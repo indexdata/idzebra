@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.25 2003-03-20 14:37:35 adam Exp $
+/* $Id: isamb.c,v 1.26 2003-04-15 16:38:32 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -275,7 +275,7 @@ struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
         yaz_log (b->log_io, "bf_read: open_block");
         if (!bf_read (b->file[cat].bf, pos/4, 0, 0, p->buf))
         {
-            yaz_log (LOG_FATAL, "read failure for pos=%ld block=%ld",
+            yaz_log (LOG_FATAL, "isamb: read fail for pos=%ld block=%ld",
                      (long) pos, (long) pos/4);
             abort();
         }
@@ -317,7 +317,7 @@ struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
             yaz_log (b->log_io, "bf_read: new_block");
             if (!bf_read (b->file[cat].bf, p->pos/4, 0, 0, p->buf))
             {
-                yaz_log (LOG_FATAL, "read failure for pos=%ld block=%ld",
+                yaz_log (LOG_FATAL, "isamb: read fail for pos=%ld block=%ld",
                          (long) p->pos/4, (long) p->pos/4);
                 abort ();
             }
@@ -571,7 +571,11 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             if (d > 0)
             {
                 dst_item = lookahead_item;
-                assert (*lookahead_mode);
+                if (!*lookahead_mode)
+                {
+                    yaz_log (LOG_WARN, "isamb: Inconsistent register (1)");
+                    assert (*lookahead_mode);
+                }
             }
             else
                 dst_item = file_item_buf;
@@ -657,7 +661,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         }
         if (!*lookahead_mode)
         {
-            yaz_log (LOG_WARN, "Inconsistent register (2)");
+            yaz_log (LOG_WARN, "isamb: Inconsistent register (2)");
             abort();
         }
         else if (!half1 && dst > cut)   
