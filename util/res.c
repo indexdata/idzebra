@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.15  1996-05-22 08:23:43  adam
+ * Revision 1.16  1996-10-29 13:47:49  adam
+ * Implemented res_get_match. Updated to use zebrautl instead of alexpath.
+ *
+ * Revision 1.15  1996/05/22 08:23:43  adam
  * Bug fix: trailing blanks in resource values where not removed.
  *
  * Revision 1.14  1996/04/26 11:51:20  adam
@@ -55,7 +58,8 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
-#include <alexutil.h>
+
+#include <zebrautl.h>
 #include <yaz-util.h>
 
 static struct res_entry *add_entry (Res r)
@@ -80,7 +84,6 @@ static void reread (Res r)
     char *line;
     char *val_buf;
     int val_size, val_max = 256;
-    char path[256];
     char fr_buf[1024];
     FILE *fr;
 
@@ -89,12 +92,10 @@ static void reread (Res r)
 
     val_buf = xmalloc (val_max);
 
-    strcpy (path, alex_path(r->name));
-
-    fr = fopen (path, "r");
+    fr = fopen (r->name, "r");
     if (!fr)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Cannot open %s", path);
+        logf (LOG_FATAL|LOG_ERRNO, "Cannot open %s", r->name);
         exit (1);
     }
     while (1)
@@ -242,6 +243,15 @@ char *res_get_def (Res r, const char *name, char *def)
     	return t;
 }
 
+int res_get_match (Res r, const char *name, const char *value, const char *s)
+{
+    const char *cn = res_get (r, name);
+
+    if (cn && !yaz_matchstr (cn, value))
+        return 1;
+    return 0;
+}
+
 void res_put (Res r, const char *name, const char *value)
 {
     struct res_entry *re;
@@ -282,18 +292,15 @@ void res_trav (Res r, const char *prefix,
 int res_write (Res r)
 {
     struct res_entry *re;
-    char path[256];
     FILE *fr;
 
     assert (r);
     if (!r->init)
         reread (r);
-    strcpy (path, alex_path(r->name));
-
-    fr = fopen (path, "w");
+    fr = fopen (r->name, "w");
     if (!fr)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Cannot create %s", path);
+        logf (LOG_FATAL|LOG_ERRNO, "Cannot create %s", r->name);
         exit (1);
     }
 
