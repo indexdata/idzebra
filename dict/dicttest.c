@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.8  1994-09-22 10:43:44  adam
+ * Revision 1.9  1994-09-22 14:43:56  adam
+ * First functional version of lookup with error correction. A 'range'
+ * specified the maximum number of insertions+deletions+substitutions.
+ *
+ * Revision 1.8  1994/09/22  10:43:44  adam
  * Two versions of depend. Type 1 is the tail-type compatible with
  * all make programs. Type 2 is the GNU make with include facility.
  * Type 2 is default. depend rule chooses current rule.
@@ -191,7 +195,7 @@ int main (int argc, char **argv)
                         char *cp;
 
                         cp = dict_lookup (dict, ipf_ptr);
-                        if (cp)
+                        if (cp && *cp)
                             no_of_hits++;
                         else
                             no_of_misses++;

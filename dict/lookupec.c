@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookupec.c,v $
- * Revision 1.1  1994-09-22 10:43:44  adam
+ * Revision 1.2  1994-09-22 14:43:57  adam
+ * First functional version of lookup with error correction. A 'range'
+ * specified the maximum number of insertions+deletions+substitutions.
+ *
+ * Revision 1.1  1994/09/22  10:43:44  adam
  * Two versions of depend. Type 1 is the tail-type compatible with
  * all make programs. Type 2 is the GNU make with include facility.
  * Type 2 is default. depend rule chooses current rule.
@@ -27,87 +31,93 @@ typedef struct {
 
 #define SH(x) (((x)<<1)+1)
 
-int dict_look_ec (Dict dict, MatchInfo *mi, MatchWord *ri_base, int pos,
-                  int (*userfunc)(Dict_char *), int range)
+int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
+                  int pos, int (*userfunc)(Dict_char *),
+                  int range, Dict_char *prefix)
 {
-    Dict_ptr ptr = 1;
-    int mid, lo, hi;
+    int lo, hi;
     void *p;
     short *indxp;
     char *info;
     MatchWord match_mask = 1<<(mi->m-1);
 
     dict_bf_readp (dict->dbf, ptr, &p);
-    mid = lo = 0;
+    lo = 0;
     hi = DICT_nodir(p)-1;
     indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));    
     while (lo <= hi)
     {
-        mid = lo;
-        if (indxp[-mid] > 0)
+        if (indxp[-lo] > 0)
         {
             /* string (Dict_char *) DICT_EOS terminated */
             /* unsigned char        length of information */
             /* char *               information */
             MatchWord *ri = ri_base, sc;
             int i, j;
-            info = (char*)p + indxp[-mid];
+            info = (char*)p + indxp[-lo];
             for (j=0; ; j++)
             {
                 Dict_char ch;
 
                 memcpy (&ch, info+j*sizeof(Dict_char), sizeof(Dict_char));
-                if (j && (ri[-1] & match_mask))
+                prefix[pos+j] = ch;
+                if (ch == DICT_EOS)
                 {
-                    if (ch == DICT_EOS)
-                        (*userfunc)(info);
+                    if (ri[range] & match_mask)
+                        (*userfunc)(prefix);
                     break;
                 }
-                if (j > mi->m+range-pos)
-                    break;
-                if (ch == DICT_EOS)
+                if (j+pos >= mi->m+range)
                     break;
                 sc = mi->s[ch & 255];
                 ri[1+range] = SH(ri[0]) & sc;
                 for (i=1; i<=range; i++)
-                    ri[i+1+range] = (SH(ri[i])&sc) | SH(ri[i-1])
+                    ri[i+1+range] = (SH(ri[i]) & sc) | SH(ri[i-1])
                         | SH(ri[i+range]) | ri[i-1];
                 ri += 1+range;
+                if (!(ri[range] & (1<<(pos+j))))
+                    break;
             }
         }
-#if 0
         else
         {
-            Dict_char dc;
-            Dict_ptr subptr;
+            Dict_char ch;
+            MatchWord *ri = ri_base, sc;
+            int i;
 
             /* Dict_ptr             subptr */
             /* Dict_char            sub char */
             /* unsigned char        length of information */
             /* char *               information */
-            info = (char*)p - indxp[-mid];
-            memcpy (&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
-            cmp = dc- *str;
-            if (!cmp)
+            info = (char*)p - indxp[-lo];
+            memcpy (&ch, info+sizeof(Dict_ptr), sizeof(Dict_char));
+            prefix[pos] = ch;
+            
+            sc = mi->s[ch & 255];
+            ri[1+range] = SH(ri[0]) & sc;
+            for (i=1; i<=range; i++)
+                ri[i+1+range] = (SH(ri[i]) & sc) | SH(ri[i-1])
+                    | SH(ri[i+range]) | ri[i-1];
+            ri += 1+range;
+            if (ri[range] & (1<<pos))
             {
-                memcpy (&subptr, info, sizeof(Dict_ptr));
-                if (*++str == DICT_EOS)
-                    return info+sizeof(Dict_ptr)+sizeof(Dict_char);
-                else
+                Dict_ptr subptr;
+                if (info[sizeof(Dict_ptr)+sizeof(Dict_char)] &&
+                    (ri[range] & match_mask))
                 {
-                    if (subptr == 0)
-                        return NULL;
-                    ptr = subptr;
+                    prefix[pos+1] = DICT_EOS;
+                    (*userfunc)(prefix);
+                }
+                memcpy (&subptr, info, sizeof(Dict_ptr));
+                if (subptr)
+                {
+                    dict_look_ec (dict, subptr, mi, ri, pos+1,
+                                  userfunc, range, prefix);
                     dict_bf_readp (dict->dbf, ptr, &p);
-                    mid = lo = 0;
-                    hi = DICT_nodir(p)-1;
                     indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
-                    continue;
                 }
             }
-
         }
-#endif
         lo++;
     }
     return 0;
@@ -135,16 +145,23 @@ int dict_lookup_ec (Dict dict, Dict_char *pattern, int range,
     MatchInfo *mi;
     MatchWord *ri;
     int i;
+    Dict_char prefix[2048];
 
     if (dict->head.last == 1)
         return 0;
     
     mi = prepare_match (pattern);
+
+#if 1
     ri = xmalloc ((dict_strlen(pattern)+range+2)*(range+1)*sizeof(*ri));
+#else
+    ri = xmalloc (2048 * (range+1) * sizeof(*ri));
+#endif
+
     for (i=0; i<=range; i++)
         ri[i] = (2<<i)-1;
     
-    i = dict_look_ec (dict, mi, ri, 0, userfunc, range);
+    i = dict_look_ec (dict, 1, mi, ri, 0, userfunc, range, prefix);
     xfree (ri);
     return i;
 }
