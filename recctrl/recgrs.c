@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.15  1998-01-26 10:37:57  adam
+ * Revision 1.16  1998-01-29 13:38:17  adam
+ * Fixed problem with mapping to record with unknown schema.
+ *
+ * Revision 1.15  1998/01/26 10:37:57  adam
  * Better diagnostics.
  *
  * Revision 1.14  1997/11/06 11:41:01  adam
@@ -669,6 +672,11 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 		p->diagnostic = 238;
 	    break;
 	default:
+            if (!node->u.root.absyn)
+            {
+		p->diagnostic = 238;
+		break;
+	    }
 	    for (marctab = node->u.root.absyn->marc; marctab;
 		marctab = marctab->next)
 		if (marctab->reference == p->input_format)
