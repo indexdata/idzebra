@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: drdwr.c,v $
- * Revision 1.7  1994-10-05 10:47:15  adam
+ * Revision 1.8  1995-01-24 11:25:11  adam
+ * Removed stupid assertion.
+ *
+ * Revision 1.7  1994/10/05  10:47:15  adam
  * Function pr_lru is non-static now. No warning no more.
  *
  * Revision 1.6  1994/09/06  13:05:14  adam
@@ -146,7 +149,6 @@ int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
 {
     struct Dict_file_block *p;
     int i;
-    assert (no < 1000);
     if ((p = find_block (bf, no)))
     {
         *bufp = p->data;
