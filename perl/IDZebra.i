@@ -26,6 +26,20 @@
   argvi++;
 }
 
+/* * * * * *  Fix for broken swig implementation */
+%typemap(argout) long long *INOUT {
+    char temp[256];
+    if (argvi >= items) {
+        EXTEND(sp,1);
+    }
+ /* sprintf(temp,"%lld", $1); */
+    sprintf(temp,"%lld", *$1);
+    $result = sv_newmortal();
+    sv_setpv($result,temp);
+    argvi++;
+}
+
+
 /* RetrievalRecordBuff is a special construct, to allow to map a char * buf
    to non-null terminated perl string scalar value (SVpv). */
 %typemap(out) RetrievalRecordBuf * {
@@ -273,7 +287,8 @@ void zebra_repository_show (ZebraHandle zh, const char *path);
    If not, and match_criteria is provided, then sysno is guessed
    If not, and a record is provided, then sysno is got from there */
 
-%apply long long *OUT { long long *sysno };
+%apply long long *INOUT { long long *sysno };
+
 %name(insert_record)       
 int zebra_insert_record (ZebraHandle zh, 
 			 const char *recordType,
