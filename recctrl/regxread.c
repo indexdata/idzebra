@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: regxread.c,v $
- * Revision 1.36  2001-05-22 21:02:26  adam
+ * Revision 1.37  2001-05-29 08:51:59  adam
+ * More fixes for character encodings.
+ *
+ * Revision 1.36  2001/05/22 21:02:26  adam
  * Fixes for Tcl UTF8 character handling.
  *
  * Revision 1.35  2001/03/29 21:31:31  adam
@@ -2102,7 +2105,9 @@ data1_node *grs_read_tcl (struct grs_read_info *p)
         if (*curLexSpec)
             lexSpecDestroy (curLexSpec);
         *curLexSpec = lexSpecCreate (p->type, p->dh);
+	Tcl_FindExecutable("");
 	tcl_interp = (*curLexSpec)->tcl_interp = Tcl_CreateInterp();
+	Tcl_Init(tcl_interp);
 	Tcl_CreateCommand (tcl_interp, "begin", cmd_tcl_begin, *curLexSpec, 0);
 	Tcl_CreateCommand (tcl_interp, "end", cmd_tcl_end, *curLexSpec, 0);
 	Tcl_CreateCommand (tcl_interp, "data", cmd_tcl_data, *curLexSpec, 0);
