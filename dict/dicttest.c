@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.10  1994-09-26 10:17:24  adam
+ * Revision 1.11  1994-09-28 13:07:09  adam
+ * Use log_mask_str now.
+ *
+ * Revision 1.10  1994/09/26  10:17:24  adam
  * Minor changes.
  *
  * Revision 1.9  1994/09/22  14:43:56  adam
@@ -124,7 +127,7 @@ int main (int argc, char **argv)
         }
         else if (ret == 'v')
         {
-            log_init (atoi(arg), prog, NULL);
+            log_init (log_mask_str(arg), prog, NULL);
         }
         else
         {

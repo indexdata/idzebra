@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dictext.c,v $
- * Revision 1.1  1994-09-16 15:39:11  adam
+ * Revision 1.2  1994-09-28 13:07:08  adam
+ * Use log_mask_str now.
+ *
+ * Revision 1.1  1994/09/16  15:39:11  adam
  * Initial code of lookup - not tested yet.
  *
  */
@@ -42,7 +45,7 @@ int main (int argc, char **argv)
         }
         else if (ret == 'v')
         {
-            log_init (atoi(arg), prog, NULL);
+            log_init (log_mask_str(arg), prog, NULL);
         }
         else if (ret == 'h')
         {
