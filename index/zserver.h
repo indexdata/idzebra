@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.18  1996-05-14 06:16:50  adam
+ * Revision 1.19  1996-05-14 11:34:01  adam
+ * Scan support in multiple registers/databases.
+ *
+ * Revision 1.18  1996/05/14  06:16:50  adam
  * Compact use/set bytes used in search service.
  *
  * Revision 1.17  1995/12/08 16:22:57  adam
@@ -100,6 +103,7 @@ int rpn_search (ZServerInfo *zi,
                 const char *setname, int *hits);
 
 int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
+              oid_value attributeset,
               int num_bases, char **basenames,
               int *position, int *num_entries, struct scan_entry **list,
               int *status);

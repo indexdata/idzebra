@@ -1,7 +1,7 @@
-# Copyright (C) 1995, Index Data I/S 
+# Copyright (C) 1995-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.35 1996-05-14 06:16:35 adam Exp $
+# $Id: Makefile,v 1.36 1996-05-14 11:34:00 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.37  1996-05-14 06:16:48  adam
+ * Revision 1.38  1996-05-14 11:34:01  adam
+ * Scan support in multiple registers/databases.
+ *
+ * Revision 1.37  1996/05/14  06:16:48  adam
  * Compact use/set bytes used in search service.
  *
  * Revision 1.36  1996/05/01 13:46:37  adam
@@ -451,6 +454,7 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
     r.term_position = q->term_position;
     r.num_entries = q->num_entries;
     r.errcode = rpn_scan (&server_info, q->term,
+                          q->attributeset,
                           q->num_bases, q->basenames,
                           &r.term_position,
                           &r.num_entries, &r.entries, &status);

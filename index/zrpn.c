@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.44  1996-05-14 06:16:44  adam
+ * Revision 1.45  1996-05-14 11:34:00  adam
+ * Scan support in multiple registers/databases.
+ *
+ * Revision 1.44  1996/05/14  06:16:44  adam
  * Compact use/set bytes used in search service.
  *
  * Revision 1.43  1996/05/09 09:54:43  adam
@@ -689,7 +692,6 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
     for (base_no = 0; base_no < num_bases; base_no++)
     {
-#if 1
         attent *attp;
         data1_local_attribute *local_attr;
         int max_pos, prefix_len = 0;
@@ -697,6 +699,8 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         attp = att_getentbyatt (curAttributeSet, use_value);
         if (!attp)
         {
+            logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
+                  curAttributeSet, use_value);
             zi->errCode = 114;
             return -1;
         }
@@ -806,196 +810,6 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 break;
             }
         }
-#else
-        int max_pos;
-#if 1
-        attent *attp;
-        data1_local_attribute *local_attr;
-        int prefix_len;
-
-        attp = att_getentbyatt (curAttributeSet, use_value);
-        if (!attp)
-        {
-            zi->errCode = 114;
-            return -1;
-        }
-        for (local_attr = attp->local_attributes; local_attr;
-             local_attr = local_attr->next)
-        {
-            prefix_len = index_word_prefix (term_dict, attp->attset_ordinal,
-                                            local_attr->local,
-                                            basenames[base_no]);
-            
-            if (!relational_term (zi, zapt, term_sub, term_dict,
-                                  attributeSet, grep_info, &max_pos))
-            {
-                const char *cp;
-                
-                j = prefix_len;
-                switch (truncation_value)
-                {
-                case -1:         /* not specified */
-                case 100:        /* do not truncate */
-                    term_dict[j++] = '(';
-                    for (i = 0; term_sub[i]; i++)
-                        verbatim_char (term_sub[i], &j, term_dict);
-                    strcpy (term_dict+j, ")");
-                    r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                          &max_pos, 0, grep_handle);
-                    if (r)
-                        logf (LOG_WARN, "dict_lookup_grep err, trunc=none:%d", r);
-                    break;
-                case 1:          /* right truncation */
-                    term_dict[j++] = '(';
-                    for (i = 0; term_sub[i]; i++)
-                        verbatim_char (term_sub[i], &j, term_dict);
-                    strcpy (term_dict+j, ".*)");
-                    dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                      &max_pos, 0, grep_handle);
-                    break;
-                case 2:          /* left truncation */
-                case 3:          /* left&right truncation */
-                    zi->errCode = 120;
-                    return -1;
-                case 101:        /* process # in term */
-                    term_dict[j++] = '(';
-                    for (i=0; term_sub[i]; i++)
-                        if (term_sub[i] == '#' && i > 2)
-                        {
-                            term_dict[j++] = '.';
-                            term_dict[j++] = '*';
-                        }
-                        else
-                            verbatim_char (term_sub[i], &j, term_dict);
-                    strcpy (term_dict+j, ")");
-                    r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                          &max_pos, 0, grep_handle);
-                    if (r)
-                        logf (LOG_WARN, "dict_lookup_grep err, trunc=#: %d",
-                              r);
-                    break;
-                case 102:        /* regular expression */
-                    sprintf (term_dict + j, "(%s)", term_sub);
-                    r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                          &max_pos, 0, grep_handle);
-                    if (r)
-                        logf (LOG_WARN, "dict_lookup_grep err, trunc=regular: %d",
-                              r);
-                    break;
-                case 103:        /* regular expression with error correction */
-                    cp = term_sub;
-                    r = 0;
-                    if (*cp == '*' && cp[1] && cp[2])
-                    {
-                        r = atoi (cp+1);
-                        cp += 2;
-                    }
-                    sprintf (term_dict + j, "(%s)", cp);
-                    r = dict_lookup_grep (zi->wordDict, term_dict, r, grep_info,
-                                          &max_pos, j, grep_handle);
-                    if (r)
-                        logf (LOG_WARN, "dict_lookup_grep err, trunc=eregular: %d",
-                              r);
-                    break;
-                }
-            }
-            if (max_pos <= strlen(basenames[base_no]))
-            {
-                zi->errCode = 109; /* Database unavailable */
-                zi->errString = basenames[base_no];
-                return -1;
-            }
-        }
-#else
-        int prefix_len = index_word_prefix_map (term_dict, curAttributeSet,
-                                                use_value,
-                                                basenames[base_no]);
-        if (prefix_len < 0)
-        {
-            zi->errCode = 114;
-            return -1;
-        }
-        if (!relational_term (zi, zapt, term_sub, term_dict,
-                              attributeSet, grep_info, &max_pos))
-        {
-            const char *cp;
-
-            j = prefix_len;
-            switch (truncation_value)
-            {
-            case -1:         /* not specified */
-            case 100:        /* do not truncate */
-                term_dict[j++] = '(';
-                for (i = 0; term_sub[i]; i++)
-                    verbatim_char (term_sub[i], &j, term_dict);
-                strcpy (term_dict+j, ")");
-                r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                      &max_pos, 0, grep_handle);
-                if (r)
-                    logf (LOG_WARN, "dict_lookup_grep err, trunc=none:%d", r);
-                break;
-            case 1:          /* right truncation */
-                term_dict[j++] = '(';
-                for (i = 0; term_sub[i]; i++)
-                    verbatim_char (term_sub[i], &j, term_dict);
-                strcpy (term_dict+j, ".*)");
-                dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                  &max_pos, 0, grep_handle);
-                break;
-            case 2:          /* left truncation */
-            case 3:          /* left&right truncation */
-                zi->errCode = 120;
-                return -1;
-            case 101:        /* process # in term */
-                term_dict[j++] = '(';
-                for (i=0; term_sub[i]; i++)
-                    if (term_sub[i] == '#' && i > 2)
-                    {
-                        term_dict[j++] = '.';
-                        term_dict[j++] = '*';
-                    }
-                    else
-                        verbatim_char (term_sub[i], &j, term_dict);
-                strcpy (term_dict+j, ")");
-                r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                      &max_pos, 0, grep_handle);
-                if (r)
-                    logf (LOG_WARN, "dict_lookup_grep err, trunc=#: %d",
-                          r);
-                break;
-            case 102:        /* regular expression */
-		sprintf (term_dict + j, "(%s)", term_sub);
-                r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                      &max_pos, 0, grep_handle);
-                if (r)
-                    logf (LOG_WARN, "dict_lookup_grep err, trunc=regular: %d",
-                          r);
-                break;
-            case 103:        /* regular expression with error correction */
-                cp = term_sub;
-                r = 0;
-		if (*cp == '*' && cp[1] && cp[2])
-                {
-                    r = atoi (cp+1);
-                    cp += 2;
-                }
-		sprintf (term_dict + j, "(%s)", cp);
-                r = dict_lookup_grep (zi->wordDict, term_dict, r, grep_info,
-                                      &max_pos, j, grep_handle);
-                if (r)
-                    logf (LOG_WARN, "dict_lookup_grep err, trunc=eregular: %d",
-                          r);
-                break;
-            }
-        }
-        if (max_pos <= strlen(basenames[base_no]))
-        {
-            zi->errCode = 109; /* Database unavailable */
-            zi->errString = basenames[base_no];
-            return -1;
-        }
-#endif
-#endif
     }
     logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
     return 0;
@@ -1374,6 +1188,9 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         if (relation_value == 102) /* relevance relation */
             return rpn_search_APT_relevance (zi, zapt, attributeSet,
                                              num_bases, basenames);
+        if (completeness_value == 2 || completeness_value == 3)
+            return rpn_search_APT_cphrase (zi, zapt, attributeSet,
+                                           num_bases, basenames);
         return rpn_search_APT_word (zi, zapt, attributeSet,
                                     num_bases, basenames);
     case 3: /* key */
@@ -1576,22 +1393,22 @@ int rpn_search (ZServerInfo *zi,
     return zi->errCode;
 }
 
+struct scan_info_entry {
+    char *term;
+    ISAM_P isam_p;
+};
+
 struct scan_info {
-    struct scan_entry *list;
+    struct scan_info_entry *list;
     ODR odr;
     int before, after;
-    ISAM isam;
     char prefix[20];
 };
 
 static int scan_handle (char *name, const char *info, int pos, void *client)
 {
     int len_prefix, idx;
-    ISAM_P isam_p;
-    RSET rset;
     struct scan_info *scan_info = client;
-
-    rset_isam_parms parms;
 
     len_prefix = strlen(scan_info->prefix);
     if (memcmp (name, scan_info->prefix, len_prefix))
@@ -1600,113 +1417,248 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
         idx = scan_info->after - pos + scan_info->before;
     else
         idx = - pos - 1;
+    logf (LOG_DEBUG, "%-3d %s", idx, name+len_prefix);
     scan_info->list[idx].term = odr_malloc (scan_info->odr,
                                             strlen(name + len_prefix)+1);
     strcpy (scan_info->list[idx].term, name + len_prefix);
-    assert (*info == sizeof(isam_p));
-    memcpy (&isam_p, info+1, sizeof(isam_p));
-    parms.is = scan_info->isam;
-    parms.pos = isam_p;
-#if 1
-    rset = rset_create (rset_kind_isam, &parms);
-    count_set (rset, &scan_info->list[idx].occurrences);
-    rset_delete (rset);
-#else
-    scan_info->list[idx].occurrences = 1;
-#endif
-    logf (LOG_DEBUG, "pos=%3d idx=%3d name=%s", pos, idx, name);
+    assert (*info == sizeof(ISAM_P));
+    memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAM_P));
     return 0;
 }
 
-
-static int dummy_handle (char *name, const char *info, void *p)
-{
-    return 0;
-}
 
 int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
+              oid_value attributeset,
               int num_bases, char **basenames,
               int *position, int *num_entries, struct scan_entry **list,
               int *status)
 {
-    int i, j, sizez, max_pos;
+    int i;
     int pos = *position;
     int num = *num_entries;
     int before;
     int after;
+    int base_no;
     char termz[IT_MAX_WORD+20];
     AttrType use;
     int use_value;
-    Z_Term *term = zapt->term;
-    struct scan_info scan_info;
+    AttrType completeness;
+    int completeness_value;
+    struct scan_info *scan_info_array;
+    struct scan_entry *glist;
+    int ords[32], ord_no = 0;
+    int ptr[32];
 
     logf (LOG_DEBUG, "scan, position = %d, num = %d", pos, num);
 
-    if (num_bases != 1)
-        return 111;
-    scan_info.before = before = pos-1;
-    scan_info.after = after = 1+num-pos;
-    scan_info.odr = zi->odr;
-
-    logf (LOG_DEBUG, "scan, before = %d, after = %d", before, after);
-    
-    scan_info.isam = zi->wordIsam;
-    scan_info.list = odr_malloc (zi->odr, (before+after)*
-                                 sizeof(*scan_info.list));
-    for (j = 0; j<before+after; j++)
-        scan_info.list[j].term = NULL;
     attr_init (&use, zapt, 1);
     use_value = attr_find (&use, NULL);
     logf (LOG_DEBUG, "use value %d", use_value);
 
+    attr_init (&completeness, zapt, 6);
+    completeness_value = attr_find (&completeness, NULL);
+    logf (LOG_DEBUG, "completeness value %d", completeness_value);
+
+    if (attributeset == VAL_NONE)
+        attributeset = VAL_BIB1;
+        
     if (use_value == -1)
         use_value = 1016;
-    i = index_word_prefix (termz, 1, use_value, *basenames);
-
-    dict_lookup_grep (zi->wordDict, termz, 0, NULL, &max_pos, 0,
-                      dummy_handle);
-    if (max_pos <= strlen(*basenames))
+    for (base_no = 0; base_no < num_bases && ord_no < 32; base_no++)
     {
-        zi->errString = *basenames;
-        return zi->errCode = 109; /* Database unavailable */
+        attent *attp;
+        data1_local_attribute *local_attr;
+
+        attp = att_getentbyatt (attributeset, use_value);
+        if (!attp)
+        {
+            logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
+                  attributeset, use_value);
+            return zi->errCode = 114;
+        }
+        if (zebTargetInfo_curDatabase (zi->zti, basenames[base_no]))
+        {
+            zi->errString = basenames[base_no];
+            return zi->errCode = 109; /* Database unavailable */
+        }
+        for (local_attr = attp->local_attributes; local_attr && ord_no < 32;
+             local_attr = local_attr->next)
+        {
+            int ord;
+
+            ord = zebTargetInfo_lookupSU (zi->zti, attp->attset_ordinal,
+                                          local_attr->local);
+            if (ord > 0)
+                ords[ord_no++] = ord;
+        }
     }
-    strcpy (scan_info.prefix, termz);
-    sizez = term->u.general->len;
-    if (sizez > IT_MAX_WORD)
-        sizez = IT_MAX_WORD;
-    for (j = 0; j<sizez; j++)
-        termz[j+i] = index_char_cvt (term->u.general->buf[j]);
-    termz[j+i] = '\0';
+    if (ord_no == 0)
+        return zi->errCode = 113;
+    before = pos-1;
+    after = 1+num-pos;
+    scan_info_array = odr_malloc (zi->odr, ord_no * sizeof(*scan_info_array));
+    for (i = 0; i < ord_no; i++)
+    {
+        int j, prefix_len = 0;
+        int before_tmp = before, after_tmp = after;
+        struct scan_info *scan_info = scan_info_array + i;
+
+        scan_info->before = before;
+        scan_info->after = after;
+        scan_info->odr = zi->odr;
+
+        scan_info->list = odr_malloc (zi->odr, (before+after)*
+                                      sizeof(*scan_info->list));
+        for (j = 0; j<before+after; j++)
+            scan_info->list[j].term = NULL;
+        termz[prefix_len++] = ords[i];
+        if (completeness_value == 2 || completeness_value == 3)
+            trans_term (zi, zapt, 'p', termz+prefix_len);
+        else
+            trans_term (zi, zapt, 'w', termz+prefix_len);
+        memcpy (scan_info->prefix, termz, prefix_len+1);
+        scan_info->prefix[prefix_len+1] = '\0';
+        dict_scan (zi->wordDict, termz, &before_tmp, &after_tmp, scan_info,
+                   scan_handle);
+    }
+    glist = odr_malloc (zi->odr, (before+after)*sizeof(*glist));
+    for (i = 0; i < ord_no; i++)
+        ptr[i] = before;
     
-    dict_scan (zi->wordDict, termz, &before, &after, &scan_info, scan_handle);
-
     *status = BEND_SCAN_SUCCESS;
-
-    for (i = 0; i<scan_info.after; i++)
-        if (scan_info.list[scan_info.before+scan_info.after-i-1].term)
+    for (i = 0; i<after; i++)
+    {
+        int j, j0 = -1;
+        const char *mterm = NULL;
+        const char *tst;
+        RSET rset;
+        rset_isam_parms parms;
+        
+        for (j = 0; j < ord_no; j++)
+        {
+            if (ptr[j] < before+after &&
+                (tst=scan_info_array[j].list[ptr[j]].term) &&
+                (!mterm || strcmp (tst, mterm) < 0))
+            {
+                j0 = j;
+                mterm = tst;
+            }
+        }
+        if (j0 == -1)
             break;
-    *num_entries -= i;
-    if (i)
-        *status = BEND_SCAN_PARTIAL;
+        glist[i+before].term = odr_malloc (zi->odr, strlen(mterm)+1);
+        strcpy (glist[i+before].term, mterm);
+        
+        parms.is = zi->wordIsam;
+        parms.pos = scan_info_array[j0].list[ptr[j0]].isam_p;
+        rset = rset_create (rset_kind_isam, &parms);
 
-    for (i = 0; i<scan_info.before; i++)
-        if (scan_info.list[i].term)
+        ptr[j0]++;
+        for (j = j0+1; j<ord_no; j++)
+        {
+            if (ptr[j] < before+after &&
+                (tst=scan_info_array[j].list[ptr[j]].term) &&
+                !strcmp (tst, mterm))
+            {
+                rset_isam_parms parms;
+                rset_bool_parms bool_parms;
+                RSET rset2;
+
+                parms.is = zi->wordIsam;
+                parms.pos = scan_info_array[j].list[ptr[j]].isam_p;
+                rset2 = rset_create (rset_kind_isam, &parms);
+
+                bool_parms.key_size = sizeof(struct it_key);
+                bool_parms.cmp = key_compare;
+                bool_parms.rset_l = rset;
+                bool_parms.rset_r = rset2;
+              
+                rset = rset_create (rset_kind_or, &bool_parms);
+
+                ptr[j]++;
+            }
+        }
+        count_set (rset, &glist[i+before].occurrences);
+        rset_delete (rset);
+    }
+    if (i < after)
+    {
+        *num_entries -= (after-i);
+        *status = BEND_SCAN_PARTIAL;
+    }
+
+    for (i = 0; i<ord_no; i++)
+        ptr[i] = 0;
+
+    for (i = 0; i<before; i++)
+    {
+        int j, j0 = -1;
+        const char *mterm = NULL;
+        const char *tst;
+        RSET rset;
+        rset_isam_parms parms;
+        
+        for (j = 0; j <ord_no; j++)
+        {
+            if (ptr[j] < before &&
+                (tst=scan_info_array[j].list[before-1-ptr[j]].term) &&
+                (!mterm || strcmp (tst, mterm) > 0))
+            {
+                j0 = j;
+                mterm = tst;
+            }
+        }
+        if (j0 == -1)
             break;
+        glist[before-1-i].term = odr_malloc (zi->odr, strlen(mterm)+1);
+        strcpy (glist[before-1-i].term, mterm);
+
+        parms.is = zi->wordIsam;
+        parms.pos = scan_info_array[j0].list[before-1-ptr[j0]].isam_p;
+        rset = rset_create (rset_kind_isam, &parms);
+
+        ptr[j0]++;
+
+        for (j = j0+1; j<ord_no; j++)
+        {
+            if (ptr[j] < before &&
+                (tst=scan_info_array[j].list[before-1-ptr[j]].term) &&
+                !strcmp (tst, mterm))
+            {
+                rset_isam_parms parms;
+                rset_bool_parms bool_parms;
+                RSET rset2;
+
+                parms.is = zi->wordIsam;
+                parms.pos = scan_info_array[j].list[before-1-ptr[j]].isam_p;
+                rset2 = rset_create (rset_kind_isam, &parms);
+
+                bool_parms.key_size = sizeof(struct it_key);
+                bool_parms.cmp = key_compare;
+                bool_parms.rset_l = rset;
+                bool_parms.rset_r = rset2;
+              
+                rset = rset_create (rset_kind_or, &bool_parms);
+
+                ptr[j]++;
+            }
+        }
+        count_set (rset, &glist[before-1-i].occurrences);
+        rset_delete (rset);
+    }
+    i = before-i;
     if (i)
+    {
         *status = BEND_SCAN_PARTIAL;
-    *position -= i;
-    *num_entries -= i;
-
-    *list = scan_info.list+i;       /* list is set to first 'real' entry */
-
-    if (*num_entries == 0)          /* signal 'unsupported use-attribute' */
-        zi->errCode = 114;          /* if no entries was found */
+        *position -= i;
+        *num_entries -= i;
+    }
+    *list = glist + i;               /* list is set to first 'real' entry */
+    
     logf (LOG_DEBUG, "position = %d, num_entries = %d",
           *position, *num_entries);
     if (zi->errCode)
         logf (LOG_DEBUG, "scan error: %d", zi->errCode);
-    return 0;
+    return zi->errCode;
 }
               
-
-
