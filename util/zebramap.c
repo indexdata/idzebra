@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.2  1997-10-31 12:39:30  adam
+ * Revision 1.3  1997-11-17 15:35:26  adam
+ * Bug fix. Relation=relevance wasn't observed.
+ *
+ * Revision 1.2  1997/10/31 12:39:30  adam
  * Changed log message.
  *
  * Revision 1.1  1997/10/27 14:33:06  adam
@@ -223,6 +226,7 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 
     completeness_value = attr_find (&completeness, NULL);
     structure_value = attr_find (&structure, NULL);
+    relation_value = attr_find (&relation, NULL);
 
     if (completeness_value == 2 || completeness_value == 3)
 	*complete_flag = 1;
