@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.40 2004-08-31 10:43:35 heikki Exp $
+/* $Id: trunc.c,v 1.41 2004-08-31 14:43:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -131,7 +131,7 @@ static void heap_close (struct trunc_info *ti)
 static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                           const char *flags, ISAMS_P *isam_p, int from, int to,
                           int merge_chunk, int preserve_position,
-                          int term_type)
+                          int term_type, NMEM rset_nmem)
 {
     RSET result; 
     RSFD result_rsfd;
@@ -144,7 +144,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
     parms.temp_path = res_get (zi->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);
     */
-    result=rstemp_create(NULL, /* FIXME - use a proper nmem */
+    result=rstemp_create( rset_nmem, /* NULL, FIXME - use a proper nmem */
             sizeof(struct it_key), key_compare_it, 
             res_get (zi->res, "setTmpDir"));
     result_rsfd = rset_open (result, RSETF_WRITE);
@@ -167,12 +167,12 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                 rset[rscur] = rset_trunc_r (zi, term, length, flags,
 				            isam_p, i, i+i_add,
                                             merge_chunk, preserve_position,
-                                            term_type);
+                                            term_type, rset_nmem);
             else
                 rset[rscur] = rset_trunc_r (zi, term, length, flags,
                                             isam_p, i, to,
                                             merge_chunk, preserve_position,
-                                            term_type);
+                                            term_type, rset_nmem);
             rscur++;
         }
         ti = heap_init (rscur, sizeof(struct it_key), key_compare_it);
@@ -407,15 +407,15 @@ static int isamc_trunc_cmp (const void *p1, const void *p2)
 
 RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 		 const char *term, int length, const char *flags,
-                 int preserve_position, int term_type)
+                 int preserve_position, int term_type, NMEM rset_nmem)
 {
     logf (LOG_DEBUG, "rset_trunc no=%d", no);
     if (no < 1)
-	return rsnull_create (NULL); /* FIXME - use a proper nmem */
+	return rsnull_create (rset_nmem); /* FIXME - use a proper nmem */
     if (zi->reg->isams)
     {
         if (no == 1)
-            return rsisams_create(NULL, /* FIXME - use some nmem */
+            return rsisams_create(rset_nmem, /* FIXME - use some nmem */
                     sizeof(struct it_key), key_compare_it,
                     zi->reg->isams, *isam_p);
         /*
@@ -432,7 +432,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
     else if (zi->reg->isamc)
     {
         if (no == 1)
-            return rsisamc_create(NULL, /* FIXME - use some nmem */
+            return rsisamc_create(rset_nmem, /* FIXME - use some nmem */
                     sizeof(struct it_key), key_compare_it,
                     zi->reg->isamc, *isam_p);
         /*
@@ -466,7 +466,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
     else if (zi->reg->isamb)
     {
         if (no == 1)
-            return rsisamb_create(NULL, /* FIXME - use some nmem */
+            return rsisamb_create(rset_nmem, /* FIXME - use some nmem */
                     sizeof(struct it_key), key_compare_it,
                     zi->reg->isamb, *isam_p);
         /*
@@ -489,7 +489,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
                 rsets[i]=rsisamb_create(NULL, /* */
                     sizeof(struct it_key), key_compare_it,
                     zi->reg->isamb, isam_p[i] );
-            r=rsmultior_create( NULL, /* FIXME - use some nmem */
+            r=rsmultior_create( rset_nmem, /* FIXME - use some nmem */
                       sizeof(struct it_key), key_compare_it, 
                       no, rsets);
             xfree(rsets);
@@ -522,6 +522,6 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 	return rsnull_create (NULL); /* FIXME - nmem */
     }
     return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100,
-                         preserve_position, term_type);
+                         preserve_position, term_type, rset_nmem);
 }
 

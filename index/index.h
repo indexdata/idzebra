@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.115 2004-08-30 12:32:24 heikki Exp $
+/* $Id: index.h,v 1.116 2004-08-31 14:43:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -72,6 +72,13 @@ struct it_key {
     int  seqno;
 };
 #endif
+
+struct key_info {
+    int keysize;
+    int (*key_compare) (const void *p1, const void *p2);
+    void (*key_logdump_txt) (int logmask, const void *p, const char *txt);
+    /* FIXME - decode and encode, and lots of other stuff */
+};
 
 enum dirsKind { dirs_dir, dirs_file };
 
@@ -372,7 +379,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
 RSET rset_trunc (ZebraHandle zh, ISAMS_P *isam_p, int no,
 		 const char *term, int length_term, const char *flags,
-                 int preserve_position, int term_type);
+                 int preserve_position, int term_type, NMEM rset_nmem);
 
 void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       const char *db, int set,

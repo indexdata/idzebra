@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.19 2004-08-31 10:43:39 heikki Exp $
+/* $Id: rsisamb.c,v 1.20 2004-08-31 14:43:42 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -49,7 +49,7 @@ static const struct rset_control control =
     r_open,
     r_close,
     r_rewind,
-    r_forward, /* rset_default_forward, */
+    r_forward, 
     r_pos,
     r_read,
     r_write,
