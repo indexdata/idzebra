@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.121 2004-08-25 09:17:33 adam Exp $
+/* $Id: zserver.c,v 1.122 2004-08-25 09:28:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -173,7 +173,7 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
     zint count = 0;
     int no_terms;
     int i;
-    int type = Z_Term_general
+    int type = Z_Term_general;
     struct Z_External *ext;
     Z_SearchInfoReport *sr;
 
