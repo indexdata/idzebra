@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.4 2002-08-29 08:41:07 adam Exp $
+/* $Id: xmlread.c,v 1.5 2002-08-29 09:59:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -202,7 +202,10 @@ static int cb_external_entity (XML_Parser pparser,
         }
         if (!XML_ParseBuffer (parser, r, done))
         {
-            yaz_log (LOG_WARN, "XML_ParseBuffer failed %s",
+            yaz_log (LOG_WARN, "%s:%d:%d:XML error: %s",
+                     systemId,
+                     XML_GetCurrentLineNumber(parser),
+                     XML_GetCurrentColumnNumber(parser),
 		     XML_ErrorString(XML_GetErrorCode(parser)));
 	}
     }
@@ -423,7 +426,9 @@ data1_node *zebra_read_xml (data1_handle dh,
             done = 1;
         if (!XML_ParseBuffer (parser, r, done))
         {
-            yaz_log (LOG_WARN, "XML_ParseBuffer (1) failed %s",
+            yaz_log (LOG_WARN, "%d:%d:XML error: %s",
+                     XML_GetCurrentLineNumber(parser),
+                     XML_GetCurrentColumnNumber(parser),
 		     XML_ErrorString(XML_GetErrorCode(parser)));
 	}
     }
