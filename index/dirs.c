@@ -1,4 +1,4 @@
-/* $Id: dirs.c,v 1.18 2002-08-02 19:26:55 adam Exp $
+/* $Id: dirs.c,v 1.19 2002-08-17 07:59:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -42,6 +42,7 @@ struct dirs_info {
     char prefix[DIRS_MAX_PATH];
     int prelen;
     struct dirs_entry *last_entry;
+    int nextpath_deleted;
 };
 
 static int dirs_client_proc (char *name, const char *info, int pos,
@@ -57,10 +58,7 @@ static int dirs_client_proc (char *name, const char *info, int pos,
         ci->no_cur = 0;
         return 0;
     }
-    if (ci->no_cur == ci->no_max)
-    {
-        assert (0);
-    }
+    assert (ci->no_cur < ci->no_max);
     entry = ci->entries + ci->no_cur;
     if (info[0] == sizeof(entry->sysno)+sizeof(entry->mtime))
     {
@@ -93,6 +91,7 @@ struct dirs_info *dirs_open (Dict dict, const char *rep, int rw)
     strcpy (p->prefix, rep);
     p->prelen = strlen(p->prefix);
     strcpy (p->nextpath, rep);
+    p->nextpath_deleted = 0;
     p->no_read = p->no_cur = 0;
     after = p->no_max = 100;
     p->entries = (struct dirs_entry *)
@@ -142,10 +141,20 @@ struct dirs_entry *dirs_read (struct dirs_info *p)
     }
     if (p->no_cur < p->no_max)
         return p->last_entry = NULL;
-    p->no_cur = -1;
-    logf (LOG_DEBUG, "dirs_read rescan");
-    dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
+    if (p->nextpath_deleted)
+    {
+        p->no_cur = 0;
+	after = p->no_max;
+    }
+    else
+    {
+        p->no_cur = -1;
+	after = p->no_max + 1;
+    }
     p->no_read = 1;
+    p->nextpath_deleted = 0;
+    logf (LOG_DEBUG, "dirs_read rescan %s", p->nextpath);
+    dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
     if (p->no_read <= p->no_cur)
         return p->last_entry = p->entries;
     return p->last_entry = NULL;
@@ -196,7 +205,11 @@ void dirs_del (struct dirs_info *p, const char *src)
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_del %s", path);
     if (p->rw)
+    {
+        if (!strcmp(path, p->nextpath))
+             p->nextpath_deleted = 1;
 	dict_delete (p->dict, path);
+    }
 }
 
 void dirs_free (struct dirs_info **pp)
