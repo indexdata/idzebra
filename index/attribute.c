@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.19 2005-01-15 19:38:24 adam Exp $
+/* $Id: attribute.c,v 1.20 2005-03-30 09:25:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,13 +20,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #include <stdio.h>
 
 #include <yaz/log.h>
 #include <idzebra/res.h>
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include "index.h"
 
 static data1_att *getatt(data1_attset *p, int att, const char *sattr)

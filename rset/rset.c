@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.43 2005-01-17 01:21:44 adam Exp $
+/* $Id: rset.c,v 1.44 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,7 +22,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 #include <string.h>
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <assert.h>
 #include <yaz/nmem.h>
 #include <rset.h>

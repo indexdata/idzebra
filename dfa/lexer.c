@@ -1,4 +1,4 @@
-/* $Id: lexer.c,v 1.13 2005-01-15 19:38:19 adam Exp $
+/* $Id: lexer.c,v 1.14 2005-03-30 09:25:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,7 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <stdarg.h>
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <dfa.h>
 #include "imalloc.h"
 #include "lexer.h"

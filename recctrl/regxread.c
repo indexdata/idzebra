@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.57 2005-01-16 23:14:57 adam Exp $
+/* $Id: regxread.c,v 1.58 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 
 #include <yaz/tpath.h>
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <dfa.h>
 #include <idzebra/recgrs.h>
 

@@ -1,4 +1,4 @@
-/* $Id: version.h,v 1.2 2005-01-15 19:38:24 adam Exp $
+/* $Id: version.h,v 1.3 2005-03-30 09:25:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -24,24 +24,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define ZEBRAVER "1.4.0"
 
-#define ZEBRADATE "$Date: 2005-01-15 19:38:24 $"
-
-#ifdef __GNUC__
-typedef long long int zint;
-#define ZINT_FORMAT "%lld"
-#define ZINT_FORMAT0 "lld"
-#else
-#ifdef WIN32
-typedef __int64 zint;
-#define ZINT_FORMAT "%I64d"
-#define ZINT_FORMAT0 "I64d"
-#else
-typedef long zint;
-#define ZINT_FORMAT "%ld"
-#define ZINT_FORMAT0 "ld"
-#endif
-#endif
-
-typedef zint SYSNO;
+#define ZEBRADATE "$Date: 2005-03-30 09:25:23 $"
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: recindex.h,v 1.23 2005-01-15 19:38:26 adam Exp $
+/* $Id: recindex.h,v 1.24 2005-03-30 09:25:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,7 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef RECINDEX_H
 #define RECINDEX_H
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <zebra-lock.h>
 #include <idzebra/bfile.h>
 

@@ -1,4 +1,4 @@
-/* $Id: atoi_zn.c,v 1.3 2005-03-30 09:25:25 adam Exp $
+/* $Id: zint.c,v 1.1 2005-03-30 09:25:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,20 +20,33 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <string.h>
-#include <ctype.h>
 #include <idzebra/util.h>
 
-zint atoi_zn (const char *buf, zint len)
+void zebra_zint_encode(char **dst, zint pos)
 {
-    zint val = 0;
+    unsigned char *bp = (unsigned char*) *dst;
 
-    while (--len >= 0)
+    while (pos > 127)
     {
-        if (isdigit (*buf))
-            val = val*10 + (*buf - '0');
-	buf++;
+         *bp++ = (unsigned char) (128 | (pos & 127));
+         pos = pos >> 7;
     }
-    return val;
+    *bp++ = (unsigned char) pos;
+    *dst = (char *) bp;
 }
 
+void zebra_zint_decode(const char **src, zint *pos)
+{
+    const unsigned char **bp = (const unsigned char **) src;
+    zint d = 0;
+    unsigned char c;
+    unsigned r = 0;
+
+    while (((c = *(*bp)++) & 128))
+    {
+        d += ((zint) (c & 127) << r);
+	r += 7;
+    }
+    d += ((zint) c << r);
+    *pos = d;
+}

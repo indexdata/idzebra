@@ -1,4 +1,4 @@
-/* $Id: res.h,v 1.3 2005-01-15 19:38:24 adam Exp $
+/* $Id: res.h,v 1.4 2005-03-30 09:25:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,10 +20,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#ifndef RES_H
-#define RES_H
+#ifndef IDZEBRA_RES_H
+#define IDZEBRA_RES_H
 
-#include <yaz/yaz-version.h>
+#include <idzebra/util.h>
 
 YAZ_BEGIN_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.14 2005-03-08 14:02:15 adam Exp $
+/* $Id: rsmultiandor.c,v 1.15 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,7 +39,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <string.h>
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <idzebra/isamc.h>
 #include <rset.h>
 

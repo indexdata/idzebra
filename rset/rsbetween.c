@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.35 2005-01-15 20:47:16 adam Exp $
+/* $Id: rsbetween.c,v 1.36 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,7 +36,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <assert.h>
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <rset.h>
 
 

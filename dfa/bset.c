@@ -1,4 +1,4 @@
-/* $Id: bset.c,v 1.7 2005-01-15 19:38:18 adam Exp $
+/* $Id: bset.c,v 1.8 2005-03-30 09:25:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <string.h>
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <bset.h>
 #include "imalloc.h"
 

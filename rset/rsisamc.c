@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.35 2005-01-15 19:38:34 adam Exp $
+/* $Id: rsisamc.c,v 1.36 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,7 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <rset.h>
 
 static RSFD r_open (RSET ct, int flag);

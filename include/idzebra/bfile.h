@@ -1,4 +1,4 @@
-/* $Id: bfile.h,v 1.3 2005-01-15 19:38:24 adam Exp $
+/* $Id: bfile.h,v 1.4 2005-03-30 09:25:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define BFILE_H
 
 #include <yaz/yconfig.h>
-#include <idzebra/version.h>
+#include <idzebra/util.h>
 
 YAZ_BEGIN_CDECL
 
@@ -40,12 +40,20 @@ void bfs_destroy (BFiles bfiles);
 YAZ_EXPORT
 int bf_close (BFile);
 
+YAZ_EXPORT
+int bf_xclose (BFile bf, int version, const char *more_info);
+
 /* bf_open: opens bfile.
    opens bfile with name 'name' and with 'block_size' as block size.
    returns bfile handle is successful; NULL otherwise 
  */
 YAZ_EXPORT
 BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag);
+
+YAZ_EXPORT
+BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wrflag,
+	       const char *magic, int *read_version,
+	       const char **more_info);
 
 /* bf_read: reads bytes from bfile 'bf'.
    reads 'nbytes' bytes (or whole block if 0) from offset 'offset' from
@@ -82,6 +90,14 @@ void bf_commitClean (BFiles bfs, const char *spec);
 /* bf_reset: delete register and shadow completely */
 YAZ_EXPORT
 void bf_reset (BFiles bfs);
+
+/* bf_alloc: allocate one or more blocks */
+YAZ_EXPORT
+int bf_alloc(BFile bf, int no, zint *blocks);
+
+/* bf_alloc: allocate one or more blocks */
+YAZ_EXPORT
+int bf_free(BFile bf, int no, const zint *blocks);
 
 YAZ_END_CDECL
 

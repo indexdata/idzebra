@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.5 2005-03-09 13:45:29 adam Exp $
+/* $Id: safari.c,v 1.6 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #include <ctype.h>
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <idzebra/recctrl.h>
 
 struct safari_info {

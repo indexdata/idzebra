@@ -1,6 +1,8 @@
-# $Id: Makefile.am,v 1.4 2004-09-30 08:16:49 adam Exp $
+# $Id: Makefile.am,v 1.5 2005-03-30 09:25:25 adam Exp $
 
-TESTS = tstcodec
+check_PROGRAMS = tstcodec
+
+TESTS = $(check_PROGRAMS)
 
 zebralibs = \
  ../../index/libidzebra-api.la \
@@ -17,7 +19,6 @@ zebralibs = \
 
 tstcodec_SOURCES = tstcodec.c
 
-noinst_PROGRAMS = tstcodec
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 

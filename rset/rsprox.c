@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.25 2005-03-08 14:02:15 adam Exp $
+/* $Id: rsprox.c,v 1.26 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <assert.h>
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <rset.h>
 
 #ifndef RSET_DEBUG

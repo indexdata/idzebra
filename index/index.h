@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.130 2005-01-16 23:14:57 adam Exp $
+/* $Id: index.h,v 1.131 2005-03-30 09:25:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,7 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <time.h>
 #include <stdlib.h>
 #include <idzebra/version.h>
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <sortidx.h>
 
 #if HAVE_SYS_TIMES_H

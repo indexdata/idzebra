@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.7 2005-01-15 19:38:24 adam Exp $
+/* $Id: data1.h,v 1.8 2005-03-30 09:25:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,10 +28,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/nmem.h>
 #include <yaz/oid.h>
 #include <yaz/proto.h>
-
-#include <idzebra/version.h>
-
 #include <yaz/yaz-util.h>
+
+#include <idzebra/util.h>
 
 #define d1_isspace(c) strchr(" \r\n\t\f", c)
 #define d1_isdigit(c) ((c) <= '9' && (c) >= '0')

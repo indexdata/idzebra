@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.52 2005-01-15 19:38:33 adam Exp $
+/* $Id: rsbool.c,v 1.53 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <assert.h>
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <rset.h>
 
 #ifndef RSET_DEBUG

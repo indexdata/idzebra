@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.60 2005-01-17 01:21:44 adam Exp $
+/* $Id: rstemp.c,v 1.61 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -32,7 +32,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #include <sys/types.h>
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <rset.h>
 
 static RSFD r_open(RSET ct, int flag);

@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.24 2005-03-05 09:19:16 adam Exp $
+/* $Id: rectext.c,v 1.25 2005-03-30 09:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #include <ctype.h>
 
-#include <zebrautl.h>
+#include <idzebra/util.h>
 #include <idzebra/recctrl.h>
 
 struct text_info {
