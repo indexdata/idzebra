@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.24  1999-05-21 11:08:46  adam
+ * Revision 1.25  1999-05-25 12:33:32  adam
+ * Fixed bug in Tcl filter.
+ *
+ * Revision 1.24  1999/05/21 11:08:46  adam
  * Tcl filter attempts to read <filt>.tflt. Improvements to configure
  * script so that it reads uninstalled Tcl source.
  *
@@ -710,15 +713,7 @@ int readFileSpec (struct lexSpec *spec)
         xfree (lineBuf);
         return -1;
     }
-    logf (LOG_LOG, "reading regx filter %s.flt", lineBuf);
-    sprintf (lineBuf, "%s.flt", spec->name);
-    if (!(spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh),
-				     lineBuf, "r")))
-    {
-        logf (LOG_ERRNO|LOG_WARN, "cannot read spec file %s", spec->name);
-        xfree (lineBuf);
-        return -1;
-    }
+    logf (LOG_LOG, "reading regx filter %s", lineBuf);
 #if HAVE_TCL_H
     if (spec->tcl_interp)
 	logf (LOG_LOG, "Tcl enabled");
@@ -1298,17 +1293,15 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
     {
 	int min_level = 1;
 	char *element = 0;
-	if (!strcmp(argv[2], "-record"))
+	if (argc >= 3 && !strcmp(argv[2], "-record"))
 	{
 	    min_level = 0;
 	    if (argc == 4)
 		element = argv[3];
 	}
 	else
-	{
 	    if (argc == 3)
 		element = argv[2];
-	}
 	tagEnd (spec, min_level, element, (element ? strlen(element) : 0));
 	if (spec->d1_level == 0)
 	{
