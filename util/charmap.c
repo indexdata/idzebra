@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.6  1996-06-04 13:28:00  quinn
+ * Revision 1.7  1996-06-06 12:08:56  quinn
+ * Fixed bug.
+ *
+ * Revision 1.6  1996/06/04  13:28:00  quinn
  * More work on charmapping
  *
  * Revision 1.5  1996/06/04  08:32:15  quinn
@@ -147,8 +150,8 @@ static chr_t_entry *find_entry(chr_t_entry *t, char **from, int len)
 	/* no match */
 	*from = pos;
     }
-    /* no children match. use ourselves */
-   return t;
+    /* no children match. use ourselves, if we have a target */
+   return t->target ? t : 0;
 }
 
 char **chr_map_input(chr_t_entry *t, char **from, int len)
