@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.10  1995-09-15 14:45:39  adam
+ * Revision 1.11  1995-09-18 14:17:56  adam
+ * Bug fixes.
+ *
+ * Revision 1.10  1995/09/15  14:45:39  adam
  * Bug fixes.
  *
  * Revision 1.9  1995/09/15  09:20:42  adam
@@ -105,7 +108,7 @@ static struct rset_control *r_create(const struct rset_control *sel,
     info->fd = -1;
     info->fname = NULL;
     info->key_size = temp_parms->key_size;
-    info->buf_size = 2048;
+    info->buf_size = 4096;
     info->buf_mem = xmalloc (info->buf_size);
     info->pos_cur = 0;
     info->pos_end = 0;
@@ -294,9 +297,10 @@ static int r_write (RSFD rfd, const void *buf)
     {
         r_flush (rfd, 1);
         info->pos_buf = info->pos_cur;
-        r_reread (rfd);
-        info->dirty = 1;
+        if (info->pos_buf < info->pos_end)
+            r_reread (rfd);
     }
+    info->dirty = 1;
     memcpy (info->buf_mem + (info->pos_cur - info->pos_buf), buf,
             info->key_size);
     info->pos_cur = nc;
