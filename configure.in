@@ -1,9 +1,8 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.96 2004-08-29 12:31:32 adam Exp $
+dnl $Id: configure.in,v 1.97 2004-08-30 21:35:27 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
-AM_PROG_LIBTOOL
 dnl ------ Substitutions
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
@@ -19,8 +18,8 @@ dnl
 dnl ------ Checking programs
 AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_INSTALL
-AC_PROG_RANLIB
+AM_DISABLE_SHARED
+AM_PROG_LIBTOOL
 dnl
 dnl ----- DOCBOOK DTD
 AC_SUBST(DTD_DIR)
