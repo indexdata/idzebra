@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.69  1997-10-29 12:05:02  adam
+ * Revision 1.70  1997-10-31 12:34:43  adam
+ * Changed a few log statements.
+ *
+ * Revision 1.69  1997/10/29 12:05:02  adam
  * Server produces diagnostic "Unsupported Attribute Set" when appropriate.
  *
  * Revision 1.68  1997/10/27 14:33:06  adam
@@ -770,7 +773,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         term_dict[prefix_len++] = ')';        
         term_dict[prefix_len++] = 1;
         term_dict[prefix_len++] = reg_type;
-	logf (LOG_LOG, "reg_type = %d", term_dict[prefix_len-1]);
+	logf (LOG_DEBUG, "reg_type = %d", term_dict[prefix_len-1]);
         term_dict[prefix_len] = '\0';
         if (!relational_term (zi, zapt, &termp, term_dict,
                               attributeSet, grep_info, &max_pos, reg_type))
@@ -1158,7 +1161,7 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
 
     while (1)
     { 
-	logf (LOG_LOG, "APT_phrase termp=%s", termp);
+	logf (LOG_DEBUG, "APT_phrase termp=%s", termp);
 	grep_info.isam_p_indx = 0;
         r = field_term (zi, zapt, &termp, attributeSet, &grep_info,
 			reg_type, complete_flag, num_bases, basenames);
