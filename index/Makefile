@@ -1,7 +1,7 @@
-# Copyright (C) 1995-1996, Index Data I/S 
+# Copyright (C) 1995-1998, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.46 1997-12-12 06:38:07 adam Exp $
+# $Id: Makefile,v 1.47 1998-01-30 15:31:49 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -27,7 +27,7 @@ O3 = zserver.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
 O4 = hlvl.o hlvltest.o kcompare.o
 CPP=$(CC) -E
 
-all: $(TPROG1) $(TPROG2) $(TPROG3)
+all: $(TPROG1) $(TPROG3)
 
 $(TPROG1): $(O1) ../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
 		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a $(YAZLIB)
