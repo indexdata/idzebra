@@ -5,7 +5,7 @@ Makefile.in
 t[0-9]
 *.mf
 *.LCK
-t[0-9].log
+*.log
 testclient
 zebrasrv.pid
 *.lo
