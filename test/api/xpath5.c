@@ -1,6 +1,6 @@
 
 
-/* $Id: xpath5.c,v 1.1 2004-11-01 11:45:39 heikki Exp $
+/* $Id: xpath5.c,v 1.2 2004-11-01 16:09:05 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -77,13 +77,15 @@ int main(int argc, char **argv)
 
     q("@attr 1=/ @attr 2=102 foo",
             3,"second title",850);
+
+#if 0 
     /* FIXME - This query triggers bug #202 */
     /* http://bugs.index/show_bug.cgi?id=202 */
     /* it seems that the ranking does not see all occurrences */
     /* of 'foo', and thus ranks all records as high. */
-    /*
     q("@attr 1=/record/ @attr 2=102 foo",
             3,"second title",846);
-     Ø*/
+#endif
+
     return close_down(zh, zs, 0);
 }

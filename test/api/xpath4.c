@@ -1,6 +1,6 @@
 
 
-/* $Id: xpath4.c,v 1.1 2004-10-29 14:16:22 heikki Exp $
+/* $Id: xpath4.c,v 1.2 2004-11-01 16:09:05 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -51,7 +51,7 @@ const char *myrec[] = {
  
     "<record> \n"
     "  <title>hamlet</title> \n"
-    "  <author>foo bar grunt</author> \n"
+    "  <author>foo bar grunt grunt grunt</author> \n"
     "</record> \n",
 
     0};
@@ -70,10 +70,14 @@ int main(int argc, char **argv)
     q("@attr 1=/record/title[@lang='da'] foo",1);
     q("@attr 1=/record/title[@lang='en'] foo",1);
     q("@attr 1=/record/title @and foo bar",2);
-    /* The last one returns two hits, as the and applies to the whole
+    /* The previous one returns two hits, as the and applies to the whole
     record, so it matches <title>foo</title><title>bar</title>
     This might not have to be like that, but currently that is what
     zebra does.  */
     q("@and @attr 1=/record/title foo @attr 1=/record/title bar ",2);
+
+    /* check we get all the occureences for 'grunt' */
+    /* this can only be seen in the log, with debugs on. bug #202 */
+    q("@attr 1=/record/author grunt",2);
     return close_down(zh, zs, 0);
 }
