@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zinfo.c,v 1.25 2002-04-04 14:14:13 adam Exp $
+ * $Id: zinfo.c,v 1.26 2002-04-11 20:09:47 adam Exp $
  */
 
 #include <stdlib.h>
@@ -435,7 +435,11 @@ ZebraExplainInfo zebraExplain_open (
 	data1_node *node_tgtinfo, *node_zebra, *node_list, *np;
 
 	zei->data1_target = read_sgml_rec (zei->dh, zei->nmem, trec);
+#if 0
 	if (!zei->data1_target || !zei->data1_target->u.root.absyn)
+#else
+	if (!zei->data1_target)
+#endif
 	{
 	    logf (LOG_FATAL, "Explain schema missing. Check profilePath");
 	    nmem_destroy (zei->nmem);
@@ -541,7 +545,7 @@ ZebraExplainInfo zebraExplain_open (
 				 "<multipleDBSearch>1</>\n"
 				 "<nicknames><name>Zebra</></>\n"
 				 "</></>\n" );
-	    if (!zei->data1_target || !zei->data1_target->u.root.absyn)
+	    if (!zei->data1_target)
 	    {
 		logf (LOG_FATAL, "Explain schema missing. Check profilePath");
 		nmem_destroy (zei->nmem);

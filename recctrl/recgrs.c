@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: recgrs.c,v $
- * Revision 1.43  2002-03-21 23:06:36  adam
+ * Revision 1.44  2002-04-11 20:09:47  adam
+ * work on string tag indexing
+ *
+ * Revision 1.43  2002/03/21 23:06:36  adam
  * Source 'tag' in abs-file
  *
  * Revision 1.42  2002/02/20 17:30:01  adam
@@ -321,8 +324,55 @@ static void grs_destroy(void *clientData)
     free (h);
 }
 
-static void index_tag (data1_node *par, data1_node *n,
-		       struct recExtractCtrl *p, int level, RecWord *wrd)
+static void index_string_tag (data1_node *n,
+                              struct recExtractCtrl *p,
+                              int level, RecWord *wrd,
+                              int use)
+{
+    int i;
+    switch (n->which)
+    {
+    case DATA1N_data:
+        wrd->reg_type = 'w';
+        wrd->string = n->u.data.data;
+        wrd->length = n->u.data.len;
+        wrd->attrSet = VAL_BIB1;
+        wrd->attrUse = 1016;
+        if (p->flagShowRecords)
+        {
+            printf("%*s data=", (level + 1) * 4, "");
+            for (i = 0; i<wrd->length && i < 8; i++)
+                fputc (wrd->string[i], stdout);
+            printf("\n");
+        }
+        else
+        {
+            (*p->tokenAdd)(wrd);
+        }
+        break;
+    case DATA1N_tag:
+        wrd->reg_type = 'w';
+        wrd->string = n->u.tag.tag;
+        wrd->length = strlen(n->u.tag.tag);
+        wrd->attrSet = VAL_BIB1;
+        wrd->attrUse = use;
+        if (p->flagShowRecords)
+        {
+            printf("%*s tag=", (level + 1) * 4, "");
+            for (i = 0; i<wrd->length && i < 8; i++)
+                fputc (wrd->string[i], stdout);
+            printf("\n");
+        }
+        else
+        {
+            (*p->tokenAdd)(wrd);
+        }
+        break;
+    }
+}
+
+static void index_termlist (data1_node *par, data1_node *n,
+                            struct recExtractCtrl *p, int level, RecWord *wrd)
 {
     data1_termlist *tlist = 0;
     data1_datatype dtype = DATA1K_string;
@@ -409,7 +459,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	    if (n->which == DATA1N_root)
 	    {
 		printf("%*s", level * 4, "");
-		printf("Record type: '%s'\n", n->u.root.absyn->name);
+                printf("Record type: '%s'\n", n->u.root.type);
 	    }
 	    else if (n->which == DATA1N_tag)
 	    {
@@ -441,14 +491,18 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	    }
 	}
 
+	if (n->which == DATA1N_tag)
+	{
+            index_termlist (n, n, p, level, &wrd);
+            /* index start tag */
+            if (!n->root->u.root.absyn)
+                index_string_tag (n, p, level, &wrd, 1);
+	}
+
 	if (n->child)
 	    if (dumpkeys(n->child, p, level + 1) < 0)
 		return -1;
 
-	if (n->which == DATA1N_tag)
-	{
-	    index_tag (n, n, p, level, &wrd);
-	}
 
 	if (n->which == DATA1N_data)
 	{
@@ -468,8 +522,20 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	    }
 
 	    if (par)
-		index_tag (par, n, p, level, &wrd);
+		index_termlist (par, n, p, level, &wrd);
+            if (!n->root->u.root.absyn)
+                index_string_tag (n, p, level, &wrd, 1016);
+
  	}
+
+	if (n->which == DATA1N_tag)
+	{
+            /* index end tag */
+            if (!n->root->u.root.absyn)
+                index_string_tag (n, p, level, &wrd, 2);
+	}
+
+
 	if (p->flagShowRecords && n->which == DATA1N_root)
 	{
 	    printf("%*s-------------\n\n", level * 4, "");
@@ -485,11 +551,13 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
 
     oe.proto = PROTO_Z3950;
     oe.oclass = CLASS_SCHEMA;
-    oe.value = n->u.root.absyn->reference;
-
-    if ((oid_ent_to_oid (&oe, oidtmp)))
-	(*p->schemaAdd)(p, oidtmp);
-
+    if (n->u.root.absyn)
+    {
+        oe.value = n->u.root.absyn->reference;
+        
+        if ((oid_ent_to_oid (&oe, oidtmp)))
+            (*p->schemaAdd)(p, oidtmp);
+    }
     return dumpkeys(n, p, 0);
 }
 
@@ -516,12 +584,16 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
         return RECCTRL_EXTRACT_EOF;
     oe.proto = PROTO_Z3950;
     oe.oclass = CLASS_SCHEMA;
+#if 0
     if (!n->u.root.absyn)
         return RECCTRL_EXTRACT_ERROR;
-    oe.value = n->u.root.absyn->reference;
-    if ((oid_ent_to_oid (&oe, oidtmp)))
-	(*p->schemaAdd)(p, oidtmp);
-
+#endif
+    if (n->u.root.absyn)
+    {
+        oe.value = n->u.root.absyn->reference;
+        if ((oid_ent_to_oid (&oe, oidtmp)))
+            (*p->schemaAdd)(p, oidtmp);
+    }
 #if 0
     data1_pr_tree (p->dh, n, stdout);
 #endif
@@ -733,20 +805,21 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
      * family)
      */
     logf (LOG_DEBUG, "grs_retrieve: syntax mapping");
-    for (map = node->u.root.absyn->maptabs; map; map = map->next)
-    {
-	if (map->target_absyn_ref == p->input_format)
-	{
-	    onode = node;
-	    if (!(node = data1_map_record(p->dh, onode, map, mem)))
-	    {
-		p->diagnostic = 14;
-                nmem_destroy (mem);
-		return 0;
-	    }
-	    break;
-	}
-    }
+    if (node->u.root.absyn)
+        for (map = node->u.root.absyn->maptabs; map; map = map->next)
+        {
+            if (map->target_absyn_ref == p->input_format)
+            {
+                onode = node;
+                if (!(node = data1_map_record(p->dh, onode, map, mem)))
+                {
+                    p->diagnostic = 14;
+                    nmem_destroy (mem);
+                    return 0;
+                }
+                break;
+            }
+        }
     logf (LOG_DEBUG, "grs_retrieve: schemaIdentifier");
     if (node->u.root.absyn &&
 	node->u.root.absyn->reference != VAL_NONE &&
