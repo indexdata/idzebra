@@ -1,3 +1,7 @@
+--- XXXX XXXX/XX/XX
+
+Fixed bug in ISAM system. Occurred rarely during register updates.
+
 Logging during index merge phase is improved. The remaining running
 time is estimated.
 
