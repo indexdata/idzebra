@@ -8,6 +8,13 @@ Change block number in bfile/cfile to zint. zint is a long integer
 
 Implement int-list encoding for ISAMs.
 
+Added facility to make attibutes in grs.regx and grs.tcl filter using the
+data command with argument -attribute <name> . The content of data is
+the value of the attribute. This command should be used inside a
+begin element , end element section.
+
+Update zebra.nsi to NSIS 2.
+
 Added a new 'cut' directive to charmaps (.chr files) which specifies that
 only characters after the cutting char should be indexed.
 

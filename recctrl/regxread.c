@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.51 2004-08-04 08:35:25 adam Exp $
+/* $Id: regxread.c,v 1.52 2004-08-15 17:22:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -664,7 +664,8 @@ static struct lexSpec *curLexSpec = NULL;
 #endif
 
 static void execData (struct lexSpec *spec,
-                      const char *ebuf, int elen, int formatted_text)
+                      const char *ebuf, int elen, int formatted_text,
+		      const char *attribute_str, int attribute_len)
 {
     struct data1_node *res, *parent;
     int org_len;
@@ -691,43 +692,82 @@ static void execData (struct lexSpec *spec,
     parent = spec->d1_stack[spec->d1_level -1];
     assert (parent);
 
-    if ((res = spec->d1_stack[spec->d1_level]) && res->which == DATA1N_data)
-	org_len = res->u.data.len;
-    else
+    if (attribute_str)
     {
-	org_len = 0;
-
-	res = data1_mk_node2 (spec->dh, spec->m, DATA1N_data, parent);
-	res->u.data.what = DATA1I_text;
-	res->u.data.len = 0;
-	res->u.data.formatted_text = formatted_text;
-	res->u.data.data = 0;
-	
-	if (spec->d1_stack[spec->d1_level])
-	    spec->d1_stack[spec->d1_level]->next = res;
-	spec->d1_stack[spec->d1_level] = res;
-    }
-    if (org_len + elen >= spec->concatBuf[spec->d1_level].max)
-    {
-	char *old_buf, *new_buf;
-
-	spec->concatBuf[spec->d1_level].max = org_len + elen + 256;
-	new_buf = (char *) xmalloc (spec->concatBuf[spec->d1_level].max);
-	if ((old_buf = spec->concatBuf[spec->d1_level].buf))
+	data1_xattr **ap;
+	res = parent;
+	if (res->which != DATA1N_tag)
+	    return;
+	/* sweep through exising attributes.. */
+	for (ap = &res->u.tag.attributes; *ap; ap = &(*ap)->next)
+	    if (strlen((*ap)->name) == attribute_len &&
+		!memcmp((*ap)->name, attribute_str, attribute_len))
+		break;
+	if (!*ap)
 	{
-	    memcpy (new_buf, old_buf, org_len);
-	    xfree (old_buf);
+	    /* new attribute. Create it with name + value */
+	    *ap = nmem_malloc(spec->m, sizeof(**ap));
+
+	    (*ap)->name = nmem_malloc(spec->m, attribute_len+1);
+	    memcpy((*ap)->name, attribute_str, attribute_len);
+	    (*ap)->name[attribute_len] = '\0';
+
+	    (*ap)->value = nmem_malloc(spec->m, elen+1);
+	    memcpy((*ap)->value, ebuf, elen);
+	    (*ap)->value[elen] = '\0';
+	    (*ap)->next = 0;
 	}
-	spec->concatBuf[spec->d1_level].buf = new_buf;
+	else
+	{
+	    /* append to value if attribute already exists */
+	    char *nv = nmem_malloc(spec->m, elen + 1 + strlen((*ap)->value));
+	    strcpy(nv, (*ap)->value);
+	    memcpy (nv + strlen(nv), ebuf, elen);
+	    nv[strlen(nv)+elen] = '\0';
+	    (*ap)->value = nv;
+	}
+    } 
+    else 
+    {
+	if ((res = spec->d1_stack[spec->d1_level]) && 
+	    res->which == DATA1N_data)
+	    org_len = res->u.data.len;
+	else
+	{
+	    org_len = 0;
+	    
+	    res = data1_mk_node2 (spec->dh, spec->m, DATA1N_data, parent);
+	    res->u.data.what = DATA1I_text;
+	    res->u.data.len = 0;
+	    res->u.data.formatted_text = formatted_text;
+	    res->u.data.data = 0;
+	    
+	    if (spec->d1_stack[spec->d1_level])
+		spec->d1_stack[spec->d1_level]->next = res;
+	    spec->d1_stack[spec->d1_level] = res;
+	}
+	if (org_len + elen >= spec->concatBuf[spec->d1_level].max)
+	{
+	    char *old_buf, *new_buf;
+	    
+	    spec->concatBuf[spec->d1_level].max = org_len + elen + 256;
+	    new_buf = (char *) xmalloc (spec->concatBuf[spec->d1_level].max);
+	    if ((old_buf = spec->concatBuf[spec->d1_level].buf))
+	    {
+		memcpy (new_buf, old_buf, org_len);
+		xfree (old_buf);
+	    }
+	    spec->concatBuf[spec->d1_level].buf = new_buf;
+	}
+	memcpy (spec->concatBuf[spec->d1_level].buf + org_len, ebuf, elen);
+	res->u.data.len += elen;
     }
-    memcpy (spec->concatBuf[spec->d1_level].buf + org_len, ebuf, elen);
-    res->u.data.len += elen;
 }
 
 static void execDataP (struct lexSpec *spec,
                        const char *ebuf, int elen, int formatted_text)
 {
-    execData (spec, ebuf, elen, formatted_text);
+    execData (spec, ebuf, elen, formatted_text, 0, 0);
 }
 
 static void tagDataRelease (struct lexSpec *spec)
@@ -1148,6 +1188,7 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
     int argi = 1;
     int textFlag = 0;
     const char *element = 0;
+    const char *attribute = 0;
     struct lexSpec *spec = (struct lexSpec *) clientData;
     
     while (argi < argc)
@@ -1163,6 +1204,12 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
 	    if (argi < argc)
 		element = argv[argi++];
 	}
+	else if (!strcmp("-attribute", argv[argi]))
+	{
+	    argi++;
+	    if (argi < argc)
+		attribute = argv[argi++];
+	}
 	else
 	    break;
     }
@@ -1174,10 +1221,12 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
 #if TCL_MAJOR_VERSION > 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION > 0)
 	Tcl_DString ds;
 	char *native = Tcl_UtfToExternalDString(0, argv[argi], -1, &ds);
-	execData (spec, native, strlen(native), textFlag);
+	execData (spec, native, strlen(native), textFlag, attribute, 
+		  attribute ? strlen(attribute) : 0);
 	Tcl_DStringFree (&ds);
 #else
-	execData (spec, argv[argi], strlen(argv[argi]), textFlag);
+	execData (spec, argv[argi], strlen(argv[argi]), textFlag, attribute,
+		  attribute ? strlen(attribute) : 0);
 #endif
 	argi++;
     }
@@ -1438,6 +1487,8 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
             int textFlag = 0;
             int element_len;
             const char *element_str = NULL;
+	    int attribute_len;
+	    const char *attribute_str = NULL;
             
             while ((r = execTok (spec, &s, &cmd_str, &cmd_len)) == 3)
             {
@@ -1446,6 +1497,13 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 else if (cmd_len==8 && !memcmp ("-element", cmd_str, cmd_len))
                 {
                     r = execTok (spec, &s, &element_str, &element_len);
+                    if (r < 2)
+                        break;
+                }
+                else if (cmd_len==10 && !memcmp ("-attribute", cmd_str, 
+						 cmd_len))
+                {
+                    r = execTok (spec, &s, &attribute_str, &attribute_len);
                     if (r < 2)
                         break;
                 }
@@ -1462,7 +1520,8 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 tagBegin (spec, element_str, element_len);
             do
             {
-                execData (spec, cmd_str, cmd_len,textFlag);
+                execData (spec, cmd_str, cmd_len, textFlag,
+			  attribute_str, attribute_len);
                 r = execTok (spec, &s, &cmd_str, &cmd_len);
             } while (r > 1);
             if (element_str)
