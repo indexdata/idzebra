@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.25  1999-05-26 07:49:14  adam
+ * Revision 1.26  1999-10-07 09:48:36  adam
+ * Allow res_get / res_get_def with NULL res.
+ *
+ * Revision 1.25  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.24  1999/02/02 14:51:42  adam
@@ -262,7 +265,8 @@ char *res_get (Res r, const char *name)
 {
     struct res_entry *re;
 
-    assert (r);
+    if (!r)
+	return NULL;
     if (!r->init)
         reread (r);
     for (re = r->first; re; re=re->next)
