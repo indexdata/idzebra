@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.57  1998-04-03 14:45:18  adam
+ * Revision 1.58  1998-05-27 16:57:46  adam
+ * Zebra returns surrogate diagnostic for single records when
+ * appropriate.
+ *
+ * Revision 1.57  1998/04/03 14:45:18  adam
  * Fixed setting of last_in_set in bend_fetch.
  *
  * Revision 1.56  1998/03/05 08:45:13  adam
@@ -285,13 +289,19 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     r->last_in_set = 0;
     zebra_records_retrieve (zh, q->stream, q->setname, q->comp,
 			    q->format, 1, &retrievalRecord);
-
-    if (zh->errCode)
+    if (zh->errCode)                  /* non Surrogate Diagnostic */
     {
 	r->errcode = zh->errCode;
 	r->errstring = zh->errString;
     }
-    else
+    else if (retrievalRecord.errCode) /* Surrogate Diagnostic */
+    {
+	q->surrogate_flag = 1;
+	r->errcode = retrievalRecord.errCode;
+	r->errstring = retrievalRecord.errString;
+	r->basename = retrievalRecord.base;
+    }
+    else                              /* Database Record */
     {
 	r->errcode = 0;
 	r->basename = retrievalRecord.base;

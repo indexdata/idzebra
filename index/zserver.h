@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.31  1998-05-20 10:12:23  adam
+ * Revision 1.32  1998-05-27 16:57:47  adam
+ * Zebra returns surrogate diagnostic for single records when
+ * appropriate.
+ *
+ * Revision 1.31  1998/05/20 10:12:23  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -252,6 +256,8 @@ void zebra_search_rpn (ZebraHandle zh, ODR stream,
 		       const char *setname);
 
 typedef struct {
+    int errCode;
+    char *errString;
     int position;
     char *buf;
     int len;

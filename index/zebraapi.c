@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.2  1998-05-20 10:12:19  adam
+ * Revision 1.3  1998-05-27 16:57:44  adam
+ * Zebra returns surrogate diagnostic for single records when
+ * appropriate.
+ *
+ * Revision 1.2  1998/05/20 10:12:19  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -190,6 +194,7 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
     ZebraPosSet poset;
     int i, *pos_array;
 
+    zh->errCode = 0;
     pos_array = xmalloc (sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
 	pos_array[i] = recs[i].position;
@@ -213,12 +218,13 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
 	    }
 	    else
 	    {
-		zh->errCode =
+		recs[i].errCode =
 		    zebra_record_fetch (zh, poset[i].sysno, poset[i].score,
 					stream, input_format, comp,
 					&recs[i].format, &recs[i].buf,
 					&recs[i].len,
 					&recs[i].base);
+		recs[i].errString = NULL;
 	    }
 	}
 	zebraPosSetDestroy (zh, poset, num_recs);
@@ -233,6 +239,7 @@ void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		 int *position, int *num_entries, ZebraScanEntry **entries,
 		 int *is_partial)
 {
+    zh->errCode = 0;
     zebra_register_lock (zh);
     rpn_scan (zh, stream, zapt, attributeset,
 	      num_bases, basenames, position,
