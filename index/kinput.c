@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.8  1995-10-04 16:57:19  adam
+ * Revision 1.9  1995-10-10 12:24:39  adam
+ * Temporary sort files are compressed.
+ *
+ * Revision 1.8  1995/10/04  16:57:19  adam
  * Key input and merge sort in one pass.
  *
  * Revision 1.7  1995/10/02  15:18:52  adam
@@ -52,120 +55,6 @@ static int no_updates = 0;
 static int no_insertions = 0;
 static int no_iterations = 0;
 
-static int read_one (FILE *inf, char *name, char *key)
-{
-    int c;
-    int i = 0;
-    do
-    {
-        if ((c=getc(inf)) == EOF)
-            return 0;
-        name[i++] = c;
-    } while (c);
-    for (i = 0; i<KEY_SIZE; i++)
-        ((char *)key)[i] = getc (inf);
-    ++no_iterations;
-    return 1;
-}
-
-static int inp (Dict dict, ISAM isam, const char *name)
-{
-    FILE *inf;
-    char *info;
-    char next_name[INP_NAME_MAX+1];
-    char cur_name[INP_NAME_MAX+1];
-    int key_buf_size = INP_BUF_START;
-    int key_buf_ptr;
-    char *next_key;
-    char *key_buf;
-    int more;
-    
-    next_key = xmalloc (KEY_SIZE);
-    key_buf = xmalloc (key_buf_size * (KEY_SIZE));
-    if (!(inf = fopen (name, "r")))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "cannot open `%s'", name);
-        exit (1);
-    }
-    more = read_one (inf, cur_name, key_buf);
-    while (more)                   /* EOF ? */
-    {
-        int nmemb;
-        key_buf_ptr = KEY_SIZE;
-        while (1)
-        {
-            if (!(more = read_one (inf, next_name, next_key)))
-                break;
-            if (*next_name && strcmp (next_name, cur_name))
-                break;
-            memcpy (key_buf + key_buf_ptr, next_key, KEY_SIZE);
-            key_buf_ptr += KEY_SIZE;
-            if (key_buf_ptr+KEY_SIZE >= key_buf_size)
-            {
-                char *new_key_buf;
-                new_key_buf = xmalloc (key_buf_size + INP_BUF_ADD);
-                memcpy (new_key_buf, key_buf, key_buf_size);
-                key_buf_size += INP_BUF_ADD;
-                xfree (key_buf);
-                key_buf = new_key_buf;
-            }
-        }
-        no_diffs++;
-        nmemb = key_buf_ptr / KEY_SIZE;
-        assert (nmemb*KEY_SIZE == key_buf_ptr);
-        if ((info = dict_lookup (dict, cur_name)))
-        {
-            ISAM_P isam_p, isam_p2;
-            logf (LOG_DEBUG, "updating %s", cur_name);
-            no_updates++;
-            memcpy (&isam_p, info+1, sizeof(ISAM_P));
-            isam_p2 = is_merge (isam, isam_p, nmemb, key_buf);
-            if (isam_p2 != isam_p)
-                dict_insert (dict, cur_name, sizeof(ISAM_P), &isam_p2);
-        }
-        else
-        {
-            ISAM_P isam_p;
-            logf (LOG_DEBUG, "inserting %s", cur_name);
-            no_insertions++;
-            isam_p = is_merge (isam, 0, nmemb, key_buf);
-            dict_insert (dict, cur_name, sizeof(ISAM_P), &isam_p);
-        }
-        memcpy (key_buf, next_key, KEY_SIZE);
-        strcpy (cur_name, next_name);
-    }
-    fclose (inf);
-    return 0;
-}
-
-void key_input (const char *dict_fname, const char *isam_fname,
-                const char *key_fname, int cache)
-{
-    Dict dict;
-    ISAM isam;
-
-    dict = dict_open (dict_fname, cache, 1);
-    if (!dict)
-    {
-        logf (LOG_FATAL, "dict_open fail of `%s'", dict_fname);
-        exit (1);
-    }
-    isam = is_open (isam_fname, key_compare, 1, sizeof(struct it_key));
-    if (!isam)
-    {
-        logf (LOG_FATAL, "is_open fail of `%s'", isam_fname);
-        exit (1);
-    }
-    inp (dict, isam, key_fname);
-    dict_close (dict);
-    is_close (isam);
-    logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
-    logf (LOG_LOG, "Distinct words .%7d", no_diffs);
-    logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
-    logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
-}
-
-
 struct key_file {
     int   no;            /* file no */
     off_t offset;        /* file offset */
@@ -174,6 +63,8 @@ struct key_file {
     size_t chunk;        /* number of bytes allocated */
     size_t buf_ptr;      /* current position in buffer */
     char *prev_name;     /* last word read */
+    int   sysno;         /* last sysno */
+    int   seqno;         /* last seqno */
 };
 
 void key_file_chunk_read (struct key_file *f)
@@ -215,6 +106,8 @@ struct key_file *key_file_init (int no, int chunk)
     struct key_file *f;
 
     f = xmalloc (sizeof(*f));
+    f->sysno = 0;
+    f->seqno = 0;
     f->no = no;
     f->chunk = chunk;
     f->offset = 0;
@@ -239,9 +132,36 @@ int key_file_getc (struct key_file *f)
         return EOF;
 }
 
+int key_file_decode (struct key_file *f)
+{
+    int c, d;
+
+    c = key_file_getc (f);
+    switch (c & 192) 
+    {
+    case 0:
+        d = c;
+        break;
+    case 64:
+        d = ((c&63) << 8) + (key_file_getc (f) & 0xff);
+        break;
+    case 128:
+        d = ((c&63) << 8) + (key_file_getc (f) & 0xff);
+        d = (d << 8) + (key_file_getc (f) & 0xff);
+        break;
+    case 192:
+        d = ((c&63) << 8) + (key_file_getc (f) & 0xff);
+        d = (d << 8) + (key_file_getc (f) & 0xff);
+        d = (d << 8) + (key_file_getc (f) & 0xff);
+        break;
+    }
+    return d;
+}
+
 int key_file_read (struct key_file *f, char *key)
 {
-    int i, j, c;
+    int i, d, c;
+    struct it_key itkey;
 
     c = key_file_getc (f);
     if (c == 0)
@@ -258,10 +178,22 @@ int key_file_read (struct key_file *f, char *key)
         while ((key[i++] = key_file_getc (f)))
             ;
         strcpy (f->prev_name, key);
+        f->sysno = 0;
     }
-    for (j = KEY_SIZE; --j >= 0; )
-        key[i++] = key_file_getc (f);
-    return i;
+    d = key_file_decode (f);
+    key[i++] = d & 1;
+    d = d >> 1;
+    itkey.sysno = d + f->sysno;
+    if (d) 
+    {
+        f->sysno = itkey.sysno;
+        f->seqno = 0;
+    }
+    d = key_file_decode (f);
+    itkey.seqno = d + f->seqno;
+    f->seqno = itkey.seqno;
+    memcpy (key + i, &itkey, sizeof(struct it_key));
+    return i + sizeof (struct it_key);
 }
 
 struct heap_info {
@@ -310,12 +242,8 @@ static void key_heap_delete (struct heap_info *hi)
 
     assert (hi->heapnum > 0);
 
-#if 1
     key_heap_swap (hi, 1, hi->heapnum);
     hi->heapnum--;
-#else
-    hi->ptr[1] = hi->ptr[hi->heapnum--];
-#endif
     while (child <= hi->heapnum) {
         if (child < hi->heapnum &&
             (*hi->cmp)(&hi->info.buf[hi->ptr[child]],
@@ -435,7 +363,7 @@ int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
     return 0;
 }
 
-void key_input2 (const char *dict_fname, const char *isam_fname,
+void key_input (const char *dict_fname, const char *isam_fname,
                  int nkeys, int cache)
 {
     Dict dict;

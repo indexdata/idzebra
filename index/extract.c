@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.20  1995-10-06 13:52:05  adam
+ * Revision 1.21  1995-10-10 12:24:38  adam
+ * Temporary sort files are compressed.
+ *
+ * Revision 1.20  1995/10/06  13:52:05  adam
  * Bug fixes. Handler may abort further scanning.
  *
  * Revision 1.19  1995/10/04  12:55:16  adam
@@ -119,12 +122,73 @@ void key_open (int mem)
         exit (1);
     }
 }
+
+struct encode_info {
+    int  sysno;
+    int  seqno;
+    char buf[512];
+};
+
+void encode_key_init (struct encode_info *i)
+{
+    i->sysno = 0;
+    i->seqno = 0;
+}
+
+char *encode_key_int (int d, char *bp)
+{
+    if (d <= 63)
+        *bp++ = d;
+    else if (d <= 16383)
+    {
+        *bp++ = 64 + (d>>8);
+        *bp++ = d  & 255;
+    }
+    else if (d <= 4194303)
+    {
+        *bp++ = 128 + (d>>16);
+        *bp++ = (d>>8) & 255;
+        *bp++ = d & 255;
+    }
+    else
+    {
+        *bp++ = 192 + (d>>24);
+        *bp++ = (d>>16) & 255;
+        *bp++ = (d>>8) & 255;
+        *bp++ = d & 255;
+    }
+    return bp;
+}
+
+void encode_key_write (char *k, struct encode_info *i, FILE *outf)
+{
+    struct it_key key;
+    char *bp = i->buf;
+
+    while ((*bp++ = *k++))
+        ;
+    memcpy (&key, k+1, sizeof(struct it_key));
+    bp = encode_key_int ( (key.sysno - i->sysno) * 2 + *k, bp);
+    if (i->sysno != key.sysno)
+    {
+        i->sysno = key.sysno;
+        i->seqno = 0;
+    }
+    bp = encode_key_int (key.seqno - i->seqno, bp);
+    i->seqno = key.seqno;
+    if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fwrite");
+        exit (1);
+    }
+}
     
 void key_flush (void)
 {
     FILE *outf;
     char out_fname[200];
     char *prevcp, *cp;
+    struct encode_info encode_info;
     
     if (ptr_i <= 0)
         return;
@@ -142,33 +206,19 @@ void key_flush (void)
     logf (LOG_LOG, "writing section %d", key_file_no);
     prevcp = cp = key_buf[ptr_top-ptr_i];
     
-    if (fwrite (cp, strlen (cp)+2+sizeof(struct it_key), 1, outf) != 1)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "fwrite %s", out_fname);
-        exit (1);
-    }
+    encode_key_init (&encode_info);
+    encode_key_write (cp, &encode_info, outf);
     while (--ptr_i > 0)
     {
         cp = key_buf[ptr_top-ptr_i];
         if (strcmp (cp, prevcp))
         {
-            if (fwrite (cp, strlen (cp)+2+sizeof(struct it_key), 1,
-                        outf) != 1)
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "fwrite %s", out_fname);
-                exit (1);
-            }
+            encode_key_init (&encode_info);
+            encode_key_write (cp, &encode_info, outf);
             prevcp = cp;
         }
         else
-        {
-            cp = strlen (cp) + cp;
-            if (fwrite (cp, 2+sizeof(struct it_key), 1, outf) != 1)
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "fwrite %s", out_fname);
-                exit (1);
-            }
-        }
+            encode_key_write (cp + strlen(cp), &encode_info, outf);
     }
     if (fclose (outf))
     {

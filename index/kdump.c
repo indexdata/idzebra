@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.6  1995-09-29 14:01:42  adam
+ * Revision 1.7  1995-10-10 12:24:38  adam
+ * Temporary sort files are compressed.
+ *
+ * Revision 1.6  1995/09/29  14:01:42  adam
  * Bug fixes.
  *
  * Revision 1.5  1995/09/11  13:09:35  adam
@@ -28,24 +31,68 @@
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include <alexutil.h>
 #include "index.h"
 
 char *prog;
 
-static int read_one (FILE *inf, char *name, char *key)
+
+int key_file_decode (FILE *f)
+{
+    int c, d;
+
+    c = getc (f);
+    switch (c & 192) 
+    {
+    case 0:
+        d = c;
+        break;
+    case 64:
+        d = ((c&63) << 8) + (getc (f) & 0xff);
+        break;
+    case 128:
+        d = ((c&63) << 8) + (getc (f) & 0xff);
+        d = (d << 8) + (getc (f) & 0xff);
+        break;
+    case 192:
+        d = ((c&63) << 8) + (getc (f) & 0xff);
+        d = (d << 8) + (getc (f) & 0xff);
+        d = (d << 8) + (getc (f) & 0xff);
+        break;
+    }
+    return d;
+}
+
+
+static int read_one (FILE *inf, char *name, char *key, struct it_key *prevk)
 {
     int c;
     int i = 0;
+    struct it_key itkey;
     do
     {
         if ((c=getc(inf)) == EOF)
             return 0;
         name[i++] = c;
     } while (c);
-    for (i = 0; i<sizeof(struct it_key)+1; i++)
-        ((char *)key)[i] = getc (inf);
+    if (i > 1)
+        prevk->sysno = 0;
+    c = key_file_decode (inf);
+    key[0] = c & 1;
+    c = c >> 1;
+    itkey.sysno = c + prevk->sysno;
+    if (c)
+    {
+        prevk->sysno = itkey.sysno;
+        prevk->seqno = 0;
+    }
+    c = key_file_decode (inf);
+    itkey.seqno = c + prevk->seqno;
+    prevk->seqno = itkey.seqno;
+
+    memcpy (key+1, &itkey, sizeof(itkey));
     return 1;
 }
 
@@ -57,6 +104,10 @@ int main (int argc, char **argv)
     char key_string[IT_MAX_WORD];
     char key_info[256];
     FILE *inf;
+    struct it_key prevk;
+
+    prevk.sysno = 0;
+    prevk.seqno = 0;
 
     prog = *argv;
     while ((ret = options ("v:", argv, argc, &arg)) != -2)
@@ -85,21 +136,15 @@ int main (int argc, char **argv)
         logf (LOG_FATAL|LOG_ERRNO, "fopen %s", key_fname);
         exit (1);
     }
-    while (read_one (inf, key_string, key_info))
+    while (read_one (inf, key_string, key_info, &prevk))
     {
         struct it_key k;
         int op;
 
         op = key_info[0];
         memcpy (&k, 1+key_info, sizeof(k));
-#if IT_KEY_HAVE_SEQNO
         printf ("%7d op=%d s=%-5d %s\n", k.sysno, op, k.seqno,
                 key_string);
-#else
-        printf ("%7d op=%d f=%-3d %s\n", k.sysno, op, k.freq,
-                key_string);
-
-#endif
     }
     if (fclose (inf))
     {
