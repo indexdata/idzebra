@@ -1,5 +1,5 @@
-/* $Id: retrieve.c,v 1.20 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: retrieve.c,v 1.21 2004-05-27 09:28:01 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -19,8 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
-
 
 #include <stdio.h>
 #include <assert.h>
@@ -97,6 +95,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     struct zebra_fetch_control fc;
     RecordAttr *recordAttr;
     void *clientData;
+    int raw_mode = 0;
 
     rec = rec_get (zh->reg->records, sysno);
     if (!rec)
@@ -117,7 +116,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
         comp->u.simple->which == Z_ElementSetNames_generic)
     {
         if (!strcmp (comp->u.simple->u.generic, "R"))
-            file_type = "text";
+	    raw_mode = 1;
     }
     if (!(rt = recType_byName (zh->reg->recTypes,
 			       file_type, subType, &clientData)))
@@ -138,6 +137,15 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
         fc.record_int_buf = rec->info[recInfo_storeData];
         fc.record_int_pos = 0;
         logf (LOG_DEBUG, "Internal retrieve. %d bytes", fc.record_int_len);
+	if (raw_mode)
+	{
+            *output_format = VAL_SUTRS;
+            *rec_lenp = rec->size[recInfo_storeData];
+       	    *rec_bufp = (char *) odr_malloc(stream, *rec_lenp);
+	    memcpy(*rec_bufp, rec->info[recInfo_storeData], *rec_lenp);
+            rec_rm (&rec);
+	    return 0;
+	}
     }
     else
     {
@@ -151,7 +159,6 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
         }
         else
             strcpy (full_rep, fname);
-        
 
         if ((fc.fd = open (full_rep, O_BINARY|O_RDONLY)) == -1)
         {
@@ -167,6 +174,16 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
         retrieveCtrl.tellf = zebra_record_ext_tell;
 
         zebra_record_ext_seek (retrieveCtrl.fh, 0);
+	if (raw_mode)
+	{
+            *output_format = VAL_SUTRS;
+            *rec_lenp = recordAttr->recordSize;
+       	    *rec_bufp = (char *) odr_malloc(stream, *rec_lenp);
+	    zebra_record_ext_read(&fc, *rec_bufp, *rec_lenp);
+            rec_rm (&rec);
+            close (fc.fd);
+	    return 0;
+	}
     }
     retrieveCtrl.subType = subType;
     retrieveCtrl.localno = sysno;
