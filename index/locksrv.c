@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.15  2000-12-01 17:59:08  adam
+ * Revision 1.16  2001-10-29 22:16:38  adam
+ * Server unlocks both "cmt" and "org" lock in zebra_server_unlock.
+ *
+ * Revision 1.15  2000/12/01 17:59:08  adam
  * Fixed bug regarding online updates on WIN32.
  * When zebra.cfg is not available the server will not abort.
  *
@@ -135,16 +138,10 @@ void zebra_server_unlock (ZebraService zi, int commitPhase)
 {
     if (zi->server_lock_org == NULL)
         return;
-    if (commitPhase)
-    {
-        logf (LOG_DEBUG, "Server unlocks org");
-        zebra_unlock (zi->server_lock_org);
-    }
-    else
-    {
-        logf (LOG_DEBUG, "Server unlocks cmt");
-        zebra_unlock (zi->server_lock_cmt);
-    }
+    logf (LOG_DEBUG, "Server unlocks org");
+    zebra_unlock (zi->server_lock_org);
+    logf (LOG_DEBUG, "Server unlocks cmt");
+    zebra_unlock (zi->server_lock_cmt);
 }
 
 int zebra_server_lock_get_state (ZebraService zi, time_t *timep)
