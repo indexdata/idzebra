@@ -1,0 +1,26 @@
+Source: zebra
+Standards-Version: 2.5.0.0
+Maintainer: Adam Dickmeiss <adam@indexdata.dk>
+Priority: extra
+Build-Depends: yaz-devel (>= 1.9), libexpat1-dev, tcl8.3-dev, libbz2-dev
+
+Package: zebra-doc
+Section: devel
+Architecture: any
+Recommends: zebra-runtime
+Description: Zebra (documentation)
+ Zebra is a high-performance, general-purpose structured text indexing
+ and retrieval engine. It reads structured records in a variety of input
+ formats (eg. email, XML, MARC) and allows access to them through exact
+ boolean search expressions and relevance-ranked free-text queries. 
+
+Package: zebra-runtime
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, yaz-runtime (>= 1.9), libexpat1, tcl8.3, libbz2
+Description: Zebra (runtime files)
+ Zebra is a high-performance, general-purpose structured text indexing
+ and retrieval engine. It reads structured records in a variety of input
+ formats (eg. email, XML, MARC) and allows access to them through exact
+ boolean search expressions and relevance-ranked free-text queries. 
+
