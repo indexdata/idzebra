@@ -1,12 +1,12 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.29 1995-10-04 17:03:46 quinn Exp $
+# $Id: Makefile,v 1.30 1995-10-06 09:08:14 quinn Exp $
 
 CC=cc
 SHELL=/bin/sh
 MAKE=make
-SUBDIR=util str bfile dfa dict isam rset data1 index it base
+SUBDIR=util str bfile dfa dict isam rset data1 index base
 RANLIB=ranlib
 YAZ=../../yaz
 OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
