@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.14  1996-10-29 13:57:22  adam
+ * Revision 1.15  1997-02-10 10:19:20  adam
+ * Added facility for open character sets, eg [a-].
+ *
+ * Revision 1.14  1996/10/29 13:57:22  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.13  1996/06/17 14:24:08  adam
@@ -60,6 +63,8 @@
 #include <zebrautl.h>
 #include "dfap.h"
 #include "imalloc.h"
+
+#define DFA_OPEN_RANGE 1
 
 #define CAT     16000
 #define OR      16001
@@ -424,14 +429,23 @@ static int read_charset (void)
         ch1 = nextchar_set (&esc1);
         if (!esc1 && ch1 == '-')
         {
+            int open_range = 0;
             if ((ch1 = nextchar_set (&esc1)) == 0)
                 break;
+#if DFA_OPEN_RANGE
+            if (!esc1 && ch1 == ']')
+            {
+                ch1 = 255;
+                open_range = 1;
+            }
+#else
             if (!esc1 && ch1 == ']')
             {
                 add_BSet (parse_info->charset, look_chars, '-');
                 break;
             }
-            if (parse_info->cmap)
+#endif
+            if (!open_range && parse_info->cmap)
             {
                 char **mapto, mapfrom[2];
                 const char *mcp = mapfrom;
@@ -442,7 +456,10 @@ static int read_charset (void)
             }
             for (i=ch0; ++i<=ch1;)
                 add_BSet (parse_info->charset, look_chars, i);
-            ch0 = nextchar_set (&esc0);
+            if (!open_range)
+                ch0 = nextchar_set (&esc0);
+            else
+                break;
         }
         else
         {
