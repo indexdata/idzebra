@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.122 2002-08-29 08:47:08 adam Exp $
+/* $Id: extract.c,v 1.123 2002-08-29 10:00:15 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -414,19 +414,6 @@ struct recordLogInfo {
     struct recordGroup *rGroup;
 };
      
-static void recordLogPreamble (int level, const char *msg, void *info)
-{
-    struct recordLogInfo *p = (struct recordLogInfo *) info;
-    FILE *outf = yaz_log_file ();
-
-    if (level & LOG_LOG)
-        return ;
-    fprintf (outf, "File %s, offset %d, type %s\n",
-             p->fname, p->recordOffset, p->rGroup->recordType);
-    log_event_start (NULL, NULL);
-}
-
-
 static int recordExtract (ZebraHandle zh,
                           SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
@@ -438,7 +425,6 @@ static int recordExtract (ZebraHandle zh,
     char *matchStr;
     SYSNO sysnotmp;
     Record rec;
-    struct recordLogInfo logInfo;
     off_t recordOffset = 0;
 
     if (fi->fd != -1)
@@ -479,16 +465,16 @@ static int recordExtract (ZebraHandle zh,
 
         if (!rGroup->flagRw)
             printf ("File: %s " PRINTF_OFF_T "\n", fname, recordOffset);
-
-        logInfo.fname = fname;
-        logInfo.recordOffset = recordOffset;
-        logInfo.rGroup = rGroup;
-        log_event_start (recordLogPreamble, &logInfo);
+        if (rGroup->flagRw)
+        {
+            char msg[512];
+            sprintf (msg, "%s:" PRINTF_OFF_T , fname, recordOffset);
+            yaz_log_init_prefix2 (msg);
+        }
 
         r = (*recType->extract)(clientData, &extractCtrl);
 
-        log_event_start (NULL, NULL);
-
+        yaz_log_init_prefix2 (0);
 	if (r == RECCTRL_EXTRACT_EOF)
 	    return 0;
 	else if (r == RECCTRL_EXTRACT_ERROR_GENERIC)
