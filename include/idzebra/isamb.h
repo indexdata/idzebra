@@ -1,5 +1,5 @@
-/* $Id: isamb.h,v 1.1 2004-12-08 14:02:36 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: isamb.h,v 1.2 2005-01-15 18:43:05 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -32,30 +32,46 @@ typedef struct ISAMB_s *ISAMB;
 typedef struct ISAMB_PP_s *ISAMB_PP;
 typedef ISAMC_P ISAMB_P;
 
-ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
+YAZ_EXPORT
+ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
                   int cache);
-void isamb_close (ISAMB isamb);
 
-ISAMB_P isamb_merge (ISAMB b, ISAMB_P pos, ISAMC_I *data);
+YAZ_EXPORT
+void isamb_close(ISAMB isamb);
 
-ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos, int scope);
+YAZ_EXPORT 
+ISAMB_P isamb_merge(ISAMB b, ISAMB_P pos, ISAMC_I *data);
 
-int isamb_pp_read (ISAMB_PP pp, void *buf);
+YAZ_EXPORT
+ISAMB_PP isamb_pp_open(ISAMB isamb, ISAMB_P pos, int scope);
 
-int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf);
+YAZ_EXPORT
+int isamb_pp_read(ISAMB_PP pp, void *buf);
 
-void isamb_pp_pos (ISAMB_PP pp, double *current, double *total);
+YAZ_EXPORT
+int isamb_pp_forward(ISAMB_PP pp, void *buf, const void *untilbuf);
+YAZ_EXPORT
+int isamb_pp_forward2(ISAMB_PP pp, void *buf, const void *untilbuf);
 
-void isamb_pp_close (ISAMB_PP pp);
+YAZ_EXPORT
+void isamb_pp_pos(ISAMB_PP pp, double *current, double *total);
 
-int isamb_unlink (ISAMB b, ISAMC_P pos);
+YAZ_EXPORT
+void isamb_pp_close(ISAMB_PP pp);
 
-ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level, int scope);
-void isamb_pp_close_x (ISAMB_PP pp, int *size, int *blocks);
+YAZ_EXPORT
+int isamb_unlink(ISAMB b, ISAMC_P pos);
 
-int isamb_block_info (ISAMB isamb, int cat);
+YAZ_EXPORT
+ISAMB_PP isamb_pp_open_x(ISAMB isamb, ISAMB_P pos, int *level, int scope);
+YAZ_EXPORT
+void isamb_pp_close_x(ISAMB_PP pp, int *size, int *blocks);
 
-void isamb_dump (ISAMB b, ISAMB_P pos, void (*pr)(const char *str));
+YAZ_EXPORT
+int isamb_block_info(ISAMB isamb, int cat);
+
+YAZ_EXPORT
+void isamb_dump(ISAMB b, ISAMB_P pos, void (*pr)(const char *str));
 
 YAZ_END_CDECL
 
