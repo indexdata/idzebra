@@ -3,7 +3,10 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.19 1999-09-13 13:28:28 heikki Exp $
+ * $Id: merge-d.c,v 1.20 1999-09-20 15:48:06 heikki Exp $
+ *
+ * bugs
+ *   (none)
  *
  * missing
  *
@@ -11,25 +14,12 @@
  *  - Input filter: Eliminate del-ins pairs, tell if only one entry (or none)
  *  - single-entry optimizing (keep the one entry in the dict, no block)
  *  - study and optimize block sizes (later)
- *  - Clean up the different ways diffs are handled in writing and reading
- *  - Keep a merge-count in the firstpp, and if the block has already been
- *    merged, reduce it to a larger size even if it could fit in a small one!
- *  - Keep minimum freespace in the category table, and use that in reduce!
- *  - pass a space-needed for separateDiffBlock and reduce to be able to 
- *    reserve more room for diffs, or to force a separate (larger?) block
- *  - Idea: Simplify the structure, so that the first block is always diffs.
- *    On small blocks, that is all we have. Once a block has been merged, we
- *    allocate the first main block and a (new) firstblock ffor diffs. From
- *    that point on the word has two blocks for it. 
- *  - On allocating more blocks (in append), check the order of blocks, and
- *    if needed, swap them. 
- *  - In merge, merge also with the input data.
+ *  - find a way to decide the size of an empty diffblock (after merge)
+ *  - On allocating more blocks (in append and merge), check the order of 
+ *    blocks, and if needed, swap them. 
  *  - Write a routine to save/load indexes into a block, save only as many 
  *    bytes as needed (size, diff, diffindexes)
  *
- * bugs
- *  - Some confusion about opening pp's, how to set offset etc. Maybe it'd be
- *    best to load both diffs and first main block?
  *
  * caveat
  *  There is a confusion about the block addresses. cat or type is the category,
@@ -131,6 +121,48 @@ struct ISAMD_DIFF_s {
 #define DT_INPU 3 // input data to be merged
 #define DT_DONE 4 // done with all input here
 
+
+
+/***************************************************************
+ * Input preprocess filter
+ ***************************************************************/
+
+struct ISAMD_FILTER_s {
+  ISAMD_I data;          /* where the data comes from */
+  struct it_key k1;      /* the next item to be returned */
+  struct it_key k2;      /* the one after that */
+};
+
+static void init_filter( ISAMD_I data )
+{
+}
+
+static void close_filter ()
+{
+}
+
+static int filter_read( struct it_key *k)
+{
+  return 0;
+}
+
+static int filter_empty()
+{
+  return 0;
+}
+
+static int filter_only_one()
+{
+  return 0;
+}
+
+
+/***************************************************************
+ * General support routines
+ ***************************************************************/
+
+
+
 static char *hexdump(unsigned char *p, int len, char *buff) {
   static char localbuff[128];
   char bytebuff[8];
@@ -145,29 +177,7 @@ static char *hexdump(unsigned char *p, int len, char *buff) {
   return buff;
 }
 
-/***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************
- ***************************************************************/
 
-
-/***************************************************************
- * General support routines
- ***************************************************************/
 
 static void isamd_reduceblock(ISAMD_PP pp)
 /* takes a large block, and reduces its category if possible */
@@ -762,7 +772,7 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   } /* while read */
   
   
-  firstpp->diffs=0; 
+//  firstpp->diffs=0; 
 
 
   isamd_reduceblock(pp);  /* reduce size if possible */
@@ -962,7 +972,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.19  1999-09-13 13:28:28  heikki
+ * Revision 1.20  1999-09-20 15:48:06  heikki
+ * Small changes
+ *
+ * Revision 1.19  1999/09/13 13:28:28  heikki
  * isam-d optimizing: merging input data in the same go
  *
  * Revision 1.18  1999/08/25 18:09:24  heikki

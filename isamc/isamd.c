@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.12 1999-09-13 13:28:28 heikki Exp $ 
+ * $Id: isamd.c,v 1.13 1999-09-20 15:48:06 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -493,7 +493,7 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
     pp->is = is;
     pp->decodeClientData = (*is->method->code_start)(ISAMD_DECODE);
     pp->numKeys = 0;
-    pp->diffs=0;
+//    pp->diffs=0;
     pp->diffbuf=0;
     pp->diffinfo=0;
     
@@ -507,18 +507,18 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
         src += sizeof(pp->size);
         memcpy (&pp->numKeys, src, sizeof(pp->numKeys));
         src += sizeof(pp->numKeys);
-        memcpy (&pp->diffs, src, sizeof(pp->diffs));
-        src += sizeof(pp->diffs);
+//        memcpy (&pp->diffs, src, sizeof(pp->diffs));
+//        src += sizeof(pp->diffs);
         assert (pp->next != pp->pos);
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMD_BLOCK_OFFSET_1);
-        if (0==pp->diffs)
-           ++(is->files[pp->cat].no_op_nodiff);
-        else
-           if(pp->diffs&1)
-               ++(is->files[pp->cat].no_op_extdiff);
-           else
-               ++(is->files[pp->cat].no_op_intdiff);
+//        if (0==pp->diffs)
+//           ++(is->files[pp->cat].no_op_nodiff);
+//        else
+//        if(pp->diffs&1)
+//            ++(is->files[pp->cat].no_op_extdiff);
+//        else
+//               ++(is->files[pp->cat].no_op_intdiff);
       //  if (!pp->diffbuf)
       //    pp->diffbuf=pp->buf;
     }
@@ -543,15 +543,14 @@ void isamd_buildfirstblock(ISAMD_PP pp){
   dst += sizeof(pp->size);
   memcpy(dst, &pp->numKeys, sizeof(pp->numKeys));
   dst += sizeof(pp->numKeys);
-  memcpy(dst, &pp->diffs, sizeof(pp->diffs));
-  dst += sizeof(pp->diffs);  
+//  memcpy(dst, &pp->diffs, sizeof(pp->diffs));
+//  dst += sizeof(pp->diffs);  
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_1);
   if (pp->is->method->debug > 5)
-     logf (LOG_LOG, "isamd: first: sz=%d  p=%d/%d>%d/%d nk=%d d=%d",
-           pp->size, 
-           pp->cat, pp->pos, 
-           isamd_type(pp->next), isamd_block(pp->next),
-           pp->numKeys, pp->diffs);
+     logf (LOG_LOG, "isamd: bldfirst:  p=%d=%d:%d n=%d:%d:%d sz=%d nk=%d ",
+           isamd_addr(pp->pos,pp->cat),pp->cat, pp->pos, 
+           pp->next, isamd_type(pp->next), isamd_block(pp->next),
+           pp->size, pp->numKeys);
 }
 
 void isamd_buildlaterblock(ISAMD_PP pp){
@@ -685,12 +684,14 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
   int diffmax=1;
   int diffidx;
   char hexbuff[64];
+  int olddebug= is->method->debug;
+  is->method->debug=0; /* no debug logs while reading for dump */
   
   logf(LOG_LOG,"dumping isamd block %d (%d:%d)",
                   (int)ipos, isamd_type(ipos), isamd_block(ipos) );
   pp=isamd_pp_open(is,ipos);
-  logf(LOG_LOG,"numKeys=%d,  ofs=%d sz=%d d=%d",
-       pp->numKeys, pp->offset, pp->size, pp->diffs);
+  logf(LOG_LOG,"numKeys=%d,  ofs=%d sz=%d",
+       pp->numKeys, pp->offset, pp->size );
   diffidx=oldoffs= pp->offset;
   while ((diffidx < is->method->filecat[pp->cat].bsize) && (diffmax>0))
   {
@@ -731,11 +732,15 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
   }
   /*!*/ /*TODO: dump diffs too!!! */
   isamd_pp_close(pp);
+  is->method->debug=olddebug;
 } /* dump */
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.12  1999-09-13 13:28:28  heikki
+ * Revision 1.13  1999-09-20 15:48:06  heikki
+ * Small changes
+ *
+ * Revision 1.12  1999/09/13 13:28:28  heikki
  * isam-d optimizing: merging input data in the same go
  *
  * Revision 1.11  1999/08/25 18:09:24  heikki
