@@ -3,8 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.4 1999-07-21 14:53:55 heikki Exp $
- * merge-d.c: merge routines for isamd
+ * $Id: merge-d.c,v 1.5 1999-07-23 13:58:52 heikki Exp $
  *
  * todo
  *  - merge when needed
@@ -62,9 +61,13 @@ static char *hexdump(unsigned char *p, int len, char *buff) {
 
 static int separateDiffBlock(ISAMD_PP pp)
 {
-  return ( 0 != pp->next);
-  /* Todo: This could be improved to check that there is a reasonable 
-     amount of space in the block, or something... */
+  if (pp->next) 
+     return 1;  /* multi-block chains always have a separate diff block */
+  return ( pp->size + 2*sizeof(int) > pp->is->method->filecat[pp->cat].bsize);
+  /* make sure there is at least room for the length and one diff. if not, */
+  /* it goes to a separate block */
+  
+  /* todo: Make the limit adjustable in the filecat table ! */
 }
 
 
@@ -78,11 +81,13 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
     /* Each diff takes at least 5 bytes. Probably more, but this is safe */
    int i=1;  /* [0] is used for the main data */
    int diffsz= maxinfos * sizeof(struct ISAMD_DIFF_s);
+
    pp->diffinfo = xmalloc( diffsz );
    memset(pp->diffinfo,'\0',diffsz);
    if (pp->is->method->debug > 4)
      logf(LOG_LOG,"isamd_getDiffInfo: %d (%d:%d), ix=%d mx=%d",
          isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, diffidx,maxinfos);
+   assert(pp->diffbuf);
 
    while (i<maxinfos) 
    {  
@@ -94,6 +99,11 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
          return; /* whole block done */
       }
       memcpy( &pp->diffinfo[i].maxidx, &pp->diffbuf[diffidx], sizeof(int) );
+
+      if (pp->is->method->debug > 4)
+        logf(LOG_LOG,"isamd_getDiffInfo: max=%d ix=%d dbuf=%p",
+          pp->diffinfo[i].maxidx, diffidx, pp->diffbuf);
+
       if (0==pp->diffinfo[i].maxidx)
       {
          if (pp->is->method->debug > 4)
@@ -113,7 +123,7 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
         return; /* whole block done */
       ++i;
    }
-   assert ("too many diff sequences in the block");
+   assert (!"too many diff sequences in the block");
 }
 
 static void loadDiffs(ISAMD_PP pp)
@@ -125,15 +135,22 @@ static void loadDiffs(ISAMD_PP pp)
    if (pp->diffs & 1 )
    { /* separate diff block, load it */
       pp->diffbuf= xmalloc( pp->is->method->filecat[pp->cat].bsize);
-      diffaddr=pp->diffs/2;
+      diffaddr=isamd_addr(pp->diffs/2, pp->cat);
       isamd_read_block (pp->is, isamd_type(diffaddr), 
                                 isamd_block(diffaddr), pp->diffbuf );
       diffidx= ISAMD_BLOCK_OFFSET_N; 
+      if (pp->is->method->debug > 4)
+        logf(LOG_LOG,"isamd_LoadDiffs: loaded block %d=%d:%d, d=%d ix=%d",
+          diffaddr, isamd_type(diffaddr),isamd_block(diffaddr), 
+          pp->diffs,diffidx);
    }
    else
    { /* integrated block, just set the pointers */
      pp->diffbuf = pp->buf;
      diffidx = pp->size;  /* size is the beginning of diffs, diffidx the end*/
+      if (pp->is->method->debug > 4)
+        logf(LOG_LOG,"isamd_LoadDiffs: within %d=%d:%d, d=%d ix=%d ",
+          isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, pp->diffs, diffidx);
    }
    getDiffInfo(pp,diffidx);
 } /* loadDiffs */
@@ -220,7 +237,7 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
              if (pp->diffinfo[i].mode)  /* insert diff, should always be */
                winner = i;
              else
-               assert("delete diff for nonexisting item");  
+               assert(!"delete diff for nonexisting item");  
                /* is an assert too steep here?*/
           } /* earlier key */
           else if (cmp==0)
@@ -275,11 +292,9 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
    
 } /* isamd_read_item */
 
-
-
-/*******************************************************************
- * Building main blocks (no diffs)
- *******************************************************************/
+/*****************************************************************
+ * Support routines 
+ *****************************************************************/
 
 static void isamd_reduceblock(ISAMD_PP pp)
 /* takes a large block, and reduces its category if possible */
@@ -300,6 +315,187 @@ static void isamd_reduceblock(ISAMD_PP pp)
 } /* reduceblock */
 
 
+
+ 
+static int save_first_pp ( ISAMD_PP firstpp)
+{
+   isamd_reduceblock(firstpp);
+   isamd_buildfirstblock(firstpp);
+   isamd_write_block(firstpp->is,firstpp->cat,firstpp->pos,firstpp->buf);
+   return isamd_addr(firstpp->pos,firstpp->cat);
+}
+
+static void save_last_pp (ISAMD_PP pp)
+{
+   pp->next = 0;/* just to be sure */
+   isamd_buildlaterblock(pp);
+   isamd_write_block(pp->is,pp->cat,pp->pos,pp->buf);
+}
+
+
+static int save_both_pps (ISAMD_PP firstpp, ISAMD_PP pp)
+{
+   /* order of things: Better to save firstpp first, if there are just two */
+   /* blocks, but last if there are blocks in between, as these have already */
+   /* been saved... optimise later (that's why this is in its own func...*/
+   int retval = save_first_pp(firstpp);
+   if (firstpp!=pp){ 
+      save_last_pp(pp);
+      isamd_pp_close(pp);
+   }
+   isamd_pp_close(firstpp);
+   return retval;
+} /* save_both_pps */
+
+static ISAMD_PP read_diff_block(ISAMD_PP firstpp, int* p_diffidx)
+{ /* reads the diff block (if separate) and sets diffidx right */
+   ISAMD_PP pp=firstpp;
+   int diffidx;   
+   if (pp->diffs == 0)
+   { /* no diffs yet, create room for them */
+      if (separateDiffBlock(firstpp))
+      { /* create a new block */
+         pp=isamd_pp_open(pp->is,isamd_addr(0,firstpp->cat));
+         pp->pos = isamd_alloc_block(pp->is, pp->cat);
+         firstpp->diffs = pp->pos*2 +1;
+         diffidx = pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N;
+         if (pp->is->method->debug >3) 
+             logf(LOG_LOG,"isamd_appd: alloc diff  (d=%d) %d=%d:%d ix=%d",
+                   firstpp->diffs,
+                   isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
+                   diffidx);
+      }
+      else
+      { /* prepare to append diffs in head */
+        diffidx = pp->size;
+        pp->diffs = diffidx *2 +0;  
+         if (pp->is->method->debug >3) 
+             logf(LOG_LOG,"isamd_appd: set up diffhead  (d=%d) %d=%d:%d ix=%d",
+                   firstpp->diffs,
+                   isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
+                   diffidx);
+      }
+   } /* new */
+   else
+   { /* existing diffs */
+      if (pp->diffs & 1)
+      { /* diffs in a separate block, load it */
+        pp=isamd_pp_open(pp->is, isamd_addr(firstpp->diffs/2,pp->cat));
+        diffidx = pp->offset= pp->size;
+        if (pp->is->method->debug >3) 
+           logf(LOG_LOG,"isamd_appd: loaded diff (d=%d) %d=%d:%d ix=%d",
+                 firstpp->diffs,
+                 isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
+                 diffidx);
+      }
+      else
+      { /* diffs within the nead */
+         diffidx= pp->diffs/2;
+         if (pp->is->method->debug >3) 
+            logf(LOG_LOG,"isamd_appd: diffs in head d=%d %d=%d:%d ix=%d sz=%d",
+                     pp->diffs,
+                     isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
+                     diffidx, pp->size);
+      }
+   } /* diffs exist already */
+   *p_diffidx = diffidx;
+   return pp;
+} /* read_diff_block */
+
+
+
+
+/*******************************************************************
+ * Building main blocks (no diffs)
+ *******************************************************************/
+
+
+
+static ISAMD_PP get_new_main_block( ISAMD_PP firstpp, ISAMD_PP pp)
+{  /* allocates a new block for the main data, and links it in */
+   int newblock;
+   if (firstpp==pp) 
+   { /* special case: it was the first block. Save much later */
+      if (0==firstpp->pos)
+      { /* firstpp not allocated yet, do so now, */
+        /* to keep blocks in order. Don't save yet, though */
+         firstpp->pos = isamd_alloc_block(pp->is, firstpp->cat);
+      }
+      newblock = isamd_alloc_block(pp->is, firstpp->cat);
+      firstpp->next = isamd_addr(newblock,firstpp->cat);
+        /* keep the largest category */
+      pp=isamd_pp_open(pp->is,isamd_addr(0,firstpp->cat));/*don't load*/
+      pp->pos=newblock; 
+      pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N; 
+      pp->next=0;
+      if (pp->is->method->debug >3)
+         logf(LOG_LOG,"isamd_build: Alloc2 f=%d (%d:%d) n=%d(%d:%d)",
+            isamd_addr(firstpp->pos,firstpp->cat), 
+            firstpp->cat, firstpp->pos,
+            isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos );
+   }
+   else
+   { /* it was not the first block */
+      newblock = isamd_alloc_block(pp->is, firstpp->cat);
+      pp->next = isamd_addr(newblock,firstpp->cat);
+      isamd_buildlaterblock(pp);
+      isamd_write_block(pp->is,pp->cat,pp->pos,pp->buf);
+      pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N;
+      pp->next=0;
+      pp->cat = firstpp->cat;
+      pp->pos = isamd_block(firstpp->next);
+   }
+  return pp;
+} /* get_new_main_block */
+
+
+static ISAMD_PP  append_main_item(ISAMD_PP firstpp, 
+                                  ISAMD_PP pp, 
+                                  struct it_key *i_key,
+                                  void *encoder_data)
+{  /* appends one item in the main data block, allocates new if needed */
+   char *i_item= (char *) i_key;  /* same as char */
+   char *i_ptr=i_item;
+   char codebuff[128];
+   char *c_ptr = codebuff;
+   int codelen;
+   char hexbuff[64];
+
+   int maxsize = pp->is->method->filecat[pp->is->max_cat].bsize; 
+
+   c_ptr=codebuff;
+   i_ptr=i_item;
+   (*pp->is->method->code_item)(ISAMD_ENCODE, encoder_data, &c_ptr, &i_ptr);
+   codelen = c_ptr - codebuff;
+   assert ( (codelen<128) && (codelen>0));
+   if (pp->is->method->debug >3)
+      logf(LOG_LOG,"isamd:build: coded into %s  (nk=%d)",
+          hexdump(codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1);
+
+   if (pp->offset + codelen > maxsize )
+   { /* oops, block full - get a new one */
+      pp =  get_new_main_block( firstpp, pp );
+      /* reset encoging and code again */
+      (*pp->is->method->code_reset)(encoder_data);
+      c_ptr=codebuff;
+      i_ptr=i_item;
+      (*pp->is->method->code_item)(ISAMD_ENCODE, encoder_data, &c_ptr, &i_ptr);
+      codelen = c_ptr - codebuff;
+      assert ( (codelen<128) && (codelen>0));
+      if (pp->is->method->debug >3)
+         logf(LOG_LOG,"isamd:build: recoded into %s  (nk=%d)",
+             hexdump(codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1);
+   } /* block full */    
+   
+   /* write the data into pp, now we must have room */ 
+   memcpy(&(pp->buf[pp->offset]),codebuff,codelen);
+   pp->offset += codelen;
+   pp->size += codelen;
+   firstpp->numKeys++;
+   return pp;    
+} /* append_main_item */
+
+
 static int isamd_build_first_block(ISAMD is, ISAMD_I data) 
 {
    struct it_key i_key;  /* input key */
@@ -311,24 +507,17 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
    ISAMD_PP firstpp;
    ISAMD_PP pp;
    void *encoder_data;
-   int maxsize;
-   
-   char codebuff[128];
-   char *c_ptr = codebuff;
-   int codelen;
    
    char hexbuff[64];
-   int newblock;
-   int retval=0;
    
    firstpp=pp=isamd_pp_open(is, isamd_addr(0,is->max_cat));
    firstpp->size = firstpp->offset = ISAMD_BLOCK_OFFSET_1;
    encoder_data=(*is->method->code_start)(ISAMD_ENCODE);
-   maxsize = is->method->filecat[is->max_cat].bsize; 
    
    if (is->method->debug >3)
       logf(LOG_LOG,"isamd_bld start: p=%d c=%d sz=%d maxsz=%d ",
-         pp->pos, pp->cat, pp->size, maxsize);
+         pp->pos, pp->cat, pp->size, 
+         pp->is->method->filecat[pp->is->max_cat].bsize); 
 
    /* read first input */
    i_ptr = i_item;
@@ -336,7 +525,7 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
    if (i_more)
      assert( i_ptr-i_item == sizeof(i_key) );
 
-   if (is->method->debug >3)
+   if (pp->is->method->debug >3)
       logf(LOG_LOG,"isamd: build_fi start: m=%d %s",
          i_mode, hexdump(i_item,i_ptr-i_item,hexbuff) );
 
@@ -344,105 +533,149 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
    { 
       if (i_mode!=0) 
       { /* ignore deletes here, should not happen */
-      
-         c_ptr=codebuff;
-         i_ptr=i_item;
-         (*is->method->code_item)(ISAMD_ENCODE, encoder_data, &c_ptr, &i_ptr);
-         codelen = c_ptr - codebuff;
-         assert ( (codelen<128) && (codelen>0));
-         if (is->method->debug >3)
-            logf(LOG_LOG,"isamd:build: coded into %s  (nk=%d)",
-                hexdump(codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1);
-     
-         if (pp->offset + codelen > maxsize )
-         { /* oops, block full - get a new one */
-            if (firstpp==pp) 
-            { /* special case: it was the first block. Save much later */
-               if (0==firstpp->pos)
-               { /* firstpp not allocated yet, do so now, */
-                 /* to keep blocks in order. Don't save yet, though */
-                  firstpp->pos = isamd_alloc_block(is, firstpp->cat);
-               }
-               newblock = isamd_alloc_block(is, firstpp->cat);
-               firstpp->next = isamd_addr(newblock,firstpp->cat);
-                 /* keep the largest category */
-               pp=isamd_pp_open(is,isamd_addr(0,firstpp->cat));/*don't load*/
-               pp->pos=newblock; 
-               pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N; 
-               pp->next=0;
-               if (is->method->debug >3)
-                  logf(LOG_LOG,"isamd_build: Alloc2 f=%d (%d:%d) n=%d(%d:%d)",
-                     isamd_addr(firstpp->pos,firstpp->cat), 
-                     firstpp->cat, firstpp->pos,
-                     isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos );
-            }
-            else
-            { /* it was not the first block */
-               newblock = isamd_alloc_block(is, firstpp->cat);
-               pp->next = isamd_addr(newblock,firstpp->cat);
-               isamd_buildlaterblock(pp);
-               isamd_write_block(is,pp->cat,pp->pos,pp->buf);
-               pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N;
-               pp->next=0;
-               pp->cat = firstpp->cat;
-               pp->pos = isamd_block(firstpp->next);
-            }
-            /* reset encoging and code again */
-            (*is->method->code_reset)(encoder_data);
-            c_ptr=codebuff;
-            i_ptr=i_item;
-            (*is->method->code_item)(ISAMD_ENCODE, encoder_data, &c_ptr, &i_ptr);
-            codelen = c_ptr - codebuff;
-            assert ( (codelen<128) && (codelen>0));
-            if (is->method->debug >3)
-               logf(LOG_LOG,"isamd:build: recoded into %s  (nk=%d)",
-                   hexdump(codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1);
-         } /* block full */    
-         
-         /* write the data into pp, now we have room */ 
-         memcpy(&(pp->buf[pp->offset]),codebuff,codelen);
-         pp->offset += codelen;
-         pp->size += codelen;
-         firstpp->numKeys++;
+         pp= append_main_item(firstpp, pp, &i_key, encoder_data);      
       } /* not delete */
       
       /* (try to) read the next item */
       i_ptr = i_item;
       i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); 
       
-      if ( (i_more) && (is->method->debug >3) )
+      if ( (i_more) && (pp->is->method->debug >3) )
          logf(LOG_LOG,"isamd: build_fi start: m=%d %s",
             i_mode, hexdump(i_item,i_ptr-i_item,hexbuff) );
       
-      
    } /* i_more */
 
-   /* order of things: Better to save firstpp first, if there are just two */
-   /* blocks, but last if there are blocks in between, as these have already */
-   /* been saved... optimise later */
+   return save_both_pps( firstpp, pp );
 
-   /* save the first block */
-   isamd_reduceblock(firstpp);
-   isamd_buildfirstblock(firstpp);
-   isamd_write_block(is,firstpp->cat,firstpp->pos,firstpp->buf);   
-   retval = isamd_addr(firstpp->pos,firstpp->cat);
-
-   if (firstpp!=pp){  /* and the last one */
-      pp->next = 0;/* just to be sure */
-      isamd_buildlaterblock(pp);
-      isamd_write_block(is,pp->cat,pp->pos,pp->buf);
-      isamd_pp_close(pp);
-   }
-
-   isamd_pp_close(firstpp);
-   
-   return retval;
 } /* build_first_block */
+
+
+/***************************************************************
+ * Merging diffs 
+ ***************************************************************/
+
+ 
+static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
+                   ISAMD_PP *p_pp,        /* diff block */
+                   struct it_key *p_key )
+{
+  ISAMD_PP readpp = *p_firstpp;
+  int diffidx;  
+  int killblk=0;
+  struct it_key r_key;
+  char * r_ptr;
+  int r_more = 1;
+  ISAMD_PP firstpp;  /* the new first, the one we write into */
+  ISAMD_PP pp;
+  void *encoder_data;
+     
+  /* set up diffs as they should be for reading */
+  readpp->offset= ISAMD_BLOCK_OFFSET_1; 
+  
+  if (*p_pp == *p_firstpp)
+  { /* integrated diffs */
+     diffidx=readpp->size;
+     readpp->diffs = diffidx*2+0;
+     readpp->diffbuf=readpp->buf;  /*? does this get freed right ???  */
+     if (readpp->is->method->debug >3) 
+         logf(LOG_LOG,"isamd_merge:local diffs at %d", diffidx);
+  }
+  else
+  { /* separate diff block in *p_pp */
+     killblk = readpp->diffs/2;
+     diffidx = readpp->is->method->filecat[readpp->cat].bsize;
+     readpp->diffbuf= xmalloc( diffidx); /* copy diffs to where read wants*/
+     memcpy( &readpp->diffbuf, &((*p_pp)->buf[0]), diffidx);
+     diffidx = ISAMD_BLOCK_OFFSET_N;
+     if (readpp->is->method->debug >3) 
+         logf(LOG_LOG,"isamd_merge:separate diffs at ix=%d", 
+                 diffidx);
+     if (readpp->is->method->debug >3) 
+         logf(LOG_LOG,"isamd_merge: dbuf=%p (from %p) pp=%p", 
+                  readpp->diffbuf, &((*p_pp)->buf[0]), (*p_pp) );
+  }
+  getDiffInfo(readpp,diffidx);
+
+  r_ptr= (char *) &r_key;
+  r_more = isamd_read_item( readpp, &r_ptr);
+  if (!r_more)  
+  { /* oops, all data has been deleted! what to do??? */
+    /* never mind, we have at least one more delta to add to the block */
+    /* pray that is not a delete as well... */
+    r_key.sysno = 0;
+    r_key.seqno = 0;
+     if (readpp->is->method->debug >3) 
+         logf(LOG_LOG,"isamd_merge:all data has been deleted (nk=%d) ",
+            readpp->numKeys);
+    assert (readpp->numKeys == 0);
+  }
+
+  if (killblk) 
+  {
+     isamd_release_block(readpp->is, isamd_type(killblk), isamd_block(killblk));
+     /* we have the data, let the block go */
+     if (readpp->is->method->debug >3) 
+         logf(LOG_LOG,"isamd_merge: released diff block %d (%d:%d)",
+              killblk, isamd_type(killblk), isamd_block(killblk) );
+  }
+  killblk=isamd_addr(readpp->pos, readpp->cat);
+  isamd_release_block(readpp->is, isamd_type(killblk), isamd_block(killblk));
+  if (readpp->is->method->debug >3) 
+      logf(LOG_LOG,"isamd_merge: released old firstblock %d (%d:%d)",
+            killblk, isamd_type(killblk), isamd_block(killblk) );
+   
+  /* set up the new blocks for simple writing */
+  firstpp=pp=isamd_pp_open(readpp->is,isamd_addr(0, readpp->is->max_cat));
+  firstpp->size = firstpp->offset = ISAMD_BLOCK_OFFSET_1;
+  encoder_data = (*pp->is->method->code_start)(ISAMD_ENCODE);
+  
+  while (r_more)
+  {
+     if (readpp->is->method->debug >4) 
+         logf(LOG_LOG,"isamd_merge: got key %d.%d",
+           r_key.sysno, r_key.seqno );
+     pp= append_main_item(firstpp, pp, &r_key, encoder_data);
+
+     if ( isamd_addr(readpp->pos, readpp->cat) != killblk )
+     {
+        isamd_release_block(readpp->is, readpp->cat, readpp->pos);
+        if (readpp->is->method->debug >3) 
+            logf(LOG_LOG,"isamd_merge: released data block %d (%d:%d)",
+                  killblk, isamd_type(killblk), isamd_block(killblk) );
+        killblk=isamd_addr(readpp->pos, readpp->cat);
+     }
+
+     /* (try to) read next item */
+     r_ptr= (char *) &r_key;
+     r_more = isamd_read_item( readpp, &r_ptr);
+
+  } /* while read */
+  
+  /* TODO: while pkey is an insert, and after last key inserted, append it */
+  /* will prevent multiple merges on large insert runs */  
+
+  /* set things up so that merge can continue */
+  isamd_reduceblock(firstpp);
+
+  if (firstpp!=pp) 
+  { /* the last data block is of no interest any more */
+    save_last_pp(pp);
+    isamd_pp_close(pp);
+  }
+  
+  *p_firstpp = firstpp; 
+    
+  return 0; 
+  
+} /* merge */
+
 
 
 /***************************************************************
  * Appending diffs 
  ***************************************************************/
+
 
 
 static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
@@ -457,59 +690,20 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
    ISAMD_PP pp;
    void *encoder_data;
    char hexbuff[64];
-   int retval=ipos;  /* by default we do not change the firstblock addr */
    int diffidx=0;
    int maxsize=0;
    int difflenidx;
    char codebuff[128];
    char *c_ptr = codebuff;
    int codelen;
+   int merge_rc;
 
-   pp=firstpp=isamd_pp_open(is, ipos);
-
-   /* TODO: Turn these ifs around! Check first diffs==0, and create new */
-   /* according to separateDiffBlock. if !=0, read according to its type */
-   /* bit. Much more robust this way around! */
-   
-   if (separateDiffBlock(firstpp))
-   { /* multi-block item, get the diff block */
-     if (firstpp->diffs==0) 
-     { /* allocate first diff block */
-       pp=isamd_pp_open(is,isamd_addr(0,firstpp->cat));
-       pp->pos = isamd_alloc_block(pp->is, pp->cat);
-       firstpp->diffs = pp->pos*2 +1;
-       diffidx = pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N;
-       if (is->method->debug >3) 
-           logf(LOG_LOG,"isamd_appd: alloc diff  (%d) %d %d:%d ix=%d",
-                 firstpp->diffs,
-                 isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
-                 diffidx);
-     }
-     else
-     { /* find pointers within the existing block */
-        pp=isamd_pp_open(is, firstpp->diffs/2);
-        diffidx = pp->offset= pp->size;
-        if (is->method->debug >3) 
-           logf(LOG_LOG,"isamd_appd: load diff (%d) %d (%d:%d) ix=%d",
-                 firstpp->diffs,
-                 isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
-                 diffidx);
-     }
-   } 
-   else
-   { /* single-block item, get idx right */
-     diffidx= pp->diffs/2;
-     if (is->method->debug >3) 
-        logf(LOG_LOG,"isamd_appd: diffs in head %d (%d:%d) ix=%d sz=%d",
-                 isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
-                 diffidx, pp->size);
-     if (0==diffidx)
-     { /* no diffs yet, make them */
-        diffidx = pp->size;
-        pp->diffs = diffidx *2 +0;  
-     }
-   }
-   
+   firstpp=isamd_pp_open(is, ipos);
+   if (is->method->debug >4)
+      logf(LOG_LOG,"isamd_appd: Start ipos=%d=%d:%d d=%d=%d*2+%d",
+        ipos, isamd_type(ipos), isamd_block(ipos),
+        firstpp->diffs, firstpp->diffs/2, firstpp->diffs & 1);
+   pp=read_diff_block(firstpp, &diffidx);
    encoder_data=(*is->method->code_start)(ISAMD_ENCODE);
    maxsize = is->method->filecat[pp->cat].bsize; 
    
@@ -526,8 +720,10 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
    while (i_more)
    {     
+      /* store the mode bit inside key */
       assert( ((i_key.seqno<<1)>>1) == i_key.seqno); /* can spare the bit */
-      i_key.seqno = i_key.seqno * 2 + i_mode;
+      i_key.seqno = i_key.seqno * 2 + i_mode;  
+
       c_ptr=codebuff;
       i_ptr=i_item;
       (*is->method->code_item)(ISAMD_ENCODE, encoder_data, &c_ptr, &i_ptr);
@@ -540,9 +736,19 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
       if (diffidx + codelen > maxsize )
       { /* block full */
-         logf(LOG_LOG,"isamd_appd: block full (ix=%d mx=%d)",
-            diffidx, maxsize);
-         return 0;         /*!*/ /* do something about it!!! */
+         if (is->method->debug >3)
+            logf(LOG_LOG,"isamd_appd: block full (ix=%d mx=%d lix=%d)",
+               diffidx, maxsize, difflenidx);
+         if (is->method->debug >3)
+            logf(LOG_LOG,"isamd_appd: block pp=%p buf=%p [%d]:%s",
+               pp, pp->buf, difflenidx, hexdump(&pp->buf[difflenidx],8,0));
+         merge_rc = merge (&firstpp, &pp, &i_key);
+         if (merge_rc)
+           return merge_rc;  /* merge handled them all ! */
+
+          /* set things up so we can continue */
+          pp = read_diff_block(firstpp, &diffidx);
+          
       } /* block full */
       
       /* save the diff */ 
@@ -552,13 +758,15 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
         firstpp->numKeys++; /* insert diff */
       else
         firstpp->numKeys--; /* delete diff */ 
+
+      /* update length of this diff run */
       memcpy(&(pp->buf[difflenidx]),&diffidx,sizeof(diffidx));
       if (firstpp==pp)
         firstpp->diffs =diffidx*2+0;
       else
         pp->size =diffidx;
       
-      /* try to read the next input */
+      /* (try to) read the next input */
       i_ptr = i_item;
       i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); 
       if ( (i_more) && (is->method->debug >3) )
@@ -570,22 +778,9 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
    difflenidx = diffidx;
    while ( (difflenidx-diffidx<=sizeof(int)) && (difflenidx<maxsize))
      pp->buf[difflenidx++]='\0';
-   
-   /* ok, save the block(s) */
-   if (firstpp != pp) 
-   { /* save the diff block */
-      pp->next = 0;  /* just to be sure */
-      isamd_buildlaterblock(pp);
-      isamd_write_block(is,pp->cat,pp->pos,pp->buf);
-      isamd_pp_close(pp);
-   }
 
-   isamd_buildfirstblock(firstpp);
-   isamd_write_block(is,firstpp->cat,firstpp->pos,firstpp->buf);   
-   retval = isamd_addr(firstpp->pos,firstpp->cat);
-   isamd_pp_close(firstpp);
+   return save_both_pps( firstpp, pp );
 
-   return retval;
 } /* append_diffs */
 
 
@@ -609,7 +804,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.4  1999-07-21 14:53:55  heikki
+ * Revision 1.5  1999-07-23 13:58:52  heikki
+ * merged closer to working, still fails on filling a separate, large block
+ *
+ * Revision 1.4  1999/07/21 14:53:55  heikki
  * isamd read and write functions work, except when block full
  * Merge missing still. Need to split some functions
  *
