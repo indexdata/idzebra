@@ -1,3 +1,9 @@
+Zvrank: an experimental ranking algorithm. See doc/zvrank.txt and
+source in index/zvrank.c. Enable this by using rank: zvrank in zebra.cfg.
+Contributed by Johannes Leveling <Johannes.Leveling at
+fernuni-hagen.de>
+
+
 This is an experimental addon (or patch) for the Zebra server
 to faciliate ranked searches with the Vector Space Model.
 To install the addon, copy the file 'rank1.c' in the index

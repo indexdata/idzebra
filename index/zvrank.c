@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.5 2003-05-20 09:43:46 adam Exp $
+/* $Id: zvrank.c,v 1.6 2004-06-08 13:27:48 marc Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -18,6 +18,13 @@
    along with Zebra; see the file LICENSE.zebra.  If not, write to the
    Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA.
+*/
+
+/*
+Zvrank: an experimental ranking algorithm. See doc/zvrank.txt and
+source in index/zvrank.c. Enable this by using rank: zvrank in zebra.cfg.
+Contributed by Johannes Leveling <Johannes.Leveling at
+fernuni-hagen.de>
 */
 
 /* Zebra Vector Space Model RANKing 
