@@ -32,7 +32,6 @@ LOCAL_LINK=-ldebian/idzebra/usr/lib
 $(ZEBRASRCDIR)/configure: $(ZEBRASRCDIR)/configure.in
 	cd $(ZEBRASRCDIR); sh buildconf.sh
 
-configure: stamp-configure
 stamp-configure: $(ZEBRASRCDIR)/configure
 	dh_testdir
 
