@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.9 1994-09-01 17:43:41 adam Exp $
+# $Id: Makefile,v 1.10 1994-09-02 14:58:38 quinn Exp $
 
 SHELL=/bin/sh
 SUBDIR=util bfile dict
@@ -19,6 +19,7 @@ cleanup:
 	rm -f `find $(SUBDIR) -name "*.o" -print`
 	rm -f `find $(SUBDIR) -name "core" -print`
 	rm -f `find $(SUBDIR) -name "errlist" -print`
+	rm -f `find $(SUBDIR) -name "a.out" -print`
 
 wc:
 	wc `find . -name '*.[ch]'`
