@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.70  1999-09-07 07:19:21  adam
+ * Revision 1.71  1999-09-08 12:12:06  adam
+ * Fixed bad message.
+ *
+ * Revision 1.70  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.69  1999/07/21 08:31:33  adam
@@ -285,7 +288,7 @@ int main (int argc, char **argv)
     int ret;
     int cmd = 0;
     char *arg;
-    char *configName = NULL;
+    char *configName = FNAME_CONFIG;
     int nsections = 0;
     int disableCommit = 0;
     size_t mem_max = 0;
@@ -361,8 +364,7 @@ int main (int argc, char **argv)
                                                 configName : FNAME_CONFIG);
                     if (!common_resource)
                     {
-                        logf (LOG_FATAL, "cannot configuration file `%s'",
-                              configName);
+                        logf (LOG_FATAL, "cannot read file `%s'", configName);
                         exit (1);
                     }
                     data1_set_tabpath (rGroupDef.dh, res_get (common_resource,
