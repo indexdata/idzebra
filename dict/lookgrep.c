@@ -1,4 +1,4 @@
-/* $Id: lookgrep.c,v 1.25 2002-08-02 19:26:55 adam Exp $
+/* $Id: lookgrep.c,v 1.26 2002-09-18 21:01:15 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -385,6 +385,7 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     i = dfa_parse (dfa, &this_pattern);
     if (i || *this_pattern)
     {
+        yaz_log (LOG_WARN, "dfa_parse fail=%d", i);
         dfa_delete (&dfa);
         return -1;
     }

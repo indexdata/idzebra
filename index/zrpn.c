@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.122 2002-08-28 19:52:29 adam Exp $
+/* $Id: zrpn.c,v 1.123 2002-09-18 21:01:15 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -46,7 +46,20 @@ struct rpn_char_map_info {
 static const char **rpn_char_map_handler (void *vp, const char **from, int len)
 {
     struct rpn_char_map_info *p = (struct rpn_char_map_info *) vp;
-    return zebra_maps_input (p->zm, p->reg_type, from, len);
+    const char **out = zebra_maps_input (p->zm, p->reg_type, from, len);
+#if 0
+    if (out && *out)
+    {
+        const char *outp = *out;
+        yaz_log (LOG_LOG, "---");
+        while (*outp)
+        {
+            yaz_log (LOG_LOG, "%02X", *outp);
+            outp++;
+        }
+    }
+#endif
+    return out;
 }
 
 static void rpn_char_map_prepare (struct zebra_register *reg, int reg_type,
@@ -266,7 +279,7 @@ static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
     return *s0;
 }
 
-#define REGEX_CHARS "[]()|.*+!"
+#define REGEX_CHARS " []()|.*+!"
 
 /* term_100: handle term, where trunc=none (no operators at all) */
 static int term_100 (ZebraMaps zebra_maps, int reg_type,
@@ -982,11 +995,11 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 				  attributeSet,
 				  reg_type, space_split, term_dst))
 		return 0;
-	    logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict+prefix_len);
+	    logf (LOG_LOG, "dict_lookup_grep: %s", term_dict+prefix_len);
 	    r = dict_lookup_grep (zh->reg->dict, term_dict, 0,
 				  grep_info, &max_pos, 0, grep_handle);
 	    if (r)
-		logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
+		logf (LOG_WARN, "dict_lookup_grep fail %d", r);
 	    break;
 	case 1:          /* right truncation */
 	    term_dict[j++] = '(';
