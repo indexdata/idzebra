@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.6.2.2 2005-01-07 14:00:24 adam Exp $
+/* $Id: d1_marc.c,v 1.6.2.3 2005-02-02 08:03:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -398,9 +398,9 @@ static int nodetomarc(data1_handle dh,
 		if (!strcmp(xa->name, "ind1"))
 		    indicator_data[0] = xa->value[0];
 		if (!strcmp(xa->name, "ind2"))
-		    indicator_data[1] = xa->value[1];
+		    indicator_data[1] = xa->value[0];
 		if (!strcmp(xa->name, "ind3"))
-		    indicator_data[2] = xa->value[2];
+		    indicator_data[2] = xa->value[0];
 	    }
 	}
 	if (!control_field)
