@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.68  1999-07-14 10:59:26  adam
+ * Revision 1.69  1999-07-21 08:31:33  adam
+ * More version info on WIN32.
+ *
+ * Revision 1.68  1999/07/14 10:59:26  adam
  * Changed functions isc_getmethod, isams_getmethod.
  * Improved fatal error handling (such as missing EXPLAIN schema).
  *
@@ -531,6 +534,13 @@ int main (int argc, char **argv)
         {
             fprintf (stderr, "Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
 	    fprintf (stderr, " (C) 1994-1999, Index Data ApS\n");
+#ifdef WIN32
+#ifdef _DEBUG
+            fprintf (stderr, " WIN32 Debug\n");
+#else
+            fprintf (stderr, " WIN32 Release\n");
+#endif
+#endif
 #if HAVE_BZLIB_H
             fprintf (stderr, "libbzip2\n"
 		     " (C) 1996-1998 Julian R Seward.  All rights reserved.\n");
