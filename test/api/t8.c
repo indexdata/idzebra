@@ -1,4 +1,4 @@
-/* $Id: t8.c,v 1.2 2004-10-15 10:07:34 heikki Exp $
+/* $Id: t8.c,v 1.3 2004-10-24 13:34:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,7 +35,7 @@ static ZebraService start_service()
 {
     char cfg[256];
     char *srcdir = getenv("srcdir");
-    sprintf(cfg, "%.200s%szebragils.cfg", 
+    sprintf(cfg, "%.200s%szebra8.cfg", 
             srcdir ? srcdir : "", srcdir ? "/" : "");
     return zebra_start(cfg);
 }

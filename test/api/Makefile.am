@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.18 2004-10-01 14:25:28 heikki Exp $
+# $Id: Makefile.am,v 1.19 2004-10-24 13:34:45 adam Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c
@@ -6,7 +6,7 @@ testclient_SOURCES = testclient.c
 check_PROGRAMS = t1 t2 t3 t4 t5 t6 t7 t8
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST=zebra.cfg zebra6.cfg
+EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg
 
 t1_SOURCES = t1.c
 t2_SOURCES = t2.c
