@@ -75,10 +75,10 @@ yazconfig = @yazconfig@
 
 tabdatadir = $(pkgdatadir)/tab
 
-tabdata_DATA = default.idx hci.flt mail.flt news.flt  numeric.chr nwi.flt refer.flt scan.chr sgml.flt soif.flt  string.chr urx.chr usmarc.flt
+tabdata_DATA = default.idx hci.flt mail.flt news.flt  numeric.chr nwi.flt out out,v refer.flt scan.chr sgml.flt soif.flt  string.chr urx.chr usmarc.flt
 
 
-EXTRA_DIST = default.idx hci.flt mail.flt news.flt  numeric.chr nwi.flt refer.flt scan.chr sgml.flt soif.flt  string.chr urx.chr usmarc.flt
+EXTRA_DIST = default.idx hci.flt mail.flt news.flt  numeric.chr nwi.flt out out,v refer.flt scan.chr sgml.flt soif.flt  string.chr urx.chr usmarc.flt
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
