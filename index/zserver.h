@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.14  1995-11-16 17:00:57  adam
+ * Revision 1.15  1995-11-21 15:29:13  adam
+ * Config file 'base' read by default by both indexer and server.
+ *
+ * Revision 1.14  1995/11/16  17:00:57  adam
  * Better logging of rpn query.
  *
  * Revision 1.13  1995/11/16  15:34:56  adam
@@ -54,9 +57,7 @@
 #include <rset.h>
 
 #include "index.h"
-#if RECORD_BASE
 #include "recindex.h"
-#endif
 
 typedef struct {
     int sysno;
@@ -74,12 +75,7 @@ typedef struct {
     ZServerSet *sets;
     Dict wordDict;
     ISAM wordIsam;
-    Dict fileDict;
-#if RECORD_BASE
     Records records;
-#else
-    int sys_idx_fd;
-#endif
     int errCode;
     char *errString;
     ODR odr;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.24  1995-11-21 15:01:15  adam
+ * Revision 1.25  1995-11-21 15:29:12  adam
+ * Config file 'base' read by default by both indexer and server.
+ *
+ * Revision 1.24  1995/11/21  15:01:15  adam
  * New general match criteria implemented.
  * New feature: document groups.
  *
@@ -145,14 +148,6 @@ int merge_sort (char **buf, int from, int to);
 #define TEMP_FNAME  "keys%d.tmp"
 #define FNAME_WORD_DICT "worddict"
 #define FNAME_WORD_ISAM "wordisam"
-#define FNAME_FILE_DICT "filedict"
-
-#define RECORD_BASE 1
-
-#if !RECORD_BASE
-#define FNAME_SYS_IDX "sysidx"
-#define SYS_IDX_ENTRY_LEN 120
-#endif
 
 struct strtab *strtab_mk (void);
 int strtab_src (struct strtab *t, const char *name, void ***infop);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.24  1995-11-20 16:59:47  adam
+ * Revision 1.25  1995-11-21 15:29:13  adam
+ * Config file 'base' read by default by both indexer and server.
+ *
+ * Revision 1.24  1995/11/20  16:59:47  adam
  * New update method: the 'old' keys are saved for each records.
  *
  * Revision 1.23  1995/11/16  17:00:56  adam
@@ -104,30 +107,27 @@ bend_initresult *bend_init (bend_initrequest *q)
     r.handle = name;
 
     logf (LOG_DEBUG, "bend_init");
+
+    if (!common_resource)
+    {
+        struct statserv_options_block *sob;
+
+        sob = statserv_getcontrol ();
+        logf (LOG_LOG, "Reading resources from %s", sob->configname);
+        if (!(common_resource = res_open (sob->configname)))
+        {
+            logf (LOG_FATAL, "Cannot open resource `%s'", sob->configname);
+            exit (1);
+        }
+    }
+
     data1_tabpath = res_get(common_resource, "data1_tabpath");
     server_info.sets = NULL;
-#if RECORD_BASE
+
     server_info.records = rec_open (0);
-#else
-    if (!(server_info.sys_idx_fd = open (FNAME_SYS_IDX, O_RDONLY)))
-    {
-        logf (LOG_WARN|LOG_ERRNO, "sys_idx open fail");
-        r.errcode = 1;
-        r.errstring = "sys_idx open fail";
-        return &r;
-    }
-#endif
-    if (!(server_info.fileDict = dict_open (FNAME_FILE_DICT, 10, 0)))
-    {
-        logf (LOG_WARN, "dict_open fail: fname dict");
-        r.errcode = 1;
-        r.errstring = "dict_open fail: fname dict";
-        return &r;
-    }    
     if (!(server_info.wordDict = dict_open (FNAME_WORD_DICT, 40, 0)))
     {
         logf (LOG_WARN, "dict_open fail: word dict");
-        dict_close (server_info.fileDict);
         r.errcode = 1;
         r.errstring = "dict_open fail: word dict";
         return &r;
@@ -137,7 +137,6 @@ bend_initresult *bend_init (bend_initrequest *q)
     {
         logf (LOG_WARN, "is_open fail: word isam");
         dict_close (server_info.wordDict);
-        dict_close (server_info.fileDict);
         r.errcode = 1;
         r.errstring = "is_open fail: word isam";
         return &r;
@@ -184,34 +183,14 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
 			  oid_value *output_format, char **rec_bufp,
 			  int *rec_lenp)
 {
-#if RECORD_BASE
     Record rec;
-#else
-    char record_info[SYS_IDX_ENTRY_LEN];
-#endif
     char *fname, *file_type;
     RecType rt;
     struct recRetrieveCtrl retrieveCtrl;
 
-#if RECORD_BASE
     rec = rec_get (zi->records, sysno);
     file_type = rec->info[0];
     fname = rec->info[1];
-#else
-    if (lseek (zi->sys_idx_fd, sysno * SYS_IDX_ENTRY_LEN,
-               SEEK_SET) == -1)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "Retrieve: lseek of sys_idx");
-        exit (1);
-    }
-    if (read (zi->sys_idx_fd, record_info, SYS_IDX_ENTRY_LEN) == -1)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "Retrieve: read of sys_idx");
-        exit (1);
-    }
-    file_type = record_info;
-    fname = record_info + strlen(record_info) + 1;
-#endif
 
     if (!(rt = recType_byName (file_type)))
     {
@@ -227,9 +206,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
         *output_format = VAL_SUTRS;
         *rec_bufp = msg;
         *rec_lenp = strlen (msg);
-#if RECORD_BASE
         rec_rm (&rec);
-#endif
         return 0;     /* or 14: System error in presenting records */
     }
     retrieveCtrl.localno = sysno;
@@ -244,9 +221,8 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     *rec_bufp = retrieveCtrl.rec_buf;
     *rec_lenp = retrieveCtrl.rec_len;
     close (retrieveCtrl.fd);
-#if RECORD_BASE
     rec_rm (&rec);
-#endif
+
     return retrieveCtrl.diagnostic;
 }
 
@@ -311,25 +287,19 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
 
 void bend_close (void *handle)
 {
-    dict_close (server_info.fileDict);
     dict_close (server_info.wordDict);
     is_close (server_info.wordIsam);
-#if RECORD_BASE
     rec_close (&server_info.records);
-#else
-    close (server_info.sys_idx_fd);
-#endif
     return;
 }
 
 int main (int argc, char **argv)
 {
-    char *base_name = "base";
+    struct statserv_options_block *sob;
 
-    if (!(common_resource = res_open (base_name)))
-    {
-        logf (LOG_FATAL, "Cannot open resource `%s'", base_name);
-        exit (1);
-    }
+    sob = statserv_getcontrol ();
+    strcpy (sob->configname, "base");
+    statserv_setcontrol (sob);
+
     return statserv_main (argc, argv);
 }
