@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.61 2002-08-23 14:29:58 adam Exp $
+/* $Id: recgrs.c,v 1.62 2002-08-28 12:47:10 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -19,8 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
-
 
 #include <stdio.h>
 #include <assert.h>
@@ -101,7 +99,7 @@ static void *grs_init(RecType recType)
     grs_add_handler (h, recTypeGrs_tcl);
 #endif
     grs_add_handler (h, recTypeGrs_marc);
-#if YAZ_HAVE_EXPAT
+#if HAVE_EXPAT_H
     grs_add_handler (h, recTypeGrs_xml);
 #endif
     return h;
@@ -472,7 +470,7 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
     gri.dh = p->dh;
 
     if (read_grs_type (h, &gri, p->subType, &n))
-	return RECCTRL_EXTRACT_ERROR;
+	return RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER;
     if (!n)
         return RECCTRL_EXTRACT_EOF;
     oe.proto = PROTO_Z3950;
@@ -499,7 +497,7 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
     if (dumpkeys(n, p, 0, &wrd) < 0)
     {
 	data1_free_tree(p->dh, n);
-	return RECCTRL_EXTRACT_ERROR;
+	return RECCTRL_EXTRACT_ERROR_GENERIC;
     }
     data1_free_tree(p->dh, n);
     return RECCTRL_EXTRACT_OK;
@@ -655,7 +653,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     /* ensure our data1 tree is UTF-8 */
     data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 
-#if 0
+#if 1
     data1_pr_tree (p->dh, node, stdout);
 #endif
     top = data1_get_root_tag (p->dh, node);

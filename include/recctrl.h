@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.38 2002-08-02 19:26:55 adam Exp $
+/* $Id: recctrl.h,v 1.39 2002-08-28 12:47:10 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -109,7 +109,8 @@ struct recType
 
 #define RECCTRL_EXTRACT_OK    0
 #define RECCTRL_EXTRACT_EOF   1
-#define RECCTRL_EXTRACT_ERROR 2
+#define RECCTRL_EXTRACT_ERROR_GENERIC 2
+#define RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER 3
 
 typedef struct recTypes *RecTypes;
 

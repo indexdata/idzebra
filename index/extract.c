@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.120 2002-08-02 19:26:55 adam Exp $
+/* $Id: extract.c,v 1.121 2002-08-28 12:47:10 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -488,13 +488,25 @@ static int recordExtract (ZebraHandle zh,
 
 	if (r == RECCTRL_EXTRACT_EOF)
 	    return 0;
-	else if (r == RECCTRL_EXTRACT_ERROR)
+	else if (r == RECCTRL_EXTRACT_ERROR_GENERIC)
 	{
             /* error occured during extraction ... */
             if (rGroup->flagRw &&
 		zh->records_processed < rGroup->fileVerboseLimit)
             {
                 logf (LOG_WARN, "fail %s %s " PRINTF_OFF_T, rGroup->recordType,
+                      fname, recordOffset);
+            }
+            return 0;
+        }
+	else if (r == RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER)
+	{
+            /* error occured during extraction ... */
+            if (rGroup->flagRw &&
+		zh->records_processed < rGroup->fileVerboseLimit)
+            {
+                logf (LOG_WARN, "no filter for %s %s " 
+                      PRINTF_OFF_T, rGroup->recordType,
                       fname, recordOffset);
             }
             return 0;
@@ -955,19 +967,16 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
 
     if (r == RECCTRL_EXTRACT_EOF)
 	return 0;
-    else if (r == RECCTRL_EXTRACT_ERROR)
+    else if (r == RECCTRL_EXTRACT_ERROR_GENERIC)
     {
 	/* error occured during extraction ... */
-#if 1
-	yaz_log (LOG_WARN, "extract error");
-#else
-	if (rGroup->flagRw &&
-	    zh->records_processed < rGroup->fileVerboseLimit)
-	{
-	    logf (LOG_WARN, "fail %s %s %ld", rGroup->recordType,
-		  fname, (long) recordOffset);
-	}
-#endif
+	yaz_log (LOG_WARN, "extract error: generic");
+	return 0;
+    }
+    else if (r == RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER)
+    {
+	/* error occured during extraction ... */
+	yaz_log (LOG_WARN, "extract error: no such filter");
 	return 0;
     }
     if (zh->reg->keys.buf_used == 0)
