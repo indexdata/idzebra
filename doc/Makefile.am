@@ -1,5 +1,5 @@
-## $Id: Makefile.am,v 1.9 2002-04-09 19:58:38 adam Exp $
-docdir=$(pkgdatadir)/doc
+## $Id: Makefile.am,v 1.10 2002-06-02 19:30:07 adam Exp $
+docdir=$(datadir)/doc/@PACKAGE@
 
 doc_DATA = zebra.html zebra.pdf
 
