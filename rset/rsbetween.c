@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.25 2004-09-09 10:08:06 heikki Exp $
+/* $Id: rsbetween.c,v 1.26 2004-09-30 09:53:04 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -43,7 +43,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open_between (RSET ct, int flag);
 static void r_close_between (RSFD rfd);
 static void r_delete_between (RSET ct);
-static void r_rewind_between (RSFD rfd);
 static int r_forward_between(RSFD rfd, void *buf, const void *untilbuf);
 static int r_read_between (RSFD rfd, void *buf);
 static int r_write_between (RSFD rfd, const void *buf);
@@ -55,7 +54,6 @@ static const struct rset_control control =
     r_delete_between,
     r_open_between,
     r_close_between,
-    r_rewind_between,
     r_forward_between, 
     r_pos_between,
     r_read_between,
@@ -183,29 +181,6 @@ static void r_close_between (RSFD rfd)
     if (info->rset_attr)
         rset_close (p->rfd_attr);
     rfd_delete_base(rfd);
-}
-
-static void r_rewind_between (RSFD rfd)
-{
-    struct rset_between_info *info =(struct rset_between_info *)rfd->rset->priv;
-    struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
-
-#if RSBETWEEN_DEBUG
-    logf (LOG_DEBUG, "rsbetween_rewind");
-#endif
-    rset_rewind (p->rfd_l);
-    rset_rewind (p->rfd_m);
-    rset_rewind (p->rfd_r);
-    p->more_l = rset_read (p->rfd_l, p->buf_l);
-    p->more_m = rset_read (p->rfd_m, p->buf_m);
-    p->more_r = rset_read (p->rfd_r, p->buf_r);
-    if (info->rset_attr)
-    {
-        rset_rewind (p->rfd_attr);
-        p->more_attr = rset_read (p->rfd_attr, p->buf_attr);
-    }
-    p->level=0;
-    p->hits=0;
 }
 
 

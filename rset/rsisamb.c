@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.22 2004-09-09 10:08:06 heikki Exp $
+/* $Id: rsisamb.c,v 1.23 2004-09-30 09:53:05 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -33,7 +33,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static void r_rewind (RSFD rfd);
 static int r_forward(RSFD rfd, void *buf, const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
 static int r_read (RSFD rfd, void *buf);
@@ -45,7 +44,6 @@ static const struct rset_control control =
     r_delete,
     r_open,
     r_close,
-    r_rewind,
     r_forward, 
     r_pos,
     r_read,
@@ -111,12 +109,6 @@ static void r_close (RSFD rfd)
     rfd_delete_base(rfd);
 }
 
-
-static void r_rewind (RSFD rfd)
-{   
-    logf (LOG_DEBUG, "rsisamb_rewind");
-    abort ();
-}
 
 static int r_forward(RSFD rfd, void *buf, const void *untilbuf)
 {

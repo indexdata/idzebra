@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.49 2004-09-09 10:08:06 heikki Exp $
+/* $Id: rstemp.c,v 1.50 2004-09-30 09:53:05 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -37,10 +37,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static void r_rewind (RSFD rfd);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double  *total);
+static void r_flush (RSFD rfd, int mk);
+static void r_reread (RSFD rfd);
 
 
 static const struct rset_control control = 
@@ -49,7 +50,6 @@ static const struct rset_control control =
     r_delete,
     r_open,
     r_close,
-    r_rewind,
     rset_default_forward,
     r_pos, 
     r_read,
@@ -139,8 +139,13 @@ static RSFD r_open (RSET ct, int flag)
         prfd= (struct rset_temp_rfd *) nmem_malloc(ct->nmem, sizeof(*prfd));
         rfd->priv=(void *)prfd;
         prfd->buf = nmem_malloc (ct->nmem,ct->keycontrol->key_size);
-    }
-    r_rewind (rfd);
+    } else
+        prfd= rfd->priv;
+    r_flush (rfd, 0);
+    prfd->pos_cur = 0;
+    info->pos_buf = 0;
+    r_reread (rfd);
+    prfd->cur=0;
     return rfd;
 }
 
@@ -266,16 +271,6 @@ static void r_reread (RSFD rfd)
         info->pos_border = info->pos_end;
 }
 
-static void r_rewind (RSFD rfd)
-{
-    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) (rfd->priv);  
-    struct rset_temp_info *info = (struct rset_temp_info *)(rfd->rset->priv);
-    r_flush (rfd, 0);
-    mrfd->pos_cur = 0;
-    info->pos_buf = 0;
-    r_reread (rfd);
-    mrfd->cur=0;
-}
 
 static int r_read (RSFD rfd, void *buf)
 {

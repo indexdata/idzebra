@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.16 2004-09-09 10:08:06 heikki Exp $
+/* $Id: rsprox.c,v 1.17 2004-09-30 09:53:05 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,7 +35,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static void r_rewind (RSFD rfd);
 static int r_forward(RSFD rfd, void *buf, const void *untilbuf);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
@@ -47,7 +46,6 @@ static const struct rset_control control =
     r_delete,
     r_open,
     r_close,
-    r_rewind,
     r_forward,
     r_pos,
     r_read,
@@ -148,22 +146,6 @@ static void r_close (RSFD rfd)
     for (i = 0; i<info->rset_no; i++)
         rset_close (p->rfd[i]);
     rfd_delete_base(rfd);
-}
-
-static void r_rewind (RSFD rfd)
-{
-    struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
-    struct rset_prox_rfd *p=(struct rset_prox_rfd *)(rfd->priv);
-    int i;
-
-    logf (LOG_DEBUG, "rsprox_rewind");
-
-    for (i = 0; i < info->rset_no; i++)
-    {
-        rset_rewind (p->rfd[i]);
-        p->more[i] = rset_read (p->rfd[i], p->buf[i]);
-    }
-    p->hits=0;
 }
 
 static int r_forward (RSFD rfd, void *buf, const void *untilbuf)

@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.4 2004-09-29 11:00:57 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.5 2004-09-30 09:53:05 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -47,7 +47,6 @@ static RSFD r_open_and (RSET ct, int flag);
 static RSFD r_open_or (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static void r_rewind (RSFD rfd);
 static int r_read_and (RSFD rfd, void *buf);
 static int r_read_or (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
@@ -63,7 +62,6 @@ static const struct rset_control control_or =
     r_delete,
     r_open_or,
     r_close,
-    r_rewind,
     r_forward_or,
     r_pos,
     r_read_or,
@@ -75,7 +73,6 @@ static const struct rset_control control_and =
     r_delete,
     r_open_and,
     r_close,
-    r_rewind,
     r_forward_and,
     r_pos,
     r_read_and,
@@ -567,11 +564,6 @@ static void r_pos (RSFD rfd, double *current, double *total)
 }
 
 
-static void r_rewind (RSFD rfd)
-{
-    assert(!"rewind not implemented yet");
-    /* FIXME - rewind all parts, rebalance heap, clear hits */
-}
 
 static int r_write (RSFD rfd, const void *buf)
 {

@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.47 2004-09-09 10:08:06 heikki Exp $
+/* $Id: rsbool.c,v 1.48 2004-09-30 09:53:05 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,7 +35,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static void r_rewind (RSFD rfd);
 static int r_forward(RSFD rfd, void *buf, const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total); 
 static int r_read_and (RSFD rfd, void *buf);
@@ -49,7 +48,6 @@ static const struct rset_control control_and =
     r_delete,
     r_open,
     r_close,
-    r_rewind,
     r_forward, 
     r_pos,    
     r_read_and,
@@ -62,7 +60,6 @@ static const struct rset_control control_or =
     r_delete,
     r_open,
     r_close,
-    r_rewind,
     r_forward, 
     r_pos,
     r_read_or,
@@ -75,7 +72,6 @@ static const struct rset_control control_not =
     r_delete,
     r_open,
     r_close,
-    r_rewind,
     r_forward, 
     r_pos,
     r_read_not,
@@ -197,18 +193,6 @@ static void r_close (RSFD rfd)
 }
 
 
-static void r_rewind (RSFD rfd)
-{
- /* struct rset_bool_info *info = (struct rset_bool_info*)(rfd->rset->priv); */
-    struct rset_bool_rfd *p=(struct rset_bool_rfd *)rfd->priv;
-
-    logf (LOG_DEBUG, "rsbool_rewind");
-    rset_rewind (p->rfd_l);
-    rset_rewind (p->rfd_r);
-    p->more_l = rset_read (p->rfd_l, p->buf_l);
-    p->more_r = rset_read (p->rfd_r, p->buf_r);
-    p->hits=0;
-}
 
 static int r_forward (RSFD rfd, void *buf,
                      const void *untilbuf)
