@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.20  1995-10-27 14:00:12  adam
+ * Revision 1.21  1995-11-01 16:25:52  quinn
+ * *** empty log message ***
+ *
+ * Revision 1.20  1995/10/27  14:00:12  adam
  * Implemented detection of database availability.
  *
  * Revision 1.19  1995/10/17  18:02:11  adam
@@ -74,6 +77,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <common.h>
+#include <data1.h>
 #include <recctrl.h>
 #include <dmalloc.h>
 #include "zserver.h"
@@ -90,6 +95,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     r.handle = name;
 
     logf (LOG_DEBUG, "bend_init");
+    data1_tabpath = res_get(common_resource, "data1_tabpath");
     server_info.sets = NULL;
     if (!(server_info.sys_idx_fd = open (FNAME_SYS_IDX, O_RDONLY)))
     {

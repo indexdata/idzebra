@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.14  1995-10-17 18:02:09  adam
+ * Revision 1.15  1995-11-01 16:25:51  quinn
+ * *** empty log message ***
+ *
+ * Revision 1.14  1995/10/17  18:02:09  adam
  * New feature: databases. Implemented as prefix to words in dictionary.
  *
  * Revision 1.13  1995/10/10  12:24:39  adam
@@ -54,6 +57,7 @@
 #include <unistd.h>
 
 #include <alexutil.h>
+#include <data1.h>
 #include "index.h"
 
 char *prog;
@@ -85,6 +89,7 @@ int main (int argc, char **argv)
                     logf (LOG_FATAL, "Cannot open resource `%s'", base_name);
                     exit (1);
                 }
+		data1_tabpath = res_get(common_resource, "data1_tabpath");
             }
             else if(cmd == 0) /* command */
             {

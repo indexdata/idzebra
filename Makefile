@@ -1,14 +1,14 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.34 1995-11-01 13:58:22 quinn Exp $
+# $Id: Makefile,v 1.35 1995-11-01 16:25:37 quinn Exp $
 
 SHELL=/bin/sh
 MAKE=make
 SUBDIR=util str bfile dfa dict isam rset index
 RANLIB=ranlib
 YAZ=../../yaz
-#OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
+OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
 #NETLIB=-lnsl -lsocket
 
 all:
