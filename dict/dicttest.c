@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.4  1994-09-01 17:49:37  adam
+ * Revision 1.5  1994-09-06 13:05:14  adam
+ * Further development of insertion. Some special cases are
+ * not properly handled yet! assert(0) are put here. The
+ * binary search in each page definitely reduce usr CPU.
+ *
+ * Revision 1.4  1994/09/01  17:49:37  adam
  * Removed stupid line. Work on insertion in dictionary. Not finished yet.
  *
  * Revision 1.3  1994/09/01  17:44:06  adam
@@ -21,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include <dict.h>
 
@@ -33,9 +39,11 @@ int main (int argc, char **argv)
     const char *inputfile = NULL;
     const char *base = NULL;
     int rw = 0;
-    int infosize = 2;
+    int infosize = 4;
     int cache = 10;
     int ret;
+    int no_of_insertions = 0;
+    int no_of_new = 0, no_of_same = 0, no_of_change = 0;
     char *arg;
     
     prog = argv[0];
@@ -108,7 +116,6 @@ int main (int argc, char **argv)
     {
         FILE *ipf;
         char ipf_buf[256];
-        char word[256];
         int line = 1;
         char infobytes[120];
         memset (infobytes, 0, 120);
@@ -121,15 +128,46 @@ int main (int argc, char **argv)
         
         while (fgets (ipf_buf, 255, ipf))
         {
-            if (sscanf (ipf_buf, "%s", word) == 1)
+            char *ipf_ptr = ipf_buf;
+            sprintf (infobytes, "%d", line);
+            for (;*ipf_ptr && *ipf_ptr != '\n';ipf_ptr++)
             {
-                sprintf (infobytes, "%d", line);
-                dict_insert (dict, word, infosize, infobytes);
+                if (isalpha(*ipf_ptr) || *ipf_ptr == '_')
+                {
+                    int i = 1;
+                    while (ipf_ptr[i] && (isalnum(ipf_ptr[i]) ||
+                                          ipf_ptr[i] == '_'))
+                        i++;
+                    if (ipf_ptr[i])
+                        ipf_ptr[i++] = '\0';
+#if 1
+                    switch(dict_insert (dict, ipf_ptr, infosize, infobytes))
+                    {
+                    case 0:
+                        no_of_new++;
+                        break;
+                    case 1:
+                        no_of_change++;
+                        break;
+                    case 2:
+                        no_of_same++;
+                        break;
+                    }
+#else
+                    printf ("%s\n", ipf_ptr);
+#endif
+                    ++no_of_insertions;
+                    ipf_ptr += (i-1);
+                }
             }
             ++line;
         }
         fclose (ipf);
     }
+    log (LOG_LOG, "Insertions.... %d", no_of_insertions);
+    log (LOG_LOG, "No of new..... %d", no_of_new);
+    log (LOG_LOG, "No of change.. %d", no_of_change);
+    log (LOG_LOG, "No of same.... %d", no_of_same);
     dict_close (dict);
     res_close (common_resource);
     return 0;

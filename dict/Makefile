@@ -1,12 +1,12 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.4 1994-09-01 17:44:05 adam Exp $
+# $Id: Makefile,v 1.5 1994-09-06 13:05:12 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
 TPROG=dicttest
-CFLAGS=-g -Wall -pedantic
+CFLAGS=-Wall -pg -pedantic
 DEFS=$(INCLUDE)
 LIB=../lib/dict.a 
 PO = dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o 

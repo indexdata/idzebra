@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.4  1994-09-01 17:44:40  adam
+ * Revision 1.5  1994-09-06 13:05:29  adam
+ * Further development of insertion. Some special cases are
+ * not properly handled yet! assert(0) are put here. The
+ * binary search in each page definitely reduce usr CPU.
+ *
+ * Revision 1.4  1994/09/01  17:44:40  adam
  * Work on insertion in dictionary. Not finished yet.
  * CVS ----------------------------------------------------------------------
  *
@@ -74,7 +79,7 @@ Dict_BFile dict_bf_open (const char *name, int block_size, int cache, int rw);
 int dict_bf_close (Dict_BFile dbf);
 #define DICT_MAGIC "dict00"
 
-#define DICT_PAGESIZE 64
+#define DICT_PAGESIZE 8192
     
 Dict dict_open (const char *name, int cache, int rw);
 int dict_close (Dict dict);

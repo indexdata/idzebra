@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: drdwr.c,v $
- * Revision 1.5  1994-09-01 17:49:38  adam
+ * Revision 1.6  1994-09-06 13:05:14  adam
+ * Further development of insertion. Some special cases are
+ * not properly handled yet! assert(0) are put here. The
+ * binary search in each page definitely reduce usr CPU.
+ *
+ * Revision 1.5  1994/09/01  17:49:38  adam
  * Removed stupid line. Work on insertion in dictionary. Not finished yet.
  *
  */
@@ -138,6 +143,7 @@ int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
 {
     struct Dict_file_block *p;
     int i;
+    assert (no < 1000);
     if ((p = find_block (bf, no)))
     {
         *bufp = p->data;
@@ -168,7 +174,7 @@ int dict_bf_newp (Dict_BFile dbf, int no, void **bufp)
     *bufp = p->data;
     memset (p->data, 0, dbf->block_size);
     p->dirty = 1;
-#if 1
+#if 0
     printf ("bf_newp of %d:", no);
     pr_lru (dbf);
 #endif
