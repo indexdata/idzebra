@@ -3,7 +3,7 @@
  * All rights reserved.
  * Heikki Levanto
  *
- * $Id: rsbetween.c,v 1.2 2002-04-12 14:51:34 heikki Exp $
+ * $Id: rsbetween.c,v 1.3 2002-04-12 14:57:41 heikki Exp $
  */
 
 #include <stdio.h>
@@ -46,7 +46,7 @@ struct rset_between_info {
     RSET rset_r;
     int term_index_s;
     int (*cmp)(const void *p1, const void *p2);
-    char *(*printer)(void *p1, char *buf);
+    char *(*printer)(const void *p1, char *buf);
     struct rset_between_rfd *rfd_list;
 };
 
@@ -191,6 +191,18 @@ static int r_count_between (RSET ct)
     return 0;
 }
 
+static void logit( struct rset_between_info *info, char *prefix, void *l, void *m, void *r)
+{
+    char buf_l[32];
+    char buf_m[32];
+    char buf_r[32];
+    logf(LOG_DEBUG,"%s l=%s m=%s r=%s",
+      prefix, 
+      (*info->printer)(l, buf_l),
+      (*info->printer)(m, buf_m),
+      (*info->printer)(r, buf_r) );
+}
+
 static int r_read_between (RSFD rfd, void *buf, int *term_index)
 {
     struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
@@ -200,6 +212,7 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
 
     while (p->more_m)
     {
+        logit( info, "between: start of loop", p->buf_l, p->buf_m, p->buf_r);
 
 	/* forward L until past m, count levels, note rec boundaries */
 	if (p->more_l)
