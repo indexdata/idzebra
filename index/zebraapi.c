@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.106 2003-06-20 14:21:23 heikki Exp $
+/* $Id: zebraapi.c,v 1.107 2003-06-20 16:27:55 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -432,7 +432,7 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 int zebra_stop(ZebraService zs)
 {
     if (!zs)
-        return ;
+        return 0;
     yaz_log (LOG_LOG|LOG_API, "zebra_stop");
 
     while (zs->sessions)
@@ -460,14 +460,12 @@ int zebra_close (ZebraHandle zh)
 
     yaz_log(LOG_API,"zebra_close");
     if (!zh)
-        return;
+        return 0;
     ASSERTZH;
     zh->errCode=0;
     
     zs = zh->service;
     yaz_log (LOG_DEBUG, "zebra_close zh=%p", zh);
-    if (!zh)
-        return ;
     resultSetDestroy (zh, -1, 0, 0);
 
     if (zh->reg)
@@ -1731,26 +1729,28 @@ const char *zebra_get_resource(ZebraHandle zh,
 /* moved from zebra_api_ext.c by pop */
 /* FIXME: Should this really be public??? -Heikki */
 
-int zebra_trans_no (ZebraHandle zh) {
-  ASSERTZH;
-  yaz_log(LOG_API,"zebra_trans_no");
-  return (zh->trans_no);
+int zebra_trans_no (ZebraHandle zh)
+{
+    ASSERTZH;
+    yaz_log(LOG_API,"zebra_trans_no");
+    return zh->trans_no;
 }
 
-
-
-int zebra_get_shadow_enable (ZebraHandle zh) {
+int zebra_get_shadow_enable (ZebraHandle zh)
+{
     yaz_log(LOG_API,"zebra_get_shadow_enable");
     return (zh->shadow_enable);
 }
 
-int zebra_set_shadow_enable (ZebraHandle zh, int value) {
+int zebra_set_shadow_enable (ZebraHandle zh, int value)
+{
     yaz_log(LOG_API,"zebra_set_shadow_enable %d",value);
     zh->shadow_enable = value;
     return 0;
 }
 
-int init_recordGroup (struct recordGroup *rg) {
+int init_recordGroup (struct recordGroup *rg)
+{
     assert(rg);
     yaz_log(LOG_API,"init_recordGroup");
     rg->groupName = NULL;
@@ -1773,77 +1773,85 @@ int init_recordGroup (struct recordGroup *rg) {
    called... and in general... Should be moved to somewhere else */
 void res_get_recordGroup (ZebraHandle zh,
 			  struct recordGroup *rGroup,
-			  const char *ext) {
-  char gprefix[128];
-  char ext_res[128]; 
+			  const char *ext)
+{
+    char gprefix[128];
+    char ext_res[128]; 
     
-  yaz_log(LOG_API,"res_get_recordGroup e=%s",ext);
-  if (!rGroup->groupName || !*rGroup->groupName)
-    *gprefix = '\0';
-  else 
-    sprintf (gprefix, "%s.", rGroup->groupName);
-  
-  /* determine file type - depending on extension */
-  if (!rGroup->recordType) {
-    sprintf (ext_res, "%srecordType.%s", gprefix, ext);
-    if (!(rGroup->recordType = res_get (zh->res, ext_res))) {
-      sprintf (ext_res, "%srecordType", gprefix);
-      rGroup->recordType = res_get (zh->res, ext_res);
-    }
-  }
-  /* determine match criteria */
-  if (!rGroup->recordId) { 
-    sprintf (ext_res, "%srecordId.%s", gprefix, ext);
-    if (!(rGroup->recordId = res_get (zh->res, ext_res))) {
-      sprintf (ext_res, "%srecordId", gprefix);
-      rGroup->recordId = res_get (zh->res, ext_res);
-    }
-  } 
-  
-  /* determine database name */
-  if (!rGroup->databaseName) {
-    sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
-    if (!(rGroup->databaseName = res_get (zh->res, ext_res))) { 
-      sprintf (ext_res, "%sdatabase", gprefix);
-      rGroup->databaseName = res_get (zh->res, ext_res);
-    }
-  }
-  if (!rGroup->databaseName)
-    rGroup->databaseName = "Default";
-
-  /* determine if explain database */
-  sprintf (ext_res, "%sexplainDatabase", gprefix);
-  rGroup->explainDatabase =
-    atoi (res_get_def (zh->res, ext_res, "0"));
-
-  /* storeData */
-  if (rGroup->flagStoreData == -1) {
-    const char *sval;
-    sprintf (ext_res, "%sstoreData.%s", gprefix, ext);
-    if (!(sval = res_get (zh->res, ext_res))) {
-      sprintf (ext_res, "%sstoreData", gprefix);
-      sval = res_get (zh->res, ext_res);
-    }
-    if (sval)
-      rGroup->flagStoreData = atoi (sval);
-  }
-  if (rGroup->flagStoreData == -1)  rGroup->flagStoreData = 0;
-
-  /* storeKeys */
-  if (rGroup->flagStoreKeys == -1)  {
-    const char *sval;
+    yaz_log(LOG_API,"res_get_recordGroup e=%s",ext);
+    if (!rGroup->groupName || !*rGroup->groupName)
+	*gprefix = '\0';
+    else 
+	sprintf (gprefix, "%s.", rGroup->groupName);
     
-    sprintf (ext_res, "%sstoreKeys.%s", gprefix, ext);
-    sval = res_get (zh->res, ext_res);
-    if (!sval) {
-      sprintf (ext_res, "%sstoreKeys", gprefix);
-      sval = res_get (zh->res, ext_res);
+    /* determine file type - depending on extension */
+    if (!rGroup->recordType) {
+	sprintf (ext_res, "%srecordType.%s", gprefix, ext);
+	if (!(rGroup->recordType = res_get (zh->res, ext_res))) {
+	    sprintf (ext_res, "%srecordType", gprefix);
+	    rGroup->recordType = res_get (zh->res, ext_res);
+	}
     }
-    if (!sval)  sval = res_get (zh->res, "storeKeys");
-    if (sval) rGroup->flagStoreKeys = atoi (sval);
-  }
-  if (rGroup->flagStoreKeys == -1) rGroup->flagStoreKeys = 0;
-  
+    /* determine match criteria */
+    if (!rGroup->recordId) { 
+	sprintf (ext_res, "%srecordId.%s", gprefix, ext);
+	if (!(rGroup->recordId = res_get (zh->res, ext_res))) {
+	    sprintf (ext_res, "%srecordId", gprefix);
+	    rGroup->recordId = res_get (zh->res, ext_res);
+	}
+    } 
+    
+    /* determine database name */
+    if (!rGroup->databaseName) {
+	sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
+	if (!(rGroup->databaseName = res_get (zh->res, ext_res))) { 
+	    sprintf (ext_res, "%sdatabase", gprefix);
+	    rGroup->databaseName = res_get (zh->res, ext_res);
+	}
+    }
+    if (!rGroup->databaseName)
+	rGroup->databaseName = "Default";
+    
+    /* determine if explain database */
+    sprintf (ext_res, "%sexplainDatabase", gprefix);
+    rGroup->explainDatabase =
+	atoi (res_get_def (zh->res, ext_res, "0"));
+    
+    /* storeData */
+    if (rGroup->flagStoreData == -1)
+    {
+	const char *sval;
+	sprintf (ext_res, "%sstoreData.%s", gprefix, ext);
+	if (!(sval = res_get (zh->res, ext_res)))
+	{
+	    sprintf (ext_res, "%sstoreData", gprefix);
+	    sval = res_get (zh->res, ext_res);
+	}
+	if (sval)
+	    rGroup->flagStoreData = atoi (sval);
+    }
+    if (rGroup->flagStoreData == -1) 
+	rGroup->flagStoreData = 0;
+    
+    /* storeKeys */
+    if (rGroup->flagStoreKeys == -1)
+    {
+	const char *sval;
+	
+	sprintf (ext_res, "%sstoreKeys.%s", gprefix, ext);
+	sval = res_get (zh->res, ext_res);
+	if (!sval)
+	{
+	    sprintf (ext_res, "%sstoreKeys", gprefix);
+	    sval = res_get (zh->res, ext_res);
+	}
+	if (!sval)
+	    sval = res_get (zh->res, "storeKeys");
+	if (sval)
+	    rGroup->flagStoreKeys = atoi (sval);
+    }
+    if (rGroup->flagStoreKeys == -1)
+	rGroup->flagStoreKeys = 0;
 } 
 
 
@@ -1948,7 +1956,7 @@ int zebra_insert_record (ZebraHandle zh,
  
 {
     int res;
-    yaz_log(LOG_API,"zebra_insert_record sysno=%d",sysno);
+    yaz_log(LOG_API,"zebra_insert_record sysno=%d", *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -1972,10 +1980,10 @@ int zebra_update_record (ZebraHandle zh,
 			 int* sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update)
-
 {
     int res;
-    yaz_log(LOG_API,"zebra_update_record sysno=%d",sysno);
+
+    yaz_log(LOG_API,"zebra_update_record sysno=%d", *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -1992,8 +2000,6 @@ int zebra_update_record (ZebraHandle zh,
     return res; 
 }
 
-
-
 int zebra_delete_record (ZebraHandle zh, 
 			 struct recordGroup *rGroup, 
 			 const char *recordType,
@@ -2002,7 +2008,7 @@ int zebra_delete_record (ZebraHandle zh,
 			 int force_update) 
 {
     int res;
-    yaz_log(LOG_API,"zebra_delete_record sysno=%d",sysno);
+    yaz_log(LOG_API,"zebra_delete_record sysno=%d", *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -2030,7 +2036,7 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
     int res=-1;
     Z_RPNQuery *query;
     ODR odr = odr_createmem(ODR_ENCODE);
-    assert(numhits);
+
     yaz_log(LOG_API,"zebra_search_PQF s=%s q=%s",setname, pqf_query);
     
     query = p_query_rpn (odr, PROTO_Z3950, pqf_query);
@@ -2042,7 +2048,8 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
     
     odr_destroy(odr);
 
-    *numhits=hits;
+    if (numhits)
+	*numhits=hits;
 
     return res;
 }
@@ -2052,20 +2059,20 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
   FIXME - This is a horrible name, will conflict with half the applications
 */
 int zebra_sort_2 (ZebraHandle zh, 
-	  ODR stream,
-	  const char *sort_spec,
-	  const char *output_setname,
-	  const char **input_setnames
-    ) 
+		  ODR stream,
+		  const char *sort_spec,
+		  const char *output_setname,
+		  const char **input_setnames) 
 {
     int num_input_setnames = 0;
     int sort_status = 0;
     Z_SortKeySpecList *sort_sequence = yaz_sort_spec (stream, sort_spec);
     yaz_log(LOG_API,"sort (FIXME) ");
-    if (!sort_sequence) {
+    if (!sort_sequence)
+    {
         logf(LOG_WARN,"invalid sort specs '%s'", sort_spec);
         zh->errCode = 207;
-    return (-1);
+	return -1;
     }
     
     /* we can do this, since the perl typemap code for char** will 
@@ -2079,5 +2086,5 @@ int zebra_sort_2 (ZebraHandle zh,
                    output_setname, sort_sequence, &sort_status);
     
     zebra_end_read(zh);
-    return (sort_status);
+    return sort_status;
 }
