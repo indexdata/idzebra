@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.47  1996-01-17 14:57:48  adam
+ * Revision 1.48  1996-02-01 20:53:26  adam
+ * The temporary per-record keys are compacted a little, and duplication
+ * of the per-records keys are avoided when they are saved in the record
+ * information buffer.
+ *
+ * Revision 1.47  1996/01/17  14:57:48  adam
  * Prototype changed for reader functions in extract/retrieve. File
  *  is identified by 'void *' instead of 'int.
  *
@@ -346,6 +351,8 @@ struct recKeys {
     int buf_used;
     int buf_max;
     char *buf;
+    char prevAttrSet;
+    short prevAttrUse;
 } reckeys;
 
 static void addRecordKey (const RecWord *p)
@@ -354,29 +361,46 @@ static void addRecordKey (const RecWord *p)
     char attrSet;
     short attrUse;
     size_t i;
+    int lead = 0;
 
     if (reckeys.buf_used+1024 > reckeys.buf_max)
     {
         char *b;
 
-        b = xmalloc (reckeys.buf_max += 65000);
+        b = xmalloc (reckeys.buf_max += 128000);
         if (reckeys.buf_used > 0)
             memcpy (b, reckeys.buf, reckeys.buf_used);
         xfree (reckeys.buf);
         reckeys.buf = b;
     }
     dst = reckeys.buf + reckeys.buf_used;
+
+    attrSet = p->attrSet;
+    if (reckeys.buf_used > 0 && reckeys.prevAttrSet == attrSet)
+        lead |= 1;
+    else
+        reckeys.prevAttrSet = attrSet;
+    attrUse = p->attrUse;
+    if (reckeys.buf_used > 0 && reckeys.prevAttrUse == attrUse)
+        lead |= 2;
+    else
+        reckeys.prevAttrUse = attrUse;
+
     switch (p->which)
     {
     case Word_String:
-        attrSet = p->attrSet;
-        memcpy (dst, &attrSet, sizeof(attrSet));
-        dst += sizeof(attrSet);
+        *dst++ = lead;
 
-        attrUse = p->attrUse;
-        memcpy (dst, &attrUse, sizeof(attrUse));
-        dst += sizeof(attrUse);
-        
+        if (!(lead & 1))
+        {
+            memcpy (dst, &attrSet, sizeof(attrSet));
+            dst += sizeof(attrSet);
+        }
+        if (!(lead & 2))
+        {
+            memcpy (dst, &attrUse, sizeof(attrUse));
+            dst += sizeof(attrUse);
+        }
         for (i = 0; p->u.string[i]; i++)
             *dst++ = p->u.string[i];
         *dst++ = '\0';
@@ -394,20 +418,27 @@ static void addRecordKey (const RecWord *p)
 static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys, 
                              const char *databaseName)
 {
+    char attrSet = -1;
+    short attrUse = -1;
     int off = 0;
     while (off < reckeys->buf_used)
     {
         const char *src = reckeys->buf + off;
-        char attrSet;
-        short attrUse;
         struct it_key key;
-        
-        memcpy (&attrSet, src, sizeof(attrSet));
-        src += sizeof(attrSet);
+        int lead;
+    
+        lead = *src++;
 
-        memcpy (&attrUse, src, sizeof(attrUse));
-        src += sizeof(attrUse);
-
+        if (!(lead & 1))
+        {
+            memcpy (&attrSet, src, sizeof(attrSet));
+            src += sizeof(attrSet);
+        }
+        if (!(lead & 2))
+        {
+            memcpy (&attrUse, src, sizeof(attrUse));
+            src += sizeof(attrUse);
+        }
         if (key_buf_used + 1024 > (ptr_top-ptr_i)*sizeof(char*))
             key_flush ();
         ++ptr_i;
@@ -756,6 +787,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.add = addRecordKeyAny;
 
         reckeys.buf_used = 0;
+        reckeys.prevAttrUse = -1;
+        reckeys.prevAttrSet = -1;
         extractCtrl.readf = file_read;
         r = (*recType->extract)(&extractCtrl);
   
@@ -866,10 +899,17 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     xfree (rec->info[recInfo_delKeys]);
     if (reckeys.buf_used > 0 && rGroup->flagStoreKeys == 1)
     {
+#if 1
+        rec->size[recInfo_delKeys] = reckeys.buf_used;
+        rec->info[recInfo_delKeys] = reckeys.buf;
+        reckeys.buf = NULL;
+        reckeys.buf_max = 0;
+#else
         rec->info[recInfo_delKeys] = xmalloc (reckeys.buf_used);
         rec->size[recInfo_delKeys] = reckeys.buf_used;
         memcpy (rec->info[recInfo_delKeys], reckeys.buf,
                 rec->size[recInfo_delKeys]);
+#endif
     }
     else
     {
