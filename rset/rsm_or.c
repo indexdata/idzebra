@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.c,v $
- * Revision 1.1  1996-12-20 11:07:21  adam
+ * Revision 1.2  1996-12-23 15:30:49  adam
+ * Work on truncation.
+ *
+ * Revision 1.1  1996/12/20 11:07:21  adam
  * Implemented Multi-or result set.
  *
  */
@@ -53,6 +56,7 @@ struct rset_mor_info {
     ISAM_P  *isam_positions;
 
     int     no_isam_positions;
+    int     no_save_positions;
     struct rset_mor_rfd *rfd_list;
 };
 
@@ -70,6 +74,8 @@ struct trunc_info {
 
 struct rset_mor_rfd {
     int flag;
+    int position;
+    int position_max;
     ISAMC_PP *ispt;
     struct rset_mor_rfd *next;
     struct rset_mor_info *info;
@@ -171,6 +177,8 @@ static void *r_create (const struct rset_control *sel, void *parms,
     info->key_size = r_parms->key_size;
     assert (info->key_size > 1);
     info->cmp = r_parms->cmp;
+    
+    info->no_save_positions = r_parms->no_save_positions;
 
     info->isc = r_parms->isc;
     info->no_isam_positions = r_parms->no_isam_positions;
@@ -215,6 +223,7 @@ static RSFD r_open (RSET ct, int flag)
             rfd->ispt[i] = NULL;
         }
     }
+    rfd->position = info->no_save_positions;
     r_rewind (rfd);
     return rfd;
 }
@@ -268,13 +277,32 @@ static int r_read (RSFD rfd, void *buf)
     if (!ti->heapnum)
         return 0;
     memcpy (buf, ti->heap[ti->ptr[1]], ti->keysize);
-    heap_delete (ti);
-    if (isc_pp_read (((struct rset_mor_rfd *) rfd)->ispt[n], ti->tmpbuf))
-        heap_insert (ti, ti->tmpbuf, n);
-    else
+    if (((struct rset_mor_rfd *) rfd)->position)
     {
-        isc_pp_close (((struct rset_mor_rfd *) rfd)->ispt[n]);
-        ((struct rset_mor_rfd*) rfd)->ispt[n] = NULL;
+        if (isc_pp_read (((struct rset_mor_rfd *) rfd)->ispt[n], ti->tmpbuf))
+        {
+            heap_delete (ti);
+            if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+                 ((struct rset_mor_rfd *) rfd)->position--;
+            heap_insert (ti, ti->tmpbuf, n);
+        }
+        else
+            heap_delete (ti);
+        return 1;
+    }
+    while (1)
+    {
+        if (!isc_pp_read (((struct rset_mor_rfd *) rfd)->ispt[n], ti->tmpbuf))
+        {
+            heap_delete (ti);
+            break;
+        }
+        if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+        {
+            heap_delete (ti);
+            heap_insert (ti, ti->tmpbuf, n);
+            break;
+        }
     }
     return 1;
 }
