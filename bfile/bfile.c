@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.18  1996-01-02 08:59:06  quinn
+ * Revision 1.19  1996-02-05 12:28:58  adam
+ * Removed a LOG_LOG message.
+ *
+ * Revision 1.18  1996/01/02  08:59:06  quinn
  * Changed "commit" setting to "shadow".
  *
  * Revision 1.17  1995/12/11  09:03:51  adam
@@ -105,8 +108,6 @@ BFile bf_open (const char *name, int block_size, int wflag)
         FILE *outf;
         int first_time;
 
-        logf (LOG_LOG, "cf,mf_open %s", name);
-        
         tmp->mf = mf_open (0, name, block_size, 0);
         tmp->cf = cf_open (tmp->mf, commit_area, name, block_size,
                            wflag, &first_time);
