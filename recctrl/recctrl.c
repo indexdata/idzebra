@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.11 2004-09-30 07:23:15 adam Exp $
+/* $Id: recctrl.c,v 1.12 2004-09-30 08:30:05 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -106,8 +106,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	    while ((de = readdir(dir)))
 	    {
 		size_t dlen = strlen(de->d_name);
-		if ((de->d_type == DT_REG || de->d_type == DT_LNK) 
-		    && dlen >= 5 &&
+		if (dlen >= 5 &&
 		    !memcmp(de->d_name, "mod-", 4) &&
 		    !strcmp(de->d_name + dlen - 3, ".so"))
 		{
