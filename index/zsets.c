@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.48 2004-06-07 22:09:32 adam Exp $
+/* $Id: zsets.c,v 1.49 2004-06-13 18:45:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -714,6 +714,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     ZebraRankClass rank_class;
     struct rank_control *rc;
     struct zset_sort_info *sort_info;
+    const char *rank_handler_name = res_get_def(zh->res, "rank", "rank-1");
 
     sort_info = zebraSet->sort_info;
     sort_info->num_entries = 0;
@@ -722,7 +723,12 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 
     yaz_log (LOG_LOG, "resultSetRank");
 
-    rank_class = zebraRankLookup (zh, res_get_def(zh->res, "rank", "rank-1"));
+    rank_class = zebraRankLookup (zh, rank_handler_name);
+    if (!rank_class)
+    {
+        yaz_log (LOG_WARN, "No such rank handler: %s", rank_handler_name);
+        return;
+    }
     rc = rank_class->control;
 
     if (rset_read (rset, rfd, &key, &term_index))
