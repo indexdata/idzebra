@@ -1,4 +1,4 @@
-/* $Id: t2.c,v 1.8 2004-01-22 11:27:22 adam Exp $
+/* $Id: t2.c,v 1.9 2004-06-14 21:43:44 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -38,17 +38,18 @@ int main(int argc, char **argv)
 
     nmem_init ();
 
-    zs = zebra_start("t2.cfg", 0, 0);
+    zs = zebra_start("zebra.cfg", 0, 0);
     zh = zebra_open (zs);
     zebra_select_database(zh, "Default");
+    zebra_init(zh);
     zebra_begin_trans (zh, 1);
 
     zebra_add_record (zh, myrec, strlen(myrec));
 
     zebra_search_PQF (zh, "@attr 1=4 my", "set1", &hits);
-    if (hits < 1)
+    if (hits != 1)
     {
-        yaz_log(LOG_FATAL, "At least one hit expected");
+        yaz_log(LOG_FATAL, "Expected 1 hit. Got %d", hits);
         exit_code = 1;
     }
 

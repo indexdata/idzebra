@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.5 2004-01-22 11:27:22 adam Exp $
+/* $Id: t4.c,v 1.6 2004-06-14 21:43:44 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -38,8 +38,9 @@ int main(int argc, char **argv)
 
     nmem_init ();
     
-    zs = zebra_start("t2.cfg", 0, 0);
+    zs = zebra_start("zebra.cfg", 0, 0);
     zh = zebra_open (zs);
+    zebra_init(zh);
     zebra_select_database(zh, "Default");
 
     zebra_begin_trans (zh, 1);
@@ -49,7 +50,7 @@ int main(int argc, char **argv)
     zebra_close(zh);
     zebra_stop(zs);
 
-    zs = zebra_start("t2.cfg", 0, 0);
+    zs = zebra_start("zebra.cfg", 0, 0);
     zh = zebra_open (zs);
     zebra_select_database(zh, "Default");
 
