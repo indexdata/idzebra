@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.7  1996-06-06 13:30:12  quinn
+ * Revision 1.8  1996-10-18 12:38:22  adam
+ * New internal release.
+ *
+ * Revision 1.7  1996/06/06  13:30:12  quinn
  * Work
  *
  * Revision 1.6  1996/05/16  15:31:07  quinn
@@ -32,5 +35,5 @@
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 1996-06-06 13:30:12 $"
+#define ZEBRADATE "$Date: 1996-10-18 12:38:22 $"
 #endif
