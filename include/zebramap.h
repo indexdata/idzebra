@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.1  1997-10-27 14:33:04  adam
+ * Revision 1.2  1997-10-29 12:02:47  adam
+ * Added missing prototype.
+ *
+ * Revision 1.1  1997/10/27 14:33:04  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -33,6 +36,7 @@ const char *zebra_maps_output(ZebraMaps, int reg_type, const char **from);
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 		     int *reg_type, char **search_type, int *complete_flag);
 
+int zebra_maps_is_complete (ZebraMaps zms, int structure);
 #ifdef __cplusplus
 }
 #endif
