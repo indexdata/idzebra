@@ -1,4 +1,4 @@
-/* $Id: t3.c,v 1.14 2005-01-15 19:38:35 adam Exp $
+/* $Id: t3.c,v 1.15 2005-01-22 12:20:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 			       VAL_TEXT_XML, 1, &retrievalRecord);
 #endif
 #if 1
-        zebra_deleleResultSet(zh, Z_DeleteRequest_list,
+        zebra_deleteResultSet(zh, Z_DeleteRequest_list,
                               1, &setnamep, &status);
 #endif
         odr_destroy(odr_input);

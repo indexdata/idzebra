@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.150 2005-01-21 19:07:25 adam Exp $
+/* $Id: zebraapi.c,v 1.151 2005-01-22 12:20:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -991,7 +991,7 @@ int zebra_deleteResultSet(ZebraHandle zh, int function,
     int i, status;
     ASSERTZH;
     assert(statuses);
-    yaz_log(log_level, "zebra_deleleResultSet n=%d",num_setnames);
+    yaz_log(log_level, "zebra_deleteResultSet n=%d",num_setnames);
     zh->errCode = 0;
     if (zebra_begin_read(zh))
 	return Z_DeleteStatus_systemProblemAtTarget;

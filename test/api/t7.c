@@ -1,4 +1,4 @@
-/* $Id: t7.c,v 1.6 2005-01-15 19:38:35 adam Exp $
+/* $Id: t7.c,v 1.7 2005-01-22 12:20:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
     yaz_pqf_destroy(parser);
 
     /*
-     zebra_deleleResultSet(zh, Z_DeleteRequest_list,
+     zebra_deleteResultSet(zh, Z_DeleteRequest_list,
                           1, &setnamep, &status);
     */  
     odr_destroy(odr_input);
