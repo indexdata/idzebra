@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.3  1996-11-08 14:05:33  adam
+ * Revision 1.4  1997-02-12 20:42:58  adam
+ * Changed some log messages.
+ *
+ * Revision 1.3  1996/11/08 14:05:33  adam
  * Bug fix: data1 node member u.tag.get_bytes weren't initialized.
  *
  * Revision 1.2  1996/10/29  14:02:09  adam
@@ -377,7 +380,7 @@ static int readParseToken (const char **cpp, int *len)
         cmd[i] = '\0';
         if (i == 0)
         {
-            logf (LOG_WARN, "Bad character %d %c", *cp, *cp);
+            logf (LOG_WARN, "bad character %d %c", *cp, *cp);
             cp++;
             while (*cp && *cp != ' ' && *cp != '\t' && *cp != '\n')
                 cp++;
@@ -393,7 +396,7 @@ static int readParseToken (const char **cpp, int *len)
             return REGX_BODY;
         else
         {
-            logf (LOG_WARN, "Bad command %s", cmd);
+            logf (LOG_WARN, "bad command %s", cmd);
             return 0;
         }
     }
@@ -429,14 +432,14 @@ static int actionListMk (struct lexSpec *spec, const char *s,
             {
                 xfree (*ap);
                 *ap = NULL;
-                logf (LOG_WARN, "Regular expression error. r=%d", r);
+                logf (LOG_WARN, "regular expression error. r=%d", r);
                 return -1;
             }
             dfa_mkstate ((*ap)->u.pattern.dfa);
             s++;
             break;
         case REGX_BEGIN:
-            logf (LOG_WARN, "Cannot use begin here");
+            logf (LOG_WARN, "cannot use begin here");
             continue;
         case REGX_END:
             *ap = xmalloc (sizeof(**ap));
@@ -471,12 +474,12 @@ int readOneSpec (struct lexSpec *spec, const char *s)
         r = dfa_parse (spec->trans.dfa, &s);
         if (r)
         {
-            logf (LOG_WARN, "Regular expression error. r=%d", r);
+            logf (LOG_WARN, "regular expression error. r=%d", r);
             return -1;
         }
         if (*s != '/')
         {
-            logf (LOG_WARN, "Expects / at end of pattern. got %c", *s);
+            logf (LOG_WARN, "expects / at end of pattern. got %c", *s);
             return -1;
         }
         s++;
@@ -498,11 +501,11 @@ int readFileSpec (struct lexSpec *spec)
     FILE *spec_inf;
 
     lineBuf = xmalloc (1+lineSize);
-    logf (LOG_LOG, "Reading spec %s", spec->name);
+    logf (LOG_LOG, "reading regx filter %s.flt", spec->name);
     sprintf (lineBuf, "%s.flt", spec->name);
     if (!(spec_inf = yaz_path_fopen (data1_get_tabpath(), lineBuf, "r")))
     {
-        logf (LOG_ERRNO|LOG_WARN, "Cannot read spec file %s", spec->name);
+        logf (LOG_ERRNO|LOG_WARN, "cannot read spec file %s", spec->name);
         xfree (lineBuf);
         return -1;
     }
@@ -659,7 +662,7 @@ static void tagBegin (struct lexSpec *spec,
 
     if (*d1_level == 0)
     {
-        logf (LOG_WARN, "In element begin. No record type defined");
+        logf (LOG_WARN, "in element begin. No record type defined");
         return ;
     }
     
@@ -676,7 +679,7 @@ static void tagBegin (struct lexSpec *spec,
     res->u.tag.tag[len] = '\0';
    
 #if REGX_DEBUG 
-    logf (LOG_DEBUG, "Tag begin %s (%d)", res->u.tag.tag, *d1_level);
+    logf (LOG_DEBUG, "tag begin %s (%d)", res->u.tag.tag, *d1_level);
 #endif
     if (parent->which == DATA1N_variant)
         return ;
@@ -715,7 +718,7 @@ static void tagEnd (struct lexSpec *spec,
             break;
     }
 #if REGX_DEBUG
-    logf (LOG_DEBUG, "Tag end (%d)", *d1_level);
+    logf (LOG_DEBUG, "tag end (%d)", *d1_level);
 #endif
 }
 
@@ -997,10 +1000,10 @@ static int execCode (struct lexSpec *spec,
                         tagEnd (spec, d1_stack, d1_level, NULL, 0);
                 }
                 else
-                    logf (LOG_WARN, "Missing record/element/variant");
+                    logf (LOG_WARN, "missing record/element/variant");
             }
             else
-                logf (LOG_WARN, "Missing record/element/variant");
+                logf (LOG_WARN, "missing record/element/variant");
         }
         else if (!strcmp (p, "data"))
         {
@@ -1021,12 +1024,12 @@ static int execCode (struct lexSpec *spec,
                         break;
                 }
                 else 
-                    logf (LOG_WARN, "Bad data option: %.*s",
+                    logf (LOG_WARN, "bad data option: %.*s",
                           cmd_len, cmd_str);
             }
             if (r != 2)
             {
-                logf (LOG_WARN, "Missing data item after data");
+                logf (LOG_WARN, "missing data item after data");
                 continue;
             }
             if (element_str)
@@ -1052,7 +1055,7 @@ static int execCode (struct lexSpec *spec,
                              &cmd_str, &cmd_len);
                 if (r < 2)
                 {
-                    logf (LOG_WARN, "Missing number after -offset");
+                    logf (LOG_WARN, "missing number after -offset");
                     continue;
                 }
                 p = regxStrz (cmd_str, cmd_len);
@@ -1064,12 +1067,12 @@ static int execCode (struct lexSpec *spec,
                 offset = 0;
             if (r < 2)
             {
-                logf (LOG_WARN, "Missing index after unread command");
+                logf (LOG_WARN, "missing index after unread command");
                 continue;
             }
             if (cmd_len != 1 || *cmd_str < '0' || *cmd_str > '9')
             {
-                logf (LOG_WARN, "Bad index after unread command");
+                logf (LOG_WARN, "bad index after unread command");
                 continue;
             }
             else
@@ -1084,14 +1087,14 @@ static int execCode (struct lexSpec *spec,
         }
         else
         {
-            logf (LOG_WARN, "Unknown code command: %.*s", cmd_len, cmd_str);
+            logf (LOG_WARN, "unknown code command: %.*s", cmd_len, cmd_str);
             r = execTok (spec, &s, arg_no, arg_start, arg_end,
                          &cmd_str, &cmd_len);
             continue;
         }
         if (r > 1)
         {
-            logf (LOG_WARN, "Ignoring token %.*s", cmd_len, cmd_str);
+            logf (LOG_WARN, "ignoring token %.*s", cmd_len, cmd_str);
             do {
                 r = execTok (spec, &s, arg_no, arg_start, arg_end, &cmd_str,
                              &cmd_len);
