@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.17  1997-02-12 20:39:46  adam
+ * Revision 1.18  1997-07-15 16:28:42  adam
+ * Bug fix: storeData didn't work with files with multiple records.
+ * Bug fix: fixed memory management with records; not really well
+ *  thought through.
+ *
+ * Revision 1.17  1997/02/12 20:39:46  adam
  * Implemented options -f <n> that limits the log to the first <n>
  * records.
  * Changed some log messages also.
@@ -98,11 +103,11 @@ static void rec_write_head (Records p)
 
 static void rec_tmp_expand (Records p, int size, int dst_type)
 {
-    if (p->tmp_size < size + 256 ||
+    if (p->tmp_size < size + 2048 ||
         p->tmp_size < p->head.block_size[dst_type]*2)
     {
         xfree (p->tmp_buf);
-        p->tmp_size = size + p->head.block_size[dst_type]*2 + 256;
+        p->tmp_size = size + p->head.block_size[dst_type]*2 + 2048;
         p->tmp_buf = xmalloc (p->tmp_size);
     }
 }

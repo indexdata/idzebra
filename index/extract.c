@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.70  1997-07-01 13:00:42  adam
+ * Revision 1.71  1997-07-15 16:28:41  adam
+ * Bug fix: storeData didn't work with files with multiple records.
+ * Bug fix: fixed memory management with records; not really well
+ *  thought through.
+ *
+ * Revision 1.70  1997/07/01 13:00:42  adam
  * Bug fix in routine searchRecordKey: uninitialized variables.
  *
  * Revision 1.69  1997/04/29 09:26:03  adam
@@ -1143,16 +1148,18 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     xfree (rec->info[recInfo_storeData]);
     if (rGroup->flagStoreData == 1)
     {
-        rec->size[recInfo_storeData] = fi->file_max;
-        rec->info[recInfo_storeData] = xmalloc (fi->file_max);
+        int size = fi->file_moffset - recordOffset; 
+        if (!size)
+            size = fi->file_max - recordOffset;
+        rec->size[recInfo_storeData] = size;
+        rec->info[recInfo_storeData] = xmalloc (size);
         if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
         {
             logf (LOG_ERRNO|LOG_FATAL, "seek to %ld in %s", fname,
                   (long) recordOffset);
             exit (1);
         }
-        if (read (fi->fd, rec->info[recInfo_storeData], fi->file_max)
-            < fi->file_max)
+        if (read (fi->fd, rec->info[recInfo_storeData], size) < size)
         {
             logf (LOG_ERRNO|LOG_FATAL, "read %d bytes of %s",
                   fi->file_max, fname);
