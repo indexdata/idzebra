@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.h,v $
- * Revision 1.5  1995-12-05 11:15:03  quinn
+ * Revision 1.6  1996-10-29 13:46:10  adam
+ * Removed obsolete headers alexpath, alexutil. Created zebrautl.h as
+ * a replacement.
+ *
+ * Revision 1.5  1995/12/05 11:15:03  quinn
  * Fixed FILENAME_MAX for some Sun systems, hopefully.
  *
  * Revision 1.4  1995/11/30  08:33:30  adam
@@ -25,8 +29,6 @@
 #define MFILE_H
 
 #include <stdio.h>
-
-#include <alexutil.h>
 
 #ifndef FILENAME_MAX
 #include <sys/param.h>
