@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop02.sh,v 1.9 2004-12-04 01:48:26 adam Exp $
+# $Id: stop02.sh,v 1.10 2005-01-02 23:21:31 adam Exp $
 # test start and stop of the server with -S
 
 pp=${srcdir:-"."}
@@ -13,9 +13,6 @@ test -d reg || mkdir reg
 
 #create a base to test on
 ../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records  || exit 1
-
-#kill old server (if any)
-test -f z.pid && kill -9 `cat z.pid`
 
 echo "Starting server with -S (static)..." >>$LOG
 ../../index/zebrasrv -D -p z.pid -S -c $pp/zebra1.cfg -l $LOG unix:socket

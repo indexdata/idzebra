@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: timing1.sh,v 1.9 2004-06-15 09:43:30 adam Exp $
+# $Id: timing1.sh,v 1.10 2005-01-02 23:21:31 adam Exp $
 # tests that updates are reflected immediately # in the registers.
 # Repeatedly modifies a record and counts hits.
 # Test 1: with good sleeps in every between - should pass always
@@ -14,13 +14,10 @@ echo "  init..." >>$LOG
 rm -f $pp/records/esdd000[12].grs # these should not be here, will be created later
 ../../index/zebraidx -c $pp/zebra2.cfg -l $LOG init || exit 1
 
-echo "  killing old server (if any)..." >>$LOG
-test -f zebrasrv.pid && kill -9 `cat zebrasrv.pid`
-
 echo "  starting server..." >>$LOG
-../../index/zebrasrv -S -c $pp/zebra2.cfg -l $LOG tcp:@:9901 &
+../../index/zebrasrv -D -p z.pid -S -c $pp/zebra2.cfg -l $LOG tcp:@:9901
 sleep 1
-test -f zebrasrv.pid || exit 1
+test -f z.pid || exit 1
 sleep 2
 
 echo "  update 1..." >>$LOG
@@ -131,9 +128,9 @@ echo "    checking..." >>$LOG
 grep "^Result count: 10$" log >/dev/null || exit 1
 
 echo "stopping server..." >>$LOG
-test -f zebrasrv.pid || exit 1
-kill `cat zebrasrv.pid` || exit 1
+test -f z.pid || exit 1
+kill `cat z.pid` || exit 1
 rm -f log
 rm -f $pp/records/esdd000[12].grs 
-rm -f zebrasrv.pid
+rm -f z.pid
 

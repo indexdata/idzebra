@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test3.sh,v 1.4 2004-06-15 09:43:30 adam Exp $
+# $Id: test3.sh,v 1.5 2005-01-02 23:21:31 adam Exp $
 
 # Testing searches with lots of @and operators
 # in order to test the fast-forward operation of rsets
@@ -10,9 +10,6 @@ LOG=test3.log
 DBG="-v 1647"
 
 rm -f $LOG
-echo "killing old server (if any)..." >>$LOG
-test -f zebrasrv.pid && kill `cat zebrasrv.pid`
-rm -f zebrasrv.pid
 
 echo  "initializing..." >>$LOG
 mkdir -p reg
@@ -22,11 +19,11 @@ echo "updating..." >>$LOG
 ../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update $pp/records  || exit 1
 
 echo "starting server..." >>$LOG
-../../index/zebrasrv -S -c $pp/zebra1.cfg $DBG -l $LOG tcp:@:9901 &
+../../index/zebrasrv -D -p z.pid -S -c $pp/zebra1.cfg $DBG -l $LOG tcp:@:9901
 sleep 1
 
 echo "checking it runs..." >>$LOG
-test -f zebrasrv.pid || exit 1
+test -f z.pid || exit 1
 
 echo "search A1..." >>$LOG
 ../api/testclient -c 17 localhost:9901 utah > log || exit 1
@@ -117,9 +114,9 @@ echo "search F4..." >>$LOG
 
 
 echo "stopping server..." >>$LOG
-test -f zebrasrv.pid || exit 1
-kill `cat zebrasrv.pid` || exit 1
-rm -f zebrasrv.pid
+test -f z.pid || exit 1
+kill `cat z.pid` || exit 1
+rm -f z.pid
 sleep 1
 
 echo "Test successfully completed" >>$LOG

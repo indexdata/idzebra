@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.10 2004-09-24 15:03:19 adam Exp $
+# $Id: test1.sh,v 1.11 2005-01-02 23:21:31 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -14,15 +14,12 @@ rm -f $pp/records/esdd000[12].grs # these should not be here, will be created la
 echo "updating..." >>$LOG
 ../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update $pp/records  || exit 1
 
-echo "killing old server (if any)..." >>$LOG
-test -f zebrasrv.pid && kill `cat zebrasrv.pid`
-
 echo "starting server..." >>$LOG
-../../index/zebrasrv -S -c $pp/zebra1.cfg -l $LOG tcp:@:9901 &
+../../index/zebrasrv -D -p z.pid -S -c $pp/zebra1.cfg -l $LOG tcp:@:9901
 sleep 1
 
 echo "checking it runs..." >>$LOG
-test -f zebrasrv.pid || sleep 5 || test -f zebrasrv.pid || exit 1
+test -f z.pid || sleep 5 || test -f z.pid || exit 1
 
 echo "search 1..." >>$LOG
 ../api/testclient localhost:9901 utah > log || exit 1
@@ -48,7 +45,7 @@ echo "search 5..." >>$LOG
 grep "^Result count: 18$" log >/dev/null || exit 1
 
 echo "stopping server..." >>$LOG
-test -f zebrasrv.pid || exit 1
-kill `cat zebrasrv.pid` || exit 1
-rm -f zebrasrv.pid
+test -f z.pid || exit 1
+kill `cat z.pid` || exit 1
+rm -f z.pid
 
