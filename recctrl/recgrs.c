@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.38  2000-12-05 14:44:58  adam
+ * Revision 1.39  2000-12-05 19:09:15  adam
+ * Fixed problem where indexer could crash if abstract syntax was undefined.
+ *
+ * Revision 1.38  2000/12/05 14:44:58  adam
  * Fixed minor bug that could cause zmbol to break it data were emitted
  * with not parent tags.
  *
@@ -497,6 +500,8 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
         return RECCTRL_EXTRACT_EOF;
     oe.proto = PROTO_Z3950;
     oe.oclass = CLASS_SCHEMA;
+    if (!n->u.root.absyn)
+        return RECCTRL_EXTRACT_ERROR;
     oe.value = n->u.root.absyn->reference;
     if ((oid_ent_to_oid (&oe, oidtmp)))
 	(*p->schemaAdd)(p, oidtmp);
