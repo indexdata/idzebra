@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.8  1995-09-08 14:52:42  adam
+ * Revision 1.9  1995-09-15 09:20:42  adam
+ * Bug fixes.
+ *
+ * Revision 1.8  1995/09/08  14:52:42  adam
  * Work on relevance feedback.
  *
  * Revision 1.7  1995/09/07  13:58:44  adam
@@ -69,14 +72,14 @@ const rset_control *rset_kind_temp = &control;
 struct rset_temp_info {
     int     fd;
     char   *fname;
-    size_t  key_size;
-    char   *buf_mem;
-    size_t  buf_size;
-    size_t  pos_end;
-    size_t  pos_cur;
-    size_t  pos_buf;
-    size_t  pos_border;
-    int     dirty;
+    size_t  key_size;      /* key size */
+    char   *buf_mem;       /* window buffer */
+    size_t  buf_size;      /* size of window */
+    size_t  pos_end;       /* last position in set */
+    size_t  pos_cur;       /* current position in set */
+    size_t  pos_buf;       /* position of first byte in window */
+    size_t  pos_border;    /* position of last byte+1 in window */
+    int     dirty;         /* window is dirty */
 };
 
 struct rset_temp_rfd {
@@ -133,6 +136,9 @@ static RSFD r_open (struct rset_control *ct, int wflag)
     return rfd;
 }
 
+/* r_flush:
+      flush current window to file if file is assocated with set
+ */
 static void r_flush (RSFD rfd, int mk)
 {
     struct rset_temp_info *info = ((struct rset_temp_rfd*) rfd)->info;
@@ -192,7 +198,6 @@ static void r_delete (struct rset_control *ct)
 {
     struct rset_temp_info *info = ct->buf;
 
-    r_close (ct);
     if (info->fname)
         unlink (info->fname);        
     free (info->buf_mem);
@@ -200,6 +205,10 @@ static void r_delete (struct rset_control *ct)
     free (info);
 }
 
+/* r_reread:
+      read from file to window if file is assocated with set -
+      indicated by fname
+ */
 static void r_reread (RSFD rfd)
 {
     struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
@@ -275,11 +284,13 @@ static int r_write (RSFD rfd, const void *buf)
         r_flush (rfd, 1);
         info->pos_buf = info->pos_cur;
         r_reread (rfd);
+        info->dirty = 1;
     }
     memcpy (info->buf_mem + (info->pos_cur - info->pos_buf), buf,
             info->key_size);
-    info->dirty = 1;
-    info->pos_border = info->pos_cur = nc;
+    info->pos_cur = nc;
+    if (nc > info->pos_end)
+        info->pos_border = info->pos_end = nc;
     return 1;
 }
 
