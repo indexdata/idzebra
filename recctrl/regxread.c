@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.5  1997-02-19 16:22:33  adam
+ * Revision 1.6  1997-02-24 10:41:51  adam
+ * Cleanup of code and commented out the "end element-end-record" code.
+ *
+ * Revision 1.5  1997/02/19 16:22:33  adam
  * Fixed "end element" to terminate record in outer-most level.
  *
  * Revision 1.4  1997/02/12 20:42:58  adam
@@ -129,7 +132,7 @@ struct lexRuleAction {
     int which; 
     union {
         struct {
-            struct DFA *dfa;        /* REGX_PATTERN */
+            struct DFA *dfa;    /* REGX_PATTERN */
             int body;
         } pattern;
         struct regxCode *code;  /* REGX_CODE */
@@ -161,22 +164,19 @@ struct lexSpec {
     NMEM m;
     void *f_win_fh;
     void (*f_win_ef)(void *, off_t);
-#if F_WIN_READ
+
     int f_win_start;
     int f_win_end;
     int f_win_size;
     char *f_win_buf;
     int (*f_win_rf)(void *, char *, size_t);
     off_t (*f_win_sf)(void *, off_t);
-#else
-    char *scan_buf;
-    int scan_size;
-#endif
+
     struct lexRuleAction *beginActionList;
     struct lexRuleAction *endActionList;
 };
 
-#if F_WIN_READ
+
 static char *f_win_get (struct lexSpec *spec, off_t start_pos, off_t end_pos,
                         int *size)
 {
@@ -234,7 +234,6 @@ static int f_win_advance (struct lexSpec *spec, int *pos)
     *pos = F_WIN_EOF;
     return 0;
 }
-#endif
 
 static void regxCodeDel (struct regxCode **pp)
 {
@@ -281,9 +280,7 @@ static struct lexSpec *lexSpecMk (const char *name)
     p->trans.fastRule = NULL;
     p->beginActionList = NULL;
     p->endActionList = NULL;
-#if F_WIN_READ
     p->f_win_buf = NULL;
-#endif
     return p;
 }
 
@@ -327,9 +324,7 @@ static void lexSpecDel (struct lexSpec **pp)
     }
     actionListDel (&p->beginActionList);
     actionListDel (&p->endActionList);
-#if F_WIN_READ
     xfree (p->f_win_buf);
-#endif
     xfree (p);
     *pp = NULL;
 }
@@ -585,7 +580,6 @@ static void execData (struct lexSpec *spec,
                       const char *ebuf, int elen, int formatted_text)
 {
     struct data1_node *res, *parent;
-
 #if REGX_DEBUG
     if (elen > 40)
         logf (LOG_DEBUG, "execData %.15s ... %.*s", ebuf, 15, ebuf + elen-15);
@@ -595,7 +589,7 @@ static void execData (struct lexSpec *spec,
         logf (LOG_DEBUG, "execData len=%d", elen);
 #endif
         
-        if (*d1_level <= 1)
+    if (*d1_level <= 1)
         return;
 
     parent = d1_stack[*d1_level -1];
@@ -732,9 +726,7 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
     struct DFA_state *state = dfa->states[0];
     struct DFA_tran *t;
     unsigned char c;
-#if F_WIN_READ
     unsigned char c_prev = 0;
-#endif
     int ptr = *pptr;
     int start_ptr = *pptr;
     int last_rule = 0;
@@ -743,7 +735,6 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
 
     while (1)
     {
-#if F_WIN_READ
         c = f_win_advance (spec, &ptr);
         if (ptr == F_WIN_EOF)
         {
@@ -755,19 +746,6 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
             }
             break;
         }
-#else
-        if (ptr == spec->scan_size)
-        {
-            if (last_rule)
-            {
-                *mptr = start_ptr;
-                *pptr = last_ptr;
-                return 1;
-            }
-            break;
-        }
-        c = spec->scan_buf[ptr++];
-#endif
         t = state->trans;
         i = state->tran_no;
         while (1)
@@ -781,9 +759,7 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
                 }
                 state = dfa->states[0];
                 start_ptr = ptr;
-#if F_WIN_READ
                 c_prev = c;
-#endif
                 break;
             }
             else if (c >= t->ch[0] && c <= t->ch[1])
@@ -791,7 +767,6 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
                 state = dfa->states[t->to];
                 if (state->rule_no)
                 {
-#if F_WIN_READ
                     if (c_prev == '\n')
                     {
                         last_rule = state->rule_no;
@@ -802,10 +777,6 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
                         last_rule = state->rule_nno;
                         last_ptr = ptr;
                     }
-#else
-                    last_rule = state->rule_no;
-                    last_ptr = ptr;
-#endif
                 }
                 break;
             }
@@ -840,12 +811,7 @@ static int execTok (struct lexSpec *spec, const char **src,
         {
             if (n >= arg_no)
                 n = arg_no-1;
-#if F_WIN_READ
             *tokBuf = f_win_get (spec, arg_start[n], arg_end[n], tokLen);
-#else
-            *tokBuf = spec->scan_buf + arg_start[n];
-            *tokLen = arg_end[n] - arg_start[n];
-#endif
         }
     }
     else if (*s == '\"')
@@ -993,11 +959,13 @@ static int execCode (struct lexSpec *spec,
                 {
                     r = execTok (spec, &s, arg_no, arg_start, arg_end,
                                  &cmd_str, &cmd_len);
+#if 0
                     if (*d1_level == 1)
                     {
                         *d1_level = 0;
                         returnCode = 0;
                     }
+#endif
                     if (r > 2)
                     {
                         tagEnd (spec, d1_stack, d1_level, cmd_str, cmd_len);
@@ -1167,17 +1135,9 @@ static int execAction (struct lexSpec *spec, struct lexRuleAction *ap,
             break;
         case REGX_END:
             arg_start[arg_no] = *pptr;
-#if F_WIN_READ
             arg_end[arg_no] = F_WIN_EOF;
-#else
-            arg_end[arg_no] = spec->scan_size;
-#endif
             arg_no++;
-#if F_WIN_READ
             *pptr = F_WIN_EOF;
-#else
-            *pptr = spec->scan_size;
-#endif
         }
         ap = ap->next;
     }
@@ -1202,9 +1162,7 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
     struct DFA_state *state = trans->dfa->states[0];
     struct DFA_tran *t;
     unsigned char c;
-#if F_WIN_READ
     unsigned char c_prev = '\n';
-#endif
     int i;
     int last_rule = 0;
     int last_ptr = *ptr;
@@ -1213,7 +1171,6 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
 
     while (1)
     {
-#if F_WIN_READ
         c = f_win_advance (spec, ptr);
         if (*ptr == F_WIN_EOF)
         {
@@ -1243,33 +1200,6 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
             if (*ptr == F_WIN_EOF)
                 break;
         }
-#else
-        if (*ptr == spec->scan_size)
-        {
-            if (last_rule)
-            {
-                if (skip_ptr < start_ptr)
-                {
-                    execDataP (spec, d1_stack, d1_level,
-                              spec->scan_buf + skip_ptr, start_ptr - skip_ptr,
-                              0);
-                }
-                *ptr = last_ptr;
-                execRule (spec, trans, d1_stack, d1_level, last_rule,
-                          start_ptr, ptr);
-                skip_ptr = *ptr;
-                last_rule = 0;
-            }
-            else if (skip_ptr < *ptr)
-            {
-                execDataP (spec, d1_stack, d1_level,
-                          spec->scan_buf + skip_ptr, *ptr - skip_ptr, 0);
-            }
-            if (*ptr == spec->scan_size)
-                break;
-        }
-        c = spec->scan_buf[(*ptr)++];
-#endif
         t = state->trans;
         i = state->tran_no;
         while (1)
@@ -1279,44 +1209,37 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
                 {
                     if (skip_ptr < start_ptr)
                     {
-#if F_WIN_READ
                         int size;
                         char *buf;
                         buf = f_win_get (spec, skip_ptr, start_ptr, &size);
                         execDataP (spec, d1_stack, d1_level, buf, size, 0);
-#else                        
-                        execDataP (spec, d1_stack, d1_level,
-                                  spec->scan_buf + skip_ptr,
-                                  start_ptr - skip_ptr, 0);
-#endif
                     }
                     *ptr = last_ptr;
                     if (!execRule (spec, trans, d1_stack, d1_level, last_rule,
                                    start_ptr, ptr))
                     {
                         if (spec->f_win_ef && *ptr != F_WIN_EOF)
+			{
+#if REGX_DEBUG
+			    logf (LOG_DEBUG, "regx: endf ptr=%d", *ptr);
+#endif
                             (*spec->f_win_ef)(spec->f_win_fh, *ptr);
+			}
                         return NULL;
                     }
                     skip_ptr = *ptr;
                     last_rule = 0;
                     start_ptr = *ptr;
-#if F_WIN_READ
                     if (start_ptr > 0)
                     {
                         --start_ptr;
                         c_prev = f_win_advance (spec, &start_ptr);
                     }
-#endif
                 }
                 else
                 {
-#if F_WIN_READ
                     c_prev = f_win_advance (spec, &start_ptr);
                     *ptr = start_ptr;
-#else
-                    *ptr = ++start_ptr;
-#endif
                 }
                 state = trans->dfa->states[0];
                 break;
@@ -1326,7 +1249,6 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
                 state = trans->dfa->states[t->to];
                 if (state->rule_no)
                 {
-#if F_WIN_READ
                     if (c_prev == '\n')
                     {
                         last_rule = state->rule_no;
@@ -1337,18 +1259,6 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
                         last_rule = state->rule_nno;
                         last_ptr = *ptr;
                     }
-#else
-                    if (!start_ptr || spec->scan_buf[start_ptr-1] == '\n')
-                    {
-                        last_rule = state->rule_no;
-                        last_ptr = *ptr;
-                    } 
-                    else if (state->rule_nno)
-                    {
-                        last_rule = state->rule_nno;
-                        last_ptr = *ptr;
-                    }
-#endif
                 }
                 break;
             }
@@ -1376,25 +1286,12 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset)
 }
 
 data1_node *grs_read_regx (struct grs_read_info *p)
-/*
-                             int (*rf)(void *, char *, size_t),
-                             off_t (*sf)(void *, off_t),
-                             void (*ef)(void *, off_t),
-                             void *fh,
-                             off_t offset,
-                             const char *name, NMEM m
-*/
 {
     int res;
-#if !F_WIN_READ
-    static int size;
-    int rd = 0;
-#endif
     data1_node *n;
 
 #if REGX_DEBUG
-    logf (LOG_DEBUG, "data1_read_regx, offset=%ld type=%s",(long) offset,
-          name);
+    logf (LOG_DEBUG, "grs_read_regx");
 #endif
     if (!curLexSpec || strcmp (curLexSpec->name, p->type))
     {
@@ -1408,7 +1305,6 @@ data1_node *grs_read_regx (struct grs_read_info *p)
             return NULL;
         }
     }
-#if F_WIN_READ
     if (!p->offset)
     {
         curLexSpec->f_win_start = 0;
@@ -1419,24 +1315,7 @@ data1_node *grs_read_regx (struct grs_read_info *p)
         curLexSpec->f_win_ef = p->endf;
         curLexSpec->f_win_size = 500000;
     }
-#else
-    if (!(curLexSpec->scan_buf = xmalloc (size = 4096)))
-	abort();
-    do
-    {
-	if (rd+4096 > size && !(curLexSpec->scan_buf
-                                = xrealloc (curLexSpec->scan_buf, size *= 2)))
-	    abort();
-	if ((res = (*rf)(fh, curLexSpec->scan_buf + rd, 4096)) < 0)
-            return NULL;
-	rd += res;
-    } while (res); 
-    curLexSpec->scan_size = rd;
-#endif
     curLexSpec->m = p->mem;
     n = lexRoot (curLexSpec, p->offset);
-#if !F_WIN_READ
-    xfree (curLexSpec->scan_buf);
-#endif
     return n;
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.2  1996-10-11 16:06:43  quinn
+ * Revision 1.3  1997-02-24 10:41:50  adam
+ * Cleanup of code and commented out the "end element-end-record" code.
+ *
+ * Revision 1.2  1996/10/11 16:06:43  quinn
  * Fixed arguments to nodetogr
  *
  * Revision 1.1  1996/10/11  10:57:25  adam
@@ -385,7 +388,7 @@ static int grs_extract(struct recExtractCtrl *p)
     if (dumpkeys(n, p, 0) < 0)
     {
 	data1_free_tree(n);
-	return -1;
+	return -2;
     }
     data1_free_tree(n);
     nmem_destroy(mem);
