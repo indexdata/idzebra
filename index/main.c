@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.37  1996-03-19 12:43:26  adam
+ * Revision 1.38  1996-03-26 16:01:14  adam
+ * New setting lockPath: directory of various lock files.
+ *
+ * Revision 1.37  1996/03/19  12:43:26  adam
  * Bug fix: File update traversal didn't handle trailing slashes correctly.
  * Bug fix: Update of sub directory groups wasn't handled correctly.
  *
@@ -215,6 +218,7 @@ int main (int argc, char **argv)
                         exit (1);
                     }
                     data1_tabpath = res_get (common_resource, "profilePath");
+                    bf_lockDir (res_get (common_resource, "lockPath"));
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';

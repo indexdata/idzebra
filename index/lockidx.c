@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.5  1995-12-13 08:46:09  adam
+ * Revision 1.6  1996-03-26 16:01:13  adam
+ * New setting lockPath: directory of various lock files.
+ *
+ * Revision 1.5  1995/12/13  08:46:09  adam
  * Locking uses F_WRLCK and F_RDLCK again!
  *
  * Revision 1.4  1995/12/12  16:00:57  adam
@@ -50,7 +53,7 @@ int zebraIndexWait (int commitPhase)
 
     if (server_lock_cmt == -1)
     {
-        sprintf (path, "%s%s", FNAME_COMMIT_LOCK, pathPrefix);
+        sprintf (path, "%s%s", pathPrefix, FNAME_COMMIT_LOCK);
         if ((server_lock_cmt = open (path, O_CREAT|O_RDWR|O_SYNC, 0666))
             == -1)
         {
@@ -62,7 +65,7 @@ int zebraIndexWait (int commitPhase)
         zebraUnlock (server_lock_cmt);
     if (server_lock_org == -1)
     {
-        sprintf (path, "%s%s", FNAME_ORG_LOCK, pathPrefix);
+        sprintf (path, "%s%s", pathPrefix, FNAME_ORG_LOCK);
         if ((server_lock_org = open (path, O_CREAT|O_RDWR|O_SYNC, 0666))
             == -1)
         {

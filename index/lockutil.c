@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.4  1995-12-13 08:46:10  adam
+ * Revision 1.5  1996-03-26 16:01:13  adam
+ * New setting lockPath: directory of various lock files.
+ *
+ * Revision 1.4  1995/12/13  08:46:10  adam
  * Locking uses F_WRLCK and F_RDLCK again!
  *
  * Revision 1.3  1995/12/12  16:00:57  adam
@@ -37,7 +40,7 @@ static char *lockDir = NULL;
 void zebraLockPrefix (char *pathPrefix)
 {
     if (!lockDir)
-        lockDir = res_get_def (common_resource, "lockDir", "");
+        lockDir = res_get_def (common_resource, "lockPath", "");
     assert (lockDir);
     
     strcpy (pathPrefix, lockDir);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.36  1996-03-21 14:50:09  adam
+ * Revision 1.37  1996-03-26 16:01:13  adam
+ * New setting lockPath: directory of various lock files.
+ *
+ * Revision 1.36  1996/03/21  14:50:09  adam
  * File update uses modify-time instead of change-time.
  *
  * Revision 1.35  1996/02/12  18:45:36  adam
@@ -188,6 +191,7 @@ void dir_free (struct dir_entry **e_p);
 void repositoryUpdate (struct recordGroup *rGroup);
 void repositoryAdd (struct recordGroup *rGroup);
 void repositoryDelete (struct recordGroup *rGroup);
+void repositoryShow (struct recordGroup *rGroup);
 
 void key_open (int mem);
 int key_close (void);

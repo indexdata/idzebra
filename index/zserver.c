@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.34  1996-03-20 09:36:46  adam
+ * Revision 1.35  1996-03-26 16:01:14  adam
+ * New setting lockPath: directory of various lock files.
+ *
+ * Revision 1.34  1996/03/20  09:36:46  adam
  * Function dict_lookup_grep got extra parameter, init_pos, which marks
  * from which position in pattern approximate pattern matching should occur.
  * Approximate pattern matching is used in relevance=re-2.
@@ -224,8 +227,9 @@ bend_initresult *bend_init (bend_initrequest *q)
             logf (LOG_FATAL, "Cannot open resource `%s'", sob->configname);
             exit (1);
         }
+        bf_lockDir (res_get (common_resource, "lockPath"));
+        data1_tabpath = res_get(common_resource, "profilePath");
     }
-    data1_tabpath = res_get(common_resource, "profilePath");
     server_info.sets = NULL;
     server_info.registerState = -1;  /* trigger open of registers! */
     server_info.registerChange = 0;
