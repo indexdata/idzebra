@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.120 2002-08-02 19:26:56 adam Exp $
+/* $Id: zrpn.c,v 1.121 2002-08-23 14:30:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -2136,12 +2136,28 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     int prefix_len = 0;
     int ord = zebraExplain_lookupSU (zh->reg->zei, curAttributeSet, use);
     int ord_len, i, r, max_pos;
+    int term_type = Z_Term_characterString;
+    const char *flags = "void";
 
     if (grep_info_prepare (zh, 0 /* zapt */, &grep_info, '0', stream))
-	return 0;
+    {
+	rset_null_parms parms;
+	
+	parms.rset_term = rset_term_create (term, strlen(term),
+					    flags, term_type);
+	parms.rset_term->nn = 0;
+	return rset_create (rset_kind_null, &parms);
+    }
 
     if (ord < 0)
-        return 0;
+    {
+	rset_null_parms parms;
+	
+	parms.rset_term = rset_term_create (term, strlen(term),
+					    flags, term_type);
+	parms.rset_term->nn = 0;
+	return rset_create (rset_kind_null, &parms);
+    }
     if (prefix_len)
         term_dict[prefix_len++] = '|';
     else
@@ -2166,7 +2182,7 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
              grep_info.isam_p_indx);
     rset = rset_trunc (zh, grep_info.isam_p_buf,
                        grep_info.isam_p_indx, term, strlen(term),
-                       "void", 1, Z_Term_characterString);
+                       flags, 1, term_type);
     grep_info_delete (&grep_info);
     return rset;
 }
@@ -2294,7 +2310,7 @@ static RSET rpn_search_xpath (ZebraHandle zh,
             
                 rset_end_tag = xpath_trunc(zh, stream,
                                        '0', xpath_rev, 2, curAttributeSet);
-            
+
                 parms.key_size = sizeof(struct it_key);
                 parms.cmp = key_compare_it;
                 parms.rset_l = rset_start_tag;
