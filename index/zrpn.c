@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zrpn.c,v 1.113 2002-04-12 14:40:42 adam Exp $
+ * $Id: zrpn.c,v 1.114 2002-04-12 14:55:22 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -2034,6 +2034,7 @@ static RSET rpn_search_xpath (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         parms.rset_l = rset_start_tag;
         parms.rset_m = rset;
         parms.rset_r = rset_end_tag;
+        parms.printer = key_print_it;
         yaz_log (LOG_LOG, "rpn_search_xpath 4");
         rset = rset_create (rset_kind_between, &parms);
     }

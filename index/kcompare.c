@@ -42,6 +42,13 @@ int key_compare_it (const void *p1, const void *p2)
     return 0;
 }
 
+char *key_print_it (const void *p, char *buf)
+{
+    const struct it_key *i = p;
+    sprintf (buf, "%d:%d", i->sysno, i->seqno);
+    return buf;
+}
+
 int key_compare (const void *p1, const void *p2)
 {
     struct it_key i1, i2;
@@ -290,7 +297,10 @@ int key_SU_decode (int *ch, const unsigned char *out)
 
 /* 
  * $Log: kcompare.c,v $
- * Revision 1.38  2002-04-05 08:46:26  adam
+ * Revision 1.39  2002-04-12 14:55:22  adam
+ * key_print_it
+ *
+ * Revision 1.38  2002/04/05 08:46:26  adam
  * Zebra with full functionality
  *
  * Revision 1.37  2001/11/19 23:08:30  adam

@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
- * $Id: index.h,v 1.78 2002-04-12 14:40:42 adam Exp $
+ * $Id: index.h,v 1.79 2002-04-12 14:55:22 adam Exp $
  */
 
 #ifndef INDEX_H
@@ -86,6 +86,7 @@ void repositoryShow (ZebraHandle zh);
 int key_open (ZebraHandle zh, int mem);
 int key_close (ZebraHandle zh);
 int key_compare (const void *p1, const void *p2);
+char *key_print_it (const void *p, char *buf);
 int key_get_pos (const void *p);
 int key_compare_it (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
