@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.8  1995-12-06 09:09:58  adam
+ * Revision 1.9  1995-12-06 12:24:58  adam
+ * Removed verbatim mode code.
+ *
+ * Revision 1.8  1995/12/06  09:09:58  adam
  * Work on left and right anchors.
  *
  * Revision 1.7  1995/11/27  09:23:02  adam
@@ -81,7 +84,6 @@ static struct DFA_parse *parse_info = NULL;
 static int err_code;
 static int inside_string;
 static const unsigned char *expr_ptr;
-static int expr_verbatim;
 static unsigned short *ctrl_chars;
 static struct Tnode **posar;
 
@@ -320,7 +322,6 @@ static void do_parse (struct DFA_parse *dfap, char **s,
     parse_info = dfap;
     err_code = 0;
     expr_ptr = (unsigned char *) *s;
-    expr_verbatim = 0;
 
     inside_string = 0;
     lex ();
@@ -389,30 +390,8 @@ static int nextchar (int *esc)
     *esc = 0;
     if (*expr_ptr == '\0' || isspace(*expr_ptr))
         return 0;
-    else if (*expr_ptr != '\\' || expr_verbatim)
-    {
-        if (*expr_ptr == '[' && expr_ptr[1] == ']' && !expr_verbatim)
-        {
-            int i = 2;
-            int val = 0;
-            while (expr_ptr[i] >= '0' && expr_ptr[i] <= '9')
-                val = val*10 + expr_ptr[i++]-'0';
-            if (i > 2)
-            {
-                if (expr_ptr[i] == ' ')
-                    i++;
-                expr_verbatim = val;
-                expr_ptr += i;
-            }
-        }
-        if (expr_verbatim)
-        {
-            assert (expr_verbatim > 0);
-            *esc = 1;
-            --expr_verbatim;
-        }
+    else if (*expr_ptr != '\\')
         return *expr_ptr++;
-    }
     *esc = 1;
     switch (*++expr_ptr)
     {
@@ -421,6 +400,7 @@ static int nextchar (int *esc)
     case '\0':
         return '\\';
     case '\t':
+        ++expr_ptr;
         return ' ';
     case 'n':
         ++expr_ptr;
