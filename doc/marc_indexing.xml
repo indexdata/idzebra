@@ -1,8 +1,8 @@
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
+<?xml version="1.0 encoding="iso-8859-1" standalone="no" ?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 
-    "/usr/local/share/xml/docbook/4.1.2/docbookx.dtd">
-
-<!-- $Id: marc_indexing.xml,v 1.1 2003-03-11 13:24:10 oleg Exp $ -->
+<!-- $Id: marc_indexing.xml,v 1.2 2003-08-21 10:29:18 adam Exp $ -->
 
 <book id="marc_indexing">
 <bookinfo>
