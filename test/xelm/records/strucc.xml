@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<user xmlns="http://www.technomat.hu/Classic/" id="strucc">
+	<name>Strucc Emu</name>
+        <description xml:lang="hu">Leiras</description>
+        <description xml:lang="en" test="asd">Testit</description>
+	<email>strucc@technomat.hu</email>
+	<url>http://www.technomat.hu/strucc</url>
+	<age>5</age>
+</user>
