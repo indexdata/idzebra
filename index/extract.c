@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.176 2005-03-17 08:31:28 adam Exp $
+/* $Id: extract.c,v 1.177 2005-03-17 09:48:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -945,15 +945,12 @@ int buffer_extract_record (ZebraHandle zh,
 	    }
         }
     }
-    if (! *sysno && zh->reg->keys.buf_used == 0)
+    if (zh->reg->keys.buf_used == 0)
     {
-	/* new record and it's empty .. we will skip it */
 	/* the extraction process returned no information - the record
 	   is probably empty - unless flagShowRecords is in use */
 	if (test_mode)
 	    return 1;
-	yaz_log (YLOG_WARN, "No keys generated for record.");
-	return 1;
     }
 
     if (! *sysno)
