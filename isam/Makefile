@@ -3,13 +3,17 @@ INCLUDE=-I../include
 CFLAGS=-g -Wall -pedantic
 DEFS=$(INCLUDE)
 LIB=../lib/isam.a
-PO = isam.o isutil.o rootblk.o memory.o
+PO = isam.o isutil.o rootblk.o memory.o physical.o
 CPP=cc -E
 
 all: $(LIB)
 
 isam-test: isam-test.c $(LIB)
 	$(CC) -g -o isam-test -I../include isam-test.c \
+	../lib/isam.a ../lib/bfile.a ../lib/util.a
+
+issh: issh.c $(LIB)
+	$(CC) -g -o issh -I../include issh.c \
 	../lib/isam.a ../lib/bfile.a ../lib/util.a
 
 #$(TPROG): $(TPROG).o $(LIB) 
