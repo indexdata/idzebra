@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.70 2002-09-06 10:28:02 adam Exp $
+/* $Id: zebraapi.c,v 1.71 2002-09-13 11:03:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1211,10 +1211,8 @@ void zebra_end_trans (ZebraHandle zh)
 
 void zebra_repository_update (ZebraHandle zh)
 {
-    zebra_begin_trans (zh);
     logf (LOG_LOG, "updating %s", zh->rGroup.path);
     repositoryUpdate (zh);    
-    zebra_end_trans (zh);
 }
 
 void zebra_repository_delete (ZebraHandle zh)
