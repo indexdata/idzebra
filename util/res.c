@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.11  1994-10-05 16:54:52  adam
+ * Revision 1.12  1995-01-24 16:40:32  adam
+ * Bug fix.
+ *
+ * Revision 1.11  1994/10/05  16:54:52  adam
  * Minor changes.
  *
  * Revision 1.10  1994/10/05  10:47:31  adam
@@ -175,6 +178,7 @@ Res res_open (const char *name)
         log (LOG_LOG|LOG_ERRNO, "Cannot access `%s'", name);
     r = xmalloc (sizeof(*r));
     r->init = 0;
+    r->first = r->last = NULL;
     r->name = xstrdup (name);
     return r;
 }
