@@ -1,3 +1,5 @@
+Scan support in multiple databases/registers.
+
 Configuration settings are case-insensitive and single dash (-)
 characters are ignored in comparisons.
 
