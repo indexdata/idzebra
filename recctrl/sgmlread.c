@@ -1,6 +1,6 @@
-/* $Id: sgmlread.c,v 1.15 2004-12-13 20:51:32 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
-   Index Data Aps
+/* $Id: sgmlread.c,v 1.16 2005-01-15 19:38:32 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

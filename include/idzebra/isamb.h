@@ -1,6 +1,6 @@
-/* $Id: isamb.h,v 1.2 2005-01-15 18:43:05 adam Exp $
+/* $Id: isamb.h,v 1.3 2005-01-15 19:38:24 adam Exp $
    Copyright (C) 1995-2005
-   Index Data Aps
+   Index Data ApS
 
 This file is part of the Zebra server.
 

@@ -1,6 +1,6 @@
-/* $Id: rsisamc.c,v 1.34 2005-01-11 14:03:04 adam Exp $
+/* $Id: rsisamc.c,v 1.35 2005-01-15 19:38:34 adam Exp $
    Copyright (C) 1995-2005
-   Index Data Aps
+   Index Data ApS
 
 This file is part of the Zebra server.
 

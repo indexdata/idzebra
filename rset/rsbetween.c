@@ -1,6 +1,6 @@
-/* $Id: rsbetween.c,v 1.33 2004-11-19 15:52:58 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
-   Index Data Aps
+/* $Id: rsbetween.c,v 1.34 2005-01-15 19:38:33 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

@@ -1,6 +1,6 @@
-/* $Id: zinfo.h,v 1.19 2004-09-28 10:15:03 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
-   Index Data Aps
+/* $Id: zinfo.h,v 1.20 2005-01-15 19:38:29 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

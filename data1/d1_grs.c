@@ -1,6 +1,6 @@
-/* $Id: d1_grs.c,v 1.6 2004-12-13 20:51:28 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
-   Index Data Aps
+/* $Id: d1_grs.c,v 1.7 2005-01-15 19:38:18 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

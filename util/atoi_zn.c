@@ -1,6 +1,6 @@
-/* $Id: atoi_zn.c,v 1.1 2004-08-04 08:35:27 adam Exp $
-   Copyright (C) 2003,2004
-   Index Data Aps
+/* $Id: atoi_zn.c,v 1.2 2005-01-15 19:38:40 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

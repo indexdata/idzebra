@@ -1,6 +1,6 @@
-/* $Id: insert.c,v 1.24 2004-12-08 12:23:08 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
-   Index Data Aps
+/* $Id: insert.c,v 1.25 2005-01-15 19:38:21 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

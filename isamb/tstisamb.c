@@ -1,6 +1,6 @@
-/* $Id: tstisamb.c,v 1.15 2005-01-03 09:23:25 adam Exp $
+/* $Id: tstisamb.c,v 1.16 2005-01-15 19:38:31 adam Exp $
    Copyright (C) 1995-2005
-   Index Data Aps
+   Index Data ApS
 
 This file is part of the Zebra server.
 

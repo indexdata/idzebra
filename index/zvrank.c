@@ -1,6 +1,6 @@
-/* $Id: zvrank.c,v 1.14 2004-11-19 15:52:58 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
-   Index Data Aps
+/* $Id: zvrank.c,v 1.15 2005-01-15 19:38:30 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
    This file is part of the Zebra server.
 

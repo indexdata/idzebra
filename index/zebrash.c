@@ -1,6 +1,6 @@
-/* $Id: zebrash.c,v 1.31 2004-12-13 20:51:30 adam Exp $
-   Copyright (C) 2002,2003,2004
-   Index Data Aps
+/* $Id: zebrash.c,v 1.32 2005-01-15 19:38:29 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

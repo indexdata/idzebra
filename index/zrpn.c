@@ -1,6 +1,6 @@
-/* $Id: zrpn.c,v 1.166 2005-01-15 19:22:27 adam Exp $
+/* $Id: zrpn.c,v 1.167 2005-01-15 19:38:29 adam Exp $
    Copyright (C) 1995-2005
-   Index Data Aps
+   Index Data ApS
 
 This file is part of the Zebra server.
 

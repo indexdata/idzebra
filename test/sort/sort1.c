@@ -1,6 +1,6 @@
-/* $Id: sort1.c,v 1.2 2004-12-02 17:43:04 adam Exp $
-   Copyright (C) 2003,2004
-   Index Data Aps
+/* $Id: sort1.c,v 1.3 2005-01-15 19:38:39 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

@@ -1,6 +1,6 @@
-/* $Id: t1.c,v 1.3 2004-12-14 11:23:32 adam Exp $
-   Copyright (C) 2003,2004
-   Index Data Aps
+/* $Id: t1.c,v 1.4 2005-01-15 19:38:36 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

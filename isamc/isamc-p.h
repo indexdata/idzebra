@@ -1,6 +1,6 @@
-/* $Id: isamc-p.h,v 1.13 2004-12-08 14:02:37 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
-   Index Data Aps
+/* $Id: isamc-p.h,v 1.14 2005-01-15 19:38:31 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

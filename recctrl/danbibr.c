@@ -1,6 +1,6 @@
-/* $Id: danbibr.c,v 1.8 2004-12-13 20:51:32 adam Exp $
-   Copyright (C) 2004
-   Index Data Aps
+/* $Id: danbibr.c,v 1.9 2005-01-15 19:38:32 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

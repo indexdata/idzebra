@@ -1,6 +1,6 @@
-/* $Id: dict-p.h,v 1.2 2004-12-13 20:51:29 adam Exp $
-   Copyright (C) 2004
-   Index Data Aps
+/* $Id: dict-p.h,v 1.3 2005-01-15 19:38:21 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

@@ -1,5 +1,5 @@
-dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.112 2005-01-04 23:12:34 adam Exp $
+dnl Zebra, Index Data ApS, 1995-2005
+dnl $Id: configure.in,v 1.113 2005-01-15 19:38:17 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)

@@ -1,6 +1,6 @@
-/* $Id: trav.c,v 1.46 2004-11-19 10:27:03 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
-   Index Data Aps
+/* $Id: trav.c,v 1.47 2005-01-15 19:38:27 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

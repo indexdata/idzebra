@@ -1,6 +1,6 @@
-/* $Id: d1_absyn.c,v 1.18 2005-01-15 13:01:49 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
-   Index Data Aps
+/* $Id: d1_absyn.c,v 1.19 2005-01-15 19:38:18 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

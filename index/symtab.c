@@ -1,6 +1,6 @@
-/* $Id: symtab.c,v 1.7 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
-   Index Data Aps
+/* $Id: symtab.c,v 1.8 2005-01-15 19:38:27 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

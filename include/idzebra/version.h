@@ -1,6 +1,6 @@
-/* $Id: version.h,v 1.1 2004-08-25 09:23:36 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
-   Index Data Aps
+/* $Id: version.h,v 1.2 2005-01-15 19:38:24 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define ZEBRAVER "1.4.0"
 
-#define ZEBRADATE "$Date: 2004-08-25 09:23:36 $"
+#define ZEBRADATE "$Date: 2005-01-15 19:38:24 $"
 
 #ifdef __GNUC__
 typedef long long int zint;

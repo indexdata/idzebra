@@ -1,6 +1,6 @@
-/* $Id: sortidx.c,v 1.12 2004-12-13 20:51:30 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
-   Index Data Aps
+/* $Id: sortidx.c,v 1.13 2005-01-15 19:38:27 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

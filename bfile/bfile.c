@@ -1,6 +1,6 @@
-/* $Id: bfile.c,v 1.38 2004-12-08 12:23:08 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
-   Index Data Aps
+/* $Id: bfile.c,v 1.39 2005-01-15 19:38:17 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

@@ -1,6 +1,6 @@
-/* $Id: dicttest.c,v 1.31 2004-12-08 12:23:08 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
-   Index Data Aps
+/* $Id: dicttest.c,v 1.32 2005-01-15 19:38:21 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 

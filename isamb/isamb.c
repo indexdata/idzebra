@@ -1,6 +1,6 @@
-/* $Id: isamb.c,v 1.68 2005-01-15 18:53:46 adam Exp $
+/* $Id: isamb.c,v 1.69 2005-01-15 19:38:31 adam Exp $
    Copyright (C) 1995-2005
-   Index Data Aps
+   Index Data ApS
 
 This file is part of the Zebra server.
 
@@ -1752,9 +1752,9 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
             if (isamb_pp_forward_on_leaf(pp, buf, untilbuf))
 	    {
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG, "isamb_pp_forward (f) returning (C) "
-                   "at level %d node %d ofs=%d sz=%d",
-                    pp->level, p->pos, p->offset, p->size);
+		yaz_log(YLOG_DEBUG, "isamb_pp_forward (f) returning (c) "
+			"at level %d node %d ofs=%d sz=%d",
+			pp->level, p->pos, p->offset, p->size);
 #endif
                 return 1;
             }
