@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.45 2004-06-02 12:29:03 adam Exp $
+/* $Id: kcompare.c,v 1.46 2004-06-09 13:11:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -94,6 +94,13 @@ int key_compare (const void *p1, const void *p2)
     return 0;
 }
 
+int key_get_seq(const void *p)
+{
+    struct it_key k;
+    memcpy (&k, p, sizeof(k));
+    return k.seqno;
+}
+
 int key_qsort_compare (const void *p1, const void *p2)
 {
     int r;
@@ -113,8 +120,7 @@ struct iscz1_code_info {
     struct it_key key;
 };
 
-
-static void *iscz1_code_start (int mode)
+void *iscz1_code_start (int mode)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *)
 	xmalloc (sizeof(*p));
@@ -123,14 +129,14 @@ static void *iscz1_code_start (int mode)
     return p;
 }
 
-static void iscz1_code_reset (void *vp)
+void iscz1_code_reset (void *vp)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
     p->key.sysno = 0;
     p->key.seqno = 0;
 }
 
-static void iscz1_code_stop (int mode, void *p)
+void iscz1_code_stop (int mode, void *p)
 {
     xfree (p);
 }
@@ -218,7 +224,7 @@ static CODEC_INLINE int iscz1_decode_int (unsigned char **src)
 }
 #endif
 
-static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
+void iscz1_code_item (int mode, void *vp, char **dst, char **src)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
     struct it_key tkey;

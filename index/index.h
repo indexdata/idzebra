@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.107 2004-06-01 12:32:18 heikki Exp $
+/* $Id: index.h,v 1.108 2004-06-09 13:11:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -107,7 +107,7 @@ int key_open (ZebraHandle zh, int mem);
 int key_close (ZebraHandle zh);
 int key_compare (const void *p1, const void *p2);
 char *key_print_it (const void *p, char *buf);
-int key_get_pos (const void *p);
+int key_get_seq (const void *p);
 int key_compare_it (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
@@ -482,6 +482,13 @@ int zebra_file_stat (const char *file_name, struct stat *buf,
                      int follow_links);
 
 void zebra_livcode_transform(ZebraHandle zh, Z_RPNQuery *query);
+
+void *iscz1_code_start (int mode);
+void iscz1_code_reset (void *vp);
+void iscz1_code_stop (int mode, void *p);
+void iscz1_code_item (int mode, void *vp, char **dst, char **src);
+
+
 
 YAZ_END_CDECL
 
