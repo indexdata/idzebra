@@ -1,144 +1,9 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: mfile.c,v $
- * Revision 1.43  2002-04-04 20:50:36  adam
- * Multi register works with record paths and data1 profile path
- *
- * Revision 1.42  2002/04/04 14:14:13  adam
- * Multiple registers (alpha early)
- *
- * Revision 1.41  2000/11/29 14:24:01  adam
- * Script configure uses yaz pthreads options. Added locking for
- * zebra_register_{lock,unlock}.
- *
- * Revision 1.40  2000/10/17 12:37:09  adam
- * Fixed notification of live-updates. Fixed minor problem with mf_init
- * where it didn't handle shadow area file names correctly.
- *
- * Revision 1.39  2000/05/05 13:48:03  adam
- * Fixed locking for metafiles.
- *
- * Revision 1.38  2000/03/20 19:08:35  adam
- * Added remote record import using Z39.50 extended services and Segment
- * Requests.
- *
- * Revision 1.37  2000/03/15 15:00:30  adam
- * First work on threaded version.
- *
- * Revision 1.36  1999/12/08 15:03:11  adam
- * Implemented bf_reset.
- *
- * Revision 1.35  1999/10/14 14:33:50  adam
- * Added truncation 5=106.
- *
- * Revision 1.34  1999/05/26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.33  1999/05/12 13:08:06  adam
- * First version of ISAMS.
- *
- * Revision 1.32  1999/04/28 14:53:07  adam
- * Fixed stupid bug regarding split-files.
- *
- * Revision 1.31  1999/02/18 12:49:33  adam
- * Changed file naming scheme for register files as well as record
- * store/index files.
- *
- * Revision 1.30  1999/02/02 14:50:02  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.29  1998/05/27 14:28:34  adam
- * Fixed bug in mf_write. 'Cap off' byte written at wrong offset.
- *
- * Revision 1.28  1998/05/20 10:00:35  adam
- * Fixed register spec so that colon isn't treated as size separator
- * unless followed by [0-9+-] in order to allow DOS drive specifications.
- *
- * Revision 1.27  1998/02/10 11:55:07  adam
- * Minor changes.
- *
- * Revision 1.26  1997/10/27 14:25:38  adam
- * Fixed memory leaks.
- *
- * Revision 1.25  1997/09/18 08:59:16  adam
- * Extra generic handle for the character mapping routines.
- *
- * Revision 1.24  1997/09/17 12:19:06  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.23  1997/09/09 13:37:53  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.22  1997/09/04 13:56:39  adam
- * Added O_BINARY to open calls.
- *
- * Revision 1.21  1996/10/29 13:56:18  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.20  1996/05/14 12:10:16  quinn
- * Bad areadef scan
- *
- * Revision 1.19  1996/05/01  07:16:30  quinn
- * Fixed ancient bug.
- *
- * Revision 1.18  1996/04/09  06:47:30  adam
- * Function scan_areadef doesn't use sscanf (%n fails on this Linux).
- *
- * Revision 1.17  1996/03/20 13:29:11  quinn
- * Bug-fix
- *
- * Revision 1.16  1995/12/12  15:57:57  adam
- * Implemented mf_unlink. cf_unlink uses mf_unlink.
- *
- * Revision 1.15  1995/12/08  16:21:14  adam
- * Work on commit/update.
- *
- * Revision 1.14  1995/12/05  13:12:37  quinn
- * Added <errno.h>
- *
- * Revision 1.13  1995/11/30  17:00:50  adam
- * Several bug fixes. Commit system runs now.
- *
- * Revision 1.12  1995/11/24  17:26:11  quinn
- * Mostly about making some ISAM stuff in the config file optional.
- *
- * Revision 1.11  1995/11/13  09:32:43  quinn
- * Comment work.
- *
- * Revision 1.10  1995/09/04  12:33:22  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.9  1994/11/04  14:26:39  quinn
- * bug-fix.
- *
- * Revision 1.8  1994/10/05  16:56:42  quinn
- * Minor.
- *
- * Revision 1.7  1994/09/19  14:12:37  quinn
- * dunno.
- *
- * Revision 1.6  1994/09/14  13:10:15  quinn
- * Corrected some bugs in the init-phase
- *
- * Revision 1.5  1994/09/12  08:01:51  quinn
- * Small
- *
- * Revision 1.4  1994/09/01  14:51:07  quinn
- * Allowed mf_write to write beyond eof+1.
- *
- * Revision 1.3  1994/08/24  09:37:17  quinn
- * Changed reaction to read return values.
- *
- * Revision 1.2  1994/08/23  14:50:48  quinn
- * Fixed mf_close().
- *
- * Revision 1.1  1994/08/23  14:41:33  quinn
- * First functional version.
- *
+ * $Id: mfile.c,v 1.44 2002-04-11 20:09:08 adam Exp $
  */
 
 
@@ -234,12 +99,12 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
 	case 'K': case 'k': multi = 1024; break;
 	case 'M': case 'm': multi = 1048576; break;
 	case 'G': case 'g': multi = 1073741824; break;
-            case '\0':
-	        logf (LOG_FATAL, "Missing unit: %s", ad0);
-		return -1;
-	    default:
-	        logf (LOG_FATAL, "Illegal unit: %c in %s", *ad, ad0);
-	        return -1;
+        case '\0':
+            logf (LOG_FATAL, "Missing unit: %s", ad0);
+            return -1;
+        default:
+            logf (LOG_FATAL, "Illegal unit: %c in %s", *ad, ad0);
+            return -1;
 	}
         ad++;
 	*dp = dir = (mf_dir *) xmalloc(sizeof(mf_dir));
