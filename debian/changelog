@@ -1,9 +1,15 @@
+idzebra (1.3.13-1) unstable; urgency=low
+
+  * upstream.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Fri, 26 Sep 2003 12:28:45 +0200
+
 idzebra (1.3.12-3) unstable; urgency=low
 
   * Compress man pages.
     Fix bug in regx/tcl filter(introduced in 1.3.11).
 
- -- Adam Dickmeiss <adam@indexdata>  Tue, 16 Sep 2003 12:01:00 +0200
+ -- Adam Dickmeiss <adam@indexdata.dk>  Tue, 16 Sep 2003 12:01:00 +0200
 
 idzebra (1.3.12-2) unstable; urgency=low
 
