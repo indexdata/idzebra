@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.8  1999-05-26 07:49:14  adam
+ * Revision 1.9  1999-06-25 13:47:25  adam
+ * Minor change that prevents MSVC warning.
+ *
+ * Revision 1.8  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.7  1999/05/20 12:57:18  adam
@@ -292,7 +295,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
     return res_root;
 } 
 
-static void *grs_init_marc()
+static void *grs_init_marc(void)
 {
     return 0;
 }
