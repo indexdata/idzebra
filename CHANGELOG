@@ -1,3 +1,5 @@
+Fixed bug with configure script - used bash-specific features.
+
 --- 1.0 1999/12/10
 
 The software was split in two products Zebra (for testing,

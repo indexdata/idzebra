@@ -951,10 +951,10 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-if ! test -d lib; then
+if test ! -d lib; then
 	mkdir lib
 fi
-if ! test -d bin; then
+if test ! -d bin; then
 	mkdir bin
 fi
 
@@ -1363,16 +1363,16 @@ else
 #define ZMBOL 0
 EOF
 
-	if ! test -d isamc; then
+	if test ! -d isamc; then
 		mkdir isamc
 	fi
-	if ! test -r isamc/Makefile.in; then
+	if test ! -r isamc/Makefile.in; then
 		touch isamc/Makefile.in
 	fi
-	if ! test -d isam; then
+	if test ! -d isam; then
 		mkdir isam
 	fi
-	if ! test -r isam/Makefile.in; then
+	if test ! -r isam/Makefile.in; then
 		touch isam/Makefile.in
 	fi
 fi

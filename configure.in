@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-1999
-dnl $Id: configure.in,v 1.13 1999-12-09 01:19:14 adam Exp $
+dnl $Id: configure.in,v 1.14 2000-01-27 16:26:00 adam Exp $
 dnl See the file LICENSE.2 for details.
 dnl
 AC_INIT(include/zebraver.h)
@@ -21,10 +21,10 @@ AC_PROG_INSTALL
 AC_PROG_RANLIB
 dnl
 dnl ------ Create sub directory lib/bin
-if ! test -d lib; then
+if test ! -d lib; then
 	mkdir lib
 fi
-if ! test -d bin; then
+if test ! -d bin; then
 	mkdir bin
 fi
 dnl ------ Build root
@@ -124,16 +124,16 @@ else
  ../lib/recctrl.a ../lib/bfile.a ../lib/dfa.a\
  ../lib/zebrautl.a"
 	AC_DEFINE(ZMBOL,0)
-	if ! test -d isamc; then
+	if test ! -d isamc; then
 		mkdir isamc
 	fi
-	if ! test -r isamc/Makefile.in; then
+	if test ! -r isamc/Makefile.in; then
 		touch isamc/Makefile.in
 	fi
-	if ! test -d isam; then
+	if test ! -d isam; then
 		mkdir isam
 	fi
-	if ! test -r isam/Makefile.in; then
+	if test ! -r isam/Makefile.in; then
 		touch isam/Makefile.in
 	fi
 fi
