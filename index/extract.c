@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.129 2002-10-24 21:54:29 adam Exp $
+/* $Id: extract.c,v 1.130 2002-11-07 09:07:07 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -944,6 +944,8 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
     zh->reg->keys.prevAttrSet = -1;
     zh->reg->keys.prevSeqNo = 0;
     zh->reg->sortKeys.buf_used = 0;
+    zh->reg->sortKeys.buf_max = 0;
+    zh->reg->sortKeys.buf = 0;
 
     extractCtrl.subType = subType;
     extractCtrl.init = extract_init;
@@ -1014,11 +1016,14 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
         }
 	extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
         extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
+
+        zh->records_inserted++;
     }
     else
     {
         /* record already exists */
         struct recKeys delkeys;
+        struct sortKeys sortKeys;
 
         rec = rec_get (zh->reg->records, *sysno);
         assert (rec);
@@ -1030,12 +1035,18 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
 	{
 	    logf (LOG_LOG, "skipped %s %s %ld", recordType,
 		  fname, (long) recordOffset);
+	    extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
 	    rec_rm (&rec);
+            logRecord(zh);
 	    return 1;
 	}
         delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
-	extract_flushSortKeys (zh, *sysno, 0, &zh->reg->sortKeys);
+
+        sortKeys.buf_used = rec->size[recInfo_sortKeys];
+        sortKeys.buf = rec->info[recInfo_sortKeys];
+
+	extract_flushSortKeys (zh, *sysno, 0, &sortKeys);
         extract_flushRecordKeys (zh, *sysno, 0, &delkeys);
         if (delete_flag)
         {
@@ -1050,6 +1061,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
             {
 		logf (LOG_LOG, "delete %s %s %ld", recordType,
 		      fname, (long) recordOffset);
+                zh->records_deleted++;
 #if 0
                 if (matchStr)
                     dict_delete (matchDict, matchStr);
@@ -1057,6 +1069,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
                 rec_del (zh->reg->records, &rec);
             }
 	    rec_rm (&rec);
+            logRecord(zh);
             return 1;
         }
         else
@@ -1074,6 +1087,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
 		      fname, (long) recordOffset);
                 extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
                 extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
+                zh->records_updated++;
             }
         }
     }
@@ -1101,6 +1115,14 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
         rec->info[recInfo_delKeys] = NULL;
         rec->size[recInfo_delKeys] = 0;
     }
+
+    /* update sort keys */
+    xfree (rec->info[recInfo_sortKeys]);
+
+    rec->size[recInfo_sortKeys] = zh->reg->sortKeys.buf_used;
+    rec->info[recInfo_sortKeys] = zh->reg->sortKeys.buf;
+    zh->reg->sortKeys.buf = NULL;
+    zh->reg->sortKeys.buf_max = 0;
 
     /* save file size of original record */
     zebraExplain_recordBytesIncrement (zh->reg->zei,
@@ -1160,6 +1182,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
     /* commit this record */
     rec_put (zh->reg->records, &rec);
 
+    logRecord(zh);
     return 0;
 }
 
