@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.34 2004-06-02 06:51:06 adam Exp $
+/* $Id: isamb.c,v 1.35 2004-06-02 07:53:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1141,6 +1141,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
                             p->pos, p->offset);
 #endif
             assert(!p->leaf);
+	    assert(p->offset <= p->size);
             /* skip the child we have handled */
             if (p->offset != p->size)
             { 
@@ -1223,40 +1224,46 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
         } /* not on a leaf */
         else
         { /* on a leaf */
-	    assert (p->offset < p->size);
-            src = p->bytes + p->offset;
-            dst=buf;
-            (*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
-                                            &dst, &src);
-            p->offset = src - (char*) p->bytes;
-            if (untilbuf)
-                cmp=(*pp->isamb->method->compare_item)(untilbuf,buf);
-            else
-                cmp=-2;
+	    if (p->offset == p->size) { 
+		descending = 0;
+	    }
+	    else
+	    {
+		assert (p->offset < p->size);
+		src = p->bytes + p->offset;
+		dst=buf;
+		(*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
+						&dst, &src);
+		p->offset = src - (char*) p->bytes;
+		if (untilbuf)
+		    cmp=(*pp->isamb->method->compare_item)(untilbuf,buf);
+		else
+		    cmp=-2;
 #if ISAMB_DEBUG
-            logf(LOG_DEBUG,"isamb_pp_forward on a leaf. cmp=%d", 
-                              cmp);
-	    (*pp->isamb->method->log_item)(LOG_DEBUG, buf, "");
+		logf(LOG_DEBUG,"isamb_pp_forward on a leaf. cmp=%d", 
+		     cmp);
+		(*pp->isamb->method->log_item)(LOG_DEBUG, buf, "");
 #endif
-            if (cmp <2)
-            {
+		if (cmp <2)
+		{
 #if ISAMB_DEBUG
-                if (untilbuf)
-		{
-		    (*pp->isamb->method->log_item)(
-			LOG_DEBUG, buf,  "isamb_pp_forward returning 1");
-		}
-                else
-		{
-		    (*pp->isamb->method->log_item)(
-			LOG_DEBUG, buf, "isamb_pp_read returning 1 (fwd)");
-		}
+		    if (untilbuf)
+		    {
+			(*pp->isamb->method->log_item)(
+			    LOG_DEBUG, buf,  "isamb_pp_forward returning 1");
+		    }
+		    else
+		    {
+			(*pp->isamb->method->log_item)(
+			    LOG_DEBUG, buf, "isamb_pp_read returning 1 (fwd)");
+		    }
 #endif
-                pp->returned_numbers++;
-                return 1;
-            }
-            else
-                pp->skipped_numbers++;
+		    pp->returned_numbers++;
+		    return 1;
+		}
+		else
+		    pp->skipped_numbers++;
+	    }
         } /* leaf */
     } /* main loop */
 }
