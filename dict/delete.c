@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: delete.c,v $
- * Revision 1.3  1995-12-07 11:48:55  adam
+ * Revision 1.4  1996-02-02 13:43:50  adam
+ * The public functions simply use char instead of Dict_char to represent
+ * search strings. Dict_char is used internally only.
+ *
+ * Revision 1.3  1995/12/07  11:48:55  adam
  * Insert operation obeys DICT_type = 1 (slack in page).
  * Function dict_open exists if page size or magic aren't right.
  *
@@ -108,9 +112,9 @@ static int dict_del (Dict dict, const Dict_char *str)
     return 0;
 }
 
-int dict_delete (Dict dict, const Dict_char *p)
+int dict_delete (Dict dict, const char *p)
 {
     if (dict->head.last == 1)
         return 0;
-    return dict_del (dict, p);
+    return dict_del (dict, (const Dict_char*) p);
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.8  1995-12-07 11:48:56  adam
+ * Revision 1.9  1996-02-02 13:43:51  adam
+ * The public functions simply use char instead of Dict_char to represent
+ * search strings. Dict_char is used internally only.
+ *
+ * Revision 1.8  1995/12/07  11:48:56  adam
  * Insert operation obeys DICT_type = 1 (slack in page).
  * Function dict_open exists if page size or magic aren't right.
  *
@@ -104,10 +108,10 @@ Dict dict_open (const char *name, int cache, int rw)
 
 int dict_strcmp (const Dict_char *s1, const Dict_char *s2)
 {
-    return strcmp (s1, s2);
+    return strcmp ((const char *) s1, (const char *) s2);
 }
 
 int dict_strlen (const Dict_char *s)
 {
-    return strlen(s);
+    return strlen((const char *) s);
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.18  1996-02-01 20:39:52  adam
+ * Revision 1.19  1996-02-02 13:43:50  adam
+ * The public functions simply use char instead of Dict_char to represent
+ * search strings. Dict_char is used internally only.
+ *
+ * Revision 1.18  1996/02/01  20:39:52  adam
  * Bug fix: insert didn't work on 8-bit characters due to unsigned char
  * compares in dict_strcmp (strcmp) and signed Dict_char. Dict_char is
  * unsigned now.
@@ -79,7 +83,7 @@ static Dict dict;
 
 static int look_hits;
 
-static int grep_handle (Dict_char *name, const char *info, void *client)
+static int grep_handle (char *name, const char *info, void *client)
 {
     look_hits++;
     printf ("%s\n", name);

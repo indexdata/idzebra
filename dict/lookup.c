@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookup.c,v $
- * Revision 1.6  1995-12-11 09:04:50  adam
+ * Revision 1.7  1996-02-02 13:43:51  adam
+ * The public functions simply use char instead of Dict_char to represent
+ * search strings. Dict_char is used internally only.
+ *
+ * Revision 1.6  1995/12/11  09:04:50  adam
  * Bug fix: the lookup/scan/lookgrep didn't handle empty dictionary.
  *
  * Revision 1.5  1995/09/04  09:09:15  adam
@@ -55,7 +59,8 @@ static char *dict_look (Dict dict, const Dict_char *str)
             info = (char*)p + indxp[-mid];
             cmp = dict_strcmp((Dict_char*) info, str);
             if (!cmp)
-                return info+(dict_strlen (info)+1)*sizeof(Dict_char);
+                return info+(dict_strlen ((Dict_char*) info)+1)
+                    *sizeof(Dict_char);
         }
         else
         {
@@ -100,11 +105,11 @@ static char *dict_look (Dict dict, const Dict_char *str)
     return NULL;
 }
 
-char *dict_lookup (Dict dict, const Dict_char *p)
+char *dict_lookup (Dict dict, const char *p)
 {
     if (dict->head.last <= 1)
         return NULL;
-    return dict_look (dict, p);
+    return dict_look (dict, (const Dict_char *) p);
 }
 
 

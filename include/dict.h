@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.18  1996-02-01 20:41:06  adam
+ * Revision 1.19  1996-02-02 13:43:54  adam
+ * The public functions simply use char instead of Dict_char to represent
+ * search strings. Dict_char is used internally only.
+ *
+ * Revision 1.18  1996/02/01  20:41:06  adam
  * Bug fix: insert didn't work on 8-bit characters due to unsigned char
  * compares in dict_strcmp (strcmp) and signed Dict_char. Dict_char is
  * unsigned now.
@@ -127,21 +131,20 @@ int        dict_bf_close (Dict_BFile dbf);
      
 Dict       dict_open (const char *name, int cache, int rw);
 int        dict_close (Dict dict);
-int        dict_insert (Dict dict, const Dict_char *p, int userlen,
-                        void *userinfo);
-int        dict_delete (Dict dict, const Dict_char *p);
-char      *dict_lookup (Dict dict, const Dict_char *p);
-int        dict_lookup_ec (Dict dict, Dict_char *p, int range,
-                           int (*f)(Dict_char *name));
-int        dict_lookup_grep (Dict dict, Dict_char *p, int range, void *client,
+int        dict_insert (Dict dict, const char *p, int userlen, void *userinfo);
+int        dict_delete (Dict dict, const char *p);
+char      *dict_lookup (Dict dict, const char *p);
+int        dict_lookup_ec (Dict dict, char *p, int range,
+                           int (*f)(char *name));
+int        dict_lookup_grep (Dict dict, const char *p, int range, void *client,
                              int *max_pos,
-                             int (*f)(Dict_char *name, const char *info,
+                             int (*f)(char *name, const char *info,
                                       void *client));
 int        dict_strcmp (const Dict_char *s1, const Dict_char *s2);
 int        dict_strlen (const Dict_char *s);
-int	   dict_scan (Dict dict, Dict_char *str, 
+int	   dict_scan (Dict dict, char *str, 
 		      int *before, int *after, void *client,
-		      int (*f)(Dict_char *name, const char *info, int pos,
+		      int (*f)(char *name, const char *info, int pos,
                                void *client));
 
 #define DICT_EOS        0

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.13  1996-01-08 09:09:30  adam
+ * Revision 1.14  1996-02-02 13:43:51  adam
+ * The public functions simply use char instead of Dict_char to represent
+ * search strings. Dict_char is used internally only.
+ *
+ * Revision 1.13  1996/01/08  09:09:30  adam
  * Function dfa_parse got 'const' string argument.
  *
  * Revision 1.12  1995/12/11  09:04:48  adam
@@ -257,7 +261,7 @@ static INLINE int move (MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
 
 static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                       MatchWord *Rj, int pos, void *client,
-                      int (*userfunc)(Dict_char *, const char *, void *),
+                      int (*userfunc)(char *, const char *, void *),
                       Dict_char *prefix, struct DFA *dfa,
                       int *max_pos)
 {
@@ -295,8 +299,8 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                 if (ch == DICT_EOS)
                 {
                     if (was_match)
-                        if ((*userfunc)(prefix, info+(j+1)*sizeof(Dict_char),
-                                        client))
+                        if ((*userfunc)((char*) prefix,
+                                        info+(j+1)*sizeof(Dict_char), client))
                             return 1;
                     break;
                 }
@@ -344,7 +348,8 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                         if (Rj1[mc->range*mc->n + d] & mc->match_mask[d])
                         {
                             prefix[pos+1] = DICT_EOS;
-                            if ((*userfunc)(prefix, info+sizeof(Dict_ptr)+
+                            if ((*userfunc)((char*) prefix,
+                                            info+sizeof(Dict_ptr)+
                                             sizeof(Dict_char), client))
                                 return 1;
                             break;
@@ -367,9 +372,9 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
     return 0;
 }
 
-int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
+int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
                       int *max_pos,
-                      int (*userfunc)(Dict_char *name, const char *info,
+                      int (*userfunc)(char *name, const char *info,
                                       void *client))
 {
     MatchWord *Rj;

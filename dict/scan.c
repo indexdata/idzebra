@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.7  1995-12-11 09:04:50  adam
+ * Revision 1.8  1996-02-02 13:43:52  adam
+ * The public functions simply use char instead of Dict_char to represent
+ * search strings. Dict_char is used internally only.
+ *
+ * Revision 1.7  1995/12/11  09:04:50  adam
  * Bug fix: the lookup/scan/lookgrep didn't handle empty dictionary.
  *
  * Revision 1.6  1995/11/20  11:58:04  adam
@@ -35,7 +39,7 @@
 
 int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
 		    int start, int *count, void *client,
-                    int (*userfunc)(Dict_char *, const char *, int, void *),
+                    int (*userfunc)(char *, const char *, int, void *),
 		    int dir)
 {
     int lo, hi, j;
@@ -63,8 +67,8 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             for (j = 0; info[j] != DICT_EOS; j++)
 		str[pos+j] = info[j];
             str[pos+j] = DICT_EOS;
-            if ((*userfunc)(str, info+(j+1)*sizeof(Dict_char), *count * dir,
-                            client))
+            if ((*userfunc)((char*) str, info+(j+1)*sizeof(Dict_char),
+                            *count * dir, client))
                 return 1;
             --(*count);
         }
@@ -85,7 +89,8 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 	    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
             {
                  str[pos+1] = DICT_EOS;
-                 if ((*userfunc)(str, info+sizeof(Dict_ptr)+sizeof(Dict_char),
+                 if ((*userfunc)((char*) str,
+                                 info+sizeof(Dict_ptr)+sizeof(Dict_char),
                                  *count * dir, client))
                      return 1;
                  --(*count);
@@ -101,7 +106,7 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
     
 int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
 		 int *before, int *after, void *client,
-                 int (*userfunc)(Dict_char *, const char *, int, void *))
+                 int (*userfunc)(char *, const char *, int, void *))
 {
     int cmp = 0, mid, lo, hi;
     void *p;
@@ -128,8 +133,9 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             {
                 if (*after)
                 {
-                    (*userfunc)(str, info+
-                                (dict_strlen(info)+1)*sizeof(Dict_char), 
+                    (*userfunc)((char *) str, info+
+                                (dict_strlen((Dict_char*) info)+1)
+                                *sizeof(Dict_char), 
                                 *after, client);
                     --(*after);
                 }
@@ -157,7 +163,7 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                     {
                         if (*after)
                         {
-                            (*userfunc)(str, 
+                            (*userfunc)((char*) str,
                                         info+sizeof(Dict_ptr)+
                                         sizeof(Dict_char),
                                         *after, client);
@@ -194,13 +200,12 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
     return 0;
 }
 
-int dict_scan (Dict dict, Dict_char *str, int *before, int *after,
-               void *client,
-               int (*f)(Dict_char *name, const char *info, int pos,
-                        void *client))
+int dict_scan (Dict dict, char *str, int *before, int *after, void *client,
+               int (*f)(char *name, const char *info, int pos, void *client))
 {
     if (dict->head.last <= 1)
         return 0;
-    return dict_scan_r (dict, 1, 0, str, before, after, client, f);
+    return dict_scan_r (dict, 1, 0, (Dict_char *) str, before, after, client,
+                        f);
 }
 

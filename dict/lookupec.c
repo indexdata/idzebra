@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookupec.c,v $
- * Revision 1.5  1995-01-24 16:01:03  adam
+ * Revision 1.6  1996-02-02 13:43:51  adam
+ * The public functions simply use char instead of Dict_char to represent
+ * search strings. Dict_char is used internally only.
+ *
+ * Revision 1.5  1995/01/24  16:01:03  adam
  * Added -ansi to CFLAGS.
  * Use new API of dfa module.
  *
@@ -41,8 +45,8 @@ typedef struct {
 #define SH(x) (((x)<<1)+1)
 
 int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
-                  int pos, int (*userfunc)(Dict_char *),
-                  int range, Dict_char *prefix)
+                  int pos, int (*userfunc)(char *), int range,
+                  Dict_char *prefix)
 {
     int lo, hi;
     void *p;
@@ -73,7 +77,7 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
                 if (ch == DICT_EOS)
                 {
                     if (ri[range] & match_mask)
-                        (*userfunc)(prefix);
+                        (*userfunc)((char*) prefix);
                     break;
                 }
                 if (j+pos >= mi->m+range)
@@ -115,7 +119,7 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
                     (ri[range] & match_mask))
                 {
                     prefix[pos+1] = DICT_EOS;
-                    (*userfunc)(prefix);
+                    (*userfunc)((char*) prefix);
                 }
                 memcpy (&subptr, info, sizeof(Dict_ptr));
                 if (subptr)
@@ -149,8 +153,8 @@ static MatchInfo *prepare_match (Dict_char *pattern)
     return mi;
 }
 
-int dict_lookup_ec (Dict dict, Dict_char *pattern, int range,
-                    int (*userfunc)(Dict_char *name))
+int dict_lookup_ec (Dict dict, char *pattern, int range,
+                    int (*userfunc)(char *name))
 {
     MatchInfo *mi;
     MatchWord *ri;
@@ -160,9 +164,10 @@ int dict_lookup_ec (Dict dict, Dict_char *pattern, int range,
     if (dict->head.last == 1)
         return 0;
     
-    mi = prepare_match (pattern);
+    mi = prepare_match ((Dict_char*) pattern);
 
-    ri = xmalloc ((dict_strlen(pattern)+range+2)*(range+1)*sizeof(*ri));
+    ri = xmalloc ((dict_strlen((Dict_char*) pattern)+range+2)
+                  * (range+1)*sizeof(*ri));
     for (i=0; i<=range; i++)
         ri[i] = (2<<i)-1;
     

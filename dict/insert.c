@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.15  1996-02-01 20:39:59  adam
+ * Revision 1.16  1996-02-02 13:43:50  adam
+ * The public functions simply use char instead of Dict_char to represent
+ * search strings. Dict_char is used internally only.
+ *
+ * Revision 1.15  1996/02/01  20:39:59  adam
  * Bug fix: insert didn't work on 8-bit characters due to unsigned char
  * compares in dict_strcmp (strcmp) and signed Dict_char. Dict_char is
  * unsigned now.
@@ -159,7 +163,7 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
         /* entry start */
         memcpy (&dc, info, sizeof(dc));
         assert (dc == best_char);
-        slen = dict_strlen(info);
+        slen = dict_strlen((Dict_char*) info);
 
         assert (slen > 0);
         if (slen == 1)
@@ -170,7 +174,8 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
         else
         {
             info1 = info+(1+slen)*sizeof(Dict_char);  /* info start */
-            dict_ins (dict, info+sizeof(Dict_char), subptr, *info1, info1+1);
+            dict_ins (dict, (Dict_char*) (info+sizeof(Dict_char)),
+                      subptr, *info1, info1+1);
             dict_bf_readp (dict->dbf, ptr, &p);
         }
     }
@@ -220,7 +225,7 @@ static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
                 continue;
 	    }
             *--indxp2 = info2 - np;
-            slen = (dict_strlen(info1)+1)*sizeof(Dict_char);
+            slen = (dict_strlen((Dict_char*) info1)+1)*sizeof(Dict_char);
             memcpy (info2, info1, slen);
 	    info1 += slen;
             info2 += slen;
@@ -300,7 +305,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
             cmp = dict_strcmp((Dict_char*) info, str);
             if (!cmp)
             {
-                info += (dict_strlen(info)+1)*sizeof(Dict_char);
+                info += (dict_strlen((Dict_char*) info)+1)*sizeof(Dict_char);
                 /* consider change of userinfo length... */
                 if (*info == userlen)
                 {
@@ -468,12 +473,12 @@ static int dict_ins (Dict dict, const Dict_char *str,
     return 1;
 }
 
-int dict_insert (Dict dict, const Dict_char *str, int userlen, void *userinfo)
+int dict_insert (Dict dict, const char *str, int userlen, void *userinfo)
 {
     assert (dict->head.last > 0);
     if (dict->head.last == 1)
-        return dict_ins (dict, str, 0, userlen, userinfo);
+        return dict_ins (dict, (const Dict_char *) str, 0, userlen, userinfo);
     else
-        return dict_ins (dict, str, 1, userlen, userinfo);
+        return dict_ins (dict, (const Dict_char *) str, 1, userlen, userinfo);
 }
 
