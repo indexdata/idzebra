@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.46 2005-01-16 23:14:56 adam Exp $
+/* $Id: rset.h,v 1.47 2005-01-17 01:21:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -142,6 +142,7 @@ typedef struct rset
     char my_nmem; /* Should the nmem be destroyed with the rset?  */
                   /* 1 if created with it, 0 if passed from above */
     RSFD free_list; /* all rfd's allocated but not currently in use */
+    RSFD use_list;  /* all rfd's in use */
     int scope;    /* On what level do we count hits and compare them? */
     TERMID term; /* the term thing for ranking etc */
 } rset;
@@ -164,6 +165,7 @@ typedef struct rset
 
 RSFD rfd_create_base(RSET rs);
 void rfd_delete_base(RSFD rfd);
+int rfd_is_last(RSFD rfd);
 
 RSET rset_create_base(const struct rset_control *sel, 
                       NMEM nmem,

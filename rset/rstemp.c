@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.59 2005-01-17 00:01:51 adam Exp $
+/* $Id: rstemp.c,v 1.60 2005-01-17 01:21:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -35,14 +35,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include <rset.h>
 
-static RSFD r_open (RSET ct, int flag);
-static void r_close (RSFD rfd);
-static void r_delete (RSET ct);
-static int r_read (RSFD rfd, void *buf, TERMID *term);
-static int r_write (RSFD rfd, const void *buf);
-static void r_pos (RSFD rfd, double *current, double  *total);
-static void r_flush (RSFD rfd, int mk);
-static void r_reread (RSFD rfd);
+static RSFD r_open(RSET ct, int flag);
+static void r_close(RSFD rfd);
+static void r_delete(RSET ct);
+static int r_read(RSFD rfd, void *buf, TERMID *term);
+static int r_write(RSFD rfd, const void *buf);
+static void r_pos(RSFD rfd, double *current, double  *total);
+static void r_flush(RSFD rfd, int mk);
+static void r_reread(RSFD rfd);
 
 
 static const struct rset_control control = 
@@ -80,25 +80,24 @@ struct rset_temp_rfd {
     zint cur; /* number of the current hit */
 };
 
-static int log_level=0;
-static int log_level_initialized=0;
+static int log_level = 0;
+static int log_level_initialized = 0;
 
 RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
-                    int scope, 
-                    const char *temp_path, TERMID term)
+                    int scope, const char *temp_path, TERMID term)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,term);
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,term);
     struct rset_temp_info *info;
     if (!log_level_initialized)
     {
-        log_level=yaz_log_module_level("rstemp");
-        log_level_initialized=1;
+        log_level = yaz_log_module_level("rstemp");
+        log_level_initialized = 1;
     }
     info = (struct rset_temp_info *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->fd = -1;
     info->fname = NULL;
     info->buf_size = 4096;
-    info->buf_mem = (char *) nmem_malloc (rnew->nmem, info->buf_size);
+    info->buf_mem = (char *) nmem_malloc(rnew->nmem, info->buf_size);
     info->pos_end = 0;
     info->pos_buf = 0;
     info->dirty = 0;
@@ -108,24 +107,23 @@ RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
         info->temp_path = NULL;
     else
         info->temp_path = nmem_strdup(rnew->nmem, temp_path);
-    rnew->priv=info; 
+    rnew->priv = info; 
     return rnew;
 } /* rstemp_create */
 
-static void r_delete (RSET ct)
+static void r_delete(RSET ct)
 {
     struct rset_temp_info *info = (struct rset_temp_info*) ct->priv;
 
-    yaz_log (log_level, "r_delete: set size %ld", (long) info->pos_end);
+    yaz_log(log_level, "r_delete: set size %ld", (long) info->pos_end);
     if (info->fname)
     {
-        yaz_log (log_level, "r_delete: unlink %s", info->fname);
-        unlink (info->fname);
+        yaz_log(log_level, "r_delete: unlink %s", info->fname);
+        unlink(info->fname);
     }
 }
 
-
-static RSFD r_open (RSET ct, int flag)
+static RSFD r_open(RSET ct, int flag)
 {
     struct rset_temp_info *info = (struct rset_temp_info *) ct->priv;
     RSFD rfd;
@@ -134,26 +132,28 @@ static RSFD r_open (RSET ct, int flag)
     if (info->fd == -1 && info->fname)
     {
         if (flag & RSETF_WRITE)
-            info->fd = open (info->fname, O_BINARY|O_RDWR|O_CREAT, 0666);
+            info->fd = open(info->fname, O_BINARY|O_RDWR|O_CREAT, 0666);
         else
-            info->fd = open (info->fname, O_BINARY|O_RDONLY);
+            info->fd = open(info->fname, O_BINARY|O_RDONLY);
         if (info->fd == -1)
         {
-            yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: open failed %s", info->fname);
-            exit (1);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: open failed %s", info->fname);
+            exit(1);
         }
     }
     rfd = rfd_create_base(ct);
-    if (!rfd->priv){
-        prfd= (struct rset_temp_rfd *) nmem_malloc(ct->nmem, sizeof(*prfd));
-        rfd->priv=(void *)prfd;
-        prfd->buf = nmem_malloc (ct->nmem,ct->keycontrol->key_size);
-    } else
+    if (!rfd->priv)
+    {
+        prfd = (struct rset_temp_rfd *) nmem_malloc(ct->nmem, sizeof(*prfd));
+        rfd->priv = (void *)prfd;
+        prfd->buf = nmem_malloc(ct->nmem,ct->keycontrol->key_size);
+    } 
+    else
         prfd= rfd->priv;
-    r_flush (rfd, 0);
+    r_flush(rfd, 0);
     prfd->pos_cur = 0;
     info->pos_buf = 0;
-    r_reread (rfd);
+    r_reread(rfd);
     prfd->cur = 0;
     return rfd;
 }
@@ -161,7 +161,7 @@ static RSFD r_open (RSET ct, int flag)
 /* r_flush:
       flush current window to file if file is assocated with set
  */
-static void r_flush (RSFD rfd, int mk)
+static void r_flush(RSFD rfd, int mk)
 {
     /* struct rset_temp_info *info = ((struct rset_temp_rfd*) rfd)->info; */
     struct rset_temp_info *info = rfd->rset->priv;
@@ -180,11 +180,11 @@ static void r_flush (RSFD rfd, int mk)
         if (info->fd == -1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: mkstemp %s", template);
-            exit (1);
+            exit(1);
         }
 	info->fname = nmem_strdup(rfd->rset->nmem, template);
 #else
-        char *s = (char*) tempnam (info->temp_path, "zrs");
+        char *s = (char*) tempnam(info->temp_path, "zrs");
         info->fname= nmem_strdup(rfd->rset->nmem, s);
 
         yaz_log(log_level, "creating tempfile %s", info->fname);
@@ -192,7 +192,7 @@ static void r_flush (RSFD rfd, int mk)
         if (info->fd == -1)
         {
             yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: open %s", info->fname);
-            exit (1);
+            exit(1);
         }
 #endif
     }
@@ -201,37 +201,40 @@ static void r_flush (RSFD rfd, int mk)
         size_t count;
         int r;
         
-        if (lseek (info->fd, info->pos_buf, SEEK_SET) == -1)
+        if (lseek(info->fd, info->pos_buf, SEEK_SET) == -1)
         {
-            yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek %s", info->fname);
-            exit (1);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek (1) %s", info->fname);
+            exit(1);
         }
         count = info->buf_size;
         if (count > info->pos_end - info->pos_buf)
             count = info->pos_end - info->pos_buf;
-        if ((r = write (info->fd, info->buf_mem, count)) < (int) count)
+        if ((r = write(info->fd, info->buf_mem, count)) < (int) count)
         {
             if (r == -1)
-                yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: write %s", info->fname);
+                yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: write %s", info->fname);
             else
-                yaz_log (YLOG_FATAL, "rstemp: write of %ld but got %ld",
+                yaz_log(YLOG_FATAL, "rstemp: write of %ld but got %ld",
                       (long) count, (long) r);
-            exit (1);
+            exit(1);
         }
         info->dirty = 0;
     }
 }
 
-static void r_close (RSFD rfd)
+static void r_close(RSFD rfd)
 {
     /*struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv; */
     struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
-    r_flush (rfd, 0);
-    if (info->fname && info->fd != -1)
+    if (rfd_is_last(rfd))
     {
-        close (info->fd);
-        info->fd = -1;
-    } /* FIXME - Is this right, don't we risk closing the file too early ?*/
+	r_flush(rfd, 0);
+	if (info->fname && info->fd != -1)
+	{
+	    close(info->fd);
+	    info->fd = -1;
+	}
+    }
     rfd_delete_base(rfd);
 }
 
@@ -240,7 +243,7 @@ static void r_close (RSFD rfd)
       read from file to window if file is assocated with set -
       indicated by fname
  */
-static void r_reread (RSFD rfd)
+static void r_reread(RSFD rfd)
 {
     struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv; 
     struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
@@ -257,19 +260,19 @@ static void r_reread (RSFD rfd)
         count = info->pos_border - info->pos_buf;
         if (count > 0)
         {
-            if (lseek (info->fd, info->pos_buf, SEEK_SET) == -1)
+            if (lseek(info->fd, info->pos_buf, SEEK_SET) == -1)
             {
-                yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek %s", info->fname);
-                exit (1);
+                yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek (2) %s fd=%d", info->fname, info->fd);
+                exit(1);
             }
-            if ((r = read (info->fd, info->buf_mem, count)) < (int) count)
+            if ((r = read(info->fd, info->buf_mem, count)) < (int) count)
             {
                 if (r == -1)
-                    yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: read %s", info->fname);
+                    yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: read %s", info->fname);
                 else
-                    yaz_log (YLOG_FATAL, "read of %ld but got %ld",
+                    yaz_log(YLOG_FATAL, "read of %ld but got %ld",
                           (long) count, (long) r);
-                exit (1);
+                exit(1);
             }
         }
     }
@@ -277,8 +280,7 @@ static void r_reread (RSFD rfd)
         info->pos_border = info->pos_end;
 }
 
-
-static int r_read (RSFD rfd, void *buf, TERMID *term)
+static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
     struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
@@ -289,21 +291,21 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
     {
         if (nc > info->pos_end)
             return 0;
-        r_flush (rfd, 0);
+        r_flush(rfd, 0);
         info->pos_buf = mrfd->pos_cur;
-        r_reread (rfd);
+        r_reread(rfd);
     }
-    memcpy (buf, info->buf_mem + (mrfd->pos_cur - info->pos_buf),
+    memcpy(buf, info->buf_mem + (mrfd->pos_cur - info->pos_buf),
             rfd->rset->keycontrol->key_size);
     if (term)
-        *term=rfd->rset->term; 
+        *term = rfd->rset->term; 
         /* FIXME - should we store and return terms ?? */
     mrfd->pos_cur = nc;
     mrfd->cur++;
     return 1;
 }
 
-static int r_write (RSFD rfd, const void *buf)
+static int r_write(RSFD rfd, const void *buf)
 {
     struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
     struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
@@ -312,13 +314,13 @@ static int r_write (RSFD rfd, const void *buf)
 
     if (nc > info->pos_buf + info->buf_size)
     {
-        r_flush (rfd, 1);
+        r_flush(rfd, 1);
         info->pos_buf = mrfd->pos_cur;
         if (info->pos_buf < info->pos_end)
-            r_reread (rfd);
+            r_reread(rfd);
     }
     info->dirty = 1;
-    memcpy (info->buf_mem + (mrfd->pos_cur - info->pos_buf), buf,
+    memcpy(info->buf_mem + (mrfd->pos_cur - info->pos_buf), buf,
             rfd->rset->keycontrol->key_size);
     mrfd->pos_cur = nc;
     if (nc > info->pos_end)
@@ -327,12 +329,12 @@ static int r_write (RSFD rfd, const void *buf)
     return 1;
 }
 
-static void r_pos (RSFD rfd, double  *current, double  *total)
+static void r_pos(RSFD rfd, double  *current, double  *total)
 {
     /* struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd; */
     struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
     struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
     
-    *current=(double) mrfd->cur;
-    *total=(double) info->hits;
+    *current = (double) mrfd->cur;
+    *total = (double) info->hits;
 }
