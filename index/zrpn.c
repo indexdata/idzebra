@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.11  1995-09-14 11:53:27  adam
+ * Revision 1.12  1995-09-15 14:45:21  adam
+ * Retrieve control.
+ * Work on truncation.
+ *
+ * Revision 1.11  1995/09/14  11:53:27  adam
  * First work on regular expressions/truncations.
  *
  * Revision 1.10  1995/09/11  15:23:26  adam
@@ -141,6 +145,144 @@ static void attr_init (AttrType *src, Z_AttributesPlusTerm *zapt,
     src->minor = 0;
 }
 
+struct trunc_info {
+    int  *indx;
+    char **heap;
+    int  heapnum;
+    int  (*cmp)(const void *p1, const void *p2);
+    int  keysize;
+    char *swapbuf;
+    char *tmpbuf;
+    char *buf;
+};
+
+static void heap_swap (struct trunc_info *ti, int i1, int i2)
+{
+    int swap;
+
+    memcpy (ti->swapbuf, ti->heap[i1], ti->keysize);
+    memcpy (ti->heap[i1], ti->heap[i2], ti->keysize);
+    memcpy (ti->heap[i2], ti->swapbuf, ti->keysize);
+
+    swap = ti->indx[i1];
+    ti->indx[i1] = ti->indx[i2];
+    ti->indx[i2] = swap;
+}
+
+static void heap_delete (struct trunc_info *ti)
+{
+    int cur = 1, child = 2;
+
+    assert (ti->heapnum > 0);
+    memcpy (ti->heap[1], ti->heap[ti->heapnum], ti->keysize);
+    ti->indx[1] = ti->indx[ti->heapnum--];
+    while (child <= ti->heapnum) {
+        if (child < ti->heapnum &&
+            (*ti->cmp)(ti->heap[child], ti->heap[1+child]) > 0)
+            child++;
+        if ((*ti->cmp)(ti->heap[cur], ti->heap[child]) > 0)
+        {
+            heap_swap (ti, cur, child);
+            cur = child;
+            child = 2*cur;
+        }
+        else
+            break;
+    }
+}
+
+static void heap_insert (struct trunc_info *ti, const char *buf, int indx)
+{
+    int cur, parent;
+
+    cur = ++(ti->heapnum);
+    memcpy (ti->heap[cur], buf, ti->keysize);
+    ti->indx[cur] = indx;
+    parent = cur/2;
+    while (parent && (*ti->cmp)(ti->heap[parent], ti->heap[cur]) > 0)
+    {
+        heap_swap (ti, cur, parent);
+        cur = parent;
+        parent = cur/2;
+    }
+}
+
+static
+struct trunc_info *heap_init (int size, int key_size,
+                              int (*cmp)(const void *p1, const void *p2))
+{
+    struct trunc_info *ti = xmalloc (sizeof(*ti));
+    int i;
+
+    ++size;
+    ti->heapnum = 0;
+    ti->keysize = key_size;
+    ti->cmp = cmp;
+    ti->indx = xmalloc (size * sizeof(*ti->indx));
+    ti->heap = xmalloc (size * sizeof(*ti->heap));
+    ti->swapbuf = xmalloc (ti->keysize);
+    ti->tmpbuf = xmalloc (ti->keysize);
+    ti->buf = xmalloc (size * ti->keysize);
+    for (i = size; --i >= 0; )
+        ti->heap[i] = ti->buf + ti->keysize * i;
+    return ti;
+}
+
+static void heap_close (struct trunc_info *ti)
+{
+    xfree (ti->indx);
+    xfree (ti->heap);
+    xfree (ti->swapbuf);
+    xfree (ti->tmpbuf);
+    xfree (ti);
+}
+
+static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
+                        int merge_chunk)
+{
+    logf (LOG_DEBUG, "rset_trunc, range=%d-%d", from, to-1);
+    if (from - to > merge_chunk)
+    {
+        return NULL;
+    }
+    else
+    {
+        ISPT *ispt;
+        int i;
+        struct trunc_info *ti;
+        RSET result;
+        RSFD rsfd;
+        rset_temp_parms parms;
+
+        parms.key_size = sizeof (struct it_key);
+        result = rset_create (rset_kind_temp, &parms);
+        rsfd = rset_open (result, 1);
+
+        ti = heap_init (to-from, sizeof(struct it_key),
+                        key_compare);
+        for (i = to-from; --i >= 0; )
+        {
+            ispt[i] = is_position (isam, isam_p[from+i]);
+            if (is_readkey (ispt[i], ti->tmpbuf))
+                heap_insert (ti, ti->tmpbuf, i);
+        }
+        while (ti->heapnum)
+        {
+            int n = ti->indx[1];
+
+            rset_write (result, rsfd, ti->heap[1]);
+            heap_delete (ti);
+            if (is_readkey (ispt[n], ti->tmpbuf))
+                heap_insert (ti, ti->tmpbuf, n);
+        }
+        for (i = to-from; --i >= 0; )
+            is_pt_free (ispt[i]);
+        rset_close (result, rsfd);
+        heap_close (ti);
+        return result;
+    }
+}
+
 static ISAM_P *isam_p_buf = NULL;
 static int isam_p_size = 0;
 static int isam_p_indx;
@@ -175,28 +317,78 @@ static int grep_handle (Dict_char *name, const char *info)
 }
 
 static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                       ISAM_P **isam_ps,
-                       int *no, int split_flag)
+                       const char *term_sub, ISAM_P **isam_ps)
 {
-    char termz[IT_MAX_WORD+1];
-    char term_sub[IT_MAX_WORD+1];
     char term_dict[2*IT_MAX_WORD+2];
-    int sizez, i, j;
-    char *p0 = termz, *p1 = NULL;
+    int i, j;
     const char *info;    
     AttrType truncation;
     int truncation_value;
-    Z_Term *term = zapt->term;
 
-    isam_p_indx = 0;
     attr_init (&truncation, zapt, 5);
     truncation_value = attr_find (&truncation);
     logf (LOG_DEBUG, "truncation value %d", truncation_value);
-    *no = 0;
+    switch (truncation_value)
+    {
+    case -1:         /* not specified */
+    case 100:        /* do not truncate */
+        strcpy (term_dict, term_sub);
+        logf (LOG_DEBUG, "dict_lookup: %s", term_dict);
+        if ((info = dict_lookup (zi->wordDict, term_dict)))
+            add_isam_p (info);
+        break;
+    case 1:          /* right truncation */
+        strcpy (term_dict, term_sub);
+        strcat (term_dict, ".*");
+        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_handle);
+        break;
+    case 2:          /* left truncation */
+    case 3:          /* left&right truncation */
+        zi->errCode = 120;
+        return -1;
+    case 101:        /* process # in term */
+        for (j = 0, i = 0; term_sub[i] && i < 3; i++)
+            term_dict[j++] = term_sub[i];
+        for (; term_sub[i]; i++)
+            if (term_sub[i] == '#')
+            {
+                term_dict[j++] = '.';
+                term_dict[j++] = '*';
+            }
+            else
+                term_dict[j++] = term_sub[i];
+        term_dict[j] = '\0';
+        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_handle);
+        break;
+    case 102:        /* regular expression */
+        strcpy (term_dict, term_sub);
+        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_handle);
+        break;
+    }
+    *isam_ps = isam_p_buf;
+    logf (LOG_DEBUG, "%d positions", isam_p_indx);
+    return 0;
+}
+
+static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
+                                      Z_AttributesPlusTerm *zapt)
+{
+    rset_relevance_parms parms;
+    char termz[IT_MAX_WORD+1];
+    char term_sub[IT_MAX_WORD+1];
+    char *p0 = termz, *p1 = NULL;
+    Z_Term *term = zapt->term;
+    size_t sizez, i;
+
+    parms.key_size = sizeof(struct it_key);
+    parms.max_rec = 100;
+    parms.cmp = key_compare;
+    parms.is = zi->wordIsam;
+
     if (term->which != Z_Term_general)
     {
         zi->errCode = 124;
-        return -1;
+        return NULL;
     }
     sizez = term->u.general->len;
     if (sizez > IT_MAX_WORD)
@@ -205,75 +397,24 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         termz[i] = index_char_cvt (term->u.general->buf[i]);
     termz[i] = '\0';
 
+    isam_p_indx = 0;  /* global, set by trunc_term - see below */
     while (1)
     {
-        if (split_flag && (p1 = strchr (p0, ' ')))
+        if ((p1 = strchr (p0, ' ')))
         {
             memcpy (term_sub, p0, p1-p0);
             term_sub[p1-p0] = '\0';
         }
         else
             strcpy (term_sub, p0);
-        switch (truncation_value)
-        {
-        case -1:         /* not specified */
-        case 100:        /* do not truncate */
-            strcpy (term_dict, term_sub);
-            logf (LOG_DEBUG, "dict_lookup: %s", term_dict);
-            if ((info = dict_lookup (zi->wordDict, term_dict)))
-                add_isam_p (info);
-            break;
-        case 1:          /* right truncation */
-            strcpy (term_dict, term_sub);
-            strcat (term_dict, ".*");
-            dict_lookup_grep (zi->wordDict, term_dict, 0, grep_handle);
-            break;
-        case 2:          /* left truncation */
-        case 3:          /* left&right truncation */
-            zi->errCode = 120;
-            return -1;
-        case 101:        /* process # in term */
-            for (j = 0, i = 0; term_sub[i] && i < 3; i++)
-                term_dict[j++] = term_sub[i];
-            for (; term_sub[i]; i++)
-                if (term_sub[i] == '#')
-                {
-                    term_dict[j++] = '.';
-                    term_dict[j++] = '*';
-                }
-                else
-                    term_dict[j++] = term_sub[i];
-            term_dict[j] = '\0';
-            dict_lookup_grep (zi->wordDict, term_dict, 0, grep_handle);
-            break;
-        case 102:        /* regular expression */
-            strcpy (term_dict, term_sub);
-            dict_lookup_grep (zi->wordDict, term_dict, 0, grep_handle);
-            break;
-        }
+        if (trunc_term (zi, zapt, term_sub, &parms.isam_positions))
+            return NULL;
         if (!p1)
             break;
         p0 = p1+1;
-    }       
-    *isam_ps = isam_p_buf;
-    *no = isam_p_indx; 
-    logf (LOG_DEBUG, "%d positions", *no);
-    return 0;
-}
-
-static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
-                                      Z_AttributesPlusTerm *zapt)
-{
-    rset_relevance_parms parms;
-
-    parms.key_size = sizeof(struct it_key);
-    parms.max_rec = 100;
-    parms.cmp = key_compare;
-    parms.is = zi->wordIsam;
-    if (trunc_term (zi, zapt, &parms.isam_positions, 
-                &parms.no_isam_positions, 1))
-        return NULL;
-    if (parms.no_isam_positions > 0)
+    }
+    parms.no_isam_positions = isam_p_indx;
+    if (isam_p_indx > 0)
         return rset_create (rset_kind_relevance, &parms);
     else
         return rset_create (rset_kind_null, NULL);
@@ -283,30 +424,65 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
                                  Z_AttributesPlusTerm *zapt)
 {
     ISAM_P *isam_positions;
-    int no_isam_positions;
     rset_isam_parms parms;
 
-    if (trunc_term (zi, zapt, &isam_positions,
-                    &no_isam_positions, 0))
+    char termz[IT_MAX_WORD+1];
+    Z_Term *term = zapt->term;
+    size_t sizez, i;
+
+    if (term->which != Z_Term_general)
+    {
+        zi->errCode = 124;
         return NULL;
-    if (no_isam_positions != 1)
+    }
+    sizez = term->u.general->len;
+    if (sizez > IT_MAX_WORD)
+        sizez = IT_MAX_WORD;
+    for (i = 0; i<sizez; i++)
+        termz[i] = index_char_cvt (term->u.general->buf[i]);
+    termz[i] = '\0';
+
+    isam_p_indx = 0;  /* global, set by trunc_term - see below */
+    if (trunc_term (zi, zapt, termz, &isam_positions))
+        return NULL;
+    if (isam_p_indx < 1)
         return rset_create (rset_kind_null, NULL);
-    parms.is = zi->wordIsam;
-    parms.pos = *isam_positions;
-    return rset_create (rset_kind_isam, &parms);
+    else if (isam_p_indx == 1)
+    {
+        parms.is = zi->wordIsam;
+        parms.pos = *isam_positions;
+        return rset_create (rset_kind_isam, &parms);
+    }
+    else
+        return rset_trunc (zi->wordIsam, isam_positions, 0, isam_p_indx, 200);
 }
 
 static RSET rpn_search_APT_phrase (ZServerInfo *zi,
                                    Z_AttributesPlusTerm *zapt)
 {
     ISAM_P *isam_positions;
-    int no_isam_positions;
     rset_isam_parms parms;
 
-    if (trunc_term (zi, zapt, &isam_positions,
-                    &no_isam_positions, 1))
+    char termz[IT_MAX_WORD+1];
+    Z_Term *term = zapt->term;
+    size_t sizez, i;
+
+    if (term->which != Z_Term_general)
+    {
+        zi->errCode = 124;
         return NULL;
-    if (no_isam_positions != 1)
+    }
+    sizez = term->u.general->len;
+    if (sizez > IT_MAX_WORD)
+        sizez = IT_MAX_WORD;
+    for (i = 0; i<sizez; i++)
+        termz[i] = index_char_cvt (term->u.general->buf[i]);
+    termz[i] = '\0';
+
+    isam_p_indx = 0;  /* global, set by trunc_term - see below */
+    if (trunc_term (zi, zapt, termz, &isam_positions))
+        return NULL;
+    if (isam_p_indx != 1)
         return rset_create (rset_kind_null, NULL);
     parms.is = zi->wordIsam;
     parms.pos = *isam_positions;
