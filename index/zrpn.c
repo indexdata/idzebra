@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.132 2003-03-31 22:14:18 adam Exp $
+/* $Id: zrpn.c,v 1.133 2003-04-15 20:48:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -699,7 +699,7 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int relation_value;
     int i;
     char *term_tmp = term_dict + strlen(term_dict);
-    char term_component[256];
+    char term_component[2*IT_MAX_WORD+20];
 
     attr_init (&relation, zapt, 2);
     relation_value = attr_find (&relation, NULL);
@@ -733,6 +733,9 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    *term_tmp++ = ']';
 	    *term_tmp++ = '.';
 	    *term_tmp++ = '*';
+
+            if ((term_tmp - term_dict) > IT_MAX_WORD)
+                break;
 	}
 	*term_tmp++ = ')';
 	*term_tmp = '\0';
@@ -762,6 +765,9 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    *term_tmp++ = '*';
 
 	    *term_tmp++ = '|';
+
+            if ((term_tmp - term_dict) > IT_MAX_WORD)
+                break;
 	}
 	for (i = 0; term_component[i]; )
 	    string_rel_add_char (&term_tmp, term_component, &i);
@@ -792,6 +798,9 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    *term_tmp++ = '*';
 
 	    *term_tmp++ = '|';
+
+            if ((term_tmp - term_dict) > IT_MAX_WORD)
+                break;
 	}
 	for (i = 0; term_component[i];)
 	    string_rel_add_char (&term_tmp, term_component, &i);
@@ -831,6 +840,9 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    *term_tmp++ = ']';
 	    *term_tmp++ = '.';
 	    *term_tmp++ = '*';
+
+            if ((term_tmp - term_dict) > IT_MAX_WORD)
+                break;
 	}
 	*term_tmp++ = ')';
 	*term_tmp = '\0';
