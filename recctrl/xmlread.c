@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.6 2002-10-22 12:51:09 adam Exp $
+/* $Id: xmlread.c,v 1.7 2003-05-05 09:58:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -226,6 +226,9 @@ static int cb_encoding_convert (void *data, const char *s)
     char *inbuf = (char *) s;
     unsigned short code;
 
+#if 1
+    yaz_log(LOG_LOG, "------------------------- cb_encoding_convert --- ");
+#endif
     ret = iconv (t, &inbuf, &inleft, &outbuf, &outleft);
     if (ret == (size_t) (-1) && errno != E2BIG)
     {
@@ -339,8 +342,9 @@ static int cb_encoding_handler (void *userData, const char *name,
             if (errno == E2BIG)
             {
                 info->map[i] = -1;  /* no room for output */
-                yaz_log (LOG_WARN, "Encoding %d: no room for output",
-                         i);
+                if (i != 0)
+                    yaz_log (LOG_WARN, "Encoding %d: no room for output",
+                             i);
             }
         }
         else if (outleft == 0)
