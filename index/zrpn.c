@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.67  1997-09-29 09:06:10  adam
+ * Revision 1.68  1997-10-27 14:33:06  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.67  1997/09/29 09:06:10  adam
  * Removed one static var in order to make this module thread safe.
  *
  * Revision 1.66  1997/09/25 14:58:03  adam
@@ -247,6 +253,25 @@
 #include <rsbool.h>
 #include <rsrel.h>
 
+struct rpn_char_map_info {
+    ZebraMaps zm;
+    int reg_type;
+};
+
+static const char **rpn_char_map_handler (void *vp, const char **from, int len)
+{
+    struct rpn_char_map_info *p = vp;
+    return zebra_maps_input (p->zm, p->reg_type, from, len);
+}
+
+static void rpn_char_map_prepare (ZServerInfo *zi, int reg_type,
+				  struct rpn_char_map_info *map_info)
+{
+    map_info->zm = zi->zebra_maps;
+    map_info->reg_type = reg_type;
+    dict_grep_cmap (zi->dict, map_info, rpn_char_map_handler);
+}
+
 typedef struct {
     int type;
     int major;
@@ -362,7 +387,8 @@ static int grep_handle (char *name, const char *info, void *p)
     return 0;
 }
 
-static int term_pre (const char **src, const char *ct1, const char *ct2)
+static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
+		     const char *ct1, const char *ct2)
 {
     const char *s1, *s0 = *src;
     const char **map;
@@ -375,7 +401,7 @@ static int term_pre (const char **src, const char *ct1, const char *ct2)
         if (ct2 && strchr (ct2, *s0))
             break;
         s1 = s0;
-        map = map_chrs_input (0, &s1, strlen(s1));
+        map = zebra_maps_input (zebra_maps, reg_type, &s1, strlen(s1));
         if (**map != *CHR_SPACE)
             break;
         s0 = s1;
@@ -384,24 +410,25 @@ static int term_pre (const char **src, const char *ct1, const char *ct2)
     return *s0;
 }
 
-static int term_100 (const char **src, char *dst, int space_split)
+static int term_100 (ZebraMaps zebra_maps, int reg_type,
+		     const char **src, char *dst, int space_split)
 {
     const char *s0, *s1;
     const char **map;
     int i = 0;
 
-    if (!term_pre (src, NULL, NULL))
+    if (!term_pre (zebra_maps, reg_type, src, NULL, NULL))
         return 0;
     s0 = *src;
     while (*s0)
     {
         s1 = s0;
-        map = map_chrs_input (0, &s0, strlen(s0));
+        map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
         if (space_split && **map == *CHR_SPACE)
             break;
         while (s1 < s0)
         {
-            if (!isalnum (*s1))
+            if (!isalnum (*s1) && *s1 != '-')
                 dst[i++] = '\\';
             dst[i++] = *s1++;
         }
@@ -411,13 +438,14 @@ static int term_100 (const char **src, char *dst, int space_split)
     return i;
 }
 
-static int term_101 (const char **src, char *dst, int space_split)
+static int term_101 (ZebraMaps zebra_maps, int reg_type,
+		     const char **src, char *dst, int space_split)
 {
     const char *s0, *s1;
     const char **map;
     int i = 0;
 
-    if (!term_pre (src, "#", "#"))
+    if (!term_pre (zebra_maps, reg_type, src, "#", "#"))
         return 0;
     s0 = *src;
     while (*s0)
@@ -431,7 +459,7 @@ static int term_101 (const char **src, char *dst, int space_split)
         else
         {
             s1 = s0;
-            map = map_chrs_input (0, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -448,13 +476,14 @@ static int term_101 (const char **src, char *dst, int space_split)
 }
 
 
-static int term_103 (const char **src, char *dst, int *errors, int space_split)
+static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
+		     char *dst, int *errors, int space_split)
 {
     int i = 0;
     const char *s0, *s1;
     const char **map;
 
-    if (!term_pre (src, "^\\()[].*+?|", "("))
+    if (!term_pre (zebra_maps, reg_type, src, "^\\()[].*+?|", "("))
         return 0;
     s0 = *src;
     if (errors && *s0 == '+' && s0[1] && s0[2] == '+' && s0[3] &&
@@ -472,7 +501,7 @@ static int term_103 (const char **src, char *dst, int *errors, int space_split)
         else
         {
             s1 = s0;
-            map = map_chrs_input (0, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
             if (**map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -488,9 +517,10 @@ static int term_103 (const char **src, char *dst, int *errors, int space_split)
     return i;
 }
 
-static int term_102 (const char **src, char *dst, int space_split)
+static int term_102 (ZebraMaps zebra_maps, int reg_type, const char **src,
+		     char *dst, int space_split)
 {
-    return term_103 (src, dst, NULL, space_split);
+    return term_103 (zebra_maps, reg_type, src, dst, NULL, space_split);
 }
 
 /* gen_regular_rel - generate regular expression from relation
@@ -508,21 +538,21 @@ static void gen_regular_rel (char *dst, int val, int islt)
     if (val >= 0)
     {
         if (islt)
-            strcpy (dst, "(-[0-9]+|");
+            strcpy (dst, "(-[0-9]+|(");
         else
-            strcpy (dst, "(");
+            strcpy (dst, "((");
     } 
     else
     {
         if (!islt)
         {
-            strcpy (dst, "([0-9]+|-");
+            strcpy (dst, "([0-9]+|-(");
             dst_p = strlen (dst);
             islt = 1;
         }
         else
         {
-            strcpy (dst, "(-");
+            strcpy (dst, "((-");
             islt = 0;
         }
         val = -val;
@@ -599,7 +629,7 @@ static void gen_regular_rel (char *dst, int val, int islt)
             strcat (dst, "[0-9]");
         strcat (dst, "[0-9]*");
     }
-    strcat (dst, ")");
+    strcat (dst, "))");
 }
 
 static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
@@ -607,58 +637,53 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                             char *term_dict,
                             oid_value attributeSet,
                             struct grep_info *grep_info,
-                            int *max_pos)
+                            int *max_pos,
+			    int reg_type)
 {
     AttrType relation;
     int relation_value;
     int term_value;
     int r;
+    char *term_tmp = term_dict + strlen(term_dict);
 
     attr_init (&relation, zapt, 2);
     relation_value = attr_find (&relation, NULL);
 
+    logf (LOG_DEBUG, "relation value=%d", relation_value);
     switch (relation_value)
     {
     case 1:
-        if (!term_100 (term_sub, term_dict, 1))
+        if (!term_100 (zi->zebra_maps, reg_type, term_sub, term_tmp, 1))
             return 0;
-        term_value = atoi (term_dict);
-        if (term_value <= 0)
-            return 1;
+        term_value = atoi (term_tmp);
         logf (LOG_DEBUG, "Relation <");
-        gen_regular_rel (term_dict + strlen(term_dict), term_value-1, 1);
+        gen_regular_rel (term_tmp, term_value-1, 1);
         break;
     case 2:
-        if (!term_100 (term_sub, term_dict, 1))
+        if (!term_100 (zi->zebra_maps, reg_type, term_sub, term_tmp, 1))
             return 0;
-        term_value = atoi (term_dict);
-        if (term_value < 0)
-            return 1;
+        term_value = atoi (term_tmp);
         logf (LOG_DEBUG, "Relation <=");
-        gen_regular_rel (term_dict + strlen(term_dict), term_value, 1);
+        gen_regular_rel (term_tmp, term_value, 1);
         break;
     case 4:
-        if (!term_100 (term_sub, term_dict, 1))
+        if (!term_100 (zi->zebra_maps, reg_type, term_sub, term_tmp, 1))
             return 0;
-        term_value = atoi (term_dict);
-        if (term_value < 0)
-            term_value = 0;
+        term_value = atoi (term_tmp);
         logf (LOG_DEBUG, "Relation >=");
-        gen_regular_rel (term_dict + strlen(term_dict), term_value, 0);
+        gen_regular_rel (term_tmp, term_value, 0);
         break;
     case 5:
-        if (!term_100 (term_sub, term_dict, 1))
+        if (!term_100 (zi->zebra_maps, reg_type, term_sub, term_tmp, 1))
             return 0;
-        term_value = atoi (term_dict);
-        if (term_value < 0)
-            term_value = 0;
+        term_value = atoi (term_tmp);
         logf (LOG_DEBUG, "Relation >");
-        gen_regular_rel (term_dict + strlen(term_dict), term_value+1, 0);
+        gen_regular_rel (term_tmp, term_value+1, 0);
         break;
     default:
         return 0;
     }
-    logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
+    logf (LOG_DEBUG, "dict_lookup_grep: %s", term_tmp);
     r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info, max_pos,
                           0, grep_handle);
     if (r)
@@ -668,9 +693,10 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 }
 
 static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                       const char **term_sub, int regType,
+                       const char **term_sub, 
                        oid_value attributeSet, struct grep_info *grep_info,
-                       int num_bases, char **basenames, int space_split)
+		       int reg_type, int complete_flag,
+                       int num_bases, char **basenames)
 {
     char term_dict[2*IT_MAX_WORD+2];
     int j, r, base_no;
@@ -680,7 +706,10 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     int use_value;
     oid_value curAttributeSet = attributeSet;
     const char *termp;
+    struct rpn_char_map_info rcmi;
+    int space_split = complete_flag ? 0 : 1;
 
+    rpn_char_map_prepare (zi, reg_type, &rcmi);
     attr_init (&use, zapt, 1);
     use_value = attr_find (&use, &curAttributeSet);
     logf (LOG_DEBUG, "field_term, use value %d", use_value);
@@ -734,10 +763,11 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         }
         term_dict[prefix_len++] = ')';        
         term_dict[prefix_len++] = 1;
-        term_dict[prefix_len++] = regType;
+        term_dict[prefix_len++] = reg_type;
+	logf (LOG_LOG, "reg_type = %d", term_dict[prefix_len-1]);
         term_dict[prefix_len] = '\0';
         if (!relational_term (zi, zapt, &termp, term_dict,
-                              attributeSet, grep_info, &max_pos))
+                              attributeSet, grep_info, &max_pos, reg_type))
         {
             j = prefix_len;
             switch (truncation_value)
@@ -745,7 +775,8 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
             case -1:         /* not specified */
             case 100:        /* do not truncate */
                 term_dict[j++] = '(';   
-                if (!term_100 (&termp, term_dict + j, space_split))
+                if (!term_100 (zi->zebra_maps, reg_type,
+			       &termp, term_dict + j, space_split))
                     return 0;
                 strcat (term_dict, ")");
                 r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
@@ -755,7 +786,8 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 break;
             case 1:          /* right truncation */
                 term_dict[j++] = '(';
-                if (!term_100 (&termp, term_dict + j, space_split))
+                if (!term_100 (zi->zebra_maps, reg_type,
+			       &termp, term_dict + j, space_split))
                     return 0;
                 strcat (term_dict, ".*)");
                 dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
@@ -767,7 +799,8 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 return -1;
             case 101:        /* process # in term */
                 term_dict[j++] = '(';
-                if (!term_101 (&termp, term_dict + j, space_split))
+                if (!term_101 (zi->zebra_maps, reg_type,
+			       &termp, term_dict + j, space_split))
                     return 0;
                 strcat (term_dict, ")");
                 r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
@@ -777,7 +810,8 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 break;
             case 102:        /* Regexp-1 */
                 term_dict[j++] = '(';
-                if (!term_102 (&termp, term_dict + j, space_split))
+                if (!term_102 (zi->zebra_maps, reg_type,
+			       &termp, term_dict + j, space_split))
                     return 0;
                 strcat (term_dict, ")");
                 logf (LOG_DEBUG, "Regexp-1 tolerance=%d", r);
@@ -787,10 +821,11 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=regular: %d",
                           r);
                 break;
-             case 103:       /* Regexp-1 */
+             case 103:       /* Regexp-2 */
                 r = 1;
                 term_dict[j++] = '(';
-                if (!term_103 (&termp, term_dict + j, &r, space_split))
+                if (!term_103 (zi->zebra_maps, reg_type,
+			       &termp, term_dict + j, &r, space_split))
                     return 0;
                 strcat (term_dict, ")");
                 logf (LOG_DEBUG, "Regexp-2 tolerance=%d", r);
@@ -822,7 +857,7 @@ static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 }
 
 static void trans_scan_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                             char *termz)
+                             char *termz, int reg_type)
 {
     Z_Term *term = zapt->term;
     const char **map;
@@ -835,7 +870,7 @@ static void trans_scan_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     
     while ((len = (cp_end - cp)) > 0)
     {
-        map = map_chrs_input (0, &cp, len);
+        map = zebra_maps_input (zi->zebra_maps, reg_type, &cp, len);
         if (**map == *CHR_SPACE)
             space_map = *map;
         else
@@ -854,6 +889,7 @@ static void trans_scan_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
                                       Z_AttributesPlusTerm *zapt,
                                       oid_value attributeSet,
+				      int reg_type, int complete_flag,
                                       int num_bases, char **basenames)
 {
     rset_relevance_parms parms;
@@ -887,8 +923,8 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     grep_info.isam_p_buf = NULL;
     while (1)
     {
-        r = field_term (zi, zapt, &termp, 'w', attributeSet, &grep_info,
-                        num_bases, basenames, 1);
+        r = field_term (zi, zapt, &termp, attributeSet, &grep_info,
+                        reg_type, complete_flag, num_bases, basenames);
         if (r <= 0)
             break;
 #ifdef TERM_COUNT
@@ -904,41 +940,6 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
         result = rset_create (rset_kind_relevance, &parms);
     else
         result = rset_create (rset_kind_null, NULL);
-#ifdef TERM_COUNT
-    xfree(grep_info.term_no);
-#endif
-    xfree (grep_info.isam_p_buf);
-    return result;
-}
-
-static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
-                                    Z_AttributesPlusTerm *zapt,
-                                    oid_value attributeSet,
-                                    int num_bases, char **basenames)
-{
-    char termz[IT_MAX_WORD+1];
-    struct grep_info grep_info;
-    RSET result;
-    const char *termp = termz;
-    int r;
-
-    if (zapt->term->which != Z_Term_general)
-    {
-        zi->errCode = 124;
-        return NULL;
-    }
-    trans_term (zi, zapt, termz);
-
-#ifdef TERM_COUNT
-    grep_info.term_no = 0;
-#endif
-    grep_info.isam_p_indx = 0;
-    grep_info.isam_p_size = 0;
-    grep_info.isam_p_buf = NULL;
-
-    r = field_term (zi, zapt, &termp, 'p', attributeSet, &grep_info,
-                    num_bases, basenames, 0);
-    result = rset_trunc (zi, grep_info.isam_p_buf, grep_info.isam_p_indx);
 #ifdef TERM_COUNT
     xfree(grep_info.term_no);
 #endif
@@ -1127,6 +1128,7 @@ static RSET rpn_prox (ZServerInfo *zi, RSET *rset, int rset_no)
 static RSET rpn_search_APT_phrase (ZServerInfo *zi,
                                    Z_AttributesPlusTerm *zapt,
                                    oid_value attributeSet,
+				   int reg_type, int complete_flag,
                                    int num_bases, char **basenames)
 {
     char termz[IT_MAX_WORD+1];
@@ -1149,10 +1151,11 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
     grep_info.isam_p_buf = NULL;
 
     while (1)
-    {
-        grep_info.isam_p_indx = 0;
-        r = field_term (zi, zapt, &termp, 'w', attributeSet, &grep_info,
-                        num_bases, basenames, 1);
+    { 
+	logf (LOG_LOG, "APT_phrase termp=%s", termp);
+	grep_info.isam_p_indx = 0;
+        r = field_term (zi, zapt, &termp, attributeSet, &grep_info,
+			reg_type, complete_flag, num_bases, basenames);
         if (r < 1)
             break;
         rset[rset_no] = rset_trunc (zi, grep_info.isam_p_buf,
@@ -1208,80 +1211,31 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                             oid_value attributeSet,
                             int num_bases, char **basenames)
 {
-    AttrType relation;
-    AttrType structure;
-    AttrType completeness;
-    int relation_value, structure_value, completeness_value;
+    int reg_type;
+    char *search_type = NULL;
+    int complete_flag;
 
-    attr_init (&relation, zapt, 2);
-    attr_init (&structure, zapt, 4);
-    attr_init (&completeness, zapt, 6);
+    zebra_maps_attr (zi->zebra_maps, zapt, &reg_type, &search_type,
+		     &complete_flag);
     
-    relation_value = attr_find (&relation, NULL);
-    structure_value = attr_find (&structure, NULL);
-    completeness_value = attr_find (&completeness, NULL);
-    switch (structure_value)
+    logf (LOG_DEBUG, "reg_type=%c", reg_type);
+    logf (LOG_DEBUG, "complete_flag=%d", complete_flag);
+    logf (LOG_DEBUG, "search_type=%s", search_type);
+    if (!strcmp (search_type, "phrase"))
     {
-    case -1:
-        if (relation_value == 102) /* relevance relation */
-            return rpn_search_APT_relevance (zi, zapt, attributeSet,
-                                             num_bases, basenames);
-        if (completeness_value == 2 || completeness_value == 3)
-            return rpn_search_APT_cphrase (zi, zapt, attributeSet,
-                                           num_bases, basenames);
-        return rpn_search_APT_phrase (zi, zapt, attributeSet,
-                                      num_bases, basenames);
-    case 1: /* phrase */
-        if (relation_value == 102) /* relevance relation */
-            return rpn_search_APT_relevance (zi, zapt, attributeSet,
-                                             num_bases, basenames);
-        if (completeness_value == 2 || completeness_value == 3)
-            return rpn_search_APT_cphrase (zi, zapt, attributeSet,
-                                           num_bases, basenames);
-        return rpn_search_APT_phrase (zi, zapt, attributeSet,
-                                      num_bases, basenames);
-        break;
-    case 2: /* word */
-        if (relation_value == 102) /* relevance relation */
-            return rpn_search_APT_relevance (zi, zapt, attributeSet,
-                                             num_bases, basenames);
-        if (completeness_value == 2 || completeness_value == 3)
-            return rpn_search_APT_cphrase (zi, zapt, attributeSet,
-                                           num_bases, basenames);
-        return rpn_search_APT_phrase (zi, zapt, attributeSet,
-                                      num_bases, basenames);
-    case 3: /* key */
-        break;
-    case 4: /* year */
-        break;
-    case 5: /* date - normalized */
-        break;
-    case 6: /* word list */
+	return rpn_search_APT_phrase (zi, zapt, attributeSet,
+				      reg_type, complete_flag,
+				      num_bases, basenames);
+    }
+    else if (!strcmp (search_type, "ranked"))
+    {
         return rpn_search_APT_relevance (zi, zapt, attributeSet,
+					 reg_type, complete_flag,
                                          num_bases, basenames);
-    case 100: /* date - un-normalized */
-        break;
-    case 101: /* name - normalized */
-        break;
-    case 102: /* date - un-normalized */
-        break;
-    case 103: /* structure */
-        break;
-    case 104: /* urx */
-        break;
-    case 105: /* free-form-text */
-        return rpn_search_APT_relevance (zi, zapt, attributeSet,
-                                         num_bases, basenames);
-    case 106: /* document-text */
-        return rpn_search_APT_relevance (zi, zapt, attributeSet,
-                                         num_bases, basenames);
-    case 107: /* local-number */
+    }
+    else if (!strcmp (search_type, "local"))
+    {
         return rpn_search_APT_local (zi, zapt, attributeSet);
-    case 108: /* string */ 
-        return rpn_search_APT_phrase (zi, zapt, attributeSet,
-                                      num_bases, basenames);
-    case 109: /* numeric string */
-        break;
     }
     zi->errCode = 118;
     return NULL;
@@ -1458,7 +1412,6 @@ int rpn_search (ZServerInfo *zi,
     oident *attrset;
     oid_value attributeSet;
 
-    dict_grep_cmap (zi->dict, 0, map_chrs_input);
     zlog_rpn (rpn);
 
     zi->errCode = 0;
@@ -1513,14 +1466,15 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
 }
 
 
-static void scan_term_untrans (ODR odr, char **dstp, const char *src)
+static void scan_term_untrans (ZServerInfo *zi, int reg_type,
+			       char **dstp, const char *src)
 {    
-    char *dst = odr_malloc (odr, strlen(src)*2+1);
+    char *dst = odr_malloc (zi->odr, strlen(src)*2+1);
     *dstp = dst;
 
     while (*src)
     {
-        const char *cp = map_chrs_output (&src);
+        const char *cp = zebra_maps_output (zi->zebra_maps, reg_type, &src);
         while (*cp)
             *dst++ = *cp++;
     }
@@ -1542,12 +1496,14 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     char termz[IT_MAX_WORD+20];
     AttrType use;
     int use_value;
-    AttrType completeness;
-    int completeness_value;
     struct scan_info *scan_info_array;
     struct scan_entry *glist;
     int ords[32], ord_no = 0;
     int ptr[32];
+
+    int reg_type;
+    char *search_type = NULL;
+    int complete_flag;
 
     logf (LOG_DEBUG, "scan, position = %d, num = %d", pos, num);
 
@@ -1558,9 +1514,12 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     use_value = attr_find (&use, &attributeset);
     logf (LOG_DEBUG, "use value %d", use_value);
 
-    attr_init (&completeness, zapt, 6);
-    completeness_value = attr_find (&completeness, NULL);
-    logf (LOG_DEBUG, "completeness value %d", completeness_value);
+    if (zebra_maps_attr (zi->zebra_maps, zapt, &reg_type, &search_type,
+			 &complete_flag))
+    {
+	zi->errCode = 113;
+	return zi->errCode;
+    }
 
     if (use_value == -1)
         use_value = 1016;
@@ -1601,6 +1560,9 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         int j, prefix_len = 0;
         int before_tmp = before, after_tmp = after;
         struct scan_info *scan_info = scan_info_array + i;
+	struct rpn_char_map_info rcmi;
+
+	rpn_char_map_prepare (zi, reg_type, &rcmi);
 
         scan_info->before = before;
         scan_info->after = after;
@@ -1611,12 +1573,11 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         for (j = 0; j<before+after; j++)
             scan_info->list[j].term = NULL;
         termz[prefix_len++] = ords[i];
-        termz[prefix_len++] =
-            (completeness_value==2 || completeness_value==3) ? 'p': 'w';
+        termz[prefix_len++] = reg_type;
         termz[prefix_len] = 0;
         strcpy (scan_info->prefix, termz);
 
-        trans_scan_term (zi, zapt, termz+prefix_len);
+        trans_scan_term (zi, zapt, termz+prefix_len, reg_type);
                     
         dict_scan (zi->dict, termz, &before_tmp, &after_tmp, scan_info,
                    scan_handle);
@@ -1645,7 +1606,7 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         }
         if (j0 == -1)
             break;
-        scan_term_untrans (zi->odr, &glist[i+before].term, mterm);
+        scan_term_untrans (zi, reg_type, &glist[i+before].term, mterm);
         rset = rset_trunc (zi, &scan_info_array[j0].list[ptr[j0]].isam_p, 1);
 
         ptr[j0]++;
@@ -1703,7 +1664,7 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         if (j0 == -1)
             break;
 
-        scan_term_untrans (zi->odr, &glist[before-1-i].term, mterm);
+        scan_term_untrans (zi, reg_type, &glist[before-1-i].term, mterm);
 
         rset = rset_trunc
                (zi, &scan_info_array[j0].list[before-1-ptr[j0]].isam_p, 1);

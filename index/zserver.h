@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.26  1997-09-29 12:41:35  adam
+ * Revision 1.27  1997-10-27 14:33:06  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.26  1997/09/29 12:41:35  adam
  * Fixed bug regarding USE_TIMES var.
  *
  * Revision 1.25  1997/09/29 09:08:36  adam
@@ -145,6 +151,7 @@ typedef struct {
     struct tms tms1;
     struct tms tms2;    
 #endif
+    ZebraMaps zebra_maps;
 } ZServerInfo;
 
 int rpn_search (ZServerInfo *zi, 

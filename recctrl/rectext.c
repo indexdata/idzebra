@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.4  1996-11-04 14:09:16  adam
+ * Revision 1.5  1997-10-27 14:33:06  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.4  1996/11/04 14:09:16  adam
  * Minor changes.
  *
  * Revision 1.3  1996/11/01 09:00:33  adam
@@ -99,7 +105,7 @@ static int text_extract (struct recExtractCtrl *p)
     struct buf_info *fi = buf_open (p);
 
     (*p->init)(&recWord);
-    recWord.which = Word_String;
+    recWord.reg_type = 'w';
     do
     {
         int i = 0;
@@ -117,7 +123,7 @@ static int text_extract (struct recExtractCtrl *p)
                 w[j] = tolower(w[j]);
             w[i] = 0;
             recWord.seqno = seqno++;
-            recWord.u.string = w;
+            recWord.string = w;
             (*p->add)(&recWord);
         }
     } while (r > 0);

@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.26 1997-09-17 12:19:23 adam Exp $
+# $Id: Makefile,v 1.27 1997-10-27 14:33:06 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -14,7 +14,7 @@ TPROG=opt-test
 DEFS=$(INCLUDE)
 CPP=$(CC) -E
 LIB=../lib/zebrautl.a
-PO = res.o charmap.o
+PO = res.o charmap.o zebramap.o
 
 all: $(LIB)
 

@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.75  1997-09-17 12:19:12  adam
+ * Revision 1.76  1997-10-27 14:33:04  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.75  1997/09/17 12:19:12  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -525,7 +531,7 @@ static void wordInit (RecWord *p)
 {
     p->attrSet = 1;
     p->attrUse = 1016;
-    p->which = Word_String;
+    p->reg_type = 'w';
 }
 
 struct recKeys {
@@ -589,19 +595,9 @@ static void addRecordKey (const RecWord *p)
         memcpy (dst, &attrUse, sizeof(attrUse));
         dst += sizeof(attrUse);
     }
-    switch (p->which)
-    {
-        case Word_String:
-            *dst++ = 'w';
-            break;
-        case Word_Phrase:
-            *dst++ = 'p';
-            break;
-        case Word_Numeric:
-            *dst++ = 'n';
-    }
-    for (i = 0; p->u.string[i] && i < IT_MAX_WORD-3; i++)
-        *dst++ = p->u.string[i];
+    *dst++ = p->reg_type;
+    for (i = 0; p->string[i] && i < IT_MAX_WORD-3; i++)
+        *dst++ = p->string[i];
     *dst++ = '\0';
 
     if (!diff)
@@ -1002,7 +998,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.seekf = file_seek;
         extractCtrl.tellf = file_tell;
         extractCtrl.endf = file_end;
-        extractCtrl.map_chrs_input = map_chrs_input;
+	extractCtrl.zebra_maps = rGroup->zebra_maps;
         extractCtrl.flagShowRecords = rGroup->flagShowRecords;
         if (rGroup->flagShowRecords)
             printf ("File: %s %ld\n", fname, (long) recordOffset);

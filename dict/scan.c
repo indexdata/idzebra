@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.8  1996-02-02 13:43:52  adam
+ * Revision 1.9  1997-10-27 14:33:04  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.8  1996/02/02 13:43:52  adam
  * The public functions simply use char instead of Dict_char to represent
  * search strings. Dict_char is used internally only.
  *
@@ -203,6 +209,14 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 int dict_scan (Dict dict, char *str, int *before, int *after, void *client,
                int (*f)(char *name, const char *info, int pos, void *client))
 {
+    int i;
+
+    logf (LOG_DEBUG, "dict_scan");
+    for (i = 0; str[i]; i++)
+    {
+	logf (LOG_DEBUG, " %3d  %c", str[i],
+	      (str[i] > ' ' && str[i] < 127) ? str[i] : '?');
+    }
     if (dict->head.last <= 1)
         return 0;
     return dict_scan_r (dict, 1, 0, (Dict_char *) str, before, after, client,

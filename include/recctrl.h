@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.21  1997-09-18 08:59:19  adam
+ * Revision 1.22  1997-10-27 14:33:04  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.21  1997/09/18 08:59:19  adam
  * Extra generic handle for the character mapping routines.
  *
  * Revision 1.20  1997/09/17 12:19:10  adam
@@ -85,33 +91,19 @@
 #include <oid.h>
 #include <odr.h>
 #include <data1.h>
+#include <zebramap.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef enum {
-    Word_String,
-    Word_Phrase,
-    Word_Numeric
-} RecWordType;
 
 /* single word entity */
 typedef struct {
     int  attrSet;
     int  attrUse;
-    RecWordType which;
-#if 0
-    enum {
-	Word_String,
-	Word_Phrase,
-        Word_Numeric
-    } which;
-#endif
-    union {
-        char *string;
-        int  numeric;
-    } u;
+    unsigned reg_type;
+    char *string;
     int seqno;
 } RecWord;
 
@@ -126,7 +118,7 @@ struct recExtractCtrl {
     char      *subType;
     void      (*init)(RecWord *p);
     void      (*add)(const RecWord *p);
-    const char **(*map_chrs_input)(void *vp, const char **from, int len);
+    ZebraMaps zebra_maps;
     int       flagShowRecords;
     data1_handle dh;
 };

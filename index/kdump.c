@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.13  1997-09-09 13:38:07  adam
+ * Revision 1.14  1997-10-27 14:33:04  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.13  1997/09/09 13:38:07  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.12  1997/09/05 09:52:32  adam
@@ -128,7 +134,7 @@ int main (int argc, char **argv)
     char key_info[256];
     FILE *inf;
     struct it_key prevk;
-    chrmaptab *map = 0;
+    chrmaptab map = 0;
 
     prevk.sysno = 0;
     prevk.seqno = 0;
@@ -146,7 +152,7 @@ int main (int argc, char **argv)
         }
 	else if (ret == 'm')
 	{
-	    if (!(map = chr_read_maptab (NULL, arg)))
+	    if (!(map = chrmaptab_create (NULL, arg, 0)))
 	    {
 		logf(LOG_FATAL, "Failed to open maptab");
 		exit(1);
@@ -182,7 +188,7 @@ int main (int argc, char **argv)
 
 	    while (*from)
 	    {
-		char *res = (char*)map->output[(unsigned char) *(from++)];
+		char *res = chr_map_output(map, from, 1);
 		while (*res)
 		    *(to++) = *(res++);
 	    }

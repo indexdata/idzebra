@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebrautl.h,v $
- * Revision 1.3  1997-09-17 12:19:11  adam
+ * Revision 1.4  1997-10-27 14:33:04  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.3  1997/09/17 12:19:11  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -21,10 +27,7 @@
 #ifndef ZEBRA_UTIL_H
 #define ZEBRA_UTIL_H
 
-#include <log.h>
-#include <options.h>
-#include <xmalloc.h>
+#include <yaz-util.h>
 #include <res.h>
-#include <readconf.h>
 
 #endif

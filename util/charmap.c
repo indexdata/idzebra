@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.12  1997-09-05 15:30:11  adam
+ * Revision 1.13  1997-10-27 14:33:06  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.12  1997/09/05 15:30:11  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -53,17 +59,28 @@
 #include <string.h>
 #include <assert.h>
 
-#include <zebrautl.h>
 #include <yaz-util.h>
 #include <charmap.h>
-#include <tpath.h>
 
 #define CHR_MAXSTR 1024
 #define CHR_MAXEQUIV 32
 
+int chr_map_chrs(chr_t_entry *t, char **from, int len,
+		 int *read, char **to, int max);
+
 const char *CHR_UNKNOWN = "\001";
 const char *CHR_SPACE   = "\002";
 const char *CHR_BASE    = "\003";
+
+struct chrmaptab_info
+{
+    chr_t_entry *input;         /* mapping table for input data */
+    chr_t_entry *query_equiv;   /* mapping table for queries */
+    unsigned char *output[256]; /* return mapping - for display of registers */
+    int base_uppercase;         /* Start of upper-case ordinals */
+    char **tmp_buf;
+    NMEM nmem;
+};
 
 /*
  * Character map trie node.
@@ -80,19 +97,19 @@ struct chr_t_entry
  */
 typedef struct chrwork 
 {
-    chrmaptab *map;
+    chrmaptab map;
     char string[CHR_MAXSTR+1];
 } chrwork;
 
 /*
  * Add an entry to the character map.
  */
-static chr_t_entry *set_map_string(chr_t_entry *root, const char *from,
-				   int len, char *to)
+static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
+				   const char *from, int len, char *to)
 {
     if (!root)
     {
-	root = xmalloc(sizeof(*root));
+	root = nmem_malloc(nmem, sizeof(*root));
 	root->children = 0;
 	root->target = 0;
     }
@@ -100,7 +117,7 @@ static chr_t_entry *set_map_string(chr_t_entry *root, const char *from,
     {
 	if (!root->target || (char*) root->target == CHR_SPACE ||
 	    (char*) root->target == CHR_UNKNOWN)
-	    root->target = (unsigned char *) xstrdup(to);
+	    root->target = (unsigned char *) nmem_strdup(nmem, to);
 	else if ((char*) to != CHR_SPACE)
 	    logf(LOG_DEBUG, "Character map overlap");
     }
@@ -110,13 +127,13 @@ static chr_t_entry *set_map_string(chr_t_entry *root, const char *from,
 	{
 	    int i;
 
-	    root->children = xmalloc(sizeof(chr_t_entry*) * 256);
+	    root->children = nmem_malloc(nmem, sizeof(chr_t_entry*) * 256);
 	    for (i = 0; i < 256; i++)
 		root->children[i] = 0;
 	}
 	if (!(root->children[(unsigned char) *from] =
-	    set_map_string(root->children[(unsigned char) *from], from + 1,
-	    len - 1, to)))
+	    set_map_string(root->children[(unsigned char) *from], nmem,
+			   from + 1, len - 1, to)))
 	    return 0;
     }
     return root;
@@ -167,17 +184,24 @@ static chr_t_entry *find_entry(chr_t_entry *t, const char **from, int len)
    return t->target ? t : 0;
 }
 
-const char **chr_map_input(chr_t_entry *t, const char **from, int len)
+const char **chr_map_input(chrmaptab maptab, const char **from, int len)
 {
-    static const char *buf[2] = {0, 0};
+    chr_t_entry *t = maptab->input;
     chr_t_entry *res;
 
     if (!(res = find_entry(t, from, len)))
 	abort();
-    buf[0] = (char *) res->target;
-    return buf;
+    maptab->tmp_buf[0] = (char*) res->target;
+    maptab->tmp_buf[1] = NULL;
+    return (const char **) maptab->tmp_buf;
 }
 
+const char *chr_map_output(chrmaptab maptab, const char **from, int len)
+{
+    unsigned char c = ** (unsigned char **) from;
+    (*from)++;
+    return (const char*) maptab->output[c];
+}
 
 static unsigned char prim(char **s)
 {
@@ -214,12 +238,13 @@ static unsigned char prim(char **s)
  */
 static void fun_addentry(const char *s, void *data, int num)
 {
-    chrmaptab *tab = data;
+    chrmaptab tab = data;
     char tmp[2];
 
     tmp[0] = num; tmp[1] = '\0';
-    tab->input = set_map_string(tab->input, s, strlen(s), tmp);
-    tab->output[num + tab->base_uppercase] = (unsigned char *) xstrdup(s);
+    tab->input = set_map_string(tab->input, tab->nmem, s, strlen(s), tmp);
+    tab->output[num + tab->base_uppercase] =
+	(unsigned char *) nmem_strdup(tab->nmem, s);
 }
 
 /* 
@@ -228,8 +253,9 @@ static void fun_addentry(const char *s, void *data, int num)
  */
 static void fun_addspace(const char *s, void *data, int num)
 {
-    chrmaptab *tab = data;
-    tab->input = set_map_string(tab->input, s, strlen(s), (char*) CHR_SPACE);
+    chrmaptab tab = data;
+    tab->input = set_map_string(tab->input, tab->nmem, s, strlen(s),
+				(char*) CHR_SPACE);
 }
 
 /*
@@ -240,7 +266,7 @@ static void fun_mkstring(const char *s, void *data, int num)
     chrwork *arg = data;
     const char **res, *p = s;
 
-    res = chr_map_input(arg->map->input, &s, strlen(s));
+    res = chr_map_input(arg->map, &s, strlen(s));
     if (*res == (char*) CHR_UNKNOWN)
 	logf(LOG_WARN, "Map: '%s' has no mapping", p);
     strncat(arg->string, *res, CHR_MAXSTR - strlen(arg->string));
@@ -255,7 +281,7 @@ static void fun_addmap(const char *s, void *data, int num)
     chrwork *arg = data;
 
     assert(arg->map->input);
-    set_map_string(arg->map->input, s, strlen(s), arg->string);
+    set_map_string(arg->map->input, arg->map->nmem, s, strlen(s), arg->string);
 }
 
 static int scan_string(char *s, void (*fun)(const char *c, void *data, int num),
@@ -315,11 +341,11 @@ static int scan_string(char *s, void (*fun)(const char *c, void *data, int num),
     return 0;
 }
 
-chrmaptab *chr_read_maptab(const char *tabpath, const char *name)
+chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only)
 {
     FILE *f;
     char line[512], *argv[50];
-    chrmaptab *res = xmalloc(sizeof(*res));
+    chrmaptab res;
     int argc, num = (int) *CHR_BASE, i;
 
     if (!(f = yaz_path_fopen(tabpath, name, "r")))
@@ -328,21 +354,27 @@ chrmaptab *chr_read_maptab(const char *tabpath, const char *name)
 	return 0;
     }
     res = xmalloc(sizeof(*res));
-    res->input = xmalloc(sizeof(*res->input));
+    res->nmem = nmem_create ();
+    res->tmp_buf = nmem_malloc (res->nmem, sizeof(*res->tmp_buf) * 100);
+    res->input = nmem_malloc(res->nmem, sizeof(*res->input));
     res->input->target = (unsigned char*) CHR_UNKNOWN;
     res->input->equiv = 0;
-#if 1
-    res->input->children = xmalloc(sizeof(res->input) * 256);
+    res->input->children = nmem_malloc(res->nmem, sizeof(res->input) * 256);
     for (i = 0; i < 256; i++)
     {
-	res->input->children[i] = xmalloc(sizeof(*res->input));
+	res->input->children[i] = nmem_malloc(res->nmem, sizeof(*res->input));
 	res->input->children[i]->children = 0;
-	res->input->children[i]->target = (unsigned char*) CHR_UNKNOWN;
+	if (map_only)
+	{
+	    res->input->children[i]->target = nmem_malloc (res->nmem,
+							   2 * sizeof(char));
+	    res->input->children[i]->target[0] = i;
+	    res->input->children[i]->target[1] = 0;
+	}
+	else
+	    res->input->children[i]->target = (unsigned char*) CHR_UNKNOWN;
 	res->input->children[i]->equiv = 0;
     }
-#else
-    res->input->children = 0;
-#endif
     res->query_equiv = 0;
     for (i = *CHR_BASE; i < 256; i++)
 	res->output[i] = 0;
@@ -351,7 +383,7 @@ chrmaptab *chr_read_maptab(const char *tabpath, const char *name)
     res->base_uppercase = 0;
 
     while ((argc = readconf_line(f, line, 512, argv, 50)))
-	if (!yaz_matchstr(argv[0], "lowercase"))
+	if (!map_only && !yaz_matchstr(argv[0], "lowercase"))
 	{
 	    if (argc != 2)
 	    {
@@ -370,7 +402,7 @@ chrmaptab *chr_read_maptab(const char *tabpath, const char *name)
 	    res->output[(int) *CHR_UNKNOWN + num] = (unsigned char*) "@";
 	    num = (int) *CHR_BASE;
 	}
-	else if (!yaz_matchstr(argv[0], "uppercase"))
+	else if (!map_only && !yaz_matchstr(argv[0], "uppercase"))
 	{
 	    if (!res->base_uppercase)
 	    {
@@ -391,7 +423,7 @@ chrmaptab *chr_read_maptab(const char *tabpath, const char *name)
 		return 0;
 	    }
 	}
-	else if (!yaz_matchstr(argv[0], "space"))
+	else if (!map_only && !yaz_matchstr(argv[0], "space"))
 	{
 	    if (argc != 2)
 	    {
@@ -433,12 +465,16 @@ chrmaptab *chr_read_maptab(const char *tabpath, const char *name)
 	}
 	else
 	{
-#if 0
-	    logf(LOG_WARN, "Syntax error at '%s' in %s", line, file);
-	    fclose(f);
-	    return 0;
-#endif
+	    logf(LOG_WARN, "Syntax error at '%s' in %s", line, name);
 	}
     fclose(f);
     return res;
 }
+
+void chrmaptab_destroy(chrmaptab tab)
+{
+    nmem_destroy (tab->nmem);
+    xfree (tab);
+}
+
+

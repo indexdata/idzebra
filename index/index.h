@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.54  1997-09-29 09:08:36  adam
+ * Revision 1.55  1997-10-27 14:33:04  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.54  1997/09/29 09:08:36  adam
  * Revised locking system to be thread safe for the server.
  *
  * Revision 1.53  1997/09/25 14:54:43  adam
@@ -195,6 +201,7 @@
 #include <time.h>
 #include <zebraver.h>
 #include <zebrautl.h>
+#include <zebramap.h>
 
 #include <dict.h>
 #include <isam.h>
@@ -227,6 +234,7 @@ struct dirs_entry {
     time_t mtime;
 };
 
+
 struct recordGroup {
     char         *groupName;
     char         *databaseName;
@@ -239,6 +247,7 @@ struct recordGroup {
     int          fileVerboseLimit;
     data1_handle dh;
     BFiles       bfs;
+    ZebraMaps    zebra_maps;
 };
 
 void getFnameTmp (char *fname, int no);
@@ -315,8 +324,5 @@ int zebra_unlock (ZebraLockHandle h);
 int zebra_lock_fd (ZebraLockHandle h);
 void zebra_lock_prefix (Res res, char *dst);
 
-void init_charmap(Res res);
-const char **map_chrs_input(void *vp, const char **from, int len);
-const char *map_chrs_output(const char **from);
 
 extern Res common_resource;

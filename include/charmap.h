@@ -36,7 +36,13 @@
  * OF THIS SOFTWARE.
  *
  * $Log: charmap.h,v $
- * Revision 1.3  1997-09-05 15:29:59  adam
+ * Revision 1.4  1997-10-27 14:33:04  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.3  1997/09/05 15:29:59  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -56,18 +62,15 @@ extern const char *CHR_BASE;
 struct chr_t_entry;
 typedef struct chr_t_entry chr_t_entry;
 
-typedef struct chrmaptab
-{
-    chr_t_entry *input;         /* mapping table for input data */
-    chr_t_entry *query_equiv;   /* mapping table for queries */
-    unsigned char *output[256]; /* return mapping - for display of registers */
-    int base_uppercase;         /* Start of upper-case ordinals */
-} chrmaptab, *CHRMAPTAB;
+typedef struct chrmaptab_info *chrmaptab;
 
-chrmaptab *chr_read_maptab(const char *tabpath, const char *name);
-int chr_map_chrs(chr_t_entry *t, char **from, int len, int *read, char **to,
-    int max);
-const char **chr_map_input(chr_t_entry *t, const char **from, int len);
+chrmaptab chrmaptab_create(const char *tabpath, const char *name,
+			   int map_only);
+void chrmaptab_destroy (chrmaptab tab);
+
+const char **chr_map_input(chrmaptab t, const char **from, int len);
+
+const char *chr_map_output(chrmaptab t, const char **from, int len);
 
 #ifdef __cplusplus
 }

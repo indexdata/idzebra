@@ -1,3 +1,6 @@
+Moved towards generic character mapping. Type w, p uses
+string.chr, u uses urx.chr and n uses numeric.chr.
+
 Added support for C++, headers uses extern "C" for public definitions.
 
 New filter grs.marc.<syntax> that reads MARC records in the ISO2709

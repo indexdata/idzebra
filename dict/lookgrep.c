@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.19  1997-09-18 08:59:18  adam
+ * Revision 1.20  1997-10-27 14:33:03  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.19  1997/09/18 08:59:18  adam
  * Extra generic handle for the character mapping routines.
  *
  * Revision 1.18  1997/09/05 15:29:58  adam
@@ -413,7 +419,12 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     struct DFA *dfa = dfa_init();
     int i, d;
 
-    logf (LOG_DEBUG, "dict_lookup_grep '%s' range=%d", pattern, range);
+    logf (LOG_DEBUG, "dict_lookup_grep range=%d", range);
+    for (i = 0; pattern[i]; i++)
+    {
+	logf (LOG_DEBUG, " %3d  %c", pattern[i],
+	      (pattern[i] > ' ' && pattern[i] < 127) ? pattern[i] : '?');
+    }
    
     dfa_set_cmap (dfa, dict->grep_cmap_data, dict->grep_cmap);
 

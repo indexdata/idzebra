@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.50  1997-09-25 14:55:52  adam
+ * Revision 1.51  1997-10-27 14:33:05  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.50  1997/09/25 14:55:52  adam
  * Minor changes.
  *
  * Revision 1.49  1997/09/17 12:19:15  adam
@@ -227,6 +233,7 @@ int main (int argc, char **argv)
     rGroupDef.flagStoreKeys = -1;
     rGroupDef.flagShowRecords = 0;
     rGroupDef.fileVerboseLimit = 100000;
+    rGroupDef.zebra_maps = NULL;
     rGroupDef.dh = data1_create ();
 
     prog = *argv;
@@ -280,7 +287,8 @@ int main (int argc, char **argv)
 
                     bf_lockDir (rGroupDef.bfs,
 				res_get (common_resource, "lockDir"));
-		    init_charmap(common_resource);
+		    rGroupDef.zebra_maps = zebra_maps_open (res_get(
+			common_resource, "profilePath"));
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';

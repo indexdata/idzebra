@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.4  1997-09-25 14:57:08  adam
+ * Revision 1.5  1997-10-27 14:33:05  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.4  1997/09/25 14:57:08  adam
  * Added string.h.
  *
  * Revision 1.3  1996/05/22 08:21:59  adam
@@ -302,3 +308,4 @@ void zebTargetInfo_setDB (ZebTargetInfo *zti, ZebDatabaseInfo *zdi)
     zti->curDatabaseInfo->dirty = 1;
     memcpy (&zti->curDatabaseInfo->info, zdi, sizeof(*zdi));
 }
+

@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.50  1997-09-29 09:08:36  adam
+ * Revision 1.51  1997-10-27 14:33:06  adam
+ * Moved towards generic character mapping depending on "structure"
+ * field in abstract syntax file. Fixed a few memory leaks. Fixed
+ * bug with negative integers when doing searches with relational
+ * operators.
+ *
+ * Revision 1.50  1997/09/29 09:08:36  adam
  * Revised locking system to be thread safe for the server.
  *
  * Revision 1.49  1997/09/25 14:57:23  adam
@@ -259,7 +265,7 @@ static int register_lock (ZServerInfo *zi)
             return -1;
     }
     zi->zti = zebTargetInfo_open (zi->records, 0);
-    init_charmap (zi->res);
+
     return 0;
 }
 
@@ -321,6 +327,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     zi->records = NULL;
     zi->odr = odr_createmem (ODR_ENCODE);
     zi->registered_sets = NULL;
+    zi->zebra_maps = zebra_maps_open (res_get(zi->res, "profilePath"));
     return r;
 }
 
@@ -560,9 +567,11 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
 void bend_close (void *handle)
 {
     ZServerInfo *zi = handle;
+
     if (zi->records)
     {
         resultSetDestroy (zi);
+        zebTargetInfo_close (zi->zti, 0);
         dict_close (zi->dict);
         if (zi->isam)
             is_close (zi->isam);
@@ -571,11 +580,34 @@ void bend_close (void *handle)
         rec_close (&zi->records);
         register_unlock (zi);
     }
+    odr_destroy (zi->odr);
+    zebra_maps_close (zi->zebra_maps);
     bfs_destroy (zi->bfs);
     data1_destroy (zi->dh);
     zebra_server_lock_destroy (zi);
-    return;
+
+    res_close (zi->res);
+    xfree (zi);
 }
+
+#ifndef WINDOWS
+static void pre_init (struct statserv_options_block *sob)
+{
+    char *pidfile = "zebrasrv.pid";
+    int fd = creat (pidfile, 0666);
+    
+    if (fd == -1)
+	logf (LOG_WARN|LOG_ERRNO, "creat %s", pidfile);
+    else
+    {
+	char pidstr[30];
+	
+	sprintf (pidstr, "%ld", (long) getpid ());
+	write (fd, pidstr, strlen(pidstr));
+	close (fd);
+    }
+}
+#endif
 
 int main (int argc, char **argv)
 {
@@ -583,6 +615,9 @@ int main (int argc, char **argv)
 
     sob = statserv_getcontrol ();
     strcpy (sob->configname, FNAME_CONFIG);
+#ifndef WINDOWS
+    sob->pre_init = pre_init;
+#endif
     statserv_setcontrol (sob);
 
     return statserv_main (argc, argv);
