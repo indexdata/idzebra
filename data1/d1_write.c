@@ -1,4 +1,4 @@
-/* $Id: d1_write.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_write.c,v 1.3 2003-02-25 21:50:27 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -114,8 +114,6 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
 
         if (c->which == DATA1N_preprocess)
         {
-            data1_xattr *p;
-
             if (pretty_format)
                 indent (b, col);
 	    wrbuf_puts (b, "<?");
@@ -140,8 +138,6 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
 	    }
 	    else
 	    {
-		data1_xattr *p;
-
                 if (pretty_format)
                     indent (b, col);
 		wrbuf_puts (b, "<");	

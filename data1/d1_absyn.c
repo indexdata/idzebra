@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.6 2003-02-04 12:06:46 pop Exp $
+/* $Id: d1_absyn.c,v 1.7 2003-02-25 21:50:27 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -665,7 +665,6 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    int i;
 	    char *p, *xpath_expr, *termlists;
 	    const char *regexp;
-	    int type, value;
 	    struct DFA *dfa = dfa = dfa_init();
 	    data1_termlist **tp;
             
@@ -958,7 +957,6 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	}
         else if (!strcmp(cmd, "systag"))
         {
-            struct data1_systag *st;
             if (argc != 3)
             {
 		yaz_log(LOG_WARN, "%s:%d: Bad # or args for systag",
