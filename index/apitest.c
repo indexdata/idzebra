@@ -184,7 +184,7 @@ int main (int argc, char **argv)
 	for (i = 0; i<noOfRecordsToFetch; i++)
 	    records[i].position = i+1;
 	/* fetch them and request for GRS-1 records */
-	zebra_records_retrieve (zh, odr_input, setname, NULL, VAL_GRS1,
+	zebra_records_retrieve (zh, odr_input, setname, NULL, VAL_SUTRS,
 				noOfRecordsToFetch, records);
 
 	/* status ... */
@@ -218,6 +218,11 @@ int main (int argc, char **argv)
 		    printf ("  GRS-1\n");
 		    display_grs1(grs_record, 0);
 		}
+                else if (records[i].format == VAL_SUTRS)
+                {
+                    printf ("  SUTRS\n");
+                    printf ("%.*s", records[i].len, records[i].buf);
+                }
 		/* some other record we don't handle yet... */
 		else
 		{
