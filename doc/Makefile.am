@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.24 2004-08-19 13:10:49 adam Exp $
+## $Id: Makefile.am,v 1.25 2004-09-28 20:38:25 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -34,9 +34,9 @@ HTMLFILES =  \
 PNGFILES=zebra.png
 EPSFILES=zebra.eps
 
-MANFILES=zebraidx.1 zebrasrv.8
+MANFILES=zebraidx.1 zebrasrv.8 idzebra-config.1
 
-REFFILES=zebraidx-man.sgml zebrasrv-man.sgml
+REFFILES=zebraidx-man.sgml zebrasrv-man.sgml idzebra-config-man.sgml
 
 doc_DATA = $(HTMLFILES) zebra.pdf $(PNGFILES)
 man_MANS = $(MANFILES)
@@ -52,6 +52,9 @@ zebraidx.1: zebraidx-man.sgml zebraidx-options.xml zebraidx-commands.xml
 
 zebrasrv.8: zebrasrv-man.sgml
 	docbook2man $(srcdir)/zebrasrv-man.sgml
+
+idzebra-config.1: idzebra-config-man.sgml
+	docbook2man $(srcdir)/idzebra-config-man.sgml
 
 $(HTMLFILES): $(XMLFILES)
 	jade -E14 -D $(srcdir) -d zebrahtml.dsl -t sgml $(srcdir)/xml.dcl zebra.xml

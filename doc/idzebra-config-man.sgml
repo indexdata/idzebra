@@ -1,0 +1,129 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<!-- $Id: idzebra-config-man.sgml,v 1.1 2004-09-28 20:38:25 adam Exp $ -->
+<refentry id="idzebra-config">
+ 
+ <refmeta>
+  <refentrytitle>idzebra-config</refentrytitle>
+  <manvolnum>1</manvolnum>
+ </refmeta>
+ 
+ <refnamediv>
+  <refname>idzebra-config</refname>
+  <refpurpose>Script to get information about idzebra</refpurpose>
+ </refnamediv>
+ 
+ <refsynopsisdiv>
+  <cmdsynopsis>
+   <command>idzebra-config</command>
+   <arg choice="opt"><option>--prefix[=<replaceable>DIR</replaceable>]</option></arg>
+   <arg choice="opt"><option>--version</option></arg>
+   <arg choice="opt"><option>--libs</option></arg>
+   <arg choice="opt"><option>--lalibs</option></arg>
+   <arg choice="opt"><option>--cflags</option></arg>
+   <arg choice="opt"><option>--tabs</option></arg>
+   <arg choice="opt" rep="repeat">libraries</arg>
+  </cmdsynopsis>
+ </refsynopsisdiv>
+ 
+ <refsect1><title>DESCRIPTION</title>
+  <para>
+   <command>idzebra-config</command> is a script that returns information
+   that your own software should use to build software that uses idzebra.
+  </para>
+
+  <para>
+   The following libraries are supported:
+  </para>
+
+  <para>
+   None (yet)
+  </para>
+  
+ </refsect1>
+ 
+ <refsect1><title>OPTIONS</title>
+  
+  <variablelist>
+   <varlistentry>
+    <term>--prefix[=<replaceable>DIR</replaceable>]</term>
+    <listitem><para>
+      Returns prefix of idzebra or assume a different one if DIR is
+      specified.
+     </para></listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>--version</term>
+    <listitem><para>
+      Returns version of idzebra.
+     </para></listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>--libs</term>
+    <listitem><para>
+      Library specification be used when linking with idzebra.
+     </para></listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>--lalibs</term>
+    <listitem><para>
+      Return library specification.
+     </para></listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>--cflags</term>
+    <listitem><para>
+      Return C Compiler flags.
+     </para></listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term>--tabs</term>
+    <listitem><para>
+      Return directory of idzebra tables.
+     </para></listitem>
+   </varlistentry>
+
+  </variablelist>
+ </refsect1>
+ 
+ <refsect1><title>FILES</title>
+  <para>
+   <filename><replaceable>prefix</replaceable>/bin/idzebra-config</filename>
+  </para>
+  <para>
+   <filename><replaceable>prefix</replaceable>/lib/libidzebra*.a</filename>
+  </para>
+  <para>
+   <filename><replaceable>prefix</replaceable>/include/idzebra/*.h</filename>
+  </para>
+ </refsect1>
+ <!--
+ <refsect1><title>SEE ALSO</title>
+ <para>
+ yaz(7)
+  </para>
+ <para>
+ Section "How to make apps using YAZ on UNIX" in the YAZ manual.
+  </para>
+ </refsect1>
+ -->
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-local-catalogs: nil
+sgml-namecase-general:t
+End:
+-->
