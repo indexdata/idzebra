@@ -1,5 +1,5 @@
 <appendix id="indexdata">
- <!-- $Id: indexdata.xml,v 1.6 2002-10-20 14:02:03 mike Exp $ -->
+ <!-- $Id: indexdata.xml,v 1.7 2003-11-03 14:04:34 adam Exp $ -->
  <title>About Index Data and the Zebra Server</title>
  
  <para>
@@ -19,8 +19,8 @@
  </para>
  <para>
   <address>
-   Index Data Aps
-   <street>K&oslash;bmagergade 43</street>
+   Index Data ApS
+   <street>K&oslash;bmagergade 43, 2.</street>
    <postcode>1150 Copenhagen K</postcode>
    <country>Denmark</country>
    Phone <phone>+45 3341 0100</phone>
