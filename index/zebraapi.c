@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.151 2005-01-22 12:20:34 adam Exp $
+/* $Id: zebraapi.c,v 1.152 2005-01-23 12:36:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -681,6 +681,21 @@ void map_basenames_func (void *vp, const char *name, const char *value)
 	}
 }
 
+int zebra_select_default_database(ZebraHandle zh)
+{
+    if (!zh->res)
+    {
+	/* no database has been selected - so we select based on
+	   resource setting (including group)
+	*/
+	const char *group = res_get(zh->service->global_res, "group");
+	const char *v = res_get_prefix(zh->service->global_res,
+				       "database", group, "Default");
+	zebra_select_database(zh, v);
+    }
+    return 0;
+}
+
 void map_basenames (ZebraHandle zh, ODR stream,
 		    int *num_bases, char ***basenames)
 {
@@ -694,6 +709,7 @@ void map_basenames (ZebraHandle zh, ODR stream,
     zh->errCode = 0;
 
     info.zh = zh;
+
     info.num_bases = *num_bases;
     info.basenames = *basenames;
     info.new_num_max = 128;
@@ -1400,16 +1416,7 @@ static void read_res_for_transaction(ZebraHandle zh)
 int zebra_begin_trans (ZebraHandle zh, int rw)
 {
     ASSERTZH;
-    if (!zh->res)
-    {
-	/* no database has been selected - so we select based on
-	   resource setting (including group)
-	*/
-	const char *group = res_get(zh->service->global_res, "group");
-	const char *v = res_get_prefix(zh->service->global_res,
-				       "database", group, "Default");
-	zebra_select_database(zh, v);
-    }
+    zebra_select_default_database(zh);
     if (!zh->res)
     {
         zh->errCode = 2;
@@ -1752,6 +1759,7 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
     ASSERTZH;
     zh->errCode = 0;
 
+    zebra_select_default_database(zh);
     if (!zh->res)
     {
         zh->errCode = 109;
@@ -1825,6 +1833,7 @@ int zebra_init (ZebraHandle zh)
     yaz_log(log_level, "zebra_init");
     zh->errCode = 0;
 
+    zebra_select_default_database(zh);
     if (!zh->res)
     {
         zh->errCode = 109;
@@ -1832,8 +1841,7 @@ int zebra_init (ZebraHandle zh)
     }
     rval = res_get (zh->res, "shadow");
 
-    bfs = bfs_create (res_get (zh->service->global_res, "register"),
-                      zh->path_reg);
+    bfs = bfs_create (res_get (zh->res, "register"), zh->path_reg);
     if (!bfs)
 	return -1;
     if (rval && *rval)
