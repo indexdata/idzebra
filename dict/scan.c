@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.2  1995-10-06 10:43:16  adam
+ * Revision 1.3  1995-10-06 11:06:07  adam
+ * Bug fixes.
+ *
+ * Revision 1.2  1995/10/06  10:43:16  adam
  * Minor changes.
  *
  * Revision 1.1  1995/10/06  09:04:18  adam
@@ -48,7 +51,7 @@ void dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             for (j = 0; info[j] != DICT_EOS; j++)
 		str[pos+j] = info[j];
             str[pos+j] = DICT_EOS;
-            (*userfunc)(str, info+j*sizeof(Dict_char), *count * dir);
+            (*userfunc)(str, info+(j+1)*sizeof(Dict_char), *count * dir);
             --(*count);
         }
         else
@@ -105,7 +108,8 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 	    cmp = dict_strcmp ((Dict_char*) info, str + pos);
 	    if (!cmp)
             {
-                (*userfunc)(str, str, *after);
+                (*userfunc)(str, info+(dict_strlen(info)+1)*sizeof(Dict_char)
+                            , *after);
                 --(*after);
                 break;
             }
