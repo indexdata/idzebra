@@ -1,7 +1,7 @@
 Name: zebra
 Version: 1.3.0
 Release: 1
-Requires: yaz
+Requires: yaz expat bzip2-libs tcl
 Copyright: GPL
 Group: Applications/Databases
 Vendor: Index Data ApS <info@indexdata.dk>
@@ -9,6 +9,7 @@ Source: zebra-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 URL: http://www.indexdata.dk/zebra/
+BuildRequires: yaz expat-devel bzip2-devel tcl
 Summary: High-performance, structured text indexing and retrival engine.
 
 %description
