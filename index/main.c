@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.22  1995-11-28 09:09:42  adam
+ * Revision 1.23  1995-11-30 08:34:31  adam
+ * Started work on commit facility.
+ * Changed a few malloc/free to xmalloc/xfree.
+ *
+ * Revision 1.22  1995/11/28  09:09:42  adam
  * Zebra config renamed.
  * Use setting 'recordId' to identify record now.
  * Bug fix in recindex.c: rec_release_blocks was invokeded even
@@ -113,11 +117,21 @@ int main (int argc, char **argv)
     prog = *argv;
     if (argc < 2)
     {
-        fprintf (stderr, "index [-v log] [-m meg] [-c config] [-d base]"
-                 " [-g group] [update|del dir] ...\n");
+        fprintf (stderr, "zebraidx [options] command <dir> ...\n"
+        "Commands:\n"
+        " update <dir>  Update index with files below <dir>.\n"
+	"               If <dir> is empty filenames are read from stdin.\n"
+        " delete <dir>  Delete index with files below <dir>.\n"
+        "Options:\n"
+	" -t <type>     Index files as <type> (grs or text).\n"
+	" -c <config>   Read configuration file <config>.\n"
+	" -g <group>    Index files according to group settings.\n"
+	" -d <database> Records belong to Z39.50 database <database>.\n"
+	" -m <mbytes>   Use <mbytes> before flushing keys to disk.\n"
+	" -v <level>    Set logging to <level>.\n");
         exit (1);
     }
-    while ((ret = options ("t:c:g:v:m:d:", argv, argc, &arg)) != -2)
+    while ((ret = options ("t:c:g:d:m:v:l:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -184,6 +198,8 @@ int main (int argc, char **argv)
             configName = arg;
         else if (ret == 't')
             rGroupDef.recordType = arg;
+        else if (ret == 'l')
+            bf_cache (arg);
         else
         {
             logf (LOG_FATAL, "Unknown option '-%s'", arg);

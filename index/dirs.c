@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.3  1995-11-20 16:59:45  adam
+ * Revision 1.4  1995-11-30 08:34:27  adam
+ * Started work on commit facility.
+ * Changed a few malloc/free to xmalloc/xfree.
+ *
+ * Revision 1.3  1995/11/20  16:59:45  adam
  * New update method: the 'old' keys are saved for each records.
  *
  * Revision 1.2  1995/11/20  11:56:23  adam
@@ -77,22 +81,14 @@ struct dirs_info *dirs_open (Dict dict, const char *rep)
     int before = 0, after;
 
     logf (LOG_DEBUG, "dirs_open %s", rep);
-    if (!(p = malloc (sizeof (*p))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    p = xmalloc (sizeof (*p));
     p->dict = dict;
     strcpy (p->prefix, rep);
     p->prelen = strlen(p->prefix);
     strcpy (p->nextpath, rep);
     p->no_read = p->no_cur = 0;
     after = p->no_max = 400;
-    if (!(p->entries = malloc (sizeof(*p->entries) * (p->no_max))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    p->entries = xmalloc (sizeof(*p->entries) * (p->no_max));
     logf (LOG_DEBUG, "dirs_open first scan");
     dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
     return p;
@@ -171,8 +167,8 @@ void dirs_free (struct dirs_info **pp)
 {
     struct dirs_info *p = *pp;
 
-    free (p->entries);
-    free (p);
+    xfree (p->entries);
+    xfree (p);
     *pp = NULL;
 }
 

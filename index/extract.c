@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.35  1995-11-28 14:26:21  adam
+ * Revision 1.36  1995-11-30 08:34:29  adam
+ * Started work on commit facility.
+ * Changed a few malloc/free to xmalloc/xfree.
+ *
+ * Revision 1.35  1995/11/28  14:26:21  adam
  * Bug fix: recordId with constant wasn't right.
  * Bug fix: recordId dictionary entry wasn't deleted when needed.
  *
@@ -315,10 +319,10 @@ static void addRecordKey (const RecWord *p)
     {
         char *b;
 
-        b = malloc (reckeys.buf_max += 65000);
+        b = xmalloc (reckeys.buf_max += 65000);
         if (reckeys.buf_used > 0)
             memcpy (b, reckeys.buf, reckeys.buf_used);
-        free (reckeys.buf);
+        xfree (reckeys.buf);
         reckeys.buf = b;
     }
     dst = reckeys.buf + reckeys.buf_used;
@@ -786,18 +790,18 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             }
         }
     }
-    free (rec->info[recInfo_fileType]);
+    xfree (rec->info[recInfo_fileType]);
     rec->info[recInfo_fileType] =
         rec_strdup (rGroup->recordType, &rec->size[recInfo_fileType]);
 
-    free (rec->info[recInfo_filename]);
+    xfree (rec->info[recInfo_filename]);
     rec->info[recInfo_filename] =
         rec_strdup (fname, &rec->size[recInfo_filename]);
 
-    free (rec->info[recInfo_delKeys]);
+    xfree (rec->info[recInfo_delKeys]);
     if (reckeys.buf_used > 0 && rGroup->flagStoreKeys == 1)
     {
-        rec->info[recInfo_delKeys] = malloc (reckeys.buf_used);
+        rec->info[recInfo_delKeys] = xmalloc (reckeys.buf_used);
         rec->size[recInfo_delKeys] = reckeys.buf_used;
         memcpy (rec->info[recInfo_delKeys], reckeys.buf,
                 rec->size[recInfo_delKeys]);
@@ -808,11 +812,11 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         rec->size[recInfo_delKeys] = 0;
     }
 
-    free (rec->info[recInfo_storeData]);
+    xfree (rec->info[recInfo_storeData]);
     if (rGroup->flagStoreData == 1)
     {
         rec->size[recInfo_storeData] = file_noread;
-        rec->info[recInfo_storeData] = malloc (file_noread);
+        rec->info[recInfo_storeData] = xmalloc (file_noread);
         if (file_noread < FILE_READ_BUFSIZE)
 	    memcpy (rec->info[recInfo_storeData], file_buf, file_noread);
         else
@@ -836,7 +840,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         rec->info[recInfo_storeData] = NULL;
         rec->size[recInfo_storeData] = 0;
     }
-    free (rec->info[recInfo_databaseName]);
+    xfree (rec->info[recInfo_databaseName]);
     rec->info[recInfo_databaseName] =
         rec_strdup (rGroup->databaseName, &rec->size[recInfo_databaseName]); 
 

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.8  1995-11-28 14:26:21  adam
+ * Revision 1.9  1995-11-30 08:34:33  adam
+ * Started work on commit facility.
+ * Changed a few malloc/free to xmalloc/xfree.
+ *
+ * Revision 1.8  1995/11/28  14:26:21  adam
  * Bug fix: recordId with constant wasn't right.
  * Bug fix: recordId dictionary entry wasn't deleted when needed.
  *
@@ -127,14 +131,9 @@ static void rec_tmp_expand (Records p, int size, int dst_type)
     if (p->tmp_size < size + 256 ||
         p->tmp_size < p->head.block_size[dst_type]*2)
     {
-        free (p->tmp_buf);
-        p->tmp_size = size + p->head.block_size[dst_type]*2 +
-            256;
-        if (!(p->tmp_buf = malloc (p->tmp_size)))
-        {
-            logf (LOG_FATAL|LOG_ERRNO, "malloc");
-            exit (1);
-        }
+        xfree (p->tmp_buf);
+        p->tmp_size = size + p->head.block_size[dst_type]*2 + 256;
+        p->tmp_buf = xmalloc (p->tmp_size);
     }
 }
 
@@ -290,19 +289,10 @@ Records rec_open (int rw)
     Records p;
     int i, r;
 
-    if (!(p = malloc (sizeof(*p))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    p = xmalloc (sizeof(*p));
     p->rw = rw;
     p->tmp_size = 1024;
-    p->tmp_buf = malloc (p->tmp_size);
-    if (!p->tmp_buf)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    p->tmp_buf = xmalloc (p->tmp_size);
     p->index_fname = "recindex";
     p->index_BFile = bf_open (p->index_fname, 128, rw);
     if (p->index_BFile == NULL)
@@ -347,7 +337,7 @@ Records rec_open (int rw)
     {
         char str[80];
         sprintf (str, "recdata%c", i + 'A');
-        p->data_fname[i] = malloc (strlen(str)+1);
+        p->data_fname[i] = xmalloc (strlen(str)+1);
         strcpy (p->data_fname[i], str);
         p->data_BFile[i] = NULL;
     }
@@ -363,11 +353,7 @@ Records rec_open (int rw)
     }
     p->cache_max = 10;
     p->cache_cur = 0;
-    if (!(p->record_cache = malloc (sizeof(*p->record_cache)*p->cache_max)))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    p->record_cache = xmalloc (sizeof(*p->record_cache)*p->cache_max);
     return p;
 }
 
@@ -434,7 +420,7 @@ void rec_close (Records *pp)
     assert (p);
 
     rec_cache_flush (p);
-    free (p->record_cache);
+    xfree (p->record_cache);
 
     if (p->rw)
         rec_write_head (p);
@@ -446,10 +432,10 @@ void rec_close (Records *pp)
     {
         if (p->data_BFile[i])
             bf_close (p->data_BFile[i]);
-        free (p->data_fname[i]);
+        xfree (p->data_fname[i]);
     }
-    free (p->tmp_buf);
-    free (p);
+    xfree (p->tmp_buf);
+    xfree (p);
     *pp = NULL;
 }
 
@@ -476,11 +462,7 @@ Record rec_get (Records p, int sysno)
 
     assert (freeblock > 0);
     
-    if (!(rec = malloc (sizeof(*rec))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    rec = xmalloc (sizeof(*rec));
     rec_tmp_expand (p, entry.u.used.size, dst_type);
 
     cptr = p->tmp_buf;
@@ -507,7 +489,7 @@ Record rec_get (Records p, int sysno)
         nptr += sizeof(*rec->size);
         if (rec->size[i])
         {
-            rec->info[i] = malloc (rec->size[i]);
+            rec->info[i] = xmalloc (rec->size[i]);
             memcpy (rec->info[i], nptr, rec->size[i]);
             nptr += rec->size[i];
         }
@@ -524,11 +506,7 @@ Record rec_new (Records p)
     Record rec;
 
     assert (p);
-    if (!(rec = malloc (sizeof(*rec))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    rec = xmalloc (sizeof(*rec));
     if (p->head.index_free == 0)
         sysno = (p->head.index_last)++;
     else
@@ -588,8 +566,8 @@ void rec_rm (Record *recpp)
 {
     int i;
     for (i = 0; i < REC_NO_INFO; i++)
-        free ((*recpp)->info[i]);
-    free (*recpp);
+        xfree ((*recpp)->info[i]);
+    xfree (*recpp);
     *recpp = NULL;
 }
 
@@ -598,11 +576,7 @@ Record rec_cp (Record rec)
     Record n;
     int i;
 
-    if (!(n = malloc (sizeof(*n))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    n = xmalloc (sizeof(*n));
     n->sysno = rec->sysno;
     for (i = 0; i < REC_NO_INFO; i++)
         if (!rec->info[i])
@@ -613,11 +587,7 @@ Record rec_cp (Record rec)
         else
         {
             n->size[i] = rec->size[i];
-            if (!(n->info[i] = malloc (rec->size[i])))
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "malloc. rec_cp");
-                exit (1);
-            }
+            n->info[i] = xmalloc (rec->size[i]);
             memcpy (n->info[i], rec->info[i], rec->size[i]);
         }
     return n;
@@ -698,11 +668,7 @@ Records rec_open (int rw)
     Records p;
     int r;
 
-    if (!(p = malloc (sizeof(*p))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    p = xmalloc (sizeof(*p));
     p->rw = rw;
     p->tmp_buf = NULL;
     p->tmp_size = 0;
@@ -754,11 +720,7 @@ Records rec_open (int rw)
     }
     p->cache_max = 10;
     p->cache_cur = 0;
-    if (!(p->record_cache = malloc (sizeof(*p->record_cache)*p->cache_max)))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    p->record_cache = xmalloc (sizeof(*p->record_cache)*p->cache_max));
     return p;
 }
 
@@ -829,13 +791,9 @@ static void rec_write_single (Records p, Record rec)
     }
     if (p->tmp_size < entry.u.used.size) 
     {
-        free (p->tmp_buf);
+        xfree (p->tmp_buf);
         p->tmp_size = entry.u.used.size + 16384;
-        if (!(p->tmp_buf = malloc (p->tmp_size)))
-        {
-            logf (LOG_FATAL|LOG_ERRNO, "malloc");
-            exit (1);
-        }
+        p->tmp_buf = xmalloc (p->tmp_size));
     }
     cptr = p->tmp_buf;
     for (i = 0; i < REC_NO_INFO; i++)
@@ -906,7 +864,7 @@ void rec_close (Records *p)
     assert (*p);
 
     rec_cache_flush (*p);
-    free ((*p)->record_cache);
+    xfree ((*p)->record_cache);
 
     if ((*p)->rw)
         rec_write_head (*p);
@@ -917,9 +875,9 @@ void rec_close (Records *p)
     if ((*p)->data_fd != -1)
         close ((*p)->data_fd);
 
-    free ((*p)->tmp_buf);
+    xfree ((*p)->tmp_buf);
 
-    free (*p);
+    xfree (*p);
     *p = NULL;
 }
 
@@ -939,11 +897,7 @@ Record rec_get (Records p, int sysno)
 
     read_indx (p, sysno, &entry, sizeof(entry));
     
-    if (!(rec = malloc (sizeof(*rec))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    rec = xmalloc (sizeof(*rec));
     if (lseek (p->data_fd, entry.u.used.offset, SEEK_SET) == -1) 
     {
         logf (LOG_FATAL|LOG_ERRNO, "lseek in %s to pos %ld",
@@ -952,13 +906,9 @@ Record rec_get (Records p, int sysno)
     }
     if (p->tmp_size < entry.u.used.size) 
     {
-        free (p->tmp_buf);
+        xfree (p->tmp_buf);
         p->tmp_size = entry.u.used.size + 16384;
-        if (!(p->tmp_buf = malloc (p->tmp_size)))
-        {
-            logf (LOG_FATAL|LOG_ERRNO, "malloc");
-            exit (1);
-        }
+        p->tmp_buf = xmalloc (p->tmp_size));
     }
     for (got = 0; got < entry.u.used.size; got += r)
     {
@@ -978,7 +928,7 @@ Record rec_get (Records p, int sysno)
         nptr += sizeof(*rec->size);
         if (rec->size[i])
         {
-            rec->info[i] = malloc (rec->size[i]);
+            rec->info[i] = xmalloc (rec->size[i]);
             memcpy (rec->info[i], nptr, rec->size[i]);
             nptr += rec->size[i];
         }
@@ -995,11 +945,7 @@ Record rec_new (Records p)
     Record rec;
 
     assert (p);
-    if (!(rec = malloc (sizeof(*rec))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    rec = xmalloc (sizeof(*rec));
     if (p->head.index_free == 0)
         sysno = (p->head.index_last)++;
     else
@@ -1042,8 +988,8 @@ void rec_rm (Record *recpp)
 {
     int i;
     for (i = 0; i < REC_NO_INFO; i++)
-        free ((*recpp)->info[i]);
-    free (*recpp);
+        xfree ((*recpp)->info[i]);
+    xfree (*recpp);
     *recpp = NULL;
 }
 
@@ -1052,11 +998,7 @@ Record rec_cp (Record rec)
     Record n;
     int i;
 
-    if (!(n = malloc (sizeof(*n))))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    n = xmalloc (sizeof(*n));
     n->sysno = rec->sysno;
     for (i = 0; i < REC_NO_INFO; i++)
         if (!rec->info[i])
@@ -1067,11 +1009,7 @@ Record rec_cp (Record rec)
         else
         {
             n->size[i] = rec->size[i];
-            if (!(n->info[i] = malloc (rec->size[i])))
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "malloc. rec_cp");
-                exit (1);
-            }
+            n->info[i] = xmalloc (rec->size[i]);
             memcpy (n->info[i], rec->info[i], rec->size[i]);
         }
     return n;
@@ -1095,12 +1033,7 @@ char *rec_strdup (const char *s, size_t *len)
         return NULL;
     }
     *len = strlen(s)+1;
-    p = malloc (*len);
-    if (!p)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    p = xmalloc (*len);
     strcpy (p, s);
     return p;
 }
