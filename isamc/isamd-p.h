@@ -16,12 +16,12 @@ extern "C" {
 typedef struct {
     int lastblock;
     int freelist;
-} ISAMH_head;
+} ISAMD_head;
 
-typedef unsigned ISAMH_BLOCK_SIZE;
+typedef unsigned ISAMD_BLOCK_SIZE;
 
-typedef struct ISAMH_file_s {
-    ISAMH_head head;
+typedef struct ISAMD_file_s {
+    ISAMD_head head;
     BFile bf;
     int head_is_dirty;
     
@@ -45,44 +45,44 @@ typedef struct ISAMH_file_s {
 
     int fc_max;
     int *fc_list;
-} *ISAMH_file;
+} *ISAMD_file;
 
-struct ISAMH_s {
+struct ISAMD_s {
     int no_files;
     int max_cat;
   //  char *merge_buf;
     char *startblock; /* start of the chain, update lastptr and numKeys here */
     char *lastblock;  /* end of the chain, append here */
-    ISAMH_M method;
-    ISAMH_file files;
+    ISAMD_M method;
+    ISAMD_file files;
 }; 
 
-struct ISAMH_PP_s {
+struct ISAMD_PP_s {
     char *buf;
-    ISAMH_BLOCK_SIZE offset;
-    ISAMH_BLOCK_SIZE size;
+    ISAMD_BLOCK_SIZE offset;
+    ISAMD_BLOCK_SIZE size;
     int cat;  /* category of this block */
     int pos;  /* block number of this block */
     int next; /* number of the next block */
-    ISAMH is;
+    ISAMD is;
     void *decodeClientData;
     int deleteFlag;
     int numKeys;
-    ISAMH_BLOCK_SIZE lastblock;  /* last block in chain */
+    ISAMD_BLOCK_SIZE lastblock;  /* last block in chain */
 };
 
-#define ISAMH_BLOCK_OFFSET_N (sizeof(int) +  \
-                              sizeof(ISAMH_BLOCK_SIZE)) 
+#define ISAMD_BLOCK_OFFSET_N (sizeof(int) +  \
+                              sizeof(ISAMD_BLOCK_SIZE)) 
 /* == 8 */
-#define ISAMH_BLOCK_OFFSET_1 (sizeof(int) + \
-                              sizeof(ISAMH_BLOCK_SIZE) + \
+#define ISAMD_BLOCK_OFFSET_1 (sizeof(int) + \
+                              sizeof(ISAMD_BLOCK_SIZE) + \
                               sizeof(int) + \
-                              sizeof(ISAMH_BLOCK_SIZE)) 
+                              sizeof(ISAMD_BLOCK_SIZE)) 
 /* == 16 */
-int isamd_alloc_block (ISAMH is, int cat);
-void isamd_release_block (ISAMH is, int cat, int pos);
-int isamd_read_block (ISAMH is, int cat, int pos, char *dst);
-int isamd_write_block (ISAMH is, int cat, int pos, char *src);
+int isamd_alloc_block (ISAMD is, int cat);
+void isamd_release_block (ISAMD is, int cat, int pos);
+int isamd_read_block (ISAMD is, int cat, int pos, char *dst);
+int isamd_write_block (ISAMD is, int cat, int pos, char *src);
 
 #ifdef __cplusplus
 }
@@ -92,7 +92,10 @@ int isamd_write_block (ISAMH is, int cat, int pos, char *src);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.1  1999-07-14 12:34:43  heikki
+ * Revision 1.2  1999-07-14 13:21:34  heikki
+ * Added isam-d files. Compiles (almost) clean. Doesn't work at all
+ *
+ * Revision 1.1  1999/07/14 12:34:43  heikki
  * Copied from isamh, starting to change things...
  *
  *

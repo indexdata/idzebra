@@ -208,6 +208,7 @@ struct heap_info {
     ISAMC isamc;
     ISAMS isams;
     ISAMH isamh;
+    ISAMD isamd;
 };
 
 struct heap_info *key_heap_init (int nkeys,
@@ -478,6 +479,60 @@ int heap_inph (struct heap_info *hi)
     return 0;
 } 
 
+int heap_inpd (struct heap_info *hi)
+{
+    struct heap_cread_info hci;
+    ISAMD_I isamd_i = (ISAMD_I) xmalloc (sizeof(*isamd_i));
+
+    hci.key = (char *) xmalloc (KEY_SIZE);
+    hci.mode = 1;
+    hci.hi = hi;
+    hci.more = heap_read_one (hi, hci.cur_name, hci.key);
+
+    isamd_i->clientData = &hci;
+    isamd_i->read_item = heap_cread_item;
+
+    while (hci.more)
+    {
+        char this_name[INP_NAME_MAX];
+        ISAMD_P isamd_p, isamd_p2;
+        char *dict_info;
+
+        strcpy (this_name, hci.cur_name);
+	assert (hci.cur_name[1]);
+        no_diffs++;
+        if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
+        {
+            memcpy (&isamd_p, dict_info+1, sizeof(ISAMD_P));
+            isamd_p2 = isamd_append (hi->isamd, isamd_p, isamd_i);
+            if (!isamd_p2)
+            {
+                no_deletions++;
+                if (!dict_delete (hi->dict, this_name))
+                    abort();
+            }
+            else 
+            {
+                no_updates++;
+                if (isamd_p2 != isamd_p)
+                    dict_insert (hi->dict, this_name,
+                                 sizeof(ISAMD_P), &isamd_p2);
+            }
+        } 
+        else
+        {
+            isamd_p = isamd_append (hi->isamd, 0, isamd_i);
+            no_insertions++;
+            dict_insert (hi->dict, this_name, sizeof(ISAMD_P), &isamd_p);
+        }
+    }
+    xfree (isamd_i);
+    return 0;
+} 
+
+
+
+
 int heap_inp (struct heap_info *hi)
 {
     char *info;
@@ -591,6 +646,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
     ISAMC isamc = NULL;
     ISAMS isams = NULL;
     ISAMH isamh = NULL;
+    ISAMD isamd = NULL;
     struct key_file **kf;
     char rbuf[1024];
     int i, r;
@@ -648,6 +704,17 @@ void key_input (BFiles bfs, int nkeys, int cache)
             exit (1);
         }
     }
+    else if (res_get_match (common_resource, "isam", "d", NULL))
+    {
+	struct ISAMD_M_s isamd_m;
+        isamd = isamd_open (bfs, FNAME_ISAMD, 1,
+			  key_isamd_m (common_resource,&isamd_m));
+        if (!isamd)
+        {
+            logf (LOG_FATAL, "isamd_open fail");
+            exit (1);
+        }
+    }
     else
     {
 	struct ISAMC_M_s isamc_m;
@@ -678,6 +745,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
     hi->isamc = isamc;
     hi->isams = isams;
     hi->isamh = isamh;
+    hi->isamd = isamd;
     
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read (kf[i], rbuf)))
@@ -690,6 +758,8 @@ void key_input (BFiles bfs, int nkeys, int cache)
 	heap_inp (hi);
     else if (isamh)
 	heap_inph (hi);
+    else if (isamd)
+	heap_inpd (hi);
 	
     dict_close (dict);
     if (isam)
@@ -700,6 +770,8 @@ void key_input (BFiles bfs, int nkeys, int cache)
 	isams_close (isams);
     if (isamh)
         isamh_close (isamh);
+    if (isamd)
+        isamd_close (isamd);
    
     for (i = 1; i<=nkeys; i++)
     {
@@ -717,7 +789,10 @@ void key_input (BFiles bfs, int nkeys, int cache)
 
 /*
  * $Log: kinput.c,v $
- * Revision 1.36  1999-07-14 10:59:26  adam
+ * Revision 1.37  1999-07-14 13:21:34  heikki
+ * Added isam-d files. Compiles (almost) clean. Doesn't work at all
+ *
+ * Revision 1.36  1999/07/14 10:59:26  adam
  * Changed functions isc_getmethod, isams_getmethod.
  * Improved fatal error handling (such as missing EXPLAIN schema).
  *

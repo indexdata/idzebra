@@ -14,6 +14,7 @@
 #include <isamc.h>
 #include <isams.h>
 #include <isamh.h>
+#include <isamd.h>
 #include <data1.h>
 #include <recctrl.h>
 
@@ -102,6 +103,7 @@ void key_input (BFiles bfs, int nkeys, int cache);
 ISAMC_M key_isamc_m (Res res, ISAMC_M me);
 ISAMS_M key_isams_m (Res res, ISAMS_M me);
 ISAMH_M key_isamh_m (Res res);
+ISAMD_M key_isamd_m (Res res, ISAMD_M me);
 int merge_sort (char **buf, int from, int to);
 int key_SU_code (int ch, char *out);
 
@@ -110,6 +112,7 @@ int key_SU_code (int ch, char *out);
 #define FNAME_ISAMC "isamc"
 #define FNAME_ISAMS "isams"
 #define FNAME_ISAMH "isamh"
+#define FNAME_ISAMD "isamd"
 #define FNAME_CONFIG "zebra.cfg"
 
 #define GMATCH_DICT "gmatch"
@@ -158,7 +161,10 @@ extern Res common_resource;
 
 /*
  * $Log: index.h,v $
- * Revision 1.65  1999-07-14 10:59:26  adam
+ * Revision 1.66  1999-07-14 13:21:34  heikki
+ * Added isam-d files. Compiles (almost) clean. Doesn't work at all
+ *
+ * Revision 1.65  1999/07/14 10:59:26  adam
  * Changed functions isc_getmethod, isams_getmethod.
  * Improved fatal error handling (such as missing EXPLAIN schema).
  *
