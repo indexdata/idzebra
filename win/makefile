@@ -1,11 +1,11 @@
 # Z'mbol/Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.6 2000-05-23 21:28:03 adam Exp $
+# $Id: makefile,v 1.7 2001-07-10 00:04:53 adam Exp $
  
 ###########################################################
 ############### Parameters 
 ###########################################################
 
-DEBUG=1   # 0 for release, 1 for debug
+DEBUG=0   # 0 for release, 1 for debug
 ZMBOL=1
 
 default: all
@@ -265,6 +265,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\zrpn.obj \
 	$(OBJDIR)\zsets.obj \
 	$(OBJDIR)\isams.obj \
+	$(OBJDIR)\rsisamd.obj \
 	$(OBJDIR)\rsisams.obj 
 
 ALL_OBJS=\
@@ -395,7 +396,7 @@ $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
 ############### Explicit dependencies
 ###########################################################
 
-$(ALL_OBJS): makefile
+# $(ALL_OBJS): makefile
 
 # force recompilation of everything, if makefile changed
 
@@ -404,7 +405,10 @@ $(ALL_OBJS): makefile
 ###########################################################
 #
 # $Log: makefile,v $
-# Revision 1.6  2000-05-23 21:28:03  adam
+# Revision 1.7  2001-07-10 00:04:53  adam
+# Added file rsidamd.obj.
+#
+# Revision 1.6  2000/05/23 21:28:03  adam
 # Combined zebra/zmbol makefile.
 #
 # Revision 1.5  2000/05/05 13:48:03  adam
