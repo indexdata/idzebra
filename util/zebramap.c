@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.5  1997-11-19 10:22:14  adam
+ * Revision 1.6  1998-01-29 13:36:01  adam
+ * Structure word-list, free-form-text and document-text all
+ * trigger ranked search.
+ *
+ * Revision 1.5  1997/11/19 10:22:14  adam
  * Bug fix (introduced by previous commit).
  *
  * Revision 1.4  1997/11/18 10:05:08  adam
@@ -288,13 +292,16 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     
     switch (structure_value)
     {
+    case 6:   /* word list */
+    case 105: /* free-form-text */
+    case 106: /* document-text */
+        *search_type = "ranked";
+        *reg_type = 'w';
+        break;
     case -1:
     case 1:   /* phrase */
     case 2:   /* word */
     case 3:   /* key */
-    case 6:   /* word list */
-    case 105: /* free-form-text */
-    case 106: /* document-text */
     case 108: /* string */ 
 	if (*complete_flag)
 	    *reg_type = 'p';
