@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.31 2005-01-15 13:18:17 adam Exp $
+# $Id: makefile,v 1.32 2005-01-16 00:00:29 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -17,7 +17,7 @@ ICONV_DIR = c:\iconv-1.9.1.win32
 
 default: all
 
-all: dirs zebralib zserver zindex
+all: dirs iconv zebralib zserver zindex 
 
 ###########################################################
 ############### Directories
@@ -119,9 +119,14 @@ EXPAT_DLL_TARGET=
 !if $(HAVE_ICONV)
 ICONV_DEF= /D HAVE_ICONV_H=1 /I"$(ICONV_DIR)\include"
 ICONV_LIB= $(ICONV_DIR)\lib\iconv.lib
+iconv: $(BINDIR)\iconv.dll
+
+$(BINDIR)\iconv.dll:
+	copy "$(ICONV_DIR)\lib\iconv.dll" $(BINDIR)
 !else
 ICONV_DEF= /D HAVE_ICONV_H=0
 ICONV_LIB=
+iconv:
 !endif
 
 ### C and CPP compiler  (the same thing)
@@ -450,7 +455,7 @@ $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
  	if not exist "$@/$(NUL)" mkdir "$@"
 
 $(YAZ_DLL_TARGET) : $(YAZ_DLL_SOURCE)
-	copy $(YAZ_DLL_SOURCE) $(YAZ_DLL_TARGET)
+	copy $(YAZBINDIR)\*.dll $(BINDIR)
 
 ###########################################################
 ############### Explicit dependencies
