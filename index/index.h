@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.21  1995-11-16 15:34:55  adam
+ * Revision 1.22  1995-11-20 11:56:26  adam
+ * Work on new traversal.
+ *
+ * Revision 1.21  1995/11/16  15:34:55  adam
  * Uses new record management system in both indexer and server.
  *
  * Revision 1.20  1995/11/15  14:46:18  adam
@@ -85,18 +88,39 @@ struct it_key {
     int   seqno;
 };
 
+enum dirsKind { dirs_dir, dirs_file };
+
 struct dir_entry {
+    enum dirsKind kind;
     char *name;
+    int ctime;
 };
+
+struct dirs_entry {
+    enum dirsKind kind;
+    char path[256];
+    int sysno;
+    int ctime;
+};
+
+struct dirs_info *dirs_open (Dict dict, const char *rep);
+struct dirs_entry *dirs_read (struct dirs_info *p);
+struct dirs_entry *dirs_last (struct dirs_info *p);
+void dirs_mkdir (struct dirs_info *p, const char *src, int ctime);
+void dirs_rmdir (struct dirs_info *p, const char *src);
+void dirs_add (struct dirs_info *p, const char *src, int sysno, int ctime);
+void dirs_del (struct dirs_info *p, const char *src);
+void dirs_free (struct dirs_info **pp);
 
 struct dir_entry *dir_open (const char *rep);
 void dir_sort (struct dir_entry *e);
 void dir_free (struct dir_entry **e_p);
 void repository (int cmd, const char *rep, const char *base_path,
                  char *databaseName);
+void repositoryUpdate (const char *path, char *databaseName);
 
-void file_extract (int cmd, const char *fname, const char *kname,
-                   char *databaseName);
+SYSNO file_extract (int cmd, const char *fname, const char *kname,
+                    char *databaseName);
 
 void key_open (int mem);
 int key_close (void);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.25  1995-11-16 15:34:54  adam
+ * Revision 1.26  1995-11-20 11:56:24  adam
+ * Work on new traversal.
+ *
+ * Revision 1.25  1995/11/16  15:34:54  adam
  * Uses new record management system in both indexer and server.
  *
  * Revision 1.24  1995/11/15  19:13:08  adam
@@ -392,8 +395,8 @@ static int file_read (int fd, char *buf, size_t count)
     return read (fd, buf, count);
 }
 #endif
-void file_extract (int cmd, const char *fname, const char *kname,
-                   char *databaseName)
+SYSNO file_extract (int cmd, const char *fname, const char *kname,
+                    char *databaseName)
 {
     int i, r;
     char ext[128];
@@ -418,9 +421,9 @@ void file_extract (int cmd, const char *fname, const char *kname,
         }
     sprintf (ext_res, "fileExtension.%s", ext);
     if (!(file_type = res_get (common_resource, ext_res)))
-        return;
+        return 0;
     if (!(rt = recType_byName (file_type)))
-        return;
+        return 0;
     logf (LOG_DEBUG, "%c %s k=%s", cmd, fname, kname);
     file_info = dict_lookup (file_idx, kname);
     if (!file_info)
@@ -448,7 +451,7 @@ void file_extract (int cmd, const char *fname, const char *kname,
     if ((extractCtrl.fd = open (fname, O_RDONLY)) == -1)
     {
         logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
-        return;
+        return 0;
     }
     extractCtrl.subType = "";
     extractCtrl.init = wordInit;
@@ -466,4 +469,5 @@ void file_extract (int cmd, const char *fname, const char *kname,
     close (extractCtrl.fd);
     if (r)
         logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
+    return sysno;
 }

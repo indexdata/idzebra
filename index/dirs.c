@@ -4,37 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.1  1995-11-17 15:54:42  adam
+ * Revision 1.2  1995-11-20 11:56:23  adam
+ * Work on new traversal.
+ *
+ * Revision 1.1  1995/11/17  15:54:42  adam
  * Started work on virtual directory structure.
- *
- * Revision 1.9  1995/10/30  13:42:12  adam
- * Added errno.h
- *
- * Revision 1.8  1995/10/10  13:59:23  adam
- * Function rset_open changed its wflag parameter to general flags.
- *
- * Revision 1.7  1995/09/28  09:19:40  adam
- * xfree/xmalloc used everywhere.
- * Extract/retrieve method seems to work for text records.
- *
- * Revision 1.6  1995/09/08  14:52:26  adam
- * Minor changes. Dictionary is lower case now.
- *
- * Revision 1.5  1995/09/06  16:11:16  adam
- * Option: only one word key per file.
- *
- * Revision 1.4  1995/09/04  12:33:41  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.3  1995/09/01  14:06:35  adam
- * Split of work into more files.
- *
- * Revision 1.2  1995/09/01  10:57:07  adam
- * Minor changes.
- *
- * Revision 1.1  1995/09/01  10:34:51  adam
- * Added dir.c
- *
  */
 #include <stdio.h>
 #include <assert.h>
@@ -45,88 +19,153 @@
 #include <alexutil.h>
 #include "index.h"
 
-struct dirs_entry {
-    char path[160];
-    int sysno;
-};
-
 struct dirs_info {
-    int no;
-    struct dirs_entry *entries;
-};
-
-struct dirs_client_info {
-    struct dirs_info *di;
+    Dict dict;
+    int no_read;
+    int no_cur;
     int no_max;
-    char *prefix;
+    struct dirs_entry *entries;
+    char nextpath[256];
+    char prefix[256];
     int prelen;
+    struct dirs_entry *last_entry;
 };
 
 static int dirs_client_proc (Dict_char *name, const char *info, int pos,
                              void *client)
 {
-    struct dirs_client_info *ci = client;
+    struct dirs_info *ci = client;
+    struct dirs_entry *entry;
 
     if (memcmp (name, ci->prefix, ci->prelen))
         return 1;
-    if (ci->di->no == ci->no_max)
+    if (ci->no_cur < 0)
     {
-        if (ci->no_max > 0)
-        {
-            struct dirs_entry *arn;
-
-            ci->no_max += 1000;
-            arn = malloc (sizeof(*arn) * (ci->no_max));
-            if (!arn)
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "malloc");
-                exit (1);
-            }
-            memcpy (arn, ci->di->entries, ci->di->no * sizeof(*arn));
-            free (ci->di->entries);
-            ci->di->entries = arn;
-        }
+        ci->no_cur = 0;
+        return 0;
     }
-    strcpy ((ci->di->entries + ci->di->no)->path, name); 
-    memcpy (&(ci->di->entries + ci->di->no)->sysno, info+1, *info);
-    assert (*info == sizeof(ci->di->entries->sysno));
-    ++(ci->di->no);
+    if (ci->no_cur == ci->no_max)
+    {
+        assert (0);
+    }
+    entry = ci->entries + ci->no_cur;
+    if (info[0] == sizeof(entry->sysno)+sizeof(entry->ctime))
+    {
+        strcpy (entry->path, name + ci->prelen); 
+        entry->kind = dirs_file;
+        memcpy (&entry->sysno, info+1, sizeof(entry->sysno));
+        memcpy (&entry->ctime, info+1+sizeof(entry->sysno), 
+                sizeof(entry->ctime));
+        ci->no_cur++;
+    } 
+    else if (info[0] == sizeof(entry->ctime))
+    {
+        strcpy (entry->path, name + ci->prelen);
+        entry->kind = dirs_dir;
+        memcpy (&entry->ctime, info+1, sizeof(entry->ctime));
+        ci->no_cur++;
+    }
     return 0;
 }
 
 struct dirs_info *dirs_open (Dict dict, const char *rep)
 {
-    static char wname[200];
-    static char pname[200];
-    int dirid;
-    char *dinfo;
-    struct dirs_client_info dirs_client_info;
     struct dirs_info *p;
-    int before, after;
+    int before = 0, after;
 
-    sprintf (wname, "d%s", rep);
-    dinfo = dict_lookup (dict, wname);
-    if (!dinfo)
-        return NULL;
+    logf (LOG_DEBUG, "dirs_open %s", rep);
     if (!(p = malloc (sizeof (*p))))
     {
         logf (LOG_FATAL|LOG_ERRNO, "malloc");
         exit (1);
     }
-    memcpy (&dirid, dinfo+1, sizeof(dirid));
-    sprintf (wname, "%d.", dirid);
-    strcpy (pname, wname);
-
-    p->no = 0;
-    dirs_client_info.di = p;
-    dirs_client_info.no_max = 0;
-    dirs_client_info.prefix = wname;
-    dirs_client_info.prelen = strlen(wname);
-    strcpy (pname, wname);
-    dict_scan (dict, pname, &before, &after, &dirs_client_info,
-               dirs_client_proc);
-
+    p->dict = dict;
+    strcpy (p->prefix, rep);
+    p->prelen = strlen(p->prefix);
+    strcpy (p->nextpath, rep);
+    p->no_read = p->no_cur = 0;
+    after = p->no_max = 400;
+    if (!(p->entries = malloc (sizeof(*p->entries) * (p->no_max))))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "malloc");
+        exit (1);
+    }
+    logf (LOG_DEBUG, "dirs_open first scan");
+    dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
     return p;
+}
+
+struct dirs_entry *dirs_read (struct dirs_info *p)
+{
+    int before = 0, after = p->no_max;
+
+    if (p->no_read < p->no_cur)
+    {
+        logf (LOG_DEBUG, "dirs_read %d. returns %s", p->no_read,
+              (p->entries + p->no_read)->path);
+        return p->last_entry = p->entries + (p->no_read++);
+    }
+    if (p->no_cur < p->no_max)
+        return p->last_entry = NULL;
+#if 0
+    strcpy (p->nextpath, p->prefix);
+    strcat (p->nextpath, (p->entries + p->no_max-1)->path);
+#endif
+    p->no_cur = -1;
+    logf (LOG_DEBUG, "dirs_read rescan");
+    dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
+    p->no_read = 1;
+    if (p->no_read < p->no_cur)
+        return p->last_entry = p->entries;
+    return p->last_entry = NULL;
+}
+
+struct dirs_entry *dirs_last (struct dirs_info *p)
+{
+    return p->last_entry;
+}
+
+void dirs_mkdir (struct dirs_info *p, const char *src, int ctime)
+{
+    char path[256];
+
+    sprintf (path, "%s%s", p->prefix, src);
+    logf (LOG_DEBUG, "dirs_mkdir %s", path);
+    dict_insert (p->dict, path, sizeof(ctime), &ctime);
+}
+
+void dirs_rmdir (struct dirs_info *p, const char *src)
+{
+    char path[256];
+    char info[2];
+
+    sprintf (path, "%s%s", p->prefix, src);
+    logf (LOG_DEBUG, "dirs_rmdir %s", path);
+    info[0] = 'r';
+    dict_insert (p->dict, path, 1, info);
+}
+
+void dirs_add (struct dirs_info *p, const char *src, int sysno, int ctime)
+{
+    char path[256];
+    char info[16];
+
+    sprintf (path, "%s%s", p->prefix, src);
+    logf (LOG_DEBUG, "dirs_add %s", path);
+    memcpy (info, &sysno, sizeof(sysno));
+    memcpy (info+sizeof(sysno), &ctime, sizeof(ctime));
+    dict_insert (p->dict, path, sizeof(sysno)+sizeof(ctime), info);
+}
+
+void dirs_del (struct dirs_info *p, const char *src)
+{
+    char path[256];
+    char info[2];
+
+    sprintf (path, "%s%s", p->prefix, src);
+    logf (LOG_DEBUG, "dirs_del %s", path);
+    info[0] = 'r';
+    dict_insert (p->dict, path, 1, info);
 }
 
 void dirs_free (struct dirs_info **pp)
@@ -137,3 +176,4 @@ void dirs_free (struct dirs_info **pp)
     free (p);
     *pp = NULL;
 }
+

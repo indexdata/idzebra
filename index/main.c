@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.15  1995-11-01 16:25:51  quinn
+ * Revision 1.16  1995-11-20 11:56:27  adam
+ * Work on new traversal.
+ *
+ * Revision 1.15  1995/11/01  16:25:51  quinn
  * *** empty log message ***
  *
  * Revision 1.14  1995/10/17  18:02:09  adam
@@ -114,7 +117,11 @@ int main (int argc, char **argv)
                     key_open (mem_max);
                     key_open_flag = 1;
                 }
+#if 0
                 repository (cmd, arg, base_path, databaseName);
+#else
+                repositoryUpdate (arg, databaseName);
+#endif
                 cmd = 0;
             }
         }
