@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.8 1995-11-28 16:56:26 quinn Exp $
+  $Id: zebra.sgml,v 1.9 1995-12-01 11:37:31 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.8 $
+<date>$Revision: 1.9 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -408,6 +408,9 @@ explained further in the following sections.
 <tag>register</tag> 
  Specifies the location of the various files that Zebra uses to represent
  your system.
+<tag>tempSetPath</tag>
+ Specifies the directory that the server uses for temporary result sets.
+ If not specified <tt>/tmp</tt> will be used.
 <tag>profilePath</tag>
  Specifies the location of profile specification paths.
 <tag>attset</tag> 
