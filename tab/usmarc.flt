@@ -9,7 +9,7 @@ BEGIN			     { begin record usmarc }
 				end element
                              }
 /^.../ / / /../              { begin element $0 }
-/\$/ /./ / / BODY / *[$\n]/  { data -element $1 $3; unread 4 }
+/[$*]/ /./ / / BODY / *[$*\n]/  { data -element $1 $3; unread 4 }
 /\n/                         { end element }
 
 /./                          { }
