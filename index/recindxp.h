@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindxp.h,v $
- * Revision 1.1  1995-12-06 12:41:25  adam
+ * Revision 1.2  1995-12-11 09:12:51  adam
+ * The rec_get function returns NULL if record doesn't exist - will
+ * happen in the server if the result set records have been deleted since
+ * the creation of the set (i.e. the search).
+ * The server saves a result temporarily if it is 'volatile', i.e. the
+ * set is register dependent.
+ *
+ * Revision 1.1  1995/12/06  12:41:25  adam
  * New command 'stat' for the index program.
  * Filenames can be read from stdin by specifying '-'.
  * Bug fix/enhancement of the transformation from terms to regular
@@ -62,6 +69,10 @@ struct record_cache_entry {
 };
 
 struct record_index_entry {
+#if 1
+    int next;         /* first block of record info / next free entry */
+    int size;         /* size of record or 0 if free entry */
+#else
     union {
         struct {
             int next;
@@ -71,5 +82,6 @@ struct record_index_entry {
             int next;
         } free;
     } u;
+#endif
 };
 

@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.31  1995-12-08 16:22:56  adam
+ * Revision 1.32  1995-12-11 09:12:58  adam
+ * The rec_get function returns NULL if record doesn't exist - will
+ * happen in the server if the result set records have been deleted since
+ * the creation of the set (i.e. the search).
+ * The server saves a result temporarily if it is 'volatile', i.e. the
+ * set is register dependent.
+ *
+ * Revision 1.31  1995/12/08  16:22:56  adam
  * Work on update while servers are running. Three lock files introduced.
  * The servers reload their registers when necessary, but they don't
  * reestablish result sets yet.
@@ -168,8 +175,20 @@ static int register_lock (ZServerInfo *zi)
     return 0;
 }
 
-static int register_unlock (ZServerInfo *zi)
+static void register_unlock (ZServerInfo *zi)
 {
+    static int waitSec = -1;
+
+    if (waitSec == -1)
+    {
+        char *s = res_get (common_resource, "debugRequestWait");
+        if (s)
+            waitSec = atoi (s);
+        else
+            waitSec = 0;
+    }
+    if (waitSec > 0)
+        sleep (waitSec);
     if (zi->registerState != -1)
         zebraServerUnlock (zi->registerState);
 }
@@ -270,6 +289,14 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     char subType[128];
 
     rec = rec_get (zi->records, sysno);
+    if (!rec)
+    {
+        char *msg = "Record is deleted\n";
+        *output_format = VAL_SUTRS;
+        *rec_bufp = msg;
+        *rec_lenp = strlen (msg);
+        return 0;
+    }
     file_type = rec->info[recInfo_fileType];
     fname = rec->info[recInfo_filename];
 
@@ -292,7 +319,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     {
         if ((retrieveCtrl.fd = open (fname, O_RDONLY)) == -1)
         {
-            char *msg = "Record doesn't exist";
+            char *msg = "Record doesn't exist\n";
             logf (LOG_WARN|LOG_ERRNO, "Retrieve: Open record file %s", fname);
             *output_format = VAL_SUTRS;
             *rec_bufp = msg;

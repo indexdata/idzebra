@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.37  1995-12-06 15:05:28  adam
+ * Revision 1.38  1995-12-11 09:12:55  adam
+ * The rec_get function returns NULL if record doesn't exist - will
+ * happen in the server if the result set records have been deleted since
+ * the creation of the set (i.e. the search).
+ * The server saves a result temporarily if it is 'volatile', i.e. the
+ * set is register dependent.
+ *
+ * Revision 1.37  1995/12/06  15:05:28  adam
  * More verbose in count_set.
  *
  * Revision 1.36  1995/12/06  12:41:27  adam
@@ -1116,12 +1123,15 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
     if (zs->which == Z_RPNStructure_complex)
     {
         rset_bool_parms bool_parms;
+        int soft = 0;
 
         bool_parms.rset_l = rpn_search_structure (zi, zs->u.complex->s1,
                                                   attributeSet,
                                                   num_bases, basenames);
         if (bool_parms.rset_l == NULL)
             return NULL;
+        if (rset_is_ranked(bool_parms.rset_l))
+            soft = 1;
         bool_parms.rset_r = rpn_search_structure (zi, zs->u.complex->s2,
                                                   attributeSet,
                                                   num_bases, basenames);
@@ -1130,19 +1140,21 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
             rset_delete (bool_parms.rset_l);
             return NULL;
         }
+        if (rset_is_ranked(bool_parms.rset_r))
+            soft = 1;
         bool_parms.key_size = sizeof(struct it_key);
         bool_parms.cmp = key_compare;
 
         switch (zs->u.complex->operator->which)
         {
         case Z_Operator_and:
-            r = rset_create (rset_kind_and, &bool_parms);
+            r = rset_create (soft ? rset_kind_sand:rset_kind_and, &bool_parms);
             break;
         case Z_Operator_or:
-            r = rset_create (rset_kind_or, &bool_parms);
+            r = rset_create (soft ? rset_kind_sor:rset_kind_or, &bool_parms);
             break;
         case Z_Operator_and_not:
-            r = rset_create (rset_kind_not, &bool_parms);
+            r = rset_create (soft ? rset_kind_snot:rset_kind_not, &bool_parms);
             break;
         default:
             assert (0);
@@ -1173,6 +1185,38 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
     return r;
 }
 
+void count_set_save (RSET *r, int *count)
+{
+    int psysno = 0;
+    int kno = 0;
+    struct it_key key;
+    RSFD rfd, wfd;
+    RSET w;
+    rset_temp_parms parms;
+
+    logf (LOG_DEBUG, "count_set_save");
+    *count = 0;
+    parms.key_size = sizeof(struct it_key);
+    w = rset_create (rset_kind_temp, &parms);
+    wfd = rset_open (w, RSETF_WRITE|RSETF_SORT_SYSNO);
+    rfd = rset_open (*r, RSETF_READ|RSETF_SORT_SYSNO);
+    while (rset_read (*r, rfd, &key))
+    {
+        if (key.sysno != psysno)
+        {
+            rset_write (w, wfd, &key);
+            psysno = key.sysno;
+            (*count)++;
+        }
+        kno++;
+    }
+    rset_close (*r, rfd);
+    rset_delete (*r);
+    rset_close (w, wfd);
+    *r = w;
+    logf (LOG_DEBUG, "%d keys, %d distinct sysnos", kno, *count);
+}
+
 static void count_set (RSET r, int *count)
 {
     int psysno = 0;
@@ -1180,7 +1224,7 @@ static void count_set (RSET r, int *count)
     struct it_key key;
     RSFD rfd;
 
-    logf (LOG_DEBUG, "rpn_save_set");
+    logf (LOG_DEBUG, "count_set");
     *count = 0;
     rfd = rset_open (r, RSETF_READ|RSETF_SORT_SYSNO);
     while (rset_read (r, rfd, &key))
@@ -1215,7 +1259,10 @@ int rpn_search (ZServerInfo *zi,
                                  num_bases, basenames);
     if (!rset)
         return zi->errCode;
-    count_set (rset, hits);
+    if (rset_is_volatile(rset))
+        count_set_save(&rset,hits);
+    else
+        count_set (rset, hits);
     resultSetAdd (zi, setname, 1, rset);
     if (zi->errCode)
         logf (LOG_DEBUG, "search error: %d", zi->errCode);

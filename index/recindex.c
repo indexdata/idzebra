@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.12  1995-12-07 17:38:47  adam
+ * Revision 1.13  1995-12-11 09:12:49  adam
+ * The rec_get function returns NULL if record doesn't exist - will
+ * happen in the server if the result set records have been deleted since
+ * the creation of the set (i.e. the search).
+ * The server saves a result temporarily if it is 'volatile', i.e. the
+ * set is register dependent.
+ *
+ * Revision 1.12  1995/12/07  17:38:47  adam
  * Work locking mechanisms for concurrent updates/commit.
  *
  * Revision 1.11  1995/12/06  13:58:26  adam
@@ -118,8 +125,8 @@ static void rec_release_blocks (Records p, int sysno)
 
     if (read_indx (p, sysno, &entry, sizeof(entry), 1) != 1)
         return ;
-    p->head.total_bytes -= entry.u.used.size;
-    freeblock = entry.u.used.next;
+    p->head.total_bytes -= entry.size;
+    freeblock = entry.next;
     assert (freeblock > 0);
     dst_type = freeblock & 7;
     assert (dst_type < REC_BLOCK_TYPES);
@@ -150,7 +157,8 @@ static void rec_delete_single (Records p, Record rec)
 
     rec_release_blocks (p, rec->sysno);
 
-    entry.u.free.next = p->head.index_free;
+    entry.next = p->head.index_free;
+    entry.size = 0;
     p->head.index_free = rec->sysno;
     write_indx (p, rec->sysno, &entry, sizeof(entry));
 }
@@ -206,8 +214,8 @@ static void rec_write_single (Records p, Record rec)
             block_free = p->head.block_last[dst_type]++;
         if (block_prev == -1)
         {
-            entry.u.used.next = block_free*8 + dst_type;
-            entry.u.used.size = size;
+            entry.next = block_free*8 + dst_type;
+            entry.size = size;
             p->head.total_bytes += size;
             write_indx (p, rec->sysno, &entry, sizeof(entry));
         }
@@ -424,16 +432,20 @@ Record rec_get (Records p, int sysno)
     if ((recp = rec_cache_lookup (p, sysno, recordFlagNop)))
         return rec_cp (*recp);
 
-    read_indx (p, sysno, &entry, sizeof(entry), 0);
+    if (!read_indx (p, sysno, &entry, sizeof(entry), 1))
+        return NULL;       /* record is not there! */
 
-    dst_type = entry.u.used.next & 7;
+    if (!entry.size)
+        return NULL;       /* record is deleted */
+
+    dst_type = entry.next & 7;
     assert (dst_type < REC_BLOCK_TYPES);
-    freeblock = entry.u.used.next / 8;
+    freeblock = entry.next / 8;
 
     assert (freeblock > 0);
     
     rec = xmalloc (sizeof(*rec));
-    rec_tmp_expand (p, entry.u.used.size, dst_type);
+    rec_tmp_expand (p, entry.size, dst_type);
 
     cptr = p->tmp_buf;
     bf_read (p->data_BFile[dst_type], freeblock, 0, 0, cptr);
@@ -485,7 +497,7 @@ Record rec_new (Records p)
 
         read_indx (p, p->head.index_free, &entry, sizeof(entry), 0);
         sysno = p->head.index_free;
-        p->head.index_free = entry.u.free.next;
+        p->head.index_free = entry.next;
     }
     (p->head.no_records)++;
     rec->sysno = sysno;
