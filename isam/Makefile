@@ -1,11 +1,11 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.11 1994-09-27 20:03:50 quinn Exp $
+# $Id: Makefile,v 1.12 1995-01-24 16:01:34 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
-CFLAGS=-g -Wall -pedantic
+CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 LIB=../lib/isam.a
 PO = isam.o isutil.o rootblk.o memory.o physical.o

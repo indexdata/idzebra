@@ -1,11 +1,11 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.2 1994-11-04 13:21:28 quinn Exp $
+# $Id: Makefile,v 1.3 1995-01-24 16:01:44 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
-CFLAGS=-g -Wall -pedantic
+CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 LIB=../lib/rset.a
 PROG=

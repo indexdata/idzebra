@@ -1,7 +1,7 @@
 SHELL=/bin/sh
 INCLUDE=-I../include
 TPROG=btest
-CFLAGS=-g -Wall -pedantic
+CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 LIB=../lib/bfile.a
 PO = bfile.o mfile.o
