@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.83  1998-09-02 13:53:19  adam
+ * Revision 1.84  1998-09-18 12:41:00  adam
+ * Fixed bug with numerical relations.
+ *
+ * Revision 1.83  1998/09/02 13:53:19  adam
  * Extra parameter decode added to search routines to implement
  * persistent queries.
  *
@@ -651,7 +654,7 @@ static void gen_regular_rel (char *dst, int val, int islt)
         }
         else
         {
-            strcpy (dst, "((-");
+            strcpy (dst, "(-(");
             islt = 0;
         }
         val = -val;
