@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.4  1995-09-04 09:09:52  adam
+ * Revision 1.5  1995-09-04 15:20:13  adam
+ * More work on temp sets. is_open member removed.
+ *
+ * Revision 1.4  1995/09/04  09:09:52  adam
  * String arg in dict lookup is const.
  * Minor changes.
  *
@@ -22,10 +25,12 @@
 #ifndef RSET_H
 #define RSET_H
 
+#include <stdlib.h>
+
 typedef struct rset_control
 {
     char *desc; /* text description of set type (for debugging) */
-    char *buf;  /* state data stored by subsystem */
+    void *buf;  /* state data stored by subsystem */
     struct rset_control *(*f_create)(const struct rset_control *sel, void *parms);
     int (*f_open)(struct rset_control *ct, int wflag);
     void (*f_close)(struct rset_control *ct);
@@ -38,7 +43,6 @@ typedef struct rset_control
 
 typedef struct rset
 {
-    int is_open;
     rset_control *control;
 } rset, *RSET;
 

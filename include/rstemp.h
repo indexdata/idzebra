@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.h,v $
- * Revision 1.1  1994-11-04 13:21:23  quinn
+ * Revision 1.2  1995-09-04 15:20:13  adam
+ * More work on temp sets. is_open member removed.
+ *
+ * Revision 1.1  1994/11/04  13:21:23  quinn
  * Working.
  *
  */
@@ -15,5 +18,10 @@
 #include <rset.h>
 
 extern const rset_control *rset_kind_temp;
+
+typedef struct rset_temp_parms
+{
+    int     key_size;
+} rset_temp_parms;
 
 #endif
