@@ -1,7 +1,7 @@
 /*
- * $Id: testclient.c,v 1.3 2002-10-23 13:41:15 adam Exp $
+ * $Id: testclient.c,v 1.4 2002-10-23 13:55:37 adam Exp $
  *
- * Synchronous single-target client doing search (but no yet retrieval)
+ * Z39.50 client specifically for Zebra testing.
  */
 
 #include <stdlib.h>
@@ -23,8 +23,12 @@ int main(int argc, char **argv)
     char *arg;
     int delay_sec = 0;
     int ret;
+    int retrieve_number = 0;
+    int retrieve_offset = 0;
+    char *format = 0;
+    int pos;
 
-    while ((ret = options("d:", argv, argc, &arg)) != -2)
+    while ((ret = options("d:n:o:f:", argv, argc, &arg)) != -2)
     {
         switch (ret)
         {
@@ -36,6 +40,15 @@ int main(int argc, char **argv)
             break;
         case 'd':
             delay_sec = atoi(arg);
+            break;
+        case 'n':
+            retrieve_number = atoi(arg);
+            break;
+        case 'o':
+            retrieve_offset = atoi(arg);
+            break;
+        case 'f':
+            format = xstrdup(arg);
             break;
         default:
             printf ("%s: unknown option %s\n", prog, arg);
@@ -50,6 +63,12 @@ int main(int argc, char **argv)
         printf ("%s: missing target/query\n", prog);
         printf ("usage:\n%s [options] target query \n", prog);
         printf (" eg.  bagel.indexdata.dk/gils computer\n");
+        printf ("Options:\n");
+        printf (" -n num       number of records to fetch. Default: 0.\n");
+        printf (" -o off       offset for records - counting from 0.\n");
+        printf (" -f format    set record syntax. Default: none\n");
+        printf (" -d sec       delay a number of seconds before exit.\n");
+        printf ("Options\n");
         exit (3);
     }
     z = ZOOM_connection_new (target, 0);
@@ -66,6 +85,19 @@ int main(int argc, char **argv)
     else
 	printf ("Result count: %d\n", ZOOM_resultset_size(r));
     
+    if (format)
+        ZOOM_resultset_option_set(r, "preferredRecordSyntax", format);
+    for (pos = 0; pos < retrieve_number; pos++)
+    {
+        size_t len;
+        const char *rec =
+            ZOOM_record_get(
+                ZOOM_resultset_record(r, pos + retrieve_offset),
+                "render", &len);
+        
+        if (rec)
+            fwrite (rec, 1, len, stdout);
+    }
     if (delay_sec > 0)
 	sleep(delay_sec);
     ZOOM_resultset_destroy (r);
