@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.15  1995-09-04 12:33:31  adam
+ * Revision 1.16  1995-10-09 16:18:31  adam
+ * Function dict_lookup_grep got extra client data parameter.
+ *
+ * Revision 1.15  1995/09/04  12:33:31  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.14  1994/10/04  17:46:55  adam
@@ -68,7 +71,7 @@ static Dict dict;
 
 static int look_hits;
 
-static int grep_handle (Dict_char *name, char *info)
+static int grep_handle (Dict_char *name, const char *info, void *client)
 {
     look_hits++;
     printf ("%s\n", name);
@@ -230,7 +233,8 @@ int main (int argc, char **argv)
                     else
                     {
                         look_hits = 0;
-                        dict_lookup_grep (dict, ipf_ptr, range, grep_handle);
+                        dict_lookup_grep (dict, ipf_ptr, range, NULL,
+                                          grep_handle);
                         if (look_hits)
                             no_of_hits++;
                         else
@@ -249,7 +253,7 @@ int main (int argc, char **argv)
         if (range < 0)
             range = 0;
         logf (LOG_LOG, "Grepping '%s'", grep_pattern);
-        dict_lookup_grep (dict, grep_pattern, range, grep_handle);
+        dict_lookup_grep (dict, grep_pattern, range, NULL, grep_handle);
     }
     if (rw)
     {

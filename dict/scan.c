@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.4  1995-10-06 13:52:00  adam
+ * Revision 1.5  1995-10-09 16:18:32  adam
+ * Function dict_lookup_grep got extra client data parameter.
+ *
+ * Revision 1.4  1995/10/06  13:52:00  adam
  * Bug fixes. Handler may abort further scanning.
  *
  * Revision 1.3  1995/10/06  11:06:07  adam
@@ -25,8 +28,8 @@
 #include <dict.h>
 
 int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
-		    int start, int *count,
-                    int (*userfunc)(Dict_char *, const char *, int pos),
+		    int start, int *count, void *client,
+                    int (*userfunc)(Dict_char *, const char *, int, void *),
 		    int dir)
 {
     int lo, hi, j;
@@ -54,7 +57,8 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             for (j = 0; info[j] != DICT_EOS; j++)
 		str[pos+j] = info[j];
             str[pos+j] = DICT_EOS;
-            if ((*userfunc)(str, info+(j+1)*sizeof(Dict_char), *count * dir))
+            if ((*userfunc)(str, info+(j+1)*sizeof(Dict_char), *count * dir,
+                            client))
                 return 1;
             --(*count);
         }
@@ -76,13 +80,13 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             {
                  str[pos+1] = DICT_EOS;
                  if ((*userfunc)(str, info+sizeof(Dict_ptr)+sizeof(Dict_char),
-                                 *count * dir))
+                                 *count * dir, client))
                      return 1;
                  --(*count);
             }
             if (*count > 0 && subptr)
 	         dict_scan_trav (dict, subptr, pos+1, str, 0, count, 
-                                 userfunc, dir);
+                                 client, userfunc, dir);
         }
         lo += dir;
     }
@@ -90,8 +94,8 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 }
     
 int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
-		 int *before, int *after,
-                 int (*userfunc)(Dict_char *, const char *, int))
+		 int *before, int *after, void *client,
+                 int (*userfunc)(Dict_char *, const char *, int, void *))
 {
     int cmp = 0, mid, lo, hi;
     void *p;
@@ -118,7 +122,7 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                 {
                     (*userfunc)(str, info+
                                 (dict_strlen(info)+1)*sizeof(Dict_char), 
-                                *after);
+                                *after, client);
                     --(*after);
                 }
                 break;
@@ -148,18 +152,18 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                             (*userfunc)(str, 
                                         info+sizeof(Dict_ptr)+
                                         sizeof(Dict_char),
-                                        *after);
+                                        *after, client);
                             --(*after);
                         }
                     }
                     if (*after && subptr)
 		        if (dict_scan_trav (dict, subptr, pos+1, str, 0, 
-                                            after, userfunc, 1))
+                                            after, client, userfunc, 1))
                             return 1;
                 }
 		else if (subptr)
                     if (dict_scan_r (dict, subptr, pos+1, str, before, after,
-                                     userfunc))
+                                     client, userfunc))
                         return 1;
                 break;
             }
@@ -173,20 +177,22 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         ++mid;
     if (*after)
         if (dict_scan_trav (dict, ptr, pos, str, cmp ? mid : mid+1, after,
-                            userfunc, 1))
+                            client, userfunc, 1))
             return 1;
     if (*before && mid > 1)
         if (dict_scan_trav (dict, ptr, pos, str, mid-1, before, 
-                            userfunc, -1))
+                            client, userfunc, -1))
             return 1;
     return 0;
 }
 
 int dict_scan (Dict dict, Dict_char *str, int *before, int *after,
-               int (*f)(Dict_char *name, const char *info, int pos))
+               void *client,
+               int (*f)(Dict_char *name, const char *info, int pos,
+                        void *client))
 {
     int i;
-    i = dict_scan_r (dict, 1, 0, str, before, after, f);
+    i = dict_scan_r (dict, 1, 0, str, before, after, client, f);
     return i;
 }
 

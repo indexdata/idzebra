@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.13  1995-10-06 14:38:00  adam
+ * Revision 1.14  1995-10-09 16:18:37  adam
+ * Function dict_lookup_grep got extra client data parameter.
+ *
+ * Revision 1.13  1995/10/06  14:38:00  adam
  * New result set method: r_score.
  * Local no (sysno) and score is transferred to retrieveCtrl.
  *
@@ -218,6 +221,7 @@ bend_deleteresult *bend_delete (void *handle, bend_deleterequest *q, int *num)
 bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
 {
     static bend_scanresult r;
+    int status;
 
     odr_reset (server_info.odr);
     server_info.errCode = 0;
@@ -227,7 +231,8 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
     r.num_entries = q->num_entries;
     r.errcode = rpn_scan (&server_info, server_info.odr, q->term,
                           &r.term_position,
-                          &r.num_entries, &r.entries);
+                          &r.num_entries, &r.entries, &status);
+    r.status = status;
     return &r;
 }
 

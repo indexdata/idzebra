@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.9  1995-10-06 14:38:01  adam
+ * Revision 1.10  1995-10-09 16:18:38  adam
+ * Function dict_lookup_grep got extra client data parameter.
+ *
+ * Revision 1.9  1995/10/06  14:38:01  adam
  * New result set method: r_score.
  * Local no (sysno) and score is transferred to retrieveCtrl.
  *
@@ -72,7 +75,8 @@ int rpn_search (ZServerInfo *zi,
                 const char *setname, int *hits);
 
 int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
-              int *position, int *num_entries, struct scan_entry **list);
+              int *position, int *num_entries, struct scan_entry **list,
+              int *status);
 
 ZServerSet *resultSetAdd (ZServerInfo *zi, const char *name,
                           int ov, RSET rset);

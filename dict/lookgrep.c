@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.5  1995-09-14 11:52:59  adam
+ * Revision 1.6  1995-10-09 16:18:32  adam
+ * Function dict_lookup_grep got extra client data parameter.
+ *
+ * Revision 1.5  1995/09/14  11:52:59  adam
  * Grep handle function parameter info is const now.
  *
  * Revision 1.4  1995/01/24  16:01:02  adam
@@ -231,8 +234,8 @@ static INLINE int move (MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
 
 
 static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
-                      MatchWord *Rj, int pos,
-                      int (*userfunc)(Dict_char *name, const char *info),
+                      MatchWord *Rj, int pos, void *client,
+                      int (*userfunc)(Dict_char *, const char *, void *),
                       Dict_char *prefix, struct DFA *dfa)
 {
     int lo, hi, d;
@@ -267,7 +270,8 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                 if (ch == DICT_EOS)
                 {
                     if (was_match)
-                        (*userfunc)(prefix, info+(j+1)*sizeof(Dict_char));
+                        (*userfunc)(prefix, info+(j+1)*sizeof(Dict_char),
+                                    client);
                     break;
                 }
                 move (mc, Rj1, Rj0, ch, dfa, Rj_tmp);
@@ -313,7 +317,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                         {
                             prefix[pos+1] = DICT_EOS;
                             (*userfunc)(prefix, info+sizeof(Dict_ptr)+
-                                        sizeof(Dict_char));
+                                        sizeof(Dict_char), client);
                             break;
                         }
                 }
@@ -321,7 +325,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                 if (subptr)
                 {
                     dict_grep (dict, subptr, mc, Rj1, pos+1,
-                                  userfunc, prefix, dfa);
+                                  client, userfunc, prefix, dfa);
                     dict_bf_readp (dict->dbf, ptr, &p);
                     indxp = (short*) ((char*) p+DICT_pagesize(dict)
                                       -sizeof(short));
@@ -333,8 +337,9 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
     return 0;
 }
 
-int dict_lookup_grep (Dict dict, Dict_char *pattern, int range,
-                    int (*userfunc)(Dict_char *name, const char *info))
+int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
+                    int (*userfunc)(Dict_char *name, const char *info,
+                                    void *client))
 {
     MatchWord *Rj;
     Dict_char prefix[MAX_LENGTH+1];
@@ -371,7 +376,7 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range,
             }
         }
     }
-    i = dict_grep (dict, 1, mc, Rj, 0, userfunc, prefix, dfa);
+    i = dict_grep (dict, 1, mc, Rj, 0, client, userfunc, prefix, dfa);
 
     dfa_delete (&dfa);
     xfree (Rj);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.13  1995-10-06 09:03:51  adam
+ * Revision 1.14  1995-10-09 16:18:35  adam
+ * Function dict_lookup_grep got extra client data parameter.
+ *
+ * Revision 1.13  1995/10/06  09:03:51  adam
  * First version of scan.
  *
  * Revision 1.12  1995/09/14  11:53:02  adam
@@ -114,13 +117,15 @@ int        dict_insert (Dict dict, const Dict_char *p, int userlen,
 char      *dict_lookup (Dict dict, const Dict_char *p);
 int        dict_lookup_ec (Dict dict, Dict_char *p, int range,
                            int (*f)(Dict_char *name));
-int        dict_lookup_grep (Dict dict, Dict_char *p, int range, 
-                             int (*f)(Dict_char *name, const char *info));
+int        dict_lookup_grep (Dict dict, Dict_char *p, int range, void *client,
+                             int (*f)(Dict_char *name, const char *info,
+                                      void *client));
 int        dict_strcmp (const Dict_char *s1, const Dict_char *s2);
 int        dict_strlen (const Dict_char *s);
 int	   dict_scan (Dict dict, Dict_char *str, 
-		      int *before, int *after,
-		      int (*f)(Dict_char *name, const char *info, int pos));
+		      int *before, int *after, void *client,
+		      int (*f)(Dict_char *name, const char *info, int pos,
+                               void *client));
 
 #define DICT_EOS        0
 #define DICT_type(x)    0[(Dict_ptr*) x]
