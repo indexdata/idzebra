@@ -300,14 +300,18 @@ void inv_prstat (BFiles bfs)
         isamh_close (isamh);
     if (isamd)
         isamd_close (isamd);
-    
+
+    xmalloc_trav("unfreed"); /*! while hunting memory leaks */    
 }
 
 
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.15  1999-08-18 08:34:53  heikki
+ * Revision 1.16  1999-08-18 08:38:22  heikki
+ * Memory leak hunting
+ *
+ * Revision 1.15  1999/08/18 08:34:53  heikki
  * isamd
  *
  * Revision 1.14  1999/07/14 10:59:26  adam
