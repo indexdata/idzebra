@@ -1,20 +1,20 @@
-Summary: Zebra - An Open Indexing Search Engine
 Name: zebra
-Version: 1.0pl1
+Version: 1.1
 Release: 1
-Copyright: distributable
-Group: Applications/Internet
+Requires: yaz
+Copyright: Distributable
+Group: Applications/Databases
 Vendor: Index Data ApS <info@indexdata.dk>
-Url: http://www.indexdata.dk/zebra/
-Source: zebra-1.0pl1.tar.gz
+Source: zebra-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
+URL: http://www.indexdata.dk/zebra/
+Summary: Zebra: a fielded free-text engine with a Z39.50 frontend.
 
 %description
-The Zebra indexing tool is a generic search engine suitable for dealing
-with Metadata and other document types. Zebra consists of an indexing
-tool - for building an index for fast retrieval - and a search engine
-server that offers a Z39.50 interface.
+Zebra is a fielded free-text indexing and retrieval engine with a Z39.50
+frontend. You can use any compatible, commercial or freeware Z39.50 client to
+access data stored in Zebra.
 
 %prep
 %setup
@@ -22,17 +22,18 @@ server that offers a Z39.50 interface.
 %build
 
 CFLAGS="$RPM_OPT_FLAGS" \
- ./configure --with-build-root=$RPM_BUILD_ROOT --prefix=/usr 
+ ./configure --prefix=/usr --with-yazconfig=/usr/bin
 make CFLAGS="$RPM_OPT_FLAGS"
 
 %install
 rm -fr $RPM_BUILD_ROOT
-make install
+make prefix=$RPM_BUILD_ROOT/usr install
+cd doc; make prefix=$RPM_BUILD_ROOT/usr install
 
 %files
 %defattr(-,root,root)
-%doc README LICENSE.zebra CHANGELOG
-%config /usr/lib/zebra/tab
+%doc README LICENSE.zebra CHANGELOG 
+%config /usr/share/zebra/tab
+/usr/bin/zebrsrv
 /usr/bin/zebraidx
-/usr/bin/zebrasrv
-%dir /usr/lib/zebra
+/usr/share/zebra/doc
