@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.36 2004-06-02 12:30:32 adam Exp $
+/* $Id: isamb.c,v 1.37 2004-06-02 14:07:01 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1149,12 +1149,12 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
      *     if cmp
      *       return 1
      */
-        /* 
-         * The upper nodes consist of a sequence of nodenumbers and keys
-         * When opening a block,  the first node number is read in, and
-         * offset points to the first key, which is the upper limit of keys
-         * in the node just read.
-         */
+     /* 
+      * The upper nodes consist of a sequence of nodenumbers and keys
+      * When opening a block,  the first node number is read in, and
+      * offset points to the first key, which is the upper limit of keys
+      * in the node just read.
+      */
     char *dst = buf;
     char *src;
     struct ISAMB_block *p = pp->block[pp->level];
