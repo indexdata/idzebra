@@ -2,4 +2,6 @@ attset bib1.att
 tagset tagsetg.tag
 xpath enable
 
-# elm (2,1)	title	!
+esetname F @
+esetname B zthes-b.est
+
