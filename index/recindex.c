@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.6  1995-11-25 10:24:06  adam
+ * Revision 1.7  1995-11-28 09:09:43  adam
+ * Zebra config renamed.
+ * Use setting 'recordId' to identify record now.
+ * Bug fix in recindex.c: rec_release_blocks was invokeded even
+ * though the blocks were already released.
+ * File traversal properly deletes records when needed.
+ *
+ * Revision 1.6  1995/11/25  10:24:06  adam
  * More record fields - they are enumerated now.
  * New options: flagStoreData flagStoreKey.
  *
@@ -75,7 +82,8 @@ struct records_info {
     } head;
 };
 
-enum recordCacheFlag { recordFlagNop, recordFlagWrite, recordFlagDelete };
+enum recordCacheFlag { recordFlagNop, recordFlagWrite, recordFlagNew,
+                       recordFlagDelete };
 
 struct record_cache_entry {
     Record rec;
@@ -161,6 +169,7 @@ static void rec_release_blocks (Records p, int sysno)
     freeblock = entry.u.used.next;
     assert (freeblock > 0);
     dst_type = freeblock & 7;
+    assert (dst_type < REC_BLOCK_TYPES);
     freeblock = freeblock / 8;
     while (freeblock)
     {
@@ -193,6 +202,7 @@ static void rec_delete_single (Records p, Record rec)
     write_indx (p, rec->sysno, &entry, sizeof(entry));
 }
 
+
 static void rec_write_single (Records p, Record rec)
 {
     int i, size = 0;
@@ -201,8 +211,6 @@ static void rec_write_single (Records p, Record rec)
     int no_written = 0;
     int block_prev = -1, block_free;
     struct record_index_entry entry;
-
-    rec_release_blocks (p, rec->sysno);
 
     for (i = 0; i < REC_NO_INFO; i++)
         if (!rec->info[i])
@@ -269,6 +277,11 @@ static void rec_write_single (Records p, Record rec)
               sizeof(int) + (p->tmp_buf+size) - cptr, cptr);
 }
 
+static void rec_update_single (Records p, Record rec)
+{
+    rec_release_blocks (p, rec->sysno);
+    rec_write_single (p, rec);
+}
 
 Records rec_open (int rw)
 {
@@ -331,7 +344,7 @@ Records rec_open (int rw)
     for (i = 0; i<REC_BLOCK_TYPES; i++)
     {
         char str[80];
-        sprintf (str, "recdata%d", i);
+        sprintf (str, "recdata%c", i + 'A');
         p->data_fname[i] = malloc (strlen(str)+1);
         strcpy (p->data_fname[i], str);
         p->data_BFile[i] = NULL;
@@ -366,8 +379,11 @@ static void rec_cache_flush (Records p)
         {
         case recordFlagNop:
             break;
-        case recordFlagWrite:
+        case recordFlagNew:
             rec_write_single (p, e->rec);
+            break;
+        case recordFlagWrite:
+            rec_update_single (p, e->rec);
             break;
         case recordFlagDelete:
             rec_delete_single (p, e->rec);
@@ -387,7 +403,7 @@ static Record *rec_cache_lookup (Records p, int sysno,
         struct record_cache_entry *e = p->record_cache + i;
         if (e->rec->sysno == sysno)
         {
-            if (flag != recordFlagNop)
+            if (flag != recordFlagNop && e->flag == recordFlagNop)
                 e->flag = flag;
             return &e->rec;
         }
@@ -453,6 +469,7 @@ Record rec_get (Records p, int sysno)
     read_indx (p, sysno, &entry, sizeof(entry), 0);
 
     dst_type = entry.u.used.next & 7;
+    assert (dst_type < REC_BLOCK_TYPES);
     freeblock = entry.u.used.next / 8;
 
     assert (freeblock > 0);
@@ -527,7 +544,7 @@ Record rec_new (Records p)
         rec->info[i] = NULL;
         rec->size[i] = 0;
     }
-    rec_cache_insert (p, rec, recordFlagWrite);
+    rec_cache_insert (p, rec, recordFlagNew);
     return rec;
 }
 

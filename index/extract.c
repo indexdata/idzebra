@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.33  1995-11-27 09:56:20  adam
+ * Revision 1.34  1995-11-28 09:09:38  adam
+ * Zebra config renamed.
+ * Use setting 'recordId' to identify record now.
+ * Bug fix in recindex.c: rec_release_blocks was invokeded even
+ * though the blocks were already released.
+ * File traversal properly deletes records when needed.
+ *
+ * Revision 1.33  1995/11/27  09:56:20  adam
  * Record info elements better enumerated. Internal store of records.
  *
  * Revision 1.32  1995/11/25  10:24:05  adam
@@ -526,7 +533,6 @@ static int atois (const char **s)
 
 static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
                            const char *fname,
-                           const char *recordType,
                            const char *spec)
 {
     static char dstBuf[2048];
@@ -614,7 +620,7 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
             else if (strcmp (special, "filename"))
                 spec_src = fname;
             else if (strcmp (special, "type"))
-                spec_src = recordType;
+                spec_src = rGroup->recordType;
             else 
                 spec_src = NULL;
             if (spec_src)
@@ -660,7 +666,6 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
 static int recordExtract (SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
                           int fd,
-                          const char *file_type,
                           RecType recType)
 {
     struct recExtractCtrl extractCtrl;
@@ -669,21 +674,23 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     SYSNO sysnotmp;
     Record rec;
 
-    extractCtrl.fd = fd;
-    
-    /* extract keys */
-    extractCtrl.subType = "";
-    extractCtrl.init = wordInit;
-    extractCtrl.add = addRecordKeyAny;
-
-    reckeys.buf_used = 0;
-    extractCtrl.readf = file_read;
-    r = (*recType->extract)(&extractCtrl);
-  
-    if (r)      
+    if (fd != -1)
     {
-        logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
-        return 0;
+        extractCtrl.fd = fd;
+        /* extract keys */
+        extractCtrl.subType = "";
+        extractCtrl.init = wordInit;
+        extractCtrl.add = addRecordKeyAny;
+
+        reckeys.buf_used = 0;
+        extractCtrl.readf = file_read;
+        r = (*recType->extract)(&extractCtrl);
+  
+        if (r)      
+        {
+            logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
+            return 0;
+        }
     }
 
     /* perform match if sysno not known and if match criteria is specified */
@@ -693,12 +700,12 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     {
         sysnotmp = 0;
         sysno = &sysnotmp;
-        if (rGroup->fileMatch)
+        if (rGroup->recordId && *rGroup->recordId)
         {
             char *rinfo;
         
-            matchStr = fileMatchStr(&reckeys, rGroup, fname, file_type,
-                                    rGroup->fileMatch);
+            matchStr = fileMatchStr (&reckeys, rGroup, fname, 
+                                     rGroup->recordId);
             if (matchStr)
             {
                 rinfo = dict_lookup (matchDict, matchStr);
@@ -721,7 +728,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             logf (LOG_LOG, "? record %s", fname);
             return 1;
         }
-        logf (LOG_LOG, "add record %s", fname);
+        logf (LOG_LOG, "add %s record %s", rGroup->recordType, fname);
         rec = rec_new (records);
         *sysno = rec->sysno;
 
@@ -748,7 +755,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
                       fname);
             }
             else
-                logf (LOG_LOG, "delete record %s", fname);
+                logf (LOG_LOG, "delete %s record %s", rGroup->recordType,
+                      fname);
             records_deleted++;
             rec_del (records, &rec);
             return 1;
@@ -762,7 +770,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             }
             else
             {
-                logf (LOG_LOG, "update record %s", fname);
+                logf (LOG_LOG, "update %s record %s", rGroup->recordType,
+                      fname);
                 flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
                 records_updated++;
             }
@@ -770,7 +779,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     }
     free (rec->info[recInfo_fileType]);
     rec->info[recInfo_fileType] =
-        rec_strdup (file_type, &rec->size[recInfo_fileType]);
+        rec_strdup (rGroup->recordType, &rec->size[recInfo_fileType]);
 
     free (rec->info[recInfo_filename]);
     rec->info[recInfo_filename] =
@@ -826,16 +835,19 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     return 1;
 }
 
-int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
-                 int deleteFlag)
+int fileExtract (SYSNO *sysno, const char *fname, 
+                 const struct recordGroup *rGroupP, int deleteFlag)
 {
     int i, fd;
     char gprefix[128];
     char ext[128];
     char ext_res[128];
-    const char *file_type;
     RecType recType;
+    struct recordGroup rGroupM;
+    struct recordGroup *rGroup = &rGroupM;
 
+    memcpy (rGroup, rGroupP, sizeof(*rGroupP));
+   
     if (!rGroup->groupName || !*rGroup->groupName)
         *gprefix = '\0';
     else
@@ -856,22 +868,35 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
             break;
         }
     /* determine file type - depending on extension */
-    sprintf (ext_res, "%sfileExtension.%s", gprefix, ext);
-    if (!(file_type = res_get (common_resource, ext_res)))
+    if (!rGroup->recordType)
+    {
+        sprintf (ext_res, "%srecordType.%s", gprefix, ext);
+        if (!(rGroup->recordType = res_get (common_resource, ext_res)))
+        {
+            sprintf (ext_res, "%srecordType", gprefix);
+            if (!(rGroup->recordType = res_get (common_resource, ext_res)))
+            {
+                logf (LOG_LOG, "? record %s", fname);
+                return 0;
+            }
+        }
+    }
+    if (!rGroup->recordType)
+    {
+        logf (LOG_LOG, "? record %s", fname);
         return 0;
-    if (!(recType = recType_byName (file_type)))
+    }
+    if (!(recType = recType_byName (rGroup->recordType)))
+    {
+        logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
         return 0;
+    }
 
     /* determine match criteria */
-    if (rGroup->fileMatch)
+    if (!rGroup->recordId)
     {
-        sprintf (ext_res, "%sfileMatch.%s", gprefix, ext);
-        rGroup->fileMatch = res_get (common_resource, ext_res);
-        if (!rGroup->fileMatch)
-        {
-            sprintf (ext_res, "%sfileMatch", gprefix);
-            rGroup->fileMatch = res_get (common_resource, ext_res);
-        }
+        sprintf (ext_res, "%srecordId.%s", gprefix, ext);
+        rGroup->recordId = res_get (common_resource, ext_res);
     }
 
     /* determine database name */
@@ -918,17 +943,21 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
     if (rGroup->flagStoreKeys == -1)
         rGroup->flagStoreKeys = 0;
 
-    /* open input file */
-    if ((fd = open (fname, O_RDONLY)) == -1)
+    if (sysno && deleteFlag)
+        fd = -1;
+    else
     {
-        logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
-        return 0;
+        if ((fd = open (fname, O_RDONLY)) == -1)
+        {
+            logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
+            return 0;
+        }
     }
     file_read_start (fd);
-    recordExtract (sysno, fname, rGroup, deleteFlag, fd,
-                   file_type, recType);
+    recordExtract (sysno, fname, rGroup, deleteFlag, fd, recType);
     file_read_stop (fd);
-    close (fd);
+    if (fd != -1)
+        close (fd);
     return 1;
 }
 

@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.12  1995-11-24 11:31:37  adam
+ * Revision 1.13  1995-11-28 09:09:46  adam
+ * Zebra config renamed.
+ * Use setting 'recordId' to identify record now.
+ * Bug fix in recindex.c: rec_release_blocks was invokeded even
+ * though the blocks were already released.
+ * File traversal properly deletes records when needed.
+ *
+ * Revision 1.12  1995/11/24  11:31:37  adam
  * Commands add & del read filenames from stdin if source directory is
  * empty.
  * Match criteria supports 'constant' strings.
@@ -99,8 +106,39 @@ static void stdinExtractR (int deleteFlag, struct recordGroup *rGroup)
 {
     char tmppath[256];
 
+    logf (LOG_LOG, "stdinExtractR");
     while (scanf ("%s", tmppath) == 1)
         fileExtract (NULL, tmppath, rGroup, deleteFlag);
+}
+
+static void repositoryDeleteR (struct dirs_info *di, struct dirs_entry *dst,
+			       const char *base, char *src,
+			       struct recordGroup *rGroup)
+{
+    char tmppath[256];
+    size_t src_len = strlen (src);
+
+    while (dst && !repComp (dst->path, src, src_len+1))
+    {
+        switch (dst->kind)
+        {
+        case dirs_file:
+            sprintf (tmppath, "%s%s", base, dst->path);
+            fileExtract (&dst->sysno, tmppath, rGroup, 1);
+             
+            strcpy (tmppath, dst->path);
+            dst = dirs_read (di); 
+            dirs_del (di, tmppath);
+            break;
+        case dirs_dir:
+            strcpy (tmppath, dst->path);
+            dst = dirs_read (di);
+            dirs_rmdir (di, tmppath);
+            break;
+        default:
+            dst = dirs_read (di);
+        }
+    }
 }
 
 static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
@@ -133,7 +171,8 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     }
     else if (!e_src)
     {
-        /* delete tree dst */
+        strcpy (src, dst->path);
+        repositoryDeleteR (di, dst, base, src, rGroup);
         return;
     }
     else
@@ -178,7 +217,10 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                 if (e_src[i_src].ctime > dst->ctime)
                 {
                     if (fileExtract (&dst->sysno, tmppath, rGroup, 0))
+                    {
+                        logf (LOG_LOG, "dirs_add");
                         dirs_add (di, src, dst->sysno, e_src[i_src].ctime);
+                    }
                 }
                 dst = dirs_read (di);
                 break;
@@ -214,27 +256,66 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
         }
         else  /* sd < 0 */
         {
-            assert (0);
+            strcpy (src, dst->path);
+            sprintf (tmppath, "%s%s", base, dst->path);
+
+            switch (dst->kind)
+            {
+            case dirs_file:
+                fileExtract (&dst->sysno, tmppath, rGroup, 1);
+                dirs_del (di, dst->path);
+                dst = dirs_read (di);
+                break;
+            case dirs_dir:
+                repositoryDeleteR (di, dst, base, src, rGroup);
+                dst = dirs_last (di);
+            }
         }
     }
     dir_free (&e_src);
 }
 
+static void groupRes (struct recordGroup *rGroup)
+{
+    char resStr[256];
+    char gPrefix[256];
+
+    if (!rGroup->groupName || !*rGroup->groupName)
+        *gPrefix = '\0';
+    else
+        sprintf (gPrefix, "%s.", rGroup->groupName);
+
+    sprintf (resStr, "%srecordId", gPrefix);
+    rGroup->recordId = res_get (common_resource, resStr);
+}
+
 void repositoryUpdate (struct recordGroup *rGroup)
 {
-    struct dirs_info *di;
     char src[256];
-    Dict dict;
 
-    dict = dict_open ("repdict", 40, 1);
+    groupRes (rGroup);
+    if (rGroup->recordId && !strcmp (rGroup->recordId, "file"))
+    {
+        Dict dict;
+        struct dirs_info *di;
 
-    assert (rGroup->path);
-    di = dirs_open (dict, rGroup->path);
-    strcpy (src, "");
-    repositoryUpdateR (di, dirs_read (di), rGroup->path, src, rGroup);
-    dirs_free (&di);
+        dict = dict_open ("repdict", 40, 1);
 
-    dict_close (dict);
+        assert (rGroup->path);
+        di = dirs_open (dict, rGroup->path);
+        strcpy (src, "");
+        repositoryUpdateR (di, dirs_read (di), rGroup->path, src, rGroup);
+        dirs_free (&di);
+        dict_close (dict);
+    }
+    else 
+    {
+        strcpy (src, rGroup->path);
+        if (*src == '\0')
+            stdinExtractR (0, rGroup);
+        else
+            repositoryExtractR (0, src, rGroup);
+    }
 }
 
 void repositoryDelete (struct recordGroup *rGroup)
@@ -242,22 +323,11 @@ void repositoryDelete (struct recordGroup *rGroup)
     char src[256];
 
     assert (rGroup->path);
+    groupRes (rGroup);
     strcpy (src, rGroup->path);
     if (*src == '\0')
 	stdinExtractR (1, rGroup);
     else
 	repositoryExtractR (1, src, rGroup);
-}
-
-void repositoryAdd (struct recordGroup *rGroup)
-{
-    char src[256];
-
-    assert (rGroup->path);
-    strcpy (src, rGroup->path);
-    if (*src == '\0')
-	stdinExtractR (0, rGroup);
-    else
-	repositoryExtractR (0, src, rGroup);
 }
 

@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.28  1995-11-27 13:58:53  adam
+ * Revision 1.29  1995-11-28 09:09:40  adam
+ * Zebra config renamed.
+ * Use setting 'recordId' to identify record now.
+ * Bug fix in recindex.c: rec_release_blocks was invokeded even
+ * though the blocks were already released.
+ * File traversal properly deletes records when needed.
+ *
+ * Revision 1.28  1995/11/27  13:58:53  adam
  * New option -t. storeStore data implemented in server.
  *
  * Revision 1.27  1995/11/25  10:24:06  adam
@@ -127,8 +134,8 @@ struct recordGroup {
     char *groupName;
     char *databaseName;
     char *path;
-    char *fileMatch;
-    char *fileType;
+    char *recordId;
+    char *recordType;
     int  flagStoreData;
     int  flagStoreKeys;
 };
@@ -163,6 +170,7 @@ int merge_sort (char **buf, int from, int to);
 #define TEMP_FNAME  "keys%d.tmp"
 #define FNAME_WORD_DICT "worddict"
 #define FNAME_WORD_ISAM "wordisam"
+#define FNAME_CONFIG "zebra.cfg"
 
 struct strtab *strtab_mk (void);
 int strtab_src (struct strtab *t, const char *name, void ***infop);
@@ -174,4 +182,4 @@ int index_word_prefix (char *string, int attset_ordinal,
                        int local_attribute, const char *databaseName);
 
 int fileExtract (SYSNO *sysno, const char *fname,
-                 struct recordGroup *rGroup, int deleteFlag);
+                 const struct recordGroup *rGroup, int deleteFlag);

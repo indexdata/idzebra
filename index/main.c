@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.21  1995-11-27 14:27:39  adam
+ * Revision 1.22  1995-11-28 09:09:42  adam
+ * Zebra config renamed.
+ * Use setting 'recordId' to identify record now.
+ * Bug fix in recindex.c: rec_release_blocks was invokeded even
+ * though the blocks were already released.
+ * File traversal properly deletes records when needed.
+ *
+ * Revision 1.21  1995/11/27  14:27:39  adam
  * Renamed 'update' command to 'dir'.
  *
  * Revision 1.20  1995/11/27  13:58:53  adam
@@ -93,21 +100,21 @@ int main (int argc, char **argv)
     int nsections;
     int key_open_flag = 0;
 
-    struct recordGroup rGroup;
+    struct recordGroup rGroupDef;
     
-    rGroup.groupName = NULL;
-    rGroup.databaseName = NULL;
-    rGroup.path = NULL;
-    rGroup.fileMatch = NULL;
-    rGroup.flagStoreData = -1;
-    rGroup.flagStoreKeys = -1;
-    rGroup.fileType = NULL;
+    rGroupDef.groupName = NULL;
+    rGroupDef.databaseName = NULL;
+    rGroupDef.path = NULL;
+    rGroupDef.recordId = NULL;
+    rGroupDef.recordType = NULL;
+    rGroupDef.flagStoreData = -1;
+    rGroupDef.flagStoreKeys = -1;
 
     prog = *argv;
     if (argc < 2)
     {
         fprintf (stderr, "index [-v log] [-m meg] [-c config] [-d base]"
-                 " [-g group] cmd1 dir1 cmd2 dir2 ...\n");
+                 " [-g group] [update|del dir] ...\n");
         exit (1);
     }
     while ((ret = options ("t:c:g:v:m:d:", argv, argc, &arg)) != -2)
@@ -116,18 +123,10 @@ int main (int argc, char **argv)
         {
             if(cmd == 0) /* command */
             {
-                if (!strcmp (arg, "add"))
-                {
-                    cmd = 'a';
-                }
-                else if (!strcmp (arg, "del"))
-                {
-                    cmd = 'd';
-                }
-                else if (!strcmp (arg, "dir"))
-                {
+                if (!strcmp (arg, "update"))
                     cmd = 'u';
-                }
+                else if (!strcmp (arg, "del") || !strcmp(arg, "delete"))
+                    cmd = 'd';
                 else
                 {
                     logf (LOG_FATAL, "Unknown command: %s", arg);
@@ -136,17 +135,20 @@ int main (int argc, char **argv)
             }
             else
             {
+                struct recordGroup rGroup;
+
+                memcpy (&rGroup, &rGroupDef, sizeof(rGroup));
                 if (!common_resource)
                 {
                     common_resource = res_open (configName ?
-                                                configName : "base");
+                                                configName : FNAME_CONFIG);
                     if (!common_resource)
                     {
                         logf (LOG_FATAL, "Cannot open resource `%s'",
                               configName);
                         exit (1);
                     }
-                    data1_tabpath = res_get (common_resource, "data1_tabpath");
+                    data1_tabpath = res_get (common_resource, "profilePath");
                     assert (data1_tabpath);
                 }
                 if (!key_open_flag)
@@ -157,8 +159,6 @@ int main (int argc, char **argv)
                 rGroup.path = arg;
                 if (cmd == 'u')
                     repositoryUpdate (&rGroup);
-                else if (cmd == 'a')
-                    repositoryAdd (&rGroup);
                 else if (cmd == 'd')
                     repositoryDelete (&rGroup);
                 cmd = 0;
@@ -174,16 +174,16 @@ int main (int argc, char **argv)
         }
         else if (ret == 'd')
         {
-            rGroup.databaseName = arg;
+            rGroupDef.databaseName = arg;
         }
         else if (ret == 'g')
         {
-            rGroup.groupName = arg;
+            rGroupDef.groupName = arg;
         }
         else if (ret == 'c')
             configName = arg;
         else if (ret == 't')
-            rGroup.fileType = arg;
+            rGroupDef.recordType = arg;
         else
         {
             logf (LOG_FATAL, "Unknown option '-%s'", arg);
@@ -195,7 +195,7 @@ int main (int argc, char **argv)
     nsections = key_close ();
     if (!nsections)
         exit (0);
-    logf (LOG_LOG, "Input");
+    logf (LOG_LOG, "Merging with index");
     key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, nsections, 60);
     exit (0);
 }

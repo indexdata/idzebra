@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.6  1995-11-27 09:56:21  adam
+ * Revision 1.7  1995-11-28 09:09:45  adam
+ * Zebra config renamed.
+ * Use setting 'recordId' to identify record now.
+ * Bug fix in recindex.c: rec_release_blocks was invokeded even
+ * though the blocks were already released.
+ * File traversal properly deletes records when needed.
+ *
+ * Revision 1.6  1995/11/27  09:56:21  adam
  * Record info elements better enumerated. Internal store of records.
  *
  * Revision 1.5  1995/11/25  10:24:07  adam
@@ -31,6 +38,7 @@
 
 typedef struct record_info {
     int sysno;
+    int newFlag;
     char *info[REC_NO_INFO];
     size_t size[REC_NO_INFO];
 } *Record;

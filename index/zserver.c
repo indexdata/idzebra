@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.27  1995-11-27 13:58:54  adam
+ * Revision 1.28  1995-11-28 09:09:48  adam
+ * Zebra config renamed.
+ * Use setting 'recordId' to identify record now.
+ * Bug fix in recindex.c: rec_release_blocks was invokeded even
+ * though the blocks were already released.
+ * File traversal properly deletes records when needed.
+ *
+ * Revision 1.27  1995/11/27  13:58:54  adam
  * New option -t. storeStore data implemented in server.
  *
  * Revision 1.26  1995/11/25  10:24:07  adam
@@ -128,7 +135,7 @@ bend_initresult *bend_init (bend_initrequest *q)
         }
     }
 
-    data1_tabpath = res_get(common_resource, "data1_tabpath");
+    data1_tabpath = res_get(common_resource, "profilePath");
     server_info.sets = NULL;
 
     server_info.records = rec_open (0);
@@ -196,7 +203,7 @@ static int record_int_read (int fd, char *buf, size_t count)
         return 0;
     l = (l < count) ? l : count;
     memcpy (buf, record_int_buf + record_int_pos, l);
-    record_int_buf += l;
+    record_int_pos += l;
     return l;
 }
 
@@ -227,6 +234,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
         record_int_len = rec->size[recInfo_storeData];
         record_int_buf = rec->info[recInfo_storeData];
         record_int_pos = 0;
+        logf (LOG_DEBUG, "Internal retrieve. %d bytes", record_int_len);
     }
     else 
     {
@@ -330,7 +338,7 @@ int main (int argc, char **argv)
     struct statserv_options_block *sob;
 
     sob = statserv_getcontrol ();
-    strcpy (sob->configname, "base");
+    strcpy (sob->configname, FNAME_CONFIG);
     statserv_setcontrol (sob);
 
     return statserv_main (argc, argv);
