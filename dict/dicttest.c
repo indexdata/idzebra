@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.7  1994-09-19 16:34:26  adam
+ * Revision 1.8  1994-09-22 10:43:44  adam
+ * Two versions of depend. Type 1 is the tail-type compatible with
+ * all make programs. Type 2 is the GNU make with include facility.
+ * Type 2 is default. depend rule chooses current rule.
+ *
+ * Revision 1.7  1994/09/19  16:34:26  adam
  * Depend rule change. Minor changes in dicttest.c
  *
  * Revision 1.6  1994/09/16  15:39:12  adam
@@ -39,11 +44,18 @@
 char *prog;
 Dict dict;
 
+static int lookup_handle (Dict_char *name)
+{
+    printf ("%s\n", name);
+    return 0;
+}
+
 int main (int argc, char **argv)
 {
     const char *name = NULL;
     const char *inputfile = NULL;
     const char *base = NULL;
+    int range = -1;
     int rw = 0;
     int infosize = 4;
     int cache = 10;
@@ -57,12 +69,13 @@ int main (int argc, char **argv)
     prog = argv[0];
     if (argc < 2)
     {
-        fprintf (stderr, "usage:\n"
-                 "  %s [-u] [-s n] [-v n] [-i f] [-w] [-c n] base file\n",
+        fprintf (stderr, "usage:\n "
+                 " %s [-r n] [-u] [-s n] [-v n] [-i f] [-w] [-c n]"
+                 " base file\n",
                  prog);
         exit (1);
     }
-    while ((ret = options ("us:v:i:wc:", argv, argc, &arg)) != -2)
+    while ((ret = options ("r:us:v:i:wc:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -75,6 +88,10 @@ int main (int argc, char **argv)
                 log (LOG_FATAL, "too many files specified\n");
                 exit (1);
             }
+        }
+        else if (ret == 'r')
+        {
+            range = atoi (arg);
         }
         else if (ret == 'u')
         {
@@ -169,7 +186,7 @@ int main (int argc, char **argv)
                             break;
                         }
                     }
-                    else
+                    else if(range < 0)
                     {
                         char *cp;
 
@@ -178,6 +195,10 @@ int main (int argc, char **argv)
                             no_of_hits++;
                         else
                             no_of_misses++;
+                    }
+                    else
+                    {
+                        dict_lookup_ec (dict, ipf_ptr, range, lookup_handle);
                     }
                     ++no_of_iterations;
                     ipf_ptr += (i-1);
