@@ -1,15 +1,21 @@
-<!-- $Id: installation.xml,v 1.9 2003-03-05 16:40:51 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.10 2003-03-06 13:16:02 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
    Zebra is written in ANSI C and was implemented with portability in mind. 
-   We primarily use GNU C on UNIX and Microsoft Visual C++ on Windows.
+   We primarily use GCC on UNIX and Microsoft Visual C++ on Windows.
   </para>
 
   <para>
-   The software is regularly tested on Debian GNU/Linux, Redhat Linux,
-   Gentoo Linux, NetBSD (Cobalt qube), FreeBSD (i386), MAC OSX,
-   SunOS 5.8 (sparc), Windows 2000 SP3.
+   The software is regularly tested on
+   <ulink url="http://www.debian.org/">Debian GNU/Linux</ulink>,
+   <ulink url="http://www.redhat.com/">Redhat Linux</ulink>,
+   <ulink url="http://www.gentoo.org/">Gentoo Linux</ulink>,
+   <ulink url="http://www.netbsd.org/Ports/cobalt/">NetBSD (Cobalt)</ulink>,
+   <ulink url="http://www.freebsd.org/">FreeBSD (i386)</ulink>,
+   <ulink url="http://www.apple.com/macosx/">MAC OSX</ulink>,
+   <ulink url="http://wwws.sun.com/software/solaris/">SunOS 5.8 (sparc)</ulink>,
+   <ulink url="http://www.microsoft.com/windows2000/">Windows 2000 SP3</ulink>.
   </para>
   
   <para>
@@ -92,7 +98,7 @@
      <listitem>
       <para>
        These tools are only required if you're writing
-       Documentation for Zebra. You need the following
+       documentation for Zebra. You need the following
        Debian packages: jadetex, docbook, docbook-dsssl,
        docbook-xml, docbook-utils.
       </para>
