@@ -4,5 +4,6 @@ Makefile.in
 *.log
 log
 *.LCK
+*.zsh.out
 shadow
 reg
