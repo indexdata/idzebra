@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.4  1995-09-05 15:28:40  adam
+ * Revision 1.5  1995-09-06 10:33:04  adam
+ * More work on present. Some log messages removed.
+ *
+ * Revision 1.4  1995/09/05  15:28:40  adam
  * More work on search engine.
  *
  * Revision 1.3  1995/09/04  15:20:22  adam
@@ -27,23 +30,26 @@
 
 #include <rsisam.h>
 #include <rstemp.h>
+#include <rsnull.h>
 
 static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
 {
+    char termz[256];
+    size_t sizez;
     struct rset_isam_parms parms;
     const char *info;
     Z_Term *term = zapt->term;
 
     if (term->which != Z_Term_general)
         return NULL; 
-    logf (LOG_DEBUG, "dict_lookup: %s", term->u.general->buf);    
-    if (!(info = dict_lookup (zi->wordDict, term->u.general->buf)))
-    {
-        rset_temp_parms parms;
-
-        parms.key_size = sizeof(struct it_key);
-        return rset_create (rset_kind_temp, &parms);
-    }
+    sizez = term->u.general->len;
+    if (sizez > 255)
+        sizez = 255;
+    memcpy (termz, term->u.general->buf, sizez);
+    termz[sizez] = '\0';
+    logf (LOG_DEBUG, "dict_lookup: %s", termz);
+    if (!(info = dict_lookup (zi->wordDict, termz)))
+        return rset_create (rset_kind_null, NULL);
     assert (*info == sizeof(parms.pos));
     memcpy (&parms.pos, info+1, sizeof(parms.pos));
     parms.is = zi->wordIsam;
@@ -180,7 +186,6 @@ static RSET rpn_save_set (RSET r, int *count)
             psysno = key.sysno;
             (*count)++;
         }
-        logf (LOG_DEBUG, "lllllllllllllllll");
 #if 0
         rset_write (d, &key);
 #endif

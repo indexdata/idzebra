@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.3  1995-09-05 15:28:40  adam
+ * Revision 1.4  1995-09-06 10:33:04  adam
+ * More work on present. Some log messages removed.
+ *
+ * Revision 1.3  1995/09/05  15:28:40  adam
  * More work on search engine.
  *
  * Revision 1.2  1995/09/04  12:33:43  adam
@@ -105,6 +108,12 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     {
         logf (LOG_DEBUG, "resultSetRecordGet, error");
         r.errcode = 13;
+        return &r;
+    }
+    if (!records[0].buf)
+    {
+        r.errcode = 13;
+        logf (LOG_DEBUG, "Out of range. pos=%d", q->number);
         return &r;
     }
     r.len = records[0].size;

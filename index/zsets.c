@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.1  1995-09-05 15:28:40  adam
+ * Revision 1.2  1995-09-06 10:33:04  adam
+ * More work on present. Some log messages removed.
+ *
+ * Revision 1.1  1995/09/05  15:28:40  adam
  * More work on search engine.
  *
  */
@@ -67,7 +70,6 @@ ZServerRecord *resultSetRecordGet (ZServerInfo *zi, const char *name,
     rset_open (rset, 0);
     while (rset_read (rset, &key))
     {
-        logf (LOG_DEBUG, "resultSetRecordGet: %d", key.sysno);
         if (key.sysno != psysno)
         {
             psysno = key.sysno;
@@ -77,7 +79,6 @@ ZServerRecord *resultSetRecordGet (ZServerInfo *zi, const char *name,
                 FILE *inf;
                 char fname[SYS_IDX_ENTRY_LEN];
 
-                logf (LOG_DEBUG, "get sysno=%d", psysno);
                 sr[num_i].buf = NULL;
                 if (lseek (zi->sys_idx_fd, psysno * SYS_IDX_ENTRY_LEN,
                            SEEK_SET) == -1)
@@ -118,6 +119,12 @@ ZServerRecord *resultSetRecordGet (ZServerInfo *zi, const char *name,
         }
     }
     rset_close (rset);
+    while (num_i < num)
+    {
+        sr[num_i].buf = NULL;
+        sr[num_i].size = 0;
+        num_i++;
+    }
     return sr;
 }
 
