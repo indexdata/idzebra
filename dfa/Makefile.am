@@ -1,11 +1,11 @@
-## $Id: Makefile.am,v 1.1 2000-04-05 09:49:35 adam Exp $
+## $Id: Makefile.am,v 1.2 2002-08-17 08:00:27 adam Exp $
 
 noinst_LIBRARIES = libdfa.a
 
 noinst_PROGRAMS = agrep lexer grepper
 
 INCLUDES = -I$(srcdir)/../include @YAZINC@
-LDADD = libdfa.a ../util/libutil.a @YAZLIB@ @LIBS@
+LDADD = libdfa.a ../util/libutil.a $(YAZLIB) $(TCL_LIB)
 
 agrep_SOURCES = agrep.c
 
