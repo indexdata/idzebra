@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.12  1998-11-16 10:18:10  adam
+ * Revision 1.13  1998-12-16 12:23:30  adam
+ * Added facility for database name mapping using resource mapdb.
+ *
+ * Revision 1.12  1998/11/16 10:18:10  adam
  * Better error reporting for result sets.
  *
  * Revision 1.11  1998/10/16 08:14:34  adam
@@ -236,6 +239,74 @@ void zebra_close (ZebraHandle zh)
     xfree (zh);
 }
 
+struct map_baseinfo {
+    ZebraHandle zh;
+    NMEM mem;
+    int num_bases;
+    char **basenames;
+    int new_num_bases;
+    char **new_basenames;
+    int new_num_max;
+};
+	
+void map_basenames_func (void *vp, const char *name, const char *value)
+{
+    struct map_baseinfo *p = vp;
+    int i, no;
+    char fromdb[128], todb[8][128];
+    
+    no =
+	sscanf (value, "%127s %127s %127s %127s %127s %127s %127s %127s %127s",
+		fromdb,	todb[0], todb[1], todb[2], todb[3], todb[4],
+		todb[5], todb[6], todb[7]);
+    if (no < 2)
+	return ;
+    no--;
+    for (i = 0; i<p->num_bases; i++)
+	if (p->basenames[i] && !strcmp (p->basenames[i], fromdb))
+	{
+	    p->basenames[i] = 0;
+	    for (i = 0; i < no; i++)
+	    {
+		if (p->new_num_bases == p->new_num_max)
+		    return;
+		p->new_basenames[(p->new_num_bases)++] = 
+		    nmem_strdup (p->mem, todb[i]);
+	    }
+	    return;
+	}
+}
+
+void map_basenames (ZebraHandle zh, ODR stream,
+		    int *num_bases, char ***basenames)
+{
+    struct map_baseinfo info;
+    struct map_baseinfo *p = &info;
+    int i;
+
+    info.zh = zh;
+    info.num_bases = *num_bases;
+    info.basenames = *basenames;
+    info.new_num_max = 128;
+    info.new_num_bases = 0;
+    info.new_basenames = (char **)
+	odr_malloc (stream, sizeof(*info.new_basenames) * info.new_num_max);
+    info.mem = stream->mem;
+
+    res_trav (zh->res, "mapdb", &info, map_basenames_func);
+    
+    for (i = 0; i<p->num_bases; i++)
+	if (p->basenames[i] && p->new_num_bases < p->new_num_max)
+	{
+	    p->new_basenames[(p->new_num_bases)++] = 
+		nmem_strdup (p->mem, p->basenames[i]);
+	}
+    *num_bases = info.new_num_bases;
+    *basenames = info.new_basenames;
+    for (i = 0; i<*num_bases; i++)
+	logf (LOG_LOG, "base %s", (*basenames)[i]);
+}
+
 void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
 		       Z_RPNQuery *query, int num_bases, char **basenames, 
 		       const char *setname)
@@ -245,6 +316,7 @@ void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
     zh->errString = NULL;
     zh->hits = 0;
 
+    map_basenames (zh, stream, &num_bases, &basenames);
     resultSetAddRPN (zh, stream, decode, query, num_bases, basenames, setname);
 
     zebra_register_unlock (zh);
@@ -312,6 +384,7 @@ void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     zh->errCode = 0;
     zh->errString = NULL;
     zebra_register_lock (zh);
+    map_basenames (zh, stream, &num_bases, &basenames);
     rpn_scan (zh, stream, zapt, attributeset,
 	      num_bases, basenames, position,
 	      num_entries, entries, is_partial);
