@@ -1,5 +1,5 @@
-/* $Id: isamb.c,v 1.22 2003-02-04 12:06:47 pop Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: isamb.c,v 1.23 2003-03-02 23:12:50 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -249,6 +249,7 @@ void isamb_close (ISAMB isamb)
             bf_write (isamb->file[i].bf, 0, 0,
                       sizeof(struct ISAMB_head), &isamb->file[i].head);
         
+        bf_close (isamb->file[i].bf);
     }
     xfree (isamb->file);
     xfree (isamb->method);
