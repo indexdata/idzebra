@@ -18,6 +18,14 @@ BEGIN {
 #Zebra::API::LogFile("a.log");
 
 
+#my $arr = IDZebra::give_me_array("strucc",6);
+
+#print "$arr\n";
+
+#for (@arr) {print "$_\n";}
+
+#exit;
+
 IDZebra::init();
 
 chdir('demo');
@@ -51,11 +59,28 @@ $sess->end_trans;
 #$sess->end_trans;
 
 $sess->select_databases('Default');
-#$sess->begin_read;
-print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1'), "\n";
-print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1'), "\n";
-print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1'), "\n";
-#$sess->end_read;
+$sess->begin_read;
+#print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1'), "\n";
+#print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1'), "\n";
+
+my $rs1 = $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1');
+print STDERR "Rs1 '$rs1->{name}' has $rs1->{recordCount} hits\n";
+
+my $rs2 = $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_2');
+#print STDERR "Rs2 '$rs2->{name}' has $rs2->{recordCount} hits\n";
+
+my $rs3 = $sess->sortResultsets ('1=4 id','test_3',($rs1));
+#print STDERR "Rs3 '$rs3->{name}' has $rs3->{recordCount} hits\n";
+#print STDERR "Rs3 '$rs3->{name}' error $rs3->{errCode}: $rs3->{errString}\n";
+
+$rs1->sort('1=4 id');
+
+#for ($i=1; $i<100000; $i++) {
+my @recs1 = $rs1->records(from=>1,to=>2);
+#}
+#my $res=$sess->retrieve_records('test_1',1,1);
+
+$sess->end_read;
 
 #$sess->commit;
 #IDZebra::describe_recordGroup($rep->{rg});
@@ -64,6 +89,11 @@ print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','
 $sess->close;
 $service->stop;
 			  
+foreach my $rec (@recs1) {
+    foreach my $line (split (/\n/, $rec->{buf})) {
+	if ($line =~ /^package/) { print STDERR "$line\n";}
+    }
+}
 
 #$rep->{groupName} = "Strucc";
 #$rep->describe();
