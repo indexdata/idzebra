@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.104 2003-06-17 13:53:27 adam Exp $
+/* $Id: zebraapi.c,v 1.105 2003-06-18 11:46:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -208,7 +208,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     assert (res);
 
     yaz_log (LOG_LOG|LOG_API, "zebra_register_open rw = %d useshadow=%d p=%p,n=%s,rp=%s",
-             rw, useshadow, reg, name, reg_path);
+             rw, useshadow, reg, name, reg_path ? reg_path : "(none)");
     
     reg->dh = data1_createx (DATA1_FLAG_XML);
     if (!reg->dh)
@@ -762,7 +762,7 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
     return 0;
 }
 
-void zebra_search_RPN (ZebraHandle zh,
+void zebra_search_RPN (ZebraHandle zh, ODR o,
 		       Z_RPNQuery *query, const char *setname, int *hits)
 {
     ASSERTZH;
@@ -776,7 +776,7 @@ void zebra_search_RPN (ZebraHandle zh,
 
     zebra_livcode_transform(zh, query);
 
-    resultSetAddRPN (zh, query, 
+    resultSetAddRPN (zh, odr_extract_mem(o), query, 
                      zh->num_basenames, zh->basenames, setname);
 
     zebra_end_read (zh);
@@ -1123,7 +1123,7 @@ void zebra_set_state (ZebraHandle zh, int val, int seqno)
     long p = getpid();
     FILE *f;
     ASSERTZH;
-    yaz_log(LOG_API,"zebra_set_state v=%d seq=%s", val, seqno);
+    yaz_log(LOG_API,"zebra_set_state v=%d seq=%d", val, seqno);
     zh->errCode=0;
 
     sprintf (state_fname, "state.%s.LCK", zh->reg_name);
@@ -1994,7 +1994,7 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
     if (!query)
         yaz_log (LOG_WARN, "bad query %s\n", pqf_query);
     else
-        zebra_search_RPN (zh, query, setname, &hits);
+        zebra_search_RPN (zh, odr, query, setname, &hits);
     
     odr_destroy(odr);
 

@@ -1,4 +1,4 @@
-/* $Id: dfa.c,v 1.28 2002-08-02 19:26:55 adam Exp $
+/* $Id: dfa.c,v 1.29 2003-06-18 11:46:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1067,7 +1067,10 @@ static struct DFA_states *mk_dfas (struct DFA_parse *dfap, int poset_chunk)
     init_DFA_states (&dfas, parse_info->poset, (int) (STATE_HASH));
     mk_dfa_tran (parse_info, dfas);
     if (debug_dfa_tran)
+    {
+	printf ("PR_TRAN\n");
         pr_tran (parse_info, dfas);
+    }
     if (dfa_verbose)
         pr_verbose (parse_info, dfas);
     del_pos(parse_info);

@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.107 2003-05-24 22:35:11 adam Exp $
+/* $Id: zserver.c,v 1.108 2003-06-18 11:46:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -264,7 +264,7 @@ int bend_search (void *handle, bend_search_rr *r)
     switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
-	zebra_search_RPN (zh, r->query->u.type_1,
+	zebra_search_RPN (zh, r->stream, r->query->u.type_1,
 			  r->setname, &r->hits);
         zebra_result (zh, &r->errcode, &r->errstring);
         if (!r->errcode)

@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.45 2003-05-20 12:52:50 adam Exp $
+/* $Id: zsets.c,v 1.46 2003-06-18 11:46:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -70,7 +70,7 @@ struct zset_sort_info {
     struct zset_sort_entry **entries;
 };
 
-ZebraSet resultSetAddRPN (ZebraHandle zh,
+ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,
 			  Z_RPNQuery *rpn, int num_bases,
                           char **basenames, 
 			  const char *setname)
@@ -87,7 +87,7 @@ ZebraSet resultSetAddRPN (ZebraHandle zh,
 	return 0;
     zebraSet->locked = 1;
     zebraSet->rpn = 0;
-    zebraSet->nmem = nmem_create ();
+    zebraSet->nmem = m;
 
     zebraSet->num_bases = num_bases;
     zebraSet->basenames = 

@@ -1,4 +1,9 @@
 
+Bug fix: result sets were not recovered correctly. Had to
+add ODR handle for zebra_search_RPN in order to make it work.
+
+Fixed a bug in regx filters that didn't do anchors (^) correctly.
+
 Fixed a bug in searches with X-Path searches sometimes giving "extra"
 hits.
 
