@@ -1,10 +1,15 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.17  1998-06-23 15:33:36  adam
+ * Revision 1.18  1998-09-22 10:03:45  adam
+ * Changed result sets to be persistent in the sense that they can
+ * be re-searched if needed.
+ * Fixed memory leak in rsm_or.
+ *
+ * Revision 1.17  1998/06/23 15:33:36  adam
  * Added feature to specify sort criteria in query (type 7 specifies
  * sort flags).
  *
@@ -82,7 +87,11 @@
 struct zebra_set {
     char *name;
     RSET rset;
-    int size;
+    NMEM nmem;
+    int hits;
+    int num_bases;
+    char **basenames;
+    Z_RPNQuery *rpn;
     struct zset_sort_info *sort_info;
     struct zebra_set *next;
 };
@@ -100,43 +109,76 @@ struct zset_sort_info {
     struct zset_sort_entry **entries;
 };
 
-void resultSetRank (ZebraHandle zh, struct zset_sort_info *si,
-		    RSET rset, int *hits);
+ZebraSet resultSetAddRPN (ZebraHandle zh, ODR stream, ODR decode,
+			  Z_RPNQuery *rpn, int num_bases, char **basenames, 
+			  const char *setname)
+{
+    ZebraSet zebraSet;
 
-ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov,
-			  RSET rset, int *hits)
+    zlog_rpn (rpn);
+
+    zh->errCode = 0;
+    zh->errString = NULL;
+    zh->hits = 0;
+
+    zebraSet = resultSetAdd (zh, setname, 1);
+    if (!zebraSet)
+	return 0;
+    zebraSet->rpn = 0;
+    zebraSet->num_bases = num_bases;
+    zebraSet->basenames = basenames;
+    zebraSet->nmem = odr_extract_mem (decode);
+
+    zebraSet->rset = rpn_search (zh, stream->mem, rpn,
+                                 zebraSet->num_bases,
+		                 zebraSet->basenames, zebraSet->name,
+				 zebraSet);
+    zh->hits = zebraSet->hits;
+    if (zebraSet->rset)
+        zebraSet->rpn = rpn;
+    return zebraSet;
+}
+
+ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
 {
     ZebraSet s;
     int i;
 
     for (s = zh->sets; s; s = s->next)
         if (!strcmp (s->name, name))
-        {
-	    logf (LOG_DEBUG, "updating result set %s", name);
-            if (!ov)
-                return NULL;
-            rset_delete (s->rset);
-            s->rset = rset;
-	    resultSetRank (zh, s->sort_info, rset, hits);
-            return s;
-        }
-    logf (LOG_DEBUG, "adding result set %s", name);
-    s = xmalloc (sizeof(*s));
-    s->next = zh->sets;
-    zh->sets = s;
-    s->name = xmalloc (strlen(name)+1);
-    strcpy (s->name, name);
-    s->rset = rset;
-    
-    s->sort_info = xmalloc (sizeof(*s->sort_info));
-    s->sort_info->max_entries = 1000;
-    s->sort_info->entries = xmalloc (sizeof(*s->sort_info->entries) *
-				     s->sort_info->max_entries);
-    s->sort_info->all_entries = xmalloc (sizeof(*s->sort_info->all_entries) *
-					 s->sort_info->max_entries);
-    for (i = 0; i < s->sort_info->max_entries; i++)
-	s->sort_info->entries[i] = s->sort_info->all_entries + i;
-    resultSetRank (zh, s->sort_info, rset, hits);
+	    break;
+    if (s)
+    {
+	logf (LOG_DEBUG, "updating result set %s", name);
+	if (!ov)
+	    return NULL;
+	if (s->rset)
+	    rset_delete (s->rset);
+	if (s->nmem)
+	    nmem_destroy (s->nmem);
+    }
+    else
+    {
+	logf (LOG_DEBUG, "adding result set %s", name);
+	s = xmalloc (sizeof(*s));
+	s->next = zh->sets;
+	zh->sets = s;
+	s->name = xmalloc (strlen(name)+1);
+	strcpy (s->name, name);
+
+	s->sort_info = xmalloc (sizeof(*s->sort_info));
+	s->sort_info->max_entries = 1000;
+	s->sort_info->entries =
+	    xmalloc (sizeof(*s->sort_info->entries) *
+		     s->sort_info->max_entries);
+	s->sort_info->all_entries =
+	    xmalloc (sizeof(*s->sort_info->all_entries) *
+		     s->sort_info->max_entries);
+	for (i = 0; i < s->sort_info->max_entries; i++)
+	    s->sort_info->entries[i] = s->sort_info->all_entries + i;
+    }
+    s->rset = 0;
+    s->nmem = 0;	
     return s;
 }
 
@@ -146,7 +188,18 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
 
     for (s = zh->sets; s; s = s->next)
         if (!strcmp (s->name, name))
+        {
+            if (!s->rset && s->rpn)
+            {
+                NMEM nmem = nmem_create ();
+                s->rset =
+                    rpn_search (zh, nmem, s->rpn, s->num_bases,
+				s->basenames, s->name, s);
+                nmem_destroy (nmem);
+
+            }
             return s;
+        }
     return NULL;
 }
 
@@ -163,6 +216,8 @@ void resultSetDestroy (ZebraHandle zh)
 	xfree (s->sort_info->entries);
 	xfree (s->sort_info);
 
+        if (s->nmem)
+            nmem_destroy (s->nmem);
         rset_delete (s->rset);
         xfree (s->name);
         xfree (s);
@@ -366,19 +421,13 @@ void resultSetInsertRank (ZebraHandle zh, struct zset_sort_info *sort_info,
     new_entry->score = score;
 }
 
-void resultSetSort (ZebraHandle zh, ODR stream,
+void resultSetSort (ZebraHandle zh, NMEM nmem,
 		    int num_input_setnames, const char **input_setnames,
 		    const char *output_setname,
 		    Z_SortKeySpecList *sort_sequence, int *sort_status)
 {
     ZebraSet sset;
     RSET rset;
-    int i, psysno = 0;
-    struct it_key key;
-    struct sortKey sort_criteria[3];
-    int num_criteria;
-    int term_index;
-    RSFD rfd;
 
     if (num_input_setnames == 0)
     {
@@ -396,15 +445,39 @@ void resultSetSort (ZebraHandle zh, ODR stream,
     if (!sset)
     {
 	zh->errCode = 30;
-	zh->errString = nmem_strdup (stream->mem, input_setnames[0]);
+	zh->errString = nmem_strdup (nmem, input_setnames[0]);
 	return;
     }
     if (!(rset = sset->rset))
     {
 	zh->errCode = 30;
-	zh->errString = nmem_strdup (stream->mem, input_setnames[0]);
+	zh->errString = nmem_strdup (nmem, input_setnames[0]);
         return;
     }
+    if (strcmp (output_setname, input_setnames[0]))
+    {
+	rset = rset_dup (rset);
+	sset = resultSetAdd (zh, output_setname, 1);
+        sset->rset = rset;
+    }
+    resultSetSortSingle (zh, nmem, sset, rset, sort_sequence, sort_status);
+}
+
+void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
+			  ZebraSet sset, RSET rset,
+			  Z_SortKeySpecList *sort_sequence, int *sort_status)
+{
+    int i, psysno = 0;
+    struct it_key key;
+    struct sortKey sort_criteria[3];
+    int num_criteria;
+    int term_index;
+    RSFD rfd;
+
+    logf (LOG_DEBUG, "resultSetSortSingle start");
+    sset->sort_info->num_entries = 0;
+
+    sset->hits = 0;
     num_criteria = sort_sequence->num_specs;
     if (num_criteria > 3)
 	num_criteria = 3;
@@ -461,19 +534,12 @@ void resultSetSort (ZebraHandle zh, ODR stream,
 	    break;
 	}
     }
-    if (strcmp (output_setname, input_setnames[0]))
-    {
-	int hits;
-	rset = rset_dup (rset);
-	sset = resultSetAdd (zh, output_setname, 1, rset, &hits);
-    }
-    sset->sort_info->num_entries = 0;
-
     rfd = rset_open (rset, RSETF_READ);
     while (rset_read (rset, rfd, &key, &term_index))
     {
         if (key.sysno != psysno)
         {
+	    (sset->hits)++;
             psysno = key.sysno;
 	    resultSetInsertSort (zh, sset,
 				 sort_criteria, num_criteria, psysno);
@@ -483,8 +549,7 @@ void resultSetSort (ZebraHandle zh, ODR stream,
 
     zh->errCode = 0;
     *sort_status = Z_SortStatus_success;
-    
-    return;
+    logf (LOG_DEBUG, "resultSetSortSingle end");
 }
 
 RSET resultSetRef (ZebraHandle zh, Z_ResultSetId *resultSetId)
@@ -496,8 +561,7 @@ RSET resultSetRef (ZebraHandle zh, Z_ResultSetId *resultSetId)
     return NULL;
 }
 
-void resultSetRank (ZebraHandle zh, struct zset_sort_info *sort_info,
-		    RSET rset, int *hits)
+void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 {
     int kno = 0;
     struct it_key key;
@@ -505,9 +569,11 @@ void resultSetRank (ZebraHandle zh, struct zset_sort_info *sort_info,
     int term_index, i;
     ZebraRankClass rank_class;
     struct rank_control *rc;
+    struct zset_sort_info *sort_info;
 
+    sort_info = zebraSet->sort_info;
     sort_info->num_entries = 0;
-    *hits = 0;
+    zebraSet->hits = 0;
     rfd = rset_open (rset, RSETF_READ);
 
     logf (LOG_DEBUG, "resultSetRank");
@@ -526,7 +592,7 @@ void resultSetRank (ZebraHandle zh, struct zset_sort_info *sort_info,
 	int score;
 	void *handle =
 	    (*rc->begin) (zh, rank_class->class_handle, rset);
-	(*hits)++;
+	(zebraSet->hits)++;
 	do
 	{
 	    kno++;
@@ -535,7 +601,7 @@ void resultSetRank (ZebraHandle zh, struct zset_sort_info *sort_info,
 		score = (*rc->calc) (handle, psysno);
 
 		resultSetInsertRank (zh, sort_info, psysno, score, 'A');
-		(*hits)++;
+		(zebraSet->hits)++;
 		psysno = key.sysno;
 	    }
 	    (*rc->add) (handle, key.seqno, term_index);
@@ -546,7 +612,7 @@ void resultSetRank (ZebraHandle zh, struct zset_sort_info *sort_info,
 	(*rc->end) (zh, handle);
     }
     rset_close (rset, rfd);
-    logf (LOG_DEBUG, "%d keys, %d distinct sysnos", kno, *hits);
+    logf (LOG_DEBUG, "%d keys, %d distinct sysnos", kno, zebraSet->hits);
 }
 
 ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name)

@@ -1,10 +1,15 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.c,v $
- * Revision 1.6  1998-03-05 08:36:28  adam
+ * Revision 1.7  1998-09-22 10:03:46  adam
+ * Changed result sets to be persistent in the sense that they can
+ * be re-searched if needed.
+ * Fixed memory leak in rsm_or.
+ *
+ * Revision 1.6  1998/03/05 08:36:28  adam
  * New result set model.
  *
  * Revision 1.5  1997/12/18 10:54:25  adam
@@ -200,7 +205,7 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 
     ct->no_rset_terms = 1;
     ct->rset_terms = xmalloc (sizeof(*ct->rset_terms));
-    ct->rset_terms[0] = rset_term_dup (r_parms->rset_term);
+    ct->rset_terms[0] = r_parms->rset_term;
     return info;
 }
 

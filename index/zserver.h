@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.37  1998-09-02 13:53:22  adam
+ * Revision 1.38  1998-09-22 10:03:44  adam
+ * Changed result sets to be persistent in the sense that they can
+ * be re-searched if needed.
+ * Fixed memory leak in rsm_or.
+ *
+ * Revision 1.37  1998/09/02 13:53:22  adam
  * Extra parameter decode added to search routines to implement
  * persistent queries.
  *
@@ -208,9 +213,9 @@ struct rank_control {
     void (*add)(void *set_handle, int seqno, int term_index);
 };
 
-void rpn_search (ZebraHandle zh, ODR stream, ODR decode,
+RSET rpn_search (ZebraHandle zh, NMEM mem,
 		 Z_RPNQuery *rpn, int num_bases, char **basenames, 
-		 const char *setname);
+		 const char *setname, ZebraSet sset);
 
 
 void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
@@ -222,9 +227,10 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 RSET rset_trunc (ZebraHandle zh, ISAM_P *isam_p, int no,
 		 const char *term, int length_term, const char *flags);
 
-ZebraSet resultSetAdd (ZebraHandle zh, const char *name,
-                          int ov, RSET rset, int *hits);
+ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov);
 ZebraSet resultSetGet (ZebraHandle zh, const char *name);
+ZebraSet resultSetAddRPN (ZebraHandle zh, ODR stream, ODR decode,                                         Z_RPNQuery *rpn, int num_bases, char **basenames,
+                          const char *setname);
 RSET resultSetRef (ZebraHandle zh, Z_ResultSetId *resultSetId);
 void resultSetDestroy (ZebraHandle zh);
 
@@ -232,10 +238,14 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 			       int num, int *positions);
 void zebraPosSetDestroy (ZebraHandle zh, ZebraPosSet records, int num);
 
-void resultSetSort (ZebraHandle zh, ODR stream,
+void resultSetSort (ZebraHandle zh, NMEM nmem,
 		    int num_input_setnames, const char **input_setnames,
 		    const char *output_setname,
 		    Z_SortKeySpecList *sort_sequence, int *sort_status);
+void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
+			  ZebraSet sset, RSET rset,
+			  Z_SortKeySpecList *sort_sequence, int *sort_status);
+void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset);
 
 void zebra_sort (ZebraHandle zh, ODR stream,
 		 int num_input_setnames, const char **input_setnames,

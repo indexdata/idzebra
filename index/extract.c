@@ -1,10 +1,15 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.84  1998-06-11 15:42:22  adam
+ * Revision 1.85  1998-09-22 10:03:41  adam
+ * Changed result sets to be persistent in the sense that they can
+ * be re-searched if needed.
+ * Fixed memory leak in rsm_or.
+ *
+ * Revision 1.84  1998/06/11 15:42:22  adam
  * Changed the way use attributes are specified in the recordId
  * specification.
  *
@@ -682,9 +687,10 @@ static void addSortString (RecWord *p, const char *string, int length)
     sk->next = sortKeys;
     sortKeys = sk;
 
-    sk->string = xmalloc (p->length);
-    sk->length = p->length;
-    memcpy (sk->string, p->string, p->length);
+    sk->string = xmalloc (length);
+    sk->length = length;
+    memcpy (sk->string, string, length);
+
     sk->attrSet = p->attrSet;
     sk->attrUse = p->attrUse;
 }

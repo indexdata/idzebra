@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.9  1998-09-02 13:53:17  adam
+ * Revision 1.10  1998-09-22 10:03:42  adam
+ * Changed result sets to be persistent in the sense that they can
+ * be re-searched if needed.
+ * Fixed memory leak in rsm_or.
+ *
+ * Revision 1.9  1998/09/02 13:53:17  adam
  * Extra parameter decode added to search routines to implement
  * persistent queries.
  *
@@ -230,7 +235,9 @@ void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
     zh->errCode = 0;
     zh->errString = NULL;
     zh->hits = 0;
-    rpn_search (zh, stream, decode, query, num_bases, basenames, setname);
+
+    resultSetAddRPN (zh, stream, decode, query, num_bases, basenames, setname);
+
     zebra_register_unlock (zh);
 }
 
@@ -305,7 +312,7 @@ void zebra_sort (ZebraHandle zh, ODR stream,
     zh->errCode = 0;
     zh->errString = NULL;
     zebra_register_lock (zh);
-    resultSetSort (zh, stream, num_input_setnames, input_setnames,
+    resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
 		   output_setname, sort_sequence, sort_status);
     zebra_register_unlock (zh);
 }

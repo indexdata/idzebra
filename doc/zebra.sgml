@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.41 1998-06-11 15:42:21 adam Exp $
+  $Id: zebra.sgml,v 1.42 1998-09-22 10:03:39 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.41 $
+<date>$Revision: 1.42 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -192,14 +192,33 @@ An ANSI C compiler is required to compile the Zebra
 server system &mdash; <tt/gcc/ works fine if your own system doesn't
 provide an adequate compiler.
 
-Unpack the distribution archive. In some cases, you may want to edit
-the top-level <tt/Makefile/, eg. to select a different C compiler, or
-to specify machine-specific libraries in the <bf/ELIBS/ variable.
+Unpack the distribution archive. The <tt>configure</tt> shell script
+attempts to guess correct values for various system-dependent variables
+used during compilation. It uses those values to create a 'Makefile' in
+each directory of Zebra.
 
-When you are done editing the <tt>Makefile</tt> type:
+To run the configure script type:
 <tscreen><verb>
-$ make
+  ./configure
 </verb></tscreen>
+
+The configure script attempts to use C compiler specified by
+the <tt>CC</tt> environment variable. If not set, <tt>cc</tt>
+will be used. The <tt>CFLAGS</tt> environment variable holds
+options to be passed to the C compiler. If you're using a Bourne-shell
+compatible shell you may pass something like this:
+<tscreen><verb>
+  CC=/opt/ccs/bin/cc CFLAGS=-O ./configure
+</verb></tscreen>
+
+When configured build the software by typing:
+<tscreen><verb>
+  make
+</verb></tscreen> 
+
+As an option you may type <tt>make depend</tt> to create
+source file dependencies for the package. This is only needed,
+however, if you alter the source.
 
 If successful, two executables have been created in the sub-directory
 <tt/index/.
