@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-1999
-dnl $Id: configure.in,v 1.9 1999-06-25 13:48:02 adam Exp $
+dnl $Id: configure.in,v 1.10 1999-07-14 10:59:26 adam Exp $
 dnl See the file LICENSE.2 for details.
 dnl
 AC_INIT(include/zebraver.h)
@@ -58,6 +58,9 @@ if test "$checkBoth" = "1"; then
 	AC_CHECK_FUNC(accept, , [LIBS=$oldLibs])
 fi
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, main, [LIBS="$LIBS -lnsl"]))
+dnl
+dnl ------ times
+AC_CHECK_HEADERS(sys/times.h)
 dnl
 dnl ------ TCP wrapper (for Linux)
 AC_CHECK_LIB(wrap, main, [LIBS="$LIBS -lwrap"])

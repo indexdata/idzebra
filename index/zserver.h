@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.42  1999-05-26 07:49:13  adam
+ * Revision 1.43  1999-07-14 10:59:27  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.42  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.41  1999/05/12 13:08:06  adam
@@ -149,16 +153,7 @@
  *
  */
 
-
-#ifndef USE_TIMES
-#ifdef __linux__
-#define USE_TIMES 1
-#else
-#define USE_TIMES 0
-#endif
-#endif
-
-#if USE_TIMES
+#if HAVE_SYS_TIMES_H
 #include <sys/times.h>
 #endif
 
@@ -210,7 +205,7 @@ struct zebra_info {
     ZebraLockHandle server_lock_cmt;
     ZebraLockHandle server_lock_org;
     char *server_path_prefix;
-#if USE_TIMES
+#if HAVE_SYS_TIMES_H
     struct tms tms1;
     struct tms tms2;    
 #endif
@@ -219,7 +214,6 @@ struct zebra_info {
     RecTypes recTypes;
     Passwd_db passwd_db;
 };
-
 
 struct rank_control {
     char *name;

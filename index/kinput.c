@@ -619,8 +619,9 @@ void key_input (BFiles bfs, int nkeys, int cache)
     }
     if (res_get_match (common_resource, "isam", "s", NULL))
     {
+	struct ISAMS_M_s isams_m;
         isams = isams_open (bfs, FNAME_ISAMS, 1,
-			    key_isams_m (common_resource));
+			    key_isams_m (common_resource, &isams_m));
         if (!isams)
         {
             logf (LOG_FATAL, "isams_open fail");
@@ -649,8 +650,9 @@ void key_input (BFiles bfs, int nkeys, int cache)
     }
     else
     {
+	struct ISAMC_M_s isamc_m;
         isamc = isc_open (bfs, FNAME_ISAMC, 1,
-			  key_isamc_m (common_resource));
+			  key_isamc_m (common_resource, &isamc_m));
         if (!isamc)
         {
             logf (LOG_FATAL, "isc_open fail");
@@ -715,7 +717,11 @@ void key_input (BFiles bfs, int nkeys, int cache)
 
 /*
  * $Log: kinput.c,v $
- * Revision 1.35  1999-06-30 15:07:23  heikki
+ * Revision 1.36  1999-07-14 10:59:26  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.35  1999/06/30 15:07:23  heikki
  * Adding isamh stuff
  *
  * Revision 1.34  1999/05/26 07:49:13  adam

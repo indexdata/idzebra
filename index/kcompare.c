@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.32  1999-07-13 13:21:15  heikki
+ * Revision 1.33  1999-07-14 10:59:26  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.32  1999/07/13 13:21:15  heikki
  * Managing negative deltas
  *
  * Revision 1.31  1999/07/06 09:37:04  heikki
@@ -307,14 +311,9 @@ static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
     }
 }
 
-ISAMC_M key_isamc_m (Res res)
+ISAMC_M key_isamc_m (Res res, ISAMC_M me)
 {
-    static ISAMC_M me = NULL;
-
-    if (me)
-        return me;
-
-    me = isc_getmethod ();
+    isc_getmethod (me);
 
     me->compare_item = key_compare;
 
@@ -328,14 +327,9 @@ ISAMC_M key_isamc_m (Res res)
     return me;
 }
 
-ISAMS_M key_isams_m (Res res)
+ISAMS_M key_isams_m (Res res, ISAMS_M me)
 {
-    static ISAMS_M me = NULL;
-
-    if (me)
-        return me;
-
-    me = isams_getmethod ();
+    isams_getmethod (me);
 
     me->compare_item = key_compare;
 

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.18  1999-06-30 09:08:23  adam
+ * Revision 1.19  1999-07-14 10:59:27  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.18  1999/06/30 09:08:23  adam
  * Added coder to reset.
  *
  * Revision 1.17  1999/05/26 07:49:14  adam
@@ -91,8 +95,9 @@ static void init_fc (ISAMC is, int cat);
 
 #define SMALL_TEST 0
 
-ISAMC_M isc_getmethod (void)
+void isc_getmethod (ISAMC_M m)
 {
+
     static struct ISAMC_filecat_s def_cat[] = {
 #if SMALL_TEST
         {    32,     28,      0,  3 },
@@ -106,7 +111,6 @@ ISAMC_M isc_getmethod (void)
         { 32768,  32000,  31000,  0 },
 #endif
     };
-    ISAMC_M m = (ISAMC_M) xmalloc (sizeof(*m));
     m->filecat = def_cat;
 
     m->code_start = NULL;
@@ -119,10 +123,7 @@ ISAMC_M isc_getmethod (void)
     m->debug = 1;
 
     m->max_blocks_mem = 10;
-
-    return m;
 }
-
 
 ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
 {

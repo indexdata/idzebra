@@ -1,3 +1,5 @@
+Added support for multiple records in one file for filter grs.sgml.
+
 Changed record index structure. New layout is incompatible with
 previous releases. Added setting "recordcompression" to control
 compression of records. Possible values are "none" (no

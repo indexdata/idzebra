@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: isams.h,v 1.1 1999-05-12 13:08:06 adam Exp $
+ * $Id: isams.h,v 1.2 1999-07-14 10:59:26 adam Exp $
  */
 #ifndef ISAMS_H
 #define ISAMS_H
@@ -36,7 +36,7 @@ typedef struct ISAMS_I_s {
     void *clientData;
 } *ISAMS_I;
 
-ISAMS_M isams_getmethod (void);
+void isams_getmethod (ISAMS_M me);
 
 ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
 		  ISAMS_M method);

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isams.c,v $
- * Revision 1.4  1999-05-26 07:49:14  adam
+ * Revision 1.5  1999-07-14 10:59:27  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.4  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.3  1999/05/20 12:57:18  adam
@@ -53,10 +57,8 @@ struct ISAMS_PP_s {
     int numRead;
 };
 
-ISAMS_M isams_getmethod (void)
+void isams_getmethod (ISAMS_M m)
 {
-    ISAMS_M m = (ISAMS_M) xmalloc (sizeof(*m));
-
     m->code_start = NULL;
     m->code_item = NULL;
     m->code_stop = NULL;
@@ -65,8 +67,6 @@ ISAMS_M isams_getmethod (void)
 
     m->debug = 1;
     m->block_size = 128;
-
-    return m;
 }
 
 ISAMS isams_open (BFiles bfs, const char *name, int writeflag,

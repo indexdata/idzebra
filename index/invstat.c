@@ -150,7 +150,9 @@ void inv_prstat (BFiles bfs)
     }
     else if (res_get_match (common_resource, "isam", "s", NULL))
     {
-        isams = isams_open (bfs, FNAME_ISAMS, 0, key_isams_m(common_resource));
+	struct ISAMS_M_s isams_m;
+        isams = isams_open (bfs, FNAME_ISAMS, 0,
+			    key_isams_m(common_resource, &isams_m));
         if (!isams)
         {
             logf (LOG_FATAL, "isams_open fail");
@@ -168,7 +170,9 @@ void inv_prstat (BFiles bfs)
     }
     else
     {
-        isamc = isc_open (bfs, FNAME_ISAMC, 0, key_isamc_m (common_resource));
+	struct ISAMC_M_s isamc_m;
+        isamc = isc_open (bfs, FNAME_ISAMC, 0,
+			  key_isamc_m (common_resource, &isamc_m));
         if (!isamc)
         {
             logf (LOG_FATAL, "isc_open fail");
@@ -261,7 +265,11 @@ void inv_prstat (BFiles bfs)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.13  1999-07-08 14:23:27  heikki
+ * Revision 1.14  1999-07-14 10:59:26  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.13  1999/07/08 14:23:27  heikki
  * Fixed a bug in isamh_pp_read and cleaned up a bit
  *
  * Revision 1.12  1999/07/06 12:28:04  adam

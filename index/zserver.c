@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.70  1999-06-10 12:14:56  adam
+ * Revision 1.71  1999-07-14 10:59:26  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.70  1999/06/10 12:14:56  adam
  * Fixed to use bend_start instead of pre_init.
  *
  * Revision 1.69  1999/06/10 09:20:03  adam
@@ -263,7 +267,6 @@
 #endif
 
 #include <data1.h>
-#include <dmalloc.h>
 
 #include "zserver.h"
 

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.20  1999-07-06 12:28:04  adam
+ * Revision 1.21  1999-07-14 10:59:26  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.20  1999/07/06 12:28:04  adam
  * Updated record index structure. Format includes version ID. Compression
  * algorithm ID is stored for each record block.
  *
@@ -98,10 +102,17 @@ static void zebra_chdir (ZebraHandle zh)
     chdir (dir);
 #endif
 }
+
+static void zebra_register_unlock (ZebraHandle zh);
+
 static int zebra_register_lock (ZebraHandle zh)
 {
     time_t lastChange;
     int state;
+
+    zh->errCode = 0;
+    zh->errString = 0;
+    zh->hits = 0;
 
     zebra_chdir (zh);
 
@@ -116,7 +127,7 @@ static int zebra_register_lock (ZebraHandle zh)
         state = 0;
     }
     zebra_server_lock (zh, state);
-#if USE_TIMES
+#if HAVE_SYS_TIMES_H
     times (&zh->tms1);
 #endif
     if (zh->registerState == state)
@@ -135,59 +146,87 @@ static int zebra_register_lock (ZebraHandle zh)
     if (zh->records)
     {
         zebraExplain_close (zh->zei, 0, 0);
-        dict_close (zh->dict);
-	sortIdx_close (zh->sortIdx);
+	if (zh->dict)
+	    dict_close (zh->dict);
+	if (zh->sortIdx)
+	    sortIdx_close (zh->sortIdx);
         if (zh->isam)
             is_close (zh->isam);
         if (zh->isamc)
             isc_close (zh->isamc);
+        if (zh->isams)
+            isams_close (zh->isams);
         rec_close (&zh->records);
     }
     bf_cache (zh->bfs, state ? res_get (zh->res, "shadow") : NULL);
     zh->registerState = state;
-    zh->records = rec_open (zh->bfs, 0, 0);
-    if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 40, 0, 0)))
-    {
-	logf (LOG_WARN, "dict_open");
-        return -1;
-    }
-    if (!(zh->sortIdx = sortIdx_open (zh->bfs, 0)))
-    {
-	logf (LOG_WARN, "sortIdx_open");
-	return -1;
-    }
+
     zh->isam = NULL;
     zh->isamc = NULL;
     zh->isams = NULL;
-    if (res_get_match (zh->res, "isam", "i", NULL))
+    zh->dict = NULL;
+    zh->sortIdx = NULL;
+    zh->zei = NULL;
+
+    if (!(zh->records = rec_open (zh->bfs, 0, 0)))
     {
-        if (!(zh->isam = is_open (zh->bfs, FNAME_ISAM, key_compare, 0,
-                                  sizeof (struct it_key), zh->res)))
-	{
-	    logf (LOG_WARN, "is_open");
-            return -1;
-	}
-    }
-    else if (res_get_match (zh->res, "isam", "s", NULL))
-    {
-        if (!(zh->isams = isams_open (zh->bfs, FNAME_ISAMS, 0,
-				      key_isams_m(zh->res))))
-	{
-	    logf (LOG_WARN, "isams_open");
-            return -1;
-	}
+	logf (LOG_WARN, "rec_open");
+	zh->errCode = 2;
     }
     else
     {
-        if (!(zh->isamc = isc_open (zh->bfs, FNAME_ISAMC,
-				    0, key_isamc_m(zh->res))))
+	if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 40, 0, 0)))
 	{
-	    logf (LOG_WARN, "isc_open");
-            return -1;
+	    logf (LOG_WARN, "dict_open");
+	    zh->errCode = 2;
+	}
+	if (!(zh->sortIdx = sortIdx_open (zh->bfs, 0)))
+	{
+	    logf (LOG_WARN, "sortIdx_open");
+	    zh->errCode = 2;
+	}
+	if (res_get_match (zh->res, "isam", "i", NULL))
+	{
+	    if (!(zh->isam = is_open (zh->bfs, FNAME_ISAM, key_compare, 0,
+				      sizeof (struct it_key), zh->res)))
+	    {
+		logf (LOG_WARN, "is_open");
+		zh->errCode = 2;
+	    }
+	}
+	else if (res_get_match (zh->res, "isam", "s", NULL))
+	{
+	    struct ISAMS_M_s isams_m;
+	    if (!(zh->isams = isams_open (zh->bfs, FNAME_ISAMS, 0,
+					  key_isams_m(zh->res, &isams_m))))
+	    {
+		logf (LOG_WARN, "isams_open");
+		zh->errCode = 2;
+	    }
+	}
+	else
+	{
+	    struct ISAMC_M_s isamc_m;
+	    if (!(zh->isamc = isc_open (zh->bfs, FNAME_ISAMC,
+					0, key_isamc_m(zh->res, &isamc_m))))
+	    {
+		logf (LOG_WARN, "isc_open");
+		zh->errCode = 2;
+	    }
+	}
+	zh->zei = zebraExplain_open (zh->records, zh->dh, zh->res, 0, 0, 0);
+	if (!zh->zei)
+	{
+	    logf (LOG_WARN, "Cannot obtain EXPLAIN information");
+	    zh->errCode = 2;
 	}
     }
-    zh->zei = zebraExplain_open (zh->records, zh->dh, zh->res, 0, 0, 0);
-
+    if (zh->errCode)
+    {
+	zebra_register_unlock (zh);
+	zh->registerState = -1;
+	return -1;
+    }
     return 0;
 }
 
@@ -195,7 +234,7 @@ static void zebra_register_unlock (ZebraHandle zh)
 {
     static int waitSec = -1;
 
-#if USE_TIMES
+#if HAVE_SYS_TIMES_H
     times (&zh->tms2);
     logf (LOG_LOG, "user/system: %ld/%ld",
 			(long) (zh->tms2.tms_utime - zh->tms1.tms_utime),
@@ -220,8 +259,9 @@ static void zebra_register_unlock (ZebraHandle zh)
 
 ZebraHandle zebra_open (const char *configName)
 {
-    ZebraHandle zh = (ZebraHandle) xmalloc (sizeof(*zh));
+    ZebraHandle zh;
 
+    zh = (ZebraHandle) xmalloc (sizeof(*zh));
     if (!(zh->res = res_open (configName)))
     {
 	logf (LOG_WARN, "Failed to read resources `%s'", configName);
@@ -291,6 +331,7 @@ void zebra_close (ZebraHandle zh)
 	passwd_db_close (zh->passwd_db);
     res_close (zh->res);
     xfree (zh);
+    xmalloc_trav("x");
 }
 
 struct map_baseinfo {
@@ -365,11 +406,8 @@ void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
 		       Z_RPNQuery *query, int num_bases, char **basenames, 
 		       const char *setname)
 {
-    zebra_register_lock (zh);
-    zh->errCode = 0;
-    zh->errString = NULL;
-    zh->hits = 0;
-
+    if (zebra_register_lock (zh))
+	return;
     map_basenames (zh, stream, &num_bases, &basenames);
     resultSetAddRPN (zh, stream, decode, query, num_bases, basenames, setname);
 
@@ -384,14 +422,11 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
     ZebraPosSet poset;
     int i, *pos_array;
 
-    zh->errCode = 0;
-    zh->errString = NULL;
+    if (zebra_register_lock (zh))
+	return;
     pos_array = (int *) xmalloc (num_recs * sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
 	pos_array[i] = recs[i].position;
-
-    zebra_register_lock (zh);
-
     poset = zebraPosSetCreate (zh, setname, num_recs, pos_array);
     if (!poset)
     {
@@ -435,9 +470,12 @@ void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		 int *position, int *num_entries, ZebraScanEntry **entries,
 		 int *is_partial)
 {
-    zh->errCode = 0;
-    zh->errString = NULL;
-    zebra_register_lock (zh);
+    if (zebra_register_lock (zh))
+    {
+	*entries = 0;
+	*num_entries = 0;
+	return;
+    }
     map_basenames (zh, stream, &num_bases, &basenames);
     rpn_scan (zh, stream, zapt, attributeset,
 	      num_bases, basenames, position,
@@ -450,9 +488,8 @@ void zebra_sort (ZebraHandle zh, ODR stream,
 		 const char *output_setname, Z_SortKeySpecList *sort_sequence,
 		 int *sort_status)
 {
-    zh->errCode = 0;
-    zh->errString = NULL;
-    zebra_register_lock (zh);
+    if (zebra_register_lock (zh))
+	return;
     resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
 		   output_setname, sort_sequence, sort_status);
     zebra_register_unlock (zh);

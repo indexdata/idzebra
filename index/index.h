@@ -99,8 +99,8 @@ void key_logdump (int mask, const void *p);
 void inv_prstat (BFiles bfs);
 void inv_compact (BFiles bfs);
 void key_input (BFiles bfs, int nkeys, int cache);
-ISAMC_M key_isamc_m (Res res);
-ISAMS_M key_isams_m (Res res);
+ISAMC_M key_isamc_m (Res res, ISAMC_M me);
+ISAMS_M key_isams_m (Res res, ISAMS_M me);
 ISAMH_M key_isamh_m (Res res);
 int merge_sort (char **buf, int from, int to);
 int key_SU_code (int ch, char *out);
@@ -158,7 +158,11 @@ extern Res common_resource;
 
 /*
  * $Log: index.h,v $
- * Revision 1.64  1999-06-30 15:07:23  heikki
+ * Revision 1.65  1999-07-14 10:59:26  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.64  1999/06/30 15:07:23  heikki
  * Adding isamh stuff
  *
  * Revision 1.63  1999/05/26 07:49:13  adam

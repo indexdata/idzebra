@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.67  1999-07-06 12:28:04  adam
+ * Revision 1.68  1999-07-14 10:59:26  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.67  1999/07/06 12:28:04  adam
  * Updated record index structure. Format includes version ID. Compression
  * algorithm ID is stored for each record block.
  *
@@ -276,7 +280,7 @@ int main (int argc, char **argv)
     int cmd = 0;
     char *arg;
     char *configName = NULL;
-    int nsections;
+    int nsections = 0;
     int disableCommit = 0;
     size_t mem_max = 0;
 

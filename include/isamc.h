@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.h,v $
- * Revision 1.8  1999-06-30 09:08:23  adam
+ * Revision 1.9  1999-07-14 10:59:26  adam
+ * Changed functions isc_getmethod, isams_getmethod.
+ * Improved fatal error handling (such as missing EXPLAIN schema).
+ *
+ * Revision 1.8  1999/06/30 09:08:23  adam
  * Added coder to reset.
  *
  * Revision 1.7  1998/03/13 15:30:50  adam
@@ -75,7 +79,7 @@ typedef struct ISAMC_I_s {
     void *clientData;
 } *ISAMC_I;
 
-ISAMC_M isc_getmethod (void);
+void isc_getmethod (ISAMC_M m);
 
 ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method);
 int isc_close (ISAMC is);
