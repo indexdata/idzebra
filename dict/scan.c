@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.5  1995-10-09 16:18:32  adam
+ * Revision 1.6  1995-11-20 11:58:04  adam
+ * Support for YAZ in standard located directories, such as /usr/local/..
+ *
+ * Revision 1.5  1995/10/09  16:18:32  adam
  * Function dict_lookup_grep got extra client data parameter.
  *
  * Revision 1.4  1995/10/06  13:52:00  adam
@@ -103,6 +106,8 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
     char *info;
 
     dict_bf_readp (dict->dbf, ptr, &p);
+    if (!p)
+        return 0;
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
     indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));    
@@ -191,8 +196,6 @@ int dict_scan (Dict dict, Dict_char *str, int *before, int *after,
                int (*f)(Dict_char *name, const char *info, int pos,
                         void *client))
 {
-    int i;
-    i = dict_scan_r (dict, 1, 0, str, before, after, client, f);
-    return i;
+    return dict_scan_r (dict, 1, 0, str, before, after, client, f);
 }
 
