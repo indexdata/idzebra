@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.16 2002-11-08 01:01:38 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.17 2002-11-08 17:00:57 mike Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -53,9 +53,9 @@
   <para>
    This example shows how Zebra can be used with absolutely minimal
    configuration to index a body of
-   <ulink url="http://www.w3.org/xml/###">XML</ulink>
+   <ulink url="http://www.w3.org/XML/">XML</ulink>
    documents, and search them using
-   <ulink url="http://www.w3.org/xpath/###">XPath</ulink>
+   <ulink url="http://www.w3.org/TR/xpath">XPath</ulink>
    expressions to specify access points.
   </para>
   <para>
@@ -183,7 +183,8 @@
    sets</firstterm>.  For example, the BIB-1 attribute set is supposed to
    contain bibliographic access points such as author, title, subject
    and ISBN; the GEO attribute set contains access points pertaining
-   to geospatial information (bounding box, ###, etc.); the CIMI
+   to geospatial information (bounding coordinates, stratum, latitude
+   resolution, etc.); the CIMI
    attribute set contains access points to do with museum collections
    (provenance, inscriptions, etc.)
   </para>
@@ -200,7 +201,8 @@
    interpreted as a title - that is, a phrase that identifies the item
    in question.  BIB-1 represents title searches by
    access point 4.  (See
-   <ulink url="###bib1-semantics"/>)
+   <ulink url="ftp://ftp.loc.gov/pub/z3950/defs/bib1.txt"
+	>The BIB-1 Attribute Set Semantics</ulink>)
    So we need to configure our dinosaur database so that searches for
    BIB-1 access point 4 look in the 
    <literal>&lt;termName&gt;</literal> element,
