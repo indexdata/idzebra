@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.31 2002-08-02 19:26:57 adam Exp $
+/* $Id: res.c,v 1.32 2002-09-09 09:35:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -81,7 +81,7 @@ static void reread (Res r)
     fr = fopen (r->name, "r");
     if (!fr)
     {
-        logf (LOG_WARN|LOG_ERRNO, "Cannot open %s", r->name);
+        logf (LOG_WARN|LOG_ERRNO, "Cannot open `%s'", r->name);
 	return ;
     }
     while (1)
@@ -181,7 +181,7 @@ Res res_open (const char *name, Res def_res)
     if (access (name, R_OK))
 #endif
     {
-        logf (LOG_WARN|LOG_ERRNO, "Cannot access resource file `%s'", name);
+        logf (LOG_WARN|LOG_ERRNO, "Cannot open `%s'", name);
 	return 0;
     }
     r = (Res) xmalloc (sizeof(*r));
@@ -308,7 +308,7 @@ int res_write (Res r)
     fr = fopen (r->name, "w");
     if (!fr)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Cannot create %s", r->name);
+        logf (LOG_FATAL|LOG_ERRNO, "Cannot create `%s'", r->name);
         exit (1);
     }
 
