@@ -1,4 +1,4 @@
-/* $Id: charmap1.c,v 1.1 2004-12-02 13:59:08 adam Exp $
+/* $Id: charmap1.c,v 1.2 2004-12-14 11:23:32 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -27,6 +27,8 @@ int main(int argc, char **argv)
     ZebraService zs = start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs);
     char path[256];
+
+    check_filter(zs, "grs.xml");
 
     zebra_select_database(zh, "Default");
 

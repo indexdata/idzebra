@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.2 2004-12-02 14:05:04 adam Exp $
+/* $Id: t1.c,v 1.3 2004-12-14 11:23:32 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -28,6 +28,7 @@ int main(int argc, char **argv)
     ZebraHandle  zh = zebra_open(zs);
     char path[256];
 
+    check_filter(zs, "grs.xml");
     zebra_select_database(zh, "Default");
 
     zebra_init(zh);

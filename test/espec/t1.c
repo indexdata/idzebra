@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.1 2004-12-14 09:47:55 adam Exp $
+/* $Id: t1.c,v 1.2 2004-12-14 11:23:32 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -30,6 +30,8 @@ int main(int argc, char **argv)
     char path[256];
     int i, errs = 0;
 
+    check_filter(zs, "grs.xml");
+
     zebra_select_database(zh, "Default");
 
     zebra_init(zh);
@@ -45,25 +47,6 @@ int main(int argc, char **argv)
 
     do_query(__LINE__,zh, "@attr 1=1016 X2", 1);
     do_query(__LINE__,zh, "@attr 1=1016 {X2 X3}", 1);
-
-#if 0
-    recs = zebra_meta_records_create_range (zh, "rsetname", 1, 4);
-    if (!recs)
-    {
-	fprintf(stderr, "recs==0\n");
-	exit(1);
-    }
-    if (recs[0].sysno != 3)
-	errs++;
-    if (recs[1].sysno != 2)
-	errs++;
-    if (recs[2].sysno != 4)
-	errs++;
-    if (recs[3].sysno != 5)
-	errs++;
-
-    zebra_meta_records_destroy (zh, recs, 4);
-#endif
 
     if (errs)
     {
