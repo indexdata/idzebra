@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.24 2004-06-16 22:12:30 adam Exp $
+/* $Id: marcread.c,v 1.24.2.1 2004-11-30 16:39:42 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -290,7 +290,11 @@ static char *get_data(data1_node *n, int *len)
         {
             int i;
             *len = n->u.data.len;
-
+	    
+	    /** Fixme: not delete leader/final whitespaces
+	     ** in MARC field/subfield. It fixed in
+	     ** data1/d1_marc.c too.
+	     
             for (i = 0; i<*len; i++)
                 if (!d1_isspace(n->u.data.data[i]))
                     break;
@@ -299,6 +303,9 @@ static char *get_data(data1_node *n, int *len)
             *len = *len - i;
             if (*len > 0)
                 return n->u.data.data + i;
+	    **/
+	    if (*len > 0)
+		return n->u.data.data;
         }
         if (n->which == DATA1N_tag)
             n = n->child;
@@ -362,7 +369,7 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, WRBUF buf,
 		else
 		{
 		    wrbuf_write(buf, found->data+p->interval.start,
-				p->interval.end-p->interval.start);
+				p->interval.end-p->interval.start+1);
 		    wrbuf_puts(buf, "");
 		}
 	    	if (strcmp(p->suffix, "_"))
@@ -484,7 +491,7 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 	inline_destroy_field(pif);
     }
 #if MARCOMP_DEBUG    
-    logf(LOG_LOG, "cat_inline_field(): got buffer {%s}", buf);
+    logf(LOG_LOG, "cat_inline_field(): got buffer {%s}", buf->buf);
 #endif
 }
 
@@ -520,7 +527,7 @@ static data1_node *cat_subfield(mc_subfield *psf, WRBUF buf,
 		else
 		{
 		    wrbuf_write(buf, get_data(found, &len)+p->interval.start,
-			p->interval.end-p->interval.start);
+			p->interval.end-p->interval.start+1);
 		    wrbuf_puts(buf, "");
 		}
 		if (strcmp(p->suffix, "_"))
@@ -601,11 +608,11 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
 	else
 	{
 	    wrbuf_write(buf, get_data(field, &len)+pf->interval.start,
-			pf->interval.end-pf->interval.start);
+			pf->interval.end-pf->interval.start+1);
 	    wrbuf_puts(buf, "");
 	}
 #if MARCOMP_DEBUG
-        logf(LOG_LOG, "cat_field(): got buffer {%s}", buf);
+        logf(LOG_LOG, "cat_field(): got buffer {%s}", buf->buf);
 #endif
 	return field->next;
     }
@@ -636,7 +643,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
     cat_subfield(pf->list, buf, subfield);
 
 #if MARCOMP_DEBUG    
-    logf(LOG_LOG, "cat_field(): got buffer {%s}", buf);
+    logf(LOG_LOG, "cat_field(): got buffer {%s}", buf->buf);
 #endif
     
     return field->next;    

@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.6 2003-12-17 12:03:54 adam Exp $
+/* $Id: d1_marc.c,v 1.6.2.1 2004-11-30 16:39:42 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -174,7 +174,8 @@ static char *get_data(data1_node *n, int *len)
         {
             int i;
             *len = n->u.data.len;
-
+	    
+	    /* Fixme: don't delete leader/final whitespaces
             for (i = 0; i<*len; i++)
                 if (!d1_isspace(n->u.data.data[i]))
                     break;
@@ -183,6 +184,9 @@ static char *get_data(data1_node *n, int *len)
             *len = *len - i;
             if (*len > 0)
                 return n->u.data.data + i;
+	    */
+	    if (*len > 0)
+		return n->u.data.data;
         }
         if (n->which == DATA1N_tag)
             n = n->child;
