@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.8 2004-08-04 08:35:24 adam Exp $
+/* $Id: tstisamb.c,v 1.7.2.1 2005-01-17 08:46:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,6 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <stdlib.h>
 #include <string.h>
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -47,12 +48,12 @@ int compare_item(const void *a, const void *b)
     return ia - ib;
 }
 
-void *code_start()
+void *code_start(int mode)
 {
     return 0;
 }
 
-void code_item(void *p, char **dst, const char **src)
+void code_item(int mode, void *p, char **dst, char **src)
 {
     memcpy (*dst, *src, sizeof(int));
     (*dst) += sizeof(int);
@@ -62,7 +63,7 @@ void code_item(void *p, char **dst, const char **src)
 void code_reset(void *p)
 {
 }
-void code_stop(void *p)
+void code_stop(int mode, void *p)
 {
 }
 
@@ -199,11 +200,10 @@ int main(int argc, char **argv)
     /* setup method (attributes) */
     method.compare_item = compare_item;
     method.log_item = log_item;
-    method.codec.start = code_start;
-    method.codec.encode = code_item;
-    method.codec.decode = code_item;
-    method.codec.reset = code_reset;
-    method.codec.stop = code_stop;
+    method.code_start = code_start;
+    method.code_item = code_item;
+    method.code_reset = code_reset;
+    method.code_stop = code_stop;
 
     /* create block system */
     bfs = bfs_create(0, 0);
