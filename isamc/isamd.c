@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.20 2002-06-19 10:29:18 adam Exp $ 
+ * $Id: isamd.c,v 1.21 2002-07-11 16:16:00 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -547,12 +547,13 @@ void isamd_pp_close (ISAMD_PP pp)
 
     (*is->method->code_stop)(ISAMD_DECODE, pp->decodeClientData);
     isamd_free_diffs(pp);  /* see merge-d.h */
+    if (is->method->debug > 5)
+       logf (LOG_LOG, "isamd_pp_close %p %d=%d:%d  sz=%d n=%d=%d:%d nk=%d",
+             pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
+             pp->next, isamd_type(pp->next), isamd_block(pp->next), 
+             pp->numKeys );
     xfree (pp->buf);
     xfree (pp);
-    if (is->method->debug > 5)
-       logf (LOG_LOG, "isamd_pp_close %p %d=%d:%d  sz=%d n=%d=%d:%d",
-             pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
-             pp->next, isamd_type(pp->next), isamd_block(pp->next) );
 }
 
 
@@ -850,7 +851,11 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.20  2002-06-19 10:29:18  adam
+ * Revision 1.21  2002-07-11 16:16:00  heikki
+ * Fixed a bug in isamd, failed to store a single key when its bits
+ * did not fit into a singleton.
+ *
+ * Revision 1.20  2002/06/19 10:29:18  adam
  * align block sizes for isam sys. Better plot for test
  *
  * Revision 1.19  1999/11/30 13:48:04  adam

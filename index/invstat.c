@@ -30,7 +30,8 @@ struct inv_stat_info {
 #define SINGLETON_TYPE 8 /* the type to use for singletons that */ 
                          /* have no block and no block type */
 
-static void print_dict_item (ZebraMaps zm, const char *s, int count )
+static void print_dict_item (ZebraMaps zm, const char *s, int count,
+            int firstsys, int firstseq, int lastsys, int lastseq )
 {
     int reg_type = s[1];
     char keybuf[IT_MAX_WORD+1];
@@ -48,7 +49,8 @@ static void print_dict_item (ZebraMaps zm, const char *s, int count )
     }
     *to = '\0';
     /* yaz_log (LOG_LOG, "%s", keybuf); */
-    printf("%10d %s\n",count, keybuf);
+    printf("%10d %s %d.%d - %d.%d\n",count, keybuf,
+              firstsys,firstseq, lastsys,lastseq);
 }
 
 static int inv_stat_handle (char *name, const char *info, int pos,
@@ -58,6 +60,10 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     int i = 0;
     struct inv_stat_info *stat_info = (struct inv_stat_info*) client;
     ISAMS_P isam_p;
+    int firstsys=-1;
+    int firstseq=-1;
+    int lastsys=-1;
+    int lastseq=-1;
 
     stat_info->no_dict_entries++;
     stat_info->no_dict_bytes += strlen(name);
@@ -79,6 +85,13 @@ static int inv_stat_handle (char *name, const char *info, int pos,
             stat_info->cksum = stat_info->cksum * 65509 + 
                 key.sysno + 11 * key.seqno;
             occurx++;
+            if (-1==firstsys)
+            {
+                firstseq=key.seqno;
+                firstsys=key.sysno;
+            }
+            lastsys=key.sysno;
+            lastseq=key.seqno;
 	}
         assert (occurx == occur);
 	stat_info->no_isam_entries[0] += occur;
@@ -106,6 +119,13 @@ static int inv_stat_handle (char *name, const char *info, int pos,
             stat_info->cksum = stat_info->cksum * 65509 + 
                 key.sysno + 11 * key.seqno;
             occurx++;
+            if (-1==firstsys)
+            {
+                firstseq=key.seqno;
+                firstsys=key.sysno;
+            }
+            lastsys=key.sysno;
+            lastseq=key.seqno;
 	}
         assert (occurx == occur);
 	stat_info->no_isam_entries[isc_type(isam_p)] += occur;
@@ -125,6 +145,13 @@ static int inv_stat_handle (char *name, const char *info, int pos,
             stat_info->cksum = stat_info->cksum * 65509 + 
                 key.sysno + 11 * key.seqno;
             occurx++;
+            if (-1==firstsys)
+            {
+                firstseq=key.seqno;
+                firstsys=key.sysno;
+            }
+            lastsys=key.sysno;
+            lastseq=key.seqno;
             if ( pp->is->method->debug >8 )
 	       logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
 	           key.sysno, key.seqno,
@@ -160,6 +187,13 @@ static int inv_stat_handle (char *name, const char *info, int pos,
             stat_info->cksum = stat_info->cksum * 65509 + 
                 key.sysno + 11 * key.seqno;
             occur++;
+            if (-1==firstsys)
+            {
+                firstseq=key.seqno;
+                firstsys=key.sysno;
+            }
+            lastsys=key.sysno;
+            lastseq=key.seqno;
         }
         isamb_pp_close_x (pp, &size, &blocks);
         stat_info->isamb_blocks[cat] += blocks;
@@ -174,7 +208,8 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         i++;
     ++(stat_info->isam_occurrences[i]);
     if (stat_info->dumpwords)
-       print_dict_item(stat_info->zh->reg->zebra_maps, name, occur);
+       print_dict_item(stat_info->zh->reg->zebra_maps, name, occur,
+          firstsys,firstseq, lastsys, lastseq);
     return 0;
 }
 
@@ -341,7 +376,11 @@ void zebra_register_statistics (ZebraHandle zh, int dumpdict)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.30  2002-07-11 13:03:01  heikki
+ * Revision 1.31  2002-07-11 16:16:00  heikki
+ * Fixed a bug in isamd, failed to store a single key when its bits
+ * did not fit into a singleton.
+ *
+ * Revision 1.30  2002/07/11 13:03:01  heikki
  * Added dumpdict command line option to dump the
  * dictionary before doing the usual stats
  *

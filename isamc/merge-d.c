@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.25 1999-11-30 13:48:04 adam Exp $
+ * $Id: merge-d.c,v 1.26 2002-07-11 16:16:00 heikki Exp $
  *
  * bugs
  *  sinleton-bit has to be in the high end, not low, so as not to confuse
@@ -232,7 +232,18 @@ static int filter_only_one(FILTER F)
   return ( (0 != F->r1) && (0 == F->r2));
 }
 
-
+/* We may need backfilling, if we read a lonely key to make */
+/* a singleton, but its bitw will not fit in. Then we need to */
+/* process it normally, which means reading it again. So we  */
+/* need to unread it first. Luckily the filter is empty at that */
+/* point */
+static void filter_backfill(FILTER F, struct it_key *k, int mode)
+{
+  assert(F->r1 == FILTER_NOTYET ); /* not overwriting data! */
+  F->k1=*k;
+  F->m1=mode;
+  F->r1=1; /* ok read */
+}
 
 
 /***************************************************************
@@ -1091,6 +1102,12 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
       filter_read(F,&k,&mode);     
       assert(mode); 
       rc = singleton_encode(&k);
+      if (!rc) 
+      {
+      if (is->method->debug >9) 
+         logf(LOG_LOG,"isamd_appd: singleton didn't fit, backfilling");
+         filter_backfill(F,&k, mode);
+      }
       if (is->method->debug >9) 
          logf(LOG_LOG,"isamd_appd: singleton %d (%x)",
            rc,rc);
@@ -1122,7 +1139,11 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.25  1999-11-30 13:48:04  adam
+ * Revision 1.26  2002-07-11 16:16:00  heikki
+ * Fixed a bug in isamd, failed to store a single key when its bits
+ * did not fit into a singleton.
+ *
+ * Revision 1.25  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.24  1999/10/05 09:57:40  heikki
