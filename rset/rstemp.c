@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.45 2004-08-24 14:25:16 heikki Exp $
+/* $Id: rstemp.c,v 1.46 2004-08-26 11:11:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -38,12 +38,10 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-/* static int r_count (RSET ct);*/
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double  *total);
 
-/* FIXME - Use the nmem instead of xmalloc all the way through */
 
 static const struct rset_control control = 
 {
@@ -73,7 +71,8 @@ struct rset_temp_info {
     zint     hits;          /* no of hits */
     char   *temp_path;
     int     (*cmp)(const void *p1, const void *p2);
-    struct rset_temp_rfd *rfd_list;
+    struct rset_temp_rfd *rfd_list;  /* rfds in use */
+    struct rset_temp_rfd *free_list; /* fully alloc'd rfds waiting for reuse*/
 };
 
 struct rset_temp_rfd {
@@ -91,7 +90,7 @@ RSET rstemp_create( NMEM nmem, int key_size,
     RSET rnew=rset_create_base(&control, nmem);
     struct rset_temp_info *info;
    
-    info = (struct rset_temp_info *) nmem_malloc ( rnew->nmem, sizeof(*info));
+    info = (struct rset_temp_info *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->fd = -1;
     info->fname = NULL;
     info->key_size = key_size;
@@ -103,6 +102,7 @@ RSET rstemp_create( NMEM nmem, int key_size,
     info->hits = 0;
     info->cmp = cmp;
     info->rfd_list = NULL;
+    info->free_list = NULL;
 
     if (!temp_path)
         info->temp_path = NULL;
@@ -111,37 +111,6 @@ RSET rstemp_create( NMEM nmem, int key_size,
     rnew->priv=info; 
     return rnew;
 } /* rstemp_create */
-
-#if 0
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
-{
-    rset_temp_parms *temp_parms = (rset_temp_parms *) parms;
-    struct rset_temp_info *info;
-   
-    info = (struct rset_temp_info *) xmalloc (sizeof(struct rset_temp_info));
-    info->fd = -1;
-    info->fname = NULL;
-    info->key_size = temp_parms->key_size;
-    info->buf_size = 4096;
-    info->buf_mem = (char *) xmalloc (info->buf_size);
-    info->pos_end = 0;
-    info->pos_buf = 0;
-    info->dirty = 0;
-    info->hits = 0;
-    info->cmp = temp_parms->cmp;
-    info->rfd_list = NULL;
-
-    if (!temp_parms->temp_path)
-        info->temp_path = NULL;
-    else
-    {
-        info->temp_path = (char *) xmalloc (strlen(temp_parms->temp_path)+1);
-        strcpy (info->temp_path, temp_parms->temp_path);
-    }
-
-    return info;
-}
-#endif
 
 static void r_delete (RSET ct)
 {
@@ -180,13 +149,17 @@ static RSFD r_open (RSET ct, int flag)
             exit (1);
         }
     }
-    rfd = (struct rset_temp_rfd *) xmalloc (sizeof(*rfd));
+    rfd = info->free_list;
+    if (rfd)
+        info->free_list=rfd->next;
+    else {
+        rfd = (struct rset_temp_rfd *) xmalloc (sizeof(*rfd));
+        rfd->buf = xmalloc (info->key_size);
+    }
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->info = info;
     r_rewind (rfd);
-
-    rfd->buf = xmalloc (info->key_size);
 
     return rfd;
 }
@@ -265,11 +238,11 @@ static void r_close (RSFD rfd)
     for (rfdp = &info->rfd_list; *rfdp; rfdp = &(*rfdp)->next)
         if (*rfdp == rfd)
         {
+            struct rset_temp_rfd *rfd_tmp=*rfdp;
             r_flush (*rfdp, 0);
-            xfree ((*rfdp)->buf);
-
             *rfdp = (*rfdp)->next;
-            xfree (rfd);
+            rfd_tmp->next=info->free_list;
+            info->free_list=rfd_tmp;
 
             if (!info->rfd_list && info->fname && info->fd != -1)
             {

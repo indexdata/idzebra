@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.17 2004-08-24 14:25:16 heikki Exp $
+/* $Id: rsisamb.c,v 1.18 2004-08-26 11:11:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -70,6 +70,7 @@ struct rset_isamb_info {
     int key_size;
     int (*cmp)(const void *p1, const void *p2);
     struct rset_pp_info *ispt_list;
+    struct rset_pp_info *free_list;
 };
 
 RSET rsisamb_create( NMEM nmem, int key_size, 
@@ -84,6 +85,7 @@ RSET rsisamb_create( NMEM nmem, int key_size,
     info->is=is;
     info->pos=pos;
     info->ispt_list = NULL;
+    info->free_list = NULL;
     rnew->priv=info;
     return rnew;
 }
@@ -120,15 +122,20 @@ RSFD r_open (RSET ct, int flag)
     logf (LOG_DEBUG, "risamb_open");
     if (flag & RSETF_WRITE)
     {
-	logf (LOG_FATAL, "ISAMB set type is read-only");
-	return NULL;
+        logf (LOG_FATAL, "ISAMB set type is read-only");
+        return NULL;
     }
-    ptinfo = (struct rset_pp_info *) xmalloc (sizeof(*ptinfo));
+    ptinfo = info->free_list;
+    if (ptinfo)
+        info->free_list=ptinfo->next;
+    else {
+        ptinfo = (struct rset_pp_info *) nmem_malloc (ct->nmem,sizeof(*ptinfo));
+        ptinfo->buf = nmem_malloc (ct->nmem,info->key_size);
+    }
     ptinfo->next = info->ispt_list;
     info->ispt_list = ptinfo;
     ptinfo->pt = isamb_pp_open (info->is, info->pos);
     ptinfo->info = info;
-    ptinfo->buf = xmalloc (info->key_size);
     return ptinfo;
 }
 
@@ -140,10 +147,11 @@ static void r_close (RSFD rfd)
     for (ptinfop = &info->ispt_list; *ptinfop; ptinfop = &(*ptinfop)->next)
         if (*ptinfop == rfd)
         {
-            xfree ((*ptinfop)->buf);
+            struct rset_pp_info *tmp=(struct rset_pp_info*) rfd;
             isamb_pp_close ((*ptinfop)->pt);
             *ptinfop = (*ptinfop)->next;
-            xfree (rfd);
+            tmp->next=info->free_list;
+            info->free_list=tmp;
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");

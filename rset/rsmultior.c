@@ -1,4 +1,4 @@
-/* $Id: rsmultior.c,v 1.6 2004-08-24 14:25:16 heikki Exp $
+/* $Id: rsmultior.c,v 1.7 2004-08-26 11:11:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -88,7 +88,11 @@ struct rset_multior_info {
     int     (*cmp)(const void *p1, const void *p2);
     int     no_rsets;
     RSET    *rsets;
-    struct rset_multior_rfd *rfd_list;
+    struct rset_multior_rfd *rfd_list; /* rfds in use */
+    struct rset_multior_rfd *free_list; /* rfds free */
+        /* rfds are allocated when first opened, if nothing in freelist */
+        /* when allocated, all their pointers are allocated as well, and */
+        /* those are kept intact when in the freelist, ready to be reused */
 };
 
 
@@ -195,25 +199,30 @@ static void heap_insert (HEAP h, struct heap_item *hi)
 
 
 static
-HEAP heap_create (int size, int key_size,
+HEAP heap_create (NMEM nmem, int size, int key_size,
       int (*cmp)(const void *p1, const void *p2))
 {
-    HEAP h = (HEAP) xmalloc (sizeof(*h));
+    HEAP h = (HEAP) nmem_malloc (nmem, sizeof(*h));
 
     ++size; /* heap array starts at 1 */
     h->heapnum = 0;
     h->heapmax = size;
     h->keysize = key_size;
     h->cmp = cmp;
-    h->heap = (struct heap_item**) xmalloc((size)*sizeof(*h->heap));
+    h->heap = (struct heap_item**) nmem_malloc(nmem,(size)*sizeof(*h->heap));
     h->heap[0]=0; /* not used */
     return h;
 }
 
+static void heap_clear( HEAP h)
+{
+    assert(h);
+    h->heapnum=0;
+}
+
 static void heap_destroy (HEAP h)
 {
-    xfree (h->heap); /* safe, they all point to the rfd */
-    xfree (h);
+    /* nothing to delete, all is nmem'd, and will go away in due time */
 }
 
 
@@ -230,6 +239,7 @@ RSET rsmultior_create( NMEM nmem, int key_size,
     info->rsets=(RSET*)nmem_malloc(rnew->nmem, no_rsets*sizeof(*rsets));
     memcpy(info->rsets,rsets,no_rsets*sizeof(*rsets));
     info->rfd_list = NULL;
+    info->free_list = NULL;
     rnew->priv=info;
     return rnew;
 }
@@ -242,8 +252,6 @@ static void r_delete (RSET ct)
     assert (info->rfd_list == NULL);
     for(i=0;i<info->no_rsets;i++)
         rset_delete(info->rsets[i]);
-/*    xfree(info->rsets); */ /* nmem'd */
-/*    xfree(info); */  /* nmem'd */
 }
 #if 0
 static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
@@ -272,23 +280,35 @@ static RSFD r_open (RSET ct, int flag)
         logf (LOG_FATAL, "multior set type is read-only");
         return NULL;
     }
-    rfd = (struct rset_multior_rfd *) xmalloc (sizeof(*rfd));
+    rfd=info->free_list;
+    if (rfd) {
+        info->free_list=rfd->next;
+        heap_clear(rfd->h);
+        assert(rfd->items);
+        /* all other pointers shouls already be allocated, in right sizes! */
+    }
+    else {
+        rfd = (struct rset_multior_rfd *) nmem_malloc (ct->nmem,sizeof(*rfd));
+        rfd->h = heap_create( ct->nmem, info->no_rsets, 
+                              info->key_size, info->cmp);
+        rfd->items=(struct heap_item *) nmem_malloc(ct->nmem,
+                              info->no_rsets*sizeof(*rfd->items));
+        for (i=0; i<info->no_rsets; i++){
+            rfd->items[i].rset=info->rsets[i];
+            rfd->items[i].buf=nmem_malloc(ct->nmem,info->key_size);
+        }
+    }
     rfd->flag = flag;
     rfd->next = info->rfd_list;
     rfd->info = info;
     info->rfd_list = rfd;
-    rfd->h = heap_create( info->no_rsets, info->key_size, info->cmp);
     rfd->prevvalue=0;
     rfd->hits=0;
-    rfd->items=(struct heap_item *) xmalloc(info->no_rsets*sizeof(*rfd->items));
     for (i=0; i<info->no_rsets; i++){
-       rfd->items[i].rset=info->rsets[i];
-       rfd->items[i].buf=xmalloc(info->key_size);
-       rfd->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
-/*       if (item_readbuf(&(rfd->items[i]))) */
-       if ( rset_read(rfd->items[i].rset, rfd->items[i].fd, 
+        rfd->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
+        if ( rset_read(rfd->items[i].rset, rfd->items[i].fd, 
                       rfd->items[i].buf) )
-           heap_insert(rfd->h, &(rfd->items[i]));
+            heap_insert(rfd->h, &(rfd->items[i]));
     }
     return rfd;
 }
@@ -309,12 +329,9 @@ static void r_close (RSFD rfd)
             for (i = 0; i<info->no_rsets; i++) {
                 if (mrfd->items[i].fd)
                     rset_close(info->rsets[i],mrfd->items[i].fd);
-                xfree(mrfd->items[i].buf);
             }
-            xfree(mrfd->items);
-            if (mrfd->prevvalue)
-                xfree(mrfd->prevvalue);
-            xfree(mrfd);
+            mrfd->next=info->free_list;
+            info->free_list=mrfd;
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");

@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.43 2004-08-25 13:23:13 adam Exp $
+/* $Id: rsbool.c,v 1.44 2004-08-26 11:11:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -202,8 +202,11 @@ static RSFD r_open (RSET ct, int flag)
     rfd = info->free_list;
     if (rfd)
 	info->free_list = rfd->next;
-    else
+    else {
         rfd = (struct rset_bool_rfd *) nmem_malloc(ct->nmem, sizeof(*rfd));
+        rfd->buf_l = nmem_malloc(ct->nmem, info->key_size);
+        rfd->buf_r = nmem_malloc(ct->nmem, info->key_size);
+    }
 
     logf(LOG_DEBUG,"rsbool (%s) open [%p]", ct->control->desc, rfd);
     rfd->next = info->rfd_list;
@@ -211,8 +214,6 @@ static RSFD r_open (RSET ct, int flag)
     rfd->info = info;
     rfd->hits=0;
 
-    rfd->buf_l = nmem_malloc(ct->nmem, info->key_size);
-    rfd->buf_r = nmem_malloc(ct->nmem, info->key_size);
     rfd->rfd_l = rset_open (info->rset_l, RSETF_READ);
     rfd->rfd_r = rset_open (info->rset_r, RSETF_READ);
     rfd->more_l = rset_read (info->rset_l, rfd->rfd_l, rfd->buf_l);

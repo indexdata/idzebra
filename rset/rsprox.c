@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.11 2004-08-24 14:25:16 heikki Exp $
+/* $Id: rsprox.c,v 1.12 2004-08-26 11:11:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -70,6 +70,7 @@ struct rset_prox_info {
     int (*cmp)(const void *p1, const void *p2);
     int (*getseq)(const void *p);
     struct rset_prox_rfd *rfd_list;
+    struct rset_prox_rfd *free_list;
 };
 
 struct rset_prox_rfd {
@@ -104,6 +105,7 @@ RSET rsprox_create( NMEM nmem, int key_size,
     info->relation=relation;
     info->distance=distance;
     info->rfd_list = NULL;
+    info->free_list = NULL;
     rnew->priv=info;
     return rnew;
 }
@@ -117,26 +119,8 @@ static void r_delete (RSET ct)
     assert (info->rfd_list == NULL);
     for (i = 0; i<info->rset_no; i++)
         rset_delete (info->rset[i]);
-/*  xfree (info->rset); */  /* nmems! */
-/*  xfree (info); */
 }
 
-#if 0
-static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
-{
-    rset_prox_parms *prox_parms = (rset_prox_parms *) parms;
-    struct rset_prox_info *info;
-
-    info = (struct rset_prox_info *) xmalloc (sizeof(*info));
-    memcpy(&info->p, prox_parms, sizeof(struct rset_prox_parms));
-    assert(info->p.rset_no >= 2);
-    info->p.rset = xmalloc(info->p.rset_no * sizeof(*info->p.rset));
-    memcpy(info->p.rset, prox_parms->rset,
-           info->p.rset_no * sizeof(*info->p.rset));
-    info->rfd_list = NULL;
-    return info;
-}
-#endif
 
 static RSFD r_open (RSET ct, int flag)
 {
@@ -149,25 +133,28 @@ static RSFD r_open (RSET ct, int flag)
         logf (LOG_FATAL, "prox set type is read-only");
         return NULL;
     }
-    rfd = (struct rset_prox_rfd *) xmalloc (sizeof(*rfd));
+    rfd = info->free_list;
+    if (rfd)
+        info->free_list=rfd->next;
+    else {
+        rfd = (struct rset_prox_rfd *) xmalloc (sizeof(*rfd));
+        rfd->more = nmem_malloc (ct->nmem,sizeof(*rfd->more) * info->rset_no);
+        rfd->buf = nmem_malloc(ct->nmem,sizeof(*rfd->buf) * info->rset_no);
+        for (i = 0; i < info->rset_no; i++)
+            rfd->buf[i] = nmem_malloc(ct->nmem,info->key_size);
+        rfd->rfd = nmem_malloc(ct->nmem,sizeof(*rfd->rfd) * info->rset_no);
+    }
     logf(LOG_DEBUG,"rsprox (%s) open [%p]", ct->control->desc, rfd);
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->info = info;
 
-    rfd->more = xmalloc (sizeof(*rfd->more) * info->rset_no);
 
-    rfd->buf = xmalloc(sizeof(*rfd->buf) * info->rset_no);
-    for (i = 0; i < info->rset_no; i++)
-        rfd->buf[i] = xmalloc (info->key_size);
-
-    rfd->rfd = xmalloc(sizeof(*rfd->rfd) * info->rset_no);
-    for (i = 0; i < info->rset_no; i++)
+    for (i = 0; i < info->rset_no; i++) {
         rfd->rfd[i] = rset_open (info->rset[i], RSETF_READ);
-
-    for (i = 0; i < info->rset_no; i++)
         rfd->more[i] = rset_read (info->rset[i], rfd->rfd[i],
                                   rfd->buf[i]);
+    }
     rfd->hits=0;
     return rfd;
 }
@@ -181,17 +168,12 @@ static void r_close (RSFD rfd)
         if (*rfdp == rfd)
         {
             int i;
-            for (i = 0; i<info->rset_no; i++)
-                xfree ((*rfdp)->buf[i]);
-            xfree ((*rfdp)->buf);
-            xfree ((*rfdp)->more);
-
+            struct rset_prox_rfd *rfd_tmp=*rfdp;
             for (i = 0; i<info->rset_no; i++)
                 rset_close (info->rset[i], (*rfdp)->rfd[i]);
-            xfree ((*rfdp)->rfd);
-
             *rfdp = (*rfdp)->next;
-            xfree (rfd);
+            rfd_tmp->next=info->free_list;
+            info->free_list=rfd_tmp;
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");

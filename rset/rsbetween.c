@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.21 2004-08-24 15:00:16 heikki Exp $
+/* $Id: rsbetween.c,v 1.22 2004-08-26 11:11:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -76,6 +76,7 @@ struct rset_between_info {
     int (*cmp)(const void *p1, const void *p2);
     char *(*printer)(const void *p1, char *buf);
     struct rset_between_rfd *rfd_list;
+    struct rset_between_rfd *free_list;
 };
 
 struct rset_between_rfd {
@@ -128,30 +129,11 @@ RSET rsbetween_create( NMEM nmem, int key_size,
     info->cmp = cmp;
     info->printer = printer;
     info->rfd_list = NULL;
+    info->free_list = NULL;
     
     rnew->priv=info;
     return rnew;
 }
-
-/*
-static void *r_create_between (RSET ct, const struct rset_control *sel,
-                               void *parms)
-{
-    rset_between_parms *between_parms = (rset_between_parms *) parms;
-    struct rset_between_info *info;
-
-    info = (struct rset_between_info *) xmalloc (sizeof(*info));
-    info->key_size = between_parms->key_size;
-    info->rset_l = between_parms->rset_l;
-    info->rset_m = between_parms->rset_m;
-    info->rset_r = between_parms->rset_r;
-    info->rset_attr = between_parms->rset_attr;
-    info->cmp = between_parms->cmp;
-    info->printer = between_parms->printer;
-    info->rfd_list = NULL;
-    return info;
-}
-*/
 
 
 static void r_delete_between (RSET ct)
@@ -177,15 +159,19 @@ static RSFD r_open_between (RSET ct, int flag)
         logf (LOG_FATAL, "between set type is read-only");
         return NULL;
     }
-    rfd = (struct rset_between_rfd *) nmem_malloc(ct->nmem, (sizeof(*rfd)));
+    rfd=info->free_list;
+    if (rfd)  
+        info->free_list=rfd->next;
+    else {
+        rfd = (struct rset_between_rfd *) nmem_malloc(ct->nmem, (sizeof(*rfd)));
+        rfd->buf_l = nmem_malloc(ct->nmem, (info->key_size));
+        rfd->buf_m = nmem_malloc(ct->nmem, (info->key_size));
+        rfd->buf_r = nmem_malloc(ct->nmem, (info->key_size));
+        rfd->buf_attr = nmem_malloc(ct->nmem, (info->key_size));
+    }
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->info = info;
-
-    rfd->buf_l = nmem_malloc(ct->nmem, (info->key_size));
-    rfd->buf_m = nmem_malloc(ct->nmem, (info->key_size));
-    rfd->buf_r = nmem_malloc(ct->nmem, (info->key_size));
-    rfd->buf_attr = nmem_malloc(ct->nmem, (info->key_size));
 
     rfd->rfd_l = rset_open (info->rset_l, RSETF_READ);
     rfd->rfd_m = rset_open (info->rset_m, RSETF_READ);
@@ -213,13 +199,15 @@ static void r_close_between (RSFD rfd)
     for (rfdp = &info->rfd_list; *rfdp; rfdp = &(*rfdp)->next)
         if (*rfdp == rfd)
         {
+            struct rset_between_rfd *rfd_tmp=*rfdp;
             rset_close (info->rset_l, (*rfdp)->rfd_l);
             rset_close (info->rset_m, (*rfdp)->rfd_m);
             rset_close (info->rset_r, (*rfdp)->rfd_r);
             if (info->rset_attr)
                 rset_close (info->rset_attr, (*rfdp)->rfd_attr);
-            
             *rfdp = (*rfdp)->next;
+            rfd_tmp->next=info->free_list;
+            info->free_list=rfd_tmp;
             return;
         }
     logf (LOG_FATAL, "r_close_between but no rfd match!");

@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.22 2004-08-24 14:25:16 heikki Exp $
+/* $Id: rsnull.c,v 1.23 2004-08-26 11:11:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -86,7 +86,6 @@ static void r_delete (RSET ct)
 
 static void r_rewind (RSFD rfd)
 {
-    logf (LOG_DEBUG, "rsnull_rewind");
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)
