@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.15  1998-06-30 12:55:45  adam
+ * Revision 1.16  1998-06-30 15:15:09  adam
+ * Tags are trimmed: white space removed before- and after the tag.
+ *
+ * Revision 1.15  1998/06/30 12:55:45  adam
  * Bug fix.
  *
  * Revision 1.14  1998/03/05 08:41:00  adam
@@ -135,6 +138,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <tpath.h>
 #include <zebrautl.h>
@@ -828,6 +832,19 @@ static void variantBegin (struct lexSpec *spec,
     d1_stack[++(*d1_level)] = NULL;
 }
 
+static void tagStrip (const char **tag, int *len)
+{
+    int i;
+
+    for (i = *len; i > 0 && isspace((*tag)[i-1]); --i)
+        ;
+    *len = i;
+    for (i = 0; i < *len && isspace((*tag)[i]); i++)
+        ;
+    *tag += i;
+    *len -= i;
+}
+
 static void tagBegin (struct lexSpec *spec, 
                       data1_node **d1_stack, int *d1_level,
                       const char *tag, int len)
@@ -844,7 +861,8 @@ static void tagBegin (struct lexSpec *spec,
         logf (LOG_WARN, "in element begin. No record type defined");
         return ;
     }
-    
+    tagStrip (&tag, &len);
+   
     res = data1_mk_node (spec->dh, spec->m);
     res->parent = parent;
     res->which = DATA1N_tag;
@@ -886,6 +904,7 @@ static void tagEnd (struct lexSpec *spec,
                     data1_node **d1_stack, int *d1_level,
                     const char *tag, int len)
 {
+    tagStrip (&tag, &len);
     while (*d1_level > 1)
     {
         (*d1_level)--;
