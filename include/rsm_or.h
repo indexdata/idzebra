@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.h,v $
- * Revision 1.1  1996-12-20 11:06:45  adam
+ * Revision 1.2  1996-12-23 15:29:54  adam
+ * More work on truncation algorithm.
+ *
+ * Revision 1.1  1996/12/20 11:06:45  adam
  * Implemented multi-or result set.
  *
  *
@@ -26,6 +29,7 @@ typedef struct rset_m_or_parms
     ISAM_P  *isam_positions;
 
     int     no_isam_positions;
+    int     no_save_positions;
 } rset_m_or_parms;
 
 #endif
