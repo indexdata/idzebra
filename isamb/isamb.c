@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.69 2005-01-15 19:38:31 adam Exp $
+/* $Id: isamb.c,v 1.70 2005-01-16 01:22:14 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -187,15 +187,15 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 
     isamb->bfs = bfs;
     isamb->method = (ISAMC_M *) xmalloc(sizeof(*method));
-    memcpy (isamb->method, method, sizeof(*method));
+    memcpy(isamb->method, method, sizeof(*method));
     isamb->no_cat = CAT_NO;
     isamb->log_io = 0;
     isamb->log_freelist = 0;
     isamb->cache = cache;
     isamb->skipped_numbers = 0;
     isamb->returned_numbers = 0;
-    for (i = 0;i<ISAMB_MAX_LEVEL;i++)
-      isamb->skipped_nodes[i]= isamb->accessed_nodes[i]=0;
+    for (i = 0; i<ISAMB_MAX_LEVEL; i++)
+      isamb->skipped_nodes[i] = isamb->accessed_nodes[i] = 0;
 
     assert(cache == 0);
     isamb->file = xmalloc(sizeof(*isamb->file) * isamb->no_cat);
@@ -374,7 +374,7 @@ static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
 void isamb_close (ISAMB isamb)
 {
     int i;
-    for (i = 0;isamb->accessed_nodes[i];i++)
+    for (i = 0; isamb->accessed_nodes[i]; i++)
         yaz_log(YLOG_DEBUG, "isamb_close  level leaf-%d: "ZINT_FORMAT" read, "
 			ZINT_FORMAT" skipped",
              i, isamb->accessed_nodes[i], isamb->skipped_nodes[i]);
@@ -1239,8 +1239,8 @@ ISAMB_PP isamb_pp_open_x(ISAMB isamb, ISAMB_P pos, int *level, int scope)
     pp->skipped_numbers = 0;
     pp->returned_numbers = 0;
     pp->scope = scope;
-    for (i = 0;i<ISAMB_MAX_LEVEL;i++)
-        pp->skipped_nodes[i] = pp->accessed_nodes[i]=0;
+    for (i = 0; i<ISAMB_MAX_LEVEL; i++)
+        pp->skipped_nodes[i] = pp->accessed_nodes[i] = 0;
     while (1)
     {
         struct ISAMB_block *p = open_block(isamb, pos);
@@ -1276,14 +1276,14 @@ void isamb_pp_close_x(ISAMB_PP pp, int *size, int *blocks)
     yaz_log(YLOG_DEBUG, "isamb_pp_close lev=%d returned "ZINT_FORMAT" values, " 
 		    "skipped "ZINT_FORMAT,
         pp->maxlevel, pp->skipped_numbers, pp->returned_numbers);
-    for (i = pp->maxlevel;i>=0;i--)
+    for (i = pp->maxlevel; i>=0; i--)
         if (pp->skipped_nodes[i] || pp->accessed_nodes[i])
             yaz_log(YLOG_DEBUG, "isamb_pp_close  level leaf-%d: "
 			    ZINT_FORMAT" read, "ZINT_FORMAT" skipped", i,
                  pp->accessed_nodes[i], pp->skipped_nodes[i]);
     pp->isamb->skipped_numbers += pp->skipped_numbers;
     pp->isamb->returned_numbers += pp->returned_numbers;
-    for (i = pp->maxlevel;i>=0;i--)
+    for (i = pp->maxlevel; i>=0; i--)
     {
         pp->isamb->accessed_nodes[i] += pp->accessed_nodes[i];
         pp->isamb->skipped_nodes[i] += pp->skipped_nodes[i];
@@ -1528,7 +1528,7 @@ static int isamb_pp_climb_level(ISAMB_PP pp, ISAMB_P *pos)
     }
     assert(pp->level>0); 
     close_block(pp->isamb, pp->block[pp->level]);
-    pp->block[pp->level]=0;
+    pp->block[pp->level] = 0;
     (pp->level)--;
     p = pp->block[pp->level];
 #if ISAMB_DEBUG
