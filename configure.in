@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2005
-dnl $Id: configure.in,v 1.113 2005-01-15 19:38:17 adam Exp $
+dnl $Id: configure.in,v 1.114 2005-01-15 21:43:40 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -304,6 +304,7 @@ AC_OUTPUT([
   examples/marc21/Makefile
   idzebra.spec
   idzebra-config
+  Doxyfile
 ],[sed s%idzebra_echo_source=yes%idzebra_echo_source=no%g < idzebra-config > util/idzebra-config && chmod +x idzebra-config util/idzebra-config])
 if test  -z "$YAZLIB"; then
 	echo "YAZ was not found. Use --with-yaz=DIR to specify location."
