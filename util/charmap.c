@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.29.2.2 2004-09-16 14:07:51 adam Exp $
+/* $Id: charmap.c,v 1.29.2.3 2004-11-26 11:06:13 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -33,9 +33,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 typedef unsigned ucs4_t;
 
-#include <yaz/yaz-util.h>
+#include <zebrautl.h>
 #include <charmap.h>
-
 
 #define CHR_MAXSTR 1024
 #define CHR_MAXEQUIV 32

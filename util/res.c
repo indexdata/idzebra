@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.37 2004-07-26 13:59:25 adam Exp $
+/* $Id: res.c,v 1.37.2.1 2004-11-26 11:06:13 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -31,7 +31,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #include <zebrautl.h>
-#include <yaz/yaz-util.h>
 
 struct res_entry {
     char *name;

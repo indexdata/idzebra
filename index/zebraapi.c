@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.1 2004-09-09 10:43:18 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.2 2004-11-26 11:06:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -30,6 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <unistd.h>
 #endif
 
+#include <yaz/log.h>
 #include <yaz/diagbib1.h>
 #include <yaz/pquery.h>
 #include <yaz/sortspec.h>
