@@ -1,0 +1,12 @@
+*.mf
+*.LCK
+*.in
+zebrasrv.pid
+Makefile
+tmp?
+reg
+lock
+recs
+shadow
+socket
+*.log
