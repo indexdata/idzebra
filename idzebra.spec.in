@@ -24,7 +24,7 @@ boolean search expressions and relevance-ranked free-text queries.
 %build
 
 CFLAGS="$RPM_OPT_FLAGS" \
- ./configure --prefix=/usr --with-yazconfig=/usr/bin
+ ./configure --prefix=/usr --with-yaz=/usr/bin
 make CFLAGS="$RPM_OPT_FLAGS"
 
 %install
