@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.127 2003-02-04 12:06:47 pop Exp $
+/* $Id: zrpn.c,v 1.128 2003-02-26 21:46:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -447,18 +447,43 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "#!", "#!"))
+    if (!term_pre (zebra_maps, reg_type, src, "?*#", "?*#"))
         return 0;
     s0 = *src;
     while (*s0)
     {
-        if (*s0 == '#')
+        if (*s0 == '?')
+        {
+	    dst_term[j++] = *s0++;
+            if (*s0 >= '0' && *s0 <= '9')
+            {
+                int limit = 0;
+                while (*s0 >= '0' && *s0 <= '9')
+                {
+                    limit = limit * 10 + (*s0 - '0');
+                    dst_term[j++] = *s0++;
+                }
+                if (limit > 20)
+                    limit = 20;
+                while (--limit >= 0)
+                {
+                    dst[i++] = '.';
+                    dst[i++] = '?';
+                }
+            }
+            else
+            {
+                dst[i++] = '.';
+                dst[i++] = '*';
+            }
+        }
+        else if (*s0 == '*')
         {
             dst[i++] = '.';
             dst[i++] = '*';
 	    dst_term[j++] = *s0++;
         }
-        else if (*s0 == '!')
+        else if (*s0 == '#')
 	{
             dst[i++] = '.';
 	    dst_term[j++] = *s0++;
