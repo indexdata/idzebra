@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.1  1995-09-04 09:10:36  adam
+ * Revision 1.2  1995-09-06 16:11:17  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.1  1995/09/04  09:10:36  adam
  * More work on index add/del/update.
  * Merge sort implemented.
  * Initial work on z39 server.
@@ -25,17 +28,25 @@ int key_compare (const void *p1, const void *p2)
     memcpy (&i2, p2, sizeof(i2));
     if ( i1.sysno != i2.sysno)
         return i1.sysno - i2.sysno;
+#if IT_KEY_HAVE_FIELD
     if ( i1.seqno != i2.seqno)
         return i1.seqno - i2.seqno;
     return i1.field - i2.field;
+#else
+    return i1.seqno - i2.seqno;
+#endif
 }
 
 int key_compare_x (const struct it_key *i1, const struct it_key *i2)
 {
     if ( i1->sysno != i2->sysno)
         return i1->sysno - i2->sysno;
+#if IT_KEY_HAVE_FIELD
     if ( i1->seqno != i2->seqno)
         return i1->seqno - i2->seqno;
     return i1->field - i2->field;
+#else
+    return i1->seqno - i2->seqno;
+#endif
 }
 

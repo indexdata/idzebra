@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.2  1995-09-04 12:33:43  adam
+ * Revision 1.3  1995-09-06 16:11:18  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.2  1995/09/04  12:33:43  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.1  1995/09/01  14:06:36  adam

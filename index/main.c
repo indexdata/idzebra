@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.7  1995-09-05 15:28:39  adam
+ * Revision 1.8  1995-09-06 16:11:18  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.7  1995/09/05  15:28:39  adam
  * More work on search engine.
  *
  * Revision 1.6  1995/09/04  12:33:43  adam
@@ -108,11 +111,11 @@ int main (int argc, char **argv)
     key_flush ();
     if (!key_close ())
         exit (0);
-    logf (LOG_DEBUG, "Sorting");
-    if (!key_sort ("keys.tmp", 1000000))
+    logf (LOG_LOG, "Sorting");
+    if (!key_sort ("keys.tmp", 3000000))
         exit (0);
-    logf (LOG_DEBUG, "Input");
-    key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, "keys.tmp", 50);
+    logf (LOG_LOG, "Input");
+    key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, "keys.tmp", 60);
     exit (0);
 }
 

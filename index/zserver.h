@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.1  1995-09-05 15:28:40  adam
+ * Revision 1.2  1995-09-06 16:11:19  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.1  1995/09/05  15:28:40  adam
  * More work on search engine.
  *
  */

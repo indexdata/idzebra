@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.4  1995-09-04 12:33:41  adam
+ * Revision 1.5  1995-09-06 16:11:16  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.4  1995/09/04  12:33:41  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.3  1995/09/01  14:06:35  adam
@@ -37,7 +40,7 @@ struct dir_entry *dir_open (const char *rep)
     size_t idx = 0;
     struct dir_entry *entry;
 
-    logf (LOG_DEBUG, "dir_open %s", rep);
+    logf (LOG_LOG, "dir_open %s", rep);
     if (!(dir = opendir(rep)))
     {
         logf (LOG_WARN|LOG_ERRNO, "opendir %s", rep);

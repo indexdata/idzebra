@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.6  1995-09-05 15:28:39  adam
+ * Revision 1.7  1995-09-06 16:11:16  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.6  1995/09/05  15:28:39  adam
  * More work on search engine.
  *
  * Revision 1.5  1995/09/04  12:33:42  adam
@@ -30,10 +33,14 @@
 #include <dict.h>
 #include <isam.h>
 
+#define IT_KEY_HAVE_FIELD 0
+
 struct it_key {
     int sysno;
     int seqno;
+#if IT_KEY_HAVE_FIELD
     int field;
+#endif
 };
 
 struct dir_entry {
@@ -62,3 +69,9 @@ int key_sort (const char *key_fname, size_t mem);
 #define FNAME_FILE_DICT "filedict"
 #define FNAME_SYS_IDX "sysidx"
 #define SYS_IDX_ENTRY_LEN 120
+
+struct strtab *strtab_mk (void);
+int strtab_src (struct strtab *t, const char *name, void ***infop);
+void strtab_del (struct strtab *t,
+                 void (*func)(const char *name, void *info, void *data),
+                 void *data);

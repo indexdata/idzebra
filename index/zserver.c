@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.4  1995-09-06 10:33:04  adam
+ * Revision 1.5  1995-09-06 16:11:18  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.4  1995/09/06  10:33:04  adam
  * More work on present. Some log messages removed.
  *
  * Revision 1.3  1995/09/05  15:28:40  adam
@@ -47,20 +50,21 @@ bend_initresult *bend_init (bend_initrequest *q)
         r.errstring = "dict_open fail: filedict";
         return &r;
     }
-    if (!(server_info.fileDict = dict_open (FNAME_FILE_DICT, 5, 0)))
+    if (!(server_info.fileDict = dict_open (FNAME_FILE_DICT, 10, 0)))
     {
         r.errcode = 1;
         r.errstring = "dict_open fail: filedict";
         return &r;
     }    
-    if (!(server_info.wordDict = dict_open (FNAME_WORD_DICT, 20, 0)))
+    if (!(server_info.wordDict = dict_open (FNAME_WORD_DICT, 40, 0)))
     {
         dict_close (server_info.fileDict);
         r.errcode = 1;
         r.errstring = "dict_open fail: worddict";
         return &r;
     }    
-    if (!(server_info.wordIsam = is_open (FNAME_WORD_ISAM, key_compare, 0)))
+    if (!(server_info.wordIsam = is_open (FNAME_WORD_ISAM, key_compare, 0,
+                                          sizeof (struct it_key))))
     {
         dict_close (server_info.wordDict);
         dict_close (server_info.fileDict);

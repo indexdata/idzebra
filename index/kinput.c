@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.2  1995-09-04 12:33:42  adam
+ * Revision 1.3  1995-09-06 16:11:17  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.2  1995/09/04  12:33:42  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.1  1995/09/04  09:10:37  adam
@@ -130,7 +133,7 @@ void key_input (const char *dict_fname, const char *isam_fname,
         logf (LOG_FATAL, "dict_open fail of `%s'", dict_fname);
         exit (1);
     }
-    isam = is_open (isam_fname, key_compare, 1);
+    isam = is_open (isam_fname, key_compare, 1, sizeof(struct it_key));
     if (!isam)
     {
         logf (LOG_FATAL, "is_open fail of `%s'", isam_fname);

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.2  1995-09-04 12:33:42  adam
+ * Revision 1.3  1995-09-06 16:11:17  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.2  1995/09/04  12:33:42  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.1  1995/09/04  09:10:36  adam

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.4  1995-09-05 15:28:39  adam
+ * Revision 1.5  1995-09-06 16:11:16  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.4  1995/09/05  15:28:39  adam
  * More work on search engine.
  *
  * Revision 1.3  1995/09/04  12:33:41  adam
@@ -54,7 +57,7 @@ void key_open (const char *fname)
         exit (1);
     }
     key_offset = 0;
-    if (!(file_idx = dict_open (FNAME_FILE_DICT, 10, 1)))
+    if (!(file_idx = dict_open (FNAME_FILE_DICT, 40, 1)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", "fileidx");
         exit (1);
@@ -123,7 +126,27 @@ void key_write (int cmd, struct it_key *k, const char *str)
     key_offset += sizeof(*k);
 }
 
-void text_extract (SYSNO sysno, int cmd, const char *fname)
+void key_write_x (struct strtab *t, int cmd, struct it_key *k, const char *str)
+{
+    void **oldinfo;
+
+    if (strtab_src (t, str, &oldinfo))
+        ((struct it_key *) *oldinfo)->seqno++;
+    else
+    {
+        *oldinfo = xmalloc (sizeof(*k));
+        memcpy (*oldinfo, k, sizeof(*k));
+        ((struct it_key *) *oldinfo)->seqno = 1;
+    }
+}
+
+void key_rec_flush (const char *str, void *info, void *data)
+{
+    key_write (*((int*) data), (struct it_key *)info, str);
+    xfree (info);
+}
+
+void text_extract (struct strtab *t, SYSNO sysno, int cmd, const char *fname)
 {
     FILE *inf;
     struct it_key k;
@@ -152,8 +175,10 @@ void text_extract (SYSNO sysno, int cmd, const char *fname)
             w[i] = 0;
             
             k.seqno = seqno++;
+#if IT_KEY_HAVE_FIELD
             k.field = 0;
-            key_write (cmd, &k, w);
+#endif
+            key_write_x (t, cmd, &k, w);
         }
         if (c == EOF)
             break;
@@ -169,6 +194,7 @@ void file_extract (int cmd, const char *fname, const char *kname)
     char ext_res[128];
     const char *file_type;
     void *file_info;
+    struct strtab *t;
 
     logf (LOG_DEBUG, "%c %s k=%s", cmd, fname, kname);
     for (i = strlen(fname); --i >= 0; )
@@ -196,8 +222,10 @@ void file_extract (int cmd, const char *fname, const char *kname)
     }
     else
         memcpy (&sysno, (char*) file_info+1, sizeof(sysno));
+    t = strtab_mk ();
     if (!strcmp (file_type, "text"))
-        text_extract (sysno, cmd, fname);
+        text_extract (t, sysno, cmd, fname);
+    strtab_del (t, key_rec_flush, &cmd);
 }
 
 

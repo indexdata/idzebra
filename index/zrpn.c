@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.5  1995-09-06 10:33:04  adam
+ * Revision 1.6  1995-09-06 16:11:18  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.5  1995/09/06  10:33:04  adam
  * More work on present. Some log messages removed.
  *
  * Revision 1.4  1995/09/05  15:28:40  adam
