@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.6  1995-10-16 09:31:25  adam
+ * Revision 1.7  1995-11-27 09:23:02  adam
+ * New berbatim hook in regular expressions. "[]n ..".
+ *
+ * Revision 1.6  1995/10/16  09:31:25  adam
  * Bug fix.
  *
  * Revision 1.5  1995/10/02  15:17:58  adam
@@ -75,6 +78,7 @@ static struct DFA_parse *parse_info = NULL;
 static int err_code;
 static int inside_string;
 static const unsigned char *expr_ptr;
+static int expr_verbatim;
 static unsigned short *ctrl_chars;
 static struct Tnode **posar;
 
@@ -316,6 +320,7 @@ struct Tnode **tnp;
     parse_info = dfap;
     err_code = 0;
     expr_ptr = (unsigned char *) *s;
+    expr_verbatim = 0;
 
     inside_string = 0;
     lex ();
@@ -352,8 +357,30 @@ static int nextchar (int *esc)
     *esc = 0;
     if (*expr_ptr == '\0' || isspace(*expr_ptr))
         return 0;
-    else if (*expr_ptr != '\\')
+    else if (*expr_ptr != '\\' || expr_verbatim)
+    {
+        if (*expr_ptr == '[' && expr_ptr[1] == ']' && !expr_verbatim)
+        {
+            int i = 2;
+            int val = 0;
+            while (expr_ptr[i] >= '0' && expr_ptr[i] <= '9')
+                val = val*10 + expr_ptr[i++]-'0';
+            if (i > 2)
+            {
+                if (expr_ptr[i] == ' ')
+                    i++;
+                expr_verbatim = val;
+                expr_ptr += i;
+            }
+        }
+        if (expr_verbatim)
+        {
+            assert (expr_verbatim > 0);
+            *esc = 1;
+            --expr_verbatim;
+        }
         return *expr_ptr++;
+    }
     *esc = 1;
     switch (*++expr_ptr)
     {
@@ -470,7 +497,7 @@ static int lex_sub(void)
             return read_charset();
         else if (look_ch == ' ')
             return 0;
-        else
+        else 
         {
             for (cc = ctrl_chars; *cc; cc += 2)
                 if (*cc == look_ch)
