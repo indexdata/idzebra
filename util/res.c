@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.8  1994-09-16 14:37:12  quinn
+ * Revision 1.9  1994-09-16 14:41:12  quinn
+ * Added log warning to res_get_def
+ *
+ * Revision 1.8  1994/09/16  14:37:12  quinn
  * added res_get_def
  *
  * Revision 1.7  1994/09/06  13:01:03  quinn
@@ -211,7 +214,10 @@ char *res_get_def (Res r, const char *name, char *def)
     char *t;
 
     if (!(t = res_get (r, name)))
+    {
+    	log(LOG_DEBUG, "CAUTION: Using default resource %s:%s", name, def);
     	return def;
+    }
     else
     	return t;
 }
