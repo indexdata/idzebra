@@ -1,5 +1,5 @@
-/* $Id: marcread.c,v 1.22 2003-11-09 11:49:49 oleg Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: marcread.c,v 1.23 2003-12-10 23:30:15 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -113,7 +113,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 	identifier_length = marctab->force_identifier_length;
     else
 	identifier_length = atoi_n (buf+11, 1);
-    base_address = atoi_n (buf+12, 4);
+    base_address = atoi_n (buf+12, 5);
 
     length_data_entry = atoi_n (buf+20, 1);
     length_starting = atoi_n (buf+21, 1);
