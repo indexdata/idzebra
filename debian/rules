@@ -105,7 +105,6 @@ binary-arch: build install
 	dh_undocumented -p idzebra zebraidx.1 zebrasrv.1
 	dh_shlibdeps -p idzebra $(LOCAL_LINK) 
 
-	# Ugh Ugly hack
 	cat debian/postinst >> debian/idzebra/DEBIAN/postinst
 
 	dh_gencontrol -p idzebra
@@ -118,7 +117,6 @@ binary-arch: build install
 	        debian/tmp/usr/share/idzebra
 
 	dh_builddeb -p idzebra
-
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install install-stamp configure
