@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.56 2004-08-23 13:06:46 adam Exp $
+/* $Id: isamb.c,v 1.57 2004-09-03 14:59:49 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1991,8 +1991,6 @@ again:
 void isamb_pp_pos( ISAMB_PP pp, double *current, double *total )
 { /* return an estimate of the current position and of the total number of */
   /* occureences in the isam tree, based on the current leaf */
-	/* FIXME - Isam-B ought to know how many we have, so we could return */
-	/* that directly */
     struct ISAMB_block *p = pp->block[pp->level];
     assert(total);
     assert(current);
@@ -2000,7 +1998,6 @@ void isamb_pp_pos( ISAMB_PP pp, double *current, double *total )
 
     *total = pp->block[0]->no_items;
     *current = (double) pp->returned_numbers;
-    /* use the precise number, since we have it! */
 #if ISAMB_DEBUG
     logf(LOG_LOG, "isamb_pp_pos returning: cur= %0.1f tot=%0.1f rn="
 	 ZINT_FORMAT, *current, *total, pp->returned_numbers);

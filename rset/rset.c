@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.31 2004-09-01 15:01:32 heikki Exp $
+/* $Id: rset.c,v 1.32 2004-09-03 14:59:50 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -69,8 +69,6 @@ void rfd_delete_base(RSFD rfd)
 
 RSET rset_create_base(const struct rset_control *sel, 
                       NMEM nmem, const struct key_control *kcontrol)
-        /* FIXME - Add keysize and cmp function */
-        /* FIXME - Add a general key-func block for cmp, dump, etc */
 {
     RSET rnew;
     NMEM M;
@@ -91,7 +89,6 @@ RSET rset_create_base(const struct rset_control *sel,
     rnew->priv = 0;
     rnew->free_list=NULL;
     rnew->keycontrol=kcontrol;
-    
     return rnew;
 }
 

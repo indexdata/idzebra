@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.127 2004-08-25 09:23:36 adam Exp $
+/* $Id: zebraapi.c,v 1.128 2004-09-03 14:59:49 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -2059,7 +2059,6 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
 
 /* ---------------------------------------------------------------------------
   Sort - a simplified interface, with optional read locks.
-  FIXME - This is a horrible name, will conflict with half the applications
 */
 int zebra_sort_by_specstr (ZebraHandle zh, 
 			   ODR stream,

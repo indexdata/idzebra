@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.42 2004-09-01 15:01:32 heikki Exp $
+/* $Id: trunc.c,v 1.43 2004-09-03 14:59:49 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -420,21 +420,6 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
         if (no == 1)
             return rsisamc_create(rset_nmem, kctrl,
                     zi->reg->isamc, *isam_p);
-
-#if 0 /* NEW_TRUNC */ /* FIXME - Use the new multi_or instead !! */
-        else if (no < 10000)
-        {
-            rset_m_or_parms parms;
-
-            parms.key_size = sizeof(struct it_key);
-            parms.cmp = key_compare_it;
-            parms.isc = zi->reg->isamc;
-            parms.isam_positions = isam_p;
-            parms.no_isam_positions = no;
-            parms.no_save_positions = 100000;
-            return rset_create (rset_kind_m_or, &parms);
-        }
-#endif
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
     else if (zi->reg->isamb)
