@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.75  1998-03-05 08:45:13  adam
+ * Revision 1.76  1998-04-02 14:35:29  adam
+ * First version of Zebra that works with compiled ASN.1.
+ *
+ * Revision 1.75  1998/03/05 08:45:13  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -304,11 +307,22 @@ typedef struct {
 
 static int attr_find (AttrType *src, oid_value *attributeSetP)
 {
-    while (src->major < src->zapt->num_attributes)
+    int num_attributes;
+
+#ifdef ASN_COMPILED
+    num_attributes = src->zapt->attributes->num_attributes;
+#else
+    num_attributes = src->zapt->num_attributes;
+#endif
+    while (src->major < num_attributes)
     {
         Z_AttributeElement *element;
 
+#ifdef ASN_COMPILED
+        element = src->zapt->attributes->attributes[src->major];
+#else
         element = src->zapt->attributeList[src->major];
+#endif
         if (src->type == *element->attributeType)
         {
             switch (element->which) 
@@ -1466,11 +1480,30 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
             r = rset_create (rset_kind_not, &bool_parms);
             break;
         case Z_Operator_prox:
+#ifdef ASN_COMPILED
+            if (zop->u.prox->which != Z_ProximityOperator_known)
+            {
+                zh->errCode = 132;
+                return NULL;
+            }
+#else
             if (zop->u.prox->which != Z_ProxCode_known)
             {
                 zh->errCode = 132;
                 return NULL;
             }
+#endif
+
+#ifdef ASN_COMPILED
+            if (*zop->u.prox->u.known != Z_ProxUnit_word)
+            {
+                char *val = odr_malloc (stream, 16);
+                zh->errCode = 132;
+                zh->errString = val;
+                sprintf (val, "%d", *zop->u.prox->u.known);
+                return NULL;
+            }
+#else
             if (*zop->u.prox->proximityUnitCode != Z_ProxUnit_word)
             {
                 char *val = odr_malloc (stream, 16);
@@ -1479,6 +1512,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
                 sprintf (val, "%d", *zop->u.prox->proximityUnitCode);
                 return NULL;
             }
+#endif
             r = rpn_proximity (zh, bool_parms.rset_l, bool_parms.rset_r,
                                *zop->u.prox->ordered,
                                (!zop->u.prox->exclusion ? 0 :

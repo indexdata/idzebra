@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zlogs.c,v $
- * Revision 1.7  1998-01-29 13:40:11  adam
+ * Revision 1.8  1998-04-02 14:35:29  adam
+ * First version of Zebra that works with compiled ASN.1.
+ *
+ * Revision 1.7  1998/01/29 13:40:11  adam
  * Better logging for scan service.
  *
  * Revision 1.6  1997/09/29 09:06:41  adam
@@ -217,10 +220,20 @@ static void zlog_attributes (Z_AttributesPlusTerm *t, int level,
 {
     int of, i;
     char str[80];
-    for (of = 0; of < t->num_attributes; of++)
+#ifdef ASN_COMPILED
+    int num_attributes = t->attributes->num_attributes;
+#else
+    int num_attributes = t->num_attributes;
+#endif
+    
+    for (of = 0; of < num_attributes; of++)
     {
         Z_AttributeElement *element;
+#ifdef ASN_COMPILED
+	element = t->attributes->attributes[of];
+#else
         element = t->attributeList[of];
+#endif
 
         switch (element->which) 
         {

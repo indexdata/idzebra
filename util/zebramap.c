@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.8  1998-03-05 08:42:44  adam
+ * Revision 1.9  1998-04-02 14:35:30  adam
+ * First version of Zebra that works with compiled ASN.1.
+ *
+ * Revision 1.8  1998/03/05 08:42:44  adam
  * Minor changes to zebramap data structures. Query mapping rules changed.
  *
  * Revision 1.7  1998/02/10 12:03:07  adam
@@ -304,9 +307,13 @@ static int attr_find (AttrType *src, oid_value *attributeSetP)
 
 static void attr_init_APT (AttrType *src, Z_AttributesPlusTerm *zapt, int type)
 {
-
+#ifdef ASN_COMPILED
+    src->attributeList = zapt->attributes->attributes;
+    src->num_attributes = zapt->attributes->num_attributes;
+#else
     src->attributeList = zapt->attributeList;
     src->num_attributes = zapt->num_attributes;
+#endif
     src->type = type;
     src->major = 0;
     src->minor = 0;
