@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.17  1997-04-30 08:56:04  quinn
+ * Revision 1.18  1997-09-04 13:56:15  adam
+ * Added new filter grs.marc.<syntax> where <syntax> refers to
+ * abstract syntax. New method tellf in extract/retrieve control
+ * block.
+ *
+ * Revision 1.17  1997/04/30 08:56:04  quinn
  * null
  *
  * Revision 1.16  1996/10/11  10:56:25  adam
@@ -90,6 +95,7 @@ struct recExtractCtrl {
     void      *fh;                    /* File handle and read function     */
     int       (*readf)(void *fh, char *buf, size_t count);
     off_t     (*seekf)(void *fh, off_t offset);  /* seek function          */
+    off_t     (*tellf)(void *fh);                /* tell function          */
     void      (*endf)(void *fh, off_t offset);   /* end of record position */
     off_t     offset;                            /* start offset           */
     char      *subType;
@@ -106,6 +112,7 @@ struct recRetrieveCtrl {
     void     *fh;                     /* File descriptor and read function */
     int       (*readf)(void *fh, char *buf, size_t count);
     off_t     (*seekf)(void *fh, off_t offset);
+    off_t     (*tellf)(void *fh);
     oid_value input_format;           /* Preferred record syntax           */
     Z_RecordComposition *comp;        /* formatting instructions           */
     int       localno;                /* local id of record                */
