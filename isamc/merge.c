@@ -576,8 +576,8 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
           assert( (codelen < 128) && (codelen>0));
        
           if (pp->is->method->debug > 3)
-            logf(LOG_LOG,"isamh_append: coded into %d:%s", 
-               codelen,hexdump(codebuffer,codelen,0));
+            logf(LOG_LOG,"isamh_append: coded into %d:%s  (nk=%d)", 
+               codelen,hexdump(codebuffer,codelen,0),firstpp->numKeys);
 
           if ( pp->offset + codelen > maxsize ) 
           { /* oops, block full, do something */
@@ -622,8 +622,8 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
             (*is->method->code_item)(ISAMH_ENCODE, r_clientData, &codeptr, &i_item_ptr);
             codelen = codeptr-codebuffer;
             if (pp->is->method->debug > 3)
-              logf(LOG_LOG,"isamh_append: coded again %d:%s", 
-                   codelen,hexdump(codebuffer,codelen,0));
+              logf(LOG_LOG,"isamh_append: coded again %d:%s  (nk=%d)", 
+                   codelen,hexdump(codebuffer,codelen,0),firstpp->numKeys);
 
           } /* block full */
 
@@ -672,7 +672,10 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
 
 /*
  * $Log: merge.c,v $
- * Revision 1.15  1999-07-07 09:36:04  heikki
+ * Revision 1.16  1999-07-08 14:23:27  heikki
+ * Fixed a bug in isamh_pp_read and cleaned up a bit
+ *
+ * Revision 1.15  1999/07/07 09:36:04  heikki
  * Fixed an assertion in isamh
  *
  * Revision 1.13  1999/07/06 09:37:05  heikki

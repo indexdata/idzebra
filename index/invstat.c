@@ -1,51 +1,8 @@
 /*
  * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: invstat.c,v $
- * Revision 1.12  1999-07-06 12:28:04  adam
- * Updated record index structure. Format includes version ID. Compression
- * algorithm ID is stored for each record block.
- *
- * Revision 1.11  1999/05/15 14:36:38  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.10  1999/05/12 13:08:06  adam
- * First version of ISAMS.
- *
- * Revision 1.9  1999/02/12 13:29:23  adam
- * Implemented position-flag for registers.
- *
- * Revision 1.8  1999/02/02 14:50:53  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.7  1998/03/13 15:30:50  adam
- * New functions isc_block_used and isc_block_size. Fixed 'leak'
- * in isc_alloc_block.
- *
- * Revision 1.6  1998/03/06 13:54:02  adam
- * Fixed two nasty bugs in isc_merge.
- *
- * Revision 1.5  1997/09/17 12:19:13  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.4  1996/11/08 11:10:21  adam
- * Buffers used during file match got bigger.
- * Compressed ISAM support everywhere.
- * Bug fixes regarding masking characters in queries.
- * Redesigned Regexp-2 queries.
- *
- * Revision 1.3  1996/06/04 10:18:58  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.2  1996/05/22  08:25:56  adam
- * Minor change.
- *
- * Revision 1.1  1996/05/14 14:04:34  adam
- * In zebraidx, the 'stat' command is improved. Statistics about ISAM/DICT
- * is collected.
+ * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
+ * log at eof
  *
  */
 #include <stdio.h>
@@ -54,11 +11,13 @@
 
 #include "index.h"
 #include "recindex.h"
+#include "../isamc/isamh-p.h"
 
 struct inv_stat_info {
     ISAM isam;
     ISAMC isamc;
     ISAMS isams;
+    ISAMH isamh;
     int no_isam_entries[8];
     int no_dict_entries;
     int no_dict_bytes;
@@ -81,7 +40,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     assert (*info == sizeof(ISAM_P));
     memcpy (&isam_p, info+1, sizeof(ISAM_P));
 
-    printf ("---\n");
+    //printf ("---\n");
     if (stat_info->isam)
     {
         ISPT ispt;
@@ -107,6 +66,31 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 	stat_info->no_isam_entries[isc_type(isam_p)] += occur;
         isc_pp_close (pp);
     }
+    if (stat_info->isamh)
+    {
+        ISAMH_PP pp;
+        int occurx = 0;
+	struct it_key key;
+
+        pp = isamh_pp_open (stat_info->isamh, isam_p);
+        
+        occur = isamh_pp_num (pp);
+	  //  printf ("  opening item %d=%d:%d \n",
+  	  //    isam_p, isamh_type(isam_p),isamh_block(isam_p));
+        while (isamh_pp_read(pp, &key))
+	{
+            occurx++;
+	    logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
+	           key.sysno, key.seqno,
+	           key.sysno, key.seqno,
+	           occur,occurx, pp->offset);
+	}
+        if (occurx != occur) 
+          logf(LOG_LOG,"Count error!!! read %d, counted %d", occur, occurx);
+        assert (occurx == occur);
+	stat_info->no_isam_entries[isamh_type(isam_p)] += occur;
+        isamh_pp_close (pp);
+    }
     if (stat_info->isams)
     {
         ISAMS_PP pp;
@@ -117,7 +101,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         occur = isams_pp_num (pp);
         while (isams_pp_read(pp, &key))
 	{
-	    printf ("sysno=%d seqno=%d\n", key.sysno, key.seqno);
+	    //printf ("sysno=%d seqno=%d\n", key.sysno, key.seqno);
             occurx++;
 	}
         assert (occurx == occur);
@@ -134,9 +118,10 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 void inv_prstat (BFiles bfs)
 {
     Dict dict;
-    ISAM isam = NULL;
+    ISAM  isam  = NULL;
     ISAMC isamc = NULL;
     ISAMS isams = NULL;
+    ISAMH isamh = NULL;
     Records records;
     int i, prev;
     int before = 0;
@@ -172,6 +157,15 @@ void inv_prstat (BFiles bfs)
             exit (1);
         }
     }
+    else if (res_get_match (common_resource, "isam", "h", NULL))
+    {
+        isamh = isamh_open (bfs, FNAME_ISAMH, 0, key_isamh_m(common_resource));
+        if (!isamh)
+        {
+            logf (LOG_FATAL, "isamh_open fail");
+            exit (1);
+        }
+    }
     else
     {
         isamc = isc_open (bfs, FNAME_ISAMC, 0, key_isamc_m (common_resource));
@@ -190,6 +184,7 @@ void inv_prstat (BFiles bfs)
     stat_info.isam = isam;
     stat_info.isamc = isamc;
     stat_info.isams = isams;
+    stat_info.isamh = isamh;
     stat_info.isam_bounds[0] = 1;
     stat_info.isam_bounds[1] = 2;
     stat_info.isam_bounds[2] = 3;
@@ -257,5 +252,58 @@ void inv_prstat (BFiles bfs)
         isc_close (isamc);
     if (isams)
         isams_close (isams);
+    if (isamh)
+        isamh_close (isamh);
     
 }
+
+
+/*
+ *
+ * $Log: invstat.c,v $
+ * Revision 1.13  1999-07-08 14:23:27  heikki
+ * Fixed a bug in isamh_pp_read and cleaned up a bit
+ *
+ * Revision 1.12  1999/07/06 12:28:04  adam
+ * Updated record index structure. Format includes version ID. Compression
+ * algorithm ID is stored for each record block.
+ *
+ * Revision 1.11  1999/05/15 14:36:38  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.10  1999/05/12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.9  1999/02/12 13:29:23  adam
+ * Implemented position-flag for registers.
+ *
+ * Revision 1.8  1999/02/02 14:50:53  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.7  1998/03/13 15:30:50  adam
+ * New functions isc_block_used and isc_block_size. Fixed 'leak'
+ * in isc_alloc_block.
+ *
+ * Revision 1.6  1998/03/06 13:54:02  adam
+ * Fixed two nasty bugs in isc_merge.
+ *
+ * Revision 1.5  1997/09/17 12:19:13  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.4  1996/11/08 11:10:21  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.3  1996/06/04 10:18:58  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.2  1996/05/22  08:25:56  adam
+ * Minor change.
+ *
+ * Revision 1.1  1996/05/14 14:04:34  adam
+ * In zebraidx, the 'stat' command is improved. Statistics about ISAM/DICT
+ * is collected.
+ */

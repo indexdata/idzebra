@@ -5,6 +5,12 @@
  * 
  * Isamh - append-only isam 
  *
+ * todo
+ *  (get invstat to work)
+ *  implement dirty bit 
+ *  implement direct address bit
+ *  (result set stuff)
+ *
  */
 
 
@@ -64,6 +70,7 @@ ISAMH_M isamh_getmethod (void)
 }
 
 
+
 ISAMH isamh_open (BFiles bfs, const char *name, int writeflag, ISAMH_M method)
 {
     ISAMH is;
@@ -80,7 +87,7 @@ ISAMH isamh_open (BFiles bfs, const char *name, int writeflag, ISAMH_M method)
 
     /* determine number of block categories */
     if (is->method->debug)
-        logf (LOG_LOG, "isc: bsize  ifill  mfill mblocks");
+        logf (LOG_LOG, "isc: bsize  maxkeys");
     do
     {
         if (is->method->debug)
@@ -548,6 +555,7 @@ int isamh_read_item (ISAMH_PP pp, char **dst)
 {
     ISAMH is = pp->is;
     char *src = pp->buf + pp->offset;
+    int newcat;
 
     if (pp->offset >= pp->size)
     {
@@ -577,7 +585,13 @@ int isamh_read_item (ISAMH_PP pp, char **dst)
 	    }
 	}
 	/* out new block position */
-        pp->pos = pp->next;
+	newcat = isamh_type(pp->next);
+	if (pp->cat != newcat ) {
+	  pp->buf = xrealloc(pp->buf, is->method->filecat[newcat].bsize);
+	}
+        pp->pos = isamh_block(pp->next);
+        pp->cat = isamh_type(pp->next);
+        
         src = pp->buf;
 	/* read block and save 'next' and 'size' entry */
         isamh_read_block (is, pp->cat, pp->pos, src);
@@ -587,9 +601,10 @@ int isamh_read_item (ISAMH_PP pp, char **dst)
         src += sizeof(pp->size);
         /* assume block is non-empty */
         assert (src - pp->buf == ISAMH_BLOCK_OFFSET_N);
-        assert (pp->next != pp->pos);
+        assert (pp->next != isamh_addr(pp->pos,pp->cat));
         if (pp->deleteFlag)
             isamh_release_block (is, pp->cat, pp->pos);
+        (*is->method->code_reset)(pp->decodeClientData);
         (*is->method->code_item)(ISAMH_DECODE, pp->decodeClientData, dst, &src);
         pp->offset = src - pp->buf; 
         if (is->method->debug > 2)
@@ -607,9 +622,14 @@ int isamh_pp_num (ISAMH_PP pp)
     return pp->numKeys;
 }
 
+
+
 /*
  * $Log: isamh.c,v $
- * Revision 1.4  1999-07-07 09:36:04  heikki
+ * Revision 1.5  1999-07-08 14:23:27  heikki
+ * Fixed a bug in isamh_pp_read and cleaned up a bit
+ *
+ * Revision 1.4  1999/07/07 09:36:04  heikki
  * Fixed an assertion in isamh
  *
  * Revision 1.2  1999/07/06 09:37:05  heikki
