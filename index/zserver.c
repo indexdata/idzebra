@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.36  1996-05-01 13:46:37  adam
+ * Revision 1.37  1996-05-14 06:16:48  adam
+ * Compact use/set bytes used in search service.
+ *
+ * Revision 1.36  1996/05/01 13:46:37  adam
  * First work on multiple records in one file.
  * New option, -offset, to the "unread" command in the filter module.
  *
@@ -176,6 +179,7 @@ static int register_lock (ZServerInfo *zi)
     zi->registerChange = lastChange;
     if (zi->records)
     {
+        zebTargetInfo_close (zi->zti, 0);
         dict_close (zi->wordDict);
         is_close (zi->wordIsam);
         rec_close (&zi->records);
@@ -188,6 +192,7 @@ static int register_lock (ZServerInfo *zi)
     if (!(zi->wordIsam = is_open (FNAME_WORD_ISAM, key_compare, 0,
                                   sizeof (struct it_key))))
         return -1;
+    zi->zti = zebTargetInfo_open (zi->records, 0);
     return 0;
 }
 

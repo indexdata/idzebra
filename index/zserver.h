@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.17  1995-12-08 16:22:57  adam
+ * Revision 1.18  1996-05-14 06:16:50  adam
+ * Compact use/set bytes used in search service.
+ *
+ * Revision 1.17  1995/12/08 16:22:57  adam
  * Work on update while servers are running. Three lock files introduced.
  * The servers reload their registers when necessary, but they don't
  * reestablish result sets yet.
@@ -65,7 +68,7 @@
 #include <rset.h>
 
 #include "index.h"
-#include "recindex.h"
+#include "zinfo.h"
 
 typedef struct {
     int sysno;
@@ -89,6 +92,7 @@ typedef struct {
     int errCode;
     char *errString;
     ODR odr;
+    ZebTargetInfo *zti;
 } ZServerInfo;
 
 int rpn_search (ZServerInfo *zi, 

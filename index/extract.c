@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.57  1996-05-13 14:23:04  adam
+ * Revision 1.58  1996-05-14 06:16:38  adam
+ * Compact use/set bytes used in search service.
+ *
+ * Revision 1.57  1996/05/13 14:23:04  adam
  * Work on compaction of set/use bytes in dictionary.
  *
  * Revision 1.56  1996/05/09  09:54:42  adam
@@ -437,32 +440,35 @@ static void addRecordKey (const RecWord *p)
     else
         reckeys.prevAttrUse = attrUse;
 
+    *dst++ = lead;
+
+    if (!(lead & 1))
+    {
+        memcpy (dst, &attrSet, sizeof(attrSet));
+        dst += sizeof(attrSet);
+    }
+    if (!(lead & 2))
+    {
+        memcpy (dst, &attrUse, sizeof(attrUse));
+        dst += sizeof(attrUse);
+    }
     switch (p->which)
     {
-    case Word_String: case Word_Phrase:
-        *dst++ = lead;
-
-        if (!(lead & 1))
-        {
-            memcpy (dst, &attrSet, sizeof(attrSet));
-            dst += sizeof(attrSet);
-        }
-        if (!(lead & 2))
-        {
-            memcpy (dst, &attrUse, sizeof(attrUse));
-            dst += sizeof(attrUse);
-        }
-        for (i = 0; p->u.string[i]; i++)
-            *dst++ = p->u.string[i];
-        *dst++ = '\0';
-
-        memcpy (dst, &p->seqno, sizeof(p->seqno));
-        dst += sizeof(p->seqno);
-
-        break;
-    default:
-        return;
+        case Word_String:
+            *dst++ = 'w';
+            break;
+        case Word_Phrase:
+            *dst++ = 'p';
+            break;
+        case Word_Numeric:
+            *dst++ = 'n';
     }
+    for (i = 0; p->u.string[i]; i++)
+        *dst++ = p->u.string[i];
+    *dst++ = '\0';
+
+    memcpy (dst, &p->seqno, sizeof(p->seqno));
+    dst += sizeof(p->seqno);
     reckeys.buf_used = dst - reckeys.buf;
 }
 

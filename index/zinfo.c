@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.1  1996-05-13 14:23:07  adam
+ * Revision 1.2  1996-05-14 06:16:41  adam
+ * Compact use/set bytes used in search service.
+ *
+ * Revision 1.1  1996/05/13 14:23:07  adam
  * Work on compaction of set/use bytes in dictionary.
  *
  */
@@ -30,6 +33,7 @@ struct zebDatabaseInfo {
     char *databaseName;
     int sysno;
     int readFlag;
+    int dirty;
     struct zebDatabaseInfo *next;
 };
 
@@ -47,14 +51,13 @@ void zebTargetInfo_close (ZebTargetInfo *zti, int writeFlag)
     
     if (writeFlag)
     {
-        Record grec;
         char p0[4096], *p = p0;
 
         memcpy (p, &zti->dictNum, sizeof(zti->dictNum));
         p += sizeof(zti->dictNum);
         for (zdi = zti->databaseInfo; zdi; zdi=zdi->next)
         {
-            if (zdi->readFlag || !zdi->sysno)
+            if (zdi->dirty)
             {
                 char q0[4096], *q = q0;
                 struct zebSUInfoB *zsui;
@@ -89,13 +92,18 @@ void zebTargetInfo_close (ZebTargetInfo *zti, int writeFlag)
             memcpy (p, &zdi->sysno, sizeof(zdi->sysno));
             p += sizeof(zdi->sysno);
         }
-        *p = '\0';
-        grec = rec_get (zti->records, 1);
-        xfree (grec->info[0]);
-        grec->size[0] = p-p0;
-        grec->info[0] = xmalloc (grec->size[0]);
-        memcpy (grec->info[0], p0, grec->size[0]);
-        rec_put (zti->records, &grec);
+        *p++ = '\0';
+        if (zti->dirty)
+        {
+            Record grec = rec_get (zti->records, 1);
+
+            assert (grec);
+            xfree (grec->info[0]);
+            grec->size[0] = p-p0;
+            grec->info[0] = xmalloc (grec->size[0]);
+            memcpy (grec->info[0], p0, grec->size[0]);
+            rec_put (zti->records, &grec);
+        }
     }
     for (zdi = zti->databaseInfo; zdi; zdi = zdi1)
     {
@@ -144,6 +152,7 @@ ZebTargetInfo *zebTargetInfo_open (Records records, int writeFlag)
             memcpy (&(*zdi)->sysno, p, sizeof((*zdi)->sysno));
             p += sizeof((*zdi)->sysno);
             (*zdi)->readFlag = 1;
+            (*zdi)->dirty = 0;
             zdi = &(*zdi)->next;
         }
         assert (p - rec->info[0] == rec->size[0]-1);
@@ -157,6 +166,7 @@ ZebTargetInfo *zebTargetInfo_open (Records records, int writeFlag)
             rec->info[0] = xmalloc (1+sizeof(zti->dictNum));
             memcpy (rec->info[0], &zti->dictNum, sizeof(zti->dictNum));
             rec->info[0][sizeof(zti->dictNum)] = '\0';
+            rec->size[0] = sizeof(zti->dictNum)+1;
             rec_put (records, &rec);
         }
     }
@@ -230,6 +240,8 @@ int zebTargetInfo_newDatabase (ZebTargetInfo *zti, const char *database)
     zdi->readFlag = 0;
     zdi->databaseName = xstrdup (database);
     zdi->SUInfo = NULL;
+    zdi->dirty = 1;
+    zti->dirty = 1;
     zti->curDatabaseInfo = zdi;
     return 0;
 }
@@ -256,6 +268,8 @@ int zebTargetInfo_addSU (ZebTargetInfo *zti, int set, int use)
     zsui = xmalloc (sizeof(*zsui));
     zsui->next = zti->curDatabaseInfo->SUInfo;
     zti->curDatabaseInfo->SUInfo = zsui;
+    zti->curDatabaseInfo->dirty = 1;
+    zti->dirty = 1;
     zsui->info.set = set;
     zsui->info.use = use;
     zsui->info.ordinal = (zti->dictNum)++;
