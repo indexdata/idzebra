@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.13 1994-09-20 09:03:03 adam Exp $
+# $Id: Makefile,v 1.14 1994-09-22 10:45:19 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -31,9 +31,19 @@ $(LIB): $(PO)
 clean:
 	rm -f *.[oa] opt-test res-test core mon.out gmon.out errlist
 
-dep depend:
+depend: depend2
+
+depend1:
 	mv Makefile Makefile.tmp
 	sed '/^#Depend/q' <Makefile.tmp >Makefile
 	$(CPP) $(INCLUDE) -M *.c >>Makefile
+	-rm Makefile.tmp
+
+depend2:
+	$(CPP) $(INCLUDE) -M *.c >.depend	
+
+ifeq (.depend,$(wildcard .depend))
+include .depend
+endif
 
 #Depend --- DOT NOT DELETE THIS LINE

@@ -26,9 +26,19 @@ $(LIB): $(PO)
 clean:
 	rm -f *.[oa] $(TPROG) core mon.out gmon.out errlist isam-test
 
-dep depend:
+depend: depend2
+
+depend1:
 	mv Makefile Makefile.tmp
 	sed '/^#Depend/q' <Makefile.tmp >Makefile
 	$(CPP) $(INCLUDE) -M *.c >>Makefile
+	-rm Makefile.tmp
+
+depend2:
+	$(CPP) $(INCLUDE) -M *.c >.depend	
+
+ifeq (.depend,$(wildcard .depend))
+include .depend
+endif
 
 #Depend --- DOT NOT DELETE THIS LINE
