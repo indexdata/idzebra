@@ -1,3 +1,16 @@
+Bug fix: The show records facility (-s) only displayed information for
+the first record in a file (and not for every record in the file).
+
+Added option "-f <n>" to limit the logging of record operations. After
+<n> records has been processed no logging is performed (unless errors
+occur).
+
+Bug fix: the compressed ISAM system didn't handle update operations
+correctly.
+
+Added setting, "maxResultSetSize", to hold the number of records to 
+save in a result set.
+
 Bug fix: Complete phrase did't work for search operations.
 
 Bug fix: temporary result sets weren't deleted.
