@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zrpn.c,v 1.115 2002-04-13 18:16:43 adam Exp $
+ * $Id: zrpn.c,v 1.116 2002-07-03 10:05:19 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -891,6 +891,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                       curAttributeSet, use_value, r);
                 if (r == -1)
                 {
+                    /* set was found, but value wasn't defined */
                     char val_str[32];
                     sprintf (val_str, "%d", use_value);
                     zh->errCode = 114;

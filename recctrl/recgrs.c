@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: recgrs.c,v 1.52 2002-07-02 20:20:09 adam Exp $
+ * $Id: recgrs.c,v 1.53 2002-07-03 10:05:19 adam Exp $
  */
 
 #include <stdio.h>
@@ -146,20 +146,12 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                 tag_path_full[flen++] = '/';
             }
             else if (nn->which == DATA1N_root)
-            {
-                size_t tlen = strlen(nn->u.root.type);
-                if (tlen + flen > (sizeof(tag_path_full)-2))
-                    return;
-                memcpy (tag_path_full + flen, nn->u.root.type, tlen);
-                flen += tlen;
-                tag_path_full[flen++] = '/';
                 break;
-            }
         }
         wrd->reg_type = '0';
         wrd->string = tag_path_full;
         wrd->length = flen;
-        wrd->attrSet = VAL_IDXPATH,
+        wrd->attrSet = VAL_IDXPATH;
         wrd->attrUse = use;
         if (p->flagShowRecords)
         {
@@ -502,9 +494,33 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
     }
 }
 
+static void add_idzebra_info (struct recRetrieveCtrl *p, data1_node *top,
+                              NMEM mem)
+{
+    const char *idzebra_ns[7];
+
+    idzebra_ns[0] = "xmlns:idzebra";
+    idzebra_ns[1] = "http://www.indexdata.dk/zebra/";
+    idzebra_ns[2] = 0;
+
+    data1_tag_add_attr (p->dh, mem, top, idzebra_ns);
+
+    data1_mk_tag_data_int (p->dh, top, "idzebra:size", p->recordSize,
+                           mem);
+    if (p->score != -1)
+        data1_mk_tag_data_int (p->dh, top, "idzebra:score",
+                               p->score, mem);
+    
+    data1_mk_tag_data_int (p->dh, top, "idzebra:localnumber", p->localno,
+                           mem);
+    if (p->fname)
+        data1_mk_tag_data_text(p->dh, top, "idzebra:filename",
+                               p->fname, mem);
+}
+
 static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 {
-    data1_node *node = 0, *onode = 0;
+    data1_node *node = 0, *onode = 0, *top;
     data1_node *dnew;
     data1_maptab *map;
     int res, selected = 0;
@@ -542,8 +558,10 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 #if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
+    top = data1_get_root_tag (p->dh, node);
+
     logf (LOG_DEBUG, "grs_retrieve: size");
-    if ((dnew = data1_mk_tag_data_wd(p->dh, node, "size", mem)))
+    if ((dnew = data1_mk_tag_data_wd(p->dh, top, "size", mem)))
     {
 	dnew->u.data.what = DATA1I_text;
 	dnew->u.data.data = dnew->lbuf;
@@ -553,7 +571,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 
     tagname = res_get_def(p->res, "tagrank", "rank");
     if (strcmp(tagname, "0") && p->score >= 0 &&
-	(dnew = data1_mk_tag_data_wd(p->dh, node, tagname, mem)))
+	(dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
         logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_num;
@@ -564,11 +582,12 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 
     tagname = res_get_def(p->res, "tagsysno", "localControlNumber");
     if (strcmp(tagname, "0") && p->localno > 0 &&
-   	 (dnew = data1_mk_tag_data_wd(p->dh, node, tagname, mem)))
+   	 (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
         logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_text;
 	dnew->u.data.data = dnew->lbuf;
+
 	sprintf(dnew->u.data.data, "%d", p->localno);
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
@@ -695,18 +714,8 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     {
 	
     case VAL_TEXT_XML:
-        data1_mk_tag_data_int (p->dh, node, "idzebra:size", p->recordSize,
-                               mem);
-        if (p->score != -1)
-            data1_mk_tag_data_int (p->dh, node, "idzebra:score",
-                                   p->score, mem);
-        
-        data1_mk_tag_data_int (p->dh, node, "idzebra:localnumber", p->localno,
-                               mem);
-        if (p->fname)
-            data1_mk_tag_data_text(p->dh, node, "idzebra:filename",
-                                   p->fname, mem);
-        
+        add_idzebra_info (p, top, mem);
+
 	if (!(p->rec_buf = data1_nodetoidsgml(p->dh, node, selected,
 					      &p->rec_len)))
 	    p->diagnostic = 238;

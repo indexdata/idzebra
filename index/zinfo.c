@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zinfo.c,v 1.30 2002-05-13 14:13:43 adam Exp $
+ * $Id: zinfo.c,v 1.31 2002-07-03 10:05:19 adam Exp $
  */
 
 #include <stdlib.h>
@@ -322,8 +322,8 @@ ZebraExplainInfo zebraExplain_open (
 #if ZINFO_DEBUG
 	data1_pr_tree (zei->dh, zei->data1_target, stderr);
 #endif
-	node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target->child,
-					 "targetInfo");
+	node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target,
+					 "/targetInfo");
 	zebraExplain_mergeAccessInfo (zei, node_tgtinfo,
 				      &zei->accessInfo);
 
@@ -426,8 +426,8 @@ ZebraExplainInfo zebraExplain_open (
 		nmem_destroy (zei->nmem);
 		return 0;
 	    }
-	    node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target->child,
-					    "targetInfo");
+	    node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target,
+                                             "/targetInfo");
 	    assert (node_tgtinfo);
 
 	    zebraExplain_initCommonInfo (zei, node_tgtinfo);
@@ -464,10 +464,8 @@ ZebraExplainInfo zebraExplain_open (
 	
 	    if (zcl->data1_categoryList)
 	    {
-		assert (zcl->data1_categoryList->child);
-		node_cl = data1_search_tag (zei->dh,
-					    zcl->data1_categoryList->child,
-					    "categoryList");
+		node_cl = data1_search_tag (zei->dh, zcl->data1_categoryList,
+					    "/categoryList");
 		assert (node_cl);
 		zebraExplain_initCommonInfo (zei, node_cl);
 	    }
@@ -488,8 +486,8 @@ static void zebraExplain_readAttributeDetails (ZebraExplainInfo zei,
 
     zad->data1_tree = read_sgml_rec (zei->dh, zei->nmem, rec);
 
-    node_adinfo = data1_search_tag (zei->dh, zad->data1_tree->child,
-				    "attributeDetails");
+    node_adinfo = data1_search_tag (zei->dh, zad->data1_tree,
+				    "/attributeDetails");
     node_zebra = data1_search_tag (zei->dh, node_adinfo->child,
 				 "zebraInfo");
     node_list = data1_search_tag (zei->dh, node_zebra->child,
@@ -553,8 +551,9 @@ static void zebraExplain_readDatabase (ZebraExplainInfo zei,
 
     zdi->data1_database = read_sgml_rec (zei->dh, zei->nmem, rec);
     
-    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database->child,
-				   "databaseInfo");
+    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database,
+                                    "/databaseInfo");
+    assert (node_dbinfo);
     zebraExplain_mergeAccessInfo (zei, node_dbinfo, &zdi->accessInfo);
 
     node_zebra = data1_search_tag (zei->dh, node_dbinfo->child,
@@ -715,9 +714,9 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 			 "</></>\n");
     if (!zdi->data1_database)
 	return -2;
-    
-    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database->child,
-				   "databaseInfo");
+
+    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database,
+                                    "/databaseInfo");
     assert (node_dbinfo);
 
     zebraExplain_initCommonInfo (zei, node_dbinfo);
@@ -754,9 +753,8 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 			 "<explain><attributeDetails>AttributeDetails\n"
 			 "</></>\n");
 
-    node_adinfo =
-	data1_search_tag (zei->dh, zdi->attributeDetails->data1_tree->child,
-			  "attributeDetails");
+    node_adinfo = data1_search_tag (zei->dh, zdi->attributeDetails->data1_tree,
+                                    "/attributeDetails");
     assert (node_adinfo);
 
     zebraExplain_initCommonInfo (zei, node_adinfo);
@@ -818,9 +816,9 @@ static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
 #endif
 
     drec = createRecord (zei->records, &sysno);
-
-    node_ci = data1_search_tag (zei->dh, node_categoryList->child,
-				"categoryList");
+    
+    node_ci = data1_search_tag (zei->dh, node_categoryList,
+				"/categoryList");
     assert (node_ci);
     node_ci = data1_mk_tag (zei->dh, zei->nmem, "categories", 0 /* attr */,
                             node_ci);
@@ -873,8 +871,9 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 
     drec = createRecord (zei->records, &zad->sysno);
     assert (zad->data1_tree);
-    node_adinfo = data1_search_tag (zei->dh, zad->data1_tree->child,
-				   "attributeDetails");
+
+    node_adinfo = data1_search_tag (zei->dh, zad->data1_tree,
+				   "/attributeDetails");
     zebraExplain_updateCommonInfo (zei, node_adinfo);
 
     data1_mk_tag_data_text (zei->dh, node_adinfo, "name",
@@ -999,9 +998,11 @@ static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
 #endif
     drec = createRecord (zei->records, &zdi->sysno);
     assert (zdi->data1_database);
-    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database->child,
-				   "databaseInfo");
 
+    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database,
+                                    "/databaseInfo");
+
+    assert (node_dbinfo);
     zebraExplain_updateCommonInfo (zei, node_dbinfo);
     zebraExplain_updateAccessInfo (zei, node_dbinfo, zdi->accessInfo);
 
@@ -1087,9 +1088,10 @@ static void zebraExplain_writeAttributeSet (ZebraExplainInfo zei,
 			 "<explain><attributeSetInfo>AttributeSetInfo\n"
 			 "</></>\n" );
 
-    node_attinfo = data1_search_tag (zei->dh, node_root->child,
-				   "attributeSetInfo");
+    node_attinfo = data1_search_tag (zei->dh, node_root,
+				   "/attributeSetInfo");
 
+    assert (node_attinfo);
     zebraExplain_initCommonInfo (zei, node_attinfo);
     zebraExplain_updateCommonInfo (zei, node_attinfo);
 
@@ -1145,8 +1147,8 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush)
     trec = rec_get (zei->records, 1);
     xfree (trec->info[recInfo_storeData]);
 
-    node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target->child,
-				   "targetInfo");
+    node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target,
+                                     "/targetInfo");
     assert (node_tgtinfo);
 
     zebraExplain_updateCommonInfo (zei, node_tgtinfo);
