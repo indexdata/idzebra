@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.27 2004-06-01 15:22:58 adam Exp $
+/* $Id: rsbool.c,v 1.28 2004-06-02 12:31:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,9 +27,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <rsbool.h>
 #include <zebrautl.h>
-
-/* for key_logdump. Debugging only */
-#include <../index/index.h> 
 
 #ifndef RSET_DEBUG
 #define RSET_DEBUG 0
@@ -106,6 +103,7 @@ struct rset_bool_info {
     RSET rset_r;
     int term_index_s;
     int (*cmp)(const void *p1, const void *p2);
+    void (*log_item)(int logmask, const void *p, const char *txt);
     struct rset_bool_rfd *rfd_list;
 };
 
@@ -135,6 +133,7 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     if (rset_is_volatile(info->rset_l) || rset_is_volatile(info->rset_r))
         ct->flags |= RSET_FLAG_VOLATILE;
     info->cmp = bool_parms->cmp;
+    info->log_item = bool_parms->log_item;
     info->rfd_list = NULL;
     
     info->term_index_s = info->rset_l->no_rset_terms;
@@ -324,8 +323,8 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 #if RSET_DEBUG
         logf (LOG_DEBUG, "r_read_and [%p] looping: m=%d/%d c=%d t=%d",
                         rfd, p->more_l, p->more_r, cmp, p->tail);
-        key_logdump(LOG_DEBUG,p->buf_l);
-        key_logdump(LOG_DEBUG,p->buf_r);
+        (*info->log_item)(LOG_DEBUG, p->buf_l, "left ");
+        (*info->log_item)(LOG_DEBUG, p->buf_r, "right ");
 #endif
         if (!cmp)
         {
@@ -346,6 +345,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             logf (LOG_DEBUG, "r_read_and [%p] returning R m=%d/%d c=%d",
                     rfd, p->more_l, p->more_r, cmp);
             key_logdump(LOG_DEBUG,buf);
+	    (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
             return 1;
         }
@@ -359,7 +359,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 #if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_and [%p] returning L m=%d/%d c=%d",
                     rfd, p->more_l, p->more_r, cmp);
-            key_logdump(LOG_DEBUG,buf);
+	    (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
             return 1;
         }
@@ -379,7 +379,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 #if RSET_DEBUG
                 logf (LOG_DEBUG, "r_read_and returning C m=%d/%d c=%d",
                         p->more_l, p->more_r, cmp);
-                key_logdump(LOG_DEBUG,buf);
+		(*info->log_item)(LOG_DEBUG, buf, "");
 #endif
                 return 1;
             }
@@ -396,7 +396,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 #if RSET_DEBUG
                 logf (LOG_DEBUG, "r_read_and [%p] returning R tail m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
-                key_logdump(LOG_DEBUG,buf);
+		(*info->log_item)(LOG_DEBUG, buf, "");
 #endif
                 return 1;
             } else
@@ -429,7 +429,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 #if RSET_DEBUG
                  logf (LOG_DEBUG, "r_read_and [%p] returning R tail m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
-                 key_logdump(LOG_DEBUG,buf);
+		 (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
                  return 1;
              }
@@ -445,7 +445,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 #if RSET_DEBUG
                 logf (LOG_DEBUG, "r_read_and [%p] returning L tail m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
-                key_logdump(LOG_DEBUG,buf);
+		(*info->log_item)(LOG_DEBUG, buf, "");
 #endif
                 return 1;
             }
@@ -499,7 +499,7 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
 #if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_or returning A m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
-            key_logdump(LOG_DEBUG,buf);
+            (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
             return 1;
         }
@@ -512,7 +512,7 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
 #if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_or returning B m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
-            key_logdump(LOG_DEBUG,buf);
+            (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
             return 1;
         }
@@ -525,7 +525,7 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
 #if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_or returning C m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
-            key_logdump(LOG_DEBUG,buf);
+            (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
             return 1;
         }
