@@ -1,131 +1,8 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: recindex.c,v $
- * Revision 1.32  2002-04-05 08:46:26  adam
- * Zebra with full functionality
- *
- * Revision 1.31  2001/02/26 22:14:59  adam
- * Updated for BZIP2 1.0.X. Configure script doesn't enable 64 bit LFS
- * on broken glibc on Redhat 7.0.
- *
- * Revision 1.30  2000/07/13 10:14:20  heikki
- * Removed compiler warnings when making zebra
- *
- * Revision 1.29  2000/04/05 09:49:35  adam
- * On Unix, zebra/z'mbol uses automake.
- *
- * Revision 1.28  1999/12/08 22:44:45  adam
- * Zebra/Z'mbol dependencies added.
- *
- * Revision 1.27  1999/10/29 10:02:33  adam
- * Fixed decompression buffer overflow.
- *
- * Revision 1.26  1999/07/06 13:34:57  adam
- * Fixed bug (introduced by previous commit).
- *
- * Revision 1.25  1999/07/06 12:28:04  adam
- * Updated record index structure. Format includes version ID. Compression
- * algorithm ID is stored for each record block.
- *
- * Revision 1.24  1999/06/25 13:48:02  adam
- * Updated MSVC project files.
- * Added BZIP2 record compression (not very well tested).
- *
- * Revision 1.23  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.22  1999/02/18 12:49:34  adam
- * Changed file naming scheme for register files as well as record
- * store/index files.
- *
- * Revision 1.21  1999/02/02 14:51:03  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.20  1998/01/12 15:04:08  adam
- * The test option (-s) only uses read-lock (and not write lock).
- *
- * Revision 1.19  1997/09/17 12:19:16  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.18  1997/07/15 16:28:42  adam
- * Bug fix: storeData didn't work with files with multiple records.
- * Bug fix: fixed memory management with records; not really well
- *  thought through.
- *
- * Revision 1.17  1997/02/12 20:39:46  adam
- * Implemented options -f <n> that limits the log to the first <n>
- * records.
- * Changed some log messages also.
- *
- * Revision 1.16  1996/06/04 10:19:00  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.15  1996/05/13  14:23:06  adam
- * Work on compaction of set/use bytes in dictionary.
- *
- * Revision 1.14  1996/02/01  20:48:15  adam
- * The total size of records are always checked in rec_cache_insert to
- * reduce memory usage.
- *
- * Revision 1.13  1995/12/11  09:12:49  adam
- * The rec_get function returns NULL if record doesn't exist - will
- * happen in the server if the result set records have been deleted since
- * the creation of the set (i.e. the search).
- * The server saves a result temporarily if it is 'volatile', i.e. the
- * set is register dependent.
- *
- * Revision 1.12  1995/12/07  17:38:47  adam
- * Work locking mechanisms for concurrent updates/commit.
- *
- * Revision 1.11  1995/12/06  13:58:26  adam
- * Improved flushing of records - all flushes except the last one
- * don't write the last accessed. Also flush takes place if record
- * info occupy more than about 256k.
- *
- * Revision 1.10  1995/12/06  12:41:24  adam
- * New command 'stat' for the index program.
- * Filenames can be read from stdin by specifying '-'.
- * Bug fix/enhancement of the transformation from terms to regular
- * expressons in the search engine.
- *
- * Revision 1.9  1995/11/30  08:34:33  adam
- * Started work on commit facility.
- * Changed a few malloc/free to xmalloc/xfree.
- *
- * Revision 1.8  1995/11/28  14:26:21  adam
- * Bug fix: recordId with constant wasn't right.
- * Bug fix: recordId dictionary entry wasn't deleted when needed.
- *
- * Revision 1.7  1995/11/28  09:09:43  adam
- * Zebra config renamed.
- * Use setting 'recordId' to identify record now.
- * Bug fix in recindex.c: rec_release_blocks was invokeded even
- * though the blocks were already released.
- * File traversal properly deletes records when needed.
- *
- * Revision 1.6  1995/11/25  10:24:06  adam
- * More record fields - they are enumerated now.
- * New options: flagStoreData flagStoreKey.
- *
- * Revision 1.5  1995/11/22  17:19:18  adam
- * Record management uses the bfile system.
- *
- * Revision 1.4  1995/11/20  16:59:46  adam
- * New update method: the 'old' keys are saved for each records.
- *
- * Revision 1.3  1995/11/16  15:34:55  adam
- * Uses new record management system in both indexer and server.
- *
- * Revision 1.2  1995/11/15  19:13:08  adam
- * Work on record management.
- *
- * Revision 1.1  1995/11/15  14:46:20  adam
- * Started work on better record management system.
- *
+ * $Id: recindex.c,v 1.33 2002-07-15 11:50:01 adam Exp $
  */
 
 
@@ -802,8 +679,9 @@ static Record rec_get_int (Records p, int sysno)
     {
 	if (rec->info[i] && rec->size[i])
 	{
-	    char *np = xmalloc (rec->size[i]);
+	    char *np = xmalloc (rec->size[i]+1);
 	    memcpy (np, rec->info[i], rec->size[i]);
+            np[rec->size[i]] = '\0';
 	    rec->info[i] = np;
 	}
 	else
