@@ -1,11 +1,16 @@
 /*
- * $Id: testclient.c,v 1.9 2003-01-13 22:28:18 adam Exp $
+ * $Id: testclient.c,v 1.10 2003-02-28 15:34:21 adam Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef WIN32
+#else
+#include <unistd.h>
+#endif
+
 #include <yaz/xmalloc.h>
 #include <yaz/options.h>
 #include <yaz/zoom.h>
