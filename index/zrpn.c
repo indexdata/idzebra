@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.164 2004-12-10 12:37:07 heikki Exp $
+/* $Id: zrpn.c,v 1.165 2005-01-03 19:31:57 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -413,7 +413,7 @@ static int term_103(ZebraMaps zebra_maps, int reg_type, const char **src,
         return 0;
     s0 = *src;
     if (errors && *s0 == '+' && s0[1] && s0[2] == '+' && s0[3] &&
-        isdigit(s0[1]))
+        isdigit(((const unsigned char *)s0)[1]))
     {
         *errors = s0[1] - '0';
         s0 += 3;

@@ -1,5 +1,5 @@
 /*
-    $Id: marcomp.c,v 1.4 2004-12-13 20:51:32 adam Exp $
+    $Id: marcomp.c,v 1.5 2005-01-03 19:27:53 adam Exp $
 
     marcomp.c - compiler of MARC statements.
 */
@@ -88,7 +88,8 @@ mc_token mc_gettoken(mc_context *c)
 	case '[': c->crrtok = LINTERVAL; break;
 	case ']': c->crrtok = RINTERVAL; break;
 	default:
-	    if (isspace(*(c->data+c->offset)) || *(c->data+c->offset) == '\n')
+	    if (isspace(*(unsigned char *) (c->data+c->offset)) 
+			    || *(c->data+c->offset) == '\n')
 	    {
 		c->crrtok = NOP;
 	    }

@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.28 2004-12-13 20:51:32 adam Exp $
+/* $Id: marcread.c,v 1.29 2005-01-03 19:27:53 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -652,7 +652,7 @@ static int is_empty(char *s)
     
     for (p = s; *p; p++)
     {
-	if (!isspace(*p))
+	if (!isspace(*(unsigned char *)p))
 	    return 0;
     }
     return 1;
