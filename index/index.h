@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.88 2002-10-16 09:30:57 heikki Exp $
+/* $Id: index.h,v 1.89 2002-10-22 12:51:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -43,7 +43,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <isamd.h>
 #include <isamb.h>
 #define ISAM_DEFAULT "c"
-#include <yaz/data1.h>
+#include <data1.h>
 #include <recctrl.h>
 #include "recindex.h"
 #include "zebraapi.h"

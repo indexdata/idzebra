@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.125 2002-10-22 09:37:55 heikki Exp $
+/* $Id: extract.c,v 1.126 2002-10-22 12:51:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1632,8 +1632,17 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
     while (sk)
     {
 	struct sortKey *sk_next = sk->next;
-	sortIdx_type (sortIdx, sk->attrUse);
-	sortIdx_add (sortIdx, sk->string, sk->length);
+        if (cmd == 1)
+        {
+            /* insert/update: set it */
+            sortIdx_type (sortIdx, sk->attrUse);
+            sortIdx_add (sortIdx, sk->string, sk->length);
+        }
+        else if (cmd == 0)
+        {   /* delete : zero it  */
+            sortIdx_type (sortIdx, sk->attrUse);
+            sortIdx_add (sortIdx, "", 1);
+        }
 	xfree (sk->string);
 	xfree (sk);
 	sk = sk_next;

@@ -1,6 +1,6 @@
 
-noinst_HEADERS = bfile.h bset.h charmap.h dfa.h dict.h direntz.h isam.h \
- isamc.h isamd.h isams.h mfile.h passwddb.h recctrl.h res.h rsbool.h rset.h \
- rsisam.h rsisamc.h rsisams.h rsisamd.h rsm_or.h rsnull.h rstemp.h set.h \
- sortidx.h str.h zebra-lock.h zebramap.h zebrautl.h zebraver.h isamb.h \
- rsbetween.h rsisamb.h
+noinst_HEADERS = bfile.h bset.h charmap.h d1_attset.h d1_map.h \
+data1.h dfa.h dict.h direntz.h isamb.h isamc.h isamd.h isamg.h isam.h \
+isams.h mfile.h passwddb.h recctrl.h res.h rsbetween.h rsbool.h rset.h \
+rsisamb.h rsisamc.h rsisamd.h rsisam.h rsisams.h rsm_or.h rsnull.h \
+rstemp.h set.h sortidx.h str.h zebra-lock.h zebramap.h zebrautl.h zebraver.h

@@ -1,11 +1,15 @@
-## $Id: Makefile.am,v 1.2 2000-04-05 09:58:12 adam Exp $
+## $Id: Makefile.am,v 1.4 2002-10-22 12:51:09 adam Exp $
 
 tabdatadir = $(pkgdatadir)/tab
+tabdata_DATA = bib1.att dan1.att danmarc.abs danmarc.mar default.idx \
+ explain.abs explain.att explain.tag generic.tag gils.abs gils-a.est \
+ gils.att gils-b.est gils-f.est gils-g.est gils-summary.map gils.tag \
+ gils-usmarc.map gils-variant.est hci.flt mail.flt \
+ meta.abs meta-b.est meta.tag meta-usmarc.map news.flt numeric.chr \
+ nwi.flt refer.flt scan.chr sgml.flt soif.flt string.chr summary.abs \
+ summary.tag tagsetg.tag tagsetm.tag urx.chr usmarc.abs usmarc-b.est \
+ usmarc.flt usmarc.mar usmarc.tag var1.var wais.abs wais-b.est \
+ wais-variant.est
 
-tabdata_DATA = default.idx hci.flt mail.flt news.flt \
- numeric.chr nwi.flt out out,v refer.flt scan.chr sgml.flt soif.flt \
- string.chr urx.chr usmarc.flt
+EXTRA_DIST = $(tabdata_DATA)
 
-EXTRA_DIST = default.idx hci.flt mail.flt news.flt \
- numeric.chr nwi.flt out out,v refer.flt scan.chr sgml.flt soif.flt \
- string.chr urx.chr usmarc.flt

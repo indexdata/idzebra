@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.5 2002-08-29 09:59:25 adam Exp $
+/* $Id: xmlread.c,v 1.6 2002-10-22 12:51:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -36,7 +36,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
-#include <yaz/data1.h>
+#include <data1.h>
 
 #include <expat.h>
 

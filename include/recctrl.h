@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.39 2002-08-28 12:47:10 adam Exp $
+/* $Id: recctrl.h,v 1.40 2002-10-22 12:51:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -28,7 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/proto.h>
 #include <yaz/oid.h>
 #include <yaz/odr.h>
-#include <yaz/data1.h>
+#include <data1.h>
 #include <zebramap.h>
 
 #ifdef __cplusplus

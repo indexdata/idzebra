@@ -1,10 +1,11 @@
-## $Id: Makefile.am,v 1.7 2002-09-25 09:50:20 adam Exp $
+## $Id: Makefile.am,v 1.8 2002-10-22 12:51:08 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
 EXTRA_DIST= README CHANGELOG 
 
-SUBDIRS=util bfile dfa dict isams isamb isamc isam rset recctrl tab index test include doc
+SUBDIRS=util bfile dfa dict isams isamb isamc isam rset data1 \
+ recctrl tab index test include doc
 
 SPEC_FILE=$(PACKAGE).spec
 
