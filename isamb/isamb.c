@@ -1,5 +1,5 @@
-/* $Id: isamb.c,v 1.27 2003-06-23 15:36:11 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: isamb.c,v 1.28 2004-05-30 18:04:49 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -36,12 +36,22 @@ struct ISAMB_head {
 
 #define ISAMB_DATA_OFFSET 3
 
+/* maximum size of encoded buffer */
 #define DST_ITEM_MAX 256
 
-/* approx 2*4 K + max size of item */
-#define DST_BUF_SIZE 8448
+/* approx 2*max page + max size of item */
+#define DST_BUF_SIZE 16840
 
 #define ISAMB_CACHE_ENTRY_SIZE 4096
+
+/* CAT_MAX: _must_ be power of 2 */
+#define CAT_MAX 4
+#define CAT_MASK (CAT_MAX-1)
+/* CAT_NO: <= CAT_MAX */
+#define CAT_NO 4
+
+/* ISAMB_PTR_CODEC=1 var, =0 fixed */
+#define ISAMB_PTR_CODEC  1
 
 struct ISAMB_cache_entry {
     ISAMB_P pos;
@@ -50,7 +60,6 @@ struct ISAMB_cache_entry {
     int hits;
     struct ISAMB_cache_entry *next;
 };
-
 
 struct ISAMB_file {
     BFile bf;
@@ -93,17 +102,50 @@ struct ISAMB_PP_s {
     struct ISAMB_block **block;
 };
 
-void encode_ptr (char **dst, int pos)
+#if ISAMB_PTR_CODEC
+static void encode_ptr (char **dst, unsigned pos)
 {
-    memcpy (*dst, &pos, sizeof(pos));
+    unsigned char *bp = (unsigned char*) *dst;
+
+    while (pos > 127)
+    {
+         *bp++ = 128 | (pos & 127);
+         pos = pos >> 7;
+    }
+    *bp++ = pos;
+    *dst = (char *) bp;
+}
+#else
+static void encode_ptr (char **dst, unsigned pos)
+{
+    memcpy(*dst, &pos, sizeof(pos));
     (*dst) += sizeof(pos);
 }
+#endif
 
-void decode_ptr (char **src, int *pos)
+#if ISAMB_PTR_CODEC
+static void decode_ptr (char **src1, int *pos)
 {
-    memcpy (pos, *src, sizeof(*pos));
-    (*src) += sizeof(*pos);
+    unsigned char **src = (unsigned char **) src1;
+    unsigned d = 0;
+    unsigned char c;
+    unsigned r = 0;
+
+    while (((c = *(*src)++) & 128))
+    {
+        d += ((c & 127) << r);
+	r += 7;
+    }
+    d += (c << r);
+    *pos = d;
 }
+#else
+static void decode_ptr (char **src, int *pos)
+{
+     memcpy (pos, *src, sizeof(*pos));
+     (*src) += sizeof(*pos);
+}
+#endif
 
 ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
                   int cache)
@@ -114,7 +156,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
     isamb->bfs = bfs;
     isamb->method = (ISAMC_M *) xmalloc (sizeof(*method));
     memcpy (isamb->method, method, sizeof(*method));
-    isamb->no_cat = 4;
+    isamb->no_cat = CAT_NO;
     isamb->log_io = 0;
     isamb->log_freelist = 0;
     isamb->cache = cache;
@@ -170,11 +212,11 @@ static void flush_blocks (ISAMB b, int cat)
 
 static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
 {
-    int cat = pos&3;
-    int off = ((pos/4) & 
+    int cat = pos&CAT_MASK;
+    int off = ((pos/CAT_MAX) & 
                (ISAMB_CACHE_ENTRY_SIZE / b->file[cat].head.block_size - 1))
         * b->file[cat].head.block_size;
-    int norm = pos / (4*ISAMB_CACHE_ENTRY_SIZE / b->file[cat].head.block_size);
+    int norm = pos / (CAT_MASK*ISAMB_CACHE_ENTRY_SIZE / b->file[cat].head.block_size);
     int no = 0;
     struct ISAMB_cache_entry **ce, *ce_this = 0, **ce_last = 0;
 
@@ -261,22 +303,22 @@ void isamb_close (ISAMB isamb)
 
 struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
 {
-    int cat = pos&3;
+    int cat = pos&CAT_MASK;
     struct ISAMB_block *p;
     if (!pos)
         return 0;
     p = xmalloc (sizeof(*p));
     p->pos = pos;
-    p->cat = pos & 3;
+    p->cat = pos & CAT_MASK;
     p->buf = xmalloc (b->file[cat].head.block_size);
 
     if (!get_block (b, pos, p->buf, 0))
     {
         yaz_log (b->log_io, "bf_read: open_block");
-        if (!bf_read (b->file[cat].bf, pos/4, 0, 0, p->buf))
+        if (!bf_read (b->file[cat].bf, pos/CAT_MAX, 0, 0, p->buf))
         {
             yaz_log (LOG_FATAL, "isamb: read fail for pos=%ld block=%ld",
-                     (long) pos, (long) pos/4);
+                     (long) pos, (long) pos/CAT_MAX);
             abort();
         }
     }
@@ -306,24 +348,24 @@ struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
     {
         int block_no;
         block_no = b->file[cat].head.last_block++;
-        p->pos = block_no * 4 + cat;
+        p->pos = block_no * CAT_MAX + cat;
     }
     else
     {
         p->pos = b->file[cat].head.free_list;
-        assert((p->pos & 3) == cat);
+        assert((p->pos & CAT_MASK) == cat);
         if (!get_block (b, p->pos, p->buf, 0))
         {
             yaz_log (b->log_io, "bf_read: new_block");
-            if (!bf_read (b->file[cat].bf, p->pos/4, 0, 0, p->buf))
+            if (!bf_read (b->file[cat].bf, p->pos/CAT_MAX, 0, 0, p->buf))
             {
                 yaz_log (LOG_FATAL, "isamb: read fail for pos=%ld block=%ld",
-                         (long) p->pos/4, (long) p->pos/4);
+                         (long) p->pos/CAT_MAX, (long) p->pos/CAT_MAX);
                 abort ();
             }
         }
         yaz_log (b->log_freelist, "got block %d from freelist %d:%d", p->pos,
-                 cat, p->pos/4);
+                 cat, p->pos/CAT_MAX);
         memcpy (&b->file[cat].head.free_list, p->buf, sizeof(int));
     }
     p->cat = cat;
@@ -365,7 +407,7 @@ static void check_block (ISAMB b, struct ISAMB_block *p)
         int pos;
             
         decode_ptr (&src, &pos);
-        assert ((pos&3) == p->cat);
+        assert ((pos&CAT_MASK) == p->cat);
         while (src != endp)
         {
             int item_len;
@@ -373,7 +415,7 @@ static void check_block (ISAMB b, struct ISAMB_block *p)
             assert (item_len > 0 && item_len < 30);
             src += item_len;
             decode_ptr (&src, &pos);
-            assert ((pos&3) == p->cat);
+            assert ((pos&CAT_MASK) == p->cat);
         }
     }
 }
@@ -385,13 +427,13 @@ void close_block (ISAMB b, struct ISAMB_block *p)
     if (p->deleted)
     {
         yaz_log (b->log_freelist, "release block %d from freelist %d:%d",
-                 p->pos, p->cat, p->pos/4);
+                 p->pos, p->cat, p->pos/CAT_MAX);
         memcpy (p->buf, &b->file[p->cat].head.free_list, sizeof(int));
         b->file[p->cat].head.free_list = p->pos;
         if (!get_block (b, p->pos, p->buf, 1))
         {
             yaz_log (b->log_io, "bf_write: close_block (deleted)");
-            bf_write (b->file[p->cat].bf, p->pos/4, 0, 0, p->buf);
+            bf_write (b->file[p->cat].bf, p->pos/CAT_MAX, 0, 0, p->buf);
         }
     }
     else if (p->dirty)
@@ -405,7 +447,7 @@ void close_block (ISAMB b, struct ISAMB_block *p)
         if (!get_block (b, p->pos, p->buf, 1))
         {
             yaz_log (b->log_io, "bf_write: close_block");
-            bf_write (b->file[p->cat].bf, p->pos/4, 0, 0, p->buf);
+            bf_write (b->file[p->cat].bf, p->pos/CAT_MAX, 0, 0, p->buf);
         }
     }
     (*b->method->code_stop)(ISAMC_DECODE, p->decodeClientData);
@@ -543,7 +585,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
     void *c1 = (*b->method->code_start)(ISAMC_DECODE);
     void *c2 = (*b->method->code_start)(ISAMC_ENCODE);
     int more = 1;
-    int quater = b->file[b->no_cat-1].head.block_max / 4;
+    int quater = b->file[b->no_cat-1].head.block_max / CAT_MAX;
     char *cut = dst_buf + quater * 2;
     char *maxp = dst_buf + b->file[b->no_cat-1].head.block_max;
     char *half1 = 0;
