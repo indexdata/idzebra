@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.8 2004-08-04 08:35:24 adam Exp $
+/* $Id: zvrank.c,v 1.7.2.1 2004-11-04 12:49:36 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -757,7 +757,7 @@ static void zv_add (void *rsi, int seqno, int i) {
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int zv_calc (void *rsi, zint sysno)
+static int zv_calc (void *rsi, int sysno)
 {
     int i, veclen; 
     int score=0;
@@ -776,9 +776,13 @@ static int zv_calc (void *rsi, zint sysno)
         dscore=rs->sim_fct(rs->qdoc, rs->rdoc);
     }
     score = dscore * 1000;
-    yaz_log (LOG_LOG, "sysno=" ZINT_FORMAT " score=%d", sysno, score);
+    yaz_log (LOG_LOG, "sysno=%d score=%d", sysno, score);
     if (score > 1000) /* should not happen */
         score = 1000;
+    /* reset counts for the next record */
+    for (i = 0; i < rs->veclen; i++)
+        rs->rdoc->terms[i].locc=0;
+
     return score;
 }
 
