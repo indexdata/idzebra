@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.31  1997-09-17 12:19:17  adam
+ * Revision 1.32  1997-09-25 14:56:51  adam
+ * Windows NT interface code to the stat call.
+ *
+ * Revision 1.31  1997/09/17 12:19:17  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -116,16 +119,20 @@
  * Split of work into more files.
  *
  */
+
+
 #include <stdio.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #ifdef WINDOWS
 #include <io.h>
+#define S_ISREG(x) (x & _S_IFREG)
+#define S_ISDIR(x) (x & _S_IFDIR)
 #else
 #include <unistd.h>
 #endif
 #include <direntz.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
 
