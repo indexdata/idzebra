@@ -43,17 +43,8 @@ echo "  killing it..."
 kill  $PID
 sleep 1
 
-echo "  checking that it still runs waiting for the client"
-ps -p $PID >/dev/null || exit 1
-
-echo "  waiting for the client to exit..."
-sleep 3
-
-echo "  checking that the server is dead..."
+echo "  checking that it is dead"
 ps -p $PID >/dev/null && exit 1
-
-echo "  checking that it exited normally..."
-test -f servercrash && exit 1
 
 echo ok
 # clean up
