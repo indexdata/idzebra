@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.8  1995-10-19 14:57:21  adam
+ * Revision 1.9  1995-10-27 13:58:09  adam
+ * Makes 'Database unavailable' diagnostic.
+ *
+ * Revision 1.8  1995/10/19  14:57:21  adam
  * New feature: grep lookup saves length of longest prefix match.
  *
  * Revision 1.7  1995/10/17  18:01:22  adam
@@ -353,6 +356,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
 }
 
 int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
+                      int *max_pos,
                       int (*userfunc)(Dict_char *name, const char *info,
                                       void *client))
 {
@@ -361,7 +365,7 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
     char *this_pattern = pattern;
     MatchContext *mc;
     struct DFA *dfa = dfa_init();
-    int i, d, max_pos;
+    int i, d;
 
     i = dfa_parse (dfa, &this_pattern);
     if (i || *this_pattern)
@@ -375,7 +379,6 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
 
     Rj = xcalloc ((MAX_LENGTH+1) * mc->n, sizeof(*Rj));
 
-    max_pos = 0;
     set_bit (mc, Rj, 0, 0);
     for (d = 1; d<=mc->range; d++)
     {
@@ -392,8 +395,9 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
             }
         }
     }
+    *max_pos = 0;
     i = dict_grep (dict, 1, mc, Rj, 0, client, userfunc, prefix, dfa,
-                   &max_pos);
+                   max_pos);
     logf (LOG_DEBUG, "max_pos = %d", max_pos);
     dfa_delete (&dfa);
     xfree (Rj);
