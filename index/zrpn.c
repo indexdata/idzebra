@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.68  1997-10-27 14:33:06  adam
+ * Revision 1.69  1997-10-29 12:05:02  adam
+ * Server produces diagnostic "Unsupported Attribute Set" when appropriate.
+ *
+ * Revision 1.68  1997/10/27 14:33:06  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -727,11 +730,14 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         int max_pos, prefix_len = 0;
 
         termp = *term_sub;
-        if (!att_getentbyatt (zi, &attp, curAttributeSet, use_value))
+        if ((r=att_getentbyatt (zi, &attp, curAttributeSet, use_value)))
         {
-            logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
-                  curAttributeSet, use_value);
-            zi->errCode = 114;
+            logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
+                  curAttributeSet, use_value, r);
+	    if (r == -1)
+		zi->errCode = 114;
+	    else
+		zi->errCode = 121;
             return -1;
         }
         if (zebTargetInfo_curDatabase (zi->zti, basenames[base_no]))
@@ -1525,14 +1531,18 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         use_value = 1016;
     for (base_no = 0; base_no < num_bases && ord_no < 32; base_no++)
     {
+	int r;
         attent attp;
         data1_local_attribute *local_attr;
 
-        if (!att_getentbyatt (zi, &attp, attributeset, use_value))
+        if ((r=att_getentbyatt (zi, &attp, attributeset, use_value)))
         {
             logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
                   attributeset, use_value);
-            return zi->errCode = 114;
+	    if (r == -1)
+		zi->errCode = 114;
+	    else
+		zi->errCode = 121;
         }
         if (zebTargetInfo_curDatabase (zi->zti, basenames[base_no]))
         {

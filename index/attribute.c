@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: attribute.c,v $
- * Revision 1.6  1997-09-17 12:19:11  adam
+ * Revision 1.7  1997-10-29 12:05:01  adam
+ * Server produces diagnostic "Unsupported Attribute Set" when appropriate.
+ *
+ * Revision 1.6  1997/09/17 12:19:11  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -77,11 +80,13 @@ int att_getentbyatt(ZServerInfo *zi, attent *res, oid_value set, int att)
     if (!zi->registered_sets)
 	load_atts(zi);
     for (p = zi->registered_sets; p; p = p->next)
-	if (p->reference == set && (r = getatt(p, att)))
+	if (p->reference == set)
 	    break;;
     if (!p)
-	return 0;
+	return -2;
+    if (!(r = getatt(p, att)))
+	return -1;
     res->attset_ordinal = r->parent->ordinal;
     res->local_attributes = r->locals;
-    return 1;
+    return 0;
 }
