@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.13 1999-09-20 15:48:06 heikki Exp $ 
+ * $Id: isamd.c,v 1.14 1999-09-23 18:01:18 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -480,10 +480,12 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
     char *src;
     int sz = is->method->filecat[is->max_cat].bsize;
                  /* always allocate for the largest blocks, saves trouble */
-   
-    pp->cat = isamd_type(ipos);
-    pp->pos = isamd_block(ipos); 
-
+    struct it_key singlekey;
+    char *c_ptr; /* for fake encoding the singlekey */
+    char *i_ptr;
+    int ofs;
+    
+    pp->numKeys = 0;
     src = pp->buf = (char *) xmalloc (sz);
     memset(src,'\0',sz); /* clear the buffer, for new blocks */
     
@@ -491,12 +493,47 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
     pp->size = 0;
     pp->offset = 0;
     pp->is = is;
-    pp->decodeClientData = (*is->method->code_start)(ISAMD_DECODE);
-    pp->numKeys = 0;
-//    pp->diffs=0;
+    pp->diffs=0;
     pp->diffbuf=0;
     pp->diffinfo=0;
+    pp->decodeClientData = (*is->method->code_start)(ISAMD_DECODE);
     
+    if ( is_singleton(ipos) ) 
+    {
+       pp->cat=0; 
+       pp->pos=0;
+       if (is->method->debug > 5)
+          logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
+                pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
+                pp->next, isamd_type(pp->next), isamd_block(pp->next) );
+       singleton_decode(ipos, &singlekey );
+       pp->offset=ISAMD_BLOCK_OFFSET_1;
+       pp->numKeys = 1;
+       ofs=pp->offset+sizeof(int); /* reserve length of diffsegment */
+       singlekey.seqno = singlekey.seqno * 2 + 1; /* make an insert diff */  
+       c_ptr=&(pp->buf[ofs]);
+       i_ptr=(char*)(&singlekey); 
+       (*is->method->code_item)(ISAMD_ENCODE, pp->decodeClientData, 
+                                &c_ptr, &i_ptr);
+       (*is->method->code_reset)(pp->decodeClientData);
+       ofs += c_ptr-&(pp->buf[ofs]);
+       memcpy( &(pp->buf[pp->offset]), &ofs, sizeof(int) );
+       /* since we memset buf earlier, we already have a zero endmark! */
+       pp->size = ofs;
+       if (is->method->debug > 5)
+          logf (LOG_LOG, "isamd_pp_open single %d=%x: %d.%d sz=%d", 
+            ipos,ipos, 
+            singlekey.sysno, singlekey.seqno/2,
+            pp->size );
+       return pp;
+    } /* singleton */
+   
+
+    ipos=ipos>>1; /* remove the singleton bit */
+
+    pp->cat = isamd_type(ipos);
+    pp->pos = isamd_block(ipos); 
+ 
     if (pp->pos)
     {
         src = pp->buf;
@@ -507,27 +544,16 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
         src += sizeof(pp->size);
         memcpy (&pp->numKeys, src, sizeof(pp->numKeys));
         src += sizeof(pp->numKeys);
-//        memcpy (&pp->diffs, src, sizeof(pp->diffs));
-//        src += sizeof(pp->diffs);
         assert (pp->next != pp->pos);
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMD_BLOCK_OFFSET_1);
-//        if (0==pp->diffs)
-//           ++(is->files[pp->cat].no_op_nodiff);
-//        else
-//        if(pp->diffs&1)
-//            ++(is->files[pp->cat].no_op_extdiff);
-//        else
-//               ++(is->files[pp->cat].no_op_intdiff);
-      //  if (!pp->diffbuf)
-      //    pp->diffbuf=pp->buf;
+        assert(pp->size>=ISAMD_BLOCK_OFFSET_1); /*??*/
     }
     if (is->method->debug > 5)
        logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
              pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
              pp->next, isamd_type(pp->next), isamd_block(pp->next) );
-    
-      
+
     return pp;
 }
 
@@ -574,9 +600,10 @@ void isamd_buildlaterblock(ISAMD_PP pp){
 /* returns non-zero if item could be read; 0 otherwise */
 int isamd_pp_read (ISAMD_PP pp, void *buf)
 {
+
     return isamd_read_item (pp, (char **) &buf);
-    /* note: isamd_read_item is in merge-d.c, because it is so */
-    /* convoluted with the merge process */
+       /* note: isamd_read_item is in merge-d.c, because it is so */
+       /* convoluted with the merge process */
 }
 
 /* read one main item from file - decode and store it in *dst.
@@ -737,7 +764,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.13  1999-09-20 15:48:06  heikki
+ * Revision 1.14  1999-09-23 18:01:18  heikki
+ * singleton optimising
+ *
+ * Revision 1.13  1999/09/20 15:48:06  heikki
  * Small changes
  *
  * Revision 1.12  1999/09/13 13:28:28  heikki

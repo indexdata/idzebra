@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.21 1999-09-21 17:36:43 heikki Exp $
+ * $Id: merge-d.c,v 1.22 1999-09-23 18:01:18 heikki Exp $
  *
  * bugs
  *   (none)
@@ -11,8 +11,6 @@
  * missing
  *
  * optimize
- *  - Input filter: Eliminate del-ins pairs, tell if only one entry (or none)
- *  - single-entry optimizing (keep the one entry in the dict, no block)
  *  - study and optimize block sizes (later)
  *  - find a way to decide the size of an empty diffblock (after merge)
  *  - On allocating more blocks (in append and merge), check the order of 
@@ -196,6 +194,7 @@ FILTER filter_open( ISAMD is, ISAMD_I data )
   F->m1 = F->m2 = 0;
   F->r1 = F->r2 = FILTER_NOTYET;
   filter_fill(F);
+  return F;
 }
 
 static void filter_close (FILTER F)
@@ -220,28 +219,58 @@ static int filter_read( FILTER F,
   }
   F->r1 = FILTER_NOTYET;
   return res;
-  
-#ifdef SKIPTHIS
-  char *k_ptr = (char*) k;
-  int res = (F->data->read_item)(F->data->clientData, &k_ptr, mode); 
-  if (F->is->method->debug > 9)  
-    logf(LOG_LOG,"filt_read: start %d.%d m=%d r=%d",
-       k->sysno, k->seqno, *mode, res);
-  return res;
-#endif
 }
 
-static int filter_empty(FILTER F)
+static int filter_isempty(FILTER F)
 {
-  return 0;
+  return ( (0 == F->r1) && (0 == F->r2)) ;
 }
 
 static int filter_only_one(FILTER F)
 {
-  return 0;
+  return ( (0 != F->r1) && (0 == F->r2));
 }
 
 
+
+
+/***************************************************************
+ * Singleton encoding
+ ***************************************************************/
+/* When there is only a single item, we don't allocate a block
+ * for it, but code it in the directory entry directly, if it
+ * fits.
+ */
+
+#define DEC_SYSBITS 15
+#define DEC_SEQBITS 15
+#define DEC_MASK(n) ((1<<(n))-1)
+
+int is_singleton(ISAMD_P ipos)
+{
+  return ( ipos != 0 ) && ( ipos & 1 );
+}
+
+
+int singleton_encode(struct it_key *k)
+/* encodes the key into one int. If it does not fit, returns 0 */
+{
+  if ( (k->sysno & DEC_MASK(DEC_SYSBITS) ) != k->sysno )
+    return 0;  /* no room dor sysno */
+  if ( (k->seqno & DEC_MASK(DEC_SYSBITS) ) != k->seqno )
+    return 0;  /* no room dor sysno */
+  return ( (k->sysno | (k->seqno << DEC_SYSBITS) ) << 1) | 1;
+}
+ 
+void singleton_decode (int code, struct it_key *k)
+{
+  assert ((code & 1) == 1 );
+  code = code >> 1; 
+  k->sysno = code & DEC_MASK(DEC_SYSBITS);
+  k->seqno = code >> DEC_SYSBITS ;
+} 
+ 
+ 
 /***************************************************************
  * General support routines
  ***************************************************************/
@@ -387,7 +416,7 @@ static void getDiffInfo(ISAMD_PP pp )
 
       if ( (pp->is->method->debug > 0) &&
          (pp->diffinfo[i].maxidx > pp->is->method->filecat[pp->cat].bsize) )
-      { /* bug-hunting, this fails on some long runs that log too much */
+      { 
          logf(LOG_LOG,"Bad MaxIx!!! %s:%d: diffidx=%d", 
                        __FILE__,__LINE__, diffidx);
          logf(LOG_LOG,"i=%d maxix=%d bsz=%d", i, pp->diffinfo[i].maxidx,
@@ -1024,8 +1053,40 @@ static int append_diffs(
 ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 {
    FILTER F = filter_open(is,data);
-   return append_diffs(is,ipos,F);
+   ISAMD_P rc=0;
+
+   if ( filter_isempty(F) ) /* can be, if del-ins of the same */
+   {
+      if (is->method->debug >9) 
+         logf(LOG_LOG,"isamd_appd: nothing to do");
+      filter_close(F);
+      return ipos; /* without doing anything at all */
+   }
+
+   if ( ( 0==ipos) && filter_only_one(F) )
+   {
+      struct it_key k;
+      int mode;
+      filter_read(F,&k,&mode);     
+      assert(mode); 
+      rc = singleton_encode(&k);
+      if (is->method->debug >9) 
+         logf(LOG_LOG,"isamd_appd: singleton %d (%x)",
+           rc,rc);
+      assert ( (rc==0) || is_singleton(rc) );
+   }
+   if ( 0==rc) /* either not single, or it did not fit */
+   {
+      rc = append_diffs(is,ipos,F)<<1;  /* not singleton */
+      assert ( ! is_singleton(rc) );  /*!*/
+   }
    filter_close(F);
+
+   if (is->method->debug >9) 
+      logf(LOG_LOG,"isamd_appd: ret %d=%x (%d=%x)",
+        rc,rc,ipos,ipos);
+
+   return rc;
 } /*  isamd_append */
 
 
@@ -1036,7 +1097,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.21  1999-09-21 17:36:43  heikki
+ * Revision 1.22  1999-09-23 18:01:18  heikki
+ * singleton optimising
+ *
+ * Revision 1.21  1999/09/21 17:36:43  heikki
  * Added filter function. Not much of effect on the small test set...
  *
  * Revision 1.20  1999/09/20 15:48:06  heikki

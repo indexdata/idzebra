@@ -1,4 +1,4 @@
-/* $Id: isamd-p.h,v 1.7 1999-09-20 15:48:06 heikki Exp $
+/* $Id: isamd-p.h,v 1.8 1999-09-23 18:01:18 heikki Exp $
  * Copyright (c) 1995-1996, Index Data.
  * See the file LICENSE for details.
  * Heikki Levanto
@@ -97,6 +97,11 @@ int isamd_read_block (ISAMD is, int cat, int pos, char *dst);
 int isamd_write_block (ISAMD is, int cat, int pos, char *src);
 void isamd_free_diffs(ISAMD_PP pp);
 
+int is_singleton(ISAMD_P ipos);
+void singleton_decode (int code, struct it_key *k);
+int singleton_encode(struct it_key *k);
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -105,7 +110,10 @@ void isamd_free_diffs(ISAMD_PP pp);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.7  1999-09-20 15:48:06  heikki
+ * Revision 1.8  1999-09-23 18:01:18  heikki
+ * singleton optimising
+ *
+ * Revision 1.7  1999/09/20 15:48:06  heikki
  * Small changes
  *
  * Revision 1.6  1999/08/25 18:09:23  heikki
