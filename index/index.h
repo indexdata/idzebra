@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.52  1997-09-22 12:39:06  adam
+ * Revision 1.53  1997-09-25 14:54:43  adam
+ * WIN32 files lock support.
+ *
+ * Revision 1.52  1997/09/22 12:39:06  adam
  * Added get_pos method for the ranked result sets.
  *
  * Revision 1.51  1997/09/18 08:59:19  adam
@@ -302,9 +305,13 @@ int zebraIndexWait (int commitPhase);
 #define FNAME_ORG_LOCK    "zebraorg.LCK"
 #define FNAME_TOUCH_TIME  "zebraidx.time"
 
-int zebraLock (int fd, int wr);
-int zebraLockNB (int fd, int wr);
-int zebraUnlock (int fd);
+typedef struct zebra_lock_info *ZebraLockHandle;
+ZebraLockHandle zebra_lock_create(const char *file, int excl_flag);
+void zebra_lock_destroy (ZebraLockHandle h);
+int zebra_lock (ZebraLockHandle h);
+int zebra_lock_nb (ZebraLockHandle h);
+int zebra_unlock (ZebraLockHandle h);
+int zebra_lock_fd (ZebraLockHandle h);
 
 void init_charmap(Res res);
 const char **map_chrs_input(void *vp, const char **from, int len);

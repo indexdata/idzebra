@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.8  1997-09-17 12:19:15  adam
+ * Revision 1.9  1997-09-25 14:54:43  adam
+ * WIN32 files lock support.
+ *
+ * Revision 1.8  1997/09/17 12:19:15  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -36,7 +39,11 @@
  */
 #include <stdio.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
@@ -44,8 +51,8 @@
 
 #include "zserver.h"
 
-static int server_lock_cmt = -1;
-static int server_lock_org = -1;
+static ZebraLockHandle server_lock_cmt = NULL;
+static ZebraLockHandle server_lock_org = NULL;
 
 int zebraServerLock (Res res, int commitPhase)
 {
@@ -54,20 +61,18 @@ int zebraServerLock (Res res, int commitPhase)
     
     zebraLockPrefix (res, pathPrefix);
 
-    if (server_lock_cmt == -1)
+    if (!server_lock_cmt)
     {
         sprintf (path, "%s%s", pathPrefix, FNAME_COMMIT_LOCK);
-        if ((server_lock_cmt = open (path, O_BINARY|O_CREAT|O_RDWR, 0666))
-            == -1)
+        if (!(server_lock_cmt = zebra_lock_create (path, 0)))
         {
             logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
             return -1;
         }
-        assert (server_lock_org == -1);
+        assert (server_lock_org == NULL);
 
         sprintf (path, "%s%s", pathPrefix, FNAME_ORG_LOCK);
-        if ((server_lock_org = open (path, O_BINARY|O_CREAT|O_RDWR, 0666))
-            == -1)
+        if (!(server_lock_org = zebra_lock_create (path, 0)))
         {
             logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
             return -1;
@@ -76,29 +81,29 @@ int zebraServerLock (Res res, int commitPhase)
     if (commitPhase)
     {
         logf (LOG_DEBUG, "Server locks org");
-        zebraLock (server_lock_org, 0);
+        zebra_lock (server_lock_org);
     }
     else
     {
         logf (LOG_DEBUG, "Server locks cmt");
-        zebraLock (server_lock_cmt, 0);
+        zebra_lock (server_lock_cmt);
     }
     return 0;
 }
 
 void zebraServerUnlock (int commitPhase)
 {
-    if (server_lock_org == -1)
+    if (server_lock_org == NULL)
         return;
     if (commitPhase)
     {
         logf (LOG_DEBUG, "Server unlocks org");
-        zebraUnlock (server_lock_org);
+        zebra_unlock (server_lock_org);
     }
     else
     {
         logf (LOG_DEBUG, "Server unlocks cmt");
-        zebraUnlock (server_lock_cmt);
+        zebra_unlock (server_lock_cmt);
     }
 }
 

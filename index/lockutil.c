@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.8  1997-09-17 12:19:15  adam
+ * Revision 1.9  1997-09-25 14:54:43  adam
+ * WIN32 files lock support.
+ *
+ * Revision 1.8  1997/09/17 12:19:15  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -42,6 +45,7 @@
 #include <sys/types.h>
 #ifdef WINDOWS
 #include <io.h>
+#include <sys/locking.h>
 #else
 #include <unistd.h>
 #endif
@@ -49,6 +53,45 @@
 #include "index.h"
 
 static char *lockDir = NULL;
+
+struct zebra_lock_info {
+    int fd;
+    int excl_flag;
+};
+
+ZebraLockHandle zebra_lock_create (const char *name, int excl_flag)
+{
+    ZebraLockHandle h = xmalloc (sizeof(*h));
+    h->excl_flag = excl_flag;
+    h->fd = -1;
+#ifdef WINDOWS
+    if (!h->excl_flag)
+        h->fd = open (name, O_BINARY|O_RDONLY);
+    if (h->fd == -1)
+        h->fd = open (name, ((h->excl_flag > 1) ? O_EXCL : 0)|
+	    (O_BINARY|O_CREAT|O_RDWR), 0666);
+#else
+    h->fd= open (name, ((h->excl_flag > 1) ? O_EXCL : 0)|
+	    (O_BINARY|O_CREAT|O_RDWR|O_SYNC), 0666);
+#endif
+    if (h->fd == -1)
+    {
+	if (h->excl_flag <= 1)
+            logf (LOG_WARN|LOG_ERRNO, "open %s", name);
+	xfree (h);
+	return NULL;
+    }
+    return h;
+}
+
+void zebra_lock_destroy (ZebraLockHandle h)
+{
+    if (!h)
+	return;
+    if (h->fd != -1)
+	close (h->fd);
+    xfree (h);
+}
 
 void zebraLockPrefix (Res res, char *pathPrefix)
 {
@@ -61,7 +104,10 @@ void zebraLockPrefix (Res res, char *pathPrefix)
         strcat (pathPrefix, "/");
 }
 
-static int intLock (int fd, int type, int cmd)
+#ifdef WINDOWS
+
+#else
+static int unixLock (int fd, int type, int cmd)
 {
     struct flock area;
     area.l_type = type;
@@ -69,26 +115,36 @@ static int intLock (int fd, int type, int cmd)
     area.l_len = area.l_start = 0L;
     return fcntl (fd, cmd, &area);
 }
+#endif
 
-int zebraLock (int fd, int wr)
+int zebra_lock (ZebraLockHandle h)
 {
-#if 0
-    return intLock (fd, wr ? F_EXLCK : F_SHLCK, F_SETLKW);
+#ifdef WINDOWS
+    return _locking (h->fd, _LK_LOCK, 1);
 #else
-    return intLock (fd, wr ? F_WRLCK : F_RDLCK, F_SETLKW);
+    return unixLock (h->fd, h->excl_flag ? F_WRLCK : F_RDLCK, F_SETLKW);
 #endif
 }
 
-int zebraLockNB (int fd, int wr)
+int zebra_lock_nb (ZebraLockHandle h)
 {
-#if 0
-    return intLock (fd, wr ? F_EXLCK : F_SHLCK, F_SETLK);
+#ifdef WINDOWS
+    return _locking (h->fd, _LK_NBLCK, 1);
 #else
-    return intLock (fd, wr ? F_WRLCK : F_RDLCK, F_SETLK);
+    return unixLock (h->fd, h->excl_flag ? F_WRLCK : F_RDLCK, F_SETLK);
 #endif
 }
 
-int zebraUnlock (int fd)
+int zebra_unlock (ZebraLockHandle h)
 {
-    return intLock (fd, F_UNLCK, F_SETLKW);
+#ifdef WINDOWS
+    return _locking (h->fd, _LK_UNLCK, 1);
+#else
+    return unixLock (h->fd, F_UNLCK, F_SETLKW);
+#endif
+}
+
+int zebra_lock_fd (ZebraLockHandle h)
+{
+    return h->fd;
 }
