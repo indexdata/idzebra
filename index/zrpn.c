@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zrpn.c,v 1.114 2002-04-12 14:55:22 adam Exp $
+ * $Id: zrpn.c,v 1.115 2002-04-13 18:16:43 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -85,17 +85,17 @@ static int attr_find_ex (AttrType *src, oid_value *attributeSetP,
             case Z_AttributeValue_complex:
                 if (src->minor >= element->value.complex->num_list)
 		    break;
+                if (element->attributeSet && attributeSetP)
+                {
+                    oident *attrset;
+                    
+                    attrset = oid_getentbyoid (element->attributeSet);
+                    *attributeSetP = attrset->value;
+                }
                 if (element->value.complex->list[src->minor]->which ==  
                     Z_StringOrNumeric_numeric)
 		{
 		    ++(src->minor);
-		    if (element->attributeSet && attributeSetP)
-		    {
-			oident *attrset;
-			
-			attrset = oid_getentbyoid (element->attributeSet);
-			*attributeSetP = attrset->value;
-		    }
 		    return
 			*element->value.complex->list[src->minor-1]->u.numeric;
 		}
@@ -856,9 +856,9 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     truncation_value = attr_find (&truncation, NULL);
     logf (LOG_DEBUG, "truncation value %d", truncation_value);
 
-    if (use_value == -1)
+    if (use_value == -1)    /* no attribute - assumy "any" */
         use_value = 1016;
-    if (use_value == -2)
+    if (use_value == -2)    /* string attribute - assumy "any" */
         use_value = 1016;
 
     for (base_no = 0; base_no < num_bases; base_no++)
@@ -1931,8 +1931,8 @@ static RSET rpn_search_xpath (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     oid_value curAttributeSet = attributeSet;
     char term_dict[2048];
     int base_no;
+    int reg_type = '0';
     struct grep_info grep_info;
-    struct rpn_char_map_info rcmi;
 
     yaz_log (LOG_LOG, "rpn_search_xpath 1");
     attr_init (&use, zapt, 1);
@@ -1949,14 +1949,14 @@ static RSET rpn_search_xpath (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         return rset;
     }
 
-    rpn_char_map_prepare (zh->reg, '0', &rcmi);
-
-    if (grep_info_prepare (zh, zapt, &grep_info, '0', stream))
+    dict_grep_cmap (zh->reg->dict, 0, 0);
+    if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
 	return 0;
 
     yaz_log (LOG_LOG, "rpn_search_xpath 2");
     for (base_no = 0; base_no < num_bases; base_no++)
     {
+        const char *termp = use_string;
         rset_between_parms parms;
         RSET rset_start_tag, rset_end_tag;
         int ord, ord_len, i, r, max_pos;
@@ -1986,8 +1986,11 @@ static RSET rpn_search_xpath (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         term_dict[prefix_len++] = ')';
         term_dict[prefix_len++] = 1;
-        term_dict[prefix_len++] = '0';
+        term_dict[prefix_len++] = reg_type;
+
+        termp = use_string;
         strcpy (term_dict+prefix_len, use_string);
+        
         grep_info.isam_p_indx = 0;
         yaz_log (LOG_LOG, "rpn_search_xpath 3 %s", term_dict+prefix_len);
         r = dict_lookup_grep (zh->reg->dict, term_dict, 0,
@@ -2016,8 +2019,12 @@ static RSET rpn_search_xpath (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         term_dict[prefix_len++] = ')';
         term_dict[prefix_len++] = 1;
-        term_dict[prefix_len++] = '0';
+        term_dict[prefix_len++] = reg_type;
+
+        termp = use_string;
+
         strcpy (term_dict+prefix_len, use_string);
+
         grep_info.isam_p_indx = 0;
         r = dict_lookup_grep (zh->reg->dict, term_dict, 0,
                               &grep_info, &max_pos, 0, grep_handle);

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: extract.c,v 1.115 2002-04-04 20:50:36 adam Exp $
+ * $Id: extract.c,v 1.116 2002-04-13 18:16:43 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -44,7 +44,7 @@ static void logRecord (int showFlag)
 static void extract_init (struct recExtractCtrl *p, RecWord *w)
 {
     w->zebra_maps = p->zebra_maps;
-    w->seqnos = p->seqno;
+    w->seqno = 1;
     w->attrSet = VAL_BIB1;
     w->attrUse = 1016;
     w->reg_type = 'w';
@@ -1359,11 +1359,11 @@ void extract_add_index_string (RecWord *p, const char *string,
     unsigned short attrUse;
     int lead = 0;
     int diff = 0;
-    int *pseqno = &p->seqnos[p->reg_type];
+    int *pseqno = &p->seqno;
     ZebraHandle zh = p->extractCtrl->handle;
     ZebraExplainInfo zei = zh->reg->zei;
     struct recKeys *keys = &zh->reg->keys;
-
+    
     if (keys->buf_used+1024 > keys->buf_max)
     {
         char *b;
@@ -1434,8 +1434,6 @@ void extract_add_index_string (RecWord *p, const char *string,
         dst += sizeof(*pseqno);
     }
     keys->buf_used = dst - keys->buf;
-    if (*pseqno)
-	(*pseqno)++;
 }
 
 static void extract_add_sort_string (RecWord *p, const char *string,
@@ -1510,8 +1508,8 @@ static void extract_add_incomplete_field (RecWord *p)
 	if (!i)
 	    return;
 	extract_add_string (p, buf, i);
+        p->seqno++;
     }
-    (p->seqnos[p->reg_type])++; /* to separate this from next one  */
 }
 
 static void extract_add_complete_field (RecWord *p)

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.34  2000-03-20 19:08:36  adam
+ * Revision 1.35  2002-04-13 18:16:42  adam
+ * More XPATH work; common sequence numbers for extract keys
+ *
+ * Revision 1.34  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -142,7 +145,7 @@ typedef struct {
     unsigned reg_type;
     char *string;
     int  length;
-    int  *seqnos;
+    int  seqno;
     ZebraMaps zebra_maps;
     struct recExtractCtrl *extractCtrl;
 } RecWord;

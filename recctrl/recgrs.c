@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: recgrs.c,v $
- * Revision 1.45  2002-04-12 14:40:42  adam
+ * Revision 1.46  2002-04-13 18:16:43  adam
+ * More XPATH work; common sequence numbers for extract keys
+ *
+ * Revision 1.45  2002/04/12 14:40:42  adam
  * Work on XPATH
  *
  * Revision 1.44  2002/04/11 20:09:47  adam
@@ -477,10 +480,9 @@ static void index_termlist (data1_node *par, data1_node *n,
     }
 }
 
-static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
+static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
+                    RecWord *wrd)
 {
-    RecWord wrd;
-    (*p->init)(p, &wrd);      /* set defaults */
     for (; n; n = n->next)
     {
 	if (p->flagShowRecords) /* display element description to user */
@@ -522,14 +524,14 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 
 	if (n->which == DATA1N_tag)
 	{
-            index_termlist (n, n, p, level, &wrd);
+            index_termlist (n, n, p, level, wrd);
             /* index start tag */
             if (!n->root->u.root.absyn)
-                index_xpath (n, p, level, &wrd, 1);
+                index_xpath (n, p, level, wrd, 1);
 	}
 
 	if (n->child)
-	    if (dumpkeys(n->child, p, level + 1) < 0)
+	    if (dumpkeys(n->child, p, level + 1, wrd) < 0)
 		return -1;
 
 
@@ -551,9 +553,9 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	    }
 
 	    if (par)
-		index_termlist (par, n, p, level, &wrd);
+		index_termlist (par, n, p, level, wrd);
             if (!n->root->u.root.absyn)
-                index_xpath (n, p, level, &wrd, 1016);
+                index_xpath (n, p, level, wrd, 1016);
 
  	}
 
@@ -561,7 +563,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	{
             /* index end tag */
             if (!n->root->u.root.absyn)
-                index_xpath (n, p, level, &wrd, 2);
+                index_xpath (n, p, level, wrd, 2);
 	}
 
 
@@ -577,6 +579,7 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
 {
     oident oe;
     int oidtmp[OID_SIZE];
+    RecWord wrd;
 
     oe.proto = PROTO_Z3950;
     oe.oclass = CLASS_SCHEMA;
@@ -587,7 +590,8 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
         if ((oid_ent_to_oid (&oe, oidtmp)))
             (*p->schemaAdd)(p, oidtmp);
     }
-    return dumpkeys(n, p, 0);
+    (*p->init)(p, &wrd);
+    return dumpkeys(n, p, 0, &wrd);
 }
 
 static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
@@ -597,6 +601,7 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
     struct grs_read_info gri;
     oident oe;
     int oidtmp[OID_SIZE];
+    RecWord wrd;
 
     gri.readf = p->readf;
     gri.seekf = p->seekf;
@@ -626,7 +631,8 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
 #if 0
     data1_pr_tree (p->dh, n, stdout);
 #endif
-    if (dumpkeys(n, p, 0) < 0)
+    (*p->init)(p, &wrd);
+    if (dumpkeys(n, p, 0, &wrd) < 0)
     {
 	data1_free_tree(p->dh, n);
 	return RECCTRL_EXTRACT_ERROR;
