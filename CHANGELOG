@@ -1,4 +1,7 @@
 
+Bug fix: sort index was not properly modified on 
+record updates/deletes.
+
 Move data1 to Zebra (used to be part of YAZ).
 
 --- 1.3.3 2002/10/05
