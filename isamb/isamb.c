@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.33 2004-06-01 18:04:41 adam Exp $
+/* $Id: isamb.c,v 1.34 2004-06-02 06:51:06 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1120,6 +1120,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
     {
         while ( (p->offset == p->size) && !descending )
         {  /* end of this block - climb higher */
+	    assert (p->offset <= p->size);
 #if ISAMB_DEBUG
             logf(LOG_DEBUG,"isamb_pp_forward climbing from l=%d",
                             pp->level);
@@ -1153,21 +1154,23 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
                 src += item_len;
                 decode_ptr(&src,&pos);
                 p->offset = src - (char*) p->bytes;
-                break; /* even if this puts us at the end of the block, we need to */
-                       /* descend to the last pos. UGLY coding, clean up some */
-                       /* day */
+                break; /* even if this puts us at the end of the block, we
+			  need to descend to the last pos. UGLY coding,
+			  clean up some day */
             }
         }
         if (!p->leaf)
         { 
             src = p->bytes + p->offset;
             if (p->offset == p->size)
-                cmp=-2 ; /* descend to the last node, as we have no value to cmp */
+                cmp=-2 ; /* descend to the last node, as we have
+			    no value to cmp */
             else
             {
                 decode_ptr(&src, &item_len);
 #if ISAMB_DEBUG
-                logf(LOG_DEBUG,"isamb_pp_forward (B) on a high node. ofs=%d sz=%d nxtpos=%d ",
+                logf(LOG_DEBUG,"isamb_pp_forward (B) on a high node. "
+		     "ofs=%d sz=%d nxtpos=%d ",
                         p->offset,p->size,pos);
 		(*pp->isamb->method->log_item)(LOG_DEBUG, src, "");
 #endif
@@ -1209,7 +1212,8 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
                 (pp->skipped_nodes[pp->maxlevel - pp->level -1])++;
 #if ISAMB_DEBUG
                 logf(LOG_DEBUG,
-                    "isamb_pp_forward: skipping block on level %d, noting on %d (%d)",
+                    "isamb_pp_forward: skipping block on level %d, noting "
+		     "on %d (%d)",
                     pp->level, pp->maxlevel - pp->level-1 , 
                     pp->skipped_nodes[pp->maxlevel - pp->level-1 ]);
 #endif
@@ -1219,6 +1223,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
         } /* not on a leaf */
         else
         { /* on a leaf */
+	    assert (p->offset < p->size);
             src = p->bytes + p->offset;
             dst=buf;
             (*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
@@ -1238,13 +1243,13 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
 #if ISAMB_DEBUG
                 if (untilbuf)
 		{
-		    (*pp->isamb->method->log_item)(LOG_DEBUG, buf, 
-						   "isamb_pp_forward returning 1");
+		    (*pp->isamb->method->log_item)(
+			LOG_DEBUG, buf,  "isamb_pp_forward returning 1");
 		}
                 else
 		{
-		    (*pp->isamb->method->log_item)(LOG_DEBUG, buf, 
-						   "isamb_pp_read returning 1 (fwd)");
+		    (*pp->isamb->method->log_item)(
+			LOG_DEBUG, buf, "isamb_pp_read returning 1 (fwd)");
 		}
 #endif
                 pp->returned_numbers++;
