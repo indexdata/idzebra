@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.17 2003-07-04 14:00:22 heikki Exp $
+/* $Id: zebrash.c,v 1.18 2003-07-04 14:25:51 heikki Exp $
    Copyright (C) 2002,2003
    Index Data Aps
 
@@ -133,6 +133,16 @@ int cmd_echo( char *args[], WRBUF outbuff)
  
 int cmd_quit( char *args[], WRBUF outbuff)
 {
+    if (zs)
+    {
+        onecommand("zebra_close",outbuff,"");
+        zs=0;
+    }
+    if (zh)
+    {
+        onecommand("zebra_stop",outbuff,"");
+        zh=0;
+    }
     wrbuf_puts(outbuff, "bye");
     return -99; /* special stop signal */
 }
@@ -438,6 +448,7 @@ static int cmd_show( char *args[], WRBUF outbuff)
         }
         nextrecno=start+nrecs+1;
     }
+    odr_destroy(odr);
     return rc;
 }
 /**************************************)
@@ -736,6 +747,7 @@ void shell()
 	    Zerrors(outbuff);
   	    printf("%s\n", wrbuf_buf(outbuff));
     } /* while */
+    wrbuf_free(outbuff,1);
 } /* shell() */
   
  
