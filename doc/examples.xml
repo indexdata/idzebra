@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.12 2002-10-18 08:31:37 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.13 2002-10-18 16:16:59 mike Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -148,7 +148,7 @@
    structure of the documents in order to find them.  For example,
    when we wanted to know the genera for which Matt Wedel is an
    author
-   (<phrase role="taxon">Sauroposeidon proteles</phrase>),
+   (<foreignphrase role="taxon">Sauroposeidon proteles</foreignphrase>),
    we had to formulate a complex XPath 
    <literal>1=/GENUS/SPECIES/AUTHOR/@name</literal>
    which embodies the knowledge that author names are specified in the
