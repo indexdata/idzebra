@@ -1,20 +1,20 @@
 # Copyright (C) 1994-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.23 1996-05-22 08:23:41 adam Exp $
+# $Id: Makefile,v 1.24 1996-05-31 09:07:17 quinn Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
 
 YAZLIB=-lyaz
-YAZINC=
+YAZINC=-I../../yaz/include
 
 INCLUDE=-I../include $(YAZINC)
 TPROG=opt-test
 DEFS=$(INCLUDE)
 CPP=$(CC) -E
 LIB=../lib/alexutil.a
-PO = res.o alexpath.o common.o
+PO = res.o alexpath.o common.o charmap.o
 
 all: $(LIB)
 

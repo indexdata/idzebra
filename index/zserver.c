@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.38  1996-05-14 11:34:01  adam
+ * Revision 1.39  1996-05-31 09:07:05  quinn
+ * Work on character-set handling
+ *
+ * Revision 1.38  1996/05/14  11:34:01  adam
  * Scan support in multiple registers/databases.
  *
  * Revision 1.37  1996/05/14  06:16:48  adam
@@ -269,7 +272,7 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     logf (LOG_LOG, "ResultSet '%s'", q->setname);
     switch (q->query->which)
     {
-    case Z_Query_type_1:
+    case Z_Query_type_1: case Z_Query_type_101:
         r.errcode = rpn_search (&server_info, q->query->u.type_1,
                                 q->num_bases, q->basenames, q->setname,
                                 &r.hits);

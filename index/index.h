@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.39  1996-05-14 14:04:33  adam
+ * Revision 1.40  1996-05-31 09:06:58  quinn
+ * Work on character-set handling
+ *
+ * Revision 1.39  1996/05/14  14:04:33  adam
  * In zebraidx, the 'stat' command is improved. Statistics about ISAM/DICT
  * is collected.
  *
@@ -249,3 +252,6 @@ int zebraIndexWait (int commitPhase);
 int zebraLock (int fd, int wr);
 int zebraLockNB (int fd, int wr);
 int zebraUnlock (int fd);
+
+void init_charmap(void);
+char **map_chrs_input(char **from, int len);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.41  1996-05-14 14:04:34  adam
+ * Revision 1.42  1996-05-31 09:07:01  quinn
+ * Work on character-set handling
+ *
+ * Revision 1.41  1996/05/14  14:04:34  adam
  * In zebraidx, the 'stat' command is improved. Statistics about ISAM/DICT
  * is collected.
  *
@@ -232,6 +235,7 @@ int main (int argc, char **argv)
                     }
                     data1_tabpath = res_get (common_resource, "profilePath");
                     bf_lockDir (res_get (common_resource, "lockPath"));
+		    init_charmap();
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
