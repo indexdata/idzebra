@@ -1,9 +1,9 @@
-# $Id: Makefile.am,v 1.1 2003-10-07 09:18:56 adam Exp $
+# $Id: Makefile.am,v 1.2 2003-10-20 18:56:00 adam Exp $
 
-check_SCRIPTS = test1.sh
+check_SCRIPTS = test1.sh test2.sh
 
 TESTS = $(check_SCRIPTS)
 
-EXTRA_DIST = zebra.cfg record.abs m1.xml m2.xml m3.xml \
+EXTRA_DIST = zebra.cfg record.abs m1.xml m2.xml m3.xml sample-marc \
  $(check_SCRIPTS)
 
