@@ -1,0 +1,14 @@
+# VMware software license  - All data changed to protect everybody
+Fields = "Cpt, Name, LicenseType, LicenseClass, Count, LicenseKey, ProductID, ProductType" 
+StartFields = "Cpt, Name, LicenseType, LicenseClass, Field2" 
+Field2 = "Count, LicenseKey, ProductID, ProductType" 
+Cpt = "COPYRIGHT (c) VMware, Inc. 1999" 
+Name = "Index Data 1 of 1" 
+LicenseType = "User" 
+LicenseClass = "Commercial" 
+Count = "1 of 1" 
+LicenseKey = "xxxxxx.xxxxx.xx.x" 
+ProductID = "VMware for Linux" 
+ProductType = "x.x" 
+
+Hash = 3xxxxxxx-xxxxxxxx-xxxxxxxx-xxxxxxxx-xxxxxxxx 
