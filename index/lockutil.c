@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.2  1995-12-11 11:43:29  adam
+ * Revision 1.3  1995-12-12 16:00:57  adam
+ * System call sync(2) used after update/commit.
+ * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
+ * and F_RDLCK.
+ *
+ * Revision 1.2  1995/12/11  11:43:29  adam
  * Locking based on fcntl instead of flock.
  * Setting commitEnable removed. Command line option -n can be used to
  * prevent commit if commit setting is defined in the configuration file.
@@ -48,12 +53,20 @@ static int intLock (int fd, int type, int cmd)
 
 int zebraLock (int fd, int wr)
 {
+#if 1
+    return intLock (fd, wr ? F_EXLCK : F_SHLCK, F_SETLKW);
+#else
     return intLock (fd, wr ? F_WRLCK : F_RDLCK, F_SETLKW);
+#endif
 }
 
 int zebraLockNB (int fd, int wr)
 {
-    return intLock (fd, wr ? F_WRLCK : F_RDLCK, F_SETLK);
+#if 1
+    return intLock (fd, wr ? F_EXLCK : F_SHLCK, F_SETLKW);
+#else
+    return intLock (fd, wr ? F_WRLCK : F_RDLCK, F_SETLKW);
+#endif
 }
 
 int zebraUnlock (int fd)

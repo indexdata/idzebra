@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.43  1995-12-11 09:12:46  adam
+ * Revision 1.44  1995-12-12 16:00:54  adam
+ * System call sync(2) used after update/commit.
+ * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
+ * and F_RDLCK.
+ *
+ * Revision 1.43  1995/12/11  09:12:46  adam
  * The rec_get function returns NULL if record doesn't exist - will
  * happen in the server if the result set records have been deleted since
  * the creation of the set (i.e. the search).
@@ -184,7 +189,6 @@ void key_open (int mem)
 {
     if (mem < 50000)
         mem = 50000;
-    logf (LOG_LOG, "key_open %d", mem);
     key_buf = xmalloc (mem);
     ptr_top = mem/sizeof(char*);
     ptr_i = 0;
@@ -311,7 +315,6 @@ void key_flush (void)
 int key_close (void)
 {
     key_flush ();
-    logf (LOG_LOG, "buf free");
     xfree (key_buf);
     rec_close (&records);
     dict_close (matchDict);

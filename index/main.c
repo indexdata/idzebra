@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.29  1995-12-11 11:43:30  adam
+ * Revision 1.30  1995-12-12 16:00:59  adam
+ * System call sync(2) used after update/commit.
+ * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
+ * and F_RDLCK.
+ *
+ * Revision 1.29  1995/12/11  11:43:30  adam
  * Locking based on fcntl instead of flock.
  * Setting commitEnable removed. Command line option -n can be used to
  * prevent commit if commit setting is defined in the configuration file.
@@ -148,6 +153,7 @@ int main (int argc, char **argv)
         " update <dir>  Update index with files below <dir>.\n"
 	"               If <dir> is empty filenames are read from stdin.\n"
         " delete <dir>  Delete index with files below <dir>.\n"
+        " commit        Commit changes\n"
         "Options:\n"
 	" -t <type>     Index files as <type> (grs or text).\n"
 	" -c <config>   Read configuration file <config>.\n"
@@ -201,6 +207,7 @@ int main (int argc, char **argv)
                         zebraIndexWait (1);
                         logf (LOG_LOG, "Commit execute");
                         bf_commitExec ();
+                        sync ();
                         zebraIndexLockMsg ("d");
                         zebraIndexWait (0);
                         logf (LOG_LOG, "Commit clean");
@@ -212,12 +219,6 @@ int main (int argc, char **argv)
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
                 {
                     zebraIndexLock (0);
-                    bf_cache (0);
-                    rec_prstat ();
-                }
-                else if (!strcmp (arg, "cstat") || !strcmp (arg, "cstatus"))
-                {
-                    zebraIndexLock (1);
                     rval = res_get (common_resource, "commit");
                     if (rval && *rval)
                     {
@@ -270,6 +271,7 @@ int main (int argc, char **argv)
                     logf (LOG_LOG, "Merging with index");
                     key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, nsections,
                                60);
+                    sync ();
                 }
             }
         }

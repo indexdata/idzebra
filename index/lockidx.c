@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.3  1995-12-11 11:43:29  adam
+ * Revision 1.4  1995-12-12 16:00:57  adam
+ * System call sync(2) used after update/commit.
+ * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
+ * and F_RDLCK.
+ *
+ * Revision 1.3  1995/12/11  11:43:29  adam
  * Locking based on fcntl instead of flock.
  * Setting commitEnable removed. Command line option -n can be used to
  * prevent commit if commit setting is defined in the configuration file.
@@ -134,11 +139,17 @@ void zebraIndexLock (int commitNow)
     sprintf (path, "%s%s", pathPrefix, FNAME_MAIN_LOCK);
     while (1)
     {
-        lock_fd = open (path, O_CREAT|O_RDWR|O_EXCL|O_SYNC, 0666);
+        lock_fd = open (path, O_CREAT|O_RDWR|O_EXCL, 0666);
         if (lock_fd == -1)
         {
             lock_fd = open (path, O_RDONLY);
-            assert (lock_fd != -1);
+            if (lock_fd == -1) 
+            {
+                if (errno == ENOENT)
+                    continue;
+                logf (LOG_FATAL|LOG_ERRNO, "open %s", path);
+                exit (1);
+            }
             if (zebraLockNB (lock_fd, 1) == -1)
             {
                 if (errno == EWOULDBLOCK)
