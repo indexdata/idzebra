@@ -1,6 +1,4 @@
 
-EXTRA_DIST = zebra.cfg test.sh zebra1.cfg zebra2.cfg \
- t1.sh t2.sh t3.sh t4.sh t5.sh t6.sh t7.sh t8.sh
 
 dist-hook:
 	-mkdir $(distdir)/records
@@ -9,6 +7,8 @@ dist-hook:
 TESTS = test01.sh test02.sh test03.sh test04.sh \
         test1.sh test2.sh \
 	timing1.sh
+
+EXTRA_DIST = $(TESTS) zebra.cfg zebra1.cfg zebra2.cfg
 
 # FIXME:
 # test02.sh fails
