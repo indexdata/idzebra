@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.49.2.1 2004-11-15 21:53:08 adam Exp $
+/* $Id: zsets.c,v 1.49.2.2 2005-01-07 14:06:16 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -55,6 +55,10 @@ struct zebra_set {
     int term_entries_max;
     struct zebra_set *next;
     int locked;
+
+    int cache_position;  /* last position */
+    RSFD cache_rfd;      /* rfd (NULL if not existing) */
+    int cache_psysno;
 };
 
 struct zset_sort_entry {
@@ -88,7 +92,7 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,
     zebraSet->locked = 1;
     zebraSet->rpn = 0;
     zebraSet->nmem = m;
-
+    
     zebraSet->num_bases = num_bases;
     zebraSet->basenames = 
         nmem_malloc (zebraSet->nmem, num_bases * sizeof(*zebraSet->basenames));
@@ -201,13 +205,17 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
 	if (!ov || s->locked)
 	    return NULL;
 	if (s->rset)
+	{
+	    if (s->cache_rfd)
+		rset_close(s->rset, s->cache_rfd);
 	    rset_delete (s->rset);
+	}
 	if (s->nmem)
 	    nmem_destroy (s->nmem);
     }
     else
     {
-	const char *sort_max_str = zebra_get_resource(zh, "sortmax", "1000");
+	const char *sort_max_str = zebra_get_resource(zh, "sortmax", "2");
 
 	yaz_log (LOG_DEBUG, "adding result set %s", name);
 	s = (ZebraSet) xmalloc (sizeof(*s));
@@ -237,6 +245,8 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     s->rset = 0;
     s->nmem = 0;
     s->rpn = 0;
+    s->cache_position = 0;
+    s->cache_rfd = 0;
     return s;
 }
 
@@ -268,8 +278,14 @@ void resultSetInvalidate (ZebraHandle zh)
     for (; s; s = s->next)
     {
         if (s->rset)
+	{
+	    if (s->cache_rfd)
+		rset_close(s->rset, s->cache_rfd);
             rset_delete (s->rset);
+	}
         s->rset = 0;
+	s->cache_rfd = 0;
+	s->cache_position = 0;
     }
 }
 
@@ -309,7 +325,11 @@ void resultSetDestroy (ZebraHandle zh, int num, char **names,int *statuses)
 	    if (s->nmem)
 		nmem_destroy (s->nmem);
 	    if (s->rset)
+	    {
+		if (s->cache_rfd)
+		    rset_close (s->rset, s->cache_rfd);
 		rset_delete (s->rset);
+	    }
 	    xfree (s->name);
 	    xfree (s);
 	}
@@ -393,7 +413,20 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 		position = sort_info->num_entries;
 	    while (num_i < num && positions[num_i] < position)
 		num_i++;
-	    rfd = rset_open (rset, RSETF_READ);
+	    
+	    if (sset->cache_rfd && 
+		num_i < num && positions[num_i] > sset->cache_position)
+	    {
+		position = sset->cache_position;
+		rfd = sset->cache_rfd;
+		psysno = sset->cache_psysno;
+	    } 
+	    else
+	    {
+		if (sset->cache_rfd)
+		    rset_close(rset, sset->cache_rfd);
+		rfd = rset_open (rset, RSETF_READ);
+	    }
 	    while (num_i < num && rset_read (rset, rfd, &key, &term_index))
 	    {
 		if (key.sysno != psysno)
@@ -419,7 +452,9 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 		    }
 		}
 	    }
-	    rset_close (rset, rfd);
+	    sset->cache_position = position;
+	    sset->cache_psysno = psysno;
+	    sset->cache_rfd = rfd;
 	}
     }
     return sr;
