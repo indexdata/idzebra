@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zinfo.c,v 1.26 2002-04-11 20:09:47 adam Exp $
+ * $Id: zinfo.c,v 1.27 2002-04-15 09:07:10 adam Exp $
  */
 
 #include <stdlib.h>
@@ -1451,7 +1451,7 @@ static void att_loadset(void *p, const char *n, const char *name)
 {
     data1_handle dh = (data1_handle) p;
     if (!data1_get_attset (dh, name))
-	logf (LOG_WARN, "Couldn't load attribute set %s", name);
+	logf (LOG_WARN, "Directive attset failed for %s", name);
 }
 
 void zebraExplain_loadAttsets (data1_handle dh, Res res)

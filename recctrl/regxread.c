@@ -1,209 +1,8 @@
 /*
- * Copyright (C) 1994-2001, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Log: regxread.c,v $
- * Revision 1.38  2002-04-04 20:50:37  adam
- * Multi register works with record paths and data1 profile path
- *
- * Revision 1.37  2001/05/29 08:51:59  adam
- * More fixes for character encodings.
- *
- * Revision 1.36  2001/05/22 21:02:26  adam
- * Fixes for Tcl UTF8 character handling.
- *
- * Revision 1.35  2001/03/29 21:31:31  adam
- * Fixed "record begin" for Tcl filter.
- *
- * Revision 1.34  2000/11/29 14:24:01  adam
- * Script configure uses yaz pthreads options. Added locking for
- * zebra_register_{lock,unlock}.
- *
- * Revision 1.33  1999/11/30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.32  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.31  1999/07/14 13:05:29  adam
- * Tcl filter works with objects when TCL is version 8 or later; filter
- * works with strings otherwise (slow).
- *
- * Revision 1.30  1999/07/14 10:55:28  adam
- * Fixed memory leak.
- *
- * Revision 1.29  1999/07/12 07:27:54  adam
- * Improved speed of Tcl processing. Fixed one memory leak.
- *
- * Revision 1.28  1999/07/06 12:26:04  adam
- * Fixed filters so that MS-DOS CR is ignored.
- *
- * Revision 1.27  1999/06/28 13:25:40  quinn
- * Improved diagnostics for Tcl
- *
- * Revision 1.26  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.25  1999/05/25 12:33:32  adam
- * Fixed bug in Tcl filter.
- *
- * Revision 1.24  1999/05/21 11:08:46  adam
- * Tcl filter attempts to read <filt>.tflt. Improvements to configure
- * script so that it reads uninstalled Tcl source.
- *
- * Revision 1.23  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.22  1998/11/03 16:07:13  adam
- * Yet another fix.
- *
- * Revision 1.21  1998/11/03 15:43:39  adam
- * Fixed bug introduced by previous commit.
- *
- * Revision 1.20  1998/11/03 14:51:28  adam
- * Changed code so that it creates as few data1 nodes as possible.
- *
- * Revision 1.19  1998/11/03 10:22:39  adam
- * Fixed memory leak that could occur for when large data1 node were
- * concatenated. Data-type data1_nodes may have multiple nodes.
- *
- * Revision 1.18  1998/10/15 13:11:47  adam
- * Added support for option -record for "end element". When specified
- * end element will mark end-of-record when at outer-level.
- *
- * Revision 1.17  1998/07/01 10:13:51  adam
- * Minor fix.
- *
- * Revision 1.16  1998/06/30 15:15:09  adam
- * Tags are trimmed: white space removed before- and after the tag.
- *
- * Revision 1.15  1998/06/30 12:55:45  adam
- * Bug fix.
- *
- * Revision 1.14  1998/03/05 08:41:00  adam
- * Implemented rule contexts.
- *
- * Revision 1.13  1997/12/12 06:33:58  adam
- * Fixed bug that showed up when multiple filter where used.
- * Made one routine thread-safe.
- *
- * Revision 1.12  1997/11/18 10:03:24  adam
- * Member num_children removed from data1_node.
- *
- * Revision 1.11  1997/11/06 11:41:01  adam
- * Implemented "begin variant" for the sgml.regx filter.
- *
- * Revision 1.10  1997/10/31 12:36:12  adam
- * Minor change that avoids compiler warning.
- *
- * Revision 1.9  1997/09/29 09:02:49  adam
- * Fixed small bug (introduced by previous commit).
- *
- * Revision 1.8  1997/09/17 12:19:22  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.7  1997/07/15 16:33:07  adam
- * Check for zero length in execData.
- *
- * Revision 1.6  1997/02/24 10:41:51  adam
- * Cleanup of code and commented out the "end element-end-record" code.
- *
- * Revision 1.5  1997/02/19 16:22:33  adam
- * Fixed "end element" to terminate record in outer-most level.
- *
- * Revision 1.4  1997/02/12 20:42:58  adam
- * Changed some log messages.
- *
- * Revision 1.3  1996/11/08 14:05:33  adam
- * Bug fix: data1 node member u.tag.get_bytes weren't initialized.
- *
- * Revision 1.2  1996/10/29  14:02:09  adam
- * Doesn't use the global data1_tabpath (from YAZ). Instead the function
- * data1_get_tabpath is used.
- *
- * Revision 1.1  1996/10/11 10:57:30  adam
- * New module recctrl. Used to manage records (extract/retrieval).
- *
- * Revision 1.24  1996/06/17 14:25:31  adam
- * Removed LOG_DEBUG logs; can still be enabled by setting REGX_DEBUG.
- *
- * Revision 1.23  1996/06/04 10:19:00  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.22  1996/06/03  15:23:13  adam
- * Bug fix: /../ BODY /../ - pattern didn't match EOF.
- *
- * Revision 1.21  1996/05/14  16:58:38  adam
- * Minor change.
- *
- * Revision 1.20  1996/05/01  13:46:36  adam
- * First work on multiple records in one file.
- * New option, -offset, to the "unread" command in the filter module.
- *
- * Revision 1.19  1996/02/12  16:18:20  adam
- * Yet another bug fix in implementation of unread command.
- *
- * Revision 1.18  1996/02/12  16:07:54  adam
- * Bug fix in new unread command.
- *
- * Revision 1.17  1996/02/12  15:56:11  adam
- * New code command: unread.
- *
- * Revision 1.16  1996/01/17  14:57:51  adam
- * Prototype changed for reader functions in extract/retrieve. File
- *  is identified by 'void *' instead of 'int.
- *
- * Revision 1.15  1996/01/08  19:15:47  adam
- * New input filter that works!
- *
- * Revision 1.14  1996/01/08  09:10:38  adam
- * Yet another complete rework on this module.
- *
- * Revision 1.13  1995/12/15  17:21:50  adam
- * This version is able to set data.formatted_text in data1-nodes.
- *
- * Revision 1.12  1995/12/15  16:20:10  adam
- * The filter files (*.flt) are read from the path given by data1_tabpath.
- *
- * Revision 1.11  1995/12/15  12:35:16  adam
- * Better logging.
- *
- * Revision 1.10  1995/12/15  10:35:36  adam
- * Misc. bug fixes.
- *
- * Revision 1.9  1995/12/14  16:38:48  adam
- * Completely new attempt to make regular expression parsing.
- *
- * Revision 1.8  1995/12/13  17:16:59  adam
- * Small changes.
- *
- * Revision 1.7  1995/12/13  16:51:58  adam
- * Modified to set last_child in data1_nodes.
- * Uses destroy handler to free up data text nodes.
- *
- * Revision 1.6  1995/12/13  13:45:37  quinn
- * Changed data1 to use nmem.
- *
- * Revision 1.5  1995/12/11  09:12:52  adam
- * The rec_get function returns NULL if record doesn't exist - will
- * happen in the server if the result set records have been deleted since
- * the creation of the set (i.e. the search).
- * The server saves a result temporarily if it is 'volatile', i.e. the
- * set is register dependent.
- *
- * Revision 1.4  1995/12/05  16:57:40  adam
- * More work on regular patterns.
- *
- * Revision 1.3  1995/12/05  09:37:09  adam
- * One malloc was renamed to xmalloc.
- *
- * Revision 1.2  1995/12/04  17:59:24  adam
- * More work on regular expression conversion.
- *
- * Revision 1.1  1995/12/04  14:25:30  adam
- * Started work on regular expression parsed input to structured records.
- *
+ * $Id: regxread.c,v 1.39 2002-04-15 09:07:10 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -1276,26 +1075,22 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
     {
 	char *absynName = argv[2];
 	data1_absyn *absyn;
+        data1_node *res;
 
 #if REGX_DEBUG
 	logf (LOG_LOG, "begin record %s", absynName);
 #endif
-	if (!(absyn = data1_get_absyn (spec->dh, absynName)))
-	    logf (LOG_WARN, "Unknown tagset: %s", absynName);
-	else
-	{
-	    data1_node *res;
-	    
-	    res = data1_mk_node (spec->dh, spec->m);
-	    res->which = DATA1N_root;
-	    res->u.root.type =
-                data1_insert_string(spec->dh, res, spec->m, absynName);
-	    res->u.root.absyn = absyn;
-	    res->root = res;
-	    
-	    spec->d1_stack[spec->d1_level] = res;
-	    spec->d1_stack[++(spec->d1_level)] = NULL;
-	}
+	absyn = data1_get_absyn (spec->dh, absynName);
+        
+        res = data1_mk_node (spec->dh, spec->m);
+        res->which = DATA1N_root;
+        res->u.root.type =
+            data1_insert_string(spec->dh, res, spec->m, absynName);
+        res->u.root.absyn = absyn;
+        res->root = res;
+        
+        spec->d1_stack[spec->d1_level] = res;
+        spec->d1_stack[++(spec->d1_level)] = NULL;
     }
     else if (!strcmp(argv[1], "element") && argc == 3)
     {
@@ -1528,6 +1323,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 {
                     static char absynName[64];
                     data1_absyn *absyn;
+                    data1_node *res;
 
                     if (cmd_len > 63)
                         cmd_len = 63;
@@ -1537,21 +1333,16 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 #if REGX_DEBUG
                     logf (LOG_LOG, "begin record %s", absynName);
 #endif
-                    if (!(absyn = data1_get_absyn (spec->dh, absynName)))
-                        logf (LOG_WARN, "Unknown tagset: %s", absynName);
-                    else
-                    {
-                        data1_node *res;
+                    absyn = data1_get_absyn (spec->dh, absynName);
 
-                        res = data1_mk_node (spec->dh, spec->m);
-                        res->which = DATA1N_root;
-                        res->u.root.type = absynName;
-                        res->u.root.absyn = absyn;
-                        res->root = res;
-                        
-                        spec->d1_stack[spec->d1_level] = res;
-                        spec->d1_stack[++(spec->d1_level)] = NULL;
-                    }
+                    res = data1_mk_node (spec->dh, spec->m);
+                    res->which = DATA1N_root;
+                    res->u.root.type = absynName;
+                    res->u.root.absyn = absyn;
+                    res->root = res;
+                    
+                    spec->d1_stack[spec->d1_level] = res;
+                    spec->d1_stack[++(spec->d1_level)] = NULL;
                 }
                 r = execTok (spec, &s, &cmd_str, &cmd_len);
             }
