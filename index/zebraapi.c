@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.114 2003-09-05 10:51:17 adam Exp $
+/* $Id: zebraapi.c,v 1.115 2003-11-28 14:47:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1434,7 +1434,10 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
             zebra_lock_r (zh->lock_normal);
         
         if (zh->reg)
+	{
+            resultSetInvalidate (zh);
             zebra_register_close (zh->service, zh->reg);
+	}
         zh->reg = zebra_register_open (zh->service, zh->reg_name,
                                        0, val == 'c' ? 1 : 0,
                                        zh->res, zh->path_reg);
