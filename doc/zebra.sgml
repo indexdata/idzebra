@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.2 1995-11-28 14:25:23 adam Exp $
+  $Id: zebra.sgml,v 1.3 1995-11-28 15:59:46 adam Exp $
 -->
 
 <article>
 <title>Zebra server Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.2 $
+<date>$Revision: 1.3 $
 <abstract>
 This document describes Zebra &mdash; an information retrieval server
 that uses the Z39.50 protocol.
@@ -383,12 +383,17 @@ register: /d1:200M /d2:300M
 
 <sect1>Running the server
 <p>
-Starting the server and how to configure the server.
+The server <tt>zebrasrv</tt> supports the same set of options as the 
+test server <tt>ztest</tt> that comes with YAZ. As for the 
+<tt>zebraidx</tt> the option <tt>-c</tt> specifies the configuration
+filename. When the Zebra server is executed with its normal log level it 
+prints (not too detailed) information about the incoming queries. 
+This is useful if you don't happen to know what attributes your client sends.
+
+Note that the server doesn't support the static mode (-S). 
 
 <sect1>How the server handles queries
 <p>
-What elements of Bib-1 are supported and where are result sets
-stored.
 
 <sect>About Index Data
 <p>
