@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.2  1994-08-23 14:50:48  quinn
+ * Revision 1.3  1994-08-24 09:37:17  quinn
+ * Changed reaction to read return values.
+ *
+ * Revision 1.2  1994/08/23  14:50:48  quinn
  * Fixed mf_close().
  *
  * Revision 1.1  1994/08/23  14:41:33  quinn
@@ -293,14 +296,19 @@ int mf_close(MFile mf)
  */
 int mf_read(MFile mf, int no, int offset, int num, void *buf)
 {
+    int rd;
+
     if (file_position(mf, no) < 0)
     	exit(1);
-    if (read(mf->files[mf->cur_file].fd, buf, mf->blocksize) < mf->blocksize)
+    if ((rd = read(mf->files[mf->cur_file].fd, buf, mf->blocksize)) < 0)
     {
     	log(LOG_FATAL|LOG_ERRNO, "Read failed");
     	exit(1);
     }
-    return 0;
+    else if (rd < mf->blocksize)
+    	return 0;
+    else
+    	return 1;
 }
 
 /*
