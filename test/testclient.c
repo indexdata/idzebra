@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.5 2002-11-09 22:26:19 adam Exp $
+ * $Id: testclient.c,v 1.6 2002-11-11 15:19:25 heikki Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -22,6 +22,7 @@ int main(int argc, char **argv)
     char *target = 0;
     char *arg;
     int delay_sec = 0;
+    int expected_hits=-1;
     int ret;
     int retrieve_number = 0;
     int retrieve_offset = 0;
@@ -30,7 +31,7 @@ int main(int argc, char **argv)
     int check_count = -1;
     int exit_code = 0;
 
-    while ((ret = options("d:n:o:f:c:", argv, argc, &arg)) != -2)
+    while ((ret = options("d:n:o:f:c:e:", argv, argc, &arg)) != -2)
     {
         switch (ret)
         {
@@ -54,6 +55,9 @@ int main(int argc, char **argv)
             break;
         case 'c':
 	    check_count = atoi(arg);
+	    break;
+	case 'e':
+	    expected_hits = atoi(arg);
 	    break;
         default:
             printf ("%s: unknown option %s\n", prog, arg);
@@ -96,6 +100,12 @@ int main(int argc, char **argv)
 	printf ("Result count: %d\n", ZOOM_resultset_size(r));
 	if (check_count != -1 && check_count != ZOOM_resultset_size(r))
             exit_code = 10;
+	if ((expected_hits!=-1) && (ZOOM_resultset_size(r) != expected_hits))
+	{
+	    printf("Wrong number of hits, expected %d, got %d\n",
+			    expected_hits, ZOOM_resultset_size(r) );
+	    exit(3);
+	}
     }
     if (format)
         ZOOM_resultset_option_set(r, "preferredRecordSyntax", format);
