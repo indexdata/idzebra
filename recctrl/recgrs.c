@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.17  1998-02-10 12:03:06  adam
+ * Revision 1.18  1998-03-05 08:41:31  adam
+ * Minor changes.
+ *
+ * Revision 1.17  1998/02/10 12:03:06  adam
  * Implemented Sort.
  *
  * Revision 1.16  1998/01/29 13:38:17  adam
@@ -251,8 +254,9 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	    {
 		printf("%*s", level * 4, "");
 		printf("Data: ");
-		if (n->u.data.len > 20)
-		    printf("'%.20s...'\n", n->u.data.data);
+		if (n->u.data.len > 32)
+		    printf("'%.24s ... %.6s'\n", n->u.data.data,
+			   n->u.data.data + n->u.data.len-6);
 		else if (n->u.data.len > 0)
 		    printf("'%.*s'\n", n->u.data.len, n->u.data.data);
 		else
@@ -412,7 +416,7 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
 static int grs_retrieve(struct recRetrieveCtrl *p)
 {
     data1_node *node = 0, *onode = 0;
-    data1_node *new;
+    data1_node *dnew;
     data1_maptab *map;
     int res, selected = 0;
     NMEM mem;
@@ -436,26 +440,38 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
         nmem_destroy (mem);
 	return 0;
     }
+    logf (LOG_DEBUG, "grs_retrieve: size");
+    if ((dnew = data1_insert_taggeddata(p->dh, node, node,
+				       "size", mem)))
+    {
+	dnew->u.data.what = DATA1I_text;
+	dnew->u.data.data = dnew->lbuf;
+	sprintf(dnew->u.data.data, "%d", p->recordSize);
+	dnew->u.data.len = strlen(dnew->u.data.data);
+    }
+
     logf (LOG_DEBUG, "grs_retrieve: score");
-    if (p->score >= 0 && (new =
+    if (p->score >= 0 && (dnew =
 			  data1_insert_taggeddata(p->dh, node,
 						  node, "rank",
 						  mem)))
     {
-	new->u.data.what = DATA1I_num;
-	new->u.data.data = new->lbuf;
-	sprintf(new->u.data.data, "%d", p->score);
-	new->u.data.len = strlen(new->u.data.data);
+	dnew->u.data.what = DATA1I_num;
+	dnew->u.data.data = dnew->lbuf;
+	sprintf(dnew->u.data.data, "%d", p->score);
+	dnew->u.data.len = strlen(dnew->u.data.data);
     }
+
     logf (LOG_DEBUG, "grs_retrieve: localControlNumber");
-    if ((new = data1_insert_taggeddata(p->dh, node, node,
+    if ((dnew = data1_insert_taggeddata(p->dh, node, node,
 				       "localControlNumber", mem)))
     {
-	new->u.data.what = DATA1I_text;
-	new->u.data.data = new->lbuf;
-	sprintf(new->u.data.data, "%d", p->localno);
-	new->u.data.len = strlen(new->u.data.data);
+	dnew->u.data.what = DATA1I_text;
+	dnew->u.data.data = dnew->lbuf;
+	sprintf(dnew->u.data.data, "%d", p->localno);
+	dnew->u.data.len = strlen(dnew->u.data.data);
     }
+
     logf (LOG_DEBUG, "grs_retrieve: schemaIdentifier");
     if (p->input_format == VAL_GRS1 && node->u.root.absyn &&
 	node->u.root.absyn->reference != VAL_NONE)
@@ -484,13 +500,13 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	    }
 	    *(p++) = '\0';
 
-	    if ((new = data1_insert_taggeddata(dh, node, node,
+	    if ((dnew = data1_insert_taggeddata(dh, node, node,
 					       "schemaIdentifier", mem)))
 	    {
-		new->u.data.what = DATA1I_oid;
-		new->u.data.data = nmem_malloc(mem, p - tmp);
-		memcpy(new->u.data.data, tmp, p - tmp);
-		new->u.data.len = p - tmp;
+		dnew->u.data.what = DATA1I_oid;
+		dnew->u.data.data = nmem_malloc(mem, p - tmp);
+		memcpy(dnew->u.data.data, tmp, p - tmp);
+		dnew->u.data.len = p - tmp;
 	    }
 	}
     }
