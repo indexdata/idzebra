@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.18  1998-10-15 13:11:47  adam
+ * Revision 1.19  1998-11-03 10:22:39  adam
+ * Fixed memory leak that could occur for when large data1 node were
+ * concatenated. Data-type data1_nodes may have multiple nodes.
+ *
+ * Revision 1.18  1998/10/15 13:11:47  adam
  * Added support for option -record for "end element". When specified
  * end element will mark end-of-record when at outer-level.
  *
@@ -708,42 +712,26 @@ static void execData (struct lexSpec *spec,
 
     parent = d1_stack[*d1_level -1];
     assert (parent);
-    if ((res=d1_stack[*d1_level]) && res->which == DATA1N_data)
-    {
-        if (elen + res->u.data.len <= DATA1_LOCALDATA)
-            memcpy (res->u.data.data + res->u.data.len, ebuf, elen);
-        else
-        {
-            char *nb = xmalloc (elen + res->u.data.len);
-            memcpy (nb, res->u.data.data, res->u.data.len);
-            memcpy (nb + res->u.data.len, ebuf, elen);
-            res->u.data.data = nb;
-            res->destroy = destroy_data;
-        }
-        res->u.data.len += elen;
-    }
+
+    res = data1_mk_node (spec->dh, spec->m);
+    res->parent = parent;
+    res->which = DATA1N_data;
+    res->u.data.what = DATA1I_text;
+    res->u.data.len = elen;
+    res->u.data.formatted_text = formatted_text;
+    if (elen > DATA1_LOCALDATA)
+	res->u.data.data = nmem_malloc (spec->m, elen);
     else
-    {
-        res = data1_mk_node (spec->dh, spec->m);
-        res->parent = parent;
-        res->which = DATA1N_data;
-        res->u.data.what = DATA1I_text;
-        res->u.data.len = elen;
-        res->u.data.formatted_text = formatted_text;
-        if (elen > DATA1_LOCALDATA)
-            res->u.data.data = nmem_malloc (spec->m, elen);
-        else
-            res->u.data.data = res->lbuf;
-        memcpy (res->u.data.data, ebuf, elen);
-        res->root = parent->root;
-        
-        parent->last_child = res;
-        if (d1_stack[*d1_level])
-            d1_stack[*d1_level]->next = res;
-        else
-            parent->child = res;
-        d1_stack[*d1_level] = res;
-    }
+	res->u.data.data = res->lbuf;
+    memcpy (res->u.data.data, ebuf, elen);
+    res->root = parent->root;
+    
+    parent->last_child = res;
+    if (d1_stack[*d1_level])
+	d1_stack[*d1_level]->next = res;
+    else
+	parent->child = res;
+    d1_stack[*d1_level] = res;
 }
 
 static void execDataP (struct lexSpec *spec,
@@ -876,10 +864,12 @@ static void tagBegin (struct lexSpec *spec,
     res->u.tag.get_bytes = -1;
 
     if (len >= DATA1_LOCALDATA)
-        len = DATA1_LOCALDATA-1;
-    memcpy (res->lbuf, tag, len);
-    res->lbuf[len] = '\0';
-    res->u.tag.tag = res->lbuf;
+	res->u.tag.tag = nmem_malloc (spec->m, len+1);
+    else
+	res->u.tag.tag = res->lbuf;
+
+    memcpy (res->u.tag.tag, tag, len);
+    res->u.tag.tag[len] = '\0';
    
 #if REGX_DEBUG 
     logf (LOG_DEBUG, "begin tag %s (%d)", res->u.tag.tag, *d1_level);
