@@ -1,4 +1,4 @@
-/* $Id: d1_if.c,v 1.3 2004-09-28 10:15:03 adam Exp $
+/* $Id: d1_if.c,v 1.4 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -26,7 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include <idzebra/data1.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 
 #include <string.h>
 
@@ -89,17 +89,17 @@ char *data1_getNodeValue(data1_node* node, char* pTagPath)
             }
             else
             {
-                yaz_log(LOG_WARN,"Attempting to lookup data for tagpath: Child node is not a data node");
+                yaz_log(YLOG_WARN,"Attempting to lookup data for tagpath: Child node is not a data node");
             }
         }
         else
         {
-            yaz_log(LOG_WARN,"Found a node matching the tagpath, but it has no child data nodes");
+            yaz_log(YLOG_WARN,"Found a node matching the tagpath, but it has no child data nodes");
         }
     }
     else
     {
-        yaz_log(LOG_WARN,"Unable to lookup a node on the specified tag path");
+        yaz_log(YLOG_WARN,"Unable to lookup a node on the specified tag path");
     }
 
     return "";
@@ -173,7 +173,7 @@ data1_node *data1_LookupNode(data1_node* node, char* pTagPath)
         }
         else
         {
-            yaz_log(LOG_FATAL,"Node does not end with a ]");
+            yaz_log(YLOG_FATAL,"Node does not end with a ]");
             /* Fatal Error */
             return(NULL);
         }
@@ -196,7 +196,7 @@ data1_node *data1_LookupNode(data1_node* node, char* pTagPath)
         
     }
 
-    yaz_log(LOG_DEBUG,"search node for child like [%d,%d,%s,%d]",iTagType,iTagValue,StringTagVal,iOccurences);
+    yaz_log(YLOG_DEBUG,"search node for child like [%d,%d,%s,%d]",iTagType,iTagValue,StringTagVal,iOccurences);
     
 
     /* OK.. We have extracted tagtype, Value and Occurence, see if we can find a node */
@@ -227,7 +227,7 @@ data1_node *data1_LookupNode(data1_node* node, char* pTagPath)
             }
             else /* Attempt to match real element */
             {
-                yaz_log(LOG_WARN,"Non string tag matching not yet implemented");
+                yaz_log(YLOG_WARN,"Non string tag matching not yet implemented");
             }
         }
         current_child = current_child->next;

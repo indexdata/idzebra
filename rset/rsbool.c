@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.50 2004-10-22 10:12:51 heikki Exp $
+/* $Id: rsbool.c,v 1.51 2004-11-19 10:27:14 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -165,7 +165,7 @@ static RSFD r_open (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-        logf (LOG_FATAL, "bool set type is read-only");
+        yaz_log (YLOG_FATAL, "bool set type is read-only");
         return NULL;
     }
     rfd = rfd_create_base(ct);
@@ -178,7 +178,7 @@ static RSFD r_open (RSET ct, int flag)
         p->buf_r = nmem_malloc(ct->nmem, ct->keycontrol->key_size);
     }
 
-    logf(LOG_DEBUG,"rsbool (%s) open [%p]", ct->control->desc, rfd);
+    yaz_log(YLOG_DEBUG,"rsbool (%s) open [%p]", ct->control->desc, rfd);
     p->hits=0;
 
     p->rfd_l = rset_open (info->rset_l, RSETF_READ);
@@ -247,10 +247,10 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
         else
             cmp = rfd->rset->scope;
 #if RSET_DEBUG
-        logf (LOG_DEBUG, "r_read_and [%p] looping: m=%d/%d c=%d t=%d",
+        yaz_log (YLOG_DEBUG, "r_read_and [%p] looping: m=%d/%d c=%d t=%d",
                         rfd, p->more_l, p->more_r, cmp, p->tail);
-        (*kctrl->log_item)(LOG_DEBUG, p->buf_l, "left ");
-        (*kctrl->log_item)(LOG_DEBUG, p->buf_r, "right ");
+        (*kctrl->log_item)(YLOG_DEBUG, p->buf_l, "left ");
+        (*kctrl->log_item)(YLOG_DEBUG, p->buf_r, "right ");
 #endif
         if (!cmp)
         {  /* cmp==0 */
@@ -268,10 +268,10 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
             p->more_r = rset_read (p->rfd_r, p->buf_r, &p->term_r);
             p->tail = 1;
 #if RSET_DEBUG
-            logf (LOG_DEBUG, "r_read_and [%p] returning R m=%d/%d c=%d",
+            yaz_log (YLOG_DEBUG, "r_read_and [%p] returning R m=%d/%d c=%d",
                     rfd, p->more_l, p->more_r, cmp);
-            key_logdump(LOG_DEBUG,buf);
-            (*kctrl->log_item)(LOG_DEBUG, buf, "");
+            key_logdump(YLOG_DEBUG,buf);
+            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
 #endif
             p->hits++;
             return 1;
@@ -284,9 +284,9 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
             p->more_l = rset_read (p->rfd_l, p->buf_l,&p->term_l);
             p->tail = 1;
 #if RSET_DEBUG
-            logf (LOG_DEBUG, "r_read_and [%p] returning L m=%d/%d c=%d",
+            yaz_log (YLOG_DEBUG, "r_read_and [%p] returning L m=%d/%d c=%d",
                     rfd, p->more_l, p->more_r, cmp);
-            (*kctrl->log_item)(LOG_DEBUG, buf, "");
+            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
 #endif
             p->hits++;
             return 1;
@@ -302,9 +302,9 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                 if (!p->more_r || (*kctrl->cmp)(p->buf_r, buf) > 1)
                     p->tail = 0;
 #if RSET_DEBUG
-                logf (LOG_DEBUG, "r_read_and [%p] returning R tail m=%d/%d c=%d",
+                yaz_log (YLOG_DEBUG, "r_read_and [%p] returning R tail m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
-                (*kctrl->log_item)(LOG_DEBUG, buf, "");
+                (*kctrl->log_item)(YLOG_DEBUG, buf, "");
 #endif
                 p->hits++;
                 return 1;
@@ -312,7 +312,7 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
             else
             {
 #if RSET_DEBUG
-                logf (LOG_DEBUG, "r_read_and [%p] about to forward R "
+                yaz_log (YLOG_DEBUG, "r_read_and [%p] about to forward R "
                                  "m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
 #endif
@@ -334,9 +334,9 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                 if (!p->more_l || (*kctrl->cmp)(p->buf_l, buf) > 1)
                     p->tail = 0;
 #if RSET_DEBUG
-                logf (LOG_DEBUG, "r_read_and [%p] returning L tail m=%d/%d c=%d",
+                yaz_log (YLOG_DEBUG, "r_read_and [%p] returning L tail m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
-                (*kctrl->log_item)(LOG_DEBUG, buf, "");
+                (*kctrl->log_item)(YLOG_DEBUG, buf, "");
 #endif
                 p->hits++;
                 return 1;
@@ -344,7 +344,7 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
             else
             {
 #if RSET_DEBUG
-                logf (LOG_DEBUG, "r_read_and [%p] about to forward L "
+                yaz_log (YLOG_DEBUG, "r_read_and [%p] about to forward L "
                                  "m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
 #endif
@@ -357,7 +357,7 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
         }
     }
 #if RSET_DEBUG
-    logf (LOG_DEBUG, "r_read_and [%p] reached its end",rfd);
+    yaz_log (YLOG_DEBUG, "r_read_and [%p] reached its end",rfd);
 #endif
     return 0;
 }
@@ -388,9 +388,9 @@ static int r_read_or (RSFD rfd, void *buf, TERMID *term)
             /* get to see both? */
             p->more_r = rset_read (p->rfd_r, p->buf_r, &p->term_r);
 #if RSET_DEBUG
-            logf (LOG_DEBUG, "r_read_or returning A m=%d/%d c=%d",
+            yaz_log (YLOG_DEBUG, "r_read_or returning A m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
-            (*kctrl->log_item)(LOG_DEBUG, buf, "");
+            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
 #endif
             p->hits++;
             return 1;
@@ -402,9 +402,9 @@ static int r_read_or (RSFD rfd, void *buf, TERMID *term)
                 *term=p->term_r;
             p->more_r = rset_read (p->rfd_r, p->buf_r, &p->term_r);
 #if RSET_DEBUG
-            logf (LOG_DEBUG, "r_read_or returning B m=%d/%d c=%d",
+            yaz_log (YLOG_DEBUG, "r_read_or returning B m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
-            (*kctrl->log_item)(LOG_DEBUG, buf, "");
+            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
 #endif
             p->hits++;
             return 1;
@@ -416,9 +416,9 @@ static int r_read_or (RSFD rfd, void *buf, TERMID *term)
                 *term=p->term_l;
             p->more_l = rset_read ( p->rfd_l, p->buf_l, &p->term_l);
 #if RSET_DEBUG
-            logf (LOG_DEBUG, "r_read_or returning C m=%d/%d c=%d",
+            yaz_log (YLOG_DEBUG, "r_read_or returning C m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
-            (*kctrl->log_item)(LOG_DEBUG, buf, "");
+            (*kctrl->log_item)(YLOG_DEBUG, buf, "");
 #endif
             p->hits++;
             return 1;
@@ -484,7 +484,7 @@ static int r_read_not (RSFD rfd, void *buf, TERMID *term)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "bool set type is read-only");
+    yaz_log (YLOG_FATAL, "bool set type is read-only");
     return -1;
 }
 
@@ -512,7 +512,7 @@ static void r_pos (RSFD rfd, double *current, double *total)
     *current=(double) (p->hits);
     *total=*current/r ; 
 #if RSET_DEBUG
-    yaz_log(LOG_DEBUG,"bool_pos: (%s/%s) %0.1f/%0.1f= %0.4f ",
+    yaz_log(YLOG_DEBUG,"bool_pos: (%s/%s) %0.1f/%0.1f= %0.4f ",
                     info->rset_l->control->desc, info->rset_r->control->desc,
                     *current, *total, r);
 #endif

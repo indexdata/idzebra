@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.53 2004-11-04 11:47:23 heikki Exp $
+/* $Id: kcompare.c,v 1.54 2004-11-19 10:26:57 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -50,10 +50,10 @@ void key_logdump_txt (int logmask, const void *p, const char *txt)
 		strcat(formstr, ".");
 	    sprintf(formstr + strlen(formstr), ZINT_FORMAT, key.mem[i]);
 	}
-        logf (logmask, "%s %s", formstr, txt);
+        yaz_log (logmask, "%s %s", formstr, txt);
     }
     else
-        logf(logmask, " (null) %s",txt);
+        yaz_log(logmask, " (null) %s",txt);
 }
 
 void key_logdump (int logmask, const void *p)

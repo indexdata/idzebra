@@ -1,4 +1,4 @@
-/* $Id: lockutil.c,v 1.18 2004-01-22 11:27:21 adam Exp $
+/* $Id: lockutil.c,v 1.19 2004-11-19 10:26:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -97,7 +97,7 @@ ZebraLockHandle zebra_lock_create (const char *dir,
     if (h->fd == -1)
     {
 	if (h->excl_flag <= 1)
-            logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
+            yaz_log (YLOG_WARN|YLOG_ERRNO, "open %s", fname);
 	xfree (h);
         h = 0;
     }

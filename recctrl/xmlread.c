@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.15 2004-09-28 10:15:03 adam Exp $
+/* $Id: xmlread.c,v 1.16 2004-11-19 10:27:13 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -30,12 +30,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <iconv.h>
 #endif
 
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 
 #include <idzebra/recgrs.h>
 
 #include <yaz/xmalloc.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 
 #include <expat.h>
 
@@ -98,7 +98,7 @@ static void cb_decl (void *user, const char *version, const char *encoding,
     data1_mk_preprocess (ui->dh, ui->nmem, "xml", attr_list,
                              ui->d1_stack[ui->level-1]);
 #if 0
-    yaz_log (LOG_LOG, "decl version=%s encoding=%s",
+    yaz_log (YLOG_LOG, "decl version=%s encoding=%s",
              version ? version : "null",
              encoding ? encoding : "null");
 #endif
@@ -175,7 +175,7 @@ static int cb_external_entity (XML_Parser pparser,
 
     if (!(inf = fopen (systemId, "rb")))
     {
-        yaz_log (LOG_WARN|LOG_ERRNO, "fopen %s", systemId);
+        yaz_log (YLOG_WARN|YLOG_ERRNO, "fopen %s", systemId);
         return 0;
     }
 
@@ -186,7 +186,7 @@ static int cb_external_entity (XML_Parser pparser,
         void *buf = XML_GetBuffer (parser, XML_CHUNK);
         if (!buf)
         {
-            yaz_log (LOG_WARN, "XML_GetBuffer fail");
+            yaz_log (YLOG_WARN, "XML_GetBuffer fail");
             break;
         }
         r = fread (buf, 1, XML_CHUNK, inf);
@@ -194,7 +194,7 @@ static int cb_external_entity (XML_Parser pparser,
         {
             if (ferror(inf))
             {
-                yaz_log (LOG_WARN|LOG_ERRNO, "fread %s", systemId);
+                yaz_log (YLOG_WARN|YLOG_ERRNO, "fread %s", systemId);
                 break;
             }
             done = 1;
@@ -202,7 +202,7 @@ static int cb_external_entity (XML_Parser pparser,
         if (!XML_ParseBuffer (parser, r, done))
         {
 	    done = 1;
-	    yaz_log (LOG_WARN, "%s:%d:%d:XML error: %s",
+	    yaz_log (YLOG_WARN, "%s:%d:%d:XML error: %s",
 		     systemId,
 		     XML_GetCurrentLineNumber(parser),
 		     XML_GetCurrentColumnNumber(parser),
@@ -227,7 +227,7 @@ static int cb_encoding_convert (void *data, const char *s)
     unsigned short code;
 
 #if 1
-    yaz_log(LOG_LOG, "------------------------- cb_encoding_convert --- ");
+    yaz_log(YLOG_LOG, "------------------------- cb_encoding_convert --- ");
 #endif
     ret = iconv (t, &inbuf, &inleft, &outbuf, &outleft);
     if (ret == (size_t) (-1) && errno != E2BIG)
@@ -343,7 +343,7 @@ static int cb_encoding_handler (void *userData, const char *name,
             {
                 info->map[i] = -1;  /* no room for output */
                 if (i != 0)
-                    yaz_log (LOG_WARN, "Encoding %d: no room for output",
+                    yaz_log (YLOG_WARN, "Encoding %d: no room for output",
                              i);
             }
         }
@@ -357,7 +357,7 @@ static int cb_encoding_handler (void *userData, const char *name,
         else
         {   /* should never happen */
             info->map[i] = -1;
-            yaz_log (LOG_DEBUG, "Encoding %d: bad state", i);
+            yaz_log (YLOG_DEBUG, "Encoding %d: bad state", i);
         }
     }
     if (info->data)
@@ -401,7 +401,7 @@ data1_node *zebra_read_xml (data1_handle dh,
     int done = 0;
     data1_node *first_node;
 
-    uinfo.loglevel = LOG_DEBUG;
+    uinfo.loglevel = YLOG_DEBUG;
     uinfo.level = 1;
     uinfo.dh = dh;
     uinfo.nmem = m;
@@ -430,14 +430,14 @@ data1_node *zebra_read_xml (data1_handle dh,
         if (!buf)
         {
             /* error */
-            yaz_log (LOG_WARN, "XML_GetBuffer fail");
+            yaz_log (YLOG_WARN, "XML_GetBuffer fail");
             break;
         }
         r = (*rf)(fh, buf, XML_CHUNK);
         if (r < 0)
         {
             /* error */
-            yaz_log (LOG_WARN, "XML read fail");
+            yaz_log (YLOG_WARN, "XML read fail");
             break;
         }
         else if (r == 0)
@@ -445,7 +445,7 @@ data1_node *zebra_read_xml (data1_handle dh,
         if (!XML_ParseBuffer (parser, r, done))
         {
 	    done = 1;
-	    yaz_log (LOG_WARN, "%d:%d:XML error: %s",
+	    yaz_log (YLOG_WARN, "%d:%d:XML error: %s",
 		     XML_GetCurrentLineNumber(parser),
 		     XML_GetCurrentColumnNumber(parser),
 		     XML_ErrorString(XML_GetErrorCode(parser)));

@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.38 2004-09-26 20:19:44 adam Exp $
+/* $Id: recindex.c,v 1.39 2004-11-19 10:27:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -56,7 +56,7 @@ static void rec_write_head (Records p)
     r = bf_write (p->index_BFile, 0, 0, sizeof(p->head), &p->head);    
     if (r)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "write head of %s", p->index_fname);
+        yaz_log (YLOG_FATAL|YLOG_ERRNO, "write head of %s", p->index_fname);
         exit (1);
     }
 }
@@ -88,7 +88,7 @@ static int read_indx (Records p, SYSNO sysno, void *buf, int itemsize,
 	r = bf_read (p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1, buf + sz1);
     if (r != 1 && !ignoreError)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "read in %s at pos %ld",
+        yaz_log (YLOG_FATAL|YLOG_ERRNO, "read in %s at pos %ld",
               p->index_fname, (long) pos);
         exit (1);
     }
@@ -131,7 +131,7 @@ static void rec_release_blocks (Records p, SYSNO sysno)
 		     first ? sizeof(block_and_ref) : sizeof(zint),
 		     block_and_ref) != 1)
         {
-            logf (LOG_FATAL|LOG_ERRNO, "read in rec_del_single");
+            yaz_log (YLOG_FATAL|YLOG_ERRNO, "read in rec_del_single");
             exit (1);
         }
 	if (first)
@@ -145,7 +145,7 @@ static void rec_release_blocks (Records p, SYSNO sysno)
 		if (bf_write (p->data_BFile[dst_type], freeblock, 0,
 			      sizeof(block_and_ref), block_and_ref))
 		{
-		    logf (LOG_FATAL|LOG_ERRNO, "write in rec_del_single");
+		    yaz_log (YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
 		    exit (1);
 		}
 		return;
@@ -156,7 +156,7 @@ static void rec_release_blocks (Records p, SYSNO sysno)
         if (bf_write (p->data_BFile[dst_type], freeblock, 0, sizeof(freeblock),
                       &p->head.block_free[dst_type]))
         {
-            logf (LOG_FATAL|LOG_ERRNO, "write in rec_del_single");
+            yaz_log (YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
             exit (1);
         }
         p->head.block_free[dst_type] = freeblock;
@@ -200,7 +200,7 @@ static void rec_write_tmp_buf (Records p, int size, SYSNO *sysnos)
                          block_free, 0, sizeof(*p->head.block_free),
                          &p->head.block_free[dst_type]) != 1)
             {
-                logf (LOG_FATAL|LOG_ERRNO, "read in %s at free block " ZINT_FORMAT,
+                yaz_log (YLOG_FATAL|YLOG_ERRNO, "read in %s at free block " ZINT_FORMAT,
                       p->data_fname[dst_type], block_free);
 		exit (1);
             }
@@ -250,7 +250,7 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
     p->index_BFile = bf_open (bfs, p->index_fname, RIDX_CHUNK, rw);
     if (p->index_BFile == NULL)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "open %s", p->index_fname);
+        yaz_log (YLOG_FATAL|YLOG_ERRNO, "open %s", p->index_fname);
         exit (1);
     }
     r = bf_read (p->index_BFile, 0, 0, 0, p->tmp_buf);
@@ -283,13 +283,13 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
         memcpy (&p->head, p->tmp_buf, sizeof(p->head));
         if (memcmp (p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic)))
         {
-            logf (LOG_FATAL, "file %s has bad format", p->index_fname);
+            yaz_log (YLOG_FATAL, "file %s has bad format", p->index_fname);
             exit (1);
         }
 	version = atoi (p->head.version);
 	if (version != REC_VERSION)
 	{
-	    logf (LOG_FATAL, "file %s is version %d, but version"
+	    yaz_log (YLOG_FATAL, "file %s is version %d, but version"
 		  " %d is required", p->index_fname, version, REC_VERSION);
 	    exit (1);
 	}
@@ -309,7 +309,7 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
                                           p->head.block_size[i],
                                           rw)))
         {
-            logf (LOG_FATAL|LOG_ERRNO, "bf_open %s", p->data_fname[i]);
+            yaz_log (YLOG_FATAL|YLOG_ERRNO, "bf_open %s", p->data_fname[i]);
             exit (1);
         }
     }
@@ -490,10 +490,10 @@ static void rec_write_multiple (Records p, int saveCount)
 				      &csize, out_buf, out_offset, 1, 0, 30);
 	    if (i != BZ_OK)
 	    {
-		logf (LOG_WARN, "bzBuffToBuffCompress error code=%d", i);
+		yaz_log (YLOG_WARN, "bzBuffToBuffCompress error code=%d", i);
 		csize = 0;
 	    }
-	    logf (LOG_LOG, "compress %4d %5d %5d", ref_count, out_offset,
+	    yaz_log (YLOG_LOG, "compress %4d %5d %5d", ref_count, out_offset,
 		  csize);
 #endif
 	    break;
@@ -688,17 +688,17 @@ static Record rec_get_int (Records p, SYSNO sysno)
 	    i = bzBuffToBuffDecompress
 #endif
                  (bz_buf, &bz_size, in_buf, in_size, 0, 0);
-	    logf (LOG_LOG, "decompress %5d %5d", in_size, bz_size);
+	    yaz_log (YLOG_LOG, "decompress %5d %5d", in_size, bz_size);
 	    if (i == BZ_OK)
 		break;
-	    logf (LOG_LOG, "failed");
+	    yaz_log (YLOG_LOG, "failed");
 	    xfree (bz_buf);
             bz_size *= 2;
 	}
 	in_buf = bz_buf;
 	in_size = bz_size;
 #else
-	logf (LOG_FATAL, "cannot decompress record(s) in BZIP2 format");
+	yaz_log (YLOG_FATAL, "cannot decompress record(s) in BZIP2 format");
 	exit (1);
 #endif
 	break;

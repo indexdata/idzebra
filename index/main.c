@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.117 2004-09-28 20:09:13 adam Exp $
+/* $Id: main.c,v 1.118 2004-11-19 10:27:00 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -34,7 +34,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <sys/times.h>
 #endif
 
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/options.h>
 #include <idzebra/api.h>
 
@@ -122,12 +122,12 @@ int main (int argc, char **argv)
                 if (!zs)
                 {
 		    const char *config = configName ? configName : "zebra.cfg";
-                    logf (LOG_LOG, "Zebra version %s %s",
+                    yaz_log (YLOG_LOG, "Zebra version %s %s",
                           ZEBRAVER, ZEBRADATE);
                     zs = zebra_start_res (config, 0, res);
                     if (!zs)
                     {
-			yaz_log (LOG_FATAL, "Cannot read config %s", config);
+			yaz_log (YLOG_FATAL, "Cannot read config %s", config);
                         exit (1);
 	            }	
                     zh = zebra_open (zs);
@@ -136,7 +136,7 @@ int main (int argc, char **argv)
 
 		if (zebra_select_database (zh, database))
 		{
-		    logf(LOG_FATAL, "Could not select database %s errCode=%d",
+		    yaz_log(YLOG_FATAL, "Could not select database %s errCode=%d",
 			 database, zebra_errCode(zh) );
 		    exit (1);
 		}
@@ -188,7 +188,7 @@ int main (int argc, char **argv)
                 }
                 else
                 {
-                    logf (LOG_FATAL, "unknown command: %s", arg);
+                    yaz_log (YLOG_FATAL, "unknown command: %s", arg);
                     exit (1);
                 }
             }
@@ -262,7 +262,7 @@ int main (int argc, char **argv)
 	else if (ret == 'L')
 	    res_set(res, "followLinks", "0");
         else
-            logf (LOG_WARN, "unknown option '-%s'", arg);
+            yaz_log (YLOG_WARN, "unknown option '-%s'", arg);
     } /* while arg */
 
     if (trans_started)
@@ -277,7 +277,7 @@ int main (int argc, char **argv)
         usec = (end_time.tv_sec - start_time.tv_sec) * 1000000.0 +
 	    end_time.tv_usec - start_time.tv_usec;
         times(&tms2);
-        yaz_log (LOG_LOG, "zebraidx times: %5.2f %5.2f %5.2f",
+        yaz_log (YLOG_LOG, "zebraidx times: %5.2f %5.2f %5.2f",
 		usec / 1000000,
 		(double) (tms2.tms_utime - tms1.tms_utime)/100,
 		(double) (tms2.tms_stime - tms1.tms_stime)/100);

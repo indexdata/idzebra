@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.36 2004-08-04 08:35:22 adam Exp $
+/* $Id: bfile.c,v 1.37 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -89,7 +89,7 @@ void bf_cache (BFiles bfs, const char *spec)
 {
     if (spec)
     {
-        yaz_log (LOG_LOG, "enabling cache spec=%s", spec);
+        yaz_log (YLOG_LOG, "enabling cache spec=%s", spec);
         if (!bfs->commit_area)
 	    bfs->commit_area = mf_init ("shadow", spec, bfs->base);
         if (bfs->commit_area)
@@ -98,7 +98,7 @@ void bf_cache (BFiles bfs, const char *spec)
                                        8);
             strcpy (bfs->cache_fname, bfs->commit_area->dirs->name);
             strcat (bfs->cache_fname, "/cache");
-            yaz_log (LOG_LOG, "cache_fname = %s", bfs->cache_fname);
+            yaz_log (YLOG_LOG, "cache_fname = %s", bfs->cache_fname);
         }
     }
     else
@@ -133,7 +133,7 @@ BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
             outf = open_cache (bfs, "ab");
             if (!outf)
             {
-                logf (LOG_FATAL|LOG_ERRNO, "open %s", bfs->cache_fname);
+                yaz_log (YLOG_FATAL|YLOG_ERRNO, "open %s", bfs->cache_fname);
                 exit (1);
             }
             fprintf (outf, "%s %d\n", name, block_size);
@@ -147,7 +147,7 @@ BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
     }
     if (!tmp->mf)
     {
-        logf (LOG_FATAL, "mf_open failed for %s", name);
+        yaz_log (YLOG_FATAL, "mf_open failed for %s", name);
         xfree (tmp);
         return 0;
     }
@@ -216,7 +216,7 @@ void bf_commitExec (BFiles bfs)
     assert (bfs->commit_area);
     if (!(inf = open_cache (bfs, "rb")))
     {
-        logf (LOG_LOG, "No commit file");
+        yaz_log (YLOG_LOG, "No commit file");
         return ;
     }
     while (fscanf (inf, "%s %d", path, &block_size) == 2)

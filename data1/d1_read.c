@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.10 2004-09-28 10:15:03 adam Exp $
+/* $Id: d1_read.c,v 1.11 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -31,7 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/xmalloc.h>
 #include <yaz/yaz-util.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <d1_absyn.h>
 
 data1_node *data1_get_root_tag (data1_handle dh, data1_node *n)
@@ -118,7 +118,7 @@ static void data1_init_node (data1_handle dh, data1_node *r, int type)
         r->u.preprocess.attributes = 0;
         break;
     default:
-	logf (LOG_WARN, "data_mk_node_type. bad type = %d\n", type);
+	yaz_log (YLOG_WARN, "data_mk_node_type. bad type = %d\n", type);
     }
 }
 
@@ -194,7 +194,7 @@ data1_node *data1_mk_root (data1_handle dh, NMEM nmem, const char *name)
     data1_node *res;
     if (!absyn)
     {
-        yaz_log(LOG_WARN, "Unable to acquire abstract syntax " "for '%s'",
+        yaz_log(YLOG_WARN, "Unable to acquire abstract syntax " "for '%s'",
                 name); 
         /* It's now OK for a record not to have an absyn */
     }
@@ -786,7 +786,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 	    }
 	    if (amp || c != '>')
 	    {
-		yaz_log(LOG_WARN, "d1: %d: Malformed tag", line);
+		yaz_log(YLOG_WARN, "d1: %d: Malformed tag", line);
 		return 0;
 	    }
 	    else
@@ -814,7 +814,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 		    }
 		    if (i != level)
 		    {
-			yaz_log (LOG_WARN, "%d: no begin tag for %s",
+			yaz_log (YLOG_WARN, "%d: no begin tag for %s",
 				 line, tag);
 			break;
 		    }
@@ -839,7 +839,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 		
 		if (sscanf(args, "%s %s %n", tclass, type, &val_offset) != 2)
 		{
-		    yaz_log(LOG_WARN, "Malformed variant triple at '%s'", tag);
+		    yaz_log(YLOG_WARN, "Malformed variant triple at '%s'", tag);
 		    continue;
 		}
 		if (!(tp =

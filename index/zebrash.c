@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.29 2004-08-25 09:23:36 adam Exp $
+/* $Id: zebrash.c,v 1.30 2004-11-19 10:27:04 heikki Exp $
    Copyright (C) 2002,2003,2004
    Index Data Aps
 
@@ -38,7 +38,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #include <idzebra/api.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/proto.h>
 #include <yaz/sortspec.h>
 #include <yaz/options.h>
@@ -62,6 +62,8 @@ ZebraHandle  zh=0;  /* the current session */
 /* time being, only one session works */
 int nextrecno=1;  /* record number to show next */
 static char *default_config = DEFAULTCONFIG;
+static int log_level=0;
+
 
 /**************************************
  * Help functions
@@ -210,10 +212,10 @@ static int cmd_quickstart( char *args[], WRBUF outbuff)
         rc=onecommand("yaz_log_file zebrash.log",outbuff,"");
     if (!rc)
         rc=onecommand("yaz_log_prefix ZebraSh", outbuff,"");
-    sprintf(tmp, "yaz_log_level 0x%x", LOG_DEFAULT_LEVEL | LOG_APP);
+    sprintf(tmp, "yaz_log_level 0x%x", YLOG_DEFAULT_LEVEL | log_level );
     if (!rc)
         rc=onecommand(tmp,outbuff,"");
-    logf(LOG_APP,"quickstart");
+    yaz_log(log_level,"quickstart");
     if (!zs)
         if (!rc)
             rc=onecommand("zebra_start",outbuff,"");
@@ -239,7 +241,7 @@ static int cmd_yaz_log_file( char *args[], WRBUF outbuff)
 
 static int cmd_yaz_log_level( char *args[], WRBUF outbuff)
 {
-    int  lev = defargint(args[1],LOG_DEFAULT_LEVEL);
+    int  lev = defargint(args[1],YLOG_DEFAULT_LEVEL);
     wrbuf_printf(outbuff, "setting yaz-log to level %d (ox%x)\n",lev,lev);
     yaz_log_init_level(lev);
     return 0; /* ok */
@@ -260,8 +262,8 @@ static int cmd_logf( char *args[], WRBUF outbuff)
     if (lev)
 	i=2;
     else
-	lev=LOG_LOG; /* this is in the default set!*/
-    logf( lev, restargs(args,i));
+	lev=YLOG_LOG; /* this is in the default set!*/
+    yaz_log( lev, restargs(args,i));
     return 0; /* ok */
 }
  
@@ -557,7 +559,7 @@ struct cmdstruct cmds[] = {
       "[prefix]",
       "Sets the log prefix",
       cmd_yaz_log_prefix},    
-    { "logf", 
+    { "yaz_log", 
       "[level] text...",
       "writes an entry in the log",
       cmd_logf},    
@@ -652,7 +654,7 @@ int onecommand(
     char *args[MAX_NO_ARGS];
     int nargs;
     char argbuf[MAX_ARG_LEN];
-    logf(LOG_APP,"%s",line);
+    yaz_log(log_level,"%s",line);
     strncpy(argbuf,line, MAX_ARG_LEN-1);
     argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
     /*memset(args,'\0',MAX_NO_ARGS*sizeof(char *));*/
@@ -692,7 +694,7 @@ int onecommand(
 	    return ((cmds[i].testfunc)(args,outbuff));
 	}
     wrbuf_printf(outbuff, "Unknown command '%s'. Try help\n",args[0]);
-    logf(LOG_APP,"Unknown command");
+    yaz_log(log_level,"Unknown command");
     return -90; 
 }
  
@@ -747,7 +749,7 @@ static void Zerrors ( WRBUF outbuff)
     ec=zebra_errCode (zh);
     if (ec)
     {
-	logf(LOG_APP, "   Zebra error %d: %s, (%s)",
+	yaz_log(log_level, "   Zebra error %d: %s, (%s)",
 	     ec, zebra_errString (zh),
 	     zebra_errAdd (zh) );
 	wrbuf_printf(outbuff, "   Zebra error %d: %s, (%s)\n",
@@ -811,7 +813,7 @@ void shell()
 	if (rc==0)
 	{
 	    wrbuf_puts(outbuff, "   OK\n");
-	    logf(LOG_APP, "OK");
+	    yaz_log(log_level, "OK");
 	}
 	else if (rc>-90)
 	{
@@ -847,11 +849,14 @@ int main (int argc, char ** argv)
 	    break;
 	case 'h':
 	    usage();
+        /* FIXME - handle -v */
 	default:
 	    fprintf(stderr, "bad option %s\n", arg);
 	    usage();
 	}
     }
+    log_level=yaz_log_module_level("zebrash");
+
     shell();
     return 0;
 } /* main */

@@ -1,4 +1,4 @@
-/* $Id: open.c,v 1.20 2004-09-09 09:07:12 adam Exp $
+/* $Id: open.c,v 1.21 2004-11-19 10:26:55 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -43,7 +43,7 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
     page_size = DICT_DEFAULT_PAGESIZE;
     if (page_size < 2048)
     {
-        logf (LOG_WARN, "Page size for dict %s %d<2048. Set to 2048",
+        yaz_log (YLOG_WARN, "Page size for dict %s %d<2048. Set to 2048",
 	      name, page_size);
         page_size = 2048;
     }
@@ -52,7 +52,7 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
 
     if(!dict->dbf)
     {
-        logf (LOG_WARN, "Cannot open `%s'", name);
+        yaz_log (YLOG_WARN, "Cannot open `%s'", name);
         xfree (dict);
         return NULL;
     }
@@ -75,12 +75,12 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
 	memcpy (&dict->head, head_buf, sizeof(dict->head));
         if (strcmp (dict->head.magic_str, DICT_MAGIC))
         {
-            logf (LOG_WARN, "Bad magic of `%s'", name);
+            yaz_log (YLOG_WARN, "Bad magic of `%s'", name);
             exit (1);
         }
         if (dict->head.page_size != page_size)
         {
-            logf (LOG_WARN, "Page size for existing dict %s is %d. Current is %d",
+            yaz_log (YLOG_WARN, "Page size for existing dict %s is %d. Current is %d",
 		  name, dict->head.page_size, page_size);
         }
     }

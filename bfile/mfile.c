@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.55 2004-08-06 12:55:01 adam Exp $
+/* $Id: mfile.c,v 1.56 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -83,12 +83,12 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
         dirname[i] = '\0';
         if (*ad++ != ':')
         {
-	    logf (LOG_WARN, "Missing colon after path: %s", ad0);
+	    yaz_log (YLOG_WARN, "Missing colon after path: %s", ad0);
             return -1;
         }
         if (i == 0)
         {
-	    logf (LOG_WARN, "Empty path: %s", ad0);
+	    yaz_log (YLOG_WARN, "Empty path: %s", ad0);
             return -1;
         }
         while (*ad == ' ' || *ad == '\t')
@@ -103,7 +103,7 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
         size = 0;
         if (*ad < '0' || *ad > '9')
         {
-	    logf (LOG_FATAL, "Missing size after path: %s", ad0);
+	    yaz_log (YLOG_FATAL, "Missing size after path: %s", ad0);
             return -1;
         }
         size = 0;
@@ -116,10 +116,10 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
 	case 'M': case 'm': multi = 1048576; break;
 	case 'G': case 'g': multi = 1073741824; break;
         case '\0':
-            logf (LOG_FATAL, "Missing unit: %s", ad0);
+            yaz_log (YLOG_FATAL, "Missing unit: %s", ad0);
             return -1;
         default:
-            logf (LOG_FATAL, "Illegal unit: %c in %s", *ad, ad0);
+            yaz_log (YLOG_FATAL, "Illegal unit: %c in %s", *ad, ad0);
             return -1;
 	}
         ad++;
@@ -159,7 +159,7 @@ static zint file_position(MFile mf, zint pos, int offset)
         {
             if (!mf->wr && errno == ENOENT && off == 0)
                 return -2;
-    	    logf (LOG_WARN|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
+    	    yaz_log (YLOG_WARN|YLOG_ERRNO, "Failed to open %s", mf->files[c].path);
     	     return -1;
         }
     }
@@ -167,8 +167,8 @@ static zint file_position(MFile mf, zint pos, int offset)
     if (mfile_seek(mf->files[c].fd, ps * (mfile_off_t) mf->blocksize + offset,
     	SEEK_SET) < 0)
     {
-    	logf (LOG_WARN|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
-        logf(LOG_WARN, "pos=" ZINT_FORMAT " off=" ZINT_FORMAT " blocksize=%d offset=%d",
+    	yaz_log (YLOG_WARN|YLOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
+        yaz_log(YLOG_WARN, "pos=" ZINT_FORMAT " off=" ZINT_FORMAT " blocksize=%d offset=%d",
                        pos, off, mf->blocksize, offset);
     	return -1;
     }
@@ -201,13 +201,13 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
     int fd, number;
     char metaname[FILENAME_MAX+1], tmpnam[FILENAME_MAX+1];
     
-    logf (LOG_DEBUG, "mf_init(%s)", name);
+    yaz_log (YLOG_DEBUG, "mf_init(%s)", name);
     strcpy(ma->name, name);
     ma->mfiles = 0;
     ma->dirs = 0;
     if (scan_areadef(ma, spec, base) < 0)
     {
-    	logf (LOG_WARN, "Failed to access description of '%s'", name);
+    	yaz_log (YLOG_WARN, "Failed to access description of '%s'", name);
     	return 0;
     }
     /* look at each directory */
@@ -215,7 +215,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
     {
     	if (!(dd = opendir(dirp->name)))
     	{
-    	    logf (LOG_WARN|LOG_ERRNO, "Failed to open directory %s",
+    	    yaz_log (YLOG_WARN|YLOG_ERRNO, "Failed to open directory %s",
                                      dirp->name);
     	    return 0;
 	}
@@ -264,13 +264,13 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
 	    /* get size */
 	    if ((fd = open(part_f->path, O_BINARY|O_RDONLY)) < 0)
 	    {
-	    	logf (LOG_FATAL|LOG_ERRNO, "Failed to access %s",
+	    	yaz_log (YLOG_FATAL|YLOG_ERRNO, "Failed to access %s",
                       dent->d_name);
 	    	return 0;
 	    }
 	    if ((part_f->bytes = mfile_seek(fd, 0, SEEK_END)) < 0)
 	    {
-	    	logf (LOG_FATAL|LOG_ERRNO, "Failed to seek in %s",
+	    	yaz_log (YLOG_FATAL|YLOG_ERRNO, "Failed to seek in %s",
                       dent->d_name);
 	    	return 0;
 	    }
@@ -285,7 +285,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
     }
     for (meta_f = ma->mfiles; meta_f; meta_f = meta_f->next)
     {
-    	logf (LOG_DEBUG, "mf_init: %s consists of %d part(s)", meta_f->name,
+    	yaz_log (YLOG_DEBUG, "mf_init: %s consists of %d part(s)", meta_f->name,
               meta_f->no_files);
     	qsort(meta_f->files, meta_f->no_files, sizeof(part_file),
               cmp_part_file);
@@ -359,7 +359,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     char tmp[FILENAME_MAX+1];
     mf_dir *dp;
 
-    logf(LOG_DEBUG, "mf_open(%s bs=%d, %s)", name, block_size,
+    yaz_log(YLOG_DEBUG, "mf_open(%s bs=%d, %s)", name, block_size,
          wflag ? "RW" : "RDONLY");
     assert (ma);
     for (mnew = ma->mfiles; mnew; mnew = mnew->next)
@@ -388,7 +388,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 	    mnew->min_bytes_creat; dp = dp->next);
 	if (!dp)
 	{
-	    logf (LOG_FATAL, "Insufficient space for new mfile.");
+	    yaz_log (YLOG_FATAL, "Insufficient space for new mfile.");
 	    return 0;
 	}
 	mnew->files[0].dir = dp;
@@ -435,7 +435,7 @@ int mf_close(MFile mf)
 {
     int i;
 
-    logf (LOG_DEBUG, "mf_close(%s)", mf->name);
+    yaz_log (YLOG_DEBUG, "mf_close(%s)", mf->name);
     assert(mf->open);
     for (i = 0; i < mf->no_files; i++)
     {
@@ -472,14 +472,14 @@ int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
 	}
         else
         {
-            yaz_log (LOG_FATAL, "mf_read %s internal error", mf->name);
+            yaz_log (YLOG_FATAL, "mf_read %s internal error", mf->name);
             exit(1);
         }
     }
     toread = nbytes ? nbytes : mf->blocksize;
     if ((rd = read(mf->files[mf->cur_file].fd, buf, toread)) < 0)
     {
-    	logf (LOG_FATAL|LOG_ERRNO, "mf_read: Read failed (%s)",
+    	yaz_log (YLOG_FATAL|YLOG_ERRNO, "mf_read: Read failed (%s)",
               mf->files[mf->cur_file].path);
     	exit(1);
     }
@@ -505,7 +505,7 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
     zebra_mutex_lock (&mf->mutex);
     if ((ps = file_position(mf, no, offset)) < 0)
     {
-        yaz_log (LOG_FATAL, "mf_write %s internal error (1)", mf->name);
+        yaz_log (YLOG_FATAL, "mf_write %s internal error (1)", mf->name);
 	exit(1);
     }
     /* file needs to grow */
@@ -521,20 +521,20 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 	    if ((nblocks = (int) (mf->files[mf->cur_file].dir->avail_bytes /
 		mf->blocksize)) > 0)
 	    {
-	    	logf (LOG_DEBUG, "Capping off file %s at pos " ZINT_FORMAT,
+	    	yaz_log (YLOG_DEBUG, "Capping off file %s at pos " ZINT_FORMAT,
 		    mf->files[mf->cur_file].path, nblocks);
 	    	if ((ps = file_position(mf,
 		    (mf->cur_file ? mf->files[mf->cur_file-1].top : 0) +
 		    mf->files[mf->cur_file].blocks + nblocks - 1, 0)) < 0)
                 {
-                    yaz_log (LOG_FATAL, "mf_write %s internal error (2)",
+                    yaz_log (YLOG_FATAL, "mf_write %s internal error (2)",
 				 mf->name);
 		    exit(1);
                 }
-		logf (LOG_DEBUG, "ps = " ZINT_FORMAT, ps);
+		yaz_log (YLOG_DEBUG, "ps = " ZINT_FORMAT, ps);
 		if (write(mf->files[mf->cur_file].fd, &dummych, 1) < 1)
 		{
-		    logf (LOG_ERRNO|LOG_FATAL, "mf_write %s internal error (3)",
+		    yaz_log (YLOG_ERRNO|YLOG_FATAL, "mf_write %s internal error (3)",
 				      mf->name);
 		    exit(1);
 		}
@@ -544,12 +544,12 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 		    mf->blocksize;
 	    }
 	    /* get other bit */
-    	    logf (LOG_DEBUG, "Creating new file.");
+    	    yaz_log (YLOG_DEBUG, "Creating new file.");
     	    for (dp = mf->ma->dirs; dp && dp->max_bytes >= 0 &&
 		dp->avail_bytes < needed; dp = dp->next);
 	    if (!dp)
 	    {
-	    	logf (LOG_FATAL, "Cannot allocate more space for %s",
+	    	yaz_log (YLOG_FATAL, "Cannot allocate more space for %s",
                       mf->name);
 	    	exit(1);
 	    }
@@ -570,7 +570,7 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 	    /* open new file and position at beginning */
 	    if ((ps = file_position(mf, no, offset)) < 0)
             {
-                yaz_log (LOG_FATAL, "mf_write %s internal error (4)",
+                yaz_log (YLOG_FATAL, "mf_write %s internal error (4)",
 				 mf->name);
 	    	exit(1);
             }	
@@ -588,7 +588,7 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
     towrite = nbytes ? nbytes : mf->blocksize;
     if (write(mf->files[mf->cur_file].fd, buf, towrite) < towrite)
     {
-    	logf (LOG_FATAL|LOG_ERRNO, "Write failed for file %s part %d",
+    	yaz_log (YLOG_FATAL|YLOG_ERRNO, "Write failed for file %s part %d",
 		mf->name, mf->cur_file);
     	exit(1);
     }

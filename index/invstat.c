@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.41 2004-09-15 08:13:51 adam Exp $
+/* $Id: invstat.c,v 1.42 2004-11-19 10:26:57 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -63,7 +63,7 @@ static void print_dict_item (ZebraMaps zm, const char *s, zint count,
                 *to++ = *res++;
     }
     *to = '\0';
-    /* yaz_log (LOG_LOG, "%s", keybuf); */
+    /* yaz_log (YLOG_LOG, "%s", keybuf); */
     printf("%10" ZINT_FORMAT0 " %s %d.%d - %d.%d\n", count, keybuf,
               firstsys,firstseq, lastsys,lastseq);
 }

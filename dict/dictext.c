@@ -1,4 +1,4 @@
-/* $Id: dictext.c,v 1.9 2002-08-02 19:26:55 adam Exp $
+/* $Id: dictext.c,v 1.10 2004-11-19 10:26:55 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -50,7 +50,7 @@ int main (int argc, char **argv)
                 inputfile = arg;
             else
             {
-                logf (LOG_FATAL, "too many files specified\n");
+                yaz_log (YLOG_FATAL, "too many files specified\n");
                 exit (1);
             }
         }
@@ -68,7 +68,7 @@ int main (int argc, char **argv)
             use8 = 1;
         else
         {
-            logf (LOG_FATAL, "Unknown option '-%s'", arg);
+            yaz_log (YLOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }
@@ -77,7 +77,7 @@ int main (int argc, char **argv)
         ipf = fopen (inputfile, "r");
         if (!ipf)
         {
-            logf (LOG_FATAL|LOG_ERRNO, "cannot open '%s'", inputfile);
+            yaz_log (YLOG_FATAL|YLOG_ERRNO, "cannot open '%s'", inputfile);
             exit (1);
         }
     }

@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.26 2004-09-28 10:15:03 adam Exp $
+/* $Id: marcread.c,v 1.27 2004-11-19 10:27:12 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 #include <assert.h>
 
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/yaz-util.h>
 #include <yaz/marcdisp.h>
 #include <idzebra/recgrs.h>
@@ -63,14 +63,14 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     record_length = atoi_n (buf, 5);
     if (record_length < 25)
     {
-        logf (LOG_WARN, "MARC record length < 25, is %d", record_length);
+        yaz_log (YLOG_WARN, "MARC record length < 25, is %d", record_length);
         return NULL;
     }
     /* read remaining part - attempt to read one byte furhter... */
     read_bytes = (*p->readf)(p->fh, buf+5, record_length-4);
     if (read_bytes < record_length-5)
     {
-        logf (LOG_WARN, "Couldn't read whole MARC record");
+        yaz_log (YLOG_WARN, "Couldn't read whole MARC record");
         return NULL;
     }
     if (read_bytes == record_length - 4)
@@ -85,7 +85,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     res_root = data1_mk_root (p->dh, p->mem, absynName);
     if (!res_root)
     {
-        yaz_log (LOG_WARN, "cannot read MARC without an abstract syntax");
+        yaz_log (YLOG_WARN, "cannot read MARC without an abstract syntax");
         return 0;
     }
     if (marc_xml)
@@ -376,7 +376,7 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, WRBUF buf,
 		    wrbuf_puts(buf, " ");
 		}
 #if MARCOMP_DEBUG
-		logf(LOG_LOG, "cat_inline_subfield(): add subfield $%s", found->name);
+		yaz_log(YLOG_LOG, "cat_inline_subfield(): add subfield $%s", found->name);
 #endif		
 		pisf = found->next;
 	    }
@@ -440,7 +440,7 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 	    int i;
 	    if ((i=inline_parse(pif, psubf->u.tag.tag, get_data(psubf, &len)))<0)
 	    {
-		logf(LOG_WARN, "inline subfield ($%s): parse error",
+		yaz_log(YLOG_WARN, "inline subfield ($%s): parse error",
 		    psubf->u.tag.tag);
 		inline_destroy_field(pif);
 		return;	
@@ -482,14 +482,14 @@ static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 		}
 		else
 		{
-		    logf(LOG_WARN, "In-line field %s missed -- indicators do not match", pif->name);
+		    yaz_log(YLOG_WARN, "In-line field %s missed -- indicators do not match", pif->name);
 		}
 	    }
 	}
 	inline_destroy_field(pif);
     }
 #if MARCOMP_DEBUG    
-    logf(LOG_LOG, "cat_inline_field(): got buffer {%s}", buf);
+    yaz_log(YLOG_LOG, "cat_inline_field(): got buffer {%s}", buf);
 #endif
 }
 
@@ -534,7 +534,7 @@ static data1_node *cat_subfield(mc_subfield *psf, WRBUF buf,
 		    wrbuf_puts(buf, " ");
 		}
 #if MARCOMP_DEBUG		
-		logf(LOG_LOG, "cat_subfield(): add subfield $%s", found->u.tag.tag);
+		yaz_log(YLOG_LOG, "cat_subfield(): add subfield $%s", found->u.tag.tag);
 #endif		
 		subfield = found->next;
 	    }
@@ -610,7 +610,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
 	    wrbuf_puts(buf, "");
 	}
 #if MARCOMP_DEBUG
-        logf(LOG_LOG, "cat_field(): got buffer {%s}", buf);
+        yaz_log(YLOG_LOG, "cat_field(): got buffer {%s}", buf);
 #endif
 	return field->next;
     }
@@ -628,7 +628,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
 	))
     {
 #if MARCOMP_DEBUG
-	logf(LOG_WARN, "Field %s missed -- does not match indicators", field->u.tag.tag);
+	yaz_log(YLOG_WARN, "Field %s missed -- does not match indicators", field->u.tag.tag);
 #endif
 	return field->next;
     }
@@ -641,7 +641,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
     cat_subfield(pf->list, buf, subfield);
 
 #if MARCOMP_DEBUG    
-    logf(LOG_LOG, "cat_field(): got buffer {%s}", buf);
+    yaz_log(YLOG_LOG, "cat_field(): got buffer {%s}", buf);
 #endif
     
     return field->next;    
@@ -683,13 +683,13 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
     }
     buf = wrbuf_alloc();
 #if MARCOMP_DEBUG    
-    logf(LOG_LOG, "parse_data1_tree(): statement -{%s}", mc_stmnt);
+    yaz_log(YLOG_LOG, "parse_data1_tree(): statement -{%s}", mc_stmnt);
 #endif
     if (!yaz_matchstr(pf->name, "ldr"))
     {
 	data1_node *new;
 #if MARCOMP_DEBUG
-	logf(LOG_LOG,"parse_data1_tree(): try LEADER from {%d} to {%d} positions",
+	yaz_log(YLOG_LOG,"parse_data1_tree(): try LEADER from {%d} to {%d} positions",
 	    pf->interval.start, pf->interval.end);
 #endif	
 	new = data1_mk_tag_n(p->dh, p->mem, mc_stmnt, strlen(mc_stmnt), 0, top);
@@ -707,7 +707,7 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
 		data1_node *new;
 		char *pb;
 #if MARCOMP_DEBUG		
-		logf(LOG_LOG, "parse_data1_tree(): try field {%s}", field->u.tag.tag);
+		yaz_log(YLOG_LOG, "parse_data1_tree(): try field {%s}", field->u.tag.tag);
 #endif		
 		wrbuf_rewind(buf);
 		wrbuf_puts(buf, "");

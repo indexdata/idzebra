@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.48 2004-11-03 16:04:45 heikki Exp $
+/* $Id: trunc.c,v 1.49 2004-11-19 10:27:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -369,7 +369,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         xfree (ispt);
     }
     else
-        logf (LOG_WARN, "Unknown isam set in rset_trunc_r");
+        yaz_log (YLOG_WARN, "Unknown isam set in rset_trunc_r");
 
     rset_close (result_rsfd);
     return result;
@@ -409,7 +409,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
                  const struct key_control *kctrl, int scope)
 {
     TERMID termid;
-    logf (LOG_DEBUG, "rset_trunc no=%d", no);
+    yaz_log (YLOG_DEBUG, "rset_trunc no=%d", no);
     if (no < 1)
 	return rsnull_create (rset_nmem,kctrl);
     termid=rset_term_create(term, length, flags, term_type,rset_nmem);
@@ -448,7 +448,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
     }
     else
     {
-        logf (LOG_WARN, "Unknown isam set in rset_trunc");
+        yaz_log (YLOG_WARN, "Unknown isam set in rset_trunc");
 	return rsnull_create (rset_nmem, kctrl);
     }
     return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100,

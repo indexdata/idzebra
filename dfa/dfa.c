@@ -1,4 +1,4 @@
-/* $Id: dfa.c,v 1.30 2003-06-18 21:32:44 adam Exp $
+/* $Id: dfa.c,v 1.31 2004-11-19 10:26:54 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -459,7 +459,7 @@ static int map_l_char (struct DFA_parse *parse_info)
     
     parse_info->expr_ptr = (const unsigned char *) cp0;
     parse_info->look_ch = ((unsigned char **) mapto)[i][0];
-    logf (LOG_DEBUG, "map from %c to %d", parse_info->expr_ptr[-1], parse_info->look_ch);
+    yaz_log (YLOG_DEBUG, "map from %c to %d", parse_info->expr_ptr[-1], parse_info->look_ch);
     return L_CHAR;
 }
 

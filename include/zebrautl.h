@@ -1,4 +1,4 @@
-/* $Id: zebrautl.h,v 1.9 2004-08-25 09:23:36 adam Exp $
+/* $Id: zebrautl.h,v 1.10 2004-11-19 10:26:55 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,6 +26,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/yaz-util.h>
 #include <idzebra/res.h>
 #include <idzebra/version.h>
+
+/* check that we don't have all too old yaz */
+#ifndef YLOG_ERRNO
+#error Need a modern yaz with ylog.h
+#endif
 
 YAZ_BEGIN_CDECL
 zint atoi_zn (const char *buf, zint len);

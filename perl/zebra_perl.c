@@ -4,7 +4,7 @@
 
 #include <yaz/yaz-util.h>
 #include <yaz/proto.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/cql.h>
 #include <yaz/pquery.h>
 
@@ -17,17 +17,17 @@ NMEM handles;
 void init (void) {
   nmem_init ();
   yaz_log_init_prefix ("ZebraPerl");
-  yaz_log (LOG_LOG, "Zebra API initialized");
+  yaz_log (YLOG_LOG, "Zebra API initialized");
 }
 
 void DESTROY (void) {
   nmem_exit ();
-  yaz_log (LOG_LOG, "Zebra API destroyed");
+  yaz_log (YLOG_LOG, "Zebra API destroyed");
 }   
 
 /* Logging facilities from yaz */
 void logMsg (int level, const char *message) {
-  logf(level, "%s", message);
+  yaz_log(level, "%s", message);
 }
 
 /* debug tool for data1... maybe should be moved to data1. 
@@ -119,7 +119,7 @@ void records_retrieve(ZebraHandle zh,
   } else {
     schema = oid_getvalbyname (a_schema);
     if (schema == VAL_NONE) {
-      logf(LOG_WARN,"unknown schema '%s'",a_schema);
+      yaz_log(YLOG_WARN,"unknown schema '%s'",a_schema);
     }
   }
 
@@ -129,7 +129,7 @@ void records_retrieve(ZebraHandle zh,
   } else {
     recordsyntax = oid_getvalbyname (a_format);
     if (recordsyntax == VAL_NONE) {
-      logf(LOG_WARN,"unknown record syntax '%s', using SUTRS",a_schema);
+      yaz_log(YLOG_WARN,"unknown record syntax '%s', using SUTRS",a_schema);
       recordsyntax = VAL_SUTRS;
     }
   }
@@ -209,7 +209,7 @@ int zebra_cql2pqf (cql_transform_t ct,
 
   if (cql_transform_buf(ct, cql_parser_result(cp), res, len)) {
     status = cql_transform_error(ct, &addinfo);
-    logf (LOG_WARN,"Transform error %d %s\n", status, addinfo ? addinfo : "");
+    yaz_log (YLOG_WARN,"Transform error %d %s\n", status, addinfo ? addinfo : "");
     cql_parser_destroy(cp);
     return (status);
   }
@@ -230,18 +230,18 @@ void zebra_scan_PQF (ZebraHandle zh,
   ZebraScanEntry *entries;
   int i, class;
 
-  logf(LOG_DEBUG,  
+  yaz_log(YLOG_DEBUG,  
        "scan req: pos:%d, num:%d, partial:%d", 
        so->position, so->num_entries, so->is_partial);
 
   zapt = p_query_scan (stream, PROTO_Z3950, &attrsetid, pqf_query);
 
   oidname = yaz_z3950oid_to_str (attrsetid, &class); 
-  logf (LOG_DEBUG, "Attributreset: %s", oidname);
+  yaz_log (YLOG_DEBUG, "Attributreset: %s", oidname);
   attributeset = oid_getvalbyname(oidname);
 
   if (!zapt) {
-    logf (LOG_WARN, "bad query %s\n", pqf_query);
+    yaz_log (YLOG_WARN, "bad query %s\n", pqf_query);
     odr_reset (stream);
     return;
   }
@@ -254,7 +254,7 @@ void zebra_scan_PQF (ZebraHandle zh,
 	      &so->position, &so->num_entries, 
 	      (ZebraScanEntry **) &so->entries, &so->is_partial);
 
-  logf(LOG_DEBUG, 
+  yaz_log(YLOG_DEBUG, 
        "scan res: pos:%d, num:%d, partial:%d", 
        so->position, so->num_entries, so->is_partial);
 }

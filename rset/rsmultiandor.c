@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.9 2004-11-04 13:54:08 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.10 2004-11-19 10:27:14 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -137,13 +137,13 @@ static void heap_dump_item( HEAP h, int i, int level) {
     if (i>h->heapnum)
         return;
     (void)rset_pos(h->heap[i]->rset,h->heap[i]->fd, &cur, &tot);
-    logf(log_level," %d %*s i=%p buf=%p %0.1f/%0.1f",i, level, "",  
+    yaz_log(log_level," %d %*s i=%p buf=%p %0.1f/%0.1f",i, level, "",  
                     &(h->heap[i]), h->heap[i]->buf, cur,tot );
     heap_dump_item(h, 2*i, level+1);
     heap_dump_item(h, 2*i+1, level+1);
 }
 static void heap_dump( HEAP h,char *msg) {
-    logf(log_level, "heap dump: %s num=%d max=%d",msg, h->heapnum, h->heapmax);
+    yaz_log(log_level, "heap dump: %s num=%d max=%d",msg, h->heapnum, h->heapmax);
     heap_dump_item(h,1,1);
 }
 #endif
@@ -316,7 +316,7 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
 
     if (flag & RSETF_WRITE)
     {
-        logf (LOG_FATAL, "multiandor set type is read-only");
+        yaz_log (YLOG_FATAL, "multiandor set type is read-only");
         return NULL;
     }
     rfd=rfd_create_base(ct);
@@ -571,26 +571,26 @@ static void r_pos (RSFD rfd, double *current, double *total)
     int i;
     for (i=0; i<info->no_rsets; i++){
         rset_pos(mrfd->items[i].fd, &cur, &tot);
-        logf(log_level, "r_pos: %d %0.1f %0.1f", i, cur,tot); 
+        yaz_log(log_level, "r_pos: %d %0.1f %0.1f", i, cur,tot); 
         scur += cur;
         stot += tot;
     }
     if (stot <1.0) { /* nothing there */
         *current=0;
         *total=0;
-        logf(log_level, "r_pos: NULL  %0.1f %0.1f",  *current, *total);
+        yaz_log(log_level, "r_pos: NULL  %0.1f %0.1f",  *current, *total);
         return;
     }
     *current=mrfd->hits;
     *total=*current*stot/scur;
-    logf(log_level, "r_pos: =  %0.1f %0.1f",  *current, *total);
+    yaz_log(log_level, "r_pos: =  %0.1f %0.1f",  *current, *total);
 }
 
 
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "multior set type is read-only");
+    yaz_log (YLOG_FATAL, "multior set type is read-only");
     return -1;
 }
 

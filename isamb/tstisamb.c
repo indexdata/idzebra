@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.10 2004-09-09 10:08:06 heikki Exp $
+/* $Id: tstisamb.c,v 1.11 2004-11-19 10:27:09 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -22,7 +22,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <string.h>
 #include <yaz/xmalloc.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <isamb.h>
 #include <assert.h>
 
@@ -30,12 +30,12 @@ static void log_item(int level, const void *b, const char *txt)
 {
     int x;
     memcpy(&x, b, sizeof(int));
-    yaz_log(LOG_DEBUG, "%s %d", txt, x);
+    yaz_log(YLOG_DEBUG, "%s %d", txt, x);
 }
 
 static void log_pr(const char *txt)
 {
-    yaz_log(LOG_DEBUG, "%s", txt);
+    yaz_log(YLOG_DEBUG, "%s", txt);
 }
 
 int compare_item(const void *a, const void *b)
@@ -118,7 +118,7 @@ void tst_forward(ISAMB isb, int n)
 	isamb_pp_forward(pp, &x, &xu);
 	if (x != xu && xu != x+1)
 	{
-	    yaz_log(LOG_WARN, "isamb_pp_forward (1). Got %d (expected %d)",
+	    yaz_log(YLOG_WARN, "isamb_pp_forward (1). Got %d (expected %d)",
 		    x, xu);
 	    exit(4);
 	}
@@ -134,7 +134,7 @@ void tst_forward(ISAMB isb, int n)
 	isamb_pp_forward(pp, &x, &xu);
 	if (x != xu && xu != x+1)
 	{
-	    yaz_log(LOG_WARN, "isamb_pp_forward (2). Got %d (expected %d)",
+	    yaz_log(YLOG_WARN, "isamb_pp_forward (2). Got %d (expected %d)",
 		    x, xu);
 	    exit(4);
 	}
@@ -174,7 +174,7 @@ void tst_insert(ISAMB isb, int n)
 	memcpy (&x, key_buf, sizeof(int));
 	if (x != ri.no)
 	{
-	    yaz_log(LOG_WARN, "isamb_pp_read. Got %d (expected %d)",
+	    yaz_log(YLOG_WARN, "isamb_pp_read. Got %d (expected %d)",
 		    x, ri.no);
 	    exit(3);
 	}
@@ -182,7 +182,7 @@ void tst_insert(ISAMB isb, int n)
     }
     if (ri.no != ri.max)
     {
-	yaz_log(LOG_WARN, "ri.max != ri.max (%d != %d)", ri.no, ri.max);
+	yaz_log(YLOG_WARN, "ri.max != ri.max (%d != %d)", ri.no, ri.max);
 	exit(3);
     }
     isamb_pp_close(pp);
@@ -213,7 +213,7 @@ void tst_insert(ISAMB isb, int n)
 
     if (isamc_p)
     {
-	yaz_log(LOG_WARN, "isamb_merge did not return empty list");
+	yaz_log(YLOG_WARN, "isamb_merge did not return empty list");
 	exit(3);
     }
 }
@@ -225,7 +225,7 @@ int main(int argc, char **argv)
     ISAMC_M method;
     
     if (argc == 2)
-	yaz_log_init_level(LOG_ALL);
+	yaz_log_init_level(YLOG_ALL);
 	
     /* setup method (attributes) */
     method.compare_item = compare_item;
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
     bfs = bfs_create(0, 0);
     if (!bfs)
     {
-	yaz_log(LOG_WARN, "bfs_create failed");
+	yaz_log(YLOG_WARN, "bfs_create failed");
 	exit(1);
     }
 
@@ -250,7 +250,7 @@ int main(int argc, char **argv)
     isb = isamb_open (bfs, "isamb", 1, &method, 0);
     if (!isb)
     {
-	yaz_log(LOG_WARN, "isamb_open failed");
+	yaz_log(YLOG_WARN, "isamb_open failed");
 	exit(2);
     }
     tst_insert(isb, 1);

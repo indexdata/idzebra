@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.7 2004-09-28 10:15:03 adam Exp $
+/* $Id: d1_marc.c,v 1.8 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include <yaz/oid.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/marcdisp.h>
 #include <yaz/readconf.h>
 #include <yaz/xmalloc.h>
@@ -45,7 +45,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
     
     if (!(f = data1_path_fopen(dh, file, "r")))
     {
-	yaz_log(LOG_WARN|LOG_ERRNO, "%s", file);
+	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", file);
 	return 0;
     }
 
@@ -70,7 +70,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d:Missing arg for %s", file, lineno,
+		yaz_log(YLOG_WARN, "%s:%d:Missing arg for %s", file, lineno,
 			*argv);
 		continue;
 	    }
@@ -80,13 +80,13 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
+		yaz_log(YLOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
 			*argv);
 		continue;
 	    }
 	    if ((res->reference = oid_getvalbyname(argv[1])) == VAL_NONE)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Unknown tagset reference '%s'",
+		yaz_log(YLOG_WARN, "%s:%d: Unknown tagset reference '%s'",
 			file, lineno, argv[1]);
 		continue;
 	    }
@@ -95,7 +95,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
+		yaz_log(YLOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
 			*argv);
 		continue;
 	    }
@@ -105,7 +105,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
+		yaz_log(YLOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
 			*argv);
 		continue;
 	    }
@@ -115,7 +115,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
+		yaz_log(YLOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
 			*argv);
 		continue;
 	    }
@@ -125,7 +125,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
+		yaz_log(YLOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
 			*argv);
 		continue;
 	    }
@@ -135,7 +135,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
+		yaz_log(YLOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
 			*argv);
 		continue;
 	    }
@@ -145,14 +145,14 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
+		yaz_log(YLOG_WARN, "%s:%d: Missing arg for %s", file, lineno,
 			*argv);
 		continue;
 	    }
 	    res->force_identifier_length = atoi(argv[1]);
 	}
 	else
-	    yaz_log(LOG_WARN, "%s:%d: Unknown directive '%s'", file, lineno,
+	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'", file, lineno,
 		    *argv);
 
     fclose(f);
@@ -234,7 +234,7 @@ static int nodetomarc(data1_handle dh,
 #if 0
     data1_pr_tree(dh, n, stdout);
 #endif
-    yaz_log (LOG_DEBUG, "nodetomarc");
+    yaz_log (YLOG_DEBUG, "nodetomarc");
 
     memcpy (leader+5, p->record_status, 1);
     memcpy (leader+6, p->implementation_codes, 4);
@@ -420,7 +420,7 @@ static int nodetomarc(data1_handle dh,
 		    }
 		}
 		else if (subf->which != DATA1N_tag)
-                    yaz_log(LOG_WARN, "Malformed fields for marc output.");
+                    yaz_log(YLOG_WARN, "Malformed fields for marc output.");
                 else
                     identifier = subf->u.tag.tag;
                 op[data_p] = ISO2709_IDFS;

@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.21 2004-09-28 10:15:03 adam Exp $
+/* $Id: rectext.c,v 1.22 2004-11-19 10:27:13 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -105,7 +105,7 @@ static int text_extract (void *clientData, struct recExtractCtrl *p)
     struct buf_info *fi = buf_open (p);
 
 #if 0
-    yaz_log(LOG_LOG, "text_extract off=%ld",
+    yaz_log(YLOG_LOG, "text_extract off=%ld",
 	    (long) (*fi->p->tellf)(fi->p->fh));
 #endif
     xfree(tinfo->sep);

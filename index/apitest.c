@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.17 2004-08-25 09:23:36 adam Exp $
+/* $Id: apitest.c,v 1.18 2004-11-19 10:26:56 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
 
@@ -170,7 +170,7 @@ int main (int argc, char **argv)
 	/* bad query? */
 	if (!query)
 	{
-	    logf (LOG_WARN, "bad query %s\n", argv[argno]);
+	    yaz_log (YLOG_WARN, "bad query %s\n", argv[argno]);
 	    odr_reset (odr_input);
 	    continue;
 	}

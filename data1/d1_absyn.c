@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.14 2004-09-30 18:31:14 adam Exp $
+/* $Id: d1_absyn.c,v 1.15 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,7 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include <yaz/oid.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <idzebra/data1.h>
 #include <zebra_xpath.h>
 #include <d1_absyn.h>
@@ -183,7 +183,7 @@ void data1_absyn_destroy (data1_handle dh)
 	{
 	    data1_xpelement *xpe = abs->xp_elements;
 	    while (xpe) {
-		logf (LOG_DEBUG,"Destroy xp element %s",xpe->xpath_expr);
+		yaz_log (YLOG_DEBUG,"Destroy xp element %s",xpe->xpath_expr);
 		if (xpe->dfa) {  dfa_delete (&xpe->dfa); }
 		xpe = xpe->next;
 	    } 
@@ -273,7 +273,7 @@ data1_attset *data1_attset_add (data1_handle dh, const char *name)
 	    *cp = '\0';
     }
     if (!attset)
-	yaz_log (LOG_WARN|LOG_ERRNO, "Couldn't load attribute set %s", name);
+	yaz_log (YLOG_WARN|YLOG_ERRNO, "Couldn't load attribute set %s", name);
     else
     {
 	data1_attset_cache p = (data1_attset_cache)
@@ -413,7 +413,7 @@ void fix_element_ref (data1_handle dh, data1_absyn *absyn, data1_element *e)
 	    if (sub_e)
 		e->children = sub_e->elements;
 	    else
-		yaz_log (LOG_WARN, "Unresolved reference to sub-elements %s",
+		yaz_log (YLOG_WARN, "Unresolved reference to sub-elements %s",
 		      e->sub_name);
 	}
     }
@@ -496,7 +496,7 @@ const char * mk_xpath_regexp (data1_handle dh, char *expr)
     if (!abs) { sprintf (p, ".*"); p+=2; }
     sprintf (p, "$"); p++;
     r = nmem_strdup (data1_nmem_get (dh), res);
-    yaz_log(LOG_DEBUG,"Got regexp: %s",r);
+    yaz_log(YLOG_DEBUG,"Got regexp: %s",r);
     return (r);
 }
 
@@ -528,7 +528,7 @@ static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
 	if (i == 0)
 	{
 	    if (*cp)
-		yaz_log(LOG_WARN,
+		yaz_log(YLOG_WARN,
 			"%s:%d: Syntax error in termlistspec '%s'",
 			file, lineno, cp);
 	    break;
@@ -568,7 +568,7 @@ static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
 	if (!((*tp)->att = data1_getattbyname(dh, res->attset,
                                               attname))) {
             if ((!xpelement) || (*attname != '!')) {
-                yaz_log(LOG_WARN,
+                yaz_log(YLOG_WARN,
                         "%s:%d: Couldn't find att '%s' in attset",
                         file, lineno, attname);
                 return -1;
@@ -681,7 +681,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 
     if (!(f = data1_path_fopen(dh, file, "r")))
     {
-	yaz_log(LOG_WARN|LOG_ERRNO, "Couldn't open %s", file);
+	yaz_log(YLOG_WARN|YLOG_ERRNO, "Couldn't open %s", file);
         if (file_must_exist)
             return 0;
     }
@@ -723,7 +723,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 
 	    if (argc < 4)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to elm", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to elm", file, lineno);
 		continue;
 	    }
 	    path = argv[1];
@@ -754,7 +754,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    }
 	    if (i > level+1)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad level increase", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad level increase", file, lineno);
 		fclose(f);
 		return 0;
 	    }
@@ -777,14 +777,14 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    {
 		if (!res->tagset)
 		{
-		    yaz_log(LOG_WARN, "%s:%d: No tagset loaded", file, lineno);
+		    yaz_log(YLOG_WARN, "%s:%d: No tagset loaded", file, lineno);
 		    fclose(f);
 		    return 0;
 		}
 		if (!(new_element->tag = data1_gettagbynum (dh, res->tagset,
 							    type, value)))
 		{
-		    yaz_log(LOG_WARN, "%s:%d: Couldn't find tag %s in tagset",
+		    yaz_log(YLOG_WARN, "%s:%d: Couldn't find tag %s in tagset",
 			 file, lineno, p);
 		    fclose(f);
 		    return 0;
@@ -810,7 +810,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    }
 	    else
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad element", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad element", file, lineno);
 		fclose(f);
 		return 0;
 	    }
@@ -853,7 +853,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
             
 	    if (argc < 3)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to xelm", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to xelm", file, lineno);
 		continue;
 	    }
 	    xpath_expr = argv[1];
@@ -861,7 +861,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    regexp = mk_xpath_regexp(dh, xpath_expr);
 	    i = dfa_parse (dfa, &regexp);
 	    if (i || *regexp) {
-                yaz_log(LOG_WARN, "%s:%d: Bad xpath to xelm", file, lineno);
+                yaz_log(YLOG_WARN, "%s:%d: Bad xpath to xelm", file, lineno);
                 dfa_delete (&dfa);
                 continue;
 	    }
@@ -917,7 +917,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    
 	    if (argc < 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to section",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to section",
                         file, lineno);
 		continue;
 	    }
@@ -937,7 +937,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
         {
             if (argc != 2)
             {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to 'xpath' directive",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to 'xpath' directive",
 		     file, lineno);
 		continue;
             }
@@ -947,7 +947,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
                 res->enable_xpath_indexing = 0;
             else
             {
-		yaz_log(LOG_WARN, "%s:%d: Expecting disable/enable "
+		yaz_log(YLOG_WARN, "%s:%d: Expecting disable/enable "
                         "after 'xpath' directive", file, lineno);
             }
         }
@@ -956,13 +956,13 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    data1_termlist **tp = &all;
 	    if (all)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Too many 'all' directives - ignored",
+		yaz_log(YLOG_WARN, "%s:%d: Too many 'all' directives - ignored",
 		     file, lineno);
 		continue;
 	    }
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to 'all' directive",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to 'all' directive",
 		     file, lineno);
 		continue;
 	    }
@@ -976,7 +976,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to name directive",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to name directive",
 		     file, lineno);
 		continue;
 	    }
@@ -988,14 +988,14 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to reference",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to reference",
 		     file, lineno);
 		continue;
 	    }
 	    name = argv[1];
 	    if ((res->reference = oid_getvalbyname(name)) == VAL_NONE)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Unknown tagset ref '%s'", 
+		yaz_log(YLOG_WARN, "%s:%d: Unknown tagset ref '%s'", 
 		     file, lineno, name);
 		continue;
 	    }
@@ -1007,14 +1007,14 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to attset",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to attset",
 		     file, lineno);
 		continue;
 	    }
 	    name = argv[1];
 	    if (!(attset = data1_get_attset (dh, name)))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Couldn't find attset  %s",
+		yaz_log(YLOG_WARN, "%s:%d: Couldn't find attset  %s",
 		     file, lineno, name);
 		continue;
 	    }
@@ -1030,7 +1030,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    int type = 0;
 	    if (argc < 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args to tagset",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args to tagset",
 		     file, lineno);
 		continue;
 	    }
@@ -1040,7 +1040,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    *tagset_childp = data1_read_tagset (dh, name, type);
 	    if (!(*tagset_childp))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Couldn't load tagset %s",
+		yaz_log(YLOG_WARN, "%s:%d: Couldn't load tagset %s",
 		     file, lineno, name);
 		continue;
 	    }
@@ -1052,14 +1052,14 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args in varset",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args in varset",
 		     file, lineno);
 		continue;
 	    }
 	    name = argv[1];
 	    if (!(res->varset = data1_read_varset (dh, name)))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Couldn't load Varset %s",
+		yaz_log(YLOG_WARN, "%s:%d: Couldn't load Varset %s",
 		     file, lineno, name);
 		continue;
 	    }
@@ -1070,7 +1070,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 
 	    if (argc != 3)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args in esetname",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args in esetname",
 		     file, lineno);
 		continue;
 	    }
@@ -1085,7 +1085,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 		(*esetpp)->spec = 0;
 	    else if (!((*esetpp)->spec = data1_read_espec1 (dh, fname)))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Espec-1 read failed for %s",
+		yaz_log(YLOG_WARN, "%s:%d: Espec-1 read failed for %s",
 		     file, lineno, fname);
 		continue;
 	    }
@@ -1097,14 +1097,14 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args for maptab",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args for maptab",
                      file, lineno);
 		continue;
 	    }
 	    name = argv[1];
 	    if (!(*maptabp = data1_read_maptab (dh, name)))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Couldn't load maptab %s",
+		yaz_log(YLOG_WARN, "%s:%d: Couldn't load maptab %s",
                      file, lineno, name);
 		continue;
 	    }
@@ -1116,14 +1116,14 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # or args for marc",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # or args for marc",
 		     file, lineno);
 		continue;
 	    }
 	    name = argv[1];
 	    if (!(*marcp = data1_read_marctab (dh, name)))
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Couldn't read marctab %s",
+		yaz_log(YLOG_WARN, "%s:%d: Couldn't read marctab %s",
                      file, lineno, name);
 		continue;
 	    }
@@ -1133,7 +1133,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # or args for encoding",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # or args for encoding",
 		     file, lineno);
 		continue;
 	    }
@@ -1143,7 +1143,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
         {
             if (argc != 3)
             {
-		yaz_log(LOG_WARN, "%s:%d: Bad # or args for systag",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # or args for systag",
 		     file, lineno);
 		continue;
             }
@@ -1155,7 +1155,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
         }
 	else
 	{
-	    yaz_log(LOG_WARN, "%s:%d: Unknown directive '%s'", file, 
+	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'", file, 
                     lineno, cmd);
 	    continue;
 	}
@@ -1171,6 +1171,6 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	fix_element_ref (dh, res, cur_elements->elements);
     }
     *systagsp = 0;
-    yaz_log(LOG_DEBUG, "%s: data1_read_absyn end", file);
+    yaz_log(YLOG_DEBUG, "%s: data1_read_absyn end", file);
     return res;
 }

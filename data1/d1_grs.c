@@ -1,4 +1,4 @@
-/* $Id: d1_grs.c,v 1.4 2004-09-28 10:15:03 adam Exp $
+/* $Id: d1_grs.c,v 1.5 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -26,7 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 
 #include <yaz/proto.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <d1_absyn.h>
 
 #define D1_VARIANTARRAY 20 /* fixed max length on sup'd variant-list. Lazy me */
@@ -94,7 +94,7 @@ static Z_Variant *make_variant(data1_node *n, int num, ODR o)
                     odr_strdup(o, p->u.variant.value);
 		break;
 	    default:
-		yaz_log(LOG_WARN, "Unable to handle value for variant %s",
+		yaz_log(YLOG_WARN, "Unable to handle value for variant %s",
 			p->u.variant.type->name);
 		return 0;
 	}
@@ -118,7 +118,7 @@ static int traverse_triples(data1_node *n, int level, Z_ElementMetaData *m,
 		    D1_VARIANTARRAY);
 	    else if (m->num_supportedVariants >= D1_VARIANTARRAY)
 	    {
-		yaz_log(LOG_WARN, "Too many variants (D1_VARIANTARRAY==%d)",
+		yaz_log(YLOG_WARN, "Too many variants (D1_VARIANTARRAY==%d)",
 			D1_VARIANTARRAY);
 		return -1;
 	    }
@@ -218,7 +218,7 @@ static Z_ElementData *nodetoelementdata(data1_handle dh, data1_node *n,
             *len += oid_oidlen(res->u.oid) * sizeof(int);
             break;
         default:
-            yaz_log(LOG_WARN, "Can't handle datatype.");
+            yaz_log(YLOG_WARN, "Can't handle datatype.");
             return 0;
 	}
     }
@@ -294,7 +294,7 @@ static Z_TaggedElement *nodetotaggedelement(data1_handle dh, data1_node *n,
     }
     else
     {
-	yaz_log(LOG_WARN, "Bad data.");
+	yaz_log(YLOG_WARN, "Bad data.");
 	return 0;
     }
 
@@ -392,7 +392,7 @@ Z_GenericRecord *data1_nodetogr(data1_handle dh, data1_node *n,
           data1_gettagbyname (dh, n->root->u.root.absyn->tagset,
                               "wellKnown")))
     {
-        yaz_log(LOG_WARN, "Unable to locate tag for 'wellKnown'");
+        yaz_log(YLOG_WARN, "Unable to locate tag for 'wellKnown'");
         wellknown_tag = odr_malloc(o, sizeof(*wellknown_tag));
         wellknown_tag->which = DATA1T_numeric;
         wellknown_tag->value.numeric = 19;

@@ -1,4 +1,4 @@
-/* $Id: commit.c,v 1.20 2004-09-13 08:43:28 adam Exp $
+/* $Id: commit.c,v 1.21 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,7 +35,7 @@ void cf_unlink (CFile cf)
 {
     if (cf->bucket_in_memory)
     {
-        logf (LOG_FATAL, "Cannot unlink potential dirty cache");
+        yaz_log (YLOG_FATAL, "Cannot unlink potential dirty cache");
         exit (1);
     }
     cf->head.state = 0;
@@ -97,7 +97,7 @@ static void map_cache_flush (struct map_cache *m_p)
         if (!mf_read (m_p->cf->block_mf, m_p->map[i].from, 0, 0,
                       m_p->buf + i * m_p->cf->head.block_size))
         {
-            logf (LOG_FATAL, "read commit block at position %d",
+            yaz_log (YLOG_FATAL, "read commit block at position %d",
                   m_p->map[i].from);
             exit (1);
         }
@@ -156,7 +156,7 @@ static void cf_commit_hash (CFile cf)
     {
         if (!mf_read (cf->hash_mf, bucket_no, 0, 0, p))
         {
-            logf (LOG_FATAL, "read commit hash");
+            yaz_log (YLOG_FATAL, "read commit hash");
             exit (1);
         }
         for (i = 0; i<HASH_BUCKET && p->vno[i]; i++)
@@ -166,7 +166,7 @@ static void cf_commit_hash (CFile cf)
 #else
             if (!mf_read (cf->block_mf, p->vno[i], 0, 0, cf->iobuf))
             {
-                logf (LOG_FATAL, "read commit block");
+                yaz_log (YLOG_FATAL, "read commit block");
                 exit (1);
             }
             mf_write (cf->rmf, p->no[i], 0, 0, cf->iobuf);
@@ -202,7 +202,7 @@ static void cf_commit_flat (CFile cf)
         if (!mf_read (cf->hash_mf, hno, 0, 0, fp) &&
             hno != cf->head.flat_bucket-1)
         {
-            logf (LOG_FATAL, "read index block hno=" ZINT_FORMAT
+            yaz_log (YLOG_FATAL, "read index block hno=" ZINT_FORMAT
 		  " (" ZINT_FORMAT "-" ZINT_FORMAT ") commit",
                   hno, cf->head.next_bucket, cf->head.flat_bucket-1);
         }
@@ -215,7 +215,7 @@ static void cf_commit_flat (CFile cf)
 #else
                 if (!mf_read (cf->block_mf, fp[i], 0, 0, cf->iobuf))
                 {
-                    logf (LOG_FATAL, "read data block hno=" ZINT_FORMAT " (" ZINT_FORMAT "-" ZINT_FORMAT ") "
+                    yaz_log (YLOG_FATAL, "read data block hno=" ZINT_FORMAT " (" ZINT_FORMAT "-" ZINT_FORMAT ") "
                                      "i=%d commit block at " ZINT_FORMAT " (->" ZINT_FORMAT")",
                           hno, cf->head.next_bucket, cf->head.flat_bucket-1,
                           i, fp[i], vno);
@@ -239,7 +239,7 @@ void cf_commit (CFile cf)
 
     if (cf->bucket_in_memory)
     {
-        logf (LOG_FATAL, "Cannot commit potential dirty cache");
+        yaz_log (YLOG_FATAL, "Cannot commit potential dirty cache");
         exit (1);
     }
     if (cf->head.state == 1)

@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.31 2004-11-05 18:08:06 heikki Exp $
+/* $Id: rsbetween.c,v 1.32 2004-11-19 10:27:13 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -146,7 +146,7 @@ RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
     }
     info->andset=rsmultiand_create( nmem, kcontrol, scope, n, rsetarray);
     rnew->priv=info;
-    logf(log_level,"create rset at %p",rnew);
+    yaz_log(log_level,"create rset at %p",rnew);
     return rnew;
 }
 
@@ -154,7 +154,7 @@ RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
 static void r_delete (RSET ct)
 {
     struct rset_between_info *info = (struct rset_between_info *) ct->priv;
-    logf(log_level,"delete rset at %p",ct);
+    yaz_log(log_level,"delete rset at %p",ct);
     rset_delete(info->andset);
 }
 
@@ -167,7 +167,7 @@ static RSFD r_open (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-        logf (LOG_FATAL, "between set type is read-only");
+        yaz_log (YLOG_FATAL, "between set type is read-only");
         return NULL;
     }
     rfd=rfd_create_base(ct);
@@ -186,14 +186,14 @@ static RSFD r_open (RSET ct, int flag)
     p->attrdepth=0;
     p->attrbufok=0;
     p->startbufok=0;
-    logf(log_level,"open rset=%p rfd=%p", ct, rfd);
+    yaz_log(log_level,"open rset=%p rfd=%p", ct, rfd);
     return rfd;
 }
 
 static void r_close (RSFD rfd)
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
-    logf(log_level,"close rfd=%p", rfd);
+    yaz_log(log_level,"close rfd=%p", rfd);
     rset_close (p->andrfd);
     rfd_delete_base(rfd);
 }
@@ -205,7 +205,7 @@ static int r_forward(RSFD rfd, void *buf,
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     int rc;
-    logf(log_level, "forwarding ");
+    yaz_log(log_level, "forwarding ");
     rc=rset_forward(p->andrfd,buf,term,untilbuf);
     return rc;
 }
@@ -231,7 +231,7 @@ static void checkattr(RSFD rfd)
         if (0==cmp) /* and the keys match */
         {
             p->attrdepth=p->depth;
-            logf(log_level, "found attribute match at depth %d",p->attrdepth);
+            yaz_log(log_level, "found attribute match at depth %d",p->attrdepth);
         }
     }
 }
@@ -243,13 +243,13 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     const struct key_control *kctrl=rfd->rset->keycontrol;
     int cmp;
-    logf(log_level,"== read: term=%p",term);
+    yaz_log(log_level,"== read: term=%p",term);
     TERMID dummyterm=0;
     if (!term)
         term=&dummyterm;
     while ( rset_read(p->andrfd,buf,term) )
     {
-        logf(log_level,"read loop term=%p d=%d ad=%d",
+        yaz_log(log_level,"read loop term=%p d=%d ad=%d",
                 *term,p->depth, p->attrdepth);
         if (p->hits<0) 
         {/* first time? */
@@ -259,23 +259,23 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
         }
         else {
             cmp=(kctrl->cmp)(buf,p->recbuf);
-            logf(log_level, "cmp=%d",cmp);
+            yaz_log(log_level, "cmp=%d",cmp);
         }
 
         if (cmp>=rfd->rset->scope)
         { 
-            logf(log_level,"new record");
+            yaz_log(log_level,"new record");
             p->depth=0;
             p->attrdepth=0;
             memcpy(p->recbuf,buf,kctrl->key_size);
         }
 
         if (*term)
-            logf(log_level,"  term: '%s'", (*term)->name);
+            yaz_log(log_level,"  term: '%s'", (*term)->name);
         if (*term==info->startterm)
         {
             p->depth++;
-            logf(log_level,"read start tag. d=%d",p->depth);
+            yaz_log(log_level,"read start tag. d=%d",p->depth);
             memcpy(p->startbuf,buf,kctrl->key_size);
             p->startbufok=1;
             checkattr(rfd); /* in case we already saw the attr here */
@@ -285,11 +285,11 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
             if (p->depth == p->attrdepth)
                 p->attrdepth=0; /* ending the tag with attr match */
             p->depth--;
-            logf(log_level,"read end tag. d=%d ad=%d",p->depth, p->attrdepth);
+            yaz_log(log_level,"read end tag. d=%d ad=%d",p->depth, p->attrdepth);
         }
         else if (*term==info->attrterm)
         {
-            logf(log_level,"read attr");
+            yaz_log(log_level,"read attr");
             memcpy(p->attrbuf,buf,kctrl->key_size);
             p->attrbufok=1;
             checkattr(rfd); /* in case the start tag came first */
@@ -299,11 +299,11 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
             if (p->depth && p->attrdepth)
             {
                 p->hits++;
-                logf(log_level,"got a hit h="ZINT_FORMAT" d=%d ad=%d", 
+                yaz_log(log_level,"got a hit h="ZINT_FORMAT" d=%d ad=%d", 
                         p->hits,p->depth,p->attrdepth);
                 return 1; /* we have everything in place already! */
             } else
-                logf(log_level, "Ignoring hit. h="ZINT_FORMAT" d=%d ad=%d",
+                yaz_log(log_level, "Ignoring hit. h="ZINT_FORMAT" d=%d ad=%d",
                         p->hits,p->depth,p->attrdepth);
         }
     } /* while read */
@@ -315,7 +315,7 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "between set type is read-only");
+    yaz_log (YLOG_FATAL, "between set type is read-only");
     return -1;
 }
 
@@ -324,7 +324,7 @@ static void r_pos (RSFD rfd, double *current, double *total)
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     rset_pos(p->andrfd,current, total);
-    logf(log_level,"pos: %0.1f/%0.1f ", *current, *total);
+    yaz_log(log_level,"pos: %0.1f/%0.1f ", *current, *total);
 }
 
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)

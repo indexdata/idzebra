@@ -1,4 +1,4 @@
-/* $Id: danbibr.c,v 1.6 2004-09-28 10:15:03 adam Exp $
+/* $Id: danbibr.c,v 1.7 2004-11-19 10:27:12 heikki Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 
 #include <idzebra/recgrs.h>
 

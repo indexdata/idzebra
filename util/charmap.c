@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.30 2004-09-14 14:38:08 quinn Exp $
+/* $Id: charmap.c,v 1.31 2004-11-19 10:27:17 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -97,7 +97,7 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
                 root->target && root->target[0] && root->target[0][0] &&
                 strcmp (root->target[0], CHR_UNKNOWN))
             {
-                yaz_log (LOG_WARN, "duplicate entry for charmap from '%s'",
+                yaz_log (YLOG_WARN, "duplicate entry for charmap from '%s'",
                          from_0);
             }
 	    root->target = (unsigned char **)
@@ -222,7 +222,7 @@ unsigned char zebra_prim(char **s)
     unsigned char c;
     unsigned int i = 0;
 
-    yaz_log (LOG_DEBUG, "prim %.3s", *s);
+    yaz_log (YLOG_DEBUG, "prim %.3s", *s);
     if (**s == '\\')
     {
         (*s)++;
@@ -275,7 +275,7 @@ ucs4_t zebra_prim_w(ucs4_t **s)
     ucs4_t i = 0;
     char fmtstr[8];
 
-    yaz_log (LOG_DEBUG, "prim_w %.3s", (char *) *s);
+    yaz_log (YLOG_DEBUG, "prim_w %.3s", (char *) *s);
     if (**s == '\\')
     {
 	(*s)++;
@@ -341,7 +341,7 @@ ucs4_t zebra_prim_w(ucs4_t **s)
         c = **s;
         ++(*s);
     }
-    yaz_log (LOG_DEBUG, "out %d", c);
+    yaz_log (YLOG_DEBUG, "out %d", c);
     return c;
 }
 
@@ -392,7 +392,7 @@ static void fun_mkstring(const char *s, void *data, int num)
 
     res = chr_map_input(arg->map, &s, strlen(s), 0);
     if (*res == (char*) CHR_UNKNOWN)
-	logf(LOG_WARN, "Map: '%s' has no mapping", p);
+	yaz_log(YLOG_WARN, "Map: '%s' has no mapping", p);
     strncat(arg->string, *res, CHR_MAXSTR - strlen(arg->string));
     arg->string[CHR_MAXSTR] = '\0';
 }
@@ -405,11 +405,11 @@ static void fun_add_map(const char *s, void *data, int num)
     chrwork *arg = (chrwork *) data;
 
     assert(arg->map->input);
-    logf (LOG_DEBUG, "set map %.*s", (int) strlen(s), s);
+    yaz_log (YLOG_DEBUG, "set map %.*s", (int) strlen(s), s);
     set_map_string(arg->map->input, arg->map->nmem, s, strlen(s), arg->string,
                    0);
     for (s = arg->string; *s; s++)
-	logf (LOG_DEBUG, " %3d", (unsigned char) *s);
+	yaz_log (YLOG_DEBUG, " %3d", (unsigned char) *s);
 }
 
 /*
@@ -420,11 +420,11 @@ static void fun_add_qmap(const char *s, void *data, int num)
     chrwork *arg = (chrwork *) data;
 
     assert(arg->map->q_input);
-    logf (LOG_DEBUG, "set qmap %.*s", (int) strlen(s), s);
+    yaz_log (YLOG_DEBUG, "set qmap %.*s", (int) strlen(s), s);
     set_map_string(arg->map->q_input, arg->map->nmem, s,
 		   strlen(s), arg->string, 0);
     for (s = arg->string; *s; s++)
-	logf (LOG_DEBUG, " %3d", (unsigned char) *s);
+	yaz_log (YLOG_DEBUG, " %3d", (unsigned char) *s);
 }
 
 static int scan_to_utf8 (yaz_iconv_t t, ucs4_t *from, size_t inlen,
@@ -441,9 +441,9 @@ static int scan_to_utf8 (yaz_iconv_t t, ucs4_t *from, size_t inlen,
         ret = yaz_iconv (t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
         if (ret == (size_t) (-1))
         {
-	    yaz_log(LOG_LOG, "from: %2X %2X %2X %2X",
+	    yaz_log(YLOG_LOG, "from: %2X %2X %2X %2X",
 		    from[0], from[1], from[2], from[3]);
-            yaz_log (LOG_WARN|LOG_ERRNO, "bad unicode sequence");
+            yaz_log (YLOG_WARN|YLOG_ERRNO, "bad unicode sequence");
             return -1;
         }
     }
@@ -494,14 +494,14 @@ static int scan_string(char *s_native,
 	    begin = zebra_prim_w(&s);
 	    if (*s != '-')
 	    {
-		logf(LOG_FATAL, "Bad range in char-map");
+		yaz_log(YLOG_FATAL, "Bad range in char-map");
 		return -1;
 	    }
 	    s++;
 	    end = zebra_prim_w(&s);
 	    if (end <= begin)
 	    {
-		logf(LOG_FATAL, "Bad range in char-map");
+		yaz_log(YLOG_FATAL, "Bad range in char-map");
 		return -1;
 	    }
 	    s++;
@@ -554,10 +554,10 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 
     t_utf8 = yaz_iconv_open ("UTF-8", ucs4_native);
 
-    logf (LOG_DEBUG, "maptab %s open", name);
+    yaz_log (YLOG_DEBUG, "maptab %s open", name);
     if (!(f = yaz_fopen(tabpath, name, "r", tabroot)))
     {
-	logf(LOG_WARN|LOG_ERRNO, "%s", name);
+	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", name);
 	return 0;
     }
     nmem = nmem_create ();
@@ -604,13 +604,13 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	{
 	    if (argc != 2)
 	    {
-		logf(LOG_FATAL, "Syntax error in charmap");
+		yaz_log(YLOG_FATAL, "Syntax error in charmap");
 		++errors;
 	    }
 	    if (scan_string(argv[1], t_unicode, t_utf8, fun_addentry,
                             res, &num) < 0)
 	    {
-		logf(LOG_FATAL, "Bad value-set specification");
+		yaz_log(YLOG_FATAL, "Bad value-set specification");
 		++errors;
 	    }
 	    res->base_uppercase = num;
@@ -622,18 +622,18 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	{
 	    if (!res->base_uppercase)
 	    {
-		logf(LOG_FATAL, "Uppercase directive with no lowercase set");
+		yaz_log(YLOG_FATAL, "Uppercase directive with no lowercase set");
 		++errors;
 	    }
 	    if (argc != 2)
 	    {
-		logf(LOG_FATAL, "Missing arg for uppercase directive");
+		yaz_log(YLOG_FATAL, "Missing arg for uppercase directive");
 		++errors;
 	    }
 	    if (scan_string(argv[1], t_unicode, t_utf8, fun_addentry,
                             res, &num) < 0)
 	    {
-		logf(LOG_FATAL, "Bad value-set specification");
+		yaz_log(YLOG_FATAL, "Bad value-set specification");
 		++errors;
 	    }
 	}
@@ -641,13 +641,13 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	{
 	    if (argc != 2)
 	    {
-		logf(LOG_FATAL, "Syntax error in charmap for space");
+		yaz_log(YLOG_FATAL, "Syntax error in charmap for space");
 		++errors;
 	    }
 	    if (scan_string(argv[1], t_unicode, t_utf8,
                             fun_addspace, res, 0) < 0)
 	    {
-		logf(LOG_FATAL, "Bad space specification");
+		yaz_log(YLOG_FATAL, "Bad space specification");
 		++errors;
 	    }
 	}
@@ -655,13 +655,13 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	{
 	    if (argc != 2)
 	    {
-		logf(LOG_FATAL, "Syntax error in charmap for cut");
+		yaz_log(YLOG_FATAL, "Syntax error in charmap for cut");
 		++errors;
 	    }
 	    if (scan_string(argv[1], t_unicode, t_utf8,
                             fun_addcut, res, 0) < 0)
 	    {
-		logf(LOG_FATAL, "Bad cut specification");
+		yaz_log(YLOG_FATAL, "Bad cut specification");
 		++errors;
 	    }
 	}
@@ -671,7 +671,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 
 	    if (argc != 3)
 	    {
-		logf(LOG_FATAL, "charmap directive map requires 2 args");
+		yaz_log(YLOG_FATAL, "charmap directive map requires 2 args");
 		++errors;
 	    }
 	    buf.map = res;
@@ -679,13 +679,13 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	    if (scan_string(argv[2], t_unicode, t_utf8,
                             fun_mkstring, &buf, 0) < 0)
 	    {
-		logf(LOG_FATAL, "Bad map target");
+		yaz_log(YLOG_FATAL, "Bad map target");
 		++errors;
 	    }
 	    if (scan_string(argv[1], t_unicode, t_utf8,
                             fun_add_map, &buf, 0) < 0)
 	    {
-		logf(LOG_FATAL, "Bad map source");
+		yaz_log(YLOG_FATAL, "Bad map source");
 		++errors;
 	    }
 	}
@@ -695,7 +695,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 
 	    if (argc != 3)
 	    {
-		logf(LOG_FATAL, "charmap directive qmap requires 2 args");
+		yaz_log(YLOG_FATAL, "charmap directive qmap requires 2 args");
 		++errors;
 	    }
 	    buf.map = res;
@@ -703,13 +703,13 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	    if (scan_string(argv[2], t_unicode, t_utf8, 
                             fun_mkstring, &buf, 0) < 0)
 	    {
-		logf(LOG_FATAL, "Bad qmap target");
+		yaz_log(YLOG_FATAL, "Bad qmap target");
 		++errors;
 	    }
 	    if (scan_string(argv[1], t_unicode, t_utf8, 
                             fun_add_qmap, &buf, 0) < 0)
 	    {
-		logf(LOG_FATAL, "Bad qmap source");
+		yaz_log(YLOG_FATAL, "Bad qmap source");
 		++errors;
 	    }
 	}
@@ -740,7 +740,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
         }
 	else
 	{
-	    logf(LOG_WARN, "Syntax error at '%s' in %s", line, name);
+	    yaz_log(YLOG_WARN, "Syntax error at '%s' in %s", line, name);
 	}
     
     yaz_fclose(f);
@@ -749,7 +749,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	chrmaptab_destroy(res);
 	res = 0;
     }
-    logf (LOG_DEBUG, "maptab %s close %d errors", name, errors);
+    yaz_log (YLOG_DEBUG, "maptab %s close %d errors", name, errors);
     if (t_utf8 != 0)
         yaz_iconv_close(t_utf8);
     if (t_unicode != 0)

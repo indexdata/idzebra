@@ -1,4 +1,4 @@
-/* $Id: recstat.c,v 1.11 2004-08-16 12:09:43 heikki Exp $
+/* $Id: recstat.c,v 1.12 2004-11-19 10:27:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,15 +35,15 @@ void rec_prstat (Records records)
     int i;
     zint total_bytes = 0;
     
-    logf (LOG_LOG,
+    yaz_log (YLOG_LOG,
           "Total records                        %8" ZINT_FORMAT0,
           records->head.no_records);
 
     for (i = 0; i< REC_BLOCK_TYPES; i++)
     {
-        logf (LOG_LOG, "Record blocks of size "ZINT_FORMAT,
+        yaz_log (YLOG_LOG, "Record blocks of size "ZINT_FORMAT,
               records->head.block_size[i]);
-        logf (LOG_LOG,
+        yaz_log (YLOG_LOG,
           " Used/Total/Bytes used            "
 	      ZINT_FORMAT "/" ZINT_FORMAT "/" ZINT_FORMAT,
               records->head.block_used[i], records->head.block_last[i]-1,
@@ -51,10 +51,10 @@ void rec_prstat (Records records)
         total_bytes +=
             records->head.block_used[i] * records->head.block_size[i];
     }
-    logf (LOG_LOG,
+    yaz_log (YLOG_LOG,
           "Total size of record index in bytes  %8" ZINT_FORMAT0,
           records->head.total_bytes);
-    logf (LOG_LOG,
+    yaz_log (YLOG_LOG,
           "Total size with overhead             %8" ZINT_FORMAT0,
 	  total_bytes);
 }

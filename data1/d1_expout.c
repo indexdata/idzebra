@@ -1,4 +1,4 @@
-/* $Id: d1_expout.c,v 1.3 2004-09-28 10:15:03 adam Exp $
+/* $Id: d1_expout.c,v 1.4 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -28,7 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <stdlib.h>
 
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/proto.h>
 #include <idzebra/data1.h>
 
@@ -47,12 +47,12 @@ static int is_numeric_tag (ExpHandle *eh, data1_node *c)
 	return 0;
     if (!c->u.tag.element)
     {
-	yaz_log(LOG_WARN, "Tag %s is local", c->u.tag.tag);
+	yaz_log(YLOG_WARN, "Tag %s is local", c->u.tag.tag);
 	return 0;
     }
     if (c->u.tag.element->tag->which != DATA1T_numeric)
     {
-	yaz_log(LOG_WARN, "Tag %s is not numeric", c->u.tag.tag);
+	yaz_log(YLOG_WARN, "Tag %s is not numeric", c->u.tag.tag);
 	return 0;
     }
     if (eh->select && !c->u.tag.node_selected)
@@ -1381,7 +1381,7 @@ Z_ExplainRecord *data1_nodetoexplain (data1_handle dh, data1_node *n,
     assert(n->which == DATA1N_root);
     if (strcmp(n->u.root.type, "explain"))
     {
-	yaz_log(LOG_WARN, "Attempt to convert a non-Explain record");
+	yaz_log(YLOG_WARN, "Attempt to convert a non-Explain record");
 	return 0;
     }
     for (n = n->child; n; n = n->next)
@@ -1415,6 +1415,6 @@ Z_ExplainRecord *data1_nodetoexplain (data1_handle dh, data1_node *n,
 	    return res;
 	}
     }
-    yaz_log(LOG_WARN, "No category in Explain record");
+    yaz_log(YLOG_WARN, "No category in Explain record");
     return 0;
 }

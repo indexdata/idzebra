@@ -1,4 +1,4 @@
-/* $Id: xpath1.c,v 1.1 2004-10-29 13:02:56 heikki Exp $
+/* $Id: xpath1.c,v 1.2 2004-11-19 10:27:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -21,7 +21,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 #include <stdlib.h>
-#include <yaz/log.h>
 #include <idzebra/api.h>
 #include "testlib.h"
 

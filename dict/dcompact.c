@@ -1,4 +1,4 @@
-/* $Id: dcompact.c,v 1.9 2004-09-09 09:07:12 adam Exp $
+/* $Id: dcompact.c,v 1.10 2004-11-19 10:26:54 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <stdio.h>
 
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <dict.h>
 
 static void dict_copy_page(Dict dict, char *to_p, char *from_p, int *map)
@@ -110,7 +110,7 @@ int dict_copy_compact (BFiles bfs, const char *from_name, const char *to_name)
 	void *buf;
 	int size;
 #if 0
-	logf (LOG_LOG, "map[%d] = %d", i, map[i]);
+	yaz_log (YLOG_LOG, "map[%d] = %d", i, map[i]);
 #endif
 	dict_bf_readp (dict_from->dbf, i, &buf);
 	size = ((DICT_size(buf)+sizeof(short)-1)/sizeof(short) +
@@ -119,8 +119,8 @@ int dict_copy_compact (BFiles bfs, const char *from_name, const char *to_name)
 	no_dir += DICT_nodir(buf);
     }
 #if 0
-    logf (LOG_LOG, "map[%d] = %d", i, map[i]);
-    logf (LOG_LOG, "nodir = %d", no_dir);
+    yaz_log (YLOG_LOG, "map[%d] = %d", i, map[i]);
+    yaz_log (YLOG_LOG, "nodir = %d", no_dir);
 #endif
     dict_to->head.root = map[1];
     dict_to->head.last = map[i];
@@ -129,7 +129,7 @@ int dict_copy_compact (BFiles bfs, const char *from_name, const char *to_name)
 	void *old_p, *new_p;
 	dict_bf_readp (dict_from->dbf, i, &old_p);
 
-	logf (LOG_LOG, "dict_bf_newp no=%d size=%d", map[i],
+	yaz_log (YLOG_LOG, "dict_bf_newp no=%d size=%d", map[i],
 	      map[i+1] - map[i]);
         dict_bf_newp (dict_to->dbf, map[i], &new_p, map[i+1] - map[i]);
 

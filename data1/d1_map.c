@@ -1,4 +1,4 @@
-/* $Id: d1_map.c,v 1.5 2004-09-28 10:43:37 adam Exp $
+/* $Id: d1_map.c,v 1.6 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include <yaz/oid.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/readconf.h>
 #include <yaz/tpath.h>
 #include <d1_absyn.h>
@@ -43,7 +43,7 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 
     if (!(f = data1_path_fopen(dh, file, "r")))
     {
-	yaz_log(LOG_WARN|LOG_ERRNO, "%s", file);
+	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", file);
 	return 0;
     }
 
@@ -58,14 +58,14 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # args for targetref",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args for targetref",
 			file, lineno);
 		continue;
 	    }
 	    if ((res->target_absyn_ref = oid_getvalbyname(argv[1]))
 		== VAL_NONE)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Unknown reference '%s'",
+		yaz_log(YLOG_WARN, "%s:%d: Unknown reference '%s'",
 			file, lineno, argv[1]);
 		continue;
 	    }
@@ -74,7 +74,7 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # args for targetname",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args for targetname",
 			file, lineno);
 		continue;
 	    }
@@ -88,7 +88,7 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 	{
 	    if (argc != 2)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # args for name", file, lineno);
+		yaz_log(YLOG_WARN, "%s:%d: Bad # args for name", file, lineno);
 		continue;
 	    }
 	    res->name = (char *)nmem_malloc(mem, strlen(argv[1])+1);
@@ -101,7 +101,7 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 
 	    if (argc < 3)
 	    {
-		yaz_log(LOG_WARN, "%s:%d: Bad # of args for map",
+		yaz_log(YLOG_WARN, "%s:%d: Bad # of args for map",
 			file, lineno);
 		continue;
 	    }
@@ -128,7 +128,7 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 		if ((np = sscanf(path, "(%d,%511[^)]):%511[^/]", &type, valstr,
 		    parm)) < 2)
 		{
-		    yaz_log(LOG_WARN, "%s:%d: Syntax error in map "
+		    yaz_log(YLOG_WARN, "%s:%d: Syntax error in map "
 			    "directive: %s", file, lineno, argv[2]);
 		    fclose(f);
 		    return 0;
@@ -157,7 +157,7 @@ data1_maptab *data1_read_maptab (data1_handle dh, const char *file)
 	    mapp = &(*mapp)->next;
 	}
 	else 
-	    yaz_log(LOG_WARN, "%s:%d: Unknown directive '%s'",
+	    yaz_log(YLOG_WARN, "%s:%d: Unknown directive '%s'",
 		    file, lineno, argv[0]);
 
     fclose(f);
@@ -331,7 +331,7 @@ data1_node *data1_map_record (data1_handle dh, data1_node *n,
     res->u.root.type = map->target_absyn_name;
     if (!(res->u.root.absyn = data1_get_absyn(dh, map->target_absyn_name)))
     {
-	yaz_log(LOG_WARN, "%s: Failed to load target absyn '%s'",
+	yaz_log(YLOG_WARN, "%s: Failed to load target absyn '%s'",
 		map->name, map->target_absyn_name);
     }
     if (data1_is_xmlmode(dh))

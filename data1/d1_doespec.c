@@ -1,4 +1,4 @@
-/* $Id: d1_doespec.c,v 1.3 2004-09-28 10:15:03 adam Exp $
+/* $Id: d1_doespec.c,v 1.4 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -23,7 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 
 #include <yaz/oid.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/proto.h>
 #include <idzebra/data1.h>
 
@@ -197,7 +197,7 @@ static int match_children_here (data1_handle dh, data1_node *n,
 	counter++;
 	if (occur && occur->which == Z_Occurrences_last)
 	{
-	    yaz_log(LOG_WARN, "Can't do occurrences=last (yet)");
+	    yaz_log(YLOG_WARN, "Can't do occurrences=last (yet)");
 	    return 0;
 	}
 	if (!occur || occur->which == Z_Occurrences_all ||

@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.16 2004-10-22 10:12:52 heikki Exp $
+/* $Id: rsisams.c,v 1.17 2004-11-19 10:27:14 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -73,7 +73,7 @@ RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol, int scope,
 
 static void r_delete (RSET ct)
 {
-    logf (LOG_DEBUG, "rsisams_delete");
+    yaz_log (YLOG_DEBUG, "rsisams_delete");
     rset_delete(ct);
 }
 
@@ -84,10 +84,10 @@ RSFD r_open (RSET ct, int flag)
     RSFD rfd;
     struct rset_pp_info *ptinfo;
 
-    logf (LOG_DEBUG, "risams_open");
+    yaz_log (YLOG_DEBUG, "risams_open");
     if (flag & RSETF_WRITE)
     {
-        logf (LOG_FATAL, "ISAMS set type is read-only");
+        yaz_log (YLOG_FATAL, "ISAMS set type is read-only");
         return NULL;
     }
     rfd=rfd_create_base(ct);
@@ -122,7 +122,7 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "ISAMS set type is read-only");
+    yaz_log (YLOG_FATAL, "ISAMS set type is read-only");
     return -1;
 }
 

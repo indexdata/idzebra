@@ -1,4 +1,4 @@
-/* $Id: d1_handle.c,v 1.4 2004-09-28 10:15:03 adam Exp $
+/* $Id: d1_handle.c,v 1.5 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -23,7 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <idzebra/data1.h>
 
 struct data1_handle_info {
@@ -116,14 +116,14 @@ WRBUF data1_get_wrbuf (data1_handle dp)
 char **data1_get_read_buf (data1_handle dp, int **lenp)
 {
     *lenp = &dp->read_len;
-    yaz_log (LOG_DEBUG, "data1_get_read_buf lenp=%u", **lenp);
+    yaz_log (YLOG_DEBUG, "data1_get_read_buf lenp=%u", **lenp);
     return &dp->read_buf;
 }
 
 char **data1_get_map_buf (data1_handle dp, int **lenp)
 {
     *lenp = &dp->map_len;
-    yaz_log (LOG_DEBUG, "data1_get_map_buf lenp=%u", **lenp);
+    yaz_log (YLOG_DEBUG, "data1_get_map_buf lenp=%u", **lenp);
     return &dp->map_buf;
 }
 

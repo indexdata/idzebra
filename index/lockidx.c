@@ -1,4 +1,4 @@
-/* $Id: lockidx.c,v 1.22 2002-08-02 19:26:55 adam Exp $
+/* $Id: lockidx.c,v 1.23 2004-11-19 10:26:58 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -54,7 +54,7 @@ int zebraIndexWait (ZebraHandle zh, int commitPhase)
 	server_lock_cmt = zebra_lock_create (path, 1);
 	if (!server_lock_cmt)
 	{
-	    logf (LOG_WARN|LOG_ERRNO, "cannot create lock %s", path);
+	    yaz_log (YLOG_WARN|YLOG_ERRNO, "cannot create lock %s", path);
 	    return -1;
 	}
     }
@@ -69,7 +69,7 @@ int zebraIndexWait (ZebraHandle zh, int commitPhase)
 	server_lock_org = zebra_lock_create (path, 1);
 	if (!server_lock_org)
 	{
-	    logf (LOG_WARN|LOG_ERRNO, "cannot create lock %s", path);
+	    yaz_log (YLOG_WARN|YLOG_ERRNO, "cannot create lock %s", path);
 	    return -1;
 	}
     }
@@ -82,17 +82,17 @@ int zebraIndexWait (ZebraHandle zh, int commitPhase)
 #ifndef WIN32
         if (errno != EWOULDBLOCK)
         {
-            logf (LOG_FATAL|LOG_ERRNO, "flock");
+            yaz_log (YLOG_FATAL|YLOG_ERRNO, "flock");
             exit (1);
         }
 #endif
         if (commitPhase)
-            logf (LOG_LOG, "Waiting for lock cmt");
+            yaz_log (YLOG_LOG, "Waiting for lock cmt");
         else
-            logf (LOG_LOG, "Waiting for lock org");
+            yaz_log (YLOG_LOG, "Waiting for lock org");
         if (zebra_lock (h) == -1)
         {
-            logf (LOG_FATAL, "flock");
+            yaz_log (YLOG_FATAL, "flock");
             exit (1);
         }
     }
@@ -113,7 +113,7 @@ void zebraIndexLockMsg (ZebraHandle zh, const char *str)
     r = write (fd, str, l);
     if (r != l)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "write lock file");
+        yaz_log (YLOG_FATAL|YLOG_ERRNO, "write lock file");
         exit (1);
     }
     zebra_lock_prefix (zh->service->res, path);
@@ -131,10 +131,10 @@ void zebraIndexUnlock (ZebraHandle zh)
 #ifdef WIN32
     zebra_lock_destroy (server_lock_main);
     if (unlink (path) && errno != ENOENT)
-        logf (LOG_WARN|LOG_ERRNO, "unlink %s failed", path);
+        yaz_log (YLOG_WARN|YLOG_ERRNO, "unlink %s failed", path);
 #else
     if (unlink (path) && errno != ENOENT)
-        logf (LOG_WARN|LOG_ERRNO, "unlink %s failed", path);
+        yaz_log (YLOG_WARN|YLOG_ERRNO, "unlink %s failed", path);
     zebra_lock_destroy (server_lock_main);
 #endif
     server_lock_main = 0;
@@ -160,13 +160,13 @@ int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow,
             server_lock_main = zebra_lock_create (path, 1);
 	    if (!server_lock_main)
             {
-                logf (LOG_FATAL, "couldn't obtain indexer lock");
+                yaz_log (YLOG_FATAL, "couldn't obtain indexer lock");
 		exit (1);
             }
             if (zebra_lock_nb (server_lock_main) == -1)
             {
 #ifdef WIN32
-                logf (LOG_LOG, "waiting for other index process");
+                yaz_log (YLOG_LOG, "waiting for other index process");
                 zebra_lock (server_lock_main);
                 zebra_unlock (server_lock_main);
                 zebra_lock_destroy (server_lock_main);
@@ -174,7 +174,7 @@ int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow,
 #else
                 if (errno == EWOULDBLOCK)
                 {
-                    logf (LOG_LOG, "waiting for other index process");
+                    yaz_log (YLOG_LOG, "waiting for other index process");
                     zebra_lock (server_lock_main);
                     zebra_unlock (server_lock_main);
 		    zebra_lock_destroy (server_lock_main);
@@ -182,7 +182,7 @@ int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow,
                 }
                 else
                 {
-                    logf (LOG_FATAL|LOG_ERRNO, "flock %s", path);
+                    yaz_log (YLOG_FATAL|YLOG_ERRNO, "flock %s", path);
                     exit (1);
                 }
 #endif
@@ -191,23 +191,23 @@ int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow,
             {
 		int fd = zebra_lock_fd (server_lock_main);
 
-                logf (LOG_WARN, "unlocked %s", path);
+                yaz_log (YLOG_WARN, "unlocked %s", path);
                 r = read (fd, buf, 256);
                 if (r == 0)
                 {
-                    logf (LOG_WARN, "zero length %s", path);
+                    yaz_log (YLOG_WARN, "zero length %s", path);
 		    zebra_lock_destroy (server_lock_main);
 		    unlink (path);
                     continue;
                 }
                 else if (r == -1)
                 {
-                    logf (LOG_FATAL|LOG_ERRNO, "read %s", path);
+                    yaz_log (YLOG_FATAL|YLOG_ERRNO, "read %s", path);
                     exit (1);
                 }
                 if (*buf == 'r')
                 {
-                    logf (LOG_WARN, "previous transaction didn't"
+                    yaz_log (YLOG_WARN, "previous transaction didn't"
                           " reach commit");
 		    zebra_lock_destroy (server_lock_main);
                     bf_commitClean (bfs, rval);
@@ -216,7 +216,7 @@ int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow,
                 }
                 else if (*buf == 'd')
                 {
-                    logf (LOG_WARN, "commit file wan't deleted after commit");
+                    yaz_log (YLOG_WARN, "commit file wan't deleted after commit");
                     zebra_lock_destroy (server_lock_main);
                     bf_commitClean (bfs, rval);
                     unlink (path);
@@ -224,12 +224,12 @@ int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow,
                 }                    
                 else if (*buf == 'w')
                 {
-		    logf (LOG_WARN,
+		    yaz_log (YLOG_WARN,
 			  "The lock file indicates that your index is");
-		    logf (LOG_WARN, "inconsistent. Perhaps the indexer");
-		    logf (LOG_WARN, "terminated abnormally in the previous");
-		    logf (LOG_WARN, "run. You can try to proceed by");
-		    logf (LOG_WARN, "deleting the file %s", path);
+		    yaz_log (YLOG_WARN, "inconsistent. Perhaps the indexer");
+		    yaz_log (YLOG_WARN, "terminated abnormally in the previous");
+		    yaz_log (YLOG_WARN, "run. You can try to proceed by");
+		    yaz_log (YLOG_WARN, "deleting the file %s", path);
                     exit (1);
                 }
                 else if (*buf == 'c')
@@ -240,13 +240,13 @@ int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow,
 			zebra_lock_destroy (server_lock_main);
                         continue;
                     }
-                    logf (LOG_FATAL, "previous transaction didn't"
+                    yaz_log (YLOG_FATAL, "previous transaction didn't"
                           " finish commit. Commit now!");
                     exit (1);
                 }
                 else 
                 {
-                    logf (LOG_FATAL, "unknown id 0x%02x in %s", *buf,
+                    yaz_log (YLOG_FATAL, "unknown id 0x%02x in %s", *buf,
                           path);
                     exit (1);
                 }

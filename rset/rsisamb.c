@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.27 2004-11-15 23:13:12 adam Exp $
+/* $Id: rsisamb.c,v 1.28 2004-11-19 10:27:14 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -94,7 +94,7 @@ RSFD r_open (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-        yaz_log(LOG_FATAL, "ISAMB set type is read-only");
+        yaz_log(YLOG_FATAL, "ISAMB set type is read-only");
         return NULL;
     }
     rfd = rfd_create_base(ct);
@@ -152,6 +152,6 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    yaz_log(LOG_FATAL, "ISAMB set type is read-only");
+    yaz_log(YLOG_FATAL, "ISAMB set type is read-only");
     return -1;
 }

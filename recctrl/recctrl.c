@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.12 2004-09-30 08:30:05 adam Exp $
+/* $Id: recctrl.c,v 1.13 2004-11-19 10:27:12 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -98,7 +98,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     if (module_path)
     {
 	DIR *dir = opendir(module_path);
-	yaz_log(LOG_LOG, "searching filters in %s", module_path);
+	yaz_log(YLOG_LOG, "searching filters in %s", module_path);
 	if (dir)
 	{
 	    struct dirent *de;
@@ -118,20 +118,20 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 		    mod_p = dlopen(fname, RTLD_NOW|RTLD_GLOBAL);
 		    if (mod_p && (fl = dlsym(mod_p, "idzebra_filter")))
 		    {
-			yaz_log(LOG_LOG, "Loaded filter module %s", fname);
+			yaz_log(YLOG_LOG, "Loaded filter module %s", fname);
 			recTypeClass_add(&rts, fl, nmem, mod_p);
 		    }
 		    else if (mod_p)
 		    {
 			const char *err = dlerror();
-			yaz_log(LOG_WARN, "dlsym failed %s %s",
+			yaz_log(YLOG_WARN, "dlsym failed %s %s",
 				fname, err ? err : "none");
 			dlclose(mod_p);
 		    }
 		    else
 		    {
 			const char *err = dlerror();
-			yaz_log(LOG_WARN, "dlopen failed %s %s",
+			yaz_log(YLOG_WARN, "dlopen failed %s %s",
 				fname, err ? err : "none");
 			
 		    }
@@ -154,7 +154,7 @@ static void recTypeClass_add (struct recTypeClass **rts, RecType *rt,
 	r->next = *rts;
 	*rts = r;
 
-	yaz_log(LOG_LOG, "Adding filter %s", (*rt)->name);
+	yaz_log(YLOG_LOG, "Adding filter %s", (*rt)->name);
 	r->module_handle = module_handle;
 	module_handle = 0; /* so that we only store module_handle once */
 	r->recType = *rt;

@@ -1,4 +1,4 @@
-/* $Id: d1_sumout.c,v 1.3 2004-09-28 10:15:03 adam Exp $
+/* $Id: d1_sumout.c,v 1.4 2004-11-19 10:26:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <stdlib.h>
 
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 #include <yaz/proto.h>
 #include <idzebra/data1.h>
 
@@ -63,7 +63,7 @@ Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
     assert(n->which == DATA1N_root);
     if (strcmp(n->u.root.type, "summary"))
     {
-	yaz_log(LOG_WARN, "Attempt to convert a non-summary record");
+	yaz_log(YLOG_WARN, "Attempt to convert a non-summary record");
 	return 0;
     }
 
@@ -87,7 +87,7 @@ Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
     {
 	if (c->which != DATA1N_tag || !c->u.tag.element)
 	{
-	    yaz_log(LOG_WARN, "Malformed element in Summary record");
+	    yaz_log(YLOG_WARN, "Malformed element in Summary record");
 	    return 0;
 	}
 	if (select && !c->u.tag.node_selected)
@@ -109,7 +109,7 @@ Z_BriefBib *data1_nodetosummary (data1_handle dh, data1_node *n,
 	    case 16: res->abstract = f_string(c, o); break;
 	    case 17: abort(); /* TODO */
 	    default:
-	        yaz_log(LOG_WARN, "Unknown element in Summary record.");
+	        yaz_log(YLOG_WARN, "Unknown element in Summary record.");
 	}
     }
     return res;

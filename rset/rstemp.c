@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.54 2004-11-04 13:54:08 heikki Exp $
+/* $Id: rstemp.c,v 1.55 2004-11-19 10:27:14 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -115,10 +115,10 @@ static void r_delete (RSET ct)
 {
     struct rset_temp_info *info = (struct rset_temp_info*) ct->priv;
 
-    logf (log_level, "r_delete: set size %ld", (long) info->pos_end);
+    yaz_log (log_level, "r_delete: set size %ld", (long) info->pos_end);
     if (info->fname)
     {
-        logf (log_level, "r_delete: unlink %s", info->fname);
+        yaz_log (log_level, "r_delete: unlink %s", info->fname);
         unlink (info->fname);
     }
 }
@@ -138,7 +138,7 @@ static RSFD r_open (RSET ct, int flag)
             info->fd = open (info->fname, O_BINARY|O_RDONLY);
         if (info->fd == -1)
         {
-            logf (LOG_FATAL|LOG_ERRNO, "rstemp: open failed %s", info->fname);
+            yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: open failed %s", info->fname);
             exit (1);
         }
     }
@@ -179,7 +179,7 @@ static void r_flush (RSFD rfd, int mk)
 
         if (info->fd == -1)
         {
-            logf (LOG_FATAL|LOG_ERRNO, "rstemp: mkstemp %s", template);
+            yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: mkstemp %s", template);
             exit (1);
         }
         info->fname= nmem_malloc(rfd->rset->nmem,strlen(template)+1);
@@ -189,11 +189,11 @@ static void r_flush (RSFD rfd, int mk)
         info->fname= nmem_malloc(rfd->rset->nmem,strlen(template)+1);
         strcpy (info->fname, s);
 
-        logf (log_level, "creating tempfile %s", info->fname);
+        yaz_log (log_level, "creating tempfile %s", info->fname);
         info->fd = open (info->fname, O_BINARY|O_RDWR|O_CREAT, 0666);
         if (info->fd == -1)
         {
-            logf (LOG_FATAL|LOG_ERRNO, "rstemp: open %s", info->fname);
+            yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: open %s", info->fname);
             exit (1);
         }
 #endif
@@ -205,7 +205,7 @@ static void r_flush (RSFD rfd, int mk)
         
         if (lseek (info->fd, info->pos_buf, SEEK_SET) == -1)
         {
-            logf (LOG_FATAL|LOG_ERRNO, "rstemp: lseek %s", info->fname);
+            yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek %s", info->fname);
             exit (1);
         }
         count = info->buf_size;
@@ -214,9 +214,9 @@ static void r_flush (RSFD rfd, int mk)
         if ((r = write (info->fd, info->buf_mem, count)) < (int) count)
         {
             if (r == -1)
-                logf (LOG_FATAL|LOG_ERRNO, "rstemp: write %s", info->fname);
+                yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: write %s", info->fname);
             else
-                logf (LOG_FATAL, "rstemp: write of %ld but got %ld",
+                yaz_log (YLOG_FATAL, "rstemp: write of %ld but got %ld",
                       (long) count, (long) r);
             exit (1);
         }
@@ -261,15 +261,15 @@ static void r_reread (RSFD rfd)
         {
             if (lseek (info->fd, info->pos_buf, SEEK_SET) == -1)
             {
-                logf (LOG_FATAL|LOG_ERRNO, "rstemp: lseek %s", info->fname);
+                yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: lseek %s", info->fname);
                 exit (1);
             }
             if ((r = read (info->fd, info->buf_mem, count)) < (int) count)
             {
                 if (r == -1)
-                    logf (LOG_FATAL|LOG_ERRNO, "rstemp: read %s", info->fname);
+                    yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: read %s", info->fname);
                 else
-                    logf (LOG_FATAL, "read of %ld but got %ld",
+                    yaz_log (YLOG_FATAL, "read of %ld but got %ld",
                           (long) count, (long) r);
                 exit (1);
             }

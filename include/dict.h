@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.33 2004-09-09 09:07:12 adam Exp $
+/* $Id: dict.h,v 1.34 2004-11-19 10:26:55 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,7 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define DICT_H
 
 #include <bfile.h>
-#include <yaz/log.h>
+#include <yaz/ylog.h>
 
 #ifdef __cplusplus
 extern "C" {

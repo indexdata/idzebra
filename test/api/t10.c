@@ -1,4 +1,4 @@
-/* $Id: t10.c,v 1.4 2004-11-04 13:09:49 heikki Exp $
+/* $Id: t10.c,v 1.5 2004-11-19 10:27:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
         zh = zebra_open (zs);
         zebra_select_database(zh, "Default");
         zebra_set_resource(zh, "zvrank.weighting-scheme", tests[i].schema);
-        logf(LOG_LOG,"============%d: %s ============", i,tests[i].schema);
+        yaz_log(log_level,"============%d: %s ============", i,tests[i].schema);
 
         ranking_query( __LINE__, zh, "@attr 1=1016 @attr 2=102 the",
                 3, tests[i].hit1, tests[i].score1);

@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.20 2004-10-22 10:12:52 heikki Exp $
+/* $Id: rsprox.c,v 1.21 2004-11-19 10:27:14 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -114,7 +114,7 @@ static RSFD r_open (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-        logf (LOG_FATAL, "prox set type is read-only");
+        yaz_log (YLOG_FATAL, "prox set type is read-only");
         return NULL;
     }
     rfd = rfd_create_base(ct);
@@ -133,7 +133,7 @@ static RSFD r_open (RSET ct, int flag)
         }
         p->rfd = nmem_malloc(ct->nmem,sizeof(*p->rfd) * info->rset_no);
     }
-    logf(LOG_DEBUG,"rsprox (%s) open [%p] n=%d", 
+    yaz_log(YLOG_DEBUG,"rsprox (%s) open [%p] n=%d", 
             ct->control->desc, rfd, info->rset_no);
 
     for (i = 0; i < info->rset_no; i++) {
@@ -302,7 +302,7 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "prox set type is read-only");
+    yaz_log (YLOG_FATAL, "prox set type is read-only");
     return -1;
 }
 
@@ -315,7 +315,7 @@ static void r_pos (RSFD rfd, double *current, double *total)
     double scur=0,stot=0;
     double r;
 
-    logf (LOG_DEBUG, "rsprox_pos");
+    yaz_log (YLOG_DEBUG, "rsprox_pos");
 
     for (i = 0; i < info->rset_no; i++)
     {
@@ -336,7 +336,7 @@ static void r_pos (RSFD rfd, double *current, double *total)
         *current=p->hits;
         *total=*current/r ; 
     }
-    logf(LOG_DEBUG,"prox_pos: [%d] %0.1f/%0.1f= %0.4f ",
+    yaz_log(YLOG_DEBUG,"prox_pos: [%d] %0.1f/%0.1f= %0.4f ",
                     i,*current, *total, r);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.4 2004-11-04 13:10:07 heikki Exp $
+/* $Id: testlib.c,v 1.5 2004-11-19 10:27:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,14 +23,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /** testlib - utilities for the api tests */
 
 #include <assert.h>
-#include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
 #include "testlib.h"
 
 /** start_log: open a log file */
 /*    FIXME - parse command line arguments to set log levels etc */
-static int loglevel=0;
+int log_level=0; /* not static, t*.c may use it */
+
 void start_log(int argc, char **argv)
 {
     char logname[2048];
@@ -40,9 +40,9 @@ void start_log(int argc, char **argv)
         return;
     sprintf(logname, "%s.log", argv[0]);
     yaz_log_init_file(logname);
-    loglevel = yaz_log_mask_str_x(argv[0],0);
-    yaz_log_init_level(LOG_DEFAULT_LEVEL | loglevel);
-    logf(loglevel,"starting %s",argv[0]);
+    log_level = yaz_log_mask_str_x(argv[0],0);
+    yaz_log_init_level(YLOG_DEFAULT_LEVEL | log_level);
+    yaz_log(log_level,"starting %s",argv[0]);
 }
 
 /** 
@@ -92,9 +92,9 @@ int close_down(ZebraHandle zh, ZebraService zs, int retcode)
         zebra_stop(zs);
 
     if (retcode)
-        logf(loglevel,"========= Exiting with return code %d", retcode);
+        yaz_log(log_level,"========= Exiting with return code %d", retcode);
     else
-        logf(loglevel,"========= All tests OK");
+        yaz_log(log_level,"========= All tests OK");
     nmem_exit();
     xmalloc_trav("x");
     return retcode;
@@ -108,9 +108,9 @@ void init_data( ZebraHandle zh, const char **recs)
     char *addinfo;
     assert(zh);
     zebra_select_database(zh, "Default");
-    logf(LOG_DEBUG,"going to call init");
+    yaz_log(log_level,"going to call init");
     i=zebra_init(zh);
-    logf(LOG_DEBUG,"init returned %d",i);
+    yaz_log(log_level,"init returned %d",i);
     if (i) 
     {
         printf("init failed with %d\n",i);
@@ -141,8 +141,8 @@ int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
     int rc;
         
 
-    logf(loglevel,"======================================");
-    logf(loglevel,"qry[%d]: %s", lineno, query);
+    yaz_log(log_level,"======================================");
+    yaz_log(log_level,"qry[%d]: %s", lineno, query);
     odr=odr_createmem (ODR_DECODE);    
 
     parser = yaz_pqf_create();

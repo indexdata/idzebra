@@ -1,4 +1,4 @@
-/* $Id: insert.c,v 1.22 2002-08-02 19:26:55 adam Exp $
+/* $Id: insert.c,v 1.23 2004-11-19 10:26:55 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -343,7 +343,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
                         }
                         if (split_page (dict, ptr, p)) 
                         {
-                            logf (LOG_FATAL, "Unable to split page %d\n", ptr);
+                            yaz_log (YLOG_FATAL, "Unable to split page %d\n", ptr);
                             abort ();
                         }
                         return dict_ins (dict, str-1, ptr, userlen, userinfo);
