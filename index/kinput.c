@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.10  1995-12-06 12:41:22  adam
+ * Revision 1.11  1995-12-06 16:06:43  adam
+ * Better diagnostics. Work on 'real' dictionary deletion.
+ *
+ * Revision 1.10  1995/12/06  12:41:22  adam
  * New command 'stat' for the index program.
  * Filenames can be read from stdin by specifying '-'.
  * Bug fix/enhancement of the transformation from terms to regular
@@ -58,6 +61,7 @@
 
 static int no_diffs   = 0;
 static int no_updates = 0;
+static int no_deletions = 0;
 static int no_insertions = 0;
 static int no_iterations = 0;
 
@@ -349,11 +353,21 @@ int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
         {
             ISAM_P isam_p, isam_p2;
             logf (LOG_DEBUG, "updating %s", cur_name);
-            no_updates++;
             memcpy (&isam_p, info+1, sizeof(ISAM_P));
             isam_p2 = is_merge (isam, isam_p, nmemb, key_buf);
-            if (isam_p2 != isam_p)
-                dict_insert (dict, cur_name, sizeof(ISAM_P), &isam_p2);
+#if 0
+            if (!isam_p2)
+            {
+                no_deletions++;
+                dict_delete (dict, cur_name);
+            }
+            else 
+#endif
+            {
+                no_updates++;
+                if (isam_p2 != isam_p)
+                    dict_insert (dict, cur_name, sizeof(ISAM_P), &isam_p2);
+            }
         }
         else
         {
@@ -409,6 +423,7 @@ void key_input (const char *dict_fname, const char *isam_fname,
     logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
     logf (LOG_LOG, "Distinct words .%7d", no_diffs);
     logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
+    logf (LOG_LOG, "Deletions. . . .%7d", no_deletions);
     logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
 }
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.40  1995-12-05 16:57:40  adam
+ * Revision 1.41  1995-12-06 16:06:42  adam
+ * Better diagnostics. Work on 'real' dictionary deletion.
+ *
+ * Revision 1.40  1995/12/05  16:57:40  adam
  * More work on regular patterns.
  *
  * Revision 1.39  1995/12/05  13:20:18  adam
@@ -789,7 +792,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         {
             if (!delkeys.buf_used)
             {
-                logf (LOG_WARN, "cannot delete %s - no delete keys", fname);
+                logf (LOG_WARN, "cannot delete %s: storeKeys false",
+                      fname);
             }
             else
             {
@@ -806,7 +810,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         {
             if (!delkeys.buf_used)
             {
-                logf (LOG_WARN, "cannot update %s - no delete keys",
+                logf (LOG_WARN, "cannot update %s: storeKeys false",
                       fname);
             }
             else
