@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.6 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rsprox.c,v 1.5.2.1 2004-10-05 13:31:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,8 +25,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <assert.h>
 
-#include <zebrautl.h>
 #include <rsprox.h>
+#include <zebrautl.h>
 
 #ifndef RSET_DEBUG
 #define RSET_DEBUG 0
@@ -71,6 +71,8 @@ struct rset_prox_rfd {
     char *more;  /* more in each lookahead? */
     struct rset_prox_rfd *next;
     struct rset_prox_info *info;
+    int  *countp;
+    char *pbuf;
 };    
 
 static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
@@ -126,6 +128,7 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 
     ct->rset_terms[0] = rset_term_create (prox_term, length_prox_term,
 					  flags, term_type);
+
     return info;
 }
 
@@ -159,6 +162,9 @@ static RSFD r_open (RSET ct, int flag)
     for (i = 0; i < info->p.rset_no; i++)
 	rfd->more[i] = rset_read (info->p.rset[i], rfd->rfd[i],
 				  rfd->buf[i], &dummy);
+
+    rfd->countp = &ct->rset_terms[0]->count;
+    rfd->pbuf = xmalloc (info->p.key_size);
     return rfd;
 }
 
@@ -175,6 +181,8 @@ static void r_close (RSFD rfd)
 		xfree ((*rfdp)->buf[i]);
 	    xfree ((*rfdp)->buf);
             xfree ((*rfdp)->more);
+
+            xfree ((*rfdp)->pbuf);
 
 	    for (i = 0; i<info->p.rset_no; i++)
 		rset_close (info->p.rset[i], (*rfdp)->rfd[i]);
@@ -286,6 +294,13 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
 		
 		p->more[0] = rset_read (info->p.rset[0], p->rfd[0],
 					p->buf[0], &dummy);
+
+		if (p->countp && (
+			*p->countp == 0 || (*info->p.cmp)(buf, p->pbuf) > 1))
+		{
+		    memcpy (p->pbuf, buf, info->p.key_size);
+		    (*p->countp)++;
+		}
 		return 1;
 	    }
 	}
