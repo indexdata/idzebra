@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.7  1995-11-27 09:23:02  adam
+ * Revision 1.8  1995-12-06 09:09:58  adam
+ * Work on left and right anchors.
+ *
+ * Revision 1.7  1995/11/27  09:23:02  adam
  * New berbatim hook in regular expressions. "[]n ..".
  *
  * Revision 1.6  1995/10/16  09:31:25  adam
@@ -97,7 +100,6 @@ static void
     add_follow     (Set lastpos, Set firstpos),
     dfa_trav       (struct Tnode *n),
     init_followpos (void),
-    mk_dfa_tran    (struct DFA_states *dfas),
     pr_tran        (struct DFA_states *dfas),
     pr_verbose     (struct DFA_states *dfas),
     pr_followpos   (void),
@@ -232,7 +234,7 @@ static struct Tnode *expr_4 (void)
         break;
     case L_CHAR:
         t1 = mk_Tnode();
-        t1->pos = ++(parse_info->position);
+        t1->pos = ++parse_info->position;
         t1->u.ch[1] = t1->u.ch[0] = look_ch;
         lex ();
         break;
@@ -263,14 +265,12 @@ static struct Tnode *expr_4 (void)
     return t1;
 }
 
-static void do_parse (dfap, s, cc, tnp)
-struct DFA_parse *dfap;
-char **s;
-const unsigned short *cc;
-struct Tnode **tnp;
+static void do_parse (struct DFA_parse *dfap, char **s,
+		      const unsigned short *cc, struct Tnode **tnp)
 {
     int i;
-    struct Tnode *t1, *t2;
+    int anchor_flag = 0;
+    struct Tnode *t1, *t2, *tn;
 
     for (i=0; cc[i]; i +=2)
         ;
@@ -324,12 +324,44 @@ struct Tnode **tnp;
 
     inside_string = 0;
     lex ();
+    if (lookahead == L_START)
+    {
+        t2 = mk_Tnode ();
+        t2->pos = ++parse_info->position;
+        t2->u.ch[1] = t2->u.ch[0] = '\n';
+        anchor_flag = 1;
+        lex ();
+    }
     t1 = expr_1 ();
-    if (t1 && lookahead == 0)
+    if (anchor_flag)
+    {
+        tn = mk_Tnode ();
+        tn->pos = CAT;
+        tn->u.p[0] = t2;
+        tn->u.p[1] = t1;
+        t1 = tn;
+    }
+    if (lookahead == L_END && t1)
+    {
+        t2 = mk_Tnode ();
+        t2->pos = ++parse_info->position;
+        t2->u.ch[1] = t2->u.ch[0] = '\n';
+
+        tn = mk_Tnode ();
+        tn->pos = CAT;
+        tn->u.p[0] = t1;
+        tn->u.p[1] = t2;
+        t1 = tn;
+        
+        anchor_flag |= 2;
+        lex ();
+    }
+    if (lookahead == 0 && t1)
     {
         t2 = mk_Tnode();
         t2->pos = ++parse_info->position;
         t2->u.ch[0] = -(++parse_info->rule);
+        t2->u.ch[1] = anchor_flag;
         
         *tnp = mk_Tnode();
         (*tnp)->pos = CAT;
@@ -386,9 +418,10 @@ static int nextchar (int *esc)
     {
     case '\r':
     case '\n':
-    case '\t':
     case '\0':
         return '\\';
+    case '\t':
+        return ' ';
     case 'n':
         ++expr_ptr;
         return '\n';
