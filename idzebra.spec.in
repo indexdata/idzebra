@@ -9,7 +9,7 @@ Source: idzebra-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 URL: http://www.indexdata.dk/zebra/
-BuildRequires: libyaz-devel expat-devel bzip2-devel tcl
+BuildRequires: libyaz-devel expat-devel bzip2-devel tcl-devel
 Summary: High-performance, structured text indexing and retrival engine.
 
 %description
