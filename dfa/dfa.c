@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.19  1998-01-12 14:39:39  adam
+ * Revision 1.20  1998-06-08 14:40:44  adam
+ * Fixed problem with signed character(s) in regular expressions.
+ *
+ * Revision 1.19  1998/01/12 14:39:39  adam
  * Fixed bug in term_Tnode.
  *
  * Revision 1.18  1997/09/29 09:05:17  adam
@@ -484,7 +487,7 @@ static int map_l_char (struct DFA_parse *parse_info)
     if (cp0[0] == 1 && cp0[1])
     {
         parse_info->expr_ptr++;
-        parse_info->look_ch = cp0[1];
+        parse_info->look_ch = cp0[1] & 255;
         return L_CHAR;
     }
     if (!parse_info->cmap)
@@ -494,7 +497,7 @@ static int map_l_char (struct DFA_parse *parse_info)
     assert (mapto);
     
     parse_info->expr_ptr = (const unsigned char *) cp0;
-    parse_info->look_ch = mapto[i][0];
+    parse_info->look_ch = mapto[i][0] & 255;
     logf (LOG_DEBUG, "map from %c to %d", parse_info->expr_ptr[-1], parse_info->look_ch);
     return L_CHAR;
 }
@@ -537,7 +540,7 @@ static const char *str_char (unsigned c)
 {
     static char s[6];
     s[0] = '\\';
-    if (c < 32)
+    if (c < 32 || c >= 127)
         switch (c)
         {
         case '\r':
