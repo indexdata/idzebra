@@ -1,3 +1,6 @@
+Changed the way use attributes are specified in the recordId
+specification.
+
 Maximum number of databases in one Zebra register increased.
 
 New setting, databasePath, which specifies that first directory

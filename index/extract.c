@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.83  1998-06-08 14:43:10  adam
+ * Revision 1.84  1998-06-11 15:42:22  adam
+ * Changed the way use attributes are specified in the recordId
+ * specification.
+ *
+ * Revision 1.83  1998/06/08 14:43:10  adam
  * Added suport for EXPLAIN Proxy servers - added settings databasePath
  * and explainDatabase to facilitate this. Increased maximum number
  * of databases and attributes in one register.
@@ -999,26 +1003,13 @@ static void file_end (void *handle, off_t offset)
     p->file_moffset = offset;
 }
 
-static int atois (const char **s)
-{
-    int val = 0, c;
-    while ( (c=**s) >= '0' && c <= '9')
-    {
-        val = val*10 + c - '0';
-        ++(*s);
-    }
-    return val;
-}
-
 static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
-                           const char *fname,
-                           const char *spec)
+                           const char *fname, const char *spec)
 {
     static char dstBuf[2048];
     char *dst = dstBuf;
     const char *s = spec;
     static const char **w;
-    int i;
 
     while (1)
     {
@@ -1028,21 +1019,39 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
             break;
         if (*s == '(')
         {
+	    char attset_str[64], attname_str[64];
+	    data1_attset *attset;
+	    int i;
             char matchFlag[32];
-            int attrSet, attrUse;
+            int attSet = 1, attUse = 1;
             int first = 1;
 
             s++;
-            attrSet = atois (&s);
-            if (*s != ',')
-            {
-                logf (LOG_WARN, "Missing , in match criteria %s in group %s",
-                      spec, rGroup->groupName ? rGroup->groupName : "none");
-                return NULL;
-            }
-            s++;
-            attrUse = atois (&s);
-            w = searchRecordKey (reckeys, attrSet, attrUse);
+	    for (i = 0; *s && *s != ',' && *s != ')'; s++)
+		if (i < 63)
+		    attset_str[i++] = *s;
+	    attset_str[i] = '\0';
+
+	    if (*s == ',')
+	    {
+		s++;
+		for (i = 0; *s && *s != ')'; s++)
+		    if (i < 63)
+			attname_str[i++] = *s;
+		attname_str[i] = '\0';
+	    }
+	    
+	    if ((attset = data1_get_attset (rGroup->dh, attset_str)))
+	    {
+		data1_att *att;
+		attSet = attset->reference;
+		att = data1_getattbyname(rGroup->dh, attset, attname_str);
+		if (att)
+		    attUse = att->value;
+		else
+		    attUse = atoi (attname_str);
+	    }
+            w = searchRecordKey (reckeys, attSet, attUse);
             assert (w);
 
             if (*s == ')')
@@ -1072,7 +1081,7 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
             if (first)
             {
                 logf (LOG_WARN, "Record didn't contain match"
-                      " fields in (%d,%d)", attrSet, attrUse);
+                      " fields in (%s,%s)", attset_str, attname_str);
                 return NULL;
             }
         }

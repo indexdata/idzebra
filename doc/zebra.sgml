@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.40 1998-02-10 12:03:05 adam Exp $
+  $Id: zebra.sgml,v 1.41 1998-06-11 15:42:21 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.40 $
+<date>$Revision: 1.41 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -560,7 +560,7 @@ There are three kinds of tokens:
 <tag>Internal record info</tag> The token refers to a key that is
 extracted from the record. The syntax of this token is
  <tt/(/ <em/set/ <tt/,/ <em/use/ <tt/)/, where <em/set/ is the
-attribute set ordinal number and <em/use/ is the use value of the attribute.
+attribute set name <em/use/ is the name or value of the attribute.
 <tag>System variable</tag> The system variables are preceded by
 <verb>$</verb> and immediately followed by the system variable name, which
 may one of
@@ -574,18 +574,18 @@ may one of
 </descrip>
 
 For instance, the sample GILS records that come with the Zebra
-distribution contain a
-unique ID
-in the Control-Identifier field. This field is mapped to the Bib-1
-use attribute 1007. To use this field as a record id, specify
-<tt>(1,1007)</tt> as the value of the <tt>recordId</tt> in the
-configuration file. If you have other record types that uses
-the same field for a different purpose, you might add the record type (or group or database name)
-to the record id of the gils records as well, to prevent matches
-with other types of records. In this case the recordId might be
-set like this:
+distribution contain a unique ID in the data tagged Control-Identifier.
+The data is mapped to the Bib-1 use attribute Identifier-standard
+(code 1007). To use this field as a record id, specify
+<tt>(bib1,Identifier-standard)</tt> as the value of the
+<tt>recordId</tt> in the configuration file.
+If you have other record types that uses the same field for a
+different purpose, you might add the record type
+(or group or database name) to the record id of the gils
+records as well, to prevent matches with other types of records.
+In this case the recordId might be set like this:
 <tscreen><verb>
-gils.recordId: $type (1,1007)
+gils.recordId: $type (bib1,Identifier-standard)
 </verb></tscreen>
 
 (see section <ref id="data-model" name="Configuring Your Data Model">
