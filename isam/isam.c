@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.6  1994-09-28 11:29:33  quinn
+ * Revision 1.7  1994-09-28 11:56:25  quinn
+ * Added sort of input to is_merge
+ *
+ * Revision 1.6  1994/09/28  11:29:33  quinn
  * Added cmp parameter.
  *
  * Revision 1.5  1994/09/27  20:03:50  quinn
@@ -32,6 +35,8 @@
 #include "isutil.h"
 #include "rootblk.h"
 #include "keyops.h"
+
+static int (*extcmp)(const void *p1, const void *p2);
 
 static int splitargs(const char *s, char *bf[], int max)
 {
@@ -266,7 +271,16 @@ static ISAM_P is_address(int type, int pos)
     return r;
 }
 
-ISAM_P is_merge(ISAM is, ISAM_P pos, int num, const char *data)
+int sort_input(const void *p1, const void *p2)
+{
+    int rs;
+
+    if ((rs = (*extcmp)(((char *)p1) + 1, ((char *)p2) + 1)))
+    	return rs;
+    return *((char *)p1) - *((char*)p2);
+}
+
+ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 {
     is_mtable tab;
     int res;
@@ -274,6 +288,8 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, const char *data)
     int oldnum, oldtype, i;
     char operation, *record;
 
+    extcmp = is->cmp;
+    qsort(data, num, is_keysize(is) + 1, sort_input);
     is_m_establish_tab(is, &tab, pos);
     /* TODO: do something to aquire oldnum at this point */
     if (pos)
