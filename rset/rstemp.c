@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.17  1995-12-11 09:15:28  adam
+ * Revision 1.18  1996-10-29 13:54:52  adam
+ * Changed name of setting tempSetDir to setTmpDir.
+ *
+ * Revision 1.17  1995/12/11 09:15:28  adam
  * New set types: sand/sor/snot - ranked versions of and/or/not in
  * ranked/semi-ranked result sets.
  * Note: the snot not finished yet.
@@ -71,7 +74,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <rstemp.h>
 
 static void *r_create(const struct rset_control *sel, void *parms,
@@ -141,7 +144,7 @@ static void *r_create(const struct rset_control *sel, void *parms, int *flags)
     if (!temppath_init)
     {
         temppath_init = 1;
-        temppath_root = res_get (common_resource, "tempSetPath");
+        temppath_root = res_get (common_resource, "setTmpDir");
     }
     return info;
 }
