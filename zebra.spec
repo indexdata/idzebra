@@ -2,7 +2,7 @@ Summary: Zebra - An Open Indexing Search Engine
 Name: zebra
 Version: 1.0
 Release: 1
-Copyright: none
+Copyright: commercial
 Group: Development/Libraries
 Vendor: Index Data ApS <info@indexdata.dk>
 Url: http://www.indexdata.dk/zebra/
@@ -13,10 +13,10 @@ BuildRoot: /var/tmp/%{name}-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 
 %description
-The Zebra indexing tool is a generic search engine suitable for dealing with
-Metadata and many other document types. Zebra consists of an indexing
-tool - for building an index for fast retrieval - and a search engine server
-that offers a Z39.50 interface.
+The Zebra indexing tool is a generic search engine suitable for dealing
+with Metadata and other document types. Zebra consists of an indexing
+tool - for building an index for fast retrieval - and a search engine
+server that offers a Z39.50 interface.
 
 %prep
 %setup

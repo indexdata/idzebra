@@ -1,1 +1,50 @@
-License here.
+Zebra
+Copyright (c) 1995-1999 Index Data ApS.
+
+All rights reserved.
+
+Use and redistribution in source or binary form, with or without
+modification, of any or all of this software and documentation is
+permitted, provided that the following Conditions 1 to 6 set out below
+are met.
+
+1. Unless prior specific written permission is obtained this copyright
+and permission notice appear with all copies of the software and its
+documentation. Notices of copyright or attribution which appear at the
+beginning of any file must remain unchanged.
+ 
+2. The names of Index Data or the individual authors may not be used
+to endorse or promote products derived from this software without
+specific prior written permission.
+ 
+3. Source code or binary versions of this software and its documentation
+may be used freely in `not for profit´ applications limited to databases
+of 100,000 records maximum. Other applications - such as publishing over
+100,000 records, providing for-pay services, distributing a product based
+in whole or in part on this software or its documentation, or generally 
+distributing this software or its documentation under a different license 
+require a commercial license from Index Data. 
+
+4. The software may be installed and used for evaluation purposes in
+conjunction with such commercially licensed applications for a trial
+period no longer than 60 days.
+ 
+5. Unless a prior specific written agreement is obtained THIS SOFTWARE
+IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED,
+OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF
+MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
+INDEX DATA BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING
+FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF THE
+POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+6. Commercial licenses and support agreements for Zebra and related
+Index Data products such as Z'bol (c) - and written agreements
+relating to these Conditions may be obtained only from Index Data
+or its appointed agents as follows: 
+
+Index Data: www.indexdata.dk
+Fretwell-Downing Informatics: www.fdgroup.co.uk
+Fretwell-Downing Informatics USA: www.fdi.com
+
