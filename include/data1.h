@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.5 2003-02-04 12:06:47 pop Exp $
+/* $Id: data1.h,v 1.6 2003-02-28 12:33:38 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -89,6 +89,7 @@ typedef struct data1_marctab
 
     int  force_indicator_length;
     int  force_identifier_length;
+    char leader[24]; /* Fixme! Need linear access to LEADER of MARC record */  
     struct data1_marctab *next;
 } data1_marctab;
 

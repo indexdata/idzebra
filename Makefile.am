@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.11 2003-02-20 21:06:47 adam Exp $
+## $Id: Makefile.am,v 1.12 2003-02-28 12:33:38 oleg Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -23,7 +23,7 @@ dist-hook:
 	cp $(srcdir)/debian/rules $(distdir)/debian
 	cp $(srcdir)/debian/postinst $(distdir)/debian
 	cp $(srcdir)/debian/copyright $(distdir)/debian
-	mkdir $(distdir)/perl
+	mkdir -p $(distdir)/perl
 	for f in `cat $(srcdir)/perl/MANIFEST`; do \
 		(pdir=`cd $(distdir)/perl && pwd`; \
 		cd $(srcdir)/perl;cp --parents $$f $$pdir); \

@@ -1,5 +1,5 @@
 
-SUBDIRS=gils usmarc api dmoz xpath sort xelm
+SUBDIRS=gils usmarc api dmoz xpath sort xelm rusmarc
 
 testclient_SOURCES = testclient.c
 

@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_marc.c,v 1.3 2003-02-28 12:33:38 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -246,6 +246,9 @@ static int nodetomarc(data1_handle dh,
 	}
 	if (selected && !field->u.tag.node_selected)
 	    continue;
+	    
+	if (!yaz_matchstr(field->u.tag.tag, "mc?"))
+	    continue;
 
 	subf = field->child;
         if (!subf)
@@ -264,7 +267,7 @@ static int nodetomarc(data1_handle dh,
                 is00X = 1;
         }
             
-	
+
         if (!is00X)
             len += p->indicator_length;  
 	/*  we'll allow no indicator if length is not 2 */
@@ -308,6 +311,9 @@ static int nodetomarc(data1_handle dh,
         int data_0 = data_p;
 	char *indicator_data = "    ";
 	if (selected && !field->u.tag.node_selected)
+	    continue;
+
+	if (!yaz_matchstr(field->u.tag.tag, "mc?"))
 	    continue;
 
 	subf = field->child;

@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_read.c,v 1.3 2003-02-28 12:33:38 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -322,7 +322,7 @@ data1_node *data1_search_tag (data1_handle dh, data1_node *n,
     }
     for (; n; n = n->next)
 	if (n->which == DATA1N_tag && n->u.tag.tag &&
-	    !yaz_matchstr (tag, n->u.tag.tag))
+	    !yaz_matchstr (n->u.tag.tag, tag))
 	{
 	    return n;
 	}
@@ -1097,7 +1097,7 @@ int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
                   const char *tocode, 
                   const char *fromcode)
 {
-    if (strcmp (tocode, fromcode))
+    if (yaz_matchstr (tocode, fromcode))
     {
         WRBUF wrbuf = wrbuf_alloc();
         yaz_iconv_t t = yaz_iconv_open (tocode, fromcode);

@@ -1,0 +1,34 @@
+# Russian character map.
+#
+# $Id: string.chr,v 1.1 2003-02-28 12:33:41 oleg Exp $
+# Define the basic value-set. *Beware* of changing this without re-indexing
+# your databases.
+
+# Character set this file
+
+encoding koi8-r
+
+lowercase {0-9}{a-z}ÁÂ×ÇÄÅ£ÖÚÉÊËÌÍÎÏĞÒÓÔÕÆÈÃŞÛİßÙØÜÀÑ
+uppercase {0-9}{A-Z}áâ÷çäå³öúéêëìíîïğòóôõæèãşûıÿùøüàñ
+
+# Breaking characters
+
+space {\001-\040}!"#$%&'\()*+,-./:;<=>?@\[\\]^_`\{|}~
+
+# Characters to be considered equivalent for searching purposes.
+# equivalent ÔÄ(ae)
+# equivalent ÜÆ(oe)
+# equivalent Å(aa)
+# equivalent uİ
+# Supplemental mappings
+#map (&aelig;)      Ô
+#map (&oslash;)     Ü
+#map (&aring;)      Å
+#map (&Aelig;)      ô
+#map (&Oslash;)     ü
+#map (&Aring;)      å
+#map Èè		e
+#map À		a
+#map Ñ		o
+#map Ì		i
+#map (Aa)	(AA)

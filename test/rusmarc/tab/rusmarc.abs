@@ -1,0 +1,159 @@
+#
+name rusmarc
+reference RUSmarc
+attset bib1.att
+tagset rusmarc.tag
+
+marc rusmarc.mar
+
+esetname B rusmarc-b.est
+esetname F @
+encoding koi8-r
+
+elm mc-70._1_$a,_$g_(_$c_)	Author			!:w,!:p
+elm mc-70._1_$a,_$b_(_$c_)	Author			!:w,!:p
+elm mc-70._0_$a__$d_(_$c_)	Author			!:w,!:p
+
+elm mc-4.._._$1<001>_                                Author	!:w,!:p
+elm mc-4.._._$1<70._1_$a,_$g_(_$c_)>_             Author	!:w,!:p
+elm mc-4.._._$1<70._1_$a,_$b_(_$c_)>_             Author	!:w,!:p
+elm mc-4.._._$1<70._0_$a__$d_(_$c_)>_             Author	!:w,!:p
+
+elm mc-71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}              Author	!:w,!:p
+elm mc-71.01_$a_(_$c_){.$b_(_$c_)(_$d;_$f;_$e_)}       Author	!:w,!:p
+elm mc-71.02_$a_(_$c_){.$b_(_$c_)(_$d;_$f;_$e_)}       Author	!:w,!:p
+
+elm mc-4.._._$1<71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}>_		Author	!:w,!:p
+elm mc-4.._._$1<71.01_$a_(_$c_){.$b_(_$c_)(_$d;_$f;_$e_)}>_	Author	!:w,!:p
+elm mc-4.._._$1<71.02_$a_(_$c_){.$b_(_$c_)(_$d;_$f;_$e_)}>_	Author	!:w,!:p
+
+elm mc-71.10_$a,_$g,_$h_(_$c_)(_$d;_$f;_$e_){.$b_(_$c_)(_$d;_$f;_$e_)}	Author	!:w,!:p
+elm mc-71.11_$a_(_$c_)(_$d;_$f;_$e_){.$b_(_$c_)(_$d;_$f;_$e_)}			Author	!:w,!:p
+elm mc-71.12_$a_(_$d;_$f;_$e_){.$b_(_$c_)(_$d;_$f;_$e_)}				Author	!:w,!:p
+
+elm mc-4.._._$1<71.10_$a,_$g,_$h_(_$c_)(_$d;_$f;_$e_){.$b_(_$c_)(_$d;_$f;_$e_)}>_	Author	!:w,!:p
+elm mc-4.._._$1<71.11_$a_(_$c_)(_$d;_$f;_$e_){.$b_(_$c_)(_$d;_$f;_$e_)}>_		Author	!:w,!:p
+elm mc-4.._._$1<71.12_$a_(_$d;_$f;_$e_){.$b_(_$c_)(_$d;_$f;_$e_)}>_			Author	!:w,!:p
+
+elm mc-2001__$a_{.$h,_$i_}      Title   !:w,!:p
+elm mc-2001__$i_                 Title   !:w,!:p
+elm mc-2250__$a_{.$h,_$i_}        Title   !:w,!:p
+elm mc-2251__$a_{.$h,_$i_}         Title   !:w,!:p
+elm mc-2251__$i_                  Title   !:w,!:p
+elm mc-2252__$i_                  Title   !:w,!:p
+elm mc-5001._$a_{.$h,_$i_}         Title   !:w,!:p
+elm mc-5001._$i_                  Title   !:w,!:p
+elm mc-501.__$a_                  Title   !:w,!:p
+elm mc-5031__$a_                  Title   !:w,!:p
+elm mc-5101__$a_{.$h,_$i_}        Title   !:w,!:p
+elm mc-5101__$i_                  Title   !:w,!:p
+elm mc-5121__$a_                  Title   !:w,!:p
+elm mc-5131__$a_{.$h,_$i_}         Title   !:w,!:p
+elm mc-5131__$i_                  Title   !:w,!:p
+elm mc-5141__$a_                  Title   !:w,!:p
+elm mc-5151__$a_                  Title   !:w,!:p
+elm mc-5161__$a_                  Title   !:w,!:p
+elm mc-5171__$a_                  Title   !:w,!:p
+elm mc-5181__$a_                  Title   !:w,!:p
+elm mc-5201__$a_{.$h,_$i_}         Title   !:w,!:p
+elm mc-5201__$i_                  Title   !:w,!:p
+elm mc-5301__$a_                  Title   !:w,!:p
+elm mc-531___$a_                  Title   !:w,!:p
+elm mc-5321._$a_                  Title   !:w,!:p
+elm mc-5401__$a_                  Title   !:w,!:p
+elm mc-5411__$a_{.$h,_$i_}         Title   !:w,!:p
+elm mc-5411__$i_                  Title   !:w,!:p
+elm mc-5451__$a_                  Title   !:w,!:p
+elm mc-4.._._$1<2001__$a_{.$h,_$i_}>_       Title   !:w,!:p
+elm mc-4.._._$1<2001__$i_>_                 Title   !:w,!:p
+elm mc-4.._._$1<2250__$a_{.$h,_$i_}>_       Title   !:w,!:p
+elm mc-4.._._$1<2250__$i_>_                 Title   !:w,!:p
+elm mc-4.._._$1<2251__$a_{.$h,_$i_}>_       Title   !:w,!:p
+elm mc-4.._._$1<2251__$i_>_                 Title   !:w,!:p
+elm mc-4.._._$1<2252__$i_>_                 Title   !:w,!:p
+elm mc-4.._._$1<5001._$a_{.$h,_$i_}>_        Title   !:w,!:p
+elm mc-4.._._$1<5001._$i_>_                 Title   !:w,!:p
+elm mc-4.._._$1<501.__$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<5031__$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<5101__$a_{.$h,_$i_}>_      Title   !:w,!:p
+elm mc-4.._._$1<5101__$i_>_              Title   !:w,!:p
+elm mc-4.._._$1<5121__$a_>_              Title   !:w,!:p
+elm mc-4.._._$1<5131__$a_{.$h,_$i_}>_      Title   !:w,!:p
+elm mc-4.._._$1<5131__$i_>_              Title   !:w,!:p
+elm mc-4.._._$1<5141__$a_>_              Title   !:w,!:p
+elm mc-4.._._$1<5151__$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<5161__$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<5171__$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<5181__$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<5201__$a_{.$h,_$i_}>_   Title   !:w,!:p
+elm mc-4.._._$1<5201__$i_>_             Title   !:w,!:p
+elm mc-4.._._$1<5301__$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<531___$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<5321._$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<5401__$a_>_             Title   !:w,!:p
+elm mc-4.._._$1<5411__$a_{.$h,_$i_}>_   Title   !:w,!:p
+elm mc-4.._._$1<5411__$i_>_             Title   !:w,!:p
+elm mc-4.._._$1<5451__$a_>_             Title   !:w,!:p
+elm mc-600_._$a_    Subject-heading     !:w,!:p
+elm mc-601.._$a_    Subject-heading     !:w,!:p
+elm mc-602___$a_    Subject-heading     !:w,!:p
+elm mc-604___$a_    Subject-heading     !:w,!:p
+elm mc-605___$a_    Subject-heading     !:w,!:p
+elm mc-606.__$a_    Subject-heading     !:w,!:p
+elm mc-607___$a_    Subject-heading     !:w,!:p
+elm mc-608___$a_    Subject-heading     !:w,!:p
+elm mc-610.__$a_    Subject-heading     !:w,!:p
+elm mc-010___$a_                 ISBN    !:w,!:p
+elm mc-421_._$1<010___$a_>_     ISBN    !:w,!:p
+elm mc-422_._$1<010___$a_>_     ISBN    !:w,!:p
+elm mc-45._._$1<010___$a_>_     ISBN    !:w,!:p
+elm mc-463_._$1<010___$a_>_     ISBN    !:w,!:p
+elm mc-470_._$1<010___$a_>_     ISBN    !:w,!:p
+elm mc-48._._$1<010___$a_>_     ISBN    !:w,!:p
+elm mc-011___$a_			ISSN	!:p
+elm mc-225.__$x_			ISSN	!:p
+elm mc-461_._$1<011___$a_>_	ISSN	!:p
+elm mc-462_._$1<011___$a_>_	ISSN	!:p
+
+elm mc-010___$a      Identifier-standard     !:p
+elm mc-011___$a      Identifier-standard     !:p
+elm mc-014___$a      Identifier-standard     !:p
+elm mc-020___$b      Identifier-standard     !:p
+elm mc-021___$b      Identifier-standard     !:p
+elm mc-022___$b      Identifier-standard     !:p
+
+elm mc-001                    Local-number		!
+
+elm mc-100___$a[09-12]_		Date-of-publication	!
+elm mc-100___$a[13-16]_		Date-of-publication	!
+elm mc-210___$d_             Date-of-publication	!
+
+elm mc-102___$a_              Place-publication       !:w
+elm mc-102___$b_              Place-publication       !:w
+elm mc-210___$a_              Place-publication       !:w
+elm mc-620___$a_              Place-publication       !:w
+elm mc-620___$b_              Place-publication       !:w
+elm mc-620___$c_              Place-publication       !:w
+elm mc-620___$d_              Place-publication       !:w
+
+elm mc-210___$c_              Publisher               !:w
+
+elm mc-100___$a[00-07]_      Date/time-added-to-db	!
+elm mc-801_0_$c_             Date/time-added-to-db	!
+
+elm mc-101.__$a_             Code-language           !:w
+
+elm mc-ldr[07]                Bib-level 		!
+
+elm mc-ldr[06]                Record-type		!
+
+elm mc-105___$a[4]_          Content-type	!
+elm mc-105___$a[5]_          Content-type	!
+elm mc-105___$a[6]_          Content-type	!
+elm mc-105___$a[7]_          Content-type	!
+elm mc-110___$a[3]_          Content-type	!
+elm mc-110___$a[4]_          Content-type	!
+elm mc-110___$a[5]_          Content-type	!
+elm mc-110___$a[6]_          Content-type	!
+
+elm mc-801_.$b_               Record-source               !:w
