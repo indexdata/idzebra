@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.73  1999-11-04 15:00:45  adam
+ * Revision 1.74  1999-11-29 15:13:26  adam
+ * Server sets implementationName - and Version.
+ *
+ * Revision 1.73  1999/11/04 15:00:45  adam
  * Implemented delete result set(s).
  *
  * Revision 1.71  1999/07/14 10:59:26  adam
@@ -296,6 +299,9 @@ bend_initresult *bend_init (bend_initrequest *q)
     r->errstring = 0;
     q->bend_sort = bend_sort;
     q->bend_delete = bend_delete;
+
+    q->implementation_name = "Z'mbol Information Server";
+    q->implementation_version = "Z'mbol 1.0";
 
     logf (LOG_DEBUG, "bend_init");
 
