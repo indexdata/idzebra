@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.14 2005-01-02 18:51:31 adam Exp $
+/* $Id: tstisamb.c,v 1.15 2005-01-03 09:23:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -143,7 +143,6 @@ void tst_insert(ISAMB isb, int n)
 
     if (nerrs)
         exit(3);
-    return;
     /* delete a number of entries (even ones) */
     ri.no = 0;
     ri.step = 2;
@@ -156,7 +155,7 @@ void tst_insert(ISAMB isb, int n)
     isamc_p = isamb_merge (isb, isamc_p , &isamc_i);
 
     /* delete a number of entries (odd ones) */
-    ri.no = 0;
+    ri.no = 1;
     ri.step = 2;
     ri.max = n;
     ri.insertMode = 0;
