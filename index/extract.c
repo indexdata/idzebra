@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.148 2004-01-22 11:50:16 adam Exp $
+/* $Id: extract.c,v 1.149 2004-01-22 15:40:25 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1282,7 +1282,7 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 #endif
         if (zh->reg->key_buf_used + 1024 > 
             (zh->reg->ptr_top -zh->reg->ptr_i)*sizeof(char*))
-            extract_flushWriteKeys (zh);
+            extract_flushWriteKeys (zh,0);
         ++(zh->reg->ptr_i);
         (zh->reg->key_buf)[zh->reg->ptr_top - zh->reg->ptr_i] =
 	    (char*)zh->reg->key_buf + zh->reg->key_buf_used;
@@ -1319,24 +1319,60 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
     assert (off == reckeys->buf_used);
 }
 
-void extract_flushWriteKeys (ZebraHandle zh)
+void extract_flushWriteKeys (ZebraHandle zh, int final)
+        /* optimizing: if final=1, and no files written yet */
+        /* push the keys directly to merge, sidestepping the */
+        /* temp file altogether. Speeds small updates */
 {
     FILE *outf;
     char out_fname[200];
     char *prevcp, *cp;
     struct encode_info encode_info;
     int ptr_i = zh->reg->ptr_i;
+    int temp_policy;
 #if SORT_EXTRA
     int i;
 #endif
     if (!zh->reg->key_buf || ptr_i <= 0)
+    {
+        logf (LOG_DEBUG, "  nothing to flush section=%d buf=%p i=%d",
+               zh->reg->key_file_no, zh->reg->key_buf, ptr_i);
+        logf (LOG_DEBUG, "  buf=%p ",
+               zh->reg->key_buf);
+        logf (LOG_DEBUG, "  ptr=%d ",zh->reg->ptr_i);
+        logf (LOG_DEBUG, "  reg=%p ",zh->reg);
+               
         return;
+    }
 
     (zh->reg->key_file_no)++;
     logf (LOG_LOG, "sorting section %d", (zh->reg->key_file_no));
+    logf (LOG_DEBUG, "  sort_buff at %p n=%d",
+                    zh->reg->key_buf + zh->reg->ptr_top - ptr_i,ptr_i);
 #if !SORT_EXTRA
     qsort (zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
                sizeof(char*), key_qsort_compare);
+
+    /* Case 1: always use temp files (old way) */
+    /* Case 2: use temp files, if more than one (auto) */
+    /*         = if this is both the last and the first */
+    /* Case 3: never bother with temp files (new) */
+    temp_policy=2;
+    /* FIXME - will come from config file into zh */
+
+    if (   ( temp_policy ==3 )   ||     /* always from memory */
+         ( ( temp_policy ==2 ) &&       /* automatic */
+             (zh->reg->key_file_no == 1) &&  /* this is first time */
+             (final) ) )                     /* and last (=only) time */
+    { /* go directly from memory */
+        zh->reg->key_file_no =0; /* signal not to read files */
+        zebra_index_merge(zh); 
+        zh->reg->ptr_i = 0;
+        zh->reg->key_buf_used = 0; 
+        return; /*!*/
+    }
+
+    /* Not doing directly from memory, write into a temp file */
     extract_get_fname_tmp (zh, out_fname, zh->reg->key_file_no);
 
     if (!(outf = fopen (out_fname, "wb")))

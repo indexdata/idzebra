@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.56 2003-06-23 15:35:25 adam Exp $
+/* $Id: kinput.c,v 1.57 2004-01-22 15:40:25 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -236,7 +236,7 @@ struct heap_info {
     int    *ptr;
     int    (*cmp)(const void *p1, const void *p2);
     struct zebra_register *reg;
-
+    ZebraHandle zh; /* only used for raw reading that bypasses the heaps */
     int no_diffs;
     int no_updates;
     int no_deletions;
@@ -244,24 +244,15 @@ struct heap_info {
     int no_iterations;
 };
 
-struct heap_info *key_heap_init (int nkeys,
-                                 int (*cmp)(const void *p1, const void *p2))
-{
+static struct heap_info *key_heap_malloc()
+{  /* malloc and clear it */
     struct heap_info *hi;
-    int i;
-
     hi = (struct heap_info *) xmalloc (sizeof(*hi));
-    hi->info.file = (struct key_file **)
-	xmalloc (sizeof(*hi->info.file) * (1+nkeys));
-    hi->info.buf = (char **) xmalloc (sizeof(*hi->info.buf) * (1+nkeys));
+    hi->info.file = 0;
+    hi->info.buf = 0;
     hi->heapnum = 0;
-    hi->ptr = (int *) xmalloc (sizeof(*hi->ptr) * (1+nkeys));
-    hi->cmp = cmp;
-    for (i = 0; i<= nkeys; i++)
-    {
-        hi->ptr[i] = i;
-        hi->info.buf[i] = (char *) xmalloc (INP_NAME_MAX);
-    }
+    hi->ptr = 0;
+    hi->zh=0;
     hi->no_diffs = 0;
     hi->no_diffs = 0;
     hi->no_updates = 0;
@@ -271,12 +262,43 @@ struct heap_info *key_heap_init (int nkeys,
     return hi;
 }
 
+struct heap_info *key_heap_init (int nkeys,
+                                 int (*cmp)(const void *p1, const void *p2))
+{
+    struct heap_info *hi;
+    int i;
+
+    hi = key_heap_malloc();
+    hi->info.file = (struct key_file **)
+        xmalloc (sizeof(*hi->info.file) * (1+nkeys));
+    hi->info.buf = (char **) xmalloc (sizeof(*hi->info.buf) * (1+nkeys));
+    hi->ptr = (int *) xmalloc (sizeof(*hi->ptr) * (1+nkeys));
+    hi->cmp = cmp;
+    for (i = 0; i<= nkeys; i++)
+    {
+        hi->ptr[i] = i;
+        hi->info.buf[i] = (char *) xmalloc (INP_NAME_MAX);
+    }
+    return hi;
+}
+
+struct heap_info *key_heap_init_buff ( ZebraHandle zh,
+                                 int (*cmp)(const void *p1, const void *p2))
+{
+    struct heap_info *hi=key_heap_malloc();
+    hi->cmp=cmp;
+    hi->zh=zh;
+    return hi;
+}
+
 void key_heap_destroy (struct heap_info *hi, int nkeys)
 {
     int i;
     yaz_log (LOG_DEBUG, "key_heap_destroy");
-    for (i = 0; i<=nkeys; i++)
-        xfree (hi->info.buf[i]);
+    yaz_log (LOG_DEBUG, "key_heap_destroy nk=%d",nkeys);
+    if (!hi->zh)
+        for (i = 0; i<=nkeys; i++)
+            xfree (hi->info.buf[i]);
     
     xfree (hi->info.buf);
     xfree (hi->ptr);
@@ -338,11 +360,29 @@ static void key_heap_insert (struct heap_info *hi, const char *buf, int nbytes,
     }
 }
 
+static int heap_read_one_raw (struct heap_info *hi, char *name, char *key)
+{
+    ZebraHandle zh=hi->zh;
+    int ptr_i = zh->reg->ptr_i--;
+    char *cp;
+    if (!ptr_i)
+        return 0;
+    cp=(zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
+    logf (LOG_DEBUG, " raw: i=%d top=%d cp=%p", ptr_i, zh->reg->ptr_top,cp);
+    strcpy(name, cp);
+    memcpy(key, cp+strlen(name)+1, KEY_SIZE);
+    hi->no_iterations++;
+    return 1;
+}
+
 static int heap_read_one (struct heap_info *hi, char *name, char *key)
 {
     int n, r;
     char rbuf[INP_NAME_MAX];
     struct key_file *kf;
+
+    if (hi->zh) /* bypass the heap stuff, we have a readymade buffer */
+        return heap_read_one_raw(hi, name, key);
 
     if (!hi->heapnum)
         return 0;
@@ -868,40 +908,56 @@ void zebra_index_merge (ZebraHandle zh)
     struct heap_info *hi;
     struct progressInfo progressInfo;
     int nkeys = zh->reg->key_file_no;
+    int usefile; 
     
-    if (nkeys < 0)
+    logf (LOG_DEBUG, " index_merge called with nk=%d b=%p", 
+                    nkeys, zh->reg->key_buf);
+    if ( (nkeys==0) && (zh->reg->key_buf==0) )
+        return; /* nothing to merge - probably flush after end-trans */
+    
+    usefile = (nkeys!=0); 
+
+    if (usefile)
     {
-        char fname[1024];
-        nkeys = 0;
-        while (1)
+        if (nkeys < 0)
         {
-            extract_get_fname_tmp  (zh, fname, nkeys+1);
-            if (access (fname, R_OK) == -1)
-                break;
-            nkeys++;
+            char fname[1024];
+            nkeys = 0;
+            while (1)
+            {
+                extract_get_fname_tmp  (zh, fname, nkeys+1);
+                if (access (fname, R_OK) == -1)
+                        break;
+                nkeys++;
+            }
+            if (!nkeys)
+                return ;
         }
-        if (!nkeys)
-            return ;
+        kf = (struct key_file **) xmalloc ((1+nkeys) * sizeof(*kf));
+        progressInfo.totalBytes = 0;
+        progressInfo.totalOffset = 0;
+        time (&progressInfo.startTime);
+        time (&progressInfo.lastTime);
+        for (i = 1; i<=nkeys; i++)
+        {
+            kf[i] = key_file_init (i, 8192, zh->res);
+            kf[i]->readHandler = progressFunc;
+            kf[i]->readInfo = &progressInfo;
+            progressInfo.totalBytes += kf[i]->length;
+            progressInfo.totalOffset += kf[i]->buf_size;
+        }
+        hi = key_heap_init (nkeys, key_qsort_compare);
+        hi->reg = zh->reg;
+        
+        for (i = 1; i<=nkeys; i++)
+            if ((r = key_file_read (kf[i], rbuf)))
+                key_heap_insert (hi, rbuf, r, kf[i]);
+    }  /* use file */
+    else 
+    { /* do not use file, read straight from buffer */
+        hi = key_heap_init_buff (zh,key_qsort_compare);
+        hi->reg = zh->reg;
     }
-    kf = (struct key_file **) xmalloc ((1+nkeys) * sizeof(*kf));
-    progressInfo.totalBytes = 0;
-    progressInfo.totalOffset = 0;
-    time (&progressInfo.startTime);
-    time (&progressInfo.lastTime);
-    for (i = 1; i<=nkeys; i++)
-    {
-        kf[i] = key_file_init (i, 8192, zh->res);
-        kf[i]->readHandler = progressFunc;
-        kf[i]->readInfo = &progressInfo;
-        progressInfo.totalBytes += kf[i]->length;
-        progressInfo.totalOffset += kf[i]->buf_size;
-    }
-    hi = key_heap_init (nkeys, key_qsort_compare);
-    hi->reg = zh->reg;
-    
-    for (i = 1; i<=nkeys; i++)
-        if ((r = key_file_read (kf[i], rbuf)))
-            key_heap_insert (hi, rbuf, r, kf[i]);
     if (zh->reg->isams)
 	heap_inps (hi);
     if (zh->reg->isamc)
@@ -913,22 +969,28 @@ void zebra_index_merge (ZebraHandle zh)
     if (zh->reg->isamb)
 	heap_inpb (hi);
 	
-    for (i = 1; i<=nkeys; i++)
+    if (usefile)
     {
-        extract_get_fname_tmp  (zh, rbuf, i);
-        unlink (rbuf);
+        for (i = 1; i<=nkeys; i++)
+        {
+            extract_get_fname_tmp  (zh, rbuf, i);
+            unlink (rbuf);
+        }
+        for (i = 1; i<=nkeys; i++)
+            key_file_destroy (kf[i]);
+        xfree (kf);
     }
-    logf (LOG_LOG, "Iterations . . .%7d", hi->no_iterations);
-    logf (LOG_LOG, "Distinct words .%7d", hi->no_diffs);
-    logf (LOG_LOG, "Updates. . . . .%7d", hi->no_updates);
-    logf (LOG_LOG, "Deletions. . . .%7d", hi->no_deletions);
-    logf (LOG_LOG, "Insertions . . .%7d", hi->no_insertions);
+    if (hi->no_iterations)
+    { /* do not log if nothing happened */
+        logf (LOG_LOG, "Iterations . . .%7d", hi->no_iterations);
+        logf (LOG_LOG, "Distinct words .%7d", hi->no_diffs);
+        logf (LOG_LOG, "Updates. . . . .%7d", hi->no_updates);
+        logf (LOG_LOG, "Deletions. . . .%7d", hi->no_deletions);
+        logf (LOG_LOG, "Insertions . . .%7d", hi->no_insertions);
+    }
     zh->reg->key_file_no = 0;
 
     key_heap_destroy (hi, nkeys);
-    for (i = 1; i<=nkeys; i++)
-        key_file_destroy (kf[i]);
-    xfree (kf);
 }
 
 

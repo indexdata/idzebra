@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.116 2004-01-22 11:27:21 adam Exp $
+/* $Id: zebraapi.c,v 1.117 2004-01-22 15:40:25 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -77,8 +77,8 @@ static void zebra_flush_reg (ZebraHandle zh)
     zh->errCode=0;
     zebraExplain_flush (zh->reg->zei, zh);
     
-    extract_flushWriteKeys (zh);
-    zebra_index_merge (zh);
+    extract_flushWriteKeys (zh,1 /* final */);
+    zebra_index_merge (zh );
 }
 
 static struct zebra_register *zebra_register_open (ZebraService zs, 
@@ -258,6 +258,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     reg->zei = 0;
     reg->matchDict = 0;
     reg->key_file_no = 0;
+    reg->ptr_i=0;
     
     zebraRankInstall (reg, rank1_class);
     zebraRankInstall (reg, rankzv_class);

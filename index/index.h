@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.103 2004-01-22 11:27:21 adam Exp $
+/* $Id: index.h,v 1.104 2004-01-22 15:40:25 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -420,6 +420,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 			int *rec_lenp, char **basenamep);
 
 void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no);
+
 void zebra_index_merge (ZebraHandle zh);
 
 int buffer_extract_record (ZebraHandle zh, 
@@ -441,8 +442,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
                         int store_keys, int store_data,
                         const char *match_criteria);
 #endif
-
-void extract_flushWriteKeys (ZebraHandle zh);
+void extract_flushWriteKeys (ZebraHandle zh, int final);
 
 struct zebra_fetch_control {
     off_t offset_end;
