@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.173 2005-03-08 14:02:09 adam Exp $
+/* $Id: extract.c,v 1.174 2005-03-09 12:14:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -577,7 +577,8 @@ static int file_extract_record(ZebraHandle zh,
 	if (!force_update && recordAttr->runNumber ==
             zebraExplain_runNumberIncrement (zh->reg->zei, 0))
 	{
-            yaz_log (YLOG_LOG, "run number = %d", recordAttr->runNumber);
+            yaz_log (YLOG_LOG, "run number = " ZINT_FORMAT,
+			    recordAttr->runNumber);
 	    yaz_log (YLOG_LOG, "skipped %s %s " PRINTF_OFF_T,
                      zh->m_record_type, fname, recordOffset);
 	    extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);

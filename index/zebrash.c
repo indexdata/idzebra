@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.32 2005-01-15 19:38:29 adam Exp $
+/* $Id: zebrash.c,v 1.33 2005-03-09 12:14:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -390,15 +390,15 @@ static int cmd_exchange_record( char *args[], WRBUF outbuff)
  * Searching and retrieving
  */
 
-static int cmd_search_pqf( char *args[], WRBUF outbuff)
+static int cmd_search_pqf(char *args[], WRBUF outbuff)
 {
-    int hits=0;
-    char *set=args[1];
-    char *qry=restargs(args,2);
+    zint hits = 0;
+    char *set = args[1];
+    char *qry = restargs(args,2);
     int rc;
-    rc=zebra_search_PQF(zh, qry, set, &hits);
+    rc = zebra_search_PQF(zh, qry, set, &hits);
     if (0==rc)
-        wrbuf_printf(outbuff,"%d hits found\n",hits);
+        wrbuf_printf(outbuff, ZINT_FORMAT " hits found\n", hits);
     return rc;
 }
 
@@ -406,21 +406,21 @@ static int cmd_find( char *args[], WRBUF outbuff)
 {
     char *setname=DEFAULTRESULTSET;
     int rc;
-    int hits=0;
-    WRBUF qry=wrbuf_alloc();
+    zint hits = 0;
+    WRBUF qry = wrbuf_alloc();
     if (0==strstr(args[0],"@attr"))
         wrbuf_puts(qry, "@attr 1=/ ");
     wrbuf_puts(qry,restargs(args,1));
     if (!zh)
 	onecommand("quickstart", outbuff, "");
     wrbuf_printf(outbuff, "find %s\n",wrbuf_buf(qry));
-    rc=zebra_search_PQF(zh, wrbuf_buf(qry), setname, &hits);
+    rc = zebra_search_PQF(zh, wrbuf_buf(qry), setname, &hits);
     if (0==rc)
     {
-        wrbuf_printf(outbuff,"%d hits found\n",hits);
-        nextrecno=1;
+        wrbuf_printf(outbuff, ZINT_FORMAT " hits found\n", hits);
+        nextrecno = 1;
     }
-    wrbuf_free(qry,1);
+    wrbuf_free(qry, 1);
     return rc;
 }
 

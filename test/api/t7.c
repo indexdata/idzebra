@@ -1,4 +1,4 @@
-/* $Id: t7.c,v 1.7 2005-01-22 12:20:35 adam Exp $
+/* $Id: t7.c,v 1.8 2005-03-09 12:14:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
                                       "@attr 1=4 my");
     Z_SortKeySpecList *spec = 
           yaz_sort_spec (odr_output, "@attr 1=4 id");
-    int hits;
+    zint hits;
 
     init_data(zh, recs);
 

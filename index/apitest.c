@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.21 2005-01-16 23:14:57 adam Exp $
+/* $Id: apitest.c,v 1.22 2005-03-09 12:14:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -161,7 +161,7 @@ int main (int argc, char **argv)
 	char setname[64];
 	int errCode;
 	int i;
-        int hits;
+        zint hits;
 	char *errString;
 	ZebraRetrievalRecord *records;
 	int noOfRecordsToFetch;
@@ -209,7 +209,7 @@ int main (int argc, char **argv)
 	    continue;
 	}
 	/* ok ... */
-	printf ("Zebra Search gave %d hits\n", hits);
+	printf ("Zebra Search gave " ZINT_FORMAT " hits\n", hits);
 	
 	/* Deterimine number of records to fetch ... */
 	if (hits > 10)

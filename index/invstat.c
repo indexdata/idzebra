@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.44 2005-03-08 14:02:09 adam Exp $
+/* $Id: invstat.c,v 1.45 2005-03-09 12:14:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -241,11 +241,11 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
                 break;
             fprintf (stdout, "Category   %d\n", i);
             fprintf (stdout, "Block size %d\n", bsize);
-            fprintf (stdout, "Blocks:    %d\n", stat_info.isamb_blocks[i]);
-            fprintf (stdout, "Size:      %d\n", stat_info.isamb_sizes[i]);
+            fprintf (stdout, "Blocks:    " ZINT_FORMAT "\n", stat_info.isamb_blocks[i]);
+            fprintf (stdout, "Size:      " ZINT_FORMAT "\n", stat_info.isamb_sizes[i]);
             fprintf (stdout, "Entries:   " ZINT_FORMAT "\n",
 		     stat_info.no_isam_entries[i]);
-            fprintf (stdout, "Total      %d\n", stat_info.isamb_blocks[i]*
+            fprintf (stdout, "Total      " ZINT_FORMAT "\n", stat_info.isamb_blocks[i]*
                      bsize);
             for (j = 0; j<5; j++)
                 if (stat_info.isamb_levels[i][j])

@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.14 2005-01-15 19:38:35 adam Exp $
+/* $Id: t4.c,v 1.15 2005-03-09 12:14:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         YAZ_PQF_Parser parser = yaz_pqf_create();
         Z_RPNQuery *query = yaz_pqf_parse(parser, odr_input, 
                                           "@attr 1=4 my");
-        int hits;
+        zint hits;
         
         sprintf(setname, "s%d", i+1);
         zebra_search_RPN(zh, odr_input, query, setname, &hits);
