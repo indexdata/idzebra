@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.85 2003-02-27 22:55:40 adam Exp $
+/* $Id: zebraapi.c,v 1.86 2003-02-27 23:08:10 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -407,7 +407,6 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
     xfree (reg->key_buf);
     xfree (reg->name);
     xfree (reg);
-    yaz_log(LOG_DEBUG, "zebra_register_close 2");
 }
 
 void zebra_stop(ZebraService zs)
@@ -1288,12 +1287,25 @@ void zebra_begin_trans (ZebraHandle zh)
     zh->reg->seqno = seqno;
 }
 
-void zebra_end_trans (ZebraHandle zh)
+void zebra_end_trans (ZebraHandle zh) {
+  ZebraTransactionStatus dummy;
+  zebra_end_transaction(zh, &dummy);
+}
+
+void zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
 {
     char val;
     int seqno;
     const char *rval;
+
     ASSERTZH;
+
+    status->processed = 0;
+    status->inserted  = 0;
+    status->updated   = 0;
+    status->deleted   = 0;
+    status->utime     = 0;
+    status->stime     = 0;
 
     zh->trans_no--;
     if (zh->trans_no != 0)
@@ -1311,6 +1323,11 @@ void zebra_end_trans (ZebraHandle zh)
     yaz_log (LOG_LOG, "Records: %7d i/u/d %d/%d/%d", 
              zh->records_processed, zh->records_inserted,
              zh->records_updated, zh->records_deleted);
+
+    status->processed = zh->records_processed;
+    status->inserted = zh->records_inserted;
+    status->updated = zh->records_updated;
+    status->deleted = zh->records_deleted;
 
     zebra_get_state (zh, &val, &seqno);
     if (val != 'd')
@@ -1333,7 +1350,11 @@ void zebra_end_trans (ZebraHandle zh)
                     (long) (zh->tms2.tms_utime - zh->tms1.tms_utime),
                     (long) (zh->tms2.tms_stime - zh->tms1.tms_stime));
 
+    status->utime = (long) (zh->tms2.tms_utime - zh->tms1.tms_utime);
+    status->stime = (long) (zh->tms2.tms_stime - zh->tms1.tms_stime);
 #endif
+
+    return;
 }
 
 void zebra_repository_update (ZebraHandle zh)

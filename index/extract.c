@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.138 2003-02-27 22:55:40 adam Exp $
+/* $Id: extract.c,v 1.139 2003-02-27 23:08:10 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -961,18 +961,24 @@ int bufferExtractRecord (ZebraHandle zh,
     extractCtrl.endf = zebra_record_int_end;
     extractCtrl.fh = &fc;
 
-    /* announce database */
-    if (zebraExplain_curDatabase (zh->reg->zei, rGroup->databaseName))
-    {
-      if (zebraExplain_newDatabase (zh->reg->zei, rGroup->databaseName, 0))
-	return 0;
-    }
-
     zh->reg->keys.buf_used = 0;
     zh->reg->keys.prevAttrUse = -1;
     zh->reg->keys.prevAttrSet = -1;
     zh->reg->keys.prevSeqNo = 0;
     zh->reg->sortKeys.buf_used = 0;
+
+    /* announce database */
+
+    if (!(rGroup->databaseName)) {
+        logf (LOG_WARN, "Invalid record group, no database name given");
+	return 0;
+    }
+
+    if (zebraExplain_curDatabase (zh->reg->zei, rGroup->databaseName))
+    {
+      if (zebraExplain_newDatabase (zh->reg->zei, rGroup->databaseName, 0))
+	return 0;
+    }
 
     if (*recordType) {
       logf (LOG_DEBUG, "Record type explicitly specified: %s", recordType);

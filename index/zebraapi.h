@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.25 2003-02-11 17:28:10 heikki Exp $
+/* $Id: zebraapi.h,v 1.26 2003-02-27 23:08:10 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -53,6 +53,15 @@ struct recordGroup {
     int   explainDatabase;
     int   followLinks;
 };
+
+typedef struct {
+  int processed;
+  int inserted;
+  int updated;
+  int deleted;
+  long utime;
+  long stime;
+} ZebraTransactionStatus;
 
 /* Retrieval Record Descriptor */
 typedef struct {
@@ -188,6 +197,7 @@ int zebra_admin_exchange_record (ZebraHandle zh,
 
 void zebra_begin_trans (ZebraHandle zh);
 void zebra_end_trans (ZebraHandle zh);
+void zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *stat);
 
 int zebra_commit (ZebraHandle zh);
 
