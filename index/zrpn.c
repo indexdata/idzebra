@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.158 2004-10-26 15:32:11 heikki Exp $
+/* $Id: zrpn.c,v 1.159 2004-11-03 16:04:45 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1739,7 +1739,7 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     struct it_key key;
     int sys;
     result = rstemp_create( rset_nmem,key_it_ctrl,key_it_ctrl->scope,
-                     res_get (zh->res, "setTmpDir") );
+                     res_get (zh->res, "setTmpDir"),0 );
     rsfd = rset_open (result, RSETF_WRITE);
 
     sys = atoi(termz);

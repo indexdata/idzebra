@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.47 2004-10-20 14:32:28 heikki Exp $
+/* $Id: trunc.c,v 1.48 2004-11-03 16:04:45 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -127,7 +127,8 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                           const char *flags, ISAMS_P *isam_p, int from, int to,
                           int merge_chunk, int preserve_position,
                           int term_type, NMEM rset_nmem,
-                          const struct key_control *kctrl, int scope)
+                          const struct key_control *kctrl, int scope,
+                          TERMID termid)
 {
     RSET result; 
     RSFD result_rsfd;
@@ -141,7 +142,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
     result = rset_create (rset_kind_temp, &parms);
     */
     result=rstemp_create( rset_nmem,kctrl, scope,
-            res_get (zi->res, "setTmpDir"));
+            res_get (zi->res, "setTmpDir"), termid);
     result_rsfd = rset_open (result, RSETF_WRITE);
 
     if (to - from > merge_chunk)
@@ -163,13 +164,13 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
 				            isam_p, i, i+i_add,
                                             merge_chunk, preserve_position,
                                             term_type, rset_nmem, 
-                                            kctrl, scope);
+                                            kctrl, scope,termid);
             else
                 rset[rscur] = rset_trunc_r (zi, term, length, flags,
                                             isam_p, i, to,
                                             merge_chunk, preserve_position,
                                             term_type, rset_nmem, 
-                                            kctrl, scope);
+                                            kctrl, scope,termid);
             rscur++;
         }
         ti = heap_init (rscur, sizeof(struct it_key), key_compare_it);
@@ -451,6 +452,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 	return rsnull_create (rset_nmem, kctrl);
     }
     return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100,
-                         preserve_position, term_type, rset_nmem,kctrl,scope);
+                         preserve_position, term_type, rset_nmem,kctrl,scope,
+                         termid);
 }
 

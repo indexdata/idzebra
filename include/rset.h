@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.41 2004-10-22 11:33:28 heikki Exp $
+/* $Id: rset.h,v 1.42 2004-11-03 16:04:45 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -216,7 +216,7 @@ zint rset_count(RSET rs);
 
 RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
                     int scope, 
-                    const char *temp_path);
+                    const char *temp_path, TERMID term);
 
 RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol);
 

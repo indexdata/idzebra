@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.52 2004-10-22 10:12:52 heikki Exp $
+/* $Id: rstemp.c,v 1.53 2004-11-03 16:04:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -48,7 +48,7 @@ static const struct rset_control control =
 {
     "temp",
     r_delete,
-    rset_get_no_terms,
+    rset_get_one_term,
     r_open,
     r_close,
     rset_default_forward,
@@ -81,9 +81,9 @@ struct rset_temp_rfd {
 
 RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
                     int scope, 
-                    const char *temp_path)
+                    const char *temp_path,TERMID term)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,0);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,term);
     struct rset_temp_info *info;
    
     info = (struct rset_temp_info *) nmem_malloc(rnew->nmem, sizeof(*info));
