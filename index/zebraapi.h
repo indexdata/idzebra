@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.22 2002-10-22 09:37:56 heikki Exp $
+/* $Id: zebraapi.h,v 1.23 2003-01-15 07:26:40 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -29,6 +29,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/oid.h>
 #include <yaz/proto.h>
 #include <zebraver.h>
+
+/* Fixme! Compare string (ignore case) */
+#ifdef WIN32
+#define STRCASECMP	stricmp
+#else
+#define STRCASECMP	strcasecmp
+#endif
 
 YAZ_BEGIN_CDECL
 

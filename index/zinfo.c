@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.35 2002-09-06 10:28:02 adam Exp $
+/* $Id: zinfo.c,v 1.36 2003-01-15 07:26:40 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -610,11 +610,11 @@ int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database)
     
     assert (zei);
     if (zei->curDatabaseInfo &&
-        !strcmp (zei->curDatabaseInfo->databaseName, database))
+        !STRCASECMP (zei->curDatabaseInfo->databaseName, database))
         return 0;
     for (zdi = zei->databaseInfo; zdi; zdi=zdi->next)
     {
-        if (!strcmp (zdi->databaseName, database_n))
+        if (!STRCASECMP (zdi->databaseName, database_n))
             break;
     }
     if (!zdi)
@@ -709,7 +709,7 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
     assert (zei);
     for (zdi = zei->databaseInfo; zdi; zdi=zdi->next)
     {
-        if (!strcmp (zdi->databaseName, database_n))
+        if (!STRCASECMP (zdi->databaseName, database_n))
             break;
     }
     if (zdi)

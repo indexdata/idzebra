@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.80 2003-01-13 10:56:09 oleg Exp $
+/* $Id: zebraapi.c,v 1.81 2003-01-15 07:26:40 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -571,7 +571,7 @@ void map_basenames_func (void *vp, const char *name, const char *value)
 	return ;
     no--;
     for (i = 0; i<p->num_bases; i++)
-	if (p->basenames[i] && !strcmp (p->basenames[i], fromdb))
+	if (p->basenames[i] && !STRCASECMP (p->basenames[i], fromdb))
 	{
 	    p->basenames[i] = 0;
 	    for (i = 0; i < no; i++)
