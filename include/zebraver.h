@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.16  2000-02-10 10:19:47  adam
+ * Revision 1.17  2000-11-08 14:06:18  adam
+ * Updated version.
+ *
+ * Revision 1.16  2000/02/10 10:19:47  adam
  * Patch level 1.
  *
  * Revision 1.15  1999/12/01 13:30:30  adam
@@ -55,9 +58,9 @@
  */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.0pl1"
+#define ZEBRAVER "1.1pre"
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 2000-02-10 10:19:47 $"
+#define ZEBRADATE "$Date: 2000-11-08 14:06:18 $"
 #endif
