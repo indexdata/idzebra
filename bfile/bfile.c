@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.14  1995-12-01 11:37:21  adam
+ * Revision 1.15  1995-12-01 16:24:28  adam
+ * Commit files use separate meta file area.
+ *
+ * Revision 1.14  1995/12/01  11:37:21  adam
  * Cached/commit files implemented as meta-files.
  *
  * Revision 1.13  1995/11/30  17:00:49  adam
@@ -46,10 +49,8 @@
  */
 
 #include <stdio.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <alexutil.h>
 #include <bfile.h>
@@ -60,7 +61,14 @@ static MFile_area commit_area = NULL;
 void bf_cache (void)
 {
     if (!commit_area)
-        commit_area = mf_init ("commit");
+        if (res_get (common_resource, "commit"))
+            commit_area = mf_init ("commit");
+        else
+        {
+            logf (LOG_FATAL, "Commit area must be defined if commit"
+                  "is to be enabled");
+            exit (1);
+        }
 }
 
 int bf_close (BFile bf)
@@ -82,8 +90,9 @@ BFile bf_open (const char *name, int block_size, int wflag)
         int first_time;
 
         logf (LOG_LOG, "cf,mf_open %s", name);
-        tmp->mf = mf_open (commit_area, name, block_size, 0);
-        tmp->cf = cf_open (tmp->mf, name, block_size, wflag, &first_time);
+        tmp->mf = mf_open (0, name, block_size, 0);
+        tmp->cf = cf_open (tmp->mf, commit_area, name, block_size,
+                           wflag, &first_time);
 
         if (first_time)
         {
@@ -131,8 +140,7 @@ void bf_commit (void)
     CFile cf;
     int first_time;
 
-    if (!commit_area)
-        commit_area = mf_init ("commit");
+    assert (commit_area);
     if (!(inf = fopen ("cache", "r")))
     {
         logf (LOG_FATAL|LOG_ERRNO, "cannot open commit %s", "cache");
@@ -140,8 +148,8 @@ void bf_commit (void)
     }
     while (fscanf (inf, "%s %d", path, &block_size) == 2)
     {
-        mf = mf_open (commit_area, path, block_size, 1);
-        cf = cf_open (mf, path, block_size, 0, &first_time);
+        mf = mf_open (0, path, block_size, 1);
+        cf = cf_open (mf, commit_area, path, block_size, 0, &first_time);
 
         cf_commit (cf);
 

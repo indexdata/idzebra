@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.24  1995-11-30 17:01:38  adam
+ * Revision 1.25  1995-12-01 16:24:39  adam
+ * Commit files use separate meta file area.
+ *
+ * Revision 1.24  1995/11/30  17:01:38  adam
  * New setting commitCache: points to commit directories/files.
  * New command commit: commits at the end of a zebraidx run.
  *
@@ -144,6 +147,7 @@ int main (int argc, char **argv)
             {
                 if (!common_resource)
                 {
+                    const char *rval;
                     common_resource = res_open (configName ?
                                                 configName : FNAME_CONFIG);
                     if (!common_resource)
@@ -153,7 +157,9 @@ int main (int argc, char **argv)
                         exit (1);
                     }
                     data1_tabpath = res_get (common_resource, "profilePath");
-                    bf_cache (res_get (common_resource, "commitCache"));
+                    rval = res_get (common_resource, "commitEnable");
+                    if (rval && atoi(rval))
+                        bf_cache ();
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
@@ -223,7 +229,7 @@ int main (int argc, char **argv)
     if (commit_at_end)
     {
         logf (LOG_LOG, "commiting");
-        bf_commit (res_get (common_resource, "commitCache"));
+        bf_commit ();
     }
     exit (0);
 }

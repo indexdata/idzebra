@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.2  1995-12-01 11:37:24  adam
+ * Revision 1.3  1995-12-01 16:24:29  adam
+ * Commit files use separate meta file area.
+ *
+ * Revision 1.2  1995/12/01  11:37:24  adam
  * Cached/commit files implemented as meta-files.
  *
  * Revision 1.1  1995/11/30  08:33:13  adam
@@ -21,7 +24,7 @@
 
 void cf_commit (CFile cf)
 {
-    int i, r, bucket_no;
+    int i, bucket_no;
     int hash_bytes;
     struct CFile_ph_bucket *p;
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.3  1995-12-01 11:37:22  adam
+ * Revision 1.4  1995-12-01 16:24:28  adam
+ * Commit files use separate meta file area.
+ *
+ * Revision 1.3  1995/12/01  11:37:22  adam
  * Cached/commit files implemented as meta-files.
  *
  * Revision 1.2  1995/11/30  17:00:49  adam
@@ -58,8 +61,8 @@ static int read_head (CFile cf)
 }
 
 
-CFile cf_open (MFile mf, const char *fname, int block_size, int wflag,
-               int *firstp)
+CFile cf_open (MFile mf, MFile_area area, const char *fname,
+               int block_size, int wflag, int *firstp)
 {
     char path[256];
     int i;
@@ -68,13 +71,13 @@ CFile cf_open (MFile mf, const char *fname, int block_size, int wflag,
    
     cf->rmf = mf; 
     sprintf (path, "%s.b", fname);
-    if (!(cf->block_mf = mf_open (0, path, block_size, wflag)))
+    if (!(cf->block_mf = mf_open (area, path, block_size, wflag)))
     {
         logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", path);
         exit (1);
     }
     sprintf (path, "%s.h", fname);
-    if (!(cf->hash_mf = mf_open (0, path, HASH_BSIZE, wflag)))
+    if (!(cf->hash_mf = mf_open (area, path, HASH_BSIZE, wflag)))
     {
         logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", path);
         exit (1);
@@ -111,7 +114,7 @@ CFile cf_open (MFile mf, const char *fname, int block_size, int wflag,
         cf->parray[i] = NULL;
     cf->bucket_lru_front = cf->bucket_lru_back = NULL;
     cf->bucket_in_memory = 0;
-    cf->max_bucket_in_memory = 200;
+    cf->max_bucket_in_memory = 400;
     cf->dirty = 0;
     cf->iobuf = xmalloc (cf->head.block_size);
     memset (cf->iobuf, 0, cf->head.block_size);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.h,v $
- * Revision 1.9  1995-12-01 11:37:46  adam
+ * Revision 1.10  1995-12-01 16:24:33  adam
+ * Commit files use separate meta file area.
+ *
+ * Revision 1.9  1995/12/01  11:37:46  adam
  * Cached/commit files implemented as meta-files.
  *
  * Revision 1.8  1995/11/30  08:33:29  adam
@@ -45,7 +48,7 @@ int bf_close (BFile);
 BFile bf_open (const char *name, int block_size, int wflag);
 int bf_read (BFile bf, int no, int offset, int num, void *buf);
 int bf_write (BFile bf, int no, int offset, int num, const void *buf);
-void bf_cache ();
-void bf_commit ();
+void bf_cache (void);
+void bf_commit (void);
 
 #endif

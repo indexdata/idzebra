@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.h,v $
- * Revision 1.2  1995-12-01 11:37:23  adam
+ * Revision 1.3  1995-12-01 16:24:29  adam
+ * Commit files use separate meta file area.
+ *
+ * Revision 1.2  1995/12/01  11:37:23  adam
  * Cached/commit files implemented as meta-files.
  *
  * Revision 1.1  1995/11/30  08:33:12  adam
@@ -52,8 +55,8 @@ typedef struct CFile_struct
 } *CFile;
 
 int cf_close (CFile cf);
-CFile cf_open (MFile mf, const char *fname, int block_size, int wflag,
-               int *firstp);
+CFile cf_open (MFile mf, MFile_area area, const char *fname, int block_size,
+               int wflag, int *firstp);
 int cf_read (CFile cf, int no, int offset, int num, void *buf);
 int cf_write (CFile cf, int no, int offset, int num, const void *buf);
 void cf_commit (CFile cf);
