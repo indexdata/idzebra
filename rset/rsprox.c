@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.23 2005-01-15 19:38:35 adam Exp $
+/* $Id: rsprox.c,v 1.24 2005-01-17 01:16:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -75,22 +75,22 @@ struct rset_prox_rfd {
 
 
 RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol, int scope,
-            int rset_no, RSET *rset,
-            int ordered, int exclusion,
-            int relation, int distance)
+		    int rset_no, RSET *rset,
+		    int ordered, int exclusion,
+		    int relation, int distance)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,0);
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,0);
     struct rset_prox_info *info;
     info = (struct rset_prox_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->rset = nmem_malloc(rnew->nmem,rset_no * sizeof(*info->rset));
     memcpy(info->rset, rset,
            rset_no * sizeof(*info->rset));
-    info->rset_no=rset_no;
-    info->ordered=ordered;
-    info->exclusion=exclusion;
-    info->relation=relation;
-    info->distance=distance;
-    rnew->priv=info;
+    info->rset_no = rset_no;
+    info->ordered = ordered;
+    info->exclusion = exclusion;
+    info->relation = relation;
+    info->distance = distance;
+    rnew->priv = info;
     return rnew;
 }
 
@@ -101,7 +101,7 @@ static void r_delete (RSET ct)
     int i;
 
     for (i = 0; i<info->rset_no; i++)
-        rset_delete (info->rset[i]);
+        rset_delete(info->rset[i]);
 }
 
 
@@ -114,15 +114,15 @@ static RSFD r_open (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-        yaz_log (YLOG_FATAL, "prox set type is read-only");
+        yaz_log(YLOG_FATAL, "prox set type is read-only");
         return NULL;
     }
     rfd = rfd_create_base(ct);
     if (rfd->priv)
         p=(struct rset_prox_rfd *)(rfd->priv);
     else {
-        p = (struct rset_prox_rfd *) nmem_malloc (ct->nmem,sizeof(*p));
-        rfd->priv=p;
+        p = (struct rset_prox_rfd *) nmem_malloc(ct->nmem,sizeof(*p));
+        rfd->priv = p;
         p->more = nmem_malloc (ct->nmem,sizeof(*p->more) * info->rset_no);
         p->buf = nmem_malloc(ct->nmem,sizeof(*p->buf) * info->rset_no);
         p->terms = nmem_malloc(ct->nmem,sizeof(*p->terms) * info->rset_no);
@@ -140,7 +140,7 @@ static RSFD r_open (RSET ct, int flag)
         p->rfd[i] = rset_open (info->rset[i], RSETF_READ);
         p->more[i] = rset_read (p->rfd[i], p->buf[i], &p->terms[i]);
     }
-    p->hits=0;
+    p->hits = 0;
     return rfd;
 }
 
@@ -159,8 +159,8 @@ static int r_forward (RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
 {
     struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
     struct rset_prox_rfd *p=(struct rset_prox_rfd *)(rfd->priv);
-    const struct key_control *kctrl=rfd->rset->keycontrol;
-    int cmp=0;
+    const struct key_control *kctrl = rfd->rset->keycontrol;
+    int cmp = 0;
     int i;
 
     if (untilbuf)
@@ -213,7 +213,7 @@ static int r_forward (RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
             {
                 memcpy (buf, p->buf[0], kctrl->key_size);
                 if (term)
-                    *term=p->terms[0];
+                    *term = p->terms[0];
                 p->more[0] = rset_read (p->rfd[0], p->buf[0], &p->terms[0]);
                 p->hits++;
                 return 1;
@@ -280,14 +280,14 @@ static int r_forward (RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                     {
                         memcpy (buf, p->buf[1], kctrl->key_size);
                         if (term)
-                            *term=p->terms[1];
+                            *term = p->terms[1];
                         p->more[1] = rset_read ( p->rfd[1], p->buf[1],
                                                  &p->terms[1]);
                         p->hits++;
                         return 1;
                     }
                 }
-                p->more[1] = rset_read (p->rfd[1], p->buf[1],&p->terms[1]);
+                p->more[1] = rset_read (p->rfd[1], p->buf[1], &p->terms[1]);
             }
         }
     }
@@ -302,20 +302,20 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    yaz_log (YLOG_FATAL, "prox set type is read-only");
+    yaz_log(YLOG_FATAL, "prox set type is read-only");
     return -1;
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)
 {
     struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
-    struct rset_prox_rfd *p=(struct rset_prox_rfd *)(rfd->priv);
+    struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
     int i;
     double r = 0.0;
     double cur, tot = -1.0;
     double scur = 0.0, stot = 0.0;
 
-    yaz_log (YLOG_DEBUG, "rsprox_pos");
+    yaz_log(YLOG_DEBUG, "rsprox_pos");
 
     for (i = 0; i < info->rset_no; i++)
     {
@@ -326,14 +326,14 @@ static void r_pos (RSFD rfd, double *current, double *total)
         }
     }
     if (tot <0) {  /* nothing found */
-        *current=-1;
-        *total=-1;
-    } else if (tot <1) { /* most likely tot==0 */
-        *current=0;
-        *total=0;
+        *current = -1;
+        *total = -1;
+    } else if (tot < 1) { /* most likely tot==0 */
+        *current = 0;
+        *total = 0;
     } else {
-        r=scur/stot; 
-        *current=p->hits;
+        r = scur/stot; 
+        *current = p->hits;
         *total=*current/r ; 
     }
     yaz_log(YLOG_DEBUG,"prox_pos: [%d] %0.1f/%0.1f= %0.4f ",
@@ -347,7 +347,7 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
     struct rset_prox_info *info =
               (struct rset_prox_info *) ct->priv;
     int i;
-    for (i=0;i<info->rset_no;i++)
+    for (i = 0; i<info->rset_no; i++)
         rset_getterms(info->rset[i], terms, maxterms, curterm);
 }
 
