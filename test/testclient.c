@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.8 2002-12-10 12:54:24 adam Exp $
+ * $Id: testclient.c,v 1.9 2003-01-13 22:28:18 adam Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
         ZOOM_resultset_option_set(r, "preferredRecordSyntax", format);
     for (pos = 0; pos < retrieve_number; pos++)
     {
-        size_t len;
+        int len;
         const char *rec =
             ZOOM_record_get(
                 ZOOM_resultset_record(r, pos + retrieve_offset),
