@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.27  1999-06-28 13:25:40  quinn
+ * Revision 1.28  1999-07-06 12:26:04  adam
+ * Fixed filters so that MS-DOS CR is ignored.
+ *
+ * Revision 1.27  1999/06/28 13:25:40  quinn
  * Improved diagnostics for Tcl
  *
  * Revision 1.26  1999/05/26 07:49:14  adam
@@ -504,7 +507,7 @@ static int readParseToken (const char **cpp, int *len)
     char cmd[32];
     int i, level;
 
-    while (*cp == ' ' || *cp == '\t' || *cp == '\n')
+    while (*cp == ' ' || *cp == '\t' || *cp == '\n' || *cp == '\r')
         cp++;
     switch (*cp)
     {
@@ -548,7 +551,8 @@ static int readParseToken (const char **cpp, int *len)
         {
             logf (LOG_WARN, "bad character %d %c", *cp, *cp);
             cp++;
-            while (*cp && *cp != ' ' && *cp != '\t' && *cp != '\n')
+            while (*cp && *cp != ' ' && *cp != '\t' &&
+                   *cp != '\n' && *cp != '\r')
                 cp++;
             *cpp = cp;
             return 0;
@@ -731,7 +735,7 @@ int readFileSpec (struct lexSpec *spec)
     while (c != EOF)
     {
         int off = 0;
-        if (c == '#' || c == '\n' || c == ' ' || c == '\t')
+        if (c == '#' || c == '\n' || c == ' ' || c == '\t' || c == '\r')
         {
             while (c != '\n' && c != EOF)
                 c = getc (spec_inf);
@@ -748,6 +752,8 @@ int readFileSpec (struct lexSpec *spec)
             {
                 int c1 = c;
                 c = getc (spec_inf);
+		while (c == '\r')
+		    c = getc (spec_inf);
                 if (c == EOF)
                     break;
                 if (c1 == '\n')
@@ -1192,7 +1198,8 @@ static int execTok (struct lexSpec *spec, const char **src,
     else if (*s == '-')
     {
         *tokBuf = s++;
-        while (*s && *s != ' ' && *s != '\t' && *s != '\n' && *s != ';')
+        while (*s && *s != ' ' && *s != '\t' && *s != '\n' && *s != '\r' &&
+               *s != ';')
             s++;
         *tokLen = s - *tokBuf;
         *src = s;
@@ -1201,7 +1208,8 @@ static int execTok (struct lexSpec *spec, const char **src,
     else
     {
         *tokBuf = s++;
-        while (*s && *s != ' ' && *s != '\t' && *s != '\n' && *s != ';')
+        while (*s && *s != ' ' && *s != '\t' && *s != '\n' && *s != '\r' &&
+               *s != ';')
             s++;
         *tokLen = s - *tokBuf;
     }
