@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.19  1998-11-03 10:22:39  adam
+ * Revision 1.20  1998-11-03 14:51:28  adam
+ * Changed code so that it creates as few data1 nodes as possible.
+ *
+ * Revision 1.19  1998/11/03 10:22:39  adam
  * Fixed memory leak that could occur for when large data1 node were
  * concatenated. Data-type data1_nodes may have multiple nodes.
  *
@@ -207,7 +210,14 @@ struct lexContext {
     struct lexContext *next;
 };
 
+struct lexConcatBuf {
+    int len;
+    int max;
+    char *buf;
+};
+
 struct lexSpec {
+
     char *name;
     struct lexContext *context;
 
@@ -228,6 +238,8 @@ struct lexSpec {
     int (*f_win_rf)(void *, char *, size_t);
     off_t (*f_win_sf)(void *, off_t);
 
+    struct lexConcatBuf **concatBuf;
+    int maxLevel;
 };
 
 
@@ -377,6 +389,7 @@ static void lexContextDestroy (struct lexContext *p)
 static struct lexSpec *lexSpecCreate (const char *name)
 {
     struct lexSpec *p;
+    int i;
 
     p = xmalloc (sizeof(*p));
     p->name = xmalloc (strlen(name)+1);
@@ -387,6 +400,15 @@ static struct lexSpec *lexSpecCreate (const char *name)
     p->context_stack = xmalloc (sizeof(*p->context_stack) *
 				p->context_stack_size);
     p->f_win_buf = NULL;
+
+    p->maxLevel = 128;
+    p->concatBuf = xmalloc (sizeof(*p->concatBuf) * p->maxLevel);
+    for (i = 0; i < p->maxLevel; i++)
+    {
+	p->concatBuf[i] = xmalloc (sizeof(**p->concatBuf));
+	p->concatBuf[i]->len = p->concatBuf[i]->max = 0;
+	p->concatBuf[i]->buf = 0;
+    }
     return p;
 }
 
@@ -394,11 +416,17 @@ static void lexSpecDestroy (struct lexSpec **pp)
 {
     struct lexSpec *p;
     struct lexContext *lt;
+    int i;
 
     assert (pp);
     p = *pp;
     if (!p)
         return ;
+
+    for (i = 0; i < p->maxLevel; i++)
+	xfree (p->concatBuf[i]);
+    xfree (p->concatBuf);
+
     lt = p->context;
     while (lt)
     {
@@ -683,17 +711,12 @@ int readFileSpec (struct lexSpec *spec)
 
 static struct lexSpec *curLexSpec = NULL;
 
-static void destroy_data (struct data1_node *n)
-{
-    assert (n->which == DATA1N_data);
-    xfree (n->u.data.data);
-}
-
 static void execData (struct lexSpec *spec,
                       data1_node **d1_stack, int *d1_level,
                       const char *ebuf, int elen, int formatted_text)
 {
     struct data1_node *res, *parent;
+    int org_len;
 
     if (elen == 0) /* shouldn't happen, but it does! */
 	return ;
@@ -713,25 +736,52 @@ static void execData (struct lexSpec *spec,
     parent = d1_stack[*d1_level -1];
     assert (parent);
 
-    res = data1_mk_node (spec->dh, spec->m);
-    res->parent = parent;
-    res->which = DATA1N_data;
-    res->u.data.what = DATA1I_text;
-    res->u.data.len = elen;
-    res->u.data.formatted_text = formatted_text;
-    if (elen > DATA1_LOCALDATA)
-	res->u.data.data = nmem_malloc (spec->m, elen);
+    if ((res = d1_stack[*d1_level]) && res->which == DATA1N_data)
+	org_len = res->u.data.len;
     else
-	res->u.data.data = res->lbuf;
-    memcpy (res->u.data.data, ebuf, elen);
-    res->root = parent->root;
-    
-    parent->last_child = res;
-    if (d1_stack[*d1_level])
-	d1_stack[*d1_level]->next = res;
-    else
-	parent->child = res;
-    d1_stack[*d1_level] = res;
+    {
+	org_len = 0;
+
+	res = data1_mk_node (spec->dh, spec->m);
+	res->parent = parent;
+	res->which = DATA1N_data;
+	res->u.data.what = DATA1I_text;
+	res->u.data.len = 0;
+	res->u.data.formatted_text = formatted_text;
+#if 0
+	if (elen > DATA1_LOCALDATA)
+	    res->u.data.data = nmem_malloc (spec->m, elen);
+	else
+	    res->u.data.data = res->lbuf;
+	memcpy (res->u.data.data, ebuf, elen);
+#else
+	res->u.data.data = 0;
+#endif
+	res->root = parent->root;
+	
+	parent->last_child = res;
+	if (d1_stack[*d1_level])
+	    d1_stack[*d1_level]->next = res;
+	else
+	    parent->child = res;
+	d1_stack[*d1_level] = res;
+    }
+    if (org_len + elen >= spec->concatBuf[*d1_level]->max)
+    {
+	char *old_buf, *new_buf;
+
+	spec->concatBuf[*d1_level]->max = org_len + elen + 256;
+	new_buf = xmalloc (spec->concatBuf[*d1_level]->max);
+	if ((old_buf = spec->concatBuf[*d1_level]->buf))
+	{
+	    memcpy (new_buf, old_buf, org_len);
+	    xfree (old_buf);
+	}
+	spec->concatBuf[*d1_level]->buf = new_buf;
+    }
+    assert (spec->concatBuf[*d1_level]);
+    memcpy (spec->concatBuf[*d1_level]->buf + org_len, ebuf, elen);
+    res->u.data.len += elen;
 }
 
 static void execDataP (struct lexSpec *spec,
@@ -739,6 +789,27 @@ static void execDataP (struct lexSpec *spec,
                        const char *ebuf, int elen, int formatted_text)
 {
     execData (spec, d1_stack, d1_level, ebuf, elen, formatted_text);
+}
+
+static void tagDataRelease (struct lexSpec *spec,
+			    data1_node **d1_stack, int d1_level)
+{
+    data1_node *res;
+    
+    assert (d1_stack[d1_level]);
+    if ((res = d1_stack[d1_level]) &&
+	res->which == DATA1N_data && 
+	res->u.data.what == DATA1I_text)
+    {
+	assert (!res->u.data.data);
+	assert (res->u.data.len > 0);
+	if (res->u.data.len > DATA1_LOCALDATA)
+	    res->u.data.data = nmem_malloc (spec->m, res->u.data.len);
+	else
+	    res->u.data.data = res->lbuf;
+	memcpy (res->u.data.data, spec->concatBuf[d1_level]->buf,
+		res->u.data.len);
+    }
 }
 
 static void variantBegin (struct lexSpec *spec, 
@@ -820,7 +891,10 @@ static void variantBegin (struct lexSpec *spec,
     
     parent->last_child = res;
     if (d1_stack[*d1_level])
+    {
+	tagDataRelease (spec, d1_stack, *d1_level);
         d1_stack[*d1_level]->next = res;
+    }
     else
         parent->child = res;
     d1_stack[*d1_level] = res;
@@ -890,7 +964,10 @@ static void tagBegin (struct lexSpec *spec,
 
     parent->last_child = res;
     if (d1_stack[*d1_level])
+    {
+	tagDataRelease (spec, d1_stack, *d1_level);
         d1_stack[*d1_level]->next = res;
+    }
     else
         parent->child = res;
     d1_stack[*d1_level] = res;
@@ -904,6 +981,7 @@ static void tagEnd (struct lexSpec *spec,
     tagStrip (&tag, &len);
     while (*d1_level > min_level)
     {
+	tagDataRelease (spec, d1_stack, *d1_level);
         (*d1_level)--;
         if (*d1_level == 0)
 	    break;
@@ -1211,6 +1289,9 @@ static int execCode (struct lexSpec *spec,
 	    p = regxStrz (cmd_str, cmd_len, ptmp);
 	    if (!strcmp (p, "record"))
 	    {
+		int i;
+		for (i = *d1_level; i; --i)
+		    tagDataRelease (spec, d1_stack, i);
 		*d1_level = 0;
 		r = execTok (spec, &s, arg_no, arg_start, arg_end,
 			     &cmd_str, &cmd_len);
@@ -1585,7 +1666,7 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
 			    const char *context_name)
 {
     struct lexContext *lt = spec->context;
-    data1_node *d1_stack[512];
+    data1_node *d1_stack[128];
     int d1_level = 0;
     int ptr = offset;
 
