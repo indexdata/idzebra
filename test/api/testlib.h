@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.7 2004-12-14 10:30:42 heikki Exp $
+/* $Id: testlib.h,v 1.8 2004-12-14 10:37:25 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -40,6 +40,12 @@ int log_level;
  *      default to zebra.cfg, if no name is given
  */
 ZebraService start_up(char *cfgname, int argc, char **argv);
+
+/**
+ * get_srcdir : returns the source dir. Most often ".", but when
+ * making distcheck, some other dir 
+ */
+const char *get_srcdir();
 
 /** 
  * start_log: open a log file 
