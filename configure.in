@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2003
-dnl $Id: configure.in,v 1.73 2003-04-01 07:48:20 adam Exp $
+dnl $Id: configure.in,v 1.74 2003-04-15 20:47:05 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(idzebra,1.3.10)
@@ -250,13 +250,11 @@ if test "$perl" != "no"; then
 	    AC_MSG_CHECKING(perl core directory)
 	    archdir=`$perlbin -MConfig -e 'print $Config{archlib}'`;
 	    perlcore="$archdir/CORE";
-	    if test "$perlcore"; then
+	    if test -d "$perlcore"; then
 		PERL_BINARY="$perlbin"
 		AC_MSG_RESULT($perlcore)	
-	        AC_DEFINE(HAVE_PERL,1)
 	    else
 		AC_MSG_RESULT(Failed)	
-		AC_DEFINE(HAVE_PERL,0)
 	    fi
 
 	    AC_MSG_CHECKING("for ExtUtils::Embed to determine ccopts")
@@ -290,10 +288,28 @@ if test "$perl" != "no"; then
 		AC_MSG_RESULT(XS libraries are not going to be available)
             fi
 
-	    ZPERL_LIBS="$LIBS"
+	    xLIBS="$LIBS"
+	    xCFLAGS="$CFLAGS"
 	    CFLAGS="$PERL_CFLAGS $CFLAGS"
 	    LIBS="$PERL_LIBS $LIBS"
-	    AM_CONDITIONAL(perl,true)
+
+	    AC_MSG_CHECKING(for perl library)
+            AC_TRY_LINK([
+            #include <stdio.h>
+             ],[
+            static void f()
+            {
+		;
+            }
+		],AM_CONDITIONAL(perl,true)
+	          AC_DEFINE(HAVE_PERL,1)
+		  AC_MSG_RESULT(found)
+	          ZPERL_LIBS="$LIBS"
+			,
+                  AC_MSG_RESULT(not found)
+	          AC_DEFINE(HAVE_PERL,0)
+		  LIBS="$xLIBS"
+		  CFLAGS="$xCFLAGS")
         else
 	    AC_DEFINE(HAVE_PERL,0)
 	    AC_MSG_RESULT(Not found)
