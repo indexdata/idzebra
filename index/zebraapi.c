@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.57 2002-04-16 22:31:42 adam Exp $
+ * $Id: zebraapi.c,v 1.58 2002-04-23 18:07:17 adam Exp $
  */
 
 #include <assert.h>
@@ -937,6 +937,9 @@ static int zebra_begin_read (ZebraHandle zh)
         zebra_flush_reg (zh);
         return 0;
     }
+#if HAVE_SYS_TIMES_H
+    times (&zh->tms1);
+#endif
     if (!zh->res)
     {
         (zh->trans_no)--;
@@ -991,6 +994,14 @@ static void zebra_end_read (ZebraHandle zh)
 
     if (zh->trans_no != 0)
         return;
+
+#if HAVE_SYS_TIMES_H
+    times (&zh->tms2);
+    logf (LOG_LOG, "user/system: %ld/%ld",
+                    (long) (zh->tms2.tms_utime - zh->tms1.tms_utime),
+                    (long) (zh->tms2.tms_stime - zh->tms1.tms_stime));
+
+#endif
 
     zebra_unlock (zh->lock_normal);
     zebra_unlock (zh->lock_shadow);

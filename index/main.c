@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.86 2002-04-15 13:48:10 adam Exp $
+ * $Id: main.c,v 1.87 2002-04-23 18:07:17 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +11,9 @@
 #include <io.h>
 #else
 #include <unistd.h>
+#endif
+#if HAVE_SYS_TIMES_H
+#include <sys/times.h>
 #endif
 
 #include <yaz/data1.h>
@@ -27,6 +30,9 @@ int main (int argc, char **argv)
     int nsections = 0;
     int disableCommit = 0;
     size_t mem_max = 0;
+#if HAVE_SYS_TIMES_H
+    struct tms tms1, tms2;
+#endif
 #ifndef WIN32
     char nbuf[100];
 #endif
@@ -40,6 +46,9 @@ int main (int argc, char **argv)
 #else
     sprintf(nbuf, "%.40s(%d)", *argv, getpid());
     yaz_log_init_prefix (nbuf);
+#endif
+#if HAVE_SYS_TIMES_H
+    times(&tms1);
 #endif
 
     rGroupDef.groupName = NULL;
@@ -221,6 +230,12 @@ int main (int argc, char **argv)
     }
     zebra_close (zh);
     zebra_stop (zs);
+#if HAVE_SYS_TIMES_H
+    times(&tms2);
+    yaz_log (LOG_LOG, "user/system: %ld/%ld",
+		(long) tms2.tms_utime - tms1.tms_utime,
+		(long) tms2.tms_stime - tms1.tms_stime);
+#endif
     exit (0);
     return 0;
 }
