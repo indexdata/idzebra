@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.15  2002-03-20 20:24:30  adam
+ * Revision 1.16  2002-07-25 13:06:44  adam
+ * Character set negotiation updates
+ *
+ * Revision 1.15  2002/03/20 20:24:30  adam
  * Hits per term. Returned in SearchResult-1
  *
  * Revision 1.14  1999/05/26 07:49:14  adam
@@ -105,7 +108,8 @@ RSET_TERM *rset_terms(RSET rs, int *no)
     return rs->rset_terms;
 }
 
-RSET_TERM rset_term_create (const char *name, int length, const char *flags)
+RSET_TERM rset_term_create (const char *name, int length, const char *flags,
+                            int type)
 {
     RSET_TERM t = (RSET_TERM) xmalloc (sizeof(*t));
     if (!name)
@@ -124,6 +128,7 @@ RSET_TERM rset_term_create (const char *name, int length, const char *flags)
 	t->flags = xstrdup (flags);
     t->nn = -1;
     t->count = 0;
+    t->type = type;
     return t;
 }
 

@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data 
  * All rights reserved.
  *
- * $Id: zserver.c,v 1.88 2002-05-07 11:05:19 adam Exp $
+ * $Id: zserver.c,v 1.89 2002-07-25 13:06:43 adam Exp $
  */
 
 #include <stdio.h>
@@ -89,6 +89,38 @@ bend_initresult *bend_init (bend_initrequest *q)
 	return r;
     }
     r->handle = zh;
+    if (q->charneg_request) /* characater set and langauge negotiation? */
+    {
+        char **charsets = 0;
+        int num_charsets;
+        char **langs = 0;
+        int num_langs = 0;
+        int selected = 0;
+        int i;
+
+        NMEM nmem = nmem_create ();
+        yaz_log (LOG_LOG, "character set and language negotiation");
+
+        yaz_get_proposal_charneg (nmem, q->charneg_request,
+                                  &charsets, &num_charsets,
+                                  &langs, &num_langs, &selected);
+        for (i = 0; i < num_charsets; i++)
+        {
+            yaz_log (LOG_LOG, "charset %d %s", i, charsets[i]);
+            
+            if (odr_set_charset (q->decode, "UTF-8", charsets[i]) == 0)
+            {
+                odr_set_charset (q->stream, charsets[i], "UTF-8");
+                if (selected)
+                    zebra_record_encoding (zh, charsets[i]);
+                q->charneg_response =
+                    yaz_set_response_charneg (q->stream, charsets[i],
+                                              0, selected);
+                break;
+            }
+        }
+        nmem_destroy (nmem);
+    }
     return r;
 }
 
@@ -97,11 +129,12 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
     int count;
     int no_terms;
     int i;
+    int type;
     struct Z_External *ext;
     Z_SearchInfoReport *sr;
 
     /* get no of terms for result set */
-    zebra_resultSetTerms (zh, r->setname, -1, &count, &no_terms);
+    no_terms = zebra_resultSetTerms (zh, r->setname, 0, 0, 0, 0, 0);
     if (!no_terms)
         return;
 
@@ -129,8 +162,10 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
     for (i = 0; i<no_terms; i++)
     {
         Z_Term *term;
-        const char *termz = zebra_resultSetTerms (zh, r->setname, i,
-                                                  &count, &no_terms);
+        char outbuf[1024];
+        size_t len = sizeof(outbuf);
+        zebra_resultSetTerms (zh, r->setname, i,
+                              &count, &type, outbuf, &len);
         
         sr->elements[i] = odr_malloc (r->stream, sizeof(**sr->elements));
         sr->elements[i]->subqueryId = 0;
@@ -145,14 +180,25 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
             odr_malloc (r->stream, sizeof(Z_QueryExpressionTerm));
         term = odr_malloc (r->stream, sizeof(Z_Term));
         sr->elements[i]->subqueryExpression->u.term->queryTerm = term;
-
-        term->which = Z_Term_general;
-        term->u.general = odr_malloc (r->stream, sizeof(Odr_oct));
-        term->u.general->buf = odr_strdup (r->stream, termz);
-
-        term->u.general->len = strlen (termz);
-        term->u.general->size = strlen (termz);
-        
+        switch (type)
+        {
+        case Z_Term_characterString:
+            yaz_log (LOG_LOG, "term as characterString");
+            term->which = Z_Term_characterString;
+            term->u.characterString = odr_strdup (r->stream, outbuf);
+            break;
+        case Z_Term_general:
+            yaz_log (LOG_LOG, "term as general");
+            term->which = Z_Term_general;
+            term->u.general = odr_malloc (r->stream, sizeof(*term->u.general));
+            term->u.general->size = term->u.general->len = len;
+            term->u.general->buf = odr_malloc (r->stream, len);
+            memcpy (term->u.general->buf, outbuf, len);
+            break;
+        default:
+            term->which = Z_Term_general;
+            term->u.null = odr_nullval();
+        }
         sr->elements[i]->subqueryExpression->u.term->termComment = 0;
         sr->elements[i]->subqueryInterpretation = 0;
         sr->elements[i]->subqueryRecommendation = 0;

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.c,v 1.46 2002-07-16 09:52:20 heikki Exp $
+ * $Id: mfile.c,v 1.47 2002-07-25 13:06:43 adam Exp $
  */
 
 
@@ -248,7 +248,9 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
                       dent->d_name);
 	    	return 0;
 	    }
+#ifndef WIN32
 	    fsync(fd);
+#endif
 	    close(fd);
 	    if (dirp->max_bytes >= 0)
 		dirp->avail_bytes -= part_f->bytes;

@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
- * $Id: index.h,v 1.83 2002-04-26 08:44:47 adam Exp $
+ * $Id: index.h,v 1.84 2002-07-25 13:06:43 adam Exp $
  */
 
 #ifndef INDEX_H
@@ -16,6 +16,10 @@
 
 #if HAVE_SYS_TIMES_H
 #include <sys/times.h>
+#endif
+
+#if HAVE_ICONV_H
+#include <iconv.h>
 #endif
 
 #include <dict.h>
@@ -281,7 +285,11 @@ struct zebra_session {
     int records_updated;
     int records_deleted;
     int records_processed;
-
+    char *record_encoding;
+#if HAVE_ICONV_H
+    iconv_t iconv_to_utf8;
+    iconv_t iconv_from_utf8;
+#endif
 };
 
 struct rank_control {
@@ -317,7 +325,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
 RSET rset_trunc (ZebraHandle zh, ISAMS_P *isam_p, int no,
 		 const char *term, int length_term, const char *flags,
-                 int preserve_position);
+                 int preserve_position, int term_type);
 
 void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       const char *db, int set,

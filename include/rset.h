@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.17  2002-03-20 20:24:29  adam
+ * Revision 1.18  2002-07-25 13:06:43  adam
+ * Character set negotiation updates
+ *
+ * Revision 1.17  2002/03/20 20:24:29  adam
  * Hits per term. Returned in SearchResult-1
  *
  * Revision 1.16  1999/02/02 14:50:38  adam
@@ -100,6 +103,7 @@ struct rset_term {
     int  nn;
     char *flags;
     int  count;
+    int  type;
 };
 
 typedef struct rset
@@ -112,7 +116,8 @@ typedef struct rset
     int no_rset_terms;
 } rset;
 
-RSET_TERM rset_term_create (const char *name, int length, const char *flags);
+RSET_TERM rset_term_create (const char *name, int length, const char *flags,
+                            int type);
 void rset_term_destroy (RSET_TERM t);
 RSET_TERM rset_term_dup (RSET_TERM t);
 

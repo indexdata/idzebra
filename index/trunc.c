@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Id: trunc.c,v 1.25 2002-07-12 18:12:22 heikki Exp $
+ * $Id: trunc.c,v 1.26 2002-07-25 13:06:43 adam Exp $
  *
  */
 #include <stdio.h>
@@ -121,7 +121,8 @@ static void heap_close (struct trunc_info *ti)
 
 static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                           const char *flags, ISAMS_P *isam_p, int from, int to,
-                          int merge_chunk, int preserve_position)
+                          int merge_chunk, int preserve_position,
+                          int term_type)
 {
     RSET result; 
     RSFD result_rsfd;
@@ -130,7 +131,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
     parms.cmp = key_compare_it;
     parms.key_size = sizeof(struct it_key);
     parms.temp_path = res_get (zi->res, "setTmpDir");
-    parms.rset_term = rset_term_create (term, length, flags);
+    parms.rset_term = rset_term_create (term, length, flags, term_type);
     result = rset_create (rset_kind_temp, &parms);
     result_rsfd = rset_open (result, RSETF_WRITE);
 
@@ -152,11 +153,13 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             if (i_add <= to - i)
                 rset[rscur] = rset_trunc_r (zi, term, length, flags,
 				            isam_p, i, i+i_add,
-                                            merge_chunk, preserve_position);
+                                            merge_chunk, preserve_position,
+                                            term_type);
             else
                 rset[rscur] = rset_trunc_r (zi, term, length, flags,
                                             isam_p, i, to,
-                                            merge_chunk, preserve_position);
+                                            merge_chunk, preserve_position,
+                                            term_type);
             rscur++;
         }
         ti = heap_init (rscur, sizeof(struct it_key), key_compare_it);
@@ -509,13 +512,13 @@ static int isamd_trunc_cmp (const void *p1, const void *p2)
 
 RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 		 const char *term, int length, const char *flags,
-                 int preserve_position)
+                 int preserve_position, int term_type)
 {
     logf (LOG_DEBUG, "rset_trunc no=%d", no);
     if (no < 1)
     {
 	rset_null_parms parms;
-	parms.rset_term = rset_term_create (term, length, flags);
+	parms.rset_term = rset_term_create (term, length, flags, term_type);
 	return rset_create (rset_kind_null, &parms);
     }
     if (zi->reg->isams)
@@ -526,7 +529,8 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 
             parms.pos = *isam_p;
             parms.is = zi->reg->isams;
-	    parms.rset_term = rset_term_create (term, length, flags);
+	    parms.rset_term = rset_term_create (term, length, flags,
+                                                term_type);
             return rset_create (rset_kind_isams, &parms);
         }
         qsort (isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
@@ -539,7 +543,8 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 
             parms.pos = *isam_p;
             parms.is = zi->reg->isam;
-	    parms.rset_term = rset_term_create (term, length, flags);
+	    parms.rset_term = rset_term_create (term, length, flags,
+                                                term_type);
             return rset_create (rset_kind_isam, &parms);
         }
         qsort (isam_p, no, sizeof(*isam_p), isam_trunc_cmp);
@@ -554,7 +559,8 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             parms.cmp = key_compare_it;
             parms.pos = *isam_p;
             parms.is = zi->reg->isamc;
-	    parms.rset_term = rset_term_create (term, length, flags);
+	    parms.rset_term = rset_term_create (term, length, flags,
+                                                term_type);
             return rset_create (rset_kind_isamc, &parms);
         }
 #if NEW_TRUNC
@@ -568,7 +574,8 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             parms.isam_positions = isam_p;
             parms.no_isam_positions = no;
             parms.no_save_positions = 100000;
-	    parms.rset_term = rset_term_create (term, length, flags);
+	    parms.rset_term = rset_term_create (term, length, flags,
+                                                term_type);
             return rset_create (rset_kind_m_or, &parms);
         }
 #endif
@@ -584,7 +591,8 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             abort();
             /* parms.pos = *isam_p; */
             parms.is = zi->reg->isamd;
-	    parms.rset_term = rset_term_create (term, length, flags);
+	    parms.rset_term = rset_term_create (term, length, flags,
+                                                term_type);
             return rset_create (rset_kind_isamd, &parms);
         }
 #if NEW_TRUNC_NOT_DONE_FOR_ISAM_D
@@ -615,7 +623,8 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             parms.cmp = key_compare_it;
             parms.pos = *isam_p;
             parms.is = zi->reg->isamb;
-	    parms.rset_term = rset_term_create (term, length, flags);
+	    parms.rset_term = rset_term_create (term, length, flags,
+                                                term_type);
             return rset_create (rset_kind_isamb, &parms);
         }
         qsort (isam_p, no, sizeof(*isam_p), isamd_trunc_cmp);
@@ -626,6 +635,6 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 	return rset_create (rset_kind_null, NULL);
     }
     return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100,
-                         preserve_position);
+                         preserve_position, term_type);
 }
 

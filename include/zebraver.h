@@ -2,13 +2,13 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraver.h,v 1.20 2002-04-05 08:46:26 adam Exp $
+ * $Id: zebraver.h,v 1.21 2002-07-25 13:06:43 adam Exp $
  */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.2.0"
+#define ZEBRAVER "1.3.0"
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 2002-04-05 08:46:26 $"
+#define ZEBRADATE "$Date: 2002-07-25 13:06:43 $"
 #endif

@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: recgrs.c,v 1.54 2002-07-05 16:07:02 adam Exp $
+ * $Id: recgrs.c,v 1.55 2002-07-25 13:06:44 adam Exp $
  */
 
 #include <stdio.h>
@@ -396,10 +396,13 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
         if ((oid_ent_to_oid (&oe, oidtmp)))
             (*p->schemaAdd)(p, oidtmp);
     }
+
+    /* ensure our data1 tree is UTF-8 */
+    data1_iconv (p->dh, mem, n, "UTF-8", data1_get_encoding(p->dh, n));
+
 #if 0
     data1_pr_tree (p->dh, n, stdout);
 #endif
-    data1_iconv (p->dh, mem, n, "ISO-8859-1", "UTF-8");
 
     (*p->init)(p, &wrd);
     if (dumpkeys(n, p, 0, &wrd) < 0)
@@ -558,6 +561,9 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
         nmem_destroy (mem);
 	return 0;
     }
+    /* ensure our data1 tree is UTF-8 */
+    data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
+
 #if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
@@ -708,19 +714,18 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     else if (p->comp && !res)
 	selected = 1;
 
-#if 0
-    data1_pr_tree (p->dh, node, stdout);
-#endif
 #if 1
-    data1_iconv (p->dh, mem, node, "ISO-8859-1", "UTF-8");
+    data1_pr_tree (p->dh, node, stdout);
 #endif
     logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
     switch (p->output_format = (p->input_format != VAL_NONE ?
 				p->input_format : VAL_SUTRS))
     {
-	
     case VAL_TEXT_XML:
         add_idzebra_info (p, top, mem);
+
+        if (p->encoding)
+            data1_iconv (p->dh, mem, node, p->encoding, "UTF-8");
 
 	if (!(p->rec_buf = data1_nodetoidsgml(p->dh, node, selected,
 					      &p->rec_len)))
@@ -755,6 +760,8 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	    p->rec_len = (size_t) (-1);
 	break;
     case VAL_SUTRS:
+        if (p->encoding)
+            data1_iconv (p->dh, mem, node, p->encoding, "UTF-8");
 	if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
 					   &p->rec_len)))
 	    p->diagnostic = 238;
@@ -791,6 +798,8 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	    p->diagnostic = 238;
 	    break;
 	}
+        if (p->encoding)
+            data1_iconv (p->dh, mem, node, p->encoding, "UTF-8");
 	if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
 					selected, &p->rec_len)))
 	    p->diagnostic = 238;

@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.62 2002-07-15 11:50:45 adam Exp $
+ * $Id: zebraapi.c,v 1.63 2002-07-25 13:06:43 adam Exp $
  */
 
 #include <assert.h>
@@ -53,6 +53,7 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg);
 ZebraHandle zebra_open (ZebraService zs)
 {
     ZebraHandle zh;
+    const char *default_encoding;
 
     if (!zs)
         return 0;
@@ -81,6 +82,21 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->admin_databaseName = 0;
 
     zh->shadow_enable = 1;
+
+    default_encoding = res_get_def(zs->global_res, "encoding", "ISO-8859-1");
+    zh->record_encoding = xstrdup (default_encoding);
+#if HAVE_ICONV_H
+    zh->iconv_to_utf8 =
+        iconv_open ("UTF-8", default_encoding);
+    if (zh->iconv_to_utf8 == (iconv_t)(-1))
+        yaz_log (LOG_WARN, "iconv: %s to UTF-8 unsupported",
+           default_encoding);
+    zh->iconv_from_utf8 =
+        iconv_open (default_encoding, "UTF-8");
+    if (zh->iconv_to_utf8 == (iconv_t)(-1))
+        yaz_log (LOG_WARN, "iconv: UTF-8 to %s unsupported",
+           default_encoding);
+#endif
 
     zebra_mutex_cond_lock (&zs->session_lock);
 
@@ -396,6 +412,14 @@ void zebra_close (ZebraHandle zh)
     if (zh->reg)
         zebra_register_close (zh->service, zh->reg);
     zebra_close_res (zh);
+
+    xfree (zh->record_encoding);
+#if HAVE_ICONV_H
+    if (zh->iconv_to_utf8 != (iconv_t) (-1))
+        iconv_close (zh->iconv_to_utf8);
+    if (zh->iconv_from_utf8 != (iconv_t) (-1))
+        iconv_close (zh->iconv_from_utf8);
+#endif
 
     xfree (zh->admin_databaseName);
     zebra_mutex_cond_lock (&zs->session_lock);
@@ -1304,3 +1328,9 @@ void zebra_shadow_enable (ZebraHandle zh, int value)
     zh->shadow_enable = value;
 }
 
+int zebra_record_encoding (ZebraHandle zh, const char *encoding)
+{
+    xfree (zh->record_encoding);
+    zh->record_encoding = xstrdup (encoding);
+    return 0;
+}

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zebraapi.h,v 1.17 2002-07-11 13:03:01 heikki Exp $
+ * $Id: zebraapi.h,v 1.18 2002-07-25 13:06:43 adam Exp $
  */
 
 #ifndef ZEBRAAPI_H
@@ -130,9 +130,10 @@ YAZ_EXPORT void zebra_set_group (ZebraHandle zh, struct recordGroup *rg);
 
 YAZ_EXPORT void zebra_result (ZebraHandle zh, int *code, char **addinfo);
 
-YAZ_EXPORT const char *zebra_resultSetTerms (ZebraHandle zh,
-                                             const char *setname, 
-                                             int no, int *count, int *no_max);
+
+YAZ_EXPORT int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
+                                     int no, int *count, 
+                                     int *type, char *out, size_t *len);
 
 YAZ_EXPORT void zebra_sort (ZebraHandle zh, ODR stream,
                             int num_input_setnames,
@@ -154,6 +155,9 @@ void zebra_shadow_enable (ZebraHandle zh, int value);
 
 YAZ_EXPORT
 void zebra_register_statistics (ZebraHandle zh, int dumpdict);
+
+YAZ_EXPORT
+int zebra_record_encoding (ZebraHandle zh, const char *encoding);
 
 YAZ_END_CDECL				      
 #endif

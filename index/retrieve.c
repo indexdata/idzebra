@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.18  2002-07-02 20:20:09  adam
+ * Revision 1.19  2002-07-25 13:06:43  adam
+ * Character set negotiation updates
+ *
+ * Revision 1.18  2002/07/02 20:20:09  adam
  * idzebra:{filename,score,size,localnumber} tags for XML
  *
  * Revision 1.17  2002/05/03 13:49:04  adam
@@ -215,6 +218,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     retrieveCtrl.odr = stream;
     retrieveCtrl.input_format = retrieveCtrl.output_format = input_format;
     retrieveCtrl.comp = comp;
+    retrieveCtrl.encoding = zh->record_encoding;
     retrieveCtrl.diagnostic = 0;
     retrieveCtrl.dh = zh->reg->dh;
     retrieveCtrl.res = zh->res;

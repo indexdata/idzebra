@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.36  2002-07-02 20:20:09  adam
+ * Revision 1.37  2002-07-25 13:06:43  adam
+ * Character set negotiation updates
+ *
+ * Revision 1.36  2002/07/02 20:20:09  adam
  * idzebra:{filename,score,size,localnumber} tags for XML
  *
  * Revision 1.35  2002/04/13 18:16:42  adam
@@ -184,6 +187,7 @@ struct recRetrieveCtrl {
     off_t     (*tellf)(void *fh);
     oid_value input_format;           /* Preferred record syntax           */
     Z_RecordComposition *comp;        /* formatting instructions           */
+    char      *encoding;              /* preferred character encoding      */
     int       localno;                /* local id of record                */
     int       score;                  /* score 0-1000 or -1 if none        */
     int       recordSize;             /* size of record in bytes */

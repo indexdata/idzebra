@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zsets.c,v 1.36 2002-04-18 20:22:09 adam Exp $
+ * $Id: zsets.c,v 1.37 2002-07-25 13:06:43 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -119,20 +119,56 @@ void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 }
 
 
-const char *zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
-                                  int no, int *count, int *no_max)
+int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
+                          int no, int *count, 
+                          int *type, char *out, size_t *len)
 {
     ZebraSet s = resultSetGet (zh, setname);
+    int no_max = 0;
 
-    *count = 0;
-    *no_max = 0;
+    if (count)
+        *count = 0;
     if (!s || !s->rset)
         return 0;
-    *no_max = s->rset->no_rset_terms;
-    if (no < 0 || no >= *no_max)
+    no_max = s->rset->no_rset_terms;
+    if (no < 0 || no >= no_max)
         return 0;
-    *count = s->rset->rset_terms[no]->count;
-    return s->rset->rset_terms[no]->name;
+    if (count)
+        *count = s->rset->rset_terms[no]->count;
+    if (type)
+        *type = s->rset->rset_terms[no]->type;
+    
+    if (out)
+    {
+        char *inbuf = s->rset->rset_terms[no]->name;
+        size_t inleft = strlen(inbuf);
+        size_t outleft = *len - 1;
+	int converted = 0;
+#if HAVE_ICONV_H
+        if (zh->iconv_from_utf8 != (iconv_t)(-1))
+        {
+            char *outbuf = out;
+            size_t ret;
+            
+            ret = iconv(zh->iconv_from_utf8, &inbuf, &inleft,
+                        &outbuf, &outleft);
+            if (ret == (size_t)(-1))
+                *len = 0;
+            else
+                *len = outbuf - out;
+	    converted = 1;
+        }
+#endif
+        if (!converted)
+        {
+            if (inleft > outleft)
+                inleft = outleft;
+            *len = inleft;
+            memcpy (out, inbuf, *len);
+        }
+        out[*len] = 0;
+    }
+    return no_max;
 }
 
 

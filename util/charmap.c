@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: charmap.c,v 1.22 2002-05-03 13:46:05 adam Exp $
+ * $Id: charmap.c,v 1.23 2002-07-25 13:06:44 adam Exp $
  *
  */
 
@@ -16,8 +16,22 @@
 #include <string.h>
 #include <assert.h>
 
+#if HAVE_ICONV_H
+#include <iconv.h>
+#else
+typedef int iconv_t;
+static size_t iconv(iconv_t t, char **buf, size_t *inbytesleft,
+                    char **outbuf, size_t *outbytesleft)
+{
+    return -1;
+}
+#endif
+
+typedef unsigned ucs4_t;
+
 #include <yaz/yaz-util.h>
 #include <charmap.h>
+
 
 #define CHR_MAXSTR 1024
 #define CHR_MAXEQUIV 32
@@ -190,16 +204,16 @@ unsigned char zebra_prim(char **s)
     yaz_log (LOG_DEBUG, "prim %.3s", *s);
     if (**s == '\\')
     {
-	(*s)++;
-	c = **s;
-	switch (c)
-	{
-	case '\\': c = '\\'; (*s)++; break;
-	case 'r': c = '\r'; (*s)++; break;
-	case 'n': c = '\n'; (*s)++; break;
-	case 't': c = '\t'; (*s)++; break;
-	case 's': c = ' '; (*s)++; break;
-	case 'x': sscanf(*s, "x%2x", &i); c = i; *s += 3; break;
+        (*s)++;
+        c = **s;
+        switch (c)
+        {
+        case '\\': c = '\\'; (*s)++; break;
+        case 'r': c = '\r'; (*s)++; break;
+        case 'n': c = '\n'; (*s)++; break;
+        case 't': c = '\t'; (*s)++; break;
+        case 's': c = ' '; (*s)++; break;
+        case 'x': sscanf(*s, "x%2x", &i); c = i; *s += 3; break;
         case '0':
         case '1':
         case '2':
@@ -210,7 +224,63 @@ unsigned char zebra_prim(char **s)
         case '7':
         case '8':
         case '9':
-	    sscanf(*s, "%3o", &i);
+            sscanf(*s, "%3o", &i);
+            c = i;
+            *s += 3;
+            break;
+        default:
+            (*s)++;
+        }
+    }
+    else
+    {
+        c = **s;
+        ++(*s);
+    }
+    return c;
+}
+
+ucs4_t zebra_prim_w(ucs4_t **s)
+{
+    ucs4_t c;
+    ucs4_t i = 0;
+    char fmtstr[8];
+
+    yaz_log (LOG_DEBUG, "prim %.3s", (char *) *s);
+    if (**s == '\\')
+    {
+	(*s)++;
+	c = **s;
+	switch (c)
+	{
+	case '\\': c = '\\'; (*s)++; break;
+	case 'r': c = '\r'; (*s)++; break;
+	case 'n': c = '\n'; (*s)++; break;
+	case 't': c = '\t'; (*s)++; break;
+	case 's': c = ' '; (*s)++; break;
+	case 'x': 
+            fmtstr[0] = (*s)[0];
+            fmtstr[1] = (*s)[1];
+            fmtstr[2] = (*s)[2];
+            fmtstr[3] = 0;
+            sscanf(fmtstr, "x%2x", &i);
+            c = i;
+            *s += 3; break;
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            fmtstr[0] = (*s)[0];
+            fmtstr[1] = (*s)[1];
+            fmtstr[2] = (*s)[2];
+            fmtstr[3] = 0;
+	    sscanf(fmtstr, "%3o", &i);
             c = i;
             *s += 3;
             break;
@@ -298,27 +368,84 @@ static void fun_add_qmap(const char *s, void *data, int num)
 	logf (LOG_DEBUG, " %3d", (unsigned char) *s);
 }
 
+static int scan_to_utf8 (iconv_t t, ucs4_t *from, size_t inlen,
+                        char *outbuf, size_t outbytesleft)
+{
+    size_t inbytesleft = inlen * sizeof(ucs4_t);
+    char *inbuf = (char*) from;
+    size_t ret;
+   
+    if (t == (iconv_t)(-1))
+        *outbuf++ = *from;  /* ISO-8859-1 is OK here */
+    else
+    {
+        size_t i;
+        for (i = 0; i<inlen; i++)
+            yaz_log (LOG_LOG, "%08X", from[i]);
+        ret = iconv (t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+        if (ret == (size_t) (-1))
+        {
+            yaz_log (LOG_WARN|LOG_ERRNO, "bad unicode sequence");
+            for (i = 0; i<inlen; i++)
+                yaz_log (LOG_LOG, "%08X", from[i]);
+            return -1;
+        }
+    }
+    *outbuf = '\0';
+    return 0;
+}
 
-static int scan_string(char *s,
+static int scan_string(char *s_native,
+                       iconv_t t_unicode, iconv_t t_utf8,
 		       void (*fun)(const char *c, void *data, int num),
 		       void *data, int *num)
 {
-    unsigned char c, str[1024], begin, end, *p;
-    
+    char str[1024];
+
+    ucs4_t arg[512];
+    ucs4_t *s0, *s = arg;
+    ucs4_t c, begin, end;
+    size_t i, j;
+
+    if (t_unicode != (iconv_t)(-1))
+    {
+        char *outbuf = (char *) arg;
+        char *inbuf = s_native;
+        size_t outbytesleft = sizeof(arg)-4;
+        size_t inbytesleft = strlen(s_native);
+        size_t ret;
+        ret = iconv(t_unicode, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+        if (ret == (size_t)(-1))
+            return -1;
+        i = (outbuf - (char*) arg)/sizeof(ucs4_t);
+        yaz_log (LOG_LOG, "to unicode");
+    }
+    else
+    { 
+        for (i = 0; s_native[i]; i++)
+            arg[i] = s_native[i] & 255; /* ISO-8859-1 conversion */
+        yaz_log (LOG_LOG, "to virtual unicode");
+    }
+    arg[i] = 0;      /* terminate */
+    for (j = 0; j<i; j++)
+        yaz_log (LOG_LOG, " %d %8X %d %c", j, arg[j], arg[j],
+                 (arg[j] > 33 && arg[j] < 127) ? arg[j] : '?');
+    if (s[0] == 0xfeff || s[0] == 0xfeff)  /* skip byte Order Mark */
+        s++;
     while (*s)
     {
 	switch (*s)
 	{
 	case '{':
 	    s++;
-	    begin = zebra_prim(&s);
+	    begin = zebra_prim_w(&s);
 	    if (*s != '-')
 	    {
 		logf(LOG_FATAL, "Bad range in char-map");
 		return -1;
 	    }
 	    s++;
-	    end = zebra_prim(&s);
+	    end = zebra_prim_w(&s);
 	    if (end <= begin)
 	    {
 		logf(LOG_FATAL, "Bad range in char-map");
@@ -327,31 +454,28 @@ static int scan_string(char *s,
 	    s++;
 	    for (c = begin; c <= end; c++)
 	    {
-		str[0] = c; str[1] = '\0';
-		(*fun)((char *) str, data, num ? (*num)++ : 0);
+                if (scan_to_utf8 (t_utf8, &c, 1, str, sizeof(str)-1))
+                    return -1;
+		(*fun)(str, data, num ? (*num)++ : 0);
 	    }
 	    break;
 	case '[': s++; abort(); break;
 	case '(':
-	    p = (unsigned char*) ++s;
-		/* Find the end-marker, ignoring escapes */
-	    do
-	    {
-		if (!(p = (unsigned char*) strchr((char*) p, ')')))
-		{
-		    logf(LOG_FATAL, "Missing ')' in string");
-		    return -1;
-		}
-	    }
-	    while (*(p -  1) == '\\');
-	    *p = 0;
-	    (*fun)(s, data, num ? (*num)++ : 0);
-	    s = (char*) p + 1;
+            ++s;
+            s0 = s;
+            while (*s != ')' || s[-1] == '\\')
+                s++;
+	    *s = 0;
+            if (scan_to_utf8 (t_utf8, s0, s - s0, str, sizeof(str)-1))
+                return -1;
+	    (*fun)(str, data, num ? (*num)++ : 0);
+	    s++;
 	    break;
 	default:
-	    c = zebra_prim(&s);
-	    str[0] = c; str[1] = '\0';
-	    (*fun)((char *) str, data, num ? (*num)++ : 0);
+	    c = zebra_prim_w(&s);
+            if (scan_to_utf8 (t_utf8, &c, 1, str, sizeof(str)-1))
+                return -1;
+	    (*fun)(str, data, num ? (*num)++ : 0);
 	}
     }
     return 0;
@@ -367,7 +491,17 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
     int errors = 0;
     int argc, num = (int) *CHR_BASE, i;
     NMEM nmem;
+    iconv_t t_unicode = (iconv_t)(-1);
+    iconv_t t_utf8 = (iconv_t)(-1);
+    unsigned endian = 31;
+    const char *ucs4_native = "UCS-4";
 
+    if (*(char*) &endian == 31)      /* little endian? */
+        ucs4_native = "UCS-4LE";
+
+#if HAVE_ICONV_H
+    t_utf8 = iconv_open ("UTF-8", ucs4_native);
+#endif
     logf (LOG_DEBUG, "maptab %s open", name);
     if (!(f = yaz_fopen(tabpath, name, "r", tabroot)))
     {
@@ -421,7 +555,8 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 		logf(LOG_FATAL, "Syntax error in charmap");
 		++errors;
 	    }
-	    if (scan_string(argv[1], fun_addentry, res, &num) < 0)
+	    if (scan_string(argv[1], t_unicode, t_utf8, fun_addentry,
+                            res, &num) < 0)
 	    {
 		logf(LOG_FATAL, "Bad value-set specification");
 		++errors;
@@ -443,7 +578,8 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 		logf(LOG_FATAL, "Missing arg for uppercase directive");
 		++errors;
 	    }
-	    if (scan_string(argv[1], fun_addentry, res, &num) < 0)
+	    if (scan_string(argv[1], t_unicode, t_utf8, fun_addentry,
+                            res, &num) < 0)
 	    {
 		logf(LOG_FATAL, "Bad value-set specification");
 		++errors;
@@ -456,7 +592,8 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 		logf(LOG_FATAL, "Syntax error in charmap");
 		++errors;
 	    }
-	    if (scan_string(argv[1], fun_addspace, res, 0) < 0)
+	    if (scan_string(argv[1], t_unicode, t_utf8,
+                            fun_addspace, res, 0) < 0)
 	    {
 		logf(LOG_FATAL, "Bad space specification");
 		++errors;
@@ -473,12 +610,14 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	    }
 	    buf.map = res;
 	    buf.string[0] = '\0';
-	    if (scan_string(argv[2], fun_mkstring, &buf, 0) < 0)
+	    if (scan_string(argv[2], t_unicode, t_utf8,
+                            fun_mkstring, &buf, 0) < 0)
 	    {
 		logf(LOG_FATAL, "Bad map target");
 		++errors;
 	    }
-	    if (scan_string(argv[1], fun_add_map, &buf, 0) < 0)
+	    if (scan_string(argv[1], t_unicode, t_utf8,
+                            fun_add_map, &buf, 0) < 0)
 	    {
 		logf(LOG_FATAL, "Bad map source");
 		++errors;
@@ -495,17 +634,29 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	    }
 	    buf.map = res;
 	    buf.string[0] = '\0';
-	    if (scan_string(argv[2], fun_mkstring, &buf, 0) < 0)
+	    if (scan_string(argv[2], t_unicode, t_utf8, 
+                            fun_mkstring, &buf, 0) < 0)
 	    {
 		logf(LOG_FATAL, "Bad qmap target");
 		++errors;
 	    }
-	    if (scan_string(argv[1], fun_add_qmap, &buf, 0) < 0)
+	    if (scan_string(argv[1], t_unicode, t_utf8, 
+                            fun_add_qmap, &buf, 0) < 0)
 	    {
 		logf(LOG_FATAL, "Bad qmap source");
 		++errors;
 	    }
 	}
+        else if (!yaz_matchstr(argv[0], "encoding"))
+        {
+#if HAVE_ICONV_H
+            if (t_unicode != (iconv_t)(-1))
+                iconv_close (t_unicode);
+            t_unicode = iconv_open (ucs4_native, argv[1]);
+#else
+            logf (LOG_WARN, "Encoding ignored. iconv not installed");
+#endif
+        }
 	else
 	{
 	    logf(LOG_WARN, "Syntax error at '%s' in %s", line, name);
@@ -518,6 +669,12 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	res = 0;
     }
     logf (LOG_DEBUG, "maptab %s close %d errors", name, errors);
+#if HAVE_ICONV_H
+    if (t_utf8 != (iconv_t)(-1))
+        iconv_close(t_utf8);
+    if (t_unicode != (iconv_t)(-1))
+        iconv_close(t_unicode);
+#endif
     return res;
 }
 
