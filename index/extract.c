@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.159 2004-08-06 13:36:22 adam Exp $
+/* $Id: extract.c,v 1.160 2004-08-10 08:19:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -72,7 +72,8 @@ static void logRecord (ZebraHandle zh)
     ++zh->records_processed;
     if (!(zh->records_processed % 1000))
     {
-        logf (LOG_LOG, "Records: %7d i/u/d %d/%d/%d", 
+        logf (LOG_LOG, "Records: "ZINT_FORMAT" i/u/d "
+			ZINT_FORMAT"/"ZINT_FORMAT"/"ZINT_FORMAT, 
               zh->records_processed, zh->records_inserted, zh->records_updated,
               zh->records_deleted);
     }
@@ -1337,7 +1338,6 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
         if (zh->reg->key_buf_used + 1024 > 
             (zh->reg->ptr_top -zh->reg->ptr_i)*sizeof(char*))
             extract_flushWriteKeys (zh,0);
-        assert(zh->reg->ptr_i >= 0);
         ++(zh->reg->ptr_i);
         assert(zh->reg->ptr_i > 0);
         (zh->reg->key_buf)[zh->reg->ptr_top - zh->reg->ptr_i] =

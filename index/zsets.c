@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.54 2004-08-06 13:36:23 adam Exp $
+/* $Id: zsets.c,v 1.55 2004-08-10 08:19:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -46,7 +46,7 @@ struct zebra_set {
     char *name;
     RSET rset;
     NMEM nmem;
-    int hits;
+    zint hits;
     int num_bases;
     char **basenames;
     Z_RPNQuery *rpn;
@@ -111,6 +111,7 @@ void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       const char *db, int set,
 		       int use, const char *term)
 {
+    assert(zh); /* compiler shut up */
     if (!s->nmem)
 	s->nmem = nmem_create ();
     if (!s->term_entries)
@@ -432,6 +433,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 
 void zebraPosSetDestroy (ZebraHandle zh, ZebraPosSet records, int num)
 {
+    assert(zh); /* compiler shut up about unused arg */
     xfree (records);
 }
 
@@ -521,6 +523,7 @@ void resultSetInsertRank (ZebraHandle zh, struct zset_sort_info *sort_info,
 {
     struct zset_sort_entry *new_entry = NULL;
     int i, j;
+    assert(zh); /* compiler shut up about unused arg */
 
     i = sort_info->num_entries;
     while (--i >= 0)
@@ -617,6 +620,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
     RSFD rfd;
 
     yaz_log (LOG_LOG, "resultSetSortSingle start");
+    assert(nmem); /* compiler shut up about unused param */
     sset->sort_info->num_entries = 0;
 
     sset->hits = 0;
@@ -777,18 +781,23 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 	    (*rc->add) (handle, this_sys, term_index);
         if ( (est==-2) && (zebraSet->hits==esthits))
         { /* time to estimate the hits */
-            float f;
+            double f;
             rset_pos(rset,rfd,&cur,&tot); 
             if (tot>0) {
-                f=1.0*cur/tot;
+                f=cur/tot;
                 est=(zint)(0.5+zebraSet->hits/f);
-                /* FIXME - round the guess to 3 digits */
                 logf(LOG_LOG, "Estimating hits (%s) "
-                              "%0.1f->%d"
+                              "%0.1f->"ZINT_FORMAT
                               "; %0.1f->"ZINT_FORMAT,
                               rset->control->desc,
                               cur, zebraSet->hits,
                               tot,est);
+		i=0; /* round to 3 significant digits */
+		while (est>1000) {
+                    est/=10;
+		    i++;
+		}
+		while (i--) est*=10;
                 zebraSet->hits=est;
             }
         }
@@ -808,7 +817,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
                  rset->rset_terms[i]->flags,
                  rset->rset_terms[i]->count);
     
-    yaz_log (LOG_LOG, ZINT_FORMAT " keys, %d distinct sysnos", 
+    yaz_log (LOG_LOG, ZINT_FORMAT " keys, "ZINT_FORMAT" distinct sysnos", 
                     kno, zebraSet->hits);
 }
 

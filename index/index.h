@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.112 2004-08-06 13:36:23 adam Exp $
+/* $Id: index.h,v 1.113 2004-08-10 08:19:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -306,7 +306,7 @@ struct zebra_session {
     Res res;
     char *user_perm;
     int errCode;
-    int hits;
+    zint hits;
     char *errString;
 #if HAVE_SYS_TIMES_H
     struct tms tms1;
@@ -314,10 +314,10 @@ struct zebra_session {
 #endif
     int  shadow_enable;
 
-    int records_inserted;
-    int records_updated;
-    int records_deleted;
-    int records_processed;
+    zint records_inserted;
+    zint records_updated;
+    zint records_deleted;
+    zint records_processed;
     char *record_encoding;
 
     yaz_iconv_t iconv_to_utf8;

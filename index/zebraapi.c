@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.123 2004-08-06 13:14:46 adam Exp $
+/* $Id: zebraapi.c,v 1.124 2004-08-10 08:19:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1561,7 +1561,8 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
         zebra_register_close (zh->service, zh->reg);
         zh->reg = 0;
         
-        yaz_log (LOG_LOG, "Records: %7d i/u/d %d/%d/%d", 
+        yaz_log (LOG_LOG, "Records: "ZINT_FORMAT" i/u/d "
+			ZINT_FORMAT"/"ZINT_FORMAT"/"ZINT_FORMAT, 
                  zh->records_processed, zh->records_inserted,
                  zh->records_updated, zh->records_deleted);
         

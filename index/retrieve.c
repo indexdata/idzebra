@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.23 2004-08-06 09:43:03 heikki Exp $
+/* $Id: retrieve.c,v 1.24 2004-08-10 08:19:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -70,7 +70,7 @@ int zebra_record_int_read (void *fh, char *buf, size_t count)
     int l = fc->record_int_len - fc->record_int_pos;
     if (l <= 0)
         return 0;
-    l = (l < (int) count) ? l : count;
+    l = (l < (int) count) ? l : (int) count;
     memcpy (buf, fc->record_int_buf + fc->record_int_pos, l);
     fc->record_int_pos += l;
     return l;
