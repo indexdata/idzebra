@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.h,v $
- * Revision 1.2  1994-08-18 08:22:26  adam
+ * Revision 1.3  1994-08-18 09:43:04  adam
+ * Added res_trav. Major changes of prototypes.
+ *
+ * Revision 1.2  1994/08/18  08:22:26  adam
  * Res.h modified. xmalloc now declares xstrdup.
  *
  */
@@ -24,4 +27,11 @@ typedef struct res_struct {
     int  init;
 } *Res;
 
+Res res_open (const char *name);
+void res_close (Res r);
+const char *res_get (Res r, const char *name);
+void res_put (Res r, const char *name, const char *value);
+void res_trav (Res r, const char *prefix, 
+               void (*f)(const char *name, const char *value));
+int res_write (Res r);
 #endif
