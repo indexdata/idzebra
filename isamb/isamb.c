@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.63 2005-01-02 18:50:53 adam Exp $
+/* $Id: isamb.c,v 1.64 2005-01-02 23:24:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -1098,7 +1098,7 @@ ISAMB_P isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
             char *dst = p2->bytes + p2->size;
             
             encode_ptr (&dst, p->pos);
-            assert (sub_size < 40);
+	    assert (sub_size < 80 && sub_size > 1);
             encode_ptr (&dst, sub_size);
             memcpy (dst, sub_item, sub_size);
             dst += sub_size;
