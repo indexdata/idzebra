@@ -2,13 +2,18 @@ name user
 
 attset bib1.att
 
-xpath enable
-xelm //des*/ Any:w
+#xpath enable
+#xelm //des*/ Any:w
 #xelm //user/age !:n,ISBN:w
 #xelm //user/name !:p
-#xelm //user/@id !:w,Doc-id:w,Any:w
+xelm //user/@id !:w,Doc-id:w,Any:w
 #xelm /user[@id="strucc"]/description[@xml:lang="en" and @test] !:w,Any:w
+
 #xelm ///description[@xml:lang="en"] !:w,Any:w
 
 #elm name name Any:p
 #elm age age Any:n
+
+
+xelm /@* !:w            # all attributes
+xelm /* !:w             # expression for all tags
