@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.21  1995-11-01 16:25:52  quinn
+ * Revision 1.22  1995-11-16 15:34:55  adam
+ * Uses new record management system in both indexer and server.
+ *
+ * Revision 1.21  1995/11/01  16:25:52  quinn
  * *** empty log message ***
  *
  * Revision 1.20  1995/10/27  14:00:12  adam
@@ -97,6 +100,9 @@ bend_initresult *bend_init (bend_initrequest *q)
     logf (LOG_DEBUG, "bend_init");
     data1_tabpath = res_get(common_resource, "data1_tabpath");
     server_info.sets = NULL;
+#if RECORD_BASE
+    server_info.records = rec_open (0);
+#else
     if (!(server_info.sys_idx_fd = open (FNAME_SYS_IDX, O_RDONLY)))
     {
         logf (LOG_WARN|LOG_ERRNO, "sys_idx open fail");
@@ -104,6 +110,7 @@ bend_initresult *bend_init (bend_initrequest *q)
         r.errstring = "sys_idx open fail";
         return &r;
     }
+#endif
     if (!(server_info.fileDict = dict_open (FNAME_FILE_DICT, 10, 0)))
     {
         logf (LOG_WARN, "dict_open fail: fname dict");
@@ -168,11 +175,20 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
 			  oid_value *output_format, char **rec_bufp,
 			  int *rec_lenp)
 {
+#if RECORD_BASE
+    Record rec;
+#else
     char record_info[SYS_IDX_ENTRY_LEN];
+#endif
     char *fname, *file_type;
     RecType rt;
     struct recRetrieveCtrl retrieveCtrl;
 
+#if RECORD_BASE
+    rec = rec_get (zi->records, sysno);
+    file_type = rec->info[0];
+    fname = rec->info[1];
+#else
     if (lseek (zi->sys_idx_fd, sysno * SYS_IDX_ENTRY_LEN,
                SEEK_SET) == -1)
     {
@@ -186,6 +202,8 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     }
     file_type = record_info;
     fname = record_info + strlen(record_info) + 1;
+#endif
+
     if (!(rt = recType_byName (file_type)))
     {
         logf (LOG_FATAL|LOG_ERRNO, "Retrieve: Cannot handle type %s", 
@@ -200,6 +218,9 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
         *output_format = VAL_SUTRS;
         *rec_bufp = msg;
         *rec_lenp = strlen (msg);
+#if RECORD_BASE
+        rec_rm (rec);
+#endif
         return 0;     /* or 14: System error in presenting records */
     }
     retrieveCtrl.localno = sysno;
@@ -214,6 +235,9 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     *rec_bufp = retrieveCtrl.rec_buf;
     *rec_lenp = retrieveCtrl.rec_len;
     close (retrieveCtrl.fd);
+#if RECORD_BASE
+    rec_rm (rec);
+#endif
     return retrieveCtrl.diagnostic;
 }
 
@@ -281,7 +305,11 @@ void bend_close (void *handle)
     dict_close (server_info.fileDict);
     dict_close (server_info.wordDict);
     is_close (server_info.wordIsam);
+#if RECORD_BASE
+    rec_close (&server_info.records);
+#else
     close (server_info.sys_idx_fd);
+#endif
     return;
 }
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.20  1995-11-15 14:46:18  adam
+ * Revision 1.21  1995-11-16 15:34:55  adam
+ * Uses new record management system in both indexer and server.
+ *
+ * Revision 1.20  1995/11/15  14:46:18  adam
  * Started work on better record management system.
  *
  * Revision 1.19  1995/10/27  14:00:11  adam
@@ -109,8 +112,13 @@ int merge_sort (char **buf, int from, int to);
 #define FNAME_WORD_DICT "worddict"
 #define FNAME_WORD_ISAM "wordisam"
 #define FNAME_FILE_DICT "filedict"
+
+#define RECORD_BASE 1
+
+#if !RECORD_BASE
 #define FNAME_SYS_IDX "sysidx"
 #define SYS_IDX_ENTRY_LEN 120
+#endif
 
 struct strtab *strtab_mk (void);
 int strtab_src (struct strtab *t, const char *name, void ***infop);

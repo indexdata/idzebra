@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.12  1995-10-27 14:00:12  adam
+ * Revision 1.13  1995-11-16 15:34:56  adam
+ * Uses new record management system in both indexer and server.
+ *
+ * Revision 1.12  1995/10/27  14:00:12  adam
  * Implemented detection of database availability.
  *
  * Revision 1.11  1995/10/17  18:02:12  adam
@@ -44,9 +47,13 @@
  *
  */
 
-#include "index.h"
 #include <backend.h>
 #include <rset.h>
+
+#include "index.h"
+#if RECORD_BASE
+#include "recindex.h"
+#endif
 
 typedef struct {
     int sysno;
@@ -65,7 +72,11 @@ typedef struct {
     Dict wordDict;
     ISAM wordIsam;
     Dict fileDict;
+#if RECORD_BASE
+    Records records;
+#else
     int sys_idx_fd;
+#endif
     int errCode;
     char *errString;
     ODR odr;

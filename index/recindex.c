@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.2  1995-11-15 19:13:08  adam
+ * Revision 1.3  1995-11-16 15:34:55  adam
+ * Uses new record management system in both indexer and server.
+ *
+ * Revision 1.2  1995/11/15  19:13:08  adam
  * Work on record management.
  *
  * Revision 1.1  1995/11/15  14:46:20  adam
@@ -134,6 +137,7 @@ Records rec_open (int rw)
         logf (LOG_FATAL|LOG_ERRNO, "read %s", p->index_fname);
         exit (1);
     case 0:
+        memcpy (p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic));
         p->head.index_free = 0;
         p->head.index_last = 1;
         p->head.no_records = 0;
@@ -162,7 +166,7 @@ Records rec_open (int rw)
         logf (LOG_FATAL|LOG_ERRNO, "open %s", p->data_fname);
         exit (1);
     }
-    p->cache_max = 100;
+    p->cache_max = 10;
     p->cache_cur = 0;
     if (!(p->record_cache = malloc (sizeof(*p->record_cache)*p->cache_max)))
     {
@@ -264,7 +268,6 @@ static void rec_write_single (Records p, Record rec)
             logf (LOG_FATAL|LOG_ERRNO, "write of %s", p->data_fname);
             exit (1);
         }
-        got += r;
     }
 }
 
@@ -306,7 +309,7 @@ static void rec_cache_insert (Records p, Record rec, int dirty)
     assert (p->cache_cur < p->cache_max);
 
     e = p->record_cache + (p->cache_cur)++;
-    e->dirty = 1;
+    e->dirty = dirty;
     e->rec = rec_cp (rec);
 }
 
@@ -316,6 +319,9 @@ void rec_close (Records *p)
 
     rec_cache_flush (*p);
     free ((*p)->record_cache);
+
+    if ((*p)->rw)
+        rec_write_head (*p);
 
     if ((*p)->index_fd != -1)
         close ((*p)->index_fd);
@@ -374,7 +380,6 @@ Record rec_get (Records p, int sysno)
             logf (LOG_FATAL|LOG_ERRNO, "read of %s", p->data_fname);
             exit (1);
         }
-        got += r;
     }
     rec->sysno = sysno;
 

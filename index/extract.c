@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.24  1995-11-15 19:13:08  adam
+ * Revision 1.25  1995-11-16 15:34:54  adam
+ * Uses new record management system in both indexer and server.
+ *
+ * Revision 1.24  1995/11/15  19:13:08  adam
  * Work on record management.
  *
  * Revision 1.23  1995/10/27  14:00:10  adam
@@ -90,8 +93,6 @@
 #include <alexutil.h>
 #include <recctrl.h>
 #include "index.h"
-
-#define RECORD_BASE 1
 
 #if RECORD_BASE
 #include "recindex.h"
@@ -432,6 +433,7 @@ void file_extract (int cmd, const char *fname, const char *kname,
         rec->info[0] = rec_strdup (file_type);
         rec->info[1] = rec_strdup (kname);
         rec_put (records, rec);
+        rec_rm (rec);
 #else
         sysno = sysno_next++;
         dict_insert (file_idx, kname, sizeof(sysno), &sysno);
