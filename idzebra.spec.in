@@ -1,6 +1,6 @@
 Name: idzebra
 Version: @VERSION@
-Release: 1
+Release: 3
 Requires: libyaz expat bzip2-libs tcl
 Copyright: GPL
 Group: Applications/Databases
