@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.18  1995-10-04 09:37:08  quinn
+ * Revision 1.19  1995-10-04 12:55:16  adam
+ * Bug fix in ranked search. Use=Any keys inserted.
+ *
+ * Revision 1.18  1995/10/04  09:37:08  quinn
  * Fixed bug.
  *
  * Revision 1.17  1995/10/03  14:28:57  adam
@@ -219,6 +222,21 @@ static void wordAdd (const RecWord *p)
     kused += sizeof(key);
 }
 
+static void wordAddAny (const RecWord *p)
+{
+    if (p->attrSet != 1 && p->attrUse != 1016)
+    {
+        RecWord w;
+
+        memcpy (&w, p, sizeof(w));
+        w.attrSet = 1;
+        w.attrUse = 1016;
+        wordAdd (&w);
+    }
+    wordAdd (p);
+}
+
+
 #define FILE_READ_BUF 1
 #if FILE_READ_BUF
 static char *file_buf;
@@ -334,7 +352,7 @@ void file_extract (int cmd, const char *fname, const char *kname)
     }
     extractCtrl.subType = "";
     extractCtrl.init = wordInit;
-    extractCtrl.add = wordAdd;
+    extractCtrl.add = wordAddAny;
 #if FILE_READ_BUF
     file_read_start (extractCtrl.fd);
 #endif

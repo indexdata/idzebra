@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.16  1995-10-02 16:24:40  adam
+ * Revision 1.17  1995-10-04 12:55:17  adam
+ * Bug fix in ranked search. Use=Any keys inserted.
+ *
+ * Revision 1.16  1995/10/02  16:24:40  adam
  * Use attribute actually used in search requests.
  *
  * Revision 1.15  1995/10/02  15:18:52  adam
@@ -338,21 +341,31 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     const char *info;    
     AttrType truncation;
     int truncation_value;
+    AttrType use;
+    int use_value;
 
+    attr_init (&use, zapt, 1);
+    use_value = attr_find (&use);
+    logf (LOG_DEBUG, "use value %d", truncation_value);
     attr_init (&truncation, zapt, 5);
     truncation_value = attr_find (&truncation);
     logf (LOG_DEBUG, "truncation value %d", truncation_value);
+
+    if (use_value == -1)
+        use_value = 1016;
+    i = index_word_prefix (term_dict, 1, use_value);
+
     switch (truncation_value)
     {
     case -1:         /* not specified */
     case 100:        /* do not truncate */
-        strcpy (term_dict, term_sub);
+        strcat (term_dict, term_sub);
         logf (LOG_DEBUG, "dict_lookup: %s", term_dict);
         if ((info = dict_lookup (zi->wordDict, term_dict)))
             add_isam_p (info);
         break;
     case 1:          /* right truncation */
-        strcpy (term_dict, term_sub);
+        strcat (term_dict, term_sub);
         strcat (term_dict, ".*");
         dict_lookup_grep (zi->wordDict, term_dict, 0, grep_handle);
         break;
@@ -361,7 +374,7 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         zi->errCode = 120;
         return -1;
     case 101:        /* process # in term */
-        for (j = 0, i = 0; term_sub[i] && i < 2; i++)
+        for (j = strlen(term_dict), i = 0; term_sub[i] && i < 2; i++)
             term_dict[j++] = term_sub[i];
         for (; term_sub[i]; i++)
             if (term_sub[i] == '#')
@@ -375,7 +388,7 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         dict_lookup_grep (zi->wordDict, term_dict, 0, grep_handle);
         break;
     case 102:        /* regular expression */
-        strcpy (term_dict, term_sub);
+        strcat (term_dict, term_sub);
         dict_lookup_grep (zi->wordDict, term_dict, 0, grep_handle);
         break;
     }
@@ -384,6 +397,7 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     return 0;
 }
 
+#if 0
 static void field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                         char *termz)
 {
@@ -405,7 +419,21 @@ static void field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         termz[i] = index_char_cvt (term->u.general->buf[j]);
     termz[i] = '\0';
 }
+#else
+static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
+                        char *termz)
+{
+    size_t i, sizez;
+    Z_Term *term = zapt->term;
 
+    sizez = term->u.general->len;
+    if (sizez > IT_MAX_WORD)
+        sizez = IT_MAX_WORD;
+    for (i = 0; i < sizez; i++)
+        termz[i] = index_char_cvt (term->u.general->buf[i]);
+    termz[i] = '\0';
+}
+#endif
 
 static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
                                       Z_AttributesPlusTerm *zapt)
@@ -426,7 +454,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    field_term (zi, zapt, termz);
+    trans_term (zi, zapt, termz);
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
     while (1)
     {
@@ -464,7 +492,7 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    field_term (zi, zapt, termz);
+    trans_term (zi, zapt, termz);
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
     if (trunc_term (zi, zapt, termz, &isam_positions))
         return NULL;
@@ -494,7 +522,7 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    field_term (zi, zapt, termz);
+    trans_term (zi, zapt, termz);
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
     if (trunc_term (zi, zapt, termz, &isam_positions))
         return NULL;
