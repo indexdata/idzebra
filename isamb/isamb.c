@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.20 2002-09-03 13:21:24 adam Exp $
+/* $Id: isamb.c,v 1.21 2002-09-03 19:05:02 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -31,6 +31,7 @@ struct ISAMB_head {
     int last_block;
     int block_size;
     int block_max;
+    int free_list;
 };
 
 #define ISAMB_DATA_OFFSET 3
@@ -65,6 +66,8 @@ struct ISAMB_s {
     struct ISAMB_file *file;
     int no_cat;
     int cache; /* 0=no cache, 1=use cache, -1=dummy isam (for testing only) */
+    int log_io;        /* log level for bf_read/bf_write calls */
+    int log_freelist;  /* log level for freelist handling */
 };
 
 struct ISAMB_block {
@@ -73,10 +76,12 @@ struct ISAMB_block {
     int size;
     int leaf;
     int dirty;
+    int deleted;
     int offset;
     char *bytes;
     unsigned char *buf;
     void *decodeClientData;
+    int log_rw;
 };
 
 struct ISAMB_PP_s {
@@ -110,6 +115,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method,
     isamb->method = (ISAMC_M) xmalloc (sizeof(*method));
     memcpy (isamb->method, method, sizeof(*method));
     isamb->no_cat = 4;
+    isamb->log_io = 0;
     isamb->cache = cache;
 
     isamb->file = xmalloc (sizeof(*isamb->file) * isamb->no_cat);
@@ -133,6 +139,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method,
             isamb->file[i].head.last_block = isamb->file[i].head.first_block;
             isamb->file[i].head.block_size = b_size;
             isamb->file[i].head.block_max = b_size - ISAMB_DATA_OFFSET;
+            isamb->file[i].head.free_list = 0;
 	}
         assert (isamb->file[i].head.block_size >= ISAMB_DATA_OFFSET);
         isamb->file[i].head_dirty = 0;
@@ -150,7 +157,10 @@ static void flush_blocks (ISAMB b, int cat)
         b->file[cat].cache_entries = ce_this->next;
 
         if (ce_this->dirty)
+        {
+            yaz_log (b->log_io, "bf_write: flush_blocks");
             bf_write (b->file[cat].bf, ce_this->pos, 0, 0, ce_this->buf);
+        }
         xfree (ce_this->buf);
         xfree (ce_this);
     }
@@ -200,7 +210,10 @@ static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
         ce_this = *ce_last;
         *ce_last = 0;  /* remove the last entry from list */
         if (ce_this->dirty)
+        {
+            yaz_log (b->log_io, "bf_write: get_block");
             bf_write (b->file[cat].bf, ce_this->pos, 0, 0, ce_this->buf);
+        }
         xfree (ce_this->buf);
         xfree (ce_this);
     }
@@ -209,6 +222,7 @@ static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
     b->file[cat].cache_entries = ce_this;
     ce_this->buf = xmalloc (ISAMB_CACHE_ENTRY_SIZE);
     ce_this->pos = norm;
+    yaz_log (b->log_io, "bf_read: get_block");
     if (!bf_read (b->file[cat].bf, norm, 0, 0, ce_this->buf))
         memset (ce_this->buf, 0, ISAMB_CACHE_ENTRY_SIZE);
     if (wr)
@@ -255,6 +269,7 @@ struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
 
     if (!get_block (b, pos, p->buf, 0))
     {
+        yaz_log (b->log_io, "bf_read: open_block");
         if (!bf_read (b->file[cat].bf, pos/4, 0, 0, p->buf))
         {
             yaz_log (LOG_FATAL, "read failure for pos=%ld block=%ld",
@@ -267,6 +282,7 @@ struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
     p->size = p->buf[1] + 256 * p->buf[2] - ISAMB_DATA_OFFSET;
     p->offset = 0;
     p->dirty = 0;
+    p->deleted = 0;
     p->decodeClientData = (*b->method->code_start)(ISAMC_DECODE);
     return p;
 }
@@ -274,20 +290,41 @@ struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
 struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
 {
     struct ISAMB_block *p;
-    int block_no;
-    
+
     p = xmalloc (sizeof(*p));
-    block_no = b->file[cat].head.last_block++;
-    p->cat = cat;
-    p->pos = block_no * 4 + cat;
+    p->buf = xmalloc (b->file[cat].head.block_size);
+
+    if (!b->file[cat].head.free_list)
+    {
+        int block_no;
+        block_no = b->file[cat].head.last_block++;
+        p->pos = block_no * 4 + cat;
+    }
+    else
+    {
+        p->pos = b->file[cat].head.free_list;
+        if (!get_block (b, p->pos, p->buf, 0))
+        {
+            yaz_log (b->log_io, "bf_read: new_block");
+            if (!bf_read (b->file[cat].bf, p->pos/4, 0, 0, p->buf))
+            {
+                yaz_log (LOG_FATAL, "read failure for pos=%ld block=%ld",
+                         (long) p->pos/4, (long) p->pos/4);
+                abort ();
+            }
+        }
+        yaz_log (b->log_freelist, "got block %d from freelist %d:%d", p->pos,
+                 cat, p->pos/4);
+        memcpy (&b->file[cat].head.free_list, p->buf, sizeof(int));
+    }
     p->cat = cat;
     b->file[cat].head_dirty = 1;
-    p->buf = xmalloc (b->file[cat].head.block_size);
     memset (p->buf, 0, b->file[cat].head.block_size);
     p->bytes = p->buf + ISAMB_DATA_OFFSET;
     p->leaf = leaf;
     p->size = 0;
     p->dirty = 1;
+    p->deleted = 0;
     p->offset = 0;
     p->decodeClientData = (*b->method->code_start)(ISAMC_DECODE);
     return p;
@@ -308,14 +345,29 @@ void close_block (ISAMB b, struct ISAMB_block *p)
 {
     if (!p)
         return;
-    if (p->dirty)
+    if (p->deleted)
+    {
+        yaz_log (b->log_freelist, "release block %d from freelist %d:%d",
+                 p->pos, p->cat, p->pos/4);
+        memcpy (p->buf, &b->file[p->cat].head.free_list, sizeof(int));
+        b->file[p->cat].head.free_list = p->pos;
+        if (!get_block (b, p->pos, p->buf, 1))
+        {
+            yaz_log (b->log_io, "bf_write: close_block");
+            bf_write (b->file[p->cat].bf, p->pos/4, 0, 0, p->buf);
+        }
+    }
+    else if (p->dirty)
     {
         int size = p->size + ISAMB_DATA_OFFSET;
         p->buf[0] = p->leaf;
         p->buf[1] = size & 255;
         p->buf[2] = size >> 8;
         if (!get_block (b, p->pos, p->buf, 1))
+        {
+            yaz_log (b->log_io, "bf_write: close_block");
             bf_write (b->file[p->cat].bf, p->pos/4, 0, 0, p->buf);
+        }
     }
     (*b->method->code_stop)(ISAMC_DECODE, p->decodeClientData);
     xfree (p->buf);
@@ -600,6 +652,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         new_size > b->file[p->cat].head.block_max)
     {
         /* non-btree block will be removed */
+        p->deleted = 1;
         close_block (b, p);
         /* delete it too!! */
         p = 0; /* make a new one anyway */
