@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.6 2004-08-24 10:44:53 adam Exp $
+## $Id: Makefile.am,v 1.7 2004-09-30 08:16:48 adam Exp $
 
 lib_LTLIBRARIES = libidzebra-isamb.la
 
@@ -15,4 +15,4 @@ libidzebra_isamb_la_SOURCES = isamb.c
 
 AM_CPPFLAGS=-I$(srcdir)/../include $(YAZINC)
 
-LDADD = ../util/libutil.a ../bfile/libbfile.a libisamc.a $(YAZLALIB) $(TCL_LIB)
+LDADD = ../util/libutil.a ../bfile/libbfile.a libisamc.a $(YAZLALIB)

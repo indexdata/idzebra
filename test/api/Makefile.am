@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.16 2004-09-22 11:59:25 heikki Exp $
+# $Id: Makefile.am,v 1.17 2004-09-30 08:16:49 adam Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c
@@ -31,5 +31,5 @@ zebralibs = \
  ../../dfa/libidzebra-dfa.la \
  ../../util/libidzebra-util.la
 
-LDADD = $(zebralibs) $(YAZLALIB) $(TCL_LIB)
+LDADD = $(zebralibs) $(YAZLALIB)
 

@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.11 2004-08-29 12:31:32 adam Exp $
+## $Id: Makefile.am,v 1.12 2004-09-30 08:16:49 adam Exp $
 
 lib_LTLIBRARIES = libidzebra-util.la
 
@@ -11,7 +11,7 @@ EXTRA_DIST = zebrasrv.rh
 DISTCLEANFILES = idzebra-config
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
-LDADD = libidzebra-util.la $(TCL_LIB) $(YAZLALIB)
+LDADD = libidzebra-util.la $(YAZLALIB)
 
 libidzebra_util_la_SOURCES = res.c charmap.c zebramap.c passwddb.c \
  zebra-lock.c dirent.c xpath.c atoi_zn.c

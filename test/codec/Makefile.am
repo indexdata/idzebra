@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2004-08-30 21:36:53 adam Exp $
+# $Id: Makefile.am,v 1.4 2004-09-30 08:16:49 adam Exp $
 
 TESTS = tstcodec
 
@@ -21,4 +21,4 @@ noinst_PROGRAMS = tstcodec
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 
-LDADD = $(zebralibs) $(YAZLALIB) $(TCL_LIB)
+LDADD = $(zebralibs) $(YAZLALIB)

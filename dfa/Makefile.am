@@ -1,11 +1,11 @@
-## $Id: Makefile.am,v 1.5 2004-08-24 10:40:23 adam Exp $
+## $Id: Makefile.am,v 1.6 2004-09-30 08:16:48 adam Exp $
 
 lib_LTLIBRARIES = libidzebra-dfa.la
 
 noinst_PROGRAMS = agrep lexer grepper
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC)
-LDADD = libidzebra-dfa.la ../util/libidzebra-util.la $(YAZLALIB) $(TCL_LIB)
+LDADD = libidzebra-dfa.la ../util/libidzebra-util.la $(YAZLALIB)
 
 agrep_SOURCES = agrep.c
 
