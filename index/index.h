@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.92 2002-11-26 22:18:34 adam Exp $
+/* $Id: index.h,v 1.93 2003-02-27 17:12:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -400,6 +400,7 @@ void zebraRankDestroy (struct zebra_register *reg);
 int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att);
 
 extern struct rank_control *rank1_class;
+extern struct rank_control *rankzv_class;
 
 int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
@@ -414,6 +415,7 @@ int bufferExtractRecord (ZebraHandle zh,
 			 struct recordGroup *rGroup, 
 			 int delete_flag,
 			 int test_mode, 
+			 const char *recordType,
 			 int *sysno,
 			 const char *match_criteria,
 			 const char *fname);
