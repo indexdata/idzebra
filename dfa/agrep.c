@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.6  1995-09-28 09:18:51  adam
+ * Revision 1.7  1995-10-16 09:31:24  adam
+ * Bug fix.
+ *
+ * Revision 1.6  1995/09/28  09:18:51  adam
  * Removed various preprocessor defines.
  *
  * Revision 1.5  1995/09/04  12:33:25  adam
@@ -274,7 +277,8 @@ char **argv;
             }
     if (!no)
     {
-        fprintf (stderr, "%s: no files specified\n", prog);
+        fprintf (stderr, "usage:\n "
+                         " %s [-d] [-v] [-n] [-f] pattern file ..\n", prog);
         return 2;
     }
     fflush(stdout);

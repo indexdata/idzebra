@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.5  1995-10-02 15:17:58  adam
+ * Revision 1.6  1995-10-16 09:31:25  adam
+ * Bug fix.
+ *
+ * Revision 1.5  1995/10/02  15:17:58  adam
  * Bug fix in dfa_delete.
  *
  * Revision 1.4  1995/09/28  09:18:52  adam
@@ -763,27 +766,28 @@ static void mk_dfa_tran (struct DFA_states *dfas)
         {
             char_0 = max_char+1;
             for (pos_i = pos; (i = *pos_i) != -1; ++pos_i)
-                if (posar[i]->u.ch[1] >= char_1)
-                    if ((c=posar[i]->u.ch[0]) < char_0)
-                        if (c < char_1)
-                            char_0 = char_1;
-                        else
-                            char_0 = c;
+                if (posar[i]->u.ch[1] >= char_1 
+                    && (c=posar[i]->u.ch[0]) < char_0)
+                    if (c < char_1)
+                        char_0 = char_1;
+                    else
+                        char_0 = c;
 
-            char_1 = max_char;
             if (char_0 > max_char)
                 break;
+
+            char_1 = max_char;
+                
             tran_set = mk_Set (poset);
             for (pos_i = pos; (i = *pos_i) != -1; ++pos_i)
-                if ((c=posar[i]->u.ch[1]) >= char_0)
-                    if (posar[i]->u.ch[0] <= char_0)
-                    {
-                        if (c < char_1)
-                            char_1 = c;
-                        tran_set = union_Set (poset, tran_set, followpos[i]);
-                    }
-                    else if (c <= char_1)
-                        char_1 = c-1;
+            {
+                if ((c=posar[i]->u.ch[0]) > char_0 && c <= char_1)
+                    char_1 = c - 1;                /* forward chunk */
+                else if ((c=posar[i]->u.ch[1]) >= char_0 && c < char_1)
+                    char_1 = c;                    /* backward chunk */
+                if (posar[i]->u.ch[1] >= char_0 && posar[i]->u.ch[0] <= char_0)
+                    tran_set = union_Set (poset, tran_set, followpos[i]);
+            }
             if (tran_set)
             {
                 add_DFA_state (dfas, &tran_set, &dfa_to);
