@@ -4,7 +4,7 @@ WriteMakefile(
               'NAME'          => 'IDZebra',
               'OBJECT'        => 'IDZebra_wrap.o zebra_perl.o' ,
               'INC'           => "-I@top_srcdir@/index -I../include @YAZINC@",
-              'LIBS'          => "-L@top_srcdir@/index -lzebra -L../data1 -ldata1 @TCL_LIB@ @YAZLIB@ @ZPERL_LIBS@",
+              'LIBS'          => "-L@top_srcdir@/index -lzebra @TCL_LIB@ @YAZLIB@ @ZPERL_LIBS@",
               'OPTIMIZE'      => '-g',
 #              'PREREQ_FATAL'  => 1,
               'PREREQ_PM'     => {
@@ -16,7 +16,8 @@ WriteMakefile(
 
 sub MY::postamble {
 'IDZebra_wrap.c: IDZebra.i
-	swig -perl IDZebra.i'
+	swig -I../include -v -Wall -perl -proxy ./IDZebra.i
+	mv IDZebra.pm lib/'
 	;
 }
 
