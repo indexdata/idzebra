@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.6  1995-09-06 16:10:58  adam
+ * Revision 1.7  1995-09-07 13:58:08  adam
+ * New parameter: result-set file descriptor (RSFD) to support multiple
+ * positions within the same result-set.
+ * Boolean operators: and, or, not implemented.
+ *
+ * Revision 1.6  1995/09/06  16:10:58  adam
  * More work on boolean sets.
  *
  * Revision 1.5  1995/09/04  15:20:13  adam
@@ -30,18 +35,20 @@
 
 #include <stdlib.h>
 
+typedef void *RSFD;
+
 typedef struct rset_control
 {
     char *desc; /* text description of set type (for debugging) */
     void *buf;  /* state data stored by subsystem */
     struct rset_control *(*f_create)(const struct rset_control *sel, void *parms);
-    int (*f_open)(struct rset_control *ct, int wflag);
-    void (*f_close)(struct rset_control *ct);
+    RSFD (*f_open)(struct rset_control *ct, int wflag);
+    void (*f_close)(RSFD rfd);
     void (*f_delete)(struct rset_control *ct);
-    void (*f_rewind)(struct rset_control *ct);
+    void (*f_rewind)(RSFD rfd);
     int (*f_count)(struct rset_control *ct);
-    int (*f_read)(struct rset_control *ct, void *buf);
-    int (*f_write)(struct rset_control *ct, const void *buf);
+    int (*f_read)(RSFD rfd, void *buf);
+    int (*f_write)(RSFD rfd, const void *buf);
 } rset_control;
 
 typedef struct rset
@@ -55,20 +62,20 @@ RSET rset_create(const rset_control *sel, void *parms);       /* parameters? */
 #define rset_open(rs, wflag) ((*(rs)->control->f_open)((rs)->control, (wflag)))
 
 /* void rset_close(RSET rs); */
-#define rset_close(rs) ((*(rs)->control->f_close)((rs)->control))
+#define rset_close(rs, rfd) ((*(rs)->control->f_close)((rfd)))
 
 void rset_delete(RSET rs);
 
 /* void rset_rewind(RSET rs); */
-#define rset_rewind(rs) ((*(rs)->control->f_rewind)((rs)->control))
+#define rset_rewind(rs, rfd) ((*(rs)->control->f_rewind)((rfd)))
 
 /* int rset_count(RSET rs); */
 #define rset_count(rs) ((*(rs)->control->f_count)((rs)->control))
 
 /* int rset_read(RSET rs, void *buf); */
-#define rset_read(rs, buf) ((*(rs)->control->f_read)((rs)->control, (buf)))
+#define rset_read(rs, fd, buf) ((*(rs)->control->f_read)((fd), (buf)))
 
 /* int rset_write(RSET rs, const void *buf); */
-#define rset_write(rs, buf) ((*(rs)->control->f_write)((rs)->control, (buf)))
+#define rset_write(rs, fd, buf) ((*(rs)->control->f_write)((fd), (buf)))
 
 #endif

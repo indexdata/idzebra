@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.6  1995-09-06 16:11:56  adam
+ * Revision 1.7  1995-09-07 13:58:44  adam
+ * New parameter: result-set file descriptor (RSFD) to support multiple
+ * positions within the same result-set.
+ * Boolean operators: and, or, not implemented.
+ *
+ * Revision 1.6  1995/09/06  16:11:56  adam
  * More work on boolean sets.
  *
  * Revision 1.5  1995/09/05  16:36:59  adam
@@ -33,15 +38,14 @@
 #include <alexutil.h>
 #include <rstemp.h>
 
-static struct rset_control *r_create(const struct rset_control *sel, 
-                                     void *parms);
-static int r_open(struct rset_control *ct, int wflag);
-static void r_close(struct rset_control *ct);
-static void r_delete(struct rset_control *ct);
-static void r_rewind(struct rset_control *ct);
-static int r_count(struct rset_control *ct);
-static int r_read (rset_control *ct, void *buf);
-static int r_write (rset_control *ct, const void *buf);
+static rset_control *r_create(const struct rset_control *sel, void *parms);
+static RSFD r_open (rset_control *ct, int wflag);
+static void r_close (RSFD rfd);
+static void r_delete (rset_control *ct);
+static void r_rewind (RSFD rfd);
+static int r_count (rset_control *ct);
+static int r_read (RSFD rfd, void *buf);
+static int r_write (RSFD rfd, const void *buf);
 
 static const rset_control control = 
 {
@@ -59,7 +63,7 @@ static const rset_control control =
 
 const rset_control *rset_kind_temp = &control;
 
-struct rset_temp_private {
+struct rset_temp_info {
     int     fd;
     char   *fname;
     size_t  key_size;
@@ -72,17 +76,22 @@ struct rset_temp_private {
     int     dirty;
 };
 
+struct rset_temp_rfd {
+    struct rset_temp_info *info;
+    struct rset_temp_rfd *next;
+};
+
 static struct rset_control *r_create(const struct rset_control *sel,
                                      void *parms)
 {
     rset_control *newct;
     rset_temp_parms *temp_parms = parms;
-    struct rset_temp_private *info;
+    struct rset_temp_info *info;
     
     logf (LOG_DEBUG, "ritemp_create(%s)", sel->desc);
     newct = xmalloc(sizeof(*newct));
     memcpy(newct, sel, sizeof(*sel));
-    newct->buf = xmalloc (sizeof(struct rset_temp_private));
+    newct->buf = xmalloc (sizeof(struct rset_temp_info));
     info = newct->buf;
 
     info->fd = -1;
@@ -98,9 +107,10 @@ static struct rset_control *r_create(const struct rset_control *sel,
     return newct;
 }
 
-static int r_open(struct rset_control *ct, int wflag)
+static RSFD r_open (struct rset_control *ct, int wflag)
 {
-    struct rset_temp_private *info = ct->buf;
+    struct rset_temp_info *info = ct->buf;
+    struct rset_temp_rfd *rfd;
 
     assert (info->fd == -1);
     if (info->fname)
@@ -115,13 +125,15 @@ static int r_open(struct rset_control *ct, int wflag)
             exit (1);
         }
     }
+    rfd = xmalloc (sizeof(*rfd));
+    rfd->info = info;
     r_rewind (ct);
-    return 0;
+    return rfd;
 }
 
-static void r_flush (struct rset_control *ct, int mk)
+static void r_flush (RSFD rfd, int mk)
 {
-    struct rset_temp_private *info = ct->buf;
+    struct rset_temp_info *info = ((struct rset_temp_rfd*) rfd)->info;
 
     if (!info->fname && mk)
     {
@@ -162,11 +174,11 @@ static void r_flush (struct rset_control *ct, int mk)
     }
 }
 
-static void r_close (struct rset_control *ct)
+static void r_close (RSFD rfd)
 {
-    struct rset_temp_private *info = ct->buf;
+    struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
 
-    r_flush (ct, 0);
+    r_flush (rfd, 0);
     if (info->fname && info->fd != -1)
     {
         close (info->fd);
@@ -176,7 +188,7 @@ static void r_close (struct rset_control *ct)
 
 static void r_delete (struct rset_control *ct)
 {
-    struct rset_temp_private *info = ct->buf;
+    struct rset_temp_info *info = ct->buf;
 
     r_close (ct);
     if (info->fname)
@@ -186,9 +198,9 @@ static void r_delete (struct rset_control *ct)
     free (info);
 }
 
-static void r_reread (struct rset_control *ct)
+static void r_reread (RSFD rfd)
 {
-    struct rset_temp_private *info = ct->buf;
+    struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
 
     if (info->fname)
     {
@@ -213,35 +225,36 @@ static void r_reread (struct rset_control *ct)
         info->pos_border = info->pos_end;
 }
 
-static void r_rewind (struct rset_control *ct)
+static void r_rewind (RSFD rfd)
 {
-    struct rset_temp_private *info = ct->buf;
+    struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
 
-    r_flush (ct, 0);
+    r_flush (rfd, 0);
     info->pos_cur = 0;
     info->pos_buf = 0;
-    r_reread (ct);
+    r_reread (rfd);
 }
 
 static int r_count (struct rset_control *ct)
 {
-    struct rset_temp_private *info = ct->buf;
+    struct rset_temp_info *info = ct->buf;
 
     return info->pos_end / info->key_size;
 }
 
-static int r_read (rset_control *ct, void *buf)
+static int r_read (RSFD rfd, void *buf)
 {
-    struct rset_temp_private *info = ct->buf;
+    struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
+
     size_t nc = info->pos_cur + info->key_size;
 
     if (nc > info->pos_border)
     {
         if (nc > info->pos_end)
             return 0;
-        r_flush (ct, 0);
+        r_flush (rfd, 0);
         info->pos_buf = info->pos_cur;
-        r_reread (ct);
+        r_reread (rfd);
     }
     memcpy (buf, info->buf_mem + (info->pos_cur - info->pos_buf),
             info->key_size);
@@ -249,16 +262,17 @@ static int r_read (rset_control *ct, void *buf)
     return 1;
 }
 
-static int r_write (rset_control *ct, const void *buf)
+static int r_write (RSFD rfd, const void *buf)
 {
-    struct rset_temp_private *info = ct->buf;
+    struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
+
     size_t nc = info->pos_cur + info->key_size;
 
     if (nc > info->pos_buf + info->buf_size)
     {
-        r_flush (ct, 1);
+        r_flush (rfd, 1);
         info->pos_buf = info->pos_cur;
-        r_reread (ct);
+        r_reread (rfd);
     }
     memcpy (info->buf_mem + (info->pos_cur - info->pos_buf), buf,
             info->key_size);

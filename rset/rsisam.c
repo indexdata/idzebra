@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.8  1995-09-06 16:11:56  adam
+ * Revision 1.9  1995-09-07 13:58:43  adam
+ * New parameter: result-set file descriptor (RSFD) to support multiple
+ * positions within the same result-set.
+ * Boolean operators: and, or, not implemented.
+ *
+ * Revision 1.8  1995/09/06  16:11:56  adam
  * More work on boolean sets.
  *
  * Revision 1.7  1995/09/06  10:35:44  adam
@@ -28,17 +33,18 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 #include <rsisam.h>
 #include <alexutil.h>
 
 static rset_control *r_create(const struct rset_control *sel, void *parms);
-static int r_open (rset_control *ct, int wflag);
-static void r_close (rset_control *ct);
+static RSFD r_open (rset_control *ct, int wflag);
+static void r_close (RSFD rfd);
 static void r_delete (rset_control *ct);
-static void r_rewind (rset_control *ct);
+static void r_rewind (RSFD rfd);
 static int r_count (rset_control *ct);
-static int r_read (rset_control *ct, void *buf);
-static int r_write (rset_control *ct, const void *buf);
+static int r_read (RSFD rfd, void *buf);
+static int r_write (RSFD rfd, const void *buf);
 
 static const rset_control control = 
 {
@@ -56,47 +62,87 @@ static const rset_control control =
 
 const rset_control *rset_kind_isam = &control;
 
+struct rset_ispt_info {
+    ISPT   pt;
+    struct rset_ispt_info *next;
+    struct rset_isam_info *info;
+};
+
+struct rset_isam_info {
+    ISAM   is;
+    ISAM_P pos;
+    struct rset_ispt_info *ispt_list;
+};
+
 static rset_control *r_create(const struct rset_control *sel, void *parms)
 {
     rset_control *newct;
     rset_isam_parms *pt = parms;
+    struct rset_isam_info *info;
 
     logf (LOG_DEBUG, "rsisam_create(%s)", sel->desc);
     newct = xmalloc(sizeof(*newct));
     memcpy(newct, sel, sizeof(*sel));
-    if (!(newct->buf = (char*) is_position(pt->is, pt->pos)))
+
+    if (!(newct->buf = xmalloc (sizeof(struct rset_isam_info))))
     	return 0;
+    info = newct->buf;
+    info->is = pt->is;
+    info->pos = pt->pos;
+    info->ispt_list = NULL;
     return newct;
 }
 
-static int r_open(rset_control *ct, int wflag)
+RSFD r_open (rset_control *ct, int wflag)
 {
+    struct rset_isam_info *info = ct->buf;
+    struct rset_ispt_info *ptinfo;
+
     logf (LOG_DEBUG, "risam_open");
     if (wflag)
     {
 	logf (LOG_FATAL, "ISAM set type is read-only");
-	return -1;
+	return NULL;
     }
-    r_rewind(ct);
-    return 0;
+    ptinfo = xmalloc (sizeof(*ptinfo));
+    ptinfo->next = info->ispt_list;
+    info->ispt_list = ptinfo;
+    ptinfo->pt = is_position (info->is, info->pos);
+    ptinfo->info = info;
+    return ptinfo;
 }
 
-static void r_close(rset_control *ct)
+static void r_close (RSFD rfd)
 {
-    /* NOP */
+    struct rset_isam_info *info = ((struct rset_ispt_info*) rfd)->info;
+    struct rset_ispt_info **ptinfop;
+
+    for (ptinfop = &info->ispt_list; *ptinfop; ptinfop = &(*ptinfop)->next)
+        if (*ptinfop == rfd)
+        {
+            is_pt_free ((*ptinfop)->pt);
+            *ptinfop = (*ptinfop)->next;
+            free (rfd);
+            return;
+        }
+    logf (LOG_FATAL, "r_close but no rfd match!");
+    assert (0);
 }
 
-static void r_delete(rset_control *ct)
+static void r_delete (rset_control *ct)
 {
+    struct rset_isam_info *info = ct->buf;
+
     logf (LOG_DEBUG, "rsisam_delete");
-    is_pt_free((ISPT) ct->buf);
-    xfree(ct);
+    assert (info->ispt_list == NULL);
+    xfree (info);
+    xfree (ct);
 }
 
-static void r_rewind(rset_control *ct)
-{
+static void r_rewind (RSFD rfd)
+{   
     logf (LOG_DEBUG, "rsisam_rewind");
-    is_rewind((ISPT) ct->buf);
+    is_rewind( ((struct rset_ispt_info*) rfd)->pt);
 }
 
 static int r_count (rset_control *ct)
@@ -104,12 +150,12 @@ static int r_count (rset_control *ct)
     return 0;
 }
 
-static int r_read (rset_control *ct, void *buf)
+static int r_read (RSFD rfd, void *buf)
 {
-    return is_readkey((ISPT) ct->buf, buf);
+    return is_readkey( ((struct rset_ispt_info*) rfd)->pt, buf);
 }
 
-static int r_write (rset_control *ct, const void *buf)
+static int r_write (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "ISAM set type is read-only");
     return -1;

@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.1  1995-09-06 10:35:44  adam
+ * Revision 1.2  1995-09-07 13:58:43  adam
+ * New parameter: result-set file descriptor (RSFD) to support multiple
+ * positions within the same result-set.
+ * Boolean operators: and, or, not implemented.
+ *
+ * Revision 1.1  1995/09/06  10:35:44  adam
  * Null set implemented.
  *
  */
@@ -14,13 +19,13 @@
 #include <alexutil.h>
 
 static rset_control *r_create(const struct rset_control *sel, void *parms);
-static int r_open (rset_control *ct, int wflag);
-static void r_close (rset_control *ct);
+static RSFD r_open (rset_control *ct, int wflag);
+static void r_close (RSFD rfd);
 static void r_delete (rset_control *ct);
-static void r_rewind (rset_control *ct);
+static void r_rewind (RSFD rfd);
 static int r_count (rset_control *ct);
-static int r_read (rset_control *ct, void *buf);
-static int r_write (rset_control *ct, const void *buf);
+static int r_read (RSFD rfd, void *buf);
+static int r_write (RSFD rfd, const void *buf);
 
 static const rset_control control = 
 {
@@ -48,27 +53,26 @@ static rset_control *r_create(const struct rset_control *sel, void *parms)
     return newct;
 }
 
-static int r_open(rset_control *ct, int wflag)
+static RSFD r_open (rset_control *ct, int wflag)
 {
     if (wflag)
     {
 	logf (LOG_FATAL, "NULL set type is read-only");
-	return -1;
+	return NULL;
     }
-    return 0;
+    return "";
 }
 
-static void r_close(rset_control *ct)
+static void r_close (RSFD rfd)
 {
-    /* NOP */
 }
 
-static void r_delete(rset_control *ct)
+static void r_delete (rset_control *ct)
 {
     xfree(ct);
 }
 
-static void r_rewind(rset_control *ct)
+static void r_rewind (RSFD rfd)
 {
     logf (LOG_DEBUG, "rsnull_rewind");
 }
@@ -78,12 +82,12 @@ static int r_count (rset_control *ct)
     return 0;
 }
 
-static int r_read (rset_control *ct, void *buf)
+static int r_read (RSFD rfd, void *buf)
 {
     return 0;
 }
 
-static int r_write (rset_control *ct, const void *buf)
+static int r_write (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "NULL set type is read-only");
     return -1;
