@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.3  1994-11-22 13:15:27  quinn
+ * Revision 1.4  1995-09-04 09:09:52  adam
+ * String arg in dict lookup is const.
+ * Minor changes.
+ *
+ * Revision 1.3  1994/11/22  13:15:27  quinn
  * Simple
  *
  * Revision 1.2  1994/11/04  13:21:21  quinn
@@ -54,10 +58,10 @@ void rset_delete(RSET rs);
 /* int rset_count(RSET rs); */
 #define rset_count(rs, wflag) ((*(rs)->control->f_count)((rs)->control))
 
-/* int rset_read(RSET rs, void *buf); */   /* change parameters */
+/* int rset_read(RSET rs, void *buf); */
 #define rset_read(rs, buf) ((*(rs)->control->f_read)((rs)->control, (buf)))
 
-
-int rset_write(RSET rs, void *buf);  /* change parameters */
+/* int rset_write(RSET rs, const void *buf); */
+#define rset_write(rs, buf) ((*(rs)->control->f_write)((rs)->control, (buf)))
 
 #endif

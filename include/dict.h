@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.10  1994-10-05 12:16:58  adam
+ * Revision 1.11  1995-09-04 09:09:51  adam
+ * String arg in dict lookup is const.
+ * Minor changes.
+ *
+ * Revision 1.10  1994/10/05  12:16:58  adam
  * Pagesize is a resource now.
  *
  * Revision 1.9  1994/10/04  12:08:19  adam
@@ -101,7 +105,7 @@ Dict       dict_open (const char *name, int cache, int rw);
 int        dict_close (Dict dict);
 int        dict_insert (Dict dict, const Dict_char *p, int userlen,
                         void *userinfo);
-char      *dict_lookup (Dict dict, Dict_char *p);
+char      *dict_lookup (Dict dict, const Dict_char *p);
 int        dict_lookup_ec (Dict dict, Dict_char *p, int range,
                            int (*f)(Dict_char *name));
 int        dict_lookup_grep (Dict dict, Dict_char *p, int range, 
