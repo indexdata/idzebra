@@ -1,3 +1,8 @@
+New settings, memMax and keyTmpDir.
+
+Changed name of setting lockDir (previously called lockPath) and
+setTmpDir (previously called tempSetPath).
+
 Generalized and changed record type specifications. In short, there are:
        text                plain SUTRS
        grs.sgml            structured, "SGML-like" syntax
