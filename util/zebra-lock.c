@@ -1,10 +1,17 @@
 
 #include <assert.h>
+#include <stdio.h>
 
 #include <zebra-lock.h>
 
+
 int zebra_mutex_init (Zebra_mutex *p)
 {
+    if (p->state == 1)
+    {
+        fprintf (stderr, "zebra_mutex_init. state=%d\n", p->state);
+    }
+    p->state = 1;
 #if HAVE_PTHREAD_H
     pthread_mutex_init (&p->mutex, 0);
 #endif
@@ -16,6 +23,11 @@ int zebra_mutex_init (Zebra_mutex *p)
 
 int zebra_mutex_destroy (Zebra_mutex *p)
 {
+    --(p->state);
+    if (p->state != 0)
+    {
+        fprintf (stderr, "zebra_mutex_destroy. state = %d\n", p->state);
+    } 
 #if HAVE_PTHREAD_H
     pthread_mutex_destroy (&p->mutex);
 #endif
@@ -27,6 +39,10 @@ int zebra_mutex_destroy (Zebra_mutex *p)
 
 int zebra_mutex_lock (Zebra_mutex *p)
 {
+    if (p->state != 1)
+    {
+        fprintf (stderr, "zebra_mutex_lock. state = %d\n", p->state);
+    }
 #if HAVE_PTHREAD_H
     pthread_mutex_lock (&p->mutex);
 #endif
@@ -38,6 +54,10 @@ int zebra_mutex_lock (Zebra_mutex *p)
 
 int zebra_mutex_unlock (Zebra_mutex *p)
 {
+    if (p->state != 1)
+    {
+        fprintf (stderr, "zebra_mutex_unlock. state = %d\n", p->state);
+    }
 #if HAVE_PTHREAD_H
     pthread_mutex_unlock (&p->mutex);
 #endif

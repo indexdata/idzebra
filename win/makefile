@@ -1,11 +1,11 @@
 # Z'mbol makefile for MS NMAKE
-# $Id: makefile,v 1.4 2000-04-19 14:35:59 adam Exp $
+# $Id: makefile,v 1.5 2000-05-05 13:48:03 adam Exp $
  
 ###########################################################
 ############### Parameters 
 ###########################################################
 
-DEBUG=0   # 0 for release, 1 for debug
+DEBUG=1   # 0 for release, 1 for debug
 
 default: all
 
@@ -392,7 +392,10 @@ $(ALL_OBJS): makefile
 ###########################################################
 #
 # $Log: makefile,v $
-# Revision 1.4  2000-04-19 14:35:59  adam
+# Revision 1.5  2000-05-05 13:48:03  adam
+# Fixed locking for metafiles.
+#
+# Revision 1.4  2000/04/19 14:35:59  adam
 # WIN32 update (this version is known not to work on Windows).
 #
 # Revision 1.3  2000/04/17 14:22:00  adam

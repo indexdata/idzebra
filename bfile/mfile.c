@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.38  2000-03-20 19:08:35  adam
+ * Revision 1.39  2000-05-05 13:48:03  adam
+ * Fixed locking for metafiles.
+ *
+ * Revision 1.38  2000/03/20 19:08:35  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -324,6 +327,7 @@ MFile_area mf_init(const char *name, const char *spec)
 	    if (!meta_f)
 	    {
 	    	meta_f = (meta_file *) xmalloc(sizeof(*meta_f));
+        	zebra_mutex_init (&meta_f->mutex);
 	    	meta_f->ma = ma;
 	    	meta_f->next = ma->mfiles;
 	    	meta_f->open = 0;

@@ -23,6 +23,7 @@ typedef struct {
     int dummy;
 # endif
 #endif
+    int state;
 } Zebra_mutex;
 
 YAZ_EXPORT int zebra_mutex_init (Zebra_mutex *p);
