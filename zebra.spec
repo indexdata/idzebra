@@ -35,6 +35,6 @@ cd doc; make prefix=$RPM_BUILD_ROOT/usr install
 %defattr(-,root,root)
 %doc README LICENSE.zebra CHANGELOG 
 %config /usr/share/zebra/tab
-/usr/bin/zebrsrv
+/usr/bin/zebrasrv
 /usr/bin/zebraidx
 /usr/share/zebra/doc
