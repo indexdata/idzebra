@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.2 2002-11-15 22:01:42 adam Exp $
+/* $Id: perlread.c,v 1.3 2002-11-16 00:24:36 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -21,7 +21,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 #if HAVE_PERL
-#define PERL_IMPLICIT_CONTEXT     
 #include "perlread.h"
 #include "EXTERN.h"
 #include "perl.h"
