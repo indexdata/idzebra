@@ -1,4 +1,4 @@
-/* $Id: dir.c,v 1.24 2002-09-03 11:44:54 adam Exp $
+/* $Id: dir.c,v 1.25 2002-09-03 12:22:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -38,9 +38,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 int zebra_file_stat (const char *file_name, struct stat *buf,
                      int follow_links)
 {
-    if (follow_links)
-        return stat(file_name, buf);
-    return lstat(file_name, buf);
+#ifndef WIN32
+    if (!follow_links)
+        return lstat(file_name, buf);
+#endif
+    return stat(file_name, buf);
 }
 
 struct dir_entry *dir_open (const char *rep, const char *base,
