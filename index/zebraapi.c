@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.81 2003-01-15 07:26:40 oleg Exp $
+/* $Id: zebraapi.c,v 1.82 2003-02-11 14:01:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -834,17 +834,23 @@ int zebra_deleleResultSet(ZebraHandle zh, int function,
 
 int zebra_errCode (ZebraHandle zh)
 {
-    return zh->errCode;
+    if (zh)
+        return zh->errCode;
+    return 0; /* is this the right thing to return ?*/
 }
 
 const char *zebra_errString (ZebraHandle zh)
 {
-    return diagbib1_str (zh->errCode);
+    if (zh)
+        return diagbib1_str (zh->errCode);
+    return "";
 }
 
 char *zebra_errAdd (ZebraHandle zh)
 {
-    return zh->errString;
+    if (zh)
+        return zh->errString;
+    return "";
 }
 
 int zebra_auth (ZebraHandle zh, const char *user, const char *pass)

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.23 2003-01-15 07:26:40 oleg Exp $
+/* $Id: zebraapi.h,v 1.24 2003-02-11 14:01:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -74,8 +74,44 @@ typedef struct {
 typedef struct zebra_session *ZebraHandle;
 typedef struct zebra_service *ZebraService;
 
-/* Open Zebra using file 'configName' (usually zebra.cfg) */
+
+/******
+ * Starting and stopping 
+ */
+
+/* Start Zebra using file 'configName' (usually zebra.cfg) */
+/* There should be exactly one ZebraService */
+YAZ_EXPORT ZebraService zebra_start (const char *configName);
+
+/* Close the whole Zebra */
+YAZ_EXPORT void zebra_stop (ZebraService zs);
+
+
+/* Open a ZebraHandle */
+/* There should be one handle for each thred doing something */
+/* with zebra, be that searching or indexing. In simple apps */
+/* one handle is sufficient */
 YAZ_EXPORT ZebraHandle zebra_open (ZebraService zs);
+
+/* Close handle */
+YAZ_EXPORT void zebra_close (ZebraHandle zh);
+
+/*********
+ * Error handling 
+ */
+
+/* last error code */
+YAZ_EXPORT int zebra_errCode (ZebraHandle zh);
+
+/* string representatio of above */
+YAZ_EXPORT const char *zebra_errString (ZebraHandle zh);
+
+/* extra information associated with error */
+YAZ_EXPORT char *zebra_errAdd (ZebraHandle zh);
+
+/**************
+ * Searching 
+ */
 
 /* Search using RPN-Query */
 YAZ_EXPORT void zebra_search_rpn (ZebraHandle zh, ODR input, ODR output,
@@ -88,6 +124,12 @@ YAZ_EXPORT void zebra_records_retrieve (ZebraHandle zh, ODR stream,
 		       oid_value input_format,
 		       int num_recs, ZebraRetrievalRecord *recs);
 
+/* Delete Result Set(s) */
+YAZ_EXPORT int zebra_deleleResultSet(ZebraHandle zh, int function,
+				     int num_setnames, char **setnames,
+				     int *statuses);
+
+
 /* Browse */
 YAZ_EXPORT void zebra_scan (ZebraHandle zh, ODR stream,
 			    Z_AttributesPlusTerm *zapt,
@@ -95,23 +137,13 @@ YAZ_EXPORT void zebra_scan (ZebraHandle zh, ODR stream,
 			    int *position, int *num_entries,
 			    ZebraScanEntry **list,
 			    int *is_partial);
-    
-/* Delete Result Set(s) */
-YAZ_EXPORT int zebra_deleleResultSet(ZebraHandle zh, int function,
-				     int num_setnames, char **setnames,
-				     int *statuses);
 
-/* Close zebra and destroy handle */
-YAZ_EXPORT void zebra_close (ZebraHandle zh);
-
-/* last error code */
-YAZ_EXPORT int zebra_errCode (ZebraHandle zh);
-/* string representatio of above */
-YAZ_EXPORT const char *zebra_errString (ZebraHandle zh);
-
-/* extra information associated with error */
-YAZ_EXPORT char *zebra_errAdd (ZebraHandle zh);
-
+   
+          
+/*********
+ * Other 
+ */
+                      
 /* do authentication */
 YAZ_EXPORT int zebra_auth (ZebraHandle zh, const char *user, const char *pass);
 
@@ -121,10 +153,13 @@ YAZ_EXPORT int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
 				  const char *input_str, int input_len,
 				  char *output_str, int output_len);
 
+
+/******
+ * Admin 
+ */                   
+          
 YAZ_EXPORT void zebra_admin_create (ZebraHandle zh, const char *db);
 
-YAZ_EXPORT ZebraService zebra_start (const char *configName);
-YAZ_EXPORT void zebra_stop (ZebraService zs);
 
 YAZ_EXPORT void zebra_admin_shutdown (ZebraHandle zh);
 YAZ_EXPORT void zebra_admin_start (ZebraHandle zh);

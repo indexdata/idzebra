@@ -7,7 +7,7 @@
  
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> 
 #include <ctype.h>
 
 #if HAVE_READLINE_READLINE_H
@@ -212,6 +212,44 @@ static int cmd_logf( char *args[], char *outbuff)
   return 0; /* ok */
 }
  
+/****************
+ * Error handling 
+ */
+static int cmd_err ( char *args[], char *outbuff)
+{
+  char tmp[MAX_OUT_BUFF];
+  sprintf(tmp, "errCode: %d \nerrStr:  %s\nerrAdd:  %s \n",
+    zebra_errCode (zh),
+    zebra_errString (zh),  
+    zebra_errAdd (zh) );
+  strcat(outbuff, tmp);
+  return 0; /* ok */
+}
+static int cmd_errcode ( char *args[], char *outbuff)
+{
+  char tmp[MAX_OUT_BUFF];
+  sprintf(tmp, "errCode: %d ",
+    zebra_errCode (zh));
+  strcat(outbuff, tmp);
+  return 0; /* ok */
+}
+static int cmd_errstr ( char *args[], char *outbuff)
+{
+  char tmp[MAX_OUT_BUFF];
+  sprintf(tmp, "errStr:  %s",
+    zebra_errString (zh));
+  strcat(outbuff, tmp);
+  return 0; /* ok */
+}
+static int cmd_erradd ( char *args[], char *outbuff)
+{
+  char tmp[MAX_OUT_BUFF];
+  sprintf(tmp, "errAdd:  %s \n",
+    zebra_errAdd (zh) ); 
+  strcat(outbuff, tmp);
+  return 0; /* ok */
+}
+
  
 /**************************************
  * Command table, parser, and help 
@@ -268,6 +306,20 @@ struct cmdstruct cmds[] = {
     "[level] text...",
     "writes an entry in the log",
     cmd_logf},    
+
+  { "", "Error handling:","", 0},
+  { "err",  "",
+    "Displays zebra's error status (code, str, add)",
+    cmd_err},    
+  { "errcode",  "",
+    "Displays zebra's error code",
+    cmd_errcode},    
+  { "errstr",  "",
+    "Displays zebra's error string",
+    cmd_errstr},    
+  { "erradd",  "",
+    "Displays zebra's additional error message",
+    cmd_erradd},    
   
   { "", "Misc:","", 0}, 
   { "echo", "string", 
@@ -290,6 +342,7 @@ int onecommand( char *line, char *outbuff)
   char *args[MAX_NO_ARGS];
   int n;
   char argbuf[MAX_ARG_LEN];
+  int rc;
   strncpy(argbuf,line, MAX_ARG_LEN-1);
   argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
   n=split_args(argbuf, args);
@@ -360,9 +413,26 @@ int onecommand( char *line, char *outbuff)
     strcat(outbuff,tmp);
   }
   return 0;
- }
+}
  
- 
+/* If Zebra reports an error after an operation,
+ * append it to the outbuff */
+static void Zerrors ( char *outbuff)
+{
+  int ec;
+  char tmp[MAX_OUT_BUFF];
+  if (!zh)
+    return ;
+  ec=zebra_errCode (zh);
+  if (ec)
+  {
+    sprintf(tmp, "Zebra error %d: %s, (%s) \n",
+      ec, zebra_errString (zh),
+      zebra_errAdd (zh) );
+    strcat(outbuff, tmp);
+  }
+}
+  
 /************************************** 
  * The shell
  */
@@ -397,6 +467,7 @@ void shell()
 #endif 
     outbuff[0]='\0';
     rc=onecommand(buf, outbuff);
+    Zerrors(outbuff);
   	printf("%s\n", outbuff);
   }
 
