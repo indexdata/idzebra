@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.3 2002-11-16 00:24:36 pop Exp $
+/* $Id: perlread.c,v 1.4 2002-11-18 13:11:30 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -169,12 +169,12 @@ void grs_perl_endf(struct perl_context *context, off_t offset) {
 }
 
 /* Get pointers from the context. Easyer to wrap this by SWIG */
-data1_handle grs_perl_get_dh(struct perl_context *context) {
-  return(context->dh);
+data1_handle *grs_perl_get_dh(struct perl_context *context) {
+  return(&context->dh);
 }
 
-NMEM grs_perl_get_mem(struct perl_context *context) {
-  return(context->mem);
+NMEM *grs_perl_get_mem(struct perl_context *context) {
+  return(&context->mem);
 }
 
 /* Set the result in the context */
