@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.7  1995-09-11 13:09:32  adam
+ * Revision 1.8  1995-09-14 07:48:22  adam
+ * Record control management.
+ *
+ * Revision 1.7  1995/09/11  13:09:32  adam
  * More work on relevance feedback.
  *
  * Revision 1.6  1995/09/08  14:52:27  adam
@@ -35,16 +38,17 @@
 #include <ctype.h>
 
 #include <alexutil.h>
+#include <rectext.h>
 #include "index.h"
-
-#define KEY_BUF_SIZE 100000
 
 static Dict file_idx;
 static SYSNO sysno_next;
 static int key_fd = -1;
 static int sys_idx_fd = -1;
 static char *key_buf;
-static int key_offset;
+static int key_offset, key_buf_size;
+static int key_cmd;
+static int key_sysno;
 
 void key_open (const char *fname)
 {
@@ -57,11 +61,8 @@ void key_open (const char *fname)
         exit (1);
     }
     logf (LOG_DEBUG, "key_open of %s", fname);
-    if (!(key_buf = malloc (KEY_BUF_SIZE)))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    key_buf_size = 49100;
+    key_buf = xmalloc (key_buf_size);
     key_offset = 0;
     if (!(file_idx = dict_open (FNAME_FILE_DICT, 40, 1)))
     {
@@ -92,11 +93,11 @@ int key_close (void)
     dict_insert (file_idx, ".", sizeof(sysno_next), &sysno_next);
     dict_close (file_idx);
     key_fd = -1;
-    logf (LOG_DEBUG, "key close - key file exist");
+    xfree (key_buf);
     return 1;
 }
 
-void key_flush (void)
+void wordFlush (int sysno)
 {
     size_t i = 0;
     int w;
@@ -116,88 +117,49 @@ void key_flush (void)
     key_offset = 0;
 }
 
-void key_write (int cmd, struct it_key *k, const char *str)
+static void wordInit (RecWord *p)
 {
-    char x;
-    size_t slen = strlen(str);
+    p->attrSet = 1;
+    p->attrUse = 1;
+    p->which = Word_String;
+}
 
-    if (key_offset + sizeof(*k) + slen >= KEY_BUF_SIZE - 2)
-        key_flush ();
-    x = (cmd == 'a') ? 1 : 0;
-    memcpy (key_buf + key_offset, str, slen+1);
-    key_offset += slen+1;
+static void wordAdd (const RecWord *p)
+{
+    struct it_key key;
+    char x;
+    size_t i;
+
+    if (key_offset + 1000 > key_buf_size)
+    {
+        char *new_key_buf;
+
+        key_buf_size *= 2;
+        new_key_buf = xmalloc (2*key_buf_size);
+        memcpy (new_key_buf, key_buf, key_offset);
+        xfree (key_buf);
+        key_buf = new_key_buf;
+    }
+    switch (p->which)
+    {
+    case Word_String:
+        for (i = 0; p->u.string[i]; i++)
+            key_buf[key_offset++] = index_char_cvt (p->u.string[i]);
+        key_buf[key_offset++] = '\0';
+        break;
+    default:
+        return ;
+    }
+    x = (key_cmd == 'a') ? 1 : 0;
     memcpy (key_buf + key_offset, &x, 1);
     key_offset++;
-    memcpy (key_buf + key_offset, k, sizeof(*k));
-    key_offset += sizeof(*k);
-}
 
-#if !IT_KEY_HAVE_SEQNO
-void key_write_x (struct strtab *t, int cmd, struct it_key *k, const char *str)
-{
-    void **oldinfo;
-
-    if (strtab_src (t, str, &oldinfo))
-        ((struct it_key *) *oldinfo)->freq++;
-    else
-    {
-        *oldinfo = xmalloc (sizeof(*k));
-        memcpy (*oldinfo, k, sizeof(*k));
-        ((struct it_key *) *oldinfo)->freq = 1;
-    }
-}
-#endif
-
-void key_rec_flush (const char *str, void *info, void *data)
-{
-    key_write (*((int*) data), (struct it_key *)info, str);
-    xfree (info);
-}
-
-void text_extract (struct strtab *t, SYSNO sysno, int cmd, const char *fname)
-{
-    FILE *inf;
-    struct it_key k;
-#if IT_KEY_HAVE_SEQNO
-    int seqno = 1;
-#endif
-    int c;
-    char w[IT_MAX_WORD];
-
-    logf (LOG_DEBUG, "Text extract of %d", sysno);
-    k.sysno = sysno;
-    inf = fopen (fname, "r");
-    if (!inf)
-    {
-        logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
-        return;
-    }
-    while ((c=getc (inf)) != EOF)
-    {
-        int i = 0;
-        while (i < IT_MAX_WORD-1 && c != EOF && isalnum(c))
-        {
-            w[i++] = index_char_cvt (c);
-            c = getc (inf);
-        }
-        if (i)
-        {
-            w[i] = 0;
-            
-#if IT_KEY_HAVE_FIELD
-            k.field = 0;
-#endif
-#if IT_KEY_HAVE_SEQNO
-            k.seqno = seqno++;
-            key_write (cmd, &k, w);
-#else
-            key_write_x (t, cmd, &k, w);
-#endif
-        }
-        if (c == EOF)
-            break;
-    }
-    fclose (inf);
+    key.sysno = key_sysno;
+    key.attrSet = p->attrSet;
+    key.attrUse = p->attrUse;
+    key.seqno   = p->seqno;
+    memcpy (key_buf + key_offset, &key, sizeof(key));
+    key_offset += sizeof(key);
 }
 
 void file_extract (int cmd, const char *fname, const char *kname)
@@ -208,7 +170,9 @@ void file_extract (int cmd, const char *fname, const char *kname)
     char ext_res[128];
     const char *file_type;
     void *file_info;
-    struct strtab *t;
+    FILE *inf;
+    struct recExtractCtrl extractCtrl;
+    RecType rt;
 
     logf (LOG_DEBUG, "%c %s k=%s", cmd, fname, kname);
     for (i = strlen(fname); --i >= 0; )
@@ -236,10 +200,25 @@ void file_extract (int cmd, const char *fname, const char *kname)
     }
     else
         memcpy (&sysno, (char*) file_info+1, sizeof(sysno));
-    t = strtab_mk ();
+
+    if (!(inf = fopen (fname, "r")))
+    {
+        logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
+        return;
+    }
     if (!strcmp (file_type, "text"))
-        text_extract (t, sysno, cmd, fname);
-    strtab_del (t, key_rec_flush, &cmd);
+        rt = recTypeText;
+    else
+        return;
+    extractCtrl.inf = inf;
+    extractCtrl.subType = "";
+    extractCtrl.init = wordInit;
+    extractCtrl.add = wordAdd;
+    key_sysno = sysno;
+    key_cmd = cmd;
+    (*rt->extract)(&extractCtrl);
+    fclose (inf);
+    wordFlush (sysno);
 }
 
 

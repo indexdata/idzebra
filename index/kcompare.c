@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.5  1995-09-11 13:09:34  adam
+ * Revision 1.6  1995-09-14 07:48:23  adam
+ * Record control management.
+ *
+ * Revision 1.5  1995/09/11  13:09:34  adam
  * More work on relevance feedback.
  *
  * Revision 1.4  1995/09/08  14:52:27  adam
@@ -39,11 +42,8 @@ void key_logdump (int logmask, const void *p)
     struct it_key key;
 
     memcpy (&key, p, sizeof(key));
-#if IT_KEY_HAVE_SEQNO
-    logf (logmask, "%7d s=%-3d", key.sysno, key.seqno);
-#else
-    logf (logmask, "%7d f=%-3d", key.sysno, key.freq);
-#endif
+    logf (logmask, "%7d s=%-4d f=%d,%d", key.sysno, key.seqno,
+             key.attrSet, key.attrUse);
 }
 
 int key_compare (const void *p1, const void *p2)
@@ -75,15 +75,20 @@ int key_compare (const void *p1, const void *p2)
             return -1;
     }
 #endif
-#if IT_KEY_HAVE_FIELD
-    if (i1.field != i2.field)
+    if (i1.attrSet != i2.attrSet)
     {
-        if (i1.field > i2.field)
+        if (i1.attrSet > i2.attrSet)
             return 1;
         else
             return -1;
     }
-#endif
+    if (i1.attrUse != i2.attrUse)
+    {
+        if (i1.attrUse > i2.attrUse)
+            return 1;
+        else
+            return -1;
+    }
     return 0;
 }
 

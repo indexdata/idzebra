@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.8  1995-09-06 16:11:18  adam
+ * Revision 1.9  1995-09-14 07:48:24  adam
+ * Record control management.
+ *
+ * Revision 1.8  1995/09/06  16:11:18  adam
  * Option: only one word key per file.
  *
  * Revision 1.7  1995/09/05  15:28:39  adam
@@ -108,7 +111,6 @@ int main (int argc, char **argv)
                  "base cmd1 dir1 cmd2 dir2 ...\n");
         exit (1);
     }
-    key_flush ();
     if (!key_close ())
         exit (0);
     logf (LOG_LOG, "Sorting");

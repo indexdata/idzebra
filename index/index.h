@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.9  1995-09-11 13:09:33  adam
+ * Revision 1.10  1995-09-14 07:48:23  adam
+ * Record control management.
+ *
+ * Revision 1.9  1995/09/11  13:09:33  adam
  * More work on relevance feedback.
  *
  * Revision 1.8  1995/09/08  14:52:27  adam
@@ -45,14 +48,9 @@
 
 struct it_key {
     int sysno;
-#if IT_KEY_HAVE_SEQNO
     int seqno;
-#else
-    int freq;
-#endif
-#if IT_KEY_HAVE_FIELD
-    int field;
-#endif
+    unsigned attrSet : 3;
+    unsigned attrUse : 13;
 };
 
 struct dir_entry {
@@ -68,7 +66,6 @@ void file_extract (int cmd, const char *fname, const char *kname);
 
 void key_open (const char *fname);
 int key_close (void);
-void key_flush (void);
 void key_write (int cmd, struct it_key *k, const char *str);
 int key_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
