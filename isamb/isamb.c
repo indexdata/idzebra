@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.19 2002-08-02 19:26:56 adam Exp $
+/* $Id: isamb.c,v 1.20 2002-09-03 13:21:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -785,7 +785,7 @@ int isamb_block_info (ISAMB isamb, int cat)
 
 void isamb_pp_close (ISAMB_PP pp)
 {
-    return isamb_pp_close_x (pp, 0, 0);
+    isamb_pp_close_x (pp, 0, 0);
 }
 
 int isamb_pp_read (ISAMB_PP pp, void *buf)
