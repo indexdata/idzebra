@@ -8,3 +8,6 @@ shadow
 reg
 socket
 zebrasrv.pid
+.libs
+.deps
+charmap[0-9]

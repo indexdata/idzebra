@@ -1,0 +1,9 @@
+*.mf
+*.LCK
+*.in
+zebrasrv.pid
+Makefile
+tmp?
+*.log
+.libs
+.deps
