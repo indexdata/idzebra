@@ -1,6 +1,12 @@
+idzebra (1.3.11-4) unstable; urgency=low
+
+  * Write PID file in lockdir.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Thu, 21 Aug 2003 12:30:22 +0200
+
 idzebra (1.3.11-3) unstable; urgency=low
 
-  * png files part of documentaiton.
+  * png files part of documentation.
 
  -- Adam Dickmeiss <adam@indexdata.dk>  Wed,  7 May 2003 16:07:30 +0100
 
