@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.29  1995-10-13 16:01:49  adam
+ * Revision 1.30  1995-10-16 09:32:38  adam
+ * More work on relational op.
+ *
+ * Revision 1.29  1995/10/13  16:01:49  adam
  * Work on relations.
  *
  * Revision 1.28  1995/10/13  12:26:43  adam
@@ -415,12 +418,14 @@ static RSET rset_trunc_r (ISAM isam, ISAM_P *isam_p, int from, int to,
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
 #if 0
+/* section that preserve all keys */
             heap_delete (ti);
             if (is_readkey (ispt[n], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, n);
             else
                 is_pt_free (ispt[n]);
 #else
+/* section that preserve all keys with unique sysnos */
             while (1)
             {
                 if (!is_readkey (ispt[n], ti->tmpbuf))
@@ -501,25 +506,38 @@ static int grep_handle (Dict_char *name, const char *info, void *p)
 
 static void gen_regular_ge (char *dst, int val)
 {
-    int dst_p = 0;
-    int w = 1;
-    int d;
+    int dst_p = 1;
+    int w, d, i;
     int pos = 0;
-    int i;
+    char numstr[20];
 
+    *dst = '(';
     if (val < 0) 
         val = 0;
-    while ((d=(val % (w*10))/w))
+    sprintf (numstr, "%d", val);
+    for (w = strlen(numstr); --w >= 0; pos++)
     {
-        sprintf (dst + dst_p, "%d", val);
-
+        d = numstr[w];
+        if (pos > 0)
+        {
+            if (d == '9')
+                continue;
+            d++;
+        }
+        
+        strcpy (dst + dst_p, numstr);
         dst_p = strlen(dst) - pos - 1;
 
-        dst[dst_p++] = '[';
-        dst[dst_p++] = d +'1';
-        dst[dst_p++] = '-';
-        dst[dst_p++] = '9';
-        dst[dst_p++] = ']';
+        if (d <= '8')
+        { 
+            dst[dst_p++] = '[';
+            dst[dst_p++] = d;
+            dst[dst_p++] = '-';
+            dst[dst_p++] = '9';
+            dst[dst_p++] = ']';
+        }
+        else
+            dst[dst_p++] = d;
 
         for (i = 0; i<pos; i++)
         {
@@ -530,14 +548,11 @@ static void gen_regular_ge (char *dst, int val)
             dst[dst_p++] = ']';
         }
         dst[dst_p++] = '|';
-
-        w = w * 10;
-        pos++;
     }
     dst[dst_p] = '\0';
-    for (i = 0; i<pos; i++)
+    for (i = 0; i <= pos; i++)
         strcat (dst, "[0-9]");
-    strcat (dst, "[0-9]*");
+    strcat (dst, "[0-9]*)");
 }
 
 static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
@@ -545,7 +560,7 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                        oid_value attributeSet, struct grep_info *grep_info)
 {
     char term_dict[10*IT_MAX_WORD+2];
-    int i, j;
+    int i, j, r;
     const char *info;    
     AttrType truncation;
     int truncation_value;
@@ -582,14 +597,20 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         logf (LOG_LOG, "Relation ge");
         gen_regular_ge (term_dict + strlen(term_dict), atoi(term_sub));
         logf (LOG_LOG, "dict_lookup_grep: %s", term_dict);
-        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, grep_handle);
+        r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, 
+                              grep_handle);
+        if (r)
+            logf (LOG_WARN, "dict_lookup_grep fail, rel=ge: %d", r);
         logf (LOG_LOG, "%d positions", grep_info->isam_p_indx);
         return 0;
     case 5:
         logf (LOG_LOG, "Relation gt");
         gen_regular_ge (term_dict + strlen(term_dict), atoi(term_sub)+1);
         logf (LOG_LOG, "dict_lookup_grep: %s", term_dict);
-        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, grep_handle);
+        r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, 
+                              grep_handle);
+        if (r)
+            logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
         logf (LOG_LOG, "%d positions", grep_info->isam_p_indx);
         return 0;
     }
@@ -626,8 +647,14 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, grep_handle);
         break;
     case 102:        /* regular expression */
+        strcat (term_dict, "(");
         strcat (term_dict, term_sub);
-        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, grep_handle);
+        strcat (term_dict, ")");
+        logf (LOG_LOG, "dict_lookup_grep: %s", term_dict);
+        r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                              grep_handle);
+        if (r)
+            logf (LOG_WARN, "dict_lookup_grep fail, truncation=regular: %d", r);
         break;
     }
     logf (LOG_LOG, "%d positions", grep_info->isam_p_indx);

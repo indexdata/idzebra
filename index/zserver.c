@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.16  1995-10-13 12:26:44  adam
+ * Revision 1.17  1995-10-16 09:32:40  adam
+ * More work on relational op.
+ *
+ * Revision 1.16  1995/10/13  12:26:44  adam
  * Optimization of truncation.
  *
  * Revision 1.15  1995/10/12  12:40:55  adam
@@ -174,7 +177,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
     if ((retrieveCtrl.fd = open (fname, O_RDONLY)) == -1)
     {
-        const char *msg = "Record doesn't exist";
+        char *msg = "Record doesn't exist";
         logf (LOG_WARN|LOG_ERRNO, "Retrieve: Open record file %s", fname);
         *output_format = VAL_SUTRS;
         *rec_bufp = msg;
