@@ -1,4 +1,8 @@
 .deps
+.libs
 Makefile
 Makefile.in
 passtest
+idzebra-config
+*.lo
+*.la

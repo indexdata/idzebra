@@ -1,5 +1,8 @@
 .deps
+.libs
 Makefile
 Makefile.in
 perlread.h
 xsinit.h
+*.lo
+*.la

@@ -1,6 +1,9 @@
 .deps
+.libs
 Makefile
 Makefile.in
 agrep
 grepper
 lexer
+*.lo
+*.la

@@ -1,4 +1,5 @@
 .deps
+.libs
 Makefile
 Makefile.in
 apitest
@@ -7,3 +8,5 @@ kdump
 zebraidx
 zebrasrv
 zebrash
+*.lo
+*.la

@@ -1,5 +1,8 @@
 .deps
+.libs
 Makefile
 Makefile.in
 dictext
 dicttest
+*.lo
+*.la
