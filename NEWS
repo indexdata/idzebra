@@ -1,4 +1,8 @@
 
+--- 1.3.17 2004/08/17
+
+Add IDZebra.i to dist so that Perl extension builds again.
+
 --- 1.3.16 2004/08/16
 
 Added facility to make attibutes in grs.regx and grs.tcl filter using the
