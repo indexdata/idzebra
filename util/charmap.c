@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.5  1996-06-04 08:32:15  quinn
+ * Revision 1.6  1996-06-04 13:28:00  quinn
+ * More work on charmapping
+ *
+ * Revision 1.5  1996/06/04  08:32:15  quinn
  * Moved default keymap to keychars.c
  *
  * Revision 1.4  1996/06/03  16:32:13  quinn
@@ -29,11 +32,15 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <assert.h>
 
 #include <alexutil.h>
 #include <yaz-util.h>
 #include <charmap.h>
 #include <tpath.h>
+
+#define CHR_MAXSTR 1024
+#define CHR_MAXEQUIV 32
 
 const char *CHR_UNKNOWN = "\001";
 const char *CHR_SPACE   = "\002";
@@ -49,7 +56,16 @@ struct chr_t_entry
     chr_t_entry **children; /* array of children */
     unsigned char *target;  /* target for this node, if any */
     unsigned char *equiv;   /* equivalent to, or sumthin */
-} t_entry;
+};
+
+/*
+ * General argument structure for callback functions (internal use only)
+ */
+typedef struct chrwork 
+{
+    chrmaptab *map;
+    char string[CHR_MAXSTR+1];
+} chrwork;
 
 /*
  * Add an entry to the character map.
@@ -236,6 +252,32 @@ static void fun_addspace(char *s, void *data, int num)
     tab->input = set_map_string(tab->input, s, strlen(s), (char*) CHR_SPACE);
 }
 
+/*
+ * Create a string containing the mapped characters provided.
+ */
+static void fun_mkstring(char *s, void *data, int num)
+{
+    chrwork *arg = data;
+    char **res, *p = s;
+
+    res = chr_map_input(arg->map->input, &s, strlen(s));
+    if (*res == (char*) CHR_UNKNOWN)
+	logf(LOG_WARN, "Map: '%s' has no mapping", p);
+    strncat(arg->string, *res, CHR_MAXSTR - strlen(arg->string));
+    arg->string[CHR_MAXSTR] = '\0';
+}
+
+/*
+ * Add a map to the string contained in the argument.
+ */
+static void fun_addmap(char *s, void *data, int num)
+{
+    chrwork *arg = data;
+
+    assert(arg->map->input);
+    set_map_string(arg->map->input, s, strlen(s), arg->string);
+}
+
 static int scan_string(char *s, void (*fun)(char *c, void *data, int num),
     void *data, int *num)
 {
@@ -377,9 +419,34 @@ chrmaptab *chr_read_maptab(char *name)
 		fclose(f);
 		return 0;
 	    }
-	    if (scan_string(argv[1], fun_addspace, res, 0))
+	    if (scan_string(argv[1], fun_addspace, res, 0) < 0)
 	    {
 		logf(LOG_FATAL, "Bad space specification");
+		fclose(f);
+		return 0;
+	    }
+	}
+	else if (!yaz_matchstr(argv[0], "map"))
+	{
+	    chrwork buf;
+
+	    if (argc != 3)
+	    {
+		logf(LOG_FATAL, "charmap MAP directive requires 2 args");
+		fclose(f);
+		return 0;
+	    }
+	    buf.map = res;
+	    buf.string[0] = '\0';
+	    if (scan_string(argv[2], fun_mkstring, &buf, 0) < 0)
+	    {
+		logf(LOG_FATAL, "Bad map target");
+		fclose(f);
+		return 0;
+	    }
+	    if (scan_string(argv[1], fun_addmap, &buf, 0) < 0)
+	    {
+		logf(LOG_FATAL, "Bad map source");
 		fclose(f);
 		return 0;
 	    }
