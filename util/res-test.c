@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res-test.c,v $
- * Revision 1.5  1995-09-04 12:34:05  adam
+ * Revision 1.6  1996-10-29 13:48:16  adam
+ * Updated to use zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.5  1995/09/04 12:34:05  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.4  1994/10/04  17:47:11  adam
@@ -22,7 +25,8 @@
  */
 
 #include <stdio.h>
-#include <alexutil.h>
+
+#include <zebrautl.h>
 
 static void res_print (const char *name, const char *value)
 {

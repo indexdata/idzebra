@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.8  1996-10-18 12:39:23  adam
+ * Revision 1.9  1996-10-29 13:48:14  adam
+ * Updated to use zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.8  1996/10/18 12:39:23  adam
  * Uses LOG_DEBUG instead of LOG_WARN for "Character map overlap".
  *
  * Revision 1.7  1996/06/06  12:08:56  quinn
@@ -40,7 +43,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <yaz-util.h>
 #include <charmap.h>
 #include <tpath.h>
