@@ -1,4 +1,4 @@
-/* $Id: d1_write.c,v 1.4 2004-09-28 10:15:03 adam Exp $
+/* $Id: d1_write.c,v 1.5 2004-10-20 10:36:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -47,40 +47,6 @@ static void indent (WRBUF b, int col)
         wrbuf_putc (b, ' ');
 }
 
-static void wrbuf_write_cdata(WRBUF b, const char *msg, int len)
-{
-    int i;
-
-    for (i = 0; i < len; i++)
-    {
-        switch (msg[i])
-        {
-        case '"':
-            wrbuf_puts (b, "&quot;");
-            break;
-        case '\'':
-            wrbuf_puts (b, "&apos;");
-            break;
-        case '>':
-            wrbuf_puts (b, "&gt;");
-            break;
-        case '<':
-            wrbuf_puts (b, "&lt;");
-            break;
-        case '&':
-            wrbuf_puts (b, "&amp;");
-            break;
-        default:
-            wrbuf_putc(b, msg[i]);
-        }
-    }
-}
-
-static void wrbuf_put_cdata(WRBUF b, const char *msg)
-{
-    wrbuf_write_cdata (b, msg, strlen(msg));
-}
-
 static void wrbuf_put_xattr(WRBUF b, data1_xattr *p)
 {
     for (; p; p = p->next)
@@ -89,13 +55,13 @@ static void wrbuf_put_xattr(WRBUF b, data1_xattr *p)
         if (p->what == DATA1I_xmltext)
             wrbuf_puts (b, p->name);
         else
-            wrbuf_put_cdata (b, p->name);
+            wrbuf_xmlputs (b, p->name);
         if (p->value)
         {
             wrbuf_putc (b, '=');
             wrbuf_putc (b, '"');
             if (p->what == DATA1I_text)
-                wrbuf_put_cdata (b, p->value);
+                wrbuf_xmlputs (b, p->value);
             else
                 wrbuf_puts (b, p->value);
             wrbuf_putc (b, '"');
@@ -117,7 +83,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
             if (pretty_format)
                 indent (b, col);
 	    wrbuf_puts (b, "<?");
-            wrbuf_put_cdata (b, c->u.preprocess.target);
+            wrbuf_xmlputs (b, c->u.preprocess.target);
             wrbuf_put_xattr (b, c->u.preprocess.attributes);
             if (c->child)
                 wrbuf_puts(b, " ");
@@ -141,7 +107,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                 if (pretty_format)
                     indent (b, col);
 		wrbuf_puts (b, "<");	
-		wrbuf_put_cdata (b, tag);
+		wrbuf_xmlputs (b, tag);
                 wrbuf_put_xattr (b, c->u.tag.attributes);
 		wrbuf_puts(b, ">");
                 if (pretty_format)
@@ -152,7 +118,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                 if (pretty_format)
                     indent (b, col);
 		wrbuf_puts(b, "</");
-		wrbuf_put_cdata(b, tag);
+		wrbuf_xmlputs(b, tag);
 		wrbuf_puts(b, ">");
                 if (pretty_format)
                     wrbuf_puts (b, "\n");
@@ -177,7 +143,7 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
 	    case DATA1I_text:
                 if (!pretty_format || c->u.data.formatted_text)
                 {
-                    wrbuf_write_cdata (b, p, l);
+                    wrbuf_xmlputs_n (b, p, l);
                 }
                 else
                 {
@@ -216,12 +182,12 @@ static int nodetoidsgml(data1_node *n, int select, WRBUF b, int col,
                 }
 		break;
 	    case DATA1I_num:
-		wrbuf_write_cdata(b, c->u.data.data, c->u.data.len);
+		wrbuf_xmlputs_n(b, c->u.data.data, c->u.data.len);
                 if (pretty_format)
                     wrbuf_puts(b, "\n");
 		break;
 	    case DATA1I_oid:
-		wrbuf_write_cdata(b, c->u.data.data, c->u.data.len);
+		wrbuf_xmlputs_n(b, c->u.data.data, c->u.data.len);
                 if (pretty_format)
                     wrbuf_puts(b, "\n");
 	    }
