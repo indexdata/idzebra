@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.6 2004-06-08 13:27:48 marc Exp $
+/* $Id: zvrank.c,v 1.7 2004-06-13 18:44:57 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -660,9 +660,10 @@ static void *zv_create (ZebraHandle zh) {
     struct rank_class_info *ci = (struct rank_class_info *)
         xmalloc (sizeof(*ci));
     yaz_log(LOG_DEBUG, "zv_create");
-    wscheme=res_get(res, "zvrank.weighting-scheme");
-    for (i=0; (i < strlen(wscheme)) && (i < 8); i++) 
+    wscheme=res_get_def(res, "zvrank.weighting-scheme", "");
+    for (i=0; wscheme[i] && i < 8; i++) 
         ci->rscheme[i]=wscheme[i];
+    ci->rscheme[i] = '\0';
     return ci;
 }
 
