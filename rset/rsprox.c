@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.3 2004-06-16 21:27:37 adam Exp $
+/* $Id: rsprox.c,v 1.4 2004-08-03 12:15:45 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -40,7 +40,7 @@ static void r_rewind (RSFD rfd);
 static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
-static int r_count (RSET ct);
+/* static int r_count (RSET ct); */
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
 
@@ -53,7 +53,7 @@ static const struct rset_control control_prox =
     r_delete,
     r_rewind,
     r_forward,
-    r_count,
+    /* r_count, */
     r_read,
     r_write,
 };
@@ -370,10 +370,12 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
     return 0;
 }
 
+/*
 static int r_count (RSET ct)
 {
     return 0;
 }
+*/
 
 static int r_read (RSFD rfd, void *buf, int *term_index)
 {

@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.140 2004-06-16 21:29:49 adam Exp $
+/* $Id: zrpn.c,v 1.141 2004-08-03 12:15:44 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1365,7 +1365,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
 {
     char term_dst[IT_MAX_WORD+1];
     RSET rset[60], result;
-    int i, rset_no = 0;
+    int  rset_no = 0;
     struct grep_info grep_info;
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;

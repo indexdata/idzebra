@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.21 2004-01-30 11:43:40 heikki Exp $
+/* $Id: rset.h,v 1.22 2004-08-03 12:15:44 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -46,7 +46,7 @@ struct rset_control
     int (*f_forward)(RSET ct, RSFD rfd, void *buf,  int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
-    int (*f_count)(RSET ct);
+/*    int (*f_count)(RSET ct); */ /* FIXME - remove this and add pos */
     int (*f_read)(RSFD rfd, void *buf, int *term_index);
     int (*f_write)(RSFD rfd, const void *buf);
 };
