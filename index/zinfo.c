@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.16  1999-05-26 07:49:13  adam
+ * Revision 1.17  1999-07-14 10:53:51  adam
+ * Updated various routines to handle missing explain schema.
+ *
+ * Revision 1.16  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.15  1999/01/25 13:47:54  adam
@@ -334,6 +337,8 @@ void zebraExplain_close (ZebraExplainInfo zei, int writeFlag,
     struct zebDatabaseInfoB *zdi;
     
     logf (LOG_DEBUG, "zebraExplain_close wr=%d", writeFlag);
+    if (!zei)
+	return;
     if (writeFlag)
     {
 	zebAccessObject o;
@@ -368,7 +373,6 @@ void zebraExplain_close (ZebraExplainInfo zei, int writeFlag,
 	
     }
     nmem_destroy (zei->nmem);
-    xfree (zei);
 }
 
 void zebraExplain_mergeOids (ZebraExplainInfo zei, data1_node *n,
@@ -448,15 +452,16 @@ ZebraExplainInfo zebraExplain_open (
     struct zebDatabaseInfoB **zdip;
     time_t our_time;
     struct tm *tm;
+    NMEM nmem = nmem_create ();
 
     logf (LOG_DEBUG, "zebraExplain_open wr=%d", writeFlag);
-    zei = (ZebraExplainInfo) xmalloc (sizeof(*zei));
+    zei = (ZebraExplainInfo) nmem_malloc (nmem, sizeof(*zei));
     zei->updateHandle = updateHandle;
     zei->updateFunc = updateFunc;
     zei->dirty = 0;
     zei->curDatabaseInfo = NULL;
     zei->records = records;
-    zei->nmem = nmem_create ();
+    zei->nmem = nmem;
     zei->dh = dh;
     zei->attsets = NULL;
     zei->res = res;
@@ -481,7 +486,12 @@ ZebraExplainInfo zebraExplain_open (
 	data1_node *node_tgtinfo, *node_zebra, *node_list, *np;
 
 	zei->data1_target = read_sgml_rec (zei->dh, zei->nmem, trec);
-
+	if (!zei->data1_target)
+	{
+	    rec_rm (&trec);
+	    nmem_destroy(zei->nmem);
+	    return 0;
+	}
 #if ZINFO_DEBUG
 	data1_pr_tree (zei->dh, zei->data1_target, stderr);
 #endif
@@ -561,6 +571,7 @@ ZebraExplainInfo zebraExplain_open (
         zei->ordinalSU = 1;
 	zei->runNumber = 0;
 
+	*zdip = NULL;
 	if (writeFlag)
 	{
 	    char *sgml_buf;
@@ -575,6 +586,11 @@ ZebraExplainInfo zebraExplain_open (
 				 "<nicknames><name>Zebra</></>\n"
 				 "</></>\n" );
 
+	    if (!zei->data1_target)
+	    {
+		nmem_destroy (zei->nmem);
+		return 0;
+	    }
 	    node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target->child,
 					    "targetInfo");
 	    assert (node_tgtinfo);
@@ -595,26 +611,31 @@ ZebraExplainInfo zebraExplain_open (
 	    trec->size[recInfo_storeData] = sgml_len;
 	    
 	    rec_put (records, &trec);
-	}
-	*zdip = NULL;
-	rec_rm (&trec);
-	zebraExplain_newDatabase (zei, "IR-Explain-1", 0);
+	    rec_rm (&trec);
 
+	}
+	zebraExplain_newDatabase (zei, "IR-Explain-1", 0);
+	    
 	if (!zei->categoryList->dirty)
 	{
 	    struct zebraCategoryListInfo *zcl = zei->categoryList;
 	    data1_node *node_cl;
-
+	    
 	    zcl->dirty = 1;
 	    zcl->data1_categoryList =
 		data1_read_sgml (zei->dh, zei->nmem,
 				 "<explain><categoryList>CategoryList\n"
-				 "/></>\n");
-	    node_cl = data1_search_tag (zei->dh,
-					zcl->data1_categoryList->child,
-					"categoryList");
-	    assert (node_cl);
-	    zebraExplain_initCommonInfo (zei, node_cl);
+				 "</></>\n");
+	
+	    if (zcl->data1_categoryList)
+	    {
+		assert (zcl->data1_categoryList->child);
+		node_cl = data1_search_tag (zei->dh,
+					    zcl->data1_categoryList->child,
+					    "categoryList");
+		assert (node_cl);
+		zebraExplain_initCommonInfo (zei, node_cl);
+	    }
 	}
     }
     return zei;
@@ -840,6 +861,8 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 	data1_read_sgml (zei->dh, zei->nmem, 
 			 "<explain><databaseInfo>DatabaseInfo\n"
 			 "</></>\n");
+    if (!zdi->data1_database)
+	return -2;
     
     node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database->child,
 				   "databaseInfo");
