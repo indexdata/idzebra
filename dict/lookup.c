@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookup.c,v $
- * Revision 1.4  1994-10-05 12:16:51  adam
+ * Revision 1.5  1995-09-04 09:09:15  adam
+ * String arg in lookup is const.
+ *
+ * Revision 1.4  1994/10/05  12:16:51  adam
  * Pagesize is a resource now.
  *
  * Revision 1.3  1994/09/26  10:17:25  adam
@@ -25,7 +28,7 @@
 
 #include <dict.h>
 
-static char *dict_look (Dict dict, Dict_char *str)
+static char *dict_look (Dict dict, const Dict_char *str)
 {
     Dict_ptr ptr = 1;
     int mid, lo, hi;
@@ -94,7 +97,7 @@ static char *dict_look (Dict dict, Dict_char *str)
     return NULL;
 }
 
-char *dict_lookup (Dict dict, Dict_char *p)
+char *dict_lookup (Dict dict, const Dict_char *p)
 {
     if (dict->head.last == 1)
         return NULL;
