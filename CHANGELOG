@@ -1,3 +1,5 @@
+Implemented "begin variant" for the sgml.regx - filter.
+
 Fixed a few memory leaks.
 
 Moved towards generic character mapping. Type w, p uses

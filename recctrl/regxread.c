@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.10  1997-10-31 12:36:12  adam
+ * Revision 1.11  1997-11-06 11:41:01  adam
+ * Implemented "begin variant" for the sgml.regx filter.
+ *
+ * Revision 1.10  1997/10/31 12:36:12  adam
  * Minor change that avoids compiler warning.
  *
  * Revision 1.9  1997/09/29 09:02:49  adam
@@ -663,6 +666,93 @@ static void execDataP (struct lexSpec *spec,
     execData (spec, d1_stack, d1_level, ebuf, elen, formatted_text);
 }
 
+static void variantBegin (struct lexSpec *spec, 
+			  data1_node **d1_stack, int *d1_level,
+			  const char *class_str, int class_len,
+			  const char *type_str, int type_len,
+			  const char *value_str, int value_len)
+{
+    struct data1_node *parent = d1_stack[*d1_level -1];
+    char tclass[DATA1_MAX_SYMBOL], ttype[DATA1_MAX_SYMBOL];
+    data1_vartype *tp;
+    int i;
+    data1_node *res;
+
+    if (*d1_level == 0)
+    {
+        logf (LOG_WARN, "in variant begin. No record type defined");
+        return ;
+    }
+    if (class_len >= DATA1_MAX_SYMBOL)
+	class_len = DATA1_MAX_SYMBOL-1;
+    memcpy (tclass, class_str, class_len);
+    tclass[class_len] = '\0';
+
+    if (type_len >= DATA1_MAX_SYMBOL)
+	type_len = DATA1_MAX_SYMBOL-1;
+    memcpy (ttype, type_str, type_len);
+    ttype[type_len] = '\0';
+
+#if REGX_DEBUG 
+    logf (LOG_DEBUG, "variant begin %s %s (%d)", tclass, ttype, *d1_level);
+#endif
+
+    if (!(tp =
+	  data1_getvartypebyct(spec->dh, parent->root->u.root.absyn->varset,
+			       tclass, ttype)))
+	return;
+    
+    if (parent->which != DATA1N_variant)
+    {
+	res = data1_mk_node (spec->dh, spec->m);
+	res->parent = parent;
+	res->which = DATA1N_variant;
+	res->u.variant.type = 0;
+	res->u.variant.value = 0;
+	res->root = parent->root;
+
+	parent->num_children++;
+	parent->last_child = res;
+	if (d1_stack[*d1_level])
+	    d1_stack[*d1_level]->next = res;
+	else
+	    parent->child = res;
+	d1_stack[*d1_level] = res;
+	d1_stack[++(*d1_level)] = NULL;
+    }
+    for (i = *d1_level-1; d1_stack[i]->which == DATA1N_variant; i--)
+	if (d1_stack[i]->u.variant.type == tp)
+	{
+	    *d1_level = i;
+	    break;
+	}
+
+#if REGX_DEBUG 
+    logf (LOG_DEBUG, "variant node (%d)", *d1_level);
+#endif
+    parent = d1_stack[*d1_level-1];
+    res = data1_mk_node (spec->dh, spec->m);
+    res->parent = parent;
+    res->which = DATA1N_variant;
+    res->root = parent->root;
+    res->u.variant.type = tp;
+
+    if (value_len >= DATA1_LOCALDATA)
+	value_len =DATA1_LOCALDATA-1;
+    memcpy (res->lbuf, value_str, value_len);
+    res->lbuf[value_len] = '\0';
+
+    res->u.variant.value = res->lbuf;
+    
+    parent->num_children++;
+    parent->last_child = res;
+    if (d1_stack[*d1_level])
+        d1_stack[*d1_level]->next = res;
+    else
+        parent->child = res;
+    d1_stack[*d1_level] = res;
+    d1_stack[++(*d1_level)] = NULL;
+}
 
 static void tagBegin (struct lexSpec *spec, 
                       data1_node **d1_stack, int *d1_level,
@@ -704,12 +794,12 @@ static void tagBegin (struct lexSpec *spec,
     
     elem = data1_getelementbytagname (spec->dh, d1_stack[0]->u.root.absyn,
 				      e, res->u.tag.tag);
-    
     res->u.tag.element = elem;
     res->u.tag.node_selected = 0;
     res->u.tag.make_variantlist = 0;
     res->u.tag.no_data_requested = 0;
     res->root = parent->root;
+
     parent->num_children++;
     parent->last_child = res;
     if (d1_stack[*d1_level])
@@ -727,9 +817,10 @@ static void tagEnd (struct lexSpec *spec,
     while (*d1_level > 1)
     {
         (*d1_level)--;
-        if (!tag ||
-            (strlen(d1_stack[*d1_level]->u.tag.tag) == (size_t) len &&
-             !memcmp (d1_stack[*d1_level]->u.tag.tag, tag, len)))
+        if ((d1_stack[*d1_level]->which == DATA1N_tag) &&
+	    (!tag ||
+	     (strlen(d1_stack[*d1_level]->u.tag.tag) == (size_t) len &&
+	      !memcmp (d1_stack[*d1_level]->u.tag.tag, tag, len))))
             break;
     }
 #if REGX_DEBUG
@@ -954,7 +1045,42 @@ static int execCode (struct lexSpec *spec,
                 tagBegin (spec, d1_stack, d1_level, cmd_str, cmd_len);
                 r = execTok (spec, &s, arg_no, arg_start, arg_end,
                              &cmd_str, &cmd_len);
-            }
+            } 
+	    else if (!strcmp (p, "variant"))
+	    {
+		int class_len;
+		const char *class_str = NULL;
+		int type_len;
+		const char *type_str = NULL;
+		int value_len;
+		const char *value_str = NULL;
+		r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			     &cmd_str, &cmd_len);
+		if (r < 2)
+		    continue;
+		class_str = cmd_str;
+		class_len = cmd_len;
+		r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			     &cmd_str, &cmd_len);
+		if (r < 2)
+		    continue;
+		type_str = cmd_str;
+		type_len = cmd_len;
+
+		r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			     &cmd_str, &cmd_len);
+		if (r < 2)
+		    continue;
+		value_str = cmd_str;
+		value_len = cmd_len;
+
+                variantBegin (spec, d1_stack, d1_level, class_str, class_len,
+			      type_str, type_len, value_str, value_len);
+		
+		
+		r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			     &cmd_str, &cmd_len);
+	    }
         }
         else if (!strcmp (p, "end"))
         {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.13  1997-10-31 12:35:44  adam
+ * Revision 1.14  1997-11-06 11:41:01  adam
+ * Implemented "begin variant" for the sgml.regx filter.
+ *
+ * Revision 1.13  1997/10/31 12:35:44  adam
  * Added a few log statements.
  *
  * Revision 1.12  1997/10/29 12:02:22  adam
@@ -492,9 +495,15 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
 		return 26; /* fix */
     }
     if (espec)
+    {
+        logf (LOG_LOG, "Element: Espec-1 match");
 	return data1_doespec1(dh, n, espec);
+    }
     else
+    {
+	logf (LOG_DEBUG, "Element: all match");
 	return -1;
+    }
 }
 
 static int grs_retrieve(struct recRetrieveCtrl *p)
