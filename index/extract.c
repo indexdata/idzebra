@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.39  1995-12-05 13:20:18  adam
+ * Revision 1.40  1995-12-05 16:57:40  adam
+ * More work on regular patterns.
+ *
+ * Revision 1.39  1995/12/05  13:20:18  adam
  * Bug fix: file_read sometimes returned early EOF.
  *
  * Revision 1.38  1995/12/04  17:59:21  adam
@@ -530,8 +533,8 @@ static int file_read (int fd, char *buf, size_t count)
         {
             file_offset = r;
             memcpy (buf + l, file_buf, r);
-            file_noread += (l+r);
-            return l + r;
+            file_noread += l+r;
+            return l+r;
         }
         else
         {
