@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.30  1995-11-22 17:19:16  adam
+ * Revision 1.31  1995-11-24 11:31:35  adam
+ * Commands add & del read filenames from stdin if source directory is
+ * empty.
+ * Match criteria supports 'constant' strings.
+ *
+ * Revision 1.30  1995/11/22  17:19:16  adam
  * Record management uses the bfile system.
  *
  * Revision 1.29  1995/11/21  15:01:14  adam
@@ -573,15 +578,15 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
         else if (*s == '$')
         {
             int spec_len;
-            char special[32];
+            char special[64];
             const char *spec_src = NULL;
             const char *s1 = ++s;
             while (*s1 && *s1 != ' ' && *s1 != '\t')
                 s1++;
 
             spec_len = s1 - s;
-            if (spec_len > 31)
-                spec_len = 31;
+            if (spec_len > 63)
+                spec_len = 63;
             memcpy (special, s, spec_len);
             special[spec_len] = '\0';
             s = s1;
@@ -599,8 +604,25 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
             if (spec_src)
             {
                 strcpy (dst, spec_src);
-                dst += strlen(spec_src);
+                dst += strlen (spec_src);
             }
+        }
+        else if (*s == '\"' || *s == '\'')
+        {
+            int stopMarker = *s++;
+            char tmpString[64];
+            int i = 0;
+
+            while (*s && *s != stopMarker)
+            {
+                if (i < 63)
+                    tmpString[i++] = *s;
+            }
+            if (*s)
+                s++;
+            tmpString[i] = '\0';
+            strcpy (dst, tmpString);
+            dst += strlen (tmpString);
         }
         else
         {
@@ -639,7 +661,7 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
     else
         sprintf (gprefix, "%s.", rGroup->groupName);
 
-    logf (LOG_DEBUG, "fileExtractAdd %s", fname);
+    logf (LOG_DEBUG, "fileExtract %s", fname);
 
     /* determine file extension */
     for (i = strlen(fname); --i >= 0; )
@@ -710,25 +732,27 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
     /* perform match if sysno not known and if match criteria is specified */
        
     matchStr = NULL;
-    if (!sysno && file_match)
+    if (!sysno) 
     {
-        char *rinfo;
-        
+        sysnotmp = 0;
         sysno = &sysnotmp;
-        matchStr = fileMatchStr(&reckeys, rGroup, fname, file_type,
-                                file_match);
-        if (matchStr)
+        if (file_match)
         {
-            rinfo = dict_lookup (matchDict, matchStr);
-            if (rinfo)
-                memcpy (sysno, rinfo+1, sizeof(*sysno));
+            char *rinfo;
+        
+            matchStr = fileMatchStr(&reckeys, rGroup, fname, file_type,
+                                    file_match);
+            if (matchStr)
+            {
+                rinfo = dict_lookup (matchDict, matchStr);
+                if (rinfo)
+                    memcpy (sysno, rinfo+1, sizeof(*sysno));
+            }
             else
-                *sysno = 0;
-        }
-        else
-        {
-            logf (LOG_WARN, "Record not inserted");
-            return 0;
+            {
+                logf (LOG_WARN, "Record not inserted");
+                return 0;
+            }
         }
     }
 

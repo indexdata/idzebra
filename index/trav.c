@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.11  1995-11-22 17:19:19  adam
+ * Revision 1.12  1995-11-24 11:31:37  adam
+ * Commands add & del read filenames from stdin if source directory is
+ * empty.
+ * Match criteria supports 'constant' strings.
+ *
+ * Revision 1.11  1995/11/22  17:19:19  adam
  * Record management uses the bfile system.
  *
  * Revision 1.10  1995/11/21  15:01:16  adam
@@ -88,6 +93,14 @@ static void repositoryExtractR (int deleteFlag, char *rep,
     }
     dir_free (&e);
 
+}
+
+static void stdinExtractR (int deleteFlag, struct recordGroup *rGroup)
+{
+    char tmppath[256];
+
+    while (scanf ("%s", tmppath) == 1)
+        fileExtract (NULL, tmppath, rGroup, deleteFlag);
 }
 
 static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
@@ -230,7 +243,10 @@ void repositoryDelete (struct recordGroup *rGroup)
 
     assert (rGroup->path);
     strcpy (src, rGroup->path);
-    repositoryExtractR (1, src, rGroup);
+    if (*src == '\0')
+	stdinExtractR (1, rGroup);
+    else
+	repositoryExtractR (1, src, rGroup);
 }
 
 void repositoryAdd (struct recordGroup *rGroup)
@@ -239,6 +255,9 @@ void repositoryAdd (struct recordGroup *rGroup)
 
     assert (rGroup->path);
     strcpy (src, rGroup->path);
-    repositoryExtractR (0, src, rGroup);
+    if (*src == '\0')
+	stdinExtractR (0, rGroup);
+    else
+	repositoryExtractR (0, src, rGroup);
 }
 
