@@ -1,5 +1,5 @@
-/* $Id: zsets.c,v 1.49.2.2 2005-01-07 14:06:16 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: zsets.c,v 1.49.2.3 2005-01-21 11:35:49 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -215,7 +215,7 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     }
     else
     {
-	const char *sort_max_str = zebra_get_resource(zh, "sortmax", "2");
+	const char *sort_max_str = zebra_get_resource(zh, "sortmax", "1000");
 
 	yaz_log (LOG_DEBUG, "adding result set %s", name);
 	s = (ZebraSet) xmalloc (sizeof(*s));
