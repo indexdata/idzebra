@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.38  1995-12-04 17:59:21  adam
+ * Revision 1.39  1995-12-05 13:20:18  adam
+ * Bug fix: file_read sometimes returned early EOF.
+ *
+ * Revision 1.38  1995/12/04  17:59:21  adam
  * More work on regular expression conversion.
  *
  * Revision 1.37  1995/12/04  14:22:27  adam
@@ -466,29 +469,37 @@ static void addRecordKeyAny (const RecWord *p)
     addRecordKey (p);
 }
 
-#define FILE_READ_BUFSIZE 4096 
 
+#define FILE_READ_BUFSIZE 4096
+
+static int file_noread;
+#if FILE_READ_BUFSIZE
 static char *file_buf;
 static int file_offset;
 static int file_bufsize;
-static int file_noread;
+#endif
 
 static void file_read_start (int fd)
 {
+    file_noread = 0;
+#if FILE_READ_BUFSIZE
     file_offset = 0;
     file_buf = xmalloc (FILE_READ_BUFSIZE);
     file_bufsize = read (fd, file_buf, FILE_READ_BUFSIZE);
-    file_noread = 0;
+#endif
 }
 
 static void file_read_stop (int fd)
 {
+#if FILE_READ_BUFSIZE
     xfree (file_buf);
     file_buf = NULL;
+#endif
 }
 
 static int file_read (int fd, char *buf, size_t count)
 {
+#if FILE_READ_BUFSIZE
     int l = file_bufsize - file_offset;
 
     if (count > l)
@@ -497,7 +508,7 @@ static int file_read (int fd, char *buf, size_t count)
         if (l > 0)
             memcpy (buf, file_buf + file_offset, l);
         count = count-l;
-        if (count > file_bufsize)
+        if (count > FILE_READ_BUFSIZE)
         {
             if ((r = read (fd, buf + l, count)) == -1)
             {
@@ -506,8 +517,8 @@ static int file_read (int fd, char *buf, size_t count)
             }
             file_bufsize = 0;
             file_offset = 0;
-            file_noread += r;
-            return r;
+            file_noread += l+r;
+            return l+r;
         }
         file_bufsize = r = read (fd, file_buf, FILE_READ_BUFSIZE);
         if (r == -1)
@@ -534,6 +545,13 @@ static int file_read (int fd, char *buf, size_t count)
     file_offset += count;
     file_noread += count;
     return count;
+#else
+    int r;
+    r = read (fd, buf, count);
+    if (r > 0)
+        file_noread += r;
+    return r;
+#endif
 }
 
 static int atois (const char **s)
@@ -681,9 +699,7 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
 
 static int recordExtract (SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
-                          int fd,
-                          RecType recType,
-                          const char *subType)
+                          int fd, RecType recType, char *subType)
 {
     struct recExtractCtrl extractCtrl;
     int r;
@@ -826,9 +842,11 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     {
         rec->size[recInfo_storeData] = file_noread;
         rec->info[recInfo_storeData] = xmalloc (file_noread);
+#if FILE_READ_BUFSIZE
         if (file_noread < FILE_READ_BUFSIZE)
 	    memcpy (rec->info[recInfo_storeData], file_buf, file_noread);
         else
+#endif
         {
             if (lseek (fd, 0L, SEEK_SET) < 0)
             {
