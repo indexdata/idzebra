@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.46  1997-07-28 08:30:47  adam
+ * Revision 1.47  1997-09-04 13:58:36  adam
+ * New retrieve/extract method tellf (added).
+ * Added O_BINARY for open calls.
+ *
+ * Revision 1.46  1997/07/28 08:30:47  adam
  * Server returns diagnostic 14 when record doesn't exist.
  *
  * Revision 1.45  1996/12/23 15:30:45  adam
@@ -358,6 +362,11 @@ static off_t record_ext_seek (void *fh, off_t offset)
     return lseek (*((int*) fh), offset + record_offset, SEEK_SET);
 }
 
+static off_t record_ext_tell (void *fh)
+{
+    return lseek (*((int*) fh), 0, SEEK_CUR) - record_offset;
+}
+
 static int record_int_pos;
 static char *record_int_buf;
 static int record_int_len;
@@ -365,6 +374,11 @@ static int record_int_len;
 static off_t record_int_seek (void *fh, off_t offset)
 {
     return (off_t) (record_int_pos = offset);
+}
+
+static off_t record_int_tell (void *fh)
+{
+    return (off_t) record_int_pos;
 }
 
 static int record_int_read (void *fh, char *buf, size_t count)
@@ -413,6 +427,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     {
         retrieveCtrl.readf = record_int_read;
         retrieveCtrl.seekf = record_int_seek;
+        retrieveCtrl.tellf = record_int_tell;
         record_int_len = rec->size[recInfo_storeData];
         record_int_buf = rec->info[recInfo_storeData];
         record_int_pos = 0;
@@ -420,7 +435,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     }
     else 
     {
-        if ((fd = open (fname, O_RDONLY)) == -1)
+        if ((fd = open (fname, O_BINARY|O_RDONLY)) == -1)
         {
             logf (LOG_WARN|LOG_ERRNO, "Retrieve fail; missing file: %s",
 		  fname);
@@ -433,6 +448,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
         retrieveCtrl.fh = &fd;
         retrieveCtrl.readf = record_ext_read;
         retrieveCtrl.seekf = record_ext_seek;
+        retrieveCtrl.tellf = record_ext_tell;
 
         record_ext_seek (retrieveCtrl.fh, 0);
     }
