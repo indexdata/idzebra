@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.4  1994-08-17 14:27:32  quinn
+ * Revision 1.5  1994-08-18 08:10:08  quinn
+ * Minimal changes
+ *
+ * Revision 1.4  1994/08/17  14:27:32  quinn
  * last mods
  *
  * Revision 1.2  1994/08/17  14:09:32  quinn
@@ -20,6 +23,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 int bf_close (BFile bf)
 {
