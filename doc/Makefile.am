@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.25 2004-09-28 20:38:25 adam Exp $
+## $Id: Makefile.am,v 1.26 2004-12-15 09:10:47 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -67,9 +67,9 @@ zebra.pdf: $(XMLFILES)
 		if test ! -f $$i; then ln -s $(srcdir)/$$i .; fi; \
 	done
 	jade -E14 -D $(srcdir) -d zebraprint.dsl -t tex $(srcdir)/xml.dcl zebra.xml
-	pdfjadetex zebra.tex
-	pdfjadetex zebra.tex
-	pdfjadetex zebra.tex
+	pdfjadetex zebra.tex >/dev/null
+	pdfjadetex zebra.tex >/dev/null
+	pdfjadetex zebra.tex >/dev/null
 
 index.tkl: $(XMLFILES) tkl.xsl
 	xsltproc tkl.xsl zebra.xml
