@@ -1,5 +1,5 @@
-/* $Id: extract.c,v 1.140 2003-03-04 23:30:20 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: extract.c,v 1.141 2003-03-05 00:08:04 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.

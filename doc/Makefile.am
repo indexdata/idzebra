@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.18 2002-11-08 13:23:52 adam Exp $
+## $Id: Makefile.am,v 1.19 2003-03-05 00:08:04 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -21,13 +21,14 @@ XMLFILES = \
  indexdata.xml \
  zebraidx-options.xml
 
-HTMLFILES = administration.html apps.html configuration-file.html \
- data-model.html example1.html example2.html examples.html features.html \
- file-ids.html formats.html future.html generic-ids.html indexdata.html \
- installation.html internal-representation.html introduction.html \
+HTMLFILES =  \
+ administration.html apps.html configuration-file.html data-model.html \
+ example1.html example2.html examples.html features.html file-ids.html \
+ formats.html future.html generic-ids.html indexdata.html installation.html \
+ installation.win32.html internal-representation.html introduction.html \
  license.html locating-records.html protocol-support.html quick-start.html \
  record-model.html register-location.html server.html shadow-registers.html \
- simple-indexing.html support.html zebra.html zebraidx.html
+ simple-indexing.html support.html zebra.html zebraidx.html 
 
 doc_DATA = $(HTMLFILES) zebra.pdf
 man_MANS = zebraidx.1 zebrasrv.8

@@ -1,20 +1,28 @@
-<!-- $Id: installation.xml,v 1.7 2003-03-04 23:30:20 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.8 2003-03-05 00:08:04 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
-   Zebra is very portable. An ANSI C compiler is required. We
-   primarily use GNU C on UNIX and Microsoft Visual C++ on Windows.
+   Zebra is written in ANSI C and was implemented with portability in mind. 
+   We primarily use GNU C on UNIX and Microsoft Visual C++ on Windows.
   </para>
 
   <para>
-   Zebra uses following components. Most of these are optional.
+   The software is regularly tested on Debian GNU/Linux, Redhat Linux,
+   Gentoo Linux, NetBSD (Cobalt), FreeBSD (i386), SunOS 5.8 (sparc),
+   Windows 2000 SP3.
+  </para>
+  
+  <para>
+   Zebra can be configured to use the following utilities (most of
+   which are optional):
+
    <variablelist>
     <varlistentry>
      <term><ulink url="http://www.indexdata.dk/yaz/">yaz</ulink> (required)</term>
      <listitem>
       <para>
-       Zebra uses lots of utilities provided by YAZ. Most notably
-       Z39.50 support.
+       Zebra uses YAZ to support Z39.50/SRW. Also the memory management
+       utilites from YAZ is used by Zebra.
       </para>
      </listitem>
     </varlistentry>
@@ -35,12 +43,12 @@
      <listitem>
       <para>
        XML parser. If you're going to index real XML you should
-       install this (filter grs.xml). On most system, you should be able
+       install this (filter grs.xml). On most systems you should be able
        to find binary Expat packages.
       </para>
      </listitem>
     </varlistentry>
-
+    
     <varlistentry>
      <term><ulink url="http://www.perl.com/">Perl</ulink> (optional)</term>
      <listitem>
@@ -52,7 +60,7 @@
       </para>
      </listitem>
     </varlistentry>
-
+    
     <varlistentry>
      <term><ulink url="http://www.tcl.tk/">Tcl</ulink> (optional)</term>
      <listitem>
@@ -63,13 +71,12 @@
       </para>
      </listitem>
     </varlistentry>
-
+    
     <varlistentry>
      <term>
       <ulink url="http://www.gnu.org/software/autoconf/">Autoconf</ulink>,
-      <ulink url="
-      
- (optional)</term>
+      <ulink url="http://www.gnu.org/software/automake/">Automake</ulink>
+      (optional)</term>
      <listitem>
       <para>
        GNU Automake and Autoconf are only required if you're
@@ -80,7 +87,8 @@
     </varlistentry>
     
     <varlistentry>
-     <term>Docbook and friends (optional)</term>
+     <term><ulink url="http://docbook.org/">Docbook</ulink>
+      and friends (optional)</term>
      <listitem>
       <para>
        These tools are only required if you're writing
@@ -183,9 +191,9 @@
     to configure.
    </para>
   </sect1>
-  <sect1><title>WIN32</title>
+  <sect1 id="installation.win32"><title>WIN32</title>
    <para>
-    
+    [to be written]
    </para>
   </sect1>
  </chapter>
