@@ -1,3 +1,5 @@
+Bug fix: Complete phrase did't work for search operations.
+
 Bug fix: temporary result sets weren't deleted.
 
 Reduced disk space for saved keys (storeKeys = 1).
