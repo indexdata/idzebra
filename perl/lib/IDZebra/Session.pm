@@ -9,6 +9,7 @@ package IDZebra::Session;
 use IDZebra;
 use IDZebra::Logger qw(:flags :calls);
 use IDZebra::Repository;
+use IDZebra::Resultset;
 use Scalar::Util;
 
 our @ISA = qw(IDZebra::Logger);
@@ -51,13 +52,15 @@ sub close {
         IDZebra::close($self->{zh});
 	$self->{zh} = undef;
     }
-
+    
     if ($self->{odr_input}) {
+        IDZebra::odr_reset($self->{odr_input});
         IDZebra::odr_destroy($self->{odr_input});
 	$self->{odr_input} = undef;  
     }
 
     if ($self->{odr_output}) {
+        IDZebra::odr_reset($self->{odr_output});
         IDZebra::odr_destroy($self->{odr_output});
 	$self->{odr_output} = undef;  
     }
@@ -106,6 +109,16 @@ sub end_trans {
         $self->{trans_started} = 0;
         IDZebra::end_trans($self->{zh});
     }
+}
+
+sub begin_read {
+    my ($self) =@_;
+    return(IDZebra::begin_read($self->{zh}));
+}
+
+sub end_read {
+    my ($self) =@_;
+    IDZebra::end_read($self->{zh});
 }
 
 sub shadow_enable {
@@ -160,7 +173,7 @@ sub Repository {
 }
 
 # -----------------------------------------------------------------------------
-# Search and retrieval
+# Search 
 # -----------------------------------------------------------------------------
 sub select_databases {
     my ($self, @databases) = @_;
@@ -169,24 +182,59 @@ sub select_databases {
 				      \@databases));
 }
 
-sub begin_read {
-    my ($self) =@_;
-    return(IDZebra::begin_read($self->{zh}));
-}
-
-sub end_read {
-    my ($self) =@_;
-    IDZebra::end_read($self->{zh});
-}
-
 sub search_pqf {
     my ($self, $query, $setname) = @_;
-    return (IDZebra::search_PQF($self->{zh},
-				$self->{odr_input},
-				$self->{odr_output},
-				$query,
-				$setname));
+    my $hits = IDZebra::search_PQF($self->{zh},
+				   $self->{odr_input},
+				   $self->{odr_output},
+				   $query,
+				   $setname);
+
+    my $rs  = IDZebra::Resultset->new($self,
+				      name        => $setname,
+				      recordCount => $hits,
+				      errCode     => $self->errCode,
+				      errString   => $self->errString);
+    return($rs);
 }
+
+# -----------------------------------------------------------------------------
+# Sort
+#
+# Sorting of multiple result sets is not supported by zebra...
+# -----------------------------------------------------------------------------
+
+sub sortResultsets {
+    my ($self, $sortspec, $setname, @sets) = @_;
+
+    my @setnames;
+    my $count = 0;
+    foreach my $rs (@sets) {
+	push (@setnames, $rs->{name});
+	$count += $rs->{recordCount};  # is this really sure ??? It doesn't 
+	                               # matter now...
+    }
+
+    my $status = IDZebra::sort($self->{zh},
+			       $self->{odr_output},
+			       $sortspec,
+			       $setname,
+			       \@setnames);
+
+    my $errCode = $self->errCode;
+    my $errString = $self->errString;
+
+    if ($status || $errCode) {$count = 0;}
+
+    my $rs  = IDZebra::Resultset->new($self,
+				      name        => $setname,
+				      recordCount => $count,
+				      errCode     => $errCode,
+				      errString   => $errString);
+    
+    return ($rs);
+}
+
 
 __END__
 
