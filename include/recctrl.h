@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.23  1998-02-10 12:03:05  adam
+ * Revision 1.24  1998-03-05 08:38:46  adam
+ * New member recordSize in recRetrieveCtrl.
+ *
+ * Revision 1.23  1998/02/10 12:03:05  adam
  * Implemented Sort.
  *
  * Revision 1.22  1997/10/27 14:33:04  adam
@@ -100,7 +103,6 @@
 extern "C" {
 #endif
 
-
 /* single word entity */
 typedef struct {
     int  attrSet;
@@ -140,6 +142,7 @@ struct recRetrieveCtrl {
     Z_RecordComposition *comp;        /* formatting instructions           */
     int       localno;                /* local id of record                */
     int       score;                  /* score 0-1000 or -1 if none        */
+    int       recordSize;             /* size of record in bytes */
     char      *subType;
     data1_handle dh;
     
