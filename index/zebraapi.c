@@ -3,7 +3,11 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.40  2000-11-29 15:21:31  adam
+ * Revision 1.41  2000-12-01 17:59:08  adam
+ * Fixed bug regarding online updates on WIN32.
+ * When zebra.cfg is not available the server will not abort.
+ *
+ * Revision 1.40  2000/11/29 15:21:31  adam
  * Fixed problem with passwd db.
  *
  * Revision 1.39  2000/11/29 14:24:01  adam
@@ -214,8 +218,12 @@ static int zebra_register_lock (ZebraHandle zh, int rw)
 	logf (LOG_LOG, "Register in read/write mode");
     else if (zh->service->registerState == state)
     {
+        logf (LOG_LOG, "registerChange = %ld lastChange = %ld",
+            (long) zh->service->registerChange, (long)lastChange);
 	if (zh->service->registerChange >= lastChange)
+        {
 	    return 0;
+        }
 	logf (LOG_LOG, "Register completely updated since last access");
     }
     else if (zh->service->registerState == -1)
@@ -297,7 +305,7 @@ ZebraService zebra_start (const char *configName)
     if (!(zh->res = res_open (zh->configName)))
     {
 	logf (LOG_WARN, "Failed to read resources `%s'", zh->configName);
-	return zh;
+//	return zh;
     }
     zebra_chdir (zh);
     zebra_server_lock_init (zh);
@@ -495,7 +503,11 @@ void zebra_stop(ZebraService zs)
 	return ;
     yaz_log (LOG_LOG, "zebra_stop");
 
-    assert (!zs->sessions);
+    zebra_mutex_cond_lock (&zs->session_lock);
+    while (zs->sessions)
+        zebra_close (zs->sessions);
+
+    zebra_mutex_cond_unlock (&zs->session_lock);
 
     zebra_mutex_cond_destroy (&zs->session_lock);
 

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.14  2000-03-15 15:00:30  adam
+ * Revision 1.15  2000-12-01 17:59:08  adam
+ * Fixed bug regarding online updates on WIN32.
+ * When zebra.cfg is not available the server will not abort.
+ *
+ * Revision 1.14  2000/03/15 15:00:30  adam
  * First work on threaded version.
  *
  * Revision 1.13  1999/05/26 07:49:13  adam
@@ -71,7 +75,6 @@ int zebra_server_lock_init (ZebraService zi)
 {
     char path_prefix[1024];
 
-    assert (zi->res);
     zi->server_lock_cmt = NULL;
     zi->server_lock_org = NULL;
 
@@ -156,7 +159,7 @@ int zebra_server_lock_get_state (ZebraService zi, time_t *timep)
     if (stat (path, &xstat) == -1)
         *timep = 1;
     else
-        *timep = xstat.st_ctime;
+        *timep = xstat.st_mtime;
 
     strcpy (path, zi->server_path_prefix);
     strcat (path, FNAME_MAIN_LOCK);

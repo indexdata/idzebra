@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.27  1999-11-30 13:48:04  adam
+ * Revision 1.28  2000-12-01 17:59:08  adam
+ * Fixed bug regarding online updates on WIN32.
+ * When zebra.cfg is not available the server will not abort.
+ *
+ * Revision 1.27  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.26  1999/10/07 09:48:36  adam
@@ -246,7 +250,8 @@ Res res_open (const char *name)
 
 void res_close (Res r)
 {
-    assert (r);
+    if (!r)
+        return;
     if (r->init)
     {
         struct res_entry *re, *re1;
@@ -328,7 +333,8 @@ int res_trav (Res r, const char *prefix, void *p,
     int l = 0;
     int no = 0;
     
-    assert (r);
+    if (!r)
+        return 0;
     if (prefix)
         l = strlen(prefix);
     if (!r->init)
