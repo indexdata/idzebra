@@ -1,3 +1,6 @@
+Remote record import using Z39.50 Extended Services and Segments.
+
+Multi-threaded version.
 
 Fixed bug regarding proximity.
 
