@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.11 2004-08-25 09:23:35 adam Exp $
+/* $Id: data1.h,v 1.1 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,8 +23,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef DATA1_H
 #define DATA1_H
 
-#define ENHANCED_XELM 1
-
 #include <stdio.h>
 
 #include <yaz/nmem.h>
@@ -36,8 +34,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <d1_map.h>
 #include <yaz/yaz-util.h>
 #include <yaz/wrbuf.h>
-#include <dfa.h>         /* pop */
-#include <zebra_xpath.h> /* pop */
 
 #define d1_isspace(c) strchr(" \r\n\t\f", c)
 #define d1_isdigit(c) ((c) <= '9' && (c) >= '0')
@@ -56,6 +52,7 @@ typedef struct data1_name
 
 typedef struct data1_absyn_cache_info *data1_absyn_cache;
 typedef struct data1_attset_cache_info *data1_attset_cache;
+typedef struct data1_absyn data1_absyn;
 
 typedef enum data1_datatype
 {
@@ -193,19 +190,6 @@ typedef struct data1_sub_elements {
     data1_element *elements;
 } data1_sub_elements;
 
-/* pop */
-typedef struct data1_xpelement
-{
-    char *xpath_expr;
-#ifdef ENHANCED_XELM 
-    struct xpath_location_step xpath[XPATH_STEP_COUNT];
-    int xpath_len;
-#endif
-    struct DFA *dfa;  
-    data1_termlist *termlists;
-    struct data1_xpelement *next;
-} data1_xpelement;
-
 typedef struct data1_xattr {
     char *name;
     char *value;
@@ -213,27 +197,7 @@ typedef struct data1_xattr {
     unsigned short what;  /* DATA1I_text, .. see data1_node.u.data */
 } data1_xattr;
 
-#if 0
-typedef struct data1_absyn data1_absyn;
-#else
-typedef struct data1_absyn
-{
-    char *name;
-    oid_value reference;
-    data1_tagset *tagset;
-    data1_attset *attset;
-    data1_varset *varset;
-    data1_esetname *esetnames;
-    data1_maptab *maptabs;
-    data1_marctab *marc;
-    data1_sub_elements *sub_elements;
-    data1_element *main_elements;
-    data1_xpelement *xp_elements; /* pop */
-    struct data1_systag *systags;
-    char *encoding;
-    int  enable_xpath_indexing;
-} data1_absyn;
-#endif
+
 /*
  * record data node (tag/data/variant)
  */
@@ -258,7 +222,7 @@ typedef struct data1_node
 	struct
 	{
 	    char *type;
-	    data1_absyn *absyn;  /* abstract syntax for this type */
+	    struct data1_absyn *absyn;  /* abstract syntax for this type */
 	} root;
 
 	struct 
@@ -361,6 +325,9 @@ YAZ_EXPORT data1_varset *data1_read_varset(data1_handle dh, const char *file);
 YAZ_EXPORT data1_vartype *data1_getvartypebyct(data1_handle dh,
 					       data1_varset *set,
 					       char *zclass, char *type);
+YAZ_EXPORT data1_vartype *data1_getvartypeby_absyn(data1_handle dh,
+						   data1_absyn *absyn,
+						   char *zclass, char *type);
 YAZ_EXPORT Z_Espec1 *data1_read_espec1(data1_handle dh, const char *file);
 YAZ_EXPORT int data1_doespec1(data1_handle dh, data1_node *n, Z_Espec1 *e);
 YAZ_EXPORT data1_esetname *data1_getesetbyname(data1_handle dh, 
@@ -455,6 +422,10 @@ YAZ_EXPORT data1_node *data1_map_record(data1_handle dh, data1_node *n,
 					data1_maptab *map, NMEM m);
 YAZ_EXPORT data1_marctab *data1_read_marctab (data1_handle dh,
 					      const char *file);
+YAZ_EXPORT data1_marctab *data1_absyn_getmarctab(data1_handle dh,
+						 data1_absyn *absyn);
+YAZ_EXPORT data1_element *data1_absyn_getelements(data1_handle dh,
+						 data1_absyn *absyn);
 YAZ_EXPORT char *data1_nodetomarc(data1_handle dh, data1_marctab *p,
 				  data1_node *n, int selected, int *len);
 YAZ_EXPORT char *data1_nodetoidsgml(data1_handle dh, data1_node *n,

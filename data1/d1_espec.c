@@ -1,4 +1,4 @@
-/* $Id: d1_espec.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_espec.c,v 1.3 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/odr.h>
 #include <yaz/proto.h>
 #include <yaz/log.h>
-#include <data1.h>
+#include <idzebra/data1.h>
 
 static Z_Variant *read_variant(int argc, char **argv, NMEM nmem,
 			       const char *file, int lineno)

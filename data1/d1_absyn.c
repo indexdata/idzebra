@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.11 2004-08-24 14:29:09 adam Exp $
+/* $Id: d1_absyn.c,v 1.12 2004-09-28 10:15:02 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,10 +27,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/oid.h>
 #include <yaz/log.h>
-#include <data1.h>
+#include <idzebra/data1.h>
 #include <zebra_xpath.h>
+#include <d1_absyn.h>
 
 #define D1_MAX_NESTING  128
+
+#if PRIVATE_DATA1_ABSYN
+#endif
 
 struct data1_systag {
     char *name;
@@ -501,6 +505,16 @@ int read_absyn_line(FILE *f, int *lineno, char *line, int len,
     return argc;
 }
 
+data1_marctab *data1_absyn_getmarctab(data1_handle dh, data1_absyn *absyn)
+{
+    return absyn->marc;
+}
+
+YAZ_EXPORT data1_element *data1_absyn_getelements(data1_handle dh,
+						  data1_absyn *absyn)
+{
+    return absyn->main_elements;
+}
 
 data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
                                int file_must_exist)

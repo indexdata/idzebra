@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.90 2004-09-27 10:44:50 adam Exp $
+/* $Id: recgrs.c,v 1.91 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -31,8 +31,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/oid.h>
 
-#include <recctrl.h>
-#include "grsread.h"
+#include <d1_absyn.h>
+#include <idzebra/recgrs.h>
 
 #define GRS_MAX_WORD 512
 

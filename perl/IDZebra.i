@@ -5,7 +5,7 @@
 %{
 #include <idzebra/api.h>
 #include "zebra_perl.h"
-#include "data1.h"
+#include <idzebra/data1.h>
 #include "yaz/odr.h"
 #include "yaz/cql.h"
 %}

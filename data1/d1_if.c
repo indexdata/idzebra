@@ -1,4 +1,4 @@
-/* $Id: d1_if.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_if.c,v 1.3 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -25,11 +25,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <string.h>
 
-#include <data1.h>
+#include <idzebra/data1.h>
 #include <yaz/log.h>
 
 #include <string.h>
-
 
 /*
  * Search for a token in the supplied string up to the supplied list of stop characters or EOL

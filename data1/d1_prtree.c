@@ -1,4 +1,4 @@
-/* $Id: d1_prtree.c,v 1.3 2003-09-08 10:26:26 adam Exp $
+/* $Id: d1_prtree.c,v 1.4 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -21,7 +21,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 #include <yaz/log.h>
-#include <data1.h>
+#include <idzebra/data1.h>
 
 static void pr_string (FILE *out, const char *str, int len)
 {

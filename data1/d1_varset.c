@@ -1,4 +1,4 @@
-/* $Id: d1_varset.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_varset.c,v 1.3 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/oid.h>
 #include <yaz/log.h>
-#include <data1.h>
+#include <d1_absyn.h>
 
 data1_vartype *data1_getvartypebyct (data1_handle dh, data1_varset *set,
 				     char *zclass, char *type)
@@ -45,6 +45,12 @@ data1_vartype *data1_getvartypebyct (data1_handle dh, data1_varset *set,
 	}
     yaz_log(LOG_WARN, "Unknown variant class %s", zclass);
     return 0;
+}
+
+data1_vartype *data1_getvartypeby_absyn (data1_handle dh, data1_absyn *absyn,
+					   char *zclass, char *type)
+{
+    return data1_getvartypebyct(dh, absyn->varset, zclass, type);
 }
 
 data1_varset *data1_read_varset (data1_handle dh, const char *file)

@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.8 2004-09-28 08:44:48 adam Exp $
+/* $Id: recctrl.c,v 1.9 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -28,7 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <direntz.h>
 #include <zebrautl.h>
-#include <recctrl.h>
+#include <idzebra/recctrl.h>
 
 struct recTypeClass {
     RecType recType;

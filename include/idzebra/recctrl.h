@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.42 2004-09-27 10:44:48 adam Exp $
+/* $Id: recctrl.h,v 1.1 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -29,7 +29,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/oid.h>
 #include <yaz/odr.h>
 #include <idzebra/res.h>
-#include <data1.h>
+#include <idzebra/data1.h>
 #include <zebramap.h>
 
 #ifdef __cplusplus
@@ -127,8 +127,6 @@ void recTypes_default_handlers(RecTypes recTypes, Res res);
 RecType recType_byName(RecTypes rts, Res res, const char *name,
 		       void **clientDataP);
 
-
-int grs_extract_tree(struct recExtractCtrl *p, data1_node *n);
 
 #ifdef __cplusplus
 }

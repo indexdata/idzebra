@@ -3,6 +3,8 @@
 #ifndef ZEBRA_XPATH_H
 #define ZEBRA_XPATH_H
 
+#include <yaz/nmem.h>
+
 #define XPATH_STEP_COUNT 10
 struct xpath_predicate {
     int which;
@@ -32,5 +34,6 @@ int zebra_parse_xpath_str(const char *xpath_string,
                           int max, NMEM mem);
 
 void dump_xp_steps (struct xpath_location_step *xpath, int no);
+
 
 #endif

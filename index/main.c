@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.115 2004-09-27 10:44:49 adam Exp $
+/* $Id: main.c,v 1.116 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,7 +35,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <sys/times.h>
 #endif
 
-#include <data1.h>
+#include <yaz/log.h>
 #include <idzebra/api.h>
 
 char *prog;

@@ -1,4 +1,4 @@
-/* $Id: danbibr.c,v 1.5 2004-09-27 10:44:50 adam Exp $
+/* $Id: danbibr.c,v 1.6 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -26,11 +26,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/log.h>
 
-#include "grsread.h"
+#include <idzebra/recgrs.h>
 
 #include <yaz/xmalloc.h>
-#include <yaz/log.h>
-#include <data1.h>
 
 #define READ_CHUNK 200
 

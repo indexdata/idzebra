@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.9 2004-08-04 08:35:22 adam Exp $
+/* $Id: d1_read.c,v 1.10 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -32,7 +32,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/xmalloc.h>
 #include <yaz/yaz-util.h>
 #include <yaz/log.h>
-#include <data1.h>
+#include <d1_absyn.h>
 
 data1_node *data1_get_root_tag (data1_handle dh, data1_node *n)
 {

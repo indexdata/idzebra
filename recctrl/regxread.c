@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.53 2004-09-27 10:44:50 adam Exp $
+/* $Id: regxread.c,v 1.54 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -29,7 +29,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/tpath.h>
 #include <zebrautl.h>
 #include <dfa.h>
-#include "grsread.h"
+#include <idzebra/recgrs.h>
 
 #if HAVE_TCL_H
 #include <tcl.h>
@@ -822,8 +822,8 @@ static void variantBegin (struct lexSpec *spec,
 #endif
 
     if (!(tp =
-	  data1_getvartypebyct(spec->dh, parent->root->u.root.absyn->varset,
-			       tclass, ttype)))
+	  data1_getvartypeby_absyn(spec->dh, parent->root->u.root.absyn,
+				   tclass, ttype)))
 	return;
     
     if (parent->which != DATA1N_variant)

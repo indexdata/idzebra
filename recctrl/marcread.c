@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.25 2004-09-27 10:44:50 adam Exp $
+/* $Id: marcread.c,v 1.26 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/yaz-util.h>
 #include <yaz/marcdisp.h>
-#include "grsread.h"
+#include <idzebra/recgrs.h>
 #include "marcomp.h"
 #include "inline.h"
 
@@ -101,7 +101,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     else
 	res_top = data1_mk_tag (p->dh, p->mem, absynName, 0, res_root);
 
-    if ((marctab = res_root->u.root.absyn->marc))
+    if ((marctab = data1_absyn_getmarctab(p->dh, res_root->u.root.absyn)))
     {
 	memcpy(marctab->leader, buf, 24);
         memcpy(marctab->implementation_codes, buf+6, 4);
@@ -662,7 +662,7 @@ static int is_empty(char *s)
 static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
 			     data1_node *root)
 {
-    data1_marctab *marctab = root->u.root.absyn->marc;
+    data1_marctab *marctab = data1_absyn_getmarctab(p->dh, root->u.root.absyn);
     data1_node *top = root->child;
     data1_node *field;
     mc_context *c;
@@ -743,7 +743,7 @@ data1_node *grs_read_marcxml(struct grs_read_info *p)
     if (!root)
 	return 0;
 	
-    for (e=root->u.root.absyn->main_elements; e; e=e->next)
+    for (e = data1_absyn_getelements(p->dh, root->u.root.absyn); e; e=e->next)
     {
 	data1_tag *tag = e->tag;
 	
@@ -762,7 +762,7 @@ data1_node *grs_read_marc(struct grs_read_info *p)
     if (!root)
 	return 0;
 	
-    for (e=root->u.root.absyn->main_elements; e; e=e->next)
+    for (e = data1_absyn_getelements(p->dh, root->u.root.absyn); e; e=e->next)
     {
 	data1_tag *tag = e->tag;
 	

@@ -1,7 +1,3 @@
-#if 0
-#include "zebraapi.h"
-#endif
-
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -14,7 +10,7 @@
 
 #include "zebra_perl.h"
 #include "../recctrl/perlread.h"
-#include <data1.h>
+#include <idzebra/data1.h>
 
 NMEM handles;
 

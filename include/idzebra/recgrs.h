@@ -1,4 +1,4 @@
-/* $Id: grsread.h,v 1.15 2004-09-27 10:44:50 adam Exp $
+/* $Id: recgrs.h,v 1.1 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,8 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GRSREAD_H
 #define GRSREAD_H
 
-#include <data1.h>
-#include <recctrl.h>
+#include <idzebra/recctrl.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +46,9 @@ int zebra_grs_extract(void *clientData, struct recExtractCtrl *p,
 
 int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 		       data1_node *(*grs_read)(struct grs_read_info *));
+
+
+int grs_extract_tree(struct recExtractCtrl *p, data1_node *n);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.6 2003-12-17 12:03:54 adam Exp $
+/* $Id: d1_marc.c,v 1.7 2004-09-28 10:15:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -32,7 +32,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/readconf.h>
 #include <yaz/xmalloc.h>
 #include <yaz/tpath.h>
-#include <data1.h>
+#include <idzebra/data1.h>
 
 data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
 {
