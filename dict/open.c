@@ -1,5 +1,5 @@
-/* $Id: open.c,v 1.19 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: open.c,v 1.20 2004-09-09 09:07:12 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -29,25 +29,22 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <dict.h>
 
 Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
-		int compact_flag)
+		int compact_flag, int page_size)
 {
     Dict dict;
     void *head_buf;
-    char resource_str[80];
-    int page_size;
 
     dict = (Dict) xmalloc (sizeof(*dict));
 
     if (cache < 5)
 	cache = 5;
-    sprintf (resource_str, "dict.%s.pagesize", name);
 
     dict->grep_cmap = NULL;
     page_size = DICT_DEFAULT_PAGESIZE;
     if (page_size < 2048)
     {
-        logf (LOG_WARN, "Resource %s was too small. Set to 2048",
-              resource_str);
+        logf (LOG_WARN, "Page size for dict %s %d<2048. Set to 2048",
+	      name, page_size);
         page_size = 2048;
     }
     dict->dbf = dict_bf_open (bfs, name, page_size, cache, rw);
@@ -83,9 +80,8 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
         }
         if (dict->head.page_size != page_size)
         {
-            logf (LOG_WARN, "Resource %s is %d and pagesize of `%s' is %d",
-                  resource_str, page_size, name, dict->head.page_size);
-	    return 0;
+            logf (LOG_WARN, "Page size for existing dict %s is %d. Current is %d",
+		  name, dict->head.page_size, page_size);
         }
     }
     if (dict->head.compact_flag)

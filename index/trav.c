@@ -1,4 +1,4 @@
-/* $Id: trav.c,v 1.44 2004-01-22 11:27:21 adam Exp $
+/* $Id: trav.c,v 1.45 2004-09-09 09:07:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -258,7 +258,7 @@ void repositoryShow (ZebraHandle zh, const char *path)
     Dict dict;
     struct dirs_info *di;
 
-    if (!(dict = dict_open (zh->reg->bfs, FMATCH_DICT, 50, 0, 0)))
+    if (!(dict = dict_open_res (zh->reg->bfs, FMATCH_DICT, 50, 0, 0, zh->res)))
     {
         yaz_log (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
 	return;
@@ -398,8 +398,8 @@ void repositoryUpdate (ZebraHandle zh, const char *path)
     if (zh->m_record_id && !strcmp (zh->m_record_id, "file"))
     {
         Dict dict;
-        if (!(dict = dict_open (zh->reg->bfs, FMATCH_DICT, 50,
-				zh->m_flag_rw, 0)))
+        if (!(dict = dict_open_res (zh->reg->bfs, FMATCH_DICT, 50,
+				    zh->m_flag_rw, 0, zh->res)))
         {
             yaz_log (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
 	    return ;

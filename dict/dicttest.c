@@ -1,4 +1,4 @@
-/* $Id: dicttest.c,v 1.28 2004-01-22 11:27:20 adam Exp $
+/* $Id: dicttest.c,v 1.29 2004-09-09 09:07:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -172,7 +172,7 @@ int main (int argc, char **argv)
         logf (LOG_FATAL, "bfs_create fail");
         exit (1);
     }
-    dict = dict_open (bfs, name, cache, rw, 0);
+    dict = dict_open (bfs, name, cache, rw, 0, 4096);
     if (!dict)
     {
         logf (LOG_FATAL, "dict_open fail of `%s'", name);

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.117 2004-09-01 15:01:32 heikki Exp $
+/* $Id: index.h,v 1.118 2004-09-09 09:07:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -497,6 +497,9 @@ void iscz1_reset (void *vp);
 void iscz1_stop (void *p);
 void iscz1_decode (void *vp, char **dst, const char **src);
 void iscz1_encode (void *vp, char **dst, const char **src);
+
+Dict dict_open_res (BFiles bfs, const char *name, int cache, int rw,
+		    int compact_flag, Res res);
 
 YAZ_END_CDECL
 

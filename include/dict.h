@@ -1,5 +1,5 @@
-/* $Id: dict.h,v 1.32 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: dict.h,v 1.33 2004-09-09 09:07:12 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -93,7 +93,7 @@ int        dict_bf_close (Dict_BFile dbf);
 void       dict_bf_compact (Dict_BFile dbf);
      
 Dict       dict_open (BFiles bfs, const char *name, int cache, int rw,
-		      int compact_flag);
+		      int compact_flag, int page_size);
 int        dict_close (Dict dict);
 int        dict_insert (Dict dict, const char *p, int userlen, void *userinfo);
 int        dict_delete (Dict dict, const char *p);

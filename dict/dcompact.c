@@ -1,4 +1,4 @@
-/* $Id: dcompact.c,v 1.8 2002-08-02 19:26:55 adam Exp $
+/* $Id: dcompact.c,v 1.9 2004-09-09 09:07:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -93,13 +93,13 @@ int dict_copy_compact (BFiles bfs, const char *from_name, const char *to_name)
     int no_dir = 0;
     Dict dict_from, dict_to;
     int *map, i;
-    dict_from = dict_open (bfs, from_name, 0, 0, 0);
+    dict_from = dict_open (bfs, from_name, 0, 0, 0, 4096);
     if (!dict_from)
 	return -1;
     map = (int *) xmalloc ((dict_from->head.last+1) * sizeof(*map));
     for (i = 0; i <= (int) (dict_from->head.last); i++)
 	map[i] = -1;
-    dict_to = dict_open (bfs, to_name, 0, 1, 1);
+    dict_to = dict_open (bfs, to_name, 0, 1, 1, 4096);
     if (!dict_to)
 	return -1;
     map[0] = 0;

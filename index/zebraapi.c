@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.128 2004-09-03 14:59:49 heikki Exp $
+/* $Id: zebraapi.c,v 1.129 2004-09-09 09:07:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -196,6 +196,25 @@ void zebra_pidfname(ZebraService zs, char *path)
     strcat(path, "zebrasrv.pid");
 }
 
+Dict dict_open_res (BFiles bfs, const char *name, int cache, int rw,
+		    int compact_flag, Res res)
+{
+    int page_size = 4096;
+    char resource_str[200];
+    const char *v;
+    sprintf (resource_str, "dict.%.100s.pagesize", name);
+
+    v = res_get(res, resource_str);
+    if (v)
+    {
+	page_size = atoi(v);
+	yaz_log(LOG_LOG, "Using custom dictionary page size %d for %s",
+		page_size, name);
+    }
+    return dict_open(bfs, name, cache, rw, compact_flag, page_size);
+}
+
+
 static
 struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
                                             int rw, int useshadow, Res res,
@@ -286,9 +305,9 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     }
     if (rw)
     {
-        reg->matchDict = dict_open (reg->bfs, GMATCH_DICT, 20, 1, 0);
+        reg->matchDict = dict_open_res (reg->bfs, GMATCH_DICT, 20, 1, 0, res);
     }
-    if (!(reg->dict = dict_open (reg->bfs, FNAME_DICT, 40, rw, 0)))
+    if (!(reg->dict = dict_open_res (reg->bfs, FNAME_DICT, 40, rw, 0, res)))
     {
 	logf (LOG_WARN, "dict_open");
 	return 0;
