@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: sgmlread.c,v $
- * Revision 1.8  1999-06-25 13:47:25  adam
+ * Revision 1.9  1999-07-14 10:56:16  adam
+ * Filter handles multiple records in one file.
+ *
+ * Revision 1.8  1999/06/25 13:47:25  adam
  * Minor change that prevents MSVC warning.
  *
  * Revision 1.7  1999/05/21 12:00:17  adam
@@ -31,22 +34,81 @@
  * New module recctrl. Used to manage records (extract/retrieval).
  *
  */
+#include <assert.h>
 #include <log.h>
 
 #include "grsread.h"
 
+struct sgml_getc_info {
+    char *buf;
+    int buf_size;
+    int size;
+    int off;
+    int moffset;
+    void *fh;
+    int (*readf)(void *, char *, size_t);
+    WRBUF wrbuf;
+};
+
+int sgml_getc (void *clientData)
+{
+    struct sgml_getc_info *p = (struct sgml_getc_info *) clientData;
+    int res;
+    
+    if (p->off < p->size)
+	return p->buf[(p->off)++];
+    if (p->size < p->buf_size)
+	return 0;
+    p->moffset += p->off;
+    p->off = 0;
+    p->size = 0;
+    res = (*p->readf)(p->fh, p->buf, p->buf_size);
+    if (res > 0)
+    {
+	p->size += res;
+	return p->buf[(p->off)++];
+    }
+    return 0;
+}
+
 static data1_node *grs_read_sgml (struct grs_read_info *p)
 {
-    return data1_read_record (p->dh, p->readf, p->fh, p->mem);
+    struct sgml_getc_info *sgi = (struct sgml_getc_info *) p->clientData;
+    data1_node *node;
+    int res;
+    
+    sgi->moffset = p->offset;
+    sgi->fh = p->fh;
+    sgi->readf = p->readf;
+    sgi->off = 0;
+    sgi->size = 0;
+    res = (*sgi->readf)(sgi->fh, sgi->buf, sgi->buf_size);
+    if (res > 0)
+	sgi->size += res;
+    else
+	return 0;
+    node = data1_read_nodex (p->dh, p->mem, sgml_getc, sgi, sgi->wrbuf);
+    if (node && p->endf)
+	(*p->endf)(sgi->fh, sgi->moffset + sgi->off);
+    return node;
 }
 
 static void *grs_init_sgml(void)
 {
-    return 0;
+    struct sgml_getc_info *p = (struct sgml_getc_info *) xmalloc (sizeof(*p));
+    p->buf_size = 512;
+    p->buf = xmalloc (p->buf_size);
+    p->wrbuf = wrbuf_alloc();
+    return p;
 }
 
 static void grs_destroy_sgml(void *clientData)
 {
+    struct sgml_getc_info *p = (struct sgml_getc_info *) clientData;
+
+    wrbuf_free(p->wrbuf, 1);
+    xfree (p->buf);
+    xfree (p);
 }
 
 static struct recTypeGrs sgml_type = {
