@@ -551,7 +551,10 @@ int heap_inps (struct heap_info *hi)
             dict_insert (hi->dict, this_name, sizeof(ISAMS_P), &isams_p);
         }
 	else
-	    abort();
+	{
+	    logf (LOG_FATAL, "isams doesn't support this kind of update");
+	    break;
+	}
     }
     xfree (isams_i);
     return 0;
@@ -740,7 +743,10 @@ void key_input (BFiles bfs, int nkeys, int cache)
 
 /*
  * $Log: kinput.c,v $
- * Revision 1.41  1999-11-30 13:48:03  adam
+ * Revision 1.42  1999-12-01 21:58:48  adam
+ * Proper handle of illegal use of isams.
+ *
+ * Revision 1.41  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.40  1999/09/08 12:12:39  adam
