@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zebraapi.h,v 1.15 2002-04-15 13:48:11 adam Exp $
+ * $Id: zebraapi.h,v 1.16 2002-04-26 08:44:47 adam Exp $
  */
 
 #ifndef ZEBRAAPI_H
@@ -151,6 +151,9 @@ int zebra_select_database (ZebraHandle zh, const char *basename);
 
 YAZ_EXPORT
 void zebra_shadow_enable (ZebraHandle zh, int value);
+
+YAZ_EXPORT
+void zebra_register_statistics (ZebraHandle zh);
 
 YAZ_END_CDECL				      
 #endif

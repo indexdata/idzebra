@@ -1,8 +1,8 @@
 /*
- *  Copyright (c) 1995-1998, Index Data.
+ *  Copyright (c) 2000-2002, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.9 2002-04-23 17:56:54 adam Exp $
+ *  $Id: isamb.c,v 1.10 2002-04-26 08:44:47 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>

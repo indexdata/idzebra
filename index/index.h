@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
- * $Id: index.h,v 1.82 2002-04-16 22:31:42 adam Exp $
+ * $Id: index.h,v 1.83 2002-04-26 08:44:47 adam Exp $
  */
 
 #ifndef INDEX_H
@@ -411,6 +411,10 @@ int explain_extract (void *handle, Record rec, data1_node *n);
 
 int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
                  const struct recordGroup *rGroup, int deleteFlag);
+
+int zebra_begin_read (ZebraHandle zh);
+void zebra_end_read (ZebraHandle zh);
+
 
 YAZ_END_CDECL
 

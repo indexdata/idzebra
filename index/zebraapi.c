@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.58 2002-04-23 18:07:17 adam Exp $
+ * $Id: zebraapi.c,v 1.59 2002-04-26 08:44:47 adam Exp $
  */
 
 #include <assert.h>
@@ -49,9 +49,6 @@ static struct zebra_register *zebra_register_open (ZebraService zs,
                                                    Res res,
                                                    const char *reg_path);
 static void zebra_register_close (ZebraService zs, struct zebra_register *reg);
-
-static int zebra_begin_read (ZebraHandle zh);
-static void zebra_end_read (ZebraHandle zh);
 
 ZebraHandle zebra_open (ZebraService zs)
 {
@@ -922,7 +919,7 @@ void zebra_get_state (ZebraHandle zh, char *val, int *seqno)
     xfree (fname);
 }
 
-static int zebra_begin_read (ZebraHandle zh)
+int zebra_begin_read (ZebraHandle zh)
 {
     int dirty = 0;
     char val;
@@ -988,7 +985,7 @@ static int zebra_begin_read (ZebraHandle zh)
     return 0;
 }
 
-static void zebra_end_read (ZebraHandle zh)
+void zebra_end_read (ZebraHandle zh)
 {
     (zh->trans_no)--;
 

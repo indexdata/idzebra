@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.88 2002-04-23 18:09:05 adam Exp $
+ * $Id: main.c,v 1.89 2002-04-26 08:44:47 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
@@ -146,7 +146,7 @@ int main (int argc, char **argv)
                 }
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
                 {
-                    assert (!"todo");
+                    zebra_register_statistics (zh);
                 }
                 else if (!strcmp (arg, "compact"))
                 {

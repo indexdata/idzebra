@@ -13,10 +13,7 @@
 #include "../isamc/isamd-p.h"
 
 struct inv_stat_info {
-    ISAMS isams;
-    ISAM isam;
-    ISAMC isamc;
-    ISAMD isamd;
+    ZebraHandle zh;
     int no_isam_entries[9];
     int no_dict_entries;
     int no_dict_bytes;
@@ -42,13 +39,13 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     assert (*info == sizeof(ISAMS_P));
     memcpy (&isam_p, info+1, sizeof(ISAMS_P));
 
-    if (stat_info->isams)
+    if (stat_info->zh->reg->isams)
     {
         ISAMS_PP pp;
         int occurx = 0;
 	struct it_key key;
 
-        pp = isams_pp_open (stat_info->isams, isam_p);
+        pp = isams_pp_open (stat_info->zh->reg->isams, isam_p);
         occur = isams_pp_num (pp);
         while (isams_pp_read(pp, &key))
 	{
@@ -59,21 +56,21 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 	stat_info->no_isam_entries[0] += occur;
         isams_pp_close (pp);
     }
-    if (stat_info->isam)
+    if (stat_info->zh->reg->isam)
     {
         ISPT ispt;
 
-        ispt = is_position (stat_info->isam, isam_p);
+        ispt = is_position (stat_info->zh->reg->isam, isam_p);
         occur = is_numkeys (ispt);
         is_pt_free (ispt);
     }
-    if (stat_info->isamc)
+    if (stat_info->zh->reg->isamc)
     {
         ISAMC_PP pp;
         int occurx = 0;
 	struct it_key key;
 
-        pp = isc_pp_open (stat_info->isamc, isam_p);
+        pp = isc_pp_open (stat_info->zh->reg->isamc, isam_p);
         occur = isc_pp_num (pp);
         while (isc_pp_read(pp, &key))
 	{
@@ -84,13 +81,13 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 	stat_info->no_isam_entries[isc_type(isam_p)] += occur;
         isc_pp_close (pp);
     }
-    if (stat_info->isamd)
+    if (stat_info->zh->reg->isamd)
     {
         ISAMD_PP pp;
         int occurx = 0;
 	struct it_key key;
 
-        pp = isamd_pp_open (stat_info->isamd, isam_p);
+        pp = isamd_pp_open (stat_info->zh->reg->isamd, isam_p);
         
         occur = isamd_pp_num (pp);
         while (isamd_pp_read(pp, &key))
@@ -115,98 +112,46 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 	    stat_info->no_isam_entries[isamd_type(isam_p)] += occur;
         isamd_pp_close (pp);
     }
+    if (stat_info->zh->reg->isamb)
+    {
+        ISAMB_PP pp;
+        struct it_key key;
+
+        pp = isamb_pp_open(stat_info->zh->reg->isamb, isam_p);
+        while (isamb_pp_read(pp, &key))
+            occur++;
+        isamb_pp_close (pp);
+    }
+
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
         i++;
     ++(stat_info->isam_occurrences[i]);
     return 0;
 }
 
-void inv_prstat (ZebraHandle zh)
+void zebra_register_statistics (ZebraHandle zh)
 {
-    Res res = zh->res;
-    BFiles bfs;
-    Dict dict;
-    ISAMS isams = NULL;
-    ISAM  isam  = NULL;
-    ISAMC isamc = NULL;
-    ISAMD isamd = NULL;
     int blocks;
     int size;
     int count;
-    Records records;
     int i, prev;
     int before = 0;
     int after = 1000000000;
     struct inv_stat_info stat_info;
     char term_dict[2*IT_MAX_WORD+2];
 
-    if (!res || !zh->reg)
-        return;
+    if (zebra_begin_read (zh))
+	return;
 
-    bfs = zh->reg->bfs;
-        
+    stat_info.zh = zh;
+
     term_dict[0] = 1;
     term_dict[1] = 0;
-
-    dict = dict_open (bfs, FNAME_DICT, 100, 0, 0);
-    if (!dict)
-    {
-        logf (LOG_FATAL, "dict_open fail");
-        exit (1);
-    }
-    if (res_get_match (res, "isam", "s", ISAM_DEFAULT))
-    {
-	struct ISAMS_M_s isams_m;
-        isams = isams_open (bfs, FNAME_ISAMS, 0,
-			    key_isams_m(res, &isams_m));
-        if (!isams)
-        {
-            logf (LOG_FATAL, "isams_open fail");
-            exit (1);
-        }
-    }
-    else if (res_get_match (res, "isam", "i", ISAM_DEFAULT))
-    {
-        isam = is_open (bfs, FNAME_ISAM, key_compare, 0,
-			sizeof(struct it_key), res);
-        if (!isam)
-        {
-            logf (LOG_FATAL, "is_open fail");
-            exit (1);
-        }
-    }
-    else if (res_get_match (res, "isam", "d", ISAM_DEFAULT))
-    {
-	struct ISAMD_M_s isamd_m;
-        isamd = isamd_open (bfs, FNAME_ISAMD, 0, 
-                            key_isamd_m(res,&isamd_m));
-        if (!isamd)
-        {
-            logf (LOG_FATAL, "isamd_open fail");
-            exit (1);
-        }
-    }
-    else if (res_get_match (res, "isam", "c", ISAM_DEFAULT))
-    {
-	struct ISAMC_M_s isamc_m;
-        isamc = isc_open (bfs, FNAME_ISAMC, 0,
-			  key_isamc_m (res, &isamc_m));
-        if (!isamc)
-        {
-            logf (LOG_FATAL, "isc_open fail");
-            exit (1);
-        }
-    }
-    records = rec_open (bfs, 0, 0);
 
     for (i = 0; i<=SINGLETON_TYPE; i++)
 	stat_info.no_isam_entries[i] = 0;
     stat_info.no_dict_entries = 0;
     stat_info.no_dict_bytes = 0;
-    stat_info.isams = isams;
-    stat_info.isam = isam;
-    stat_info.isamc = isamc;
-    stat_info.isamd = isamd;
     stat_info.isam_bounds[0] = 1;
     stat_info.isam_bounds[1] = 2;
     stat_info.isam_bounds[2] = 3;
@@ -230,35 +175,37 @@ void inv_prstat (ZebraHandle zh)
     for (i = 0; i<20; i++)
         stat_info.isam_occurrences[i] = 0;
 
-    dict_scan (dict, term_dict, &before, &after, &stat_info, inv_stat_handle);
+    dict_scan (zh->reg->dict, term_dict, &before, &after, &stat_info,
+               inv_stat_handle);
 
-    if (isamc)
+    if (zh->reg->isamc)
     {
 	fprintf (stderr, "   Blocks    Occur  Size KB   Bytes/Entry\n");
-	for (i = 0; isc_block_used (isamc, i) >= 0; i++)
+	for (i = 0; isc_block_used (zh->reg->isamc, i) >= 0; i++)
 	{
-	    fprintf (stderr, " %8d %8d", isc_block_used (isamc, i),
+	    fprintf (stderr, " %8d %8d", isc_block_used (zh->reg->isamc, i),
 		     stat_info.no_isam_entries[i]);
 
 	    if (stat_info.no_isam_entries[i])
 		fprintf (stderr, " %8d   %f",
-			 (int) ((1023.0 + (double) isc_block_used(isamc, i) *
-				 isc_block_size(isamc,i))/1024),
-			 ((double) isc_block_used(isamc, i) *
-			  isc_block_size(isamc,i))/
+			 (int) ((1023.0 + (double)
+                                 isc_block_used(zh->reg->isamc, i) *
+				 isc_block_size(zh->reg->isamc,i))/1024),
+			 ((double) isc_block_used(zh->reg->isamc, i) *
+			  isc_block_size(zh->reg->isamc,i))/
 			 stat_info.no_isam_entries[i]);
 	    fprintf (stderr, "\n");
 	}
     }
-    if (isamd)
+    if (zh->reg->isamd)
     {
 	fprintf (stderr, "   Blocks   Occur      KB Bytes/Entry\n");
-	if (isamd->method->debug >0) 
+	if (zh->reg->isamd->method->debug >0) 
             logf(LOG_LOG,"   Blocks   Occur      KB Bytes/Entry");
 	for (i = 0; i<=SINGLETON_TYPE; i++)
 	{
-	    blocks= isamd_block_used(isamd,i);
-	    size= isamd_block_size(isamd,i);
+	    blocks= isamd_block_used(zh->reg->isamd,i);
+	    size= isamd_block_size(zh->reg->isamd,i);
 	    count=stat_info.no_isam_entries[i];
 	    if (i==SINGLETON_TYPE) 
 	        blocks=size=0;
@@ -270,7 +217,7 @@ void inv_prstat (ZebraHandle zh)
     		         count,
     		    	 (int) ((1023.0 + (double) blocks * size)/1024),
     			 ((double) blocks * size)/count);
-	        if (isamd->method->debug >0) 
+	        if (zh->reg->isamd->method->debug >0) 
     		    logf(LOG_LOG, "%c %7d %7d %7d %5.2f",
     		         (i==SINGLETON_TYPE)?('z'):('A'+i),
     		         blocks,
@@ -280,7 +227,7 @@ void inv_prstat (ZebraHandle zh)
 	    } /* entries */
 	} /* for */
     } /* isamd */
-    if ( (isamd) && (isamd->method->debug>0))
+    if ( (zh->reg->isamd) && (zh->reg->isamd->method->debug>0))
         fprintf (stderr, "\n%d words using %d bytes\n",
              stat_info.no_dict_entries, stat_info.no_dict_bytes);
     fprintf (stderr, "    Occurrences     Words\n");
@@ -294,25 +241,18 @@ void inv_prstat (ZebraHandle zh)
     }
     fprintf (stderr, "%7d-        %7d\n",
              prev, stat_info.isam_occurrences[i]);
-    rec_close (&records);
-    dict_close (dict);
-
-    if (isams)
-        isams_close (isams);
-    if (isam)
-        is_close (isam);
-    if (isamc)
-        isc_close (isamc);
-    if (isamd)
-        isamd_close (isamd);
     xmalloc_trav("unfreed"); /*! while hunting memory leaks */    
+    zebra_end_read (zh);
 }
 
 
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.24  2002-04-05 08:46:26  adam
+ * Revision 1.25  2002-04-26 08:44:47  adam
+ * Index statistics working again
+ *
+ * Revision 1.24  2002/04/05 08:46:26  adam
  * Zebra with full functionality
  *
  * Revision 1.23  2002/04/04 14:14:13  adam
