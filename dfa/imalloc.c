@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: imalloc.c,v $
- * Revision 1.6  1996-10-29 13:57:25  adam
+ * Revision 1.7  1997-10-27 14:27:13  adam
+ * Minor changes.
+ *
+ * Revision 1.6  1996/10/29 13:57:25  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.5  1996/05/14 11:33:41  adam
@@ -92,9 +95,9 @@ void *icalloc (size_t size)
 #endif
 }
 
-#if MEMDEBUG
-void i_free (void *p)
+void ifree (void *p)
 {
+#if MEMDEBUG
     size_t size;
     if( !p )
         return;
@@ -110,8 +113,10 @@ void i_free (void *p)
     if( alloc < 0L )
         logf (LOG_FATAL,"Internal: ifree(%u) negative alloc.", size );
     xfree( (unsigned *) p-2 );
-}
+#else
+    xfree (p);
 #endif
+}
 
 #if MEMDEBUG
 void imemstat (void)
