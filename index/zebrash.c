@@ -83,6 +83,8 @@ static int defargint( char *arg, int def )
     sscanf(a," %i", &v);
   return v;
 }
+
+int onecommand( char *line, char *outbuff);
  
  /**************************************
  * Simple support commands
@@ -152,12 +154,17 @@ static int cmd_zebra_close( char *args[], char *outbuff)
 
 static int cmd_quickstart( char *args[], char *outbuff)
 {
-  cmd_zebra_start(args,outbuff);
-  cmd_zebra_open(args,outbuff);
-  yaz_log_init_file("zebrash.log");
-  yaz_log_init_prefix("ZebraSh");
-  strcat(outbuff,"Started zebra, log in zebrash.log");
-  return 0; /* ok */
+  char tmp[128];
+  onecommand("yaz_log_file zebrash.log",outbuff);
+  onecommand("yaz_log_prefix ZebraSh", outbuff);
+  sprintf(tmp, "yaz_log_level 0x%x", LOG_DEFAULT_LEVEL | LOG_APP);
+  onecommand(tmp,outbuff);
+  logf(LOG_APP,"quickstart");
+  onecommand("zebra_start",outbuff);
+  onecommand("zebra_open",outbuff);
+  onecommand("select_database Default",outbuff);
+  strcat(outbuff,"ok\n");
+  return 0;
 }
 
 /**************************************
@@ -168,7 +175,7 @@ static int cmd_yaz_log_file( char *args[], char *outbuff)
 {
   char *fn = defarg(args[1],0);
   char tmp[255];
-  sprintf(tmp, "sending yaz-log to %s ",fn);
+  sprintf(tmp, "sending yaz-log to %s\n",fn);
   strcat(outbuff, tmp);
   yaz_log_init_file(fn);
   return 0; /* ok */
@@ -178,7 +185,7 @@ static int cmd_yaz_log_level( char *args[], char *outbuff)
 {
   int  lev = defargint(args[1],LOG_DEFAULT_LEVEL);
   char tmp[255];
-  sprintf(tmp, "setting yaz-log to level %d (ox%x)",lev,lev);
+  sprintf(tmp, "setting yaz-log to level %d (ox%x)\n",lev,lev);
   strcat(outbuff, tmp);
   yaz_log_init_level(lev);
   return 0; /* ok */
@@ -188,7 +195,7 @@ static int cmd_yaz_log_prefix( char *args[], char *outbuff)
 {
   char *pref = defarg(args[1],"ZebraSh");
   char tmp[255];
-  sprintf(tmp, "setting yaz-log prefix to %s",pref);
+  sprintf(tmp, "setting yaz-log prefix to %s\n",pref);
   strcat(outbuff, tmp);
   yaz_log_init_prefix(pref);
   return 0; /* ok */
@@ -228,7 +235,7 @@ static int cmd_err ( char *args[], char *outbuff)
 static int cmd_errcode ( char *args[], char *outbuff)
 {
   char tmp[MAX_OUT_BUFF];
-  sprintf(tmp, "errCode: %d ",
+  sprintf(tmp, "errCode: %d \n",
     zebra_errCode (zh));
   strcat(outbuff, tmp);
   return 0; /* ok */
@@ -236,7 +243,7 @@ static int cmd_errcode ( char *args[], char *outbuff)
 static int cmd_errstr ( char *args[], char *outbuff)
 {
   char tmp[MAX_OUT_BUFF];
-  sprintf(tmp, "errStr:  %s",
+  sprintf(tmp, "errStr:  %s\n",
     zebra_errString (zh));
   strcat(outbuff, tmp);
   return 0; /* ok */
@@ -250,6 +257,23 @@ static int cmd_erradd ( char *args[], char *outbuff)
   return 0; /* ok */
 }
 
+/**************************************
+ * Admin commands
+ */
+
+static int cmd_init ( char *args[], char *outbuff)
+{
+  zebra_init(zh);
+  return 0; /* ok */
+}
+
+static int cmd_select_database ( char *args[], char *outbuff)
+{
+  char *db=args[1];
+  if (!db)
+    db="Default";
+  return zebra_select_database(zh, args[1]);
+}
  
 /**************************************
  * Command table, parser, and help 
@@ -294,7 +318,7 @@ struct cmdstruct cmds[] = {
     "[filename]",
     "Directs the log to filename (or stderr)",
     cmd_yaz_log_file },
-  { "yaz_log_file", 
+  { "yaz_log_level", 
     "[level]",
     "Sets the logging level (or returns to default)",
     cmd_yaz_log_level },
@@ -321,6 +345,14 @@ struct cmdstruct cmds[] = {
     "Displays zebra's additional error message",
     cmd_erradd},    
   
+  { "", "Admin:","", 0}, 
+  { "init",  "",
+    "Initializes the zebra database, destroying all data in it",
+    cmd_init},    
+  { "select_database",  "basename",
+    "Selects a database",
+    cmd_select_database},    
+  
   { "", "Misc:","", 0}, 
   { "echo", "string", 
     "ouputs the string", 
@@ -343,6 +375,7 @@ int onecommand( char *line, char *outbuff)
   int n;
   char argbuf[MAX_ARG_LEN];
   int rc;
+  logf(LOG_APP,"%s",line);
   strncpy(argbuf,line, MAX_ARG_LEN-1);
   argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
   n=split_args(argbuf, args);
@@ -357,7 +390,10 @@ int onecommand( char *line, char *outbuff)
         args[0]=""; 
       return ((cmds[i].testfunc)(args,outbuff));
     }
-  sprintf (outbuff, "Unknown command '%s'. Try help",args[0] );
+  strcat(outbuff, "Unknown command '");
+  strcat(outbuff,args[0] );
+  strcat(outbuff,"'. Try help");
+  logf(LOG_APP,"Unknown command");
   return -1; 
 }
  
@@ -365,8 +401,8 @@ int onecommand( char *line, char *outbuff)
  { 
   int i;
   char tmp[MAX_ARG_LEN];
-  if (args[1])
-  { /* help for a single command */
+  if (args[1]) 
+  { /* help for a single command */ 
     for (i=0;cmds[i].cmd;i++)
       if (0==strcmp(cmds[i].cmd, args[1])) 
       {
@@ -440,6 +476,7 @@ static void Zerrors ( char *outbuff)
 void shell()
 {
   int rc=0;
+  char tmp[MAX_ARG_LEN];
   while (rc!=-99)
   {
     char buf[MAX_ARG_LEN];
@@ -467,11 +504,17 @@ void shell()
 #endif 
     outbuff[0]='\0';
     rc=onecommand(buf, outbuff);
+    if (rc==0)
+      strcat(outbuff, "OK\n");
+    else if (rc > 0)
+    {
+      sprintf(tmp, "command returned %d\n",rc);
+      strcat(outbuff,tmp);
+    }
     Zerrors(outbuff);
   	printf("%s\n", outbuff);
-  }
-
- }
+  } /* while */
+} /* shell() */
  
  
 /**************************************
