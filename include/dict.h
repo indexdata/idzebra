@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.6  1994-09-16 15:39:21  adam
+ * Revision 1.7  1994-09-22 10:44:47  adam
+ * Don't remember what changed!!
+ *
+ * Revision 1.6  1994/09/16  15:39:21  adam
  * Initial code of lookup - not tested yet.
  *
  * Revision 1.5  1994/09/06  13:05:29  adam
@@ -88,6 +91,8 @@ Dict dict_open (const char *name, int cache, int rw);
 int dict_close (Dict dict);
 int dict_insert (Dict dict, const Dict_char *p, int userlen, void *userinfo);
 char *dict_lookup (Dict dict, Dict_char *p);
+int dict_lookup_ec (Dict dict, Dict_char *p, int range,
+                    int (*f)(Dict_char*name));
 int dict_strcmp (const Dict_char *s1, const Dict_char *s2);
 int dict_strlen (const Dict_char *s);
 
