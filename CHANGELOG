@@ -10,6 +10,8 @@ Various fixes.
 
 Small modifications to input filters and profiles.
 
+Added support for SOIF syntax (with private OID).
+
 --- 1.0a7 1996/5/16
 
 Fixed buffer-size problem in indexing.
