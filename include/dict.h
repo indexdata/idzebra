@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.3  1994-08-18 12:41:12  adam
+ * Revision 1.4  1994-09-01 17:44:40  adam
+ * Work on insertion in dictionary. Not finished yet.
+ * CVS ----------------------------------------------------------------------
+ *
+ * Revision 1.3  1994/08/18  12:41:12  adam
  * Some development of dictionary. Not finished at all!
  *
  * Revision 1.2  1994/08/17  13:32:33  adam
@@ -51,11 +55,13 @@ typedef struct Dict_file_struct
     int hash_size;
     void *all_data;
 
+    int  block_size;
     int  hits;
     int  misses;
 } *Dict_BFile;
 
 typedef struct Dict_struct {
+    int rw;
     Dict_BFile dbf;
     struct Dict_head head;
 } *Dict;
@@ -68,13 +74,11 @@ Dict_BFile dict_bf_open (const char *name, int block_size, int cache, int rw);
 int dict_bf_close (Dict_BFile dbf);
 #define DICT_MAGIC "dict00"
 
-typedef int Dict_info;
-
-#define DICT_PAGESIZE 8192
+#define DICT_PAGESIZE 64
     
 Dict dict_open (const char *name, int cache, int rw);
 int dict_close (Dict dict);
-int dict_insert (Dict dict, const Dict_char *p, void *userinfo);
+int dict_insert (Dict dict, const Dict_char *p, int userlen, void *userinfo);
 int dict_lookup (Dict dict, Dict_char *p);
 int dict_strcmp (const Dict_char *s1, const Dict_char *s2);
 int dict_strlen (const Dict_char *s);
