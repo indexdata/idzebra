@@ -1,4 +1,4 @@
-# $Id: Resultset.pm,v 1.9 2003-03-06 23:32:10 pop Exp $
+# $Id: Resultset.pm,v 1.10 2003-07-26 16:27:46 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -12,7 +12,7 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.9 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.10 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -32,6 +32,7 @@ sub new {
     $self->{odr_stream} = IDZebra::odr_createmem($IDZebra::ODR_DECODE);
 
     $self->{name}        = $args{name};
+    $self->{query}       = $args{query};
     $self->{recordCount} = $args{recordCount};
     $self->{errCode}     = $args{errCode};
     $self->{errString}   = $args{errString};
@@ -56,6 +57,31 @@ sub errCode {
 sub errString {
     my ($self) = @_;
     return ($self->{errCode});
+}
+
+sub terms {
+    use Data::Dumper;
+    my ($self) = @_;
+    my $count = 0; my $type = 0; my $len = 0;
+    my $tc = IDZebra::resultSetTerms($self->{session}{zh},$self->{name},
+				     0, \$count, \$type, "\0", \$len);
+
+    logf (LOG_LOG,"Got $tc terms");
+    
+    
+    my @res = ();
+    for (my $i=0; $i<$tc; $i++) {
+	my $len = 1024;
+	my $t = {term => "\0" x $len, count => 0, type => 0};
+	my $stat = IDZebra::resultSetTerms($self->{session}{zh},$self->{name},
+					   $i, \$t->{count}, \$t->{type}, 
+					   $t->{term}, \$len);
+	$t->{term} = substr($t->{term}, 0, $len);
+	logf (LOG_LOG,
+	      "term $i: type $t->{type}, '$t->{term}' ($t->{count})");
+	push (@res, $t);
+    }
+    return (@res);
 }
 
 # =============================================================================

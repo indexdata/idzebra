@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 05_search.t,v 1.2 2003-03-04 19:33:53 pop Exp $
+# $Id: 05_search.t,v 1.3 2003-07-26 16:27:46 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,7 +14,7 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 12;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -41,6 +41,7 @@ my ($hits, $expected);
 # Search 1 databases
 my $rs1 = $sess->search(cqlmap    => 'demo/cql.map',
 			cql       => 'IDZebra',
+			termset   => 1,
 			databases => [qw(demo1)]);
 
 $expected = $filecount;
@@ -64,8 +65,33 @@ ok(($hits == $expected), "CQL search - found $hits/$expected records");
 my $rs3 = $sess->search(cqlmap    => 'demo/cql.map',
 			pqf       => '@attr 1=4 IDZebra');
 $expected = $filecount * 2;
-$hits = $rs2->count;
+$hits = $rs3->count;
 ok(($hits == $expected), "RPN search - found $hits/$expected records");
+
+# Termlists;
+my $rs4 = $sess->search(pqf       => '@attr 1=4 @and IDZebra Session');
+$expected = 2;
+$hits = $rs4->count;
+ok(($hits == $expected), "RPN search - found $hits/$expected records");
+
+my @terms = $rs4->terms();
+ok(($#terms == 1), "Got 2 terms in RPN expression");
+my $cc = 0;
+foreach my $t (@terms) {
+    if ($t->{term} eq 'IDZebra') {
+	ok(($t->{count} = $filecount*2), "Term IDZebra ($t->{count})");
+	$cc++;
+    }
+    elsif ($t->{term} eq 'Session') {
+	ok(($t->{count} = 2), "Term Session ($t->{count})");
+	$cc++;
+    } else {
+	ok(0,"Invalid term $t->{term}");
+    }
+
+}
+ok (($cc == 2), "Got 2 terms for RS");
+
 
 
 # More specific search

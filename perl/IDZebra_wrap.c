@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.19 2003-07-07 10:59:33 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.20 2003-07-26 16:27:46 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -4630,6 +4630,106 @@ XS(_wrap_deleteResultSet) {
 }
 
 
+XS(_wrap_resultSetTerms) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraHandle arg1 ;
+        char *arg2 ;
+        int arg3 ;
+        int *arg4 ;
+        int *arg5 ;
+        char *arg6 ;
+        int *arg7 ;
+        int result;
+        int dvalue4 ;
+        int dvalue5 ;
+        int dvalue7 ;
+        int argvi = 0;
+        SV * _saved[3] ;
+        dXSARGS;
+        
+        if ((items < 7) || (items > 7)) {
+            SWIG_croak("Usage: resultSetTerms(zh,setname,no,REFERENCE,REFERENCE,out,REFERENCE);");
+        }
+        {
+            ZebraHandle * argp;
+            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_ZebraHandle,0) < 0) {
+                SWIG_croak("Type error in argument 1 of resultSetTerms. Expected _p_ZebraHandle");
+            }
+            arg1 = *argp;
+        }
+        if (!SvOK((SV*) ST(1))) arg2 = 0;
+        else arg2 = (char *) SvPV(ST(1), PL_na);
+        arg3 = (int) SvIV(ST(2));
+        {
+            SV *tempsv;
+            if (!SvROK(ST(3))) {
+                SWIG_croak("expected a reference");
+            }
+            tempsv = SvRV(ST(3));
+            if (!SvIOK(tempsv)) {
+                SWIG_croak("expected a integer reference");
+            }
+            dvalue4 = SvIV(tempsv);
+            arg4 = &dvalue4;
+        }
+        {
+            SV *tempsv;
+            if (!SvROK(ST(4))) {
+                SWIG_croak("expected a reference");
+            }
+            tempsv = SvRV(ST(4));
+            if (!SvIOK(tempsv)) {
+                SWIG_croak("expected a integer reference");
+            }
+            dvalue5 = SvIV(tempsv);
+            arg5 = &dvalue5;
+        }
+        if (!SvOK((SV*) ST(5))) arg6 = 0;
+        else arg6 = (char *) SvPV(ST(5), PL_na);
+        {
+            SV *tempsv;
+            if (!SvROK(ST(6))) {
+                SWIG_croak("expected a reference");
+            }
+            tempsv = SvRV(ST(6));
+            if (!SvIOK(tempsv)) {
+                SWIG_croak("expected a integer reference");
+            }
+            dvalue7 = SvIV(tempsv);
+            arg7 = &dvalue7;
+        }
+        _saved[0] = ST(3);
+        _saved[1] = ST(4);
+        _saved[2] = ST(6);
+        result = (int)zebra_resultSetTerms(arg1,(char const *)arg2,arg3,arg4,arg5,arg6,arg7);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        {
+            SV *tempsv;
+            tempsv = SvRV(_saved[0]);
+            sv_setiv(tempsv, (IV) *arg4);
+        }
+        {
+            SV *tempsv;
+            tempsv = SvRV(_saved[1]);
+            sv_setiv(tempsv, (IV) *arg5);
+        }
+        {
+            SV *tempsv;
+            tempsv = SvRV(_saved[2]);
+            sv_setiv(tempsv, (IV) *arg7);
+        }
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_sort) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
@@ -8632,6 +8732,7 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::records_retrieve", _wrap_records_retrieve},
 {"IDZebrac::record_retrieve", _wrap_record_retrieve},
 {"IDZebrac::deleteResultSet", _wrap_deleteResultSet},
+{"IDZebrac::resultSetTerms", _wrap_resultSetTerms},
 {"IDZebrac::sort", _wrap_sort},
 {"IDZebrac::scan_PQF", _wrap_scan_PQF},
 {"IDZebrac::getScanEntry", _wrap_getScanEntry},

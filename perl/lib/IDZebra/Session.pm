@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.18 2003-07-07 10:59:33 pop Exp $
+# $Id: Session.pm,v 1.19 2003-07-26 16:27:46 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -16,7 +16,7 @@ BEGIN {
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
     require Exporter;
-    our $VERSION = do { my @r = (q$Revision: 1.18 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.19 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger Exporter);
     our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
@@ -595,6 +595,7 @@ sub search {
 	$self->databases(@{$args{databases}});
     }
 
+
     my $rsname = $args{rsname} ? $args{rsname} : $self->_new_setname;
 
     my $rs = $self->_search_pqf($query, $rsname);
@@ -633,6 +634,7 @@ sub _search_pqf {
 
     my $rs  = IDZebra::Resultset->new($self,
 				      name        => $setname,
+				      query       => $query,
 				      recordCount => $hits,
 				      errCode     => $self->errCode,
 				      errString   => $self->errString);

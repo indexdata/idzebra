@@ -373,6 +373,12 @@ int zebra_deleleResultSet(ZebraHandle zh, int function,
 			  int *statuses);
 
 
+/* Resultset terms */
+%name(resultSetTerms)
+int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
+                          int no, int *REFERENCE, 
+                          int *REFERENCE, char *out, int *REFERENCE);
+
 /* == Sort ================================================================= */
 %name(sort)
 int zebra_sort_by_specstr (ZebraHandle zh, 
