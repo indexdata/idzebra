@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.10 1995-12-13 13:45:21 quinn Exp $
+  $Id: zebra.sgml,v 1.11 1995-12-13 17:14:00 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.10 $
+<date>$Revision: 1.11 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -111,7 +111,7 @@ Complex composition specifications using Espec-1 are partially
 supported (simple element requests only).
 
 <item>
-Element Set Names are established the Espec-1 capability of the
+Element Set Names are defined using the Espec-1 capability of the
 system, and are given in configuration files as simple element
 requests (and possibly variant requests).
 
