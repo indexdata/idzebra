@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.3  1996-11-01 08:59:14  adam
+ * Revision 1.4  1996-11-01 13:36:46  adam
+ * New element, max_blocks_mem, that control how many blocks of max size
+ * to store in memory during isc_merge.
+ * Function isc_merge now ignoreds delete/update of identical keys and
+ * the proper blocks are then non-dirty and not written in flush_blocks.
+ *
+ * Revision 1.3  1996/11/01  08:59:14  adam
  * First version of isc_merge that supports update/delete.
  *
  * Revision 1.2  1996/10/29 16:44:56  adam
@@ -17,9 +23,8 @@
 
 /* 
  * TODO:
- *   small/empty blocks aren't handled in isc_merge.
- *   delete/update optimization of same key.
- *   implementation of isc_numkeys
+ *   Reduction to lower categories in isc_merge
+ *   Implementation of isc_numkeys
  */
 #include <stdlib.h>
 #include <assert.h>
@@ -48,6 +53,8 @@ ISAMC_M isc_getmethod (void)
     m->compare_item = NULL;
 
     m->debug = 0;
+
+    m->max_blocks_mem = 10;
 
     return m;
 }
@@ -83,13 +90,18 @@ ISAMC isc_open (const char *name, int writeflag, ISAMC_M method)
     is->max_cat = --i;
     /* max_buf_size is the larget buffer to be used during merge */
     max_buf_size = (1 + max_buf_size / filecat[i].bsize) * filecat[i].bsize;
+    if (max_buf_size < (1+is->method->max_blocks_mem) * filecat[i].bsize)
+        max_buf_size = (1+is->method->max_blocks_mem) * filecat[i].bsize;
     if (is->method->debug)
         logf (LOG_LOG, "isc: max_buf_size %d", max_buf_size);
     
     assert (is->no_files > 0);
     is->files = xmalloc (sizeof(*is->files)*is->no_files);
     if (writeflag)
+    {
         is->merge_buf = xmalloc (max_buf_size+128);
+	memset (is->merge_buf, 0, max_buf_size+128);
+    }
     else
         is->merge_buf = NULL;
     for (i = 0; i<is->no_files; i++)
