@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.19  1998-09-22 10:48:22  adam
+ * Revision 1.20  1998-11-16 10:10:53  adam
+ * Fixed problem with zebraPosSetCreate that occurred when positions were
+ * less than 1.
+ *
+ * Revision 1.19  1998/09/22 10:48:22  adam
  * Minor changes in search API.
  *
  * Revision 1.18  1998/09/22 10:03:45  adam
@@ -255,7 +259,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 	for (i = 0; i<num; i++)
 	{
 	    position = positions[i];
-	    if (position <= sort_info->num_entries)
+	    if (position > 0 && position <= sort_info->num_entries)
 	    {
 		logf (LOG_DEBUG, "got pos=%d (sorted)", position);
 		sr[i].sysno = sort_info->entries[position-1]->sysno;
