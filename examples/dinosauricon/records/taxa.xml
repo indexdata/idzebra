@@ -4,17 +4,30 @@
  <CLADOGRAM>
   <CLADE name="Allosauridae" in="Allosaurus" out="Sinraptor" silhouette="carnosauria">
    <AUTHOR type="sensu" name="Padian, Hutchinson" year="1997"/>
+   <UNNAMED cf="Acrocanthosaurus" silhouette="Acrocanthosaurus">
+    <PLACE name="Ethiopia"/>
+    <TIME value="Tithonian"/>
+   </UNNAMED>
+   <UNNAMED comment="giant" q="1">
+    <PLACE name="Germany"/>
+    <TIME value="EK"/>
+   </UNNAMED>
    <CGENUS name="Acrocanthosaurus" silhouette="acrocanthosaurus"/>
    <CLADE name="Allosaurinae" in="Allosaurus" out="Carcharodontosaurus, Cryolophosaurus, Monolophosaurus, Sinraptor">
     <CSYNONYM name="Allosauridae" sensu="Sereno"/>
     <CGENUS q="1" incertae="1" name="Antrodemus"/>
+    <CGENUS incertae="1" name="Wyomingraptor"/>
     <CGENUS name="Allosaurus"/>
-    <CGENUS name="Saurophaganax"/>
    </CLADE>
    <CLADE q="1" name="Carcharodontosaurinae" in="Carcharodontosaurus" out="Allosaurus, Cryolophosaurus, Monolophosaurus, Sinraptor">
     <CSYNONYM name="Carcharodontosauridae" sensu="Sereno"/>
+    <CSYNONYM name="Acrocanthosauridae" q="1"/>
     <CGENUS name="Neovenator" q="1"/>
-    <UNNAMED comment="pneumatic"/>
+    <UNNAMED>
+     <PLACE name="Niger"/>  
+     <TIME value="Aptian"/>
+     <REMAINS content="maxilla, pelvis, femora, tibiae, fibulae"/>
+    </UNNAMED>
     <CLADE>
      <UNNAMED comment="giant">
       <TIME value="Albian"/>
@@ -48,13 +61,11 @@ carcharodontosaurines, each measuring up to 45 feet long, might have
 preyed upon herds of 130+-foot-long titanosaurs.</P>
 
 <P header="An Abelisaur Link?"> There are some cranial similarities
-between carcharodontosaurines and <LINK content="abelisaurs"/>, another
-group of Gondwanan (Southern Hemisphere) carnivores. This may be due to
-convergence, but some have proposed that carcharodontosaurines are not
-<LINK content="carnosaurs"/>, but <LINK content="neoceratosaurs"/> more
-closely related to abelisaurs. But other characteristics, such as the
-three-fingered hand (neoceratosaurs have four fingers), cast doubt on this
-idea. </P>
+between <LINK content="carcharodontosaurines"/> and <LINK content="abelisaurs"/>, another
+group of Gondwanan (Southern Hemisphere) carnivores. This is probably due to
+convergence. It has been noted that <NOMEN name="Abelisaurus"/>, which is
+known only from a cranium, could conceivably be <LINK
+content="carcharodontosaurine"/> and not a <LINK content="ceratosaur"/>.</P>
  </ESSAY>
 </TAXON>
 
@@ -65,6 +76,7 @@ idea. </P>
    <MEANING>
     <NOMEN name="Alvarezsaurus"/>'s taxon
    </MEANING>
+   <CGENUS name="Rapator" incertae="1" q="1"/>
    <CLADE name="Alvarezsauridae">
     <AUTHOR type="non" name="Sereno" year="1999"/>
     <CGENUS name="Alvarezsaurus"/>
@@ -125,7 +137,9 @@ single-clawed hands. </P>
    <MEANING>
     without apses
    </MEANING>
-   <CSYNONYM name="Parareptilia"/>
+   <CSYNONYM name="Parareptilia"/>    
+   <CLADE name="Mesosauridae" extinct="1"/>
+   <CLADE>
    <CLADE name="Millerettidae" q="1" extinct="1"/>
    <CLADE name="Procolophonomorpha">
     <CLADE name="Nyctiphruretia" extinct="1">
@@ -233,6 +247,7 @@ single-clawed hands. </P>
      </CLADE>
     </CLADE>
    </CLADE>
+   </CLADE>
   </CLADE>
  </CLADOGRAM>
  <ESSAY>
@@ -258,7 +273,8 @@ basal romeriids (e.g. <LINK content="captorhinids"/>).
 
 <TAXON name="Animalia" nickname="Animals" simple="1">
  <WORD key="1" content="fauna, invertebrate, invertebrates"/>
- <WORD essay="1" content="mollusk, ammonoid, ammonoids, rudist clams"/>
+ <WORD essay="1" content="mollusk, ammonoid, ammonoids, horseshoe crab, rudist clams"/>
+ <INCLUDED content="Cancelloidokytodermogammarus"/>
  <CLADOGRAM>
   <CLADE name="Animalia" silhouette="animalia">
    <AUTHOR name="Linnaeus"/>
@@ -418,7 +434,8 @@ basal romeriids (e.g. <LINK content="captorhinids"/>).
             </CLADE>
            </CLADE>
            <CLADE>
-            <CLADE name="Brachiolitha"/>
+            <CLADE name="Brachiopoda"/>
+            <CLADE name="Graptolitha" extinct="1"/>
             <CLADE>
              <CLADE name="Hemichordata" content="acorn worms"/>
              <CLADE name="Chordata" content="animals with a notochord">
@@ -489,7 +506,16 @@ which is characterized by the possession of a backbone. </P>
    </UNNAMED>
    <CGENUS name="Minmi"/>
    <CLADE name="Ankylosauroidea" in="Ankylosaurus, Nodosaurus">
+    <CLADE name="Stegopeltini" incertae="1">
+     <UNNAMED comment="San Diego"></UNNAMED>
+     <CGENUS name="Glyptodontopelta"/>
+     <CGENUS name="Stegopelta"/>
+    </CLADE>
     <CLADE name="Nodosauridae" in="Nodosaurus" out="Ankylosaurus" silhouette="nodosauridae">
+     <UNNAMED indet="1">
+      <TIME section="early" value="Maastrichtian"/>
+      <PLACE name="Argentina"/>
+     </UNNAMED>
      <UNNAMED comment="giant">
       <TIME value="EK" section="early"/>
       <PLACE name="Utah"/>
@@ -506,27 +532,49 @@ which is characterized by the possession of a backbone. </P>
      <UNNAMED>
       <PLACE name="Antarctica"/>
      </UNNAMED>
-     <CGENUS name="Animantarx" incertae="1"/>
-     <CGENUS name="Dracopelta" incertae="1"/>
-     <CGENUS name="Niobrarasaurus" incertae="1"/>
-     <CGENUS name="Nodosaurus" incertae="1"/>
-     <CGENUS name="Palaeoscincus" incertae="1"/>
-     <CGENUS name="Sarcolestes" incertae="1"/>
-     <CGENUS name="Struthiosaurus" incertae="1"/>
-     <CGENUS name="Hylaeosaurus"/>
-     <CLADE>
-      <CGENUS name="Pawpawsaurus"/>
+     <CGENUS name="Dracopelta" incertae="1" q="1"/>
+     <CGENUS name="Liaoningosaurus" incertae="1" q="1"/>
+     <CGENUS name="Palaeoscincus" incertae="1" q="1"/>
+     <CGENUS name="Pawpawsaurus" incertae="1"/>
+     <CGENUS name="Sarcolestes" incertae="1" q="1"/>
+     <CGENUS name="Struthiosaurus" q="1"/>
+     <CGENUS name="Anoplosaurus" q="1"/>
+     <CGENUS name="Nodosaurus" q="1"/>
+     <CLADE name="Edmontoniinae">
+      <CGENUS name="Niobrarasaurus" q="1"/>
+      <CLADE>
+       <CGENUS name="Texasetes" q="1"/>
+       <CLADE>
+        <CGENUS name="Animantarx"/>
+        <CGENUS name="Edmontonia"/>
+       </CLADE>
+      </CLADE>
+     </CLADE>
+     <CLADE name="Panoplosaurinae">
+      <CGENUS name="Panoplosaurus"/>
       <CLADE>
        <CGENUS name="Sauropelta"/>
-       <CLADE name="Panoplosaurinae">
-        <CSYNONYM name="Edmontoniinae"/>
-        <CGENUS name="Edmontonia"/>
-        <CGENUS name="Panoplosaurus"/>
-       </CLADE>
+       <CGENUS name="Silvisaurus"/>
       </CLADE>
      </CLADE>
     </CLADE>
     <CLINK name="Ankylosauridae"/>
+   </CLADE>
+  </CLADE>
+ </CLADOGRAM>
+ <CLADOGRAM alternate="1">
+  <CLADE name="Nodosauridae">
+   <CGENUS name="Hylaeosaurus"/>
+   <CLADE>
+    <CGENUS name="Pawpawsaurus"/>
+    <CLADE>
+     <CGENUS name="Sauropelta"/>
+     <CLADE name="Panoplosaurinae">
+      <CSYNONYM name="Edmontoniinae"/>
+      <CGENUS name="Edmontonia"/>
+      <CGENUS name="Panoplosaurus"/>
+     </CLADE>
+    </CLADE>
    </CLADE>
   </CLADE>
  </CLADOGRAM>
@@ -561,53 +609,55 @@ Laurasia (the northern supercontinent). </P>
     <TIME value="Campanian"/>
     <PLACE name="France"/>
    </UNNAMED>
-   <CGENUS name="Gargoyleosaurus" incertae="1"/>
+   <CGENUS name="Aletopelta" incertae="1"/>
    <CGENUS name="Tianchisaurus"/>
    <CLADE name="Polacanthinae" in="Polacanthus" out="Ankylosaurus, Shamosaurus">
-    <CGENUS name="Acanthopholis" q="1"/>
-    <CGENUS name="Anoplosaurus" q="1"/>
-    <CGENUS name="Texasetes"/>
-    <CGENUS name="Mymoorapelta"/>
-    <CGENUS name="Silvisaurus" q="1"/>
+    <CGENUS name="Acanthopholis" q="1" incertae="1"/>
+    <CLADE>
+     <CGENUS name="Gargoyleosaurus"/>
+     <CLADE>
+      <CGENUS name="Hylaeosaurus"/> 
+      <CGENUS name="Mymoorapelta"/>
+     </CLADE>
+    </CLADE>
     <CLADE name="Polacanthini">
      <CGENUS name="Gastonia"/>
-     <CGENUS name="Hoplitosaurus" q="1"/>
-     <CGENUS name="Polacanthus"/>
+     <CLADE>
+      <CGENUS name="Hoplitosaurus"/>
+      <CGENUS name="Polacanthus"/>
+     </CLADE>
     </CLADE>
    </CLADE>
    <CLADE silhouette="ankylosaurinae-shamosaurinae">
-    <CGENUS name="Bibleyhallorum" incertae="1"/>
-    <CLADE name="Shamosaurinae" in="Shamosaurus" out="Ankylosaurus, Polacanthus">
-     <UNNAMED>
-      <TIME value="Cenomanian"/>
-      <PLACE name="U.S.A."/>
-     </UNNAMED>
-     <CGENUS name="Gobisaurus" q="1"/>
-     <CGENUS name="Shamosaurus"/>
-    </CLADE>
-    <CLADE name="Ankylosaurinae" in="Ankylosaurus" out="Polacanthus, Shamosaurus">
-     <CGENUS name="Sauroplites" incertae="1"/>
-     <CGENUS name="Tsagantegia"/>
-     <CLADE>
-      <CLADE name="Ankylosaurini">
-       <CGENUS name="Ankylosaurus"/>
-       <CGENUS name="Euoplocephalus"/>
-      </CLADE>
-      <CLADE name="Stegopeltini" q="1">
-       <UNNAMED comment="San Diego"></UNNAMED>
-       <CGENUS name="Glyptodontopelta"/>
-       <CGENUS name="Stegopelta"/>
-      </CLADE>
-      <CLADE name="Syrmosaurini">
-       <CGENUS name="Amtosaurus"/>
-       <CGENUS name="Maleevus"/>
-       <CGENUS name="Pinacosaurus"/>
-       <CGENUS name="Shanxia"/>
-       <CGENUS name="Talarurus"/>
-       <CLADE>
-        <CGENUS name="Nodocephalosaurus" q="1"/>
-        <CGENUS name="Saichania"/>
-        <CGENUS name="Tarchia"/>
+    <CGENUS name="Cedarpelta"/>
+    <CLADE>
+     <CLADE name="Shamosaurinae" in="Shamosaurus" out="Ankylosaurus, Polacanthus">
+      <UNNAMED>
+       <TIME value="Cenomanian"/>
+       <PLACE name="U.S.A."/>
+      </UNNAMED>
+      <CGENUS name="Gobisaurus" q="1"/>
+      <CGENUS name="Shamosaurus"/>
+     </CLADE>
+     <CLADE name="Ankylosaurinae" in="Ankylosaurus" out="Polacanthus, Shamosaurus">
+      <CGENUS name="Sauroplites" incertae="1"/>
+      <CGENUS name="Tsagantegia" q="1"/>
+      <CLADE>
+       <CGENUS name="Ankylosaurus" q="1"/>
+       <CLADE name="Syrmosaurini">
+        <CGENUS name="Amtosaurus" incertae="1"/>
+        <CGENUS name="Maleevus" incertae="1"/>
+        <CGENUS name="Shanxia" incertae="1"/> 
+        <CGENUS name="Talarurus" incertae="1"/>
+        <CLADE>
+         <CGENUS name="Nodocephalosaurus" q="1"/>
+         <CGENUS name="Saichania"/>
+         <CGENUS name="Tarchia"/>
+        </CLADE>
+        <CLADE>
+         <CGENUS name="Euoplocephalus"/>
+         <CGENUS name="Pinacosaurus"/>
+        </CLADE>
        </CLADE>
       </CLADE>
      </CLADE>
@@ -654,7 +704,7 @@ enhance their sense of smell. </P>
 </TAXON>
 
 <TAXON name="Archosauromorpha" nickname='"Ruling Reptiles"' simple="1">
- <INCLUDED content="Euparkeria, Hsisosuchus, Lewisuchus, Postosuchus, Proterosuchus, Saltopus"/>
+ <INCLUDED content="Desmatosuchus, Euparkeria, Hsisosuchus, Lewisuchus, Postosuchus, Proterosuchus, Rutiodon, Saltopus"/>
  <CLADOGRAM>
   <CLADE name="Archosauromorpha" in="Archosauria" out="Lepidosauria" silhouette="archosauromorpha">
    <MEANING>archosaur forms</MEANING>
@@ -921,17 +971,7 @@ the <LINK content="Triassic"/>. </P>
     <PLACE name="Romania"/>
     <REMAINS content="partial humerus"/>
    </UNNAMED>
-   <UNNAMED>
-    <TIME value="Barremian" q="1"/>
-    <PLACE name="S. Korea"/>
-    <REMAINS content="forelimb with feather impressions"/>
-   </UNNAMED>
-   <CGENUS name="Bambiraptor" q="1" incertae="1"/>
-   <CGENUS name="Holbotia" incertae="1"/>
    <CGENUS name="Wyleyia" incertae="1" q="1"/>
-   <CGENUS incertae="1" name="Archaeoraptor" silhouette="aves"/>
-   <CGENUS q="1" name="Rahonavis"/>
-   <CGENUS q="1" name="Unenlagia" silhouette="paraves-flightless"/>
    <CLADE name="Aves" in="Archaeopteryx, Neornithes" silhouette="aves">
     <AUTHOR name="Linnaeus"/>
     <AUTHOR type="sensu" name="Chiappe"/>
@@ -939,38 +979,77 @@ the <LINK content="Triassic"/>. </P>
     <MEANING>
      birds
     </MEANING>
+    <UNNAMED comment='"Archaeoraptor"' incertae="1">
+     <TIME value="Barremian" section="middle"/>
+     <PLACE name="China"/>
+     <REMAINS content="forepart of skeleton with integument impressions"/>
+    </UNNAMED>
     <CLADE name="Archaeopterygiformes">
      <CSYNONYM name="Archaeornithes"/>
      <CGENUS name="Archaeopteryx"/>
     </CLADE>
     <CLADE in="Neornithes" out="Archaeopteryx">
      <CSYNONYM name="Ornithurae" sensu="Gauthier" year="1986"/>
-     <CLADE name="Metornithes" in="Mononykus, Neornithes">
-      <CLINK q="1" name="Alvarezsauria"/>
+      <CGENUS name="Hulsanpes" incertae="1" q="1"/>
+      <CGENUS name="Yandangornis" q="1"/>
       <CLADE name="Pygostylia" in="Confuciusornis, Neornithes" silhouette="pygostylia">
        <MEANING>
         pygostyles <LOW>("Parson's noses")</LOW>
        </MEANING>
-       <CGENUS incertae="1" name="Jibeinia"/>
-       <CGENUS incertae="1" name="Liaoxiornis"/>
+       <UNNAMED indet="1">
+        <REMAINS museum="PO" id="4821" content="proximal coracoid"/>
+        <PLACE name="Uzbekistan"/>
+        <TIME value="Coniacian"/>
+       </UNNAMED>
+       <CGENUS name="Catenoleimus" incertae="1"/>
        <CLADE name="Confuciusornithidae">
         <CGENUS name="Changchengornis"/>
         <CGENUS name="Confuciusornis"/>
+        <CGENUS name="Proornis"/>
        </CLADE>
        <CLADE>
+        <CGENUS name="Abavornis" incertae="1"/>
+        <CGENUS name="Explorornis" incertae="1"/>
+        <CGENUS name="Holbotia" incertae="1"/>
+        <CGENUS name="Incolornis" incertae="1"/>
+        <CGENUS q="1" name="Jibeinia"/>
+        <CGENUS q="1" name="Longipteryx"/>
         <CGENUS q="1" name="Noguerornis"/>
+        <CGENUS name="Protopteryx" q="1"/>
+        <CLADE name="Zhyraornithidae" incertae="1">
+         <CGENUS name="Zhyraornis">
+        </CLADE>
         <CLADE name="Ornithothoraces" in="Iberomesornis, Neornithes">
          <MEANING><LOW>modern</LOW> bird chests</MEANING>
-         <CGENUS incertae="1" name="Otogornis"/>
          <CGENUS incertae="1" name="Platanavis"/>
+         <CGENUS name="Vorona" q="1"/>
          <CLINK name="Enantiornithes"/>
          <CLADE name="Euornithes" in="Neornithes" out="Sinornis">
           <MEANING>true birds</MEANING>
           <AUTHOR name="Sereno" year="1998"/>
           <CSYNONYM name="Ornithurae" sensu="Feduccia"/>
+          <CGENUS q="1" name="Kuszholia" silhouette="pygostylia-flightless" incertae="1"/>
           <CGENUS q="1" name="Liaoningornis"/>
+          <CGENUS q="1" name="Yanornis"/>
+          <CGENUS q="1" name="Yixianornis"/>
           <CLADE name="Gansuiformes" incertae="1">
            <CGENUS name="Gansus"/>
+          </CLADE>
+          <CLADE name="Ambiortiformes" incertae="1">
+           <CGENUS q="1" name="Otogornis"/>
+           <CGENUS name="Ambiortus"/>
+          </CLADE>
+          <CLADE name="Patagopterygiformes" incertae="1">
+           <CGENUS name="Patagopteryx" silhouette="pygostylia-flightless"/>
+           <CGENUS q="1" name="Gargantuavis" silhouette="pygostylia-flightless"/>
+          </CLADE>
+          <CLADE name="Chaoyangiiformes" incertae="1">
+           <CLADE name="Chaoyangiidae">
+            <CGENUS name="Chaoyangia"/>
+           </CLADE>
+           <CLADE name="Songlingornithidae" q="1"> 
+            <CGENUS name="Songlingornis"/>
+           </CLADE>
           </CLADE>
           <CLINK name="Ornithurae"/>
          </CLADE>
@@ -978,7 +1057,6 @@ the <LINK content="Triassic"/>. </P>
        </CLADE>
       </CLADE>
      </CLADE>
-    </CLADE>
    </CLADE>
   </CLADE>
  </CLADOGRAM>
@@ -1007,22 +1085,6 @@ the <LINK content="Triassic"/>. </P>
     <CLADE name="Aves">
      <CGENUS name="Archaeopteryx"/>
      <CLADE name="Pygostylia"/>
-    </CLADE>
-   </CLADE>
-  </CLADE>
- </CLADOGRAM>
- <CLADOGRAM alternate="1">
-  <CLADE name="Avialae">
-   <CGENUS name="Adasaurus"/>
-   <CLADE>
-    <CLADE>
-     <CGENUS name="Rahonavis"/>
-     <CGENUS name="Unenlagia"/>
-     <CGENUS name="Bambiraptor"/>
-    </CLADE>
-    <CLADE name="Aves">
-     <CGENUS name="Archaeopteryx"/>
-     <CLADE name="Metornithes"/>
     </CLADE>
    </CLADE>
   </CLADE>
@@ -1166,23 +1228,23 @@ when they represent separate niches.</P>
     <PLACE name="France"/>
     <REMAINS content="braincase"/>
    </UNNAMED>
-   <CGENUS name="Chilantaisaurus" incertae="1"/>
-   <CGENUS incertae="1" name="Katsuyamasaurus" q="1"/>
-   <CGENUS incertae="1" name="Mifunesaurus" q="1"/>
-   <CGENUS incertae="1" name="Prodeinodon" q="1"/>
-   <CGENUS incertae="1" name="Valdoraptor"/>
    <CSYNONYM name="Allosauria"/>
    <CSYNONYM name="Allosauroidea" sensu="Sereno" year="1998"/>
-   <CGENUS name="Cryolophosaurus" silhouette="cryolophosaurus"/>
-   <CGENUS name="Monolophosaurus" silhouette="monolophosaurus"/>
-   <CLADE name="Allosauroidea" in="Allosaurus, Sinraptor">
-    <CGENUS incertae="1" name="Lourinhanosaurus"/>
-    <CLADE name="Sinraptoridae" in="Sinraptor" out="Allosaurus">
-     <CGENUS name="Sinraptor"/>
-     <CGENUS name="Szechuanosaurus"/>
-     <CGENUS name="Yangchuanosaurus"/>
+   <CGENUS name="Xuanhanosaurus" q="1"/>
+   <CLADE>
+    <CGENUS name="Cryolophosaurus" silhouette="cryolophosaurus"/>
+    <CGENUS name="Fukuiraptor"/>
+    <CGENUS name="Monolophosaurus" silhouette="monolophosaurus"/>
+    <CLADE name="Allosauroidea" in="Allosaurus, Sinraptor">
+     <CGENUS incertae="1" name="Lourinhanosaurus"/>
+     <CLADE name="Sinraptoridae" in="Sinraptor" out="Allosaurus">
+      <CGENUS name="Gasosaurus" q="1"/>
+      <CGENUS name="Sinraptor"/>
+      <CGENUS name="Szechuanosaurus"/>
+      <CGENUS name="Yangchuanosaurus"/>
+     </CLADE>
+     <CLINK name="Allosauridae"/>
     </CLADE>
-    <CLINK name="Allosauridae"/>
    </CLADE>
   </CLADE>
  </CLADOGRAM>
@@ -1276,6 +1338,7 @@ or possibly the core of a gigantic nasal horn. </P>
     <TIME value="EK"/>
    </UNNAMED>
    <CGENUS name="Echizensaurus" incertae="1"/>
+   <CGENUS name="Trachodon" incertae="1"/>
    <CLADE name="Psittacosauria" in="Psittacosaurus" out="Ceratops">
     <MEANING>
      <NOMEN name="Psittacosaurus"/>' <LOW>taxon</LOW>
@@ -1311,17 +1374,16 @@ or possibly the core of a gigantic nasal horn. </P>
      <PLACE name="Alberta"/>
      <REMAINS content="dentaries"/>
     </UNNAMED>
+    <CGENUS name="Asiaceratops" incertae="1"/>
+    <CGENUS name="Magulodon" incertae="1"/>
+    <CGENUS name="Microceratops" incertae="1"/>
     <CGENUS name="Graciliceratops" incertae="1"/>
     <CGENUS name="Leptoceratops" incertae="1"/>
     <CGENUS name="Udanoceratops" incertae="1"/>
     <CGENUS name="Chaoyangsaurus" q="1"/>
     <CGENUS name="Archaeoceratops"/>
     <CGENUS name="Kulceratops" q="1"/>
-    <CLADE>
-     <CGENUS name="Asiaceratops"/>
-     <CGENUS name="Microceratops"/>
-     <CLINK name="Coronosauria"/>
-    </CLADE>
+    <CLINK name="Coronosauria"/>
    </CLADE>
   </CLADE>
  </CLADOGRAM>
@@ -1411,56 +1473,42 @@ site. </P>
  <WORD key="1" content="spitter, frill, Gojira, Godzilla"/>
  <CLADOGRAM>
   <CLADE name="Coelophysoidea" in="Coelophysis" out="Ceratosaurus" silhouette="neotheropoda">
-   <CSYNONYM name="Podokesauroidea" q="1"/>
-   <CGENUS name="Camposaurus" incertae="1"/>
-   <CLADE name="Coelophysidae" in="Coelophysis, Procompsognathus">
-    <CSYNONYM name="Podokesauridae"/>
-    <CLADE name="Procompsognathinae" in="Procompsognathus" out="Coelophysis">
-     <CSYNONYM name="Segisaurinae"/>
-     <CGENUS name="Procompsognathus"/>
-     <CGENUS name="Segisaurus"/>
-    </CLADE>
-    <CLADE name="Coelophysinae" in="Coelophysis" out="Procompsognathus">
-     <CSYNONYM name="Podokesaurinae" q="1"/>
+   <CSYNONYM name="Podokesauroidea"/>
+   <CGENUS name="Dolichosuchus" incertae="1"/>
+   <CGENUS name="Gojirasaurus" incertae="1" silhouette="coelophysoidea-large"/>
+   <CGENUS name="Halticosaurus" incertae="1"/>
+   <CGENUS name="Pterospondylus" incertae="1" q="1"/>
+   <CGENUS name="Shuvosaurus" incertae="1" q="1"/>
+   <CGENUS name="Dilophosaurus" silhouette="coelophysoidea-large"/>
+   <CLADE>
+    <CGENUS name="Liliensternus" silhouette="coelophysoidea-large"/>
+    <CLADE>
      <UNNAMED comment='"Shake-N-Bake"'>
       <TIME value="Hettangian"/>
       <TIME value="Pliensbachian"/>
       <PLACE name="Arizona"/>
      </UNNAMED>
-     <CGENUS name="Eucoelophysis" incertae="1"/>
-     <CGENUS name="Gojirasaurus" incertae="1" q="1" silhouette="coelophysoidea-large"/>
-     <CGENUS name="Coelophysis"/>
-     <CGENUS name="Syntarsus"/>
-     <CLADE silhouette="coelophysoidea-large">
-      <CSYNONYM name="Halticosaurini" q="1"/>
-      <CGENUS name="Dilophosaurus"/>
-      <CGENUS name="Liliensternus"/>
-     </CLADE>
-    </CLADE>
-   </CLADE>
-  </CLADE>
- </CLADOGRAM>
- <CLADOGRAM alternate="1">
-  <CLADE name="Coelophysoidea">
-   <CGENUS name="Dilophosaurus"/>
-   <CLADE>
-    <CGENUS name="Liliensternus"/>
-    <CLADE>
-     <UNNAMED comment='"Shake-N-Bake"'/>
-     <CLADE name="Coelophysidae">
-      <CLADE name="Coelophysinae">
-       <CGENUS name="Coelophysis"/>
-       <CGENUS name="Syntarsus"/>
-      </CLADE>
-      <CLADE name="Procompsognathinae">
+     <CLADE name="Coelophysidae" in="Coelophysis, Procompsognathus">
+      <CSYNONYM name="Podokesauridae"/>
+      <CLADE name="Procompsognathinae" in="Procompsognathus" out="Coelophysis">
+       <CSYNONYM name="Segisaurinae"/>
        <CGENUS name="Procompsognathus"/>
        <CGENUS name="Segisaurus"/>
       </CLADE>
+      <CLADE name="Coelophysinae" in="Coelophysis" out="Procompsognathus">
+       <CSYNONYM name="Podokesaurinae"/>
+       <CGENUS name="Camposaurus"/>
+       <CGENUS name="Coelophysis"/>
+       <CGENUS name="Eucoelophysis"/>
+       <CGENUS name="Podokesaurus"/>
+       <CGENUS name="Syntarsus"/>
+      </CLADE>
      </CLADE>
     </CLADE>
    </CLADE>
   </CLADE>
  </CLADOGRAM>
+ <CLADOGRAM alternate="1"><REFER page="Theropoda"/></CLADOGRAM>
  <ESSAY>
 <P header="Strange Jaws"> <ILLO name="coelophysid_skull"/> Coelophysoids were a group of early
 <LINK content="neotheropods"/>. Most were characterized by a kink in the
@@ -1490,17 +1538,26 @@ coelophysoids, about 15 to 20 feet long. </P>
    <MEANING>
     hollow-tailed lizards
    </MEANING>
-   <CGENUS name="Chilantaisaurus maortuensis" incertae="1"/>
-   <CGENUS name="Diplotomodon" q="1" incertae="1"/>
-   <CGENUS name="Nqwebasaurus" incertae="1"/>
-   <CGENUS name="Piveteausaurus" incertae="1" silhouette="ornitholestidae"/>
-   <CGENUS name="Proceratosaurus" incertae="1" silhouette="ornitholestidae"/>
-   <CGENUS name="Timimus" incertae="1"/>
+   <UNNAMED indet="1">
+    <PLACE name="District of Columbia"/>
+    <REMAINS content="caudal vertebra (lost)"/>
+   </UNNAMED>
+   <UNNAMED q="1" indet="1">
+    <REMAINS content="pedal phalanx"/>
+    <PLACE name="Mongolia"/>
+    <TIME value="K"/>
+   </UNNAMED>
+   <UNNAMED q="1">
+    <REMAINS age="juvenileQ" content="vertebrae, ribs, caudal series, radius, ulna, manus, hindlimbs, pedes"/>
+    <PLACE name="Mongolia"/>
+    <TIME value="LK"/>
+   </UNNAMED>
    <UNNAMED comment="basal">
     <TIME value="EK"/>
     <PLACE name="S. Africa"/>
    </UNNAMED>
    <UNNAMED>
+    <REMAINS value="tarsus"/>
     <TIME value="Aptian"/>
     <TIME value="Albian"/>
     <PLACE name="Maryland"/>
@@ -1510,47 +1567,69 @@ coelophysoids, about 15 to 20 feet long. </P>
     <TIME value="Tithonian" section="earliest"/>
     <PLACE name="Germany"/>
    </UNNAMED>
-   <CGENUS name="Gasosaurus" q="1"/>
-   <CLADE>
-    <CGENUS incertae="1" name="Bagaraatan"/>
-    <CGENUS name="Deltadromeus"/>
-    <CGENUS name="Dryptosaurus"/>
-    <CGENUS incertae="1" name="Shanyangosaurus"/>
-    <CLADE name="Maniraptoriformes" in="Neornithes, Ornithomimus">
-     <MEANING>maniraptor forms</MEANING>
-     <AUTHOR name="Holtz" year="1996"/>
-     <CSYNONYM name="Deinonychosauria" sensu="Sereno" q="1"/>
-     <CSYNONYM name="Manuraptoriformes"/>
-     <CSYNONYM name="Maniraptora" sensu="Holtz" year="1994"/>
-     <CSYNONYM name="Bullatosauria" q="1"/>
-     <CSYNONYM name="Tyrannoraptora" q="1">
-      <AUTHOR name="Sereno" year="1999"/>
-     </CSYNONYM>
+   <CGENUS name="Aniksosaurus" incertae="1"/>
+   <CGENUS incertae="1" name="Beelemodon"/>
+   <CGENUS name="Chilantaisaurus maortuensis" incertae="1"/>
+   <CGENUS name="Ornithomimus affinis" incertae="1"/> 
+   <CGENUS name="Ozraptor" incertae="1"/>
+   <CGENUS name="Piveteausaurus" incertae="1" silhouette="ornitholestidae"/>
+   <CGENUS incertae="1" name="Bagaraatan"/>
+   <CGENUS name="Deltadromeus"/>
+   <CLADE name="Maniraptoriformes" in="Neornithes, Ornithomimus">
+    <MEANING>maniraptor forms</MEANING>
+    <AUTHOR name="Holtz" year="1996"/>
+    <CSYNONYM name="Deinonychosauria" sensu="Sereno" q="1"/>
+    <CSYNONYM name="Manuraptoriformes"/>
+    <CSYNONYM name="Maniraptora" sensu="Holtz" year="1994"/>
+    <CSYNONYM name="Bullatosauria" q="1"/>
+    <CSYNONYM name="Tyrannoraptora" q="1">
+     <AUTHOR name="Sereno" year="1999"/>
+    </CSYNONYM>
     <UNNAMED indet="1" comment="deinonychosaur or troodontid" silhouette="deinonychosauria">
      <TIME value="Bathonian"/>
      <PLACE name="England"/>
      <REMAINS content="teeth"/>
     </UNNAMED>
-    <UNNAMED>
-     <TIME value="Valanginian" q="1"/>
-     <TIME value="Hauterivian" q="1"/>
-     <PLACE name="Thailand"/>
-     <REMAINS content="metatarsus, other postcranial bones"/>
+    <UNNAMED q="1" comment="dryptosaurid?">
+     <REMAINS content="forelimb elements"/>
+     <PLACE name="Mongolia"/>
+     <TIME value="EK"/>
     </UNNAMED>
-    <CGENUS name="Araucanoraptor" incertae="1" silhouette="deinonychosauria"/>
+    <UNNAMED comment="deinonychosaurian?">
+     <REMAINS content="teeth, limb elements"/>
+     <PLACE name="Mongolia"/>
+     <TIME value="EK"/>
+    </UNNAMED>
+    <UNNAMED comment="deinonychosaurian?">
+     <REMAINS content="many elements, including two cervical vertebrae and a manual ungual"/>
+     <PLACE name="Mongolia"/>
+     <TIME value="LK"/>
+    </UNNAMED>
     <CGENUS name="Archaeornithoides" incertae="1" silhouette="maniraptora"/>
     <CGENUS name="Aristosuchus sp." incertae="1" silhouette="coelurosauria-small" q="1"/>
-    <CGENUS name="Arkansaurus" incertae="1" silhouette="ornithomimosauria"/>
+    <CGENUS name="Arkansaurus" q="1" silhouette="ornithomimosauria"/>
+    <CGENUS name="Bradycneme" incertae="1" silhouette="maniraptora"/>
+    <CGENUS name="Calamosaurus" incertae="1"/>
+    <CGENUS name="Diplotomodon" q="1" incertae="1"/>
+    <CGENUS name="Dryptosaurus" q="1"/>
     <CGENUS name="Elopteryx" incertae="1" silhouette="maniraptora"/>
-    <CGENUS name="Koparion" incertae="1" silhouette="coelurosauria-small"/>
-    <CGENUS name="Ornithomimus sp." incertae="1"/>
-    <CGENUS name="Paronychodon" incertae="1" silhouette="deinonychosauria"/>
-    <CGENUS name="Phaedrolosaurus" incertae="1"/>
-    <CGENUS name="Ricardoestesia" incertae="1" silhouette="maniraptora"/>
+    <CGENUS name="Ginnareemimus" incertae="1" silhouette="ornithomimosauria"/>
+    <CGENUS name="Harpymimus" incertae="1" silhouette="ornithomimosauria"/>
+    <CGENUS name="Heptasteornis" incertae="1" silhouette="maniraptora"/>
+    <CGENUS incertae="1" name="Labocania" q="1"/>
+    <CGENUS name="Nqwebasaurus" q="1"/>
     <CGENUS name="Nedcolbertia" q="1"/>
     <CGENUS name="Ornitholestes" silhouette="ornitholestidae" q="1"/>
-    <CGENUS name="Santanaraptor" incertae="1" q="1"/>
+    <CGENUS name="Ornithomimus sp." incertae="1"/>
+    <CGENUS name="Phaedrolosaurus" incertae="1"/>
+    <CGENUS name="Proceratosaurus" q="1" silhouette="ornitholestidae"/>
+    <CGENUS name="Ricardoestesia" incertae="1" silhouette="maniraptora"/>
+    <CGENUS name="Santanaraptor" q="1"/>
     <CGENUS name="Scipionyx" silhouette="coelurosauria-small" q="1"/>
+    <CLADE incertae="1">
+     <CGENUS name="Euronychodon" q="1" silhouette="deinonychosauria"/>
+     <CGENUS name="Paronychodon" q="1" silhouette="deinonychosauria"/>
+    </CLADE>
     <CLADE name="Avimimidae" incertae="1" silhouette="avimimidae">
      <CGENUS name="Avimimus"/>
      <CGENUS name="Kakuru" q="1"/>
@@ -1564,7 +1643,6 @@ coelophysoids, about 15 to 20 feet long. </P>
       <PLACE name="Mongolia"/>
       <REMAINS museum="ZPAL" id="MgD-I/99"/>
      </UNNAMED>
-     <CGENUS name="Calamosaurus" q="1"/>
      <CGENUS name="Coelurus"/>
     </CLADE>
     <CLADE name="Compsognathidae" silhouette="coelurosauria-small" q="1">
@@ -1596,6 +1674,11 @@ coelophysoids, about 15 to 20 feet long. </P>
       <LOW>big-</LOW>handed raiders
      </MEANING>
      <CSYNONYM name="Manuraptora"/>
+     <UNNAMED q="1" comment="2-meter-long">
+      <REMAINS content="multiple specimens"/>
+      <TIME value="Turonian" section="middle"/>
+      <PLACE name="New Mexico"/>
+     </UNNAMED>
      <UNNAMED comment="(oviraptorosaurian?)">
       <TIME value="Aptian"/>
       <PLACE name="Australia"/>
@@ -1645,9 +1728,7 @@ coelophysoids, about 15 to 20 feet long. </P>
      </UNNAMED>
      <CGENUS name="Palaeopteryx" q="1" incertae="1"/>
      <CGENUS name="Protarchaeopteryx" incertae="1"/>
-     <CLADE name="Yandangornithiformes" incertae="1">
-      <CGENUS name="Yandangornis"/>
-     </CLADE>
+     <CGENUS name="Timimus" incertae="1" q="1"/>
      <CLADE in="Neornithes, Oviraptor">
       <CSYNONYM name="Maniraptora" sensu="Sereno"/>
       <CLADE in="Oviraptor" out="Neornithes">
@@ -1666,7 +1747,7 @@ coelophysoids, about 15 to 20 feet long. </P>
         <PLACE name="Argentina"/>
         <REMAINS content="neck vertebra"/>
        </UNNAMED>
-       <CGENUS name="Microvenator"/>
+       <CGENUS incertae="1" q="1" name="Shanyangosaurus"/>
        <CLINK name="Therizinosauria"/>
        <CLADE>
         <UNNAMED>
@@ -1679,7 +1760,11 @@ coelophysoids, about 15 to 20 feet long. </P>
          <REMAINS content="caudal vertebra"/>
         </UNNAMED>
         <CGENUS name="Caudipteryx" q="1"/>
-        <CLINK name="Oviraptorosauria"/>
+        <CGENUS name="Thecocoelurus" incertae="1"/>
+        <CLADE>
+         <CGENUS name="Microvenator"/>
+         <CLINK name="Oviraptorosauria"/>
+        </CLADE>
        </CLADE>
       </CLADE>
       <CLADE name="Paraves" in="Neornithes" out="Oviraptor" silhouette="paraves">
@@ -1699,26 +1784,33 @@ coelophysoids, about 15 to 20 feet long. </P>
        </UNNAMED>
        <UNNAMED comment="large" silhouette="paraves-flightless">
         <PLACE name="Argentina"/>
-        <TIME value="Cenomanian" q="1"/>
+        <TIME value="Cenomanian"/>
+        <TIME value="Turonian"/>
         <REMAINS content="left ungual phalanx (digit II), right metatarsal II, etc."/>
        </UNNAMED>
-       <CGENUS name="Adasaurus" incertae="1"/>
-       <CGENUS name="Hulsanpes" incertae="1"/>
-       <CGENUS name="Megaraptor" incertae="1" silhouette="paraves-flightless"/>
        <CLADE name="Eumaniraptora" in="Neornithes, Deinonychus">
         <AUTHOR name="Padian, Hutchinson, Holtz" year="1998"/>
         <MEANING>
          true maniraptors
         </MEANING>
         <CSYNONYM name="Eumanuraptora"/>
+        <UNNAMED cf="Sinornithosaurus" q="1">
+         <PLACE name="China"/>
+         <TIME value="Barremian" section="middle" q="1"/>
+         <REMAINS museum="NGMC" id="91" age="subadult" content="complete skeleton with well-preserved feathery integument"/>
+        </UNNAMED>
+        <CGENUS name="Microraptor" incertae="1" silhouette="deinonychosauria"/>
+        <CGENUS incertae="1" name="Rahonavis"/>
+        <CGENUS name="Sinornithosaurus" incertae="1"/>
+        <CGENUS incertae="1" name="Unenlagia" silhouette="paraves-flightless"/>
         <CLINK name="Deinonychosauria"/>
         <CLINK name="Avialae"/>
        </CLADE>
+       <CLINK name="Alvarezsauria" incertae="1"/>
       </CLADE>
      </CLADE>
     </CLADE>
    </CLADE>
-  </CLADE>
   </CLADE>
  </CLADOGRAM>
  <CLADOGRAM alternate="1">
@@ -1934,16 +2026,6 @@ middle metatarsal is pinched at the top. This trait, an adaptation for
 running, is now thought to have evolved separately in caenagnathids
 and possibly in all five of the groups. <LINK content="Mononykines"/>
 have an extreme version of this feature. </P>
-
-<P> <ILLO name="dromaeosaurid_pes"/> <LINK content="Avialae"/> includes all
-animals that share more recent ancestry with birds than with
-deinonychosaurs. Several primitive avialans have been found with
-dromaeosaurid-like "sickle claws" (a hyperextendable second digit 
-with a large, very curved claw) on their feet, including <NOMEN
-name="Rahonavis"/> and the <LINK content="enantiornithean"/> <NOMEN
-name="Vorona"/>. It was also realized not long ago that the 
-"first bird", <NOMEN name="Archaeopteryx"/>, had a hyperextendable
-second toe. This trait may be a basal trait for all paravians. </P>
  </ESSAY>
 </TAXON>
 
@@ -1971,6 +2053,7 @@ second toe. This trait may be a basal trait for all paravians. </P>
        <CSYNONYM name="Agathaumidae"/>
        <CSYNONYM name="Ceratopidae"/>
        <CGENUS name="Agathaumas" incertae="1"/>
+       <CGENUS incertae="1" name="Claorhynchus"/>
        <CGENUS name="Dysganus" incertae="1"/>
        <CLINK name="Centrosaurinae"/>
        <CLINK name="Ceratopsinae"/>
@@ -2037,8 +2120,8 @@ horns above their eyes. </P>
 
 <P> The function of the neck frills in these and other ceratopsians is not
 certain. They may have borne colorful displays, protected the neck from
-predators, anchored powerful cheek muscles, or performed a combination of
-these functions. In <NOMEN name="Protoceratops"/>, one gender (male?) has
+predators, anchored powerful cheek muscles, amplified low-frequency sounds,
+or performed a combination of these functions. In <NOMEN name="Protoceratops"/>, one gender (male?) has
 a much wider frill than the other, supporting the idea that these were
 used as sexual displays. </P>
 
@@ -2066,6 +2149,7 @@ termed Protoceratopsidae. </P>
 
 <TAXON name="Crocodylomorpha" nickname='"Crocs"' simple="1">
  <WORD key="1" essay="1" content="crocodile, crocodilian"/>
+ <INCLUDED content="Crocodylus, Deinosuchus, Phobosuchus, Purussaurus, Simosuchus"/>
  <CLADOGRAM>
   <CLADE name="Crocodylomorpha" silhouette="crocodylomorpha">
    <AUTHOR name="Walker" year="1970"/>
@@ -2223,27 +2307,26 @@ lifestyle. </P>
     <PLACE name="France"/>
     <REMAINS content="tooth"/>
    </UNNAMED>
-   <UNNAMED>
-    <PLACE name="Africa"/>
+   <UNNAMED indet="1" comment="dromaeosaurine?">
+    <PLACE name="Denmark"/>
+    <REMAINS content="tooth"/>
+   </UNNAMED>
+   <UNNAMED comment="large">
+    <PLACE name="Sudan"/>
    </UNNAMED>
    <UNNAMED comment="medium-sized">
     <PLACE name="Mongolia"/>
    </UNNAMED>
-   <UNNAMED cf="Archaeoraptor">
-    <TIME value="Barremian"/>
-    <PLACE name="China"/>
-    <REMAINS content="tail, hindlimbs"/>
-   </UNNAMED>
    <CGENUS incertae="1" name="Achillobator"/>
-   <CGENUS incertae="1" q="1" name="Euronychodon"/>
-   <CGENUS incertae="1" q="1" name="Kitadanisaurus"/>
+   <CGENUS name="Adasaurus" incertae="1"/>
+   <CGENUS name="Bambiraptor" incertae="1"/>
    <CGENUS incertae="1" q="1" name="Koreanosaurus"/>
+   <CGENUS name="Megaraptor" incertae="1" q="1"/>
    <CGENUS name="Nuthetes" incertae="1"/>
    <CGENUS incertae="1" q="1" name="Ornithodesmus"/>
    <CGENUS incertae="1" name="Pyroraptor"/>
    <CGENUS incertae="1" name="Utahraptor"/>
    <CGENUS incertae="1" name="Variraptor"/>
-   <CGENUS name="Sinornithosaurus"/>
    <CLADE name="Dromaeosauridae" in="Dromaeosaurus, Velociraptor">
     <CSYNONYM name="Ornithodesmidae" q="1"/>
     <CLADE name="Dromaeosaurinae" in="Dromaeosaurus" out="Velociraptor">
@@ -2359,7 +2442,14 @@ the flexible tail, the incorrect hands, and the lack of feathers. </P>
     <PLACE name="Mississippi"/>
     <REMAINS content="sacrum"/>
    </UNNAMED>
-   <CGENUS incertae="1" name="Beelemodon"/>
+   <UNNAMED comment="Baluchistani">
+    <PLACE name="Pakistan"/>
+    <REMAINS content="over 100 bones"/>
+   </UNNAMED>
+   <UNNAMED comment="4.5m-long Liaoning">
+    <PLACE name="China"/> <TIME value="Barremian" section="middle"/>
+    <REMAINS content="complete skeleton"/>
+   </UNNAMED>
    <CGENUS incertae="1" name="Luanpingosaurus"/>
    <CGENUS incertae="1" name="Teyuwasu"/>
    <CLINK name="Ornithischia"/>
@@ -2369,9 +2459,7 @@ the flexible tail, the incorrect hands, and the lack of feathers. </P>
     <MEANING>
      lizard<LOW>-like</LOW> ischia
     </MEANING>
-    <CLADE name="Guaibasauridae">
-     <CGENUS name="Guaibasaurus"/>
-    </CLADE>
+    <CGENUS name="Eshanosaurus" incertae="1"/>
     <CLINK name="Sauropodomorpha"/>
     <CLINK name="Theropoda"/>
    </CLADE> 
@@ -2577,6 +2665,7 @@ existed. </P>
    <CGENUS name="Megacervixosaurus" incertae="1" q="1"/>
    <CGENUS name="Mongolosaurus" incertae="1" q="1"/>
    <CGENUS name="Amphicoelias"/>
+   <CGENUS name="Losillasaurus"/>
    <CLADE name="Rebbachisauridae" silhouette="rebbachisauridae">
     <UNNAMED>
      <PLACE name="S. America"/>
@@ -2592,6 +2681,7 @@ existed. </P>
     </CLADE>
    </CLADE>
    <CLADE name="Diplodocoidea" in="Diplodocus, Dicraeosaurus">
+    <UNNAMED><PLACE name="Niger"/><TIME value="Cenomanian"/><REMAINS content="cervical & dorsal vertebrae"/></UNNAMED>
     <CLADE name="Dicraeosauridae">
      <UNNAMED cf="Dicraeosaurus" q="1">
       <TIME value="Albian"/>
@@ -2651,71 +2741,96 @@ for a long time (if it ever, indeed, existed). </P>
    <UNNAMED comment="juvenile">
     <PLACE name="Spain"/>
    </UNNAMED>
+   <UNNAMED comment="small Maevarano">
+    <PLACE name="Madagascar"/>
+    <TIME value="Maastrichtian"/>
+    <REMAINS content="dentary"/>
+   </UNNAMED>
+   <UNNAMED comment="small Maevarano">
+    <PLACE name="Madagascar"/>
+    <TIME value="Maastrichtian"/>
+    <REMAINS content="furcula"/>
+   </UNNAMED>
+   <UNNAMED comment="small Maevarano">
+    <PLACE name="Madagascar"/>
+    <TIME value="Maastrichtian"/>
+    <REMAINS content="tibia"/>
+   </UNNAMED>
+   <UNNAMED comment="small Maevarano">
+    <PLACE name="Madagascar"/>
+    <TIME value="Maastrichtian"/>
+    <REMAINS content="coracoid"/>
+   </UNNAMED>
+   <UNNAMED comment="small Maevarano">
+    <PLACE name="Madagascar"/>
+    <TIME value="Maastrichtian"/>
+    <REMAINS content="synsacrum"/>
+   </UNNAMED>
+   <UNNAMED comment="medium-large Maevarano">
+    <PLACE name="Madagascar"/>
+    <TIME value="Maastrichtian"/>
+    <REMAINS content="synsacrum"/>
+   </UNNAMED>
+   <UNNAMED comment="small Maevarano">
+    <PLACE name="Madagascar"/>
+    <TIME value="Maastrichtian"/>
+    <REMAINS content="humerus"/>
+   </UNNAMED>
+   <UNNAMED comment="small Maevarano">
+    <PLACE name="Madagascar"/>
+    <TIME value="Maastrichtian"/>
+    <REMAINS content="humerus"/>
+   </UNNAMED>
+   <UNNAMED comment="small Maevarano">
+    <PLACE name="Madagascar"/>
+    <TIME value="Maastrichtian"/>
+    <REMAINS content="humerus"/>
+   </UNNAMED>
+   <CGENUS name="Alexornis" incertae="1"/>
+   <CGENUS name="Boluochia" incertae="1"/>
    <CGENUS incertae="1" name="Eoalulavis"/>
    <CGENUS incertae="1" name="Gurilynia"/>
-   <CGENUS name="Iberomesornis" q="1"/>
-   <CGENUS name="Lingyuanornis" incertae="1"/>
-   <CGENUS name="Vorona" q="1" silhouette="paraves"/>
-   <CLADE name="Alexornithiformes" incertae="1">
-    <CGENUS name="Alexornis"/>
-    <CGENUS name="Kizylkumavis"/>
-    <CGENUS name="Lenesornis"/>
-    <CGENUS name="Sazavis"/>
+   <CGENUS name="Horezmavis" incertae="1"/>
+   <CGENUS name="Kizylkumavis" incertae="1"/>
+   <CGENUS name="Lenesornis" incertae="1"/>
+   <CGENUS name="Liaoxiornis" incertae="1" q="1"/>
+   <CGENUS name="Longchengornis" incertae="1"/>
+   <CGENUS name="Sazavis" incertae="1"/>
+   <CLADE name="Enantiornithiformes" incertae="1">
+    <MEANING>
+     <NOMEN name="Enantiornis"/> forms
+    </MEANING>
+    <CGENUS name="Enantiornis"/>
    </CLADE>
-   <CLADE name="Eoenantiornithiformes" q="1">
+   <CLADE name="Eoenantiornithiformes" incertae="1">
     <MEANING><NOMEN name="Eoenantiornis"/> forms</MEANING>
     <CGENUS name="Eoenantiornis"/>
    </CLADE>
+   <CLADE name="Cuspirostrisornithidae" incertae="1">
+    <CGENUS name="Cuspirostrisornis"/>
+    <CGENUS name="Largirostrisornis" q="1"/>
+   </CLADE>
+   <CLADE name="Gobipterygidae" incertae="1">
+    <CGENUS name="Gobipteryx"/>
+    <CGENUS name="Nanantius" q="1"/>
+   </CLADE>
+   <CLADE name="Sinornithiformes" incertae="1">
+    <CGENUS name="Cathayornis"/>
+    <CGENUS name="Sinornis"/>
+   </CLADE>
+   <CGENUS name="Iberomesornis" q="1"/>
    <CLADE>
-    <CLADE name="Sinornithiformes">
-     <CGENUS name="Sinornis"/>
-    </CLADE>
+    <CGENUS name="Lectavis"/>
     <CLADE>
-     <CLADE name="Cathayornithiformes">
-      <MEANING>
-       <NOMEN name="Cathayornis"/> forms
-      </MEANING>
-      <CLADE name="Cuspirostrisornithidae" q="1">
-       <CGENUS name="Cuspirostrisornis"/>
-       <CGENUS name="Largirostrisornis"/>
-      </CLADE>
-      <CLADE name="Cathayornithidae">
-       <CGENUS name="Boluochia"/>
-       <CGENUS name="Cathayornis"/>
-       <CGENUS name="Longchengornis"/>
-      </CLADE>
-     </CLADE>
+     <CGENUS name="Yungavolucris"/>
      <CLADE>
-      <CLADE name="Gobipterygidae">
-       <CGENUS name="Gobipteryx"/>
-       <CGENUS name="Horezmavis"/>
-      </CLADE>
-      <CLADE name="Enantiornithiformes">
-       <MEANING>
-        <NOMEN name="Enantiornis"/> forms
-       </MEANING>
-       <CLADE name="Zhyraornithidae" q="1">
-        <CGENUS name="Zhyraornis">
-       </CLADE>
-       <CLADE name="Enantiornithidae">
-        <CGENUS name="Enantiornis"/>
-        <CGENUS name="Nanantius"/>
-       </CLADE>
-       <CLADE name="Avisauridae">
-        <CGENUS name="Lectavis"/>
-        <CLADE>
-         <CGENUS name="Yungavolucris"/>
-         <CLADE>
-          <CGENUS name="Concornis" q="1"/>
-          <CLADE>
-           <CGENUS name="Neuquenornis"/>
-           <CLADE>
-            <CGENUS name="Avisaurus"/>
-            <CGENUS name="Soroavisaurus"/>
-           </CLADE>
-          </CLADE>
-         </CLADE>
-        </CLADE>
+      <CGENUS name="Concornis" q="1"/>
+      <CLADE name="Avisauridae" in="Neuquenornis, Avisaurus">
+       <AUTHOR type="sensu" name="Chiappe" year="1993"/>
+       <CGENUS name="Neuquenornis"/>
+       <CLADE>
+        <CGENUS name="Avisaurus"/>
+        <CGENUS name="Soroavisaurus"/>
        </CLADE>
       </CLADE>
      </CLADE>
@@ -2753,7 +2868,6 @@ survived while they did not remains a mystery. </P>
  <CLADOGRAM>
   <CLADE name="Hadrosaurinae" in="Hadrosaurus" out="Lambeosaurus" silhouette="hadrosaurinae">
    <CSYNONYM name="Saurolophinae"/>
-   <CGENUS name="Hadrosaurus" incertae="1"/>
    <CGENUS name="Microhadrosaurus" incertae="1"/>
    <CGENUS name="Thespesius" incertae="1" q="1"/>
    <CLADE name="Maiasaurini" silhouette="maiasaurini">
@@ -2761,10 +2875,12 @@ survived while they did not remains a mystery. </P>
     <CGENUS name="Maiasaura"/>
    </CLADE>
    <CLADE>
-    <CLADE name="Gryposaurini">
-     <CSYNONYM name="Hadrosaurini" q="1"/>
+    <CLADE name="Hadrosaurini">
+     <CSYNONYM name="Gryposaurini"/>
+     <CGENUS name="Hadrosaurus" incertae="1"/>
      <CGENUS name="Aralosaurus" q="1"/>
      <CGENUS name="Gryposaurus"/>
+     <CGENUS name="Kritosaurus" q="1"/>
     </CLADE>
     <CLADE>
      <CLADE name="Edmontosaurini" silhouette="edmontosaurini">
@@ -2774,9 +2890,6 @@ survived while they did not remains a mystery. </P>
       <CGENUS name="Tanius" q="1"/>
      </CLADE>
      <CLADE name="Saurolophini">
-      <CGENUS name="Anasazisaurus"/>
-      <CGENUS name="Kritosaurus"/>
-      <CGENUS name="Naashoibitosaurus"/>
       <CGENUS name="Prosaurolophus" silhouette="prosaurolophus-saurolophus"/>
       <CGENUS name="Saurolophus" silhouette="prosaurolophus-saurolophus"/>
      </CLADE>
@@ -2851,6 +2964,11 @@ the generic name <NOMEN name="Anatotitan"/> was coined. </P>
       <PLACE name="Japan"/>
      </UNNAMED>
      <UNNAMED>
+      <PLACE name="Mongolia"/>
+      <TIME value="LK"/>
+      <REMAINS content="dorsal vertebrae, scapula, manual elements"/>
+     </UNNAMED>
+     <UNNAMED>
       <TIME value="Maastrichtian"/>
       <PLACE name="Antarctica"/>
      </UNNAMED>
@@ -2858,12 +2976,25 @@ the generic name <NOMEN name="Anatotitan"/> was coined. </P>
       <TIME value="Maastrichtian" section="late"/>
       <PLACE name="France"/>
      </UNNAMED>
+     <UNNAMED indet="1">
+      <TIME value="Campanian" section="latest" q="1"/>
+      <TIME value="Maastrichtian" section="early"/>
+      <PLACE name="Argentina"/>
+     </UNNAMED>
+     <UNNAMED indet="1" comment="Chronister">
+      <TIME value="LK"/><PLACE name="Missouri"/>
+      <REMAINS content="vertebrae, phalanx, teeth"/>
+     </UNNAMED>
+     <UNNAMED comment="Cerro del Pueblo">
+      <TIME value="Campanian" section="late"/>
+      <PLACE name="Mexico"/>
+      <REMAINS content="nearly complete skeleton with skin impressions from tail, limbs, and hip"/>
+      <REMAINS content="unassociated skin impressions"/>
+     </UNNAMED>
      <CGENUS incertae="1" name="Hironosaurus" q="1"/>
      <CGENUS incertae="1" name="Hypsibema"/>
-     <CGENUS incertae="1" name="Lophorhothon"/>
      <CGENUS incertae="1" name="Mandschurosaurus"/>
      <CGENUS incertae="1" name="Orthomerus"/>
-     <CGENUS incertae="1" name="Sanpasaurus"/>
      <CGENUS incertae="1" name="Secernosaurus"/>
      <CGENUS name="Protohadros"/>
      <CLADE>
@@ -3136,12 +3267,17 @@ lost.) </P>
     <TIME value="Barremian"/>
     <PLACE name="Japan"/>
    </UNNAMED>
+   <UNNAMED>
+    <PLACE name="Mongolia"/>
+    <TIME value="EK"/>
+    <REMAINS content="ribs, etc."/>
+   </UNNAMED>
    <UNNAMED comment="small">
     <TIME section="earliest" value="Cenomanian"/>
     <PLACE name="Utah"/>
    </UNNAMED>
-   <CGENUS name="Caudocoelus" q="1"/>
-   <CGENUS name="Magulodon" q="1"/>
+   <CGENUS incertae="1" name="Jinzhousaurus"/>
+   <CGENUS incertae="1" name="Lophorhothon"/>
    <CGENUS name="Mandschurosaurus laosensis" q="1"/>
    <CGENUS name="Muttaburrasaurus" q="1" silhouette="iguanodontia-robust"/>
    <CLADE>
@@ -3182,7 +3318,10 @@ lost.) </P>
       </UNNAMED>
       <CGENUS incertae="1" name="Bihariosaurus"/>
       <CGENUS incertae="1" name="Pararhabdodon"/>
-      <CGENUS name="Camptosaurus"/>
+      <CLADE name="Camptosauridae">
+       <CGENUS name="Camptosaurus"/>
+       <CGENUS name="Draconyx"/>
+      </CLADE>
       <CLADE name="Styracosterna" in="Parasaurolophus" out="Camptosaurus">
        <MEANING>
         spiked sterna
@@ -3198,7 +3337,11 @@ lost.) </P>
        </UNNAMED>
        <CGENUS name="Fukuisaurus" incertae="1"/>
        <CGENUS name="Lurdusaurus" incertae="1" q="1"/>
-       <CGENUS name="Probactrosaurus" incertae="1"/>
+       <CGENUS name="Planicoxa" incertae="1"/>
+       <CLADE incertae="1">
+        <CGENUS name="Eolambia" q="1"/>
+        <CGENUS name="Probactrosaurus"/>
+       </CLADE>
        <CLADE name="Iguanodontoidea" in="Iguanodon, Hadrosaurus">
         <CSYNONYM name="Hadrosauriformes"/>
         <CGENUS name="Camptosaurus sp." incertae="1"/>
@@ -3264,14 +3407,13 @@ in <NOMEN name="Iguanodon"/>, then tiny or absent in
 <CLADE name="Lambeosaurinae" in="Lambeosaurus" out="Hadrosaurus" silhouette="hadrosauroidea">
  <CSYNONYM name="Hypacrosaurinae"/>
  <UNNAMED indet="1">
-  <TIME section="early" value="Maastrichtian"/>
+  <TIME value="Campanian" section="latest" q="1"/>
+  <TIME value="Maastrichtian" section="early"/>
   <PLACE name="Argentina"/>
  </UNNAMED>
  <CGENUS incertae="1" name="Arstanosaurus" q="1"/>
  <CGENUS name="Gadolosaurus" incertae="1" q="1"/>
  <CGENUS name="Pteropelyx" incertae="1"/>
- <CGENUS name="Trachodon" incertae="1"/>
- <CGENUS name="Eolambia"/>
  <CLADE>
   <CGENUS name="Bactrosaurus" q="1"/>
   <CLADE>
@@ -3556,17 +3698,17 @@ squamates known as mosasaurs. They went extinct at the end of the
     <TIME value="LJ"/>
    </UNNAMED>
    <CGENUS incertae="1" name="Abrosaurus" q="1"/>
-   <CGENUS name="Aragosaurus" incertae="1"/>
    <CGENUS incertae="1" name="Bashunosaurus"/>
    <CGENUS name="Chondrosteosaurus" incertae="1"/>
-   <CGENUS name="Lourinhasaurus" q="1" incertae="1"/>
    <CGENUS name="Sugiyamasaurus" incertae="1"/>
    <CLADE name="Camarasauromorpha" in="Camarasaurus, Saltasaurus">
     <MEANING>
      <NOMEN name="Camarasaurus"/> forms
     </MEANING>
     <CLADE name="Camarasauridae">
+     <CGENUS name="Aragosaurus" q="1"/>
      <CGENUS name="Camarasaurus"/>
+     <CGENUS name="Lourinhasaurus" q="1"/>
     </CLADE>
     <CLADE name="Titanosauriformes" in="Titanosaurus, Brachiosaurus">
      <MEANING>
@@ -3590,23 +3732,28 @@ squamates known as mosasaurs. They went extinct at the end of the
      <UNNAMED>
       <PLACE name="England"/>
      </UNNAMED>
+     <UNNAMED comment="Ruby Ranch">
+      <PLACE name="U.S.A."/> <TIME value="EK"/>
+      <REMAINS content="bones from at least 4 individuals"/>
+     </UNNAMED>
+     <CGENUS name="Astrodon" q="1"/>
+     <CGENUS q="1" name="Atlasaurus" silhouette="brachiosauridae"/>
      <CGENUS incertae="1" name="Austrosaurus" q="1"/>
      <CGENUS incertae="1" name="Bellusaurus" q="1"/>
      <CGENUS incertae="1" name="Bothriospondylus"/>
      <CGENUS name="Damalasaurus" incertae="1" q="1"/>
+     <CGENUS name="Eucamerotus" q="1"/>
      <CGENUS incertae="1" name="Ischyrosaurus"/>
      <CGENUS incertae="1" name="Ornithopsis"/>
      <CGENUS incertae="1" name="Pelorosaurus"/>
-     <CGENUS name="Astrodon" q="1"/>
-     <CGENUS q="1" name="Atlasaurus" silhouette="brachiosauridae"/>
-     <CGENUS name="Cedarosaurus"/>
-     <CGENUS name="Eucamerotus" q="1"/>
-     <CGENUS name="Giraffatitan" silhouette="brachiosauridae"/>
+     <CGENUS incertae="1" name="Venenosaurus"/>
      <CGENUS name="Pleurocoelus" q="1"/>
-     <CGENUS name="Sauroposeidon" silhouette="brachiosauridae"/>
      <CGENUS name="Sonorasaurus"/>
      <CLADE name="Brachiosauridae" silhouette="brachiosauridae">
       <CGENUS name="Brachiosaurus"/>
+      <CGENUS name="Cedarosaurus"/>
+      <CGENUS name="Giraffatitan"/>
+      <CGENUS name="Sauroposeidon"/>
      </CLADE>
      <CLINK name="Titanosauria"/>
     </CLADE>
@@ -3674,7 +3821,7 @@ great that its lungs would collapse. Instead, it is likely that
 <TAXON name="Mammalia" nickname="Furry Milksuckers" simple="1">
  <WORD key="1" content="mammals, multis"/>
  <WORD essay="1" content="bat, bats, human, mammal, glyptodont, mammalian bats, sirenians, walruses"/>
- <INCLUDED content="Antidorcas, Giraffa, Homo, Bison, Zalambdalestes"/>
+ <INCLUDED content="Antidorcas, Bison, Giraffa, Homo, Ia, Rhinoceros, Theosodon, Zalambdalestes"/>
  <CLADOGRAM>
   <CLADE name="Mammalia" sensu="stricto" crown="1" silhouette="mammalia">
    <CLADE name="Prototheria" in="Monotremata" out="Theria">
@@ -4217,21 +4364,25 @@ I have to go eat some <LINK content="chicken"/>. </P>
      <CGENUS incertae="1" name="Genyodectes"/>
      <CGENUS name="Jubbulpuria" incertae="1"/>
      <CGENUS name="Ornithomimoides" incertae="1"/>
-     <CGENUS incertae="1" name="Tarascosaurus"/>
-     <CGENUS name="Ilokelesia" q="1"/>
+     <CGENUS name="Ilokelesia" silhouette="abeliosauroidea-small"/>
      <CGENUS name="Laevisuchus" silhouette="abelisauroidea-small"/>
-     <CGENUS name="Ligabueino" silhouette="abelisauroidea-small"/>
-     <CGENUS name="Velocisaurus" silhouette="abelisauroidea-small"/>
      <CLADE name="Abelisauria" in="Abelisaurus, Noasaurus">
       <MEANING>
        <NOMEN name="Abelisaurus"/>' <LOW>taxon</LOW>
       </MEANING>
-      <CGENUS name="Noasaurus" silhouette="noasaurus"/>
+      <CLADE name="Noasauridae" silhouette="abelisauroidea-small">
+       <CGENUS name="Masiakasaurus" silhouette="neotheropoda"/>
+       <CGENUS name="Ligabueino" ailhouette="noasaurus" q="1"/>
+       <CGENUS name="Noasaurus" silhouette="noasaurus"/>
+       <CGENUS name="Velocisaurus" silhouette="abelisauroidea-small"/>
+      </CLADE>
       <CLADE name="Abelisauridae" in="Abelisaurus, Carnotaurus, Indosaurus, Indosuchus, Xenotarsosaurus">
        <AUTHOR name="Bonaparte, Novas" year="1985"/>
        <AUTHOR type="sensu" name="Novas" year="1997"/>
-       <CGENUS incertae="1" name="Indosaurus"/>
-       <CGENUS incertae="1" name="Xenotarsosaurus"/>
+       <UNNAMED><REMAINS content="skull"/><PLACE name="Niger"/><TIME value="Cenomanian"/></UNNAMED>
+       <CGENUS name="Betasuchus"/>
+       <CGENUS name="Xenotarsosaurus"/>
+       <CGENUS name="Tarascosaurus"/>
        <CGENUS name="Indosuchus"/>
        <CLADE name="Abelisaurinae" in="Abelisaurus" out="Carnotaurus">
         <AUTHOR type="sensu" name="Sereno" year="1999"/>
@@ -4240,12 +4391,10 @@ I have to go eat some <LINK content="chicken"/>. </P>
        </CLADE>
        <CLADE name="Carnotaurinae" in="Carnotaurus" out="Abelisaurus" silhouette="carnotaurinae">
         <AUTHOR name="Sereno" year="1999"/>
-        <UNNAMED>
-         <TIME value="Cenomanian"/>
-         <PLACE name="Argentina"/>
-        </UNNAMED>
-        <CGENUS incertae="1" name="Majungasaurus" q="1"/>
+        <CGENUS incertae="1" name="Majungasaurus"/>
+        <CGENUS name="Aucasaurus"/>
         <CGENUS name="Carnotaurus"/>
+        <CGENUS name="Indosaurus"/>
         <CGENUS name="Majungatholus"/>
        </CLADE>
       </CLADE>
@@ -4289,8 +4438,8 @@ are abelisauroids, they may have even been the dominant Gondwanan predators
 
 <TAXON name="Neornithes" nickname="Modern Birds" simple="1">
  <WORD key="1" content="bird, modern, classification, cladogram, evolution, feather, flight, origin, Diatryma"/>
- <WORD essay="1" content="chicken, modern bird, modern birds, modern flying birds, modern-day birds, neornithean birds, ostriches, penguins, sparrow, songbird, trochilid, trochilids"/>
- <INCLUDED content="Aegotheles, Aquila, Aratinga, Casuarius, Ceratogymna, Gastornis, Dinornis, Dromaius, Opisthocomo, Pavo, Pelagornis, Sagittarius, Scaniornis, Tyto"/>
+ <WORD essay="1" content="chicken, modern bird, modern birds, modern flying birds, modern-day birds, neornithean birds, ostriches, penguins, sparrow, songbird, trochilid, trochilids, turkey, phorusrhacids"/>
+ <INCLUDED content="Aegotheles, Apteryx, Aquila, Aratinga, Casuarius, Ceratogymna, Gastornis, Dinornis, Dromaius, Icterus, Opisthocomo, Passer, Pavo, Pelagornis, Phorusrhacus, Sagittarius, Selasphorus, Scaniornis, Struthio, Teratornis, Titanis, Trochilis, Tyto"/>
  <CLADOGRAM>
   <CLADE name="Neornithes" crown="1" silhouette="neornithes">
    <MEANING>
@@ -4325,10 +4474,7 @@ are abelisauroids, they may have even been the dominant Gondwanan predators
        <CLADE name="Casuariiformes" content="cassowaries, emus"/>
        <CLADE>
         <CLADE name="Rheiformes" content="rheas"/>
-        <CLADE>
-         <CLADE extinct="1" name="Lithornithiformes" q="1"/>
-         <CLADE name="Struthioniformes" content="ostriches"/>
-        </CLADE>
+        <CLADE name="Struthioniformes" content="ostriches"/>
        </CLADE>  
       </CLADE>
      </CLADE>
@@ -4341,9 +4487,6 @@ are abelisauroids, they may have even been the dominant Gondwanan predators
     <CSYNONYM name="Neognathia"/>
     <CSYNONYM name="Neoaves"/>
     <CLADE name="Galloanserae">
-     <MEANING>
-      <NOMEN nolink="1" name="Gallus"/>' <LOW>(chicken) and</LOW> <NOMEN nolink="1" name="Anser"/>'s <LOW>(duck) taxon</LOW>
-     </MEANING>
      <CLADE name="Anseriformes" q="1" content="ducks, geese, swans, screamers, Presbyornis, Gastornis?"/>
      <CLADE name="Galliformes" q="1" content="turkeys, grouse, quails, pheasants, peafowl, etc."/>
     </CLADE>
@@ -4404,7 +4547,7 @@ are abelisauroids, they may have even been the dominant Gondwanan predators
        </CLADE>
       </CLADE>
       <CLADE>
-       <CLADE name="Cariamae" content="phorusrhacids, etc"/>
+       <CLADE name="Cariamae" content="phorusrhacids, etc."/>
        <CLADE>
         <CLADE>
          <CLADE name="Falconiformes" content="falcons, caracaras" q="1"/>
@@ -4543,7 +4686,7 @@ the last vestige of the dinosaurs' dominion. </P>
       <PLACE name="Japan"/>
      </UNNAMED>
      <CGENUS name="Echinodon"/>
-     <CGENUS name="Peishansaurus"/>
+     <CGENUS name="Jeholosaurus" incertae="1"/>
      <CGENUS name="Taveirosaurus"/>
      <CGENUS name="Thecospondylus" q="1"/>
      <CLINK name="Thyreophora"/>
@@ -4552,9 +4695,7 @@ the last vestige of the dinosaurs' dominion. </P>
        Cera<LOW>topsia and Ornitho</LOW>poda
       </MEANING>
       <CSYNONYM name="Neornithischia"/>
-      <CGENUS incertae="1" name="Claorhynchus"/>
       <CGENUS incertae="1" name="Notoceratops"/>
-      <CGENUS incertae="1" name="Tianchungosaurus" q="1"/>
       <CLINK name="Heterodontosauridae"/>
       <CLINK name="Ornithopoda"/>
       <CLADE name="Marginocephalia" in="Triceratops, Pachycephalosaurus">
@@ -4757,44 +4898,38 @@ homologous. </P>
     <REMAINS q="1" content="pubis"/>
    </UNNAMED>
    <CGENUS name="Pelecanimimus"/>
-   <CLADE>
-    <CSYNONYM name="Ornithomimidae" sensu="Smith, Galton" year="1990"/>
-    <CGENUS name="Harpymimus"/>
-    <CLADE name="Ornithomimoidea">
+   <CLADE name="Ornithomimidae">
+    <AUTHOR name="Marsh" year="1890"/>
+    <AUTHOR type="non" name="Sereno" year="1999"/>
+    <AUTHOR type="sensu" name="Smith, Galton" year="1990"/>
+    <AUTHOR type="implied" name="Marsh" year="1890"/>
+    <UNNAMED indet="1">
+     <TIME value="Campanian"/>
+     <PLACE name="Georgia"/>
+    </UNNAMED>
+    <UNNAMED>
+     <TIME value="Campanian"/>
+     <PLACE name="Montana"/>
+    </UNNAMED>
+    <UNNAMED>
+     <TIME value="LK"/>
+     <PLACE name="China"/>
+     <REMAINS content="12 skeletons (with gastroliths)"/>
+    </UNNAMED>
+    <CGENUS name="Archaeornithomimus"/>
+    <CGENUS name="Deinocheirus" incertae="1" q="1"/>
+    <CGENUS name="Garudimimus" silhouette="garudimimus"/>
+    <CGENUS name="Orcomimus" incertae="1"/>
+    <CGENUS incertae="1" name="Sanchusaurus" q="1"/>
+    <CLADE name="Ornithomiminae">
      <AUTHOR type="implied" name="Marsh" year="1890"/>
-     <AUTHOR type="non" name="Sereno" year="1999"/>
-     <CGENUS name="Deinocheirus" incertae="1"/>
-     <CGENUS name="Garudimimus" silhouette="garudimimus"/>
-     <CLADE name="Ornithomimidae">
-      <AUTHOR name="Marsh" year="1890"/>
-      <AUTHOR type="non" name="Sereno" year="1999"/>
-      <UNNAMED indet="1">
-       <TIME value="Campanian"/>
-       <PLACE name="Georgia"/>
-      </UNNAMED>
-      <UNNAMED>
-       <TIME value="Campanian"/>
-       <PLACE name="Montana"/>
-      </UNNAMED>
-      <UNNAMED>
-       <TIME value="LK"/>
-       <PLACE name="China"/>
-       <REMAINS content="12 skeletons (with gastroliths)"/>
-      </UNNAMED>
-      <CGENUS incertae="1" name="Sanchusaurus" q="1"/>
-      <CGENUS name="Orcomimus" incertae="1"/>
-      <CGENUS name="Archaeornithomimus"/>
-      <CLADE name="Ornithomiminae">
-       <AUTHOR type="implied" name="Marsh" year="1890"/>
-       <CGENUS name="Gallimimus"/>
-       <CGENUS name="Anserimimus"/>
-       <CLADE name="Ornithomimini">
-        <AUTHOR type="implied" name="Marsh" year="1890"/>
-        <CGENUS name="Dromiceiomimus"/>
-        <CGENUS name="Ornithomimus"/>
-        <CGENUS name="Struthiomimus"/>
-       </CLADE>
-      </CLADE>
+     <CGENUS name="Gallimimus"/>
+     <CGENUS name="Anserimimus"/>
+     <CLADE name="Ornithomimini">
+      <AUTHOR type="implied" name="Marsh" year="1890"/>
+      <CGENUS name="Dromiceiomimus"/>
+      <CGENUS name="Ornithomimus"/>
+      <CGENUS name="Struthiomimus"/>
      </CLADE>
     </CLADE>
    </CLADE>
@@ -4817,7 +4952,7 @@ This may indicate that they were one of the few groups of
 non-<LINK content="neornithean"/> <LINK content="theropods"/> to abandon a
 predatory lifestyle, possibly assuming an herbivorous or omnivorous mode of
 life similar to that of modern-day ostriches. Early ornithomimosaurs such as
-<NOMEN name="Pelecanimimus"/> and <NOMEN name="Harpymimus"/> still had teeth,
+<NOMEN name="Pelecanimimus"/> still had teeth,
 although they were quite small. </P>
   
 <P> Ornithomimoids were all fairly similar. They had lost the first, inner
@@ -4848,6 +4983,10 @@ ornithomimoid <NOMEN name="Deinocheirus"/> </P>
     <TIME value="Valanginian"/>
     <PLACE name="Japan"/>
    </UNNAMED>
+   <UNNAMED comment="small Kota" q="1">
+    <TIME value="EJ"/> <TIME value="MJ"/>
+    <PLACE name="India"/>
+   </UNNAMED>
    <UNNAMED>
     <PLACE name="Texas"/>
    </UNNAMED>
@@ -4861,8 +5000,13 @@ ornithomimoid <NOMEN name="Deinocheirus"/> </P>
     <TIME value="EK"/>
     <PLACE name="Spain"/>
    </UNNAMED>
-   <UNNAMED content="small">
+   <UNNAMED content="small Tetori">
+    <REMAINS content="partial skull"/>
     <PLACE name="Japan"/>
+   </UNNAMED>
+   <UNNAMED>
+    <PLACE name="Ethiopia"/>
+    <TIME value="Tithonian"/>
    </UNNAMED>
    <CGENUS incertae="1" name="Anoplosaurus tanyspondylus"/>
    <CGENUS incertae="1" name="Atlascopcosaurus"/>
@@ -4872,6 +5016,7 @@ ornithomimoid <NOMEN name="Deinocheirus"/> </P>
    <CGENUS incertae="1" name="Notohypsilophodon"/>
    <CGENUS incertae="1" name="Phyllodon"/>
    <CGENUS incertae="1" name="Qantassaurus"/>
+   <CGENUS incertae="1" q="1" name="Sanpasaurus"/>
    <CGENUS incertae="1" name="Siluosaurus"/>
    <CGENUS incertae="1" name="Tichosteus" q="1"/>
    <CGENUS incertae="1" name="Yandusaurus"/>
@@ -4957,28 +5102,16 @@ such as these came the larger, semi-quadrupedal iguanodonts. </P>
    <MEANING>
     bird tails
    </MEANING>
-   <CLADE name="Patagopterygiformes">
-    <CGENUS name="Patagopteryx" silhouette="pygostylia-flightless"/>
-    <CGENUS q="1" name="Gargantuavis" silhouette="pygostylia-flightless"/>
-    <CGENUS q="1" name="Kuszholia" silhouette="pygostylia-flightless"/>
-   </CLADE>
    <CLINK name="Hesperornithiformes"/>
-   <CLADE name="Carinatae" in="Neornithes, Ichthyornis">
-    <CLADE name="Ambiortimorphae" in="Ambiortus" out="Neornithes" silhouette="ambiortimorphae">
-     <MEANING>
-      <NOMEN name="Ambiortus"/> forms
-     </MEANING>
-     <CLADE name="Ambiortiformes">
-      <CGENUS name="Ambiortus"/>
-     </CLADE>
-     <CLADE name="Chaoyangiiformes" q="1">
-      <CLADE name="Chaoyangiidae">
-       <CGENUS name="Chaoyangia"/>
-      </CLADE>
-      <CLADE name="Songlingornithidae"> 
-       <CGENUS name="Songlingornis"/>
-      </CLADE>
-     </CLADE>
+   <CLADE silhouette="ambiortimorphae">
+    <CGENUS name="Apsaravis"/>
+    <CLADE name="Carinatae" in="Neornithes, Ichthyornis">
+     <UNNAMED incertae="1">
+      <TIME value="Campanian"/>
+      <TIME value="Maastrichtian"/>
+      <PLACE name="Mongolia"/>
+      <REMAINS content="nearly complete skeleton"/>
+     </UNNAMED>
      <CLADE name="Ichthyornithiformes">
       <CSYNONYM name="Apatornithiformes" q="1"/>
       <MEANING>
@@ -4990,8 +5123,14 @@ such as these came the larger, semi-quadrupedal iguanodonts. </P>
       <CGENUS name="Apatornis" q="1"/>
       <CGENUS name="Ichthyornis"/>
      </CLADE>
+     <CLADE>
+      <CGENUS name="Limenavis"/>
+      <CLADE>
+       <CLADE extinct="1" name="Lithornithiformes" q="1"/>
+       <CLINK name="Neornithes"/>
+      </CLADE>
+     </CLADE>
     </CLADE>
-    <CLINK name="Neornithes"/>
    </CLADE>
   </CLADE>
  </CLADOGRAM>
@@ -4999,12 +5138,6 @@ such as these came the larger, semi-quadrupedal iguanodonts. </P>
 <P> Ornithurans include modern birds (<LINK content="neornitheans"/>) and
 their relatives. Except for neornitheans, ornithurans retained small
 teeth in their jaws, except at the front of the upper jaw (premaxilla). </P>
-
-<P header="Varieties"> Four main types are known: the flightless patagopterygiforms,
-the aquatic <LINK content="hesperornithiforms"/>, the seaside-dwelling
-ambiortimorphs, and the extremely diverse neornitheans. All lived in the
-<LINK content="Cretaceous Period"/>, and all except neornitheans died out at the
-end of the Cretaceous. </P>
  </ESSAY>
 </TAXON>
 
@@ -5021,7 +5154,7 @@ end of the Cretaceous. </P>
    <CSYNONYM name="Caenagnathidae" sensu="Paul" year="1988"/>
    <CSYNONYM name="Caenagnathoidea"/>
    <CSYNONYM name="Oviraptoroidea"/>
-   <CGENUS name="Nomingia" incertae="1"/>
+   <CGENUS name="Nomingia" q="1"/>
    <CLADE name="Caenagnathidae" in="Chirostenotes" out="Oviraptor">
     <UNNAMED comment="large">
      <TIME section="late" value="Maastrichtian"/>
@@ -5037,18 +5170,22 @@ end of the Cretaceous. </P>
    </CLADE>
    <CLADE name="Oviraptoridae" in="Oviraptor" out="Chirostenotes">
     <UNNAMED cf="Oviraptor">
-     <REMAINS content="postcranium with nest of eggs"/>
+     <REMAINS content="2 postcrania with nests of eggs (with embryos), skull"/>
      <PLACE name="Mongolia"/>
      <TIME value="Campanian"/>
      <TIME value="Maastrichtian"/>
     </UNNAMED>
-    <UNNAMED comment="large">
+    <UNNAMED>
      <PLACE name="Mongolia"/>
+     <REMAINS content="3 skeletons"/>
+     <TIME value="Campanian"/>
+     <TIME value="Maastrichtian"/>
     </UNNAMED>
+    <CGENUS name="Citipati" silhouette="oviraptoridae-crested"/>
     <CGENUS name="Conchoraptor"/>
     <CGENUS name="Ingenia"/>
+    <CGENUS name="Khaan"/>
     <CGENUS name="Oviraptor" silhouette="oviraptoridae-crested"/>
-    <CGENUS name="Rinchenia" silhouette="oviraptoridae-crested"/>
    </CLADE>
   </CLADE>
  </CLADOGRAM>
@@ -5102,7 +5239,6 @@ that we have yet found. </P>
     <CGENUS name="Micropachycephalosaurus"/>
     <CLADE name="Homalocephaloidea" in="Homalocephale, Pachycephalosaurus">
      <CGENUS name="Homalocephale"/>
-     <CGENUS name="Ornatotholus" q="1"/>
      <CLINK name="Pachycephalosauridae"/>
     </CLADE>
    </CLADE>
@@ -5138,16 +5274,16 @@ that were not conducive to fossilization, such as mountains. </P>
   <CLADE name="Pachycephalosauridae" silhouette="pachycephalosauridae">
    <CGENUS name="Stegoceras"/>
    <CLADE name="Pachycephalosaurinae">
-    <CLADE content="Asian forms">
-     <CGENUS name="Tylocephale"/>
+    <CLADE>
+     <CGENUS name="Gravitholus"/>
      <CGENUS name="Prenocephale"/>
+     <CGENUS name="Tylocephale"/>
     </CLADE>
-    <CLADE name="Pachycephalosaurini" content="N. American forms">
+    <CLADE name="Pachycephalosaurini">
      <UNNAMED comment="high-domed">
       <TIME section="middle-late" value="Campanian"/>
       <PLACE name="Alberta"/>
      </UNNAMED>
-     <CGENUS name="Gravitholus" q="1"/>
      <CGENUS name="Microcephale" q="1"/>
      <CGENUS name="Pachycephalosaurus"/>
      <CGENUS name="Stygimoloch" silhouette="stygimoloch"/>
@@ -5173,6 +5309,7 @@ non-<LINK content="avian"/> dinosaurs. </P>
  <WORD key="1" content="pterodactyl, ptero, pterodactyls, flying, flight, soaring, flew, wing"/>
  <CLADOGRAM>
   <CLADE name="Pterodactyloidea" silhouette="pterodactyloidea">
+   <UNNAMED indet="1"><PLACE name="Niger"/><TIME value="Aptian"/><REMAINS content="phalanx of digit IV"/></UNNAMED>
    <UNNAMED q="1" comment="large">
     <TIME value="Kimmeridgian"/>
     <REMAINS content="right manual phalanx II"/>
@@ -5219,7 +5356,7 @@ non-<LINK content="avian"/> dinosaurs. </P>
       </UNNAMED>
       <CGENUS name="Bogolubovia" q="1"/>
       <CGENUS name="Ornithostoma"/>
-      <CGENUS name="Ornithodesmus latidens"/>
+      <CGENUS name="Istiodactylus"/>
       <CGENUS name="Pteranodon" silhouette="pteranodon"/>
       <CLADE name="Anhangueridae" silhouette="anhangueridae">
        <UNNAMED q="1">
@@ -5247,6 +5384,7 @@ non-<LINK content="avian"/> dinosaurs. </P>
      <CLADE name="Pterodactylidae">
       <CSYNONYM name="Germanodactylidae"/>
       <CGENUS name="Germanodactylus" q="1"/>
+      <CGENUS name="Haopterus" q="1"/>
       <CGENUS name="Pterodactylus"/>
      </CLADE>
      <CLADE name="Ctenochasmatidae" silhouette="ctenochasmatidae">
@@ -5381,8 +5519,9 @@ save for <LINK content="neornithean birds"/>. </P>
 <TAXON name="Pterosauria" nickname="Flying Reptiles">
  <WORD key="1" content="pterodactyl, flying, reptile, wing, flight"/>
  <CLADOGRAM>
-  <CLADE name="Pterosauria" in="Pterodactylus, Preondactylus" silhouette="pterosauria">
+  <CLADE name="Pterosauria" in="Anurognathus, Campylognathoides, Dimorphodon, Dorygnathus, Eudimorphodon, Peteinosaurus, Preondactylus, Pterodactylus, Rhamphorhynchus, Scaphognathus" silhouette="pterosauria">
    <AUTHOR type="sensu" name="Sereno" year="1991"/>
+   <AUTHOR type="emended" name="herein"/>
    <MEANING>winged lizards</MEANING>
    <CSYNONYM name="Ornithosauria"/>
    <UNNAMED comment="crested, toothed"/>
@@ -5397,6 +5536,10 @@ save for <LINK content="neornithean birds"/>. </P>
    <UNNAMED>
     <TIME value="Berriasian"/>
     <PLACE name="Africa"/>
+   </UNNAMED>
+   <UNNAMED comment="large Dolomia di Forni">
+    <TIME value="Norian"/> <PLACE name="Italy"/>
+    <REMAINS content="wing phalanx 4 (137+mm long)"/>
    </UNNAMED>
    <CGENUS incertae="1" name="Comodactylus"/>
    <CGENUS incertae="1" name="Laopteryx"/>
@@ -5532,6 +5675,11 @@ neck, and torso, much like modern-day bats. </P>
    <CSYNONYM name="Opisthocoelia" sensu="Riggs">
     <AUTHOR name="Owen" year="1860"/>
    </CSYNONYM>
+   <UNNAMED>
+    <TIME value="LJ" q="1"/>
+    <PLACE name="Algeria"/>
+    <REMAINS content="51 bones"/>  
+   </UNNAMED>
    <UNNAMED indet="1">
     <TIME value="Hettangian"/>
     <TIME value="Sinemurian"/>
@@ -5609,71 +5757,83 @@ neck, and torso, much like modern-day bats. </P>
     <TIME value="LJ"/>
     <PLACE name="Portugal"/>
    </UNNAMED>
+   <UNNAMED indet="1">
+    <TIME value="Campanian" section="latest" q="1"/>
+    <TIME value="Maastrichtian" section="early"/>
+    <PLACE name="Argentina"/>
+   </UNNAMED>
    <CGENUS incertae="1" name="Asiatosaurus"/>
    <CGENUS incertae="1" name="Cardiodon"/>
    <CGENUS incertae="1" name="Kunmingosaurus"/>
-   <CGENUS incertae="1" name="Moshisaurus"/>
-   <CGENUS incertae="1" name="Pleurocoelus altus"/>
-   <CGENUS incertae="1" name="Qinlingosaurus"/>
-   <CGENUS name="Titanosaurus falloti" incertae="1"/>
-   <CGENUS incertae="1" name="Titanosaurus rahioliensis"/>
    <CGENUS incertae="1" name="Ultrasaurus"/>
    <CLADE name="Tendaguriidae" incertae="1">
     <AUTHOR name="Bonaparte, Heinrich, Wild" year="2000"/>
     <CGENUS name="Tendaguria"/>
    </CLADE>
-   <CGENUS name="Isanosaurus"/>
-   <CGENUS name="Kotasaurus" q="1"/>
+   <CGENUS name="Gongxianosaurus"/>
    <CLADE>
-    <CGENUS name="Vulcanodon"/>
-    <CLADE in="Saltasaurus" out="Vulcanodon">
-     <CSYNONYM name="Eusauropoda" sensu="Wilson, Sereno"/>
-     <CGENUS name="Datousaurus" incertae="1"/>
-     <CGENUS name="Shunosaurus" incertae="1" silhouette="shunosaurus"/>
-     <CGENUS name="Barapasaurus"/>
-     <CGENUS name="Ohmdenosaurus" q="1"/>
-     <CGENUS name="Zizhongosaurus" q="1"/>
-     <CLADE name="Eusauropoda" in="Saltasaurus" out="Barapasaurus, Ohmdenosaurus, Vulcanodon, Zizhongosaurus">
-      <AUTHOR name="Upchurch"/>
-      <MEANING>true sauropods</MEANING>
-      <CGENUS incertae="1" name="Chuanjiesaurus"/>
-      <CGENUS incertae="1" name="Dachongosaurus"/>
-      <CGENUS name="Euhelopus" incertae="1" silhouette="euhelopodinae"/>
-      <CGENUS incertae="1" name="Hudiesaurus"/>
-      <CGENUS incertae="1" name="Klamelisaurus"/>
-      <CGENUS incertae="1" name="Lancanjiangosaurus"/>
-      <CGENUS name="Lapparentosaurus" incertae="1"/>
-      <CGENUS incertae="1" name="Morosaurus agilis"/>
-      <CGENUS name="Mamenchisaurus" incertae="1" silhouette="euhelopodinae"/>
-      <CGENUS incertae="1" name="Nurosaurus"/>
-      <CGENUS incertae="1" name="Omeisaurus" silhouette="euhelopodinae"/>
-      <CGENUS incertae="1" name="Oshanosaurus" q="1"/>
-      <CGENUS incertae="1" name="Protognathosaurus"/>
-      <CGENUS incertae="1" name="Rhoetosaurus"/>
-      <CGENUS incertae="1" name="Tehuelchesaurus" silhouette="euhelopodinae"/>
-      <CGENUS incertae="1" name="Tienshanosaurus"/>
-      <CGENUS name="Amygdalodon"/>
-      <CLADE>
-       <CGENUS name="Volkheimeria" q="1"/>
+    <CGENUS name="Isanosaurus"/>
+    <CGENUS name="Kotasaurus" q="1"/>
+    <CLADE>
+     <CGENUS name="Vulcanodon"/>
+     <CLADE in="Saltasaurus" out="Vulcanodon">
+      <CSYNONYM name="Eusauropoda" sensu="Wilson, Sereno"/>
+      <CGENUS name="Datousaurus" incertae="1"/>
+      <CGENUS name="Shunosaurus" incertae="1" silhouette="shunosaurus"/>
+      <CGENUS name="Barapasaurus"/>
+      <CGENUS name="Ohmdenosaurus" q="1"/> 
+      <CGENUS name="Zizhongosaurus" q="1"/>
+      <CLADE name="Eusauropoda" in="Saltasaurus" out="Barapasaurus, Ohmdenosaurus, Vulcanodon, Zizhongosaurus">
+       <AUTHOR name="Upchurch"/>
+       <MEANING>true sauropods</MEANING>
+       <CGENUS incertae="1" name="Chuanjiesaurus"/>
+       <CGENUS incertae="1" name="Dachongosaurus"/>
+       <CGENUS name="Euhelopus" incertae="1" silhouette="euhelopodinae"/>
+       <CGENUS incertae="1" name="Klamelisaurus"/>
+       <CGENUS incertae="1" name="Lancanjiangosaurus"/>
+       <CGENUS name="Lapparentosaurus" incertae="1"/>
+       <CGENUS incertae="1" name="Morosaurus agilis"/>
+       <CGENUS incertae="1" name="Oshanosaurus" q="1"/>
+       <CGENUS incertae="1" name="Pleurocoelus altus"/>
+       <CGENUS incertae="1" name="Protognathosaurus"/>
+       <CGENUS incertae="1" name="Rhoetosaurus"/>
+       <CGENUS incertae="1" name="Tehuelchesaurus" silhouette="euhelopodinae"/>
+       <CGENUS incertae="1" name="Tienshanosaurus"/>
+       <CGENUS name="Amygdalodon"/>
+       <CLADE incertae="1" name="Mamenchisauridae">
+        <CGENUS q="1" name="Hudiesaurus"/>
+        <CGENUS name="Mamenchisaurus" silhouette="euhelopodinae"/>
+        <CGENUS q="1" name="Nurosaurus"/>
+        <CGENUS name="Omeisaurus" silhouette="euhelopodinae"/>
+       </CLADE>
        <CLADE>
-        <CGENUS name="Patagosaurus" q="1"/>
+        <CGENUS name="Volkheimeria" q="1"/>
         <CLADE>
-         <CGENUS name="Cetiosaurus" q="1"/>
+         <CGENUS name="Patagosaurus" q="1"/>
          <CLADE>
-          <CGENUS name="Rebbachisaurus tasmenensis" incertae="1" q="1"/>
-          <CGENUS name="Jobaria"/>
-          <CLADE name="Neosauropoda" in="Saltasaurus, Diplodocus">
-           <MEANING>
-            new sauropods
-           </MEANING>
-           <CGENUS name="Cetiosauriscus" incertae="1"/>
-           <CGENUS name="Haplocanthosaurus"/>
-           <CLADE name="Agustiniidae" incertae="1" silhouette="agustiniidae">
-            <CSYNONYM name="Agustinidae"/>
-            <CGENUS name="Agustinia"/>
+          <CGENUS name="Cetiosaurus" q="1"/>
+          <CLADE>
+           <CGENUS name="Rebbachisaurus tasmenensis" incertae="1" q="1"/>
+           <CGENUS name="Jobaria"/>
+           <CLADE name="Neosauropoda" in="Saltasaurus, Diplodocus">
+            <MEANING>
+             new sauropods
+            </MEANING>
+            <UNNAMED comment="small Morrison">
+             <REMAINS content="60% complete skeleton"/>
+             <PLACE name="Utah"/> <TIME value="LJ" section="late"/>
+            </UNNAMED>
+            <CGENUS name="Cetiosauriscus" incertae="1"/>
+            <CGENUS incertae="1" name="Qinlingosaurus"/>
+            <CGENUS incertae="1" name="Titanosaurus rahioliensis"/>
+            <CGENUS name="Haplocanthosaurus"/>
+            <CLADE name="Agustiniidae" incertae="1" silhouette="agustiniidae">
+             <CSYNONYM name="Agustinidae"/>
+             <CGENUS name="Agustinia"/>
+            </CLADE>
+            <CLINK name="Diplodocimorpha"/>
+            <CLINK name="Macronaria"/>
            </CLADE>
-           <CLINK name="Diplodocimorpha"/>
-           <CLINK name="Macronaria"/>
           </CLADE>
          </CLADE>
         </CLADE>
@@ -5741,9 +5901,8 @@ neck, and torso, much like modern-day bats. </P>
 All sauropods were quite large. Even the smallest ones were about as big as
 the largest members of other dinosaur groups. </P>
   
-<P header="Diversity"> Early sauropods like <NOMEN name="Vulcanodon"/> resembled
-"<LINK content="prosauropods"/>", especially
-<LINK content="melanorosaurids"/>. As sauropod evolution progressed,
+<P header="Diversity"> Early sauropods like <NOMEN name="Vulcanodon"/> resembled large
+"<LINK content="prosauropods"/>". As sauropod evolution progressed,
 they became larger and more diverse. There were crested forms
 (<LINK content="macronarians"/>), armored forms
 (<LINK content="titanosaurs"/>), a plated form (<NOMEN name="Agustinia"/>),
@@ -5766,6 +5925,11 @@ placing <NOMEN name="Shunosaurus"/> as a basal <LINK content="sauropod"/>,
 <NOMEN name="Omeisaurus"/> as a "<LINK content="cetiosaur"/>"
 just outside <LINK content="Neosauropoda"/>, and <NOMEN name="Euhelopus"/>
 as a relative of <LINK content="titanosaurs"/>! </P>
+
+<P>The position of nemegtosaurids is also debated. Some place them
+as <LINK content="titanosaurs"/>, others as <LINK content="diplodocimorphs"/>.
+They are currently only reliably known from cranial material, which
+is often lacking in sauropod fossils.</P>
  </ESSAY>
 </TAXON>
 
@@ -5803,65 +5967,51 @@ as a relative of <LINK content="titanosaurs"/>! </P>
     <PLACE name="Brazil"/>
    </UNNAMED>
    <CGENUS name="Gyposaurus sinensis" incertae="1"/>
-   <CGENUS name="Azendohsaurus"/>
+   <CGENUS name="Nyasasaurus" q="1" incertae="1"/>
    <CGENUS name="Saturnalia"/>
-   <CGENUS q="1" name="Thecodontosaurus"/>
-   <CLADE name="Brontosauria" silhouette="sauropodomorpha-large">
-    <AUTHOR name="Olshevsky" year="1991"/>
-    <MEANING><NOMEN name="Brontosaurus"/>' <LOW>taxon</LOW>/thunder lizards</MEANING>
-    <CGENUS name="Gongxianosaurus" incertae="1"/>
-    <CGENUS name="Mussaurus" incertae="1" silhouette="sauropodomorpha"/>
-    <CGENUS name="Camelotia" incertae="1"/>
-    <CGENUS name="Chinshakiangosaurus" incertae="1"/>
-    <CGENUS name="Thotobolosaurus" incertae="1"/>
-    <CGENUS name="Yimenosaurus" incertae="1"/>
-    <CGENUS name="Anchisaurus" silhouette="sauropodomorpha"/>
-    <CGENUS name="Ammosaurus" silhouette="sauropodomorpha"/>
-    <CGENUS name="Blikanasaurus"/>
-    <CLADE name="Melanorosauridae">
-     <CGENUS name="Hortalotarsus" incertae="1" q="1"/>
-     <CGENUS name="Lessemsaurus" q="1"/>
-     <CGENUS name="Melanorosaurus"/>
-     <CGENUS q="1" name="Microdontosaurus"/>
-     <CGENUS name="Riojasaurus" q="1"/>
-    </CLADE>
-    <CLINK name="Sauropoda"/>
-    <CLADE in="Plateosaurus" out="Saltasaurus">
-     <CSYNONYM name="Prosauropoda" sensu="Wilson, Sereno"/>
-     <CLADE name="Plateosauria" in="Plateosaurus, Massospondylus">
-      <MEANING>
-       <NOMEN name="Plateosaurus"/>' <LOW>taxon</LOW>
-      </MEANING>
-      <UNNAMED q="1">
-       <TIME value="MTr" q="1"/>
-       <TIME value="LTr" q="1"/>
-       <PLACE name="Madagascar"/>
-      </UNNAMED>
-      <UNNAMED>
-       <PLACE name="Antarctica"/>
-      </UNNAMED>
-      <UNNAMED q="1" comment="therizinosaur-like">
-       <TIME value="EJ"/>
-       <PLACE name="China"/>
-       <REMAINS content="lower jaw"/>
-      </UNNAMED>
-      <CGENUS name="Euskelosaurus" incertae="1" q="1"/>
+   <CLADE>
+    <CGENUS name="Azendohsaurus"/>
+    <CGENUS q="1" name="Thecodontosaurus"/>
+    <CLADE silhouette="sauropodomorpha-large">
+     <UNNAMED q="1">
+      <TIME value="MTr" q="1"/>
+      <TIME value="LTr" q="1"/>
+      <PLACE name="Madagascar"/>
+     </UNNAMED>
+     <UNNAMED>
+      <PLACE name="Antarctica"/>
+     </UNNAMED>
+     <CGENUS name="Anchisaurus" silhouette="sauropodomorpha"/>
+     <CGENUS name="Chinshakiangosaurus" incertae="1"/>
+     <CGENUS name="Euskelosaurus" incertae="1"/>
+     <CGENUS name="Lessemsaurus" incertae="1"/>
+     <CGENUS name="Mussaurus" incertae="1" silhouette="sauropodomorpha"/>
+     <CGENUS name="Microdontosaurus" incertae="1"/>
+     <CGENUS name="Riojasaurus" incertae="1"/>
+     <CGENUS name="Ruehleia" incertae="1"/>
+     <CGENUS name="Thotobolosaurus" incertae="1"/>
+     <CGENUS name="Yimenosaurus" incertae="1"/>
+     <CLADE name="Plateosauridae">
+      <CGENUS name="Plateosaurus"/>
+      <CGENUS name="Sellosaurus" q="1"/>
+     </CLADE>
+     <CLADE>
+      <CGENUS name="Blikanasaurus"/>
+       <CLADE name="Melanorosauridae">
+       <CGENUS name="Camelotia"/>
+       <CGENUS name="Melanorosaurus"/>
+      </CLADE>
       <CLADE name="Massospondylidae">
        <CSYNONYM name="Yunnanosauridae"/>
+       <CGENUS name="Coloradisaurus" q="1"/>
+       <CGENUS name="Lufengosaurus"/>
        <CGENUS name="Massospondylus"/>
        <CLADE name="Yunnanosaurinae">
         <CGENUS name="Jingshanosaurus"/>
         <CGENUS name="Yunnanosaurus"/>
        </CLADE>
       </CLADE>
-      <CLADE name="Plateosauridae">
-       <CGENUS name="Coloradisaurus" q="1"/>
-       <CGENUS name="Sellosaurus"/>
-       <CLADE name="Plateosaurinae">
-        <CGENUS name="Lufengosaurus"/>
-        <CGENUS name="Plateosaurus"/>
-       </CLADE>
-      </CLADE>
+      <CLINK name="Sauropoda"/>
      </CLADE>
     </CLADE>
    </CLADE>
@@ -5979,7 +6129,6 @@ has not yet been used formally, to my knowledge. </P>
    <MEANING>
     lizard faces
    </MEANING>
-   <CLADE extinct="1" name="Mesosauridae" content='"sauropsid otters"'/>
    <CLADE name="Reptilia" in="Crocodylia, Squamata, Sphenodon, Chelonia">
     <AUTHOR name="Linnaeus"/>
     <AUTHOR type="sensu" name="Gauthier" year="1984"/>
@@ -5988,6 +6137,7 @@ has not yet been used formally, to my knowledge. </P>
     </MEANING>
     <CLINK name="Anapsida"/>
     <CLADE name="Romeriida" in="Sauria" out="Chelonia">
+     <CSYNONYM name="Eureptilia"/>
      <MEANING>
       Romer's <LOW>taxon</LOW>
      </MEANING>
@@ -6047,8 +6197,8 @@ has not yet been used formally, to my knowledge. </P>
  <ESSAY>
 <P> Sauropsida is one of the two great lineages of
 <LINK content="amniote"/> (the other being <LINK content="Synapsida"/>,
-which includes <LINK content="Mammalia"/>). All sauropsids, except for
-primitive forms like mesosaurids, belong to the clade Reptilia. </P>
+which includes <LINK content="Mammalia"/>). All known sauropsids
+belong to the clade Reptilia. </P>
 
 <P header="History of Classification"> Reptilia was once a "grab-bag" taxon for every amniote that was neither
 a <LINK content="bird"/> nor a mammal. It was divided into four sections based
@@ -6229,6 +6379,7 @@ teeth. </P>
    <CGENUS incertae="1" name="Gigantspinosaurus"/>
    <CGENUS incertae="1" name="Katsuyamakensaurus"/>
    <CGENUS incertae="1" name="Regnosaurus"/>
+   <CGENUS q="1" name="Hesperosaurus"/>
    <CLADE name="Huayangosauridae" in="Huayangosaurus" out="Stegosaurus">
     <CGENUS name="Huayangosaurus"/>
    </CLADE>
@@ -6250,6 +6401,12 @@ teeth. </P>
       <CGENUS name="Chialingosaurus"/>
       <CGENUS name="Chungkingosaurus"/>
       <CLADE name="Stegosaurinae" silhouette="stegosaurinae">
+       <UNNAMED cf="Lexovisaurus">
+        <!--Wiehenbirge 1982-9-->
+        <TIME value="Callovian" section="middle"/>
+        <PLACE name="Germany"/>
+        <REMAINS content="fragmentary skeleton"/>
+       </UNNAMED>
        <CGENUS name="Lexovisaurus"/>
        <CGENUS name="Paranthodon" q="1"/>
        <CGENUS name="Tuojiangosaurus"/>
@@ -6293,7 +6450,7 @@ rakers from a fish!) </P>
 <TAXON name="Synapsida" nickname="Mammals and Kin" simple="1">
  <WORD key="1" content="proto-mammals, proto, mammals, mammal-like, like, pelycosaurian, sailbacked, sail, back, fin, finbacked, backed"/>
  <WORD essay="1" key="1" content="pelycosaurs"/>
- <INCLUDED content="Cynognathus, Edaphosaurus, Dimetrodon, Lycaenops, Lystrosaurus, Moschops, Titanopheus"/>
+ <INCLUDED content="Cynognathus, Edaphosaurus, Dimetrodon, Lycaenops, Lystrosaurus, Moschops, Oligokyphus, Titanopheus"/>
  <CLADOGRAM>
   <CLADE name="Synapsida" in="Mammalia" out="Reptilia" silhouette="synapsida">
    <MEANING>
@@ -6415,11 +6572,11 @@ rakers from a fish!) </P>
 <P> Once called <LINK content="mammal"/>-like <LINK content="reptiles"/>,
 the animals shown here are no longer considered reptiles. Instead, they were
 the non-mammalian members of a separate lineage. Their skin was
-not scaly like true reptiles. </P>
+probably not dry and scaly like true reptiles. </P>
 
 <P header="Evolutionary Dynasties"> Synapsids were the first terrestrial vertebrates to truly dominate the
 landscape. There were two main "waves", the "pelycosaurs" (non-therapsid
-synapsids) in the Permian and then the therapsids in the
+synapsids) in the Permian and then the early therapsids in the
 <LINK content="Triassic"/>. </P>
 
 <P> "Pelycosaurs" were probably cold-blooded. They ranged from large
@@ -6432,8 +6589,9 @@ canines, and molars. </P>
 and milk-giving. They varied from the beaked, tusked, and herbivorous
 dicynodonts to the sleek, predatory <NOMEN nolink="1" name="Cynognathus"/>.
 By the end of the Triassic, most of these forms had died out, replaced by
-<LINK content="archosaurs"/> (including <LINK content="dinosaurs"/>). The
-only survivors were a group of small, furry cynodonts: the mammals. </P>
+<LINK content="archosaurs"/> (including <LINK content="dinosaurs"/>). Only
+a few small <LINK content="Probainognathia"/> survived, including some of
+the earliest <LINK content="mammals"/>.</P>
  </ESSAY>
 </TAXON>
 
@@ -6466,51 +6624,46 @@ only survivors were a group of small, furry cynodonts: the mammals. </P>
     <TIME value="EK"/>
    </UNNAMED>
    <CGENUS incertae="1" name="Allosaurus sp."/>
-   <CGENUS incertae="1" name="Altispinax"/>
    <CGENUS incertae="1" name="Becklespinax" silhouette="acrocanthosaurus"/>
-   <CGENUS incertae="1" name="Brontoraptor"/>
-   <CGENUS incertae="1" q="1" name="Calamospondylus" silhouette="neotheropoda"/>
    <CGENUS name="Eustreptospondylus" incertae="1"/>
    <CGENUS incertae="1" name="Kaijiangosaurus"/>
-   <CGENUS incertae="1" name="Magnosaurus"/>
-   <CGENUS incertae="1" name="Megalosaurus andrewsi"/>
    <CGENUS incertae="1" name="Metriacanthosaurus"/>
-   <CGENUS incertae="1" name="Newtonsaurus"/>
    <CGENUS incertae="1" name="Piatnitzkysaurus"/>
    <CGENUS incertae="1" name="Streptospondylus"/>
+   <CGENUS name="Unquillosaurus" incertae="1"/>
    <CGENUS incertae="1" name="Walkersaurus"/>
-   <CGENUS incertae="1" name="Wyomingraptor"/>
-   <CGENUS incertae="1" name="Xuanhanosaurus"/>
+   <CGENUS name="Saltriosaurus" q="1"/>
+   <CGENUS incertae="1" name="Valdoraptor"/>
+   <CGENUS name="Zupaysaurus" q="1"/>
    <CSYNONYM name="Avipoda" q="1"/>
    <CLADE in="Neornithes, Torvosaurus">
     <CSYNONYM name="Tetanurae" sensu="Sereno"/>
     <CSYNONYM name="Spinosauroidea" sensu="Sereno" q="1"/>
+    <CGENUS name="Chilantaisaurus" incertae="1"/>
+    <CGENUS incertae="1" name="Erectopus"/>
+    <CGENUS name="Afrovenator" q="1"/>
+    <CLINK name="Spinosauria"/>
     <CLADE name="Torvosauridae" in="Torvosaurus" out="Spinosaurus">
      <CSYNONYM name="Megalosauridae"/>
      <CSYNONYM name="Eustreptospondylidae" q="1"/>
+     <CGENUS incertae="1" name="Brontoraptor"/>
      <CGENUS name="Edmarka"/>
      <CGENUS name="Megalosaurus"/>
      <CGENUS name="Poekilopleuron"/>
      <CGENUS name="Torvosaurus"/>
     </CLADE>
-    <CLADE>
-     <CGENUS name="Afrovenator" q="1"/>
-     <CLINK name="Spinosauria"/>
-     <CLADE name="Neotetanurae" in="Neornithes, Allosaurus">
-      <MEANING>new tetanurans</MEANING>
-      <AUTHOR name="Sereno, al." year="1994"/>
-      <CSYNONYM name="Avetheropoda">
-       <AUTHOR name="Paul" year="1988"/>
-       <AUTHOR type="sensu" name="Holtz" year="1994"/>
-      </CSYNONYM>
-      <CSYNONYM name="Tetanurae" sensu="Novas"/>
-      <CGENUS incertae="1" name="Chingkankousaurus"/>
-      <CGENUS incertae="1" name="Erectopus"/>
-      <CGENUS incertae="1" name="Marshosaurus"/>
-      <CGENUS incertae="1" name="Walgettosuchus"/>
-      <CLINK name="Carnosauria"/>
-      <CLINK name="Coelurosauria"/>
-     </CLADE>
+    <CLADE name="Neotetanurae" in="Neornithes, Allosaurus">
+     <MEANING>new tetanurans</MEANING>
+     <AUTHOR name="Sereno, al." year="1994"/>
+     <CSYNONYM name="Avetheropoda">
+      <AUTHOR name="Paul" year="1988"/>
+      <AUTHOR type="sensu" name="Holtz" year="1994"/>
+     </CSYNONYM>
+     <CSYNONYM name="Tetanurae" sensu="Novas"/>
+     <CGENUS incertae="1" name="Marshosaurus"/>
+     <CGENUS name="Tugulusaurus" incertae="1"/>
+     <CLINK name="Carnosauria"/>
+     <CLINK name="Coelurosauria"/>
     </CLADE>
    </CLADE>
   </CLADE>
@@ -6560,7 +6713,7 @@ it seems to be a neotetanuran trait as well. </P>
 
 <TAXON name="Tetrapoda" nickname="Terrestrial Vertebrates" simple="1">
  <WORD key="1" content="terrestrial, land, amniotic"/>
- <INCLUDED content="Acanthostega, Limnoscelis, Siderops"/>
+ <INCLUDED content="Acanthostega, Eryops, Limnoscelis, Siderops, Triadobatrachus"/>
  <CLADOGRAM>
   <CLADE name="Tetrapoda" silhouette="tetrapoda">
    <MEANING>
@@ -6671,6 +6824,12 @@ two main branches of amniotes, dinosaurs belong to
     <PLACE name="Alberta"/>
     <REMAINS content="frontal"/>
    </UNNAMED>
+   <UNNAMED>
+    <REMAINS content="partial skeleton including forelimbs"/>
+    <PLACE name="Mongolia"/>
+    <TIME value="LK"/>
+   </UNNAMED>
+   <CGENUS incertae="1" name="Neimenggusaurus"/>
    <CGENUS name="Chilantaisaurus zheziangensis" incertae="1"/>
    <CGENUS q="1" name="Beipiaosaurus"/>
    <CLADE name="Therizinosauroidea" in="Therizinosaurus, Alxasaurus">
@@ -6685,12 +6844,15 @@ two main branches of amniotes, dinosaurs belong to
      <AUTHOR name="Maleev" year="1954"/>
      <AUTHOR type="non" name="Sereno" year="1999"/>
      <CSYNONYM name="Segnosauridae"/>
-     <CGENUS q="1" name="Nanshiungosaurus bohlini"/>
-     <CGENUS name="Enigmosaurus"/>
-     <CGENUS name="Erlikosaurus"/>
-     <CGENUS name="Nanshiungosaurus"/>
-     <CGENUS name="Segnosaurus"/>
-     <CGENUS name="Therizinosaurus"/>
+     <CGENUS q="1" incertae="1" name="Nanshiungosaurus bohlini"/>
+     <CGENUS name="Nothronychus"/>
+     <CLADE name="Therizinosaurinae">
+      <CGENUS name="Enigmosaurus"/>
+      <CGENUS name="Erlikosaurus"/>
+      <CGENUS name="Nanshiungosaurus"/>
+      <CGENUS name="Segnosaurus"/>
+      <CGENUS name="Therizinosaurus"/>
+     </CLADE>
     </CLADE>
    </CLADE>
   </CLADE>
@@ -6747,16 +6909,16 @@ oviraptorosaur-like features in its pelvis. </P>
    <UNNAMED>
     <PLACE name="New Zealand"/>
    </UNNAMED>
-   <CGENUS name="Aniksosaurus" incertae="1"/>
+   <UNNAMED comment="small Kota">
+    <TIME value="EJ"/> <TIME value="MJ"/>
+    <PLACE name="India"/>
+   </UNNAMED>
    <CGENUS name="Arctosaurus" incertae="1" q="1"/>
    <CGENUS name="Carnosaurus" incertae="1" q="1"/>
    <CGENUS name="Coelurosaurus" incertae="1" q="1"/>
-   <CGENUS name="Dolichosuchus" incertae="1" q="1"/>
    <CGENUS name="Protoavis" incertae="1"/>
-   <CGENUS name="Rileyasuchus" incertae="1"/>
    <CGENUS name="Sinosaurus" incertae="1"/>
-   <CGENUS name="Spinosuchus" incertae="1" q="1"/>
-   <CGENUS name="Spondylosoma" incertae="1" q="1"/>
+   <CGENUS name="Spinosuchus" q="1" incertae="1"/>
    <CGENUS name="Velocipes" incertae="1" q="1"/>
    <CGENUS name="Eoraptor"/>
    <CLADE>
@@ -6766,11 +6928,6 @@ oviraptorosaur-like features in its pelvis. </P>
     <UNNAMED comment="large, primitive">
      <PLACE name="Germany"/>
     </UNNAMED>
-    <CGENUS name="Aliwalia" incertae="1"/>
-    <CGENUS name="Alwalkeria" incertae="1"/>
-    <CGENUS name="Caseosaurus" incertae="1"/>
-    <CGENUS name="Liassaurus" incertae="1" q="1"/>
-    <CGENUS name="Merosaurus" incertae="1" q="1"/>
     <CLADE name="Herrerasauria">
      <MEANING><NOMEN name="Herrerasaurus"/>' <LOW>taxon</LOW></MEANING>
      <CSYNONYM q="1" name="Herreravia">
@@ -6785,6 +6942,7 @@ oviraptorosaur-like features in its pelvis. </P>
        <PLACE name="Brazil"/>
        <REMAINS content="pubis, ischium, dorsal & caudal vertebrae"/>
       </UNNAMED>
+      <CGENUS name="Caseosaurus"/>
       <CGENUS name="Chindesaurus"/>
       <CLADE name="Staurikosaurinae" in="Staurikosaurus" out="Herrerasaurus">
        <CGENUS name="Staurikosaurus"/>
@@ -6795,148 +6953,171 @@ oviraptorosaur-like features in its pelvis. </P>
       </CLADE>
      </CLADE>
     </CLADE>
-    <CLADE name="Neotheropoda" in="Neornithes, Coelophysis" silhouette="neotheropoda">
-     <MEANING>new theropods</MEANING>
-     <AUTHOR name="Bakker" year="1986"/>
-     <AUTHOR type="sensu" name="Sereno"/>
-     <UNNAMED indet="1">
-      <TIME section="late" value="Barremian"/>
-      <PLACE name="China"/>
-     </UNNAMED>
-     <UNNAMED indet="1" comment="(dromaeosaurid?)">
-      <TIME value="LK"/>
-      <PLACE name="Australia"/>
-      <REMAINS content="partial humerus"/>
-     </UNNAMED>
-     <UNNAMED>
-      <PLACE name="Brazil"/>
-      <TIME value="Albian"/>
-     </UNNAMED>
-     <UNNAMED indet="1" q="1">
-      <TIME value="Maastrichtian"/>
-      <PLACE name="Australia"/>
-     </UNNAMED>
-     <UNNAMED indet="1">
-      <TIME value="Albian"/>
-      <PLACE name="Utah"/>
-     </UNNAMED>
-     <UNNAMED indet="1">
-      <TIME value="Campanian"/>
-      <TIME value="Maastrichtian"/>
-      <PLACE name="New Zealand"/>
-     </UNNAMED>
-     <UNNAMED indet="1">
-      <TIME value="Aptian"/>
-      <PLACE name="Japan"/>
-      <REMAINS content="neck vertebra"/>
-     </UNNAMED>
-     <UNNAMED indet="1">
-      <TIME value="Barremian"/>
-      <TIME value="Aptian"/>
-      <PLACE name="Japan"/>
-      <REMAINS content="teeth, vertebra"/>
-     </UNNAMED>
-     <UNNAMED indet="1">
-      <TIME value="Coniacian"/>
-      <TIME value="Santonian"/>
-      <PLACE name="Japan"/>
-      <REMAINS content="tibia"/>
-     </UNNAMED>
-     <UNNAMED indet="1">
-      <TIME value="Valanginian"/>
-      <PLACE name="Japan"/>
-      <REMAINS content="teeth"/>
-     </UNNAMED>
-     <UNNAMED indet="1">
-      <TIME value="Valanginian"/>
-      <TIME value="Aptian"/>
-      <PLACE name="Japan"/>
-      <REMAINS content="teeth"/>
-     </UNNAMED>
-     <UNNAMED indet="1">
-      <TIME value="K" q="1"/>
-      <PLACE name="Japan"/>
-      <REMAINS content="small teeth"/>
-     </UNNAMED>
-     <UNNAMED comment="giant, tall-spined">
-      <TIME section="earliest" value="Oxfordian"/>
-      <PLACE name="Germany"/> 
-     </UNNAMED>
-     <UNNAMED comment="large">
-      <TIME value="J" q="1"/>
-      <PLACE name="China"/>
-     </UNNAMED>
-     <UNNAMED>
-      <TIME value="J" q="1"/>
-      <PLACE name="China"/>
-      <REMAINS content="postcranium"/>
-     </UNNAMED>
-     <UNNAMED>
-      <TIME value="Barremian"/>
-      <PLACE name="England"/>
-     </UNNAMED>
-     <UNNAMED>
-      <TIME value="Barremian"/>
-      <PLACE name="China"/>
-     </UNNAMED>
-     <UNNAMED>
-      <PLACE name="Alabama"/>
-     </UNNAMED>
-     <CGENUS name="Betasuchus" incertae="1"/>
-     <CGENUS name="Capitalsaurus" incertae="1"/>
-     <CGENUS name="Chuandongocoelurus" incertae="1"/>
-     <CGENUS name="Coeluroides" incertae="1"/>
-     <CGENUS name="Dinosaurus2" incertae="1" q="1"/>
-     <CGENUS name="Elaphrosaurus gautieri" incertae="1"/>
-     <CGENUS name="Elaphrosaurus iguidensis" incertae="1"/>
-     <CGENUS name="Embasaurus" incertae="1"/>
-     <CGENUS name="Halticosaurus" incertae="1"/>
-     <CGENUS name="Inosaurus" incertae="1"/>
-     <CGENUS name="Kagasaurus" incertae="1"/>
-     <CGENUS name="Kelmayisaurus" incertae="1"/>
-     <CGENUS incertae="1" name="Labocania"/>
-     <CGENUS name="Megalosaurus chubutensis" incertae="1"/>
-     <CGENUS name="Megalosaurus insignis" incertae="1"/>
-     <CGENUS name="Megalosaurus pannoniensis" incertae="1"/>
-     <CGENUS name="Megalosaurus pombali" incertae="1"/>
-     <CGENUS name="Megalosaurus terquemi" incertae="1"/>
-     <CGENUS name="Ngexisaurus" incertae="1"/>
-     <CGENUS name="Ornithomimus affinis" incertae="1"/>
-     <CGENUS name="Ozraptor" incertae="1"/>
-     <CGENUS name="Patricosaurus" incertae="1"/>
-     <CGENUS name="Podokesaurus" incertae="1"/>
-     <CGENUS name="Poekilopleuron schmidti" incertae="1"/>
-     <CGENUS name="Rapator" incertae="1"/>
-     <CGENUS name="Sigilmassasaurus" incertae="1"/>
-     <CGENUS name="Sinocoelurus" incertae="1" q="1"/>
-     <CGENUS name="Tsuchikurasaurus" incertae="1"/>
-     <CGENUS name="Tugulusaurus" incertae="1"/>
-     <CGENUS name="Unquillosaurus" incertae="1"/>
-     <CGENUS name="Wakinosaurus" incertae="1"/>
-     <CGENUS name="Zupaysaurus" incertae="1"/>
-     <CLADE name="Ceratosauria" in="Ceratosaurus" out="Neornithes">
-      <MEANING>
-       <NOMEN name="Ceratosaurus"/>' <LOW>taxon</LOW>
-      </MEANING>
-      <AUTHOR type="sensu" name="Gauthier" year="1984"/>
-      <AUTHOR type="non" name="Sereno" year="1999"/>
-      <CGENUS name="Elaphrosaurus" incertae="1"/>
-      <CGENUS name="Pterospondylus" incertae="1" q="1"/>
-      <CLINK name="Coelophysoidea"/>
-      <CLINK name="Neoceratosauria"/>
+    <CLADE>
+     <CLADE name="Guaibasauridae" q="1">
+      <CGENUS name="Guaibasaurus"/>
      </CLADE>
-     <CLINK name="Tetanurae"/>
+     <CLADE name="Neotheropoda" in="Neornithes, Ceratosaurus" silhouette="neotheropoda">
+      <MEANING>new theropods</MEANING>
+      <AUTHOR name="Bakker" year="1986"/>
+      <AUTHOR type="sensu" name="Sereno"/>
+      <UNNAMED indet="1" comment="large">
+       <PLACE name="Mongolia"/>
+       <TIME value="LK"/>
+       <REMAINS content="partial skull"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME section="late" value="Barremian"/>
+       <PLACE name="China"/>
+      </UNNAMED>
+      <UNNAMED indet="1" comment="(dromaeosaurid?)">
+       <TIME value="LK"/>
+       <PLACE name="Australia"/>
+       <REMAINS content="partial humerus"/>
+      </UNNAMED>
+      <UNNAMED>
+       <PLACE name="Brazil"/>
+       <TIME value="Albian"/>
+      </UNNAMED>
+      <UNNAMED indet="1" q="1">
+       <TIME value="Maastrichtian"/>
+       <PLACE name="Australia"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME value="Albian"/>
+       <PLACE name="Utah"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME value="Campanian"/>
+       <TIME value="Maastrichtian"/>
+       <PLACE name="New Zealand"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME value="Aptian"/>
+       <PLACE name="Japan"/>
+       <REMAINS content="neck vertebra"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME value="Barremian"/>
+       <TIME value="Aptian"/>
+       <PLACE name="Japan"/>
+       <REMAINS content="teeth, vertebra"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME value="Coniacian"/>
+       <TIME value="Santonian"/>
+       <PLACE name="Japan"/>
+       <REMAINS content="tibia"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME value="Valanginian"/>
+       <PLACE name="Japan"/>
+       <REMAINS content="teeth"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME value="Valanginian"/>
+       <TIME value="Aptian"/>
+       <PLACE name="Japan"/>
+       <REMAINS content="teeth"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME value="Campanian" section="latest" q="1"/>
+       <TIME value="Maastrichtian" section="early"/>
+       <PLACE name="Argentina"/>
+      </UNNAMED>
+      <UNNAMED indet="1">
+       <TIME value="K" q="1"/>
+       <PLACE name="Japan"/>
+       <REMAINS content="small teeth"/>
+      </UNNAMED>
+      <UNNAMED comment="giant, tall-spined">
+       <TIME section="earliest" value="Oxfordian"/>
+       <PLACE name="Germany"/> 
+      </UNNAMED>
+      <UNNAMED comment="large">
+       <TIME value="J" q="1"/>
+       <PLACE name="China"/>
+      </UNNAMED>
+       <UNNAMED>
+       <TIME value="J" q="1"/>
+       <PLACE name="China"/>
+       <REMAINS content="postcranium"/>
+      </UNNAMED>
+       <UNNAMED>
+       <TIME value="Barremian"/>
+       <PLACE name="China"/>
+      </UNNAMED>
+       <UNNAMED>
+       <PLACE name="Alabama"/>
+      </UNNAMED>
+      <UNNAMED incertae="1"> 
+       <TIME value="EK"/> <PLACE name="Argentina"/>
+       <REMAINS content="nearly complete skeleton" museum="MUCPv" id="301"/>
+      </UNNAMED>
+      <UNNAMED>
+       <TIME value="Cenomanian"/><PLACE name="Niger"/>
+      </UNNAMED>
+      <CGENUS name="Aliwalia" incertae="1" q="1"/>
+      <CGENUS incertae="1" name="Altispinax"/>
+      <CGENUS name="Alwalkeria" incertae="1" q="1"/>
+      <CGENUS incertae="1" q="1" name="Calamospondylus"/>
+      <CGENUS name="Capitalsaurus" incertae="1"/>
+      <CGENUS name="Chuandongocoelurus" incertae="1"/>
+      <CGENUS name="Coeluroides" incertae="1"/>
+      <CGENUS name="Elaphrosaurus gautieri" incertae="1"/>
+      <CGENUS name="Elaphrosaurus iguidensis" incertae="1"/>
+      <CGENUS name="Embasaurus" incertae="1"/>
+      <CGENUS name="Inosaurus" incertae="1"/>
+      <CGENUS name="Kagasaurus" incertae="1"/>
+      <CGENUS incertae="1" name="Katsuyamasaurus"/>
+      <CGENUS name="Kelmayisaurus" incertae="1"/>
+      <CGENUS name="Liassaurus" incertae="1" q="1"/>
+      <CGENUS incertae="1" name="Magnosaurus"/>
+      <CGENUS incertae="1" name="Megalosaurus andrewsi"/>
+      <CGENUS name="Megalosaurus chubutensis" incertae="1"/>
+      <CGENUS name="Megalosaurus insignis" incertae="1"/>
+      <CGENUS name="Megalosaurus pannoniensis" incertae="1"/>
+      <CGENUS name="Megalosaurus pombali" incertae="1"/>
+      <CGENUS name="Megalosaurus terquemi" incertae="1"/>
+      <CGENUS name="Merosaurus" incertae="1" q="1"/>
+      <CGENUS incertae="1" name="Mifunesaurus"/>
+      <CGENUS incertae="1" name="Newtonsaurus"/>
+      <CGENUS name="Ngexisaurus" incertae="1"/>
+      <CGENUS name="Poekilopleuron schmidti" incertae="1"/>
+      <CGENUS incertae="1" name="Prodeinodon"/>
+      <CGENUS incertae="1" name="Quilmesaurus" silhouette="tetanurae"/>
+      <CGENUS name="Sidormimus" incertae="1"/>
+      <CGENUS name="Sigilmassasaurus" incertae="1"/>
+      <CGENUS name="Sinocoelurus" incertae="1" q="1"/>
+      <CGENUS name="Teinurosaurus" incertae="1" q="1"/>
+      <CGENUS name="Tsuchikurasaurus" incertae="1"/>
+      <CGENUS name="Wakinosaurus" incertae="1"/>
+      <CGENUS incertae="1" name="Walgettosuchus"/>
+      <CLADE name="Ceratosauria" in="Ceratosaurus" out="Neornithes">
+       <MEANING>
+        <NOMEN name="Ceratosaurus"/>' <LOW>taxon</LOW>
+       </MEANING>
+       <AUTHOR type="sensu" name="Gauthier" year="1984"/>
+       <AUTHOR type="non" name="Sereno" year="1999"/>
+       <CGENUS name="Elaphrosaurus" incertae="1"/>
+       <CLINK name="Coelophysoidea"/>
+       <CLINK name="Neoceratosauria"/>
+      </CLADE>
+      <CLINK name="Tetanurae"/>
+     </CLADE>
     </CLADE>
    </CLADE>
   </CLADE>
  </CLADOGRAM>
  <CLADOGRAM alternate="1">
-  <CLADE name="Neotheropoda">
+  <CLADE>
    <CLADE name="Coelophysoidea"/>
    <CLADE>
-    <CSYNONYM name="Neotheropoda" sensu="Bakker"/>
-    <CLADE name="Ceratosauria" comment="same membership as Neoceratosauria in main cladogram"/>
-    <CLADE name="Tetanurae"/>
+    <CGENUS name="Dilophosaurus"/>
+    <CLADE name="Neotheropoda">
+     <CLADE name="Ceratosauria"/>
+     <CLADE name="Tetanurae"/>
+    </CLADE>
    </CLADE>
   </CLADE>
  </CLADOGRAM>
@@ -6987,6 +7168,8 @@ ancestry with tetanurans than with coelophysoids. </P>
  <WORD essay="1" content="armored tanks"/>
  <CLADOGRAM>
   <CLADE name="Thyreophora" in="Ankylosaurus" out="Triceratops" silhouette="thyreophora">
+   <UNNAMED><PLACE name="Niger"/><TIME value="EK" section="early"/></UNNAMED>
+   <CGENUS name="Bienosaurus" incertae="1"/>
    <CGENUS name="Scutellosaurus"/>
    <CLADE name="Thyreophoroidea" in="Ankylosaurus" out="Scutellosaurus" silhouette="thyreophoroidea">
     <MEANING>
@@ -6996,17 +7179,15 @@ ancestry with tetanurans than with coelophysoids. </P>
     <CGENUS name="Lusitanosaurus" incertae="1"/>
     <CGENUS name="Tatisaurus" incertae="1"/>
     <CGENUS name="Emausaurus"/>
-    <CLADE>
+    <CLADE name="Eurypoda" in="Ankylosaurus, Stegosaurus">
      <CGENUS name="Scelidosaurus"/>
-     <CLADE name="Eurypoda" in="Ankylosaurus, Stegosaurus">
-      <CGENUS name="Brachypodosaurus" incertae="1"/>
-       <UNNAMED>
-       <TIME value="LK"/>
-       <PLACE name="Argentina"/>
-      </UNNAMED>
-      <CLINK name="Stegosauria"/>
-      <CLINK name="Ankylosauria"/>
-     </CLADE>
+     <CGENUS name="Brachypodosaurus" incertae="1"/>
+      <UNNAMED>
+      <TIME value="LK"/>
+      <PLACE name="Argentina"/>
+     </UNNAMED>
+     <CLINK name="Stegosauria"/>
+     <CLINK name="Ankylosauria"/>
     </CLADE>
    </CLADE>
   </CLADE>
@@ -7049,6 +7230,17 @@ content="ankylosaurs"/>.</P>
     <PLACE name="Brazil"/>        
     <REMAINS content="osteoderm"/>
    </UNNAMED>
+   <UNNAMED><PLACE name="Niger"/><TIME value="Aptian"/><REMAINS content="axial column, pelvis"/></UNNAMED>
+   <UNNAMED><PLACE name="Niger"/><TIME value="Cenomanian"/><REMAINS content="nearly complete postcranium"/></UNNAMED>
+   <UNNAMED comment="Bauru">
+    <PLACE name="Brazil"/>
+   </UNNAMED>
+   <UNNAMED comment="Bauru">
+    <PLACE name="Brazil"/>
+   </UNNAMED>
+   <UNNAMED comment="Bauru">
+    <PLACE name="Brazil"/>
+   </UNNAMED>
    <UNNAMED q="1">
     <TIME value="LK"/>
     <PLACE name="Mongolia"/>
@@ -7075,9 +7267,26 @@ content="ankylosaurs"/>.</P>
     <!-- LENGTH value="51"/ -->
     <REMAINS content="cervical vertebrae, femur, etc."/>
    </UNNAMED>
+   <UNNAMED cf="Aegyptosaurus">
+    <TIME value="Albian"/>
+    <TIME value="Cenomanian" section="early"/>
+    <PLACE name="Egypt"/>
+    <REMAINS museum="IPGH" id="1912VIII65" content="caudal vertebra"/>
+   </UNNAMED>
+   <UNNAMED cf="Aegyptosaurus">
+    <TIME value="Albian"/>
+    <TIME value="Cenomanian" section="early"/>
+    <PLACE name="Egypt"/>
+    <REMAINS museum="IPGH" id="1912VIII66" content="vertebra"/>
+   </UNNAMED>
+   <UNNAMED cf="Aegyptosaurus">
+    <TIME value="Albian"/>
+    <TIME value="Cenomanian" section="early"/>
+    <PLACE name="Egypt"/>
+    <REMAINS museum="IPGH" id="1912VIII67" content="2 cervical? vertebrae"/>
+   </UNNAMED>
    <CGENUS name="Aegyptosaurus" incertae="1"/>
    <CGENUS name="Aepisaurus" incertae="1" q="1"/>
-   <CGENUS name="Alamosaurus" incertae="1"/>
    <CGENUS name="Algoasaurus" incertae="1"/>
    <CGENUS name="Bruhathkayosaurus" incertae="1" q="1"/>
    <CGENUS name="Campylodoniscus" incertae="1"/>
@@ -7088,19 +7297,17 @@ content="ankylosaurs"/>.</P>
    <CLADE>
     <CGENUS name="Macrurosaurus" q="1"/>
     <CGENUS name="Tangvayosaurus" q="1"/>
+    <CGENUS name="Titanosaurus falloti" incertae="1" q="1"/>
+    <CGENUS name="Phuwiangosaurus" q="1"/>
     <CLADE name="Huabeisauridae" q="1" incertae="1">
      <CGENUS name="Huabeisaurus"/>
-    </CLADE>
-    <CLADE name="Nemegtosauridae" q="1" incertae="1">
-     <CGENUS name="Nemegtosaurus"/>
-     <CGENUS name="Phuwiangosaurus" q="1"/>
-     <CGENUS name="Quaesitosaurus"/>
     </CLADE>
     <CLADE>
      <UNNAMED>
       <PLACE name="Argentina"/>
       <REMAINS content="skull"/>
      </UNNAMED>
+     <CGENUS name="Paralititan" incertae="1"/>
      <CGENUS name="Andesaurus"/>
      <CLADE in="Epachthosaurus, Saltasaurus, Argyrosaurus, Lirainosaurus">
       <CSYNONYM name="Titanosauria" sensu="Sanz, J. Powell, Le Loeuff, Martinez, Pereda-Suberbiola" year="1999"/>
@@ -7112,10 +7319,8 @@ content="ankylosaurs"/>.</P>
        <AUTHOR type="implied" name="Salgado" year="1996"/>
        <CGENUS name="Pellegrinisaurus"/>
       </CLADE>
-      <CGENUS name="Titanosaurus" incertae="1"/>
       <CGENUS name="Epachthosaurus"/>
       <CGENUS name="Janenschia"/>
-      <CGENUS name="Malawisaurus"/>
       <CLADE in="Saltasaurus, Argyrosaurus, Lirainosaurus">
        <CSYNONYM q="1" name="Eutitanosauria">
         <AUTHOR name="Sanz, J. Powell, Le Loeuff, Martinez, Pereda-Suberbiola" year="1999"/>
@@ -7130,20 +7335,28 @@ content="ankylosaurs"/>.</P>
        <CLADE>
         <CGENUS name="Antarctosaurus" q="1"/>
         <CGENUS name="Laplatasaurus"/>
+        <CGENUS name="Malawisaurus" q="1"/>
+        <CLADE name="Nemegtosauridae" q="1">
+         <CGENUS name="Nemegtosaurus"/>
+         <CGENUS name="Quaesitosaurus"/>
+         <CGENUS name="Rapetosaurus"/>
+        </CLADE>
         <CLADE>
+         <CGENUS name="Alamosaurus"/>
          <CGENUS name="Argyrosaurus"/>
+         <CGENUS name="Titanosaurus"/>
          <CLADE>
-          <CLADE>
-           <CGENUS name="Aeolosaurus"/>
-           <CGENUS name="Gondwanatitan" q="1"/>
+          <CGENUS name="Aeolosaurus"/>
+          <CGENUS name="Gondwanatitan" q="1"/>
+         </CLADE>
+         <CLADE name="Saltasauridae" in="Saltasaurus, Opisthocoelicaudia">
+          <CLADE name="Opisthocoelicaudinae" in="Opisthocoelicaudia" out="Saltasaurus" q="1">
+           <CGENUS name="Opisthocoelicaudia"/>
           </CLADE>
-          <CLADE name="Saltasauridae" in="Saltasaurus, Opisthocoelicaudia">
-           <CLADE name="Opisthocoelicaudinae" in="Opisthocoelicaudia" out="Saltasaurus">
-            <CSYNONYM name="Nemegtosaurinae" q="1"/>
-            <CGENUS name="Opisthocoelicaudia"/>
-           </CLADE>
-           <CLADE name="Saltasaurinae" out="Opisthocoelicaudia" in="Saltasaurus">
-            <CGENUS name="Neuquensaurus"/>
+          <CLADE name="Saltasaurinae" out="Opisthocoelicaudia" in="Saltasaurus">
+           <CGENUS name="Neuquensaurus"/>
+           <CLADE name="Saltasaurini">
+            <CGENUS name="Rocasaurus"/>
             <CGENUS name="Saltasaurus"/>
            </CLADE>
           </CLADE>
@@ -7212,28 +7425,31 @@ show non-overlapping scales, like those seen in many other
    <AUTHOR type="emended" name="herein"/>
    <CSYNONYM name="Saurornithoididae"/>
    <CSYNONYM name="Troödontidae"/>
-   <CSYNONYM name="Ornithodesmidae" q="1"/>
-   <UNNAMED indet="1">
-    <TIME value="EK"/>
-    <PLACE name="Mongolia"/>
-   </UNNAMED>
-   <UNNAMED indet="1">
-    <TIME value="Albian"/>
-    <PLACE name="Utah"/>
-   </UNNAMED>
-   <UNNAMED>
-    <TIME value="Aptian"/>
-    <TIME value="Albian"/>
-    <PLACE name="Mongolia"/>
-   </UNNAMED>
-   <CGENUS name="Sinornithoides"/>   
+   <CGENUS name="Koparion" q="1"/>
    <CLADE>
-    <CGENUS name="Borogovia" incertae="1"/>
-    <CGENUS name="Tochisaurus" incertae="1"/>   
-    <CGENUS name="Byronosaurus"/>
+    <UNNAMED indet="1">
+     <TIME value="EK"/>
+     <PLACE name="Mongolia"/>
+    </UNNAMED>
+    <UNNAMED indet="1">
+     <TIME value="Albian"/>
+     <PLACE name="Utah"/>
+    </UNNAMED>
+    <UNNAMED>
+     <TIME value="Aptian"/>
+     <TIME value="Albian"/>
+     <PLACE name="Mongolia"/>
+    </UNNAMED>
+    <CGENUS name="Araucanoraptor" incertae="1" q="1"/>
+    <CGENUS name="Sinornithoides"/>   
     <CLADE>
-     <CGENUS name="Saurornithoides"/>   
-     <CGENUS name="Troodon"/>
+     <CGENUS name="Borogovia" incertae="1"/>
+     <CGENUS name="Tochisaurus" incertae="1"/>   
+     <CGENUS name="Byronosaurus"/>
+     <CLADE>
+      <CGENUS name="Saurornithoides"/>   
+      <CGENUS name="Troodon"/>
+     </CLADE>
     </CLADE>
    </CLADE>
   </CLADE>
@@ -7265,30 +7481,29 @@ content="oviraptorosaur"/>-<LINK content="therizinosaur"/> group. </P>
  <WORD key="1" content="t-rex, rex, tyrant, trex"/>
  <WORD essay="1" content="gigantic predators, tyrannosaur, tyrannosaurs"/>
  <CLADOGRAM>
-  <CLADE name="Tyrannosauroidea" in="Tyrannosaurus" out="Ornithomimus, Neornithes" silhouette="tyrannosauroidea">
+  <CLADE name="Tyrannosauroidea" in="Tyrannosaurus" out="Ornithomimus, Neornithes" silhouette="coelurosauria-large">
    <CSYNONYM name="Tyrannosauria"/>
-   <CSYNONYM name="Deinodontoidea"/> 
+   <CSYNONYM name="Deinodontoidea"/>
    <UNNAMED>
     <REMAINS content="premaxillary tooth"/>
     <PLACE name="Japan"/>
     <TIME value="EK"/>
    </UNNAMED>
+   <CGENUS name="Eotyrannus"/>
    <CGENUS name="Futabasaurus" incertae="1" q="1"/>
    <CGENUS name="Iliosuchus" q="1"/>
    <CGENUS name="Itemirus" q="1"/>
    <CGENUS name="Siamotyrannus" q="1"/>
    <CGENUS name="Stokesosaurus" q="1"/>
    <CGENUS name="Tonouchisaurus" q="1"/>
-   <CLADE name="Tyrannosauridae">
+   <CLADE name="Tyrannosauridae" silhouette="tyrannosauroidea">
     <CSYNONYM name="Deinodontidae"/>
     <UNNAMED indet="1" comment="gracile">
      <TIME section="middle-late" value="Campanian"/>
      <PLACE name="Alberta"/>
     </UNNAMED>
-    <CGENUS name="Aublysodon" incertae="1"/>
     <CGENUS name="Alectrosaurus"/>
-    <CGENUS name="Shanshanosaurus"/>
-    <CGENUS name="Stygivenator"/>
+    <CGENUS incertae="1" name="Chingkankousaurus"/>
     <CLADE name="Tyrannosaurinae" in="Tyrannosaurus" out="Alectrosaurus, Aublysodon">
      <CSYNONYM name="Deinodontinae"/>
      <CGENUS name="Deinodon" incertae="1"/>
@@ -7297,7 +7512,10 @@ content="oviraptorosaur"/>-<LINK content="therizinosaur"/> group. </P>
       <CGENUS name="Albertosaurus"/>
       <CGENUS name="Gorgosaurus"/>
       <CLADE name="Tyrannosaurini" in="Tyrannosaurus" out="Albertosaurus, Gorgosaurus">
+       <CGENUS name="Aublysodon" incertae="1" q="1"/>
+       <CGENUS name="Shanshanosaurus" incertae="1" q="1"/>
        <CGENUS name="Daspletosaurus"/>
+       <CGENUS name="Tarbosaurus"/>
        <CGENUS name="Tyrannosaurus"/>
       </CLADE>
      </CLADE>
@@ -7360,7 +7578,7 @@ the fastest (running) dinosaurs of all. </P>
 <TAXON name="Vertebrata" nickname="Animals with Backbones" simple="1">
  <WORD key="1" essay="1" content="fish"/>
  <WORD essay="1" content="ray"/>
- <INCLUDED content="Carcharias, Cladoselaches, Dunkleosteus, Leedsichthys, Lepidotes, Longania, Squatina, Stethacanthus"/>
+ <INCLUDED content="Carcharias, Carcharodon, Carcharocles, Cladoselaches, Dunkleosteus, Helicoprion, Leedsichthys, Lepidotes, Longania, Squatina, Stethacanthus, Xiphactinus"/>
  <CLADOGRAM>
   <CLADE name="Vertebrata" silhouette="vertebrata">
    <MEANING>

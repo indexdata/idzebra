@@ -9,12 +9,25 @@
  </ESSAY>
 </GENUS>
 
+<GENUS name="Abavornis" type="with">
+ <MEANING>great-great-grandfather bird</MEANING>
+ <SPECIES name="bonaparti">
+  <MEANING><LOW>Jose</LOW> Bonaparte's</MEANING>
+  <REMAINS type="holo" museum="TsNIGIRI" id="56/11915" content="coracoid shaft (glenoid surface to nearest edge of supracoracoid foramen- 3.1 mm)"/>
+ </SPECIES>
+ <SPECIES name="sp.">
+  <REMAINS museum="PO" id="4605" content="coracoid shaft"/>
+ </SPECIES>
+ <TIME value="Coniacian"/>
+ <PLACE name="Uzbekistan"/>
+</GENUS>
+
 <GENUS name="Abelisaurus" type="with">
  <MEANING>Abel's lizard</MEANING>
  <LENGTH value="6.5" q="1"/>
  <MASS value="1500" q="1"/>
  <TIME section="early" value="Maastrichtian"/>
- <PLACE name="Argentina"/>
+  <PLACE name="Argentina"/>
  <REMAINS content="skull lacking tip of snout, much of jaws, & parts of roof" museum="MC" id="11098" type="holo"/>
  <SPECIES name="comahuensis">
   <AUTHOR name="Bonaparte, Novas" year="1985"/>
@@ -47,22 +60,24 @@
 
 <GENUS name="Abrosaurus" type="with">
  <PLACE name="China"/>
- <SPECIES name="dongpoensis">
+ <TIME value="MJ"/>
+ <SPECIES name="dongpoi">
   <AUTHOR name="Ouyang" year="1989"/>
+  <AUTHOR type="emended" name="Peng, Shu" year="1999"/>
   <REMAINS type="holo" content="specimen including skull"/>
  </SPECIES>
  <SPECIES name="gigantorhinus">
   <AUTHOR name="Ouyang" year="1986"/>
   <AUTHOR type="vide" name="Zhang, Chen" year="1996"/>
   <MEANING>giant-snouted</MEANING>
-  <SYNONYM name="dongpoensis"/>
+  <SYNONYM name="dongpoi"/>
  </SPECIES>
  <ESSAY>
 <P>Two different species names have been used in conjunction with the
-same type material. <NOMEN name="A. gigantorhinus"/> was used first, but
+same type material. <NOMEN name="Abrosaurus gigantorhinus"/> was used first, but
 in a dissertation, and hence was not a valid name by ICZN rules. The
 first version of the name to be published in accord with ICZN rules
-was <NOMEN name="A. dongpoensis"/>.</P>
+was <NOMEN name="A. dongpoi"/>.</P>
  </ESSAY>
 </GENUS>
 
@@ -213,7 +228,7 @@ it may be closer to <LINK content="birds"/>. </P>
  <LENGTH value="15"/>
  <TIME value="Cenomanian"/>
  <PLACE name="Egypt"/>
- <REMAINS museum="IPGH" content="3 centra; left scapula (partial), humerus, & radius; right ulna; left tibia & femur" comment="destroyed in World War II" type="holo"/>
+ <REMAINS museum="IPGH" id="1912VIII61" content="3 centra; left scapula (partial), humerus, & radius; right ulna; left tibia & femur" comment="destroyed in World War II" type="holo"/>
  <SPECIES name="baharijensis">
   <AUTHOR name="Stromer" year="1932"/>
   <MEANING>from Baharîya <LOW>Oasis</LOW></MEANING>
@@ -224,8 +239,8 @@ it may be closer to <LINK content="birds"/>. </P>
  <MISSPELLED name="Eolosaurus"/>
  <MEANING>Aeolus' <LOW>(god of wind)</LOW> lizard</MEANING>
  <LENGTH value="15"/>
- <TIME section="late" value="Campanian"/>
- <TIME section="early" value="Maastrichtian"/>
+ <TIME value="Campanian" section="latest" q="y"/>
+ <TIME value="Maastrichtian" section="early"/>
  <PLACE name="Argentina"/>
  <REMAINS content="5 tail vertebrae, ulna, radius, metacarpal, pubis, ischium, dermal plates"/>
  <REMAINS museum="MPCA" id="27174" content="5 caudal vertebrae, right ulna, metacarpal, left pubis, right ischium"/>
@@ -272,6 +287,7 @@ it may be closer to <LINK content="birds"/>. </P>
  <TIME value="Barremian"/>
  <PLACE name="Niger"/>
  <REMAINS museum="UC OBA" id="1" content="skull lacking much of mandibles & parts of snout & roof; cervical vertebrae (some articulated); incomplete dorsal & caudal series; ribs; pelvis; nearly complete forelimbs; hindlimbs" type="holo"/>
+ <REMAINS content="metatarsals"/>
  <SPECIES name="abakensis">
   <AUTHOR name="Sereno, J. A. Wilson, Larsson, Dutheil, Sues" year="1994"/>
  </SPECIES>
@@ -304,6 +320,7 @@ it may be closer to <LINK content="birds"/>. </P>
  <SPECIES name="sphenocerus">
   <SYNONYM name="Styracosaurus sphenocerus" status="objective"/>
  </SPECIES>
+ <ESSAY><P>The first <LINK content="ceratopsian"/> genus to be named.</P></ESSAY>
 </GENUS>
 
 <GENUS name="Aggiosaurus" type="with">
@@ -377,7 +394,7 @@ name="Thecodontosaurus antiquus"/>.</P>
  <REMAINS museum="USNM" content="right ischium" type="para"/>
  <REMAINS museum="USNM" id="15658" content="caudal centrum"/>
  <REMAINS museum="USNM" id="15560" content="30 most anterior caudal vertebrae (articulated); 25 chevrons; ischia; left scapulocoracoid; right forelimb lacking phalanges, 2 sternal plates, 3 fragmentary ribs"/>
- <SPECIES name="sanjuanensis">
+ <SPECIES name="sanjuanensis" status="dubiumQ">
   <AUTHOR name="Gilmore" year="1922"/>
  </SPECIES>
  <ESSAY>
@@ -436,7 +453,7 @@ name="Thecodontosaurus antiquus"/>.</P>
  </SPECIES>
  <SPECIES name="periculosus" status="dubium">
   <AUTHOR name="Riabinin" year="1930"/>
-  <SYNONYM name="Tyrannosaurus bataar"/>
+  <SYNONYM name="Tarbosaurus bataar"/>
  </SPECIES>
  <SPECIES name="sternbergi">
   <SYNONYM name="Gorgosaurus sternbergi" status="objective"/>
@@ -470,6 +487,14 @@ name="Thecodontosaurus antiquus"/>.</P>
  <SPECIES name="periculosus">
   <SYNONYM name="Albertosaurus periculosus" status="objective"/>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Aletopelta" type="with">
+ <PLACE name="New Mexico"/>
+ <SPECIES name="coombsi">
+  <MEANING>Coombs'</MEANING>
+  <AUTHOR name="Ford, Kirkland" year="2001"/>
+ <SPECIES>
 </GENUS>
 
 <GENUS name="Alexornis" type="with">
@@ -516,6 +541,7 @@ name="Thecodontosaurus antiquus"/>.</P>
 
 <GENUS name="Aliwalia" type="with">
  <MEANING>Aliwal <LOW>North (in South Africa) one</LOW></MEANING>
+ <LENGTH value="10" q="1"/>
  <LENGTH value="12" q="1"/>
  <MASS value="1500" q="1"/>
  <TIME section="late" value="Carnian"/>
@@ -539,7 +565,6 @@ more advanced than <NOMEN name="Herrerasaurus"/>. </P>
 
 <GENUS name="Allosaurus" type="with">
  <MEANING>different lizard</MEANING>
- <TIME value="Kimmeridgian"/>
  <TIME value="Tithonian"/>
  <PLACE name="Colorado, Montana, New Mexico, Oklahoma, S. Dakota, Utah, Wyoming"/>
  <SPECIES name="fragilis">
@@ -567,6 +592,8 @@ more advanced than <NOMEN name="Herrerasaurus"/>. </P>
   <REMAINS museum="USNM" id="7336" content="left astragalus"/>
   <REMAINS museum="USNM" id="8302" content="right manual digit III"/>
   <REMAINS museum="USNM" id="8257" content="right manual digit II"/>
+  <REMAINS museum="YPM" id="1890" content="jugal, premaxilla, 2 vertebrae, ilium, astragalus, 2 unguals, 2 phalanges" synonym="atrox"/>
+  <REMAINS museum="USNM" id="2315" content="left dentary with 12 teeth" comment="pathologic" synonym="ferox"/>
  </SPECIES>
  <SPECIES name="amplexus" status="dubiumQ" original="Epanterias">
   <AUTHOR name="Cope" year="1878"/>
@@ -576,34 +603,30 @@ more advanced than <NOMEN name="Herrerasaurus"/>. </P>
  </SPECIES>
  <SPECIES name="atrox" original="Creosaurus">
   <AUTHOR name="Marsh" year="1878"/>
-  <LENGTH value="10"/>
-  <LENGTH value="12"/>
-  <MASS value="1000"/>
-  <MASS value="1700"/>
-  <REMAINS museum="YPM" id="1890" content="jugal, premaxilla, 2 vertebrae, ilium, astragalus, 2 unguals, 2 phalanges" type="holo"/>
+  <SYNONYM name="A. fragilis"/>
  </SPECIES>
  <SPECIES name="ferox">
   <AUTHOR name="Marsh" year="1896"/>
-  <LENGTH value="10"/>
-  <LENGTH value="12"/>
-  <MASS value="1000"/>
-  <MASS value="1700"/>
   <MEANING>fierce</MEANING>
-  <REMAINS museum="USNM" id="2315" content="left dentary with 12 teeth" comment="pathologic" type="holo"/>
+  <SYNONYM name="A. fragilis"/>
  </SPECIES>
  <SPECIES name="lucaris">
   <AUTHOR name="Marsh" year="1878"/>
   <SYNONYM name="fragilis"/>
  </SPECIES>
  <SPECIES name="maximus">
-  <SYNONYM name="Saurophagus maximus" status="objective"/>
+  <LENGTH value="14" q="1"/>
+  <TIME value="Kimmeridgian"/>
+  <PLACE name="Oklahoma"/>
+  <REMAINS content="dorsal neural arch" type="holo"/>
+  <AUTHOR name="Chure" year="1995"/>
+  <MEANING>greatest</MEANING>
  </SPECIES>
  <SPECIES name="medius">
   <SYNONYM name="Dryptosaurus medius" status="objective"/>
  </SPECIES>
- <SPECIES name="meriani" status="dubium" original="Megalosaurus">
-  <AUTHOR name="Greppin" year="1870"/>
-  <REMAINS content="tooth"/>
+ <SPECIES name="meriani">
+  <SYNONYM name="Ceratosaurus meriani"/>
  </SPECIES>
  <SPECIES name="sibiricus">
   <SYNONYM name="Chilantaisaurus sibiricus" status="objective"/>
@@ -644,10 +667,10 @@ It probably hunted <LINK content="stegosaurs"/>,
 <NOMEN name="Camarasaurus"/>. Its main rival was
 the slightly smaller <NOMEN name="Ceratosaurus"/>. </P>
 
-<P> There is debate over the taxonomy of these species. Some feel they
-should all be lumped into <NOMEN name="A. fragilis"/> while others would
+<P> There is debate over the taxonomy of these species. Some feel that most of them
+should be lumped into <NOMEN name="A. fragilis"/> while others would
 split them into several genera (<NOMEN name="Creosaurus"/>,
-<NOMEN name="Epanterias"/>, etc.) </P>
+<NOMEN name="Epanterias"/>, <NOMEN name="Saurophaganax"/>, etc.)</P>
  </ESSAY>
 </GENUS>
 
@@ -813,18 +836,8 @@ of its neck, possibly forming a double sail. </P>
 <GENUS name="Ammosaurus">
  <AUTHOR name="Marsh" year="1891"/>
  <MEANING>sand lizard</MEANING>
- <LENGTH value="2.5"/>
- <LENGTH value="4"/>
- <TIME value="Pliensbachian"/>
- <TIME value="Toarcian"/>
- <PLACE name="Connecticut, Arizona"/>
- <PLACE name="Nova Scotia" q="1"/>
- <REMAINS museum="YPM" id="208" content="3 presacral vertebrae, sacrum, pelvis, hindlimbs" type="holo"/>
- <REMAINS museum="YPM" id="209" synonym="Ammosaurus solus" content="pelvis, podes"/>
- <REMAINS museum="MNA" id="G2 7233" content="lower parts of skeleton" q="1"/>
- <SPECIES name="major" original="Anchisaurus">
-  <AUTHOR name="Marsh" year="1889"/>
-  <MEANING>greater</MEANING>
+ <SPECIES name="major">
+  <SYNONYM name="Anchisaurus major" status="objective"/>
  </SPECIES>
  <SPECIES name="solus">
   <SYNONYM name="Anchisaurus solus" status="objective"/>
@@ -1005,17 +1018,11 @@ It may have represented an enormous individual of
 
 <GENUS name="Anasazisaurus" type="with">
  <MEANING>Anasazi <LOW>(North American tribe)</LOW> lizard</MEANING>
- <LENGTH value="10"/>
- <TIME value="Campanian"/>
- <PLACE name="New Mexico"/>
- <REMAINS content="partial skull" type="holo" museum="BYU" id="12950"/>
  <SPECIES name="horneri">
   <AUTHOR name="Hunt, Lucas" year="1993"/>
   <MEANING><LOW>John</LOW> Horner's</MEANING>
+  <SYNONYM name="Kritosaurus navajovius"/>
  </SPECIES>
- <ESSAY>
-<P> May be a variant of <NOMEN name="Kritosaurus navajovius"/>. </P>
- </ESSAY>
 </GENUS>
 
 <GENUS name="Anatosaurus">
@@ -1120,10 +1127,17 @@ It may have represented an enormous individual of
   <SYNONYM name="polyzelus" status="q"/>
  </SPECIES>
  <SPECIES name="major">
-  <SYNONYM name="Ammosaurus major" status="objective"/>
-  <MEANING>
-   greater
-  </MEANING>
+  <AUTHOR name="Marsh" year="1889"/>
+  <MEANING>greater</MEANING>
+  <LENGTH value="2.5"/>
+  <LENGTH value="4"/>
+  <TIME value="Pliensbachian"/>
+  <TIME value="Toarcian"/>
+  <PLACE name="Connecticut, Arizona"/>
+  <PLACE name="Nova Scotia" q="1"/>
+  <REMAINS museum="YPM" id="208" content="3 presacral vertebrae, sacrum, pelvis, hindlimbs" type="holo"/>
+  <REMAINS museum="YPM" id="209" synonym="Ammosaurus solus" content="pelvis, podes"/>
+  <REMAINS museum="MNA" id="G2 7233" content="lower parts of skeleton" q="1"/>
  </SPECIES>
  <SPECIES name="sinensis">
   <SYNONYM name="Gyposaurus sinensis" status="objective"/>
@@ -1134,7 +1148,9 @@ It may have represented an enormous individual of
  </SPECIES>
  <ESSAY>
 <P><NOMEN name="Anchisaurus colurus"/> may represent another gender (female?)
-of <NOMEN name="A. polyzelus"/>. </P>
+of <NOMEN name="A. polyzelus"/>. <NOMEN name="A. major"/>, the type
+species of <NOMEN name="Ammosaurus"/>, may also be a synonym of
+<NOMEN name="Anchisaurus polyzelus"/>.</P>
  </ESSAY>
 </GENUS>
 
@@ -1204,8 +1220,14 @@ of <NOMEN name="A. polyzelus"/>. </P>
 </GENUS>
 
 <GENUS name="Aniksosaurus" status="unpublished">
+ <PLACE name="Argentina"/> 
+ <TIME value="Cenomanian"/>
+ <TIME value="Turonian"/>
+ <SPECIES name="darwini" status="unpublished">
+  <MEANING>Darwin's</MEANING>
+ </SPECIES>
  <ESSAY>
-<P> A small <LINK content="theropod"/> of some kind. </P>
+<P>Hails from the Bajo Barreal Formation.</P>
  </ESSAY>
 </GENUS>
 
@@ -1233,9 +1255,8 @@ of <NOMEN name="A. polyzelus"/>. </P>
  <MISSPELLED name="Anchylosaurus"/>
  <MISSPELLED name="Ancylosaurus"/>
  <MEANING>fused lizard</MEANING>
- <LENGTH value="10"/>
- <LENGTH value="11"/>
- <MASS value="4000"/>
+ <LENGTH value="7.5"/>
+ <MASS value="4500"/>
  <TIME value="Maastrichtian"/>
  <PLACE name="Montana, Wyoming, Alberta"/>
  <REMAINS museum="AMNH" id="5895" content="skull, scapulocoracoid, vertebrae (7 cervical, 10 dorsal, 4 caudal), ribs, osteoderms" type="holo"/>
@@ -1367,7 +1388,7 @@ both). </P>
   <SYNONYM name="Allosaurus lucaris" status="objective"/>
  </SPECIES>
  <SPECIES name="meriani">
-  <SYNONYM name="Allosaurus meriani" status="objective"/>
+  <SYNONYM name="Ceratosaurus meriani" status="objective"/>
  </SPECIES>
  <SPECIES name="sibiricus">
   <SYNONYM name="Chilantaisaurus sibiricus" status="objective"/>
@@ -1493,6 +1514,17 @@ but <NOMEN name="Brontosaurus"/> has long been considered a junior synonym of
 <P> <NOMEN name="Apatosaurus"/> was shorter but bulkier than its relatives
 <NOMEN name="Barosaurus"/> and <NOMEN name="Diplodocus"/>. </P>
  </ESSAY>
+</GENUS>
+
+<GENUS name="Apsaravis" type="with">
+ <MEANING>Apsar bird</MEANING>
+ <SPECIES name="ukhaana">
+  <MEANING><LOW>from</LOW> Ukhaa <LOW>Tolgod</LOW></MEANING>
+  <AUTHOR name="Norell, Clarke" year="2001"/>
+  <REMAINS content="partial postcranium with fragmentary skull"/>
+ </SPECIES>
+ <TIME value="Campanian" q="1"/>
+ <PLACE name="Mongolia"/>
 </GENUS>
 
 <GENUS name="Aragosaurus" type="with">
@@ -1641,7 +1673,7 @@ given to an insect(!) </P>
  </SPECIES>
  <SPECIES name="recurva">
   <AUTHOR name="Howgate" year="1984"/>
-  <SYNONYM name="Archaeopteryx bavarica" status="q"/>
+  <SYNONYM name="Archaeopteryx lithographica" status="q"/>
   <MEANING>recurved</MEANING>
  </SPECIES>
  <SPECIES name="siemensii">
@@ -1679,26 +1711,61 @@ Eichstätt   1951  1970       X
 Solnhofen         1987       X
 <NOMEN name="A. bavarica"/> 1992  1993       X
 </DIAGRAM> </P>
+<P>The Solnhofen specimen may represent a new genus and species, <NOMEN
+name="Wellnhoferia grandis"/>.</P>
  </ESSAY>
 </GENUS>
 
 <GENUS name="Archaeoraptor" type="with">
  <MEANING>ancient raider <I>or</I> <NOMEN name="Archaeopteryx"/>/<NOMEN name="Velociraptor"/></MEANING>
- <SPECIES name="liaoningensis" status="nudum">
+ <SYNONYM name="Microraptor"/>
+ <PROPERTAXON name="Aves" incertae="1"/>
+ <SPECIES name="liaoningensis">
   <MEANING>from Liaoning <LOW>Province</LOW></MEANING>
-  <AUTHOR type="vide" name="Sloan" year="1999"/>
+  <AUTHOR type="vide" name="Olson" year="2000"/>
   <AUTHOR name="Stephen Czerkas, Sylvia Czerkas"/>
  </SPECIES>
- <TIME value="Barremian" section="middle"/>
- <PLACE name="China"/>
- <REMAINS content="forepart of skeleton with integument impressions"/>
  <ESSAY>
-<P>The specimen as originally published was touted as a
-<LINK content="bird"/>-<LINK content="deinonychosaur"/> link. However, it appears
-instead to be a chimera, the tail and hindlimbs belonging to a deinonychosaur and the rest
-belonging to a bird. The name <NOMEN name="Archaeoraptor"/> may be dropped
-for the formal publication of the animals. Until then, The Dinosauricon
-will use the name for the bird.</P>
+<P header="A Messy Situation"> This name has an ugly, if brief, history
+behind it. Here is an attempt to sum it up. </P>
+
+<P>The name "Archaeoraptor liaoningensis" was originally published in a
+National Geographic article in 1999. Pictures of the type specimen,
+supposedly a link between <LINK content="Aves"/> and more primitive, <LINK
+content="deinonychosaur"/>-like animals, were also published, but there
+was no formal diagnosis. Furthermore, the article disclaimed itself as a
+formal description and announced that the animal would be properly
+described later. Thus, at that point in time, according to ICZN rules, the
+name "Archaeoraptor" was a <I>nomen nudum</I>, completely unofficial.</P>
+
+<P>Shortly after publication, it became clear that the hindpart (tail,
+hindlimbs) of "Archaeoraptor" was from a different animal than the rest of
+it. This was discovered because the more complete counterslab to the
+hindpart had been found, and indicated that that part belonged to a basal
+<LINK content="paravian"/>, possibly a <LINK content="deinonychosaur"/>.
+The forepart was determined to be <LINK content="avian"/>. At that point I
+decided to use the unofficial name "Archaeoraptor" for the avian forepart,
+which was the major part of the supposed specimen.</P>
+
+<P>The hindpart and its counterslab were described in 2000 as <NOMEN
+name="Microraptor zhaoianus"/>. But, unbeknownst to the authors, Storrs
+Olson, a paleornithologist, had already formally designated the hindpart as the
+type specimen of <NOMEN name="Archaeoraptor liaoningensis"/>, publishing a
+minimal description in an obscure journal. (The intent was to remove the
+infamous name of <NOMEN name="Archaeoraptor"/> from the field of
+paleornithology.) Thus, as of this writing, the name <NOMEN
+name="Microraptor"/> should be considered a junior objective synonym of
+<NOMEN name="Archaeoraptor"/> by ICZN rules. The avian section should
+be considered <LINK content="Aves"/> <I>innom.</I></P>
+
+<P>Many consider Olson's publication unwarranted and irresponsible. There
+will be a petition to the ICZN to formally reject the name <NOMEN
+name="Archaeoraptor"/> and conserve the name <NOMEN name="Microraptor"/>.
+In the hope that it succeeds, I am using the name <NOMEN name="Microraptor"/>
+for the basal paravian, despite ICZN rules.</P>
+
+<P>The avian section has yet to be formally described and named.</P>
+
  </ESSAY>
 </GENUS>
 
@@ -1729,11 +1796,9 @@ will use the name for the bird.</P>
  </SPECIES>
  <ESSAY>
 <P> A poorly known dinosaur, <NOMEN name="Archaeornithoides"/> has been
-classified as a <LINK content="spinosaur"/>, but it shows
-<LINK content="bird"/>-like traits and may be some kind of
-<LINK content="coelurosaur"/>. </P>
-
-<P> Like birds and spinosaurs, it had unserrated teeth. </P>
+classified as a <LINK content="spinosaur"/> because of its unserrated
+teeth, but it may be some kind of <LINK content="coelurosaur"/>, perhaps a
+juvenile <NOMEN name="Byronosaurus"/>. </P>
  </ESSAY>
 </GENUS>
 
@@ -1949,7 +2014,7 @@ to its size of any flying animal. </P>
  <TIME value="Albian"/>
  <PLACE name="Uzbekistan"/>
  <REMAINS content="fragmentary skull, skeletal elements"/>
- <SPECIES name="salsopaludalis">
+ <SPECIES name="salsopaludalis" status="dubiumQ">
   <AUTHOR name="Nessov, Kaznyshkina, Cherepanov" year="1989"/>
  </SPECIES>
  <SPECIES name="sulcidens">
@@ -1988,15 +2053,22 @@ to its size of any flying animal. </P>
  </MEANING>
  <TIME value="EK"/>
  <PLACE name="China, Mongolia"/>
- <REMAINS content="teeth"/>
  <SPECIES name="mongoliensis" status="dubium">
   <AUTHOR name="Osborn" year="1924"/>
   <MEANING>
    Mongolian      
   </MEANING>
+  <REMAINS content="teeth"/>
+ </SPECIES>
+ <SPECIES name="asianensis" status="dubium" q="1">
+  <MEANING>from Asia</MEANING>
+  <AUTHOR name="Lee, Yang, Park" year="1997"/>
+  <REMAINS museum="KPE" id="8001" content="tooth (46mm)"/>
+  <PLACE name="Korea"/>
  </SPECIES>
  <SPECIES name="kwangshiensis" status="dubium">
   <AUTHOR name="Hou, Yeh, Zhao" year="1975"/>
+  <REMAINS content="teeth"/>
  </SPECIES>
 </GENUS>
 
@@ -2168,14 +2240,33 @@ oriole, of course). Sometimes synonymized with <NOMEN name="Pleurocoelus"/>.
   <SYNONYM name="mirandis"/>
  </SPECIES>
  <SPECIES name="molnari">
-  <SYNONYM name="Stygivenator molnari" status="objective"/>
+  <SYNONYM name="Tyrannosaurus rex"/>
+  <AUTHOR name="Paul" year="1988"/>
  </SPECIES>
  <SPECIES name="novojilovi">
   <SYNONYM name="Gorgosaurus novojilovi" status="objective"/>
  </SPECIES>
- <ESSAY>
-<P> Poorly known. Could be the same thing as <NOMEN name="Stygivenator"/>.
-</P>
+ <ESSAY><P>Probably a juvenile of another genus.</P></ESSAY>
+</GENUS>
+
+<GENUS name="Aucasaurus" type="with">
+ <MEANING>Auca <LOW>Mahuevo</LOW> lizard</MEANING>
+ <SPECIES name="garridoi" status="nudum">
+  <MEANING><LOW>Alberto</LOW> Garrido's <LOW>(discoverer)</LOW></MEANING>
+  <AUTHOR name="Chiappe, Coria"/>
+  <AUTHOR type="vide" name="Chiappe, Dingus" year="2001"/>
+  <REMAINS type="holo" content="specimen with pelvic soft tissue impressions"/>
+ </SPECIES>
+ <MASS value="700"/>
+ <TIME value="Campanian" section="early"/>
+ <PLACE name="Argentina"/>
+ <ESSAY> <P>Similar to the larger <NOMEN name="Carnotaurus"/>, but with
+proportionally longer arms, a longer and lower skull, and bumps instead of
+horns.</P> 
+
+<P>The single specimen was buried at the bottom of a shallow lake, in
+sediment that became the Anacleto Member of the Rio Colorado Formation.
+Part of its skull was broken apart.</P>
  </ESSAY>
 </GENUS>
 
@@ -2608,7 +2699,7 @@ found in its belly. </P>
   </MEANING>
  </SPECIES>
  <SPECIES name="sp.">
- <TIME value="Valanginian"/>
+  <TIME value="Valanginian"/>
  </SPECIES>
  <ESSAY>
 <P> <REFER page="Altispinax"/> </P>
@@ -2714,10 +2805,23 @@ it had some features similar to the related
  </ESSAY>
 </GENUS>
 
-<GENUS name="Bibleyhallorum" status="nudum">
- <AUTHOR name="Burge, Bird, McClelland, Cicconetti" year="1999"/>
- <TIME value="EK" section="early"/>
- <PLACE name="Utah"/>
+<GENUS name="Bienosaurus" type="with">
+ <MEANING><LOW>Mai N.</LOW> Bien's lizard</MEANING>
+ <SPECIES name="lufengensis">
+  <MEANING>from <LOW>the</LOW> Lufeng <LOW>Formation</LOW></MEANING>
+  <AUTHOR name="Dong" year="2001"/>
+ </SPECIES>
+ <SPECIES name="crichtonii" status="nudum">
+  <SYNONYM name="lufengensis"/>
+  <MEANING><LOW>Michael</LOW> Crichton's</MEANING>
+  <AUTHOR year="2000"/>
+ </SPECIES>
+ <PLACE name="China"/>
+ <TIME value="EJ"/>
+ <REMAINS content="mandible, skull fragments, etc."/>
+ <ESSAY><P>
+A small biped (about 1 meter tall) with armored cheeks.
+ </P></ESSAY>
 </GENUS>
 
 <GENUS name="Bihariosaurus" type="with">
@@ -2731,6 +2835,11 @@ it had some features similar to the related
  <SPECIES name="bauxiticus">
   <AUTHOR name="Marinescu" year="1989"/>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Bilbeyhallorum" status="nudum">
+ <AUTHOR name="Burge, Bird, McClelland, Cicconetti" year="1999"/>
+ <SYNONYM name="Cedarpelta"/>
 </GENUS>
 
 <GENUS name="Blikanasaurus" type="with">
@@ -2812,6 +2921,7 @@ it had some features similar to the related
   </MEANING>
  </SPECIES>
  <SPECIES name="madagascariensis" status="dubium" q="1">
+  <REMAINS content="vertebrae"/>
   <AUTHOR name="Lydekker" year="1895"/>
   <PLACE name="Madagascar"/>
   <PLACE name="Europe" q="1"/>
@@ -2966,7 +3076,7 @@ content="titanosaurs"/> such as <NOMEN name="Argentinosaurus"/>. </P>
  </MEANING>
  <SPECIES name="draculae" status="dubiumQ">
   <AUTHOR name="Harrison, C. A. Walker" year="1975"/>
-  <SYNONYM name="Elopteryx nopcsai" status="q"/>
+  <REMAINS content="partial ankle"/>
   <MEANING>
    <LOW>Count</LOW> Dracula's
   </MEANING>
@@ -3307,7 +3417,7 @@ unserrated teeth, like those of <LINK content="birds"/>.</P>
  <LENGTH value="3.5"/>
  <LENGTH value="7"/>
  <TIME value="Kimmeridgian"/>
- <TIME value="Barremian"/>
+ <TIME value="Tithonian"/>
  <SPECIES name="dispar" original="Camptonotus">
   <AUTHOR name="Marsh" year="1879"/>
   <PLACE name="Colorado, Oklahoma, Utah, Wyoming"/>
@@ -3348,7 +3458,7 @@ unserrated teeth, like those of <LINK content="birds"/>.</P>
  <SPECIES name="prestwichii" original="Cumnoria">
   <AUTHOR name="Hulke" year="1880"/>
   <PLACE name="England"/>
- <REMAINS content="fragmentary specimen"/>
+  <REMAINS content="fragmentary specimen"/>
  </SPECIES>
  <SPECIES name="valdensis" status="dubium">
   <AUTHOR name="Lydekker" year="1889"/>
@@ -3357,9 +3467,8 @@ unserrated teeth, like those of <LINK content="birds"/>.</P>
  </SPECIES>
  <SPECIES name="sp.">
   <PROPERTAXON name="Iguanodontoidea" incertae="1"/>
-  <TIME value="Kimmeridgian"/>
-  <TIME value="Tithonian"/>
-  <PLACE name="U.S.A."/>
+  <TIME value="Barremian"/>
+  <PLACE name="S. Dakota"/>
  </SPECIES>
  <ESSAY>
 <P> <NOMEN name="Camptosaurus depressus"/> may not even represent an 
@@ -3427,8 +3536,7 @@ unserrated teeth, like those of <LINK content="birds"/>.</P>
 <GENUS name="Capitalsaurus" status="nudum">
  <AUTHOR name="Kranz" year="1998"/>
  <MEANING>capital <LOW>(Washington, D.C.)</LOW> lizard</MEANING>
- <TIME value="Aptian"/>
- <PLACE name="Maryland"/>
+ <PLACE name="District of Columbia"/>
 </GENUS>
 
 <GENUS name="Carcharodontosaurus">
@@ -3447,6 +3555,8 @@ unserrated teeth, like those of <LINK content="birds"/>.</P>
  <TIME section="early" value="Cenomanian"/>
  <PLACE name="Egypt, Morocco, Tunisia, Algeria, Libya, Niger"/>
  <REMAINS content="isolated teeth, partial skeletons"/>
+ <REMAINS content="braincase"/>
+ <REMAINS content="anterior part of dentary"/>
  <SPECIES name="saharicus" original="Megalosaurus">
   <AUTHOR name="Depéret, Savornin" year="1925"/>
   <AUTHOR type="referred" name="Stromer" year="1931"/>
@@ -3490,8 +3600,8 @@ large <LINK content="theropod"/> material.</P>
  </MEANING>
  <LENGTH value="7.5"/>
  <MASS value="1000"/>
- <TIME value="Albian"/>
- <TIME section="early" value="Cenomanian" q="1"/>
+ <TIME value="Campanian" q="1"/>
+ <TIME value="Maastrichtian" q="1"/>
  <PLACE name="Argentina"/>
  <REMAINS content="complete skeleton with skin impressions"/>
  <SPECIES name="sastrei">
@@ -3505,12 +3615,15 @@ content="tyrannosaurids"/>. The forearms were so short that the hands
 appeared to sprout almost directly from the elbows. Remains are very
 complete, with skin impressions that show rows of large, non-bony,
 semiconical scales along the right side of the body. </P>
-  
+
 <P> <NOMEN name="Carnotaurus"/> was featured in the book <U>The Lost
 World</U>, where it was given amazing, chameleon-like powers of skin
 camouflage. Even if this is blatantly unscientific, it would've looked
 kind of cool on the big screen. (Unfortunately, <NOMEN
 name="Carnotaurus"/> wasn't put in the movie.) </P>
+
+<P>Although originally dated as Early Cretaceous, the sediments this dinosaur
+is from appear to be Late Cretaceous instead.</P>
  </ESSAY>
 </GENUS>
 
@@ -3525,6 +3638,17 @@ name="Carnotaurus"/> wasn't put in the movie.) </P>
 <P> A "<LINK content="herrerasaur"/>" of some kind. Originally referred to 
 <NOMEN name="Chindesaurus"/>. </P>
  </ESSAY>
+</GENUS>
+
+<GENUS name="Catenoleimus" type="with">
+ <MEANING>lineage remainder</MEANING>
+ <SPECIES name="anachoretus">
+  <MEANING>reclusive</MEANING>
+  <AUTHOR name="Panteleev" year="1998"/>
+  <REMAINS type="holo" museum="PO" id="4606" content="coracoid shaft (glenoid surface to nearest edge of supracoracoid foramen- 3.2 mm)"/>
+  <TIME value="Coniacian"/>
+  <PLACE name="Uzbekistan"/>
+ </SPECIES>
 </GENUS>
 
 <GENUS name="Cathayornis" type="with">
@@ -3557,26 +3681,29 @@ name="Carnotaurus"/> wasn't put in the movie.) </P>
  <MEANING>
   tail feathers
  </MEANING>
- <LENGTH value="1"/>
+ <LENGTH value=".7"/>
+ <LENGTH value=".9"/>
  <TIME section="middle" value="Barremian"/>
  <PLACE name="China"/>
+ <REMAINS museum="IVPP" id="V 12340" content="nearly complete skeleton with preserved integument and gastroliths"/>
  <SPECIES name="zoui">
-  <REMAINS content="2 specimens with feather impressions and gastroliths"/>
+  <REMAINS museum="NGMC" id="97-4-A" type="holo" content="nearly complete skeleton with preserved integument and gastroliths"/>
+  <REMAINS museum="NGMC" id="97-9-A" type="para" content="nearly complete skeleton with preserved integument and gastroliths"/>
+  <REMAINS museum="BPM" id="0001" q="1" content="nearly complete skeleton with preserved integument and gastroliths"/>
   <AUTHOR name="Ji Q., Currie, Norell, Ji S." year="1998"/>
   <MEANING><LOW>Vice-Premier</LOW> Zou <LOW>Jiahua</LOW>'s</MEANING>
  </SPECIES>
  <SPECIES name="dongi">
   <AUTHOR name="Zhou, Wang" year="2000"/>
-  <REMAINS content="1 specimen with feather impressions and gastroliths"/>
+  <REMAINS museum="IVPP" id="V 12344" type="holo" content="nearly complete skeleton with preserved integument and gastroliths"/>
+  <MEANING>Dong's</MEANING>
  </SPECIES>
  <ESSAY>
-<P header="A Feathered Dinosaur"> <NOMEN name="Caudipteryx"/> is one of the few non-<LINK
-content="avian"/> <LINK content="dinosaurs"/> for which feathery
-impressions are known. The only others (<NOMEN
-name="Sinosauropteryx"/>, <NOMEN name="Protarchaeopteryx"/>, <NOMEN
-name="Beipiaosaurus"/>, and <NOMEN name="Sinornithosaurus"/>) come from the same 
-site and have also only recently been discovered. <NOMEN name="Caudipteryx"/> 
-specimens were at first mistaken for <NOMEN name="Protarchaeopteryx"/> 
+<P header="A Feathered Dinosaur"> <NOMEN name="Caudipteryx"/> is one of
+the few non-<LINK content="avian"/> <LINK content="dinosaurs"/> for which
+feathery impressions are known. The only others come from the same site
+and have also only recently been discovered. <NOMEN name="Caudipteryx"/>
+specimens were at first mistaken for <NOMEN name="Protarchaeopteryx"/>
 specimens. </P>
 
 <P> As the name implies, <NOMEN name="Caudipteryx"/> had a special
@@ -3589,9 +3716,15 @@ ever preserved.</P>
 feathers, meaning that it did not fly. It legs were long, perhaps for
 running and/or wading. A recent study has suggested that it was capable of perching.</P>
 
-<P header="Relationships"> The original cladistic analysis placed <NOMEN name="Caudipteryx"/> as a
-basal <LINK content="avialan"/>, but many now think it was related to
-<LINK content="oviraptorosaurs"/>. </P>
+<P header="Relationships"> The original cladistic analysis placed <NOMEN
+name="Caudipteryx"/> as a basal <LINK content="avialan"/>, but many now
+think it was a more basal <LINK content="maniraptor"/>, probably related
+to <LINK content="oviraptorosaurs"/>. The original analysis did not allow
+for the possibility that it was not <LINK content="eumaniraptoran"/>.</P>
+
+<P>It is possible that <NOMEN name="Caudipteryx dongi"/> is a synonym of
+<NOMEN name="C. zoui"/>. It is also possible that IVPP V 12340 and BPM
+0001 belong to a new species.</P>
  </ESSAY>
 </GENUS>
 
@@ -3600,11 +3733,8 @@ basal <LINK content="avialan"/>, but many now think it was related to
  <MEANING>
   tail vertebra
  </MEANING>
- <TIME value="Kimmeridgian"/>
- <PLACE name="France"/>
- <REMAINS content="tail vertebra (destroyed in World War II)"/>
- <SPECIES name="sauvagei" status="dubium" original="Saurornithoides2">
-  <AUTHOR name="Nopcsa" year="1928"/>
+ <SPECIES name="sauvagei">
+  <SYNONYM name="Teinurosaurus sauvagei" status="objective"/>
  </SPECIES>
 </GENUS>
 
@@ -3644,6 +3774,16 @@ basal <LINK content="avialan"/>, but many now think it was related to
  <SPECIES name="weiskopfae">
   <MEANING><LOW>Carol</LOW> Weiskopf's</MEANING>
   <AUTHOR name="Tidwell, Carpenter, Brooks" year="1999"/>
+ </SPECIES>
+</GENUS>
+
+<GENUS name="Cedarpelta" type="with">
+ <MEANING>Cedar <LOW>Mountain Formation</LOW> shield</MEANING>
+ <TIME value="Albian"/>
+ <PLACE name="Utah"/>
+ <SPECIES name="bilbeyhallorum">
+  <AUTHOR name="Carpenter, Kirkland, Burge, Bird" year="2001"/>
+  <REMAINS type="holo" content="disarticulated skull"/>
  </SPECIES>
 </GENUS>
 
@@ -3735,7 +3875,6 @@ perhaps <NOMEN name="Chasmosaurus"/>. </P>
  <MEANING>
   horned lizard
  </MEANING>
- <TIME value="Kimmeridgian"/>
  <TIME value="Tithonian"/>
  <SPECIES name="nasicornis">
   <AUTHOR name="Marsh" year="1884"/>
@@ -3749,9 +3888,9 @@ perhaps <NOMEN name="Chasmosaurus"/>. </P>
    nose-horned      
   </MEANING>
  </SPECIES>
- <SPECIES name="dentisulcatus" status="nudum">
-  <AUTHOR name="Anonymous" year="1995"/>
-  <PLACE name="Utah" q="1"/>
+ <SPECIES name="dentisulcatus">
+  <AUTHOR name="Madsen, Welles" year="2000"/>
+  <PLACE name="Utah"/>
  </SPECIES>
  <SPECIES name="ingens" status="dubium" original="Megalosaurus">
   <AUTHOR type="referred" name="Paul" year="1988"/>
@@ -3766,8 +3905,9 @@ perhaps <NOMEN name="Chasmosaurus"/>. </P>
   <REMAINS content="skull, several specimens"/>
   <PLACE name="U.S.A."/>
  </SPECIES>
- <SPECIES name="meriani">
-  <SYNONYM name="Allosaurus meriani" status="objective"/>
+ <SPECIES name="meriani" status="dubium" original="Megalosaurus" q="1">
+  <AUTHOR name="Greppin" year="1870"/>
+  <REMAINS content="tooth"/>
  </SPECIES>
  <SPECIES name="roechlingi" status="dubium">
   <AUTHOR name="Janensch" year="1925"/>
@@ -3787,6 +3927,9 @@ sported a large horn on the snout and two smaller ones above the eyes.
 <P> <NOMEN name="C. ingens"/> may have been a humongous African <LINK
 content="ceratosaur"/>, among the largest of <LINK content="theropods"/>.
 </P>
+
+<P> <NOMEN name="C. magnicornis"/> and <NOMEN name="C. dentisulcatus"/>
+may be junior synonyms of <NOMEN name="C. nasicornis"/>.</P>
  </ESSAY>
 </GENUS>
 
@@ -3863,7 +4006,7 @@ reevaluation.</P>
  <SPECIES name="brevis" status="dubium">
   <AUTHOR name="Owen" year="1842"/>
   <SYNONYM name="Pelorosaurus conybearei"/>
-  <SYNONYM name="Iguanodon anglicum"/>
+  <SYNONYM name="Iguanodon anglicus"/>
   <MEANING>
    short
   </MEANING>
@@ -3988,7 +4131,8 @@ the same year as <NOMEN name="C. medius"/>. </P>
  <MEANING>
   Chaoyang <LOW>County</LOW> lizard
  </MEANING>
- <TIME value="Aptian"/>
+ <TIME value="MJ" q="1"/>
+ <TIME value="LJ" q="1"/>
  <PLACE name="China"/>
  <REMAINS content="skull"/>
  <SPECIES name="youngi">
@@ -3998,6 +4142,7 @@ the same year as <NOMEN name="C. medius"/>. </P>
   <AUTHOR name="Zhao, Zheng" year="1983"/>
   <SYNONYM name="youngi"/>
  </SPECIES>
+ <ESSAY><P>The oldest known <LINK content="ceratopsian"/>, although not quite the most basal.</P></ESSAY>
 </GENUS>
 
 <GENUS name="Chaoyoungosaurus" status="nudum">
@@ -4355,12 +4500,13 @@ may belong to a new species. </P>
 </GENUS>
 
 <GENUS name="Chuanjiesaurus" type="with">
- <MEANING>Chuanjie lizard</MEANING>
+ <MEANING>Chuanjie <LOW>Formation</LOW> lizard</MEANING>
  <SPECIES name="anaensis">
   <AUTHOR name="Fang, Pang, Lü, Zhang, Pan, Wang, Li, Cheng" year="2000"/>
   <MEANING>from A'na</MEANING>
+  <REMAINS type="holo" museum="LFCH" id="1001" content="9 cervicals, 17 caudals, 2 ribs, limb & limb girdle elements"/>
  </SPECIES>
- <TIME value="MJ"/>
+ <TIME value="MJ" section="earliest" q="1"/>
  <PLACE name="China"/>
  <ESSAY><P>Originally published as <B><I>C. a'naensis</I></B>, but the
  ICZN does not permit non-alphabetic characters in any taxon's name.</P></ESSAY>
@@ -4423,6 +4569,27 @@ is a very primitive <LINK content="titanosaur"/>.</P>
  <SPECIES name="stenopsis">
   <SYNONYM name="Thespesius stenopsis" status="objective"/>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Citipati" type="with">
+ <MEANING>pyre lord</MEANING>
+ <SPECIES name="osmolskae">
+  <AUTHOR name="Clark, Norell, Barsbold" year="2001"/>
+  <MEANING><LOW>Halszka</LOW> Osmólska's</MEANING>
+  <REMAINS type="holo" content="nearly complete skeleton" museum="IGM" id="100/978"/>
+  <REMAINS q="1" museum="IGM" id="100/979" content="partial postcranium overlying a nest with elongatoolithid eggs"/>
+  <REMAINS museum="IGM" id="100/971" content="embryonic skeleton inside elongatoolothid egg"/>
+ </SPECIES>
+ <SPECIES name="sp." q="1">
+  <REMAINS content="skull with associated cervical vertebrae" museum="IGM" id="100/42"/>
+ </SPECIES>
+ <LENGTH q="1" value="2"/>
+ <TIME value="Campanian" q="1"/>
+ <PLACE name="Mongolia"/>
+ <ESSAY>
+<P>The specimen assigned to <NOMEN name="Citipati sp."/>
+had previously been assigned to <NOMEN name="Oviraptor philoceratops"/>.</P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Cladeiodon" type="with">
@@ -4576,7 +4743,7 @@ specimen. They proposed a new name for the Ghost Ranch dinosaurs - <NOMEN
 name="Rioarribasaurus"/>. But by this time the association of the name
 <NOMEN name="Coelophysis"/> with the Ghost Ranch material had become
 heavily entrenched in dinosaur terminology. The ICZN (International
-Committee on Zoological Nomenclature) voted to redefine the type specimen
+Commission on Zoological Nomenclature) voted to redefine the type specimen
 of <NOMEN name="Coelophysis"/> as one of the Ghost Ranch specimens. So the
 name <NOMEN name="Rioarribasaurus"/> has been officially dropped. </P>
   
@@ -4676,7 +4843,7 @@ some indeterminate small <LINK content="theropod"/> material.</P>
  </SPECIES>
  <SPECIES name="longicollis">
   <AUTHOR name="Cope" year="1887"/>
-  <SYNONYM name="Coelophysis bauri"/>
+  <SYNONYM name="Eucoelophysis colberti"/>
  </SPECIES>
 </GENUS>
 
@@ -4726,6 +4893,13 @@ some indeterminate small <LINK content="theropod"/> material.</P>
  </ESSAY>
 </GENUS>
 
+<GENUS name="Colossosaurus" status="nudum">
+ <MEANING>colossal lizard</MEANING>
+ <AUTHOR name="Mantell"/>
+ <AUTHOR type="vide" name="Cadbury" year="2000"/>
+ <SYNONYM name="Pelorosaurus"/>
+</GENUS>
+
 <GENUS name="Comodactylus" type="with">
  <MEANING>
   Como <LOW>Bluff</LOW> finger
@@ -4748,7 +4922,7 @@ some indeterminate small <LINK content="theropod"/> material.</P>
  </MEANING>
  <LENGTH value="1"/>
  <MASS value="2.5"/>
- <TIME value="Kimmeridgian"/>
+ <TIME value="Tithonian"/>
  <PLACE name="France, Germany"/>
  <REMAINS content="2 skeletons (juvenile & adult)"/>
  <SPECIES name="longipes">
@@ -4772,7 +4946,9 @@ content="dinosaurs"/>. </P>
 restoration with a finned forelimb has been rejected. Usually it is
 depicted with two fingers, although it may well have had the usual
 theropod three, as its closest relative <NOMEN name="Sinosauropteryx"/>
-did. </P>
+did. Recently, a bone previously identified as left metacarpal I was
+re-diagnosed as the first phalanx of the first digit, bolstering this
+idea.</P>
   
 <P> The type specimen of <NOMEN name="Compsognathus corallestris"/> probably represents
 the adult form, while the type specimen of <NOMEN name="C. longipes"/> is
@@ -4794,7 +4970,7 @@ name="Compsognathus"/>' predatory nature. </P>
  <PLACE name="India"/>
  <REMAINS content="neck vertebra"/>
  <SPECIES name="solus" status="dubiumQ">
-  <AUTHOR name="von Huene" year="1932"/>
+  <AUTHOR name="von Huene, Matley" year="1932"/>
  </SPECIES>
 </GENUS>
 
@@ -4802,7 +4978,7 @@ name="Compsognathus"/>' predatory nature. </P>
  <MEANING>
   conch raider
  </MEANING>
- <LENGTH value="1" q="1"/>
+ <LENGTH value="1.7"/>
  <TIME value="Campanian"/>
  <PLACE name="Mongolia"/>
  <REMAINS content="skull, fragmentary postcranium"/>
@@ -5308,6 +5484,7 @@ name="Dacentrurus"/> was rather primitive, and had no plates, only spikes.
  <MASS value="3500"/>
  <TIME section="late" value="Campanian"/>
  <SPECIES name="torosus">
+  <MEANING>muscular</MEANING>
   <AUTHOR name="D. A. Russell" year="1970"/>
   <PLACE name="Alberta"/>
   <REMAINS content="skeletons (one nearly complete), skulls (1 complete), 3 partial hindlimbs, partial spine, partial upper jaw"/>
@@ -5459,6 +5636,7 @@ name="Gorgosaurus"/> or <NOMEN name="Albertosaurus"/>. </P>
  <PLACE name="Maryland" q="1"/>
  <REMAINS content="over 9 skeletons (adult and subadult), teeth"/>
  <SPECIES name="antirrhopus">
+  <MEANING>counterbalancing</MEANING>
   <AUTHOR name="Ostrom" year="1969"/>
  </SPECIES>
  <SPECIES name="koreanensis" status="nudum">
@@ -5477,7 +5655,9 @@ name="Gorgosaurus"/> or <NOMEN name="Albertosaurus"/>. </P>
  <MASS value="4000"/>
  <TIME value="LK"/>
  <PLACE name="Africa"/>
- <REMAINS content="partial postcranium, teeth"/>
+ <REMAINS content="partial postcranium"/>
+ <REMAINS content="femora"/>
+ <REMAINS content="teeth"/>
  <SPECIES name="agilis">
   <AUTHOR name="Sereno, Duthiel, Iarochene, Larsson, Lyon, Magwene, Sidor, Varicchio, J. A. Wilson" year="1996"/>
   <MEANING>
@@ -5528,11 +5708,22 @@ name="Gorgosaurus"/> or <NOMEN name="Albertosaurus"/>. </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Deuterosaurus" type="with">
+ <MEANING>second <LINK content="saurian"/></MEANING>
+ <SPECIES name="biarmicus">
+  <AUTHOR name="Eichwald" year="1860"/>
+  <PROPERTAXON name="Dinocephalia"/>
+ </SPECIES>
+</GENUS>
+
 <GENUS name="Dianchungosaurus" type="with">
  <MEANING>Dianchung lizard</MEANING>
  <TIME value="EJ"/>
  <PLACE name="China"/>
  <REMAINS content="fragmentary skull"/>
+ <MISSPELLED name="Tianchungosaurus">
+  <AUTHOR name="Zhao" year="1983"/>
+ </MISSPELLED>
  <SPECIES name="lufengensis" status="dubium">
   <AUTHOR name="Young" year="1982"/>
   <MEANING>
@@ -5642,11 +5833,13 @@ name="Triceratops"/>, this genus was recently resurrected. </P>
   <REMAINS content="nearly complete skeleton"/>
  </SPECIES>
  <ESSAY>
-<P> <NOMEN name="Dilophosaurus"/> sported a pair of thin crests 
-running from above the nostrils to the back of the head. 
-(At least, <NOMEN name="D. breedorum"/> and <NOMEN name="D. sinensis"/>
-did -- that part of the skull is unknown for <NOMEN name="D. wetherilli"/>.)
-These frills were probably ornamental in nature. </P>
+
+<P> <NOMEN name="Dilophosaurus"/> sported a pair of thin crests running
+from above the nostrils to the back of the head.  (At least, <NOMEN
+name="D. breedorum"/> [which may very well be a junior synonym of <NOMEN
+name="D. wetherilli"/>] and <NOMEN name="D. sinensis"/> did -- that part
+of the skull is unknown for <NOMEN name="D. wetherilli"/> <I>sensu
+stricto</I>.) These frills were probably ornamental in nature. </P>
   
 <P> <NOMEN name="Dilophosaurus"/> was featured in the blockbuster movie
 <U>Jurassic Park</U>. Considerable liberties were taken with the
@@ -5714,24 +5907,6 @@ belong to this genus. </P>
   The name <NOMEN name="Dinosaurus" nolink="1"/> was first given to
   a species of <NOMEN name="Rhopalodon"/>.
  </P></ESSAY>
-</GENUS>
-
-<GENUS name="Dinosaurus2" status="unknown">
- <AUTHOR type="first" name="Fischer de Waldheim" year="1847"/>
- <MEANING>
-  terrible lizard
- </MEANING>
- <TIME value="Coniacian"/>
- <TIME value="Santonian"/>
- <PLACE name="India"/>
- <REMAINS content="tail vertebra, fragmentary ribs"/>
- <ESSAY>
-<P> Named for some scrappy remains, but the name <NOMEN
-name="Dinosaurus"/> was already given to another <LINK
-content="dinosaur"/> which turned out to be the same thing as <NOMEN
-name="Plateosaurus"/>. (And in fact even then the name had already been
-given to another creature!) </P>
- </ESSAY>
 </GENUS>
 
 <GENUS name="Dinotyrannus">
@@ -5824,7 +5999,7 @@ the back. Other <LINK content="sauropods"/> may have shared this trait.
   </MEANING>
  </SPECIES>
  <ESSAY>
-<P> Similar to <NOMEN name="Dryptosaurus"/>. </P>
+<P> Extremely similar to <NOMEN name="Dryptosaurus"/>. </P>
  </ESSAY>
 </GENUS>
 
@@ -5900,6 +6075,17 @@ the back. Other <LINK content="sauropods"/> may have shared this trait.
  <SPECIES name="aethiopicus">
   <SYNONYM name="Kentrosaurus aethiopicus" status="objective"/>
   <AUTHOR type="referred" name="Nopcsa" year="1916"/>
+ </SPECIES>
+</GENUS>
+
+<GENUS name="Draconyx" type="with">
+ <MEANING>dragon claw</MEANING>
+ <SPECIES name="loureiroi">
+  <AUTHOR name="Mateus, Antunes" year="2001"/>
+  <REMAINS type="holo" content="maxillary teeth, 3 caudal centra, chevron, distal epiphyses of right humerus & femur, epiphyses of tibia & fibula, manual phalanx, 3 manual unguals, various pedal elements"/>
+  <PLACE name="Portugal"/>
+  <TIME section="late" value="Kimmeridgian"/>
+  <TIME section="early" value="Tithonian"/>
  </SPECIES>
 </GENUS>
 
@@ -6509,7 +6695,8 @@ something like a bottle-opener. </P>
 <P> <NOMEN name="Elaphrosaurus"/> remains are not complete, and it was
 originally classified with the <LINK content="ornithomimosaurs"/>, or
 "ostrich mimics". Placement is still uncertain, although most likely it is
-some type of <LINK content="ceratosaur"/>. </P>
+some type of <LINK content="ceratosaur"/>, possibly
+a <LINK content="noasaurid"/>. </P>
  </ESSAY>
 </GENUS>
 
@@ -6548,7 +6735,7 @@ possibly <NOMEN name="C. pergracilis"/>. </P>
  <MASS value="5"/>
  <TIME value="Maastrichtian"/>
  <PLACE name="Romania"/>
- <REMAINS content="fragmentary femora, partial ankles, etc."/>
+ <REMAINS content="fragmentary femora, etc."/>
  <REMAINS content="cranium" q="1"/>
  <SPECIES name="nopcsai" status="dubium">
   <AUTHOR name="Andrews" year="1913"/>
@@ -6559,10 +6746,7 @@ possibly <NOMEN name="C. pergracilis"/>. </P>
  <ESSAY>
 <P> This Transylvanian <LINK content="theropod"/> may be a <LINK
 content="paravian"/> (possibly even a <LINK content="neornithean"/>) or a
-<LINK content="troodontid"/>. The ankles might belong to one or two
-different, but similar, animals (<NOMEN name="Bradycneme draculae"/> and
-<NOMEN name="Heptasteornis andrewsi"/>, here tentatively considered junior synonyms of
-<NOMEN name="Elopteryx nopcsai"/>). </P>
+<LINK content="troodontid"/>.</P>
  </ESSAY>
 </GENUS>
 
@@ -6763,7 +6947,7 @@ were ascertained. It is the earliest <LINK content="hadrosaurid"/> known
  <LENGTH value="1"/>
  <TIME section="early" value="Carnian"/>
  <PLACE name="Argentina"/>
- <REMAINS content="nearly complete skeleton (missing end of tail)"/>
+ <REMAINS content="several nearly complete skeletons"/>
  <SPECIES name="lunensis">
   <AUTHOR name="Sereno, Forster, Rogers, Monetta" year="1993"/>
   <MEANING>from <LOW>the Valley of</LOW> the Moon</MEANING>
@@ -6786,6 +6970,25 @@ be a true dinosaur). </P>
  <SPECIES name="yangi">
   <AUTHOR name="Ji Q., Ji S." year="1997"/>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Eotyrannus" type="with">
+ <MEANING>dawn tyrant</MEANING>
+ <PLACE name="England"/>
+ <TIME value="Barremian"/>
+ <LENGTH value="4.5"/>
+ <SPECIES name="lengi">
+  <AUTHOR name="Hutt, Naish, Martill, Barker, Newbery" year="2001"/>
+  <MEANING><LOW>Gavin</LOW> Leng's <LOW>(the discoverer)</LOW></MEANING>
+  <REMAINS content="partial skeleton" age="subadult"/>
+ </SPECIES>
+ <ESSAY>
+<P>This <LINK content="theropod"/> may be an early member of
+<LINK content="Tyrannosauroidea"/>, a precursor to the "tyrants" of later
+times. It hails from the Wessex formation of the Isle of Wight.
+Unlike the later <LINK content="Tyrannosauridae"/>, it retained three
+fingers.</P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Epachthosaurus" type="with">
@@ -6873,11 +7076,31 @@ be a true dinosaur). </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Eshanosaurus" type="with">
+ <MEANING>Eshan <LOW>County</LOW> lizard</MEANING>
+ <TIME value="Hettangian"/>
+ <PLACE name="China"/>
+ <SPECIES name="deguchiianus">
+  <AUTHOR name="Xu, Zhao, Clark" year="2001"/>
+  <MEANING><LOW>Hikaru</LOW> Deguchi's</MEANING>
+  <REMAINS type="holo" content="mandible"/>
+ </SPECIES>
+ <ESSAY>
+<P>Although originally classified as a <LINK content="therizinosaur"/>,
+there are (as yet unpublished) speculations that this species might be a
+<LINK content="sauropodomorph"/> instead. If a <LINK
+content="therizinosaur"/>, it would be the earliest one known, indeed, the
+earliest <LINK content="coelurosaur"/> known, and would push back the
+hypothesized origin of that group by a great amount of time.</P>
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Euacanthus" type="with">
  <MEANING>
   good spine
  </MEANING>
  <SPECIES name="vectianus" status="nudum">
+  <MEANING>of the Isle of Wight</MEANING>
   <AUTHOR name="Owen"/>
   <AUTHOR name="Tennyson" year="1987"/>
   <SYNONYM name="Polacanthus foxii"/>
@@ -6986,9 +7209,8 @@ be a true dinosaur). </P>
  <MEANING>
   well-armored head
  </MEANING>
- <LENGTH value="7"/>
- <MASS value="1800"/>
- <MASS value="3000"/>
+ <LENGTH value="5.8"/>
+ <MASS value="2000"/>
  <TIME value="Campanian"/>
  <TIME value="Maastrichtian"/>
  <PLACE name="Montana, Alberta"/>
@@ -7122,6 +7344,29 @@ be a true dinosaur). </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Explorornis" type="with">
+ <MEANING>discovered bird</MEANING>
+ <PLACE name="Uzbekistan"/>
+ <TIME value="Coniacian"/>
+ <SPECIES name="nessovi">
+  <MEANING>Nessov's</MEANING>
+  <AUTHOR name="Panteleev" year="1998"/>
+  <REMAINS content="distally incomplete coracoid (glenoid surface to nearest edge of supracoracoid foramen- 3.5 mm)" type="holo" museum="PO" id="4819"/>
+ </SPECIES>
+ <SPECIES name="walkeri" q="1">
+  <MEANING>Walker's</MEANING>
+  <REMAINS type="holo" museum="PO" id="4825" content="proximal coracoid (glenoid surface to nearest edge of supracoracoid foramen- 6.5 mm)"/>  
+  <AUTHOR name="Nessov, Panteleev" year="1993"/>
+  <AUTHOR type="vide" name="Panteleev" year="1998"/>
+ </SPECIES>
+ <SPECIES name="sp." q="1">
+  <REMAINS museum="PO" id="4818" content="incomplete coracoid (glenoid surface to nearest edge of supracoracoid foramen- 2.3 mm)"/>
+ </SPECIES>
+ <SPECIES name="sp2." q="1">
+  <REMAINS museum="PO" id="4817" content="proximal coracoid (glenoid surface to nearest edge of dorsal fossa- ~5.3 mm)"/>
+ </SPECIES>
+</GENUS>
+
 <GENUS name="Fabrosaurus" type="with">
  <MEANING>
   <LOW>Jean</LOW> Fabre's lizard
@@ -7163,6 +7408,28 @@ family named after it, Fabrosauridae, has been proposed to include it,
    from <LOW>the</LOW> Ischigualasto <LOW>Group</LOW>
   </MEANING>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Fukuiraptor" type="with">
+ <MEANING>Fukui <LOW>Prefecture</LOW> plunderer</MEANING>
+ <SPECIES name="kitadaniensis">
+  <MEANING>from <LOW>the</LOW> Kitadani <LOW>Formation</LOW></MEANING>
+  <AUTHOR name="Azuma, Currie" year="2000"/>
+ </SPECIES>
+ <TIME value="Albian"/>
+ <PLACE name="Japan"/>
+ <LENGTH value="4.2" age="subadult"/>
+ <REMAINS age="subadult" content="elements of skull, vertebral column, and fore- and hindlimbs"/>
+ <ESSAY>
+<P>Originally thought to be a <LINK content="deinonychosaur"/>, this animal,
+originally called <NOMEN name="Kitadanisaurus"/>, is instead
+a basal <LINK content="carnosaur"/>. The large manual unguals were confused
+for the signature "switchblade" second pedal ungual of 
+<LINK content="Deinonychosauria"/>. The interdental plates were also
+thought to be a deinonychosaurian trait.</P>
+<P>A close relationship has been proposed with the Australian
+<NOMEN name="Allosaurus sp."/>.</P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Fukuisaurus" status="nudum">
@@ -7348,9 +7615,10 @@ May be the same as <NOMEN name="Mymoorapelta"/>.
    short-footed
   </MEANING>
  </SPECIES>
- <ESSAY>
-<P> <NOMEN name="Garudimimus"/> is easily distinguishable from other <LINK
-content="ornithomimoids"/> by the small crest in front of its eyes. </P>
+ <ESSAY> <P> <NOMEN name="Garudimimus"/> is easily distinguishable from
+other <LINK content="ornithomimoids"/> by the small crest in front of its
+eyes. May be the same as <NOMEN name="Archaeornithomimus"/> (for which no
+skull material is known).</P>
  </ESSAY>
 </GENUS>
 
@@ -7590,6 +7858,18 @@ itself -- <LINK content="titanosaurs"/>, largest land animals of all time.</P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Ginnareemimus" status="nudum">
+ <AUTHOR name="Kaneko" year="2000"/>
+ <TIME value="Valanginian" q="1"/>
+ <TIME value="Hauterivian" q="1"/>
+ <PLACE name="Thailand"/>
+ <REMAINS content="metatarsal III (pinched), vertebrae, etc."/>
+ <ESSAY>
+<P>Hails from the Sao Khua Formation. May be an <LINK content="ornithomimosaur"/>.</P>
+<P>The spelling will be changed for the final description.</P>
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Giraffatitan">
  <AUTHOR name="Paul" year="1988"/>
  <AUTHOR type="referred" name="Olshevsky" year="1991"/>
@@ -7624,7 +7904,9 @@ itself -- <LINK content="titanosaurs"/>, largest land animals of all time.</P>
  <SPECIES name="mimus">
   <MEANING>mimicking</MEANING>
   <AUTHOR name="Ford" year="2000"/>
+  <REMAINS content="armor"/>
  </SPECIES>
+ <PLACE name="New Mexico"/>
 </GENUS>
 
 <GENUS name="Gnathosaurus" type="with">
@@ -7718,10 +8000,6 @@ thought to be <LINK content="crocodilian"/>. </P>
  <SPECIES name="shibeiensis">
   <AUTHOR name="He, Wang, Liu S., Zhou, Liu T., Cai, Dai" year="1998"/>
  </SPECIES>
- <ESSAY>
-<P> Either a huge "<LINK content="prosauropod"/>" or a primitive
-<LINK content="sauropod"/>. </P>
- </ESSAY>
 </GENUS>
 
 <GENUS name="Gorgosaurus" type="with">
@@ -7748,10 +8026,10 @@ thought to be <LINK content="crocodilian"/>. </P>
  </SPECIES>
  <SPECIES name="lancinator">
   <AUTHOR name="Maleev" year="1955"/>
-  <SYNONYM name="Tyrannosaurus bataar"/>
+  <SYNONYM name="Tarbosaurus bataar"/>
  </SPECIES>
  <SPECIES name="novojilovi">
-  <SYNONYM name="Tyrannosaurus bataar" status="q" comment="juvenile"/>
+  <SYNONYM name="Tarbosaurus bataar" status="q" comment="juvenile"/>
   <AUTHOR name="Maleev" year="1955"/>
  </SPECIES>
  <SPECIES name="sternbergi">
@@ -7784,14 +8062,21 @@ probably the same species as <NOMEN name="G. libratus"/>. </P>
  </SPECIES>
 </GENUS>
 
-<GENUS name="Graciliceratops" status="nudum">
- <AUTHOR name="Forster, Sereno" year="1997"/>
+<GENUS name="Graciliceratops" type="with">
+ <SPECIES name="mongoliensis">
+  <MEANING>from Mongolia</MEANING>
+  <AUTHOR name="Sereno" year="2000"/>
+  <REMAINS type="holo" content="partial skeleton"/>
+ </SPECIES>
  <MEANING>
   gracile horned face
  </MEANING>
  <TIME value="Santonian"/>
  <TIME value="Campanian" q="1"/>
- <PLACE name="Asia"/>
+ <PLACE name="Mongolia"/>
+ <ESSAY>
+  <P>The holotype specimen was previously referred to <NOMEN name="Microceratops gobiensis"/>.</P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Gracilisuchus" type="with">
@@ -7963,9 +8248,8 @@ probably the same species as <NOMEN name="G. libratus"/>. </P>
   <MEANING>from Candelária</MEANING>
  </SPECIES>
  <ESSAY>
-  <P>This animal has features similar to basal <LINK content="theropods"/>
-  and basal <LINK content="sauropodomorphs"/>, placing it near the root of
-  <LINK content="Saurischia"/>.</P>
+  <P>This animal was originally placed as a basal <LINK content="saurischian"/>.
+Further work has refined it position to just outside <LINK content="Neotheropoda"/>.</P>
  </ESSAY>
 </GENUS>
 
@@ -8135,6 +8419,17 @@ It may belong to a <LINK content="gryposaurin"/>. </P>
  </ESSAY>
 </GENUS>
 
+<GENUS name="Haopterus" type="with">
+ <MEANING>Hao wing</MEANING>
+ <TIME value="Barremian"/>
+ <PLACE name="China"/>
+ <SPECIES name="gracilis">
+  <AUTHOR name="Wang, Lü" year="2001"/>
+  <MEANING>gracile</MEANING>
+  <REMAINS type="holo" content="well-preserved specimen with nearly complete skull"/>
+ </SPECIES>
+</GENUS>
+
 <GENUS name="Haplocanthosaurus" type="with">
  <MEANING>
   simple spine lizard
@@ -8259,8 +8554,8 @@ may be an <LINK content="ankylosaur"/>. </P>
  </MEANING>
  <SPECIES name="andrewsi">
   <AUTHOR name="Harrison, C. A. Walker" year="1975"/>
-  <SYNONYM name="Elopteryx nopcsai" status="q"/>
   <MEANING>Andrews'</MEANING>
+  <REMAINS content="partial ankle"/>
  </SPECIES>
 </GENUS>
 
@@ -8314,6 +8609,16 @@ may be an <LINK content="ankylosaur"/>. </P>
   <SYNONYM name="Parahesperornis gracilis" status="objective"/>
  </SPECIES>
  <SPECIES name="rossica">
+ </SPECIES>
+</GENUS>
+
+<GENUS name="Hesperosaurus" type="with">
+ <MEANING>western lizard</MEANING>
+ <PLACE name="Wyoming"/>
+ <TIME value="Kimmeridgian"/>
+ <TIME value="Tithonian"/>
+ <SPECIES name="mjosi">
+  <AUTHOR name="Carpenter, Miles, Cloward" year="2001"/>
  </SPECIES>
 </GENUS>
 
@@ -8472,13 +8777,10 @@ may be an <LINK content="ankylosaur"/>. </P>
  <MEANING>
   young bird ankle
  </MEANING>
- <REMAINS content="partial foot (juvenile)"/>
  <SPECIES name="skirtopodus" status="dubium">
   <AUTHOR name="Seeley" year="1894"/>
+  <SYNONYM name="Massospondylus carinatus" status="q"/>
  </SPECIES>
- <ESSAY>
-<P> May be a juvenile of <NOMEN name="Massospondylus carinatus"/>. </P>
- </ESSAY>
 </GENUS>
 
 <GENUS name="Huabeisaurus" type="with">
@@ -8760,7 +9062,8 @@ attributed to this <LINK content="sauropod"/>. </P>
  </SPECIES>
 </GENUS>
 
-<GENUS name="Iguanodon" type="with">
+<GENUS name="Iguanodon">
+ <AUTHOR name="Mantell" year="1825"/>
  <MEANING>
   <NOMEN nolink="1" name="Iguana"/> tooth
  </MEANING>
@@ -8768,7 +9071,16 @@ attributed to this <LINK content="sauropod"/>. </P>
  <LENGTH value="10"/>
  <MASS value="4500"/>
  <MASS value="5500"/>
- <SPECIES name="anglicum">
+ <SPECIES name="bernissartensis">
+  <AUTHOR name="Boulenger"/>
+  <AUTHOR name="van Beneden" year="1881"/>
+  <TIME value="Barremian"/>
+  <PLACE name="Belgium, England, Germany, Spain, Mongolia?"/>
+  <PLACE name="France, Tunisia" q="1"/>
+  <REMAINS content="dozens of skeletons (some complete), teeth"/>
+  <LENGTH value="11"/>
+ </SPECIES>
+ <SPECIES name="anglicus">
   <AUTHOR name="Holl" year="1829"/>
   <TIME value="Valanginian"/>
   <PLACE name="England"/>
@@ -8782,15 +9094,6 @@ attributed to this <LINK content="sauropod"/>. </P>
   <TIME value="Barremian"/>
   <PLACE name="Belgium, England, Germany, Spain"/>
   <REMAINS content="3 complete skeletons, partial skeletons, teeth, postcrania (juvenile to adult)"/>
- </SPECIES>
- <SPECIES name="bernissartensis">
-  <AUTHOR name="Boulenger"/>
-  <AUTHOR name="van Beneden" year="1881"/>
-  <TIME value="Barremian"/>
-  <PLACE name="Belgium, England, Germany, Spain, Mongolia?"/>
-  <PLACE name="France, Tunisia" q="1"/>
-  <REMAINS content="dozens of skeletons (some complete), teeth"/>
-  <LENGTH value="11"/>
  </SPECIES>
  <SPECIES name="dawsoni">
   <AUTHOR name="Lydekker" year="1888"/>
@@ -8845,7 +9148,7 @@ attributed to this <LINK content="sauropod"/>. </P>
  </SPECIES>
  <SPECIES name="mantelli">
   <AUTHOR name="von Meyer" year="1832"/>
-  <SYNONYM name="anglicum"/>
+  <SYNONYM name="anglicus"/>
   <MEANING>
    <LOW>Gideon</LOW> Mantell's
   </MEANING>
@@ -8891,8 +9194,8 @@ attributed to this <LINK content="sauropod"/>. </P>
   <AUTHOR name="Hulke" year="1882"/>
   <SYNONYM name="bernissartensis"/>
  </SPECIES>
- <SPECIES name="sp.">
- <TIME value="LJ"/>
+ <SPECIES name="sp." q="1">
+  <TIME value="LJ"/>
   <PLACE name="U.S.A."/>
  </SPECIES>
  <SPECIES name="suessi" status="dubium">
@@ -8919,10 +9222,12 @@ than its forelimbs. Nowadays it, like other large
 that is, primarily quadrupedal, but capable of moving on two legs as well. </P>
   
 <P> <NOMEN name="Iguanodon"/> as shown here may be a paraphyletic genus, with
-some species, such as <NOMEN name="I. bernissartensis"/>, closer to
-<LINK content="hadrosauroids"/>. As with most old genera, there is some
-taxonomic sorting to be done. The type species (<NOMEN name="I. anglicum"/>)
-is based on very poor material. </P>
+some species closer to
+<LINK content="hadrosauroids"/> than others. As with most old genera, there is some
+taxonomic sorting to be done. The original type species (<NOMEN name="I. anglicus"/>)
+is based on very poor material, and thus the type was recently
+changed to the better-known <NOMEN name="I. bernissartensis"/>
+by the ICZN.</P>
 
 <P> <NOMEN name="I. hollingtonensis"/> and <NOMEN name="I. atherfieldensis"/>
 were rather gracile and long-spined, while <NOMEN name="I. dawsoni"/> and
@@ -8961,13 +9266,29 @@ Both may have been very early <LINK content="tyrannosauroids"/>. </P>
  </ESSAY>
 </GENUS>
 
-<GENUS name="Ilokelesia" status="nudum" type="none">
- <AUTHOR name="Coria, Calvo"/>
- <AUTHOR type="vide" name="Coria" year="1999"/>
- <SPECIES name="aguadagrandensis" status="unpublished">
+<GENUS name="Ilokelesia" type="with">
+ <SPECIES name="aguadagrandensis">
+  <AUTHOR name="Coria, Salgado" year="2000"/>
  </SPECIES>
  <PLACE name="Argentina"/>
  <TIME value="Cenomanian" q="1"/>
+</GENUS>
+
+<GENUS name="Incolornis" type="with">
+ <MEANING>inhabitant bird</MEANING>
+ <TIME value="Coniacian"/>
+ <PLACE name="Uzbekistan"/>
+ <SPECIES name="silvae">
+  <MEANING>of the forest</MEANING>
+  <AUTHOR name="Panteleev" year="1998"/>
+  <REMAINS type="holo" museum="PO" id="4604" content="proximal coracoid (glenoid surface to nearest edge of supracoracoid foramen- 2.6 mm)"/>
+ </SPECIES>
+ <SPECIES name="martini">
+  <MEANING>Martin's</MEANING>
+  <AUTHOR name="Panteleev" year="1998"/>
+  <REMAINS type="holo" museum="PO" id="4609" content="proximal fragment of coracoid"/>
+ </SPECIES>
+ <ESSAY><P>These two species may be the same.</P></ESSAY>
 </GENUS>
 
 <GENUS name="Indosaurus" type="with">
@@ -8979,7 +9300,7 @@ Both may have been very early <LINK content="tyrannosauroids"/>. </P>
  <PLACE name="India"/>
  <REMAINS content="partial skull, fragmentary postcranium"/>
  <SPECIES name="matleyi">
-  <AUTHOR name="von Huene, Matley" year="1933"/>
+  <AUTHOR name="von Huene, Matley" year="1932"/>
  </SPECIES>
  <ESSAY>
 <P> May have had two horns on its head. Had a thick braincase. </P>
@@ -8995,7 +9316,7 @@ Both may have been very early <LINK content="tyrannosauroids"/>. </P>
  <TIME value="Maastrichtian"/>
  <PLACE name="India"/>
  <SPECIES name="raptorius">
-  <AUTHOR name="von Huene, Matley" year="1933"/>
+  <AUTHOR name="von Huene, Matley" year="1923"/>
   <REMAINS content="fragmentary skull, postcranial fragments"/>
   <MEANING>thievish</MEANING>
  </SPECIES>
@@ -9009,6 +9330,7 @@ Both may have been very early <LINK content="tyrannosauroids"/>. </P>
  <MEANING>
   Ingeni<LOW>-Khobur (in the Gobi Desert) one</LOW>
  </MEANING>
+ <LENGTH value="1.5"/>
  <LENGTH value="1.8"/>
  <MASS value="6" q="1"/>
  <TIME section="middle" value="Campanian"/>
@@ -9112,6 +9434,17 @@ initial publication. </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Istiodactylus">
+ <MEANING>sail finger</MEANING>
+ <AUTHOR name="Howse, Milner, Martill" year="2001"/>
+ <SPECIES name="latidens" original="Ornithodesmus">
+  <AUTHOR name="Hooley" year="1913"/>
+ </SPECIES>
+ <LENGTH value="5"/>
+ <PLACE name="England"/>
+ <TIME value="Aptian"/>
+</GENUS>
+
 <GENUS name="Itemirus" type="with">
  <MEANING>
   Itemir <LOW>(in the Kyzyl Kum Desert) one</LOW>
@@ -9212,6 +9545,16 @@ to it may be <LINK content="diplodocimorphan"/>. </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Jeholosaurus" type="with">
+ <MEANING>Jehol <LOW>Group</LOW> <LINK content="saurian"/></MEANING>
+ <SPECIES name="shangyuanensis">
+  <AUTHOR name="Xu, Wang, You" year="2000"/>
+  <MEANING>from Shangyuan</MEANING>
+  <REMAINS type="holo" content="nearly compete skull (dorsally compressed)"/>
+  <REMAINS content="skull (laterally compressed), some skeletal elements"/>
+ </SPECIES>
+</GENUS>
+
 <GENUS name="Jenghizkhan">
  <AUTHOR name="Olshevsky"/>
  <AUTHOR type="vide" name="Olshevsky, Ford, Yamamoto" year="1995"/>
@@ -9219,7 +9562,7 @@ to it may be <LINK content="diplodocimorphan"/>. </P>
   Genghis Khan's <LOW>one</LOW>
  </MEANING>
  <SPECIES name="bataar">
-  <SYNONYM name="Tyrannosaurus bataar" status="objective"/>
+  <SYNONYM name="Tarbosaurus bataar" status="objective"/>
  </SPECIES>
  <SPECIES name="luanchuanensis">
   <SYNONYM name="Tyrannosaurus luanchuanensis" status="objective"/>
@@ -9270,11 +9613,22 @@ to it may be <LINK content="diplodocimorphan"/>. </P>
  </ESSAY>
 </GENUS>
 
+<GENUS name="Jinzhousaurus" type="with">
+ <MEANING>Jinzhou lizard</MEANING>
+ <SPECIES name="yangi">
+  <MEANING>Yang's</MEANING>
+  <AUTHOR name="Wang, Xu" year="2001"/>
+ </SPECIES>
+ <TIME value="Barremian"/>
+ <PLACE name="China"/>
+</GENUS>
+
 <GENUS name="Jobaria" type="with">
  <MEANING>Jobar <LOW>(creature of Tuareg mythology)</LOW></MEANING>
  <LENGTH value="21"/>
  <MASS value="18000"/>
  <REMAINS content="complete specimens of various ages"/>
+ <REMAINS content="pes"/>
  <SPECIES name="tiguidensis">
   <AUTHOR name="Sereno, Beck, Dutheil, Larsson, Lyon, Moussa, Sadler, Sidor, Varricchio, G. P. Wilson, J. A. Wilson" year="1999"/>
  </SPECIES>
@@ -9492,18 +9846,33 @@ down its neck that gave way to spikes on its back and tail. </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Khaan" type="with">
+ <MEANING>lord</MEANING>
+ <SPECIES name="mckennai">
+  <AUTHOR name="Clark, Norell, Barsbold" year="2001"/>
+  <MEANING><LOW>Malcolm</LOW> McKenna's</MEANING>
+  <REMAINS type="holo" content="complete skeleton" museum="IGM" id="100/1127"/>
+  <REMAINS content="nearly complete skeleton (lacking distal half of tail)" museum="IGM" id="100/1002"/>
+  <REMAINS content="nearly complete skeleton" museum="IGM" id="100/973"/>
+ </SPECIES>
+ <LENGTH value="1.2"/>
+ <TIME value="Campanian" q="1"/>
+ <PLACE name="Mongolia"/>
+ <ESSAY>
+<P>The material referred to this species was previously referred to
+<NOMEN name="Ingenia"/>.</P>
+<P> This animal is tied with <NOMEN name="Minmi"/> for the shortest genus name of any
+non-<LINK content="neornithean"/> <LINK content="dinosaur"/>, and it is
+the only monosyllabic genus name for a non-neornithean dinosaur.</P>
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Kitadanisaurus" status="nudum">
  <AUTHOR name="Lambert" year="1990"/>
  <MEANING>
   Kitadani <LOW>Formation</LOW> lizard
  </MEANING>
- <TIME value="Barremian"/>
- <TIME value="Aptian"/>
- <PLACE name="Japan"/>
- <REMAINS content="arm, partial leg, partial jaws, teeth"/>
- <ESSAY>
-  Large for a deinonychosaur.
- </ESSAY>
+ <SYNONYM name="Fukuiraptor"/>
 </GENUS>
 
 <GENUS name="Kizylkumavis" type="with">
@@ -9559,7 +9928,7 @@ down its neck that gave way to spikes on its back and tail. </P>
   Korean lizard
  </MEANING>
  <TIME value="LK"/>
- <PLACE name="Korea"/>
+ <PLACE name="N. Korea"/>
  <REMAINS content="femur"/>
 </GENUS>
 
@@ -9583,15 +9952,17 @@ down its neck that gave way to spikes on its back and tail. </P>
  <LENGTH value="10"/>
  <TIME value="Campanian"/>
  <TIME value="Maastrichtian"/>
- <SPECIES name="navajovius" status="dubiumQ">
+ <SPECIES name="navajovius">
   <AUTHOR name="Brown" year="1910"/>
   <PLACE name="New Mexico, Texas"/>
+  <REMAINS content="skull" synonym="Naashoibitosaurus ostromi"/>
   <REMAINS content="fragmentary skull, postcrania"/>
+  <REMAINS content="partial skull" museum="BYU" id="12950" synonym="Anasazisaurus horneri"/>
   <MEANING>
    Navahos' <LOW>(North American tribe)</LOW>
   </MEANING>
  </SPECIES>
- <SPECIES name="australis">
+ <SPECIES name="australis" q="1">
   <AUTHOR name="Bonaparte" year="1984"/>
   <PLACE name="Argentina"/>
   <MEANING>
@@ -9625,9 +9996,6 @@ down its neck that gave way to spikes on its back and tail. </P>
 <LINK content="hadrosaurid"/> from the Southern Hemisphere. It may not
 belong to the same genus as the poorly known type of
 <NOMEN name="Kritosaurus"/>. </P>
-  
-<P> <NOMEN name="Anasazisaurus"/> and <NOMEN name="Naashoibitosaurus"/>
-may be variants of <NOMEN name="K. navajovius"/>. </P>
  </ESSAY>
 </GENUS>
 
@@ -9711,7 +10079,7 @@ may be variants of <NOMEN name="K. navajovius"/>. </P>
   <SYNONYM name="Dryptosaurus medius" status="objective"/>
  </SPECIES>
  <SPECIES name="meriani">
-  <SYNONYM name="Allosaurus meriani" status="objective"/>
+  <SYNONYM name="Ceratosaurus meriani" status="objective"/>
  </SPECIES>
  <SPECIES name="stechowi" status="dubium">
   <AUTHOR name="Janensch" year="1925"/>
@@ -10197,18 +10565,39 @@ actually the gill rakers of a large <LINK content="fish"/>
  </ESSAY>
 </GENUS>
 
-<GENUS name="Liaoxiornis" type="with">
- <LENGTH value="0.06"/>
- <TIME section="late" value="Barremian"/>
+<GENUS name="Liaoningosaurus" type="with">
+ <MEANING>Liaoning <LOW>Formation</LOW> lizard</MEANING>
+ <SPECIES name="paradoxus">
+  <MEANING>paradoxical</MEANING>
+  <AUTHOR name="Xu, Wang, You" year="2001"/>
+  <REMAINS type="holo" age="juvenile" content="well-preserved specimen"/>
+ </SPECIES>
+ <TIME value="Barremian"/>
  <PLACE name="China"/>
+ <ESSAY>
+<P>This specimen, the only dinosaur known with a bony plate covering
+its abdomen, seems to have both <LINK content="ankylosaurid"/>
+and <LINK content="nodosaurid"/> features. A cladistic analysis has placed
+it in <LINK content="Nodosauridae"/>.</P>
+ </ESSAY>
+</GENUS>
+
+<GENUS name="Liaoxiornis" type="with">
  <SPECIES name="delicatus">
   <AUTHOR name="Hou, Chen" year="1999"/>
   <MEANING>delicate</MEANING>
  </SPECIES>
+ <LENGTH value="0.06"/>
+ <TIME value="Barremian" q="1"/>
+ <PLACE name="China"/>
  <ESSAY>
 <P> This tiny <LINK content="bird"/> is the smallest known adult
 <LINK content="dinosaur"/> from the <LINK content="Mesozoic Era"/>,
 under 2½ inches in length, despite its unusually long pygostyle. </P>
+
+<P>The counterslab of the type specimen was originally published as
+<NOMEN name="Lingyuanornis parvus"/>.</P>
+
  </ESSAY>
 </GENUS>
 
@@ -10243,13 +10632,16 @@ species.
  <LENGTH value="0.7" q="1"/>
  <TIME value="Hauterivian"/>
  <PLACE name="Argentina"/>
- <REMAINS content="vertebrae, etc."/>
+ <REMAINS content="vertebrae, pedal elements, etc."/>
  <SPECIES name="andesi">
   <AUTHOR name="Bonaparte" year="1995"/>
   <MEANING>
    <LOW>from the</LOW> Andes <LOW>Mountains</LOW>
   </MEANING>
  </SPECIES>
+ <ESSAY><P>May have had a hyperextensible second pedal digit, like
+the related <NOMEN name="Noasaurus"/> and the not-so-closely-related
+<LINK content="Deinonychosauria"/>.</P></ESSAY>
 </GENUS>
 
 <GENUS name="Likhoelesaurus" type="with">
@@ -10296,6 +10688,7 @@ May be the same as <NOMEN name="Basutodon ferox"/>.
   <REMAINS content="tooth, vertebrae, partial pelvic girdle"/>
  </SPECIES>
  <SPECIES name="orbitoangulatus" original="Halticosaurus">
+  <PROPERTAXON name="Sphenosuchidae"/>
   <AUTHOR name="von Huene" year="1932"/>
   <PLACE name="Germany"/>
   <REMAINS content="partial skull"/>
@@ -10321,6 +10714,18 @@ May be the same as <NOMEN name="Basutodon ferox"/>.
  </ESSAY>
 </GENUS>
 
+<GENUS name="Limenavis" type="with">
+ <MEANING>Limen bird</MEANING>
+ <SPECIES name="patagonica">
+  <MEANING>Patagonian</MEANING>
+  <TIME value="Campanian"/>
+  <TIME value="Maastrichtian"/>
+  <PLACE name="Argentina"/>
+  <AUTHOR name="Clarke, Chiappe" year="2001"/>
+  <REMAINS museum="PVL" id="4731" content="distal humerus, proximal and distal ulna, proximal radius, proximal and distal carpometacarpus, partial ulnare, radiale, incomplete phalanx II-1" type="holo"/>
+ </SPECIES>
+</GENUS>
+
 <GENUS name="Limnosaurus" type="with">
  <AUTHOR type="first" name="Marsh" year="1872"/>
  <MEANING>
@@ -10333,11 +10738,10 @@ May be the same as <NOMEN name="Basutodon ferox"/>.
 
 <GENUS name="Lingyuanornis" type="with">
  <MEANING>Lingyuan bird</MEANING>
- <TIME value="Barremian" section="middle"/>
- <PLACE name="China"/>
  <SPECIES name="parvus">
   <MEANING>small</MEANING>
-  <AUTHOR year="1999" name="Ji Q., Ji S."/>
+  <SYNONYM name="Liaoxiornis delicatus"/>
+  <AUTHOR year="1999"/>
  </SPECIES>
 </GENUS>
 
@@ -10402,6 +10806,19 @@ May be the same as <NOMEN name="Basutodon ferox"/>.
  <ESSAY><P>About the size of a <LINK content="sparrow"/>.</P></ESSAY>
 </GENUS>
 
+<GENUS name="Longipteryx" type="with">
+ <MEANING>long feathers</MEANING>
+ <SPECIES name="chaoyangensis">
+  <MEANING>from Chaoyang <LOW>County</LOW></MEANING>
+  <AUTHOR name="Zhang, Zhou, Hou, Gu" year="2001"/>
+  <TIME value="EK"/>
+  <PLACE name="China"/>
+ </SPECIES>
+ <ESSAY>
+<P>Hails from the Jiufotang Formation. The bill is rather long.</P>
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Longisquama" type="with">
  <MEANING>
   long scales
@@ -10426,7 +10843,7 @@ May be the same as <NOMEN name="Basutodon ferox"/>.
  <MEANING>
   crested snout
  </MEANING>
- <LENGTH value="15"/>
+ <LENGTH value="15" q="y"/>
  <TIME value="Campanian"/>
  <PLACE name="Alabama, N. Carolina"/>
  <PLACE name="Mississippi" q="1"/>
@@ -10436,8 +10853,11 @@ May be the same as <NOMEN name="Basutodon ferox"/>.
   <AUTHOR name="Langston" year="1960"/>
  </SPECIES>
  <ESSAY>
-<P> Could be a <LINK content="hadrosaurine"/> or a young
-<NOMEN name="Parasaurolophus"/>. Had a small bump in front of its eyes. </P>
+
+<P> Could be a small <LINK content="hadrosaurine"/> or a young <NOMEN
+name="Parasaurolophus"/>. (The length estimate on this page assumes it is
+known from juvenile material.) Had a small bump in front of its eyes. </P>
+
  </ESSAY>
 </GENUS>
 
@@ -10446,6 +10866,22 @@ May be the same as <NOMEN name="Basutodon ferox"/>.
   <AUTHOR name="von Huene" year="1929"/>
   <SYNONYM name="Neuquensaurus australis"/>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Losillasaurus" type="with">
+ <MEANING>Losilla lizard</MEANING>
+ <SPECIES name="giganteus">
+  <MEANING>gigantic</MEANING>
+  <REMAINS age="subadult" type="holo" content="cervical vertebra"/>
+  <REMAINS age="subadult" content="cranial fragment; cervical, dorsal, sacral, and caudal vertebrae; vertebral fragments; humerus; ulna; radius; metacarpal; sternal plates; ilium; ischium; pubis"/>
+  <AUTHOR name="Casanovas, Santafe, Sanz" year="2001"/>
+ </SPECIES>
+ <PLACE name="Spain"/>
+ <TIME value="LJ" q="1"/>
+ <TIME value="EK" q="1"/>
+ <ESSAY>
+<P>Hails from the Collano Formation.</P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Lourinhanosaurus" type="with">
@@ -10929,6 +11365,12 @@ long. </P>
   <AUTHOR name="Zhang, Chen" year="1996"/>
   <SYNONYM name="youngi"/>
  </SPECIES>
+ <SPECIES name="sp.">
+  <TIME section="late" value="Aptian"/>
+  <TIME section="early" value="Albian"/>
+  <PLACE name="Japan"/>
+  <REMAINS content="fragmentary humerus" synonym="Moshisaurus sp."/>
+ </SPECIES>
 </GENUS>
 
 <GENUS name="Mandschurosaurus">
@@ -11028,6 +11470,23 @@ relative of guinea pigs. </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Masiakasaurus" type="with">
+ <MEANING>vicious <LINK content="saurian"/></MEANING>
+ <PLACE name="Madagascar"/>
+ <LENGTH value="2"/>
+ <TIME value="Maastrichtian"/>
+ <SPECIES name="knopfleri">
+  <AUTHOR name="Sampson, Carrano, Forster" year="2001"/>
+  <REMAINS content="specimen" type="holo"/>
+  <MEANING><LOW>Mark</LOW> Knopfler's <LOW>(member of rock band Dire Straits)</LOW></MEANING>
+ </SPECIES>
+ <ESSAY>
+<P>This small predator had strange, forward-pointing teeth, like those of
+some <LINK content="Pterosauria"/>. It may be a <LINK content="noasaurid"/>.</P>
+<P>Hails from the Maevarano Formation.</P>
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Massospondylus" type="with">
  <MEANING>
   large vertebra
@@ -11040,6 +11499,7 @@ relative of guinea pigs. </P>
  <SPECIES name="carinatus">
   <AUTHOR name="Owen" year="1854"/>
   <REMAINS content="over 80 partial skeletons (juvenile to adult), 4 skulls, isolated elements, gastroliths, etc."/>
+  <REMAINS content="partial foot" age="juvenile" synonym="Hortalotarsus skirtopodus"/>
   <REMAINS content="eggs" q="1"/>
  </SPECIES>
  <SPECIES name="browni" status="dubium">
@@ -11135,7 +11595,7 @@ to <NOMEN name="Massospondylus carinatus"/>. </P>
  </SPECIES>
  <SPECIES name="andrewsi">
   <AUTHOR name="von Huene" year="1932"/>
-  <PROPERTAXON name="Tetanurae" incertae="1"/>
+  <PROPERTAXON name="Neotheropoda" incertae="1"/>
   <MEANING>Andrews'</MEANING>
  </SPECIES>
  <SPECIES name="aquilunguis">
@@ -11230,7 +11690,7 @@ to <NOMEN name="Massospondylus carinatus"/>. </P>
   <SYNONYM name="Indosaurus matleyi" status="objective"/>
  </SPECIES>
  <SPECIES name="meriani">
-  <SYNONYM name="Allosaurus meriani" status="objective"/>
+  <SYNONYM name="Ceratosaurus meriani" status="objective"/>
  </SPECIES>
  <SPECIES name="nasicornis">
   <SYNONYM name="Ceratosaurus nasicornis" status="objective"/>
@@ -11460,25 +11920,22 @@ More material must be found to verify or falsify this.</P>
  <MEANING>
   small horned face
  </MEANING>
- <LENGTH value="0.6"/>
+ <LENGTH value="0.6" age="juvenile"/>
  <TIME value="Campanian"/>
  <TIME value="Maastrichtian"/>
  <PLACE name="China, Mongolia"/>
- <REMAINS content="partial skull, skeleton"/>
- <SPECIES name="gobiensis">
+ <SPECIES name="gobiensis" status="dubiumQ">
+  <REMAINS content="partial skull, skeleton" type="holo" age="juvenile"/>
   <AUTHOR name="Bohlin" year="1953"/>
   <MEANING>
    from <LOW>the</LOW> Gobi <LOW>Desert</LOW>
   </MEANING>
  </SPECIES>
- <SPECIES name="sulcidens">
+ <SPECIES name="sulcidens" status="dubium" q="1">
+  <REMAINS content="teeth"/>
   <AUTHOR name="Bohlin" year="1953"/>
   <SYNONYM name="gobiensis"/>
  </SPECIES>
- <ESSAY>
-<P> Tiny and bipedal.
-</P>
- </ESSAY>
 </GENUS>
 
 <GENUS name="Microcoelus" type="with">
@@ -11502,7 +11959,6 @@ More material must be found to verify or falsify this.</P>
  <MEANING>
   small-toothed lizard
  </MEANING>
- <TIME value="LK"/>
  <PLACE name="China"/>
  <SPECIES name="dayensis" status="nudum">
   <AUTHOR name="Zhao" year="1985"/>
@@ -11545,6 +12001,68 @@ More material must be found to verify or falsify this.</P>
  </ESSAY>
 </GENUS>
 
+<GENUS name="Microraptor" type="with">
+ <MEANING>small plunderer</MEANING>
+ <SPECIES name="zhaoianus">
+  <MEANING>Zhao <LOW>Xijin</LOW>'s</MEANING>
+  <AUTHOR name="Xu, Zhou, Wang" year="2000"/>
+  <REMAINS type="holo" content="articulated skeleton missing middle portion, with patches of preserved integument"/>
+  <PLACE name="China"/>
+  <LENGTH value="0.4"/>
+  <LENGTH value="0.5"/>
+  <TIME value="Barremian" section="middle"/>
+ </SPECIES>
+ <ESSAY>
+
+<P header='The "Tiny Raptor"'>Possibly the smallest non-<LINK
+content="avian"> <LINK content="dinosaur"/>, assuming (as the authors do)
+that is is fully grown.</P>
+
+<P header="Placement">The counterslab to the hindquarters of this specimen
+was already published as half of the chimerical <NOMEN 
+name="Archaeoraptor liaoningensis"/>. The front half of that specimen is
+actually an <LINK content="avialan"/>.</P>
+
+<P>Although the authors classified this species as a <LINK
+content="dromaeosaurid"/>, it has troodontid features (arctometatarsalian
+pes, "waisted" teeth, maxilla bordering naris, closely packed dentary
+teeth) and avialan features (<NOMEN name="Rahonavis"/>-like ischium, avian
+features of the teeth, maxilla bordering naris) as well. Some features
+(rod-like extensions of prezygaopohyses which stiffen the tail, large
+second pedal ungual) are dromaeosaurid-like. Hopefully this species can
+shed light on how the three groups are related to each other.</P>
+
+<P>Wherever this species belongs, it does not appear to be <LINK
+content="avian"/>, and thus dispels notions that dinosaurs were too big to
+be bird ancestors. (This species is smaller than <NOMEN
+name="Archaeopteryx"/>, the most primitive bird known.)</P>
+
+<P header="Small AND Fuzzy">Feathers or (feather-like integument with a
+rachis, or vane) similar to those of <NOMEN name="Beipiaosaurus"/> and
+<NOMEN name="Sinornithosaurus"/> are preserved. They are found near the
+femur, tibia, and ischium.</P>
+
+<P header="A Climber?"> Some features of this species have been
+interpreted as indicating a scansorial lifestyle. These include distally
+placed metatarsal and pedal digit I. </P>
+
+<P header="Transitional Teeth"> <NOMEN name="Microraptor"/> has heterodont
+teeth, the anterior ones being more recurved and laterally compressed and
+lacking serrations. They are more bird-like than the posterior teeth, and
+thus may indicate that avian dental traits began in the front and spread
+to the back over the course of evolution. </P>
+
+<P header="Trouble with the Name"> Technically, by ICZN rules, this animal
+should be referred to as <NOMEN name="Archaeoraptor liaoningensis"/>.
+However, there will be a petition to reject that name and conserve the
+name <NOMEN name="Microraptor zhaoianus"/>. In the hope that this petition
+goes through, I am using the name <NOMEN name="Microraptor"/> despite ICZN
+rules. See the entry on <NOMEN name="Archaeoraptor"/> for more on this
+nomenclatural debacle.</P>
+
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Microsaurops">
  <AUTHOR name="Kuhn" year="1963"/>
  <SYNONYM name="Microcoelus"/>
@@ -11557,8 +12075,8 @@ More material must be found to verify or falsify this.</P>
  <MEANING>
   small hunter
  </MEANING>
- <LENGTH age="juvenile" value="1.2"/>
- <MASS age="juvenile" value="3" q="1"/>
+ <LENGTH age="juvenileQ" value="1.2"/>
+ <MASS age="juvenileQ" value="3" q="1"/>
  <TIME value="Aptian"/>
  <TIME value="Albian"/>
  <SPECIES name="celer">
@@ -11598,17 +12116,17 @@ More material must be found to verify or falsify this.</P>
  <TIME value="Aptian"/>
  <PLACE name="Australia"/>
  <REMAINS content="nearly complete skeleton, fragmentary postcranium"/>
- <SPECIES name="paravertebrata">
+ <SPECIES name="paravertebra">
   <AUTHOR name="Molnar" year="1980"/>
   <MEANING>
    vertebrate-like(?)
   </MEANING>
  </SPECIES>
  <ESSAY>
-<P> This animal has the shortest genus name of any
-  non-<LINK content="neornithean"/> <LINK content="dinosaur"/>.
+<P> This animal is tied with <NOMEN name="Khaan"/> for the shortest genus name of any
+  non-<LINK content="neornithean"/> <LINK content="dinosaur"/>.</P>
 
-  Once considered an <LINK content="ankylosaurid"/> due to a supposed club at the end of its tail,
+<P>  <NOMEN name="Minmi"/> was once considered an <LINK content="ankylosaurid"/> due to a supposed club at the end of its tail,
   but the club turned out to be an artifact of preservation. Instead, it is
   probably a very primitive <LINK content="ankylosaur"/>.
 </P>
@@ -11869,10 +12387,9 @@ with paedomorphic (juvenile-like) features.
 
 <GENUS name="Moshisaurus" status="nudum">
  <AUTHOR name="Hisa" year="1985"/>
- <TIME section="late" value="Aptian"/>
- <TIME section="early" value="Albian"/>
- <PLACE name="Japan"/>
- <REMAINS content="fragmentary humerus"/>
+ <SPECIES name="sp.">
+  <SYNONYM name="Mamenchisaurus sp."/>
+ </SPECIES>
 </GENUS>
 
 <GENUS name="Mussaurus" type="with">
@@ -11939,20 +12456,13 @@ with paedomorphic (juvenile-like) features.
  <MEANING>
   Naashoibito <LOW>Member</LOW> lizard
  </MEANING>
- <LENGTH value="10"/>
- <TIME section="late" value="Maastrichtian"/>
- <PLACE name="New Mexico"/>
- <REMAINS content="skull"/>
  <SPECIES name="ostromi">
   <AUTHOR name="Hunt, Lucas" year="1993"/>
   <MEANING>
    <LOW>John</LOW> Ostrom's
   </MEANING>
+  <SYNONYM name="Kritosaurus navajovius"/>
  </SPECIES>
- <ESSAY>
-<P> May be a variant of <NOMEN name="Kritosaurus navajovius"/>.
-</P>
- </ESSAY>
 </GENUS>
 
 <GENUS name="Nanantius" type="with">
@@ -12074,9 +12584,17 @@ with paedomorphic (juvenile-like) features.
  </SPECIES>
  <ESSAY><P>
   This species was originally to be named after its discoverer (Whittle),
-  but instead was named after the young boy who won a contest to have
-  it named after himself.
+  but instead was named after a young boy (Justin Hoffman) who won a
+  contest.
  </P></ESSAY>
+</GENUS>
+
+<GENUS name="Neimenggusaurus" status="unpublished">
+ <MEANING>Neimenggu <LOW>(Inner Mongolia)</LOW></MEANING>
+ <TIME value="Campanian" q="1"/>
+ <PLACE name="China"/>
+ <ESSAY><P>Published in Chinese as "Neimenggulong" ("Inner Mongolian
+ dragon"). Hails from the Erlian Basin.</P></ESSAY>
 </GENUS>
 
 <GENUS name="Nemegtosaurus" type="with">
@@ -12228,10 +12746,11 @@ further material is needed to be certain. </P>
 
 <GENUS name="Nigersaurus" type="with">
  <MEANING>Nigerian lizard</MEANING>
- <REMAINS content="specimen" type="holo"/>
  <SPECIES name="taqueti">
   <AUTHOR name="Sereno, Beck, Dutheil, Larsson, Lyon, Moussa, Sadler, Sidor, Varricchio, G. P. Wilson, J. A. Wilson" year="1999"/>
   <MEANING>Taquet's</MEANING>
+  <REMAINS content="specimen" type="holo"/>
+  <REMAINS content="nearly complete specimens"/>
  </SPECIES>
  <LENGTH value="15"/>
  <PLACE name="Niger"/>
@@ -12287,7 +12806,7 @@ further material is needed to be certain. </P>
 <GENUS name="Noasaurus" type="with">
  <MEANING>N<LOW>or</LOW>o<LOW>este (Northwest) </LOW>A<LOW>rgentina</LOW> lizard</MEANING>
  <LENGTH value="1" q="1"/>
- <LENGTH value="3"/>
+ <LENGTH value="3" q="1"/>
  <MASS value="15"/>
  <TIME section="early" value="Maastrichtian"/>
  <PLACE name="Argentina"/>
@@ -12365,13 +12884,14 @@ example of convergent evolution. </P>
 
 <GENUS name="Nomingia" type="with">
  <SPECIES name="gobiensis">
+  <REMAINS museum="GIN" id="100/119" content="3 cervical vertebrae, 10 dorsal vertebrae, 10 fragmentary dorsal ribs, gastralia, sacrum (5 vertebrae), pelvis, femur, tibiae, fibulae, tail (24 vertebrae)"/>
   <AUTHOR name="Barsbold, Osmólska, Watabe, Currie, Tsogtbataar" year="2000"/>
   <MEANING>from <LOW>the</LOW> Gobi <LOW>Desert</LOW></MEANING>
  </SPECIES>
  <PLACE name="Mongolia"/>
  <TIME value="LK" section="latest"/>
  <ESSAY>
-<P>The only non-<LINK content="avian"/> <LINK content="dinosaur"/> known
+<P>The only non-<LINK content="pygostylian"/> <LINK content="dinosaur"/> known
 to have a pygostyle (a fusion of vertebrae at the end of the tail).</P>
  </ESSAY>
 </GENUS>
@@ -12403,6 +12923,29 @@ to have a pygostyle (a fusion of vertebrae at the end of the tail).</P>
    <LOW>Peter</LOW> Wellnhofer's
   </MEANING>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Nothronychus" type="with">
+ <MEANING>slothful claw</MEANING>
+ <SPECIES name="mckinleyi">
+  <AUTHOR name="Kirkland, Wolfe"/>
+  <AUTHOR name="Stanley" type="vide" year="2001"/>
+  <MEANING>McKinley's</MEANING>
+  <REMAINS content="skeleton nearly half complete" museum="MSM" id="P21026"/>
+ </SPECIES>
+ <TIME value="Turonian" section="middle"/>
+ <PLACE name="New Mexico"/>
+ <MASS value="900" q="1"/>
+ <LENGTH value="4.5"/>
+ <LENGTH value="6"/>
+ <ESSAY>
+<P>This is the first <LINK content="therizinosaur"/> to be named which is 
+not from Asia. Its ischium was originally thought to be the squamosal bone
+of <NOMEN name="Zuniceratops christopheri"/>. The name refers to the
+resemblance between therizinosaurs and extinct ground sloths, both of
+which had large manual claws, stood somewhat upright, and probably
+fed on plants.</P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Notoceratops" type="with">
@@ -12479,8 +13022,10 @@ to have a pygostyle (a fusion of vertebrae at the end of the tail).</P>
 
 <GENUS name="Nyasasaurus" status="nudum">
  <MISSPELLED name="Nyasaurus"/>
- <AUTHOR name="Charig" year="1967"/>
- <PROPERTAXON incertae="1"/>
+ <SPECIES name="cromptoni" status="nudum">
+  <AUTHOR name="Charig" year="1967"/>
+  <PLACE name="Tanzania"/>
+ </SPECIES>
 </GENUS>
 
 <GENUS name="Nyctodactylus">
@@ -12710,12 +13255,8 @@ for feeding. </P>
  <MEANING>
   ornate dome
  </MEANING>
- <LENGTH value="3"/>
- <TIME value="Campanian"/>
- <PLACE name="Alberta, Montana"/>
- <REMAINS content="frontoparietal dome"/>
- <SPECIES name="browni" original="Stegoceras">
-  <AUTHOR name="Wall, Galton" year="1979"/>
+ <SPECIES name="browni">
+  <SYNONYM name="Stegoceras browni" status="objective"/>
  </SPECIES>
 </GENUS>
 
@@ -12817,23 +13358,17 @@ Many are probably dubious or in need of reconsideration.</P>
 <GENUS name="Ornithodesmus" type="with">
  <MEANING>bird link</MEANING>
  <PLACE name="England"/>
+ <TIME value="Barremian"/>
  <REMAINS content="6 vertebrae, sacrum, etc."/>
  <SPECIES name="cluniculus" status="dubiumQ">
   <AUTHOR name="Seeley" year="1887"/>
-  <TIME value="Barremian"/>
  </SPECIES>
  <SPECIES name="latidens">
-  <PROPERTAXON name="Pteranodontoidea"/>
-  <LENGTH value="5"/>
-  <TIME value="Aptian"/>
+  <SYNONYM name="Istiodactylus latidens" status="objective"/>
  </SPECIES>
  <ESSAY>
 <P> Once identified as a <LINK content="troodontid"/>, this scrappy specimen
 may instead to belong to some kind of <LINK content="deinonychosaur"/>. </P>
-
-<P> <NOMEN name="Ornithodesmus latidens"/> is not related to
-<NOMEN name="O. cluniculus"/>, but is instead a type of
-<LINK content="pterosaur"/>. </P>
  </ESSAY>
 </GENUS>
 
@@ -13254,6 +13789,7 @@ is too indeterminate to assign confidently to any known
  <TIME value="Aptian"/>
  <PLACE name="Niger"/>
  <REMAINS content="2 skeletons"/>
+ <REMAINS content="hindlimb with pes"/>
  <SPECIES name="nigeriensis">
   <AUTHOR name="Taquet" year="1976"/>
   <MEANING>
@@ -13271,21 +13807,27 @@ and the <LINK content="sauropod"/> <NOMEN name="Rebbachisaurus"/>. </P>
  <MEANING>
   egg raider
  </MEANING>
- <LENGTH value="1.5"/>
- <LENGTH value="2.5"/>
- <MASS value="25"/>
- <MASS value="35"/>
- <TIME value="Campanian"/>
+ <TIME value="Campanian" q="1"/>
  <PLACE name="Mongolia"/>
- <REMAINS content="skeletons (some complete), eggs"/>
  <SPECIES name="philoceratops">
-  <AUTHOR name="Osborn" year="1924"/>
+  <AUTHOR name="Osborn" year="1924" subyear="b"/>
   <MEANING>
    <LINK content="ceratopsian"/>-loving
   </MEANING>
+  <REMAINS content="skeletons (some complete), eggs"/>
+  <LENGTH value="1.8"/>
+  <LENGTH value="2.4"/>
+  <MASS value="25" q="1"/>
+  <MASS value="35"/>
  </SPECIES>
  <SPECIES name="mongoliensis">
-  <SYNONYM name="Rinchenia mongoliensis" status="objective"/>
+  <REMAINS content="skeletons"/>
+  <AUTHOR name="Barsbold" year="1986"/>
+  <LENGTH value="1.8"/>
+  <MASS value="25" q="1"/>
+  <MEANING>
+   from Mongolia
+  </MEANING>
  </SPECIES>
  <SPECIES name="yanshini">
   <AUTHOR type="referred" name="Paul" year="1988"/>
@@ -13339,7 +13881,7 @@ fictional book has turned out to fit the animal better than its actual name.
  <PLACE name="Australia"/>
  <REMAINS museum="UWA" id="82469" content="distal fragment of tibia"/>
  <SPECIES name="subotaii">
-  <AUTHOR year="1998"/>
+  <AUTHOR name="Long, Molnar" year="1998"/>
   <MEANING>
    Subotai's <LOW>(character in <U>Conan the Barbarian</U>)</LOW>
   </MEANING>
@@ -13648,6 +14190,25 @@ Its feathers were rather hair-like. </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Paralititan" type="with">
+ <MEANING>tidal Titan</MEANING>
+ <SPECIES name="stromeri">
+  <MEANING><LOW>Ernst</LOW> Stromer's</MEANING>
+  <AUTHOR name="Smith, Lamanna, Lacovara, Dodson, Smith, Poole, Giegengack, Attia" year="2001"/>
+  <TIME value="Albian"/>
+  <MASS value="70000" q="1"/>
+  <LENGTH value="24" q="1"/>
+  <LENGTH value="30" q="1"/>
+  <TIME section="early" value="Cenomanian"/>
+  <PLACE name="Egypt"/>
+  <REMAINS type="holo" content="partial specimen"/>
+  <REMAINS q="1" museum="IPGH" id="1912VIII64" content="dorsal vertebra"/>
+ </SPECIES>
+ <ESSAY>
+<P>One of the largest land animals, and the largest known African land animal.</P>
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Paranthodon">
  <MISSPELLED name="Paracanthodon"/>
  <AUTHOR name="Nopcsa" year="1929"/>
@@ -13711,6 +14272,8 @@ Its feathers were rather hair-like. </P>
  <TIME value="Campanian"/>
  <TIME value="Maastrichtian"/>
  <REMAINS content="skeletons"/>
+ <REMAINS content="skeleton" age="juvenile"/>
+ <PLACE name="New Mexico"/> <!-- Fruitland Fm. -->
  <SPECIES name="walkeri">
   <AUTHOR name="Parks" year="1922"/>
   <PLACE name="Alberta"/>
@@ -13886,6 +14449,7 @@ pygostyle, it probably did have a pygostyle. </P>
  <REMAINS content="fragmentary femur & sacral vertebra"/>
  <SPECIES name="merocratus" status="dubium">
   <AUTHOR name="Seeley" year="1887"/>
+  <PROPERTAXON name="Diapsida" incertae="1"/>
  </SPECIES>
 </GENUS>
 
@@ -14071,8 +14635,9 @@ to be imprints of muscle fibers. </P>
  <LENGTH value="8"/>
  <MASS value="2500"/>
  <TIME value="Campanian"/>
- <TIME value="Maastrichtian"/>
+ <TIME value="Maastrichtian" section="early"/>
  <PLACE name="New Mexico"/>
+ <PLACE name="Colorado"/> <!-- Williams Fork Fm -->
  <REMAINS content="9 skulls, skeletons (some complete)"/>
  <SPECIES name="sternbergi">
   <AUTHOR name="Osborn" year="1923"/>
@@ -14126,7 +14691,7 @@ Largest Head, formerly held by <NOMEN name="Torosaurus"/>. </P>
  <AUTHOR type="first" name="Krøyer" year="1844"/>
  <MEANING>Phobetor <LOW>(god of fear)</LOW></MEANING>
  <LENGTH value="1.5"/>
- <TIME section="late" value="LK"/>
+ <TIME value="EK"/>
  <PLACE name="Mongolia"/>
  <SPECIES name="parvus">
   <AUTHOR name="Balhurina" year="1986"/>
@@ -14259,6 +14824,20 @@ Largest Head, formerly held by <NOMEN name="Torosaurus"/>. </P>
  <SPECIES name="divesensis" original="Eustreptospondylus">
   <AUTHOR name="C. A. Walker" year="1964"/>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Planicoxa" type="with">
+ <SPECIES name="venenica">
+  <AUTHOR name="DiCroce, Carpenter" year="2001"/>
+  <REMAINS type="holo" content="ilium"/>
+  <REMAINS content="limb & girdle elements, vertebrae"/>
+ </SPECIES>
+ <TIME value="Barremian"/>
+ <PLACE name="Utah"/>
+ <ESSAY>
+<P>All specimens come from "Tony's Bone Bed" in the Cedar Mountain Formation
+of eastern Utah.</P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Plataleorhynchus" type="with">
@@ -14890,6 +15469,19 @@ another theropod with a nasal horn/crest, it is now recognized as a
  <SYNONYM name="Iguanodon" q="1"/>
 </GENUS>
 
+<GENUS name="Proornis" type="with">
+ <SPECIES name="coreae" status="nudum">
+  <TIME value="Barremian" q="1"/>
+  <PLACE name="N. Korea"/>
+  <AUTHOR name="Lim"/>
+  <AUTHOR type="vide" name="Pak, Kim" year="1996"/>
+  <REMAINS type="holo" content="skull, cervical vertebrae, forelimb with feathers"/>
+ </SPECIES>
+ <ESSAY>
+<P>Hails from the Sinoiju Series.</P>
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Prosaurolophus" type="with">
  <MEANING>
   <LOW>one</LOW> before <NOMEN name="Saurolophus"/>
@@ -14935,7 +15527,7 @@ another theropod with a nasal horn/crest, it is now recognized as a
  <MEANING>
   <LOW>one</LOW> before <NOMEN name="Archaeopteryx"/>
  </MEANING>
- <TIME value="Barremian" q="1"/>
+ <TIME value="Barremian" section="middle"/>
  <PLACE name="China"/>
  <REMAINS content="2 specimens, including feather remains"/>
  <SPECIES name="robusta">
@@ -14954,7 +15546,7 @@ it is more primitive. In fact, it may not even be an
 
 <P> <NOMEN name="Protarchaeopteryx"/> was about turkey-sized. Its forelimbs,
 proportionally shorter than those of flying animals, bore long,
-symmetrical feathers. Since all flying birds have symmetrical feathers,
+symmetrical feathers. Since all flying birds have asymmetrical feathers,
 <NOMEN name="Protarchaeopteryx"/> probably could not fly. </P>
  </ESSAY>
 </GENUS>
@@ -14970,8 +15562,7 @@ symmetrical feathers. Since all flying birds have symmetrical feathers,
 </GENUS>
 
 <GENUS name="Protoavis" type="with">
- <MEANING>
-  <LOW>one</LOW> before <LINK content="birds"/> / first bird
+ <MEANING>beginning bird
  </MEANING>
  <MASS value="0.35"/>
  <TIME section="late" value="Carnian"/>
@@ -15057,8 +15648,7 @@ fought. </P>
 </GENUS>
 
 <GENUS name="Protohadros" type="with">
- <MEANING>
-  <LOW>one</LOW> before <LINK content="hadrosaurids"/> / first hadros<LOW>aurid</LOW>
+ <MEANING>beginning <LINK content="hadrosaurid"/>
  </MEANING>
  <TIME value="Cenomanian"/>
  <PLACE name="Texas"/>
@@ -15074,7 +15664,23 @@ fought. </P>
  </ESSAY>
 </GENUS>
 
+<GENUS name="Protopteryx" type="with">
+ <MEANING>beginning feather</MEANING>
+ <SPECIES name="fengningensis">
+  <MEANING>from Fengning <LOW>County</LOW></MEANING>
+  <AUTHOR name="Zhang, Zhou" year="2000"/>
+  <REMAINS museum="IVPP" id="V11665" content="nearly complete skeleton with preserved feathers (including down)" type="holo"/>
+  <REMAINS museum="IVPP" id="V11844" content="partial skeleton with preserved feathers (including down)" type="para"/>
+  <PLACE name="China"/>
+  <TIME value="Barremian" section="middle"/>
+ </SPECIES>
+ <ESSAY>
+  <P>This starling-sized species had long tail feathers which lack barbs and rami toward the base.</P>
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Protorosaurus">
+ <MEANING>beginning lizard</MEANING>
  <AUTHOR name="von Meyer" year="1830"/>
  <PROPERTAXON name="Prolacertiformes"/>
 </GENUS>
@@ -15155,9 +15761,9 @@ fought. </P>
  </SPECIES>
  <SPECIES name="meileyingensis">
   <AUTHOR name="Sereno, Zhao, Zheng, Rao" year="1988"/>
- <TIME section="late" value="Aptian"/>
+  <TIME section="late" value="Aptian"/>
   <PLACE name="China"/>
- <REMAINS content="4 specimens (2 with complete skulls)"/>
+  <REMAINS content="4 specimens (2 with complete skulls)"/>
  </SPECIES>
  <SPECIES name="neimongoliensis">
   <AUTHOR name="D. A. Russell, Zhao" year="1996"/>
@@ -15193,6 +15799,11 @@ fought. </P>
   <MEANING>
    from China
   </MEANING>
+ </SPECIES>
+ <SPECIES name="sp.">
+  <TIME value="EK"/>
+  <PLACE name="Mongolia"/>
+  <REMAINS content="partial skull, articulated skeleton with gastroliths"/>
  </SPECIES>
  <SPECIES name="tingi">
   <AUTHOR name="Young" year="1931"/>
@@ -15559,6 +16170,20 @@ while <NOMEN name="P. sternbergi"/>'s crest was more vertical. </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Quilmesaurus" type="with">
+ <SPECIES name="curriei">
+  <MEANING><LOW>Philip</LOW> Currie's</MEANING>
+  <AUTHOR name="Coria" year="2001"/>
+ </SPECIES>
+ <PLACE name="Argentina"/>
+ <TIME value="Campanian"/>
+ <TIME value="Maastrichtian"/>
+ <REMAINS content="hindlimb material, etc."/>
+ <ESSAY>
+<P>This medium-sized carnivore hails from the Allen Formation.</P>
+ </ESSAY>
+</GENUS>
+
 <GENUS name="Rachitrema">
  <AUTHOR name="Sauvage" year="1882"/>
  <PROPERTAXON name="Ichthyopterygia"/>
@@ -15579,9 +16204,10 @@ while <NOMEN name="P. sternbergi"/>'s crest was more vertical. </P>
  <MEANING>
   cloud/menace bird
  </MEANING>
- <TIME value="LK"/>
+ <TIME value="Maastrichtian"/>
  <PLACE name="Madagascar"/>
- <REMAINS content="vertebrae, scapula, partial pelvis, partial limbs"/>
+ <REMAINS content="vertebrae, scapula, partial pelvis, partial limbs" type="holo"/>
+ <REMAINS content="2 distal humeri"/>
  <SPECIES name="ostromi" original="Rahona">
   <AUTHOR name="Forster, Sampson, Chiappe, Krause" year="1998"/>
   <MEANING>
@@ -15593,7 +16219,14 @@ while <NOMEN name="P. sternbergi"/>'s crest was more vertical. </P>
   <LINK content="dromaeosaurids"/> and <LINK content="birds"/>. It had a "sickle claw",
   like dromaeosaurids, and feathered wings, like birds (feather
   impressions were not preserved, but anchor points are evident along the
-  wing's bones, as in many <LINK content="modern birds"/>).
+  wing's bones, as in many <LINK content="modern birds"/>). It also had a bird-like sacrum.
+</P>
+<P> The fossil was found in two parts, the thorax in hindlimbs in one part,
+and the sacrum, pelvis, hindlimbs, and tail in the other. This led to some suspicion
+that it was a chimera, but given that the halves came out in the same position
+from cladistic analyses that tested them separately, coupled with additional
+anatomic and taphonomic details, it seems quite likely that both
+halves belonged to the same individual.
 </P>
  </ESSAY>
 </GENUS>
@@ -15602,7 +16235,7 @@ while <NOMEN name="P. sternbergi"/>'s crest was more vertical. </P>
  <MEANING>
   raider
  </MEANING>
- <LENGTH value="8" q="1"/>
+ <LENGTH value="7" q="1"/>
  <LENGTH value="9" q="1"/>
  <MASS value="1000" q="1"/>
  <TIME value="Albian"/>
@@ -15619,6 +16252,28 @@ while <NOMEN name="P. sternbergi"/>'s crest was more vertical. </P>
 <P> Has been suggested as an <LINK content="ornitholestid"/>, a <LINK content="carnosaur"/>,
   or an <LINK content="abelisaur"/>.
 </P>
+ </ESSAY>
+</GENUS>
+
+<GENUS name="Rapetosaurus" type="with">
+ <MEANING>Rapeto <LOW>(mischievous giant)</LOW> <LINK content="saurian"/></MEANING>
+ <PLACE name="Madagascar"/>
+ <TIME value="Maastrichtian"/>
+ <SPECIES name="krausei">
+  <AUTHOR name="Rogers, Forster" year="2001"/>
+  <MEANING><LOW>David W.</LOW> Krause's</MEANING>
+  <REMAINS type="holo" museum="UA" id="8698" content="skull with maxillae, nasals, lacrimal, jugal, quadrate, pterygoids, partial basioccipital, paroccipital process, dentary, surangular, angular, & 24 teeth"/>
+  <REMAINS museum="FMNH PR" id="2184-2192, 2194, 2196, 2197, 2210" content="exoccipital, opisthotic, laterosphenoid, supraoccipital, frontals, prefrontals, surangular, parietal, caudal centrum"/>
+  <REMAINS museum="FMNH PR" id="2209" age="juvenile" content="75% complete skeleton"/>
+  <REMAINS museum="UCB" id="92829" content="mid-caudal centrum"/>
+ </SPECIES>
+ <LENGTH age="juvenile" value="8"/>
+ <LENGTH value="15" q="1"/>
+ <ESSAY>
+<P>The type specimen of this genus is the most complete <LINK content="titanosaur"/>
+known. It shows that at least some titanosaurs had low, "horse-like" skulls like
+<LINK content="diplodocimorphs"/> rather than "boxy" skulls like
+<NOMEN name="Camarasaurus"/>.</P>
  </ESSAY>
 </GENUS>
 
@@ -15697,10 +16352,14 @@ referred to it may belong to <NOMEN name="Jobaria"/>. </P>
  <TIME section="late" value="Carnian" q="1"/>
  <TIME value="Norian"/>
  <PLACE name="New Mexico, Arizona"/>
+ <LENGTH value="3" q="1"/>
  <REMAINS content="teeth"/>
- <SPECIES name="callenderi" status="dubiumQ">
+ <SPECIES name="callenderi">
   <AUTHOR name="Hunt" year="1989"/>
  </SPECIES>
+ <ESSAY>
+  <P>One of the largest <LINK content="Ornithischia"/> of its time.</P>
+ <ESSAY>
 </GENUS>
 
 <GENUS name="Rhabdodon" type="with">
@@ -15894,28 +16553,20 @@ referred to it may belong to <NOMEN name="Jobaria"/>. </P>
   <MEANING>
    from Bristol
   </MEANING>
+  <PROPERTAXON name="Parasuchia" q="1"/>
+  <SYNONYM name="Thecodontosaurus antiquus"/>
  </SPECIES>
 </GENUS>
 
 <GENUS name="Rinchenia" status="nudum">
  <AUTHOR name="Barsbold" year="1997"/>
  <MEANING>
-  Rinchen <LOW>'s one</LOW>
+  Rinchen's <LOW>one</LOW>
  </MEANING>
- <TIME value="Campanian"/>
- <PLACE name="Mongolia"/>
- <REMAINS content="skeletons"/>
- <SPECIES name="mongoliensis" original="Oviraptor">
-  <AUTHOR name="Barsbold" year="1986"/>
-  <AUTHOR type="referred" name="Barsbold" year="1997"/>
-  <MEANING>
-   from Mongolia
-  </MEANING>
+ <SPECIES name="mongoliensis">
+  <SYNONYM name="Oviraptor mongoliensis" status="objective"/>
  </SPECIES>
  <ESSAY>
-<P> May belong to <NOMEN name="Oviraptor"/>, as originally assigned. Had a more upright crest
-  than that of <NOMEN name="Oviraptor philoceratops"/>.
-</P>
 <P>This genus is named for the father of its namer. </P>
  </ESSAY>
 </GENUS>
@@ -15963,6 +16614,22 @@ referred to it may belong to <NOMEN name="Jobaria"/>. </P>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Rocasaurus" type="with">
+ <MEANING><LOW>General</LOW> Roca <LOW>city</LOW> lizard</MEANING>
+ <SPECIES name="muniozi">
+  <AUTHOR name="Salgado, Azpilicueta" year="2000"/>
+  <MEANING>Munioz'</MEANING>
+  <REMAINS museum="MPCA-PV" id="46" type="holo"/>
+  <REMAINS content="specimens"/>
+ </SPECIES>
+ <LENGTH value="8"/>
+ <LENGTH value="9"/>
+ <TIME value="Campanian" section="latest" q="y"/>
+ <TIME value="Maastrichtian" section="early"/>
+ <PLACE name="Argentina"/>
+ <ESSAY><P>Hails from the Allen Formation.</P></ESSAY>
+</GENUS>
+
 <GENUS name="Roccosaurus" type="with">
  <MEANING>
   Rocco lizard
@@ -15975,6 +16642,17 @@ referred to it may belong to <NOMEN name="Jobaria"/>. </P>
    <LOW>with</LOW> four sacral <LOW>(hip) vertebrae</LOW>
   </MEANING>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Ruehleia" type="with">
+ <MEANING><LOW>Hugo</LOW> Rüle <LOW>von Lilienstern</LOW>'s <LOW>one</LOW></MEANING>
+ <SPECIES name="bedheimensis">
+  <MEANING>from Bedheim</MEANING>
+  <AUTHOR name="Galton" year="2001"/>
+  <REMAINS museum="MB" id=" (unnumbered)" type="holo" content="cervical vertebrae 4-10, dorsal vertebrae 1-14, partial sacrum, about 20 caudals, right scapulocoracoid, both humeri, right radius and ulna, both manus (incomplete), both pelvic girdles, femora, tibiae and right astragalus"/>
+ </SPECIES>
+ <PLACE name="Germany"/>
+ <TIME value="Norian" section="late"/>
 </GENUS>
 
 <GENUS name="Saichania" type="with">
@@ -16022,6 +16700,17 @@ referred to it may belong to <NOMEN name="Jobaria"/>. </P>
   <AUTHOR name="von Huene" year="1910"/>
   <PROPERTAXON name="Ornithosuchia" incertae="1"/>
  </SPECIES>
+</GENUS>
+
+<GENUS name="Saltriosaurus" status="nudum">
+ <TIME value="Sinemurian" section="middle"/>
+ <PLACE name="Italy"/>
+ <AUTHOR name="Dal Sasso" year="2000"/>
+ <REMAINS content="humerus, phalanges, rib fragments, scapula fragments"/>
+ <ESSAY>
+<P>The earliest known large <LINK content="tetanuran"/>.
+(<NOMEN name="Zupaysaurus"/> is earlier.)</P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Sanchusaurus" status="nudum">
@@ -16201,21 +16890,9 @@ referred to it may belong to <NOMEN name="Jobaria"/>. </P>
  <MEANING>
   lizard-eater master
  </MEANING>
- <LENGTH value="14" q="1"/>
- <TIME value="Kimmeridgian"/>
- <PLACE name="Oklahoma"/>
- <REMAINS content="dorsal neural arch"/>
  <SPECIES name="maximus">
-  <AUTHOR name="Chure" year="1995"/>
-  <MEANING>
-   greatest
-  </MEANING>
+  <SYNONYM name="Allosaurus maximus" status="objective"/>
  </SPECIES>
- <ESSAY>
-<P> This gigantic <LINK content="carnosaur"/> may be a huge, late species of
-  <NOMEN name="Allosaurus"/>.
-</P>
- </ESSAY>
 </GENUS>
 
 <GENUS name="Saurophagus" type="with">
@@ -16248,9 +16925,9 @@ referred to it may belong to <NOMEN name="Jobaria"/>. </P>
 
 <GENUS name="Sauroposeidon" type="with">
  <MEANING>lizard Poseidon <LOW>(Greek god of, among other things, earthquakes)</LOW></MEANING>
- <SPECIES name="proteles" status="nudum">
-  <AUTHOR type="vide" name="Franklin" year="1999"/>
-  <AUTHOR name="Wedel, Cifelli"/>
+ <SPECIES name="proteles">
+  <AUTHOR type="vide" name="Franklin" year="2000"/>
+  <AUTHOR name="Wedel, Cifelli, Sanders"/>
  </SPECIES>
  <PLACE name="Oklahoma"/>
  <TIME value="Albian"/>
@@ -16597,12 +17274,12 @@ name="Diplodocus"/>. </P>
  <TIME value="Campanian" q="1"/>
  <TIME value="Maastrichtian"/>
  <PLACE name="China"/>
- <REMAINS content="partial skeleton"/>
- <SPECIES name="huoyanshanensis">
+ <SPECIES name="huoyanshanensis" status="dubiumQ">
+  <REMAINS content="partial skeleton" age="juvenile" type="holo"/>
   <AUTHOR name="Dong" year="1977"/>
  </SPECIES>
  <ESSAY>
-<P> Was once allied with <LINK content="dromaeosaurids"/>.
+<P>Probably a juvenile <LINK content="Tarbosaurus"/>.
 </P>
  </ESSAY>
 </GENUS>
@@ -16706,9 +17383,15 @@ name="Diplodocus"/>. </P>
 <GENUS name="Shuvosaurus" type="with">
  <SPECIES name="inexpectatus">
   <AUTHOR name="Chatterjee" year="1993"/>
-  <PROPERTAXON name="Rauisuchia"/>
   <MEANING>unexpected</MEANING>
  </SPECIES>
+ <TIME section="late" value="Carnian"/>
+ <PLACE name="Texas"/>
+ <ESSAY>
+<P>Originally placed as an extremely early <LINK content="ornithomimosaur"/>,
+then as a toothless <LINK content="rauisuchian"/>. Now it seems
+to be a toothless <LINK content="coelophysoid"/>.</P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Shuvuuia" type="with">
@@ -16763,6 +17446,12 @@ feather-like structures. </P>
 <P> Proposed as an early <LINK content="tyrannosauroid"/>, but that may not be the
 case. </P>
  </ESSAY>
+</GENUS>
+
+<GENUS name="Sidormimus" status="unpublished">
+ <MEANING><LOW>Chris</LOW> Sidor's mimic</MEANING>
+ <PLACE name="Niger"/>
+ <TIME value="Aptian"/>
 </GENUS>
 
 <GENUS name="Sigilmassasaurus" type="with">
@@ -16881,6 +17570,9 @@ case. </P>
   idea that deinonychosaurs, and perhaps other coelurosaurs, are secondarily
   flightless (like <LINK content="ratite"/> birds), since it has more flight 
   characteristics than more advanced deinonychosaurs.</P>
+
+  <P>A new subadult specimen with well-preserved integumentary structures
+  may belong to this genus, or a new one.</P>
  </ESSAY>
 </GENUS>
 
@@ -17085,12 +17777,13 @@ been debated) did too. </P>
  <TIME value="Albian"/>
  <TIME value="Cenomanian" section="early"/>
  <PLACE name="Egypt, Morocco"/>
- <REMAINS content="fragmentary dentary, vertebrae, hindlimb elements, teeth (destroyed in World War II); neck vertebra, fragmentary dentaries, dorsal neural arch"/>
+ <REMAINS content="teeth"/>
  <SPECIES name="aegyptiacus">
   <AUTHOR name="Stromer" year="1915"/>
   <MEANING>
    Egyptian
   </MEANING>
+  <REMAINS content="fragmentary dentary, vertebrae, hindlimb elements, teeth (destroyed in World War II); neck vertebra, fragmentary dentaries, dorsal neural arch"/>
  </SPECIES>
  <SPECIES name="maroccanus" q="1">
   <AUTHOR name="D. A. Russell" year="1996"/>
@@ -17105,7 +17798,7 @@ been debated) did too. </P>
 fifty feet long. It was possibly the longest <LINK content="theropod"/>,
 but not the biggest, since it was more lightly built than the heavier
 <NOMEN name="Tyrannosaurus"/> and <LINK
-content="carcharodontousaurines"/>.</P>
+content="carcharodontosaurines"/>.</P>
   
   <P>As remarkable as its length was, even more interesting was the huge sail
   along the back, formed by long vertebral spines, up to six feet in height
@@ -17133,7 +17826,7 @@ content="carcharodontousaurines"/>.</P>
  </SPECIES>
  <ESSAY>
   <P> Once thought to be a <LINK content="pseudosuchian"/>, but may be a
-  <LINK content="theropod"/>.</P>
+  <LINK content="theropod"/>, possibly a <LINK content="herrerasaurine"/>.</P>
  </ESSAY>
 </GENUS>
 
@@ -17141,11 +17834,15 @@ content="carcharodontousaurines"/>.</P>
  <MEANING>
   vertebral body
  </MEANING>
- <TIME value="Carnian"/>
- <PLACE name="Brazil"/>
- <REMAINS content="teeth, postcranial elements"/>
+ <TIME value="Ladinian"/>
+ <PLACE name="Brazil"/> <!-- Therapsid Assemblage Zone of Santa Maria Fm. -->
  <SPECIES name="absconditum" status="dubium">
   <AUTHOR name="von Huene" year="1942"/>
+  <PROPERTAXON name="Rauisuchidae"/>
+  <REMAINS type="lecto" museum="GPIT" id="479/30" content="fourth or fifth cervical vertebra, sixth or seventh cervical vertebra, posterior dorsal vertebra, first sacral vertebra, second sacral vertebra"/>
+  <REMAINS content="mid dorsal centrum, third sacral vertebra"/>
+  <REMAINS content="proximal and distal scapula, proximal humerus, proximal pubis, distal femur"/>
+  <REMAINS content="teeth"/>
  </SPECIES>
 </GENUS>
 
@@ -17192,7 +17889,11 @@ content="carcharodontousaurines"/>.</P>
   <SYNONYM type="objective" name="Prenocephale brevis"/>
  </SPECIES>
  <SPECIES name="browni">
-  <SYNONYM name="Ornatotholus browni" status="objective"/>
+  <LENGTH value="3"/>
+  <TIME value="Campanian"/>
+  <PLACE name="Alberta, Montana"/>
+  <REMAINS content="frontoparietal dome"/>
+  <AUTHOR name="Wall, Galton" year="1979"/>
  </SPECIES>
  <SPECIES name="edmontonense">
   <SYNONYM type="objective" name="Prenocephale edmontonensis"/>
@@ -17494,25 +18195,25 @@ Small bony ossicles covered at least the the throat and hips. </P>
  </SPECIES>
  <SPECIES name="grandis" status="dubium">
   <AUTHOR name="Hulke" year="1879"/>
-  <SYNONYM name="Iguanodon anglicum"/>
+  <SYNONYM name="Iguanodon anglicus"/>
   <MEANING>
    grand
   </MEANING>
  </SPECIES>
  <SPECIES name="major" status="dubium">
   <AUTHOR name="Owen" year="1842"/>
-  <SYNONYM name="Iguanodon anglicum"/>
+  <SYNONYM name="Iguanodon anglicus"/>
   <MEANING>
    greater
   </MEANING>
  </SPECIES>
  <SPECIES name="meyeri" status="dubium">
   <AUTHOR name="Owen" year="1854"/>
-  <SYNONYM name="Iguanodon anglicum"/>
+  <SYNONYM name="Iguanodon anglicus"/>
  </SPECIES>
  <SPECIES name="recentior" status="dubium">
   <AUTHOR name="Owen" year="1851"/>
-  <SYNONYM name="Iguanodon anglicum"/>
+  <SYNONYM name="Iguanodon anglicus"/>
  </SPECIES>
  <ESSAY>
 <P> May be a <LINK content="crocodylomorph"/>.
@@ -17569,7 +18270,7 @@ Small bony ossicles covered at least the the throat and hips. </P>
  <PLACE name="Hungary, Spain" q="1"/>
  <REMAINS content="fragmentary skull"/>
  <REMAINS content="postcranial remains" q="1"/>
- <SPECIES name="austriacus" status="dubium">
+ <SPECIES name="austriacus" status="dubiumQ">
   <AUTHOR name="Bunzel" year="1871"/>
   <MEANING>
    Austrian
@@ -17629,15 +18330,8 @@ might be the body of <NOMEN name="Stygimoloch"/>. </P>
  <MEANING>
   <LOW>River</LOW> Styx <LOW>(Hell Creek Formation)</LOW> hunter
  </MEANING>
- <LENGTH value="4"/>
- <LENGTH value="5"/>
- <MASS value="200" q="1"/>
- <MASS value="500" q="1"/>
- <TIME value="Maastrichtian"/>
- <PLACE name="Montana"/>
- <REMAINS content="partial skull"/>
- <SPECIES name="molnari" original="Aublysodon">
-  <AUTHOR name="Paul" year="1988"/>
+ <SPECIES name="molnari">
+  <SYNONYM name="Aublysodon molnari" status="objective"/>
  </SPECIES>
  <SPECIES name="amplus">
   <SYNONYM name="Aublysodon amplus" status="objective"/>
@@ -17645,10 +18339,6 @@ might be the body of <NOMEN name="Stygimoloch"/>. </P>
  <SPECIES name="cristatus">
   <SYNONYM name="Aublysodon cristatus" status="objective"/>
  </SPECIES>
- <ESSAY>
-<P> Formerly known as the "Jordan <LINK content="theropod"/>".
-Could be the same thing as <NOMEN name="Aublysodon"/>. </P>
- </ESSAY>
 </GENUS>
 
 <GENUS name="Styracosaurus" type="with">
@@ -17708,9 +18398,11 @@ was equipped with horns lining the edge of its frill. </P>
  <LENGTH age="subadult" value="11"/>
  <TIME value="Aptian"/>
  <PLACE name="Niger"/>
- <REMAINS content="partial subadult skeleton"/>
  <SPECIES name="tenerensis">
   <AUTHOR name="Sereno, Beck, Dutheil, Gado, Larsson, Lyon, Marcot, Rauhut, Sadleir, Sidor, Varricchio, G. P. Wilson, J. A. Wilson" year="1998"/>
+  <REMAINS content="partial subadult skeleton" type="holo"/>
+  <REMAINS content="nearly complete postcranium, ?skull"/>
+  <REMAINS content="partial skull"/>
  </SPECIES>
  <ESSAY>
   <P>This <LINK content="baryonychine"/> had a two-foot-high sail over its 
@@ -17739,25 +18431,25 @@ was equipped with horns lining the edge of its frill. </P>
   super lizard
  </MEANING>
  <LENGTH value="30"/>
- <LENGTH value="40"/>
- <MASS value="45000"/>
- <MASS value="55000" q="1"/>
+ <MASS value="30000"/>
+ <MASS value="40000"/>
  <TIME value="Kimmeridgian"/>
  <TIME value="Tithonian"/>
  <PLACE name="Colorado"/>
  <REMAINS content="vertebrae, scapulocoracoid, ischium"/>
+ <REMAINS content="partial specimen"/>
  <SPECIES name="vivianae">
   <AUTHOR name="Jensen" year="1985"/>
  </SPECIES>
  <ESSAY>
 <P> One of the hugest land animals of all time. Stood 27 feet (8m) high
-  at the shoulders and had at 40 foot (12m) long neck. </P>
+  at the shoulders and had a 40 foot (12m) long neck. </P>
 
 <P> "Ultrasaurus macintoshi" was to be a name for some giant
 <LINK content="sauropod"/> bones from the Morrison Formation, but before it was
   published the name <NOMEN name="Ultrasaurus"/> was given to a smaller, dubious Korean
   sauropod (which was originally though to be larger because they
-  misidentified a humerus as an ulna). The giant American sauropod's name was
+  misidentified a femur as a humerus). The giant American sauropod's name was
   changed to <NOMEN name="Ultrasauros"/>. More recent analysis indicates that this creature
   is made up of bones from <NOMEN name="Supersaurus vivianae"/>
   and a large <NOMEN name="Brachiosaurus altithorax"/>, so the name <NOMEN name="Ultrasauros"/> is
@@ -17794,6 +18486,7 @@ was equipped with horns lining the edge of its frill. </P>
  </MEANING>
  <LENGTH value="2"/>
  <MASS value="13"/>
+ <REMAINS content="2 pelves"/>
  <SPECIES name="rhodesiensis">
   <AUTHOR name="Raath" year="1969"/>
   <TIME value="Hettangian"/>
@@ -17894,14 +18587,12 @@ genus (provisionally called "Shake-N-Bake theropod").</P>
  <SPECIES name="hoffeti">
   <AUTHOR name="Allian, Taquet, Battail, Dejax, Richir, Veran, Limon-Duparcmeur, Vacant, Mateus, Sayarath, Khenthavong, Phouyavong" year="1999"/>
   <MEANING><LOW>Josué-Heilmann</LOW> Hoffet's</MEANING>
+  <TIME value="Aptian"/>
+  <TIME value="Albian"/>
+  <PLACE name="Laos"/>
+  <REMAINS content="2 partial skeletons"/>
  </SPECIES>
- <TIME value="Aptian"/>
- <TIME value="Albian"/>
- <PLACE name="Laos"/>
- <REMAINS content="2 partial skeletons"/>
- <ESSAY><P>
-  May be the same as <NOMEN name="Titanosaurus falloti"/>.
- </P></ESSAY>
+ <ESSAY><P>May be the same as <NOMEN name="Titanosaurus falloti"/>.</P></ESSAY>
 </GENUS>
 
 <GENUS name="Tanius" type="with">
@@ -17953,7 +18644,7 @@ genus (provisionally called "Shake-N-Bake theropod").</P>
  </SPECIES>
  <SPECIES name="willistoni">
   <AUTHOR name="Cope" year="1887"/>
-  <SYNONYM name="Coelurus longicollis"/>
+  <SYNONYM name="Eucoelophysis colberti"/>
   <REMAINS content="ilium"/>
  </SPECIES>
 </GENUS>
@@ -18019,19 +18710,57 @@ behind its eyes. This may have been for sexual display.
   alarming lizard
  </MEANING>
  <SPECIES name="efremovi">
-  <SYNONYM name="Tyrannosaurus efremovi" status="objective"/>
+  <AUTHOR name="Maleev" year="1955"/>
+  <MEANING>
+   <LOW>I. A.</LOW> Efremov's
+  </MEANING>
+  <LENGTH value="7"/>
+  <LENGTH value="8"/>
+  <MASS value="2000"/>
+  <MASS value="3000"/>
+  <TIME section="early" value="Maastrichtian"/>
+  <PLACE name="Mongolia"/>
+  <REMAINS museum="PEN AN SSR" id="551-3" content="partial skeleton" type="holo"/>
+  <REMAINS content="nearly complete skeleton"/>
  </SPECIES>
- <SPECIES name="bataar">
-  <SYNONYM name="Tyrannosaurus bataar" status="objective"/>
+ <SPECIES name="bataar" original="Tyrannosaurus">
+  <AUTHOR name="Maleev" year="1955"/>
+  <LENGTH value="9"/>
+  <LENGTH value="12"/>
+  <MASS value="4000"/>
+  <MASS value="5000"/>
+  <TIME section="early" value="Maastrichtian"/>
+  <PLACE name="China, Mongolia"/>
+  <MEANING>
+   warrior/hero 
+  </MEANING>
+  <REMAINS museum="PIN" id="551-1" content="skeleton lacking forelimb" type="holo"/>
+  <REMAINS museum="PIN" id="551-2" content="complete skeleton"/>
+  <REMAINS museum="PIN" id="551-3" content="skull"/>
+  <REMAINS museum="PIN" id="551-4" content="partial skeleton"/>
+  <REMAINS museum="PIN" id="551-6" content="partial scapulocoracoid"/>
+  <REMAINS museum="PIN" id="551-91" content="partial snout"/>
+  <REMAINS museum="PIN" id="552-1" content="partial skeleton"/>
+  <REMAINS museum="PIN" id="552-1" content="partial skeleton"/>
+  <REMAINS museum="PIN" id="552-2" content="partial skeleton"/>
+  <REMAINS museum="PIN" id="552-4" content="partial skeleton"/>
+  <REMAINS museum="PIN" id="553-1" content="skull, fragmentary postcranium"/>
+  <REMAINS museum="PIN" id="553-2" content="partial skeleton"/>
+  <REMAINS museum="PIN" id="553-5" content="partial skeleton"/>
+  <REMAINS museum="ZPAL" id="MgD-I/3" content="skeleton" age="juvenile"/>
+  <REMAINS museum="GIM SPS" id="100/59" content="nearly complete skeleton"/>
+  <REMAINS museum="NSM" content="nearly complete skeleton"/>
+  <REMAINS museum="IVPP" id="V836" content="fragmentary scapula"/>
+  <REMAINS q="1" age="juvenile" museum="PIN" id="552-2" content="partial skeleton" synonym="Gorgosaurus novojilovi"/>
  </SPECIES>
- <SPECIES name="lanpingensis">
-  <SYNONYM name="Tyrannosaurus lanpingensis" status="objective"/>
+ <SPECIES name="lanpingensis" status="dubium" original="Tyrannosaurus" q="1">
+  <MISSPELLED name="lanpingi"/>
+  <AUTHOR name="Yeh" year="1975"/>
+  <REMAINS q="1" content="tooth" type="holo"/>
  </SPECIES>
- <SPECIES name="luanchuanensis">
-  <SYNONYM name="Tyrannosaurus luanchuanensis" status="objective"/>
- </SPECIES>
- <SPECIES name="novojilovi">
-  <SYNONYM name="Gorgosaurus novojilovi" status="objective"/>
+ <SPECIES name="luanchuanensis" status="dubium" original="Tyrannosaurus" q="1">
+  <AUTHOR name="Dong" year="1979"/>
+  <REMAINS q="1" museum="NIGP" id="V4733" type="holo" content="tooth"/>
  </SPECIES>
  <SPECIES name="periculosus">
   <SYNONYM name="Albertosaurus periculosus" status="objective"/>
@@ -18039,6 +18768,20 @@ behind its eyes. This may have been for sexual display.
  <SPECIES name="turpanensis">
   <SYNONYM name="Tyrannosaurus turpanensis" status="objective"/>
  </SPECIES>
+ <ESSAY>
+<P>The largest Asian predators known. These species were sometimes
+placed in <NOMEN name="Tyrannosaurus"/>, or sometimes further split up,
+with <NOMEN name="Tarbosaurus bataar"/> in <NOMEN name="Jenghizkhan"/>,
+but it is now most common to place them as shown.</P>
+
+<P>It is possible that <NOMEN name="Tarbosaurus efremovi"/> is
+a subadult <NOMEN name="T. bataar"/>. <NOMEN name="Maleevosaurus novojilovi"/>,
+once thought to be a pygmy <LINK content="tyrannosaurid"/>, may also be
+a young <NOMEN name="T. bataar"/>.</P>
+
+<P>Eggs tentatively assigned to <NOMEN name="Therizinosaurus"/> may belong
+to this genus. </P>
+ </ESSAY>
 </GENUS>
 
 <GENUS name="Tarchia">
@@ -18151,17 +18894,22 @@ behind its eyes. This may have been for sexual display.
   <LINK content="sauropod"/> <NOMEN name="Omeisaurus tianfuensis"/>. The
   girdle and limb elements, on the other hand, resemble
   <NOMEN name="Patagosaurus"/>.</P>
+  <P>Skin impressions from the thoracic and scapular areas show tubercular
+  scales with two patterns.</P>
  </ESSAY>
 </GENUS>
 
-<GENUS name="Teinurosaurus">
+<GENUS name="Teinurosaurus" status="dubium">
  <AUTHOR name="Nopcsa" year="1928"/>
  <AUTHOR type="emended" year="1929"/>
  <MEANING>
   stretched tail lizard
  </MEANING>
- <SPECIES name="sauvagei">
-  <SYNONYM name="Caudocoelus sauvagei" status="objective"/>
+ <SPECIES name="sauvagei" status="dubium" original="Saurornithoides2">
+  <TIME value="Kimmeridgian"/>
+  <PLACE name="France"/>
+  <REMAINS content="tail vertebra (destroyed in World War II)" type="holo"/>
+  <AUTHOR name="Nopcsa" year="1928"/>
  </SPECIES>
 </GENUS>
 
@@ -18330,7 +19078,7 @@ behind its eyes. This may have been for sexual display.
  <PLACE name="Brazil"/>
  <MEANING>big lizard <LOW>(Tupi language)</LOW></MEANING>
  <SPECIES name="barbarenai">
-  <AUTHOR name="Mischlat" year="1999"/>
+  <AUTHOR name="Kischlat" year="1999"/>
   <MEANING><LOW>M. C.</LOW> Barbarena's</MEANING>
  </SPECIES>
  <REMAINS content="right femur & tibia"/>
@@ -18341,8 +19089,8 @@ behind its eyes. This may have been for sexual display.
  <MEANING>
   socket hollow tail
  </MEANING>
- <SPECIES name="daviesi">
-  <SYNONYM name="Thecospondylus daviesi" status="objective"/>
+ <SPECIES name="daviesi" status="dubium">
+  <AUTHOR name="Seeley" year="1888"/>
  </SPECIES>
 </GENUS>
 
@@ -18445,9 +19193,8 @@ behind its eyes. This may have been for sexual display.
  <SPECIES name="horneri" status="dubium">
   <AUTHOR name="Seeley" year="1882"/>
  </SPECIES>
- <SPECIES name="daviesi" status="dubium">
-  <AUTHOR name="Seeley" year="1888"/>
-  <SYNONYM name="Calamospondylus2 foxi"/>
+ <SPECIES name="daviesi">
+  <SYNONYM name="Thecocoelurus daviesi" status="objective"/>
  </SPECIES>
  <ESSAY>
 <P> Originally classified as a small <LINK content="theropod"/>
@@ -18685,19 +19432,6 @@ page="http://www.dinoheart.org/"/></P>
  </ESSAY>
 </GENUS>
 
-<GENUS name="Tianchungosaurus" status="nudum">
- <AUTHOR name="Zhao" year="1983"/>
- <MEANING>
-  Tianchung lizard
- </MEANING>
- <TIME value="J" q="1"/>
- <PLACE name="China"/>
- <ESSAY>
-<P> Might be a misspelling of <NOMEN name="Dianchungosaurus"/>, a <LINK content="heterodontosaurid"/>.
-</P>
- </ESSAY>
-</GENUS>
-
 <GENUS name="Tianzhenosaurus" type="with">
  <MEANING>
   Tianzhen lizard
@@ -18821,7 +19555,7 @@ page="http://www.dinoheart.org/"/></P>
  </SPECIES>
  <SPECIES name="falloti" status="dubium">
   <AUTHOR name="Hoffet" year="1943"/>
-  <PROPERTAXON name="Sauropoda" incertae="1"/>
+  <PROPERTAXON name="Titanosauria" incertae="1"/>
   <PLACE name="Laos"/>
  </SPECIES>
  <SPECIES name="hungaricus">
@@ -18846,7 +19580,7 @@ page="http://www.dinoheart.org/"/></P>
  </SPECIES>
  <SPECIES name="rahioliensis">
   <AUTHOR name="Mathur, Srivatsava" year="1987"/>
-  <PROPERTAXON name="Sauropoda" incertae="1"/>
+  <PROPERTAXON name="Neosauropoda" incertae="1"/>
   <TIME value="Maastrichtian"/>
   <PLACE name="India"/>
  </SPECIES>
@@ -19000,8 +19734,7 @@ title="The Torosaurus Home Page"/> </P>
  <PLACE name="Montana"/>
  <SPECIES name="mirabilis" status="dubium">
   <AUTHOR name="Leidy" year="1856"/>
-  <REMAINS content="dentary, tooth"/>
-  <REMAINS content="maxilla" q="1"/>
+  <REMAINS content="tooth"/>
  </SPECIES>
  <SPECIES name="affinis">
   <SYNONYM name="Claosaurus affinis" status="objective"/>
@@ -19089,9 +19822,10 @@ title="The Torosaurus Home Page"/> </P>
   <SYNONYM name="Thespesius stenopsis" status="objective"/>
  </SPECIES>
  <ESSAY>
-<P> One of the first American <LINK content="dinosaurs"/> to be named. Probably the
-  same thing as another <LINK content="hadrosaurid"/>.
-</P>
+<P> One of the first American <LINK content="dinosaurs"/> to be named.
+Although for decades the name <NOMEN name="Trachodon"/> has been associated with
+the archetypical "duck-bill" dinosaur (now <NOMEN name="Anatotitan"/>), the
+type specimen is in fact a <LINK content="ceratopsian"/> tooth!</P>
  </ESSAY>
 </GENUS>
 
@@ -19268,6 +20002,7 @@ title="The Torosaurus Home Page"/> </P>
  <MASS value="50"/>
  <TIME section="late" value="Campanian"/>
  <PLACE name="Alberta, Montana, Wyoming"/>
+ <PLACE name="Alaska" q="1"/> <!-- teeth; Prince Creek Fm. -->
  <SPECIES name="formosus">
   <AUTHOR name="Leidy" year="1856"/>
   <REMAINS content="teeth, 20 skeletons, eggs with embryos"/>
@@ -19554,6 +20289,7 @@ the same feature. </P>
   <REMAINS museum="SDSM" id="12047" content="partial skeleton" synonym="stanwinstonorum"/>
   <REMAINS museum="MMS" id="51-2004" content="front part of braincase" synonym="stanwinstonorum"/>
   <REMAINS museum="USNM" id="358563" synonym="stanwinstonorum"/>
+  <REMAINS content="partial skull" nickname="Jordan theropod" age="juvenile" synonym="Aublysodon molnari"/>
   <REMAINS q="1" content="partial skeleton" age="subadult" synonym="Albertosaurus megagracilis"/>
   <REMAINS q="1" age="juvenile" museum="CMNH" id="7541" content="complete skull" synonym="Gorgosaurus lancensis"/>
   <REMAINS content="skeleton" age="juvenile" nickname="Tinker"/>
@@ -19562,50 +20298,10 @@ the same feature. </P>
   <SYNONYM name="Aublysodon amplus" status="objective"/>
  </SPECIES>
  <SPECIES name="bataar">
-  <AUTHOR name="Maleev" year="1955"/>
-  <LENGTH value="9"/>
-  <LENGTH value="12"/>
-  <MASS value="4000"/>
-  <MASS value="5000"/>
-  <TIME section="early" value="Maastrichtian"/>
-  <PLACE name="China, Mongolia"/>
-  <MEANING>
-   warrior/hero 
-  </MEANING>
-  <REMAINS museum="PIN" id="551-1" content="skeleton lacking forelimb" type="holo"/>
-  <REMAINS museum="PIN" id="551-2" content="complete skeleton"/>
-  <REMAINS museum="PIN" id="551-3" content="skull"/>
-  <REMAINS museum="PIN" id="551-4" content="partial skeleton"/>
-  <REMAINS museum="PIN" id="551-6" content="partial scapulocoracoid"/>
-  <REMAINS museum="PIN" id="551-91" content="partial snout"/>
-  <REMAINS museum="PIN" id="552-1" content="partial skeleton"/>
-  <REMAINS museum="PIN" id="552-1" content="partial skeleton"/>
-  <REMAINS museum="PIN" id="552-2" content="partial skeleton"/>
-  <REMAINS museum="PIN" id="552-4" content="partial skeleton"/>
-  <REMAINS museum="PIN" id="553-1" content="skull, fragmentary postcranium"/>
-  <REMAINS museum="PIN" id="553-2" content="partial skeleton"/>
-  <REMAINS museum="PIN" id="553-5" content="partial skeleton"/>
-  <REMAINS museum="ZPAL" id="MgD-I/3" content="skeleton" age="juvenile"/>
-  <REMAINS museum="GIM SPS" id="100/59" content="nearly complete skeleton"/>
-  <REMAINS museum="NSM" content="nearly complete skeleton"/>
-  <REMAINS museum="IVPP" id="V836" content="fragmentary scapula"/>
-  <REMAINS q="1" age="juvenile" museum="PIN" id="552-2" content="partial skeleton" synonym="Gorgosaurus novojilovi"/>
-  <REMAINS q="1" museum="NIGP" id="V4733" synonym="luanchuanensis" content="tooth"/>
-  <REMAINS q="1" content="tooth" synonym="lanpingensis"/>
+  <SYNONYM name="Tarbosaurus bataar" status="objective"/>
  </SPECIES>
- <SPECIES name="efremovi" original="Tarbosaurus">
-  <AUTHOR name="Maleev" year="1955"/>
-  <MEANING>
-   <LOW>I. A.</LOW> Efremov's
-  </MEANING>
-  <LENGTH value="7"/>
-  <LENGTH value="8"/>
-  <MASS value="2000"/>
-  <MASS value="3000"/>
-  <TIME section="early" value="Maastrichtian"/>
-  <PLACE name="Mongolia"/>
-  <REMAINS museum="PEN AN SSR" id="551-3" content="partial skeleton" type="holo"/>
-  <REMAINS content="nearly complete skeleton"/>
+ <SPECIES name="efremovi">
+  <SYNONYM name="Tarbosaurus efremovi" status="objective"/>
  </SPECIES>
  <SPECIES name="gigantus" status="nudum">
   <AUTHOR year="1990"/>
@@ -19618,24 +20314,15 @@ the same feature. </P>
  <SPECIES name="lancensis">
   <SYNONYM name="Gorgosaurus lancensis" status="objective"/>
   <AUTHOR name="Gilmore" year="1946"/>
-  <MEANING>
-    from <LOW>the</LOW> Lance <LOW>Formation</LOW>
-  </MEANING>
  </SPECIES>
  <SPECIES name="lancinator">
   <SYNONYM name="Gorgosaurus lancinator" status="objective"/>
  </SPECIES>
  <SPECIES name="lanpingensis" status="dubium">
-  <AUTHOR name="Yeh" year="1975"/>
-  <SYNONYM name="bataar" q="1"/>
- </SPECIES>
- <SPECIES name="lanpingi" status="dubium">
-  <AUTHOR name="Zhao" year="1986"/>
-  <SYNONYM name="lanpingensis"/>
+  <SYNONYM name="Tarbosaurus lanpingensis" status="objective"/>
  </SPECIES>
  <SPECIES name="luanchuanensis" status="dubium">
-  <AUTHOR name="Dong" year="1979"/>
-  <SYNONYM name="bataar" q="1"/>
+  <SYNONYM name="Tarbosaurus luanchuanensis" status="objective"/>
  </SPECIES>
  <SPECIES name="megagracilis">
   <SYNONYM name="Albertosaurus megagracilis" status="objective"/>
@@ -19652,7 +20339,7 @@ the same feature. </P>
  </SPECIES>
  <SPECIES name="turpanensis">
   <AUTHOR name="Zhai, Zheng, Tong" year="1978"/>
-  <SYNONYM name="bataar"/>
+  <SYNONYM name="Tarbosaurus bataar"/>
  </SPECIES>
  <ESSAY>
 <P> <NOMEN name="Tyrannosaurus rex"/>, possibly the most popular <LINK
@@ -19664,42 +20351,26 @@ that an even larger <NOMEN name="T. rex"/> specimen may be found some day.
 And it <U>was</U> the largest known predator of its time, at the end of
 the Mesozoic Era.</P>
 
-<P> The most complete <NOMEN name="Tyrannosaurus"/> skeleton, a female(?)
+<P> The most complete <NOMEN name="Tyrannosaurus"/> skeleton, a 
 <NOMEN name="T. rex"/> (=<NOMEN name="T. stanwinstonorum"/>) nicknamed "Sue",
 was recently sold for over $7 million by Sotheby's to corporate benefactors
-on behalf of the Chicago Field Museum. </P>
+on behalf of the Chicago Field Museum. Although originally diagnosed as
+a female, its sex is uncertain.</P>
 
-<P header="Odd Remains"> Recently an enormous coprolite (fossilized piece of dung) from
+<P header="Tyrant Dung"> Recently an enormous coprolite (fossilized piece of dung) from
 Saskatchewan was referred to <NOMEN name="T. rex"/>. At 43cm in length and
 2.4L in volume, this is the largest known coprolite from a carnivore. Tiny,
 well-crushed bone fragments indicate that the meal was a small subadult
 <LINK content="ornithischian"/>. </P>
 
-<P> Eggs tentatively assigned to <NOMEN name="Therizinosaurus"/> may belong
-to an Asian species of <NOMEN name="Tyrannosaurus"/>. </P>
+<P header="Species"> Many smaller <LINK content="tyrannosaurid"/> "species"
+now seem to be young <NOMEN name="Tyrannosaurus rex"/>, including species
+which were thought to be pygmies (<NOMEN name="Nanotyrannus lancensis"/>),
+primitive tyrannosaurids (<NOMEN name="Stygivenator molnari"/>), and close
+relatives (<NOMEN name="Dinotyrannus megagracilis"/>).</P>
 
-<P header="Classification"> The various species included here in <NOMEN name="Tyrannosaurus"/> are
-sometimes placed in other genera. <NOMEN name="T. efremovi"/> was originally
-<NOMEN name="Tarbosaurus"/>, and sometimes <NOMEN name="Tyrannosaurus bataar"/> is also
-included in that genus. Others put <NOMEN name="T. bataar"/> into its
-own genus, <NOMEN name="Jenghizkhan"/>. Still others consider
-<NOMEN name="T. efremovi"/> to be the subadult stage of
-<NOMEN name="T. bataar"/>. </P>
-
-<P> <NOMEN name="Tyrannosaurus novojilovi"/> and <NOMEN name="T. lancensis"/>
-were thought by some to be pygmy <LINK content="tyrannosaurins"/>,
-and were accorded their own genera (<NOMEN name="Maleevosaurus"/> and
-<NOMEN name="Nanotyrannus"/>, respectively). But they seem instead to
-be juveniles. <NOMEN name="T. novojilovi"/> likely belongs to
-<NOMEN name="T. bataar"/> or <NOMEN name="T. efremovi"/>, and
-<NOMEN name="T. lancensis"/> likely belongs to <NOMEN name="T. rex"/>.
-<NOMEN name="T. megagracilis"/> also likely belongs to <NOMEN name="T. rex"/>,
-representing the subadult stage. It is sometimes placed in
-<NOMEN name="Dinotyrannus"/>. </P>
-
-<P> <NOMEN name="T. luanchuanensis"/> and <NOMEN name="T. lanpingensis"/>,
-both dubious tooth taxa, probably belong to either <NOMEN name="T. bataar"/>
-or <NOMEN name="T. efremovi"/>. </P>
+<P>Certain Asian <LINK content="Tyrannosaurini"/> were once included by some 
+in this genus, but are now usually placed in <NOMEN name="Tarbosaurus"/>.</P>
  </ESSAY>
 </GENUS>
 
@@ -19953,6 +20624,7 @@ or <NOMEN name="T. efremovi"/>. </P>
 </GENUS>
 
 <GENUS name="Vectisaurus" type="with">
+ <MEANING>Isle of Wight <LINK content="saurian"/></MEANING>
  <SPECIES name="valdensis">
   <AUTHOR name="Hulke" year="1879"/>
   <SYNONYM name="Iguanodon atherfieldensis"/>
@@ -20028,6 +20700,16 @@ or <NOMEN name="T. efremovi"/>. </P>
  <PROPERTAXON name="Archosauromorpha"/>
 </GENUS>
 
+<GENUS name="Venenosaurus" type="with">
+ <SPECIES name="dicrocei">
+  <AUTHOR name="Tidwell, Carpenter, Meyer" year="2001"/>
+  <REMAINS type="holo" content="partial skeleton, including limb elements and caudal vertebrae"/>
+ </SPECIES>
+ <REMAINS content="specimen" q="1" age="juvenile"/>
+ <TIME value="Barremian"/>
+ <PLACE name="Utah"/>
+</GENUS>
+
 <GENUS name="Volkheimeria" type="with">
  <MEANING>
   <LOW>Wolfgang</LOW> Volkheimer's <LOW>one</LOW>
@@ -20052,17 +20734,13 @@ or <NOMEN name="T. efremovi"/>. </P>
  <MEANING>
   bird
  </MEANING>
- <TIME value="LK"/>
+ <TIME value="Maastrichtian"/>
  <PLACE name="Madagascar"/>
- <REMAINS content="hindlimbs"/>
+ <REMAINS content="hindlimbs" type="holo"/>
+ <REMAINS content="2 partial humeri"/>
  <SPECIES name="berivotrensis">
   <AUTHOR name="Forster, Chiappe, Krause, Sampson" year="1996"/>
  </SPECIES>
- <ESSAY>
-<P> Possessed a "switchblade" foot claw, like those of <LINK content="deinonychosaurs"/>
-  and other basal <LINK content="paravians"/>.
-</P>
- </ESSAY>
 </GENUS>
 
 <GENUS name="Vulcanodon" type="with">
@@ -20079,8 +20757,7 @@ or <NOMEN name="T. efremovi"/>. </P>
  <ESSAY>
 <P> The teeth (found in rock of volcanic origin) which this genus was named
   after actually came from a predator that may have eaten it.
-  <NOMEN name="Vulcanodon"/> was similar to "<LINK content="prosauropods"/>", but probably the
-  earliest <LINK content="sauropod"/>.
+  <NOMEN name="Vulcanodon"/> was similar to "<LINK content="prosauropods"/>".
 </P>
  </ESSAY>
 </GENUS>
@@ -20148,6 +20825,15 @@ or <NOMEN name="T. efremovi"/>. </P>
  <REMAINS content="partial skull roof, mandible, postcranial fragments"/>
  <SPECIES name="yansiensis">
   <AUTHOR name="Hou" year="1977"/>
+ </SPECIES>
+</GENUS>
+
+<GENUS name="Wellnhoferia" type="with">
+ <MEANING><LOW>Peter</LOW> Wellnhofer's <LOW>one</LOW></MEANING>
+ <SPECIES name="grandis">
+  <MEANING>grand</MEANING>
+  <AUTHOR name="Elzanowski" year="2001"/>
+  <SYNONYM name="Archaeopteryx lithographica" status="q"/>
  </SPECIES>
 </GENUS>
 
@@ -20361,6 +21047,15 @@ holotype was found in association with the <LINK content="pterosaur"/>
  </SPECIES>
 </GENUS>
 
+<GENUS name="Yanornis" type="with">
+ <MEANING>Yan bird</MEANING>
+ <SPECIES name="martini">
+  <MEANING>Martin's</MEANING>
+  <AUTHOR name="Zhou, Zhang" year="2001"/>
+ </SPECIES>
+ <PLACE name="China"/> <TIME value="Barremian"/>
+</GENUS>
+
 <GENUS name="Yaverlandia" type="with">
  <MEANING>
   Yaverland <LOW>Point (on the Isle of Wight) one</LOW>
@@ -20412,6 +21107,15 @@ holotype was found in association with the <LINK content="pterosaur"/>
 <P> Had broad spikes on its shoulders.
 </P>
  </ESSAY>
+</GENUS>
+
+<GENUS name="Yixianornis" type="with">
+ <MEANING>Yixian <LOW>Formation</LOW> bird</MEANING>
+ <SPECIES name="grabaui">
+  <MEANING>Grabau's</MEANING>
+  <AUTHOR name="Zhou, Zhang" year="2001"/>
+ </SPECIES>
+ <PLACE name="China"/> <TIME value="Barremian"/>
 </GENUS>
 
 <GENUS name="Yubasaurus" status="nudum">
@@ -20586,7 +21290,9 @@ is now thought to actually be from a sauropod.</P>
  </SPECIES>
  <ESSAY>
 <P> The first known <LINK content="ceratopsian"/> with brow horns, and the
-oldest named American ceratopsian. </P>
+oldest named American ceratopsian. Its snout is rather long.</P>
+<P>An element thought to be a squamosal of this species is actually the
+ischium of <NOMEN name="Nothronychus"/>.</P>
  </ESSAY>
 </GENUS>
 
