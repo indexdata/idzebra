@@ -1,5 +1,5 @@
-/* $Id: main.c,v 1.112.2.1 2004-09-26 20:49:02 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: main.c,v 1.112.2.2 2005-01-21 13:23:03 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -56,7 +56,7 @@ int main (int argc, char **argv)
     char *configName = 0;
     int nsections = 0;
     int enable_commit = 1;
-    char *database = "Default";
+    char *database = 0;
     Res res = res_open(0, 0, 0);
     
     int trans_started=0;
@@ -132,7 +132,7 @@ int main (int argc, char **argv)
 		    zebra_shadow_enable (zh, enable_commit);
                 }
 
-		if (zebra_select_database (zh, database))
+		if (database && zebra_select_database (zh, database))
 		{
 		    logf(LOG_FATAL, "Could not select database %s errCode=%d",
 			 database, zebra_errCode(zh) );

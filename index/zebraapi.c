@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.2 2004-11-26 11:06:12 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.3 2005-01-21 13:23:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1317,6 +1317,16 @@ static void read_res_for_transaction(ZebraHandle zh)
 
 int zebra_begin_trans (ZebraHandle zh, int rw)
 {
+    if (!zh->res)
+    {
+	/* no database has been selected - so we select based on
+	   resource setting (including group)
+	*/
+	const char *group = res_get(zh->service->global_res, "group");
+	const char *v = res_get_prefix(zh->service->global_res,
+				       "database", group, "Default");
+	zebra_select_database(zh, v);
+    }
     if (!zh->res)
     {
         zh->errCode = 2;
