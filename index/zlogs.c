@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zlogs.c,v $
- * Revision 1.6  1997-09-29 09:06:41  adam
+ * Revision 1.7  1998-01-29 13:40:11  adam
+ * Better logging for scan service.
+ *
+ * Revision 1.6  1997/09/29 09:06:41  adam
  * Removed static var to make this module thread safe.
  *
  * Revision 1.5  1997/04/30 08:56:07  quinn
@@ -306,4 +309,17 @@ void zlog_rpn (Z_RPNQuery *rpn)
     ast = attrset->value;
     logf (LOG_LOG, "RPN query. Type: %s", attrset->desc);
     zlog_structure (rpn->RPNStructure, 0, ast);
+}
+
+void zlog_scan (Z_AttributesPlusTerm *zapt, oid_value ast)
+{
+    int level = 0;
+    if (zapt->term->which == Z_Term_general) 
+    {
+	logf (LOG_LOG, "%*.s term '%.*s' (general)", level, "",
+	      zapt->term->u.general->len, zapt->term->u.general->buf);
+    }
+    else
+	logf (LOG_LOG, "%*.s term (not general)", level, "");
+    zlog_attributes (zapt, level+2, ast);
 }

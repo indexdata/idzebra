@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.27  1997-10-27 14:33:06  adam
+ * Revision 1.28  1998-01-29 13:40:11  adam
+ * Better logging for scan service.
+ *
+ * Revision 1.27  1997/10/27 14:33:06  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -175,6 +178,7 @@ ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
                                     int num, int *positions);
 void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num);
 void zlog_rpn (Z_RPNQuery *rpn);
+void zlog_scan (Z_AttributesPlusTerm *zapt, oid_value ast);
 
 int zebra_server_lock_init (ZServerInfo *zi);
 int zebra_server_lock_destroy (ZServerInfo *zi);

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.72  1998-01-07 13:53:41  adam
+ * Revision 1.73  1998-01-29 13:40:11  adam
+ * Better logging for scan service.
+ *
+ * Revision 1.72  1998/01/07 13:53:41  adam
  * Queries using simple ranked operands returns right number of hits.
  *
  * Revision 1.71  1997/12/18 10:54:24  adam
@@ -1526,14 +1529,14 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     char *search_type = NULL;
     int complete_flag;
 
-    logf (LOG_DEBUG, "scan, position = %d, num = %d", pos, num);
-
     if (attributeset == VAL_NONE)
         attributeset = VAL_BIB1;
+
+    zlog_scan (zapt, attributeset);
+    logf (LOG_DEBUG, "position = %d, num = %d", pos, num);
         
     attr_init (&use, zapt, 1);
     use_value = attr_find (&use, &attributeset);
-    logf (LOG_DEBUG, "use value %d", use_value);
 
     if (zebra_maps_attr (zi->zebra_maps, zapt, &reg_type, &search_type,
 			 &complete_flag))
