@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.19  1995-10-06 10:43:56  adam
+ * Revision 1.20  1995-10-06 11:06:33  adam
+ * Scan entries include 'occurrences' now.
+ *
+ * Revision 1.19  1995/10/06  10:43:56  adam
  * Scan added. 'occurrences' in scan entries not set yet.
  *
  * Revision 1.18  1995/10/04  16:57:20  adam
@@ -682,10 +685,15 @@ static struct scan_entry *scan_list;
 static ODR scan_odr;
 static int scan_before, scan_after;
 static int scan_prefix;
+static ISAM scan_isam;
 
 static int scan_handle (Dict_char *name, const char *info, int pos)
 {
     int idx;
+    ISAM_P isam_p;
+    RSET rset;
+
+    rset_isam_parms parms;
 
     if (pos > 0)
         idx = scan_after - pos + scan_before;
@@ -693,8 +701,13 @@ static int scan_handle (Dict_char *name, const char *info, int pos)
         idx = - pos - 1;
     scan_list[idx].term = odr_malloc (scan_odr, strlen(name + scan_prefix)+1);
     strcpy (scan_list[idx].term, name + scan_prefix);
-    scan_list[idx].occurrences = 1;
-    logf (LOG_DEBUG, "pos=%3d idx=%3d name=%s", pos, idx, name);
+    assert (*info == sizeof(isam_p));
+    memcpy (&isam_p, info+1, sizeof(isam_p));
+    parms.is = scan_isam;
+    parms.pos = isam_p;
+    rset = rset_create (rset_kind_isam, &parms);
+    count_set (rset, &scan_list[idx].occurrences);
+    rset_delete (rset);
     return 0;
 }
 
@@ -718,6 +731,7 @@ int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
 
     logf (LOG_DEBUG, "scan, before = %d, after = %d", before, after);
     
+    scan_isam = zi->wordIsam;
     scan_list = *list = odr_malloc (odr, (before+after)*sizeof(**list));
     attr_init (&use, zapt, 1);
     use_value = attr_find (&use);
