@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.93 2003-03-13 04:25:17 pop Exp $
+/* $Id: zebraapi.c,v 1.94 2003-03-25 19:56:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1389,7 +1389,7 @@ void zebra_repository_show (ZebraHandle zh)
     repositoryShow (zh);
 }
 
-int zebra_commit (ZebraHandle zh)
+static int zebra_commit_ex (ZebraHandle zh, int clean_only)
 {
     int seqno;
     char val;
@@ -1422,13 +1422,18 @@ int zebra_commit (ZebraHandle zh)
         bf_cache (bfs, rval);
     if (bf_commitExists (bfs))
     {
-        zebra_set_state (zh, 'c', seqno);
-
-        logf (LOG_LOG, "commit start");
-        bf_commitExec (bfs);
+        if (clean_only)
+            zebra_set_state (zh, 'd', seqno);
+        else
+        {
+            zebra_set_state (zh, 'c', seqno);
+            
+            logf (LOG_LOG, "commit start");
+            bf_commitExec (bfs);
 #ifndef WIN32
-        sync ();
+            sync ();
 #endif
+        }
         logf (LOG_LOG, "commit clean");
         bf_commitClean (bfs, rval);
         seqno++;
@@ -1443,6 +1448,16 @@ int zebra_commit (ZebraHandle zh)
     zebra_unlock (zh->lock_shadow);
     zebra_unlock (zh->lock_normal);
     return 0;
+}
+
+int zebra_clean (ZebraHandle zh)
+{
+    zebra_commit_ex(zh, 1);
+}
+
+int zebra_commit (ZebraHandle zh)
+{
+    zebra_commit_ex(zh, 0);
 }
 
 int zebra_init (ZebraHandle zh)

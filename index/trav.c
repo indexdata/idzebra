@@ -1,4 +1,4 @@
-/* $Id: trav.c,v 1.41 2002-09-03 11:44:54 adam Exp $
+/* $Id: trav.c,v 1.42 2003-03-25 19:56:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -455,6 +455,9 @@ void repositoryUpdate (ZebraHandle zh)
 
 void repositoryDelete (ZebraHandle zh)
 {
-    repositoryExtractG (zh, 1, &zh->rGroup);
+    struct recordGroup *rGroup = &zh->rGroup;
+    groupRes (zh, rGroup);
+    assert (rGroup->path);
+    repositoryExtractG (zh, 1, rGroup);
 }
 

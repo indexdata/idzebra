@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.102 2003-03-04 23:30:20 adam Exp $
+/* $Id: main.c,v 1.103 2003-03-25 19:56:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -178,7 +178,7 @@ int main (int argc, char **argv)
                 }
                 else if (!strcmp (arg, "clean"))
                 {
-                    assert (!"todo");
+                    zebra_clean (zh);
                 }
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
                 {
