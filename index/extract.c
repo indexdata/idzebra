@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.128 2002-10-24 13:07:02 heikki Exp $
+/* $Id: extract.c,v 1.129 2002-10-24 21:54:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1503,22 +1503,18 @@ void extract_add_index_string (RecWord *p, const char *string,
 static void extract_add_sort_string (RecWord *p, const char *string,
 				     int length)
 {
-#if 1
     ZebraHandle zh = p->extractCtrl->handle;
     struct sortKeys *sk = &zh->reg->sortKeys;
     size_t off = 0;
-    int slen;
 
     while (off < sk->buf_used)
     {
-        int set, use, l;
+        int set, use, slen;
 
-        l = key_SU_decode(&set, sk->buf + off);
-        off += l;
-        l = key_SU_decode(&use, sk->buf + off);
-        off += l;
-        l = key_SU_decode(&slen, sk->buf + off);
-        off += l + slen;
+        off += key_SU_decode(&set, sk->buf + off);
+        off += key_SU_decode(&use, sk->buf + off);
+        off += key_SU_decode(&slen, sk->buf + off);
+        off += slen;
         if (p->attrSet == set && p->attrUse == use)
             return;
     }
@@ -1536,30 +1532,9 @@ static void extract_add_sort_string (RecWord *p, const char *string,
     }
     off += key_SU_encode(p->attrSet, sk->buf + off);
     off += key_SU_encode(p->attrUse, sk->buf + off);
-    slen = strlen(string);
-    off += key_SU_encode(slen, sk->buf + off);
-    memcpy (sk->buf + off, string, slen);
-    sk->buf_used = off + slen;
-#else
-    struct sortKey *sk;
-    ZebraHandle zh = p->extractCtrl->handle;
-
-
-    for (sk = zh->reg->sortKeys; sk; sk = sk->next)
-	if (sk->attrSet == p->attrSet && sk->attrUse == p->attrUse)
-	    return;
-
-    sk = (struct sortKey *) xmalloc (sizeof(*sk));
-    sk->next = zh->reg->sortKeys;
-    zh->reg->sortKeys = sk;
-
-    sk->string = (char *) xmalloc (length);
-    sk->length = length;
-    memcpy (sk->string, string, length);
-
-    sk->attrSet = p->attrSet;
-    sk->attrUse = p->attrUse;
-#endif
+    off += key_SU_encode(length, sk->buf + off);
+    memcpy (sk->buf + off, string, length);
+    sk->buf_used = off + length;
 }
 
 void extract_add_string (RecWord *p, const char *string, int length)
