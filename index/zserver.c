@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.30  1995-12-07 17:38:48  adam
+ * Revision 1.31  1995-12-08 16:22:56  adam
+ * Work on update while servers are running. Three lock files introduced.
+ * The servers reload their registers when necessary, but they don't
+ * reestablish result sets yet.
+ *
+ * Revision 1.30  1995/12/07  17:38:48  adam
  * Work locking mechanisms for concurrent updates/commit.
  *
  * Revision 1.29  1995/12/04  14:22:32  adam
@@ -119,9 +124,10 @@
 
 ZServerInfo server_info;
 
-static int register_check (ZServerInfo *zi)
+static int register_lock (ZServerInfo *zi)
 {
-    int state = zebraServerLockGetState();
+    time_t lastChange;
+    int state = zebraServerLockGetState(&lastChange);
 
     switch (state)
     {
@@ -131,24 +137,41 @@ static int register_check (ZServerInfo *zi)
     default:
         state = 0;
     }
+    zebraServerLock (state);
     if (zi->registerState == state)
-        return 0;
-
-    zi->registerState = state;
-    if (server_info.records)
     {
-        dict_close (server_info.wordDict);
-        is_close (server_info.wordIsam);
-        rec_close (&server_info.records);
+        if (zi->registerChange >= lastChange)
+            return 0;
+        logf (LOG_LOG, "Register completely updated since last access");
     }
-    /* enable commit if state is 1 */
-    server_info.records = rec_open (0);
-    if (!(server_info.wordDict = dict_open (FNAME_WORD_DICT, 40, 0)))
+    else if (zi->registerState == -1)
+        logf (LOG_LOG, "Reading register using state %d pid=%ld", state,
+              (long) getpid());
+    else
+        logf (LOG_LOG, "Register has changed state from %d to %d",
+              zi->registerState, state);
+    zi->registerChange = lastChange;
+    if (zi->records)
+    {
+        dict_close (zi->wordDict);
+        is_close (zi->wordIsam);
+        rec_close (&zi->records);
+    }
+    bf_cache (state);
+    zi->registerState = state;
+    zi->records = rec_open (0);
+    if (!(zi->wordDict = dict_open (FNAME_WORD_DICT, 40, 0)))
         return -1;
-    if (!(server_info.wordIsam = is_open (FNAME_WORD_ISAM, key_compare, 0,
-                                          sizeof (struct it_key))))
+    if (!(zi->wordIsam = is_open (FNAME_WORD_ISAM, key_compare, 0,
+                                  sizeof (struct it_key))))
         return -1;
     return 0;
+}
+
+static int register_unlock (ZServerInfo *zi)
+{
+    if (zi->registerState != -1)
+        zebraServerUnlock (zi->registerState);
 }
 
 bend_initresult *bend_init (bend_initrequest *q)
@@ -174,34 +197,14 @@ bend_initresult *bend_init (bend_initrequest *q)
             exit (1);
         }
     }
-    zebraServerLock ();
-
     data1_tabpath = res_get(common_resource, "profilePath");
     server_info.sets = NULL;
     server_info.registerState = -1;  /* trigger open of registers! */
-#if 1
+    server_info.registerChange = 0;
+
     server_info.records = NULL;
     server_info.wordDict = NULL;
     server_info.wordIsam = NULL;
-#else
-    server_info.records = rec_open (0);
-    if (!(server_info.wordDict = dict_open (FNAME_WORD_DICT, 40, 0)))
-    {
-        logf (LOG_WARN, "dict_open fail: word dict");
-        r.errcode = 1;
-        r.errstring = "dict_open fail: word dict";
-        return &r;
-    }    
-    if (!(server_info.wordIsam = is_open (FNAME_WORD_ISAM, key_compare, 0,
-                                          sizeof (struct it_key))))
-    {
-        logf (LOG_WARN, "is_open fail: word isam");
-        dict_close (server_info.wordDict);
-        r.errcode = 1;
-        r.errstring = "is_open fail: word isam";
-        return &r;
-    }
-#endif
     server_info.odr = odr_createmem (ODR_ENCODE);
     return &r;
 }
@@ -214,7 +217,7 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     r.errstring = 0;
     r.hits = 0;
 
-    register_check (&server_info);
+    register_lock (&server_info);
     odr_reset (server_info.odr);
     server_info.errCode = 0;
     server_info.errString = NULL;
@@ -231,6 +234,7 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     default:
         r.errcode = 107;
     }
+    register_unlock (&server_info);
     return &r;
 }
 
@@ -321,7 +325,7 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     int positions[2];
     ZServerSetSysno *records;
 
-    register_check (&server_info);
+    register_lock (&server_info);
 
     r.errstring = 0;
     r.last_in_set = 0;
@@ -336,24 +340,28 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     {
         logf (LOG_DEBUG, "resultSetRecordGet, error");
         r.errcode = 13;
+        register_unlock (&server_info);
         return &r;
     }
     if (!records[0].sysno)
     {
         r.errcode = 13;
         logf (LOG_DEBUG, "Out of range. pos=%d", q->number);
+        register_unlock (&server_info);
         return &r;
     }
     r.errcode = record_fetch (&server_info, records[0].sysno,
                               records[0].score, q->stream, q->format,
                               q->comp, &r.format, &r.record, &r.len);
     resultSetSysnoDel (&server_info, records, 1);
+    register_unlock (&server_info);
     return &r;
 }
 
 bend_deleteresult *bend_delete (void *handle, bend_deleterequest *q, int *num)
 {
-    register_check (&server_info);
+    register_lock (&server_info);
+    register_unlock (&server_info);
     return 0;
 }
 
@@ -362,7 +370,7 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
     static bend_scanresult r;
     int status;
 
-    register_check (&server_info);
+    register_lock (&server_info);
     odr_reset (server_info.odr);
     server_info.errCode = 0;
     server_info.errString = 0;
@@ -375,6 +383,7 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
                           &r.num_entries, &r.entries, &status);
     r.errstring = server_info.errString;
     r.status = status;
+    register_unlock (&server_info);
     return &r;
 }
 
@@ -385,8 +394,8 @@ void bend_close (void *handle)
         dict_close (server_info.wordDict);
         is_close (server_info.wordIsam);
         rec_close (&server_info.records);
+        register_unlock (&server_info);
     }
-    zebraServerUnlock ();
     return;
 }
 

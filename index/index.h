@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.32  1995-12-07 17:38:46  adam
+ * Revision 1.33  1995-12-08 16:22:53  adam
+ * Work on update while servers are running. Three lock files introduced.
+ * The servers reload their registers when necessary, but they don't
+ * reestablish result sets yet.
+ *
+ * Revision 1.32  1995/12/07  17:38:46  adam
  * Work locking mechanisms for concurrent updates/commit.
  *
  * Revision 1.31  1995/12/06  12:41:22  adam
@@ -205,13 +210,12 @@ void rec_prstat (void);
 
 void zebraLockPrefix (char *pathPrefix);
 
-int zebraServerLock (void);
-void zebraServerUnlock (void);
-
 void zebraIndexLockMsg (const char *str);
-void zebraIndexUnlock (int rw);
-void zebraIndexLock (int rw);
-void zebraIndexLockCommit (void);
-int zebraServerLockGetState (void);
+void zebraIndexUnlock (void);
+void zebraIndexLock (int commitNow);
+int zebraIndexWait (int commitPhase);
 
-#define FNAME_MAIN_LOCK "zebra.lock"
+#define FNAME_MAIN_LOCK   "zebraidx.LCK"
+#define FNAME_COMMIT_LOCK "zebracmt.LCK"
+#define FNAME_ORG_LOCK    "zebraorg.LCK"
+#define FNAME_TOUCH_TIME  "zebraidx.time"

@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.27  1995-12-07 17:38:47  adam
+ * Revision 1.28  1995-12-08 16:22:56  adam
+ * Work on update while servers are running. Three lock files introduced.
+ * The servers reload their registers when necessary, but they don't
+ * reestablish result sets yet.
+ *
+ * Revision 1.27  1995/12/07  17:38:47  adam
  * Work locking mechanisms for concurrent updates/commit.
  *
  * Revision 1.26  1995/12/06  12:41:23  adam
@@ -150,11 +155,11 @@ int main (int argc, char **argv)
     {
         if (ret == 0)
         {
+            const char *rval;
             if(cmd == 0) /* command */
             {
                 if (!common_resource)
                 {
-                    const char *rval;
                     common_resource = res_open (configName ?
                                                 configName : FNAME_CONFIG);
                     if (!common_resource)
@@ -164,16 +169,6 @@ int main (int argc, char **argv)
                         exit (1);
                     }
                     data1_tabpath = res_get (common_resource, "profilePath");
-                    rval = res_get (common_resource, "commitEnable");
-
-                    zebraIndexLock (1);
-                    if (rval && atoi(rval))
-                    {
-                        zebraIndexLockMsg ("r");
-                        bf_cache ();
-                    }
-                    else
-                        zebraIndexLockMsg ("w");
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
@@ -181,12 +176,41 @@ int main (int argc, char **argv)
                     cmd = 'd';
                 else if (!strcmp (arg, "commit"))
                 {
-                    logf (LOG_LOG, "Commit");
-                    zebraIndexLockMsg ("c");
-                    bf_commit ();
+                    zebraIndexLock (1);
+                    rval = res_get (common_resource, "commitEnable");
+                    if (rval && atoi (rval))
+                        bf_cache (1);
+
+                    if (bf_commitExists ())
+                    {
+                        logf (LOG_LOG, "Commit start");
+                        zebraIndexLockMsg ("c");
+                        zebraIndexWait (1);
+                        logf (LOG_LOG, "Commit execute");
+                        bf_commitExec ();
+                        zebraIndexLockMsg ("d");
+                        zebraIndexWait (0);
+                        logf (LOG_LOG, "Commit clean");
+                        bf_commitClean ();
+                    }
+                    else
+                        logf (LOG_LOG, "Nothing to commit");
                 }
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
                 {
+                    zebraIndexLock (0);
+                    bf_cache (0);
+                    rec_prstat ();
+                }
+                else if (!strcmp (arg, "cstat") || !strcmp (arg, "cstatus"))
+                {
+                    zebraIndexLock (1);
+                    rval = res_get (common_resource, "commitEnable");
+                    if (rval && atoi(rval))
+                    {
+                        bf_cache (1);
+                        zebraIndexLockMsg ("r");
+                    }
                     rec_prstat ();
                 }
                 else
@@ -198,6 +222,17 @@ int main (int argc, char **argv)
             else
             {
                 struct recordGroup rGroup;
+
+                zebraIndexLock (0);
+                rval = res_get (common_resource, "commitEnable");
+                if (rval && atoi(rval))
+                {
+                    bf_cache (1);
+                    zebraIndexLockMsg ("r");
+                }
+                else
+                    zebraIndexLockMsg ("w");
+                zebraIndexWait (0);
 
                 memcpy (&rGroup, &rGroupDef, sizeof(rGroup));
                 key_open (mem_max);
@@ -248,7 +283,7 @@ int main (int argc, char **argv)
             exit (1);
         }
     }
-    zebraIndexUnlock (1);
+    zebraIndexUnlock ();
     exit (0);
 }
 

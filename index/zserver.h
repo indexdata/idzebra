@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.16  1995-12-07 17:38:48  adam
+ * Revision 1.17  1995-12-08 16:22:57  adam
+ * Work on update while servers are running. Three lock files introduced.
+ * The servers reload their registers when necessary, but they don't
+ * reestablish result sets yet.
+ *
+ * Revision 1.16  1995/12/07  17:38:48  adam
  * Work locking mechanisms for concurrent updates/commit.
  *
  * Revision 1.15  1995/11/21  15:29:13  adam
@@ -76,6 +81,7 @@ typedef struct ZServerSet_ {
    
 typedef struct {
     int registerState; /* 0 (no commit pages), 1 (use commit pages) */
+    time_t registerChange;
     ZServerSet *sets;
     Dict wordDict;
     ISAM wordIsam;
@@ -101,3 +107,7 @@ ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
                                     int num, int *positions);
 void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num);
 void zlog_rpn (Z_RPNQuery *rpn);
+
+int zebraServerLock (int lockCommit);
+void zebraServerUnlock (int commitPhase);
+int zebraServerLockGetState (time_t *timep);
