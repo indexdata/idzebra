@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.24 2003-02-11 14:01:39 heikki Exp $
+/* $Id: zebraapi.h,v 1.25 2003-02-11 17:28:10 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -109,6 +109,11 @@ YAZ_EXPORT const char *zebra_errString (ZebraHandle zh);
 /* extra information associated with error */
 YAZ_EXPORT char *zebra_errAdd (ZebraHandle zh);
 
+/* get the result code and addinfo from zh */
+YAZ_EXPORT void zebra_result (ZebraHandle zh, int *code, char **addinfo);
+/* FIXME - why is this needed?? -H */
+
+
 /**************
  * Searching 
  */
@@ -194,8 +199,6 @@ void zebra_repository_show (ZebraHandle zh);
 int zebra_record_insert (ZebraHandle zh, const char *buf, int len);
 
 YAZ_EXPORT void zebra_set_group (ZebraHandle zh, struct recordGroup *rg);
-
-YAZ_EXPORT void zebra_result (ZebraHandle zh, int *code, char **addinfo);
 
 
 YAZ_EXPORT int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
