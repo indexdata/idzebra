@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.28 2004-06-02 12:31:23 adam Exp $
+/* $Id: rsbool.c,v 1.29 2004-06-09 11:11:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -256,32 +256,6 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
                        rfd, rc, p->more_l, p->more_r);
 #endif
     return rc;
-
-    if (p->more_l && p->more_r)
-           cmp = (*info->cmp)(p->buf_l, p->buf_r);
-       else if (p->more_l)
-           cmp = -2;
-       else
-           cmp = 2;
-    if ( (cmp<0) && (p->more_l) )
-    {
-        memcpy (buf, p->buf_l, info->key_size);
-	    *term_index = p->term_index_l;
-#if RSET_DEBUG
-        logf (LOG_DEBUG, "rsbool_forward returning L (cmp=%d)",cmp);
-#endif
-        return 1;
-    } else if ( (cmp>0) && (p->more_r) )
-    {
-        memcpy (buf, p->buf_r, info->key_size);
-	    *term_index = p->term_index_r + info->term_index_s;
-#if RSET_DEBUG
-        logf (LOG_DEBUG, "rsbool_forward returning R (cmp=%d)",cmp);
-#endif
-        return 1;
-    }
-    /* return ( p->more_l || p->more_r); */
-    return 0;
 }
 
 static int r_count (RSET ct)
@@ -399,7 +373,8 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 		(*info->log_item)(LOG_DEBUG, buf, "");
 #endif
                 return 1;
-            } else
+            }
+	    else
             {
 #if RSET_DEBUG
                 logf (LOG_DEBUG, "r_read_and [%p] about to forward R m=%d/%d c=%d",
@@ -557,15 +532,17 @@ static int r_read_not (RSFD rfd, void *buf, int *term_index)
             return 1;
         }
         else if (cmp > 1)
+	{
 #if 0
             p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
 				   &p->term_index_r);
 #else
-            p->more_r = rset_forward( 
-                            info->rset_r, p->rfd_r, 
-                            p->buf_r, &p->term_index_r, 
-                            (info->cmp), p->buf_l);
+	    p->more_r = rset_forward( 
+		info->rset_r, p->rfd_r, 
+		p->buf_r, &p->term_index_r, 
+		(info->cmp), p->buf_l);
 #endif
+	}
         else
         {
             memcpy (buf, p->buf_l, info->key_size);
