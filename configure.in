@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2002
-dnl $Id: configure.in,v 1.30 2002-02-20 17:30:01 adam Exp $
+dnl $Id: configure.in,v 1.31 2002-02-20 17:32:38 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -7,12 +7,12 @@ if test -r ${srcdir}/LICENSE.zmbol; then
 	AC_MSG_RESULT([Z'mbol])
 	PROGPREFIX=zmbol
 	AC_DEFINE(ZMBOL,1)
-	AM_INIT_AUTOMAKE(zmbol,1.1)
+	AM_INIT_AUTOMAKE(zmbol,1.1.1)
 else
 	AC_MSG_RESULT([Zebra])
 	PROGPREFIX=zebra
 	AC_DEFINE(ZMBOL,0)
-	AM_INIT_AUTOMAKE(zebra,1.1)
+	AM_INIT_AUTOMAKE(zebra,1.1.1)
 	if test ! -r ${srcdir}/isam; then
 		mkdir ${srcdir}/isam
 	fi
