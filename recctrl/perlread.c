@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.7 2003-02-28 16:20:10 pop Exp $
+/* $Id: perlread.c,v 1.8 2003-03-05 16:43:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -190,7 +190,7 @@ int grs_perl_readline(struct perl_context *context) {
 char grs_perl_getc(struct perl_context *context) {
   int r;
   char *p;
-  if (r = (*context->readf)(context->fh,p,1)) {
+  if ((r = (*context->readf)(context->fh,p,1))) {
     return (*p);
   } else {
     return (0);
