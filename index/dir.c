@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.2  1995-09-01 10:57:07  adam
+ * Revision 1.3  1995-09-01 14:06:35  adam
+ * Split of work into more files.
+ *
+ * Revision 1.2  1995/09/01  10:57:07  adam
  * Minor changes.
  *
  * Revision 1.1  1995/09/01  10:34:51  adam
@@ -46,6 +49,9 @@ struct dir_entry *dir_open (const char *rep)
     }    
     while ((dent = readdir (dir)))
     {
+        if (strcmp (dent->d_name, ".") == 0 ||
+            strcmp (dent->d_name, "..") == 0)
+            continue;
         if (idx == entry_max-1)
         {
             struct dir_entry *entry_n;
@@ -55,7 +61,7 @@ struct dir_entry *dir_open (const char *rep)
                 log (LOG_FATAL|LOG_ERRNO, "malloc");
                 exit (1);
             }
-            memcpy (entry_n, entry, entry_max * sizeof(*entry));
+            memcpy (entry_n, entry, idx * sizeof(*entry));
             free (entry);
             entry = entry_n;
             entry_max += 100;
