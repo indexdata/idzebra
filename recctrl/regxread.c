@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.6  1997-02-24 10:41:51  adam
+ * Revision 1.7  1997-07-15 16:33:07  adam
+ * Check for zero length in execData.
+ *
+ * Revision 1.6  1997/02/24 10:41:51  adam
  * Cleanup of code and commented out the "end element-end-record" code.
  *
  * Revision 1.5  1997/02/19 16:22:33  adam
@@ -580,6 +583,9 @@ static void execData (struct lexSpec *spec,
                       const char *ebuf, int elen, int formatted_text)
 {
     struct data1_node *res, *parent;
+
+    if (elen == 0) /* shouldn't happen, but it does! */
+	return ;
 #if REGX_DEBUG
     if (elen > 40)
         logf (LOG_DEBUG, "execData %.15s ... %.*s", ebuf, 15, ebuf + elen-15);
