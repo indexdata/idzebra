@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.5  1996-11-04 14:08:57  adam
+ * Revision 1.6  1996-11-08 11:15:29  adam
+ * Number of keys in chain are stored in first block and the function
+ * to retrieve this information, isc_pp_num is implemented.
+ *
+ * Revision 1.5  1996/11/04 14:08:57  adam
  * Optimized free block usage.
  *
  * Revision 1.4  1996/11/01 13:36:46  adam
@@ -27,7 +31,6 @@
 /* 
  * TODO:
  *   Reduction to lower categories in isc_merge
- *   Implementation of isc_numkeys
  */
 #include <stdlib.h>
 #include <assert.h>
@@ -47,7 +50,6 @@ ISAMC_M isc_getmethod (void)
         {  512,   490,   100,    20 },
         { 4096,  3950,  1000,    20 },
         {32768, 32000, 10000,     0 },
-        {    0,     0,     0,     0 }
     };
     ISAMC_M m = xmalloc (sizeof(*m));
     m->filecat = def_cat;
@@ -58,7 +60,7 @@ ISAMC_M isc_getmethod (void)
 
     m->compare_item = NULL;
 
-    m->debug = 0;
+    m->debug = 1;
 
     m->max_blocks_mem = 10;
 
@@ -70,7 +72,7 @@ ISAMC isc_open (const char *name, int writeflag, ISAMC_M method)
 {
     ISAMC is;
     ISAMC_filecat filecat;
-    int i, j;
+    int i = 0;
     int max_buf_size = 0;
 
     is = xmalloc (sizeof(*is));
@@ -83,7 +85,7 @@ ISAMC isc_open (const char *name, int writeflag, ISAMC_M method)
     /* determine number of block categories */
     if (is->method->debug)
         logf (LOG_LOG, "isc: bsize  ifill  mfill mblocks");
-    for (i = 0; filecat[i].bsize; i++)
+    do
     {
         if (is->method->debug)
             logf (LOG_LOG, "isc:%6d %6d %6d %6d",
@@ -91,7 +93,7 @@ ISAMC isc_open (const char *name, int writeflag, ISAMC_M method)
                   filecat[i].mfill, filecat[i].mblocks);
         if (max_buf_size < filecat[i].mblocks * filecat[i].bsize)
             max_buf_size = filecat[i].mblocks * filecat[i].bsize;
-    }
+    } while (filecat[i++].mblocks);
     is->no_files = i;
     is->max_cat = --i;
     /* max_buf_size is the larget buffer to be used during merge */
@@ -105,8 +107,8 @@ ISAMC isc_open (const char *name, int writeflag, ISAMC_M method)
     is->files = xmalloc (sizeof(*is->files)*is->no_files);
     if (writeflag)
     {
-        is->merge_buf = xmalloc (max_buf_size+128);
-	memset (is->merge_buf, 0, max_buf_size+128);
+        is->merge_buf = xmalloc (max_buf_size+256);
+	memset (is->merge_buf, 0, max_buf_size+256);
     }
     else
         is->merge_buf = NULL;
@@ -185,13 +187,14 @@ int isc_write_block (ISAMC is, int cat, int pos, char *src)
 int isc_write_dblock (ISAMC is, int cat, int pos, char *src,
                       int nextpos, int offset)
 {
-    int xoffset = offset + 2*sizeof(int);
+    unsigned short size = offset + ISAMC_BLOCK_OFFSET_N;
     if (is->method->debug > 2)
         logf (LOG_LOG, "isc: write_dblock. size=%d nextpos=%d",
-              offset, nextpos);
-    memcpy (src - sizeof(int)*2, &nextpos, sizeof(int));
-    memcpy (src - sizeof(int), &xoffset, sizeof(int));
-    return isc_write_block (is, cat, pos, src - sizeof(int)*2);
+              (int) size, nextpos);
+    src -= ISAMC_BLOCK_OFFSET_N;
+    memcpy (src, &nextpos, sizeof(int));
+    memcpy (src + sizeof(int), &size, sizeof(size));
+    return isc_write_block (is, cat, pos, src);
 }
 
 static int alloc_block (ISAMC is, int cat)
@@ -249,7 +252,7 @@ void isc_release_block (ISAMC is, int cat, int pos)
         logf (LOG_LOG, "isc: release_block in cat %d: %d", cat, pos);
     if (is->files[cat].fc_list)
     {
-        int b, j;
+        int j;
         for (j = 0; j<is->files[cat].fc_max; j++)
             if (!is->files[cat].fc_list[j])
             {
@@ -297,21 +300,37 @@ ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P ipos)
     char *src;
    
     pp->cat = isc_type(ipos);
-    pp->next = isc_block(ipos); 
+    pp->pos = isc_block(ipos); 
 
     src = pp->buf = xmalloc (is->method->filecat[pp->cat].bsize);
 
-    pp->pos = 0;    
+    pp->next = 0;
     pp->size = 0;
     pp->offset = 0;
     pp->is = is;
     pp->decodeClientData = (*is->method->code_start)(ISAMC_DECODE);
     pp->deleteFlag = 0;
+    pp->numKeys = 0;
+
+    if (pp->pos)
+    {
+        src = pp->buf;
+        isc_read_block (is, pp->cat, pp->pos, src);
+        memcpy (&pp->next, src, sizeof(pp->next));
+        src += sizeof(pp->next);
+        memcpy (&pp->size, src, sizeof(pp->size));
+        src += sizeof(pp->size);
+        memcpy (&pp->numKeys, src, sizeof(pp->numKeys));
+        src += sizeof(pp->numKeys);
+        assert (pp->next != pp->pos);
+        pp->offset = src - pp->buf; 
+        assert (pp->offset == ISAMC_BLOCK_OFFSET_1);
+    }
     return pp;
 }
 
 /* returns non-zero if item could be read; 0 otherwise */
-int isc_read_key (ISAMC_PP pp, void *buf)
+int isc_pp_read (ISAMC_PP pp, void *buf)
 {
     return isc_read_item (pp, (char **) &buf);
 }
@@ -334,6 +353,7 @@ int isc_read_item (ISAMC_PP pp, char **dst)
         memcpy (&pp->size, src, sizeof(pp->size));
         src += sizeof(pp->size);
         /* assume block is non-empty */
+        assert (src - pp->buf == ISAMC_BLOCK_OFFSET_N);
         assert (pp->next != pp->pos);
         if (pp->deleteFlag)
             isc_release_block (is, pp->cat, pp->pos);
@@ -346,8 +366,8 @@ int isc_read_item (ISAMC_PP pp, char **dst)
     return 1;
 }
 
-int isc_numkeys (ISAMC_PP pp)
+int isc_pp_num (ISAMC_PP pp)
 {
-    return 1;
+    return pp->numKeys;
 }
 

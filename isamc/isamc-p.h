@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc-p.h,v $
- * Revision 1.3  1996-11-04 14:08:55  adam
+ * Revision 1.4  1996-11-08 11:15:28  adam
+ * Number of keys in chain are stored in first block and the function
+ * to retrieve this information, isc_pp_num is implemented.
+ *
+ * Revision 1.3  1996/11/04 14:08:55  adam
  * Optimized free block usage.
  *
  * Revision 1.2  1996/11/01 08:59:13  adam
@@ -49,20 +53,21 @@ struct ISAMC_s {
 
 struct ISAMC_PP_s {
     char *buf;
-    int offset;
-    int size;
+    unsigned offset;
+    unsigned short size;
     int cat;
     int pos;
     int next;
     ISAMC is;
     void *decodeClientData;
     int deleteFlag;
+    int numKeys;
 };
 
-#define ISAMC_BLOCK_OFFSET (sizeof(int)+sizeof(int)) 
+#define ISAMC_BLOCK_OFFSET_N (sizeof(int)+sizeof(short)) 
+#define ISAMC_BLOCK_OFFSET_1 (sizeof(int)+sizeof(short)+sizeof(int)) 
 
 int isc_alloc_block (ISAMC is, int cat);
 void isc_release_block (ISAMC is, int cat, int pos);
-int isc_write_dblock (ISAMC is, int cat, int pos, char *src,
-                      int nextpos, int offset);
-
+int isc_read_block (ISAMC is, int cat, int pos, char *dst);
+int isc_write_block (ISAMC is, int cat, int pos, char *src);
