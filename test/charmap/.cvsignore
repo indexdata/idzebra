@@ -1,0 +1,10 @@
+Makefile
+Makefile.in
+*.mf
+*.log
+log
+*.LCK
+shadow
+reg
+socket
+zebrasrv.pid

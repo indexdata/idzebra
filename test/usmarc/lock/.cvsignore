@@ -1,8 +1,7 @@
 Makefile
 Makefile.in
+*.mf
+*.LCK
 lock
-register
 tmp
 zebrasrv.pid
-socket
-*.log
