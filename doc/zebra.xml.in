@@ -11,10 +11,10 @@
         <!ENTITY app-license SYSTEM "license.xml">
         <!ENTITY app-indexdata SYSTEM "indexdata.xml">
 ]>
-<!-- $Id: zebra.xml.in,v 1.6 2002-04-10 14:47:49 heikki Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.7 2002-08-27 07:49:23 mike Exp $ -->
 <book id="zebra">
  <bookinfo>
-  <title>Zebra Server - Administrators' Guide and Reference</title>
+  <title>Zebra - User's Guide and Reference</title>
   <author>
    <firstname>Sebastian</firstname><surname>Hammer</surname>
   </author>
@@ -24,21 +24,27 @@
   <author>
    <firstname>Heikki</firstname><surname>Levanto</surname>
   </author>
+  <author>
+   <firstname>Mike</firstname><surname>Taylor</surname>
+  </author>
   <copyright>
    <year>1995-2002</year>
    <holder>Index Data</holder>
   </copyright>
   <abstract>
    <simpara>
-    The Zebra information server combines a versatile fielded/free-text
-    search engine with a Z39.50 v3 front-end to provide a powerful and
-    flexible information management system.
-    This document explains the procedure for installing and
-    configuring the system, managing data and providing Z39.50 
-    services with the software.
+    Zebra is a free, fast, friendly information management system.  It
+    can index records in XML/SGML, MARC, e-mail archives and many
+    other formats, and quickly find them using a combination of
+    boolean searching and relevance ranking.  Search/retrieval
+    applications can be written using APIs in a wide variety of
+    languages, communicating with the Zebra server using
+    industry-standard information-retrieval protocols.
    </simpara>
    <simpara>
-    This manual covers version @VERSION@ of Zebra.
+    This manual explains how to build and install Zebra, configure it
+    appropriately for your application, add data and set up a running
+    information service.  It describes version @VERSION@ of Zebra.
    </simpara>
   </abstract>
  </bookinfo>

@@ -1,15 +1,14 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.7 2002-08-05 08:27:05 quinn Exp $ -->
+ <!-- $Id: introduction.xml,v 1.8 2002-08-27 07:49:23 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
   <title>Overview</title>
   
   <para>
-   The 
    <ulink url="http://www.indexdata.dk/zebra/">
      Zebra</ulink>
-   server is a high-performance, general-purpose structured text
+   is a high-performance, general-purpose structured text
    indexing and retrieval engine. It reads structured records in a
    variety of input formats (eg. email, XML, MARC) and allows access
    to them through exact boolean search expressions and
@@ -18,7 +17,7 @@
 
    <para>
    Zebra supports large databases (more than ten gigabytes of data,
-   tens of millions of records). It supports incremental, safe
+   tens of millions of records). It supports safe, incremental
    database updates on live systems. You can access data stored in
    Zebra using a variety of Index Data tools (eg. YAZ and PHP/YAZ) as
    well as commercial and freeware Z39.50 clients and toolkits. 
@@ -186,6 +185,34 @@
   
  </sect1>
  
+ <sect1 id="apps">
+  <title>Applications</title>
+  <para>
+   Zebra has been deployed in numerous applications, in both the
+   academic and commercial worlds, in application domains as diverse
+   as bibliographic information, geospatial, ### (Help, guys!)
+  </para>
+  <para>
+   Notable applications include the following:
+  </para>
+
+  <sect2>
+   <title>DADS - the DTV Article Database Service</title>
+   <para>
+    DADS is a huge database of ### records, allowing students and
+    researchers at DTU (###) to search and order articles from several
+    different databases at once.  The database contains
+    literature on all engineering subjects.  It's available on-line
+    through a web gateway at
+	http://www.dtv.dk/search/index_e.htm
+    though only to members of the university.
+   </para>
+   <para>
+    ### Much more information needed.
+   </para>
+  </sect2>
+ </sect1>
+
  <sect1 id="future">
   <title>Future Work</title>
   
