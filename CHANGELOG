@@ -1,3 +1,5 @@
+Fixed a few memory leaks.
+
 Moved towards generic character mapping. Type w, p uses
 string.chr, u uses urx.chr and n uses numeric.chr.
 
