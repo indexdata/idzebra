@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.9  1995-12-06 15:48:46  quinn
+ * Revision 1.10  1995-12-12 14:12:47  quinn
+ * *** empty log message ***
+ *
+ * Revision 1.9  1995/12/06  15:48:46  quinn
  * Fixed update-problem.
  *
  * Revision 1.8  1995/12/06  14:48:27  quinn
@@ -396,7 +399,7 @@ int is_m_seek_record(is_mtable *tab, const void *rec)
 	if ((rs = (*tab->is->cmp)(peek, rec)) > 0)
 	{
 	    is_m_unread_record(tab);
-	    return 1;
+	    return rs;
 	}
 	else if (rs == 0)
 	    return 0;
