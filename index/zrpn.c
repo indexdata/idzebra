@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.88  1998-10-18 07:54:52  adam
+ * Revision 1.89  1998-11-16 10:11:55  adam
+ * Added addtional info for error 114 - unsupported use attribute.
+ *
+ * Revision 1.88  1998/10/18 07:54:52  adam
  * Additional info added for diagnostics 114 (Unsupported use attribute) and
  * 121 (Unsupported attribute set).
  *
@@ -1016,7 +1019,10 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         if (!prefix_len)
         {
-            zh->errCode = 114;
+	    char val_str[32];
+	    sprintf (val_str, "%d", use_value);
+	    zh->errCode = 114;
+	    zh->errString = nmem_strdup (stream, val_str);
             return -1;
         }
         term_dict[prefix_len++] = ')';        
