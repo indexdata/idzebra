@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.41 2004-08-24 15:00:16 heikki Exp $
+/* $Id: rsbool.c,v 1.42 2004-08-25 13:21:43 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -97,6 +97,7 @@ struct rset_bool_info {
     int (*cmp)(const void *p1, const void *p2);
     void (*log_item)(int logmask, const void *p, const char *txt);
     struct rset_bool_rfd *rfd_list;
+    struct rset_bool_rfd *free_list;
 };
 
 struct rset_bool_rfd {
@@ -127,6 +128,7 @@ static RSET rsbool_create_base( const struct rset_control *ctrl,
     info->cmp = cmp;
     info->log_item = log_item;
     info->rfd_list = NULL;
+    info->free_list = NULL;
     
     rnew->priv=info;
     return rnew;
@@ -197,7 +199,12 @@ static RSFD r_open (RSET ct, int flag)
         logf (LOG_FATAL, "bool set type is read-only");
         return NULL;
     }
-    rfd = (struct rset_bool_rfd *) nmem_malloc(ct->nmem, sizeof(*rfd));
+    rfd = info->free_list;
+    if (rfd)
+	info->free_list = rfd->next;
+    else
+        rfd = (struct rset_bool_rfd *) nmem_malloc(ct->nmem, sizeof(*rfd));
+
     logf(LOG_DEBUG,"rsbool (%s) open [%p]", ct->control->desc, rfd);
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
@@ -222,9 +229,15 @@ static void r_close (RSFD rfd)
     for (rfdp = &info->rfd_list; *rfdp; rfdp = &(*rfdp)->next)
         if (*rfdp == rfd)
         {
+	    struct rset_bool_rfd *rfd_tmp = *rfdp;
+
             rset_close (info->rset_l, (*rfdp)->rfd_l);
             rset_close (info->rset_r, (*rfdp)->rfd_r);
             *rfdp = (*rfdp)->next;
+
+	    rfd_tmp->next = info->free_list;
+	    info->free_list = rfd_tmp;
+
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");
