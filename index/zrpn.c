@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.92  1999-05-26 07:49:13  adam
+ * Revision 1.93  1999-06-17 14:38:40  adam
+ * Bug fix: Scan SEGV'ed when getting unknown use attribute.
+ *
+ * Revision 1.92  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.91  1999/02/02 14:51:13  adam
@@ -2232,6 +2235,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     char *rank_type = NULL;
     int complete_flag;
     int sort_flag;
+    *list = 0;
 
     if (attributeset == VAL_NONE)
         attributeset = VAL_BIB1;
@@ -2264,6 +2268,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		zh->errCode = 114;
 	    else
 		zh->errCode = 121;
+	    *num_entries = 0;
+	    return;
         }
         if (zebraExplain_curDatabase (zh->zei, basenames[base_no]))
         {
