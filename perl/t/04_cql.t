@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 04_cql.t,v 1.1 2003-03-03 00:44:39 pop Exp $
+# $Id: 04_cql.t,v 1.2 2004-05-25 14:11:26 adam Exp $
 #
 # Perl API header
 # =============================================================================
@@ -40,7 +40,7 @@ $SIG{__WARN__} = \&catch_warn;
 &check_cql($sess, "dc.title=(IDZebra and Session)", 0);
 &check_cql($sess, "dc.title=IDZebra and Session)", -1);
 &check_cql($sess, "dc.title='IDZebra::Session'", 0);
-&check_cql($sess, "anything=IDZebra", 15);
+&check_cql($sess, "anything=IDZebra", 16);
 
 sub check_cql {
     my ($sess, $query, $exp) = @_;
