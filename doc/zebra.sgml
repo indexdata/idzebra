@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.37 1998-01-29 13:35:11 adam Exp $
+  $Id: zebra.sgml,v 1.38 1998-01-30 09:41:15 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.37 $
+<date>$Revision: 1.38 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -328,12 +328,11 @@ indicate the location of the configuration file by option
 
 <sect1>Record Types<label id="record-types">
 <p>
-Indexing is a per-record process, in which
-either insert/modify/delete will occur. Before a record is indexed
-search keys are extracted from whatever might be the layout the
-original record (sgml,html,text, etc..). The Zebra system 
-currently only supports SGML-like, structured records and unstructured text
-records.
+Indexing is a per-record process, in which either insert/modify/delete
+will occur. Before a record is indexed search keys are extracted from
+whatever might be the layout the original record (sgml,html,text, etc..).
+The Zebra system currently supports two fundamantal types of records:
+structured and simple text.
 To specify a particular extraction process, use either the
 command line option <tt>-t</tt> or specify a
 <tt>recordType</tt> setting in the configuration file.
@@ -969,7 +968,7 @@ If a <bf/Structure/ attribute of <bf/Phrase/ is used in conjunction with a
 <bf/Completeness/ attribute of <bf/Complete (Sub)field/, the term is
 matched against the contents of the phrase (long word) register, if one
 exists for the given <bf/Use/ attribute.
-A phrase register exists for those fields in the <tt/.abs/
+A phrase register is created for those fields in the <tt/.abs/
 file that contains a <tt/p/-specifier.
 
 If <bf/Structure/=<bf/Phrase/ is used in conjunction with
@@ -1047,6 +1046,7 @@ expressions.
 
 <sect3>Query examples
 <p>
+
 Phrase search for <bf/information retrieval/ in the title-register:
 <verb>
  @attr 1=4 "information retrieval"
@@ -1067,7 +1067,11 @@ Ranked search with a regular expression:
  @attr 1=4 @attr 5=102 @attr 2=102 "informat.* retrieval"
 </verb>
 
-Relational search on a numeric index (westoundingCoordinate &gt; -114):
+In the GILS schema (<tt/gils.abs/), the west-bounding-coordinate is
+indexed as type <tt/n/, and is therefore searched by specifying
+<bf/structure/=<bf/Numeric String/.
+To match all those records with west-bounding-coordinate greater
+than -114 we use the following query:
 <verb>
  @attr 4=109 @attr 2=5 @attr gils 1=2038 -114
 </verb>
@@ -2171,7 +2175,7 @@ level.
 <sect>License
 
 <p>
-Copyright &copy; 1995,1996 Index Data.
+Copyright &copy; 1995-1998 Index Data.
 
 All rights reserved.
 
