@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.23  2000-07-07 12:49:20  adam
+ * Revision 1.24  2000-09-05 14:04:05  adam
+ * Updates for prefix 'yaz_' for YAZ log functions.
+ *
+ * Revision 1.23  2000/07/07 12:49:20  adam
  * Optimized resultSetInsert{Rank,Sort}.
  *
  * Revision 1.22  1999/02/02 14:50:19  adam
@@ -193,7 +196,7 @@ int main (int argc, char **argv)
         }
         else if (ret == 'v')
         {
-            log_init (log_mask_str(arg), prog, NULL);
+            yaz_log_init (yaz_log_mask_str(arg), prog, NULL);
         }
         else
         {

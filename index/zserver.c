@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zserver.c,v $
- * Revision 1.79  2000-05-09 10:56:50  adam
+ * Revision 1.80  2000-09-05 14:04:05  adam
+ * Updates for prefix 'yaz_' for YAZ log functions.
+ *
+ * Revision 1.79  2000/05/09 10:56:50  adam
  * Added call to xmalloc/nmem debugging functions.
  *
  * Revision 1.78  2000/04/05 09:49:35  adam
@@ -641,7 +644,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                                        odr_errmsg(odr_geterror(rr->decode)),
                                        odr_offset(rr->decode));
                                 yaz_log(LOG_LOG, "PDU dump:");
-                                odr_dumpBER(log_file(),
+                                odr_dumpBER(yaz_log_file(),
                                      r->u.single_ASN1_type->buf,
                                      r->u.single_ASN1_type->len);
                             }
@@ -666,7 +669,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                                        odr_errmsg(odr_geterror(rr->decode)),
                                        odr_offset(rr->decode));
                                 yaz_log(LOG_LOG, "PDU dump:");
-                                odr_dumpBER(log_file(),
+                                odr_dumpBER(yaz_log_file(),
                                      r->u.single_ASN1_type->buf,
                                      r->u.single_ASN1_type->len);
                             }

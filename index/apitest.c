@@ -109,7 +109,7 @@ int main (int argc, char **argv)
 
     nmem_init ();
 
-    log_init_file("apitest.log");
+    yaz_log_init_file("apitest.log");
 
     odr_input = odr_createmem (ODR_DECODE);    
     odr_output = odr_createmem (ODR_ENCODE);    

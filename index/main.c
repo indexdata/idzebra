@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.76  2000-03-20 19:08:36  adam
+ * Revision 1.77  2000-09-05 14:04:05  adam
+ * Updates for prefix 'yaz_' for YAZ log functions.
+ *
+ * Revision 1.76  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -600,9 +603,9 @@ int main (int argc, char **argv)
 #endif
         }
         else if (ret == 'v')
-            log_init_level (log_mask_str(arg));
+            yaz_log_init_level (yaz_log_mask_str(arg));
 	else if (ret == 'l')
-	    log_init_file (arg);
+	    yaz_log_init_file (arg);
         else if (ret == 'm')
             mem_max = 1024*1024*atoi(arg);
         else if (ret == 'd')

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.103  2000-05-18 12:01:36  adam
+ * Revision 1.104  2000-09-05 14:04:05  adam
+ * Updates for prefix 'yaz_' for YAZ log functions.
+ *
+ * Revision 1.103  2000/05/18 12:01:36  adam
  * System call times(2) used again. More 64-bit fixes.
  *
  * Revision 1.102  2000/05/15 15:32:33  adam
@@ -1277,7 +1280,7 @@ struct recordLogInfo {
 static void recordLogPreamble (int level, const char *msg, void *info)
 {
     struct recordLogInfo *p = (struct recordLogInfo *) info;
-    FILE *outf = log_file ();
+    FILE *outf = yaz_log_file ();
 
     if (level & LOG_LOG)
         return ;

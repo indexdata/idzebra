@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dictext.c,v $
- * Revision 1.7  1999-02-02 14:50:18  adam
+ * Revision 1.8  2000-09-05 14:04:05  adam
+ * Updates for prefix 'yaz_' for YAZ log functions.
+ *
+ * Revision 1.7  1999/02/02 14:50:18  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.6  1996/10/29 14:00:02  adam
@@ -61,7 +64,7 @@ int main (int argc, char **argv)
         }
         else if (ret == 'v')
         {
-            log_init (log_mask_str(arg), prog, NULL);
+            yaz_log_init (yaz_log_mask_str(arg), prog, NULL);
         }
         else if (ret == 'h')
         {
