@@ -1,4 +1,4 @@
-/* $Id: kdump.c,v 1.22 2002-08-02 19:26:55 adam Exp $
+/* $Id: kdump.c,v 1.23 2003-05-24 22:35:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -59,6 +59,9 @@ int key_file_decode (FILE *f)
         d = (d << 8) + (getc (f) & 0xff);
         d = (d << 8) + (getc (f) & 0xff);
         break;
+    default:
+        d = 0;
+        assert (0);
     }
     return d;
 }

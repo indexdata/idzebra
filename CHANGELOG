@@ -1,4 +1,7 @@
 
+Zebra server checks for zebrasrv.pid and refuses to start if it is already
+locked by another (running) zebrasrv.
+
 Fixed a bug with text being chunked in pieces for the grs.xml filter.
 
 --- 1.3.11 2003/04/25

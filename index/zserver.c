@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.106 2003-05-20 13:52:41 adam Exp $
+/* $Id: zserver.c,v 1.107 2003-05-24 22:35:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,21 +20,23 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #include <stdio.h>
 #include <assert.h>
 #include <fcntl.h>
 #ifdef WIN32
 #include <io.h>
 #include <process.h>
+#include <sys/locking.h>
 #else
 #include <unistd.h>
 #endif
 
+#include <errno.h>
 #include <yaz/log.h>
 #include <yaz/ill.h>
 #include <yaz/yaz-util.h>
+
+#include <sys/types.h>
 
 #include "zserver.h"
 
@@ -641,25 +643,6 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 
 static void bend_start (struct statserv_options_block *sob)
 {
-#ifdef WIN32
-    
-#else
-    if (!sob->inetd) 
-    {
-        char *pidfile = "zebrasrv.pid";
-        int fd = creat (pidfile, 0666);
-        if (fd == -1)
-            yaz_log (LOG_WARN|LOG_ERRNO, "creat %s", pidfile);
-        else
-        {
-	    char pidstr[30];
-	
-	    sprintf (pidstr, "%ld", (long) getpid ());
-	    write (fd, pidstr, strlen(pidstr));
-	    close (fd);
-        }
-    }
-#endif
     if (sob->handle)
 	zebra_stop((ZebraService) sob->handle);
     sob->handle = zebra_start(sob->configname);
@@ -668,6 +651,45 @@ static void bend_start (struct statserv_options_block *sob)
 	yaz_log (LOG_FATAL, "Failed to read config `%s'", sob->configname);
 	exit (1);
     }
+#ifdef WIN32
+    
+#else
+    if (!sob->inetd) 
+    {
+        struct flock area;
+        char *pidfile = "zebrasrv.pid";
+        int fd = open (pidfile, O_EXCL|O_WRONLY|O_CREAT, 0666);
+        if (fd == -1)
+        {
+            if (errno != EEXIST)
+            {
+                yaz_log(LOG_FATAL|LOG_ERRNO, "lock file %s", pidfile);
+                exit(1);
+            }
+            fd = open(pidfile, O_RDWR, 0666);
+            if (fd == -1)
+            {
+                yaz_log(LOG_FATAL|LOG_ERRNO, "lock file %s", pidfile);
+                exit(1);
+            }
+        }
+        area.l_type = F_WRLCK;
+        area.l_whence = SEEK_SET;
+        area.l_len = area.l_start = 0L;
+        if (fcntl (fd, F_SETLK, &area) == -1)
+        {
+            yaz_log(LOG_ERRNO|LOG_FATAL, "Zebra server already running");
+            exit(1);
+        }
+        else
+        {
+	    char pidstr[30];
+	
+	    sprintf (pidstr, "%ld", (long) getpid ());
+	    write (fd, pidstr, strlen(pidstr));
+        }
+    }
+#endif
 }
 
 static void bend_stop(struct statserv_options_block *sob)
