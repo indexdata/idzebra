@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.14 2002-12-03 16:10:19 mike Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.15 2002-12-03 16:40:17 adam Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -1017,8 +1017,8 @@
          elm, this directive allows you to index attribute
          contents. The <replaceable>xpath</replaceable> uses
          a syntax similar to XPath. The <replaceable>attributes</replaceable>
-         have same syntax and meaning as directive elm, except that !
-         refers to the nodes selected by <replaceable>xpath</replaceable>.
+         have same syntax and meaning as directive elm, except that operator
+         ! refers to the nodes selected by <replaceable>xpath</replaceable>.
          <!--
          xelm   /         !:w                 default index
          xelm   //        !:w                 additional index
@@ -1052,6 +1052,57 @@
         </para>
        </listitem>
       </varlistentry>
+
+	<!-- Adam's version -->
+      <varlistentry>
+       <term>systag <replaceable>systemtag</replaceable> <replaceable>element</replaceable></term>
+       <listitem>
+        <para>
+         This directive maps system information to an element during
+         retrieval. This information is dynamically created. The
+         following system tags are defined
+         <variablelist>
+          <varlistentry>
+           <term>size</term>
+           <listitem>
+            <para>
+             Size of record in bytes. By default this
+             is mapped to element <literal>size</literal>.
+            </para>
+           </listitem>
+          </varlistentry>
+
+          <varlistentry>
+           <term>rank</term>
+           <listitem>
+            <para>
+             Score/rank of record. By default this
+             is mapped to element <literal>rank</literal>.
+             If no score was calculated for the record (non-ranked
+             searched) search this directive is ignored.
+            </para>
+           </listitem>
+          </varlistentry>
+          
+          <varlistentry>
+           <term>sysno</term>
+           <listitem> 
+            <para>
+             Zebra's system number (record ID) for the
+             record. By default this is mapped to element
+             <literal>localControlNumber</literal>.
+            </para>
+           </listitem>
+          </varlistentry>
+         </variablelist>
+         If you do not want a particular system tag to be applied,
+         then set the resulting element to something undefined in the
+         abs file (such as <literal>none</literal>).
+        </para>
+       </listitem>
+      </varlistentry>
+
+	<!-- Mike's version -->
       <varlistentry>
        <term>
         systag

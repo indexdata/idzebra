@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.14 2002-12-03 16:10:19 mike Exp $ -->
+ <!-- $Id: administration.xml,v 1.15 2002-12-03 16:40:17 adam Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -322,6 +322,27 @@
      </listitem>
     </varlistentry>
 
+     <!--
+     no longer supported.
+    <varlistentry>
+     <term>tagsysno: 0|1</term>
+     <listitem>
+      <para>
+       Species whether Zebra should include system-number data in XML
+       and GRS-1 records returned to clients, represented by the
+       <literal>&lt;localControlNumber&gt;</literal> element in XML
+       and the <literal>(1,14)</literal> tag in GRS-1.
+       The content of these elements is an internally-generated
+       integer uniquely identifying the record within its database.
+       It is included by default but may be turned off, with
+       <literal>tagsysno: 0</literal> for databases in which a local
+       control number is explicitly specified in the input records
+       themselves.
+      </para>
+     </listitem>
+    </varlistentry>
+     -->
+     
    </variablelist>
   </para>
   
