@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.29 1996-10-29 14:11:20 adam Exp $
+  $Id: zebra.sgml,v 1.30 1996-11-08 11:07:33 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.29 $
+<date>$Revision: 1.30 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -989,7 +989,32 @@ For the <bf/Truncation/ attribute, <bf/No Truncation/ is the default.
 is <bf/Regxp-1/. <bf/Regxp-2/ enables the fault-tolerant (fuzzy)
 search. As a default, a single error (deletion, insertion,
 replacement) is accepted when terms are matched against the register
-contents.
+contents. The <bf/Regxp-1/ and <bf/Regxp-2/ both follow the same syntax
+with the operands:
+<descrip>
+<tag/x/ Matches the character <it/x/.
+<tag/./ Matches any character.
+<tag><tt/[/..<tt/]/</tag> Matches the set of characters specified;
+ such as <tt/[abc]/ or <tt/[a-c]/.
+</descrip>
+and the operators:
+<descrip>
+<tag/x*/ Matches <it/x/ zero or more times. Priority: high.
+<tag/x+/ Matches <it/x/ one or more times. Priority: high.
+<tag/x?/ Matches <it/x/ once or twice. Priority: high.
+<tag/xy/ Matches <it/x/, then <it/y/. Priority: medium.
+<tag/x|y/ Matches either <it/x/ or <it/y/. Priority: low.
+</descrip>
+The order of evaluation may be changed by using parentheses.
+
+If the <bf/Regxp-2/ query begins with a plus sign (<tt/+/) it marks the
+beginning of a section with non-standard specifiers. The next minus sign
+marks the end of the section. Currently Zebra only supports one
+specifier, the error tolerance, which consists one digit. 
+
+Since the plus operator is normally a suffix operator the addition to
+the query syntax doesn't violate the syntax for standard regular
+expressions.
 
 <sect2>Present
 
