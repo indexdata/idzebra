@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.3 2002-08-28 12:47:10 adam Exp $
+/* $Id: xmlread.c,v 1.4 2002-08-29 08:41:07 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -381,7 +381,7 @@ data1_node *zebra_read_xml (data1_handle dh,
     struct user_info uinfo;
     int done = 0;
 
-    uinfo.loglevel = LOG_LOG;
+    uinfo.loglevel = LOG_DEBUG;
     uinfo.level = 1;
     uinfo.dh = dh;
     uinfo.nmem = m;
