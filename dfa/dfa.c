@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.26  1999-05-26 07:49:12  adam
+ * Revision 1.27  1999-07-15 12:05:32  adam
+ * Bug fix: Anyset (.) includes all 8-bit characters when charmap is defined.
+ *
+ * Revision 1.26  1999/05/26 07:49:12  adam
  * C++ compilation.
  *
  * Revision 1.25  1999/02/02 14:50:05  adam
@@ -1096,7 +1099,6 @@ static struct DFA_parse *dfa_parse_init (void)
 
     parse_info->anyset = mk_BSet (&parse_info->charset);
     res_BSet (parse_info->charset, parse_info->anyset);
-    add_BSet (parse_info->charset, parse_info->anyset, '\n');
     com_BSet (parse_info->charset, parse_info->anyset);
     parse_info->use_Tnode = parse_info->max_Tnode = 0;
     parse_info->start = parse_info->end = NULL;
@@ -1172,6 +1174,13 @@ int dfa_parse (struct DFA *dfa, const char **pattern)
     assert (dfa);
     assert (dfa->parse_info);
     parse_info = dfa->parse_info;
+
+    if (!parse_info->cmap)
+    {
+	res_BSet (parse_info->charset, parse_info->anyset);
+	add_BSet (parse_info->charset, parse_info->anyset, '\n');
+	com_BSet (parse_info->charset, parse_info->anyset);
+    }
     do_parse (parse_info, pattern, &top);
     if (parse_info->err_code)
         return parse_info->err_code;
