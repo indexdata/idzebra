@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.136 2003-02-26 09:13:51 pop Exp $
+/* $Id: extract.c,v 1.137 2003-02-26 12:30:54 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -970,6 +970,14 @@ int bufferExtractRecord (ZebraHandle zh,
 	return 0;
     }
 
+    zh->reg->keys.buf_used = 0;
+    zh->reg->keys.prevAttrUse = -1;
+    zh->reg->keys.prevAttrSet = -1;
+    zh->reg->keys.prevSeqNo = 0;
+    zh->reg->sortKeys.buf_used = 0;
+    zh->reg->sortKeys.buf_max = 0;
+    zh->reg->sortKeys.buf = 0;
+
     if (*recordType) {
       logf (LOG_DEBUG, "Record type explicitly specified: %s", recordType);
       recType = recType_byName (zh->reg->recTypes, recordType, subType,
@@ -989,14 +997,6 @@ int bufferExtractRecord (ZebraHandle zh,
       logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
       return 0;
     }
-
-    zh->reg->keys.buf_used = 0;
-    zh->reg->keys.prevAttrUse = -1;
-    zh->reg->keys.prevAttrSet = -1;
-    zh->reg->keys.prevSeqNo = 0;
-    zh->reg->sortKeys.buf_used = 0;
-    zh->reg->sortKeys.buf_max = 0;
-    zh->reg->sortKeys.buf = 0;
 
     extractCtrl.subType = subType;
     extractCtrl.init = extract_init;
