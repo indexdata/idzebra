@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.30  2001-10-15 19:53:43  adam
+ * Revision 1.31  2001-11-19 23:05:22  adam
+ * Added a few prototypes.
+ *
+ * Revision 1.30  2001/10/15 19:53:43  adam
  * POSIX thread updates. First work on term sets.
  *
  * Revision 1.29  2001/01/22 10:42:56  adam
@@ -345,7 +348,6 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 	sr = (ZebraPosSet) xmalloc (sizeof(*sr) * num);
 	for (i = 0; i<num; i++)
 	{
-	    int j;
 	    struct zebra_set_term_entry *entry = sset->term_entries;
 
 	    sr[i].sysno = 0;
