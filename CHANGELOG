@@ -1,4 +1,6 @@
 
+Added test for charmap and rusmarc.
+
 Added feature charmaps (.chr) so that characters may be specified in
 \LXXXX HEX notation.
 
