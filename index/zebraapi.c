@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.125 2004-08-10 08:54:39 heikki Exp $
+/* $Id: zebraapi.c,v 1.126 2004-08-10 15:21:48 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -766,6 +766,8 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
 int zebra_search_RPN (ZebraHandle zh, ODR o,
 		       Z_RPNQuery *query, const char *setname, int *hits)
 {
+    const char *max;
+    zint maxhits;
     ASSERTZH;
     yaz_log(LOG_API,"zebra_search_rpn");
     zh->errCode=0;
@@ -781,8 +783,19 @@ int zebra_search_RPN (ZebraHandle zh, ODR o,
                      zh->num_basenames, zh->basenames, setname);
 
     zebra_end_read (zh);
-    if (zh->hits > INT_MAX)
-	*hits=INT_MAX;
+    max = res_get (zh->res, "maxhits");
+    if (max)
+	maxhits=atoi(max);
+    else {
+        int i=0; 
+	maxhits=INT_MAX;
+	while (maxhits>100) { maxhits/=10; i++;}
+	while (i--) maxhits *= 10;
+    }
+    if (zh->hits > maxhits) { /* too large for yaz to handle */
+        logf(LOG_LOG,"limiting hits to "ZINT_FORMAT, maxhits);
+	*hits=maxhits;  /* round it down to two digits, to look like rounded */
+    }
     else
         *hits = zh->hits;
     return 0;
