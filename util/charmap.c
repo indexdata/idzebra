@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.7  1996-06-06 12:08:56  quinn
+ * Revision 1.8  1996-10-18 12:39:23  adam
+ * Uses LOG_DEBUG instead of LOG_WARN for "Character map overlap".
+ *
+ * Revision 1.7  1996/06/06  12:08:56  quinn
  * Fixed bug.
  *
  * Revision 1.6  1996/06/04  13:28:00  quinn
@@ -88,7 +91,7 @@ static chr_t_entry *set_map_string(chr_t_entry *root, char *from, int len,
 	    (char*) root->target == CHR_UNKNOWN)
 	    root->target = (unsigned char *) xstrdup(to);
 	else if ((char*) to != CHR_SPACE)
-	    logf(LOG_WARN, "Character map overlap");
+	    logf(LOG_DEBUG, "Character map overlap");
     }
     else
     {
