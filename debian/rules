@@ -93,12 +93,14 @@ binary-arch: build install
 
 	dh_installchangelogs
 	dh_link
+
+	dh_installdeb -p idzebra
+	dh_installman -p idzebra doc/zebraidx.1 doc/zebrasrv.8
+
 	dh_strip
 	dh_compress -a
 	dh_fixperms -a
 
-	dh_installdeb -p idzebra
-	dh_installman -p idzebra doc/zebraidx.1 doc/zebrasrv.8
 	dh_shlibdeps -p idzebra $(LOCAL_LINK) 
 
 	cat debian/postinst >> debian/idzebra/DEBIAN/postinst
