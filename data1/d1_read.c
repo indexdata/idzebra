@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.7 2004-07-26 12:20:07 adam Exp $
+/* $Id: d1_read.c,v 1.8 2004-07-26 13:51:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -301,14 +301,10 @@ data1_node *data1_mk_tag_n (data1_handle dh, NMEM nmem,
 void data1_tag_add_attr (data1_handle dh, NMEM nmem,
                          data1_node *res, const char **attr)
 {
-    data1_xattr **p;
-
     if (res->which != DATA1N_tag)
         return;
 
-    p = &res->u.tag.attributes;
-    data1_add_attrs(dh, nmem, attr, p);
-    *p = 0;
+    data1_add_attrs(dh, nmem, attr, &res->u.tag.attributes);
 }
 
 data1_node *data1_mk_tag (data1_handle dh, NMEM nmem,
