@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.19  1999-11-30 13:48:04  adam
+ * Revision 1.20  2000-03-02 14:35:19  adam
+ * Added structure year and date.
+ *
+ * Revision 1.19  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.18  1999/10/15 08:27:46  adam
@@ -306,7 +309,7 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
 	logf (LOG_WARN, "Unknown register type: %c", reg_id);
 
 	zm->reg_id = reg_id;
-	zm->maptab_name = NULL;
+	zm->maptab_name = nmem_strdup (zms->nmem, "@");
 	zm->maptab = NULL;
 	zm->type = ZEBRA_MAP_TYPE_INDEX;
 	zm->completeness = 0;
@@ -572,6 +575,14 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
         *reg_id = '0';
         *search_type = "phrase";
         break;
+    case 4:  /* year */
+        *reg_id = 'y';
+        *search_type = "phrase";
+        break;
+    case 5:  /* date */
+        *reg_id = 'd';
+        *search_type = "phrase";
+        break;
     default:
 	return -1;
     }
@@ -588,7 +599,7 @@ WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
 
     wrbuf_rewind(zms->wrbuf_1);
     wrbuf_write(zms->wrbuf_1, input_str, input_len);
-    if (!zm->replace_tokens)
+    if (!zm || !zm->replace_tokens)
 	return zms->wrbuf_1;
   
 #if 0

@@ -1,5 +1,5 @@
 # Zebra indexes as referred to from the *.abs-files.
-#  $Id: default.idx,v 1.7 1999-02-18 14:59:54 adam Exp $
+#  $Id: default.idx,v 1.8 2000-03-02 14:35:19 adam Exp $
 #
 # Traditional word index
 index w
@@ -31,3 +31,7 @@ charmap @
 sort s
 completeness 1
 charmap string.chr
+
+index y
+completeness 0
+charmap @

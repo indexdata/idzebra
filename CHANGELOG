@@ -1,4 +1,6 @@
 
+Fixed bug regarding proximity.
+
 Documentation updates.
 
 Fixed bug in record retrieval module that occured on 64-bit OSF 
