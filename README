@@ -1,5 +1,5 @@
 Zebra server,
- Copyright (c) 1995-2004, Index Data ApS
+ Copyright (c) 1995-2005, Index Data ApS
 
 Introduction
 ------------
@@ -37,4 +37,4 @@ We maintain a mailing-list for the purpose of announcing new versions of
 the software, bug-reports, discussion etc. You can sign up at the URL
 http://www.indexdata.dk/mailman/listinfo/zebralist
 
-$Id: README,v 1.18 2004-01-15 14:22:21 adam Exp $
+$Id: README,v 1.18.2.1 2005-01-14 14:30:30 adam Exp $
