@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.65  1998-10-18 07:54:54  adam
+ * Revision 1.66  1998-10-28 10:54:41  adam
+ * SDRKit integration.
+ *
+ * Revision 1.65  1998/10/18 07:54:54  adam
  * Additional info added for diagnostics 114 (Unsupported use attribute) and
  * 121 (Unsupported attribute set).
  *
@@ -252,6 +255,13 @@
 
 #include "zserver.h"
 
+#ifndef ZEBRASDR
+#define ZEBRASDR 0
+#endif
+#if ZEBRASDR
+#include "zebrasdr.h"
+#endif
+
 static int bend_sort (void *handle, bend_sort_rr *rr);
 
 bend_initresult *bend_init (bend_initrequest *q)
@@ -441,5 +451,8 @@ int main (int argc, char **argv)
 #endif
     statserv_setcontrol (sob);
 
+#if ZEBRASDR
+    zebraSdr_std ();
+#endif
     return statserv_main (argc, argv);
 }

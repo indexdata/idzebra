@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.59  1998-10-16 08:14:32  adam
+ * Revision 1.60  1998-10-28 10:54:39  adam
+ * SDRKit integration.
+ *
+ * Revision 1.59  1998/10/16 08:14:32  adam
  * Updated record control system.
  *
  * Revision 1.58  1998/06/08 14:43:13  adam
@@ -232,6 +235,14 @@
 #include "index.h"
 #include "recindex.h"
 
+#ifndef ZEBRASDR
+#define ZEBRASDR 0
+#endif
+
+#if ZEBRASDR
+#include "zebrasdr.h"
+#endif
+
 char *prog;
 
 Res common_resource = 0;
@@ -250,6 +261,9 @@ int main (int argc, char **argv)
 
     nmem_init ();
 
+#if ZEBRASDR
+    zebraSdr_std ();
+#endif
     rGroupDef.groupName = NULL;
     rGroupDef.databaseName = NULL;
     rGroupDef.path = NULL;
@@ -290,7 +304,7 @@ int main (int argc, char **argv)
                  );
         exit (1);
     }
-    while ((ret = options ("sVt:c:g:d:m:v:nf:", argv, argc, &arg)) != -2)
+    while ((ret = options ("sVt:c:g:d:m:v:nf:l:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -471,7 +485,9 @@ int main (int argc, char **argv)
             fprintf (stderr, "Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
         }
         else if (ret == 'v')
-            log_init (log_mask_str(arg), prog, NULL);
+            log_init_level (log_mask_str(arg));
+	else if (ret == 'l')
+	    log_init_file (arg);
         else if (ret == 'm')
             mem_max = 1024*1024*atoi(arg);
         else if (ret == 'd')

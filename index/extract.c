@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.88  1998-10-16 08:14:29  adam
+ * Revision 1.89  1998-10-28 10:54:38  adam
+ * SDRKit integration.
+ *
+ * Revision 1.88  1998/10/16 08:14:29  adam
  * Updated record control system.
  *
  * Revision 1.87  1998/10/15 13:10:33  adam
@@ -336,6 +339,14 @@
 #include "index.h"
 
 #include "zinfo.h"
+
+#ifndef ZEBRASDR
+#define ZEBRASDR 0
+#endif
+
+#if ZEBRASDR
+#include "zebrasdr.h"
+#endif
 
 static Dict matchDict;
 
@@ -950,11 +961,13 @@ static const char **searchRecordKey (struct recKeys *reckeys,
 }
 
 struct file_read_info {
-    off_t file_max;
-    off_t file_offset;
-    off_t file_moffset;
+    off_t file_max;	    /* maximum offset so far */
+    off_t file_offset;      /* current offset */
+    off_t file_moffset;     /* offset of rec/rec boundary */
     int file_more;
     int fd;
+    char *sdrbuf;
+    int sdrmax;
 };
 
 static struct file_read_info *file_read_start (int fd)
@@ -964,6 +977,8 @@ static struct file_read_info *file_read_start (int fd)
     fi->fd = fd;
     fi->file_max = 0;
     fi->file_moffset = 0;
+    fi->sdrbuf = 0;
+    fi->sdrmax = 0;
     return fi;
 }
 
@@ -976,6 +991,8 @@ static off_t file_seek (void *handle, off_t offset)
 {
     struct file_read_info *p = handle;
     p->file_offset = offset;
+    if (p->sdrbuf)
+	return offset;
     return lseek (p->fd, offset, SEEK_SET);
 }
 
@@ -990,7 +1007,16 @@ static int file_read (void *handle, char *buf, size_t count)
     struct file_read_info *p = handle;
     int fd = p->fd;
     int r;
-    r = read (fd, buf, count);
+    if (p->sdrbuf)
+    {
+	r = count;
+	if (r > p->sdrmax - p->file_offset)
+	    r = p->sdrmax - p->file_offset;
+	if (r)
+	    memcpy (buf, p->sdrbuf + p->file_offset, r);
+    }
+    else
+	r = read (fd, buf, count);
     if (r > 0)
     {
         p->file_offset += r;
@@ -1005,7 +1031,7 @@ static void file_begin (void *handle)
     struct file_read_info *p = handle;
 
     p->file_offset = p->file_moffset;
-    if (p->file_moffset)
+    if (!p->sdrbuf && p->file_moffset)
         lseek (p->fd, p->file_moffset, SEEK_SET);
     p->file_more = 0;
 }
@@ -1590,6 +1616,57 @@ int fileExtract (SYSNO *sysno, const char *fname,
     if (rGroup->flagStoreKeys == -1)
         rGroup->flagStoreKeys = 0;
 
+#if ZEBRASDR
+    if (1)
+    {
+	ZebraSdrHandle h;
+	char xname[128], *xp;
+
+	strncpy (xname, fname, 127);
+	if ((xp = strchr (xname, '.')))
+	    *xp = '\0';
+
+        h = zebraSdr_open (xname);
+	if (!h)
+	{
+	    logf (LOG_WARN, "sdr open %s", xname);
+	    return 0;
+	}
+	for (;;)
+	{
+    	    unsigned char *buf;
+	    char sdr_name[128];
+	    int r, segmentno;
+
+	    segmentno = zebraSdr_segment (h, 0);
+	    sprintf (sdr_name, "%%%s.%d", xname, segmentno);
+	    logf (LOG_LOG, "SDR: %s", sdr_name);
+
+#if 1
+	    if (segmentno > 20)
+		break;
+#endif
+	    r = zebraSdr_read (h, &buf);
+
+    	    if (!r)
+		break;
+
+            fi = file_read_start (0);
+	    fi->sdrbuf = buf;
+	    fi->sdrmax = r;
+	    do
+	    {
+		file_begin (fi);
+		r = recordExtract (sysno, sdr_name, rGroup, deleteFlag, fi,
+                           recType, subType);
+	    } while (r && !sysno && fi->file_more);
+	    file_read_stop (fi);
+	    free (buf);
+	}
+	zebraSdr_close (h);
+	return 1;
+    }
+#endif
     if (sysno && deleteFlag)
         fd = -1;
     else
