@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.9 2003-03-03 12:14:27 pop Exp $
+# $Id: Session.pm,v 1.10 2003-03-03 18:27:25 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -14,7 +14,7 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use IDZebra::Resultset;
     use IDZebra::RetrievalRecord;
-    our $VERSION = do { my @r = (q$Revision: 1.9 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.10 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
 #    our @ISA = qw(IDZebra::Logger);
 }
 
@@ -577,6 +577,15 @@ sub search {
 	$self->databases(@origdbs);
     }
 
+    if ($args{sort}) {
+	if ($rs->errCode) {
+	    carp("Sort skipped due to search error: ".
+		 $rs->errCode);
+	} else {
+	    $rs->sort($args{sort});
+	}
+    }
+
     return ($rs);
 }
 
@@ -613,6 +622,10 @@ sub sortResultsets {
 
     $self->checkzh;
 
+    if ($#sets > 0) {
+	croak ("Sorting/merging of multiple resultsets is not supported now");
+    }
+
     my @setnames;
     my $count = 0;
     foreach my $rs (@sets) {
@@ -629,6 +642,9 @@ sub sortResultsets {
 
     my $errCode = $self->errCode;
     my $errString = $self->errString;
+
+    logf (LOG_LOG, "Sort status $setname: %d, errCode: %d, errString: %s", 
+	  $status, $errCode, $errString);
 
     if ($status || $errCode) {$count = 0;}
 

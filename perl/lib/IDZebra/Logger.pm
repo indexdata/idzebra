@@ -83,7 +83,7 @@ __END__
 
 =head1 NAME
 
-IDZebra::Service - 
+IDZebra::Logger - 
 
 =head1 SYNOPSIS
 

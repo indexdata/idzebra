@@ -13,5 +13,5 @@ maptab meta-usmarc.map
 # These tags are required by Zebra for GRS-1 generation
 elm (1,10)		rank			-
 elm (1,14)		localControlNumber	Local-number
-elm name 		NAME 			Title,Any,Title:s
+elm name 		NAME 			Title:p,Any,Title:s
 elm description 	description 		Any 

@@ -1,4 +1,4 @@
-# $Id: Resultset.pm,v 1.6 2003-03-03 12:14:27 pop Exp $
+# $Id: Resultset.pm,v 1.7 2003-03-03 18:27:25 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -12,7 +12,7 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.6 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.7 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -62,6 +62,7 @@ sub errString {
 sub DESTROY {
     my $self = shift;
 
+#    print STDERR "Destroy RS\n";
     # Deleteresultset?
     
     my $stats = 0;
@@ -135,8 +136,8 @@ sub sort {
     }
 
     unless ($setname) {
-	$_[0] = $self->{session}->sortResultsets($sortspec, 
-						 $self->{name}, ($self));
+	return ($_[0] = $self->{session}->sortResultsets($sortspec, 
+						 $self->{session}->_new_setname, ($self)));
 	return ($_[0]);
     } else {
 	return ($self->{session}->sortResultsets($sortspec, 

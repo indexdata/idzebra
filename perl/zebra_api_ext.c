@@ -547,17 +547,22 @@ int sort (ZebraHandle zh,
   int num_input_setnames = 0;
   int sort_status = 0;
   Z_SortKeySpecList *sort_sequence = yaz_sort_spec (stream, sort_spec);
-
+  if (!sort_sequence) {
+    logf(LOG_WARN,"invalid sort specs '%s'", sort_spec);
+    zh->errCode = 207;
+    return (-1);
+  }
+  
   /* we can do this, since the typemap code for char** will 
      put a NULL at the end of list */
-    while (input_setnames[num_input_setnames]) num_input_setnames++;
+  while (input_setnames[num_input_setnames]) num_input_setnames++;
 
-    if (zebra_begin_read (zh))
-	return;
-
-    resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
-		   output_setname, sort_sequence, &sort_status);
-
-    zebra_end_read(zh);
-    return (sort_status);
+  if (zebra_begin_read (zh))
+    return;
+  
+  resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
+		 output_setname, sort_sequence, &sort_status);
+  
+  zebra_end_read(zh);
+  return (sort_status);
 }
