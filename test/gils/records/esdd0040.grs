@@ -15,7 +15,7 @@ LITHOLOGY; MUD; OIL; PETROLEUM; PETROLEUM WELL; UTAH
 
 <Abstract>
 Logs for selected petroleum wells include electric (all varieties) and 
-lithologic or hydrocarbon logs.  Duplicates from OG&M well records file, 
+lithologic or hydrocarbon logs.  Duplicates from OG&amp;M well records file, 
 supplied by private concerns.  The areal coverage is Utah and vicinity.
 <Format>
 LOGS
