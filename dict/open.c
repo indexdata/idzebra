@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.7  1995-09-04 12:33:32  adam
+ * Revision 1.8  1995-12-07 11:48:56  adam
+ * Insert operation obeys DICT_type = 1 (slack in page).
+ * Function dict_open exists if page size or magic aren't right.
+ *
+ * Revision 1.7  1995/09/04  12:33:32  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.6  1994/10/05  12:16:52  adam
@@ -47,11 +51,11 @@ Dict dict_open (const char *name, int cache, int rw)
 
     page_size = atoi (res_get_def (common_resource, resource_str, 
                                    DICT_DEFAULT_PAGESIZE));
-    if (page_size < 1024)
+    if (page_size < 2048)
     {
-        logf (LOG_WARN, "Resource %s was too small. Set to 1024",
+        logf (LOG_WARN, "Resource %s was too small. Set to 2048",
               resource_str);
-        page_size = 1024;
+        page_size = 2048;
     }
     dict->dbf = dict_bf_open (name, page_size, cache, rw);
     dict->rw = rw;
@@ -85,17 +89,13 @@ Dict dict_open (const char *name, int cache, int rw)
         if (strcmp (dh->magic_str, DICT_MAGIC))
         {
             logf (LOG_WARN, "Bad magic of `%s'", name);
-            dict_bf_close (dict->dbf);
-            xfree (dict);
-            return NULL;
+            exit (1);
         }
         if (dh->page_size != page_size)
         {
             logf (LOG_WARN, "Resource %s is %d and pagesize of `%s' is %d",
                   resource_str, page_size, name, dh->page_size);
-            dict_bf_close (dict->dbf);
-            xfree (dict);
-            return NULL;
+            exit (1);
         }
         memcpy (&dict->head, dh, sizeof(*dh));
     }

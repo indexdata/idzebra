@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: delete.c,v $
- * Revision 1.2  1995-12-06 17:48:30  adam
+ * Revision 1.3  1995-12-07 11:48:55  adam
+ * Insert operation obeys DICT_type = 1 (slack in page).
+ * Function dict_open exists if page size or magic aren't right.
+ *
+ * Revision 1.2  1995/12/06  17:48:30  adam
  * Bug fix: delete didn't work.
  *
  * Revision 1.1  1995/12/06  14:52:21  adam
@@ -50,6 +54,7 @@ static int dict_del (Dict dict, const Dict_char *str)
                     indxp[-mid] = indxp[-mid-1];
                     mid++;
                 }
+                DICT_type(p) = 1;
                 (DICT_nodir(p))--;
                 dict_bf_touch (dict->dbf, ptr);
                 return 1;
@@ -75,6 +80,7 @@ static int dict_del (Dict dict, const Dict_char *str)
                     if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
                     {
                         info[sizeof(Dict_ptr)+sizeof(Dict_char)] = 0;
+                        DICT_type(p) = 1;
                         dict_bf_touch (dict->dbf, ptr);
                         return 1;
                     }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.13  1995-11-28 09:06:37  adam
+ * Revision 1.14  1995-12-07 11:48:56  adam
+ * Insert operation obeys DICT_type = 1 (slack in page).
+ * Function dict_open exists if page size or magic aren't right.
+ *
+ * Revision 1.13  1995/11/28  09:06:37  adam
  * Fixed potential dangling pointer.
  *
  * Revision 1.12  1995/09/06  10:34:44  adam
@@ -411,6 +415,11 @@ static int dict_ins (Dict dict, const Dict_char *str,
     if (DICT_size(p)+slen+userlen >=
         DICT_pagesize(dict) - (1+DICT_nodir(p))*sizeof(short)) /* overflow? */
     {
+        if (DICT_type(p))
+        {
+            clean_page (dict, ptr, p, NULL, 0, NULL);
+            return dict_ins (dict, str, ptr, userlen, userinfo);
+        }
         split_page (dict, ptr, p);
         return dict_ins (dict, str, ptr, userlen, userinfo);
     }
