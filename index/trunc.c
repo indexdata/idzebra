@@ -1,83 +1,9 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
+ * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Log: trunc.c,v $
- * Revision 1.23  2002-04-12 14:40:42  adam
- * Work on XPATH
- *
- * Revision 1.22  2002/04/05 08:46:26  adam
- * Zebra with full functionality
- *
- * Revision 1.21  2002/04/04 14:14:13  adam
- * Multiple registers (alpha early)
- *
- * Revision 1.20  2002/03/20 20:24:29  adam
- * Hits per term. Returned in SearchResult-1
- *
- * Revision 1.19  2001/01/16 16:56:15  heikki
- * Searching in my isam-d
- *
- * Revision 1.18  2000/05/18 12:01:36  adam
- * System call times(2) used again. More 64-bit fixes.
- *
- * Revision 1.17  2000/03/15 15:00:30  adam
- * First work on threaded version.
- *
- * Revision 1.16  1999/11/30 13:48:03  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.15  1999/07/20 13:59:18  adam
- * Fixed bug that occurred when phrases had 0 hits.
- *
- * Revision 1.14  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.13  1999/05/12 13:08:06  adam
- * First version of ISAMS.
- *
- * Revision 1.12  1999/02/02 14:51:10  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.11  1998/03/25 13:48:02  adam
- * Fixed bug in rset_trunc_r.
- *
- * Revision 1.10  1998/03/05 08:45:13  adam
- * New result set model and modular ranking system. Moved towards
- * descent server API. System information stored as "SGML" records.
- *
- * Revision 1.9  1998/01/12 15:04:09  adam
- * The test option (-s) only uses read-lock (and not write lock).
- *
- * Revision 1.8  1997/10/31 12:34:27  adam
- * Bug fix: memory leak.
- *
- * Revision 1.7  1997/09/29 09:07:29  adam
- * Minor change.
- *
- * Revision 1.6  1997/09/22 12:39:06  adam
- * Added get_pos method for the ranked result sets.
- *
- * Revision 1.5  1997/09/17 12:19:17  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.4  1996/12/23 15:30:44  adam
- * Work on truncation.
- * Bug fix: result sets weren't deleted after server shut down.
- *
- * Revision 1.3  1996/12/20 11:07:14  adam
- * Multi-or result set.
- *
- * Revision 1.2  1996/11/08 11:10:28  adam
- * Buffers used during file match got bigger.
- * Compressed ISAM support everywhere.
- * Bug fixes regarding masking characters in queries.
- * Redesigned Regexp-2 queries.
- *
- * Revision 1.1  1996/11/04 14:07:40  adam
- * Moved truncation code to trunc.c.
+ * $Id: trunc.c,v 1.24 2002-04-16 22:31:42 adam Exp $
  *
  */
 #include <stdio.h>
@@ -92,6 +18,7 @@
 #include <rsisam.h>
 #include <rsisamc.h>
 #include <rsisamd.h>
+#include <rsisamb.h>
 #if NEW_TRUNC
 #include <rsm_or.h>
 #endif
@@ -294,31 +221,34 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
-#if 1
-/* section that preserve all keys */
-            heap_delete (ti);
-            if (is_readkey (ispt[n], ti->tmpbuf))
-                heap_insert (ti, ti->tmpbuf, n);
-            else
-                is_pt_free (ispt[n]);
-#else
-/* section that preserve all keys with unique sysnos */
-            while (1)
+            if (preserve_position)
             {
-                if (!is_readkey (ispt[n], ti->tmpbuf))
-                {
-                    heap_delete (ti);
-                    is_pt_free (ispt[n]);
-                    break;
-                }
-                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
-                {
-                    heap_delete (ti);
+/* section that preserve all keys */
+                heap_delete (ti);
+                if (is_readkey (ispt[n], ti->tmpbuf))
                     heap_insert (ti, ti->tmpbuf, n);
-                    break;
+                else
+                    is_pt_free (ispt[n]);
+            }
+            else
+            {
+/* section that preserve all keys with unique sysnos */
+                while (1)
+                {
+                    if (!is_readkey (ispt[n], ti->tmpbuf))
+                    {
+                        heap_delete (ti);
+                        is_pt_free (ispt[n]);
+                        break;
+                    }
+                    if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+                    {
+                        heap_delete (ti);
+                        heap_insert (ti, ti->tmpbuf, n);
+                        break;
+                    }
                 }
             }
-#endif
         }
         heap_close (ti);
         xfree (ispt);
@@ -429,7 +359,6 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         heap_close (ti);
         xfree (ispt);
     }
-
     else if (zi->reg->isams)
     {
         ISAMS_PP *ispt;
@@ -466,6 +395,60 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                     heap_delete (ti);
                     heap_insert (ti, ti->tmpbuf, n);
                     break;
+                }
+            }
+        }
+        heap_close (ti);
+        xfree (ispt);
+    }
+    else if (zi->reg->isamb)
+    {
+        ISAMB_PP *ispt;
+        int i;
+        struct trunc_info *ti;
+
+        ispt = (ISAMB_PP *) xmalloc (sizeof(*ispt) * (to-from));
+
+        ti = heap_init (to-from, sizeof(struct it_key),
+                        key_compare_it);
+        for (i = to-from; --i >= 0; )
+        {
+            ispt[i] = isamb_pp_open (zi->reg->isamb, isam_p[from+i]);
+            if (isamb_pp_read (ispt[i], ti->tmpbuf))
+                heap_insert (ti, ti->tmpbuf, i);
+            else
+                isamb_pp_close (ispt[i]);
+        }
+        while (ti->heapnum)
+        {
+            int n = ti->indx[ti->ptr[1]];
+
+            rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+
+            if (preserve_position)
+            {
+                heap_delete (ti);
+                if (isamb_pp_read (ispt[n], ti->tmpbuf))
+                    heap_insert (ti, ti->tmpbuf, n);
+                else
+                    isamb_pp_close (ispt[n]);
+            }
+            else
+            {
+                while (1)
+                {
+                    if (!isamb_pp_read (ispt[n], ti->tmpbuf))
+                    {
+                        heap_delete (ti);
+                        isamb_pp_close (ispt[n]);
+                        break;
+                    }
+                    if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+                    {
+                        heap_delete (ti);
+                        heap_insert (ti, ti->tmpbuf, n);
+                        break;
+                    }
                 }
             }
         }
@@ -616,6 +599,21 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             return rset_create (rset_kind_m_or, &parms);
         }
 #endif
+        qsort (isam_p, no, sizeof(*isam_p), isamd_trunc_cmp);
+    }
+    else if (zi->reg->isamb)
+    {
+        if (no == 1)
+        {
+            rset_isamb_parms parms;
+
+            parms.key_size = sizeof(struct it_key);
+            parms.cmp = key_compare_it;
+            parms.pos = *isam_p;
+            parms.is = zi->reg->isamb;
+	    parms.rset_term = rset_term_create (term, length, flags);
+            return rset_create (rset_kind_isamb, &parms);
+        }
         qsort (isam_p, no, sizeof(*isam_p), isamd_trunc_cmp);
     }
     else

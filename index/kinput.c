@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Id: kinput.c,v 1.48 2002-04-05 08:46:26 adam Exp $
+ * $Id: kinput.c,v 1.49 2002-04-16 22:31:42 adam Exp $
  *
  * Bugs
  *  - Allocates a lot of memory for the merge process, but never releases it.
@@ -29,11 +29,6 @@
 #define INP_BUF_START 60000
 #define INP_BUF_ADD  400000
 
-static int no_diffs   = 0;
-static int no_updates = 0;
-static int no_deletions = 0;
-static int no_insertions = 0;
-static int no_iterations = 0;
 
 struct key_file {
     int   no;            /* file no */
@@ -229,11 +224,13 @@ struct heap_info {
     int    heapnum;
     int    *ptr;
     int    (*cmp)(const void *p1, const void *p2);
-    Dict dict;
-    ISAMS isams;
-    ISAM isam;
-    ISAMC isamc;
-    ISAMD isamd;
+    struct zebra_register *reg;
+
+    int no_diffs;
+    int no_updates;
+    int no_deletions;
+    int no_insertions;
+    int no_iterations;
 };
 
 struct heap_info *key_heap_init (int nkeys,
@@ -254,6 +251,12 @@ struct heap_info *key_heap_init (int nkeys,
         hi->ptr[i] = i;
         hi->info.buf[i] = (char *) xmalloc (INP_NAME_MAX);
     }
+    hi->no_diffs = 0;
+    hi->no_diffs = 0;
+    hi->no_updates = 0;
+    hi->no_deletions = 0;
+    hi->no_insertions = 0;
+    hi->no_iterations = 0;
     return hi;
 }
 
@@ -340,7 +343,7 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
     key_heap_delete (hi);
     if ((r = key_file_read (kf, rbuf)))
         key_heap_insert (hi, rbuf, r, kf);
-    no_iterations++;
+    hi->no_iterations++;
     return 1;
 }
 
@@ -401,30 +404,82 @@ int heap_inpc (struct heap_info *hi)
 
         strcpy (this_name, hci.cur_name);
 	assert (hci.cur_name[1]);
-        no_diffs++;
-        if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
+        hi->no_diffs++;
+        if ((dict_info = dict_lookup (hi->reg->dict, hci.cur_name)))
         {
             memcpy (&isamc_p, dict_info+1, sizeof(ISAMC_P));
-            isamc_p2 = isc_merge (hi->isamc, isamc_p, isamc_i);
+            isamc_p2 = isc_merge (hi->reg->isamc, isamc_p, isamc_i);
             if (!isamc_p2)
             {
-                no_deletions++;
-                if (!dict_delete (hi->dict, this_name))
+                hi->no_deletions++;
+                if (!dict_delete (hi->reg->dict, this_name))
                     abort();
             }
             else 
             {
-                no_updates++;
+                hi->no_updates++;
                 if (isamc_p2 != isamc_p)
-                    dict_insert (hi->dict, this_name,
+                    dict_insert (hi->reg->dict, this_name,
                                  sizeof(ISAMC_P), &isamc_p2);
             }
         } 
         else
         {
-            isamc_p = isc_merge (hi->isamc, 0, isamc_i);
-            no_insertions++;
-            dict_insert (hi->dict, this_name, sizeof(ISAMC_P), &isamc_p);
+            isamc_p = isc_merge (hi->reg->isamc, 0, isamc_i);
+            hi->no_insertions++;
+            dict_insert (hi->reg->dict, this_name, sizeof(ISAMC_P), &isamc_p);
+        }
+    }
+    xfree (isamc_i);
+    xfree (hci.key);
+    return 0;
+} 
+
+int heap_inpb (struct heap_info *hi)
+{
+    struct heap_cread_info hci;
+    ISAMC_I isamc_i = (ISAMC_I) xmalloc (sizeof(*isamc_i));
+
+    hci.key = (char *) xmalloc (KEY_SIZE);
+    hci.mode = 1;
+    hci.hi = hi;
+    hci.more = heap_read_one (hi, hci.cur_name, hci.key);
+
+    isamc_i->clientData = &hci;
+    isamc_i->read_item = heap_cread_item;
+
+    while (hci.more)
+    {
+        char this_name[INP_NAME_MAX];
+        ISAMC_P isamc_p, isamc_p2;
+        char *dict_info;
+
+        strcpy (this_name, hci.cur_name);
+	assert (hci.cur_name[1]);
+        hi->no_diffs++;
+        if ((dict_info = dict_lookup (hi->reg->dict, hci.cur_name)))
+        {
+            memcpy (&isamc_p, dict_info+1, sizeof(ISAMC_P));
+            isamc_p2 = isamb_merge (hi->reg->isamb, isamc_p, isamc_i);
+            if (!isamc_p2)
+            {
+                hi->no_deletions++;
+                if (!dict_delete (hi->reg->dict, this_name))
+                    abort();
+            }
+            else 
+            {
+                hi->no_updates++;
+                if (isamc_p2 != isamc_p)
+                    dict_insert (hi->reg->dict, this_name,
+                                 sizeof(ISAMC_P), &isamc_p2);
+            }
+        } 
+        else
+        {
+            isamc_p = isamb_merge (hi->reg->isamb, 0, isamc_i);
+            hi->no_insertions++;
+            dict_insert (hi->reg->dict, this_name, sizeof(ISAMC_P), &isamc_p);
         }
     }
     xfree (isamc_i);
@@ -453,30 +508,30 @@ int heap_inpd (struct heap_info *hi)
 
         strcpy (this_name, hci.cur_name);
 	assert (hci.cur_name[1]);
-        no_diffs++;
-        if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
+        hi->no_diffs++;
+        if ((dict_info = dict_lookup (hi->reg->dict, hci.cur_name)))
         {
             memcpy (&isamd_p, dict_info+1, sizeof(ISAMD_P));
-            isamd_p2 = isamd_append (hi->isamd, isamd_p, isamd_i);
+            isamd_p2 = isamd_append (hi->reg->isamd, isamd_p, isamd_i);
             if (!isamd_p2)
             {
-                no_deletions++;
-                if (!dict_delete (hi->dict, this_name))
+                hi->no_deletions++;
+                if (!dict_delete (hi->reg->dict, this_name))
                     abort();
             }
             else 
             {
-                no_updates++;
+                hi->no_updates++;
                 if (isamd_p2 != isamd_p)
-                    dict_insert (hi->dict, this_name,
+                    dict_insert (hi->reg->dict, this_name,
                                  sizeof(ISAMD_P), &isamd_p2);
             }
         } 
         else
         {
-            isamd_p = isamd_append (hi->isamd, 0, isamd_i);
-            no_insertions++;
-            dict_insert (hi->dict, this_name, sizeof(ISAMD_P), &isamd_p);
+            isamd_p = isamd_append (hi->reg->isamd, 0, isamd_i);
+            hi->no_insertions++;
+            dict_insert (hi->reg->dict, this_name, sizeof(ISAMD_P), &isamd_p);
         }
     }
     xfree (isamd_i);
@@ -519,33 +574,34 @@ int heap_inp (struct heap_info *hi)
                 key_buf = new_key_buf;
             }
         }
-        no_diffs++;
+        hi->no_diffs++;
         nmemb = key_buf_ptr / KEY_SIZE;
         assert (nmemb * (int) KEY_SIZE == key_buf_ptr);
-        if ((info = dict_lookup (hi->dict, cur_name)))
+        if ((info = dict_lookup (hi->reg->dict, cur_name)))
         {
             ISAM_P isam_p, isam_p2;
             memcpy (&isam_p, info+1, sizeof(ISAM_P));
-            isam_p2 = is_merge (hi->isam, isam_p, nmemb, key_buf);
+            isam_p2 = is_merge (hi->reg->isam, isam_p, nmemb, key_buf);
             if (!isam_p2)
             {
-                no_deletions++;
-                if (!dict_delete (hi->dict, cur_name))
+                hi->no_deletions++;
+                if (!dict_delete (hi->reg->dict, cur_name))
                     abort ();
             }
             else 
             {
-                no_updates++;
+                hi->no_updates++;
                 if (isam_p2 != isam_p)
-                    dict_insert (hi->dict, cur_name, sizeof(ISAM_P), &isam_p2);
+                    dict_insert (hi->reg->dict, cur_name,
+                                 sizeof(ISAM_P), &isam_p2);
             }
         }
         else
         {
             ISAM_P isam_p;
-            no_insertions++;
-            isam_p = is_merge (hi->isam, 0, nmemb, key_buf);
-            dict_insert (hi->dict, cur_name, sizeof(ISAM_P), &isam_p);
+            hi->no_insertions++;
+            isam_p = is_merge (hi->reg->isam, 0, nmemb, key_buf);
+            dict_insert (hi->reg->dict, cur_name, sizeof(ISAM_P), &isam_p);
         }
         memcpy (key_buf, next_key, KEY_SIZE);
         strcpy (cur_name, next_name);
@@ -574,12 +630,12 @@ int heap_inps (struct heap_info *hi)
 
         strcpy (this_name, hci.cur_name);
 	assert (hci.cur_name[1]);
-        no_diffs++;
-        if (!(dict_info = dict_lookup (hi->dict, hci.cur_name)))
+        hi->no_diffs++;
+        if (!(dict_info = dict_lookup (hi->reg->dict, hci.cur_name)))
         {
-            isams_p = isams_merge (hi->isams, isams_i);
-            no_insertions++;
-            dict_insert (hi->dict, this_name, sizeof(ISAMS_P), &isams_p);
+            isams_p = isams_merge (hi->reg->isams, isams_i);
+            hi->no_insertions++;
+            dict_insert (hi->reg->dict, this_name, sizeof(ISAMS_P), &isams_p);
         }
 	else
 	{
@@ -663,34 +719,32 @@ void zebra_index_merge (ZebraHandle zh)
         progressInfo.totalOffset += kf[i]->buf_size;
     }
     hi = key_heap_init (nkeys, key_qsort_compare);
-    hi->dict = zh->reg->dict;
-    hi->isams = zh->reg->isams;
-    hi->isam = zh->reg->isam;
-    hi->isamc = zh->reg->isamc;
-    hi->isamd = zh->reg->isamd;
+    hi->reg = zh->reg;
     
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read (kf[i], rbuf)))
             key_heap_insert (hi, rbuf, r, kf[i]);
     if (zh->reg->isams)
 	heap_inps (hi);
-    else if (zh->reg->isamc)
+    if (zh->reg->isamc)
         heap_inpc (hi);
-    else if (zh->reg->isam)
+    if (zh->reg->isam)
 	heap_inp (hi);
-    else if (zh->reg->isamd)
+    if (zh->reg->isamd)
 	heap_inpd (hi);
+    if (zh->reg->isamb)
+	heap_inpb (hi);
 	
     for (i = 1; i<=nkeys; i++)
     {
         extract_get_fname_tmp  (zh, rbuf, i);
         unlink (rbuf);
     }
-    logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
-    logf (LOG_LOG, "Distinct words .%7d", no_diffs);
-    logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
-    logf (LOG_LOG, "Deletions. . . .%7d", no_deletions);
-    logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
+    logf (LOG_LOG, "Iterations . . .%7d", hi->no_iterations);
+    logf (LOG_LOG, "Distinct words .%7d", hi->no_diffs);
+    logf (LOG_LOG, "Updates. . . . .%7d", hi->no_updates);
+    logf (LOG_LOG, "Deletions. . . .%7d", hi->no_deletions);
+    logf (LOG_LOG, "Insertions . . .%7d", hi->no_insertions);
     zh->reg->key_file_no = 0;
 
     key_heap_destroy (hi, nkeys);

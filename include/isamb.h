@@ -1,5 +1,7 @@
 /*
- * $Id: isamb.h,v 1.1 2000-10-17 12:37:09 adam Exp $
+ * Copyright (C) 2000-2002, Index Data
+ * All rights reserved.
+ * $Id: isamb.h,v 1.2 2002-04-16 22:31:42 adam Exp $
  */
 
 #ifndef ISAMB_H
@@ -9,8 +11,20 @@
 #include <isamc.h>
 
 typedef struct ISAMB_s *ISAMB;
+typedef struct ISAMB_PP_s *ISAMB_PP;
+typedef ISAMC_P ISAMB_P;
 
-ISAMB isamb_open (BFiles bfs, const char *name, ISAMC_M method);
+ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method);
 void isamb_close (ISAMB isamb);
+
+ISAMB_P isamb_merge (ISAMB b, ISAMB_P pos, ISAMC_I data);
+
+ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos);
+
+int isamb_pp_read (ISAMB_PP pp, void *buf);
+
+void isamb_pp_close (ISAMB_PP pp);
+
+int isamb_pp_num (ISAMB_PP pp);
 
 #endif

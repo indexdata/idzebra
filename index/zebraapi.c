@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.56 2002-04-15 14:05:43 adam Exp $
+ * $Id: zebraapi.c,v 1.57 2002-04-16 22:31:42 adam Exp $
  */
 
 #include <assert.h>
@@ -187,6 +187,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     reg->isam = 0;
     reg->isamc = 0;
     reg->isamd = 0;
+    reg->isamb = 0;
     reg->zei = 0;
     reg->matchDict = 0;
     
@@ -227,7 +228,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	    return 0;
 	}
     }
-    else if (res_get_match (res, "isam", "i", ISAM_DEFAULT))
+    if (res_get_match (res, "isam", "i", ISAM_DEFAULT))
     {
 	if (!(reg->isam = is_open (reg->bfs, FNAME_ISAM, key_compare, rw,
 				  sizeof (struct it_key), res)))
@@ -236,7 +237,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	    return 0;
 	}
     }
-    else if (res_get_match (res, "isam", "c", ISAM_DEFAULT))
+    if (res_get_match (res, "isam", "c", ISAM_DEFAULT))
     {
 	struct ISAMC_M_s isamc_m;
 	if (!(reg->isamc = isc_open (reg->bfs, FNAME_ISAMC,
@@ -246,7 +247,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	    return 0;
 	}
     }
-    else if (res_get_match (res, "isam", "d", ISAM_DEFAULT))
+    if (res_get_match (res, "isam", "d", ISAM_DEFAULT))
     {
 	struct ISAMD_M_s isamd_m;
 	
@@ -254,6 +255,17 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 				      rw, key_isamd_m(res, &isamd_m))))
 	{
 	    logf (LOG_WARN, "isamd_open");
+	    return 0;
+	}
+    }
+    if (res_get_match (res, "isam", "b", ISAM_DEFAULT))
+    {
+	struct ISAMC_M_s isamc_m;
+	
+	if (!(reg->isamb = isamb_open (reg->bfs, "isamb",
+                                       rw, key_isamc_m(res, &isamc_m))))
+	{
+	    logf (LOG_WARN, "isamb_open");
 	    return 0;
 	}
     }
@@ -305,6 +317,8 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
             isc_close (reg->isamc);
         if (reg->isamd)
             isamd_close (reg->isamd);
+        if (reg->isamb)
+            isamb_close (reg->isamb);
         rec_close (&reg->records);
     }
 

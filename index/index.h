@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
- * $Id: index.h,v 1.81 2002-04-15 14:05:43 adam Exp $
+ * $Id: index.h,v 1.82 2002-04-16 22:31:42 adam Exp $
  */
 
 #ifndef INDEX_H
@@ -23,6 +23,7 @@
 #include <isam.h>
 #include <isamc.h>
 #include <isamd.h>
+#include <isamb.h>
 #define ISAM_DEFAULT "c"
 #include <yaz/data1.h>
 #include <recctrl.h>
@@ -203,6 +204,7 @@ struct zebra_register {
     ISAM isam;
     ISAMC isamc;
     ISAMD isamd;
+    ISAMB isamb;
     Dict dict;
     Dict matchDict;
     SortIdx sortIdx;
