@@ -1,3 +1,10 @@
+--- 1.0a3 1995/12/06
+
+Memory-problems in ISAM fixed. More blocktypes added to the default setup
+to increase performance on larger databases.
+
+Various minor changes in data management system.
+
 --- 1.0a2 1995/12/05
 
 A couple of portability-problems resolved.
