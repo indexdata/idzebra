@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.9  1996-02-06 10:19:57  quinn
+ * Revision 1.10  1996-03-19 19:22:44  quinn
+ * Fixed update-bug
+ *
+ * Revision 1.9  1996/02/06  10:19:57  quinn
  * Attempt at fixing bug. Not all blocks were read before they were unlinked
  * prior to a remap operation.
  *
@@ -298,8 +301,26 @@ void is_p_align(is_mtable *tab)
 	    else
 	    {
 	    	tab->data = tab->data->next;
-	    	tab->data->state = IS_MBSTATE_DIRTY;
 	    	next = tab->data;
+		if (next)
+		{
+		    if (next->state < IS_MBSTATE_CLEAN)
+		    {
+			if (is_p_read_full(tab, next) < 0)
+			{
+			    logf(LOG_FATAL, "Error during re-alignment");
+			    abort();
+			}
+			if (next->nextpos && !next->next)
+			{
+			    next->next = xmalloc_mblock();
+			    next->next->diskpos = next->nextpos;
+			    next->next->state = IS_MBSTATE_UNREAD;
+			    next->next->data = 0;
+			}
+		    }
+		    next->state = IS_MBSTATE_DIRTY; /* force re-process */
+		}
 	    }
 	    if (mblock->diskpos >= 0)
 		is_freestore_free(tab->is, tab->pos_type, mblock->diskpos);
