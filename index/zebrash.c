@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.14 2003-06-30 19:37:12 adam Exp $
+/* $Id: zebrash.c,v 1.15 2003-07-03 14:45:02 heikki Exp $
    Copyright (C) 2002,2003
    Index Data Aps
 
@@ -183,10 +183,12 @@ static int cmd_quickstart( char *args[], char *outbuff)
     if (!rc)
         rc=onecommand(tmp,outbuff,"");
     logf(LOG_APP,"quickstart");
-    if (!rc)
-        rc=onecommand("zebra_start",outbuff,"");
-    if (!rc)
-        rc=onecommand("zebra_open",outbuff,"");
+    if (!zs)
+        if (!rc)
+            rc=onecommand("zebra_start",outbuff,"");
+    if (!zh)
+        if (!rc)
+            rc=onecommand("zebra_open",outbuff,"");
     if (!rc)
         rc=onecommand("select_database Default",outbuff,"");
     return rc;
@@ -389,6 +391,58 @@ static int cmd_exchange_record( char *args[], char *outbuff)
     return rc;
 }
 
+/**********************************
+ * Searching and retrieving
+ */
+
+static int cmd_search_pqf( char *args[], char *outbuff)
+{
+    int hits=0;
+    char *set=args[1];
+    char qry[MAX_ARG_LEN]="";
+    int i=2;
+    int rc;
+    while (args[i])
+    {
+	    strcat(qry, args[i++]);
+	    strcat(qry, " ");
+    }
+    rc=zebra_search_PQF(zh, qry, set, &hits);
+    if (0==rc)
+    {
+        sprintf(qry,"%d hits found\n",hits);
+        strcat(outbuff,qry);
+    }
+    return rc;
+}
+
+static int cmd_find( char *args[], char *outbuff)
+{
+    char *setname="MyResultSet";
+    char qry[MAX_ARG_LEN]="";
+    int i=1;
+    int rc;
+    int hits=0;
+    if (0==strstr(args[0],"@attr"))
+        strcat(qry, "@attr 1=/ ");
+    while (args[i])
+    {
+	    strcat(qry, args[i++]);
+	    strcat(qry, " ");
+    }
+    if (!zh)
+	    onecommand("quickstart", outbuff, "");
+    strcat(outbuff, "find ");
+    strcat(outbuff, qry);
+    strcat(outbuff, "\n");
+    rc=zebra_search_PQF(zh, qry, setname, &hits);
+    if (0==rc)
+    {
+        sprintf(qry,"%d hits found\n",hits);
+        strcat(outbuff,qry);
+    }
+    return rc;
+}
 
 /**************************************)
  * Command table, parser, and help 
@@ -488,10 +542,23 @@ struct cmdstruct cmds[] = {
       "inserts (1), updates (2), or deletes (3) a record \n"
       "record-id must be a unique identifier for the record",
       cmd_exchange_record},
+    { "","Searching and retrieving:","",0},
+    { "search_pqf","setname query",
+      "search ",
+      cmd_search_pqf},
+    { "find","query",
+      "simplified search",
+      cmd_find},
+    { "f","query",
+      "simplified search",
+      cmd_find},
     { "", "Misc:","", 0}, 
     { "echo", "string", 
       "ouputs the string", 
       cmd_echo },
+    { "q", "", 
+      "exits the program", 
+      cmd_quit },
     { "quit", "", 
       "exits the program", 
       cmd_quit },
