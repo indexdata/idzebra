@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.9  1997-09-29 09:02:49  adam
+ * Revision 1.10  1997-10-31 12:36:12  adam
+ * Minor change that avoids compiler warning.
+ *
+ * Revision 1.9  1997/09/29 09:02:49  adam
  * Fixed small bug (introduced by previous commit).
  *
  * Revision 1.8  1997/09/17 12:19:22  adam
@@ -725,7 +728,7 @@ static void tagEnd (struct lexSpec *spec,
     {
         (*d1_level)--;
         if (!tag ||
-            (strlen(d1_stack[*d1_level]->u.tag.tag) == len &&
+            (strlen(d1_stack[*d1_level]->u.tag.tag) == (size_t) len &&
              !memcmp (d1_stack[*d1_level]->u.tag.tag, tag, len)))
             break;
     }
