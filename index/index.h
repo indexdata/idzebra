@@ -160,7 +160,7 @@ void zebra_lock_prefix (Res res, char *dst);
 
 void zebra_load_atts (data1_handle dh, Res res);
 
-int key_SU_decode (int *ch, unsigned char *out);
+int key_SU_decode (int *ch, const unsigned char *out);
 int key_SU_encode (int ch, char *out);
 
 extern Res common_resource;
@@ -170,7 +170,10 @@ YAZ_END_CDECL
 #endif
 /*
  * $Log: index.h,v $
- * Revision 1.71  2001-11-19 23:05:22  adam
+ * Revision 1.72  2001-11-19 23:08:29  adam
+ * Added const qualifier for name parameter of key_SU_decode.
+ *
+ * Revision 1.71  2001/11/19 23:05:22  adam
  * Added a few prototypes.
  *
  * Revision 1.70  2000/12/05 10:01:44  adam

@@ -278,7 +278,7 @@ int key_SU_encode (int ch, char *out)
     */
 }
 
-int key_SU_decode (int *ch, unsigned char *out)
+int key_SU_decode (int *ch, const unsigned char *out)
 {
     int len = 1;
     int fact = 1;
@@ -294,7 +294,10 @@ int key_SU_decode (int *ch, unsigned char *out)
 
 /* 
  * $Log: kcompare.c,v $
- * Revision 1.36  2001-10-15 19:53:43  adam
+ * Revision 1.37  2001-11-19 23:08:30  adam
+ * Added const qualifier for name parameter of key_SU_decode.
+ *
+ * Revision 1.36  2001/10/15 19:53:43  adam
  * POSIX thread updates. First work on term sets.
  *
  * Revision 1.35  1999/11/30 13:48:03  adam
