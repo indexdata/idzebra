@@ -77,11 +77,6 @@ Fixed bug in configure script - used bash-specific features.
 
 --- 1.0 1999/12/10
 
-The software was split in two products Zebra (for testing,
-non-profit use) and the commercial product Z'mbol. Zebra no
-longer supports INDEX UPDATES, i.e. zebraidx should be invoked only
-once for each register. Refer to LICENSE.zebra for more info.
-
 Added support for multiple records in one file for filter grs.sgml.
 
 Changed record index structure. New layout is incompatible with
