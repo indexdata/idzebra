@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.60 2002-05-07 11:05:19 adam Exp $
+ * $Id: zebraapi.c,v 1.61 2002-07-03 14:10:12 adam Exp $
  */
 
 #include <assert.h>
@@ -664,6 +664,8 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
         zh->errString = odr_strdup (stream, setname);
         return;
     }
+    
+    zh->errCode = 0;
 
     if (zebra_begin_read (zh))
 	return;
@@ -1190,9 +1192,6 @@ int zebra_commit (ZebraHandle zh)
         zebra_set_state (zh, 'c', seqno);
 
         logf (LOG_LOG, "commit start");
-#ifndef WIN32
-        sleep (2);
-#endif
         bf_commitExec (bfs);
 #ifndef WIN32
         sync ();
