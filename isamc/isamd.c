@@ -5,8 +5,8 @@
  * 
  * Isamd - isam with diffs 
  *
- * todo
- *   most of it, this is just a copy of isamh
+ * todo: Move read_pp into merge-d
+ *       get it to work
  *
  */
 
@@ -19,9 +19,8 @@
 #include <stdio.h>
 
 #include <log.h>
+#include "../index/index.h"  /* isamd uses the internal structure of it_key */
 #include "isamd-p.h"
-
-#include "../index/index.h" /* for dump */
 
 static void flush_block (ISAMD is, int cat);
 static void release_fc (ISAMD is, int cat);
@@ -439,9 +438,12 @@ void isamd_pp_close (ISAMD_PP pp)
     ISAMD is = pp->is;
 
     (*is->method->code_stop)(ISAMD_DECODE, pp->decodeClientData);
+    isamd_free_diffs(pp);  /* see merge-d.h */
     xfree (pp->buf);
     xfree (pp);
 }
+
+
 
 ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
 {
@@ -451,8 +453,8 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
     pp->cat = isamd_type(ipos);
     pp->pos = isamd_block(ipos); 
 
-    src = pp->buf = (char *) xmalloc (is->method->filecat[pp->cat].bsize);
-
+    src = pp->buf = (char *) xmalloc (is->method->filecat[is->max_cat].bsize);
+                 /* always allocate for the largest blocks, saves trouble */
     pp->next = 0;
     pp->size = 0;
     pp->offset = 0;
@@ -461,6 +463,9 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
     //pp->deleteFlag = 0;
     pp->numKeys = 0;
     pp->diffs=0;
+  
+    pp->diffbuf=0;
+    pp->diffinfo=0;
     
     if (pp->pos)
     {
@@ -481,6 +486,7 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
             logf (LOG_LOG, "isamd_pp_open sz=%d c=%d p=%d n=%d",
                  pp->size, pp->cat, pp->pos, isamd_block(pp->next));
     }
+      
     return pp;
 }
 
@@ -529,14 +535,17 @@ void isamd_buildlaterblock(ISAMD_PP pp){
 int isamd_pp_read (ISAMD_PP pp, void *buf)
 {
     return isamd_read_item (pp, (char **) &buf);
+    /* note: isamd_read_item is in merge-d.c, because it is so */
+    /* convoluted with the merge process */
 }
 
-/* read one item from file - decode and store it in *dst.
+/* read one main item from file - decode and store it in *dst.
+   Does not worry about diffs
    Returns
      0 if end-of-file
-     1 if item could be read ok and NO boundary
-     2 if item could be read ok and boundary */
-int isamd_read_item (ISAMD_PP pp, char **dst)
+     1 if item could be read ok
+*/
+int isamd_read_main_item (ISAMD_PP pp, char **dst)
 {
     ISAMD is = pp->is;
     char *src = pp->buf + pp->offset;
@@ -571,9 +580,6 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
 	}
 	/* out new block position */
 	newcat = isamd_type(pp->next);
-	if (pp->cat != newcat ) {
-	  pp->buf = xrealloc(pp->buf, is->method->filecat[newcat].bsize);
-	}
         pp->pos = isamd_block(pp->next);
         pp->cat = isamd_type(pp->next);
         
@@ -673,8 +679,9 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.2  1999-07-14 15:05:30  heikki
- * slow start on isam-d
+ * Revision 1.3  1999-07-21 14:24:50  heikki
+ * isamd write and read functions ok, except when diff block full.
+ * (merge not yet done)
  *
  * Revision 1.1  1999/07/14 12:34:43  heikki
  * Copied from isamh, starting to change things...

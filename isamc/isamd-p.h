@@ -50,12 +50,12 @@ typedef struct ISAMD_file_s {
 struct ISAMD_s {
     int no_files;
     int max_cat;
-    //char *startblock; /* start of the chain, update lastptr and numKeys here */
-    //char *lastblock;  /* end of the chain, append here */
-    //                  /* ??? */
     ISAMD_M method;
     ISAMD_file files;
 }; 
+
+
+typedef struct ISAMD_DIFF_s *ISAMD_DIFF;
 
 struct ISAMD_PP_s {
     char *buf;   /* buffer for read/write operations */
@@ -67,7 +67,8 @@ struct ISAMD_PP_s {
     int diffs; /* either block or offset (in head) of start of diffs */
     ISAMD is;
     void *decodeClientData;
-    //int deleteFlag;
+    ISAMD_DIFF diffinfo;
+    char *diffbuf; /* buffer for the diff block, only when reading */
     int numKeys;
 };
 
@@ -79,10 +80,13 @@ struct ISAMD_PP_s {
                               sizeof(int) + \
                               sizeof(ISAMD_BLOCK_SIZE)) 
 /* == 16 */
+
+
 int isamd_alloc_block (ISAMD is, int cat);
 void isamd_release_block (ISAMD is, int cat, int pos);
 int isamd_read_block (ISAMD is, int cat, int pos, char *dst);
 int isamd_write_block (ISAMD is, int cat, int pos, char *src);
+void isamd_free_diffs(ISAMD_PP pp);
 
 #ifdef __cplusplus
 }
@@ -92,7 +96,11 @@ int isamd_write_block (ISAMD is, int cat, int pos, char *src);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.3  1999-07-14 15:05:30  heikki
+ * Revision 1.4  1999-07-21 14:24:50  heikki
+ * isamd write and read functions ok, except when diff block full.
+ * (merge not yet done)
+ *
+ * Revision 1.3  1999/07/14 15:05:30  heikki
  * slow start on isam-d
  *
  * Revision 1.1  1999/07/14 12:34:43  heikki
