@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.22  1995-11-20 11:56:26  adam
+ * Revision 1.23  1995-11-20 16:59:45  adam
+ * New update method: the 'old' keys are saved for each records.
+ *
+ * Revision 1.22  1995/11/20  11:56:26  adam
  * Work on new traversal.
  *
  * Revision 1.21  1995/11/16  15:34:55  adam
@@ -84,7 +87,7 @@
 #define IT_KEY_HAVE_FIELD 0
 
 struct it_key {
-    int   sysno;
+    int  sysno;
     int   seqno;
 };
 
@@ -99,7 +102,7 @@ struct dir_entry {
 struct dirs_entry {
     enum dirsKind kind;
     char path[256];
-    int sysno;
+    SYSNO sysno;
     int ctime;
 };
 
@@ -151,5 +154,7 @@ void strtab_del (struct strtab *t,
                  void *data);
 int index_char_cvt (int c);
 int index_word_prefix (char *string, int attset_ordinal,
-                       int local_attribute, char *databaseName);
+                       int local_attribute, const char *databaseName);
 
+int fileExtract (SYSNO *sysno, const char *fname, const char *databaseName,
+                 int deleteFlag);

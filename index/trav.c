@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.7  1995-11-20 11:56:28  adam
+ * Revision 1.8  1995-11-20 16:59:46  adam
+ * New update method: the 'old' keys are saved for each records.
+ *
+ * Revision 1.7  1995/11/20  11:56:28  adam
  * Work on new traversal.
  *
  * Revision 1.6  1995/11/17  15:54:42  adam
@@ -348,7 +351,7 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     {
         int sd;
 
-        if (dst && !repComp (dst->path, src, src_len))
+        if (dst && !repComp (dst->path, src, src_len+1))
         {
             if (e_src[i_src].name)
             {
@@ -374,11 +377,10 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
             case dirs_file:
                 if (e_src[i_src].ctime > dst->ctime)
                 {
-                    file_extract ('d', tmppath, tmppath, databaseName);
-                    file_extract ('a', tmppath, tmppath, databaseName);
-                    dirs_add (di, src, dst->sysno, e_src[i_src].ctime);
+                    if (fileExtract (&dst->sysno, tmppath, databaseName, 0))
+                        dirs_add (di, src, dst->sysno, e_src[i_src].ctime);
                 }
-                dst = dirs_read (di); 
+                dst = dirs_read (di);
                 break;
             case dirs_dir:
                 repositoryUpdateR (di, dst, base, src, databaseName);
@@ -392,18 +394,20 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
         }
         else if (sd > 0)
         {
-            SYSNO sysno;
+            SYSNO sysno = 0;
             strcpy (src + src_len+1, e_src[i_src].name);
             sprintf (tmppath, "%s%s", base, src);
 
             switch (e_src[i_src].kind)
             {
             case dirs_file:
-                sysno = file_extract ('a', tmppath, tmppath, databaseName);
-                dirs_add (di, src, sysno, e_src[i_src].ctime);            
+                if (fileExtract (&sysno, tmppath, databaseName, 0))
+                    dirs_add (di, src, sysno, e_src[i_src].ctime);            
                 break;
             case dirs_dir:
                 repositoryUpdateR (di, dst, base, src, databaseName);
+                if (dst)
+                    dst = dirs_last (di);
                 break;
             }
             i_src++;

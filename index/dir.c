@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.10  1995-11-20 11:56:22  adam
+ * Revision 1.11  1995-11-20 16:59:44  adam
+ * New update method: the 'old' keys are saved for each records.
+ *
+ * Revision 1.10  1995/11/20  11:56:22  adam
  * Work on new traversal.
  *
  * Revision 1.9  1995/10/30  13:42:12  adam
@@ -83,11 +86,10 @@ struct dir_entry *dir_open (const char *rep)
         {
             struct dir_entry *entry_n;
 
-            entry_n = xmalloc (sizeof(*entry) * (entry_max + 1000));
+            entry_n = xmalloc (sizeof(*entry) * (entry_max += 1000));
             memcpy (entry_n, entry, idx * sizeof(*entry));
             xfree (entry);
             entry = entry_n;
-            entry_max += 100;
         }
         strcpy (path + pathpos, dent->d_name);
         stat (path, &finfo);
@@ -112,6 +114,7 @@ struct dir_entry *dir_open (const char *rep)
     }
     entry[idx].name = NULL;
     closedir (dir);
+    logf (LOG_LOG, "dir_close");
     return entry;
 }
 

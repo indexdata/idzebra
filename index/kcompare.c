@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.14  1995-10-30 15:08:08  adam
+ * Revision 1.15  1995-11-20 16:59:46  adam
+ * New update method: the 'old' keys are saved for each records.
+ *
+ * Revision 1.14  1995/10/30  15:08:08  adam
  * Bug fixes.
  *
  * Revision 1.13  1995/10/27  14:00:11  adam
@@ -125,7 +128,7 @@ int index_char_cvt (int c)
 
 int index_word_prefix (char *string, int attset_ordinal,
                        int local_attribute,
-                       char *databaseName)
+                       const char *databaseName)
 {
     int i;
     sprintf (string, "%s@%c%04d", databaseName,

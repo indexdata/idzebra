@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.3  1995-11-16 15:34:55  adam
+ * Revision 1.4  1995-11-20 16:59:46  adam
+ * New update method: the 'old' keys are saved for each records.
+ *
+ * Revision 1.3  1995/11/16  15:34:55  adam
  * Uses new record management system in both indexer and server.
  *
  * Revision 1.2  1995/11/15  19:13:08  adam
@@ -66,13 +69,17 @@ struct record_index_entry {
 
 #define REC_HEAD_MAGIC "rechead"
 
-char *rec_strdup (const char *s)
+char *rec_strdup (const char *s, size_t *len)
 {
     char *p;
 
     if (!s)
+    {
+        *len = 0;
         return NULL;
-    p = malloc (strlen(s)+1);
+    }
+    *len = strlen(s)+1;
+    p = malloc (*len);
     if (!p)
     {
         logf (LOG_FATAL|LOG_ERRNO, "malloc");
@@ -209,9 +216,9 @@ static void rec_write_single (Records p, Record rec)
 
     for (i = 0; i < REC_NO_INFO; i++)
         if (!rec->info[i])
-            size++;
+            size += sizeof(*rec->size);
         else
-            size += strlen(rec->info[i])+1;
+            size += sizeof(*rec->size) + rec->size[i];
     
     entry.u.used.offset = p->head.data_size;
     entry.u.used.size = size;
@@ -253,13 +260,15 @@ static void rec_write_single (Records p, Record rec)
     }
     cptr = p->tmp_buf;
     for (i = 0; i < REC_NO_INFO; i++)
-        if (!rec->info[i])
-            *cptr++ = '\0';
-        else
+    {
+        memcpy (cptr, &rec->size[i], sizeof(*rec->size));
+        cptr += sizeof(*rec->size);
+        if (rec->info[i])
         {
-            strcpy (cptr, rec->info[i]);
-            cptr += strlen(rec->info[i]) + 1;
+            memcpy (cptr, rec->info[i], rec->size[i]);
+            cptr += rec->size[i];
         }
+    }
     for (got = 0; got < entry.u.used.size; got += r)
     {
         r = write (p->data_fd, p->tmp_buf + got, entry.u.used.size - got);
@@ -279,7 +288,7 @@ static void rec_cache_flush (Records p)
         struct record_cache_entry *e = p->record_cache + i;
         if (e->dirty)
             rec_write_single (p, e->rec);
-        rec_rm (e->rec);
+        rec_rm (&e->rec);
     }
     p->cache_cur = 0;
 }
@@ -385,16 +394,18 @@ Record rec_get (Records p, int sysno)
 
     nptr = p->tmp_buf;
     for (i = 0; i < REC_NO_INFO; i++)
-        if (*nptr)
+    {
+        memcpy (&rec->size[i], nptr, sizeof(*rec->size));
+        nptr += sizeof(*rec->size);
+        if (rec->size[i])
         {
-            rec->info[i] = rec_strdup (nptr);
-            nptr += strlen(nptr)+1;
+            rec->info[i] = malloc (rec->size[i]);
+            memcpy (rec->info[i], nptr, rec->size[i]);
+            nptr += rec->size[i];
         }
         else
-        {
-            nptr++;
             rec->info[i] = NULL;
-        }
+    }
     rec_cache_insert (p, rec, 0);
     return rec;
 }
@@ -423,30 +434,38 @@ Record rec_new (Records p)
     (p->head.no_records)++;
     rec->sysno = sysno;
     for (i = 0; i < REC_NO_INFO; i++)
+    {
         rec->info[i] = NULL;
+        rec->size[i] = 0;
+    }
     rec_cache_insert (p, rec, 1);
     return rec;
 }
 
-void rec_put (Records p, Record rec)
+void rec_put (Records p, Record *recpp)
 {
     Record *recp;
 
-    if ((recp = rec_cache_lookup (p, rec->sysno, 1)))
+    if ((recp = rec_cache_lookup (p, (*recpp)->sysno, 1)))
     {
-        rec_rm (*recp);
-        *recp = rec_cp (rec);
+        rec_rm (recp);
+        *recp = *recpp;
     }
     else
-        rec_cache_insert (p, rec, 1);
+    {
+        rec_cache_insert (p, *recpp, 1);
+        rec_rm (recpp);
+    }
+    *recpp = NULL;
 }
 
-void rec_rm (Record rec)
+void rec_rm (Record *recpp)
 {
     int i;
     for (i = 0; i < REC_NO_INFO; i++)
-        free (rec->info[i]);
-    free (rec);
+        free ((*recpp)->info[i]);
+    free (*recpp);
+    *recpp = NULL;
 }
 
 Record rec_cp (Record rec)
@@ -461,6 +480,20 @@ Record rec_cp (Record rec)
     }
     n->sysno = rec->sysno;
     for (i = 0; i < REC_NO_INFO; i++)
-        n->info[i] = rec_strdup (rec->info[i]);
+        if (!rec->info[i])
+        {
+            n->info[i] = NULL;
+            n->size[i] = 0;
+        }
+        else
+        {
+            n->size[i] = rec->size[i];
+            if (!(n->info[i] = malloc (rec->size[i])))
+            {
+                logf (LOG_FATAL|LOG_ERRNO, "malloc. rec_cp");
+                exit (1);
+            }
+            memcpy (n->info[i], rec->info[i], rec->size[i]);
+        }
     return n;
 }

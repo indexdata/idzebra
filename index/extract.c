@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.26  1995-11-20 11:56:24  adam
+ * Revision 1.27  1995-11-20 16:59:45  adam
+ * New update method: the 'old' keys are saved for each records.
+ *
+ * Revision 1.26  1995/11/20  11:56:24  adam
  * Work on new traversal.
  *
  * Revision 1.25  1995/11/16  15:34:54  adam
@@ -113,12 +116,16 @@ static SYSNO sysno_next;
 
 static int key_cmd;
 static int key_sysno;
-static char *key_databaseName;
+static const char *key_databaseName;
 static char **key_buf;
 static size_t ptr_top;
 static size_t ptr_i;
-static size_t kused;
+static size_t key_buf_used;
 static int key_file_no;
+
+static int key_del_max;
+static int key_del_used;
+static char *key_del_buf;
 
 void key_open (int mem)
 {
@@ -130,8 +137,12 @@ void key_open (int mem)
     key_buf = xmalloc (mem);
     ptr_top = mem/sizeof(char*);
     ptr_i = 0;
-    kused = 0;
+
+    key_buf_used = 0;
     key_file_no = 0;
+
+    key_del_buf = NULL;
+    key_del_max = 0;
 
     if (!(file_idx = dict_open (FNAME_FILE_DICT, 40, 1)))
     {
@@ -259,7 +270,7 @@ void key_flush (void)
     }
     logf (LOG_LOG, "finished section %d", key_file_no);
     ptr_i = 0;
-    kused = 0;
+    key_buf_used = 0;
 }
 
 int key_close (void)
@@ -273,6 +284,10 @@ int key_close (void)
     dict_insert (file_idx, ".", sizeof(sysno_next), &sysno_next);
 #endif
     dict_close (file_idx);
+
+    xfree (key_del_buf);
+    key_del_buf = NULL;
+    key_del_max = 0;
     return key_file_no;
 }
 
@@ -288,28 +303,69 @@ static void wordAdd (const RecWord *p)
     struct it_key key;
     size_t i;
 
-    if (kused + 1024 > (ptr_top-ptr_i)*sizeof(char*))
+    if (key_buf_used + 1024 > (ptr_top-ptr_i)*sizeof(char*))
         key_flush ();
     ++ptr_i;
-    key_buf[ptr_top-ptr_i] = (char*)key_buf + kused;
-    kused += index_word_prefix ((char*)key_buf + kused,
+    key_buf[ptr_top-ptr_i] = (char*)key_buf + key_buf_used;
+    key_buf_used += index_word_prefix ((char*)key_buf + key_buf_used,
                                 p->attrSet, p->attrUse,
                                 key_databaseName);
     switch (p->which)
     {
     case Word_String:
         for (i = 0; p->u.string[i]; i++)
-            ((char*)key_buf) [kused++] = index_char_cvt (p->u.string[i]);
-        ((char*)key_buf) [kused++] = '\0';
+            ((char*)key_buf) [key_buf_used++] =
+                index_char_cvt (p->u.string[i]);
+        ((char*)key_buf) [key_buf_used++] = '\0';
         break;
     default:
         return ;
     }
-    ((char*) key_buf)[kused++] = ((key_cmd == 'a') ? 1 : 0);
+    ((char*) key_buf)[key_buf_used++] = ((key_cmd == 'a') ? 1 : 0);
     key.sysno = key_sysno;
     key.seqno = p->seqno;
-    memcpy ((char*)key_buf + kused, &key, sizeof(key));
-    kused += sizeof(key);
+    memcpy ((char*)key_buf + key_buf_used, &key, sizeof(key));
+    key_buf_used += sizeof(key);
+
+    if (key_cmd == 'a' && key_del_used >= 0)
+    {
+        char attrSet;
+        short attrUse;
+        if (key_del_used + 1024 > key_del_max)
+        {
+            char *kbn;
+            
+            if (!(kbn = malloc (key_del_max += 64000)))
+            {
+                logf (LOG_FATAL, "malloc");
+                exit (1);
+            }
+            if (key_del_buf)
+                memcpy (kbn, key_del_buf, key_del_used);
+            free (key_del_buf);
+            key_del_buf = kbn;
+        }
+        switch (p->which)
+        {
+        case Word_String:
+            for (i = 0; p->u.string[i]; i++)
+                ((char*)key_del_buf) [key_del_used++] = p->u.string[i];
+            ((char*)key_del_buf) [key_del_used++] = '\0';
+            break;
+        default:
+            return ;
+        }
+        attrSet = p->attrSet;
+        memcpy (key_del_buf + key_del_used, &attrSet, sizeof(attrSet));
+        key_del_used += sizeof(attrSet);
+
+        attrUse = p->attrUse;
+        memcpy (key_del_buf + key_del_used, &attrUse, sizeof(attrUse));
+        key_del_used += sizeof(attrUse);
+
+        memcpy (key_del_buf + key_del_used, &p->seqno, sizeof(p->seqno));
+        key_del_used += sizeof(p->seqno);
+    }
 }
 
 static void wordAddAny (const RecWord *p)
@@ -326,9 +382,6 @@ static void wordAddAny (const RecWord *p)
     wordAdd (p);
 }
 
-
-#define FILE_READ_BUF 1
-#if FILE_READ_BUF
 static char *file_buf;
 static int file_offset;
 static int file_bufsize;
@@ -389,12 +442,7 @@ static int file_read (int fd, char *buf, size_t count)
     file_offset += count;
     return count;
 }
-#else
-static int file_read (int fd, char *buf, size_t count)
-{
-    return read (fd, buf, count);
-}
-#endif
+
 SYSNO file_extract (int cmd, const char *fname, const char *kname,
                     char *databaseName)
 {
@@ -407,6 +455,7 @@ SYSNO file_extract (int cmd, const char *fname, const char *kname,
     struct recExtractCtrl extractCtrl;
     RecType rt;
 
+    key_del_used = -1;
     key_databaseName = databaseName;
     for (i = strlen(fname); --i >= 0; )
         if (fname[i] == '/')
@@ -433,10 +482,9 @@ SYSNO file_extract (int cmd, const char *fname, const char *kname,
 
         sysno = rec->sysno;
         dict_insert (file_idx, kname, sizeof(sysno), &sysno);
-        rec->info[0] = rec_strdup (file_type);
-        rec->info[1] = rec_strdup (kname);
-        rec_put (records, rec);
-        rec_rm (rec);
+        rec->info[0] = rec_strdup (file_type, &rec->size[0]);
+        rec->info[1] = rec_strdup (kname, &rec->size[1]);
+        rec_put (records, &rec);
 #else
         sysno = sysno_next++;
         dict_insert (file_idx, kname, sizeof(sysno), &sysno);
@@ -456,18 +504,149 @@ SYSNO file_extract (int cmd, const char *fname, const char *kname,
     extractCtrl.subType = "";
     extractCtrl.init = wordInit;
     extractCtrl.add = wordAddAny;
-#if FILE_READ_BUF
+
     file_read_start (extractCtrl.fd);
-#endif
+
     extractCtrl.readf = file_read;
     key_sysno = sysno;
     key_cmd = cmd;
     r = (*rt->extract)(&extractCtrl);
-#if FILE_READ_BUF
+
     file_read_stop (extractCtrl.fd);
-#endif
+
     close (extractCtrl.fd);
     if (r)
         logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
     return sysno;
+}
+
+int fileExtract (SYSNO *sysno, const char *fname, const char *databaseName,
+                 int deleteFlag)
+{
+    int i, r;
+    char ext[128];
+    char ext_res[128];
+    const char *file_type;
+    struct recExtractCtrl extractCtrl;
+    RecType rt;
+    Record rec;
+
+    logf (LOG_DEBUG, "fileExtractAdd %s", fname);
+
+    key_del_used = 0;
+    for (i = strlen(fname); --i >= 0; )
+        if (fname[i] == '/')
+        {
+            strcpy (ext, "");
+            break;
+        }
+        else if (fname[i] == '.')
+        {
+            strcpy (ext, fname+i+1);
+            break;
+        }
+    sprintf (ext_res, "fileExtension.%s", ext);
+    if (!(file_type = res_get (common_resource, ext_res)))
+        return 0;
+    if (!(rt = recType_byName (file_type)))
+        return 0;
+
+    if ((extractCtrl.fd = open (fname, O_RDONLY)) == -1)
+    {
+        logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
+        return 0;
+    }
+
+    extractCtrl.subType = "";
+    extractCtrl.init = wordInit;
+    extractCtrl.add = wordAddAny;
+
+    if (! *sysno)
+    {
+        logf (LOG_LOG, "add record %s", fname);
+        rec = rec_new (records);
+        *sysno = rec->sysno;
+        rec->info[0] = rec_strdup (file_type, &rec->size[0]);
+        rec->info[1] = rec_strdup (fname, &rec->size[1]);
+        rec->info[3] = rec_strdup (databaseName, &rec->size[3]);
+    }
+    else
+    {
+        size_t off;
+        char *kb;
+
+        if (deleteFlag)
+            logf (LOG_LOG, "delete record %s", fname);
+        else
+            logf (LOG_LOG, "update record %s", fname);
+        rec = rec_get (records, *sysno);
+
+        key_cmd = 'd';
+        key_sysno = *sysno;
+        key_databaseName = rec->info[3];
+        kb = rec->info[2];
+        for (off = 0; off < rec->size[2]; )
+        {
+            RecWord rw;
+            char   attrSet;
+            short  attrUse;
+
+            rw.which = Word_String;
+            rw.u.string = kb + off;
+            while (kb[off])
+                off++;
+            off++;
+            memcpy (&attrSet, kb + off, sizeof(attrSet));
+            off += sizeof(attrSet);
+            memcpy (&attrUse, kb + off, sizeof(attrUse));
+            off += sizeof(attrUse);
+            memcpy (&rw.seqno, kb + off, sizeof(rw.seqno));
+            off += sizeof(rw.seqno);
+            rw.attrSet = attrSet;
+            rw.attrUse = attrUse;
+
+            (*extractCtrl.add) (&rw);
+        }
+        assert (off == rec->size[2]);
+        free (rec->info[2]);
+        rec->info[2] = NULL;
+        rec->size[2] = 0;
+
+        free (rec->info[3]);
+        rec->info[3] = rec_strdup (databaseName, &rec->size[3]);
+    }
+
+    if (deleteFlag)
+    {
+#if 0
+        rec_del (records, *sysno);
+        rec_rm (&rec);
+#endif
+        return 1;
+    }
+    
+    key_databaseName = databaseName;
+    key_sysno = *sysno;
+    key_cmd = 'a';
+
+    file_read_start (extractCtrl.fd);
+    extractCtrl.readf = file_read;
+    r = (*rt->extract)(&extractCtrl);
+    file_read_stop (extractCtrl.fd);
+
+    close (extractCtrl.fd);
+    if (r)
+    {
+        rec_rm (&rec);
+        logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
+        return 0;
+    }
+    if (key_del_used > 0)
+    {
+        rec->size[2] = key_del_used;
+        rec->info[2] = malloc (rec->size[2]);
+        memcpy (rec->info[2], key_del_buf, rec->size[2]);
+    }
+    rec_put (records, &rec);
+    return 1;
 }

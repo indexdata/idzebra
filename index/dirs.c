@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.2  1995-11-20 11:56:23  adam
+ * Revision 1.3  1995-11-20 16:59:45  adam
+ * New update method: the 'old' keys are saved for each records.
+ *
+ * Revision 1.2  1995/11/20  11:56:23  adam
  * Work on new traversal.
  *
  * Revision 1.1  1995/11/17  15:54:42  adam
@@ -97,7 +100,7 @@ struct dirs_info *dirs_open (Dict dict, const char *rep)
 
 struct dirs_entry *dirs_read (struct dirs_info *p)
 {
-    int before = 0, after = p->no_max;
+    int before = 0, after = p->no_max+1;
 
     if (p->no_read < p->no_cur)
     {
@@ -107,10 +110,6 @@ struct dirs_entry *dirs_read (struct dirs_info *p)
     }
     if (p->no_cur < p->no_max)
         return p->last_entry = NULL;
-#if 0
-    strcpy (p->nextpath, p->prefix);
-    strcat (p->nextpath, (p->entries + p->no_max-1)->path);
-#endif
     p->no_cur = -1;
     logf (LOG_DEBUG, "dirs_read rescan");
     dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);

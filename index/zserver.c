@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.23  1995-11-16 17:00:56  adam
+ * Revision 1.24  1995-11-20 16:59:47  adam
+ * New update method: the 'old' keys are saved for each records.
+ *
+ * Revision 1.23  1995/11/16  17:00:56  adam
  * Better logging of rpn query.
  *
  * Revision 1.22  1995/11/16  15:34:55  adam
@@ -225,7 +228,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
         *rec_bufp = msg;
         *rec_lenp = strlen (msg);
 #if RECORD_BASE
-        rec_rm (rec);
+        rec_rm (&rec);
 #endif
         return 0;     /* or 14: System error in presenting records */
     }
@@ -242,7 +245,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     *rec_lenp = retrieveCtrl.rec_len;
     close (retrieveCtrl.fd);
 #if RECORD_BASE
-    rec_rm (rec);
+    rec_rm (&rec);
 #endif
     return retrieveCtrl.diagnostic;
 }
