@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.1 2004-12-04 00:51:39 adam Exp $
+/* $Id: t1.c,v 1.2 2004-12-14 10:53:49 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -20,20 +20,35 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <yaz/yaz-iconv.h>
+
 #include "../api/testlib.h"
+
+void check_koi8r()
+{
+    yaz_iconv_t cd = yaz_iconv_open("koi8-r", "utf-8");
+    if (!cd)
+    {
+	yaz_log(YLOG_WARN, "koi8-r to utf-8 unsupported");
+	exit(0);
+    }
+    yaz_iconv_close(cd);
+}
 
 int main(int argc, char **argv)
 {
+    
     ZebraService zs = start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs);
     char path[256];
 
-    /* TODO: if koi8-r is unsupported we must OK this test */
+    check_koi8r();
 
     zebra_select_database(zh, "Default");
 
     zebra_init(zh);
 
+    
     zebra_begin_trans(zh, 1);
     sprintf(path, "%.200s/records/simple-rusmarc", get_srcdir());
     zebra_repository_update(zh, path);
