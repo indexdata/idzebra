@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.3  1995-12-01 16:24:29  adam
+ * Revision 1.4  1995-12-11 09:03:55  adam
+ * New function: cf_unlink.
+ * New member of commit file head: state (0) deleted, (1) hash file.
+ *
+ * Revision 1.3  1995/12/01  16:24:29  adam
  * Commit files use separate meta file area.
  *
  * Revision 1.2  1995/12/01  11:37:24  adam
@@ -21,6 +25,17 @@
 #include <alexutil.h>
 #include <mfile.h>
 #include "cfile.h"
+
+void cf_unlink (CFile cf)
+{
+    if (cf->bucket_in_memory)
+    {
+        logf (LOG_FATAL, "Cannot unlink potential dirty cache");
+        exit (1);
+    }
+    cf->head.state = 0;
+    cf->dirty = 1;
+}
 
 void cf_commit (CFile cf)
 {

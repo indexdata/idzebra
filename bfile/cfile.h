@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.h,v $
- * Revision 1.3  1995-12-01 16:24:29  adam
+ * Revision 1.4  1995-12-11 09:03:54  adam
+ * New function: cf_unlink.
+ * New member of commit file head: state (0) deleted, (1) hash file.
+ *
+ * Revision 1.3  1995/12/01  16:24:29  adam
  * Commit files use separate meta file area.
  *
  * Revision 1.2  1995/12/01  11:37:23  adam
@@ -37,6 +41,7 @@ struct CFile_hash_bucket {
 typedef struct CFile_struct
 {
     struct CFile_head {
+        int state;
         int hash_size;
         int next_bucket;
         int next_block;
@@ -59,6 +64,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname, int block_size,
                int wflag, int *firstp);
 int cf_read (CFile cf, int no, int offset, int num, void *buf);
 int cf_write (CFile cf, int no, int offset, int num, const void *buf);
+void cf_unlink (CFile cf);
 void cf_commit (CFile cf);
 
 #endif

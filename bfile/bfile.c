@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.16  1995-12-08 16:21:13  adam
+ * Revision 1.17  1995-12-11 09:03:51  adam
+ * New function: cf_unlink.
+ * New member of commit file head: state (0) deleted, (1) hash file.
+ *
+ * Revision 1.16  1995/12/08  16:21:13  adam
  * Work on commit/update.
  *
  * Revision 1.15  1995/12/01  16:24:28  adam
@@ -188,18 +192,27 @@ void bf_commitClean (void)
     char path[256];
     MFile mf;
     CFile cf;
+    int mustDisable = 0;
+    int firstTime;
 
-    assert (commit_area);
+    if (!commit_area)
+    {
+        bf_cache (1);
+        mustDisable = 1;
+    }
+
     if (!(inf = fopen ("cache", "r")))
         return ;
     while (fscanf (inf, "%s %d", path, &block_size) == 2)
     {
         mf = mf_open (0, path, block_size, 0);
-        cf = cf_open (mf, commit_area, path, block_size, 1, NULL);
-
+        cf = cf_open (mf, commit_area, path, block_size, 1, &firstTime);
+        cf_unlink (cf);
         cf_close (cf);
         mf_close (mf);
     }
     fclose (inf);
     unlink ("cache");
+    if (mustDisable)
+        bf_cache (0);
 }
