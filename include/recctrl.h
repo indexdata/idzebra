@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.15  1996-06-06 12:08:16  quinn
+ * Revision 1.16  1996-10-11 10:56:25  adam
+ * New module recctrl. Used to manage records (extract/retrieval).
+ * All record types are accessed by means of definitions in recctrl.h.
+ *
+ * Revision 1.15  1996/06/06 12:08:16  quinn
  * Added showRecord Group entry
  *
  * Revision 1.14  1996/05/09  07:28:49  quinn
@@ -86,9 +90,10 @@ struct recExtractCtrl {
     void      (*endf)(void *fh, off_t offset);   /* end of record position */
     off_t     offset;                            /* start offset           */
     char      *subType;
-    struct recordGroup *group;
     void      (*init)(RecWord *p);
     void      (*add)(const RecWord *p);
+    char **(*map_chrs_input)(char **from, int len);
+    int       flagShowRecords;
 };
 
 /* Retrieve record control */
