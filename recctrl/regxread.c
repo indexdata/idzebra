@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.14  1998-03-05 08:41:00  adam
+ * Revision 1.15  1998-06-30 12:55:45  adam
+ * Bug fix.
+ *
+ * Revision 1.14  1998/03/05 08:41:00  adam
  * Implemented rule contexts.
  *
  * Revision 1.13  1997/12/12 06:33:58  adam
@@ -703,8 +706,6 @@ static void execData (struct lexSpec *spec,
             char *nb = xmalloc (elen + res->u.data.len);
             memcpy (nb, res->u.data.data, res->u.data.len);
             memcpy (nb + res->u.data.len, ebuf, elen);
-            if (res->u.data.len > DATA1_LOCALDATA)
-                xfree (res->u.data.data);
             res->u.data.data = nb;
             res->destroy = destroy_data;
         }
