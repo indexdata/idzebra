@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.12 2003-03-04 23:32:55 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.13 2003-03-05 00:35:57 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -3613,11 +3613,13 @@ XS(_wrap_begin_trans) {
     const char *_swigerr = _swigmsg;
     {
         ZebraHandle arg1 ;
+        int arg2 ;
+        int result;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: begin_trans(zh);");
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: begin_trans(zh,rw);");
         }
         {
             ZebraHandle * argp;
@@ -3626,9 +3628,11 @@ XS(_wrap_begin_trans) {
             }
             arg1 = *argp;
         }
-        zebra_begin_trans(arg1);
+        arg2 = (int) SvIV(ST(1));
+        result = (int)zebra_begin_trans(arg1,arg2);
         
-        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
