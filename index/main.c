@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.32  1996-02-01 20:50:04  adam
+ * Revision 1.33  1996-02-06 17:11:18  adam
+ * Minor changes.
+ *
+ * Revision 1.32  1996/02/01  20:50:04  adam
  * Bug fix: zebraIndexUnlock was always called even though zebraIndexLock
  * was never called - happens when no commands are specified.
  *
@@ -133,6 +136,12 @@ char *prog;
 size_t mem_max = 4*1024*1024;
 extern char *data1_tabpath;
 
+static void abort_func (int level, const char *msg, void *info)
+{
+    if (level & LOG_FATAL)
+        abort ();
+}
+
 int main (int argc, char **argv)
 {
     int ret;
@@ -171,6 +180,7 @@ int main (int argc, char **argv)
 	" -v <level>    Set logging to <level>.\n");
         exit (1);
     }
+    log_event_end (abort_func, NULL);
     while ((ret = options ("t:c:g:d:m:v:n", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
