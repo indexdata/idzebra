@@ -1,5 +1,5 @@
-/* $Id: zrpn.c,v 1.165 2005-01-03 19:31:57 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: zrpn.c,v 1.166 2005-01-15 19:22:27 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -36,6 +36,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <charmap.h>
 #include <rset.h>
 
+/* maximum number of terms in an and/or/phrase item */
+#define TERM_LIST_LENGTH_MAX 256
 
 static const struct key_control it_ctrl =
 { 
@@ -1365,8 +1367,8 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
                                    NMEM rset_nmem)
 {
     char term_dst[IT_MAX_WORD+1];
-    RSET rset[60], result;
-    int rset_no = 0;
+    RSET rset[TERM_LIST_LENGTH_MAX], result;
+    size_t rset_no = 0;
     struct grep_info grep_info;
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
@@ -1374,7 +1376,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     *term_dst = 0;
     if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
         return 0;
-    while (1)
+    for (; rset_no < sizeof(rset)/sizeof(*rset); rset_no++)
     { 
         yaz_log(log_level_rpn, "APT_phrase termp=%s", termp);
         rset[rset_no] = term_trunc(zh, zapt, &termp, attributeSet,
@@ -1384,8 +1386,6 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
                                     term_dst, rank_type,
                                     xpath_use,rset_nmem);
         if (!rset[rset_no])
-            break;
-        if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
             break;
     }
     grep_info_delete (&grep_info);
@@ -1413,15 +1413,15 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
                                     NMEM rset_nmem)
 {
     char term_dst[IT_MAX_WORD+1];
-    RSET rset[60];
-    int rset_no = 0;
+    RSET rset[TERM_LIST_LENGTH_MAX];
+    size_t rset_no = 0;
     struct grep_info grep_info;
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
 
     if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
         return 0;
-    while (1)
+    for (; rset_no < sizeof(rset)/sizeof(*rset); rset_no++)
     { 
         yaz_log(log_level_rpn, "APT_or_list termp=%s", termp);
         rset[rset_no] = term_trunc(zh, zapt, &termp, attributeSet,
@@ -1431,8 +1431,6 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
                                     term_dst, rank_type,
                                     xpath_use,rset_nmem);
         if (!rset[rset_no])
-            break;
-        if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
             break;
     }
     grep_info_delete (&grep_info);
@@ -1454,15 +1452,15 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
                                      NMEM rset_nmem)
 {
     char term_dst[IT_MAX_WORD+1];
-    RSET rset[60]; /* FIXME - bug 160 - should be dynamic somehow */
-    int rset_no = 0;
+    RSET rset[TERM_LIST_LENGTH_MAX];
+    size_t rset_no = 0;
     struct grep_info grep_info;
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
 
     if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
         return 0;
-    while (1)
+    for (; rset_no < sizeof(rset)/sizeof(*rset); rset_no++)
     { 
         yaz_log(log_level_rpn, "APT_and_list termp=%s", termp);
         rset[rset_no] = term_trunc(zh, zapt, &termp, attributeSet,
@@ -1472,9 +1470,6 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
                                     term_dst, rank_type,
                                     xpath_use, rset_nmem);
         if (!rset[rset_no])
-            break;
-        assert (rset[rset_no]);
-        if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
             break;
     }
     grep_info_delete (&grep_info);
@@ -1677,14 +1672,15 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
 {
     char term_dst[IT_MAX_WORD+1];
     const char *termp = termz;
-    RSET rset[60]; /* FIXME - hard-coded magic number */
-    int  r, rset_no = 0;
+    RSET rset[TERM_LIST_LENGTH_MAX];
+    int  r;
+    size_t rset_no = 0;
     struct grep_info grep_info;
 
     yaz_log(log_level_rpn, "APT_numeric t='%s'",termz);
     if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
         return 0;
-    while (1)
+    for (; rset_no < sizeof(rset)/sizeof(*rset); rset_no++)
     { 
         yaz_log(YLOG_DEBUG, "APT_numeric termp=%s", termp);
         grep_info.isam_p_indx = 0;
@@ -1701,9 +1697,8 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
                                     0 /* preserve position */,
                                     zapt->term->which, rset_nmem, 
                                     key_it_ctrl,key_it_ctrl->scope);
-        assert (rset[rset_no]);
-        if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
-            break;
+	if (!rset[rset_no])
+	    break;
     }
     grep_info_delete (&grep_info);
     if (rset_no == 0)
