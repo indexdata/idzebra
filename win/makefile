@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.25 2003-11-29 16:47:58 adam Exp $
+# $Id: makefile,v 1.26 2004-08-06 09:38:36 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -13,7 +13,7 @@ EXPAT_DIR= c:\Expat-1.95.7
 
 # iconv is optional
 HAVE_ICONV=1
-ICONV_DIR = c:\iconv-1.8.win32
+ICONV_DIR = c:\iconv-1.9.1.win32
 
 default: all
 
@@ -27,7 +27,7 @@ all: dirs zebralib zserver zindex
 ROOTDIR=..   # The home of zebra
 
 # YAZ include files, libraries, etc.
-YAZDIR=$(ROOTDIR)\..\YAZ-2.0.4
+YAZDIR=$(ROOTDIR)\..\YAZ-2.0.22
 YAZINCL=$(YAZDIR)\include
 YAZLIB=$(YAZDIR)\lib\yaz.lib
 YAZLIBS=$(YAZLIB)
@@ -262,6 +262,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\rectext.obj \
 	$(OBJDIR)\regxread.obj \
 	$(OBJDIR)\xmlread.obj \
+	$(OBJDIR)\danbibr.obj \
 	$(OBJDIR)\res.obj \
 	$(OBJDIR)\retrieve.obj \
 	$(OBJDIR)\rsbool.obj \
@@ -288,6 +289,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\rsisamd.obj \
 	$(OBJDIR)\rsisamb.obj \
 	$(OBJDIR)\rsbetween.obj \
+	$(OBJDIR)\rsprox.obj \
 	$(OBJDIR)\dir.obj \
 	$(OBJDIR)\dirs.obj \
 	$(OBJDIR)\extract.obj \
