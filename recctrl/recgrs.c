@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.64 2002-08-29 15:10:47 adam Exp $
+/* $Id: recgrs.c,v 1.65 2002-08-30 12:44:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -592,6 +592,17 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
     }
 }
 
+static void add_nice_whitespace (struct recRetrieveCtrl *p, data1_node *top,
+                                 NMEM mem)
+{
+    data1_node *n = top->child;
+    while (n && n->which == DATA1N_data && n->u.data.what == DATA1I_text)
+    {
+        data1_mk_text_n(p->dh, mem, n->u.data.data, n->u.data.len, top);
+        n = n->next;
+    }
+}
+
 static void add_idzebra_info (struct recRetrieveCtrl *p, data1_node *top,
                               NMEM mem)
 {
@@ -603,17 +614,24 @@ static void add_idzebra_info (struct recRetrieveCtrl *p, data1_node *top,
 
     data1_tag_add_attr (p->dh, mem, top, idzebra_ns);
 
+    add_nice_whitespace (p, top, mem);
     data1_mk_tag_data_int (p->dh, top, "idzebra:size", p->recordSize,
                            mem);
     if (p->score != -1)
+    {
+        add_nice_whitespace (p, top, mem);
         data1_mk_tag_data_int (p->dh, top, "idzebra:score",
                                p->score, mem);
-    
+    }
+    add_nice_whitespace (p, top, mem);
     data1_mk_tag_data_int (p->dh, top, "idzebra:localnumber", p->localno,
                            mem);
     if (p->fname)
+    {
+        add_nice_whitespace (p, top, mem);
         data1_mk_tag_data_text(p->dh, top, "idzebra:filename",
                                p->fname, mem);
+    }
 }
 
 static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
@@ -656,7 +674,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     /* ensure our data1 tree is UTF-8 */
     data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 
-#if 1
+#if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
     top = data1_get_root_tag (p->dh, node);
@@ -806,7 +824,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     else if (p->comp && !res)
 	selected = 1;
 
-#if 0
+#if 1
     data1_pr_tree (p->dh, node, stdout);
 #endif
     logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
