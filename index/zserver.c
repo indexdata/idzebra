@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zserver.c,v $
- * Revision 1.78  2000-04-05 09:49:35  adam
+ * Revision 1.79  2000-05-09 10:56:50  adam
+ * Added call to xmalloc/nmem debugging functions.
+ *
+ * Revision 1.78  2000/04/05 09:49:35  adam
  * On Unix, zebra/z'mbol uses automake.
  *
  * Revision 1.77  2000/03/20 19:08:36  adam
@@ -454,6 +457,8 @@ static int bend_scan (void *handle, bend_scan_rr *r)
 void bend_close (void *handle)
 {
     zebra_close ((ZebraHandle) handle);
+    xmalloc_trav("bend_close");
+    nmem_print_list();
 }
 
 int bend_sort (void *handle, bend_sort_rr *rr)
@@ -763,7 +768,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				     rec->u.sutrs->len,
 				     rec->u.sutrs->buf);
                         break;
-		    case Z_External_octet        :
+		    case Z_External_octet:
 			if (rec->u.octet_aligned->len > 170)
 			    yaz_log (LOG_LOG, "%d bytes:\n%.168s ...",
 				     rec->u.octet_aligned->len,
