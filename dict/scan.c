@@ -1,52 +1,9 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: scan.c,v $
- * Revision 1.13  1999-05-15 14:36:37  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.12  1999/02/02 14:50:28  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.11  1998/06/22 11:34:45  adam
- * Changed scan callback function so it doesn't stop further scanning.
- *
- * Revision 1.10  1998/03/06 16:58:04  adam
- * Fixed bug which related to scanning of large indexes.
- *
- * Revision 1.9  1997/10/27 14:33:04  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- * Revision 1.8  1996/02/02 13:43:52  adam
- * The public functions simply use char instead of Dict_char to represent
- * search strings. Dict_char is used internally only.
- *
- * Revision 1.7  1995/12/11  09:04:50  adam
- * Bug fix: the lookup/scan/lookgrep didn't handle empty dictionary.
- *
- * Revision 1.6  1995/11/20  11:58:04  adam
- * Support for YAZ in standard located directories, such as /usr/local/..
- *
- * Revision 1.5  1995/10/09  16:18:32  adam
- * Function dict_lookup_grep got extra client data parameter.
- *
- * Revision 1.4  1995/10/06  13:52:00  adam
- * Bug fixes. Handler may abort further scanning.
- *
- * Revision 1.3  1995/10/06  11:06:07  adam
- * Bug fixes.
- *
- * Revision 1.2  1995/10/06  10:43:16  adam
- * Minor changes.
- *
- * Revision 1.1  1995/10/06  09:04:18  adam
- * First version of scan.
- *
+ * $Id: scan.c,v 1.14 2002-01-14 01:52:22 adam Exp $
  */
 #include <stdlib.h>
 #include <string.h>
@@ -67,10 +24,15 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 
     dict_bf_readp (dict->dbf, ptr, &p);
     hi = DICT_nodir(p)-1;
-    if (start == 0 && dir == -1)
-        lo = hi;
-    else
+    if (start != -1)
         lo = start;
+    else
+    {
+        if (dir == -1)
+            lo = hi;
+        else
+            lo = 0;
+    }
     indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short)); 
 
     while (lo <= hi && lo >= 0 && *count > 0)
@@ -114,7 +76,7 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             }
             if (*count > 0 && subptr)
             {
-	        dict_scan_trav (dict, subptr, pos+1, str, 0, count, 
+	        dict_scan_trav (dict, subptr, pos+1, str, -1, count, 
                                 client, userfunc, dir);
                 dict_bf_readp (dict->dbf, ptr, &p);
                 indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short)); 
@@ -192,7 +154,7 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                         }
                     }
                     if (*after && subptr)
-		        if (dict_scan_trav (dict, subptr, pos+1, str, 0, 
+		        if (dict_scan_trav (dict, subptr, pos+1, str, -1, 
                                             after, client, userfunc, 1))
                             return 1;
                 }
@@ -216,7 +178,7 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         if (dict_scan_trav (dict, ptr, pos, str, cmp ? mid : mid+1, after,
                             client, userfunc, 1))
             return 1;
-    if (*before && mid > 1)
+    if (*before && mid > 0)
         if (dict_scan_trav (dict, ptr, pos, str, mid-1, before, 
                             client, userfunc, -1))
             return 1;
