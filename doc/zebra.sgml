@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.43 1999-12-08 15:03:11 adam Exp $
+  $Id: zebra.sgml,v 1.44 1999-12-08 22:11:56 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.43 $
+<date>$Revision: 1.44 $
 <abstract>
 
 
@@ -260,11 +260,10 @@ Zebra is shipped with "makefiles" for the NMAKE tool that comes
 with Visual C++.
 
 Start an MS-DOS prompt and switch the sub directory <tt>WIN</tt> where
-the file <tt>zebra.mak</tt> is located. Customize the installation
-by editing the <tt>zebra.mak</tt> file (for example by using notepad).
+the file <tt>makefile</tt> is located. Customize the installation
+by editing the <tt>makefile</tt> file (for example by using wordpad).
 
-The following summarises the most important settings in that
-file.
+The following summarises the most important settings in that file.
 
 <descrip>
 <tag><tt>YAZDIR</tt></tag> Specifies where YAZ is located.
@@ -277,7 +276,7 @@ that must be defined if BZIP2 compression support is desired.
 
 When satisfied with the settings in the makefile type
 <tscreen><verb>
-nmake /f zebra.mak
+nmake
 </verb></tscreen>
 
 If compilation was successful the executables <tt>zebraidx.exe</tt>
@@ -291,8 +290,8 @@ GILS records that are included with the software distribution. Go to the
 find a configuration
 file named <tt>zebra.cfg</tt> with the following contents:
 <tscreen><verb>
-# Where are the YAZ tables located.
-profilePath: ../../../yaz/tab ../../tab
+# Where the schema files, attribute files, etc. are located.
+profilePath: .:../../tab:../../../yaz/tab 
 
 # Files that describe the attribute sets supported.
 attset: explain.att
