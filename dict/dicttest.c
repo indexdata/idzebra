@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.11  1994-09-28 13:07:09  adam
+ * Revision 1.12  1994-10-03 17:23:03  adam
+ * First version of dictionary lookup with regular expressions and errors.
+ *
+ * Revision 1.11  1994/09/28  13:07:09  adam
  * Use log_mask_str now.
  *
  * Revision 1.10  1994/09/26  10:17:24  adam
@@ -63,6 +66,13 @@ static int lookup_handle (Dict_char *name)
     return 0;
 }
 
+static int grep_handle (Dict_char *name, char *info)
+{
+    look_hits++;
+    printf ("%s\n", name);
+    return 0;
+}
+
 int main (int argc, char **argv)
 {
     const char *name = NULL;
@@ -74,6 +84,7 @@ int main (int argc, char **argv)
     int cache = 10;
     int ret;
     int unique = 0;
+    char *grep_pattern = NULL;
     char *arg;
     int no_of_iterations = 0;
     int no_of_new = 0, no_of_same = 0, no_of_change = 0;
@@ -84,12 +95,12 @@ int main (int argc, char **argv)
     if (argc < 2)
     {
         fprintf (stderr, "usage:\n "
-                 " %s [-r n] [-u] [-s n] [-v n] [-i f] [-w] [-c n]"
+                 " %s [-r n] [-u] [-g pat] [-s n] [-v n] [-i f] [-w] [-c n]"
                  " base file\n",
                  prog);
         exit (1);
     }
-    while ((ret = options ("r:us:v:i:wc:", argv, argc, &arg)) != -2)
+    while ((ret = options ("r:ug:s:v:i:wc:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -102,6 +113,10 @@ int main (int argc, char **argv)
                 log (LOG_FATAL, "too many files specified\n");
                 exit (1);
             }
+        }
+        else if (ret == 'g')
+        {
+            grep_pattern = arg;
         }
         else if (ret == 'r')
         {
@@ -239,6 +254,13 @@ int main (int argc, char **argv)
         log (LOG_LOG, "Lookups....... %d", no_of_iterations);
         log (LOG_LOG, "No of hits.... %d", no_of_hits);
         log (LOG_LOG, "No of misses.. %d", no_of_misses);
+    }
+    if (grep_pattern)
+    {
+        if (range < 0)
+            range = 0;
+        log (LOG_LOG, "Grepping '%s'", grep_pattern);
+        dict_lookup_grep (dict, grep_pattern, range, grep_handle);
     }
     dict_close (dict);
     res_close (common_resource);

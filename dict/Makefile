@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.11 1994-09-26 10:17:23 adam Exp $
+# $Id: Makefile,v 1.12 1994-10-03 17:23:01 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -10,10 +10,13 @@ TPROG2=dictext
 CFLAGS=-g -Wall -pedantic 
 DEFS=$(INCLUDE)
 LIB=../lib/dict.a 
-PO = dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o lookupec.o
+PO = dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o \
+ lookupec.o lookgrep.o
 CPP=cc -E
 
 all: $(LIB)
+
+alll: $(LIB) $(TPROG1) $(TPROG2)
 
 $(TPROG1): $(TPROG1).o $(LIB) 
 	$(CC) $(CFLAGS) -o $(TPROG1) $(TPROG1).o $(LIB) ../lib/bfile.a ../lib/dfa.a ../lib/util.a 

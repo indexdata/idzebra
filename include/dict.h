@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.7  1994-09-22 10:44:47  adam
+ * Revision 1.8  1994-10-03 17:23:11  adam
+ * First version of dictionary lookup with regular expressions and errors.
+ *
+ * Revision 1.7  1994/09/22  10:44:47  adam
  * Don't remember what changed!!
  *
  * Revision 1.6  1994/09/16  15:39:21  adam
@@ -57,15 +60,15 @@ typedef struct Dict_file_struct
 {
     int cache;
     BFile bf;
-
+    
     struct Dict_file_block *all_blocks;
     struct Dict_file_block *free_list;
     struct Dict_file_block **hash_array;
-
+    
     struct Dict_file_block *lru_back, *lru_front;
     int hash_size;
     void *all_data;
-
+    
     int  block_size;
     int  hits;
     int  misses;
@@ -75,24 +78,29 @@ typedef struct Dict_struct {
     int rw;
     Dict_BFile dbf;
     struct Dict_head head;
-} *Dict;
+}
+*Dict;
+
+#define DICT_MAGIC "dict00"
+
+#define DICT_PAGESIZE 8192
 
 int dict_bf_readp (Dict_BFile bf, int no, void **bufp);
+     
 int dict_bf_newp (Dict_BFile bf, int no, void **bufp);
 int dict_bf_touch (Dict_BFile bf, int no);
 void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush);
 Dict_BFile dict_bf_open (const char *name, int block_size, int cache, int rw);
 int dict_bf_close (Dict_BFile dbf);
-#define DICT_MAGIC "dict00"
-
-#define DICT_PAGESIZE 8192
-    
+     
 Dict dict_open (const char *name, int cache, int rw);
 int dict_close (Dict dict);
 int dict_insert (Dict dict, const Dict_char *p, int userlen, void *userinfo);
 char *dict_lookup (Dict dict, Dict_char *p);
 int dict_lookup_ec (Dict dict, Dict_char *p, int range,
-                    int (*f)(Dict_char*name));
+                    int (*f)(Dict_char *name));
+int dict_lookup_grep (Dict dict, Dict_char *p, int range, 
+                    int (*f)(Dict_char *name, char *info));       
 int dict_strcmp (const Dict_char *s1, const Dict_char *s2);
 int dict_strlen (const Dict_char *s);
 
