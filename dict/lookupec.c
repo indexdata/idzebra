@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookupec.c,v $
- * Revision 1.4  1994-10-05 12:16:51  adam
+ * Revision 1.5  1995-01-24 16:01:03  adam
+ * Added -ansi to CFLAGS.
+ * Use new API of dfa module.
+ *
+ * Revision 1.4  1994/10/05  12:16:51  adam
  * Pagesize is a resource now.
  *
  * Revision 1.3  1994/09/26  16:31:06  adam
@@ -119,7 +123,8 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
                     dict_look_ec (dict, subptr, mi, ri, pos+1,
                                   userfunc, range, prefix);
                     dict_bf_readp (dict->dbf, ptr, &p);
-                    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));
+                    indxp = (short*) ((char*) p + 
+                                      DICT_pagesize(dict)-sizeof(short));
                 }
             }
         }
@@ -157,12 +162,7 @@ int dict_lookup_ec (Dict dict, Dict_char *pattern, int range,
     
     mi = prepare_match (pattern);
 
-#if 1
     ri = xmalloc ((dict_strlen(pattern)+range+2)*(range+1)*sizeof(*ri));
-#else
-    ri = xmalloc (2048 * (range+1) * sizeof(*ri));
-#endif
-
     for (i=0; i<=range; i++)
         ri[i] = (2<<i)-1;
     
@@ -170,7 +170,4 @@ int dict_lookup_ec (Dict dict, Dict_char *pattern, int range,
     xfree (ri);
     return i;
 }
-
-
-
 
