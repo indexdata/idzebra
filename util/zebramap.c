@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.24  2002-04-04 20:50:37  adam
+ * Revision 1.25  2002-04-05 12:54:29  adam
+ * Using yaz_fclose
+ *
+ * Revision 1.24  2002/04/04 20:50:37  adam
  * Multi register works with record paths and data1 profile path
  *
  * Revision 1.23  2001/11/15 08:41:24  adam
@@ -157,7 +160,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
     int lineno = 0;
     struct zebra_map **zm = 0, *zp;
 
-    if (!(f = yaz_path_fopen_base(zms->tabpath, name, "r", zms->tabroot)))
+    if (!(f = yaz_fopen(zms->tabpath, name, "r", zms->tabroot)))
     {
 	logf(LOG_WARN|LOG_ERRNO, "%s", name);
 	return ;
@@ -267,7 +270,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
     }
     if (zm)
 	(*zm)->next = NULL;
-    fclose (f);
+    yaz_fclose (f);
 
     for (zp = zms->map_list; zp; zp = zp->next)
 	zms->lookup_array[zp->reg_id] = zp;

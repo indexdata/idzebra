@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: charmap.c,v 1.20 2002-04-04 20:50:37 adam Exp $
+ * $Id: charmap.c,v 1.21 2002-04-05 12:54:29 adam Exp $
  *
  */
 
@@ -369,7 +369,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
     NMEM nmem;
 
     logf (LOG_DEBUG, "maptab %s open", name);
-    if (!(f = yaz_path_fopen_base(tabpath, name, "r", tabroot)))
+    if (!(f = yaz_fopen(tabpath, name, "r", tabroot)))
     {
 	logf(LOG_WARN|LOG_ERRNO, "%s", name);
 	return 0;
@@ -511,7 +511,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	    logf(LOG_WARN, "Syntax error at '%s' in %s", line, name);
 	}
     
-    fclose(f);
+    yaz_fclose(f);
     if (errors)
     {
 	chrmaptab_destroy(res);
