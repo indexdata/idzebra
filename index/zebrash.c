@@ -1,5 +1,5 @@
 /* zebrash.c - command-line interface to zebra API 
- *  $Id: zebrash.c,v 1.9 2003-06-02 13:33:16 adam Exp $
+ *  $Id: zebrash.c,v 1.10 2003-06-20 14:21:23 heikki Exp $
  *
  * Copyrigth 2003 Index Data Aps
  *
@@ -84,7 +84,7 @@ static int defargint( char *arg, int def )
     return v;
 }
 
-int onecommand( char *line, char *outbuff);
+int onecommand( char *line, char *outbuff, const char *prevout); 
  
 /**************************************
  * Simple support commands
@@ -155,16 +155,22 @@ static int cmd_zebra_close( char *args[], char *outbuff)
 static int cmd_quickstart( char *args[], char *outbuff)
 {
     char tmp[128];
-    onecommand("yaz_log_file zebrash.log",outbuff);
-    onecommand("yaz_log_prefix ZebraSh", outbuff);
+    int rc=0;
+    if (!rc)
+        rc=onecommand("yaz_log_file zebrash.log",outbuff,"");
+    if (!rc)
+        rc=onecommand("yaz_log_prefix ZebraSh", outbuff,"");
     sprintf(tmp, "yaz_log_level 0x%x", LOG_DEFAULT_LEVEL | LOG_APP);
-    onecommand(tmp,outbuff);
+    if (!rc)
+        rc=onecommand(tmp,outbuff,"");
     logf(LOG_APP,"quickstart");
-    onecommand("zebra_start",outbuff);
-    onecommand("zebra_open",outbuff);
-    onecommand("select_database Default",outbuff);
-    strcat(outbuff,"ok\n");
-    return 0;
+    if (!rc)
+        rc=onecommand("zebra_start",outbuff,"");
+    if (!rc)
+        rc=onecommand("zebra_open",outbuff,"");
+    if (!rc)
+        rc=onecommand("select_database Default",outbuff,"");
+    return rc;
 }
 
 /**************************************
@@ -270,11 +276,25 @@ static int cmd_init ( char *args[], char *outbuff)
 static int cmd_select_database ( char *args[], char *outbuff)
 {
     char *db=args[1];
-    if (!db)
-	db="Default";
+    if (!db) {
+        db="Default";
+	strcat(outbuff,"Selecting database 'Default'\n");
+    }
     return zebra_select_database(zh, db);
 }
  
+static int cmd_create_database( char *args[], char *outbuff)
+{
+    char *db=args[1];
+	int rc;
+    if (!db)
+        db="Default";
+    strcat(outbuff,"Creating database ");
+    strcat(outbuff,db);
+    strcat(outbuff,"\n");
+	
+    return zebra_create_database(zh, db);
+}
 /**************************************
  * Command table, parser, and help 
  */
@@ -352,7 +372,9 @@ struct cmdstruct cmds[] = {
     { "select_database",  "basename",
       "Selects a database",
       cmd_select_database},    
-  
+    { "create_database", "basename",
+      "Creates a database",
+      cmd_create_database},
     { "", "Misc:","", 0}, 
     { "echo", "string", 
       "ouputs the string", 
@@ -368,7 +390,10 @@ struct cmdstruct cmds[] = {
     {0,0,0,0} /* end marker */
 };
  
-int onecommand( char *line, char *outbuff)
+int onecommand( 
+		char *line,     /* input line */
+		char *outbuff,  /* output goes here */
+		const char *prevout) /* prev output, for 'expect' */
 {
     int i;
     char *args[MAX_NO_ARGS];
@@ -387,7 +412,23 @@ int onecommand( char *line, char *outbuff)
     }
 #endif
     if (0==n)
-	return -1; /* no command on line, too bad */
+	return -90; /* no command on line, too bad */
+
+    if (0==strcmp(args[0],"expect")) 
+    {
+	char *rest;
+        if (n>1)
+            rest= line + (args[1]-argbuf); /* rest of the line */
+        else
+            return -1; /* need something to expect */
+	printf("expecting '%s'\n",rest); /*!*/
+	if (0==strstr(prevout,rest))
+	{
+	    printf( "Failed expectation, '%s' not found\n");
+            exit(9); 
+	}
+	return 0;
+    }
     for (i=0;cmds[i].cmd;i++)
 	if (0==strcmp(cmds[i].cmd, args[0])) 
 	{
@@ -401,7 +442,7 @@ int onecommand( char *line, char *outbuff)
     strcat(outbuff,args[0] );
     strcat(outbuff,"'. Try help");
     logf(LOG_APP,"Unknown command");
-    return -2; 
+    return -90; 
 }
  
 static int cmd_help( char *args[], char *outbuff)
@@ -469,12 +510,13 @@ static void Zerrors ( char *outbuff)
     ec=zebra_errCode (zh);
     if (ec)
     {
-	sprintf(tmp, "Zebra error %d: %s, (%s)",
+	sprintf(tmp, "   Zebra error %d: %s, (%s)",
 		ec, zebra_errString (zh),
 		zebra_errAdd (zh) );
 	strcat(outbuff, tmp);
 	strcat(outbuff, "\n");
 	logf(LOG_APP, tmp);
+	zebra_clearError(zh);
     }
 }
   
@@ -486,10 +528,11 @@ void shell()
 {
     int rc=0;
     char tmp[MAX_ARG_LEN];
+    char outbuff[MAX_OUT_BUFF]="";
+    char prevout[MAX_OUT_BUFF]=""; /* previous output for 'expect' */
     while (rc!=-99)
     {
 	char buf[MAX_ARG_LEN];
-	char outbuff[MAX_OUT_BUFF];
 #if HAVE_READLINE_READLINE_H
 	char* line_in;
 	line_in=readline(PROMPT);
@@ -511,16 +554,18 @@ void shell()
 	if (!fgets (buf, MAX_ARG_LEN-1, stdin))
 	    break; 
 #endif 
+	
+	strncpy(prevout, outbuff, MAX_OUT_BUFF);
 	outbuff[0]='\0';
-	rc=onecommand(buf, outbuff);
+	rc=onecommand(buf, outbuff, prevout);
 	if (rc==0)
 	{
-	    strcat(outbuff, "OK\n");
+	    strcat(outbuff, "   OK\n");
 	    logf(LOG_APP, "OK");
 	}
-	else if (rc > 0)
+	else if (rc>-90)
 	{
-	    sprintf(tmp, "command returned %d\n",rc);
+	    sprintf(tmp, "   command returned %d\n",rc);
 	    strcat(outbuff,tmp);
 	} 
 	Zerrors(outbuff);

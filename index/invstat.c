@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.34 2002-08-05 14:08:08 adam Exp $
+/* $Id: invstat.c,v 1.35 2003-06-20 14:21:23 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -236,7 +236,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     return 0;
 }
 
-void zebra_register_statistics (ZebraHandle zh, int dumpdict)
+int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 {
     int blocks;
     int size;
@@ -249,7 +249,7 @@ void zebra_register_statistics (ZebraHandle zh, int dumpdict)
     char term_dict[2*IT_MAX_WORD+2];
 
     if (zebra_begin_read (zh))
-	return;
+	return 1;
 
     stat_info.zh = zh;
     stat_info.dumpwords=dumpdict;
@@ -393,5 +393,6 @@ void zebra_register_statistics (ZebraHandle zh, int dumpdict)
              prev, stat_info.isam_occurrences[i]);
     xmalloc_trav("unfreed"); /*! while hunting memory leaks */    
     zebra_end_read (zh);
+    return 0;
 }
 

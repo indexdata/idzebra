@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.100 2003-06-18 11:46:33 adam Exp $
+/* $Id: index.h,v 1.101 2003-06-20 14:21:23 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -462,7 +462,7 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
                  const struct recordGroup *rGroup, int deleteFlag);
 
 int zebra_begin_read (ZebraHandle zh);
-void zebra_end_read (ZebraHandle zh);
+int zebra_end_read (ZebraHandle zh);
 
 int zebra_file_stat (const char *file_name, struct stat *buf,
                      int follow_links);

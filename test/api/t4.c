@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.1 2003-06-18 11:46:34 adam Exp $
+/* $Id: t4.c,v 1.2 2003-06-20 14:21:24 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
     zebra_begin_trans (zh, 1);
     for (i = 0; i<1200; i++)
-	zebra_record_insert (zh, myrec, strlen(myrec));
+	zebra_record_insert (zh, myrec, strlen(myrec),0);
     zebra_end_trans (zh);
     zebra_close(zh);
     zebra_stop(zs);
