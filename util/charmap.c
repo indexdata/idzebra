@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.2  1996-06-03 10:15:09  quinn
+ * Revision 1.3  1996-06-03 15:17:46  quinn
+ * Fixed bug.
+ *
+ * Revision 1.2  1996/06/03  10:15:09  quinn
  * Fixed bug in mapping function.
  *
  * Revision 1.1  1996/05/31  09:07:18  quinn
@@ -141,10 +144,8 @@ char **chr_map_input(chr_t_entry *t, char **from, int len)
 	    str[0] = **from;
 	    buf[0] = str;
 	}
-	else if (isspace(**from))
-	    buf[0] = (char*) CHR_SPACE;
 	else
-	    buf[0] = (char*) CHR_UNKNOWN;
+	    buf[0] = (char*) CHR_SPACE;
 	(*from)++;
 	return buf;
     }
