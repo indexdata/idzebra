@@ -1,5 +1,5 @@
 # Z'mbol/Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.10 2002-04-05 12:49:51 adam Exp $
+# $Id: makefile,v 1.11 2002-07-15 12:31:40 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -50,6 +50,7 @@ DICTDIR=$(SRCDIR)\DICT
 ISAMSDIR=$(SRCDIR)\ISAMS
 ISAMDIR=$(SRCDIR)\ISAM
 ISAMCDIR=$(SRCDIR)\ISAMC
+ISAMBDIR=$(SRCDIR)\ISAMB
 RECCTRLDIR=$(SRCDIR)\RECCTRL
 RSETDIR=$(SRCDIR)\RSET
 UTILDIR=$(SRCDIR)\UTIL
@@ -250,7 +251,10 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\zrpn.obj \
 	$(OBJDIR)\zsets.obj \
 	$(OBJDIR)\isams.obj \
+	$(OBJDIR)\isamb.obj \
 	$(OBJDIR)\rsisamd.obj \
+	$(OBJDIR)\rsisamb.obj \
+	$(OBJDIR)\rsbetween.obj \
 	$(OBJDIR)\dir.obj \
 	$(OBJDIR)\dirs.obj \
 	$(OBJDIR)\extract.obj \
@@ -297,6 +301,9 @@ ALL_OBJS=\
 	$(CPP) $(COPT) $< 
 
 {$(ISAMCDIR)}.c{$(OBJDIR)}.obj:
+	$(CPP) $(COPT) $< 
+
+{$(ISAMBDIR)}.c{$(OBJDIR)}.obj:
 	$(CPP) $(COPT) $< 
 
 {$(RECCTRLDIR)}.c{$(OBJDIR)}.obj:
