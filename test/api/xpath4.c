@@ -1,6 +1,6 @@
 
 
-/* $Id: xpath4.c,v 1.3 2004-11-05 17:44:32 heikki Exp $
+/* $Id: xpath4.c,v 1.4 2004-11-05 18:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -91,7 +91,9 @@ int main(int argc, char **argv)
     ZebraService zs = start_up("zebraxpath.cfg", argc, argv);
     ZebraHandle zh = zebra_open (zs);
 
+#if 0
     yaz_log_init_level( yaz_log_mask_str_x("xpath4,rsbetween", LOG_DEFAULT_LEVEL));
+#endif
 
     init_data(zh,myrec);
 

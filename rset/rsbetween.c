@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.30 2004-11-05 17:44:32 heikki Exp $
+/* $Id: rsbetween.c,v 1.31 2004-11-05 18:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -94,6 +94,19 @@ static int log_level=0;
 static int log_level_initialized=0;
 
 
+/* make sure that the rset has a term attached. If not, create one */
+/* we need these terms for the tags, to distinguish what we read */
+static void checkterm( RSET rs, char *tag, NMEM nmem)
+{
+    if (!rs->term)
+    {
+        rs->term=
+             rset_term_create(tag,strlen(tag),"",0,nmem);
+        rs->term->rset=rs;
+    }
+}
+
+
 RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
             int scope,
             RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
@@ -115,36 +128,21 @@ RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
     rsetarray[ATTRTAG] = rset_attr;
 
     /* make sure we have decent terms for all rsets. Create dummies if needed*/
-    if (!rsetarray[STARTTAG]->term)
-    {
-        rsetarray[STARTTAG]->term=
-             rset_term_create("<starttag>",strlen("<starttag>"),"",0,nmem);
-        rsetarray[STARTTAG]->term->rset=rsetarray[STARTTAG];
-    }
+    checkterm( rsetarray[STARTTAG], "(start)",nmem);
+    checkterm( rsetarray[STOPTAG], "(start)",nmem);
     info->startterm=rsetarray[STARTTAG]->term;
-
-    if (!rsetarray[STOPTAG]->term)
-    {
-        rsetarray[STOPTAG]->term=
-             rset_term_create("<stoptag>",strlen("<stoptag>"),"",0,nmem);
-        rsetarray[STOPTAG]->term->rset=rsetarray[STOPTAG];
-    }
     info->stopterm=rsetarray[STOPTAG]->term;
 
     if (rset_attr)
     {
-        if (!rsetarray[ATTRTAG]->term)
-        {
-            rsetarray[ATTRTAG]->term=
-                 rset_term_create("<attrtag>",strlen("<attrtag>"),"",0,nmem);
-            rsetarray[ATTRTAG]->term->rset=rsetarray[ATTRTAG];
-        }
+        checkterm( rsetarray[ATTRTAG], "(start)",nmem);
         info->attrterm=rsetarray[ATTRTAG]->term;
+        n=4;
     }
     else
     {
         info->attrterm=NULL;
-        n--; /* smaller and */
+        n=3; 
     }
     info->andset=rsmultiand_create( nmem, kcontrol, scope, n, rsetarray);
     rnew->priv=info;
