@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.110 2004-01-22 11:27:21 adam Exp $
+/* $Id: main.c,v 1.111 2004-05-30 18:05:30 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -258,7 +258,7 @@ int main (int argc, char **argv)
         else if (ret == 'g')
 	    res_set(res, "group", arg);
         else if (ret == 'f')
-	    res_set(res, "verboseLimit", arg);
+	    res_set(res, "fileVerboseLimit", arg);
         else if (ret == 'c')
             configName = arg;
         else if (ret == 't')
