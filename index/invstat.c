@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.40 2004-09-09 10:08:05 heikki Exp $
+/* $Id: invstat.c,v 1.41 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -97,18 +97,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         while (isams_pp_read(pp, &key))
 	{
             occurx++;
-#if IT_KEY_NEW
-#else
-            stat_info->cksum = stat_info->cksum * 65509 + 
-                key.sysno + 11 * key.seqno;
-            if (-1==firstsys)
-            {
-                firstseq=key.seqno;
-                firstsys=key.sysno;
-            }
-            lastsys=key.sysno;
-            lastseq=key.seqno;
-#endif
 	}
         assert (occurx == occur);
 	stat_info->no_isam_entries[0] += occur;
@@ -125,18 +113,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         while (isc_pp_read(pp, &key))
 	{
             occurx++;
-#if IT_KEY_NEW
-#else
-            stat_info->cksum = stat_info->cksum * 65509 + 
-                key.sysno + 11 * key.seqno;
-            if (-1==firstsys)
-            {
-                firstseq=key.seqno;
-                firstsys=key.sysno;
-            }
-            lastsys=key.sysno;
-            lastseq=key.seqno;
-#endif
 	}
         assert (occurx == occur);
 	stat_info->no_isam_entries[isc_type(isam_p)] += occur;
@@ -156,18 +132,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         while (isamb_pp_read(pp, &key))
         {
             occur++;
-#if IT_KEY_NEW
-#else
-            stat_info->cksum = stat_info->cksum * 65509 + 
-                key.sysno + 11 * key.seqno;
-            if (-1==firstsys)
-            {
-                firstseq=key.seqno;
-                firstsys=key.sysno;
-            }
-            lastsys=key.sysno;
-            lastseq=key.seqno;
-#endif
         }
         isamb_pp_close_x (pp, &size, &blocks);
         stat_info->isamb_blocks[cat] += blocks;

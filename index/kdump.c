@@ -1,4 +1,4 @@
-/* $Id: kdump.c,v 1.25 2004-08-04 08:35:23 adam Exp $
+/* $Id: kdump.c,v 1.26 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -35,12 +35,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 char *prog;
 
-#if IT_KEY_NEW
 int main(int argc, char **argv)
 {
     exit(0);
 }
-#else
+
+#if 0
+/* old kdumper.. must be updated to use new codec .. */
 int key_file_decode (FILE *f)
 {
     int c, d;

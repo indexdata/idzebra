@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.152 2004-09-14 14:38:07 quinn Exp $
+/* $Id: zrpn.c,v 1.153 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1759,16 +1759,9 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     sys = atoi(termz);
     if (sys <= 0)
         sys = 1;
-#if IT_KEY_NEW
     key.mem[0] = sys;
     key.mem[1] = 1;
     key.len = 2;
-#else
-    key.sysno = sys;
-    key.seqno = 1;
-    if (key.sysno <= 0)
-        key.sysno = 1;
-#endif
     rset_write (rsfd, &key);
     rset_close (rsfd);
     return result;
@@ -2420,19 +2413,11 @@ static void count_set (RSET r, int *count)
     rfd = rset_open (r, RSETF_READ);
     while (rset_read (rfd, &key))
     {
-#if IT_KEY_NEW
         if (key.mem[0] != psysno)
         {
             psysno = key.mem[0];
             (*count)++;
         }
-#else
-        if (key.sysno != psysno)
-        {
-            psysno = key.sysno;
-            (*count)++;
-        }
-#endif
         kno++;
     }
     rset_close (rfd);

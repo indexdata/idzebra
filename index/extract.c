@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.161 2004-09-14 14:38:07 quinn Exp $
+/* $Id: extract.c,v 1.162 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -93,8 +93,6 @@ static const char **searchRecordKey (ZebraHandle zh,
                                      struct recKeys *reckeys,
 				     int attrSetS, int attrUseS)
 {
-#if IT_KEY_NEW
-/* #error searchRecordKey does not work yet in this mode.. */
     static const char *ws[32];
     void *decode_handle = iscz1_start();
     int off = 0;
@@ -137,86 +135,6 @@ static const char **searchRecordKey (ZebraHandle zh,
     iscz1_stop(decode_handle);
     assert (off == reckeys->buf_used);
     return ws;
-#else
-    static const char *ws[32];
-    int off = 0;
-    int startSeq = -1;
-    int i;
-    int seqno = 0;
-#if SU_SCHEME
-    int chS, ch;
-#else
-    short attrUse;
-    char attrSet;
-#endif
-
-    for (i = 0; i<32; i++)
-        ws[i] = NULL;
-
-#if SU_SCHEME
-    chS = zebraExplain_lookupSU (zh->reg->zei, attrSetS, attrUseS);
-    if (chS < 0)
-	return ws;
-#endif
-    while (off < reckeys->buf_used)
-    {
-
-        const char *src = reckeys->buf + off;
-	const char *wstart;
-        int lead;
-    
-        lead = *src++;
-#if SU_SCHEME
-	if ((lead & 3)<3)
-	{
-	    memcpy (&ch, src, sizeof(ch));
-	    src += sizeof(ch);
-	}
-#else
-        if (!(lead & 1))
-        {
-            memcpy (&attrSet, src, sizeof(attrSet));
-            src += sizeof(attrSet);
-        }
-        if (!(lead & 2))
-        {
-            memcpy (&attrUse, src, sizeof(attrUse));
-            src += sizeof(attrUse);
-        }
-#endif
-        wstart = src;
-        while (*src++)
-            ;
-        if (lead & 60)
-            seqno += ((lead>>2) & 15)-1;
-        else
-        {
-            memcpy (&seqno, src, sizeof(seqno));
-            src += sizeof(seqno);
-        }
-	if (
-#if SU_SCHEME
-	    ch == chS
-#else
-	    attrUseS == attrUse && attrSetS == attrSet
-#endif
-	    )
-        {
-            int woff;
-
-
-            if (startSeq == -1)
-                startSeq = seqno;
-            woff = seqno - startSeq;
-            if (woff >= 0 && woff < 31)
-                ws[woff] = wstart;
-        }
-
-        off = src - reckeys->buf;
-    }
-    assert (off == reckeys->buf_used);
-    return ws;
-#endif
 }
 
 struct file_read_info {
@@ -465,13 +383,7 @@ struct recordLogInfo {
 void create_rec_keys_codec(struct recKeys *keys)
 {
     keys->buf_used = 0;
-#if IT_KEY_NEW
     iscz1_reset(keys->codec_handle);
-#else
-    keys->prevAttrUse = -1;
-    keys->prevAttrSet = -1;
-    keys->prevSeqNo = 0;
-#endif
 }
      
 static int file_extract_record(ZebraHandle zh,
@@ -1290,16 +1202,7 @@ int explain_extract (void *handle, Record rec, data1_node *n)
 void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
                               int cmd, struct recKeys *reckeys)
 {
-#if IT_KEY_NEW
     void *decode_handle = iscz1_start();
-#else
-    int seqno = 0;
-#if SU_SCHEME
-#else
-    unsigned char attrSet = (unsigned char) -1;
-    unsigned short attrUse = (unsigned short) -1;
-#endif
-#endif
     int off = 0;
     int ch = 0;
     ZebraExplainInfo zei = zh->reg->zei;
@@ -1321,7 +1224,7 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 	zh->reg->key_file_no = 0;
     }
     zebraExplain_recordCountIncrement (zei, cmd ? 1 : -1);
-#if IT_KEY_NEW
+
     while (off < reckeys->buf_used)
     {
         const char *src = reckeys->buf + off;
@@ -1366,76 +1269,8 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
         (zh->reg->key_buf_used) += sizeof(key);
         off = src - reckeys->buf;
     }
-#else
-    while (off < reckeys->buf_used)
-    {
-        const char *src = reckeys->buf + off;
-        struct it_key key;
-        int lead;
-    
-        lead = *src++;
-
-#if SU_SCHEME
-	if ((lead & 3) < 3)
-	{
-	    memcpy (&ch, src, sizeof(ch));
-	    src += sizeof(ch);
-	}
-#else
-        if (!(lead & 1))
-        {
-            memcpy (&attrSet, src, sizeof(attrSet));
-            src += sizeof(attrSet);
-        }
-        if (!(lead & 2))
-        {
-            memcpy (&attrUse, src, sizeof(attrUse));
-            src += sizeof(attrUse);
-        }
-#endif
-        if (zh->reg->key_buf_used + 1024 > 
-            (zh->reg->ptr_top -zh->reg->ptr_i)*sizeof(char*))
-            extract_flushWriteKeys (zh,0);
-        assert(zh->reg->ptr_i >= 0);
-        ++(zh->reg->ptr_i);
-        assert(zh->reg->ptr_i > 0);
-        (zh->reg->key_buf)[zh->reg->ptr_top - zh->reg->ptr_i] =
-	    (char*)zh->reg->key_buf + zh->reg->key_buf_used;
-#if SU_SCHEME
-#else
-        ch = zebraExplain_lookupSU (zei, attrSet, attrUse);
-        if (ch < 0)
-            ch = zebraExplain_addSU (zei, attrSet, attrUse);
-#endif
-        assert (ch > 0);
-	zh->reg->key_buf_used +=
-	    key_SU_encode (ch,((char*)zh->reg->key_buf) +
-                           zh->reg->key_buf_used);
-
-        while (*src)
-            ((char*)zh->reg->key_buf) [(zh->reg->key_buf_used)++] = *src++;
-        src++;
-        ((char*)(zh->reg->key_buf))[(zh->reg->key_buf_used)++] = '\0';
-        ((char*)(zh->reg->key_buf))[(zh->reg->key_buf_used)++] = cmd;
-
-        if (lead & 60)
-            seqno += ((lead>>2) & 15)-1;
-        else
-        {
-            memcpy (&seqno, src, sizeof(seqno));
-            src += sizeof(seqno);
-        }
-        key.seqno = seqno;
-        key.sysno = sysno;
-        memcpy ((char*)zh->reg->key_buf + zh->reg->key_buf_used, &key, sizeof(key));
-        (zh->reg->key_buf_used) += sizeof(key);
-        off = src - reckeys->buf;
-    }
-#endif
     assert (off == reckeys->buf_used);
-#if IT_KEY_NEW
     iscz1_stop(decode_handle);
-#endif
 }
 
 void extract_flushWriteKeys (ZebraHandle zh, int final)
@@ -1577,17 +1412,8 @@ void extract_add_index_string (RecWord *p, const char *str, int length)
     char *dst;
     ZebraHandle zh = p->extractCtrl->handle;
     struct recKeys *keys = &zh->reg->keys;
-#if IT_KEY_NEW
     struct it_key key;
     const char *src = (char*) &key;
-#else
-    unsigned char attrSet;
-    unsigned short attrUse;
-    int lead = 0;
-    int diff = 0;
-    int *pseqno = &p->seqno;
-    ZebraExplainInfo zei = zh->reg->zei;
-#endif
     
     if (keys->buf_used+1024 > keys->buf_max)
     {
@@ -1601,7 +1427,6 @@ void extract_add_index_string (RecWord *p, const char *str, int length)
     }
     dst = keys->buf + keys->buf_used;
 
-#if IT_KEY_NEW
     key.len = 3;
     key.mem[0] = p->attrSet;
     key.mem[1] = p->attrUse;
@@ -1619,69 +1444,6 @@ void extract_add_index_string (RecWord *p, const char *str, int length)
     memcpy (dst, str, length);
     dst += length;
     *dst++ = '\0';
-#else
-    /* leader byte is encoded as follows:
-       bit 0 : 1 if attrset is unchanged; 0 if attrset is changed
-       bit 1 : 1 if attruse is unchanged; 0 if attruse is changed
-    */
-    attrSet = p->attrSet;
-    if (keys->buf_used > 0 && keys->prevAttrSet == attrSet)
-        lead |= 1;
-    else
-        keys->prevAttrSet = attrSet;
-    attrUse = p->attrUse;
-    if (keys->buf_used > 0 && keys->prevAttrUse == attrUse)
-        lead |= 2;
-    else
-        keys->prevAttrUse = attrUse;
-
-    diff = 1 + *pseqno - keys->prevSeqNo;
-    if (diff >= 1 && diff <= 15)
-        lead |= (diff << 2);
-    else
-        diff = 0;
-
-    keys->prevSeqNo = *pseqno;
-    
-    *dst++ = lead;
-
-#if SU_SCHEME
-    if ((lead & 3) < 3)
-    {
-        int ch = zebraExplain_lookupSU (zei, attrSet, attrUse);
-        if (ch < 0)
-        {
-            ch = zebraExplain_addSU (zei, attrSet, attrUse);
-            yaz_log (LOG_DEBUG, "addSU set=%d use=%d SU=%d",
-                     attrSet, attrUse, ch);
-        }
-	assert (ch > 0);
-	memcpy (dst, &ch, sizeof(ch));
-	dst += sizeof(ch);
-    }
-#else
-    if (!(lead & 1))
-    {
-        memcpy (dst, &attrSet, sizeof(attrSet));
-        dst += sizeof(attrSet);
-    }
-    if (!(lead & 2))
-    {
-        memcpy (dst, &attrUse, sizeof(attrUse));
-        dst += sizeof(attrUse);
-    }
-#endif
-    *dst++ = p->reg_type;
-    memcpy (dst, str, length);
-    dst += length;
-    *dst++ = '\0';
-
-    if (!diff)
-    {
-        memcpy (dst, pseqno, sizeof(*pseqno));
-        dst += sizeof(*pseqno);
-    }
-#endif
     keys->buf_used = dst - keys->buf;
 }
 
@@ -1820,7 +1582,7 @@ yaz_log(LOG_DEBUG, "Complete field, w='%s'", p->string);
 	    {
 		if (i >= IT_MAX_WORD)
 		    break;
-yaz_log(LOG_DEBUG, "Adding string to index '%d'", *map);
+		yaz_log(LOG_DEBUG, "Adding string to index '%d'", **map);
 		while (i < IT_MAX_WORD && *cp)
 		    buf[i++] = *(cp++);
 	    }
@@ -1900,38 +1662,8 @@ void encode_key_init (struct encode_info *i)
     i->prevseq=0;
     i->prevcmd=-1;
     i->keylen=0;
-#if IT_KEY_NEW
     i->encode_handle = iscz1_start();
-#endif
 }
-
-#if IT_KEY_NEW
-#else
-char *encode_key_int (int d, char *bp)
-{
-    if (d <= 63)
-        *bp++ = d;
-    else if (d <= 16383)
-    {
-        *bp++ = 64 + (d>>8);
-        *bp++ = d  & 255;
-    }
-    else if (d <= 4194303)
-    {
-        *bp++ = 128 + (d>>16);
-        *bp++ = (d>>8) & 255;
-        *bp++ = d & 255;
-    }
-    else
-    {
-        *bp++ = 192 + (d>>24);
-        *bp++ = (d>>16) & 255;
-        *bp++ = (d>>8) & 255;
-        *bp++ = d & 255;
-    }
-    return bp;
-}
-#endif
 
 #define OLDENCODE 1
 
@@ -1951,23 +1683,10 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
         ;
     /* and copy & align key so we can mangle */
     memcpy (&key, k+1, sizeof(struct it_key));  /* *k is insert/delete */
-#if IT_KEY_NEW
+
     bp0 = bp++;
     iscz1_encode(i->encode_handle, &bp, &src);
     *bp0 = (*k * 128) + bp - bp0 - 1; /* length and insert/delete combined */
-#else
-    bp = encode_key_int ( (key.sysno - i->sysno) * 2 + *k, bp);
-    if (i->sysno != key.sysno)
-    {
-        i->sysno = key.sysno;
-        i->seqno = 0;
-    }
-    else if (!i->seqno && !key.seqno && i->cmd == *k)
-	return;
-    bp = encode_key_int (key.seqno - i->seqno, bp);
-    i->seqno = key.seqno;
-    i->cmd = *k;
-#endif
     if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
     {
         logf (LOG_FATAL|LOG_ERRNO, "fwrite");
@@ -1977,9 +1696,7 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
 
 void encode_key_flush (struct encode_info *i, FILE *outf)
 { /* dummy routine */
-#if IT_KEY_NEW
     iscz1_stop(i->encode_handle);
-#endif
 }
 
 #else

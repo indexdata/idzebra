@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.119 2004-09-09 10:08:04 heikki Exp $
+/* $Id: index.h,v 1.120 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -54,25 +54,11 @@ YAZ_BEGIN_CDECL
 
 #define IT_MAX_WORD 256
 
-#define IT_KEY_NEW 1
-
-#if IT_KEY_NEW
-
-#endif
-
-#if IT_KEY_NEW
 #define IT_KEY_LEVEL_MAX 4
 struct it_key {
     int  len;
     zint mem[IT_KEY_LEVEL_MAX];
 };
-#else
-struct it_key {
-    int  sysno;
-    int  seqno;
-};
-#endif
-
 
 enum dirsKind { dirs_dir, dirs_file };
 
@@ -188,9 +174,7 @@ struct encode_info {
     int prevseq;
     int prevcmd;
     int keylen; /* tells if we have an unwritten key in buf, and how long*/
-#if IT_KEY_NEW
     void *encode_handle;
-#endif
     char buf[ENCODE_BUFLEN];
 };
 
@@ -219,13 +203,7 @@ struct recKeys {
     int buf_used;
     int buf_max;
     char *buf;
-#if IT_KEY_NEW
     void *codec_handle;
-#else
-    int prevSeqNo;
-    char prevAttrSet;
-    short prevAttrUse;
-#endif
 };
 
 struct sortKeys {

@@ -1,4 +1,4 @@
-/* $Id: tstcodec.c,v 1.2 2004-08-04 08:35:26 adam Exp $
+/* $Id: tstcodec.c,v 1.3 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -41,14 +41,9 @@ int tst_encode(int num)
     {
 	const char *src = (const char *) &key;
 
-#if IT_KEY_NEW
 	key.len = 2;
 	key.mem[0] = i >> 8;
 	key.mem[1] = i & 255;
-#else
-	key.sysno = num;
-	key.seqno = 1;	
-#endif
 	iscz1_encode (codec_handle, &dst, &src);
 	if (dst > dst_buf + num*10)
 	{
@@ -69,7 +64,6 @@ int tst_encode(int num)
 	    const char *src0 = src;
 	    iscz1_decode(codec_handle, &dst, &src);
 	    
-#if IT_KEY_NEW
 	    if (key.len != 2)
 	    {
 		printf ("%s: i=%d key.len=%d expected 2\n", prog,
@@ -106,9 +100,6 @@ int tst_encode(int num)
 		printf ("\n");
 		return 4;
 	    }
-#else
-
-#endif
 	}
     }
 

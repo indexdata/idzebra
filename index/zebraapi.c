@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.131 2004-09-13 09:02:16 adam Exp $
+/* $Id: zebraapi.c,v 1.132 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -263,9 +263,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     reg->keys.buf_max = 0;
     reg->keys.buf = 0;
-#if IT_KEY_NEW
     reg->keys.codec_handle = iscz1_start();
-#endif
 
     reg->sortKeys.buf = 0;
     reg->sortKeys.buf_max = 0;
@@ -431,11 +429,8 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 
     xfree (reg->sortKeys.buf);
     xfree (reg->keys.buf);
-#if IT_KEY_NEW
     if (reg->keys.codec_handle)
 	iscz1_stop(reg->keys.codec_handle);
-#endif
-
     xfree (reg->key_buf);
     xfree (reg->name);
     xfree (reg);

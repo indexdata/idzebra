@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.61 2004-08-06 13:14:46 adam Exp $
+/* $Id: kinput.c,v 1.62 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -47,12 +47,7 @@ struct key_file {
     size_t chunk;        /* number of bytes allocated */
     size_t buf_ptr;      /* current position in buffer */
     char *prev_name;     /* last word read */
-#if IT_KEY_NEW
     void *decode_handle;
-#else
-    int   sysno;         /* last sysno */
-    int   seqno;         /* last seqno */
-#endif
     off_t length;        /* length of file */
                          /* handler invoked in each read */
     void (*readHandler)(struct key_file *keyp, void *rinfo);
@@ -126,9 +121,7 @@ void key_file_chunk_read (struct key_file *f)
 
 void key_file_destroy (struct key_file *f)
 {
-#if IT_KEY_NEW
     iscz1_stop(f->decode_handle);
-#endif
     xfree (f->buf);
     xfree (f->prev_name);
     xfree (f);
@@ -140,12 +133,7 @@ struct key_file *key_file_init (int no, int chunk, Res res)
 
     f = (struct key_file *) xmalloc (sizeof(*f));
     f->res = res;
-#if IT_KEY_NEW
     f->decode_handle = iscz1_start();
-#else
-    f->sysno = 0;
-    f->seqno = 0;
-#endif
     f->no = no;
     f->chunk = chunk;
     f->offset = 0;
@@ -202,14 +190,9 @@ int key_file_read (struct key_file *f, char *key)
 {
     int i, c;
     char srcbuf[128];
-#if IT_KEY_NEW
     const char *src = srcbuf;
     char *dst;
     int j;
-#else
-    struct it_key itkey;
-    int d;
-#endif
 
     c = key_file_getc (f);
     if (c == 0)
@@ -226,11 +209,8 @@ int key_file_read (struct key_file *f, char *key)
         while ((key[i++] = key_file_getc (f)))
             ;
         strcpy (f->prev_name, key);
-#if IT_KEY_NEW
 	iscz1_reset(f->decode_handle);
-#endif
     }
-#if IT_KEY_NEW
     c = key_file_getc(f); /* length +  insert/delete combined */
     key[i++] = c & 128;
     c = c & 127;
@@ -239,22 +219,6 @@ int key_file_read (struct key_file *f, char *key)
     dst = key + i;
     iscz1_decode(f->decode_handle, &dst, &src);
     return i + sizeof(struct it_key);
-#else
-    d = key_file_decode (f);
-    key[i++] = d & 1;
-    d = d >> 1;
-    itkey.sysno = d + f->sysno;
-    if (d) 
-    {
-        f->sysno = itkey.sysno;
-        f->seqno = 0;
-    }
-    d = key_file_decode (f);
-    itkey.seqno = d + f->seqno;
-    f->seqno = itkey.seqno;
-    memcpy (key + i, &itkey, sizeof(struct it_key));
-    return i + sizeof (struct it_key);
-#endif
 }
 
 struct heap_info {

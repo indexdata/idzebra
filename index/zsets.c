@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.61 2004-09-13 09:02:16 adam Exp $
+/* $Id: zsets.c,v 1.62 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -405,11 +405,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
             rfd = rset_open (rset, RSETF_READ);
             while (num_i < num && rset_read (rfd, &key))
             {
-#if IT_KEY_NEW
                 zint this_sys = key.mem[0];
-#else
-                zint this_sys = key.sysno;
-#endif
                 if (this_sys != psysno)
                 {
                     psysno = this_sys;
@@ -692,11 +688,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
     rfd = rset_open (rset, RSETF_READ);
     while (rset_read (rfd, &key))
     {
-#if IT_KEY_NEW
         zint this_sys = key.mem[0];
-#else
-        zint this_sys = key.sysno;
-#endif
         if (this_sys != psysno)
         {
             (sset->hits)++;
@@ -760,11 +752,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 
     if (rset_read (rfd, &key))
     {
-#if IT_KEY_NEW
         zint psysno = key.mem[0];
-#else
-        zint psysno = key.sysno;
-#endif
         int score;
         void *handle =
             (*rc->begin) (zh->reg, rank_class->class_handle, rset);
@@ -774,11 +762,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
             est=-1; /* can not do */
         do
         {
-#if IT_KEY_NEW
             zint this_sys = key.mem[0];
-#else
-            zint this_sys = key.sysno;
-#endif
             kno++;
             if (this_sys != psysno)
             {

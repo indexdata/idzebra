@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.51 2004-09-01 15:01:32 heikki Exp $
+/* $Id: kcompare.c,v 1.52 2004-09-15 08:13:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,12 +27,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "index.h"
 
-#if IT_KEY_NEW
-#define INT_CODEC_NEW 1
-#else
-#define INT_CODEC_NEW 0
-#endif
-
 #ifdef __GNUC__
 #define CODEC_INLINE inline
 #else
@@ -44,7 +38,6 @@ void key_logdump_txt (int logmask, const void *p, const char *txt)
     struct it_key key;
     if (p)
     {
-#if IT_KEY_NEW
 	char formstr[128];
 	int i;
 
@@ -58,11 +51,6 @@ void key_logdump_txt (int logmask, const void *p, const char *txt)
 		strcat(formstr, " ");
 	}
         logf (logmask, "%s %s", formstr, txt);
-#else
-/* !IT_KEY_NEW */
-        memcpy (&key, p, sizeof(key));
-        logf (logmask, "%7d:%-4d %s", key.sysno, key.seqno, txt);
-#endif
     }
     else
         logf(logmask, " (null) %s",txt);
@@ -75,7 +63,6 @@ void key_logdump (int logmask, const void *p)
 
 int key_compare_it (const void *p1, const void *p2)
 {
-#if IT_KEY_NEW
     int i, l = ((struct it_key *) p1)->len;
     if (((struct it_key *) p2)->len > l)
 	l = ((struct it_key *) p2)->len;
@@ -90,45 +77,21 @@ int key_compare_it (const void *p1, const void *p2)
 		return i-l;
 	}
     }
-#else
-    if (((struct it_key *) p1)->sysno != ((struct it_key *) p2)->sysno)
-    {
-        if (((struct it_key *) p1)->sysno > ((struct it_key *) p2)->sysno)
-            return 2;
-        else
-            return -2;
-    }
-    if (((struct it_key *) p1)->seqno != ((struct it_key *) p2)->seqno)
-    {
-        if (((struct it_key *) p1)->seqno > ((struct it_key *) p2)->seqno)
-            return 1;
-        else
-            return -1;
-    }
-#endif
     return 0;
 }
 
 char *key_print_it (const void *p, char *buf)
 {
-#if IT_KEY_NEW
     strcpy(buf, "");
-#else
-    const struct it_key *i = p;
-    sprintf (buf, "%d:%d", i->sysno, i->seqno);
-#endif
     return buf;
 }
 
 int key_compare (const void *p1, const void *p2)
 {
     struct it_key i1, i2;
-#if IT_KEY_NEW
     int i, l;
-#endif
     memcpy (&i1, p1, sizeof(i1));
     memcpy (&i2, p2, sizeof(i2));
-#if IT_KEY_NEW
     l = i1.len;
     if (i2.len > l)
 	l = i2.len;
@@ -143,22 +106,6 @@ int key_compare (const void *p1, const void *p2)
 		return i-l;
 	}
     }
-#else
-    if (i1.sysno != i2.sysno)
-    {
-        if (i1.sysno > i2.sysno)
-            return 2;
-        else
-            return -2;
-    }
-    if (i1.seqno != i2.seqno)
-    {
-        if (i1.seqno > i2.seqno)
-            return 1;
-        else
-            return -1;
-    }
-#endif
     return 0;
 }
 
@@ -166,11 +113,7 @@ zint key_get_seq(const void *p)
 {
     struct it_key k;
     memcpy (&k, p, sizeof(k));
-#if IT_KEY_NEW
     return k.mem[k.len-1];
-#else
-    return k.seqno;
-#endif
 }
 
 int key_qsort_compare (const void *p1, const void *p2)
@@ -200,7 +143,6 @@ void *iscz1_start (void)
     return p;
 }
 
-#if IT_KEY_NEW
 void key_init(struct it_key *key)
 {
     int i;
@@ -208,20 +150,14 @@ void key_init(struct it_key *key)
     for (i = 0; i<IT_KEY_LEVEL_MAX; i++)
 	key->mem[i] = 0;
 }
-#endif
 
 void iscz1_reset (void *vp)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
-#if IT_KEY_NEW
     int i;
     p->key.len = 0;
     for (i = 0; i< IT_KEY_LEVEL_MAX; i++)
 	p->key.mem[i] = 0;
-#else
-    p->key.sysno = 0;
-    p->key.seqno = 0;
-#endif
 }
 
 void iscz1_stop (void *p)
@@ -229,7 +165,6 @@ void iscz1_stop (void *p)
     xfree (p);
 }
 
-#if INT_CODEC_NEW
 /* small encoder that works with unsigneds of any length */
 static CODEC_INLINE void iscz1_encode_int (zint d, char **dst)
 {
@@ -259,73 +194,13 @@ static CODEC_INLINE zint iscz1_decode_int (unsigned char **src)
     d += ((zint) c << r);
     return d;
 }
-#else
-/* ! INT_CODEC_NEW */
-
-/* old encoder that works with unsigneds up to 30 bits */
-static CODEC_INLINE void iscz1_encode_int (unsigned d, char **dst)
-{
-    unsigned char *bp = (unsigned char*) *dst;
-
-    if (d <= 63)
-        *bp++ = d;
-    else if (d <= 16383)
-    {
-        *bp++ = 64 | (d>>8);
-       *bp++ = d & 255;
-    }
-    else if (d <= 4194303)
-    {
-        *bp++ = 128 | (d>>16);
-        *bp++ = (d>>8) & 255;
-        *bp++ = d & 255;
-    }
-    else
-    {
-        *bp++ = 192 | (d>>24);
-        *bp++ = (d>>16) & 255;
-        *bp++ = (d>>8) & 255;
-        *bp++ = d & 255;
-    }
-    *dst = (char *) bp;
-}
-
-/* old decoder that works with unsigneds up to 30 bits */
-static CODEC_INLINE int iscz1_decode_int (unsigned char **src)
-{
-    unsigned c = *(*src)++;
-    switch (c & 192)
-    {
-    case 0:
-        return c;
-    case 64:
-        return ((c & 63) << 8) + *(*src)++;
-    case 128:
-        c = ((c & 63) << 8) + *(*src)++;
-        c = (c << 8) + *(*src)++;
-        return c;
-    }
-    if (c&32) /* expand sign bit to high bits */
-       c = ((c | 63) << 8) + *(*src)++;
-    else
-       c = ((c & 63) << 8) + *(*src)++;
-    c = (c << 8) + *(*src)++;
-    c = (c << 8) + *(*src)++;
-    
-    return c;
-}
-#endif
 
 void iscz1_encode (void *vp, char **dst, const char **src)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
     struct it_key tkey;
-#if IT_KEY_NEW
     zint d;
     int i;
-#else
-    int d;
-#endif
 
     /*   1
 	 3, 2, 9, 12
@@ -336,7 +211,7 @@ void iscz1_encode (void *vp, char **dst, const char **src)
 	 if diff is non-zero, then _may_ be more
     */
     memcpy (&tkey, *src, sizeof(struct it_key));
-#if IT_KEY_NEW
+
     /* deal with leader + delta encoding .. */
     d = 0;
     assert(tkey.len > 0 && tkey.len <= 4);
@@ -366,34 +241,13 @@ void iscz1_encode (void *vp, char **dst, const char **src)
 	p->key.mem[i] = tkey.mem[i];
     }
     (*src) += sizeof(struct it_key);
-#else
-    d = tkey.sysno - p->key.sysno;
-    if (d)
-    {
-	iscz1_encode_int (2*tkey.seqno + 1, dst);
-	iscz1_encode_int (d, dst);
-	p->key.sysno += d;
-	p->key.seqno = tkey.seqno;
-    }
-    else
-    {
-	iscz1_encode_int (2*(tkey.seqno - p->key.seqno), dst);
-	p->key.seqno = tkey.seqno;
-    }
-    (*src) += sizeof(struct it_key);
-#endif
 }
 
 void iscz1_decode (void *vp, char **dst, const char **src)
 {
     struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
-#if IT_KEY_NEW
     int i;
-#else
-    int d;
-#endif
-    
-#if IT_KEY_NEW
+
     int leader = (int) iscz1_decode_int ((unsigned char **) src);
     i = leader & 7;
     if (leader & 64)
@@ -405,18 +259,6 @@ void iscz1_decode (void *vp, char **dst, const char **src)
 	p->key.mem[i] = iscz1_decode_int ((unsigned char **) src);
     memcpy (*dst, &p->key, sizeof(struct it_key));
     (*dst) += sizeof(struct it_key);
-#else
-    d = iscz1_decode_int ((unsigned char **) src);
-    if (d & 1)
-    {
-	p->key.seqno = d>>1;
-	p->key.sysno += iscz1_decode_int ((unsigned char **) src);
-    }
-    else
-	p->key.seqno += d>>1;
-    memcpy (*dst, &p->key, sizeof(struct it_key));
-    (*dst) += sizeof(struct it_key);
-#endif
 }
 
 ISAMS_M *key_isams_m (Res res, ISAMS_M *me)
