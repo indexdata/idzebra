@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.18  1997-09-24 13:36:41  adam
+ * Revision 1.19  1997-10-01 11:44:06  adam
+ * Small improvement of new ranking.
+ *
+ * Revision 1.18  1997/09/24 13:36:41  adam
  * More work on new ranking algorithm.
  *
  * Revision 1.17  1997/09/22 12:39:07  adam
@@ -167,7 +170,7 @@ static int qcomp (const void *p1, const void *p2)
                             qsort_info->key_buf + i2*qsort_info->key_size);
 }
 
-#define NEW_RANKING 0
+#define NEW_RANKING 1
 
 #define SCORE_SHOW 0.0                       /* base score for showing up */
 #define SCORE_COOC 0.3                       /* component dependent on co-oc */
@@ -246,7 +249,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 	    no_occur = score_sum = 0;
 	    memcpy (isam_prev_buf, isam_buf[min], info->key_size);
 	    for (i = 0; i<parms->no_isam_positions; i++)
-		pos_tf[i] = 0;
+		pos_tf[i] = -10;
 	}
 	else if (min < 0 ||
 		 (*parms->cmp)(isam_buf[min], isam_prev_buf) > 1)
@@ -259,7 +262,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 	    no_occur = score_sum = 0;
 	    memcpy (isam_prev_buf, isam_buf[min], info->key_size);
 	    for (i = 0; i<parms->no_isam_positions; i++)
-		pos_tf[i] = 0;
+		pos_tf[i] = -10;
 	}
 	pos = (*parms->get_pos)(isam_buf[min]);
 	logf (LOG_LOG, "pos=%d", pos);
@@ -268,7 +271,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 	    int d = pos - pos_tf[i];
 
 	    no_occur++;
-	    if (!pos_tf[i] && i != min)
+	    if (pos_tf[i] < 0 && i != min)
 		continue;
 	    if (d < 10)
 		d = 10;
