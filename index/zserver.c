@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.93 2002-09-06 10:28:02 adam Exp $
+/* $Id: zserver.c,v 1.94 2002-09-06 19:54:05 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -699,6 +699,7 @@ int main (int argc, char **argv)
     strcpy (sob->configname, "zebra.cfg");
     sob->bend_start = bend_start;
     sob->bend_stop = bend_stop;
+    strcpy (sob->service_display_name, "Zebra Server");
 
     statserv_setcontrol (sob);
 
