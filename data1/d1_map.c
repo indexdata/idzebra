@@ -1,4 +1,4 @@
-/* $Id: d1_map.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_map.c,v 1.3 2003-03-27 21:57:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -278,8 +278,27 @@ static int map_children(data1_handle dh, data1_node *n, data1_maptab *map,
 		    {
 			if (!cur || mt->new_field || !tagmatch(cur, mt))
 			{
-			    cur = data1_mk_node2 (dh, mem, DATA1N_tag, pn);
-			    cur->u.tag.tag = mt->value.string;
+                            if (mt->which == D1_MAPTAG_string)
+                            {
+                                cur = data1_mk_node2 (dh, mem, DATA1N_tag, pn);
+                                cur->u.tag.tag = mt->value.string;
+                            }
+                            else if (mt->which == D1_MAPTAG_numeric)
+                            {
+                                data1_tag *tag =
+                                    data1_gettagbynum(
+                                        dh,
+                                        pn->root->u.root.absyn->tagset,
+                                        mt->type,
+                                        mt->value.numeric);
+
+                                if (tag && tag->names->name)
+                                {
+                                    cur = data1_mk_tag (
+                                        dh, mem, tag->names->name, 0, pn);
+                                    
+                                }
+                            }
 			}
 			
 			if (mt->next)

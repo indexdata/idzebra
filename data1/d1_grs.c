@@ -1,4 +1,4 @@
-/* $Id: d1_grs.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_grs.c,v 1.3 2003-03-27 21:57:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -30,6 +30,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <data1.h>
 
 #define D1_VARIANTARRAY 20 /* fixed max length on sup'd variant-list. Lazy me */
+
+static Z_GenericRecord *data1_nodetogr_r(data1_handle dh, data1_node *n,
+                                         int select, ODR o, int *len,
+                                         data1_tag *wellknown_tag);
 
 static Z_ElementMetaData *get_ElementMetaData(ODR o)
 {
@@ -170,7 +174,8 @@ static char *get_data(data1_node *n, int *len)
 
 static Z_ElementData *nodetoelementdata(data1_handle dh, data1_node *n,
 					int select, int leaf,
-					ODR o, int *len)
+					ODR o, int *len,
+                                        data1_tag *wellknown_tag)
 {
     Z_ElementData *res = (Z_ElementData *)odr_malloc(o, sizeof(*res));
 
@@ -220,7 +225,8 @@ static Z_ElementData *nodetoelementdata(data1_handle dh, data1_node *n,
     else
     {
 	res->which = Z_ElementData_subtree;
-	if (!(res->u.subtree = data1_nodetogr (dh, n->parent, select, o, len)))
+	if (!(res->u.subtree = data1_nodetogr_r (dh, n->parent, select, o, len,
+                                                 wellknown_tag )))
 	    return 0;
     }
     return res;
@@ -233,7 +239,7 @@ static int is_empty_data (data1_node *n)
     {
         int i = n->u.data.len;
         
-        while (i > 0 && strchr("\n ", n->u.data.data[i-1]))
+        while (i > 0 && d1_isspace(n->u.data.data[i-1]))
             i--;
         if (i == 0)
             return 1;
@@ -244,7 +250,8 @@ static int is_empty_data (data1_node *n)
 
 static Z_TaggedElement *nodetotaggedelement(data1_handle dh, data1_node *n,
 					    int select, ODR o,
-					    int *len)
+					    int *len,
+                                            data1_tag *wellknown_tag)
 {
     Z_TaggedElement *res = (Z_TaggedElement *)odr_malloc(o, sizeof(*res));
     data1_tag *tag = 0;
@@ -277,13 +284,9 @@ static Z_TaggedElement *nodetotaggedelement(data1_handle dh, data1_node *n,
      */
     else if (n->which == DATA1N_data || n->which == DATA1N_variant)
     {
-	if (n->root->u.root.absyn &&
-            !(tag = data1_gettagbyname (dh, n->root->u.root.absyn->tagset,
-					"wellKnown")))
-	{
-	    yaz_log(LOG_WARN, "Unable to locate tag for 'wellKnown'");
-	    return 0;
-	}
+        tag = wellknown_tag;
+        if (!tag)
+            return 0;
 	data = n;
 	leaf = 1;
         if (is_empty_data(data))
@@ -344,22 +347,20 @@ static Z_TaggedElement *nodetotaggedelement(data1_handle dh, data1_node *n,
 	res->content->u.noDataRequested = odr_nullval();
     }
     else if (!(res->content = nodetoelementdata (dh, data, select, leaf,
-						 o, len)))
+						 o, len, wellknown_tag)))
 	return 0;
     *len += 10;
     return res;
 }
 
-Z_GenericRecord *data1_nodetogr(data1_handle dh, data1_node *n,
-				int select, ODR o, int *len)
+static Z_GenericRecord *data1_nodetogr_r(data1_handle dh, data1_node *n,
+                                         int select, ODR o, int *len,
+                                         data1_tag *wellknown_tag)
 {
     Z_GenericRecord *res = (Z_GenericRecord *)odr_malloc(o, sizeof(*res));
     data1_node *c;
     int num_children = 0;
 
-    if (n->which == DATA1N_root)
-        n = data1_get_root_tag (dh, n);
-        
     for (c = n->child; c; c = c->next)
 	num_children++;
 
@@ -371,8 +372,34 @@ Z_GenericRecord *data1_nodetogr(data1_handle dh, data1_node *n,
 	if (c->which == DATA1N_tag && select && !c->u.tag.node_selected)
 	    continue;
 	if ((res->elements[res->num_elements] =
-             nodetotaggedelement (dh, c, select, o, len)))
+             nodetotaggedelement (dh, c, select, o, len, wellknown_tag)))
 	    res->num_elements++;
     }
     return res;
+}
+
+Z_GenericRecord *data1_nodetogr(data1_handle dh, data1_node *n,
+                                int select, ODR o, int *len)
+
+{
+    data1_tag *wellknown_tag = 0;
+
+    if (n->which == DATA1N_root)
+        n = data1_get_root_tag (dh, n);
+
+    if (n->root->u.root.absyn &&
+        !(wellknown_tag =
+          data1_gettagbyname (dh, n->root->u.root.absyn->tagset,
+                              "wellKnown")))
+    {
+        yaz_log(LOG_WARN, "Unable to locate tag for 'wellKnown'");
+        wellknown_tag = odr_malloc(o, sizeof(*wellknown_tag));
+        wellknown_tag->which = DATA1T_numeric;
+        wellknown_tag->value.numeric = 19;
+        wellknown_tag->next = 0;
+        wellknown_tag->tagset = odr_malloc(o, sizeof(*wellknown_tag->tagset));
+        wellknown_tag->tagset->type = 1;
+        wellknown_tag->kind = DATA1K_string;
+    }
+    return data1_nodetogr_r(dh, n, select, o, len, wellknown_tag);
 }
