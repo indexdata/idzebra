@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.25  1997-09-18 08:59:16  adam
+ * Revision 1.26  1997-10-27 14:25:38  adam
+ * Fixed memory leaks.
+ *
+ * Revision 1.25  1997/09/18 08:59:16  adam
  * Extra generic handle for the character mapping routines.
  *
  * Revision 1.24  1997/09/17 12:19:06  adam
@@ -336,7 +339,13 @@ void mf_destroy(MFile_area ma)
     meta_f = ma->mfiles;
     while (meta_f)
     {
+	int i;
 	meta_file *m = meta_f;
+	
+	for (i = 0; i<m->no_files; i++)
+	{
+	    xfree (m->files[i].path);
+	}
 	meta_f = meta_f->next;
 	xfree (m);
     }
@@ -385,6 +394,8 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     	sprintf(tmp, "%s/%s.mf.%d", dp->name, mnew->name, 0);
     	mnew->files[0].path = xstrdup(tmp);
     	mnew->ma = ma;
+	mnew->next = ma->mfiles;
+	ma->mfiles = mnew;
     }
     else
     {

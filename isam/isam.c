@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.23  1997-09-17 12:19:20  adam
+ * Revision 1.24  1997-10-27 14:25:39  adam
+ * Fixed memory leaks.
+ *
+ * Revision 1.23  1997/09/17 12:19:20  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -375,6 +378,9 @@ int is_close(ISAM is)
 	    bf_close(is->types[i].bf);
 	}
     }
+    for (i = 0; i < is->num_types; i++)
+	xfree (is->types[i].dbuf);
+
     if (is->writeflag)
     {
 	logf(LOG_LOG, "ISAM statistics:");

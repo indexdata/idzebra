@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.24  1997-09-18 08:59:16  adam
+ * Revision 1.25  1997-10-27 14:25:38  adam
+ * Fixed memory leaks.
+ *
+ * Revision 1.24  1997/09/18 08:59:16  adam
  * Extra generic handle for the character mapping routines.
  *
  * Revision 1.23  1997/09/17 12:19:06  adam
@@ -109,6 +112,7 @@ BFiles bfs_create (const char *spec)
 
 void bfs_destroy (BFiles bfs)
 {
+    xfree (bfs->lockDir);
     mf_destroy (bfs->commit_area);
     mf_destroy (bfs->register_area);
     xfree (bfs);
