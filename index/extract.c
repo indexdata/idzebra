@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.66  1996-11-14 09:52:21  adam
+ * Revision 1.67  1996-11-15 15:02:14  adam
+ * Minor changes regarding logging.
+ *
+ * Revision 1.66  1996/11/14  09:52:21  adam
  * Strings in record keys bound by IT_MAX_WORD.
  *
  * Revision 1.65  1996/11/14  08:57:56  adam
@@ -955,19 +958,26 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.endf = file_end;
         extractCtrl.map_chrs_input = map_chrs_input;
         extractCtrl.flagShowRecords = rGroup->flagShowRecords;
+        if (rGroup->flagShowRecords)
+            printf ("File: %s %ld\n", fname, (long) recordOffset);
         r = (*recType->extract)(&extractCtrl);
 
         if (r)      
         {
             /* error occured during extraction ... */
-            logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
+            if (!rGroup->flagShowRecords)
+                logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
             return 0;
         }
         if (reckeys.buf_used == 0)
         {
             /* the extraction process returned no information - the record
                is probably empty */
-            logf (LOG_WARN, "Empty file %s", fname);
+            if (!rGroup->flagShowRecords)
+            {
+                logf (LOG_WARN, "No keys generated for file %s", fname);
+                logf (LOG_WARN, " The file is probably empty");
+            }
             return 0;
         }
     }
@@ -1009,7 +1019,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         }
         logInfo.op = "add";
         if (rGroup->fileVerboseFlag)
-            logf (LOG_LOG, "add %s %s+%ld", rGroup->recordType,
+            logf (LOG_LOG, "add %s %s %ld", rGroup->recordType,
                   fname, (long) recordOffset);
         rec = rec_new (records);
         *sysno = rec->sysno;
