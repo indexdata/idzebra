@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.20  1997-10-27 14:33:03  adam
+ * Revision 1.21  1998-06-24 12:16:12  adam
+ * Support for relations on text operands. Open range support in
+ * DFA module (i.e. [-j], [g-]).
+ *
+ * Revision 1.20  1997/10/27 14:33:03  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -418,6 +422,13 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     MatchContext *mc;
     struct DFA *dfa = dfa_init();
     int i, d;
+
+#if 0
+    debug_dfa_trav = 1;
+    debug_dfa_tran = 1;
+    debug_dfa_followpos = 1;
+    dfa_verbose = 1;
+#endif
 
     logf (LOG_DEBUG, "dict_lookup_grep range=%d", range);
     for (i = 0; pattern[i]; i++)

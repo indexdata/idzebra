@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.80  1998-06-23 15:33:34  adam
+ * Revision 1.81  1998-06-24 12:16:14  adam
+ * Support for relations on text operands. Open range support in
+ * DFA module (i.e. [-j], [g-]).
+ *
+ * Revision 1.80  1998/06/23 15:33:34  adam
  * Added feature to specify sort criteria in query (type 7 specifies
  * sort flags).
  *
@@ -720,20 +724,33 @@ static void gen_regular_rel (char *dst, int val, int islt)
     strcat (dst, "))");
 }
 
+void string_rel_add_char (char **term_p, const char *src, int *indx)
+{
+    if (src[*indx] == '\\')
+	*(*term_p)++ = src[(*indx)++];
+    *(*term_p)++ = src[(*indx)++];
+}
+
+/*
+ *   >  abc     ([b-].*|a[c-].*|ab[d-].*|abc.+)
+ *              ([^-a].*|a[^-b].*ab[^-c].*|abc.+)
+ *   >= abc     ([b-].*|a[c-].*|ab[c-].*)
+ *              ([^-a].*|a[^-b].*|ab[c-].*)
+ *   <  abc     ([-0].*|a[-a].*|ab[-b].*)
+ *              ([^a-].*|a[^b-].*|ab[^c-].*)
+ *   <= abc     ([-0].*|a[-a].*|ab[-b].*|abc)
+ *              ([^a-].*|a[^b-].*|ab[^c-].*|abc)
+ */
 static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-				 const char **term_sub,
-				 char *term_dict,
-				 oid_value attributeSet,
-				 struct grep_info *grep_info,
-				 int *max_pos,
-				 int reg_type,
-				 char *term_dst)
+			    const char **term_sub, char *term_dict,
+			    oid_value attributeSet,
+			    int reg_type, int space_split, char *term_dst)
 {
     AttrType relation;
     int relation_value;
-    int term_value;
-    int r;
+    int i;
     char *term_tmp = term_dict + strlen(term_dict);
+    char term_component[256];
 
     attr_init (&relation, zapt, 2);
     relation_value = attr_find (&relation, NULL);
@@ -742,52 +759,141 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     switch (relation_value)
     {
     case 1:
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_tmp, 1,
-		       term_dst))
+        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
+		       space_split, term_dst))
             return 0;
-        term_value = atoi (term_tmp);
         logf (LOG_DEBUG, "Relation <");
-        gen_regular_rel (term_tmp, term_value-1, 1);
+	
+	*term_tmp++ = '(';
+	for (i = 0; term_component[i]; )
+	{
+	    int j = 0;
+
+	    if (i)
+		*term_tmp++ = '|';
+	    while (j < i)
+		string_rel_add_char (&term_tmp, term_component, &j);
+
+	    *term_tmp++ = '[';
+
+	    *term_tmp++ = '^';
+	    string_rel_add_char (&term_tmp, term_component, &i);
+	    *term_tmp++ = '-';
+
+	    *term_tmp++ = ']';
+	    *term_tmp++ = '.';
+	    *term_tmp++ = '*';
+	}
+	*term_tmp++ = ')';
+	*term_tmp = '\0';
         break;
     case 2:
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_tmp, 1,
-		       term_dst))
+        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
+		       space_split, term_dst))
             return 0;
-        term_value = atoi (term_tmp);
         logf (LOG_DEBUG, "Relation <=");
-        gen_regular_rel (term_tmp, term_value, 1);
-        break;
-    case 4:
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_tmp, 1,
-		       term_dst))
-            return 0;
-        term_value = atoi (term_tmp);
-        logf (LOG_DEBUG, "Relation >=");
-        gen_regular_rel (term_tmp, term_value, 0);
+
+	*term_tmp++ = '(';
+	for (i = 0; term_component[i]; )
+	{
+	    int j = 0;
+
+	    while (j < i)
+		string_rel_add_char (&term_tmp, term_component, &j);
+	    *term_tmp++ = '[';
+
+	    *term_tmp++ = '^';
+	    string_rel_add_char (&term_tmp, term_component, &i);
+	    *term_tmp++ = '-';
+
+	    *term_tmp++ = ']';
+	    *term_tmp++ = '.';
+	    *term_tmp++ = '*';
+
+	    *term_tmp++ = '|';
+	}
+	for (i = 0; term_component[i]; )
+	    string_rel_add_char (&term_tmp, term_component, &i);
+	*term_tmp++ = ')';
+	*term_tmp = '\0';
         break;
     case 5:
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_tmp, 1,
-		       term_dst))
+        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
+		       space_split, term_dst))
             return 0;
-        term_value = atoi (term_tmp);
         logf (LOG_DEBUG, "Relation >");
-        gen_regular_rel (term_tmp, term_value+1, 0);
+
+	*term_tmp++ = '(';
+	for (i = 0; term_component[i];)
+	{
+	    int j = 0;
+
+	    while (j < i)
+		string_rel_add_char (&term_tmp, term_component, &j);
+	    *term_tmp++ = '[';
+	    
+	    *term_tmp++ = '^';
+	    *term_tmp++ = '-';
+	    string_rel_add_char (&term_tmp, term_component, &i);
+
+	    *term_tmp++ = ']';
+	    *term_tmp++ = '.';
+	    *term_tmp++ = '*';
+
+	    *term_tmp++ = '|';
+	}
+	for (i = 0; term_component[i];)
+	    string_rel_add_char (&term_tmp, term_component, &i);
+	*term_tmp++ = '.';
+	*term_tmp++ = '+';
+	*term_tmp++ = ')';
+	*term_tmp = '\0';
+        break;
+    case 4:
+        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
+		       space_split, term_dst))
+            return 0;
+        logf (LOG_DEBUG, "Relation >=");
+
+	*term_tmp++ = '(';
+	for (i = 0; term_component[i];)
+	{
+	    int j = 0;
+
+	    if (i)
+		*term_tmp++ = '|';
+	    while (j < i)
+		string_rel_add_char (&term_tmp, term_component, &j);
+	    *term_tmp++ = '[';
+
+	    if (term_component[i+1])
+	    {
+		*term_tmp++ = '^';
+		*term_tmp++ = '-';
+		string_rel_add_char (&term_tmp, term_component, &i);
+	    }
+	    else
+	    {
+		string_rel_add_char (&term_tmp, term_component, &i);
+		*term_tmp++ = '-';
+	    }
+	    *term_tmp++ = ']';
+	    *term_tmp++ = '.';
+	    *term_tmp++ = '*';
+	}
+	*term_tmp++ = ')';
+	*term_tmp = '\0';
         break;
     case 3:
     default:
         logf (LOG_DEBUG, "Relation =");
-	*term_tmp = '(';
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_tmp+1, 1,
-		       term_dst))
+        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
+		       space_split, term_dst))
             return 0;
+	strcat (term_tmp, "(");
+	strcat (term_tmp, term_component);
 	strcat (term_tmp, ")");
     }
-    logf (LOG_DEBUG, "dict_lookup_grep: %s", term_tmp);
-    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info, max_pos,
-                          0, grep_handle);
-    if (r)
-        logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
-    logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
     return 1;
 }
 
@@ -798,7 +904,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			int num_bases, char **basenames,
 			char *term_dst)
 {
-    char term_dict[2*IT_MAX_WORD+2];
+    char term_dict[2*IT_MAX_WORD+4000];
     int j, r, base_no;
     AttrType truncation;
     int truncation_value;
@@ -882,20 +988,14 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	case -1:         /* not specified */
 	case 100:        /* do not truncate */
 	    if (!string_relation (zh, zapt, &termp, term_dict,
-				  attributeSet, grep_info, &max_pos,
-				  reg_type, term_dst))
+				  attributeSet,
+				  reg_type, space_split, term_dst))
 		return 0;
-#if 0
-	    term_dict[j++] = '(';   
-	    if (!term_100 (zh->zebra_maps, reg_type,
-			   &termp, term_dict + j, space_split, term_dst))
-		return 0;
-	    strcat (term_dict, ")");
-	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
-				  &max_pos, 0, grep_handle);
+	    logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict+prefix_len);
+	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info, &max_pos,
+				  0, grep_handle);
 	    if (r)
-		logf (LOG_WARN, "dict_lookup_grep err, trunc=none:%d", r);
-#endif
+		logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
 	    break;
 	case 1:          /* right truncation */
 	    term_dict[j++] = '(';

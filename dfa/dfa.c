@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.21  1998-06-22 11:33:39  adam
+ * Revision 1.22  1998-06-24 12:16:10  adam
+ * Support for relations on text operands. Open range support in
+ * DFA module (i.e. [-j], [g-]).
+ *
+ * Revision 1.21  1998/06/22 11:33:39  adam
  * Added two type casts.
  *
  * Revision 1.20  1998/06/08 14:40:44  adam
@@ -423,18 +427,28 @@ static int read_charset (struct DFA_parse *parse_info)
     {
         if (!esc0 && ch0 == ']')
             break;
-        if (parse_info->cmap)
-        {
-            const char **mapto;
-	    char mapfrom[2];
-            const char *mcp = mapfrom;
-            mapfrom[0] = ch0;
-            mapto = (*parse_info->cmap)(parse_info->cmap_data, &mcp, 1);
-            assert (mapto);
-            ch0 = mapto[0][0];
-        }
-        add_BSet (parse_info->charset, parse_info->look_chars, ch0);
-        ch1 = nextchar_set (parse_info, &esc1);
+	if (!esc0 && ch0 == '-')
+	{
+	    ch1 = ch0;
+	    esc1 = esc0;
+	    ch0 = 1;
+	    add_BSet (parse_info->charset, parse_info->look_chars, ch0);
+	}
+	else
+	{
+	    if (parse_info->cmap)
+	    {
+		const char **mapto;
+		char mapfrom[2];
+		const char *mcp = mapfrom;
+		mapfrom[0] = ch0;
+		mapto = (*parse_info->cmap)(parse_info->cmap_data, &mcp, 1);
+		assert (mapto);
+		ch0 = mapto[0][0];
+	    }
+	    add_BSet (parse_info->charset, parse_info->look_chars, ch0);
+	    ch1 = nextchar_set (parse_info, &esc1);
+	}
         if (!esc1 && ch1 == '-')
         {
             int open_range = 0;

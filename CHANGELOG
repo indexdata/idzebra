@@ -1,3 +1,11 @@
+Added support for relational operators on text when using
+RPN queries.
+
+Added support for sort specifications in RPN queries. Type 7
+specifies 'sort' where value 1=ascending, value 2=descending.
+The use attribute specifies the field criteria as usual.
+The term specifies priority (0=first, 1=second).
+
 Changed the way use attributes are specified in the recordId
 specification.
 

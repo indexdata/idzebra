@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.6  1998-06-22 11:36:47  adam
+ * Revision 1.7  1998-06-24 12:16:13  adam
+ * Support for relations on text operands. Open range support in
+ * DFA module (i.e. [-j], [g-]).
+ *
+ * Revision 1.6  1998/06/22 11:36:47  adam
  * Added authentication check facility to zebra.
  *
  * Revision 1.5  1998/06/13 00:14:08  adam
@@ -279,8 +283,8 @@ void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 }
 
 void zebra_sort (ZebraHandle zh, ODR stream,
-		 int num_input_setnames, char **input_setnames,
-		 char *output_setname, Z_SortKeySpecList *sort_sequence,
+		 int num_input_setnames, const char **input_setnames,
+		 const char *output_setname, Z_SortKeySpecList *sort_sequence,
 		 int *sort_status)
 {
     zh->errCode = 0;

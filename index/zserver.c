@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.60  1998-06-22 11:36:49  adam
+ * Revision 1.61  1998-06-24 12:16:15  adam
+ * Support for relations on text operands. Open range support in
+ * DFA module (i.e. [-j], [g-]).
+ *
+ * Revision 1.60  1998/06/22 11:36:49  adam
  * Added authentication check facility to zebra.
  *
  * Revision 1.59  1998/06/12 12:22:13  adam
@@ -386,7 +390,8 @@ int bend_sort (void *handle, bend_sort_rr *rr)
 {
     ZebraHandle zh = handle;
 
-    zebra_sort (zh, rr->stream, rr->num_input_setnames, rr->input_setnames,
+    zebra_sort (zh, rr->stream,
+                rr->num_input_setnames, (const char **) rr->input_setnames,
 		rr->output_setname, rr->sort_sequence, &rr->sort_status);
     rr->errcode = zh->errCode;
     rr->errstring = zh->errString;
