@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.14  1998-01-12 15:04:08  adam
+ * Revision 1.15  1998-02-17 10:31:33  adam
+ * Fixed bug in zebraIndexUnlock. On NT, the lock files wasn't removed.
+ *
+ * Revision 1.14  1998/01/12 15:04:08  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.13  1997/09/29 09:08:36  adam
@@ -160,9 +163,11 @@ void zebraIndexUnlock (void)
 {
     char path[1024];
     
+    zebra_lock_destroy (server_lock_main);
     zebra_lock_prefix (common_resource, path);
     strcat (path, FNAME_MAIN_LOCK);
-    unlink (path);
+    if (unlink (path))
+        logf (LOG_WARN|LOG_ERRNO, "unlink %s", path);
 }
 
 void zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
