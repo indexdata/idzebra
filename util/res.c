@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.10  1994-10-05 10:47:31  adam
+ * Revision 1.11  1994-10-05 16:54:52  adam
+ * Minor changes.
+ *
+ * Revision 1.10  1994/10/05  10:47:31  adam
  * Small bug fix.
  *
  * Revision 1.9  1994/09/16  14:41:12  quinn
@@ -18,7 +21,6 @@
  *
  * Revision 1.6  1994/09/01  17:45:14  adam
  * Work on resource manager.
- * CVS ----------------------------------------------------------------------
  *
  * Revision 1.5  1994/08/18  11:02:28  adam
  * Implementation of res_write.
@@ -79,7 +81,7 @@ static void reread (Res r)
     fr = fopen (path, "r");
     if (!fr)
     {
-        log (LOG_FATAL|LOG_ERRNO, "cannot open %s", path);
+        log (LOG_FATAL|LOG_ERRNO, "Cannot open %s", path);
         exit (1);
     }
     while (1)
@@ -170,7 +172,7 @@ Res res_open (const char *name)
 {
     Res r;
     if (access (name, R_OK))
-        log (LOG_LOG|LOG_ERRNO, "cannot access `%s'", name);
+        log (LOG_LOG|LOG_ERRNO, "Cannot access `%s'", name);
     r = xmalloc (sizeof(*r));
     r->init = 0;
     r->name = xstrdup (name);
@@ -273,7 +275,7 @@ int res_write (Res r)
     fr = fopen (path, "w");
     if (!fr)
     {
-        log (LOG_FATAL|LOG_ERRNO, "cannot create %s", path);
+        log (LOG_FATAL|LOG_ERRNO, "Cannot create %s", path);
         exit (1);
     }
 
