@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.4  1997-11-18 10:05:08  adam
+ * Revision 1.5  1997-11-19 10:22:14  adam
+ * Bug fix (introduced by previous commit).
+ *
+ * Revision 1.4  1997/11/18 10:05:08  adam
  * Changed character map facility so that admin can specify character
  * mapping files for each register type, w, p, etc.
  *
@@ -50,11 +53,9 @@ void zebra_maps_close (ZebraMaps zms)
     struct zebra_map *zm = zms->map_list;
     while (zm)
     {
-	struct zebra_map *zm_next = zm->next;
-
-	chrmaptab_destroy (zm->maptab);
-	xfree (zm);
-	zm = zm_next;
+	if (zm->maptab)
+	    chrmaptab_destroy (zm->maptab);
+	zm = zm->next;
     }
     nmem_destroy (zms->nmem);
     xfree (zms);
@@ -135,7 +136,7 @@ chrmaptab zebra_map_get (ZebraMaps zms, int reg_type)
 	    break;
     if (!zm)
     {
-	logf (LOG_WARN, "unknown register type: %c", reg_type);
+	logf (LOG_WARN, "Unknown register type: %c", reg_type);
 	return NULL;
     }
     if (!zm->maptab)
