@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.52 2004-08-06 12:28:23 adam Exp $
+/* $Id: isamb.c,v 1.53 2004-08-10 08:54:40 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -82,10 +82,10 @@ struct ISAMB_s {
     int cache; /* 0=no cache, 1=use cache, -1=dummy isam (for testing only) */
     int log_io;        /* log level for bf_read/bf_write calls */
     int log_freelist;  /* log level for freelist handling */
-    int skipped_numbers; /* on a leaf node */
-    int returned_numbers; 
-    int skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1=higher etc */
-    int accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
+    zint skipped_numbers; /* on a leaf node */
+    zint returned_numbers; 
+    zint skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1=higher etc */
+    zint accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
 };
 
 struct ISAMB_block {
@@ -108,12 +108,12 @@ struct ISAMB_PP_s {
     ISAMB_P pos;
     int level;
     int maxlevel; /* total depth */
-    int total_size;
-    int no_blocks;
-    int skipped_numbers; /* on a leaf node */
-    int returned_numbers; 
-    int skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1=higher etc */
-    int accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
+    zint total_size;
+    zint no_blocks;
+    zint skipped_numbers; /* on a leaf node */
+    zint returned_numbers; 
+    zint skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1=higher etc */
+    zint accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
     struct ISAMB_block **block;
 };
 
@@ -310,9 +310,11 @@ void isamb_close (ISAMB isamb)
 {
     int i;
     for (i=0;isamb->accessed_nodes[i];i++)
-        logf(LOG_DEBUG,"isamb_close  level leaf-%d: %d read, %d skipped",
+        logf(LOG_DEBUG,"isamb_close  level leaf-%d: "ZINT_FORMAT" read, "
+			ZINT_FORMAT" skipped",
              i, isamb->accessed_nodes[i], isamb->skipped_nodes[i]);
-    logf(LOG_DEBUG,"isamb_close returned %d values, skipped %d",
+    logf(LOG_DEBUG,"isamb_close returned "ZINT_FORMAT" values, "
+		   "skipped "ZINT_FORMAT,
          isamb->skipped_numbers, isamb->returned_numbers);
     for (i = 0; i<isamb->no_cat; i++)
     {
@@ -424,6 +426,7 @@ struct ISAMB_block *new_int (ISAMB b, int cat)
 
 static void check_block (ISAMB b, struct ISAMB_block *p)
 {
+    assert(b); /* mostly to make the compiler shut up about unused b */
     if (p->leaf)
     {
         ;
@@ -985,11 +988,13 @@ void isamb_pp_close_x (ISAMB_PP pp, int *size, int *blocks)
     int i;
     if (!pp)
         return;
-    logf(LOG_DEBUG,"isamb_pp_close lev=%d returned %d values, skipped %d",
+    logf(LOG_DEBUG,"isamb_pp_close lev=%d returned "ZINT_FORMAT" values," 
+		    "skipped "ZINT_FORMAT,
         pp->maxlevel, pp->skipped_numbers, pp->returned_numbers);
     for (i=pp->maxlevel;i>=0;i--)
         if ( pp->skipped_nodes[i] || pp->accessed_nodes[i])
-            logf(LOG_DEBUG,"isamb_pp_close  level leaf-%d: %d read, %d skipped", i,
+            logf(LOG_DEBUG,"isamb_pp_close  level leaf-%d: "
+			    ZINT_FORMAT" read, "ZINT_FORMAT" skipped", i,
                  pp->accessed_nodes[i], pp->skipped_nodes[i]);
     pp->isamb->skipped_numbers += pp->skipped_numbers;
     pp->isamb->returned_numbers += pp->returned_numbers;
@@ -1226,6 +1231,7 @@ static int isamb_pp_read_on_leaf(ISAMB_PP pp, void *buf)
     (*pp->isamb->method->codec.log_item)(LOG_DEBUG, buf, "read_on_leaf returning 1");
 #endif
 */
+    pp->returned_numbers++;
     return 1;
 } /* read_on_leaf */
 
@@ -1415,7 +1421,7 @@ static int isamb_pp_find_next_leaf(ISAMB_PP pp)
     return 1;
 }
 
-static int isamb_pp_climb_desc(ISAMB_PP pp, void *buf, const void *untilbuf)
+static int isamb_pp_climb_desc(ISAMB_PP pp,  const void *untilbuf)
 { /* climbs up and descends to a leaf where values >= *untilbuf are found */
     ISAMB_P pos;
 #if ISAMB_DEBUG
@@ -1458,7 +1464,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
 #endif
             return 1;
         }
-        if (! isamb_pp_climb_desc( pp, buf, untilbuf)) {
+        if (! isamb_pp_climb_desc( pp, untilbuf)) {
 #if ISAMB_DEBUG
             logf(LOG_DEBUG,"isamb_pp_forward (f) returning notfound (B) "
                    "at level %d node %d ofs=%d sz=%d",
@@ -1796,6 +1802,7 @@ again:
 
 int isamb_pp_num (ISAMB_PP pp)
 {
+    assert(pp); /* shut up about unused arguments */
     return 1;
 }
 
@@ -1835,7 +1842,7 @@ static void isamb_pp_leaf_pos( ISAMB_PP pp,
 }
 
 static void isamb_pp_upper_pos( ISAMB_PP pp, double *current, double *total, 
-                                zint size, int level )
+                                double size, int level )
 { /* estimates total/current occurrences from here up, excl leaf */
     struct ISAMB_block *p = pp->block[level];
     const char *src=p->bytes;
@@ -1847,32 +1854,45 @@ static void isamb_pp_upper_pos( ISAMB_PP pp, double *current, double *total,
     assert(level>=0);
     assert(!p->leaf);
    
-#if ISAMB_DEBUG
+#if  1 // ISAMB_DEBUG
     logf(LOG_DEBUG,"isamb_pp_upper_pos at beginning     l=%d "
-                   "cur="ZINT_FORMAT" tot="ZINT_FORMAT
+                   "cur=%0.1f tot=%0.1f "
                    " ofs=%d sz=%d pos=" ZINT_FORMAT, 
                    level, *current, *total, p->offset, p->size, p->pos);
 #endif    
     assert (p->offset <= p->size);
     decode_ptr (&src, &child ); /* first child */
+    if (src!=cur) {
+        *total += size;
+        if (src < cur)
+            *current +=size;
+    }
     while(src < end) {
+	decode_ptr (&src, &item_size ); 
+        assert(src+item_size<=end);
+        src += item_size;
+	decode_ptr (&src, &child );
         if (src!=cur) {
             *total += size;
             if (src < cur)
                 *current +=size;
         }
-	decode_ptr (&src, &item_size ); 
-        assert(src+item_size<=end);
-        src += item_size;
-	    decode_ptr (&src, &child );
     }
+#if ISAMB_DEBUG
+    logf(LOG_DEBUG,"isamb_pp_upper_pos before recursion l=%d "
+                   "cur=%0.1f tot=%0.1f "
+                   " ofs=%d sz=%d pos=" ZINT_FORMAT, 
+                   level, *current, *total, p->offset, p->size, p->pos);
+#endif    
     if (level>0)
-        isamb_pp_upper_pos(pp, current, total, (zint) *total, level-1);
+        isamb_pp_upper_pos(pp, current, total, *total, level-1);
 } /* upper_pos */
 
 void isamb_pp_pos( ISAMB_PP pp, double *current, double *total )
 { /* return an estimate of the current position and of the total number of */
   /* occureences in the isam tree, based on the current leaf */
+	/* FIXME - Isam-B ought to know how many we have, so we could return */
+	/* that directly */
     struct ISAMB_block *p = pp->block[pp->level];
     char dummy[100]; /* 100 bytes/entry must be enough */
     assert(total);
@@ -1880,5 +1900,11 @@ void isamb_pp_pos( ISAMB_PP pp, double *current, double *total )
     assert(p->leaf);
     isamb_pp_leaf_pos(pp,current, total, dummy);
     if (pp->level>0)
-        isamb_pp_upper_pos(pp, current, total, (zint) *total, pp->level-1);
+        isamb_pp_upper_pos(pp, current, total, *total, pp->level-1);
+    *current = (double) pp->returned_numbers;
+    /* use the precise number, since we have it! */
+#if ISAMB_DEBUG
+    logf(LOG_LOG, "isamb_pp_pos returning: cur= %0.1f tot=%0.1f rn="ZINT_FORMAT,
+                    *current, *total, pp->returned_numbers);
+#endif
 }

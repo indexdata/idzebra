@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.124 2004-08-10 08:19:15 heikki Exp $
+/* $Id: zebraapi.c,v 1.125 2004-08-10 08:54:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -22,6 +22,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <assert.h>
 #include <stdio.h>
+#include <limits.h>
 #ifdef WIN32
 #include <io.h>
 #include <process.h>
@@ -780,8 +781,10 @@ int zebra_search_RPN (ZebraHandle zh, ODR o,
                      zh->num_basenames, zh->basenames, setname);
 
     zebra_end_read (zh);
-
-    *hits = zh->hits;
+    if (zh->hits > INT_MAX)
+	*hits=INT_MAX;
+    else
+        *hits = zh->hits;
     return 0;
 }
 
