@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_absyn.c,v 1.3 2002-12-02 16:55:14 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -30,6 +30,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <data1.h>
 
 #define D1_MAX_NESTING  128
+
+struct data1_systag {
+    char *name;
+    char *value;
+    struct data1_systag *next;
+};
 
 struct data1_absyn_cache_info 
 {
@@ -293,6 +299,16 @@ static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
     return 0;
 }
 
+const char *data1_systag_lookup(data1_absyn *absyn, const char *tag,
+                                const char *default_value)
+{
+    struct data1_systag *p = absyn->systags;
+    for (; p; p = p->next)
+        if (!strcmp(p->name, tag))
+            return p->value;
+    return default_value;
+}
+
 data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
                                int file_must_exist)
 {
@@ -306,6 +322,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     data1_termlist *all = 0;
     data1_attset_child **attset_childp;
     data1_tagset **tagset_childp;
+    struct data1_systag **systagsp;
     int level = 0;
     int lineno = 0;
     int argc;
@@ -324,6 +341,8 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     res->tagset = 0;
     res->encoding = 0;
     res->enable_xpath_indexing = (f ? 0 : 1);
+    res->systags = 0;
+    systagsp = &res->systags;
     tagset_childp = &res->tagset;
 
     res->attset = data1_empty_attset (dh);
@@ -336,7 +355,6 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     maptabp = &res->maptabs;
     res->marc = 0;
     marcp = &res->marc;
-
     res->sub_elements = NULL;
     res->main_elements = NULL;
     
@@ -692,6 +710,21 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    }
             res->encoding = nmem_strdup (data1_nmem_get(dh), argv[1]);
 	}
+        else if (!strcmp(cmd, "systag"))
+        {
+            struct data1_systag *st;
+            if (argc != 3)
+            {
+		yaz_log(LOG_WARN, "%s:%d: Bad # or args for systag",
+		     file, lineno);
+		continue;
+            }
+            *systagsp = nmem_malloc (data1_nmem_get(dh), sizeof(**systagsp));
+
+            (*systagsp)->name = nmem_strdup(data1_nmem_get(dh), argv[1]);
+            (*systagsp)->value = nmem_strdup(data1_nmem_get(dh), argv[2]);
+            systagsp = &(*systagsp)->next;
+        }
 	else
 	{
 	    yaz_log(LOG_WARN, "%s:%d: Unknown directive '%s'", file, 
@@ -709,6 +742,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    res->main_elements = cur_elements->elements;
 	fix_element_ref (dh, res, cur_elements->elements);
     }
+    *systagsp = 0;
     yaz_log (LOG_DEBUG, "%s: data1_read_absyn end", file);
     return res;
 }

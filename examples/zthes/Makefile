@@ -1,6 +1,6 @@
 recdA-0.mf: records/dino.xml
-	zebraidx init
-	zebraidx update records
+	../../index/zebraidx init
+	../../index/zebraidx update records
 
 records/dino.xml: tree2xml.pl dino.tree
 	./tree2xml.pl dino.tree > records/dino.xml

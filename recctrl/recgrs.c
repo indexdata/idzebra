@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.69 2002-11-15 21:57:41 adam Exp $
+/* $Id: recgrs.c,v 1.70 2002-12-02 16:55:14 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -651,7 +651,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     int res, selected = 0;
     NMEM mem;
     struct grs_read_info gri;
-    char *tagname;
+    const char *tagname;
     struct grs_handlers *h = (struct grs_handlers *) clientData;
     int requested_schema = VAL_NONE;
     data1_marctab *marctab;
@@ -689,16 +689,18 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     top = data1_get_root_tag (p->dh, node);
 
     logf (LOG_DEBUG, "grs_retrieve: size");
-    if ((dnew = data1_mk_tag_data_wd(p->dh, top, "size", mem)))
+    tagname = data1_systag_lookup(node->u.root.absyn, "size", "size");
+    if (tagname &&
+        (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
 	dnew->u.data.what = DATA1I_text;
 	dnew->u.data.data = dnew->lbuf;
 	sprintf(dnew->u.data.data, "%d", p->recordSize);
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
-
-    tagname = res_get_def(p->res, "tagrank", "rank");
-    if (strcmp(tagname, "0") && p->score >= 0 &&
+    
+    tagname = data1_systag_lookup(node->u.root.absyn, "rank", "rank");
+    if (tagname && p->score >= 0 &&
 	(dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
         logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
@@ -708,14 +710,15 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
 
-    tagname = res_get_def(p->res, "tagsysno", "localControlNumber");
-    if (strcmp(tagname, "0") && p->localno > 0 &&
-   	 (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
+    tagname = data1_systag_lookup(node->u.root.absyn, "sysno",
+                                  "localControlNumber");
+    if (tagname && p->localno > 0 &&
+        (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
         logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_text;
 	dnew->u.data.data = dnew->lbuf;
-
+        
 	sprintf(dnew->u.data.data, "%d", p->localno);
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }

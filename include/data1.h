@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: data1.h,v 1.3 2002-12-02 16:55:14 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -194,6 +194,9 @@ typedef struct data1_xattr {
     unsigned short what;  /* DATA1I_text, .. see data1_node.u.data */
 } data1_xattr;
 
+#if 0
+typedef struct data1_absyn data1_absyn;
+#else
 typedef struct data1_absyn
 {
     char *name;
@@ -206,10 +209,11 @@ typedef struct data1_absyn
     data1_marctab *marc;
     data1_sub_elements *sub_elements;
     data1_element *main_elements;
+    struct data1_systag *systags;
     char *encoding;
     int  enable_xpath_indexing;
 } data1_absyn;
-
+#endif
 /*
  * record data node (tag/data/variant)
  */
@@ -485,6 +489,9 @@ YAZ_EXPORT int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
 YAZ_EXPORT const char *data1_get_encoding (data1_handle dh, data1_node *n);
 
 YAZ_EXPORT int data1_is_xmlmode(data1_handle dh);
+
+YAZ_EXPORT const char *data1_systag_lookup(data1_absyn *absyn, const char *tag,
+                                           const char *default_value);
 
 YAZ_END_CDECL
 

@@ -3,6 +3,7 @@ tagset tagsetm-zthes.tag
 tagset tagsetg-zthes.tag
 tagset zthes.tag
 xpath enable
+systag sysno none
 
 elm (1,14)	termId			!
 elm (2,1)	termName		!

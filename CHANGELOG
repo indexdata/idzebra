@@ -1,4 +1,9 @@
 
+New .abs directive, systag, that control where to put retrieval
+information. The directive takes two arguments: system tag, actual tag.
+System tag is one of : rank, sysno, size with the default actual
+rank, localControlNumber, size .
+
 --- 1.3.4 2002/11/26
 
 Perl Filter and Perl API. By Peter Popovics.
