@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.77 2003-04-24 22:29:52 pop Exp $
+/* $Id: recgrs.c,v 1.78 2003-04-25 08:57:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -123,87 +123,88 @@ static void grs_destroy(void *clientData)
     xfree (h);
 }
 
-int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p) {
-  int res = 1;
-  char *attname;
-  data1_xattr *attr;
-
-  if (!p) {
-    return (1);
-  } else {
-    if (p->which == XPATH_PREDICATE_RELATION) {
-      if (p->u.relation.name[0]) {
-	if (*p->u.relation.name != '@') {
-	  logf(LOG_WARN, 
-	       "  Only attributes (@) are supported in xelm xpath predicates");
-	  logf(LOG_WARN, "predicate %s ignored", p->u.relation.name);
-	  return (1);
-	}
-	attname = p->u.relation.name + 1;
-	res = 0;
-	/* looking for the attribute with a specified name */
-	for (attr = n->u.tag.attributes; attr; attr = attr->next) {
-	  logf(LOG_DEBUG,"  - attribute %s <-> %s", attname, attr->name );
-
-	  if (!strcmp(attr->name, attname)) {
-	    if (p->u.relation.op[0]) {
-	      if (*p->u.relation.op != '=') {
-		logf(LOG_WARN, 
-		     "Only '=' relation is supported (%s)",p->u.relation.op);
-		logf(LOG_WARN, "predicate %s ignored", p->u.relation.name);
-		res = 1; break;
-	      } else {
-		logf(LOG_DEBUG,"    - value %s <-> %s", 
-		     p->u.relation.value, attr->value );
-		if (!strcmp(attr->value, p->u.relation.value)) {
-		  res = 1; break;
-		} 
-	      }
-	    } else {
-	      /* attribute exists, no value specified */
-	      res = 1; break;
-	    }
-	  }
-	}
-	return (res);
-      } else {
-	return (1);
-      }
-    } 
-    else if (p->which == XPATH_PREDICATE_BOOLEAN) {
-      if (!strcmp(p->u.boolean.op,"and")) {
-	return (d1_check_xpath_predicate(n, p->u.boolean.left) 
-		&& d1_check_xpath_predicate(n, p->u.boolean.right)); 
-      }
-      else if (!strcmp(p->u.boolean.op,"or")) {
-	return (d1_check_xpath_predicate(n, p->u.boolean.left) 
-		|| d1_check_xpath_predicate(n, p->u.boolean.right)); 
-      } else {
-	logf(LOG_WARN, "Unknown boolean relation %s, ignored",p->u.boolean.op);
-	return (1);
-      }
+int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
+{
+    int res = 1;
+    char *attname;
+    data1_xattr *attr;
+    
+    if (!p) {
+        return 1;
+    } else {
+        if (p->which == XPATH_PREDICATE_RELATION) {
+            if (p->u.relation.name[0]) {
+                if (*p->u.relation.name != '@') {
+                    logf(LOG_WARN, 
+                         "  Only attributes (@) are supported in xelm xpath predicates");
+                    logf(LOG_WARN, "predicate %s ignored", p->u.relation.name);
+                    return (1);
+                }
+                attname = p->u.relation.name + 1;
+                res = 0;
+                /* looking for the attribute with a specified name */
+                for (attr = n->u.tag.attributes; attr; attr = attr->next) {
+                    logf(LOG_DEBUG,"  - attribute %s <-> %s", attname, attr->name );
+                    
+                    if (!strcmp(attr->name, attname)) {
+                        if (p->u.relation.op[0]) {
+                            if (*p->u.relation.op != '=') {
+                                logf(LOG_WARN, 
+                                     "Only '=' relation is supported (%s)",p->u.relation.op);
+                                logf(LOG_WARN, "predicate %s ignored", p->u.relation.name);
+                                res = 1; break;
+                            } else {
+                                logf(LOG_DEBUG,"    - value %s <-> %s", 
+                                     p->u.relation.value, attr->value );
+                                if (!strcmp(attr->value, p->u.relation.value)) {
+                                    res = 1; break;
+                                } 
+                            }
+                        } else {
+                            /* attribute exists, no value specified */
+                            res = 1; break;
+                        }
+                    }
+                }
+                return res;
+            } else {
+                return 1;
+            }
+        } 
+        else if (p->which == XPATH_PREDICATE_BOOLEAN) {
+            if (!strcmp(p->u.boolean.op,"and")) {
+                return d1_check_xpath_predicate(n, p->u.boolean.left) 
+                    && d1_check_xpath_predicate(n, p->u.boolean.right); 
+            }
+            else if (!strcmp(p->u.boolean.op,"or")) {
+                return (d1_check_xpath_predicate(n, p->u.boolean.left) 
+                        || d1_check_xpath_predicate(n, p->u.boolean.right)); 
+            } else {
+                logf(LOG_WARN, "Unknown boolean relation %s, ignored",p->u.boolean.op);
+                return 1;
+            }
+        }
     }
-  }
-  return 0;
+    return 0;
 }
 
 
 /* *ostrich*
    
-   New function, looking for xpath "element" definitions in abs, by
-   tagpath, using a kind of ugly regxp search.The DFA was built while
-   parsing abs, so here we just go trough them and try to match
-   against the given tagpath. The first matching entry is returned.
+New function, looking for xpath "element" definitions in abs, by
+tagpath, using a kind of ugly regxp search.The DFA was built while
+parsing abs, so here we just go trough them and try to match
+against the given tagpath. The first matching entry is returned.
 
-   pop, 2002-12-13
+pop, 2002-12-13
 
-   Added support for enhanced xelm. Now [] predicates are considered
-   as well, when selecting indexing rules... (why the hell it's called
-   termlist???)
+Added support for enhanced xelm. Now [] predicates are considered
+as well, when selecting indexing rules... (why the hell it's called
+termlist???)
 
-   pop, 2003-01-17
+pop, 2003-01-17
 
- */
+*/
 
 data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 {
@@ -250,39 +251,39 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
         pexpr--;
         if (ok) {
 #ifdef ENHANCED_XELM 
-	  /* we have to check the perdicates up to the root node */
-	  xp = xpe->xpath;
-
-	  /* find the first tag up in the node structure */
-	  nn = n; while (nn && nn->which != DATA1N_tag) {
-	    nn = nn->parent;
-	  }
-
-	  /* go from inside out in the node structure, while going
-	     backwards trough xpath location steps ... */
-	  for (i=xpe->xpath_len - 1; i>0; i--) {
-	    
-	    logf(LOG_DEBUG,"Checking step %d: %s on tag %s",
+            /* we have to check the perdicates up to the root node */
+            xp = xpe->xpath;
+            
+            /* find the first tag up in the node structure */
+            nn = n; while (nn && nn->which != DATA1N_tag) {
+                nn = nn->parent;
+            }
+            
+            /* go from inside out in the node structure, while going
+               backwards trough xpath location steps ... */
+            for (i=xpe->xpath_len - 1; i>0; i--) {
+                
+                logf(LOG_DEBUG,"Checking step %d: %s on tag %s",
 		     i,xp[i].part,nn->u.tag.tag);
-
-	    if (!d1_check_xpath_predicate(nn, xp[i].predicate)) {
-	      logf(LOG_DEBUG,"  Predicates didn't match");
-	      ok = 0;
-	      break;
-	    }
-
-	    if (nn->which == DATA1N_tag) {
-	      nn = nn->parent;
-	    }
-	  }
+                
+                if (!d1_check_xpath_predicate(nn, xp[i].predicate)) {
+                    logf(LOG_DEBUG,"  Predicates didn't match");
+                    ok = 0;
+                    break;
+                }
+                
+                if (nn->which == DATA1N_tag) {
+                    nn = nn->parent;
+                }
+            }
 #endif
-	  if (ok) {
-	    break;
-	  }
+            if (ok) {
+                break;
+            }
 	}
         xpe = xpe->next;
     } 
-
+    
     xfree(pexpr);
     
     if (ok) {
@@ -314,56 +315,28 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 /* add xpath index for an attribute */
 static void index_xpath_attr (char *tag_path, char *name, char *value,
 			      char *structure, struct recExtractCtrl *p,
-			      RecWord *wrd) {
-
-  /*
-  char comb[512];
-  
-  wrd->attrSet = VAL_IDXPATH;
-  wrd->attrUse = 3;
-  wrd->reg_type = '0';
-  wrd->string = name;
-  wrd->length = strlen(name);
-                    
-  wrd->seqno--;
-  (*p->tokenAdd)(wrd);
-
-  if (value && 
-      strlen(name) + strlen(value) < sizeof(comb)-2) {
-    strcpy (comb, name);
-    strcat (comb, "=");
-    strcat (comb, value);
-    
-    wrd->attrUse = 3;
+			      RecWord *wrd)
+{
+    wrd->attrSet = VAL_IDXPATH;
+    wrd->attrUse = 1;
     wrd->reg_type = '0';
-    wrd->string = comb;
-    wrd->length = strlen(comb);
-    wrd->seqno--;
+    wrd->string = tag_path;
+    wrd->length = strlen(tag_path);
+    (*p->tokenAdd)(wrd);
     
+    if (value) {
+        wrd->attrUse = 1015;
+        wrd->reg_type = 'w';
+        wrd->string = value;
+        wrd->length = strlen(value);
+        (*p->tokenAdd)(wrd);
+    }
+    
+    wrd->attrUse = 2;
+    wrd->reg_type = '0';
+    wrd->string = tag_path;
+    wrd->length = strlen(tag_path);
     (*p->tokenAdd)(wrd);
-  }
-  */
-                
-  wrd->attrSet = VAL_IDXPATH;
-  wrd->attrUse = 1;
-  wrd->reg_type = '0';
-  wrd->string = tag_path;
-  wrd->length = strlen(tag_path);
-  (*p->tokenAdd)(wrd);
-  
-  if (value) {
-    wrd->attrUse = 1015;
-    wrd->reg_type = 'w';
-    wrd->string = value;
-    wrd->length = strlen(value);
-    (*p->tokenAdd)(wrd);
-  }
-
-  wrd->attrUse = 2;
-  wrd->reg_type = '0';
-  wrd->string = tag_path;
-  wrd->length = strlen(tag_path);
-  (*p->tokenAdd)(wrd);
 }
 
 
@@ -504,99 +477,109 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
 
 	      /* get termlists for attributes, and find out, if we have to do xpath indexing */
 	      for (xp = n->u.tag.attributes; xp; xp = xp->next) {
-		i++;
+                  i++;
 	      }
-
+              
 	      i = 0;
 	      for (xp = n->u.tag.attributes; xp; xp = xp->next) {
-		char comb[512];
-		int do_xpindex = 1 - termlist_only;
-		data1_termlist *tl;
-		char attr_tag_path_full[1024]; 
-		int int_len = flen;
-
-		/* this could be cached as well */
-      		sprintf (attr_tag_path_full, "@%s/%.*s",
-			 xp->name, int_len, tag_path_full);
-
-		tll[i] = xpath_termlist_by_tagpath(attr_tag_path_full,n);
-
-		/* if there is a ! in the xelm termlist, or default indexing is on, 
-		   proceed with xpath idx */
-		if ((tl = tll[i])) {
-		  for (; tl; tl = tl->next) { if (!tl->att) {do_xpindex = 1;} }
-		}
-
-		if (do_xpindex) {
-		  
-		  /* attribute  (no value) */
-		  wrd->reg_type = '0';
-		  wrd->attrUse = 3;
-		  wrd->string = xp->name;
-		  wrd->length = strlen(xp->name);
-		  
-		  wrd->seqno--;
-		  (*p->tokenAdd)(wrd);
-
-		  if (xp->value &&
-		      strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2) {
-
-		    /* attribute value exact */
-		    strcpy (comb, xp->name);
-		    strcat (comb, "=");
-		    strcat (comb, xp->value);
-		    
-		    wrd->attrUse = 3;
-		    wrd->reg_type = '0';
-		    wrd->string = comb;
-		    wrd->length = strlen(comb);
-		    wrd->seqno--;
-		    
-		    (*p->tokenAdd)(wrd);
-		  }
-		}                
-		i++;
+                  char comb[512];
+                  int do_xpindex = 1 - termlist_only;
+                  data1_termlist *tl;
+                  char attr_tag_path_full[1024]; 
+                  int int_len = flen;
+                  
+                  /* this could be cached as well */
+                  sprintf (attr_tag_path_full, "@%s/%.*s",
+                           xp->name, int_len, tag_path_full);
+                  
+                  tll[i] = xpath_termlist_by_tagpath(attr_tag_path_full,n);
+                  
+                  /* if there is a ! in the xelm termlist, or default indexing is on, 
+                     proceed with xpath idx */
+                  if ((tl = tll[i]))
+                  {
+                      for (; tl; tl = tl->next)
+                      { 
+                          if (!tl->att)
+                              do_xpindex = 1;
+                      }
+                  }
+                  
+                  if (do_xpindex) {
+                      
+                      /* attribute  (no value) */
+                      wrd->reg_type = '0';
+                      wrd->attrUse = 3;
+                      wrd->string = xp->name;
+                      wrd->length = strlen(xp->name);
+                      
+                      wrd->seqno--;
+                      (*p->tokenAdd)(wrd);
+                      
+                      if (xp->value &&
+                          strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2) {
+                          
+                          /* attribute value exact */
+                          strcpy (comb, xp->name);
+                          strcat (comb, "=");
+                          strcat (comb, xp->value);
+                          
+                          wrd->attrUse = 3;
+                          wrd->reg_type = '0';
+                          wrd->string = comb;
+                          wrd->length = strlen(comb);
+                          wrd->seqno--;
+                          
+                          (*p->tokenAdd)(wrd);
+                      }
+                  }                
+                  i++;
 	      }
-
+              
 	      i = 0;
 	      for (xp = n->u.tag.attributes; xp; xp = xp->next) {
-		data1_termlist *tl;
-		char attr_tag_path_full[1024];
-		int int_len = flen;
-		int xpdone = 0;
-		
-		sprintf (attr_tag_path_full, "@%s/%.*s",
-			 xp->name, int_len, tag_path_full);
-		
-		if ((tl = tll[i])) {
-		  /* If there is a termlist given (=xelm directive) */
-		  for (; tl; tl = tl->next) {
-		    if (!tl->att) {
-		      /* add xpath index for the attribute */
-		      index_xpath_attr (attr_tag_path_full, xp->name,
-					xp->value, tl->structure, p, wrd);
-		      xpdone = 1;
-		    } else {
-		      /* add attribute based index for the attribute */
-		      if (xp->value) {
-			wrd->attrSet = (int) (tl->att->parent->reference);
-			wrd->attrUse = tl->att->locals->local;
-			wrd->reg_type = *tl->structure;
-			wrd->string = xp->value;
-			wrd->length = strlen(xp->value);
-			(*p->tokenAdd)(wrd);
-		      }
-		    }
-		  }
-		}
-		/* if there was no termlist for the given path, 
-		   or the termlist didn't have a ! element, index 
-		   the attribute as "w" */
-		if ((!xpdone) && (!termlist_only)) {
-		  index_xpath_attr (attr_tag_path_full, xp->name, xp->value, 
-				    "w", p, wrd);
-		}
-		i++;
+                  data1_termlist *tl;
+                  char attr_tag_path_full[1024];
+                  int int_len = flen;
+                  int xpdone = 0;
+                  
+                  sprintf (attr_tag_path_full, "@%s/%.*s",
+                           xp->name, int_len, tag_path_full);
+                  
+                  if ((tl = tll[i]))
+                  {
+                      /* If there is a termlist given (=xelm directive) */
+                      for (; tl; tl = tl->next)
+                      {
+                          if (!tl->att) {
+                              /* add xpath index for the attribute */
+                              index_xpath_attr (attr_tag_path_full, xp->name,
+                                                xp->value, tl->structure,
+                                                p, wrd);
+                              xpdone = 1;
+                          } else {
+                              /* add attribute based index for the attribute */
+                              if (xp->value) {
+                                  wrd->attrSet = (int) 
+                                      (tl->att->parent->reference);
+                                  wrd->attrUse = tl->att->locals->local;
+                                  wrd->reg_type = *tl->structure;
+                                  wrd->string = xp->value;
+                                  wrd->length = strlen(xp->value);
+                                  (*p->tokenAdd)(wrd);
+                              }
+                          }
+                      }
+                  }
+                  /* if there was no termlist for the given path, 
+                     or the termlist didn't have a ! element, index 
+                     the attribute as "w" */
+                  if ((!xpdone) && (!termlist_only))
+                  {
+                      index_xpath_attr (attr_tag_path_full, xp->name,
+                                        xp->value,  "w", p, wrd);
+                  }
+                  i++;
 	      }
 	    }
 	}
