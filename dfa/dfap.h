@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfap.h,v $
- * Revision 1.5  1997-09-05 15:29:58  adam
+ * Revision 1.6  1997-09-18 08:59:17  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.5  1997/09/05 15:29:58  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -42,7 +45,8 @@ struct DFA_parse {
     struct Tblock *end;       /* end block of Tnodes */
     int *charMap;
     int charMapSize;
-    const char **(*cmap)(const char **from, int len);
+    void *cmap_data;
+    const char **(*cmap)(void *vp, const char **from, int len);
 };
 
 typedef struct DFA_stateb_ {

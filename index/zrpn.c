@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.63  1997-09-17 12:19:18  adam
+ * Revision 1.64  1997-09-18 08:59:20  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.63  1997/09/17 12:19:18  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -359,7 +362,7 @@ static int term_pre (const char **src, const char *ct1, const char *ct2)
         if (ct2 && strchr (ct2, *s0))
             break;
         s1 = s0;
-        map = map_chrs_input (&s1, strlen(s1));
+        map = map_chrs_input (0, &s1, strlen(s1));
         if (**map != *CHR_SPACE)
             break;
         s0 = s1;
@@ -380,7 +383,7 @@ static int term_100 (const char **src, char *dst, int space_split)
     while (*s0)
     {
         s1 = s0;
-        map = map_chrs_input (&s0, strlen(s0));
+        map = map_chrs_input (0, &s0, strlen(s0));
         if (space_split && **map == *CHR_SPACE)
             break;
         while (s1 < s0)
@@ -415,7 +418,7 @@ static int term_101 (const char **src, char *dst, int space_split)
         else
         {
             s1 = s0;
-            map = map_chrs_input (&s0, strlen(s0));
+            map = map_chrs_input (0, &s0, strlen(s0));
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -456,7 +459,7 @@ static int term_103 (const char **src, char *dst, int *errors, int space_split)
         else
         {
             s1 = s0;
-            map = map_chrs_input (&s0, strlen(s0));
+            map = map_chrs_input (0, &s0, strlen(s0));
             if (**map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -819,7 +822,7 @@ static void trans_scan_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     
     while ((len = (cp_end - cp)) > 0)
     {
-        map = map_chrs_input (&cp, len);
+        map = map_chrs_input (0, &cp, len);
         if (**map == *CHR_SPACE)
             space_map = *map;
         else
@@ -1441,7 +1444,7 @@ int rpn_search (ZServerInfo *zi,
     oident *attrset;
     oid_value attributeSet;
 
-    dict_grep_cmap (zi->dict, map_chrs_input);
+    dict_grep_cmap (zi->dict, 0, map_chrs_input);
     zlog_rpn (rpn);
 
     zi->errCode = 0;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.9  1997-09-17 12:19:21  adam
+ * Revision 1.10  1997-09-18 08:59:21  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.9  1997/09/17 12:19:21  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -179,7 +182,7 @@ static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
 
     remain = n->u.data.len - (b - n->u.data.data);
     if (remain > 0)
-	map = (*p->map_chrs_input)(&b, remain);
+	map = (*p->map_chrs_input)(0, &b, remain);
 
     while (map)
     {
@@ -192,7 +195,7 @@ static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
 	{
 	    remain = n->u.data.len - (b - n->u.data.data);
 	    if (remain > 0)
-		map = (*p->map_chrs_input)(&b, remain);
+		map = (*p->map_chrs_input)(0, &b, remain);
 	    else
 		map = 0;
 	}
@@ -207,7 +210,7 @@ static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
 		buf[i++] = *(cp++);
 	    remain = n->u.data.len - (b - n->u.data.data);
 	    if (remain > 0)
-		map = (*p->map_chrs_input)(&b, remain);
+		map = (*p->map_chrs_input)(0, &b, remain);
 	    else
 		map = 0;
 	}
@@ -235,7 +238,7 @@ static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
 
     remain = n->u.data.len - (b - n->u.data.data);
     if (remain > 0)
-	map = (*p->map_chrs_input)(&b, remain);
+	map = (*p->map_chrs_input)(0, &b, remain);
 
     while (remain > 0 && i < GRS_MAX_WORD)
     {
@@ -243,7 +246,7 @@ static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
 	{
 	    remain = n->u.data.len - (b - n->u.data.data);
 	    if (remain > 0)
-		map = (*p->map_chrs_input)(&b, remain);
+		map = (*p->map_chrs_input)(0, &b, remain);
 	    else
 		map = 0;
 	}
@@ -262,7 +265,7 @@ static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
 		buf[i++] = *(cp++);
 	    remain = n->u.data.len - (b - n->u.data.data);
 	    if (remain > 0)
-		map = (*p->map_chrs_input)(&b, remain);
+		map = (*p->map_chrs_input)(0, &b, remain);
 	    else
 		map = 0;
 	}

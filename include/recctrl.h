@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.20  1997-09-17 12:19:10  adam
+ * Revision 1.21  1997-09-18 08:59:19  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.20  1997/09/17 12:19:10  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -123,7 +126,7 @@ struct recExtractCtrl {
     char      *subType;
     void      (*init)(RecWord *p);
     void      (*add)(const RecWord *p);
-    const char **(*map_chrs_input)(const char **from, int len);
+    const char **(*map_chrs_input)(void *vp, const char **from, int len);
     int       flagShowRecords;
     data1_handle dh;
 };

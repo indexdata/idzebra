@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.h,v $
- * Revision 1.8  1997-09-17 12:19:10  adam
+ * Revision 1.9  1997-09-18 08:59:19  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.8  1997/09/17 12:19:10  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -105,7 +108,7 @@ MFile_area mf_init(const char *name, const char *spec);
 /*
  * Release an area.
  */
-int mf_dispose(MFile_area ma);
+void mf_destroy(MFile_area ma);
 
 /*
  * Open a metafile.

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.16  1997-09-05 15:29:57  adam
+ * Revision 1.17  1997-09-18 08:59:17  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.16  1997/09/05 15:29:57  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -426,7 +429,7 @@ static int read_charset (void)
 	    char mapfrom[2];
             const char *mcp = mapfrom;
             mapfrom[0] = ch0;
-            mapto = (*parse_info->cmap)(&mcp, 1);
+            mapto = (*parse_info->cmap)(parse_info->cmap_data, &mcp, 1);
             assert (mapto);
             ch0 = mapto[0][0];
         }
@@ -456,7 +459,7 @@ static int read_charset (void)
 		char mapfrom[2];
                 const char *mcp = mapfrom;
                 mapfrom[0] = ch1;
-                mapto = (*parse_info->cmap) (&mcp, 1);
+                mapto = (*parse_info->cmap) (parse_info->cmap_data, &mcp, 1);
                 assert (mapto);
                 ch1 = mapto[0][0];
             }
@@ -493,7 +496,7 @@ static int map_l_char (void)
     if (!parse_info->cmap)
         return L_CHAR;
 
-    mapto = (*parse_info->cmap) (&cp0, len);
+    mapto = (*parse_info->cmap) (parse_info->cmap_data, &cp0, len);
     assert (mapto);
     
     expr_ptr = (const unsigned char *) cp0;
@@ -1107,10 +1110,11 @@ struct DFA *dfa_init (void)
     return dfa;
 }
 
-void dfa_set_cmap (struct DFA *dfa,
-		   const char **(*cmap)(const char **from, int len))
+void dfa_set_cmap (struct DFA *dfa, void *vp,
+		   const char **(*cmap)(void *vp, const char **from, int len))
 {
     dfa->parse_info->cmap = cmap;
+    dfa->parse_info->cmap_data = vp;
 }
 
 int dfa_parse (struct DFA *dfa, const char **pattern)

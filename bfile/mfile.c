@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.24  1997-09-17 12:19:06  adam
+ * Revision 1.25  1997-09-18 08:59:16  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.24  1997/09/17 12:19:06  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -224,7 +227,7 @@ static int cmp_part_file(const void *p1, const void *p2)
  */
 MFile_area mf_init(const char *name, const char *spec)
 {
-    MFile_area ma = xmalloc(sizeof(MFile_area_struct));
+    MFile_area ma = xmalloc(sizeof(*ma));
     mf_dir *dirp;
     meta_file *meta_f;
     part_file *part_f = 0;
@@ -232,9 +235,8 @@ MFile_area mf_init(const char *name, const char *spec)
     struct dirent *dent;
     int fd, number;
     char metaname[FILENAME_MAX+1], tmpnam[FILENAME_MAX+1];
-
+    
     logf (LOG_DEBUG, "mf_init(%s)", name);
-    ma = xmalloc(sizeof(MFile_area_struct));
     strcpy(ma->name, name);
     ma->mfiles = 0;
     ma->dirs = 0;
@@ -317,13 +319,37 @@ MFile_area mf_init(const char *name, const char *spec)
     return ma;
 }
 
+void mf_destroy(MFile_area ma)
+{
+    mf_dir *dp;
+    meta_file *meta_f;
+
+    if (!ma)
+	return;
+    dp = ma->dirs;
+    while (dp)
+    {
+	mf_dir *d = dp;
+	dp = dp->next;
+	xfree (d);
+    }
+    meta_f = ma->mfiles;
+    while (meta_f)
+    {
+	meta_file *m = meta_f;
+	meta_f = meta_f->next;
+	xfree (m);
+    }
+    xfree (ma);
+}
+
 /*
  * Open a metafile.
  * If !ma, Use MF_DEFAULT_AREA.
  */
 MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 {
-    struct meta_file *new;
+    struct meta_file *mnew;
     int i;
     char tmp[FILENAME_MAX+1];
     mf_dir *dp;
@@ -331,62 +357,63 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     logf(LOG_DEBUG, "mf_open(%s bs=%d, %s)", name, block_size,
          wflag ? "RW" : "RDONLY");
     assert (ma);
-    for (new = ma->mfiles; new; new = new->next)
-    	if (!strcmp(name, new->name))
-    	    if (new->open)
+    for (mnew = ma->mfiles; mnew; mnew = mnew->next)
+    	if (!strcmp(name, mnew->name))
+    	    if (mnew->open)
     	        abort();
 	    else
 	        break;
-    if (!new)
+    if (!mnew)
     {
-    	new = xmalloc(sizeof(*new));
-    	strcpy(new->name, name);
+    	mnew = xmalloc(sizeof(*mnew));
+    	strcpy(mnew->name, name);
     	/* allocate one, empty file */
-    	new->no_files = 1;
-    	new->files[0].bytes = new->files[0].blocks = 0;
-    	new->files[0].top = -1;
-    	new->files[0].number = 0;
-    	new->files[0].fd = -1;
-    	new->min_bytes_creat = MF_MIN_BLOCKS_CREAT * block_size;
+    	mnew->no_files = 1;
+    	mnew->files[0].bytes = mnew->files[0].blocks = 0;
+    	mnew->files[0].top = -1;
+    	mnew->files[0].number = 0;
+    	mnew->files[0].fd = -1;
+    	mnew->min_bytes_creat = MF_MIN_BLOCKS_CREAT * block_size;
     	for (dp = ma->dirs; dp && dp->max_bytes >= 0 && dp->avail_bytes <
-	    new->min_bytes_creat; dp = dp->next);
+	    mnew->min_bytes_creat; dp = dp->next);
 	if (!dp)
 	{
 	    logf (LOG_FATAL, "Insufficient space for new mfile.");
 	    return 0;
 	}
-	new->files[0].dir = dp;
-    	sprintf(tmp, "%s/%s.mf.%d", dp->name, new->name, 0);
-    	new->files[0].path = xstrdup(tmp);
-    	new->ma = ma;
+	mnew->files[0].dir = dp;
+    	sprintf(tmp, "%s/%s.mf.%d", dp->name, mnew->name, 0);
+    	mnew->files[0].path = xstrdup(tmp);
+    	mnew->ma = ma;
     }
     else
     {
-    	for (i = 0; i < new->no_files; i++)
+    	for (i = 0; i < mnew->no_files; i++)
     	{
-	    if (new->files[i].bytes % block_size)
-	    	new->files[i].bytes += block_size - new->files[i].bytes %
+	    if (mnew->files[i].bytes % block_size)
+	    	mnew->files[i].bytes += block_size - mnew->files[i].bytes %
 		    block_size;
-	    new->files[i].blocks = new->files[i].bytes / block_size;
+	    mnew->files[i].blocks = mnew->files[i].bytes / block_size;
 	}
-    	assert(!new->open);
+    	assert(!mnew->open);
     }
-    new->blocksize = block_size;
-    new->min_bytes_creat = MF_MIN_BLOCKS_CREAT * block_size;
-    new->wr=wflag;
-    new->cur_file = 0;
-    new->open = 1;
+    mnew->blocksize = block_size;
+    mnew->min_bytes_creat = MF_MIN_BLOCKS_CREAT * block_size;
+    mnew->wr=wflag;
+    mnew->cur_file = 0;
+    mnew->open = 1;
 
-    for (i = 0; i < new->no_files; i++)
+    for (i = 0; i < mnew->no_files; i++)
     {
-    	new->files[i].blocks = new->files[i].bytes / new->blocksize;
-    	if (i == new->no_files - 1)
-	    new->files[i].top = -1;
+    	mnew->files[i].blocks = mnew->files[i].bytes / mnew->blocksize;
+    	if (i == mnew->no_files - 1)
+	    mnew->files[i].top = -1;
 	else
-	    new->files[i].top = i ? (new->files[i-1].top + new->files[i].blocks)
-	        : (new->files[i].blocks - 1);
+	    mnew->files[i].top =
+		i ? (mnew->files[i-1].top + mnew->files[i].blocks)
+	        : (mnew->files[i].blocks - 1);
     }
-    return new;
+    return mnew;
 }
 
 /*

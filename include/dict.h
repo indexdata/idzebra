@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.25  1997-09-17 12:19:09  adam
+ * Revision 1.26  1997-09-18 08:59:18  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.25  1997/09/17 12:19:09  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -140,7 +143,8 @@ typedef struct Dict_file_struct
 typedef struct Dict_struct {
     int rw;
     Dict_BFile dbf;
-    const char **(*grep_cmap)(const char **from, int len);
+    const char **(*grep_cmap)(void *vp, const char **from, int len);
+    void *grep_cmap_data;
     struct Dict_head head;
 } *Dict;
 
@@ -174,8 +178,9 @@ int	   dict_scan (Dict dict, char *str,
 		      int (*f)(char *name, const char *info, int pos,
                                void *client));
 
-void       dict_grep_cmap (Dict dict,
-                           const char **(*cmap)(const char **from, int len));
+void       dict_grep_cmap (Dict dict, void *vp,
+                           const char **(*cmap)(void *vp,
+						const char **from, int len));
 
 
 #define DICT_EOS        0

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.50  1997-09-17 12:19:13  adam
+ * Revision 1.51  1997-09-18 08:59:19  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.50  1997/09/17 12:19:13  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -300,7 +303,7 @@ int zebraLockNB (int fd, int wr);
 int zebraUnlock (int fd);
 
 void init_charmap(Res res);
-const char **map_chrs_input(const char **from, int len);
+const char **map_chrs_input(void *vp, const char **from, int len);
 const char *map_chrs_output(const char **from);
 
 extern Res common_resource;

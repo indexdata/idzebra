@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.18  1997-09-05 15:29:58  adam
+ * Revision 1.19  1997-09-18 08:59:18  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.18  1997/09/05 15:29:58  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -412,7 +415,7 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
 
     logf (LOG_DEBUG, "dict_lookup_grep '%s' range=%d", pattern, range);
    
-    dfa_set_cmap (dfa, dict->grep_cmap);
+    dfa_set_cmap (dfa, dict->grep_cmap_data, dict->grep_cmap);
 
     i = dfa_parse (dfa, &this_pattern);
     if (i || *this_pattern)
@@ -455,8 +458,9 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     return i;
 }
 
-void dict_grep_cmap (Dict dict,
-		     const char **(*cmap)(const char **from, int len))
+void dict_grep_cmap (Dict dict, void *vp,
+		     const char **(*cmap)(void *vp, const char **from, int len))
 {
     dict->grep_cmap = cmap;
+    dict->grep_cmap_data = vp;
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.h,v $
- * Revision 1.7  1997-09-05 15:29:59  adam
+ * Revision 1.8  1997-09-18 08:59:18  adam
+ * Extra generic handle for the character mapping routines.
+ *
+ * Revision 1.7  1997/09/05 15:29:59  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -70,8 +73,8 @@ struct DFA {
 };
 
 struct DFA *dfa_init (void);
-void dfa_set_cmap (struct DFA *dfa,
-                   const char **(*cmap)(const char **from, int len));
+void dfa_set_cmap (struct DFA *dfa, void *vp,
+                   const char **(*cmap)(void *vp, const char **from, int len));
 int dfa_parse (struct DFA *, const char **);
 void dfa_mkstate (struct DFA *);
 void dfa_delete (struct DFA **);
