@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.3  1995-09-07 13:58:43  adam
+ * Revision 1.4  1995-09-08 08:54:04  adam
+ * More efficient and operation.
+ *
+ * Revision 1.3  1995/09/07  13:58:43  adam
  * New parameter: result-set file descriptor (RSFD) to support multiple
  * positions within the same result-set.
  * Boolean operators: and, or, not implemented.
@@ -194,16 +197,11 @@ static int r_read_and (RSFD rfd, void *buf)
     struct rset_bool_rfd *p = rfd;
     struct rset_bool_info *info = p->info;
 
-    while (p->more_l || p->more_r)
+    while (p->more_l && p->more_r)
     {
         int cmp;
 
-        if (p->more_l && p->more_r)
-            cmp = (*info->cmp)(p->buf_l, p->buf_r);
-        else if (p->more_r)
-            cmp = 2;
-        else
-            cmp = -2;
+        cmp = (*info->cmp)(p->buf_l, p->buf_r);
         if (!cmp)
         {
             memcpy (buf, p->buf_l, info->key_size);
