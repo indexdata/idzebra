@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Id: kinput.c,v 1.49 2002-04-16 22:31:42 adam Exp $
+ * $Id: kinput.c,v 1.50 2002-04-23 13:39:10 adam Exp $
  *
  * Bugs
  *  - Allocates a lot of memory for the merge process, but never releases it.
@@ -435,6 +435,27 @@ int heap_inpc (struct heap_info *hi)
     return 0;
 } 
 
+/* for debugging only */
+static void print_dict_item (ZebraMaps zm, const char *s)
+{
+    int reg_type = s[1];
+    char keybuf[IT_MAX_WORD+1];
+    char *to = keybuf;
+    const char *from = s + 2;
+
+    while (*from)
+    {
+        const char *res = zebra_maps_output (zm, reg_type, &from);
+        if (!res)
+            *to++ = *from++;
+        else
+            while (*res)
+                *to++ = *res++;
+    }
+    *to = '\0';
+    yaz_log (LOG_LOG, "%s", keybuf);
+}
+
 int heap_inpb (struct heap_info *hi)
 {
     struct heap_cread_info hci;
@@ -457,6 +478,10 @@ int heap_inpb (struct heap_info *hi)
         strcpy (this_name, hci.cur_name);
 	assert (hci.cur_name[1]);
         hi->no_diffs++;
+
+#if 0
+        print_dict_item (hi->reg->zebra_maps, hci.cur_name);
+#endif
         if ((dict_info = dict_lookup (hi->reg->dict, hci.cur_name)))
         {
             memcpy (&isamc_p, dict_info+1, sizeof(ISAMC_P));
