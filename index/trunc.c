@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.14  1999-05-26 07:49:13  adam
+ * Revision 1.15  1999-07-20 13:59:18  adam
+ * Fixed bug that occurred when phrases had 0 hits.
+ *
+ * Revision 1.14  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.13  1999/05/12 13:08:06  adam
@@ -427,11 +430,15 @@ RSET rset_trunc (ZebraHandle zi, ISAM_P *isam_p, int no,
 		 const char *term, int length, const char *flags)
 {
     logf (LOG_DEBUG, "rset_trunc no=%d", no);
+    if (no < 1)
+    {
+	rset_null_parms parms;
+	parms.rset_term = rset_term_create (term, length, flags);
+	return rset_create (rset_kind_null, &parms);
+    }
     if (zi->isam)
     {
-        if (no < 1)
-            return rset_create (rset_kind_null, NULL);
-        else if (no == 1)
+        if (no == 1)
         {
             rset_isam_parms parms;
 
@@ -444,9 +451,7 @@ RSET rset_trunc (ZebraHandle zi, ISAM_P *isam_p, int no,
     }
     else if (zi->isamc)
     {
-        if (no < 1)
-            return rset_create (rset_kind_null, NULL);
-        else if (no == 1)
+        if (no == 1)
         {
             rset_isamc_parms parms;
 
@@ -474,9 +479,7 @@ RSET rset_trunc (ZebraHandle zi, ISAM_P *isam_p, int no,
     }
     else if (zi->isams)
     {
-        if (no < 1)
-            return rset_create (rset_kind_null, NULL);
-        else if (no == 1)
+        if (no == 1)
         {
             rset_isams_parms parms;
 

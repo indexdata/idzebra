@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.93  1999-06-17 14:38:40  adam
+ * Revision 1.94  1999-07-20 13:59:18  adam
+ * Fixed bug that occurred when phrases had 0 hits.
+ *
+ * Revision 1.93  1999/06/17 14:38:40  adam
  * Bug fix: Scan SEGV'ed when getting unknown use attribute.
  *
  * Revision 1.92  1999/05/26 07:49:13  adam
@@ -526,6 +529,7 @@ static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
     return *s0;
 }
 
+/* term_100: handle term, where trunc=none (no operators at all) */
 static int term_100 (ZebraMaps zebra_maps, int reg_type,
 		     const char **src, char *dst, int space_split,
 		     char *dst_term)
@@ -558,6 +562,7 @@ static int term_100 (ZebraMaps zebra_maps, int reg_type,
     return i;
 }
 
+/* term_101: handle term, where trunc=Process # */
 static int term_101 (ZebraMaps zebra_maps, int reg_type,
 		     const char **src, char *dst, int space_split,
 		     char *dst_term)
@@ -599,7 +604,7 @@ static int term_101 (ZebraMaps zebra_maps, int reg_type,
     return i;
 }
 
-
+/* term_103: handle term, where trunc=re-2 (regular expressions) */
 static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
 		     char *dst, int *errors, int space_split,
 		     char *dst_term)
@@ -648,6 +653,7 @@ static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
     return i;
 }
 
+/* term_103: handle term, where trunc=re-1 (regular expressions) */
 static int term_102 (ZebraMaps zebra_maps, int reg_type, const char **src,
 		     char *dst, int space_split, char *dst_term)
 {
@@ -1283,26 +1289,33 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no)
     more = (int *) xmalloc (sizeof(*more)*rset_no);
     buf = (struct it_key **) xmalloc (sizeof(*buf)*rset_no);
 
+    *prox_term = '\0';
     for (i = 0; i<rset_no; i++)
     {
 	int j;
-	buf[i] = (struct it_key *) xmalloc (sizeof(**buf));
-	rsfd[i] = rset_open (rset[i], RSETF_READ);
-        if (!(more[i] = rset_read (rset[i], rsfd[i], buf[i], &term_index)))
-	    break;
 	for (j = 0; j<rset[i]->no_rset_terms; j++)
 	{
 	    const char *nflags = rset[i]->rset_terms[j]->flags;
 	    char *term = rset[i]->rset_terms[j]->name;
 	    int lterm = strlen(term);
-	    if (length_prox_term)
-		prox_term[length_prox_term++] = ' ';
-	    strcpy (prox_term + length_prox_term, term);
-	    length_prox_term += lterm;
+	    if (lterm + length_prox_term < sizeof(prox_term)-1)
+	    {
+		if (length_prox_term)
+		    prox_term[length_prox_term++] = ' ';
+		strcpy (prox_term + length_prox_term, term);
+		length_prox_term += lterm;
+	    }
 	    if (min_nn > rset[i]->rset_terms[j]->nn)
 		min_nn = rset[i]->rset_terms[j]->nn;
 	    flags = nflags;
 	}
+    }
+    for (i = 0; i<rset_no; i++)
+    {
+	buf[i] = (struct it_key *) xmalloc (sizeof(**buf));
+	rsfd[i] = rset_open (rset[i], RSETF_READ);
+        if (!(more[i] = rset_read (rset[i], rsfd[i], buf[i], &term_index)))
+	    break;
     }
     if (i != rset_no)
     {
@@ -1314,7 +1327,8 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no)
 	    xfree (buf[i]);
 	    --i;
 	}
-	parms.rset_term = rset_term_create (prox_term, -1, flags);
+	parms.rset_term = rset_term_create (prox_term, length_prox_term,
+					    flags);
 	parms.rset_term->nn = 0;
 	result = rset_create (rset_kind_null, &parms);
     }
@@ -1323,7 +1337,8 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no)
 	rset_temp_parms parms;
 	RSFD rsfd_result;
 
-	parms.rset_term = rset_term_create (prox_term, -1, flags);
+	parms.rset_term = rset_term_create (prox_term, length_prox_term,
+					    flags);
 	parms.rset_term->nn = min_nn;
 	parms.key_size = sizeof (struct it_key);
 	parms.temp_path = res_get (zh->res, "setTmpDir");
@@ -2162,8 +2177,7 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
     len_prefix = strlen(scan_info->prefix);
     if (memcmp (name, scan_info->prefix, len_prefix))
         return 1;
-    if (pos > 0)
-        idx = scan_info->after - pos + scan_info->before;
+    if (pos > 0)        idx = scan_info->after - pos + scan_info->before;
     else
         idx = - pos - 1;
     scan_info->list[idx].term = (char *)
