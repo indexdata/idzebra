@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.4  1995-12-11 09:03:55  adam
+ * Revision 1.5  1995-12-12 15:57:55  adam
+ * Implemented mf_unlink. cf_unlink uses mf_unlink.
+ *
+ * Revision 1.4  1995/12/11  09:03:55  adam
  * New function: cf_unlink.
  * New member of commit file head: state (0) deleted, (1) hash file.
  *
@@ -35,6 +38,8 @@ void cf_unlink (CFile cf)
     }
     cf->head.state = 0;
     cf->dirty = 1;
+    mf_unlink (cf->block_mf);
+    mf_unlink (cf->hash_mf);
 }
 
 void cf_commit (CFile cf)

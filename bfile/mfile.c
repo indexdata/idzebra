@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.15  1995-12-08 16:21:14  adam
+ * Revision 1.16  1995-12-12 15:57:57  adam
+ * Implemented mf_unlink. cf_unlink uses mf_unlink.
+ *
+ * Revision 1.15  1995/12/08  16:21:14  adam
  * Work on commit/update.
  *
  * Revision 1.14  1995/12/05  13:12:37  quinn
@@ -477,7 +480,10 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
  */
 int mf_unlink(MFile mf)
 {
-    abort();
+    int i;
+
+    for (i = 0; i < mf->no_files; i++)
+        unlink (mf->files[i].path);
     return 0;
 }
 
