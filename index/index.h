@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.27  1995-11-25 10:24:06  adam
+ * Revision 1.28  1995-11-27 13:58:53  adam
+ * New option -t. storeStore data implemented in server.
+ *
+ * Revision 1.27  1995/11/25  10:24:06  adam
  * More record fields - they are enumerated now.
  * New options: flagStoreData flagStoreKey.
  *
@@ -125,6 +128,7 @@ struct recordGroup {
     char *databaseName;
     char *path;
     char *fileMatch;
+    char *fileType;
     int  flagStoreData;
     int  flagStoreKeys;
 };

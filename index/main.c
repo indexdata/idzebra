@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.19  1995-11-25 10:24:06  adam
+ * Revision 1.20  1995-11-27 13:58:53  adam
+ * New option -t. storeStore data implemented in server.
+ *
+ * Revision 1.19  1995/11/25  10:24:06  adam
  * More record fields - they are enumerated now.
  * New options: flagStoreData flagStoreKey.
  *
@@ -95,6 +98,7 @@ int main (int argc, char **argv)
     rGroup.fileMatch = NULL;
     rGroup.flagStoreData = -1;
     rGroup.flagStoreKeys = -1;
+    rGroup.fileType = NULL;
 
     prog = *argv;
     if (argc < 2)
@@ -103,7 +107,7 @@ int main (int argc, char **argv)
                  " [-g group] cmd1 dir1 cmd2 dir2 ...\n");
         exit (1);
     }
-    while ((ret = options ("c:g:v:m:d:", argv, argc, &arg)) != -2)
+    while ((ret = options ("t:c:g:v:m:d:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -175,6 +179,8 @@ int main (int argc, char **argv)
         }
         else if (ret == 'c')
             configName = arg;
+        else if (ret == 't')
+            rGroup.fileType = arg;
         else
         {
             logf (LOG_FATAL, "Unknown option '-%s'", arg);

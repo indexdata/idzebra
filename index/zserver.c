@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.26  1995-11-25 10:24:07  adam
+ * Revision 1.27  1995-11-27 13:58:54  adam
+ * New option -t. storeStore data implemented in server.
+ *
+ * Revision 1.26  1995/11/25  10:24:07  adam
  * More record fields - they are enumerated now.
  * New options: flagStoreData flagStoreKey.
  *
@@ -177,9 +180,24 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     return &r;
 }
 
-static int record_read (int fd, char *buf, size_t count)
+static int record_ext_read (int fd, char *buf, size_t count)
 {
     return read (fd, buf, count);
+}
+
+static int record_int_pos;
+static char *record_int_buf;
+static int record_int_len;
+
+static int record_int_read (int fd, char *buf, size_t count)
+{
+    int l = record_int_len - record_int_pos;
+    if (l <= 0)
+        return 0;
+    l = (l < count) ? l : count;
+    memcpy (buf, record_int_buf + record_int_pos, l);
+    record_int_buf += l;
+    return l;
 }
 
 static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
@@ -203,20 +221,30 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
         exit (1);
     }
     logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
-    if ((retrieveCtrl.fd = open (fname, O_RDONLY)) == -1)
+    if (rec->size[recInfo_storeData] > 0)
     {
-        char *msg = "Record doesn't exist";
-        logf (LOG_WARN|LOG_ERRNO, "Retrieve: Open record file %s", fname);
-        *output_format = VAL_SUTRS;
-        *rec_bufp = msg;
-        *rec_lenp = strlen (msg);
-        rec_rm (&rec);
-        return 0;     /* or 14: System error in presenting records */
+        retrieveCtrl.readf = record_int_read;
+        record_int_len = rec->size[recInfo_storeData];
+        record_int_buf = rec->info[recInfo_storeData];
+        record_int_pos = 0;
+    }
+    else 
+    {
+        if ((retrieveCtrl.fd = open (fname, O_RDONLY)) == -1)
+        {
+            char *msg = "Record doesn't exist";
+            logf (LOG_WARN|LOG_ERRNO, "Retrieve: Open record file %s", fname);
+            *output_format = VAL_SUTRS;
+            *rec_bufp = msg;
+            *rec_lenp = strlen (msg);
+            rec_rm (&rec);
+            return 0;     /* or 14: System error in presenting records */
+        }
+        retrieveCtrl.readf = record_ext_read;
     }
     retrieveCtrl.localno = sysno;
     retrieveCtrl.score = score;
     retrieveCtrl.odr = stream;
-    retrieveCtrl.readf = record_read;
     retrieveCtrl.input_format = retrieveCtrl.output_format = input_format;
     retrieveCtrl.comp = comp;
     retrieveCtrl.diagnostic = 0;
