@@ -64,7 +64,7 @@ void record_retrieve(RetrievalObj *ro,
     res->errString = "";
   }
   res->position   = ro->records[i].position;
-  res->base       = ro->records[i].base;
+  res->base       = odr_strdup(stream, ro->records[i].base);
   res->format     = (char *) 
     yaz_z3950_oid_value_to_str(ro->records[i].format, CLASS_RECSYN); 
   res->buf        = buf;
