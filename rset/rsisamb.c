@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.3 2004-01-16 15:27:35 heikki Exp $
+/* $Id: rsisamb.c,v 1.4 2004-01-28 10:44:52 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -27,6 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #include <zebrautl.h>
 #include <rsisamb.h>
+#include <string.h>
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
