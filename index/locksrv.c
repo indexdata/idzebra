@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.3  1995-12-11 11:43:29  adam
+ * Revision 1.4  1996-04-10 16:01:27  quinn
+ * Fixed order of path/filename.
+ *
+ * Revision 1.3  1995/12/11  11:43:29  adam
  * Locking based on fcntl instead of flock.
  * Setting commitEnable removed. Command line option -n can be used to
  * prevent commit if commit setting is defined in the configuration file.
@@ -41,7 +44,7 @@ int zebraServerLock (int commitPhase)
 
     if (server_lock_cmt == -1)
     {
-        sprintf (path, "%s%s", FNAME_COMMIT_LOCK, pathPrefix);
+        sprintf (path, "%s%s", pathPrefix, FNAME_COMMIT_LOCK);
         if ((server_lock_cmt = open (path, O_CREAT|O_RDWR, 0666))
             == -1)
         {
@@ -50,7 +53,7 @@ int zebraServerLock (int commitPhase)
         }
         assert (server_lock_org == -1);
 
-        sprintf (path, "%s%s", FNAME_ORG_LOCK, pathPrefix);
+        sprintf (path, "%s%s", pathPrefix, FNAME_ORG_LOCK);
         if ((server_lock_org = open (path, O_CREAT|O_RDWR, 0666))
             == -1)
         {
