@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.15 2005-01-05 00:10:19 adam Exp $
+/* $Id: recctrl.c,v 1.16 2005-01-15 13:14:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -50,6 +50,9 @@ struct recTypes {
     struct recTypeInstance *entries;
 };
 
+#ifdef IDZEBRA_STATIC_GRS_SGML
+    extern RecType idzebra_filter_grs_sgml[];
+#endif
 #ifdef IDZEBRA_STATIC_TEXT
     extern RecType idzebra_filter_text[];
 #endif
@@ -80,8 +83,9 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     const char *module_path = res_get_def(res, "modulePath",
 					  DEFAULT_MODULE_PATH);
 
-    extern RecType idzebra_filter_grs_sgml[];
+#ifdef IDZEBRA_STATIC_GRS_SGML
     recTypeClass_add (&rts, idzebra_filter_grs_sgml, nmem, 0);
+#endif
 #ifdef IDZEBRA_STATIC_TEXT
     recTypeClass_add (&rts, idzebra_filter_text, nmem, 0);
 #endif
