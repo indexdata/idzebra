@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.11  1998-10-16 08:14:34  adam
+ * Revision 1.12  1998-11-16 10:18:10  adam
+ * Better error reporting for result sets.
+ *
+ * Revision 1.11  1998/10/16 08:14:34  adam
  * Updated record control system.
  *
  * Revision 1.10  1998/09/22 10:03:42  adam
@@ -267,7 +270,8 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
     if (!poset)
     {
         logf (LOG_DEBUG, "zebraPosSetCreate error");
-        zh->errCode = 13;
+        zh->errCode = 30;
+        zh->errString = nmem_strdup (stream->mem, setname);
     }
     else
     {
@@ -275,8 +279,12 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
 	{
 	    if (!poset[i].sysno)
 	    {
+	        char num_str[20];
+
+		sprintf (num_str, "%d", pos_array[i]);	
 		zh->errCode = 13;
-		logf (LOG_DEBUG, "Out of range. pos=%d", pos_array[i]);
+                zh->errString = nmem_strdup (stream->mem, num_str);
+                break;
 	    }
 	    else
 	    {
