@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.37 2004-08-18 17:02:05 adam Exp $
+/* $Id: recindex.c,v 1.38 2004-09-26 20:19:44 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,6 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#define RIDX_CHUNK 128
 
 /*
  *  Format of first block
@@ -76,8 +77,15 @@ static int read_indx (Records p, SYSNO sysno, void *buf, int itemsize,
 {
     int r;
     zint pos = (sysno-1)*itemsize;
+    int off = (int) (pos%RIDX_CHUNK);
+    int sz1 = RIDX_CHUNK - off;    /* sz1 is size of buffer to read.. */
 
-    r = bf_read (p->index_BFile, 1+pos/128, (int) (pos%128), itemsize, buf);
+    if (sz1 > itemsize)
+	sz1 = itemsize;  /* no more than itemsize bytes */
+
+    r = bf_read (p->index_BFile, 1+pos/RIDX_CHUNK, off, sz1, buf);
+    if (r == 1 && sz1 < itemsize) /* boundary? - must read second part */
+	r = bf_read (p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1, buf + sz1);
     if (r != 1 && !ignoreError)
     {
         logf (LOG_FATAL|LOG_ERRNO, "read in %s at pos %ld",
@@ -90,8 +98,15 @@ static int read_indx (Records p, SYSNO sysno, void *buf, int itemsize,
 static void write_indx (Records p, SYSNO sysno, void *buf, int itemsize)
 {
     zint pos = (sysno-1)*itemsize;
+    int off = (int) (pos%RIDX_CHUNK);
+    int sz1 = RIDX_CHUNK - off;    /* sz1 is size of buffer to read.. */
 
-    bf_write (p->index_BFile, 1+pos/128, (int) (pos%128), itemsize, buf);
+    if (sz1 > itemsize)
+	sz1 = itemsize;  /* no more than itemsize bytes */
+
+    bf_write(p->index_BFile, 1+pos/RIDX_CHUNK, off, sz1, buf);
+    if (sz1 < itemsize)   /* boundary? must write second part */
+	bf_write(p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1, buf + sz1);
 }
 
 static void rec_release_blocks (Records p, SYSNO sysno)
@@ -232,7 +247,7 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
     p->tmp_size = 1024;
     p->tmp_buf = (char *) xmalloc (p->tmp_size);
     p->index_fname = "reci";
-    p->index_BFile = bf_open (bfs, p->index_fname, 128, rw);
+    p->index_BFile = bf_open (bfs, p->index_fname, RIDX_CHUNK, rw);
     if (p->index_BFile == NULL)
     {
         logf (LOG_FATAL|LOG_ERRNO, "open %s", p->index_fname);
