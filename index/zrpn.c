@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.22  1995-10-06 15:07:39  adam
+ * Revision 1.23  1995-10-06 16:33:37  adam
+ * Use attribute mappings.
+ *
+ * Revision 1.22  1995/10/06  15:07:39  adam
  * Structure 'local-number' handled.
  *
  * Revision 1.21  1995/10/06  13:52:06  adam
@@ -82,12 +85,26 @@
 #include <unistd.h>
 
 #include "zserver.h"
+#include <attribute.h>
 
 #include <rsisam.h>
 #include <rstemp.h>
 #include <rsnull.h>
 #include <rsbool.h>
 #include <rsrel.h>
+
+int index_word_prefix_map (char *string, oid_value attrSet, int attrUse)
+{
+    attent *attp;
+
+    logf (LOG_DEBUG, "oid_value attrSet = %d", attrSet);
+    logf (LOG_DEBUG, "int attrUse = %d", attrUse);
+    attp = att_getentbyatt (attrSet, attrUse);
+    assert (attp);
+    logf (LOG_DEBUG, "ord=%d", attp->attset_ordinal);
+    return index_word_prefix (string, attp->attset_ordinal,
+                              attp->local_attribute);
+}
 
 /*
  * attr_print: log attributes
@@ -135,19 +152,26 @@ typedef struct {
     Z_AttributesPlusTerm *zapt;
 } AttrType;
 
-static int attr_find (AttrType *src)
+static int attr_find (AttrType *src, oid_value *attributeSetP)
 {
     while (src->major < src->zapt->num_attributes)
     {
         Z_AttributeElement *element;
-        element = src->zapt->attributeList[src->major];
 
+        element = src->zapt->attributeList[src->major];
         if (src->type == *element->attributeType)
         {
             switch (element->which) 
             {
             case Z_AttributeValue_numeric:
                 ++(src->major);
+                if (element->attributeSet && attributeSetP)
+                {
+                    oident *attrset;
+
+                    attrset = oid_getentbyoid (element->attributeSet);
+                    *attributeSetP = attrset->value;
+                }
                 return *element->value.numeric;
                 break;
             case Z_AttributeValue_complex:
@@ -156,6 +180,13 @@ static int attr_find (AttrType *src)
                     Z_StringOrNumeric_numeric)
                     break;
                 ++(src->minor);
+                if (element->attributeSet && attributeSetP)
+                {
+                    oident *attrset;
+
+                    attrset = oid_getentbyoid (element->attributeSet);
+                    *attributeSetP = attrset->value;
+                }
                 return *element->value.complex->list[src->minor-1]->u.numeric;
             default:
                 assert (0);
@@ -349,7 +380,8 @@ static int grep_handle (Dict_char *name, const char *info)
 }
 
 static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                       const char *term_sub, ISAM_P **isam_ps)
+                       const char *term_sub, ISAM_P **isam_ps,
+                       oid_value attributeSet)
 {
     char term_dict[2*IT_MAX_WORD+2];
     int i, j;
@@ -358,18 +390,19 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     int truncation_value;
     AttrType use;
     int use_value;
+    oid_value curAttributeSet = attributeSet;
 
     attr_init (&use, zapt, 1);
-    use_value = attr_find (&use);
+    use_value = attr_find (&use, &curAttributeSet);
     logf (LOG_DEBUG, "use value %d", use_value);
     attr_init (&truncation, zapt, 5);
-    truncation_value = attr_find (&truncation);
+    truncation_value = attr_find (&truncation, NULL);
     logf (LOG_DEBUG, "truncation value %d", truncation_value);
 
     if (use_value == -1)
         use_value = 1016;
-    i = index_word_prefix (term_dict, 1, use_value);
-
+    i = index_word_prefix_map (term_dict, curAttributeSet, use_value);
+    
     switch (truncation_value)
     {
     case -1:         /* not specified */
@@ -427,20 +460,20 @@ static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 }
 
 static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
-                                      Z_AttributesPlusTerm *zapt)
+                                      Z_AttributesPlusTerm *zapt,
+                                      oid_value attributeSet)
 {
     rset_relevance_parms parms;
     char termz[IT_MAX_WORD+1];
     char term_sub[IT_MAX_WORD+1];
     char *p0 = termz, *p1 = NULL;
-    Z_Term *term = zapt->term;
 
     parms.key_size = sizeof(struct it_key);
     parms.max_rec = 100;
     parms.cmp = key_compare;
     parms.is = zi->wordIsam;
 
-    if (term->which != Z_Term_general)
+    if (zapt->term->which != Z_Term_general)
     {
         zi->errCode = 124;
         return NULL;
@@ -456,7 +489,8 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
         }
         else
             strcpy (term_sub, p0);
-        if (trunc_term (zi, zapt, term_sub, &parms.isam_positions))
+        if (trunc_term (zi, zapt, term_sub, &parms.isam_positions,
+                        attributeSet))
             return NULL;
         if (!p1)
             break;
@@ -470,22 +504,21 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
 }
 
 static RSET rpn_search_APT_word (ZServerInfo *zi,
-                                 Z_AttributesPlusTerm *zapt)
+                                 Z_AttributesPlusTerm *zapt,
+                                 oid_value attributeSet)
 {
     ISAM_P *isam_positions;
     rset_isam_parms parms;
-
     char termz[IT_MAX_WORD+1];
-    Z_Term *term = zapt->term;
 
-    if (term->which != Z_Term_general)
+    if (zapt->term->which != Z_Term_general)
     {
         zi->errCode = 124;
         return NULL;
     }
     trans_term (zi, zapt, termz);
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
-    if (trunc_term (zi, zapt, termz, &isam_positions))
+    if (trunc_term (zi, zapt, termz, &isam_positions, attributeSet))
         return NULL;
     if (isam_p_indx < 1)
         return rset_create (rset_kind_null, NULL);
@@ -500,22 +533,21 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
 }
 
 static RSET rpn_search_APT_phrase (ZServerInfo *zi,
-                                   Z_AttributesPlusTerm *zapt)
+                                   Z_AttributesPlusTerm *zapt,
+                                   oid_value attributeSet)
 {
     ISAM_P *isam_positions;
     rset_isam_parms parms;
-
     char termz[IT_MAX_WORD+1];
-    Z_Term *term = zapt->term;
 
-    if (term->which != Z_Term_general)
+    if (zapt->term->which != Z_Term_general)
     {
         zi->errCode = 124;
         return NULL;
     }
     trans_term (zi, zapt, termz);
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
-    if (trunc_term (zi, zapt, termz, &isam_positions))
+    if (trunc_term (zi, zapt, termz, &isam_positions, attributeSet))
         return NULL;
     if (isam_p_indx != 1)
         return rset_create (rset_kind_null, NULL);
@@ -524,7 +556,8 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
     return rset_create (rset_kind_isam, &parms);
 }
 
-static RSET rpn_search_APT_local (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
+static RSET rpn_search_APT_local (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
+                                  oid_value attributeSet)
 {
     RSET result;
     RSFD rsfd;
@@ -551,7 +584,8 @@ static RSET rpn_search_APT_local (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
 }
 
 
-static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
+static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
+                            oid_value attributeSet)
 {
     AttrType relation;
     AttrType structure;
@@ -560,23 +594,23 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
     attr_init (&relation, zapt, 2);
     attr_init (&structure, zapt, 4);
     
-    relation_value = attr_find (&relation);
-    structure_value = attr_find (&structure);
+    relation_value = attr_find (&relation, NULL);
+    structure_value = attr_find (&structure, NULL);
     switch (structure_value)
     {
     case -1:
         if (relation_value == 102) /* relevance relation */
-            return rpn_search_APT_relevance (zi, zapt);
-        return rpn_search_APT_word (zi, zapt);
+            return rpn_search_APT_relevance (zi, zapt, attributeSet);
+        return rpn_search_APT_word (zi, zapt, attributeSet);
     case 1: /* phrase */
         if (relation_value == 102) /* relevance relation */
-            return rpn_search_APT_relevance (zi, zapt);
-        return rpn_search_APT_phrase (zi, zapt);
+            return rpn_search_APT_relevance (zi, zapt, attributeSet);
+        return rpn_search_APT_phrase (zi, zapt, attributeSet);
         break;
     case 2: /* word */
         if (relation_value == 102) /* relevance relation */
-            return rpn_search_APT_relevance (zi, zapt);
-        return rpn_search_APT_word (zi, zapt);
+            return rpn_search_APT_relevance (zi, zapt, attributeSet);
+        return rpn_search_APT_word (zi, zapt, attributeSet);
     case 3: /* key */
         break;
     case 4: /* year */
@@ -584,7 +618,7 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
     case 5: /* date - normalized */
         break;
     case 6: /* word list */
-        return rpn_search_APT_relevance (zi, zapt);
+        return rpn_search_APT_relevance (zi, zapt, attributeSet);
     case 100: /* date - un-normalized */
         break;
     case 101: /* name - normalized */
@@ -596,13 +630,13 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
     case 104: /* urx */
         break;
     case 105: /* free-form-text */
-        return rpn_search_APT_relevance (zi, zapt);
+        return rpn_search_APT_relevance (zi, zapt, attributeSet);
     case 106: /* document-text */
-        return rpn_search_APT_relevance (zi, zapt);
+        return rpn_search_APT_relevance (zi, zapt, attributeSet);
     case 107: /* local-number */
-        return rpn_search_APT_local (zi, zapt);
+        return rpn_search_APT_local (zi, zapt, attributeSet);
     case 108: /* string */ 
-        return rpn_search_APT_word (zi, zapt);
+        return rpn_search_APT_word (zi, zapt, attributeSet);
     case 109: /* numeric string */
         break;
     }
@@ -619,17 +653,20 @@ static RSET rpn_search_ref (ZServerInfo *zi, Z_ResultSetId *resultSetId)
     return s->rset;
 }
 
-static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs)
+static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
+                                  oid_value attributeSet)
 {
     RSET r = NULL;
     if (zs->which == Z_RPNStructure_complex)
     {
         rset_bool_parms bool_parms;
 
-        bool_parms.rset_l = rpn_search_structure (zi, zs->u.complex->s1);
+        bool_parms.rset_l = rpn_search_structure (zi, zs->u.complex->s1,
+                                                  attributeSet);
         if (bool_parms.rset_l == NULL)
             return NULL;
-        bool_parms.rset_r = rpn_search_structure (zi, zs->u.complex->s2);
+        bool_parms.rset_r = rpn_search_structure (zi, zs->u.complex->s2,
+                                                  attributeSet);
         if (bool_parms.rset_r == NULL)
         {
             rset_delete (bool_parms.rset_l);
@@ -658,7 +695,8 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs)
         if (zs->u.simple->which == Z_Operand_APT)
         {
             logf (LOG_DEBUG, "rpn_search_APT");
-            r = rpn_search_APT (zi, zs->u.simple->u.attributesPlusTerm);
+            r = rpn_search_APT (zi, zs->u.simple->u.attributesPlusTerm,
+                                attributeSet);
         }
         else if (zs->u.simple->which == Z_Operand_resultSetId)
         {
@@ -703,10 +741,16 @@ int rpn_search (ZServerInfo *zi,
                 const char *setname, int *hits)
 {
     RSET rset;
+    oident *attrset;
+    oid_value attributeSet;
 
     zi->errCode = 0;
     zi->errString = NULL;
-    rset = rpn_search_structure (zi, rpn->RPNStructure);
+    
+    attrset = oid_getentbyoid (rpn->attributeSetId);
+    attributeSet = attrset->value;
+
+    rset = rpn_search_structure (zi, rpn->RPNStructure, attributeSet);
     if (!rset)
         return zi->errCode;
     count_set (rset, hits);
@@ -779,7 +823,7 @@ int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
     for (j = 0; j<before+after; j++)
         scan_list[j].term = "------";
     attr_init (&use, zapt, 1);
-    use_value = attr_find (&use);
+    use_value = attr_find (&use, NULL);
     logf (LOG_DEBUG, "use value %d", use_value);
 
     if (use_value == -1)
@@ -796,7 +840,7 @@ int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
     dict_scan (zi->wordDict, termz, &before, &after, scan_handle);
 
     if (zi->errCode)
-        logf (LOG_DEBUG, "search error: %d", zi->errCode);
+        logf (LOG_DEBUG, "scan error: %d", zi->errCode);
     return 0;
 }
               
