@@ -71,6 +71,15 @@ package IDZebra;
 *records_retrieve = *IDZebrac::records_retrieve;
 *record_retrieve = *IDZebrac::record_retrieve;
 *sort = *IDZebrac::sort;
+*scan_PQF = *IDZebrac::scan_PQF;
+sub getScanEntry {
+    my @args = @_;
+    my $result = IDZebrac::getScanEntry(@args);
+    return undef if (!defined($result));
+    my %resulthash;
+    tie %resulthash, ref($result), $result;
+    return bless \%resulthash, ref($result);
+}
 *nmem_create = *IDZebrac::nmem_create;
 *nmem_destroy = *IDZebrac::nmem_destroy;
 *data1_create = *IDZebrac::data1_create;
@@ -427,6 +436,82 @@ sub DESTROY {
     delete $ITERATORS{$self};
     if (exists $OWNER{$self}) {
         IDZebrac::delete_ScanEntry($self);
+        delete $OWNER{$self};
+    }
+}
+
+sub DISOWN {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    delete $OWNER{$ptr};
+    };
+
+sub ACQUIRE {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    $OWNER{$ptr} = 1;
+    };
+
+sub FETCH {
+    my ($self,$field) = @_;
+    my $member_func = "swig_${field}_get";
+    my $val = $self->$member_func();
+    if (exists $BLESSEDMEMBERS{$field}) {
+        return undef if (!defined($val));
+        my %retval;
+        tie %retval,$BLESSEDMEMBERS{$field},$val;
+        return bless \%retval, $BLESSEDMEMBERS{$field};
+    }
+    return $val;
+}
+
+sub STORE {
+    my ($self,$field,$newval) = @_;
+    my $member_func = "swig_${field}_set";
+    if (exists $BLESSEDMEMBERS{$field}) {
+        $self->$member_func(tied(%{$newval}));
+    } else {
+        $self->$member_func($newval);
+    }
+}
+
+
+############# Class : IDZebra::ScanObj ##############
+
+package IDZebra::ScanObj;
+@ISA = qw( IDZebra );
+%OWNER = ();
+%BLESSEDMEMBERS = (
+    entries => 'IDZebra::ScanEntry',
+);
+
+%ITERATORS = ();
+*swig_num_entries_get = *IDZebrac::ScanObj_num_entries_get;
+*swig_num_entries_set = *IDZebrac::ScanObj_num_entries_set;
+*swig_position_get = *IDZebrac::ScanObj_position_get;
+*swig_position_set = *IDZebrac::ScanObj_position_set;
+*swig_is_partial_get = *IDZebrac::ScanObj_is_partial_get;
+*swig_is_partial_set = *IDZebrac::ScanObj_is_partial_set;
+*swig_entries_get = *IDZebrac::ScanObj_entries_get;
+*swig_entries_set = *IDZebrac::ScanObj_entries_set;
+sub new {
+    my $pkg = shift;
+    my @args = @_;
+    my $self = IDZebrac::new_ScanObj(@args);
+    return undef if (!defined($self));
+    $OWNER{$self} = 1;
+    my %retval;
+    tie %retval, "IDZebra::ScanObj", $self;
+    return bless \%retval, $pkg;
+}
+
+sub DESTROY {
+    return unless $_[0]->isa('HASH');
+    my $self = tied(%{$_[0]});
+    return unless defined $self;
+    delete $ITERATORS{$self};
+    if (exists $OWNER{$self}) {
+        IDZebrac::delete_ScanObj($self);
         delete $OWNER{$self};
     }
 }

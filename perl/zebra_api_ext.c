@@ -213,6 +213,51 @@ int zebra_search_PQF (ZebraHandle zh,
   return(hits);
 }
 
+void zebra_scan_PQF (ZebraHandle zh,
+		     ScanObj *so,
+		     ODR stream,
+		     const char *pqf_query)
+{
+  Z_AttributesPlusTerm *zapt;
+  Odr_oid *attrsetid;
+  const char* oidname;
+  oid_value attributeset;
+  ZebraScanEntry *entries;
+  int i, class;
+
+  logf(LOG_DEBUG,  
+       "scan req: pos:%d, num:%d, partial:%d", 
+       so->position, so->num_entries, so->is_partial);
+
+  zapt = p_query_scan (stream, PROTO_Z3950, &attrsetid, pqf_query);
+
+  oidname = yaz_z3950oid_to_str (attrsetid, &class); 
+  logf (LOG_DEBUG, "Attributreset: %s", oidname);
+  attributeset = oid_getvalbyname(oidname);
+
+  if (!zapt) {
+    logf (LOG_WARN, "bad query %s\n", pqf_query);
+    odr_reset (stream);
+    return;
+  }
+
+  so->entries = (ScanEntry *)
+    odr_malloc (stream, sizeof(so->entries) * (so->num_entries));
+
+
+  zebra_scan (zh, stream, zapt, attributeset, 
+	      &so->position, &so->num_entries, 
+	      (ZebraScanEntry **) &so->entries, &so->is_partial);
+
+  logf(LOG_DEBUG, 
+       "scan res: pos:%d, num:%d, partial:%d", 
+       so->position, so->num_entries, so->is_partial);
+}
+
+ScanEntry *getScanEntry(ScanObj *so, int pos) {
+  return (&so->entries[pos-1]);
+}
+
 /* ---------------------------------------------------------------------------
   Record retrieval 
   2 phase retrieval - I didn't manage to return array of blessed references

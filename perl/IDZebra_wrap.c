@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.3 2002-11-18 13:16:43 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.4 2002-12-02 10:23:30 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -519,28 +519,29 @@ static void _swig_create_magic(CPerlObj *pPerl, SV *sv, const char *name, int (C
 #define  SWIGTYPE_p_RetrievalRecordBuf swig_types[18] 
 #define  SWIGTYPE_p_perl_context swig_types[19] 
 #define  SWIGTYPE_p_data1_node swig_types[20] 
-#define  SWIGTYPE_p_RetrievalObj swig_types[21] 
-#define  SWIGTYPE_p_data1_tagset swig_types[22] 
-#define  SWIGTYPE_p_data1_tag swig_types[23] 
-#define  SWIGTYPE_p_Z_ExplainRecord swig_types[24] 
+#define  SWIGTYPE_p_ScanObj swig_types[21] 
+#define  SWIGTYPE_p_RetrievalObj swig_types[22] 
+#define  SWIGTYPE_p_data1_tagset swig_types[23] 
+#define  SWIGTYPE_p_data1_tag swig_types[24] 
 #define  SWIGTYPE_p_ZebraRetrievalRecord swig_types[25] 
 #define  SWIGTYPE_p_RetrievalRecord swig_types[26] 
 #define  SWIGTYPE_p_NMEM swig_types[27] 
-#define  SWIGTYPE_p_data1_marctab swig_types[28] 
-#define  SWIGTYPE_p_Z_BriefBib swig_types[29] 
-#define  SWIGTYPE_p_ScanEntry swig_types[30] 
-#define  SWIGTYPE_p_f_p_void_p_char_size_t__int swig_types[31] 
-#define  SWIGTYPE_p_FILE swig_types[32] 
-#define  SWIGTYPE_p_data1_element swig_types[33] 
-#define  SWIGTYPE_p_recordGroup swig_types[34] 
-#define  SWIGTYPE_p_int swig_types[35] 
-#define  SWIGTYPE_p_data1_handle swig_types[36] 
-#define  SWIGTYPE_p_p_int swig_types[37] 
-#define  SWIGTYPE_p_data1_absyn_cache swig_types[38] 
-#define  SWIGTYPE_p_data1_attset_cache swig_types[39] 
-#define  SWIGTYPE_p_Z_GenericRecord swig_types[40] 
-#define  SWIGTYPE_p_data1_vartype swig_types[41] 
-static swig_type_info *swig_types[43];
+#define  SWIGTYPE_p_Z_ExplainRecord swig_types[28] 
+#define  SWIGTYPE_p_data1_marctab swig_types[29] 
+#define  SWIGTYPE_p_Z_BriefBib swig_types[30] 
+#define  SWIGTYPE_p_ScanEntry swig_types[31] 
+#define  SWIGTYPE_p_f_p_void_p_char_size_t__int swig_types[32] 
+#define  SWIGTYPE_p_FILE swig_types[33] 
+#define  SWIGTYPE_p_data1_element swig_types[34] 
+#define  SWIGTYPE_p_recordGroup swig_types[35] 
+#define  SWIGTYPE_p_int swig_types[36] 
+#define  SWIGTYPE_p_data1_handle swig_types[37] 
+#define  SWIGTYPE_p_p_int swig_types[38] 
+#define  SWIGTYPE_p_data1_absyn_cache swig_types[39] 
+#define  SWIGTYPE_p_data1_attset_cache swig_types[40] 
+#define  SWIGTYPE_p_Z_GenericRecord swig_types[41] 
+#define  SWIGTYPE_p_data1_vartype swig_types[42] 
+static swig_type_info *swig_types[44];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -2152,6 +2153,292 @@ XS(_wrap_delete_ScanEntry) {
 }
 
 
+XS(_wrap_ScanObj_num_entries_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ScanObj_num_entries_set(self,num_entries);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ScanObj_num_entries_set. Expected _p_ScanObj");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->num_entries = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ScanObj_num_entries_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ScanObj_num_entries_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ScanObj_num_entries_get. Expected _p_ScanObj");
+            }
+        }
+        result = (int) ((arg1)->num_entries);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ScanObj_position_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ScanObj_position_set(self,position);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ScanObj_position_set. Expected _p_ScanObj");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->position = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ScanObj_position_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ScanObj_position_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ScanObj_position_get. Expected _p_ScanObj");
+            }
+        }
+        result = (int) ((arg1)->position);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ScanObj_is_partial_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ScanObj_is_partial_set(self,is_partial);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ScanObj_is_partial_set. Expected _p_ScanObj");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->is_partial = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ScanObj_is_partial_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ScanObj_is_partial_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ScanObj_is_partial_get. Expected _p_ScanObj");
+            }
+        }
+        result = (int) ((arg1)->is_partial);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ScanObj_entries_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        ScanEntry *arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ScanObj_entries_set(self,entries);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ScanObj_entries_set. Expected _p_ScanObj");
+            }
+        }
+        {
+            if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_ScanEntry,0) < 0) {
+                SWIG_croak("Type error in argument 2 of ScanObj_entries_set. Expected _p_ScanEntry");
+            }
+        }
+        if (arg1) (arg1)->entries = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ScanObj_entries_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        ScanEntry *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ScanObj_entries_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ScanObj_entries_get. Expected _p_ScanObj");
+            }
+        }
+        result = (ScanEntry *) ((arg1)->entries);
+        
+        ST(argvi) = sv_newmortal();
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_ScanEntry,0);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_new_ScanObj) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 0) || (items > 0)) {
+            SWIG_croak("Usage: new_ScanObj();");
+        }
+        result = (ScanObj *)(ScanObj *) calloc(1, sizeof(ScanObj));
+        
+        ST(argvi) = sv_newmortal();
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_ScanObj,0);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_delete_ScanObj) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: delete_ScanObj(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of delete_ScanObj. Expected _p_ScanObj");
+            }
+        }
+        free((char *) arg1);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_init__SWIG_0) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
@@ -3511,6 +3798,83 @@ XS(_wrap_sort) {
         {
             free(arg5);
         }
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_scan_PQF) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraHandle arg1 ;
+        ScanObj *arg2 ;
+        ODR arg3 ;
+        char *arg4 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 4) || (items > 4)) {
+            SWIG_croak("Usage: scan_PQF(zh,so,stream,pqf_query);");
+        }
+        {
+            ZebraHandle * argp;
+            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_ZebraHandle,0) < 0) {
+                SWIG_croak("Type error in argument 1 of scan_PQF. Expected _p_ZebraHandle");
+            }
+            arg1 = *argp;
+        }
+        {
+            if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 2 of scan_PQF. Expected _p_ScanObj");
+            }
+        }
+        {
+            ODR * argp;
+            if (SWIG_ConvertPtr(ST(2),(void **) &argp, SWIGTYPE_p_ODR,0) < 0) {
+                SWIG_croak("Type error in argument 3 of scan_PQF. Expected _p_ODR");
+            }
+            arg3 = *argp;
+        }
+        if (!SvOK((SV*) ST(3))) arg4 = 0;
+        else arg4 = (char *) SvPV(ST(3), PL_na);
+        zebra_scan_PQF(arg1,arg2,arg3,(char const *)arg4);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_getScanEntry) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ScanObj *arg1 ;
+        int arg2 ;
+        ScanEntry *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: getScanEntry(so,pos);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanObj,0) < 0) {
+                SWIG_croak("Type error in argument 1 of getScanEntry. Expected _p_ScanObj");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        result = (ScanEntry *)getScanEntry(arg1,arg2);
+        
+        ST(argvi) = sv_newmortal();
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_ScanEntry,0);
+        XSRETURN(argvi);
+        fail:
         (void) _swigerr;
     }
     croak(_swigerr);
@@ -6077,7 +6441,7 @@ XS(_wrap_data1_get_read_buf) {
                 svs[i] = sv_newmortal();
                 sv_setpv((SV*)svs[i],result[i]);
             };
-            myav =	av_make(len,svs);
+            myav =  av_make(len,svs);
             free(svs);
             ST(argvi) = newRV((SV*)myav);
             sv_2mortal(ST(argvi));
@@ -6130,7 +6494,7 @@ XS(_wrap_data1_get_map_buf) {
                 svs[i] = sv_newmortal();
                 sv_setpv((SV*)svs[i],result[i]);
             };
-            myav =	av_make(len,svs);
+            myav =  av_make(len,svs);
             free(svs);
             ST(argvi) = newRV((SV*)myav);
             sv_2mortal(ST(argvi));
@@ -7065,13 +7429,14 @@ static swig_type_info _swigt__p_data1_varset[] = {{"_p_data1_varset", 0, "data1_
 static swig_type_info _swigt__p_RetrievalRecordBuf[] = {{"_p_RetrievalRecordBuf", 0, "RetrievalRecordBuf *", 0},{"_p_RetrievalRecordBuf"},{0}};
 static swig_type_info _swigt__p_perl_context[] = {{"_p_perl_context", 0, "struct perl_context *", 0},{"_p_perl_context"},{0}};
 static swig_type_info _swigt__p_data1_node[] = {{"_p_data1_node", 0, "data1_node *", 0},{"_p_data1_node"},{0}};
+static swig_type_info _swigt__p_ScanObj[] = {{"IDZebra::ScanObj", 0, "ScanObj *", 0},{"IDZebra::ScanObj"},{0}};
 static swig_type_info _swigt__p_RetrievalObj[] = {{"IDZebra::RetrievalObj", 0, "RetrievalObj *", 0},{"IDZebra::RetrievalObj"},{0}};
 static swig_type_info _swigt__p_data1_tagset[] = {{"_p_data1_tagset", 0, "data1_tagset *", 0},{"_p_data1_tagset"},{0}};
 static swig_type_info _swigt__p_data1_tag[] = {{"_p_data1_tag", 0, "data1_tag *", 0},{"_p_data1_tag"},{0}};
-static swig_type_info _swigt__p_Z_ExplainRecord[] = {{"_p_Z_ExplainRecord", 0, "Z_ExplainRecord *", 0},{"_p_Z_ExplainRecord"},{0}};
 static swig_type_info _swigt__p_ZebraRetrievalRecord[] = {{"_p_ZebraRetrievalRecord", 0, "ZebraRetrievalRecord *", 0},{"_p_ZebraRetrievalRecord"},{0}};
 static swig_type_info _swigt__p_RetrievalRecord[] = {{"IDZebra::RetrievalRecord", 0, "RetrievalRecord *", 0},{"IDZebra::RetrievalRecord"},{0}};
 static swig_type_info _swigt__p_NMEM[] = {{"_p_NMEM", 0, "NMEM *", 0},{"_p_NMEM"},{0}};
+static swig_type_info _swigt__p_Z_ExplainRecord[] = {{"_p_Z_ExplainRecord", 0, "Z_ExplainRecord *", 0},{"_p_Z_ExplainRecord"},{0}};
 static swig_type_info _swigt__p_data1_marctab[] = {{"_p_data1_marctab", 0, "data1_marctab *", 0},{"_p_data1_marctab"},{0}};
 static swig_type_info _swigt__p_Z_BriefBib[] = {{"_p_Z_BriefBib", 0, "Z_BriefBib *", 0},{"_p_Z_BriefBib"},{0}};
 static swig_type_info _swigt__p_ScanEntry[] = {{"IDZebra::ScanEntry", 0, "ScanEntry *", 0},{"IDZebra::ScanEntry"},{0}};
@@ -7109,13 +7474,14 @@ _swigt__p_data1_varset,
 _swigt__p_RetrievalRecordBuf, 
 _swigt__p_perl_context, 
 _swigt__p_data1_node, 
+_swigt__p_ScanObj, 
 _swigt__p_RetrievalObj, 
 _swigt__p_data1_tagset, 
 _swigt__p_data1_tag, 
-_swigt__p_Z_ExplainRecord, 
 _swigt__p_ZebraRetrievalRecord, 
 _swigt__p_RetrievalRecord, 
 _swigt__p_NMEM, 
+_swigt__p_Z_ExplainRecord, 
 _swigt__p_data1_marctab, 
 _swigt__p_Z_BriefBib, 
 _swigt__p_ScanEntry, 
@@ -7237,6 +7603,16 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::ScanEntry_term_get", _wrap_ScanEntry_term_get},
 {"IDZebrac::new_ScanEntry", _wrap_new_ScanEntry},
 {"IDZebrac::delete_ScanEntry", _wrap_delete_ScanEntry},
+{"IDZebrac::ScanObj_num_entries_set", _wrap_ScanObj_num_entries_set},
+{"IDZebrac::ScanObj_num_entries_get", _wrap_ScanObj_num_entries_get},
+{"IDZebrac::ScanObj_position_set", _wrap_ScanObj_position_set},
+{"IDZebrac::ScanObj_position_get", _wrap_ScanObj_position_get},
+{"IDZebrac::ScanObj_is_partial_set", _wrap_ScanObj_is_partial_set},
+{"IDZebrac::ScanObj_is_partial_get", _wrap_ScanObj_is_partial_get},
+{"IDZebrac::ScanObj_entries_set", _wrap_ScanObj_entries_set},
+{"IDZebrac::ScanObj_entries_get", _wrap_ScanObj_entries_get},
+{"IDZebrac::new_ScanObj", _wrap_new_ScanObj},
+{"IDZebrac::delete_ScanObj", _wrap_delete_ScanObj},
 {"IDZebrac::DESTROY", _wrap_DESTROY},
 {"IDZebrac::logLevel", _wrap_logLevel},
 {"IDZebrac::logFile", _wrap_logFile},
@@ -7275,6 +7651,8 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::records_retrieve", _wrap_records_retrieve},
 {"IDZebrac::record_retrieve", _wrap_record_retrieve},
 {"IDZebrac::sort", _wrap_sort},
+{"IDZebrac::scan_PQF", _wrap_scan_PQF},
+{"IDZebrac::getScanEntry", _wrap_getScanEntry},
 {"IDZebrac::nmem_create", _wrap_nmem_create},
 {"IDZebrac::nmem_destroy", _wrap_nmem_destroy},
 {"IDZebrac::data1_create", _wrap_data1_create},
@@ -7423,6 +7801,7 @@ XS(SWIG_init) {
     SWIG_TypeClientData(SWIGTYPE_p_RetrievalObj, (void*) "IDZebra::RetrievalObj");
     SWIG_TypeClientData(SWIGTYPE_p_RetrievalRecord, (void*) "IDZebra::RetrievalRecord");
     SWIG_TypeClientData(SWIGTYPE_p_ScanEntry, (void*) "IDZebra::ScanEntry");
+    SWIG_TypeClientData(SWIGTYPE_p_ScanObj, (void*) "IDZebra::ScanObj");
     ST(0) = &PL_sv_yes;
     XSRETURN(1);
 }

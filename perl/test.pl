@@ -59,6 +59,9 @@ $sess->end_trans;
 #$sess->end_trans;
 
 $sess->select_databases('Default');
+
+goto scan;
+
 $sess->begin_read;
 #print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1'), "\n";
 #print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1'), "\n";
@@ -82,10 +85,30 @@ my @recs1 = $rs1->records(from=>1,to=>2);
 
 $sess->end_read;
 
-#$sess->commit;
+
 #IDZebra::describe_recordGroup($rep->{rg});
 #$rep->update;
 #    print "HOW did we got back???\n";
+
+scan:
+
+my $so = IDZebra::ScanObj->new;
+$so->{position} = 1;
+$so->{num_entries} = 20;
+$so->{is_partial} = 0;
+#print STDERR "Pos:$so->{position}\nNum:$so->{num_entries}\nPartial:$so->{is_partial}\n";
+
+IDZebra::scan_PQF($sess->{zh}, $so,
+		  $sess->{odr_output}, 
+		  "\@attr 1=4 a");
+
+#print STDERR "Pos:$so->{position}\nNum:$so->{num_entries}\nPartial:$so->{is_partial}\n";
+
+for ($i=1; $i<=$so->{num_entries}; $i++) {
+    my $se = IDZebra::getScanEntry($so, $i);
+    print STDERR "$se->{term} ($se->{occurrences})\n";
+}
+
 $sess->close;
 $service->stop;
 			  

@@ -39,4 +39,11 @@ typedef struct {
     char *term;          /* scan term string */
 } ScanEntry;
 
+typedef struct {
+  int num_entries;
+  int position;
+  int is_partial;
+  ScanEntry *entries;
+} ScanObj;
+
 #endif

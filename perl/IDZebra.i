@@ -1,4 +1,5 @@
 %module "IDZebra"
+%include typemaps.i                       // Load the typemaps librayr
 
 %{
 #include "zebraapi.h"
@@ -46,29 +47,27 @@
 
 /* Creates a new Perl array and places a NULL-terminated char ** into it */
 %typemap(out) char ** {
-	AV *myav;
-	SV **svs;
-	int i = 0,len = 0;
-	/* Figure out how many elements we have */
-	while ($1[len])
-	   len++;
-	svs = (SV **) malloc(len*sizeof(SV *));
-	for (i = 0; i < len ; i++) {
-	    svs[i] = sv_newmortal();
-	    sv_setpv((SV*)svs[i],$1[i]);
-	};
-	myav =	av_make(len,svs);
-	free(svs);
+        AV *myav;
+        SV **svs;
+        int i = 0,len = 0;
+        /* Figure out how many elements we have */
+        while ($1[len])
+           len++;
+        svs = (SV **) malloc(len*sizeof(SV *));
+        for (i = 0; i < len ; i++) {
+            svs[i] = sv_newmortal();
+            sv_setpv((SV*)svs[i],$1[i]);
+        };
+        myav =  av_make(len,svs);
+        free(svs);
         $result = newRV((SV*)myav);
         sv_2mortal($result);
         argvi++;
 }
 
-
 /* == Structures for shadow classes  ======================================= */
 
 %include "zebra_perl.h"
-
 
 /* == Module initialization and cleanup (zebra_perl.c) ===================== */
 
@@ -271,15 +270,28 @@ int sort (ZebraHandle zh,
 	  const char *output_setname,
 	  const char **input_setnames
 	  ); 
-/*
 
-void zebra_sort (ZebraHandle zh, ODR stream,
-		 int num_input_setnames,
-		 const char **input_setnames,
-		 const char *output_setname,
-		 Z_SortKeySpecList *sort_sequence,
-		 int *sort_status);
+/* == Scan ================================================================= */
+/*
+%apply int *INOUT {int *position};
+%apply int *INOUT {int *num_entries};
+%apply int *INOUT {int *is_partial};
+
+%name(scan_PQF) 
+void zebra_scan_PQF (ZebraHandle zh,
+		     ODR stream,
+		     const char *pqf_query,
+		     int *position,
+		     int *num_entries,
+		     int *is_partial);
 */
+%name(scan_PQF) 
+void zebra_scan_PQF (ZebraHandle zh,
+		     ScanObj *so,
+		     ODR stream,
+		     const char *pqf_query);
+
+ScanEntry *getScanEntry(ScanObj *so, int pos);
 
 /* Admin functionality */
 /*
@@ -287,14 +299,6 @@ void zebra_sort (ZebraHandle zh, ODR stream,
 %name(admin_shutdown)      void zebra_admin_shutdown (ZebraHandle zh);
 */
 
-/* Browse 
-void zebra_scan (ZebraHandle zh, ODR stream,
-		 Z_AttributesPlusTerm *zapt,
-		 oid_value attributeset,
-		 int *position, int *num_entries,
-		 ZebraScanEntry **list,
-		 int *is_partial);
-*/
 
 /* Delete Result Set(s) */
 /*
