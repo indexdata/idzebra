@@ -4,15 +4,24 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.h,v $
- * Revision 1.1  1994-08-17 15:34:14  adam
- * Initial version of resource manager.
+ * Revision 1.2  1994-08-18 08:22:26  adam
+ * Res.h modified. xmalloc now declares xstrdup.
  *
  */
 
 #ifndef RES_H
 #define RES_H
 
-const char *res_get (const char *name);
-const char *res_put (const char *name, const char *value);
-int res_write (void);
+struct res_entry {
+    char *name;
+    char *value;
+    struct res_entry *next;
+};
+
+typedef struct res_struct {
+    struct res_entry *first, *last;
+    char *name;
+    int  init;
+} *Res;
+
 #endif
