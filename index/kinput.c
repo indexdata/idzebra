@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.29  1998-06-11 15:41:39  adam
+ * Revision 1.30  1998-10-28 10:53:57  adam
+ * Added type cast to prevent warning.
+ *
+ * Revision 1.29  1998/06/11 15:41:39  adam
  * Minor changes.
  *
  * Revision 1.28  1998/03/05 08:45:12  adam
@@ -515,7 +518,7 @@ int heap_inp (struct heap_info *hi)
                 break;
             memcpy (key_buf + key_buf_ptr, next_key, KEY_SIZE);
             key_buf_ptr += KEY_SIZE;
-            if (key_buf_ptr+KEY_SIZE >= key_buf_size)
+            if (key_buf_ptr+(int) KEY_SIZE >= key_buf_size)
             {
                 char *new_key_buf;
                 new_key_buf = xmalloc (key_buf_size + INP_BUF_ADD);
@@ -527,7 +530,7 @@ int heap_inp (struct heap_info *hi)
         }
         no_diffs++;
         nmemb = key_buf_ptr / KEY_SIZE;
-        assert (nmemb*KEY_SIZE == key_buf_ptr);
+        assert (nmemb * (int) KEY_SIZE == key_buf_ptr);
         if ((info = dict_lookup (hi->dict, cur_name)))
         {
             ISAM_P isam_p, isam_p2;
@@ -578,8 +581,8 @@ void progressFunc (struct key_file *keyp, void *info)
     if (now >= p->lastTime+10)
     {
         p->lastTime = now;
-        remaining = (now - p->startTime)*
-            ((double) p->totalBytes/p->totalOffset - 1.0);
+        remaining = (time_t) ((now - p->startTime)*
+            ((double) p->totalBytes/p->totalOffset - 1.0));
         if (remaining <= 130)
             logf (LOG_LOG, "Merge %2.1f%% completed; %ld seconds remaining",
                  (100.0*p->totalOffset) / p->totalBytes, (long) remaining);
