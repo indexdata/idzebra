@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.23 1996-03-26 15:59:46 adam Exp $
+  $Id: zebra.sgml,v 1.24 1996-04-17 09:21:29 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.23 $
+<date>$Revision: 1.24 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -191,25 +191,13 @@ contact info at the end of this file.
 <sect>Compiling the software
 
 <p>
-Zebra uses the YAZ package to implement Z39.50, so you
-have to compile YAZ before going further. Specifically, Zebra uses
-the YAZ header files in <tt>yaz/include/..</tt> and its public library
-<tt>yaz/lib/libyaz.a</tt>.
-
-As with YAZ, an ANSI C compiler is required in order to compile the Zebra
+An ANSI C compiler is required to compile the Zebra
 server system &mdash; <tt/gcc/ works fine if your own system doesn't
 provide an adequate compiler.
 
-Unpack the Zebra software. You might put Zebra in the same directory level
-as YAZ, for example if YAZ is placed in ..<tt>/src/yaz-xxx</tt>, then
-Zebra is placed in ..<tt>/src/zebra-yyy</tt>.
-
-Edit the top-level <tt>Makefile</tt> in the Zebra directory in which
-you specify the location of YAZ by setting make variables.
-The <tt>OSILIB</tt> should be empty if YAZ wasn't compiled with
-MOSI support. Some systems, such as Solaris, have separate socket
-libraries and for those systems you need to specify the
-<tt>NETLIB</tt> variable.
+Unpack the distribution archive. In some cases, you may want to edit
+the top-level <tt/Makefile/, eg. to select a different C compiler, or
+to specify machine-specific libraries in the <bf/NETLIB/ variable.
 
 When you are done editing the <tt>Makefile</tt> type:
 <tscreen><verb>
@@ -223,8 +211,7 @@ If successful, two executables have been created in the sub-directory
 <tag><tt>zebraidx</tt></tag> The administrative tool for the search index.
 </descrip>
 
-<sect>Quick Start
-
+<sect>Quick Start 
 <p>
 In this section, we will test the system by indexing a small set of sample
 GILS records that are included with the software distribution. Go to the
