@@ -11,7 +11,9 @@
 
 #include "index.h"
 #include "recindex.h"
+#if ZMBOL
 #include "../isamc/isamd-p.h"
+#endif
 
 struct inv_stat_info {
     ISAMS isams;
@@ -321,7 +323,10 @@ void inv_prstat (BFiles bfs)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.19  1999-11-30 13:48:03  adam
+ * Revision 1.20  1999-12-01 13:30:30  adam
+ * Updated configure for Zmbol/Zebra dependent settings.
+ *
+ * Revision 1.19  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.18  1999/10/06 11:46:36  heikki

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.14  1999-11-30 13:48:03  adam
+ * Revision 1.15  1999-12-01 13:30:30  adam
+ * Updated configure for Zmbol/Zebra dependent settings.
+ *
+ * Revision 1.14  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.13  1999/02/02 14:50:48  adam
@@ -53,9 +56,5 @@
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 1999-11-30 13:48:03 $"
-#endif
-
-#ifndef ZMBOL
-#define ZMBOL 1
+#define ZEBRADATE "$Date: 1999-12-01 13:30:30 $"
 #endif

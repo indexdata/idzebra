@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1999, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.7 1999-11-30 13:48:03 adam Exp $
+# $Id: Makefile.in,v 1.8 1999-12-01 13:30:30 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -40,7 +40,7 @@ INCDIR=$(prefix)/include
 ZEBRADIR=$(prefix)/lib/zebra
 ZEBRATAB=$(prefix)/lib/zebra/tab
 
-SUBDIR=util bfile dfa dict isams isamc isam rset recctrl index
+SUBDIR=@SUBDIR@
 
 all:
 	for i in $(SUBDIR); do cd $$i; if $(MAKE) OSILIB="$(OSILIB)" YAZLIB="$(YAZLIB)" YAZINC="$(YAZINC)" RANLIB="$(RANLIB)" CDEFS="$(CDEFS)" LIBS="$(LIBS)" CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done
