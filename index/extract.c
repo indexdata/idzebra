@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-2000, Index Data 
+ * Copyright (C) 1994-2001, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.106  2000-12-05 12:22:53  adam
+ * Revision 1.107  2001-05-28 13:58:48  adam
+ * Call flushSortKeys when record is skipped to fix bad re-use of
+ * sort keys to whatever next record that comes in.
+ *
+ * Revision 1.106  2000/12/05 12:22:53  adam
  * Termlist source implemented (so that we can index values of XML/SGML
  * attributes).
  *
@@ -929,8 +933,11 @@ static void flushSortKeys (SYSNO sysno, int cmd)
     while (sk)
     {
 	struct sortKey *sk_next = sk->next;
-	sortIdx_type (sortIdx, sk->attrUse);
-	sortIdx_add (sortIdx, sk->string, sk->length);
+	if (cmd >= 0)
+	{
+	    sortIdx_type (sortIdx, sk->attrUse);
+	    sortIdx_add (sortIdx, sk->string, sk->length);
+	}
 	xfree (sk->string);
 	xfree (sk);
 	sk = sk_next;
@@ -1512,6 +1519,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 	{
 	    logf (LOG_LOG, "skipped %s %s " PRINTF_OFF_T, rGroup->recordType,
 		  fname, recordOffset);
+	    flushSortKeys (*sysno, -1);
 	    rec_rm (&rec);
 	    logRecord (0);
 	    return 1;
