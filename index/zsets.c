@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.55 2004-08-10 08:19:15 heikki Exp $
+/* $Id: zsets.c,v 1.56 2004-08-19 14:47:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -733,6 +733,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     double cur,tot; 
     zint est=-2; /* -2 not done, -1 can't do, >0 actual estimate*/
     zint esthits;
+    double ratio;
 
     sort_info = zebraSet->sort_info;
     sort_info->num_entries = 0;
@@ -781,23 +782,22 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 	    (*rc->add) (handle, this_sys, term_index);
         if ( (est==-2) && (zebraSet->hits==esthits))
         { /* time to estimate the hits */
-            double f;
             rset_pos(rset,rfd,&cur,&tot); 
             if (tot>0) {
-                f=cur/tot;
-                est=(zint)(0.5+zebraSet->hits/f);
+                ratio=cur/tot;
+                est=(zint)(0.5+zebraSet->hits/ratio);
                 logf(LOG_LOG, "Estimating hits (%s) "
                               "%0.1f->"ZINT_FORMAT
                               "; %0.1f->"ZINT_FORMAT,
                               rset->control->desc,
                               cur, zebraSet->hits,
                               tot,est);
-		i=0; /* round to 3 significant digits */
-		while (est>1000) {
+                i=0; /* round to 3 significant digits */
+                while (est>1000) {
                     est/=10;
-		    i++;
-		}
-		while (i--) est*=10;
+                    i++;
+                }
+                while (i--) est*=10;
                 zebraSet->hits=est;
             }
         }
@@ -811,11 +811,17 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     rset_close (rset, rfd);
 
     for (i = 0; i < rset->no_rset_terms; i++)
-	yaz_log (LOG_LOG, "term=\"%s\" nn=" ZINT_FORMAT " type=%s count=" ZINT_FORMAT,
+    {
+        if (est>0)
+            rset->rset_terms[i]->count = 
+                est=(zint)(rset->rset_terms[i]->count/ratio);
+        yaz_log (LOG_LOG, "term=\"%s\" nn=" ZINT_FORMAT 
+                    " type=%s count=" ZINT_FORMAT,
                  rset->rset_terms[i]->name,
                  rset->rset_terms[i]->nn,
                  rset->rset_terms[i]->flags,
                  rset->rset_terms[i]->count);
+    }
     
     yaz_log (LOG_LOG, ZINT_FORMAT " keys, "ZINT_FORMAT" distinct sysnos", 
                     kno, zebraSet->hits);
