@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.9 2002-10-30 13:59:42 adam Exp $
+## $Id: Makefile.am,v 1.10 2002-11-15 23:00:59 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -25,7 +25,11 @@ dist-hook:
 	cp $(srcdir)/debian/rules $(distdir)/debian
 	cp $(srcdir)/debian/postinst $(distdir)/debian
 	cp $(srcdir)/debian/copyright $(distdir)/debian
-
+	mkdir $(distdir)/perl
+	for f in `cat $(srcdir)/perl/MANIFEST`; do \
+		(pdir=`cd $(distdir)/perl && pwd`; \
+		cd $(srcdir)/perl;cp --parents $$f $$pdir); \
+	done
 
 rpm: $(PACKAGE)-$(VERSION).tar.gz
 	cp $(PACKAGE)-$(VERSION).tar.gz /usr/src/redhat/SOURCES
