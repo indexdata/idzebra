@@ -3,7 +3,11 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.36  2000-09-06 08:59:36  adam
+ * Revision 1.37  2000-10-17 12:37:09  adam
+ * Fixed notification of live-updates. Fixed minor problem with mf_init
+ * where it didn't handle shadow area file names correctly.
+ *
+ * Revision 1.36  2000/09/06 08:59:36  adam
  * Using read-only (for now) for server.
  *
  * Revision 1.35  2000/07/07 12:49:20  adam
@@ -162,8 +166,13 @@ static void extract_index (ZebraHandle zh);
 
 static void zebra_register_unlock (ZebraHandle zh);
 
+static int zebra_register_activate (ZebraService zh, int rw);
+static int zebra_register_deactivate (ZebraService zh);
+
 static int zebra_register_lock (ZebraHandle zh)
 {
+    time_t lastChange;
+    int state;
     zh->errCode = 0;
     zh->errString = 0;
     if (!zh->service->active)
@@ -171,14 +180,50 @@ static int zebra_register_lock (ZebraHandle zh)
 	zh->errCode = 1019;
 	return 1;
     }
+    
 #if HAVE_SYS_TIMES_H
     times (&zh->tms1);
 #endif
+
+    state = zebra_server_lock_get_state(zh->service, &lastChange);
+
+    zebra_server_lock (zh->service, state);
+
+    switch (state)
+    {
+    case 'c':
+        state = 1;
+        break;
+    default:
+        state = 0;
+    }
+    if (zh->service->registerState == state)
+    {
+        if (zh->service->registerChange >= lastChange)
+            return 0;
+        logf (LOG_LOG, "Register completely updated since last access");
+    }
+    else if (zh->service->registerState == -1)
+        logf (LOG_LOG, "Reading register using state %d pid=%ld", state,
+              (long) getpid());
+    else
+        logf (LOG_LOG, "Register has changed state from %d to %d",
+              zh->service->registerState, state);
+    zh->service->registerChange = lastChange;
+
+    zebra_register_deactivate (zh->service);
+
+    zh->service->registerState = state;
+
+    zebra_register_activate (zh->service, 0);
     return 0;
 }
 
+
 static void zebra_register_unlock (ZebraHandle zh)
 {
+    if (zh->service->registerState != -1)
+        zebra_server_unlock (zh->service, zh->service->registerState);
 #if HAVE_SYS_TIMES_H
     times (&zh->tms2);
     logf (LOG_LOG, "user/system: %ld/%ld",
@@ -214,13 +259,9 @@ ZebraHandle zebra_open (ZebraService zs)
 
     zebra_mutex_cond_unlock (&zs->session_lock);
 
-    logf(LOG_APP,"CONNECT:");
-
     return zh;
 }
 
-static int zebra_register_activate (ZebraService zh, int rw);
-static int zebra_register_deactivate (ZebraService zh);
 
 ZebraService zebra_start (const char *configName)
 {
@@ -231,23 +272,29 @@ ZebraService zebra_start (const char *configName)
     zh->configName = xstrdup(configName);
     zh->sessions = 0;
     zh->stop_flag = 0;
-    zh->active = 0;
+    zh->active = 1;
+
+    zh->registerState = -1;
+    zh->registerChange = 0;
+
+    if (!(zh->res = res_open (zh->configName)))
+    {
+	logf (LOG_WARN, "Failed to read resources `%s'", zh->configName);
+	return zh;
+    }
+    zebra_chdir (zh);
+    zebra_server_lock_init (zh);
     zebra_mutex_cond_init (&zh->session_lock);
-    zebra_register_activate (zh, 0);
     return zh;
 }
 
 static int zebra_register_activate (ZebraService zh, int rw)
 {
-    if (zh->active)
+    if (zh->active > 1)
 	return 0;
-    yaz_log (LOG_LOG, "zebra_register_activate");
-    if (!(zh->res = res_open (zh->configName)))
-    {
-	logf (LOG_WARN, "Failed to read resources `%s'", zh->configName);
-	return -1;
-    }
-    zebra_chdir (zh);
+    yaz_log (LOG_LOG, "zebra_register_activate shadow=%s",
+	     zh->registerState ? "yes" : "no");
+
     zh->dh = data1_create ();
     if (!zh->dh)
         return -1;
@@ -258,9 +305,8 @@ static int zebra_register_activate (ZebraService zh, int rw)
         return -1;
     }
     bf_lockDir (zh->bfs, res_get (zh->res, "lockDir"));
+    bf_cache (zh->bfs, zh->registerState ? res_get (zh->res, "shadow") : NULL);
     data1_set_tabpath (zh->dh, res_get(zh->res, "profilePath"));
-    zh->registerState = -1;  /* trigger open of registers! */
-    zh->registerChange = 0;
     zh->recTypes = recTypes_init (zh->dh);
     recTypes_default_handlers (zh->recTypes);
 
@@ -357,20 +403,23 @@ static int zebra_register_activate (ZebraService zh, int rw)
 	logf (LOG_WARN, "Cannot obtain EXPLAIN information");
 	return -1;
     }
-    zh->active = 1;
+    zh->active = 2;
     yaz_log (LOG_LOG, "zebra_register_activate ok");
     return 0;
 }
 
 void zebra_admin_shutdown (ZebraHandle zh)
 {
+    zebra_register_lock (zh);
     zebraExplain_flush (zh->service->zei, 1, zh);
     extract_index (zh);
 
+    zebra_register_unlock (zh);
     zebra_mutex_cond_lock (&zh->service->session_lock);
     zh->service->stop_flag = 1;
     if (!zh->service->sessions)
 	zebra_register_deactivate(zh->service);
+    zh->service->active = 0;
     zebra_mutex_cond_unlock (&zh->service->session_lock);
 }
 
@@ -380,14 +429,14 @@ void zebra_admin_start (ZebraHandle zh)
     zh->errCode = 0;
     zebra_mutex_cond_lock (&zs->session_lock);
     if (!zs->stop_flag)
-	zebra_register_activate(zs, 0);
+	zh->service->active = 1;
     zebra_mutex_cond_unlock (&zs->session_lock);
 }
 
 static int zebra_register_deactivate (ZebraService zh)
 {
     zh->stop_flag = 0;
-    if (!zh->active)
+    if (zh->active <= 1)
 	return 0;
     yaz_log(LOG_LOG, "zebra_register_deactivate");
     zebra_chdir (zh);
@@ -416,8 +465,7 @@ static int zebra_register_deactivate (ZebraService zh)
 
     if (zh->passwd_db)
 	passwd_db_close (zh->passwd_db);
-    res_close (zh->res);
-    zh->active = 0;
+    zh->active = 1;
     return 0;
 }
 
@@ -432,6 +480,7 @@ void zebra_stop(ZebraService zh)
     zebra_mutex_cond_destroy (&zh->session_lock);
 
     zebra_register_deactivate(zh);
+    res_close (zh->res);
     xfree (zh->configName);
     xfree (zh);
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.77  2000-09-05 14:04:05  adam
+ * Revision 1.78  2000-10-17 12:37:09  adam
+ * Fixed notification of live-updates. Fixed minor problem with mf_init
+ * where it didn't handle shadow area file names correctly.
+ *
+ * Revision 1.77  2000/09/05 14:04:05  adam
  * Updates for prefix 'yaz_' for YAZ log functions.
  *
  * Revision 1.76  2000/03/20 19:08:36  adam
@@ -423,6 +427,8 @@ int main (int argc, char **argv)
 		    zebraIndexUnlock();	
 		    rval = res_get (common_resource, "shadow");
 		    zebraIndexLock (rGroupDef.bfs, 0, rval);
+		    if (rval && *rval)
+			bf_cache (rGroupDef.bfs, rval);
 		    zebraIndexLockMsg ("w");
 		    bf_reset (rGroupDef.bfs);
 		}
@@ -454,7 +460,7 @@ int main (int argc, char **argv)
                         bf_commitClean (rGroupDef.bfs, rval);
                     }
                     else
-                        logf (LOG_LOG, "cothing to commit");
+                        logf (LOG_LOG, "nothing to commit");
                 }
                 else if (!strcmp (arg, "clean"))
                 {

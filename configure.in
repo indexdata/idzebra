@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2000
-dnl $Id: configure.in,v 1.23 2000-10-11 12:31:27 adam Exp $
+dnl $Id: configure.in,v 1.24 2000-10-17 12:37:09 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -8,25 +8,11 @@ if test -r ${srcdir}/LICENSE.zmbol; then
 	PROGPREFIX=zmbol
 	AC_DEFINE(ZMBOL,1)
 	AM_INIT_AUTOMAKE(zmbol,1.1)
-        SUBLIBS="../rset/librset.a \
- ../dict/libdict.a \
- ../isamb/libisamb.a \
- ../isams/libisams.a \
- ../isam/libisam.a \
- ../isamc/libisamc.a \
- ../recctrl/librecctrl.a \
- ../bfile/libbfile.a \
- ../dfa/libdfa.a \
- ../util/libutil.a"
 else
 	AC_MSG_RESULT([Zebra])
 	PROGPREFIX=zebra
 	AC_DEFINE(ZMBOL,0)
 	AM_INIT_AUTOMAKE(zebra,1.1)
-        SUBLIBS="../rset/librset.a ../dict/libdict.a ../isams/libisams.a \
-	../recctrl/librecctrl.a  \
-	../bfile/libbfile.a ../dfa/libdfa.a \
- 	../util/libutil.a"
 	if test ! -r ${srcdir}/isam; then
 		mkdir ${srcdir}/isam
 		touch ${srcdir}/isam/Makefile.in
@@ -42,7 +28,6 @@ else
 fi
 AM_CONDITIONAL(ISZMBOL,test $PACKAGE = zmbol)
 dnl ------ Substitutions
-AC_SUBST(SUBLIBS)
 AC_SUBST(DEFS)
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)

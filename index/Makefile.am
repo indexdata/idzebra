@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.3 2000-05-02 11:26:13 adam Exp $
+## $Id: Makefile.am,v 1.4 2000-10-17 12:37:09 adam Exp $
 
 noinst_PROGRAMS = apitest
 
@@ -33,4 +33,15 @@ apitest_SOURCES = apitest.c kcompare.c zrpn.c zsets.c attribute.c recindex.c \
 
 INCLUDES = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)
 
-LDADD = @SUBLIBS@ $(YAZLIB) $(TCL_LIB)
+if ISZMBOL
+zmbol_libs = ../isam/libisam.a ../isamc/libisamc.a ../isamb/libisamb.a
+else
+zmbol_libs =
+endif
+
+LDADD = \
+ ../rset/librset.a ../dict/libdict.a  ../isams/libisams.a \
+ $(zmbol_libs) \
+ ../recctrl/librecctrl.a ../bfile/libbfile.a ../dfa/libdfa.a \
+ ../util/libutil.a \
+ $(YAZLIB) $(TCL_LIB)
