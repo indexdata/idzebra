@@ -3,18 +3,21 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.8 1999-08-07 11:30:59 heikki Exp $
+ * $Id: merge-d.c,v 1.9 1999-08-17 19:46:53 heikki Exp $
  *
  * todo
- *  - merge when needed
+ *  - Input filter: Eliminate del-ins pairs, tell if only one entry (or none)
  *  - single-entry optimizing
  *  - study and optimize block sizes (later)
+ *  - Clean up the different ways diffs are handled in writing and reading
  *
  * bugs
- *  not yet ready
+ * - memory leak somewhere. 
+ *    - Some pp_opens do not get closed. 
+ *    - Diffinfo's get left behind.
  *
  * caveat
- *  There is aconfusion about the block addresses. cat or type is the category,
+ *  There is a confusion about the block addresses. cat or type is the category,
  *  pos or block is the block number. pp structures keep these two separate,
  *  and combine when saving the pp. The next pointer in the pp structure is
  *  also a combined address, but needs to be combined every time it is needed,
@@ -82,7 +85,7 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
    int i=1;  /* [0] is used for the main data */
    int diffsz= maxinfos * sizeof(struct ISAMD_DIFF_s);
 
-   pp->diffinfo = xmalloc( diffsz );
+   pp->diffinfo = xmalloc( diffsz );  /*!!!*/ /* does not always get freed */
    memset(pp->diffinfo,'\0',diffsz);
    if (pp->is->method->debug > 1)   //4
      logf(LOG_LOG,"isamd_getDiffInfo: %d (%d:%d), ix=%d mx=%d",
@@ -171,10 +174,17 @@ static void loadDiffs(ISAMD_PP pp)
 void isamd_free_diffs(ISAMD_PP pp)
 {
   int i;
+  if (pp->is->method->debug > 4)
+     logf(LOG_LOG,"isamd_free_diffs: pp=%p di=%p", pp, pp->diffinfo);
   if (!pp->diffinfo) 
     return;
-  for (i=0;pp->diffinfo[i].decodeData;i++) 
-      (*pp->is->method->code_stop)(ISAMD_DECODE,pp->diffinfo[i].decodeData);    
+  for (i=1;pp->diffinfo[i].decodeData;i++) 
+  {
+      if (pp->is->method->debug > 4)
+         logf(LOG_LOG,"isamd_free_diffs [%d]=%p",i, 
+                       pp->diffinfo[i].decodeData);
+      (*pp->is->method->code_stop)(ISAMD_DECODE,pp->diffinfo[i].decodeData);
+  } 
   xfree(pp->diffinfo);
   if (pp->diffbuf != pp->buf)
     xfree (pp->diffbuf);  
@@ -568,6 +578,7 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
             i_mode, hexdump(i_item,i_ptr-i_item,hexbuff) );
       
    } /* i_more */
+   (*is->method->code_stop)(ISAMD_ENCODE, encoder_data);
 
    return save_both_pps( firstpp, pp );
 
@@ -596,11 +607,10 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
   /* set up diffs as they should be for reading */
   readpp->offset= ISAMD_BLOCK_OFFSET_1; 
   
-//  if (*p_pp == *p_firstpp)  /* not the way to check it !! */
   if ( (*p_firstpp)->diffs & 1 )
   { /* separate diff block in *p_pp */
      killblk = readpp->diffs/2;
-     diffidx = readpp->is->method->filecat[readpp->cat].bsize;
+     diffidx /*size*/ = readpp->is->method->filecat[readpp->cat].bsize; 
      readpp->diffbuf= xmalloc( diffidx); /* copy diffs to where read wants*/
      memcpy( readpp->diffbuf, &((*p_pp)->buf[0]), diffidx);
      diffidx = ISAMD_BLOCK_OFFSET_N;
@@ -623,10 +633,14 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
   }
 
   getDiffInfo(readpp,diffidx);
+  if (readpp->is->method->debug >3) 
+         logf(LOG_LOG,"isamd_merge: diffinfo=%p", readpp->diffinfo);
+  
 
   if (killblk) 
-  {  /* we had a separate diff block, release it, we have the data */
+  {  /* we had a separate diff block, release it, we have copied the data */
      isamd_release_block(readpp->is, readpp->cat, killblk);
+     isamd_pp_close (*p_pp);
      if (readpp->is->method->debug >1)  // 3 !!! 
          logf(LOG_LOG,"isamd_merge: released diff block %d=%d:%d",
               isamd_addr(killblk,readpp->cat), readpp->cat, killblk );
@@ -699,6 +713,14 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
               isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos);
     isamd_pp_close(pp);
   }
+
+  if (readpp->is->method->debug >3) 
+        logf(LOG_LOG,"isamd_merge: closing readpp %d=%d:%d di=%p",
+              isamd_addr(readpp->pos,readpp->cat), readpp->cat, readpp->pos,
+              readpp->diffinfo);
+  isamd_pp_close(readpp); /* pos is 0 by now, at eof. close works anyway */
+
+  (*firstpp->is->method->code_stop)(ISAMD_ENCODE, encoder_data);
   
   *p_firstpp = firstpp; 
 
@@ -836,6 +858,8 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
    while ( (difflenidx-diffidx<=sizeof(int)) && (difflenidx<maxsize))
      pp->buf[difflenidx++]='\0';
 
+
+  (*firstpp->is->method->code_stop)(ISAMD_ENCODE, encoder_data);
    return save_both_pps( firstpp, pp );
 
 } /* append_diffs */
@@ -855,13 +879,26 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
    else
       retval = append_diffs(is,ipos,data);
 
+   if (0)  /*!*/ 
+   {
+     void *p1=xmalloc(100);
+     void *p2=xmalloc(100);
+     void *p3=xmalloc(100);
+     logf(LOG_LOG,"Traversing xmalloc stuff. p1=%p p2=%p p3=%p",p1,p2,p3);
+     xmalloc_trav("end of append"); /*!*/
+     assert(!"foo");
+   }
+   
    return retval;
 } /*  isamd_append */
 
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.8  1999-08-07 11:30:59  heikki
+ * Revision 1.9  1999-08-17 19:46:53  heikki
+ * Fixed a memory leak
+ *
+ * Revision 1.8  1999/08/07 11:30:59  heikki
  * Bug fixing (still a mem leak somewhere)
  *
  * Revision 1.7  1999/08/04 14:21:18  heikki
