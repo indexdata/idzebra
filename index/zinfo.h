@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.3  1998-03-05 08:45:13  adam
+ * Revision 1.4  1998-05-20 10:12:21  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.3  1998/03/05 08:45:13  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -23,16 +27,24 @@
 
 typedef struct zebraExplainInfo *ZebraExplainInfo;
 typedef struct zebDatabaseInfo ZebDatabaseInfo;
-ZebraExplainInfo zebraExplain_open (Records records, data1_handle,
-				    int writeFlag);
-void zebraExplain_close (ZebraExplainInfo zei, int writeFlag);
+ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
+				    Res res,
+				    int writeFlag,
+				    void *updateHandle,
+				    int (*updateFunc)(void *handle,
+						      Record drec,
+						      data1_node *n));
+void zebraExplain_close (ZebraExplainInfo zei, int writeFlag,
+			 int (*updateH)(Record drec, data1_node *n));
 int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database);
 int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database);
 int zebraExplain_lookupSU (ZebraExplainInfo zei, int set, int use);
 int zebraExplain_addSU (ZebraExplainInfo zei, int set, int use);
+void zebraExplain_addSchema (ZebraExplainInfo zei, Odr_oid *oid);
 void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_recordBytesIncrement (ZebraExplainInfo zei, int adjust_num);
 int zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num);
+void zebraExplain_loadAttsets (data1_handle dh, Res res);
 
 typedef struct {
     int recordSize;

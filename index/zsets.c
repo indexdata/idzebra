@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.15  1998-03-05 08:45:14  adam
+ * Revision 1.16  1998-05-20 10:12:24  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.15  1998/03/05 08:45:14  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -88,6 +92,7 @@ struct zset_sort_entry {
 struct zset_sort_info {
     int max_entries;
     int num_entries;
+    struct zset_sort_entry *all_entries;
     struct zset_sort_entry **entries;
 };
 
@@ -123,8 +128,10 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov,
     s->sort_info->max_entries = 1000;
     s->sort_info->entries = xmalloc (sizeof(*s->sort_info->entries) *
 				     s->sort_info->max_entries);
+    s->sort_info->all_entries = xmalloc (sizeof(*s->sort_info->all_entries) *
+					 s->sort_info->max_entries);
     for (i = 0; i < s->sort_info->max_entries; i++)
-	s->sort_info->entries[i] = xmalloc (sizeof(**s->sort_info->entries));
+	s->sort_info->entries[i] = s->sort_info->all_entries + i;
     resultSetRank (zh, s->sort_info, rset, hits);
     return s;
 }
@@ -146,11 +153,10 @@ void resultSetDestroy (ZebraHandle zh)
 
     for (s = zh->sets; s; s = s1)
     {
-	int i;
         s1 = s->next;
 
-	for (i = 0; i < s->sort_info->max_entries; i++)
-	    xfree (s->sort_info->entries[i]);
+	xfree (s->sort_info->all_entries);
+	xfree (s->sort_info->entries);
 	xfree (s->sort_info);
 
         rset_delete (s->rset);

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.14  1998-03-19 10:04:35  adam
+ * Revision 1.15  1998-05-20 10:12:25  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.14  1998/03/19 10:04:35  adam
  * Minor changes.
  *
  * Revision 1.13  1998/03/18 09:23:55  adam
@@ -248,6 +252,7 @@ int isc_close (ISAMC is)
     }
     xfree (is->files);
     xfree (is->merge_buf);
+    xfree (is->method);
     xfree (is);
     return 0;
 }

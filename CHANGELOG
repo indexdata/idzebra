@@ -1,3 +1,13 @@
+Modified Zebra so that it works with ASN.1 compiled code for YAZ.
+
+Implemented EXPLAIN database maintenance. Zebra automatically
+generate - and update TargetInfo, DatabaseInfo, AttributeSetInfo
+and AttributeDetails records at this stage. The records may
+be transferred as GRS-1, SUTRS and Explain.
+
+Fixed register spec so that colon isn't treated as size separator
+unless followed by [0-9+-] in order to allow DOS drive specifications.
+
 Fixed two bugs in ISAMC system.
 
 Changed the way Zebra keeps its maintenance information. Records

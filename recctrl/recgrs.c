@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.19  1998-03-11 11:19:05  adam
+ * Revision 1.20  1998-05-20 10:12:26  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.19  1998/03/11 11:19:05  adam
  * Changed the way sequence numbers are generated.
  *
  * Revision 1.18  1998/03/05 08:41:31  adam
@@ -294,9 +298,9 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 		    wrd.reg_type = *tlist->structure;
 		    wrd.string = n->u.data.data;
 		    wrd.length = n->u.data.len;
-		    wrd.attrSet = tlist->att->parent->ordinal;
+		    wrd.attrSet = (int) (tlist->att->parent->reference);
 		    wrd.attrUse = tlist->att->locals->local;
-		    (*p->add)(&wrd);
+		    (*p->addWord)(&wrd);
 		}
 	    }
 	}
@@ -308,11 +312,28 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
     return 0;
 }
 
+int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
+{
+    oident oe;
+    int oidtmp[OID_SIZE];
+
+    oe.proto = PROTO_Z3950;
+    oe.oclass = CLASS_SCHEMA;
+    oe.value = n->u.root.absyn->reference;
+
+    if ((oid_ent_to_oid (&oe, oidtmp)))
+	(*p->addSchema)(p, oidtmp);
+
+    return dumpkeys(n, p, 0);
+}
+
 static int grs_extract(struct recExtractCtrl *p)
 {
     data1_node *n;
     NMEM mem;
     struct grs_read_info gri;
+    oident oe;
+    int oidtmp[OID_SIZE];
 
     mem = nmem_create (); 
     gri.readf = p->readf;
@@ -327,6 +348,13 @@ static int grs_extract(struct recExtractCtrl *p)
     n = read_grs_type (&gri, p->subType);
     if (!n)
         return -1;
+
+    oe.proto = PROTO_Z3950;
+    oe.oclass = CLASS_SCHEMA;
+    oe.value = n->u.root.absyn->reference;
+    if ((oid_ent_to_oid (&oe, oidtmp)))
+	(*p->addSchema)(p, oidtmp);
+
     if (dumpkeys(n, p, 0) < 0)
     {
 	data1_free_tree(p->dh, n);

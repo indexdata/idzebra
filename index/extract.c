@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.81  1998-03-11 11:19:04  adam
+ * Revision 1.82  1998-05-20 10:12:15  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.81  1998/03/11 11:19:04  adam
  * Changed the way sequence numbers are generated.
  *
  * Revision 1.80  1998/03/05 08:45:11  adam
@@ -339,8 +343,13 @@ static void logRecord (int showFlag)
     }
 }
 
-int key_open (BFiles bfs, int mem, int rw, data1_handle dh)
+static int explain_extract (void *handle, Record drec, data1_node *n);
+
+int key_open (struct recordGroup *rGroup, int mem)
 {
+    BFiles bfs = rGroup->bfs;
+    int rw = rGroup->flagRw;
+    data1_handle dh = rGroup->dh;
     if (!mem)
         mem = atoi(res_get_def (common_resource, "memMax", "4"))*1024*1024;
     if (mem < 50000)
@@ -364,7 +373,8 @@ int key_open (BFiles bfs, int mem, int rw, data1_handle dh)
 	dict_close (matchDict);
 	return -1;
     }
-    zti = zebraExplain_open (records, dh, rw);
+    zti = zebraExplain_open (records, dh, common_resource,
+			     rw, rGroup, explain_extract);
     if (!zti)
     {
 	rec_close (&records);
@@ -543,13 +553,14 @@ void key_flush (void)
     key_buf_used = 0;
 }
 
-int key_close (int rw)
+int key_close (struct recordGroup *rGroup)
 {
-    key_flush ();
-    xfree (key_buf);
+    int rw = rGroup->flagRw;
     if (rw)
 	zebraExplain_runNumberIncrement (zti, 1);
-    zebraExplain_close (zti, rw);
+    zebraExplain_close (zti, rw, 0);
+    key_flush ();
+    xfree (key_buf);
     rec_close (&records);
     dict_close (matchDict);
     sortIdx_close (sortIdx);
@@ -562,7 +573,7 @@ static void wordInit (struct recExtractCtrl *p, RecWord *w)
 {
     w->zebra_maps = p->zebra_maps;
     w->seqnos = p->seqno;
-    w->attrSet = 1;
+    w->attrSet = VAL_BIB1;
     w->attrUse = 1016;
     w->reg_type = 'w';
 }
@@ -793,19 +804,13 @@ static void flushSortKeys (SYSNO sysno, int cmd)
     sortKeys = NULL;
 }
 
-static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys, 
-                             const char *databaseName)
+static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys)
 {
     char attrSet = -1;
     short attrUse = -1;
     int seqno = 0;
     int off = 0;
 
-    if (zebraExplain_curDatabase (zti, databaseName))
-    {
-        if (zebraExplain_newDatabase (zti, databaseName))
-            abort ();
-    }
     zebraExplain_recordCountIncrement (zti, cmd ? 1 : -1);
     while (off < reckeys->buf_used)
     {
@@ -938,7 +943,6 @@ static struct file_read_info *file_read_start (int fd)
 
 static void file_read_stop (struct file_read_info *fi)
 {
-    assert (fi);
     xfree (fi);
 }
 
@@ -1151,45 +1155,53 @@ static void recordLogPreamble (int level, const char *msg, void *info)
     log_event_start (NULL, NULL);
 }
 
+void addSchema (struct recExtractCtrl *p, Odr_oid *oid)
+{
+    zebraExplain_addSchema (zti, oid);
+}
+
 static int recordExtract (SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
-                          struct file_read_info *fi, RecType recType,
-                          char *subType)
+                          struct file_read_info *fi,
+			  RecType recType, char *subType)
 {
-    struct recExtractCtrl extractCtrl;
     RecordAttr *recordAttr;
     int r;
     char *matchStr;
     SYSNO sysnotmp;
-    off_t recordOffset = 0;
     Record rec;
     struct recordLogInfo logInfo;
+    off_t recordOffset = 0;
 
     if (fi->fd != -1)
     {
-	int i;
+	struct recExtractCtrl extractCtrl;
+
         /* we are going to read from a file, so prepare the extraction */
-        extractCtrl.fh = fi;
-        extractCtrl.subType = subType;
-        extractCtrl.init = wordInit;
-        extractCtrl.add = addRecordKey;
+	int i;
+
+	reckeys.buf_used = 0;
+	reckeys.prevAttrUse = -1;
+	reckeys.prevAttrSet = -1;
+	reckeys.prevSeqNo = 0;
+	
+	recordOffset = fi->file_moffset;
+	extractCtrl.offset = fi->file_moffset;
+	extractCtrl.readf = file_read;
+	extractCtrl.seekf = file_seek;
+	extractCtrl.tellf = file_tell;
+	extractCtrl.endf = file_end;
+	extractCtrl.fh = fi;
+	extractCtrl.subType = subType;
+	extractCtrl.init = wordInit;
+	extractCtrl.addWord = addRecordKey;
+	extractCtrl.addSchema = addSchema;
 	extractCtrl.dh = rGroup->dh;
-
-        reckeys.buf_used = 0;
-        reckeys.prevAttrUse = -1;
-        reckeys.prevAttrSet = -1;
-        reckeys.prevSeqNo = 0;
-
 	for (i = 0; i<256; i++)
 	    extractCtrl.seqno[i] = 0;
-        recordOffset = fi->file_moffset;
-        extractCtrl.offset = recordOffset;
-        extractCtrl.readf = file_read;
-        extractCtrl.seekf = file_seek;
-        extractCtrl.tellf = file_tell;
-        extractCtrl.endf = file_end;
 	extractCtrl.zebra_maps = rGroup->zebra_maps;
-        extractCtrl.flagShowRecords = !rGroup->flagRw;
+	extractCtrl.flagShowRecords = !rGroup->flagRw;
+
         if (!rGroup->flagRw)
             printf ("File: %s %ld\n", fname, (long) recordOffset);
 
@@ -1275,7 +1287,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         {
             dict_insert (matchDict, matchStr, sizeof(*sysno), sysno);
         }
-        flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName);
+        flushRecordKeys (*sysno, 1, &reckeys);
 	flushSortKeys (*sysno, 1);
 
         records_inserted++;
@@ -1301,7 +1313,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
 	flushSortKeys (*sysno, 0);
-        flushRecordKeys (*sysno, 0, &delkeys, rec->info[recInfo_databaseName]);
+        flushRecordKeys (*sysno, 0, &delkeys);
         if (deleteFlag)
         {
             /* record going to be deleted */
@@ -1339,7 +1351,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
                 if (records_processed < rGroup->fileVerboseLimit)
                     logf (LOG_LOG, "update %s %s %ld", rGroup->recordType,
                           fname, (long) recordOffset);
-                flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
+                flushRecordKeys (*sysno, 1, &reckeys);
                 records_updated++;
             }
         }
@@ -1506,6 +1518,12 @@ int fileExtract (SYSNO *sysno, const char *fname,
     if (!rGroup->databaseName)
         rGroup->databaseName = "Default";
 
+    if (zebraExplain_curDatabase (zti, rGroup->databaseName))
+    {
+        if (zebraExplain_newDatabase (zti, rGroup->databaseName))
+            abort ();
+    }
+
     if (rGroup->flagStoreData == -1)
     {
         const char *sval;
@@ -1560,3 +1578,53 @@ int fileExtract (SYSNO *sysno, const char *fname,
     return r;
 }
 
+static int explain_extract (void *handle, Record rec, data1_node *n)
+{
+    struct recordGroup *rGroup = (struct recordGroup*) handle;
+    struct recExtractCtrl extractCtrl;
+    int i;
+
+    if (zebraExplain_curDatabase (zti, rec->info[recInfo_databaseName]))
+    {
+        if (zebraExplain_newDatabase (zti, rec->info[recInfo_databaseName]))
+            abort ();
+    }
+
+    reckeys.buf_used = 0;
+    reckeys.prevAttrUse = -1;
+    reckeys.prevAttrSet = -1;
+    reckeys.prevSeqNo = 0;
+    
+    extractCtrl.init = wordInit;
+    extractCtrl.addWord = addRecordKey;
+    extractCtrl.addSchema = addSchema;
+    extractCtrl.dh = rGroup->dh;
+    for (i = 0; i<256; i++)
+	extractCtrl.seqno[i] = 0;
+    extractCtrl.zebra_maps = rGroup->zebra_maps;
+    extractCtrl.flagShowRecords = !rGroup->flagRw;
+    
+    grs_extract_tree(&extractCtrl, n);
+
+    logf (LOG_DEBUG, "flush explain record, sysno=%d", rec->sysno);
+
+    if (rec->size[recInfo_delKeys])
+    {
+	struct recKeys delkeys;
+
+	delkeys.buf_used = rec->size[recInfo_delKeys];
+	delkeys.buf = rec->info[recInfo_delKeys];
+	flushSortKeys (rec->sysno, 0);
+	flushRecordKeys (rec->sysno, 0, &delkeys);
+    }
+    flushRecordKeys (rec->sysno, 1, &reckeys);
+    flushSortKeys (rec->sysno, 1);
+
+    xfree (rec->info[recInfo_delKeys]);
+    rec->size[recInfo_delKeys] = reckeys.buf_used;
+    rec->info[recInfo_delKeys] = reckeys.buf;
+    reckeys.buf = NULL;
+    reckeys.buf_max = 0;
+
+    return 0;
+}

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.1  1998-03-05 08:45:13  adam
+ * Revision 1.2  1998-05-20 10:12:19  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.1  1998/03/05 08:45:13  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -52,7 +56,7 @@ static int zebra_register_lock (ZebraHandle zh)
     zh->registerChange = lastChange;
     if (zh->records)
     {
-        zebraExplain_close (zh->zei, 0);
+        zebraExplain_close (zh->zei, 0, 0);
         dict_close (zh->dict);
 	sortIdx_close (zh->sortIdx);
         if (zh->isam)
@@ -83,7 +87,7 @@ static int zebra_register_lock (ZebraHandle zh)
                                   sizeof (struct it_key), zh->res)))
             return -1;
     }
-    zh->zei = zebraExplain_open (zh->records, zh->dh, 0);
+    zh->zei = zebraExplain_open (zh->records, zh->dh, zh->res, 0, 0, 0);
 
     return 0;
 }
@@ -134,7 +138,6 @@ ZebraHandle zebra_open (const char *host, const char *configName)
     zh->registerChange = 0;
     
     zh->records = NULL;
-    zh->registered_sets = NULL;
     zh->zebra_maps = zebra_maps_open (zh->res);
     zh->rank_classes = NULL;
     
@@ -147,7 +150,7 @@ void zebra_close (ZebraHandle zh)
     if (zh->records)
     {
         resultSetDestroy (zh);
-        zebraExplain_close (zh->zei, 0);
+        zebraExplain_close (zh->zei, 0, 0);
         dict_close (zh->dict);
 	sortIdx_close (zh->sortIdx);
         if (zh->isam)

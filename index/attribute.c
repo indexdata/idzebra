@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: attribute.c,v $
- * Revision 1.8  1998-03-05 08:45:11  adam
+ * Revision 1.9  1998-05-20 10:12:14  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.8  1998/03/05 08:45:11  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -40,39 +44,19 @@
 #include <zebrautl.h>
 #include "zserver.h"
 
-static void att_loadset(void *p, const char *n, const char *name)
-{
-    data1_attset *cnew;
-    ZebraHandle zi = p;
-
-    if (!(cnew = data1_read_attset(zi->dh, (char*) name)))
-    {
-	logf(LOG_WARN|LOG_ERRNO, "%s", name);
-	return;
-    }
-    cnew->next = zi->registered_sets;
-    zi->registered_sets = cnew;
-}
-
-static void load_atts(ZebraHandle zi)
-{
-    res_trav(zi->res, "attset", zi, att_loadset);
-}
-
 static data1_att *getatt(data1_attset *p, int att)
 {
     data1_att *a;
+    data1_attset_child *c;
 
-    for (; p; p = p->next)
-    {
-	/* scan local set */
-	for (a = p->atts; a; a = a->next)
-	    if (a->value == att)
-		return a;
-	/* scan included sets */
-	if (p->children && (a = getatt(p->children, att)))
+    /* scan local set */
+    for (a = p->atts; a; a = a->next)
+	if (a->value == att)
 	    return a;
-    }
+    /* scan included sets */
+    for (c = p->children; c; c = c->next)
+	if ((a = getatt(c->child, att)))
+	    return a;
     return 0;
 }
 
@@ -81,16 +65,16 @@ int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att)
     data1_att *r;
     data1_attset *p;
 
-    if (!zi->registered_sets)
-	load_atts(zi);
-    for (p = zi->registered_sets; p; p = p->next)
-	if (p->reference == set)
-	    break;
+    if (!(p = data1_attset_search_id (zi->dh, set)))
+    {
+	zebraExplain_loadAttsets (zi->dh, zi->res);
+	p = data1_attset_search_id (zi->dh, set);
+    }
     if (!p)
 	return -2;
     if (!(r = getatt(p, att)))
 	return -1;
-    res->attset_ordinal = r->parent->ordinal;
+    res->attset_ordinal = r->parent->reference;
     res->local_attributes = r->locals;
     return 0;
 }

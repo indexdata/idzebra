@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.15  1998-03-05 08:45:12  adam
+ * Revision 1.16  1998-05-20 10:12:17  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.15  1998/03/05 08:45:12  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -182,6 +186,7 @@ int main (int argc, char **argv)
         logf (LOG_FATAL|LOG_ERRNO, "fopen %s", key_fname);
         exit (1);
     }
+    printf ("t  rg op  sysno seqno txt\n");
     while (read_one (inf, key_string, key_info, &prevk))
     {
         struct it_key k;

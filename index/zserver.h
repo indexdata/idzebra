@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.30  1998-03-05 08:45:13  adam
+ * Revision 1.31  1998-05-20 10:12:23  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.30  1998/03/05 08:45:13  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -139,7 +143,7 @@ typedef struct zebra_rank_class {
     void *class_handle;
     struct zebra_rank_class *next;
 } *ZebraRankClass;
-   
+
 struct zebra_info {
     int registerState; /* 0 (no commit pages), 1 (use commit pages) */
     time_t registerChange;
@@ -154,7 +158,6 @@ struct zebra_info {
     char *errString;
     ZebraExplainInfo zei;
     data1_handle dh;
-    data1_attset *registered_sets;
     BFiles bfs;
     Res res;
 

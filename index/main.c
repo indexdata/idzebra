@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.56  1998-03-05 08:45:12  adam
+ * Revision 1.57  1998-05-20 10:12:18  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.56  1998/03/05 08:45:12  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -403,31 +407,28 @@ int main (int argc, char **argv)
                 switch (cmd)
                 {
                 case 'u':
-                    if (!key_open (rGroup.bfs, mem_max, rGroup.flagRw,
-				   rGroup.dh))
+                    if (!key_open (&rGroup, mem_max))
 		    {
 			logf (LOG_LOG, "updating %s", rGroup.path);
 			repositoryUpdate (&rGroup);
-			nsections = key_close (rGroup.flagRw);
+			nsections = key_close (&rGroup);
 		    }
                     break;
                 case 'U':
-                    if (!key_open (rGroup.bfs,mem_max, rGroup.flagRw,
-				   rGroup.dh))
+                    if (!key_open (&rGroup, mem_max))
 		    {
 			logf (LOG_LOG, "updating (pass 1) %s", rGroup.path);
 			repositoryUpdate (&rGroup);
-			key_close (rGroup.flagRw);
+			key_close (&rGroup);
 		    }
                     nsections = 0;
                     break;
                 case 'd':
-                    if (!key_open (rGroup.bfs,mem_max, rGroup.flagRw,
-				   rGroup.dh))
+                    if (!key_open (&rGroup,mem_max))
 		    {
 			logf (LOG_LOG, "deleting %s", rGroup.path);
 			repositoryDelete (&rGroup);
-			nsections = key_close (rGroup.flagRw);
+			nsections = key_close (&rGroup);
 		    }
                     break;
                 case 's':

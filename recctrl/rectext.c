@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.7  1998-03-11 11:19:05  adam
+ * Revision 1.8  1998-05-20 10:12:27  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.7  1998/03/11 11:19:05  adam
  * Changed the way sequence numbers are generated.
  *
  * Revision 1.6  1998/02/10 12:03:06  adam
@@ -126,7 +130,7 @@ static int text_extract (struct recExtractCtrl *p)
         {
             recWord.string = w;
 	    recWord.length = i;
-            (*p->add)(&recWord);
+            (*p->addWord)(&recWord);
         }
     } while (r > 0);
     buf_close (fi);

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.57  1998-03-05 08:45:12  adam
+ * Revision 1.58  1998-05-20 10:12:16  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.57  1998/03/05 08:45:12  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -278,8 +282,8 @@ void repositoryAdd (struct recordGroup *rGroup);
 void repositoryDelete (struct recordGroup *rGroup);
 void repositoryShow (struct recordGroup *rGroup);
 
-int key_open (BFiles bfs, int mem, int rw, data1_handle);
-int key_close (int rw);
+int key_open (struct recordGroup *rGroup, int mem);
+int key_close (struct recordGroup *group);
 int key_compare (const void *p1, const void *p2);
 int key_get_pos (const void *p);
 int key_compare_it (const void *p1, const void *p2);
@@ -328,5 +332,7 @@ int zebra_lock_nb (ZebraLockHandle h);
 int zebra_unlock (ZebraLockHandle h);
 int zebra_lock_fd (ZebraLockHandle h);
 void zebra_lock_prefix (Res res, char *dst);
+
+void zebra_load_atts (data1_handle dh, Res res);
 
 extern Res common_resource;

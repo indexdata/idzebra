@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.25  1998-03-11 11:19:04  adam
+ * Revision 1.26  1998-05-20 10:12:12  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.25  1998/03/11 11:19:04  adam
  * Changed the way sequence numbers are generated.
  *
  * Revision 1.24  1998/03/05 08:38:46  adam
@@ -127,10 +131,11 @@ struct recExtractCtrl {
     off_t     offset;                            /* start offset           */
     char      *subType;
     void      (*init)(struct recExtractCtrl *p, RecWord *w);
-    void      (*add)(RecWord *p);
+    void      (*addWord)(RecWord *p);
     ZebraMaps zebra_maps;
     int       flagShowRecords;
     int       seqno[256];
+    void      (*addSchema)(struct recExtractCtrl *p, Odr_oid *oid);
     data1_handle dh;
 };
 
@@ -167,6 +172,8 @@ typedef struct recType
 } *RecType;
 
 RecType recType_byName (const char *name, char *subType);
+
+int grs_extract_tree(struct recExtractCtrl *p, data1_node *n);
 
 #ifdef __cplusplus
 }

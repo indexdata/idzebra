@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.76  1998-04-02 14:35:29  adam
+ * Revision 1.77  1998-05-20 10:12:22  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.76  1998/04/02 14:35:29  adam
  * First version of Zebra that works with compiled ASN.1.
  *
  * Revision 1.75  1998/03/05 08:45:13  adam
@@ -1613,9 +1617,9 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
 }
 
 static void scan_term_untrans (ZebraHandle zh, ODR stream, int reg_type,
-			       char **dstp, const char *src)
+			       char **dst, const char *src)
 {
-    char term_dst[1024], **dst;
+    char term_dst[1024];
     
     term_untrans (zh, reg_type, term_dst, src);
     

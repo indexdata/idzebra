@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.7  1998-03-05 08:45:13  adam
+ * Revision 1.8  1998-05-20 10:12:20  adam
+ * Implemented automatic EXPLAIN database maintenance.
+ * Modified Zebra to work with ASN.1 compiled version of YAZ.
+ *
+ * Revision 1.7  1998/03/05 08:45:13  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -34,6 +38,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <time.h>
 
 #include <zebraver.h>
 #include "zinfo.h"
@@ -51,8 +56,30 @@ struct zebSUInfoB {
     struct zebSUInfoB *next;
 };
 
-struct zebDatabaseInfoB {
+typedef struct zebAccessObjectB *zebAccessObject;
+struct zebAccessObjectB {
+    void *handle;
+    int sysno;
+    Odr_oid *oid;
+    zebAccessObject next;
+};
+
+typedef struct zebAccessInfoB *zebAccessInfo;
+struct zebAccessInfoB {
+    zebAccessObject attributeSetIds;
+    zebAccessObject schemas;
+};
+
+typedef struct {
     struct zebSUInfoB *SUInfo;
+    int sysno;
+    int dirty;
+    int readFlag;
+    data1_node *data1_tree;
+} *zebAttributeDetails;
+
+struct zebDatabaseInfoB {
+    zebAttributeDetails attributeDetails;
     char *databaseName;
     data1_node *data1_database;
     int recordCount;     /* records in db */
@@ -61,6 +88,7 @@ struct zebDatabaseInfoB {
     int readFlag;        /* 1: read is needed when referenced; 0 if not */
     int dirty;           /* 1: database is dirty: write is needed */
     struct zebDatabaseInfoB *next;
+    zebAccessInfo accessInfo;
 };
 
 struct zebraExplainAttset {
@@ -75,12 +103,20 @@ struct zebraExplainInfo {
     int  dirty;
     Records records;
     data1_handle dh;
+    Res res;
     struct zebraExplainAttset *attsets;
     NMEM nmem;
     data1_node *data1_target;
     struct zebDatabaseInfoB *databaseInfo;
     struct zebDatabaseInfoB *curDatabaseInfo;
+    zebAccessInfo accessInfo;
+    char date[15]; /* YYYY MMDD HH MM SS */
+    int (*updateFunc)(void *handle, Record drec, data1_node *n);
+    void *updateHandle;
 };
+
+static void zebraExplain_initCommonInfo (ZebraExplainInfo zei, data1_node *n);
+static void zebraExplain_initAccessInfo (ZebraExplainInfo zei, data1_node *n);
 
 static data1_node *read_sgml_rec (data1_handle dh, NMEM nmem, Record rec)
 {
@@ -103,7 +139,7 @@ static data1_node *data1_search_tag (data1_handle dh, data1_node *n,
 }
 
 static data1_node *data1_add_tag (data1_handle dh, data1_node *at,
-				     const char *tag, NMEM nmem)
+				  const char *tag, NMEM nmem)
 {
     data1_node *partag = get_parent_tag(dh, at);
     data1_node *res = data1_mk_node (dh, nmem);
@@ -137,9 +173,7 @@ static data1_node *data1_add_tag (data1_handle dh, data1_node *at,
 static data1_node *data1_make_tag (data1_handle dh, data1_node *at,
 				   const char *tag, NMEM nmem)
 {
-    data1_node *node;
-
-    node = data1_search_tag (dh, at->child, tag);
+    data1_node *node = data1_search_tag (dh, at->child, tag);
     if (!node)
 	node = data1_add_tag (dh, at, tag, nmem);
     else
@@ -163,6 +197,32 @@ static data1_node *data1_add_tagdata_int (data1_handle dh, data1_node *at,
     return node_data;
 }
 
+static data1_node *data1_add_tagdata_oid (data1_handle dh, data1_node *at,
+					   const char *tag, Odr_oid *oid,
+					   NMEM nmem)
+{
+    data1_node *node_data;
+    char str[128], *p = str;
+    Odr_oid *ii;
+    
+    node_data = data1_add_taggeddata (dh, at->root, at, tag, nmem);
+    if (!node_data)
+	return 0;
+    
+    for (ii = oid; *ii >= 0; ii++)
+    {
+	if (ii != oid)
+	    *p++ = '.';
+	sprintf (p, "%d", *ii);
+	p += strlen (p);
+    }
+    node_data->u.data.what = DATA1I_oid;
+    node_data->u.data.len = strlen (str);
+    node_data->u.data.data = data1_insert_string (dh, node_data, nmem, str);
+    return node_data;
+}
+
+
 static data1_node *data1_add_tagdata_text (data1_handle dh, data1_node *at,
 					   const char *tag, const char *str,
 					   NMEM nmem)
@@ -173,64 +233,204 @@ static data1_node *data1_add_tagdata_text (data1_handle dh, data1_node *at,
     if (!node_data)
 	return 0;
     node_data->u.data.what = DATA1I_text;
-    node_data->u.data.data = node_data->lbuf;
-    strcpy (node_data->u.data.data, str);
-    node_data->u.data.len = strlen (node_data->u.data.data);
+    node_data->u.data.len = strlen (str);
+    node_data->u.data.data = data1_insert_string (dh, node_data, nmem, str);
     return node_data;
 }
 
-static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
-                                        struct zebDatabaseInfoB *zdi);
-static void zebraExplain_writeTarget (ZebraExplainInfo zei);
-
-void zebraExplain_close (ZebraExplainInfo zei, int writeFlag)
+static data1_node *data1_make_tagdata_text (data1_handle dh, data1_node *at,
+					    const char *tag, const char *str,
+					    NMEM nmem)
 {
-    struct zebDatabaseInfoB *zdi, *zdi_next;
+    data1_node *node = data1_search_tag (dh, at->child, tag);
+    if (!node)
+        return data1_add_tagdata_text (dh, at, tag, str, nmem);
+    else
+    {
+	data1_node *node_data = node->child;
+	node_data->u.data.what = DATA1I_text;
+	node_data->u.data.data = node_data->lbuf;
+	strcpy (node_data->u.data.data, str);
+	node_data->u.data.len = strlen (node_data->u.data.data);
+	return node_data;
+    }
+}
+
+static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
+                                        struct zebDatabaseInfoB *zdi,
+					int key_flush);
+static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
+						zebAttributeDetails zad,
+						const char *databaseName,
+						int key_flush);
+static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush);
+static void zebraExplain_writeAttributeSet (ZebraExplainInfo zei,
+					    zebAccessObject o,
+					    int key_flush);
+
+static Record createRecord (Records records, int *sysno)
+{
+    Record rec;
+    if (*sysno)
+    {
+	rec = rec_get (records, *sysno);
+	xfree (rec->info[recInfo_storeData]);
+    }
+    else
+    {
+	rec = rec_new (records);
+	*sysno = rec->sysno;
+	
+	rec->info[recInfo_fileType] =
+	    rec_strdup ("grs.sgml", &rec->size[recInfo_fileType]);
+	rec->info[recInfo_databaseName] =
+	    rec_strdup ("IR-Explain-1",
+			&rec->size[recInfo_databaseName]); 
+    }
+    return rec;
+}
+
+void zebraExplain_close (ZebraExplainInfo zei, int writeFlag,
+			 int (*updateH)(Record drec, data1_node *n))
+{
+    struct zebDatabaseInfoB *zdi;
     
     logf (LOG_DEBUG, "zebraExplain_close wr=%d", writeFlag);
     if (writeFlag)
     {
+	zebAccessObject o;
 	/* write each database info record */
 	for (zdi = zei->databaseInfo; zdi; zdi = zdi->next)
-	    zebraExplain_writeDatabase (zei, zdi);
-	zebraExplain_writeTarget (zei);
-    }
-    for (zdi = zei->databaseInfo; zdi; zdi = zdi_next)
-    {
-        struct zebSUInfoB *zsui, *zsui_next;
+	{
+	    zebraExplain_writeDatabase (zei, zdi, 1);
+	    zebraExplain_writeAttributeDetails (zei, zdi->attributeDetails,
+						zdi->databaseName, 1);
+	}
+	zebraExplain_writeTarget (zei, 1);
+	
+	assert (zei->accessInfo);
+	for (o = zei->accessInfo->attributeSetIds; o; o = o->next)
+	    if (!o->sysno)
+		zebraExplain_writeAttributeSet (zei, o, 1);
+	for (o = zei->accessInfo->schemas; o; o = o->next)
+	    if (!o->sysno)
+	    {
+/* 		zebraExplain_writeSchema (zei, o, 1); */
+	    }
 
-        zdi_next = zdi->next;
-        for (zsui = zdi->SUInfo; zsui; zsui = zsui_next)
-        {
-            zsui_next = zsui->next;
-            xfree (zsui);
-        }
-        xfree (zdi);
+	for (zdi = zei->databaseInfo; zdi; zdi = zdi->next)
+	{
+	    zebraExplain_writeDatabase (zei, zdi, 0);
+	    zebraExplain_writeAttributeDetails (zei, zdi->attributeDetails,
+						zdi->databaseName, 0);
+	}
+	zebraExplain_writeTarget (zei, 0);
+	
     }
     nmem_destroy (zei->nmem);
     xfree (zei);
 }
 
+void zebraExplain_mergeOids (ZebraExplainInfo zei, data1_node *n,
+			     zebAccessObject *op)
+{
+    data1_node *np;
 
-ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
-				    int writeFlag)
+    for (np = n->child; np; np = np->next)
+    {
+	char str[64];
+	int len;
+	Odr_oid *oid;
+	zebAccessObject ao;
+
+	if (np->which != DATA1N_tag || strcmp (np->u.tag.tag, "oid"))
+	    continue;
+	len = np->child->u.data.len;
+	if (len > 63)
+	    len = 63;
+	memcpy (str, np->child->u.data.data, len);
+	str[len] = '\0';
+	
+	oid = odr_getoidbystr_nmem (zei->nmem, str);
+
+	for (ao = *op; ao; ao = ao->next)
+	    if (!oid_oidcmp (oid, ao->oid))
+	    {
+		ao->sysno = 1;
+		break;
+	    }
+	if (!ao)
+	{
+	    ao = nmem_malloc (zei->nmem, sizeof(*ao));
+	    ao->handle = NULL;
+	    ao->sysno = 1;
+	    ao->oid = oid;
+	    ao->next = *op;
+	    *op = ao;
+	}
+    }
+}
+
+void zebraExplain_mergeAccessInfo (ZebraExplainInfo zei, data1_node *n,
+				   zebAccessInfo *accessInfo)
+{
+    data1_node *np;
+    
+    if (!n)
+    {
+	*accessInfo = nmem_malloc (zei->nmem, sizeof(**accessInfo));
+	(*accessInfo)->attributeSetIds = NULL;
+	(*accessInfo)->schemas = NULL;
+    }
+    else
+    {
+	if (!(n = data1_search_tag (zei->dh, n->child, "accessInfo")))
+	    return;
+	if ((np = data1_search_tag (zei->dh, n->child, "attributeSetIds")))
+	    zebraExplain_mergeOids (zei, np,
+				    &(*accessInfo)->attributeSetIds);
+	if ((np = data1_search_tag (zei->dh, n->child, "schemas")))
+	    zebraExplain_mergeOids (zei, np,
+				    &(*accessInfo)->schemas);
+    }
+}
+
+ZebraExplainInfo zebraExplain_open (
+    Records records, data1_handle dh,
+    Res res,
+    int writeFlag,
+    void *updateHandle,
+    int (*updateFunc)(void *handle, Record drec, data1_node *n))
 {
     Record trec;
     ZebraExplainInfo zei;
     struct zebDatabaseInfoB **zdip;
+    time_t our_time;
+    struct tm *tm;
 
     logf (LOG_DEBUG, "zebraExplain_open wr=%d", writeFlag);
     zei = xmalloc (sizeof(*zei));
+    zei->updateHandle = updateHandle;
+    zei->updateFunc = updateFunc;
     zei->dirty = 0;
     zei->curDatabaseInfo = NULL;
     zei->records = records;
     zei->nmem = nmem_create ();
     zei->dh = dh;
     zei->attsets = NULL;
-    zdip = &zei->databaseInfo;
-    trec = rec_get (records, 1);
+    zei->res = res;
 
-    if (trec)
+    time (&our_time);
+    tm = localtime (&our_time);
+    sprintf (zei->date, "%04d%02d%02d%02d%02d%02d",
+	     tm->tm_year+1900, tm->tm_mon+1,  tm->tm_mday,
+	     tm->tm_hour, tm->tm_min, tm->tm_sec);
+
+    zdip = &zei->databaseInfo;
+    trec = rec_get (records, 1);      /* get "root" record */
+
+    zebraExplain_mergeAccessInfo (zei, 0, &zei->accessInfo);
+    if (trec)    /* targetInfo already exists ... */
     {
 	data1_node *node_tgtinfo, *node_zebra, *node_list, *np;
 
@@ -241,6 +441,9 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 #endif
 	node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target->child,
 					 "targetInfo");
+	zebraExplain_mergeAccessInfo (zei, node_tgtinfo,
+				      &zei->accessInfo);
+
 	node_zebra = data1_search_tag (zei->dh, node_tgtinfo->child,
 				       "zebraInfo");
 	node_list = data1_search_tag (zei->dh, node_zebra->child,
@@ -249,6 +452,7 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 	{
 	    data1_node *node_name = NULL;
 	    data1_node *node_id = NULL;
+	    data1_node *node_aid = NULL;
 	    data1_node *np2;
 	    if (np->which != DATA1N_tag || strcmp (np->u.tag.tag, "database"))
 		continue;
@@ -260,17 +464,19 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 		    node_name = np2->child;
 		else if (!strcmp (np2->u.tag.tag, "id"))
 		    node_id = np2->child;
+		else if (!strcmp (np2->u.tag.tag, "attributeDetailsId"))
+		    node_aid = np2->child;
 	    }
-	    assert (node_id && node_name);
+	    assert (node_id && node_name && node_aid);
 	    
-	    *zdip = xmalloc (sizeof(**zdip));
+	    *zdip = nmem_malloc (zei->nmem, sizeof(**zdip));
 
             (*zdip)->readFlag = 1;
             (*zdip)->dirty = 0;
 	    (*zdip)->data1_database = NULL;
 	    (*zdip)->recordCount = 0;
 	    (*zdip)->recordBytes = 0;
-	    (*zdip)->SUInfo = NULL;
+	    zebraExplain_mergeAccessInfo (zei, 0, &(*zdip)->accessInfo);
 
 	    (*zdip)->databaseName = nmem_malloc (zei->nmem,
 						 1+node_name->u.data.len);
@@ -279,6 +485,14 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 	    (*zdip)->databaseName[node_name->u.data.len] = '\0';
 	    (*zdip)->sysno = atoi_n (node_id->u.data.data,
 				     node_id->u.data.len);
+	    (*zdip)->attributeDetails =
+		nmem_malloc (zei->nmem, sizeof(*(*zdip)->attributeDetails));
+	    (*zdip)->attributeDetails->sysno = atoi_n (node_aid->u.data.data,
+						       node_aid->u.data.len);
+	    (*zdip)->attributeDetails->readFlag = 1;
+	    (*zdip)->attributeDetails->dirty = 0;
+	    (*zdip)->attributeDetails->SUInfo = NULL;
+
 	    zdip = &(*zdip)->next;
 	}
 	np = data1_search_tag (zei->dh, node_zebra->child,
@@ -292,11 +506,15 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 	np = np->child;
 	assert (np && np->which == DATA1N_data);
 	zei->runNumber = atoi_n (np->u.data.data, np->u.data.len);
+	*zdip = NULL;
+	rec_rm (&trec);
     }
-    else
+    else  /* create initial targetInfo */
     {
+	data1_node *node_tgtinfo;
         zei->ordinalSU = 1;
 	zei->runNumber = 0;
+
 	if (writeFlag)
 	{
 	    char *sgml_buf;
@@ -304,12 +522,21 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 
 	    zei->data1_target =
 		data1_read_sgml (zei->dh, zei->nmem,
-				 "<explain><targetInfo>targetInfo\n"
+				 "<explain><targetInfo>TargetInfo\n"
 				 "<name>Zebra</>\n"
 				 "<namedResultSets>1</>\n"
 				 "<multipleDBSearch>1</>\n"
 				 "<nicknames><name>Zebra</></>\n"
 				 "</></>\n" );
+
+	    node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target->child,
+					    "targetInfo");
+	    assert (node_tgtinfo);
+
+
+	    zebraExplain_initCommonInfo (zei, node_tgtinfo);
+	    zebraExplain_initAccessInfo (zei, node_tgtinfo);
+
 	    /* write now because we want to be sure about the sysno */
 	    trec = rec_new (records);
 	    trec->info[recInfo_fileType] =
@@ -324,40 +551,31 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 	    
 	    rec_put (records, &trec);
 	}
+	*zdip = NULL;
+	rec_rm (&trec);
+	zebraExplain_newDatabase (zei, "IR-Explain-1");
     }
-    *zdip = NULL;
-    rec_rm (&trec);
-    zebraExplain_newDatabase (zei, "IR-Explain-1");
     return zei;
 }
 
-
-static void zebraExplain_readDatabase (ZebraExplainInfo zei,
-				       struct zebDatabaseInfoB *zdi)
+static void zebraExplain_readAttributeDetails (ZebraExplainInfo zei,
+					       zebAttributeDetails zad)
 {
     Record rec;
-    data1_node *node_dbinfo, *node_zebra, *node_list, *np;
-    struct zebSUInfoB **zsuip = &zdi->SUInfo;
+    struct zebSUInfoB **zsuip = &zad->SUInfo;
+    data1_node *node_adinfo, *node_zebra, *node_list, *np;
 
-    assert (zdi->sysno);
-    rec = rec_get (zei->records, zdi->sysno);
+    assert (zad->sysno);
+    rec = rec_get (zei->records, zad->sysno);
 
-    zdi->data1_database = read_sgml_rec (zei->dh, zei->nmem, rec);
-    
-    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database->child,
-				   "databaseInfo");
+    zad->data1_tree = read_sgml_rec (zei->dh, zei->nmem, rec);
 
-    node_zebra = data1_search_tag (zei->dh, node_dbinfo->child,
+    node_adinfo = data1_search_tag (zei->dh, zad->data1_tree->child,
+				    "attributeDetails");
+    node_zebra = data1_search_tag (zei->dh, node_adinfo->child,
 				 "zebraInfo");
-    np  = data1_search_tag (zei->dh, node_dbinfo->child,
-			    "recordBytes");
-    if (np && np->child && np->child->which == DATA1N_data)
-    {
-	zdi->recordBytes = atoi_n (np->child->u.data.data,
-				   np->child->u.data.len);
-    }
     node_list = data1_search_tag (zei->dh, node_zebra->child,
-				 "attrlist");
+				  "attrlist");
     for (np = node_list->child; np; np = np->next)
     {
 	data1_node *node_set = NULL;
@@ -380,7 +598,7 @@ static void zebraExplain_readDatabase (ZebraExplainInfo zei,
 	}
 	assert (node_set && node_use && node_ordinal);
 	
-        *zsuip = xmalloc (sizeof(**zsuip));
+        *zsuip = nmem_malloc (zei->nmem, sizeof(**zsuip));
 	(*zsuip)->info.set = atoi_n (node_set->u.data.data,
 				     node_set->u.data.len);
 	(*zsuip)->info.use = atoi_n (node_use->u.data.data,
@@ -392,7 +610,32 @@ static void zebraExplain_readDatabase (ZebraExplainInfo zei,
         zsuip = &(*zsuip)->next;
     }
     *zsuip = NULL;
+    zad->readFlag = 0;
+    rec_rm (&rec);
+}
 
+static void zebraExplain_readDatabase (ZebraExplainInfo zei,
+				       struct zebDatabaseInfoB *zdi)
+{
+    Record rec;
+    data1_node *node_dbinfo, *node_zebra, *np;
+
+    assert (zdi->sysno);
+    rec = rec_get (zei->records, zdi->sysno);
+
+    zdi->data1_database = read_sgml_rec (zei->dh, zei->nmem, rec);
+    
+    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database->child,
+				   "databaseInfo");
+    zebraExplain_mergeAccessInfo (zei, node_dbinfo, &zdi->accessInfo);
+
+    node_zebra = data1_search_tag (zei->dh, node_dbinfo->child,
+				 "zebraInfo");
+    np  = data1_search_tag (zei->dh, node_dbinfo->child,
+			    "recordBytes");
+    if (np && np->child && np->child->which == DATA1N_data)
+	zdi->recordBytes = atoi_n (np->child->u.data.data,
+				   np->child->u.data.len);
     if ((np = data1_search_tag (zei->dh, node_dbinfo->child,
 				"recordCount")) &&
 	(np = data1_search_tag (zei->dh, np->child,
@@ -421,17 +664,81 @@ int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database)
     }
     if (!zdi)
         return -1;
+#if ZINFO_DEBUG
+    logf (LOG_LOG, "zebraExplain_curDatabase: %s", database);
+#endif
     if (zdi->readFlag)
+    {
+#if ZINFO_DEBUG
+	logf (LOG_LOG, "zebraExplain_readDatabase: %s", database);
+#endif
         zebraExplain_readDatabase (zei, zdi);
+    }
+    if (zdi->attributeDetails->readFlag)
+    {
+#if ZINFO_DEBUG
+	logf (LOG_LOG, "zebraExplain_readAttributeDetails: %s", database);
+#endif
+        zebraExplain_readAttributeDetails (zei, zdi->attributeDetails);
+    }
     zei->curDatabaseInfo = zdi;
     return 0;
+}
+
+static void zebraExplain_initCommonInfo (ZebraExplainInfo zei, data1_node *n)
+{
+    data1_node *c = data1_add_tag (zei->dh, n, "commonInfo", zei->nmem);
+
+    data1_add_tagdata_text (zei->dh, c, "dateAdded", zei->date, zei->nmem);
+    data1_add_tagdata_text (zei->dh, c, "dateChanged", zei->date, zei->nmem);
+    data1_add_tagdata_text (zei->dh, c, "languageCode", "EN", zei->nmem);
+}
+
+static void zebraExplain_updateCommonInfo (ZebraExplainInfo zei, data1_node *n)
+{
+    data1_node *c = data1_search_tag (zei->dh, n->child, "commonInfo");
+    assert (c);
+    data1_make_tagdata_text (zei->dh, c, "dateChanged", zei->date, zei->nmem);
+}
+
+static void zebraExplain_initAccessInfo (ZebraExplainInfo zei, data1_node *n)
+{
+    data1_node *c = data1_add_tag (zei->dh, n, "accessInfo", zei->nmem);
+    data1_node *d = data1_add_tag (zei->dh, c, "unitSystems", zei->nmem);
+    data1_add_tagdata_text (zei->dh, d, "string", "ISO", zei->nmem);
+}
+
+static void zebraExplain_updateAccessInfo (ZebraExplainInfo zei, data1_node *n,
+					   zebAccessInfo accessInfo)
+{
+    data1_node *c = data1_search_tag (zei->dh, n->child, "accessInfo");
+    data1_node *d;
+    zebAccessObject p;
+    
+    assert (c);
+
+    if ((p = accessInfo->attributeSetIds))
+    {
+	d = data1_make_tag (zei->dh, c, "attributeSetIds", zei->nmem);
+	for (; p; p = p->next)
+	    data1_add_tagdata_oid (zei->dh, d, "oid", p->oid, zei->nmem);
+    }
+    if ((p = accessInfo->schemas))
+    {
+	d = data1_make_tag (zei->dh, c, "schemas", zei->nmem);
+	for (; p; p = p->next)
+	    data1_add_tagdata_oid (zei->dh, d, "oid", p->oid, zei->nmem);
+    }
 }
 
 int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database)
 {
     struct zebDatabaseInfoB *zdi;
-    data1_node *node_dbinfo;
+    data1_node *node_dbinfo, *node_adinfo;
 
+#if ZINFO_DEBUG
+    logf (LOG_LOG, "zebraExplain_newDatabase: %s", database);
+#endif
     assert (zei);
     for (zdi = zei->databaseInfo; zdi; zdi=zdi->next)
     {
@@ -441,7 +748,7 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database)
     if (zdi)
         return -1;
     /* it's new really. make it */
-    zdi = xmalloc (sizeof(*zdi));
+    zdi = nmem_malloc (zei->nmem, sizeof(*zdi));
     zdi->next = zei->databaseInfo;
     zei->databaseInfo = zdi;
     zdi->sysno = 0;
@@ -449,24 +756,32 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database)
     zdi->recordBytes = 0;
     zdi->readFlag = 0;
     zdi->databaseName = nmem_strdup (zei->nmem, database);
-    zdi->SUInfo = NULL;
+
+    zebraExplain_mergeAccessInfo (zei, 0, &zdi->accessInfo);
     
     assert (zei->dh);
     assert (zei->nmem);
 
     zdi->data1_database =
 	data1_read_sgml (zei->dh, zei->nmem, 
-			 "<explain><databaseInfo>databaseInfo\n"
-			 "<userFee>0</>\n"
-			 "<available>1</>\n"
+			 "<explain><databaseInfo>DatabaseInfo\n"
 			 "</></>\n");
     
     node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database->child,
 				   "databaseInfo");
     assert (node_dbinfo);
 
+    zebraExplain_initCommonInfo (zei, node_dbinfo);
+    zebraExplain_initAccessInfo (zei, node_dbinfo);
+
     data1_add_tagdata_text (zei->dh, node_dbinfo, "name",
 			       database, zei->nmem);
+
+    data1_add_tagdata_text (zei->dh, node_dbinfo, "userFee",
+			       "0", zei->nmem);
+
+    data1_add_tagdata_text (zei->dh, node_dbinfo, "available",
+			       "1", zei->nmem);
 
 #if ZINFO_DEBUG
     data1_pr_tree (zei->dh, zdi->data1_database, stderr);
@@ -474,52 +789,145 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database)
     zdi->dirty = 1;
     zei->dirty = 1;
     zei->curDatabaseInfo = zdi;
+
+    zdi->attributeDetails =
+	nmem_malloc (zei->nmem, sizeof(*zdi->attributeDetails));
+    zdi->attributeDetails->readFlag = 0;
+    zdi->attributeDetails->sysno = 0;
+    zdi->attributeDetails->dirty = 1;
+    zdi->attributeDetails->data1_tree =
+	data1_read_sgml (zei->dh, zei->nmem,
+			 "<explain><attributeDetails>AttributeDetails\n"
+			 "</></>\n");
+
+    node_adinfo =
+	data1_search_tag (zei->dh, zdi->attributeDetails->data1_tree->child,
+			  "attributeDetails");
+    assert (node_adinfo);
+
+    zebraExplain_initCommonInfo (zei, node_adinfo);
+
     return 0;
 }
 
-static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
-                                        struct zebDatabaseInfoB *zdi)
+static void writeAttributeValueDetails (ZebraExplainInfo zei,
+				  zebAttributeDetails zad,
+				  data1_node *node_atvs, data1_attset *attset)
+
+{
+    struct zebSUInfoB *zsui;
+    int set_ordinal = attset->reference;
+    data1_attset_child *c;
+
+    for (c = attset->children; c; c = c->next)
+	writeAttributeValueDetails (zei, zad, node_atvs, c->child);
+    for (zsui = zad->SUInfo; zsui; zsui = zsui->next)
+    {
+	data1_node *node_attvalue, *node_value;
+	if (set_ordinal != zsui->info.set)
+	    continue;
+	node_attvalue = data1_add_tag (zei->dh, node_atvs, "attributeValue",
+				       zei->nmem);
+	node_value = data1_add_tag (zei->dh, node_attvalue, "value",
+				    zei->nmem);
+	data1_add_tagdata_int (zei->dh, node_value, "numeric",
+			       zsui->info.use, zei->nmem);
+    }
+}
+
+static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
+						zebAttributeDetails zad,
+						const char *databaseName,
+						int key_flush)
 {
     char *sgml_buf;
     int sgml_len;
     Record drec;
-    data1_node *node_dbinfo, *node_list, *node_count, *node_zebra;
+    data1_node *node_adinfo, *node_list, *node_zebra, *node_attributesBySet;
     struct zebSUInfoB *zsui;
+    int set_min;
     
-    if (!zdi->dirty)
+    if (!zad->dirty)
 	return;
     
-    if (zdi->sysno)
-    {
-	drec = rec_get (zei->records, zdi->sysno);
-	xfree (drec->info[recInfo_storeData]);
-    }
-    else
-    {
-	drec = rec_new (zei->records);
-	zdi->sysno = drec->sysno;
-	
-	drec->info[recInfo_fileType] =
-	    rec_strdup ("grs.sgml", &drec->size[recInfo_fileType]);
-	drec->info[recInfo_databaseName] =
-	    rec_strdup ("IR-Explain-1",
-			&drec->size[recInfo_databaseName]); 
-    }
-    assert (zdi->data1_database);
-    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database->child,
-				   "databaseInfo");
-    /* record count */
-    node_count = data1_make_tag (zei->dh, node_dbinfo,
-				 "recordCount", zei->nmem);
-    data1_add_tagdata_int (zei->dh, node_count, "recordCountActual",
-			      zdi->recordCount, zei->nmem);
+    zad->dirty = 0;
+#if ZINFO_DEBUG
+    logf (LOG_LOG, "zebraExplain_writeAttributeDetails");    
+#endif
 
+    drec = createRecord (zei->records, &zad->sysno);
+    assert (zad->data1_tree);
+    node_adinfo = data1_search_tag (zei->dh, zad->data1_tree->child,
+				   "attributeDetails");
+    zebraExplain_updateCommonInfo (zei, node_adinfo);
+
+    data1_add_tagdata_text (zei->dh, node_adinfo, "name",
+			    databaseName, zei->nmem);
+
+    /* extract *searchable* keys from it. We do this here, because
+       record count, etc. is affected */
+    if (key_flush)
+	(*zei->updateFunc)(zei->updateHandle, drec, zad->data1_tree);
+
+    node_attributesBySet = data1_make_tag (zei->dh, node_adinfo,
+					   "attributesBySet", zei->nmem);
+    set_min = -1;
+    while (1)
+    {
+	data1_node *node_asd;
+	data1_attset *attset;
+	int set_ordinal = -1;
+	for (zsui = zad->SUInfo; zsui; zsui = zsui->next)
+	{
+	    if ((set_ordinal < 0 || set_ordinal > zsui->info.set)
+		&& zsui->info.set > set_min)
+		set_ordinal = zsui->info.set;
+	}
+	if (set_ordinal < 0)
+	    break;
+	set_min = set_ordinal;
+	node_asd = data1_add_tag (zei->dh, node_attributesBySet,
+				  "attributeSetDetails", zei->nmem);
+
+	attset = data1_attset_search_id (zei->dh, set_ordinal);
+	if (!attset)
+	{
+	    zebraExplain_loadAttsets (zei->dh, zei->res);
+	    attset = data1_attset_search_id (zei->dh, set_ordinal);
+	}
+	if (attset)
+	{
+	    int oid[OID_SIZE];
+	    oident oe;
+	    
+	    oe.proto = PROTO_Z3950;
+	    oe.oclass = CLASS_ATTSET;
+	    oe.value = set_ordinal;
+	    
+	    if (oid_ent_to_oid (&oe, oid))
+	    {
+		data1_node *node_abt, *node_atd, *node_atvs;
+		data1_add_tagdata_oid (zei->dh, node_asd, "oid",
+				       oid, zei->nmem);
+
+		node_abt = data1_add_tag (zei->dh, node_asd,
+					  "attributesByType", zei->nmem);
+		node_atd = data1_add_tag (zei->dh, node_abt,
+					  "attributeTypeDetails", zei->nmem);
+		data1_add_tagdata_int (zei->dh, node_atd,
+					"type", 1, zei->nmem);
+		node_atvs = data1_add_tag (zei->dh, node_atd, 
+					  "attributeValues", zei->nmem);
+		writeAttributeValueDetails (zei, zad, node_atvs, attset);
+	    }
+	}
+    }
     /* zebra info (private) */
-    node_zebra = data1_make_tag (zei->dh, node_dbinfo,
+    node_zebra = data1_make_tag (zei->dh, node_adinfo,
 				 "zebraInfo", zei->nmem);
     node_list = data1_make_tag (zei->dh, node_zebra,
 				 "attrlist", zei->nmem);
-    for (zsui = zdi->SUInfo; zsui; zsui = zsui->next)
+    for (zsui = zad->SUInfo; zsui; zsui = zsui->next)
     {
 	data1_node *node_attr;
 	node_attr = data1_add_tag (zei->dh, node_list,
@@ -531,6 +939,56 @@ static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
 	data1_add_tagdata_int (zei->dh, node_attr, "ordinal",
 				  zsui->info.ordinal, zei->nmem);
     }
+    /* convert to "SGML" and write it */
+#if ZINFO_DEBUG
+    data1_pr_tree (zei->dh, zad->data1_tree, stderr);
+#endif
+    sgml_buf = data1_nodetoidsgml(zei->dh, zad->data1_tree,
+				  0, &sgml_len);
+    drec->info[recInfo_storeData] = xmalloc (sgml_len);
+    memcpy (drec->info[recInfo_storeData], sgml_buf, sgml_len);
+    drec->size[recInfo_storeData] = sgml_len;
+    
+    rec_put (zei->records, &drec);
+}
+
+static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
+                                        struct zebDatabaseInfoB *zdi,
+					int key_flush)
+{
+    char *sgml_buf;
+    int sgml_len;
+    Record drec;
+    data1_node *node_dbinfo, *node_count, *node_zebra;
+    
+    if (!zdi->dirty)
+	return;
+
+    zdi->dirty = 0;
+#if ZINFO_DEBUG
+    logf (LOG_LOG, "zebraExplain_writeDatabase %s", zdi->databaseName);
+#endif
+    drec = createRecord (zei->records, &zdi->sysno);
+    assert (zdi->data1_database);
+    node_dbinfo = data1_search_tag (zei->dh, zdi->data1_database->child,
+				   "databaseInfo");
+
+    zebraExplain_updateCommonInfo (zei, node_dbinfo);
+    zebraExplain_updateAccessInfo (zei, node_dbinfo, zdi->accessInfo);
+
+    /* extract *searchable* keys from it. We do this here, because
+       record count, etc. is affected */
+    if (key_flush)
+	(*zei->updateFunc)(zei->updateHandle, drec, zdi->data1_database);
+    /* record count */
+    node_count = data1_make_tag (zei->dh, node_dbinfo,
+				 "recordCount", zei->nmem);
+    data1_add_tagdata_int (zei->dh, node_count, "recordCountActual",
+			      zdi->recordCount, zei->nmem);
+
+    /* zebra info (private) */
+    node_zebra = data1_make_tag (zei->dh, node_dbinfo,
+				 "zebraInfo", zei->nmem);
     data1_add_tagdata_int (zei->dh, node_zebra,
 			   "recordBytes", zdi->recordBytes, zei->nmem);
     /* convert to "SGML" and write it */
@@ -546,37 +1004,103 @@ static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
     rec_put (zei->records, &drec);
 }
 
-static void trav_attset (data1_handle dh, ZebraExplainInfo zei,
-			 data1_attset *p_this)
+static void writeAttributeValues (ZebraExplainInfo zei,
+				  data1_node *node_values,
+				  data1_attset *attset)
 {
-    struct zebraExplainAttset *p_reg = zei->attsets;
+    data1_att *atts;
+    data1_attset_child *c;
 
-    if (!p_this)
-	return ;
-    while (p_reg)
+    if (!attset)
+	return;
+
+    for (c = attset->children; c; c = c->next)
+	writeAttributeValues (zei, node_values, c->child);
+    for (atts = attset->atts; atts; atts = atts->next)
     {
-	if (!strcmp (p_this->name, p_reg->name))
-	    break;
-	p_reg = p_reg->next;
+	data1_node *node_value;
+	
+	node_value = data1_add_tag (zei->dh, node_values, "attributeValue",
+				    zei->nmem);
+	data1_add_tagdata_text (zei->dh, node_value, "name",
+				atts->name, zei->nmem);
+        node_value = data1_add_tag (zei->dh, node_value, "value", zei->nmem);
+	data1_add_tagdata_int (zei->dh, node_value, "numeric",
+			       atts->value, zei->nmem);
     }
-    if (!p_this)
-    {
-	p_reg = nmem_malloc (zei->nmem, sizeof (*p_reg));
-	p_reg->name = nmem_strdup (zei->nmem, p_this->name);
-	p_reg->ordinal = p_this->ordinal;
-	p_reg->next = zei->attsets;
-	zei->attsets = p_reg;
-    }
-    trav_attset (dh, zei, p_this->children);
 }
 
-static void trav_absyn (data1_handle dh, void *h, data1_absyn *a)
+
+static void zebraExplain_writeAttributeSet (ZebraExplainInfo zei,
+					    zebAccessObject o,
+					    int key_flush)
 {
-    logf (LOG_LOG, "absyn %s", a->name);
-    trav_attset (dh, (ZebraExplainInfo) h, a->attset);
+    char *sgml_buf;
+    int sgml_len;
+    Record drec;
+    data1_node *node_root, *node_attinfo, *node_attributes, *node_atttype;
+    data1_node *node_values;
+    struct oident *entp;
+    struct data1_attset *attset = NULL;
+    
+    if ((entp = oid_getentbyoid (o->oid)))
+	attset = data1_attset_search_id (zei->dh, entp->value);
+	    
+#if ZINFO_DEBUG
+    logf (LOG_LOG, "zebraExplain_writeAttributeSet %s",
+	  attset ? attset->name : "<unknown>");    
+#endif
+
+    drec = createRecord (zei->records, &o->sysno);
+    node_root =
+	data1_read_sgml (zei->dh, zei->nmem,
+			 "<explain><attributeSetInfo>AttributeSetInfo\n"
+			 "</></>\n" );
+
+    node_attinfo = data1_search_tag (zei->dh, node_root->child,
+				   "attributeSetInfo");
+
+    zebraExplain_initCommonInfo (zei, node_attinfo);
+    zebraExplain_updateCommonInfo (zei, node_attinfo);
+
+    data1_add_tagdata_oid (zei->dh, node_attinfo,
+			    "oid", o->oid, zei->nmem);
+    if (attset && attset->name)
+	data1_add_tagdata_text (zei->dh, node_attinfo,
+				"name", attset->name, zei->nmem);
+    
+    node_attributes = data1_make_tag (zei->dh, node_attinfo,
+				      "attributes", zei->nmem);
+    node_atttype = data1_make_tag (zei->dh, node_attributes,
+				   "attributeType", zei->nmem);
+    data1_add_tagdata_text (zei->dh, node_atttype,
+			    "name", "Use", zei->nmem);
+    data1_add_tagdata_text (zei->dh, node_atttype,
+			    "description", "Use Attribute", zei->nmem);
+    data1_add_tagdata_int (zei->dh, node_atttype,
+			   "type", 1, zei->nmem);
+    node_values = data1_add_tag (zei->dh, node_atttype,
+				 "attributeValues", zei->nmem);
+    if (attset)
+	writeAttributeValues (zei, node_values, attset);
+
+    /* extract *searchable* keys from it. We do this here, because
+       record count, etc. is affected */
+    if (key_flush)
+	(*zei->updateFunc)(zei->updateHandle, drec, node_root);
+    /* convert to "SGML" and write it */
+#if ZINFO_DEBUG
+    data1_pr_tree (zei->dh, node_root, stderr);
+#endif
+    sgml_buf = data1_nodetoidsgml(zei->dh, node_root, 0, &sgml_len);
+    drec->info[recInfo_storeData] = xmalloc (sgml_len);
+    memcpy (drec->info[recInfo_storeData], sgml_buf, sgml_len);
+    drec->size[recInfo_storeData] = sgml_len;
+    
+    rec_put (zei->records, &drec);
 }
 
-static void zebraExplain_writeTarget (ZebraExplainInfo zei)
+static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush)
 {
     struct zebDatabaseInfoB *zdi;
     data1_node *node_tgtinfo, *node_list, *node_zebra;
@@ -586,6 +1110,7 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei)
 
     if (!zei->dirty)
 	return;
+    zei->dirty = 0;
 
     trec = rec_get (zei->records, 1);
     xfree (trec->info[recInfo_storeData]);
@@ -593,6 +1118,13 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei)
     node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target->child,
 				   "targetInfo");
     assert (node_tgtinfo);
+
+    zebraExplain_updateCommonInfo (zei, node_tgtinfo);
+    zebraExplain_updateAccessInfo (zei, node_tgtinfo, zei->accessInfo);
+
+    /* convert to "SGML" and write it */
+    if (key_flush)
+	(*zei->updateFunc)(zei->updateHandle, trec, zei->data1_target);
 
     node_zebra = data1_make_tag (zei->dh, node_tgtinfo,
 				 "zebraInfo", zei->nmem);
@@ -609,6 +1141,8 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei)
 				   zdi->databaseName, zei->nmem);
 	data1_add_tagdata_int (zei->dh, node_db, "id",
 				  zdi->sysno, zei->nmem);
+	data1_add_tagdata_int (zei->dh, node_db, "attributeDetailsId",
+				  zdi->attributeDetails->sysno, zei->nmem);
     }
     data1_add_tagdata_int (zei->dh, node_zebra, "ordinalSU",
 			      zei->ordinalSU, zei->nmem);
@@ -616,9 +1150,6 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei)
     data1_add_tagdata_int (zei->dh, node_zebra, "runNumber",
 			      zei->runNumber, zei->nmem);
 
-    node_list = data1_add_tag (zei->dh, node_zebra,
-			       "attsetList", zei->nmem);
-    /* convert to "SGML" and write it */
 #if ZINFO_DEBUG
     data1_pr_tree (zei->dh, zei->data1_target, stderr);
 #endif
@@ -636,10 +1167,49 @@ int zebraExplain_lookupSU (ZebraExplainInfo zei, int set, int use)
     struct zebSUInfoB *zsui;
 
     assert (zei->curDatabaseInfo);
-    for (zsui = zei->curDatabaseInfo->SUInfo; zsui; zsui=zsui->next)
+    for (zsui = zei->curDatabaseInfo->attributeDetails->SUInfo;
+	 zsui; zsui=zsui->next)
         if (zsui->info.use == use && zsui->info.set == set)
             return zsui->info.ordinal;
     return -1;
+}
+
+zebAccessObject zebraExplain_announceOid (ZebraExplainInfo zei,
+					  zebAccessObject *op,
+					  Odr_oid *oid)
+{
+    zebAccessObject ao;
+    
+    for (ao = *op; ao; ao = ao->next)
+	if (!oid_oidcmp (oid, ao->oid))
+	    break;
+    if (!ao)
+    {
+	ao = nmem_malloc (zei->nmem, sizeof(*ao));
+	ao->handle = NULL;
+	ao->sysno = 0;
+	ao->oid = odr_oiddup_nmem (zei->nmem, oid);
+	ao->next = *op;
+	*op = ao;
+    }
+    return ao;
+}
+
+void zebraExplain_addAttributeSet (ZebraExplainInfo zei, int set)
+{
+    oident oe;
+    int oid[OID_SIZE];
+
+    oe.proto = PROTO_Z3950;
+    oe.oclass = CLASS_ATTSET;
+    oe.value = set;
+
+    if (oid_ent_to_oid (&oe, oid))
+    {
+	zebraExplain_announceOid (zei, &zei->accessInfo->attributeSetIds, oid);
+	zebraExplain_announceOid (zei, &zei->curDatabaseInfo->
+				  accessInfo->attributeSetIds, oid);
+    }
 }
 
 int zebraExplain_addSU (ZebraExplainInfo zei, int set, int use)
@@ -647,13 +1217,15 @@ int zebraExplain_addSU (ZebraExplainInfo zei, int set, int use)
     struct zebSUInfoB *zsui;
 
     assert (zei->curDatabaseInfo);
-    for (zsui = zei->curDatabaseInfo->SUInfo; zsui; zsui=zsui->next)
+    for (zsui = zei->curDatabaseInfo->attributeDetails->SUInfo;
+	 zsui; zsui=zsui->next)
         if (zsui->info.use == use && zsui->info.set == set)
             return -1;
-    zsui = xmalloc (sizeof(*zsui));
-    zsui->next = zei->curDatabaseInfo->SUInfo;
-    zei->curDatabaseInfo->SUInfo = zsui;
-    zei->curDatabaseInfo->dirty = 1;
+    zebraExplain_addAttributeSet (zei, set);
+    zsui = nmem_malloc (zei->nmem, sizeof(*zsui));
+    zsui->next = zei->curDatabaseInfo->attributeDetails->SUInfo;
+    zei->curDatabaseInfo->attributeDetails->SUInfo = zsui;
+    zei->curDatabaseInfo->attributeDetails->dirty = 1;
     zei->dirty = 1;
     zsui->info.set = set;
     zsui->info.use = use;
@@ -661,20 +1233,33 @@ int zebraExplain_addSU (ZebraExplainInfo zei, int set, int use)
     return zsui->info.ordinal;
 }
 
+void zebraExplain_addSchema (ZebraExplainInfo zei, Odr_oid *oid)
+{
+    zebraExplain_announceOid (zei, &zei->accessInfo->schemas, oid);
+    zebraExplain_announceOid (zei, &zei->curDatabaseInfo->
+			      accessInfo->schemas, oid);
+}
+
 void zebraExplain_recordBytesIncrement (ZebraExplainInfo zei, int adjust_num)
 {
     assert (zei->curDatabaseInfo);
 
-    zei->curDatabaseInfo->recordBytes += adjust_num;
-    zei->curDatabaseInfo->dirty = 1;
+    if (adjust_num)
+    {
+	zei->curDatabaseInfo->recordBytes += adjust_num;
+	zei->curDatabaseInfo->dirty = 1;
+    }
 }
 
 void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num)
 {
     assert (zei->curDatabaseInfo);
 
-    zei->curDatabaseInfo->recordCount += adjust_num;
-    zei->curDatabaseInfo->dirty = 1;
+    if (adjust_num)
+    {
+	zei->curDatabaseInfo->recordCount += adjust_num;
+	zei->curDatabaseInfo->dirty = 1;
+    }
 }
 
 int zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num)
@@ -700,3 +1285,23 @@ RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec)
     return recordAttr;
 }
 
+static void att_loadset(void *p, const char *n, const char *name)
+{
+    data1_handle dh = p;
+    if (!data1_get_attset (dh, name))
+	logf (LOG_WARN, "Couldn't load attribute set %s", name);
+}
+
+void zebraExplain_loadAttsets (data1_handle dh, Res res)
+{
+    res_trav(res, "attset", dh, att_loadset);
+}
+
+/*
+     zebraExplain_addSU adds to AttributeDetails for a database and
+     adds attributeSet (in AccessInfo area) to DatabaseInfo if it doesn't
+     exist for the database.
+
+     If the database doesn't exist globally (in TargetInfo) an 
+     AttributeSetInfo must be added (globally).
+ */
