@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.155 2004-10-01 14:25:28 heikki Exp $
+/* $Id: zrpn.c,v 1.156 2004-10-01 15:36:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1695,6 +1695,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
     int  r, rset_no = 0;
     struct grep_info grep_info;
 
+    logf (LOG_DEBUG, "APT_numeric t='%s'",termz);
     if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
         return 0;
     while (1)
@@ -2281,7 +2282,7 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
 
     sort_sequence = (Z_SortKeySpecList *)
         nmem_malloc (nmem, sizeof(*sort_sequence));
-    sort_sequence->num_specs = 10;
+    sort_sequence->num_specs = 10; /* FIXME - Hard-coded number */
     sort_sequence->specs = (Z_SortKeySpec **)
         nmem_malloc (nmem, sort_sequence->num_specs *
                      sizeof(*sort_sequence->specs));

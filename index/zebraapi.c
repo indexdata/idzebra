@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.133 2004-09-27 10:44:49 adam Exp $
+/* $Id: zebraapi.c,v 1.134 2004-10-01 15:36:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -785,6 +785,9 @@ int zebra_search_RPN (ZebraHandle zh, ODR o,
     const char *max;
     zint maxhits;
     ASSERTZH;
+    assert(query);
+    assert(hits);
+    assert(setname);
     yaz_log(LOG_API,"zebra_search_rpn");
     zh->errCode=0;
     zh->hits = 0;
