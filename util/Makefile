@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.5 1994-08-18 08:21:08 quinn Exp $
+# $Id: Makefile,v 1.6 1994-08-18 09:43:49 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -14,8 +14,11 @@ CPP=cc -E
 
 all: $(LIB)
 
-$(TPROG): $(TPROG).o $(LIB) 
-	$(CC) -o $(TPROG) $(TPROG).o $(LIB)
+opt-test: opt-test.o $(LIB) 
+	$(CC) -o opt-test opt-test.o $(LIB)
+
+res-test: res-test.o $(LIB)
+	$(CC) -o res-test res-test.o $(LIB)
 
 $(LIB): $(PO)
 	rm -f $(LIB)
@@ -26,7 +29,7 @@ $(LIB): $(PO)
 	$(CC) -c $(DEFS) $(CFLAGS) $<
 
 clean:
-	rm -f *.[oa] $(TPROG) core mon.out gmon.out errlist
+	rm -f *.[oa] opt-test core mon.out gmon.out errlist
 
 dep depend:
 	$(CPP) $(INCLUDE) -M *.c >.depend
