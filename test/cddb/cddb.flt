@@ -1,10 +1,22 @@
 BEGIN			{ begin record cddb }
 /^DISCID=/ BODY /$/	{ data -element identifier $1 }
 /^DTITLE=/ BODY /$/	{ data -element title $1 }
-/^TTITLE[0-9]+=/ BODY /$/ {
-				begin element track
-			 	data -element title $1
-				end element
+/^EXTD=/ BODY /$/	{ data -element ext $1 }
+/^TTITLE/ /[0-9]+/ /=/ BODY /$/ { set trackstitle($1) $3 }
+/^EXTT/ /[0-9]+/ /=/ BODY /$/ { set tracksext($1) $3 }
+/^PLAYORDER/	{ 
+		foreach v [array names trackstitle] {
+			begin element track
+			data -element title $trackstitle($v)
+			if {[info exists tracksext($v)]} {
+				set d $tracksext($v)
+				if {[string length $d]} {
+					data -element ext $tracksext($v)
+				}
 			}
+			end element
+		}
+	}		
+			
 	
 

@@ -1,4 +1,4 @@
-# $Id: cddb.abs,v 1.1 2001-02-27 09:50:18 adam Exp $
+# $Id: cddb.abs,v 1.2 2001-02-27 10:10:40 adam Exp $
 
 name meta
 attset bib1.att
@@ -11,6 +11,7 @@ esetname B meta-b.est
 maptab meta-usmarc.map
 
 elm (2,1)		title			Title:w,Title:p
+elm (4,101)		titleext		Title-other-variant:w
 elm (2,2)		creator			Author:w,Author:p
 elm (2,21)		subject			Subject-heading
 elm (2,17)		description		-
@@ -31,4 +32,5 @@ elm (1,10)		rank			-
 elm (1,14)		localControlNumber	Local-number
 
 elm (4,100)		track			-
-elm (4,100)/(2,1)	tracktitle		-
+elm (4,100)/(2,1)	tracktitle		Title-series:w,Title-series:p
+elm (4,100)/(4,101)	trackext		-
