@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.26 2004-08-24 10:37:18 adam Exp $
+## $Id: Makefile.am,v 1.27 2004-08-30 21:36:53 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -14,17 +14,17 @@ libidzebra_api_la_SOURCES = dir.c dirs.c trav.c kinput.c kcompare.c \
 bin_PROGRAMS = zebraidx zebrasrv zebrash
 
 zebralibs = \
+ ../index/libidzebra-api.la \
  ../rset/libidzebra-rset.la \
+ ../recctrl/libidzebra-recctrl.la \
  ../dict/libidzebra-dict.la  \
  ../isams/libidzebra-isams.la \
  ../isamc/libidzebra-isamc.la \
  ../isamb/libidzebra-isamb.la \
- ../recctrl/libidzebra-recctrl.la \
  ../data1/libidzebra-data1.la \
  ../bfile/libidzebra-bfile.la \
  ../dfa/libidzebra-dfa.la \
- ../util/libidzebra-util.la \
- ../index/libidzebra-api.la
+ ../util/libidzebra-util.la
 
 zebraidx_SOURCES = main.c
 zebrasrv_SOURCES = zserver.c
@@ -35,7 +35,7 @@ kdump_SOURCES = kdump.c
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE) \
   -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
 
-zebrash_LDADD= $(zebralibs) $(YAZLALIB) $(READLINE_LIBS) $(TCL_LIB)
+zebrash_LDADD= $(zebralibs) $(YAZLALIB) $(TCL_LIB) $(READLINE_LIBS)
 
 LDADD = $(zebralibs) $(YAZLALIB) $(TCL_LIB)
 
