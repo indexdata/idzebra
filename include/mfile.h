@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.h,v $
- * Revision 1.3  1995-09-04 12:33:35  adam
+ * Revision 1.4  1995-11-30 08:33:30  adam
+ * Started work on commit facility.
+ *
+ * Revision 1.3  1995/09/04  12:33:35  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.2  1994/09/14  13:10:36  quinn

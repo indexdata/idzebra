@@ -1,12 +1,15 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- $Log: bfile.h,v $
- Revision 1.7  1995-09-04 12:33:35  adam
- Various cleanup. YAZ util used instead.
-
+ * $Log: bfile.h,v $
+ * Revision 1.8  1995-11-30 08:33:29  adam
+ * Started work on commit facility.
+ *
+ * Revision 1.7  1995/09/04  12:33:35  adam
+ * Various cleanup. YAZ util used instead.
+ *
  * Revision 1.6  1994/09/14  13:10:35  quinn
  * Small changes
  *
@@ -32,11 +35,14 @@
 typedef struct BFile_struct
 {
     MFile mf;
+    struct CFile_struct *cf;
 } *BFile, BFile_struct;
 
 int bf_close (BFile);
 BFile bf_open (const char *name, int block_size, int wflag);
 int bf_read (BFile bf, int no, int offset, int num, void *buf);
 int bf_write (BFile bf, int no, int offset, int num, const void *buf);
+void bf_cache (const char *name);
+void bf_commit (const char *name);
 
 #endif

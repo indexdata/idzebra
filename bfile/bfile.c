@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.11  1995-09-04 12:33:21  adam
+ * Revision 1.12  1995-11-30 08:33:10  adam
+ * Started work on commit facility.
+ *
+ * Revision 1.11  1995/09/04  12:33:21  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.10  1994/08/25  10:15:54  quinn
@@ -44,32 +47,98 @@
 
 #include <alexutil.h>
 #include <bfile.h>
+#include "cfile.h"
+
+static const char *cache_name = NULL;
+
+void bf_cache (const char *name)
+{
+    cache_name = name;
+}
 
 int bf_close (BFile bf)
 {
-    mf_close(bf->mf);
-    xfree(bf);
-    return(0);
+    if (bf->cf)
+        cf_close (bf->cf);
+    mf_close (bf->mf);
+    xfree (bf);
+    return 0;
 }
 
 BFile bf_open (const char *name, int block_size, int wflag)
 {
     BFile tmp = xmalloc(sizeof(BFile_struct));
 
-    if (!(tmp->mf = mf_open(0, name, block_size, wflag)))
+    if (cache_name)
     {
-        logf (LOG_FATAL, "Mfopen failed for %s", name); 
-	return(0);
+        FILE *outf;
+        int first_time;
+
+        logf (LOG_LOG, "cf,mf_open %s, cache_name=%s", name, cache_name);
+        tmp->mf = mf_open(0, name, block_size, wflag);
+        tmp->cf = cf_open(tmp->mf, cache_name, name, block_size, wflag,
+                          &first_time);
+
+        if (first_time)
+        {
+            outf = fopen (cache_name, "a");
+            fprintf (outf, "%s %d\n", name, block_size);
+            fclose (outf);
+        }
+    }
+    else
+    {
+        tmp->mf = mf_open(0, name, block_size, wflag);
+        tmp->cf = NULL;
+    }
+    if (!tmp->mf)
+    {
+        logf (LOG_FATAL, "mf_open failed for %s", name);
+        xfree (tmp);
+        return 0;
     }
     return(tmp);
 }
 
 int bf_read (BFile bf, int no, int offset, int num, void *buf)
 {
-    return mf_read(bf->mf, no, offset, num, buf);
+    int r;
+
+    if (bf->cf && (r=cf_read (bf->cf, no, offset, num, buf)) != -1)
+        return r;
+    return mf_read (bf->mf, no, offset, num, buf);
 }
 
 int bf_write (BFile bf, int no, int offset, int num, const void *buf)
 {
-    return mf_write(bf->mf, no, offset, num, buf);
+    if (bf->cf)
+        return cf_write (bf->cf, no, offset, num, buf);
+    return mf_write (bf->mf, no, offset, num, buf);
+}
+
+void bf_commit (const char *name)
+{
+    FILE *inf;
+    int block_size;
+    char path[256];
+    MFile mf;
+    CFile cf;
+    int first_time;
+
+    if (!(inf = fopen (name, "r")))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "cannot open commit %s", name);
+        exit (1);
+    }
+    while (fscanf (inf, "%s %d", path, &block_size) == 1)
+    {
+        mf = mf_open(0, path, block_size, 1);
+        cf = cf_open(mf, name, path, block_size, 0, &first_time);
+
+        cf_commit (cf);
+
+        cf_close (cf);
+        mf_close (mf);
+    }
+    fclose (inf);
 }
