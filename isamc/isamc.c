@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.17  1999-05-26 07:49:14  adam
+ * Revision 1.18  1999-06-30 09:08:23  adam
+ * Added coder to reset.
+ *
+ * Revision 1.17  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.16  1998/05/27 14:32:03  adam
@@ -109,6 +112,7 @@ ISAMC_M isc_getmethod (void)
     m->code_start = NULL;
     m->code_item = NULL;
     m->code_stop = NULL;
+    m->code_reset = NULL;
 
     m->compare_item = NULL;
 

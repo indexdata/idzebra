@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.h,v $
- * Revision 1.7  1998-03-13 15:30:50  adam
+ * Revision 1.8  1999-06-30 09:08:23  adam
+ * Added coder to reset.
+ *
+ * Revision 1.7  1998/03/13 15:30:50  adam
  * New functions isc_block_used and isc_block_size. Fixed 'leak'
  * in isc_alloc_block.
  *
@@ -61,6 +64,7 @@ typedef struct ISAMC_M_s {
     void *(*code_start)(int mode);
     void (*code_stop)(int mode, void *p);
     void (*code_item)(int mode, void *p, char **dst, char **src);
+    void (*code_reset)(void *p);
 
     int max_blocks_mem;
     int debug;

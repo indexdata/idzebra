@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.28  1999-05-26 07:49:13  adam
+ * Revision 1.29  1999-06-30 09:08:23  adam
+ * Added coder to reset.
+ *
+ * Revision 1.28  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.27  1999/05/12 13:08:06  adam
@@ -193,6 +196,13 @@ static void *iscz1_code_start (int mode)
     return p;
 }
 
+static void iscz1_code_reset (void *vp)
+{
+    struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
+    p->key.sysno = 0;
+    p->key.seqno = 0;
+}
+
 static void iscz1_code_stop (int mode, void *p)
 {
     xfree (p);
@@ -298,6 +308,7 @@ ISAMC_M key_isamc_m (Res res)
     me->code_start = iscz1_code_start;
     me->code_item = iscz1_code_item;
     me->code_stop = iscz1_code_stop;
+    me->code_reset = iscz1_code_reset;
 
     me->debug = atoi(res_get_def (res, "isamcDebug", "0"));
 
