@@ -1,6 +1,6 @@
-; $Id: zebra.nsi,v 1.11 2003-02-27 11:33:46 adam Exp $
+; $Id: zebra.nsi,v 1.12 2003-03-26 20:58:09 adam Exp $
 
-!define VERSION "1.3.7"
+!define VERSION "1.3.8"
 
 Name "Zebra"
 Caption "Index Data Yebra ${VERSION} Setup"
