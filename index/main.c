@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.103 2003-03-25 19:56:01 adam Exp $
+/* $Id: main.c,v 1.104 2003-05-20 21:39:57 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -205,9 +205,9 @@ int main (int argc, char **argv)
 		if (!trans_started)
 		{
 		    trans_started=1;
-                    zebra_begin_trans (zh, 1);
+                    if (zebra_begin_trans (zh, 1))
+                        exit(1);
 		}
-
                 switch (cmd)
                 {
                 case 'u':

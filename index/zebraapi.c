@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.101 2003-05-20 13:52:41 adam Exp $
+/* $Id: zebraapi.c,v 1.102 2003-05-20 21:39:57 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1040,7 +1040,8 @@ void zebra_create_database (ZebraHandle zh, const char *database)
 
     if (zebra_select_database (zh, database))
         return;
-    zebra_begin_trans (zh, 1);
+    if (zebra_begin_trans (zh, 1))
+        return;
 
     zs = zh->service;
     /* announce database */
@@ -1128,6 +1129,7 @@ void zebra_end_read (ZebraHandle zh)
 
 int zebra_begin_trans (ZebraHandle zh, int rw)
 {
+    yaz_log(LOG_LOG, "zebra_begin_trans rw=%d trans=%d", rw, zh->trans_no);
     if (!zh->res)
     {
         zh->errCode = 2;
@@ -1158,8 +1160,6 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         zh->trans_w_no = zh->trans_no;
 
         zh->errCode=0;
-        
-        yaz_log (LOG_LOG, "zebra_begin_trans");
         
         zh->records_inserted = 0;
         zh->records_updated = 0;
@@ -1225,6 +1225,21 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
                                        zh->path_reg);
         if (zh->reg)
             zh->reg->seqno = seqno;
+        else
+        {
+            zebra_set_state (zh, 'o', seqno);
+            
+            zebra_unlock (zh->lock_shadow);
+            zebra_unlock (zh->lock_normal);
+
+            zh->trans_no--;
+            zh->trans_w_no = 0;
+
+            zh->errCode = 2;
+            zh->errString = "zebra_begin_trans: cannot open register";
+            yaz_log(LOG_FATAL, zh->errString);
+            return -1;
+        }
     }
     else
     {
@@ -1288,6 +1303,9 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
                                        zh->res, zh->path_reg);
         if (!zh->reg)
         {
+            zebra_unlock (zh->lock_normal);
+            zebra_unlock (zh->lock_shadow);
+            zh->trans_no--;
             zh->errCode = 109;
             return -1;
         }
