@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.59 2002-04-26 08:44:47 adam Exp $
+ * $Id: zebraapi.c,v 1.60 2002-05-07 11:05:19 adam Exp $
  */
 
 #include <assert.h>
@@ -37,7 +37,7 @@ static void zebra_chdir (ZebraService zh)
 
 static void zebra_flush_reg (ZebraHandle zh)
 {
-    zebraExplain_flush (zh->reg->zei, 1, zh);
+    zebraExplain_flush (zh->reg->zei, zh);
     
     extract_flushWriteKeys (zh);
     zebra_index_merge (zh);
@@ -301,7 +301,7 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
     zebra_chdir (zs);
     if (reg->records)
     {
-        zebraExplain_close (reg->zei, 0);
+        zebraExplain_close (reg->zei);
         dict_close (reg->dict);
         if (reg->matchDict)
             dict_close (reg->matchDict);
@@ -1100,6 +1100,8 @@ void zebra_end_trans (ZebraHandle zh)
 
     yaz_log (LOG_LOG, "zebra_end_trans");
     rval = res_get (zh->res, "shadow");
+
+    zebraExplain_runNumberIncrement (zh->reg->zei, 1);
 
     zebra_flush_reg (zh);
 

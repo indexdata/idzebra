@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.12  2002-02-20 17:30:01  adam
+ * Revision 1.13  2002-05-07 11:05:19  adam
+ * data1 updates. Run number fix
+ *
+ * Revision 1.12  2002/02/20 17:30:01  adam
  * Work on new API. Locking system re-implemented
  *
  * Revision 1.11  2001/10/15 19:53:43  adam
@@ -64,8 +67,7 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 				    int (*updateFunc)(void *handle,
 						      Record drec,
 						      data1_node *n));
-void zebraExplain_close (ZebraExplainInfo zei, int writeFlag /*,
-							       int (*updateH)(Record drec, data1_node *n)*/);
+void zebraExplain_close (ZebraExplainInfo zei);
 int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database);
 int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 			      int explain_database);
@@ -76,8 +78,7 @@ void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_recordBytesIncrement (ZebraExplainInfo zei, int adjust_num);
 int zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_loadAttsets (data1_handle dh, Res res);
-void zebraExplain_flush (ZebraExplainInfo zei, int writeFlag,
-			 void *updateHandle);
+void zebraExplain_flush (ZebraExplainInfo zei, void *updateHandle);
 
 int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
 			     const char **db, int *set, int *use);

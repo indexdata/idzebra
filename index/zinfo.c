@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zinfo.c,v 1.28 2002-05-03 13:49:04 adam Exp $
+ * $Id: zinfo.c,v 1.29 2002-05-07 11:05:19 adam Exp $
  */
 
 #include <stdlib.h>
@@ -78,6 +78,7 @@ struct zebraExplainInfo {
     int  ordinalSU;
     int  runNumber;
     int  dirty;
+    int write_flag;
     Records records;
     data1_handle dh;
     Res res;
@@ -139,12 +140,12 @@ static Record createRecord (Records records, int *sysno)
     return rec;
 }
 
-void zebraExplain_flush (ZebraExplainInfo zei, int writeFlag, void *handle)
+void zebraExplain_flush (ZebraExplainInfo zei, void *handle)
 {
     if (!zei)
         return;
     zei->updateHandle = handle;
-    if (writeFlag)
+    if (zei->write_flag)
     {
 	struct zebDatabaseInfoB *zdi;
 	zebAccessObject o;
@@ -180,14 +181,14 @@ void zebraExplain_flush (ZebraExplainInfo zei, int writeFlag, void *handle)
     }
 }
 
-void zebraExplain_close (ZebraExplainInfo zei, int writeFlag)
+void zebraExplain_close (ZebraExplainInfo zei)
 {
 #if ZINFO_DEBUG
-    logf (LOG_LOG, "zebraExplain_close wr=%d", writeFlag);
+    yaz_log (LOG_LOG, "zebraExplain_close");
 #endif
     if (!zei)
 	return;
-    zebraExplain_flush (zei, writeFlag, zei->updateHandle);
+    zebraExplain_flush (zei, zei->updateHandle);
     nmem_destroy (zei->nmem);
 }
 
@@ -274,6 +275,7 @@ ZebraExplainInfo zebraExplain_open (
     logf (LOG_LOG, "zebraExplain_open wr=%d", writeFlag);
 #endif
     zei = (ZebraExplainInfo) nmem_malloc (nmem, sizeof(*zei));
+    zei->write_flag = writeFlag;
     zei->updateHandle = updateHandle;
     zei->updateFunc = updateFunc;
     zei->dirty = 0;
@@ -395,6 +397,7 @@ ZebraExplainInfo zebraExplain_open (
 	    np = np->child;
 	    assert (np && np->which == DATA1N_data);
 	    zei->runNumber = atoi_n (np->u.data.data, np->u.data.len);
+            yaz_log (LOG_LOG, "READ runnumber = %d", zei->runNumber);
 	    *zdip = NULL;
 	}
 	rec_rm (&trec);
@@ -423,13 +426,9 @@ ZebraExplainInfo zebraExplain_open (
 		nmem_destroy (zei->nmem);
 		return 0;
 	    }
-            data1_pr_tree (zei->dh, zei->data1_target, stdout);
-            
 	    node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target->child,
 					    "targetInfo");
 	    assert (node_tgtinfo);
-
-            data1_pr_tree (zei->dh, zei->data1_target, stdout);
 
 	    zebraExplain_initCommonInfo (zei, node_tgtinfo);
 	    zebraExplain_initAccessInfo (zei, node_tgtinfo);
@@ -633,7 +632,8 @@ static void zebraExplain_updateCommonInfo (ZebraExplainInfo zei, data1_node *n)
 {
     data1_node *c = data1_search_tag (zei->dh, n->child, "commonInfo");
     assert (c);
-    data1_mk_tag_data_text (zei->dh, c, "dateChanged", zei->date, zei->nmem);
+    data1_mk_tag_data_text_uni (zei->dh, c, "dateChanged", zei->date,
+                                zei->nmem);
 }
 
 static void zebraExplain_initAccessInfo (ZebraExplainInfo zei, data1_node *n)
@@ -1307,7 +1307,10 @@ void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num)
 int zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num)
 {
     if (adjust_num)
+    {
 	zei->dirty = 1;
+        yaz_log (LOG_LOG, "zinfo run number=%d", zei->runNumber+adjust_num);
+    }
     return zei->runNumber += adjust_num;
 }
 

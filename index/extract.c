@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: extract.c,v 1.118 2002-05-03 13:49:04 adam Exp $
+ * $Id: extract.c,v 1.119 2002-05-07 11:05:19 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -564,8 +564,9 @@ static int recordExtract (ZebraHandle zh,
 	if (recordAttr->runNumber ==
             zebraExplain_runNumberIncrement (zh->reg->zei, 0))
 	{
-	    logf (LOG_LOG, "skipped %s %s " PRINTF_OFF_T, rGroup->recordType,
-		  fname, recordOffset);
+            yaz_log (LOG_LOG, "run number = %d", recordAttr->runNumber);
+	    yaz_log (LOG_LOG, "skipped %s %s " PRINTF_OFF_T,
+                     rGroup->recordType, fname, recordOffset);
 	    extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
 	    rec_rm (&rec);
 	    logRecord (zh);

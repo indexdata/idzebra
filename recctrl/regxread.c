@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: regxread.c,v 1.41 2002-05-03 17:59:17 adam Exp $
+ * $Id: regxread.c,v 1.42 2002-05-07 11:05:20 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -672,7 +672,7 @@ static void execData (struct lexSpec *spec,
     {
 	org_len = 0;
 
-	res = data1_mk_node (spec->dh, spec->m, DATA1N_data, parent);
+	res = data1_mk_node2 (spec->dh, spec->m, DATA1N_data, parent);
 	res->u.data.what = DATA1I_text;
 	res->u.data.len = 0;
 	res->u.data.formatted_text = formatted_text;
@@ -762,7 +762,7 @@ static void variantBegin (struct lexSpec *spec,
     
     if (parent->which != DATA1N_variant)
     {
-	res = data1_mk_node (spec->dh, spec->m, DATA1N_variant, parent);
+	res = data1_mk_node2 (spec->dh, spec->m, DATA1N_variant, parent);
 	if (spec->d1_stack[spec->d1_level])
 	    tagDataRelease (spec);
 	spec->d1_stack[spec->d1_level] = res;
@@ -779,7 +779,7 @@ static void variantBegin (struct lexSpec *spec,
     logf (LOG_LOG, "variant node (%d)", spec->d1_level);
 #endif
     parent = spec->d1_stack[spec->d1_level-1];
-    res = data1_mk_node (spec->dh, spec->m, DATA1N_variant, parent);
+    res = data1_mk_node2 (spec->dh, spec->m, DATA1N_variant, parent);
     res->u.variant.type = tp;
 
     if (value_len >= DATA1_LOCALDATA)
@@ -828,7 +828,7 @@ static void tagBegin (struct lexSpec *spec,
     parent = spec->d1_stack[spec->d1_level -1];
     partag = get_parent_tag(spec->dh, parent);
    
-    res = data1_mk_node (spec->dh, spec->m, DATA1N_tag, parent);
+    res = data1_mk_node2 (spec->dh, spec->m, DATA1N_tag, parent);
 
     if (len >= DATA1_LOCALDATA)
 	res->u.tag.tag = (char *) nmem_malloc (spec->m, len+1);

@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data 
  * All rights reserved.
  *
- * $Id: zserver.c,v 1.87 2002-04-05 08:46:26 adam Exp $
+ * $Id: zserver.c,v 1.88 2002-05-07 11:05:19 adam Exp $
  */
 
 #include <stdio.h>
@@ -620,6 +620,12 @@ static void bend_start (struct statserv_options_block *sob)
 
 static void bend_stop(struct statserv_options_block *sob)
 {
+#ifdef WIN32
+
+#else
+    if (!sob->inetd) 
+        unlink ("zebrasrv.pid");
+#endif
     if (sob->handle)
     {
 	ZebraService service = sob->handle;
