@@ -2,6 +2,9 @@
 #ifndef ZEBRA_LOCK_H
 #define ZEBRA_LOCK_H
 
+#ifdef WIN32
+#include <windows.h>
+#endif
 #if HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
@@ -11,10 +14,14 @@
 YAZ_BEGIN_CDECL
 
 typedef struct {
-#if HAVE_PTHREAD_H
-    pthread_mutex_t mutex;
+#ifdef WIN32
+    CRITICAL_SECTION mutex;
 #else
+# if HAVE_PTHREAD_H
+    pthread_mutex_t mutex;
+# else
     int dummy;
+# endif
 #endif
 } Zebra_mutex;
 

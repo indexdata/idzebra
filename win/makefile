@@ -1,5 +1,5 @@
 # Z'mbol makefile for MS NMAKE
-# $Id: makefile,v 1.3 2000-04-17 14:22:00 adam Exp $
+# $Id: makefile,v 1.4 2000-04-19 14:35:59 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -169,6 +169,7 @@ LNKOPT= $(COMMON_LNK_OPTIONS) $(RELEASE_LNK_OPTIONS) $(LNK_LIBS)
 # need to be specified, though
 
 ZSERVER_OBJS= \
+	$(OBJDIR)\kinput.obj \
 	$(OBJDIR)\zserver.obj 
 
 ZEBRAIDX_OBJS= \
@@ -183,6 +184,7 @@ APITEST_OBJS= \
 	$(OBJDIR)\apitest.obj
 
 ZEBRALIB_OBJS= \
+	$(OBJDIR)\zebra-lock.obj \
 	$(OBJDIR)\attribute.obj \
 	$(OBJDIR)\bfile.obj \
 	$(OBJDIR)\bset.obj \
@@ -390,7 +392,10 @@ $(ALL_OBJS): makefile
 ###########################################################
 #
 # $Log: makefile,v $
-# Revision 1.3  2000-04-17 14:22:00  adam
+# Revision 1.4  2000-04-19 14:35:59  adam
+# WIN32 update (this version is known not to work on Windows).
+#
+# Revision 1.3  2000/04/17 14:22:00  adam
 # WIN32 update.
 #
 # Revision 1.2  2000/02/08 12:34:17  adam

@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.31  2000-04-05 10:07:02  adam
+ * Revision 1.32  2000-04-19 14:35:59  adam
+ * WIN32 update (this version is known not to work on Windows).
+ *
+ * Revision 1.31  2000/04/05 10:07:02  adam
  * Minor zebra compile fix.
  *
  * Revision 1.30  2000/04/05 09:49:35  adam
@@ -169,10 +172,7 @@ ZebraHandle zebra_open (ZebraService zs)
 
     assert (zs);
     if (zs->stop_flag)
-    {
-	zh->errCode = 1019;
 	return 0;
-    }
 
     zh = (ZebraHandle) xmalloc (sizeof(*zh));
 
