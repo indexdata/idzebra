@@ -1,10 +1,10 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.12 1994-09-20 09:02:30 adam Exp $
+# $Id: Makefile,v 1.13 1994-09-22 10:38:34 quinn Exp $
 
 SHELL=/bin/sh
-SUBDIR=util bfile dict isam
+SUBDIR=util bfile dict
 
 all:
 	for i in $(SUBDIR); do cd $$i; if make; then cd ..; else exit 1; fi; done
