@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.124 2004-10-26 15:32:11 heikki Exp $
+/* $Id: index.h,v 1.125 2004-11-29 21:45:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -410,7 +410,8 @@ extern struct rank_control *rankliv_class;
 int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
-			int *rec_lenp, char **basenamep);
+			int *rec_lenp, char **basenamep,
+			char **addinfo);
 
 void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no);
 

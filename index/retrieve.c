@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.26 2004-11-19 10:27:03 heikki Exp $
+/* $Id: retrieve.c,v 1.27 2004-11-29 21:45:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -85,7 +85,8 @@ void zebra_record_int_end (void *fh, off_t off)
 int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
-			int *rec_lenp, char **basenamep)
+			int *rec_lenp, char **basenamep,
+			char **addinfo)
 {
     Record rec;
     char *fname, *file_type, *basename;
@@ -96,6 +97,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
     void *clientData;
     int raw_mode = 0;
 
+    *addinfo = 0;
     rec = rec_get (zh->reg->records, sysno);
     if (!rec)
     {
@@ -192,6 +194,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
     retrieveCtrl.comp = comp;
     retrieveCtrl.encoding = zh->record_encoding;
     retrieveCtrl.diagnostic = 0;
+    retrieveCtrl.addinfo = 0;
     retrieveCtrl.dh = zh->reg->dh;
     retrieveCtrl.res = zh->res;
     retrieveCtrl.rec_buf = 0;
@@ -205,5 +208,6 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
         close (fc.fd);
     rec_rm (&rec);
 
+    *addinfo = retrieveCtrl.addinfo;
     return retrieveCtrl.diagnostic;
 }

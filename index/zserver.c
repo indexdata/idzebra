@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.123 2004-11-19 10:27:08 heikki Exp $
+/* $Id: zserver.c,v 1.124 2004-11-29 21:45:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -271,7 +271,7 @@ int bend_search (void *handle, bend_search_rr *r)
         zebra_result (zh, &r->errcode, &r->errstring);
         return 0;
     }
-    yaz_log (YLOG_LOG, "ResultSet '%s'", r->setname);
+    yaz_log (YLOG_DEBUG, "ResultSet '%s'", r->setname);
     switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:

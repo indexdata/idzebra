@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.93 2004-11-19 10:27:12 heikki Exp $
+/* $Id: recgrs.c,v 1.94 2004-11-29 21:45:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -900,7 +900,8 @@ int zebra_grs_extract(void *clientData, struct recExtractCtrl *p,
 /*
  * Return: -1: Nothing done. 0: Ok. >0: Bib-1 diagnostic.
  */
-static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
+static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c,
+			char **addinfo, ODR o)
 {
     data1_esetname *eset;
     Z_Espec1 *espec = 0;
@@ -915,6 +916,7 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
 					 c->u.simple->u.generic)))
 	{
 	    yaz_log(YLOG_LOG, "Unknown esetname '%s'", c->u.simple->u.generic);
+	    *addinfo = odr_strdup(o, c->u.simple->u.generic);
 	    return 25; /* invalid esetname */
 	}
 	yaz_log(YLOG_DEBUG, "Esetname '%s' in simple compspec",
@@ -934,8 +936,9 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
 			  data1_getesetbyname(dh, n->u.root.absyn,
 					      p->u.elementSetName)))
 		    {
-			yaz_log(YLOG_LOG, "Unknown esetname '%s'",
+			yaz_log(YLOG_DEBUG, "Unknown esetname '%s'",
 			     p->u.elementSetName);
+			*addinfo = odr_strdup(o, p->u.elementSetName);
 			return 25; /* invalid esetname */
 		    }
 		    yaz_log(YLOG_DEBUG, "Esetname '%s' in complex compspec",
@@ -1213,7 +1216,8 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     }
 
     yaz_log(YLOG_DEBUG, "grs_retrieve: element spec");
-    if (p->comp && (res = process_comp(p->dh, node, p->comp)) > 0)
+    if (p->comp && (res = process_comp(p->dh, node, p->comp, &p->addinfo,
+				       p->odr)) > 0)
     {
 	p->diagnostic = res;
 	if (onode)

@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.3 2004-09-28 13:31:18 adam Exp $
+/* $Id: recctrl.h,v 1.4 2004-11-29 21:45:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -86,7 +86,7 @@ struct recRetrieveCtrl {
     void       *rec_buf;
     int        rec_len;
     int        diagnostic;
-    char *message;
+    char       *addinfo;
 };
 
 typedef struct recType *RecType;

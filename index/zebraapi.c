@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.140 2004-11-19 10:27:03 heikki Exp $
+/* $Id: zebraapi.c,v 1.141 2004-11-29 21:45:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -904,8 +904,8 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
 					stream, input_format, comp,
 					&recs[i].format, &recs[i].buf,
 					&recs[i].len,
-					&recs[i].base);
-		recs[i].errString = NULL;
+					&recs[i].base,
+					&recs[i].errString);
                 recs[i].score=poset[i].score;
                 recs[i].sysno=poset[i].sysno;
 	    }
@@ -2008,10 +2008,10 @@ void api_records_retrieve (ZebraHandle zh, ODR stream,
 					&recs[i].format, 
 					&b,
 					&recs[i].len,
-					&recs[i].base);
+					&recs[i].base,
+					&recs[i].errString);
 		recs[i].buf = (char *) odr_malloc(stream,recs[i].len);
 		memcpy(recs[i].buf, b, recs[i].len);
-		recs[i].errString = 0; /* Hmmm !!! we should get this */ 
 		recs[i].sysno = poset[i].sysno;
 		recs[i].score = poset[i].score;
 	    }
