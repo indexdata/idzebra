@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookupec.c,v $
- * Revision 1.2  1994-09-22 14:43:57  adam
+ * Revision 1.3  1994-09-26 16:31:06  adam
+ * Minor changes.
+ *
+ * Revision 1.2  1994/09/22  14:43:57  adam
  * First functional version of lookup with error correction. A 'range'
  * specified the maximum number of insertions+deletions+substitutions.
  *
@@ -14,7 +17,6 @@
  * Type 2 is default. depend rule chooses current rule.
  *
  */
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
