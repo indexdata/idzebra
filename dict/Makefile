@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.15 1995-09-04 12:33:31 adam Exp $
+# $Id: Makefile,v 1.16 1995-10-06 09:04:03 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -13,7 +13,7 @@ TPROG2=dictext
 #CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 LIB=../lib/dict.a 
-PO = dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o \
+PO = scan.o dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o \
  lookupec.o lookgrep.o
 CPP=cc -E
 

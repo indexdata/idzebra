@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.12  1995-09-14 11:53:02  adam
+ * Revision 1.13  1995-10-06 09:03:51  adam
+ * First version of scan.
+ *
+ * Revision 1.12  1995/09/14  11:53:02  adam
  * Grep handle function parameter info is const now.
  *
  * Revision 1.11  1995/09/04  09:09:51  adam
@@ -115,6 +118,9 @@ int        dict_lookup_grep (Dict dict, Dict_char *p, int range,
                              int (*f)(Dict_char *name, const char *info));
 int        dict_strcmp (const Dict_char *s1, const Dict_char *s2);
 int        dict_strlen (const Dict_char *s);
+int	   dict_scan (Dict dict, Dict_char *str, 
+		      int *before, int *after,
+		      int (*f)(Dict_char *name, const char *info, int pos));
 
 #define DICT_EOS        0
 #define DICT_type(x)    0[(Dict_ptr*) x]
