@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.19 2002-11-26 22:04:13 adam Exp $
+# $Id: makefile,v 1.20 2002-11-26 22:20:06 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -34,8 +34,6 @@ YAZLIBS=$(YAZLIB)
 YAZBINDIR=$(YAZDIR)\bin
 YAZ_DLL_SOURCE=$(YAZBINDIR)\yaz.dll
 YAZ_DLL_TARGET=$(BINDIR)\yaz.dll
-
-DEFAULT_PROFILE_PATH=0
 
 # BZIP2 settings. Uncomment and specify if you wish to use LIBBZIP2.
 # (C) 1996-1999 Julian Seward <jseward@acm.org> http://www.bzip2.org
@@ -127,6 +125,7 @@ COMMON_C_OPTIONS=          \
   /FR"$(OBJDIR)\\"         \
   /Fo"$(OBJDIR)\\"         \
   /Fd"$(OBJDIR)\\"         \
+  /DDEFAULT_PROFILE_PATH=0 \
   $(BZIP2DEF)
 
 COMMON_C_INCLUDES= \
