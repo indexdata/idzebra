@@ -27,6 +27,8 @@ sub new {
     bless ($self, $class);
     $self->{cql_ct} = undef;
     return ($self);
+
+    $self->{databases} = {};
 }
 
 sub start_service {
@@ -70,9 +72,11 @@ sub open {
     }    
 
     unless (defined($self->{zh})) {
-	$self->{zh}=IDZebra::open($self->{zs}) #if ($self->{zs}); 
+	$self->{zh}=IDZebra::open($self->{zs}); 
     }   
-  
+
+    # Reset result set counter
+    $self->{rscount} = 0;
 
     # This is needed in order to somehow initialize the service
     $self->select_databases("Default");
@@ -124,16 +128,14 @@ sub DESTROY {
     }
 }
 # -----------------------------------------------------------------------------
-# Record group selection
+# Record group selection  This is a bit nasty... but used at many places 
 # -----------------------------------------------------------------------------
 sub group {
     my ($self,%args) = @_;
-#    print STDERR "A\n";
     if ($#_ > 0) {
 	$self->{rg} = $self->_makeRecordGroup(%args);
 	$self->_selectRecordGroup($self->{rg});
     }
-#    print STDERR "B\n";
     return($self->{rg});
 }
 
@@ -236,15 +238,42 @@ sub _selectRecordGroup {
     unless ($dbName = $rg->{databaseName}) {
 	$dbName = 'Default';
     }
-    if (IDZebra::select_database($self->{zh}, $dbName)) {
-	logf(LOG_FATAL, 
-	     "Could not select database %s errCode=%d",
-	     $dbName,
-	     $self->errCode());
-	croak("Fatal error selecting record group");
-    } else {
-	logf(LOG_LOG,"Database %s selected",$dbName);
+    if ($self->select_databases($dbName)) {
+	croak("Fatal error selecting database $dbName");
     }
+}
+# -----------------------------------------------------------------------------
+# Selecting databases for search (and also for updating - internally)
+# -----------------------------------------------------------------------------
+sub select_databases {
+    my ($self, @databases) = @_;
+
+    my $changed = 0;
+    foreach my $db (@databases) {
+	next if ($self->{databases}{$db});
+	$changed++;
+    }
+
+    if ($changed) {
+
+	delete ($self->{databases});
+	foreach my $db (@databases) {
+	    $self->{databases}{$db}++;
+	}
+
+	if (my $res = IDZebra::select_databases($self->{zh}, 
+						($#databases + 1), 
+						\@databases)) {
+	    logf(LOG_FATAL, 
+		 "Could not select database(s) %s errCode=%d",
+		 join(",",@databases),
+		 $self->errCode());
+	    return ($res);
+	} else {
+	    logf(LOG_LOG,"Database(s) selected: %s",join(",",@databases));
+	}
+    }
+    return (0);
 }
 
 # -----------------------------------------------------------------------------
@@ -272,9 +301,6 @@ sub begin_trans {
     my ($self) = @_;
     IDZebra::begin_trans($self->{zh});
 }
-
-
-
 
 sub end_trans {
     my ($self) = @_;
@@ -332,7 +358,8 @@ sub compact {
 
 sub update {
     my ($self, %args) = @_;
-    my $rg = $self->update_args(%args);
+    my $rg = $self->_update_args(%args);
+    $self->_selectRecordGroup($rg);
     $self->begin_trans;
     IDZebra::repository_update($self->{zh});
     $self->_selectRecordGroup($self->{rg});
@@ -341,7 +368,8 @@ sub update {
 
 sub delete {
     my ($self, %args) = @_;
-    my $rg = $self->update_args(%args);
+    my $rg = $self->_update_args(%args);
+    $self->_selectRecordGroup($rg);
     $self->begin_trans;
     IDZebra::repository_delete($self->{zh});
     $self->_selectRecordGroup($self->{rg});
@@ -350,14 +378,15 @@ sub delete {
 
 sub show {
     my ($self, %args) = @_;
-    my $rg = $self->update_args(%args);
+    my $rg = $self->_update_args(%args);
+    $self->_selectRecordGroup($rg);
     $self->begin_trans;
     IDZebra::repository_show($self->{zh});
     $self->_selectRecordGroup($self->{rg});
     $self->end_trans;
 }
 
-sub update_args {
+sub _update_args {
     my ($self, %args) = @_;
     my $rg = $self->_makeRecordGroup(%args);
     $self->_selectRecordGroup($rg);
@@ -371,15 +400,15 @@ sub update_args {
 sub update_record {
     my ($self, %args) = @_;
     return(IDZebra::update_record($self->{zh},
-				  $self->record_update_args(%args)));
+				  $self->_record_update_args(%args)));
 }
 
 sub delete_record {
     my ($self, %args) = @_;
     return(IDZebra::delete_record($self->{zh},
-				  $self->record_update_args(%args)));
+				  $self->_record_update_args(%args)));
 }
-sub record_update_args {
+sub _record_update_args {
     my ($self, %args) = @_;
 
     my $sysno   = $args{sysno}      ? $args{sysno}      : 0;
@@ -426,17 +455,71 @@ sub record_update_args {
 }
 
 # -----------------------------------------------------------------------------
-# Search 
-# -----------------------------------------------------------------------------
-sub select_databases {
-    my ($self, @databases) = @_;
-    return (IDZebra::select_databases($self->{zh}, 
-				      ($#databases + 1), 
-				      \@databases));
+# CQL stuff
+sub cqlmap {
+    my ($self,$mapfile) = @_;
+    if ($#_ > 0) {
+	if ($self->{cql_mapfile} ne $mapfile) {
+	    unless (-f $mapfile) {
+		croak("Cannot find $mapfile");
+	    }
+	    if (defined ($self->{cql_ct})) {
+	      IDZebra::cql_transform_close($self->{cql_ct});
+	    }
+	    $self->{cql_ct} = IDZebra::cql_transform_open_fname($mapfile);
+	    $self->{cql_mapfile} = $mapfile;
+	}
+    }
+    return ($self->{cql_mapfile});
 }
 
-sub search_pqf {
+sub cql2pqf {
+    my ($self, $cqlquery) = @_;
+    unless (defined($self->{cql_ct})) {
+	croak("CQL map file is not specified yet.");
+    }
+    my $res = "\0" x 2048;
+    my $r = IDZebra::cql2pqf($self->{cql_ct}, $cqlquery, $res, 2048);
+    unless ($r) {return (undef)};
+    $res=~s/\0.+$//g;
+    return ($res); 
+}
+
+
+# -----------------------------------------------------------------------------
+# Search 
+# -----------------------------------------------------------------------------
+sub search {
+    my ($self, %args) = @_;
+
+    if ($args{cqlmap}) { $self->cqlmap($args{cqlmap}); }
+
+    my $query;
+    if ($args{pqf}) {
+	$query = $args{pqf};
+    }
+    elsif ($args{cql}) {
+	unless ($query = $self->cql2pqf($args{cql})) {
+	    croak ("Invalid CQL query: '$args{cql}'");
+	}
+    }
+    unless ($query) {
+	croak ("No query given to search");
+    }
+
+    my $rsname = $args{rsname} ? $args{rsname} : $self->_new_setname;
+
+    return ($self->_search_pqf($query, $rsname));
+}
+
+sub _new_setname {
+    my ($self) = @_;
+    return ("set_".$self->{rscount}++);
+}
+
+sub _search_pqf {
     my ($self, $query, $setname) = @_;
+
     my $hits = IDZebra::search_PQF($self->{zh},
 				   $self->{odr_input},
 				   $self->{odr_output},
@@ -449,32 +532,6 @@ sub search_pqf {
 				      errCode     => $self->errCode,
 				      errString   => $self->errString);
     return($rs);
-}
-
-sub cqlmap {
-    my ($self,$mapfile) = @_;
-    if ($#_ > 0) {
-	unless (-f $mapfile) {
-	    croak("Cannot find $mapfile");
-	}
-	if (defined ($self->{cql_ct})) {
-	  IDZebra::cql_transform_close($self->{cql_ct});
-	}
-	$self->{cql_ct} = IDZebra::cql_transform_open_fname($mapfile);
-	$self->{cql_mapfile} = $mapfile;
-    }
-    return ($self->{cql_mapfile});
-}
-
-sub cql2pqf {
-    my ($self, $cqlquery) = @_;
-    unless (defined($self->{cql_ct})) {
-	croak("CQL map file is not specified yet.");
-    }
-    my $res = "\0" x 2048;
-    my $r = IDZebra::cql2pqf($self->{cql_ct}, $cqlquery, $res, 2048);
-    $res=~s/\0.+$//g;
-    return ($res); 
 }
 
 sub search_cql {
@@ -719,6 +776,8 @@ Don't try this at home! This case, the record identifier string (which is normal
 
 
 B<Important:> Note, that one record can be updated only once within a transaction - all subsequent updates are skipped. 
+
+=head1 SEARCHING
 
 
 =head1 COPYRIGHT

@@ -42,6 +42,8 @@ sub DESTROY {
 
 #    print STDERR "Destroy RS\n";
 
+    # Deleteresultset?
+
     if ($self->{odr_stream}) {
         IDZebra::odr_reset($self->{odr_stream});
         IDZebra::odr_destroy($self->{odr_stream});

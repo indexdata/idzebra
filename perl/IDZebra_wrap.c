@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.5 2003-02-27 23:12:18 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.6 2003-02-28 16:17:42 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -7831,6 +7831,64 @@ XS(_wrap_grs_perl_readf) {
 }
 
 
+XS(_wrap_grs_perl_readline) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        struct perl_context *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: grs_perl_readline(context);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_perl_context,0) < 0) {
+                SWIG_croak("Type error in argument 1 of grs_perl_readline. Expected _p_perl_context");
+            }
+        }
+        result = (int)grs_perl_readline(arg1);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_grs_perl_getc) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        struct perl_context *arg1 ;
+        char result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: grs_perl_getc(context);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_perl_context,0) < 0) {
+                SWIG_croak("Type error in argument 1 of grs_perl_getc. Expected _p_perl_context");
+            }
+        }
+        result = (char)grs_perl_getc(arg1);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setpvn((SV*)ST(argvi++), &result, 1);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_grs_perl_seekf) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
@@ -8380,6 +8438,8 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::data1_get_tabpath", _wrap_data1_get_tabpath},
 {"IDZebrac::data1_get_tabroot", _wrap_data1_get_tabroot},
 {"IDZebrac::grs_perl_readf", _wrap_grs_perl_readf},
+{"IDZebrac::grs_perl_readline", _wrap_grs_perl_readline},
+{"IDZebrac::grs_perl_getc", _wrap_grs_perl_getc},
 {"IDZebrac::grs_perl_seekf", _wrap_grs_perl_seekf},
 {"IDZebrac::grs_perl_tellf", _wrap_grs_perl_tellf},
 {"IDZebrac::grs_perl_endf", _wrap_grs_perl_endf},

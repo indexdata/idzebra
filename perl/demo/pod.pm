@@ -9,6 +9,7 @@ package pod;
 use IDZebra::Filter;
 use IDZebra::Data1;
 use Pod::Text;
+use Symbol qw(gensym);
 our @ISA=qw(IDZebra::Filter);
 1;
 
@@ -27,19 +28,18 @@ sub process {
     my $r1=$d1->mk_root('pod');    
     my $root=$d1->mk_tag($r1,'pod');
 
-    # This is dirty... Pod::Parser doesn't seems to support 
-    # parsing a string, so we have to write the whole thing out into a 
-    # temporary file
-    open (TMP, ">$tempfile_in");
-    print TMP $self->readall(10240);
-    close (TMP);
+    # Get the input "file handle"
+    my $inf = $self->get_fh;
 
-    $parser->parse_from_file ($tempfile_in, $tempfile_out);
+    # Create a funny output "file handle"
+    my $outf = gensym;
+    tie (*$outf,'MemFile');
+
+    $parser->parse_from_filehandle ($inf, $outf);
 
     my $section;
     my $data;
-    open (TMP, "$tempfile_out");
-    while(<TMP>) {
+    while(<$outf>) {
 	chomp;
 	if (/^([A-Z]+)\s*$/) {
 	    my $ss = $1;
@@ -59,7 +59,34 @@ sub process {
 	my $tag = $d1->mk_tag($root,$section);
 	$d1->mk_text($tag,$data) if ($data);
     }
-    close (TMP);
-    
     return ($r1);
+}
+
+# ----------------------------------------------------------------------------
+# Package to collect data as an output file from stupid modules, who can only
+# write to files...
+# ----------------------------------------------------------------------------
+package MemFile;
+
+sub TIEHANDLE {
+    my $class = shift;
+    my $self = {};
+    bless ($self,$class);
+    $self->{buff} = "";
+    return ($self);
+}
+
+sub PRINT {
+    my $self = shift;
+    for (@_) {
+	$self->{buff} .= $_;
+    }
+}
+
+sub READLINE {
+    my $self = shift;
+    my $res;
+    return (undef) unless ($self->{buff});
+    ($res,$self->{buff}) = split (/\n/,$self->{buff},2);
+    return ($res."\n");
 }

@@ -569,6 +569,8 @@ const char *data1_get_tabroot(data1_handle dh);
  * ========================================================================= 
  */
 int grs_perl_readf(struct perl_context *context, size_t len);
+int grs_perl_readline(struct perl_context *context);
+char grs_perl_getc(struct perl_context *context);
 off_t grs_perl_seekf(struct perl_context *context, off_t offset);
 off_t grs_perl_tellf(struct perl_context *context);
 void grs_perl_endf(struct perl_context *context, off_t offset);

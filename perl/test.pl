@@ -16,7 +16,7 @@ IDZebra::logFile("test.log");
 
 #IDZebra::logLevel(15);
 
-#IDZebra::init();
+IDZebra::init();
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -49,31 +49,38 @@ $sess->init();
 
 # ----------------------------------------------------------------------------
 # repository upadte
+
+our $filecount = 6;
+
 $sess->begin_trans;
 $sess->update(path      =>  'lib');
 my $stat = $sess->end_trans;
 
-ok(($stat->{inserted} == 6), "Inserted 6 records");
+ok(($stat->{inserted} == $filecount), 
+   "Inserted $stat->{inserted}/$filecount records");
 
 $sess->begin_trans;
 $sess->update(groupName => 'demo1',
 	      path      =>  'lib');
 
 my $stat = $sess->end_trans;
-ok(($stat->{updated} == 6), "Updated 6 records");
+ok(($stat->{inserted} == $filecount), 
+   "Inserted $stat->{updated}/$filecount records");
 
 $sess->begin_trans;
 $sess->delete(groupName => 'demo1',
 	      path      =>  'lib');
 my $stat = $sess->end_trans;
-ok(($stat->{deleted} == 6), "Deleted 6 records");
+ok(($stat->{deleted} == $filecount), 
+   "Deleted $stat->{deleted}/$filecount records");
 
 $sess->begin_trans;
 $sess->update(groupName => 'demo1',
 	      path      =>  'lib');
 
 my $stat = $sess->end_trans;
-ok(($stat->{inserted} == 6), "Inserted 6 records");
+ok(($stat->{inserted} == $filecount), 
+   "Inserted $stat->{inserted}/$filecount records");
 
 ok(($sess->group->{databaseName} eq "demo2"),"Original group is selected");
 
@@ -83,10 +90,22 @@ my $rec1=`cat lib/IDZebra/Data1.pm`;
 my $rec2=`cat lib/IDZebra/Filter.pm`;
 
 $sess->begin_trans;
-my $s1=$sess->update_record(data       => $rec1,
+my $s1=$sess->update_record(data       => $rec2,
 			    recordType => 'grs.perl.pod',
 			    groupName  => "demo1",
 			    );
+my $stat = $sess->end_trans;
+ok(($stat->{updated} == 1), "Updated 1 records");
+
+#exit;
+# ----------------------------------------------------------------------------
+# search
+$sess->select_databases('demo2');
+$sess->begin_read;
+my $rs1 = $sess->search(cqlmap => 'demo/cql.map',
+			cql    => 'IDZebra');
+
+print STDERR "$rs1->{recordCount} hits.\n";
 
 #my $s2=$sess->update_record(data       => $rec2);
 #					recordType => "grs.perl.pod");
@@ -95,9 +114,6 @@ my $s1=$sess->update_record(data       => $rec1,
 #my $s3=$sess->update_record(file       => "lib/IDZebra/Data1.pm");
 
 
-
-my $stat = $sess->end_trans;
-ok(($stat->{updated} == 1), "Updated 1 records");
 
 #$sess->cqlmap("cql.map");
 #print STDERR $sess->cql2pqf("job.id <= 5");

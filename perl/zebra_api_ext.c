@@ -244,8 +244,6 @@ int zebra_cql2pqf (cql_transform_t ct,
     return (status);
   }
 
-  logf (LOG_LOG,"PQF:%s",res);
-
   return (0);
 }
 

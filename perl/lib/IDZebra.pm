@@ -163,6 +163,8 @@ sub getScanEntry {
 *data1_get_tabpath = *IDZebrac::data1_get_tabpath;
 *data1_get_tabroot = *IDZebrac::data1_get_tabroot;
 *grs_perl_readf = *IDZebrac::grs_perl_readf;
+*grs_perl_readline = *IDZebrac::grs_perl_readline;
+*grs_perl_getc = *IDZebrac::grs_perl_getc;
 *grs_perl_seekf = *IDZebrac::grs_perl_seekf;
 *grs_perl_tellf = *IDZebrac::grs_perl_tellf;
 *grs_perl_endf = *IDZebrac::grs_perl_endf;

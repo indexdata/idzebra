@@ -9,7 +9,8 @@ package IDZebra::Filter;
 use IDZebra;
 use IDZebra::Data1;
 use IDZebra::Logger qw(:flags :calls);
-use Devel::Leak;
+use Symbol qw(gensym);
+#use Devel::Leak;
 
 our $SAFE_MODE = 1;
 
@@ -86,8 +87,6 @@ sub process {
 sub test {
     my ($proto, $file, %args) = @_;
 
-#    print "Proto:$proto\n";
-
     my $class = ref($proto) || $proto;
     my $self = {};
     bless ($self, $class);
@@ -128,6 +127,30 @@ sub readf {
 	}
 	return ($r);
     }
+}
+
+sub readline {
+    my ($self) = @_;
+
+    my $r = IDZebra::grs_perl_readline($self->{context});
+    if ($r > 0) {
+	my $buff = $self->{_buff};
+	$self->{_buff} = undef;	
+	return ($buff);
+    }
+    return (undef);
+}
+
+sub getc {
+    my ($self) = @_;
+    return(IDZebra::grs_perl_getc($self->{context}));
+}
+
+sub get_fh {
+    my ($self) = @_;
+    my $fh = gensym;
+    tie (*$fh,'IDZebra::FilterFile', $self);
+    return ($fh);
 }
 
 sub readall {
@@ -177,6 +200,53 @@ sub endf {
         IDZebra::grs_perl_endf($self->{context},$offset);	
     }
 }
+# ----------------------------------------------------------------------------
+# The 'virtual' filehandle for zebra extract calls
+# ----------------------------------------------------------------------------
+package IDZebra::FilterFile;
+require Tie::Handle;
+
+our @ISA = qw(Tie::Handle);
+
+sub TIEHANDLE {
+    my $class = shift;
+    my $self = {};
+    bless ($self, $class);
+    $self->{filter} = shift;
+    return ($self);
+}
+
+sub READ {
+    my $self = shift;
+    return ($self->{filter}->readf(@_));
+}
+
+sub READLINE {
+    my $self = shift;
+    return ($self->{filter}->readline());
+}
+
+sub GETC {
+    my $self = shift;
+    return ($self->{filter}->getc());
+}
+
+sub EOF {
+    croak ("EOF not implemented");
+}
+
+sub TELL {
+    croak ("TELL not implemented");
+}
+
+sub SEEK {
+    croak ("SEEK not implemented");
+}
+
+sub CLOSE {
+    my $self = shift;
+}
+
 
 __END__
 
