@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.17 2004-09-14 14:38:07 quinn Exp $
+/* $Id: zebramap.h,v 1.1 2004-09-28 12:39:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 

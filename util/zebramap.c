@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.33 2004-09-14 14:38:08 quinn Exp $
+/* $Id: zebramap.c,v 1.34 2004-09-28 12:39:55 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/yaz-util.h>
 #include <charmap.h>
-#include <zebramap.h>
+#include <idzebra/zebramap.h>
 
 #define ZEBRA_MAP_TYPE_SORT  1
 #define ZEBRA_MAP_TYPE_INDEX 2

@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.1 2004-09-28 10:15:03 adam Exp $
+/* $Id: recctrl.h,v 1.2 2004-09-28 12:39:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -30,7 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/odr.h>
 #include <idzebra/res.h>
 #include <idzebra/data1.h>
-#include <zebramap.h>
+#include <idzebra/zebramap.h>
 
 #ifdef __cplusplus
 extern "C" {
