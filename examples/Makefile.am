@@ -1,5 +1,5 @@
 
-SUBDIRS=gils dinosauricon
+SUBDIRS=gils
 
 EXTRA_DIST = README
 
