@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.16 2004-03-22 20:52:11 adam Exp $
+/* $Id: rectext.c,v 1.17 2004-05-14 10:57:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -28,13 +28,22 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include "rectext.h"
 
+struct text_info {
+    char *sep;
+};
+
 static void *text_init (RecType recType)
 {
-    return 0;
+    struct text_info *tinfo = (struct text_info *) xmalloc(sizeof(*tinfo));
+    tinfo->sep = 0;
+    return tinfo;
 }
 
 static void text_destroy (void *clientData)
 {
+    struct text_info *tinfo = clientData;
+    xfree (tinfo->sep);
+    xfree (tinfo);
 }
 
 struct buf_info {
@@ -55,7 +64,7 @@ struct buf_info *buf_open (struct recExtractCtrl *p)
     return fi;
 }
 
-int buf_read (struct buf_info *fi, char *dst)
+int buf_read (struct text_info *tinfo, struct buf_info *fi, char *dst)
 {
     if (fi->offset >= fi->max)
     {
@@ -67,6 +76,12 @@ int buf_read (struct buf_info *fi, char *dst)
             return 0;
     }
     *dst = fi->buf[(fi->offset)++];
+    if (tinfo->sep && *dst == *tinfo->sep)
+    {
+	off_t off = (*fi->p->tellf)(fi->p->fh);
+	(*fi->p->endf)(fi->p->fh, off - (fi->max - fi->offset));
+	return 0;
+    }
     return 1;
 }
 
@@ -78,23 +93,34 @@ void buf_close (struct buf_info *fi)
 
 static int text_extract (void *clientData, struct recExtractCtrl *p)
 {
+    struct text_info *tinfo = clientData;
     char w[512];
     RecWord recWord;
     int r;
     struct buf_info *fi = buf_open (p);
 
+#if 0
+    yaz_log(LOG_LOG, "text_extract off=%ld",
+	    (long) (*fi->p->tellf)(fi->p->fh));
+#endif
+    xfree(tinfo->sep);
+    tinfo->sep = 0;
+    if (p->subType) {
+	if (!strncmp(p->subType, "sep=", 4))
+	    tinfo->sep = xstrdup(p->subType+4);
+    }
     (*p->init)(p, &recWord);
     recWord.reg_type = 'w';
     do
     {
         int i = 0;
             
-        r = buf_read (fi, w);
+        r = buf_read (tinfo, fi, w);
         while (r > 0 && i < 511 && w[i] != '\n' && w[i] != '\r')
         {
             i++;
-            r = buf_read (fi, w + i);
-        }
+            r = buf_read (tinfo, fi, w + i); 
+	}
         if (i)
         {
             recWord.string = w;
@@ -108,6 +134,7 @@ static int text_extract (void *clientData, struct recExtractCtrl *p)
 
 static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
+    struct text_info *tinfo = clientData;
     int r, text_ptr = 0;
     static char *text_buf = NULL;
     static int text_size = 0;
