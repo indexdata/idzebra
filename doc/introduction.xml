@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.6 2002-08-02 19:26:55 adam Exp $ -->
+ <!-- $Id: introduction.xml,v 1.7 2002-08-05 08:27:05 quinn Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -9,27 +9,21 @@
    The 
    <ulink url="http://www.indexdata.dk/zebra/">
      Zebra</ulink>
-   system is a fielded free-text indexing and retrieval engine with a
-   Z39.50 front-end. You can use our various toolkits or any commercial 
-   or free-ware Z39.50 client to access data stored in Zebra.
-  </para>
-  
-  <para>
-   FIXME - not a "first step" but a part of a complete system! -H
-  </para>
-  
-  <para>
-   The Zebra server is our first step towards the development of a fully
-   configurable, open information system. Eventually, it will be paired
-   off with a powerful Z39.50 client to support complex information
-   management tasks within almost any application domain. We're making
-   the server available now because it's no fun to be in the open
-   information retrieval business all by yourself. We want to allow
-   people with interesting data to make their things
-   available in interesting ways, without having to start out
-   by implementing yet another protocol stack from scratch.
-  </para>
-  
+   server is a high-performance, general-purpose structured text
+   indexing and retrieval engine. It reads structured records in a
+   variety of input formats (eg. email, XML, MARC) and allows access
+   to them through exact boolean search expressions and
+   relevance-ranked free-text queries.
+   </para>
+
+   <para>
+   Zebra supports large databases (more than ten gigabytes of data,
+   tens of millions of records). It supports incremental, safe
+   database updates on live systems. You can access data stored in
+   Zebra using a variety of Index Data tools (eg. YAZ and PHP/YAZ) as
+   well as commercial and freeware Z39.50 clients and toolkits. 
+   </para>
+
   <para>
    This document is an introduction to the Zebra system. It will tell you
    how to compile the software, and how to prepare your first database.
@@ -53,7 +47,7 @@
   <title>Features</title>
   
   <para>
-   This is a list of some of the most important features of the
+   This is an overview of some of the most important features of the
    system.
   </para>
   
@@ -107,7 +101,8 @@
     <listitem>
       <para>
         Can import the data into Zebras own storage, or just refer to
-        external files (html pages).
+        external files (good for building indexes of "live"
+	collections).
       </para>
     </listitem>
 
@@ -139,7 +134,7 @@
   </para>
   
   <para>
-   Protocol support:
+   Z39.50 protocol support:
   </para>
   
   <para>   
@@ -197,10 +192,6 @@
   <para>
    These are some of the plans that we have for the software in the near
    and far future, approximately ordered after their relative importance.
-   Items marked with an
-   asterisk will be implemented before the
-   last beta release.
-   FIXME - What are the current plans? 
   </para>
   
   <para>
@@ -208,45 +199,37 @@
 
     <listitem>
      <para>
-      *Finalize the data element <emphasis>include</emphasis> facility
-      to support multimedia data elements in records.
+       Improved support for XML in search and retrieval. Eventually,
+       the goal is for Zebra to pull double duty as a flexible
+       information retrieval engine and high-performance XML
+       repository.
      </para>
     </listitem>
 
     <listitem>
      <para>
-      Add more sophisticated relevance ranking mechanisms.
-      Add support for soundex and stemming.
-      Add relevance <emphasis>feedback</emphasis> support.
+       Access to search engine through SOAP/RPC API to allow the
+       construction of applications without requiring Z39.50 tools.
      </para>
     </listitem>
 
     <listitem>
      <para>
-      Complete EXPLAIN support.
+       Finalisation, documentation of the Zebra API. Consider
+       exposing the API through SOAP as well (allowing updates,
+       database management).
      </para>
     </listitem>
 
     <listitem>
      <para>
-      Add support for very large records by implementing segmentation and/or
-      variant pieces.
+       Improved free-text searching. We're first and foremost octet jockeys and
+       we're actively looking for organisations or people who'd like
+       to contribute experience in relevance ranking and text
+       searching.
      </para>
     </listitem>
 
-    <listitem>
-     <para>
-      Support the Item Update extended service of the protocol.
-     </para>
-    </listitem>
-
-    <listitem>
-     <para>
-      We want to add a management system that allows you to
-      control your databases and configuration tables from a graphical
-      interface.
-     </para>
-    </listitem>
    </itemizedlist>
   </para>
   
