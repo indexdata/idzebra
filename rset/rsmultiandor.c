@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.3 2004-09-28 16:39:46 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.4 2004-09-29 11:00:57 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -306,7 +306,7 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
 
     if (flag & RSETF_WRITE)
     {
-        logf (LOG_FATAL, "multior set type is read-only");
+        logf (LOG_FATAL, "multiandor set type is read-only");
         return NULL;
     }
     rfd=rfd_create_base(ct);
@@ -386,34 +386,45 @@ static void r_close (RSFD rfd)
 
 
 static int r_forward_or(RSFD rfd, void *buf, const void *untilbuf)
+{ /* while heap head behind untilbuf, forward it and rebalance heap */
+    struct rset_multiandor_rfd *p=rfd->priv;
+    const struct key_control *kctrl=rfd->rset->keycontrol;
+    if (heap_empty(p->h))
+        return 0;
+    while ( (*kctrl->cmp)(p->h->heap[1]->buf,untilbuf) < -rfd->rset->scope )
+    {
+        if ( rset_forward(p->h->heap[1]->fd, p->h->heap[1]->buf, untilbuf) )
+            heap_balance(p->h);
+        else 
+        {
+            heap_delete(p->h);
+            if (heap_empty(p->h))
+                return 0;
+        }
+
+    }
+    return r_read_or(rfd,buf);
+}
+
+
+static int r_read_or (RSFD rfd, void *buf)
 {
     struct rset_multiandor_rfd *mrfd=rfd->priv;
     const struct key_control *kctrl=rfd->rset->keycontrol;
-    struct heap_item it;
+    struct heap_item *it;
     int rdres;
     if (heap_empty(mrfd->h))
         return 0;
-    it = *(mrfd->h->heap[1]);
-    memcpy(buf,it.buf, kctrl->key_size); 
-    /* FIXME - This is not right ! */
-    /* If called with an untilbuf, we need to compare to that, and */
-    /* forward until we are somewhere! */
+    it = mrfd->h->heap[1];
+    memcpy(buf,it->buf, kctrl->key_size); 
     (mrfd->hits)++;
-    if (untilbuf)
-        rdres=rset_forward(it.fd, it.buf, untilbuf);
-    else
-        rdres=rset_read(it.fd, it.buf);
+    rdres=rset_read(it->fd, it->buf);
     if ( rdres )
         heap_balance(mrfd->h);
     else
         heap_delete(mrfd->h);
     return 1;
 
-}
-
-static int r_read_or (RSFD rfd, void *buf)
-{
-    return r_forward_or(rfd, buf,0);
 }
 
 static int r_read_and (RSFD rfd, void *buf)

@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.44 2004-09-09 10:08:05 heikki Exp $
+/* $Id: trunc.c,v 1.45 2004-09-29 11:00:56 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -439,6 +439,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
                     zi->reg->isamb, isam_p[i] );
             r=rsmultior_create( rset_nmem, kctrl, scope, no, rsets);
             xfree(rsets);
+            return r;
         } 
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
