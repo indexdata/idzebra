@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.98  1999-11-30 13:48:04  adam
+ * Revision 1.99  1999-12-23 09:03:32  adam
+ * Changed behaviour of trunc=105 so that * is regular .* and ! is regular .
+ *
+ * Revision 1.98  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.97  1999/10/14 14:33:50  adam
@@ -723,7 +726,7 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
     return i;
 }
 
-/* term_105/106: handle term, where trunc=Process # and ! and right trunc */
+/* term_105/106: handle term, where trunc=Process * and ! and right trunc */
 static int term_105 (ZebraMaps zebra_maps, int reg_type,
 		     const char **src, char *dst, int space_split,
 		     char *dst_term, int right_truncate)
@@ -733,6 +736,7 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
+    logf (LOG_LOG, "
     if (!term_pre (zebra_maps, reg_type, src, "*!", "*!"))
         return 0;
     s0 = *src;
@@ -741,7 +745,7 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
         if (*s0 == '*')
         {
             dst[i++] = '.';
-            dst[i++] = '+';
+            dst[i++] = '*';
 	    dst_term[j++] = *s0++;
         }
         else if (*s0 == '!')
