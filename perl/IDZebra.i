@@ -1,17 +1,23 @@
 %module "IDZebra"
 
-/* Module initialization and cleanup */
-
 %{
 #include "zebraapi.h"
-#include "rg.h"
+#include "zebra_api_ext.h"
 #include "data1.h"
 #include "yaz/odr.h"
 %}
 
-%include "rg.h"
+/* == Typemaps ============================================================= */
 
-/* ----------------------------------------------------------------------------------- */
+/* RetrievalRecordBuff is a special construct, to allow to map a char * buf
+   to non-null terminated perl string scalar value (SVpv). */
+%typemap(out) RetrievalRecordBuf * {
+  $result = newSVpv($1->buf,$1->len);
+  sv_2mortal($result);
+  argvi++;
+}
+
+/* All char ** values are mapped in-out to array of strings. */
 %typemap(in) char ** {
 	AV *tempav;
 	I32 len;
@@ -32,12 +38,12 @@
 	$1[i] = NULL;
 };
 
-// This cleans up the char ** array after the function call
+/* This cleans up the char ** array after the function call */
 %typemap(freearg) char ** {
 	free($1);
 }
 
-// Creates a new Perl array and places a NULL-terminated char ** into it
+/* Creates a new Perl array and places a NULL-terminated char ** into it */
 %typemap(out) char ** {
 	AV *myav;
 	SV **svs;
@@ -56,12 +62,21 @@
         sv_2mortal($result);
         argvi++;
 }
-/* ----------------------------------------------------------------------------------- */
+
+
+/* == Structures for shadow classes  ======================================= */
+
+%include "zebra_api_ext.h"
+
+
+/* == Module initialization and cleanup (zebra_perl.c) ===================== */
 
 void init (void);
 void DESTROY (void);
 
-/* Logging facilities from yaz */
+
+/* == Logging facilities (yaz/log.h) ======================================= */
+
 void logLevel (int level);
 void logFile (const char *fname);
 void logMsg  (int level, const char *message);
@@ -72,13 +87,13 @@ void logMsg  (int level, const char *message);
 #define LOG_LOG    0x0008
 #define LOG_ERRNO  0x0010     /* append strerror to message */
 #define LOG_FILE   0x0020
-#define LOG_APP    0x0040     /* For application level events such as new-connection */
+#define LOG_APP    0x0040     /* For application level events */
 #define LOG_MALLOC 0x0080     /* debugging mallocs */
-#define LOG_ALL   0xff7f
+#define LOG_ALL    0xff7f
 #define LOG_DEFAULT_LEVEL (LOG_FATAL | LOG_ERRNO | LOG_LOG | LOG_WARN)
 
+/* == ODR stuff (yaz/odr.h) ================================================ */
 
-/* ODR stuff */
 #define ODR_DECODE      0
 #define ODR_ENCODE      1
 #define ODR_PRINT       2
@@ -87,72 +102,188 @@ void odr_reset(ODR o);
 void odr_destroy(ODR o);
 void *odr_malloc(ODR o, int size);
 
-/* Session and service */
-%name(start)     ZebraService zebra_start (const char *configName);
-%name(open)      ZebraHandle zebra_open (ZebraService zs);
-%name(close)     void zebra_close (ZebraHandle zh);
-%name(stop)      void zebra_stop (ZebraService zs);
+
+/* == Zebra session and service (index/zebraapi.c) ========================= */
+
+%name(start)     
+ZebraService zebra_start (const char *configName);
+
+%name(open)      
+ZebraHandle zebra_open (ZebraService zs);
+
+%name(close)     
+void zebra_close (ZebraHandle zh);
+
+%name(stop)      
+void zebra_stop (ZebraService zs);
 
 
-/* Error handling and reporting */
-%name(errCode)   int zebra_errCode (ZebraHandle zh); /* last error code */
-%name(errString) const char * zebra_errString (ZebraHandle zh); /* string representatio of above */
-%name(errAdd)    char *  zebra_errAdd (ZebraHandle zh); /* extra information associated with error */
+/* == Error handling and reporting (index/zebraapi.c) ====================== */
 
-/* Record groups */
-void describe_recordGroup (recordGroup *rg); 
+/* last error code */
+%name(errCode)   
+int zebra_errCode (ZebraHandle zh); 
+
+/* string representatio of above */
+%name(errString) 
+const char * zebra_errString (ZebraHandle zh); 
+
+/* extra information associated with error */
+%name(errAdd)    
+char *  zebra_errAdd (ZebraHandle zh); 
+
+
+/* == Record groups and database selection ================================= */
+
+/* initialize a recordGroup (zebra_api_ext.c); */
 void init_recordGroup (recordGroup *rg);
-void res_get_recordGroup (ZebraHandle zh, recordGroup *rg, const char *ext);
-%name(set_group)           void zebra_set_group (ZebraHandle zh, struct recordGroup *rg);
-%name(select_databases)    int  zebra_select_databases (ZebraHandle zh, int num_bases, const char **basenames);
-%name(select_database)     int  zebra_select_database (ZebraHandle zh, const char *basename);
 
-/* Transaction, shadow register */
-%name(begin_trans)         void zebra_begin_trans (ZebraHandle zh);
-%name(end_trans)           void zebra_end_trans (ZebraHandle zh); 
-%name(commit)              int  zebra_commit (ZebraHandle zh);
-%name(get_shadow_enable)   int  zebra_get_shadow_enable (ZebraHandle zh);
-%name(set_shadow_enable)   void zebra_set_shadow_enable (ZebraHandle zh, int value);
+/* set up a recordGroup for a specific file extension from zebra.cfg 
+   (zebra_api_ext.c); */
+void res_get_recordGroup (ZebraHandle zh, recordGroup *rg, 
+			  const char *ext); 
+/* set current record group for update purposes (zebraapi.c) */
+%name(set_group)           
+void zebra_set_group (ZebraHandle zh, struct recordGroup *rg);
 
-/* Repository actions */
-%name(init)                int  zebra_init (ZebraHandle zh);
-%name(compact)             int  zebra_compact (ZebraHandle zh);
-%name(repository_update)   void zebra_repository_update (ZebraHandle zh);
-%name(repository_delete)   void zebra_repository_delete (ZebraHandle zh);
-%name(repository_show)     void zebra_repository_show (ZebraHandle zh); 
-%name(update_record)       int zebra_update_record (ZebraHandle zh, 
-					       	    recordGroup *rGroup, 
-						    int sysno, const char *match, const char *fname,
-						    const char *buf, int buf_size);
-%name(delete_record)       int zebra_delete_record (ZebraHandle zh, 
-					       	    recordGroup *rGroup, 
-						    int sysno, const char *match, const char *fname,
-						    const char *buf, int buf_size);
+/* select database for update purposes (zebraapi.c) */
+%name(select_database)     
+int zebra_select_database (ZebraHandle zh, const char *basename);
 
-/* Search and retrieval */
-%name(begin_read)          int zebra_begin_read (ZebraHandle zh);
-%name(end_read)            void zebra_end_read (ZebraHandle zh);
-%name(search_PQF)          int zebra_search_PQF (ZebraHandle zh, 
-						 ODR odr_input, ODR odr_output, 
-						 const char *pqf_query,
-						 const char *setname);
-
-/* Admin functionality */
-%name(admin_start)         void zebra_admin_start (ZebraHandle zh);
-%name(admin_shutdown)      void zebra_admin_shutdown (ZebraHandle zh);
+/* select databases for record retrieval (zebraapi.c) */
+%name(select_databases)    
+int zebra_select_databases (ZebraHandle zh, int num_bases, 
+			     const char **basenames);
 
 
-/* Search using RPN-Query
-YAZ_EXPORT void zebra_search_rpn (ZebraHandle zh, ODR input, ODR output,
-                                  Z_RPNQuery *query,
-                                  const char *setname, int *hits);
+/* == Transactions, locking, shadow register =============================== */
+
+/* begin transaction (add write lock) (zebraapi.c) */
+%name(begin_trans)         
+void zebra_begin_trans (ZebraHandle zh);
+
+/* end transaction (remove write lock) (zebraapi.c) */
+%name(end_trans)           
+void zebra_end_trans (ZebraHandle zh); 
+
+/* begin retrieval (add read lock) (zebraapi.c) */
+%name(begin_read)          
+int zebra_begin_read (ZebraHandle zh);
+
+/* end retrieval (remove read lock) (zebraapi.c) */
+%name(end_read)            
+void zebra_end_read (ZebraHandle zh);
+
+/* commit changes from shadow (zebraapi.c) */
+%name(commit)              
+int  zebra_commit (ZebraHandle zh);
+
+/* get shadow status (zebra_api_ext.c) */
+%name(get_shadow_enable)   
+int  zebra_get_shadow_enable (ZebraHandle zh);
+
+/* set shadow status (zebra_api_ext.c) */
+%name(set_shadow_enable)   
+void zebra_set_shadow_enable (ZebraHandle zh, int value);
+
+
+/* == Repository actions (zebraapi.c) ====================================== */
+
+%name(init)                
+int  zebra_init (ZebraHandle zh);
+
+%name(compact)             
+int  zebra_compact (ZebraHandle zh);
+
+%name(repository_update)   
+void zebra_repository_update (ZebraHandle zh);
+
+%name(repository_delete)   
+void zebra_repository_delete (ZebraHandle zh);
+
+%name(repository_show)     
+void zebra_repository_show (ZebraHandle zh); 
+
+
+/* == Record update/delete (zebra_api_ext.c) =============================== */
+
+/* If sysno is provided, then it's used to identify the reocord.
+   If not, and match_criteria is provided, then sysno is guessed
+   If not, and a record is provided, then sysno is got from there */
+
+%name(update_record)       
+int zebra_update_record (ZebraHandle zh, 
+			 recordGroup *rGroup, 
+			 int sysno, 
+			 const char *match, 
+			 const char *fname,
+			 const char *buf, 
+			 int buf_size);
+     
+%name(delete_record)       
+int zebra_delete_record (ZebraHandle zh, 
+			 recordGroup *rGroup, 
+			 int sysno, 
+			 const char *match, 
+			 const char *fname,
+			 const char *buf, 
+			 int buf_size);
+
+/* == Search (zebra_api_ext.c) ============================================= */
+
+%name(search_PQF) 
+int zebra_search_PQF (ZebraHandle zh, 
+		      ODR odr_input, ODR odr_output, 
+		      const char *pqf_query,
+		      const char *setname);
+
+
+/* TODO: search_CCL */
+
+
+/* == Retrieval (zebra_api_ext.c) ========================================== */
+
+/* will get a 'retrieval obj' (simple enough to pass to perl), which can be 
+   used to get the individual records. Elementset, schema and format strings
+   are threated the same way yaz-client does. */
+void records_retrieve(ZebraHandle zh,
+		      ODR stream,
+		      const char *setname,      // resultset name
+		      const char *a_eset,       // optional elementset
+		      const char *a_schema,     // optional schema
+		      const char *a_format,     // optional record syntax
+		      int from,                 // range, 1 based
+		      int to,
+		      RetrievalObj *res
+		      );
+
+/* fetch a record from the retrieval object. pos is 1 based */
+void record_retrieve(RetrievalObj *ro,
+		     ODR stream,
+		     RetrievalRecord *res,
+		     int pos);
+
+/* == Sort ================================================================= */
+int sort (ZebraHandle zh, 
+	  ODR stream,
+	  const char *sort_spec,
+	  const char *output_setname,
+	  const char **input_setnames
+	  ); 
+/*
+
+void zebra_sort (ZebraHandle zh, ODR stream,
+		 int num_input_setnames,
+		 const char **input_setnames,
+		 const char *output_setname,
+		 Z_SortKeySpecList *sort_sequence,
+		 int *sort_status);
 */
 
-/* Retrieve record(s) 
-void zebra_records_retrieve (ZebraHandle zh, ODR stream,
-		       const char *setname, Z_RecordComposition *comp,
-		       oid_value input_format,
-		       int num_recs, ZebraRetrievalRecord *recs);
+/* Admin functionality */
+/*
+%name(admin_start)         void zebra_admin_start (ZebraHandle zh);
+%name(admin_shutdown)      void zebra_admin_shutdown (ZebraHandle zh);
 */
 
 /* Browse 
@@ -184,14 +315,6 @@ void zebra_result (ZebraHandle zh, int *code, char **addinfo);
 int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
 			  int no, int *count, 
 			  int *type, char *out, size_t *len);
-*/
-/*
-void zebra_sort (ZebraHandle zh, ODR stream,
-		 int num_input_setnames,
-		 const char **input_setnames,
-		 const char *output_setname,
-		 Z_SortKeySpecList *sort_sequence,
-		 int *sort_status);
 */
 
 /*
@@ -258,7 +381,7 @@ data1_handle data1_create (void);
 data1_handle data1_createx (int flags);
 void data1_destroy(data1_handle dh);
 
-// Data1 node
+/* Data1 node */
 data1_node *get_parent_tag(data1_handle dh, data1_node *n);
 data1_node *data1_read_node(data1_handle dh, const char **buf,NMEM m);
 data1_node *data1_read_nodex (data1_handle dh, NMEM m, int (*get_byte)(void *fh), void *fh, WRBUF wrbuf);
