@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.76  1997-10-27 14:33:04  adam
+ * Revision 1.77  1998-01-12 15:04:08  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.76  1997/10/27 14:33:04  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -320,7 +323,7 @@ static void logRecord (int showFlag)
     }
 }
 
-void key_open (BFiles bfs, int mem)
+int key_open (BFiles bfs, int mem, int rw)
 {
     if (!mem)
         mem = atoi(res_get_def (common_resource, "memMax", "4"))*1024*1024;
@@ -333,16 +336,26 @@ void key_open (BFiles bfs, int mem)
     key_buf_used = 0;
     key_file_no = 0;
 
-    if (!(matchDict = dict_open (bfs, GMATCH_DICT, 50, 1)))
+    if (!(matchDict = dict_open (bfs, GMATCH_DICT, 50, rw)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", GMATCH_DICT);
-        exit (1);
+	return -1;
     }
     assert (!records);
-    records = rec_open (bfs, 1);
-#if 1
-    zti = zebTargetInfo_open (records, 1);
-#endif
+    records = rec_open (bfs, rw);
+    if (!records)
+    {
+	dict_close (matchDict);
+	return -1;
+    }
+    zti = zebTargetInfo_open (records, rw);
+    if (!zti)
+    {
+	rec_close (&records);
+	dict_close (matchDict);
+	return -1;	
+    }
+    return 0;
 }
 
 struct encode_info {
@@ -447,7 +460,7 @@ void key_flush (void)
 
     if (!(outf = fopen (out_fname, "w")))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "fopen (4) %s", out_fname);
+        logf (LOG_FATAL|LOG_ERRNO, "fopen %s", out_fname);
         exit (1);
     }
     logf (LOG_LOG, "writing section %d", key_file_no);
@@ -473,7 +486,7 @@ void key_flush (void)
 
     if (!(outf = fopen (out_fname, "w")))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "fopen (4) %s", out_fname);
+        logf (LOG_FATAL|LOG_ERRNO, "fopen %s", out_fname);
         exit (1);
     }
     logf (LOG_LOG, "writing section %d", key_file_no);
@@ -999,8 +1012,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.tellf = file_tell;
         extractCtrl.endf = file_end;
 	extractCtrl.zebra_maps = rGroup->zebra_maps;
-        extractCtrl.flagShowRecords = rGroup->flagShowRecords;
-        if (rGroup->flagShowRecords)
+        extractCtrl.flagShowRecords = !rGroup->flagRw;
+        if (!rGroup->flagRw)
             printf ("File: %s %ld\n", fname, (long) recordOffset);
 
         logInfo.fname = fname;
@@ -1015,8 +1028,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         if (r)      
         {
             /* error occured during extraction ... */
-            if (!rGroup->flagShowRecords &&
-                    records_processed < rGroup->fileVerboseLimit)
+            if (rGroup->flagRw &&
+		records_processed < rGroup->fileVerboseLimit)
             {
                 logf (LOG_WARN, "fail %s %s %ld code = %d", rGroup->recordType,
                       fname, (long) recordOffset, r);
@@ -1027,7 +1040,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         {
             /* the extraction process returned no information - the record
                is probably empty - unless flagShowRecords is in use */
-            if (rGroup->flagShowRecords)
+            if (!rGroup->flagRw)
                 return 1;
             logf (LOG_WARN, "No keys generated for file %s", fname);
             logf (LOG_WARN, " The file is probably empty");
@@ -1067,7 +1080,9 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         /* new record */
         if (deleteFlag)
         {
-            logf (LOG_LOG, "Cannot delete new record");
+	    logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
+		  fname, (long) recordOffset);
+            logf (LOG_WARN, "cannot delete record above (seems new)");
             return 1;
         }
         if (records_processed < rGroup->fileVerboseLimit)

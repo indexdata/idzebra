@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recstat.c,v $
- * Revision 1.5  1997-09-17 12:19:17  adam
+ * Revision 1.6  1998-01-12 15:04:08  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.5  1997/09/17 12:19:17  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -34,9 +37,8 @@
 #endif
 #include "recindxp.h"
 
-void rec_prstat (BFiles bfs)
+void rec_prstat (Records records)
 {
-    Records records = rec_open (bfs, 0);
     int i;
     int total_bytes = 0;
     
@@ -60,5 +62,4 @@ void rec_prstat (BFiles bfs)
           records->head.total_bytes);
     logf (LOG_LOG,
           "Total size with overhead             %8d", total_bytes);
-    rec_close (&records);
 }

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1997, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.55  1997-10-27 14:33:04  adam
+ * Revision 1.56  1998-01-12 15:04:08  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.55  1997/10/27 14:33:04  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -243,7 +246,7 @@ struct recordGroup {
     char         *recordType;
     int          flagStoreData;
     int          flagStoreKeys;
-    int          flagShowRecords;
+    int          flagRw;
     int          fileVerboseLimit;
     data1_handle dh;
     BFiles       bfs;
@@ -252,7 +255,7 @@ struct recordGroup {
 
 void getFnameTmp (char *fname, int no);
         
-struct dirs_info *dirs_open (Dict dict, const char *rep);
+struct dirs_info *dirs_open (Dict dict, const char *rep, int rw);
 struct dirs_info *dirs_fopen (Dict dict, const char *path);
 struct dirs_entry *dirs_read (struct dirs_info *p);
 struct dirs_entry *dirs_last (struct dirs_info *p);
@@ -271,7 +274,7 @@ void repositoryAdd (struct recordGroup *rGroup);
 void repositoryDelete (struct recordGroup *rGroup);
 void repositoryShow (struct recordGroup *rGroup);
 
-void key_open (BFiles bfs, int mem);
+int key_open (BFiles bfs, int mem, int rw);
 int key_close (void);
 int key_compare (const void *p1, const void *p2);
 int key_get_pos (const void *p);
@@ -302,8 +305,6 @@ int index_word_prefix (char *string, int attset_ordinal,
 
 int fileExtract (SYSNO *sysno, const char *fname,
                  const struct recordGroup *rGroup, int deleteFlag);
-
-void rec_prstat (void);
 
 void zebraIndexLockMsg (const char *str);
 void zebraIndexUnlock (void);

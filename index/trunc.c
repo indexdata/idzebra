@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.8  1997-10-31 12:34:27  adam
+ * Revision 1.9  1998-01-12 15:04:09  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.8  1997/10/31 12:34:27  adam
  * Bug fix: memory leak.
  *
  * Revision 1.7  1997/09/29 09:07:29  adam
@@ -397,7 +400,10 @@ RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no)
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
     else
-        logf (LOG_FATAL, "Neither isam nor isamc set in rset_trunc");
+    {
+        logf (LOG_WARN, "Neither isam nor isamc set in rset_trunc");
+	return rset_create (rset_kind_null, NULL);
+    }
     return rset_trunc_r (zi, isam_p, 0, no, 100);
 }
 

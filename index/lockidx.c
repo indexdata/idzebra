@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.13  1997-09-29 09:08:36  adam
+ * Revision 1.14  1998-01-12 15:04:08  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.13  1997/09/29 09:08:36  adam
  * Revised locking system to be thread safe for the server.
  *
  * Revision 1.12  1997/09/25 14:54:43  adam
@@ -247,7 +250,12 @@ void zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
                 }                    
                 else if (*buf == 'w')
                 {
-                    logf (LOG_WARN, "your index may be inconsistent");
+		    logf (LOG_WARN,
+			  "The lock file indicates that your index is");
+		    logf (LOG_WARN, "inconsistent. Perhaps the indexer");
+		    logf (LOG_WARN, "terminated abnormally in the previous");
+		    logf (LOG_WARN, "run. You can try to proceed by");
+		    logf (LOG_WARN, "deleting the file %s", path);
                     exit (1);
                 }
                 else if (*buf == 'c')

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1997, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.52  1997-11-18 10:05:08  adam
+ * Revision 1.53  1998-01-12 15:04:09  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.52  1997/11/18 10:05:08  adam
  * Changed character map facility so that admin can specify character
  * mapping files for each register type, w, p, etc.
  *
@@ -316,8 +319,9 @@ bend_initresult *bend_init (bend_initrequest *q)
     logf (LOG_LOG, "Reading resources from %s", sob->configname);
     if (!(zi->res = res_open (sob->configname)))
     {
-	logf (LOG_FATAL, "Cannot open resource `%s'", sob->configname);
-	exit (1);
+	logf (LOG_FATAL, "Failed to read resources `%s'", sob->configname);
+	r->errcode = 1;
+	return r;
     }
     zebra_server_lock_init (zi);
     zi->dh = data1_create ();
@@ -442,9 +446,8 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
 
     if (!(rt = recType_byName (file_type, subType)))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Retrieve: Cannot handle type %s", 
-              file_type);
-        exit (1);
+        logf (LOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
+	return 14;
     }
     logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
     retrieveCtrl.fh = &fc;

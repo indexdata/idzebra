@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.13  1997-09-09 13:38:06  adam
+ * Revision 1.14  1998-01-12 15:04:07  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.13  1997/09/09 13:38:06  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.12  1996/11/08 11:10:13  adam
@@ -61,6 +64,7 @@
 
 struct dirs_info {
     Dict dict;
+    int rw;
     int no_read;
     int no_cur;
     int no_max;
@@ -108,7 +112,7 @@ static int dirs_client_proc (char *name, const char *info, int pos,
     return 0;
 }
 
-struct dirs_info *dirs_open (Dict dict, const char *rep)
+struct dirs_info *dirs_open (Dict dict, const char *rep, int rw)
 {
     struct dirs_info *p;
     int before = 0, after;
@@ -116,6 +120,7 @@ struct dirs_info *dirs_open (Dict dict, const char *rep)
     logf (LOG_DEBUG, "dirs_open %s", rep);
     p = xmalloc (sizeof (*p));
     p->dict = dict;
+    p->rw = rw;
     strcpy (p->prefix, rep);
     p->prelen = strlen(p->prefix);
     strcpy (p->nextpath, rep);
@@ -187,7 +192,8 @@ void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime)
 
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_mkdir %s", path);
-    dict_insert (p->dict, path, sizeof(mtime), &mtime);
+    if (p->rw)
+	dict_insert (p->dict, path, sizeof(mtime), &mtime);
 }
 
 void dirs_rmdir (struct dirs_info *p, const char *src)
@@ -196,7 +202,8 @@ void dirs_rmdir (struct dirs_info *p, const char *src)
 
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_rmdir %s", path);
-    dict_delete (p->dict, path);
+    if (p->rw)
+	dict_delete (p->dict, path);
 }
 
 void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime)
@@ -208,7 +215,8 @@ void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime)
     logf (LOG_DEBUG, "dirs_add %s", path);
     memcpy (info, &sysno, sizeof(sysno));
     memcpy (info+sizeof(sysno), &mtime, sizeof(mtime));
-    dict_insert (p->dict, path, sizeof(sysno)+sizeof(mtime), info);
+    if (p->rw)
+	dict_insert (p->dict, path, sizeof(sysno)+sizeof(mtime), info);
 }
 
 void dirs_del (struct dirs_info *p, const char *src)
@@ -217,7 +225,8 @@ void dirs_del (struct dirs_info *p, const char *src)
 
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_del %s", path);
-    dict_delete (p->dict, path);
+    if (p->rw)
+	dict_delete (p->dict, path);
 }
 
 void dirs_free (struct dirs_info **pp)

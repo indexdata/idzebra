@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.19  1997-09-17 12:19:16  adam
+ * Revision 1.20  1998-01-12 15:04:08  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.19  1997/09/17 12:19:16  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -127,7 +130,6 @@ static int read_indx (Records p, int sysno, void *buf, int itemsize,
     {
         logf (LOG_FATAL|LOG_ERRNO, "read in %s at pos %ld",
               p->index_fname, (long) pos);
-        abort ();
         exit (1);
     }
     return r;
@@ -231,6 +233,7 @@ static void rec_write_single (Records p, Record rec)
             {
                 logf (LOG_FATAL|LOG_ERRNO, "read in %s at free block %d",
                       p->data_fname[dst_type], block_free);
+		exit (1);
             }
         }
         else

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.32  1997-09-25 14:56:51  adam
+ * Revision 1.33  1998-01-12 15:04:08  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.32  1997/09/25 14:56:51  adam
  * Windows NT interface code to the stat call.
  *
  * Revision 1.31  1997/09/17 12:19:17  adam
@@ -367,10 +370,10 @@ void repositoryShow (struct recordGroup *rGroup)
     Dict dict;
     struct dirs_info *di;
     
-    if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50, 1)))
+    if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50, 0)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
-        exit (1);
+	return;
     }
     
     assert (rGroup->path);    
@@ -383,7 +386,7 @@ void repositoryShow (struct recordGroup *rGroup)
         src[++src_len] = '\0';
     }
     
-    di = dirs_open (dict, src);
+    di = dirs_open (dict, src, rGroup->flagRw);
     
     while ( (dst = dirs_read (di)) )
         logf (LOG_LOG, "%s", dst->path);
@@ -432,14 +435,14 @@ static void fileUpdate (Dict dict, struct recordGroup *rGroup,
             src[src_len] = '/';
             src[++src_len] = '\0';
         }
-        di = dirs_open (dict, src);
+        di = dirs_open (dict, src, rGroup->flagRw);
         *dst = '\0';
         fileUpdateR (di, dirs_read (di), src, dst, rGroup);
         dirs_free (&di);
     }
     else
     {
-        logf (LOG_WARN, "Cannot handle file %s", src);
+        logf (LOG_WARN, "Ignoring path %s", src);
     }
 }
 
@@ -459,7 +462,7 @@ static void repositoryExtract (int deleteFlag, struct recordGroup *rGroup,
     else if (S_ISDIR(sbuf.st_mode))
 	repositoryExtractR (deleteFlag, src, rGroup);
     else
-        logf (LOG_WARN, "Cannot handle file %s", src);
+        logf (LOG_WARN, "Ignoring path %s", src);
 }
 
 static void repositoryExtractG (int deleteFlag, struct recordGroup *rGroup)
@@ -482,10 +485,10 @@ void repositoryUpdate (struct recordGroup *rGroup)
     if (rGroup->recordId && !strcmp (rGroup->recordId, "file"))
     {
         Dict dict;
-        if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50, 1)))
+        if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50, rGroup->flagRw)))
         {
             logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
-            exit (1);
+	    return ;
         }
         if (*rGroup->path == '\0' || !strcmp(rGroup->path, "-"))
         {

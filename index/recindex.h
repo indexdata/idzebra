@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.11  1997-09-17 12:19:16  adam
+ * Revision 1.12  1998-01-12 15:04:08  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.11  1997/09/17 12:19:16  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -72,6 +75,7 @@ Record rec_get (Records p, int sysno);
 void rec_close (Records *p);
 Records rec_open (BFiles bfs, int rw);
 char *rec_strdup (const char *s, size_t *len);
+void rec_prstat (Records p);
 
 enum { 
     recInfo_fileType, 

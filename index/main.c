@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.53  1997-11-18 10:05:08  adam
+ * Revision 1.54  1998-01-12 15:04:08  adam
+ * The test option (-s) only uses read-lock (and not write lock).
+ *
+ * Revision 1.53  1997/11/18 10:05:08  adam
  * Changed character map facility so that admin can specify character
  * mapping files for each register type, w, p, etc.
  *
@@ -208,17 +211,11 @@
 
 #include <data1.h>
 #include "index.h"
+#include "recindex.h"
 
 char *prog;
-size_t mem_max = 0;
 
 Res common_resource = 0;
-
-static void abort_func (int level, const char *msg, void *info)
-{
-    if (level & LOG_FATAL)
-        abort ();
-}
 
 int main (int argc, char **argv)
 {
@@ -228,6 +225,7 @@ int main (int argc, char **argv)
     char *configName = NULL;
     int nsections;
     int disableCommit = 0;
+    size_t mem_max = 0;
 
     struct recordGroup rGroupDef;
 
@@ -240,7 +238,7 @@ int main (int argc, char **argv)
     rGroupDef.recordType = NULL;
     rGroupDef.flagStoreData = -1;
     rGroupDef.flagStoreKeys = -1;
-    rGroupDef.flagShowRecords = 0;
+    rGroupDef.flagRw = 1;
     rGroupDef.fileVerboseLimit = 100000;
     rGroupDef.zebra_maps = NULL;
     rGroupDef.dh = data1_create ();
@@ -284,7 +282,7 @@ int main (int argc, char **argv)
                                                 configName : FNAME_CONFIG);
                     if (!common_resource)
                     {
-                        logf (LOG_FATAL, "cannot open resource `%s'",
+                        logf (LOG_FATAL, "cannot configuration file `%s'",
                               configName);
                         exit (1);
                     }
@@ -355,6 +353,7 @@ int main (int argc, char **argv)
                 }
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
                 {
+		    Records records;
                     rval = res_get (common_resource, "shadow");
                     zebraIndexLock (rGroupDef.bfs, 0, rval);
                     if (rval && *rval)
@@ -362,7 +361,9 @@ int main (int argc, char **argv)
                         bf_cache (rGroupDef.bfs, rval);
                         zebraIndexLockMsg ("r");
                     }
-                    rec_prstat ();
+		    records = rec_open (rGroupDef.bfs, 0);
+                    rec_prstat (records);
+		    rec_close (&records);
                     inv_prstat (rGroupDef.bfs);
                 }
                 else
@@ -371,47 +372,55 @@ int main (int argc, char **argv)
                     exit (1);
                 }
             }
-            else
+	    else
             {
                 struct recordGroup rGroup;
 
                 log_event_end (abort_func, NULL);
                 rval = res_get (common_resource, "shadow");
                 zebraIndexLock (rGroupDef.bfs, 0, rval);
-                if (rval && *rval && !disableCommit)
-                {
-                    bf_cache (rGroupDef.bfs, rval);
-                    zebraIndexLockMsg ("r");
-                }
-                else
-                {
-                    bf_cache (rGroupDef.bfs, 0);
-                    zebraIndexLockMsg ("w");
-                }
-                zebraIndexWait (0);
-                
+		if (rGroupDef.flagRw)
+		{
+		    if (rval && *rval && !disableCommit)
+		    {
+			bf_cache (rGroupDef.bfs, rval);
+			zebraIndexLockMsg ("r");
+		    }
+		    else
+		    {
+			bf_cache (rGroupDef.bfs, 0);
+			zebraIndexLockMsg ("w");
+		    }
+		    zebraIndexWait (0);
+		}
                 memcpy (&rGroup, &rGroupDef, sizeof(rGroup));
                 rGroup.path = arg;
                 switch (cmd)
                 {
                 case 'u':
-                    key_open (rGroup.bfs, mem_max);
-                    logf (LOG_LOG, "updating %s", rGroup.path);
-                    repositoryUpdate (&rGroup);
-                    nsections = key_close ();
+                    if (!key_open (rGroup.bfs, mem_max, rGroup.flagRw))
+		    {
+			logf (LOG_LOG, "updating %s", rGroup.path);
+			repositoryUpdate (&rGroup);
+			nsections = key_close ();
+		    }
                     break;
                 case 'U':
-                    key_open (rGroup.bfs,mem_max);
-                    logf (LOG_LOG, "updating (pass 1) %s", rGroup.path);
-                    repositoryUpdate (&rGroup);
-                    key_close ();
+                    if (!key_open (rGroup.bfs,mem_max, rGroup.flagRw))
+		    {
+			logf (LOG_LOG, "updating (pass 1) %s", rGroup.path);
+			repositoryUpdate (&rGroup);
+			key_close ();
+		    }
                     nsections = 0;
                     break;
                 case 'd':
-                    key_open (rGroup.bfs,mem_max);
-                    logf (LOG_LOG, "deleting %s", rGroup.path);
-                    repositoryDelete (&rGroup);
-                    nsections = key_close ();
+                    if (!key_open (rGroup.bfs,mem_max, rGroup.flagRw))
+		    {
+			logf (LOG_LOG, "deleting %s", rGroup.path);
+			repositoryDelete (&rGroup);
+			nsections = key_close ();
+		    }
                     break;
                 case 's':
                     logf (LOG_LOG, "dumping %s", rGroup.path);
@@ -447,7 +456,7 @@ int main (int argc, char **argv)
         else if (ret == 'd')
             rGroupDef.databaseName = arg;
 	else if (ret == 's')
-	    rGroupDef.flagShowRecords = 1;
+	    rGroupDef.flagRw = 0;
         else if (ret == 'g')
             rGroupDef.groupName = arg;
         else if (ret == 'f')
@@ -459,10 +468,7 @@ int main (int argc, char **argv)
         else if (ret == 'n')
             disableCommit = 1;
         else
-        {
-            logf (LOG_FATAL, "unknown option '-%s'", arg);
-            exit (1);
-        }
+            logf (LOG_WARN, "unknown option '-%s'", arg);
     }
     if (common_resource)
     {
