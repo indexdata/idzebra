@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.25 2004-01-22 11:27:21 adam Exp $
+/* $Id: zebrash.c,v 1.26 2004-06-15 07:42:45 adam Exp $
    Copyright (C) 2002,2003,2004
    Index Data Aps
 
@@ -41,6 +41,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/proto.h>
 #include <yaz/sortspec.h>
+#include <yaz/options.h>
 #include <yaz/wrbuf.h>
 
 #define MAX_NO_ARGS 32
@@ -60,6 +61,7 @@ ZebraService zs=0;  /* our global handle to zebra */
 ZebraHandle  zh=0;  /* the current session */
 /* time being, only one session works */
 int nextrecno=1;  /* record number to show next */
+static char *default_config = DEFAULTCONFIG;
 
 /**************************************
  * Help functions
@@ -159,9 +161,10 @@ static int cmd_zebra_start( char *args[], WRBUF outbuff)
 {
     char *conf=args[1];
     if (!conf || !*conf) {
-	wrbuf_puts(outbuff,"no config file specified, using "
-		   DEFAULTCONFIG "\n" );
-	conf=DEFAULTCONFIG;
+	wrbuf_puts(outbuff,"no config file specified, using ");
+	wrbuf_puts(outbuff, default_config);
+	wrbuf_puts(outbuff, "\n");
+	conf=default_config;
     }
     zs=zebra_start(conf, 0, 0);
     if (!zs) {
@@ -820,12 +823,34 @@ void shell()
 } /* shell() */
 
 
+static void usage()
+{
+    printf ("usage:\n");
+    printf ("zebrash [-c config]\n");
+    exit(1);
+}
 /**************************************
  * Main 
  */
- 
-int main (int argc, char ** args)
+
+int main (int argc, char ** argv)
 {
+    int ret;
+    char *arg = 0;
+    while ((ret = options ("c:h", argv, argc, &arg)) != -2)
+    {
+	switch(ret)
+	{
+	case 'c':
+	    default_config = arg;
+	    break;
+	case 'h':
+	    usage();
+	default:
+	    fprintf(stderr, "bad option %s\n", arg);
+	    usage();
+	}
+    }
     shell();
     return 0;
 } /* main */
