@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.103 2004-09-28 12:52:03 adam Exp $
+dnl $Id: configure.in,v 1.104 2004-11-09 12:02:36 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -20,7 +20,7 @@ if test "$enable_threads" = "yes"; then
 else
 	yazflag=""
 fi
-YAZ_INIT($yazflag)
+YAZ_INIT($yazflag,2.0.27)
 YAZ_DOC
 dnl ------ Look for Tcl
 dnl See if user has specified location of tclConfig.sh; otherwise
