@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.129 2004-09-09 09:07:12 adam Exp $
+/* $Id: zebraapi.c,v 1.130 2004-09-09 10:41:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1751,6 +1751,8 @@ int zebra_init (ZebraHandle zh)
 
     bfs = bfs_create (res_get (zh->service->global_res, "register"),
                       zh->path_reg);
+    if (!bfs)
+	return -1;
     if (rval && *rval)
         bf_cache (bfs, rval);
     
