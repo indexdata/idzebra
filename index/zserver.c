@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.68  1999-05-26 07:49:13  adam
+ * Revision 1.69  1999-06-10 09:20:03  adam
+ * Minor change to pre_init handler.
+ *
+ * Revision 1.68  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.67  1999/02/02 14:51:14  adam
@@ -435,18 +438,20 @@ int bend_sort (void *handle, bend_sort_rr *rr)
 #ifndef WIN32
 static void pre_init (struct statserv_options_block *sob)
 {
-    char *pidfile = "zebrasrv.pid";
-    int fd = creat (pidfile, 0666);
-    
-    if (fd == -1)
-	logf (LOG_WARN|LOG_ERRNO, "creat %s", pidfile);
-    else
+    if (!sob->inetd) 
     {
-	char pidstr[30];
+        char *pidfile = "zebrasrv.pid";
+        int fd = creat (pidfile, 0666);
+        if (fd == -1)
+            logf (LOG_WARN|LOG_ERRNO, "creat %s", pidfile);
+        else
+        {
+	    char pidstr[30];
 	
-	sprintf (pidstr, "%ld", (long) getpid ());
-	write (fd, pidstr, strlen(pidstr));
-	close (fd);
+	    sprintf (pidstr, "%ld", (long) getpid ());
+	    write (fd, pidstr, strlen(pidstr));
+	    close (fd);
+        }
     }
 }
 #endif
