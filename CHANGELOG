@@ -1,3 +1,5 @@
+--- 1.0b1 1998/1/29
+
 Simple ranked searches now return correct number of hits.
 
 The test option (-s) only makes a read-lock on the index as well

@@ -1,4 +1,4 @@
-Zebra TODO $Id: TODO,v 1.4 1998-01-12 15:04:31 adam Exp $
+Zebra TODO $Id: TODO,v 1.5 1998-01-29 13:40:27 adam Exp $
 
 Make regx-filter thread safe.
 
@@ -13,8 +13,6 @@ Admin should be able to specify set/attr when none is specified
 
 Explain support - including d1 to grs (d1_grs.c) in YAZ; Zebra
  to auto-generate explain information depending on data1 system.
-
-Generic character set mapping (w, p, etc.)
 
 ISAMC optimization: indirect block with pointers to all blocks
  in chain. The initial block should include the count as well.
