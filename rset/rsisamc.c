@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisamc.c,v $
- * Revision 1.1  1996-10-29 13:41:48  adam
+ * Revision 1.2  1996-11-08 11:15:57  adam
+ * Compressed isam fully supported.
+ *
+ * Revision 1.1  1996/10/29 13:41:48  adam
  * First use of isamc.
  *
  */
@@ -125,7 +128,7 @@ static int r_count (RSET ct)
 
 static int r_read (RSFD rfd, void *buf)
 {
-    return isc_read_key( ((struct rset_pp_info*) rfd)->pt, buf);
+    return isc_pp_read( ((struct rset_pp_info*) rfd)->pt, buf);
 }
 
 static int r_write (RSFD rfd, const void *buf)

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.13  1996-10-29 13:55:26  adam
+ * Revision 1.14  1996-11-08 11:15:58  adam
+ * Compressed isam fully supported.
+ *
+ * Revision 1.13  1996/10/29 13:55:26  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.12  1996/10/08 13:00:40  adam
@@ -54,6 +57,7 @@
 #include <assert.h>
 
 #include <isam.h>
+#include <isamc.h>
 #include <rsrel.h>
 #include <zebrautl.h>
 
@@ -158,13 +162,22 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     char *isam_tmp_buf;
     int  *isam_r;
     int  *max_tf, *tf;
-    ISPT *isam_pt;
+    ISPT *isam_pt = NULL;
+    ISAMC_PP *isamc_pp = NULL;
     int i;
 
     logf (LOG_DEBUG, "relevance");
     isam_buf = xmalloc (parms->no_isam_positions * sizeof(*isam_buf));
     isam_r = xmalloc (sizeof (*isam_r) * parms->no_isam_positions);
-    isam_pt = xmalloc (sizeof (*isam_pt) * parms->no_isam_positions);
+    if (parms->is)
+        isam_pt = xmalloc (sizeof (*isam_pt) * parms->no_isam_positions);
+    else if (parms->isc)
+        isamc_pp = xmalloc (sizeof (*isamc_pp) * parms->no_isam_positions);
+    else
+    {
+        logf (LOG_FATAL, "No isamc or isam in rs_rel");
+        abort ();
+    }
     isam_tmp_buf = xmalloc (info->key_size);
     max_tf = xmalloc (sizeof (*max_tf) * parms->no_terms);
     tf = xmalloc (sizeof (*tf) * parms->no_terms);
@@ -174,9 +187,18 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     for (i = 0; i<parms->no_isam_positions; i++)
     {
         isam_buf[i] = xmalloc (info->key_size);
-        isam_pt[i] = is_position (parms->is, parms->isam_positions[i]);
-        max_tf [parms->term_no[i]] = is_numkeys (isam_pt[i]);
-        isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
+        if (isam_pt)
+        {
+            isam_pt[i] = is_position (parms->is, parms->isam_positions[i]);
+            max_tf [parms->term_no[i]] = is_numkeys (isam_pt[i]);
+            isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
+        } 
+        else if (isamc_pp)
+        {
+            isamc_pp[i] = isc_pp_open (parms->isc, parms->isam_positions[i]);
+            max_tf [parms->term_no[i]] = isc_pp_num (isamc_pp[i]);
+            isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
+        }
         logf (LOG_DEBUG, "max tf %d = %d", i, max_tf[i]);
     }
     while (1)
@@ -219,7 +241,10 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
                 do
                 {
                     tf[parms->term_no[i]]++;
-                    isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
+                    if (isam_pt)
+                        isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
+                    else if (isamc_pp)
+                        isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
                 } while (isam_r[i] && 
                          (*parms->cmp)(isam_buf[i], isam_tmp_buf) <= 1);
             }
@@ -239,7 +264,10 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     qsort (info->sysno_idx, info->no_rec, sizeof(*info->sysno_idx), qcomp);
     for (i = 0; i<parms->no_isam_positions; i++)
     {
-        is_pt_free (isam_pt[i]);
+        if (isam_pt)
+            is_pt_free (isam_pt[i]);
+        if (isamc_pp)
+            isc_pp_close (isamc_pp[i]);
         xfree (isam_buf[i]);
     }
     xfree (max_tf);
@@ -247,6 +275,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     xfree (isam_buf);
     xfree (isam_r);
     xfree (isam_pt);
+    xfree (isamc_pp);
     xfree(tf);
 }
 
