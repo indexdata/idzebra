@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dictext.c,v $
- * Revision 1.4  1995-09-04 12:33:31  adam
+ * Revision 1.5  1996-01-31 21:03:59  adam
+ * Extra options.
+ *
+ * Revision 1.4  1995/09/04  12:33:31  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.3  1994/10/04  17:46:54  adam
@@ -32,12 +35,13 @@ int main (int argc, char **argv)
 {
     char *arg;
     int ret;
+    int use8 = 0;
     char *inputfile = NULL;
     FILE *ipf = stdin;
     char ipf_buf[1024];
 
     prog = *argv;
-    while ((ret = options ("vh", argv, argc, &arg)) != -2)
+    while ((ret = options ("8vh", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -56,9 +60,11 @@ int main (int argc, char **argv)
         else if (ret == 'h')
         {
             fprintf (stderr, "usage:\n"
-                     "  %s [-h] [-v n] [file]\n", prog);
+                     "  %s [-8] [-h] [-v n] [file]\n", prog);
             exit (1);
         }
+        else if (ret == '8')
+            use8 = 1;
         else
         {
             logf (LOG_FATAL, "Unknown option '-%s'", arg);
@@ -79,11 +85,14 @@ int main (int argc, char **argv)
         char *ipf_ptr = ipf_buf;
         for (;*ipf_ptr && *ipf_ptr != '\n';ipf_ptr++)
         {
-            if (isalpha(*ipf_ptr) || *ipf_ptr == '_')
+            if ((use8 && *ipf_ptr<0)
+                || (*ipf_ptr > 0 && isalpha(*ipf_ptr))
+                || *ipf_ptr == '_')
             {
                 int i = 1;
-                while (ipf_ptr[i] && (isalnum(ipf_ptr[i]) ||
-                                      ipf_ptr[i] == '_'))
+                while (ipf_ptr[i] && ((use8 && ipf_ptr[i] < 0)
+                                      || (ipf_ptr[i]>0 && isalnum(ipf_ptr[i]))
+                                      || ipf_ptr[i] == '_'))
                     i++;
                 if (ipf_ptr[i])
                     ipf_ptr[i++] = '\0';
