@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.10  1995-12-06 12:41:24  adam
+ * Revision 1.11  1995-12-06 13:58:26  adam
+ * Improved flushing of records - all flushes except the last one
+ * don't write the last accessed. Also flush takes place if record
+ * info occupy more than about 256k.
+ *
+ * Revision 1.10  1995/12/06  12:41:24  adam
  * New command 'stat' for the index program.
  * Filenames can be read from stdin by specifying '-'.
  * Bug fix/enhancement of the transformation from terms to regular
@@ -300,10 +305,13 @@ Records rec_open (int rw)
     return p;
 }
 
-static void rec_cache_flush (Records p)
+static void rec_cache_flush (Records p, int saveCount)
 {
-    int i;
-    for (i = 0; i<p->cache_cur; i++)
+    int i, j;
+
+    if (saveCount >= p->cache_cur)
+        saveCount = 0;
+    for (i = 0; i<p->cache_cur - saveCount; i++)
     {
         struct record_cache_entry *e = p->record_cache + i;
         switch (e->flag)
@@ -322,7 +330,10 @@ static void rec_cache_flush (Records p)
         }
         rec_rm (&e->rec);
     }
-    p->cache_cur = 0;
+    for (j = 0; j<saveCount; j++, i++)
+        memcpy (p->record_cache+j, p->record_cache+i,
+                sizeof(*p->record_cache));
+    p->cache_cur = saveCount;
 }
 
 static Record *rec_cache_lookup (Records p, int sysno,
@@ -347,7 +358,20 @@ static void rec_cache_insert (Records p, Record rec, enum recordCacheFlag flag)
     struct record_cache_entry *e;
 
     if (p->cache_cur == p->cache_max)
-        rec_cache_flush (p);
+        rec_cache_flush (p, 1);
+    else if (p->cache_cur > 2)
+    {
+        int i, j;
+        int used = 0;
+        for (i = 0; i<p->cache_cur; i++)
+        {
+            Record r = (p->record_cache + i)->rec;
+            for (j = 0; j<REC_NO_INFO; j++)
+                used += r->size[j];
+        }
+        if (used > 256000)
+            rec_cache_flush (p, 1);
+    }
     assert (p->cache_cur < p->cache_max);
 
     e = p->record_cache + (p->cache_cur)++;
@@ -362,7 +386,7 @@ void rec_close (Records *pp)
 
     assert (p);
 
-    rec_cache_flush (p);
+    rec_cache_flush (p, 0);
     xfree (p->record_cache);
 
     if (p->rw)
