@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.h,v $
- * Revision 1.3  1995-01-24 16:01:30  adam
+ * Revision 1.4  1995-01-25 11:31:04  adam
+ * Simple error reporting when parsing regular expressions.
+ *
+ * Revision 1.3  1995/01/24  16:01:30  adam
  * Added -ansi to CFLAGS.
  * New functions and change of data structures.
  *
@@ -64,4 +67,8 @@ extern int  dfa_verbose;
 extern unsigned short
         dfa_thompson_chars[],
         dfa_ccl_chars[];
+
+#define DFA_ERR_SYNTAX 1
+#define DFA_ERR_LP     2
+#define DFA_ERR_RP     3
 #endif
