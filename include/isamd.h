@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995-1997, Index Data.
+ * Copyright (c) 1995-2000, Index Data.
  * See the file LICENSE for details.
  *
  * IsamH is a simple ISAM that can only append to the end of the list.
@@ -17,9 +17,7 @@
 
 #include <bfile.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 typedef struct ISAMD_s *ISAMD;
 typedef int ISAMD_P;
@@ -77,11 +75,7 @@ int isamd_block_size (ISAMD is, int type);
 void isamd_buildfirstblock(ISAMD_PP pp);
 void isamd_buildlaterblock(ISAMD_PP pp);
 
-
-
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif  /* ISAMD_H */
 

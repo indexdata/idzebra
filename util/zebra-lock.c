@@ -100,3 +100,37 @@ int zebra_lock_rdwr_wunlock (Zebra_lock_rdwr *p)
     return 0;
 }
 
+int zebra_mutex_cond_init (Zebra_mutex_cond *p)
+{
+    pthread_cond_init (&p->cond, 0);
+    pthread_mutex_init (&p->mutex, 0);
+    return 0;
+}
+
+int zebra_mutex_cond_destroy (Zebra_mutex_cond *p)
+{
+    pthread_cond_destroy (&p->cond);
+    pthread_mutex_destroy (&p->mutex);
+    return 0;
+}
+
+int zebra_mutex_cond_lock (Zebra_mutex_cond *p)
+{
+    return pthread_mutex_lock (&p->mutex);
+}
+
+int zebra_mutex_cond_unlock (Zebra_mutex_cond *p)
+{
+    return pthread_mutex_unlock (&p->mutex);
+}
+
+int zebra_mutex_cond_wait (Zebra_mutex_cond *p)
+{
+    return pthread_cond_wait (&p->cond, &p->mutex);
+}
+
+int zebra_mutex_cond_signal (Zebra_mutex_cond *p)
+{
+    return pthread_cond_signal (&p->cond);
+}
+

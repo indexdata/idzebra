@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.33  2000-02-25 13:24:49  adam
+ * Revision 1.34  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.33  2000/02/25 13:24:49  adam
  * Fixed bug regarding pointer conversion that showed up on OSF V5.
  *
  * Revision 1.32  1999/11/30 13:48:03  adam
@@ -160,6 +164,7 @@ struct recExtractCtrl {
     int       seqno[256];
     void      (*schemaAdd)(struct recExtractCtrl *p, Odr_oid *oid);
     data1_handle dh;
+    void      *handle;
 };
 
 /* Retrieve record control */

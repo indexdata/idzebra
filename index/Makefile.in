@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1999, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.10 1999-12-01 13:30:30 adam Exp $
+# $Id: Makefile.in,v 1.11 2000-03-20 19:08:36 adam Exp $
 
 SHELL=/bin/sh
 
@@ -29,7 +29,7 @@ O1 = main.o dir.o dirs.o trav.o extract.o kinput.o kcompare.o \
 O2 = kdump.o
 O3 = zserver.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
  lockutil.o locksrv.o zinfo.o trunc.o sortidx.o rank1.o zebraapi.o \
- retrieve.o
+ retrieve.o kinput.o
 O4 = hlvl.o hlvltest.o kcompare.o
 O5 = apitest.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
  lockutil.o locksrv.o zinfo.o trunc.o sortidx.o rank1.o zebraapi.o \
@@ -62,7 +62,7 @@ $(TPROG5): $(O5) @SUBLIBS@
 	$(CC) -c $(DEFS) $(CFLAGS) $<
 
 clean:
-	rm -f *.[oa] $(TPROG1) $(TPROG2) $(TPROG3) 
+	rm -f *.[oa] $(TPROG1) $(TPROG2) $(TPROG3) $(TPROG4) $(TPROG5)
 	rm -f core mon.out gmon.out errlist
 
 depend:

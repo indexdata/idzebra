@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.17  1999-07-14 10:53:51  adam
+ * Revision 1.18  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.17  1999/07/14 10:53:51  adam
  * Updated various routines to handle missing explain schema.
  *
  * Revision 1.16  1999/05/26 07:49:13  adam
@@ -331,17 +335,14 @@ static Record createRecord (Records records, int *sysno)
     return rec;
 }
 
-void zebraExplain_close (ZebraExplainInfo zei, int writeFlag,
-			 int (*updateH)(Record drec, data1_node *n))
+void zebraExplain_flush (ZebraExplainInfo zei, int writeFlag, void *handle)
 {
-    struct zebDatabaseInfoB *zdi;
-    
-    logf (LOG_DEBUG, "zebraExplain_close wr=%d", writeFlag);
-    if (!zei)
-	return;
+    zei->updateHandle = handle;
     if (writeFlag)
     {
+	struct zebDatabaseInfoB *zdi;
 	zebAccessObject o;
+
 	/* write each database info record */
 	for (zdi = zei->databaseInfo; zdi; zdi = zdi->next)
 	{
@@ -370,8 +371,17 @@ void zebraExplain_close (ZebraExplainInfo zei, int writeFlag,
 						zdi->databaseName, 0);
 	}
 	zebraExplain_writeTarget (zei, 0);
-	
     }
+}
+
+void zebraExplain_close (ZebraExplainInfo zei, int writeFlag)
+{
+#if ZINFO_DEBUG
+    logf (LOG_LOG, "zebraExplain_close wr=%d", writeFlag);
+#endif
+    if (!zei)
+	return;
+    zebraExplain_flush (zei, writeFlag, zei->updateHandle);
     nmem_destroy (zei->nmem);
 }
 
@@ -454,7 +464,9 @@ ZebraExplainInfo zebraExplain_open (
     struct tm *tm;
     NMEM nmem = nmem_create ();
 
-    logf (LOG_DEBUG, "zebraExplain_open wr=%d", writeFlag);
+#if ZINFO_DEBUG
+    logf (LOG_LOG, "zebraExplain_open wr=%d", writeFlag);
+#endif
     zei = (ZebraExplainInfo) nmem_malloc (nmem, sizeof(*zei));
     zei->updateHandle = updateHandle;
     zei->updateFunc = updateFunc;

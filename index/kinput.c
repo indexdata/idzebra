@@ -23,6 +23,7 @@
 #include <assert.h>
 
 #include "index.h"
+#include "zserver.h"
 
 #define KEY_SIZE (1+sizeof(struct it_key))
 #define INP_NAME_MAX 768
@@ -49,13 +50,22 @@ struct key_file {
                          /* handler invoked in each read */
     void (*readHandler)(struct key_file *keyp, void *rinfo);
     void *readInfo;
+    Res res;
 };
 
-void getFnameTmp (char *fname, int no)
+void getFnameTmp (Res res, char *fname, int no)
 {
     const char *pre;
     
-    pre = res_get_def (common_resource, "keyTmpDir", ".");
+    pre = res_get_def (res, "keyTmpDir", ".");
+    sprintf (fname, "%s/key%d.tmp", pre, no);
+}
+
+void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no)
+{
+    const char *pre;
+    
+    pre = res_get_def (zh->service->res, "keyTmpDir", ".");
     sprintf (fname, "%s/key%d.tmp", pre, no);
 }
 
@@ -63,25 +73,30 @@ void key_file_chunk_read (struct key_file *f)
 {
     int nr = 0, r = 0, fd;
     char fname[1024];
-    getFnameTmp (fname, f->no);
+    getFnameTmp (f->res, fname, f->no);
     fd = open (fname, O_BINARY|O_RDONLY);
+
+    f->buf_ptr = 0;
+    f->buf_size = 0;
     if (fd == -1)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cannot open %s", fname);
-        exit (1);
+        logf (LOG_WARN|LOG_ERRNO, "cannot open %s", fname);
+	return ;
     }
     if (!f->length)
     {
         if ((f->length = lseek (fd, 0L, SEEK_END)) == (off_t) -1)
         {
-            logf (LOG_FATAL|LOG_ERRNO, "cannot seek %s", fname);
-            exit (1);
+            logf (LOG_WARN|LOG_ERRNO, "cannot seek %s", fname);
+	    close (fd);
+	    return ;
         }
     }
     if (lseek (fd, f->offset, SEEK_SET) == -1)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cannot seek %s", fname);
-        exit (1);
+        logf (LOG_WARN|LOG_ERRNO, "cannot seek %s", fname);
+	close(fd);
+	return ;
     }
     while (f->chunk - nr > 0)
     {
@@ -92,21 +107,22 @@ void key_file_chunk_read (struct key_file *f)
     }
     if (r == -1)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "read of %s", fname);
-        exit (1);
+        logf (LOG_WARN|LOG_ERRNO, "read of %s", fname);
+	close (fd);
+	return;
     }
     f->buf_size = nr;
-    f->buf_ptr = 0;
     if (f->readHandler)
         (*f->readHandler)(f, f->readInfo);
     close (fd);
 }
 
-struct key_file *key_file_init (int no, int chunk)
+struct key_file *key_file_init (int no, int chunk, Res res)
 {
     struct key_file *f;
 
     f = (struct key_file *) xmalloc (sizeof(*f));
+    f->res = res;
     f->sysno = 0;
     f->seqno = 0;
     f->no = no;
@@ -595,7 +611,79 @@ void progressFunc (struct key_file *keyp, void *info)
 #define R_OK 4
 #endif
 
-void key_input (BFiles bfs, int nkeys, int cache)
+void zebra_index_merge (ZebraHandle zh)
+{
+    struct key_file **kf;
+    char rbuf[1024];
+    int i, r;
+    struct heap_info *hi;
+    struct progressInfo progressInfo;
+    int nkeys = zh->key_file_no;
+    
+    if (nkeys < 0)
+    {
+        char fname[1024];
+        nkeys = 0;
+        while (1)
+        {
+            extract_get_fname_tmp  (zh, fname, nkeys+1);
+            if (access (fname, R_OK) == -1)
+                break;
+            nkeys++;
+        }
+        if (!nkeys)
+            return ;
+    }
+    kf = (struct key_file **) xmalloc ((1+nkeys) * sizeof(*kf));
+    progressInfo.totalBytes = 0;
+    progressInfo.totalOffset = 0;
+    time (&progressInfo.startTime);
+    time (&progressInfo.lastTime);
+    for (i = 1; i<=nkeys; i++)
+    {
+        kf[i] = key_file_init (i, 32768, zh->service->res);
+        kf[i]->readHandler = progressFunc;
+        kf[i]->readInfo = &progressInfo;
+        progressInfo.totalBytes += kf[i]->length;
+        progressInfo.totalOffset += kf[i]->buf_size;
+    }
+    hi = key_heap_init (nkeys, key_qsort_compare);
+    hi->dict = zh->service->dict;
+    hi->isams = zh->service->isams;
+#if ZMBOL
+    hi->isam = zh->service->isam;
+    hi->isamc = zh->service->isamc;
+    hi->isamd = zh->service->isamd;
+#endif
+    
+    for (i = 1; i<=nkeys; i++)
+        if ((r = key_file_read (kf[i], rbuf)))
+            key_heap_insert (hi, rbuf, r, kf[i]);
+    if (zh->service->isams)
+	heap_inps (hi);
+#if ZMBOL
+    else if (zh->service->isamc)
+        heap_inpc (hi);
+    else if (zh->service->isam)
+	heap_inp (hi);
+    else if (zh->service->isamd)
+	heap_inpd (hi);
+#endif
+	
+    for (i = 1; i<=nkeys; i++)
+    {
+	extract_get_fname_tmp  (zh, rbuf, i);
+        unlink (rbuf);
+    }
+    logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
+    logf (LOG_LOG, "Distinct words .%7d", no_diffs);
+    logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
+    logf (LOG_LOG, "Deletions. . . .%7d", no_deletions);
+    logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
+    zh->key_file_no = 0;
+}
+
+void key_input (BFiles bfs, int nkeys, int cache, Res res)
                 
 {
     Dict dict;
@@ -617,7 +705,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
         nkeys = 0;
         while (1)
         {
-            getFnameTmp (fname, nkeys+1);
+            getFnameTmp (res, fname, nkeys+1);
             if (access (fname, R_OK) == -1)
                 break;
             nkeys++;
@@ -631,11 +719,11 @@ void key_input (BFiles bfs, int nkeys, int cache)
         logf (LOG_FATAL, "dict_open fail");
         exit (1);
     }
-    if (res_get_match (common_resource, "isam", "s", ISAM_DEFAULT))
+    if (res_get_match (res, "isam", "s", ISAM_DEFAULT))
     {
 	struct ISAMS_M_s isams_m;
         isams = isams_open (bfs, FNAME_ISAMS, 1,
-			    key_isams_m (common_resource, &isams_m));
+			    key_isams_m (res, &isams_m));
         if (!isams)
         {
             logf (LOG_FATAL, "isams_open fail");
@@ -644,32 +732,32 @@ void key_input (BFiles bfs, int nkeys, int cache)
 	logf (LOG_LOG, "isams opened");
     }
 #if ZMBOL
-    else if (res_get_match (common_resource, "isam", "i", ISAM_DEFAULT))
+    else if (res_get_match (res, "isam", "i", ISAM_DEFAULT))
     {
         isam = is_open (bfs, FNAME_ISAM, key_compare, 1,
-			sizeof(struct it_key), common_resource);
+			sizeof(struct it_key), res);
         if (!isam)
         {
             logf (LOG_FATAL, "is_open fail");
             exit (1);
         }
     }
-    else if (res_get_match (common_resource, "isam", "d", ISAM_DEFAULT))
+    else if (res_get_match (res, "isam", "d", ISAM_DEFAULT))
     {
 	struct ISAMD_M_s isamd_m;
         isamd = isamd_open (bfs, FNAME_ISAMD, 1,
-			  key_isamd_m (common_resource,&isamd_m));
+			  key_isamd_m (res,&isamd_m));
         if (!isamd)
         {
             logf (LOG_FATAL, "isamd_open fail");
             exit (1);
         }
     }
-    else if (res_get_match (common_resource, "isam", "c", ISAM_DEFAULT))
+    else if (res_get_match (res, "isam", "c", ISAM_DEFAULT))
     {
 	struct ISAMC_M_s isamc_m;
         isamc = isc_open (bfs, FNAME_ISAMC, 1,
-			  key_isamc_m (common_resource, &isamc_m));
+			  key_isamc_m (res, &isamc_m));
         if (!isamc)
         {
             logf (LOG_FATAL, "isc_open fail");
@@ -684,7 +772,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
     time (&progressInfo.lastTime);
     for (i = 1; i<=nkeys; i++)
     {
-        kf[i] = key_file_init (i, 32768);
+        kf[i] = key_file_init (i, 32768, res);
         kf[i]->readHandler = progressFunc;
         kf[i]->readInfo = &progressInfo;
         progressInfo.totalBytes += kf[i]->length;
@@ -727,7 +815,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
    
     for (i = 1; i<=nkeys; i++)
     {
-        getFnameTmp (rbuf, i);
+        getFnameTmp (res, rbuf, i);
         unlink (rbuf);
     }
     logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
@@ -743,7 +831,11 @@ void key_input (BFiles bfs, int nkeys, int cache)
 
 /*
  * $Log: kinput.c,v $
- * Revision 1.42  1999-12-01 21:58:48  adam
+ * Revision 1.43  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.42  1999/12/01 21:58:48  adam
  * Proper handle of illegal use of isams.
  *
  * Revision 1.41  1999/11/30 13:48:03  adam

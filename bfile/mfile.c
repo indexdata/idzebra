@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.37  2000-03-15 15:00:30  adam
+ * Revision 1.38  2000-03-20 19:08:35  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.37  2000/03/15 15:00:30  adam
  * First work on threaded version.
  *
  * Revision 1.36  1999/12/08 15:03:11  adam
@@ -527,7 +531,10 @@ int mf_read(MFile mf, int no, int offset, int nbytes, void *buf)
     if ((rd = file_position(mf, no, offset)) < 0)
     {
         if (rd == -2)
+	{
+	    zebra_mutex_unlock (&mf->mutex);
             return 0;
+	}
         else
             exit(1);
     }

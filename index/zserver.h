@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.46  2000-03-15 15:00:31  adam
+ * Revision 1.47  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.46  2000/03/15 15:00:31  adam
  * First work on threaded version.
  *
  * Revision 1.45  1999/11/30 13:48:04  adam
@@ -202,6 +206,7 @@ struct zebra_service {
 #if ZMBOL
     ISAM isam;
     ISAMC isamc;
+    ISAMD isamd;
 #endif
     Dict dict;
     SortIdx sortIdx;
@@ -223,21 +228,46 @@ struct zebra_service {
     ZebraRankClass rank_classes;
     RecTypes recTypes;
     Passwd_db passwd_db;
+    Zebra_mutex_cond session_lock;
+    int stop_flag;
+    int active;
+};
+
+struct recKeys {
+    int buf_used;
+    int buf_max;
+    char *buf;
+    char prevAttrSet;
+    short prevAttrUse;
+    int prevSeqNo;
+};
+
+struct sortKey {
+    char *string;
+    int length;
+    int attrSet;
+    int attrUse;
+    struct sortKey *next;
 };
 
 struct zebra_session {
-#if HAVE_PTHREADS_H
-    pthread_t *pthread_session;
-#endif
     struct zebra_session *next;
-    struct zebra_info *info;
     struct zebra_service *service;
 
+    struct recKeys keys;
+    struct sortKey *sortKeys;
+
+    char **key_buf;
+    size_t ptr_top;
+    size_t ptr_i;
+    size_t key_buf_used;
+    int key_file_no;
+
+    int destroyed;
     ZebraSet sets;
     int errCode;
     int hits;
     char *errString;
-
 };
 
 struct rank_control {
@@ -314,5 +344,26 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep);
+
+void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no);
+void zebra_index_merge (ZebraHandle zh);
+
+
+struct zebra_fetch_control {
+    int offset_end;
+    int record_offset;
+    int record_int_pos;
+    const char *record_int_buf;
+    int record_int_len;
+    int fd;
+};
+
+int zebra_record_ext_read (void *fh, char *buf, size_t count);
+off_t zebra_record_ext_seek (void *fh, off_t offset);
+off_t zebra_record_ext_tell (void *fh);
+off_t zebra_record_int_seek (void *fh, off_t offset);
+off_t zebra_record_int_tell (void *fh);
+int zebra_record_int_read (void *fh, char *buf, size_t count);
+void zebra_record_int_end (void *fh, off_t offset);
 
 YAZ_END_CDECL

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.75  1999-12-08 22:44:45  adam
+ * Revision 1.76  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.75  1999/12/08 22:44:45  adam
  * Zebra/Z'mbol dependencies added.
  *
  * Revision 1.74  1999/12/08 15:03:11  adam
@@ -567,7 +571,7 @@ int main (int argc, char **argv)
                 if (nsections)
                 {
                     logf (LOG_LOG, "merging with index");
-                    key_input (rGroup.bfs, nsections, 60);
+                    key_input (rGroup.bfs, nsections, 60, common_resource);
 #ifndef WIN32
                     sync ();
 #endif

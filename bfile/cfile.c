@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1999, Index Data ApS
+ * Copyright (C) 1995-2000, Index Data ApS
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.25  1999-05-26 07:49:12  adam
+ * Revision 1.26  2000-03-20 19:08:35  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.25  1999/05/26 07:49:12  adam
  * C++ compilation.
  *
  * Revision 1.24  1999/05/12 13:08:06  adam
@@ -206,6 +209,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
     memset (cf->iobuf, 0, cf->head.block_size);
     cf->no_hits = 0;
     cf->no_miss = 0;
+    zebra_mutex_init (&cf->mutex);
     return cf;
 }
 
@@ -515,8 +519,13 @@ int cf_read (CFile cf, int no, int offset, int nbytes, void *buf)
     int block;
     
     assert (cf);
+    zebra_mutex_lock (&cf->mutex);
     if (!(block = cf_lookup (cf, no)))
+    {
+	zebra_mutex_unlock (&cf->mutex);
         return -1;
+    }
+    zebra_mutex_unlock (&cf->mutex);
     if (!mf_read (cf->block_mf, block, offset, nbytes, buf))
     {
         logf (LOG_FATAL|LOG_ERRNO, "cf_read no=%d, block=%d", no, block);
@@ -530,6 +539,7 @@ int cf_write (CFile cf, int no, int offset, int nbytes, const void *buf)
     int block;
 
     assert (cf);
+    zebra_mutex_lock (&cf->mutex);
     if (!(block = cf_lookup (cf, no)))
     {
         block = cf_new (cf, no);
@@ -542,6 +552,7 @@ int cf_write (CFile cf, int no, int offset, int nbytes, const void *buf)
             nbytes = 0;
         }
     }
+    zebra_mutex_unlock (&cf->mutex);
     if (mf_write (cf->block_mf, block, offset, nbytes, buf))
     {
         logf (LOG_FATAL|LOG_ERRNO, "cf_write no=%d, block=%d", no, block);
@@ -566,6 +577,7 @@ int cf_close (CFile cf)
     xfree (cf->array);
     xfree (cf->parray);
     xfree (cf->iobuf);
+    zebra_mutex_destroy (&cf->mutex);
     xfree (cf);
     return 0;
 }

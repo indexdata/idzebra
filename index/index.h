@@ -4,6 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  * (log at the end)
  */
+
+#ifndef INDEX_H
+#define INDEX_H
+
 #include <time.h>
 #include <zebraver.h>
 #include <zebrautl.h>
@@ -22,9 +26,7 @@
 #include <yaz/data1.h>
 #include <recctrl.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 #define IT_MAX_WORD 256
 #define IT_KEY_HAVE_SEQNO 1
@@ -73,7 +75,7 @@ struct recordGroup {
     RecTypes     recTypes;
 };
 
-void getFnameTmp (char *fname, int no);
+void getFnameTmp (Res res, char *fname, int no);
         
 struct dirs_info *dirs_open (Dict dict, const char *rep, int rw);
 struct dirs_info *dirs_fopen (Dict dict, const char *path);
@@ -103,7 +105,7 @@ int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
 void inv_prstat (BFiles bfs);
 void inv_compact (BFiles bfs);
-void key_input (BFiles bfs, int nkeys, int cache);
+void key_input (BFiles bfs, int nkeys, int cache, Res res);
 ISAMS_M key_isams_m (Res res, ISAMS_M me);
 #if ZMBOL
 ISAMC_M key_isamc_m (Res res, ISAMC_M me);
@@ -158,15 +160,16 @@ void zebra_load_atts (data1_handle dh, Res res);
 
 extern Res common_resource;
 
-#ifdef __cplusplus
-}
+YAZ_END_CDECL
+
 #endif
-
-
-
 /*
  * $Log: index.h,v $
- * Revision 1.68  2000-02-24 11:00:07  adam
+ * Revision 1.69  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.68  2000/02/24 11:00:07  adam
  * Fixed bug: indexer would run forever when lock dir was non-existant.
  *
  * Revision 1.67  1999/11/30 13:48:03  adam

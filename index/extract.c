@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.99  2000-02-24 10:57:02  adam
+ * Revision 1.100  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.99  2000/02/24 10:57:02  adam
  * Sequence number incremented after each incomplete-field.
  *
  * Revision 1.98  1999/09/07 07:19:21  adam
@@ -562,7 +566,7 @@ void key_flush (void)
     logf (LOG_LOG, "sorting section %d", key_file_no);
 #if !SORT_EXTRA
     qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_qsort_compare);
-    getFnameTmp (out_fname, key_file_no);
+    getFnameTmp (common_resource, out_fname, key_file_no);
 
     if (!(outf = fopen (out_fname, "wb")))
     {
@@ -637,7 +641,7 @@ int key_close (struct recordGroup *rGroup)
     int rw = rGroup->flagRw;
     if (rw)
 	zebraExplain_runNumberIncrement (zti, 1);
-    zebraExplain_close (zti, rw, 0);
+    zebraExplain_close (zti, rw);
     key_flush ();
     xfree (key_buf);
     rec_close (&records);
@@ -1681,59 +1685,6 @@ int fileExtract (SYSNO *sysno, const char *fname,
     if (rGroup->flagStoreKeys == -1)
         rGroup->flagStoreKeys = 0;
 
-#if ZEBRASDR
-    if (rGroup->useSDR)
-    {
-	ZebraSdrHandle h;
-	char xname[128], *xp;
-
-	strncpy (xname, fname, 127);
-	if (!(xp = strchr (xname, '.')))
-	    return 0;
-	*xp = '\0';
-	if (strcmp (xp+1, "sdr.bits"))
-	    return 0;
-
-        h = zebraSdr_open (xname);
-	if (!h)
-	{
-	    logf (LOG_WARN, "sdr open %s", xname);
-	    return 0;
-	}
-	for (;;)
-	{
-    	    unsigned char *buf;
-	    char sdr_name[128];
-	    int r, segmentno;
-
-	    segmentno = zebraSdr_segment (h, 0);
-	    sprintf (sdr_name, "%%%s.%d", xname, segmentno);
-
-#if 0
-	    if (segmentno > 20)
-		break;
-#endif
-	    r = zebraSdr_read (h, &buf);
-
-    	    if (!r)
-		break;
-
-            fi = file_read_start (0);
-	    fi->sdrbuf = buf;
-	    fi->sdrmax = r;
-	    do
-	    {
-		file_begin (fi);
-		r = recordExtract (sysno, sdr_name, rGroup, deleteFlag, fi,
-                           recType, subType);
-	    } while (r && !sysno && fi->file_more);
-	    file_read_stop (fi);
-	    free (buf);
-	}
-	zebraSdr_close (h);
-	return 1;
-    }
-#endif
     if (sysno && deleteFlag)
         fd = -1;
     else

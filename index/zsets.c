@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.25  2000-03-15 15:00:31  adam
+ * Revision 1.26  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.25  2000/03/15 15:00:31  adam
  * First work on threaded version.
  *
  * Revision 1.24  1999/11/04 15:00:45  adam
@@ -358,13 +362,13 @@ void zebraPosSetDestroy (ZebraHandle zh, ZebraPosSet records, int num)
     xfree (records);
 }
 
-struct sortKey {
+struct sortKeyInfo {
     int relation;
     int attrUse;
 };
 
 void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
-			  struct sortKey *criteria, int num_criteria,
+			  struct sortKeyInfo *criteria, int num_criteria,
 			  int sysno)
 {
     struct zset_sort_entry this_entry;
@@ -512,7 +516,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 {
     int i, psysno = 0;
     struct it_key key;
-    struct sortKey sort_criteria[3];
+    struct sortKeyInfo sort_criteria[3];
     int num_criteria;
     int term_index;
     RSFD rfd;

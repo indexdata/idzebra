@@ -33,5 +33,17 @@ YAZ_EXPORT int zebra_lock_rdwr_wlock (Zebra_lock_rdwr *p);
 YAZ_EXPORT int zebra_lock_rdwr_runlock (Zebra_lock_rdwr *p);
 YAZ_EXPORT int zebra_lock_rdwr_wunlock (Zebra_lock_rdwr *p);
 
+typedef struct {
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+} Zebra_mutex_cond;
+
+YAZ_EXPORT int zebra_mutex_cond_init (Zebra_mutex_cond *p);
+YAZ_EXPORT int zebra_mutex_cond_destroy (Zebra_mutex_cond *p);
+YAZ_EXPORT int zebra_mutex_cond_lock (Zebra_mutex_cond *p);
+YAZ_EXPORT int zebra_mutex_cond_unlock (Zebra_mutex_cond *p);
+YAZ_EXPORT int zebra_mutex_cond_wait (Zebra_mutex_cond *p);
+YAZ_EXPORT int zebra_mutex_cond_signal (Zebra_mutex_cond *p);
+
 YAZ_END_CDECL
 #endif

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.102  2000-03-15 15:00:31  adam
+ * Revision 1.103  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.102  2000/03/15 15:00:31  adam
  * First work on threaded version.
  *
  * Revision 1.101  2000/03/02 14:35:03  adam
@@ -1557,7 +1561,7 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
     }
     for (i = 0; i<rset_no; i++)
     {
-	if (rset[i])
+	if (rsfd[i])
 	    rset_close (rset[i], rsfd[i]);
 	xfree (buf[i]);
     }

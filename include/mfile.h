@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.h,v 1.13 2000-03-15 15:00:30 adam Exp $
+ * $Id: mfile.h,v 1.14 2000-03-20 19:08:36 adam Exp $
  */
 
 #ifndef MFILE_H
@@ -55,8 +55,8 @@ typedef struct meta_file
     int no_files;
     int cur_file;
     int open;                          /* is this file open? */
-    int blocksize;
-    int min_bytes_creat;  /* minimum bytes required to enter directory */
+    off_t blocksize;
+    off_t min_bytes_creat;  /* minimum bytes required to enter directory */
     MFile_area ma;
     int wr;
     Zebra_mutex mutex;

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.76  2000-03-15 15:00:31  adam
+ * Revision 1.77  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.76  2000/03/15 15:00:31  adam
  * First work on threaded version.
  *
  * Revision 1.75  1999/11/30 13:48:04  adam
@@ -295,6 +299,7 @@
 static int bend_sort (void *handle, bend_sort_rr *rr);
 static int bend_delete (void *handle, bend_delete_rr *rr);
 static int bend_esrequest (void *handle, bend_esrequest_rr *rr);
+static int bend_segment (void *handle, bend_segment_rr *rr);
 
 bend_initresult *bend_init (bend_initrequest *q)
 {
@@ -310,6 +315,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     q->bend_sort = bend_sort;
     q->bend_delete = bend_delete;
     q->bend_esrequest = bend_esrequest;
+    q->bend_segment = bend_segment;
 
     q->implementation_name = "Z'mbol Information Server";
     q->implementation_version = "Z'mbol 1.0";
@@ -499,6 +505,14 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
     case Z_ESAdminOriginPartToKeep_commit:
 	yaz_log(LOG_LOG, "adm-commit");
 	break;
+    case Z_ESAdminOriginPartToKeep_shutdown:
+	yaz_log(LOG_LOG, "shutdown");
+	zebra_admin_shutdown(zh);
+	break;
+    case Z_ESAdminOriginPartToKeep_start:
+	yaz_log(LOG_LOG, "start");
+	zebra_admin_start(zh);
+	break;
     default:
 	yaz_log(LOG_LOG, "unknown admin");
 	zh->errCode = 1001;
@@ -525,6 +539,14 @@ static int es_admin (ZebraHandle zh, Z_Admin *r)
 	break;
     }
 
+    return 0;
+}
+
+int bend_segment (void *handle, bend_segment_rr *rr)
+{
+    ZebraHandle zh = (ZebraHandle) handle;
+
+    zebra_admin_import_segment (zh, rr->segment);
     return 0;
 }
 
@@ -675,19 +697,25 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 		switch (*toKeep->action)
 		{
 		case Z_IUOriginPartToKeep_recordInsert:
-		    yaz_log (LOG_LOG, " recordInsert");
+		    yaz_log (LOG_LOG, "recordInsert");
 		    break;
 		case Z_IUOriginPartToKeep_recordReplace:
-		    yaz_log (LOG_LOG, " recordUpdate");
+		    yaz_log (LOG_LOG, "recordUpdate");
 		    break;
 		case Z_IUOriginPartToKeep_recordDelete:
-		    yaz_log (LOG_LOG, " recordDelete");
+		    yaz_log (LOG_LOG, "recordDelete");
 		    break;
 		case Z_IUOriginPartToKeep_elementUpdate:
-		    yaz_log (LOG_LOG, " elementUpdate");
+		    yaz_log (LOG_LOG, "elementUpdate");
 		    break;
 		case Z_IUOriginPartToKeep_specialUpdate:
-		    yaz_log (LOG_LOG, " specialUpdate");
+		    yaz_log (LOG_LOG, "specialUpdate");
+		    break;
+                case Z_ESAdminOriginPartToKeep_shutdown:
+		    yaz_log (LOG_LOG, "shutDown");
+		    break;
+		case Z_ESAdminOriginPartToKeep_start:
+		    yaz_log (LOG_LOG, "start");
 		    break;
 		default:
 		    yaz_log (LOG_LOG, " unknown (%d)", *toKeep->action);
@@ -783,8 +811,10 @@ static void bend_start (struct statserv_options_block *sob)
 static void bend_stop(struct statserv_options_block *sob)
 {
     if (sob->handle)
-	zebra_stop(sob->handle);
-    sob->handle = 0;
+    {
+	ZebraService service = sob->handle;
+	zebra_stop(service);
+    }
 }
 
 int main (int argc, char **argv)

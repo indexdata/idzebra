@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.12  2000-03-15 15:00:30  adam
+ * Revision 1.13  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.12  2000/03/15 15:00:30  adam
  * First work on threaded version.
  *
  * Revision 1.11  1999/10/29 10:00:00  adam
@@ -65,47 +69,39 @@
 #include "zebrasdr.h"
 #endif
 
-struct fetch_control {
-    int record_offset;
-    int record_int_pos;
-    char *record_int_buf;
-    int record_int_len;
-    int fd;
-};
-
-static int record_ext_read (void *fh, char *buf, size_t count)
+int zebra_record_ext_read (void *fh, char *buf, size_t count)
 {
-    struct fetch_control *fc = (struct fetch_control *) fh;
+    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
     return read (fc->fd, buf, count);
 }
 
-static off_t record_ext_seek (void *fh, off_t offset)
+off_t zebra_record_ext_seek (void *fh, off_t offset)
 {
-    struct fetch_control *fc = (struct fetch_control *) fh;
+    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
     return lseek (fc->fd, offset + fc->record_offset, SEEK_SET);
 }
 
-static off_t record_ext_tell (void *fh)
+off_t zebra_record_ext_tell (void *fh)
 {
-    struct fetch_control *fc = (struct fetch_control *) fh;
+    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
     return lseek (fc->fd, 0, SEEK_CUR) - fc->record_offset;
 }
 
-static off_t record_int_seek (void *fh, off_t offset)
+off_t zebra_record_int_seek (void *fh, off_t offset)
 {
-    struct fetch_control *fc = (struct fetch_control *) fh;
+    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
     return (off_t) (fc->record_int_pos = offset);
 }
 
-static off_t record_int_tell (void *fh)
+off_t zebra_record_int_tell (void *fh)
 {
-    struct fetch_control *fc = (struct fetch_control *) fh;
+    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
     return (off_t) fc->record_int_pos;
 }
 
-static int record_int_read (void *fh, char *buf, size_t count)
+int zebra_record_int_read (void *fh, char *buf, size_t count)
 {
-    struct fetch_control *fc = (struct fetch_control *) fh;
+    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
     int l = fc->record_int_len - fc->record_int_pos;
     if (l <= 0)
         return 0;
@@ -113,6 +109,12 @@ static int record_int_read (void *fh, char *buf, size_t count)
     memcpy (buf, fc->record_int_buf + fc->record_int_pos, l);
     fc->record_int_pos += l;
     return l;
+}
+
+void zebra_record_int_end (void *fh, off_t off)
+{
+    struct zebra_fetch_control *fc = (struct zebra_fetch_control *) fh;
+    fc->offset_end = off;
 }
 
 int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
@@ -125,7 +127,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     RecType rt;
     struct recRetrieveCtrl retrieveCtrl;
     char subType[128];
-    struct fetch_control fc;
+    struct zebra_fetch_control fc;
     RecordAttr *recordAttr;
     void *clientData;
 
@@ -155,79 +157,14 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     fc.fd = -1;
     if (rec->size[recInfo_storeData] > 0)
     {
-        retrieveCtrl.readf = record_int_read;
-        retrieveCtrl.seekf = record_int_seek;
-        retrieveCtrl.tellf = record_int_tell;
+        retrieveCtrl.readf = zebra_record_int_read;
+        retrieveCtrl.seekf = zebra_record_int_seek;
+        retrieveCtrl.tellf = zebra_record_int_tell;
         fc.record_int_len = rec->size[recInfo_storeData];
         fc.record_int_buf = rec->info[recInfo_storeData];
         fc.record_int_pos = 0;
         logf (LOG_DEBUG, "Internal retrieve. %d bytes", fc.record_int_len);
     }
-#if ZEBRASDR
-    else if (*fname == '%')
-    {	
-	ZebraSdrHandle h;
-	int segment = 0, r;
-	char *cp, xname[128];
-	unsigned char *buf;
-
-	logf (LOG_DEBUG, "SDR");
-	strcpy (xname, fname+1);
-	if ((cp = strrchr (xname, '.')))
-	{
-	    *cp++ = 0;
-	    segment = atoi(cp);
-	}
-	h = zebraSdr_open (xname);
-	if (!h)
-	{
-	    logf (LOG_WARN, "sdr open %s", xname);
-	    return 0;
-	}
-        if (zebraSdr_segment (h, &segment) < 0)
-	{
-	    logf (LOG_WARN, "zebraSdr_segment fail segment=%d",
-		segment);
-            rec_rm (&rec);
-            return 14;
-	}    
-        r = zebraSdr_read (h, &buf);
-    	if (r < 1)
-	{
-	    logf (LOG_WARN, "zebraSdr_read fail segment=%d",
-		segment);
-            rec_rm (&rec);
-            return 14;
-	}
-	zebraSdr_close (h);
-
-        fc.record_int_len = recordAttr->recordSize;
-        fc.record_int_buf = buf + recordAttr->recordOffset;
-        fc.record_int_pos = 0;
-
-	logf (LOG_LOG, "segment = %d len=%d off=%d",
-	    segment,
-	    recordAttr->recordSize,
-	    recordAttr->recordOffset);
-	if (fc.record_int_len > 180)
-	{
-	    logf (LOG_LOG, "%.70s", fc.record_int_buf);
-	    logf (LOG_LOG, "%.70s", fc.record_int_buf +
-		(fc.record_int_len - 70));
-	}
-	else
-	    logf (LOG_LOG, "%.*s",
-		fc.record_int_len, fc.record_int_buf);
-
-	/* the following two lines makes rec_rm delete buf */
-        rec->size[recInfo_storeData] = r;
-        rec->info[recInfo_storeData] = buf;
-
-        retrieveCtrl.readf = record_int_read;
-        retrieveCtrl.seekf = record_int_seek;
-        retrieveCtrl.tellf = record_int_tell;
-    }
-#endif
     else
     {
         if ((fc.fd = open (fname, O_BINARY|O_RDONLY)) == -1)
@@ -239,11 +176,11 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
         }
 	fc.record_offset = recordAttr->recordOffset;
 
-        retrieveCtrl.readf = record_ext_read;
-        retrieveCtrl.seekf = record_ext_seek;
-        retrieveCtrl.tellf = record_ext_tell;
+        retrieveCtrl.readf = zebra_record_ext_read;
+        retrieveCtrl.seekf = zebra_record_ext_seek;
+        retrieveCtrl.tellf = zebra_record_ext_tell;
 
-        record_ext_seek (retrieveCtrl.fh, 0);
+        zebra_record_ext_seek (retrieveCtrl.fh, 0);
     }
     retrieveCtrl.subType = subType;
     retrieveCtrl.localno = sysno;

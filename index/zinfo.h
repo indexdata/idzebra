@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.8  1999-11-30 13:48:03  adam
+ * Revision 1.9  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.8  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.7  1999/05/26 07:49:13  adam
@@ -39,9 +43,7 @@
 #include <yaz/data1.h>
 #include "recindex.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 typedef struct zebraExplainInfo *ZebraExplainInfo;
 typedef struct zebDatabaseInfo ZebDatabaseInfo;
@@ -52,8 +54,8 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 				    int (*updateFunc)(void *handle,
 						      Record drec,
 						      data1_node *n));
-void zebraExplain_close (ZebraExplainInfo zei, int writeFlag,
-			 int (*updateH)(Record drec, data1_node *n));
+void zebraExplain_close (ZebraExplainInfo zei, int writeFlag /*,
+							       int (*updateH)(Record drec, data1_node *n)*/);
 int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database);
 int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 			      int explain_database);
@@ -64,6 +66,8 @@ void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_recordBytesIncrement (ZebraExplainInfo zei, int adjust_num);
 int zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_loadAttsets (data1_handle dh, Res res);
+void zebraExplain_flush (ZebraExplainInfo zei, int writeFlag,
+			 void *updateHandle);
 
 typedef struct {
     int recordSize;
@@ -72,8 +76,6 @@ typedef struct {
 } RecordAttr;
 RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec);
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.h,v $
- * Revision 1.10  2000-03-15 15:00:31  adam
+ * Revision 1.11  2000-03-20 19:08:36  adam
+ * Added remote record import using Z39.50 extended services and Segment
+ * Requests.
+ *
+ * Revision 1.10  2000/03/15 15:00:31  adam
  * First work on threaded version.
  *
  * Revision 1.9  2000/02/24 12:31:17  adam
@@ -118,5 +122,15 @@ YAZ_EXPORT void zebra_admin_create (ZebraHandle zh, const char *db);
 
 YAZ_EXPORT ZebraService zebra_start (const char *configName);
 YAZ_EXPORT void zebra_stop (ZebraService zs);
+
+YAZ_EXPORT void zebra_admin_shutdown (ZebraHandle zh);
+YAZ_EXPORT void zebra_admin_start (ZebraHandle zh);
+
+YAZ_EXPORT void zebra_shutdown (ZebraService zs);
+
+YAZ_EXPORT void zebra_admin_import_begin (ZebraHandle zh, const char *database);
+
+YAZ_EXPORT void zebra_admin_import_segment (ZebraHandle zh,
+					    Z_Segment *segment);
 
 YAZ_END_CDECL				      
