@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.2  1996-10-29 14:02:09  adam
+ * Revision 1.3  1996-11-08 14:05:33  adam
+ * Bug fix: data1 node member u.tag.get_bytes weren't initialized.
+ *
+ * Revision 1.2  1996/10/29  14:02:09  adam
  * Doesn't use the global data1_tabpath (from YAZ). Instead the function
  * data1_get_tabpath is used.
  *
@@ -664,6 +667,7 @@ static void tagBegin (struct lexSpec *spec,
     res->parent = parent;
     res->which = DATA1N_tag;
     res->u.tag.tag = res->lbuf;
+    res->u.tag.get_bytes = -1;
 
     if (len >= DATA1_LOCALDATA)
         len = DATA1_LOCALDATA-1;
