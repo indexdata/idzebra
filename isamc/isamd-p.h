@@ -1,4 +1,4 @@
-/* $Id: isamd-p.h,v 1.8 1999-09-23 18:01:18 heikki Exp $
+/* $Id: isamd-p.h,v 1.9 1999-10-05 09:57:40 heikki Exp $
  * Copyright (c) 1995-1996, Index Data.
  * See the file LICENSE for details.
  * Heikki Levanto
@@ -32,20 +32,15 @@ typedef struct ISAMD_file_s {
     int no_released;
     int no_remap;
 
-    int no_forward;
+    int no_forward;  /* stats from pp_read, for isam-c compatibility */
     int no_backward;
     int sum_forward;
     int sum_backward;
     int no_next;
     int no_prev;
 
-    int no_op_nodiff; /* existing blocks opened for reading without diffs */
-    int no_op_intdiff; /* - with internal diffs */
-    int no_op_extdiff; /* with separate diff blocks */
-    int no_fbuilds;    /* number of first-time builds */
-    int no_appds;      /* number of appends */
-    int no_merges;     /* number of merges done */
-    int no_remerges;   /* number of times more than one merge needed */
+    int no_op_diffonly;/* number of opens without mainblock */
+    int no_op_main;    /* number of opens with a main block */
 
     char *alloc_buf;    /* free-list handling (?) */
     int alloc_entries_num;
@@ -60,6 +55,26 @@ struct ISAMD_s {
     int max_cat;
     ISAMD_M method;
     ISAMD_file files;
+    int last_pos;   /* last read/write position for seek stats */
+    int last_cat;   /* same for category */
+    int no_read;    /* blocks read (in all categories) */
+    int no_write;   /* blocks written (in all categories) */
+    int no_op_single;/* singleton "blocks" opened */
+    int no_read_keys;/* number of keys read (occurences of words) */
+    int no_read_main;/* number of main keys read (not diffs) */
+    int no_read_eof; /* number of key sequence ends read (no of words read) */
+    int no_seek_nxt; /* seeks to the next record (fast) */
+    int no_seek_sam; /* seeks to same record (fast) */
+    int no_seek_fwd; /* seeks forward */
+    int no_seek_prv; /* seeks to previous */
+    int no_seek_bak; /* seeks backwards */
+    int no_seek_cat; /* seeks to different category (expensive) */
+    int no_op_new;  /* "open"s for new blocks */
+    int no_fbuilds;    /* number of first-time builds */
+    int no_appds;      /* number of appends */
+    int no_merges;     /* number of merges done */
+    int no_non;     /* merges without any work */
+    int no_singles; /* new items resulting in singletons */
 }; 
 
 
@@ -110,7 +125,10 @@ int singleton_encode(struct it_key *k);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.8  1999-09-23 18:01:18  heikki
+ * Revision 1.9  1999-10-05 09:57:40  heikki
+ * Tuning the isam-d (and fixed a small "detail")
+ *
+ * Revision 1.8  1999/09/23 18:01:18  heikki
  * singleton optimising
  *
  * Revision 1.7  1999/09/20 15:48:06  heikki

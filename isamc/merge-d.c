@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.23 1999-09-27 14:36:36 heikki Exp $
+ * $Id: merge-d.c,v 1.24 1999-10-05 09:57:40 heikki Exp $
  *
  * bugs
  *  sinleton-bit has to be in the high end, not low, so as not to confuse
@@ -751,8 +751,11 @@ int isamd_read_item_merge (
     assert(winner==0); /* if nothing found, nothing comes from a diff */
     cmp= 0; /* eof */
   }
-  if (pp->is->method->debug >9)
-     logf(LOG_LOG,"mergeDB4: sysno[1]=%d", pp->diffinfo[1].key.sysno); /*!*/
+  if (cmp)
+    ++(pp->is->no_read_keys);
+  else
+    ++(pp->is->no_read_eof);
+
   return cmp;
    
 } /* isamd_read_item */
@@ -787,7 +790,7 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
                                /* resize later. Saves disk, but will lead */
                                /* into bad seeks. */
   
-  ++(readpp->is->files[0].no_merges);
+  ++(readpp->is->no_merges);
      
   /* set up diffs as they should be for reading */
   diffidx = ISAMD_BLOCK_OFFSET_1; 
@@ -822,7 +825,6 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
      if (readpp->is->method->debug >5) 
          logf(LOG_LOG,"isamd_merge:all data has been deleted (nk=%d) ",
             readpp->numKeys);
-    //assert (readpp->numKeys == 0);  /* no longer true! */
   }
 
 
@@ -930,12 +932,12 @@ static int append_diffs(
        firstpp=isamd_pp_open(is, isamd_addr(0,0) );
        firstpp->size=firstpp->offset=ISAMD_BLOCK_OFFSET_1;
          /* create in smallest category, will expand later */
-       ++(is->files[0].no_fbuilds);
+       ++(is->no_fbuilds);
    } 
    else
    {
        firstpp=isamd_pp_open(is, ipos);
-       ++(is->files[0].no_appds);
+       ++(is->no_appds);
    }
 
    if (is->method->debug >2) 
@@ -980,21 +982,23 @@ static int append_diffs(
 
       if (diffidx + codelen > maxsize )
       { /* block full */
-         if (firstpp->cat < firstpp->is->max_cat)
-         { /* just increase the block size */
+         while ( (firstpp->cat < firstpp->is->max_cat) &&
+                 (diffidx + codelen > maxsize) )
+         { /* try to increase the block size */
              if (firstpp->pos > 0)  /* free the old block if allocated */
                  isamd_release_block(is, firstpp->cat, firstpp->pos);
              ++firstpp->cat;
              maxsize = is->method->filecat[firstpp->cat].bsize; 
              firstpp->pos=0; /* need to allocate it when saving */             
              if (is->method->debug >3)
-                logf(LOG_LOG,"isamd_appd: increased diff block to %d (%d)",
+                logf(LOG_LOG,"isamd_appd: increased diff block sz to %d (%d)",
                    firstpp->cat, maxsize);
          }
-         else 
-         { /* max size already - can't help, need to merge it */
+         if  ((firstpp->cat >= firstpp->is->max_cat) &&
+                 (diffidx + codelen > maxsize) )
+         { /* max size - can't help, need to merge it */
              if (is->method->debug >7)
-                logf(LOG_LOG,"isamd_appd: block full");
+                logf(LOG_LOG,"isamd_appd: need to merge");
              if (is->method->debug >9)  //!!!!!
                 logf(LOG_LOG,"isamd_appd: going to merge with m=%d %d.%d",
                      i_mode, i_key.sysno, i_key.seqno);
@@ -1004,7 +1008,16 @@ static int append_diffs(
              assert(!"merge returned zero ??");
          } /* need to merge */
       } /* block full */
-      
+
+      if (!( diffidx+codelen <= maxsize )) 
+      { /* bug hunting */
+         logf(LOG_LOG,"OOPS, diffidx problem: d=%d c=%d s=%d > m=%d",
+           diffidx, codelen, diffidx+codelen, maxsize);
+         logf(LOG_LOG,"ipos=%d f=%d=%d:%d",
+           ipos, 
+           isamd_addr(firstpp->pos, firstpp->cat),
+           firstpp->cat, firstpp->pos );
+      }
       assert ( diffidx+codelen <= maxsize );
       
       /* save the diff */ 
@@ -1059,7 +1072,7 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
    ISAMD_P rc=0;
 
    int olddebug= is->method->debug;
-   if (ipos == 1846)
+   if (ipos == 7320)
      is->method->debug = 99;  /*!*/
      
    if ( filter_isempty(F) ) /* can be, if del-ins of the same */
@@ -1067,6 +1080,7 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
       if (is->method->debug >3) 
          logf(LOG_LOG,"isamd_appd: nothing to do for %d=",ipos);
       filter_close(F);
+      ++(is->no_non);
       return ipos; /* without doing anything at all */
    }
 
@@ -1080,6 +1094,8 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
       if (is->method->debug >9) 
          logf(LOG_LOG,"isamd_appd: singleton %d (%x)",
            rc,rc);
+      if (rc)
+        is->no_singles++;
       assert ( (rc==0) || is_singleton(rc) );
    }
    if ( 0==rc) /* either not single, or it did not fit */
@@ -1106,7 +1122,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.23  1999-09-27 14:36:36  heikki
+ * Revision 1.24  1999-10-05 09:57:40  heikki
+ * Tuning the isam-d (and fixed a small "detail")
+ *
+ * Revision 1.23  1999/09/27 14:36:36  heikki
  * singletons
  *
  * Revision 1.22  1999/09/23 18:01:18  heikki

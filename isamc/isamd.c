@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.15 1999-09-27 14:36:36 heikki Exp $ 
+ * $Id: isamd.c,v 1.16 1999-10-05 09:57:40 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -38,22 +38,35 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
 	{    64,    0 },
 #else
         {    32,    1 },
+        {    64,    1 },
+	{   128,    1 },
+        {   512,    1 },
+        {  2048,    1 },
+        {  8192,    1 },
+        { 32768,    0 },
+
+#endif
+#ifdef SKIPTHIS
+
+
+
+        {    32,    1 },
         {   128,    1 },
         {   512,    1 },
         {  2048,    1 },
         {  8192,    1 },
         { 32768,    1 },
         {131072,    0 },
-#endif 
 
-/* old values from isamc, long time ago...
-        {    24,   40 },
-	{   128,  256 },
-        {   512, 1024 },
-        {  2048, 4096 },
-        {  8192,16384 },
-        { 32768,   0  },
-*/
+        {    24,    1 }, /* Experimental sizes */
+        {    32,    1 },
+        {    64,    1 },
+        {   128,    1 },
+        {   256,    1 },
+        {   512,    1 },
+        {  1024,    1 },
+        {  2048,    0 },
+#endif 
 
     };
     ISAMD_M m = (ISAMD_M) xmalloc (sizeof(*m));  /* never released! */
@@ -136,16 +149,31 @@ ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method)
 	is->files[i].sum_backward = 0;
 	is->files[i].no_next = 0;
 	is->files[i].no_prev = 0;
-        is->files[i].no_op_nodiff=0;
-        is->files[i].no_op_intdiff=0;
-        is->files[i].no_op_extdiff=0;
-        is->files[i].no_fbuilds=0;   
-        is->files[i].no_appds=0;     
-        is->files[i].no_merges=0;    
-        is->files[i].no_remerges=0;  
-
+        is->files[i].no_op_diffonly=0;
+        is->files[i].no_op_main=0;
         init_fc (is, i);
     }
+    is->last_pos=0;
+    is->last_cat=0;   
+    is->no_read=0;    
+    is->no_read_main=0;
+    is->no_write=0;   
+    is->no_op_single=0;
+    is->no_op_new=0;
+    is->no_read_keys=0;
+    is->no_read_eof=0;
+    is->no_seek_nxt=0;
+    is->no_seek_sam=0;
+    is->no_seek_fwd=0;
+    is->no_seek_prv=0;
+    is->no_seek_bak=0;
+    is->no_seek_cat=0;
+    is->no_fbuilds=0;
+    is->no_appds=0;
+    is->no_merges=0;
+    is->no_non=0;
+    is->no_singles=0;
+
     return is;
 }
 
@@ -167,23 +195,24 @@ int isamd_block_size (ISAMD is, int type)
 int isamd_close (ISAMD is)
 {
     int i;
+    int s;
 
     if (is->method->debug>0)
     {
         logf (LOG_LOG, "isamd statistics");
-	logf (LOG_LOG, "f      nxt    forw   mid-f    prev   backw   mid-b");
+	logf (LOG_LOG, "f    nxt   forw  mid-f   prev  backw  mid-b");
 	for (i = 0; i<is->no_files; i++)
-	    logf (LOG_LOG, "%d%8d%8d%8.1f%8d%8d%8.1f",i,
+	    logf (LOG_LOG, "%d%7d%7d%7.1f%7d%7d%7.1f",i,
 		  is->files[i].no_next,
 		  is->files[i].no_forward,
 		  is->files[i].no_forward ?
-		  (double) is->files[i].sum_forward/is->files[i].no_forward
-		  : 0.0,
+		    (double) is->files[i].sum_forward/is->files[i].no_forward
+		    : 0.0,
 		  is->files[i].no_prev,
 		  is->files[i].no_backward,
 		  is->files[i].no_backward ?
-		  (double) is->files[i].sum_backward/is->files[i].no_backward
-		  : 0.0);
+		    (double) is->files[i].sum_backward/is->files[i].no_backward
+		    : 0.0);
     }
     if (is->method->debug>0)
         logf (LOG_LOG, "f  writes   reads skipped   alloc released ");
@@ -208,23 +237,50 @@ int isamd_close (ISAMD is)
     
     if (is->method->debug>0) 
     {
-        logf (LOG_LOG, "f   opens  simple     int     ext");
+        logf (LOG_LOG, "f   opens    main  diffonly");
         for (i = 0; i<is->no_files; i++)
         {
-            logf (LOG_LOG, "%d%8d%8d%8d%8d",i,
-                  is->files[i].no_op_nodiff+
-                  is->files[i].no_op_intdiff+
-                  is->files[i].no_op_extdiff,
-                  is->files[i].no_op_nodiff,
-                  is->files[i].no_op_intdiff,
-                  is->files[i].no_op_extdiff);
+            logf (LOG_LOG, "%d%8d%8d%8d",i,
+                  is->files[i].no_op_main+
+                  is->files[i].no_op_diffonly,
+                  is->files[i].no_op_main,
+                  is->files[i].no_op_diffonly);
         }
-        logf (LOG_LOG, "    build  append   merge   remrg");
-        logf (LOG_LOG, "=%8d%8d%8d%8d",
-                  is->files[0].no_fbuilds,
-                  is->files[0].no_appds,
-                  is->files[0].no_merges,
-                  is->files[0].no_remerges);
+        logf(LOG_LOG,"single   %8d", is->no_op_single);
+        logf(LOG_LOG,"new      %8d", is->no_op_new);
+
+        logf(LOG_LOG, "new build   %8d", is->no_fbuilds);
+        logf(LOG_LOG, "append      %8d", is->no_appds);
+        logf(LOG_LOG, "  merges    %8d", is->no_merges);
+        logf(LOG_LOG, "  singles   %8d", is->no_singles);
+        logf(LOG_LOG, "  non       %8d", is->no_non);
+
+        logf(LOG_LOG, "read blocks %8d", is->no_read);
+        logf(LOG_LOG, "read keys:  %8d %8.1f k/bl", 
+                  is->no_read_keys, 
+                  1.0*(is->no_read_keys+1)/(is->no_read+1) );
+        logf(LOG_LOG, "read main-k %8d %8.1f %% of keys",
+                  is->no_read_main,
+                  100.0*(is->no_read_main+1)/(is->no_read_keys+1) );
+        logf(LOG_LOG, "read ends:  %8d %8.1f k/e",
+                  is->no_read_eof,
+                  1.0*(is->no_read_keys+1)/(is->no_read_eof+1) );
+        s= is->no_seek_nxt+ is->no_seek_sam+ is->no_seek_fwd +
+           is->no_seek_prv+ is->no_seek_bak+ is->no_seek_cat;
+        if (s==0) 
+          s++;
+        logf(LOG_LOG, "seek same   %8d %8.1f%%",
+            is->no_seek_sam, 100.0*is->no_seek_sam/s );
+        logf(LOG_LOG, "seek next   %8d %8.1f%%",
+            is->no_seek_nxt, 100.0*is->no_seek_nxt/s );
+        logf(LOG_LOG, "seek prev   %8d %8.1f%%",
+            is->no_seek_prv, 100.0*is->no_seek_prv/s );
+        logf(LOG_LOG, "seek forw   %8d %8.1f%%",
+            is->no_seek_fwd, 100.0*is->no_seek_fwd/s );
+        logf(LOG_LOG, "seek back   %8d %8.1f%%",
+            is->no_seek_bak, 100.0*is->no_seek_bak/s );
+        logf(LOG_LOG, "seek cat    %8d %8.1f%%",
+            is->no_seek_cat, 100.0*is->no_seek_cat/s );
     }
     xfree (is->files);
     xfree (is->method);
@@ -232,9 +288,29 @@ int isamd_close (ISAMD is)
     return 0;
 }
 
+static void isamd_seek_stat(ISAMD is, int cat, int pos)
+{
+  if (cat != is->last_cat)
+     is->no_seek_cat++;
+  else if ( pos == is->last_pos)
+     is->no_seek_sam++;
+  else if ( pos == is->last_pos+1)
+     is->no_seek_nxt++;
+  else if ( pos == is->last_pos-1)
+     is->no_seek_prv++;
+  else if ( pos > is->last_pos)
+     is->no_seek_fwd++;
+  else if ( pos < is->last_pos)
+     is->no_seek_bak++;
+  is->last_cat = cat;
+  is->last_pos = pos;
+} /* seek_stat */
+
 int isamd_read_block (ISAMD is, int cat, int pos, char *dst)
 {
+    isamd_seek_stat(is,cat,pos);
     ++(is->files[cat].no_reads);
+    ++(is->no_read);
     if (is->method->debug > 6)
         logf (LOG_LOG, "isamd: read_block %d:%d",cat, pos);
     return bf_read (is->files[cat].bf, pos, 0, 0, dst);
@@ -242,7 +318,9 @@ int isamd_read_block (ISAMD is, int cat, int pos, char *dst)
 
 int isamd_write_block (ISAMD is, int cat, int pos, char *src)
 {
+    isamd_seek_stat(is,cat,pos);
     ++(is->files[cat].no_writes);
+    ++(is->no_write);
     if (is->method->debug > 6)
         logf (LOG_LOG, "isamd: write_block %d:%d", cat, pos);
     return bf_write (is->files[cat].bf, pos, 0, 0, src);
@@ -525,12 +603,16 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
             ipos,ipos, 
             singlekey.sysno, singlekey.seqno/2,
             pp->size );
+       is->no_op_single++;
        return pp;
     } /* singleton */
    
     pp->cat = isamd_type(ipos);
     pp->pos = isamd_block(ipos); 
- 
+    
+    if (0==pp->pos)
+      is->no_op_new++; 
+      
     if (pp->pos)
     {
         src = pp->buf;
@@ -541,10 +623,14 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
         src += sizeof(pp->size);
         memcpy (&pp->numKeys, src, sizeof(pp->numKeys));
         src += sizeof(pp->numKeys);
-        assert (pp->next != pp->pos);
+        assert (pp->next != isamd_addr(pp->pos,pp->cat));
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMD_BLOCK_OFFSET_1);
         assert(pp->size>=ISAMD_BLOCK_OFFSET_1); /*??*/
+        if (pp->next)
+          is->files[pp->cat].no_op_main++;
+        else
+          is->files[pp->cat].no_op_diffonly++;
     }
     if (is->method->debug > 5)
        logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
@@ -559,15 +645,13 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
 void isamd_buildfirstblock(ISAMD_PP pp){
   char *dst=pp->buf;
   assert(pp->buf);
-  assert(pp->next != pp->pos); 
+  assert(pp->next != isamd_addr(pp->pos,pp->cat)); 
   memcpy(dst, &pp->next, sizeof(pp->next) );
   dst += sizeof(pp->next);
   memcpy(dst, &pp->size,sizeof(pp->size));
   dst += sizeof(pp->size);
   memcpy(dst, &pp->numKeys, sizeof(pp->numKeys));
   dst += sizeof(pp->numKeys);
-//  memcpy(dst, &pp->diffs, sizeof(pp->diffs));
-//  dst += sizeof(pp->diffs);  
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_1);
   if (pp->is->method->debug > 5)
      logf (LOG_LOG, "isamd: bldfirst:  p=%d=%d:%d n=%d:%d:%d sz=%d nk=%d ",
@@ -647,7 +731,7 @@ int isamd_read_main_item (ISAMD_PP pp, char **dst)
 	newcat = isamd_type(pp->next);
         pp->pos = isamd_block(pp->next);
         pp->cat = isamd_type(pp->next);
-        
+        pp->is->no_read_main++;
         src = pp->buf;
 	/* read block and save 'next' and 'size' entry */
         isamd_read_block (is, pp->cat, pp->pos, src);
@@ -761,7 +845,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.15  1999-09-27 14:36:36  heikki
+ * Revision 1.16  1999-10-05 09:57:40  heikki
+ * Tuning the isam-d (and fixed a small "detail")
+ *
+ * Revision 1.15  1999/09/27 14:36:36  heikki
  * singletons
  *
  * Revision 1.14  1999/09/23 18:01:18  heikki

@@ -77,6 +77,8 @@ int isamd_block_size (ISAMD is, int type);
 void isamd_buildfirstblock(ISAMD_PP pp);
 void isamd_buildlaterblock(ISAMD_PP pp);
 
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -86,6 +88,9 @@ void isamd_buildlaterblock(ISAMD_PP pp);
 
 /*
  * $Log: isamd.h,v $
+ * Revision 1.3  1999/08/18 08:33:41  heikki
+ * Fixes
+ *
  * Revision 1.2  1999/07/14 13:21:34  heikki
  * Added isam-d files. Compiles (almost) clean. Doesn't work at all
  *
