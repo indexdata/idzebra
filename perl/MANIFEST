@@ -28,3 +28,4 @@ t/07_sort.t
 t/08_scan.t
 zebra_perl.c
 zebra_perl.h
+IDZebra.i
