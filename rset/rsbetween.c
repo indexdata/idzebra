@@ -3,7 +3,7 @@
  * All rights reserved.
  * Heikki Levanto
  *
- * $Id: rsbetween.c,v 1.3 2002-04-12 14:57:41 heikki Exp $
+ * $Id: rsbetween.c,v 1.4 2002-04-12 15:03:46 heikki Exp $
  */
 
 #include <stdio.h>
@@ -196,7 +196,7 @@ static void logit( struct rset_between_info *info, char *prefix, void *l, void *
     char buf_l[32];
     char buf_m[32];
     char buf_r[32];
-    logf(LOG_DEBUG,"%s l=%s m=%s r=%s",
+    logf(LOG_DEBUG,"btw: %s l=%s m=%s r=%s",
       prefix, 
       (*info->printer)(l, buf_l),
       (*info->printer)(m, buf_m),
@@ -212,13 +212,15 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
 
     while (p->more_m)
     {
-        logit( info, "between: start of loop", p->buf_l, p->buf_m, p->buf_r);
+        logit( info, "start of loop", p->buf_l, p->buf_m, p->buf_r);
 
 	/* forward L until past m, count levels, note rec boundaries */
 	if (p->more_l)
 	    cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
 	else
 	    cmp_l=2; /* past this record */
+        logf(LOG_DEBUG, "cmp_l=%d", cmp_l);
+
         while (cmp_l < 0)   /* l before m */
 	{
             if (cmp_l == -2)
@@ -230,6 +232,8 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                 p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 		    		   &p->term_index_l);
 	        cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
+                logit( info, "forwarded L", p->buf_l, p->buf_m, p->buf_r);
+                logf(LOG_DEBUG, "  cmp_l=%d", cmp_l);
             }
             else
 		cmp_l=2; 
@@ -240,6 +244,7 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
 	    cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
 	else
 	    cmp_r=2; 
+        logf(LOG_DEBUG, "cmp_r=%d", cmp_r);
         while (cmp_r < 0)   /* r before m */
 	{
  	    /* -2, earlier record, doesn't matter */
@@ -250,6 +255,8 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                 p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
 		    		   &p->term_index_r);
 	        cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
+                logit( info, "forwarded R", p->buf_l, p->buf_m, p->buf_r);
+                logf(LOG_DEBUG, "  cmp_r=%d", cmp_r);
             }
             else
 		cmp_r=2; 
@@ -262,6 +269,7 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
 	{
 	    memcpy (buf, p->buf_m, info->key_size);
             *term_index = p->term_index_m;
+            logit( info, "Returning a hit (m)", p->buf_l, p->buf_m, p->buf_r);
 	    return 1;  
 	}
 	else
@@ -272,7 +280,9 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                                &p->term_index_m);
     } /* while more_m */
       
+    logf(LOG_DEBUG,"Exiting, no more stuff in m");
     return 0;  /* no more data possible */
+
 
 }  /* r_read */
 
