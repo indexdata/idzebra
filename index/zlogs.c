@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zlogs.c,v $
- * Revision 1.5  1997-04-30 08:56:07  quinn
+ * Revision 1.6  1997-09-29 09:06:41  adam
+ * Removed static var to make this module thread safe.
+ *
+ * Revision 1.5  1997/04/30 08:56:07  quinn
  * null
  *
  * Revision 1.4  1996/10/08  09:41:25  quinn
@@ -27,10 +30,8 @@
 
 #include "zserver.h"
 
-static char *attrStr (int type, int value, enum oid_value ast)
+static void attrStr (int type, int value, enum oid_value ast, char *str)
 {
-    static char str[80];
-
     *str = '\0';
     switch (ast)
     {
@@ -203,7 +204,6 @@ static char *attrStr (int type, int value, enum oid_value ast)
         sprintf (str + strlen(str), " (%d=%d)", type, value);
     else
         sprintf (str, "%d=%d", type, value);
-    return str;
 }
 
 /*
@@ -213,6 +213,7 @@ static void zlog_attributes (Z_AttributesPlusTerm *t, int level,
                              enum oid_value ast)
 {
     int of, i;
+    char str[80];
     for (of = 0; of < t->num_attributes; of++)
     {
         Z_AttributeElement *element;
@@ -221,8 +222,9 @@ static void zlog_attributes (Z_AttributesPlusTerm *t, int level,
         switch (element->which) 
         {
         case Z_AttributeValue_numeric:
-            logf (LOG_LOG, "%*.s %s", level, "",
-                  attrStr (*element->attributeType, *element->value.numeric, ast));
+	    attrStr (*element->attributeType,
+		     *element->value.numeric, ast, str);
+            logf (LOG_LOG, "%*.s %s", level, "", str);
             break;
         case Z_AttributeValue_complex:
             logf (LOG_LOG, "%*.s attributeType=%d complex", level, "",
