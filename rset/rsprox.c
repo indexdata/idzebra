@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.14 2004-09-01 15:01:32 heikki Exp $
+/* $Id: rsprox.c,v 1.15 2004-09-03 15:04:11 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -232,11 +232,11 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
             int cmp = (*kctrl->cmp)(p->buf[0], p->buf[1]);
             if (cmp < -1)
                 p->more[0] = rset_forward (p->rfd[0],
-                                           p->buf[0], p->buf[0]);
+                                           p->buf[0], p->buf[1]);
                 /* FIXME - this certainly looks wrong! */
             else if (cmp > 1)
                 p->more[1] = rset_forward (p->rfd[1],
-                                           p->buf[1], p->buf[1]);
+                                           p->buf[1], p->buf[0]);
             else
             {
                 zint seqno[500]; /* FIXME - why 500 ?? */
