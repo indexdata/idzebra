@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.6  1995-10-02 15:05:26  quinn
+ * Revision 1.7  1995-10-02 15:18:09  adam
+ * Minor changes.
+ *
+ * Revision 1.6  1995/10/02  15:05:26  quinn
  * Added a few fields.
  *
  * Revision 1.5  1995/10/02  14:55:52  quinn
@@ -65,7 +68,7 @@ struct recRetrieveCtrl {
     oid_value  output_format;
     void       *rec_buf;
     size_t     rec_len;
-    int diagnostic;
+    int        diagnostic;
     char *message;
 };
 
