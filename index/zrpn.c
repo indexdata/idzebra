@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.124 2002-09-24 19:44:20 adam Exp $
+/* $Id: zrpn.c,v 1.125 2002-10-03 10:16:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -180,17 +180,18 @@ struct grep_info {
 static void term_untrans  (ZebraHandle zh, int reg_type,
 			   char *dst, const char *src)
 {
+    int len = 0;
     while (*src)
     {
         const char *cp = zebra_maps_output (zh->reg->zebra_maps,
 					    reg_type, &src);
-	if (!cp)
-	    *dst++ = *src++;
+	if (!cp && len < IT_MAX_WORD-1)
+	    dst[len++] = *src++;
 	else
-	    while (*cp)
-		*dst++ = *cp++;
+	    while (*cp && len < IT_MAX_WORD-1)
+		dst[len++] = *cp++;
     }
-    *dst = '\0';
+    dst[len] = '\0';
 }
 
 static void add_isam_p (const char *name, const char *info,
@@ -233,7 +234,7 @@ static void add_isam_p (const char *name, const char *info,
     {
 	const char *db;
 	int set, use;
-	char term_tmp[512];
+	char term_tmp[IT_MAX_WORD];
 	int su_code = 0;
 	int len = key_SU_decode (&su_code, name);
 	
@@ -1109,8 +1110,9 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 }
 
 
-static int trans_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-                       char *termz)
+/* convert APT search term to UTF8 */
+static int zapt_term_to_utf8 (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+                              char *termz)
 {
     size_t sizez;
     Z_Term *term = zapt->term;
@@ -1126,7 +1128,6 @@ static int trans_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             size_t outleft = IT_MAX_WORD-1;
             size_t ret;
 
-            yaz_log (LOG_DEBUG, "converting general from ISO-8859-1");
             ret = yaz_iconv(zh->iconv_to_utf8, &inbuf, &inleft,
                         &outbuf, &outleft);
             if (ret == (size_t)(-1))
@@ -1136,13 +1137,15 @@ static int trans_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 return -1;
             }
             *outbuf = 0;
-            return 0;
         }
-        sizez = term->u.general->len;
-        if (sizez > IT_MAX_WORD-1)
-            sizez = IT_MAX_WORD-1;
-        memcpy (termz, term->u.general->buf, sizez);
-        termz[sizez] = '\0';
+        else
+        {
+            sizez = term->u.general->len;
+            if (sizez > IT_MAX_WORD-1)
+                sizez = IT_MAX_WORD-1;
+            memcpy (termz, term->u.general->buf, sizez);
+            termz[sizez] = '\0';
+        }
         break;
     case Z_Term_characterString:
         sizez = strlen(term->u.characterString);
@@ -1153,38 +1156,47 @@ static int trans_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         break;
     default:
         zh->errCode = 124;
+        return -1;
     }
     return 0;
 }
 
-static void trans_scan_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-                             char *termz, int reg_type)
+/* convert APT SCAN term to internal cmap */
+static int trans_scan_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+                            char *termz, int reg_type)
 {
-    Z_Term *term = zapt->term;
-    const char **map;
-    const char *cp = (const char *) term->u.general->buf;
-    const char *cp_end = cp + term->u.general->len;
-    const char *src;
-    int i = 0;
-    const char *space_map = NULL;
-    int len;
-    
-    while ((len = (cp_end - cp)) > 0)
+    char termz0[IT_MAX_WORD];
+
+    if (zapt_term_to_utf8(zh, zapt, termz0))
+        return -1;    /* error */
+    else
     {
-        map = zebra_maps_input (zh->reg->zebra_maps, reg_type, &cp, len);
-        if (**map == *CHR_SPACE)
-            space_map = *map;
-        else
+        const char **map;
+        const char *cp = (const char *) termz0;
+        const char *cp_end = cp + strlen(cp);
+        const char *src;
+        int i = 0;
+        const char *space_map = NULL;
+        int len;
+            
+        while ((len = (cp_end - cp)) > 0)
         {
-            if (i && space_map)
-                for (src = space_map; *src; src++)
+            map = zebra_maps_input (zh->reg->zebra_maps, reg_type, &cp, len);
+            if (**map == *CHR_SPACE)
+                space_map = *map;
+            else
+            {
+                if (i && space_map)
+                    for (src = space_map; *src; src++)
+                        termz[i++] = *src;
+                space_map = NULL;
+                for (src = *map; *src; src++)
                     termz[i++] = *src;
-            space_map = NULL;
-            for (src = *map; *src; src++)
-                termz[i++] = *src;
+            }
         }
+        termz[i] = '\0';
     }
-    termz[i] = '\0';
+    return 0;
 }
 
 static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
@@ -2364,7 +2376,7 @@ static RSET rpn_search_APT (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     logf (LOG_DEBUG, "search_type=%s", search_type);
     logf (LOG_DEBUG, "rank_type=%s", rank_type);
 
-    if (trans_term (zh, zapt, termz))
+    if (zapt_term_to_utf8(zh, zapt, termz))
         return 0;
 
     if (sort_flag)
@@ -2639,12 +2651,33 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
 static void scan_term_untrans (ZebraHandle zh, NMEM stream, int reg_type,
 			       char **dst, const char *src)
 {
-    char term_dst[1024];
+    char term_src[IT_MAX_WORD];
+    char term_dst[IT_MAX_WORD];
     
-    term_untrans (zh, reg_type, term_dst, src);
-    
-    *dst = (char *) nmem_malloc (stream, strlen(term_dst)+1);
-    strcpy (*dst, term_dst);
+    term_untrans (zh, reg_type, term_src, src);
+
+    if (zh->iconv_from_utf8 != 0)
+    {
+        int len;
+        char *inbuf = term_src;
+        size_t inleft = strlen(term_src);
+        char *outbuf = term_dst;
+        size_t outleft = sizeof(term_dst)-1;
+        size_t ret;
+        
+        ret = yaz_iconv (zh->iconv_from_utf8, &inbuf, &inleft,
+                         &outbuf, &outleft);
+        if (ret == (size_t)(-1))
+            len = 0;
+        else
+            len = outbuf - term_dst;
+        *dst = nmem_malloc (stream, len + 1);
+        if (len > 0)
+            memcpy (*dst, term_dst, len);
+        (*dst)[len] = '\0';
+    }
+    else
+        *dst = nmem_strdup (stream, term_src);
 }
 
 static void count_set (RSET r, int *count)
@@ -2788,7 +2821,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         termz[prefix_len] = 0;
         strcpy (scan_info->prefix, termz);
 
-        trans_scan_term (zh, zapt, termz+prefix_len, reg_id);
+        if (trans_scan_term (zh, zapt, termz+prefix_len, reg_id))
+            return ;
                     
         dict_scan (zh->reg->dict, termz, &before_tmp, &after_tmp,
 		   scan_info, scan_handle);
