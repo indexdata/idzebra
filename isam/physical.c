@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.7  1995-12-06 14:48:27  quinn
+ * Revision 1.8  1996-01-29 09:47:11  quinn
+ * Fixed mean little bug in the read-table code.
+ *
+ * Revision 1.7  1995/12/06  14:48:27  quinn
  * Fixed some strange bugs.
  *
  * Revision 1.6  1995/09/04  12:33:47  adam
@@ -113,7 +116,7 @@ int is_p_read_partial(is_mtable *tab, is_mblock *block)
     	block->state = IS_MBSTATE_CLEAN;
     }
     else
-    	block->bread = buf->num * is_keysize(tab->is);
+    	block->bread = buf->offset + buf->num * is_keysize(tab->is);
     return 0;
 }
 
@@ -201,6 +204,7 @@ void is_p_sync(is_mtable *tab)
 	{
 	    memcpy(type->dbuf + sum, b->data + b->offset, v = b->num *
 		is_keysize(tab->is));
+
 	    sum += v;
 	    assert(sum <= type->blocksize);
 	}
