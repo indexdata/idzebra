@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.53  1997-09-25 14:54:43  adam
+ * Revision 1.54  1997-09-29 09:08:36  adam
+ * Revised locking system to be thread safe for the server.
+ *
+ * Revision 1.53  1997/09/25 14:54:43  adam
  * WIN32 files lock support.
  *
  * Revision 1.52  1997/09/22 12:39:06  adam
@@ -293,8 +296,6 @@ int fileExtract (SYSNO *sysno, const char *fname,
 
 void rec_prstat (void);
 
-void zebraLockPrefix (Res res, char *pathPrefix);
-
 void zebraIndexLockMsg (const char *str);
 void zebraIndexUnlock (void);
 void zebraIndexLock (BFiles bfs, int commitNow, const char *rval);
@@ -312,6 +313,7 @@ int zebra_lock (ZebraLockHandle h);
 int zebra_lock_nb (ZebraLockHandle h);
 int zebra_unlock (ZebraLockHandle h);
 int zebra_lock_fd (ZebraLockHandle h);
+void zebra_lock_prefix (Res res, char *dst);
 
 void init_charmap(Res res);
 const char **map_chrs_input(void *vp, const char **from, int len);

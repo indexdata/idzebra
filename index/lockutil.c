@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.9  1997-09-25 14:54:43  adam
+ * Revision 1.10  1997-09-29 09:08:36  adam
+ * Revised locking system to be thread safe for the server.
+ *
+ * Revision 1.9  1997/09/25 14:54:43  adam
  * WIN32 files lock support.
  *
  * Revision 1.8  1997/09/17 12:19:15  adam
@@ -52,8 +55,6 @@
 
 #include "index.h"
 
-static char *lockDir = NULL;
-
 struct zebra_lock_info {
     int fd;
     int excl_flag;
@@ -93,15 +94,13 @@ void zebra_lock_destroy (ZebraLockHandle h)
     xfree (h);
 }
 
-void zebraLockPrefix (Res res, char *pathPrefix)
+void zebra_lock_prefix (Res res, char *path)
 {
-    if (!lockDir)
-        lockDir = res_get_def (res, "lockDir", "");
-    assert (lockDir);
-    
-    strcpy (pathPrefix, lockDir);
-    if (*pathPrefix && pathPrefix[strlen(pathPrefix)-1] != '/')
-        strcat (pathPrefix, "/");
+    char *lock_dir = res_get_def (res, "lockDir", "");
+
+    strcpy (path, lock_dir);
+    if (*path && path[strlen(path)-1] != '/')
+        strcat (path, "/");
 }
 
 #ifdef WINDOWS

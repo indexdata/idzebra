@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.24  1997-09-17 12:19:19  adam
+ * Revision 1.25  1997-09-29 09:08:36  adam
+ * Revised locking system to be thread safe for the server.
+ *
+ * Revision 1.24  1997/09/17 12:19:19  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -84,6 +87,19 @@
  *
  */
 
+
+#ifndef USE_TIMES
+#ifdef __linux__
+#define USE_TIMES 1
+#else
+#define USE_TIMES 0
+#endif
+#endif
+
+#if USE_TIMES
+#include <sys/times.h>
+#endif
+
 #include <backend.h>
 #include <rset.h>
 
@@ -118,6 +134,14 @@ typedef struct {
     data1_attset *registered_sets;
     BFiles bfs;
     Res res;
+
+    ZebraLockHandle server_lock_cmt;
+    ZebraLockHandle server_lock_org;
+    char *server_path_prefix;
+#ifdef USE_TIMES
+    struct tms tms1;
+    struct tms tms2;    
+#endif
 } ZServerInfo;
 
 int rpn_search (ZServerInfo *zi, 
@@ -142,9 +166,11 @@ ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
 void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num);
 void zlog_rpn (Z_RPNQuery *rpn);
 
-int zebraServerLock (Res res, int lockCommit);
-void zebraServerUnlock (int commitPhase);
-int zebraServerLockGetState (Res res, time_t *timep);
+int zebra_server_lock_init (ZServerInfo *zi);
+int zebra_server_lock_destroy (ZServerInfo *zi);
+int zebra_server_lock (ZServerInfo *zi, int lockCommit);
+void zebra_server_unlock (ZServerInfo *zi, int commitPhase);
+int zebra_server_lock_get_state (ZServerInfo *zi, time_t *timep);
 
 typedef struct attent
 {

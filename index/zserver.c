@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.49  1997-09-25 14:57:23  adam
+ * Revision 1.50  1997-09-29 09:08:36  adam
+ * Revised locking system to be thread safe for the server.
+ *
+ * Revision 1.49  1997/09/25 14:57:23  adam
  * Windows NT port.
  *
  * Revision 1.48  1997/09/17 12:19:19  adam
@@ -193,29 +196,12 @@
 #include <recctrl.h>
 #include <dmalloc.h>
 
-#ifdef __linux__
-#define USE_TIMES 1
-#endif
-
-#ifndef USE_TIMES
-#define USE_TIMES 0
-#endif
-
-#if USE_TIMES
-#include <sys/times.h>
-#endif
 #include "zserver.h"
-
-
-#if USE_TIMES
-static struct tms tms1;
-static struct tms tms2;
-#endif
 
 static int register_lock (ZServerInfo *zi)
 {
     time_t lastChange;
-    int state = zebraServerLockGetState(zi->res, &lastChange);
+    int state = zebra_server_lock_get_state(zi, &lastChange);
 
     switch (state)
     {
@@ -225,9 +211,9 @@ static int register_lock (ZServerInfo *zi)
     default:
         state = 0;
     }
-    zebraServerLock (zi->res, state);
+    zebra_server_lock (zi, state);
 #if USE_TIMES
-    times (&tms1);
+    times (&zi->tms1);
 #endif
     if (zi->registerState == state)
     {
@@ -282,10 +268,10 @@ static void register_unlock (ZServerInfo *zi)
     static int waitSec = -1;
 
 #if USE_TIMES
-    times (&tms2);
+    times (&zi->tms2);
     logf (LOG_LOG, "user/system: %ld/%ld",
-			(long) (tms2.tms_utime - tms1.tms_utime),
-			(long) (tms2.tms_stime - tms1.tms_stime));
+			(long) (zi->tms2.tms_utime - zi->tms1.tms_utime),
+			(long) (zi->tms2.tms_stime - zi->tms1.tms_stime));
 #endif
     if (waitSec == -1)
     {
@@ -301,7 +287,7 @@ static void register_unlock (ZServerInfo *zi)
         sleep (waitSec);
 #endif
     if (zi->registerState != -1)
-        zebraServerUnlock (zi->registerState);
+        zebra_server_unlock (zi, zi->registerState);
 }
 
 bend_initresult *bend_init (bend_initrequest *q)
@@ -323,6 +309,7 @@ bend_initresult *bend_init (bend_initrequest *q)
 	logf (LOG_FATAL, "Cannot open resource `%s'", sob->configname);
 	exit (1);
     }
+    zebra_server_lock_init (zi);
     zi->dh = data1_create ();
     zi->bfs = bfs_create (res_get (zi->res, "register"));
     bf_lockDir (zi->bfs, res_get (zi->res, "lockDir"));
@@ -586,6 +573,7 @@ void bend_close (void *handle)
     }
     bfs_destroy (zi->bfs);
     data1_destroy (zi->dh);
+    zebra_server_lock_destroy (zi);
     return;
 }
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.12  1997-09-25 14:54:43  adam
+ * Revision 1.13  1997-09-29 09:08:36  adam
+ * Revised locking system to be thread safe for the server.
+ *
+ * Revision 1.12  1997/09/25 14:54:43  adam
  * WIN32 files lock support.
  *
  * Revision 1.11  1997/09/17 12:19:15  adam
@@ -69,17 +72,16 @@ static ZebraLockHandle server_lock_org = NULL;
 
 int zebraIndexWait (int commitPhase)
 {
-    char pathPrefix[1024];
-    char path[1024];
     ZebraLockHandle h;
-    
-    zebraLockPrefix (common_resource, pathPrefix);
 
     if (server_lock_cmt)
 	zebra_unlock (server_lock_cmt);
     else
     {
-	sprintf (path, "%s%s", pathPrefix, FNAME_COMMIT_LOCK);
+	char path[1024];
+
+	zebra_lock_prefix (common_resource, path);
+	strcat (path, FNAME_COMMIT_LOCK);
 	server_lock_cmt = zebra_lock_create (path, 1);
 	if (!server_lock_cmt)
 	{
@@ -91,7 +93,10 @@ int zebraIndexWait (int commitPhase)
 	zebra_unlock (server_lock_org);
     else
     {
-        sprintf (path, "%s%s", pathPrefix, FNAME_ORG_LOCK);
+	char path[1024];
+
+	zebra_lock_prefix (common_resource, path);
+	strcat (path, FNAME_ORG_LOCK);
 	server_lock_org = zebra_lock_create (path, 1);
 	if (!server_lock_org)
 	{
@@ -130,7 +135,6 @@ int zebraIndexWait (int commitPhase)
 void zebraIndexLockMsg (const char *str)
 {
     char path[1024];
-    char pathPrefix[1024];
     int l, r, fd;
 
     assert (server_lock_main);
@@ -143,8 +147,8 @@ void zebraIndexLockMsg (const char *str)
         logf (LOG_FATAL|LOG_ERRNO, "write lock file");
         exit (1);
     }
-    zebraLockPrefix (common_resource, pathPrefix);
-    sprintf (path, "%s%s", pathPrefix, FNAME_TOUCH_TIME);
+    zebra_lock_prefix (common_resource, path);
+    strcat (path, FNAME_TOUCH_TIME);
     fd = creat (path, 0666);
     close (fd);
 }
@@ -152,24 +156,23 @@ void zebraIndexLockMsg (const char *str)
 void zebraIndexUnlock (void)
 {
     char path[1024];
-    char pathPrefix[1024];
-
-    zebraLockPrefix (common_resource, pathPrefix);
-    sprintf (path, "%s%s", pathPrefix, FNAME_MAIN_LOCK);
+    
+    zebra_lock_prefix (common_resource, path);
+    strcat (path, FNAME_MAIN_LOCK);
     unlink (path);
 }
 
 void zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
 {
     char path[1024];
-    char pathPrefix[1024];
     char buf[256];
     int r;
 
     if (server_lock_main)
         return ;
-    zebraLockPrefix (common_resource, pathPrefix);
-    sprintf (path, "%s%s", pathPrefix, FNAME_MAIN_LOCK);
+
+    zebra_lock_prefix (common_resource, path);
+    strcat (path, FNAME_MAIN_LOCK);
     while (1)
     {
         server_lock_main = zebra_lock_create (path, 2);

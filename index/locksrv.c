@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.9  1997-09-25 14:54:43  adam
+ * Revision 1.10  1997-09-29 09:08:36  adam
+ * Revised locking system to be thread safe for the server.
+ *
+ * Revision 1.9  1997/09/25 14:54:43  adam
  * WIN32 files lock support.
  *
  * Revision 1.8  1997/09/17 12:19:15  adam
@@ -51,28 +54,49 @@
 
 #include "zserver.h"
 
-static ZebraLockHandle server_lock_cmt = NULL;
-static ZebraLockHandle server_lock_org = NULL;
-
-int zebraServerLock (Res res, int commitPhase)
+int zebra_server_lock_init (ZServerInfo *zi)
 {
-    char pathPrefix[1024];
-    char path[1024];
-    
-    zebraLockPrefix (res, pathPrefix);
+    char path_prefix[1024];
 
-    if (!server_lock_cmt)
+    assert (zi->res);
+    zi->server_lock_cmt = NULL;
+    zi->server_lock_org = NULL;
+
+    zebra_lock_prefix (zi->res, path_prefix);
+    zi->server_path_prefix = xmalloc (strlen(path_prefix)+1);
+    strcpy (zi->server_path_prefix, path_prefix);
+
+    logf (LOG_DEBUG, "Locking system initialized");
+    return 0;
+}
+
+int zebra_server_lock_destroy (ZServerInfo *zi)
+{
+    xfree (zi->server_path_prefix);
+    zebra_lock_destroy (zi->server_lock_cmt);
+    zebra_lock_destroy (zi->server_lock_org);
+    logf (LOG_DEBUG, "Locking system destroyed");
+    return 0;
+}
+
+int zebra_server_lock (ZServerInfo *zi, int commitPhase)
+{
+    if (!zi->server_lock_cmt)
     {
-        sprintf (path, "%s%s", pathPrefix, FNAME_COMMIT_LOCK);
-        if (!(server_lock_cmt = zebra_lock_create (path, 0)))
+	char path[1024];
+
+	strcpy (path, zi->server_path_prefix);
+	strcat (path, FNAME_COMMIT_LOCK);
+        if (!(zi->server_lock_cmt = zebra_lock_create (path, 0)))
         {
             logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
             return -1;
         }
-        assert (server_lock_org == NULL);
+        assert (zi->server_lock_org == NULL);
 
-        sprintf (path, "%s%s", pathPrefix, FNAME_ORG_LOCK);
-        if (!(server_lock_org = zebra_lock_create (path, 0)))
+	strcpy (path, zi->server_path_prefix);
+	strcat (path, FNAME_ORG_LOCK);
+        if (!(zi->server_lock_org = zebra_lock_create (path, 0)))
         {
             logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
             return -1;
@@ -81,49 +105,48 @@ int zebraServerLock (Res res, int commitPhase)
     if (commitPhase)
     {
         logf (LOG_DEBUG, "Server locks org");
-        zebra_lock (server_lock_org);
+        zebra_lock (zi->server_lock_org);
     }
     else
     {
         logf (LOG_DEBUG, "Server locks cmt");
-        zebra_lock (server_lock_cmt);
+        zebra_lock (zi->server_lock_cmt);
     }
     return 0;
 }
 
-void zebraServerUnlock (int commitPhase)
+void zebra_server_unlock (ZServerInfo *zi, int commitPhase)
 {
-    if (server_lock_org == NULL)
+    if (zi->server_lock_org == NULL)
         return;
     if (commitPhase)
     {
         logf (LOG_DEBUG, "Server unlocks org");
-        zebra_unlock (server_lock_org);
+        zebra_unlock (zi->server_lock_org);
     }
     else
     {
         logf (LOG_DEBUG, "Server unlocks cmt");
-        zebra_unlock (server_lock_cmt);
+        zebra_unlock (zi->server_lock_cmt);
     }
 }
 
-int zebraServerLockGetState (Res res, time_t *timep)
+int zebra_server_lock_get_state (ZServerInfo *zi, time_t *timep)
 {
-    char pathPrefix[1024];
     char path[1024];
     char buf[256];
     int fd;
     struct stat xstat;
     
-    zebraLockPrefix (res, pathPrefix);
-
-    sprintf (path, "%s%s", pathPrefix, FNAME_TOUCH_TIME);
+    strcpy (path, zi->server_path_prefix);
+    strcat (path, FNAME_TOUCH_TIME);
     if (stat (path, &xstat) == -1)
         *timep = 1;
     else
         *timep = xstat.st_ctime;
-    
-    sprintf (path, "%s%s", pathPrefix, FNAME_MAIN_LOCK);
+
+    strcpy (path, zi->server_path_prefix);
+    strcat (path, FNAME_MAIN_LOCK);
     fd = open (path, O_BINARY|O_RDONLY);
     if (fd == -1)
     {
