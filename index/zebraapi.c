@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.110 2003-07-04 13:58:32 adam Exp $
+/* $Id: zebraapi.c,v 1.111 2003-07-07 13:55:37 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -2107,6 +2107,8 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
     
     odr_destroy(odr);
 
+    yaz_log(LOG_API,"Hits: %d",numhits);
+
     if (numhits)
 	*numhits=hits;
 
@@ -2117,11 +2119,11 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
   Sort - a simplified interface, with optional read locks.
   FIXME - This is a horrible name, will conflict with half the applications
 */
-int zebra_sort_2 (ZebraHandle zh, 
-		  ODR stream,
-		  const char *sort_spec,
-		  const char *output_setname,
-		  const char **input_setnames) 
+int zebra_sort_by_specstr (ZebraHandle zh, 
+			   ODR stream,
+			   const char *sort_spec,
+			   const char *output_setname,
+			   const char **input_setnames) 
 {
     int num_input_setnames = 0;
     int sort_status = 0;
