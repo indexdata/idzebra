@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.h,v $
- * Revision 1.6  1997-09-17 12:19:10  adam
+ * Revision 1.7  1998-03-13 15:30:50  adam
+ * New functions isc_block_used and isc_block_size. Fixed 'leak'
+ * in isc_alloc_block.
+ *
+ * Revision 1.6  1997/09/17 12:19:10  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -78,6 +82,9 @@ void isc_pp_close (ISAMC_PP pp);
 int isc_read_item (ISAMC_PP pp, char **dst);
 int isc_pp_read (ISAMC_PP pp, void *buf);
 int isc_pp_num (ISAMC_PP pp);
+
+int isc_block_used (ISAMC is, int type);
+int isc_block_size (ISAMC is, int type);
 
 #define isc_type(x) ((x) & 7)
 #define isc_block(x) ((x) >> 3)

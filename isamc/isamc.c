@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.10  1998-03-11 11:18:18  adam
+ * Revision 1.11  1998-03-13 15:30:50  adam
+ * New functions isc_block_used and isc_block_size. Fixed 'leak'
+ * in isc_alloc_block.
+ *
+ * Revision 1.10  1998/03/11 11:18:18  adam
  * Changed the isc_merge to take into account the mfill (minimum-fill).
  *
  * Revision 1.9  1998/03/06 13:54:02  adam
@@ -68,9 +72,9 @@ ISAMC_M isc_getmethod (void)
         {   32,    28,     0,    3 },
 	{   64,    54,    30,    0 },
 #else
-        {   32,    28,    20,    20 },
-        {  512,   490,   340,    20 },
-        { 4096,  3950,  3200,    20 },
+        {   32,    28,    24,    20 },
+        {  512,   490,   350,    20 },
+        { 4096,  3950,  4200,    20 },
         {32768, 32000, 30000,     0 },
 #endif
     };
@@ -161,6 +165,21 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
     return is;
 }
 
+int isc_block_used (ISAMC is, int type)
+{
+    if (type < 0 || type >= is->no_files)
+	return -1;
+    return is->files[type].head.lastblock-1;
+}
+
+int isc_block_size (ISAMC is, int type)
+{
+    ISAMC_filecat filecat = is->method->filecat;
+    if (type < 0 || type >= is->no_files)
+	return -1;
+    return filecat[type].bsize;
+}
+
 int isc_close (ISAMC is)
 {
     int i;
@@ -246,6 +265,7 @@ int isc_alloc_block (ISAMC is, int cat)
             if ((nb = is->files[cat].fc_list[j]) && (!block || nb < block))
             {
                 is->files[cat].fc_list[j] = 0;
+		block = nb;
                 break;
             }
     }
