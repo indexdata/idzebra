@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.12 1999-08-18 13:28:17 heikki Exp $
+ * $Id: merge-d.c,v 1.13 1999-08-18 13:59:19 heikki Exp $
  *
  * todo
  *  - Clean up log levels
@@ -33,7 +33,6 @@
  *  quite different, and likely to give maintenance problems.
  *
  *  log levels (set isamd=x in zebra.cfg (or what ever cfg file you use) )
- *  NOT IMPLEMEMTED YET !!!
  *    0 = no logging. Default
  *    1 = no logging here. isamd logs overall statistics
  *    2 = Each call to isamd_append with start address and no more
@@ -84,11 +83,14 @@ static char *hexdump(unsigned char *p, int len, char *buff) {
 
 static int separateDiffBlock(ISAMD_PP pp)
 {
+  int limit = sizeof(int) + 8;
   if (pp->next) 
      return 1;  /* multi-block chains always have a separate diff block */
-  return ( pp->size + 2*sizeof(int) > pp->is->method->filecat[pp->cat].bsize);
+  return ( pp->size + limit >= pp->is->method->filecat[pp->cat].bsize);
   /* make sure there is at least room for the length and one diff. if not, */
-  /* it goes to a separate block */
+  /* it goes to a separate block. Assumes max diff is 8 bytes. Not         */
+  /* unreaalistic in large data sets, where first sysno may be very large, */
+  /* and even the first seqno may be quite something. */
   
   /* todo: Make the limit adjustable in the filecat table ! */
 }
@@ -859,6 +861,12 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
           
       } /* block full */
       
+      /* Note: this goes horribly wrong if there is no room for the diff */
+      /* after the merge! The solution is to increase the limit in */
+      /* separateDiffBlock, to force a separate diff block earlier, and not */
+      /* to have absurdly small blocks */
+      assert ( diffidx+codelen <= maxsize );
+      
       /* save the diff */ 
       memcpy(&(pp->buf[diffidx]),codebuff,codelen);
       diffidx += codelen;
@@ -924,7 +932,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.12  1999-08-18 13:28:17  heikki
+ * Revision 1.13  1999-08-18 13:59:19  heikki
+ * Fixed another unlikely difflen bug
+ *
+ * Revision 1.12  1999/08/18 13:28:17  heikki
  * Set log levels to decent values
  *
  * Revision 1.11  1999/08/18 10:37:11  heikki
