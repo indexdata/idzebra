@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.130 2003-03-01 22:45:38 adam Exp $
+/* $Id: zrpn.c,v 1.131 2003-03-06 11:58:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -2660,7 +2660,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	       oid_value attributeset,
 	       int num_bases, char **basenames,
 	       int *position, int *num_entries, ZebraScanEntry **list,
-	       int *is_partial)
+	       int *is_partial, RSET limit_set, int return_zero)
 {
     int i;
     int pos = *position;
@@ -2681,11 +2681,38 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     char rank_type[128];
     int complete_flag;
     int sort_flag;
+
     *list = 0;
 
     if (attributeset == VAL_NONE)
         attributeset = VAL_BIB1;
 
+    if (!limit_set)
+    {
+        AttrType termset;
+        int termset_value_numeric;
+        const char *termset_value_string;
+        attr_init (&termset, zapt, 8);
+        termset_value_numeric =
+            attr_find_ex (&termset, NULL, &termset_value_string);
+        if (termset_value_numeric != -1)
+        {
+            char resname[32];
+            const char *termset_name = 0;
+            
+            if (termset_value_numeric != -2)
+            {
+                
+                sprintf (resname, "%d", termset_value_numeric);
+                termset_name = resname;
+            }
+            else
+                termset_name = termset_value_string;
+            
+            limit_set = resultSetRef (zh, termset_name);
+        }
+    }
+        
     yaz_log (LOG_DEBUG, "position = %d, num = %d set=%d",
              pos, num, attributeset);
         
@@ -2842,6 +2869,17 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                 ptr[j]++;
             }
         }
+        if (limit_set)
+        {
+            rset_bool_parms bool_parms;
+
+            bool_parms.key_size = sizeof(struct it_key);
+            bool_parms.cmp = key_compare_it;
+            bool_parms.rset_l = rset;
+            bool_parms.rset_r = rset_dup(limit_set);
+
+            rset = rset_create (rset_kind_and, &bool_parms);
+        }
         count_set (rset, &glist[i+before].occurrences);
         rset_delete (rset);
     }
@@ -2909,6 +2947,17 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
                 ptr[j]++;
             }
+        }
+        if (limit_set)
+        {
+            rset_bool_parms bool_parms;
+
+            bool_parms.key_size = sizeof(struct it_key);
+            bool_parms.cmp = key_compare_it;
+            bool_parms.rset_l = rset;
+            bool_parms.rset_r = rset_dup(limit_set);
+
+            rset = rset_create (rset_kind_and, &bool_parms);
         }
         count_set (rset, &glist[before-1-i].occurrences);
         rset_delete (rset);

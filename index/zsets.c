@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.42 2003-02-27 22:55:40 adam Exp $
+/* $Id: zsets.c,v 1.43 2003-03-06 11:58:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -691,7 +691,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
     yaz_log (LOG_LOG, "resultSetSortSingle end");
 }
 
-RSET resultSetRef (ZebraHandle zh, Z_ResultSetId *resultSetId)
+RSET resultSetRef (ZebraHandle zh, const char *resultSetId)
 {
     ZebraSet s;
 

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.90 2003-03-05 00:08:04 adam Exp $
+/* $Id: zebraapi.c,v 1.91 2003-03-06 11:58:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -846,7 +846,7 @@ void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     }
     rpn_scan (zh, stream, zapt, attributeset,
 	      zh->num_basenames, zh->basenames, position,
-	      num_entries, entries, is_partial);
+	      num_entries, entries, is_partial, 0, 0);
     zebra_end_read (zh);
 }
 
