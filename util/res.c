@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.13  1995-09-04 12:34:05  adam
+ * Revision 1.14  1996-04-26 11:51:20  adam
+ * Resource names are matched by the yaz_matchstr routine instead of strcmp.
+ *
+ * Revision 1.13  1995/09/04  12:34:05  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.12  1995/01/24  16:40:32  adam
@@ -50,6 +53,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <alexutil.h>
+#include <yaz-util.h>
 
 static struct res_entry *add_entry (Res r)
 {
@@ -213,7 +217,7 @@ char *res_get (Res r, const char *name)
     if (!r->init)
         reread (r);
     for (re = r->first; re; re=re->next)
-        if (re->value && !strcmp (re->name, name))
+        if (re->value && !yaz_matchstr (re->name, name))
             return re->value;
     return NULL;
 }
@@ -239,7 +243,7 @@ void res_put (Res r, const char *name, const char *value)
         reread (r);
 
     for (re = r->first; re; re=re->next)
-        if (re->value && !strcmp (re->name, name))
+        if (re->value && !yaz_matchstr (re->name, name))
         {
             xfree (re->value);
             re->value = xstrdup (value);
