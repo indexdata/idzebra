@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.25.2.3 2004-08-20 12:32:19 adam Exp $
+# $Id: makefile,v 1.25.2.4 2005-01-16 00:27:30 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -9,7 +9,7 @@ DEBUG=0   # 0 for release, 1 for debug
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
-EXPAT_DIR= c:\Expat-1.95.7
+EXPAT_DIR= c:\Expat-1.95.8
 
 # iconv is optional
 HAVE_ICONV=1
@@ -454,7 +454,7 @@ $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
  	if not exist "$@/$(NUL)" mkdir "$@"
 
 $(YAZ_DLL_TARGET) : $(YAZ_DLL_SOURCE)
-	copy $(YAZ_DLL_SOURCE) $(YAZ_DLL_TARGET)
+	copy $(YAZBINDIR)\*.dll $(BINDIR)
 
 ###########################################################
 ############### Explicit dependencies
