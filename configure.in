@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2003
-dnl $Id: configure.in,v 1.70 2003-03-26 20:58:08 adam Exp $
+dnl $Id: configure.in,v 1.71 2003-03-26 22:22:17 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(idzebra,1.3.8)
@@ -206,6 +206,9 @@ else
 		AC_CHECK_HEADERS(bzlib.h)
 	fi
 fi
+dnl
+dnl ------ -lm
+AC_CHECK_LIB(m,sqrt)
 dnl
 dnl ------ EXPAT
 expat=yes
