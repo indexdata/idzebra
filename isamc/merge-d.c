@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.14 1999-08-20 12:25:58 heikki Exp $
+ * $Id: merge-d.c,v 1.15 1999-08-22 08:26:34 heikki Exp $
  *
  * todo
  *  - Input filter: Eliminate del-ins pairs, tell if only one entry (or none)
@@ -15,6 +15,13 @@
  *  - Keep minimum freespace in the category table, and use that in reduce!
  *  - pass a space-needed for separateDiffBlock and reduce to be able to 
  *    reserve more room for diffs, or to force a separate (larger?) block
+ *  - Idea: Simplify the stryucture, so that the first block is always diffs.
+ *    On small blocks, that is all we have. Once a block has been merged, we
+ *    allocate the first main block and a (new) firstblock ffor diffs. From
+ *    that point on the word has two blocks for it. Order the allocations 
+ *    right, and you should always get sequential reads!
+ *  - On allocating more blocks (in append), check the order of blocks, and
+ *    if needed, swap them. 
  *
  * bugs
  *  - Still has not been able to run a complete long test on bagel!
@@ -942,7 +949,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.14  1999-08-20 12:25:58  heikki
+ * Revision 1.15  1999-08-22 08:26:34  heikki
+ * COmments
+ *
+ * Revision 1.14  1999/08/20 12:25:58  heikki
  * Statistics in isamd
  *
  * Revision 1.13  1999/08/18 13:59:19  heikki
