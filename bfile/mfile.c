@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.8  1994-10-05 16:56:42  quinn
+ * Revision 1.9  1994-11-04 14:26:39  quinn
+ * bug-fix.
+ *
+ * Revision 1.8  1994/10/05  16:56:42  quinn
  * Minor.
  *
  * Revision 1.7  1994/09/19  14:12:37  quinn
@@ -315,11 +318,14 @@ int mf_close(MFile mf)
 {
     int i;
 
-    log(LOG_DEBUG, "mf_close()");
+    log(LOG_DEBUG, "mf_close(%s)", mf->name);
     assert(mf->open);
     for (i = 0; i < mf->no_files; i++)
     	if (mf->files[i].fd >= 0)
+    	{
     	    close(mf->files[i].fd);
+    	    mf->files[i].fd = -1;
+	}
     mf->open = 0;
     return 0;
 }
