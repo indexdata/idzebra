@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.6 2003-02-28 12:33:38 oleg Exp $
+/* $Id: data1.h,v 1.7 2003-05-05 20:13:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -511,6 +511,8 @@ YAZ_EXPORT int data1_is_xmlmode(data1_handle dh);
 
 YAZ_EXPORT const char *data1_systag_lookup(data1_absyn *absyn, const char *tag,
                                            const char *default_value);
+
+YAZ_EXPORT void data1_concat_text(data1_handle dh, NMEM m, data1_node *n);
 
 YAZ_END_CDECL
 

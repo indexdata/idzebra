@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.3 2003-02-28 12:33:38 oleg Exp $
+/* $Id: d1_read.c,v 1.4 2003-05-05 20:13:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1108,4 +1108,31 @@ int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
         wrbuf_free (wrbuf, 1);
     }
     return 0;
+}
+
+void data1_concat_text(data1_handle dh, NMEM m, data1_node *n)
+{
+    for (; n; n = n->next)
+    {
+        if (n->which == DATA1N_data && n->next && 
+            n->next->which == DATA1N_data)
+        {
+            int sz = 0;
+            int off = 0;
+            char *ndata;
+            data1_node *np;
+            for (np = n; np && np->which == DATA1N_data; np=np->next)
+                sz += np->u.data.len;
+            ndata = nmem_malloc(m, sz);
+            for (np = n; np && np->which == DATA1N_data; np=np->next)
+            {
+                memcpy(ndata+off, np->u.data.data, np->u.data.len);
+                off += np->u.data.len;
+            }
+            n->u.data.data = ndata;
+            n->u.data.len = sz;
+            n->next = np;
+        }
+        data1_concat_text(dh, m, n->child);
+    }
 }
