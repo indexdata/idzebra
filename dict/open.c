@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.17  2000-12-05 09:59:10  adam
+ * Revision 1.18  2002-05-03 13:47:15  adam
+ * make checkergcc happy
+ *
+ * Revision 1.17  2000/12/05 09:59:10  adam
  * Work on dict_delete_subtree.
  *
  * Revision 1.16  1999/05/26 07:49:13  adam
@@ -99,6 +102,7 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
     }
     if (dict_bf_readp (dict->dbf, 0, &head_buf) <= 0)
     {
+	memset (dict->head.magic_str, 0, sizeof(dict->head.magic_str));
 	strcpy (dict->head.magic_str, DICT_MAGIC);
 	dict->head.last = 1;
 	dict->head.root = 0;

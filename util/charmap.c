@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: charmap.c,v 1.21 2002-04-05 12:54:29 adam Exp $
+ * $Id: charmap.c,v 1.22 2002-05-03 13:46:05 adam Exp $
  *
  */
 
@@ -185,7 +185,7 @@ const char *chr_map_output(chrmaptab maptab, const char **from, int len)
 unsigned char zebra_prim(char **s)
 {
     unsigned char c;
-    unsigned int i;
+    unsigned int i = 0;
 
     yaz_log (LOG_DEBUG, "prim %.3s", *s);
     if (**s == '\\')
