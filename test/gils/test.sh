@@ -1,5 +1,15 @@
 :
 echo Loading Records
-../../bin/zebraidx -t grs.sgml update records
+if [ -x ../../bin/zmbolidx ]; then
+	../../bin/zmbolidx -t grs.sgml update records
+fi
+if [ -x ../../bin/zebraidx ]; then
+	../../bin/zebraidx -t grs.sgml update records
+fi
 echo Starting Server
-../../bin/zebrasrv
+if [ -x ../../bin/zmbolsrv ]; then
+	../../bin/zmbolsrv
+fi
+if [ -x ../../bin/zebrasrv ]; then
+	../../bin/zebrasrv
+fi

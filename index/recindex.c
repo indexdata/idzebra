@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.27  1999-10-29 10:02:33  adam
+ * Revision 1.28  1999-12-08 22:44:45  adam
+ * Zebra/Z'mbol dependencies added.
+ *
+ * Revision 1.27  1999/10/29 10:02:33  adam
  * Fixed decompression buffer overflow.
  *
  * Revision 1.26  1999/07/06 13:34:57  adam
@@ -805,6 +808,14 @@ Record rec_new (Records p)
         sysno = p->head.index_free;
         p->head.index_free = entry.next;
     }
+#if ZMBOL
+#else
+    if (sysno > 100000)
+    {
+        logf (LOG_FATAL, "100,000 record limit reached");
+        exit (1);
+    }
+#endif
     (p->head.no_records)++;
     rec->sysno = sysno;
     for (i = 0; i < REC_NO_INFO; i++)

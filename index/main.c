@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.74  1999-12-08 15:03:11  adam
+ * Revision 1.75  1999-12-08 22:44:45  adam
+ * Zebra/Z'mbol dependencies added.
+ *
+ * Revision 1.74  1999/12/08 15:03:11  adam
  * Implemented bf_reset.
  *
  *
@@ -331,7 +334,7 @@ int main (int argc, char **argv)
     prog = *argv;
     if (argc < 2)
     {
-        fprintf (stderr, "zebraidx [options] command <dir> ...\n"
+        fprintf (stderr, "%s [options] command <dir> ...\n"
         "Commands:\n"
         " update <dir>  Update index with files below <dir>.\n"
 	"               If <dir> is empty filenames are read from stdin.\n"
@@ -352,7 +355,7 @@ int main (int argc, char **argv)
 #if ZEBRASDR
 	" -S            Use SDRKit\n"
 #endif
-        " -V            Show version.\n"
+        " -V            Show version.\n", *argv
                  );
         exit (1);
     }
@@ -369,8 +372,13 @@ int main (int argc, char **argv)
             {
                 if (!common_resource)
                 {
+#if ZMBOL
+                    logf (LOG_LOG, "zmbol version %s %s",
+                          ZEBRAVER, ZEBRADATE);
+#else
                     logf (LOG_LOG, "zebra version %s %s",
                           ZEBRAVER, ZEBRADATE);
+#endif
                     common_resource = res_open (configName ?
                                                 configName : FNAME_CONFIG);
                     if (!common_resource)
