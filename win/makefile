@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.30 2004-08-25 09:18:49 adam Exp $
+# $Id: makefile,v 1.31 2005-01-15 13:18:17 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -138,6 +138,12 @@ COMMON_C_OPTIONS=          \
   /Fo"$(OBJDIR)\\"         \
   /Fd"$(OBJDIR)\\"         \
   /DDEFAULT_PROFILE_PATH=0 \
+  /DDEFAULT_MODULE_PATH=0  \
+  /DIDZEBRA_STATIC_GRS_SGML=1 \
+  /DIDZEBRA_STATIC_TEXT=1  \
+  /DIDZEBRA_STATIC_GRS_XML=1 \
+  /DIDZEBRA_STATIC_GRS_REGX=1 \
+  /DIDZEBRA_STATIC_GRS_MARC=1 \
   $(BZIP2DEF)
 
 COMMON_C_INCLUDES= \
@@ -255,7 +261,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\passwddb.obj \
 	$(OBJDIR)\zvrank.obj \
 	$(OBJDIR)\rank1.obj \
-	$(OBJDIR)\livcode.obj \
 	$(OBJDIR)\readfile.obj \
 	$(OBJDIR)\recctrl.obj \
 	$(OBJDIR)\recgrs.obj \
@@ -270,7 +275,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\rsbool.obj \
 	$(OBJDIR)\rset.obj \
 	$(OBJDIR)\rsisamc.obj \
-	$(OBJDIR)\rsmultior.obj \
+	$(OBJDIR)\rsmultiandor.obj \
 	$(OBJDIR)\rsnull.obj \
 	$(OBJDIR)\rstemp.obj \
 	$(OBJDIR)\scan.obj \
