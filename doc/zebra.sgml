@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.36 1998-01-19 15:26:18 quinn Exp $
+  $Id: zebra.sgml,v 1.37 1998-01-29 13:35:11 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.36 $
+<date>$Revision: 1.37 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -45,7 +45,7 @@ It also explains how the server can be configured to give you the
 functionality that you need.
 
 If you find the software interesting, you should join the support
-mailing-list by sending Email to <tt/zebra-request@index.ping.dk/.
+mailing-list by sending email to <tt/zebra-request@indexdata.dk/.
 
 <sect1>Features
 
@@ -212,19 +212,16 @@ If successful, two executables have been created in the sub-directory
 <p>
 In this section, we will test the system by indexing a small set of sample
 GILS records that are included with the software distribution. Go to the
-<tt>test</tt> subdirectory of the distribution archive. There you will
+<tt>test/gils</tt> subdirectory of the distribution archive. There you will
 find a configuration
 file named <tt>zebra.cfg</tt> with the following contents:
 <tscreen><verb>
 # Where are the YAZ tables located.
-profilePath: ../../yaz/tab ../tab
+profilePath: ../../../yaz/tab ../../tab
 
 # Files that describe the attribute sets supported.
 attset: bib1.att
 attset: gils.att
-
-# Name of character map file.
-charMap: scan.chr
 </verb></tscreen>
 
 Now, edit the file and set <tt>profilePath</tt> to the path of the
@@ -234,7 +231,7 @@ archive).
 The 48 test records are located in the sub directory <tt>records</tt>.
 To index these, type:
 <tscreen><verb>
-$ ../index/zebraidx -t grs.sgml update records
+$ ../../index/zebraidx -t grs.sgml update records
 </verb></tscreen>
 
 In the command above the option <tt>-t</tt> specified the record
@@ -244,7 +241,7 @@ by a directory root updates all files below that directory node.
 If your indexing command was successful, you are now ready to
 fire up a server. To start a server on port 2100, type:
 <tscreen><verb>
-$ ../index/zebrasrv tcp:@:2100
+$ ../../index/zebrasrv tcp:@:2100
 </verb></tscreen>
 
 The Zebra index that you have just created has a single database
@@ -427,9 +424,6 @@ section <ref id="locating-records" name="Locating Records">.
  searching. At least the Bib-1 set should be loaded (<tt/bib1.att/).
  The <tt/profilePath/ setting is used to look for the specified files.
  See section <ref id="attset-files" name="The Attribute Set Files">
-<tag>charMap</tag>
- Specifies the filename of a character mapping. Zebra uses the path,
- <tt>profilePath</tt>, to locate this file.
 <tag>memMax</tag>
  Specifies size of internal memory to use for the zebraidx program. The
  amount is given in megabytes - default is 4 (4 MB).
@@ -455,12 +449,12 @@ internal file structures of the system.
 <sect1>Indexing with no Record IDs (Simple Indexing)
 
 <p>
-If you have a set of records that is not expected to change over time
+If you have a set of records that are not expected to change over time
 you may can build your database without record IDs.
 This indexing method uses less space than the other methods and
 is simple to use. 
 
-To use this method, you simply don't provide the <tt>recordId</tt> entry
+To use this method, you simply omit the <tt>recordId</tt> entry
 for the group of files that you index. To add a set of records you use
 <tt>zebraidx</tt> with the <tt>update</tt> command. The
 <tt>update</tt> command will always add all of the records that it
@@ -804,13 +798,20 @@ name="The Zebra Configuration File">).
 with the database name <it/database/ for access through the Z39.50
 server.
 
-<tag>-d <it/mbytes/</tag>Use <it/mbytes/ of megabytes before flushing
+<tag>-m <it/mbytes/</tag>Use <it/mbytes/ of megabytes before flushing
 keys to background storage. This setting affects performance when
 updating large databases.
 
 <tag>-n</tag>Disable the use of shadow registers for this operation
 (see section <ref id="shadow-registers" name="Robust Updating - Using
 Shadow Registers">).
+
+<tag>-s</tag>Show analysis of the indexing process. The maintenance
+program works in a read-only mode and doesn't change the state
+of the index. This options is very useful when you wish to test a
+new profile.
+
+<tag>-V</tag>Show Zebra version.
 
 <tag>-v <it/level/</tag>Set the log level to <it/level/. <it/level/
 should be one of <tt/none/, <tt/debug/, and <tt/all/.
@@ -944,15 +945,16 @@ NamedResultSets, and concurrentOperations will be set, if requested by
 the client. The maximum PDU size is negotiated down to a maximum of
 1Mb by default.
 
-<sect2>Search
+<sect2>Search<label id="search">
 
 <p>
 The supported query type are 1 and 101. All operators are currently
-supported with the restriction that only proximity units of type "word" are supported
-for the proximity operator. Queries can be arbitrarily complex. Named
-result sets are supported, and result sets can be used as operands
-without
-limitations. Searches may span multiple databases.
+supported with the restriction that only proximity units of type "word" are
+supported for the proximity operator.
+Queries can be arbitrarily complex.
+Named result sets are supported, and result sets can be used as operands
+without limitations.
+Searches may span multiple databases.
 
 The server has full support for piggy-backed present requests (see
 also the following section).
@@ -965,15 +967,35 @@ attribute is provided, a default of Bib-1 <bf/Any/ is assumed.
 
 If a <bf/Structure/ attribute of <bf/Phrase/ is used in conjunction with a
 <bf/Completeness/ attribute of <bf/Complete (Sub)field/, the term is
-matched against the contents of a phrase (long word) register, if one
-exists for the given <bf/Use/ attribute. If <bf/Structure/=<bf/Phrase/
-is used in conjunction with <bf/Incomplete Field/ - the default value
-for <bf/Completeness/, the search is directed against the normal word
-registers, but if the term contains multiple words, the term will only
-match if all of the words are found immediately adjacent, and in the
-given order. If the <bf/Structure/ attribute is <bf/Word List/,
+matched against the contents of the phrase (long word) register, if one
+exists for the given <bf/Use/ attribute.
+A phrase register exists for those fields in the <tt/.abs/
+file that contains a <tt/p/-specifier.
+
+If <bf/Structure/=<bf/Phrase/ is used in conjunction with
+<bf/Incomplete Field/ - the default value for <bf/Completeness/, the
+search is directed against the normal word registers, but if the term
+contains multiple words, the term will only match if all of the words
+are found immediately adjacent, and in the given order.
+The word search is performed on those fields that are indexed as
+type <tt/w/ in the <tt/.abs/ file.
+
+If the <bf/Structure/ attribute is <bf/Word List/,
 <bf/Free-form Text/, or <bf/Document Text/, the term is treated as a
 natural-language, relevance-ranked query.
+This search type uses the word register, i.e. those fields
+that are indexed as type <tt/w/ in the <tt/.abs/ file.
+
+If the <bf/Structure/ attribute is <bf/Numeric String/ the
+term is treated as an integer. The search is performed on those
+fields that are indexed as type <tt/n/ in the <tt/.abs/ file.
+
+If the <bf/Structure/ attribute is <bf/URx/ the
+term is treated as a URX (URL) entity. The search is performed on those
+fields that are indexed as type <tt/u/ in the <tt/.abs/ file.
+
+If the <bf/Structure/ attribute is <bf/Local Number/ the
+term is treated as native Zebra Record Identifier.
 
 If the <bf/Relation/ attribute is <bf/Equals/ (default), the term is
 matched in a normal fashion (modulo truncation and processing of
@@ -990,73 +1012,6 @@ is <bf/Regxp-1/. <bf/Regxp-2/ enables the fault-tolerant (fuzzy)
 search. As a default, a single error (deletion, insertion,
 replacement) is accepted when terms are matched against the register
 contents.
-
-Zebra interprets queries in one the following ways:
-<descrip>
-<tag>1 Phrase search</tag>
- Each token separated by white space is truncated according to the
- value of truncation attribute. If the completeness attribute
- is <bf/complete subfield/ the search is directed to the separate
-complete field
- register, if one exists for the given USE attribute. For other completeness attribute values the term is split
- into tokens according to the white-space specification in the
- character map. Only records in which each token exists in the order
- specified are matched.
-<tag>2 Word search</tag>
- The token is truncated according to the value of truncation attribute. 
- The completeness attribute is ignored.
-<tag>3 Ranked search</tag>
- Each token separated by white space is truncated according to the value
- of truncation attribute. The completeness attribute is ignored.
-<tag>4 Numeric relation</tag>
- The token should consist of decimal digits. The integer is matched
- against integers in the register according to the relation attribute.
- The truncation - and the completenss attribute is ignored.
-<tag>5 Document identifier</tag>
- The token consists of exactly one document identifier. The 
- truncation - and the completeness attribute is ignored.
-</descrip>
-
-For ranked searches the result sets are ranked and a score
-is associated with each record. All other result sets from the
-remaining four types are non-ranked.
-
-Combinations of the structure attribute and the relation attribute
-determine how the query is interpreted. The two following tables
-define how.
-
-<verb>
-                              Structure Attribute (4)
-                        none     phrase(1)  word(2)   word list(6)
-
-           none          1         1         2         3
-           =   (3)       1         1         2         3
-           <   (1)       4         4         4         4
-Relation   <=  (2)       4         4         4         4
-Attribute  >=  (4)       4         4         4         4
- (2)       >   (5)       4         4         4         4
-           <>  (6)       -         -         -         -
-           rel (102)     3         3         3         3
-           other         1         1         2         3
- 
-</verb>
-
-<verb>
-                              Structure Attribute (4)
-                       free-form- document- local-    string
-                       text       text      number 
-                       (105)      (106)     (107)     (108)
-           none          3         3         5         1
-           =   (3)       3         3         5         1
-           <   (1)       4         4         5         4
- Relation  <=  (2)       4         4         5         4
- Attribute >=  (4)       4         4         5         4
- (2)       >   (5)       4         4         5         4
-           <>  (6)       -         -         5         -
-           rel (102)     3         3         5         3
-           other         3         3         5         1
-
-</verb>
 
 <sect3>Regular expressions
 <p>
@@ -1110,6 +1065,11 @@ Phrase search with a regular expression:
 Ranked search with a regular expression:
 <verb>
  @attr 1=4 @attr 5=102 @attr 2=102 "informat.* retrieval"
+</verb>
+
+Relational search on a numeric index (westoundingCoordinate &gt; -114):
+<verb>
+ @attr 4=109 @attr 2=5 @attr gils 1=2038 -114
 </verb>
 
 <sect2>Present
@@ -1260,8 +1220,8 @@ The keywords surrounded by &lt;...&gt; are <it/tags/, while the
 sections of text in between are the <it/data elements/. A data element
 is characterized by its location in the tree that is made up by the
 nested elements. Each element is terminated by a closing tag -
-beginning with &etago;, and containing the same symbolic tag-name as
-the corresponding opening tag. The general closing tag - &etago;&gt; -
+beginning with <tt/&etago;/, and containing the same symbolic tag-name as
+the corresponding opening tag. The general closing tag - <tt/&etago;&gt;/ -
 terminates the element started by the last opening tag. The
 structuring of elements is significant. The element <bf/Telephone/,
 for instance, may be indexed and presented to the client differently,
@@ -1717,8 +1677,10 @@ specifies that no indexing is to take place for the given element. The
 attributes can be qualified with <it/field types/ to specify which
 character set should govern the indexing procedure for that field. The
 same data element may be indexed into several different fields, using
-different character set definitions. See the section on character set
-processing below. The default field type is &dquot;w&dquot; for
+different character set definitions. See the section
+<ref id="field structure and character sets"
+name="Field Structure and Character Sets">.
+The default field type is &dquot;w&dquot; for
 <it/word/.
 </descrip>
 
@@ -2059,6 +2021,7 @@ re-evaluating and most likely changing the way that MARC records are
 handled by the system.</it>
 
 <sect2>Field Structure and Character Sets
+<label id="field structure and character sets">
 
 <p>
 In order to provide a flexible approach to national character set
@@ -2084,7 +2047,9 @@ of the .idx file is as follows
 <descrip>
 <tag>index <it/field type code/</tag>This directive introduces a new
 index code. The argument is a one-character code to be used in the
-.abs files to select this particular index type.
+.abs files to select this particular index type. An index, roughly,
+corresponds to a particular structure attribute during search. Refer
+to section <ref id="search" name="Search">.
 
 <tag>completeness <it/boolean/</tag>This directive enables or disables
 complete field indexing. The value of the <it/boolean/ should be 0
@@ -2269,14 +2234,14 @@ is available to you at favorable rates.
 <tscreen><verb>
 Index Data
 Ryesgade 3
-DK-2200 K&oslash;benhavn N
+DK-2200 Copenhagen N
 </verb></tscreen>
 
 <p>
 <tscreen><verb>
 Phone: +45 3536 3672
 Fax  : +45 3536 0449
-Email: info@index.ping.dk
+Email: info@indexdata.dk
 </verb></tscreen>
 
 The <it>Random House College Dictionary</it>, 1975 edition
