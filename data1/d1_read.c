@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.14 2005-01-15 19:38:18 adam Exp $
+/* $Id: d1_read.c,v 1.15 2005-01-17 22:12:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1108,12 +1108,15 @@ int data1_iconv (data1_handle dh, NMEM m, data1_node *n,
     if (yaz_matchstr (tocode, fromcode))
     {
         WRBUF wrbuf = wrbuf_alloc();
-        yaz_iconv_t t = yaz_iconv_open (tocode, fromcode);
+        yaz_iconv_t t = yaz_iconv_open(tocode, fromcode);
         if (!t)
+	{
+            wrbuf_free(wrbuf, 1);
             return -1;
-        data1_iconv_s (dh, m, n, t, wrbuf, tocode);
-        yaz_iconv_close (t);
-        wrbuf_free (wrbuf, 1);
+	}
+        data1_iconv_s(dh, m, n, t, wrbuf, tocode);
+        yaz_iconv_close(t);
+        wrbuf_free(wrbuf, 1);
     }
     return 0;
 }
