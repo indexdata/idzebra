@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.15  1999-02-17 12:18:12  adam
+ * Revision 1.16  1999-02-19 10:38:30  adam
+ * Implemented chdir-setting.
+ *
+ * Revision 1.15  1999/02/17 12:18:12  adam
  * Fixed zebra_close so that a NULL pointer is ignored.
  *
  * Revision 1.14  1999/02/02 14:51:11  adam
@@ -62,6 +65,7 @@
 #ifdef WIN32
 #include <io.h>
 #include <process.h>
+#include <direct.h>
 #else
 #include <unistd.h>
 #endif
@@ -69,10 +73,26 @@
 #include <diagbib1.h>
 #include "zserver.h"
 
+static void zebra_chdir (ZebraHandle zh)
+{
+    const char *dir = res_get (zh->res, "chdir");
+    if (!dir)
+	return;
+    logf (LOG_DEBUG, "chdir %s", dir);
+#ifdef WIN32
+    _chdir(dir);
+#else
+    chdir (dir);
+#endif
+}
 static int zebra_register_lock (ZebraHandle zh)
 {
     time_t lastChange;
-    int state = zebra_server_lock_get_state(zh, &lastChange);
+    int state;
+
+    zebra_chdir (zh);
+
+    state = zebra_server_lock_get_state(zh, &lastChange);
 
     switch (state)
     {
@@ -185,6 +205,7 @@ ZebraHandle zebra_open (const char *configName)
 	logf (LOG_WARN, "Failed to read resources `%s'", configName);
 	return NULL;
     }
+    zebra_chdir (zh);
     zebra_server_lock_init (zh);
     zh->dh = data1_create ();
     zh->bfs = bfs_create (res_get (zh->res, "register"));
@@ -221,6 +242,7 @@ void zebra_close (ZebraHandle zh)
 {
     if (!zh)
 	return;
+    zebra_chdir (zh);
     if (zh->records)
     {
         resultSetDestroy (zh);
