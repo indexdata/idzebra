@@ -1,6 +1,10 @@
-Bug fix: result sets with ranked operands weren't sorted.
+Generalized and changed record type specifications. In short, there are:
+       text                plain SUTRS
+       grs.sgml            structured, "SGML-like" syntax
+       grs.regx.<filter>   structured, Regular expression filter
 
-Added SOIF support.
+Bug fix: Result sets weren't sorted in operations involving boolean
+operations with "ranked" operands.
 
 --- 1.0a8 1996/6/6
 
