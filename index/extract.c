@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.50  1996-02-12 18:45:36  adam
+ * Revision 1.51  1996-03-19 11:08:42  adam
+ * Bug fix: Log preamble wasn't always turned off after recordExtract.
+ *
+ * Revision 1.50  1996/02/12  18:45:36  adam
  * New fileVerboseFlag in record group control.
  *
  * Revision 1.49  1996/02/05  12:29:57  adam
@@ -988,7 +991,6 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         rec_strdup (rGroup->databaseName, &rec->size[recInfo_databaseName]); 
 
     rec_put (records, &rec);
-    log_event_start (NULL, NULL);
     return 1;
 }
 
@@ -1116,6 +1118,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
     }
     fi = file_read_start (fd);
     recordExtract (sysno, fname, rGroup, deleteFlag, fi, recType, subType);
+    log_event_start (NULL, NULL);
     file_read_stop (fi);
     if (fd != -1)
         close (fd);
