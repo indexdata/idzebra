@@ -4,8 +4,8 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.3  1994-08-17 14:10:41  quinn
- * *** empty log message ***
+ * Revision 1.4  1994-08-17 14:27:32  quinn
+ * last mods
  *
  * Revision 1.2  1994/08/17  14:09:32  quinn
  * Compiles cleanly (still only dummy).
@@ -37,13 +37,18 @@ BFile bf_open (const char *name, int block_size, int wflag)
         log(LOG_FATAL, "open: %s"); 
 	return(0);
     }
+    tmp->block_size = block_size;
     return(tmp);
 }
 
 int bf_read (BFile bf, int no, int offset, int num, void *buf)
 {
+    lseek(bf->fd, no * bf->block_size + offset, 0);
+    return(read(bf->fd, buf, num ? num : bf->block_size));
 }
 
 int bf_write (BFile bf, int no, int offset, int num, const void *buf)
 {
+    lseek(bf->fd, no * bf->block_size + offset, 0);
+    return(write(bf->fd, buf, num ? num : bf->block_size));
 }
