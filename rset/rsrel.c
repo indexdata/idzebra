@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.17  1997-09-22 12:39:07  adam
+ * Revision 1.18  1997-09-24 13:36:41  adam
+ * More work on new ranking algorithm.
+ *
+ * Revision 1.17  1997/09/22 12:39:07  adam
  * Added get_pos method for the ranked result sets.
  *
  * Revision 1.16  1997/09/17 12:19:23  adam
@@ -164,6 +167,8 @@ static int qcomp (const void *p1, const void *p2)
                             qsort_info->key_buf + i2*qsort_info->key_size);
 }
 
+#define NEW_RANKING 0
+
 #define SCORE_SHOW 0.0                       /* base score for showing up */
 #define SCORE_COOC 0.3                       /* component dependent on co-oc */
 #define SCORE_DYN  (1-(SCORE_SHOW+SCORE_COOC)) /* dynamic component of score */
@@ -174,6 +179,14 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     char *isam_tmp_buf;
     int  *isam_r;
     int  *max_tf, *tf;
+
+#if NEW_RANKING
+    int  *pos_tf = NULL;
+    int score_sum = 0;
+    int no_occur = 0;
+    char *isam_prev_buf = NULL;
+    int fact1, fact2;
+#endif
     ISPT *isam_pt = NULL;
     ISAMC_PP *isamc_pp = NULL;
     int i;
@@ -213,7 +226,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
         }
         logf (LOG_DEBUG, "max tf %d = %d", i, max_tf[i]);
     }
-#if 0
+#if NEW_RANKING
     while (1)
     {
 	int r, min = -1;
@@ -223,16 +236,57 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 		(min < 0 ||
 		 (r = (*parms->cmp)(isam_buf[i], isam_buf[min])) < 1))
                 min = i;
-        if (min < 0)
-            break;
-	i = min;
-	pos = (*parms->get_pos)(isam_buf[i]);
+	if (!isam_prev_buf)
+	{
+	    pos_tf = xmalloc (sizeof(*pos_tf) * parms->no_isam_positions);
+	    isam_prev_buf = xmalloc (info->key_size);
+	    fact1 = 100000/parms->no_isam_positions;
+	    fact2 = 100000/(parms->no_isam_positions*parms->no_isam_positions);
+	    
+	    no_occur = score_sum = 0;
+	    memcpy (isam_prev_buf, isam_buf[min], info->key_size);
+	    for (i = 0; i<parms->no_isam_positions; i++)
+		pos_tf[i] = 0;
+	}
+	else if (min < 0 ||
+		 (*parms->cmp)(isam_buf[min], isam_prev_buf) > 1)
+	{
+	    logf (LOG_LOG, "final occur = %d ratio=%d",
+		  no_occur, score_sum / no_occur);
+	    add_rec (info, score_sum / (10000.0*no_occur), isam_prev_buf);
+	    if (min < 0)
+		break;
+	    no_occur = score_sum = 0;
+	    memcpy (isam_prev_buf, isam_buf[min], info->key_size);
+	    for (i = 0; i<parms->no_isam_positions; i++)
+		pos_tf[i] = 0;
+	}
+	pos = (*parms->get_pos)(isam_buf[min]);
 	logf (LOG_LOG, "pos=%d", pos);
+	for (i = 0; i<parms->no_isam_positions; i++)
+	{
+	    int d = pos - pos_tf[i];
+
+	    no_occur++;
+	    if (!pos_tf[i] && i != min)
+		continue;
+	    if (d < 10)
+		d = 10;
+	    if (i == min)
+		score_sum += fact2 / d;
+	    else
+		score_sum += fact1 / d;
+	}
+	pos_tf[min] = pos;
+	logf (LOG_LOG, "score_sum = %d", score_sum);
+	i = min;
 	if (isam_pt)
 	    isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
 	else if (isamc_pp)
 	    isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
     }
+    xfree (isam_prev_buf);
+    xfree (pos_tf);
 #else
     while (1)
     {
