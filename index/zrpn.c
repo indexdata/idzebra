@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.163 2004-11-29 21:55:27 adam Exp $
+/* $Id: zrpn.c,v 1.164 2004-12-10 12:37:07 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -63,6 +63,9 @@ typedef struct
     Z_AttributesPlusTerm *zapt;
 } AttrType;
 
+
+static int log_level_set=0;
+static int log_level_rpn=0;
 
 static const char **rpn_char_map_handler(void *vp, const char **from, int len)
 {
@@ -203,6 +206,11 @@ static void term_untrans(ZebraHandle zh, int reg_type,
 static void add_isam_p(const char *name, const char *info,
                         struct grep_info *p)
 {
+    if (!log_level_set)
+    {
+        log_level_rpn = yaz_log_module_level("rpn");
+        log_level_set=1;
+    }
     if (p->isam_p_indx == p->isam_p_size)
     {
         ISAMC_P *new_isam_p_buf;
@@ -245,10 +253,10 @@ static void add_isam_p(const char *name, const char *info,
         int len = key_SU_decode (&su_code, name);
         
         term_untrans  (p->zh, p->reg_type, term_tmp, name+len+1);
-        yaz_log(YLOG_LOG, "grep: %d %c %s", su_code, name[len], term_tmp);
+        yaz_log(log_level_rpn, "grep: %d %c %s", su_code, name[len], term_tmp);
         zebraExplain_lookup_ord (p->zh->reg->zei,
                                  su_code, &db, &set, &use);
-        yaz_log(YLOG_LOG, "grep:  set=%d use=%d db=%s", set, use, db);
+        yaz_log(log_level_rpn, "grep:  set=%d use=%d db=%s", set, use, db);
         
         resultSetAddTerm(p->zh, p->termset, name[len], db,
 			 set, use, term_tmp);
@@ -724,7 +732,7 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                        term_sub, term_component,
                        space_split, term_dst))
             return 0;
-        yaz_log(YLOG_DEBUG, "Relation <");
+        yaz_log(log_level_rpn, "Relation <");
         
         *term_tmp++ = '(';
         for (i = 0; term_component[i]; )
@@ -757,7 +765,7 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                        term_sub, term_component,
                        space_split, term_dst))
             return 0;
-        yaz_log(YLOG_DEBUG, "Relation <=");
+        yaz_log(log_level_rpn, "Relation <=");
 
         *term_tmp++ = '(';
         for (i = 0; term_component[i]; )
@@ -790,7 +798,7 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         if (!term_100 (zh->reg->zebra_maps, reg_type,
                        term_sub, term_component, space_split, term_dst))
             return 0;
-        yaz_log(YLOG_DEBUG, "Relation >");
+        yaz_log(log_level_rpn, "Relation >");
 
         *term_tmp++ = '(';
         for (i = 0; term_component[i];)
@@ -825,7 +833,7 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         if (!term_100 (zh->reg->zebra_maps, reg_type, term_sub,
                        term_component, space_split, term_dst))
             return 0;
-        yaz_log(YLOG_DEBUG, "Relation >=");
+        yaz_log(log_level_rpn, "Relation >=");
 
         *term_tmp++ = '(';
         for (i = 0; term_component[i];)
@@ -861,7 +869,7 @@ static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         break;
     case 3:
     default:
-        yaz_log(YLOG_DEBUG, "Relation =");
+        yaz_log(log_level_rpn, "Relation =");
         if (!term_100 (zh->reg->zebra_maps, reg_type, term_sub,
                        term_component, space_split, term_dst))
             return 0;
@@ -897,7 +905,7 @@ static RSET term_trunc(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                      term_dst, xpath_use);
     if (r < 1)
         return 0;
-    yaz_log(YLOG_DEBUG, "term: %s", term_dst);
+    yaz_log(log_level_rpn, "term: %s", term_dst);
     return rset_trunc(zh, grep_info->isam_p_buf,
                        grep_info->isam_p_indx, term_dst,
                        strlen(term_dst), rank_type, 1 /* preserve pos */,
@@ -938,10 +946,10 @@ static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     rpn_char_map_prepare (zh->reg, reg_type, &rcmi);
     attr_init (&use, zapt, 1);
     use_value = attr_find_ex (&use, &curAttributeSet, &use_string);
-    yaz_log(YLOG_DEBUG, "string_term, use value %d", use_value);
+    yaz_log(log_level_rpn, "string_term, use value %d", use_value);
     attr_init (&truncation, zapt, 5);
     truncation_value = attr_find (&truncation, NULL);
-    yaz_log(YLOG_DEBUG, "truncation value %d", truncation_value);
+    yaz_log(log_level_rpn, "truncation value %d", truncation_value);
 
     if (use_value == -1)    /* no attribute - assumy "any" */
         use_value = 1016;
@@ -1052,7 +1060,7 @@ static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         term_dict[prefix_len++] = ')';
         term_dict[prefix_len++] = 1;
         term_dict[prefix_len++] = reg_type;
-        yaz_log(YLOG_DEBUG, "reg_type = %d", term_dict[prefix_len-1]);
+        yaz_log(log_level_rpn, "reg_type = %d", term_dict[prefix_len-1]);
         term_dict[prefix_len] = '\0';
         j = prefix_len;
         switch (truncation_value)
@@ -1136,7 +1144,7 @@ static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
 	if (attr_ok)
 	{
-	    yaz_log(YLOG_DEBUG, "dict_lookup_grep: %s", term_dict+prefix_len);
+	    yaz_log(log_level_rpn, "dict_lookup_grep: %s", term_dict+prefix_len);
 	    r = dict_lookup_grep(zh->reg->dict, term_dict, regex_range,
 				 grep_info, &max_pos, init_pos,
 				 grep_handle);
@@ -1333,7 +1341,7 @@ static int grep_info_prepare (ZebraHandle zh,
         }
         else
             termset_name = termset_value_string;
-        yaz_log(YLOG_LOG, "creating termset set %s", termset_name);
+        yaz_log(log_level_rpn, "creating termset set %s", termset_name);
         grep_info->termset = resultSetAdd (zh, termset_name, 1);
         if (!grep_info->termset)
         {
@@ -1368,7 +1376,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
         return 0;
     while (1)
     { 
-        yaz_log(YLOG_DEBUG, "APT_phrase termp=%s", termp);
+        yaz_log(log_level_rpn, "APT_phrase termp=%s", termp);
         rset[rset_no] = term_trunc(zh, zapt, &termp, attributeSet,
                                     stream, &grep_info,
                                     reg_type, complete_flag,
@@ -1415,7 +1423,7 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
         return 0;
     while (1)
     { 
-        yaz_log(YLOG_DEBUG, "APT_or_list termp=%s", termp);
+        yaz_log(log_level_rpn, "APT_or_list termp=%s", termp);
         rset[rset_no] = term_trunc(zh, zapt, &termp, attributeSet,
                                     stream, &grep_info,
                                     reg_type, complete_flag,
@@ -1456,7 +1464,7 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
         return 0;
     while (1)
     { 
-        yaz_log(YLOG_DEBUG, "APT_and_list termp=%s", termp);
+        yaz_log(log_level_rpn, "APT_and_list termp=%s", termp);
         rset[rset_no] = term_trunc(zh, zapt, &termp, attributeSet,
                                     stream, &grep_info,
                                     reg_type, complete_flag,
@@ -1495,7 +1503,7 @@ static int numeric_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     attr_init (&relation, zapt, 2);
     relation_value = attr_find (&relation, NULL);
 
-    yaz_log(YLOG_DEBUG, "numeric relation value=%d", relation_value);
+    yaz_log(log_level_rpn, "numeric relation value=%d", relation_value);
 
     if (!term_100 (zh->reg->zebra_maps, reg_type, term_sub, term_tmp, 1,
                    term_dst))
@@ -1504,32 +1512,32 @@ static int numeric_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     switch (relation_value)
     {
     case 1:
-        yaz_log(YLOG_DEBUG, "Relation <");
+        yaz_log(log_level_rpn, "Relation <");
         gen_regular_rel (term_tmp, term_value-1, 1);
         break;
     case 2:
-        yaz_log(YLOG_DEBUG, "Relation <=");
+        yaz_log(log_level_rpn, "Relation <=");
         gen_regular_rel (term_tmp, term_value, 1);
         break;
     case 4:
-        yaz_log(YLOG_DEBUG, "Relation >=");
+        yaz_log(log_level_rpn, "Relation >=");
         gen_regular_rel (term_tmp, term_value, 0);
         break;
     case 5:
-        yaz_log(YLOG_DEBUG, "Relation >");
+        yaz_log(log_level_rpn, "Relation >");
         gen_regular_rel (term_tmp, term_value+1, 0);
         break;
     case 3:
     default:
-        yaz_log(YLOG_DEBUG, "Relation =");
+        yaz_log(log_level_rpn, "Relation =");
         sprintf (term_tmp, "(0*%d)", term_value);
     }
-    yaz_log(YLOG_DEBUG, "dict_lookup_grep: %s", term_tmp);
+    yaz_log(log_level_rpn, "dict_lookup_grep: %s", term_tmp);
     r = dict_lookup_grep(zh->reg->dict, term_dict, 0, grep_info, max_pos,
                           0, grep_handle);
     if (r)
         yaz_log(YLOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
-    yaz_log(YLOG_DEBUG, "%d positions", grep_info->isam_p_indx);
+    yaz_log(log_level_rpn, "%d positions", grep_info->isam_p_indx);
     return 1;
 }
 
@@ -1673,7 +1681,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
     int  r, rset_no = 0;
     struct grep_info grep_info;
 
-    yaz_log(YLOG_DEBUG, "APT_numeric t='%s'",termz);
+    yaz_log(log_level_rpn, "APT_numeric t='%s'",termz);
     if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
         return 0;
     while (1)
@@ -1908,10 +1916,10 @@ static RSET rpn_search_xpath (ZebraHandle zh,
     if (xpath_len < 0)
         return rset;
 
-    yaz_log (YLOG_LOG, "len=%d", xpath_len);
+    yaz_log (YLOG_DEBUG, "xpath len=%d", xpath_len);
     for (i = 0; i<xpath_len; i++)
     {
-        yaz_log (YLOG_LOG, "XPATH %d %s", i, xpath[i].part);
+        yaz_log (log_level_rpn, "XPATH %d %s", i, xpath[i].part);
 
     }
 
@@ -2017,7 +2025,7 @@ static RSET rpn_search_xpath (ZebraHandle zh,
                 if (!first_path)
                     continue;
             }
-            yaz_log (YLOG_LOG, "xpath_rev (%d) = %s", level, xpath_rev);
+            yaz_log (log_level_rpn, "xpath_rev (%d) = %s", level, xpath_rev);
             if (strlen(xpath_rev))
             {
                 rset_start_tag = xpath_trunc(zh, stream, '0', 
@@ -2065,6 +2073,11 @@ static RSET rpn_search_APT (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int xpath_use = 0;
     struct xpath_location_step xpath[10];
 
+    if (!log_level_set)
+    {
+        log_level_rpn = yaz_log_module_level("rpn");
+        log_level_set=1;
+    }
     zebra_maps_attr (zh->reg->zebra_maps, zapt, &reg_id, &search_type,
                      rank_type, &complete_flag, &sort_flag);
     

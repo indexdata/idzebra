@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.74 2004-12-10 11:56:22 heikki Exp $
+/* $Id: zsets.c,v 1.75 2004-12-10 12:37:07 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -85,6 +85,7 @@ static void loglevels()
     log_level_searchhits = yaz_log_module_level("searchhits");
     log_level_searchterms = yaz_log_module_level("searchterms");
     log_level_resultsets = yaz_log_module_level("resultsets");
+    log_level_set=1;
 }
 
 ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.143 2004-12-02 17:27:03 adam Exp $
+/* $Id: zebraapi.c,v 1.144 2004-12-10 12:37:07 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -315,7 +315,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     if (!(reg->records = rec_open (reg->bfs, rw, record_compression)))
     {
-	yaz_log (YLOG_WARN, "rec_open");
+	yaz_log (YLOG_WARN, "rec_open failed");
 	return 0;
     }
     if (rw)
@@ -324,12 +324,12 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     }
     if (!(reg->dict = dict_open_res (reg->bfs, FNAME_DICT, 40, rw, 0, res)))
     {
-	yaz_log (YLOG_WARN, "dict_open");
+	yaz_log (YLOG_WARN, "dict_open failed");
 	return 0;
     }
     if (!(reg->sortIdx = sortIdx_open (reg->bfs, rw)))
     {
-	yaz_log (YLOG_WARN, "sortIdx_open");
+	yaz_log (YLOG_WARN, "sortIdx_open failed");
 	return 0;
     }
     if (res_get_match (res, "isam", "s", ISAM_DEFAULT))
@@ -338,7 +338,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	if (!(reg->isams = isams_open (reg->bfs, FNAME_ISAMS, rw,
 				      key_isams_m(res, &isams_m))))
 	{
-	    yaz_log (YLOG_WARN, "isams_open");
+	    yaz_log (YLOG_WARN, "isams_open failed");
 	    return 0;
 	}
     }
@@ -348,7 +348,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	if (!(reg->isamc = isc_open (reg->bfs, FNAME_ISAMC,
 				    rw, key_isamc_m(res, &isamc_m))))
 	{
-	    yaz_log (YLOG_WARN, "isc_open");
+	    yaz_log (YLOG_WARN, "isc_open failed");
 	    return 0;
 	}
     }
@@ -359,7 +359,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	if (!(reg->isamb = isamb_open (reg->bfs, "isamb",
                                        rw, key_isamc_m(res, &isamc_m), 0)))
 	{
-	    yaz_log (YLOG_WARN, "isamb_open");
+	    yaz_log (YLOG_WARN, "isamb_open failed");
 	    return 0;
 	}
     }
@@ -370,7 +370,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	if (!(reg->isamb = isamb_open (reg->bfs, "isamb",
                                        rw, key_isamc_m(res, &isamc_m), 1)))
 	{
-	    yaz_log (YLOG_WARN, "isamb_open");
+	    yaz_log (YLOG_WARN, "isamb_open failed");
 	    return 0;
 	}
     }
@@ -381,7 +381,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	if (!(reg->isamb = isamb_open (reg->bfs, "isamb",
                                        rw, key_isamc_m(res, &isamc_m), -1)))
 	{
-	    yaz_log (YLOG_WARN, "isamb_open");
+	    yaz_log (YLOG_WARN, "isamb_open failed");
 	    return 0;
 	}
     }
@@ -1693,7 +1693,7 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
     }
 #if HAVE_SYS_TIMES_H
     times (&zh->tms2);
-    yaz_log (YLOG_LOG, "user/system: %ld/%ld",
+    yaz_log (log_level, "user/system: %ld/%ld",
           (long) (zh->tms2.tms_utime - zh->tms1.tms_utime),
           (long) (zh->tms2.tms_stime - zh->tms1.tms_stime));
     
@@ -1750,8 +1750,7 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
     rval = res_get (zh->res, "shadow");    
     if (!rval)
     {
-        yaz_log (YLOG_WARN, "Cannot perform commit");
-        yaz_log (YLOG_WARN, "No shadow area defined");
+        yaz_log (YLOG_WARN, "Cannot perform commit - No shadow area defined");
         return 0;
     }
 
@@ -1785,7 +1784,7 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
     }
     else
     {
-        yaz_log (YLOG_LOG, "nothing to commit");
+        yaz_log (log_level, "nothing to commit");
     }
     bfs_destroy (bfs);
 
