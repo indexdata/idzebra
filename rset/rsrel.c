@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.9  1995-12-11 09:15:26  adam
+ * Revision 1.10  1996-06-11 10:54:29  quinn
+ * Relevance work
+ *
+ * Revision 1.9  1995/12/11  09:15:26  adam
  * New set types: sand/sor/snot - ranked versions of and/or/not in
  * ranked/semi-ranked result sets.
  * Note: the snot not finished yet.
@@ -138,14 +141,17 @@ static int qcomp (const void *p1, const void *p2)
                             qsort_info->key_buf + i2*qsort_info->key_size);
 }
 
+#define SCORE_SHOW 0.0                       /* base score for showing up */
+#define SCORE_COOC 0.3                       /* component dependent on co-oc */
+#define SCORE_DYN  (1-(SCORE_SHOW+SCORE_COOC)) /* dynamic component of score */
+
 static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 {
     char **isam_buf;
     char *isam_tmp_buf;
     int  *isam_r;
-    int  *max_tf;
+    int  *max_tf, *tf;
     ISPT *isam_pt;
-    double *wgt;
     int i;
 
     logf (LOG_DEBUG, "relevance");
@@ -153,31 +159,46 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     isam_r = xmalloc (sizeof (*isam_r) * parms->no_isam_positions);
     isam_pt = xmalloc (sizeof (*isam_pt) * parms->no_isam_positions);
     isam_tmp_buf = xmalloc (info->key_size);
-    max_tf = xmalloc (sizeof (*max_tf) * parms->no_isam_positions);
-    wgt = xmalloc (sizeof (*wgt) * parms->no_isam_positions);
+    max_tf = xmalloc (sizeof (*max_tf) * parms->no_terms);
+    tf = xmalloc (sizeof (*tf) * parms->no_terms);
 
+    for (i = 0; i<parms->no_terms; i++)
+	max_tf[i] = 0;
     for (i = 0; i<parms->no_isam_positions; i++)
     {
         isam_buf[i] = xmalloc (info->key_size);
         isam_pt[i] = is_position (parms->is, parms->isam_positions[i]);
-        max_tf [i] = is_numkeys (isam_pt[i]);
+        max_tf [parms->term_no[i]] = is_numkeys (isam_pt[i]);
         isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
         logf (LOG_DEBUG, "max tf %d = %d", i, max_tf[i]);
     }
     while (1)
     {
-        int min = -1, i;
+        int min = -1, i, r;
         double score;
+	int co_oc, last_term;    /* Number of co-occurrences */
 
+	last_term = -1;
         /* find min with lowest sysno */
         for (i = 0; i<parms->no_isam_positions; i++)
+	{
             if (isam_r[i] && 
-               (min < 0 || (*parms->cmp)(isam_buf[i], isam_buf[min]) < 2))
+               (min < 0 || (r = (*parms->cmp)(isam_buf[i], isam_buf[min])) < 2))
+	    {
                 min = i;
+		co_oc = 1;
+	    }
+	    else if (!r && last_term != parms->term_no[i]) /* new occurrence */
+		    co_oc++;
+	    last_term = parms->term_no[i];
+	}
+
         if (min < 0)
             break;
         memcpy (isam_tmp_buf, isam_buf[min], info->key_size);
         /* calculate for all with those sysno */
+	for (i = 0; i < parms->no_terms; i++)
+	    tf[i] = 0;
         for (i = 0; i<parms->no_isam_positions; i++)
         {
             int r;
@@ -186,26 +207,28 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
                 r = (*parms->cmp)(isam_buf[i], isam_tmp_buf);
             else 
                 r = 2;
+#if 0
             if (r > 1 || r < -1)
-                wgt[i] = 0.0;
-            else
+                wgt[parms->term_no[i]] = 0.0;
+#endif
+	    if (r <= 1 && r >= -1)
             {
-                int tf = 0;
                 do
                 {
-                    tf++;
+                    tf[parms->term_no[i]]++;
                     isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
                 } while (isam_r[i] && 
                          (*parms->cmp)(isam_buf[i], isam_tmp_buf) <= 1);
-                wgt[i] = 0.1+tf*0.9/max_tf[i];
             }
         }
         /* calculate relevance value */
         score = 0.0;
-        for (i = 0; i<parms->no_isam_positions; i++)
-            score += wgt[i];
+        for (i = 0; i<parms->no_terms; i++)
+            if (tf[i])
+		score += SCORE_SHOW + SCORE_COOC*co_oc/parms->no_terms +
+		    SCORE_DYN*tf[i]/max_tf[i];
         /* if value is in the top score, then save it - don't emit yet */
-        add_rec (info, score/parms->no_isam_positions, isam_tmp_buf);
+        add_rec (info, score/parms->no_terms, isam_tmp_buf);
     }
     for (i = 0; i<info->no_rec; i++)
         info->sysno_idx[i] = i;
@@ -221,7 +244,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     xfree (isam_buf);
     xfree (isam_r);
     xfree (isam_pt);
-    xfree (wgt);
+    xfree(tf);
 }
 
 static void *r_create (const struct rset_control *sel, void *parms,

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.50  1996-06-07 08:51:53  adam
+ * Revision 1.51  1996-06-11 10:54:15  quinn
+ * Relevance work
+ *
+ * Revision 1.50  1996/06/07  08:51:53  adam
  * Bug fix: Character mapping was broken (introducued by last revision).
  *
  * Revision 1.49  1996/06/04  10:18:11  adam
@@ -491,17 +494,25 @@ static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int no)
     return rset_trunc_r (isam, isam_p, 0, no, 100);
 }
 
-struct grep_info {
-    ISAM_P *isam_p_buf;
-    int isam_p_size;
-    int isam_p_indx;
-};
+#define TERM_COUNT        
+       
+struct grep_info {        
+#ifdef TERM_COUNT        
+    int *term_no;        
+#endif        
+    ISAM_P *isam_p_buf;        
+    int isam_p_size;        
+    int isam_p_indx;        
+};        
 
 static void add_isam_p (const char *info, struct grep_info *p)
 {
     if (p->isam_p_indx == p->isam_p_size)
     {
         ISAM_P *new_isam_p_buf;
+#ifdef TERM_COUNT        
+        int *new_term_no;        
+#endif        
         
         p->isam_p_size = 2*p->isam_p_size + 100;
         new_isam_p_buf = xmalloc (sizeof(*new_isam_p_buf) *
@@ -513,6 +524,18 @@ static void add_isam_p (const char *info, struct grep_info *p)
             xfree (p->isam_p_buf);
         }
         p->isam_p_buf = new_isam_p_buf;
+
+#ifdef TERM_COUNT
+        new_term_no = xmalloc (sizeof(*new_term_no) *
+                                  p->isam_p_size);
+        if (p->term_no)
+        {
+            memcpy (new_term_no, p->isam_p_buf,
+                    p->isam_p_indx * sizeof(*p->term_no));
+            xfree (p->term_no);
+        }
+        p->term_no = new_term_no;
+#endif
     }
     assert (*info == sizeof(*p->isam_p_buf));
     memcpy (p->isam_p_buf + p->isam_p_indx, info+1, sizeof(*p->isam_p_buf));
@@ -868,11 +891,13 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     struct grep_info grep_info;
     char *p0 = termz;
     RSET result;
+    int term_index = 0;
 
     parms.key_size = sizeof(struct it_key);
     parms.max_rec = 100;
     parms.cmp = key_compare;
     parms.is = zi->wordIsam;
+    parms.no_terms = 0;
 
     if (zapt->term->which != Z_Term_general)
     {
@@ -881,6 +906,9 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     }
     trans_term (zi, zapt, termz);
 
+#ifdef TERM_COUNT
+    grep_info.term_no = 0;
+#endif
     grep_info.isam_p_indx = 0;
     grep_info.isam_p_size = 0;
     grep_info.isam_p_buf = NULL;
@@ -914,13 +942,22 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
         if (field_term (zi, zapt, term_sub, 'w', attributeSet, &grep_info,
                         num_bases, basenames))
             return NULL;
+#ifdef TERM_COUNT
+        for (; term_index < grep_info.isam_p_indx; term_index++)
+            grep_info.term_no[term_index] = parms.no_terms;
+        parms.no_terms++;
+#endif
     }
+    parms.term_no = grep_info.term_no;
     parms.isam_positions = grep_info.isam_p_buf;
     parms.no_isam_positions = grep_info.isam_p_indx;
     if (grep_info.isam_p_indx > 0)
         result = rset_create (rset_kind_relevance, &parms);
     else
         result = rset_create (rset_kind_null, NULL);
+#ifdef TERM_COUNT
+    xfree(grep_info.term_no);
+#endif
     xfree (grep_info.isam_p_buf);
     return result;
 }
@@ -942,6 +979,9 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
     }
     trans_term (zi, zapt, termz);
 
+#ifdef TERM_COUNT
+    grep_info.term_no = 0;
+#endif
     grep_info.isam_p_indx = 0;
     grep_info.isam_p_size = 0;
     grep_info.isam_p_buf = NULL;
@@ -960,6 +1000,9 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
     else
         result = rset_trunc (zi->wordIsam, grep_info.isam_p_buf,
                              grep_info.isam_p_indx);
+#ifdef TERM_COUNT
+    xfree(grep_info.term_no);
+#endif
     xfree (grep_info.isam_p_buf);
     return result;
 }
@@ -1069,6 +1112,9 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
     }
     trans_term (zi, zapt, termz);
 
+#ifdef TERM_COUNT
+    grep_info.term_no = 0;
+#endif
     grep_info.isam_p_size = 0;
     grep_info.isam_p_buf = NULL;
 
@@ -1123,6 +1169,9 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         if (++rset_no >= sizeof(rset)/sizeof(*rset))
             break;
     }
+#ifdef TERM_COUNT
+    xfree(grep_info.term_no);
+#endif
     xfree (grep_info.isam_p_buf);
     if (rset_no == 0)
         return rset_create (rset_kind_null, NULL);
