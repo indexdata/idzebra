@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.32  1995-11-25 10:24:05  adam
+ * Revision 1.33  1995-11-27 09:56:20  adam
+ * Record info elements better enumerated. Internal store of records.
+ *
+ * Revision 1.32  1995/11/25  10:24:05  adam
  * More record fields - they are enumerated now.
  * New options: flagStoreData flagStoreKey.
  *
@@ -440,20 +443,25 @@ static void addRecordKeyAny (const RecWord *p)
     addRecordKey (p);
 }
 
+#define FILE_READ_BUFSIZE 4096 
+
 static char *file_buf;
 static int file_offset;
 static int file_bufsize;
+static int file_noread;
 
 static void file_read_start (int fd)
 {
     file_offset = 0;
-    file_buf = xmalloc (4096);
-    file_bufsize = read (fd, file_buf, 4096);
+    file_buf = xmalloc (FILE_READ_BUFSIZE);
+    file_bufsize = read (fd, file_buf, FILE_READ_BUFSIZE);
+    file_noread = 0;
 }
 
 static void file_read_stop (int fd)
 {
     xfree (file_buf);
+    file_buf = NULL;
 }
 
 static int file_read (int fd, char *buf, size_t count)
@@ -475,9 +483,10 @@ static int file_read (int fd, char *buf, size_t count)
             }
             file_bufsize = 0;
             file_offset = 0;
+            file_noread += r;
             return r;
         }
-        file_bufsize = r = read (fd, file_buf, 4096);
+        file_bufsize = r = read (fd, file_buf, FILE_READ_BUFSIZE);
         if (r == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "read");
@@ -487,17 +496,20 @@ static int file_read (int fd, char *buf, size_t count)
         {
             file_offset = r;
             memcpy (buf + l, file_buf, r);
+            file_noread += (l+r);
             return l + r;
         }
         else
         {
             file_offset = count;
             memcpy (buf + l, file_buf, count - l);
+            file_noread += count;
             return count;
         }
     }
     memcpy (buf, file_buf + file_offset, count);
     file_offset += count;
+    file_noread += count;
     return count;
 }
 
@@ -665,11 +677,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     extractCtrl.add = addRecordKeyAny;
 
     reckeys.buf_used = 0;
-    file_read_start (extractCtrl.fd);
     extractCtrl.readf = file_read;
     r = (*recType->extract)(&extractCtrl);
-    file_read_stop (extractCtrl.fd);
-    close (extractCtrl.fd);
   
     if (r)      
     {
@@ -770,7 +779,6 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     free (rec->info[recInfo_delKeys]);
     if (reckeys.buf_used > 0 && rGroup->flagStoreKeys == 1)
     {
-        logf (LOG_LOG, "Storing keys...");
         rec->info[recInfo_delKeys] = malloc (reckeys.buf_used);
         rec->size[recInfo_delKeys] = reckeys.buf_used;
         memcpy (rec->info[recInfo_delKeys], reckeys.buf,
@@ -780,6 +788,35 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     {
         rec->info[recInfo_delKeys] = NULL;
         rec->size[recInfo_delKeys] = 0;
+    }
+
+    free (rec->info[recInfo_storeData]);
+    if (rGroup->flagStoreData == 1)
+    {
+        rec->size[recInfo_storeData] = file_noread;
+        rec->info[recInfo_storeData] = malloc (file_noread);
+        if (file_noread < FILE_READ_BUFSIZE)
+	    memcpy (rec->info[recInfo_storeData], file_buf, file_noread);
+        else
+        {
+            if (lseek (fd, 0L, SEEK_SET) < 0)
+            {
+                logf (LOG_ERRNO|LOG_FATAL, "seek to 0 in %s", fname);
+                exit (1);
+            }
+            if (read (fd, rec->info[recInfo_storeData], file_noread) 
+                < file_noread)
+            {
+                logf (LOG_ERRNO|LOG_FATAL, "read %d bytes of %s",
+                      file_noread, fname);
+                exit (1);
+            }
+        }
+    }
+    else
+    {
+        rec->info[recInfo_storeData] = NULL;
+        rec->size[recInfo_storeData] = 0;
     }
     free (rec->info[recInfo_databaseName]);
     rec->info[recInfo_databaseName] =
@@ -865,7 +902,6 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
     if (rGroup->flagStoreData == -1)
         rGroup->flagStoreData = 0;
 
-
     if (rGroup->flagStoreKeys == -1)
     {
         const char *sval;
@@ -882,15 +918,16 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
     if (rGroup->flagStoreKeys == -1)
         rGroup->flagStoreKeys = 0;
 
-
     /* open input file */
     if ((fd = open (fname, O_RDONLY)) == -1)
     {
         logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
         return 0;
     }
+    file_read_start (fd);
     recordExtract (sysno, fname, rGroup, deleteFlag, fd,
                    file_type, recType);
+    file_read_stop (fd);
     close (fd);
     return 1;
 }

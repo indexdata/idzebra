@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.5  1995-11-25 10:24:07  adam
+ * Revision 1.6  1995-11-27 09:56:21  adam
+ * Record info elements better enumerated. Internal store of records.
+ *
+ * Revision 1.5  1995/11/25  10:24:07  adam
  * More record fields - they are enumerated now.
  * New options: flagStoreData flagStoreKey.
  *
@@ -24,7 +27,7 @@
 
 #include <alexutil.h>
 
-#define REC_NO_INFO 4
+#define REC_NO_INFO 8
 
 typedef struct record_info {
     int sysno;
@@ -44,10 +47,10 @@ void rec_close (Records *p);
 Records rec_open (int rw);
 char *rec_strdup (const char *s, size_t *len);
 
-enum { recInfo_fileType,
-           recInfo_filename,
-           recInfo_delKeys,
-           recInfo_databaseName,
-           recInfo_recordData
-   };
-           
+enum { 
+    recInfo_fileType, 
+    recInfo_filename, 
+    recInfo_delKeys, 
+    recInfo_databaseName,
+    recInfo_storeData
+};
