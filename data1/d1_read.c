@@ -1,5 +1,5 @@
-/* $Id: d1_read.c,v 1.5 2003-09-08 10:26:51 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: d1_read.c,v 1.6 2004-05-25 10:21:25 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -128,13 +128,13 @@ data1_node *data1_append_node (data1_handle dh, NMEM m, int type,
     data1_node *r = (data1_node *)nmem_malloc(m, sizeof(*r));
     r->next = r->child = r->last_child = 0;
     r->destroy = 0;
-    
+
+    r->parent = parent;
     if (!parent)
         r->root = r;
     else
     {
         r->root = parent->root;
-        r->parent = parent;
         if (!parent->child)
             parent->child = parent->last_child = r;
         else
