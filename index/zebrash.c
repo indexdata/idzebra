@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.23 2003-11-21 15:30:16 heikki Exp $
+/* $Id: zebrash.c,v 1.24 2003-12-04 11:20:39 heikki Exp $
    Copyright (C) 2002,2003
    Index Data Aps
 
@@ -28,6 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <string.h> 
 #include <ctype.h>
+#include <unistd.h>  /* for isatty */
 
 #if HAVE_READLINE_READLINE_H
 #include <readline/readline.h> 
@@ -39,6 +40,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "zebraapi.h"
 #include <yaz/log.h>
 #include <yaz/proto.h>
+#include <yaz/sortspec.h>
 #include <yaz/wrbuf.h>
 
 #define MAX_NO_ARGS 32
@@ -449,7 +451,52 @@ static int cmd_show( char *args[], WRBUF outbuff)
     }
     odr_destroy(odr);
     return rc;
-}
+} /* cmd_show */
+
+static int cmd_sort( char *args[], WRBUF outbuff)
+{
+    int rc=0;
+    ODR odr;
+    int sortstatus=0;
+    Z_SortKeySpecList *spec=0;
+    const char * inpsets[]={ DEFAULTRESULTSET, 0};
+    /* FIXME - allow the user to specify result sets in/out */
+
+    odr=odr_createmem(ODR_ENCODE);
+    spec=yaz_sort_spec (odr, restargs(args,1));
+    if (!spec)
+        rc=1;
+    if (!rc)
+        rc=zebra_sort(zh, odr,
+                        1, inpsets,
+                        DEFAULTRESULTSET,
+                        spec,
+                        &sortstatus);
+    if (!rc)
+        wrbuf_printf(outbuff, "sort returned status %d\n",sortstatus);
+
+    odr_destroy(odr);
+    return rc;
+} /* cmd_sort */
+/*
+ *
+ * int bend_sort (void *handle, bend_sort_rr *rr)
+ * {
+ *     ZebraHandle zh = (ZebraHandle) handle;
+ *
+ *     zebra_sort (zh, rr->stream,
+ *                     rr->num_input_setnames, (const char **)
+ *                     rr->input_setnames,
+ *                     rr->output_setname,
+ *                     rr->sort_sequence,
+ *                     &rr->sort_status);
+ *     zebra_result (zh, &rr->errcode,
+ *                  &rr->errstring);
+ *     return 0;
+ *  }
+ *
+ */
+
 /**************************************)
  * Command table, parser, and help 
  */
@@ -548,6 +595,7 @@ struct cmdstruct cmds[] = {
       "inserts (1), updates (2), or deletes (3) a record \n"
       "record-id must be a unique identifier for the record",
       cmd_exchange_record},
+
     { "","Searching and retrieving:","",0},
     { "search_pqf","setname query",
       "search ",
@@ -564,6 +612,10 @@ struct cmdstruct cmds[] = {
     { "s","[start] [numrecs] [resultset]",
       "shows a result",
       cmd_show},
+    { "sort","sortspec",
+      "sorts a result set. (example spec: 1=4 >)",
+      cmd_sort},
+      
     { "", "Misc:","", 0}, 
     { "echo", "string", 
       "ouputs the string", 
