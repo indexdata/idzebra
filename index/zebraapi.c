@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.149 2005-01-21 18:41:19 adam Exp $
+/* $Id: zebraapi.c,v 1.150 2005-01-21 19:07:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -990,8 +990,6 @@ int zebra_deleteResultSet(ZebraHandle zh, int function,
 {
     int i, status;
     ASSERTZH;
-    assert(num_setnames>0);
-    assert(setnames);
     assert(statuses);
     yaz_log(log_level, "zebra_deleleResultSet n=%d",num_setnames);
     zh->errCode = 0;
@@ -1000,6 +998,8 @@ int zebra_deleteResultSet(ZebraHandle zh, int function,
     switch (function)
     {
     case Z_DeleteResultSetRequest_list:
+	assert(num_setnames>0);
+	assert(setnames);
 	resultSetDestroy (zh, num_setnames, setnames, statuses);
 	break;
     case Z_DeleteResultSetRequest_all:

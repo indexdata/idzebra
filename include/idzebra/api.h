@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.11 2005-01-21 18:41:19 adam Exp $
+/* $Id: api.h,v 1.12 2005-01-21 19:07:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,16 +20,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-/**
- * \file api.h
- * \brief Zebra API
- */
-
-/* Return codes:
- * Most functions return an int. Unix-like, 0 means OK, 
- * non-zero means an error. The error info should be available
- * via zebra_errCode and friends. 
- */
+/** \file api.h
+    \brief Zebra API
+    
+    Return codes:
+    Most functions return an int. Unix-like, 0 means OK, 
+    non-zero means an error. The error info should be available
+    via zebra_errCode and friends. 
+*/
 
 #ifndef ZEBRAAPI_H
 #define ZEBRAAPI_H
@@ -43,12 +41,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 YAZ_BEGIN_CDECL
 
 typedef struct {
-  int processed;
-  int inserted;
-  int updated;
-  int deleted;
-  long utime;
-  long stime;
+    int processed;
+    int inserted;
+    int updated;
+    int deleted;
+    long utime;
+    long stime;
 } ZebraTransactionStatus;
 
 /* Retrieval Record Descriptor */
@@ -71,148 +69,157 @@ typedef struct {
 } ZebraScanEntry;
 
 /** \var ZebraHandle
- * \brief a Zebra Handle - (session)
- */
+    \brief a Zebra Handle - (session)
+*/
 typedef struct zebra_session *ZebraHandle;
 
 /** \var ZebraService
- * \brief a Zebra Service handle
- */
+    \brief a Zebra Service handle
+*/
 typedef struct zebra_service *ZebraService;
 
 /** \fn ZebraService zebra_start(const char *configName)
- * \brief starts a Zebra service. 
- * \param configName name of configuration file
- *
- * This function is a simplified version of zebra_start_res.
- */
+    \brief starts a Zebra service. 
+    \param configName name of configuration file
+    
+    This function is a simplified version of zebra_start_res.
+*/
 YAZ_EXPORT ZebraService zebra_start(const char *configName);
 
 /** \fn ZebraService zebra_start_res(const char *configName,
     Res def_res, Res over_res)
- * \brief starts a Zebra service with resources.
- * \param configName name of configuration file
- * \param def_res default resources
- * \param over_res overriding resources
- *
- * This function typically called once in a program. A Zebra Service
- * acts as a factory for Zebra session handles.
- */
+    \brief starts a Zebra service with resources.
+    \param configName name of configuration file
+    \param def_res default resources
+    \param over_res overriding resources
+    
+    This function typically called once in a program. A Zebra Service
+    acts as a factory for Zebra session handles.
+*/
 YAZ_EXPORT
 ZebraService zebra_start_res(const char *configName,
-		         Res def_res, Res over_res);
+			     Res def_res, Res over_res);
 
 /** \fn int zebra_stop(ZebraService zs)
- * \brief stops a Zebra service.
- * \param zs service handle
- *
- * Frees resources used by the service.
- */
+    \brief stops a Zebra service.
+    \param zs service handle
+    
+    Frees resources used by the service.
+*/
 YAZ_EXPORT
 int zebra_stop(ZebraService zs);
 
 /** \fn void zebra_filter_info(ZebraService zs, void *cd,
-                               void(*cb)(void *cd, const char *name))
- * \brief lists enabled Zebra filters
- * \param zs service handle
- * \param cd callback parameter (opaque)
- * \param cb callback function
+    void(*cb)(void *cd, const char *name))
+    \brief lists enabled Zebra filters
+    \param zs service handle
+    \param cd callback parameter (opaque)
+    \param cb callback function
  */
 YAZ_EXPORT
 void zebra_filter_info(ZebraService zs, void *cd,
-		  void (*cb)(void *cd, const char *name));
+		       void (*cb)(void *cd, const char *name));
 
 
 /** \fn ZebraHandle zebra_open(ZebraService zs)
- * \brief creates a Zebra session handle within service.
- * \param zs service handle.
- *
- * There should be one handle for each thread doing something
- * with zebra, be that searching or indexing. In simple apps 
- * one handle is sufficient 
- */
+    \brief creates a Zebra session handle within service.
+    \param zs service handle.
+    
+    There should be one handle for each thread doing something
+    with zebra, be that searching or indexing. In simple apps 
+    one handle is sufficient 
+*/
 YAZ_EXPORT ZebraHandle zebra_open(ZebraService zs);
 
 /** \fn int zebra_close(ZebraHandle zh)
- * \brief destroys Zebra session handle.
- * \param zh zebra session handle.
+    \brief destroys Zebra session handle.
+    \param zh zebra session handle.
  */
 YAZ_EXPORT int zebra_close(ZebraHandle zh);
 
-/*********
- * Error handling 
- */
-
 /** \fn int zebra_errCode(ZebraHandle zh)
- * \brief returns error code for last error
- * \param zh zebra session handle.
- */
+    \brief returns error code for last error
+    \param zh zebra session handle.
+*/
 YAZ_EXPORT int zebra_errCode(ZebraHandle zh);
 
 /** \fn const char *zebra_errString(ZebraHandle zh)
- * \brief returns error string for last error
- * \param zh zebra session handle.
- */
+    \brief returns error string for last error
+    \param zh zebra session handle.
+*/
 YAZ_EXPORT const char *zebra_errString(ZebraHandle zh);
 
 /** \fn char *zebra_errAdd(ZebraHandle zh)
- * \brief returns additional info for last error
- * \param zh zebra session handle.
- */
+    \brief returns additional info for last error
+    \param zh zebra session handle.
+*/
 YAZ_EXPORT char *zebra_errAdd(ZebraHandle zh);
 
 /** \fn int zebra_result(ZebraHandle zh, int *code, char **addinfo)
- * \brief returns error code and additional info for last error
- * \param zh zebra session handle.
- * \param code pointer to returned error code
- * \param addinfo pointer to returned additional info
- */
+    \brief returns error code and additional info for last error
+    \param zh zebra session handle.
+    \param code pointer to returned error code
+    \param addinfo pointer to returned additional info
+*/
 YAZ_EXPORT int zebra_result(ZebraHandle zh, int *code, char **addinfo);
 
 /** \fn void zebra_clearError(ZebraHandle zh)
- * \brief clears last error.
- * \param zh zebra session handle.
+    \brief clears last error.
+    \param zh zebra session handle.
  */
 YAZ_EXPORT void zebra_clearError(ZebraHandle zh);
 
 /** \fn int zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
-    const char *setname, int *numhits)
- * \brief Search using PQF Query 
- * \param zh session handle
- * \param pqf_query query
- * \param setname name of resultset
- * \param number of hits is returned
+    const char *setname, int *hits)
+    \brief Search using PQF Query 
+    \param zh session handle
+    \param pqf_query query
+    \param setname name of resultset
+    \param hits of hits is returned
  */
 YAZ_EXPORT int zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
-				const char *setname, int *numhits);
+				const char *setname, int *hits);
 
-/** \fn int zebra_search_RPN(ZebraHandle zh, Z_RPNQuery *query,
-    const char *setname, int *numhits)
- * \brief Search using RPN Query 
- * \param zh session handle
- * \param query RPN query using YAZ structure
- * \param setname name of resultset
- * \param number of hits is returned
+/** \fn int zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
+    const char *setname, int *hits)
+    \brief Search using RPN Query 
+    \param zh session handle
+    \param o ODR handle
+    \param query RPN query using YAZ structure
+    \param setname name of resultset
+    \param hits number of hits is returned
  */
 YAZ_EXPORT int zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
 				const char *setname, int *hits);
 
-/** \fn 
-    int zebra_records_retrieve(ZebraHandle zh, ODR stream, const char *setname, Z_RecordComposition *comp, oid_value input_format, int num_recs, ZebraRetrievalRecord *recs)
+/** 
+    \fn int zebra_records_retrieve(ZebraHandle zh, ODR stream,
+    const char *setname, Z_RecordComposition *comp, oid_value input_format,
+    int num_recs, ZebraRetrievalRecord *recs)
     \brief retrieve records from result set (after search)
- * \param zh session handle
- * \param stream allocate records returned using this ODR
- * \param setname name of result set to retrieve records from
- * \param comp Z39.50 record composition
- * \param input_format transfer syntax (OID)
- * \param num_recs number of records to retrieve
- * \param recs store records in this structure (size is num_recs)
- */
+    \param zh session handle
+    \param stream allocate records returned using this ODR
+    \param setname name of result set to retrieve records from
+    \param comp Z39.50 record composition
+    \param input_format transfer syntax (OID)
+    \param num_recs number of records to retrieve
+    \param recs store records in this structure (size is num_recs)
+*/
 YAZ_EXPORT int zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		       const char *setname, Z_RecordComposition *comp,
 		       oid_value input_format,
 		       int num_recs, ZebraRetrievalRecord *recs);
 
+/**
+   \fn int zebra_deleteResultSet(ZebraHandle zh, int function,
+   int num_setnames, char **setnames, int *statuses)
+   \brief delete one or more resultsets 
+   \param zh session handle
+   \param function Z_DeleteResultSetRequest_{list,all}
+   \param num_setnames number of result sets
+   \param setnames result set names
+   \param statuses status result
+*/
 YAZ_EXPORT int zebra_deleteResultSet(ZebraHandle zh, int function,
 				     int num_setnames, char **setnames,
 				     int *statuses);
@@ -220,14 +227,13 @@ YAZ_EXPORT int zebra_deleteResultSet(ZebraHandle zh, int function,
 
 /* Browse */
 YAZ_EXPORT int zebra_scan(ZebraHandle zh, ODR stream,
-			   Z_AttributesPlusTerm *zapt,
-			   oid_value attributeset,
-			   int *position, int *num_entries,
-			   ZebraScanEntry **list,
-			   int *is_partial);
+			  Z_AttributesPlusTerm *zapt,
+			  oid_value attributeset,
+			  int *position, int *num_entries,
+			  ZebraScanEntry **list,
+			  int *is_partial);
 
-   
-          
+             
 /*********
  * Other 
  */
