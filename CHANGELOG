@@ -1,4 +1,6 @@
 
+Fixed a bug with text being chunked in pieces for the grs.xml filter.
+
 --- 1.3.11 2003/04/25
 
 xelm code updates. xelm works regardless state of 'xpath enable/disable'
