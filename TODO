@@ -1,4 +1,5 @@
-Zebra TODO $Id: TODO,v 1.7 1999-05-20 12:57:18 adam Exp $
+Zebra TODO
+$Id: TODO,v 1.8 1999-12-01 14:29:50 adam Exp $
 
 Size of sort entries should be configurable.
 
