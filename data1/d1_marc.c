@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.6.2.1 2004-11-30 16:39:42 oleg Exp $
+/* $Id: d1_marc.c,v 1.6.2.2 2005-01-07 14:00:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -164,7 +164,7 @@ data1_marctab *data1_read_marctab (data1_handle dh, const char *file)
  * Locate some data under this node. This routine should handle variants
  * prettily.
  */
-static char *get_data(data1_node *n, int *len)
+static char *get_data(data1_node *n, int *len, int chop)
 {
     char *r;
 
@@ -175,18 +175,21 @@ static char *get_data(data1_node *n, int *len)
             int i;
             *len = n->u.data.len;
 	    
-	    /* Fixme: don't delete leader/final whitespaces
-            for (i = 0; i<*len; i++)
-                if (!d1_isspace(n->u.data.data[i]))
-                    break;
-            while (*len && d1_isspace(n->u.data.data[*len - 1]))
-                (*len)--;
-            *len = *len - i;
-            if (*len > 0)
-                return n->u.data.data + i;
-	    */
-	    if (*len > 0)
-		return n->u.data.data;
+	    
+	    if (chop)
+	    {
+		for (i = 0; i<*len; i++)
+		    if (!d1_isspace(n->u.data.data[i]))
+			break;
+		while (*len && d1_isspace(n->u.data.data[*len - 1]))
+		    (*len)--;
+		*len = *len - i;
+		if (*len > 0)
+		    return n->u.data.data + i;
+	    }
+	    else
+		if (*len > 0)
+		    return n->u.data.data;
         }
         if (n->which == DATA1N_tag)
             n = n->child;
@@ -269,7 +272,7 @@ static int nodetomarc(data1_handle dh,
 	else if (!strcmp(field->u.tag.tag, "leader"))
 	{
 	    int dlen = 0;
-	    char *dbuf = get_data(subf, &dlen);
+	    char *dbuf = get_data(subf, &dlen, 0);
 	    if (dlen > 24)
 		dlen = 24;
 	    if (dbuf && dlen > 0)
@@ -314,7 +317,7 @@ static int nodetomarc(data1_handle dh,
         {
             if (!control_field)
                 len += p->identifier_length;
-	    get_data(subf, &dlen);
+	    get_data(subf, &dlen, 1);
             len += dlen;
         }
     }
@@ -431,7 +434,7 @@ static int nodetomarc(data1_handle dh,
                 memcpy (op + data_p+1, identifier, p->identifier_length-1);
                 data_p += p->identifier_length;
             }
-	    data = get_data(subf, &dlen);
+	    data = get_data(subf, &dlen, 1);
             memcpy (op + data_p, data, dlen);
             data_p += dlen;
         }
