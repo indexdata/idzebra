@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.34  1995-11-16 17:00:56  adam
+ * Revision 1.35  1995-11-27 09:29:00  adam
+ * Bug fixes regarding conversion to regular expressions.
+ *
+ * Revision 1.34  1995/11/16  17:00:56  adam
  * Better logging of rpn query.
  *
  * Revision 1.33  1995/11/01  13:58:28  quinn
@@ -655,9 +658,8 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
             {
             case -1:         /* not specified */
             case 100:        /* do not truncate */
-                strcat (term_dict, "(");
-                strcat (term_dict, term_sub);
-                strcat (term_dict, ")");
+		sprintf (term_dict + strlen(term_dict), 
+                         "([]%d %s)", strlen(term_sub), term_sub);
                 logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
                 r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
                                       &max_pos, grep_handle);
@@ -665,8 +667,8 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=none:%d", r);
                 break;
             case 1:          /* right truncation */
-                strcat (term_dict, term_sub);
-                strcat (term_dict, ".*");
+		sprintf (term_dict + strlen(term_dict),
+			 "([]%d %s.*)", strlen(term_sub), term_sub);
                 dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
                                   &max_pos, grep_handle);
                 break;
@@ -675,17 +677,20 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 zi->errCode = 120;
                 return -1;
             case 101:        /* process # in term */
-                for (j = strlen(term_dict), i = 0; term_sub[i] && i < 2; i++)
-                    term_dict[j++] = term_sub[i];
-                for (; term_sub[i]; i++)
-                    if (term_sub[i] == '#')
+                strcat (term_dict, "(");
+                j = strlen(term_dict);
+                for (i=0; term_sub[i]; i++)
+                    if (i > 2 && term_sub[i] == '#')
                     {
                         term_dict[j++] = '.';
                         term_dict[j++] = '*';
                     }
                     else
+                    {
+                        term_dict[j++] = '\\';
                         term_dict[j++] = term_sub[i];
-                term_dict[j] = '\0';
+                    }
+                strcpy (term_dict+j, ")");
                 r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
                                       &max_pos, grep_handle);
                 if (r)
@@ -693,9 +698,7 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                           r);
                 break;
             case 102:        /* regular expression */
-                strcat (term_dict, "(");
-                strcat (term_dict, term_sub);
-                strcat (term_dict, ")");
+		sprintf (term_dict + strlen(term_dict), "(%s)", term_sub);
                 logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
                 r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
                                       &max_pos, grep_handle);
