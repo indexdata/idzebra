@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.8 2003-03-05 16:43:48 adam Exp $
+/* $Id: perlread.c,v 1.8.2.1 2004-09-03 09:31:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -232,6 +232,9 @@ static void *grs_init_perl(void)
   /* If there is an interpreter (context) running, - we are calling 
      indexing and retrieval from the perl API - we don't create a new one. */
   context->origi = PERL_GET_CONTEXT;
+  /* with Perl 5.8 context may be non-NULL even though it's not there! */
+  if (context->origi && !PL_stack_sp)  /* dirty, but it seems to work */
+      context->origi = 0;
   if (context->origi == NULL) {
     context->perli = perl_alloc();
     PERL_SET_CONTEXT(context->perli);
@@ -285,13 +288,18 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
     char *arglist[6] = { "", "-I", "", "-M", "-e", "" };
 
     if (context->perli_ready) {
-      /*
-      FREETMPS;
-      LEAVE;
-      */
-      if (context->origi == NULL) perl_destruct(context->perli);
+	/*
+	  FREETMPS;
+	  LEAVE;
+	*/
+	if (context->origi == NULL) {
+	    perl_destruct(context->perli);
+      }
     }
-    if (context->origi == NULL) perl_construct(context->perli);
+    if (context->origi == NULL) {
+	perl_construct(context->perli);
+    }
+
     
     /*
     ENTER;
