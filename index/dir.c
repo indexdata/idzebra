@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.17  1997-09-09 13:38:06  adam
+ * Revision 1.18  1997-09-25 14:55:33  adam
+ * Windows port uses stat and not lstat.
+ *
+ * Revision 1.17  1997/09/09 13:38:06  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.16  1996/10/29 14:06:45  adam
@@ -111,7 +114,11 @@ struct dir_entry *dir_open (const char *rep)
             entry = entry_n;
         }
         strcpy (path + pathpos, dent->d_name);
+#ifdef WINDOWS
+        stat (path, &finfo);
+#else
         lstat (path, &finfo);
+#endif
         switch (finfo.st_mode & S_IFMT)
         {
         case S_IFREG:
