@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.8 2002-04-09 19:41:50 adam Exp $
+## $Id: Makefile.am,v 1.9 2002-04-09 19:58:38 adam Exp $
 docdir=$(pkgdatadir)/doc
 
 doc_DATA = zebra.html zebra.pdf
@@ -20,7 +20,7 @@ XMLFILES = \
  license.xml \
  indexdata.xml
  
-EXTRA_DIST = $(SUPPORTFILES) $(XMLFILES) zebra.pdf zebra.html
+EXTRA_DIST = $(SUPPORTFILES) $(XMLFILES) zebra.pdf
 
 install-data-hook:
 	for f in *.html; do \
@@ -48,8 +48,8 @@ gils.ps: gils.sgml
 gils.html: gils.sgml
 	sgml2html gils.sgml
 
-dist-hook:
-	cp $(srcdir)/*.html $(distdir)
+dist-hook: zebra.html
+	cp -f $(srcdir)/*.html $(distdir)
 
 clean-data-hook:
 	rm -f [0-9]* *.bak
