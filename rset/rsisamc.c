@@ -1,5 +1,5 @@
-/* $Id: rsisamc.c,v 1.33 2004-11-19 10:27:14 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: rsisamc.c,v 1.34 2005-01-11 14:03:04 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -128,7 +128,7 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
     r = isc_pp_read(p->pt, buf);
     if (term)
         *term = rfd->rset->term;
-    yaz_log(log_level,"read returning term %p", *term);
+    yaz_log(log_level, "isamc.r_read");
     return r;
 }
 
