@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.5  1995-10-17 18:02:09  adam
+ * Revision 1.6  1995-11-17 15:54:42  adam
+ * Started work on virtual directory structure.
+ *
+ * Revision 1.5  1995/10/17  18:02:09  adam
  * New feature: databases. Implemented as prefix to words in dictionary.
  *
  * Revision 1.4  1995/09/28  09:19:46  adam
@@ -300,3 +303,15 @@ void repository (int cmd, const char *rep, const char *base_path,
         repository_extract_r (cmd, rep_tmp1, databaseName);
 }
 
+void repositoryUpdate (const char *src, char *databaseName)
+{
+    struct dir_entry *e_src;
+    int i_src = 0;
+    struct stat fs_src;
+    size_t src_len = strlen (src);
+
+    e_src = dir_open (src);
+
+    if (!e_src)
+        return;
+}
