@@ -3,6 +3,7 @@
 %{
 #include "zebraapi.h"
 #include "zebra_api_ext.h"
+#include "zebra_perl.h"
 #include "data1.h"
 #include "yaz/odr.h"
 %}
@@ -66,7 +67,7 @@
 
 /* == Structures for shadow classes  ======================================= */
 
-%include "zebra_api_ext.h"
+%include "zebra_perl.h"
 
 
 /* == Module initialization and cleanup (zebra_perl.c) ===================== */
@@ -557,7 +558,7 @@ off_t grs_perl_seekf(struct perl_context *context, off_t offset);
 off_t grs_perl_tellf(struct perl_context *context);
 void grs_perl_endf(struct perl_context *context, off_t offset);
 
-data1_handle grs_perl_get_dh(struct perl_context *context);
-NMEM grs_perl_get_mem(struct perl_context *context);
+data1_handle *grs_perl_get_dh(struct perl_context *context);
+NMEM *grs_perl_get_mem(struct perl_context *context);
 void grs_perl_set_res(struct perl_context *context, data1_node *n);
 
