@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.h,v $
- * Revision 1.3  1994-08-18 09:43:04  adam
+ * Revision 1.4  1994-09-06 13:02:29  quinn
+ * Removed const from res_get
+ *
+ * Revision 1.3  1994/08/18  09:43:04  adam
  * Added res_trav. Major changes of prototypes.
  *
  * Revision 1.2  1994/08/18  08:22:26  adam
@@ -29,7 +32,7 @@ typedef struct res_struct {
 
 Res res_open (const char *name);
 void res_close (Res r);
-const char *res_get (Res r, const char *name);
+char *res_get (Res r, const char *name);
 void res_put (Res r, const char *name, const char *value);
 void res_trav (Res r, const char *prefix, 
                void (*f)(const char *name, const char *value));
