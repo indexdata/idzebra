@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.5  1996-01-17 14:54:44  adam
+ * Revision 1.6  1996-02-02 13:44:43  adam
+ * The public dictionary functions simply use char instead of Dict_char
+ * to represent search strings. Dict_char is used internally only.
+ *
+ * Revision 1.5  1996/01/17  14:54:44  adam
  * Function dirs_rmdir uses dict_delete.
  *
  * Revision 1.4  1995/11/30  08:34:27  adam
@@ -41,7 +45,7 @@ struct dirs_info {
     struct dirs_entry *last_entry;
 };
 
-static int dirs_client_proc (Dict_char *name, const char *info, int pos,
+static int dirs_client_proc (char *name, const char *info, int pos,
                              void *client)
 {
     struct dirs_info *ci = client;

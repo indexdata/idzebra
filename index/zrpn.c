@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.39  1996-01-03 16:22:13  quinn
+ * Revision 1.40  1996-02-02 13:44:44  adam
+ * The public dictionary functions simply use char instead of Dict_char
+ * to represent search strings. Dict_char is used internally only.
+ *
+ * Revision 1.39  1996/01/03  16:22:13  quinn
  * operator->roperator
  *
  * Revision 1.38  1995/12/11  09:12:55  adam
@@ -494,7 +498,7 @@ static void add_isam_p (const char *info, struct grep_info *p)
     (p->isam_p_indx)++;
 }
 
-static int grep_handle (Dict_char *name, const char *info, void *p)
+static int grep_handle (char *name, const char *info, void *p)
 {
     logf (LOG_DEBUG, "dict name: %s", name);
     add_isam_p (info, p);
@@ -1280,8 +1284,7 @@ struct scan_info {
     char prefix[20];
 };
 
-static int scan_handle (Dict_char *name, const char *info, int pos, 
-                        void *client)
+static int scan_handle (char *name, const char *info, int pos, void *client)
 {
     int len_prefix, idx;
     ISAM_P isam_p;
@@ -1316,7 +1319,7 @@ static int scan_handle (Dict_char *name, const char *info, int pos,
 }
 
 
-static int dummy_handle (Dict_char *name, const char *info, void *p)
+static int dummy_handle (char *name, const char *info, void *p)
 {
     return 0;
 }
