@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.18  1996-06-04 10:18:59  adam
+ * Revision 1.19  1996-10-29 14:09:46  adam
+ * Use of cisam system - enabled if setting isamc is 1.
+ *
+ * Revision 1.18  1996/06/04 10:18:59  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.17  1996/05/14  15:47:07  adam
@@ -105,7 +108,10 @@ struct key_file {
 
 void getFnameTmp (char *fname, int no)
 {
-    sprintf (fname, TEMP_FNAME, no);
+    const char *pre;
+    
+    pre = res_get_def (common_resource, "keyTmpDir", ".");
+    sprintf (fname, "%s/key%d.tmp", pre, no);
 }
 
 void key_file_chunk_read (struct key_file *f)
@@ -256,6 +262,9 @@ struct heap_info {
     int    heapnum;
     int    *ptr;
     int    (*cmp)(const void *p1, const void *p2);
+    Dict dict;
+    ISAM isam;
+    ISAMC isamc;
 };
 
 struct heap_info *key_heap_init (int nkeys,
@@ -352,7 +361,79 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
     return 1;
 }
 
-int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
+struct heap_cread_info {
+    char prev_name[INP_NAME_MAX];
+    char cur_name[INP_NAME_MAX];
+    char *key;
+    struct heap_info *hi;
+    int mode;
+    int more;
+};
+      
+int heap_cread_item (void *vp, char **dst, int *insertMode)
+{
+    struct heap_cread_info *p = vp;
+    struct heap_info *hi = p->hi;
+
+    if (p->mode == 1)
+    {
+        *insertMode = p->key[0];
+        memcpy (*dst, p->key+1, sizeof(struct it_key));
+        (*dst) += sizeof(struct it_key);
+        p->mode = 2;
+        return 1;
+    }
+    strcpy (p->prev_name, p->cur_name);
+    if (!(p->more = heap_read_one (hi, p->cur_name, p->key)))
+        return 0;
+    if (*p->cur_name && strcmp (p->cur_name, p->prev_name))
+    {
+        p->mode = 1;
+        return 0;
+    }
+    *insertMode = p->key[0];
+    memcpy (*dst, p->key+1, sizeof(struct it_key));
+    (*dst) += sizeof(struct it_key);
+    return 1;
+}
+
+int heap_inpc (struct heap_info *hi)
+{
+    struct heap_cread_info hci;
+    ISAMC_P isamc_p;
+    ISAMC_I isamc_i = xmalloc (sizeof(*isamc_i));
+    void *dict_info;
+
+    hci.key = xmalloc (KEY_SIZE);
+    hci.mode = 1;
+    hci.hi = hi;
+    hci.more = heap_read_one (hi, hci.cur_name, hci.key);
+
+    isamc_i->clientData = &hci;
+    isamc_i->read_item = heap_cread_item;
+
+    while (hci.more)
+    {
+        logf (LOG_DEBUG, "inserting %s", 1+hci.cur_name);
+        if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
+        {
+            logf (LOG_FATAL, "Cannot merge really yet! %s", hci.cur_name);
+            exit (1);
+        } 
+        else
+        {
+            char this_name[128];
+            strcpy (this_name, hci.cur_name);
+            isamc_p = isc_merge (hi->isamc, 0, isamc_i);
+            no_insertions++;
+            dict_insert (hi->dict, this_name, sizeof(ISAMC_P), &isamc_p);
+        }
+    }
+    xfree (isamc_i);
+    return 0;
+} 
+
+int heap_inp (struct heap_info *hi)
 {
     char *info;
     char next_name[INP_NAME_MAX];
@@ -391,32 +472,32 @@ int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
         no_diffs++;
         nmemb = key_buf_ptr / KEY_SIZE;
         assert (nmemb*KEY_SIZE == key_buf_ptr);
-        if ((info = dict_lookup (dict, cur_name)))
+        if ((info = dict_lookup (hi->dict, cur_name)))
         {
             ISAM_P isam_p, isam_p2;
-            logf (LOG_DEBUG, "updating %s", cur_name);
+            logf (LOG_DEBUG, "updating %s", 1+cur_name);
             memcpy (&isam_p, info+1, sizeof(ISAM_P));
-            isam_p2 = is_merge (isam, isam_p, nmemb, key_buf);
+            isam_p2 = is_merge (hi->isam, isam_p, nmemb, key_buf);
             if (!isam_p2)
             {
                 no_deletions++;
-                if (!dict_delete (dict, cur_name))
+                if (!dict_delete (hi->dict, cur_name))
                     abort ();
             }
             else 
             {
                 no_updates++;
                 if (isam_p2 != isam_p)
-                    dict_insert (dict, cur_name, sizeof(ISAM_P), &isam_p2);
+                    dict_insert (hi->dict, cur_name, sizeof(ISAM_P), &isam_p2);
             }
         }
         else
         {
             ISAM_P isam_p;
-            logf (LOG_DEBUG, "inserting %s", cur_name);
+            logf (LOG_DEBUG, "inserting %s", 1+cur_name);
             no_insertions++;
-            isam_p = is_merge (isam, 0, nmemb, key_buf);
-            dict_insert (dict, cur_name, sizeof(ISAM_P), &isam_p);
+            isam_p = is_merge (hi->isam, 0, nmemb, key_buf);
+            dict_insert (hi->dict, cur_name, sizeof(ISAM_P), &isam_p);
         }
         memcpy (key_buf, next_key, KEY_SIZE);
         strcpy (cur_name, next_name);
@@ -455,12 +536,12 @@ void progressFunc (struct key_file *keyp, void *info)
     p->totalOffset += keyp->buf_size;
 }
 
-void key_input (const char *dict_fname, const char *isam_fname,
-                int nkeys, int cache)
+void key_input (int nkeys, int cache)
                 
 {
     Dict dict;
-    ISAM isam;
+    ISAM isam = NULL;
+    ISAMC isamc = NULL;
     struct key_file **kf;
     char rbuf[1024];
     int i, r;
@@ -481,19 +562,30 @@ void key_input (const char *dict_fname, const char *isam_fname,
         if (!nkeys)
             return ;
     }
-    dict = dict_open (dict_fname, cache, 1);
+    dict = dict_open (FNAME_DICT, cache, 1);
     if (!dict)
     {
-        logf (LOG_FATAL, "dict_open fail of `%s'", dict_fname);
+        logf (LOG_FATAL, "dict_open fail");
         exit (1);
     }
-    isam = is_open (isam_fname, key_compare, 1, sizeof(struct it_key));
-    if (!isam)
+    if (res_get_match (common_resource, "isam", "c", NULL))
     {
-        logf (LOG_FATAL, "is_open fail of `%s'", isam_fname);
-        exit (1);
+        isamc = isc_open (FNAME_ISAMC, 1, key_isamc_m ());
+        if (!isamc)
+        {
+           logf (LOG_FATAL, "isc_open fail");
+           exit (1);
+        }
     }
-
+    else
+    {
+        isam = is_open (FNAME_ISAM, key_compare, 1, sizeof(struct it_key));
+        if (!isam)
+        {
+            logf (LOG_FATAL, "is_open fail");
+            exit (1);
+        }
+    }
     kf = xmalloc ((1+nkeys) * sizeof(*kf));
     progressInfo.totalBytes = 0;
     progressInfo.totalOffset = 0;
@@ -508,13 +600,22 @@ void key_input (const char *dict_fname, const char *isam_fname,
         progressInfo.totalOffset += kf[i]->buf_size;
     }
     hi = key_heap_init (nkeys, key_qsort_compare);
+    hi->dict = dict;
+    hi->isam = isam;
+    hi->isamc = isamc;
+
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read (kf[i], rbuf)))
             key_heap_insert (hi, rbuf, r, kf[i]);
-    heap_inp (dict, isam, hi);
-
+    if (isamc)
+        heap_inpc (hi);
+    else
+        heap_inp (hi);
     dict_close (dict);
-    is_close (isam);
+    if (isam)
+        is_close (isam);
+    if (isamc)
+        isc_close (isamc);
     
     for (i = 1; i<=nkeys; i++)
     {

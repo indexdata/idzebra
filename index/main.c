@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.43  1996-06-06 12:08:42  quinn
+ * Revision 1.44  1996-10-29 14:09:48  adam
+ * Use of cisam system - enabled if setting isamc is 1.
+ *
+ * Revision 1.43  1996/06/06 12:08:42  quinn
  * Added showRecord function
  *
  * Revision 1.42  1996/05/31  09:07:01  quinn
@@ -162,13 +165,11 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include <alexutil.h>
 #include <data1.h>
 #include "index.h"
 
 char *prog;
-size_t mem_max = 4*1024*1024;
-extern char *data1_tabpath;
+size_t mem_max = 0;
 
 static void abort_func (int level, const char *msg, void *info)
 {
@@ -238,8 +239,9 @@ int main (int argc, char **argv)
                               configName);
                         exit (1);
                     }
-                    data1_tabpath = res_get (common_resource, "profilePath");
-                    bf_lockDir (res_get (common_resource, "lockPath"));
+                    data1_set_tabpath (res_get (common_resource,
+                                                "profilePath"));
+                    bf_lockDir (res_get (common_resource, "lockDir"));
 		    init_charmap();
                 }
                 if (!strcmp (arg, "update"))
@@ -303,7 +305,7 @@ int main (int argc, char **argv)
                         zebraIndexLockMsg ("r");
                     }
                     rec_prstat ();
-                    inv_prstat  (FNAME_WORD_DICT, FNAME_WORD_ISAM);
+                    inv_prstat (FNAME_DICT, FNAME_ISAM);
                 }
                 else
                 {
@@ -367,8 +369,7 @@ int main (int argc, char **argv)
                 if (nsections)
                 {
                     logf (LOG_LOG, "Merging with index");
-                    key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, nsections,
-                               60);
+                    key_input (nsections, 60);
                     sync ();
                 }
             }

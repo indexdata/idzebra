@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.44  1996-06-06 12:08:40  quinn
+ * Revision 1.45  1996-10-29 14:09:42  adam
+ * Use of cisam system - enabled if setting isamc is 1.
+ *
+ * Revision 1.44  1996/06/06 12:08:40  quinn
  * Added showRecord function
  *
  * Revision 1.43  1996/06/04  10:18:12  adam
@@ -154,20 +157,23 @@
  * New simple file index tool.
  *
  */
-
 #include <time.h>
 #include <zebraver.h>
-#include <alexutil.h>
+#include <zebrautl.h>
+
 #include <dict.h>
 #include <isam.h>
+#include <isamc.h>
 
 #define IT_MAX_WORD 256
 #define IT_KEY_HAVE_SEQNO 1
 #define IT_KEY_HAVE_FIELD 0
 
+typedef int SYSNO;
+
 struct it_key {
     int  sysno;
-    int   seqno;
+    int  seqno;
 };
 
 enum dirsKind { dirs_dir, dirs_file };
@@ -197,6 +203,7 @@ struct recordGroup {
     int  fileVerboseFlag;
 };
 
+void getFnameTmp (char *fname, int no);
         
 struct dirs_info *dirs_open (Dict dict, const char *rep);
 struct dirs_info *dirs_fopen (Dict dict, const char *path);
@@ -219,18 +226,17 @@ void repositoryShow (struct recordGroup *rGroup);
 
 void key_open (int mem);
 int key_close (void);
-void key_write (int cmd, struct it_key *k, const char *str);
 int key_compare (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
 void inv_prstat (const char *dict_fname, const char *isam_fname);
-void key_input (const char *dict_fname, const char *isam_fname,
-                 int nkeys, int cache);
+void key_input (int nkeys, int cache);
+ISAMC_M key_isamc_m (void);
 int merge_sort (char **buf, int from, int to);
 
-#define TEMP_FNAME  "keys%d.tmp"
-#define FNAME_WORD_DICT "worddict"
-#define FNAME_WORD_ISAM "wordisam"
+#define FNAME_DICT "dict"
+#define FNAME_ISAM "isam"
+#define FNAME_ISAMC "isamc"
 #define FNAME_CONFIG "zebra.cfg"
 
 #define GMATCH_DICT "gmatch"

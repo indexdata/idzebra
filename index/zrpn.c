@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.53  1996-06-26 09:21:43  adam
+ * Revision 1.54  1996-10-29 14:09:52  adam
+ * Use of cisam system - enabled if setting isamc is 1.
+ *
+ * Revision 1.53  1996/06/26 09:21:43  adam
  * Bug fix: local attribute set wasn't obeyed in scan.
  *
  * Revision 1.52  1996/06/17  14:26:20  adam
@@ -192,6 +195,7 @@
 
 #include <charmap.h>
 #include <rsisam.h>
+#include <rsisamc.h>
 #include <rstemp.h>
 #include <rsnull.h>
 #include <rsbool.h>
@@ -203,6 +207,27 @@ typedef struct {
     int minor;
     Z_AttributesPlusTerm *zapt;
 } AttrType;
+
+static RSET rset_create_isamx (ZServerInfo *zi, int pos)
+{
+    if (zi->isam)
+    {
+        rset_isam_parms parms;
+
+        parms.pos = pos;
+        parms.is = zi->isam;
+        return rset_create (rset_kind_isam, &parms);
+    }
+    if (zi->isamc)
+    {
+        rset_isamc_parms parms;
+
+        parms.pos = pos;
+        parms.is = zi->isamc;
+        return rset_create (rset_kind_isamc, &parms);
+    }
+    return rset_create (rset_kind_null, NULL);
+}
 
 static int attr_find (AttrType *src, oid_value *attributeSetP)
 {
@@ -495,7 +520,7 @@ static int isam_trunc_cmp (const void *p1, const void *p2)
 
 static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int no)
 {
-
+    assert (isam);
     qsort (isam_p, no, sizeof(*isam_p), isam_trunc_cmp);
     return rset_trunc_r (isam, isam_p, 0, no, 100);
 }
@@ -709,7 +734,7 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         return 0;
     }
     logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
-    r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, max_pos,
+    r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info, max_pos,
                           0, grep_handle);
     if (r)
         logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
@@ -806,7 +831,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 for (i = 0; term_sub[i]; i++)
                     verbatim_char (term_sub[i], &j, term_dict);
                 strcpy (term_dict+j, ")");
-                r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
                                       &max_pos, 0, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=none:%d", r);
@@ -816,7 +841,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 for (i = 0; term_sub[i]; i++)
                     verbatim_char (term_sub[i], &j, term_dict);
                 strcpy (term_dict+j, ".*)");
-                dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
                                   &max_pos, 0, grep_handle);
                 break;
             case 2:          /* left truncation */
@@ -834,7 +859,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                     else
                         verbatim_char (term_sub[i], &j, term_dict);
                 strcpy (term_dict+j, ")");
-                r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
                                       &max_pos, 0, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=#: %d",
@@ -842,7 +867,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 break;
             case 102:        /* regular expression */
 		sprintf (term_dict + j, "(%s)", term_sub);
-                r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
                                       &max_pos, 0, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=regular: %d",
@@ -857,7 +882,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                     cp += 2;
                 }
 		sprintf (term_dict + j, "(%s)", cp);
-                r = dict_lookup_grep (zi->wordDict, term_dict, r, grep_info,
+                r = dict_lookup_grep (zi->dict, term_dict, r, grep_info,
                                       &max_pos, j, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=eregular: %d",
@@ -928,7 +953,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     parms.key_size = sizeof(struct it_key);
     parms.max_rec = 100;
     parms.cmp = key_compare;
-    parms.is = zi->wordIsam;
+    parms.is = zi->isam;
     parms.no_terms = 0;
 
     if (zapt->term->which != Z_Term_general)
@@ -999,7 +1024,6 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
                                     oid_value attributeSet,
                                     int num_bases, char **basenames)
 {
-    rset_isam_parms parms;
     char termz[IT_MAX_WORD+1];
     struct grep_info grep_info;
     RSET result;
@@ -1025,12 +1049,10 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
         result = rset_create (rset_kind_null, NULL);
     else if (grep_info.isam_p_indx == 1)
     {
-        parms.is = zi->wordIsam;
-        parms.pos = *grep_info.isam_p_buf;
-        result = rset_create (rset_kind_isam, &parms);
+        result = rset_create_isamx (zi, *grep_info.isam_p_buf);
     }
     else
-        result = rset_trunc (zi->wordIsam, grep_info.isam_p_buf,
+        result = rset_trunc (zi->isam, grep_info.isam_p_buf,
                              grep_info.isam_p_indx);
 #ifdef TERM_COUNT
     xfree(grep_info.term_no);
@@ -1186,16 +1208,12 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         if (grep_info.isam_p_indx == 0)
             rset[rset_no] = rset_create (rset_kind_null, NULL);
         else if (grep_info.isam_p_indx > 1)
-            rset[rset_no] = rset_trunc (zi->wordIsam,
+            rset[rset_no] = rset_trunc (zi->isam,
                                         grep_info.isam_p_buf,
                                         grep_info.isam_p_indx);
         else
         {
-            rset_isam_parms parms;
-            
-            parms.is = zi->wordIsam;
-            parms.pos = *grep_info.isam_p_buf;
-            rset[rset_no] = rset_create (rset_kind_isam, &parms);
+            rset[rset_no] = rset_create_isamx (zi, *grep_info.isam_p_buf);
         }
         assert (rset[rset_no]);
         if (++rset_no >= sizeof(rset)/sizeof(*rset))
@@ -1423,6 +1441,7 @@ void count_set_save (RSET *r, int *count)
     rfd = rset_open (*r, RSETF_READ|RSETF_SORT_SYSNO);
     while (rset_read (*r, rfd, &key))
     {
+        logf (LOG_DEBUG, "sysno=%-7d seqno=%d", key.sysno, key.seqno);
         if (key.sysno != psysno)
         {
             rset_write (w, wfd, &key);
@@ -1469,7 +1488,7 @@ int rpn_search (ZServerInfo *zi,
     oident *attrset;
     oid_value attributeSet;
 
-    dict_grep_cmap (zi->wordDict, map_chrs_input);
+    dict_grep_cmap (zi->dict, map_chrs_input);
     zlog_rpn (rpn);
 
     zi->errCode = 0;
@@ -1631,7 +1650,7 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
         trans_scan_term (zi, zapt, termz+prefix_len);
                     
-        dict_scan (zi->wordDict, termz, &before_tmp, &after_tmp, scan_info,
+        dict_scan (zi->dict, termz, &before_tmp, &after_tmp, scan_info,
                    scan_handle);
     }
     glist = odr_malloc (zi->odr, (before+after)*sizeof(*glist));
@@ -1645,7 +1664,6 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         const char *mterm = NULL;
         const char *tst;
         RSET rset;
-        rset_isam_parms parms;
         
         for (j = 0; j < ord_no; j++)
         {
@@ -1660,9 +1678,8 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         if (j0 == -1)
             break;
         scan_term_untrans (zi->odr, &glist[i+before].term, mterm);
-        parms.is = zi->wordIsam;
-        parms.pos = scan_info_array[j0].list[ptr[j0]].isam_p;
-        rset = rset_create (rset_kind_isam, &parms);
+        rset =
+            rset_create_isamx (zi, scan_info_array[j0].list[ptr[j0]].isam_p);
 
         ptr[j0]++;
         for (j = j0+1; j<ord_no; j++)
@@ -1671,13 +1688,11 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 (tst=scan_info_array[j].list[ptr[j]].term) &&
                 !strcmp (tst, mterm))
             {
-                rset_isam_parms parms;
                 rset_bool_parms bool_parms;
                 RSET rset2;
 
-                parms.is = zi->wordIsam;
-                parms.pos = scan_info_array[j].list[ptr[j]].isam_p;
-                rset2 = rset_create (rset_kind_isam, &parms);
+                rset2 = rset_create_isamx
+                         (zi, scan_info_array[j].list[ptr[j]].isam_p);
 
                 bool_parms.key_size = sizeof(struct it_key);
                 bool_parms.cmp = key_compare;
@@ -1707,7 +1722,6 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         const char *mterm = NULL;
         const char *tst;
         RSET rset;
-        rset_isam_parms parms;
         
         for (j = 0; j <ord_no; j++)
         {
@@ -1724,9 +1738,8 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
         scan_term_untrans (zi->odr, &glist[before-1-i].term, mterm);
 
-        parms.is = zi->wordIsam;
-        parms.pos = scan_info_array[j0].list[before-1-ptr[j0]].isam_p;
-        rset = rset_create (rset_kind_isam, &parms);
+        rset = rset_create_isamx
+                  (zi, scan_info_array[j0].list[before-1-ptr[j0]].isam_p);
 
         ptr[j0]++;
 
@@ -1736,13 +1749,11 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 (tst=scan_info_array[j].list[before-1-ptr[j]].term) &&
                 !strcmp (tst, mterm))
             {
-                rset_isam_parms parms;
                 rset_bool_parms bool_parms;
                 RSET rset2;
 
-                parms.is = zi->wordIsam;
-                parms.pos = scan_info_array[j].list[before-1-ptr[j]].isam_p;
-                rset2 = rset_create (rset_kind_isam, &parms);
+                rset2 = rset_create_isamx (zi,
+                            scan_info_array[j].list[before-1-ptr[j]].isam_p);
 
                 bool_parms.key_size = sizeof(struct it_key);
                 bool_parms.cmp = key_compare;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.17  1996-06-04 10:18:58  adam
+ * Revision 1.18  1996-10-29 14:09:44  adam
+ * Use of cisam system - enabled if setting isamc is 1.
+ *
+ * Revision 1.17  1996/06/04 10:18:58  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.16  1996/05/13  14:23:05  adam
@@ -124,5 +127,125 @@ int key_qsort_compare (const void *p1, const void *p2)
     if ((r = key_compare (cp1+l+1, cp2+l+1)))
         return r;
     return cp1[l] - cp2[l];
+}
+
+struct iscz_code_info {
+    struct it_key key;
+};
+
+static void *iscz_code_start (int mode)
+{
+    struct iscz_code_info *p = xmalloc (sizeof(*p));
+    p->key.sysno = 0;
+    p->key.seqno = 0;
+    return p;
+}
+
+static void iscz_code_stop (int mode, void *p)
+{
+    xfree (p);
+}
+
+void iscz_encode_int (unsigned d, char **dst)
+{
+    unsigned char *bp = (unsigned char*) *dst;
+
+    if (d <= 63)
+        *bp++ = d;
+    else if (d <= 16383)
+    {
+        *bp++ = 64 + (d>>8);
+       *bp++ = d & 255;
+    }
+    else if (d <= 4194303)
+    {
+        *bp++ = 128 + (d>>16);
+        *bp++ = (d>>8) & 255;
+        *bp++ = d & 255;
+    }
+    else
+    {
+        *bp++ = 192 + (d>>24);
+        *bp++ = (d>>16) & 255;
+        *bp++ = (d>>8) & 255;
+        *bp++ = d & 255;
+    }
+    *dst = (char *) bp;
+}
+
+int isxz_decode_int (unsigned char **src)
+{
+    unsigned c = *(*src)++;
+    switch (c & 192)
+    {
+    case 0:
+        return c;
+    case 64:
+        return ((c & 63) << 8) + *(*src)++;
+    case 128:
+        c = ((c & 63) << 8) + *(*src)++;
+        c = (c << 8) + *(*src)++;
+        return c;
+    }
+    c = ((c & 63) << 8) + *(*src)++;
+    c = (c << 8) + *(*src)++;
+    c = (c << 8) + *(*src)++;
+    return c;
+}
+
+static void iscz_code_item (int mode, void *vp, char **dst, char **src)
+{
+    struct iscz_code_info *p = vp;
+    struct it_key tkey;
+    int d;
+
+    if (mode == ISAMC_ENCODE)
+    {
+        memcpy (&tkey, *src, sizeof(struct it_key));
+        d = tkey.sysno - p->key.sysno;
+        iscz_encode_int (d, dst);
+        if (d)
+        {
+            p->key.sysno = tkey.sysno;
+            p->key.seqno = 0;
+        }
+        iscz_encode_int (tkey.seqno - p->key.seqno, dst);
+        p->key.seqno = tkey.seqno;
+        (*src) += sizeof(struct it_key);
+    }
+    else
+    {
+        d = isxz_decode_int ((unsigned char **) src);
+        if (d)
+        {
+            p->key.sysno += d;
+            p->key.seqno = 0;
+        }
+        d = isxz_decode_int ((unsigned char **) src);
+        p->key.seqno += d;
+        memcpy (*dst, &p->key, sizeof(struct it_key));
+        (*dst) += sizeof(struct it_key);
+    }
+}
+
+ISAMC_M key_isamc_m (void)
+{
+    static ISAMC_M me = NULL;
+
+    if (me)
+        return me;
+
+    me = isc_getmethod ();
+
+    me->compare_item = key_compare;
+
+    me->code_start = iscz_code_start;
+    me->code_item = iscz_code_item;
+    me->code_stop = iscz_code_stop;
+
+    me->debug = atoi(res_get_def (common_resource, "isamcDebug", "0"));
+
+    logf (LOG_LOG, "ISAMC system active");
+    return me;
 }
 

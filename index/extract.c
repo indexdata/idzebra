@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.62  1996-10-11 10:57:01  adam
+ * Revision 1.63  1996-10-29 14:09:39  adam
+ * Use of cisam system - enabled if setting isamc is 1.
+ *
+ * Revision 1.62  1996/10/11 10:57:01  adam
  * New module recctrl. Used to manage records (extract/retrieval).
  * Several files have been moved to the recctrl sub directory.
  *
@@ -227,7 +230,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <alexutil.h>
 #include <recctrl.h>
 #include "index.h"
 
@@ -264,6 +266,8 @@ static void logRecord (int showFlag)
 
 void key_open (int mem)
 {
+    if (!mem)
+        mem = atoi(res_get_def (common_resource, "memMax", "4"))*1024*1024;
     if (mem < 50000)
         mem = 50000;
     key_buf = xmalloc (mem);
@@ -358,7 +362,7 @@ void key_flush (void)
     key_file_no++;
     logf (LOG_LOG, "sorting section %d", key_file_no);
     qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_qsort_compare);
-    sprintf (out_fname, TEMP_FNAME, key_file_no);
+    getFnameTmp (out_fname, key_file_no);
 
     if (!(outf = fopen (out_fname, "w")))
     {

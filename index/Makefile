@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.40 1996-10-11 10:56:58 adam Exp $
+# $Id: Makefile,v 1.41 1996-10-29 14:09:36 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -20,7 +20,7 @@ TPROG3=zebrasrv
 DEFS=$(INCLUDE)
 O1 = main.o dir.o dirs.o trav.o extract.o kinput.o kcompare.o \
  symtab.o recindex.o recstat.o lockutil.o lockidx.o \
- zinfo.o invstat.o keychars.o 
+ zinfo.o invstat.o keychars.o
 O2 = kdump.o
 O3 = zserver.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
  zlogs.o lockutil.o locksrv.o zinfo.o keychars.o
@@ -28,22 +28,22 @@ CPP=$(CC) -E
 
 all: $(TPROG1) $(TPROG2) $(TPROG3)
 
-$(TPROG1): $(O1) ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
-		../lib/bfile.a ../lib/dfa.a ../lib/alexutil.a 
+$(TPROG1): $(O1) ../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
+		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a 
 	$(CC) $(CFLAGS) -o $(TPROG1) $(O1) \
-		../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
-		../lib/bfile.a ../lib/dfa.a ../lib/alexutil.a \
+		../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
+		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
 		$(YAZLIB)
 
 $(TPROG2): $(O2)
-	$(CC) $(CFLAGS) -o $(TPROG2) $(O2) ../lib/alexutil.a $(YAZLIB)
+	$(CC) $(CFLAGS) -o $(TPROG2) $(O2) ../lib/zebrautl.a $(YAZLIB)
 
 $(TPROG3): $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
-		../lib/bfile.a ../lib/dfa.a ../lib/alexutil.a
+		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a
 	$(CC) $(CFLAGS) -o $(TPROG3) $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
-		../lib/bfile.a ../lib/dfa.a ../lib/alexutil.a \
+		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
 		$(YAZLIB) $(OSILIB) $(NETLIB) -lm
 
 .c.o:

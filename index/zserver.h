@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.20  1996-06-04 10:19:02  adam
+ * Revision 1.21  1996-10-29 14:09:58  adam
+ * Use of cisam system - enabled if setting isamc is 1.
+ *
+ * Revision 1.20  1996/06/04 10:19:02  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.19  1996/05/14  11:34:01  adam
@@ -92,8 +95,9 @@ typedef struct {
     int registerState; /* 0 (no commit pages), 1 (use commit pages) */
     time_t registerChange;
     ZServerSet *sets;
-    Dict wordDict;
-    ISAM wordIsam;
+    Dict dict;
+    ISAM isam;
+    ISAMC isamc;
     Records records;
     int errCode;
     char *errString;

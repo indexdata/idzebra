@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.40  1996-06-04 10:19:02  adam
+ * Revision 1.41  1996-10-29 14:09:56  adam
+ * Use of cisam system - enabled if setting isamc is 1.
+ *
+ * Revision 1.40  1996/06/04 10:19:02  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.39  1996/05/31  09:07:05  quinn
@@ -189,18 +192,32 @@ static int register_lock (ZServerInfo *zi)
     if (zi->records)
     {
         zebTargetInfo_close (zi->zti, 0);
-        dict_close (zi->wordDict);
-        is_close (zi->wordIsam);
+        dict_close (zi->dict);
+        if (zi->isam)
+            is_close (zi->isam);
+        if (zi->isamc)
+            isc_close (zi->isamc);
         rec_close (&zi->records);
     }
     bf_cache (state);
     zi->registerState = state;
     zi->records = rec_open (0);
-    if (!(zi->wordDict = dict_open (FNAME_WORD_DICT, 40, 0)))
+    if (!(zi->dict = dict_open (FNAME_DICT, 40, 0)))
         return -1;
-    if (!(zi->wordIsam = is_open (FNAME_WORD_ISAM, key_compare, 0,
+    zi->isam = NULL;
+    zi->isamc = NULL;
+    if (res_get_match (common_resource, "isam", "c", NULL))
+    {
+        if (!(zi->isamc = isc_open (FNAME_ISAMC, 0, key_isamc_m())))
+            return -1;
+
+    }
+    else
+    {
+        if (!(zi->isam = is_open (FNAME_ISAM, key_compare, 0,
                                   sizeof (struct it_key))))
-        return -1;
+            return -1;
+    }
     zi->zti = zebTargetInfo_open (zi->records, 0);
     init_charmap ();
     return 0;
@@ -246,16 +263,14 @@ bend_initresult *bend_init (bend_initrequest *q)
             logf (LOG_FATAL, "Cannot open resource `%s'", sob->configname);
             exit (1);
         }
-        bf_lockDir (res_get (common_resource, "lockPath"));
-        data1_tabpath = res_get(common_resource, "profilePath");
+        bf_lockDir (res_get (common_resource, "lockDir"));
+        data1_set_tabpath (res_get(common_resource, "profilePath"));
     }
     server_info.sets = NULL;
     server_info.registerState = -1;  /* trigger open of registers! */
     server_info.registerChange = 0;
 
     server_info.records = NULL;
-    server_info.wordDict = NULL;
-    server_info.wordIsam = NULL;
     server_info.odr = odr_createmem (ODR_ENCODE);
     return &r;
 }
@@ -475,8 +490,11 @@ void bend_close (void *handle)
 {
     if (server_info.records)
     {
-        dict_close (server_info.wordDict);
-        is_close (server_info.wordIsam);
+        dict_close (server_info.dict);
+        if (server_info.isam)
+            is_close (server_info.isam);
+        if (server_info.isamc)
+            isc_close (server_info.isamc);
         rec_close (&server_info.records);
         register_unlock (&server_info);
     }
