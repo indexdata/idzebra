@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.18 2003-02-28 12:33:39 oleg Exp $
+/* $Id: marcread.c,v 1.19 2003-03-05 11:12:18 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -525,8 +525,16 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf, char *buf, d
     if (!pf->list && subfield->which == DATA1N_data)
     {
 	int len;
-
-	strcat(buf, get_data(field, &len));
+	
+	if (pf->interval.start == -1)
+	{
+	    strcat(buf, get_data(field, &len));
+	}
+	else
+	{
+	    strncat(buf, get_data(field, &len)+pf->interval.start,
+		pf->interval.end-pf->interval.start+1);
+	}
 #if MARCOMP_DEBUG
         logf(LOG_LOG, "cat_field(): got buffer {%s}", buf);
 #endif
