@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.65 2005-01-03 11:02:42 adam Exp $
+/* $Id: isamb.c,v 1.66 2005-01-13 11:55:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -58,7 +58,7 @@ struct ISAMB_head {
 /* CAT_NO: <= CAT_MAX */
 #define CAT_NO 4
 
-/* ISAMB_PTR_CODEC=1 var, =0 fixed */
+/* ISAMB_PTR_CODEC = 1 var, =0 fixed */
 #define ISAMB_PTR_CODEC 1
 
 struct ISAMB_cache_entry {
@@ -82,12 +82,12 @@ struct ISAMB_s {
 
     struct ISAMB_file *file;
     int no_cat;
-    int cache; /* 0=no cache, 1=use cache, -1=dummy isam (for testing only) */
+    int cache; /* 0 = no cache, 1 = use cache, -1 = dummy isam (for testing only) */
     int log_io;        /* log level for bf_read/bf_write calls */
     int log_freelist;  /* log level for freelist handling */
     zint skipped_numbers; /* on a leaf node */
     zint returned_numbers; 
-    zint skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1=higher etc */
+    zint skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1 = higher etc */
     zint accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
 };
 
@@ -116,7 +116,7 @@ struct ISAMB_PP_s {
     zint no_blocks;
     zint skipped_numbers; /* on a leaf node */
     zint returned_numbers; 
-    zint skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1=higher etc */
+    zint skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1 = higher etc */
     zint accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
     struct ISAMB_block **block;
     int scope;  /* on what level we forward */
@@ -181,9 +181,9 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
     isamb->log_io = 0;
     isamb->log_freelist = 0;
     isamb->cache = cache;
-    isamb->skipped_numbers=0;
-    isamb->returned_numbers=0;
-    for (i=0;i<ISAMB_MAX_LEVEL;i++)
+    isamb->skipped_numbers = 0;
+    isamb->returned_numbers = 0;
+    for (i = 0;i<ISAMB_MAX_LEVEL;i++)
       isamb->skipped_nodes[i]= isamb->accessed_nodes[i]=0;
 
     assert (cache == 0);
@@ -363,11 +363,11 @@ static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
 void isamb_close (ISAMB isamb)
 {
     int i;
-    for (i=0;isamb->accessed_nodes[i];i++)
-        yaz_log(YLOG_DEBUG,"isamb_close  level leaf-%d: "ZINT_FORMAT" read, "
+    for (i = 0;isamb->accessed_nodes[i];i++)
+        yaz_log(YLOG_DEBUG, "isamb_close  level leaf-%d: "ZINT_FORMAT" read, "
 			ZINT_FORMAT" skipped",
              i, isamb->accessed_nodes[i], isamb->skipped_nodes[i]);
-    yaz_log(YLOG_DEBUG,"isamb_close returned "ZINT_FORMAT" values, "
+    yaz_log(YLOG_DEBUG, "isamb_close returned "ZINT_FORMAT" values, "
 		   "skipped "ZINT_FORMAT,
          isamb->skipped_numbers, isamb->returned_numbers);
     for (i = 0; i<isamb->no_cat; i++)
@@ -1140,13 +1140,13 @@ ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level, int scope)
 
     pp->pos = pos;
     pp->level = 0;
-    pp->maxlevel=0;
+    pp->maxlevel = 0;
     pp->total_size = 0;
     pp->no_blocks = 0;
-    pp->skipped_numbers=0;
-    pp->returned_numbers=0;
-    pp->scope=scope;
-    for (i=0;i<ISAMB_MAX_LEVEL;i++)
+    pp->skipped_numbers = 0;
+    pp->returned_numbers = 0;
+    pp->scope = scope;
+    for (i = 0;i<ISAMB_MAX_LEVEL;i++)
         pp->skipped_nodes[i] = pp->accessed_nodes[i]=0;
     while (1)
     {
@@ -1164,7 +1164,7 @@ ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level, int scope)
         pp->accessed_nodes[pp->level]++; 
     }
     pp->block[pp->level+1] = 0;
-    pp->maxlevel=pp->level;
+    pp->maxlevel = pp->level;
     if (level)
         *level = pp->level;
     return pp;
@@ -1180,17 +1180,17 @@ void isamb_pp_close_x (ISAMB_PP pp, int *size, int *blocks)
     int i;
     if (!pp)
         return;
-    yaz_log(YLOG_DEBUG,"isamb_pp_close lev=%d returned "ZINT_FORMAT" values," 
+    yaz_log(YLOG_DEBUG, "isamb_pp_close lev=%d returned "ZINT_FORMAT" values, " 
 		    "skipped "ZINT_FORMAT,
         pp->maxlevel, pp->skipped_numbers, pp->returned_numbers);
-    for (i=pp->maxlevel;i>=0;i--)
-        if ( pp->skipped_nodes[i] || pp->accessed_nodes[i])
-            yaz_log(YLOG_DEBUG,"isamb_pp_close  level leaf-%d: "
+    for (i = pp->maxlevel;i>=0;i--)
+        if (pp->skipped_nodes[i] || pp->accessed_nodes[i])
+            yaz_log(YLOG_DEBUG, "isamb_pp_close  level leaf-%d: "
 			    ZINT_FORMAT" read, "ZINT_FORMAT" skipped", i,
                  pp->accessed_nodes[i], pp->skipped_nodes[i]);
     pp->isamb->skipped_numbers += pp->skipped_numbers;
     pp->isamb->returned_numbers += pp->returned_numbers;
-    for (i=pp->maxlevel;i>=0;i--)
+    for (i = pp->maxlevel;i>=0;i--)
     {
         pp->isamb->accessed_nodes[i] += pp->accessed_nodes[i];
         pp->isamb->skipped_nodes[i] += pp->skipped_nodes[i];
@@ -1267,7 +1267,7 @@ static void isamb_dump_r (ISAMB b, ISAMB_P pos, void (*pr)(const char *str),
 		isamb_dump_r(b, sub, pr, level+1);
 	    }		
 	}
-	close_block(b,p);
+	close_block(b, p);
     }
 }
 
@@ -1291,44 +1291,46 @@ static int isamb_pp_on_right_node(ISAMB_PP pp, int level, const void *untilbuf)
     const char *src;
     zint item_len;
     assert(level>=0);
-    if ( level == 0) {
+    if (level == 0)
+    {
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_on_right returning true for root");
+            yaz_log(YLOG_DEBUG, "isamb_pp_on_right returning true for root");
 #endif
         return 1; /* we can never skip the root node */
     }
     level--;
-    p=pp->block[level];
+    p = pp->block[level];
     assert(p->offset <= p->size);
-    if (p->offset < p->size )
+    if (p->offset < p->size)
     {
         assert(p->offset>0); 
-        src=p->bytes + p->offset;
+        src = p->bytes + p->offset;
         decode_ptr(&src, &item_len);
 #if ISAMB_DEBUG
-        (*pp->isamb->method->codec.log_item)(YLOG_DEBUG,untilbuf,"on_leaf: until");
-        (*pp->isamb->method->codec.log_item)(YLOG_DEBUG,src,"on_leaf: value");
+        (*pp->isamb->method->codec.log_item)(YLOG_DEBUG, untilbuf, "on_leaf: until");
+        (*pp->isamb->method->codec.log_item)(YLOG_DEBUG, src, "on_leaf: value");
 #endif
-        cmp=(*pp->isamb->method->compare_item)(untilbuf,src);
-        if (cmp<pp->scope) {  /* cmp<2 */
+        cmp=(*pp->isamb->method->compare_item)(untilbuf, src);
+        if (cmp<pp->scope)
+	{  /* cmp<2 */
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_on_right returning true "
-                            "cmp=%d lev=%d ofs=%d",cmp,level,p->offset);
+            yaz_log(YLOG_DEBUG, "isamb_pp_on_right returning true "
+                            "cmp=%d lev=%d ofs=%d", cmp, level, p->offset);
 #endif
             return 1; 
         }
         else {
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_on_right returning false "
-                            "cmp=%d lev=%d ofs=%d",cmp,level,p->offset);
+            yaz_log(YLOG_DEBUG, "isamb_pp_on_right returning false "
+                            "cmp=%d lev=%d ofs=%d", cmp, level, p->offset);
 #endif
             return 0; 
         }
     }
     else {
 #if ISAMB_DEBUG
-        yaz_log(YLOG_DEBUG,"isamb_pp_on_right at tail, looking higher "
-                        "lev=%d",level);
+        yaz_log(YLOG_DEBUG, "isamb_pp_on_right at tail, looking higher "
+                        "lev=%d", level);
 #endif
         return isamb_pp_on_right_node(pp, level, untilbuf);
     }
@@ -1341,15 +1343,16 @@ static int isamb_pp_read_on_leaf(ISAMB_PP pp, void *buf)
     const char *src;
     assert(pp);
     assert(buf);
-    if (p->offset == p->size) {
+    if (p->offset == p->size)
+    {
 #if ISAMB_DEBUG
-        yaz_log(YLOG_DEBUG,"isamb_pp_read_on_leaf returning 0 on node %d",p->pos);
+        yaz_log(YLOG_DEBUG, "isamb_pp_read_on_leaf returning 0 on node %d", p->pos);
 #endif
         return 0; /* at end of leaf */
     }
-    src=p->bytes + p->offset;
-    dst=buf;
-    (*pp->isamb->method->codec.decode)(p->decodeClientData,&dst, &src);
+    src = p->bytes + p->offset;
+    dst = buf;
+    (*pp->isamb->method->codec.decode)(p->decodeClientData, &dst, &src);
     p->offset = src - (char*) p->bytes;
 #if ISAMB_DEBUG
     (*pp->isamb->method->codec.log_item)(YLOG_DEBUG, buf, "read_on_leaf returning 1");
@@ -1361,16 +1364,18 @@ static int isamb_pp_read_on_leaf(ISAMB_PP pp, void *buf)
 static int isamb_pp_forward_on_leaf(ISAMB_PP pp, void *buf, const void *untilbuf)
 { /* forwards on the current leaf, returns 0 if not found */
     int cmp;
-    int skips=0;
-    while (1){
-        if (!isamb_pp_read_on_leaf(pp,buf))
+    int skips = 0;
+    while (1)
+    {
+        if (!isamb_pp_read_on_leaf(pp, buf))
             return 0;
         /* FIXME - this is an extra function call, inline the read? */
-        cmp=(*pp->isamb->method->compare_item)(untilbuf,buf);
-        if (cmp <pp->scope){  /* cmp<2  found a good one */
+        cmp=(*pp->isamb->method->compare_item)(untilbuf, buf);
+        if (cmp <pp->scope)
+	{  /* cmp<2  found a good one */
 #if ISAMB_DEBUG
             if (skips)
-                yaz_log(YLOG_DEBUG, "isam_pp_fwd_on_leaf skipped %d items",skips);
+                yaz_log(YLOG_DEBUG, "isam_pp_fwd_on_leaf skipped %d items", skips);
 #endif
             pp->returned_numbers++;
             return 1;
@@ -1390,7 +1395,7 @@ static int isamb_pp_climb_level(ISAMB_PP pp, ISAMB_P *pos)
     const char *src;
     zint item_len;
 #if ISAMB_DEBUG
-    yaz_log(YLOG_DEBUG,"isamb_pp_climb_level starting "
+    yaz_log(YLOG_DEBUG, "isamb_pp_climb_level starting "
                    "at level %d node %d ofs=%d sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
@@ -1399,7 +1404,7 @@ static int isamb_pp_climb_level(ISAMB_PP pp, ISAMB_P *pos)
     if (pp->level==0)
     {
 #if ISAMB_DEBUG
-        yaz_log(YLOG_DEBUG,"isamb_pp_climb_level returning 0 at root");
+        yaz_log(YLOG_DEBUG, "isamb_pp_climb_level returning 0 at root");
 #endif
         return 0;
     }
@@ -1407,32 +1412,33 @@ static int isamb_pp_climb_level(ISAMB_PP pp, ISAMB_P *pos)
     close_block(pp->isamb, pp->block[pp->level]);
     pp->block[pp->level]=0;
     (pp->level)--;
-    p=pp->block[pp->level];
+    p = pp->block[pp->level];
 #if ISAMB_DEBUG
-    yaz_log(YLOG_DEBUG,"isamb_pp_climb_level climbed to level %d node %d ofs=%d",
+    yaz_log(YLOG_DEBUG, "isamb_pp_climb_level climbed to level %d node %d ofs=%d",
                     pp->level, p->pos, p->offset);
 #endif
     assert(!p->leaf);
     assert(p->offset <= p->size);
-    if (p->offset == p->size ) {
+    if (p->offset == p->size)
+    {
         /* we came from the last pointer, climb on */
-        if (!isamb_pp_climb_level(pp,pos))
+        if (!isamb_pp_climb_level(pp, pos))
             return 0;
-        p=pp->block[pp->level];
+        p = pp->block[pp->level];
     }
     else
     {
         /* skip the child we just came from */
 #if ISAMB_DEBUG
-        yaz_log(YLOG_DEBUG,"isam_pp_climb_level: skipping lev=%d ofs=%d sz=%d", 
+        yaz_log(YLOG_DEBUG, "isam_pp_climb_level: skipping lev=%d ofs=%d sz=%d", 
                         pp->level, p->offset, p->size);
 #endif
-        assert (p->offset < p->size );
-        src=p->bytes + p->offset;
+        assert (p->offset < p->size);
+        src = p->bytes + p->offset;
         decode_ptr(&src, &item_len);
         src += item_len;
         decode_ptr(&src, pos);
-        p->offset=src - (char *)p->bytes;
+        p->offset = src - (char *)p->bytes;
             
     }
     return 1;
@@ -1448,49 +1454,51 @@ static zint isamb_pp_forward_unode(ISAMB_PP pp, zint pos, const void *untilbuf)
   /* parent node, but that gets messy. Presumably the cost is */
   /* pretty low anyway */
     struct ISAMB_block *p = pp->block[pp->level];
-    const char *src=p->bytes + p->offset;
+    const char *src = p->bytes + p->offset;
     zint item_len;
     int cmp;
     zint nxtpos;
 #if ISAMB_DEBUG
-    int skips=0;
-    yaz_log(YLOG_DEBUG,"isamb_pp_forward_unode starting "
+    int skips = 0;
+    yaz_log(YLOG_DEBUG, "isamb_pp_forward_unode starting "
                    "at level %d node %d ofs=%di sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
     assert(!p->leaf);
     assert(p->offset <= p->size);
-    if (p->offset == p->size) {
+    if (p->offset == p->size)
+    {
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_forward_unode returning at end "
+            yaz_log(YLOG_DEBUG, "isamb_pp_forward_unode returning at end "
                    "at level %d node %d ofs=%di sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
         return pos; /* already at the end of it */
     }
-    while(p->offset < p->size) {
-        decode_ptr(&src,&item_len);
-        cmp=(*pp->isamb->method->compare_item)(untilbuf,src);
+    while(p->offset < p->size)
+    {
+        decode_ptr(&src, &item_len);
+        cmp=(*pp->isamb->method->compare_item)(untilbuf, src);
         src+=item_len;
-        decode_ptr(&src,&nxtpos);
+        decode_ptr(&src, &nxtpos);
         if (cmp<pp->scope) /* cmp<2 */
         {
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_forward_unode returning a hit "
+            yaz_log(YLOG_DEBUG, "isamb_pp_forward_unode returning a hit "
                    "at level %d node %d ofs=%d sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
             return pos;
         } /* found one */
-        pos=nxtpos;
-        p->offset=src-(char*)p->bytes;
+        pos = nxtpos;
+        p->offset = src-(char*)p->bytes;
         (pp->skipped_nodes[pp->maxlevel - pp->level -1])++;
 #if ISAMB_DEBUG
         skips++;
 #endif
     }
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_forward_unode returning at tail "
+            yaz_log(YLOG_DEBUG, "isamb_pp_forward_unode returning at tail "
                    "at level %d node %d ofs=%d sz=%d skips=%d",
                     pp->level, p->pos, p->offset, p->size, skips);
 #endif
@@ -1504,32 +1512,32 @@ static void isamb_pp_descend_to_leaf(ISAMB_PP pp, ISAMB_P pos, const void *until
     const char *src;
     assert(!p->leaf);
 #if ISAMB_DEBUG
-    yaz_log(YLOG_DEBUG,"isamb_pp_descend_to_leaf "
+    yaz_log(YLOG_DEBUG, "isamb_pp_descend_to_leaf "
                    "starting at lev %d node %d ofs=%d lf=%d u=%p", 
                    pp->level, p->pos, p->offset, p->leaf, untilbuf);
 #endif
     if (untilbuf)
-        pos=isamb_pp_forward_unode(pp,pos,untilbuf);
+        pos = isamb_pp_forward_unode(pp, pos, untilbuf);
     ++(pp->level);
     assert(pos);
-    p=open_block(pp->isamb, pos);
+    p = open_block(pp->isamb, pos);
     pp->block[pp->level]=p;
     ++(pp->accessed_nodes[pp->maxlevel-pp->level]);
     ++(pp->no_blocks);
 #if ISAMB_DEBUG
-    yaz_log(YLOG_DEBUG,"isamb_pp_descend_to_leaf "
+    yaz_log(YLOG_DEBUG, "isamb_pp_descend_to_leaf "
                    "got lev %d node %d lf=%d", 
                    pp->level, p->pos, p->leaf);
 #endif
     if (p->leaf)
         return;
-    assert (p->offset==0 );
-    src=p->bytes + p->offset;
+    assert (p->offset==0);
+    src = p->bytes + p->offset;
     decode_ptr(&src, &pos);
-    p->offset=src-(char*)p->bytes;
-    isamb_pp_descend_to_leaf(pp,pos,untilbuf);
+    p->offset = src-(char*)p->bytes;
+    isamb_pp_descend_to_leaf(pp, pos, untilbuf);
 #if ISAMB_DEBUG
-    yaz_log(YLOG_DEBUG,"isamb_pp_descend_to_leaf "
+    yaz_log(YLOG_DEBUG, "isamb_pp_descend_to_leaf "
                    "returning at lev %d node %d ofs=%d lf=%d", 
                    pp->level, p->pos, p->offset, p->leaf);
 #endif
@@ -1538,9 +1546,9 @@ static void isamb_pp_descend_to_leaf(ISAMB_PP pp, ISAMB_P pos, const void *until
 static int isamb_pp_find_next_leaf(ISAMB_PP pp)
 { /* finds the next leaf by climbing up and down */
     ISAMB_P pos;
-    if (!isamb_pp_climb_level(pp,&pos))
+    if (!isamb_pp_climb_level(pp, &pos))
         return 0;
-    isamb_pp_descend_to_leaf(pp, pos,0);
+    isamb_pp_descend_to_leaf(pp, pos, 0);
     return 1;
 }
 
@@ -1549,20 +1557,20 @@ static int isamb_pp_climb_desc(ISAMB_PP pp,  const void *untilbuf)
     ISAMB_P pos;
 #if ISAMB_DEBUG
     struct ISAMB_block *p = pp->block[pp->level];
-    yaz_log(YLOG_DEBUG,"isamb_pp_climb_desc starting "
+    yaz_log(YLOG_DEBUG, "isamb_pp_climb_desc starting "
                    "at level %d node %d ofs=%d sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
-    if (!isamb_pp_climb_level(pp,&pos))
+    if (!isamb_pp_climb_level(pp, &pos))
         return 0;
     /* see if it would pay to climb one higher */
     if (!isamb_pp_on_right_node(pp, pp->level, untilbuf))
-        if (!isamb_pp_climb_level(pp,&pos))
+        if (!isamb_pp_climb_level(pp, &pos))
             return 0;
-    isamb_pp_descend_to_leaf(pp, pos,untilbuf);
+    isamb_pp_descend_to_leaf(pp, pos, untilbuf);
 #if ISAMB_DEBUG
     p = pp->block[pp->level];
-    yaz_log(YLOG_DEBUG,"isamb_pp_climb_desc done "
+    yaz_log(YLOG_DEBUG, "isamb_pp_climb_desc done "
                    "at level %d node %d ofs=%d sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
@@ -1574,37 +1582,41 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
 #if ISAMB_DEBUG
     struct ISAMB_block *p = pp->block[pp->level];
     assert(p->leaf);
-    yaz_log(YLOG_DEBUG,"isamb_pp_forward starting "
+    yaz_log(YLOG_DEBUG, "isamb_pp_forward starting "
                    "at level %d node %d ofs=%d sz=%d u=%p sc=%d",
-                    pp->level, p->pos, p->offset, p->size,untilbuf, scope);
+                    pp->level, p->pos, p->offset, p->size, untilbuf, scope);
 #endif
-    if (untilbuf) {
-        if (isamb_pp_forward_on_leaf( pp, buf, untilbuf)) {
+    if (untilbuf)
+    {
+        if (isamb_pp_forward_on_leaf(pp, buf, untilbuf))
+	{
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_forward (f) returning (A) "
+            yaz_log(YLOG_DEBUG, "isamb_pp_forward (f) returning (A) "
                    "at level %d node %d ofs=%d sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
             return 1;
         }
-        if (! isamb_pp_climb_desc( pp, untilbuf)) {
+        if (! isamb_pp_climb_desc(pp, untilbuf))
+	{
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_forward (f) returning notfound (B) "
+            yaz_log(YLOG_DEBUG, "isamb_pp_forward (f) returning notfound (B) "
                    "at level %d node %d ofs=%d sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
             return 0; /* could not find a leaf */
         }
-        do{
-            if (isamb_pp_forward_on_leaf( pp, buf, untilbuf)) {
+        do {
+            if (isamb_pp_forward_on_leaf(pp, buf, untilbuf))
+	    {
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_forward (f) returning (C) "
+            yaz_log(YLOG_DEBUG, "isamb_pp_forward (f) returning (C) "
                    "at level %d node %d ofs=%d sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
                 return 1;
             }
-        }while ( isamb_pp_find_next_leaf(pp));
+        } while (isamb_pp_find_next_leaf(pp));
         return 0; /* could not find at all */
     }
     else { /* no untilbuf, a straight read */
@@ -1612,17 +1624,19 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
          * directly into the pp_read */
         /* keeping here now, to keep same
          * interface as the old fwd */
-        if (isamb_pp_read_on_leaf( pp, buf)) {
+        if (isamb_pp_read_on_leaf(pp, buf))
+	{
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_forward (read) returning (D) "
+            yaz_log(YLOG_DEBUG, "isamb_pp_forward (read) returning (D) "
                    "at level %d node %d ofs=%d sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
             return 1;
         }
-        if (isamb_pp_find_next_leaf(pp)) {
+        if (isamb_pp_find_next_leaf(pp))
+	{
 #if ISAMB_DEBUG
-            yaz_log(YLOG_DEBUG,"isamb_pp_forward (read) returning (E) "
+            yaz_log(YLOG_DEBUG, "isamb_pp_forward (read) returning (E) "
                    "at level %d node %d ofs=%d sz=%d",
                     pp->level, p->pos, p->offset, p->size);
 #endif
@@ -1633,7 +1647,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
     }
 } /* isam_pp_forward (new version) */
 
-void isamb_pp_pos( ISAMB_PP pp, double *current, double *total )
+void isamb_pp_pos(ISAMB_PP pp, double *current, double *total)
 { /* return an estimate of the current position and of the total number of */
   /* occureences in the isam tree, based on the current leaf */
     struct ISAMB_block *p = pp->block[pp->level];
