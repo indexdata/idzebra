@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.58 2004-06-01 14:50:59 heikki Exp $
+/* $Id: kinput.c,v 1.59 2004-06-15 10:56:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -180,7 +180,7 @@ int key_file_decode (struct key_file *f)
         d = ((c&63) << 8) + (key_file_getc (f) & 0xff);
         d = (d << 8) + (key_file_getc (f) & 0xff);
         break;
-    case 192:
+    default: /* 192 */
         d = ((c&63) << 8) + (key_file_getc (f) & 0xff);
         d = (d << 8) + (key_file_getc (f) & 0xff);
         d = (d << 8) + (key_file_getc (f) & 0xff);
@@ -363,13 +363,14 @@ static void key_heap_insert (struct heap_info *hi, const char *buf, int nbytes,
 static int heap_read_one_raw (struct heap_info *hi, char *name, char *key)
 {
     ZebraHandle zh=hi->zh;
-    int ptr_i = zh->reg->ptr_i;
+    size_t ptr_i = zh->reg->ptr_i;
     char *cp;
     if (!ptr_i)
         return 0;
     --(zh->reg->ptr_i);
     cp=(zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
-    logf (LOG_DEBUG, " raw: i=%d top=%d cp=%p", ptr_i, zh->reg->ptr_top,cp);
+    logf (LOG_DEBUG, " raw: i=%ld top=%ld cp=%p", (long) ptr_i,
+	  (long) zh->reg->ptr_top, cp);
     strcpy(name, cp);
     memcpy(key, cp+strlen(name)+1, KEY_SIZE);
     hi->no_iterations++;
@@ -903,7 +904,7 @@ void progressFunc (struct key_file *keyp, void *info)
 
 void zebra_index_merge (ZebraHandle zh)
 {
-    struct key_file **kf;
+    struct key_file **kf = 0;
     char rbuf[1024];
     int i, r;
     struct heap_info *hi;
