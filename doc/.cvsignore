@@ -6,5 +6,9 @@ zebra.out
 zebra.log
 zebra.aux
 zebra.pdf
+manpage.links
+manpage.refs
+zebraidx.1
+zebrasrv.8
 *.html
 *.dsl
