@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.6 1995-11-28 16:41:48 adam Exp $
+  $Id: zebra.sgml,v 1.7 1995-11-28 16:47:24 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.6 $
+<date>$Revision: 1.7 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -530,7 +530,7 @@ extracted from the record. The syntax of this token is
  <tt/(/ <em/set/ <tt/,/ <em/use/ <tt/)/, where <em/set/ is the
 attribute set ordinal number and <em/use/ is the use value of the attribute.
 <tag>System variable</tag> The system variables are preceded by
-<tt>$</tt> and immediately followed by the system variable name, which
+<verb>$</verb> and immediately followed by the system variable name, which
 may one of
  <descrip>
  <tag>group</tag> Group name.
@@ -614,11 +614,6 @@ This is useful if you don't happen to know what attributes your client sends.
 
 Note that the server doesn't support the static mode (-S). 
 
-<sect1>How the server handles queries
-<p>
-What elements of Bib-1 are supported and where are result sets
-stored.
-
 <sect>License
 
 <p>
@@ -693,6 +688,5 @@ Zebra, n., any of several horselike, African mammals of the genus Equus,
 having a characteristic pattern of black or dark-brown stripes on
 a whitish background.
 </it>
-<sect>References
 
 </article>
