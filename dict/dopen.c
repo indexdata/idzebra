@@ -10,6 +10,7 @@ static void common_init (Dict_BFile bf, int block_size, int cache)
 {
     int i;
 
+    bf->block_size = block_size;
     bf->cache = cache;
     bf->hash_size = 31;
 
@@ -48,6 +49,8 @@ Dict_BFile dict_bf_open (const char *name, int block_size, int cache, int rw)
 
     dbf = xmalloc (sizeof(*dbf));
     dbf->bf = bf_open (name, block_size, rw);
+    if (!dbf->bf)
+        return NULL;
     common_init (dbf, block_size, cache);
     return dbf;
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: close.c,v $
- * Revision 1.3  1994-08-18 12:40:52  adam
+ * Revision 1.4  1994-09-01 17:44:06  adam
+ * depend include change.
+ * CVS ----------------------------------------------------------------------
+ *
+ * Revision 1.3  1994/08/18  12:40:52  adam
  * Some development of dictionary. Not finished at all!
  *
  * Revision 1.2  1994/08/17  13:32:19  adam
@@ -25,7 +29,14 @@
 int dict_close (Dict dict)
 {
     assert (dict);
-    
+
+    if (dict->rw)
+    {
+        void *head_buf;
+        dict_bf_readp (dict->dbf, 0, &head_buf);
+        memcpy (head_buf, &dict->head, sizeof(dict->head));
+        dict_bf_touch (dict->dbf, 0);        
+    }
     dict_bf_close (dict->dbf);
     xfree (dict);
     return 0;

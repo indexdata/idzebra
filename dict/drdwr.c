@@ -41,7 +41,7 @@ static void release_block (Dict_BFile bf, struct Dict_file_block *p)
     if (p->lru_next)
         p->lru_next->lru_prev = p->lru_prev;
     else
-        bf->lru_back = p->lru_prev;
+        bf->lru_front = p->lru_prev;
 
     /* remove from hash chain */
     *p->h_prev = p->h_next;
@@ -61,7 +61,9 @@ void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush)
     {
         p = bf->lru_back;
         if (p->dirty)
+        {
             bf_write (bf->bf, p->no, 0, 0, p->data);
+        }
         release_block (bf, p);
     }
 }
@@ -145,27 +147,27 @@ int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
     return i;
 }
 
-int dict_bf_newp (Dict_BFile bf, int no, void **bufp)
+int dict_bf_newp (Dict_BFile dbf, int no, void **bufp)
 {
     struct Dict_file_block *p;
-    if (!(p = find_block (bf, no)))
-        p = alloc_block (bf, no);
+    if (!(p = find_block (dbf, no)))
+        p = alloc_block (dbf, no);
     else
-        move_to_front (bf, p);
+        move_to_front (dbf, p);
     *bufp = p->data;
-    memset (p->data, 0, bf->bf->block_size);
+    memset (p->data, 0, dbf->block_size);
     p->dirty = 1;
-#if 0
+#if 1
     printf ("bf_newp of %d:", no);
-    pr_lru (bf);
+    pr_lru (dbf);
 #endif
     return 1;
 }
 
-int dict_bf_touch (Dict_BFile bf, int no)
+int dict_bf_touch (Dict_BFile dbf, int no)
 {
     struct Dict_file_block *p;
-    if ((p = find_block (bf, no)))
+    if ((p = find_block (dbf, no)))
     {
         p->dirty = 1;
         return 0;

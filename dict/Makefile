@@ -1,12 +1,12 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.3 1994-08-18 08:21:06 quinn Exp $
+# $Id: Makefile,v 1.4 1994-09-01 17:44:05 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
 TPROG=dicttest
-CFLAGS=-g -Wall
+CFLAGS=-g -Wall -pedantic
 DEFS=$(INCLUDE)
 LIB=../lib/dict.a 
 PO = dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o 
@@ -15,7 +15,7 @@ CPP=cc -E
 all: $(LIB)
 
 $(TPROG): $(TPROG).o $(LIB) 
-	$(CC) -o $(TPROG) $(TPROG).o $(LIB) ../lib/bfile.a ../lib/util.a
+	$(CC) $(CFLAGS) -o $(TPROG) $(TPROG).o $(LIB) ../lib/bfile.a ../lib/util.a
 
 $(LIB): $(PO)
 	rm -f $(LIB)
@@ -31,6 +31,6 @@ clean:
 dep depend:
 	$(CPP) $(INCLUDE) -M *.c >.depend
 
-#ifeq (.depend,$(wildcard .depend))
+ifeq (.depend,$(wildcard .depend))
 include .depend
-#endif
+endif

@@ -26,6 +26,6 @@ clean:
 dep depend:
 	$(CPP) $(INCLUDE) -M *.c >.depend
 
-#ifeq (.depend,$(wildcard .depend))
+ifeq (.depend,$(wildcard .depend))
 include .depend
-#endif
+endif
