@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.4  1995-09-08 14:52:27  adam
+ * Revision 1.5  1995-09-11 13:09:34  adam
+ * More work on relevance feedback.
+ *
+ * Revision 1.4  1995/09/08  14:52:27  adam
  * Minor changes. Dictionary is lower case now.
  *
  * Revision 1.3  1995/09/07  13:58:36  adam
@@ -31,6 +34,18 @@
 
 #include "index.h"
 
+void key_logdump (int logmask, const void *p)
+{
+    struct it_key key;
+
+    memcpy (&key, p, sizeof(key));
+#if IT_KEY_HAVE_SEQNO
+    logf (logmask, "%7d s=%-3d", key.sysno, key.seqno);
+#else
+    logf (logmask, "%7d f=%-3d", key.sysno, key.freq);
+#endif
+}
+
 int key_compare (const void *p1, const void *p2)
 {
     struct it_key i1, i2;
@@ -43,6 +58,7 @@ int key_compare (const void *p1, const void *p2)
         else
             return -2;
     }
+#if IT_KEY_HAVE_SEQNO
     if (i1.seqno != i2.seqno)
     {
         if (i1.seqno > i2.seqno)
@@ -50,6 +66,15 @@ int key_compare (const void *p1, const void *p2)
         else
             return -1;
     }
+#else
+    if (i1.freq != i2.freq)
+    {
+        if (i1.freq > i2.freq)
+            return 1;
+        else
+            return -1;
+    }
+#endif
 #if IT_KEY_HAVE_FIELD
     if (i1.field != i2.field)
     {

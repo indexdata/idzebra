@@ -4,12 +4,17 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.1  1995-09-08 14:52:42  adam
+ * Revision 1.2  1995-09-11 13:09:41  adam
+ * More work on relevance feedback.
+ *
+ * Revision 1.1  1995/09/08  14:52:42  adam
  * Work on relevance feedback.
  *
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include <assert.h>
 
 #include <isam.h>
@@ -60,26 +65,90 @@ struct rset_rel_rfd {
 
 static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 {
-    char *isam_buf;
+    char **isam_buf;
+    char *isam_tmp_buf;
     int  *isam_r;
+    int  *max_tf;
     ISPT *isam_pt;
+    double *wgt;
     int i;
 
-    isam_buf = xmalloc (info->key_size * parms->no_isam_positions);
+    logf (LOG_DEBUG, "relevance");
+    isam_buf = xmalloc (parms->no_isam_positions * sizeof(*isam_buf));
     isam_r = xmalloc (sizeof (*isam_r) * parms->no_isam_positions);
     isam_pt = xmalloc (sizeof (*isam_pt) * parms->no_isam_positions);
+    isam_tmp_buf = xmalloc (info->key_size);
+    max_tf = xmalloc (sizeof (*max_tf) * parms->no_isam_positions);
+    wgt = xmalloc (sizeof (*wgt) * parms->no_isam_positions);
 
     for (i = 0; i<parms->no_isam_positions; i++)
     {
+        isam_buf[i] = xmalloc (info->key_size);
         isam_pt[i] = is_position (parms->is, parms->isam_positions[i]);
-        isam_r[i] = is_readkey (isam_pt[i], isam_buf + i*info->key_size);
+        max_tf [i] = is_numkeys (isam_pt[i]);
+        isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
+        logf (LOG_DEBUG, "max tf %d = %d", i, max_tf[i]);
     }
+    while (1)
+    {
+        int min = -1, i;
+        double length, similarity;
 
+        /* find min with lowest sysno */
+        for (i = 0; i<parms->no_isam_positions; i++)
+            if (isam_r[i] && 
+               (min < 0 || (*parms->cmp)(isam_buf[i], isam_buf[min]) < 1))
+                min = i;
+        if (min < 0)
+            break;
+        memcpy (isam_tmp_buf, isam_buf[min], info->key_size);
+        logf (LOG_LOG, "calc rel for");
+        key_logdump (LOG_LOG, isam_tmp_buf);
+        /* calculate for all with those sysno */
+        length = 0.0;
+        for (i = 0; i<parms->no_isam_positions; i++)
+        {
+            int r;
+
+            if (isam_r[i])
+                r = (*parms->cmp)(isam_buf[i], isam_tmp_buf);
+            else 
+                r = 2;
+            if (r > 1 || r < -1)
+                wgt[i] = 0.0;
+            else
+            {
+                int tf = 0;
+                do
+                {
+                    tf++;
+                    isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
+                } while (isam_r[i] && 
+                         (*parms->cmp)(isam_buf[i], isam_tmp_buf) <= 1);
+                logf (LOG_DEBUG, "tf%d = %d", i, tf);
+                wgt[i] = 0.5+tf*0.5/max_tf[i];
+                length += wgt[i] * wgt[i];
+            }
+        }
+        /* calculate relevance value */
+        length = sqrt (length);
+        similarity = 0.0;
+        for (i = 0; i<parms->no_isam_positions; i++)
+             similarity += wgt[i]/length;
+        logf (LOG_LOG, " %f", similarity);
+        /* if value is in the top score, then save it - don't emit yet */
+    }
     for (i = 0; i<parms->no_isam_positions; i++)
+    {
         is_pt_free (isam_pt[i]);
+        xfree (isam_buf[i]);
+    }
+    xfree (max_tf);
+    xfree (isam_tmp_buf);
     xfree (isam_buf);
     xfree (isam_r);
     xfree (isam_pt);
+    xfree (wgt);
 }
 
 static rset_control *r_create (const struct rset_control *sel, void *parms)

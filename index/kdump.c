@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.4  1995-09-08 14:52:27  adam
+ * Revision 1.5  1995-09-11 13:09:35  adam
+ * More work on relevance feedback.
+ *
+ * Revision 1.4  1995/09/08  14:52:27  adam
  * Minor changes. Dictionary is lower case now.
  *
  * Revision 1.3  1995/09/06  16:11:17  adam
@@ -85,8 +88,14 @@ int main (int argc, char **argv)
         struct it_key k;
 
         memcpy (&k, key_info+1, sizeof(k));
-        printf ("%7d op=%d s=%-3d %s\n", k.sysno, *key_info, k.seqno,
+#if IT_KEY_HAVE_SEQNO
+        printf ("%7d op=%d s=%-5d %s\n", k.sysno, *key_info, k.seqno,
                 key_string);
+#else
+        printf ("%7d op=%d f=%-3d %s\n", k.sysno, *key_info, k.freq,
+                key_string);
+
+#endif
     }
     if (fclose (inf))
     {

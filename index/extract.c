@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.6  1995-09-08 14:52:27  adam
+ * Revision 1.7  1995-09-11 13:09:32  adam
+ * More work on relevance feedback.
+ *
+ * Revision 1.6  1995/09/08  14:52:27  adam
  * Minor changes. Dictionary is lower case now.
  *
  * Revision 1.5  1995/09/06  16:11:16  adam
@@ -129,19 +132,21 @@ void key_write (int cmd, struct it_key *k, const char *str)
     key_offset += sizeof(*k);
 }
 
+#if !IT_KEY_HAVE_SEQNO
 void key_write_x (struct strtab *t, int cmd, struct it_key *k, const char *str)
 {
     void **oldinfo;
 
     if (strtab_src (t, str, &oldinfo))
-        ((struct it_key *) *oldinfo)->seqno++;
+        ((struct it_key *) *oldinfo)->freq++;
     else
     {
         *oldinfo = xmalloc (sizeof(*k));
         memcpy (*oldinfo, k, sizeof(*k));
-        ((struct it_key *) *oldinfo)->seqno = 1;
+        ((struct it_key *) *oldinfo)->freq = 1;
     }
 }
+#endif
 
 void key_rec_flush (const char *str, void *info, void *data)
 {
@@ -153,7 +158,9 @@ void text_extract (struct strtab *t, SYSNO sysno, int cmd, const char *fname)
 {
     FILE *inf;
     struct it_key k;
+#if IT_KEY_HAVE_SEQNO
     int seqno = 1;
+#endif
     int c;
     char w[IT_MAX_WORD];
 
@@ -168,7 +175,7 @@ void text_extract (struct strtab *t, SYSNO sysno, int cmd, const char *fname)
     while ((c=getc (inf)) != EOF)
     {
         int i = 0;
-        while (i < 254 && c != EOF && isalnum(c))
+        while (i < IT_MAX_WORD-1 && c != EOF && isalnum(c))
         {
             w[i++] = index_char_cvt (c);
             c = getc (inf);
@@ -177,11 +184,15 @@ void text_extract (struct strtab *t, SYSNO sysno, int cmd, const char *fname)
         {
             w[i] = 0;
             
-            k.seqno = seqno++;
 #if IT_KEY_HAVE_FIELD
             k.field = 0;
 #endif
+#if IT_KEY_HAVE_SEQNO
+            k.seqno = seqno++;
+            key_write (cmd, &k, w);
+#else
             key_write_x (t, cmd, &k, w);
+#endif
         }
         if (c == EOF)
             break;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.8  1995-09-08 14:52:27  adam
+ * Revision 1.9  1995-09-11 13:09:35  adam
+ * More work on relevance feedback.
+ *
+ * Revision 1.8  1995/09/08  14:52:27  adam
  * Minor changes. Dictionary is lower case now.
  *
  * Revision 1.7  1995/09/07  13:58:36  adam
@@ -44,15 +47,81 @@
 #include <rstemp.h>
 #include <rsnull.h>
 #include <rsbool.h>
+#include <rsrel.h>
+
+int split_term (ZServerInfo *zi, Z_Term *term, ISAM_P **isam_ps, int *no)
+{
+    static ISAM_P isam_p[16];
+    int isam_p_indx = 0;
+    char termz[IT_MAX_WORD+1];
+    char term_sub[IT_MAX_WORD+1];
+    int sizez, i;
+    char *p0, *p1;
+    const char *info;
+    
+    if (term->which != Z_Term_general)
+        return 0; 
+    sizez = term->u.general->len;
+    if (sizez > IT_MAX_WORD)
+        sizez = IT_MAX_WORD;
+    for (i = 0; i<sizez; i++)
+        termz[i] = index_char_cvt (term->u.general->buf[i]);
+    termz[i] = '\0';
+
+    p0 = termz;
+    while (1)
+    {
+        if ((p1 = strchr (p0, ' ')))
+        {
+            memcpy (term_sub, p0, p1-p0);
+            term_sub[p1-p0] = '\0';
+        }
+        else
+            strcpy (term_sub, p0);
+        logf (LOG_DEBUG, "dict_lookup: %s", term_sub);
+        if ((info = dict_lookup (zi->wordDict, term_sub)))
+        {
+            logf (LOG_DEBUG, " found");
+            assert (*info == sizeof(*isam_p));
+            memcpy (isam_p + isam_p_indx, info+1, sizeof(*isam_p));
+            isam_p_indx++;
+        }
+        if (!p1)
+            break;
+        p0 = p1+1;
+    }       
+    *isam_ps = isam_p;
+    *no = isam_p_indx; 
+    logf (LOG_DEBUG, "%d positions", *no);
+    return 1;
+}
+
+static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
+                                      Z_AttributesPlusTerm *zapt)
+{
+    rset_relevance_parms parms;
+
+    parms.key_size = sizeof(struct it_key);
+    parms.max_rec = 100;
+    parms.cmp = key_compare;
+    parms.is = zi->wordIsam;
+    split_term (zi, zapt->term, &parms.isam_positions, 
+                &parms.no_isam_positions);
+    if (parms.no_isam_positions > 0)
+        return rset_create (rset_kind_relevance, &parms);
+    else
+        return rset_create (rset_kind_null, NULL);
+}
 
 static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
 {
+#if 0
+    Z_Term *term = zapt->term;
     char termz[IT_MAX_WORD+1];
     size_t sizez;
     struct rset_isam_parms parms;
     const char *info;
     int i;
-    Z_Term *term = zapt->term;
 
     if (term->which != Z_Term_general)
         return NULL; 
@@ -70,6 +139,9 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
     parms.is = zi->wordIsam;
     logf (LOG_DEBUG, "rset_create isam");
     return rset_create (rset_kind_isam, &parms);
+#else
+    return rpn_search_APT_relevance (zi, zapt);
+#endif
 }
 
 static RSET rpn_search_ref (ZServerInfo *zi, Z_ResultSetId *resultSetId)

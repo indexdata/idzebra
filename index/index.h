@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.8  1995-09-08 14:52:27  adam
+ * Revision 1.9  1995-09-11 13:09:33  adam
+ * More work on relevance feedback.
+ *
+ * Revision 1.8  1995/09/08  14:52:27  adam
  * Minor changes. Dictionary is lower case now.
  *
  * Revision 1.7  1995/09/06  16:11:16  adam
@@ -37,11 +40,16 @@
 #include <isam.h>
 
 #define IT_MAX_WORD 256
+#define IT_KEY_HAVE_SEQNO 1
 #define IT_KEY_HAVE_FIELD 0
 
 struct it_key {
     int sysno;
+#if IT_KEY_HAVE_SEQNO
     int seqno;
+#else
+    int freq;
+#endif
 #if IT_KEY_HAVE_FIELD
     int field;
 #endif
@@ -63,6 +71,7 @@ int key_close (void);
 void key_flush (void);
 void key_write (int cmd, struct it_key *k, const char *str);
 int key_compare (const void *p1, const void *p2);
+void key_logdump (int mask, const void *p);
 void key_input (const char *dict_fname, const char *isam_fname, 
                 const char *key_fname, int cache);
 int key_sort (const char *key_fname, size_t mem);
