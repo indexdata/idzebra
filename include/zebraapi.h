@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.5 2003-05-20 13:52:40 adam Exp $
+/* $Id: zebraapi.h,v 1.6 2003-05-20 13:54:30 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -127,10 +127,11 @@ YAZ_EXPORT void zebra_result (ZebraHandle zh, int *code, char **addinfo);
  * Searching 
  */
 
-/* Search using RPN-Query */
+/* Search using PQF Query */
 YAZ_EXPORT int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
                                  const char *setname);
 
+/* Search using RPN Query */
 YAZ_EXPORT void zebra_search_RPN (ZebraHandle zh, Z_RPNQuery *query,
                                   const char *setname, int *hits);
 
