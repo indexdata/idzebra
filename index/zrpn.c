@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.125 2002-10-03 10:16:23 adam Exp $
+/* $Id: zrpn.c,v 1.126 2002-12-16 22:59:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -82,20 +82,12 @@ static int attr_find_ex (AttrType *src, oid_value *attributeSetP,
 {
     int num_attributes;
 
-#ifdef ASN_COMPILED
     num_attributes = src->zapt->attributes->num_attributes;
-#else
-    num_attributes = src->zapt->num_attributes;
-#endif
     while (src->major < num_attributes)
     {
         Z_AttributeElement *element;
 
-#ifdef ASN_COMPILED
         element = src->zapt->attributes->attributes[src->major];
-#else
-        element = src->zapt->attributeList[src->major];
-#endif
         if (src->type == *element->attributeType)
         {
             switch (element->which) 
@@ -1755,20 +1747,20 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			 oid_value attributeSet, struct grep_info *grep_info,
 			 int reg_type, int complete_flag,
 			 int num_bases, char **basenames,
-			 char *term_dst)
+			 char *term_dst, int xpath_use)
 {
     char term_dict[2*IT_MAX_WORD+2];
     int r, base_no;
     AttrType use;
     int use_value;
+    const char *use_string = 0;
     oid_value curAttributeSet = attributeSet;
     const char *termp;
     struct rpn_char_map_info rcmi;
 
     rpn_char_map_prepare (zh->reg, reg_type, &rcmi);
     attr_init (&use, zapt, 1);
-    use_value = attr_find (&use, &curAttributeSet);
-    logf (LOG_DEBUG, "numeric_term, use value %d", use_value);
+    use_value = attr_find_ex (&use, &curAttributeSet, &use_string);
 
     if (use_value == -1)
         use_value = 1016;
@@ -1776,19 +1768,38 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     for (base_no = 0; base_no < num_bases; base_no++)
     {
         attent attp;
+        data1_local_attribute id_xpath_attr;
         data1_local_attribute *local_attr;
         int max_pos, prefix_len = 0;
 
         termp = *term_sub;
-        if ((r=att_getentbyatt (zh, &attp, curAttributeSet, use_value)))
+        if (use_value == -2)  /* string attribute (assume IDXPATH/any) */
         {
-            logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
-                  curAttributeSet, use_value, r);
-	    if (r == -1)
-		zh->errCode = 114;
-	    else
-		zh->errCode = 121;
-            return -1;
+            use_value = xpath_use;
+            attp.local_attributes = &id_xpath_attr;
+            attp.attset_ordinal = VAL_IDXPATH;
+            id_xpath_attr.next = 0;
+            id_xpath_attr.local = use_value;
+        }
+	else if (curAttributeSet == VAL_IDXPATH)
+        {
+            attp.local_attributes = &id_xpath_attr;
+            attp.attset_ordinal = VAL_IDXPATH;
+            id_xpath_attr.next = 0;
+            id_xpath_attr.local = use_value;
+        }
+        else
+        {
+            if ((r=att_getentbyatt (zh, &attp, curAttributeSet, use_value)))
+            {
+                logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
+                      curAttributeSet, use_value, r);
+                if (r == -1)
+                    zh->errCode = 114;
+                else
+                    zh->errCode = 121;
+                return -1;
+            }
         }
         if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
         {
@@ -1845,7 +1856,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
 				    oid_value attributeSet,
 				    NMEM stream,
 				    int reg_type, int complete_flag,
-				    const char *rank_type,
+				    const char *rank_type, int xpath_use,
 				    int num_bases, char **basenames)
 {
     char term_dst[IT_MAX_WORD+1];
@@ -1862,7 +1873,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
 	grep_info.isam_p_indx = 0;
         r = numeric_term (zh, zapt, &termp, attributeSet, &grep_info,
 			  reg_type, complete_flag, num_bases, basenames,
-			  term_dst);
+			  term_dst, xpath_use);
         if (r < 1)
             break;
 	logf (LOG_DEBUG, "term: %s", term_dst);
@@ -2014,13 +2025,8 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	nmem_malloc (stream, sizeof(*sks->caseSensitivity));
     *sks->caseSensitivity = 0;
 
-#ifdef ASN_COMPILED
     sks->which = Z_SortKeySpec_null;
     sks->u.null = odr_nullval ();
-#else
-    sks->missingValueAction = 0;
-#endif
-
     sort_sequence->specs[i] = sks;
 
     parms.rset_term = rset_term_create (termz, -1, rank_type,
@@ -2420,6 +2426,7 @@ static RSET rpn_search_APT (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     {
 	rset = rpn_search_APT_numeric (zh, zapt, termz, attributeSet, stream,
 			               reg_id, complete_flag, rank_type,
+                                       xpath_use,
 				       num_bases, basenames);
     }
     else if (!strcmp (search_type, "always"))
@@ -2473,21 +2480,11 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
             r = rset_create (rset_kind_not, &bool_parms);
             break;
         case Z_Operator_prox:
-#ifdef ASN_COMPILED
             if (zop->u.prox->which != Z_ProximityOperator_known)
             {
                 zh->errCode = 132;
                 return NULL;
             }
-#else
-            if (zop->u.prox->which != Z_ProxCode_known)
-            {
-                zh->errCode = 132;
-                return NULL;
-            }
-#endif
-
-#ifdef ASN_COMPILED
             if (*zop->u.prox->u.known != Z_ProxUnit_word)
             {
                 char *val = (char *) nmem_malloc (stream, 16);
@@ -2496,16 +2493,6 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
                 sprintf (val, "%d", *zop->u.prox->u.known);
                 return NULL;
             }
-#else
-            if (*zop->u.prox->proximityUnitCode != Z_ProxUnit_word)
-            {
-                char *val = (char *) nmem_malloc (stream, 16);
-                zh->errCode = 132;
-                zh->errString = val;
-                sprintf (val, "%d", *zop->u.prox->proximityUnitCode);
-                return NULL;
-            }
-#endif
 	    else
 	    {
 		RSET rsets[2];

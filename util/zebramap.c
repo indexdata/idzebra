@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.28 2002-10-30 14:35:09 adam Exp $
+/* $Id: zebramap.c,v 1.29 2002-12-16 22:59:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -405,13 +405,8 @@ static int attr_find (AttrType *src, oid_value *attributeSetP)
 
 static void attr_init_APT (AttrType *src, Z_AttributesPlusTerm *zapt, int type)
 {
-#ifdef ASN_COMPILED
     src->attributeList = zapt->attributes->attributes;
     src->num_attributes = zapt->attributes->num_attributes;
-#else
-    src->attributeList = zapt->attributeList;
-    src->num_attributes = zapt->num_attributes;
-#endif
     src->type = type;
     src->major = 0;
     src->minor = 0;

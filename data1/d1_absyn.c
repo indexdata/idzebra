@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.4 2002-12-16 20:27:18 adam Exp $
+/* $Id: d1_absyn.c,v 1.5 2002-12-16 22:59:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -635,13 +635,12 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 		assert (res->attset);
 		
 		if (parse_termlists (dh, &tp, p, file, lineno,
-                                     xpath_expr, res,1))
+                                     xpath_expr, res, 1))
 		{
 		    fclose (f);
 		    return 0;
 		}
 	        *tp = all; /* append any ALL entries to the list */
-                
 	    }
 	}
  	else if (!strcmp(cmd, "section"))
