@@ -1,5 +1,5 @@
-/* $Id: rstemp.c,v 1.33 2002-08-02 19:26:57 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: rstemp.c,v 1.34 2003-03-18 08:53:35 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -137,6 +137,7 @@ static RSFD r_open (RSET ct, int flag)
     r_rewind (rfd);
 
     rfd->countp = &ct->rset_terms[0]->count;
+    *rfd->countp = 0;
     rfd->buf = xmalloc (info->key_size);
 
     return rfd;
