@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.29  1999-07-12 07:27:54  adam
+ * Revision 1.30  1999-07-14 10:55:28  adam
+ * Fixed memory leak.
+ *
+ * Revision 1.29  1999/07/12 07:27:54  adam
  * Improved speed of Tcl processing. Fixed one memory leak.
  *
  * Revision 1.28  1999/07/06 12:26:04  adam
@@ -249,7 +252,6 @@ struct lexContext {
 };
 
 struct lexConcatBuf {
-    int len;
     int max;
     char *buf;
 };
@@ -278,7 +280,7 @@ struct lexSpec {
     int (*f_win_rf)(void *, char *, size_t);
     off_t (*f_win_sf)(void *, off_t);
 
-    struct lexConcatBuf **concatBuf;
+    struct lexConcatBuf *concatBuf;
     int maxLevel;
     data1_node **d1_stack;
     int d1_level;
@@ -470,14 +472,12 @@ static struct lexSpec *lexSpecCreate (const char *name, data1_handle dh)
     p->f_win_buf = NULL;
 
     p->maxLevel = 128;
-    p->concatBuf = (struct lexConcatBuf **)
+    p->concatBuf = (struct lexConcatBuf *)
 	xmalloc (sizeof(*p->concatBuf) * p->maxLevel);
     for (i = 0; i < p->maxLevel; i++)
     {
-	p->concatBuf[i] = (struct lexConcatBuf *)
-	    xmalloc (sizeof(**p->concatBuf));
-	p->concatBuf[i]->len = p->concatBuf[i]->max = 0;
-	p->concatBuf[i]->buf = 0;
+	p->concatBuf[i].max = 0;
+	p->concatBuf[i].buf = 0;
     }
     p->d1_stack = (data1_node **) xmalloc (sizeof(*p->d1_stack) * p->maxLevel);
     p->d1_level = 0;
@@ -496,7 +496,7 @@ static void lexSpecDestroy (struct lexSpec **pp)
         return ;
 
     for (i = 0; i < p->maxLevel; i++)
-	xfree (p->concatBuf[i]);
+	xfree (p->concatBuf[i].buf);
     xfree (p->concatBuf);
 
     lt = p->context;
@@ -868,21 +868,20 @@ static void execData (struct lexSpec *spec,
 	    parent->child = res;
 	spec->d1_stack[spec->d1_level] = res;
     }
-    if (org_len + elen >= spec->concatBuf[spec->d1_level]->max)
+    if (org_len + elen >= spec->concatBuf[spec->d1_level].max)
     {
 	char *old_buf, *new_buf;
 
-	spec->concatBuf[spec->d1_level]->max = org_len + elen + 256;
-	new_buf = (char *) xmalloc (spec->concatBuf[spec->d1_level]->max);
-	if ((old_buf = spec->concatBuf[spec->d1_level]->buf))
+	spec->concatBuf[spec->d1_level].max = org_len + elen + 256;
+	new_buf = (char *) xmalloc (spec->concatBuf[spec->d1_level].max);
+	if ((old_buf = spec->concatBuf[spec->d1_level].buf))
 	{
 	    memcpy (new_buf, old_buf, org_len);
 	    xfree (old_buf);
 	}
-	spec->concatBuf[spec->d1_level]->buf = new_buf;
+	spec->concatBuf[spec->d1_level].buf = new_buf;
     }
-    assert (spec->concatBuf[spec->d1_level]);
-    memcpy (spec->concatBuf[spec->d1_level]->buf + org_len, ebuf, elen);
+    memcpy (spec->concatBuf[spec->d1_level].buf + org_len, ebuf, elen);
     res->u.data.len += elen;
 }
 
@@ -906,7 +905,7 @@ static void tagDataRelease (struct lexSpec *spec)
 	    res->u.data.data = (char *) nmem_malloc (spec->m, res->u.data.len);
 	else
 	    res->u.data.data = res->lbuf;
-	memcpy (res->u.data.data, spec->concatBuf[spec->d1_level]->buf,
+	memcpy (res->u.data.data, spec->concatBuf[spec->d1_level].buf,
 		res->u.data.len);
     }
 }
