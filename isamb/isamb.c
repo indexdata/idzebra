@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.64 2005-01-02 23:24:07 adam Exp $
+/* $Id: isamb.c,v 1.65 2005-01-03 11:02:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -492,7 +492,7 @@ struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
         }
         yaz_log (b->log_freelist, "got block " ZINT_FORMAT " from freelist %d:" ZINT_FORMAT, p->pos,
                  cat, p->pos/CAT_MAX);
-        memcpy (&b->file[cat].head.free_list, p->buf, sizeof(int));
+        memcpy (&b->file[cat].head.free_list, p->buf, sizeof(zint));
     }
     p->cat = cat;
     b->file[cat].head_dirty = 1;
@@ -559,7 +559,7 @@ void close_block (ISAMB b, struct ISAMB_block *p)
     {
         yaz_log (b->log_freelist, "release block " ZINT_FORMAT " from freelist %d:" ZINT_FORMAT,
                  p->pos, p->cat, p->pos/CAT_MAX);
-        memcpy (p->buf, &b->file[p->cat].head.free_list, sizeof(int));
+        memcpy (p->buf, &b->file[p->cat].head.free_list, sizeof(zint));
         b->file[p->cat].head.free_list = p->pos;
         if (!get_block (b, p->pos, p->buf, 1))
         {
