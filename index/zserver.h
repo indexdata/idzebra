@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.4  1995-09-14 11:53:28  adam
+ * Revision 1.5  1995-09-27 16:17:32  adam
+ * More work on retrieve.
+ *
+ * Revision 1.4  1995/09/14  11:53:28  adam
  * First work on regular expressions/truncations.
  *
  * Revision 1.3  1995/09/08  08:53:23  adam
@@ -26,6 +29,10 @@ typedef struct {
     size_t size;
     char *buf;
 } ZServerRecord;
+
+typedef struct {
+    int sysno;
+} ZServerSetSysno;
 
 typedef struct ZServerSet_ {
     char *name;

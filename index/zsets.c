@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.4  1995-09-07 13:58:36  adam
+ * Revision 1.5  1995-09-27 16:17:32  adam
+ * More work on retrieve.
+ *
+ * Revision 1.4  1995/09/07  13:58:36  adam
  * New parameter: result-set file descriptor (RSFD) to support multiple
  * positions within the same result-set.
  * Boolean operators: and, or, not implemented.
@@ -59,8 +62,62 @@ ZServerSet *resultSetGet (ZServerInfo *zi, const char *name)
     return NULL;
 }
 
-ZServerRecord *resultSetRecordGet (ZServerInfo *zi, const char *name, 
-                                   int num, int *positions)
+ZServerSetSysno *resultSetSysnoGet  (ZServerInfo *zi, const char *name, 
+                                     int num, int *positions)
+{
+    ZServerSet *sset;
+    ZServerSetSysno *sr;
+    RSET rset;
+    int num_i = 0;
+    int position = 0;
+    int psysno = 0;
+    struct it_key key;
+    RSFD rfd;
+
+    if (!(sset = resultSetGet (zi, name)))
+        return NULL;
+    if (!(rset = sset->rset))
+        return NULL;
+    logf (LOG_DEBUG, "resultSetRecordGet");
+    sr = xmalloc (sizeof(*sr) * num);
+    rfd = rset_open (rset, 0);
+    while (rset_read (rset, rfd, &key))
+    {
+        if (key.sysno != psysno)
+        {
+            psysno = key.sysno;
+            position++;
+            if (position == positions[num_i])
+            {
+                sr[num_i].sysno = psysno;
+                num_i++;
+                if (++num_i == num)
+                    break;
+            }
+        }
+    }
+    rset_close (rset, rfd);
+    while (num_i < num)
+    {
+        sr[num_i].sysno = 0;
+        num_i++;
+    }
+    return sr;
+}
+
+void resultSetRecordDel (ZServerInfo *zi, ZServerRecord *records, int num)
+{
+    int i;
+
+    for (i = 0; i<num; i++)
+        free (records[i].buf);
+    free (records);
+}
+
+
+#if 0
+ZServerSetSysno *resultSetSysno  (ZServerInfo *zi, const char *name, 
+                                  int num, int *positions)
 {
     ZServerSet *sset;
     ZServerRecord *sr;
@@ -137,12 +194,4 @@ ZServerRecord *resultSetRecordGet (ZServerInfo *zi, const char *name,
     }
     return sr;
 }
-
-void resultSetRecordDel (ZServerInfo *zi, ZServerRecord *records, int num)
-{
-    int i;
-
-    for (i = 0; i<num; i++)
-        free (records[i].buf);
-    free (records);
-}
+#endif

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.6  1995-09-08 08:53:22  adam
+ * Revision 1.7  1995-09-27 16:17:32  adam
+ * More work on retrieve.
+ *
+ * Revision 1.6  1995/09/08  08:53:22  adam
  * Record buffer maintained in server_info.
  *
  * Revision 1.5  1995/09/06  16:11:18  adam
@@ -104,7 +107,7 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
 {
     static bend_fetchresult r;
     int positions[2];
-    ZServerRecord *records;
+    ZServerSetSysno *records;
 
     r.errstring = 0;
     r.last_in_set = 0;
@@ -113,25 +116,27 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     xfree (server_info.recordBuf);
     server_info.recordBuf = NULL;
     positions[0] = q->number;
-    records = resultSetRecordGet (&server_info, q->setname, 1, positions);
+    records = resultSetSysnoGet (&server_info, q->setname, 1, positions);
     if (!records)
     {
         logf (LOG_DEBUG, "resultSetRecordGet, error");
         r.errcode = 13;
         return &r;
     }
-    if (!records[0].buf)
+    if (!records[0].sysno)
     {
         r.errcode = 13;
         logf (LOG_DEBUG, "Out of range. pos=%d", q->number);
         return &r;
     }
+#if 0
     r.len = records[0].size;
     server_info.recordBuf = r.record = xmalloc (r.len+1);
     strcpy (r.record, records[0].buf);
     resultSetRecordDel (&server_info, records, 1);
     r.format = VAL_SUTRS;
     r.errcode = 0;
+#endif
     return &r;
 }
 
