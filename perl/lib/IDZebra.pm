@@ -68,7 +68,7 @@ package IDZebra;
 *delete_record = *IDZebrac::delete_record;
 *begin_read = *IDZebrac::begin_read;
 *end_read = *IDZebrac::end_read;
-*search_pqf = *IDZebrac::search_pqf;
+*search_PQF = *IDZebrac::search_PQF;
 *admin_start = *IDZebrac::admin_start;
 *admin_shutdown = *IDZebrac::admin_shutdown;
 *nmem_create = *IDZebrac::nmem_create;

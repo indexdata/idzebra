@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.1 2002-11-15 21:26:00 adam Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.2 2002-11-16 00:17:57 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
