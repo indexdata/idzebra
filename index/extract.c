@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.17  1995-10-03 14:28:57  adam
+ * Revision 1.18  1995-10-04 09:37:08  quinn
+ * Fixed bug.
+ *
+ * Revision 1.17  1995/10/03  14:28:57  adam
  * Buffered read in extract works.
  *
  * Revision 1.16  1995/10/03  14:28:45  adam
@@ -336,12 +339,12 @@ void file_extract (int cmd, const char *fname, const char *kname)
     file_read_start (extractCtrl.fd);
 #endif
     extractCtrl.readf = file_read;
-#if FILE_READ_BUF
-    file_read_stop (extractCtrl.fd);
-#endif
     key_sysno = sysno;
     key_cmd = cmd;
     r = (*rt->extract)(&extractCtrl);
+#if FILE_READ_BUF
+    file_read_stop (extractCtrl.fd);
+#endif
     close (extractCtrl.fd);
     if (r)
         logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
