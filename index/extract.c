@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.23  1995-10-27 14:00:10  adam
+ * Revision 1.24  1995-11-15 19:13:08  adam
+ * Work on record management.
+ *
+ * Revision 1.23  1995/10/27  14:00:10  adam
  * Implemented detection of database availability.
  *
  * Revision 1.22  1995/10/17  18:02:07  adam
@@ -88,9 +91,21 @@
 #include <recctrl.h>
 #include "index.h"
 
+#define RECORD_BASE 1
+
+#if RECORD_BASE
+#include "recindex.h"
+#endif
+
 static Dict file_idx;
-static SYSNO sysno_next;
+
+
+#if RECORD_BASE
+static Records records = NULL;
+#else
 static int sys_idx_fd = -1;
+static SYSNO sysno_next;
+#endif
 
 static int key_cmd;
 static int key_sysno;
@@ -103,8 +118,9 @@ static int key_file_no;
 
 void key_open (int mem)
 {
+#if !RECORD_BASE
     void *file_key;
-
+#endif
     if (mem < 50000)
         mem = 50000;
     key_buf = xmalloc (mem);
@@ -118,6 +134,10 @@ void key_open (int mem)
         logf (LOG_FATAL, "dict_open fail of %s", "fileidx");
         exit (1);
     }
+#if RECORD_BASE
+    assert (!records);
+    records = rec_open (1);
+#else
     file_key = dict_lookup (file_idx, ".");
     if (file_key)
         memcpy (&sysno_next, (char*)file_key+1, sizeof(sysno_next));
@@ -128,6 +148,7 @@ void key_open (int mem)
         logf (LOG_FATAL|LOG_ERRNO, "open %s", FNAME_SYS_IDX);
         exit (1);
     }
+#endif
 }
 
 struct encode_info {
@@ -241,8 +262,12 @@ int key_close (void)
 {
     key_flush ();
     xfree (key_buf);
+#if RECORD_BASE
+    rec_close (&records);
+#else
     close (sys_idx_fd);
     dict_insert (file_idx, ".", sizeof(sysno_next), &sysno_next);
+#endif
     dict_close (file_idx);
     return key_file_no;
 }
@@ -399,11 +424,21 @@ void file_extract (int cmd, const char *fname, const char *kname,
     file_info = dict_lookup (file_idx, kname);
     if (!file_info)
     {
+#if RECORD_BASE
+        Record rec = rec_new (records);
+
+        sysno = rec->sysno;
+        dict_insert (file_idx, kname, sizeof(sysno), &sysno);
+        rec->info[0] = rec_strdup (file_type);
+        rec->info[1] = rec_strdup (kname);
+        rec_put (records, rec);
+#else
         sysno = sysno_next++;
         dict_insert (file_idx, kname, sizeof(sysno), &sysno);
         lseek (sys_idx_fd, sysno * SYS_IDX_ENTRY_LEN, SEEK_SET);
         write (sys_idx_fd, file_type, strlen (file_type)+1);
         write (sys_idx_fd, kname, strlen(kname)+1);
+#endif
     }
     else
         memcpy (&sysno, (char*) file_info+1, sizeof(sysno));

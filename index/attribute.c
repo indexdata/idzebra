@@ -1,4 +1,13 @@
 /*
+ * Copyright (C) 1994-1995, Index Data I/S 
+ * All rights reserved.
+ * Sebastian Hammer, Adam Dickmeiss
+ *
+ * $Log: attribute.c,v $
+ * Revision 1.2  1995-11-15 19:13:07  adam
+ * Work on record management.
+ *
+ *
  * This interface is used by other modules (the Z-server in particular)
  * to normalize the attributes given in queries.
  */
@@ -8,8 +17,7 @@
 #include <log.h>
 #include <alexutil.h>
 #include <res.h>
-
-#include "d1_attset.h"
+#include <d1_attset.h>
 
 #include "attribute.h"
 
