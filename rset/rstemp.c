@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.11  1995-09-18 14:17:56  adam
+ * Revision 1.12  1995-09-28 09:52:11  adam
+ * xfree/xmalloc used everywhere.
+ *
+ * Revision 1.11  1995/09/18  14:17:56  adam
  * Bug fixes.
  *
  * Revision 1.10  1995/09/15  14:45:39  adam
@@ -208,7 +211,13 @@ static void r_delete (struct rset_control *ct)
     if (info->fname)
         unlink (info->fname);        
     free (info->buf_mem);
-    free (info->fname);
+    logf (LOG_DEBUG, "r_delete: set size %ld", (long) info->pos_end);
+    if (info->fname)
+    {
+        logf (LOG_DEBUG, "r_delete: unlink %s", info->fname);
+        unlink (info->fname);
+        free (info->fname);
+    }
     free (info);
 }
 
