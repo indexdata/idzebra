@@ -1,5 +1,5 @@
-/* $Id: mfile.c,v 1.49 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: mfile.c,v 1.50 2003-02-28 15:28:36 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -60,7 +60,7 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
     {
         const char *ad0 = ad;
         int i = 0, fact = 1, multi;
-	off_t size = 0;
+	mfile_off_t size = 0;
 
         while (*ad == ' ' || *ad == '\t')
             ad++;
@@ -162,7 +162,7 @@ static int file_position(MFile mf, int pos, int offset)
     	     return -1;
         }
     }
-    if (lseek(mf->files[c].fd, (ps = pos - off) * mf->blocksize + offset,
+    if (mfile_seek(mf->files[c].fd, (ps = pos - off) * mf->blocksize + offset,
     	SEEK_SET) < 0)
     {
     	logf (LOG_WARN|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
@@ -258,7 +258,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
                       dent->d_name);
 	    	return 0;
 	    }
-	    if ((part_f->bytes = lseek(fd, 0, SEEK_END)) < 0)
+	    if ((part_f->bytes = mfile_seek(fd, 0, SEEK_END)) < 0)
 	    {
 	    	logf (LOG_FATAL|LOG_ERRNO, "Failed to seek in %s",
                       dent->d_name);
@@ -394,7 +394,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 	    if (mnew->files[i].bytes % block_size)
 	    	mnew->files[i].bytes += block_size - mnew->files[i].bytes %
 		    block_size;
-	    mnew->files[i].blocks = mnew->files[i].bytes / block_size;
+	    mnew->files[i].blocks = (int) (mnew->files[i].bytes / block_size);
 	}
     	assert(!mnew->open);
     }
@@ -406,7 +406,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 
     for (i = 0; i < mnew->no_files; i++)
     {
-    	mnew->files[i].blocks = mnew->files[i].bytes / mnew->blocksize;
+    	mnew->files[i].blocks = (int)(mnew->files[i].bytes / mnew->blocksize);
     	if (i == mnew->no_files - 1)
 	    mnew->files[i].top = -1;
 	else
@@ -493,15 +493,15 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
     /* file needs to grow */
     while (ps >= mf->files[mf->cur_file].blocks)
     {
-        off_t needed = (ps - mf->files[mf->cur_file].blocks + 1) *
+        mfile_off_t needed = (ps - mf->files[mf->cur_file].blocks + 1) *
                        mf->blocksize;
     	/* file overflow - allocate new file */
     	if (mf->files[mf->cur_file].dir->max_bytes >= 0 &&
 	    needed > mf->files[mf->cur_file].dir->avail_bytes)
 	{
 	    /* cap off file? */
-	    if ((nblocks = mf->files[mf->cur_file].dir->avail_bytes /
-		mf->blocksize) > 0)
+	    if ((nblocks = (int) (mf->files[mf->cur_file].dir->avail_bytes /
+		mf->blocksize)) > 0)
 	    {
 	    	logf (LOG_DEBUG, "Capping off file %s at pos %d",
 		    mf->files[mf->cur_file].path, nblocks);
@@ -542,8 +542,8 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 	    mf->files[mf->cur_file].dir = dp;
 	    mf->files[mf->cur_file].number =
 		mf->files[mf->cur_file-1].number + 1;
-	    mf->files[mf->cur_file].blocks =
-	    	mf->files[mf->cur_file].bytes = 0;
+	    mf->files[mf->cur_file].blocks = 0;
+	    mf->files[mf->cur_file].bytes = 0;
 	    mf->files[mf->cur_file].fd = -1;
 	    sprintf(tmp, "%s/%s-%d.mf", dp->name, mf->name,
 		mf->files[mf->cur_file].number);

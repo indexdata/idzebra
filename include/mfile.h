@@ -1,5 +1,5 @@
-/* $Id: mfile.h,v 1.18 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: mfile.h,v 1.19 2003-02-28 15:28:36 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -29,9 +29,21 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/yconfig.h>
 
 #ifdef WIN32
-typedef long off_t;
+
+/* 32-bit access .. */
+#if 0
+typedef long mfile_off_t;
+#define mfile_seek lseek
+#endif
+
+/* 64-but access .. */
+typedef __int64 mfile_off_t;
+#define mfile_seek _lseeki64
+
 #else
 #include <sys/types.h>
+typedef off_t mfile_off_t;
+#define mfile_seek lseek
 #endif
 
 #ifndef FILENAME_MAX
@@ -52,8 +64,8 @@ YAZ_BEGIN_CDECL
 typedef struct mf_dir
 {
     char name[FILENAME_MAX+1];
-    off_t max_bytes;      /* allocated bytes in this dir. */
-    off_t avail_bytes;    /* bytes left */
+    mfile_off_t max_bytes;      /* allocated bytes in this dir. */
+    mfile_off_t avail_bytes;    /* bytes left */
     struct mf_dir *next;
 } mf_dir;
 
@@ -62,7 +74,7 @@ typedef struct part_file
     int number;
     int top;
     int blocks;
-    off_t bytes;
+    mfile_off_t bytes;
     mf_dir *dir;
     char *path;
     int fd;
@@ -78,8 +90,8 @@ typedef struct meta_file
     int no_files;
     int cur_file;
     int open;                          /* is this file open? */
-    off_t blocksize;
-    off_t min_bytes_creat;  /* minimum bytes required to enter directory */
+    int blocksize;
+    mfile_off_t min_bytes_creat;  /* minimum bytes required to enter directory */
     MFile_area ma;
     int wr;
     Zebra_mutex mutex;
