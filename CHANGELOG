@@ -1,66 +1,72 @@
-Zebra supports the specification of arbitrary attributes sets,
-schemas and tag sets, because of the change in YAZ' OID
-management system.
+For the regx-filter "end element -record" may trigger a mark-of-record
+if outer level is reached.
 
-Fixed bug in Sort that caused it NOT to use character mapping as
-it should.
+Tag sets may be typed in the reference to it. From the .abs-file the
+"tagset" directive takes a third optional integer type for the tag set
+referenced. From a .tag-file the "include" directive takes a third
+optional type as well. The old "type" directive in the tag set itself
+is still recognized but acts as the default type for the tag set.
+ 
+Zebra supports the specification of arbitrary attributes sets, schemas
+and tag sets, because of the change in YAZ' OID management system.
+
+Fixed bug in Sort that caused it NOT to use character mapping as it
+should.
 
 Zebra now uses GNU configure to generate Makefile(s).
 
 Added un-optimised support for left and left/right truncation attributes.
 
-Added support for relational operators on text when using
-RPN queries.
+Added support for relational operators on text when using RPN queries.
 
-Added support for sort specifications in RPN queries. Type 7
-specifies 'sort' where value 1=ascending, value 2=descending.
-The use attribute specifies the field criteria as usual.
-The term specifies priority (0=first, 1=second).
+Added support for sort specifications in RPN queries. Type 7 specifies
+'sort' where value 1=ascending, value 2=descending. The use attribute
+specifies the field criteria as usual.  The term specifies priority
+where 0=first, 1=second, ...
 
 Changed the way use attributes are specified in the recordId
 specification.
 
 Maximum number of databases in one Zebra register increased.
 
-New setting, databasePath, which specifies that first directory
-during update traversal is the database name (instead of
-a fixed one).
+New setting, databasePath, which specifies that first directory during
+update traversal is the database name (instead of a fixed one).
 
-New setting, explainDatabase, which specifies that databases
-are EXPLAIN aware.
+New setting, explainDatabase, which specifies that databases are
+EXPLAIN aware.
 
 Modified Zebra so that it works with ASN.1 compiled code for YAZ.
 
 Implemented EXPLAIN database maintenance. Zebra automatically
 generate - and update CategoryList, TargetInfo, DatabaseInfo,
-AttributeSetInfo and AttributeDetails records at this stage.
-The records may be transferred as GRS-1, SUTRS or Explain.
+AttributeSetInfo and AttributeDetails records at this stage. The
+records may be transferred as GRS-1, SUTRS or Explain.
 
 Fixed register spec so that colon isn't treated as size separator
 unless followed by [0-9+-] in order to allow DOS drive specifications.
 
 Fixed two bugs in ISAMC system.
 
-Changed the way Zebra keeps its maintenance information. Records
-in "SGML" notation using an EXPLAIN schema is now used when
-appropriate.
+Changed the way Zebra keeps its maintenance information about attribute
+sets, available attributes, etc.. Records in "SGML" notation using an
+EXPLAIN schema is now used when appropriate.
 
-Bug fix: Index didn't handle update/insert/delete of the same
-record (i.e. same recordId) in one run (one invocation of zebraidx).
-Only the first occurence of a record is considered.
+Bug fix: Index didn't handle update/insert/delete of the same record
+(i.e. same recordId) in one run (one invocation of zebraidx). Only the
+first occurence of a record is considered.
 
 Most searches now return correct number of hits.
 
 New modular ranking system. Interested programmers are encouraged to
 inspect rank1.c and improve the algorithm.
 
-Bug fix: Lock files weren't removed as they should when using NT.
+Bug fix: Lock files weren't removed as they should on NT.
 
 Implemented Z39.50 Sort. Zebra's sort handler uses use attributes to
-specify a "sort register". Refer to the gils sample records which
-refer to index type "s" which is specified as "sort" in the default.idx
-file. Each sort criteria can either be Ascending or Descending and
-at most three sort elements can be specified.  
+specify a "sort register". Refer to the gils sample records which refer
+to index type "s" which is specified as "sort" in the default.idx file.
+Each sort criteria can either be Ascending or Descending and at most
+three sort elements can be specified.  
 
 Bug fix: Character mapping didn't work for text files.
 
