@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.13  1995-11-30 17:00:49  adam
+ * Revision 1.14  1995-12-01 11:37:21  adam
+ * Cached/commit files implemented as meta-files.
+ *
+ * Revision 1.13  1995/11/30  17:00:49  adam
  * Several bug fixes. Commit system runs now.
  *
  * Revision 1.12  1995/11/30  08:33:10  adam
@@ -52,11 +55,12 @@
 #include <bfile.h>
 #include "cfile.h"
 
-static const char *cache_name = NULL;
+static MFile_area commit_area = NULL;
 
-void bf_cache (const char *name)
+void bf_cache (void)
 {
-    cache_name = name;
+    if (!commit_area)
+        commit_area = mf_init ("commit");
 }
 
 int bf_close (BFile bf)
@@ -72,19 +76,18 @@ BFile bf_open (const char *name, int block_size, int wflag)
 {
     BFile tmp = xmalloc(sizeof(BFile_struct));
 
-    if (cache_name)
+    if (commit_area)
     {
         FILE *outf;
         int first_time;
 
-        logf (LOG_LOG, "cf,mf_open %s, cache_name=%s", name, cache_name);
-        tmp->mf = mf_open(0, name, block_size, 0);
-        tmp->cf = cf_open(tmp->mf, cache_name, name, block_size, wflag,
-                          &first_time);
+        logf (LOG_LOG, "cf,mf_open %s", name);
+        tmp->mf = mf_open (commit_area, name, block_size, 0);
+        tmp->cf = cf_open (tmp->mf, name, block_size, wflag, &first_time);
 
         if (first_time)
         {
-            outf = fopen (cache_name, "a");
+            outf = fopen ("cache", "a");
             fprintf (outf, "%s %d\n", name, block_size);
             fclose (outf);
         }
@@ -119,7 +122,7 @@ int bf_write (BFile bf, int no, int offset, int num, const void *buf)
     return mf_write (bf->mf, no, offset, num, buf);
 }
 
-void bf_commit (const char *name)
+void bf_commit (void)
 {
     FILE *inf;
     int block_size;
@@ -128,15 +131,17 @@ void bf_commit (const char *name)
     CFile cf;
     int first_time;
 
-    if (!(inf = fopen (name, "r")))
+    if (!commit_area)
+        commit_area = mf_init ("commit");
+    if (!(inf = fopen ("cache", "r")))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cannot open commit %s", name);
+        logf (LOG_FATAL|LOG_ERRNO, "cannot open commit %s", "cache");
         exit (1);
     }
     while (fscanf (inf, "%s %d", path, &block_size) == 2)
     {
-        mf = mf_open(0, path, block_size, 1);
-        cf = cf_open(mf, name, path, block_size, 0, &first_time);
+        mf = mf_open (commit_area, path, block_size, 1);
+        cf = cf_open (mf, path, block_size, 0, &first_time);
 
         cf_commit (cf);
 

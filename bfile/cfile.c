@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.2  1995-11-30 17:00:49  adam
+ * Revision 1.3  1995-12-01 11:37:22  adam
+ * Cached/commit files implemented as meta-files.
+ *
+ * Revision 1.2  1995/11/30  17:00:49  adam
  * Several bug fixes. Commit system runs now.
  *
  * Revision 1.1  1995/11/30  08:33:11  adam
@@ -13,8 +16,6 @@
  */
 
 #include <assert.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -22,75 +23,65 @@
 #include <mfile.h>
 #include "cfile.h"
 
-static int hash_write (CFile cf, const void *buf, size_t bytes)
+static int write_head (CFile cf)
 {
-    int r;
+    int left = cf->head.hash_size * sizeof(int);
+    int bno = 1;
+    const char *tab = (char*) cf->array;
 
-    r = write (cf->hash_fd, buf, bytes);
-    if (r == bytes)
-        return bytes;
-    if (r == -1)
-        logf (LOG_FATAL|LOG_ERRNO, "write in commit hash file");
-    else
-        logf (LOG_FATAL, "write in commit hash file. "
-                     "%d bytes instead of %d bytes", r, bytes);
-    exit (1);
+    while (left >= HASH_BSIZE)
+    {
+        mf_write (cf->hash_mf, bno++, 0, 0, tab);
+        tab += HASH_BSIZE;
+        left -= HASH_BSIZE;
+    }
+    if (left > 0)
+        mf_write (cf->hash_mf, bno, 0, left, tab);
     return 0;
 }
 
-static int hash_read (CFile cf, void *buf, size_t bytes)
+static int read_head (CFile cf)
 {
-    int r;
+    int left = cf->head.hash_size * sizeof(int);
+    int bno = 1;
+    char *tab = (char*) cf->array;
 
-    r = read (cf->hash_fd, buf, bytes);
-    if (r == bytes)
-        return bytes;
-    if (r == -1)
-        logf (LOG_FATAL|LOG_ERRNO, "read in commit hash file");
-    else
-        logf (LOG_FATAL, "read in commit hash file. "
-                     "%d bytes instead of %d bytes", r, bytes);
-    abort ();
+    while (left >= HASH_BSIZE)
+    {
+        mf_read (cf->hash_mf, bno++, 0, 0, tab);
+        tab += HASH_BSIZE;
+        left -= HASH_BSIZE;
+    }
+    if (left > 0)
+        mf_read (cf->hash_mf, bno, 0, left, tab);
     return 0;
 }
 
-CFile cf_open (MFile mf, const char *cname, const char *fname,
-               int block_size, int wflag, int *firstp)
+
+CFile cf_open (MFile mf, const char *fname, int block_size, int wflag,
+               int *firstp)
 {
     char path[256];
-    int r, i;
+    int i;
     CFile cf = xmalloc (sizeof(*cf));
     int hash_bytes;
    
-    cf->mf = mf; 
-    sprintf (path, "%s.%s.b", cname, fname);
-    if ((cf->block_fd = 
-        open (path, wflag ? O_RDWR|O_CREAT : O_RDONLY, 0666)) < 0)
+    cf->rmf = mf; 
+    sprintf (path, "%s.b", fname);
+    if (!(cf->block_mf = mf_open (0, path, block_size, wflag)))
     {
         logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", path);
         exit (1);
     }
-    sprintf (path, "%s.%s.h", cname, fname);
-    if ((cf->hash_fd = 
-        open (path, wflag ? O_RDWR|O_CREAT : O_RDONLY, 0666)) < 0)
+    sprintf (path, "%s.h", fname);
+    if (!(cf->hash_mf = mf_open (0, path, HASH_BSIZE, wflag)))
     {
         logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", path);
         exit (1);
     }
-    r = read (cf->hash_fd, &cf->head, sizeof(cf->head));
-    if (r != sizeof(cf->head))
+    if (!mf_read (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head))
     {
         *firstp = 1;
-        if (r == -1)
-        {
-            logf (LOG_FATAL|LOG_ERRNO, "read head of %s", path);
-            exit (1);
-        }
-        if (r != 0)
-        {
-            logf (LOG_FATAL, "illegal head of %s", path);
-            exit (1);
-        }
         cf->head.block_size = block_size;
         cf->head.hash_size = 401;
         hash_bytes = cf->head.hash_size * sizeof(int);
@@ -98,12 +89,12 @@ CFile cf_open (MFile mf, const char *cname, const char *fname,
             (hash_bytes+sizeof(cf->head))/HASH_BSIZE + 2;
         cf->head.next_block = 1;
         if (wflag)
-            hash_write (cf, &cf->head, sizeof(cf->head));
+            mf_write (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
         cf->array = xmalloc (hash_bytes);
         for (i = 0; i<cf->head.hash_size; i++)
             cf->array[i] = 0;
         if (wflag)
-            hash_write (cf, cf->array, hash_bytes);
+            write_head (cf);
     }
     else
     {
@@ -113,7 +104,7 @@ CFile cf_open (MFile mf, const char *cname, const char *fname,
         hash_bytes = cf->head.hash_size * sizeof(int);
         assert (cf->head.next_bucket > 0);
         cf->array = xmalloc (hash_bytes);
-        hash_read (cf, cf->array, hash_bytes);
+        read_head (cf);
     }
     cf->parray = xmalloc (cf->head.hash_size * sizeof(*cf->parray));
     for (i = 0; i<cf->head.hash_size; i++)
@@ -163,12 +154,7 @@ static void flush_bucket (CFile cf, int no_to_flush)
             break;
         if (p->dirty)
         {
-            if (lseek (cf->hash_fd, p->ph.this_bucket*HASH_BSIZE, SEEK_SET) < 0)
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "lseek in flush_bucket");
-                exit (1);
-            }
-            hash_write (cf, &p->ph, HASH_BSIZE);
+            mf_write (cf->hash_mf, p->ph.this_bucket, 0, 0, &p->ph);
             cf->dirty = 1;
         }
         release_bucket (cf, p);
@@ -207,13 +193,11 @@ static struct CFile_hash_bucket *get_bucket (CFile cf, int block_no, int hno)
     struct CFile_hash_bucket *p;
 
     p = alloc_bucket (cf, block_no, hno);
-
-    if (lseek (cf->hash_fd, block_no * HASH_BSIZE, SEEK_SET) < 0)
+    if (!mf_read (cf->hash_mf, block_no, 0, 0, &p->ph))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "lseek in get_bucket");
+        logf (LOG_FATAL|LOG_ERRNO, "read get_bucket");
         exit (1);
     }
-    hash_read (cf, &p->ph, HASH_BSIZE);
     assert (p->ph.this_bucket == block_no);
     p->dirty = 0;
     return p;
@@ -320,24 +304,14 @@ int cf_new (CFile cf, int no)
 
 int cf_read (CFile cf, int no, int offset, int num, void *buf)
 {
-    int tor, block, r;
+    int block;
     
     assert (cf);
     if (!(block = cf_lookup (cf, no)))
         return -1;
-    if (lseek (cf->block_fd, cf->head.block_size * block + offset,
-         SEEK_SET) < 0)
+    if (!mf_read (cf->block_mf, block, offset, num, buf))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_read, lseek no=%d, block=%d",
-              no, block);
-        exit (1);
-    }
-    tor = num ? num : cf->head.block_size;
-    r = read (cf->block_fd, buf, tor);
-    if (r != tor)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_read, read no=%d, block=%d",
-              no, block);
+        logf (LOG_FATAL|LOG_ERRNO, "cf_read no=%d, block=%d", no, block);
         exit (1);
     }
     return 1;
@@ -345,7 +319,7 @@ int cf_read (CFile cf, int no, int offset, int num, void *buf)
 
 int cf_write (CFile cf, int no, int offset, int num, const void *buf)
 {
-    int block, r, tow;
+    int block;
 
     assert (cf);
     if (!(block = cf_lookup (cf, no)))
@@ -353,27 +327,16 @@ int cf_write (CFile cf, int no, int offset, int num, const void *buf)
         block = cf_new (cf, no);
         if (offset || num)
         {
-            mf_read (cf->mf, no, 0, 0, cf->iobuf);
+            mf_read (cf->rmf, no, 0, 0, cf->iobuf);
             memcpy (cf->iobuf + offset, buf, num);
             buf = cf->iobuf;
             offset = 0;
             num = 0;
         }
     }
-    if (lseek (cf->block_fd, cf->head.block_size * block + offset,
-               SEEK_SET) < 0)
+    if (mf_write (cf->block_mf, block, offset, num, buf))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_write, lseek no=%d, block=%d",
-              no, block);
-        exit (1);
-    }
-
-    tow = num ? num : cf->head.block_size;
-    r = write (cf->block_fd, buf, tow);
-    if (r != tow)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_write, read no=%d, block=%d",
-              no, block);
+        logf (LOG_FATAL|LOG_ERRNO, "cf_write no=%d, block=%d", no, block);
         exit (1);
     }
     return 0;
@@ -384,25 +347,11 @@ int cf_close (CFile cf)
     flush_bucket (cf, -1);
     if (cf->dirty)
     {
-        int hash_bytes = cf->head.hash_size * sizeof(int);
-        if (lseek (cf->hash_fd, 0L, SEEK_SET) < 0)
-        {
-            logf (LOG_FATAL|LOG_ERRNO, "seek in hash fd");
-            exit (1);
-        }
-        hash_write (cf, &cf->head, sizeof(cf->head));
-        hash_write (cf, cf->array, hash_bytes);
+        mf_write (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
+        write_head (cf);
     }
-    if (close (cf->hash_fd) < 0)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "close hash fd");
-        exit (1);
-    }
-    if (close (cf->block_fd) < 0)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "close block fd");
-        exit (1);
-    }
+    mf_close (cf->hash_mf);
+    mf_close (cf->block_mf);
     xfree (cf->array);
     xfree (cf->parray);
     xfree (cf->iobuf);
