@@ -62,6 +62,7 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P pos, ISAMD_I data);
 ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P pos);
 void isamd_pp_close (ISAMD_PP pp);
 int isamd_read_item (ISAMD_PP pp, char **dst);
+int isamd_read_main_item (ISAMD_PP pp, char **dst);
 int isamd_pp_read (ISAMD_PP pp, void *buf);
 int isamd_pp_num (ISAMD_PP pp);
 
@@ -85,6 +86,9 @@ void isamd_buildlaterblock(ISAMD_PP pp);
 
 /*
  * $Log: isamd.h,v $
+ * Revision 1.2  1999/07/14 13:21:34  heikki
+ * Added isam-d files. Compiles (almost) clean. Doesn't work at all
+ *
  * Revision 1.1  1999/07/14 12:34:43  heikki
  * Copied from isamh, starting to change things...
  *
