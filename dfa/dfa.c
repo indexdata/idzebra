@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.23  1998-09-02 14:15:28  adam
+ * Revision 1.24  1998-10-28 10:48:55  adam
+ * Added type cast to prevent warning.
+ *
+ * Revision 1.23  1998/09/02 14:15:28  adam
  * Zebra uses GNU Configure.
  *
  * Revision 1.22  1998/06/24 12:16:10  adam
@@ -540,7 +543,7 @@ static int lex_sub(struct DFA_parse *parse_info)
         {
             const int *cc;
             for (cc = parse_info->charMap; *cc; cc += 2)
-                if (*cc == parse_info->look_ch)
+                if (*cc == (int) (parse_info->look_ch))
                 {
                     if (!cc[1])
                         --parse_info->expr_ptr;
