@@ -1,2 +1,2 @@
 
-SUBDIRS=gils usmarc api
+SUBDIRS=gils usmarc api dmoz

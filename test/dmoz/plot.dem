@@ -1,0 +1,12 @@
+set xlabel "runs"
+set ylabel "seconds"
+plot [0:] [0:] 'times-c.log' using 3 title 'ISAMC(user)' with linespoints, 'times-b.log' using 3 title 'ISAMB(user)' with linespoints, 'times-c.log' using 2 title 'ISAMC(total)' with linespoints,'times-b.log' using 2 title 'ISAMB(total)' with linespoints
+set output "times.ps"
+set terminal postscript
+replot
+set output
+set terminal x11
+pause -1 "Hit return to continue"
+
+
+
