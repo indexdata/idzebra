@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: gils.sgml,v 1.4 1996-05-13 13:25:51 quinn Exp $
+  $Id: gils.sgml,v 1.5 1997-12-12 06:37:53 adam Exp $
 -->
 
 <article>
 <title>Serving GILS Records with Zebra
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.4 $
+<date>$Revision: 1.5 $
 <abstract>
 This document explains how to set up a simple database of Government
 Information Locator Records using the Zebra retrieval engine and
@@ -71,7 +71,7 @@ distribution directory (this is the directory that was created when
 you executed <tt/tar/). Normally, Zebra compiles cleanly at least on
 Linux, Digital Unix (DEC OSF/1), and IBM AIX. On certain platforms
 (such as SunOS), you will need to edit the top-level <tt/Makefile/ to
-set the <tt/NETLIB/ variable to include the Berkeley Socket
+set the <tt/ELIBS/ variable to include the Berkeley Socket
 Libraries. On other Unix platforms, you <it/may/ need to modify
 Makefiles or header files, but in general, we have found Zebra to be
 easily portable across modern Unix-versions. You do need an ANSI-C
