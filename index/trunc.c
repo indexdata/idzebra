@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.9  1998-01-12 15:04:09  adam
+ * Revision 1.10  1998-03-05 08:45:13  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.9  1998/01/12 15:04:09  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.8  1997/10/31 12:34:27  adam
@@ -148,7 +152,7 @@ static void heap_close (struct trunc_info *ti)
     xfree (ti);
 }
 
-static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
+static RSET rset_trunc_r (ZebraHandle zi, ISAM_P *isam_p, int from, int to,
                          int merge_chunk)
 {
     RSET result; 
@@ -158,12 +162,13 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
     parms.key_size = sizeof(struct it_key);
     parms.temp_path = res_get (zi->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);
-    result_rsfd = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
+    result_rsfd = rset_open (result, RSETF_WRITE);
 
     if (to - from > merge_chunk)
     {
         RSFD *rsfd;
         RSET *rset;
+	int term_index;
         int i, i_add = (to-from)/merge_chunk + 1;
         struct trunc_info *ti;
         int rscur = 0;
@@ -185,8 +190,8 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
         ti = heap_init (rscur, sizeof(struct it_key), key_compare_it);
         for (i = rscur; --i >= 0; )
         {
-            rsfd[i] = rset_open (rset[i], RSETF_READ|RSETF_SORT_SYSNO);
-            if (rset_read (rset[i], rsfd[i], ti->tmpbuf))
+            rsfd[i] = rset_open (rset[i], RSETF_READ);
+            if (rset_read (rset[i], rsfd[i], ti->tmpbuf, &term_index))
                 heap_insert (ti, ti->tmpbuf, i);
             else
             {
@@ -202,7 +207,7 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
 
             while (1)
             {
-                if (!rset_read (rset[n], rsfd[n], ti->tmpbuf))
+                if (!rset_read (rset[n], rsfd[n], ti->tmpbuf, &term_index))
                 {
                     heap_delete (ti);
                     rset_close (rset[n], rsfd[n]);
@@ -353,7 +358,8 @@ static int isamc_trunc_cmp (const void *p1, const void *p2)
     return isc_block (i1) - isc_block (i2);
 }
 
-RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no)
+RSET rset_trunc (ZebraHandle zi, ISAM_P *isam_p, int no,
+		 const char *term, int length, const char *flags)
 {
     logf (LOG_DEBUG, "rset_trunc no=%d", no);
     if (zi->isam)
@@ -366,6 +372,7 @@ RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no)
 
             parms.pos = *isam_p;
             parms.is = zi->isam;
+	    parms.rset_term = rset_term_create (term, length, flags);
             return rset_create (rset_kind_isam, &parms);
         }
         qsort (isam_p, no, sizeof(*isam_p), isam_trunc_cmp);
@@ -380,6 +387,7 @@ RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no)
 
             parms.pos = *isam_p;
             parms.is = zi->isamc;
+	    parms.rset_term = rset_term_create (term, length, flags);
             return rset_create (rset_kind_isamc, &parms);
         }
 #if NEW_TRUNC
@@ -387,13 +395,13 @@ RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no)
         {
             rset_m_or_parms parms;
 
-            logf (LOG_LOG, "new_trunc");
             parms.key_size = sizeof(struct it_key);
             parms.cmp = key_compare_it;
             parms.isc = zi->isamc;
             parms.isam_positions = isam_p;
             parms.no_isam_positions = no;
-            parms.no_save_positions = 100;
+            parms.no_save_positions = 100000;
+	    parms.rset_term = rset_term_create (term, length, flags);
             return rset_create (rset_kind_m_or, &parms);
         }
 #endif

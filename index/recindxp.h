@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindxp.h,v $
- * Revision 1.3  1995-12-11 11:45:55  adam
+ * Revision 1.4  1998-03-05 08:45:12  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.3  1995/12/11 11:45:55  adam
  * Removed commented code.
  *
  * Revision 1.2  1995/12/11  09:12:51  adam
@@ -34,7 +38,6 @@ struct records_info {
 
     char *index_fname;
     BFile index_BFile;
-
 
     char *data_fname[REC_BLOCK_TYPES];
     BFile data_BFile[REC_BLOCK_TYPES];

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.27  1998-02-17 10:32:52  adam
+ * Revision 1.28  1998-03-05 08:45:12  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.27  1998/02/17 10:32:52  adam
  * Fixed bug: binary files weren't opened with flag b on NT.
  *
  * Revision 1.26  1998/01/29 13:39:13  adam
@@ -451,7 +455,6 @@ int heap_inpc (struct heap_info *hi)
         char *dict_info;
 
         strcpy (this_name, hci.cur_name);
-        logf (LOG_DEBUG, "inserting %s", 1+hci.cur_name);
 	assert (hci.cur_name[1]);
         no_diffs++;
         if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
@@ -525,7 +528,6 @@ int heap_inp (struct heap_info *hi)
         if ((info = dict_lookup (hi->dict, cur_name)))
         {
             ISAM_P isam_p, isam_p2;
-            logf (LOG_DEBUG, "updating %s", 1+cur_name);
             memcpy (&isam_p, info+1, sizeof(ISAM_P));
             isam_p2 = is_merge (hi->isam, isam_p, nmemb, key_buf);
             if (!isam_p2)
@@ -544,7 +546,6 @@ int heap_inp (struct heap_info *hi)
         else
         {
             ISAM_P isam_p;
-            logf (LOG_DEBUG, "inserting %s", 1+cur_name);
             no_insertions++;
             isam_p = is_merge (hi->isam, 0, nmemb, key_buf);
             dict_insert (hi->dict, cur_name, sizeof(ISAM_P), &isam_p);

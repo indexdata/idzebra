@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.55  1998-01-26 10:37:34  adam
+ * Revision 1.56  1998-03-05 08:45:12  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.55  1998/01/26 10:37:34  adam
  * Minor changes.
  *
  * Revision 1.54  1998/01/12 15:04:08  adam
@@ -297,8 +301,7 @@ int main (int argc, char **argv)
 
                     bf_lockDir (rGroupDef.bfs,
 				res_get (common_resource, "lockDir"));
-		    rGroupDef.zebra_maps = zebra_maps_open (res_get(
-			common_resource, "profilePath"), common_resource);
+		    rGroupDef.zebra_maps = zebra_maps_open (common_resource);
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
@@ -400,28 +403,31 @@ int main (int argc, char **argv)
                 switch (cmd)
                 {
                 case 'u':
-                    if (!key_open (rGroup.bfs, mem_max, rGroup.flagRw))
+                    if (!key_open (rGroup.bfs, mem_max, rGroup.flagRw,
+				   rGroup.dh))
 		    {
 			logf (LOG_LOG, "updating %s", rGroup.path);
 			repositoryUpdate (&rGroup);
-			nsections = key_close ();
+			nsections = key_close (rGroup.flagRw);
 		    }
                     break;
                 case 'U':
-                    if (!key_open (rGroup.bfs,mem_max, rGroup.flagRw))
+                    if (!key_open (rGroup.bfs,mem_max, rGroup.flagRw,
+				   rGroup.dh))
 		    {
 			logf (LOG_LOG, "updating (pass 1) %s", rGroup.path);
 			repositoryUpdate (&rGroup);
-			key_close ();
+			key_close (rGroup.flagRw);
 		    }
                     nsections = 0;
                     break;
                 case 'd':
-                    if (!key_open (rGroup.bfs,mem_max, rGroup.flagRw))
+                    if (!key_open (rGroup.bfs,mem_max, rGroup.flagRw,
+				   rGroup.dh))
 		    {
 			logf (LOG_LOG, "deleting %s", rGroup.path);
 			repositoryDelete (&rGroup);
-			nsections = key_close ();
+			nsections = key_close (rGroup.flagRw);
 		    }
                     break;
                 case 's':

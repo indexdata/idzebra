@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.29  1998-02-10 12:03:06  adam
+ * Revision 1.30  1998-03-05 08:45:13  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.29  1998/02/10 12:03:06  adam
  * Implemented Sort.
  *
  * Revision 1.28  1998/01/29 13:40:11  adam
@@ -125,28 +129,30 @@
 typedef struct {
     int sysno;
     int score;
-} ZServerSetSysno;
+} *ZebraPosSet;
 
-typedef struct ZServerSet_ {
-    char *name;
-    RSET rset;
-    int size;
-    struct zset_sort_info *sort_info;
-    struct ZServerSet_ *next;
-} ZServerSet;
+typedef struct zebra_set *ZebraSet;
+
+typedef struct zebra_rank_class {
+    struct rank_control *control;
+    int init_flag;
+    void *class_handle;
+    struct zebra_rank_class *next;
+} *ZebraRankClass;
    
-typedef struct {
+struct zebra_info {
     int registerState; /* 0 (no commit pages), 1 (use commit pages) */
     time_t registerChange;
-    ZServerSet *sets;
+    ZebraSet sets;
     Dict dict;
     SortIdx sortIdx;
     ISAM isam;
     ISAMC isamc;
     Records records;
     int errCode;
+    int hits;
     char *errString;
-    ZebTargetInfo *zti;
+    ZebraExplainInfo zei;
     data1_handle dh;
     data1_attset *registered_sets;
     BFiles bfs;
@@ -160,39 +166,68 @@ typedef struct {
     struct tms tms2;    
 #endif
     ZebraMaps zebra_maps;
-} ZServerInfo;
+    ZebraRankClass rank_classes;
+};
 
-int rpn_search (ZServerInfo *zi, ODR stream,
-                Z_RPNQuery *rpn, int num_bases, char **basenames, 
-                const char *setname, int *hits);
+typedef struct zebra_info *ZebraHandle;
 
-int rpn_scan (ZServerInfo *zi, ODR stream, Z_AttributesPlusTerm *zapt,
-              oid_value attributeset,
-              int num_bases, char **basenames,
-              int *position, int *num_entries, struct scan_entry **list,
-              int *status);
+struct rank_control {
+    char *name;
+    void *(*create)(ZebraHandle zh);
+    void (*destroy)(ZebraHandle zh, void *class_handle);
+    void *(*begin)(ZebraHandle zh, void *class_handle, RSET rset);
+    void (*end)(ZebraHandle zh, void *set_handle);
+    int (*calc)(void *set_handle, int sysno);
+    void (*add)(void *set_handle, int seqno, int term_index);
+};
 
-RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no);
+void rpn_search (ZebraHandle zh, ODR stream,
+		 Z_RPNQuery *rpn, int num_bases, char **basenames, 
+		 const char *setname);
 
-ZServerSet *resultSetAdd (ZServerInfo *zi, const char *name,
-                          int ov, RSET rset);
-ZServerSet *resultSetGet (ZServerInfo *zi, const char *name);
-void resultSetDestroy (ZServerInfo *zi);
 
-ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
-                                    int num, int *positions);
-void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num);
+typedef struct {
+    int occurrences;
+    char *term;
+} ZebraScanEntry;
 
-int resultSetSort (ZServerInfo *zi, bend_sort_rr *rr);
+void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
+	       oid_value attributeset,
+	       int num_bases, char **basenames,
+	       int *position, int *num_entries, ZebraScanEntry **list,
+	       int *is_partial);
+
+RSET rset_trunc (ZebraHandle zh, ISAM_P *isam_p, int no,
+		 const char *term, int length_term, const char *flags);
+
+ZebraSet resultSetAdd (ZebraHandle zh, const char *name,
+                          int ov, RSET rset, int *hits);
+ZebraSet resultSetGet (ZebraHandle zh, const char *name);
+RSET resultSetRef (ZebraHandle zh, Z_ResultSetId *resultSetId);
+void resultSetDestroy (ZebraHandle zh);
+
+ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
+			       int num, int *positions);
+void zebraPosSetDestroy (ZebraHandle zh, ZebraPosSet records, int num);
+
+void resultSetSort (ZebraHandle zh, ODR stream,
+		    int num_input_setnames, char **input_setnames,
+		    char *output_setname, Z_SortKeySpecList *sort_sequence,
+		    int *sort_status);
+
+void zebra_sort (ZebraHandle zh, ODR stream,
+		 int num_input_setnames, char **input_setnames,
+		 char *output_setname, Z_SortKeySpecList *sort_sequence,
+		 int *sort_status);
 
 void zlog_rpn (Z_RPNQuery *rpn);
 void zlog_scan (Z_AttributesPlusTerm *zapt, oid_value ast);
 
-int zebra_server_lock_init (ZServerInfo *zi);
-int zebra_server_lock_destroy (ZServerInfo *zi);
-int zebra_server_lock (ZServerInfo *zi, int lockCommit);
-void zebra_server_unlock (ZServerInfo *zi, int commitPhase);
-int zebra_server_lock_get_state (ZServerInfo *zi, time_t *timep);
+int zebra_server_lock_init (ZebraHandle zh);
+int zebra_server_lock_destroy (ZebraHandle zh);
+int zebra_server_lock (ZebraHandle zh, int lockCommit);
+void zebra_server_unlock (ZebraHandle zh, int commitPhase);
+int zebra_server_lock_get_state (ZebraHandle zh, time_t *timep);
 
 typedef struct attent
 {
@@ -200,4 +235,42 @@ typedef struct attent
     data1_local_attribute *local_attributes;
 } attent;
 
-int att_getentbyatt(ZServerInfo *zi, attent *res, oid_value set, int att);
+void zebraRankInstall (ZebraHandle zh, struct rank_control *ctrl);
+ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name);
+void zebraRankDestroy (ZebraHandle zh);
+
+int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att);
+
+extern struct rank_control *rank1_class;
+
+ZebraHandle zebra_open (const char *host, const char *configName);
+void zebra_search_rpn (ZebraHandle zh, ODR stream,
+		       Z_RPNQuery *query, int num_bases, char **basenames, 
+		       const char *setname);
+
+typedef struct {
+    int position;
+    char *buf;
+    int len;
+    oid_value format;
+    char *base;
+} ZebraRetrievalRecord;
+
+void zebra_records_retrieve (ZebraHandle zh, ODR stream,
+			     const char *setname, Z_RecordComposition *comp,
+			     oid_value input_format,
+			     int num_recs, ZebraRetrievalRecord *recs);
+
+int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
+			oid_value input_format, Z_RecordComposition *comp,
+			oid_value *output_format, char **rec_bufp,
+			int *rec_lenp, char **basenamep);
+
+void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
+		 oid_value attributeset,
+		 int num_bases, char **basenames,
+		 int *position, int *num_entries, ZebraScanEntry **list,
+		 int *is_partial);
+
+void zebra_close (ZebraHandle zh);
+

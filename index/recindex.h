@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.12  1998-01-12 15:04:08  adam
+ * Revision 1.13  1998-03-05 08:45:12  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.12  1998/01/12 15:04:08  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.11  1997/09/17 12:19:16  adam
@@ -83,6 +87,6 @@ enum {
     recInfo_delKeys, 
     recInfo_databaseName,
     recInfo_storeData,
-    recInfo_offset
+    recInfo_attr
 };
 

@@ -1,18 +1,26 @@
-Zebra TODO $Id: TODO,v 1.5 1998-01-29 13:40:27 adam Exp $
+Zebra TODO $Id: TODO,v 1.6 1998-03-05 08:45:11 adam Exp $
 
 Make regx-filter thread safe.
 
+Size of sort entries should be configurable.
+
+Use first field in sorting, i.e. author.
+
+System number sorting.
+
+Configurable default sorting criteria - used when query is not ranked.
+
+Configurable default search attributes.
+
 Better ranking in searches. Admin should be able specify initial
  weight to certain fields.
-
-Search result should hold information about hits for each term,
- especially when using ranked search.
-
-Admin should be able to specify set/attr when none is specified
- (currently bib1,use=any is used).
 
 Explain support - including d1 to grs (d1_grs.c) in YAZ; Zebra
  to auto-generate explain information depending on data1 system.
 
 ISAMC optimization: indirect block with pointers to all blocks
  in chain. The initial block should include the count as well.
+
+Create surrogate diagnostic when ONE record is missing insead of a
+non-surrogate diagnostic.
+

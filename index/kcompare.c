@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.22  1997-09-22 12:39:06  adam
+ * Revision 1.23  1998-03-05 08:45:12  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.22  1997/09/22 12:39:06  adam
  * Added get_pos method for the ranked result sets.
  *
  * Revision 1.21  1997/09/17 12:19:13  adam
@@ -279,7 +283,6 @@ ISAMC_M key_isamc_m (Res res)
 
     me->debug = atoi(res_get_def (res, "isamcDebug", "0"));
 
-    logf (LOG_LOG, "ISAMC system active");
     return me;
 }
 

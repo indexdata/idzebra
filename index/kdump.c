@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.14  1997-10-27 14:33:04  adam
+ * Revision 1.15  1998-03-05 08:45:12  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.14  1997/10/27 14:33:04  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -132,15 +136,16 @@ int main (int argc, char **argv)
     char *key_fname = NULL;
     char key_string[IT_MAX_WORD];
     char key_info[256];
+    ZebraMaps zm;
     FILE *inf;
+    Res res = NULL;
     struct it_key prevk;
-    chrmaptab map = 0;
 
     prevk.sysno = 0;
     prevk.seqno = 0;
 
     prog = *argv;
-    while ((ret = options ("m:v:", argv, argc, &arg)) != -2)
+    while ((ret = options ("c:v:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -150,12 +155,12 @@ int main (int argc, char **argv)
         {
             log_init (log_mask_str(arg), prog, NULL);
         }
-	else if (ret == 'm')
+	else if (ret == 'c')
 	{
-	    if (!(map = chrmaptab_create (NULL, arg, 0)))
-	    {
-		logf(LOG_FATAL, "Failed to open maptab");
-		exit(1);
+	    if (!(res = res_open (arg)))
+            {
+		logf(LOG_FATAL, "Failed to open resource file %s", arg);
+	        exit (1);
 	    }
 	}
         else
@@ -166,9 +171,12 @@ int main (int argc, char **argv)
     }
     if (!key_fname)
     {
-        fprintf (stderr, "kdump [-m maptab -v log] file\n");
+        fprintf (stderr, "kdump [-c config] [-v log] file\n");
         exit (1);
     }
+    if (!res)
+        res = res_open ("zebra.cfg");
+    zm = zebra_maps_open (res);
     if (!(inf = fopen (key_fname, "r")))
     {
         logf (LOG_FATAL|LOG_ERRNO, "fopen %s", key_fname);
@@ -179,26 +187,26 @@ int main (int argc, char **argv)
         struct it_key k;
         int op;
 	char keybuf[IT_MAX_WORD+1];
+	char *to = keybuf;
+	const char *from = key_string;
+        int usedb_type = from[0];
+        int reg_type = from[1];
 
         op = key_info[0];
         memcpy (&k, 1+key_info, sizeof(k));
-	if (map)
-	{
-	    char *to = keybuf, *from = key_string;
 
-	    while (*from)
-	    {
-		char *res = chr_map_output(map, from, 1);
-		while (*res)
-		    *(to++) = *(res++);
-	    }
-	    *to = '\0';
+	from += 2;  
+	while (*from)
+	{
+	    const char *res = zebra_maps_output (zm, reg_type, &from);
+	    while (*res)
+		*(to++) = *(res++);
 	}
-	else
-	    strcpy(keybuf, key_string);
-        printf ("%7d op=%d s=%-5d %s\n", k.sysno, op, k.seqno,
-                keybuf);
+	*to = '\0';
+        printf ("%c %3d %c %7d %5d %s\n", reg_type, usedb_type, op ? 'i':'d',
+		k.sysno, k.seqno, keybuf);
     }
+    zebra_maps_close (zm);
     if (fclose (inf))
     {
         logf (LOG_FATAL|LOG_ERRNO, "fclose %s", key_fname);

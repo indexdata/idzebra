@@ -1,3 +1,16 @@
+Changed the way Zebra keeps its maintenance information. Records
+in "SGML" notation using an EXPLAIN schema is now used when
+appropriate.
+
+Bug fix: Index didn't handle update/insert/delete of the same
+record (i.e. same recordId) in one run (one invocation of zebraidx).
+Only the first occurence of a record is considered.
+
+Most searches now return correct number of hits.
+
+New modular ranking system. Interested programmers are encouraged to
+inspect rank1.c and improve the algorithm.
+
 Bug fix: Lock files weren't removed as they should when using NT.
 
 Implemented Z39.50 Sort. Zebra's sort handler uses use attributes to

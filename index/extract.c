@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.79  1998-02-17 10:32:52  adam
+ * Revision 1.80  1998-03-05 08:45:11  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.79  1998/02/17 10:32:52  adam
  * Fixed bug: binary files weren't opened with flag b on NT.
  *
  * Revision 1.78  1998/02/10 12:03:05  adam
@@ -318,7 +322,7 @@ static int records_updated = 0;
 static int records_deleted = 0;
 static int records_processed = 0;
 
-static ZebTargetInfo *zti = NULL;
+static ZebraExplainInfo zti = NULL;
 
 static void logRecord (int showFlag)
 {
@@ -332,7 +336,7 @@ static void logRecord (int showFlag)
     }
 }
 
-int key_open (BFiles bfs, int mem, int rw)
+int key_open (BFiles bfs, int mem, int rw, data1_handle dh)
 {
     if (!mem)
         mem = atoi(res_get_def (common_resource, "memMax", "4"))*1024*1024;
@@ -357,7 +361,7 @@ int key_open (BFiles bfs, int mem, int rw)
 	dict_close (matchDict);
 	return -1;
     }
-    zti = zebTargetInfo_open (records, rw);
+    zti = zebraExplain_open (records, dh, rw);
     if (!zti)
     {
 	rec_close (&records);
@@ -536,13 +540,13 @@ void key_flush (void)
     key_buf_used = 0;
 }
 
-int key_close ()
+int key_close (int rw)
 {
     key_flush ();
     xfree (key_buf);
-#if 1
-    zebTargetInfo_close (zti, 1);
-#endif
+    if (rw)
+	zebraExplain_runNumberIncrement (zti, 1);
+    zebraExplain_close (zti, rw);
     rec_close (&records);
     dict_close (matchDict);
     sortIdx_close (sortIdx);
@@ -792,11 +796,12 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
     int seqno = 0;
     int off = 0;
 
-    if (zebTargetInfo_curDatabase (zti, databaseName))
+    if (zebraExplain_curDatabase (zti, databaseName))
     {
-        if (zebTargetInfo_newDatabase (zti, databaseName))
+        if (zebraExplain_newDatabase (zti, databaseName))
             abort ();
     }
+    zebraExplain_recordCountIncrement (zti, cmd ? 1 : -1);
     while (off < reckeys->buf_used)
     {
         const char *src = reckeys->buf + off;
@@ -820,9 +825,9 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
         ++ptr_i;
         key_buf[ptr_top-ptr_i] = (char*)key_buf + key_buf_used;
 
-        ch = zebTargetInfo_lookupSU (zti, attrSet, attrUse);
+        ch = zebraExplain_lookupSU (zti, attrSet, attrUse);
         if (ch < 0)
-            ch = zebTargetInfo_addSU (zti, attrSet, attrUse);
+            ch = zebraExplain_addSU (zti, attrSet, attrUse);
         assert (ch > 0);
         ((char*) key_buf) [key_buf_used++] = ch;
         while (*src)
@@ -848,7 +853,7 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
 }
 
 static const char **searchRecordKey (struct recKeys *reckeys,
-                               int attrSetS, int attrUseS)
+				     int attrSetS, int attrUseS)
 {
     static const char *ws[32];
     int off = 0;
@@ -1147,6 +1152,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
                           char *subType)
 {
     struct recExtractCtrl extractCtrl;
+    RecordAttr *recordAttr;
     int r;
     char *matchStr;
     SYSNO sysnotmp;
@@ -1252,7 +1258,10 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             logf (LOG_LOG, "add %s %s %ld", rGroup->recordType,
                   fname, (long) recordOffset);
         rec = rec_new (records);
+
         *sysno = rec->sysno;
+
+	recordAttr = rec_init_attr (zti, rec);
 
         if (matchStr)
         {
@@ -1270,6 +1279,17 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 
         rec = rec_get (records, *sysno);
         assert (rec);
+	
+	recordAttr = rec_init_attr (zti, rec);
+
+	if (recordAttr->runNumber == zebraExplain_runNumberIncrement (zti, 0))
+	{
+	    logf (LOG_LOG, "skipped %s %s %ld", rGroup->recordType,
+		  fname, (long) recordOffset);
+	    rec_rm (&rec);
+	    logRecord (0);
+	    return 1;
+	}
         delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
 	flushSortKeys (*sysno, 0);
@@ -1293,6 +1313,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
                     dict_delete (matchDict, matchStr);
                 rec_del (records, &rec);
             }
+	    rec_rm (&rec);
             logRecord (0);
             return 1;
         }
@@ -1347,25 +1368,33 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         rec->size[recInfo_delKeys] = 0;
     }
 
+    /* save file size of original record */
+    zebraExplain_recordBytesIncrement (zti, - recordAttr->recordSize);
+    recordAttr->recordSize = fi->file_moffset - recordOffset;
+    if (!recordAttr->recordSize)
+	recordAttr->recordSize = fi->file_max - recordOffset;
+    zebraExplain_recordBytesIncrement (zti, recordAttr->recordSize);
+
+    /* set run-number for this record */
+    recordAttr->runNumber = zebraExplain_runNumberIncrement (zti, 0);
+
     /* update store data */
     xfree (rec->info[recInfo_storeData]);
     if (rGroup->flagStoreData == 1)
     {
-        int size = fi->file_moffset - recordOffset; 
-        if (!size)
-            size = fi->file_max - recordOffset;
-        rec->size[recInfo_storeData] = size;
-        rec->info[recInfo_storeData] = xmalloc (size);
+        rec->size[recInfo_storeData] = recordAttr->recordSize;
+        rec->info[recInfo_storeData] = xmalloc (recordAttr->recordSize);
         if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
         {
             logf (LOG_ERRNO|LOG_FATAL, "seek to %ld in %s", fname,
                   (long) recordOffset);
             exit (1);
         }
-        if (read (fi->fd, rec->info[recInfo_storeData], size) < size)
+        if (read (fi->fd, rec->info[recInfo_storeData], recordAttr->recordSize)
+	    < recordAttr->recordSize)
         {
             logf (LOG_ERRNO|LOG_FATAL, "read %d bytes of %s",
-                  fi->file_max, fname);
+                  recordAttr->recordSize, fname);
             exit (1);
         }
     }
@@ -1380,11 +1409,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         rec_strdup (rGroup->databaseName, &rec->size[recInfo_databaseName]); 
 
     /* update offset */
-    xfree (rec->info[recInfo_offset]);
-
-    rec->size[recInfo_offset] = sizeof(recordOffset);
-    rec->info[recInfo_offset] = xmalloc (sizeof(recordOffset));
-    memcpy (rec->info[recInfo_offset], &recordOffset, sizeof(recordOffset));
+    recordAttr->recordOffset = recordOffset;
     
     /* commit this record */
     rec_put (records, &rec);

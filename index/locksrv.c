@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.10  1997-09-29 09:08:36  adam
+ * Revision 1.11  1998-03-05 08:45:12  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.10  1997/09/29 09:08:36  adam
  * Revised locking system to be thread safe for the server.
  *
  * Revision 1.9  1997/09/25 14:54:43  adam
@@ -54,7 +58,7 @@
 
 #include "zserver.h"
 
-int zebra_server_lock_init (ZServerInfo *zi)
+int zebra_server_lock_init (ZebraHandle zi)
 {
     char path_prefix[1024];
 
@@ -70,7 +74,7 @@ int zebra_server_lock_init (ZServerInfo *zi)
     return 0;
 }
 
-int zebra_server_lock_destroy (ZServerInfo *zi)
+int zebra_server_lock_destroy (ZebraHandle zi)
 {
     xfree (zi->server_path_prefix);
     zebra_lock_destroy (zi->server_lock_cmt);
@@ -79,7 +83,7 @@ int zebra_server_lock_destroy (ZServerInfo *zi)
     return 0;
 }
 
-int zebra_server_lock (ZServerInfo *zi, int commitPhase)
+int zebra_server_lock (ZebraHandle zi, int commitPhase)
 {
     if (!zi->server_lock_cmt)
     {
@@ -115,7 +119,7 @@ int zebra_server_lock (ZServerInfo *zi, int commitPhase)
     return 0;
 }
 
-void zebra_server_unlock (ZServerInfo *zi, int commitPhase)
+void zebra_server_unlock (ZebraHandle zi, int commitPhase)
 {
     if (zi->server_lock_org == NULL)
         return;
@@ -131,7 +135,7 @@ void zebra_server_unlock (ZServerInfo *zi, int commitPhase)
     }
 }
 
-int zebra_server_lock_get_state (ZServerInfo *zi, time_t *timep)
+int zebra_server_lock_get_state (ZebraHandle zi, time_t *timep)
 {
     char path[1024];
     char buf[256];

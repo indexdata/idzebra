@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.55  1998-02-10 12:03:06  adam
+ * Revision 1.56  1998-03-05 08:45:13  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.55  1998/02/10 12:03:06  adam
  * Implemented Sort.
  *
  * Revision 1.54  1998/01/29 13:39:13  adam
@@ -201,409 +205,148 @@
  * Initial work on z39 server.
  *
  */
+
 #include <stdio.h>
 #include <assert.h>
+#include <fcntl.h>
 #ifdef WINDOWS
 #include <io.h>
 #include <process.h>
 #else
 #include <unistd.h>
 #endif
-#include <fcntl.h>
 
 #include <data1.h>
-#include <recctrl.h>
 #include <dmalloc.h>
 
 #include "zserver.h"
-
-static int register_lock (ZServerInfo *zi)
-{
-    time_t lastChange;
-    int state = zebra_server_lock_get_state(zi, &lastChange);
-
-    switch (state)
-    {
-    case 'c':
-        state = 1;
-        break;
-    default:
-        state = 0;
-    }
-    zebra_server_lock (zi, state);
-#if USE_TIMES
-    times (&zi->tms1);
-#endif
-    if (zi->registerState == state)
-    {
-        if (zi->registerChange >= lastChange)
-            return 0;
-        logf (LOG_LOG, "Register completely updated since last access");
-    }
-    else if (zi->registerState == -1)
-        logf (LOG_LOG, "Reading register using state %d pid=%ld", state,
-              (long) getpid());
-    else
-        logf (LOG_LOG, "Register has changed state from %d to %d",
-              zi->registerState, state);
-    zi->registerChange = lastChange;
-    if (zi->records)
-    {
-        zebTargetInfo_close (zi->zti, 0);
-        dict_close (zi->dict);
-	sortIdx_close (zi->sortIdx);
-        if (zi->isam)
-            is_close (zi->isam);
-        if (zi->isamc)
-            isc_close (zi->isamc);
-        rec_close (&zi->records);
-    }
-    bf_cache (zi->bfs, state ? res_get (zi->res, "shadow") : NULL);
-    zi->registerState = state;
-    zi->records = rec_open (zi->bfs, 0);
-    if (!(zi->dict = dict_open (zi->bfs, FNAME_DICT, 40, 0)))
-        return -1;
-    if (!(zi->sortIdx = sortIdx_open (zi->bfs, 0)))
-	return -1;
-    zi->isam = NULL;
-    zi->isamc = NULL;
-    if (!res_get_match (zi->res, "isam", "i", NULL))
-    {
-        if (!(zi->isamc = isc_open (zi->bfs, FNAME_ISAMC,
-				    0, key_isamc_m(zi->res))))
-            return -1;
-
-    }
-    else
-    {
-        if (!(zi->isam = is_open (zi->bfs, FNAME_ISAM, key_compare, 0,
-                                  sizeof (struct it_key), zi->res)))
-            return -1;
-    }
-    zi->zti = zebTargetInfo_open (zi->records, 0);
-
-    return 0;
-}
-
-static void register_unlock (ZServerInfo *zi)
-{
-    static int waitSec = -1;
-
-#if USE_TIMES
-    times (&zi->tms2);
-    logf (LOG_LOG, "user/system: %ld/%ld",
-			(long) (zi->tms2.tms_utime - zi->tms1.tms_utime),
-			(long) (zi->tms2.tms_stime - zi->tms1.tms_stime));
-#endif
-    if (waitSec == -1)
-    {
-        char *s = res_get (zi->res, "debugRequestWait");
-        if (s)
-            waitSec = atoi (s);
-        else
-            waitSec = 0;
-    }
-#ifdef WINDOWS
-#else
-    if (waitSec > 0)
-        sleep (waitSec);
-#endif
-    if (zi->registerState != -1)
-        zebra_server_unlock (zi, zi->registerState);
-}
 
 static int bend_sort (void *handle, bend_sort_rr *rr);
 
 bend_initresult *bend_init (bend_initrequest *q)
 {
     bend_initresult *r = odr_malloc (q->stream, sizeof(*r));
-    ZServerInfo *zi = xmalloc (sizeof(*zi));
+    ZebraHandle zh;
     struct statserv_options_block *sob;
 
     r->errcode = 0;
     r->errstring = 0;
-    r->handle = zi;
     q->bend_sort = bend_sort;
 
     logf (LOG_DEBUG, "bend_init");
 
     sob = statserv_getcontrol ();
-    logf (LOG_LOG, "Reading resources from %s", sob->configname);
-    if (!(zi->res = res_open (sob->configname)))
+    if (!(zh = zebra_open (NULL, sob->configname)))
     {
-	logf (LOG_FATAL, "Failed to read resources `%s'", sob->configname);
+	logf (LOG_FATAL, "Failed to open Zebra `%s'", sob->configname);
 	r->errcode = 1;
 	return r;
     }
-    zebra_server_lock_init (zi);
-    zi->dh = data1_create ();
-    zi->bfs = bfs_create (res_get (zi->res, "register"));
-    bf_lockDir (zi->bfs, res_get (zi->res, "lockDir"));
-    data1_set_tabpath (zi->dh, res_get(zi->res, "profilePath"));
-    zi->sets = NULL;
-    zi->registerState = -1;  /* trigger open of registers! */
-    zi->registerChange = 0;
-
-    zi->records = NULL;
-    zi->registered_sets = NULL;
-    zi->zebra_maps = zebra_maps_open (res_get(zi->res, "profilePath"),
-				      zi->res);
+    r->handle = zh;
     return r;
 }
 
 bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
 {
-    ZServerInfo *zi = handle;
+    ZebraHandle zh = handle;
     bend_searchresult *r = odr_malloc (q->stream, sizeof(*r));
 
-    r->errcode = 0;
-    r->errstring = 0;
     r->hits = 0;
-
-    register_lock (zi);
-    zi->errCode = 0;
-    zi->errString = NULL;
-
+    r->errcode = 0;
+    r->errstring = NULL;
+    
     logf (LOG_LOG, "ResultSet '%s'", q->setname);
     switch (q->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
-        r->errcode = rpn_search (zi, q->stream, q->query->u.type_1,
-                                q->num_bases, q->basenames, q->setname,
-                                &r->hits);
-        r->errstring = zi->errString;
+	zebra_search_rpn (zh, q->stream, q->query->u.type_1,
+			  q->num_bases, q->basenames, q->setname);
+	r->errcode = zh->errCode;
+	r->errstring = zh->errString;
+	r->hits = zh->hits;
         break;
     default:
         r->errcode = 107;
     }
-    register_unlock (zi);
     return r;
-}
-
-struct fetch_control {
-    int record_offset;
-    int record_int_pos;
-    char *record_int_buf;
-    int record_int_len;
-    int fd;
-};
-
-static int record_ext_read (void *fh, char *buf, size_t count)
-{
-    struct fetch_control *fc = fh;
-    return read (fc->fd, buf, count);
-}
-
-static off_t record_ext_seek (void *fh, off_t offset)
-{
-    struct fetch_control *fc = fh;
-    return lseek (fc->fd, offset + fc->record_offset, SEEK_SET);
-}
-
-static off_t record_ext_tell (void *fh)
-{
-    struct fetch_control *fc = fh;
-    return lseek (fc->fd, 0, SEEK_CUR) - fc->record_offset;
-}
-
-static off_t record_int_seek (void *fh, off_t offset)
-{
-    struct fetch_control *fc = fh;
-    return (off_t) (fc->record_int_pos = offset);
-}
-
-static off_t record_int_tell (void *fh)
-{
-    struct fetch_control *fc = fh;
-    return (off_t) fc->record_int_pos;
-}
-
-static int record_int_read (void *fh, char *buf, size_t count)
-{
-    struct fetch_control *fc = fh;
-    int l = fc->record_int_len - fc->record_int_pos;
-    if (l <= 0)
-        return 0;
-    l = (l < count) ? l : count;
-    memcpy (buf, fc->record_int_buf + fc->record_int_pos, l);
-    fc->record_int_pos += l;
-    return l;
-}
-
-static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
-                          oid_value input_format, Z_RecordComposition *comp,
-			  oid_value *output_format, char **rec_bufp,
-			  int *rec_lenp, char **basenamep)
-{
-    Record rec;
-    char *fname, *file_type, *basename;
-    RecType rt;
-    struct recRetrieveCtrl retrieveCtrl;
-    char subType[128];
-    struct fetch_control fc;
-
-    rec = rec_get (zi->records, sysno);
-    if (!rec)
-    {
-        logf (LOG_DEBUG, "rec_get fail on sysno=%d", sysno);
-        return 14;
-    }
-    file_type = rec->info[recInfo_fileType];
-    fname = rec->info[recInfo_filename];
-    basename = rec->info[recInfo_databaseName];
-    *basenamep = odr_malloc (stream, strlen(basename)+1);
-    strcpy (*basenamep, basename);
-
-    if (!(rt = recType_byName (file_type, subType)))
-    {
-        logf (LOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
-	return 14;
-    }
-    logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
-    retrieveCtrl.fh = &fc;
-    fc.fd = -1;
-    if (rec->size[recInfo_storeData] > 0)
-    {
-        retrieveCtrl.readf = record_int_read;
-        retrieveCtrl.seekf = record_int_seek;
-        retrieveCtrl.tellf = record_int_tell;
-        fc.record_int_len = rec->size[recInfo_storeData];
-        fc.record_int_buf = rec->info[recInfo_storeData];
-        fc.record_int_pos = 0;
-        logf (LOG_DEBUG, "Internal retrieve. %d bytes", fc.record_int_len);
-    }
-    else 
-    {
-        if ((fc.fd = open (fname, O_BINARY|O_RDONLY)) == -1)
-        {
-            logf (LOG_WARN|LOG_ERRNO, "Retrieve fail; missing file: %s",
-		  fname);
-            rec_rm (&rec);
-            return 14;
-        }
-        memcpy (&fc.record_offset, rec->info[recInfo_offset],
-                sizeof(fc.record_offset));
-
-        retrieveCtrl.readf = record_ext_read;
-        retrieveCtrl.seekf = record_ext_seek;
-        retrieveCtrl.tellf = record_ext_tell;
-
-        record_ext_seek (retrieveCtrl.fh, 0);
-    }
-    retrieveCtrl.subType = subType;
-    retrieveCtrl.localno = sysno;
-    retrieveCtrl.score = score;
-    retrieveCtrl.odr = stream;
-    retrieveCtrl.input_format = retrieveCtrl.output_format = input_format;
-    retrieveCtrl.comp = comp;
-    retrieveCtrl.diagnostic = 0;
-    retrieveCtrl.dh = zi->dh;
-    (*rt->retrieve)(&retrieveCtrl);
-    *output_format = retrieveCtrl.output_format;
-    *rec_bufp = retrieveCtrl.rec_buf;
-    *rec_lenp = retrieveCtrl.rec_len;
-    if (fc.fd != -1)
-        close (fc.fd);
-    rec_rm (&rec);
-
-    return retrieveCtrl.diagnostic;
 }
 
 bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
 {
-    ZServerInfo *zi = handle;
+    ZebraHandle zh = handle;
     bend_fetchresult *r = odr_malloc (q->stream, sizeof(*r));
-    int positions[2];
-    ZServerSetSysno *records;
+    ZebraRetrievalRecord retrievalRecord;
 
-    register_lock (zi);
+    retrievalRecord.position = q->number;
+    
+    zebra_records_retrieve (zh, q->stream, q->setname, q->comp,
+			    q->format, 1, &retrievalRecord);
 
-    r->errstring = 0;
-    r->last_in_set = 0;
-    r->basename = "base";
-
-    zi->errCode = 0;
-
-    positions[0] = q->number;
-    records = resultSetSysnoGet (zi, q->setname, 1, positions);
-    if (!records)
+    if (zh->errCode)
     {
-        logf (LOG_DEBUG, "resultSetRecordGet, error");
-        r->errcode = 13;
-        register_unlock (zi);
-        return r;
+	r->errcode = zh->errCode;
+	r->errstring = zh->errString;
     }
-    if (!records[0].sysno)
+    else
     {
-        r->errcode = 13;
-        logf (LOG_DEBUG, "Out of range. pos=%d", q->number);
-        register_unlock (zi);
-        return r;
+	r->errcode = 0;
+	r->basename = retrievalRecord.base;
+	r->record = retrievalRecord.buf;
+	r->len = retrievalRecord.len;
+	r->format = retrievalRecord.format;
     }
-    r->errcode = record_fetch (zi, records[0].sysno,
-                              records[0].score, q->stream, q->format,
-                              q->comp, &r->format, &r->record, &r->len,
-                              &r->basename);
-    resultSetSysnoDel (zi, records, 1);
-    register_unlock (zi);
     return r;
 }
 
 bend_deleteresult *bend_delete (void *handle, bend_deleterequest *q, int *num)
 {
-    ZServerInfo *zi = handle;
-    register_lock (zi);
-    register_unlock (zi);
     return 0;
 }
 
 bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
 {
-    ZServerInfo *zi = handle;
+    ZebraScanEntry *entries;
+    ZebraHandle zh = handle;
     bend_scanresult *r = odr_malloc (q->stream, sizeof(*r));
-    int status;
-
-    register_lock (zi);
-    zi->errCode = 0;
-    zi->errString = 0;
-
+    int is_partial, i;
+    
     r->term_position = q->term_position;
     r->num_entries = q->num_entries;
-    r->errcode = rpn_scan (zi, q->stream, q->term,
-                          q->attributeset,
-                          q->num_bases, q->basenames,
-                          &r->term_position,
-                          &r->num_entries, &r->entries, &status);
-    r->errstring = zi->errString;
-    r->status = status;
-    register_unlock (zi);
+
+    r->entries = odr_malloc (q->stream, sizeof(*r->entries) * q->num_entries);
+    zebra_scan (zh, q->stream, q->term,
+		q->attributeset,
+		q->num_bases, q->basenames,
+		&r->term_position,
+		&r->num_entries, &entries, &is_partial);
+    if (is_partial)
+	r->status = BEND_SCAN_PARTIAL;
+    else
+	r->status = BEND_SCAN_SUCCESS;
+    for (i = 0; i < r->num_entries; i++)
+    {
+	r->entries[i].term = entries[i].term;
+	r->entries[i].occurrences = entries[i].occurrences;
+    }
+    r->errcode = zh->errCode;
+    r->errstring = zh->errString;
     return r;
 }
 
 void bend_close (void *handle)
 {
-    ZServerInfo *zi = handle;
+    zebra_close ((ZebraHandle) handle);
+}
 
-    if (zi->records)
-    {
-        resultSetDestroy (zi);
-        zebTargetInfo_close (zi->zti, 0);
-        dict_close (zi->dict);
-	sortIdx_close (zi->sortIdx);
-        if (zi->isam)
-            is_close (zi->isam);
-        if (zi->isamc)
-            isc_close (zi->isamc);
-        rec_close (&zi->records);
-        register_unlock (zi);
-    }
-    zebra_maps_close (zi->zebra_maps);
-    bfs_destroy (zi->bfs);
-    data1_destroy (zi->dh);
-    zebra_server_lock_destroy (zi);
+int bend_sort (void *handle, bend_sort_rr *rr)
+{
+    ZebraHandle zh = handle;
 
-    res_close (zi->res);
-    xfree (zi);
+    zebra_sort (zh, rr->stream, rr->num_input_setnames, rr->input_setnames,
+		rr->output_setname, rr->sort_sequence, &rr->sort_status);
+    rr->errcode = zh->errCode;
+    rr->errstring = zh->errString;
+    return 0;
 }
 
 #ifndef WINDOWS
@@ -624,20 +367,6 @@ static void pre_init (struct statserv_options_block *sob)
     }
 }
 #endif
-
-int bend_sort (void *handle, bend_sort_rr *rr)
-{
-    ZServerInfo *zi = handle;
-
-#if 1
-    register_lock (zi);
-
-    resultSetSort (zi, rr);
-
-    register_unlock (zi);
-#endif
-    return 0;
-}
 
 int main (int argc, char **argv)
 {
