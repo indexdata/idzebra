@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.12  1995-09-15 14:45:21  adam
+ * Revision 1.13  1995-09-18 14:17:50  adam
+ * Minor changes.
+ *
+ * Revision 1.12  1995/09/15  14:45:21  adam
  * Retrieve control.
  * Work on truncation.
  *
@@ -241,7 +244,7 @@ static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
                         int merge_chunk)
 {
     logf (LOG_DEBUG, "rset_trunc, range=%d-%d", from, to-1);
-    if (from - to > merge_chunk)
+    if (to - from > merge_chunk)
     {
         return NULL;
     }
@@ -254,6 +257,7 @@ static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
         RSFD rsfd;
         rset_temp_parms parms;
 
+        ispt = xmalloc (sizeof(*ispt) * (to-from));
         parms.key_size = sizeof (struct it_key);
         result = rset_create (rset_kind_temp, &parms);
         rsfd = rset_open (result, 1);
@@ -279,6 +283,7 @@ static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
             is_pt_free (ispt[i]);
         rset_close (result, rsfd);
         heap_close (ti);
+        xfree (ispt);
         return result;
     }
 }
@@ -347,7 +352,7 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         zi->errCode = 120;
         return -1;
     case 101:        /* process # in term */
-        for (j = 0, i = 0; term_sub[i] && i < 3; i++)
+        for (j = 0, i = 0; term_sub[i] && i < 2; i++)
             term_dict[j++] = term_sub[i];
         for (; term_sub[i]; i++)
             if (term_sub[i] == '#')
@@ -454,7 +459,7 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
         return rset_create (rset_kind_isam, &parms);
     }
     else
-        return rset_trunc (zi->wordIsam, isam_positions, 0, isam_p_indx, 200);
+        return rset_trunc (zi->wordIsam, isam_positions, 0, isam_p_indx, 400);
 }
 
 static RSET rpn_search_APT_phrase (ZServerInfo *zi,
