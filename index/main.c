@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.87 2002-04-23 18:07:17 adam Exp $
+ * $Id: main.c,v 1.88 2002-04-23 18:09:05 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
@@ -232,7 +232,7 @@ int main (int argc, char **argv)
     zebra_stop (zs);
 #if HAVE_SYS_TIMES_H
     times(&tms2);
-    yaz_log (LOG_LOG, "user/system: %ld/%ld",
+    yaz_log (LOG_LOG, "zebraidx user/system: %ld/%ld",
 		(long) tms2.tms_utime - tms1.tms_utime,
 		(long) tms2.tms_stime - tms1.tms_stime);
 #endif
