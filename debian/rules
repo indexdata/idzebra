@@ -91,7 +91,7 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_movefiles -p idzebra usr/share/zebra usr/bin
+	dh_movefiles -p idzebra usr/share/idzebra usr/bin
 
 	cp LICENSE.zebra debian/copyright
 	cp CHANGELOG changelog
@@ -117,7 +117,7 @@ binary-arch: build install
 	-find debian/tmp -type d -name CVS | xargs rm -rf
 	# For some reason it is necessary to remove empty-dirs in doc
 	-rm -rf debian/tmp/usr/include debian/tmp/usr/share/aclocal debian/tmp/usr/lib debian/tmp/usr/bin \
-	        debian/tmp/usr/share/zebra
+	        debian/tmp/usr/share/idzebra
 
 	dh_builddeb -p idzebra
 

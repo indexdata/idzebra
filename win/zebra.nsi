@@ -1,10 +1,10 @@
-; $Id: zebra.nsi,v 1.3 2002-09-06 19:55:25 adam Exp $
+; $Id: zebra.nsi,v 1.4 2002-09-09 09:36:24 adam Exp $
 
 !define VERSION "1.3.2"
 
 Name "Zebra"
 Caption "Index Data Yebra ${VERSION} Setup"
-OutFile "zebra_${VERSION}.exe"
+OutFile "idzebra_${VERSION}.exe"
 
 LicenseText "You must read the following license before installing:"
 LicenseData license.txt

@@ -1,11 +1,11 @@
-Name: zebra
+Name: idzebra
 Version: 1.3.2
 Release: 1
 Requires: yaz expat bzip2-libs tcl
 Copyright: GPL
 Group: Applications/Databases
 Vendor: Index Data ApS <info@indexdata.dk>
-Source: zebra-%{version}.tar.gz
+Source: idzebra-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 URL: http://www.indexdata.dk/zebra/
@@ -35,7 +35,7 @@ cd doc; make prefix=$RPM_BUILD_ROOT/usr install
 %files
 %defattr(-,root,root)
 %doc README LICENSE.zebra CHANGELOG 
-%config /usr/share/zebra/tab
+%config /usr/share/idzebra/tab
 /usr/bin/zebrasrv
 /usr/bin/zebraidx
-/usr/share/doc/zebra
+/usr/share/doc/idzebra

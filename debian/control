@@ -1,4 +1,4 @@
-Source: zebra
+Source: idzebra
 Standards-Version: 2.5.0.0
 Maintainer: Adam Dickmeiss <adam@indexdata.dk>
 Priority: extra
