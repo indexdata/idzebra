@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.27 2004-08-06 12:27:30 adam Exp $
+# $Id: makefile,v 1.28 2004-08-06 13:35:45 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -212,13 +212,8 @@ APITEST_OBJS= \
 	$(OBJDIR)\apitest.obj
 
 ZEBRALIB_OBJS= \
-	$(OBJDIR)\isam.obj \
 	$(OBJDIR)\isamc.obj \
-	$(OBJDIR)\isutil.obj \
-	$(OBJDIR)\memory.obj \
 	$(OBJDIR)\merge.obj \
-	$(OBJDIR)\physical.obj \
-	$(OBJDIR)\rootblk.obj \
 	$(OBJDIR)\zebra-lock.obj \
 	$(OBJDIR)\attribute.obj \
 	$(OBJDIR)\bfile.obj \
@@ -266,7 +261,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\retrieve.obj \
 	$(OBJDIR)\rsbool.obj \
 	$(OBJDIR)\rset.obj \
-	$(OBJDIR)\rsisam.obj \
 	$(OBJDIR)\rsisamc.obj \
 	$(OBJDIR)\rsm_or.obj \
 	$(OBJDIR)\rsnull.obj \
@@ -285,7 +279,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\zsets.obj \
 	$(OBJDIR)\isams.obj \
 	$(OBJDIR)\isamb.obj \
-	$(OBJDIR)\rsisamd.obj \
 	$(OBJDIR)\rsisamb.obj \
 	$(OBJDIR)\rsbetween.obj \
 	$(OBJDIR)\rsprox.obj \
