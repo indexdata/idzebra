@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.11  1995-09-27 12:22:28  adam
+ * Revision 1.12  1995-09-28 12:10:32  adam
+ * Bug fixes. Field prefix used in queries.
+ *
+ * Revision 1.11  1995/09/27  12:22:28  adam
  * More work on extract in record control.
  * Field name is not in isam keys but in prefix in dictionary words.
  *
@@ -51,8 +54,8 @@
 #define IT_KEY_HAVE_FIELD 0
 
 struct it_key {
-    int   sysno;
-    short seqno;
+    int   sysno : 24;
+    int   seqno : 16;
 };
 
 struct dir_entry {
@@ -87,3 +90,4 @@ void strtab_del (struct strtab *t,
                  void (*func)(const char *name, void *info, void *data),
                  void *data);
 int index_char_cvt (int c);
+int index_word_prefix (char *string, int attrSet, int attrUse);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.13  1995-09-18 14:17:50  adam
+ * Revision 1.14  1995-09-28 12:10:32  adam
+ * Bug fixes. Field prefix used in queries.
+ *
+ * Revision 1.13  1995/09/18  14:17:50  adam
  * Minor changes.
  *
  * Revision 1.12  1995/09/15  14:45:21  adam
@@ -395,10 +398,11 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    sizez = term->u.general->len;
+    i = index_word_prefix (termz, 1, 1016);
+    sizez = i + term->u.general->len;
     if (sizez > IT_MAX_WORD)
         sizez = IT_MAX_WORD;
-    for (i = 0; i<sizez; i++)
+    for ( ; i < sizez; i++)
         termz[i] = index_char_cvt (term->u.general->buf[i]);
     termz[i] = '\0';
 
@@ -440,10 +444,11 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    sizez = term->u.general->len;
+    i = index_word_prefix (termz, 1, 1016);
+    sizez = i + term->u.general->len;
     if (sizez > IT_MAX_WORD)
         sizez = IT_MAX_WORD;
-    for (i = 0; i<sizez; i++)
+    for ( ; i < sizez; i++)
         termz[i] = index_char_cvt (term->u.general->buf[i]);
     termz[i] = '\0';
 
@@ -477,10 +482,11 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    sizez = term->u.general->len;
+    i = index_word_prefix (termz, 1, 1016);
+    sizez = i + term->u.general->len;
     if (sizez > IT_MAX_WORD)
         sizez = IT_MAX_WORD;
-    for (i = 0; i<sizez; i++)
+    for ( ; i < sizez; i++)
         termz[i] = index_char_cvt (term->u.general->buf[i]);
     termz[i] = '\0';
 

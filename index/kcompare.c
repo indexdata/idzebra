@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.8  1995-09-28 09:19:42  adam
+ * Revision 1.9  1995-09-28 12:10:32  adam
+ * Bug fixes. Field prefix used in queries.
+ *
+ * Revision 1.8  1995/09/28  09:19:42  adam
  * xfree/xmalloc used everywhere.
  * Extract/retrieve method seems to work for text records.
  *
@@ -86,4 +89,10 @@ int key_compare (const void *p1, const void *p2)
 int index_char_cvt (int c)
 {
     return tolower (c);
+}
+
+int index_word_prefix (char *string, int attrSet, int attrUse)
+{
+    sprintf (string, "%c%04d", attrSet + '0', attrUse);
+    return 5;
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.10  1995-09-28 09:19:41  adam
+ * Revision 1.11  1995-09-28 12:10:31  adam
+ * Bug fixes. Field prefix used in queries.
+ *
+ * Revision 1.10  1995/09/28  09:19:41  adam
  * xfree/xmalloc used everywhere.
  * Extract/retrieve method seems to work for text records.
  *
@@ -128,7 +131,7 @@ void wordFlush (int sysno)
 static void wordInit (RecWord *p)
 {
     p->attrSet = 1;
-    p->attrUse = 1;
+    p->attrUse = 1016;
     p->which = Word_String;
 }
 
@@ -137,7 +140,6 @@ static void wordAdd (const RecWord *p)
     struct it_key key;
     char x;
     size_t i;
-    char wordPrefix[8];
 
     if (key_offset + 1000 > key_buf_size)
     {
@@ -149,9 +151,8 @@ static void wordAdd (const RecWord *p)
         xfree (key_buf);
         key_buf = new_key_buf;
     }
-    sprintf (wordPrefix, "%c%04d", p->attrSet + '0', p->attrUse);
-    strcpy (key_buf + key_offset, wordPrefix);
-    key_offset += strlen (wordPrefix);
+    key_offset += index_word_prefix (key_buf + key_offset,
+                                     p->attrSet, p->attrUse);
     switch (p->which)
     {
     case Word_String:
@@ -167,7 +168,7 @@ static void wordAdd (const RecWord *p)
     key_offset++;
 
     key.sysno = key_sysno;
-    key.seqno   = p->seqno;
+    key.seqno = p->seqno;
     memcpy (key_buf + key_offset, &key, sizeof(key));
     key_offset += sizeof(key);
 }
