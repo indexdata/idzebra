@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.17  1995-12-11 09:03:51  adam
+ * Revision 1.18  1996-01-02 08:59:06  quinn
+ * Changed "commit" setting to "shadow".
+ *
+ * Revision 1.17  1995/12/11  09:03:51  adam
  * New function: cf_unlink.
  * New member of commit file head: state (0) deleted, (1) hash file.
  *
@@ -71,11 +74,11 @@ void bf_cache (int enableFlag)
     if (enableFlag)
     {
         if (!commit_area)
-            if (res_get (common_resource, "commit"))
-                commit_area = mf_init ("commit");
+            if (res_get (common_resource, "shadow"))
+                commit_area = mf_init ("shadow");
             else
             {
-                logf (LOG_FATAL, "Commit area must be defined if commit"
+                logf (LOG_FATAL, "Shadow area must be defined if commit"
                       "is to be enabled");
                 exit (1);
             }
