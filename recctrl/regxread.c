@@ -1,5 +1,5 @@
-/* $Id: regxread.c,v 1.49 2003-09-16 13:56:52 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: regxread.c,v 1.50 2004-05-25 12:13:15 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -882,7 +882,7 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
 {
     struct DFA_state *state = dfa->states[0];
     struct DFA_tran *t;
-    unsigned char c;
+    unsigned char c = 0;
     unsigned char c_prev = 0;
     int ptr = *pptr;          /* current pointer */
     int start_ptr = *pptr;    /* first char of match */
@@ -1048,6 +1048,8 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
 #endif
         res = data1_mk_root (spec->dh, spec->m, absynName);
         
+	spec->d1_level = 0;
+
         spec->d1_stack[spec->d1_level++] = res;
 
         res = data1_mk_tag (spec->dh, spec->m, absynName, 0, res);
@@ -1107,7 +1109,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
     }
     else if (!strcmp (argv[1], "element"))
     {
-	int min_level = 1;
+	int min_level = 2;
 	char *element = 0;
 	if (argc >= 3 && !strcmp(argv[2], "-record"))
 	{
@@ -1119,7 +1121,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
 	    if (argc == 3)
 		element = argv[2];
 	tagEnd (spec, min_level, element, (element ? strlen(element) : 0));
-	if (spec->d1_level == 0)
+	if (spec->d1_level <= 1)
 	{
 #if REGX_DEBUG
 	    logf (LOG_LOG, "end element end records");
@@ -1180,7 +1182,7 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
 	argi++;
     }
     if (element)
-	tagEnd (spec, 1, NULL, 0);
+	tagEnd (spec, 2, NULL, 0);
     return TCL_OK;
 }
 
@@ -1283,7 +1285,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 r = execTok (spec, &s, &cmd_str, &cmd_len);
                 if (r < 2)
                     continue;
-                if (spec->d1_level == 0)
+                if (spec->d1_level <= 1)
                 {
                     static char absynName[64];
                     data1_node *res;
@@ -1297,6 +1299,8 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 #endif
                     res = data1_mk_root (spec->dh, spec->m, absynName);
                     
+		    spec->d1_level = 0;
+
                     spec->d1_stack[spec->d1_level++] = res;
 
                     res = data1_mk_tag (spec->dh, spec->m, absynName, 0, res);
@@ -1395,7 +1399,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 	    }
 	    else if (!strcmp (p, "element"))
 	    {
-                int min_level = 1;
+                int min_level = 2;
                 while ((r = execTok (spec, &s, &cmd_str, &cmd_len)) == 3)
                 {
                     if (cmd_len==7 && !memcmp ("-record", cmd_str, cmd_len))
@@ -1408,7 +1412,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 		}
 		else
 		    tagEnd (spec, min_level, NULL, 0);
-                if (spec->d1_level == 0)
+                if (spec->d1_level <= 1)
                 {
 #if REGX_DEBUG
 		    logf (LOG_LOG, "end element end records");
@@ -1462,7 +1466,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 r = execTok (spec, &s, &cmd_str, &cmd_len);
             } while (r > 1);
             if (element_str)
-                tagEnd (spec, 1, NULL, 0);
+                tagEnd (spec, 2, NULL, 0);
         }
         else if (!strcmp (p, "unread"))
         {
