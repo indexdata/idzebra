@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.145 2003-06-30 19:37:12 adam Exp $
+/* $Id: extract.c,v 1.146 2003-10-07 09:18:43 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1751,9 +1751,9 @@ static void extract_add_complete_field (RecWord *p)
 void extract_token_add (RecWord *p)
 {
     WRBUF wrbuf;
-
 #if 0
-    yaz_log (LOG_LOG, "reg_type=%c attrSet=%d attrUse=%d seqno=%d s=%.*s",
+    yaz_log (LOG_LOG, "token_add "
+	     "reg_type=%c attrSet=%d attrUse=%d seqno=%d s=%.*s",
              p->reg_type, p->attrSet, p->attrUse, p->seqno, p->length,
              p->string);
 #endif

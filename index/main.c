@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.106 2003-09-16 13:58:25 adam Exp $
+/* $Id: main.c,v 1.107 2003-10-07 09:18:43 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -37,6 +37,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #if HAVE_TCL_H
 #include <tcl.h>
+#endif
+
+#if HAVE_EXPAT_H
+#include <expat.h>
 #endif
 
 #include <data1.h>
@@ -263,6 +267,14 @@ int main (int argc, char **argv)
 #endif
 #if HAVE_TCL_H
 	    printf("Using: Tcl %s\n", TCL_VERSION);
+#endif
+#if HAVE_EXPAT_H
+	    if (1)
+	    {
+		XML_Expat_Version v = XML_ExpatVersionInfo();
+		printf ("Using: Expat %d.%d.%d\n",
+			v.major, v.minor, v.micro);
+	    }
 #endif
         }
         else if (ret == 'v')
