@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.9  1995-09-14 07:48:24  adam
+ * Revision 1.10  1995-09-28 14:22:57  adam
+ * Sort uses smaller temporary files.
+ *
+ * Revision 1.9  1995/09/14  07:48:24  adam
  * Record control management.
  *
  * Revision 1.8  1995/09/06  16:11:18  adam
@@ -50,6 +53,8 @@ int main (int argc, char **argv)
     char *arg;
     char *base_name = NULL;
     char *base_path = NULL;
+    int nsections;
+    char **mbuf;
 
     prog = *argv;
     while ((ret = options ("r:v:", argv, argc, &arg)) != -2)
@@ -86,7 +91,7 @@ int main (int argc, char **argv)
             else
             {
                 unlink ("keys.tmp");
-                key_open ("keys.tmp");
+                key_open (3000000);
                 repository (cmd, arg, base_path);
                 cmd = 0;
             }
@@ -111,13 +116,14 @@ int main (int argc, char **argv)
                  "base cmd1 dir1 cmd2 dir2 ...\n");
         exit (1);
     }
-    if (!key_close ())
+    nsections = key_close ();
+    if (!nsections)
         exit (0);
-    logf (LOG_LOG, "Sorting");
-    if (!key_sort ("keys.tmp", 3000000))
-        exit (0);
+    logf (LOG_LOG, "Merge sorting");
+    mbuf = xmalloc (100000);
+    merge_sort (mbuf, 1, nsections+1);
     logf (LOG_LOG, "Input");
-    key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, "keys.tmp", 60);
+    key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, "keys1.tmp", 60);
     exit (0);
 }
 

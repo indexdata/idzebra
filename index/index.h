@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.12  1995-09-28 12:10:32  adam
+ * Revision 1.13  1995-09-28 14:22:56  adam
+ * Sort uses smaller temporary files.
+ *
+ * Revision 1.12  1995/09/28  12:10:32  adam
  * Bug fixes. Field prefix used in queries.
  *
  * Revision 1.11  1995/09/27  12:22:28  adam
@@ -69,15 +72,16 @@ void repository (int cmd, const char *rep, const char *base_path);
 
 void file_extract (int cmd, const char *fname, const char *kname);
 
-void key_open (const char *fname);
+void key_open (int mem);
 int key_close (void);
 void key_write (int cmd, struct it_key *k, const char *str);
 int key_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
 void key_input (const char *dict_fname, const char *isam_fname, 
                 const char *key_fname, int cache);
-int key_sort (const char *key_fname, size_t mem);
+int merge_sort (char **buf, int from, int to);
 
+#define TEMP_FNAME  "keys%d.tmp"
 #define FNAME_WORD_DICT "worddict"
 #define FNAME_WORD_ISAM "wordisam"
 #define FNAME_FILE_DICT "filedict"

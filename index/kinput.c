@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.3  1995-09-06 16:11:17  adam
+ * Revision 1.4  1995-09-28 14:22:57  adam
+ * Sort uses smaller temporary files.
+ *
+ * Revision 1.3  1995/09/06  16:11:17  adam
  * Option: only one word key per file.
  *
  * Revision 1.2  1995/09/04  12:33:42  adam
@@ -79,7 +82,7 @@ static int inp (Dict dict, ISAM isam, const char *name)
         {
             if (!read_one (inf, next_name, next_key))
                 break;
-            if (strcmp (next_name, cur_name))
+            if (*next_name && strcmp (next_name, cur_name))
                 break;
             memcpy (key_buf + key_buf_ptr, next_key, KEY_SIZE);
             key_buf_ptr += KEY_SIZE;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.11  1995-09-28 12:10:31  adam
+ * Revision 1.12  1995-09-28 14:22:56  adam
+ * Sort uses smaller temporary files.
+ *
+ * Revision 1.11  1995/09/28  12:10:31  adam
  * Bug fixes. Field prefix used in queries.
  *
  * Revision 1.10  1995/09/28  09:19:41  adam
@@ -54,27 +57,44 @@
 
 static Dict file_idx;
 static SYSNO sysno_next;
-static int key_fd = -1;
 static int sys_idx_fd = -1;
-static char *key_buf;
-static int key_offset, key_buf_size;
+
 static int key_cmd;
 static int key_sysno;
+static char **key_buf;
+static size_t ptr_top;
+static size_t ptr_i;
+static size_t kused;
+static int key_file_no;
 
-void key_open (const char *fname)
+static int sort_compare (const void *p1, const void *p2)
+{
+    int r;
+    size_t l;
+    char *cp1 = *(char**) p1;
+    char *cp2 = *(char**) p2;
+
+    if ((r = strcmp (cp1, cp2)))
+        return r;
+    l = strlen(cp1); 
+    if ((r = key_compare (cp1+l, cp2+l)))
+        return r;
+    return cp1[l+sizeof(struct it_key)] -
+           cp2[l+sizeof(struct it_key)];
+}
+
+void key_open (int mem)
 {
     void *file_key;
-    if (key_fd != -1)
-        return;
-    if ((key_fd = open (fname, O_RDWR|O_CREAT, 0666)) == -1)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "open %s", fname);
-        exit (1);
-    }
-    logf (LOG_DEBUG, "key_open of %s", fname);
-    key_buf_size = 49100;
-    key_buf = xmalloc (key_buf_size);
-    key_offset = 0;
+
+    if (mem < 50000)
+        mem = 50000;
+    key_buf = xmalloc (mem);
+    ptr_top = mem/sizeof(char*);
+    ptr_i = 0;
+    kused = 0;
+    key_file_no = 0;
+
     if (!(file_idx = dict_open (FNAME_FILE_DICT, 40, 1)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", "fileidx");
@@ -91,41 +111,76 @@ void key_open (const char *fname)
         exit (1);
     }
 }
+    
+void key_flush (void)
+{
+    FILE *outf;
+    char out_fname[200];
+    char *prevcp, *cp;
+    
+    if (ptr_i <= 0)
+        return;
+
+    key_file_no++;
+    logf (LOG_LOG, "sorting section %d", key_file_no);
+    qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), sort_compare);
+    sprintf (out_fname, TEMP_FNAME, key_file_no);
+
+
+    if (!(outf = fopen (out_fname, "w")))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fopen (4) %s", out_fname);
+        exit (1);
+    }
+    logf (LOG_LOG, "writing section %d", key_file_no);
+    prevcp = cp = key_buf[ptr_top-ptr_i];
+    
+    if (fwrite (cp, strlen (cp)+2+sizeof(struct it_key), 1, outf) != 1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fwrite %s", out_fname);
+        exit (1);
+    }
+    while (--ptr_i > 0)
+    {
+        cp = key_buf[ptr_top-ptr_i];
+        if (strcmp (cp, prevcp))
+        {
+            if (fwrite (cp, strlen (cp)+2+sizeof(struct it_key), 1,
+                        outf) != 1)
+            {
+                logf (LOG_FATAL|LOG_ERRNO, "fwrite %s", out_fname);
+                exit (1);
+            }
+            prevcp = cp;
+        }
+        else
+        {
+            cp = strlen (cp) + cp;
+            if (fwrite (cp, 2+sizeof(struct it_key), 1, outf) != 1)
+            {
+                logf (LOG_FATAL|LOG_ERRNO, "fwrite %s", out_fname);
+                exit (1);
+            }
+        }
+    }
+    if (fclose (outf))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fclose %s", out_fname);
+        exit (1);
+    }
+    logf (LOG_LOG, "finished section %d", key_file_no);
+    ptr_i = 0;
+    kused = 0;
+}
 
 int key_close (void)
 {
-    if (key_fd == -1)
-    {
-        logf (LOG_DEBUG, "key_close - but no file");
-        return 0;
-    }
-    close (key_fd);
+    key_flush ();
+    xfree (key_buf);
     close (sys_idx_fd);
     dict_insert (file_idx, ".", sizeof(sysno_next), &sysno_next);
     dict_close (file_idx);
-    key_fd = -1;
-    xfree (key_buf);
-    return 1;
-}
-
-void wordFlush (int sysno)
-{
-    size_t i = 0;
-    int w;
-
-    if (key_fd == -1)
-	return; 
-    while (i < key_offset)
-    {
-        w = write (key_fd, key_buf + i, key_offset - i);
-        if (w == -1)
-        {
-            logf (LOG_FATAL|LOG_ERRNO, "Write key fail");
-            exit (1);
-        }
-        i += w;
-    }
-    key_offset = 0;
+    return key_file_no;
 }
 
 static void wordInit (RecWord *p)
@@ -138,39 +193,30 @@ static void wordInit (RecWord *p)
 static void wordAdd (const RecWord *p)
 {
     struct it_key key;
-    char x;
     size_t i;
 
-    if (key_offset + 1000 > key_buf_size)
-    {
-        char *new_key_buf;
-
-        key_buf_size *= 2;
-        new_key_buf = xmalloc (2*key_buf_size);
-        memcpy (new_key_buf, key_buf, key_offset);
-        xfree (key_buf);
-        key_buf = new_key_buf;
-    }
-    key_offset += index_word_prefix (key_buf + key_offset,
-                                     p->attrSet, p->attrUse);
+    if (kused + 1024 > (ptr_top-ptr_i)*sizeof(char*))
+        key_flush ();
+    ++ptr_i;
+    key_buf[ptr_top-ptr_i] = (char*)key_buf + kused;
+    kused += index_word_prefix ((char*)key_buf + kused,
+                                p->attrSet, p->attrUse);
     switch (p->which)
     {
     case Word_String:
         for (i = 0; p->u.string[i]; i++)
-            key_buf[key_offset++] = index_char_cvt (p->u.string[i]);
-        key_buf[key_offset++] = '\0';
+            ((char*)key_buf) [kused++] = index_char_cvt (p->u.string[i]);
+        ((char*)key_buf) [kused++] = '\0';
         break;
     default:
         return ;
     }
-    x = (key_cmd == 'a') ? 1 : 0;
-    memcpy (key_buf + key_offset, &x, 1);
-    key_offset++;
-
     key.sysno = key_sysno;
     key.seqno = p->seqno;
-    memcpy (key_buf + key_offset, &key, sizeof(key));
-    key_offset += sizeof(key);
+    memcpy ((char*)key_buf + kused, &key, sizeof(key));
+    kused += sizeof(key);
+
+    ((char*) key_buf)[kused++] = ((key_cmd == 'a') ? 1 : 0);
 }
 
 void file_extract (int cmd, const char *fname, const char *kname)
@@ -227,7 +273,4 @@ void file_extract (int cmd, const char *fname, const char *kname)
     key_cmd = cmd;
     (*rt->extract)(&extractCtrl);
     fclose (inf);
-    wordFlush (sysno);
 }
-
-
