@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.47.2.1 2004-08-18 19:58:12 adam Exp $
+/* $Id: isamb.c,v 1.47.2.2 2004-08-19 12:39:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1061,7 +1061,7 @@ static void isamb_dump_r (ISAMB b, ISAMB_P pos, void (*pr)(const char *str),
 
 void isamb_dump (ISAMB b, ISAMB_P pos, void (*pr)(const char *str))
 {
-    return isamb_dump_r(b, pos, pr, 0);
+    isamb_dump_r(b, pos, pr, 0);
 }
 
 #if 0
