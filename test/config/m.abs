@@ -1,0 +1,50 @@
+# $Id: m.abs,v 1.1 2003-09-16 13:58:00 adam Exp $
+
+name my
+attset bib1.att
+tagset meta.tag
+varset var1.var
+
+esetname F @
+esetname B meta-b.est
+
+maptab meta-usmarc.map
+
+all any
+
+elm (2,1)               title                   Title:w,Title:p,Title:s
+elm dc_title            title                   Title:w,Title:p,Title:s
+elm (2,2)               creator                 Author:w,Author:p
+elm dc_creator          creator                 Author:w,Author:p
+elm dc_publisher	publisher		Author:w,Author:p,Publisher:w,Publisher:p
+elm author-publisher	author-publisher	author-publisher:p,author-publisher:w	
+elm (2,21)              subject                 Subject-heading
+elm dc_subject          subject                 Subject-heading:w,Subject-heading:p
+elm dc_subject_s_DBC    subject                 Subject-heading:w,Subject-heading:p
+elm dc_subject_s_dkbib_DBCM subject		Subject-heading:w,Subject-heading:p
+elm dc_subject_s_dkbib_DBCF subject             Subject-heading:w,Subject-heading:p
+elm dc_subject_s_dkbib_DBCS subject             Subject-heading:w,Subject-heading:p
+elm dc_subject_s_DK5    subject_DK5             Local-classification:w,Local-classification:p
+elm (2,17)              description             abstract
+elm dc_description      description             abstract        
+elm (2,31)              publisher               Publisher
+elm (2,32)              contributor             -
+elm (2,4)               date                    Date
+elm treatment_date      date                    Date,Date:s 
+elm (2,22)              type                    Content-type,Content-type:s
+elm (2,27)              format                  Material-type
+elm (2,28)              identifier              Record-source
+elm dc_identifier_s_url identifier_url          Record-source,Record-source:0
+elm dc_identifier_s_purl identifier_purl        Record-source
+elm dc_identifier_s_urn identifier_urn          Record-source
+elm dc_identifier_s_isbn identifier_isbn        Record-source,ISBN
+elm (2,33)              source                  -
+elm (2,20)              language                Code-language
+elm dc_language_s_ISO_639_2_B_1998              language                Code-language
+elm (2,30)		relation		-
+elm (2,34)		coverage		-
+elm (2,29)		rights			-
+
+# These tags are required by Zebra for GRS-1 generation
+elm (1,10)		rank			-
+elm (1,14)		localControlNumber	Local-number

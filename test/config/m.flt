@@ -1,0 +1,34 @@
+#
+# DEF portal input filter
+#
+
+/<meta>/	{ begin record meta; set type ""; set AUTHOR ""; set PUBLISHER "" }
+/<\/meta>/	{ 
+		     data -element author-publisher "$AUTHOR XXX $PUBLISHER"; end record
+		}
+
+
+/</ /[A-Za-z0-9._:]*/ { puts "tag:$1"; set tag $1; set scheme ""; set lang ""; begin context attributes }
+
+CONTEXT {attributes}
+
+/>/		{
+			if {$scheme != ""} { set tag "$tag-s-$scheme" };
+			if {$lang != ""} { set tag "$tag-l-$lang" };
+			regsub -all {[\. -/:]} $tag "_" tag;
+		        begin element $tag;
+			end context;
+		        begin context content;
+		}
+
+/lang=\"/ BODY /\"/   { set lang $1 }
+
+/scheme=\"/ BODY /\"/ { set scheme $1 }
+
+CONTEXT {content}
+
+/<\/[aA]>/      { data $0 }
+
+/<\/[^>]*>/	{ end element; end context }
+
+/./		{ if {$tag == "dc_creator"} { append AUTHOR $0}; if {$tag == "dc_publisher"} { append PUBLISHER $0};   data $0 }
