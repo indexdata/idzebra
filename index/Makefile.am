@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.5 2000-12-05 10:01:44 adam Exp $
+## $Id: Makefile.am,v 1.6 2001-10-15 20:57:18 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -33,7 +33,7 @@ apitest_SOURCES = apitest.c kcompare.c zrpn.c zsets.c attribute.c recindex.c \
 
 kdump_SOURCES=kdump.c kcompare.c
 
-INCLUDES = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)
+CFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)
 
 if ISZMBOL
 zmbol_libs = ../isam/libisam.a ../isamc/libisamc.a ../isamb/libisamb.a
