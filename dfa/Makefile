@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.1 1994-09-26 10:16:52 adam Exp $
+# $Id: Makefile,v 1.2 1994-09-26 16:30:55 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -12,6 +12,7 @@ DEFS=$(INCLUDE) -DYACC -DYYDEBUG=1 -DMEMDEBUG=1
 LIB=../lib/dfa.a 
 PO = regexp.o imalloc.o states.o set.o bset.o
 CPP=cc -E
+YACC=yacc
 
 all: $(LIB)
 
@@ -44,12 +45,12 @@ depend1:
 	mv Makefile Makefile.tmp
 	$(YACC) $(YFLAGS) regexp.y
 	sed '/^#Depend/q' <Makefile.tmp >Makefile
-	$(CPP) -M $(DEFS) *.c |sed 's/y\.tab\.o/regexp.o/g' >>Makefile
+	$(CPP) -M $(DEFS) *.c |sed 's/y\.tab\.o/regexp.o/g'|sed 's/y\.tab\.c/regexp.y/g' >>Makefile
 	-rm Makefile.tmp
 
 depend2:
 	$(YACC) $(YFLAGS) regexp.y
-	$(CPP) -M $(DEFS) *.c |sed 's/y\.tab\.o/regexp.o/g' >.depend
+	$(CPP) -M $(DEFS) *.c |sed 's/y\.tab\.o/regexp.o/g'|sed 's/y\.tab\.c/regexp.y/g' >.depend
 
 ifeq (.depend,$(wildcard .depend))
 include .depend

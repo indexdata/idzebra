@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: readfile.c,v $
- * Revision 1.1  1994-09-26 10:16:56  adam
+ * Revision 1.2  1994-09-26 16:30:57  adam
+ * Minor changes. imalloc uses xmalloc now.
+ *
+ * Revision 1.1  1994/09/26  10:16:56  adam
  * First version of dfa module in alex. This version uses yacc to parse
  * regular expressions. This should be hand-made instead.
  *
@@ -35,7 +38,7 @@ static void
     read_tail   (void);
 
 static char
-    *read_line  ();
+    *read_line  (void);
 
 static void prep (char **s)
 {
@@ -96,9 +99,9 @@ static void read_rules (DFA **dfap)
             prep( &s );                   
             /* now parse regular expression */
 	    if (ccluse)
-                i = parse_dfa( dfa, &s, ccl_chars );
+                i = parse_dfa( dfa, &s, dfa_ccl_chars );
             else
-                i = parse_dfa( dfa, &s, thompson_chars );
+                i = parse_dfa( dfa, &s, dfa_thompson_chars );
 
             if( dfa->rule > 1 )
                 fputs( "\t\tYY_BREAK\n", outf );

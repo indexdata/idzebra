@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: imalloc.c,v $
- * Revision 1.1  1994-09-26 10:16:54  adam
+ * Revision 1.2  1994-09-26 16:30:56  adam
+ * Minor changes. imalloc uses xmalloc now.
+ *
+ * Revision 1.1  1994/09/26  10:16:54  adam
  * First version of dfa module in alex. This version uses yacc to parse
  * regular expressions. This should be hand-made instead.
  *
@@ -31,7 +34,7 @@ void *imalloc (size_t size)
 {
 #ifdef MEMDEBUG
     size_t words = (4*sizeof(unsigned) -1 + size)/sizeof(unsigned);
-    char *p = (char *)malloc( words*sizeof(unsigned) );
+    char *p = (char *)xmalloc( words*sizeof(unsigned) );
     if( !p )
         log (LOG_FATAL, "No memory: imalloc(%u); c/f %d/%d; %ld/%ld",
            size, alloc_calls, free_calls, alloc, max_alloc );
@@ -45,7 +48,7 @@ void *imalloc (size_t size)
     ++alloc_calls;
     return (void *) p;
 #else
-    void *p = (void *)malloc( size );
+    void *p = (void *)xmalloc( size );
     if( !p )
         log (LOG_FATAL, "Out of memory (imalloc)" );
     return p;
@@ -56,7 +59,7 @@ void *icalloc (size_t size)
 {
 #ifdef MEMDEBUG
     unsigned words = (4*sizeof(unsigned) -1 + size)/sizeof(unsigned);
-    char *p = (char *) calloc( words*sizeof(unsigned), 1 );
+    char *p = (char *) xcalloc( words*sizeof(unsigned), 1 );
     if( !p )
         log (LOG_FATAL, "No memory: icalloc(%u); c/f %d/%d; %ld/%ld",
            size, alloc_calls, free_calls, alloc, max_alloc );
@@ -70,7 +73,7 @@ void *icalloc (size_t size)
     ++alloc_calls;
     return (void *)p;
 #else
-    void p = (void) calloc( size, 1 );
+    void p = (void) xcalloc( size, 1 );
     if( !p )
         log (LOG_FATAL, "Out of memory (icalloc)" );
     return p;
@@ -94,14 +97,14 @@ void i_free (void *p)
     alloc -= size;
     if( alloc < 0L )
         log (LOG_FATAL,"Internal: ifree(%u) negative alloc.", size );
-    free( (unsigned *) p-2 );
+    xfree( (unsigned *) p-2 );
 }
 #else
 #ifndef ANSI
 void i_free (void *p)
 {
     if (p)
-        free( p );
+        xfree( p );
 }
 #endif
 #endif

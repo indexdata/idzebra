@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.1  1994-09-26 10:16:52  adam
+ * Revision 1.2  1994-09-26 16:30:56  adam
+ * Minor changes. imalloc uses xmalloc now.
+ *
+ * Revision 1.1  1994/09/26  10:16:52  adam
  * First version of dfa module in alex. This version uses yacc to parse
  * regular expressions. This should be hand-made instead.
  *
@@ -22,8 +25,8 @@
 
 
 #include <util.h>
+#include <dfa.h>
 #include "imalloc.h"
-#include "dfa.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -61,11 +64,9 @@ char **argv;
             {
                 switch( **argv )
                 {
-#ifdef __STDC__
                 case 'V':
                     fprintf( stderr, "%s: %s %s\n", prog, __DATE__, __TIME__ );
                     continue;
-#endif
                 case 'v':
                     dfa_verbose = 1;
                     continue;
@@ -261,7 +262,7 @@ char **argv;
             if( !pattern )
             {
                 pattern = *argv;
-                i = parse_dfa( dfa, &pattern, grep_chars );
+                i = parse_dfa( dfa, &pattern, dfa_thompson_chars );
                 if( i || *pattern )
                 {
                     fprintf( stderr, "%s: illegal pattern\n", prog );
