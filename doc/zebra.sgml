@@ -1,33 +1,178 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.3 1995-11-28 15:59:46 adam Exp $
+  $Id: zebra.sgml,v 1.4 1995-11-28 16:10:45 quinn Exp $
 -->
 
 <article>
 <title>Zebra server Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.3 $
+<date>$Revision: 1.4 $
 <abstract>
-This document describes Zebra &mdash; an information retrieval server
-that uses the Z39.50 protocol.
+The Zebra information server combines a versatile fielded/free-text
+search engine with a Z39.50-1995 frontend to provide a powerful and flexible
+information management system. This document explains the procedure for
+installing and configuring the system, and outlines the possibilities
+for managing data and providing Z39.50
+services using the software.
 </abstract>
 
 <toc>
 
 <sect>Introduction
 
+<sect1>Overview
+
 <p>
-- gils
-- UNI*X (not NT yet)
-- goals
+
+<sect1>Features
+
+<p>
+
+This is a listing of some of the most important features of the
+system.
+
+<itemize>
+
+<item>
+Supports updating - records can be added and deleted without
+rebuilding the index.
+
+<item>
+Supports large databases - files for indices, etc. can be
+automatically partitioned over multiple disks.
+
+<item>
+Supports arbitrarily complex records - base input format is an
+SGML-like syntax which allows nested (structured) data elements, as
+well as variant forms of data.
+
+<item>
+Supports boolean queries as well as relevance-ranking (free-text)
+searching. Right truncation and masking in terms are supported, as
+well as full regular expressions.
+
+<item>
+Supports multiple concrete syntaxes
+for record exchange (depending on the configuration): GRS-1, SUTRS,
+ISO2709 (*MARC). Records can be mapped between record syntaxes and
+schema on the fly.
+
+<item>
+Protocol support:
+
+<itemize>
+
+<item>
+Protocol facilities: Init, Search, Retrieve, Browse.
+
+<item>
+Piggy-backed presents are honored in the search-request.
+
+<item>
+Named result sets are supported.
+
+<item>
+Easily configured to support different application profiles, with
+tables for attribute sets, tag sets, and abstract syntaxes.
+Additional tables control facilities such as element mappings to
+different schema (eg., GILS-to-USMARC).
+
+<item>
+Complex composition specifications using Espec-1 are partially
+supported (simple element requests only).
+
+<item>
+Element Set Names are established the Espec-1 capability of the
+system, and are given in configuration files as simple element
+requests (and possibly variant requests).
+
+<item>
+Some variant support (not fully implemented yet).
+
+<item>
+Using the YAZ toolkit for the protocol implementation, the
+server can utilise a plug-in XTI/mOSI implementation (not included) to
+provide SR services over an OSI stack, as well as Z39.50 over TCP/IP.
+
+</itemize>
+
+</itemize>
+
+<sect1>Future Work
+
+<p>
+This is an early alfa-release of the software, to allow you to look at
+it - try it out, and assess whether it can be of use to you. We expect
+this version to be followed by a succession of beta-releases until we
+arrive at a stable first version.
+
+These are some of the plans that we have for the software in the near
+and far future, approximately ordered after their relative importance.
+Items marked with an
+asterisk will be implemented before the
+last beta release.
+
+<itemize>
+
+<item>
+*Allow the system to handle additional input formats. Specifically
+MARC records and general, structured ASCII records (such as mail/news
+files) parameterized by regular expressions.
+
+<item>
+*Complete the support for variants. Finalize support for the WAIS
+retrieval methodology.
+
+<item>
+*Finalize the data element <it/include/ facility to support multimedia
+data elements in records.
+
+<item>
+*Port the system to Windows NT.
+
+<item>
+Add robust database updating - tolerant to crashes or hard interrupts
+during register updating.
+
+<item>
+Add online updating, to permit register updating while users are
+accessing the system.
+
+<item>
+Add index and data compression to save disk space.
+
+<item>
+Add more sophisticated relevance ranking mechanisms. Add support for soundex
+and stemming. Add relevance feedback support.
+
+<item>
+Add Explain support.
+
+<item>
+Add support for very large records by implementing segmentation and
+variant pieces.
+
+<item>
+Support the Item Update extended service of the protocol.
+
+<item>
+The Zebra search engine supports approximate string matching in the
+index. We'd like to find a way to support and control this from RPN.
+
+</itemize>
+
+Programmers thrive on user feedback. If you are interested in a facility that
+you don't see mentioned here, or if there's something you think we
+could do better, please drop us a mail. If you think it's all really
+neat, you're of course welcome to drop us a line saying that, too.
+<sect>Introduction
 
 <sect>Compiling the software
 
 <p>
-
-Zebra uses the YAZ package in order to provide Z39.50 access. So you
-must compile YAZ before going further. Specifically, Zebra uses
+Zebra uses the YAZ package to implement Z39.50, so you
+have to compile YAZ before going further. Specifically, Zebra uses
 the YAZ header files in <tt>yaz/include/..</tt> and its public library
 <tt>yaz/lib/libyaz.a</tt>.
 
@@ -45,22 +190,22 @@ MOSI support. Some systems, such as Solaris, have separate socket
 libraries and for those systems you need to specify the
 <tt>NETLIB</tt> variable.
 
-When finished editing the <tt>Makefile</tt> type:
+When you are done editing the <tt>Makefile</tt> type:
 <tscreen><verb>
 $ make
 </verb></tscreen>
 
 If successful, two executables have been created in the sub-directory
-index.
+<tt/index/.
 <descrip>
 <tag><tt>zebrasrv</tt></tag> The Z39.50 server and search engine.
 <tag><tt>zebraidx</tt></tag> The administrative tool for the search index.
 </descrip>
 
-<sect>Quick getting started
+<sect>Quick Start
 
 <p>
-This section will get you started quickly! We will try to index a few
+This section will get you started quickly! We will try to index a few sample
 GILS records that are included with the Zebra distribution. Go to the
 <tt>test</tt> subdirectory. There you will find a configuration
 file named <tt>zebra.cfg</tt> with the following contents:
@@ -84,16 +229,44 @@ $ ../index/zebraidx -t grs update records
 
 In the command above the option <tt>-t</tt> specified the record
 type &mdash; in this case <tt>grs</tt>. The word <tt>update</tt> followed
-by a directory root updates all files below that directory.
+by a directory root updates all files below that directory node.
 
 If your indexing command went successful, you are now ready to
-setup a server. To start a server on port 2100, type:
+fire up a server. To start a server on port 2100, type:
 <tscreen><verb>
 $ ../index/zebrasrv tcp:@:2100
 </verb></tscreen>
 
-The Zebra server just made has one database called Default. It will
-return either USMARC/GRS or SUTRS depending on your client.
+The Zebra index that you've just made has one database called Default. It will
+return either USMARC, GRS-1, or SUTRS depending on what your client asks
+for.
+
+To test the server, you can use any Z39.50 client (1992 or later). For
+instance, you can use the demo client that comes with YAZ: Just cd to
+the <tt/client/ subdirectory of the YAZ distribution and type:
+
+<tscreen><verb>
+$ client tcp:localhost:2100
+</verb></tscreen>
+
+When the client has connected, you can type:
+
+<tscreen><verb>
+Z> find surficial
+Z> show 1
+</verb></tscreen>
+
+To try other retrieval formats for the same record, try:
+
+<tscreen><verb>
+Z>format sutrs
+Z>show 1
+Z>format grs-1
+Z>show 1
+</verb></tscreen>
+
+If you've made it this far, there's a reasonably good chance that
+you've made it through the compilation OK.
 
 <sect>Administrating Zebra
 
@@ -101,12 +274,13 @@ return either USMARC/GRS or SUTRS depending on your client.
 
 Unlike many other retrieval systems, Zebra offers incremental
 modifications of an existing index. Needless to say, these facilities
-makes the administration of Zebra somewhat more complicated.
+make the administration of Zebra a bit more complicated than
+systems that use the &dquot;index-it-all&dquot; approach.
 
 Normally, when Zebra modifies the index it reads a number of records
 that you specify.
 Depending on your specifications and on the contents of each record
-one the following scenarios occur:
+one the following events take place for each record:
 <descrip>
 <tag>Insert</tag> The record is indexed as if it never occurred
 before. Either the Zebra system doesn't know how to identify the record or
@@ -118,8 +292,8 @@ indicates that it has been indexed before.
 update-case it must be able to identify the record.
 </descrip>
 
-Please note, that in both the modify- and delete- case the Zebra
-system must be able to make a key that identifies the record in
+Please note that in both the modify- and delete- case the Zebra
+indexer must be able to make a unique key that identifies the record in
 question.
 
 To administrate the Zebra retrieval system, you run the
@@ -128,7 +302,7 @@ which are preceded by a minus, and a few commands (not preceded by
 minus).
 
 Both the Zebra administrative tool and the Z39.50 server share a
-set of indexing files and a global configuration file. The
+set of index files and a global configuration file. The
 name of the configuration file defaults to <tt>zebra.cfg</tt>.
 The configuration file includes specifications on how to index
 various kinds of records and where the other configuration files
@@ -143,12 +317,13 @@ Indexing is a record-per-record process, in which
 either insert/modify/delete will occur. Before a record is indexed
 search keys are extracted from whatever might be the layout the
 original record (sgml,html,text, etc..). The Zebra system 
-currently only support GILS records and simple text records.
+currently only supports SGML-like, structured records and unstructured text
+records.
 To specify a particular extraction process, use either the
 command line option <tt>-t</tt> or specify a
 <tt>recordType</tt> setting in the configuration file.
 
-<sect1>The Zebra configuration file
+<sect1>The Zebra Configuration File
 <p>
 The Zebra configuration file, read by <tt>zebraidx</tt> and
 <tt>zebrasrv</tt> defaults to <tt>zebra.cfg</tt> unless specified
@@ -162,22 +337,24 @@ A set of records that share common characteristics are called a group.
 When <tt>zebraidx</tt> is run and you wish to address a given group
 you specify that group with the <tt>-g</tt> option. In this case
 settings that have the group name as their prefix will be used
-by <tt>zebraidx</tt> and not default values.
+by <tt>zebraidx</tt> and not default values. The default values have no prefix.
 
 The group is written before the option itself separated by a dot.
-For example to set the record type for group <tt/public/ to <tt/grs/
+For instance, to set the record type for group <tt/public/ to <tt/grs/ (structured records)
 you would write:
+
 <tscreen><verb>
 public.recordType: grs
 </verb></tscreen>
 
 To set the default value of the record type to text write:
+
 <tscreen><verb>
 recordType: text
 </verb></tscreen>
 
 The configuration settings are summarized below. They will be
-explained further in the following chapters.
+explained further in the following sections.
 
 <descrip>
 <tag><it>group</it>recordType<it>name</it></tag>
@@ -191,52 +368,53 @@ explained further in the following chapters.
 <tag><it>group</it>storeKeys</tag>
  Specifies whether key information should be saved for a given
  group of records. If you plan to update/delete this type of
- record a later this should be specified as 1; otherwise it
+ records later this should be specified as 1; otherwise it
  should be 0 (default).
 <tag><it>group</it>storeData</tag>
- Specifies whether original copy of record should be stored internally
- in the Zebra system indexes. If your externally indexed files
- are temporary this option should certainly be true (1); otherwise
- false (0).
+ Specifies whether the records should be stored internally
+ in the Zebra system tables. If you want to maintain the raw records yourself,
+ this option should be false (0). If you want Zebra to take care of the records
+ for you, it should be true(1).
 <tag>register</tag> 
- Specifies the location of the indexes.
+ Specifies the location of the various files that Zebra uses to represent
+ your system.
 <tag>profilePath</tag>
  Specifies the location of profile specification paths.
 <tag>attset</tag> 
- Specifies the filename(s) of attribute specification files.
+ Specifies the filename(s) of attribute set files for use in searching.
 </descrip>
 
-<sect1>Locating records
+<sect1>Locating Records
 <p>
 The default behaviour of the Zebra system is to reference the
-records from their original location, i.e. where they were
-read an indexed.
+records from their original location, i.e. where they were found when you
+ran <tt/zebraidx/.
 
-If your records files are temporary for example if you retrieve
-them from the outside or if they where temporarily mounted on a CD-ROM,
-you may want the Zebra server to make a copy of them. To do this
+If your records files are temporary - for example if you retrieve
+them from the outside, or if they where temporarily mounted on a CD-ROM,
+you may want Zebra to make a copy of them. To do this,
 you specify 1 (true) in the <tt>storedata</tt> setting. When
-the Z39.50 search engine retrieves recoreds they will be read from an
-internal structure of the index.
+the Z39.50 server retrieves records they will be read from the
+internal file structures of the system.
 
-<sect1>Indexing with no record Ids
+<sect1>Indexing with no Record IDs (Simple Indexing)
 
 <p>
 If you have a set of records that you <em/never/ wish to delete
-or modify you may find 'indexing with no records Ids' convenient.
+or modify you may find &dquot;indexing without records IDs&dquot; convenient.
 This indexing method uses less space than the other methods and
 is simple to use. 
 
-To use this method, you simply don't specify the <tt>recordId</tt> 
-for the group of files you index. To add a set of records you use
+To use this method, you simply don't provide the <tt>recordId</tt> entry
+for the group of files that you index. To add a set of records you use
 <tt>zebraidx</tt> with the <tt>update</tt> command. The
-<tt>update</tt> command will always add the records to the index
+<tt>update</tt> command will always add all of the records to the index
 becuase Zebra doesn't know how to match the new set of records with
 existing records.
 
-Consider a system, in which you have a group of text files called
+Consider a system in which you have a group of text files called
 <tt>simple</tt>. That group of records should belong to a Z39.50 database
-called <tt>textbase</tt>. The following configuration file suffice:
+called <tt>textbase</tt>. The following <tt/zebra.cfg/ file will suffice:
 
 <tscreen><verb>
 profilePath: /usr/local/yaz
@@ -246,12 +424,12 @@ simple.recordType: text
 simple.database: textbase
 </verb></tscreen>
 
-<sect1>Indexing with file record Ids
+<sect1>Indexing with File Record IDs
 
 <p>
 If you have a set of external records that you wish to index you may
 use the file key feature of the Zebra system. In short, the file key
-feature, mirrors a directory and the files below efficiently. To
+feature mirrors a directory structure and its files efficiently. To
 perform indexing of a directory with file keys, you specify the top-level
 directory after the <tt>update</tt> command. The command will recursively
 traverse the directories and compare each with whatever have been
@@ -259,7 +437,7 @@ indexed before in the same directory. If a file is new (not in
 the previous version of the directory) it is inserted;
 if a file was already indexed and it has been modified
 since the last insertion the index is also modified; if a file is missing
-since the last visit it is deleted.
+since the last visit it is deleted from the index.
 
 The resulting system is easy to administer. To delete a record
 you simply have to delete the corresponding file (with <tt/rm/). 
@@ -269,10 +447,10 @@ For your changes to take effect you must run <tt>zebraidx</tt> with
 the same directory root again.
 
 To use this method, you must specify <tt>file</tt> as the value
-of <tt>recordId</tt> the configuration file. In the configuration
+of <tt>recordId</tt> in the configuration file. In the configuration
 also set <tt>storeKeys</tt> to <tt>1</tt>, since the Zebra
-indexer must save additional information in order to
-modify/delete the record at a later time.
+indexer must save additional information per record in order to
+modify/delete the records at a later time.
 
 For example, to update group <tt>esdd</tt> records below
 <tt>/home/grs</tt> you could type:
@@ -287,75 +465,78 @@ esdd.recordType: grs
 esdd.storeKeys: 1
 </verb></tscreen>
 
-<em>Important note: You cannot start by a group of records with simple
-indexing (no record ids as in the previous section) and then, later,
-use file record Ids. The Zebra must know from the very beginning that
-the group of files are indexed with file record Ids.
+<em>Important note: You cannot start out with a group of records with simple
+indexing (no record IDs as in the previous section) and then later
+enable file record Ids. Zebra must know from the first time that you
+index the group that
+the files should be indexed with file record IDs.
 </em>
 
-<sect1>Indexing with general record Ids
+<sect1>Indexing with General Record IDs
 <p>
 When using this method you specify an (almost) arbritrary record key
 based on the contents of the record itself and other system
 information. If you have a group of records that have an external
-id attached, this method is convenient. For example, the record may
-contain a title or an unique id. In either case you specify the 
-Z39.50 attribute-set and attribute-use location in which this
-information is stored.
+ID associated with each records, this method is convenient. For
+example, the record may contain a title or a unique ID-number. In either
+case you specify the Z39.50 attribute set and use-attribute location
+in which this information is stored.
 
-As before, the record id is defined by the <tt>recordId</tt> setting
-in the configuration file. The value of the record id consists of one
-or more tokens separated by space. The resulting id is formed
-by concatenating the tokens and separete them by ascii value (1).
+As before, the record ID is defined by the <tt>recordId</tt> setting
+in the configuration file. The value of the record ID specification
+consists of one or more tokens separated by whitespace. The resulting
+ID is
+represented in the index by concatenating the tokens and separating them by
+ASCII value (1).
 
 There are three kinds of tokens:
 <descrip>
 <tag>Internal record info</tag> The token refers to a key that is
 extracted from the record. The syntax of this token is
  <tt/(/ <em/set/ <tt/,/ <em/use/ <tt/)/, where <em/set/ is the
-attribute set number and <em/use/ is the use value of the attribute.
+attribute set ordinal number and <em/use/ is the use value of the attribute.
 <tag>System variable</tag> The system variables are preceded by
 <tt>$</tt> and immediately followed by the system variable name, which
 may one of
  <descrip>
  <tag>group</tag> Group name.
  <tag>database</tag> Current database specified.
- <tag>filename</tag> Name of file that contain the record.
  <tag>type</tag> Record type.
  </descrip>
 <tag>Constant string</tag> A string used as part of id &mdash; surrounded
  by single- or double quotes.
 </descrip>
 
-The test GILS records that comes with Zebra, contain a unique id
+The test GILS records that comes with the Zebra distribution contain a
+unique ID
 in the Control-Identifier field. This field is mapped to the Bib-1
 use attribute 1007. To use this field as a record id, specify
 <tt>(1,1007)</tt> as the value of the <tt>recordId</tt> in the
-configuration file. If you have other record types that doesn't
-contain an id in the same field, you might add the record type
-in the record id of the gils records as well, to prevent match
+configuration file. If you have other record types that don't
+contain an ID in the same field, you might add the record type
+in the record id of the gils records as well, to prevent matches
 of other types of records. In this case the recordId might be
-set, as in:
+set like this:
 <tscreen><verb>
 gils.recordId: $type (1,1007)
 </verb></tscreen>
 
 As for the file record id case described in the previous section
 updating your system is simply a matter of running <tt>zebraidx</tt>
-with the <tt>update</tt> command. However, the update of with general
-keys is considerably slower than with file record ids, since all files
-visited must be (re)indexded. 
+with the <tt>update</tt> command. However, the update with general
+keys is considerably slower than with file record IDs, since all files
+visited must be (re)read to find their IDs. 
 
 <sect1>Register location
 
 <p>
 Normally, the index files that form dictionaries, inverted
-file, record info, etc. are stored in the current directory in which you run
-<tt>zebraidx</tt>. If you wish to store those, possibly large, files
-somewhere else, you must set the <tt>register</tt> setting in the
-configuration file. Furhtermore, the Zebra system handles indexes that
-span multiple file systems, which is usefull if a large number of
-records are indexed.
+files, record info, etc., are stored in the directory where you run
+<tt>zebraidx</tt>. If you wish to store these, possibly large, files
+somewhere else, you must add the <tt>register</tt> entry to the
+configuration file. Furthermore, the Zebra system allows indexes to
+span multiple file systems, which is useful if a very large number of
+records are stored.
 
 The value <tt>register</tt> of register is a sequence of tokens.
 Each token takes the form:
@@ -366,13 +547,13 @@ The <em>dir</em> specifies a directory in which index files will be
 stored and the <em>size</em> specifies the maximum size of all
 files in that directory. The Zebra indexer system fill each directory
 in the order specified and use the next specified directories as needed.
-The <em>size</em> is an integer possibly followed by a quantity
-code, <tt>M</tt> for Mega bytes, <tt>K</tt> for Kilo bytes.
+The <em>size</em> is an integer followed by a qualifier
+code, <tt>M</tt> for megabytes, <tt>k</tt> for kilobytes.
 
-If you have two spare disks :) and the first disk is mounted
-on <tt>/d1</tt> and has 200 Mega bytes free space after formatting and the
-second, mounted on <tt>/d2</tt> has 300 Mega bytes free, you could
-specify the following in you configuration file:
+For instance, if you have two spare disks :) and the first disk is mounted
+on <tt>/d1</tt> and has 200 Mb of free space and the
+second, mounted on <tt>/d2</tt> has 300 Mb, you could
+put this entry in your configuration file:
 <tscreen><verb>
 register: /d1:200M /d2:300M
 </verb></tscreen>
@@ -394,22 +575,33 @@ Note that the server doesn't support the static mode (-S).
 
 <sect1>How the server handles queries
 <p>
+What elements of Bib-1 are supported and where are result sets
+stored.
 
-<sect>About Index Data
+<sect>License
+
 <p>
 Copyright &copy; 1995, Index Data.
 
-Permission to use, copy, modify, distribute, and sell this software and
-its documentation, in whole or in part, for any purpose, is hereby granted,
-provided that:
+All rights reserved.
 
-1. This copyright and permission notice appear in all copies of the
+Use and redistribution in source or binary form, with or without
+modification, of any or all of this software and documentation is
+permitted, provided that the following conditions are met:
+
+1. This copyright and permission notice appear with all copies of the
 software and its documentation. Notices of copyright or attribution
 which appear at the beginning of any file must remain unchanged.
 
 2. The names of Index Data or the individual authors may not be used to
 endorse or promote products derived from this software without specific
 prior written permission.
+
+3. Source code or binary versions of this software and its documentation
+may be used in not-for-profit applications. For profit aplications -
+including marketing a product based in whole or in part on this software,
+or providing for-pay database services - must obtain a commercial
+license from Index Data.
 
 THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND,
 EXPRESS, IMPLIED, OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
@@ -431,9 +623,9 @@ of our primary, long-term objectives is the development of a powerful
 information management
 system with open network interfaces and hypermedia capabilities.
 
-We make this software available free of charge, on a fairly unrestrictive
-license; as a service to the networking community, and to further the
-development of quality software for open network communication.
+We make this software available free of charge for noncommercial
+purposes, as a service to the networking community, and to further
+the development of quality software for open network communication.
 
 We'll be happy to answer questions about the software, and about ourselves
 in general.
@@ -441,8 +633,7 @@ in general.
 <tscreen>
 Index Data&nl
 Ryesgade 3&nl
-2200 K&oslash;benhavn N&nl
-DENMARK
+DK-2200 K&oslash;benhavn N&nl
 </tscreen>
 
 <p>
@@ -452,8 +643,15 @@ Fax  : +45 3536 0449
 Email: info@index.ping.dk
 </verb></tscreen>
 
-<sect>References
+The <it>Random House College Dictionary</it>, 1975 edition
+offers this definition of the 
+word &dquot;Zebra&dquot;:
 
-<p>
+<it>
+Zebra, n., any of several horselike, African mammals of the genus Equus,
+having a characteristic pattern of black or dark-brown stripes on
+a whitish background.
+</it>
+<sect>References
 
 </article>
