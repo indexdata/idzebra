@@ -7,9 +7,6 @@ Fixed a few memory leaks.
 
 Added support for C++, headers uses extern "C" for public definitions.
 
-New filter grs.marc.<syntax> that reads MARC records in the ISO2709
-format. <syntax> refers to the abstract syntax.
-
 Bug fix: The show records facility (-s) only displayed information for
 the first record in a file (and not for every record in the file).
 
@@ -58,7 +55,8 @@ Generalized and changed record type specifications. In short, there are:
        text                plain SUTRS
        grs.sgml            structured, "SGML-like" syntax
        grs.regx.<filter>   structured, Regular expression filter
-
+       grs.marc.<abs>      Reads *MARC records in the ISO2709 format. <abs>
+                           is the name of an abstract syntax file.                           
 Bug fix: Result sets weren't sorted in operations involving boolean
 operations with "ranked" operands.
 
