@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.22 2002-12-01 23:26:26 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.23 2002-12-02 15:11:49 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -310,7 +310,7 @@
    <para>
     Kang-Jin Lee
     <email>lee@arco.de</email>,
-    has recently modified the Harvest-NG web crawler to use Zebra as
+    has recently modified the Harvest web indexer to use Zebra as
     its native repository engine.  His comments on the switch over
     from the old engine are revealing:
     <blockquote>
@@ -422,8 +422,10 @@
      <para>
        Support for the use of Perl both for access to the Zebra API
        and for building extension ``plug-ins'' such as input filters.
-       The code for this has been contributed to the source tree, and
-       is in the process of being integrated and tested.
+       The code for this has been contributed to the source tree by
+       Peter Popovics
+       <email>pop@indexdata.dk</email>,
+       and is in the process of being integrated and tested.
      </para>
     </listitem>
 
