@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.12  1996-06-04 10:20:02  adam
+ * Revision 1.13  1996-06-17 14:24:08  adam
+ * Bug fix: read_charset didn't handle character mapping.
+ *
+ * Revision 1.12  1996/06/04 10:20:02  adam
  * Added support for character mapping.
  *
  * Revision 1.11  1996/01/08  19:15:24  adam
@@ -405,6 +408,15 @@ static int read_charset (void)
     {
         if (!esc0 && ch0 == ']')
             break;
+        if (parse_info->cmap)
+        {
+            char **mapto, mapfrom[2];
+            const char *mcp = mapfrom;
+            mapfrom[0] = ch0;
+            mapto = (*parse_info->cmap)(&mcp, 1);
+            assert (mapto);
+            ch0 = mapto[0][0];
+        }
         add_BSet (parse_info->charset, look_chars, ch0);
         ch1 = nextchar_set (&esc1);
         if (!esc1 && ch1 == '-')
@@ -415,6 +427,15 @@ static int read_charset (void)
             {
                 add_BSet (parse_info->charset, look_chars, '-');
                 break;
+            }
+            if (parse_info->cmap)
+            {
+                char **mapto, mapfrom[2];
+                const char *mcp = mapfrom;
+                mapfrom[0] = ch1;
+                mapto = (*parse_info->cmap) (&mcp, 1);
+                assert (mapto);
+                ch1 = mapto[0][0];
             }
             for (i=ch0; ++i<=ch1;)
                 add_BSet (parse_info->charset, look_chars, i);
