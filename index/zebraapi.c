@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.30  2000-04-05 09:49:35  adam
+ * Revision 1.31  2000-04-05 10:07:02  adam
+ * Minor zebra compile fix.
+ *
+ * Revision 1.30  2000/04/05 09:49:35  adam
  * On Unix, zebra/z'mbol uses automake.
  *
  * Revision 1.29  2000/03/20 19:08:36  adam
@@ -244,9 +247,11 @@ static int zebra_register_activate (ZebraService zh)
     zh->dict = 0;
     zh->sortIdx = 0;
     zh->isams = 0;
+#if ZMBOL
     zh->isam = 0;
     zh->isamc = 0;
     zh->isamd = 0;
+#endif
     zh->zei = 0;
     
     zebraRankInstall (zh, rank1_class);
