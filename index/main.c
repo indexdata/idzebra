@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.85 2002-04-05 08:46:26 adam Exp $
+ * $Id: main.c,v 1.86 2002-04-15 13:48:10 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
@@ -99,6 +99,8 @@ int main (int argc, char **argv)
                     if (!zs)
                         exit (1);
                     zh = zebra_open (zs);
+                    if (disableCommit)
+                        zebra_shadow_enable (zh, 0);
                 }
                 if (rGroupDef.databaseName)
                 {

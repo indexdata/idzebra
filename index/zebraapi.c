@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.54 2002-04-05 12:49:51 adam Exp $
+ * $Id: zebraapi.c,v 1.55 2002-04-15 13:48:11 adam Exp $
  */
 
 #include <assert.h>
@@ -82,6 +82,8 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->lock_shadow = 0;
 
     zh->admin_databaseName = 0;
+
+    zh->shadow_enable = 1;
 
     zebra_mutex_cond_lock (&zs->session_lock);
 
@@ -985,7 +987,7 @@ void zebra_begin_trans (ZebraHandle zh)
     int pass;
     int seqno = 0;
     char val = '?';
-    const char *rval;
+    const char *rval = 0;
 
     assert (zh->res);
 
@@ -1001,7 +1003,8 @@ void zebra_begin_trans (ZebraHandle zh)
 #endif
     
     /* lock */
-    rval = res_get (zh->res, "shadow");
+    if (zh->shadow_enable)
+        rval = res_get (zh->res, "shadow");
 
     for (pass = 0; pass < 2; pass++)
     {
@@ -1238,5 +1241,10 @@ void zebra_result (ZebraHandle zh, int *code, char **addinfo)
 {
     *code = zh->errCode;
     *addinfo = zh->errString;
+}
+
+void zebra_shadow_enable (ZebraHandle zh, int value)
+{
+    zh->shadow_enable = value;
 }
 

@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
- * $Id: index.h,v 1.79 2002-04-12 14:55:22 adam Exp $
+ * $Id: index.h,v 1.80 2002-04-15 13:48:10 adam Exp $
  */
 
 #ifndef INDEX_H
@@ -273,6 +273,7 @@ struct zebra_session {
     struct tms tms2;    
 #endif
     struct recordGroup rGroup;
+    int  shadow_enable;
 };
 
 struct rank_control {
