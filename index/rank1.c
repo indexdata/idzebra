@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rank1.c,v $
- * Revision 1.8  2002-04-04 14:14:13  adam
+ * Revision 1.9  2002-04-11 11:39:59  heikki
+ * Removed to logf calls from tight inside loops
+ *
+ * Revision 1.8  2002/04/04 14:14:13  adam
  * Multiple registers (alpha early)
  *
  * Revision 1.7  2001/11/14 22:06:27  adam
@@ -151,7 +154,7 @@ static void end (struct zebra_register *reg, void *set_handle)
 static void add (void *set_handle, int seqno, int term_index)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
-    logf (LOG_DEBUG, "rank-1 add seqno=%d term_index=%d", seqno, term_index);
+    /*logf (LOG_DEBUG, "rank-1 add seqno=%d term_index=%d", seqno, term_index);*/
     si->last_pos = seqno;
     si->entries[term_index].local_occur++;
 }
@@ -167,17 +170,16 @@ static int calc (void *set_handle, int sysno)
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
-    logf (LOG_DEBUG, "rank-1 calc sysno=%d", sysno);
-
     if (!si->no_rank_entries)
 	return -1;
+
     for (i = 0; i < si->no_entries; i++)
 	if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
 	    score += (8+log2_int (lo)) * si->entries[i].global_inv *
                 si->entries[i].rank_weight;
     divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
     score = score / divisor;
-    yaz_log (LOG_LOG, "score=%d", score);
+    yaz_log (LOG_LOG, "sysno=%d score=%d", sysno, score);
     if (score > 1000)
 	score = 1000;
     for (i = 0; i < si->no_entries; i++)
