@@ -1,4 +1,4 @@
-# $Id: ScanEntry.pm,v 1.2 2003-03-05 13:55:22 pop Exp $
+# $Id: ScanEntry.pm,v 1.3 2003-03-12 17:08:53 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -12,9 +12,13 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.2 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.3 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
 }
 
+use constant _term        => 0;
+use constant _occurrences => 1;
+use constant _position    => 2;
+use constant _list        => 3;
 1;
 
 # -----------------------------------------------------------------------------
@@ -23,34 +27,38 @@ BEGIN {
 
 
 sub new {
-    my ($proto,%args) = @_;
+    my ($proto,@args) = @_;
     my $class = ref($proto) || $proto;
-    my $self = \%args;
+    my $self = \@args;
     bless ($self, $class);
-    weaken ($self->{list});
+    weaken ($self->[_list]);
     return ($self);
 }
 
 # =============================================================================
 sub DESTROY {
     my $self = shift;
+#    logf(LOG_LOG,"DESTROY: IDZebra::ScanEntry");
 }
 
 # -----------------------------------------------------------------------------
 sub term {
     my $self = shift;
-    return ($self->{entry}{term});
+    return ($self->[_term]);
 }
 
 sub occurrences {
     my $self = shift;
-    return ($self->{entry}{occurrences});
+    return ($self->[_occurrences]);
 }
 
 sub position {
     my $self = shift;
-    return ($self->{position});
+    return ($self->[_position]);
 }
+
+
+
 # -----------------------------------------------------------------------------
 __END__
 

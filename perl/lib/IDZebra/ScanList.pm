@@ -1,4 +1,4 @@
-# $Id: ScanList.pm,v 1.2 2003-03-05 13:55:22 pop Exp $
+# $Id: ScanList.pm,v 1.3 2003-03-12 17:08:53 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -13,7 +13,7 @@ BEGIN {
     use IDZebra::ScanEntry;
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.2 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.3 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -44,6 +44,8 @@ sub new {
 
 sub DESTROY {
     my $self = shift;
+
+#    logf(LOG_LOG,"DESTROY: IDZebra::ScanList");
 
     if ($self->{odr_stream}) {
         IDZebra::odr_reset($self->{odr_stream});
@@ -113,11 +115,12 @@ sub entries {
     
     my @res;
     for (my $i=1; $i<=$so->{num_entries}; $i++) {
-	
+	my $se = IDZebra::getScanEntry($so, $i);
 	push (@res, 
-	    IDZebra::ScanEntry->new(entry    => IDZebra::getScanEntry($so, $i),
-				    position => $i,
-				    list     => $self));
+	    IDZebra::ScanEntry->new($se->{term},
+				    $se->{occurrences},
+				    $i,
+				    $self));
     }
  
     if ($self->{databases}) {

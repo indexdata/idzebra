@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.14 2003-03-05 13:55:21 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.15 2003-03-12 17:08:53 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -3988,12 +3988,13 @@ XS(_wrap_update_record) {
         char *arg6 ;
         char *arg7 ;
         int arg8 ;
+        int arg9 ;
         int result;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 8) || (items > 8)) {
-            SWIG_croak("Usage: update_record(zh,rGroup,recordType,sysno,match,fname,buf,buf_size);");
+        if ((items < 9) || (items > 9)) {
+            SWIG_croak("Usage: update_record(zh,rGroup,recordType,sysno,match,fname,buf,buf_size,force_update);");
         }
         {
             ZebraHandle * argp;
@@ -4017,7 +4018,8 @@ XS(_wrap_update_record) {
         if (!SvOK((SV*) ST(6))) arg7 = 0;
         else arg7 = (char *) SvPV(ST(6), PL_na);
         arg8 = (int) SvIV(ST(7));
-        result = (int)zebra_update_record(arg1,arg2,(char const *)arg3,arg4,(char const *)arg5,(char const *)arg6,(char const *)arg7,arg8);
+        arg9 = (int) SvIV(ST(8));
+        result = (int)zebra_update_record(arg1,arg2,(char const *)arg3,arg4,(char const *)arg5,(char const *)arg6,(char const *)arg7,arg8,arg9);
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
@@ -4041,12 +4043,13 @@ XS(_wrap_delete_record) {
         char *arg6 ;
         char *arg7 ;
         int arg8 ;
+        int arg9 ;
         int result;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 8) || (items > 8)) {
-            SWIG_croak("Usage: delete_record(zh,rGroup,recordType,sysno,match,fname,buf,buf_size);");
+        if ((items < 9) || (items > 9)) {
+            SWIG_croak("Usage: delete_record(zh,rGroup,recordType,sysno,match,fname,buf,buf_size,force_update);");
         }
         {
             ZebraHandle * argp;
@@ -4070,7 +4073,8 @@ XS(_wrap_delete_record) {
         if (!SvOK((SV*) ST(6))) arg7 = 0;
         else arg7 = (char *) SvPV(ST(6), PL_na);
         arg8 = (int) SvIV(ST(7));
-        result = (int)zebra_delete_record(arg1,arg2,(char const *)arg3,arg4,(char const *)arg5,(char const *)arg6,(char const *)arg7,arg8);
+        arg9 = (int) SvIV(ST(8));
+        result = (int)zebra_delete_record(arg1,arg2,(char const *)arg3,arg4,(char const *)arg5,(char const *)arg6,(char const *)arg7,arg8,arg9);
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);

@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.13 2003-03-05 13:55:22 pop Exp $
+# $Id: Session.pm,v 1.14 2003-03-12 17:08:53 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -15,7 +15,7 @@ BEGIN {
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
     require Exporter;
-    our $VERSION = do { my @r = (q$Revision: 1.13 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.14 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger Exporter);
     our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
@@ -266,6 +266,7 @@ sub _setRecordGroupOptions {
 }
 sub _selectRecordGroup {
     my ($self, $rg) = @_;
+
     my $r = IDZebra::set_group($self->{zh}, $rg);
     my $dbName;
     unless ($dbName = $rg->{databaseName}) {
@@ -288,11 +289,10 @@ sub databases {
     }
 
     my %tmp;
-
     my $changed = 0;
     foreach my $db (@databases) {
-	next if ($self->{databases}{$db});
 	$tmp{$db}++;
+	next if ($self->{databases}{$db});
 	$changed++;
     }
 
@@ -465,6 +465,7 @@ sub delete_record {
     return(IDZebra::delete_record($self->{zh},
 				  $self->_record_update_args(%args)));
 }
+
 sub _record_update_args {
     my ($self, %args) = @_;
 
@@ -472,6 +473,7 @@ sub _record_update_args {
     my $match   = $args{match}      ? $args{match}      : "";
     my $rectype = $args{recordType} ? $args{recordType} : "";
     my $fname   = $args{file}       ? $args{file}       : "<no file>";
+    my $force   = $args{force}      ? $args{force}      : 0;
 
     my $buff;
 
@@ -490,6 +492,7 @@ sub _record_update_args {
     delete ($args{recordType});
     delete ($args{file});
     delete ($args{data});
+    delete ($args{force});
 
     my $rg = $self->_makeRecordGroup(%args);
 
@@ -507,7 +510,7 @@ sub _record_update_args {
     unless ($rectype) {
 	$rectype="";
     }
-    return ($rg, $rectype, $sysno, $match, $fname, $buff, $len);
+    return ($rg, $rectype, $sysno, $match, $fname, $buff, $len, $force);
 }
 
 # -----------------------------------------------------------------------------
@@ -682,7 +685,6 @@ sub scan {
 }
 
 # ============================================================================
-
 
 __END__
 

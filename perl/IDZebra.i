@@ -286,7 +286,8 @@ int zebra_update_record (ZebraHandle zh,
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 
-			 int buf_size);
+			 int buf_size,
+			 int force_update);
      
 %name(delete_record)       
 int zebra_delete_record (ZebraHandle zh, 
@@ -296,7 +297,9 @@ int zebra_delete_record (ZebraHandle zh,
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 
-			 int buf_size);
+			 int buf_size,
+			 int force_update);
+
 
 /* == Search (zebra_api_ext.c) ============================================= */
 
