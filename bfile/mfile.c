@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.27  1998-02-10 11:55:07  adam
+ * Revision 1.28  1998-05-20 10:00:35  adam
+ * Fixed register spec so that colon isn't treated as size separator
+ * unless followed by [0-9+-] in order to allow DOS drive specifications.
+ *
+ * Revision 1.27  1998/02/10 11:55:07  adam
  * Minor changes.
  *
  * Revision 1.26  1997/10/27 14:25:38  adam
@@ -130,8 +134,10 @@ static int scan_areadef(MFile_area ma, const char *name, const char *ad)
             ad++;
         if (!*ad)
             break;
-        while (*ad && *ad != ':')
+        while (*ad)
         {
+	    if (*ad == ':' && strchr ("+-0123456789", ad[1]))
+		break;
             if (i < FILENAME_MAX)
                 dirname[i++] = *ad;
             ad++;
