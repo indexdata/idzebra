@@ -27,8 +27,9 @@ struct xpath_location_step {
     struct xpath_predicate *predicate;
 };
 
-int parse_xpath_str(const char *xpath_string,
-		    struct xpath_location_step *xpath, NMEM mem);
+int zebra_parse_xpath_str(const char *xpath_string,
+                          struct xpath_location_step *xpath,
+                          int max, NMEM mem);
 
 void dump_xp_steps (struct xpath_location_step *xpath, int no);
 

@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.129 2003-02-27 11:29:13 adam Exp $
+/* $Id: zrpn.c,v 1.130 2003-03-01 22:45:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1300,7 +1300,7 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
 	parms.temp_path = res_get (zh->res, "setTmpDir");
 	result = rset_create (rset_kind_temp, &parms);
 	rsfd_result = rset_open (result, RSETF_WRITE);
-	
+
 	while (*more)
 	{
 	    for (i = 1; i<rset_no; i++)
@@ -1349,8 +1349,9 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
 	rset_temp_parms parms;
 	RSFD rsfd_result;
 
-	logf (LOG_LOG, "generic prox, dist = %d, relation = %d, ordered =%d, exclusion=%d",
-	      distance, relation, ordered, exclusion);
+	yaz_log (LOG_LOG, "generic prox, dist=%d, relation=%d, ordered=%d"
+			  ", exclusion=%d",
+			  distance, relation, ordered, exclusion);
 	parms.rset_term = rset_term_create (prox_term, length_prox_term,
 					    flags, term_type);
 	parms.rset_term->nn = min_nn;
@@ -2100,12 +2101,11 @@ struct xpath_location_step {
 
 static int parse_xpath(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                        oid_value attributeSet,
-                       struct xpath_location_step *xpath, NMEM mem)
+                       struct xpath_location_step *xpath, int max, NMEM mem)
 {
     oid_value curAttributeSet = attributeSet;
     AttrType use;
     const char *use_string = 0;
-    int no = 0;
     
     attr_init (&use, zapt, 1);
     attr_find_ex (&use, &curAttributeSet, &use_string);
@@ -2113,7 +2113,7 @@ static int parse_xpath(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     if (!use_string || *use_string != '/')
         return -1;
 
-    return (parse_xpath_str(use_string, xpath, mem));
+    return zebra_parse_xpath_str(use_string, xpath, max, mem);
 }
  
                
@@ -2352,7 +2352,7 @@ static RSET rpn_search_APT (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     if (sort_flag)
 	return rpn_sort_spec (zh, zapt, attributeSet, stream, sort_sequence,
 			      rank_type);
-    xpath_len = parse_xpath(zh, zapt, attributeSet, xpath, stream);
+    xpath_len = parse_xpath(zh, zapt, attributeSet, xpath, 10, stream);
     if (xpath_len >= 0)
     {
         xpath_use = 1016;

@@ -1,4 +1,4 @@
-/* $Id: xpath.c,v 1.2 2003-03-01 20:41:34 adam Exp $
+/* $Id: xpath.c,v 1.3 2003-03-01 22:45:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -28,123 +28,139 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/nmem.h>
 #include <zebra_xpath.h>
 
-char *get_xp_part (char **strs, NMEM mem)
+static char *get_xp_part (char **strs, NMEM mem, int *literal)
 {
-    char *str = *strs;
-    char *res = '\0';
-    char *cp = str;
-    char *co;
-    int quoted = 0;
-    
-    /* ugly */
-    char *sep = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\" ";
-    
-    while (*cp == ' ') {cp++; str++;}
-    if (!strchr("><=] ", *cp)) sep = "><=] ";
-    
-    while (*cp && !(strchr(sep,*cp) && !quoted) && (*cp != ']')) {
-        if (*cp =='"') quoted = 1 - quoted;
+    char *cp = *strs;
+    char *str = 0;
+    char *res = 0;
+
+    *literal = 0;
+    while (*cp == ' ')
         cp++;
-    }  
-    /* removing leading and trailing " */
-    co = cp;
-    if (*str == '"') str++;
-    if (*(cp-1) == '"') cp--;
-    if (str < co) {
-        res = nmem_malloc(mem, cp - str + 1);
-    memcpy (res, str, (cp-str));
-    *(res + (cp-str)) = '\0';
-    *strs = co;
+    str = cp;
+    if (strchr("()", *cp))
+        cp++;
+    else if (strchr("><=", *cp))
+    {
+        while (strchr("><=", *cp))
+            cp++;
     }
-    
-    return (res);
+    else if (*cp == '"' || *cp == '\'')
+    {
+        int sep = *cp;
+        str++;
+        cp++;
+        while (*cp && *cp != sep)
+            cp++;
+        res = nmem_malloc(mem, cp - str + 1);
+        if ((cp - str))
+            memcpy (res, str, (cp-str));
+        res[cp-str] = '\0';
+        if (*cp)
+            cp++;
+        *literal = 1;
+    }
+    else
+    {
+        while (*cp && !strchr("><=()]\" ", *cp))
+            cp++;
+    }
+    if (!res)
+    {
+        res = nmem_malloc(mem, cp - str + 1);
+        if ((cp - str))
+            memcpy (res, str, (cp-str));
+        res[cp-str] = '\0';
+    }
+    *strs = cp;
+    return res;
 }
 
+static struct xpath_predicate *get_xpath_boolean(char **pr, NMEM mem,
+                                                 char **look, int *literal);
 
-struct xpath_predicate *get_xpath_predicate(char *predicates, NMEM mem) 
+static struct xpath_predicate *get_xpath_relation(char **pr, NMEM mem,
+                                                  char **look, int *literal)
 {
-    char *p1;
-    char *p2;
-    char *p3;
-    char *p4;
-    
-    struct xpath_predicate *r1;
-    struct xpath_predicate *r2;
     struct xpath_predicate *res = 0;
-    
-    char *pr = predicates;
-    
-    if ((p1 = get_xp_part(&pr, mem))) {
-        if ((p2 = get_xp_part(&pr, mem))) {
-            if (!strcmp (p2, "and") || !strcmp (p2, "or") || !strcmp (p2, "not")) {
-                r1=nmem_malloc(mem, sizeof(struct xpath_predicate));
-                r1->which = XPATH_PREDICATE_RELATION;
-                r1->u.relation.name = p1;
-                r1->u.relation.op = "";
-                r1->u.relation.value = "";
-                
-                r2 = get_xpath_predicate (pr, mem);
-                
-                res = nmem_malloc(mem, sizeof(struct xpath_predicate));
-                res->which = XPATH_PREDICATE_BOOLEAN;
-                res->u.boolean.op = p2;
-                res->u.boolean.left = r1;
-                res->u.boolean.right = r2;
-                
-                return (res);
-            }
-            
-            if (strchr("><=] ", *p2)) {
-                r1 = nmem_malloc(mem, sizeof(struct xpath_predicate));
-                
-                r1->which = XPATH_PREDICATE_RELATION;
-                r1->u.relation.name = p1;
-                r1->u.relation.op = p2;
-                r1->u.relation.value = "";
+    if (!*literal && !strcmp(*look, "("))
+    {
+        *look = get_xp_part(pr, mem, literal);
+        res = get_xpath_boolean(pr, mem, look, literal);
+        if (!strcmp(*look, ")"))
+            *look = get_xp_part(pr, mem, literal);
+        else
+            res = 0; /* error */
+    }
+    else
+    {
+        res=nmem_malloc(mem, sizeof(struct xpath_predicate));
+        res->which = XPATH_PREDICATE_RELATION;
+        res->u.relation.name = *look;
 
-                if ((p3 = get_xp_part(&pr, mem))) {
-                    r1->u.relation.value = p3;
-                } else {
-                    /* error */
-                }
-            }
-            
-            if ((p4 = get_xp_part(&pr, mem))) {
-                if (!strcmp (p4, "and") || !strcmp (p4, "or") ||
-                    !strcmp (p4, "not")) 
-                {
-                    
-                    r2 = get_xpath_predicate (pr, mem);
-                    
-                    res = nmem_malloc(mem, sizeof(struct xpath_predicate));
-                    res->which = XPATH_PREDICATE_BOOLEAN;
-                    res->u.boolean.op = p4;
-                    res->u.boolean.left = r1;
-                    res->u.boolean.right = r2;
-                    return (res);
-                } else {
-                    /* error */
-                }
-            } else {
-                return (r1);
-            }
-            
-        } else {
-            r1 = nmem_malloc(mem, sizeof(struct xpath_predicate));
-            
-            r1->which = XPATH_PREDICATE_RELATION;
-            r1->u.relation.name = p1;
-            r1->u.relation.op = "";
-            r1->u.relation.value = "";
-            
-            return (r1);
+        *look = get_xp_part(pr, mem, literal);
+        if (*look && !*literal && strchr("><=", **look))
+        {
+            res->u.relation.op = *look;
+
+            *look = get_xp_part(pr, mem, literal);
+            if (!*look)
+                return 0;  /* error */
+            res->u.relation.value = *look;
+            *look = get_xp_part(pr, mem, literal);
+        }
+        else
+        {
+            res->u.relation.op = "";
+            res->u.relation.value = "";
         }
     }
-    return 0;
+    return res;
 }
 
-int parse_xpath_str(const char *xpath_string,
-		    struct xpath_location_step *xpath, NMEM mem)
+static struct xpath_predicate *get_xpath_boolean(char **pr, NMEM mem,
+                                                 char **look, int *literal)
+{
+    struct xpath_predicate *left = 0;
+    
+    left = get_xpath_relation(pr, mem, look, literal);
+    if (!left)
+        return 0;
+    
+    while (*look && !*literal &&
+           (!strcmp(*look, "and") || !strcmp(*look, "or") || 
+            !strcmp(*look, "not")))
+    {
+        struct xpath_predicate *res, *right;
+
+        res = nmem_malloc(mem, sizeof(struct xpath_predicate));
+        res->which = XPATH_PREDICATE_BOOLEAN;
+        res->u.boolean.op = *look;
+        res->u.boolean.left = left;
+
+        *look = get_xp_part(pr, mem, literal); /* skip the boolean name */
+        right = get_xpath_relation(pr, mem, look, literal);
+
+        res->u.boolean.right = right;
+
+        left = res;
+    }
+    return left;
+}
+
+static struct xpath_predicate *get_xpath_predicate(char *predicate, NMEM mem)
+{
+    int literal;
+    char **pr = &predicate;
+    char *look = get_xp_part(pr, mem, &literal);
+
+    if (!look)
+        return 0;
+    return get_xpath_boolean(pr, mem, &look, &literal);
+}
+
+int zebra_parse_xpath_str(const char *xpath_string,
+                          struct xpath_location_step *xpath, int max, NMEM mem)
 {
     const char *cp;
     char *a;
@@ -155,7 +171,7 @@ int parse_xpath_str(const char *xpath_string,
         return -1;
     cp = xpath_string;
     
-    while (*cp)
+    while (*cp && no < max)
     {
         int i = 0;
         while (*cp && !strchr("/[",*cp))
@@ -165,7 +181,8 @@ int parse_xpath_str(const char *xpath_string,
         }
         xpath[no].predicate = 0;
         xpath[no].part = nmem_malloc (mem, i+1);
-        memcpy (xpath[no].part,  cp - i, i);
+        if (i)
+            memcpy (xpath[no].part,  cp - i, i);
         xpath[no].part[i] = 0;
 
         if (*cp == '[')
@@ -187,6 +204,12 @@ int parse_xpath_str(const char *xpath_string,
             break;
         cp++;
     }
+
+/* for debugging .. */
+#if 0
+    dump_xp_steps(xpath, no);
+#endif
+
     return no;
 }
 
@@ -194,7 +217,7 @@ void dump_xp_predicate (struct xpath_predicate *p)
 {
     if (p) {
         if (p->which == XPATH_PREDICATE_RELATION &&
-	  p->u.relation.name[0]) {
+            p->u.relation.name[0]) {
             fprintf (stderr, "%s,%s,%s", 
                      p->u.relation.name,
                      p->u.relation.op,

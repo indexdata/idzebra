@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.7 2003-02-25 21:50:27 adam Exp $
+/* $Id: d1_absyn.c,v 1.8 2003-03-01 22:45:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -701,10 +701,11 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    cur_xpelement->dfa = dfa;
 
 #ifdef ENHANCED_XELM 
-            cur_xpelement->xpath_len = parse_xpath_str(xpath_expr, 
-						       cur_xpelement->xpath, 
-						       data1_nmem_get(dh));
-
+            cur_xpelement->xpath_len =
+                zebra_parse_xpath_str(xpath_expr, 
+                                      cur_xpelement->xpath, XPATH_STEP_COUNT,
+                                      data1_nmem_get(dh));
+            
 	    /*
 	    dump_xp_steps(cur_xpelement->xpath,cur_xpelement->xpath_len);
 	    */
