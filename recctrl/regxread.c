@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.8  1997-09-17 12:19:22  adam
+ * Revision 1.9  1997-09-29 09:02:49  adam
+ * Fixed small bug (introduced by previous commit).
+ *
+ * Revision 1.8  1997/09/17 12:19:22  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -1310,6 +1313,7 @@ data1_node *grs_read_regx (struct grs_read_info *p)
         if (curLexSpec)
             lexSpecDel (&curLexSpec);
         curLexSpec = lexSpecMk (p->type);
+	curLexSpec->dh = p->dh;
         res = readFileSpec (curLexSpec);
         if (res)
         {
@@ -1328,7 +1332,6 @@ data1_node *grs_read_regx (struct grs_read_info *p)
         curLexSpec->f_win_size = 500000;
     }
     curLexSpec->m = p->mem;
-    curLexSpec->dh = p->dh;
     n = lexRoot (curLexSpec, p->offset);
     return n;
 }
