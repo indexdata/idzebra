@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.9 2003-09-08 09:30:17 adam Exp $
+/* $Id: xmlread.c,v 1.10 2003-09-08 09:50:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -43,7 +43,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define XML_CHUNK 1024
 
 struct user_info {
-    int full_error_info;
     data1_node *d1_stack[256];
     int level;
     data1_handle dh;
@@ -203,17 +202,12 @@ static int cb_external_entity (XML_Parser pparser,
         }
         if (!XML_ParseBuffer (parser, r, done))
         {
-	    if (ui->full_error_info)
-		yaz_log (LOG_WARN, "%s:%d:%d:XML error: %s",
-			 systemId,
-			 XML_GetCurrentLineNumber(parser),
-			 XML_GetCurrentColumnNumber(parser),
-			 XML_ErrorString(XML_GetErrorCode(parser)));
-	    else
-		yaz_log (LOG_WARN, "%s:%d:XML error: %s",
-			 systemId,
-			 XML_GetCurrentLineNumber(parser),
-			 XML_ErrorString(XML_GetErrorCode(parser)));
+	    done = 1;
+	    yaz_log (LOG_WARN, "%s:%d:%d:XML error: %s",
+		     systemId,
+		     XML_GetCurrentLineNumber(parser),
+		     XML_GetCurrentColumnNumber(parser),
+		     XML_ErrorString(XML_GetErrorCode(parser)));
 	}
     }
     fclose (inf);
@@ -401,14 +395,12 @@ static void cb_ns_end(void *userData, const char *prefix)
 }
 data1_node *zebra_read_xml (data1_handle dh,
                             int (*rf)(void *, char *, size_t), void *fh,
-                            NMEM m,
-			    int full_error_info)
+                            NMEM m)
 {
     XML_Parser parser;
     struct user_info uinfo;
     int done = 0;
 
-    uinfo.full_error_info = full_error_info;
     uinfo.loglevel = LOG_DEBUG;
     uinfo.level = 1;
     uinfo.dh = dh;
@@ -452,14 +444,11 @@ data1_node *zebra_read_xml (data1_handle dh,
             done = 1;
         if (!XML_ParseBuffer (parser, r, done))
         {
-	    if (full_error_info)
-		yaz_log (LOG_WARN, "%d:%d:XML error: %s",
-			 XML_GetCurrentLineNumber(parser),
-			 XML_GetCurrentColumnNumber(parser),
-			 XML_ErrorString(XML_GetErrorCode(parser)));
-	    else
-		yaz_log (LOG_WARN, "XML error: %s",
-			 XML_ErrorString(XML_GetErrorCode(parser)));
+	    done = 1;
+	    yaz_log (LOG_WARN, "%d:%d:XML error: %s",
+		     XML_GetCurrentLineNumber(parser),
+		     XML_GetCurrentColumnNumber(parser),
+		     XML_ErrorString(XML_GetErrorCode(parser)));
 	}
     }
     XML_ParserFree (parser);
@@ -470,8 +459,6 @@ data1_node *zebra_read_xml (data1_handle dh,
 
 struct xml_info {
     XML_Expat_Version expat_version;
-    int full_error_info;   /* true if we can safely use Expat's
-			      XML_GetCurrent{Line,Column}Number */
 };
 
 static void *grs_init_xml(void)
@@ -480,22 +467,12 @@ static void *grs_init_xml(void)
 
     p->expat_version = XML_ExpatVersionInfo();
 
-    /* determine if we can use XML_GetCurrent{Line,Column}Number */
-    p->full_error_info = 0;
-    if (p->expat_version.major > 1)
-	p->full_error_info = 1;
-    else if (p->expat_version.major == 1 && p->expat_version.minor > 95)
-	p->full_error_info = 1;
-    else if (p->expat_version.major == 1 && p->expat_version.minor == 95
-	     && p->expat_version.micro >= 3)
-	p->full_error_info = 1;
     return p;
 }
 
 static data1_node *grs_read_xml (struct grs_read_info *p)
 {
-    struct xml_info *x = (struct xml_info *) p->clientData;
-    return zebra_read_xml (p->dh, p->readf, p->fh, p->mem, x->full_error_info);
+    return zebra_read_xml (p->dh, p->readf, p->fh, p->mem);
 }
 
 static void grs_destroy_xml(void *clientData)
