@@ -1,12 +1,11 @@
-EXTRA_DIST = zebra.cfg Zthes.abs zthes.att zthes.tag \
-  tagsetg-zthes.tag tagsetm-zthes.tag tree2xml.pl dino.tree
+EXTRA_DIST = zebra.cfg Zthes.abs zthes.att tree2xml.pl dino.tree
 
-dist-hook:
-	-mkdir $(distdir)/records
+# optional: tagsetg-zthes.tag tagsetm-zthes.tag zthes.tag 
+dino: reci-0.mf
 
-recdA-0.mf: records/dino.xml
-	zebraidx init
-	zebraidx update records
+reci-0.mf: records/dino.xml
+	../../index/zebraidx init
+	../../index/zebraidx update records
 
 records/dino.xml: tree2xml.pl dino.tree
 	./tree2xml.pl dino.tree > records/dino.xml
@@ -14,3 +13,5 @@ records/dino.xml: tree2xml.pl dino.tree
 clean:
 	rm -f records/dino.xml *.mf *.LCK zebrasrv.pid
 
+dist-hook:
+	-mkdir $(distdir)/records

@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.18 2002-12-01 23:26:26 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.19 2002-12-30 12:56:07 adam Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -81,7 +81,7 @@
    <literal>dino.tree</literal>.)
    Type <literal>make records/dino.xml</literal>
    to make the XML data file.
-   (Or you could just type <literal>make</literal> to build the XML
+   (Or you could just type <literal>make dino</literal> to build the XML
    data file, create the database and populate it with the taxonomic
    records all in one shot - but then you wouldn't learn anything,
    would you?  :-)
@@ -227,32 +227,92 @@
    <literal>&lt;Zthes&gt;</literal> element.
   </para>
   <para>
-   ### Here's where it all goes to pieces.  The current arrangement is
-   very awkward (and somewhat embarrassing) to describe, and the new
-   arrangement hasn't actually been implemented yet.
-  </para>
-  <para>
    This is a two-step process.  First, we need to tell Zebra that we
    want to support the BIB-1 attribute set.  Then we need to tell it
    which elements of its record pertain to access point 4.
-  </para>
-  <para>
+   </para>
+   <para>
    We need to create an <link linkend="abs-file">Abstract Syntax
    file</link> named after the document element of the records we're
-   working with, plus a <literal>.abs</literal> suffix - in this case,
-   <literal>Zthes.abs</literal> - as follows:
-  </para>
-  <itemizedlist>
-   <listitem>
-    <para>
-     
-    </para>
-   </listitem>
-   <listitem>
-    <para>
-    </para>
-   </listitem>
-  </itemizedlist>
+    working with, plus a <literal>.abs</literal> suffix - in this case,
+    <literal>Zthes.abs</literal> - as follows:
+   </para>
+   <programlistingco>
+    <areaspec>
+     <area id="attset.zthes" coords="2"/>
+     <area id="attset.attset" coords="3"/>
+     <area id="termId" coords="7"/>
+     <area id="termName" coords="8"/>
+    </areaspec>
+    <programlisting>
+attset zthes.att
+attset bib1.att
+xpath enable
+systag sysno none
+
+xelm /Zthes/termId              termId:w
+xelm /Zthes/termName            termName:w,title:w
+xelm /Zthes/termQualifier       termQualifier:w
+xelm /Zthes/termType            termType:w
+xelm /Zthes/termLanguage        termLanguage:w
+xelm /Zthes/termNote            termNote:w
+xelm /Zthes/termCreatedDate     termCreatedDate:w
+xelm /Zthes/termCreatedBy       termCreatedBy:w
+xelm /Zthes/termModifiedDate    termModifiedDate:w
+xelm /Zthes/termModifiedBy      termModifiedBy:w
+    </programlisting>
+   <calloutlist>
+    <callout arearefs="attset.zthes">
+     <para>
+      Declare Thesausus attribute set. See <filename>zthes.att</filename>.
+     </para>
+    </callout>
+    <callout arearefs="attset.attset">
+     <para>
+      Declare Bib-1 attribute set. See <filename>bib1.att</filename> in
+      Zebra's <filename>tab</filename> directory.
+     </para>
+    </callout>
+    <callout arearefs="termId">
+     <para>
+      This xelm directive selects contents of nodes by XPath expression
+      <literal>/Zthes/termId</literal>. The contents (CDATA) will be
+      word searchable by Zthes attribute termId (value 1001).
+     </para>
+    </callout>
+    <callout arearefs="termName">
+     <para>
+      Make <literal>termName</literal> word searchable by both
+      Zthes attribute termName (1002) and Bib-1 atttribute title (4).
+     </para>
+    </callout>
+   </calloutlist>
+  </programlistingco>
+   <para>
+    After re-indexing, we can search the database using Bib-1
+    attribute, title, as follows:
+    <screen>
+Z> form xml
+Z> f @attr 1=4 Eoraptor
+Sent searchRequest.
+Received SearchResponse.
+Search was a success.
+Number of hits: 1, setno 1
+SearchResult-1: Eoraptor(1)
+records returned: 0
+Elapsed: 0.106896
+Z> s
+Sent presentRequest (1+1).
+Records: 1
+[Default]Record type: XML
+&lt;Zthes&gt;
+ &lt;termId&gt;2&lt;/termId&gt;
+ &lt;termName&gt;Eoraptor&lt;/termName&gt;
+ &lt;termType&gt;PT&lt;/termType&gt;
+ &lt;termNote&gt;The most basal known dinosaur&lt;/termNote&gt;
+ ...
+    </screen>
+   </para>
  </sect1>
 </chapter>
 

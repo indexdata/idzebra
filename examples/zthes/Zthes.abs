@@ -1,31 +1,15 @@
 attset zthes.att
-tagset tagsetm-zthes.tag
-tagset tagsetg-zthes.tag
-tagset zthes.tag
+attset bib1.att
 xpath enable
 systag sysno none
 
-elm (1,14)	termId			!
-elm (2,1)	termName		!
-elm (4,1)	termQualifier		!
-elm (4,2)	termType		!
-elm (2,20)	termLanguage		!
-elm (2,17)	termNote		!
-elm (1,15)	termCreatedDate		!
-elm (1,27)	termCreatedBy		!
-elm (1,16)	termModifiedDate	!
-elm (1,28)	termModifiedBy		!
-
-elm (4,4)	postings		-
-elm (4,4)/(2,36)	sourceDb	-
-elm (4,4)/(4,5)		fieldName	-
-elm (4,4)/(4,6)		hitCount	-
-
-elm (2,30)	relation		-
-elm (2,30)/(4,3)	relationType	-
-elm (2,30)/(2,36)	sourceDb	-
-elm (2,30)/(1,14)	termId		-
-elm (2,30)/(2,1)	termName	-
-elm (2,30)/(4,1)	termQualifier	-
-elm (2,30)/(4,2)	termType	-
-elm (2,30)/(2,20)	termLanguage	-
+xelm /Zthes/termId		termId:w
+xelm /Zthes/termName		termName:w,title:w
+xelm /Zthes/termQualifier	termQualifier:w
+xelm /Zthes/termType		termType:w
+xelm /Zthes/termLanguage	termLanguage:w
+xelm /Zthes/termNote 		termNote:w
+xelm /Zthes/termCreatedDate	termCreatedDate:w
+xelm /Zthes/termCreatedBy	termCreatedBy:w
+xelm /Zthes/termModifiedDate	termModifiedDate:w
+xelm /Zthes/termModifiedBy	termModifiedBy:w

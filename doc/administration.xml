@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.15 2002-12-03 16:40:17 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.16 2002-12-30 12:56:07 adam Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -405,7 +405,7 @@
   <para>
    
    <screen>
-    profilePath: /usr/local/yaz
+    profilePath: /usr/local/idzebra/tab
     attset: bib1.att
     simple.recordType: text
     simple.database: textbase

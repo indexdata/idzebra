@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.133 2002-12-16 22:59:34 adam Exp $
+/* $Id: extract.c,v 1.134 2002-12-30 12:56:07 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1727,10 +1727,11 @@ void extract_token_add (RecWord *p)
 {
     WRBUF wrbuf;
 
+#if 0
     yaz_log (LOG_LOG, "reg_type=%c attrSet=%d attrUse=%d seqno=%d s=%.*s",
              p->reg_type, p->attrSet, p->attrUse, p->seqno, p->length,
              p->string);
-
+#endif
     if ((wrbuf = zebra_replace(p->zebra_maps, p->reg_type, 0,
 			       p->string, p->length)))
     {
