@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.110 2004-12-13 20:51:27 adam Exp $
+dnl $Id: configure.in,v 1.111 2004-12-18 21:56:34 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -239,7 +239,7 @@ AC_DEFUN([ZEBRA_MODULE],[
 	   AC_MSG_RESULT([static])
 	   STATIC_MODULE_OBJ="${STATIC_MODULE_OBJ} \$(mod_${m}_la_OBJECTS)"
 	   STATIC_MODULE_LADD="${STATIC_MODULE_LADD} \$(mod_${m}_la_LADD)"
-	   modcpp=`echo $1|tr a-z- A-Z_`
+	   modcpp=`echo $1|tr abcdefghijklmnopqrstuvwxyz- ABCDEFGHIJKLMNOPQRSTUVWXYZ_`
 	   AC_DEFINE_UNQUOTED([IDZEBRA_STATIC_$modcpp])
 	elif test "$myen" = "no"; then
 	   AC_MSG_RESULT([disabled])
