@@ -72,7 +72,9 @@ VERSION = @VERSION@
 YAZINC = @YAZINC@
 YAZLIB = @YAZLIB@
 yazconfig = @yazconfig@
-@ISZMBOL_TRUE@bin_PROGRAMS = zmbolidx zmbolsrv apitest
+
+noinst_PROGRAMS = apitest
+@ISZMBOL_TRUE@bin_PROGRAMS = zmbolidx zmbolsrv 
 @ISZMBOL_FALSE@bin_PROGRAMS = zebraidx zebrasrv
 @ISZMBOL_TRUE@zmbolidx_SOURCES = main.c dir.c dirs.c trav.c extract.c kinput.c kcompare.c  symtab.c recindex.c recstat.c lockutil.c lockidx.c  zinfo.c invstat.c sortidx.c compact.c  index.h recindex.h recindxp.h zebraapi.h zinfo.h zserver.h
 
@@ -89,7 +91,7 @@ INCLUDES = -I$(srcdir)/../include @YAZINC@
 LDADD = @SUBLIBS@ @YAZLIB@
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
-PROGRAMS =  $(bin_PROGRAMS)
+PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
@@ -107,12 +109,6 @@ zmbolidx_LDFLAGS =
 zmbolsrv_LDADD = $(LDADD)
 zmbolsrv_DEPENDENCIES = 
 zmbolsrv_LDFLAGS = 
-apitest_OBJECTS =  apitest.o kcompare.o zrpn.o zsets.o attribute.o \
-recindex.o lockutil.o locksrv.o zinfo.o trunc.o sortidx.o rank1.o \
-zebraapi.o retrieve.o kinput.o
-apitest_LDADD = $(LDADD)
-apitest_DEPENDENCIES = 
-apitest_LDFLAGS = 
 @ISZMBOL_FALSE@zebraidx_OBJECTS =  main.o dir.o dirs.o trav.o extract.o \
 @ISZMBOL_FALSE@kinput.o kcompare.o symtab.o recindex.o recstat.o \
 @ISZMBOL_FALSE@lockutil.o lockidx.o zinfo.o invstat.o sortidx.o \
@@ -126,6 +122,12 @@ zebraidx_LDFLAGS =
 zebrasrv_LDADD = $(LDADD)
 zebrasrv_DEPENDENCIES = 
 zebrasrv_LDFLAGS = 
+apitest_OBJECTS =  apitest.o kcompare.o zrpn.o zsets.o attribute.o \
+recindex.o lockutil.o locksrv.o zinfo.o trunc.o sortidx.o rank1.o \
+zebraapi.o retrieve.o kinput.o
+apitest_LDADD = $(LDADD)
+apitest_DEPENDENCIES = 
+apitest_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -144,8 +146,8 @@ DEP_FILES =  .deps/apitest.P .deps/attribute.P .deps/compact.P \
 .deps/recstat.P .deps/retrieve.P .deps/sortidx.P .deps/symtab.P \
 .deps/trav.P .deps/trunc.P .deps/zebraapi.P .deps/zinfo.P .deps/zrpn.P \
 .deps/zserver.P .deps/zsets.P
-SOURCES = $(zmbolidx_SOURCES) $(zmbolsrv_SOURCES) $(apitest_SOURCES) $(zebraidx_SOURCES) $(zebrasrv_SOURCES)
-OBJECTS = $(zmbolidx_OBJECTS) $(zmbolsrv_OBJECTS) $(apitest_OBJECTS) $(zebraidx_OBJECTS) $(zebrasrv_OBJECTS)
+SOURCES = $(zmbolidx_SOURCES) $(zmbolsrv_SOURCES) $(zebraidx_SOURCES) $(zebrasrv_SOURCES) $(apitest_SOURCES)
+OBJECTS = $(zmbolidx_OBJECTS) $(zmbolsrv_OBJECTS) $(zebraidx_OBJECTS) $(zebrasrv_OBJECTS) $(apitest_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -183,6 +185,15 @@ uninstall-binPROGRAMS:
 	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	done
 
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
+
 .s.o:
 	$(COMPILE) -c $<
 
@@ -207,10 +218,6 @@ zmbolsrv: $(zmbolsrv_OBJECTS) $(zmbolsrv_DEPENDENCIES)
 	@rm -f zmbolsrv
 	$(LINK) $(zmbolsrv_LDFLAGS) $(zmbolsrv_OBJECTS) $(zmbolsrv_LDADD) $(LIBS)
 
-apitest: $(apitest_OBJECTS) $(apitest_DEPENDENCIES)
-	@rm -f apitest
-	$(LINK) $(apitest_LDFLAGS) $(apitest_OBJECTS) $(apitest_LDADD) $(LIBS)
-
 zebraidx: $(zebraidx_OBJECTS) $(zebraidx_DEPENDENCIES)
 	@rm -f zebraidx
 	$(LINK) $(zebraidx_LDFLAGS) $(zebraidx_OBJECTS) $(zebraidx_LDADD) $(LIBS)
@@ -218,6 +225,10 @@ zebraidx: $(zebraidx_OBJECTS) $(zebraidx_DEPENDENCIES)
 zebrasrv: $(zebrasrv_OBJECTS) $(zebrasrv_DEPENDENCIES)
 	@rm -f zebrasrv
 	$(LINK) $(zebrasrv_LDFLAGS) $(zebrasrv_OBJECTS) $(zebrasrv_LDADD) $(LIBS)
+
+apitest: $(apitest_OBJECTS) $(apitest_DEPENDENCIES)
+	@rm -f apitest
+	$(LINK) $(apitest_LDFLAGS) $(apitest_OBJECTS) $(apitest_LDADD) $(LIBS)
 
 tags: TAGS
 
@@ -336,22 +347,25 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-binPROGRAMS mostlyclean-compile \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+mostlyclean-am:  mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
+		mostlyclean-compile mostlyclean-tags mostlyclean-depend \
+		mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-binPROGRAMS clean-compile clean-tags clean-depend \
-		clean-generic mostlyclean-am
+clean-am:  clean-binPROGRAMS clean-noinstPROGRAMS clean-compile \
+		clean-tags clean-depend clean-generic mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-binPROGRAMS distclean-compile distclean-tags \
-		distclean-depend distclean-generic clean-am
+distclean-am:  distclean-binPROGRAMS distclean-noinstPROGRAMS \
+		distclean-compile distclean-tags distclean-depend \
+		distclean-generic clean-am
 
 distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-binPROGRAMS \
+		maintainer-clean-noinstPROGRAMS \
 		maintainer-clean-compile maintainer-clean-tags \
 		maintainer-clean-depend maintainer-clean-generic \
 		distclean-am
@@ -362,6 +376,8 @@ maintainer-clean: maintainer-clean-am
 
 .PHONY: mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
 maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
+mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
 clean-tags maintainer-clean-tags distdir mostlyclean-depend \

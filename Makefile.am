@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.1 2000-04-05 09:49:35 adam Exp $
+## $Id: Makefile.am,v 1.2 2000-04-06 09:03:27 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -16,6 +16,7 @@ SPEC_FILE=$(PACKAGE).spec
 dist-hook:
 	cd doc; make
 	cp $(srcdir)/LICENSE* $(distdir)
+	cp $(srcdir)/*.spec $(distdir)
 	mkdir $(distdir)/win
 	for i in $(srcdir)/win/*; do \
 		if test -f $$i; then \

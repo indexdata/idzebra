@@ -336,6 +336,7 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 dist-hook:
 	cd doc; make
 	cp $(srcdir)/LICENSE* $(distdir)
+	cp $(srcdir)/*.spec $(distdir)
 	mkdir $(distdir)/win
 	for i in $(srcdir)/win/*; do \
 		if test -f $$i; then \

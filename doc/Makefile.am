@@ -1,9 +1,13 @@
-# $Id: Makefile.am,v 1.1 2000-04-05 09:49:35 adam Exp $
+# $Id: Makefile.am,v 1.2 2000-04-06 09:03:28 adam Exp $
 docdir=$(pkgdatadir)/doc
 
-doc_data = zebra.sgml gils.sgml
+doc_DATA = zebra.sgml gils.sgml zebra.txt zebra.ps zebra.html \
+ zebra-1.html zebra-2.html zebra-3.html zebra-4.html zebra-5.html \
+ zebra-6.html zebra-7.html zebra-8.html zebra-9.html
 
-EXTRA_DIST = zebra.sgml gils.sgml
+EXTRA_DIST = zebra.sgml gils.sgml zebra.txt zebra.ps zebra.html \
+ zebra-1.html zebra-2.html zebra-3.html zebra-4.html zebra-5.html \
+ zebra-6.html zebra-7.html zebra-8.html zebra-9.html
 
 zebra.txt: zebra.sgml
 	sgml2txt -f zebra.sgml

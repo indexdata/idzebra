@@ -1,7 +1,9 @@
-## $Id: Makefile.am,v 1.1 2000-04-05 09:59:42 adam Exp $
+## $Id: Makefile.am,v 1.2 2000-04-06 09:03:28 adam Exp $
+
+noinst_PROGRAMS = apitest
 
 if ISZMBOL
-bin_PROGRAMS = zmbolidx zmbolsrv apitest
+bin_PROGRAMS = zmbolidx zmbolsrv 
 zmbolidx_SOURCES = main.c dir.c dirs.c trav.c extract.c kinput.c kcompare.c \
  symtab.c recindex.c recstat.c lockutil.c lockidx.c \
  zinfo.c invstat.c sortidx.c compact.c \
