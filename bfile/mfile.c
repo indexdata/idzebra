@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.10  1995-09-04 12:33:22  adam
+ * Revision 1.11  1995-11-13 09:32:43  quinn
+ * Comment work.
+ *
+ * Revision 1.10  1995/09/04  12:33:22  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.9  1994/11/04  14:26:39  quinn
@@ -249,7 +252,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     char tmp[FILENAME_MAX+1];
     mf_dir *dp;
 
-    logf(LOG_LOG, "mf_open(%s bs=%d, %s)", name, block_size,
+    logf(LOG_DEBUG, "mf_open(%s bs=%d, %s)", name, block_size,
          wflag ? "RW" : "RDONLY");
     if (!ma)
     {
