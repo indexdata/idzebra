@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.17 2003-05-21 08:03:02 pop Exp $
+# $Id: Session.pm,v 1.18 2003-07-07 10:59:33 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -16,7 +16,7 @@ BEGIN {
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
     require Exporter;
-    our $VERSION = do { my @r = (q$Revision: 1.17 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.18 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger Exporter);
     our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
@@ -455,22 +455,30 @@ sub _update_args {
 sub insert_record {
     my ($self, %args) = @_;
     $self->checkzh;
-    return(IDZebra::insert_record($self->{zh},
-				  $self->_record_update_args(%args)));
+    my @args = $self->_record_update_args(%args);
+    my $stat = IDZebra::insert_record($self->{zh}, @args);
+    my $sysno = $args[2]; $stat = -1 * $stat if ($stat > 0);
+    return $stat ? $stat : $$sysno;
+    if ($stat) { return ($stat); } else { return $sysno};
 }
 
 sub update_record {
     my ($self, %args) = @_;
     $self->checkzh;
-    return(IDZebra::update_record($self->{zh},
-				  $self->_record_update_args(%args)));
+    my @args = $self->_record_update_args(%args);
+    my $stat = IDZebra::update_record($self->{zh}, @args);
+    my $sysno = $args[2]; $stat = -1 * $stat if ($stat > 0);
+    return $stat ? $stat : $$sysno;
+    if ($stat) { return ($stat); } else { return $$sysno};
 }
 
 sub delete_record {
     my ($self, %args) = @_;
     $self->checkzh;
-    return(IDZebra::delete_record($self->{zh},
-				  $self->_record_update_args(%args)));
+    my @args = $self->_record_update_args(%args);
+    my $stat = IDZebra::delete_record($self->{zh}, @args);
+    my $sysno = $args[2]; $stat = -1 * $stat if ($stat > 0);
+    return $stat ? $stat : $$sysno;
 }
 
 sub _record_update_args {
@@ -517,7 +525,7 @@ sub _record_update_args {
     unless ($rectype) {
 	$rectype="";
     }
-    return ($rg, $rectype, $sysno, $match, $fname, $buff, $len, $force);
+    return ($rg, $rectype, \$sysno, $match, $fname, $buff, $len, $force);
 }
 
 # -----------------------------------------------------------------------------
@@ -615,9 +623,13 @@ sub _new_setname {
 sub _search_pqf {
     my ($self, $query, $setname) = @_;
 
-    my $hits = IDZebra::search_PQF($self->{zh},
+
+    my $hits = 0;
+
+    my $res = IDZebra::search_PQF($self->{zh},
 				   $query,
-				   $setname);
+				   $setname,
+				   \$hits);
 
     my $rs  = IDZebra::Resultset->new($self,
 				      name        => $setname,

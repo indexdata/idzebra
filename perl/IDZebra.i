@@ -289,11 +289,12 @@ void zebra_repository_show (ZebraHandle zh);
    If not, and match_criteria is provided, then sysno is guessed
    If not, and a record is provided, then sysno is got from there */
 
+%apply int *REFERENCE { int *sysno };
 %name(insert_record)       
 int zebra_insert_record (ZebraHandle zh, 
 			 recordGroup *rGroup, 
 			 const char *recordType,
-			 int sysno, 
+			 int *sysno, 
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 
@@ -304,7 +305,7 @@ int zebra_insert_record (ZebraHandle zh,
 int zebra_update_record (ZebraHandle zh, 
 			 recordGroup *rGroup, 
 			 const char *recordType,
-			 int sysno, 
+			 int *sysno, 
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 
@@ -315,7 +316,7 @@ int zebra_update_record (ZebraHandle zh,
 int zebra_delete_record (ZebraHandle zh, 
 			 recordGroup *rGroup, 
 			 const char *recordType,
-			 int sysno, 
+			 int *sysno, 
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 
@@ -324,11 +325,13 @@ int zebra_delete_record (ZebraHandle zh,
 
 
 /* == Search (zebraapi.c) ================================================== */
-
+%include "typemaps.i"
+%apply int *REFERENCE { int *hits };
 %name(search_PQF) 
 int zebra_search_PQF (ZebraHandle zh, 
 		      const char *pqf_query,
-		      const char *setname);
+		      const char *setname,
+		      int *hits);
 
 /* == YAZ - query tools ==================================================== */
 
@@ -371,7 +374,8 @@ int zebra_deleleResultSet(ZebraHandle zh, int function,
 
 
 /* == Sort ================================================================= */
-int sort (ZebraHandle zh, 
+%name(sort)
+int zebra_sort_by_specstr (ZebraHandle zh, 
 	  ODR stream,
 	  const char *sort_spec,
 	  const char *output_setname,
@@ -386,6 +390,10 @@ void zebra_scan_PQF (ZebraHandle zh,
 		     const char *pqf_query);
 
 scanEntry *getScanEntry(ScanObj *so, int pos);
+
+%typemap(in) int * (int dvalue);
+%typemap(argout) int *;
+
 
 /* Admin functionality */
 /*
