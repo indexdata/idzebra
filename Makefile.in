@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1998, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.1 1998-09-02 14:15:26 adam Exp $
+# $Id: Makefile.in,v 1.2 1998-10-28 15:20:40 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -13,8 +13,7 @@ CDEFS=@DEFS@ @ODEFS@
 # Where are Yaz libraries located?
 YAZLIB=../../yaz/lib/libyaz.a
 # Where are Yaz header files located?
-YAZINC=-I../../yaz/include
-#YAZINC=-I../../yaz/z39.50 -I../../yaz/include
+YAZINC=-I../../yaz/z39.50 -I../../yaz/include
 # If Yaz is compiled with mosi support uncomment and specify.
 #OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
 

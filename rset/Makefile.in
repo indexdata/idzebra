@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1998, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.1 1998-09-02 14:15:36 adam Exp $
+# $Id: Makefile.in,v 1.2 1998-10-28 15:20:51 adam Exp $
 
 SHELL=/bin/sh
 
@@ -12,7 +12,7 @@ CDEFS=@DEFS@ @ODEFS@
 LIBS=@LIBS@
 
 YAZLIB=../../yaz/lib/libyaz.a
-YAZINC=-I../../yaz/include
+YAZINC=-I../../yaz/z39.50 -I../../yaz/include
 
 INCLUDE=-I../include $(YAZINC)
 DEFS=$(CDEFS) $(INCLUDE)
