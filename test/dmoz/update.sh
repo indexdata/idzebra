@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: update.sh,v 1.8 2002-06-20 08:03:30 adam Exp $
+# $Id: update.sh,v 1.9 2002-07-03 10:13:30 adam Exp $
 t=$1
 test -n "$t" || exit 1
 rm -f *.mf *.LCK *.tmp
@@ -18,9 +18,12 @@ while test -f dmoz.$i.xml; do
 	rm -f *.mf
 	mv rtmp/*.mf .
 
-	echo " ---------- $i ----- " >> stat-$t.log
-	../../index/zebraidx -l zebraidx-$t.log -c zebra-$t.cfg stat >>stat-$t.log 
 	i=`expr $i + 1`
+	mod=`expr $i % 5`
+	if test $mod -eq 0; then
+		echo "run $i" >> stat-$t.log
+		../../index/zebraidx -l zebraidx-$t.log -c zebra-$t.cfg stat >>stat-$t.log 
+	fi
 	if test $i = 30; then
 		break
 	fi
