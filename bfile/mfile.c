@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.26  1997-10-27 14:25:38  adam
+ * Revision 1.27  1998-02-10 11:55:07  adam
+ * Minor changes.
+ *
+ * Revision 1.26  1997/10/27 14:25:38  adam
  * Fixed memory leaks.
  *
  * Revision 1.25  1997/09/18 08:59:16  adam
@@ -552,7 +555,8 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
     towrite = num ? num : mf->blocksize;
     if (write(mf->files[mf->cur_file].fd, buf, towrite) < towrite)
     {
-    	logf (LOG_FATAL|LOG_ERRNO, "Write failed");
+    	logf (LOG_FATAL|LOG_ERRNO, "Write failed for file %s part %d",
+		mf->name, mf->cur_file);
     	exit(1);
     }
     return 0;
