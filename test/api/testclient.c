@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.1 2003-05-21 14:39:22 adam Exp $
+ * $Id: testclient.c,v 1.1.2.1 2004-12-16 16:28:18 heikki Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 	if (check_count != -1 && check_count != ZOOM_resultset_size(r))
 	{
 	    printf("Wrong number of hits, expected %d, got %d\n",
-			    expected_hits, ZOOM_resultset_size(r) );
+			    check_count, ZOOM_resultset_size(r) );
 	    exit(3);
 	}
     }
