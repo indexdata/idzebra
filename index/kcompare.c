@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.13  1995-10-27 14:00:11  adam
+ * Revision 1.14  1995-10-30 15:08:08  adam
+ * Bug fixes.
+ *
+ * Revision 1.13  1995/10/27  14:00:11  adam
  * Implemented detection of database availability.
  *
  * Revision 1.12  1995/10/17  18:02:08  adam
@@ -70,26 +73,28 @@ void key_logdump (int logmask, const void *p)
 
 int key_compare (const void *p1, const void *p2)
 {
-    const struct it_key *i1 = p1, *i2 = p2;
-    if (i1->sysno != i2->sysno)
+    struct it_key i1, i2;
+    memcpy (&i1, p1, sizeof(i1));
+    memcpy (&i2, p2, sizeof(i2));
+    if (i1.sysno != i2.sysno)
     {
-        if (i1->sysno > i2->sysno)
+        if (i1.sysno > i2.sysno)
             return 2;
         else
             return -2;
     }
 #if IT_KEY_HAVE_SEQNO
-    if (i1->seqno != i2->seqno)
+    if (i1.seqno != i2.seqno)
     {
-        if (i1->seqno > i2->seqno)
+        if (i1.seqno > i2.seqno)
             return 1;
         else
             return -1;
     }
 #else
-    if (i1->freq != i2->freq)
+    if (i1.freq != i2.freq)
     {
-        if (i1->freq > i2->freq)
+        if (i1.freq > i2.freq)
             return 1;
         else
             return -1;

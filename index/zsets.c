@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.9  1995-10-17 18:02:14  adam
+ * Revision 1.10  1995-10-30 15:08:08  adam
+ * Bug fixes.
+ *
+ * Revision 1.9  1995/10/17  18:02:14  adam
  * New feature: databases. Implemented as prefix to words in dictionary.
  *
  * Revision 1.8  1995/10/10  13:59:25  adam
@@ -101,11 +104,11 @@ ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
         {
             psysno = key.sysno;
             position++;
+            assert (num_i < num);
             if (position == positions[num_i])
             {
                 sr[num_i].sysno = psysno;
                 rset_score (rset, rfd, &sr[num_i].score);
-                num_i++;
                 if (++num_i == num)
                     break;
             }
