@@ -2,7 +2,7 @@
  *  Copyright (c) 1995-1998, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.6 2002-04-17 09:03:38 adam Exp $
+ *  $Id: isamb.c,v 1.7 2002-04-17 09:44:56 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -71,7 +71,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
     isamb->bfs = bfs;
     isamb->method = (ISAMC_M) xmalloc (sizeof(*method));
     memcpy (isamb->method, method, sizeof(*method));
-    isamb->no_cat = 2;
+    isamb->no_cat = 4;
 
     isamb->file = xmalloc (sizeof(*isamb->file) * isamb->no_cat);
     for (i = 0; i<isamb->no_cat; i++)
@@ -438,7 +438,6 @@ int insert_flat (ISAMB b, const void *new_item, ISAMC_P *posp)
     new_size = dst - dst_buf + ISAMB_DATA_OFFSET;
     if (p && new_size > b->file[p->cat].head.block_size)
     {
-        yaz_log (LOG_LOG, "resize %d -> %d", p->size, new_size);
         close_block (b, p);
         /* delete it too!! */
         p = 0; /* make a new one anyway */
