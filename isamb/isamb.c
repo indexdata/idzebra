@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.24 2003-03-17 20:22:54 adam Exp $
+/* $Id: isamb.c,v 1.25 2003-03-20 14:37:35 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -116,6 +116,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method,
     memcpy (isamb->method, method, sizeof(*method));
     isamb->no_cat = 4;
     isamb->log_io = 0;
+    isamb->log_freelist = 0;
     isamb->cache = cache;
 
     assert (cache == 0);
