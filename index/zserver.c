@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.69  1999-06-10 09:20:03  adam
+ * Revision 1.70  1999-06-10 12:14:56  adam
+ * Fixed to use bend_start instead of pre_init.
+ *
+ * Revision 1.69  1999/06/10 09:20:03  adam
  * Minor change to pre_init handler.
  *
  * Revision 1.68  1999/05/26 07:49:13  adam
@@ -436,7 +439,7 @@ int bend_sort (void *handle, bend_sort_rr *rr)
 }
 
 #ifndef WIN32
-static void pre_init (struct statserv_options_block *sob)
+static void bend_start (struct statserv_options_block *sob)
 {
     if (!sob->inetd) 
     {
@@ -463,7 +466,7 @@ int main (int argc, char **argv)
     sob = statserv_getcontrol ();
     strcpy (sob->configname, FNAME_CONFIG);
 #ifndef WIN32
-    sob->pre_init = pre_init;
+    sob->bend_start = bend_start;
 #endif
     statserv_setcontrol (sob);
 
