@@ -28,14 +28,16 @@ CFLAGS="$RPM_OPT_FLAGS" \
 make CFLAGS="$RPM_OPT_FLAGS"
 
 %install
-rm -fr $RPM_BUILD_ROOT
-make prefix=$RPM_BUILD_ROOT/usr install
-cd doc; make prefix=$RPM_BUILD_ROOT/usr install
+rm -fr ${RPM_BUILD_ROOT}
+make prefix=${RPM_BUILD_ROOT}/usr mandir=${RPM_BUILD_ROOT}/usr/share/man install
+
+%clean
+rm -fr ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
 %doc README LICENSE.zebra CHANGELOG 
 %config /usr/share/idzebra/tab
-/usr/bin/zebrasrv
-/usr/bin/zebraidx
+/usr/bin/*
 /usr/share/doc/idzebra
+/usr/share/man/*/*

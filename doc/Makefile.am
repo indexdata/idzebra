@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.13 2002-09-19 21:06:50 adam Exp $
+## $Id: Makefile.am,v 1.14 2002-09-25 09:50:20 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 doc_DATA = zebra.html zebra.pdf
@@ -20,7 +20,8 @@ XMLFILES = \
  server.xml \
  recordmodel.xml \
  license.xml \
- indexdata.xml
+ indexdata.xml \
+ zebraidx-options.xml
 
 EXTRA_DIST = $(SUPPORTFILES) $(XMLFILES) zebra.pdf \
  $(man_MANS) zebraidx-man.sgml zebrasrv-man.sgml
