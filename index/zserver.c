@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.59  1998-06-12 12:22:13  adam
+ * Revision 1.60  1998-06-22 11:36:49  adam
+ * Added authentication check facility to zebra.
+ *
+ * Revision 1.59  1998/06/12 12:22:13  adam
  * Work on Zebra API.
  *
  * Revision 1.58  1998/05/27 16:57:46  adam
@@ -238,6 +241,8 @@ bend_initresult *bend_init (bend_initrequest *q)
     bend_initresult *r = odr_malloc (q->stream, sizeof(*r));
     ZebraHandle zh;
     struct statserv_options_block *sob;
+    char *user = NULL;
+    char *passwd = NULL;
 
     r->errcode = 0;
     r->errstring = 0;
@@ -250,6 +255,28 @@ bend_initresult *bend_init (bend_initrequest *q)
     {
 	logf (LOG_FATAL, "Failed to open Zebra `%s'", sob->configname);
 	r->errcode = 1;
+	return r;
+    }
+    if (q->auth)
+    {
+	if (q->auth->which == Z_IdAuthentication_open)
+	{
+	    char *openpass = xstrdup (q->auth->u.open);
+	    char *cp = strchr (openpass, '/');
+	    if (cp)
+	    {
+		*cp = '\0';
+		user = nmem_strdup (odr_getmem (q->stream), openpass);
+		passwd = nmem_strdup (odr_getmem (q->stream), cp+1);
+	    }
+	    xfree (openpass);
+	}
+    }
+    if (zebra_auth (zh, user, passwd))
+    {
+	r->errcode = 222;
+	r->errstring = user;
+	zebra_close (zh);
 	return r;
     }
     r->handle = zh;

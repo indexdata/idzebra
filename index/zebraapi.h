@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.h,v $
- * Revision 1.2  1998-06-13 00:14:09  adam
+ * Revision 1.3  1998-06-22 11:36:48  adam
+ * Added authentication check facility to zebra.
+ *
+ * Revision 1.2  1998/06/13 00:14:09  adam
  * Minor changes.
  *
  * Revision 1.1  1998/06/12 12:22:13  adam
@@ -71,4 +74,7 @@ YAZ_EXPORT char *zebra_errAdd (ZebraHandle zh);
 
 /* number of hits (after search) */
 YAZ_EXPORT int zebra_hits (ZebraHandle zh);
+
+/* do authentication */
+YAZ_EXPORT int zebra_auth (ZebraHandle zh, const char *user, const char *pass);
 

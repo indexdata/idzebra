@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.33  1998-06-12 12:22:14  adam
+ * Revision 1.34  1998-06-22 11:36:50  adam
+ * Added authentication check facility to zebra.
+ *
+ * Revision 1.33  1998/06/12 12:22:14  adam
  * Work on Zebra API.
  *
  * Revision 1.32  1998/05/27 16:57:47  adam
@@ -134,6 +137,7 @@
 #include <rset.h>
 
 #include <sortidx.h>
+#include <passwddb.h>
 #include "index.h"
 #include "zebraapi.h"
 #include "zinfo.h"
@@ -178,6 +182,7 @@ struct zebra_info {
 #endif
     ZebraMaps zebra_maps;
     ZebraRankClass rank_classes;
+    Passwd_db passwd_db;
 };
 
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.5  1998-06-13 00:14:08  adam
+ * Revision 1.6  1998-06-22 11:36:47  adam
+ * Added authentication check facility to zebra.
+ *
+ * Revision 1.5  1998/06/13 00:14:08  adam
  * Minor changes.
  *
  * Revision 1.4  1998/06/12 12:22:12  adam
@@ -155,6 +158,21 @@ ZebraHandle zebra_open (const char *configName)
     zh->errString = 0;
     
     zebraRankInstall (zh, rank1_class);
+
+    if (!res_get (zh->res, "passwd"))
+	zh->passwd_db = NULL;
+    else
+    {
+	zh->passwd_db = passwd_db_open ();
+	if (!zh->passwd_db)
+	    logf (LOG_WARN|LOG_ERRNO, "passwd_db_open failed");
+	else
+	    passwd_db_file (zh->passwd_db, res_get (zh->res, "passwd"));
+    }
+    zh->bfs = bfs_create (res_get (zh->res, "register"));
+    bf_lockDir (zh->bfs, res_get (zh->res, "lockDir"));
+    data1_set_tabpath (zh->dh, res_get(zh->res, "profilePath"));
+
     return zh;
 }
 
@@ -179,6 +197,8 @@ void zebra_close (ZebraHandle zh)
     data1_destroy (zh->dh);
     zebra_server_lock_destroy (zh);
 
+    if (zh->passwd_db)
+	passwd_db_close (zh->passwd_db);
     res_close (zh->res);
     xfree (zh);
 }
@@ -289,6 +309,13 @@ char *zebra_errAdd (ZebraHandle zh)
 int zebra_hits (ZebraHandle zh)
 {
     return zh->hits;
+}
+
+int zebra_auth (ZebraHandle zh, const char *user, const char *pass)
+{
+    if (!zh->passwd_db || !passwd_db_auth (zh->passwd_db, user, pass))
+	return 0;
+    return 1;
 }
 
 void zebra_setDB (ZebraHandle zh, int num_bases, char **basenames)
