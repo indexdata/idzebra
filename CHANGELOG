@@ -1,7 +1,9 @@
 
 --- 1.2 2002/MM/DD
 
-New Zebra API. Locking system re-implemented. Beware!
+Implemented hits per term using USR:SearchResult-1.
+
+New Zebra API. Locking system re-implemented.
 
 --- 1.1.stable 2002/02/20
 
