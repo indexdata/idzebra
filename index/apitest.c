@@ -147,7 +147,25 @@ int main (int argc, char **argv)
 	    odr_reset (odr_input);
 	    continue;
 	}
+	else
+	{
+	    char out_str[100];
+	    int r;
+#if 1
+	    r = zebra_string_norm (zh, 'w',
+				   argv[argno], strlen(argv[argno]),
+				   out_str, sizeof(out_str));
+	    if (r >= 0)
+	    {
+		printf ("norm: '%s'\n", out_str);
+	    }
+	    else
+	    {
+		printf ("norm fail: %d\n", r);
+	    }
+#endif
 
+	}
 	/* result set name will be called 1,2, etc */
 	sprintf (setname, "%d", argno);
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.h,v $
- * Revision 1.8  1999-11-30 13:48:03  adam
+ * Revision 1.9  2000-02-24 12:31:17  adam
+ * Added zebra_string_norm.
+ *
+ * Revision 1.8  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.7  1999/11/04 15:00:45  adam
@@ -103,6 +106,12 @@ YAZ_EXPORT int zebra_hits (ZebraHandle zh);
 /* do authentication */
 YAZ_EXPORT int zebra_auth (ZebraHandle zh, const char *user, const char *pass);
 
+/* Character normalisation on specific register .
+   This routine is subject to change - do not use. */
+YAZ_EXPORT int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
+				  const char *input_str, int input_len,
+				  char *output_str, int output_len);
+				      
 #ifdef __cplusplus
 }
 #endif

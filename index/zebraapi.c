@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.26  1999-11-30 13:48:03  adam
+ * Revision 1.27  2000-02-24 12:31:17  adam
+ * Added zebra_string_norm.
+ *
+ * Revision 1.26  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.25  1999/11/04 15:00:45  adam
@@ -599,4 +602,23 @@ void zebra_setGroup (ZebraHandle zh, const char *group)
 void zebra_admin (ZebraHandle zh, const char *command)
 {
 
+}
+
+int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
+		       const char *input_str, int input_len,
+		       char *output_str, int output_len)
+{
+    WRBUF wrbuf;
+    if (!zh->zebra_maps)
+	return -1;
+    wrbuf = zebra_replace(zh->zebra_maps, reg_id, "",
+			  input_str, input_len);
+    if (!wrbuf)
+	return -2;
+    if (wrbuf_len(wrbuf) >= output_len)
+	return -3;
+    if (wrbuf_len(wrbuf))
+	memcpy (output_str, wrbuf_buf(wrbuf), wrbuf_len(wrbuf));
+    output_str[wrbuf_len(wrbuf)] = '\0';
+    return wrbuf_len(wrbuf);
 }
