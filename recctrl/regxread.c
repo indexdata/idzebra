@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.47 2003-04-24 19:34:20 adam Exp $
+/* $Id: regxread.c,v 1.48 2003-06-17 22:22:57 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -473,6 +473,8 @@ static int actionListMk (struct lexSpec *spec, const char *s,
                 logf (LOG_WARN, "regular expression error '%.*s'", s-s0, s0);
                 return -1;
             }
+	    if (debug_dfa_tran)
+		printf ("pattern: %.*s\n", s-s0, s0);
             dfa_mkstate ((*ap)->u.pattern.dfa);
             s++;
             break;
@@ -590,6 +592,14 @@ int readFileSpec (struct lexSpec *spec)
     if (spec->tcl_interp)
 	logf (LOG_LOG, "Tcl enabled");
 #endif
+
+#if 0
+    debug_dfa_trav = 0;
+    debug_dfa_tran = 1;
+    debug_dfa_followpos = 0;
+    dfa_verbose = 1;
+#endif
+
     lineBuf = wrbuf_alloc();
     spec->lineNo = 0;
     c = getc (spec_inf);
@@ -632,12 +642,6 @@ int readFileSpec (struct lexSpec *spec)
     fclose (spec_inf);
     wrbuf_free(lineBuf, 1);
 
-#if 0
-    debug_dfa_trav = 1;
-    debug_dfa_tran = 1;
-    debug_dfa_followpos = 1;
-    dfa_verbose = 1;
-#endif
     for (lc = spec->context; lc; lc = lc->next)
     {
 	struct lexRule *rp;
@@ -668,13 +672,12 @@ static void execData (struct lexSpec *spec,
     if (elen == 0) /* shouldn't happen, but it does! */
 	return ;
 #if REGX_DEBUG
-    if (elen > 40)
-        logf (LOG_LOG, "data(%d bytes) %.15s ... %.*s", elen,
-	      ebuf, 15, ebuf + elen-15);
+    if (elen > 80)
+        logf (LOG_LOG, "data(%d bytes) %.40s ... %.*s", elen,
+	      ebuf, 40, ebuf + elen-40);
     else if (elen == 1 && ebuf[0] == '\n')
     {
         logf (LOG_LOG, "data(new line)");
-        assert(0);
     }
     else if (elen > 0)
         logf (LOG_LOG, "data(%d bytes) %.*s", elen, elen, ebuf);
@@ -875,7 +878,7 @@ static void tagEnd (struct lexSpec *spec, int min_level,
 
 
 static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
-                     struct DFA *dfa)
+                     struct DFA *dfa, int greedy)
 {
     struct DFA_state *state = dfa->states[0];
     struct DFA_tran *t;
@@ -885,11 +888,24 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
     int start_ptr = *pptr;    /* first char of match */
     int last_ptr = 0;         /* last char of match */
     int last_rule = 0;        /* rule number of current match */
+    int restore_ptr = 0;
     int i;
 
+    if (ptr)
+    {
+	--ptr;
+        c = f_win_advance (spec, &ptr);
+    }
     while (1)
     {
+	if (dfa->states[0] == state)
+	{
+	    c_prev = c;
+	    restore_ptr = ptr;
+	}
+
         c = f_win_advance (spec, &ptr);
+
         if (ptr == F_WIN_EOF)
         {
             if (last_rule)
@@ -900,6 +916,7 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
             }
             break;
         }
+
         t = state->trans;
         i = state->tran_no;
         while (1)
@@ -912,27 +929,29 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
                     return 1;
                 }
                 state = dfa->states[0];
+
+		ptr = restore_ptr;
+		c = f_win_advance (spec, &ptr);
+
                 start_ptr = ptr;
-                c_prev = c;
+
                 break;
             }
             else if (c >= t->ch[0] && c <= t->ch[1])
             {
                 state = dfa->states[t->to];
-                if (state->rule_no)
-                {
-                    if (c_prev == '\n')
-                    {
-                        last_rule = state->rule_no;
-                        last_ptr = ptr;
-                    }
-                    else
-                    {
-                        last_rule = state->rule_nno;
-                        last_ptr = ptr;
-                    }
-                }
-                break;
+                if (state->rule_no && c_prev == '\n')
+		{
+		    last_rule = state->rule_no;
+		    last_ptr = ptr;
+		}
+		else if (state->rule_nno)
+		{
+		    last_rule = state->rule_nno;
+		    last_ptr = ptr;
+		}
+		else
+		    break;
             }
             else
                 t++;
@@ -1542,13 +1561,14 @@ static int execAction (struct lexSpec *spec, struct lexRuleAction *ap,
             if (ap->u.pattern.body)
             {
                 arg_start[arg_no] = *pptr;
-                if (!tryMatch (spec, pptr, &sptr, ap->u.pattern.dfa))
+                if (!tryMatch (spec, pptr, &sptr, ap->u.pattern.dfa, 0))
                 {
                     arg_end[arg_no] = F_WIN_EOF;
                     arg_no++;
                     arg_start[arg_no] = F_WIN_EOF;
                     arg_end[arg_no] = F_WIN_EOF;
-/* return 1*/
+		    yaz_log(LOG_DEBUG, "Pattern match rest of record");
+		    *pptr = F_WIN_EOF;
                 }
                 else
                 {
@@ -1561,7 +1581,7 @@ static int execAction (struct lexSpec *spec, struct lexRuleAction *ap,
             else
             {
                 arg_start[arg_no] = *pptr;
-                if (!tryMatch (spec, pptr, &sptr, ap->u.pattern.dfa))
+                if (!tryMatch (spec, pptr, &sptr, ap->u.pattern.dfa, 1))
                     return 1;
                 if (sptr != arg_start[arg_no])
                     return 1;

@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.80 2003-06-12 18:20:08 adam Exp $
+/* $Id: recgrs.c,v 1.81 2003-06-17 22:22:57 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -361,10 +361,10 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
         wrd->length = n->u.data.len;
         if (p->flagShowRecords)
         {
-            printf("%*s data=", (level + 1) * 4, "");
+            printf("%*s XData:\"", (level + 1) * 4, "");
             for (i = 0; i<wrd->length && i < 8; i++)
                 fputc (wrd->string[i], stdout);
-            printf("\n");
+            printf("\"\n");
         }  
         else  {
             data1_termlist *tl;
@@ -646,7 +646,7 @@ static void index_termlist (data1_node *par, data1_node *n,
 		       tlist->att->parent->name,
 		       tlist->att->name, tlist->att->value,
 		       tlist->source);
-		printf (" data=\"");
+		printf (" XData:\"");
 		for (i = 0; i<wrd->length && i < 40; i++)
 		    fputc (wrd->string[i], stdout);
 		fputc ('"', stdout);
@@ -729,8 +729,8 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
 		printf("%*s", level * 4, "");
 		printf("Data: ");
 		if (n->u.data.len > 256)
-		    printf("'%.240s ... %.6s'\n", n->u.data.data,
-			   n->u.data.data + n->u.data.len-6);
+		    printf("'%.170s ... %.70s'\n", n->u.data.data,
+			   n->u.data.data + n->u.data.len-70);
 		else if (n->u.data.len > 0)
 		    printf("'%.*s'\n", n->u.data.len, n->u.data.data);
 		else
