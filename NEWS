@@ -1,4 +1,6 @@
 
+--- 1.3.16 2004/08/16
+
 Added facility to make attibutes in grs.regx and grs.tcl filter using the
 data command with argument -attribute <name> . The content of data is
 the value of the attribute. This command should be used inside a
