@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.61  1998-06-24 12:16:15  adam
+ * Revision 1.62  1998-08-06 14:35:28  adam
+ * Routine bend_deleterequest removed.
+ *
+ * Revision 1.61  1998/06/24 12:16:15  adam
  * Support for relations on text operands. Open range support in
  * DFA module (i.e. [-j], [g-]).
  *
@@ -344,11 +347,6 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
 	r->format = retrievalRecord.format;
     }
     return r;
-}
-
-bend_deleteresult *bend_delete (void *handle, bend_deleterequest *q, int *num)
-{
-    return 0;
 }
 
 bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
