@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.17  1999-12-08 15:03:11  adam
+ * Revision 1.18  2000-02-24 11:00:07  adam
+ * Fixed bug: indexer would run forever when lock dir was non-existant.
+ *
+ * Revision 1.17  1999/12/08 15:03:11  adam
  * Implemented bf_reset.
  *
  * Revision 1.16  1999/02/02 14:50:57  adam
@@ -177,14 +180,14 @@ void zebraIndexUnlock (void)
         logf (LOG_WARN|LOG_ERRNO, "unlink %s failed", path);
 }
 
-void zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
+int zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
 {
     char path[1024];
     char buf[256];
     int r;
 
     if (server_lock_main)
-        return ;
+        return 0;
 
     zebra_lock_prefix (common_resource, path);
     strcat (path, FNAME_MAIN_LOCK);
@@ -196,10 +199,8 @@ void zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
             server_lock_main = zebra_lock_create (path, 1);
 	    if (!server_lock_main)
             {
-                if (errno == ENOENT)
-                    continue;
-                logf (LOG_FATAL|LOG_ERRNO, "open %s", path);
-                exit (1);
+                logf (LOG_FATAL, "couldn't obtain indexer lock");
+		exit (1);
             }
             if (zebra_lock_nb (server_lock_main) == -1)
             {
@@ -294,5 +295,6 @@ void zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
             break;
     }
     zebra_lock (server_lock_main);
+    return 0;
 }
 

@@ -137,7 +137,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
 
 void zebraIndexLockMsg (const char *str);
 void zebraIndexUnlock (void);
-void zebraIndexLock (BFiles bfs, int commitNow, const char *rval);
+int zebraIndexLock (BFiles bfs, int commitNow, const char *rval);
 int zebraIndexWait (int commitPhase);
 
 #define FNAME_MAIN_LOCK   "zebraidx.LCK"
@@ -166,7 +166,10 @@ extern Res common_resource;
 
 /*
  * $Log: index.h,v $
- * Revision 1.67  1999-11-30 13:48:03  adam
+ * Revision 1.68  2000-02-24 11:00:07  adam
+ * Fixed bug: indexer would run forever when lock dir was non-existant.
+ *
+ * Revision 1.67  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.66  1999/07/14 13:21:34  heikki
