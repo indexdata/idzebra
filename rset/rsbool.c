@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.20 2003-01-13 22:16:24 adam Exp $
+/* $Id: rsbool.c,v 1.21 2003-03-28 13:53:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -248,10 +248,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 	    *term_index = p->term_index_l;
             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				   &p->term_index_l);
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
-				   &p->term_index_r);
             p->tail = 1;
-            return 1;
         }
         else if (cmp == 1)
         {
