@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.2 2004-06-14 21:44:26 adam Exp $
+/* $Id: rsprox.c,v 1.3 2004-06-16 21:27:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -85,8 +85,10 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     const char *flags = NULL;
     int term_type = 0;
 
+
     info = (struct rset_prox_info *) xmalloc (sizeof(*info));
     memcpy(&info->p, prox_parms, sizeof(struct rset_prox_parms));
+    assert(info->p.rset_no >= 2);
     info->p.rset = xmalloc(info->p.rset_no * sizeof(*info->p.rset));
     memcpy(info->p.rset, prox_parms->rset,
 	   info->p.rset_no * sizeof(*info->p.rset));
@@ -251,7 +253,8 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
 		cmp = (*info->p.cmp) (p->buf[i], p->buf[i-1]);
 		if (cmp > 1)
 		{
-		    p->more[i-1] = rset_forward (info->p.rset[i-1], p->rfd[i-1],
+		    p->more[i-1] = rset_forward (info->p.rset[i-1],
+						 p->rfd[i-1],
 						 p->buf[i-1], &dummy,
 						 info->p.cmp,
 						 p->buf[i]);
@@ -259,10 +262,12 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
 		}
 		else if (cmp == 1)
 		{
-		    if ((*info->p.getseq)(p->buf[i-1]) +1 != (*info->p.getseq)(p->buf[i]))
+		    if ((*info->p.getseq)(p->buf[i-1]) +1 != 
+			(*info->p.getseq)(p->buf[i]))
 		    {
-			p->more[i-1] = rset_read (info->p.rset[i-1], p->rfd[i-1],
-						  p->buf[i-1], &dummy);
+			p->more[i-1] = rset_read (
+			    info->p.rset[i-1], p->rfd[i-1],
+			    p->buf[i-1], &dummy);
 			break;
 		    }
 		}
@@ -292,11 +297,13 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
 	{
 	    int cmp = (*info->p.cmp)(p->buf[0], p->buf[1]);
 	    if (cmp < -1)
-		p->more[0] = rset_read (info->p.rset[0], p->rfd[0], p->buf[0],
-					term_index);
+		p->more[0] = rset_forward (info->p.rset[0], p->rfd[0],
+					   p->buf[0],
+					   term_index, info->p.cmp, p->buf[0]);
 	    else if (cmp > 1)
-		p->more[1] = rset_read (info->p.rset[1], p->rfd[1], p->buf[1],
-					term_index);
+		p->more[1] = rset_forward (info->p.rset[1], p->rfd[1],
+					   p->buf[1],
+					   term_index, info->p.cmp, p->buf[1]);
 	    else
 	    {
 		int seqno[500];
