@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-1999
-dnl $Id: configure.in,v 1.12 1999-12-01 13:30:30 adam Exp $
+dnl $Id: configure.in,v 1.13 1999-12-09 01:19:14 adam Exp $
 dnl See the file LICENSE.2 for details.
 dnl
 AC_INIT(include/zebraver.h)
@@ -20,6 +20,13 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 dnl
+dnl ------ Create sub directory lib/bin
+if ! test -d lib; then
+	mkdir lib
+fi
+if ! test -d bin; then
+	mkdir bin
+fi
 dnl ------ Build root
 AC_SUBST(build_root)
 AC_ARG_WITH(build-root, [  --with-buildroot        RPM Build root],[build_root=$withval],[build_root=""])
