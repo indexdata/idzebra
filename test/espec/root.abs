@@ -1,0 +1,11 @@
+# $Id: root.abs,v 1.1 2004-12-14 09:47:55 adam Exp $
+
+name root
+reference WAIS-schema
+attset bib1.att
+tagset generic.tag
+
+esetname B brief.est
+esetname F @
+
+xelm 	/*			any:w
