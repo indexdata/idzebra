@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.4  1998-06-12 12:22:12  adam
+ * Revision 1.5  1998-06-13 00:14:08  adam
+ * Minor changes.
+ *
+ * Revision 1.4  1998/06/12 12:22:12  adam
  * Work on Zebra API.
  *
  * Revision 1.3  1998/05/27 16:57:44  adam
@@ -148,6 +151,8 @@ ZebraHandle zebra_open (const char *configName)
     zh->records = NULL;
     zh->zebra_maps = zebra_maps_open (zh->res);
     zh->rank_classes = NULL;
+    zh->errCode = 0;
+    zh->errString = 0;
     
     zebraRankInstall (zh, rank1_class);
     return zh;
@@ -199,6 +204,7 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
     int i, *pos_array;
 
     zh->errCode = 0;
+    zh->errString = NULL;
     pos_array = xmalloc (num_recs * sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
 	pos_array[i] = recs[i].position;
@@ -244,6 +250,7 @@ void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		 int *is_partial)
 {
     zh->errCode = 0;
+    zh->errString = NULL;
     zebra_register_lock (zh);
     rpn_scan (zh, stream, zapt, attributeset,
 	      num_bases, basenames, position,
@@ -256,6 +263,8 @@ void zebra_sort (ZebraHandle zh, ODR stream,
 		 char *output_setname, Z_SortKeySpecList *sort_sequence,
 		 int *sort_status)
 {
+    zh->errCode = 0;
+    zh->errString = NULL;
     zebra_register_lock (zh);
     resultSetSort (zh, stream, num_input_setnames, input_setnames,
 		   output_setname, sort_sequence, sort_status);
