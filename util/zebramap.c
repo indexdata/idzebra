@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.10  1998-06-23 15:33:37  adam
+ * Revision 1.11  1998-10-13 20:09:19  adam
+ * Changed call to readconf_line.
+ *
+ * Revision 1.10  1998/06/23 15:33:37  adam
  * Added feature to specify sort criteria in query (type 7 specifies
  * sort flags).
  *
@@ -97,6 +100,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
     char line[512];
     char *argv[10];
     int argc;
+    int lineno = 0;
     struct zebra_map **zm = 0, *zp;
 
     if (!(f = yaz_path_fopen(zms->tabpath, name, "r")))
@@ -104,7 +108,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 	logf(LOG_WARN|LOG_ERRNO, "%s", name);
 	return ;
     }
-    while ((argc = readconf_line(f, line, 512, argv, 10)))
+    while ((argc = readconf_line(f, &lineno, line, 512, argv, 10)))
     {
 	if (!yaz_matchstr (argv[0], "index") && argc == 2)
 	{

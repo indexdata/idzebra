@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1996-1997, Index Data I/S 
+ * Copyright (C) 1996-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.13  1997-10-27 14:33:06  adam
+ * Revision 1.14  1998-10-13 20:09:18  adam
+ * Changed call to readconf_line.
+ *
+ * Revision 1.13  1997/10/27 14:33:06  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -346,6 +349,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only)
     FILE *f;
     char line[512], *argv[50];
     chrmaptab res;
+    int lineno = 0;
     int argc, num = (int) *CHR_BASE, i;
 
     if (!(f = yaz_path_fopen(tabpath, name, "r")))
@@ -382,7 +386,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only)
     res->output[(int) *CHR_UNKNOWN] = (unsigned char*) "@";
     res->base_uppercase = 0;
 
-    while ((argc = readconf_line(f, line, 512, argv, 50)))
+    while ((argc = readconf_line(f, &lineno, line, 512, argv, 50)))
 	if (!map_only && !yaz_matchstr(argv[0], "lowercase"))
 	{
 	    if (argc != 2)
