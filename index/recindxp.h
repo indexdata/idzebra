@@ -1,4 +1,4 @@
-/* $Id: recindxp.h,v 1.15 2004-08-09 09:06:13 adam Exp $
+/* $Id: recindxp.h,v 1.16 2004-12-08 12:23:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -22,7 +22,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "recindex.h"
 
-#include <bfile.h>
+#include <idzebra/bfile.h>
 
 YAZ_BEGIN_CDECL
 

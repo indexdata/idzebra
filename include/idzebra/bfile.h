@@ -1,4 +1,4 @@
-/* $Id: bfile.h,v 1.22 2004-08-04 08:35:23 adam Exp $
+/* $Id: bfile.h,v 1.1 2004-12-08 12:23:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,33 +23,27 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef BFILE_H
 #define BFILE_H
 
-#include <mfile.h>
+#include <idzebra/version.h>
 
 YAZ_BEGIN_CDECL
 
-#define bf_blocksize(bf) mf_blocksize(bf->mf)
-
 typedef struct BFiles_struct *BFiles;
+typedef struct BFile_struct *BFile;
 
 BFiles bfs_create (const char *spec, const char *base);
 void bfs_destroy (BFiles bfiles);
 
-typedef struct BFile_struct
-{
-    MFile mf;
-    Zebra_lock_rdwr rdwr_lock;
-    struct CFile_struct *cf;
-} *BFile, BFile_struct;
-
 /* bf_close: closes bfile.
    returns 0 if successful; non-zero otherwise 
  */
+YAZ_EXPORT
 int bf_close (BFile);
 
 /* bf_open: opens bfile.
    opens bfile with name 'name' and with 'block_size' as block size.
    returns bfile handle is successful; NULL otherwise 
  */
+YAZ_EXPORT
 BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag);
 
 /* bf_read: reads bytes from bfile 'bf'.
@@ -57,6 +51,7 @@ BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag);
    block 'no'. stores contents in buffer 'buf'.
    returns 1 if whole block could be read; 0 otherwise.
  */
+YAZ_EXPORT
 int bf_read (BFile bf, zint no, int offset, int nbytes, void *buf);
 
 /* bf_write: writes bytes to bfile 'bf'.
@@ -64,21 +59,27 @@ int bf_read (BFile bf, zint no, int offset, int nbytes, void *buf);
    block 'no'. retrieves contents from buffer 'buf'.
    returns 0 if successful; non-zero otherwise.
  */
+YAZ_EXPORT
 int bf_write (BFile bf, zint no, int offset, int nbytes, const void *buf);
 
 /* bf_cache: enables bfile cache if spec is not NULL */
+YAZ_EXPORT
 void bf_cache (BFiles bfs, const char *spec);
 
 /* bf_commitExists: returns 1 if commit is pending; 0 otherwise */
+YAZ_EXPORT
 int bf_commitExists (BFiles bfs);
 
 /* bf_commitExec: executes commit */
+YAZ_EXPORT
 void bf_commitExec (BFiles bfs);
 
 /* bf_commitClean: cleans commit files, etc */
+YAZ_EXPORT
 void bf_commitClean (BFiles bfs, const char *spec);
 
 /* bf_reset: delete register and shadow completely */
+YAZ_EXPORT
 void bf_reset (BFiles bfs);
 
 YAZ_END_CDECL

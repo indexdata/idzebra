@@ -1,4 +1,4 @@
-/* $Id: sortidx.h,v 1.5 2004-08-25 09:23:36 adam Exp $
+/* $Id: sortidx.h,v 1.6 2004-12-08 12:23:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define SORTIDX_H
 
 #include <idzebra/version.h>
-#include <bfile.h>
+#include <idzebra/bfile.h>
 
 #ifdef __cplusplus
 extern "C" {

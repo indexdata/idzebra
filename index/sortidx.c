@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.10 2004-11-19 10:27:03 heikki Exp $
+/* $Id: sortidx.c,v 1.11 2004-12-08 12:23:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include <yaz/ylog.h>
-#include <bfile.h>
+#include <idzebra/bfile.h>
 #include <sortidx.h>
 
 #define SORT_IDX_BLOCKSIZE 64

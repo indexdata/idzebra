@@ -1,4 +1,4 @@
-/* $Id: lookup.c,v 1.11 2002-08-02 19:26:55 adam Exp $
+/* $Id: lookup.c,v 1.12 2004-12-08 12:23:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 
-#include <dict.h>
+#include "dict-p.h"
 
 static char *dict_look (Dict dict, const Dict_char *str, Dict_ptr ptr)
 {

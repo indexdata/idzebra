@@ -1,5 +1,5 @@
-/* $Id: dict.h,v 1.34 2004-11-19 10:26:55 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: dict-p.h,v 1.1 2004-12-08 12:23:08 adam Exp $
+   Copyright (C) 2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,20 +20,16 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#ifndef DICT_P_H
+#define DICT_P_H
 
+#include <idzebra/dict.h>
 
-#ifndef DICT_H
-#define DICT_H
+YAZ_BEGIN_CDECL
 
-#include <bfile.h>
-#include <yaz/ylog.h>
+#define DICT_MAGIC "dict01"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef unsigned Dict_ptr;
-typedef unsigned char Dict_char;
+#define DICT_DEFAULT_PAGESIZE 4096
 
 struct Dict_head {
     char magic_str[8];
@@ -71,17 +67,13 @@ typedef struct Dict_file_struct
     int  compact_flag;
 } *Dict_BFile;
 
-typedef struct Dict_struct {
+struct Dict_struct {
     int rw;
     Dict_BFile dbf;
     const char **(*grep_cmap)(void *vp, const char **from, int len);
     void *grep_cmap_data;
     struct Dict_head head;
-} *Dict;
-
-#define DICT_MAGIC "dict01"
-
-#define DICT_DEFAULT_PAGESIZE 4096
+};
 
 int        dict_bf_readp (Dict_BFile bf, int no, void **bufp);
 int        dict_bf_newp (Dict_BFile bf, int no, void **bufp, int nbytes);
@@ -91,34 +83,6 @@ Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
 			 int cache, int rw);
 int        dict_bf_close (Dict_BFile dbf);
 void       dict_bf_compact (Dict_BFile dbf);
-     
-Dict       dict_open (BFiles bfs, const char *name, int cache, int rw,
-		      int compact_flag, int page_size);
-int        dict_close (Dict dict);
-int        dict_insert (Dict dict, const char *p, int userlen, void *userinfo);
-int        dict_delete (Dict dict, const char *p);
-int        dict_delete_subtree (Dict dict, const char *p, void *client,
-				int (*f)(const char *info, void *client));
-char      *dict_lookup (Dict dict, const char *p);
-int        dict_lookup_ec (Dict dict, char *p, int range,
-                           int (*f)(char *name));
-int        dict_lookup_grep (Dict dict, const char *p, int range, void *client,
-                             int *max_pos, int init_pos,
-                             int (*f)(char *name, const char *info,
-                                      void *client));
-int        dict_strcmp (const Dict_char *s1, const Dict_char *s2);
-int        dict_strncmp (const Dict_char *s1, const Dict_char *s2, size_t n);
-int        dict_strlen (const Dict_char *s);
-int	   dict_scan (Dict dict, char *str, 
-		      int *before, int *after, void *client,
-		      int (*f)(char *name, const char *info, int pos,
-                               void *client));
-
-void       dict_grep_cmap (Dict dict, void *vp,
-                           const char **(*cmap)(void *vp,
-						const char **from, int len));
-int        dict_copy_compact (BFiles bfs, const char *from, const char *to);
-
 
 #define DICT_EOS        0
 #define DICT_type(x)    0[(Dict_ptr*) x]
@@ -141,9 +105,7 @@ int        dict_copy_compact (BFiles bfs, const char *from, const char *to);
    dir[0..nodir-1]
    ptr,info,string
  */
-#ifdef __cplusplus
-}
-#endif
+     
+YAZ_END_CDECL
 
-   
 #endif

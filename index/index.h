@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.126 2004-11-29 21:55:25 adam Exp $
+/* $Id: index.h,v 1.127 2004-12-08 12:23:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -33,7 +33,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #include <sys/stat.h>
 
-#include <dict.h>
+#include <idzebra/dict.h>
 #include <isams.h>
 #include <isamc.h>
 #include <isamb.h>

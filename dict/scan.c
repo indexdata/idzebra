@@ -1,4 +1,4 @@
-/* $Id: scan.c,v 1.17 2004-12-07 20:04:39 adam Exp $
+/* $Id: scan.c,v 1.18 2004-12-08 12:23:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -26,7 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 
-#include <dict.h>
+#include "dict-p.h"
 
 int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
 		    int start, int *count, void *client,

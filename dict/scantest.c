@@ -1,4 +1,4 @@
-/* $Id: scantest.c,v 1.1 2004-12-07 14:57:08 adam Exp $
+/* $Id: scantest.c,v 1.2 2004-12-08 12:23:08 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include <yaz/options.h>
-#include <dict.h>
+#include <idzebra/dict.h>
 
 struct handle_info {
     int b;

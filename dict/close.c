@@ -1,4 +1,4 @@
-/* $Id: close.c,v 1.7 2002-08-02 19:26:55 adam Exp $
+/* $Id: close.c,v 1.8 2004-12-08 12:23:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 
-#include <dict.h>
+#include "dict-p.h"
 
 int dict_close (Dict dict)
 {

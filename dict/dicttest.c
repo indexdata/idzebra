@@ -1,4 +1,4 @@
-/* $Id: dicttest.c,v 1.30 2004-11-19 10:26:55 heikki Exp $
+/* $Id: dicttest.c,v 1.31 2004-12-08 12:23:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,14 +20,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 
-#include <dict.h>
+#include <idzebra/dict.h>
 #include <zebrautl.h>
 
 char *prog;

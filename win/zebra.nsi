@@ -1,4 +1,4 @@
-; $Id: zebra.nsi,v 1.24 2004-08-25 09:21:43 adam Exp $
+; $Id: zebra.nsi,v 1.25 2004-12-08 12:23:10 adam Exp $
 
 !define VERSION "1.4.0"
 
@@ -136,6 +136,7 @@ Section "Zebra Source"
 	File ..\recctrl\*.h
 	SetOutPath $INSTDIR\dict
 	File ..\dict\*.c
+	File ..\dict\*.h
 	SetOutPath $INSTDIR\bfile
 	File ..\bfile\*.c
 	File ..\bfile\*.h

@@ -1,4 +1,4 @@
-/* $Id: drdwr.c,v 1.14 2004-11-19 10:26:55 heikki Exp $
+/* $Id: drdwr.c,v 1.15 2004-12-08 12:23:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -32,7 +32,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <assert.h>
 
-#include <dict.h>
+#include "dict-p.h"
 
 void dict_pr_lru (Dict_BFile bf)
 {

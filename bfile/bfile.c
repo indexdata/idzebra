@@ -1,5 +1,5 @@
-/* $Id: bfile.c,v 1.37 2004-11-19 10:26:53 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: bfile.c,v 1.38 2004-12-08 12:23:08 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,8 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,9 +31,16 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #include <zebrautl.h>
-#include <bfile.h>
-
+#include <idzebra/bfile.h>
+#include "mfile.h"
 #include "cfile.h"
+
+struct BFile_struct
+{
+    MFile mf;
+    Zebra_lock_rdwr rdwr_lock;
+    struct CFile_struct *cf;
+};
 
 struct BFiles_struct {
     MFile_area commit_area;
@@ -117,7 +122,7 @@ int bf_close (BFile bf)
 
 BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
 {
-    BFile tmp = (BFile) xmalloc(sizeof(BFile_struct));
+    BFile tmp = (BFile) xmalloc(sizeof(struct BFile_struct));
 
     if (bfs->commit_area)
     {
