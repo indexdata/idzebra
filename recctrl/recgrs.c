@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.36  2000-12-05 10:01:44  adam
+ * Revision 1.37  2000-12-05 12:22:53  adam
+ * Termlist source implemented (so that we can index values of XML/SGML
+ * attributes).
+ *
+ * Revision 1.36  2000/12/05 10:01:44  adam
  * Fixed bug regarding user-defined attribute sets.
  *
  * Revision 1.35  2000/11/29 15:21:31  adam
@@ -299,6 +303,78 @@ static void grs_destroy(void *clientData)
     free (h);
 }
 
+static void index_tag (data1_node *par, data1_node *n,
+		       struct recExtractCtrl *p, int level, RecWord *wrd)
+{
+    data1_termlist *tlist = 0;
+    data1_datatype dtype = DATA1K_string;
+    /*
+     * cycle up towards the root until we find a tag with an att..
+     * this has the effect of indexing locally defined tags with
+     * the attribute of their ancestor in the record.
+     */
+    
+    while (!par->u.tag.element)
+	if (!par->parent || !(par=get_parent_tag(p->dh, par->parent)))
+	    break;
+    if (!par || !(tlist = par->u.tag.element->termlists))
+	return;
+    if (par->u.tag.element->tag)
+	dtype = par->u.tag.element->tag->kind;
+    
+    for (; tlist; tlist = tlist->next)
+    {
+	char xattr[512];
+	/* consider source */
+	wrd->string = 0;
+	
+	if (!strcmp (tlist->source, "data") && n->which == DATA1N_data)
+	{
+	    wrd->string = n->u.data.data;
+	    wrd->length = n->u.data.len;
+	}
+	else if (sscanf (tlist->source, "attr(%511[^)])", xattr) == 1 &&
+	    n->which == DATA1N_tag)
+	{
+	    data1_xattr *p = n->u.tag.attributes;
+	    while (p && strcmp (p->name, xattr))
+		p = p->next;
+	    if (p)
+	    {
+		wrd->string = p->value;
+		wrd->length = strlen(p->value);
+	    }
+	}
+	if (wrd->string)
+	{
+	    if (p->flagShowRecords)
+	    {
+		int i;
+		printf("%*sIdx: [%s]", (level + 1) * 4, "",
+		       tlist->structure);
+		printf("%s:%s [%d] %s",
+		       tlist->att->parent->name,
+		       tlist->att->name, tlist->att->value,
+		       tlist->source);
+		printf (" data=\"");
+		for (i = 0; i<wrd->length && i < 8; i++)
+		    fputc (wrd->string[i], stdout);
+		fputc ('"', stdout);
+		if (wrd->length > 8)
+		    printf (" ...");
+		fputc ('\n', stdout);
+	    }
+	    else
+	    {
+		wrd->reg_type = *tlist->structure;
+		wrd->attrSet = (int) (tlist->att->parent->reference);
+		wrd->attrUse = tlist->att->locals->local;
+		(*p->tokenAdd)(wrd);
+	    }
+	}
+    }
+}
+
 static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 {
     RecWord wrd;
@@ -346,11 +422,14 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	    if (dumpkeys(n->child, p, level + 1) < 0)
 		return -1;
 
+	if (n->which == DATA1N_tag)
+	{
+	    index_tag (n, n, p, level, &wrd);
+	}
+
 	if (n->which == DATA1N_data)
 	{
 	    data1_node *par = get_parent_tag(p->dh, n);
-	    data1_termlist *tlist = 0;
-	    data1_datatype dtype = DATA1K_string;
 
 	    if (p->flagShowRecords)
 	    {
@@ -367,39 +446,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 
 	    assert(par);
 
-	    /*
-	     * cycle up towards the root until we find a tag with an att..
-	     * this has the effect of indexing locally defined tags with
-	     * the attribute of their ancestor in the record.
-	     */
-
-	    while (!par->u.tag.element)
-		if (!par->parent || !(par=get_parent_tag(p->dh, par->parent)))
-		    break;
-	    if (!par || !(tlist = par->u.tag.element->termlists))
-		continue;
-	    if (par->u.tag.element->tag)
-		dtype = par->u.tag.element->tag->kind;
-	    for (; tlist; tlist = tlist->next)
-	    {
-		if (p->flagShowRecords)
-		{
-		    printf("%*sIdx: [%s]", (level + 1) * 4, "",
-			   tlist->structure);
-		    printf("%s:%s [%d]\n",
-			   tlist->att->parent->name,
-			   tlist->att->name, tlist->att->value);
-		}
-		else
-		{
-		    wrd.reg_type = *tlist->structure;
-		    wrd.string = n->u.data.data;
-		    wrd.length = n->u.data.len;
-		    wrd.attrSet = (int) (tlist->att->parent->reference);
-		    wrd.attrUse = tlist->att->locals->local;
-		    (*p->tokenAdd)(&wrd);
-		}
-	    }
+	    index_tag (par, n, p, level, &wrd);
 	}
 	if (p->flagShowRecords && n->which == DATA1N_root)
 	{

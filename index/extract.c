@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.105  2000-12-05 10:01:44  adam
+ * Revision 1.106  2000-12-05 12:22:53  adam
+ * Termlist source implemented (so that we can index values of XML/SGML
+ * attributes).
+ *
+ * Revision 1.105  2000/12/05 10:01:44  adam
  * Fixed bug regarding user-defined attribute sets.
  *
  * Revision 1.104  2000/09/05 14:04:05  adam
@@ -750,8 +754,6 @@ static void addIndexString (RecWord *p, const char *string, int length)
         if (ch < 0)
         {
             ch = zebraExplain_addSU (zti, attrSet, attrUse);
-            yaz_log (LOG_LOG, "addSU set=%d use=%d SU=%d",
-                     attrSet, attrUse, ch);
         }
 	assert (ch > 0);
 	memcpy (dst, &ch, sizeof(ch));

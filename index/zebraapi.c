@@ -3,7 +3,11 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.42  2000-12-05 10:01:44  adam
+ * Revision 1.43  2000-12-05 12:22:53  adam
+ * Termlist source implemented (so that we can index values of XML/SGML
+ * attributes).
+ *
+ * Revision 1.42  2000/12/05 10:01:44  adam
  * Fixed bug regarding user-defined attribute sets.
  *
  * Revision 1.41  2000/12/01 17:59:08  adam
@@ -221,7 +225,7 @@ static int zebra_register_lock (ZebraHandle zh, int rw)
 	logf (LOG_LOG, "Register in read/write mode");
     else if (zh->service->registerState == state)
     {
-        logf (LOG_LOG, "registerChange = %ld lastChange = %ld",
+        logf (LOG_DEBUG, "registerChange = %ld lastChange = %ld",
             (long) zh->service->registerChange, (long)lastChange);
 	if (zh->service->registerChange >= lastChange)
         {
