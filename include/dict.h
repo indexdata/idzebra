@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.2  1994-08-17 13:32:33  adam
+ * Revision 1.3  1994-08-18 12:41:12  adam
+ * Some development of dictionary. Not finished at all!
+ *
+ * Revision 1.2  1994/08/17  13:32:33  adam
  * Use cache in dict - not in bfile.
  *
  * Revision 1.1  1994/08/16  16:26:53  adam
@@ -82,7 +85,7 @@ int dict_strlen (const Dict_char *s);
 #define DICT_nextptr(x) 2[(Dict_ptr*) x]
 #define DICT_nodir(x)   0[(short*)((char*)(x)+3*sizeof(Dict_ptr))]
 #define DICT_size(x)    1[(short*)((char*)(x)+3*sizeof(Dict_ptr))]
-#define DICT_info(x)    ((char*)(x)+3*sizeof(Dict_ptr)+2*sizeof(short))
+#define DICT_infoffset  (3*sizeof(Dict_ptr)+2*sizeof(short))
 
 #define DICT_to_str(x)  sizeof(Dict_info)+sizeof(Dict_ptr)
 

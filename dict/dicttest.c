@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.1  1994-08-16 16:26:47  adam
+ * Revision 1.2  1994-08-18 12:40:54  adam
+ * Some development of dictionary. Not finished at all!
+ *
+ * Revision 1.1  1994/08/16  16:26:47  adam
  * Added dict.
  *
  */
@@ -14,7 +17,6 @@
 #include <stdio.h>
 
 #include <dict.h>
-#include <options.h>
 
 char *prog;
 Dict dict;
@@ -26,10 +28,10 @@ int main (int argc, char **argv)
     int rw = 0;
     int cache = 10;
     int ret;
-    int verbose = 0;
     char *arg;
     
     prog = argv[0];
+    log_init (LOG_DEFAULT_LEVEL, prog, NULL);
     if (argc < 2)
     {
         fprintf (stderr, "usage:\n"
@@ -42,7 +44,7 @@ int main (int argc, char **argv)
         {
             if (name)
             {
-                fprintf (stderr, "%s: too many files specified\n", prog);
+                log (LOG_FATAL, "too many files specified\n");
                 exit (1);
             }
             name = arg;
@@ -61,22 +63,24 @@ int main (int argc, char **argv)
             rw = 1;
         }
         else if (ret == 'v')
-            verbose = atoi(arg);
+        {
+            log_init (atoi(arg), prog, NULL);
+        }
         else
         {
-            fprintf (stderr, "%s: unknown option\n", prog);
+            log (LOG_FATAL, "unknown option");
             exit (1);
         }
     }
     if (!name)
     {
-        fprintf (stderr, "%s: no dictionary file given\n", prog);
+        log (LOG_FATAL, "no dictionary file given");
         exit (1);
     }
     dict = dict_open (name, cache, rw);
     if (!dict)
     {
-        fprintf (stderr, "%s: dict_open fail\n", prog);
+        log (LOG_FATAL, "dict_open fail");
         exit (1);
     }
     if (inputfile)
@@ -88,7 +92,7 @@ int main (int argc, char **argv)
 
         if (!(ipf = fopen(inputfile, "r")))
         {
-            fprintf (stderr, "%s: cannot open %s\n", prog, inputfile);
+            log (LOG_FATAL|LOG_ERRNO, "cannot open %s", inputfile);
             exit (1);
         }
         

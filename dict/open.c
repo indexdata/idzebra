@@ -4,14 +4,16 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.2  1994-08-17 13:32:20  adam
+ * Revision 1.3  1994-08-18 12:40:58  adam
+ * Some development of dictionary. Not finished at all!
+ *
+ * Revision 1.2  1994/08/17  13:32:20  adam
  * Use cache in dict - not in bfile.
  *
  * Revision 1.1  1994/08/16  16:26:49  adam
  * Added dict.
  *
  */
-
 
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +33,7 @@ Dict dict_open (const char *name, int cache, int rw)
 
     if(!dict->dbf)
     {
-        free (dict);
+        xfree (dict);
         return NULL;
     }
     if (dict_bf_readp (dict->dbf, 0, &head_buf) <= 0)
@@ -57,13 +59,13 @@ Dict dict_open (const char *name, int cache, int rw)
         if (!strcmp (dh->magic_str, DICT_MAGIC))
         {
             dict_bf_close (dict->dbf);
-            free (dict);
+            xfree (dict);
             return NULL;
         }
         if (dh->page_size != DICT_PAGESIZE)
         {
             dict_bf_close (dict->dbf);
-            free (dict);
+            xfree (dict);
             return NULL;
         }
         memcpy (&dict->head, dh, sizeof(*dh));

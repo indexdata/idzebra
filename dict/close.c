@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: close.c,v $
- * Revision 1.2  1994-08-17 13:32:19  adam
+ * Revision 1.3  1994-08-18 12:40:52  adam
+ * Some development of dictionary. Not finished at all!
+ *
+ * Revision 1.2  1994/08/17  13:32:19  adam
  * Use cache in dict - not in bfile.
  *
  * Revision 1.1  1994/08/16  16:26:47  adam
@@ -24,7 +27,7 @@ int dict_close (Dict dict)
     assert (dict);
     
     dict_bf_close (dict->dbf);
-    free (dict);
+    xfree (dict);
     return 0;
 }
 

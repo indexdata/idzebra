@@ -121,7 +121,7 @@ static void move_to_front (Dict_BFile bf, struct Dict_file_block *p)
     bf->lru_front = p;
 }
 
-int bf_readp (Dict_BFile bf, int no, void **bufp)
+int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
 {
     struct Dict_file_block *p;
     int i;
@@ -145,7 +145,7 @@ int bf_readp (Dict_BFile bf, int no, void **bufp)
     return i;
 }
 
-int bf_newp (Dict_BFile bf, int no, void **bufp)
+int dict_bf_newp (Dict_BFile bf, int no, void **bufp)
 {
     struct Dict_file_block *p;
     if (!(p = find_block (bf, no)))
@@ -162,7 +162,7 @@ int bf_newp (Dict_BFile bf, int no, void **bufp)
     return 1;
 }
 
-int bf_touch (Dict_BFile bf, int no)
+int dict_bf_touch (Dict_BFile bf, int no)
 {
     struct Dict_file_block *p;
     if ((p = find_block (bf, no)))

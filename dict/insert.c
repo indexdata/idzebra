@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.2  1994-08-17 13:32:19  adam
+ * Revision 1.3  1994-08-18 12:40:56  adam
+ * Some development of dictionary. Not finished at all!
+ *
+ * Revision 1.2  1994/08/17  13:32:19  adam
  * Use cache in dict - not in bfile.
  *
  * Revision 1.1  1994/08/16  16:26:48  adam
@@ -41,7 +44,7 @@ static Dict_ptr new_page (Dict dict, Dict_ptr back_ptr, void **pp)
     DICT_backptr(p) = back_ptr;
     DICT_nextptr(p) = 0;
     DICT_nodir(p) = 0;
-    DICT_size(p) = 0;
+    DICT_size(p) = DICT_infoffset;
     *pp = p;
     return ptr;
 }
@@ -49,22 +52,24 @@ static Dict_ptr new_page (Dict dict, Dict_ptr back_ptr, void **pp)
 static int dict_ins (Dict dict, const Dict_char *str, Dict_ptr back_ptr,
                      void *p, void *userinfo)
 {
+    int i;
     Dict_ptr ptr = back_ptr, subptr;
-    short *indxp, *indxp1, *indxp2;
+    short *indxp, *indxp1;
     short newsize;
+
     if (ptr == 0)
         ptr = new_page (dict, back_ptr, &p);
     assert (p);
     assert (ptr);
 
     indxp = (short*) ((char*) p+DICT_PAGESIZE);
-    while (*str != DICT_EOS)
+    for (i = DICT_nodir (p); --i >= 0; )
     {
         char *info;
+        int cmp;
         if (*--indxp > 0) /* tail string here! */
         {
-            int cmp;
-            info = DICT_info(p) + *indxp;
+            info = p + *indxp;
             cmp = dict_strcmp ((Dict_char*)
                               (info+sizeof(Dict_info)+sizeof(Dict_ptr)),
                                str);
@@ -79,14 +84,13 @@ static int dict_ins (Dict dict, const Dict_char *str, Dict_ptr back_ptr,
             }
             else if(cmp < 0)
                 break;
-            
         }
-        else if(*indxp < 0)  /* tail of string in sub page */
+        else  /* tail of string in sub page */
         {
-            int cmp;
-            info = DICT_info(p) - *indxp;
+            assert (*indxp < 0);
+            info = p - *indxp;
             cmp = memcmp (info+sizeof(Dict_info)+sizeof(Dict_ptr), str, 
-                         sizeof(Dict_char));
+                          sizeof(Dict_char));
             if (!cmp)
             {
                 Dict_ptr subptr;
@@ -103,43 +107,33 @@ static int dict_ins (Dict dict, const Dict_char *str, Dict_ptr back_ptr,
             else if(cmp < 0)
                 break;
         }
-        else
-            break;
     }
     newsize = DICT_size(p);
     subptr = 0;
-    memcpy (DICT_info(p) + newsize, &subptr, sizeof(subptr));
-    memcpy (DICT_info(p) + newsize + sizeof(Dict_ptr), userinfo,
-            sizeof(Dict_info));
-    memcpy (DICT_info(p) + newsize + sizeof(Dict_ptr)+sizeof(Dict_info),
-            str, dict_strlen (str));
-    newsize = DICT_size(p) +
-        sizeof(Dict_info) + sizeof(Dict_ptr) + dict_strlen (str);
-    DICT_size (p) = newsize;
-
-    DICT_nodir(p) = DICT_nodir(p)+1;
-    indxp2 = (short*)((char*) p + DICT_PAGESIZE - DICT_nodir(p)*sizeof(short));
-    for (indxp1 = indxp2; indxp1 != indxp; indxp1++)
-        indxp[0] = indxp[1];
+    memcpy (p+newsize, &subptr, sizeof(subptr));
+    memcpy (p+newsize + sizeof(Dict_ptr), userinfo, sizeof(Dict_info));
+    memcpy (p+newsize + sizeof(Dict_ptr)+sizeof(Dict_info), str,
+            dict_strlen (str)+1);
+    (DICT_nodir(p))++;
+    indxp1 = (short*)((char*) p + DICT_PAGESIZE - DICT_nodir(p)*sizeof(short));
+    for (; indxp1 != indxp; indxp1++)
+        indxp1[0] = indxp1[1];
     *indxp = -newsize;
+    
+    DICT_size(p) = newsize + sizeof(Dict_info)+sizeof(Dict_ptr)
+        +dict_strlen (str)+1;
     return 0;
 }
 
 int dict_insert (Dict dict, const Dict_char *str, void *userinfo)
 {
-    dict_ins (dict, str, 0, NULL, userinfo);
+    void *p;
+    if (dict->head.last == 1)
+        dict_ins (dict, str, 0, NULL, userinfo);
+    else
+    {
+        dict_bf_readp (dict->dbf, 1, &p);
+        dict_ins (dict, str, 1, p, userinfo);
+    }
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
