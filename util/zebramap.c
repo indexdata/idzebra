@@ -1,5 +1,5 @@
-/* $Id: zebramap.c,v 1.30 2003-03-26 16:41:48 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: zebramap.c,v 1.31 2004-06-15 09:29:31 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -270,6 +270,7 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
 	zm->type = ZEBRA_MAP_TYPE_INDEX;
 	zm->completeness = 0;
 	zm->next = zms->map_list;
+	zm->replace_tokens = 0;
 	zms->map_list = zm->next;
 
 	zms->lookup_array[zm->reg_id & 255] = zm;
