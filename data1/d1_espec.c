@@ -1,4 +1,4 @@
-/* $Id: d1_espec.c,v 1.2.2.1 2004-10-05 12:25:34 adam Exp $
+/* $Id: d1_espec.c,v 1.2.2.2 2004-10-12 16:47:38 quinn Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -218,6 +218,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
     char *argv[50], line[512];
     Z_Espec1 *res = (Z_Espec1 *)nmem_malloc(nmem, sizeof(*res));
     
+    yaz_log(LOG_DEBUG, "Espec1 reading file '%s'", file);
     if (!(f = data1_path_fopen(dh, file, "r")))
     {
 	yaz_log(LOG_WARN|LOG_ERRNO, "%s", file);
@@ -300,6 +301,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
 	    char *ep;
 	    int num, i = 0;
 	    
+	    yaz_log(LOG_DEBUG, "Simpleelemnt: '%s'", line);
 	    if (!res->elements)
 		res->elements = (Z_ElementRequest **)
 		    nmem_malloc(nmem, size_esn = 24*sizeof(er));

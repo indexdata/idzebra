@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.1 2004-08-24 14:06:32 adam Exp $
+/* $Id: recgrs.c,v 1.86.2.2 2004-10-12 16:47:38 quinn Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1191,6 +1191,10 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	sprintf(dnew->u.data.data, "%d", p->localno);
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
+
+    if (p->input_format == VAL_TEXT_XML)
+        zebra_xml_metadata (p, top, mem);
+
 #if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
@@ -1322,7 +1326,6 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 				p->input_format : VAL_SUTRS))
     {
     case VAL_TEXT_XML:
-        zebra_xml_metadata (p, top, mem);
 
 #if 0
         data1_pr_tree (p->dh, node, stdout);
