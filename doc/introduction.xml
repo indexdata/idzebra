@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.8 2002-08-27 07:49:23 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.9 2002-08-28 08:14:47 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -10,34 +10,40 @@
      Zebra</ulink>
    is a high-performance, general-purpose structured text
    indexing and retrieval engine. It reads structured records in a
-   variety of input formats (eg. email, XML, MARC) and allows access
-   to them through exact boolean search expressions and
-   relevance-ranked free-text queries.
-   </para>
-
-   <para>
-   Zebra supports large databases (more than ten gigabytes of data,
-   tens of millions of records). It supports safe, incremental
-   database updates on live systems. You can access data stored in
-   Zebra using a variety of Index Data tools (eg. YAZ and PHP/YAZ) as
-   well as commercial and freeware Z39.50 clients and toolkits. 
-   </para>
+   variety of input formats (eg. email, XML, MARC) and provides access
+   to them through a powerful combination of boolean search
+   expressions and relevance-ranked free-text queries.
+  </para>
 
   <para>
-   This document is an introduction to the Zebra system. It will tell you
-   how to compile the software, and how to prepare your first database.
-   It also explains how the server can be configured to give you the
+   Zebra supports large databases (tens of millions of records,
+   tens of gigabytes of data). It allows safe, incremental
+   database updates on live systems. Because Zebra supports
+   the industry-standard information retrieval protocol, Z39.50,
+   you can search Zebra databases using an enormous variety of
+   programs and toolkits, both commercial and free, which understand
+   this protocol.  Application libraries are available to allow
+   bespoke clients to be written in Perl, C, C++, Java, Tcl, Visual
+   Basic, Python, PHP and more - see
+   <ulink url="http://zoom.z3950.org/">the ZOOM web site</ulink>
+   for more information on some of these client toolkits.
+  </para>
+
+  <para>
+   This document is an introduction to the Zebra system. It explains
+   how to compile the software, how to prepare your first database,
+   and how to configure the server to give you the
    functionality that you need.
   </para>
   
   <para>
-   
-   If you find the software interesting, you should visit the 
-   <ulink url="http://www.indexdata.dk/zebra/">
-     Zebra web site</ulink>, where you can join the
+   If you use Zebra, you should visit its
+   <ulink url="http://www.indexdata.dk/zebra/">web site</ulink>,
+   where you can join the
    <ulink url="http://www.indexdata.dk/mailman/listinfo/zebralist">
    mailing-list</ulink>
    by sending email to
+   <email>### zebra-subscribe@mailman.indexdata.dk</email>
   </para>
   
  </sect1>
@@ -55,7 +61,7 @@
 
     <listitem>
      <para>
-      Supports large databases - files for indices, etc. can be
+      Supports large databases - files for indexes, etc. can be
       automatically partitioned over multiple disks.
      </para>
     </listitem>
@@ -199,16 +205,34 @@
   <sect2>
    <title>DADS - the DTV Article Database Service</title>
    <para>
-    DADS is a huge database of ### records, allowing students and
-    researchers at DTU (###) to search and order articles from several
-    different databases at once.  The database contains
-    literature on all engineering subjects.  It's available on-line
-    through a web gateway at
-	http://www.dtv.dk/search/index_e.htm
-    though only to members of the university.
+    DADS is a huge database of more than ten million records, totally
+    over ten gigabytes of data.  The records are metadata about academic
+    journal articles, primarily scientific; about 10% of these
+    metadata records link to the full text of the articles they
+    describe, a body of about a terabyte of information (although the
+    full text is not indexed.)
    </para>
    <para>
-    ### Much more information needed.
+    It allows students and researchers at DTU (###) to find and order
+    articles from multiple databases in a single query.  The database
+    contains literature on all engineering subjects.  It's available
+    on-line through a web gateway at
+	http://www.dtv.dk/search/index_e.htm
+    though currently only to registered users.
+   </para>
+  </sect2>
+
+  <sect2>
+   <title>Various web indexes</title>
+   <para>
+    Zebra has been used by a variety of institutions to construct
+    indexes of large web sites, typically in the region of tens of
+    millions of pages.  In this role, it functions somewhat similarly
+    to the engine of google or altavista, but for a selected intranet
+    or subset of the whole Web.
+   </para>
+   <para>
+    ### examples, details and numbers, please!
    </para>
   </sect2>
  </sect1>
