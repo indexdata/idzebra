@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.41.2.1  2002-07-23 12:33:21  adam
+ * Revision 1.41.2.2  2002-08-02 10:34:27  adam
+ * mf_write fix. version update
+ *
+ * Revision 1.41.2.1  2002/07/23 12:33:21  adam
  * Towards 1.1.3
  *
  * Revision 1.41.4.1  2002/07/23 09:32:41  adam
@@ -601,10 +604,11 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
     /* file needs to grow */
     while (ps >= mf->files[mf->cur_file].blocks)
     {
+        off_t needed = (ps - mf->files[mf->cur_file].blocks + 1) *
+                       mf->blocksize;
     	/* file overflow - allocate new file */
     	if (mf->files[mf->cur_file].dir->max_bytes >= 0 &&
-	    (ps - mf->files[mf->cur_file].blocks + 1) * mf->blocksize >
-	    mf->files[mf->cur_file].dir->avail_bytes)
+	    needed > mf->files[mf->cur_file].dir->avail_bytes)
 	{
 	    /* cap off file? */
 	    if ((nblocks = mf->files[mf->cur_file].dir->avail_bytes /
@@ -630,7 +634,7 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 	    /* get other bit */
     	    logf (LOG_DEBUG, "Creating new file.");
     	    for (dp = mf->ma->dirs; dp && dp->max_bytes >= 0 &&
-		dp->avail_bytes < mf->min_bytes_creat; dp = dp->next);
+		dp->avail_bytes < needed; dp = dp->next);
 	    if (!dp)
 	    {
 	    	logf (LOG_FATAL, "Cannot allocate more space for %s",
