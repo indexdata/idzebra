@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.6  1995-09-08 14:52:41  adam
+ * Revision 1.7  1995-10-12 12:41:56  adam
+ * Private info (buf) moved from struct rset_control to struct rset.
+ * Bug fixes in relevance.
+ *
+ * Revision 1.6  1995/09/08  14:52:41  adam
  * Work on relevance feedback.
  *
  * Revision 1.5  1995/09/07  13:58:43  adam
@@ -36,14 +40,14 @@ RSET rset_create(const rset_control *sel, void *parms)
     RSET new;
 
     logf (LOG_DEBUG, "rs_create(%s)", sel->desc);
-    new = xmalloc(sizeof(*new));     /* make dynamic alloc scheme */
-    if (!(new->control = (*sel->f_create)(sel, parms)))
-    	return 0;
+    new = xmalloc(sizeof(*new));
+    new->control = sel;
+    new->buf = (*sel->f_create)(sel, parms);
     return new;
 }
 
 void rset_delete (RSET rs)
 {
-    (*rs->control->f_delete)(rs->control);
+    (*rs->control->f_delete)(rs);
     xfree(rs);
 }

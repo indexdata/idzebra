@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.12  1995-10-10 14:00:04  adam
+ * Revision 1.13  1995-10-12 12:41:56  adam
+ * Private info (buf) moved from struct rset_control to struct rset.
+ * Bug fixes in relevance.
+ *
+ * Revision 1.12  1995/10/10  14:00:04  adam
  * Function rset_open changed its wflag parameter to general flags.
  *
  * Revision 1.11  1995/10/06  14:38:05  adam
@@ -47,12 +51,12 @@
 #include <rsisam.h>
 #include <alexutil.h>
 
-static rset_control *r_create(const struct rset_control *sel, void *parms);
-static RSFD r_open (rset_control *ct, int flag);
+static void *r_create(const struct rset_control *sel, void *parms);
+static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
-static void r_delete (rset_control *ct);
+static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_count (rset_control *ct);
+static int r_count (RSET ct);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
@@ -60,7 +64,6 @@ static int r_score (RSFD rfd, int *score);
 static const rset_control control = 
 {
     "ISAM set type",
-    0,
     r_create,
     r_open,
     r_close,
@@ -86,25 +89,19 @@ struct rset_isam_info {
     struct rset_ispt_info *ispt_list;
 };
 
-static rset_control *r_create(const struct rset_control *sel, void *parms)
+static void *r_create(const struct rset_control *sel, void *parms)
 {
-    rset_control *newct;
     rset_isam_parms *pt = parms;
     struct rset_isam_info *info;
 
-    newct = xmalloc(sizeof(*newct));
-    memcpy(newct, sel, sizeof(*sel));
-
-    if (!(newct->buf = xmalloc (sizeof(struct rset_isam_info))))
-    	return 0;
-    info = newct->buf;
+    info = xmalloc (sizeof(struct rset_isam_info));
     info->is = pt->is;
     info->pos = pt->pos;
     info->ispt_list = NULL;
-    return newct;
+    return info;
 }
 
-RSFD r_open (rset_control *ct, int flag)
+RSFD r_open (RSET ct, int flag)
 {
     struct rset_isam_info *info = ct->buf;
     struct rset_ispt_info *ptinfo;
@@ -140,14 +137,13 @@ static void r_close (RSFD rfd)
     assert (0);
 }
 
-static void r_delete (rset_control *ct)
+static void r_delete (RSET ct)
 {
     struct rset_isam_info *info = ct->buf;
 
     logf (LOG_DEBUG, "rsisam_delete");
     assert (info->ispt_list == NULL);
     xfree (info);
-    xfree (ct);
 }
 
 static void r_rewind (RSFD rfd)
@@ -156,7 +152,7 @@ static void r_rewind (RSFD rfd)
     is_rewind( ((struct rset_ispt_info*) rfd)->pt);
 }
 
-static int r_count (rset_control *ct)
+static int r_count (RSET ct)
 {
     return 0;
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.14  1995-10-10 14:00:04  adam
+ * Revision 1.15  1995-10-12 12:41:58  adam
+ * Private info (buf) moved from struct rset_control to struct rset.
+ * Bug fixes in relevance.
+ *
+ * Revision 1.14  1995/10/10  14:00:04  adam
  * Function rset_open changed its wflag parameter to general flags.
  *
  * Revision 1.13  1995/10/06  14:38:06  adam
@@ -60,12 +64,12 @@
 #include <alexutil.h>
 #include <rstemp.h>
 
-static rset_control *r_create(const struct rset_control *sel, void *parms);
-static RSFD r_open (rset_control *ct, int flag);
+static void *r_create(const struct rset_control *sel, void *parms);
+static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
-static void r_delete (rset_control *ct);
+static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_count (rset_control *ct);
+static int r_count (RSET ct);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
@@ -73,7 +77,6 @@ static int r_score (RSFD rfd, int *score);
 static const rset_control control = 
 {
     "Temporary set",
-    0,
     r_create,
     r_open,
     r_close,
@@ -105,18 +108,12 @@ struct rset_temp_rfd {
     struct rset_temp_rfd *next;
 };
 
-static struct rset_control *r_create(const struct rset_control *sel,
-                                     void *parms)
+static void *r_create(const struct rset_control *sel, void *parms)
 {
-    rset_control *newct;
     rset_temp_parms *temp_parms = parms;
     struct rset_temp_info *info;
     
-    newct = xmalloc(sizeof(*newct));
-    memcpy(newct, sel, sizeof(*sel));
-    newct->buf = xmalloc (sizeof(struct rset_temp_info));
-    info = newct->buf;
-
+    info = xmalloc (sizeof(struct rset_temp_info));
     info->fd = -1;
     info->fname = NULL;
     info->key_size = temp_parms->key_size;
@@ -127,10 +124,10 @@ static struct rset_control *r_create(const struct rset_control *sel,
     info->pos_buf = 0;
     info->dirty = 0;
 
-    return newct;
+    return info;
 }
 
-static RSFD r_open (struct rset_control *ct, int flag)
+static RSFD r_open (RSET ct, int flag)
 {
     struct rset_temp_info *info = ct->buf;
     struct rset_temp_rfd *rfd;
@@ -213,7 +210,7 @@ static void r_close (RSFD rfd)
     }
 }
 
-static void r_delete (struct rset_control *ct)
+static void r_delete (RSET ct)
 {
     struct rset_temp_info *info = ct->buf;
 
@@ -278,7 +275,7 @@ static void r_rewind (RSFD rfd)
     r_reread (rfd);
 }
 
-static int r_count (struct rset_control *ct)
+static int r_count (RSET ct)
 {
     struct rset_temp_info *info = ct->buf;
 

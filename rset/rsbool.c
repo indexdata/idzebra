@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.7  1995-10-10 14:00:03  adam
+ * Revision 1.8  1995-10-12 12:41:55  adam
+ * Private info (buf) moved from struct rset_control to struct rset.
+ * Bug fixes in relevance.
+ *
+ * Revision 1.7  1995/10/10  14:00:03  adam
  * Function rset_open changed its wflag parameter to general flags.
  *
  * Revision 1.6  1995/10/06  14:38:05  adam
@@ -36,12 +40,12 @@
 #include <rsbool.h>
 #include <alexutil.h>
 
-static rset_control *r_create(const struct rset_control *sel, void *parms);
-static RSFD r_open (rset_control *ct, int flag);
+static void *r_create(const struct rset_control *sel, void *parms);
+static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
-static void r_delete (rset_control *ct);
+static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_count (rset_control *ct);
+static int r_count (RSET ct);
 static int r_read_and (RSFD rfd, void *buf);
 static int r_read_or (RSFD rfd, void *buf);
 static int r_read_not (RSFD rfd, void *buf);
@@ -51,7 +55,6 @@ static int r_score (RSFD rfd, int *score);
 static const rset_control control_and = 
 {
     "AND set type",
-    0,
     r_create,
     r_open,
     r_close,
@@ -66,7 +69,6 @@ static const rset_control control_and =
 static const rset_control control_or = 
 {
     "OR set type",
-    0,
     r_create,
     r_open,
     r_close,
@@ -81,7 +83,6 @@ static const rset_control control_or =
 static const rset_control control_not = 
 {
     "NOT set type",
-    0,
     r_create,
     r_open,
     r_close,
@@ -117,25 +118,21 @@ struct rset_bool_rfd {
     struct rset_bool_info *info;
 };    
 
-static rset_control *r_create (const struct rset_control *sel, void *parms)
+static void *r_create (const struct rset_control *sel, void *parms)
 {
-    rset_control *newct;
     rset_bool_parms *bool_parms = parms;
     struct rset_bool_info *info;
 
-    newct = xmalloc(sizeof(*newct));
-    memcpy (newct, sel, sizeof(*sel));
-    newct->buf = xmalloc (sizeof(struct rset_bool_info));
-    info = (struct rset_bool_info*) newct->buf;
+    info = xmalloc (sizeof(struct rset_bool_info));
     info->key_size = bool_parms->key_size;
     info->rset_l = bool_parms->rset_l;
     info->rset_r = bool_parms->rset_r;
     info->cmp = bool_parms->cmp;
     info->rfd_list = NULL;
-    return newct;
+    return info;
 }
 
-static RSFD r_open (rset_control *ct, int flag)
+static RSFD r_open (RSET ct, int flag)
 {
     struct rset_bool_info *info = ct->buf;
     struct rset_bool_rfd *rfd;
@@ -145,6 +142,7 @@ static RSFD r_open (rset_control *ct, int flag)
 	logf (LOG_FATAL, "bool set type is read-only");
 	return NULL;
     }
+    flag = 0;
     rfd = xmalloc (sizeof(*rfd));
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
@@ -179,13 +177,12 @@ static void r_close (RSFD rfd)
     assert (0);
 }
 
-static void r_delete (rset_control *ct)
+static void r_delete (RSET ct)
 {
     struct rset_bool_info *info = ct->buf;
 
     assert (info->rfd_list == NULL);
     xfree (info);
-    xfree (ct);
 }
 
 static void r_rewind (RSFD rfd)
@@ -200,7 +197,7 @@ static void r_rewind (RSFD rfd)
     p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
 }
 
-static int r_count (rset_control *ct)
+static int r_count (RSET ct)
 {
     return 0;
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.5  1995-10-10 14:00:04  adam
+ * Revision 1.6  1995-10-12 12:41:57  adam
+ * Private info (buf) moved from struct rset_control to struct rset.
+ * Bug fixes in relevance.
+ *
+ * Revision 1.5  1995/10/10  14:00:04  adam
  * Function rset_open changed its wflag parameter to general flags.
  *
  * Revision 1.4  1995/10/06  14:38:06  adam
@@ -28,12 +32,12 @@
 #include <rsnull.h>
 #include <alexutil.h>
 
-static rset_control *r_create(const struct rset_control *sel, void *parms);
-static RSFD r_open (rset_control *ct, int flag);
+static void *r_create(const struct rset_control *sel, void *parms);
+static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
-static void r_delete (rset_control *ct);
+static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_count (rset_control *ct);
+static int r_count (RSET ct);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
@@ -41,7 +45,6 @@ static int r_score (RSFD rfd, int *score);
 static const rset_control control = 
 {
     "NULL set type",
-    0,
     r_create,
     r_open,
     r_close,
@@ -55,16 +58,12 @@ static const rset_control control =
 
 const rset_control *rset_kind_null = &control;
 
-static rset_control *r_create(const struct rset_control *sel, void *parms)
+static void *r_create(const struct rset_control *sel, void *parms)
 {
-    rset_control *newct;
-
-    newct = xmalloc(sizeof(*newct));
-    memcpy(newct, sel, sizeof(*sel));
-    return newct;
+    return NULL;
 }
 
-static RSFD r_open (rset_control *ct, int flag)
+static RSFD r_open (RSET ct, int flag)
 {
     if (flag & RSETF_WRITE)
     {
@@ -78,9 +77,8 @@ static void r_close (RSFD rfd)
 {
 }
 
-static void r_delete (rset_control *ct)
+static void r_delete (RSET ct)
 {
-    xfree(ct);
 }
 
 static void r_rewind (RSFD rfd)
@@ -88,7 +86,7 @@ static void r_rewind (RSFD rfd)
     logf (LOG_DEBUG, "rsnull_rewind");
 }
 
-static int r_count (rset_control *ct)
+static int r_count (RSET ct)
 {
     return 0;
 }
