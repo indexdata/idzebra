@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.15  1995-10-12 12:41:58  adam
+ * Revision 1.16  1995-11-28 14:47:02  adam
+ * New setting: tempSetPath. Location of temporary result sets.
+ *
+ * Revision 1.15  1995/10/12  12:41:58  adam
  * Private info (buf) moved from struct rset_control to struct rset.
  * Bug fixes in relevance.
  *
@@ -74,6 +77,9 @@ static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
 
+static int temppath_init = 0;
+static char *temppath_root = NULL;
+
 static const rset_control control = 
 {
     "Temporary set",
@@ -124,6 +130,11 @@ static void *r_create(const struct rset_control *sel, void *parms)
     info->pos_buf = 0;
     info->dirty = 0;
 
+    if (!temppath_init)
+    {
+        temppath_init = 1;
+        temppath_root = res_get (common_resource, "tempSetPath");
+    }
     return info;
 }
 
@@ -160,7 +171,7 @@ static void r_flush (RSFD rfd, int mk)
 
     if (!info->fname && mk)
     {
-        char *s = (char*) tempnam (NULL, "zrs");
+        char *s = (char*) tempnam (temppath_root, "zrs");
 
         info->fname = xmalloc (strlen(s)+1);
         strcpy (info->fname, s);
