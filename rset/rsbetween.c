@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.29 2004-11-01 15:53:57 heikki Exp $
+/* $Id: rsbetween.c,v 1.30 2004-11-05 17:44:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -29,11 +29,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  * "<title lang=eng>" and "</title>". (This assumes that the attributes are
  * indexed to the same seqno as the tags).
  *
- * Currently fails to return all hits from a record, which breaks the ranking.
- * This is bug #202. Seems like there is no decent way to get that working
- * with the current implementation. I have planned a new method for doing
- * this, see at the end of this file.
- *
 */ 
 
 #include <stdio.h>
@@ -44,71 +39,60 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include <rset.h>
 
-#define RSBETWEEN_DEBUG 0 
 
-static RSFD r_open_between (RSET ct, int flag);
-static void r_close_between (RSFD rfd);
-static void r_delete_between (RSET ct);
-static int r_forward_between(RSFD rfd, void *buf, 
+static RSFD r_open (RSET ct, int flag);
+static void r_close (RSFD rfd);
+static void r_delete (RSET ct);
+static int r_forward(RSFD rfd, void *buf, 
                     TERMID *term, const void *untilbuf);
-static int r_read_between (RSFD rfd, void *buf, TERMID *term );
-static int r_write_between (RSFD rfd, const void *buf);
-static void r_pos_between (RSFD rfd, double *current, double *total);
+static int r_read(RSFD rfd, void *buf, TERMID *term );
+static int r_write(RSFD rfd, const void *buf);
+static void r_pos(RSFD rfd, double *current, double *total);
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
 static const struct rset_control control = 
 {
     "between",
-    r_delete_between,
+    r_delete,
     r_get_terms,
-    r_open_between,
-    r_close_between,
-    r_forward_between, 
-    r_pos_between,
-    r_read_between,
-    r_write_between,
+    r_open,
+    r_close,
+    r_forward, 
+    r_pos,
+    r_read,
+    r_write,
 };
 
 
 const struct rset_control *rset_kind_between = &control;
 
+#define STARTTAG 0
+#define HIT 1
+#define STOPTAG 2
+#define ATTRTAG 3
+
 struct rset_between_info {
-    RSET rset_l;  /* left arg, start tag */
-    RSET rset_m;  /* the thing itself */
-    RSET rset_r;  /* right arg, end tag */
-    RSET rset_attr; /* attributes , optional */
+    RSET andset; /* the multi-and of the above */
+    TERMID startterm; /* pseudo terms for detecting which one we read from */
+    TERMID stopterm;
+    TERMID attrterm;
 };
 
 struct rset_between_rfd {
-    RSFD rfd_l;
-    RSFD rfd_m;
-    RSFD rfd_r;
-    RSFD rfd_attr;
-    int  more_l;
-    int  more_m;
-    int  more_r;
-    int  more_attr;
-    void *buf_l;
-    void *buf_m;
-    void *buf_r;
-    void *buf_attr;
-    TERMID term_m; /* we only return terms for the mid argument */
-    int level;  /* counting start/end tags */
-    int attr_match; /* did we have a matching attr for L */
+    RSFD andrfd;
+    void *recbuf; /* a key that tells which record we are in */
+    void *startbuf; /* the start tag */
+    int startbufok; /* we have seen the first start tag */
+    void *attrbuf;  /* the attr tag. If these two match, we have attr match */
+    int attrbufok; /* we have seen the first attr tag, can compare */
+    int depth; /* number of start-tags without end-tags */
+    int attrdepth; /* on what depth the attr matched */
     zint hits;
 };    
 
-#if RSBETWEEN_DEBUG
-static void log2 (RSFD rfd, char *msg, int cmp_l, int cmp_r)
-{
-    struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
-    RSET ct = rfd->rset;
-    logf(LOG_LOG,"between: %s cmp_l=%d cmp_r=%d", msg, cmp_l, cmp_r);
-    (*ct->keycontrol->key_logdump_txt)(LOG_LOG, p->buf_l, "between: L");
-    (*ct->keycontrol->key_logdump_txt)(LOG_LOG, p->buf_m, "between: M");
-    (*ct->keycontrol->key_logdump_txt)(LOG_LOG, p->buf_r, "between: R");
-}
-#endif
+static int log_level=0;
+static int log_level_initialized=0;
+
 
 RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
             int scope,
@@ -117,28 +101,67 @@ RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
     RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,0);
     struct rset_between_info *info=
         (struct rset_between_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    info->rset_l = rset_l;
-    info->rset_m = rset_m;
-    info->rset_r = rset_r;
-    info->rset_attr = rset_attr;
+    RSET rsetarray[4];
+    int n=4;
+    
+    if (!log_level_initialized)
+    {
+        log_level=yaz_log_module_level("rsbetween");
+        log_level_initialized=1;
+    }
+    rsetarray[STARTTAG] = rset_l;
+    rsetarray[HIT] = rset_m;
+    rsetarray[STOPTAG] = rset_r;
+    rsetarray[ATTRTAG] = rset_attr;
+
+    /* make sure we have decent terms for all rsets. Create dummies if needed*/
+    if (!rsetarray[STARTTAG]->term)
+    {
+        rsetarray[STARTTAG]->term=
+             rset_term_create("<starttag>",strlen("<starttag>"),"",0,nmem);
+        rsetarray[STARTTAG]->term->rset=rsetarray[STARTTAG];
+    }
+    info->startterm=rsetarray[STARTTAG]->term;
+
+    if (!rsetarray[STOPTAG]->term)
+    {
+        rsetarray[STOPTAG]->term=
+             rset_term_create("<stoptag>",strlen("<stoptag>"),"",0,nmem);
+        rsetarray[STOPTAG]->term->rset=rsetarray[STOPTAG];
+    }
+    info->stopterm=rsetarray[STOPTAG]->term;
+
+    if (rset_attr)
+    {
+        if (!rsetarray[ATTRTAG]->term)
+        {
+            rsetarray[ATTRTAG]->term=
+                 rset_term_create("<attrtag>",strlen("<attrtag>"),"",0,nmem);
+            rsetarray[ATTRTAG]->term->rset=rsetarray[ATTRTAG];
+        }
+        info->attrterm=rsetarray[ATTRTAG]->term;
+    }
+    else
+    {
+        info->attrterm=NULL;
+        n--; /* smaller and */
+    }
+    info->andset=rsmultiand_create( nmem, kcontrol, scope, n, rsetarray);
     rnew->priv=info;
+    logf(log_level,"create rset at %p",rnew);
     return rnew;
 }
 
 
-static void r_delete_between (RSET ct)
+static void r_delete (RSET ct)
 {
     struct rset_between_info *info = (struct rset_between_info *) ct->priv;
-
-    rset_delete (info->rset_l);
-    rset_delete (info->rset_m);
-    rset_delete (info->rset_r);
-    if (info->rset_attr)
-        rset_delete (info->rset_attr);
+    logf(log_level,"delete rset at %p",ct);
+    rset_delete(info->andset);
 }
 
 
-static RSFD r_open_between (RSET ct, int flag)
+static RSFD r_open (RSET ct, int flag)
 {
     struct rset_between_info *info = (struct rset_between_info *) ct->priv;
     RSFD rfd;
@@ -155,376 +178,161 @@ static RSFD r_open_between (RSET ct, int flag)
     else {
         p = (struct rset_between_rfd *) nmem_malloc(ct->nmem, (sizeof(*p)));
         rfd->priv=p;
-        p->buf_l = nmem_malloc(ct->nmem, (ct->keycontrol->key_size));
-        p->buf_m = nmem_malloc(ct->nmem, (ct->keycontrol->key_size));
-        p->buf_r = nmem_malloc(ct->nmem, (ct->keycontrol->key_size));
-        p->buf_attr = nmem_malloc(ct->nmem, (ct->keycontrol->key_size));
+        p->recbuf = nmem_malloc(ct->nmem, (ct->keycontrol->key_size)); 
+        p->startbuf = nmem_malloc(ct->nmem, (ct->keycontrol->key_size)); 
+        p->attrbuf = nmem_malloc(ct->nmem, (ct->keycontrol->key_size)); 
     }
-
-    p->rfd_l = rset_open (info->rset_l, RSETF_READ);
-    p->rfd_m = rset_open (info->rset_m, RSETF_READ);
-    p->rfd_r = rset_open (info->rset_r, RSETF_READ);
-    
-    p->more_l = rset_read (p->rfd_l, p->buf_l,NULL);
-    p->more_m = rset_read (p->rfd_m, p->buf_m, &p->term_m);
-    p->more_r = rset_read (p->rfd_r, p->buf_r,NULL);
-    if (info->rset_attr)
-    {
-        p->rfd_attr = rset_open (info->rset_attr, RSETF_READ);
-        p->more_attr = rset_read (p->rfd_attr, p->buf_attr, NULL);
-        p->attr_match=0;
-    } else
-        p->attr_match=1; 
-    p->level=0;
-    p->hits=0;
+    p->andrfd = rset_open (info->andset, RSETF_READ);
+    p->hits=-1;
+    p->depth=0;
+    p->attrdepth=0;
+    p->attrbufok=0;
+    p->startbufok=0;
+    logf(log_level,"open rset=%p rfd=%p", ct, rfd);
     return rfd;
 }
 
-static void r_close_between (RSFD rfd)
+static void r_close (RSFD rfd)
 {
-    struct rset_between_info *info =(struct rset_between_info *)rfd->rset->priv;
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
-
-#if RSBETWEEN_DEBUG
-    log2( rfd, "fwd: close. hits:", p->hits,0);
-#endif
-    rset_close (p->rfd_l);
-    rset_close (p->rfd_m);
-    rset_close (p->rfd_r);
-    if (info->rset_attr)
-        rset_close (p->rfd_attr);
+    logf(log_level,"close rfd=%p", rfd);
+    rset_close (p->andrfd);
     rfd_delete_base(rfd);
 }
 
 
 
-static int r_forward_between(RSFD rfd, void *buf, 
-                             TERMID *term, const void *untilbuf)
+static int r_forward(RSFD rfd, void *buf, 
+                     TERMID *term, const void *untilbuf)
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     int rc;
-#if RSBETWEEN_DEBUG
-    log2( rfd, "fwd: before forward", 0,0);
-#endif
-    /* It is enough to forward the m pointer here, the read will */
-    /* naturally forward the l, m, and attr pointers */
-    if (p->more_m)
-        p->more_m=rset_forward(p->rfd_m, p->buf_m, term, untilbuf);
-#if RSBETWEEN_DEBUG
-    log2( rfd, "fwd: after forward M", 0,0);
-#endif
-    rc = r_read_between(rfd, buf, term);
-#if RSBETWEEN_DEBUG
-    log2( rfd, "fwd: after forward", 0,0);
-#endif
+    logf(log_level, "forwarding ");
+    rc=rset_forward(p->andrfd,buf,term,untilbuf);
     return rc;
 }
 
 
 
-
-static int r_read_between (RSFD rfd, void *buf, TERMID *term)
+static void checkattr(RSFD rfd)
 {
     struct rset_between_info *info =(struct rset_between_info *)rfd->rset->priv;
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     const struct key_control *kctrl=rfd->rset->keycontrol;
-    int cmp_l=0;
-    int cmp_r=0;
-/*    int attr_match = 0; */
-
-    while (p->more_m)
+    int cmp;
+    if (p->attrdepth)
+        return; /* already found one */
+    if (!info->attrterm) 
     {
-#if RSBETWEEN_DEBUG
-        log2( rfd, "start of loop", cmp_l, cmp_r);
-        logf(LOG_LOG,"level=%d. more=%d/%d/%d",
-                p->level,p->more_l,p->more_m, p->more_r);
-#endif
-
-        /* forward L until past m, count levels, note rec boundaries */
-        if (p->more_l)
-            cmp_l= (*kctrl->cmp)(p->buf_l, p->buf_m);
-        else
+        p->attrdepth=-1; /* matches always */
+        return;
+    }
+    if ( p->startbufok && p->attrbufok )
+    { /* have buffers to compare */
+        cmp=(kctrl->cmp)(p->startbuf,p->attrbuf);
+        if (0==cmp) /* and the keys match */
         {
-            p->level = 0;
-            cmp_l=rfd->rset->scope; /* past this record */
+            p->attrdepth=p->depth;
+            logf(log_level, "found attribute match at depth %d",p->attrdepth);
         }
-#if RSBETWEEN_DEBUG
-        log2( rfd, "after first L", cmp_l, cmp_r);
-        logf(LOG_LOG,"level=%d. more=%d/%d/%d",
-                p->level,p->more_l,p->more_m, p->more_r);
-#endif
+    }
+}
 
-        while (cmp_l < 0)   /* l before m */
+
+static int r_read (RSFD rfd, void *buf, TERMID *term)
+{
+    struct rset_between_info *info =(struct rset_between_info *)rfd->rset->priv;
+    struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
+    const struct key_control *kctrl=rfd->rset->keycontrol;
+    int cmp;
+    logf(log_level,"== read: term=%p",term);
+    TERMID dummyterm=0;
+    if (!term)
+        term=&dummyterm;
+    while ( rset_read(p->andrfd,buf,term) )
+    {
+        logf(log_level,"read loop term=%p d=%d ad=%d",
+                *term,p->depth, p->attrdepth);
+        if (p->hits<0) 
+        {/* first time? */
+            memcpy(p->recbuf,buf,kctrl->key_size);
+            p->hits=0;
+            cmp=rfd->rset->scope; /* force newrecord */
+        }
+        else {
+            cmp=(kctrl->cmp)(buf,p->recbuf);
+            logf(log_level, "cmp=%d",cmp);
+        }
+
+        if (cmp>=rfd->rset->scope)
+        { 
+            logf(log_level,"new record");
+            p->depth=0;
+            p->attrdepth=0;
+            memcpy(p->recbuf,buf,kctrl->key_size);
+        }
+
+        if (*term)
+            logf(log_level,"  term: '%s'", (*term)->name);
+        if (*term==info->startterm)
         {
-            if (cmp_l <= - rfd->rset->scope)  /* ==-2 */
-                p->level=0; /* earlier record */
-            if (cmp_l > - rfd->rset->scope)  /* == -1 */
+            p->depth++;
+            logf(log_level,"read start tag. d=%d",p->depth);
+            memcpy(p->startbuf,buf,kctrl->key_size);
+            p->startbufok=1;
+            checkattr(rfd); /* in case we already saw the attr here */
+        }
+        else if (*term==info->stopterm)
+        {
+            if (p->depth == p->attrdepth)
+                p->attrdepth=0; /* ending the tag with attr match */
+            p->depth--;
+            logf(log_level,"read end tag. d=%d ad=%d",p->depth, p->attrdepth);
+        }
+        else if (*term==info->attrterm)
+        {
+            logf(log_level,"read attr");
+            memcpy(p->attrbuf,buf,kctrl->key_size);
+            p->attrbufok=1;
+            checkattr(rfd); /* in case the start tag came first */
+        }
+        else 
+        { /* mut be a real hit */
+            if (p->depth && p->attrdepth)
             {
-                p->level++; /* relevant start tag */
-
-                if (!info->rset_attr)
-                    p->attr_match = 1;
-                else
-                {
-                    int cmp_attr;
-                    p->attr_match = 0;
-                    while (p->more_attr)
-                    {
-                        cmp_attr = (*kctrl->cmp)(p->buf_attr, p->buf_l);
-                        if (cmp_attr == 0)
-                        {
-                            p->attr_match = 1;
-                            break;
-                        }
-                        else if (cmp_attr > 0)
-                            break;
-                        else if (cmp_attr > - rfd->rset->scope)  /* == -1 */
-                            p->more_attr = rset_read (p->rfd_attr, 
-                                                      p->buf_attr,NULL);
-                            /* if we had a forward that went all the way to
-                             * the seqno, we could use that. But fwd only goes
-                             * to the sysno */
-                        else if (cmp_attr <= - rfd->rset->scope) /* ==-2 */
-                        {
-                            p->more_attr = rset_forward( p->rfd_attr,
-                                             p->buf_attr, NULL, p->buf_l);
-#if RSBETWEEN_DEBUG
-                            logf(LOG_LOG, "btw: after frowarding attr m=%d",
-                                      p->more_attr);
-#endif
-                        }
-                    } /* while more_attr */
-                }
-            }
-#define NEWCODE 1 
-#if NEWCODE                
-            if (cmp_l <= - rfd->rset->scope )/* ==-2 */
-            {
-                if (p->more_l) 
-                {
-                    p->more_l=rset_forward(p->rfd_l, p->buf_l, NULL, p->buf_m);
-                    if (p->more_l)
-                        cmp_l= (*kctrl->cmp)(p->buf_l, p->buf_m);
-                    else
-                        cmp_l=rfd->rset->scope;  /*2*/
-#if RSBETWEEN_DEBUG
-                    log2( rfd, "after forwarding L", cmp_l, cmp_r);
-                    logf(LOG_LOG,"level=%d. more=%d/%d/%d",
-                            p->level,p->more_l,p->more_m, p->more_r);
-#endif
-                }
+                p->hits++;
+                logf(log_level,"got a hit h="ZINT_FORMAT" d=%d ad=%d", 
+                        p->hits,p->depth,p->attrdepth);
+                return 1; /* we have everything in place already! */
             } else
-            {
-                p->more_l = rset_read (p->rfd_l, p->buf_l, NULL);
-            }
-#else
-            p->more_l = rset_read (p->rfd_l, p->buf_l, NULL);
-#endif
-            if (p->more_l)
-            {
-                cmp_l= (*kctrl->cmp)(p->buf_l, p->buf_m);
-            }
-            else
-                cmp_l=rfd->rset->scope;   /*2*/
-#if RSBETWEEN_DEBUG
-            log2( rfd, "end of L loop", cmp_l, cmp_r);
-            logf(LOG_LOG,"level=%d. more=%d/%d/%d",
-                p->level,p->more_l,p->more_m, p->more_r);
-#endif
-        } /* forward L */
+                logf(log_level, "Ignoring hit. h="ZINT_FORMAT" d=%d ad=%d",
+                        p->hits,p->depth,p->attrdepth);
+        }
+    } /* while read */
 
-            
-        /* forward R until past m, count levels */
-#if RSBETWEEN_DEBUG
-        log2( rfd, "Before moving R", cmp_l, cmp_r);
-        logf(LOG_LOG,"level=%d. more=%d/%d/%d",
-                p->level,p->more_l,p->more_m, p->more_r);
-#endif
-        if (p->more_r)
-            cmp_r= (*kctrl->cmp)(p->buf_r, p->buf_m);
-        else
-            cmp_r=rfd->rset->scope;  /*2*/
-#if RSBETWEEN_DEBUG
-        log2( rfd, "after first R", cmp_l, cmp_r);
-        logf(LOG_LOG,"level=%d. more=%d/%d/%d",
-                p->level,p->more_l,p->more_m, p->more_r);
-#endif
-        while (cmp_r < 0)   /* r before m */
-        {
-             /* -2, earlier record, don't count level */
-            if (cmp_r > -rfd->rset->scope) /* == -1 */
-                p->level--; /* relevant end tag */
-            if (p->more_r)
-            {
-#if NEWCODE                
-                if (cmp_r <= - rfd->rset->scope) /* == -2 */
-                {
-                    p->more_r=rset_forward(p->rfd_r, p->buf_r, NULL, p->buf_m);
-                } else
-                {
-                    p->more_r = rset_read (p->rfd_r, p->buf_r, NULL);
-                }
-                if (p->more_r)
-                    cmp_r= (*kctrl->cmp)(p->buf_r, p->buf_m);
-
-#else
-                p->more_r = rset_read (p->rfd_r, p->buf_r, NULL);
-                cmp_r= (*kctrl->cmp)(p->buf_r, p->buf_m);
-#endif
-            }
-            else
-                cmp_r=rfd->rset->scope;  /*2*/
-#if RSBETWEEN_DEBUG
-        log2( rfd, "End of R loop", cmp_l, cmp_r);
-        logf(LOG_LOG,"level=%d. more=%d/%d/%d am=%d",
-                p->level,p->more_l,p->more_m, p->more_r, p->attr_match);
-#endif
-        } /* forward R */
-        
-        if ( ( p->level <= 0 ) && ! p->more_l)
-        {
-#if RSBETWEEN_DEBUG
-            logf(LOG_LOG,"no more_l, returning zero");
-#endif
-            return 0; /* no more start tags, nothing more to find */
-        }
-        
-#if RSBETWEEN_DEBUG
-        log2( rfd, "Considering M", cmp_l, cmp_r);
-        logf(LOG_LOG,"level=%d. more=%d/%d/%d am=%d",
-                p->level,p->more_l,p->more_m, p->more_r, p->attr_match);
-#endif
-        if ( p->attr_match && p->level > 0)  /* within a tag pair (or deeper) */
-        {
-            memcpy (buf, p->buf_m, kctrl->key_size);
-            if (term)
-                *term=p->term_m;
-#if RSBETWEEN_DEBUG
-            log2( rfd, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
-#endif
-            p->more_m = rset_read (p->rfd_m, p->buf_m, NULL);
-#if RSBETWEEN_DEBUG
-            logf(LOG_LOG,"read m. more=%d level=%d "
-                    "cmp_l=%d scope=%d hits="ZINT_FORMAT, 
-                    p->more_m, p->level,
-                    cmp_l, rfd->rset->scope, p->hits);
-#endif
-            if (cmp_l >= rfd->rset->scope)  /* == 2 */
-                p->level = 0;
-            p->hits++;
-            return 1;
-        }
-        else if ( ! p->more_l )  /* not in data, no more starts */
-        {
-#if RSBETWEEN_DEBUG
-            log2( rfd, "no more starts, exiting without a hit", cmp_l, cmp_r);
-#endif
-            return 0;  /* ergo, nothing can be found. stop scanning */
-        }
-#if NEWCODE                
-        if (cmp_l >= rfd->rset->scope) /* == 2 */
-        {
-            p->level = 0;
-            p->more_m=rset_forward(p->rfd_m, p->buf_m, &p->term_m, p->buf_l);
-        } else
-        {
-            p->more_m = rset_read (p->rfd_m, p->buf_m, &p->term_m);
-        }
-#else
-        if (cmp_l >= rfd->rset->scope )  /* == 2 */
-            p->level = 0;
-        p->more_m = rset_read (p->rfd_m, p->buf_m, &p->term_m);
-#endif
-#if RSBETWEEN_DEBUG
-        log2( rfd, "End of M loop", cmp_l, cmp_r);
-        logf(LOG_LOG,"level=%d. more=%d/%d/%d",
-                p->level,p->more_l,p->more_m, p->more_r);
-#endif
-    } /* while more_m */
-    
-#if RSBETWEEN_DEBUG
-    log2( rfd, "Exiting, nothing more in m", cmp_l, cmp_r);
-    logf(LOG_LOG,"level=%d. more=%d/%d/%d",
-                p->level,p->more_l,p->more_m, p->more_r);
-#endif
-    return 0;  /* no more data possible */
-
+    return 0;
 
 }  /* r_read */
 
 
-static int r_write_between (RSFD rfd, const void *buf)
+static int r_write (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "between set type is read-only");
     return -1;
 }
 
 
-static void r_pos_between (RSFD rfd, double *current, double *total)
+static void r_pos (RSFD rfd, double *current, double *total)
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
-    double lcur,ltot;
-    double mcur,mtot;
-    double rcur,rtot;
-    double r;
-    ltot=-1; rtot=-1;
-    rset_pos(p->rfd_l,  &lcur, &ltot);
-    rset_pos(p->rfd_m,  &mcur, &mtot);
-    rset_pos(p->rfd_r,  &rcur, &rtot);
-    if ( (ltot<0) && (mtot<0) && (rtot<0) ) { /*no position */
-        *current=mcur;  /* return same as you got */
-        *total=mtot;    /* probably -1 for not available */
-    }
-    if ( ltot<0) { ltot=0; lcur=0;} /* if only one useful, use it */
-    if ( mtot<0) { mtot=0; mcur=0;}
-    if ( rtot<0) { rtot=0; rcur=0;}
-    if ( ltot+mtot+rtot < 1 ) { /* empty rset */
-        *current=0;
-        *total=0;
-        return;
-    }
-    r=1.0*(lcur+mcur+rcur)/(ltot+mtot+rtot); /* weighed average of l and r */
-    *current=p->hits;
-    *total=*current/r ; 
-#if RSBETWEEN_DEBUG
-    {
-    struct rset_between_info *info =(struct rset_between_info *)rfd->rset->priv;
-    yaz_log(LOG_LOG,"betw_pos: (%s/%s) %0.1f/%0.1f= %0.4f ",
-                    info->rset_l->control->desc, info->rset_r->control->desc,
-                    *current, *total, r);
-    }
-#endif
+    rset_pos(p->andrfd,current, total);
+    logf(log_level,"pos: %0.1f/%0.1f ", *current, *total);
 }
 
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
     struct rset_between_info *info = (struct rset_between_info *) ct->priv;
-    rset_getterms(info->rset_m, terms, maxterms, curterm);
+    rset_getterms(info->andset, terms, maxterms, curterm);
 }
 
-/* Better algorithm
- * One of the major problems with rsbetween is the complexity of keeping track
- * of start tags, stop tags, hits, and attributes, together with record
- * boundaries etc. 
- *
- * Things can be divided into finding the right records, and then processing
- * hits inside the record.
- *
- * Finding the record is mostly a matter of forwarding until we have a start
- * tag and a hit in the same record.
- *
- * Handling stuff inside a record, we can simplify things by implementing a
- * glorified OR operator that returns all the occurrences in proper order,
- * together with info on what type it was. Then the main logic can just keep
- * reading, and consider each type separately:
- *   - if a start tag, increment level (some trickery with attributes!)
- *   - if a stop tag, decrement level
- *   - if a hit, and we have a level, return it
- *   - if a hit, but no level, ignore it
- *
- * The attributes can be detected when ever reading start tags. The main
- * routine needs to keep a stack of attribute match bits, so when ever we read
- * a start tag, we must report back if we have a matching attribute or not.
- *
- */
  

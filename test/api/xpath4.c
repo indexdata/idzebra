@@ -1,6 +1,6 @@
 
 
-/* $Id: xpath4.c,v 1.2 2004-11-01 16:09:05 heikki Exp $
+/* $Id: xpath4.c,v 1.3 2004-11-05 17:44:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -50,10 +50,39 @@ const char *myrec[] = {
     "</record> \n",
  
     "<record> \n"
+    "  <title lang=en>double english</title> \n"
+    "  <title lang=da>double danish</title> \n"
+    "  <author>grunt</author> \n"
+    "</record> \n",
+
+    "<record> \n"
     "  <title>hamlet</title> \n"
     "  <author>foo bar grunt grunt grunt</author> \n"
     "</record> \n",
 
+    "<record> \n"
+    "  before \n"
+    "  <nested> \n"
+    "     early \n"
+    "     <nested> \n"
+    "        middle \n"
+    "     </nested> \n"
+    "     late \n"
+    "  </nested> \n"
+    "  after \n"
+    "</record> \n",
+
+    "<record> \n"
+    "  before \n"
+    "  <nestattr level=outer> \n"
+    "     early \n"
+    "     <nestattr level=inner> \n"
+    "        middle \n"
+    "     </nestattr> \n"
+    "     late \n"
+    "  </nestattr> \n"
+    "  after \n"
+    "</record> \n",
     0};
 
 
@@ -61,6 +90,9 @@ int main(int argc, char **argv)
 {
     ZebraService zs = start_up("zebraxpath.cfg", argc, argv);
     ZebraHandle zh = zebra_open (zs);
+
+    yaz_log_init_level( yaz_log_mask_str_x("xpath4,rsbetween", LOG_DEFAULT_LEVEL));
+
     init_data(zh,myrec);
 
 #define q(qry,hits) do_query(__LINE__,zh,qry,hits)
@@ -69,6 +101,12 @@ int main(int argc, char **argv)
     q("@attr 1=/record/title bar",2);
     q("@attr 1=/record/title[@lang='da'] foo",1);
     q("@attr 1=/record/title[@lang='en'] foo",1);
+
+    q("@attr 1=/record/title[@lang='en'] english",1); 
+    q("@attr 1=/record/title[@lang='da'] english",0); 
+    q("@attr 1=/record/title[@lang='da'] danish",1);  
+    q("@attr 1=/record/title[@lang='en'] danish",0);  
+
     q("@attr 1=/record/title @and foo bar",2);
     /* The previous one returns two hits, as the and applies to the whole
     record, so it matches <title>foo</title><title>bar</title>
@@ -78,6 +116,38 @@ int main(int argc, char **argv)
 
     /* check we get all the occureences for 'grunt' */
     /* this can only be seen in the log, with debugs on. bug #202 */
-    q("@attr 1=/record/author grunt",2);
+    q("@attr 1=/record/author grunt",3);
+
+    /* check nested tags */
+    q("@attr 1=/record/nested before",0);
+    q("@attr 1=/record/nested early",1);
+    q("@attr 1=/record/nested middle",1);
+    q("@attr 1=/record/nested late",1);
+    q("@attr 1=/record/nested after",0);
+
+    q("@attr 1=/record/nested/nested before",0);
+    q("@attr 1=/record/nested/nested early",0);
+    q("@attr 1=/record/nested/nested middle",1);
+    q("@attr 1=/record/nested/nested late",0);
+    q("@attr 1=/record/nested/nested after",0);
+
+    q("@attr 1=/record/nestattr[@level='outer'] before",0);
+    q("@attr 1=/record/nestattr[@level='outer'] early",1);
+    q("@attr 1=/record/nestattr[@level='outer'] middle",1);
+    q("@attr 1=/record/nestattr[@level='outer'] late",1);
+    q("@attr 1=/record/nestattr[@level='outer'] after",0);
+
+    q("@attr 1=/record/nestattr[@level='inner'] before",0);
+    q("@attr 1=/record/nestattr[@level='inner'] early",0);
+    q("@attr 1=/record/nestattr[@level='inner'] middle",0);
+    q("@attr 1=/record/nestattr[@level='inner'] late",0);
+    q("@attr 1=/record/nestattr[@level='inner'] after",0);
+
+    q("@attr 1=/record/nestattr/nestattr[@level='inner'] before",0);
+    q("@attr 1=/record/nestattr/nestattr[@level='inner'] early",0);
+    q("@attr 1=/record/nestattr/nestattr[@level='inner'] middle",1);
+    q("@attr 1=/record/nestattr/nestattr[@level='inner'] late",0);
+    q("@attr 1=/record/nestattr/nestattr[@level='inner'] after",0);
+
     return close_down(zh, zs, 0);
 }

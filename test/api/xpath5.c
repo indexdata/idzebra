@@ -1,6 +1,6 @@
 
 
-/* $Id: xpath5.c,v 1.2 2004-11-01 16:09:05 heikki Exp $
+/* $Id: xpath5.c,v 1.3 2004-11-05 17:44:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -71,21 +71,15 @@ int main(int argc, char **argv)
     ranking_query(__LINE__,zh,qry,hits,string,score)
 
     q("@attr 1=/record/title @attr 2=102 the",
-            3,"first title",846);
+            3,"first title",952);
     q("@attr 1=/ @attr 2=102 @or third foo",
             3,"third title",802);
 
     q("@attr 1=/ @attr 2=102 foo",
             3,"second title",850);
 
-#if 0 
-    /* FIXME - This query triggers bug #202 */
-    /* http://bugs.index/show_bug.cgi?id=202 */
-    /* it seems that the ranking does not see all occurrences */
-    /* of 'foo', and thus ranks all records as high. */
     q("@attr 1=/record/ @attr 2=102 foo",
-            3,"second title",846);
-#endif
+            3,"second title",927);
 
     return close_down(zh, zs, 0);
 }
