@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.19 2002-08-02 19:26:56 adam Exp $
+/* $Id: zebraapi.h,v 1.20 2002-09-03 11:44:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -33,17 +33,18 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 YAZ_BEGIN_CDECL
 
 struct recordGroup {
-    char         *groupName;
-    char         *databaseName;
-    char         *path;
-    char         *recordId;
-    char         *recordType;
-    int          flagStoreData;
-    int          flagStoreKeys;
-    int          flagRw;
-    int          fileVerboseLimit;
-    int          databaseNamePath;
-    int          explainDatabase;
+    char  *groupName;
+    char  *databaseName;
+    char  *path;
+    char  *recordId;
+    char  *recordType;
+    int   flagStoreData;
+    int   flagStoreKeys;
+    int   flagRw;
+    int   fileVerboseLimit;
+    int   databaseNamePath;
+    int   explainDatabase;
+    int   followLinks;
 };
 
 /* Retrieval Record Descriptor */

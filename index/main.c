@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.95 2002-08-29 08:47:08 adam Exp $
+/* $Id: main.c,v 1.96 2002-09-03 11:44:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -84,6 +84,7 @@ int main (int argc, char **argv)
     rGroupDef.databaseNamePath = 0;
     rGroupDef.explainDatabase = 0;
     rGroupDef.fileVerboseLimit = 100000;
+    rGroupDef.followLinks = -1;
 
     prog = *argv;
     if (argc < 2)
@@ -105,12 +106,13 @@ int main (int argc, char **argv)
 	" -s            Show analysis on stdout, but do no work.\n"
 	" -v <level>    Set logging to <level>.\n"
         " -l <file>     Write log to <file>.\n"
+        " -L            Don't follow symbolic links.\n"
         " -f <n>        Display information for the first <n> records.\n"
         " -V            Show version.\n", *argv
                  );
         exit (1);
     }
-    while ((ret = options ("sVt:c:g:d:m:v:nf:l:"
+    while ((ret = options ("sVt:c:g:d:m:v:nf:l:L"
 			   , argv, argc, &arg)) != -2)
     {
         if (ret == 0)
@@ -246,6 +248,8 @@ int main (int argc, char **argv)
             rGroupDef.recordType = arg;
         else if (ret == 'n')
             disableCommit = 1;
+        else if (ret == 'L')
+            rGroupDef.followLinks = 0;
         else
             logf (LOG_WARN, "unknown option '-%s'", arg);
     }

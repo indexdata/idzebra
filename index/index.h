@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.86 2002-08-28 19:52:29 adam Exp $
+/* $Id: index.h,v 1.87 2002-09-03 11:44:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -34,6 +34,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #if HAVE_SYS_TIMES_H
 #include <sys/times.h>
 #endif
+#include <sys/stat.h>
 
 #include <dict.h>
 #include <isams.h>
@@ -92,7 +93,8 @@ void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime);
 void dirs_del (struct dirs_info *p, const char *src);
 void dirs_free (struct dirs_info **pp);
 
-struct dir_entry *dir_open (const char *rep, const char *base);
+struct dir_entry *dir_open (const char *rep, const char *base,
+                            int follow_links);
 void dir_sort (struct dir_entry *e);
 void dir_free (struct dir_entry **e_p);
 
@@ -435,6 +437,8 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
 int zebra_begin_read (ZebraHandle zh);
 void zebra_end_read (ZebraHandle zh);
 
+int zebra_file_stat (const char *file_name, struct stat *buf,
+                     int follow_links);
 
 YAZ_END_CDECL
 

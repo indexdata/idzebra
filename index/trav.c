@@ -1,4 +1,4 @@
-/* $Id: trav.c,v 1.40 2002-08-02 19:26:55 adam Exp $
+/* $Id: trav.c,v 1.41 2002-09-03 11:44:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,13 +20,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
-
 #include <stdio.h>
 #include <assert.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #ifdef WIN32
 #include <io.h>
 #define S_ISREG(x) (x & _S_IFREG)
@@ -55,7 +51,7 @@ static void repositoryExtractR (ZebraHandle zh, int deleteFlag, char *rep,
     int i;
     size_t rep_len = strlen (rep);
 
-    e = dir_open (rep, zh->path_reg);
+    e = dir_open (rep, zh->path_reg, rGroup->followLinks);
     if (!e)
         return;
     logf (LOG_LOG, "dir %s", rep);
@@ -130,7 +126,7 @@ static void fileUpdateR (ZebraHandle zh,
     size_t src_len = strlen (src);
 
     sprintf (tmppath, "%s%s", base, src);
-    e_src = dir_open (tmppath, zh->path_reg);
+    e_src = dir_open (tmppath, zh->path_reg, rGroup->followLinks);
     logf (LOG_LOG, "dir %s", tmppath);
 
 #if 0
@@ -276,6 +272,16 @@ static void groupRes (ZebraHandle zh, struct recordGroup *rGroup)
     sprintf (resStr, "%sdatabasePath", gPrefix);
     rGroup->databaseNamePath =
 	atoi (res_get_def (zh->res, resStr, "0"));
+
+    rGroup->databaseNamePath =
+	atoi (res_get_def (zh->res, resStr, "0"));
+
+    if (rGroup->followLinks == -1)
+    {
+        sprintf (resStr, "%sfollowLinks", gPrefix);
+        rGroup->followLinks = 
+            atoi (res_get_def (zh->res, resStr, "1"));
+    }
 }
 
 void repositoryShow (ZebraHandle zh)
@@ -332,7 +338,7 @@ static void fileUpdate (ZebraHandle zh,
     else
         *src = '\0';
     strcat (src, path);
-    stat (src, &sbuf);
+    zebra_file_stat (src, &sbuf, rGroup->followLinks);
 
     strcpy (src, path);
     src_len = strlen (src);
@@ -393,7 +399,7 @@ static void repositoryExtract (ZebraHandle zh,
     else
         *src = '\0';
     strcat (src, path);
-    stat (src, &sbuf);
+    zebra_file_stat (src, &sbuf, rGroup->followLinks);
 
     strcpy (src, path);
 

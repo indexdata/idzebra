@@ -1,4 +1,4 @@
-/* $Id: dir.c,v 1.23 2002-08-02 19:26:55 adam Exp $
+/* $Id: dir.c,v 1.24 2002-09-03 11:44:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -28,14 +28,23 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <unistd.h>
 #endif
 #include <direntz.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <fcntl.h>
 
 #include "index.h"
 
-struct dir_entry *dir_open (const char *rep, const char *base)
+
+int zebra_file_stat (const char *file_name, struct stat *buf,
+                     int follow_links)
+{
+    if (follow_links)
+        return stat(file_name, buf);
+    return lstat(file_name, buf);
+}
+
+struct dir_entry *dir_open (const char *rep, const char *base,
+                            int follow_links)
 {
     DIR *dir;
     char path[1024];
@@ -91,10 +100,10 @@ struct dir_entry *dir_open (const char *rep, const char *base)
             strcpy (full_rep, base);
             strcat (full_rep, "/");
             strcat (full_rep, path);
-            stat (full_rep, &finfo);
+            zebra_file_stat (full_rep, &finfo, follow_links);
         }
         else
-            stat (path, &finfo);
+            zebra_file_stat (path, &finfo, follow_links);
         switch (finfo.st_mode & S_IFMT)
         {
         case S_IFREG:
