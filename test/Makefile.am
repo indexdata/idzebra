@@ -1,3 +1,3 @@
 
-SUBDIRS=api gils usmarc dmoz xpath sort xelm cddb rusmarc zsh
+SUBDIRS=api gils malxml usmarc dmoz xpath sort xelm cddb rusmarc zsh
 

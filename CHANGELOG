@@ -1,4 +1,8 @@
 
+Attempt to avoid SEGV in older versions of Expat by not calling 
+XML_GetCurrent{Line,Column}Number when XML_Parse fails. New
+test case: malxml.
+
 Zebra ignores "unsupported use attribute" for individual databases
 when search multiple databases (unless all databases fail).
 
