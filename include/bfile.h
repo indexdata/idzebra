@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.h,v $
- * Revision 1.10  1995-12-01 16:24:33  adam
+ * Revision 1.11  1995-12-08 16:20:39  adam
+ * New commit utilities - used for 'save' update.
+ *
+ * Revision 1.10  1995/12/01  16:24:33  adam
  * Commit files use separate meta file area.
  *
  * Revision 1.9  1995/12/01  11:37:46  adam
@@ -48,7 +51,9 @@ int bf_close (BFile);
 BFile bf_open (const char *name, int block_size, int wflag);
 int bf_read (BFile bf, int no, int offset, int num, void *buf);
 int bf_write (BFile bf, int no, int offset, int num, const void *buf);
-void bf_cache (void);
-void bf_commit (void);
+void bf_cache (int enableFlag);
+int bf_commitExists (void);
+void bf_commitExec (void);
+void bf_commitClean (void);
 
 #endif
