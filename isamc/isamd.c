@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.14 1999-09-23 18:01:18 heikki Exp $ 
+ * $Id: isamd.c,v 1.15 1999-09-27 14:36:36 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -528,9 +528,6 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
        return pp;
     } /* singleton */
    
-
-    ipos=ipos>>1; /* remove the singleton bit */
-
     pp->cat = isamd_type(ipos);
     pp->pos = isamd_block(ipos); 
  
@@ -764,7 +761,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.14  1999-09-23 18:01:18  heikki
+ * Revision 1.15  1999-09-27 14:36:36  heikki
+ * singletons
+ *
+ * Revision 1.14  1999/09/23 18:01:18  heikki
  * singleton optimising
  *
  * Revision 1.13  1999/09/20 15:48:06  heikki

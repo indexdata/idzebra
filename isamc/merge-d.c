@@ -3,10 +3,11 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.22 1999-09-23 18:01:18 heikki Exp $
+ * $Id: merge-d.c,v 1.23 1999-09-27 14:36:36 heikki Exp $
  *
  * bugs
- *   (none)
+ *  sinleton-bit has to be in the high end, not low, so as not to confuse
+ *  ordinary small numbers, like in the next pointer..
  *
  * missing
  *
@@ -246,9 +247,11 @@ static int filter_only_one(FILTER F)
 #define DEC_SEQBITS 15
 #define DEC_MASK(n) ((1<<(n))-1)
 
+#define SINGLETON_BIT (1<<(DEC_SYSBITS+DEC_SEQBITS+1))
+
 int is_singleton(ISAMD_P ipos)
 {
-  return ( ipos != 0 ) && ( ipos & 1 );
+  return ( ipos != 0 ) && ( ipos & SINGLETON_BIT );
 }
 
 
@@ -259,15 +262,15 @@ int singleton_encode(struct it_key *k)
     return 0;  /* no room dor sysno */
   if ( (k->seqno & DEC_MASK(DEC_SYSBITS) ) != k->seqno )
     return 0;  /* no room dor sysno */
-  return ( (k->sysno | (k->seqno << DEC_SYSBITS) ) << 1) | 1;
+  return (k->sysno | (k->seqno << DEC_SYSBITS) ) | SINGLETON_BIT;
 }
  
 void singleton_decode (int code, struct it_key *k)
 {
-  assert ((code & 1) == 1 );
-  code = code >> 1; 
+  assert (code & SINGLETON_BIT);
   k->sysno = code & DEC_MASK(DEC_SYSBITS);
-  k->seqno = code >> DEC_SYSBITS ;
+  code = code >> DEC_SYSBITS; 
+  k->seqno = code & DEC_MASK(DEC_SEQBITS);
 } 
  
  
@@ -1055,10 +1058,14 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
    FILTER F = filter_open(is,data);
    ISAMD_P rc=0;
 
+   int olddebug= is->method->debug;
+   if (ipos == 1846)
+     is->method->debug = 99;  /*!*/
+     
    if ( filter_isempty(F) ) /* can be, if del-ins of the same */
    {
-      if (is->method->debug >9) 
-         logf(LOG_LOG,"isamd_appd: nothing to do");
+      if (is->method->debug >3) 
+         logf(LOG_LOG,"isamd_appd: nothing to do for %d=",ipos);
       filter_close(F);
       return ipos; /* without doing anything at all */
    }
@@ -1077,15 +1084,17 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
    }
    if ( 0==rc) /* either not single, or it did not fit */
    {
-      rc = append_diffs(is,ipos,F)<<1;  /* not singleton */
-      assert ( ! is_singleton(rc) );  /*!*/
+      rc = append_diffs(is,ipos,F); 
+      assert ( ! is_singleton(rc) ); 
+        /* can happen if we run out of bits, so that block numbers overflow */
+        /* to SINGLETON_BIT */
    }
    filter_close(F);
 
-   if (is->method->debug >9) 
+   if (is->method->debug >2) 
       logf(LOG_LOG,"isamd_appd: ret %d=%x (%d=%x)",
         rc,rc,ipos,ipos);
-
+   is->method->debug=olddebug; /*!*/
    return rc;
 } /*  isamd_append */
 
@@ -1097,7 +1106,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.22  1999-09-23 18:01:18  heikki
+ * Revision 1.23  1999-09-27 14:36:36  heikki
+ * singletons
+ *
+ * Revision 1.22  1999/09/23 18:01:18  heikki
  * singleton optimising
  *
  * Revision 1.21  1999/09/21 17:36:43  heikki
