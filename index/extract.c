@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.37  1995-12-04 14:22:27  adam
+ * Revision 1.38  1995-12-04 17:59:21  adam
+ * More work on regular expression conversion.
+ *
+ * Revision 1.37  1995/12/04  14:22:27  adam
  * Extra arg to recType_byName.
  * Started work on new regular expression parsed input to
  * structured records.
@@ -692,7 +695,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     {
         extractCtrl.fd = fd;
         /* extract keys */
-        extractCtrl.subType = "";
+        extractCtrl.subType = subType;
         extractCtrl.init = wordInit;
         extractCtrl.add = addRecordKeyAny;
 
