@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.22 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rset.c,v 1.23 2004-08-06 10:09:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -65,9 +65,9 @@ RSET rset_dup (RSET rs)
     return rs;
 }
 
-void rset_default_pos (RSFD rfd, zint *current, zint *total)
-{ /* FIXME - This function should not be needed, only while */
-  /*         coding the pos functions. */
+void rset_default_pos (RSFD rfd, double *current, double *total)
+{ /* This should never really be needed, but it is still used in */
+  /* those rsets that we don't really plan to use, like isam-s */
     assert(rfd);
     assert(current);
     assert(total);

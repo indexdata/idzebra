@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.50 2004-08-06 09:43:03 heikki Exp $
+/* $Id: isamb.c,v 1.51 2004-08-06 10:09:27 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1800,7 +1800,8 @@ int isamb_pp_num (ISAMB_PP pp)
 }
 
 static void isamb_pp_leaf_pos( ISAMB_PP pp, 
-                               zint *current, zint *total, void *dummybuf )
+                               double *current, double *total, 
+                               void *dummybuf )
 {
     struct ISAMB_block *p = pp->block[pp->level];
     const char *src=p->bytes;
@@ -1825,7 +1826,7 @@ static void isamb_pp_leaf_pos( ISAMB_PP pp,
              (*current)++;
     }
 #if ISAMB_DEBUG
-    logf(LOG_DEBUG, "isamb_pp_leaf_pos: cur="ZINT_FORMAT" tot="ZINT_FORMAT
+    logf(LOG_DEBUG, "isamb_pp_leaf_pos: cur= %0.1f tot=%0.1f "
                     " ofs=%d sz=%d lev=%d",
                     *current, *total, p->offset, p->size, pp->level);
 #endif
@@ -1833,7 +1834,7 @@ static void isamb_pp_leaf_pos( ISAMB_PP pp,
     (pp->isamb->method->codec.stop)(decodeClientData);
 }
 
-static void isamb_pp_upper_pos( ISAMB_PP pp, zint *current, zint *total, 
+static void isamb_pp_upper_pos( ISAMB_PP pp, double *current, double *total, 
                                 zint size, int level )
 { /* estimates total/current occurrences from here up, excl leaf */
     struct ISAMB_block *p = pp->block[level];
@@ -1869,7 +1870,7 @@ static void isamb_pp_upper_pos( ISAMB_PP pp, zint *current, zint *total,
         isamb_pp_upper_pos(pp, current, total, *total, level-1);
 } /* upper_pos */
 
-void isamb_pp_pos( ISAMB_PP pp, zint *current, zint *total )
+void isamb_pp_pos( ISAMB_PP pp, double *current, double *total )
 { /* return an estimate of the current position and of the total number of */
   /* occureences in the isam tree, based on the current leaf */
     struct ISAMB_block *p = pp->block[pp->level];

@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.39 2004-08-06 09:43:04 heikki Exp $
+/* $Id: rstemp.c,v 1.40 2004-08-06 10:09:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -42,7 +42,7 @@ static void r_rewind (RSFD rfd);
 /* static int r_count (RSET ct);*/
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
-static void r_pos (RSFD rfd, zint *current, zint *total);
+static void r_pos (RSFD rfd, double *current, double  *total);
 
 static const struct rset_control control = 
 {
@@ -371,7 +371,7 @@ static int r_write (RSFD rfd, const void *buf)
     return 1;
 }
 
-static void r_pos (RSFD rfd, zint *current, zint *total)
+static void r_pos (RSFD rfd, double  *current, double  *total)
 {
     struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd;
     *current=mrfd->cur;

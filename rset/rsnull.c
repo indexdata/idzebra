@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.19 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rsnull.c,v 1.20 2004-08-06 10:09:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -32,7 +32,7 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static void r_pos (RSFD rfd, zint *current, zint *total);
+static void r_pos (RSFD rfd, double *current, double *total);
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
 
@@ -93,7 +93,7 @@ static void r_rewind (RSFD rfd)
     logf (LOG_DEBUG, "rsnull_rewind");
 }
 
-static void r_pos (RSFD rfd, zint *current, zint *total)
+static void r_pos (RSFD rfd, double *current, double *total)
 {
     assert(rfd);
     assert(current);

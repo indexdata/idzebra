@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.51 2004-08-06 09:43:03 heikki Exp $
+/* $Id: zsets.c,v 1.52 2004-08-06 10:09:27 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -726,7 +726,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     struct rank_control *rc;
     struct zset_sort_info *sort_info;
     const char *rank_handler_name = res_get_def(zh->res, "rank", "rank-1");
-    zint cur,tot; 
+    double cur,tot; 
     zint est=-2; /* -2 not done, -1 can't do, >0 actual estimate*/
     zint esthits;
 
@@ -781,11 +781,11 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
             rset_pos(rset,rfd,&cur,&tot); 
             if (tot>0) {
                 f=1.0*cur/tot;
-                est=(zint)(zebraSet->hits/f);
+                est=(zint)(0.5+zebraSet->hits/f);
                 /* FIXME - round the guess to 3 digits */
                 logf(LOG_LOG, "Estimating hits (%s) "
-                              ZINT_FORMAT"->%d"
-                              "; "ZINT_FORMAT"->"ZINT_FORMAT,
+                              "%0.1f->%d"
+                              "; %0.1f->"ZINT_FORMAT,
                               rset->control->desc,
                               cur, zebraSet->hits,
                               tot,est);

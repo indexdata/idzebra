@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.12 2004-08-06 09:43:04 heikki Exp $
+/* $Id: rsisamb.c,v 1.13 2004-08-06 10:09:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -39,7 +39,7 @@ static void r_rewind (RSFD rfd);
 static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
-static void r_pos (RSFD rfd, zint *current, zint *total);
+static void r_pos (RSFD rfd, double *current, double *total);
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
 
@@ -172,13 +172,13 @@ static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
     return i;
 }
 
-static void r_pos (RSFD rfd, zint *current, zint *total)
+static void r_pos (RSFD rfd, double *current, double *total)
 {
     struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
     assert(rfd);
     isamb_pp_pos(pinfo->pt, current, total);
 #if RSET_DEBUG
-    logf(LOG_DEBUG,"isamb.r_pos returning "ZINT_FORMAT"/"ZINT_FORMAT,
+    logf(LOG_DEBUG,"isamb.r_pos returning %0.1f/%0.1f",
               *current, *total);
 #endif
 }

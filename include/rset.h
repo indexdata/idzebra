@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.25 2004-08-06 09:43:03 heikki Exp $
+/* $Id: rset.h,v 1.26 2004-08-06 10:09:27 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -46,7 +46,7 @@ struct rset_control
     int (*f_forward)(RSET ct, RSFD rfd, void *buf,  int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
-    void (*f_pos)(RSFD rfd, zint *current, zint *total);
+    void (*f_pos)(RSFD rfd, double *current, double *total);
        /* returns -1,-1 if pos function not implemented for this type */
     int (*f_read)(RSFD rfd, void *buf, int *term_index);
     int (*f_write)(RSFD rfd, const void *buf);
@@ -55,7 +55,7 @@ struct rset_control
 int rset_default_forward(RSET ct, RSFD rfd, void *buf, int *term_index, 
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
-void rset_default_pos(RSFD rfd, zint *current, zint *total);
+void rset_default_pos(RSFD rfd, double *current, double *total);
 
 struct rset_term {
     char *name;
@@ -103,7 +103,7 @@ RSET rset_dup (RSET rs);
 #define rset_forward(rs, fd, buf, indx, cmpfunc, untilbuf) \
     (*(rs)->control->f_forward)((rs), (fd), (buf), (indx), (cmpfunc), (untilbuf))
 
-/* int rset_pos(RSET rs, RSFD fd, zint *current, zint *total); */
+/* int rset_pos(RSET rs, RSFD fd, double *current, double *total); */
 #define rset_pos(rs,fd,cur,tot) \
     (*(rs)->control->f_pos)( (fd),(cur),(tot))
 

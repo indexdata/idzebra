@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.34 2004-08-06 09:43:03 heikki Exp $
+/* $Id: rsbool.c,v 1.35 2004-08-06 10:09:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -41,7 +41,7 @@ static void r_rewind (RSFD rfd);
 static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
-static void r_pos (RSFD rfd, zint *current, zint *total); 
+static void r_pos (RSFD rfd, double *current, double *total); 
 static int r_read_and (RSFD rfd, void *buf, int *term_index);
 static int r_read_or (RSFD rfd, void *buf, int *term_index);
 static int r_read_not (RSFD rfd, void *buf, int *term_index);
@@ -278,8 +278,6 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
-    { zint cur,tot; r_pos(rfd, &cur, &tot); } 
-
     while (p->more_l || p->more_r)
     {
         int cmp;
@@ -455,7 +453,6 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
-    { zint cur,tot; r_pos(rfd, &cur, &tot); }
     while (p->more_l || p->more_r)
     {
         int cmp;
@@ -519,7 +516,6 @@ static int r_read_not (RSFD rfd, void *buf, int *term_index)
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
-    { zint cur,tot; r_pos(rfd, &cur, &tot); }
     while (p->more_l || p->more_r)
     {
         int cmp;
@@ -577,13 +573,13 @@ static int r_write (RSFD rfd, const void *buf)
     return -1;
 }
 
-static void r_pos (RSFD rfd, zint *current, zint *total)
+static void r_pos (RSFD rfd, double *current, double *total)
 {
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
-    zint lcur,ltot;
-    zint rcur,rtot;
-    float r;
+    double lcur,ltot;
+    double rcur,rtot;
+    double r;
     ltot=-1; rtot=-1;
     rset_pos(info->rset_l, p->rfd_l,  &lcur, &ltot);
     rset_pos(info->rset_r, p->rfd_r,  &rcur, &rtot);
@@ -593,16 +589,16 @@ static void r_pos (RSFD rfd, zint *current, zint *total)
     }
     if ( rtot<0) { rtot=0; rcur=0;} /* if only one useful, use it */
     if ( ltot<0) { ltot=0; lcur=0;}
-    if ( rtot+ltot == 0 ) { /* empty rset */
+    if ( rtot+ltot < 1 ) { /* empty rset */
         *current=0;
         *total=0;
         return;
     }
     r=1.0*(lcur+rcur)/(ltot+rtot); /* weighed average of l and r */
     *current=p->hits;
-    *total=(zint)(0.5+*current/r); 
+    *total=*current/r ; 
 #if RSET_DEBUG
-    yaz_log(LOG_DEBUG,"bool_pos: (%s/%s) "ZINT_FORMAT"/"ZINT_FORMAT"= %0.4f ",
+    yaz_log(LOG_DEBUG,"bool_pos: (%s/%s) %0.1f/%0.1f= %0.4f ",
                     info->rset_l->control->desc, info->rset_r->control->desc,
                     *current, *total, r);
 #endif
