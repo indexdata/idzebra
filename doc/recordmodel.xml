@@ -1,5 +1,5 @@
 <chapter id="record-model">
- <!-- $Id: recordmodel.xml,v 1.2 2002-04-09 19:20:23 adam Exp $ -->
+ <!-- $Id: recordmodel.xml,v 1.3 2002-04-10 14:47:49 heikki Exp $ -->
  <title>The Record Model</title>
  
  <para>
@@ -18,6 +18,8 @@
   structured
   record type <literal>grs</literal> as introduced in
   <xref linkend="record-types"/>.
+  FIXME - Need to describe the simple string-tag model, or at least 
+          refer to it here. -H
  </para>
 
  <para>
@@ -691,7 +693,7 @@
 
    <note>
     <para>
-     Documentation needs extension here about types of nodes - numerical,
+     FIXME! Documentation needs extension here about types of nodes - numerical,
      textual, etc., plus the various types of inclusion notes.
     </para>
    </note>
@@ -718,6 +720,10 @@
     Structure, or ARS) is the focal point of the
     record schema description. For a given schema, the ABS file may state any
     or all of the following:
+   </para>
+
+   <para>
+    FIXME - Need a diagram here, or a simple explanation how it all hangs together -H
    </para>
 
    <para>
@@ -1520,7 +1526,7 @@
    </para>
 
    <para>
-    <emphasis>NOTE: The schema-mapping functions are so far limited to a
+    <emphasis>NOTE: FIXME! The schema-mapping functions are so far limited to a
      straightforward mapping of elements. This should be extended with
      mechanisms for conversions of the element contents, and conditional
      mappings of elements based on the record contents.</emphasis>
@@ -1575,7 +1581,7 @@
    </para>
 
    <para>
-    <emphasis>NOTE: This will be described better. We're in the process of
+    <emphasis>NOTE: FIXME! This will be described better. We're in the process of
      re-evaluating and most likely changing the way that MARC records are
      handled by the system.</emphasis>
    </para>
@@ -1810,6 +1816,7 @@
       is used to show the hierarchical structure of the record. All
       "GRS" type records support both the GRS-1 and SUTRS
       representations.
+      FIXME - What is SUTRS - should be expanded here
      </para>
     </listitem>
 
@@ -1852,6 +1859,7 @@
       abstract syntaxes can be mapped to the SOIF format, although nested
       elements are represented by concatenation of the tag names at each
       level.
+      FIXME - Is this used anywhere ? What is SOIF anyway? -H
      </para>
     </listitem>
 

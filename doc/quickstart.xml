@@ -1,7 +1,12 @@
 <chapter id="quick-start">
- <!-- $Id: quickstart.xml,v 1.1 2002-04-09 13:26:26 adam Exp $ -->
+ <!-- $Id: quickstart.xml,v 1.2 2002-04-10 14:47:49 heikki Exp $ -->
  <title>Quick Start </title>
  
+ <para>
+  FIXME - Start with the new improved example scripts that run 
+  without any configuration file changes!
+ </para>
+
  <para>
   In this section, we will test the system by indexing a small set of sample
   GILS records that are included with the software distribution. Go to the

@@ -1,14 +1,21 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.4 2002-04-09 19:20:22 adam Exp $ -->
+ <!-- $Id: introduction.xml,v 1.5 2002-04-10 14:47:49 heikki Exp $ -->
  <title>Introduction</title>
  
  <sect1>
   <title>Overview</title>
   
   <para>
-   The Zebra system is a fielded free-text indexing and retrieval engine with a
-   Z39.50 front-end. You can use any commercial or free-ware Z39.50 client
-   to access data stored in Zebra.
+   The 
+   <ulink url="http://www.indexdata.dk/zebra/">
+     Zebra</ulink>
+   system is a fielded free-text indexing and retrieval engine with a
+   Z39.50 front-end. You can use our various toolkits or any commercial 
+   or free-ware Z39.50 client to access data stored in Zebra.
+  </para>
+  
+  <para>
+   FIXME - not a "first step" but a part of a complete system! -H
   </para>
   
   <para>
@@ -31,9 +38,13 @@
   </para>
   
   <para>
-   If you find the software interesting, you should join the support
-   mailing-list by sending email to
-   <literal>zebra-request@indexdata.dk</literal>.
+   
+   If you find the software interesting, you should visit the 
+   <ulink url="http://www.indexdata.dk/zebra/">
+     Zebra web site</ulink>, where you can join the
+   <ulink url="http://www.indexdata.dk/mailman/listinfo/zebralist">
+   mailing-list</ulink>
+   by sending email to
   </para>
   
  </sect1>
@@ -48,17 +59,6 @@
   
   <para>
    <itemizedlist>
-    <listitem>
-     <para>
-      Supports updating - records can be added and deleted without
-      rebuilding the index from scratch.
-      The update procedure is tolerant to crashes or hard interrupts
-      during register updating - registers can be reconstructed following
-      a crash.
-      Registers can be safely updated even while users are accessing
-      the server.
-     </para>
-    </listitem>
 
     <listitem>
      <para>
@@ -72,6 +72,18 @@
       Supports arbitrarily complex records - base input format is an
       SGML-like syntax which allows nested (structured) data elements, as
       well as variant forms of data.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Robust updating - records can be added and deleted without
+      rebuilding the index from scratch.
+      The update procedure is tolerant to crashes or hard interrupts
+      during register updating - registers can be reconstructed following
+      a crash.
+      Registers can be safely updated even while users are accessing
+      the server.
      </para>
     </listitem>
 
@@ -93,6 +105,13 @@
     </listitem>
 
     <listitem>
+      <para>
+        Can import the data into Zebras own storage, or just refer to
+        external files (html pages).
+      </para>
+    </listitem>
+
+    <listitem>
      <para>
       Supports multiple concrete syntaxes
       for record exchange (depending on the configuration): GRS-1, SUTRS,
@@ -105,6 +124,13 @@
      <para>
       Supports approximate matching in registers (ie. spelling mistakes,
       etc).
+     </para>
+    </listitem>
+    
+    <listitem>
+     <para>
+      Zebra is written in portable C, so it runs on most Unix-like systems 
+      as well as Windows NT - a binary distribution for Windows NT is available.
      </para>
     </listitem>
     
@@ -121,6 +147,7 @@
     <listitem>
      <para>
       Protocol facilities: Init, Search, Retrieve, Delete, Browse and Sort.
+      FIXME - Itemupdate. (Remove delete until that time, confuses people) -H
      </para>
     </listitem>
 
@@ -162,16 +189,10 @@
     <listitem>
      <para>
       Some variant support (not fully implemented yet).
+      FIXME - Test if complete enough - is it worth mentioning at all -H
      </para>
     </listitem>
 
-    <listitem>
-     <para>
-      Zebra runs on most Unix-like systems as well as Windows NT - a binary
-      distribution for Windows NT is available.
-     </para>
-    </listitem>
-    
    </itemizedlist>
    
   </para>
@@ -187,6 +208,7 @@
    Items marked with an
    asterisk will be implemented before the
    last beta release.
+   FIXME - What are the current plans? 
   </para>
   
   <para>
@@ -194,6 +216,7 @@
     <listitem>
      <para>
       *Complete the support for variants.
+      FIXME - who cares -H
      </para>
     </listitem>
 

@@ -1,9 +1,15 @@
 <appendix id="license">
- <!-- $Id: license.xml,v 1.3 2002-04-09 13:26:26 adam Exp $ -->
+ <!-- $Id: license.xml,v 1.4 2002-04-10 14:47:49 heikki Exp $ -->
  <title>License</title>
  
  <para>
   Copyright &copy; 1995-2002 Index Data.
+ </para>
+ 
+ <para>
+    FIXME - Need to change this to GPL
+            Should also mention something about other licenses
+            being available on commercial terms.
  </para>
  
  <para>

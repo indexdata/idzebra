@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.4 2002-04-09 19:20:22 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.5 2002-04-10 14:47:48 heikki Exp $ -->
  <title>Administrating Zebra</title>
  
  <para>
@@ -147,6 +147,10 @@
   </para>
   
   <para>
+   FIXME - Didn't Adam make something to have multiple databases in multiple dirs...
+  </para>
+  
+  <para>
    <variablelist>
     
     <varlistentry>
@@ -186,6 +190,7 @@
      <listitem>
       <para>
        Specifies the Z39.50 database name.
+       FIXME - now we can have multiple databases in one server. -H
       </para>
      </listitem>
     </varlistentry>
@@ -432,6 +437,10 @@
   </para>
   
   <para>
+   FIXME - There must be a simpler way to do this with Adams string tags -H
+  </para>
+
+  <para>
    For example, to update records of group <literal>esdd</literal>
    located below
    <literal>/data1/records/</literal> you should type:
@@ -635,19 +644,22 @@
    each directory in the order specified and use the next specified
    directories as needed.
    The <emphasis>size</emphasis> is an integer followed by a qualifier
-   code, <literal>M</literal> for megabytes,
+   code, 
+   <literal>b</literal> for bytes,
    <literal>k</literal> for kilobytes.
+   <literal>M</literal> for megabytes,
+   <literal>G</literal> for gigabytes.
   </para>
   
   <para>
    For instance, if you have allocated two disks for your register, and
    the first disk is mounted
-   on <literal>/d1</literal> and has 200 MB of free space and the
-   second, mounted on <literal>/d2</literal> has 300 MB, you could
+   on <literal>/d1</literal> and has 2GB of free space and the
+   second, mounted on <literal>/d2</literal> has 3.6 GB, you could
    put this entry in your configuration file:
    
    <screen>
-    register: /d1:200M /d2:300M
+    register: /d1:2G /d2:3600M
    </screen>
    
   </para>

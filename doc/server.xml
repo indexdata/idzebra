@@ -1,9 +1,16 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.2 2002-04-09 19:20:23 adam Exp $ -->
+ <!-- $Id: server.xml,v 1.3 2002-04-10 14:47:49 heikki Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
   <title>Running the Z39.50 Server (zebrasrv)</title>
+
+  <para>
+   FIXME - We need to be consistent here, zebraidx had the options at the
+           end, and lots of explaining text before them. Same for zebrasvr! -H
+   FIXME - At least we need a small intro, what is zebrasvr, and how it
+           can be run (inetd, nt service, stand-alone program, daemon...) -H
+  </para>
 
   <para>
    <emphasis remap="bf">Syntax</emphasis>
@@ -51,11 +58,9 @@
      <term>-z</term>
      <listitem>
       <para>
-       Use the Z39.50 protocol (default). These two options complement
-       each other. You can use both multiple times on the same command
-       line, between listener-specifications (see below). This way, you
-       can set up the server to listen for connections in both protocols
-       concurrently, on different local ports.
+       Use the Z39.50 protocol. Currently the only protocol supported.
+       The option is retained for historical reasons, and for future
+       extensions.
       </para>
      </listitem>
     </varlistentry>
@@ -129,10 +134,10 @@
   </para>
 
   <para>
-   A <replaceable>listener-address</replaceable> consists of a transport
-   mode followed by a colon (:) followed by a listener address.
+   A <replaceable>listener-address</replaceable> consists of an optional
+   transport mode followed by a colon (:) followed by a listener address.
    The transport mode is either <literal>ssl</literal> or
-   <literal>tcp</literal>.
+   <literal>tcp</literal> (default).
   </para>
 
   <para>
@@ -148,7 +153,8 @@
   </para>
 
   <para>
-   The port number defaults to 210 (standard Z39.50 port).
+   The port number defaults to 210 (standard Z39.50 port) for
+   privileged users (root), and 9999 for normal users.
   </para>
 
   <para>
@@ -176,7 +182,7 @@
   <para>
 
    <screen>
-    zebrasrv -u daemon tcp:@
+    zebrasrv -u daemon @
    </screen>
 
   </para>
@@ -211,6 +217,12 @@
 
   <sect2 id="search">
    <title>Search</title>
+
+   <para>
+    FIXME - Need to explain the string tag stuff before people get bogged 
+            down with all these attribute numbers. Perhaps in its own
+            chapter? -H
+   </para>
 
    <para>
     The supported query type are 1 and 101. All operators are currently
@@ -377,6 +389,7 @@
        <listitem>
         <para>
          Matches <emphasis>x</emphasis> once or twice. Priority: high.
+         FIXME Is this right? Std regexp has '?' meaning zero or one -H
         </para>
        </listitem>
       </varlistentry>

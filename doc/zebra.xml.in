@@ -11,16 +11,19 @@
         <!ENTITY app-license SYSTEM "license.xml">
         <!ENTITY app-indexdata SYSTEM "indexdata.xml">
 ]>
-<!-- $Id: zebra.xml.in,v 1.5 2002-04-09 19:20:23 adam Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.6 2002-04-10 14:47:49 heikki Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra Server - Administrators' Guide and Reference</title>
   <author>
    <firstname>Sebastian</firstname><surname>Hammer</surname>
   </author>
-  <editor>
+  <author>
    <firstname>Adam</firstname><surname>Dickmeiss</surname>
-  </editor>
+  </author>
+  <author>
+   <firstname>Heikki</firstname><surname>Levanto</surname>
+  </author>
   <copyright>
    <year>1995-2002</year>
    <holder>Index Data</holder>
@@ -28,11 +31,11 @@
   <abstract>
    <simpara>
     The Zebra information server combines a versatile fielded/free-text
-    search engine with a Z39.50-1995 front-end to provide a powerful and
+    search engine with a Z39.50 v3 front-end to provide a powerful and
     flexible information management system.
     This document explains the procedure for installing and
-    configuring the system, and outlines the possibilities for
-    managing data and providing Z39.50 services with the software.
+    configuring the system, managing data and providing Z39.50 
+    services with the software.
    </simpara>
    <simpara>
     This manual covers version @VERSION@ of Zebra.
