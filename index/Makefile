@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1998, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.47 1998-01-30 15:31:49 adam Exp $
+# $Id: Makefile,v 1.48 1998-02-10 12:03:05 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -20,10 +20,10 @@ TPROG4=hlvltest
 DEFS=$(INCLUDE)
 O1 = main.o dir.o dirs.o trav.o extract.o kinput.o kcompare.o \
  symtab.o recindex.o recstat.o lockutil.o lockidx.o \
- zinfo.o invstat.o
+ zinfo.o invstat.o sortidx.o
 O2 = kdump.o
 O3 = zserver.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
- zlogs.o lockutil.o locksrv.o zinfo.o trunc.o
+ zlogs.o lockutil.o locksrv.o zinfo.o trunc.o sortidx.o
 O4 = hlvl.o hlvltest.o kcompare.o
 CPP=$(CC) -E
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.16  1998-01-29 13:38:17  adam
+ * Revision 1.17  1998-02-10 12:03:06  adam
+ * Implemented Sort.
+ *
+ * Revision 1.16  1998/01/29 13:38:17  adam
  * Fixed problem with mapping to record with unknown schema.
  *
  * Revision 1.15  1998/01/26 10:37:57  adam
@@ -152,7 +155,6 @@
 #include <oid.h>
 
 #include <recctrl.h>
-#include <charmap.h>
 #include "grsread.h"
 
 #define GRS_MAX_WORD 512
@@ -192,118 +194,10 @@ static void grs_init(void)
 {
 }
 
-static void dumpkeys_incomplete_field(data1_node *n, struct recExtractCtrl *p,
-				      data1_att *att, int reg_type)
-{
-    const char *b = n->u.data.data;
-    int remain;
-    const char **map = 0;
-
-    remain = n->u.data.len - (b - n->u.data.data);
-    if (remain > 0)
-	map = zebra_maps_input(p->zebra_maps, reg_type, &b, remain);
-
-    while (map)
-    {
-	RecWord wrd;
-	char buf[GRS_MAX_WORD+1];
-	int i, remain;
-
-	/* Skip spaces */
-	while (map && *map && **map == *CHR_SPACE)
-	{
-	    remain = n->u.data.len - (b - n->u.data.data);
-	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, reg_type, &b, remain);
-	    else
-		map = 0;
-	}
-	if (!map)
-	    break;
-	i = 0;
-	while (map && *map && **map != *CHR_SPACE)
-	{
-	    const char *cp = *map;
-
-	    while (i < GRS_MAX_WORD && *cp)
-		buf[i++] = *(cp++);
-	    remain = n->u.data.len - (b - n->u.data.data);
-	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, reg_type, &b, remain);
-	    else
-		map = 0;
-	}
-	if (!i)
-	    return;
-	buf[i] = '\0';
-	(*p->init)(&wrd);      /* set defaults */
-	wrd.reg_type = reg_type;
-	wrd.seqno = seqno++;
-	wrd.string = buf;
-	wrd.attrSet = att->parent->ordinal;
-	wrd.attrUse = att->locals->local;
-	(*p->add)(&wrd);
-    }
-}
-
-static void dumpkeys_complete_field(data1_node *n, struct recExtractCtrl *p,
-				    data1_att *att, int reg_type)
-{
-    const char *b = n->u.data.data;
-    char buf[GRS_MAX_WORD+1];
-    const char **map = 0;
-    RecWord wrd;
-    int i = 0, remain;
-
-    remain = n->u.data.len - (b - n->u.data.data);
-    if (remain > 0)
-	map = zebra_maps_input (p->zebra_maps, reg_type, &b, remain);
-
-    while (remain > 0 && i < GRS_MAX_WORD)
-    {
-	while (map && *map && **map == *CHR_SPACE)
-	{
-	    remain = n->u.data.len - (b - n->u.data.data);
-	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, reg_type, &b, remain);
-	    else
-		map = 0;
-	}
-	if (!map)
-	    break;
-
-	if (i && i < GRS_MAX_WORD)
-	    buf[i++] = *CHR_SPACE;
-	while (map && *map && **map != *CHR_SPACE)
-	{
-	    const char *cp = *map;
-
-	    if (i >= GRS_MAX_WORD)
-		break;
-	    while (i < GRS_MAX_WORD && *cp)
-		buf[i++] = *(cp++);
-	    remain = n->u.data.len - (b - n->u.data.data);
-	    if (remain > 0)
-		map = zebra_maps_input (p->zebra_maps, reg_type, &b, remain);
-	    else
-		map = 0;
-	}
-    }
-    if (!i)
-	return;
-    buf[i] = '\0';
-    (*p->init)(&wrd);
-    
-    wrd.reg_type = reg_type;
-    wrd.seqno = seqno++;
-    wrd.string = buf;
-    wrd.attrSet = att->parent->ordinal;
-    wrd.attrUse = att->locals->local;
-    (*p->add)(&wrd);
-}
-
 static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 {
+    RecWord wrd;
+    (*p->init)(p, &wrd);      /* set defaults */
     for (; n; n = n->next)
     {
 	if (p->flagShowRecords) /* display element description to user */
@@ -391,13 +285,16 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 			   tlist->att->name, tlist->att->value);
 		}
 		else
-		    if (zebra_maps_is_complete (p->zebra_maps,
-						*tlist->structure))
-			dumpkeys_complete_field(n, p, tlist->att,
-						*tlist->structure);
-		    else
-			dumpkeys_incomplete_field(n, p, tlist->att,
-						  *tlist->structure);
+		{
+		    wrd.reg_type = *tlist->structure;
+		    wrd.seqno = seqno;
+		    wrd.string = n->u.data.data;
+		    wrd.length = n->u.data.len;
+		    wrd.attrSet = tlist->att->parent->ordinal;
+		    wrd.attrUse = tlist->att->locals->local;
+		    (*p->add)(&wrd);
+		    seqno = wrd.seqno;
+		}
 	    }
 	}
 	if (p->flagShowRecords && n->which == DATA1N_root)

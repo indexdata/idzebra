@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.73  1998-01-29 13:40:11  adam
+ * Revision 1.74  1998-02-10 12:03:06  adam
+ * Implemented Sort.
+ *
+ * Revision 1.73  1998/01/29 13:40:11  adam
  * Better logging for scan service.
  *
  * Revision 1.72  1998/01/07 13:53:41  adam
@@ -1271,7 +1274,7 @@ static RSET rpn_search_ref (ZServerInfo *zi, Z_ResultSetId *resultSetId)
 }
 
 static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
-                                  oid_value attributeSet,
+                                  oid_value attributeSet, ODR stream,
                                   int num_bases, char **basenames)
 {
     RSET r = NULL;
@@ -1283,14 +1286,14 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
          
 
         bool_parms.rset_l = rpn_search_structure (zi, zs->u.complex->s1,
-                                                  attributeSet,
+                                                  attributeSet, stream,
                                                   num_bases, basenames);
         if (bool_parms.rset_l == NULL)
             return NULL;
         if (rset_is_ranked(bool_parms.rset_l))
             soft = 1;
         bool_parms.rset_r = rpn_search_structure (zi, zs->u.complex->s2,
-                                                  attributeSet,
+                                                  attributeSet, stream,
                                                   num_bases, basenames);
         if (bool_parms.rset_r == NULL)
         {
@@ -1321,7 +1324,7 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
             }
             if (*zop->u.prox->proximityUnitCode != Z_ProxUnit_word)
             {
-                char *val = odr_malloc (zi->odr, 16);
+                char *val = odr_malloc (stream, 16);
                 zi->errCode = 132;
                 zi->errString = val;
                 sprintf (val, "%d", *zop->u.prox->proximityUnitCode);
@@ -1425,7 +1428,7 @@ static void count_set (RSET r, int *count)
     logf (LOG_DEBUG, "%d keys, %d distinct sysnos", kno, *count);
 }
 
-int rpn_search (ZServerInfo *zi,
+int rpn_search (ZServerInfo *zi, ODR stream,
                 Z_RPNQuery *rpn, int num_bases, char **basenames, 
                 const char *setname, int *hits)
 {
@@ -1441,7 +1444,7 @@ int rpn_search (ZServerInfo *zi,
 
     attrset = oid_getentbyoid (rpn->attributeSetId);
     attributeSet = attrset->value;
-    rset = rpn_search_structure (zi, rpn->RPNStructure, attributeSet,
+    rset = rpn_search_structure (zi, rpn->RPNStructure, attributeSet, stream,
                                  num_bases, basenames);
     if (!rset)
         return zi->errCode;
@@ -1490,10 +1493,10 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
 }
 
 
-static void scan_term_untrans (ZServerInfo *zi, int reg_type,
+static void scan_term_untrans (ZServerInfo *zi, ODR stream, int reg_type,
 			       char **dstp, const char *src)
 {    
-    char *dst = odr_malloc (zi->odr, strlen(src)*2+1);
+    char *dst = odr_malloc (stream, strlen(src)*2+1);
     *dstp = dst;
 
     while (*src)
@@ -1505,7 +1508,7 @@ static void scan_term_untrans (ZServerInfo *zi, int reg_type,
     *dst = '\0';
 }
 
-int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
+int rpn_scan (ZServerInfo *zi, ODR stream, Z_AttributesPlusTerm *zapt,
               oid_value attributeset,
               int num_bases, char **basenames,
               int *position, int *num_entries, struct scan_entry **list,
@@ -1582,7 +1585,7 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         return zi->errCode = 113;
     before = pos-1;
     after = 1+num-pos;
-    scan_info_array = odr_malloc (zi->odr, ord_no * sizeof(*scan_info_array));
+    scan_info_array = odr_malloc (stream, ord_no * sizeof(*scan_info_array));
     for (i = 0; i < ord_no; i++)
     {
         int j, prefix_len = 0;
@@ -1594,9 +1597,9 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
         scan_info->before = before;
         scan_info->after = after;
-        scan_info->odr = zi->odr;
+        scan_info->odr = stream;
 
-        scan_info->list = odr_malloc (zi->odr, (before+after)*
+        scan_info->list = odr_malloc (stream, (before+after)*
                                       sizeof(*scan_info->list));
         for (j = 0; j<before+after; j++)
             scan_info->list[j].term = NULL;
@@ -1610,7 +1613,7 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         dict_scan (zi->dict, termz, &before_tmp, &after_tmp, scan_info,
                    scan_handle);
     }
-    glist = odr_malloc (zi->odr, (before+after)*sizeof(*glist));
+    glist = odr_malloc (stream, (before+after)*sizeof(*glist));
     for (i = 0; i < ord_no; i++)
         ptr[i] = before;
     
@@ -1634,7 +1637,8 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         }
         if (j0 == -1)
             break;
-        scan_term_untrans (zi, reg_type, &glist[i+before].term, mterm);
+        scan_term_untrans (zi, stream, reg_type,
+			   &glist[i+before].term, mterm);
         rset = rset_trunc (zi, &scan_info_array[j0].list[ptr[j0]].isam_p, 1);
 
         ptr[j0]++;
@@ -1692,7 +1696,8 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         if (j0 == -1)
             break;
 
-        scan_term_untrans (zi, reg_type, &glist[before-1-i].term, mterm);
+        scan_term_untrans (zi, stream, reg_type,
+			   &glist[before-1-i].term, mterm);
 
         rset = rset_trunc
                (zi, &scan_info_array[j0].list[before-1-ptr[j0]].isam_p, 1);

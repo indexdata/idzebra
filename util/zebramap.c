@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.6  1998-01-29 13:36:01  adam
+ * Revision 1.7  1998-02-10 12:03:07  adam
+ * Implemented Sort.
+ *
+ * Revision 1.6  1998/01/29 13:36:01  adam
  * Structure word-list, free-form-text and document-text all
  * trigger ranked search.
  *
@@ -39,6 +42,7 @@
 struct zebra_map {
     int reg_type;
     int completeness;
+    int sort_flag;
     chrmaptab maptab;
     const char *maptab_name;
     struct zebra_map *next;
@@ -50,6 +54,7 @@ struct zebra_maps {
     struct zebra_map *map_list;
     char temp_map_str[2];
     const char *temp_map_ptr[2];
+    struct zebra_map **lookup_array;
 };
 
 void zebra_maps_close (ZebraMaps zms)
@@ -71,7 +76,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
     char line[512];
     char *argv[10];
     int argc;
-    struct zebra_map **zm = 0;
+    struct zebra_map **zm = 0, *zp;
 
     if (!(f = yaz_path_fopen(zms->tabpath, name, "r")))
     {
@@ -90,6 +95,20 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 	    (*zm)->reg_type = argv[1][0];
 	    (*zm)->maptab_name = NULL;
 	    (*zm)->maptab = NULL;
+	    (*zm)->sort_flag = 0;
+	    (*zm)->completeness = 0;
+	}
+	else if (!strcmp (argv[0], "sort") && argc == 2)
+	{
+	    if (!zm)
+		zm = &zms->map_list;
+	    else
+		zm = &(*zm)->next;
+	    *zm = nmem_malloc (zms->nmem, sizeof(**zm));
+	    (*zm)->reg_type = argv[1][0];
+	    (*zm)->maptab_name = NULL;
+	    (*zm)->sort_flag = 1;
+	    (*zm)->maptab = NULL;
 	    (*zm)->completeness = 0;
 	}
 	else if (zm && !strcmp (argv[0], "charmap") && argc == 2)
@@ -104,7 +123,11 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
     if (zm)
 	(*zm)->next = NULL;
     fclose (f);
+
+    for (zp = zms->map_list; zp; zp = zp->next)
+	zms->lookup_array[zp->reg_type & 255] = zp;
 }
+
 static void zms_map_handle (void *p, const char *name, const char *value)
 {
     ZebraMaps zms = p;
@@ -115,6 +138,7 @@ static void zms_map_handle (void *p, const char *name, const char *value)
 ZebraMaps zebra_maps_open (const char *tabpath, Res res)
 {
     ZebraMaps zms = xmalloc (sizeof(*zms));
+    int i;
 
     zms->nmem = nmem_create ();
     zms->tabpath = nmem_strdup (zms->nmem, tabpath);
@@ -125,19 +149,24 @@ ZebraMaps zebra_maps_open (const char *tabpath, Res res)
 
     zms->temp_map_ptr[0] = zms->temp_map_str;
     zms->temp_map_ptr[1] = NULL;
-    
+
+    zms->lookup_array =
+	nmem_malloc (zms->nmem, sizeof(*zms->lookup_array)*256);
+    for (i = 0; i<256; i++)
+	zms->lookup_array[i] = 0;
     if (!res_trav (res, "index", zms, zms_map_handle))
 	zebra_map_read (zms, "default.idx");
     return zms;
 }
 
-chrmaptab zebra_map_get (ZebraMaps zms, int reg_type)
+struct zebra_map *zebra_map_get (ZebraMaps zms, int reg_type)
 {
-    struct zebra_map *zm;
-    
-    for (zm = zms->map_list; zm; zm = zm->next)
-	if (reg_type == zm->reg_type)
-	    break;
+    return zms->lookup_array[reg_type];
+}
+
+chrmaptab zebra_charmap_get (ZebraMaps zms, int reg_type)
+{
+    struct zebra_map *zm = zebra_map_get (zms, reg_type);
     if (!zm)
     {
 	logf (LOG_WARN, "Unknown register type: %c", reg_type);
@@ -162,7 +191,7 @@ const char **zebra_maps_input (ZebraMaps zms, int reg_type,
 {
     chrmaptab maptab;
 
-    maptab = zebra_map_get (zms, reg_type);
+    maptab = zebra_charmap_get (zms, reg_type);
     if (maptab)
 	return chr_map_input(maptab, from, len);
     
@@ -178,7 +207,7 @@ const char *zebra_maps_output(ZebraMaps zms, int reg_type, const char **from)
     unsigned char i = (unsigned char) **from;
     static char buf[2] = {0,0};
 
-    maptab = zebra_map_get (zms, reg_type);
+    maptab = zebra_charmap_get (zms, reg_type);
     if (maptab)
 	return chr_map_output (maptab, from, 1);
     (*from)++;
@@ -193,16 +222,17 @@ typedef struct {
     int type;
     int major;
     int minor;
-    Z_AttributesPlusTerm *zapt;
+    Z_AttributeElement **attributeList;
+    int num_attributes;
 } AttrType;
 
 static int attr_find (AttrType *src, oid_value *attributeSetP)
 {
-    while (src->major < src->zapt->num_attributes)
+    while (src->major < src->num_attributes)
     {
         Z_AttributeElement *element;
 
-        element = src->zapt->attributeList[src->major];
+        element = src->attributeList[src->major];
         if (src->type == *element->attributeType)
         {
             switch (element->which) 
@@ -241,10 +271,20 @@ static int attr_find (AttrType *src, oid_value *attributeSetP)
     return -1;
 }
 
-static void attr_init (AttrType *src, Z_AttributesPlusTerm *zapt,
-                       int type)
+static void attr_init_APT (AttrType *src, Z_AttributesPlusTerm *zapt, int type)
 {
-    src->zapt = zapt;
+
+    src->attributeList = zapt->attributeList;
+    src->num_attributes = zapt->num_attributes;
+    src->type = type;
+    src->major = 0;
+    src->minor = 0;
+}
+
+static void attr_init_AttrList (AttrType *src, Z_AttributeList *list, int type)
+{
+    src->attributeList = list->attributes;
+    src->num_attributes = list->num_attributes;
     src->type = type;
     src->major = 0;
     src->minor = 0;
@@ -254,12 +294,26 @@ static void attr_init (AttrType *src, Z_AttributesPlusTerm *zapt,
 
 int zebra_maps_is_complete (ZebraMaps zms, int reg_type)
 { 
-    struct zebra_map *zm;
-    
-    for (zm = zms->map_list; zm; zm = zm->next)
-	if (reg_type == zm->reg_type)
-	    return zm->completeness;
+    struct zebra_map *zm = zebra_map_get (zms, reg_type);
+    if (zm)
+	return zm->completeness;
     return 0;
+}
+
+int zebra_maps_is_sort (ZebraMaps zms, int reg_type)
+{
+    struct zebra_map *zm = zebra_map_get (zms, reg_type);
+    if (zm)
+	return zm->sort_flag;
+    return 0;
+}
+
+int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes)
+{
+    AttrType use;
+    attr_init_AttrList (&use, sortAttributes->list, 1);
+
+    return attr_find (&use, NULL);
 }
 
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
@@ -272,9 +326,9 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     int structure_value;
     int relation_value;
 
-    attr_init (&structure, zapt, 4);
-    attr_init (&completeness, zapt, 6);
-    attr_init (&relation, zapt, 2);
+    attr_init_APT (&structure, zapt, 4);
+    attr_init_APT (&completeness, zapt, 6);
+    attr_init_APT (&relation, zapt, 2);
 
     completeness_value = attr_find (&completeness, NULL);
     structure_value = attr_find (&structure, NULL);

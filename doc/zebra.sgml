@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.39 1998-01-30 15:30:57 adam Exp $
+  $Id: zebra.sgml,v 1.40 1998-02-10 12:03:05 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.39 $
+<date>$Revision: 1.40 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -91,13 +91,15 @@ schema on the fly.
 Supports approximate matching in registers (ie. spelling mistakes,
 etc).
 
-<item>
+</itemize>
+
+<p>
 Protocol support:
 
 <itemize>
 
 <item>
-Protocol facilities: Init, Search, Retrieve, Browse.
+Protocol facilities: Init, Search, Retrieve, Browse and Sort.
 
 <item>
 Piggy-backed presents are honored in the search-request.
@@ -132,8 +134,6 @@ provide SR services over an OSI stack, as well as Z39.50 over TCP/IP.
 Zebra runs on most Unix-like systems as well as Windows NT - a binary
 distribution for Windows NT is forthcoming - so far, the installation
 requires MSVC++ to compile the system (we use version 5.0).
-
-</itemize>
 
 </itemize>
 
@@ -1094,6 +1094,22 @@ processed in the same way as operands in a query (see above).
 Currently, only the term and the globalOccurrences are returned with
 the TermInfo structure.
 
+<sect2>Sort
+
+<p>
+Z39.50 specifies three diffent types of sort criterias.
+Of these Zebra supports the attribute specification type in which
+case the use attribute specifies the "Sort register".
+Sort registers are created for those fields that are of type "sort" in
+the default.idx file. 
+The corresponding character mapping file in default.idx specifies the
+ordinal of each character used in the actual sort.
+
+Z39.50 allows the client to specify sorting on one or more input
+result sets and one output result set.
+Zebra supports sorting on one result set only which may or may not
+be the same as the output result set.
+
 <sect2>Close
 
 <p>
@@ -2052,10 +2068,17 @@ of the .idx file is as follows
 
 <descrip>
 <tag>index <it/field type code/</tag>This directive introduces a new
-index code. The argument is a one-character code to be used in the
+search index code. The argument is a one-character code to be used in the
 .abs files to select this particular index type. An index, roughly,
 corresponds to a particular structure attribute during search. Refer
 to section <ref id="search" name="Search">.
+
+<tag>sort <it/field code type/</tag>This directive introduces a 
+sort index. The argument is a one-character code to be used in the
+.abs fie to select this particular index type. The corresponding
+use attribute must be used in the sort request to refer to this
+particular sort index. The corresponding character map (see below)
+is used in the sort process.
 
 <tag>completeness <it/boolean/</tag>This directive enables or disables
 complete field indexing. The value of the <it/boolean/ should be 0

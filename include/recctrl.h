@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.22  1997-10-27 14:33:04  adam
+ * Revision 1.23  1998-02-10 12:03:05  adam
+ * Implemented Sort.
+ *
+ * Revision 1.22  1997/10/27 14:33:04  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -104,7 +107,9 @@ typedef struct {
     int  attrUse;
     unsigned reg_type;
     char *string;
-    int seqno;
+    int  length;
+    int  seqno;
+    ZebraMaps zebra_maps;
 } RecWord;
 
 /* Extract record control */
@@ -116,8 +121,8 @@ struct recExtractCtrl {
     void      (*endf)(void *fh, off_t offset);   /* end of record position */
     off_t     offset;                            /* start offset           */
     char      *subType;
-    void      (*init)(RecWord *p);
-    void      (*add)(const RecWord *p);
+    void      (*init)(struct recExtractCtrl *p, RecWord *w);
+    void      (*add)(RecWord *p);
     ZebraMaps zebra_maps;
     int       flagShowRecords;
     data1_handle dh;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.77  1998-01-12 15:04:08  adam
+ * Revision 1.78  1998-02-10 12:03:05  adam
+ * Implemented Sort.
+ *
+ * Revision 1.77  1998/01/12 15:04:08  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.76  1997/10/27 14:33:04  adam
@@ -290,6 +293,8 @@
 #include <fcntl.h>
 
 #include <recctrl.h>
+#include <charmap.h>
+#include <sortidx.h>
 #include "index.h"
 
 #include "zinfo.h"
@@ -297,6 +302,7 @@
 static Dict matchDict;
 
 static Records records = NULL;
+static SortIdx sortIdx = NULL;
 
 static char **key_buf;
 static size_t ptr_top;
@@ -355,6 +361,7 @@ int key_open (BFiles bfs, int mem, int rw)
 	dict_close (matchDict);
 	return -1;	
     }
+    sortIdx = sortIdx_open (bfs, 1);
     return 0;
 }
 
@@ -535,19 +542,29 @@ int key_close ()
 #endif
     rec_close (&records);
     dict_close (matchDict);
+    sortIdx_close (sortIdx);
 
     logRecord (1);
     return key_file_no;
 }
 
-static void wordInit (RecWord *p)
+static void wordInit (struct recExtractCtrl *p, RecWord *w)
 {
-    p->attrSet = 1;
-    p->attrUse = 1016;
-    p->reg_type = 'w';
+    w->zebra_maps = p->zebra_maps;
+    w->attrSet = 1;
+    w->attrUse = 1016;
+    w->reg_type = 'w';
 }
 
-struct recKeys {
+static struct sortKey {
+    char *string;
+    int length;
+    int attrSet;
+    int attrUse;
+    struct sortKey *next;
+} *sortKeys = NULL;
+
+static struct recKeys {
     int buf_used;
     int buf_max;
     char *buf;
@@ -556,12 +573,11 @@ struct recKeys {
     int prevSeqNo;
 } reckeys;
 
-static void addRecordKey (const RecWord *p)
+static void addIndexString (RecWord *p, const char *string, int length)
 {
     char *dst;
     char attrSet;
     short attrUse;
-    size_t i;
     int lead = 0;
     int diff = 0;
 
@@ -609,8 +625,8 @@ static void addRecordKey (const RecWord *p)
         dst += sizeof(attrUse);
     }
     *dst++ = p->reg_type;
-    for (i = 0; p->string[i] && i < IT_MAX_WORD-3; i++)
-        *dst++ = p->string[i];
+    memcpy (dst, string, length);
+    dst += length;
     *dst++ = '\0';
 
     if (!diff)
@@ -619,6 +635,149 @@ static void addRecordKey (const RecWord *p)
         dst += sizeof(p->seqno);
     }
     reckeys.buf_used = dst - reckeys.buf;
+    (p->seqno)++;
+}
+
+static void addSortString (RecWord *p, const char *string, int length)
+{
+    struct sortKey *sk;
+
+    for (sk = sortKeys; sk; sk = sk->next)
+	if (sk->attrSet == p->attrSet && sk->attrUse == p->attrUse)
+	    return;
+
+    sk = xmalloc (sizeof(*sk));
+    sk->next = sortKeys;
+    sortKeys = sk;
+
+    sk->string = xmalloc (p->length);
+    sk->length = p->length;
+    memcpy (sk->string, p->string, p->length);
+    sk->attrSet = p->attrSet;
+    sk->attrUse = p->attrUse;
+}
+
+static void addString (RecWord *p, const char *string, int length)
+{
+    if (zebra_maps_is_sort (p->zebra_maps, p->reg_type))
+	addSortString (p, string, length);
+    else
+	addIndexString (p, string, length);
+}
+
+static void addIncompleteField (RecWord *p)
+{
+    const char *b = p->string;
+    int remain = p->length;
+    const char **map = 0;
+
+    if (remain > 0)
+	map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+
+    while (map)
+    {
+	char buf[IT_MAX_WORD+1];
+	int i, remain;
+
+	/* Skip spaces */
+	while (map && *map && **map == *CHR_SPACE)
+	{
+	    remain = p->length - (b - p->string);
+	    if (remain > 0)
+		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+	    else
+		map = 0;
+	}
+	if (!map)
+	    break;
+	i = 0;
+	while (map && *map && **map != *CHR_SPACE)
+	{
+	    const char *cp = *map;
+
+	    while (i < IT_MAX_WORD && *cp)
+		buf[i++] = *(cp++);
+	    remain = p->length - (b - p->string);
+	    if (remain > 0)
+		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+	    else
+		map = 0;
+	}
+	if (!i)
+	    return;
+	addString (p, buf, i);
+    }
+}
+
+static void addCompleteField (RecWord *p)
+{
+    const char *b = p->string;
+    char buf[IT_MAX_WORD+1];
+    const char **map = 0;
+    int i = 0, remain = p->length;
+
+    if (remain > 0)
+	map = zebra_maps_input (p->zebra_maps, p->reg_type, &b, remain);
+
+    while (remain > 0 && i < IT_MAX_WORD)
+    {
+	while (map && *map && **map == *CHR_SPACE)
+	{
+	    remain = p->length - (b - p->string);
+	    if (remain > 0)
+		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+	    else
+		map = 0;
+	}
+	if (!map)
+	    break;
+
+	if (i && i < IT_MAX_WORD)
+	    buf[i++] = *CHR_SPACE;
+	while (map && *map && **map != *CHR_SPACE)
+	{
+	    const char *cp = *map;
+
+	    if (i >= IT_MAX_WORD)
+		break;
+	    while (i < IT_MAX_WORD && *cp)
+		buf[i++] = *(cp++);
+	    remain = p->length  - (b - p->string);
+	    if (remain > 0)
+		map = zebra_maps_input (p->zebra_maps, p->reg_type, &b,
+					remain);
+	    else
+		map = 0;
+	}
+    }
+    if (!i)
+	return;
+    addString (p, buf, i);
+}
+
+static void addRecordKey (RecWord *p)
+{
+    if (zebra_maps_is_complete (p->zebra_maps, p->reg_type))
+	addCompleteField (p);
+    else
+	addIncompleteField(p);
+}
+
+static void flushSortKeys (SYSNO sysno, int cmd)
+{
+    struct sortKey *sk = sortKeys;
+
+    sortIdx_sysno (sortIdx, sysno);
+    while (sk)
+    {
+	struct sortKey *sk_next = sk->next;
+	sortIdx_type (sortIdx, sk->attrUse);
+	sortIdx_add (sortIdx, sk->string, sk->length);
+	xfree (sk->string);
+	xfree (sk);
+	sk = sk_next;
+    }
+    sortKeys = NULL;
 }
 
 static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys, 
@@ -1096,6 +1255,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             dict_insert (matchDict, matchStr, sizeof(*sysno), sysno);
         }
         flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName);
+	flushSortKeys (*sysno, 1);
 
         records_inserted++;
     }
@@ -1108,6 +1268,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         assert (rec);
         delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
+	flushSortKeys (*sysno, 0);
         flushRecordKeys (*sysno, 0, &delkeys, rec->info[recInfo_databaseName]);
         if (deleteFlag)
         {

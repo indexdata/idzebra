@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.5  1997-10-27 14:33:06  adam
+ * Revision 1.6  1998-02-10 12:03:06  adam
+ * Implemented Sort.
+ *
+ * Revision 1.5  1997/10/27 14:33:06  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -99,31 +102,28 @@ void buf_close (struct buf_info *fi)
 
 static int text_extract (struct recExtractCtrl *p)
 {
-    char w[256];
+    char w[512];
     RecWord recWord;
     int r, seqno = 1;
     struct buf_info *fi = buf_open (p);
 
-    (*p->init)(&recWord);
+    (*p->init)(p, &recWord);
     recWord.reg_type = 'w';
     do
     {
         int i = 0;
             
         r = buf_read (fi, w);
-        while (r > 0 && i < 255 && isalnum(w[i]))
+        while (r > 0 && i < 511 && w[i] != '\n' && w[i] != '\r')
         {
             i++;
             r = buf_read (fi, w + i);
         }
         if (i)
         {
-            int j;
-            for (j = 0; j<i; j++)
-                w[j] = tolower(w[j]);
-            w[i] = 0;
             recWord.seqno = seqno++;
             recWord.string = w;
+	    recWord.length = i;
             (*p->add)(&recWord);
         }
     } while (r > 0);

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.3  1997-11-18 10:05:08  adam
+ * Revision 1.4  1998-02-10 12:03:05  adam
+ * Implemented Sort.
+ *
+ * Revision 1.3  1997/11/18 10:05:08  adam
  * Changed character map facility so that admin can specify character
  * mapping files for each register type, w, p, etc.
  *
@@ -41,7 +44,10 @@ const char *zebra_maps_output(ZebraMaps, int reg_type, const char **from);
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 		     int *reg_type, char **search_type, int *complete_flag);
 
+int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes);
+
 int zebra_maps_is_complete (ZebraMaps zms, int structure);
+int zebra_maps_is_sort (ZebraMaps zms, int reg_type);
 #ifdef __cplusplus
 }
 #endif

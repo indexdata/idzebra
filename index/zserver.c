@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.54  1998-01-29 13:39:13  adam
+ * Revision 1.55  1998-02-10 12:03:06  adam
+ * Implemented Sort.
+ *
+ * Revision 1.54  1998/01/29 13:39:13  adam
  * Compress ISAM is default.
  *
  * Revision 1.53  1998/01/12 15:04:09  adam
@@ -248,6 +251,7 @@ static int register_lock (ZServerInfo *zi)
     {
         zebTargetInfo_close (zi->zti, 0);
         dict_close (zi->dict);
+	sortIdx_close (zi->sortIdx);
         if (zi->isam)
             is_close (zi->isam);
         if (zi->isamc)
@@ -259,6 +263,8 @@ static int register_lock (ZServerInfo *zi)
     zi->records = rec_open (zi->bfs, 0);
     if (!(zi->dict = dict_open (zi->bfs, FNAME_DICT, 40, 0)))
         return -1;
+    if (!(zi->sortIdx = sortIdx_open (zi->bfs, 0)))
+	return -1;
     zi->isam = NULL;
     zi->isamc = NULL;
     if (!res_get_match (zi->res, "isam", "i", NULL))
@@ -306,6 +312,8 @@ static void register_unlock (ZServerInfo *zi)
         zebra_server_unlock (zi, zi->registerState);
 }
 
+static int bend_sort (void *handle, bend_sort_rr *rr);
+
 bend_initresult *bend_init (bend_initrequest *q)
 {
     bend_initresult *r = odr_malloc (q->stream, sizeof(*r));
@@ -315,6 +323,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     r->errcode = 0;
     r->errstring = 0;
     r->handle = zi;
+    q->bend_sort = bend_sort;
 
     logf (LOG_DEBUG, "bend_init");
 
@@ -336,7 +345,6 @@ bend_initresult *bend_init (bend_initrequest *q)
     zi->registerChange = 0;
 
     zi->records = NULL;
-    zi->odr = odr_createmem (ODR_ENCODE);
     zi->registered_sets = NULL;
     zi->zebra_maps = zebra_maps_open (res_get(zi->res, "profilePath"),
 				      zi->res);
@@ -353,7 +361,6 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     r->hits = 0;
 
     register_lock (zi);
-    odr_reset (zi->odr);
     zi->errCode = 0;
     zi->errString = NULL;
 
@@ -361,7 +368,7 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     switch (q->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
-        r->errcode = rpn_search (zi, q->query->u.type_1,
+        r->errcode = rpn_search (zi, q->stream, q->query->u.type_1,
                                 q->num_bases, q->basenames, q->setname,
                                 &r->hits);
         r->errstring = zi->errString;
@@ -515,7 +522,6 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     r->last_in_set = 0;
     r->basename = "base";
 
-    odr_reset (zi->odr);
     zi->errCode = 0;
 
     positions[0] = q->number;
@@ -558,13 +564,12 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
     int status;
 
     register_lock (zi);
-    odr_reset (zi->odr);
     zi->errCode = 0;
     zi->errString = 0;
 
     r->term_position = q->term_position;
     r->num_entries = q->num_entries;
-    r->errcode = rpn_scan (zi, q->term,
+    r->errcode = rpn_scan (zi, q->stream, q->term,
                           q->attributeset,
                           q->num_bases, q->basenames,
                           &r->term_position,
@@ -584,6 +589,7 @@ void bend_close (void *handle)
         resultSetDestroy (zi);
         zebTargetInfo_close (zi->zti, 0);
         dict_close (zi->dict);
+	sortIdx_close (zi->sortIdx);
         if (zi->isam)
             is_close (zi->isam);
         if (zi->isamc)
@@ -591,7 +597,6 @@ void bend_close (void *handle)
         rec_close (&zi->records);
         register_unlock (zi);
     }
-    odr_destroy (zi->odr);
     zebra_maps_close (zi->zebra_maps);
     bfs_destroy (zi->bfs);
     data1_destroy (zi->dh);
@@ -619,6 +624,20 @@ static void pre_init (struct statserv_options_block *sob)
     }
 }
 #endif
+
+int bend_sort (void *handle, bend_sort_rr *rr)
+{
+    ZServerInfo *zi = handle;
+
+#if 1
+    register_lock (zi);
+
+    resultSetSort (zi, rr);
+
+    register_unlock (zi);
+#endif
+    return 0;
+}
 
 int main (int argc, char **argv)
 {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.28  1998-01-29 13:40:11  adam
+ * Revision 1.29  1998-02-10 12:03:06  adam
+ * Implemented Sort.
+ *
+ * Revision 1.28  1998/01/29 13:40:11  adam
  * Better logging for scan service.
  *
  * Revision 1.27  1997/10/27 14:33:06  adam
@@ -115,6 +118,7 @@
 #include <backend.h>
 #include <rset.h>
 
+#include <sortidx.h>
 #include "index.h"
 #include "zinfo.h"
 
@@ -127,6 +131,7 @@ typedef struct ZServerSet_ {
     char *name;
     RSET rset;
     int size;
+    struct zset_sort_info *sort_info;
     struct ZServerSet_ *next;
 } ZServerSet;
    
@@ -135,12 +140,12 @@ typedef struct {
     time_t registerChange;
     ZServerSet *sets;
     Dict dict;
+    SortIdx sortIdx;
     ISAM isam;
     ISAMC isamc;
     Records records;
     int errCode;
     char *errString;
-    ODR odr;
     ZebTargetInfo *zti;
     data1_handle dh;
     data1_attset *registered_sets;
@@ -157,11 +162,11 @@ typedef struct {
     ZebraMaps zebra_maps;
 } ZServerInfo;
 
-int rpn_search (ZServerInfo *zi, 
+int rpn_search (ZServerInfo *zi, ODR stream,
                 Z_RPNQuery *rpn, int num_bases, char **basenames, 
                 const char *setname, int *hits);
 
-int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
+int rpn_scan (ZServerInfo *zi, ODR stream, Z_AttributesPlusTerm *zapt,
               oid_value attributeset,
               int num_bases, char **basenames,
               int *position, int *num_entries, struct scan_entry **list,
@@ -177,6 +182,9 @@ void resultSetDestroy (ZServerInfo *zi);
 ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
                                     int num, int *positions);
 void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num);
+
+int resultSetSort (ZServerInfo *zi, bend_sort_rr *rr);
+
 void zlog_rpn (Z_RPNQuery *rpn);
 void zlog_scan (Z_AttributesPlusTerm *zapt, oid_value ast);
 
