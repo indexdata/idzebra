@@ -1,3 +1,8 @@
+Implemented "position"-flag for register type (as defined in
+default.idx). When set to zero no position (or seqence number) is
+saved in register for each word occurrence, thus saving some register
+space.
+
 Implemented database mapping. Using mapdb one can specify a database
 to be mapped to one or more physical databases. Usage:
 mapdb <fromdb> <todb> ..

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.90  1999-02-02 14:50:52  adam
+ * Revision 1.91  1999-02-12 13:29:22  adam
+ * Implemented position-flag for registers.
+ *
+ * Revision 1.90  1999/02/02 14:50:52  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.89  1998/10/28 10:54:38  adam
@@ -426,6 +429,7 @@ int key_open (struct recordGroup *rGroup, int mem)
 struct encode_info {
     int  sysno;
     int  seqno;
+    int  cmd;
     char buf[768];
 };
 
@@ -433,6 +437,7 @@ void encode_key_init (struct encode_info *i)
 {
     i->sysno = 0;
     i->seqno = 0;
+    i->cmd = -1;
 }
 
 char *encode_key_int (int d, char *bp)
@@ -474,8 +479,11 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
         i->sysno = key.sysno;
         i->seqno = 0;
     }
+    else if (!i->seqno && !key.seqno && i->cmd == *k)
+	return;
     bp = encode_key_int (key.seqno - i->seqno, bp);
     i->seqno = key.seqno;
+    i->cmd = *k;
     if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
     {
         logf (LOG_FATAL|LOG_ERRNO, "fwrite");
@@ -696,7 +704,8 @@ static void addIndexString (RecWord *p, const char *string, int length)
         dst += sizeof(*pseqno);
     }
     reckeys.buf_used = dst - reckeys.buf;
-    (*pseqno)++;
+    if (*pseqno)
+	(*pseqno)++;
 }
 
 static void addSortString (RecWord *p, const char *string, int length)
@@ -1258,7 +1267,12 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 	extractCtrl.addSchema = addSchema;
 	extractCtrl.dh = rGroup->dh;
 	for (i = 0; i<256; i++)
-	    extractCtrl.seqno[i] = 0;
+	{
+	    if (zebra_maps_is_positioned(rGroup->zebra_maps, i))
+		extractCtrl.seqno[i] = 1;
+	    else
+		extractCtrl.seqno[i] = 0;
+	}
 	extractCtrl.zebra_maps = rGroup->zebra_maps;
 	extractCtrl.flagShowRecords = !rGroup->flagRw;
 

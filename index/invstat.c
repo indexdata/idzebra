@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.8  1999-02-02 14:50:53  adam
+ * Revision 1.9  1999-02-12 13:29:23  adam
+ * Implemented position-flag for registers.
+ *
+ * Revision 1.8  1999/02/02 14:50:53  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.7  1998/03/13 15:30:50  adam
@@ -67,6 +70,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     assert (*info == sizeof(ISAM_P));
     memcpy (&isam_p, info+1, sizeof(ISAM_P));
 
+    printf ("---\n");
     if (stat_info->isam)
     {
         ISPT ispt;
@@ -79,12 +83,15 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     {
         ISAMC_PP pp;
         int occurx = 0;
-        char buf[128];
+	struct it_key key;
 
         pp = isc_pp_open (stat_info->isamc, isam_p);
         occur = isc_pp_num (pp);
-        while (isc_pp_read(pp, buf))
+        while (isc_pp_read(pp, &key))
+	{
+	    printf ("sysno=%d seqno=%d\n", key.sysno, key.seqno);
             occurx++;
+	}
         assert (occurx == occur);
 	stat_info->no_isam_entries[isc_type(isam_p)] += occur;
         isc_pp_close (pp);

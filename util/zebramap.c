@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data 
+ * Copyright (C) 1994-1999, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.11  1998-10-13 20:09:19  adam
+ * Revision 1.12  1999-02-12 13:29:25  adam
+ * Implemented position-flag for registers.
+ *
+ * Revision 1.11  1998/10/13 20:09:19  adam
  * Changed call to readconf_line.
  *
  * Revision 1.10  1998/06/23 15:33:37  adam
@@ -58,6 +61,7 @@
 struct zebra_map {
     unsigned reg_id;
     int completeness;
+    int positioned;
     int type;
     union {
         struct {
@@ -122,6 +126,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 	    (*zm)->maptab = NULL;
 	    (*zm)->type = ZEBRA_MAP_TYPE_INDEX;
 	    (*zm)->completeness = 0;
+	    (*zm)->positioned = 1;
 	}
 	else if (!yaz_matchstr (argv[0], "sort") && argc == 2)
 	{
@@ -136,6 +141,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
             (*zm)->u.sort.entry_size = 80;
 	    (*zm)->maptab = NULL;
 	    (*zm)->completeness = 0;
+	    (*zm)->positioned = 0;
 	}
 	else if (zm && !yaz_matchstr (argv[0], "charmap") && argc == 2)
 	{
@@ -144,6 +150,10 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 	else if (zm && !yaz_matchstr (argv[0], "completeness") && argc == 2)
 	{
 	    (*zm)->completeness = atoi (argv[1]);
+	}
+	else if (zm && !yaz_matchstr (argv[0], "position") && argc == 2)
+	{
+	    (*zm)->positioned = atoi (argv[1]);
 	}
         else if (zm && !yaz_matchstr (argv[0], "entrysize") && argc == 2)
         {
@@ -346,6 +356,14 @@ int zebra_maps_is_complete (ZebraMaps zms, unsigned reg_id)
     return 0;
 }
 
+int zebra_maps_is_positioned (ZebraMaps zms, unsigned reg_id)
+{
+    struct zebra_map *zm = zebra_map_get (zms, reg_id);
+    if (zm)
+	return zm->positioned;
+    return 0;
+}
+    
 int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id)
 {
     struct zebra_map *zm = zebra_map_get (zms, reg_id);

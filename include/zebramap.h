@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.7  1999-02-02 14:50:46  adam
+ * Revision 1.8  1999-02-12 13:29:21  adam
+ * Implemented position-flag for registers.
+ *
+ * Revision 1.7  1999/02/02 14:50:46  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.6  1998/06/23 15:33:33  adam
@@ -60,6 +63,7 @@ int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes);
 
 int zebra_maps_is_complete (ZebraMaps zms, unsigned reg_id);
 int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_positioned (ZebraMaps zms, unsigned reg_id);
 #ifdef __cplusplus
 }
 #endif
