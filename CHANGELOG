@@ -1,9 +1,9 @@
 
 --- 1.3.3 2002/MM/DD
 
-Fix encoding of scan response terms.
+Fix character encoding of scan response terms.
 
-Fix decoding of scan request terms.
+Fix character decoding of scan request terms.
 
 Fix ESpec handling (requires YAZ 1.9.1)
 
