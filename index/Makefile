@@ -1,12 +1,12 @@
 # Copyright (C) 1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.31 1996-01-08 19:15:46 adam Exp $
+# $Id: Makefile,v 1.32 1996-02-01 20:58:58 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
 
-YAZLIB=../../yaz/lib/libyazchkr.a
+YAZLIB=../../yaz/lib/libyaz.a
 #YAZLIB=-lyaz
 YAZINC=-I../../yaz/include
 OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a

@@ -1,6 +1,9 @@
+Bug fix: Dictionary didn't handle 8-bit characters correctly; was obvious
+when doing scan operations in dictionares with european characters.
+
 --- 1.0a4 1996/01/11
 
-A whole slew of upates, to make the first publicized release. Get the doc
+A whole slew of updates, to make the first publicized release. Get the doc
 and check it out.
 
 --- 1.0a3 1995/12/06
