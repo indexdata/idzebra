@@ -1,4 +1,4 @@
-/* $Id: scan.c,v 1.15 2002-08-02 19:26:55 adam Exp $
+/* $Id: scan.c,v 1.15.2.1 2004-12-07 20:05:17 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -81,7 +81,7 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             memcpy (&dc, info+sizeof(Dict_ptr), sizeof(Dict_char));
             str[pos] = dc;
 	    memcpy (&subptr, info, sizeof(Dict_ptr));
-	    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+	    if (dir>0 && info[sizeof(Dict_ptr)+sizeof(Dict_char)])
             {
                  str[pos+1] = DICT_EOS;
                  if ((*userfunc)((char*) str,
@@ -90,13 +90,22 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                      return 1;
                  --(*count);
             }
-            if (*count > 0 && subptr)
+            if (*count>0 && subptr)
             {
 	        dict_scan_trav (dict, subptr, pos+1, str, -1, count, 
                                 client, userfunc, dir);
                 dict_bf_readp (dict->dbf, ptr, &p);
                 indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short)); 
 	    }
+	    if (*count>0 && dir<0 && info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+            {
+                 str[pos+1] = DICT_EOS;
+                 if ((*userfunc)((char*) str,
+                                 info+sizeof(Dict_ptr)+sizeof(Dict_char),
+                                 *count * dir, client))
+                     return 1;
+                 --(*count);
+            }
         }
         lo += dir;
     }
