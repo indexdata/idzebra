@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.91 2003-03-06 11:58:08 adam Exp $
+/* $Id: zebraapi.c,v 1.92 2003-03-12 17:11:23 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1780,7 +1780,8 @@ int zebra_update_record (ZebraHandle zh,
 			 struct recordGroup *rGroup,
 			 const char *recordType,
 			 int sysno, const char *match, const char *fname,
-			 const char *buf, int buf_size)
+			 const char *buf, int buf_size,
+			 int force_update)
 
 {
     int res;
@@ -1793,7 +1794,8 @@ int zebra_update_record (ZebraHandle zh,
 			     0, // test_mode,
 			     recordType,
 			     &sysno,   
-			     match, fname);     
+			     match, fname,
+			     force_update);     
     zebra_end_trans(zh); 
     return sysno; 
 }
@@ -1802,7 +1804,8 @@ int zebra_delete_record (ZebraHandle zh,
 			 struct recordGroup *rGroup, 
 			 const char *recordType,
 			 int sysno, const char *match, const char *fname,
-			 const char *buf, int buf_size)
+			 const char *buf, int buf_size,
+			 int force_update) 
 {
     int res;
 
@@ -1814,7 +1817,8 @@ int zebra_delete_record (ZebraHandle zh,
 			     0, // test_mode, 
 			     recordType,
 			     &sysno,
-			     match,fname);    
+			     match,fname,
+			     force_update);    
     zebra_end_trans(zh);
     return sysno;   
 }

@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.141 2003-03-05 00:08:04 adam Exp $
+/* $Id: extract.c,v 1.142 2003-03-12 17:11:23 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -917,7 +917,8 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
 				 recordType,
 				 sysno,
 				 match_criteria,
-				 "<no file>"));
+				 "<no file>",
+				 0));
 }
 /*
   If sysno is provided, then it's used to identify the reocord.
@@ -933,7 +934,8 @@ int bufferExtractRecord (ZebraHandle zh,
 			 const char *recordType,
 			 int *sysno,
 			 const char *match_criteria,
-			 const char *fname)
+			 const char *fname,
+			 int force_update)
 
 {
     RecordAttr *recordAttr;
@@ -1104,16 +1106,19 @@ int bufferExtractRecord (ZebraHandle zh,
 	
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
 
-	if (recordAttr->runNumber ==
-	    zebraExplain_runNumberIncrement (zh->reg->zei, 0))
-	{
-	    logf (LOG_LOG, "skipped %s %s %ld", recordType,
-		  fname, (long) recordOffset);
-	    extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
-	    rec_rm (&rec);
-            logRecord(zh);
-	    return 1;
+	if (!force_update) {
+	  if (recordAttr->runNumber ==
+	      zebraExplain_runNumberIncrement (zh->reg->zei, 0))
+	    {
+	      logf (LOG_LOG, "skipped %s %s %ld", recordType,
+		    fname, (long) recordOffset);
+	      extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
+	      rec_rm (&rec);
+	      logRecord(zh);
+	      return 1;
+	    }
 	}
+
         delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
 
