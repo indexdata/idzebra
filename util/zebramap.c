@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.17  1999-09-08 12:13:21  adam
+ * Revision 1.18  1999-10-15 08:27:46  adam
+ * Fixed replace handler. 8-bit fix.
+ *
+ * Revision 1.17  1999/09/08 12:13:21  adam
  * Fixed minor bug "replace"-mappings. Removed some logging messages.
  *
  * Revision 1.16  1999/09/07 07:19:21  adam
@@ -195,6 +198,9 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 	    struct zm_token *token = nmem_malloc (zms->nmem, sizeof(*token));
 	    token->next = (*zm)->replace_tokens;
 	    (*zm)->replace_tokens = token;
+#if 0
+	    logf (LOG_LOG, "replace %s", argv[1]);
+#endif
 	    token->token_from = 0;
             if (argc >= 2)
             {
@@ -213,7 +219,12 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
                         cp++;
                     }
                     else
+		    {
 		        *dp++ = zebra_prim(&cp);
+#if 0
+			logf (LOG_LOG, "  char %2X %c", dp[-1], dp[-1]);
+#endif
+		    }
 	        *dp = '\0';
 	    }
 	    if (argc >= 3)
@@ -577,7 +588,7 @@ WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
     if (!zm->replace_tokens)
 	return zms->wrbuf_1;
   
-#if 0 
+#if 0
     logf (LOG_LOG, "in:%.*s:", wrbuf_len(zms->wrbuf_1),
 	  wrbuf_buf(zms->wrbuf_1));
 #endif
@@ -627,7 +638,7 @@ int zebra_replace_sub(ZebraMaps zms, unsigned reg_id, const char *ex_list,
 		if (i+j < 0 || j+i >= input_len)
 		    c = ' ';
 		else
-		    c = tolower(input_str[j+i]);
+		    c = input_str[j+i] & 255;
 		if (token->token_from[j] == ZEBRA_REPLACE_ANY)
 		{
 		    if (c == ' ')
@@ -637,7 +648,9 @@ int zebra_replace_sub(ZebraMaps zms, unsigned reg_id, const char *ex_list,
 		else
 		{
 		    if (c != token->token_from[j])
+		    {
 			break;
+		    }
 		    if (!replace_done)
 		    {
 			const char *cp = token->token_to;
