@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.7  1994-09-12 08:06:42  adam
+ * Revision 1.8  1994-09-16 12:35:01  adam
+ * New version of split_page which use clean_page for splitting.
+ *
+ * Revision 1.7  1994/09/12  08:06:42  adam
  * Futher development of insert.c
  *
  * Revision 1.6  1994/09/06  13:05:15  adam
@@ -40,6 +43,8 @@
 
 static int dict_ins (Dict dict, const Dict_char *str,
                      Dict_ptr back_ptr, int userlen, void *userinfo);
+static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
+        	Dict_ptr subptr, char *userinfo);
 
 
 static Dict_ptr new_page (Dict dict, Dict_ptr back_ptr, void **pp)
@@ -166,6 +171,11 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
             dict_bf_readp (dict->dbf, ptr, &p);
         }
     }
+#if 1
+    /* now clean the page ... */
+    clean_page (dict, ptr, p, &best_char, subptr, info_here);
+    return 0;
+#endif
     if (best_indxp)
     {   /* there was a hole big enough for a sub entry */
         char *info = (char*) p + *best_indxp;
@@ -237,7 +247,8 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
     return 0;
 }
 
-static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out)
+static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
+        	Dict_ptr subptr, char *userinfo)             
 {
     char *np = xmalloc (dict->head.page_size);
     int i, slen, no = 0;
@@ -257,12 +268,30 @@ static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out)
 
             info1 = (char*) p + *indxp1;
             if (out && memcmp (out, info1, sizeof(Dict_char)) == 0)
+	    {
+		if (subptr == 0)
+	            continue;
+		*--indxp2 = -(info2 - np);
+		memcpy (info2, &subptr, sizeof(Dict_ptr));
+		info2 += sizeof(Dict_ptr);
+		memcpy (info2, out, sizeof(Dict_char));
+		info2 += sizeof(Dict_char);
+		if (userinfo)
+		{
+                    memcpy (info2, userinfo, *userinfo+1);
+		    info2 += *userinfo + 1;
+		}
+		else
+		    *info2++ = 0;	
+                subptr = 0; 
+	        ++no;
                 continue;
+	    }
             *--indxp2 = info2 - np;
             slen = (dict_strlen(info1)+1)*sizeof(Dict_char);
             memcpy (info2, info1, slen);
+	    info1 += slen;
             info2 += slen;
-            info1 += slen;
         }
         else
         {
@@ -275,8 +304,8 @@ static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out)
             *--indxp2 = -(info2 - np);
             info1 = (char*) p - *indxp1;
             memcpy (info2, info1, sizeof(Dict_ptr)+sizeof(Dict_char));
+	    info1 += sizeof(Dict_ptr)+sizeof(Dict_char);
             info2 += sizeof(Dict_ptr)+sizeof(Dict_char);
-            info1 += sizeof(Dict_ptr)+sizeof(Dict_char);
         }
         slen = *info1+1;
         memcpy (info2, info1, slen);
@@ -399,7 +428,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
                     {
                         if (DICT_type(p) == 1)
                         {
-                            clean_page (dict, ptr, p, NULL);
+                            clean_page (dict, ptr, p, NULL, 0, NULL);
                             dict_bf_touch (dict->dbf, ptr);
                             return dict_ins (dict, str-1, ptr,
                                              userlen, userinfo);
@@ -455,7 +484,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
     {
         if (DICT_type(p) == 1)
         {
-            clean_page (dict, ptr, p, NULL);
+            clean_page (dict, ptr, p, NULL, 0, NULL);
             dict_bf_touch (dict->dbf, ptr);
             return dict_ins (dict, str, ptr, userlen, userinfo);
         }
@@ -472,7 +501,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
                 DICT_PAGESIZE - (1+DICT_nodir(p))*sizeof(short))
                 break;
             i++;
-            clean_page (dict, ptr, p, NULL);
+            clean_page (dict, ptr, p, NULL, 0, NULL);
         } while (DICT_size(p)+slen+userlen > DICT_PAGESIZE -
                  (1+DICT_nodir(p))*sizeof(short));
         return dict_ins (dict, str, ptr, userlen, userinfo);
