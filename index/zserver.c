@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zserver.c,v $
- * Revision 1.81  2001-02-14 21:42:07  adam
+ * Revision 1.82  2001-07-09 23:40:09  adam
+ * WIN32 fix.
+ *
+ * Revision 1.81  2001/02/14 21:42:07  adam
  * Fixed versions as returned in INIT response.
  *
  * Revision 1.80  2000/09/05 14:04:05  adam
@@ -336,10 +339,10 @@ bend_initresult *bend_init (bend_initrequest *q)
 
 #if ZMBOL
     q->implementation_name = "Z'mbol Information Server";
-    q->implementation_version = "Z'mbol " VERSION;
+    q->implementation_version = "Z'mbol " ZEBRAVER;
 #else
     q->implementation_name = "Zebra Information Server";
-    q->implementation_version = "Zebra " VERSION;
+    q->implementation_version = "Zebra " ZEBRAVER;
 #endif
 
     logf (LOG_DEBUG, "bend_init");
