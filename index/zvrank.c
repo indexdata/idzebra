@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.1 2003-02-27 22:55:40 adam Exp $
+/* $Id: zvrank.c,v 1.2 2003-03-03 10:31:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -21,7 +21,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 /* zvrank.c */
-/* Vector Space Model for Zebra */
+/* Zebra Vector Space Model RANKing */
 /*
 ** six (seven) letter identifier for weighting schema
 ** best document weighting:
@@ -60,7 +60,7 @@ struct rs_info { /* for result set */
   /**/
   char rschema[8];    /* name of ranking schema */
   /**/
-    int veclen;
+  int veclen;
   void (*d_tf_fct)(void *, void *);   /* doc term frequency function */
   void (*d_idf_fct)(void *, void *);  /* doc idf function */
   void (*d_norm_fct)(void *, void *); /* doc normalization function */
@@ -76,15 +76,14 @@ struct rs_info { /* for result set */
 typedef struct rs_info *RS;
 
 void prn_rs(RS rs) {
-  int i;
-  fprintf(stdout, "* RS:\n");
-  fprintf(stdout, " db_docs:   %d\n", rs->db_docs);
-  fprintf(stdout, " db_terms:  %d\n", rs->db_terms);
-  fprintf(stdout, " f_max:     %d\n", rs->db_f_max);
-  fprintf(stdout, " f_max_str: %s\n", rs->db_f_max_str);
-  fprintf(stdout, " veclen:    %d\n", rs->veclen);
+  yaz_log(LOG_DEBUG, "* RS:\n");
+  yaz_log(LOG_DEBUG, " db_docs:   %d\n", rs->db_docs);
+  yaz_log(LOG_DEBUG, " db_terms:  %d\n", rs->db_terms);
+  yaz_log(LOG_DEBUG, " f_max:     %d\n", rs->db_f_max);
+  yaz_log(LOG_DEBUG, " f_max_str: %s\n", rs->db_f_max_str);
+  yaz_log(LOG_DEBUG, " veclen:    %d\n", rs->veclen);
   /* rschema implies functions */
-  fprintf(stdout, " rschema:   %s\n", rs->rschema);
+  yaz_log(LOG_DEBUG, " rschema:   %s\n", rs->rschema);
   return;
 }
 
@@ -101,14 +100,14 @@ struct ds_info {       /* document info */
 typedef struct ds_info* DS;
 
 void prn_ds(DS ds) {
-    fprintf(stdout, " * DS:\n");
-    fprintf(stdout, " docid:      %s\n", ds->docid);
-    fprintf(stdout, " docno:      %d\n", ds->docno);
-    fprintf(stdout, " doclen:     %d\n", ds->doclen);
-    fprintf(stdout, " d_f_max:    %d\n", ds->d_f_max);
-    fprintf(stdout, " d_f_max_str:%s\n", ds->d_f_max_str);
-    fprintf(stdout, " veclen:     %d\n", ds->veclen);
-    return;
+  yaz_log(LOG_DEBUG, " * DS:\n");
+  yaz_log(LOG_DEBUG, " docid:      %s\n", ds->docid);
+  yaz_log(LOG_DEBUG, " docno:      %d\n", ds->docno);
+  yaz_log(LOG_DEBUG, " doclen:     %d\n", ds->doclen);
+  yaz_log(LOG_DEBUG, " d_f_max:    %d\n", ds->d_f_max);
+  yaz_log(LOG_DEBUG, " d_f_max_str:%s\n", ds->d_f_max_str);
+  yaz_log(LOG_DEBUG, " veclen:     %d\n", ds->veclen);
+  return;
 }
 
 struct ts_info {       /* term info */
@@ -124,9 +123,9 @@ struct ts_info {       /* term info */
 typedef struct ts_info *TS;
 
 void prn_ts(TS ts) {
-    fprintf(stdout, " * TERM:%s gocc:%d locc:%d  tf:%f idf:%f wt:%f\n",
-	    ts->name, ts->gocc, ts->locc, ts->tf, ts->idf, ts->wt);
-    return;
+  yaz_log(LOG_DEBUG, " * TERM:%s gocc:%d locc:%d  tf:%f idf:%f wt:%f\n",
+	  ts->name, ts->gocc, ts->locc, ts->tf, ts->idf, ts->wt);
+  return;
 }
 
 /* end structures */
@@ -139,7 +138,6 @@ void prn_ts(TS ts) {
 
 /* calculate new term frequency vector */
 void tf_none(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
   int i;
   int veclen;
@@ -154,109 +152,104 @@ void tf_none(void *rsi, void *dsi) {
 }
 
 void tf_binary(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
-    int i;
-    int veclen;
-    int freq;
-    /**/
-    veclen=ds->veclen;
-    for (i=0; i < veclen; i++) {
-      freq=ds->terms[i].locc;
-      if (freq > 0)
-	ds->terms[i].tf=1.0;
-      else
-	ds->terms[i].tf=0.0;
-    }
-    return;
+  int i;
+  int veclen;
+  int freq;
+  /**/
+  veclen=ds->veclen;
+  for (i=0; i < veclen; i++) {
+    freq=ds->terms[i].locc;
+    if (freq > 0)
+      ds->terms[i].tf=1.0;
+    else
+      ds->terms[i].tf=0.0;
+  }
+  return;
 }
 
 void tf_max_norm(void *rsi, void *dsi) {
   RS rs=(RS)rsi;
   DS ds=(DS)dsi;
-    int tf_max;
-    int i;
-    int veclen;
-    int freq;
-    /**/
-    tf_max=rs->db_f_max;
-    veclen=ds->veclen;
-    for (i=0; i < veclen; i++) {
-      freq=ds->terms[i].locc;
-      if ((freq > 0) &&
-	  (tf_max > 0)) 
-	ds->terms[i].tf=freq/tf_max;
-      else
-	ds->terms[i].tf=0.0;
-    }
-    return;
+  int tf_max;
+  int i;
+  int veclen;
+  int freq;
+  /**/
+  tf_max=rs->db_f_max;
+  veclen=ds->veclen;
+  for (i=0; i < veclen; i++) {
+    freq=ds->terms[i].locc;
+    if ((freq > 0) &&
+	(tf_max > 0)) 
+      ds->terms[i].tf=freq/tf_max;
+    else
+      ds->terms[i].tf=0.0;
+  }
+  return;
 }
 
 void tf_aug_norm(void *rsi, void *dsi) {
   RS rs=(RS)rsi;
   DS ds=(DS)dsi;
-    double K;
-    double tf_max;
-    int i;
-    int veclen;
-    int freq;
-    /**/
-    tf_max=rs->db_f_max;
-    veclen=ds->veclen;
-    K=0.5;
-    for (i=0; i < veclen; i++) {
-      freq=ds->terms[i].locc;
-      if ((freq > 0) &&
-	  (tf_max > 0)) 
-	ds->terms[i].tf=K+(1-K)*(freq/tf_max);
-      else
-	ds->terms[i].tf=0.0;
-    }
-    return;
+  double K;
+  double tf_max;
+  int i;
+  int veclen;
+  int freq;
+  /**/
+  tf_max=rs->db_f_max;
+  veclen=ds->veclen;
+  K=0.5;
+  for (i=0; i < veclen; i++) {
+    freq=ds->terms[i].locc;
+    if ((freq > 0) &&
+	(tf_max > 0)) 
+      ds->terms[i].tf=K+(1-K)*(freq/tf_max);
+    else
+      ds->terms[i].tf=0.0;
+  }
+  return;
 }
 
 void tf_square(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
-    int i;
-    int veclen;
-    int freq;
-    /**/
-    veclen=ds->veclen;
-    for (i=0; i < veclen; i++) {
-      freq=ds->terms[i].locc;
-      if (freq > 0) 
-	ds->terms[i].tf=freq*freq;
-      else
-	ds->terms[i].tf=0.0;
-    }
-    return;
+  int i;
+  int veclen;
+  int freq;
+  /**/
+  veclen=ds->veclen;
+  for (i=0; i < veclen; i++) {
+    freq=ds->terms[i].locc;
+    if (freq > 0) 
+      ds->terms[i].tf=freq*freq;
+    else
+      ds->terms[i].tf=0.0;
+  }
+  return;
 }
 
 void tf_log(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
-    int i;
-    int veclen;
-    int freq;
-    /**/    
-    veclen=ds->veclen;
-    for (i=0; i < veclen; i++) {
-      freq=ds->terms[i].locc;
-      if (freq > 0) 
-	ds->terms[i].tf=1+blog2(freq);
-      else
-	ds->terms[i].tf=0.0;
-    }
-    return;
+  int i;
+  int veclen;
+  int freq;
+  /**/    
+  veclen=ds->veclen;
+  for (i=0; i < veclen; i++) {
+    freq=ds->terms[i].locc;
+    if (freq > 0) 
+      ds->terms[i].tf=1+blog2(freq);
+    else
+      ds->terms[i].tf=0.0;
+  }
+  return;
 }
 
 /* calculate inverse document frequency vector */
 void idf_none(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
   int i, veclen;
-  int gocc;
   /**/
   veclen=ds->veclen;
   for (i=0; i < veclen; i++) {
@@ -312,7 +305,6 @@ void idf_freq(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
   int num_docs;
   int i, veclen;
-  int gocc;
   double idf;
   /**/
   veclen=ds->veclen;
@@ -322,7 +314,6 @@ void idf_freq(void *rsi, void *dsi) {
   else
     idf=1/num_docs;
   for (i=0; i < veclen; i++) {
-    // gocc=ds->terms[i].gocc;
     ds->terms[i].idf=idf;
   }
   return;
@@ -352,7 +343,6 @@ void idf_squared(void *rsi, void *dsi) {
 
 /* calculate normalized weight (tf-idf) vector */
 void norm_none(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
   int i, veclen;
   /**/
@@ -364,7 +354,6 @@ void norm_none(void *rsi, void *dsi) {
 }
 
 void norm_sum(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
   int i, veclen;
   double tfs=0.0;
@@ -382,7 +371,6 @@ void norm_sum(void *rsi, void *dsi) {
 }
 
 void norm_cosine(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
   int i, veclen;
   double tfs=0.0;
@@ -400,7 +388,6 @@ void norm_cosine(void *rsi, void *dsi) {
 }
 
 void norm_fourth(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
   int i, veclen;
   double tfs=0.0, fr;
@@ -420,10 +407,9 @@ void norm_fourth(void *rsi, void *dsi) {
 }
 
 void norm_max(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
   DS ds=(DS)dsi;
   int i, veclen;
-  double tfm;
+  double tfm=0.0;
   /**/
   veclen=ds->veclen;
   for (i=0; i < veclen; i++) {
@@ -443,23 +429,23 @@ void norm_max(void *rsi, void *dsi) {
 double sim_cosine(void *dsi1, void *dsi2) {
   DS ds1=(DS)dsi1;
   DS ds2=(DS)dsi2;
-    int i, veclen;
-    double smul=0.0, sdiv=0.0, sqr11=0.0, sqr22=0.0;
-    double v1, v2;
-    /**/
-    veclen=ds1->veclen; /* and ds2->veclen */
-    for (i=0; i < veclen; i++) {
-      v1=ds1->terms[i].wt;
-      v2=ds2->terms[i].wt;
-      smul +=(v1*v2);
-      sqr11+=(v1*v1);
-      sqr22+=(v2*v2);
-    }
-    sdiv=sqrt(sqr11*sqr22);
-    if (sdiv==0.0)
-      return 0.0;
-    return (smul/sdiv);
+  int i, veclen;
+  double smul=0.0, sdiv=0.0, sqr11=0.0, sqr22=0.0;
+  double v1, v2;
+  /**/
+  veclen=ds1->veclen; /* and ds2->veclen */
+  for (i=0; i < veclen; i++) {
+    v1=ds1->terms[i].wt;
+    v2=ds2->terms[i].wt;
+    smul +=(v1*v2);
+    sqr11+=(v1*v1);
+    sqr22+=(v2*v2);
   }
+  sdiv=sqrt(sqr11*sqr22);
+  if (sdiv==0.0)
+    return 0.0;
+  return (smul/sdiv);
+}
 
 /* add: norm_jaccard, norm_dice, ... */
 
@@ -475,7 +461,7 @@ void zv_init_schema(RS, const char*);
 
 void zv_init(RS rs) {
   char *sname="ntc-atn";/* obtain from configuration file */ 
-  fprintf(stdout, "zv_init\n");
+  yaz_log(LOG_DEBUG, "zv_init\n");
   /* alloc rs */
   rs->db_docs=100000;   /* assign correct value here */
   rs->db_terms=500000;  /* assign correct value here */
@@ -489,15 +475,15 @@ void zv_init_schema(RS rs, const char *sname) {
   int slen;
   char c0, c1, c2, c3, c4, c5, c6;
   /**/
-  fprintf(stdout, "zv_init_schema\n");
+  yaz_log(LOG_DEBUG, "zv_init_schema\n");
   slen=strlen(sname);
   if (slen>0) c0=sname[0]; else c0=def_rschema[0];
-  if (slen>0) c1=sname[1]; else c0=def_rschema[1];
-  if (slen>0) c2=sname[2]; else c0=def_rschema[2];
+  if (slen>0) c1=sname[1]; else c1=def_rschema[1];
+  if (slen>0) c2=sname[2]; else c2=def_rschema[2];
   c3='-';
-  if (slen>0) c4=sname[4]; else c0=def_rschema[4];
-  if (slen>0) c5=sname[5]; else c0=def_rschema[5];
-  if (slen>0) c6=sname[6]; else c0=def_rschema[6];
+  if (slen>0) c4=sname[4]; else c4=def_rschema[4];
+  if (slen>0) c5=sname[5]; else c5=def_rschema[5];
+  if (slen>0) c6=sname[6]; else c6=def_rschema[6];
   /**/
   /* assign doc functions */
   switch (c0) {
@@ -640,7 +626,7 @@ void zv_init_schema(RS rs, const char *sname) {
   rs->rschema[7]='\0';
   /**/
   rs->sim_fct=sim_cosine;
-  fprintf(stdout, "zv_schema %s\n", rs->rschema);
+  yaz_log(LOG_DEBUG, "zv_schema %s\n", rs->rschema);
 
   return;
 }
@@ -676,7 +662,7 @@ struct rank_set_info {
 static void *zv_create (struct zebra_register *reg) {
     struct rank_class_info *ci = (struct rank_class_info *)
         xmalloc (sizeof(*ci));
-    fprintf(stdout, "zv_create\n");
+    yaz_log(LOG_DEBUG, "zv_create\n");
     logf (LOG_DEBUG, "zv_create");
     return ci;
 }
@@ -688,7 +674,7 @@ static void *zv_create (struct zebra_register *reg) {
  */
 static void zv_destroy (struct zebra_register *reg, void *class_handle) {
     struct rank_class_info *ci = (struct rank_class_info *) class_handle;
-    fprintf(stdout, "zv_destroy\n");
+    yaz_log(LOG_DEBUG, "zv_destroy\n");
     logf (LOG_DEBUG, "zv_destroy");
     xfree (ci);
 }
@@ -701,50 +687,44 @@ static void zv_destroy (struct zebra_register *reg, void *class_handle) {
  */
 static void *zv_begin (struct zebra_register *reg, void *class_handle, RSET rset)
 {
-    struct rs_info *rs=(struct rs_info *)xmalloc(sizeof(*rs));
-    int i;
-    int veclen, gocc;
-    /**/
-    logf (LOG_DEBUG, "rank-1 zvbegin");
-    fprintf(stdout, "zv_begin\n");
-    veclen=rset->no_rset_terms; /* smaller vector here */
-    zv_init(rs);
-    rs->veclen=veclen;
-    prn_rs(rs);
-
-    rs->qdoc=(struct ds_info *)xmalloc(sizeof(*rs->qdoc));
-    rs->qdoc->terms=(struct ts_info *)xmalloc(sizeof(*rs->qdoc->terms)*rs->veclen);
-    rs->qdoc->veclen=veclen;
-
-    rs->rdoc=(struct ds_info *)xmalloc(sizeof(*rs->rdoc));
-    rs->rdoc->terms=(struct ts_info *)xmalloc(sizeof(*rs->rdoc->terms)*rs->veclen);
-    rs->rdoc->veclen=veclen;
-    /*
-    si->no_entries = rset->no_rset_terms;
-    si->no_rank_entries = 0;
-    si->entries = (struct rank_term_info *)
-	xmalloc (sizeof(*si->entries)*si->no_entries);
-    */
-    /* fprintf(stdout, "zv_begin_init\n"); */
-    for (i = 0; i < rs->veclen; i++)
+  struct rs_info *rs=(struct rs_info *)xmalloc(sizeof(*rs));
+  int i;
+  int veclen, gocc;
+  /**/
+  logf (LOG_DEBUG, "rank-1 zvbegin");
+  yaz_log(LOG_DEBUG, "zv_begin\n");
+  veclen=rset->no_rset_terms; /* smaller vector here */
+  zv_init(rs);
+  rs->veclen=veclen;
+  prn_rs(rs);
+  
+  rs->qdoc=(struct ds_info *)xmalloc(sizeof(*rs->qdoc));
+  rs->qdoc->terms=(struct ts_info *)xmalloc(sizeof(*rs->qdoc->terms)*rs->veclen);
+  rs->qdoc->veclen=veclen;
+  
+  rs->rdoc=(struct ds_info *)xmalloc(sizeof(*rs->rdoc));
+  rs->rdoc->terms=(struct ts_info *)xmalloc(sizeof(*rs->rdoc->terms)*rs->veclen);
+  rs->rdoc->veclen=veclen;
+  /* yaz_log(LOG_DEBUG, "zv_begin_init\n"); */
+  for (i = 0; i < rs->veclen; i++)
     {
-
-	gocc=rset->rset_terms[i]->nn;
-	/* fprintf(stdout, "zv_begin_init i=%d gocc=%d\n", i, gocc); */
-	if (!strncmp (rset->rset_terms[i]->flags, "rank,", 5)) {
-            yaz_log (LOG_LOG, "%s", rset->rset_terms[i]->flags);
-	    /*si->entries[i].rank_flag = 1;
-	    (si->no_rank_entries)++;
-	    */
-	} else {
-	    /* si->entries[i].rank_flag = 0; */
-	}
-	rs->qdoc->terms[i].gocc=gocc;
-	rs->qdoc->terms[i].locc=1;  /* assume query has no duplicates */
-	rs->rdoc->terms[i].gocc=gocc;
-	rs->rdoc->terms[i].locc=0;
+      gocc=rset->rset_terms[i]->nn;
+      /* yaz_log(LOG_DEBUG, "zv_begin_init i=%d gocc=%d\n", i, gocc); */
+      /* "rank": check name from config file */ 
+      if (!strncmp (rset->rset_terms[i]->flags, "rank,", 5)) {
+	yaz_log (LOG_LOG, "%s", rset->rset_terms[i]->flags);
+	/*si->entries[i].rank_flag = 1;
+	  (si->no_rank_entries)++;
+	*/
+      } else {
+	/* si->entries[i].rank_flag = 0; */
+      }
+      rs->qdoc->terms[i].gocc=gocc;
+      rs->qdoc->terms[i].locc=1;  /* assume query has no duplicates */
+      rs->rdoc->terms[i].gocc=gocc;
+      rs->rdoc->terms[i].locc=0;
     }
-    return rs;
+  return rs;
 }
 
 /*
@@ -753,15 +733,15 @@ static void *zv_begin (struct zebra_register *reg, void *class_handle, RSET rset
  */
 static void zv_end (struct zebra_register *reg, void *rsi)
 {
-    RS rs=(RS)rsi;
-    fprintf(stdout, "zv_end\n");
-    logf (LOG_DEBUG, "rank-1 end");
-    xfree(rs->qdoc->terms);
-    xfree(rs->rdoc->terms);
-    xfree(rs->qdoc);
-    xfree(rs->rdoc);
-    xfree(rs);
-    return;
+  RS rs=(RS)rsi;
+  yaz_log(LOG_DEBUG, "zv_end\n");
+  logf (LOG_DEBUG, "rank-1 end");
+  xfree(rs->qdoc->terms);
+  xfree(rs->rdoc->terms);
+  xfree(rs->qdoc);
+  xfree(rs->rdoc);
+  xfree(rs);
+  return;
 }
 
 /*
@@ -784,11 +764,11 @@ static void zv_add (void *rsi, int seqno, int i) {
  */
 static int zv_calc (void *rsi, int sysno)
 {
-    int i, veclen; //lo, divisor, score = 0;
+    int i, veclen; 
     int score=0;
     double dscore=0.0;
     RS rs=(RS)rsi;
-    /* fprintf(stdout, "zv_calc\n"); */
+    /* yaz_log(LOG_DEBUG, "zv_calc\n"); */
     /**/
     veclen=rs->veclen;
     if (veclen==0)
