@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.3  1994-08-24 09:37:17  quinn
+ * Revision 1.4  1994-09-01 14:51:07  quinn
+ * Allowed mf_write to write beyond eof+1.
+ *
+ * Revision 1.3  1994/08/24  09:37:17  quinn
  * Changed reaction to read return values.
  *
  * Revision 1.2  1994/08/23  14:50:48  quinn
@@ -316,21 +319,42 @@ int mf_read(MFile mf, int no, int offset, int num, void *buf)
  */
 int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 {
-    int ps;
+    int ps, nblocks;
     mf_dir *dp;
     char tmp[FILENAME_MAX+1];
+    unsigned char dummych = '\xff';
 
     if ((ps = file_position(mf, no)) < 0)
 	exit(1);
-    assert(ps <= mf->files[mf->cur_file].blocks);
-    /* extend table */
-    if (ps == mf->files[mf->cur_file].blocks)
+    /* file needs to grow */
+    while (ps >= mf->files[mf->cur_file].blocks)
     {
-    	assert(mf->cur_file == mf->no_files - 1);
-    	/* create new file */
-    	if (mf->files[mf->cur_file].dir->avail_bytes <
-	    mf->blocksize)
-    	{
+    	log(LOG_DEBUG, "File grows");
+    	/* file overflow - allocate new file */
+    	if ((ps - mf->files[mf->cur_file].blocks + 1) * mf->blocksize >
+	    mf->files[mf->cur_file].dir->avail_bytes)
+	{
+	    /* cap off file? */
+	    if ((nblocks = mf->files[mf->cur_file].dir->avail_bytes /
+		mf->blocksize) > 0)
+	    {
+	    	log(LOG_DEBUG, "Capping off file %s at pos %d",
+		    mf->files[mf->cur_file].path, nblocks);
+	    	if ((ps = file_position(mf,
+		    (mf->cur_file ? mf->files[mf->cur_file-1].top : 0) +
+		    mf->files[mf->cur_file].blocks + nblocks)) < 0)
+			exit(1);
+		if (write(mf->files[mf->cur_file].fd, &dummych, 1) < 1)
+		{
+		    log(LOG_ERRNO|LOG_FATAL, "write dummy");
+		    exit(1);
+		}
+		mf->files[mf->cur_file].blocks += nblocks;
+		mf->files[mf->cur_file].bytes += nblocks * mf->blocksize;
+		mf->files[mf->cur_file].dir->avail_bytes -= nblocks *
+		    mf->blocksize;
+	    }
+	    /* get other bit */
     	    log(LOG_DEBUG, "Creating new file.");
     	    for (dp = mf->ma->dirs; dp && dp->avail_bytes < mf->min_bytes_creat;
 		dp = dp->next);
@@ -339,7 +363,9 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 	    	log(LOG_FATAL, "Cannot allocate more space for %s", mf->name);
 	    	exit(1);
 	    }
-	    mf->files[mf->cur_file].top = no - 1;
+	    mf->files[mf->cur_file].top = (mf->cur_file ?
+	    	mf->files[mf->cur_file-1].top : -1) +
+		mf->files[mf->cur_file].blocks;
 	    mf->files[++(mf->cur_file)].top = -1;
 	    mf->files[mf->cur_file].dir = dp;
 	    mf->files[mf->cur_file].number =
@@ -352,12 +378,16 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 	    mf->files[mf->cur_file].path = xstrdup(tmp);
 	    mf->no_files++;
 	    /* open new file and position at beginning */
-	    if (file_position(mf, no) < 0)
+	    if ((ps = file_position(mf, no)) < 0)
 	    	exit(1);
 	}
-	mf->files[mf->cur_file].blocks++;
-	mf->files[mf->cur_file].bytes += mf->blocksize;
-	mf->files[mf->cur_file].dir->avail_bytes -= mf->blocksize;
+	else
+	{
+	    nblocks = ps - mf->files[mf->cur_file].blocks + 1;
+	    mf->files[mf->cur_file].blocks += nblocks;
+	    mf->files[mf->cur_file].bytes += nblocks * mf->blocksize;
+	    mf->files[mf->cur_file].dir->avail_bytes -= nblocks * mf->blocksize;
+	}
     }
     if (write(mf->files[mf->cur_file].fd, buf, mf->blocksize) < mf->blocksize)
     {
