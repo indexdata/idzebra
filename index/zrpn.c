@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.141.2.5 2004-11-26 12:20:32 adam Exp $
+/* $Id: zrpn.c,v 1.141.2.6 2005-01-23 15:06:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1508,7 +1508,7 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
         bool_parms.key_size = sizeof(struct it_key);
 	bool_parms.cmp = key_compare_it;
 	bool_parms.log_item = key_logdump_txt;
-        result = rset_create (rset_kind_and, &bool_parms);
+        result = rset_create (rset_kind_and_forward, &bool_parms);
     }
     return result;
 }
@@ -1751,7 +1751,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
         bool_parms.key_size = sizeof(struct it_key);
 	bool_parms.cmp = key_compare_it;
 	bool_parms.log_item = key_logdump_txt;
-        result = rset_create (rset_kind_and, &bool_parms);
+        result = rset_create (rset_kind_and_forward, &bool_parms);
     }
     return result;
 }
@@ -2224,7 +2224,10 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
         switch (zop->which)
         {
         case Z_Operator_and:
-            r = rset_create (rset_kind_and, &bool_parms);
+	    if (res_get(zh->res, "rsetforward"))
+		r = rset_create (rset_kind_and_forward, &bool_parms);
+	    else
+		r = rset_create (rset_kind_and, &bool_parms);
             break;
         case Z_Operator_or:
             r = rset_create (rset_kind_or, &bool_parms);

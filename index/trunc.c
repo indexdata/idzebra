@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.28.2.2 2005-01-14 14:32:25 adam Exp $
+/* $Id: trunc.c,v 1.28.2.3 2005-01-23 15:06:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -651,7 +651,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             parms.is = zi->reg->isamb;
 	    parms.rset_term = rset_term_create (term, length, flags,
                                                 term_type);
-	    if (res_get(zi->res, "isambforward"))
+	    if (res_get(zi->res, "rsetforward"))
 		return rset_create (rset_kind_isamb_forward, &parms);
 	    else
 		return rset_create (rset_kind_isamb, &parms);

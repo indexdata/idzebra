@@ -1,4 +1,4 @@
-/* $Id: rsbool.h,v 1.9 2004-06-02 12:31:23 adam Exp $
+/* $Id: rsbool.h,v 1.9.2.1 2005-01-23 15:06:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -29,6 +29,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern "C" {
 #endif
 
+extern const struct rset_control *rset_kind_and_forward;
 extern const struct rset_control *rset_kind_and;
 extern const struct rset_control *rset_kind_or;
 extern const struct rset_control *rset_kind_not;
