@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.2 2000-04-06 09:03:28 adam Exp $
+## $Id: Makefile.am,v 1.3 2000-07-06 11:40:37 adam Exp $
 docdir=$(pkgdatadir)/doc
 
 doc_DATA = zebra.sgml gils.sgml zebra.txt zebra.ps zebra.html \
