@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.17 2003-05-07 20:51:12 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.18 2003-05-21 08:03:02 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -4194,16 +4194,14 @@ XS(_wrap_search_PQF) {
     const char *_swigerr = _swigmsg;
     {
         ZebraHandle arg1 ;
-        ODR arg2 ;
-        ODR arg3 ;
-        char *arg4 ;
-        char *arg5 ;
+        char *arg2 ;
+        char *arg3 ;
         int result;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 5) || (items > 5)) {
-            SWIG_croak("Usage: search_PQF(zh,odr_input,odr_output,pqf_query,setname);");
+        if ((items < 3) || (items > 3)) {
+            SWIG_croak("Usage: search_PQF(zh,pqf_query,setname);");
         }
         {
             ZebraHandle * argp;
@@ -4212,25 +4210,11 @@ XS(_wrap_search_PQF) {
             }
             arg1 = *argp;
         }
-        {
-            ODR * argp;
-            if (SWIG_ConvertPtr(ST(1),(void **) &argp, SWIGTYPE_p_ODR,0) < 0) {
-                SWIG_croak("Type error in argument 2 of search_PQF. Expected _p_ODR");
-            }
-            arg2 = *argp;
-        }
-        {
-            ODR * argp;
-            if (SWIG_ConvertPtr(ST(2),(void **) &argp, SWIGTYPE_p_ODR,0) < 0) {
-                SWIG_croak("Type error in argument 3 of search_PQF. Expected _p_ODR");
-            }
-            arg3 = *argp;
-        }
-        if (!SvOK((SV*) ST(3))) arg4 = 0;
-        else arg4 = (char *) SvPV(ST(3), PL_na);
-        if (!SvOK((SV*) ST(4))) arg5 = 0;
-        else arg5 = (char *) SvPV(ST(4), PL_na);
-        result = (int)zebra_search_PQF(arg1,arg2,arg3,(char const *)arg4,(char const *)arg5);
+        if (!SvOK((SV*) ST(1))) arg2 = 0;
+        else arg2 = (char *) SvPV(ST(1), PL_na);
+        if (!SvOK((SV*) ST(2))) arg3 = 0;
+        else arg3 = (char *) SvPV(ST(2), PL_na);
+        result = (int)zebra_search_PQF(arg1,(char const *)arg2,(char const *)arg3);
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
