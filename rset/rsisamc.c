@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.28 2004-10-22 10:12:52 heikki Exp $
+/* $Id: rsisamc.c,v 1.29 2004-11-04 13:11:51 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -61,21 +61,26 @@ struct rset_isamc_info {
     ISAMC_P pos;
 };
 
+static int log_level=-1;
+
 RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol, int scope,
                              ISAMC is, ISAMC_P pos, TERMID term)
 {
     RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,term);
     struct rset_isamc_info *info;
+    if (log_level<0)
+        log_level=yaz_log_module_level("rsisamc");
     info = (struct rset_isamc_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->is=is;
     info->pos=pos;
     rnew->priv=info;
+    logf(log_level, "create: term=%p", term);
     return rnew;
 }
 
 static void r_delete (RSET ct)
 {
-    logf (LOG_DEBUG, "rsisamc_delete");
+    logf (log_level, "rsisamc_delete");
 }
 
 
@@ -84,7 +89,7 @@ RSFD r_open (RSET ct, int flag)
     RSFD rfd;
     struct rset_pp_info *ptinfo;
 
-    logf (LOG_DEBUG, "risamc_open");
+    logf (log_level, "risamc_open");
     if (flag & RSETF_WRITE)
     {
         logf (LOG_FATAL, "ISAMC set type is read-only");
@@ -117,6 +122,7 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
     r = isc_pp_read(p->pt, buf);
     if (term)
         *term=rfd->rset->term;
+    logf(log_level,"read returning term %p", *term);
     return r;
 }
 
