@@ -1,4 +1,4 @@
-/* $Id: t10.c,v 1.3 2004-10-29 13:02:39 heikki Exp $
+/* $Id: t10.c,v 1.4 2004-11-04 13:09:49 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -41,33 +41,33 @@ struct tst {
 
 
 struct tst tests[] = {
-    {"ntc-atn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"ntc-ntn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"ntc-btn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"ntc-apn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"ntc-npn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"ntc-bpn", "first title", 1000, "first title", 1000, "third title", 826 },
+    {"ntc-atn", "first title", 1000, "first title", 1000, "second title",862 },
+    {"ntc-ntn", "first title", 1000, "first title", 1000, "second title",862 },
+    {"ntc-btn", "first title", 1000, "first title", 1000, "second title",862 },
+    {"ntc-apn", "first title", 1000, "first title", 1000, "second title",862 },
+    {"ntc-npn", "first title", 1000, "first title", 1000, "second title",862 },
+    {"ntc-bpn", "first title", 1000, "first title", 1000, "second title",862 },
 
-    {"atc-atn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"atc-ntn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"atc-btn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"atc-apn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"atc-npn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"atc-bpn", "first title", 1000, "first title", 1000, "first title", 972 },
+    {"atc-atn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"atc-ntn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"atc-btn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"atc-apn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"atc-npn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"atc-bpn", "first title", 1000, "first title", 1000, "second title", 989 },
 
-    {"npc-atn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"npc-ntn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"npc-btn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"npc-apn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"npc-npn", "first title", 1000, "first title", 1000, "third title", 826 },
-    {"npc-bpn", "first title", 1000, "first title", 1000, "third title", 826 },
+    {"npc-atn", "first title", 1000, "first title", 1000, "second title", 862 },
+    {"npc-ntn", "first title", 1000, "first title", 1000, "second title", 862 },
+    {"npc-btn", "first title", 1000, "first title", 1000, "second title", 862 },
+    {"npc-apn", "first title", 1000, "first title", 1000, "second title", 862 },
+    {"npc-npn", "first title", 1000, "first title", 1000, "second title", 862 },
+    {"npc-bpn", "first title", 1000, "first title", 1000, "second title", 862 },
 
-    {"apc-atn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"apc-ntn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"apc-btn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"apc-apn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"apc-npn", "first title", 1000, "first title", 1000, "first title", 972 },
-    {"apc-bpn", "first title", 1000, "first title", 1000, "first title", 972 },
+    {"apc-atn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"apc-ntn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"apc-btn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"apc-apn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"apc-npn", "first title", 1000, "first title", 1000, "second title", 989 },
+    {"apc-bpn", "first title", 1000, "first title", 1000, "second title", 989 },
 
     {0,0,0,0,0,0,0},
 };
@@ -78,10 +78,10 @@ int main(int argc, char **argv)
     ZebraService zs = start_up("zebrazv.cfg", argc, argv);
     ZebraHandle  zh = zebra_open (zs);
   
+    int loglevel=yaz_log_mask_str("zvrank,rank1,t10");
     init_data(zh, recs);
     zebra_close(zh);
-
-    yaz_log_init_level(LOG_ALL);
+    yaz_log_init_level(loglevel);
     for (i=0; tests[i].schema; i++)
     {
         zh = zebra_open (zs);
