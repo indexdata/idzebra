@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.46  1995-12-15 14:57:16  adam
+ * Revision 1.47  1996-01-17 14:57:48  adam
+ * Prototype changed for reader functions in extract/retrieve. File
+ *  is identified by 'void *' instead of 'int.
+ *
+ * Revision 1.46  1995/12/15  14:57:16  adam
  * Bug fix.
  *
  * Revision 1.45  1995/12/15  12:37:41  adam
@@ -495,44 +499,53 @@ static void addRecordKeyAny (const RecWord *p)
         addRecordKey (p);
 }
 
-
 #define FILE_READ_BUFSIZE 4096
-
-static int file_noread;
+struct file_read_info {
+    int file_noread;
+    int fd;
 #if FILE_READ_BUFSIZE
-static char *file_buf;
-static int file_offset;
-static int file_bufsize;
+    char *file_buf;
+    int file_offset;
+    int file_bufsize;
 #endif
+};
 
-static void file_read_start (int fd)
+static struct file_read_info *file_read_start (int fd)
 {
-    file_noread = 0;
+    struct file_read_info *fi = xmalloc (sizeof(*fi));
+
+    fi->fd = fd;
+    fi->file_noread = 0;
 #if FILE_READ_BUFSIZE
-    file_offset = 0;
-    file_buf = xmalloc (FILE_READ_BUFSIZE);
-    file_bufsize = read (fd, file_buf, FILE_READ_BUFSIZE);
+    fi->file_offset = 0;
+    fi->file_buf = xmalloc (FILE_READ_BUFSIZE);
+    fi->file_bufsize = read (fd, fi->file_buf, FILE_READ_BUFSIZE);
 #endif
+    return fi;
 }
 
-static void file_read_stop (int fd)
+static void file_read_stop (struct file_read_info *fi)
 {
+    assert (fi);
 #if FILE_READ_BUFSIZE
-    xfree (file_buf);
-    file_buf = NULL;
+    xfree (fi->file_buf);
+    fi->file_buf = NULL;
 #endif
+    xfree (fi);
 }
 
-static int file_read (int fd, char *buf, size_t count)
+static int file_read (void *handle, char *buf, size_t count)
 {
+    struct file_read_info *p = handle;
+    int fd = p->fd;
 #if FILE_READ_BUFSIZE
-    int l = file_bufsize - file_offset;
+    int l = p->file_bufsize - p->file_offset;
 
     if (count > l)
     {
         int r;
         if (l > 0)
-            memcpy (buf, file_buf + file_offset, l);
+            memcpy (buf, p->file_buf + p->file_offset, l);
         count = count-l;
         if (count > FILE_READ_BUFSIZE)
         {
@@ -541,12 +554,12 @@ static int file_read (int fd, char *buf, size_t count)
                 logf (LOG_FATAL|LOG_ERRNO, "read");
                 exit (1);
             }
-            file_bufsize = 0;
-            file_offset = 0;
-            file_noread += l+r;
+            p->file_bufsize = 0;
+            p->file_offset = 0;
+            p->file_noread += l+r;
             return l+r;
         }
-        file_bufsize = r = read (fd, file_buf, FILE_READ_BUFSIZE);
+        p->file_bufsize = r = read (fd, p->file_buf, FILE_READ_BUFSIZE);
         if (r == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "read");
@@ -554,28 +567,28 @@ static int file_read (int fd, char *buf, size_t count)
         }
         else if (r <= count)
         {
-            file_offset = r;
-            memcpy (buf + l, file_buf, r);
-            file_noread += l+r;
+            p->file_offset = r;
+            memcpy (buf + l, p->file_buf, r);
+            p->file_noread += l+r;
             return l+r;
         }
         else
         {
-            file_offset = count;
-            memcpy (buf + l, file_buf, count - l);
-            file_noread += count;
+            p->file_offset = count;
+            memcpy (buf + l, p->file_buf, count - l);
+            p->file_noread += count;
             return count;
         }
     }
-    memcpy (buf, file_buf + file_offset, count);
-    file_offset += count;
-    file_noread += count;
+    memcpy (buf, p->file_buf + p->file_offset, count);
+    p->file_offset += count;
+    p->file_noread += count;
     return count;
 #else
     int r;
     r = read (fd, buf, count);
     if (r > 0)
-        file_noread += r;
+        p->file_noread += r;
     return r;
 #endif
 }
@@ -725,7 +738,8 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
 
 static int recordExtract (SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
-                          int fd, RecType recType, char *subType)
+                          struct file_read_info *fi, RecType recType,
+                          char *subType)
 {
     struct recExtractCtrl extractCtrl;
     int r;
@@ -733,9 +747,9 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     SYSNO sysnotmp;
     Record rec;
 
-    if (fd != -1)
+    if (fi->fd != -1)
     {
-        extractCtrl.fd = fd;
+        extractCtrl.fh = fi;
         /* extract keys */
         extractCtrl.subType = subType;
         extractCtrl.init = wordInit;
@@ -866,24 +880,25 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     xfree (rec->info[recInfo_storeData]);
     if (rGroup->flagStoreData == 1)
     {
-        rec->size[recInfo_storeData] = file_noread;
-        rec->info[recInfo_storeData] = xmalloc (file_noread);
+        rec->size[recInfo_storeData] = fi->file_noread;
+        rec->info[recInfo_storeData] = xmalloc (fi->file_noread);
 #if FILE_READ_BUFSIZE
-        if (file_noread < FILE_READ_BUFSIZE)
-	    memcpy (rec->info[recInfo_storeData], file_buf, file_noread);
+        if (fi->file_noread < FILE_READ_BUFSIZE)
+	    memcpy (rec->info[recInfo_storeData], fi->file_buf,
+                    fi->file_noread);
         else
 #endif
         {
-            if (lseek (fd, 0L, SEEK_SET) < 0)
+            if (lseek (fi->fd, 0L, SEEK_SET) < 0)
             {
                 logf (LOG_ERRNO|LOG_FATAL, "seek to 0 in %s", fname);
                 exit (1);
             }
-            if (read (fd, rec->info[recInfo_storeData], file_noread) 
-                < file_noread)
+            if (read (fi->fd, rec->info[recInfo_storeData], fi->file_noread) 
+                < fi->file_noread)
             {
                 logf (LOG_ERRNO|LOG_FATAL, "read %d bytes of %s",
-                      file_noread, fname);
+                      fi->file_noread, fname);
                 exit (1);
             }
         }
@@ -912,6 +927,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
     RecType recType;
     struct recordGroup rGroupM;
     struct recordGroup *rGroup = &rGroupM;
+    struct file_read_info *fi;
 
     memcpy (rGroup, rGroupP, sizeof(*rGroupP));
    
@@ -1020,9 +1036,9 @@ int fileExtract (SYSNO *sysno, const char *fname,
             return 0;
         }
     }
-    file_read_start (fd);
-    recordExtract (sysno, fname, rGroup, deleteFlag, fd, recType, subType);
-    file_read_stop (fd);
+    fi = file_read_start (fd);
+    recordExtract (sysno, fname, rGroup, deleteFlag, fi, recType, subType);
+    file_read_stop (fi);
     if (fd != -1)
         close (fd);
     return 1;

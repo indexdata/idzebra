@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.32  1995-12-11 09:12:58  adam
+ * Revision 1.33  1996-01-17 14:57:56  adam
+ * Prototype changed for reader functions in extract/retrieve. File
+ *  is identified by 'void *' instead of 'int.
+ *
+ * Revision 1.32  1995/12/11  09:12:58  adam
  * The rec_get function returns NULL if record doesn't exist - will
  * happen in the server if the result set records have been deleted since
  * the creation of the set (i.e. the search).
@@ -257,16 +261,16 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     return &r;
 }
 
-static int record_ext_read (int fd, char *buf, size_t count)
+static int record_ext_read (void *fh, char *buf, size_t count)
 {
-    return read (fd, buf, count);
+    return read (*((int*) fh), buf, count);
 }
 
 static int record_int_pos;
 static char *record_int_buf;
 static int record_int_len;
 
-static int record_int_read (int fd, char *buf, size_t count)
+static int record_int_read (void *fh, char *buf, size_t count)
 {
     int l = record_int_len - record_int_pos;
     if (l <= 0)
@@ -285,6 +289,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     Record rec;
     char *fname, *file_type;
     RecType rt;
+    int fd = -1;
     struct recRetrieveCtrl retrieveCtrl;
     char subType[128];
 
@@ -317,7 +322,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     }
     else 
     {
-        if ((retrieveCtrl.fd = open (fname, O_RDONLY)) == -1)
+        if ((fd = open (fname, O_RDONLY)) == -1)
         {
             char *msg = "Record doesn't exist\n";
             logf (LOG_WARN|LOG_ERRNO, "Retrieve: Open record file %s", fname);
@@ -327,6 +332,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
             rec_rm (&rec);
             return 0;     /* or 14: System error in presenting records */
         }
+        retrieveCtrl.fh = &fd;
         retrieveCtrl.readf = record_ext_read;
     }
     retrieveCtrl.subType = subType;
@@ -340,7 +346,8 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = retrieveCtrl.rec_buf;
     *rec_lenp = retrieveCtrl.rec_len;
-    close (retrieveCtrl.fd);
+    if (fd != -1)
+        close (fd);
     rec_rm (&rec);
 
     return retrieveCtrl.diagnostic;
