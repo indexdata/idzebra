@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.12  1997-10-29 12:02:22  adam
+ * Revision 1.13  1997-10-31 12:35:44  adam
+ * Added a few log statements.
+ *
+ * Revision 1.12  1997/10/29 12:02:22  adam
  * Using oid_ent_to_oid used instead of the non thread-safe oid_getoidbyent.
  *
  * Revision 1.11  1997/10/27 14:34:00  adam
@@ -399,10 +402,11 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 static int grs_extract(struct recExtractCtrl *p)
 {
     data1_node *n;
-    NMEM mem = nmem_create();
+    NMEM mem;
     struct grs_read_info gri;
     seqno = 0;
 
+    mem = nmem_create (); 
     gri.readf = p->readf;
     gri.seekf = p->seekf;
     gri.tellf = p->tellf;
@@ -499,9 +503,10 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     data1_node *new;
     data1_maptab *map;
     int res, selected = 0;
-    NMEM mem = nmem_create();
+    NMEM mem;
     struct grs_read_info gri;
     
+    mem = nmem_create();
     gri.readf = p->readf;
     gri.seekf = p->seekf;
     gri.tellf = p->tellf;
@@ -511,12 +516,15 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     gri.mem = mem;
     gri.dh = p->dh;
 
+    logf (LOG_DEBUG, "grs_retrieve");
     node = read_grs_type (&gri, p->subType);
     if (!node)
     {
 	p->diagnostic = 2;
+        nmem_destroy (mem);
 	return 0;
     }
+    logf (LOG_DEBUG, "grs_retrieve: score");
     if (p->score >= 0 && (new =
 			  data1_insert_taggeddata(p->dh, node,
 						  node, "rank",
@@ -527,6 +535,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	sprintf(new->u.data.data, "%d", p->score);
 	new->u.data.len = strlen(new->u.data.data);
     }
+    logf (LOG_DEBUG, "grs_retrieve: localControlNumber");
     if ((new = data1_insert_taggeddata(p->dh, node, node,
 				       "localControlNumber", mem)))
     {
@@ -535,6 +544,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	sprintf(new->u.data.data, "%d", p->localno);
 	new->u.data.len = strlen(new->u.data.data);
     }
+    logf (LOG_DEBUG, "grs_retrieve: schemaIdentifier");
     if (p->input_format == VAL_GRS1 && node->u.root.absyn &&
 	node->u.root.absyn->reference != VAL_NONE)
     {
@@ -573,6 +583,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	}
     }
 
+    logf (LOG_DEBUG, "grs_retrieve: schema mapping");
     /*
      * Does the requested format match a known schema-mapping? (this reflects
      * the overlap of schema and formatting which is inherent in the MARC
@@ -587,12 +598,13 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	    if (!(node = data1_map_record(p->dh, onode, map, mem)))
 	    {
 		p->diagnostic = 14;
+                nmem_destroy (mem);
 		return 0;
 	    }
-
 	    break;
 	}
 
+    logf (LOG_DEBUG, "grs_retrieve: element spec");
     if (p->comp && (res = process_comp(p->dh, node, p->comp)) > 0)
     {
 	p->diagnostic = res;
@@ -605,6 +617,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     else if (p->comp && !res)
 	selected = 1;
 
+    logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
     switch (p->output_format = (p->input_format != VAL_NONE ?
 	p->input_format : VAL_SUTRS))
     {
