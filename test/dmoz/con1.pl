@@ -2,7 +2,7 @@
 
 my $state = 'init';
 my $topic = '';
-my $title;
+my $title = '';
 my $description;
 
 while ($_ = <STDIN>) {
@@ -19,11 +19,14 @@ while ($_ = <STDIN>) {
 	$description = $1;
     }
     elsif (/<\/ExternalPage>/) {
-	print "<meta>\n";
-	print " <title>$title</title>\n";
-	print " <description>$description</description>\n";
-	print " <url>$url</url>\n";
-	print " <topic>$topic</topic>\n";
-	print "</meta>\n";
+        if (length($title) > 0) 
+	{
+	    print "<meta>\n";
+	    print " <title>$title</title>\n";
+	    print " <description>$description</description>\n";
+	    print " <url>$url</url>\n";
+	    print " <topic>$topic</topic>\n";
+	    print "</meta>\n";
+	}
     }
 }
