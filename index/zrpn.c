@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.131 2003-03-06 11:58:08 adam Exp $
+/* $Id: zrpn.c,v 1.132 2003-03-31 22:14:18 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -2500,6 +2500,8 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
 		    nmem_strdup (stream, zs->u.simple->u.resultSetId);
 		return 0;
 	    }
+            else
+                rset_dup(r);
         }
         else
         {
