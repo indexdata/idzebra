@@ -1,10 +1,12 @@
-# $Id: record.abs,v 1.1 2003-10-07 09:18:56 adam Exp $
+# $Id: record.abs,v 1.2 2003-11-14 00:28:04 adam Exp $
 
 name marcxml
 attset bib1.att
 
 esetname F @
 esetname B @
+
+marc usmarc.mar
 
 xpath disable
 
