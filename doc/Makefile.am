@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.19 2003-03-05 00:08:04 adam Exp $
+## $Id: Makefile.am,v 1.20 2003-03-27 10:46:29 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -34,7 +34,7 @@ doc_DATA = $(HTMLFILES) zebra.pdf
 man_MANS = zebraidx.1 zebrasrv.8
 
 EXTRA_DIST = $(SUPPORTFILES) $(XMLFILES) zebra.pdf \
- $(man_MANS) zebraidx-man.sgml zebrasrv-man.sgml
+ $(man_MANS) zebraidx-man.sgml zebrasrv-man.sgml zvrank.txt marc_indexing.xml
 
 zebraidx.1: zebraidx-man.sgml zebraidx-options.xml
 	if test ! -f zebraidx-options.xml ; then ln -s $(srcdir)/zebraidx-options.xml .; fi

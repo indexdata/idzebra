@@ -1,35 +1,36 @@
-/* $Id: zvrank.c,v 1.3 2003-03-26 16:41:48 adam Exp $
+/* $Id: zvrank.c,v 1.4 2003-03-27 10:46:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
-This file is part of the Zebra server.
+   This file is part of the Zebra server.
 
-Zebra is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+   Zebra is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 2, or (at your option) any later
+   version.
 
-Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
+   Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
 
-You should have received a copy of the GNU General Public License
-along with Zebra; see the file LICENSE.zebra.  If not, write to the
-Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.
+   You should have received a copy of the GNU General Public License
+   along with Zebra; see the file LICENSE.zebra.  If not, write to the
+   Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+   02111-1307, USA.
 */
 
-/* zvrank.c */
-/* Zebra Vector Space Model RANKing */
-/*
-** six (seven) letter identifier for weighting schema
+/* Zebra Vector Space Model RANKing 
+**
+** six (seven) letter identifier for weighting scheme
 ** best document weighting:
 **  tfc nfc (tpc npc) [original naming]
 **  ntc atc  npc apc  [SMART naming, used here]
 ** best query weighting:
 **  nfx tfx bfx (npx tpx bpx) [original naming]
 **  atn ntn btn  apn npn bpn  [SMART naming]
+** -> should set zvrank.weighting-scheme to one of
+** "ntc-atn", "atc-atn", etc.
 */
 
 #include <math.h>  /* for log */
@@ -44,21 +45,28 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "index.h"
 
-double blog2(double x) { /* sometimes log_e or log_10 is used */
+static double blog(double x) { 
+  /* log_2, log_e or log_10 is used, best to change it here if necessary */
   if (x <= 0)
-    return 0;
-  return log(x);
+    return 0.0;
+  return log(x); /* / log(base) */
 }
 
 /* structures */
 
-struct rs_info { /* for result set */
+struct rank_class_info { /* now we need this */
+  int dummy;
+  char rscheme[8];    /* name of weighting scheme */
+};
+
+
+struct rs_info {      /* for result set */
   int db_docs;        /* number of documents in database (collection) */
-  int db_terms;       /* number of distinct terms in database */
-  int db_f_max;       /* maximum of f_t in database */
-  char *db_f_max_str; /* string (most frequent term) */
+  int db_terms;       /* number of distinct terms in database (debugging?) */
+  int db_f_max;       /* maximum of f_t in database (debugging?) */
+  char *db_f_max_str; /* string (most frequent term) - for debugging */
   /**/
-  char rschema[8];    /* name of ranking schema */
+  char rscheme[8];    /* name of weighting scheme */
   /**/
   int veclen;
   void (*d_tf_fct)(void *, void *);   /* doc term frequency function */
@@ -68,22 +76,22 @@ struct rs_info { /* for result set */
   void (*q_tf_fct)(void *, void *);   /* query term frequency function */
   void (*q_idf_fct)(void *, void *);  /* query idf function */
   void (*q_norm_fct)(void *, void *); /* query normalization function */
-  
+    
   double (*sim_fct)(void *, void *);  /* similarity function (scoring function) */
   struct ds_info *qdoc;
   struct ds_info *rdoc;
 };
 typedef struct rs_info *RS;
 
-void prn_rs(RS rs) {
-  yaz_log(LOG_DEBUG, "* RS:\n");
-  yaz_log(LOG_DEBUG, " db_docs:   %d\n", rs->db_docs);
-  yaz_log(LOG_DEBUG, " db_terms:  %d\n", rs->db_terms);
-  yaz_log(LOG_DEBUG, " f_max:     %d\n", rs->db_f_max);
-  yaz_log(LOG_DEBUG, " f_max_str: %s\n", rs->db_f_max_str);
-  yaz_log(LOG_DEBUG, " veclen:    %d\n", rs->veclen);
-  /* rschema implies functions */
-  yaz_log(LOG_DEBUG, " rschema:   %s\n", rs->rschema);
+static void prn_rs(RS rs) { /* for debugging */
+  yaz_log(LOG_DEBUG, "* RS:");
+  yaz_log(LOG_DEBUG, " db_docs:   %d", rs->db_docs);
+  yaz_log(LOG_DEBUG, " db_terms:  %d", rs->db_terms);
+  yaz_log(LOG_DEBUG, " f_max:     %d", rs->db_f_max);
+  yaz_log(LOG_DEBUG, " f_max_str: %s", rs->db_f_max_str);
+  yaz_log(LOG_DEBUG, " veclen:    %d", rs->veclen);
+  /* rscheme implies functions */
+  yaz_log(LOG_DEBUG, " rscheme:   %s", rs->rscheme);
   return;
 }
 
@@ -91,22 +99,22 @@ struct ds_info {       /* document info */
   char *docid;         /* unique doc identifier */
   int  docno;          /* doc number */
   int doclen;          /* document length */
-  int d_f_max;         /* maximum number of any term in doc */
-  char *d_f_max_str;   /* most frequent term in d */
+  int d_f_max;         /* maximum number of any term in doc (needed) */
+  char *d_f_max_str;   /* most frequent term in d - for debugging */
   int veclen;          /* vector length */
   struct ts_info *terms;
   double docsim;       /* similarity in [0, ..., 1] (= score/1000) */
 };
 typedef struct ds_info* DS;
 
-void prn_ds(DS ds) {
-  yaz_log(LOG_DEBUG, " * DS:\n");
-  yaz_log(LOG_DEBUG, " docid:      %s\n", ds->docid);
-  yaz_log(LOG_DEBUG, " docno:      %d\n", ds->docno);
-  yaz_log(LOG_DEBUG, " doclen:     %d\n", ds->doclen);
-  yaz_log(LOG_DEBUG, " d_f_max:    %d\n", ds->d_f_max);
-  yaz_log(LOG_DEBUG, " d_f_max_str:%s\n", ds->d_f_max_str);
-  yaz_log(LOG_DEBUG, " veclen:     %d\n", ds->veclen);
+static void prn_ds(DS ds) { /* for debugging */
+  yaz_log(LOG_DEBUG, " * DS:");
+  yaz_log(LOG_DEBUG, " docid:      %s", ds->docid);
+  yaz_log(LOG_DEBUG, " docno:      %d", ds->docno);
+  yaz_log(LOG_DEBUG, " doclen:     %d", ds->doclen);
+  yaz_log(LOG_DEBUG, " d_f_max:    %d", ds->d_f_max);
+  yaz_log(LOG_DEBUG, " d_f_max_str:%s", ds->d_f_max_str);
+  yaz_log(LOG_DEBUG, " veclen:     %d", ds->veclen);
   return;
 }
 
@@ -122,8 +130,8 @@ struct ts_info {       /* term info */
 };
 typedef struct ts_info *TS;
 
-void prn_ts(TS ts) {
-  yaz_log(LOG_DEBUG, " * TERM:%s gocc:%d locc:%d  tf:%f idf:%f wt:%f\n",
+static void prn_ts(TS ts) { /* for debugging */
+  yaz_log(LOG_DEBUG, " * TERM:%s gocc:%d locc:%d  tf:%f idf:%f wt:%f",
 	  ts->name, ts->gocc, ts->locc, ts->tf, ts->idf, ts->wt);
   return;
 }
@@ -134,15 +142,14 @@ void prn_ts(TS ts) {
 
 /* 
 ** weighting functions 
+** check: RS is not needed anymore
 */
 
-/* calculate new term frequency vector */
-void tf_none(void *rsi, void *dsi) {
+/* calculate and store new term frequency vector */
+static void tf_none(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
-  int i;
-  int veclen;
-  int freq;
-  /**/
+  int i, veclen, freq;
+  /* no conversion. 1 <= tf */
   veclen=ds->veclen;
   for (i=0; i < veclen; i++) {
     freq=ds->terms[i].locc;
@@ -151,12 +158,10 @@ void tf_none(void *rsi, void *dsi) {
   return;
 }
 
-void tf_binary(void *rsi, void *dsi) {
+static void tf_binary(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
-  int i;
-  int veclen;
-  int freq;
-  /**/
+  int i, veclen, freq;
+  /* tf in {0, 1} */
   veclen=ds->veclen;
   for (i=0; i < veclen; i++) {
     freq=ds->terms[i].locc;
@@ -168,20 +173,17 @@ void tf_binary(void *rsi, void *dsi) {
   return;
 }
 
-void tf_max_norm(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
+static void tf_max_norm(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
-  int tf_max;
-  int i;
-  int veclen;
-  int freq;
-  /**/
-  tf_max=rs->db_f_max;
+  double tf_max;
+  int i, veclen, freq;
+  /* divide each term by max, so 0 <= tf <= 1 */
+  tf_max=ds->d_f_max; /* largest frequency of t in document */
   veclen=ds->veclen;
   for (i=0; i < veclen; i++) {
     freq=ds->terms[i].locc;
     if ((freq > 0) &&
-	(tf_max > 0)) 
+	(tf_max > 0.0)) 
       ds->terms[i].tf=freq/tf_max;
     else
       ds->terms[i].tf=0.0;
@@ -189,35 +191,30 @@ void tf_max_norm(void *rsi, void *dsi) {
   return;
 }
 
-void tf_aug_norm(void *rsi, void *dsi) {
-  RS rs=(RS)rsi;
+static void tf_aug_norm(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
-  double K;
+  double K; 
   double tf_max;
-  int i;
-  int veclen;
-  int freq;
-  /**/
-  tf_max=rs->db_f_max;
+  int i, veclen, freq;
+  /* augmented normalized tf. 0.5 <= tf <= 1  for K = 0.5 */
+  tf_max=ds->d_f_max; /* largest frequency of t in document */
   veclen=ds->veclen;
-  K=0.5;
+  K=0.5; /* zvrank.const-K */
   for (i=0; i < veclen; i++) {
     freq=ds->terms[i].locc;
     if ((freq > 0) &&
-	(tf_max > 0)) 
-      ds->terms[i].tf=K+(1-K)*(freq/tf_max);
+	(tf_max > 0.0)) 
+      ds->terms[i].tf=K+(1.0-K)*(freq/tf_max);
     else
       ds->terms[i].tf=0.0;
   }
   return;
 }
 
-void tf_square(void *rsi, void *dsi) {
+static void tf_square(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
-  int i;
-  int veclen;
-  int freq;
-  /**/
+  int i, veclen, freq;
+  /* tf ^ 2 */
   veclen=ds->veclen;
   for (i=0; i < veclen; i++) {
     freq=ds->terms[i].locc;
@@ -229,28 +226,26 @@ void tf_square(void *rsi, void *dsi) {
   return;
 }
 
-void tf_log(void *rsi, void *dsi) {
+static void tf_log(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
-  int i;
-  int veclen;
-  int freq;
-  /**/    
+  int i, veclen, freq;
+  /* logarithmic tf */    
   veclen=ds->veclen;
   for (i=0; i < veclen; i++) {
     freq=ds->terms[i].locc;
     if (freq > 0) 
-      ds->terms[i].tf=1+blog2(freq);
+      ds->terms[i].tf=1.0+blog(freq);
     else
       ds->terms[i].tf=0.0;
   }
   return;
 }
 
-/* calculate inverse document frequency vector */
-void idf_none(void *rsi, void *dsi) {
+/* calculate and store inverse document frequency vector */
+static void idf_none(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
   int i, veclen;
-  /**/
+  /* no conversion */
   veclen=ds->veclen;
   for (i=0; i < veclen; i++) {
     ds->terms[i].idf=1.0;
@@ -258,14 +253,13 @@ void idf_none(void *rsi, void *dsi) {
   return;
 }
 
-void idf_tfidf(void *rsi, void *dsi) {
+static void idf_tfidf(void *rsi, void *dsi) {
   RS rs=(RS)rsi;
   DS ds=(DS)dsi;
-  int num_docs;
+  int num_docs, gocc;
   int i, veclen;
-  int gocc;
   double idf;
-  /**/
+  /* normal tfidf weight */
   veclen=ds->veclen;
   num_docs=rs->db_docs;
   for (i=0; i < veclen; i++) {
@@ -273,20 +267,19 @@ void idf_tfidf(void *rsi, void *dsi) {
     if (gocc==0) 
       idf=0.0; 
     else
-      idf=blog2(num_docs/gocc);
+      idf=blog(num_docs/gocc);
     ds->terms[i].idf=idf;
   }
   return;
 }
 
-void idf_prob(void *rsi, void *dsi) {
+static void idf_prob(void *rsi, void *dsi) {
   RS rs=(RS)rsi;
   DS ds=(DS)dsi;
-  int num_docs;
+  int num_docs, gocc;
   int i, veclen;
-  int gocc;
   double idf;
-  /**/
+  /* probabilistic formulation */
   veclen=ds->veclen;
   num_docs=rs->db_docs;
   for (i=0; i < veclen; i++) {
@@ -294,58 +287,58 @@ void idf_prob(void *rsi, void *dsi) {
     if (gocc==0)
       idf=0.0; 
     else
-      idf=(num_docs-gocc)/gocc;
+      idf=blog((num_docs-gocc)/gocc);
     ds->terms[i].idf=idf;
   }
   return;
 }
 
-void idf_freq(void *rsi, void *dsi) {
+static void idf_freq(void *rsi, void *dsi) {
   RS rs=(RS)rsi;
   DS ds=(DS)dsi;
   int num_docs;
   int i, veclen;
   double idf;
-  /**/
+  /* frequency formulation */
   veclen=ds->veclen;
   num_docs=rs->db_docs;
   if (num_docs==0)
     idf=0.0;
   else
-    idf=1/num_docs;
+    idf=1.0/num_docs;
   for (i=0; i < veclen; i++) {
     ds->terms[i].idf=idf;
   }
   return;
 }
 
-void idf_squared(void *rsi, void *dsi) {
+static void idf_squared(void *rsi, void *dsi) {
   RS rs=(RS)rsi;
   DS ds=(DS)dsi;
-  int num_docs;
+  int num_docs, gocc;
   int i, veclen;
-  int gocc;
   double idf;
-  /**/
+  /* idf ^ 2 */
   veclen=ds->veclen;
   num_docs=rs->db_docs;
+  yaz_log(LOG_DEBUG, "idf_squared: db_docs required");
   for (i=0; i < veclen; i++) {
     gocc=ds->terms[i].gocc;
-    if (gocc==0.0)
+    if (gocc==0)
       idf=0.0;
-    else
-      idf=blog2(num_docs/gocc);
-      idf=idf*idf;
-      ds->terms[i].idf=idf;
+    else 
+      idf=blog(num_docs/gocc);
+    idf=idf*idf;
+    ds->terms[i].idf=idf;
   }
   return;
 }
 
-/* calculate normalized weight (tf-idf) vector */
-void norm_none(void *rsi, void *dsi) {
+/* calculate and store normalized weight (tf-idf) vector */
+static void norm_none(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
   int i, veclen;
-  /**/
+  /* no normalization */
   veclen=ds->veclen;
   for (i=0; i < veclen; i++) {
     ds->terms[i].wt=ds->terms[i].tf*ds->terms[i].idf;
@@ -353,7 +346,7 @@ void norm_none(void *rsi, void *dsi) {
   return;
 }
 
-void norm_sum(void *rsi, void *dsi) {
+static void norm_sum(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
   int i, veclen;
   double tfs=0.0;
@@ -363,14 +356,15 @@ void norm_sum(void *rsi, void *dsi) {
     ds->terms[i].wt=ds->terms[i].tf*ds->terms[i].idf;
     tfs+=ds->terms[i].wt;
   } 
-  for (i=0; i < veclen; i++) {
-    if (tfs > 0)
+  if (tfs > 0.0)
+    for (i=0; i < veclen; i++) {
       ds->terms[i].wt=ds->terms[i].wt/tfs;
-  }
+    }
+  /* else: tfs==0 && ds->terms[i].wt==0 */
   return;
 }
 
-void norm_cosine(void *rsi, void *dsi) {
+static void norm_cosine(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
   int i, veclen;
   double tfs=0.0;
@@ -380,14 +374,16 @@ void norm_cosine(void *rsi, void *dsi) {
     ds->terms[i].wt=ds->terms[i].tf*ds->terms[i].idf;
     tfs+=(ds->terms[i].wt*ds->terms[i].wt);
   } 
-  for (i=0; i < veclen; i++) {
-    if (tfs > 0)
+  tfs=sqrt(tfs); 
+  if (tfs > 0.0)
+    for (i=0; i < veclen; i++) {
       ds->terms[i].wt=ds->terms[i].wt/tfs;
-  }
+    }
+  /* else: tfs==0 && ds->terms[i].wt==0 */
   return;
 }
 
-void norm_fourth(void *rsi, void *dsi) {
+static void norm_fourth(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
   int i, veclen;
   double tfs=0.0, fr;
@@ -396,17 +392,18 @@ void norm_fourth(void *rsi, void *dsi) {
   for (i=0; i < veclen; i++) {
     ds->terms[i].wt=ds->terms[i].tf*ds->terms[i].idf;
     fr=(ds->terms[i].wt*ds->terms[i].wt);
-    fr=fr*fr;
-    tfs+=fr; /* ^ 4 */
+    fr=fr*fr; /* ^ 4 */
+    tfs+=fr; 
   }
-  for (i=0; i < veclen; i++) {
-    if (tfs > 0)
+  if (tfs > 0.0)
+    for (i=0; i < veclen; i++) {
       ds->terms[i].wt=ds->terms[i].wt/tfs;
-  }
+    }
+  /* else: tfs==0 && ds->terms[i].wt==0 */
   return;
 }
 
-void norm_max(void *rsi, void *dsi) {
+static void norm_max(void *rsi, void *dsi) {
   DS ds=(DS)dsi;
   int i, veclen;
   double tfm=0.0;
@@ -417,16 +414,17 @@ void norm_max(void *rsi, void *dsi) {
     if (ds->terms[i].wt > tfm)
       tfm=ds->terms[i].wt;
   }
-  for (i=0; i < veclen; i++) {
-    if (tfm > 0)
+  if (tfm > 0.0)
+    for (i=0; i < veclen; i++) {
       ds->terms[i].wt=ds->terms[i].wt/tfm;
-  }
+    }
+  /* else: tfs==0 && ds->terms[i].wt==0 */
   return;
 }
 
 /* add: norm_pivot, ... */
 
-double sim_cosine(void *dsi1, void *dsi2) {
+static double sim_cosine(void *dsi1, void *dsi2) {
   DS ds1=(DS)dsi1;
   DS ds2=(DS)dsi2;
   int i, veclen;
@@ -453,218 +451,208 @@ double sim_cosine(void *dsi1, void *dsi2) {
 
 /* *** */
 
-/* best-fully-weighted */
-const char* def_rschema="ntc-atn";
-
-/* prototype */
-void zv_init_schema(RS, const char*);
-
-void zv_init(RS rs) {
-  char *sname="ntc-atn";/* obtain from configuration file */ 
-  yaz_log(LOG_DEBUG, "zv_init\n");
-  /* alloc rs */
-  rs->db_docs=100000;   /* assign correct value here */
-  rs->db_terms=500000;  /* assign correct value here */
-  rs->db_f_max=50;      /* assign correct value here */
-  rs->db_f_max_str="a"; /* assign correct value here */
-  zv_init_schema(rs, sname);
-  return;
-}
-
-void zv_init_schema(RS rs, const char *sname) {
+static void zv_init_scheme(RS rs, const char *sname) {
   int slen;
   char c0, c1, c2, c3, c4, c5, c6;
+  const char *def_rscheme="ntc-atn"; /* a good default */
   /**/
-  yaz_log(LOG_DEBUG, "zv_init_schema\n");
+  yaz_log(LOG_DEBUG, "zv_init_scheme");
   slen=strlen(sname);
-  if (slen>0) c0=sname[0]; else c0=def_rschema[0];
-  if (slen>0) c1=sname[1]; else c1=def_rschema[1];
-  if (slen>0) c2=sname[2]; else c2=def_rschema[2];
+  if (slen < 7) 
+    yaz_log(LOG_LOG, "zvrank: invalid weighting-scheme \"%s\"", sname);
+  if (slen > 0) c0=sname[0]; else c0=def_rscheme[0];
+  if (slen > 1) c1=sname[1]; else c1=def_rscheme[1];
+  if (slen > 2) c2=sname[2]; else c2=def_rscheme[2];
   c3='-';
-  if (slen>0) c4=sname[4]; else c4=def_rschema[4];
-  if (slen>0) c5=sname[5]; else c5=def_rschema[5];
-  if (slen>0) c6=sname[6]; else c6=def_rschema[6];
+  if (slen > 4) c4=sname[4]; else c4=def_rscheme[4];
+  if (slen > 5) c5=sname[5]; else c5=def_rscheme[5];
+  if (slen > 6) c6=sname[6]; else c6=def_rscheme[6];
   /**/
   /* assign doc functions */
   switch (c0) {
   case 'b':
     rs->d_tf_fct=tf_binary;
-    rs->rschema[0]='b';
+    rs->rscheme[0]='b';
     break;
   case 'm':
     rs->d_tf_fct=tf_max_norm;
-    rs->rschema[0]='m';
+    rs->rscheme[0]='m';
+    yaz_log(LOG_DEBUG, "tf_max_norm: d_f_max required");
     break;
   case 'a':
     rs->d_tf_fct=tf_aug_norm;
-    rs->rschema[0]='a';
+    rs->rscheme[0]='a';
+    yaz_log(LOG_DEBUG, "tf_aug_norm: d_f_max required");
     break;
   case 's':
     rs->d_tf_fct=tf_square;
-    rs->rschema[0]='s';
+    rs->rscheme[0]='s';
     break;
   case 'l':
     rs->d_tf_fct=tf_log;
-    rs->rschema[0]='l';
+    rs->rscheme[0]='l';
     break;
   default: /* 'n' */
     rs->d_tf_fct=tf_none;
-    rs->rschema[0]='n';
+    rs->rscheme[0]='n';
   }
   switch (c1) {
   case 't':
     rs->d_idf_fct=idf_tfidf;
-    rs->rschema[1]='t';
+    rs->rscheme[1]='t';
+    yaz_log(LOG_DEBUG, "idf_tfidf: db_docs required");
     break;
   case 'p':
     rs->d_idf_fct=idf_prob;
-    rs->rschema[1]='p';
+    rs->rscheme[1]='p';
+    yaz_log(LOG_DEBUG, "idf_prob: db_docs required");
     break;
   case 'f':
     rs->d_idf_fct=idf_freq;
-    rs->rschema[1]='f';
+    rs->rscheme[1]='f';
+    yaz_log(LOG_DEBUG, "idf_freq: db_docs required");
     break;
   case 's':
     rs->d_idf_fct=idf_squared;
-    rs->rschema[1]='s';
+    rs->rscheme[1]='s';
+    yaz_log(LOG_DEBUG, "idf_squared: db_docs required");
     break;
   default: /* 'n' */
     rs->d_idf_fct=idf_none;
-    rs->rschema[1]='n';
+    rs->rscheme[1]='n';
   }
   switch (c2) {
   case 's':
     rs->d_norm_fct=norm_sum;
-    rs->rschema[2]='s';
+    rs->rscheme[2]='s';
     break;
   case 'c':
     rs->d_norm_fct=norm_cosine;
-    rs->rschema[2]='c';
+    rs->rscheme[2]='c';
     break;
   case 'f':
     rs->d_norm_fct=norm_fourth;
-    rs->rschema[2]='t';
+    rs->rscheme[2]='t';
     break;
   case 'm':
     rs->d_norm_fct=norm_max;
-    rs->rschema[2]='m';
+    rs->rscheme[2]='m';
     break;
   default: /* 'n' */
     rs->d_norm_fct=norm_none;
-    rs->rschema[2]='n';
+    rs->rscheme[2]='n';
   }
   /**/
-  rs->rschema[3]='-';
+  rs->rscheme[3]='-';
   /* assign query functions */
   switch (c4) {
   case 'b':
     rs->q_tf_fct=tf_binary;
-    rs->rschema[4]='b';
+    rs->rscheme[4]='b';
     break;
   case 'm':
     rs->q_tf_fct=tf_max_norm;
-    rs->rschema[4]='m';
+    yaz_log(LOG_DEBUG, "tf_max_norm: d_f_max required");
+    rs->rscheme[4]='m';
     break;
   case 'a':
     rs->q_tf_fct=tf_aug_norm;
-    rs->rschema[4]='a';
+    rs->rscheme[4]='a';
+    yaz_log(LOG_DEBUG, "tf_aug_norm: d_f_max required");
     break;
   case 's':
     rs->q_tf_fct=tf_square;
-    rs->rschema[4]='s';
+    rs->rscheme[4]='s';
     break;
   case 'l':
     rs->q_tf_fct=tf_log;
-    rs->rschema[4]='l';
+    rs->rscheme[4]='l';
     break;
   default: /* 'n' */
     rs->q_tf_fct=tf_none;
-    rs->rschema[4]='n';
+    rs->rscheme[4]='n';
   }
   switch (c5) {
   case 't':
     rs->q_idf_fct=idf_tfidf;
-    rs->rschema[5]='t';
+    rs->rscheme[5]='t';
+    yaz_log(LOG_DEBUG, "idf_tfidf: db_docs required");
     break;
   case 'p':
     rs->q_idf_fct=idf_prob;
-    rs->rschema[5]='p';
+    rs->rscheme[5]='p';
+    yaz_log(LOG_DEBUG, "idf_prob: db_docs required");
     break;
   case 'f':
     rs->q_idf_fct=idf_freq;
-    rs->rschema[5]='f';
+    rs->rscheme[5]='f';
+    yaz_log(LOG_DEBUG, "idf_freq: db_docs required");
     break;
   case 's':
     rs->q_idf_fct=idf_squared;
-    rs->rschema[5]='s';
+    rs->rscheme[5]='s';
+    yaz_log(LOG_DEBUG, "idf_squared: db_docs required");
     break;
   default: /* 'n' */
     rs->q_idf_fct=idf_none;
-    rs->rschema[5]='n';
+    rs->rscheme[5]='n';
   }
   switch (c6) {
   case 's':
     rs->q_norm_fct=norm_sum;
-    rs->rschema[6]='s';
+    rs->rscheme[6]='s';
     break;
   case 'c':
     rs->q_norm_fct=norm_cosine;
-    rs->rschema[6]='c';
+    rs->rscheme[6]='c';
     break;
   case 'f':
     rs->q_norm_fct=norm_fourth;
-    rs->rschema[6]='f';
+    rs->rscheme[6]='f';
     break;
   case 'm':
     rs->q_norm_fct=norm_max;
-    rs->rschema[6]='m';
+    rs->rscheme[6]='m';
     break;
   default: /* 'n' */
     rs->q_norm_fct=norm_none;
-    rs->rschema[6]='n';
+    rs->rscheme[6]='n';
   }
-  rs->rschema[7]='\0';
+  rs->rscheme[7]='\0';
   /**/
   rs->sim_fct=sim_cosine;
-  yaz_log(LOG_DEBUG, "zv_schema %s\n", rs->rschema);
+  yaz_log(LOG_DEBUG, "zv_scheme %s", rs->rscheme);
+  return;
+}
 
+static void zv_init(RS rs, const char *rscheme) {
+  yaz_log(LOG_DEBUG, "zv_init");
+  /**/
+  rs->db_docs=100000;   /* assign correct value here */
+  rs->db_terms=500000;  /* assign correct value here (for debugging) */
+  rs->db_f_max=50;      /* assign correct value here */
+  rs->db_f_max_str="a"; /* assign correct value here (for debugging) */
+  zv_init_scheme(rs, rscheme);
   return;
 }
 
 /******/
-
-struct rank_class_info { /* where do we need this ? */
-    int dummy;
-};
-
-/*
-struct rank_term_info {
-    int local_occur;
-    int global_occur;
-    int global_inv;
-    int rank_flag;
-    int rank_weight;
-};
-
-struct rank_set_info {
-    int last_pos;
-    int no_entries;
-    int no_rank_entries;
-    struct rank_term_info *entries;
-};
-*/
-
 
 /*
  * zv_create: Creates/Initialises this rank handler. This routine is 
  *  called exactly once. The routine returns the class_handle.
  */
 static void *zv_create (ZebraHandle zh) {
-    struct rank_class_info *ci = (struct rank_class_info *)
-        xmalloc (sizeof(*ci));
-    yaz_log(LOG_DEBUG, "zv_create\n");
-    logf (LOG_DEBUG, "zv_create");
-    return ci;
+  int i;
+  Res res = zh->res;
+  const char *wscheme;
+  struct rank_class_info *ci = (struct rank_class_info *)
+    xmalloc (sizeof(*ci));
+  yaz_log(LOG_DEBUG, "zv_create");
+  wscheme=res_get(res, "zvrank.weighting-scheme");
+  for (i=0; (i < strlen(wscheme)) && (i < 8); i++) 
+    ci->rscheme[i]=wscheme[i];
+  return ci;
 }
 
 /*
@@ -673,10 +661,9 @@ static void *zv_create (ZebraHandle zh) {
  *  dies. The class_handle was previously returned by create.
  */
 static void zv_destroy (struct zebra_register *reg, void *class_handle) {
-    struct rank_class_info *ci = (struct rank_class_info *) class_handle;
-    yaz_log(LOG_DEBUG, "zv_destroy\n");
-    logf (LOG_DEBUG, "zv_destroy");
-    xfree (ci);
+  struct rank_class_info *ci = (struct rank_class_info *) class_handle;
+  yaz_log(LOG_DEBUG, "zv_destroy");
+  xfree (ci);
 }
 
 
@@ -685,45 +672,43 @@ static void zv_destroy (struct zebra_register *reg, void *class_handle) {
  *  each result set. The returned handle is a "set handle" and
  *  will be used in each of the handlers below.
  */
-static void *zv_begin (struct zebra_register *reg, void *class_handle, RSET rset)
+static void *zv_begin(struct zebra_register *reg, void *class_handle, RSET rset)
 {
   struct rs_info *rs=(struct rs_info *)xmalloc(sizeof(*rs));
+  struct rank_class_info *ci=(struct rank_class_info *)class_handle;
   int i;
   int veclen, gocc;
   /**/
-  logf (LOG_DEBUG, "rank-1 zvbegin");
-  yaz_log(LOG_DEBUG, "zv_begin\n");
+  yaz_log(LOG_DEBUG, "zv_begin");
   veclen=rset->no_rset_terms; /* smaller vector here */
-  zv_init(rs);
+  zv_init(rs, ci->rscheme);
   rs->veclen=veclen;
   prn_rs(rs);
   
   rs->qdoc=(struct ds_info *)xmalloc(sizeof(*rs->qdoc));
   rs->qdoc->terms=(struct ts_info *)xmalloc(sizeof(*rs->qdoc->terms)*rs->veclen);
   rs->qdoc->veclen=veclen;
-  
+  rs->qdoc->d_f_max=1; /* no duplicates */ 
+  rs->qdoc->d_f_max_str=""; 
+
   rs->rdoc=(struct ds_info *)xmalloc(sizeof(*rs->rdoc));
   rs->rdoc->terms=(struct ts_info *)xmalloc(sizeof(*rs->rdoc->terms)*rs->veclen);
   rs->rdoc->veclen=veclen;
-  /* yaz_log(LOG_DEBUG, "zv_begin_init\n"); */
+  rs->rdoc->d_f_max=10; /* just a guess */
+  rs->rdoc->d_f_max_str=""; 
+  /* yaz_log(LOG_DEBUG, "zv_begin_init"); */
   for (i = 0; i < rs->veclen; i++)
     {
       gocc=rset->rset_terms[i]->nn;
-      /* yaz_log(LOG_DEBUG, "zv_begin_init i=%d gocc=%d\n", i, gocc); */
-      /* "rank": check name from config file */ 
-      if (!strncmp (rset->rset_terms[i]->flags, "rank,", 5)) {
-	yaz_log (LOG_LOG, "%s", rset->rset_terms[i]->flags);
-	/*si->entries[i].rank_flag = 1;
-	  (si->no_rank_entries)++;
-	*/
-      } else {
-	/* si->entries[i].rank_flag = 0; */
-      }
+      /* yaz_log(LOG_DEBUG, "zv_begin_init i=%d gocc=%d", i, gocc); */
       rs->qdoc->terms[i].gocc=gocc;
-      rs->qdoc->terms[i].locc=1;  /* assume query has no duplicates */
+      rs->qdoc->terms[i].locc=1;  /* assume query has no duplicate terms */
       rs->rdoc->terms[i].gocc=gocc;
       rs->rdoc->terms[i].locc=0;
     }
+  (*rs->q_tf_fct)(rs, rs->qdoc); /* we do this once only */
+  (*rs->q_idf_fct)(rs, rs->qdoc);
+  (*rs->q_norm_fct)(rs, rs->qdoc);
   return rs;
 }
 
@@ -734,8 +719,7 @@ static void *zv_begin (struct zebra_register *reg, void *class_handle, RSET rset
 static void zv_end (struct zebra_register *reg, void *rsi)
 {
   RS rs=(RS)rsi;
-  yaz_log(LOG_DEBUG, "zv_end\n");
-  logf (LOG_DEBUG, "rank-1 end");
+  yaz_log(LOG_DEBUG, "zv_end");
   xfree(rs->qdoc->terms);
   xfree(rs->rdoc->terms);
   xfree(rs->qdoc);
@@ -750,10 +734,9 @@ static void zv_end (struct zebra_register *reg, void *rsi)
  *  update the score.
  */
 static void zv_add (void *rsi, int seqno, int i) {
-    RS rs=(RS)rsi;
-    /*logf (LOG_DEBUG, "rank-1 add seqno=%d term_index=%d", seqno, term_index);*/
-    /*si->last_pos = seqno;*/
-    rs->rdoc->terms[i].locc++;
+  RS rs=(RS)rsi;
+  /* yaz_log(LOG_DEBUG, "zvrank zv_add seqno=%d term_index=%d", seqno, term_index);*/
+  rs->rdoc->terms[i].locc++;
 }
 
 /*
@@ -764,35 +747,27 @@ static void zv_add (void *rsi, int seqno, int i) {
  */
 static int zv_calc (void *rsi, int sysno)
 {
-    int i, veclen; 
-    int score=0;
-    double dscore=0.0;
-    RS rs=(RS)rsi;
-    /* yaz_log(LOG_DEBUG, "zv_calc\n"); */
-    /**/
-    veclen=rs->veclen;
-    if (veclen==0)
-	return -1;
-    for (i = 0; i < veclen; i++) {
-	(*rs->q_tf_fct)(rs, rs->qdoc); /* we should actually do this once */
-	(*rs->q_idf_fct)(rs, rs->qdoc);
-	(*rs->q_norm_fct)(rs, rs->qdoc);
-
-	(*rs->d_tf_fct)(rs, rs->rdoc);
-	(*rs->d_idf_fct)(rs, rs->rdoc);
-	(*rs->d_norm_fct)(rs, rs->rdoc);
-	
-	dscore=rs->sim_fct(rs->qdoc, rs->rdoc);
-    }
-    score = dscore * 1000;
-    yaz_log (LOG_LOG, "sysno=%d score=%d", sysno, score);
-    if (score > 1000)
-	score = 1000;
-    /*
-      for (i = 0; i < si->no_entries; i++)
-	si->entries[i].local_occur = 0;
-    */
-    return score;
+  int i, veclen; 
+  int score=0;
+  double dscore=0.0;
+  RS rs=(RS)rsi;
+  /* yaz_log(LOG_DEBUG, "zv_calc"); */
+  /**/
+  veclen=rs->veclen;
+  if (veclen==0)
+    return -1;
+  for (i = 0; i < veclen; i++) {
+    /* qdoc weight has already been calculated */
+    (*rs->d_tf_fct)(rs, rs->rdoc);
+    (*rs->d_idf_fct)(rs, rs->rdoc);
+    (*rs->d_norm_fct)(rs, rs->rdoc);
+    dscore=rs->sim_fct(rs->qdoc, rs->rdoc);
+  }
+  score = dscore * 1000;
+  yaz_log (LOG_LOG, "sysno=%d score=%d", sysno, score);
+  if (score > 1000) /* should not happen */
+    score = 1000;
+  return score;
 }
 
 /*
@@ -814,13 +789,13 @@ static int zv_calc (void *rsi, int sysno)
  */
 
 static struct rank_control rank_control_vsm = {
-    "zvrank", /* "zv_rank", */ /* zvrank */
-    zv_create,
-    zv_destroy,
-    zv_begin,
-    zv_end,
-    zv_calc,
-    zv_add,
+  "zvrank",
+  zv_create,
+  zv_destroy,
+  zv_begin,
+  zv_end,
+  zv_calc,
+  zv_add,
 };
  
 struct rank_control *rankzv_class = &rank_control_vsm;
