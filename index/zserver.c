@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1995-1998, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.62  1998-08-06 14:35:28  adam
+ * Revision 1.63  1998-09-02 13:53:21  adam
+ * Extra parameter decode added to search routines to implement
+ * persistent queries.
+ *
+ * Revision 1.62  1998/08/06 14:35:28  adam
  * Routine bend_deleterequest removed.
  *
  * Revision 1.61  1998/06/24 12:16:15  adam
@@ -303,7 +307,7 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     switch (q->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
-	zebra_search_rpn (zh, q->stream, q->query->u.type_1,
+	zebra_search_rpn (zh, q->stream, q->decode, q->query->u.type_1,
 			  q->num_bases, q->basenames, q->setname);
 	r->errcode = zh->errCode;
 	r->errstring = zh->errString;

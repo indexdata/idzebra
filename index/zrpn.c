@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1995-1998, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.82  1998-06-26 11:16:40  quinn
+ * Revision 1.83  1998-09-02 13:53:19  adam
+ * Extra parameter decode added to search routines to implement
+ * persistent queries.
+ *
+ * Revision 1.82  1998/06/26 11:16:40  quinn
  * Added support (un-optimised) for left and left/right truncation
  *
  * Revision 1.81  1998/06/24 12:16:14  adam
@@ -2013,7 +2017,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
     return r;
 }
 
-void rpn_search (ZebraHandle zh, ODR stream,
+void rpn_search (ZebraHandle zh, ODR stream, ODR decode,
 		 Z_RPNQuery *rpn, int num_bases, char **basenames, 
 		 const char *setname)
 {

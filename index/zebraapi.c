@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1995-1998, Index Data ApS
+ * Copyright (C) 1995-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.8  1998-08-24 17:29:23  adam
+ * Revision 1.9  1998-09-02 13:53:17  adam
+ * Extra parameter decode added to search routines to implement
+ * persistent queries.
+ *
+ * Revision 1.8  1998/08/24 17:29:23  adam
  * Minor changes.
  *
  * Revision 1.7  1998/06/24 12:16:13  adam
@@ -218,7 +222,7 @@ void zebra_close (ZebraHandle zh)
     xfree (zh);
 }
 
-void zebra_search_rpn (ZebraHandle zh, ODR stream,
+void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
 		       Z_RPNQuery *query, int num_bases, char **basenames, 
 		       const char *setname)
 {
@@ -226,7 +230,7 @@ void zebra_search_rpn (ZebraHandle zh, ODR stream,
     zh->errCode = 0;
     zh->errString = NULL;
     zh->hits = 0;
-    rpn_search (zh, stream, query, num_bases, basenames, setname);
+    rpn_search (zh, stream, decode, query, num_bases, basenames, setname);
     zebra_register_unlock (zh);
 }
 

@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.36  1998-06-24 12:16:16  adam
+ * Revision 1.37  1998-09-02 13:53:22  adam
+ * Extra parameter decode added to search routines to implement
+ * persistent queries.
+ *
+ * Revision 1.36  1998/06/24 12:16:16  adam
  * Support for relations on text operands. Open range support in
  * DFA module (i.e. [-j], [g-]).
  *
@@ -204,7 +208,7 @@ struct rank_control {
     void (*add)(void *set_handle, int seqno, int term_index);
 };
 
-void rpn_search (ZebraHandle zh, ODR stream,
+void rpn_search (ZebraHandle zh, ODR stream, ODR decode,
 		 Z_RPNQuery *rpn, int num_bases, char **basenames, 
 		 const char *setname);
 
