@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.64  1996-11-08 11:10:16  adam
+ * Revision 1.65  1996-11-14 08:57:56  adam
+ * Reduction of storeKeys area.
+ *
+ * Revision 1.64  1996/11/08 11:10:16  adam
  * Buffers used during file match got bigger.
  * Compressed ISAM support everywhere.
  * Bug fixes regarding masking characters in queries.
@@ -355,6 +358,9 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
     }
 }
 
+#define SORT_EXTRA 0
+
+#if SORT_EXTRA
 static int key_y_len;
 
 static int key_y_compare (const void *p1, const void *p2)
@@ -371,6 +377,7 @@ static int key_x_compare (const void *p1, const void *p2)
 {
     return strcmp (*(char**) p1, *(char**) p2);
 }
+#endif
 
 void key_flush (void)
 {
@@ -378,14 +385,16 @@ void key_flush (void)
     char out_fname[200];
     char *prevcp, *cp;
     struct encode_info encode_info;
+#if SORT_EXTRA
     int i;
+#endif
     
     if (ptr_i <= 0)
         return;
 
     key_file_no++;
     logf (LOG_LOG, "sorting section %d", key_file_no);
-#if 1
+#if !SORT_EXTRA
     qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_qsort_compare);
     getFnameTmp (out_fname, key_file_no);
 
@@ -484,6 +493,7 @@ struct recKeys {
     char *buf;
     char prevAttrSet;
     short prevAttrUse;
+    int prevSeqNo;
 } reckeys;
 
 static void addRecordKey (const RecWord *p)
@@ -493,6 +503,7 @@ static void addRecordKey (const RecWord *p)
     short attrUse;
     size_t i;
     int lead = 0;
+    int diff = 0;
 
     if (reckeys.buf_used+1024 > reckeys.buf_max)
     {
@@ -516,6 +527,14 @@ static void addRecordKey (const RecWord *p)
         lead |= 2;
     else
         reckeys.prevAttrUse = attrUse;
+#if 1
+    diff = 1 + p->seqno - reckeys.prevSeqNo;
+    if (diff >= 1 && diff <= 15)
+        lead |= (diff << 2);
+    else
+        diff = 0;
+#endif
+    reckeys.prevSeqNo = p->seqno;
 
     *dst++ = lead;
 
@@ -544,8 +563,11 @@ static void addRecordKey (const RecWord *p)
         *dst++ = p->u.string[i];
     *dst++ = '\0';
 
-    memcpy (dst, &p->seqno, sizeof(p->seqno));
-    dst += sizeof(p->seqno);
+    if (!diff)
+    {
+        memcpy (dst, &p->seqno, sizeof(p->seqno));
+        dst += sizeof(p->seqno);
+    }
     reckeys.buf_used = dst - reckeys.buf;
 }
 
@@ -554,6 +576,7 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
 {
     char attrSet = -1;
     short attrUse = -1;
+    int seqno = 0;
     int off = 0;
 
     if (zebTargetInfo_curDatabase (zti, databaseName))
@@ -565,7 +588,7 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
     {
         const char *src = reckeys->buf + off;
         struct it_key key;
-        int lead;
+        int lead, ch;
     
         lead = *src++;
 
@@ -584,20 +607,25 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
         ++ptr_i;
         key_buf[ptr_top-ptr_i] = (char*)key_buf + key_buf_used;
 
-        lead = zebTargetInfo_lookupSU (zti, attrSet, attrUse);
-        if (lead < 0)
-            lead = zebTargetInfo_addSU (zti, attrSet, attrUse);
-        assert (lead > 0);
-        ((char*) key_buf) [key_buf_used++] = lead;
+        ch = zebTargetInfo_lookupSU (zti, attrSet, attrUse);
+        if (ch < 0)
+            ch = zebTargetInfo_addSU (zti, attrSet, attrUse);
+        assert (ch > 0);
+        ((char*) key_buf) [key_buf_used++] = ch;
         while (*src)
             ((char*)key_buf) [key_buf_used++] = *src++;
         src++;
         ((char*)key_buf) [key_buf_used++] = '\0';
-        
         ((char*) key_buf)[key_buf_used++] = cmd;
 
-        memcpy (&key.seqno, src, sizeof(key.seqno));
-        src += sizeof(key.seqno);
+        if (lead & 60)
+            seqno += ((lead>>2) & 15)-1;
+        else
+        {
+            memcpy (&seqno, src, sizeof(seqno));
+            src += sizeof(seqno);
+        }
+        key.seqno = seqno;
         key.sysno = sysno;
         memcpy ((char*)key_buf + key_buf_used, &key, sizeof(key));
         key_buf_used += sizeof(key);
@@ -915,6 +943,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         reckeys.buf_used = 0;
         reckeys.prevAttrUse = -1;
         reckeys.prevAttrSet = -1;
+        reckeys.prevSeqNo = 0;
 
         recordOffset = fi->file_moffset;
         extractCtrl.offset = recordOffset;
