@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.1  1997-10-27 14:33:06  adam
+ * Revision 1.2  1997-10-31 12:39:30  adam
+ * Changed log message.
+ *
+ * Revision 1.1  1997/10/27 14:33:06  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -91,7 +94,7 @@ chrmaptab zebra_map_get (ZebraMaps zms, int reg_type)
     if (!(zm->maptab = chrmaptab_create (zms->tabpath, name, 0)))
 	logf(LOG_WARN, "Failed to read character table %s", name);
     else
-	logf(LOG_LOG, "Read table %s", name);
+	logf(LOG_DEBUG, "Read character table %s", name);
     return zm->maptab;
 }
 
