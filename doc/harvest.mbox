@@ -158,3 +158,123 @@ I am very happy to see such a nice software available under GPL.
 Thanks.
 
 kj
+From zebralist-admin@indexdata.dk  Mon Nov 25 11:13:10 2002
+MIME-Version: 1.0
+Envelope-to: zebra@miketaylor.org.uk
+From: Pete <P.D.Mallinson@liverpool.ac.uk>
+X-X-Sender: qq15@uxa.liv.ac.uk
+To: Kang-Jin Lee <lee@arco.de>
+cc: zebralist@indexdata.dk
+Subject: Re: [Zebralist] Some progress on Harvest's move to Zebra
+In-Reply-To: <200211242045.19196.lee@arco.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Level: 
+Sender: zebralist-admin@indexdata.dk
+X-BeenThere: zebralist@indexdata.dk
+X-Mailman-Version: 2.0.11
+Precedence: bulk
+List-Help: <mailto:zebralist-request@indexdata.dk?subject=help>
+List-Post: <mailto:zebralist@indexdata.dk>
+List-Subscribe: <http://www.indexdata.dk/mailman/listinfo/zebralist>,
+	<mailto:zebralist-request@indexdata.dk?subject=subscribe>
+List-Id: Zebra Information Server <zebralist.indexdata.dk>
+List-Unsubscribe: <http://www.indexdata.dk/mailman/listinfo/zebralist>,
+	<mailto:zebralist-request@indexdata.dk?subject=unsubscribe>
+List-Archive: <http://www.indexdata.dk/pipermail/zebralist/>
+Date: Mon, 25 Nov 2002 10:19:37 +0000 (GMT)
+X-Spam-Status: No, hits=-4.4 required=5.0 tests=IN_REP_TO version=2.20
+X-Spam-Level: 
+Content-Length: 2853
+
+On Sun, 24 Nov 2002, Kang-Jin Lee wrote:
+
+>Hi,
+>
+>I finished first steps to use Zebra as fulltext engine for Harvest
+>(http://harvest.sourceforge.net/). The performance boost after
+>some testing are quite impressive.
+
+Hi ... I'd almost forgotten that the Harvest project is still active.
+
+We had a heap of challenges with our Harvest setup and with the
+time taken to index and search ... we switched to using
+Harvest-NG as the "reaper/gatherer" and modified Zebra to
+work with SOIF and our own ranking algorithm - it's been in
+service for over 6 months now.
+
+We had challenges with both speed of gathering and with
+speed of indexing and searching but most seem to be
+"managable" now.
+
+We offered our modifications to Zebra to Indexdata who
+offered to look at them since the latest release of Zebra
+is sufficiently different at the code level to make it
+non-trivial for us to apply our code modifications to
+it.
+
+
+Cheers
+
+Pete Mallinson
+
+>
+>Here is my article I wrote for the Harvest mailinglist.
+>
+>Many thanks for Zebra.
+>
+>------------------------------------------------------
+>Hi,
+>
+>The first results after some testing with Zebra are very promising.
+>
+>The tests were done with around 220 000 SOIF files, which occupies
+>1.6GB of disk space.
+>
+>Building the index from scratch takes around one hour with Zebra where
+>Glimpse needs around five hours.
+>
+>While glimpse blocks search requests when updating its index, Zebra
+>can still answer search requests.
+>
+>While the search time of glimpse varies from some seconds to some
+>minutes depending how expensive the query is, Zebra usually takes
+>around one to three seconds, even for expensive queries.
+>
+>Glimpse' index occupies around 250MB of disk space, Zebra's index
+>takes around 570MB.
+>
+>Zebra supports incremental indexing which will speed up indexing even
+>further.
+>
+>There are still potential for faster searches when necessary, using
+>tweaks on apache.
+>
+>On the other hand, modeling data is not complete, yet.
+>
+>To sum it up:
+>- Zebra indexes data five times faster than Glimpse
+>- Zebra doesn't cause downtimes for indexupdate
+>- Zebra's search time doesn't jump from seconds to minutes for no
+>  obvious reason, but stays constant within a range of one to three
+>  seconds
+>- Zebra can search more than 100 times faster than Glimpse
+>- Zebra can process multiple search requests simultaneously
+>- Zebra can speed up indexing by using incremental indexing
+>- Glimpse's index size is only around half of the Zebra's index
+>
+>kj
+>------------------------------------------------------
+>
+>_______________________________________________
+>Zebralist mailing list
+>Zebralist@indexdata.dk
+>http://www.indexdata.dk/mailman/listinfo/zebralist
+>
+
+
+
+_______________________________________________
+Zebralist mailing list
+Zebralist@indexdata.dk
+http://www.indexdata.dk/mailman/listinfo/zebralist
+
