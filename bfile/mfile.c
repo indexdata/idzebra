@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.30  1999-02-02 14:50:02  adam
+ * Revision 1.31  1999-02-18 12:49:33  adam
+ * Changed file naming scheme for register files as well as record
+ * store/index files.
+ *
+ * Revision 1.30  1999/02/02 14:50:02  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.29  1998/05/27 14:28:34  adam
@@ -276,7 +280,7 @@ MFile_area mf_init(const char *name, const char *spec)
 	{
 	    if (*dent->d_name == '.')
 	    	continue;
-	    if (sscanf(dent->d_name, "%[^.].mf.%d", metaname, &number) != 2)
+	    if (sscanf(dent->d_name, "%[^-]-%d.mf", metaname, &number) != 2)
 	    {
 	    	logf (LOG_DEBUG, "bf: %s is not a part-file.", dent->d_name);
 	    	continue;
@@ -406,7 +410,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 	    return 0;
 	}
 	mnew->files[0].dir = dp;
-    	sprintf(tmp, "%s/%s.mf.%d", dp->name, mnew->name, 0);
+    	sprintf(tmp, "%s/%s-%d.mf", dp->name, mnew->name, 0);
     	mnew->files[0].path = xstrdup(tmp);
     	mnew->ma = ma;
 	mnew->next = ma->mfiles;

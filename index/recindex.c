@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.21  1999-02-02 14:51:03  adam
+ * Revision 1.22  1999-02-18 12:49:34  adam
+ * Changed file naming scheme for register files as well as record
+ * store/index files.
+ *
+ * Revision 1.21  1999/02/02 14:51:03  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.20  1998/01/12 15:04:08  adam
@@ -280,7 +284,7 @@ Records rec_open (BFiles bfs, int rw)
     p->rw = rw;
     p->tmp_size = 1024;
     p->tmp_buf = xmalloc (p->tmp_size);
-    p->index_fname = "recindex";
+    p->index_fname = "reci";
     p->index_BFile = bf_open (bfs, p->index_fname, 128, rw);
     if (p->index_BFile == NULL)
     {
@@ -324,7 +328,7 @@ Records rec_open (BFiles bfs, int rw)
     for (i = 0; i<REC_BLOCK_TYPES; i++)
     {
         char str[80];
-        sprintf (str, "recdata%c", i + 'A');
+        sprintf (str, "recd%c", i + 'A');
         p->data_fname[i] = xmalloc (strlen(str)+1);
         strcpy (p->data_fname[i], str);
         p->data_BFile[i] = NULL;

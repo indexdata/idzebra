@@ -1,3 +1,6 @@
+Changed file naming scheme for register files from <name>.mf.<no> to
+<name>-<no>.mf.
+
 Implemented "position"-flag for register type (as defined in
 default.idx). When set to zero no position (or seqence number) is
 saved in register for each word occurrence, thus saving some register
