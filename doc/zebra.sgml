@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.24 1996-04-17 09:21:29 quinn Exp $
+  $Id: zebra.sgml,v 1.25 1996-05-09 09:59:57 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.24 $
+<date>$Revision: 1.25 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -71,6 +71,11 @@ SGML-like syntax which allows nested (structured) data elements, as
 well as variant forms of data.
 
 <item>
+Supports random storage formats. A system of input filters driven by
+regular expressions allows you to easily process most ASCII-based
+data formats.
+
+<item>
 Supports boolean queries as well as relevance-ranking (free-text)
 searching. Right truncation and masking in terms are supported, as
 well as full regular expressions.
@@ -80,6 +85,10 @@ Supports multiple concrete syntaxes
 for record exchange (depending on the configuration): GRS-1, SUTRS,
 ISO2709 (*MARC). Records can be mapped between record syntaxes and
 schema on the fly.
+
+<item>
+Supports approximate matching in registers (ie. spelling mistakes,
+etc).
 
 <item>
 Protocol support:
@@ -139,11 +148,6 @@ last beta release.
 <itemize>
 
 <item>
-*Allow the system to handle other input formats. Specifically
-MARC records and general, structured ASCII records (such as mail/news
-files) parameterized by regular expressions.
-
-<item>
 *Complete the support for variants. Finalize support for the WAIS
 retrieval methodology.
 
@@ -159,7 +163,7 @@ Add index and data compression to save disk space.
 
 <item>
 Add more sophisticated relevance ranking mechanisms. Add support for soundex
-and stemming. Add relevance feedback support.
+and stemming. Add relevance <it/feedback/ support.
 
 <item>
 Add Explain support.
@@ -170,10 +174,6 @@ variant pieces.
 
 <item>
 Support the Item Update extended service of the protocol.
-
-<item>
-The Zebra search engine supports approximate string matching in the
-index. We'd like to find a way to support and control this from RPN.
 
 <item>
 We want to add a management system that allows you to
@@ -823,7 +823,9 @@ Registers">).
 
 </descrip>
 
-<sect>Running the Z39.50 Server (zebrasrv)
+<sect>The Z39.50 Server
+
+<sect1>Running the Z39.50 Server (zebrasrv)
 
 <p>
 <bf/Syntax/
@@ -913,6 +915,91 @@ a dedicated IR server account.
 
 The default behavior for <tt/zebrasrv/ is to establish a single TCP/IP
 listener, for the Z39.50 protocol, on port 9999.
+
+<sect1>Z39.50 Protocol Support and Behavior
+
+<sect2>Initialization
+
+<p>
+During initialization, the server will negotiate to version 3 of the
+Z39.50 protocol, and the option bits for Search, Present, Scan,
+NamedResultSets, and concurrentOperations will be set, if requested by
+the client. The maximum PDU size is negotiated down to a maximum of 1Mb.
+
+<sect2>Search
+
+<p>
+The supported query type are 1 and 101 All operators except PROXIMITY
+are currently supported. Queries can be arbitrarily complex. Named
+result sets are supported, and result sets can be used as operands
+with no limitations. Searches may span multiple databases.
+
+The server has full support for piggy-backed present requests (see
+also the following section).
+
+<bf/Use/ attributes are interpreted according to the attribute sets which
+have been loaded in the <tt/zebra.cfg/ file, and are matched against
+specific fields as specified in the <tt/.abs/ file which describes the
+profile of the records which have been loaded. If no <bf/Use/
+attribute is provided, a default of <bf/Any/ is assumed.
+
+If a <bf/Structure/ attribute of <bf/Phrase/ is used in conjunction with a
+<bf/Completeness/ attribute of <bf/Complete (Sub)field/, the term is
+matched against the contents of a phrase (long word) register, if one
+exists for the given <bf/Use/ attribute. If <bf/Structure/=<bf/Phrase/
+is used in conjunction with <bf/Incomplete Field/ - the default value
+for <bf/Completeness/, the search is directed against the normal word
+registers, but if the term contains multiple words, the term will only
+match if all of the words are found immediately adjacent, and in the
+given order. If the <bf/Structure/ attribute is <bf/Word List/,
+<bf/Free-form Text/, or <bf/Document Text/, the term is treated as a
+natural-language, relevance-ranked query.
+
+If the <bf/Relation/ attribute is <bf/Equals/ (default), the term is
+matched in a normal fashion (modulo truncation and processing of
+individual words, if required). If <bf/Relation/ is <bf/Less Than/,
+<bf/Less Than or Equal/, <bf/Greater than/, or <bf/Greater than or
+Equal/, the term is assumed to be numerical, and a standard regular
+expression is constructed to match the given expression. If
+<bf/Relation/ is <bf/Relevance/, the standard natural-language query
+processor is invoked.
+
+For the <bf/Truncation/ attribute, <bf/No Truncation/ is the default.
+<bf/Left Truncation/ is not supported. <bf/Process #/ is supported, as
+is <bf/Regxp-1/. <bf/Regxp-2/ enables the fault-tolerant (fuzzy)
+search. As a default, a single error (deletion, insertion,
+replacement) is accepted when terms are matched against the register
+contents.
+
+<sect2>Present
+
+<p>
+The present facility is supported in a standard fashion. The requested
+record syntax is matched against the ones supported by the profile of
+each record retrieved. If no record syntax is given, SUTRS is the
+default. The requested element set name, again, is matched against any
+provided by the relevant record profiles.
+
+<sect2>Scan
+
+<p>
+The attribute combinations provided with the TermListAndStartPoint are
+processed in the same way as operands in a query (see above).
+Currently, only the term and the globalOccurrences are returned with
+the TermInfo structure.
+
+<sect2>Close
+
+<p>
+If a Close PDU is received, the server will respond with a Close PDU
+with reason=FINISHED, no matter which protocol version was negotiated
+during initialization. If the protocol version is 3 or more, the
+server will generate a Close PDU under certain circumstances,
+including a session timeout (ca. 60 minutes), and certain kinds of
+protocol errors. Once a Close PDU has been sent, the protocol
+association is considered broken, and the transport connection will be
+closed immediately upon receipt of further data, or following a short
+timeout.
 
 <sect>The Record Model
 
