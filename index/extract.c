@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.71  1997-07-15 16:28:41  adam
+ * Revision 1.72  1997-07-15 16:32:29  adam
+ * Bug fix: Match handler didn't terminate the resulting string!
+ *
+ * Revision 1.71  1997/07/15 16:28:41  adam
  * Bug fix: storeData didn't work with files with multiple records.
  * Bug fix: fixed memory management with records; not really well
  *  thought through.
@@ -923,6 +926,7 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
               fname, rGroup->groupName ? rGroup->groupName : "none");
         return NULL;
     }
+    *dst = '\0';
     return dstBuf;
 }
 
