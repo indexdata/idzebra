@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.82  1998-05-20 10:12:15  adam
+ * Revision 1.83  1998-06-08 14:43:10  adam
+ * Added suport for EXPLAIN Proxy servers - added settings databasePath
+ * and explainDatabase to facilitate this. Increased maximum number
+ * of databases and attributes in one register.
+ *
+ * Revision 1.82  1998/05/20 10:12:15  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -839,7 +844,8 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys)
         if (ch < 0)
             ch = zebraExplain_addSU (zti, attrSet, attrUse);
         assert (ch > 0);
-        ((char*) key_buf) [key_buf_used++] = ch;
+	key_buf_used += key_SU_code (ch, ((char*)key_buf) + key_buf_used);
+
         while (*src)
             ((char*)key_buf) [key_buf_used++] = *src++;
         src++;
@@ -1460,12 +1466,10 @@ int fileExtract (SYSNO *sysno, const char *fname,
     logf (LOG_DEBUG, "fileExtract %s", fname);
 
     /* determine file extension */
+    *ext = '\0';
     for (i = strlen(fname); --i >= 0; )
         if (fname[i] == '/')
-        {
-            strcpy (ext, "");
             break;
-        }
         else if (fname[i] == '.')
         {
             strcpy (ext, fname+i+1);
@@ -1478,20 +1482,17 @@ int fileExtract (SYSNO *sysno, const char *fname,
         if (!(rGroup->recordType = res_get (common_resource, ext_res)))
         {
             sprintf (ext_res, "%srecordType", gprefix);
-            if (!(rGroup->recordType = res_get (common_resource, ext_res)))
-            {
-                if (records_processed < rGroup->fileVerboseLimit)
-                    logf (LOG_LOG, "? %s", fname);
-                return 0;
-            }
+            rGroup->recordType = res_get (common_resource, ext_res);
         }
     }
     if (!rGroup->recordType)
     {
         if (records_processed < rGroup->fileVerboseLimit)
-            logf (LOG_LOG, "? record %s", fname);
+            logf (LOG_LOG, "? %s", fname);
         return 0;
     }
+    if (!*rGroup->recordType)
+	return 0;
     if (!(recType = recType_byName (rGroup->recordType, subType)))
     {
         logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
@@ -1518,9 +1519,17 @@ int fileExtract (SYSNO *sysno, const char *fname,
     if (!rGroup->databaseName)
         rGroup->databaseName = "Default";
 
+    /* determine if explain database */
+    
+    sprintf (ext_res, "%sexplainDatabase", gprefix);
+    rGroup->explainDatabase =
+	atoi (res_get_def (common_resource, ext_res, "0"));
+
+    /* announce database */
     if (zebraExplain_curDatabase (zti, rGroup->databaseName))
     {
-        if (zebraExplain_newDatabase (zti, rGroup->databaseName))
+        if (zebraExplain_newDatabase (zti, rGroup->databaseName,
+				      rGroup->explainDatabase))
             abort ();
     }
 
@@ -1586,7 +1595,7 @@ static int explain_extract (void *handle, Record rec, data1_node *n)
 
     if (zebraExplain_curDatabase (zti, rec->info[recInfo_databaseName]))
     {
-        if (zebraExplain_newDatabase (zti, rec->info[recInfo_databaseName]))
+        if (zebraExplain_newDatabase (zti, rec->info[recInfo_databaseName], 0))
             abort ();
     }
 

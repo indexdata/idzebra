@@ -1,3 +1,12 @@
+Maximum number of databases in one Zebra register increased.
+
+New setting, databasePath, which specifies that first directory
+during update traversal is the database name (instead of
+a fixed one).
+
+New setting, explainDatabase, which specifies that databases
+are EXPLAIN aware.
+
 Modified Zebra so that it works with ASN.1 compiled code for YAZ.
 
 Implemented EXPLAIN database maintenance. Zebra automatically

@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.33  1998-01-12 15:04:08  adam
+ * Revision 1.34  1998-06-08 14:43:14  adam
+ * Added suport for EXPLAIN Proxy servers - added settings databasePath
+ * and explainDatabase to facilitate this. Increased maximum number
+ * of databases and attributes in one register.
+ *
+ * Revision 1.33  1998/01/12 15:04:08  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.32  1997/09/25 14:56:51  adam
@@ -149,7 +154,8 @@ static int repComp (const char *a, const char *b, size_t len)
 }
 
 static void repositoryExtractR (int deleteFlag, char *rep,
-                                struct recordGroup *rGroup)
+                                struct recordGroup *rGroup,
+				int level)
 {
     struct dir_entry *e;
     int i;
@@ -163,16 +169,23 @@ static void repositoryExtractR (int deleteFlag, char *rep,
         rep[rep_len] = '/';
     else
         --rep_len;
+    
     for (i=0; e[i].name; i++)
     {
+	char *ecp;
         strcpy (rep +rep_len+1, e[i].name);
+	if ((ecp = strrchr (e[i].name, '/')))
+	    *ecp = '\0';
+	if (level == 0 && rGroup->databaseNamePath)
+	    rGroup->databaseName = e[i].name;
+
         switch (e[i].kind)
         {
         case dirs_file:
             fileExtract (NULL, rep, rGroup, deleteFlag);
             break;
         case dirs_dir:
-            repositoryExtractR (deleteFlag, rep, rGroup);
+            repositoryExtractR (deleteFlag, rep, rGroup, level+1);
             break;
         }
     }
@@ -211,8 +224,9 @@ static void fileDeleteR (struct dirs_info *di, struct dirs_entry *dst,
 }
 
 static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
-                               const char *base, char *src, 
-                               struct recordGroup *rGroup)
+			 const char *base, char *src, 
+			 struct recordGroup *rGroup,
+			 int level)
 {
     struct dir_entry *e_src;
     int i_src = 0;
@@ -278,6 +292,9 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
         else
             break;
         logf (LOG_DEBUG, "trav sd=%d", sd);
+
+	if (level == 0 && rGroup->databaseNamePath)
+	    rGroup->databaseName = e_src[i_src].name;
         if (sd == 0)
         {
             strcpy (src + src_len, e_src[i_src].name);
@@ -298,7 +315,7 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                 dst = dirs_read (di);
                 break;
             case dirs_dir:
-                fileUpdateR (di, dst, base, src, rGroup);
+                fileUpdateR (di, dst, base, src, rGroup, level+1);
                 dst = dirs_last (di);
                 logf (LOG_DEBUG, "last is %s", dst ? dst->path : "null");
                 break;
@@ -320,7 +337,7 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                     dirs_add (di, src, sysno, e_src[i_src].mtime);            
                 break;
             case dirs_dir:
-                fileUpdateR (di, dst, base, src, rGroup);
+                fileUpdateR (di, dst, base, src, rGroup, level+1);
                 if (dst)
                     dst = dirs_last (di);
                 break;
@@ -360,6 +377,9 @@ static void groupRes (struct recordGroup *rGroup)
 
     sprintf (resStr, "%srecordId", gPrefix);
     rGroup->recordId = res_get (common_resource, resStr);
+    sprintf (resStr, "%sdatabasePath", gPrefix);
+    rGroup->databaseNamePath =
+	atoi (res_get_def (common_resource, resStr, "0"));
 }
 
 void repositoryShow (struct recordGroup *rGroup)
@@ -437,7 +457,7 @@ static void fileUpdate (Dict dict, struct recordGroup *rGroup,
         }
         di = dirs_open (dict, src, rGroup->flagRw);
         *dst = '\0';
-        fileUpdateR (di, dirs_read (di), src, dst, rGroup);
+        fileUpdateR (di, dirs_read (di), src, dst, rGroup, 0);
         dirs_free (&di);
     }
     else
@@ -460,7 +480,7 @@ static void repositoryExtract (int deleteFlag, struct recordGroup *rGroup,
     if (S_ISREG(sbuf.st_mode))
         fileExtract (NULL, src, rGroup, deleteFlag);
     else if (S_ISDIR(sbuf.st_mode))
-	repositoryExtractR (deleteFlag, src, rGroup);
+	repositoryExtractR (deleteFlag, src, rGroup, 0);
     else
         logf (LOG_WARN, "Ignoring path %s", src);
 }

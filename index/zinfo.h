@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.4  1998-05-20 10:12:21  adam
+ * Revision 1.5  1998-06-08 14:43:16  adam
+ * Added suport for EXPLAIN Proxy servers - added settings databasePath
+ * and explainDatabase to facilitate this. Increased maximum number
+ * of databases and attributes in one register.
+ *
+ * Revision 1.4  1998/05/20 10:12:21  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -37,7 +42,8 @@ ZebraExplainInfo zebraExplain_open (Records records, data1_handle dh,
 void zebraExplain_close (ZebraExplainInfo zei, int writeFlag,
 			 int (*updateH)(Record drec, data1_node *n));
 int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database);
-int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database);
+int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
+			      int explain_database);
 int zebraExplain_lookupSU (ZebraExplainInfo zei, int set, int use);
 int zebraExplain_addSU (ZebraExplainInfo zei, int set, int use);
 void zebraExplain_addSchema (ZebraExplainInfo zei, Odr_oid *oid);

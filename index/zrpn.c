@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.77  1998-05-20 10:12:22  adam
+ * Revision 1.78  1998-06-08 14:43:17  adam
+ * Added suport for EXPLAIN Proxy servers - added settings databasePath
+ * and explainDatabase to facilitate this. Increased maximum number
+ * of databases and attributes in one register.
+ *
+ * Revision 1.77  1998/05/20 10:12:22  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -435,9 +440,10 @@ static void add_isam_p (const char *name, const char *info,
     assert (*info == sizeof(*p->isam_p_buf));
     memcpy (p->isam_p_buf + p->isam_p_indx, info+1, sizeof(*p->isam_p_buf));
 
+#if 0
     term_untrans  (p->zh, p->reg_type, term_tmp, name+2);
     logf (LOG_DEBUG, "grep: %s", term_tmp);
-
+#endif
     (p->isam_p_indx)++;
 }
 
@@ -829,6 +835,8 @@ static int field_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
              local_attr = local_attr->next)
         {
             int ord;
+	    char ord_buf[32];
+	    int i, ord_len;
 
             ord = zebraExplain_lookupSU (zh->zei, attp.attset_ordinal,
                                           local_attr->local);
@@ -838,8 +846,13 @@ static int field_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 term_dict[prefix_len++] = '|';
             else
                 term_dict[prefix_len++] = '(';
-            term_dict[prefix_len++] = 1;
-            term_dict[prefix_len++] = ord;
+
+	    ord_len = key_SU_code (ord, ord_buf);
+	    for (i = 0; i<ord_len; i++)
+	    {
+		term_dict[prefix_len++] = 1;
+		term_dict[prefix_len++] = ord_buf[i];
+	    }
         }
         if (!prefix_len)
         {
@@ -1752,7 +1765,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                                       sizeof(*scan_info->list));
         for (j = 0; j<before+after; j++)
             scan_info->list[j].term = NULL;
-        termz[prefix_len++] = ords[i];
+
+	prefix_len += key_SU_code (ords[i], termz + prefix_len);
         termz[prefix_len++] = reg_id;
         termz[prefix_len] = 0;
         strcpy (scan_info->prefix, termz);

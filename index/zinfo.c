@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.9  1998-06-02 12:10:27  adam
+ * Revision 1.10  1998-06-08 14:43:15  adam
+ * Added suport for EXPLAIN Proxy servers - added settings databasePath
+ * and explainDatabase to facilitate this. Increased maximum number
+ * of databases and attributes in one register.
+ *
+ * Revision 1.9  1998/06/02 12:10:27  adam
  * Fixed bug related to attributeDetails.
  *
  * Revision 1.8  1998/05/20 10:12:20  adam
@@ -556,7 +561,7 @@ ZebraExplainInfo zebraExplain_open (
 	}
 	*zdip = NULL;
 	rec_rm (&trec);
-	zebraExplain_newDatabase (zei, "IR-Explain-1");
+	zebraExplain_newDatabase (zei, "IR-Explain-1", 0);
     }
     return zei;
 }
@@ -734,7 +739,8 @@ static void zebraExplain_updateAccessInfo (ZebraExplainInfo zei, data1_node *n,
     }
 }
 
-int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database)
+int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
+			      int explain_database)
 {
     struct zebDatabaseInfoB *zdi;
     data1_node *node_dbinfo, *node_adinfo;
@@ -779,13 +785,17 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database)
 
     data1_add_tagdata_text (zei->dh, node_dbinfo, "name",
 			       database, zei->nmem);
-
+    
+    if (explain_database)
+	data1_add_tagdata_text (zei->dh, node_dbinfo, "explainDatabase",
+				"", zei->nmem);
+    
     data1_add_tagdata_text (zei->dh, node_dbinfo, "userFee",
-			       "0", zei->nmem);
-
+			    "0", zei->nmem);
+    
     data1_add_tagdata_text (zei->dh, node_dbinfo, "available",
-			       "1", zei->nmem);
-
+			    "1", zei->nmem);
+    
 #if ZINFO_DEBUG
     data1_pr_tree (zei->dh, zdi->data1_database, stderr);
 #endif

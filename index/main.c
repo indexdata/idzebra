@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.57  1998-05-20 10:12:18  adam
+ * Revision 1.58  1998-06-08 14:43:13  adam
+ * Added suport for EXPLAIN Proxy servers - added settings databasePath
+ * and explainDatabase to facilitate this. Increased maximum number
+ * of databases and attributes in one register.
+ *
+ * Revision 1.57  1998/05/20 10:12:18  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -250,6 +255,8 @@ int main (int argc, char **argv)
     rGroupDef.flagStoreData = -1;
     rGroupDef.flagStoreKeys = -1;
     rGroupDef.flagRw = 1;
+    rGroupDef.databaseNamePath = 0;
+    rGroupDef.explainDatabase = 0;
     rGroupDef.fileVerboseLimit = 100000;
     rGroupDef.zebra_maps = NULL;
     rGroupDef.dh = data1_create ();

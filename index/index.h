@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.58  1998-05-20 10:12:16  adam
+ * Revision 1.59  1998-06-08 14:43:11  adam
+ * Added suport for EXPLAIN Proxy servers - added settings databasePath
+ * and explainDatabase to facilitate this. Increased maximum number
+ * of databases and attributes in one register.
+ *
+ * Revision 1.58  1998/05/20 10:12:16  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -256,6 +261,8 @@ struct recordGroup {
     int          flagStoreKeys;
     int          flagRw;
     int          fileVerboseLimit;
+    int          databaseNamePath;
+    int          explainDatabase;
     data1_handle dh;
     BFiles       bfs;
     ZebraMaps    zebra_maps;
@@ -293,6 +300,7 @@ void inv_prstat (BFiles bfs);
 void key_input (BFiles bfs, int nkeys, int cache);
 ISAMC_M key_isamc_m (Res res);
 int merge_sort (char **buf, int from, int to);
+int key_SU_code (int ch, char *out);
 
 #define FNAME_DICT "dict"
 #define FNAME_ISAM "isam"

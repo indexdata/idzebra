@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.23  1998-03-05 08:45:12  adam
+ * Revision 1.24  1998-06-08 14:43:12  adam
+ * Added suport for EXPLAIN Proxy servers - added settings databasePath
+ * and explainDatabase to facilitate this. Increased maximum number
+ * of databases and attributes in one register.
+ *
+ * Revision 1.23  1998/03/05 08:45:12  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -286,3 +291,18 @@ ISAMC_M key_isamc_m (Res res)
     return me;
 }
 
+int key_SU_code (int ch, char *out)
+{
+    int i;
+    logf (LOG_LOG, "key_SU_code: %d", ch);
+    for (i = 0; ch; i++)
+    {
+	if (ch > 63)
+	    out[i] = 128 + (ch & 63);
+	else
+	    out[i] = 1 + ch;
+	logf (LOG_LOG, " %d", out[i]);
+	ch = ch >> 6;
+    }
+    return i;
+}
