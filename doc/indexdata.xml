@@ -1,5 +1,5 @@
 <appendix id="indexdata">
- <!-- $Id: indexdata.xml,v 1.4 2002-04-10 14:47:49 heikki Exp $ -->
+ <!-- $Id: indexdata.xml,v 1.5 2002-08-02 20:31:42 adam Exp $ -->
  <title>About Index Data and the Zebra Server</title>
  
  <para>
@@ -26,7 +26,8 @@
    Phone <phone>+45 3341 0100</phone>
    Fax <fax>+45 3341 0101</fax>
    Email <email>info@indexdata.dk</email>
-   <otheraddr><ulink url="http://www.indexdata.dk">www.indexdata.dk</ulink></otheraddr>
+   <otheraddr>
+     <ulink url="http://www.indexdata.dk/">www.indexdata.dk</ulink></otheraddr>
   </address>
  </para>
  <para>
