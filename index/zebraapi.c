@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.22  1999-08-02 10:13:47  adam
+ * Revision 1.23  1999-09-07 11:36:32  adam
+ * Minor changes.
+ *
+ * Revision 1.22  1999/08/02 10:13:47  adam
  * Fixed bug regarding zebra_hits.
  *
  * Revision 1.21  1999/07/14 10:59:26  adam
@@ -333,7 +336,6 @@ void zebra_close (ZebraHandle zh)
 	passwd_db_close (zh->passwd_db);
     res_close (zh->res);
     xfree (zh);
-    xmalloc_trav("x");
 }
 
 struct map_baseinfo {
