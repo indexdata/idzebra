@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.15  1998-05-20 10:12:25  adam
+ * Revision 1.16  1998-05-27 14:32:03  adam
+ * Changed default block category layout.
+ *
+ * Revision 1.15  1998/05/20 10:12:25  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -89,9 +92,9 @@ ISAMC_M isc_getmethod (void)
         {    32,     28,      0,  3 },
 	{    64,     54,     30,  0 },
 #else
-        {    32,     28,     20,  7  },
-	{   128,    120,    100,  8  },
-        {   512,    490,    350,  9  },
+        {    24,     22,     18,  10 },
+	{   128,    120,    100,  10 },
+        {   512,    490,    350,  10 },
         {  2048,   1900,   1700,  10 },
         {  8192,   8000,   7900,  10 },
         { 32768,  32000,  31000,  0 },
