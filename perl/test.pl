@@ -15,6 +15,10 @@ BEGIN {
   use_ok('IDZebra::Data1'); 
 }
 
+mkdir ("demo/tmp");
+mkdir ("demo/register");
+mkdir ("demo/lock");
+
 #Zebra::API::LogFile("a.log");
 
 
