@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.11 2002-10-20 14:02:02 mike Exp $ -->
+ <!-- $Id: administration.xml,v 1.12 2002-10-30 11:09:39 adam Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -315,7 +315,7 @@
       <para>
        Specifies a directory base for Zebra. All relative paths
        given (in profilePath, register, shadow) are based on this
-       directory. This setting is useful if if you Zebra server
+       directory. This setting is useful if your Zebra server
        is running in a different directory from where
        <literal>zebra.cfg</literal> is located.
       </para>

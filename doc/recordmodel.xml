@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.11 2002-10-20 14:02:03 mike Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.12 2002-10-30 11:09:39 adam Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -42,7 +42,8 @@
       input filter by preparing conversion rules based on regular
       expressions and possibly augmented by a flexible scripting language
       (Tcl).
-      The input filter produces as output an internal representation:
+      The input filter produces as output an internal representation,
+      a tree structure.
 
      </para>
     </listitem>
@@ -94,7 +95,7 @@
     subsequent sections.
     Zebra can read structured records in many different formats.
     How this is done is governed by additional parameters after the
-    "grs" keyboard, separated by "." characters.
+    "grs" keyword, separated by "." characters.
    </para>
 
    <para>
@@ -220,7 +221,7 @@
      Each element is terminated by a closing tag - beginning
      with <literal>&#60;</literal>/, and containing the same symbolic
      tag-name as the corresponding opening tag.
-     The general closing tag - <literal>&lt;</literal>/&gt; -
+     The general closing tag - <literal>&lt;/&gt;</literal> -
      terminates the element started by the last opening tag. The
      structuring of elements is significant.
      The element <emphasis>Telephone</emphasis>,
@@ -762,7 +763,7 @@
 
       <listitem>
        <para>
-        The Tag set (again, this can consist of several different sets).
+        The tag set (again, this can consist of several different sets).
         This is used when reading the records from a file, to recognize the
         different tags, and when transmitting the record to the client -
         mapping the tags to their numerical representation, if they are

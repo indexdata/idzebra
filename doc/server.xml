@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.6 2002-10-20 14:02:03 mike Exp $ -->
+ <!-- $Id: server.xml,v 1.7 2002-10-30 11:09:39 adam Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -164,9 +164,9 @@
   <para>
 
    <screen>
-    tcp:dranet.dra.com
+    tcp:@
 
-    ssl:secure.lib.com:3000
+    ssl:@:3000
    </screen>
 
   </para>
