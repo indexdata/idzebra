@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.11  1997-09-09 13:38:15  adam
+ * Revision 1.12  1997-10-31 12:37:01  adam
+ * Code calls xfree() instead of free().
+ *
+ * Revision 1.11  1997/09/09 13:38:15  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.10  1996/10/29 13:55:20  adam
@@ -188,7 +191,7 @@ static void r_close (RSFD rfd)
             rset_close (info->rset_l, (*rfdp)->rfd_l);
             rset_close (info->rset_r, (*rfdp)->rfd_r);
             *rfdp = (*rfdp)->next;
-            free (rfd);
+            xfree (rfd);
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");

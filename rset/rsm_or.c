@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.c,v $
- * Revision 1.3  1997-09-09 13:38:16  adam
+ * Revision 1.4  1997-10-31 12:37:55  adam
+ * Code calls xfree() instead of free().
+ *
+ * Revision 1.3  1997/09/09 13:38:16  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.2  1996/12/23 15:30:49  adam
@@ -247,8 +250,8 @@ static void r_close (RSFD rfd)
             for (i = 0; i<info->no_isam_positions; i++)
                 if (((struct rset_mor_rfd *) rfd)->ispt[i])
                     isc_pp_close (((struct rset_mor_rfd *) rfd)->ispt[i]);
-            free (((struct rset_mor_rfd *)rfd)->ispt);
-            free (rfd);
+            xfree (((struct rset_mor_rfd *)rfd)->ispt);
+            xfree (rfd);
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");

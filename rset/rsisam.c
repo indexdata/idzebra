@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.15  1996-10-29 13:55:22  adam
+ * Revision 1.16  1997-10-31 12:37:01  adam
+ * Code calls xfree() instead of free().
+ *
+ * Revision 1.15  1996/10/29 13:55:22  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.14  1995/12/11 09:15:24  adam
@@ -143,7 +146,7 @@ static void r_close (RSFD rfd)
         {
             is_pt_free ((*ptinfop)->pt);
             *ptinfop = (*ptinfop)->next;
-            free (rfd);
+            xfree (rfd);
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");

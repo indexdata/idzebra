@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisamc.c,v $
- * Revision 1.2  1996-11-08 11:15:57  adam
+ * Revision 1.3  1997-10-31 12:37:01  adam
+ * Code calls xfree() instead of free().
+ *
+ * Revision 1.2  1996/11/08 11:15:57  adam
  * Compressed isam fully supported.
  *
  * Revision 1.1  1996/10/29 13:41:48  adam
@@ -99,7 +102,7 @@ static void r_close (RSFD rfd)
         {
             isc_pp_close ((*ptinfop)->pt);
             *ptinfop = (*ptinfop)->next;
-            free (rfd);
+            xfree (rfd);
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");

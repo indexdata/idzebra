@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.19  1997-10-01 11:44:06  adam
+ * Revision 1.20  1997-10-31 12:37:55  adam
+ * Code calls xfree() instead of free().
+ *
+ * Revision 1.19  1997/10/01 11:44:06  adam
  * Small improvement of new ranking.
  *
  * Revision 1.18  1997/09/24 13:36:41  adam
@@ -424,7 +427,7 @@ static void r_close (RSFD rfd)
         if (*rfdp == rfd)
         {
             *rfdp = (*rfdp)->next;
-            free (rfd);
+            xfree (rfd);
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");
