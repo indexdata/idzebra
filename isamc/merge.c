@@ -1,10 +1,13 @@
 /*
- * Copyright (c) 1996, Index Data.
+ * Copyright (c) 1996-1998, Index Data.
  * See the file LICENSE for details.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: merge.c,v $
- * Revision 1.5  1997-02-12 20:42:43  adam
+ * Revision 1.6  1998-03-06 13:54:03  adam
+ * Fixed two nasty bugs in isc_merge.
+ *
+ * Revision 1.5  1997/02/12 20:42:43  adam
  * Bug fix: during isc_merge operations, some pages weren't marked dirty
  * even though they should be. At this point the merge operation marks
  * a page dirty if the previous page changed at all. A better approach is
@@ -219,8 +222,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                         if (is->method->debug > 2)
                             logf (LOG_LOG, "isc: flush A %d sections", ptr);
                         flush_blocks (is, mb, ptr-1, r_buf, &firstpos, cat,
-                                      0, &numKeys);
-
+                                      0, &pp->numKeys);
                         mb[0].block = mb[ptr-1].block;
                         mb[0].dirty = mb[ptr-1].dirty;
                         memcpy (r_buf, r_buf + mb[ptr-1].offset,
@@ -333,8 +335,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                     if (is->method->debug > 2)
                         logf (LOG_LOG, "isc: flush B %d sections", ptr-1);
                     flush_blocks (is, mb, ptr-1, r_buf, &firstpos, cat,
-                                  0, &numKeys);
-
+                                  0, &pp->numKeys);
                     mb[0].block = mb[ptr-1].block;
                     mb[0].dirty = mb[ptr-1].dirty;
                     memcpy (r_buf, r_buf + mb[ptr-1].offset,
@@ -409,7 +410,8 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                 logf (LOG_LOG, "isc: release C");
             isc_release_block (is, pp->cat, mb[ptr].block);
             mb[ptr].block = 0;
-            mb[ptr].dirty = 1;
+	    if (ptr > 0)
+		mb[ptr-1].dirty = 1;
         }
     }
 

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.5  1997-09-17 12:19:13  adam
+ * Revision 1.6  1998-03-06 13:54:02  adam
+ * Fixed two nasty bugs in isc_merge.
+ *
+ * Revision 1.5  1997/09/17 12:19:13  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -108,7 +111,7 @@ void inv_prstat (BFiles bfs)
         logf (LOG_FATAL, "dict_open fail");
         exit (1);
     }
-    if (res_get_match (common_resource, "isam", "c", NULL))
+    if (!res_get_match (common_resource, "isam", "i", NULL))
     {
         isamc = isc_open (bfs, FNAME_ISAMC, 0, key_isamc_m (common_resource));
         if (!isamc)

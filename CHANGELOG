@@ -1,3 +1,5 @@
+Fixed two bugs in ISAMC system.
+
 Changed the way Zebra keeps its maintenance information. Records
 in "SGML" notation using an EXPLAIN schema is now used when
 appropriate.

@@ -1,10 +1,13 @@
 /*
- * Copyright (c) 1995-1996, Index Data.
+ * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.8  1997-09-17 12:19:20  adam
+ * Revision 1.9  1998-03-06 13:54:02  adam
+ * Fixed two nasty bugs in isc_merge.
+ *
+ * Revision 1.8  1997/09/17 12:19:20  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -53,13 +56,20 @@
 static void release_fc (ISAMC is, int cat);
 static void init_fc (ISAMC is, int cat);
 
+#define SMALL_TEST 0
+
 ISAMC_M isc_getmethod (void)
 {
     static struct ISAMC_filecat_s def_cat[] = {
+#if SMALL_TEST
+        {   32,    28,     0,    3 },
+	{   64,    54,    30,    0 },
+#else
         {   32,    28,     0,    20 },
         {  512,   490,   100,    20 },
         { 4096,  3950,  1000,    20 },
         {32768, 32000, 10000,     0 },
+#endif
     };
     ISAMC_M m = xmalloc (sizeof(*m));
     m->filecat = def_cat;
@@ -334,8 +344,8 @@ ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P ipos)
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMC_BLOCK_OFFSET_1);
         if (is->method->debug > 2)
-            logf (LOG_LOG, "isc: read_block size=%d %d %d",
-                 pp->size, pp->cat, pp->pos);
+            logf (LOG_LOG, "isc: read_block size=%d %d %d next=%d",
+                 pp->size, pp->cat, pp->pos, pp->next);
     }
     return pp;
 }
@@ -346,7 +356,11 @@ int isc_pp_read (ISAMC_PP pp, void *buf)
     return isc_read_item (pp, (char **) &buf);
 }
 
-/* returns non-zero if item could be read; 0 otherwise */
+/* read one item from file - decode and store it in *dst.
+   Returns
+     0 if end-of-file
+     1 if item could be read ok and NO boundary
+     2 if item could be read ok and boundary */
 int isc_read_item (ISAMC_PP pp, char **dst)
 {
     ISAMC is = pp->is;
@@ -354,10 +368,12 @@ int isc_read_item (ISAMC_PP pp, char **dst)
 
     if (pp->offset >= pp->size)
     {
+	/* out new block position */
         pp->pos = pp->next;
         if (!pp->pos)
-            return 0;
+            return 0;    /* end of file */
         src = pp->buf;
+	/* read block and save 'next' and 'size' entry */
         isc_read_block (is, pp->cat, pp->pos, src);
         memcpy (&pp->next, src, sizeof(pp->next));
         src += sizeof(pp->next);
@@ -371,8 +387,8 @@ int isc_read_item (ISAMC_PP pp, char **dst)
         (*is->method->code_item)(ISAMC_DECODE, pp->decodeClientData, dst, &src);
         pp->offset = src - pp->buf; 
         if (is->method->debug > 2)
-            logf (LOG_LOG, "isc: read_block size=%d %d %d",
-                 pp->size, pp->cat, pp->pos);
+            logf (LOG_LOG, "isc: read_block size=%d %d %d next=%d",
+                 pp->size, pp->cat, pp->pos, pp->next);
         return 2;
     }
     (*is->method->code_item)(ISAMC_DECODE, pp->decodeClientData, dst, &src);
