@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.31 2004-08-24 14:25:15 heikki Exp $
+/* $Id: rset.h,v 1.32 2004-08-31 10:43:35 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -31,18 +31,25 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern "C" {
 #endif
 
-typedef void *RSFD;       /* Rset "file descriptor" */
-typedef struct rset *RSET;
+typedef struct rsfd *RSFD; /* Rset "file descriptor" */
+typedef struct rset *RSET; /* Result set */
+
+struct rsfd {  /* the stuff common to all rsfd's. */
+    RSET rset;  /* ptr to the rset this FD is opened to */
+    void *priv; /* private parameters for this type */
+    RSFD next;  /* to keep lists of used/free rsfd's */
+};
+
 
 struct rset_control
 {
     char *desc; /* text description of set type (for debugging) */
-/* void *(*f_create)(RSET ct, const struct rset_control *sel, void *parms); */
+/* RSET rs_something_create(const struct rset_control *sel, ...); */
+    void (*f_delete)(RSET ct);
     RSFD (*f_open)(RSET ct, int wflag);
     void (*f_close)(RSFD rfd);
-    void (*f_delete)(RSET ct);
     void (*f_rewind)(RSFD rfd);
-    int (*f_forward)(RSET ct, RSFD rfd, void *buf,
+    int (*f_forward)(RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
     void (*f_pos)(RSFD rfd, double *current, double *total);
@@ -51,10 +58,9 @@ struct rset_control
     int (*f_write)(RSFD rfd, const void *buf);
 };
 
-int rset_default_forward(RSET ct, RSFD rfd, void *buf, 
+int rset_default_forward(RSFD rfd, void *buf, 
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
-void rset_default_pos(RSFD rfd, double *current, double *total);
 
 
 typedef struct rset
@@ -65,46 +71,46 @@ typedef struct rset
     NMEM nmem;    /* nibble memory for various allocs */
     char my_nmem; /* Should the nmem be destroyed with the rset?  */
                   /* 1 if created with it, 0 if passed from above */
+    RSFD free_list; /* all rfd's allocated but not currently in use */
 } rset;
 /* rset is a "virtual base class", which will never exist on its own */
 /* all instances are rsets of some specific type, like rsisamb, or rsbool */
 /* They keep their own stuff behind the priv pointer. */
 
-#define RSETF_READ       0
-#define RSETF_WRITE      1
+RSFD rfd_create_base(RSET rs);
+void rfd_delete_base(RSFD rfd);
 
 RSET rset_create_base(const struct rset_control *sel, NMEM nmem);
-
-RSET rset_create_OLD(const struct rset_control *sel, void *parms); 
-/* parameters? */
-
 void rset_delete(RSET rs);
-
 RSET rset_dup (RSET rs);
 
 
+#define RSETF_READ       0
+#define RSETF_WRITE      1
 /* RSFD rset_open(RSET rs, int wflag); */
 #define rset_open(rs, wflag) (*(rs)->control->f_open)((rs), (wflag))
 
-/* void rset_close(RSET rs); */
-#define rset_close(rs, rfd) (*(rs)->control->f_close)(rfd)
+/* void rset_close(RSFD rfd); */
+#define rset_close(rfd) (*(rfd)->rset->control->f_close)(rfd)
 
-/* void rset_rewind(RSET rs); */
-#define rset_rewind(rs, rfd) (*(rs)->control->f_rewind)((rfd))
+/* void rset_rewind(RSFD rfd); */
+#define rset_rewind(rfd) (*(rfd)->rset->control->f_rewind)((rfd))
 
-/* int rset_forward(RSET rs, void *buf, void *untilbuf); */
-#define rset_forward(rs, fd, buf, cmpfunc, untilbuf) \
-    (*(rs)->control->f_forward)((rs), (fd), (buf), (cmpfunc), (untilbuf))
+/* int rset_forward(RSFD rfd, void *buf, void *untilbuf); */
+#define rset_forward(rfd, buf, cmpfunc, untilbuf) \
+    (*(rfd)->rset->control->f_forward)((rfd),(buf),(cmpfunc),(untilbuf))
+/*FIXME - get rid of the cmp function here, keep it in a general */
+/*        key_control block */
 
-/* int rset_pos(RSET rs, RSFD fd, double *current, double *total); */
-#define rset_pos(rs,fd,cur,tot) \
-    (*(rs)->control->f_pos)( (fd),(cur),(tot))
+/* int rset_pos(RSFD fd, double *current, double *total); */
+#define rset_pos(rfd,cur,tot) \
+    (*(rfd)->rset->control->f_pos)( (rfd),(cur),(tot))
 
-/* int rset_read(RSET rs, void *buf); */
-#define rset_read(rs, fd, buf) (*(rs)->control->f_read)((fd), (buf))
+/* int rset_read(RSFD rfd, void *buf); */
+#define rset_read(rfd, buf) (*(rfd)->rset->control->f_read)((rfd), (buf))
 
-/* int rset_write(RSET rs, const void *buf); */
-#define rset_write(rs, fd, buf) (*(rs)->control->f_write)((fd), (buf))
+/* int rset_write(RSFD rfd, const void *buf); */
+#define rset_write(rfd, buf) (*(rfd)->rset->control->f_write)((rfd), (buf))
 
 /* int rset_type (RSET) */
 #define rset_type(rs) ((rs)->control->desc)

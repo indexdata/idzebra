@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.58 2004-08-30 12:32:24 heikki Exp $
+/* $Id: zsets.c,v 1.59 2004-08-31 10:43:35 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -403,7 +403,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
             while (num_i < num && positions[num_i] < position)
                 num_i++;
             rfd = rset_open (rset, RSETF_READ);
-            while (num_i < num && rset_read (rset, rfd, &key))
+            while (num_i < num && rset_read (rfd, &key))
             {
 #if IT_KEY_NEW
                 zint this_sys = key.mem[0];
@@ -433,7 +433,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
                     }
                 }
             }
-            rset_close (rset, rfd);
+            rset_close (rfd);
         }
     }
     return sr;
@@ -690,7 +690,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
         }
     }
     rfd = rset_open (rset, RSETF_READ);
-    while (rset_read (rset, rfd, &key))
+    while (rset_read (rfd, &key))
     {
 #if IT_KEY_NEW
         zint this_sys = key.mem[0];
@@ -705,7 +705,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
                                  sort_criteria, num_criteria, psysno);
         }
     }
-    rset_close (rset, rfd);
+    rset_close (rfd);
    
 #if 0
     for (i = 0; i < rset->no_rset_terms; i++)
@@ -760,7 +760,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     }
     rc = rank_class->control;
 
-    if (rset_read (rset, rfd, &key))
+    if (rset_read (rfd, &key))
     {
 #if IT_KEY_NEW
         zint psysno = key.mem[0];
@@ -796,7 +796,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
             
         if ( (est==-2) && (zebraSet->hits==esthits))
         { /* time to estimate the hits */
-            rset_pos(rset,rfd,&cur,&tot); 
+            rset_pos(rfd,&cur,&tot); 
             if (tot>0) {
                 ratio=cur/tot;
                 est=(zint)(0.5+zebraSet->hits/ratio);
@@ -816,13 +816,13 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
             }
         }
         }
-        while (rset_read (rset, rfd, &key) && (est<0) );
+        while (rset_read (rfd, &key) && (est<0) );
            
         score = (*rc->calc) (handle, psysno);
         resultSetInsertRank (zh, sort_info, psysno, score, 'A');
         (*rc->end) (zh->reg, handle);
     }
-    rset_close (rset, rfd);
+    rset_close (rfd);
 /*
     for (i = 0; i < rset->no_rset_terms; i++)
     {

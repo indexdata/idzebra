@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.23 2004-08-26 11:11:59 heikki Exp $
+/* $Id: rsnull.c,v 1.24 2004-08-31 10:43:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -27,7 +27,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include <rsnull.h>
 
-/* FIXME - Use the nmem instead of xmalloc all the way through */
 
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
@@ -40,9 +39,9 @@ static int r_write (RSFD rfd, const void *buf);
 static const struct rset_control control = 
 {
     "null",
+    r_delete,
     r_open,
     r_close,
-    r_delete,
     r_rewind,
     rset_default_forward,
     r_pos,
@@ -59,25 +58,22 @@ RSET rsnull_create(NMEM nmem )
     return rnew;
 }
 
-#if 0
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
-{
-    return NULL;
-}
-#endif
-
 static RSFD r_open (RSET ct, int flag)
 {
+    RSFD rfd;
     if (flag & RSETF_WRITE)
     {
         logf (LOG_FATAL, "NULL set type is read-only");
         return NULL;
     }
-    return "";
+    rfd=rfd_create_base(ct);
+    rfd->priv=NULL; 
+    return rfd;
 }
 
 static void r_close (RSFD rfd)
 {
+    rfd_delete_base(rfd);
 }
 
 static void r_delete (RSET ct)

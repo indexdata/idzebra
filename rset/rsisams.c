@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.10 2004-08-24 14:25:16 heikki Exp $
+/* $Id: rsisams.c,v 1.11 2004-08-31 10:43:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -33,16 +33,17 @@ static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
+static void r_pos (RSFD rfd, double *current, double *total);
 
 static const struct rset_control control = 
 {
     "isams",
+    r_delete,
     r_open,
     r_close,
-    r_delete,
     r_rewind,
     rset_default_forward,
-    rset_default_pos,
+    r_pos,
     r_read,
     r_write,
 };
@@ -51,14 +52,11 @@ const struct rset_control *rset_kind_isams = &control;
 
 struct rset_pp_info {
     ISAMS_PP pt;
-    struct rset_pp_info *next;
-    struct rset_isams_info *info;
 };
 
 struct rset_isams_info {
     ISAMS   is;
     ISAMS_P pos;
-    struct rset_pp_info *ispt_list;
 };
 
 
@@ -73,37 +71,21 @@ RSET rsisams_create( NMEM nmem, int key_size,
     assert(cmp);
     info->is=is;
     info->pos=pos;
-    info->ispt_list = NULL;
     rnew->priv=info;
     return rnew;
 }
 
 static void r_delete (RSET ct)
 {
-    struct rset_isams_info *info = (struct rset_isams_info *) ct->priv;
-
     logf (LOG_DEBUG, "rsisams_delete");
-    assert (info->ispt_list == NULL);
-    /* xfree (info); */
+    rset_delete(ct);
 }
 
-#if 0
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
-{
-    rset_isams_parms *pt = (struct rset_isams_parms *) parms;
-    struct rset_isams_info *info;
-
-    info = (struct rset_isams_info *) xmalloc (sizeof(*info));
-    info->is = pt->is;
-    info->pos = pt->pos;
-    info->ispt_list = NULL;
-    return info;
-}
-#endif
 
 RSFD r_open (RSET ct, int flag)
 {
     struct rset_isams_info *info = (struct rset_isams_info *) ct->priv;
+    RSFD rfd;
     struct rset_pp_info *ptinfo;
 
     logf (LOG_DEBUG, "risams_open");
@@ -112,29 +94,23 @@ RSFD r_open (RSET ct, int flag)
         logf (LOG_FATAL, "ISAMS set type is read-only");
         return NULL;
     }
-    ptinfo = (struct rset_pp_info *) xmalloc (sizeof(*ptinfo));
-    ptinfo->next = info->ispt_list;
-    info->ispt_list = ptinfo;
-    ptinfo->pt = isams_pp_open (info->is, info->pos);
-    ptinfo->info = info;
-    return ptinfo;
+    rfd=rfd_create_base(ct);
+    if (rfd->priv)
+        ptinfo=(struct rset_pp_info *)(rfd->priv);
+    else {
+        ptinfo = (struct rset_pp_info *) nmem_malloc(ct->nmem,sizeof(*ptinfo));
+        ptinfo->pt = isams_pp_open (info->is, info->pos);
+        rfd->priv=ptinfo;
+    }
+    return rfd;
 }
 
 static void r_close (RSFD rfd)
 {
-    struct rset_isams_info *info = ((struct rset_pp_info*) rfd)->info;
-    struct rset_pp_info **ptinfop;
+    struct rset_pp_info *ptinfo=(struct rset_pp_info *)(rfd->priv);
 
-    for (ptinfop = &info->ispt_list; *ptinfop; ptinfop = &(*ptinfop)->next)
-        if (*ptinfop == rfd)
-        {
-            isams_pp_close ((*ptinfop)->pt);
-            *ptinfop = (*ptinfop)->next;
-            xfree (rfd);
-            return;
-        }
-    logf (LOG_FATAL, "r_close but no rfd match!");
-    assert (0);
+    isams_pp_close (ptinfo->pt);
+    rfd_delete_base(rfd);
 }
 
 static void r_rewind (RSFD rfd)
@@ -146,11 +122,18 @@ static void r_rewind (RSFD rfd)
 
 static int r_read (RSFD rfd, void *buf)
 {
-    return isams_pp_read( ((struct rset_pp_info*) rfd)->pt, buf);
+    struct rset_pp_info *ptinfo=(struct rset_pp_info *)(rfd->priv);
+    return isams_pp_read(ptinfo->pt, buf);
 }
 
 static int r_write (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "ISAMS set type is read-only");
     return -1;
+}
+
+static void r_pos (RSFD rfd, double *current, double *total)
+{
+    *current=-1;  /* sorry, not implemented yet */
+    *total=-1;
 }

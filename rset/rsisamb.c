@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.18 2004-08-26 11:11:59 heikki Exp $
+/* $Id: rsisamb.c,v 1.19 2004-08-31 10:43:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,7 +35,7 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_forward(RSET ct, RSFD rfd, void *buf,
+static int r_forward(RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
@@ -45,9 +45,9 @@ static int r_write (RSFD rfd, const void *buf);
 static const struct rset_control control = 
 {
     "isamb",
+    r_delete,
     r_open,
     r_close,
-    r_delete,
     r_rewind,
     r_forward, /* rset_default_forward, */
     r_pos,
@@ -59,8 +59,6 @@ const struct rset_control *rset_kind_isamb = &control;
 
 struct rset_pp_info {
     ISAMB_PP pt;
-    struct rset_pp_info *next;
-    struct rset_isamb_info *info;
     void *buf;
 };
 
@@ -69,8 +67,6 @@ struct rset_isamb_info {
     ISAMB_P pos;
     int key_size;
     int (*cmp)(const void *p1, const void *p2);
-    struct rset_pp_info *ispt_list;
-    struct rset_pp_info *free_list;
 };
 
 RSET rsisamb_create( NMEM nmem, int key_size, 
@@ -84,78 +80,43 @@ RSET rsisamb_create( NMEM nmem, int key_size,
     info->cmp = cmp;
     info->is=is;
     info->pos=pos;
-    info->ispt_list = NULL;
-    info->free_list = NULL;
     rnew->priv=info;
     return rnew;
 }
 
 static void r_delete (RSET ct)
 {
-    struct rset_isamb_info *info = (struct rset_isamb_info *) ct->priv;
-
     logf (LOG_DEBUG, "rsisamb_delete");
-    assert (info->ispt_list == NULL);
 }
-
-#if 0
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
-{
-    rset_isamb_parms *pt = (rset_isamb_parms *) parms;
-    struct rset_isamb_info *info;
-
-    info = (struct rset_isamb_info *) xmalloc (sizeof(*info));
-    info->is = pt->is;
-    info->pos = pt->pos;
-    info->key_size = pt->key_size;
-    info->cmp = pt->cmp;
-    info->ispt_list = NULL;
-    return info;
-}
-#endif
 
 RSFD r_open (RSET ct, int flag)
 {
     struct rset_isamb_info *info = (struct rset_isamb_info *) ct->priv;
+    RSFD rfd;
     struct rset_pp_info *ptinfo;
 
-    logf (LOG_DEBUG, "risamb_open");
     if (flag & RSETF_WRITE)
     {
         logf (LOG_FATAL, "ISAMB set type is read-only");
         return NULL;
     }
-    ptinfo = info->free_list;
-    if (ptinfo)
-        info->free_list=ptinfo->next;
+    rfd=rfd_create_base(ct);
+    if (rfd->priv)
+        ptinfo=(struct rset_pp_info *) (rfd->priv);
     else {
         ptinfo = (struct rset_pp_info *) nmem_malloc (ct->nmem,sizeof(*ptinfo));
         ptinfo->buf = nmem_malloc (ct->nmem,info->key_size);
+        rfd->priv=ptinfo;
     }
-    ptinfo->next = info->ispt_list;
-    info->ispt_list = ptinfo;
     ptinfo->pt = isamb_pp_open (info->is, info->pos);
-    ptinfo->info = info;
-    return ptinfo;
+    return rfd;
 }
 
 static void r_close (RSFD rfd)
 {
-    struct rset_isamb_info *info = ((struct rset_pp_info*) rfd)->info;
-    struct rset_pp_info **ptinfop;
-
-    for (ptinfop = &info->ispt_list; *ptinfop; ptinfop = &(*ptinfop)->next)
-        if (*ptinfop == rfd)
-        {
-            struct rset_pp_info *tmp=(struct rset_pp_info*) rfd;
-            isamb_pp_close ((*ptinfop)->pt);
-            *ptinfop = (*ptinfop)->next;
-            tmp->next=info->free_list;
-            info->free_list=tmp;
-            return;
-        }
-    logf (LOG_FATAL, "r_close but no rfd match!");
-    assert (0);
+    struct rset_pp_info *ptinfo=(struct rset_pp_info *)(rfd->priv);
+    isamb_pp_close (ptinfo->pt);
+    rfd_delete_base(rfd);
 }
 
 
@@ -165,29 +126,17 @@ static void r_rewind (RSFD rfd)
     abort ();
 }
 
-static int r_forward(RSET ct, RSFD rfd, void *buf, 
+static int r_forward(RSFD rfd, void *buf, 
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf)
 {
-    int i; 
-    struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
-#if RSET_DEBUG
-    logf (LOG_DEBUG, "rset_rsisamb_forward starting '%s' (ct=%p rfd=%p)",
-                      ct->control->desc, ct,rfd);
-    key_logdump(LOG_DEBUG, untilbuf);
-    key_logdump(LOG_DEBUG, buf);
-#endif
-
-    i=isamb_pp_forward(pinfo->pt, buf, untilbuf);
-#if RSET_DEBUG
-    logf (LOG_DEBUG, "rset_rsisamb_forward returning %d",i);
-#endif
-    return i;
+    struct rset_pp_info *pinfo=(struct rset_pp_info *)(rfd->priv);
+    return isamb_pp_forward(pinfo->pt, buf, untilbuf);
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)
 {
-    struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
+    struct rset_pp_info *pinfo=(struct rset_pp_info *)(rfd->priv);
     assert(rfd);
     isamb_pp_pos(pinfo->pt, current, total);
 #if RSET_DEBUG
@@ -198,11 +147,9 @@ static void r_pos (RSFD rfd, double *current, double *total)
 
 static int r_read (RSFD rfd, void *buf)
 {
-    struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
-    int r;
+    struct rset_pp_info *pinfo=(struct rset_pp_info *)(rfd->priv);
 
-    r = isamb_pp_read(pinfo->pt, buf);
-    return r;
+    return isamb_pp_read(pinfo->pt, buf);
 }
 
 static int r_write (RSFD rfd, const void *buf)

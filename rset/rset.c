@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.28 2004-08-24 15:00:16 heikki Exp $
+/* $Id: rset.c,v 1.29 2004-08-31 10:43:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -29,18 +29,55 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/nmem.h>
 #include <rset.h>
 
+
+/* creates an rfd. Either allocates a new one, in which case the priv */
+/* pointer is null, and will have to be filled in, or picks up one */
+/* from the freelist, in which case the priv is already allocated, */
+/* and presumably everything that hangs from it as well */
+
+RSFD rfd_create_base(RSET rs)
+{
+    RSFD rnew=rs->free_list;
+    if (rnew) {
+        rs->free_list=rnew->next;
+        assert(rnew->rset==rs);
+  /*    logf(LOG_DEBUG,"rfd-create_base (fl): rfd=%p rs=%p fl=%p priv=%p", 
+                       rnew, rs, rs->free_list, rnew->priv); */
+    } else {
+        rnew=nmem_malloc(rs->nmem, sizeof(*rnew));
+        rnew->priv=NULL;
+        rnew->rset=rs;
+  /*    logf(LOG_DEBUG,"rfd_create_base (new): rfd=%p rs=%p fl=%p priv=%p", 
+                       rnew, rs, rs->free_list, rnew->priv); */
+    }
+    rnew->next=NULL; /* not part of any (free?) list */
+    return rnew;
+}
+
+/* puts an rfd into the freelist of the rset. Only when the rset gets */
+/* deleted, will all the nmem disappear */
+void rfd_delete_base(RSFD rfd) 
+{
+    RSET rs=rfd->rset;
+ /* logf(LOG_DEBUG,"rfd_delete_base: rfd=%p rs=%p priv=%p fl=%p",
+            rfd, rs, rfd->priv, rs->free_list); */
+    assert(NULL == rfd->next); 
+    rfd->next=rs->free_list;
+    rs->free_list=rfd;
+}
+
 RSET rset_create_base(const struct rset_control *sel, NMEM nmem)
         /* FIXME - Add keysize and cmp function */
         /* FIXME - Add a general key-func block for cmp, dump, etc */
 {
     RSET rnew;
     NMEM M;
-    logf (LOG_DEBUG, "rs_create(%s)", sel->desc);
     if (nmem) 
         M=nmem;
     else
         M=nmem_create();
     rnew = (RSET) nmem_malloc(M,sizeof(*rnew));
+ /* logf (LOG_DEBUG, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rnew, nmem); */
     rnew->nmem=M;
     if (nmem)
         rnew->my_nmem=0;
@@ -49,6 +86,7 @@ RSET rset_create_base(const struct rset_control *sel, NMEM nmem)
     rnew->control = sel;
     rnew->count = 1;
     rnew->priv = 0;
+    rnew->free_list=NULL;
     
     return rnew;
 }
@@ -56,6 +94,8 @@ RSET rset_create_base(const struct rset_control *sel, NMEM nmem)
 void rset_delete (RSET rs)
 {
     (rs->count)--;
+/*  logf(LOG_DEBUG,"rs_delete(%s), rs=%p, count=%d",
+            rs->control->desc, rs, rs->count); */
     if (!rs->count)
     {
         (*rs->control->f_delete)(rs);
@@ -70,6 +110,7 @@ RSET rset_dup (RSET rs)
     return rs;
 }
 
+#if 0
 void rset_default_pos (RSFD rfd, double *current, double *total)
 { /* This should never really be needed, but it is still used in */
   /* those rsets that we don't really plan to use, like isam-s */
@@ -79,20 +120,21 @@ void rset_default_pos (RSFD rfd, double *current, double *total)
     *current=-1; /* signal that pos is not implemented */
     *total=-1;
 } /* rset_default_pos */
+#endif
 
-int rset_default_forward(RSET ct, RSFD rfd, void *buf, 
+int rset_default_forward(RSFD rfd, void *buf, 
                            int (*cmpfunc)(const void *p1, const void *p2), 
                            const void *untilbuf)
 {
     int more=1;
     int cmp=2;
     logf (LOG_DEBUG, "rset_default_forward starting '%s' (ct=%p rfd=%p)",
-                    ct->control->desc, ct,rfd);
+                    rfd->rset->control->desc, rfd->rset, rfd);
     /* key_logdump(LOG_DEBUG, untilbuf); */
     while ( (cmp==2) && (more))
     {
         logf (LOG_DEBUG, "rset_default_forward looping m=%d c=%d",more,cmp);
-        more=rset_read(ct, rfd, buf);
+        more=rset_read(rfd, buf);
         if (more)
             cmp=(*cmpfunc)(untilbuf,buf);
 /*        if (more)

@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.46 2004-08-26 11:11:59 heikki Exp $
+/* $Id: rstemp.c,v 1.47 2004-08-31 10:43:40 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -46,9 +46,9 @@ static void r_pos (RSFD rfd, double *current, double  *total);
 static const struct rset_control control = 
 {
     "temp",
+    r_delete,
     r_open,
     r_close,
-    r_delete,
     r_rewind,
     rset_default_forward,
     r_pos, 
@@ -71,15 +71,12 @@ struct rset_temp_info {
     zint     hits;          /* no of hits */
     char   *temp_path;
     int     (*cmp)(const void *p1, const void *p2);
-    struct rset_temp_rfd *rfd_list;  /* rfds in use */
-    struct rset_temp_rfd *free_list; /* fully alloc'd rfds waiting for reuse*/
 };
 
 struct rset_temp_rfd {
-    struct rset_temp_info *info;
-    struct rset_temp_rfd *next;
     void *buf;
     size_t  pos_cur;       /* current position in set */
+                           /* FIXME - term pos or what ??  */
     zint cur; /* number of the current hit */
 };
 
@@ -101,8 +98,6 @@ RSET rstemp_create( NMEM nmem, int key_size,
     info->dirty = 0;
     info->hits = 0;
     info->cmp = cmp;
-    info->rfd_list = NULL;
-    info->free_list = NULL;
 
     if (!temp_path)
         info->temp_path = NULL;
@@ -135,7 +130,8 @@ static void r_delete (RSET ct)
 static RSFD r_open (RSET ct, int flag)
 {
     struct rset_temp_info *info = (struct rset_temp_info *) ct->priv;
-    struct rset_temp_rfd *rfd;
+    RSFD rfd;
+    struct rset_temp_rfd *prfd;
 
     if (info->fd == -1 && info->fname)
     {
@@ -149,18 +145,13 @@ static RSFD r_open (RSET ct, int flag)
             exit (1);
         }
     }
-    rfd = info->free_list;
-    if (rfd)
-        info->free_list=rfd->next;
-    else {
-        rfd = (struct rset_temp_rfd *) xmalloc (sizeof(*rfd));
-        rfd->buf = xmalloc (info->key_size);
+    rfd = rfd_create_base(ct);
+    if (!rfd->priv){
+        prfd= (struct rset_temp_rfd *) nmem_malloc(ct->nmem, sizeof(*prfd));
+        rfd->priv=(void *)prfd;
+        prfd->buf = nmem_malloc (ct->nmem,info->key_size);
     }
-    rfd->next = info->rfd_list;
-    info->rfd_list = rfd;
-    rfd->info = info;
     r_rewind (rfd);
-
     return rfd;
 }
 
@@ -169,7 +160,8 @@ static RSFD r_open (RSET ct, int flag)
  */
 static void r_flush (RSFD rfd, int mk)
 {
-    struct rset_temp_info *info = ((struct rset_temp_rfd*) rfd)->info;
+    /* struct rset_temp_info *info = ((struct rset_temp_rfd*) rfd)->info; */
+    struct rset_temp_info *info = rfd->rset->priv;
 
     if (!info->fname && mk)
     {
@@ -232,27 +224,15 @@ static void r_flush (RSFD rfd, int mk)
 
 static void r_close (RSFD rfd)
 {
-    struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
-    struct rset_temp_rfd **rfdp;
-
-    for (rfdp = &info->rfd_list; *rfdp; rfdp = &(*rfdp)->next)
-        if (*rfdp == rfd)
-        {
-            struct rset_temp_rfd *rfd_tmp=*rfdp;
-            r_flush (*rfdp, 0);
-            *rfdp = (*rfdp)->next;
-            rfd_tmp->next=info->free_list;
-            info->free_list=rfd_tmp;
-
-            if (!info->rfd_list && info->fname && info->fd != -1)
-            {
-                close (info->fd);
-                info->fd = -1;
-            }
-            return;
-        }
-    logf (LOG_FATAL, "r_close but no rfd match!");
-    assert (0);
+    /*struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv; */
+    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
+    r_flush (rfd, 0);
+    if (info->fname && info->fd != -1)
+    {
+        close (info->fd);
+        info->fd = -1;
+    } /* FIXME - Is this right, don't we risk closing the file too early ?*/
+    rfd_delete_base(rfd);
 }
 
 
@@ -262,14 +242,15 @@ static void r_close (RSFD rfd)
  */
 static void r_reread (RSFD rfd)
 {
-    struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
+    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv; 
+    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
 
     if (info->fname)
     {
         size_t count;
         int r;
 
-        info->pos_border = ((struct rset_temp_rfd *)rfd)->pos_cur +
+        info->pos_border = mrfd->pos_cur +
             info->buf_size;
         if (info->pos_border > info->pos_end)
             info->pos_border = info->pos_end;
@@ -298,27 +279,19 @@ static void r_reread (RSFD rfd)
 
 static void r_rewind (RSFD rfd)
 {
-    struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
-
+    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) (rfd->priv);  
+    struct rset_temp_info *info = (struct rset_temp_info *)(rfd->rset->priv);
     r_flush (rfd, 0);
-    ((struct rset_temp_rfd *)rfd)->pos_cur = 0;
+    mrfd->pos_cur = 0;
     info->pos_buf = 0;
     r_reread (rfd);
-    ((struct rset_temp_rfd *)rfd)->cur=0;
+    mrfd->cur=0;
 }
 
-/*
-static int r_count (RSET ct)
-{
-    struct rset_temp_info *info = (struct rset_temp_info *) ct->buf;
-
-    return info->pos_end / info->key_size;
-}
-*/
 static int r_read (RSFD rfd, void *buf)
 {
-    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd;
-    struct rset_temp_info *info = mrfd->info;
+    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
+    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
 
     size_t nc = mrfd->pos_cur + info->key_size;
 
@@ -339,8 +312,8 @@ static int r_read (RSFD rfd, void *buf)
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd;
-    struct rset_temp_info *info = mrfd->info;
+    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
+    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
 
     size_t nc = mrfd->pos_cur + info->key_size;
 
@@ -363,7 +336,10 @@ static int r_write (RSFD rfd, const void *buf)
 
 static void r_pos (RSFD rfd, double  *current, double  *total)
 {
-    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd;
+    /* struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd; */
+    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
+    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
+    
     *current=(double) mrfd->cur;
-    *total=(double) mrfd->info->hits;
+    *total=(double) info->hits;
 }

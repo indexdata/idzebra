@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.22 2004-08-26 11:11:59 heikki Exp $
+/* $Id: rsisamc.c,v 1.23 2004-08-31 10:43:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,16 +35,17 @@ static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
+static void r_pos (RSFD rfd, double *current, double *total);
 
 static const struct rset_control control = 
 {
     "isamc",
+    r_delete,
     r_open,
     r_close,
-    r_delete,
     r_rewind,
     rset_default_forward,
-    rset_default_pos,
+    r_pos,
     r_read,
     r_write,
 };
@@ -92,25 +93,11 @@ static void r_delete (RSET ct)
     assert (info->ispt_list == NULL);
 }
 
-/*
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
-{
-    rset_isamc_parms *pt = (rset_isamc_parms *) parms;
-    struct rset_isamc_info *info;
-
-    info = (struct rset_isamc_info *) xmalloc (sizeof(*info));
-    info->is = pt->is;
-    info->pos = pt->pos;
-    info->key_size = pt->key_size;
-    info->cmp = pt->cmp;
-    info->ispt_list = NULL;
-    return info;
-}
-*/
 
 RSFD r_open (RSET ct, int flag)
 {
     struct rset_isamc_info *info = (struct rset_isamc_info *) ct->priv;
+    RSFD rfd;
     struct rset_pp_info *ptinfo;
 
     logf (LOG_DEBUG, "risamc_open");
@@ -119,37 +106,23 @@ RSFD r_open (RSET ct, int flag)
         logf (LOG_FATAL, "ISAMC set type is read-only");
         return NULL;
     }
-    ptinfo = info->free_list;
-    if (ptinfo)
-        info->free_list=ptinfo->next;
+    rfd = rfd_create_base(ct);
+    if (rfd->priv)
+        ptinfo=(struct rset_pp_info *)rfd->priv;
     else {
         ptinfo = (struct rset_pp_info *) nmem_malloc (ct->nmem,sizeof(*ptinfo));
+        rfd->priv=ptinfo;
         ptinfo->buf = nmem_malloc (ct->nmem,info->key_size);
     }
-    ptinfo->next = info->ispt_list;
-    info->ispt_list = ptinfo;
-    ptinfo->pt = isc_pp_open (info->is, info->pos);
-    ptinfo->info = info;
-    return ptinfo;
+    return rfd;
 }
 
 static void r_close (RSFD rfd)
 {
-    struct rset_isamc_info *info = ((struct rset_pp_info*) rfd)->info;
-    struct rset_pp_info **ptinfop;
+    struct rset_pp_info *p=(struct rset_pp_info *)(rfd->priv);
 
-    for (ptinfop = &info->ispt_list; *ptinfop; ptinfop = &(*ptinfop)->next)
-        if (*ptinfop == rfd)
-        {
-            struct rset_pp_info *tmp=(struct rset_pp_info*) rfd;
-            isc_pp_close ((*ptinfop)->pt);
-            *ptinfop = (*ptinfop)->next;
-            tmp->next=info->free_list;
-            info->free_list=tmp;
-            return;
-        }
-    logf (LOG_FATAL, "r_close but no rfd match!");
-    assert (0);
+    isc_pp_close (p->pt);
+    rfd_delete_base(rfd);
 }
 
 
@@ -161,9 +134,9 @@ static void r_rewind (RSFD rfd)
 
 static int r_read (RSFD rfd, void *buf)
 {
-    struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
+    struct rset_pp_info *p=(struct rset_pp_info *)(rfd->priv);
     int r;
-    r = isc_pp_read(pinfo->pt, buf);
+    r = isc_pp_read(p->pt, buf);
     return r;
 }
 
@@ -171,4 +144,10 @@ static int r_write (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "ISAMC set type is read-only");
     return -1;
+}
+
+static void r_pos (RSFD rfd, double *current, double *total)
+{
+    *current=-1;  /* sorry, not implemented yet */
+    *total=-1;
 }

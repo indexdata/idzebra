@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.44 2004-08-26 11:11:59 heikki Exp $
+/* $Id: rsbool.c,v 1.45 2004-08-31 10:43:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -37,7 +37,7 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_forward(RSET ct, RSFD rfd, void *buf,
+static int r_forward(RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total); 
@@ -49,9 +49,9 @@ static int r_write (RSFD rfd, const void *buf);
 static const struct rset_control control_and = 
 {
     "and",
+    r_delete,
     r_open,
     r_close,
-    r_delete,
     r_rewind,
     r_forward, 
     r_pos,    
@@ -62,9 +62,9 @@ static const struct rset_control control_and =
 static const struct rset_control control_or = 
 {
     "or",
+    r_delete,
     r_open,
     r_close,
-    r_delete,
     r_rewind,
     r_forward, 
     r_pos,
@@ -75,9 +75,9 @@ static const struct rset_control control_or =
 static const struct rset_control control_not = 
 {
     "not",
+    r_delete,
     r_open,
     r_close,
-    r_delete,
     r_rewind,
     r_forward, 
     r_pos,
@@ -96,8 +96,6 @@ struct rset_bool_info {
     RSET rset_r;
     int (*cmp)(const void *p1, const void *p2);
     void (*log_item)(int logmask, const void *p, const char *txt);
-    struct rset_bool_rfd *rfd_list;  /* RSFDs in use */
-    struct rset_bool_rfd *free_list; /* RSFDs that are freed (for reuse) */
 };
 
 struct rset_bool_rfd {
@@ -127,8 +125,6 @@ static RSET rsbool_create_base( const struct rset_control *ctrl,
     info->rset_r = rset_r;
     info->cmp = cmp;
     info->log_item = log_item;
-    info->rfd_list = NULL;
-    info->free_list = NULL;
     
     rnew->priv=info;
     return rnew;
@@ -165,133 +161,84 @@ RSET rsbool_create_not( NMEM nmem, int key_size,
 static void r_delete (RSET ct)
 {
     struct rset_bool_info *info = (struct rset_bool_info *) ct->priv;
-
-    assert (info->rfd_list == NULL);
     rset_delete (info->rset_l);
     rset_delete (info->rset_r);
 }
 
-#if 0
-static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
-{
-    rset_bool_parms *bool_parms = (rset_bool_parms *) parms;
-    struct rset_bool_info *info;
-
-    info = (struct rset_bool_info *) xmalloc (sizeof(*info));
-    info->key_size = bool_parms->key_size;
-    info->rset_l = bool_parms->rset_l;
-    info->rset_r = bool_parms->rset_r;
-    info->cmp = bool_parms->cmp;
-    info->log_item = bool_parms->log_item;
-    info->rfd_list = NULL;
-    
-    return info;
-}
-#endif
 
 static RSFD r_open (RSET ct, int flag)
 {
     struct rset_bool_info *info = (struct rset_bool_info *) ct->priv;
-    struct rset_bool_rfd *rfd;
+    RSFD rfd;
+    struct rset_bool_rfd *p;
+   
 
     if (flag & RSETF_WRITE)
     {
         logf (LOG_FATAL, "bool set type is read-only");
         return NULL;
     }
-    rfd = info->free_list;
-    if (rfd)
-	info->free_list = rfd->next;
+    rfd = rfd_create_base(ct);
+    if (rfd->priv)
+        p=(struct rset_bool_rfd *)rfd->priv;
     else {
-        rfd = (struct rset_bool_rfd *) nmem_malloc(ct->nmem, sizeof(*rfd));
-        rfd->buf_l = nmem_malloc(ct->nmem, info->key_size);
-        rfd->buf_r = nmem_malloc(ct->nmem, info->key_size);
+        p=nmem_malloc(ct->nmem,sizeof(*p));
+        rfd->priv=p;
+        p->buf_l = nmem_malloc(ct->nmem, info->key_size);
+        p->buf_r = nmem_malloc(ct->nmem, info->key_size);
     }
 
     logf(LOG_DEBUG,"rsbool (%s) open [%p]", ct->control->desc, rfd);
-    rfd->next = info->rfd_list;
-    info->rfd_list = rfd;
-    rfd->info = info;
-    rfd->hits=0;
+    p->hits=0;
 
-    rfd->rfd_l = rset_open (info->rset_l, RSETF_READ);
-    rfd->rfd_r = rset_open (info->rset_r, RSETF_READ);
-    rfd->more_l = rset_read (info->rset_l, rfd->rfd_l, rfd->buf_l);
-    rfd->more_r = rset_read (info->rset_r, rfd->rfd_r, rfd->buf_r);
-    rfd->tail = 0;
+    p->rfd_l = rset_open (info->rset_l, RSETF_READ);
+    p->rfd_r = rset_open (info->rset_r, RSETF_READ);
+    p->more_l = rset_read (p->rfd_l, p->buf_l);
+    p->more_r = rset_read (p->rfd_r, p->buf_r);
+    p->tail = 0;
     return rfd;
 }
 
 static void r_close (RSFD rfd)
 {
-    struct rset_bool_info *info = ((struct rset_bool_rfd*)rfd)->info;
-    struct rset_bool_rfd **rfdp;
-    
-    for (rfdp = &info->rfd_list; *rfdp; rfdp = &(*rfdp)->next)
-        if (*rfdp == rfd)
-        {
-	    struct rset_bool_rfd *rfd_tmp = *rfdp;
+ /* struct rset_bool_info *info = (struct rset_bool_info*)(rfd->rset->priv); */
+    struct rset_bool_rfd *prfd=(struct rset_bool_rfd *)rfd->priv;
 
-            rset_close (info->rset_l, (*rfdp)->rfd_l);
-            rset_close (info->rset_r, (*rfdp)->rfd_r);
-            *rfdp = (*rfdp)->next;
-
-	    rfd_tmp->next = info->free_list;
-	    info->free_list = rfd_tmp;
-
-            return;
-        }
-    logf (LOG_FATAL, "r_close but no rfd match!");
-    assert (0);
+    rset_close (prfd->rfd_l);
+    rset_close (prfd->rfd_r);
+    rfd_delete_base(rfd);
 }
 
 
 static void r_rewind (RSFD rfd)
 {
-    struct rset_bool_info *info = ((struct rset_bool_rfd*)rfd)->info;
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
+ /* struct rset_bool_info *info = (struct rset_bool_info*)(rfd->rset->priv); */
+    struct rset_bool_rfd *p=(struct rset_bool_rfd *)rfd->priv;
 
     logf (LOG_DEBUG, "rsbool_rewind");
-    rset_rewind (info->rset_l, p->rfd_l);
-    rset_rewind (info->rset_r, p->rfd_r);
-    p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
-    p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+    rset_rewind (p->rfd_l);
+    rset_rewind (p->rfd_r);
+    p->more_l = rset_read (p->rfd_l, p->buf_l);
+    p->more_r = rset_read (p->rfd_r, p->buf_r);
     p->hits=0;
 }
 
-static int r_forward (RSET ct, RSFD rfd, void *buf,
+static int r_forward (RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf)
 {
-    struct rset_bool_info *info = ((struct rset_bool_rfd*)rfd)->info;
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
+    struct rset_bool_info *info = (struct rset_bool_info*)(rfd->rset->priv);
+    struct rset_bool_rfd *p=(struct rset_bool_rfd *)rfd->priv;
     int rc;
 
-#if RSET_DEBUG
-    logf (LOG_DEBUG, "rsbool_forward (L) [%p] '%s' (ct=%p rfd=%p m=%d,%d)",
-                      rfd, ct->control->desc, ct, rfd, p->more_l, p->more_r);
-#endif
     if ( p->more_l && ((cmpfunc)(untilbuf,p->buf_l)==2) )
-        p->more_l = rset_forward(info->rset_l, p->rfd_l, p->buf_l,
+        p->more_l = rset_forward(p->rfd_l, p->buf_l,
                         info->cmp, untilbuf);
-#if RSET_DEBUG
-    logf (LOG_DEBUG, "rsbool_forward (R) [%p] '%s' (ct=%p rfd=%p m=%d,%d)",
-                      rfd, ct->control->desc, ct, rfd, p->more_l, p->more_r);
-#endif
     if ( p->more_r && ((cmpfunc)(untilbuf,p->buf_r)==2))
-        p->more_r = rset_forward(info->rset_r, p->rfd_r, p->buf_r,
+        p->more_r = rset_forward(p->rfd_r, p->buf_r,
                         info->cmp, untilbuf);
-#if RSET_DEBUG
-    logf (LOG_DEBUG, "rsbool_forward [%p] calling read, m=%d,%d t=%d", 
-                       rfd, p->more_l, p->more_r, p->tail);
-#endif
-    
     p->tail=0; 
-    rc = rset_read(ct,rfd,buf); 
-#if RSET_DEBUG
-    logf (LOG_DEBUG, "rsbool_forward returning [%p] %d m=%d,%d", 
-                       rfd, rc, p->more_l, p->more_r);
-#endif
+    rc = rset_read(rfd,buf); 
     return rc;
 }
 
@@ -313,8 +260,8 @@ static int r_forward (RSET ct, RSFD rfd, void *buf,
 
 static int r_read_and (RSFD rfd, void *buf)
 {
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
-    struct rset_bool_info *info = p->info;
+    struct rset_bool_info *info = (struct rset_bool_info*)(rfd->rset->priv);
+    struct rset_bool_rfd *p=(struct rset_bool_rfd *)rfd->priv;
 
     while (p->more_l || p->more_r)
     {
@@ -335,13 +282,13 @@ static int r_read_and (RSFD rfd, void *buf)
         if (!cmp)
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+            p->more_l = rset_read (p->rfd_l, p->buf_l);
             p->tail = 1;
         }
         else if (cmp == 1)
         {
             memcpy (buf, p->buf_r, info->key_size);
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+            p->more_r = rset_read (p->rfd_r, p->buf_r);
             p->tail = 1;
 #if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_and [%p] returning R m=%d/%d c=%d",
@@ -355,7 +302,7 @@ static int r_read_and (RSFD rfd, void *buf)
         else if (cmp == -1)
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+            p->more_l = rset_read (p->rfd_l, p->buf_l);
             p->tail = 1;
 #if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_and [%p] returning L m=%d/%d c=%d",
@@ -371,7 +318,7 @@ static int r_read_and (RSFD rfd, void *buf)
 #if OLDCODE
             memcpy (buf, p->buf_r, info->key_size);
             
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+            p->more_r = rset_read (p->rfd_r, p->buf_r);
             if (p->tail)
             {
                 if (!p->more_r || (*info->cmp)(p->buf_r, buf) > 1)
@@ -389,7 +336,7 @@ static int r_read_and (RSFD rfd, void *buf)
             if (p->tail)
             {
                 memcpy (buf, p->buf_r, info->key_size);
-                p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+                p->more_r = rset_read (p->rfd_r, p->buf_r);
                 if (!p->more_r || (*info->cmp)(p->buf_r, buf) > 1)
                     p->tail = 0;
 #if RSET_DEBUG
@@ -407,7 +354,7 @@ static int r_read_and (RSFD rfd, void *buf)
                         rfd, p->more_l, p->more_r, cmp);
 #endif
                 if (p->more_r && p->more_l)
-                    p->more_r = rset_forward( info->rset_r, p->rfd_r, 
+                    p->more_r = rset_forward( p->rfd_r, 
                                     p->buf_r, (info->cmp), p->buf_l);
                 else 
                     return 0; /* no point in reading further */
@@ -418,7 +365,7 @@ static int r_read_and (RSFD rfd, void *buf)
         {
 #if OLDCODE
              memcpy (buf, p->buf_l, info->key_size);
-             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+             p->more_l = rset_read (p->rfd_l, p->buf_l);
              if (p->tail)
              {
                  if (!p->more_l || (*info->cmp)(p->buf_l, buf) > 1)
@@ -435,7 +382,7 @@ static int r_read_and (RSFD rfd, void *buf)
             if (p->tail)
             {
                 memcpy (buf, p->buf_l, info->key_size);
-                p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+                p->more_l = rset_read (p->rfd_l, p->buf_l);
                 if (!p->more_l || (*info->cmp)(p->buf_l, buf) > 1)
                     p->tail = 0;
 #if RSET_DEBUG
@@ -453,8 +400,7 @@ static int r_read_and (RSFD rfd, void *buf)
                         rfd, p->more_l, p->more_r, cmp);
 #endif
                 if (p->more_r && p->more_l)
-                    p->more_l = rset_forward( 
-                                    info->rset_l, p->rfd_l, 
+                    p->more_l = rset_forward(p->rfd_l, 
                                     p->buf_l, (info->cmp), p->buf_r);
                 else 
                     return 0; /* no point in reading further */
@@ -470,8 +416,8 @@ static int r_read_and (RSFD rfd, void *buf)
 
 static int r_read_or (RSFD rfd, void *buf)
 {
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
-    struct rset_bool_info *info = p->info;
+    struct rset_bool_info *info = (struct rset_bool_info*)(rfd->rset->priv);
+    struct rset_bool_rfd *p=(struct rset_bool_rfd *)rfd->priv;
 
     while (p->more_l || p->more_r)
     {
@@ -486,8 +432,8 @@ static int r_read_or (RSFD rfd, void *buf)
         if (!cmp)
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+            p->more_l = rset_read (p->rfd_l, p->buf_l);
+            p->more_r = rset_read (p->rfd_r, p->buf_r);
 #if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_or returning A m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
@@ -499,7 +445,7 @@ static int r_read_or (RSFD rfd, void *buf)
         else if (cmp > 0)
         {
             memcpy (buf, p->buf_r, info->key_size);
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+            p->more_r = rset_read (p->rfd_r, p->buf_r);
 #if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_or returning B m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
@@ -511,7 +457,7 @@ static int r_read_or (RSFD rfd, void *buf)
         else
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+            p->more_l = rset_read ( p->rfd_l, p->buf_l);
 #if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_or returning C m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
@@ -526,8 +472,8 @@ static int r_read_or (RSFD rfd, void *buf)
 
 static int r_read_not (RSFD rfd, void *buf)
 {
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
-    struct rset_bool_info *info = p->info;
+    struct rset_bool_info *info = (struct rset_bool_info*)(rfd->rset->priv);
+    struct rset_bool_rfd *p=(struct rset_bool_rfd *)rfd->priv;
 
     while (p->more_l || p->more_r)
     {
@@ -542,14 +488,13 @@ static int r_read_not (RSFD rfd, void *buf)
         if (cmp < -1)
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+            p->more_l = rset_read (p->rfd_l, p->buf_l);
             p->hits++;
             return 1;
         }
         else if (cmp > 1)
         {
-                p->more_r = rset_forward( 
-                    info->rset_r, p->rfd_r, 
+                p->more_r = rset_forward( p->rfd_r, 
                     p->buf_r, (info->cmp), p->buf_l);
         }
         else
@@ -557,14 +502,14 @@ static int r_read_not (RSFD rfd, void *buf)
             memcpy (buf, p->buf_l, info->key_size);
             do
             { 
-                p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+                p->more_l = rset_read (p->rfd_l, p->buf_l);
                 if (!p->more_l)
                     break;
                 cmp = (*info->cmp)(p->buf_l, buf);
             } while (cmp >= -1 && cmp <= 1);
             do
             {
-                p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+                p->more_r = rset_read (p->rfd_r, p->buf_r);
                 if (!p->more_r)
                     break;
                 cmp = (*info->cmp)(p->buf_r, buf);
@@ -583,14 +528,13 @@ static int r_write (RSFD rfd, const void *buf)
 
 static void r_pos (RSFD rfd, double *current, double *total)
 {
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
-    struct rset_bool_info *info = p->info;
+    struct rset_bool_rfd *p=(struct rset_bool_rfd *)rfd->priv;
     double lcur,ltot;
     double rcur,rtot;
     double r;
     ltot=-1; rtot=-1;
-    rset_pos(info->rset_l, p->rfd_l,  &lcur, &ltot);
-    rset_pos(info->rset_r, p->rfd_r,  &rcur, &rtot);
+    rset_pos(p->rfd_l,  &lcur, &ltot);
+    rset_pos(p->rfd_r,  &rcur, &rtot);
     if ( (rtot<0) && (ltot<0)) { /*no position */
         *current=rcur;  /* return same as you got */
         *total=rtot;    /* probably -1 for not available */

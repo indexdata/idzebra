@@ -1,4 +1,4 @@
-/* $Id: rsmultior.c,v 1.7 2004-08-26 11:11:59 heikki Exp $
+/* $Id: rsmultior.c,v 1.8 2004-08-31 10:43:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -38,7 +38,7 @@ static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
-static int r_forward(RSET ct, RSFD rfd, void *buf,
+static int r_forward(RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
@@ -46,9 +46,9 @@ static void r_pos (RSFD rfd, double *current, double *total);
 static const struct rset_control control = 
 {
     "multi-or",
+    r_delete,
     r_open,
     r_close,
-    r_delete,
     r_rewind,
     r_forward,
     r_pos,
@@ -88,11 +88,6 @@ struct rset_multior_info {
     int     (*cmp)(const void *p1, const void *p2);
     int     no_rsets;
     RSET    *rsets;
-    struct rset_multior_rfd *rfd_list; /* rfds in use */
-    struct rset_multior_rfd *free_list; /* rfds free */
-        /* rfds are allocated when first opened, if nothing in freelist */
-        /* when allocated, all their pointers are allocated as well, and */
-        /* those are kept intact when in the freelist, ready to be reused */
 };
 
 
@@ -100,8 +95,6 @@ struct rset_multior_rfd {
     int flag;
     struct heap_item *items; /* we alloc and free them here */
     HEAP h;
-    struct rset_multior_rfd *next;
-    struct rset_multior_info *info;
     zint hits; /* returned so far */
     char *prevvalue; /* to see if we are in another record */
       /* FIXME - is this really needed? */
@@ -238,8 +231,6 @@ RSET rsmultior_create( NMEM nmem, int key_size,
     info->no_rsets=no_rsets;
     info->rsets=(RSET*)nmem_malloc(rnew->nmem, no_rsets*sizeof(*rsets));
     memcpy(info->rsets,rsets,no_rsets*sizeof(*rsets));
-    info->rfd_list = NULL;
-    info->free_list = NULL;
     rnew->priv=info;
     return rnew;
 }
@@ -248,30 +239,14 @@ static void r_delete (RSET ct)
 {
     struct rset_multior_info *info = (struct rset_multior_info *) ct->priv;
     int i;
-
-    assert (info->rfd_list == NULL);
     for(i=0;i<info->no_rsets;i++)
         rset_delete(info->rsets[i]);
 }
-#if 0
-static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
-{
-    rset_multior_parms *r_parms = (rset_multior_parms *) parms;
-    struct rset_multior_info *info;
-    info = (struct rset_multior_info *) xmalloc (sizeof(*info));
-    info->key_size = r_parms->key_size;
-    assert (info->key_size > 1);
-    info->cmp = r_parms->cmp;
-    info->no_rsets= r_parms->no_rsets;
-    info->rsets=r_parms->rsets; /* now we own it! */
-    info->rfd_list=0;
-    return info;
-}
-#endif
 
 static RSFD r_open (RSET ct, int flag)
 {
-    struct rset_multior_rfd *rfd;
+    RSFD rfd;
+    struct rset_multior_rfd *p;
     struct rset_multior_info *info = (struct rset_multior_info *) ct->priv;
     int i;
 
@@ -280,62 +255,47 @@ static RSFD r_open (RSET ct, int flag)
         logf (LOG_FATAL, "multior set type is read-only");
         return NULL;
     }
-    rfd=info->free_list;
-    if (rfd) {
-        info->free_list=rfd->next;
-        heap_clear(rfd->h);
-        assert(rfd->items);
+    rfd=rfd_create_base(ct);
+    if (rfd->priv) {
+        p=(struct rset_multior_rfd *)rfd->priv;
+        heap_clear(p->h);
+        assert(p->items);
         /* all other pointers shouls already be allocated, in right sizes! */
     }
     else {
-        rfd = (struct rset_multior_rfd *) nmem_malloc (ct->nmem,sizeof(*rfd));
-        rfd->h = heap_create( ct->nmem, info->no_rsets, 
+        p = (struct rset_multior_rfd *) nmem_malloc (ct->nmem,sizeof(*p));
+        rfd->priv=p;
+        p->h = heap_create( ct->nmem, info->no_rsets, 
                               info->key_size, info->cmp);
-        rfd->items=(struct heap_item *) nmem_malloc(ct->nmem,
-                              info->no_rsets*sizeof(*rfd->items));
+        p->items=(struct heap_item *) nmem_malloc(ct->nmem,
+                              info->no_rsets*sizeof(*p->items));
         for (i=0; i<info->no_rsets; i++){
-            rfd->items[i].rset=info->rsets[i];
-            rfd->items[i].buf=nmem_malloc(ct->nmem,info->key_size);
+            p->items[i].rset=info->rsets[i];
+            p->items[i].buf=nmem_malloc(ct->nmem,info->key_size);
         }
     }
-    rfd->flag = flag;
-    rfd->next = info->rfd_list;
-    rfd->info = info;
-    info->rfd_list = rfd;
-    rfd->prevvalue=0;
-    rfd->hits=0;
+    p->flag = flag;
+    p->prevvalue=0;
+    p->hits=0;
     for (i=0; i<info->no_rsets; i++){
-        rfd->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
-        if ( rset_read(rfd->items[i].rset, rfd->items[i].fd, 
-                      rfd->items[i].buf) )
-            heap_insert(rfd->h, &(rfd->items[i]));
+        p->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
+        if ( rset_read(p->items[i].fd, p->items[i].buf) )
+            heap_insert(p->h, &(p->items[i]));
     }
     return rfd;
 }
 
 static void r_close (RSFD rfd)
 {
-    struct rset_multior_rfd *mrfd = (struct rset_multior_rfd *) rfd;
-    struct rset_multior_info *info = mrfd->info;
-    struct rset_multior_rfd **rfdp;
+    struct rset_multior_info *info=(struct rset_multior_info *)(rfd->rset->priv);
+    struct rset_multior_rfd *p=(struct rset_multior_rfd *)(rfd->priv);
     int i;
-    
-    for (rfdp = &info->rfd_list; *rfdp; rfdp = &(*rfdp)->next)
-        if (*rfdp == rfd)
-        {
-            *rfdp = (*rfdp)->next;
-        
-            heap_destroy (mrfd->h);
-            for (i = 0; i<info->no_rsets; i++) {
-                if (mrfd->items[i].fd)
-                    rset_close(info->rsets[i],mrfd->items[i].fd);
-            }
-            mrfd->next=info->free_list;
-            info->free_list=mrfd;
-            return;
-        }
-    logf (LOG_FATAL, "r_close but no rfd match!");
-    assert (0);
+
+    heap_destroy (p->h);
+    for (i = 0; i<info->no_rsets; i++) 
+        if (p->items[i].fd)
+            rset_close(p->items[i].fd);
+    rfd_delete_base(rfd);
 }
 
 
@@ -345,25 +305,25 @@ static void r_rewind (RSFD rfd)
 }
 
 
-static int r_forward(RSET ct, RSFD rfd, void *buf,
+static int r_forward(RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf)
 {
-    struct rset_multior_rfd *mrfd = (struct rset_multior_rfd *) rfd;
-    struct rset_multior_info *info = mrfd->info;
+    struct rset_multior_info *info=(struct rset_multior_info *)(rfd->rset->priv);
+    struct rset_multior_rfd *mrfd=(struct rset_multior_rfd *)(rfd->priv);
     struct heap_item it;
     int rdres;
     if (heap_empty(mrfd->h))
         return 0;
     if (cmpfunc)
-        assert(cmpfunc==mrfd->info->cmp);
+        assert(cmpfunc==info->cmp);
     it = *(mrfd->h->heap[1]);
     memcpy(buf,it.buf, info->key_size); 
     (mrfd->hits)++;
     if (untilbuf)
-        rdres=rset_forward(it.rset, it.fd, it.buf, cmpfunc,untilbuf);
+        rdres=rset_forward(it.fd, it.buf, cmpfunc,untilbuf);
     else
-        rdres=rset_read(it.rset, it.fd, it.buf);
+        rdres=rset_read(it.fd, it.buf);
     if ( rdres )
         heap_balance(mrfd->h);
     else
@@ -374,18 +334,18 @@ static int r_forward(RSET ct, RSFD rfd, void *buf,
 
 static int r_read (RSFD rfd, void *buf)
 {
-    return r_forward(0,rfd, buf,0,0);
+    return r_forward(rfd, buf,0,0);
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)
 {
-    struct rset_multior_rfd *mrfd = (struct rset_multior_rfd *) rfd;
-    struct rset_multior_info *info = mrfd->info;
+    struct rset_multior_info *info=(struct rset_multior_info *)(rfd->rset->priv);
+    struct rset_multior_rfd *mrfd=(struct rset_multior_rfd *)(rfd->priv);
     double cur, tot;
     double scur=0.0, stot=0.0;
     int i;
     for (i=0; i<info->no_rsets; i++){
-        rset_pos(mrfd->items[i].rset, mrfd->items[i].fd, &cur, &tot);
+        rset_pos(mrfd->items[i].fd, &cur, &tot);
         logf(LOG_LOG, "r_pos: %d %0.1f %0.1f", i, cur,tot);
         scur += cur;
         stot += tot;
