@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.6  1999-02-18 15:01:25  adam
+ * Revision 1.7  1999-03-02 16:15:43  quinn
+ * Added "tagsysno" and "tagrank" directives to zebra.cfg.
+ *
+ * Revision 1.6  1999/02/18 15:01:25  adam
  * Minor changes.
  *
  * Revision 1.5  1999/02/17 11:29:56  adam
@@ -233,6 +236,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     retrieveCtrl.comp = comp;
     retrieveCtrl.diagnostic = 0;
     retrieveCtrl.dh = zh->dh;
+    retrieveCtrl.res = zh->res;
     (*rt->retrieve)(&retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = retrieveCtrl.rec_buf;

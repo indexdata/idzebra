@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.27  1998-10-16 08:14:28  adam
+ * Revision 1.28  1999-03-02 16:15:42  quinn
+ * Added "tagsysno" and "tagrank" directives to zebra.cfg.
+ *
+ * Revision 1.27  1998/10/16 08:14:28  adam
  * Updated record control system.
  *
  * Revision 1.26  1998/05/20 10:12:12  adam
@@ -145,6 +148,7 @@ struct recExtractCtrl {
 /* Retrieve record control */
 struct recRetrieveCtrl {
     /* Input parameters ... */
+    Res       res;		      /* Resource pool                     */
     ODR       odr;                    /* ODR used to create response       */
     void     *fh;                     /* File descriptor and read function */
     int       (*readf)(void *fh, char *buf, size_t count);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.25  1999-02-18 15:01:26  adam
+ * Revision 1.26  1999-03-02 16:15:44  quinn
+ * Added "tagsysno" and "tagrank" directives to zebra.cfg.
+ *
+ * Revision 1.25  1999/02/18 15:01:26  adam
  * Minor changes.
  *
  * Revision 1.24  1999/02/02 14:51:28  adam
@@ -466,6 +469,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     int res, selected = 0;
     NMEM mem;
     struct grs_read_info gri;
+    char *tagname;
     
     mem = nmem_create();
     gri.readf = p->readf;
@@ -495,22 +499,24 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
 
-    logf (LOG_DEBUG, "grs_retrieve: score");
-    if (p->score >= 0 && (dnew =
+    tagname = res_get_def(p->res, "tagrank", "rank");
+    if (strcmp(tagname, "0") && p->score >= 0 && (dnew =
 			  data1_insert_taggeddata(p->dh, node,
-						  node, "rank",
+						  node, tagname,
 						  mem)))
     {
+        logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_num;
 	dnew->u.data.data = dnew->lbuf;
 	sprintf(dnew->u.data.data, "%d", p->score);
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
 
-    logf (LOG_DEBUG, "grs_retrieve: localControlNumber");
-    if (p->localno > 0 && (dnew = data1_insert_taggeddata(p->dh, node, node,
-				       "localControlNumber", mem)))
+    tagname = res_get_def(p->res, "tagsysno", "localControlNumber");
+    if (strcmp(tagname, "0") && p->localno > 0 &&
+   	 (dnew = data1_insert_taggeddata(p->dh, node, node, tagname, mem)))
     {
+        logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_text;
 	dnew->u.data.data = dnew->lbuf;
 	sprintf(dnew->u.data.data, "%d", p->localno);
