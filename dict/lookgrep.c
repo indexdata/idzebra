@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.6  1995-10-09 16:18:32  adam
+ * Revision 1.7  1995-10-17 18:01:22  adam
+ * Userfunc may return non-zero in which case the the grepping stops
+ * immediately.
+ *
+ * Revision 1.6  1995/10/09  16:18:32  adam
  * Function dict_lookup_grep got extra client data parameter.
  *
  * Revision 1.5  1995/09/14  11:52:59  adam
@@ -270,8 +274,9 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                 if (ch == DICT_EOS)
                 {
                     if (was_match)
-                        (*userfunc)(prefix, info+(j+1)*sizeof(Dict_char),
-                                    client);
+                        if ((*userfunc)(prefix, info+(j+1)*sizeof(Dict_char),
+                                        client))
+                            return 1;
                     break;
                 }
                 move (mc, Rj1, Rj0, ch, dfa, Rj_tmp);
@@ -316,16 +321,18 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                         if (Rj1[mc->range*mc->n + d] & mc->match_mask[d])
                         {
                             prefix[pos+1] = DICT_EOS;
-                            (*userfunc)(prefix, info+sizeof(Dict_ptr)+
-                                        sizeof(Dict_char), client);
+                            if ((*userfunc)(prefix, info+sizeof(Dict_ptr)+
+                                            sizeof(Dict_char), client))
+                                return 1;
                             break;
                         }
                 }
                 memcpy (&subptr, info, sizeof(Dict_ptr));
                 if (subptr)
                 {
-                    dict_grep (dict, subptr, mc, Rj1, pos+1,
-                                  client, userfunc, prefix, dfa);
+                    if (dict_grep (dict, subptr, mc, Rj1, pos+1,
+                                   client, userfunc, prefix, dfa))
+                        return 1;
                     dict_bf_readp (dict->dbf, ptr, &p);
                     indxp = (short*) ((char*) p+DICT_pagesize(dict)
                                       -sizeof(short));
