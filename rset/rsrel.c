@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.21  1997-11-18 10:05:08  adam
+ * Revision 1.22  1997-12-18 10:54:25  adam
+ * New method result set method rs_hits that returns the number of
+ * hits in result-set (if known). The ranked result set returns real
+ * number of hits but only when not combined with other operands.
+ *
+ * Revision 1.21  1997/11/18 10:05:08  adam
  * Changed character map facility so that admin can specify character
  * mapping files for each register type, w, p, etc.
  *
@@ -92,6 +97,7 @@ static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
+static int r_hits (RSET ct, void *oi);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
@@ -105,6 +111,7 @@ static const rset_control control =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read,
     r_write,
     r_score
@@ -116,12 +123,13 @@ struct rset_rel_info {
     int     key_size;
     int     max_rec;
     int     no_rec;
+    int     hits;                       /* hits count */
     int     (*cmp)(const void *p1, const void *p2);
     int     (*get_pos)(const void *p);
     char    *key_buf;                   /* key buffer */
     float   *score_buf;                 /* score buffer */
     int     *sort_idx;                  /* score sorted index */
-    int     *sysno_idx;                /* sysno sorted index (ring buffer) */
+    int     *sysno_idx;                 /* sysno sorted index (ring buffer) */
     struct rset_rel_rfd *rfd_list;
 };
 
@@ -137,6 +145,7 @@ static void add_rec (struct rset_rel_info *info, double score, void *key)
 {
     int idx, i, j;
 
+    (info->hits)++;
     for (i = 0; i<info->no_rec; i++)
     {
         idx = info->sort_idx[i];
@@ -190,13 +199,12 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     int  *isam_r;
     int  *max_tf, *tf;
 
-#if NEW_RANKING
     int  *pos_tf = NULL;
     int score_sum = 0;
     int no_occur = 0;
     char *isam_prev_buf = NULL;
     int fact1, fact2;
-#endif
+
     ISPT *isam_pt = NULL;
     ISAMC_PP *isamc_pp = NULL;
     int i;
@@ -236,126 +244,132 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
         }
         logf (LOG_DEBUG, "max tf %d = %d", i, max_tf[i]);
     }
-#if NEW_RANKING
-    while (1)
+    switch (parms->method)
     {
-	int r, min = -1;
-	int pos = 0;
-        for (i = 0; i<parms->no_isam_positions; i++)
-            if (isam_r[i] && 
-		(min < 0 ||
-		 (r = (*parms->cmp)(isam_buf[i], isam_buf[min])) < 1))
-                min = i;
-	if (!isam_prev_buf)
+    case RSREL_METHOD_B:
+	while (1)
 	{
-	    pos_tf = xmalloc (sizeof(*pos_tf) * parms->no_isam_positions);
-	    isam_prev_buf = xmalloc (info->key_size);
-	    fact1 = 100000/parms->no_isam_positions;
-	    fact2 = 100000/(parms->no_isam_positions*parms->no_isam_positions);
-	    
-	    no_occur = score_sum = 0;
-	    memcpy (isam_prev_buf, isam_buf[min], info->key_size);
+	    int r, min = -1;
+	    int pos = 0;
 	    for (i = 0; i<parms->no_isam_positions; i++)
-		pos_tf[i] = -10;
-	}
-	else if (min < 0 ||
-		 (*parms->cmp)(isam_buf[min], isam_prev_buf) > 1)
+		if (isam_r[i] && 
+		    (min < 0 ||
+		     (r = (*parms->cmp)(isam_buf[i], isam_buf[min])) < 1))
+		    min = i;
+	    if (!isam_prev_buf)
+	    {
+		pos_tf = xmalloc (sizeof(*pos_tf) * parms->no_isam_positions);
+		isam_prev_buf = xmalloc (info->key_size);
+		fact1 = 100000/parms->no_isam_positions;
+		fact2 = 100000/
+		    (parms->no_isam_positions*parms->no_isam_positions);
+		
+		no_occur = score_sum = 0;
+		memcpy (isam_prev_buf, isam_buf[min], info->key_size);
+		for (i = 0; i<parms->no_isam_positions; i++)
+		    pos_tf[i] = -10;
+	    }
+	    else if (min < 0 ||
+		     (*parms->cmp)(isam_buf[min], isam_prev_buf) > 1)
+	    {
+		logf (LOG_LOG, "final occur = %d ratio=%d",
+		      no_occur, score_sum / no_occur);
+		add_rec (info, score_sum / (10000.0*no_occur), isam_prev_buf);
+		if (min < 0)
+		    break;
+		no_occur = score_sum = 0;
+		memcpy (isam_prev_buf, isam_buf[min], info->key_size);
+		for (i = 0; i<parms->no_isam_positions; i++)
+		    pos_tf[i] = -10;
+	    }
+	    pos = (*parms->get_pos)(isam_buf[min]);
+	    logf (LOG_LOG, "pos=%d", pos);
+	    for (i = 0; i<parms->no_isam_positions; i++)
+	    {
+		int d = pos - pos_tf[i];
+		
+		no_occur++;
+		if (pos_tf[i] < 0 && i != min)
+		    continue;
+		if (d < 10)
+		    d = 10;
+		if (i == min)
+		    score_sum += fact2 / d;
+		else
+		    score_sum += fact1 / d;
+	    }
+	    pos_tf[min] = pos;
+	    logf (LOG_LOG, "score_sum = %d", score_sum);
+	    i = min;
+	    if (isam_pt)
+		isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
+	    else if (isamc_pp)
+		isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
+	} /* while */
+	xfree (isam_prev_buf);
+	xfree (pos_tf);
+	break;
+    case RSREL_METHOD_A:
+	while (1)
 	{
-	    logf (LOG_LOG, "final occur = %d ratio=%d",
-		  no_occur, score_sum / no_occur);
-	    add_rec (info, score_sum / (10000.0*no_occur), isam_prev_buf);
+	    int min = -1, i, r;
+	    double score;
+	    int co_oc, last_term;    /* Number of co-occurrences */
+	    
+	    last_term = -1;
+	    /* find min with lowest sysno */
+	    for (i = 0; i<parms->no_isam_positions; i++)
+	    {
+		if (isam_r[i] && 
+		    (min < 0
+		     || (r = (*parms->cmp)(isam_buf[i], isam_buf[min])) < 2))
+		{
+		    min = i;
+		    co_oc = 1;
+		}
+		else if (!r && last_term != parms->term_no[i]) 
+		    co_oc++;  /* new occurrence */
+		last_term = parms->term_no[i];
+	    }
+	    
 	    if (min < 0)
 		break;
-	    no_occur = score_sum = 0;
-	    memcpy (isam_prev_buf, isam_buf[min], info->key_size);
+	    memcpy (isam_tmp_buf, isam_buf[min], info->key_size);
+	    /* calculate for all with those sysno */
+	    for (i = 0; i < parms->no_terms; i++)
+		tf[i] = 0;
 	    for (i = 0; i<parms->no_isam_positions; i++)
-		pos_tf[i] = -10;
-	}
-	pos = (*parms->get_pos)(isam_buf[min]);
-	logf (LOG_LOG, "pos=%d", pos);
-	for (i = 0; i<parms->no_isam_positions; i++)
-	{
-	    int d = pos - pos_tf[i];
-
-	    no_occur++;
-	    if (pos_tf[i] < 0 && i != min)
-		continue;
-	    if (d < 10)
-		d = 10;
-	    if (i == min)
-		score_sum += fact2 / d;
-	    else
-		score_sum += fact1 / d;
-	}
-	pos_tf[min] = pos;
-	logf (LOG_LOG, "score_sum = %d", score_sum);
-	i = min;
-	if (isam_pt)
-	    isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
-	else if (isamc_pp)
-	    isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
-    }
-    xfree (isam_prev_buf);
-    xfree (pos_tf);
-#else
-    while (1)
-    {
-        int min = -1, i, r;
-        double score;
-	int co_oc, last_term;    /* Number of co-occurrences */
-
-	last_term = -1;
-        /* find min with lowest sysno */
-        for (i = 0; i<parms->no_isam_positions; i++)
-	{
-            if (isam_r[i] && 
-               (min < 0 || (r = (*parms->cmp)(isam_buf[i], isam_buf[min])) < 2))
 	    {
-                min = i;
-		co_oc = 1;
+		int r;
+		
+		if (isam_r[i])
+		    r = (*parms->cmp)(isam_buf[i], isam_tmp_buf);
+		else 
+		    r = 2;
+		if (r <= 1 && r >= -1)
+		{
+		    do
+		    {
+			tf[parms->term_no[i]]++;
+			if (isam_pt)
+			    isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
+			else if (isamc_pp)
+			    isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
+		    } while (isam_r[i] && 
+			     (*parms->cmp)(isam_buf[i], isam_tmp_buf) <= 1);
+		}
 	    }
-	    else if (!r && last_term != parms->term_no[i]) /* new occurrence */
-                co_oc++;
-	    last_term = parms->term_no[i];
-	}
-        
-        if (min < 0)
-            break;
-        memcpy (isam_tmp_buf, isam_buf[min], info->key_size);
-        /* calculate for all with those sysno */
-	for (i = 0; i < parms->no_terms; i++)
-	    tf[i] = 0;
-        for (i = 0; i<parms->no_isam_positions; i++)
-        {
-            int r;
-            
-            if (isam_r[i])
-                r = (*parms->cmp)(isam_buf[i], isam_tmp_buf);
-            else 
-                r = 2;
-	    if (r <= 1 && r >= -1)
-            {
-                do
-                {
-                    tf[parms->term_no[i]]++;
-                    if (isam_pt)
-                        isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
-                    else if (isamc_pp)
-                        isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
-                } while (isam_r[i] && 
-                         (*parms->cmp)(isam_buf[i], isam_tmp_buf) <= 1);
-            }
-        }
-        /* calculate relevance value */
-        score = 0.0;
-        for (i = 0; i<parms->no_terms; i++)
-            if (tf[i])
-		score += SCORE_SHOW + SCORE_COOC*co_oc/parms->no_terms +
-		    SCORE_DYN*tf[i]/max_tf[i];
-        /* if value is in the top score, then save it - don't emit yet */
-        add_rec (info, score/parms->no_terms, isam_tmp_buf);
-    }
-#endif
+	    /* calculate relevance value */
+	    score = 0.0;
+	    for (i = 0; i<parms->no_terms; i++)
+		if (tf[i])
+		    score += SCORE_SHOW + SCORE_COOC*co_oc/parms->no_terms +
+			SCORE_DYN*tf[i]/max_tf[i];
+	    /* if value is in the top score, then save it - don't emit yet */
+	    add_rec (info, score/parms->no_terms, isam_tmp_buf);
+	} /* while */
+	break;
+    } /* switch */
     for (i = 0; i<info->no_rec; i++)
         info->sysno_idx[i] = i;
     qsort_info = info;
@@ -397,6 +411,7 @@ static void *r_create (const struct rset_control *sel, void *parms,
     info->sort_idx = xmalloc (sizeof(*info->sort_idx) * info->max_rec);
     info->sysno_idx = xmalloc (sizeof(*info->sysno_idx) * info->max_rec);
     info->no_rec = 0;
+    info->hits = 0;
     info->rfd_list = NULL;
 
     relevance (info, r_parms);
@@ -466,6 +481,13 @@ static int r_count (RSET ct)
     struct rset_rel_info *info = ct->buf;
 
     return info->no_rec;
+}
+
+static int r_hits (RSET ct, void *oi)
+{
+    struct rset_rel_info *info = ct->buf;
+
+    return info->hits;
 }
 
 static int r_read (RSFD rfd, void *buf)

@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.12  1997-10-31 12:37:01  adam
+ * Revision 1.13  1997-12-18 10:54:24  adam
+ * New method result set method rs_hits that returns the number of
+ * hits in result-set (if known). The ranked result set returns real
+ * number of hits but only when not combined with other operands.
+ *
+ * Revision 1.12  1997/10/31 12:37:01  adam
  * Code calls xfree() instead of free().
  *
  * Revision 1.11  1997/09/09 13:38:15  adam
@@ -65,6 +70,7 @@ static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
+static int r_hits (RSET ct, void *oi);
 static int r_read_and (RSFD rfd, void *buf);
 static int r_read_or (RSFD rfd, void *buf);
 static int r_read_not (RSFD rfd, void *buf);
@@ -80,6 +86,7 @@ static const rset_control control_and =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read_and,
     r_write,
     r_score
@@ -94,6 +101,7 @@ static const rset_control control_or =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read_or,
     r_write,
     r_score
@@ -108,6 +116,7 @@ static const rset_control control_not =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read_not,
     r_write,
     r_score
@@ -223,6 +232,11 @@ static void r_rewind (RSFD rfd)
 static int r_count (RSET ct)
 {
     return 0;
+}
+
+static int r_hits (RSET ct, void *oi)
+{
+    return -1;
 }
 
 static int r_read_and (RSFD rfd, void *buf)

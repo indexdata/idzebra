@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.12  1997-09-05 15:30:03  adam
+ * Revision 1.13  1997-12-18 10:54:24  adam
+ * New method result set method rs_hits that returns the number of
+ * hits in result-set (if known). The ranked result set returns real
+ * number of hits but only when not combined with other operands.
+ *
+ * Revision 1.12  1997/09/05 15:30:03  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -74,6 +79,7 @@ typedef struct rset_control
     void (*f_delete)(RSET ct);
     void (*f_rewind)(RSFD rfd);
     int (*f_count)(RSET ct);
+    int (*f_hits)(RSET ct, void *oi);
     int (*f_read)(RSFD rfd, void *buf);
     int (*f_write)(RSFD rfd, const void *buf);
     int (*f_score)(RSFD rfd, int *score);
@@ -95,27 +101,31 @@ typedef struct rset
 RSET rset_create(const rset_control *sel, void *parms);       /* parameters? */
 
 /* int rset_open(RSET rs, int wflag); */
-#define rset_open(rs, wflag) ((*(rs)->control->f_open)((rs), (wflag)))
+#define rset_open(rs, wflag) (*(rs)->control->f_open)((rs), (wflag))
 
 /* void rset_close(RSET rs); */
-#define rset_close(rs, rfd) ((*(rs)->control->f_close)((rfd)))
+#define rset_close(rs, rfd) (*(rs)->control->f_close)(rfd)
 
 void rset_delete(RSET rs);
 
 /* void rset_rewind(RSET rs); */
-#define rset_rewind(rs, rfd) ((*(rs)->control->f_rewind)((rfd)))
+#define rset_rewind(rs, rfd) (*(rs)->control->f_rewind)((rfd))
 
 /* int rset_count(RSET rs); */
-#define rset_count(rs) ((*(rs)->control->f_count)(rs))
+#define rset_count(rs) (*(rs)->control->f_count)(rs)
+
+/* int rset_hits (RSET) */
+#define rset_hits(rs) (*(rs)->control->f_hits)((rs), 0)
 
 /* int rset_read(RSET rs, void *buf); */
-#define rset_read(rs, fd, buf) ((*(rs)->control->f_read)((fd), (buf)))
+#define rset_read(rs, fd, buf) (*(rs)->control->f_read)((fd), (buf))
 
 /* int rset_write(RSET rs, const void *buf); */
-#define rset_write(rs, fd, buf) ((*(rs)->control->f_write)((fd), (buf)))
+#define rset_write(rs, fd, buf) (*(rs)->control->f_write)((fd), (buf))
 
 /* int rset_score(RSET rs, int *buf); */
-#define rset_score(rs, fd, score) ((*(rs)->control->f_score)((fd), (score)))
+#define rset_score(rs, fd, score) (*(rs)->control->f_score)((fd), (score))
+
 
 /* int rset_type (RSET) */
 #define rset_type(rs) ((rs)->control->desc)

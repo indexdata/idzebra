@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.8  1996-10-29 13:55:24  adam
+ * Revision 1.9  1997-12-18 10:54:25  adam
+ * New method result set method rs_hits that returns the number of
+ * hits in result-set (if known). The ranked result set returns real
+ * number of hits but only when not combined with other operands.
+ *
+ * Revision 1.8  1996/10/29 13:55:24  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.7  1995/12/11 09:15:25  adam
@@ -49,6 +54,7 @@ static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
+static int r_hits (RSET ct, void *oi);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
@@ -62,6 +68,7 @@ static const rset_control control =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read,
     r_write,
     r_score
@@ -99,6 +106,11 @@ static void r_rewind (RSFD rfd)
 }
 
 static int r_count (RSET ct)
+{
+    return 0;
+}
+
+static int r_hits (RSET ct, void *oi)
 {
     return 0;
 }

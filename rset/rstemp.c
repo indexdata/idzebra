@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.22  1997-10-31 12:38:12  adam
+ * Revision 1.23  1997-12-18 10:54:25  adam
+ * New method result set method rs_hits that returns the number of
+ * hits in result-set (if known). The ranked result set returns real
+ * number of hits but only when not combined with other operands.
+ *
+ * Revision 1.22  1997/10/31 12:38:12  adam
  * Bug fix: added missing xfree() call.
  *
  * Revision 1.21  1997/09/17 12:19:23  adam
@@ -102,6 +107,7 @@ static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
+static int r_hits (RSET ct, void *oi);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
@@ -115,6 +121,7 @@ static const rset_control control =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read,
     r_write,
     r_score
@@ -133,6 +140,7 @@ struct rset_temp_info {
     size_t  pos_buf;       /* position of first byte in window */
     size_t  pos_border;    /* position of last byte+1 in window */
     int     dirty;         /* window is dirty */
+    int     hits;          /* no of hits */
     char   *temp_path;
 };
 
@@ -156,6 +164,7 @@ static void *r_create(const struct rset_control *sel, void *parms, int *flags)
     info->pos_end = 0;
     info->pos_buf = 0;
     info->dirty = 0;
+    info->hits = -1;
     if (!temp_parms->temp_path)
 	info->temp_path = NULL;
     else
@@ -323,6 +332,13 @@ static int r_count (RSET ct)
     struct rset_temp_info *info = ct->buf;
 
     return info->pos_end / info->key_size;
+}
+
+static int r_hits (RSET ct, void *oi)
+{
+    struct rset_temp_info *info = ct->buf;
+
+    return info->hits;
 }
 
 static int r_read (RSFD rfd, void *buf)

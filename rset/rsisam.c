@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.16  1997-10-31 12:37:01  adam
+ * Revision 1.17  1997-12-18 10:54:25  adam
+ * New method result set method rs_hits that returns the number of
+ * hits in result-set (if known). The ranked result set returns real
+ * number of hits but only when not combined with other operands.
+ *
+ * Revision 1.16  1997/10/31 12:37:01  adam
  * Code calls xfree() instead of free().
  *
  * Revision 1.15  1996/10/29 13:55:22  adam
@@ -71,6 +76,7 @@ static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
+static int r_hits (RSET ct, void *oi);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
@@ -84,6 +90,7 @@ static const rset_control control =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read,
     r_write,
     r_score
@@ -171,6 +178,11 @@ static void r_rewind (RSFD rfd)
 static int r_count (RSET ct)
 {
     return 0;
+}
+
+static int r_hits (RSET ct, void *oi)
+{
+    return -1;
 }
 
 static int r_read (RSFD rfd, void *buf)

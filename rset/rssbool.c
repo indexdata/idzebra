@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rssbool.c,v $
- * Revision 1.5  1997-09-09 13:38:16  adam
+ * Revision 1.6  1997-12-18 10:54:25  adam
+ * New method result set method rs_hits that returns the number of
+ * hits in result-set (if known). The ranked result set returns real
+ * number of hits but only when not combined with other operands.
+ *
+ * Revision 1.5  1997/09/09 13:38:16  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.4  1996/10/29 13:55:27  adam
@@ -44,6 +49,7 @@ static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
+static int r_hits (RSET ct, void *oi);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
@@ -57,6 +63,7 @@ static const rset_control control_sand =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read,
     r_write,
     r_score
@@ -71,6 +78,7 @@ static const rset_control control_sor =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read,
     r_write,
     r_score
@@ -85,6 +93,7 @@ static const rset_control control_snot =
     r_delete,
     r_rewind,
     r_count,
+    r_hits,
     r_read,
     r_write,
     r_score
@@ -419,6 +428,11 @@ static int r_count (RSET ct)
     struct rset_bool_info *info = ct->buf;
 
     return info->key_no;
+}
+
+static int r_hits (RSET ct, void *oi)
+{
+    return -1;
 }
 
 static int r_read (RSFD rfd, void *buf)

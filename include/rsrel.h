@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.h,v $
- * Revision 1.5  1997-09-22 12:39:06  adam
+ * Revision 1.6  1997-12-18 10:54:24  adam
+ * New method result set method rs_hits that returns the number of
+ * hits in result-set (if known). The ranked result set returns real
+ * number of hits but only when not combined with other operands.
+ *
+ * Revision 1.5  1997/09/22 12:39:06  adam
  * Added get_pos method for the ranked result sets.
  *
  * Revision 1.4  1997/09/05 15:30:05  adam
@@ -33,6 +38,9 @@ extern "C" {
 
 extern const rset_control *rset_kind_relevance;
 
+#define RSREL_METHOD_A  1
+#define RSREL_METHOD_B  2
+
 typedef struct rset_relevance_parms
 {
     int     key_size;
@@ -47,6 +55,8 @@ typedef struct rset_relevance_parms
     int     no_terms;
     int     *term_no;
     int     (*get_pos)(const void *p);
+
+    int     method;
 } rset_relevance_parms;
 
 #ifdef __cplusplus

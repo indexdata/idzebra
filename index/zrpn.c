@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.70  1997-10-31 12:34:43  adam
+ * Revision 1.71  1997-12-18 10:54:24  adam
+ * New method result set method rs_hits that returns the number of
+ * hits in result-set (if known). The ranked result set returns real
+ * number of hits but only when not combined with other operands.
+ *
+ * Revision 1.70  1997/10/31 12:34:43  adam
  * Changed a few log statements.
  *
  * Revision 1.69  1997/10/29 12:05:02  adam
@@ -910,12 +915,13 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     int r;
 
     parms.key_size = sizeof(struct it_key);
-    parms.max_rec = 1000;
+    parms.max_rec = 200;
     parms.cmp = key_compare_it;
     parms.get_pos = key_get_pos;
     parms.is = zi->isam;
     parms.isc = zi->isamc;
     parms.no_terms = 0;
+    parms.method = RSREL_METHOD_A;
 
     if (zapt->term->which != Z_Term_general)
     {
@@ -1398,6 +1404,7 @@ static void count_set (RSET r, int *count)
     RSFD rfd;
 
     logf (LOG_DEBUG, "count_set");
+    
     *count = 0;
     rfd = rset_open (r, RSETF_READ|RSETF_SORT_SYSNO);
     while (rset_read (r, rfd, &key))
@@ -1417,6 +1424,7 @@ int rpn_search (ZServerInfo *zi,
                 Z_RPNQuery *rpn, int num_bases, char **basenames, 
                 const char *setname, int *hits)
 {
+    int i;
     RSET rset;
     oident *attrset;
     oid_value attributeSet;
@@ -1433,7 +1441,9 @@ int rpn_search (ZServerInfo *zi,
     if (!rset)
         return zi->errCode;
     if (rset_is_volatile(rset))
-        count_set_save(zi, &rset,hits);
+        count_set_save(zi, &rset, hits);
+    else if ((i = rset_hits (rset)) >= 0)
+	*hits = i;
     else
         count_set (rset, hits);
     resultSetAdd (zi, setname, 1, rset);
