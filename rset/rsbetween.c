@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.12 2004-02-12 15:15:54 heikki Exp $
+/* $Id: rsbetween.c,v 1.13 2004-06-08 15:05:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -37,6 +37,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <rsbetween.h>
 #include <zebrautl.h>
+
+#define RSBETWEEN_DEBUG 0
 
 static void *r_create_between(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open_between (RSET ct, int flag);
@@ -100,6 +102,7 @@ struct rset_between_rfd {
     struct rset_between_info *info;
 };    
 
+#if RSBETWEEN_DEBUG
 static void log2 (struct rset_between_rfd *p, char *msg, int cmp_l, int cmp_r)
 {
     char buf_l[32];
@@ -112,6 +115,7 @@ static void log2 (struct rset_between_rfd *p, char *msg, int cmp_l, int cmp_r)
       (*p->info->printer)(p->buf_r, buf_r), p->more_r, cmp_r,
       p->level);
 }
+#endif
 
 static void *r_create_between (RSET ct, const struct rset_control *sel,
                                void *parms)
@@ -255,7 +259,9 @@ static void r_rewind_between (RSFD rfd)
     struct rset_between_info *info = ((struct rset_between_rfd*)rfd)->info;
     struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
 
+#if RSBETWEEN_DEBUG
     logf (LOG_DEBUG, "rsbetween_rewind");
+#endif
     rset_rewind (info->rset_l, p->rfd_l);
     rset_rewind (info->rset_m, p->rfd_m);
     rset_rewind (info->rset_r, p->rfd_r);
@@ -281,15 +287,21 @@ static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
     struct rset_between_info *info = ((struct rset_between_rfd*)rfd)->info;
     struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
     int rc;
+#if RSBETWEEN_DEBUG
     log2( p, "fwd: before forward", 0,0);
+#endif
     /* It is enough to forward the m pointer here, the read will */
     /* naturally forward the l, m, and attr pointers */
     if (p->more_m)
         p->more_m=rset_forward(info->rset_m,p->rfd_m, p->buf_m,
                         &p->term_index_m, info->cmp,untilbuf);
+#if RSBETWEEN_DEBUG
     log2( p, "fwd: after forward M", 0,0);
+#endif
     rc = r_read_between(rfd, buf, term_index);
+#if RSBETWEEN_DEBUG
     log2( p, "fwd: after forward", 0,0);
+#endif
     return rc;
 }
 
@@ -310,7 +322,9 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
 
     while (p->more_m)
     {
+#if RSBETWEEN_DEBUG
         log2( p, "start of loop", cmp_l, cmp_r);
+#endif
 
         /* forward L until past m, count levels, note rec boundaries */
         if (p->more_l)
@@ -320,7 +334,9 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
             p->level = 0;
             cmp_l=2; /* past this record */
         }
+#if RSBETWEEN_DEBUG
         log2( p, "after first L", cmp_l, cmp_r);
+#endif
 
         while (cmp_l < 0)   /* l before m */
         {
@@ -359,7 +375,9 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                                       info->rset_attr, p->rfd_attr,
                                       p->buf_attr, &dummy_term,
                                       info->cmp, p->buf_l);
+#if RSBETWEEN_DEBUG
                             logf(LOG_DEBUG, "btw: after frowarding attr m=%d",p->more_attr);
+#endif
                         }
                     } /* while more_attr */
                 }
@@ -378,7 +396,9 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                         cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
                     else
                         cmp_l=2;
+#if RSBETWEEN_DEBUG
                     log2( p, "after forwarding L", cmp_l, cmp_r);
+#endif
                 }
             } else
             {
@@ -395,17 +415,23 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
             }
             else
                 cmp_l=2; 
+#if RSBETWEEN_DEBUG
             log2( p, "end of L loop", cmp_l, cmp_r);
+#endif
         } /* forward L */
 
             
         /* forward R until past m, count levels */
+#if RSBETWEEN_DEBUG
         log2( p, "Before moving R", cmp_l, cmp_r);
+#endif
         if (p->more_r)
             cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
         else
             cmp_r=2; 
+#if RSBETWEEN_DEBUG
         log2( p, "after first R", cmp_l, cmp_r);
+#endif
         while (cmp_r < 0)   /* r before m */
         {
              /* -2, earlier record, don't count level */
@@ -436,7 +462,9 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
             }
             else
                 cmp_r=2; 
+#if RSBETWEEN_DEBUG
         log2( p, "End of R loop", cmp_l, cmp_r);
+#endif
         } /* forward R */
         
         if ( ( p->level <= 0 ) && ! p->more_l)
@@ -446,7 +474,9 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
         {
             memcpy (buf, p->buf_m, info->key_size);
             *term_index = p->term_index_m;
+#if RSBETWEEN_DEBUG
             log2( p, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
+#endif
             p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
                                    &p->term_index_m);
             if (cmp_l == 2)
@@ -455,7 +485,9 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
         }
         else if ( ! p->more_l )  /* not in data, no more starts */
         {
+#if RSBETWEEN_DEBUG
             log2( p, "no more starts, exiting without a hit", cmp_l, cmp_r);
+#endif
             return 0;  /* ergo, nothing can be found. stop scanning */
         }
 #if NEWCODE                
@@ -477,10 +509,14 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
         p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
                                &p->term_index_m);
 #endif
+#if RSBETWEEN_DEBUG
         log2( p, "End of M loop", cmp_l, cmp_r);
+#endif
     } /* while more_m */
     
+#if RSBETWEEN_DEBUG
     log2( p, "Exiting, nothing more in m", cmp_l, cmp_r);
+#endif
     return 0;  /* no more data possible */
 
 
