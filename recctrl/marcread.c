@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.2  1997-09-17 12:19:21  adam
+ * Revision 1.3  1997-09-24 13:36:51  adam
+ * *** empty log message ***
+ *
+ * Revision 1.2  1997/09/17 12:19:21  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -123,6 +126,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
     data1_node *res_root;
     data1_absyn *absyn;
     char *absynName;
+    data1_marctab *marctab;
 
     if ((*p->readf)(p->fh, buf, 5) != 5)
         return NULL;
@@ -158,12 +162,19 @@ data1_node *grs_read_marc (struct grs_read_info *p)
     strcpy (res_root->u.root.type, absynName);
     res_root->u.root.absyn = absyn;
 
-    indicator_length = atoi_n (buf+10, 1);
-    identifier_length = atoi_n (buf+11, 1);
+    marctab = absyn->marc;
+
+    if (marctab && marctab->force_indicator_length >= 0)
+	indicator_length = marctab->force_indicator_length;
+    else
+	indicator_length = atoi_n (buf+10, 1);
+    if (marctab && marctab->force_identifier_length >= 0)
+	identifier_length = marctab->force_identifier_length;
+    else
+	identifier_length = atoi_n (buf+11, 1);
     base_address = atoi_n (buf+12, 4);
 
-    length_data_entry = atoi_n (buf+20, 1);
-    length_data_entry = atoi_n (buf+20, 1);
+
     length_data_entry = atoi_n (buf+20, 1);
     length_starting = atoi_n (buf+21, 1);
     length_implementation = atoi_n (buf+22, 1);
