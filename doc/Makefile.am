@@ -1,8 +1,5 @@
-## $Id: Makefile.am,v 1.14 2002-09-25 09:50:20 adam Exp $
+## $Id: Makefile.am,v 1.15 2002-09-25 21:48:43 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
-
-doc_DATA = zebra.html zebra.pdf
-man_MANS = zebraidx.1 zebrasrv.8
 
 SUPPORTFILES = \
  zebrahtml.dsl.in \
@@ -23,28 +20,35 @@ XMLFILES = \
  indexdata.xml \
  zebraidx-options.xml
 
+HTMLFILES = administration.html apps.html configuration-file.html \
+ data-model.html example1.html example2.html examples.html features.html \
+ file-ids.html formats.html future.html generic-ids.html indexdata.html \
+ installation.html internal-representation.html introduction.html \
+ license.html locating-records.html protocol-support.html quick-start.html \
+ record-model.html register-location.html server.html shadow-registers.html \
+ simple-indexing.html zebra.html zebraidx.html
+
+doc_DATA = $(HTMLFILES) zebra.pdf
+man_MANS = zebraidx.1 zebrasrv.8
+
 EXTRA_DIST = $(SUPPORTFILES) $(XMLFILES) zebra.pdf \
  $(man_MANS) zebraidx-man.sgml zebrasrv-man.sgml
 
-install-data-hook:
-	for f in $(srcdir)/*.html; do \
-		$(INSTALL_DATA) $$f $(DESTDIR)$(docdir)/$$f; \
-	done
-
 zebraidx.1: zebraidx-man.sgml zebraidx-options.xml
-	cd $(srcdir); docbook2man zebraidx-man.sgml
+	if test ! -f zebraidx-options.xml ; then ln -s $(srcdir)/zebraidx-options.xml .; fi
+	docbook2man $(srcdir)/zebraidx-man.sgml
 
 zebrasrv.8: zebrasrv-man.sgml
-	cd $(srcdir); docbook2man zebrasrv-man.sgml
+	docbook2man $(srcdir)/zebrasrv-man.sgml
 
-zebra.html: $(XMLFILES)
-	jade -E14 -d zebrahtml.dsl -t sgml xml.dcl zebra.xml
+$(HTMLFILES): $(XMLFILES)
+	jade -E14 -D $(srcdir) -d zebrahtml.dsl -t sgml $(srcdir)/xml.dcl zebra.xml
 
 zebra.php: $(XMLFILES)
-	jade -E14 -d zebraphp.dsl -t sgml xml.dcl zebra.xml
+	jade -E14 -D $(srcdir) -d zebraphp.dsl -t sgml $(srcdir)/xml.dcl zebra.xml
 
 zebra.pdf: $(XMLFILES)
-	jade -E14 -d zebraprint.dsl -t tex xml.dcl zebra.xml
+	jade -E14 -D $(srcdir) -d zebraprint.dsl -t tex $(srcdir)/xml.dcl zebra.xml
 	pdfjadetex zebra.tex
 	pdfjadetex zebra.tex
 	pdfjadetex zebra.tex
@@ -57,9 +61,6 @@ gils.ps: gils.sgml
 
 gils.html: gils.sgml
 	sgml2html gils.sgml
-
-dist-hook: zebra.html
-	cp -f $(srcdir)/*.html $(distdir)
 
 clean-data-hook:
 	rm -f [0-9]* *.bak
