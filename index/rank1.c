@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rank1.c,v $
- * Revision 1.2  1998-03-05 13:03:29  adam
+ * Revision 1.3  1998-06-12 12:21:53  adam
+ * Fixed memory-leak.
+ *
+ * Revision 1.2  1998/03/05 13:03:29  adam
  * Improved ranking.
  *
  * Revision 1.1  1998/03/05 08:45:12  adam
@@ -115,6 +118,7 @@ static void end (ZebraHandle zh, void *set_handle)
 {
     struct rank_set_info *si = set_handle;
     logf (LOG_DEBUG, "rank-1 end");
+    xfree (si->entries);
     xfree (si);
 }
 
