@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.9  1996-06-04 14:18:53  quinn
+ * Revision 1.10  1996-06-04 14:56:12  quinn
+ * Fix
+ *
+ * Revision 1.9  1996/06/04  14:18:53  quinn
  * Charmap work
  *
  * Revision 1.8  1996/06/04  10:18:59  adam
@@ -118,7 +121,7 @@ int main (int argc, char **argv)
     prevk.seqno = 0;
 
     prog = *argv;
-    while ((ret = options ("v:", argv, argc, &arg)) != -2)
+    while ((ret = options ("m:v:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -166,7 +169,7 @@ int main (int argc, char **argv)
 
 	    while (*from)
 	    {
-		char *res = (char*)map->output[(unsigned char) *from];
+		char *res = (char*)map->output[(unsigned char) *(from++)];
 		while (*res)
 		    *(to++) = *(res++);
 	    }
@@ -175,7 +178,7 @@ int main (int argc, char **argv)
 	else
 	    strcpy(keybuf, key_string);
         printf ("%7d op=%d s=%-5d %s\n", k.sysno, op, k.seqno,
-                key_string);
+                keybuf);
     }
     if (fclose (inf))
     {

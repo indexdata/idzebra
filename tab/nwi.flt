@@ -1,7 +1,7 @@
 #
 # Input-filter for the Nordic Web Index record syntax. Output is 'gils-like'.
 #
-# $Id: nwi.flt,v 1.2 1996-04-24 13:34:19 quinn Exp $
+# $Id: nwi.flt,v 1.3 1996-06-04 14:56:15 quinn Exp $
 #
 
 BEGIN                            { begin record gils }
@@ -30,12 +30,15 @@ BEGIN                            { begin record gils }
 # Don't want to have <ip> inside of LocalSubjectIndex
 # Since we end localsubjectindex, we consume the end-tag for that as well.
 
-/<ip>[ \n]*/ BODY /<\/ip>[ \n]*<\/lsi>/  {
-				    end element;
-				    data -element sampleText $1
-				 }
+#/<ip>[ \n]*/ BODY /<\/ip>[ \n]*<\/lsi>/  {
+#				    end element;
+#				    data -element sampleText $1
+#				 }
 
-/<ip>[ \n]*/ BODY /<\/ip>/       { data -element sampleText $1 }
+/<ip>[ \n]*/ BODY /<\/ip>/       {
+				   end element;
+                                   data -element sampleText $1
+				 }
 
 /<cr>/                           { begin element crossReference }
 /<li> */ BODY /$/                  { data -element linkage $1 }
