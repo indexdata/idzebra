@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.21 2003-05-19 21:38:40 adam Exp $
+## $Id: Makefile.am,v 1.22 2003-09-05 10:50:33 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -19,7 +19,8 @@ XMLFILES = \
  recordmodel.xml \
  license.xml \
  indexdata.xml \
- zebraidx-options.xml
+ zebraidx-options.xml \
+ zebraidx-commands.xml
 
 HTMLFILES =  \
  administration.html apps.html configuration-file.html data-model.html \
@@ -44,8 +45,9 @@ EXTRA_DIST = $(XMLFILES) $(SUPPORTFILES) $(REFFILES) \
 	$(doc_DATA) $(EPSFILES) $(man_MANS) $(REFFILES) \
 	zvrank.txt marc_indexing.xml
 
-zebraidx.1: zebraidx-man.sgml zebraidx-options.xml
+zebraidx.1: zebraidx-man.sgml zebraidx-options.xml zebraidx-commands.xml
 	if test ! -f zebraidx-options.xml ; then ln -s $(srcdir)/zebraidx-options.xml .; fi
+	if test ! -f zebraidx-commands.xml ; then ln -s $(srcdir)/zebraidx-commands.xml .; fi
 	docbook2man $(srcdir)/zebraidx-man.sgml
 
 zebrasrv.8: zebrasrv-man.sgml

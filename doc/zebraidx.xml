@@ -1,77 +1,44 @@
 <chapter id="zebraidx">
- <!-- $Id: zebraidx.xml,v 1.5 2002-10-20 14:02:03 mike Exp $ -->
+ <!-- $Id: zebraidx.xml,v 1.6 2003-09-05 10:50:33 adam Exp $ -->
  <title>Running the Maintenance Interface (zebraidx)</title>
  
  <para>
   The following is a complete reference to the command line interface to
   the <literal>zebraidx</literal> application.
  </para>
- 
+
  <para>
   Syntax
+  </para>
   
-  <screen>
-   $ zebraidx [options] command [directory] ...
-  </screen>
+  <cmdsynopsis>
+   <command>zebraidx</command>
+   <arg choice="opt"><option>-t <replaceable>type</replaceable></option></arg>
+   <arg choice="opt"><option>-c <replaceable>config</replaceable></option></arg>
+   <arg choice="opt"><option>-g <replaceable>group</replaceable></option></arg>
+   <arg choice="opt"><option>-d <replaceable>database</replaceable></option></arg>
+   <arg choice="opt"><option>-m <replaceable>mbytes</replaceable></option></arg>
+   <arg choice="opt"><option>-n</option></arg>
+   <arg choice="opt"><option>-s</option></arg>
+   <arg choice="opt"><option>-v <replaceable>level</replaceable></option></arg>
+   <arg choice="opt"><option>-l <replaceable>file</replaceable></option></arg>
+   <arg choice="opt"><option>-L</option></arg>
+   <arg choice="opt"><option>-f <replaceable>number</replaceable></option></arg>
+   <arg choice="opt"><option>-v</option></arg>
+   <arg choice="req"><replaceable>command</replaceable></arg>
+   <arg choice="opt" rep="repeat"><replaceable>file</replaceable></arg>
+  </cmdsynopsis>
   
-  Options:
-   &zebraidx-options;
- </para>
  <!-- ### swap order of commands and options -->
  
  <para>
   Commands
-
-  <!-- From .../zebra/index/main.c:
-	update		*
-	update1
-	update2
-	dump
-	del, delete	*
-	init
-	commit		*
-	clean
-	stat, status
-	dump, dumpdict
-	compact
-       ### Only the ones marked * have been documented.
-  -->
-
-  <variablelist>
-   
-   <varlistentry>
-    <term>update <replaceable>directory</replaceable></term>
-    <listitem>
-     <para>
-      Update the register with the files contained in
-      <replaceable>directory</replaceable>.
-      If no directory is provided, a list of files is read from
-      <literal>stdin</literal>.
-      See <xref linkend="administration"/>.
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term>delete <replaceable>directory</replaceable></term>
-    <listitem>
-     <para>
-      Remove the records corresponding to the files found under
-      <replaceable>directory</replaceable> from the register.
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term>commit</term>
-    <listitem>
-     <para>
-      Write the changes resulting from the last <literal>update</literal>
-      commands to the register. This command is only available if the use of
-      shadow register files is enabled
-      (see <xref linkend="shadow-registers"/>).
-     </para>
-    </listitem>
-   </varlistentry>
-  </variablelist>
+   &zebraidx-commands;
+  </para>
+  
+  <para>
+   Options:
+   &zebraidx-options;
  </para>
 
 </chapter>

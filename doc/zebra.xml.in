@@ -14,6 +14,7 @@
         <!ENTITY app-indexdata SYSTEM "indexdata.xml">
 
         <!ENTITY zebraidx-options SYSTEM "zebraidx-options.xml">
+        <!ENTITY zebraidx-commands SYSTEM "zebraidx-commands.xml">
 	<!ENTITY ref-local-representation '
 		<xref linkend="local-representation"/>'>
 	<!ENTITY ref-record-types '
@@ -23,7 +24,7 @@
 	<!ENTITY ref-shadow-registers '
 		<xref linkend="shadow-registers"/>'>
 ]>
-<!-- $Id: zebra.xml.in,v 1.15 2003-05-19 21:38:40 adam Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.16 2003-09-05 10:50:33 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
