@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.33  1996-02-06 17:11:18  adam
+ * Revision 1.34  1996-02-07 14:06:39  adam
+ * Better progress report during register merge.
+ * New command: clean - removes temporary shadow files.
+ *
+ * Revision 1.33  1996/02/06  17:11:18  adam
  * Minor changes.
  *
  * Revision 1.32  1996/02/01  20:50:04  adam
@@ -170,6 +174,7 @@ int main (int argc, char **argv)
 	"               If <dir> is empty filenames are read from stdin.\n"
         " delete <dir>  Delete index with files below <dir>.\n"
         " commit        Commit changes\n"
+        " clean         Clean shadow files\n"
         "Options:\n"
 	" -t <type>     Index files as <type> (grs or text).\n"
 	" -c <config>   Read configuration file <config>.\n"
@@ -231,6 +236,19 @@ int main (int argc, char **argv)
                     }
                     else
                         logf (LOG_LOG, "Nothing to commit");
+                }
+                else if (!strcmp (arg, "clean"))
+                {
+                    zebraIndexLock (0);
+                    if (bf_commitExists ())
+                    {
+                        zebraIndexLockMsg ("d");
+                        zebraIndexWait (0);
+                        logf (LOG_LOG, "Commit clean");
+                        bf_commitClean ();
+                    }
+                    else
+                        logf (LOG_LOG, "Nothing to clean");
                 }
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
                 {

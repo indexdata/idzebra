@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.13  1996-02-05 12:30:00  adam
+ * Revision 1.14  1996-02-07 14:06:37  adam
+ * Better progress report during register merge.
+ * New command: clean - removes temporary shadow files.
+ *
+ * Revision 1.13  1996/02/05  12:30:00  adam
  * Logging reduced a bit.
  * The remaining running time is estimated during register merge.
  *
@@ -424,20 +428,21 @@ void progressFunc (struct key_file *keyp, void *info)
 
     if (keyp->buf_size <= 0 || p->totalBytes <= 0)
         return ;
-    p->totalOffset += keyp->buf_size;
     time (&now);
 
-    if (now < p->lastTime+10)
-        return ;
-    p->lastTime = now;
-    remaining = (now - p->startTime)*
-        ((double) p->totalBytes/p->totalOffset - 1.0);
-    if (remaining <= 130)
-        logf (LOG_LOG, "Merge %2.1f%% completed; %ld seconds remaining",
-               (100.0*p->totalOffset) / p->totalBytes, (long) remaining);
-    else
-        logf (LOG_LOG, "Merge %2.1f%% completed; %ld minutes remaining",
-		(100.0*p->totalOffset) / p->totalBytes, (long) remaining/60);
+    if (now >= p->lastTime+10)
+    {
+        p->lastTime = now;
+        remaining = (now - p->startTime)*
+            ((double) p->totalBytes/p->totalOffset - 1.0);
+        if (remaining <= 130)
+            logf (LOG_LOG, "Merge %2.1f%% completed; %ld seconds remaining",
+                 (100.0*p->totalOffset) / p->totalBytes, (long) remaining);
+        else
+            logf (LOG_LOG, "Merge %2.1f%% completed; %ld minutes remaining",
+	         (100.0*p->totalOffset) / p->totalBytes, (long) remaining/60);
+    }
+    p->totalOffset += keyp->buf_size;
 }
 
 void key_input (const char *dict_fname, const char *isam_fname,
