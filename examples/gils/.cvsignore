@@ -1,4 +1,5 @@
 *.mf
 *.LCK
 *.in
+zebrasrv.pid
 Makefile
