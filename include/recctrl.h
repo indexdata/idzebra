@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.32  1999-11-30 13:48:03  adam
+ * Revision 1.33  2000-02-25 13:24:49  adam
+ * Fixed bug regarding pointer conversion that showed up on OSF V5.
+ *
+ * Revision 1.32  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.31  1999/09/07 07:19:21  adam
@@ -179,7 +182,7 @@ struct recRetrieveCtrl {
     /* response */
     oid_value  output_format;
     void       *rec_buf;
-    size_t     rec_len;
+    int        rec_len;
     int        diagnostic;
     char *message;
 };

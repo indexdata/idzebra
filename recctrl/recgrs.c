@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.33  1999-11-30 13:48:04  adam
+ * Revision 1.34  2000-02-25 13:24:49  adam
+ * Fixed bug regarding pointer conversion that showed up on OSF V5.
+ *
+ * Revision 1.33  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.32  1999/09/07 07:19:21  adam
@@ -723,7 +726,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	
     case VAL_TEXT_XML:
 	if (!(p->rec_buf = data1_nodetoidsgml(p->dh, node, selected,
-					      (int*)&p->rec_len)))
+					      &p->rec_len)))
 	    p->diagnostic = 238;
 	else
 	{
@@ -756,7 +759,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	break;
     case VAL_SUTRS:
 	if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
-					   (int*)&p->rec_len)))
+					   &p->rec_len)))
 	    p->diagnostic = 238;
 	else
 	{
@@ -767,7 +770,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	break;
     case VAL_SOIF:
 	if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
-					    (int*)&p->rec_len)))
+					    &p->rec_len)))
 	    p->diagnostic = 238;
 	else
 	{
@@ -792,8 +795,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	    break;
 	}
 	if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
-						selected,
-					    (int*)&p->rec_len)))
+					selected, &p->rec_len)))
 	    p->diagnostic = 238;
 	else
 	{
