@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.35  2002-04-13 18:16:42  adam
+ * Revision 1.36  2002-07-02 20:20:09  adam
+ * idzebra:{filename,score,size,localnumber} tags for XML
+ *
+ * Revision 1.35  2002/04/13 18:16:42  adam
  * More XPATH work; common sequence numbers for extract keys
  *
  * Revision 1.34  2000/03/20 19:08:36  adam
@@ -184,6 +187,7 @@ struct recRetrieveCtrl {
     int       localno;                /* local id of record                */
     int       score;                  /* score 0-1000 or -1 if none        */
     int       recordSize;             /* size of record in bytes */
+    char      *fname;                 /* name of file (or NULL if internal) */
     char      *subType;
     data1_handle dh;
     

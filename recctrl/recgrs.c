@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: recgrs.c,v 1.51 2002-05-28 21:10:34 adam Exp $
+ * $Id: recgrs.c,v 1.52 2002-07-02 20:20:09 adam Exp $
  */
 
 #include <stdio.h>
@@ -513,6 +513,8 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     char *tagname;
     struct grs_handlers *h = (struct grs_handlers *) clientData;
     int requested_schema = VAL_NONE;
+    data1_marctab *marctab;
+    int dummy;
     
     mem = nmem_create();
     gri.readf = p->readf;
@@ -691,10 +693,20 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     switch (p->output_format = (p->input_format != VAL_NONE ?
 				p->input_format : VAL_SUTRS))
     {
-	data1_marctab *marctab;
-        int dummy;
 	
     case VAL_TEXT_XML:
+        data1_mk_tag_data_int (p->dh, node, "idzebra:size", p->recordSize,
+                               mem);
+        if (p->score != -1)
+            data1_mk_tag_data_int (p->dh, node, "idzebra:score",
+                                   p->score, mem);
+        
+        data1_mk_tag_data_int (p->dh, node, "idzebra:localnumber", p->localno,
+                               mem);
+        if (p->fname)
+            data1_mk_tag_data_text(p->dh, node, "idzebra:filename",
+                                   p->fname, mem);
+        
 	if (!(p->rec_buf = data1_nodetoidsgml(p->dh, node, selected,
 					      &p->rec_len)))
 	    p->diagnostic = 238;

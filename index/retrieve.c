@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.17  2002-05-03 13:49:04  adam
+ * Revision 1.18  2002-07-02 20:20:09  adam
+ * idzebra:{filename,score,size,localnumber} tags for XML
+ *
+ * Revision 1.17  2002/05/03 13:49:04  adam
  * play with shellsort
  *
  * Revision 1.16  2002/04/04 20:50:37  adam
@@ -165,6 +168,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
     retrieveCtrl.fh = &fc;
     fc.fd = -1;
+    retrieveCtrl.fname = fname;
     if (rec->size[recInfo_storeData] > 0)
     {
         retrieveCtrl.readf = zebra_record_int_read;
