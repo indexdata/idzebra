@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.3  1995-09-08 08:53:23  adam
+ * Revision 1.4  1995-09-14 11:53:28  adam
+ * First work on regular expressions/truncations.
+ *
+ * Revision 1.3  1995/09/08  08:53:23  adam
  * Record buffer maintained in server_info.
  *
  * Revision 1.2  1995/09/06  16:11:19  adam
@@ -38,6 +41,8 @@ typedef struct {
     Dict fileDict;
     int sys_idx_fd;
     char *recordBuf;
+    int errCode;
+    char *errString;
 } ZServerInfo;
 
 int rpn_search (ZServerInfo *zi, 

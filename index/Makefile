@@ -1,12 +1,13 @@
 # Copyright (C) 1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.9 1995-09-14 07:48:20 adam Exp $
+# $Id: Makefile,v 1.10 1995-09-14 11:53:27 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
 YAZ=../../yaz
 YAZLIB=$(YAZ)/lib/libyaz.a
+OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
 INCLUDE=-I../include -I$(YAZ)/include
 TPROG1=index
 TPROG2=kdump
@@ -22,7 +23,7 @@ all: $(TPROG1) $(TPROG2) $(TPROG3)
 $(TPROG1): $(O1) ../lib/dict.a \
 		../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
 	$(CC) $(CFLAGS) -o $(TPROG1) $(O1) ../lib/dict.a \
-		../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
+		../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB) $(OSILIB)
 
 $(TPROG2): $(O2) $(YAZLIB)
 	$(CC) $(CFLAGS) -o $(TPROG2) $(O2) $(YAZLIB)
@@ -32,7 +33,7 @@ $(TPROG3): $(O3) \
 		../lib/dfa.a ../lib/alexutil.a $(YAZLIB)
 	$(CC) $(CFLAGS) -o $(TPROG3) $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/bfile.a \
-		../lib/dfa.a ../lib/alexutil.a $(YAZLIB) -lm
+		../lib/dfa.a ../lib/alexutil.a $(YAZLIB) $(OSILIB) -lm
 
 .c.o:
 	$(CC) -c $(DEFS) $(CFLAGS) $<
