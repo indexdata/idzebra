@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.1  1994-09-12 08:02:07  quinn
+ * Revision 1.2  1994-09-14 13:10:35  quinn
+ * Small changes
+ *
+ * Revision 1.1  1994/09/12  08:02:07  quinn
  * Not functional yet
  *
  */
@@ -27,9 +30,11 @@ typedef struct isam_blocktype
 {
     BFile bf;                    /* blocked file */
     int blocksize;
+    int first_block;             /* position of first data block */
     int max_keys_block;          /* max num of keys per block */
     int nice_keys_block;         /* nice number of keys per block */
     int max_keys;                /* max number of keys per table */
+    int freelist;                /* fist free block */
 } isam_blocktype;
 
 /*

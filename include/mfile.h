@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.h,v $
- * Revision 1.1  1994-08-23 14:41:46  quinn
+ * Revision 1.2  1994-09-14 13:10:36  quinn
+ * Small changes
+ *
+ * Revision 1.1  1994/08/23  14:41:46  quinn
  * First functional version of mfile.
  *
  */
@@ -19,6 +22,8 @@
 #define MF_MIN_BLOCKS_CREAT 1          /* minimum free blocks in new dir */
 #define MF_DEFAULT_AREA "register"      /* Use if no mf_init */
 #define MF_MAX_PARTS 28                 /* max # of part-files per metafile */
+
+#define mf_blocksize(mf) ((mf)->blocksize)
 
 typedef struct mf_dir
 {

@@ -4,9 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  $Log: bfile.h,v $
- Revision 1.5  1994-08-24 08:45:52  quinn
- Using mfile.
+ Revision 1.6  1994-09-14 13:10:35  quinn
+ Small changes
 
+ * Revision 1.5  1994/08/24  08:45:52  quinn
+ * Using mfile.
+ *
  * Revision 1.4  1994/08/17  15:38:28  adam
  * Include of util.h.
  *
@@ -20,6 +23,8 @@
 
 #include <util.h>
 #include <mfile.h>
+
+#define bf_blocksize(bf) mf_blocksize(bf->mf)
 
 typedef struct BFile_struct
 {
