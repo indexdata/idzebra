@@ -1,5 +1,5 @@
-/* $Id: commit.c,v 1.16 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: commit.c,v 1.17 2004-08-04 08:35:22 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -180,9 +180,10 @@ static void cf_commit_hash (CFile cf)
 
 static void cf_commit_flat (CFile cf)
 {
-    int *fp;
+    zint *fp;
     int hno;
-    int i, vno = 0;
+    int i;
+    zint vno = 0;
 
 #if CF_OPTIMIZE_COMMIT
     struct map_cache *m_p;
@@ -192,7 +193,7 @@ static void cf_commit_flat (CFile cf)
 #if CF_OPTIMIZE_COMMIT
     m_p = map_cache_init (cf);
 #endif
-    fp = (int *) xmalloc (HASH_BSIZE);
+    fp = (zint *) xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
 	for (i = 0; i < (int) (HASH_BSIZE/sizeof(int)); i++)
@@ -200,7 +201,7 @@ static void cf_commit_flat (CFile cf)
         if (!mf_read (cf->hash_mf, hno, 0, 0, fp) &&
             hno != cf->head.flat_bucket-1)
         {
-            logf (LOG_FATAL, "read index block hno=%d (%d-%d) commit",
+            logf (LOG_FATAL, "read index block hno=%d (" ZINT_FORMAT "-" ZINT_FORMAT ") commit",
                   hno, cf->head.next_bucket, cf->head.flat_bucket-1);
         }
         for (i = 0; i < (int) (HASH_BSIZE/sizeof(int)); i++)
@@ -212,8 +213,8 @@ static void cf_commit_flat (CFile cf)
 #else
                 if (!mf_read (cf->block_mf, fp[i], 0, 0, cf->iobuf))
                 {
-                    logf (LOG_FATAL, "read data block hno=%d (%d-%d) "
-                                     "i=%d commit block at %d (->%d)",
+                    logf (LOG_FATAL, "read data block hno=%d (" ZINT_FORMAT "-" ZINT_FORMAT ") "
+                                     "i=%d commit block at " ZINT_FORMAT " (->" ZINT_FORMAT")",
                           hno, cf->head.next_bucket, cf->head.flat_bucket-1,
                           i, fp[i], vno);
                     exit (1);

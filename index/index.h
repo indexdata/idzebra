@@ -1,5 +1,5 @@
-/* $Id: index.h,v 1.109 2004-06-14 10:31:56 mike Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: index.h,v 1.110 2004-08-04 08:35:23 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,8 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #ifndef INDEX_H
 #define INDEX_H
 
@@ -40,7 +38,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <isams.h>
 #include <isam.h>
 #include <isamc.h>
-#include <isamd.h>
 #include <isamb.h>
 #define ISAM_DEFAULT "c"
 #include <data1.h>
@@ -56,15 +53,25 @@ YAZ_BEGIN_CDECL
 #define SU_SCHEME 1
 
 #define IT_MAX_WORD 256
-#define IT_KEY_HAVE_SEQNO 1
-#define IT_KEY_HAVE_FIELD 0
 
-typedef int SYSNO;
+#define IT_KEY_NEW 1
 
+#if IT_KEY_NEW
+
+#endif
+
+#if IT_KEY_NEW
+#define IT_KEY_LEVEL_MAX 4
+struct it_key {
+    int  len;
+    zint mem[IT_KEY_LEVEL_MAX];
+};
+#else
 struct it_key {
     int  sysno;
     int  seqno;
 };
+#endif
 
 enum dirsKind { dirs_dir, dirs_file };
 
@@ -89,7 +96,7 @@ struct dirs_entry *dirs_read (struct dirs_info *p);
 struct dirs_entry *dirs_last (struct dirs_info *p);
 void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime);
 void dirs_rmdir (struct dirs_info *p, const char *src);
-void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime);
+void dirs_add (struct dirs_info *p, const char *src, SYSNO sysno, time_t mtime);
 void dirs_del (struct dirs_info *p, const char *src);
 void dirs_free (struct dirs_info **pp);
 
@@ -106,6 +113,7 @@ void repositoryShow (ZebraHandle zh, const char *path);
 int key_open (ZebraHandle zh, int mem);
 int key_close (ZebraHandle zh);
 int key_compare (const void *p1, const void *p2);
+void key_init(struct it_key *k);
 char *key_print_it (const void *p, char *buf);
 int key_get_seq (const void *p);
 int key_compare_it (const void *p1, const void *p2);
@@ -117,7 +125,6 @@ void inv_compact (BFiles bfs);
 void key_input (ZebraHandle zh, int nkeys, int cache, Res res);
 ISAMS_M *key_isams_m (Res res, ISAMS_M *me);
 ISAMC_M *key_isamc_m (Res res, ISAMC_M *me);
-ISAMD_M *key_isamd_m (Res res, ISAMD_M *me);
 int merge_sort (char **buf, int from, int to);
 int key_SU_code (int ch, char *out);
 
@@ -180,6 +187,9 @@ struct encode_info {
     int prevseq;
     int prevcmd;
     int keylen; /* tells if we have an unwritten key in buf, and how long*/
+#if IT_KEY_NEW
+    void *encode_handle;
+#endif
     char buf[ENCODE_BUFLEN];
 };
 
@@ -208,26 +218,20 @@ struct recKeys {
     int buf_used;
     int buf_max;
     char *buf;
+#if IT_KEY_NEW
+    void *codec_handle;
+#else
+    int prevSeqNo;
     char prevAttrSet;
     short prevAttrUse;
-    int prevSeqNo;
+#endif
 };
 
-#if 1
 struct sortKeys {
     int buf_used;
     int buf_max;
     char *buf;
 };
-#else
-struct sortKey {
-    char *string;
-    int length;
-    int attrSet;
-    int attrUse;
-    struct sortKey *next;
-};
-#endif
 
 struct zebra_register {
     char *name;
@@ -235,7 +239,6 @@ struct zebra_register {
     ISAMS isams;
     ISAM isam;
     ISAMC isamc;
-    ISAMD isamd;
     ISAMB isamb;
     Dict dict;
     Dict matchDict;
@@ -343,7 +346,7 @@ struct rank_control {
      *	int rssize;	// number of records in result set (estimate?)
      */
     void (*end)(struct zebra_register *reg, void *set_handle);
-    int (*calc)(void *set_handle, int sysno);
+    int (*calc)(void *set_handle, zint sysno);
     void (*add)(void *set_handle, int seqno, int term_index);
 };
 
@@ -422,7 +425,7 @@ extern struct rank_control *rank1_class;
 extern struct rank_control *rankzv_class;
 extern struct rank_control *rankliv_class;
 
-int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
+int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep);
@@ -436,7 +439,7 @@ int buffer_extract_record (ZebraHandle zh,
 			   int delete_flag,
 			   int test_mode, 
 			   const char *recordType,
-			   int *sysno,
+			   SYSNO *sysno,
 			   const char *match_criteria,
 			   const char *fname,
 			   int force_update,
@@ -488,12 +491,11 @@ int zebra_file_stat (const char *file_name, struct stat *buf,
 
 void zebra_livcode_transform(ZebraHandle zh, Z_RPNQuery *query);
 
-void *iscz1_code_start (int mode);
-void iscz1_code_reset (void *vp);
-void iscz1_code_stop (int mode, void *p);
-void iscz1_code_item (int mode, void *vp, char **dst, char **src);
-
-
+void *iscz1_start ();
+void iscz1_reset (void *vp);
+void iscz1_stop (void *p);
+void iscz1_decode (void *vp, char **dst, const char **src);
+void iscz1_encode (void *vp, char **dst, const char **src);
 
 YAZ_END_CDECL
 

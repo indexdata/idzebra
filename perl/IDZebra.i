@@ -99,7 +99,7 @@ typedef struct {
   char *errString;     /* error string */
   int  position;       /* position of record in result set (1,2,..) */
   char *base; 
-  int  sysno;
+  long long sysno;
   int  score;
   char *format;    /* record syntax */
   RetrievalRecordBuf *buf;
@@ -273,11 +273,11 @@ void zebra_repository_show (ZebraHandle zh, const char *path);
    If not, and match_criteria is provided, then sysno is guessed
    If not, and a record is provided, then sysno is got from there */
 
-%apply int *REFERENCE { int *sysno };
+%apply int *REFERENCE { long long *sysno };
 %name(insert_record)       
 int zebra_insert_record (ZebraHandle zh, 
 			 const char *recordType,
-			 int *sysno, 
+			 long long *sysno, 
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 
@@ -287,7 +287,7 @@ int zebra_insert_record (ZebraHandle zh,
 %name(update_record)       
 int zebra_update_record (ZebraHandle zh, 
 			 const char *recordType,
-			 int *sysno, 
+			 long long *sysno, 
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 
@@ -297,7 +297,7 @@ int zebra_update_record (ZebraHandle zh,
 %name(delete_record)       
 int zebra_delete_record (ZebraHandle zh, 
 			 const char *recordType,
-			 int *sysno, 
+			 long long *sysno, 
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 

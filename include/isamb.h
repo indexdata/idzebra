@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.10 2004-08-03 14:54:41 heikki Exp $
+/* $Id: isamb.h,v 1.11 2004-08-04 08:35:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,6 +25,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <bfile.h>
 #include <isamc.h>
+
+YAZ_BEGIN_CDECL
 
 typedef struct ISAMB_s *ISAMB;
 typedef struct ISAMB_PP_s *ISAMB_PP;
@@ -56,5 +58,7 @@ void isamb_pp_close_x (ISAMB_PP pp, int *size, int *blocks);
 int isamb_block_info (ISAMB isamb, int cat);
 
 void isamb_dump (ISAMB b, ISAMB_P pos, void (*pr)(const char *str));
+
+YAZ_END_CDECL
 
 #endif

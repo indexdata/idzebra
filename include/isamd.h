@@ -46,7 +46,7 @@ typedef struct ISAMD_M_s {
 #define ISAMD_ENCODE 1
     void *(*code_start)(int mode);
     void (*code_stop)(int mode, void *p);
-    void (*code_item)(int mode, void *p, char **dst, char **src);
+    void (*code_item)(int mode, void *p, char **dst, const char **src);
     void (*code_reset)(void *p);
 
     int max_blocks_mem;

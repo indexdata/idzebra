@@ -1,4 +1,4 @@
-/* $Id: cfile.h,v 1.14 2002-08-02 19:26:55 adam Exp $
+/* $Id: cfile.h,v 1.15 2004-08-04 08:35:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -53,12 +53,12 @@ typedef struct CFile_struct
 {
     struct CFile_head {
         int state;               /* 1 = hash, 2 = flat */
-        int next_block;          /* next free block / last block */
+        zint next_block;          /* next free block / last block */
         int block_size;          /* mfile/bfile block size */
         int hash_size;           /* no of chains in hash table */
-        int first_bucket;        /* first hash bucket */
-        int next_bucket;         /* last hash bucket + 1 = first flat bucket */
-        int flat_bucket;         /* last flat bucket + 1 */
+        zint first_bucket;       /* first hash bucket */
+        zint next_bucket;        /* last hash bucket + 1 = first flat bucket */
+        zint flat_bucket;        /* last flat bucket + 1 */
     } head;
     MFile block_mf;
     MFile hash_mf;
@@ -66,8 +66,8 @@ typedef struct CFile_struct
     struct CFile_hash_bucket **parray;
     struct CFile_hash_bucket *bucket_lru_front, *bucket_lru_back;
     int dirty;
-    int bucket_in_memory;
-    int max_bucket_in_memory;
+    zint bucket_in_memory;
+    zint max_bucket_in_memory;
     char *iobuf;
     MFile rmf;
     int  no_hits;
@@ -78,8 +78,8 @@ typedef struct CFile_struct
 int cf_close (CFile cf);
 CFile cf_open (MFile mf, MFile_area area, const char *fname, int block_size,
                int wflag, int *firstp);
-int cf_read (CFile cf, int no, int offset, int nbytes, void *buf);
-int cf_write (CFile cf, int no, int offset, int nbytes, const void *buf);
+int cf_read (CFile cf, zint no, int offset, int nbytes, void *buf);
+int cf_write (CFile cf, zint no, int offset, int nbytes, const void *buf);
 void cf_unlink (CFile cf);
 void cf_commit (CFile cf);
 

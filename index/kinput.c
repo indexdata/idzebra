@@ -1,5 +1,5 @@
-/* $Id: kinput.c,v 1.59 2004-06-15 10:56:31 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: kinput.c,v 1.60 2004-08-04 08:35:23 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -19,8 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
-
  
 #include <fcntl.h>
 #ifdef WIN32
@@ -49,8 +47,12 @@ struct key_file {
     size_t chunk;        /* number of bytes allocated */
     size_t buf_ptr;      /* current position in buffer */
     char *prev_name;     /* last word read */
+#if IT_KEY_NEW
+    void *decode_handle;
+#else
     int   sysno;         /* last sysno */
     int   seqno;         /* last seqno */
+#endif
     off_t length;        /* length of file */
                          /* handler invoked in each read */
     void (*readHandler)(struct key_file *keyp, void *rinfo);
@@ -124,6 +126,9 @@ void key_file_chunk_read (struct key_file *f)
 
 void key_file_destroy (struct key_file *f)
 {
+#if IT_KEY_NEW
+    iscz1_stop(f->decode_handle);
+#endif
     xfree (f->buf);
     xfree (f->prev_name);
     xfree (f);
@@ -135,8 +140,12 @@ struct key_file *key_file_init (int no, int chunk, Res res)
 
     f = (struct key_file *) xmalloc (sizeof(*f));
     f->res = res;
+#if IT_KEY_NEW
+    f->decode_handle = iscz1_start();
+#else
     f->sysno = 0;
     f->seqno = 0;
+#endif
     f->no = no;
     f->chunk = chunk;
     f->offset = 0;
@@ -191,8 +200,16 @@ int key_file_decode (struct key_file *f)
 
 int key_file_read (struct key_file *f, char *key)
 {
-    int i, d, c;
+    int i, c;
+    char srcbuf[128];
+#if IT_KEY_NEW
+    const char *src = srcbuf;
+    char *dst;
+    int j;
+#else
     struct it_key itkey;
+    int d;
+#endif
 
     c = key_file_getc (f);
     if (c == 0)
@@ -209,8 +226,20 @@ int key_file_read (struct key_file *f, char *key)
         while ((key[i++] = key_file_getc (f)))
             ;
         strcpy (f->prev_name, key);
-        f->sysno = 0;
+#if IT_KEY_NEW
+	iscz1_reset(f->decode_handle);
+#endif
     }
+#if IT_KEY_NEW
+    c = key_file_getc(f); /* length +  insert/delete combined */
+    key[i++] = c & 128;
+    c = c & 127;
+    for (j = 0; j < c; j++)
+	srcbuf[j] = key_file_getc(f);
+    dst = key + i;
+    iscz1_decode(f->decode_handle, &dst, &src);
+    return i + sizeof(struct it_key);
+#else
     d = key_file_decode (f);
     key[i++] = d & 1;
     d = d >> 1;
@@ -225,6 +254,7 @@ int key_file_read (struct key_file *f, char *key)
     f->seqno = itkey.seqno;
     memcpy (key + i, &itkey, sizeof(struct it_key));
     return i + sizeof (struct it_key);
+#endif
 }
 
 struct heap_info {
@@ -674,87 +704,6 @@ int heap_inpb (struct heap_info *hi)
     return 0;
 } 
 
-int heap_inpd (struct heap_info *hi)
-{
-    struct heap_cread_info hci;
-    ISAMD_I isamd_i = (ISAMD_I) xmalloc (sizeof(*isamd_i));
-
-    hci.key = (char *) xmalloc (KEY_SIZE);
-    hci.key_1 = (char *) xmalloc (KEY_SIZE);
-    hci.key_2 = (char *) xmalloc (KEY_SIZE);
-    hci.ret = -1;
-    hci.first_in_list = 1;
-    hci.hi = hi;
-    hci.more = heap_read_one (hi, hci.cur_name, hci.key);
-
-    isamd_i->clientData = &hci;
-    isamd_i->read_item = heap_cread_item;
-
-    while (hci.more)
-    {
-        char this_name[INP_NAME_MAX];
-        char *dict_info;
-        char dictentry[ISAMD_MAX_DICT_LEN+1];
-        char dictlen;
-
-        strcpy (this_name, hci.cur_name);
-        
-        /* print_dict_item (hi->reg->zebra_maps, hci.cur_name); */
-        /*!*/ /* FIXME: depend on isamd-debug */
-
-	assert (hci.cur_name[1]);
-        hi->no_diffs++;
-        if ((dict_info = dict_lookup (hi->reg->dict, hci.cur_name)))
-        {
-            dictlen=dict_info[0];
-            memcpy (dictentry, dict_info+1, dictlen );
-#ifdef SKIPTHIS
-            logf(LOG_LOG,"dictentry before. len=%d: %d %d %d %d %d %d %d %d %d",
-               dictlen,dictentry[0], dictentry[1], dictentry[2],
-                       dictentry[3], dictentry[4], dictentry[5],
-                       dictentry[6], dictentry[7], dictentry[8]); /*!*/
-#endif
-            dictlen= isamd_append(hi->reg->isamd, dictentry, dictlen, isamd_i);
-             /* logf dictentry after */
-            if (dictlen)
-            {
-                hi->no_updates++;
-                if ( (dictlen!=dict_info[0]) ||
-                     (0!=memcmp(dictentry, dict_info+1, dictlen)) )
-                {
-                    dict_insert(hi->reg->dict, this_name,
-                                dictlen,dictentry);
-                }
-            }
-            else
-            {
-                hi->no_deletions++;
-                if (!dict_delete (hi->reg->dict, this_name)) 
-                {
-	            logf (LOG_FATAL, "dict_delete failed");
-                    abort();
-                }
-            }
-        } 
-        else
-        {
-            dictlen=0;
-            memset (dictentry, '\0', ISAMD_MAX_DICT_LEN);
-            dictlen= isamd_append(hi->reg->isamd, dictentry, dictlen, isamd_i);
-             /* logf dictentry first */
-            hi->no_insertions++;
-            if (dictlen)
-                dict_insert(hi->reg->dict, this_name,
-                                dictlen,dictentry);
-        }
-    }
-    xfree (isamd_i);
-    xfree (hci.key);
-    xfree (hci.key_1);
-    xfree (hci.key_2);
-    return 0;
-} 
-
 int heap_inp (struct heap_info *hi)
 {
     char *info;
@@ -966,8 +915,6 @@ void zebra_index_merge (ZebraHandle zh)
         heap_inpc (hi);
     if (zh->reg->isam)
 	heap_inp (hi);
-    if (zh->reg->isamd)
-	heap_inpd (hi);
     if (zh->reg->isamb)
 	heap_inpb (hi);
 	
@@ -994,5 +941,3 @@ void zebra_index_merge (ZebraHandle zh)
 
     key_heap_destroy (hi, nkeys);
 }
-
-

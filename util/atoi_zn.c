@@ -1,5 +1,5 @@
-/* $Id: sortidx.h,v 1.4 2004-08-04 08:35:23 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: atoi_zn.c,v 1.1 2004-08-04 08:35:27 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,29 +20,20 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#ifndef SORTIDX_H
-#define SORTIDX_H
+#include <string.h>
+#include <ctype.h>
+#include <zebrautl.h>
 
-#include <zebraver.h>
-#include <bfile.h>
+zint atoi_zn (const char *buf, zint len)
+{
+    zint val = 0;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define SORT_IDX_ENTRYSIZE 64
-
-typedef struct sortIdx *SortIdx;
-
-SortIdx sortIdx_open (BFiles bfs, int write_flag);
-void sortIdx_close (SortIdx si);
-int sortIdx_type (SortIdx si, int type);
-void sortIdx_sysno (SortIdx si, SYSNO sysno);
-void sortIdx_add (SortIdx si, const char *buf, int len);
-void sortIdx_read (SortIdx si, char *buf);
-
-#ifdef __cplusplus
+    while (--len >= 0)
+    {
+        if (isdigit (*buf))
+            val = val*10 + (*buf - '0');
+	buf++;
+    }
+    return val;
 }
-#endif
 
-#endif

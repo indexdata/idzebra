@@ -1,5 +1,5 @@
-/* $Id: merge.c,v 1.23 2003-06-23 15:36:11 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: merge.c,v 1.24 2004-08-04 08:35:24 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,8 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -31,7 +29,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct isc_merge_block {
     int offset;       /* offset in r_buf */
-    int block;        /* block number of file (0 if none) */
+    zint block;        /* block number of file (0 if none) */
     int dirty;        /* block is different from that on file */
 };
 
@@ -66,8 +64,8 @@ static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
 #endif
 
 static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
-                          char *r_buf, int *firstpos, int cat, int last,
-                          int *numkeys)
+                          char *r_buf, zint *firstpos, int cat, int last,
+                          zint *numkeys)
 {
     int i;
 
@@ -105,7 +103,7 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             if (!*firstpos)
                 *firstpos = mb[i].block;
             if (is->method->debug > 2)
-                logf (LOG_LOG, "isc: skip ptr=%d size=%d %d %d",
+                logf (LOG_LOG, "isc: skip ptr=%d size=%d %d " ZINT_FORMAT,
                      i, ssize, cat, mb[i].block);
             ++(is->files[cat].no_skip_writes);
             continue;
@@ -118,22 +116,21 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             src = r_buf + mb[i].offset - ISAMC_BLOCK_OFFSET_1;
             ssize += ISAMC_BLOCK_OFFSET_1;
 
-            memcpy (src+sizeof(int)+sizeof(ssize), numkeys,
-                    sizeof(*numkeys));
+            memcpy (src+sizeof(zint)+sizeof(ssize), numkeys, sizeof(*numkeys));
             if (is->method->debug > 2)
-                logf (LOG_LOG, "isc: flush ptr=%d numk=%d size=%d nextpos=%d",
-                     i, *numkeys, (int) ssize, mb[i+1].block);
+                logf (LOG_LOG, "isc: flush ptr=%d numk=" ZINT_FORMAT " size=%d nextpos="
+		      ZINT_FORMAT, i, *numkeys, (int) ssize, mb[i+1].block);
         }
         else
         {
             src = r_buf + mb[i].offset - ISAMC_BLOCK_OFFSET_N;
             ssize += ISAMC_BLOCK_OFFSET_N;
             if (is->method->debug > 2)
-                logf (LOG_LOG, "isc: flush ptr=%d size=%d nextpos=%d",
+                logf (LOG_LOG, "isc: flush ptr=%d size=%d nextpos=" ZINT_FORMAT,
                      i, (int) ssize, mb[i+1].block);
         }
-        memcpy (src, &mb[i+1].block, sizeof(int));
-        memcpy (src+sizeof(int), &ssize, sizeof(ssize));
+        memcpy (src, &mb[i+1].block, sizeof(zint));
+        memcpy (src+sizeof(zint), &ssize, sizeof(ssize));
         isc_write_block (is, cat, mb[i].block, src);
     }
 }
@@ -168,7 +165,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
  
     struct isc_merge_block mb[200];
 
-    int firstpos = 0;
+    zint firstpos = 0;
     int cat = 0;
     char r_item_buf[128]; /* temporary result output */
     char *r_buf;          /* block with resulting data */
@@ -176,9 +173,9 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     int ptr = 0;          /* pointer */
     void *r_clientData;   /* encode client data */
     int border;
-    int numKeys = 0;
+    zint numKeys = 0;
 
-    r_clientData = (*is->method->code_start)(ISAMC_ENCODE);
+    r_clientData = (*is->method->codec.start)();
     r_buf = is->merge_buf + 128;
 
     pp = isc_pp_open (is, ipos);
@@ -190,7 +187,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     cat = pp->cat;
 
     if (debug > 1)
-        logf (LOG_LOG, "isc: isc_merge begin %d %d", cat, pp->pos);
+        logf (LOG_LOG, "isc: isc_merge begin %d " ZINT_FORMAT, cat, pp->pos);
 
     /* read first item from i */
     i_item_ptr = i_item;
@@ -337,10 +334,10 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
         if (r_item)  /* insert resulting item? */
         {
             char *r_out_ptr = r_buf + r_offset;
+	    const char *src = r_item;
             int new_offset;
 
-            (*is->method->code_item)(ISAMC_ENCODE, r_clientData,
-                                     &r_out_ptr, &r_item);
+            (*is->method->codec.encode)(r_clientData, &r_out_ptr, &src);
             new_offset = r_out_ptr - r_buf; 
 
             numKeys++;
@@ -456,7 +453,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
         if (numKeys != isc_pp_num (pp))
         {
             if (debug > 2)
-                logf (LOG_LOG, "isc: patch num keys firstpos=%d num=%d",
+                logf (LOG_LOG, "isc: patch num keys firstpos=" ZINT_FORMAT " num=" ZINT_FORMAT,
                                 firstpos, numKeys);
             bf_write (is->files[cat].bf, firstpos, ISAMC_BLOCK_OFFSET_N,
                       sizeof(numKeys), &numKeys);
@@ -471,88 +468,12 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     /* flush rest of block(s) in r_buf */
     flush_blocks (is, mb, ptr, r_buf, &firstpos, cat, 1, &numKeys);
 
-    (*is->method->code_stop)(ISAMC_ENCODE, r_clientData);
+    (*is->method->codec.stop)(r_clientData);
     if (!firstpos)
         cat = 0;
     if (debug > 1)
-        logf (LOG_LOG, "isc: isc_merge return %d %d", cat, firstpos);
+        logf (LOG_LOG, "isc: isc_merge return %d " ZINT_FORMAT, cat, firstpos);
     isc_pp_close (pp);
     return cat + firstpos * 8;
 }
-
-/*
- * $Log: merge.c,v $
- * Revision 1.23  2003-06-23 15:36:11  adam
- * Implemented isamb_unlink.
- *
- * Revision 1.22  2003/03/05 16:41:10  adam
- * Fix GCC warnings
- *
- * Revision 1.21  2002/08/02 19:26:56  adam
- * Towards GPL
- *
- * Revision 1.20  1999/11/30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.19  1999/07/14 12:12:07  heikki
- * Large-block isam-h  (may not work too well... Abandoning for isam-d)
- *
- * Revision 1.17  1999/07/13 14:22:17  heikki
- * Better allocation strategy in isamh_merge
- *
- * Revision 1.16  1999/07/08 14:23:27  heikki
- * Fixed a bug in isamh_pp_read and cleaned up a bit
- *
- * Revision 1.15  1999/07/07 09:36:04  heikki
- * Fixed an assertion in isamh
- *
- * Revision 1.13  1999/07/06 09:37:05  heikki
- * Working on isamh - not ready yet.
- *
- * Revision 1.12  1999/06/30 15:03:55  heikki
- * first take on isamh, the append-only isam structure
- *
- * Revision 1.11  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.10  1998/03/19 12:22:09  adam
- * Minor change.
- *
- * Revision 1.9  1998/03/19 10:04:38  adam
- * Minor changes.
- *
- * Revision 1.8  1998/03/18 09:23:55  adam
- * Blocks are stored in chunks on free list - up to factor 2 in speed.
- * Fixed bug that could occur in block category rearrangemen.
- *
- * Revision 1.7  1998/03/11 11:18:18  adam
- * Changed the isc_merge to take into account the mfill (minimum-fill).
- *
- * Revision 1.6  1998/03/06 13:54:03  adam
- * Fixed two nasty bugs in isc_merge.
- *
- * Revision 1.5  1997/02/12 20:42:43  adam
- * Bug fix: during isc_merge operations, some pages weren't marked dirty
- * even though they should be. At this point the merge operation marks
- * a page dirty if the previous page changed at all. A better approach is
- * to mark it dirty if the last key written changed in previous page.
- *
- * Revision 1.4  1996/11/08 11:15:31  adam
- * Number of keys in chain are stored in first block and the function
- * to retrieve this information, isc_pp_num is implemented.
- *
- * Revision 1.3  1996/11/04 14:08:59  adam
- * Optimized free block usage.
- *
- * Revision 1.2  1996/11/01 13:36:46  adam
- * New element, max_blocks_mem, that control how many blocks of max size
- * to store in memory during isc_merge.
- * Function isc_merge now ignores delete/update of identical keys and
- * the proper blocks are then non-dirty and not written in flush_blocks.
- *
- * Revision 1.1  1996/11/01  08:59:15  adam
- * First version of isc_merge that supports update/delete.
- *
- */
-
 

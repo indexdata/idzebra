@@ -1,4 +1,4 @@
-/* $Id: kdump.c,v 1.24 2004-01-22 11:27:21 adam Exp $
+/* $Id: kdump.c,v 1.25 2004-08-04 08:35:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,7 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -36,7 +35,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 char *prog;
 
-
+#if IT_KEY_NEW
+int main(int argc, char **argv)
+{
+    exit(0);
+}
+#else
 int key_file_decode (FILE *f)
 {
     int c, d;
@@ -96,6 +100,7 @@ static int read_one (FILE *inf, char *name, char *key, struct it_key *prevk)
     memcpy (key+1, &itkey, sizeof(itkey));
     return 1;
 }
+
 
 int main (int argc, char **argv)
 {
@@ -184,6 +189,6 @@ int main (int argc, char **argv)
         logf (LOG_FATAL|LOG_ERRNO, "fclose %s", key_fname);
         exit (1);
     }
-    
     exit (0);
 }
+#endif    

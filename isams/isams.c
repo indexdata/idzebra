@@ -1,5 +1,5 @@
-/* $Id: isams.c,v 1.5 2004-06-01 12:56:39 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: isams.c,v 1.6 2004-08-04 08:35:24 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -59,9 +59,11 @@ struct ISAMS_PP_s {
 
 void isams_getmethod (ISAMS_M *m)
 {
-    m->code_start = NULL;
-    m->code_item = NULL;
-    m->code_stop = NULL;
+    m->codec.start = NULL;
+    m->codec.decode = NULL;
+    m->codec.encode = NULL;
+    m->codec.stop = NULL;
+    m->codec.reset = NULL;
 
     m->compare_item = NULL;
     m->log_item = NULL;
@@ -111,14 +113,14 @@ int isams_close (ISAMS is)
 
 ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
 {
-    char i_item[128], *i_item_ptr;
+    char i_item[128];
     int i_more, i_mode;
     void *r_clientData;
     int first_block = is->head.last_block;
     int first_offset = is->head.last_offset;
     int count = 0;
 
-    r_clientData = (*is->method->code_start)(ISAMC_ENCODE);
+    r_clientData = (*is->method->codec.start)();
 
     is->head.last_offset += sizeof(int);
     if (is->head.last_offset > is->block_size)
@@ -133,8 +135,8 @@ ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
     }
     while (1)
     {
-	i_item_ptr = i_item;
-	i_more = (*data->read_item)(data->clientData, &i_item_ptr, &i_mode);
+	char *tmp_ptr = i_item;
+	i_more = (*data->read_item)(data->clientData, &tmp_ptr, &i_mode);
 	assert (i_mode);
 	
 	if (!i_more)
@@ -143,9 +145,8 @@ ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
 	{
 	    char *r_out_ptr = is->merge_buf + is->head.last_offset;
 	    
-	    i_item_ptr = i_item;
-	    (*is->method->code_item)(ISAMC_ENCODE, r_clientData,
-				     &r_out_ptr, &i_item_ptr);
+	    const char *i_item_ptr = i_item;
+	    (*is->method->codec.encode)(r_clientData, &r_out_ptr, &i_item_ptr);
 	    is->head.last_offset = r_out_ptr - is->merge_buf;
 	    if (is->head.last_offset > is->block_size)
 	    {
@@ -158,7 +159,7 @@ ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
 	    count++;
 	}
     }
-    (*is->method->code_stop)(ISAMC_ENCODE, r_clientData);
+    (*is->method->codec.stop)(r_clientData);
     if (first_block == is->head.last_block)
 	memcpy(is->merge_buf + first_offset, &count, sizeof(int));
     else if (first_block == is->head.last_block-1)
@@ -189,7 +190,7 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
     if (is->debug > 1)
 	logf (LOG_LOG, "isams: isams_pp_open pos=%ld", (long) pos);
     pp->is = is;
-    pp->decodeClientData = (*is->method->code_start)(ISAMC_DECODE);
+    pp->decodeClientData = (*is->method->codec.start)();
     pp->numKeys = 0;
     pp->numRead = 0;
     pp->buf = (char *) xmalloc(is->block_size*2);
@@ -212,7 +213,7 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
 
 void isams_pp_close (ISAMS_PP pp)
 {
-    (*pp->is->method->code_stop)(ISAMC_DECODE, pp->decodeClientData);
+    (*pp->is->method->codec.stop)(pp->decodeClientData);
     xfree(pp->buf);
     xfree(pp);
 }
@@ -224,12 +225,13 @@ int isams_pp_num (ISAMS_PP pp)
 
 int isams_pp_read (ISAMS_PP pp, void *buf)
 {
-    return isams_read_item (pp, (char **) &buf);
+    char *cp = buf;
+    return isams_read_item (pp, &cp);
 }
 
 int isams_read_item (ISAMS_PP pp, char **dst)
 {
-    char *src;
+    const char *src;
     if (pp->numRead >= pp->numKeys)
 	return 0;
     (pp->numRead)++;
@@ -242,8 +244,7 @@ int isams_read_item (ISAMS_PP pp, char **dst)
 		 pp->buf + pp->is->block_size);
     }
     src = pp->buf + pp->block_offset;
-    (*pp->is->method->code_item)(ISAMC_DECODE, pp->decodeClientData,
-				 dst, &src);
+    (*pp->is->method->codec.decode)(pp->decodeClientData, dst, &src);
     pp->block_offset = src - pp->buf; 
     return 1;
 }

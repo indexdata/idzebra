@@ -1,4 +1,4 @@
-/* $Id: isams.h,v 1.5 2004-06-01 12:56:38 adam Exp $
+/* $Id: isams.h,v 1.6 2004-08-04 08:35:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,25 +24,23 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef ISAMS_H
 #define ISAMS_H
 
+#include <isam-codec.h>
 #include <bfile.h>
+#include <isamc.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct ISAMS_s *ISAMS;
-typedef int ISAMS_P;
+typedef ISAMC_P ISAMS_P;
 typedef struct ISAMS_PP_s *ISAMS_PP;
 
 typedef struct ISAMS_M_s {
     int (*compare_item)(const void *a, const void *b);
     void (*log_item)(int logmask, const void *p, const char *txt);
 
-#define ISAMC_DECODE 0
-#define ISAMC_ENCODE 1
-    void *(*code_start)(int mode);
-    void (*code_stop)(int mode, void *p);
-    void (*code_item)(int mode, void *p, char **dst, char **src);
+    ISAM_CODEC codec;
 
     int debug;
     int block_size;

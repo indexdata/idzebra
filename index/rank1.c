@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.14 2003-03-26 16:57:24 adam Exp $
+/* $Id: rank1.c,v 1.15 2004-08-04 08:35:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -168,7 +168,7 @@ static void add (void *set_handle, int seqno, int term_index)
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int calc (void *set_handle, int sysno)
+static int calc (void *set_handle, zint sysno)
 {
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
@@ -192,7 +192,7 @@ static int calc (void *set_handle, int sysno)
     divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
     score = score / divisor;
 #if DEBUG_RANK
-    yaz_log (LOG_LOG, "sysno=%d score=%d", sysno, score);
+    yaz_log (LOG_LOG, "sysno=" ZINT_FORMAT " score=%d", sysno, score);
 #endif
     if (score > 1000)
 	score = 1000;

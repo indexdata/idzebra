@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.13 2004-07-28 08:15:45 adam Exp $
+/* $Id: zebraapi.h,v 1.14 2004-08-04 08:35:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -62,7 +62,7 @@ typedef struct {
     int len;             /* length */
     oid_value format;    /* record syntax */
     char *base; 
-    int  sysno;
+    SYSNO sysno;
     int  score;
 } ZebraRetrievalRecord;
 
@@ -210,17 +210,17 @@ int zebra_add_record (ZebraHandle zh, const char *buf, int buf_size);
 			       
 int zebra_insert_record (ZebraHandle zh, 
 			 const char *recordType,
-			 int *sysno, const char *match, const char *fname,
+			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
 int zebra_update_record (ZebraHandle zh, 
 			 const char *recordType,
-			 int* sysno, const char *match, const char *fname,
+			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
 int zebra_delete_record (ZebraHandle zh, 
 			 const char *recordType,
-			 int *sysno, const char *match, const char *fname,
+			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
 
@@ -229,11 +229,11 @@ YAZ_EXPORT int zebra_resultSetTerms (ZebraHandle zh, const char *setname,
                                      int *type, char *out, size_t *len);
 
 YAZ_EXPORT int zebra_sort (ZebraHandle zh, ODR stream,
-                            int num_input_setnames,
-                            const char **input_setnames,
-                            const char *output_setname,
-                            Z_SortKeySpecList *sort_sequence,
-                            int *sort_status);
+			   int num_input_setnames,
+			   const char **input_setnames,
+			   const char *output_setname,
+			   Z_SortKeySpecList *sort_sequence,
+			   int *sort_status);
 
 YAZ_EXPORT
 int zebra_select_databases (ZebraHandle zh, int num_bases, 

@@ -13,5 +13,6 @@ records/dino.xml: tree2xml.pl dino.tree
 clean:
 	rm -f records/dino.xml *.mf *.LCK zebrasrv.pid
 
-dist-hook:
+dist-hook: records/dino.xml
 	-mkdir $(distdir)/records
+	cp records/dino.xml $(distdir)/records

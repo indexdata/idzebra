@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.141 2004-08-03 12:15:44 heikki Exp $
+/* $Id: zrpn.c,v 1.142 2004-08-04 08:35:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -164,7 +164,7 @@ struct grep_info {
 #ifdef TERM_COUNT        
     int *term_no;        
 #endif        
-    ISAMS_P *isam_p_buf;
+    ISAMC_P *isam_p_buf;
     int isam_p_size;        
     int isam_p_indx;
     ZebraHandle zh;
@@ -194,12 +194,12 @@ static void add_isam_p (const char *name, const char *info,
 {
     if (p->isam_p_indx == p->isam_p_size)
     {
-        ISAMS_P *new_isam_p_buf;
+        ISAMC_P *new_isam_p_buf;
 #ifdef TERM_COUNT        
         int *new_term_no;        
 #endif
         p->isam_p_size = 2*p->isam_p_size + 100;
-        new_isam_p_buf = (ISAMS_P *) xmalloc (sizeof(*new_isam_p_buf) *
+        new_isam_p_buf = (ISAMC_P *) xmalloc (sizeof(*new_isam_p_buf) *
 					     p->isam_p_size);
         if (p->isam_p_buf)
         {
@@ -1365,7 +1365,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
 {
     char term_dst[IT_MAX_WORD+1];
     RSET rset[60], result;
-    int  rset_no = 0;
+    int rset_no = 0;
     struct grep_info grep_info;
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
@@ -1787,6 +1787,7 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     RSET result;
     RSFD rsfd;
     struct it_key key;
+    int sys;
     rset_temp_parms parms;
 
     parms.rset_term = rset_term_create (termz, -1, rank_type,
@@ -1797,10 +1798,19 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     result = rset_create (rset_kind_temp, &parms);
     rsfd = rset_open (result, RSETF_WRITE);
 
-    key.sysno = atoi (termz);
+    sys = atoi(termz);
+    if (sys <= 0)
+	sys = 1;
+#if IT_KEY_NEW
+    key.mem[0] = sys;
+    key.mem[1] = 1;
+    key.len = 2;
+#else
+    key.sysno = sys;
     key.seqno = 1;
     if (key.sysno <= 0)
         key.sysno = 1;
+#endif
     rset_write (result, rsfd, &key);
     rset_close (result, rsfd);
     return result;
@@ -2390,7 +2400,7 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem,
 
 struct scan_info_entry {
     char *term;
-    ISAMS_P isam_p;
+    ISAMC_P isam_p;
 };
 
 struct scan_info {
@@ -2414,8 +2424,8 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
     scan_info->list[idx].term = (char *)
 	odr_malloc (scan_info->odr, strlen(name + len_prefix)+1);
     strcpy (scan_info->list[idx].term, name + len_prefix);
-    assert (*info == sizeof(ISAMS_P));
-    memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAMS_P));
+    assert (*info == sizeof(ISAMC_P));
+    memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAMC_P));
     return 0;
 }
 
@@ -2465,11 +2475,19 @@ static void count_set (RSET r, int *count)
     rfd = rset_open (r, RSETF_READ);
     while (rset_read (r, rfd, &key, &term_index))
     {
+#if IT_KEY_NEW
+        if (key.mem[0] != psysno)
+        {
+            psysno = key.mem[0];
+            (*count)++;
+        }
+#else
         if (key.sysno != psysno)
         {
             psysno = key.sysno;
             (*count)++;
         }
+#endif
         kno++;
     }
     rset_close (r, rfd);

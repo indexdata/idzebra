@@ -11,7 +11,7 @@ rights reserved.
 Licensed under the Academic Free License version 1.1.
 http://opensource.org/licenses/academic.php
 
-$Id: livcode.c,v 1.1 2003-03-26 16:41:48 adam Exp $
+$Id: livcode.c,v 1.2 2004-08-04 08:35:23 adam Exp $
 
 */
 
@@ -649,12 +649,12 @@ static void add (void *set_handle, int seqno, int term_index)
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int calc (void *set_handle, int sysno)
+static int calc (void *set_handle, zint sysno)
 {
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
-    logf (LOG_DEBUG, "livrank calc sysno=%d", sysno);
+    logf (LOG_DEBUG, "livrank calc sysno=" ZINT_FORMAT, sysno);
 
     if (!si->no_rank_entries)
 	return -1;

@@ -1,5 +1,5 @@
-/* $Id: recstat.c,v 1.8 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: recstat.c,v 1.9 2004-08-04 08:35:23 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -33,26 +33,28 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 void rec_prstat (Records records)
 {
     int i;
-    int total_bytes = 0;
+    zint total_bytes = 0;
     
     logf (LOG_LOG,
-          "Total records                        %8d",
+          "Total records                        %8" ZINT_FORMAT0,
           records->head.no_records);
 
     for (i = 0; i< REC_BLOCK_TYPES; i++)
     {
-        logf (LOG_LOG, "Record blocks of size %d",
+        logf (LOG_LOG, "Record blocks of size " ZINT_FORMAT,
               records->head.block_size[i]);
         logf (LOG_LOG,
-          " Used/Total/Bytes used            %d/%d/%d",
+          " Used/Total/Bytes used            "
+	      ZINT_FORMAT "/" ZINT_FORMAT "/" ZINT_FORMAT,
               records->head.block_used[i], records->head.block_last[i]-1,
               records->head.block_used[i] * records->head.block_size[i]);
         total_bytes +=
             records->head.block_used[i] * records->head.block_size[i];
     }
     logf (LOG_LOG,
-          "Total size of record index in bytes  %8d",
+          "Total size of record index in bytes  %8" ZINT_FORMAT0,
           records->head.total_bytes);
     logf (LOG_LOG,
-          "Total size with overhead             %8d", total_bytes);
+          "Total size with overhead             %8" ZINT_FORMAT0,
+	  total_bytes);
 }

@@ -1,5 +1,5 @@
-/* $Id: isamc-p.h,v 1.9 2003-06-23 15:36:11 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: isamc-p.h,v 1.10 2004-08-04 08:35:24 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -25,13 +25,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <bfile.h>
 #include <isamc.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 typedef struct {
-    int lastblock;
-    int freelist;
+    zint lastblock;
+    zint freelist;
 } ISAMC_head;
 
 typedef unsigned ISAMC_BLOCK_SIZE;
@@ -76,22 +74,33 @@ struct ISAMC_PP_s {
     ISAMC_BLOCK_SIZE offset;
     ISAMC_BLOCK_SIZE size;
     int cat;
-    int pos;
-    int next;
+    zint pos;
+    zint next;
     ISAMC is;
     void *decodeClientData;
     int deleteFlag;
-    int numKeys;
+    zint numKeys;
 };
 
-#define ISAMC_BLOCK_OFFSET_N (sizeof(int)+sizeof(ISAMC_BLOCK_SIZE)) 
-#define ISAMC_BLOCK_OFFSET_1 (sizeof(int)+sizeof(ISAMC_BLOCK_SIZE)+sizeof(int)) 
-int isc_alloc_block (ISAMC is, int cat);
-void isc_release_block (ISAMC is, int cat, int pos);
-int isc_read_block (ISAMC is, int cat, int pos, char *dst);
-int isc_write_block (ISAMC is, int cat, int pos, char *src);
+/* 
+  first block consists of
+      next pointer : zint
+      size         : ISAMC_BLOCK_SIZE (int)
+      numkeys      : zint
+      data
+  other blocks consists of
+      next pointer : zint
+      size :         ISAMC_BLOCK_SIZE (int)
+      data
+*/
+#define ISAMC_BLOCK_OFFSET_1 (sizeof(zint)+sizeof(ISAMC_BLOCK_SIZE)+sizeof(zint)) 
+#define ISAMC_BLOCK_OFFSET_N (sizeof(zint)+sizeof(ISAMC_BLOCK_SIZE)) 
 
-#ifdef __cplusplus
-}
-#endif
+zint isc_alloc_block (ISAMC is, int cat);
+void isc_release_block (ISAMC is, int cat, zint pos);
+int isc_read_block (ISAMC is, int cat, zint pos, char *dst);
+int isc_write_block (ISAMC is, int cat, zint pos, char *src);
+
+YAZ_END_CDECL
+
 

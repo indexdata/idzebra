@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.50 2004-05-25 12:13:15 adam Exp $
+/* $Id: regxread.c,v 1.51 2004-08-04 08:35:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1033,14 +1033,14 @@ static char *regxStrz (const char *src, int len, char *str)
 
 #if HAVE_TCL_H
 static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
-			  int argc, char **argv)
+			  int argc, const char **argv)
 {
     struct lexSpec *spec = (struct lexSpec *) clientData;
     if (argc < 2)
 	return TCL_ERROR;
     if (!strcmp(argv[1], "record") && argc == 3)
     {
-	char *absynName = argv[2];
+	const char *absynName = argv[2];
         data1_node *res;
 
 #if REGX_DEBUG
@@ -1089,7 +1089,7 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
 }
 
 static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
-			int argc, char **argv)
+			int argc, const char **argv)
 {
     struct lexSpec *spec = (struct lexSpec *) clientData;
     if (argc < 2)
@@ -1110,7 +1110,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
     else if (!strcmp (argv[1], "element"))
     {
 	int min_level = 2;
-	char *element = 0;
+	const char *element = 0;
 	if (argc >= 3 && !strcmp(argv[2], "-record"))
 	{
 	    min_level = 0;
@@ -1143,7 +1143,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
 }
 
 static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
-			 int argc, char **argv)
+			 int argc, const char **argv)
 {
     int argi = 1;
     int textFlag = 0;
@@ -1187,7 +1187,7 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
 }
 
 static int cmd_tcl_unread (ClientData clientData, Tcl_Interp *interp,
-			   int argc, char **argv)
+			   int argc, const char **argv)
 {
     struct lexSpec *spec = (struct lexSpec *) clientData;
     int argi = 1;

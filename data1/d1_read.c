@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.8 2004-07-26 13:51:42 adam Exp $
+/* $Id: d1_read.c,v 1.9 2004-08-04 08:35:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -470,8 +470,8 @@ data1_node *data1_add_taggeddata (data1_handle dh, data1_node *root,
     return data1_add_insert_taggeddata (dh, at, tagname, m, 1, 0);
 }
 
-data1_node *data1_mk_tag_data_int (data1_handle dh, data1_node *at,
-                                   const char *tag, int num,
+data1_node *data1_mk_tag_data_zint (data1_handle dh, data1_node *at,
+                                   const char *tag, zint num,
                                    NMEM nmem)
 {
     data1_node *node_data;
@@ -481,9 +481,16 @@ data1_node *data1_mk_tag_data_int (data1_handle dh, data1_node *at,
 	return 0;
     node_data->u.data.what = DATA1I_num;
     node_data->u.data.data = node_data->lbuf;
-    sprintf (node_data->u.data.data, "%d", num);
+    sprintf (node_data->u.data.data, ZINT_FORMAT, num);
     node_data->u.data.len = strlen (node_data->u.data.data);
     return node_data;
+}
+
+data1_node *data1_mk_tag_data_int (data1_handle dh, data1_node *at,
+                                   const char *tag, int num,
+                                   NMEM nmem)
+{
+    return data1_mk_tag_data_zint(dh, at, tag, num, nmem);
 }
 
 data1_node *data1_mk_tag_data_oid (data1_handle dh, data1_node *at,

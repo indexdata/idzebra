@@ -23,6 +23,18 @@ sub FIRSTKEY { }
 
 sub NEXTKEY { }
 
+sub FETCH {
+    my ($self,$field) = @_;
+    my $member_func = "swig_${field}_get";
+    $self->$member_func();
+}
+
+sub STORE {
+    my ($self,$field,$newval) = @_;
+    my $member_func = "swig_${field}_set";
+    $self->$member_func($newval);
+}
+
 sub this {
     my $ptr = shift;
     return tied(%$ptr);
@@ -79,14 +91,7 @@ package IDZebra;
 *resultSetTerms = *IDZebrac::resultSetTerms;
 *sort = *IDZebrac::sort;
 *scan_PQF = *IDZebrac::scan_PQF;
-sub getScanEntry {
-    my @args = @_;
-    my $result = IDZebrac::getScanEntry(@args);
-    return undef if (!defined($result));
-    my %resulthash;
-    tie %resulthash, ref($result), $result;
-    return bless \%resulthash, ref($result);
-}
+*getScanEntry = *IDZebrac::getScanEntry;
 *nmem_create = *IDZebrac::nmem_create;
 *nmem_destroy = *IDZebrac::nmem_destroy;
 *data1_create = *IDZebrac::data1_create;
@@ -178,9 +183,6 @@ sub getScanEntry {
 package IDZebra::RetrievalObj;
 @ISA = qw( IDZebra );
 %OWNER = ();
-%BLESSEDMEMBERS = (
-);
-
 %ITERATORS = ();
 *swig_noOfRecords_get = *IDZebrac::RetrievalObj_noOfRecords_get;
 *swig_noOfRecords_set = *IDZebrac::RetrievalObj_noOfRecords_set;
@@ -188,13 +190,8 @@ package IDZebra::RetrievalObj;
 *swig_records_set = *IDZebrac::RetrievalObj_records_set;
 sub new {
     my $pkg = shift;
-    my @args = @_;
-    my $self = IDZebrac::new_RetrievalObj(@args);
-    return undef if (!defined($self));
-    $OWNER{$self} = 1;
-    my %retval;
-    tie %retval, "IDZebra::RetrievalObj", $self;
-    return bless \%retval, $pkg;
+    my $self = IDZebrac::new_RetrievalObj(@_);
+    bless $self, $pkg if defined($self);
 }
 
 sub DESTROY {
@@ -212,35 +209,12 @@ sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);
     delete $OWNER{$ptr};
-    };
+}
 
 sub ACQUIRE {
     my $self = shift;
     my $ptr = tied(%$self);
     $OWNER{$ptr} = 1;
-    };
-
-sub FETCH {
-    my ($self,$field) = @_;
-    my $member_func = "swig_${field}_get";
-    my $val = $self->$member_func();
-    if (exists $BLESSEDMEMBERS{$field}) {
-        return undef if (!defined($val));
-        my %retval;
-        tie %retval,$BLESSEDMEMBERS{$field},$val;
-        return bless \%retval, $BLESSEDMEMBERS{$field};
-    }
-    return $val;
-}
-
-sub STORE {
-    my ($self,$field,$newval) = @_;
-    my $member_func = "swig_${field}_set";
-    if (exists $BLESSEDMEMBERS{$field}) {
-        $self->$member_func(tied(%{$newval}));
-    } else {
-        $self->$member_func($newval);
-    }
 }
 
 
@@ -249,9 +223,6 @@ sub STORE {
 package IDZebra::RetrievalRecord;
 @ISA = qw( IDZebra );
 %OWNER = ();
-%BLESSEDMEMBERS = (
-);
-
 %ITERATORS = ();
 *swig_errCode_get = *IDZebrac::RetrievalRecord_errCode_get;
 *swig_errCode_set = *IDZebrac::RetrievalRecord_errCode_set;
@@ -271,13 +242,8 @@ package IDZebra::RetrievalRecord;
 *swig_buf_set = *IDZebrac::RetrievalRecord_buf_set;
 sub new {
     my $pkg = shift;
-    my @args = @_;
-    my $self = IDZebrac::new_RetrievalRecord(@args);
-    return undef if (!defined($self));
-    $OWNER{$self} = 1;
-    my %retval;
-    tie %retval, "IDZebra::RetrievalRecord", $self;
-    return bless \%retval, $pkg;
+    my $self = IDZebrac::new_RetrievalRecord(@_);
+    bless $self, $pkg if defined($self);
 }
 
 sub DESTROY {
@@ -295,35 +261,12 @@ sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);
     delete $OWNER{$ptr};
-    };
+}
 
 sub ACQUIRE {
     my $self = shift;
     my $ptr = tied(%$self);
     $OWNER{$ptr} = 1;
-    };
-
-sub FETCH {
-    my ($self,$field) = @_;
-    my $member_func = "swig_${field}_get";
-    my $val = $self->$member_func();
-    if (exists $BLESSEDMEMBERS{$field}) {
-        return undef if (!defined($val));
-        my %retval;
-        tie %retval,$BLESSEDMEMBERS{$field},$val;
-        return bless \%retval, $BLESSEDMEMBERS{$field};
-    }
-    return $val;
-}
-
-sub STORE {
-    my ($self,$field,$newval) = @_;
-    my $member_func = "swig_${field}_set";
-    if (exists $BLESSEDMEMBERS{$field}) {
-        $self->$member_func(tied(%{$newval}));
-    } else {
-        $self->$member_func($newval);
-    }
 }
 
 
@@ -332,9 +275,6 @@ sub STORE {
 package IDZebra::scanEntry;
 @ISA = qw( IDZebra );
 %OWNER = ();
-%BLESSEDMEMBERS = (
-);
-
 %ITERATORS = ();
 *swig_occurrences_get = *IDZebrac::scanEntry_occurrences_get;
 *swig_occurrences_set = *IDZebrac::scanEntry_occurrences_set;
@@ -342,13 +282,8 @@ package IDZebra::scanEntry;
 *swig_term_set = *IDZebrac::scanEntry_term_set;
 sub new {
     my $pkg = shift;
-    my @args = @_;
-    my $self = IDZebrac::new_scanEntry(@args);
-    return undef if (!defined($self));
-    $OWNER{$self} = 1;
-    my %retval;
-    tie %retval, "IDZebra::scanEntry", $self;
-    return bless \%retval, $pkg;
+    my $self = IDZebrac::new_scanEntry(@_);
+    bless $self, $pkg if defined($self);
 }
 
 sub DESTROY {
@@ -366,35 +301,12 @@ sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);
     delete $OWNER{$ptr};
-    };
+}
 
 sub ACQUIRE {
     my $self = shift;
     my $ptr = tied(%$self);
     $OWNER{$ptr} = 1;
-    };
-
-sub FETCH {
-    my ($self,$field) = @_;
-    my $member_func = "swig_${field}_get";
-    my $val = $self->$member_func();
-    if (exists $BLESSEDMEMBERS{$field}) {
-        return undef if (!defined($val));
-        my %retval;
-        tie %retval,$BLESSEDMEMBERS{$field},$val;
-        return bless \%retval, $BLESSEDMEMBERS{$field};
-    }
-    return $val;
-}
-
-sub STORE {
-    my ($self,$field,$newval) = @_;
-    my $member_func = "swig_${field}_set";
-    if (exists $BLESSEDMEMBERS{$field}) {
-        $self->$member_func(tied(%{$newval}));
-    } else {
-        $self->$member_func($newval);
-    }
 }
 
 
@@ -403,10 +315,6 @@ sub STORE {
 package IDZebra::ScanObj;
 @ISA = qw( IDZebra );
 %OWNER = ();
-%BLESSEDMEMBERS = (
-    entries => 'IDZebra::scanEntry',
-);
-
 %ITERATORS = ();
 *swig_num_entries_get = *IDZebrac::ScanObj_num_entries_get;
 *swig_num_entries_set = *IDZebrac::ScanObj_num_entries_set;
@@ -418,13 +326,8 @@ package IDZebra::ScanObj;
 *swig_entries_set = *IDZebrac::ScanObj_entries_set;
 sub new {
     my $pkg = shift;
-    my @args = @_;
-    my $self = IDZebrac::new_ScanObj(@args);
-    return undef if (!defined($self));
-    $OWNER{$self} = 1;
-    my %retval;
-    tie %retval, "IDZebra::ScanObj", $self;
-    return bless \%retval, $pkg;
+    my $self = IDZebrac::new_ScanObj(@_);
+    bless $self, $pkg if defined($self);
 }
 
 sub DESTROY {
@@ -442,35 +345,12 @@ sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);
     delete $OWNER{$ptr};
-    };
+}
 
 sub ACQUIRE {
     my $self = shift;
     my $ptr = tied(%$self);
     $OWNER{$ptr} = 1;
-    };
-
-sub FETCH {
-    my ($self,$field) = @_;
-    my $member_func = "swig_${field}_get";
-    my $val = $self->$member_func();
-    if (exists $BLESSEDMEMBERS{$field}) {
-        return undef if (!defined($val));
-        my %retval;
-        tie %retval,$BLESSEDMEMBERS{$field},$val;
-        return bless \%retval, $BLESSEDMEMBERS{$field};
-    }
-    return $val;
-}
-
-sub STORE {
-    my ($self,$field,$newval) = @_;
-    my $member_func = "swig_${field}_set";
-    if (exists $BLESSEDMEMBERS{$field}) {
-        $self->$member_func(tied(%{$newval}));
-    } else {
-        $self->$member_func($newval);
-    }
 }
 
 
@@ -479,9 +359,6 @@ sub STORE {
 package IDZebra::ZebraTransactionStatus;
 @ISA = qw( IDZebra );
 %OWNER = ();
-%BLESSEDMEMBERS = (
-);
-
 %ITERATORS = ();
 *swig_processed_get = *IDZebrac::ZebraTransactionStatus_processed_get;
 *swig_processed_set = *IDZebrac::ZebraTransactionStatus_processed_set;
@@ -497,13 +374,8 @@ package IDZebra::ZebraTransactionStatus;
 *swig_stime_set = *IDZebrac::ZebraTransactionStatus_stime_set;
 sub new {
     my $pkg = shift;
-    my @args = @_;
-    my $self = IDZebrac::new_ZebraTransactionStatus(@args);
-    return undef if (!defined($self));
-    $OWNER{$self} = 1;
-    my %retval;
-    tie %retval, "IDZebra::ZebraTransactionStatus", $self;
-    return bless \%retval, $pkg;
+    my $self = IDZebrac::new_ZebraTransactionStatus(@_);
+    bless $self, $pkg if defined($self);
 }
 
 sub DESTROY {
@@ -521,35 +393,12 @@ sub DISOWN {
     my $self = shift;
     my $ptr = tied(%$self);
     delete $OWNER{$ptr};
-    };
+}
 
 sub ACQUIRE {
     my $self = shift;
     my $ptr = tied(%$self);
     $OWNER{$ptr} = 1;
-    };
-
-sub FETCH {
-    my ($self,$field) = @_;
-    my $member_func = "swig_${field}_get";
-    my $val = $self->$member_func();
-    if (exists $BLESSEDMEMBERS{$field}) {
-        return undef if (!defined($val));
-        my %retval;
-        tie %retval,$BLESSEDMEMBERS{$field},$val;
-        return bless \%retval, $BLESSEDMEMBERS{$field};
-    }
-    return $val;
-}
-
-sub STORE {
-    my ($self,$field,$newval) = @_;
-    my $member_func = "swig_${field}_set";
-    if (exists $BLESSEDMEMBERS{$field}) {
-        $self->$member_func(tied(%{$newval}));
-    } else {
-        $self->$member_func($newval);
-    }
 }
 
 

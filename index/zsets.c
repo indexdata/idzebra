@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.49 2004-06-13 18:45:25 adam Exp $
+/* $Id: zsets.c,v 1.50 2004-08-04 08:35:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -58,7 +58,7 @@ struct zebra_set {
 };
 
 struct zset_sort_entry {
-    int sysno;
+    zint sysno;
     int score;
     char buf[ZSET_SORT_MAX_LEVEL][SORT_IDX_ENTRYSIZE];
 };
@@ -384,7 +384,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 	{
 	    int position = 0;
 	    int num_i = 0;
-	    int psysno = 0;
+	    zint psysno = 0;
 	    int term_index;
 	    RSFD rfd;
 	    struct it_key key;
@@ -396,9 +396,14 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 	    rfd = rset_open (rset, RSETF_READ);
 	    while (num_i < num && rset_read (rset, rfd, &key, &term_index))
 	    {
-		if (key.sysno != psysno)
+#if IT_KEY_NEW
+		zint this_sys = key.mem[0];
+#else
+		zint this_sys = key.sysno;
+#endif
+		if (this_sys != psysno)
 		{
-		    psysno = key.sysno;
+		    psysno = this_sys;
 		    if (sort_info)
 		    {
 			/* determine we alreay have this in our set */
@@ -438,7 +443,7 @@ struct sortKeyInfo {
 
 void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
 			  struct sortKeyInfo *criteria, int num_criteria,
-			  int sysno)
+			  zint sysno)
 {
     struct zset_sort_entry this_entry;
     struct zset_sort_entry *new_entry = NULL;
@@ -512,7 +517,7 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
 }
 
 void resultSetInsertRank (ZebraHandle zh, struct zset_sort_info *sort_info,
-			  int sysno, int score, int relation)
+			  zint sysno, int score, int relation)
 {
     struct zset_sort_entry *new_entry = NULL;
     int i, j;
@@ -603,7 +608,8 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 			  ZebraSet sset, RSET rset,
 			  Z_SortKeySpecList *sort_sequence, int *sort_status)
 {
-    int i, psysno = 0;
+    int i;
+    zint psysno = 0;
     struct it_key key;
     struct sortKeyInfo sort_criteria[3];
     int num_criteria;
@@ -675,10 +681,15 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
     rfd = rset_open (rset, RSETF_READ);
     while (rset_read (rset, rfd, &key, &term_index))
     {
-        if (key.sysno != psysno)
+#if IT_KEY_NEW
+	zint this_sys = key.mem[0];
+#else
+	zint this_sys = key.sysno;
+#endif
+        if (this_sys != psysno)
         {
 	    (sset->hits)++;
-            psysno = key.sysno;
+            psysno = this_sys;
 	    resultSetInsertSort (zh, sset,
 				 sort_criteria, num_criteria, psysno);
         }
@@ -733,23 +744,32 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 
     if (rset_read (rset, rfd, &key, &term_index))
     {
-	int psysno = key.sysno;
+#if IT_KEY_NEW
+	zint psysno = key.mem[0];
+#else
+	zint psysno = key.sysno;
+#endif
 	int score;
 	void *handle =
 	    (*rc->begin) (zh->reg, rank_class->class_handle, rset);
 	(zebraSet->hits)++;
 	do
 	{
+#if IT_KEY_NEW
+	    zint this_sys = key.mem[0];
+#else
+	    zint this_sys = key.sysno;
+#endif
 	    kno++;
-	    if (key.sysno != psysno)
+	    if (this_sys != psysno)
 	    {
 		score = (*rc->calc) (handle, psysno);
 
 		resultSetInsertRank (zh, sort_info, psysno, score, 'A');
 		(zebraSet->hits)++;
-		psysno = key.sysno;
+		psysno = this_sys;
 	    }
-	    (*rc->add) (handle, key.seqno, term_index);
+	    (*rc->add) (handle, this_sys, term_index);
 	}
 	while (rset_read (rset, rfd, &key, &term_index));
 	score = (*rc->calc) (handle, psysno);

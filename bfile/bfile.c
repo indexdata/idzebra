@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.35 2002-08-02 19:26:55 adam Exp $
+/* $Id: bfile.c,v 1.36 2004-08-04 08:35:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -34,6 +34,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <zebrautl.h>
 #include <bfile.h>
+
 #include "cfile.h"
 
 struct BFiles_struct {
@@ -154,7 +155,7 @@ BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
     return(tmp);
 }
 
-int bf_read (BFile bf, int no, int offset, int nbytes, void *buf)
+int bf_read (BFile bf, zint no, int offset, int nbytes, void *buf)
 {
     int r;
 
@@ -170,7 +171,7 @@ int bf_read (BFile bf, int no, int offset, int nbytes, void *buf)
     return r;
 }
 
-int bf_write (BFile bf, int no, int offset, int nbytes, const void *buf)
+int bf_write (BFile bf, zint no, int offset, int nbytes, const void *buf)
 {
     int r;
     zebra_lock_rdwr_wlock (&bf->rdwr_lock);

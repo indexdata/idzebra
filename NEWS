@@ -1,4 +1,13 @@
 
+Remove isamd. It's not been in use for a long time and isamb is better
+in most cases.
+
+Change SYSNO to be zint. Change pointers in isamc and isamb to zint.
+Change block number in bfile/cfile to zint. zint is a long integer
+(64-bit). This change practially removes register limits for Zebra.
+
+Implement int-list encoding for ISAMs.
+
 Added a new 'cut' directive to charmaps (.chr files) which specifies that
 only characters after the cutting char should be indexed.
 

@@ -1,5 +1,5 @@
-/* $Id: rsm_or.h,v 1.6 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: rsm_or.h,v 1.7 2004-08-04 08:35:23 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -27,9 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <rset.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 extern const struct rset_control *rset_kind_m_or;
 
@@ -39,15 +37,13 @@ typedef struct rset_m_or_parms
     int     (*cmp)(const void *p1, const void *p2);
 
     ISAMC   isc;
-    ISAM_P  *isam_positions;
+    ISAMC_P  *isam_positions;
     RSET_TERM rset_term;
 
     int     no_isam_positions;
     int     no_save_positions;
 } rset_m_or_parms;
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif

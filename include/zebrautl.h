@@ -1,5 +1,5 @@
-/* $Id: zebrautl.h,v 1.7 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: zebrautl.h,v 1.8 2004-08-04 08:35:23 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,13 +20,15 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #ifndef ZEBRA_UTIL_H
 #define ZEBRA_UTIL_H
 
 #include <yaz/yaz-util.h>
 #include <res.h>
 #include <zebraver.h>
+
+YAZ_BEGIN_CDECL
+zint atoi_zn (const char *buf, zint len);
+YAZ_END_CDECL
 
 #endif

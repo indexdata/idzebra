@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120 2004-07-28 08:15:45 adam Exp $
+/* $Id: zebraapi.c,v 1.121 2004-08-04 08:35:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -249,6 +249,10 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     reg->keys.buf_max = 0;
     reg->keys.buf = 0;
+#if IT_KEY_NEW
+    reg->keys.codec_handle = iscz1_start();
+#endif
+
     reg->sortKeys.buf = 0;
     reg->sortKeys.buf_max = 0;
 
@@ -259,7 +263,6 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     reg->matchDict = 0;
     reg->isam = 0;
     reg->isamc = 0;
-    reg->isamd = 0;
     reg->isamb = 0;
     reg->zei = 0;
     reg->matchDict = 0;
@@ -321,17 +324,6 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 				    rw, key_isamc_m(res, &isamc_m))))
 	{
 	    logf (LOG_WARN, "isc_open");
-	    return 0;
-	}
-    }
-    if (res_get_match (res, "isam", "d", ISAM_DEFAULT))
-    {
-	struct ISAMD_M_s isamd_m;
-	
-	if (!(reg->isamd = isamd_open (reg->bfs, FNAME_ISAMD,
-				      rw, key_isamd_m(res, &isamd_m))))
-	{
-	    logf (LOG_WARN, "isamd_open");
 	    return 0;
 	}
     }
@@ -424,8 +416,6 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
             is_close (reg->isam);
         if (reg->isamc)
             isc_close (reg->isamc);
-        if (reg->isamd)
-            isamd_close (reg->isamd);
         if (reg->isamb)
             isamb_close (reg->isamb);
         rec_close (&reg->records);
@@ -439,6 +429,10 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 
     xfree (reg->sortKeys.buf);
     xfree (reg->keys.buf);
+#if IT_KEY_NEW
+    if (reg->keys.codec_handle)
+	iscz1_stop(reg->keys.codec_handle);
+#endif
 
     xfree (reg->key_buf);
     xfree (reg->name);
@@ -1028,7 +1022,7 @@ int zebra_admin_import_end (ZebraHandle zh)
 
 int zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 {
-    int sysno;
+    SYSNO sysno;
     int i;
     ASSERTZH;
     yaz_log(LOG_API,"zebra_admin_import_segment");
@@ -1072,7 +1066,7 @@ int zebra_admin_exchange_record (ZebraHandle zh,
     /* 3 = delete. Fail if does not exist */
     /* 4 = update. Insert/replace */
 {
-    int sysno = 0;
+    SYSNO sysno = 0;
     char *rinfo = 0;
     char recid_z[256];
     ASSERTZH;
@@ -1948,17 +1942,17 @@ NOTE: Now returns 0 at success and updates sysno, which is an int*
 int zebra_add_record(ZebraHandle zh,
 		     const char *buf, int buf_size)
 {
-    int sysno = 0;
+    SYSNO sysno = 0;
     return zebra_update_record(zh, 0, &sysno, 0, 0, buf, buf_size, 0);
 }
 
 int zebra_insert_record (ZebraHandle zh, 
 			 const char *recordType,
-			 int *sysno, const char *match, const char *fname,
+			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size, int force_update)
 {
     int res;
-    yaz_log(LOG_API,"zebra_insert_record sysno=%d", *sysno);
+    yaz_log(LOG_API,"zebra_insert_record sysno=" ZINT_FORMAT, *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -1978,13 +1972,13 @@ int zebra_insert_record (ZebraHandle zh,
 
 int zebra_update_record (ZebraHandle zh, 
 			 const char *recordType,
-			 int* sysno, const char *match, const char *fname,
+			 SYSNO* sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update)
 {
     int res;
 
-    yaz_log(LOG_API,"zebra_update_record sysno=%d", *sysno);
+    yaz_log(LOG_API,"zebra_update_record sysno=" ZINT_FORMAT, *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -2005,12 +1999,12 @@ int zebra_update_record (ZebraHandle zh,
 
 int zebra_delete_record (ZebraHandle zh, 
 			 const char *recordType,
-			 int *sysno, const char *match, const char *fname,
+			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update) 
 {
     int res;
-    yaz_log(LOG_API,"zebra_delete_record sysno=%d", *sysno);
+    yaz_log(LOG_API,"zebra_delete_record sysno=" ZINT_FORMAT, *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 

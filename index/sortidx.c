@@ -1,5 +1,5 @@
-/* $Id: sortidx.c,v 1.8 2002-12-10 12:54:24 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: sortidx.c,v 1.9 2004-08-04 08:35:23 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -31,7 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define SORT_IDX_BLOCKSIZE 64
 
 struct sortFileHead {
-    int sysno_max;
+    SYSNO sysno_max;
 };
 
 struct sortFile {
@@ -44,7 +44,7 @@ struct sortFile {
 struct sortIdx {
     BFiles bfs;
     int write_flag;
-    int sysno;
+    SYSNO sysno;
     char *entry_buf;
     struct sortFile *current_file;
     struct sortFile *files;
@@ -114,7 +114,7 @@ int sortIdx_type (SortIdx si, int type)
     return 0;
 }
 
-void sortIdx_sysno (SortIdx si, int sysno)
+void sortIdx_sysno (SortIdx si, SYSNO sysno)
 {
     si->sysno = sysno;
 }

@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.9 2003-06-12 18:20:24 adam Exp $
+/* $Id: d1_absyn.c,v 1.10 2004-08-04 08:35:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -58,7 +58,7 @@ data1_absyn *data1_absyn_search (data1_handle dh, const char *name)
 
     while (p)
     {
-	if (!strcmp (name, p->name))
+	if (!yaz_matchstr (name, p->name))
 	    return p->absyn;
 	p = p->next;
     }
@@ -133,7 +133,7 @@ data1_attset *data1_attset_search_name (data1_handle dh, const char *name)
 
     while (p)
     {
-	if (!strcmp (name, p->name))
+	if (!yaz_matchstr (name, p->name))
 	    return p->attset;
 	p = p->next;
     }

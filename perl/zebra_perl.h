@@ -34,7 +34,7 @@ typedef struct {
   char *errString;     /* error string */
   int  position;       /* position of record in result set (1,2,..) */
   char *base; 
-  int  sysno;
+  SYSNO sysno;
   int  score;
   char *format;    /* record syntax */
   RetrievalRecordBuf *buf;

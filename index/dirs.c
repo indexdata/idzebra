@@ -1,5 +1,5 @@
-/* $Id: dirs.c,v 1.19 2002-08-17 07:59:03 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: dirs.c,v 1.20 2004-08-04 08:35:23 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -185,7 +185,7 @@ void dirs_rmdir (struct dirs_info *p, const char *src)
 	dict_delete (p->dict, path);
 }
 
-void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime)
+void dirs_add (struct dirs_info *p, const char *src, SYSNO sysno, time_t mtime)
 {
     char path[DIRS_MAX_PATH];
     char info[16];

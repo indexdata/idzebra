@@ -1,5 +1,5 @@
-/* $Id: recindxp.h,v 1.12 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: recindxp.h,v 1.13 2004-08-04 08:35:23 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,8 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #include "recindex.h"
 
 #include <bfile.h>
@@ -30,7 +28,7 @@ YAZ_BEGIN_CDECL
 
 #define REC_BLOCK_TYPES 2
 #define REC_HEAD_MAGIC "recindex"
-#define REC_VERSION 4
+#define REC_VERSION 5
 
 struct records_info {
     int rw;
@@ -55,16 +53,16 @@ struct records_info {
     struct records_head {
         char magic[8];
 	char version[4];
-        int block_size[REC_BLOCK_TYPES];
-        int block_free[REC_BLOCK_TYPES];
-        int block_last[REC_BLOCK_TYPES];
-        int block_used[REC_BLOCK_TYPES];
-        int block_move[REC_BLOCK_TYPES];
+        zint block_size[REC_BLOCK_TYPES];
+        zint block_free[REC_BLOCK_TYPES];
+        zint block_last[REC_BLOCK_TYPES];
+        zint block_used[REC_BLOCK_TYPES];
+        zint block_move[REC_BLOCK_TYPES];
 
-        int total_bytes;
-        int index_last;
-        int index_free;
-        int no_records;
+        zint total_bytes;
+        zint index_last;
+        zint index_free;
+        zint no_records;
 
     } head;
 };
@@ -78,8 +76,8 @@ struct record_cache_entry {
 };
 
 struct record_index_entry {
-    int next;         /* first block of record info / next free entry */
-    int size;         /* size of record or 0 if free entry */
+    zint next;         /* first block of record info / next free entry */
+    int size;          /* size of record or 0 if free entry */
 };
 
 YAZ_END_CDECL

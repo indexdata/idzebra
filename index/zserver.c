@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.117 2004-08-02 10:12:06 adam Exp $
+/* $Id: zserver.c,v 1.118 2004-08-04 08:35:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -542,7 +542,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 		    Z_External *rec = notToKeep->elements[i]->record;
                     struct oident *oident = 0;
                     Odr_oct *opaque_recid = 0;
-		    int sysno = 0;
+		    SYSNO sysno = 0;
 
 		    if (notToKeep->elements[i]->u.opaque)
 		    {

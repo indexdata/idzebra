@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.9 2004-07-26 12:20:06 adam Exp $
+/* $Id: data1.h,v 1.10 2004-08-04 08:35:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -31,6 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/oid.h>
 #include <yaz/proto.h>
 
+#include <zebraver.h>
 #include <d1_attset.h>
 #include <d1_map.h>
 #include <yaz/yaz-util.h>
@@ -423,6 +424,9 @@ YAZ_EXPORT data1_node *data1_mk_root (data1_handle dh, NMEM nmem,
 YAZ_EXPORT void data1_set_root(data1_handle dh, data1_node *res,
                                NMEM nmem, const char *name);
 
+YAZ_EXPORT data1_node *data1_mk_tag_data_zint (data1_handle dh, data1_node *at,
+					       const char *tag, zint num,
+					       NMEM nmem);
 YAZ_EXPORT data1_node *data1_mk_tag_data_int (data1_handle dh, data1_node *at,
                                               const char *tag, int num,
                                               NMEM nmem);

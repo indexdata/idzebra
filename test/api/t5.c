@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.4 2004-07-28 08:15:47 adam Exp $
+/* $Id: t5.c,v 1.5 2004-08-04 08:35:26 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -52,7 +52,7 @@ static void expect(ZebraHandle zh, const char *pqf, int hits_expect,
 
 int main(int argc, char **argv)
 {
-    int i, hits = -1;
+    int i;
     int exit_code = 0;
     ZebraService zs;
     ZebraHandle zh;

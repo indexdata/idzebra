@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.23 2003-03-26 16:41:48 adam Exp $
+## $Id: Makefile.am,v 1.24 2004-08-04 08:35:23 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -23,7 +23,7 @@ zebraidx_SOURCES = main.c
 zebrasrv_SOURCES = zserver.c
 zebrash_SOURCES = zebrash.c
 apitest_SOURCES = apitest.c
-kdump_SOURCES=kdump.c kcompare.c
+kdump_SOURCES = kdump.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE) -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
 
