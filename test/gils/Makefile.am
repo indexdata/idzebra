@@ -1,5 +1,5 @@
 
-EXTRA_DIST = zebra.cfg test.sh
+EXTRA_DIST = zebra.cfg test.sh zebra1.cfg zebra2.cfg
 
 dist-hook:
 	-mkdir $(distdir)/records
