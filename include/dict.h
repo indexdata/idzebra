@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.14  1995-10-09 16:18:35  adam
+ * Revision 1.15  1995-10-27 13:59:17  adam
+ * Function dict_look_grep got extra parameter max_pos that upon return
+ * hold length of longest prefix that matches pattern.
+ *
+ * Revision 1.14  1995/10/09  16:18:35  adam
  * Function dict_lookup_grep got extra client data parameter.
  *
  * Revision 1.13  1995/10/06  09:03:51  adam
@@ -118,6 +122,7 @@ char      *dict_lookup (Dict dict, const Dict_char *p);
 int        dict_lookup_ec (Dict dict, Dict_char *p, int range,
                            int (*f)(Dict_char *name));
 int        dict_lookup_grep (Dict dict, Dict_char *p, int range, void *client,
+                             int *max_pos,
                              int (*f)(Dict_char *name, const char *info,
                                       void *client));
 int        dict_strcmp (const Dict_char *s1, const Dict_char *s2);
