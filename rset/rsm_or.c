@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.c,v $
- * Revision 1.8  1999-05-26 07:49:14  adam
+ * Revision 1.9  1999-07-13 14:45:42  adam
+ * Fixed memory leak.
+ *
+ * Revision 1.8  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.7  1998/09/22 10:03:46  adam
@@ -177,6 +180,7 @@ struct trunc_info *heap_init (int size, int key_size,
 
 static void heap_close (struct trunc_info *ti)
 {
+    xfree (ti->buf);
     xfree (ti->ptr);
     xfree (ti->indx);
     xfree (ti->heap);
