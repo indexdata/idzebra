@@ -3,7 +3,7 @@ INCLUDE=-I../include
 CFLAGS=-g -Wall -pedantic
 DEFS=$(INCLUDE)
 LIB=../lib/isam.a
-PO = isutil.o isam.o
+PO = isam.o isutil.o rootblk.o memory.o
 CPP=cc -E
 
 all: $(LIB)
