@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.14 1996-01-10 14:42:21 quinn Exp $
+  $Id: zebra.sgml,v 1.15 1996-01-10 15:22:27 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://130.225.252.168/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.14 $
+<date>$Revision: 1.15 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -798,6 +798,7 @@ Registers">).
 zebrasrv &lsqb;options&rsqb; &lsqb;listener-address ...&rsqb;
 </verb></tscreen>
 
+<bf/Options/
 <descrip>
 <tag>-a <it/APDU file/</tag> Specify a file for dumping PDUs (for diagnostic purposes).
 The special name &dquot;-&dquot; sends output to <tt/stderr/.
@@ -1121,7 +1122,7 @@ tag.
 
 </descrip>
 
-<tag/data/Create a data element under. The concatenated arguments make
+<tag/data/Create a data element. The concatenated arguments make
 up the value of the data element. The option <tt/-text/ signals that
 the layout (whitespace) of the data should be retained for
 transmission. The option <tt/-element/ <it/tag/ wraps the data up in
@@ -1129,7 +1130,7 @@ the <it/tag/. The use of the <tt/-element/ option is equivalent to
 preceding the command with a <bf/begin element/ command, and following
 it with the <bf/end/ command.
 
-<tag>end <it/&lsqb;type&rsqb;/</tag>Close a data element. If no parameter is given,
+<tag>end <it/&lsqb;type&rsqb;/</tag>Close a tagged element. If no parameter is given,
 the last element on the stack is terminated. The first parameter, if
 any, is a type name, similar to the <bf/begin/ statement. For the
 <bf/element/ type, a tag name can be provided to terminate a specific tag.
@@ -1137,7 +1138,9 @@ any, is a type name, similar to the <bf/begin/ statement. For the
 </descrip>
 
 The following input filter reads a Usenet news file, producing a
-record in the WAIS schema.
+record in the WAIS schema. Note that the body of the news posting is
+separated from the list of headers by a blank line (or rather a
+sequence of two newline characters.
 
 <tscreen><verb>
 BEGIN                { begin record wais }
@@ -1201,6 +1204,55 @@ schema may also establish rules for converting the record to a
 different schema, by stating, for each element, a mapping to a
 different tagging.
 
+<sect2>Tagged Elements
+
+<p>
+A data element is characterized by its tag, and its position in the
+structure of the record. For instance, while the tag &dquot;telephone
+number&dquot; may be used different places in a record, we may need to
+distinguish between these occurrences, both for searching and
+presentation purposes. For instance, while the phone numbers for the
+&dquot;customer&dquot; and the &dquot;service provider&dquot; are both
+representatives for the same type of resource (a telephone number), it
+is essential that they be kept separate. The record schema provides
+the structure of the record, and names each data element (defined by
+the sequence of tags - the tag path - by which the element can be
+reached from the root of the record).
+
+<sect2>Variants
+
+<p>
+The children of a tag node may be either more tag nodes, a data node,
+or a tree of variant nodes. The children of variant nodes are either
+more variant nodes or data nodes. Each leaf node, which is normally a
+data node, corresponds to a <it/variant form/ or the tagged element
+identified by the tag which parents the variant tree. The following
+title element occurs in two different languages:
+
+<tscreen><verb>
+      VARIANT LANG=ENG  "War and Peace"
+TITLE
+      VARIANT LANG=DAN  "Krig og Fred"
+</verb></tscreen>
+
+Which of the two elements are transmitted to the client by the server
+depends on the specifications provided by the client, if any.
+
+In practice, each variant node is associated with a triple of class,
+type, value, corresponding to the variant mechanism of Z39.50.
+
+<sect2>Data Elements
+
+<p>
+Data nodes have no children (they are always leaf nodes in the record
+tree).
+
+<it>NOTE: Add more stuff here about types of nodes - numerical,
+textual, etc., plus the various types of inclusion notes.</it>
+
+<sect1>Configuring Your Data Model
+
+<p>
 The following sections describe the configuration files that govern
 the internal management of records. The system searches for the files
 in the directories specified by the <bf/profilePath/ setting in the
