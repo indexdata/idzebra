@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.19 2002-08-02 19:26:55 adam Exp $
+/* $Id: rset.h,v 1.20 2004-01-16 18:04:33 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -43,10 +43,13 @@ struct rset_control
     void (*f_close)(RSFD rfd);
     void (*f_delete)(RSET ct);
     void (*f_rewind)(RSFD rfd);
+    int (*f_forward)(RSFD rfd, void *buf, const void *untilbuf);
     int (*f_count)(RSET ct);
     int (*f_read)(RSFD rfd, void *buf, int *term_index);
     int (*f_write)(RSFD rfd, const void *buf);
 };
+
+int rset_default_forward(RSFD rfd, void *buf, const void *untilbuf);
 
 struct rset_term {
     char *name;
