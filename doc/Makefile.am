@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.20 2003-03-27 10:46:29 adam Exp $
+## $Id: Makefile.am,v 1.21 2003-05-19 21:38:40 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -30,11 +30,19 @@ HTMLFILES =  \
  record-model.html register-location.html server.html shadow-registers.html \
  simple-indexing.html support.html zebra.html zebraidx.html 
 
-doc_DATA = $(HTMLFILES) zebra.pdf
-man_MANS = zebraidx.1 zebrasrv.8
+PNGFILES=zebra.png
+EPSFILES=zebra.eps
 
-EXTRA_DIST = $(SUPPORTFILES) $(XMLFILES) zebra.pdf \
- $(man_MANS) zebraidx-man.sgml zebrasrv-man.sgml zvrank.txt marc_indexing.xml
+MANFILES=zebraidx.1 zebrasrv.8
+
+REFFILES=zebraidx-man.sgml zebrasrv-man.sgml
+
+doc_DATA = $(HTMLFILES) zebra.pdf $(PNGFILES)
+man_MANS = $(MANFILES)
+
+EXTRA_DIST = $(XMLFILES) $(SUPPORTFILES) $(REFFILES) \
+	$(doc_DATA) $(EPSFILES) $(man_MANS) $(REFFILES) \
+	zvrank.txt marc_indexing.xml
 
 zebraidx.1: zebraidx-man.sgml zebraidx-options.xml
 	if test ! -f zebraidx-options.xml ; then ln -s $(srcdir)/zebraidx-options.xml .; fi
@@ -50,6 +58,9 @@ zebra.php: $(XMLFILES)
 	jade -E14 -D $(srcdir) -d zebraphp.dsl -t sgml $(srcdir)/xml.dcl zebra.xml
 
 zebra.pdf: $(XMLFILES)
+	for i in $(PNGFILES); do \
+		if test ! -f $$i; then ln -s $(srcdir)/$$i .; fi; \
+	done
 	jade -E14 -D $(srcdir) -d zebraprint.dsl -t tex $(srcdir)/xml.dcl zebra.xml
 	pdfjadetex zebra.tex
 	pdfjadetex zebra.tex
@@ -67,8 +78,8 @@ gils.ps: gils.sgml
 gils.html: gils.sgml
 	sgml2html gils.sgml
 
-dist-hook: zebra.html
-	cp *.html $(distdir)
+#dist-hook: zebra.html
+#	cp *.html $(distdir)
 
 clean-data-hook:
 	rm -f [0-9]* *.bak

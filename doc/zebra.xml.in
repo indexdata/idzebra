@@ -23,7 +23,7 @@
 	<!ENTITY ref-shadow-registers '
 		<xref linkend="shadow-registers"/>'>
 ]>
-<!-- $Id: zebra.xml.in,v 1.14 2003-02-20 21:24:42 adam Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.15 2003-05-19 21:38:40 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -57,6 +57,16 @@
     This manual explains how to build and install Zebra, configure it
     appropriately for your application, add data and set up a running
     information service.  It describes version @VERSION@ of Zebra.
+   </simpara>
+   <simpara>
+    <inlinemediaobject>
+     <imageobject>
+      <imagedata fileref="zebra.png" format="PNG"/>
+     </imageobject>
+     <imageobject>
+      <imagedata fileref="zebra.eps" format="EPS"/>
+     </imageobject>
+    </inlinemediaobject>
    </simpara>
   </abstract>
  </bookinfo>

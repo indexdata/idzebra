@@ -71,7 +71,7 @@ stamp-install: stamp-build
 binary-indep: build install
 	dh_testdir
 	dh_testroot
-	dh_installdocs -p idzebra-doc doc/*.html doc/*.pdf
+	dh_installdocs -p idzebra-doc doc/*.html doc/*.pdf doc/*.png
 	dh_installchangelogs -p idzebra-doc
 	dh_link -p idzebra-doc
 	dh_strip -p idzebra-doc
