@@ -1,4 +1,4 @@
-/* $Id: isamd-p.h,v 1.9 1999-10-05 09:57:40 heikki Exp $
+/* $Id: isamd-p.h,v 1.10 2002-04-29 18:10:24 adam Exp $
  * Copyright (c) 1995-1996, Index Data.
  * See the file LICENSE for details.
  * Heikki Levanto
@@ -125,7 +125,10 @@ int singleton_encode(struct it_key *k);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.9  1999-10-05 09:57:40  heikki
+ * Revision 1.10  2002-04-29 18:10:24  adam
+ * Newline at end of file
+ *
+ * Revision 1.9  1999/10/05 09:57:40  heikki
  * Tuning the isam-d (and fixed a small "detail")
  *
  * Revision 1.8  1999/09/23 18:01:18  heikki
@@ -152,3 +155,4 @@ int singleton_encode(struct it_key *k);
  *
  *
  */
+
