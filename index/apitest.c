@@ -98,7 +98,7 @@ int main (int argc, char **argv)
 {
     /* odr is a handle to memory assocated with RETURNED data from
        various functions */
-    ODR odr = odr_createmem (ODR_ENCODE);    
+    ODR odr;
     
     /* zh is our Zebra Handle - describes the server as a whole */
     ZebraHandle zh;
@@ -107,7 +107,11 @@ int main (int argc, char **argv)
     char *base = "Default";
     int argno;
 
-    /* open Zebra */
+    nmem_init ();
+
+    odr = odr_createmem (ODR_ENCODE);    
+    
+   /* open Zebra */
     zh = zebra_open ("zebra.cfg");
     if (!zh)
     {
