@@ -4,13 +4,18 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  $Log: bfile.h,v $
- Revision 1.3  1994-08-17 14:09:47  quinn
- Small changes
+ Revision 1.4  1994-08-17 15:38:28  adam
+ Include of util.h.
 
+ * Revision 1.3  1994/08/17  14:09:47  quinn
+ * Small changes
+ *
  */
 
 #ifndef BFILE_H
 #define BFILE_H
+
+#include <util.h>
 
 typedef struct BFile_struct
 {
