@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.1  1995-10-06 09:04:18  adam
+ * Revision 1.2  1995-10-06 10:43:16  adam
+ * Minor changes.
+ *
+ * Revision 1.1  1995/10/06  09:04:18  adam
  * First version of scan.
  *
  */
@@ -81,7 +84,7 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 		 int *before, int *after,
                  int (*userfunc)(Dict_char *, const char *, int))
 {
-    int cmp = 0, mid, lo, hi, j;
+    int cmp = 0, mid, lo, hi;
     void *p;
     short *indxp;
     char *info;
@@ -102,9 +105,7 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 	    cmp = dict_strcmp ((Dict_char*) info, str + pos);
 	    if (!cmp)
             {
-		for (j = 0; info[j++] != DICT_EOS; )
-		    ;
-                (*userfunc)(str, info+j*sizeof(Dict_char), *after);
+                (*userfunc)(str, str, *after);
                 --(*after);
                 break;
             }
