@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.6  1998-02-10 12:03:06  adam
+ * Revision 1.7  1998-03-11 11:19:05  adam
+ * Changed the way sequence numbers are generated.
+ *
+ * Revision 1.6  1998/02/10 12:03:06  adam
  * Implemented Sort.
  *
  * Revision 1.5  1997/10/27 14:33:06  adam
@@ -104,7 +107,7 @@ static int text_extract (struct recExtractCtrl *p)
 {
     char w[512];
     RecWord recWord;
-    int r, seqno = 1;
+    int r;
     struct buf_info *fi = buf_open (p);
 
     (*p->init)(p, &recWord);
@@ -121,7 +124,6 @@ static int text_extract (struct recExtractCtrl *p)
         }
         if (i)
         {
-            recWord.seqno = seqno++;
             recWord.string = w;
 	    recWord.length = i;
             (*p->add)(&recWord);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.24  1998-03-05 08:38:46  adam
+ * Revision 1.25  1998-03-11 11:19:04  adam
+ * Changed the way sequence numbers are generated.
+ *
+ * Revision 1.24  1998/03/05 08:38:46  adam
  * New member recordSize in recRetrieveCtrl.
  *
  * Revision 1.23  1998/02/10 12:03:05  adam
@@ -110,7 +113,7 @@ typedef struct {
     unsigned reg_type;
     char *string;
     int  length;
-    int  seqno;
+    int  *seqnos;
     ZebraMaps zebra_maps;
 } RecWord;
 
@@ -127,6 +130,7 @@ struct recExtractCtrl {
     void      (*add)(RecWord *p);
     ZebraMaps zebra_maps;
     int       flagShowRecords;
+    int       seqno[256];
     data1_handle dh;
 };
 

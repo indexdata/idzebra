@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.18  1998-03-05 08:41:31  adam
+ * Revision 1.19  1998-03-11 11:19:05  adam
+ * Changed the way sequence numbers are generated.
+ *
+ * Revision 1.18  1998/03/05 08:41:31  adam
  * Minor changes.
  *
  * Revision 1.17  1998/02/10 12:03:06  adam
@@ -162,8 +165,6 @@
 
 #define GRS_MAX_WORD 512
 
-static int seqno = 0;
-
 static data1_node *read_grs_type (struct grs_read_info *p, const char *type)
 {
     static struct {
@@ -291,13 +292,11 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 		else
 		{
 		    wrd.reg_type = *tlist->structure;
-		    wrd.seqno = seqno;
 		    wrd.string = n->u.data.data;
 		    wrd.length = n->u.data.len;
 		    wrd.attrSet = tlist->att->parent->ordinal;
 		    wrd.attrUse = tlist->att->locals->local;
 		    (*p->add)(&wrd);
-		    seqno = wrd.seqno;
 		}
 	    }
 	}
@@ -314,7 +313,6 @@ static int grs_extract(struct recExtractCtrl *p)
     data1_node *n;
     NMEM mem;
     struct grs_read_info gri;
-    seqno = 0;
 
     mem = nmem_create (); 
     gri.readf = p->readf;

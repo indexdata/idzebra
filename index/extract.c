@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.80  1998-03-05 08:45:11  adam
+ * Revision 1.81  1998-03-11 11:19:04  adam
+ * Changed the way sequence numbers are generated.
+ *
+ * Revision 1.80  1998/03/05 08:45:11  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -558,6 +561,7 @@ int key_close (int rw)
 static void wordInit (struct recExtractCtrl *p, RecWord *w)
 {
     w->zebra_maps = p->zebra_maps;
+    w->seqnos = p->seqno;
     w->attrSet = 1;
     w->attrUse = 1016;
     w->reg_type = 'w';
@@ -587,6 +591,7 @@ static void addIndexString (RecWord *p, const char *string, int length)
     short attrUse;
     int lead = 0;
     int diff = 0;
+    int *pseqno = &p->seqnos[p->reg_type];
 
     if (reckeys.buf_used+1024 > reckeys.buf_max)
     {
@@ -611,14 +616,14 @@ static void addIndexString (RecWord *p, const char *string, int length)
     else
         reckeys.prevAttrUse = attrUse;
 #if 1
-    diff = 1 + p->seqno - reckeys.prevSeqNo;
+    diff = 1 + *pseqno - reckeys.prevSeqNo;
     if (diff >= 1 && diff <= 15)
         lead |= (diff << 2);
     else
         diff = 0;
 #endif
-    reckeys.prevSeqNo = p->seqno;
-
+    reckeys.prevSeqNo = *pseqno;
+    
     *dst++ = lead;
 
     if (!(lead & 1))
@@ -638,11 +643,11 @@ static void addIndexString (RecWord *p, const char *string, int length)
 
     if (!diff)
     {
-        memcpy (dst, &p->seqno, sizeof(p->seqno));
-        dst += sizeof(p->seqno);
+        memcpy (dst, pseqno, sizeof(*pseqno));
+        dst += sizeof(*pseqno);
     }
     reckeys.buf_used = dst - reckeys.buf;
-    (p->seqno)++;
+    (*pseqno)++;
 }
 
 static void addSortString (RecWord *p, const char *string, int length)
@@ -1162,6 +1167,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 
     if (fi->fd != -1)
     {
+	int i;
         /* we are going to read from a file, so prepare the extraction */
         extractCtrl.fh = fi;
         extractCtrl.subType = subType;
@@ -1174,6 +1180,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         reckeys.prevAttrSet = -1;
         reckeys.prevSeqNo = 0;
 
+	for (i = 0; i<256; i++)
+	    extractCtrl.seqno[i] = 0;
         recordOffset = fi->file_moffset;
         extractCtrl.offset = recordOffset;
         extractCtrl.readf = file_read;
