@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.121 2004-08-04 08:35:23 adam Exp $
+/* $Id: zebraapi.c,v 1.122 2004-08-04 09:05:17 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1992,7 +1992,6 @@ int zebra_update_record (ZebraHandle zh,
 				 match, fname,
 				 force_update, 
 				 1); /* allow_update */
-    yaz_log(LOG_LOG, "zebra_update_record returned res=%d", res);
     zebra_end_trans(zh); 
     return res; 
 }
