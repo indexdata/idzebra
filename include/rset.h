@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.2  1994-11-04 13:21:21  quinn
+ * Revision 1.3  1994-11-22 13:15:27  quinn
+ * Simple
+ *
+ * Revision 1.2  1994/11/04  13:21:21  quinn
  * Working.
  *
  * Revision 1.1  1994/11/03  14:13:22  quinn
@@ -51,7 +54,10 @@ void rset_delete(RSET rs);
 /* int rset_count(RSET rs); */
 #define rset_count(rs, wflag) ((*(rs)->control->f_count)((rs)->control))
 
-int rset_read(RSET rs, void *buf);   /* change parameters */
+/* int rset_read(RSET rs, void *buf); */   /* change parameters */
+#define rset_read(rs, buf) ((*(rs)->control->f_read)((rs)->control, (buf)))
+
+
 int rset_write(RSET rs, void *buf);  /* change parameters */
 
 #endif
