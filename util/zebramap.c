@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.22  2001-11-14 22:06:27  adam
+ * Revision 1.23  2001-11-15 08:41:24  adam
+ * Fix for weight (bug introduced by previous commit).
+ *
+ * Revision 1.22  2001/11/14 22:06:27  adam
  * Rank-weight may be controlled via query.
  *
  * Revision 1.21  2001/01/22 10:42:56  adam
@@ -556,7 +559,7 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     if (relation_value == 102)
     {
         if (weight_value == -1)
-            weight_value == 34;
+            weight_value = 34;
         sprintf (rank_type, "rank,%d", weight_value);
     }    
     if (*complete_flag)
