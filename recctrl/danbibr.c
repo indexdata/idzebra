@@ -1,4 +1,4 @@
-/* $Id: danbibr.c,v 1.2 2004-05-21 13:25:07 adam Exp $
+/* $Id: danbibr.c,v 1.3 2004-05-26 13:26:17 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -166,6 +166,8 @@ static data1_node *mk_tree(struct grs_read_info *p, const char *rec_buf)
 				start_text = cp;
 			    }
 			    else if (*cp == '\n')
+				break;
+			    else if (*cp == '*')
 				break;
 			    else
 				cp++;
