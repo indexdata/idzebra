@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.34 2004-01-22 11:27:22 adam Exp $
+/* $Id: res.c,v 1.35 2004-06-14 23:42:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -63,6 +63,64 @@ static struct res_entry *add_entry (Res r)
     }
     resp->next = NULL;
     return resp;
+}
+
+static char *xstrdup_env(const char *src)
+{
+    int i = 0;
+    int j = 0;
+    char *dst;
+    int env_strlen = 0;
+
+    while (src[i])
+    {
+	if (src[i] == '$' && src[i+1] == '{')
+	{
+	    char envname[128];
+	    char *env_val;
+	    int k = 0;
+	    i = i + 2;
+	    while (k < 127 && src[i] && !strchr("}\n\r\f", src[i]))
+		envname[k++] = src[i++];
+	    envname[k] = '\0';
+	    if (src[i] == '}')
+		i++;
+	    env_val = getenv(envname);
+	    if (env_val)
+		env_strlen += 1 + strlen(env_val);
+	    else
+		env_strlen++;
+	}
+	else
+	    i++;
+    }
+    dst = xmalloc(1 + env_strlen + i);
+    i = 0;
+    while (src[i])
+    {
+	if (src[i] == '$' && src[i+1] == '{')
+	{
+	    char envname[128];
+	    char *env_val;
+	    int k = 0;
+	    i = i + 2;
+	    while(k < 127 && src[i] && !strchr("}\n\r\f", src[i]))
+		envname[k++] = src[i++];
+	    envname[k] = '\0';
+	    if (src[i] == '}')
+		i++;
+	    env_val = getenv(envname);
+	    if (env_val)
+	    {
+		strcpy(dst+j, env_val);
+		j += strlen(env_val);
+	    }
+	}
+	else
+	    dst[j++] = src[i++];
+    }
+    dst[j] = '\0';
+    return dst;
 }
 
 static void reread (Res r)
@@ -138,9 +196,8 @@ static void reread (Res r)
                               (val_buf[val_size-1] == ' ' ||
                                val_buf[val_size-1] == '\t'))
                         val_size--;
-                    val_buf[val_size++] = '\0';
-                    resp->value = (char*) xmalloc (val_size);
-                    strcpy (resp->value, val_buf);
+                    val_buf[val_size] = '\0';
+		    resp->value = xstrdup_env(val_buf);
                     logf (LOG_DEBUG, "(name=%s,value=%s)",
                          resp->name, resp->value);
                     break;
@@ -150,8 +207,8 @@ static void reread (Res r)
                     line = fgets (fr_buf, sizeof(fr_buf)-1, fr);
                     if (!line)
                     {
-                        resp->value = (char*) xmalloc (val_size);
-                        strcpy (resp->value, val_buf);
+			val_buf[val_size] = '\0';
+			resp->value = xstrdup_env(val_buf);
                         break;
                     }
                     no = 0;
@@ -303,12 +360,12 @@ void res_set (Res r, const char *name, const char *value)
         if (re->value && !yaz_matchstr (re->name, name))
         {
             xfree (re->value);
-            re->value = xstrdup (value);
+            re->value = xstrdup_env (value);
             return;
         }
     re = add_entry (r);
     re->name = xstrdup (name);
-    re->value = xstrdup (value);
+    re->value = xstrdup_env (value);
 }
 
 int res_trav (Res r, const char *prefix, void *p,
@@ -388,6 +445,4 @@ int res_write (Res r)
     fclose (fr);
     return 0;
 }
-
-
 
