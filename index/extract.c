@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.154 2004-06-03 11:38:34 adam Exp $
+/* $Id: extract.c,v 1.155 2004-06-03 11:45:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -776,16 +776,12 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
             break;
         }
     /* determine file type - depending on extension */
-    yaz_log(LOG_LOG, "recordType 1=%s", zh->m_record_type ? 
-	    zh->m_record_type : "<none>");
     original_record_type = zh->m_record_type;
     if (!zh->m_record_type)
     {
         sprintf (ext_res, "%srecordType.%s", gprefix, ext);
         zh->m_record_type = res_get (zh->res, ext_res);
     }
-    yaz_log(LOG_LOG, "recordType 2=%s", zh->m_record_type ? 
-	    zh->m_record_type : "<none>");
     if (!zh->m_record_type)
     {
 	if (zh->records_processed < zh->m_file_verbose_limit)
