@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.7  1995-10-06 10:43:57  adam
+ * Revision 1.8  1995-10-06 13:52:06  adam
+ * Bug fixes. Handler may abort further scanning.
+ *
+ * Revision 1.7  1995/10/06  10:43:57  adam
  * Scan added. 'occurrences' in scan entries not set yet.
  *
  * Revision 1.6  1995/09/28  09:19:48  adam
@@ -54,7 +57,6 @@ typedef struct {
     ISAM wordIsam;
     Dict fileDict;
     int sys_idx_fd;
-    char *recordBuf;
     int errCode;
     char *errString;
     ODR odr;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.19  1995-10-04 12:55:16  adam
+ * Revision 1.20  1995-10-06 13:52:05  adam
+ * Bug fixes. Handler may abort further scanning.
+ *
+ * Revision 1.19  1995/10/04  12:55:16  adam
  * Bug fix in ranked search. Use=Any keys inserted.
  *
  * Revision 1.18  1995/10/04  09:37:08  quinn
@@ -224,7 +227,7 @@ static void wordAdd (const RecWord *p)
 
 static void wordAddAny (const RecWord *p)
 {
-    if (p->attrSet != 1 && p->attrUse != 1016)
+    if (p->attrSet != 1 || p->attrUse != 1016)
     {
         RecWord w;
 

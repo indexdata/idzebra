@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.3  1995-10-06 11:06:07  adam
+ * Revision 1.4  1995-10-06 13:52:00  adam
+ * Bug fixes. Handler may abort further scanning.
+ *
+ * Revision 1.3  1995/10/06  11:06:07  adam
  * Bug fixes.
  *
  * Revision 1.2  1995/10/06  10:43:16  adam
@@ -21,7 +24,7 @@
 
 #include <dict.h>
 
-void dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
+int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
 		    int start, int *count,
                     int (*userfunc)(Dict_char *, const char *, int pos),
 		    int dir)
@@ -51,7 +54,8 @@ void dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             for (j = 0; info[j] != DICT_EOS; j++)
 		str[pos+j] = info[j];
             str[pos+j] = DICT_EOS;
-            (*userfunc)(str, info+(j+1)*sizeof(Dict_char), *count * dir);
+            if ((*userfunc)(str, info+(j+1)*sizeof(Dict_char), *count * dir))
+                return 1;
             --(*count);
         }
         else
@@ -71,8 +75,9 @@ void dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 	    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
             {
                  str[pos+1] = DICT_EOS;
-                 (*userfunc)(str, info+sizeof(Dict_ptr)+sizeof(Dict_char),
-			     *count * dir);
+                 if ((*userfunc)(str, info+sizeof(Dict_ptr)+sizeof(Dict_char),
+                                 *count * dir))
+                     return 1;
                  --(*count);
             }
             if (*count > 0 && subptr)
@@ -81,6 +86,7 @@ void dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         }
         lo += dir;
     }
+    return 0;
 }
     
 int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
@@ -108,9 +114,13 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 	    cmp = dict_strcmp ((Dict_char*) info, str + pos);
 	    if (!cmp)
             {
-                (*userfunc)(str, info+(dict_strlen(info)+1)*sizeof(Dict_char)
-                            , *after);
-                --(*after);
+                if (*after)
+                {
+                    (*userfunc)(str, info+
+                                (dict_strlen(info)+1)*sizeof(Dict_char), 
+                                *after);
+                    --(*after);
+                }
                 break;
             }
         }
@@ -133,18 +143,24 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                 {
 		    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
                     {
-                        (*userfunc)(str, 
-                                    info+sizeof(Dict_ptr)+sizeof(Dict_char),
-				    *after);
-	                --(*after);
+                        if (*after)
+                        {
+                            (*userfunc)(str, 
+                                        info+sizeof(Dict_ptr)+
+                                        sizeof(Dict_char),
+                                        *after);
+                            --(*after);
+                        }
                     }
-                    if (*after > 0 && subptr)
-		        dict_scan_trav (dict, subptr, pos+1, str, 0, 
-                                        after, userfunc, 1);
+                    if (*after && subptr)
+		        if (dict_scan_trav (dict, subptr, pos+1, str, 0, 
+                                            after, userfunc, 1))
+                            return 1;
                 }
-		else if (*after > 0 && subptr)
-                    dict_scan_r (dict, subptr, pos+1, str, before, after,
-                                 userfunc);
+		else if (subptr)
+                    if (dict_scan_r (dict, subptr, pos+1, str, before, after,
+                                     userfunc))
+                        return 1;
                 break;
             }
         }
@@ -156,11 +172,13 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
     if (lo>hi && cmp < 0)
         ++mid;
     if (*after)
-        dict_scan_trav (dict, ptr, pos, str, cmp ? mid : mid+1, after,
-                        userfunc, 1);
+        if (dict_scan_trav (dict, ptr, pos, str, cmp ? mid : mid+1, after,
+                            userfunc, 1))
+            return 1;
     if (*before && mid > 1)
-        dict_scan_trav (dict, ptr, pos, str, mid-1, before, 
-                        userfunc, -1);
+        if (dict_scan_trav (dict, ptr, pos, str, mid-1, before, 
+                            userfunc, -1))
+            return 1;
     return 0;
 }
 

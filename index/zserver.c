@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.11  1995-10-06 10:43:57  adam
+ * Revision 1.12  1995-10-06 13:52:06  adam
+ * Bug fixes. Handler may abort further scanning.
+ *
+ * Revision 1.11  1995/10/06  10:43:57  adam
  * Scan added. 'occurrences' in scan entries not set yet.
  *
  * Revision 1.10  1995/10/02  16:43:32  quinn
@@ -90,7 +93,6 @@ bend_initresult *bend_init (bend_initrequest *q)
         r.errstring = "is_open fail: wordisam";
         return &r;
     }
-    server_info.recordBuf = NULL;
     server_info.odr = odr_createmem (ODR_ENCODE);
     return &r;
 }
@@ -103,6 +105,8 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     r.errstring = 0;
     r.hits = 0;
 
+    odr_reset (server_info.odr);
+    server_info.errCode = 0;
     switch (q->query->which)
     {
     case Z_Query_type_1:
@@ -176,8 +180,9 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     r.last_in_set = 0;
     r.basename = "base";
 
-    xfree (server_info.recordBuf);
-    server_info.recordBuf = NULL;
+    odr_reset (server_info.odr);
+    server_info.errCode = 0;
+
     positions[0] = q->number;
     records = resultSetSysnoGet (&server_info, q->setname, 1, positions);
     if (!records)
@@ -207,13 +212,14 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
     static bend_scanresult r;
 
     odr_reset (server_info.odr);
+    server_info.errCode = 0;
 
+    r.errstring = 0;
     r.term_position = q->term_position;
     r.num_entries = q->num_entries;
     r.errcode = rpn_scan (&server_info, server_info.odr, q->term,
                           &r.term_position,
                           &r.num_entries, &r.entries);
-    r.errstring = 0;
     return &r;
 }
 
@@ -223,8 +229,6 @@ void bend_close (void *handle)
     dict_close (server_info.wordDict);
     is_close (server_info.wordIsam);
     close (server_info.sys_idx_fd);
-    xfree (server_info.recordBuf);
-    server_info.recordBuf = NULL;
     return;
 }
 
