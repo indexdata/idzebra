@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.9  1994-09-16 14:41:12  quinn
+ * Revision 1.10  1994-10-05 10:47:31  adam
+ * Small bug fix.
+ *
+ * Revision 1.9  1994/09/16  14:41:12  quinn
  * Added log warning to res_get_def
  *
  * Revision 1.8  1994/09/16  14:37:12  quinn
@@ -167,10 +170,7 @@ Res res_open (const char *name)
 {
     Res r;
     if (access (name, R_OK))
-    {
         log (LOG_LOG|LOG_ERRNO, "cannot access `%s'", name);
-        xfree (r);
-    }
     r = xmalloc (sizeof(*r));
     r->init = 0;
     r->name = xstrdup (name);
