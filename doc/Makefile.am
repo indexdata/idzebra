@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.22 2003-09-05 10:50:33 adam Exp $
+## $Id: Makefile.am,v 1.23 2004-05-10 08:42:56 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -80,9 +80,22 @@ gils.ps: gils.sgml
 gils.html: gils.sgml
 	sgml2html gils.sgml
 
-#dist-hook: zebra.html
-#	cp *.html $(distdir)
-
 clean-data-hook:
 	rm -f [0-9]* *.bak
+
+dist-hook:
+	for f in $(srcdir)/*.html; do \
+		found=0; \
+		b=`basename $$f`; \
+		for h in $(HTMLFILES); do \
+			if test "$$h" = "$$b"; then \
+				found=1; \
+			fi \
+		done; \
+		if test "$$found" = "0"; then \
+			echo "$$h not found in HTMLFILES"; \
+			exit 1; \
+		fi \
+	done
+
 
