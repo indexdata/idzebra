@@ -1,5 +1,5 @@
-/* $Id: d1_absyn.c,v 1.10 2004-08-04 08:35:22 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: d1_absyn.c,v 1.11 2004-08-24 14:29:09 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -362,28 +362,57 @@ const char * mk_xpath_regexp (data1_handle dh, char *expr)
    pop, 2002-12-13
  */
 static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
-			    char *p, const char *file, int lineno,
+			    char *cp, const char *file, int lineno,
 			    const char *element_name, data1_absyn *res,
 			    int xpelement)
 {
     data1_termlist **tp = *tpp;
-    do
+    while(1)
     {
 	char attname[512], structure[512];
 	char *source;
-	int r;
-	
-	if (!(r = sscanf(p, "%511[^:,]:%511[^,]", attname,
-			 structure)))
+	int r, i;
+	int level = 0;
+	structure[0] = '\0';
+	for (i = 0; cp[i] && i<sizeof(attname)-1; i++)
+	    if (strchr(":,", cp[i]))
+		break;
+	    else
+		attname[i] = cp[i];
+	if (i == 0)
 	{
-	    yaz_log(LOG_WARN,
-		    "%s:%d: Syntax error in termlistspec '%s'",
-		    file, lineno, p);
-	    return -1;
+	    if (*cp)
+		yaz_log(LOG_WARN,
+			"%s:%d: Syntax error in termlistspec '%s'",
+			file, lineno, cp);
+	    break;
 	}
+	attname[i] = '\0';
+	r = 1;
+	cp += i;
+	if (*cp == ':')
+	    cp++;
+
+	for (i = 0; cp[i] && i<sizeof(structure)-1; i++)
+	    if (level == 0 && strchr(",", cp[i]))
+		break;
+	    else
+	    {
+		structure[i] = cp[i];
+		if (cp[i] == '(')
+		    level++;
+		else if (cp[i] == ')')
+		    level--;
+	    }
+	structure[i] = '\0';
+	if (i)
+	    r = 2;
+	cp += i;
+	if (*cp)
+	    cp++;  /* skip , */
 
 	*tp = (data1_termlist *)
-	  nmem_malloc(data1_nmem_get(dh), sizeof(**tp));
+	    nmem_malloc(data1_nmem_get(dh), sizeof(**tp));
 	(*tp)->next = 0;
         
 	if (!xpelement) {
@@ -416,7 +445,7 @@ static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
 		nmem_strdup (data1_nmem_get (dh), structure);
 	tp = &(*tp)->next;
     }
-    while ((p = strchr(p, ',')) && *(++p));
+
     *tpp = tp;
     return 0;
 }

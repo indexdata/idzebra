@@ -1,5 +1,5 @@
-/* $Id: recgrs.c,v 1.88 2004-08-06 13:36:23 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: recgrs.c,v 1.89 2004-08-24 14:29:09 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -124,6 +124,138 @@ static void grs_destroy(void *clientData)
 	gh = gh_next;
     }
     xfree (h);
+}
+
+struct source_parser {
+    int len;
+    const char *tok;
+    const char *src;
+    int lookahead;
+};
+
+static int sp_lex(struct source_parser *sp)
+{
+    while (*sp->src == ' ')
+	(sp->src)++;
+    sp->tok = sp->src;
+    sp->len = 0;
+    while (*sp->src && !strchr("<>();,-: ", *sp->src))
+    {
+	sp->src++;
+	sp->len++;
+    }
+    if (sp->len)
+	sp->lookahead = 't';
+    else
+    {
+	sp->lookahead = *sp->src;
+	if (*sp->src)
+	    sp->src++;
+    }
+    return sp->lookahead;
+}
+
+
+static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
+{
+    if (sp->lookahead != 't')
+	return 0;
+    if (sp->len == 4 && !memcmp(sp->tok, "data", sp->len))
+    {
+	if (n->which == DATA1N_data)
+	{
+	    wrd->string = n->u.data.data;
+	    wrd->length = n->u.data.len;
+	}
+	sp_lex(sp);
+    }
+    else if (sp->len == 3 && !memcmp(sp->tok, "tag", sp->len))
+    {
+	if (n->which == DATA1N_tag)
+	{		
+	    wrd->string = n->u.tag.tag;
+	    wrd->length = strlen(n->u.tag.tag);
+	}
+	sp_lex(sp);
+    }
+    else if (sp->len == 4 && !memcmp(sp->tok, "attr", sp->len))
+    {
+	sp_lex(sp);
+	if (sp->lookahead != '(')
+	    return 0;
+	sp_lex(sp);
+	if (sp->lookahead != 't')
+	    return 0;
+	
+	if (n->which == DATA1N_tag)
+	{
+	    data1_xattr *p = n->u.tag.attributes;
+	    while (p && strlen(p->name) != sp->len && 
+		   memcmp (p->name, sp->tok, sp->len))
+		p = p->next;
+	    if (p)
+	    {
+		wrd->string = p->value;
+		wrd->length = strlen(p->value);
+	    }
+	}
+	sp_lex(sp);
+	if (sp->lookahead != ')')
+	    return 0;
+	sp_lex(sp);
+    }
+    else if (sp->len == 5 && !memcmp(sp->tok, "range", sp->len))
+    {
+	int start, len;
+	sp_lex(sp);
+	if (sp->lookahead != '(')
+	    return 0;
+	
+	sp_lex(sp);
+	sp_expr(sp, n, wrd);
+	if (sp->lookahead != ',')
+	    return 0;
+	
+	sp_lex(sp);
+	if (sp->lookahead != 't')
+	    return 0;
+	start = atoi_n(sp->tok, sp->len);
+	
+	sp_lex(sp);
+	if (sp->lookahead != ',')
+	    return 0;
+	
+	sp_lex(sp);
+	if (sp->lookahead != 't')
+	    return 0;
+	len = atoi_n(sp->tok, sp->len);
+	
+	sp_lex(sp);
+	if (sp->lookahead != ')')
+	    return 0;
+	
+	sp_lex(sp);
+	if (wrd->string && wrd->length)
+	{
+	    wrd->string += start;
+	    wrd->length -= start;
+	    if (wrd->length > len)
+		wrd->length = len;
+	}
+    }
+    return 1;
+}
+
+static int sp_parse(data1_node *n, RecWord *wrd, const char *src)
+{
+    struct source_parser sp;
+    sp.len = 0;
+    sp.tok = 0;
+    sp.src = src;
+    sp.lookahead = 0;
+    sp_lex(&sp);
+
+    return sp_expr(&sp, n, wrd);
 }
 
 int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
@@ -355,6 +487,8 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
     size_t flen = 0;
     data1_node *nn;
     int termlist_only = 1;
+    data1_termlist *tl;
+    int xpdone = 0;
 
     yaz_log(LOG_DEBUG, "index_xpath level=%d use=%d", level, use);
     if ((!n->root->u.root.absyn) ||
@@ -367,58 +501,88 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
     case DATA1N_data:
         wrd->string = n->u.data.data;
         wrd->length = n->u.data.len;
-        if (p->flagShowRecords)
-        {
-            printf("%*s XData:\"", (level + 1) * 4, "");
-            for (i = 0; i<wrd->length && i < 8; i++)
-                fputc (wrd->string[i], stdout);
-            printf("\"\n");
-        }  
-        else  {
-            data1_termlist *tl;
-            int xpdone = 0;
-            flen = 0;
+        xpdone = 0;
+        flen = 0;
             
-            /* we have to fetch the whole path to the data tag */
-            for (nn = n; nn; nn = nn->parent) {
-                if (nn->which == DATA1N_tag) {
-                    size_t tlen = strlen(nn->u.tag.tag);
-                    if (tlen + flen > (sizeof(tag_path_full)-2)) return;
-                    memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
-                    flen += tlen;
-                    tag_path_full[flen++] = '/';
-                }
-                else if (nn->which == DATA1N_root)  break;
-            }
-
-            tag_path_full[flen] = 0;
-            
-            /* If we have a matching termlist... */
-            if (n->root->u.root.absyn && (tl = xpath_termlist_by_tagpath(tag_path_full, n))) {
-                for (; tl; tl = tl->next) {
-                    wrd->reg_type = *tl->structure;
-                    /* this is the ! case, so structure is for the xpath index */
-                    if (!tl->att) {
-                        wrd->attrSet = VAL_IDXPATH;
-                        wrd->attrUse = use;
-                        (*p->tokenAdd)(wrd);
-                        xpdone = 1;
-                    } else {
-                        /* this is just the old fashioned attribute based index */
-                        wrd->attrSet = (int) (tl->att->parent->reference);
-                        wrd->attrUse = tl->att->locals->local;
-                        (*p->tokenAdd)(wrd);
-                    }
-                }
-            }
-            /* xpath indexing is done, if there was no termlist given, 
-               or no ! in the termlist, and default indexing is enabled... */
-            if ((!xpdone) && (!termlist_only)) {
-                wrd->attrSet = VAL_IDXPATH;
-                wrd->attrUse = use;
-                wrd->reg_type = 'w';
-                (*p->tokenAdd)(wrd);
-            }
+	/* we have to fetch the whole path to the data tag */
+	for (nn = n; nn; nn = nn->parent) {
+	    if (nn->which == DATA1N_tag) {
+		size_t tlen = strlen(nn->u.tag.tag);
+		if (tlen + flen > (sizeof(tag_path_full)-2)) return;
+		memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
+		flen += tlen;
+		tag_path_full[flen++] = '/';
+	    }
+	    else if (nn->which == DATA1N_root)  break;
+	}
+	
+	tag_path_full[flen] = 0;
+	
+	/* If we have a matching termlist... */
+	if (n->root->u.root.absyn && 
+	    (tl = xpath_termlist_by_tagpath(tag_path_full, n)))
+	{
+	    for (; tl; tl = tl->next)
+	    {
+		/* need to copy recword because it may be changed */
+		RecWord wrd_tl;
+		wrd->reg_type = *tl->structure;
+		/* this is the ! case, so structure is for the xpath index */
+		memcpy (&wrd_tl, wrd, sizeof(*wrd));
+		if (tl->source)
+		    sp_parse(n, &wrd_tl, tl->source);
+		if (!tl->att) {
+		    wrd_tl.attrSet = VAL_IDXPATH;
+		    wrd_tl.attrUse = use;
+		    if (p->flagShowRecords)
+		    {
+			int i;
+		        printf("%*sXPath index", (level + 1) * 4, "");
+			printf (" XData:\"");
+			for (i = 0; i<wrd_tl.length && i < 40; i++)
+			    fputc (wrd_tl.string[i], stdout);
+			fputc ('"', stdout);
+			if (wrd_tl.length > 40)
+			    printf (" ...");
+			fputc ('\n', stdout);
+		    }
+		    else
+			(*p->tokenAdd)(&wrd_tl);
+		    xpdone = 1;
+		} else {
+		    /* this is just the old fashioned attribute based index */
+		    wrd_tl.attrSet = (int) (tl->att->parent->reference);
+		    wrd_tl.attrUse = tl->att->locals->local;
+		    if (p->flagShowRecords)
+		    {
+			int i;
+			printf("%*sIdx: [%s]", (level + 1) * 4, "",
+			       tl->structure);
+			printf("%s:%s [%d] %s",
+			       tl->att->parent->name,
+			       tl->att->name, tl->att->value,
+			       tl->source);
+			printf (" XData:\"");
+			for (i = 0; i<wrd_tl.length && i < 40; i++)
+			    fputc (wrd_tl.string[i], stdout);
+			fputc ('"', stdout);
+			if (wrd_tl.length > 40)
+			    printf (" ...");
+			fputc ('\n', stdout);
+		    }
+		    else
+			(*p->tokenAdd)(&wrd_tl);
+		}
+	    }
+	}
+	/* xpath indexing is done, if there was no termlist given, 
+	   or no ! in the termlist, and default indexing is enabled... */
+	if (!p->flagShowRecords && !xpdone && !termlist_only)
+	{
+	    wrd->attrSet = VAL_IDXPATH;
+	    wrd->attrUse = use;
+	    wrd->reg_type = 'w';
+	    (*p->tokenAdd)(wrd);
 	}
         break;
     case DATA1N_tag:
@@ -612,33 +776,11 @@ static void index_termlist (data1_node *par, data1_node *n,
     
     for (; tlist; tlist = tlist->next)
     {
-
-	char xattr[512];
 	/* consider source */
 	wrd->string = 0;
+	assert(tlist->source);
+	sp_parse(n, wrd, tlist->source);
 
-	if (!strcmp (tlist->source, "data") && n->which == DATA1N_data)
-	{
-	    wrd->string = n->u.data.data;
-	    wrd->length = n->u.data.len;
-	}
-	else if (!strcmp (tlist->source, "tag") && n->which == DATA1N_tag)
-        {
-	    wrd->string = n->u.tag.tag;
-	    wrd->length = strlen(n->u.tag.tag);
-	}
-	else if (sscanf (tlist->source, "attr(%511[^)])", xattr) == 1 &&
-	    n->which == DATA1N_tag)
-	{
-	    data1_xattr *p = n->u.tag.attributes;
-	    while (p && strcmp (p->name, xattr))
-		p = p->next;
-	    if (p)
-	    {
-		wrd->string = p->value;
-		wrd->length = strlen(p->value);
-	    }
-	}
 	if (wrd->string)
 	{
 	    if (p->flagShowRecords)
