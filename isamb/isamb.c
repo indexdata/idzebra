@@ -2,7 +2,7 @@
  *  Copyright (c) 2000-2002, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.16 2002-05-30 13:22:17 adam Exp $
+ *  $Id: isamb.c,v 1.17 2002-06-19 10:29:17 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -74,12 +74,12 @@ void decode_ptr (char **src, int *pos)
 ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
 {
     ISAMB isamb = xmalloc (sizeof(*isamb));
-    int i, b_size = 64;
+    int i, b_size = 32;
 
     isamb->bfs = bfs;
     isamb->method = (ISAMC_M) xmalloc (sizeof(*method));
     memcpy (isamb->method, method, sizeof(*method));
-    isamb->no_cat = 3;
+    isamb->no_cat = 4;
 
     isamb->file = xmalloc (sizeof(*isamb->file) * isamb->no_cat);
     for (i = 0; i<isamb->no_cat; i++)

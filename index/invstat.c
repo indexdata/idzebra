@@ -216,26 +216,26 @@ void zebra_register_statistics (ZebraHandle zh)
 
     if (zh->reg->isamc)
     {
-	fprintf (stderr, "   Blocks    Occur  Size KB   Bytes/Entry\n");
+	fprintf (stdout, "   Blocks    Occur  Size KB   Bytes/Entry\n");
 	for (i = 0; isc_block_used (zh->reg->isamc, i) >= 0; i++)
 	{
-	    fprintf (stderr, " %8d %8d", isc_block_used (zh->reg->isamc, i),
+	    fprintf (stdout, " %8d %8d", isc_block_used (zh->reg->isamc, i),
 		     stat_info.no_isam_entries[i]);
 
 	    if (stat_info.no_isam_entries[i])
-		fprintf (stderr, " %8d   %f",
+		fprintf (stdout, " %8d   %f",
 			 (int) ((1023.0 + (double)
                                  isc_block_used(zh->reg->isamc, i) *
 				 isc_block_size(zh->reg->isamc,i))/1024),
 			 ((double) isc_block_used(zh->reg->isamc, i) *
 			  isc_block_size(zh->reg->isamc,i))/
 			 stat_info.no_isam_entries[i]);
-	    fprintf (stderr, "\n");
+	    fprintf (stdout, "\n");
 	}
     }
     if (zh->reg->isamd)
     {
-	fprintf (stderr, "   Blocks   Occur      KB Bytes/Entry\n");
+	fprintf (stdout, "   Blocks   Occur      KB Bytes/Entry\n");
 	if (zh->reg->isamd->method->debug >0) 
             logf(LOG_LOG,"   Blocks   Occur      KB Bytes/Entry");
 	for (i = 0; i<=SINGLETON_TYPE; i++)
@@ -247,7 +247,7 @@ void zebra_register_statistics (ZebraHandle zh)
 	        blocks=size=0;
 	    if (stat_info.no_isam_entries[i]) 
 	    {
-		fprintf (stderr, "%c %7d %7d %7d %5.2f\n",
+		fprintf (stdout, "%c %7d %7d %7d %5.2f\n",
     		         (i==SINGLETON_TYPE)?('z'):('A'+i),
     		         blocks,
     		         count,
@@ -264,7 +264,7 @@ void zebra_register_statistics (ZebraHandle zh)
 	} /* for */
     } /* isamd */
     if ( (zh->reg->isamd) && (zh->reg->isamd->method->debug>0))
-        fprintf (stderr, "\n%d words using %d bytes\n",
+        fprintf (stdout, "\n%d words using %d bytes\n",
              stat_info.no_dict_entries, stat_info.no_dict_bytes);
 
     if (zh->reg->isamb)
@@ -275,37 +275,37 @@ void zebra_register_statistics (ZebraHandle zh)
             int bsize = isamb_block_info(zh->reg->isamb, i);
             if (bsize < 0)
                 break;
-            fprintf (stderr, "Category   %d\n", i);
-            fprintf (stderr, "Block size %d\n", bsize);
-            fprintf (stderr, "Blocks:    %d\n", stat_info.isamb_blocks[i]);
-            fprintf (stderr, "Size:      %d\n", stat_info.isamb_sizes[i]);
-            fprintf (stderr, "Entries:   %d\n", stat_info.no_isam_entries[i]);
-            fprintf (stderr, "Total      %d\n", stat_info.isamb_blocks[i]*
+            fprintf (stdout, "Category   %d\n", i);
+            fprintf (stdout, "Block size %d\n", bsize);
+            fprintf (stdout, "Blocks:    %d\n", stat_info.isamb_blocks[i]);
+            fprintf (stdout, "Size:      %d\n", stat_info.isamb_sizes[i]);
+            fprintf (stdout, "Entries:   %d\n", stat_info.no_isam_entries[i]);
+            fprintf (stdout, "Total      %d\n", stat_info.isamb_blocks[i]*
                      bsize);
             for (j = 0; j<5; j++)
                 if (stat_info.isamb_levels[i][j])
-                    fprintf (stderr, "Level%d     %d\n", j,
+                    fprintf (stdout, "Level%d     %d\n", j,
                              stat_info.isamb_levels[i][j]);
-            fprintf (stderr, "\n");
+            fprintf (stdout, "\n");
         }
     }
-    fprintf (stderr, "Checksum       %08lX\n", stat_info.cksum);
+    fprintf (stdout, "Checksum       %08lX\n", stat_info.cksum);
 
-    fprintf (stderr, "Distinct words %d\n", stat_info.no_dict_entries);
+    fprintf (stdout, "Distinct words %d\n", stat_info.no_dict_entries);
     occur = 0;
     for (i = 0; i<9; i++)
         occur += stat_info.no_isam_entries[i];
-    fprintf (stderr, "Word pos       %d\n", occur);
-    fprintf (stderr, "    Occurrences     Words\n");
+    fprintf (stdout, "Word pos       %d\n", occur);
+    fprintf (stdout, "    Occurrences     Words\n");
     prev = 1;
     for (i = 0; stat_info.isam_bounds[i]; i++)
     {
         int here = stat_info.isam_bounds[i];
-        fprintf (stderr, "%7d-%-7d %7d\n",
+        fprintf (stdout, "%7d-%-7d %7d\n",
                  prev, here, stat_info.isam_occurrences[i]);
         prev = here+1;
     }
-    fprintf (stderr, "%7d-        %7d\n",
+    fprintf (stdout, "%7d-        %7d\n",
              prev, stat_info.isam_occurrences[i]);
     xmalloc_trav("unfreed"); /*! while hunting memory leaks */    
     zebra_end_read (zh);
@@ -315,7 +315,10 @@ void zebra_register_statistics (ZebraHandle zh)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.28  2002-04-30 19:31:09  adam
+ * Revision 1.29  2002-06-19 10:29:17  adam
+ * align block sizes for isam sys. Better plot for test
+ *
+ * Revision 1.28  2002/04/30 19:31:09  adam
  * isamb delete; more statistics
  *
  * Revision 1.27  2002/04/30 08:28:37  adam

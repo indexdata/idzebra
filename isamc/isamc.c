@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.20  1999-11-30 13:48:04  adam
+ * Revision 1.21  2002-06-19 10:29:18  adam
+ * align block sizes for isam sys. Better plot for test
+ *
+ * Revision 1.20  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.19  1999/07/14 10:59:27  adam
@@ -106,7 +109,7 @@ void isc_getmethod (ISAMC_M m)
         {    32,     28,      0,  3 },
 	{    64,     54,     30,  0 },
 #else
-        {    24,     22,     18,  10 },
+        {    32,     26,     20,  10 },
 	{   128,    120,    100,  10 },
         {   512,    490,    350,  10 },
         {  2048,   1900,   1700,  10 },

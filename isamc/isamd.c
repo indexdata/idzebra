@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.19 1999-11-30 13:48:04 adam Exp $ 
+ * $Id: isamd.c,v 1.20 2002-06-19 10:29:18 adam Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -37,7 +37,7 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
         {    32,   40 },  /* 24 is the smallest unreasonable size! */
 	{    64,    0 },
 #else
-        {    64,    1 },
+        {    32,    1 },
 	{   128,    1 },
 	{   256,    1 },
 	{   512,    1 },
@@ -850,7 +850,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.19  1999-11-30 13:48:04  adam
+ * Revision 1.20  2002-06-19 10:29:18  adam
+ * align block sizes for isam sys. Better plot for test
+ *
+ * Revision 1.19  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.18  1999/10/06 15:18:13  heikki
