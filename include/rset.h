@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.30 2004-08-23 12:38:53 heikki Exp $
+/* $Id: rset.h,v 1.31 2004-08-24 14:25:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -30,14 +30,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef void *RSFD;
 
+typedef void *RSFD;       /* Rset "file descriptor" */
 typedef struct rset *RSET;
 
 struct rset_control
 {
     char *desc; /* text description of set type (for debugging) */
-    void *(*f_create)(RSET ct, const struct rset_control *sel, void *parms);
+/* void *(*f_create)(RSET ct, const struct rset_control *sel, void *parms); */
     RSFD (*f_open)(RSET ct, int wflag);
     void (*f_close)(RSFD rfd);
     void (*f_delete)(RSET ct);
@@ -56,38 +56,38 @@ int rset_default_forward(RSET ct, RSFD rfd, void *buf,
                      const void *untilbuf);
 void rset_default_pos(RSFD rfd, double *current, double *total);
 
-/*
-struct rset_term {
-    char *name;
-    zint nn;
-    char *flags;
-    zint count;
-    int  type;
-};
-*/
 
 typedef struct rset
 {
     const struct rset_control *control;
-    int  count;
-    void *buf;
+    int  count;  /* reference count */
+    void *priv;  /* stuff private to the given type of rset */
+    NMEM nmem;    /* nibble memory for various allocs */
+    char my_nmem; /* Should the nmem be destroyed with the rset?  */
+                  /* 1 if created with it, 0 if passed from above */
 } rset;
+/* rset is a "virtual base class", which will never exist on its own */
+/* all instances are rsets of some specific type, like rsisamb, or rsbool */
+/* They keep their own stuff behind the priv pointer. */
 
 #define RSETF_READ       0
 #define RSETF_WRITE      1
 
-RSET rset_create(const struct rset_control *sel, void *parms); 
+RSET rset_create_base(const struct rset_control *sel, NMEM nmem);
+
+RSET rset_create_OLD(const struct rset_control *sel, void *parms); 
 /* parameters? */
-
-/* int rset_open(RSET rs, int wflag); */
-#define rset_open(rs, wflag) (*(rs)->control->f_open)((rs), (wflag))
-
-/* void rset_close(RSET rs); */
-#define rset_close(rs, rfd) (*(rs)->control->f_close)(rfd)
 
 void rset_delete(RSET rs);
 
 RSET rset_dup (RSET rs);
+
+
+/* RSFD rset_open(RSET rs, int wflag); */
+#define rset_open(rs, wflag) (*(rs)->control->f_open)((rs), (wflag))
+
+/* void rset_close(RSET rs); */
+#define rset_close(rs, rfd) (*(rs)->control->f_close)(rfd)
 
 /* void rset_rewind(RSET rs); */
 #define rset_rewind(rs, rfd) (*(rs)->control->f_rewind)((rfd))

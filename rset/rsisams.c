@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.9 2004-08-23 12:38:53 heikki Exp $
+/* $Id: rsisams.c,v 1.10 2004-08-24 14:25:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -27,7 +27,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include <rsisams.h>
 
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -38,7 +37,6 @@ static int r_write (RSFD rfd, const void *buf);
 static const struct rset_control control = 
 {
     "isams",
-    r_create,
     r_open,
     r_close,
     r_delete,
@@ -63,6 +61,33 @@ struct rset_isams_info {
     struct rset_pp_info *ispt_list;
 };
 
+
+RSET rsisams_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            ISAMS is, ISAMS_P pos)
+{
+    RSET rnew=rset_create_base(&control, nmem);
+    struct rset_isams_info *info;
+    info = (struct rset_isams_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    assert(key_size); /* FIXME - these belong to the general rset */
+    assert(cmp);
+    info->is=is;
+    info->pos=pos;
+    info->ispt_list = NULL;
+    rnew->priv=info;
+    return rnew;
+}
+
+static void r_delete (RSET ct)
+{
+    struct rset_isams_info *info = (struct rset_isams_info *) ct->priv;
+
+    logf (LOG_DEBUG, "rsisams_delete");
+    assert (info->ispt_list == NULL);
+    /* xfree (info); */
+}
+
+#if 0
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_isams_parms *pt = (struct rset_isams_parms *) parms;
@@ -74,10 +99,11 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     info->ispt_list = NULL;
     return info;
 }
+#endif
 
 RSFD r_open (RSET ct, int flag)
 {
-    struct rset_isams_info *info = (struct rset_isams_info *) ct->buf;
+    struct rset_isams_info *info = (struct rset_isams_info *) ct->priv;
     struct rset_pp_info *ptinfo;
 
     logf (LOG_DEBUG, "risams_open");
@@ -109,15 +135,6 @@ static void r_close (RSFD rfd)
         }
     logf (LOG_FATAL, "r_close but no rfd match!");
     assert (0);
-}
-
-static void r_delete (RSET ct)
-{
-    struct rset_isams_info *info = (struct rset_isams_info *) ct->buf;
-
-    logf (LOG_DEBUG, "rsisams_delete");
-    assert (info->ispt_list == NULL);
-    xfree (info);
 }
 
 static void r_rewind (RSFD rfd)

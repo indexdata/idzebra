@@ -1,4 +1,4 @@
-/* $Id: rsmultior.c,v 1.5 2004-08-23 12:38:53 heikki Exp $
+/* $Id: rsmultior.c,v 1.6 2004-08-24 14:25:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -32,7 +32,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <isamc.h>
 #include <rsmultior.h>
 
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -47,7 +46,6 @@ static void r_pos (RSFD rfd, double *current, double *total);
 static const struct rset_control control = 
 {
     "multi-or",
-    r_create,
     r_open,
     r_close,
     r_delete,
@@ -219,6 +217,35 @@ static void heap_destroy (HEAP h)
 }
 
 
+RSET rsmultior_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            int no_rsets, RSET* rsets)
+{
+    RSET rnew=rset_create_base(&control, nmem);
+    struct rset_multior_info *info;
+    info = (struct rset_multior_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info->key_size = key_size;
+    info->cmp = cmp;
+    info->no_rsets=no_rsets;
+    info->rsets=(RSET*)nmem_malloc(rnew->nmem, no_rsets*sizeof(*rsets));
+    memcpy(info->rsets,rsets,no_rsets*sizeof(*rsets));
+    info->rfd_list = NULL;
+    rnew->priv=info;
+    return rnew;
+}
+
+static void r_delete (RSET ct)
+{
+    struct rset_multior_info *info = (struct rset_multior_info *) ct->priv;
+    int i;
+
+    assert (info->rfd_list == NULL);
+    for(i=0;i<info->no_rsets;i++)
+        rset_delete(info->rsets[i]);
+/*    xfree(info->rsets); */ /* nmem'd */
+/*    xfree(info); */  /* nmem'd */
+}
+#if 0
 static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_multior_parms *r_parms = (rset_multior_parms *) parms;
@@ -232,11 +259,12 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     info->rfd_list=0;
     return info;
 }
+#endif
 
 static RSFD r_open (RSET ct, int flag)
 {
     struct rset_multior_rfd *rfd;
-    struct rset_multior_info *info = (struct rset_multior_info *) ct->buf;
+    struct rset_multior_info *info = (struct rset_multior_info *) ct->priv;
     int i;
 
     if (flag & RSETF_WRITE)
@@ -293,17 +321,6 @@ static void r_close (RSFD rfd)
     assert (0);
 }
 
-static void r_delete (RSET ct)
-{
-    struct rset_multior_info *info = (struct rset_multior_info *) ct->buf;
-    int i;
-
-    assert (info->rfd_list == NULL);
-    for(i=0;i<info->no_rsets;i++)
-        rset_delete(info->rsets[i]);
-    xfree(info->rsets);
-    xfree(info);
-}
 
 static void r_rewind (RSFD rfd)
 {

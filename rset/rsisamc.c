@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.20 2004-08-24 08:52:30 heikki Exp $
+/* $Id: rsisamc.c,v 1.21 2004-08-24 14:25:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -29,7 +29,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include <rsisamc.h>
 
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -40,7 +39,6 @@ static int r_write (RSFD rfd, const void *buf);
 static const struct rset_control control = 
 {
     "isamc",
-    r_create,
     r_open,
     r_close,
     r_delete,
@@ -68,6 +66,31 @@ struct rset_isamc_info {
     struct rset_pp_info *ispt_list;
 };
 
+RSET rsisamc_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            ISAMC is, ISAMC_P pos)
+{
+    RSET rnew=rset_create_base(&control, nmem);
+    struct rset_isamc_info *info;
+    info = (struct rset_isamc_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info->key_size = key_size;
+    info->cmp = cmp;
+    info->ispt_list = NULL;
+    info->is=is;
+    info->pos=pos;
+    rnew->priv=info;
+    return rnew;
+}
+
+static void r_delete (RSET ct)
+{
+    struct rset_isamc_info *info = (struct rset_isamc_info *) ct->priv;
+
+    logf (LOG_DEBUG, "rsisamc_delete");
+    assert (info->ispt_list == NULL);
+}
+
+/*
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_isamc_parms *pt = (rset_isamc_parms *) parms;
@@ -81,10 +104,11 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     info->ispt_list = NULL;
     return info;
 }
+*/
 
 RSFD r_open (RSET ct, int flag)
 {
-    struct rset_isamc_info *info = (struct rset_isamc_info *) ct->buf;
+    struct rset_isamc_info *info = (struct rset_isamc_info *) ct->priv;
     struct rset_pp_info *ptinfo;
 
     logf (LOG_DEBUG, "risamc_open");
@@ -120,14 +144,6 @@ static void r_close (RSFD rfd)
     assert (0);
 }
 
-static void r_delete (RSET ct)
-{
-    struct rset_isamc_info *info = (struct rset_isamc_info *) ct->buf;
-
-    logf (LOG_DEBUG, "rsisamc_delete");
-    assert (info->ispt_list == NULL);
-    xfree (info);
-}
 
 static void r_rewind (RSFD rfd)
 {   

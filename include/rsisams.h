@@ -1,4 +1,4 @@
-/* $Id: rsisams.h,v 1.3 2004-08-20 14:44:45 heikki Exp $
+/* $Id: rsisams.h,v 1.4 2004-08-24 14:25:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -34,11 +34,9 @@ extern "C" {
 
 extern const struct rset_control *rset_kind_isams;
 
-typedef struct rset_isams_parms
-{
-    ISAMS is;
-    ISAMS_P pos;
-} rset_isams_parms;
+RSET rsisams_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            ISAMS is, ISAMS_P pos);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-/* $Id: rsbetween.h,v 1.5 2002-08-02 19:26:55 adam Exp $
+/* $Id: rsbetween.h,v 1.6 2004-08-24 14:25:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -31,18 +31,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern "C" {
 #endif
 
-extern const struct rset_control *rset_kind_between;
+RSET rsbetween_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr,
+            char *(*printer)(const void *p1, char *buf) );
 
-typedef struct rset_between_parms
-{
-    int     key_size;
-    RSET    rset_l; 
-    RSET    rset_m;
-    RSET    rset_r;
-    RSET    rset_attr;
-    int (*cmp)(const void *p1, const void *p2);
-    char* (*printer)(const void *p,char *buf); /* prints p into buf and returns buf */
-} rset_between_parms;
+extern const struct rset_control *rset_kind_between;
 
 #ifdef __cplusplus
 }

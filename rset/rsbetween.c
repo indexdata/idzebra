@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.19 2004-08-23 12:38:53 heikki Exp $
+/* $Id: rsbetween.c,v 1.20 2004-08-24 14:25:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -40,7 +40,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define RSBETWEEN_DEBUG 0 
 
-static void *r_create_between(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open_between (RSET ct, int flag);
 static void r_close_between (RSFD rfd);
 static void r_delete_between (RSET ct);
@@ -52,10 +51,9 @@ static int r_read_between (RSFD rfd, void *buf);
 static int r_write_between (RSFD rfd, const void *buf);
 static void r_pos_between (RSFD rfd, double *current, double *total);
 
-static const struct rset_control control_between = 
+static const struct rset_control control = 
 {
     "between",
-    r_create_between,
     r_open_between,
     r_close_between,
     r_delete_between,
@@ -67,7 +65,7 @@ static const struct rset_control control_between =
 };
 
 
-const struct rset_control *rset_kind_between = &control_between;
+const struct rset_control *rset_kind_between = &control;
 
 struct rset_between_info {
     int key_size;
@@ -114,6 +112,28 @@ static void log2 (struct rset_between_rfd *p, char *msg, int cmp_l, int cmp_r)
 }
 #endif
 
+RSET rsbetween_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr,
+            char *(*printer)(const void *p1, char *buf) )
+{
+    RSET rnew=rset_create_base(&control, nmem);
+    struct rset_between_info *info;
+    info = (struct rset_between_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info->key_size = key_size;
+    info->rset_l = rset_l;
+    info->rset_m = rset_m;
+    info->rset_r = rset_r;
+    info->rset_attr = rset_attr;
+    info->cmp = cmp;
+    info->printer = printer;
+    info->rfd_list = NULL;
+    
+    rnew->priv=info;
+    return rnew;
+}
+
+/*
 static void *r_create_between (RSET ct, const struct rset_control *sel,
                                void *parms)
 {
@@ -131,10 +151,26 @@ static void *r_create_between (RSET ct, const struct rset_control *sel,
     info->rfd_list = NULL;
     return info;
 }
+*/
+
+
+static void r_delete_between (RSET ct)
+{
+    struct rset_between_info *info = (struct rset_between_info *) ct->priv;
+
+    assert (info->rfd_list == NULL);
+    rset_delete (info->rset_l);
+    rset_delete (info->rset_m);
+    rset_delete (info->rset_r);
+    if (info->rset_attr)
+        rset_delete (info->rset_attr);
+   /* xfree (info); */
+}
+
 
 static RSFD r_open_between (RSET ct, int flag)
 {
-    struct rset_between_info *info = (struct rset_between_info *) ct->buf;
+    struct rset_between_info *info = (struct rset_between_info *) ct->priv;
     struct rset_between_rfd *rfd;
 
     if (flag & RSETF_WRITE)
@@ -194,19 +230,6 @@ static void r_close_between (RSFD rfd)
         }
     logf (LOG_FATAL, "r_close_between but no rfd match!");
     assert (0);
-}
-
-static void r_delete_between (RSET ct)
-{
-    struct rset_between_info *info = (struct rset_between_info *) ct->buf;
-
-    assert (info->rfd_list == NULL);
-    rset_delete (info->rset_l);
-    rset_delete (info->rset_m);
-    rset_delete (info->rset_r);
-    if (info->rset_attr)
-        rset_delete (info->rset_attr);
-    xfree (info);
 }
 
 static void r_rewind_between (RSFD rfd)

@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.44 2004-08-24 08:52:30 heikki Exp $
+/* $Id: rstemp.c,v 1.45 2004-08-24 14:25:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -34,7 +34,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include <rstemp.h>
 
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -44,10 +43,11 @@ static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double  *total);
 
+/* FIXME - Use the nmem instead of xmalloc all the way through */
+
 static const struct rset_control control = 
 {
     "temp",
-    r_create,
     r_open,
     r_close,
     r_delete,
@@ -84,6 +84,35 @@ struct rset_temp_rfd {
     zint cur; /* number of the current hit */
 };
 
+RSET rstemp_create( NMEM nmem, int key_size, 
+                    int (*cmp)(const void *p1, const void *p2),
+                    const char *temp_path)
+{
+    RSET rnew=rset_create_base(&control, nmem);
+    struct rset_temp_info *info;
+   
+    info = (struct rset_temp_info *) nmem_malloc ( rnew->nmem, sizeof(*info));
+    info->fd = -1;
+    info->fname = NULL;
+    info->key_size = key_size;
+    info->buf_size = 4096;
+    info->buf_mem = (char *) nmem_malloc (rnew->nmem, info->buf_size);
+    info->pos_end = 0;
+    info->pos_buf = 0;
+    info->dirty = 0;
+    info->hits = 0;
+    info->cmp = cmp;
+    info->rfd_list = NULL;
+
+    if (!temp_path)
+        info->temp_path = NULL;
+    else
+        info->temp_path = nmem_strdup(rnew->nmem,temp_path);
+    rnew->priv=info; 
+    return rnew;
+} /* rstemp_create */
+
+#if 0
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_temp_parms *temp_parms = (rset_temp_parms *) parms;
@@ -112,10 +141,31 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 
     return info;
 }
+#endif
+
+static void r_delete (RSET ct)
+{
+    struct rset_temp_info *info = (struct rset_temp_info*) ct->priv;
+
+    xfree (info->buf_mem);
+    logf (LOG_DEBUG, "r_delete: set size %ld", (long) info->pos_end);
+    if (info->fname)
+    {
+        logf (LOG_DEBUG, "r_delete: unlink %s", info->fname);
+        unlink (info->fname);
+        xfree (info->fname);  /* FIXME should be nmem'd, and not freed here */
+    }
+    /*
+    if (info->temp_path)
+        xfree (info->temp_path);
+    xfree (info);
+    */  /* nmem'd */
+}
+
 
 static RSFD r_open (RSET ct, int flag)
 {
-    struct rset_temp_info *info = (struct rset_temp_info *) ct->buf;
+    struct rset_temp_info *info = (struct rset_temp_info *) ct->priv;
     struct rset_temp_rfd *rfd;
 
     if (info->fd == -1 && info->fname)
@@ -232,24 +282,6 @@ static void r_close (RSFD rfd)
     assert (0);
 }
 
-static void r_delete (RSET ct)
-{
-    struct rset_temp_info *info = (struct rset_temp_info*) ct->buf;
-
-    if (info->fname)
-        unlink (info->fname);        
-    xfree (info->buf_mem);
-    logf (LOG_DEBUG, "r_delete: set size %ld", (long) info->pos_end);
-    if (info->fname)
-    {
-        logf (LOG_DEBUG, "r_delete: unlink %s", info->fname);
-        unlink (info->fname);
-        xfree (info->fname);
-    }
-    if (info->temp_path)
-        xfree (info->temp_path);
-    xfree (info);
-}
 
 /* r_reread:
       read from file to window if file is assocated with set -

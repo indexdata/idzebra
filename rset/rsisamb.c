@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.16 2004-08-23 12:38:53 heikki Exp $
+/* $Id: rsisamb.c,v 1.17 2004-08-24 14:25:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -31,7 +31,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define RSET_DEBUG 0
 #endif
 
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -46,7 +45,6 @@ static int r_write (RSFD rfd, const void *buf);
 static const struct rset_control control = 
 {
     "isamb",
-    r_create,
     r_open,
     r_close,
     r_delete,
@@ -74,6 +72,31 @@ struct rset_isamb_info {
     struct rset_pp_info *ispt_list;
 };
 
+RSET rsisamb_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            ISAMB is, ISAMB_P pos)
+{
+    RSET rnew=rset_create_base(&control, nmem);
+    struct rset_isamb_info *info;
+    info = (struct rset_isamb_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info->key_size = key_size;
+    info->cmp = cmp;
+    info->is=is;
+    info->pos=pos;
+    info->ispt_list = NULL;
+    rnew->priv=info;
+    return rnew;
+}
+
+static void r_delete (RSET ct)
+{
+    struct rset_isamb_info *info = (struct rset_isamb_info *) ct->priv;
+
+    logf (LOG_DEBUG, "rsisamb_delete");
+    assert (info->ispt_list == NULL);
+}
+
+#if 0
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_isamb_parms *pt = (rset_isamb_parms *) parms;
@@ -87,10 +110,11 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     info->ispt_list = NULL;
     return info;
 }
+#endif
 
 RSFD r_open (RSET ct, int flag)
 {
-    struct rset_isamb_info *info = (struct rset_isamb_info *) ct->buf;
+    struct rset_isamb_info *info = (struct rset_isamb_info *) ct->priv;
     struct rset_pp_info *ptinfo;
 
     logf (LOG_DEBUG, "risamb_open");
@@ -126,14 +150,6 @@ static void r_close (RSFD rfd)
     assert (0);
 }
 
-static void r_delete (RSET ct)
-{
-    struct rset_isamb_info *info = (struct rset_isamb_info *) ct->buf;
-
-    logf (LOG_DEBUG, "rsisamb_delete");
-    assert (info->ispt_list == NULL);
-    xfree (info);
-}
 
 static void r_rewind (RSFD rfd)
 {   

@@ -1,4 +1,4 @@
-/* $Id: rsprox.h,v 1.1 2004-06-09 12:15:25 adam Exp $
+/* $Id: rsprox.h,v 1.2 2004-08-24 14:25:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -29,21 +29,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern "C" {
 #endif
 
-extern const struct rset_control *rset_kind_prox;
-
-typedef struct rset_prox_parms
-{
-    RSET *rset;
-    int rset_no;
-    int ordered;
-    int exclusion;
-    int relation;
-    int distance;
-    int key_size;
-    int (*cmp)(const void *p1, const void *p2);
-    int (*getseq)(const void *p);
-    void (*log_item)(int logmask, const void *a, const char *txt);
-} rset_prox_parms;
+RSET rsprox_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            int (*getseq)(const void *p),
+            int rset_no, RSET *rset,
+            int ordered, int exclusion,
+            int relation, int distance);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.10 2004-08-23 12:38:53 heikki Exp $
+/* $Id: rsprox.c,v 1.11 2004-08-24 14:25:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -32,7 +32,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define RSET_DEBUG 0
 #endif
 
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -44,10 +43,9 @@ static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double *total);
 
-static const struct rset_control control_prox = 
+static const struct rset_control control = 
 {
     "prox",
-    r_create,
     r_open,
     r_close,
     r_delete,
@@ -58,11 +56,19 @@ static const struct rset_control control_prox =
     r_write,
 };
 
-const struct rset_control *rset_kind_prox = &control_prox;
+const struct rset_control *rset_kind_prox = &control;
 
 struct rset_prox_info {
-    struct rset_prox_parms p;
-
+/*    struct rset_prox_parms p; */
+    RSET *rset;  
+    int rset_no;
+    int ordered;
+    int exclusion;
+    int relation;
+    int distance;
+    int key_size;
+    int (*cmp)(const void *p1, const void *p2);
+    int (*getseq)(const void *p);
     struct rset_prox_rfd *rfd_list;
 };
 
@@ -75,6 +81,47 @@ struct rset_prox_rfd {
     zint hits;
 };    
 
+
+RSET rsprox_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            int (*getseq)(const void *p),
+            int rset_no, RSET *rset,
+            int ordered, int exclusion,
+            int relation, int distance)
+{
+    RSET rnew=rset_create_base(&control, nmem);
+    struct rset_prox_info *info;
+    info = (struct rset_prox_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info->key_size = key_size;
+    info->cmp = cmp;
+    info->getseq=getseq; /* FIXME - what about multi-level stuff ?? */
+    info->rset = nmem_malloc(rnew->nmem,rset_no * sizeof(*info->rset));
+    memcpy(info->rset, rset,
+           rset_no * sizeof(*info->rset));
+    info->rset_no=rset_no;
+    info->ordered=ordered;
+    info->exclusion=exclusion;
+    info->relation=relation;
+    info->distance=distance;
+    info->rfd_list = NULL;
+    rnew->priv=info;
+    return rnew;
+}
+
+
+static void r_delete (RSET ct)
+{
+    struct rset_prox_info *info = (struct rset_prox_info *) ct->priv;
+    int i;
+
+    assert (info->rfd_list == NULL);
+    for (i = 0; i<info->rset_no; i++)
+        rset_delete (info->rset[i]);
+/*  xfree (info->rset); */  /* nmems! */
+/*  xfree (info); */
+}
+
+#if 0
 static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_prox_parms *prox_parms = (rset_prox_parms *) parms;
@@ -89,10 +136,11 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     info->rfd_list = NULL;
     return info;
 }
+#endif
 
 static RSFD r_open (RSET ct, int flag)
 {
-    struct rset_prox_info *info = (struct rset_prox_info *) ct->buf;
+    struct rset_prox_info *info = (struct rset_prox_info *) ct->priv;
     struct rset_prox_rfd *rfd;
     int i;
 
@@ -107,18 +155,18 @@ static RSFD r_open (RSET ct, int flag)
     info->rfd_list = rfd;
     rfd->info = info;
 
-    rfd->more = xmalloc (sizeof(*rfd->more) * info->p.rset_no);
+    rfd->more = xmalloc (sizeof(*rfd->more) * info->rset_no);
 
-    rfd->buf = xmalloc(sizeof(*rfd->buf) * info->p.rset_no);
-    for (i = 0; i < info->p.rset_no; i++)
-        rfd->buf[i] = xmalloc (info->p.key_size);
+    rfd->buf = xmalloc(sizeof(*rfd->buf) * info->rset_no);
+    for (i = 0; i < info->rset_no; i++)
+        rfd->buf[i] = xmalloc (info->key_size);
 
-    rfd->rfd = xmalloc(sizeof(*rfd->rfd) * info->p.rset_no);
-    for (i = 0; i < info->p.rset_no; i++)
-        rfd->rfd[i] = rset_open (info->p.rset[i], RSETF_READ);
+    rfd->rfd = xmalloc(sizeof(*rfd->rfd) * info->rset_no);
+    for (i = 0; i < info->rset_no; i++)
+        rfd->rfd[i] = rset_open (info->rset[i], RSETF_READ);
 
-    for (i = 0; i < info->p.rset_no; i++)
-        rfd->more[i] = rset_read (info->p.rset[i], rfd->rfd[i],
+    for (i = 0; i < info->rset_no; i++)
+        rfd->more[i] = rset_read (info->rset[i], rfd->rfd[i],
                                   rfd->buf[i]);
     rfd->hits=0;
     return rfd;
@@ -133,13 +181,13 @@ static void r_close (RSFD rfd)
         if (*rfdp == rfd)
         {
             int i;
-            for (i = 0; i<info->p.rset_no; i++)
+            for (i = 0; i<info->rset_no; i++)
                 xfree ((*rfdp)->buf[i]);
             xfree ((*rfdp)->buf);
             xfree ((*rfdp)->more);
 
-            for (i = 0; i<info->p.rset_no; i++)
-                rset_close (info->p.rset[i], (*rfdp)->rfd[i]);
+            for (i = 0; i<info->rset_no; i++)
+                rset_close (info->rset[i], (*rfdp)->rfd[i]);
             xfree ((*rfdp)->rfd);
 
             *rfdp = (*rfdp)->next;
@@ -150,18 +198,6 @@ static void r_close (RSFD rfd)
     assert (0);
 }
 
-static void r_delete (RSET ct)
-{
-    struct rset_prox_info *info = (struct rset_prox_info *) ct->buf;
-    int i;
-
-    assert (info->rfd_list == NULL);
-    for (i = 0; i<info->p.rset_no; i++)
-        rset_delete (info->p.rset[i]);
-    xfree (info->p.rset);
-    xfree (info);
-}
-
 static void r_rewind (RSFD rfd)
 {
     struct rset_prox_info *info = ((struct rset_prox_rfd*)rfd)->info;
@@ -170,10 +206,10 @@ static void r_rewind (RSFD rfd)
 
     logf (LOG_DEBUG, "rsprox_rewind");
 
-    for (i = 0; i < info->p.rset_no; i++)
+    for (i = 0; i < info->rset_no; i++)
     {
-        rset_rewind (info->p.rset[i], p->rfd[i]);
-        p->more[i] = rset_read (info->p.rset[i], p->rfd[i], p->buf[i]);
+        rset_rewind (info->rset[i], p->rfd[i]);
+        p->more[i] = rset_read (info->rset[i], p->rfd[i], p->buf[i]);
     }
     p->hits=0;
 }
@@ -193,126 +229,126 @@ static int r_forward (RSET ct, RSFD rfd, void *buf,
         /* it's enough to forward first one. Other will follow
            automatically */
         if ( p->more[0] && ((cmpfunc)(untilbuf, p->buf[0]) >= 2) )
-            p->more[0] = rset_forward(info->p.rset[0], p->rfd[0],
-                                      p->buf[0], info->p.cmp,
+            p->more[0] = rset_forward(info->rset[0], p->rfd[0],
+                                      p->buf[0], info->cmp,
                                       untilbuf);
     }
-    if (info->p.ordered && info->p.relation == 3 && info->p.exclusion == 0
-        && info->p.distance == 1)
+    if (info->ordered && info->relation == 3 && info->exclusion == 0
+        && info->distance == 1)
     {
         while (p->more[0]) 
         {
-            for (i = 1; i < info->p.rset_no; i++)
+            for (i = 1; i < info->rset_no; i++)
             {
                 if (!p->more[i]) 
                 {
                     p->more[0] = 0;    /* saves us a goto out of while loop. */
                     break;
                 }
-                cmp = (*info->p.cmp) (p->buf[i], p->buf[i-1]);
+                cmp = (*info->cmp) (p->buf[i], p->buf[i-1]);
                 if (cmp > 1)
                 {
-                    p->more[i-1] = rset_forward (info->p.rset[i-1],
+                    p->more[i-1] = rset_forward (info->rset[i-1],
                                                  p->rfd[i-1],
                                                  p->buf[i-1],
-                                                 info->p.cmp,
+                                                 info->cmp,
                                                  p->buf[i]);
                     break;
                 }
                 else if (cmp == 1)
                 {
-                    if ((*info->p.getseq)(p->buf[i-1]) +1 != 
-                        (*info->p.getseq)(p->buf[i]))
+                    if ((*info->getseq)(p->buf[i-1]) +1 != 
+                        (*info->getseq)(p->buf[i]))
                     {
-                        p->more[i-1] = rset_read ( info->p.rset[i-1], 
+                        p->more[i-1] = rset_read ( info->rset[i-1], 
                                              p->rfd[i-1], p->buf[i-1]);
                         break;
                     }
                 }
                 else
                 {
-                    p->more[i] = rset_forward (info->p.rset[i], p->rfd[i],
-                                               p->buf[i], info->p.cmp,
+                    p->more[i] = rset_forward (info->rset[i], p->rfd[i],
+                                               p->buf[i], info->cmp,
                                                p->buf[i-1]);
                     break;
                 }
             }
-            if (i == p->info->p.rset_no)
+            if (i == p->info->rset_no)
             {
-                memcpy (buf, p->buf[0], info->p.key_size);
-                p->more[0] = rset_read (info->p.rset[0], p->rfd[0], p->buf[0]);
+                memcpy (buf, p->buf[0], info->key_size);
+                p->more[0] = rset_read (info->rset[0], p->rfd[0], p->buf[0]);
                 p->hits++;
                 return 1;
             }
         }
     }
-    else if (info->p.rset_no == 2)
+    else if (info->rset_no == 2)
     {
         while (p->more[0] && p->more[1]) 
         {
-            int cmp = (*info->p.cmp)(p->buf[0], p->buf[1]);
+            int cmp = (*info->cmp)(p->buf[0], p->buf[1]);
             if (cmp < -1)
-                p->more[0] = rset_forward (info->p.rset[0], p->rfd[0],
-                                           p->buf[0], info->p.cmp, p->buf[0]);
+                p->more[0] = rset_forward (info->rset[0], p->rfd[0],
+                                           p->buf[0], info->cmp, p->buf[0]);
             else if (cmp > 1)
-                p->more[1] = rset_forward (info->p.rset[1], p->rfd[1],
-                                           p->buf[1], info->p.cmp, p->buf[1]);
+                p->more[1] = rset_forward (info->rset[1], p->rfd[1],
+                                           p->buf[1], info->cmp, p->buf[1]);
             else
             {
                 int seqno[500];
                 int n = 0;
                 
-                seqno[n++] = (*info->p.getseq)(p->buf[0]);
-                while ((p->more[0] = rset_read (info->p.rset[0], p->rfd[0],
+                seqno[n++] = (*info->getseq)(p->buf[0]);
+                while ((p->more[0] = rset_read (info->rset[0], p->rfd[0],
                                                 p->buf[0])) >= -1 &&
                        p->more[0] <= -1)
                     if (n < 500)
-                        seqno[n++] = (*info->p.getseq)(p->buf[0]);
+                        seqno[n++] = (*info->getseq)(p->buf[0]);
                 
                 for (i = 0; i<n; i++)
                 {
-                    int diff = (*info->p.getseq)(p->buf[1]) - seqno[i];
-                    int excl = info->p.exclusion;
-                    if (!info->p.ordered && diff < 0)
+                    int diff = (*info->getseq)(p->buf[1]) - seqno[i];
+                    int excl = info->exclusion;
+                    if (!info->ordered && diff < 0)
                         diff = -diff;
-                    switch (info->p.relation)
+                    switch (info->relation)
                     {
                     case 1:      /* < */
-                        if (diff < info->p.distance && diff >= 0)
+                        if (diff < info->distance && diff >= 0)
                             excl = !excl;
                         break;
                     case 2:      /* <= */
-                        if (diff <= info->p.distance && diff >= 0)
+                        if (diff <= info->distance && diff >= 0)
                             excl = !excl;
                         break;
                     case 3:      /* == */
-                        if (diff == info->p.distance && diff >= 0)
+                        if (diff == info->distance && diff >= 0)
                             excl = !excl;
                         break;
                     case 4:      /* >= */
-                        if (diff >= info->p.distance && diff >= 0)
+                        if (diff >= info->distance && diff >= 0)
                             excl = !excl;
                         break;
                     case 5:      /* > */
-                        if (diff > info->p.distance && diff >= 0)
+                        if (diff > info->distance && diff >= 0)
                             excl = !excl;
                         break;
                     case 6:      /* != */
-                        if (diff != info->p.distance && diff >= 0)
+                        if (diff != info->distance && diff >= 0)
                             excl = !excl;
                         break;
                     }
                     if (excl)
                     {
-                        memcpy (buf, p->buf[1], info->p.key_size);
+                        memcpy (buf, p->buf[1], info->key_size);
                         
-                        p->more[1] = rset_read (info->p.rset[1],
+                        p->more[1] = rset_read (info->rset[1],
                                                 p->rfd[1], p->buf[1]);
                         p->hits++;
                         return 1;
                     }
                 }
-                p->more[1] = rset_read (info->p.rset[1], p->rfd[1],
+                p->more[1] = rset_read (info->rset[1], p->rfd[1],
                                         p->buf[1]);
             }
         }
@@ -344,9 +380,9 @@ static void r_pos (RSFD rfd, double *current, double *total)
 
     logf (LOG_DEBUG, "rsprox_pos");
 
-    for (i = 0; i < info->p.rset_no; i++)
+    for (i = 0; i < info->rset_no; i++)
     {
-        rset_pos(info->p.rset[i], p->rfd[i],  &cur, &tot);
+        rset_pos(info->rset[i], p->rfd[i],  &cur, &tot);
         if (tot>0) {
             scur += cur;
             stot += tot;

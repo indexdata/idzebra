@@ -1,4 +1,4 @@
-/* $Id: rsnull.h,v 1.6 2004-08-20 14:44:45 heikki Exp $
+/* $Id: rsnull.h,v 1.7 2004-08-24 14:25:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -31,13 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern "C" {
 #endif
 
-typedef struct rset_null_parms
-{
-    int     key_size;
-    char   *temp_path;
-} rset_null_parms;
-
-extern const struct rset_control *rset_kind_null;
+RSET rsnull_create(NMEM nmem);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-/* $Id: rsbool.h,v 1.9 2004-06-02 12:31:23 adam Exp $
+/* $Id: rsbool.h,v 1.10 2004-08-24 14:25:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -29,18 +29,20 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern "C" {
 #endif
 
-extern const struct rset_control *rset_kind_and;
-extern const struct rset_control *rset_kind_or;
-extern const struct rset_control *rset_kind_not;
+RSET rsbool_create_and( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            RSET rset_l, RSET rset_r, 
+            void (*log_item)(int logmask, const void *p, const char *txt) );
 
-typedef struct rset_bool_parms
-{
-    int     key_size;
-    RSET    rset_l;
-    RSET    rset_r;
-    int (*cmp)(const void *p1, const void *p2);
-    void (*log_item)(int logmask, const void *a, const char *txt);
-} rset_bool_parms;
+RSET rsbool_create_or( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            RSET rset_l, RSET rset_r, 
+            void (*log_item)(int logmask, const void *p, const char *txt) );
+
+RSET rsbool_create_not( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            RSET rset_l, RSET rset_r, 
+            void (*log_item)(int logmask, const void *p, const char *txt) );
 
 #ifdef __cplusplus
 }

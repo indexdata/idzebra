@@ -1,4 +1,4 @@
-/* $Id: rsmultior.h,v 1.3 2004-08-20 14:44:45 heikki Exp $
+/* $Id: rsmultior.h,v 1.4 2004-08-24 14:25:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -29,20 +29,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
-extern const struct rset_control *rset_kind_multior;
-
-typedef struct rset_multior_parms
-{
-    int     key_size;
-    int     (*cmp)(const void *p1, const void *p2);
-
-    int no_rsets;
-    RSET *rsets;  /* array of rsets to multi-or */
-                  /* allocated when creating parms, */
-                  /* rset will free when deleted */
-    int     no_isam_positions;
-    int     no_save_positions;
-} rset_multior_parms;
+RSET rsmultior_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            int no_rsets, RSET* rsets);
 
 YAZ_END_CDECL
 

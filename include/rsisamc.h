@@ -1,4 +1,4 @@
-/* $Id: rsisamc.h,v 1.8 2004-08-20 14:44:45 heikki Exp $
+/* $Id: rsisamc.h,v 1.9 2004-08-24 14:25:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -34,13 +34,9 @@ extern "C" {
 
 extern const struct rset_control *rset_kind_isamc;
 
-typedef struct rset_isamc_parms
-{
-    int (*cmp)(const void *p1, const void *p2);
-    int key_size;
-    ISAMC is;
-    ISAMC_P pos;
-} rset_isamc_parms;
+RSET rsisamc_create( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            ISAMC is, ISAMC_P pos);
 
 #ifdef __cplusplus
 }

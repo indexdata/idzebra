@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.26 2004-08-23 12:38:53 heikki Exp $
+/* $Id: rset.c,v 1.27 2004-08-24 14:25:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,11 +26,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <zebrautl.h>
 #include <assert.h>
-
+#include <yaz/nmem.h>
 #include <rset.h>
-/* #include <../index/index.h> */ /* for log_keydump. Debugging only */
 
-RSET rset_create(const struct rset_control *sel, void *parms)
+RSET rset_create_base(const struct rset_control *sel, NMEM nmem)
+        /* FIXME - Add keysize and cmp function */
+        /* FIXME - Add a general key-func block for cmp, dump, etc */
 {
     RSET rnew;
 
@@ -38,7 +39,14 @@ RSET rset_create(const struct rset_control *sel, void *parms)
     rnew = (RSET) xmalloc(sizeof(*rnew));
     rnew->control = sel;
     rnew->count = 1;
-    rnew->buf = (*sel->f_create)(rnew, sel, parms);
+    rnew->priv = 0;
+    rnew->nmem=nmem;
+    if (nmem)
+        rnew->my_nmem=0;
+    else {
+        rnew->nmem=nmem_create();
+        rnew->my_nmem=1;
+    }
     return rnew;
 }
 
@@ -48,6 +56,8 @@ void rset_delete (RSET rs)
     if (!rs->count)
     {
         (*rs->control->f_delete)(rs);
+        if (rs->my_nmem)
+            nmem_destroy(rs->nmem);
         xfree(rs);
     }
 }

@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.39 2004-08-23 12:38:53 heikki Exp $
+/* $Id: rsbool.c,v 1.40 2004-08-24 14:25:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -33,7 +33,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define RSET_DEBUG 0
 #endif
 
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -50,7 +49,6 @@ static int r_write (RSFD rfd, const void *buf);
 static const struct rset_control control_and = 
 {
     "and",
-    r_create,
     r_open,
     r_close,
     r_delete,
@@ -64,7 +62,6 @@ static const struct rset_control control_and =
 static const struct rset_control control_or = 
 {
     "or",
-    r_create,
     r_open,
     r_close,
     r_delete,
@@ -78,7 +75,6 @@ static const struct rset_control control_or =
 static const struct rset_control control_not = 
 {
     "not",
-    r_create,
     r_open,
     r_close,
     r_delete,
@@ -116,6 +112,65 @@ struct rset_bool_rfd {
     struct rset_bool_info *info;
 };    
 
+static RSET rsbool_create_base( const struct rset_control *ctrl,
+            NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            RSET rset_l, RSET rset_r, 
+            void (*log_item)(int logmask, const void *p, const char *txt) )
+{
+    RSET rnew=rset_create_base(ctrl, nmem);
+    struct rset_bool_info *info;
+    info = (struct rset_bool_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info->key_size = key_size;
+    info->rset_l = rset_l;
+    info->rset_r = rset_r;
+    info->cmp = cmp;
+    info->log_item = log_item;
+    info->rfd_list = NULL;
+    
+    rnew->priv=info;
+    return rnew;
+}
+
+
+RSET rsbool_create_and( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            RSET rset_l, RSET rset_r, 
+            void (*log_item)(int logmask, const void *p, const char *txt) )
+{
+    return rsbool_create_base(rset_kind_and, nmem, key_size, cmp,
+                              rset_l, rset_r, log_item);
+}
+
+RSET rsbool_create_or( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            RSET rset_l, RSET rset_r, 
+            void (*log_item)(int logmask, const void *p, const char *txt) )
+{
+    return rsbool_create_base(rset_kind_or, nmem, key_size, cmp,
+                              rset_l, rset_r, log_item);
+}
+
+RSET rsbool_create_not( NMEM nmem, int key_size, 
+            int (*cmp)(const void *p1, const void *p2),
+            RSET rset_l, RSET rset_r, 
+            void (*log_item)(int logmask, const void *p, const char *txt) )
+{
+    return rsbool_create_base(rset_kind_not, nmem, key_size, cmp,
+                              rset_l, rset_r, log_item);
+}
+
+static void r_delete (RSET ct)
+{
+    struct rset_bool_info *info = (struct rset_bool_info *) ct->priv;
+
+    assert (info->rfd_list == NULL);
+    rset_delete (info->rset_l);
+    rset_delete (info->rset_r);
+    /* xfree (info); */ /* nmem'd */
+}
+
+#if 0
 static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_bool_parms *bool_parms = (rset_bool_parms *) parms;
@@ -131,10 +186,11 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     
     return info;
 }
+#endif
 
 static RSFD r_open (RSET ct, int flag)
 {
-    struct rset_bool_info *info = (struct rset_bool_info *) ct->buf;
+    struct rset_bool_info *info = (struct rset_bool_info *) ct->priv;
     struct rset_bool_rfd *rfd;
 
     if (flag & RSETF_WRITE)
@@ -179,15 +235,6 @@ static void r_close (RSFD rfd)
     assert (0);
 }
 
-static void r_delete (RSET ct)
-{
-    struct rset_bool_info *info = (struct rset_bool_info *) ct->buf;
-
-    assert (info->rfd_list == NULL);
-    rset_delete (info->rset_l);
-    rset_delete (info->rset_r);
-    xfree (info);
-}
 
 static void r_rewind (RSFD rfd)
 {
