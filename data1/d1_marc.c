@@ -1,5 +1,5 @@
-/* $Id: d1_marc.c,v 1.3 2003-02-28 12:33:38 oleg Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: d1_marc.c,v 1.4 2003-11-13 23:57:41 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -209,16 +209,12 @@ static void memint (char *p, int val, int len)
     }
 }
 
+/* check for indicator. non MARCXML only */
 static int is_indicator (data1_marctab *p, data1_node *subf)
 {
-#if 1
     if (p->indicator_length != 2 ||
 	(subf && subf->which == DATA1N_tag && strlen(subf->u.tag.tag) == 2))
 	return 1;
-#else
-    if (subf && subf->which == DATA1N_tag && subf->child->which == DATA1N_tag)
-	return 1;
-#endif
     return 0;
 }
 
@@ -226,6 +222,8 @@ static int nodetomarc(data1_handle dh,
 		      data1_marctab *p, data1_node *n, int selected,
                       char **buf, int *size)
 {
+    char leader[24];
+
     int len = 26;
     int dlen;
     int base_address = 25;
@@ -233,50 +231,85 @@ static int nodetomarc(data1_handle dh,
     char *op;
     data1_node *field, *subf;
 
+    data1_pr_tree (dh, n, stdout);
+
     yaz_log (LOG_DEBUG, "nodetomarc");
+    data1_pr_tree(dh, n, stdout);
+
+    memcpy (leader+5, p->record_status, 1);
+    memcpy (leader+6, p->implementation_codes, 4);
+    memint (leader+10, p->indicator_length, 1);
+    memint (leader+11, p->identifier_length, 1);
+    memint (leader+12, base_address, 5);
+    memcpy (leader+17, p->user_systems, 3);
+    memint (leader+20, p->length_data_entry, 1);
+    memint (leader+21, p->length_starting, 1);
+    memint (leader+22, p->length_implementation, 1);
+    memcpy (leader+23, p->future_use, 1);
 
     for (field = n->child; field; field = field->next)
     {
-        int is00X = 0;
+        int control_field = 0;  /* 00X fields - usually! */
+	int marc_xml = 0;
 
 	if (field->which != DATA1N_tag)
-	{
-	    yaz_log(LOG_WARN, "Malformed field composition for marc output.");
-	    return -1;
-	}
+	    continue;
 	if (selected && !field->u.tag.node_selected)
 	    continue;
 	    
-	if (!yaz_matchstr(field->u.tag.tag, "mc?"))
-	    continue;
-
 	subf = field->child;
         if (!subf)
             continue;
+	
+	if (!yaz_matchstr(field->u.tag.tag, "mc?"))
+	    continue;
+	else if (!strcmp(field->u.tag.tag, "leader"))
+	{
+	    int dlen = 0;
+	    char *dbuf = get_data(subf, &dlen);
+	    if (dlen > 24)
+		dlen = 24;
+	    if (dbuf && dlen > 0)
+		memcpy (leader, dbuf, dlen);
+	    continue;
+	}
+	else if (!strcmp(field->u.tag.tag, "controlfield"))
+	{
+	    control_field = 1;
+	    marc_xml = 1;
+	}
+	else if (!strcmp(field->u.tag.tag, "datafield"))
+	{
+	    control_field = 0;
+	    marc_xml = 1;
+	}
+	else if (subf->which == DATA1N_data)
+	{
+	    control_field = 1;
+	    marc_xml = 0;
+	}
+	else
+	{
+	    control_field = 0;
+	    marc_xml = 0;
+	}
 
         len += 4 + p->length_data_entry + p->length_starting
             + p->length_implementation;
         base_address += 3 + p->length_data_entry + p->length_starting
             + p->length_implementation;
 
-	if (subf->which == DATA1N_data)
-            is00X = 1;
-	if (!data1_is_xmlmode(dh))
-        {
-            if (subf->which == DATA1N_tag && !strcmp(subf->u.tag.tag, "@"))
-                is00X = 1;
-        }
-            
-
-        if (!is00X)
+        if (!control_field)
             len += p->indicator_length;  
-	/*  we'll allow no indicator if length is not 2 */
-	if (is_indicator (p, subf))
-	    subf = subf->child;
 
+	/* we'll allow no indicator if length is not 2 */
+	/* select when old XML format, since indicator is an element */
+	if (marc_xml == 0 && is_indicator (p, subf))
+	    subf = subf->child;
+	
         for (; subf; subf = subf->next)
         {
-            if (!is00X)
+            if (!control_field)
                 len += p->identifier_length;
 	    get_data(subf, &dlen);
             len += dlen;
@@ -289,63 +322,100 @@ static int nodetomarc(data1_handle dh,
 	*buf = (char *)xrealloc(*buf, *size = len);
 	
     op = *buf;
+    memcpy (op, leader, 24);
     memint (op, len, 5);
-    memcpy (op+5, p->record_status, 1);
-    memcpy (op+6, p->implementation_codes, 4);
-    memint (op+10, p->indicator_length, 1);
-    memint (op+11, p->identifier_length, 1);
-    memint (op+12, base_address, 5);
-    memcpy (op+17, p->user_systems, 3);
-    memint (op+20, p->length_data_entry, 1);
-    memint (op+21, p->length_starting, 1);
-    memint (op+22, p->length_implementation, 1);
-    memcpy (op+23, p->future_use, 1);
     
     entry_p = 24;
     data_p = base_address;
 
     for (field = n->child; field; field = field->next)
     {
-        int is00X = 0;
+        int control_field = 0;
+	int marc_xml = 0;
+	const char *tag = 0;
 
         int data_0 = data_p;
-	char *indicator_data = "    ";
-	if (selected && !field->u.tag.node_selected)
+	char indicator_data[6];
+
+	memset (indicator_data, ' ', sizeof(indicator_data)-1);
+	indicator_data[sizeof(indicator_data)-1] = '\0';
+
+	if (field->which != DATA1N_tag)
 	    continue;
 
-	if (!yaz_matchstr(field->u.tag.tag, "mc?"))
+	if (selected && !field->u.tag.node_selected)
 	    continue;
 
 	subf = field->child;
         if (!subf)
             continue;
-
-        if (subf->which == DATA1N_data)
-            is00X = 1;
-	if (!data1_is_xmlmode(dh))
-        {
-            if (subf->which == DATA1N_tag && !strcmp(subf->u.tag.tag, "@"))
-                is00X = 1;
-        }
-
-	if (is_indicator (p, subf))
+	
+	if (!yaz_matchstr(field->u.tag.tag, "mc?"))
+	    continue;
+	else if (!strcmp(field->u.tag.tag, "leader"))
+	    continue;
+	else if (!strcmp(field->u.tag.tag, "controlfield"))
 	{
-            indicator_data = subf->u.tag.tag;
+	    control_field = 1;
+	    marc_xml = 1;
+	}
+	else if (!strcmp(field->u.tag.tag, "datafield"))
+	{
+	    control_field = 0;
+	    marc_xml = 1;
+	}
+	else if (subf->which == DATA1N_data)
+	{
+	    control_field = 1;
+	    marc_xml = 0;
+	}
+	else
+	{
+	    control_field = 0;
+	    marc_xml = 0;
+	}
+	if (marc_xml == 0 && is_indicator (p, subf))
+	{
+	    strncpy(indicator_data, subf->u.tag.tag, sizeof(indicator_data)-1);
 	    subf = subf->child;
 	}
-        if (!is00X)
-        {
-            memcpy (op + data_p, indicator_data, p->indicator_length);
-            data_p += p->indicator_length;
-        }
-        for (; subf; subf = subf->next)
+	else if (marc_xml == 1 && !control_field)
+	{
+	    data1_xattr *xa;
+	    for (xa = field->u.tag.attributes; xa; xa = xa->next)
+	    {
+		if (!strcmp(xa->name, "ind1"))
+		    indicator_data[0] = xa->value[0];
+		if (!strcmp(xa->name, "ind2"))
+		    indicator_data[1] = xa->value[1];
+		if (!strcmp(xa->name, "ind3"))
+		    indicator_data[2] = xa->value[2];
+	    }
+	}
+	if (!control_field)
+	{
+	    memcpy (op + data_p, indicator_data, p->indicator_length);
+	    data_p += p->indicator_length;
+	}
+	for (; subf; subf = subf->next)
         {
 	    char *data;
 
-            if (!is00X)
+            if (!control_field)
             {
                 const char *identifier = "a";
-                if (subf->which != DATA1N_tag)
+		if (marc_xml)
+		{
+		    if (subf->which == DATA1N_tag &&
+			!strcmp(subf->u.tag.tag, "subfield"))
+		    {
+			data1_xattr *xa;
+			for (xa = subf->u.tag.attributes; xa; xa = xa->next)
+			    if (!strcmp(xa->name, "code"))
+				identifier = xa->value;
+		    }
+		}
+		else if (subf->which != DATA1N_tag)
                     yaz_log(LOG_WARN, "Malformed fields for marc output.");
                 else
                     identifier = subf->u.tag.tag;
@@ -359,7 +429,20 @@ static int nodetomarc(data1_handle dh,
         }
         op[data_p++] = ISO2709_FS;
 
-        memcpy (op + entry_p, field->u.tag.tag, 3);
+	if (marc_xml)
+	{
+	    data1_xattr *xa;
+	    for (xa = field->u.tag.attributes; xa; xa = xa->next)
+		if (!strcmp(xa->name, "tag"))
+		    tag = xa->value;
+	}
+	else
+	    tag = field->u.tag.tag;
+
+	if (!tag || strlen(tag) != 3)
+	    tag = "000";
+	memcpy (op + entry_p, tag, 3);
+	
         entry_p += 3;
         memint (op + entry_p, data_p - data_0, p->length_data_entry);
         entry_p += p->length_data_entry;
