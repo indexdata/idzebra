@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.4  1996-04-10 16:01:27  quinn
+ * Revision 1.5  1996-05-15 11:58:18  adam
+ * Changed some log messages.
+ *
+ * Revision 1.4  1996/04/10  16:01:27  quinn
  * Fixed order of path/filename.
  *
  * Revision 1.3  1995/12/11  11:43:29  adam
@@ -63,12 +66,12 @@ int zebraServerLock (int commitPhase)
     }
     if (commitPhase)
     {
-        logf (LOG_LOG, "Server locks org");
+        logf (LOG_DEBUG, "Server locks org");
         zebraLock (server_lock_org, 0);
     }
     else
     {
-        logf (LOG_LOG, "Server locks cmt");
+        logf (LOG_DEBUG, "Server locks cmt");
         zebraLock (server_lock_cmt, 0);
     }
     return 0;
@@ -80,12 +83,12 @@ void zebraServerUnlock (int commitPhase)
         return;
     if (commitPhase)
     {
-        logf (LOG_LOG, "Server unlocks org");
+        logf (LOG_DEBUG, "Server unlocks org");
         zebraUnlock (server_lock_org);
     }
     else
     {
-        logf (LOG_LOG, "Server unlocks cmt");
+        logf (LOG_DEBUG, "Server unlocks cmt");
         zebraUnlock (server_lock_cmt);
     }
 }
