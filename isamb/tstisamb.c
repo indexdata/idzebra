@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.5 2004-06-02 12:30:32 adam Exp $
+/* $Id: tstisamb.c,v 1.6 2004-06-03 00:24:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -110,12 +110,12 @@ void tst_forward(ISAMB isb, int n)
     /* read the entries */
     pp = isamb_pp_open (isb, isamc_p);
     
-    for (i = 0; i<ri.max; i++)
+    for (i = 0; i<ri.max; i +=2 )
     {
 	int x = -1;
 	int xu = i;
 	isamb_pp_forward(pp, &x, &xu);
-	if (x != xu)
+	if (x != xu && xu != x+1)
 	{
 	    yaz_log(LOG_WARN, "isamb_pp_forward (1). Got %d (expected %d)",
 		    x, xu);
@@ -129,12 +129,12 @@ void tst_forward(ISAMB isb, int n)
     for (i = 0; i<ri.max; i += 100)
     {
 	int x = -1;
-	int xuntil = i;
-	isamb_pp_forward(pp, &x, &xuntil);
-	if (x > xuntil)
+	int xu = i;
+	isamb_pp_forward(pp, &x, &xu);
+	if (x != xu && xu != x+1)
 	{
 	    yaz_log(LOG_WARN, "isamb_pp_forward (2). Got %d (expected %d)",
-		    x, xuntil);
+		    x, xu);
 	    exit(4);
 	}
 	ri.no++;
