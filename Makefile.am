@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.14 2004-07-28 11:15:10 adam Exp $
+## $Id: Makefile.am,v 1.14.2.1 2005-01-16 20:19:03 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -30,6 +30,5 @@ dist-hook:
 		cd $(srcdir)/perl;cp --parents $$f $$pdir); \
 	done
 
-rpm: $(PACKAGE)-$(VERSION).tar.gz
-	cp $(PACKAGE)-$(VERSION).tar.gz /usr/src/redhat/SOURCES
-	rpm -ba $(SPEC_FILE)
+cvs2cl:
+	cvs2cl -F ZEBRA_1_3_16_branch
