@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.1  1996-10-11 10:57:28  adam
+ * Revision 1.2  1996-10-29 14:02:45  adam
+ * Uses buffered read to speed up things.
+ *
+ * Revision 1.1  1996/10/11 10:57:28  adam
  * New module recctrl. Used to manage records (extract/retrieval).
  *
  * Revision 1.7  1996/01/17 14:57:55  adam
@@ -36,11 +39,50 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include "rectext.h"
 
 static void text_init (void)
 {
+}
+
+struct buf_info {
+    struct recExtractCtrl *p;
+    char *buf;
+    int offset;
+    int max;
+};
+
+struct buf_info *buf_open (struct recExtractCtrl *p)
+{
+    struct buf_info *fi = xmalloc (sizeof(*fi));
+
+    fi->p = p;
+    fi->buf = xmalloc (4096);
+    fi->offset = 1;
+    fi->max = 1;
+    return fi;
+}
+
+int buf_read (struct buf_info *fi, char *dst)
+{
+    if (fi->max <= 0)
+        return 0;
+    if (fi->offset >= fi->max)
+    {
+        fi->max = (*fi->p->readf)(fi->p->fh, fi->buf, 4096);
+        fi->offset = 0;
+        if (fi->max <= 0)
+            return 0;
+    }
+    *dst = fi->buf[(fi->offset)++];
+    return 1;
+}
+
+void buf_close (struct buf_info *fi)
+{
+    xfree (fi->buf);
+    xfree (fi);
 }
 
 static int text_extract (struct recExtractCtrl *p)
@@ -48,27 +90,32 @@ static int text_extract (struct recExtractCtrl *p)
     char w[256];
     RecWord recWord;
     int r, seqno = 1;
+    struct buf_info *fi = buf_open (p);
 
     (*p->init)(&recWord);
     recWord.which = Word_String;
     do
     {
         int i = 0;
-
-        r = (*p->readf)(p->fh, w, 1);
+            
+        r = buf_read (fi, w);
         while (r > 0 && i < 255 && isalnum(w[i]))
         {
             i++;
-            r = (*p->readf) (p->fh, w + i, 1);
+            r = buf_read (fi, w + i);
         }
         if (i)
         {
+            int j;
+            for (j = 0; j<i; j++)
+                w[j] = tolower(w[j]);
             w[i] = 0;
             recWord.seqno = seqno++;
             recWord.u.string = w;
             (*p->add)(&recWord);
         }
     } while (r > 0);
+    buf_close (fi);
     return 0;
 }
 
