@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.4 1995-11-28 16:10:45 quinn Exp $
+  $Id: zebra.sgml,v 1.5 1995-11-28 16:34:43 quinn Exp $
 -->
 
 <article>
-<title>Zebra server Administrators's Guide and Reference
+<title>Zebra Server - Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.4 $
+<date>$Revision: 1.5 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -24,11 +24,33 @@ services using the software.
 <sect1>Overview
 
 <p>
+The Zebra system is a fielded free-text indexing and retrieval engine with a
+Z39.50 frontend. You can use any commercial or freeware Z39.50 client
+to access data stored in Zebra.
+
+The Zebra server is our first step towards the development of a fully
+configurable, open information system. Eventually, it will be paired
+off with a powerful Z39.50 client to support complex information
+management tasks within almost any application domain. We're making
+the server available now because it's no fun to be in the open
+information retrieval business all by yourself. We want to allow
+people with interesting data to make their things
+available in interesting ways, without having to start out
+by implementing yet another protocol stack from scratch.
+
+This document is an introduction to the Zebra system. It will tell you
+how to compile the software, and how to prepare your first database.
+It also explains how the server can be configured to give you the
+functionality that you need.
+
+You should read <it/Specifying and Using Application (Database)
+Profiles/, which is bundled with the YAZ documentation, to learn how
+records are formatted, and how you can configure Zebra to handle
+different types of Z39.50 application profiles.
 
 <sect1>Features
 
 <p>
-
 This is a listing of some of the most important features of the
 system.
 
@@ -159,6 +181,11 @@ Support the Item Update extended service of the protocol.
 <item>
 The Zebra search engine supports approximate string matching in the
 index. We'd like to find a way to support and control this from RPN.
+
+<item>
+We want to add a management system that allows you to
+control your databases and configuration tables from a graphical
+interface. We'll probably use Tcl/Tk to stay platform-independent.
 
 </itemize>
 
@@ -534,7 +561,8 @@ Normally, the index files that form dictionaries, inverted
 files, record info, etc., are stored in the directory where you run
 <tt>zebraidx</tt>. If you wish to store these, possibly large, files
 somewhere else, you must add the <tt>register</tt> entry to the
-configuration file. Furthermore, the Zebra system allows indexes to
+configuration file. Furthermore, the Zebra system allows its file
+structures to
 span multiple file systems, which is useful if a very large number of
 records are stored.
 
