@@ -4,8 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.2  1994-08-17 14:09:32  quinn
- * Compiles cleanly (still only dummy.
+ * Revision 1.3  1994-08-17 14:10:41  quinn
+ * *** empty log message ***
+ *
+ * Revision 1.2  1994/08/17  14:09:32  quinn
+ * Compiles cleanly (still only dummy).
  *
  * Revision 1.1  1994/08/17  13:55:08  quinn
  * New blocksystem. dummy only
