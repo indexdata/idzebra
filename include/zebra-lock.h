@@ -11,7 +11,11 @@
 YAZ_BEGIN_CDECL
 
 typedef struct {
+#if HAVE_PTHREAD_H
     pthread_mutex_t mutex;
+#else
+    int dummy;
+#endif
 } Zebra_mutex;
 
 YAZ_EXPORT int zebra_mutex_init (Zebra_mutex *p);
@@ -22,8 +26,10 @@ YAZ_EXPORT int zebra_mutex_unlock (Zebra_mutex *p);
 typedef struct {
     int readers_reading;
     int writers_writing;
+#if HAVE_PTHREAD_H
     pthread_mutex_t mutex;
     pthread_cond_t lock_free;
+#endif
 } Zebra_lock_rdwr;
 
 YAZ_EXPORT int zebra_lock_rdwr_init (Zebra_lock_rdwr *p);
@@ -34,8 +40,12 @@ YAZ_EXPORT int zebra_lock_rdwr_runlock (Zebra_lock_rdwr *p);
 YAZ_EXPORT int zebra_lock_rdwr_wunlock (Zebra_lock_rdwr *p);
 
 typedef struct {
+#if HAVE_PTHREAD_H
     pthread_mutex_t mutex;
     pthread_cond_t cond;
+#else
+    int dummy;
+#endif
 } Zebra_mutex_cond;
 
 YAZ_EXPORT int zebra_mutex_cond_init (Zebra_mutex_cond *p);
@@ -46,4 +56,5 @@ YAZ_EXPORT int zebra_mutex_cond_wait (Zebra_mutex_cond *p);
 YAZ_EXPORT int zebra_mutex_cond_signal (Zebra_mutex_cond *p);
 
 YAZ_END_CDECL
+
 #endif

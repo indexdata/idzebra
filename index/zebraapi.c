@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.29  2000-03-20 19:08:36  adam
+ * Revision 1.30  2000-04-05 09:49:35  adam
+ * On Unix, zebra/z'mbol uses automake.
+ *
+ * Revision 1.29  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -143,6 +146,8 @@ static void zebra_register_unlock (ZebraHandle zh);
 
 static int zebra_register_lock (ZebraHandle zh)
 {
+    zh->errCode = 0;
+    zh->errString = 0;
     if (!zh->service->active)
     {
 	zh->errCode = 1019;
@@ -175,6 +180,7 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->errString = 0;
 
     zh->key_buf = 0;
+    zh->admin_databaseName = 0;
     
     zebra_mutex_cond_lock (&zs->session_lock);
 
@@ -413,6 +419,7 @@ void zebra_close (ZebraHandle zh)
 	xfree (zh->key_buf);
 	zh->key_buf = 0;
     }
+    xfree (zh->admin_databaseName);
     zebra_mutex_cond_lock (&zs->session_lock);
     sp = &zs->sessions;
     while (1)
@@ -522,7 +529,6 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
 
     if (zebra_register_lock (zh))
 	return;
-    zh->errCode = 0;
     pos_array = (int *) xmalloc (num_recs * sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
 	pos_array[i] = recs[i].position;
@@ -649,45 +655,50 @@ void zebra_admin_import_begin (ZebraHandle zh, const char *database)
 {
     if (zebra_register_lock (zh))
 	return;
+    xfree (zh->admin_databaseName);
+    zh->admin_databaseName = xstrdup(database);
     zebra_register_unlock(zh);
+}
+
+void zebra_admin_import_end (ZebraHandle zh)
+{
+    zebraExplain_flush (zh->service->zei, 1, zh);
+    extract_index (zh);
 }
 
 void zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 {
+    int sysno;
+    int i;
     if (zebra_register_lock (zh))
 	return;
-    if (segment->num_segmentRecords == 0)
+    for (i = 0; i<segment->num_segmentRecords; i++)
     {
-	zebraExplain_flush (zh->service->zei, 1, zh);
-	extract_index (zh);
-    }
-    else
-    {
-	int sysno;
-	int i;
-	for (i = 0; i<segment->num_segmentRecords; i++)
+	Z_NamePlusRecord *npr = segment->segmentRecords[i];
+	const char *databaseName = npr->databaseName;
+
+	if (!databaseName)
+	    databaseName = zh->admin_databaseName;
+	printf ("--------------%d--------------------\n", i);
+	if (npr->which == Z_NamePlusRecord_intermediateFragment)
 	{
-	    Z_NamePlusRecord *npr = segment->segmentRecords[i];
-	    printf ("--------------%d--------------------\n", i);
-	    if (npr->which == Z_NamePlusRecord_intermediateFragment)
+	    Z_FragmentSyntax *fragment = npr->u.intermediateFragment;
+	    if (fragment->which == Z_FragmentSyntax_notExternallyTagged)
 	    {
-		Z_FragmentSyntax *fragment = npr->u.intermediateFragment;
-		if (fragment->which == Z_FragmentSyntax_notExternallyTagged)
-		{
-		    Odr_oct *oct = fragment->u.notExternallyTagged;
-		    printf ("%.*s", (oct->len > 100 ? 100 : oct->len) ,
-			    oct->buf);
-		    
-		    sysno = 0;
-		    extract_rec_in_mem (zh, "grs.sgml",
-					oct->buf, oct->len,
-					"Default", 0 /* delete_flag */,
-					0 /* test_mode */,
-					&sysno /* sysno */,
-					1 /* store_keys */,
-					1 /* store_data */,
-					0 /* match criteria */);
-		}
+		Odr_oct *oct = fragment->u.notExternallyTagged;
+		printf ("%.*s", (oct->len > 100 ? 100 : oct->len) ,
+			oct->buf);
+		
+		sysno = 0;
+		extract_rec_in_mem (zh, "grs.sgml",
+				    oct->buf, oct->len,
+				    databaseName,
+				    0 /* delete_flag */,
+				    0 /* test_mode */,
+				    &sysno /* sysno */,
+				    1 /* store_keys */,
+				    1 /* store_data */,
+				    0 /* match criteria */);
 	    }
 	}
     }
@@ -1312,7 +1323,6 @@ static int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
     zh->keys.prevAttrSet = -1;
     zh->keys.prevSeqNo = 0;
     zh->sortKeys = 0;
-
 
     extractCtrl.subType = subType;
     extractCtrl.init = extract_init;

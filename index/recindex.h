@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.17  1999-07-06 12:28:04  adam
+ * Revision 1.18  2000-04-05 09:49:35  adam
+ * On Unix, zebra/z'mbol uses automake.
+ *
+ * Revision 1.17  1999/07/06 12:28:04  adam
  * Updated record index structure. Format includes version ID. Compression
  * algorithm ID is stored for each record block.
  *
@@ -70,12 +73,13 @@
  *
  */
 
+#ifndef RECINDEX_H
+#define RECINDEX_H
+
 #include <zebrautl.h>
 #include <bfile.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 #define REC_NO_INFO 8
 
@@ -86,6 +90,7 @@ typedef struct record_info {
     size_t size[REC_NO_INFO];
     char buf_size[REC_NO_INFO][6];
     size_t size_size[REC_NO_INFO];
+    Zebra_mutex mutex;
 } *Record;
 
 typedef struct records_info *Records;
@@ -113,6 +118,5 @@ enum {
     recInfo_attr
 };
 
-#ifdef __cplusplus
-}
+YAZ_END_CDECL
 #endif

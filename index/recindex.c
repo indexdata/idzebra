@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.28  1999-12-08 22:44:45  adam
+ * Revision 1.29  2000-04-05 09:49:35  adam
+ * On Unix, zebra/z'mbol uses automake.
+ *
+ * Revision 1.28  1999/12/08 22:44:45  adam
  * Zebra/Z'mbol dependencies added.
  *
  * Revision 1.27  1999/10/29 10:02:33  adam
@@ -396,6 +399,7 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
     p->cache_cur = 0;
     p->record_cache = (struct record_cache_entry *)
 	xmalloc (sizeof(*p->record_cache)*p->cache_max);
+    zebra_mutex_init (&p->mutex);
     return p;
 }
 
@@ -635,6 +639,7 @@ void rec_close (Records *pp)
 
     assert (p);
 
+    zebra_mutex_destroy (&p->mutex);
     rec_cache_flush (p, 0);
     xfree (p->record_cache);
 
@@ -655,8 +660,7 @@ void rec_close (Records *pp)
     *pp = NULL;
 }
 
-
-Record rec_get (Records p, int sysno)
+static Record rec_get_int (Records p, int sysno)
 {
     int i, in_size, r;
     Record rec, *recp;
@@ -791,7 +795,17 @@ Record rec_get (Records p, int sysno)
     return rec;
 }
 
-Record rec_new (Records p)
+Record rec_get (Records p, int sysno)
+{
+    Record rec;
+    zebra_mutex_lock (&p->mutex);
+
+    rec = rec_get_int (p, sysno);
+    zebra_mutex_unlock (&p->mutex);
+    return rec;
+}
+
+static Record rec_new_int (Records p)
 {
     int sysno, i;
     Record rec;
@@ -827,10 +841,21 @@ Record rec_new (Records p)
     return rec;
 }
 
+Record rec_new (Records p)
+{
+    Record rec;
+    zebra_mutex_lock (&p->mutex);
+
+    rec = rec_new_int (p);
+    zebra_mutex_unlock (&p->mutex);
+    return rec;
+}
+
 void rec_del (Records p, Record *recpp)
 {
     Record *recp;
 
+    zebra_mutex_lock (&p->mutex);
     (p->head.no_records)--;
     if ((recp = rec_cache_lookup (p, (*recpp)->sysno, recordFlagDelete)))
     {
@@ -842,6 +867,7 @@ void rec_del (Records p, Record *recpp)
         rec_cache_insert (p, *recpp, recordFlagDelete);
         rec_rm (recpp);
     }
+    zebra_mutex_unlock (&p->mutex);
     *recpp = NULL;
 }
 
@@ -849,6 +875,7 @@ void rec_put (Records p, Record *recpp)
 {
     Record *recp;
 
+    zebra_mutex_lock (&p->mutex);
     if ((recp = rec_cache_lookup (p, (*recpp)->sysno, recordFlagWrite)))
     {
         rec_rm (recp);
@@ -859,6 +886,7 @@ void rec_put (Records p, Record *recpp)
         rec_cache_insert (p, *recpp, recordFlagWrite);
         rec_rm (recpp);
     }
+    zebra_mutex_unlock (&p->mutex);
     *recpp = NULL;
 }
 

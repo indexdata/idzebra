@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.26  2000-03-20 19:08:36  adam
+ * Revision 1.27  2000-04-05 09:49:36  adam
+ * On Unix, zebra/z'mbol uses automake.
+ *
+ * Revision 1.26  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -595,7 +598,6 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
     }
     rset_close (rset, rfd);
 
-    zh->errCode = 0;
     *sort_status = Z_SortStatus_success;
     logf (LOG_DEBUG, "resultSetSortSingle end");
 }

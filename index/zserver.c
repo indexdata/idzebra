@@ -1,10 +1,12 @@
 /*
- * Copyright (C) 1995-1999, Index Data 
+ * Copyright (C) 1995-2000, Index Data 
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.77  2000-03-20 19:08:36  adam
+ * Revision 1.78  2000-04-05 09:49:35  adam
+ * On Unix, zebra/z'mbol uses automake.
+ *
+ * Revision 1.77  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -300,6 +302,9 @@ static int bend_sort (void *handle, bend_sort_rr *rr);
 static int bend_delete (void *handle, bend_delete_rr *rr);
 static int bend_esrequest (void *handle, bend_esrequest_rr *rr);
 static int bend_segment (void *handle, bend_segment_rr *rr);
+static int bend_search (void *handle, bend_search_rr *r);
+static int bend_fetch (void *handle, bend_fetch_rr *r);
+static int bend_scan (void *handle, bend_scan_rr *r);
 
 bend_initresult *bend_init (bend_initrequest *q)
 {
@@ -316,6 +321,9 @@ bend_initresult *bend_init (bend_initrequest *q)
     q->bend_delete = bend_delete;
     q->bend_esrequest = bend_esrequest;
     q->bend_segment = bend_segment;
+    q->bend_search = bend_search;
+    q->bend_fetch = bend_fetch;
+    q->bend_scan = bend_scan;
 
     q->implementation_name = "Z'mbol Information Server";
     q->implementation_version = "Z'mbol 1.0";
@@ -355,22 +363,20 @@ bend_initresult *bend_init (bend_initrequest *q)
     return r;
 }
 
-bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
+int bend_search (void *handle, bend_search_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
-    bend_searchresult *r = (bend_searchresult *)
-	odr_malloc (q->stream, sizeof(*r));
 
     r->hits = 0;
     r->errcode = 0;
     r->errstring = NULL;
     
-    logf (LOG_LOG, "ResultSet '%s'", q->setname);
-    switch (q->query->which)
+    logf (LOG_LOG, "ResultSet '%s'", r->setname);
+    switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
-	zebra_search_rpn (zh, q->decode, q->stream, q->query->u.type_1,
-			  q->num_bases, q->basenames, q->setname);
+	zebra_search_rpn (zh, r->decode, r->stream, r->query->u.type_1,
+			  r->num_bases, r->basenames, r->setname);
 	r->errcode = zh->errCode;
 	r->errstring = zh->errString;
 	r->hits = zh->hits;
@@ -382,21 +388,19 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     default:
         r->errcode = 107;
     }
-    return r;
+    return 0;
 }
 
-bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
+int bend_fetch (void *handle, bend_fetch_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
-    bend_fetchresult *r = (bend_fetchresult *)
-	odr_malloc (q->stream, sizeof(*r));
     ZebraRetrievalRecord retrievalRecord;
 
-    retrievalRecord.position = q->number;
+    retrievalRecord.position = r->number;
     
     r->last_in_set = 0;
-    zebra_records_retrieve (zh, q->stream, q->setname, q->comp,
-			    q->format, 1, &retrievalRecord);
+    zebra_records_retrieve (zh, r->stream, r->setname, r->comp,
+			    r->request_format, 1, &retrievalRecord);
     if (zh->errCode)                  /* non Surrogate Diagnostic */
     {
 	r->errcode = zh->errCode;
@@ -404,7 +408,7 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     }
     else if (retrievalRecord.errCode) /* Surrogate Diagnostic */
     {
-	q->surrogate_flag = 1;
+	r->surrogate_flag = 1;
 	r->errcode = retrievalRecord.errCode;
 	r->errstring = retrievalRecord.errString;
 	r->basename = retrievalRecord.base;
@@ -415,27 +419,22 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
 	r->basename = retrievalRecord.base;
 	r->record = retrievalRecord.buf;
 	r->len = retrievalRecord.len;
-	r->format = retrievalRecord.format;
+	r->output_format = retrievalRecord.format;
     }
-    return r;
+    return 0;
 }
 
-bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
+static int bend_scan (void *handle, bend_scan_rr *r)
 {
     ZebraScanEntry *entries;
     ZebraHandle zh = (ZebraHandle) handle;
-    bend_scanresult *r = (bend_scanresult *)
-	odr_malloc (q->stream, sizeof(*r));
     int is_partial, i;
     
-    r->term_position = q->term_position;
-    r->num_entries = q->num_entries;
-
     r->entries = (struct scan_entry *)
-	odr_malloc (q->stream, sizeof(*r->entries) * q->num_entries);
-    zebra_scan (zh, q->stream, q->term,
-		q->attributeset,
-		q->num_bases, q->basenames,
+	odr_malloc (r->stream, sizeof(*r->entries) * r->num_entries);
+    zebra_scan (zh, r->stream, r->term,
+		r->attributeset,
+		r->num_bases, r->basenames,
 		&r->term_position,
 		&r->num_entries, &entries, &is_partial);
     if (is_partial)
@@ -449,7 +448,7 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
     }
     r->errcode = zh->errCode;
     r->errstring = zh->errString;
-    return r;
+    return 0;
 }
 
 void bend_close (void *handle)
@@ -489,8 +488,8 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
     case Z_ESAdminOriginPartToKeep_truncate:
 	yaz_log(LOG_LOG, "adm-truncate");
 	break;
-    case Z_ESAdminOriginPartToKeep_delete:
-	yaz_log(LOG_LOG, "adm-delete");
+    case Z_ESAdminOriginPartToKeep_drop:
+	yaz_log(LOG_LOG, "adm-drop");
 	break;
     case Z_ESAdminOriginPartToKeep_create:
 	yaz_log(LOG_LOG, "adm-create");
@@ -498,6 +497,7 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 	break;
     case Z_ESAdminOriginPartToKeep_import:
 	yaz_log(LOG_LOG, "adm-import");
+	zebra_admin_import_begin (zh, r->toKeep->databaseName);
 	break;
     case Z_ESAdminOriginPartToKeep_refresh:
 	yaz_log(LOG_LOG, "adm-refresh");
@@ -545,8 +545,12 @@ static int es_admin (ZebraHandle zh, Z_Admin *r)
 int bend_segment (void *handle, bend_segment_rr *rr)
 {
     ZebraHandle zh = (ZebraHandle) handle;
+    Z_Segment *segment = rr->segment;
 
-    zebra_admin_import_segment (zh, rr->segment);
+    if (segment->num_segmentRecords)
+	zebra_admin_import_segment (zh, rr->segment);
+    else
+	zebra_admin_import_end (zh);
     return 0;
 }
 
@@ -826,12 +830,7 @@ int main (int argc, char **argv)
     sob->bend_start = bend_start;
     sob->bend_stop = bend_stop;
 
-    if (sob->dynamic)
-    {
-	sob->dynamic = 0;
-	sob->threads = 1;
-    }
     statserv_setcontrol (sob);
 
-    return statserv_main (argc, argv);
+    return statserv_main (argc, argv, bend_init, bend_close);
 }

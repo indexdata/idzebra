@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.h,v $
- * Revision 1.11  2000-03-20 19:08:36  adam
+ * Revision 1.12  2000-04-05 09:49:35  adam
+ * On Unix, zebra/z'mbol uses automake.
+ *
+ * Revision 1.11  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -133,4 +136,5 @@ YAZ_EXPORT void zebra_admin_import_begin (ZebraHandle zh, const char *database);
 YAZ_EXPORT void zebra_admin_import_segment (ZebraHandle zh,
 					    Z_Segment *segment);
 
+void zebra_admin_import_end (ZebraHandle zh);
 YAZ_END_CDECL				      

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1999, Index Data
+ * Copyright (C) 1995-2000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.103  2000-03-20 19:08:36  adam
+ * Revision 1.104  2000-04-05 09:49:35  adam
+ * On Unix, zebra/z'mbol uses automake.
+ *
+ * Revision 1.103  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *

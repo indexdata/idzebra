@@ -1,17 +1,49 @@
-dnl Zebra, Index Data Aps, 1994-1999
-dnl $Id: configure.in,v 1.17 2000-03-15 15:00:30 adam Exp $
-dnl See the file LICENSE.2 for details.
+dnl Zebra, Index Data Aps, 1994-2000
+dnl $Id: configure.in,v 1.18 2000-04-05 09:49:35 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
+AC_MSG_CHECKING(for package)
+if test -r ${srcdir}/LICENSE.zmbol; then
+	AC_MSG_RESULT([Z'mbol])
+	PROGPREFIX=zmbol
+	AC_DEFINE(ZMBOL,1)
+	AM_INIT_AUTOMAKE(zmbol,1.1)
+        SUBLIBS="../rset/librset.a \
+ ../dict/libdict.a \
+ ../isams/libisams.a \
+ ../isam/libisam.a \
+ ../isamc/libisamc.a \
+ ../recctrl/librecctrl.a \
+ ../bfile/libbfile.a \
+ ../dfa/libdfa.a \
+ ../util/libutil.a"
+else
+	AC_MSG_RESULT([Zebra])
+	PROGPREFIX=zebra
+	AC_DEFINE(ZMBOL,0)
+	AM_INIT_AUTOMAKE(zebra,1.1)
+        SUBLIBS="../rset/librset.a ../dict/libdict.a ../isams/libisams.a \
+	../recctrl/librecctrl.a  \
+	../bfile/libbfile.a ../dfa/libdfa.a \
+ 	../util/libutil.a"
+	if test ! -r ${srcdir}/isam; then
+		mkdir ${srcdir}/isam
+		touch ${srcdir}/isam/Makefile.in
+	fi
+	if test ! -r ${srcdir}/isamc; then
+		mkdir ${srcdir}/isamc
+		touch ${srcdir}/isamc/Makefile.in
+	fi
+fi
+AM_CONDITIONAL(ISZMBOL,test $PACKAGE = zmbol)
 dnl ------ Substitutions
+AC_SUBST(SUBLIBS)
 AC_SUBST(ODEFS)
 AC_SUBST(DEFS)
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
 AC_SUBST(YAZLIB)
 AC_SUBST(YAZINC)
-AC_SUBST(SUBDIR)
-AC_SUBST(SUBLIBS)
 AC_SUBST(PROGPREFIX)
 dnl
 dnl ------ Checking programs
@@ -19,17 +51,6 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
-dnl
-dnl ------ Create sub directory lib/bin
-if test ! -d lib; then
-	mkdir lib
-fi
-if test ! -d bin; then
-	mkdir bin
-fi
-dnl ------ Build root
-AC_SUBST(build_root)
-AC_ARG_WITH(build-root, [  --with-buildroot        RPM Build root],[build_root=$withval],[build_root=""])
 dnl
 dnl ------ Look for Yaz
 dnl See if user specified location of yaz-config; otherwise
@@ -129,25 +150,20 @@ AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
 	AC_MSG_WARN(Your system doesn't seem to support ANSI C)
 fi
-dnl
-dnl ------ Is it Zebra or Z'mbol
-if test -r LICENSE.zmbol; then
-	AC_DEFINE(ZMBOL,1)
-	PROGPREFIX=zmbol
-	SUBDIR="util bfile dfa dict isams isamc isam rset recctrl index"
-	SUBMAKE="Makefile util/Makefile bfile/Makefile dfa/Makefile dict/Makefile isams/Makefile isamc/Makefile isam/Makefile rset/Makefile recctrl/Makefile index/Makefile"
-	SUBLIBS="../lib/rset.a ../lib/dict.a ../lib/isams.a ../lib/isam.a\
- ../lib/recctrl.a ../lib/isamc.a ../lib/bfile.a ../lib/dfa.a\
- ../lib/zebrautl.a"
-else
-	PROGPREFIX=zebra
-	SUBDIR="util bfile dfa dict isams rset recctrl index"
-	SUBMAKE="Makefile util/Makefile bfile/Makefile dfa/Makefile dict/Makefile isams/Makefile rset/Makefile recctrl/Makefile index/Makefile"
-	SUBLIBS="../lib/rset.a ../lib/dict.a ../lib/isams.a\
- ../lib/recctrl.a ../lib/bfile.a ../lib/dfa.a\
- ../lib/zebrautl.a"
-	AC_DEFINE(ZMBOL,0)
-fi
-dnl
 dnl ------ Create Makefiles
-AC_OUTPUT($SUBMAKE)
+AC_OUTPUT([
+  Makefile
+  util/Makefile
+  bfile/Makefile
+  dfa/Makefile
+  dict/Makefile
+  isams/Makefile
+  isamc/Makefile
+  isam/Makefile
+  rset/Makefile
+  recctrl/Makefile
+  index/Makefile
+  include/Makefile
+  tab/Makefile
+  test/Makefile test/gils/Makefile test/usmarc/Makefile
+])

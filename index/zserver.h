@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.47  2000-03-20 19:08:36  adam
+ * Revision 1.48  2000-04-05 09:49:35  adam
+ * On Unix, zebra/z'mbol uses automake.
+ *
+ * Revision 1.47  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -262,6 +265,7 @@ struct zebra_session {
     size_t ptr_i;
     size_t key_buf_used;
     int key_file_no;
+    char *admin_databaseName;
 
     int destroyed;
     ZebraSet sets;
