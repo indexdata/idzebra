@@ -11,9 +11,18 @@
         <!ENTITY chap-recordmodel SYSTEM "recordmodel.xml">
         <!ENTITY app-license SYSTEM "license.xml">
         <!ENTITY app-indexdata SYSTEM "indexdata.xml">
+
         <!ENTITY zebraidx-options SYSTEM "zebraidx-options.xml">
+	<!ENTITY ref-local-representation '
+		<xref linkend="local-representation"/>'>
+	<!ENTITY ref-record-types '
+		<xref linkend="record-types"/>'>
+	<!ENTITY ref-configuration-file '
+		<xref linkend="configuration-file"/>'>
+	<!ENTITY ref-shadow-registers '
+		<xref linkend="shadow-registers"/>'>
 ]>
-<!-- $Id: zebra.xml.in,v 1.11 2002-10-08 08:09:43 mike Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.12 2002-10-20 14:02:03 mike Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>

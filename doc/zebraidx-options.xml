@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebraidx-options.xml,v 1.1 2002-09-19 21:06:51 adam Exp $
+   $Id: zebraidx-options.xml,v 1.2 2002-10-20 14:02:03 mike Exp $
    Options for zebraidx.
    Included in both manual and man page for zebraidx
 -->
@@ -14,10 +14,10 @@
     <literal>grs</literal><replaceable>.subtype</replaceable>.
     If no <replaceable>subtype</replaceable> is provided for the GRS
     (General Record Structure) type, the canonical input format
-    is assumed (see <xref linkend="local-representation"/>).
+    is assumed (see &ref-local-representation;).
     Generally, it is probably advisable to specify the record types
     in the <literal>zebra.cfg</literal> file (see
-    <xref linkend="record-types"/>), to avoid confusion at
+    &ref-record-types;), to avoid confusion at
     subsequent updates.
    </para>
   </listitem>
@@ -38,7 +38,7 @@
    <para>
     Update the files according to the group
     settings for <replaceable>group</replaceable>
-    (see <xref linkend="configuration-file"/>).
+    (see &ref-configuration-file;).
    </para>
   </listitem>
  </varlistentry>
@@ -77,7 +77,7 @@
   <listitem>
    <para>
     Disable the use of shadow registers for this operation
-    (see <xref linkend="shadow-registers"/>).
+    (see &ref-shadow-registers;).
    </para>
   </listitem>
  </varlistentry>

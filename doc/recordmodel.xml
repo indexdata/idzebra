@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.10 2002-10-18 08:31:37 mike Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.11 2002-10-20 14:02:03 mike Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -259,7 +259,7 @@
 
     </sect3>
 
-    <sect3>
+    <sect3><!-- ### we shouldn't make such a big deal about this -->
      <title>Variants</title>
 
      <para>
@@ -460,12 +460,12 @@
     </para>
 
     <para>
-     An action is surrounded by curly braces (&lcub;...&rcub;), and
+     An action is surrounded by curly braces ({...}), and
      consists of a sequence of statements. Statements may be separated
      by newlines or semicolons (;).
      Within actions, the strings that matched the expressions
      immediately preceding the action can be referred to as
-     &dollar;0, &dollar;1, &dollar;2, etc.
+     $0, $1, $2, etc.
     </para>
 
     <para>
@@ -476,7 +476,7 @@
      <variablelist>
 
       <varlistentry>
-       <term>begin <emphasis>type &lsqb;parameter ... &rsqb;</emphasis></term>
+       <term>begin <emphasis>type [parameter ... ]</emphasis></term>
        <listitem>
         <para>
          Begin a new
@@ -539,7 +539,7 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>end <emphasis>&lsqb;type&rsqb;</emphasis></term>
+       <term>end <emphasis>[type]</emphasis></term>
        <listitem>
         <para>
          Close a tagged element. If no parameter is given,
@@ -840,8 +840,8 @@
 
     <para>
      Generally, the files are simple ASCII files, which can be maintained
-     using any text editor. Blank lines, and lines beginning with a (&num;) are
-     ignored. Any characters on a line followed by a (&num;) are also ignored.
+     using any text editor. Blank lines, and lines beginning with a (#) are
+     ignored. Any characters on a line followed by a (#) are also ignored.
      All other lines contain <emphasis>directives</emphasis>, which provide
      some setting or value to the system.
      Generally, settings are characterized by a single
@@ -1128,7 +1128,7 @@
        </listitem></varlistentry>
       <varlistentry>
        <term>att
-        <emphasis>att-value att-name &lsqb;local-value&rsqb;</emphasis></term>
+        <emphasis>att-value att-name [local-value]</emphasis></term>
        <listitem>
         <para>
          (o,r) This
@@ -1463,7 +1463,7 @@
        </listitem></varlistentry>
       <varlistentry>
        <term>simpleElement
-        <emphasis>path &lsqb;'variant' variant-request&rsqb;</emphasis></term>
+        <emphasis>path ['variant' variant-request]</emphasis></term>
        <listitem>
         <para>
          (o,r) This corresponds to a simple element request
@@ -1748,9 +1748,9 @@
 
           <listitem>
            <para>
-            Curly braces &lcub;&rcub; may be used to enclose ranges of single
+            Curly braces {} may be used to enclose ranges of single
             characters (possibly using the escape convention described in the
-            preceding point), eg. &lcub;a-z&rcub; to introduce the
+            preceding point), eg. {a-z} to introduce the
             standard range of ASCII characters.
             Note that the interpretation of such a range depends on
             the concrete representation in your local, physical character set.

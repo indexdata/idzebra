@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.10 2002-10-17 21:54:21 mike Exp $ -->
+ <!-- $Id: administration.xml,v 1.11 2002-10-20 14:02:02 mike Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -106,7 +106,7 @@
   <para>
    You can edit the configuration file with a normal text editor.
    parameter names and values are separated by colons in the file. Lines
-   starting with a hash sign (<literal>&num;</literal>) are
+   starting with a hash sign (<literal>#</literal>) are
    treated as comments.
   </para>
   
@@ -162,7 +162,7 @@
     <varlistentry>
      <term>
       <emphasis>group</emphasis>
-      .recordType&lsqb;<emphasis>.name</emphasis>&rsqb;:
+      .recordType[<emphasis>.name</emphasis>]:
       <replaceable>type</replaceable>
      </term>
      <listitem>

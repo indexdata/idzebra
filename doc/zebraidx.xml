@@ -1,5 +1,5 @@
 <chapter id="zebraidx">
- <!-- $Id: zebraidx.xml,v 1.4 2002-10-17 08:10:08 mike Exp $ -->
+ <!-- $Id: zebraidx.xml,v 1.5 2002-10-20 14:02:03 mike Exp $ -->
  <title>Running the Maintenance Interface (zebraidx)</title>
  
  <para>
@@ -11,7 +11,7 @@
   Syntax
   
   <screen>
-   $ zebraidx &lsqb;options&rsqb; command &lsqb;directory&rsqb; ...
+   $ zebraidx [options] command [directory] ...
   </screen>
   
   Options:
@@ -21,6 +21,22 @@
  
  <para>
   Commands
+
+  <!-- From .../zebra/index/main.c:
+	update		*
+	update1
+	update2
+	dump
+	del, delete	*
+	init
+	commit		*
+	clean
+	stat, status
+	dump, dumpdict
+	compact
+       ### Only the ones marked * have been documented.
+  -->
+
   <variablelist>
    
    <varlistentry>

@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.5 2002-10-17 08:10:08 mike Exp $ -->
+ <!-- $Id: server.xml,v 1.6 2002-10-20 14:02:03 mike Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -16,7 +16,7 @@
    <emphasis remap="bf">Syntax</emphasis>
 
    <screen>
-    zebrasrv &lsqb;options&rsqb; &lsqb;listener-address ...&rsqb;
+    zebrasrv [options] [listener-address ...]
    </screen>
 
   </para>
@@ -78,7 +78,7 @@
      <listitem>
       <para>
        The log level. Use a comma-separated list of members of the set
-       &lcub;fatal,debug,warn,log,all,none&rcub;.
+       {fatal,debug,warn,log,all,none}.
       </para>
      </listitem>
     </varlistentry>
@@ -147,7 +147,7 @@
   <para>
 
    <screen>
-    hostname | IP-number &lsqb;: portnumber&rsqb;
+    hostname | IP-number [: portnumber]
    </screen>
 
   </para>
@@ -322,7 +322,7 @@
     For the <emphasis>Truncation</emphasis> attribute,
     <emphasis>No Truncation</emphasis> is the default.
     <emphasis>Left Truncation</emphasis> is not supported.
-    <emphasis>Process &num;</emphasis> is supported, as is
+    <emphasis>Process # in search term</emphasis> is supported, as is
     <emphasis>Regxp-1</emphasis>.
     <emphasis>Regxp-2</emphasis> enables the fault-tolerant (fuzzy)
     search. As a default, a single error (deletion, insertion, 
@@ -403,7 +403,7 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>x&verbar;y</term>
+       <term>x|y</term>
        <listitem>
         <para>
          Matches either <emphasis>x</emphasis> or <emphasis>y</emphasis>.

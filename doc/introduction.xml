@@ -1,12 +1,12 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.18 2002-10-17 08:10:08 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.19 2002-10-20 14:02:03 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
   <title>Overview</title>
   
   <para>
-   <ulink url="http://www.indexdata.dk/zebra/">
+   <ulink url="http://indexdata.dk/zebra/">
      Zebra</ulink>
    is a high-performance, general-purpose structured text
    indexing and retrieval engine. It reads structured records in a
@@ -318,14 +318,14 @@
   </para>
   <para>
    First, there's the Zebra web site at
-   <ulink url="http://www.indexdata.dk/zebra/"/>,
+   <ulink url="http://indexdata.dk/zebra/"/>,
    which always has the most recent version available for download.
    If you have a problem with Zebra, the first thing to do is see
    whether it's fixed in the current release.
   </para>
   <para>
    Second, there's the Zebra mailing list.  Its home page at
-   <ulink url="http://www.indexdata.dk/mailman/listinfo/zebralist"/>
+   <ulink url="http://indexdata.dk/mailman/listinfo/zebralist"/>
    includes a complete archive of all messages that have ever been
    posted on the list.  The Zebra mailing list is used both for
    announcements from the authors (new
@@ -338,7 +338,7 @@
    Third, it's possible to buy a commercial support contract, with
    well defined service levels and response times, from Index Data.
    See
-   <ulink url="http://www.indexdata.dk/support/?lang=en"/>
+   <ulink url="http://indexdata.dk/support/?lang=en"/>
    <!-- ### compare this page with http://indexdata.dk/support2/ -->
    for details.
   </para>
