@@ -1,0 +1,4 @@
+
+the xpath tests have been moved into test/api/xpath*.c
+This directory is not used any more, and should be deleted
+
