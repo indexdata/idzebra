@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.54 2003-03-05 16:44:02 adam Exp $
+/* $Id: kinput.c,v 1.55 2003-04-15 16:46:18 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -358,26 +358,119 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
     return 1;
 }
 
+#define PR_KEY 0
+
+#if PR_KEY
+static void pkey(const char *b, int mode)
+{
+    struct it_key *key = (struct it_key *) b;
+    printf ("%c %d:%d\n", mode + 48, key->sysno, key->seqno);
+}
+#endif
+
 struct heap_cread_info {
     char prev_name[INP_NAME_MAX];
     char cur_name[INP_NAME_MAX];
     char *key;
+    char *key_1, *key_2;
+    int mode_1, mode_2;
+    int sz_1, sz_2;
     struct heap_info *hi;
-    int mode;
+    int first_in_list;
     int more;
+    int ret;
 };
+
+static int heap_cread_item (void *vp, char **dst, int *insertMode);
+
+int heap_cread_item2 (void *vp, char **dst, int *insertMode)
+{
+    struct heap_cread_info *p = (struct heap_cread_info *) vp;
+    int level = 0;
+
+    if (p->ret == 0)    /* lookahead was 0?. Return that in read next round */
+    {
+        p->ret = -1;
+        return 0;
+    }
+    else if (p->ret == -1) /* Must read new item ? */
+    {
+        char *dst_1 = p->key_1;
+        p->ret = heap_cread_item(vp, &dst_1, &p->mode_1);
+        p->sz_1 = dst_1 - p->key_1;
+    }
+    else
+    {        /* lookahead in 2 . Now in 1. */
+        p->sz_1 = p->sz_2;
+        p->mode_1 = p->mode_2;
+        memcpy (p->key_1, p->key_2, p->sz_2);
+    }
+    if (p->mode_1)
+        level = 1;     /* insert */
+    else
+        level = -1;    /* delete */
+    while(1)
+    {
+        char *dst_2 = p->key_2;
+        p->ret = heap_cread_item(vp, &dst_2, &p->mode_2);
+        if (!p->ret)
+        {
+            if (level)
+                break;
+            p->ret = -1;
+            return 0;
+        }
+        p->sz_2 = dst_2 - p->key_2;
+        if (p->sz_1 == p->sz_2 && memcmp(p->key_1, p->key_2, p->sz_1) == 0)
+        {
+            if (p->mode_2) /* adjust level according to deletes/inserts */
+                level++;
+            else
+                level--;
+        }
+        else
+        {
+            if (level)
+                break;
+            /* all the same. new round .. */
+            p->sz_1 = p->sz_2;
+            p->mode_1 = p->mode_2;
+            memcpy (p->key_1, p->key_2, p->sz_1);
+            if (p->mode_1)
+                level = 1;     /* insert */
+            else
+                level = -1;    /* delete */
+        }
+    }
+    /* outcome is insert (1) or delete (0) depending on final level */
+    if (level > 0)
+        *insertMode = 1;
+    else
+        *insertMode = 0;
+    memcpy (*dst, p->key_1, p->sz_1);
+#if PR_KEY
+    printf ("top: ");
+    pkey(*dst, *insertMode); fflush(stdout);
+#endif
+    (*dst) += p->sz_1;
+    return 1;
+}
       
 int heap_cread_item (void *vp, char **dst, int *insertMode)
 {
     struct heap_cread_info *p = (struct heap_cread_info *) vp;
     struct heap_info *hi = p->hi;
 
-    if (p->mode == 1)
+    if (p->first_in_list)
     {
         *insertMode = p->key[0];
         memcpy (*dst, p->key+1, sizeof(struct it_key));
+#if PR_KEY
+        printf ("sub1: ");
+        pkey(*dst, *insertMode);
+#endif
         (*dst) += sizeof(struct it_key);
-        p->mode = 2;
+        p->first_in_list = 0;
         return 1;
     }
     strcpy (p->prev_name, p->cur_name);
@@ -385,11 +478,15 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
         return 0;
     if (*p->cur_name && strcmp (p->cur_name, p->prev_name))
     {
-        p->mode = 1;
+        p->first_in_list = 1;
         return 0;
     }
     *insertMode = p->key[0];
     memcpy (*dst, p->key+1, sizeof(struct it_key));
+#if PR_KEY
+    printf ("sub2: ");
+    pkey(*dst, *insertMode);
+#endif
     (*dst) += sizeof(struct it_key);
     return 1;
 }
@@ -400,12 +497,15 @@ int heap_inpc (struct heap_info *hi)
     ISAMC_I isamc_i = (ISAMC_I) xmalloc (sizeof(*isamc_i));
 
     hci.key = (char *) xmalloc (KEY_SIZE);
-    hci.mode = 1;
+    hci.key_1 = (char *) xmalloc (KEY_SIZE);
+    hci.key_2 = (char *) xmalloc (KEY_SIZE);
+    hci.ret = -1;
+    hci.first_in_list = 1;
     hci.hi = hi;
     hci.more = heap_read_one (hi, hci.cur_name, hci.key);
 
     isamc_i->clientData = &hci;
-    isamc_i->read_item = heap_cread_item;
+    isamc_i->read_item = heap_cread_item2;
 
     while (hci.more)
     {
@@ -443,6 +543,8 @@ int heap_inpc (struct heap_info *hi)
     }
     xfree (isamc_i);
     xfree (hci.key);
+    xfree (hci.key_1);
+    xfree (hci.key_2);
     return 0;
 } 
 
@@ -475,12 +577,15 @@ int heap_inpb (struct heap_info *hi)
     ISAMC_I isamc_i = (ISAMC_I) xmalloc (sizeof(*isamc_i));
 
     hci.key = (char *) xmalloc (KEY_SIZE);
-    hci.mode = 1;
+    hci.key_1 = (char *) xmalloc (KEY_SIZE);
+    hci.key_2 = (char *) xmalloc (KEY_SIZE);
+    hci.ret = -1;
+    hci.first_in_list = 1;
     hci.hi = hi;
     hci.more = heap_read_one (hi, hci.cur_name, hci.key);
 
     isamc_i->clientData = &hci;
-    isamc_i->read_item = heap_cread_item;
+    isamc_i->read_item = heap_cread_item2;
 
     while (hci.more)
     {
@@ -522,6 +627,8 @@ int heap_inpb (struct heap_info *hi)
     }
     xfree (isamc_i);
     xfree (hci.key);
+    xfree (hci.key_1);
+    xfree (hci.key_2);
     return 0;
 } 
 
@@ -531,7 +638,10 @@ int heap_inpd (struct heap_info *hi)
     ISAMD_I isamd_i = (ISAMD_I) xmalloc (sizeof(*isamd_i));
 
     hci.key = (char *) xmalloc (KEY_SIZE);
-    hci.mode = 1;
+    hci.key_1 = (char *) xmalloc (KEY_SIZE);
+    hci.key_2 = (char *) xmalloc (KEY_SIZE);
+    hci.ret = -1;
+    hci.first_in_list = 1;
     hci.hi = hi;
     hci.more = heap_read_one (hi, hci.cur_name, hci.key);
 
@@ -597,6 +707,9 @@ int heap_inpd (struct heap_info *hi)
         }
     }
     xfree (isamd_i);
+    xfree (hci.key);
+    xfree (hci.key_1);
+    xfree (hci.key_2);
     return 0;
 } 
 
@@ -677,7 +790,10 @@ int heap_inps (struct heap_info *hi)
     ISAMS_I isams_i = (ISAMS_I) xmalloc (sizeof(*isams_i));
 
     hci.key = (char *) xmalloc (KEY_SIZE);
-    hci.mode = 1;
+    hci.key_1 = (char *) xmalloc (KEY_SIZE);
+    hci.key_2 = (char *) xmalloc (KEY_SIZE);
+    hci.first_in_list = 1;
+    hci.ret = -1;
     hci.hi = hi;
     hci.more = heap_read_one (hi, hci.cur_name, hci.key);
 

@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.143 2003-03-13 04:25:17 pop Exp $
+/* $Id: extract.c,v 1.144 2003-04-15 16:46:18 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -419,7 +419,8 @@ static int recordExtract (ZebraHandle zh,
                           SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
                           struct file_read_info *fi,
-			  RecType recType, char *subType, void *clientData)
+			  RecType recType, char *subType, void *clientData,
+                          int force_update)
 {
     RecordAttr *recordAttr;
     int r;
@@ -580,7 +581,7 @@ static int recordExtract (ZebraHandle zh,
 	
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
 
-	if (recordAttr->runNumber ==
+	if (!force_update && recordAttr->runNumber ==
             zebraExplain_runNumberIncrement (zh->reg->zei, 0))
 	{
             yaz_log (LOG_LOG, "run number = %d", recordAttr->runNumber);
@@ -882,7 +883,7 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
     {
         file_begin (fi);
         r = recordExtract (zh, sysno, fname, rGroup, deleteFlag, fi,
-                           recType, subType, clientData);
+                           recType, subType, clientData, 1);
     } while (r && !sysno && fi->file_more);
     file_read_stop (fi);
     if (fd != -1)
@@ -1833,6 +1834,7 @@ char *encode_key_int (int d, char *bp)
     }
     return bp;
 }
+#define OLDENCODE 1
 
 #ifdef OLDENCODE
 /* this is the old encode_key_write 
