@@ -1,5 +1,5 @@
-/* $Id: tstisamb.c,v 1.13 2004-12-13 20:51:31 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: tstisamb.c,v 1.14 2005-01-02 18:51:31 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -44,7 +44,11 @@ int compare_item(const void *a, const void *b)
 
     memcpy(&ia, a, sizeof(int));
     memcpy(&ib, b, sizeof(int));
-    return ia - ib;
+    if (ia > ib)
+	return 1;
+    if (ia < ib)
+	return -1;
+   return 0;
 }
 
 void *code_start()
@@ -84,9 +88,89 @@ int code_read(void *vp, char **dst, int *insertMode)
     memcpy (*dst, &x, sizeof(int));
     (*dst)+=sizeof(int);
 
-    ri->no += ri->step;
+    ri->no = ri->no + ri->step;
     *insertMode = ri->insertMode;
     return 1;
+}
+
+void tst_insert(ISAMB isb, int n)
+{
+    ISAMC_I isamc_i;
+    ISAMC_P isamc_p;
+    struct read_info ri;
+    ISAMB_PP pp;
+    char key_buf[10];
+    int nerrs = 0;
+
+    /* insert a number of entries */
+    ri.no = 0;
+    ri.step = 1;
+    ri.max = n;
+    ri.insertMode = 1;
+
+    isamc_i.clientData = &ri;
+    isamc_i.read_item = code_read;
+    
+    isamc_p = isamb_merge (isb, 0 /* new list */ , &isamc_i);
+
+    /* read the entries */
+    pp = isamb_pp_open (isb, isamc_p, 1);
+
+    ri.no = 0;
+    while(isamb_pp_read (pp, key_buf))
+    {
+	int x;
+	memcpy (&x, key_buf, sizeof(int));
+	if (x != ri.no)
+	{
+	    yaz_log(YLOG_WARN, "isamb_pp_read. n=%d Got %d (expected %d)",
+		    n, x, ri.no);
+	    nerrs++;
+	}
+	else if (nerrs)
+	    yaz_log(YLOG_LOG, "isamb_pp_read. n=%d Got %d",
+		    n, x);
+
+	ri.no++;
+    }
+    if (ri.no != ri.max)
+    {
+	yaz_log(YLOG_WARN, "ri.max != ri.max (%d != %d)", ri.no, ri.max);
+	nerrs++;
+    }
+    isamb_dump(isb, isamc_p, log_pr);
+    isamb_pp_close(pp);
+
+    if (nerrs)
+        exit(3);
+    return;
+    /* delete a number of entries (even ones) */
+    ri.no = 0;
+    ri.step = 2;
+    ri.max = n;
+    ri.insertMode = 0;
+
+    isamc_i.clientData = &ri;
+    isamc_i.read_item = code_read;
+    
+    isamc_p = isamb_merge (isb, isamc_p , &isamc_i);
+
+    /* delete a number of entries (odd ones) */
+    ri.no = 0;
+    ri.step = 2;
+    ri.max = n;
+    ri.insertMode = 0;
+
+    isamc_i.clientData = &ri;
+    isamc_i.read_item = code_read;
+    
+    isamc_p = isamb_merge (isb, isamc_p , &isamc_i);
+
+    if (isamc_p)
+    {
+	yaz_log(YLOG_WARN, "isamb_merge did not return empty list");
+	exit(3);
+    }
 }
 
 void tst_forward(ISAMB isb, int n)
@@ -109,7 +193,7 @@ void tst_forward(ISAMB isb, int n)
     isamc_p = isamb_merge (isb, 0 /* new list */ , &isamc_i);
 
     /* read the entries */
-    pp = isamb_pp_open (isb, isamc_p, 2);
+    pp = isamb_pp_open (isb, isamc_p, 1);
     
     for (i = 0; i<ri.max; i +=2 )
     {
@@ -126,7 +210,7 @@ void tst_forward(ISAMB isb, int n)
     }
     isamb_pp_close(pp);
     
-    pp = isamb_pp_open (isb, isamc_p, 2);
+    pp = isamb_pp_open (isb, isamc_p, 1);
     for (i = 0; i<ri.max; i += 100)
     {
 	int x = -1;
@@ -143,79 +227,6 @@ void tst_forward(ISAMB isb, int n)
     isamb_pp_close(pp);
 
     isamb_unlink(isb, isamc_p);
-}
-
-void tst_insert(ISAMB isb, int n)
-{
-    ISAMC_I isamc_i;
-    ISAMC_P isamc_p;
-    struct read_info ri;
-    ISAMB_PP pp;
-    char key_buf[10];
-
-    /* insert a number of entries */
-    ri.no = 0;
-    ri.step = 1;
-    ri.max = n;
-    ri.insertMode = 1;
-
-    isamc_i.clientData = &ri;
-    isamc_i.read_item = code_read;
-    
-    isamc_p = isamb_merge (isb, 0 /* new list */ , &isamc_i);
-
-    /* read the entries */
-    pp = isamb_pp_open (isb, isamc_p, 2);
-    
-    ri.no = 0;
-    while(isamb_pp_read (pp, key_buf))
-    {
-	int x;
-	memcpy (&x, key_buf, sizeof(int));
-	if (x != ri.no)
-	{
-	    yaz_log(YLOG_WARN, "isamb_pp_read. Got %d (expected %d)",
-		    x, ri.no);
-	    exit(3);
-	}
-	ri.no++;
-    }
-    if (ri.no != ri.max)
-    {
-	yaz_log(YLOG_WARN, "ri.max != ri.max (%d != %d)", ri.no, ri.max);
-	exit(3);
-    }
-    isamb_pp_close(pp);
-
-    isamb_dump(isb, isamc_p, log_pr);
-
-    /* delete a number of entries (even ones) */
-    ri.no = 0;
-    ri.step = 2;
-    ri.max = n;
-    ri.insertMode = 0;
-
-    isamc_i.clientData = &ri;
-    isamc_i.read_item = code_read;
-    
-    isamc_p = isamb_merge (isb, isamc_p , &isamc_i);
-
-    /* delete a number of entries (odd ones) */
-    ri.no = 1;
-    ri.step = 2;
-    ri.max = n;
-    ri.insertMode = 0;
-
-    isamc_i.clientData = &ri;
-    isamc_i.read_item = code_read;
-    
-    isamc_p = isamb_merge (isb, isamc_p , &isamc_i);
-
-    if (isamc_p)
-    {
-	yaz_log(YLOG_WARN, "isamb_merge did not return empty list");
-	exit(3);
-    }
 }
 
 int main(int argc, char **argv)
