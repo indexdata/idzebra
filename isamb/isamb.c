@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.43 2004-06-03 15:05:05 heikki Exp $
+/* $Id: isamb.c,v 1.44 2004-06-04 13:54:56 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -116,6 +116,9 @@ struct ISAMB_PP_s {
     int accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
     struct ISAMB_block **block;
 };
+
+void isamb_pp_pos( ISAMB_PP pp, int *current, int *total );
+         /* FIXME - this should be in a header file */
 
 #if ISAMB_PTR_CODEC
 static void encode_ptr (char **dst, unsigned pos)
@@ -1272,7 +1275,6 @@ static int isamb_pp_climb_level(ISAMB_PP pp, int *pos)
     assert(pp->level>0); 
     close_block(pp->isamb, pp->block[pp->level]);
     pp->block[pp->level]=0;
-    assert(pp->level>0);
     (pp->level)--;
     p=pp->block[pp->level];
 #if ISAMB_DEBUG
@@ -1394,10 +1396,6 @@ static void isamb_pp_descend_to_leaf(ISAMB_PP pp, int pos, const void *untilbuf)
     src=p->bytes + p->offset;
     decode_ptr(&src, &pos);
     p->offset=src-(char*)p->bytes;
-    /*
-    if (untilbuf)
-        pos=isamb_pp_forward_unode(pp,pos,untilbuf);
-    */
     isamb_pp_descend_to_leaf(pp,pos,untilbuf);
 #if ISAMB_DEBUG
     logf(LOG_DEBUG,"isamb_pp_descend_to_leaf "
@@ -1568,7 +1566,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
                             p->pos, p->offset);
 #endif
             assert(!p->leaf);
-	    assert(p->offset <= p->size);
+            assert(p->offset <= p->size);
             /* skip the child we have handled */
             if (p->offset != p->size)
             { 
@@ -1798,4 +1796,80 @@ again:
 int isamb_pp_num (ISAMB_PP pp)
 {
     return 1;
+}
+
+static void isamb_pp_leaf_pos( ISAMB_PP pp, 
+                               int *current, int *total, void *dummybuf )
+{
+    struct ISAMB_block *p = pp->block[pp->level];
+    char *src=p->bytes;
+    char *end=p->bytes+p->size;
+    char *cur=p->bytes+p->offset;
+    char *dst;
+    assert(p->offset <= p->size);
+    assert(cur <= end);
+    assert(p->leaf);
+    *current=0;
+    *total=0;
+
+    while(src < end) {
+        dst=dummybuf;
+        (*pp->isamb->method->code_item)
+           (ISAMC_DECODE, p->decodeClientData,&dst, &src);
+        assert(dst<dummybuf+100); /*FIXME */
+        (*total)++;
+        if (src<=cur)
+             (*current)++;
+    }
+    logf(LOG_DEBUG, "isamb_pp_leaf_pos: cur=%d tot=%d ofs=%d sz=%d lev=%d",
+                    *current, *total, p->offset, p->size, pp->level);
+    assert(src==end);
+}
+
+static void isamb_pp_upper_pos( ISAMB_PP pp, int *current, int *total, 
+                                int size, int level )
+{ /* estimates total/current occurrences from here up, excl leaf */
+    struct ISAMB_block *p = pp->block[level];
+    char *src=p->bytes;
+    char *end=p->bytes+p->size;
+    char *cur=p->bytes+p->offset;
+    int item_size;
+    int child;
+    assert(level>=0);
+    assert(!p->leaf);
+    logf(LOG_DEBUG,"isamb_pp_upper_pos at beginning     l=%d "
+                   "cur=%d tot=%d ofs=%d sz=%d pos=%d", 
+                   level, *current, *total, p->offset, p->size, p->pos);
+    assert (p->offset <= p->size);
+	decode_ptr (&src, &child ); /* first child */
+    while(src < end) {
+        if (src!=cur) {
+            *total += size;
+            if (src < cur)
+                *current +=size;
+        }
+	    decode_ptr (&src, &item_size ); 
+        assert(src+item_size<=end);
+        src += item_size;
+	    decode_ptr (&src, &child );
+    }
+    if (level>0)
+        isamb_pp_upper_pos(pp, current, total, *total, level-1);
+} /* upper_pos */
+
+void isamb_pp_pos( ISAMB_PP pp, int *current, int *total )
+{ /* return an estimate of the current position and of the total number of */
+  /* occureences in the isam tree, based on the current leaf */
+    struct ISAMB_block *p = pp->block[pp->level];
+    char dummy[100]; /* 100 bytes/entry must be enough */
+    assert(total);
+    assert(current);
+    assert(p->leaf);
+    isamb_pp_leaf_pos(pp,current, total, dummy);
+    if (pp->level>0)
+        isamb_pp_upper_pos(pp, current, total, *total, pp->level-1);
+    /*
+    logf(LOG_DEBUG,"isamb_pp_pos: C=%d T=%d =%6.2f%%",
+                    *current, *total, 100.0*(*current)/(*total));
+    */
 }
