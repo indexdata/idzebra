@@ -23,7 +23,7 @@ echo "Starting server with -T (threaded)..."
 )&
 sleep 1
 
-echo "  cheking that it runs... "
+echo "  checking that it runs... "
 test -f zebrasrv.pid || exit 1
 PID=`cat zebrasrv.pid`
 ps -p $PID >/dev/null || exit 1

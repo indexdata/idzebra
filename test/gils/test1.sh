@@ -18,7 +18,7 @@ echo "starting server..."
 ../../index/zebrasrv -S -c zebra1.cfg -l srv.log tcp:@:9901 &
 sleep 1
 
-echo "cheking it runs..."
+echo "checking it runs..."
 test -f zebrasrv.pid || exit 1
 
 echo "search 1..."

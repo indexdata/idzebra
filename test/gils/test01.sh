@@ -18,7 +18,7 @@ echo "Starting server with -1 (one shot)..."
 ../../index/zebrasrv -1 -c zebra1.cfg -l srv.log tcp:@:9901 &
 sleep 1
 
-echo "  cheking that it runs... "
+echo "  checking that it runs... "
 test -f zebrasrv.pid || exit 1
 PID=`cat zebrasrv.pid`
 ps -p $PID >/dev/null || exit 1

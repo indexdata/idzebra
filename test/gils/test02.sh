@@ -20,7 +20,7 @@ echo "Starting server with -S (static)..."
 ../../index/zebrasrv -S -c zebra1.cfg -l srv.log tcp:@:9901 &
 sleep 1
 
-echo "  cheking that it runs... "
+echo "  checking that it runs... "
 test -f zebrasrv.pid || exit 1
 PID=`cat zebrasrv.pid`
 ps -p $PID >/dev/null || exit 1
@@ -33,7 +33,7 @@ echo "  checking that it still runs..."
 ps -p $PID >/dev/null || exit 1
 
 echo "  connecting again, with a delay..."
-../testclient localhost:9901 utah 5 > log &
+../testclient -d 5 localhost:9901 utah > log &
 sleep 1 # let the client connect 
 
 echo "  killing it..."
