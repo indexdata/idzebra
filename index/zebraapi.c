@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.43  2000-12-05 12:22:53  adam
+ * Revision 1.44  2001-10-15 19:53:43  adam
+ * POSIX thread updates. First work on term sets.
+ *
+ * Revision 1.43  2000/12/05 12:22:53  adam
  * Termlist source implemented (so that we can index values of XML/SGML
  * attributes).
  *
@@ -665,16 +668,15 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
     {
 	for (i = 0; i<num_recs; i++)
 	{
-	    if (!poset[i].sysno)
+	    if (poset[i].term)
 	    {
-	        char num_str[20];
-
-		sprintf (num_str, "%d", pos_array[i]);	
-		zh->errCode = 13;
-                zh->errString = nmem_strdup (stream->mem, num_str);
-                break;
+		recs[i].errCode = 0;
+		recs[i].format = VAL_SUTRS;
+		recs[i].len = strlen(poset[i].term);
+		recs[i].buf = poset[i].term;
+		recs[i].base = poset[i].db;
 	    }
-	    else
+	    else if (poset[i].sysno)
 	    {
 		recs[i].errCode =
 		    zebra_record_fetch (zh, poset[i].sysno, poset[i].score,
@@ -683,6 +685,15 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
 					&recs[i].len,
 					&recs[i].base);
 		recs[i].errString = NULL;
+	    }
+	    else
+	    {
+	        char num_str[20];
+
+		sprintf (num_str, "%d", pos_array[i]);	
+		zh->errCode = 13;
+                zh->errString = nmem_strdup (stream->mem, num_str);
+                break;
 	    }
 	}
 	zebraPosSetDestroy (zh, poset, num_recs);
@@ -1345,7 +1356,7 @@ static void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 #endif
         assert (ch > 0);
 	zh->key_buf_used +=
-	    key_SU_code (ch,((char*)zh->key_buf) + zh->key_buf_used);
+	    key_SU_encode (ch,((char*)zh->key_buf) + zh->key_buf_used);
 
         while (*src)
             ((char*)zh->key_buf) [(zh->key_buf_used)++] = *src++;

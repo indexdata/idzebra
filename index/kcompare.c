@@ -253,24 +253,51 @@ ISAMD_M key_isamd_m (Res res,ISAMD_M me)
 
 #endif
 
-int key_SU_code (int ch, char *out)
+int key_SU_encode (int ch, char *out)
 {
     int i;
     for (i = 0; ch; i++)
     {
-	if (ch > 63)
-	    out[i] = 128 + (ch & 63);
+	if (ch >= 64)
+	    out[i] = 65 + (ch & 63);
 	else
 	    out[i] = 1 + ch;
 	ch = ch >> 6;
     }
     return i;
+    /* in   out
+       0     1
+       1     2
+       63    64
+       64    65, 2
+       65    66, 2
+       127   128, 2
+       128   65, 3
+       191   128, 3
+       192   65, 4
+    */
 }
 
+int key_SU_decode (int *ch, unsigned char *out)
+{
+    int len = 1;
+    int fact = 1;
+    *ch = 0;
+    for (len = 1; *out >= 65; len++, out++)
+    {
+	*ch += (*out - 65) * fact;
+	fact <<= 6;
+    }
+    *ch += (*out - 1) * fact;
+    return len;
+}
 
 /* 
  * $Log: kcompare.c,v $
- * Revision 1.35  1999-11-30 13:48:03  adam
+ * Revision 1.36  2001-10-15 19:53:43  adam
+ * POSIX thread updates. First work on term sets.
+ *
+ * Revision 1.35  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.34  1999/07/14 13:21:34  heikki

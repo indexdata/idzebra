@@ -1,66 +1,14 @@
 /*
- * Copyright (C) 1994-2000, Index Data
+ * Copyright (C) 1994-2001, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: zebraver.h,v $
- * Revision 1.17  2000-11-08 14:06:18  adam
- * Updated version.
- *
- * Revision 1.16  2000/02/10 10:19:47  adam
- * Patch level 1.
- *
- * Revision 1.15  1999/12/01 13:30:30  adam
- * Updated configure for Zmbol/Zebra dependent settings.
- *
- * Revision 1.14  1999/11/30 13:48:03  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.13  1999/02/02 14:50:48  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.12  1998/02/10 12:03:05  adam
- * Implemented Sort.
- *
- * Revision 1.11  1998/01/29 13:33:04  adam
- * 1.0b1.
- *
- * Revision 1.10  1997/02/12 20:45:21  adam
- * Internal release.
- *
- * Revision 1.9  1996/11/08 11:08:03  adam
- * New internal release.
- *
- * Revision 1.8  1996/10/18 12:38:22  adam
- * New internal release.
- *
- * Revision 1.7  1996/06/06  13:30:12  quinn
- * Work
- *
- * Revision 1.6  1996/05/16  15:31:07  quinn
- * a7
- *
- * Revision 1.5  1996/04/26  09:59:47  adam
- * Added ZEBRADATE; date of this file.
- *
- * Revision 1.4  1996/04/24  13:36:22  quinn
- * a6
- *
- * Revision 1.3  1996/01/11  10:15:44  quinn
- * Alfa 4 release.
- *
- * Revision 1.2  1995/12/06  16:05:50  adam
- * New version.
- *
- * Revision 1.1  1995/12/05  11:24:51  adam
- * New version.
- *
+ * $Id: zebraver.h,v 1.18 2001-10-15 19:53:43 adam Exp $
  */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.1pre"
+#define ZEBRAVER "1.1"
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 2000-11-08 14:06:18 $"
+#define ZEBRADATE "$Date: 2001-10-15 19:53:43 $"
 #endif

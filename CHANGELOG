@@ -1,3 +1,6 @@
+Added support for termsets - a result set of terms matching
+a given query.
+
 Added support for raw retrieval. Element Set Name R forces the
 text filter which returns the record in its original form.
 

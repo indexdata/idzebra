@@ -5,7 +5,7 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#if HAVE_PTHREAD_H
+#if YAZ_POSIX_THREADS
 #include <pthread.h>
 #endif
 
@@ -17,7 +17,7 @@ typedef struct {
 #ifdef WIN32
     CRITICAL_SECTION mutex;
 #else
-# if HAVE_PTHREAD_H
+# if YAZ_POSIX_THREADS
     pthread_mutex_t mutex;
 # else
     int dummy;
@@ -34,7 +34,7 @@ YAZ_EXPORT int zebra_mutex_unlock (Zebra_mutex *p);
 typedef struct {
     int readers_reading;
     int writers_writing;
-#if HAVE_PTHREAD_H
+#if YAZ_POSIX_THREADS
     pthread_mutex_t mutex;
     pthread_cond_t lock_free;
 #endif
@@ -48,7 +48,7 @@ YAZ_EXPORT int zebra_lock_rdwr_runlock (Zebra_lock_rdwr *p);
 YAZ_EXPORT int zebra_lock_rdwr_wunlock (Zebra_lock_rdwr *p);
 
 typedef struct {
-#if HAVE_PTHREAD_H
+#if YAZ_POSIX_THREADS
     pthread_mutex_t mutex;
     pthread_cond_t cond;
 #else

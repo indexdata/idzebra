@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.106  2001-04-11 07:58:13  adam
+ * Revision 1.107  2001-10-15 19:53:43  adam
+ * POSIX thread updates. First work on term sets.
+ *
+ * Revision 1.106  2001/04/11 07:58:13  adam
  * Bug fix: multiple space mapped to one space when using complete subfield.
  *
  * Revision 1.105  2000/11/08 13:46:59  adam
@@ -406,7 +409,8 @@ typedef struct {
     Z_AttributesPlusTerm *zapt;
 } AttrType;
 
-static int attr_find (AttrType *src, oid_value *attributeSetP)
+static int attr_find_ex (AttrType *src, oid_value *attributeSetP,
+			 const char **string_value)
 {
     int num_attributes;
 
@@ -440,19 +444,34 @@ static int attr_find (AttrType *src, oid_value *attributeSetP)
                 return *element->value.numeric;
                 break;
             case Z_AttributeValue_complex:
-                if (src->minor >= element->value.complex->num_list ||
-                    element->value.complex->list[src->minor]->which !=  
+                if (src->minor >= element->value.complex->num_list)
+		    break;
+                if (element->value.complex->list[src->minor]->which ==  
                     Z_StringOrNumeric_numeric)
-                    break;
-                ++(src->minor);
-                if (element->attributeSet && attributeSetP)
-                {
-                    oident *attrset;
-
-                    attrset = oid_getentbyoid (element->attributeSet);
-                    *attributeSetP = attrset->value;
-                }
-                return *element->value.complex->list[src->minor-1]->u.numeric;
+		{
+		    ++(src->minor);
+		    if (element->attributeSet && attributeSetP)
+		    {
+			oident *attrset;
+			
+			attrset = oid_getentbyoid (element->attributeSet);
+			*attributeSetP = attrset->value;
+		    }
+		    return
+			*element->value.complex->list[src->minor-1]->u.numeric;
+		}
+		else if (element->value.complex->list[src->minor]->which ==  
+			 Z_StringOrNumeric_string)
+		{
+		    if (!string_value)
+			break;
+		    ++(src->minor);
+		    *string_value = 
+			element->value.complex->list[src->minor-1]->u.string;
+		    return -2;
+		}
+		else
+		    break;
             default:
                 assert (0);
             }
@@ -460,6 +479,11 @@ static int attr_find (AttrType *src, oid_value *attributeSetP)
         ++(src->major);
     }
     return -1;
+}
+
+static int attr_find (AttrType *src, oid_value *attributeSetP)
+{
+    return attr_find_ex (src, attributeSetP, 0);
 }
 
 static void attr_init (AttrType *src, Z_AttributesPlusTerm *zapt,
@@ -482,6 +506,7 @@ struct grep_info {
     int isam_p_indx;
     ZebraHandle zh;
     int reg_type;
+    ZebraSet termset;
 };        
 
 static void term_untrans  (ZebraHandle zh, int reg_type,
@@ -535,9 +560,24 @@ static void add_isam_p (const char *name, const char *info,
     assert (*info == sizeof(*p->isam_p_buf));
     memcpy (p->isam_p_buf + p->isam_p_indx, info+1, sizeof(*p->isam_p_buf));
 
-#if 0
-    term_untrans  (p->zh, p->reg_type, term_tmp, name+2);
-    logf (LOG_DEBUG, "grep: %s", term_tmp);
+#if 1
+    if (p->termset)
+    {
+	const char *db;
+	int set, use;
+	char term_tmp[512];
+	int su_code = 0;
+	int len = key_SU_decode (&su_code, name);
+	
+	term_untrans  (p->zh, p->reg_type, term_tmp, name+len+1);
+	logf (LOG_LOG, "grep: %d %c %s", su_code, name[len], term_tmp);
+	zebraExplain_lookup_ord (p->zh->service->zei,
+				 su_code, &db, &set, &use);
+	logf (LOG_LOG, "grep:  set=%d use=%d db=%s", set, use, db);
+	
+	resultSetAddTerm (p->zh, p->termset, name[len], db,
+			  set, use, term_tmp);
+    }
 #endif
     (p->isam_p_indx)++;
 }
@@ -1203,7 +1243,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             else
                 term_dict[prefix_len++] = '(';
 
-	    ord_len = key_SU_code (ord, ord_buf);
+	    ord_len = key_SU_encode (ord, ord_buf);
 	    for (i = 0; i<ord_len; i++)
 	    {
 		term_dict[prefix_len++] = 1;
@@ -1654,6 +1694,53 @@ char *normalize_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     }
 }
 
+static int grep_info_prepare (ZebraHandle zh,
+			      Z_AttributesPlusTerm *zapt,
+			      struct grep_info *grep_info,
+			      int reg_type,
+			      NMEM stream)
+{
+    AttrType termset;
+    int termset_value_numeric;
+    const char *termset_value_string;
+
+#ifdef TERM_COUNT
+    grep_info->term_no = 0;
+#endif
+    grep_info->isam_p_size = 0;
+    grep_info->isam_p_buf = NULL;
+    grep_info->zh = zh;
+    grep_info->reg_type = reg_type;
+    grep_info->termset = 0;
+
+    attr_init (&termset, zapt, 8);
+    termset_value_numeric =
+	attr_find_ex (&termset, NULL, &termset_value_string);
+    if (termset_value_numeric != -1)
+    {
+	char resname[32];
+	const char *termset_name = 0;
+	if (termset_value_numeric != -2)
+	{
+    
+	    sprintf (resname, "%d", termset_value_numeric);
+	    termset_name = resname;
+	}
+	else
+	    termset_name = termset_value_string;
+	logf (LOG_LOG, "creating termset set %s", termset_name);
+	grep_info->termset = resultSetAdd (zh, termset_name, 1);
+	if (!grep_info->termset)
+	{
+	    zh->errCode = 128;
+	    zh->errString = nmem_strdup (stream, termset_name);
+	    return -1;
+	}
+    }
+    return 0;
+}
+			       
+
 static RSET rpn_search_APT_phrase (ZebraHandle zh,
                                    Z_AttributesPlusTerm *zapt,
 				   const char *termz_org,
@@ -1670,14 +1757,8 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
 
-#ifdef TERM_COUNT
-    grep_info.term_no = 0;
-#endif
-    grep_info.isam_p_size = 0;
-    grep_info.isam_p_buf = NULL;
-    grep_info.zh = zh;
-    grep_info.reg_type = reg_type;
-
+    if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
+	return 0;
     while (1)
     { 
 	logf (LOG_DEBUG, "APT_phrase termp=%s", termp);
@@ -1729,14 +1810,9 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
     struct grep_info grep_info;
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
-#ifdef TERM_COUNT
-    grep_info.term_no = 0;
-#endif
-    grep_info.isam_p_size = 0;
-    grep_info.isam_p_buf = NULL;
-    grep_info.zh = zh;
-    grep_info.reg_type = reg_type;
 
+    if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
+	return 0;
     while (1)
     { 
 	logf (LOG_DEBUG, "APT_or_list termp=%s", termp);
@@ -1795,14 +1871,8 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
 
-#ifdef TERM_COUNT
-    grep_info.term_no = 0;
-#endif
-    grep_info.isam_p_size = 0;
-    grep_info.isam_p_buf = NULL;
-    grep_info.zh = zh;
-    grep_info.reg_type = reg_type;
-
+    if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
+	return 0;
     while (1)
     { 
 	logf (LOG_DEBUG, "APT_and_list termp=%s", termp);
@@ -1963,7 +2033,7 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             else
                 term_dict[prefix_len++] = '(';
 
-	    ord_len = key_SU_code (ord, ord_buf);
+	    ord_len = key_SU_encode (ord, ord_buf);
 	    for (i = 0; i<ord_len; i++)
 	    {
 		term_dict[prefix_len++] = 1;
@@ -2005,14 +2075,8 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
     int i, r, rset_no = 0;
     struct grep_info grep_info;
 
-#ifdef TERM_COUNT
-    grep_info.term_no = 0;
-#endif
-    grep_info.isam_p_size = 0;
-    grep_info.isam_p_buf = NULL;
-    grep_info.zh = zh;
-    grep_info.reg_type = reg_type;
-
+    if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
+	return 0;
     while (1)
     { 
 	logf (LOG_DEBUG, "APT_numeric termp=%s", termp);
@@ -2355,18 +2419,24 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
             logf (LOG_DEBUG, "rpn_search_ref");
             r = resultSetRef (zh, zs->u.simple->u.resultSetId);
 	    if (!r)
+	    {
 		r = rset_create (rset_kind_null, NULL);
+		zh->errCode = 30;
+		zh->errString =
+		    nmem_strdup (stream, zs->u.simple->u.resultSetId);
+		return 0;
+	    }
         }
         else
         {
             zh->errCode = 3;
-            return NULL;
+            return 0;
         }
     }
     else
     {
         zh->errCode = 3;
-        return NULL;
+        return 0;
     }
     return r;
 }
@@ -2600,7 +2670,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         for (j = 0; j<before+after; j++)
             scan_info->list[j].term = NULL;
 
-	prefix_len += key_SU_code (ords[i], termz + prefix_len);
+	prefix_len += key_SU_encode (ords[i], termz + prefix_len);
         termz[prefix_len++] = reg_id;
         termz[prefix_len] = 0;
         strcpy (scan_info->prefix, termz);

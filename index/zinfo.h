@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.10  2000-05-15 12:56:37  adam
+ * Revision 1.11  2001-10-15 19:53:43  adam
+ * POSIX thread updates. First work on term sets.
+ *
+ * Revision 1.10  2000/05/15 12:56:37  adam
  * Record offset of size off_t.
  *
  * Revision 1.9  2000/03/20 19:08:36  adam
@@ -71,6 +74,9 @@ int zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_loadAttsets (data1_handle dh, Res res);
 void zebraExplain_flush (ZebraExplainInfo zei, int writeFlag,
 			 void *updateHandle);
+
+int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
+			     const char **db, int *set, int *use);
 
 typedef struct {
     int recordSize;

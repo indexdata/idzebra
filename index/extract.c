@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.108  2001-06-14 11:44:56  adam
+ * Revision 1.109  2001-10-15 19:53:43  adam
+ * POSIX thread updates. First work on term sets.
+ *
+ * Revision 1.108  2001/06/14 11:44:56  adam
  * Bug fix: default storeKeys setting wasn't read when group was specified.
  *
  * Revision 1.107  2001/05/28 13:58:48  adam
@@ -1003,7 +1006,7 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys)
         }
 #endif
         assert (ch > 0);
-	key_buf_used += key_SU_code (ch, ((char*)key_buf) + key_buf_used);
+	key_buf_used += key_SU_encode (ch, ((char*)key_buf) + key_buf_used);
 
         while (*src)
             ((char*)key_buf) [key_buf_used++] = *src++;

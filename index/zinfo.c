@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.21  2000-12-05 10:01:44  adam
+ * Revision 1.22  2001-10-15 19:53:43  adam
+ * POSIX thread updates. First work on term sets.
+ *
+ * Revision 1.21  2000/12/05 10:01:44  adam
  * Fixed bug regarding user-defined attribute sets.
  *
  * Revision 1.20  2000/11/29 14:24:01  adam
@@ -1369,6 +1372,25 @@ int zebraExplain_lookupSU (ZebraExplainInfo zei, int set, int use)
 	 zsui; zsui=zsui->next)
         if (zsui->info.use == use && zsui->info.set == set)
             return zsui->info.ordinal;
+    return -1;
+}
+
+int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
+			     const char **db, int *set, int *use)
+{
+    struct zebDatabaseInfoB *zdb;
+    for (zdb = zei->databaseInfo; zdb; zdb = zdb->next)
+    {
+	struct zebSUInfoB *zsui = zdb->attributeDetails->SUInfo;
+	for ( ;zsui; zsui = zsui->next)
+	    if (zsui->info.ordinal == ord)
+	    {
+		*db = zdb->databaseName;
+		*set = zsui->info.set;
+		*use = zsui->info.use;
+		return 0;
+	    }
+    }
     return -1;
 }
 

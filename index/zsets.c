@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.29  2001-01-22 10:42:56  adam
+ * Revision 1.30  2001-10-15 19:53:43  adam
+ * POSIX thread updates. First work on term sets.
+ *
+ * Revision 1.29  2001/01/22 10:42:56  adam
  * Added numerical sort.
  *
  * Revision 1.28  2000/07/07 12:49:20  adam
@@ -119,6 +122,13 @@
 #define SORT_IDX_ENTRYSIZE 64
 #define ZSET_SORT_MAX_LEVEL 3
 
+struct zebra_set_term_entry {
+    int reg_type;
+    char *db;
+    int set;
+    int use;
+    char *term;
+};
 struct zebra_set {
     char *name;
     RSET rset;
@@ -128,7 +138,10 @@ struct zebra_set {
     char **basenames;
     Z_RPNQuery *rpn;
     struct zset_sort_info *sort_info;
+    struct zebra_set_term_entry *term_entries;
+    int term_entries_max;
     struct zebra_set *next;
+    int locked;
 };
 
 struct zset_sort_entry {
@@ -157,6 +170,7 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, ODR input, ODR output,
     zebraSet = resultSetAdd (zh, setname, 1);
     if (!zebraSet)
 	return 0;
+    zebraSet->locked = 1;
     zebraSet->rpn = 0;
     zebraSet->num_bases = num_bases;
     zebraSet->basenames = basenames;
@@ -169,7 +183,35 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, ODR input, ODR output,
     zh->hits = zebraSet->hits;
     if (zebraSet->rset)
         zebraSet->rpn = rpn;
+    zebraSet->locked = 0;
     return zebraSet;
+}
+
+void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
+		       const char *db, int set,
+		       int use, const char *term)
+{
+    if (!s->nmem)
+	s->nmem = nmem_create ();
+    if (!s->term_entries)
+    {
+	int i;
+	s->term_entries_max = 1000;
+	s->term_entries =
+	    nmem_malloc (s->nmem, s->term_entries_max * 
+			 sizeof(*s->term_entries));
+	for (i = 0; i < s->term_entries_max; i++)
+	    s->term_entries[i].term = 0;
+    }
+    if (s->hits < s->term_entries_max)
+    {
+	s->term_entries[s->hits].reg_type = reg_type;
+	s->term_entries[s->hits].db = nmem_strdup (s->nmem, db);
+	s->term_entries[s->hits].set = set;
+	s->term_entries[s->hits].use = use;
+	s->term_entries[s->hits].term = nmem_strdup (s->nmem, term);
+    }
+    (s->hits)++;
 }
 
 ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
@@ -183,7 +225,7 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     if (s)
     {
 	logf (LOG_DEBUG, "updating result set %s", name);
-	if (!ov)
+	if (!ov || s->locked)
 	    return NULL;
 	if (s->rset)
 	    rset_delete (s->rset);
@@ -211,8 +253,12 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
 	for (i = 0; i < s->sort_info->max_entries; i++)
 	    s->sort_info->entries[i] = s->sort_info->all_entries + i;
     }
+    s->locked = 0;
+    s->term_entries = 0;
+    s->hits = 0;
     s->rset = 0;
-    s->nmem = 0;	
+    s->nmem = 0;
+    s->rpn = 0;
     return s;
 }
 
@@ -223,14 +269,13 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
     for (s = zh->sets; s; s = s->next)
         if (!strcmp (s->name, name))
         {
-            if (!s->rset && s->rpn)
+            if (!s->term_entries && !s->rset && s->rpn)
             {
                 NMEM nmem = nmem_create ();
                 s->rset =
                     rpn_search (zh, nmem, s->rpn, s->num_bases,
 				s->basenames, s->name, s);
                 nmem_destroy (nmem);
-
             }
             return s;
         }
@@ -272,7 +317,8 @@ void resultSetDestroy (ZebraHandle zh, int num, char **names,int *statuses)
 	    
 	    if (s->nmem)
 		nmem_destroy (s->nmem);
-	    rset_delete (s->rset);
+	    if (s->rset)
+		rset_delete (s->rset);
 	    xfree (s->name);
 	    xfree (s);
 	}
@@ -285,7 +331,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 			       int num, int *positions)
 {
     ZebraSet sset;
-    ZebraPosSet sr;
+    ZebraPosSet sr = 0;
     RSET rset;
     int i;
     struct zset_sort_info *sort_info;
@@ -293,75 +339,100 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
     if (!(sset = resultSetGet (zh, name)))
         return NULL;
     if (!(rset = sset->rset))
-        return NULL;
-    sr = (ZebraPosSet) xmalloc (sizeof(*sr) * num);
-    for (i = 0; i<num; i++)
     {
-	sr[i].sysno = 0;
-	sr[i].score = -1;
-    }
-    sort_info = sset->sort_info;
-    if (sort_info)
-    {
-	int position;
-
+	if (!sset->term_entries)
+	    return 0;
+	sr = (ZebraPosSet) xmalloc (sizeof(*sr) * num);
 	for (i = 0; i<num; i++)
 	{
-	    position = positions[i];
-	    if (position > 0 && position <= sort_info->num_entries)
-	    {
-		logf (LOG_DEBUG, "got pos=%d (sorted)", position);
-		sr[i].sysno = sort_info->entries[position-1]->sysno;
-		sr[i].score = sort_info->entries[position-1]->score;
-	    }
-	}
-    }
-    /* did we really get all entries using sort ? */
-    for (i = 0; i<num; i++)
-    {
-	if (!sr[i].sysno)
-	    break;
-    }
-    if (i < num) /* nope, get the rest, unsorted - sorry */
-    {
-	int position = 0;
-	int num_i = 0;
-	int psysno = 0;
-	int term_index;
-	RSFD rfd;
-	struct it_key key;
+	    int j;
+	    struct zebra_set_term_entry *entry = sset->term_entries;
 
-	if (sort_info)
-	    position = sort_info->num_entries;
-	while (num_i < num && positions[num_i] < position)
-	    num_i++;
-	rfd = rset_open (rset, RSETF_READ);
-	while (num_i < num && rset_read (rset, rfd, &key, &term_index))
-	{
-	    if (key.sysno != psysno)
+	    sr[i].sysno = 0;
+	    sr[i].score = -1;
+	    sr[i].term = 0;
+	    sr[i].db = 0;
+
+	    if (positions[i] <= sset->term_entries_max)
 	    {
-		psysno = key.sysno;
-		if (sort_info)
+		sr[i].term = sset->term_entries[positions[i]-1].term;
+		sr[i].db = sset->term_entries[positions[i]-1].db;
+	    }
+	}
+    }
+    else
+    {
+	sr = (ZebraPosSet) xmalloc (sizeof(*sr) * num);
+	for (i = 0; i<num; i++)
+	{
+	    sr[i].sysno = 0;
+	    sr[i].score = -1;
+	    sr[i].term = 0;
+	    sr[i].db = 0;
+	}
+	sort_info = sset->sort_info;
+	if (sort_info)
+	{
+	    int position;
+	    
+	    for (i = 0; i<num; i++)
+	    {
+		position = positions[i];
+		if (position > 0 && position <= sort_info->num_entries)
 		{
-		    /* determine we alreay have this in our set */
-		    for (i = sort_info->num_entries; --i >= 0; )
-			if (psysno == sort_info->entries[i]->sysno)
-			    break;
-		    if (i >= 0)
-			continue;
-		}
-		position++;
-		assert (num_i < num);
-		if (position == positions[num_i])
-		{
-		    sr[num_i].sysno = psysno;
-		    logf (LOG_DEBUG, "got pos=%d (unsorted)", position);
-		    sr[num_i].score = -1;
-		    num_i++;
+		    logf (LOG_DEBUG, "got pos=%d (sorted)", position);
+		    sr[i].sysno = sort_info->entries[position-1]->sysno;
+		    sr[i].score = sort_info->entries[position-1]->score;
 		}
 	    }
 	}
-	rset_close (rset, rfd);
+	/* did we really get all entries using sort ? */
+	for (i = 0; i<num; i++)
+	{
+	    if (!sr[i].sysno)
+		break;
+	}
+	if (i < num) /* nope, get the rest, unsorted - sorry */
+	{
+	    int position = 0;
+	    int num_i = 0;
+	    int psysno = 0;
+	    int term_index;
+	    RSFD rfd;
+	    struct it_key key;
+	    
+	    if (sort_info)
+		position = sort_info->num_entries;
+	    while (num_i < num && positions[num_i] < position)
+		num_i++;
+	    rfd = rset_open (rset, RSETF_READ);
+	    while (num_i < num && rset_read (rset, rfd, &key, &term_index))
+	    {
+		if (key.sysno != psysno)
+		{
+		    psysno = key.sysno;
+		    if (sort_info)
+		    {
+			/* determine we alreay have this in our set */
+			for (i = sort_info->num_entries; --i >= 0; )
+			    if (psysno == sort_info->entries[i]->sysno)
+				break;
+			if (i >= 0)
+			    continue;
+		    }
+		    position++;
+		    assert (num_i < num);
+		    if (position == positions[num_i])
+		    {
+			sr[num_i].sysno = psysno;
+			logf (LOG_DEBUG, "got pos=%d (unsorted)", position);
+			sr[num_i].score = -1;
+			num_i++;
+		    }
+		}
+	    }
+	    rset_close (rset, rfd);
+	}
     }
     return sr;
 }
