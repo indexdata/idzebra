@@ -8,7 +8,9 @@ zebra.aux
 zebra.pdf
 manpage.links
 manpage.refs
-zebraidx.1
-zebrasrv.8
+*.8
+*.1
 *.html
+*.tkl
 *.dsl
+*.php

@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.19 2002-10-20 14:02:03 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.20 2002-11-08 13:23:52 adam Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -236,7 +236,7 @@
   <sect2>
    <title>NLI-Z39.50 - a Natural Language Interface for Libraries</title>
    <para>
-    Fernuniversität Hagen in Germany have developed a natural
+    Fernuniversit&#x00E4;t Hagen in Germany have developed a natural
     language interface for access to library databases.
     <ulink url="http://ki212.fernuni-hagen.de/nli/NLIintro.html"/>
     In order to evaluate this interface for recall and precision, they

@@ -1,10 +1,11 @@
-## $Id: Makefile.am,v 1.17 2002-10-30 12:55:18 adam Exp $
+## $Id: Makefile.am,v 1.18 2002-11-08 13:23:52 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
  zebrahtml.dsl.in \
  zebraphp.dsl.in \
  zebraprint.dsl.in \
+ tkl.xsl.in \
  xml.dcl
 XMLFILES = \
  zebra.xml.in \
@@ -52,6 +53,9 @@ zebra.pdf: $(XMLFILES)
 	pdfjadetex zebra.tex
 	pdfjadetex zebra.tex
 	pdfjadetex zebra.tex
+
+index.tkl: $(XMLFILES) tkl.xsl
+	xsltproc tkl.xsl zebra.xml
 
 gils.txt: gils.sgml
 	sgml2txt -f gils.sgml
