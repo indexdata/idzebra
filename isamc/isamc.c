@@ -1,4 +1,4 @@
-/* $Id: isamc.c,v 1.25 2004-08-04 08:35:24 adam Exp $
+/* $Id: isamc.c,v 1.26 2004-08-06 12:28:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -420,7 +420,7 @@ static void init_fc (ISAMC is, int cat)
     int j = 100;
         
     is->files[cat].fc_max = j;
-    is->files[cat].fc_list = (int *)
+    is->files[cat].fc_list = (zint *)
 	xmalloc (sizeof(*is->files[0].fc_list) * j);
     while (--j >= 0)
         is->files[cat].fc_list[j] = 0;
@@ -428,7 +428,8 @@ static void init_fc (ISAMC is, int cat)
 
 static void release_fc (ISAMC is, int cat)
 {
-    int b, j = is->files[cat].fc_max;
+    int j = is->files[cat].fc_max;
+    zint b;
 
     while (--j >= 0)
         if ((b = is->files[cat].fc_list[j]))
@@ -452,7 +453,7 @@ ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P ipos)
     ISAMC_PP pp = (ISAMC_PP) xmalloc (sizeof(*pp));
     char *src;
    
-    pp->cat = isc_type(ipos);
+    pp->cat = (int) isc_type(ipos);
     pp->pos = isc_block(ipos); 
 
     src = pp->buf = (char *) xmalloc (is->method->filecat[pp->cat].bsize);

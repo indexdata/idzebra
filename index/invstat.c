@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.36 2004-08-04 08:35:23 adam Exp $
+/* $Id: invstat.c,v 1.37 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -29,7 +29,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct inv_stat_info {
     ZebraHandle zh;
-    int no_isam_entries[9];
+    zint no_isam_entries[9];
     int no_dict_entries;
     int no_dict_bytes;
     int isam_bounds[20];
@@ -45,7 +45,7 @@ struct inv_stat_info {
 #define SINGLETON_TYPE 8 /* the type to use for singletons that */ 
                          /* have no block and no block type */
 
-static void print_dict_item (ZebraMaps zm, const char *s, int count,
+static void print_dict_item (ZebraMaps zm, const char *s, zint count,
             int firstsys, int firstseq, int lastsys, int lastseq )
 {
     int reg_type = s[1];
@@ -71,7 +71,7 @@ static void print_dict_item (ZebraMaps zm, const char *s, int count,
 static int inv_stat_handle (char *name, const char *info, int pos,
                             void *client)
 {
-    int occur = 0;
+    zint occur = 0;
     int i = 0;
     struct inv_stat_info *stat_info = (struct inv_stat_info*) client;
     ISAMS_P isam_p;
@@ -118,7 +118,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     {
         ISPT ispt;
 
-        ispt = is_position (stat_info->zh->reg->isam, isam_p);
+        ispt = is_position (stat_info->zh->reg->isam, (int) isam_p);
         occur = is_numkeys (ispt);
 	stat_info->no_isam_entries[is_type(isam_p)] += occur;
         is_pt_free (ispt);
@@ -126,7 +126,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     if (stat_info->zh->reg->isamc)
     {
         ISAMC_PP pp;
-        int occurx = 0;
+        zint occurx = 0;
 	struct it_key key;
 
         pp = isc_pp_open (stat_info->zh->reg->isamc, isam_p);
@@ -155,7 +155,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     {
         ISAMB_PP pp;
         struct it_key key;
-        int cat = isam_p & 3;
+        int cat = (int) (isam_p & 3);
         int level;
         int size;
         int blocks;
@@ -200,7 +200,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 {
     int i, prev;
     int before = 0;
-    int occur;
+    zint occur;
     int after = 1000000000;
     struct inv_stat_info stat_info;
     char term_dict[2*IT_MAX_WORD+2];

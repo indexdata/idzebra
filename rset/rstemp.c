@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.40 2004-08-06 10:09:28 heikki Exp $
+/* $Id: rstemp.c,v 1.41 2004-08-06 12:28:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -374,6 +374,6 @@ static int r_write (RSFD rfd, const void *buf)
 static void r_pos (RSFD rfd, double  *current, double  *total)
 {
     struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd;
-    *current=mrfd->cur;
-    *total=mrfd->info->hits;
+    *current=(double) mrfd->cur;
+    *total=(double) mrfd->info->hits;
 }

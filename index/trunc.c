@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.29 2004-08-04 08:35:23 adam Exp $
+/* $Id: trunc.c,v 1.30 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -439,7 +439,11 @@ static int isams_trunc_cmp (const void *p1, const void *p2)
     ISAMS_P i1 = *(ISAMS_P*) p1;
     ISAMS_P i2 = *(ISAMS_P*) p2;
 
-    return i1 - i2;
+    if (i1 > i2)
+        return 1;
+    if (i1 < i2)
+	return -1;
+    return 0;
 }
 
 static int isam_trunc_cmp (const void *p1, const void *p2)
@@ -460,10 +464,15 @@ static int isamc_trunc_cmp (const void *p1, const void *p2)
     ISAMC_P i2 = *(ISAMC_P*) p2;
     int d;
 
-    d = isc_type (i1) - isc_type (i2);
+    d = (int) (isc_type (i1) - isc_type (i2));
     if (d)
         return d;
-    return isc_block (i1) - isc_block (i2);
+    d = isc_block (i1) - isc_block (i2);
+    if (d > 0)
+	return 1;
+    else if (d < 0)
+	return -1;
+    return 0;
 }
 
 RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,

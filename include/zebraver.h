@@ -1,4 +1,4 @@
-/* $Id: zebraver.h,v 1.39 2004-08-04 08:35:23 adam Exp $
+/* $Id: zebraver.h,v 1.40 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define ZEBRAVER "1.4.0"
 
-#define ZEBRADATE "$Date: 2004-08-04 08:35:23 $"
+#define ZEBRADATE "$Date: 2004-08-06 12:28:22 $"
 
 #ifdef __GNUC__
 typedef long long int zint;
@@ -33,9 +33,8 @@ typedef long long int zint;
 #else
 #ifdef WIN32
 typedef __int64 zint;
-#define ZINT_FORMAT "%lld"
-#define ZINT_FORMAT0 "lld"
-#error must define ZINT_FORMAT on Windows
+#define ZINT_FORMAT "%I64d"
+#define ZINT_FORMAT0 "I64d"
 #else
 typedef long zint;
 #define ZINT_FORMAT "%ld"

@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.26 2004-08-06 10:09:27 heikki Exp $
+/* $Id: rset.h,v 1.27 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -59,7 +59,7 @@ void rset_default_pos(RSFD rfd, double *current, double *total);
 
 struct rset_term {
     char *name;
-    int  nn;
+    zint nn;
     char *flags;
     int  count;
     int  type;

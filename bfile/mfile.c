@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.53 2004-08-04 08:35:22 adam Exp $
+/* $Id: mfile.c,v 1.54 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -132,9 +132,10 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
     return 0;
 }
 
-static int file_position(MFile mf, int pos, int offset)
+static zint file_position(MFile mf, zint pos, int offset)
 {
-    int off = 0, c = mf->cur_file, ps;
+    zint off = 0, ps;
+    int c = mf->cur_file;
 
     if ((c > 0 && pos <= mf->files[c-1].top) ||
 	(c < mf->no_files -1 && pos > mf->files[c].top))
@@ -167,7 +168,7 @@ static int file_position(MFile mf, int pos, int offset)
     	SEEK_SET) < 0)
     {
     	logf (LOG_WARN|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
-        logf(LOG_WARN, "pos=%d off=%d blocksize=%d offset=%d",
+        logf(LOG_WARN, "pos=" ZINT_FORMAT " off=" ZINT_FORMAT " blocksize=%d offset=%d",
                        pos, off, mf->blocksize, offset);
     	return -1;
     }
@@ -177,7 +178,12 @@ static int file_position(MFile mf, int pos, int offset)
 
 static int cmp_part_file(const void *p1, const void *p2)
 {
-    return ((part_file *)p1)->number - ((part_file *)p2)->number;
+    zint d = ((part_file *)p1)->number - ((part_file *)p2)->number;
+    if (d > 0)
+        return 1;
+    if (d < 0)
+	return -1;
+    return 0;
 }
 
 /*
@@ -453,7 +459,8 @@ int mf_close(MFile mf)
  */
 int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
 {
-    int rd, toread;
+    zint rd;
+    int toread;
 
     zebra_mutex_lock (&mf->mutex);
     if ((rd = file_position(mf, no, offset)) < 0)
@@ -488,7 +495,9 @@ int mf_read(MFile mf, zint no, int offset, int nbytes, void *buf)
  */
 int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 {
-    int ps, nblocks, towrite;
+    zint ps;
+    zint nblocks;
+    int towrite;
     mf_dir *dp;
     char tmp[FILENAME_MAX+1];
     unsigned char dummych = '\xff';

@@ -1,4 +1,4 @@
-/* $Id: isamc-p.h,v 1.10 2004-08-04 08:35:24 adam Exp $
+/* $Id: isamc-p.h,v 1.11 2004-08-06 12:28:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -48,8 +48,8 @@ typedef struct ISAMC_file_s {
 
     int no_forward;
     int no_backward;
-    int sum_forward;
-    int sum_backward;
+    zint sum_forward;
+    zint sum_backward;
     int no_next;
     int no_prev;
 
@@ -58,7 +58,7 @@ typedef struct ISAMC_file_s {
     int alloc_entries_max;
 
     int fc_max;
-    int *fc_list;
+    zint *fc_list;
 } *ISAMC_file;
 
 struct ISAMC_s {

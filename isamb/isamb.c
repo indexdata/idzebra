@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.51 2004-08-06 10:09:27 heikki Exp $
+/* $Id: isamb.c,v 1.52 2004-08-06 12:28:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -235,11 +235,11 @@ static void flush_blocks (ISAMB b, int cat)
 
 static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
 {
-    int cat = pos&CAT_MASK;
-    int off = ((pos/CAT_MAX) & 
+    int cat = (int) (pos&CAT_MASK);
+    int off = (int) (((pos/CAT_MAX) & 
                (ISAMB_CACHE_ENTRY_SIZE / b->file[cat].head.block_size - 1))
-        * b->file[cat].head.block_size;
-    int norm = pos / (CAT_MASK*ISAMB_CACHE_ENTRY_SIZE / b->file[cat].head.block_size);
+        * b->file[cat].head.block_size);
+    zint norm = pos / (CAT_MASK*ISAMB_CACHE_ENTRY_SIZE / b->file[cat].head.block_size);
     int no = 0;
     struct ISAMB_cache_entry **ce, *ce_this = 0, **ce_last = 0;
 
@@ -330,13 +330,13 @@ void isamb_close (ISAMB isamb)
 
 static struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
 {
-    int cat = pos&CAT_MASK;
+    int cat = (int) (pos&CAT_MASK);
     struct ISAMB_block *p;
     if (!pos)
         return 0;
     p = xmalloc (sizeof(*p));
     p->pos = pos;
-    p->cat = pos & CAT_MASK;
+    p->cat = (int) (pos & CAT_MASK);
     p->buf = xmalloc (b->file[cat].head.block_size);
     p->cbuf = 0;
 
@@ -376,7 +376,7 @@ struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
 
     if (!b->file[cat].head.free_list)
     {
-        int block_no;
+        zint block_no;
         block_no = b->file[cat].head.last_block++;
         p->pos = block_no * CAT_MAX + cat;
     }
@@ -579,7 +579,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             while (src <= half)
             {
                 decode_ptr (&src, &split_size_tmp);
-		*split_size = split_size_tmp;
+		*split_size = (int) split_size_tmp;
 
                 src += *split_size;
                 decode_ptr (&src, &pos);
@@ -588,7 +588,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             memcpy (p->bytes, dst_buf, p_new_size);
 
 	    decode_ptr (&src, &split_size_tmp);
-	    *split_size = split_size_tmp;
+	    *split_size = (int) split_size_tmp;
             memcpy (split_item, src, *split_size);
             src += *split_size;
 
@@ -1074,7 +1074,7 @@ static void isamb_dump_r (ISAMB b, ISAMB_P pos, void (*pr)(const char *str),
 
 void isamb_dump (ISAMB b, ISAMB_P pos, void (*pr)(const char *str))
 {
-    return isamb_dump_r(b, pos, pr, 0);
+    isamb_dump_r(b, pos, pr, 0);
 }
 
 #if 0
@@ -1310,7 +1310,7 @@ static int isamb_pp_climb_level(ISAMB_PP pp, ISAMB_P *pos)
 } /* climb_level */
 
 
-static int isamb_pp_forward_unode(ISAMB_PP pp, int pos, const void *untilbuf)
+static zint isamb_pp_forward_unode(ISAMB_PP pp, zint pos, const void *untilbuf)
 { /* scans a upper node until it finds a child <= untilbuf */
   /* pp points to the key value, as always. pos is the child read from */
   /* the buffer */
@@ -1867,7 +1867,7 @@ static void isamb_pp_upper_pos( ISAMB_PP pp, double *current, double *total,
 	    decode_ptr (&src, &child );
     }
     if (level>0)
-        isamb_pp_upper_pos(pp, current, total, *total, level-1);
+        isamb_pp_upper_pos(pp, current, total, (zint) *total, level-1);
 } /* upper_pos */
 
 void isamb_pp_pos( ISAMB_PP pp, double *current, double *total )
@@ -1880,5 +1880,5 @@ void isamb_pp_pos( ISAMB_PP pp, double *current, double *total )
     assert(p->leaf);
     isamb_pp_leaf_pos(pp,current, total, dummy);
     if (pp->level>0)
-        isamb_pp_upper_pos(pp, current, total, *total, pp->level-1);
+        isamb_pp_upper_pos(pp, current, total, (zint) *total, pp->level-1);
 }

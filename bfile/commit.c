@@ -1,4 +1,4 @@
-/* $Id: commit.c,v 1.17 2004-08-04 08:35:22 adam Exp $
+/* $Id: commit.c,v 1.18 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -137,7 +137,8 @@ static void map_cache_add (struct map_cache *m_p, int from, int to)
 
 static void cf_commit_hash (CFile cf)
 { 
-    int i, bucket_no;
+    int i;
+    zint bucket_no;
     int hash_bytes;
     struct CFile_ph_bucket *p;
 #if CF_OPTIMIZE_COMMIT
@@ -149,7 +150,7 @@ static void cf_commit_hash (CFile cf)
 #endif
 
     p = (struct CFile_ph_bucket *) xmalloc (sizeof(*p));
-    hash_bytes = cf->head.hash_size * sizeof(int);
+    hash_bytes = cf->head.hash_size * sizeof(zint);
     bucket_no = cf->head.first_bucket;
     for (; bucket_no < cf->head.next_bucket; bucket_no++)
     {
@@ -181,7 +182,7 @@ static void cf_commit_hash (CFile cf)
 static void cf_commit_flat (CFile cf)
 {
     zint *fp;
-    int hno;
+    zint hno;
     int i;
     zint vno = 0;
 

@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.35 2004-08-04 08:35:23 adam Exp $
+/* $Id: recindex.c,v 1.36 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -77,7 +77,7 @@ static int read_indx (Records p, SYSNO sysno, void *buf, int itemsize,
     int r;
     zint pos = (sysno-1)*itemsize;
 
-    r = bf_read (p->index_BFile, 1+pos/128, pos%128, itemsize, buf);
+    r = bf_read (p->index_BFile, 1+pos/128, (int) (pos%128), itemsize, buf);
     if (r != 1 && !ignoreError)
     {
         logf (LOG_FATAL|LOG_ERRNO, "read in %s at pos %ld",
@@ -91,7 +91,7 @@ static void write_indx (Records p, SYSNO sysno, void *buf, int itemsize)
 {
     zint pos = (sysno-1)*itemsize;
 
-    bf_write (p->index_BFile, 1+pos/128, pos%128, itemsize, buf);
+    bf_write (p->index_BFile, 1+pos/128, (int) (pos%128), itemsize, buf);
 }
 
 static void rec_release_blocks (Records p, SYSNO sysno)
@@ -107,7 +107,7 @@ static void rec_release_blocks (Records p, SYSNO sysno)
 
     freeblock = entry.next;
     assert (freeblock > 0);
-    dst_type = freeblock & 7;
+    dst_type = (int) (freeblock & 7);
     assert (dst_type < REC_BLOCK_TYPES);
     freeblock = freeblock / 8;
     while (freeblock)
@@ -340,11 +340,11 @@ static void rec_encode_zint (zint n, unsigned char *buf, int *len)
     (*len) = 0;
     while (n > 127)
     {
-	buf[*len] = 128 + (n & 127);
+	buf[*len] = (unsigned) (128 + (n & 127));
 	n = n >> 7;
 	(*len)++;
     }
-    buf[*len] = n;
+    buf[*len] = (unsigned) n;
     (*len)++;
 }
 
@@ -624,7 +624,7 @@ static Record rec_get_int (Records p, SYSNO sysno)
     if (!entry.size)
         return NULL;       /* record is deleted */
 
-    dst_type = entry.next & 7;
+    dst_type = (int) (entry.next & 7);
     assert (dst_type < REC_BLOCK_TYPES);
     freeblock = entry.next / 8;
 

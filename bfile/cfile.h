@@ -1,4 +1,4 @@
-/* $Id: cfile.h,v 1.15 2004-08-04 08:35:22 adam Exp $
+/* $Id: cfile.h,v 1.16 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -32,10 +32,10 @@ YAZ_BEGIN_CDECL
 #define HASH_BUCKET 15
 
 struct CFile_ph_bucket {     /* structure on disc */
-    int no[HASH_BUCKET];     /* block number in original file */
-    int vno[HASH_BUCKET];    /* block number in shadow file */
-    int this_bucket;         /* this bucket number */
-    int next_bucket;         /* next bucket number */
+    zint no[HASH_BUCKET];    /* block number in original file */
+    zint vno[HASH_BUCKET];   /* block number in shadow file */
+    zint this_bucket;        /* this bucket number */
+    zint next_bucket;        /* next bucket number */
 };
 
 struct CFile_hash_bucket {
@@ -62,7 +62,7 @@ typedef struct CFile_struct
     } head;
     MFile block_mf;
     MFile hash_mf;
-    int *array;
+    zint *array;
     struct CFile_hash_bucket **parray;
     struct CFile_hash_bucket *bucket_lru_front, *bucket_lru_back;
     int dirty;

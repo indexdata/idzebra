@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.40 2002-10-22 12:51:08 adam Exp $
+/* $Id: recctrl.h,v 1.41 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -79,7 +79,7 @@ struct recRetrieveCtrl {
     oid_value input_format;           /* Preferred record syntax           */
     Z_RecordComposition *comp;        /* formatting instructions           */
     char      *encoding;              /* preferred character encoding      */
-    int       localno;                /* local id of record                */
+    zint      localno;                /* local id of record                */
     int       score;                  /* score 0-1000 or -1 if none        */
     int       recordSize;             /* size of record in bytes */
     char      *fname;                 /* name of file (or NULL if internal) */

@@ -1,4 +1,4 @@
-/* $Id: cfile.c,v 1.28 2004-08-04 08:35:22 adam Exp $
+/* $Id: cfile.c,v 1.29 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -32,7 +32,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static int write_head (CFile cf)
 {
-    int left = cf->head.hash_size * sizeof(int);
+    int left = cf->head.hash_size * sizeof(zint);
     int bno = 1;
     const char *tab = (char*) cf->array;
 
@@ -51,7 +51,7 @@ static int write_head (CFile cf)
 
 static int read_head (CFile cf)
 {
-    int left = cf->head.hash_size * sizeof(int);
+    int left = cf->head.hash_size * sizeof(zint);
     int bno = 1;
     char *tab = (char*) cf->array;
 
@@ -99,13 +99,13 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         cf->head.state = 1;
         cf->head.block_size = block_size;
         cf->head.hash_size = 199;
-        hash_bytes = cf->head.hash_size * sizeof(int);
+        hash_bytes = cf->head.hash_size * sizeof(zint);
         cf->head.flat_bucket = cf->head.next_bucket = cf->head.first_bucket = 
             (hash_bytes+sizeof(cf->head))/HASH_BSIZE + 2;
         cf->head.next_block = 1;
         if (wflag)
             mf_write (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
-        cf->array = (int *) xmalloc (hash_bytes);
+        cf->array = (zint *) xmalloc (hash_bytes);
         for (i = 0; i<cf->head.hash_size; i++)
             cf->array[i] = 0;
         if (wflag)
@@ -116,11 +116,11 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         *firstp = 0;
         assert (cf->head.block_size == block_size);
         assert (cf->head.hash_size > 2);
-        hash_bytes = cf->head.hash_size * sizeof(int);
+        hash_bytes = cf->head.hash_size * sizeof(zint);
         assert (cf->head.next_bucket > 0);
         assert (cf->head.next_block > 0);
         if (cf->head.state == 1)
-            cf->array = (int *) xmalloc (hash_bytes);
+            cf->array = (zint *) xmalloc (hash_bytes);
         else
             cf->array = NULL;
         read_head (cf);
@@ -146,9 +146,9 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
     return cf;
 }
 
-static int cf_hash (CFile cf, int no)
+static int cf_hash (CFile cf, zint no)
 {
-    return (no>>3) % cf->head.hash_size;
+    return (int) (((no >> 3) % cf->head.hash_size));
 }
 
 static void release_bucket (CFile cf, struct CFile_hash_bucket *p)
@@ -189,7 +189,7 @@ static void flush_bucket (CFile cf, int no_to_flush)
     }
 }
 
-static struct CFile_hash_bucket *alloc_bucket (CFile cf, int block_no, int hno)
+static struct CFile_hash_bucket *alloc_bucket (CFile cf, zint block_no, int hno)
 {
     struct CFile_hash_bucket *p, **pp;
 
@@ -216,7 +216,7 @@ static struct CFile_hash_bucket *alloc_bucket (CFile cf, int block_no, int hno)
     return p;
 }
 
-static struct CFile_hash_bucket *get_bucket (CFile cf, int block_no, int hno)
+static struct CFile_hash_bucket *get_bucket (CFile cf, zint block_no, int hno)
 {
     struct CFile_hash_bucket *p;
 
@@ -231,10 +231,11 @@ static struct CFile_hash_bucket *get_bucket (CFile cf, int block_no, int hno)
     return p;
 }
 
-static struct CFile_hash_bucket *new_bucket (CFile cf, int *block_nop, int hno)
+static struct CFile_hash_bucket *new_bucket (CFile cf, zint *block_nop, int hno)
 {
     struct CFile_hash_bucket *p;
-    int i, block_no;
+    int i;
+    zint block_no;
 
     block_no = *block_nop = cf->head.next_bucket++;
     p = alloc_bucket (cf, block_no, hno);
@@ -250,21 +251,22 @@ static struct CFile_hash_bucket *new_bucket (CFile cf, int *block_nop, int hno)
     return p;
 }
 
-static int cf_lookup_flat (CFile cf, int no)
+static zint cf_lookup_flat (CFile cf, zint no)
 {
-    int hno = (no*sizeof(int))/HASH_BSIZE;
-    int off = (no*sizeof(int)) - hno*HASH_BSIZE;
-    int vno = 0;
+    zint hno = (no*sizeof(zint))/HASH_BSIZE;
+    int off = (int) ((no*sizeof(zint)) - hno*HASH_BSIZE);
+    zint vno = 0;
 
-    mf_read (cf->hash_mf, hno+cf->head.next_bucket, off, sizeof(int), &vno);
+    mf_read (cf->hash_mf, hno+cf->head.next_bucket, off, sizeof(zint), &vno);
     return vno;
 }
 
-static int cf_lookup_hash (CFile cf, int no)
+static zint cf_lookup_hash (CFile cf, zint no)
 {
     int hno = cf_hash (cf, no);
     struct CFile_hash_bucket *hb;
-    int block_no, i;
+    zint block_no;
+    int i;
 
     for (hb = cf->parray[hno]; hb; hb = hb->h_next)
     {
@@ -310,22 +312,23 @@ static int cf_lookup_hash (CFile cf, int no)
     return 0;
 }
 
-static void cf_write_flat (CFile cf, int no, int vno)
+static void cf_write_flat (CFile cf, zint no, zint vno)
 {
-    int hno = (no*sizeof(int))/HASH_BSIZE;
-    int off = (no*sizeof(int)) - hno*HASH_BSIZE;
+    zint hno = (no*sizeof(zint))/HASH_BSIZE;
+    int off = (int) ((no*sizeof(zint)) - hno*HASH_BSIZE);
 
     hno += cf->head.next_bucket;
     if (hno >= cf->head.flat_bucket)
         cf->head.flat_bucket = hno+1;
     cf->dirty = 1;
-    mf_write (cf->hash_mf, hno, off, sizeof(int), &vno);
+    mf_write (cf->hash_mf, hno, off, sizeof(zint), &vno);
 }
 
 static void cf_moveto_flat (CFile cf)
 {
     struct CFile_hash_bucket *p;
-    int i, j;
+    int j;
+    zint i;
 
     logf (LOG_DEBUG, "cf: Moving to flat shadow: %s", cf->rmf->name);
     logf (LOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=" ZINT_FORMAT " total="
@@ -355,27 +358,28 @@ static void cf_moveto_flat (CFile cf)
     cf->dirty = 1;
 }
 
-static int cf_lookup (CFile cf, int no)
+static zint cf_lookup (CFile cf, zint no)
 {
     if (cf->head.state > 1)
         return cf_lookup_flat (cf, no);
     return cf_lookup_hash (cf, no);
 }
 
-static int cf_new_flat (CFile cf, int no)
+static zint cf_new_flat (CFile cf, zint no)
 {
-    int vno = (cf->head.next_block)++;
+    zint vno = (cf->head.next_block)++;
 
     cf_write_flat (cf, no, vno);
     return vno;
 }
 
-static int cf_new_hash (CFile cf, int no)
+static zint cf_new_hash (CFile cf, zint no)
 {
     int hno = cf_hash (cf, no);
     struct CFile_hash_bucket *hbprev = NULL, *hb = cf->parray[hno];
-    int *bucketpp = &cf->array[hno]; 
-    int i, vno = (cf->head.next_block)++;
+    zint *bucketpp = &cf->array[hno]; 
+    int i;
+    zint vno = (cf->head.next_block)++;
   
     for (hb = cf->parray[hno]; hb; hb = hb->h_next)
         if (!hb->ph.vno[HASH_BUCKET-1])
@@ -434,7 +438,7 @@ static int cf_new_hash (CFile cf, int no)
     return vno;
 }
 
-int cf_new (CFile cf, int no)
+zint cf_new (CFile cf, zint no)
 {
     if (cf->head.state > 1)
         return cf_new_flat (cf, no);
@@ -450,7 +454,7 @@ int cf_new (CFile cf, int no)
 
 int cf_read (CFile cf, zint no, int offset, int nbytes, void *buf)
 {
-    int block;
+    zint block;
     
     assert (cf);
     zebra_mutex_lock (&cf->mutex);
@@ -470,7 +474,7 @@ int cf_read (CFile cf, zint no, int offset, int nbytes, void *buf)
 
 int cf_write (CFile cf, zint no, int offset, int nbytes, const void *buf)
 {
-    int block;
+    zint block;
 
     assert (cf);
     zebra_mutex_lock (&cf->mutex);

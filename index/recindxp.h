@@ -1,4 +1,4 @@
-/* $Id: recindxp.h,v 1.13 2004-08-04 08:35:23 adam Exp $
+/* $Id: recindxp.h,v 1.14 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -53,7 +53,7 @@ struct records_info {
     struct records_head {
         char magic[8];
 	char version[4];
-        zint block_size[REC_BLOCK_TYPES];
+        int block_size[REC_BLOCK_TYPES];
         zint block_free[REC_BLOCK_TYPES];
         zint block_last[REC_BLOCK_TYPES];
         zint block_used[REC_BLOCK_TYPES];

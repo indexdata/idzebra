@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.8 2004-08-04 08:35:24 adam Exp $
+/* $Id: zvrank.c,v 1.9 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -131,7 +131,7 @@ struct ts_info {       /* term info */
     char *name;
     int *id;
     /**/
-    int gocc;
+    zint gocc;
     int locc;
     double tf;
     double idf;
@@ -267,7 +267,7 @@ static void idf_none(void *rsi, void *dsi) {
 static void idf_tfidf(void *rsi, void *dsi) {
     RS rs=(RS)rsi;
     DS ds=(DS)dsi;
-    int num_docs, gocc;
+    zint num_docs, gocc;
     int i, veclen;
     double idf;
     /* normal tfidf weight */
@@ -278,7 +278,7 @@ static void idf_tfidf(void *rsi, void *dsi) {
         if (gocc==0) 
             idf=0.0; 
         else
-            idf=blog(num_docs/gocc);
+            idf=blog((double) (num_docs/gocc));
         ds->terms[i].idf=idf;
     }
     return;
@@ -287,7 +287,7 @@ static void idf_tfidf(void *rsi, void *dsi) {
 static void idf_prob(void *rsi, void *dsi) {
     RS rs=(RS)rsi;
     DS ds=(DS)dsi;
-    int num_docs, gocc;
+    zint num_docs, gocc;
     int i, veclen;
     double idf;
     /* probabilistic formulation */
@@ -298,7 +298,7 @@ static void idf_prob(void *rsi, void *dsi) {
         if (gocc==0)
             idf=0.0; 
         else
-            idf=blog((num_docs-gocc)/gocc);
+            idf=blog((double) ((num_docs-gocc)/gocc));
         ds->terms[i].idf=idf;
     }
     return;
@@ -326,7 +326,7 @@ static void idf_freq(void *rsi, void *dsi) {
 static void idf_squared(void *rsi, void *dsi) {
     RS rs=(RS)rsi;
     DS ds=(DS)dsi;
-    int num_docs, gocc;
+    zint num_docs, gocc;
     int i, veclen;
     double idf;
     /* idf ^ 2 */
@@ -689,7 +689,8 @@ static void *zv_begin(struct zebra_register *reg, void *class_handle, RSET rset)
     struct rs_info *rs=(struct rs_info *)xmalloc(sizeof(*rs));
     struct rank_class_info *ci=(struct rank_class_info *)class_handle;
     int i;
-    int veclen, gocc;
+    int veclen;
+    zint gocc;
     /**/
     yaz_log(LOG_DEBUG, "zv_begin");
     veclen=rset->no_rset_terms; /* smaller vector here */
@@ -775,11 +776,11 @@ static int zv_calc (void *rsi, zint sysno)
         (*rs->d_norm_fct)(rs, rs->rdoc);
         dscore=rs->sim_fct(rs->qdoc, rs->rdoc);
     }
-    score = dscore * 1000;
+    score = (int) dscore * 1000;
     yaz_log (LOG_LOG, "sysno=" ZINT_FORMAT " score=%d", sysno, score);
     if (score > 1000) /* should not happen */
         score = 1000;
-    return score;
+    return (int) score;
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $Id: merge.c,v 1.24 2004-08-04 08:35:24 adam Exp $
+/* $Id: merge.c,v 1.25 2004-08-06 12:28:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -135,8 +135,8 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
     }
 }
 
-static int get_border (ISAMC is, struct isc_merge_block *mb, int ptr,
-                       int cat, int firstpos)
+static int get_border (ISAMC is, struct isc_merge_block *mb, zint ptr,
+                       int cat, zint firstpos)
 {
    /* Border set to initial fill or block size depending on
       whether we are creating a new one or updating and old one.
@@ -172,7 +172,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     int r_offset = 0;     /* current offset in r_buf */
     int ptr = 0;          /* pointer */
     void *r_clientData;   /* encode client data */
-    int border;
+    zint border;
     zint numKeys = 0;
 
     r_clientData = (*is->method->codec.start)();

@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.49 2004-08-06 09:37:37 adam Exp $
+/* $Id: kcompare.c,v 1.50 2004-08-06 12:28:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -167,7 +167,7 @@ int key_get_seq(const void *p)
     struct it_key k;
     memcpy (&k, p, sizeof(k));
 #if IT_KEY_NEW
-    return k.mem[k.len-1];
+    return (int) k.mem[k.len-1];
 #else
     return k.seqno;
 #endif
@@ -237,10 +237,10 @@ static CODEC_INLINE void iscz1_encode_int (zint d, char **dst)
 
     while (d > 127)
     {
-        *bp++ = 128 | (d & 127);
+        *bp++ = (unsigned) (128 | (d & 127));
 	d = d >> 7;
     }
-    *bp++ = d;
+    *bp++ = (unsigned) d;
     *dst = (char *) bp;
 }
 
@@ -394,7 +394,7 @@ void iscz1_decode (void *vp, char **dst, const char **src)
 #endif
     
 #if IT_KEY_NEW
-    int leader = iscz1_decode_int ((unsigned char **) src);
+    int leader = (int) iscz1_decode_int ((unsigned char **) src);
     i = leader & 7;
     if (leader & 64)
 	p->key.mem[i] += iscz1_decode_int ((unsigned char **) src);

@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.35 2004-08-06 10:09:28 heikki Exp $
+/* $Id: rsbool.c,v 1.36 2004-08-06 12:28:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -595,7 +595,7 @@ static void r_pos (RSFD rfd, double *current, double *total)
         return;
     }
     r=1.0*(lcur+rcur)/(ltot+rtot); /* weighed average of l and r */
-    *current=p->hits;
+    *current=(double) (p->hits);
     *total=*current/r ; 
 #if RSET_DEBUG
     yaz_log(LOG_DEBUG,"bool_pos: (%s/%s) %0.1f/%0.1f= %0.4f ",
