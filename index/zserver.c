@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.114 2004-03-29 15:48:14 adam Exp $
+/* $Id: zserver.c,v 1.115 2004-05-05 16:22:18 mike Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -327,6 +327,11 @@ static int bend_scan (void *handle, bend_scan_rr *r)
                                 (const char **) r->basenames))
     {
         zebra_result (zh, &r->errcode, &r->errstring);
+        return 0;
+    }
+    if (r->step_size != 0 && *r->step_size != 0) {
+	r->errcode = 205; /* "Only zero step size supported for Scan" */
+	r->errstring = 0;
         return 0;
     }
     r->entries = (struct scan_entry *)
