@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.73 2005-03-08 14:02:15 adam Exp $
+/* $Id: isamb.c,v 1.74 2005-03-18 12:05:11 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -966,17 +966,29 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             }
         }
     }
-    maxp = dst_buf + b->file[b->no_cat-1].head.block_max + quater;
+
     /* this loop runs when we are "appending" to a leaf page. That is
        either it's empty (new) or all file items have been read in
        previous loop */
+
+    /* determine maximum ptr for tail */
+    if (half2)
+    {
+	/* split already. No more splits - fill up to one full (Extra) block */
+	maxp = half2 + b->file[b->no_cat-1].head.block_max;
+    }
+    else
+    {
+	/* no split. Fill up to 1+1/4 block */
+	maxp = dst_buf + b->file[b->no_cat-1].head.block_max + quater;
+    }
     while (lookahead_item)
     {
         char *dst_item;
 	const char *src = lookahead_item;
         char *dst_0 = dst;
         
-	/* compare lookahead with max item */
+	/* if we have a lookahead item, we stop if we exceed the value of it */
         if (max_item &&
             (*b->method->compare_item)(max_item, lookahead_item) <= 0)
         {

@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.17 2005-01-16 23:38:34 adam Exp $
+/* $Id: tstisamb.c,v 1.18 2005-03-18 12:05:11 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -229,6 +229,29 @@ void tst_forward(ISAMB isb, int n)
     isamb_unlink(isb, isamc_p);
 }
 
+void tst_append(ISAMB isb, int n)
+{
+    ISAMC_I isamc_i;
+    ISAMB_P isamb_p = 0;
+    struct read_info ri;
+    int i;
+    int chunk = 10;
+
+    for (i = 0; i < n; i += chunk)
+    {
+	/* insert a number of entries */
+	ri.no = 0;
+	ri.step = 1;
+	ri.max = i + chunk;
+	ri.insertMode = 1;
+	
+	isamc_i.clientData = &ri;
+	isamc_i.read_item = code_read;
+	
+	isamb_p = isamb_merge (isb, isamb_p , &isamc_i);
+    }
+}
+
 int main(int argc, char **argv)
 {
     BFiles bfs;
@@ -270,7 +293,10 @@ int main(int argc, char **argv)
     tst_insert(isb, 100);
     tst_insert(isb, 500);
     tst_insert(isb, 10000);
+
     tst_forward(isb, 10000);
+
+    tst_append(isb, 10000);
     /* close isam handle */
     isamb_close(isb);
 
