@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.h,v $
- * Revision 1.4  1995-12-11 09:03:54  adam
+ * Revision 1.5  1995-12-15 12:36:52  adam
+ * Moved hash file information to union.
+ * Renamed commit files.
+ *
+ * Revision 1.4  1995/12/11  09:03:54  adam
  * New function: cf_unlink.
  * New member of commit file head: state (0) deleted, (1) hash file.
  *
@@ -42,10 +46,14 @@ typedef struct CFile_struct
 {
     struct CFile_head {
         int state;
-        int hash_size;
-        int next_bucket;
-        int next_block;
-        int block_size;
+        union {
+            struct {
+                int hash_size;
+                int next_bucket;
+                int next_block;
+                int block_size;
+            } hash;
+        } u;
     } head;
     MFile block_mf;
     MFile hash_mf;

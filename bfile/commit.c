@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.5  1995-12-12 15:57:55  adam
+ * Revision 1.6  1995-12-15 12:36:53  adam
+ * Moved hash file information to union.
+ * Renamed commit files.
+ *
+ * Revision 1.5  1995/12/12  15:57:55  adam
  * Implemented mf_unlink. cf_unlink uses mf_unlink.
  *
  * Revision 1.4  1995/12/11  09:03:55  adam
@@ -54,9 +58,9 @@ void cf_commit (CFile cf)
         exit (1);
     }
     p = xmalloc (sizeof(*p));
-    hash_bytes = cf->head.hash_size * sizeof(int);
+    hash_bytes = cf->head.u.hash.hash_size * sizeof(int);
     bucket_no = (hash_bytes+sizeof(cf->head))/HASH_BSIZE + 2;
-    for (; bucket_no < cf->head.next_bucket; bucket_no++)
+    for (; bucket_no < cf->head.u.hash.next_bucket; bucket_no++)
     {
         if (!mf_read (cf->hash_mf, bucket_no, 0, 0, p))
         {
