@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.13  1998-02-10 12:03:06  adam
+ * Revision 1.14  1998-02-10 16:39:15  adam
+ * Minor change.
+ *
+ * Revision 1.13  1998/02/10 12:03:06  adam
  * Implemented Sort.
  *
  * Revision 1.12  1997/09/25 14:57:36  adam
@@ -383,7 +386,7 @@ int resultSetSort (ZServerInfo *zi, bend_sort_rr *rr)
     resultSetSortReset (&sset->sort_info);
 
     sset->sort_info = xmalloc (sizeof(*sset->sort_info));
-    sset->sort_info->max_entries = 10;
+    sset->sort_info->max_entries = 100;
     sset->sort_info->num_entries = 0;
     sset->sort_info->entries =	xmalloc (sizeof(*sset->sort_info->entries) * 
 					 sset->sort_info->max_entries);
