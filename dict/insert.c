@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.17  1996-05-14 15:49:09  adam
+ * Revision 1.18  1998-03-05 08:17:24  adam
+ * Added a few comments - no code changed.
+ *
+ * Revision 1.17  1996/05/14 15:49:09  adam
  * Bug fix: In function split_page. In rare cases variable best_indxp was
  * referenced.
  *
@@ -162,23 +165,22 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
         char *info, *info1;
         int slen;
         Dict_char dc;
-        
 
         info = (char*) p + ((short*) p)[j];
         /* entry start */
         memcpy (&dc, info, sizeof(dc));
         assert (dc == best_char);
-        slen = dict_strlen((Dict_char*) info);
+        slen = 1+dict_strlen((Dict_char*) info);
 
-        assert (slen > 0);
-        if (slen == 1)
+        assert (slen > 1);
+        if (slen == 2)
         {
             assert (!info_here);
-            info_here = info+(slen+1)*sizeof(Dict_char);
+            info_here = info+slen*sizeof(Dict_char);
         }
         else
         {
-            info1 = info+(1+slen)*sizeof(Dict_char);  /* info start */
+            info1 = info+slen*sizeof(Dict_char);  /* info start */
             dict_ins (dict, (Dict_char*) (info+sizeof(Dict_char)),
                       subptr, *info1, info1+1);
             dict_bf_readp (dict->dbf, ptr, &p);
@@ -314,16 +316,19 @@ static int dict_ins (Dict dict, const Dict_char *str,
                 /* consider change of userinfo length... */
                 if (*info == userlen)
                 {
+		    /* change of userinfo ? */
                     if (memcmp (info+1, userinfo, userlen))
                     {
                         dict_bf_touch (dict->dbf, ptr);
                         memcpy (info+1, userinfo, userlen);
                         return 1;
                     }
+		    /* same userinfo */
                     return 2;
                 }
                 else if (*info > userlen)
                 {
+		    /* room for new userinfo */
                     DICT_type(p) = 1;
                     *info = userlen;
                     dict_bf_touch (dict->dbf, ptr);
@@ -350,9 +355,9 @@ static int dict_ins (Dict dict, const Dict_char *str,
                 memcpy (&subptr, info, sizeof(Dict_ptr));
                 if (*++str == DICT_EOS)
                 {
-                    int xlen;
-                    
-                    xlen = info[sizeof(Dict_ptr)+sizeof(Dict_char)];
+		    /* finish of string. Store userinfo here... */
+
+                    int xlen = info[sizeof(Dict_ptr)+sizeof(Dict_char)];
                     if (xlen == userlen)
                     {
                         if (memcmp (info+sizeof(Dict_ptr)+sizeof(Dict_char)+1,
@@ -374,10 +379,12 @@ static int dict_ins (Dict dict, const Dict_char *str,
                         dict_bf_touch (dict->dbf, ptr);
                         return 1;
                     }
+		    /* xlen < userlen, expanding needed ... */
                     if (DICT_size(p)+sizeof(Dict_char)+sizeof(Dict_ptr)+
                         userlen >=
                         DICT_pagesize(dict) - (1+DICT_nodir(p))*sizeof(short))
                     {
+			/* not enough room - split needed ... */
                         if (DICT_type(p) == 1)
                         {
                             clean_page (dict, ptr, p, NULL, 0, NULL);
@@ -392,7 +399,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
                         return dict_ins (dict, str-1, ptr, userlen, userinfo);
                     }
                     else
-                    {
+                    {   /* enough room - no split needed ... */
                         info = (char*)p + DICT_size(p);
                         memcpy (info, &subptr, sizeof(subptr));
                         memcpy (info+sizeof(Dict_ptr), &dc, sizeof(Dict_char));

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookup.c,v $
- * Revision 1.7  1996-02-02 13:43:51  adam
+ * Revision 1.8  1998-03-05 08:17:24  adam
+ * Added a few comments - no code changed.
+ *
+ * Revision 1.7  1996/02/02 13:43:51  adam
  * The public functions simply use char instead of Dict_char to represent
  * search strings. Dict_char is used internally only.
  *
