@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.38 2004-08-24 15:00:16 heikki Exp $
+/* $Id: trunc.c,v 1.39 2004-08-25 09:18:06 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,17 +24,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 
-#define NEW_TRUNC 1
-
 #include "index.h"
 #include <rstemp.h>
 #include <rsnull.h>
 #include <rsisams.h>
 #include <rsisamc.h>
 #include <rsisamb.h>
-#if NEW_TRUNC
-#include <rsm_or.h>
-#endif
 #include <rsmultior.h>
 
 struct trunc_info {
