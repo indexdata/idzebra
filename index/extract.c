@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.52  1996-04-25 13:27:57  adam
+ * Revision 1.53  1996-04-26 12:09:43  adam
+ * Added a few comments.
+ *
+ * Revision 1.52  1996/04/25  13:27:57  adam
  * Function recordExtract modified so that files with no keys (possibly empty)
  * are ignored.
  *
@@ -819,8 +822,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     
     if (fi->fd != -1)
     {
+        /* we are going to read from a file, so prepare the extraction */
         extractCtrl.fh = fi;
-        /* extract keys */
         extractCtrl.subType = subType;
         extractCtrl.init = wordInit;
         extractCtrl.add = addRecordKeyAny;
@@ -830,14 +833,17 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         reckeys.prevAttrSet = -1;
         extractCtrl.readf = file_read;
         r = (*recType->extract)(&extractCtrl);
-  
+
         if (r)      
         {
+            /* error occured during extraction ... */
             logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
             return 0;
         }
         if (reckeys.buf_used == 0)
         {
+            /* the extraction process returned no information - the record
+               is probably empty */
             logf (LOG_WARN, "Empty file %s", fname);
             return 0;
         }
@@ -870,9 +876,9 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         }
     }
 
-    /* new record ? */
     if (! *sysno)
     {
+        /* new record */
         if (deleteFlag)
         {
             logf (LOG_LOG, "Cannot delete new record");
@@ -894,6 +900,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     }
     else
     {
+        /* record already exists */
         struct recKeys delkeys;
 
         rec = rec_get (records, *sysno);
@@ -903,6 +910,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         flushRecordKeys (*sysno, 0, &delkeys, rec->info[recInfo_databaseName]);
         if (deleteFlag)
         {
+            /* record going to be deleted */
             logInfo.op = "delete";
             if (!delkeys.buf_used)
             {
@@ -921,6 +929,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         }
         else
         {
+            /* record going to be updated */
             logInfo.op = "update";
             if (!delkeys.buf_used)
             {
@@ -935,14 +944,17 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             }
         }
     }
+    /* update file type */
     xfree (rec->info[recInfo_fileType]);
     rec->info[recInfo_fileType] =
         rec_strdup (rGroup->recordType, &rec->size[recInfo_fileType]);
 
+    /* update filename */
     xfree (rec->info[recInfo_filename]);
     rec->info[recInfo_filename] =
         rec_strdup (fname, &rec->size[recInfo_filename]);
 
+    /* update delete keys */
     xfree (rec->info[recInfo_delKeys]);
     if (reckeys.buf_used > 0 && rGroup->flagStoreKeys == 1)
     {
@@ -964,6 +976,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         rec->size[recInfo_delKeys] = 0;
     }
 
+    /* update store data */
     xfree (rec->info[recInfo_storeData]);
     if (rGroup->flagStoreData == 1)
     {
@@ -995,10 +1008,12 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         rec->info[recInfo_storeData] = NULL;
         rec->size[recInfo_storeData] = 0;
     }
+    /* update database name */
     xfree (rec->info[recInfo_databaseName]);
     rec->info[recInfo_databaseName] =
         rec_strdup (rGroup->databaseName, &rec->size[recInfo_databaseName]); 
 
+    /* commit this record */
     rec_put (records, &rec);
     return 1;
 }
