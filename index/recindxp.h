@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindxp.h,v $
- * Revision 1.2  1995-12-11 09:12:51  adam
+ * Revision 1.3  1995-12-11 11:45:55  adam
+ * Removed commented code.
+ *
+ * Revision 1.2  1995/12/11  09:12:51  adam
  * The rec_get function returns NULL if record doesn't exist - will
  * happen in the server if the result set records have been deleted since
  * the creation of the set (i.e. the search).
@@ -69,19 +72,7 @@ struct record_cache_entry {
 };
 
 struct record_index_entry {
-#if 1
     int next;         /* first block of record info / next free entry */
     int size;         /* size of record or 0 if free entry */
-#else
-    union {
-        struct {
-            int next;
-            int size;
-        } used;
-        struct {
-            int next;
-        } free;
-    } u;
-#endif
 };
 
