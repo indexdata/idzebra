@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.12  1995-09-06 10:34:44  adam
+ * Revision 1.13  1995-11-28 09:06:37  adam
+ * Fixed potential dangling pointer.
+ *
+ * Revision 1.12  1995/09/06  10:34:44  adam
  * Memcpy in clean_page edited to satisfy checkergcc.
  *
  * Revision 1.11  1995/09/04  12:33:31  adam
@@ -92,7 +95,7 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
     void *subp;
     char *info_here;
     Dict_ptr subptr;
-    int i;
+    int i, j;
     short *indxp, *best_indxp = NULL;
     Dict_char best_char = 0;
     Dict_char prev_char = 0;
@@ -131,18 +134,18 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
     if (best_no < 0) /* we didn't find any tail string entry at all! */
         return -1;
 
+    j = best_indxp - (short*) p;
     subptr = new_page (dict, ptr, &subp);
     /* scan entries to see if there is a string with */
     /* length 1. info_here indicates if such entry exist */
     info_here = NULL;
-    for (indxp=best_indxp, i=0; i<best_no; i++, indxp++)
+    for (i=0; i<best_no; i++, j++)
     {
         char *info, *info1;
         int slen;
 
-        assert (*indxp > 0);
-        
-        info = (char*) p + *indxp;                    /* entry start */
+        info = (char*) p + ((short*) p)[j];
+        /* entry start */
         assert (*info == best_char);
         slen = dict_strlen(info);
 
