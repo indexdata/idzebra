@@ -273,7 +273,7 @@ void zebra_repository_show (ZebraHandle zh, const char *path);
    If not, and match_criteria is provided, then sysno is guessed
    If not, and a record is provided, then sysno is got from there */
 
-%apply int *REFERENCE { long long *sysno };
+%apply long long *OUT { long long *sysno };
 %name(insert_record)       
 int zebra_insert_record (ZebraHandle zh, 
 			 const char *recordType,
@@ -354,10 +354,12 @@ int zebra_deleleResultSet(ZebraHandle zh, int function,
 
 
 /* Resultset terms */
+/* disabled
 %name(resultSetTerms)
 int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
                           int no, int *REFERENCE, 
                           int *REFERENCE, char *out, int *REFERENCE);
+*/
 
 /* == Sort ================================================================= */
 %name(sort)
