@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: recgrs.c,v $
- * Revision 1.42  2002-02-20 17:30:01  adam
+ * Revision 1.43  2002-03-21 23:06:36  adam
+ * Source 'tag' in abs-file
+ *
+ * Revision 1.42  2002/02/20 17:30:01  adam
  * Work on new API. Locking system re-implemented
  *
  * Revision 1.41  2001/05/22 21:01:47  adam
@@ -347,6 +350,11 @@ static void index_tag (data1_node *par, data1_node *n,
 	{
 	    wrd->string = n->u.data.data;
 	    wrd->length = n->u.data.len;
+	}
+	else if (!strcmp (tlist->source, "tag") && n->which == DATA1N_tag)
+        {
+	    wrd->string = n->u.tag.tag;
+	    wrd->length = strlen(n->u.tag.tag);
 	}
 	else if (sscanf (tlist->source, "attr(%511[^)])", xattr) == 1 &&
 	    n->which == DATA1N_tag)
