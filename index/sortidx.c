@@ -1,18 +1,9 @@
 /*
- * Copyright (C) 1998, Index Data ApS
+ * Copyright (C) 1998-2002, Index Data ApS
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: sortidx.c,v $
- * Revision 1.4  1999-11-30 13:48:03  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.3  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.2  1998/06/25 09:55:50  adam
- * Minor changes - fixex headers.
- *
+ * $Id: sortidx.c,v 1.5 2002-01-07 19:52:22 adam Exp $
  */
  
 #include <string.h>
@@ -84,19 +75,26 @@ int sortIdx_type (SortIdx si, int type)
     sf = (struct sortFile *) xmalloc (sizeof(*sf));
     sf->type = type;
     sf->bf = NULL;
-    sf->next = si->files;
-    si->current_file = si->files = sf;
     sprintf (fname, "sort%d", type);
     logf (LOG_DEBUG, "sort idx %s wr=%d", fname, si->write_flag);
     sf->bf = bf_open (si->bfs, fname, SORT_IDX_BLOCKSIZE, si->write_flag);
     if (!sf->bf)
+    {
+        xfree (sf);
 	return -1;
+    }
     if (!bf_read (sf->bf, 0, 0, sizeof(sf->head), &sf->head))
     {
 	sf->head.sysno_max = 0;
 	if (!si->write_flag)
+        {
+            xfree (sf);
+            bf_close (sf->bf);
 	    return -1;
+        }
     }
+    sf->next = si->files;
+    si->current_file = si->files = sf;
     return 0;
 }
 
