@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc-p.h,v $
- * Revision 1.1  1996-10-29 13:40:47  adam
+ * Revision 1.2  1996-11-01 08:59:13  adam
+ * First version of isc_merge that supports update/delete.
+ *
+ * Revision 1.1  1996/10/29 13:40:47  adam
  * First work.
  *
  */
@@ -21,12 +24,19 @@ typedef struct ISAMC_file_s {
     ISAMC_head head;
     BFile bf;
     int head_is_dirty;
+    
+    int no_writes;
+    int no_reads;
+    int no_skip_writes;
+    int no_allocated;
+    int no_released;
+    int no_remap;
 } *ISAMC_file;
 
 struct ISAMC_s {
     int no_files;
     int max_cat;
-    char *r_buf;
+    char *merge_buf;
     ISAMC_M method;
     ISAMC_file files;
 }; 
@@ -40,6 +50,13 @@ struct ISAMC_PP_s {
     int next;
     ISAMC is;
     void *decodeClientData;
+    int deleteFlag;
 };
 
-#define ISAMC_BLOCK_OFFSET (sizeof(int)+sizeof(int))    
+#define ISAMC_BLOCK_OFFSET (sizeof(int)+sizeof(int)) 
+
+int isc_alloc_block (ISAMC is, int cat);
+void isc_release_block (ISAMC is, int cat, int pos);
+int isc_write_dblock (ISAMC is, int cat, int pos, char *src,
+                      int nextpos, int offset);
+

@@ -1,7 +1,7 @@
 # Copyright (C) 1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.1 1996-10-29 13:40:46 adam Exp $
+# $Id: Makefile,v 1.2 1996-11-01 08:59:11 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -13,7 +13,7 @@ INCLUDE=-I../include $(YAZINC)
 TPROG1=isamctst
 DEFS=$(INCLUDE)
 LIB=../lib/isamc.a 
-PO = isamc.o
+PO = isamc.o merge.o
 CPP=$(CC) -E
 
 all: $(LIB)
