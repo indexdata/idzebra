@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.h,v $
- * Revision 1.12  1996-03-26 16:00:44  adam
+ * Revision 1.13  1996-10-29 13:43:07  adam
+ * Added a few comments.
+ *
+ * Revision 1.12  1996/03/26 16:00:44  adam
  * The directory of the shadow table can be specified by the new
  * bf_lockDir call.
  *
@@ -40,7 +43,6 @@
 #ifndef BFILE_H
 #define BFILE_H
 
-#include <alexutil.h>
 #include <mfile.h>
 
 #define bf_blocksize(bf) mf_blocksize(bf->mf)
@@ -51,14 +53,44 @@ typedef struct BFile_struct
     struct CFile_struct *cf;
 } *BFile, BFile_struct;
 
+/* bf_close: closes bfile.
+   returns 0 if successful; non-zero otherwise 
+ */
 int bf_close (BFile);
+
+/* bf_open: opens bfile.
+   opens bfile with name 'name' and with 'block_size' as block size.
+   returns bfile handle is successful; NULL otherwise 
+ */
 BFile bf_open (const char *name, int block_size, int wflag);
+
+/* bf_read: reads bytes from bfile 'bf'.
+   reads 'num' bytes (or whole block if 0) from offset 'offset' from
+   block 'no'. stores contents in buffer 'buf'.
+   returns 1 if whole block could be read; 0 otherwise.
+ */
 int bf_read (BFile bf, int no, int offset, int num, void *buf);
+
+/* bf_write: writes bytes to bfile 'bf'.
+   writes 'num' bytes (or whole block if 0) at offset 'offset' to
+   block 'no'. retrieves contents from buffer 'buf'.
+   returns 0 if successful; non-zero otherwise.
+ */
 int bf_write (BFile bf, int no, int offset, int num, const void *buf);
+
+/* bf_cache: enables/disables bfile cache */
 void bf_cache (int enableFlag);
+
+/* bf_lockDir: specifies locking directory for the cache system */
 void bf_lockDir (const char *lockDir);
+
+/* bf_commitExists: returns 1 if commit is pending; 0 otherwise */
 int bf_commitExists (void);
+
+/* bf_commitExec: executes commit */
 void bf_commitExec (void);
+
+/* bf_commitClean: cleans commit files, etc */
 void bf_commitClean (void);
 
 #endif
