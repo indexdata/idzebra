@@ -1,3 +1,6 @@
+/*
+    $Id: inline.h,v 1.2 2003-11-09 11:49:49 oleg Exp $
+*/
 #ifndef INLINE_H
 #define INLINE_H
 
@@ -23,7 +26,8 @@ typedef struct inline_subfield
     struct inline_subfield *parent;
 } inline_subfield;
 
-inline_field *inline_parse(const char *s);
+inline_field *intline_mk_field(void);
+int inline_parse(inline_field *pf, const char *tag, const char *s);
 void inline_destroy_field(inline_field *p);
 
 #ifdef __cplusplus

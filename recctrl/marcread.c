@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.21 2003-08-21 10:29:00 adam Exp $
+/* $Id: marcread.c,v 1.22 2003-11-09 11:49:49 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -210,37 +210,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
         i0 = i;
         while (buf[i] != ISO2709_RS && buf[i] != ISO2709_FS && i < end_offset)
         {
-
-	    if (!memcmp(tag, "4", 1) && (!yaz_matchstr(absynName, "UNIMARC")||
-		!yaz_matchstr(absynName, "RUSMARC")))
-	    {
-		int go = 1;
-	        data1_node *res =
-		    data1_mk_tag_n (p->dh, p->mem,
-                                    buf+i+1, identifier_length-1, 
-                                    0 /* attr */, parent);
-                i += identifier_length;
-                i0 = i;
-		do {
-            	    while (buf[i] != ISO2709_RS && buf[i] != ISO2709_IDFS &&
-			 buf[i] != ISO2709_FS && i < end_offset)
-            	    {
-			i++;
-            	    }
-		    if (!memcmp(buf+i+1, "1", 1) && i<end_offset)
-		    {
-			go = 0;
-		    }
-		    else
-		    {
-			buf[i] = '$';
-		    }		    
-		} while (go && i < end_offset);
-		
-            	data1_mk_text_n (p->dh, p->mem, buf + i0, i - i0, res);
-		i0 = i;
-	    }
-            else if (memcmp (tag, "00", 2) && identifier_length)
+	    if (memcmp (tag, "00", 2) && identifier_length)
             {
 		data1_node *res;
 		if (marc_xml)
@@ -340,7 +310,6 @@ static char *get_data(data1_node *n, int *len)
     *len = strlen(r);
     return r;
 }
-
 static data1_node *lookup_subfield(data1_node *node, const char *name)
 {
     data1_node *p;
@@ -433,15 +402,38 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, char *buf, inline_
     return pisf; 
 }
 static void cat_inline_field(mc_field *pf, char *buf, data1_node *subfield)
-{
-    
+{    
     if (!pf || !subfield)
 	return;
 
-    for (;subfield; subfield = subfield->next)
+    for (;subfield;)
     {
 	int len;
-	inline_field *pif = inline_parse(get_data(subfield,&len));
+	inline_field *pif=NULL;
+	data1_node *psubf;
+	
+	if (yaz_matchstr(subfield->u.tag.tag, "1"))
+	{
+	    subfield = subfield->next;
+	    continue;
+	}
+	
+	psubf = subfield;
+	pif = inline_mk_field();
+	do
+	{
+	    int i;
+	    if ((i=inline_parse(pif, psubf->u.tag.tag, get_data(psubf, &len)))<0)
+	    {
+		logf(LOG_WARN, "inline subfield ($%s): parse error",
+		    psubf->u.tag.tag);
+		inline_destroy_field(pif);
+		return;	
+	    }
+	    psubf = psubf->next;
+	} while (psubf && yaz_matchstr(psubf->u.tag.tag, "1"));
+	
+	subfield = psubf;
 	
 	if (pif && !yaz_matchstr(pif->name, pf->name))
 	{

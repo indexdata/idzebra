@@ -1,3 +1,6 @@
+/*
+    $Id: inline.c,v 1.3 2003-11-09 11:49:49 oleg Exp $
+*/
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -6,7 +9,7 @@
 
 static void inline_destroy_subfield_recursive(inline_subfield *p);
 
-static inline_field *inline_mk_field(void)
+inline_field *inline_mk_field(void)
 {
     inline_field *p = (inline_field *) xmalloc(sizeof(*p));
 
@@ -73,59 +76,50 @@ static void inline_destroy_subfield_recursive(inline_subfield *p)
 	xfree(p);
     }
 }
-inline_field *inline_parse(const char *s)
+int inline_parse(inline_field *pif, const char *tag, const char *s)
 {
-    inline_field *pf = inline_mk_field();
+    inline_field *pf = pif;
     char *p = (char *)s;
     
     if (!pf)
-	return 0;
-
-    if ((sscanf(p, "%3s", pf->name)) != 1)
-	return 0;
-
-    p += SZ_FNAME;
-
-    if (!memcmp(pf->name, "00", 2))
+	return -1;
+	
+    if (pf->name[0] == '\0')
     {
-	pf->list = inline_mk_subfield(0);
-	pf->list->data = xstrdup(p);
+	if ((sscanf(p, "%3s", pf->name)) != 1)
+	    return -2;
+
+	p += SZ_FNAME;
+
+	if (!memcmp(pf->name, "00", 2))
+	{
+	    pf->list = inline_mk_subfield(0);
+	    pf->list->data = xstrdup(p);
+	}
+	else
+	{
+	    if ((sscanf(p, "%c%c", pf->ind1, pf->ind2)) != 2)
+		return -3;
+	}
     }
     else
     {
-	if ((sscanf(p, "%c%c", pf->ind1, pf->ind2)) == 2)
+	inline_subfield *psf = inline_mk_subfield(0);
+	
+	sscanf(tag, "%1s", psf->name);
+	psf->data = xstrdup(p);
+	
+	if (!pf->list)
 	{
-	    char *pdup;
-	    inline_subfield *parent = 0;
-	    
-	    p += 2*SZ_IND;
-    
-	    if (!strlen(p) || *p != '$')
-	    {
-		return pf;
-	    }
-	    
-	    pdup = p = xstrdup(p);
-	    
-	    for (p=strtok(p, "$"); p; p = strtok(NULL, "$"))
-	    {
-		inline_subfield *psf = inline_mk_subfield(parent);
-		
-		if (!psf)
-		    break;
-		    
-		if (!parent)
-		    pf->list = psf;
-		else
-		    parent->next = psf;
-		parent = psf;	
-		sscanf(p, "%1s", psf->name);
-		p += SZ_SFNAME;
-		psf->data = (char *) xstrdup(p);
-	    }
-	    
-	    xfree(pdup);
+	    pf->list = psf;
+	}
+	else
+	{
+	    inline_subfield *last = pf->list;
+	    while (last->next)
+		last = last->next;
+	    last->next = psf;
 	}
     }
-    return pf;
+    return 0;
 }
