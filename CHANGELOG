@@ -1,12 +1,8 @@
-<<<<<<< CHANGELOG
-Reduced disk space for saved keys (storeKeys = 1).
-
-Added optional, physical ANY (key replication)
-=======
 Bug fix: temporary result sets weren't deleted.
 
 Reduced disk space for saved keys (storeKeys = 1).
->>>>>>> 1.30
+
+Added optional, physical ANY (key replication)
 
 Implemented proximity operator in search.
 
