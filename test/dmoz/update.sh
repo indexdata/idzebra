@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: update.sh,v 1.6 2002-06-19 13:26:45 adam Exp $
+# $Id: update.sh,v 1.7 2002-06-19 13:40:03 adam Exp $
 t=$1
 test -n "$t" || exit 1
 rm -f *.mf *.LCK *.tmp
@@ -18,10 +18,12 @@ while test -f dmoz.$i.xml; do
 	fi
 done
 
+title="ISAM-$t `date`"
+
 cat >plot.dem <<ENDOFMESSAGE
 set output "times-$t.ps"
 set terminal postscript
-set title "ISAM-$t"
+set title "$title"
 set xlabel "runs"
 set ylabel "seconds"
 plot [0:] [0:] \
