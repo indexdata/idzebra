@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.15  1995-10-12 12:40:55  adam
+ * Revision 1.16  1995-10-13 12:26:44  adam
+ * Optimization of truncation.
+ *
+ * Revision 1.15  1995/10/12  12:40:55  adam
  * Bug fixes in rpn_prox.
  *
  * Revision 1.14  1995/10/09  16:18:37  adam
@@ -171,8 +174,12 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
     if ((retrieveCtrl.fd = open (fname, O_RDONLY)) == -1)
     {
+        const char *msg = "Record doesn't exist";
         logf (LOG_WARN|LOG_ERRNO, "Retrieve: Open record file %s", fname);
-        return 14;     /* System error in presenting records */
+        *output_format = VAL_SUTRS;
+        *rec_bufp = msg;
+        *rec_lenp = strlen (msg);
+        return 0;     /* or 14: System error in presenting records */
     }
     retrieveCtrl.localno = sysno;
     retrieveCtrl.score = score;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.27  1995-10-12 17:07:22  adam
+ * Revision 1.28  1995-10-13 12:26:43  adam
+ * Optimization of truncation.
+ *
+ * Revision 1.27  1995/10/12  17:07:22  adam
  * Truncation works.
  *
  * Revision 1.26  1995/10/12  12:40:54  adam
@@ -243,10 +246,7 @@ static void heap_delete (struct trunc_info *ti)
 {
     int cur = 1, child = 2;
 
-    assert (ti->heapnum > 0);
-
-    heap_swap (ti, 1, ti->heapnum);
-    ti->heapnum--;
+    heap_swap (ti, 1, ti->heapnum--);
     while (child <= ti->heapnum) {
         if (child < ti->heapnum &&
             (*ti->cmp)(ti->heap[ti->ptr[child]],
@@ -316,14 +316,12 @@ static void heap_close (struct trunc_info *ti)
     xfree (ti);
 }
 
-static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
-                        int merge_chunk)
+static RSET rset_trunc_r (ISAM isam, ISAM_P *isam_p, int from, int to,
+                         int merge_chunk)
 {
     RSET result; 
     RSFD result_rsfd;
     rset_temp_parms parms;
-
-    logf (LOG_DEBUG, "rset_trunc, range=%d-%d", from, to-1);
 
     parms.key_size = sizeof(struct it_key);
     result = rset_create (rset_kind_temp, &parms);
@@ -336,16 +334,19 @@ static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
         int i, i_add = (to-from)/merge_chunk + 1;
         struct trunc_info *ti;
         int rscur = 0;
-
-        rset = xmalloc (sizeof(*rset) * merge_chunk);
-        rsfd = xmalloc (sizeof(*rsfd) * merge_chunk);
+        int rsmax = (to-from)/i_add + 1;
+        
+        rset = xmalloc (sizeof(*rset) * rsmax);
+        rsfd = xmalloc (sizeof(*rsfd) * rsmax);
         
         for (i = from; i < to; i += i_add)
         {
             if (i_add <= to - i)
-                rset[rscur] = rset_trunc (isam, isam_p, i, i+i_add, i_add);
+                rset[rscur] = rset_trunc_r (isam, isam_p, i, i+i_add,
+                                            merge_chunk);
             else
-                rset[rscur] = rset_trunc (isam, isam_p, i, to,      to-i);
+                rset[rscur] = rset_trunc_r (isam, isam_p, i, to,
+                                            merge_chunk);
             rscur++;
         }
         ti = heap_init (rscur, sizeof(struct it_key), key_compare);
@@ -354,20 +355,34 @@ static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
             rsfd[i] = rset_open (rset[i], RSETF_READ|RSETF_SORT_SYSNO);
             if (rset_read (rset[i], rsfd[i], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, i);
+            else
+            {
+                rset_close (rset[i], rsfd[i]);
+                rset_delete (rset[i]);
+            }
         }
         while (ti->heapnum)
         {
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
-            heap_delete (ti);
-            if (rset_read (rset[n], rsfd[n], ti->tmpbuf))
-                heap_insert (ti, ti->tmpbuf, n);
-        }
-        for (i = rscur; --i >= 0; )
-        {
-            rset_close (rset[i], rsfd[i]);
-            rset_delete (rset[i]);
+
+            while (1)
+            {
+                if (!rset_read (rset[n], rsfd[n], ti->tmpbuf))
+                {
+                    heap_delete (ti);
+                    rset_close (rset[n], rsfd[n]);
+                    rset_delete (rset[n]);
+                    break;
+                }
+                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+                {
+                    heap_delete (ti);
+                    heap_insert (ti, ti->tmpbuf, n);
+                    break;
+                }
+            }
         }
         xfree (rset);
         xfree (rsfd);
@@ -388,23 +403,62 @@ static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
             ispt[i] = is_position (isam, isam_p[from+i]);
             if (is_readkey (ispt[i], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, i);
+            else
+                is_pt_free (ispt[i]);
         }
         while (ti->heapnum)
         {
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+#if 0
             heap_delete (ti);
             if (is_readkey (ispt[n], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, n);
+            else
+                is_pt_free (ispt[n]);
+#else
+            while (1)
+            {
+                if (!is_readkey (ispt[n], ti->tmpbuf))
+                {
+                    heap_delete (ti);
+                    is_pt_free (ispt[n]);
+                    break;
+                }
+                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+                {
+                    heap_delete (ti);
+                    heap_insert (ti, ti->tmpbuf, n);
+                    break;
+                }
+            }
+#endif
         }
-        for (i = to-from; --i >= 0; )
-            is_pt_free (ispt[i]);
         heap_close (ti);
         xfree (ispt);
     }
     rset_close (result, result_rsfd);
     return result;
+}
+
+static int isam_trunc_cmp (const void *p1, const void *p2)
+{
+    ISAM_P i1 = *(ISAM_P*) p1;
+    ISAM_P i2 = *(ISAM_P*) p2;
+    int d;
+
+    d = is_type (i1) - is_type (i2);
+    if (d)
+        return d;
+    return is_block (i1) - is_block (i2);
+}
+
+static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int no)
+{
+
+    qsort (isam_p, no, sizeof(*isam_p), isam_trunc_cmp);
+    return rset_trunc_r (isam, isam_p, 0, no, 100);
 }
 
 struct grep_info {
@@ -609,8 +663,8 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
         result = rset_create (rset_kind_isam, &parms);
     }
     else
-        result = rset_trunc (zi->wordIsam, grep_info.isam_p_buf, 0,
-                             grep_info.isam_p_indx, 400);
+        result = rset_trunc (zi->wordIsam, grep_info.isam_p_buf,
+                             grep_info.isam_p_indx);
     xfree (grep_info.isam_p_buf);
     return result;
 }
@@ -739,8 +793,8 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
             rset[rset_no] = rset_create (rset_kind_null, NULL);
         else if (grep_info.isam_p_indx > 1)
             rset[rset_no] = rset_trunc (zi->wordIsam,
-                                        grep_info.isam_p_buf, 0,
-                                        grep_info.isam_p_indx, 400);
+                                        grep_info.isam_p_buf,
+                                        grep_info.isam_p_indx);
         else
         {
             rset_isam_parms parms;
