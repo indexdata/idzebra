@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.17 2004-05-14 10:57:42 adam Exp $
+/* $Id: rectext.c,v 1.18 2004-06-16 20:32:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -134,7 +134,6 @@ static int text_extract (void *clientData, struct recExtractCtrl *p)
 
 static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
-    struct text_info *tinfo = clientData;
     int r, text_ptr = 0;
     static char *text_buf = NULL;
     static int text_size = 0;
