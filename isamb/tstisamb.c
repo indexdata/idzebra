@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.8 2004-08-04 08:35:24 adam Exp $
+/* $Id: tstisamb.c,v 1.9 2004-08-23 13:06:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -68,7 +68,9 @@ void code_stop(void *p)
 
 struct read_info {
     int no;
+    int step;
     int max;
+    int insertMode;
 };
 
 int code_read(void *vp, char **dst, int *insertMode)
@@ -76,16 +78,14 @@ int code_read(void *vp, char **dst, int *insertMode)
     struct read_info *ri = (struct read_info *)vp;
     int x;
 
-    if (ri->no > ri->max)
-	exit(3);
-    if (ri->no == ri->max)
+    if (ri->no >= ri->max)
 	return 0;
     x = ri->no;
     memcpy (*dst, &x, sizeof(int));
     (*dst)+=sizeof(int);
 
-    (ri->no)++;
-    *insertMode = 1;
+    ri->no += ri->step;
+    *insertMode = ri->insertMode;
     return 1;
 }
 
@@ -99,7 +99,9 @@ void tst_forward(ISAMB isb, int n)
 
     /* insert a number of entries */
     ri.no = 0;
+    ri.step = 1;
     ri.max = n;
+    ri.insertMode = 1;
 
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
@@ -153,7 +155,9 @@ void tst_insert(ISAMB isb, int n)
 
     /* insert a number of entries */
     ri.no = 0;
+    ri.step = 1;
     ri.max = n;
+    ri.insertMode = 1;
 
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
@@ -184,7 +188,34 @@ void tst_insert(ISAMB isb, int n)
     isamb_pp_close(pp);
 
     isamb_dump(isb, isamc_p, log_pr);
-    isamb_unlink(isb, isamc_p);
+
+    /* delete a number of entries (even ones) */
+    ri.no = 0;
+    ri.step = 2;
+    ri.max = n;
+    ri.insertMode = 0;
+
+    isamc_i.clientData = &ri;
+    isamc_i.read_item = code_read;
+    
+    isamc_p = isamb_merge (isb, isamc_p , &isamc_i);
+
+    /* delete a number of entries (odd ones) */
+    ri.no = 1;
+    ri.step = 2;
+    ri.max = n;
+    ri.insertMode = 0;
+
+    isamc_i.clientData = &ri;
+    isamc_i.read_item = code_read;
+    
+    isamc_p = isamb_merge (isb, isamc_p , &isamc_i);
+
+    if (isamc_p)
+    {
+	yaz_log(LOG_WARN, "isamb_merge did not return empty list");
+	exit(3);
+    }
 }
 
 int main(int argc, char **argv)
