@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: merge.c,v $
- * Revision 1.9  1998-03-19 10:04:38  adam
+ * Revision 1.10  1998-03-19 12:22:09  adam
+ * Minor change.
+ *
+ * Revision 1.9  1998/03/19 10:04:38  adam
  * Minor changes.
  *
  * Revision 1.8  1998/03/18 09:23:55  adam
@@ -107,7 +110,7 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             mb[i].dirty = 1;
         }
     }
-    opt_blocks (is, mb, ptr, last);
+
     for (i = 0; i<ptr; i++)
     {
         char *src;
