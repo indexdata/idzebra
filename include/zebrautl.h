@@ -1,4 +1,4 @@
-/* $Id: zebrautl.h,v 1.10 2004-11-19 10:26:55 heikki Exp $
+/* $Id: zebrautl.h,v 1.11 2004-12-10 11:56:21 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,7 +23,19 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef ZEBRA_UTIL_H
 #define ZEBRA_UTIL_H
 
-#include <yaz/yaz-util.h>
+/* Old yaz-util includes */
+#include <yaz/yconfig.h>
+#include <yaz/yaz-version.h>
+#include <yaz/xmalloc.h>
+#include <yaz/ylog.h>  
+#include <yaz/tpath.h>
+#include <yaz/options.h>
+#include <yaz/wrbuf.h>
+#include <yaz/nmem.h>
+#include <yaz/readconf.h>
+#include <yaz/marcdisp.h>
+#include <yaz/yaz-iconv.h>
+
 #include <idzebra/res.h>
 #include <idzebra/version.h>
 

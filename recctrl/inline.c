@@ -1,10 +1,22 @@
 /*
-    $Id: inline.c,v 1.3 2003-11-09 11:49:49 oleg Exp $
+    $Id: inline.c,v 1.4 2004-12-10 11:56:22 heikki Exp $
 */
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <yaz/yaz-util.h>
+/* Old yaz-util includes (FIXME - clean up what is not needed)*/
+#include <yaz/yconfig.h>
+#include <yaz/yaz-version.h>
+#include <yaz/xmalloc.h>
+#include <yaz/ylog.h>  
+#include <yaz/tpath.h>
+#include <yaz/options.h>
+#include <yaz/wrbuf.h>
+#include <yaz/nmem.h>
+#include <yaz/readconf.h>
+#include <yaz/marcdisp.h>
+#include <yaz/yaz-iconv.h>
+
 #include "inline.h"
 
 static void inline_destroy_subfield_recursive(inline_subfield *p);

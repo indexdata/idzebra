@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.73 2004-12-02 17:27:04 adam Exp $
+/* $Id: zsets.c,v 1.74 2004-12-10 11:56:22 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -70,6 +70,22 @@ struct zset_sort_info {
     struct zset_sort_entry *all_entries;
     struct zset_sort_entry **entries;
 };
+
+static int log_level_set=0;
+static int log_level_sorting=0;
+static int log_level_searchhits=0;
+static int log_level_searchterms=0;
+static int log_level_resultsets=0;
+
+static void loglevels()
+{
+    if (log_level_set)
+        return;
+    log_level_sorting = yaz_log_module_level("sorting");
+    log_level_searchhits = yaz_log_module_level("searchhits");
+    log_level_searchterms = yaz_log_module_level("searchterms");
+    log_level_resultsets = yaz_log_module_level("resultsets");
+}
 
 ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,
                           Z_RPNQuery *rpn, int num_bases,
@@ -145,9 +161,12 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     for (s = zh->sets; s; s = s->next)
         if (!strcmp (s->name, name))
             break;
+    
+    if (!log_level_set)
+        loglevels();
     if (s)
     {
-        yaz_log(YLOG_DEBUG, "updating result set %s", name);
+        yaz_log(log_level_resultsets, "updating result set %s", name);
         if (!ov || s->locked)
             return NULL;
         if (s->rset)
@@ -161,7 +180,7 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     {
         const char *sort_max_str = zebra_get_resource(zh, "sortmax", "1000");
 
-        yaz_log(YLOG_DEBUG, "adding result set %s", name);
+        yaz_log(log_level_resultsets, "adding result set %s", name);
         s = (ZebraSet) xmalloc (sizeof(*s));
         s->next = zh->sets;
         zh->sets = s;
@@ -203,7 +222,7 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
             if (!s->term_entries && !s->rset && s->rpn)
             {
                 NMEM nmem = nmem_create ();
-                yaz_log(YLOG_LOG, "research %s", name);
+                yaz_log(log_level_resultsets, "research %s", name);
                 if (!s->rset_nmem)
                     s->rset_nmem=nmem_create();
                 s->rset =
@@ -220,6 +239,7 @@ void resultSetInvalidate (ZebraHandle zh)
 {
     ZebraSet s = zh->sets;
     
+    yaz_log(log_level_resultsets, "invalidating result sets");
     for (; s; s = s->next)
     {
         if (s->rset)
@@ -312,6 +332,8 @@ ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name,
     int i;
     struct zset_sort_info *sort_info;
 
+    if (!log_level_set)
+        loglevels();
     if (!(sset = resultSetGet (zh, name)))
         return NULL;
     if (!(rset = sset->rset))
@@ -353,7 +375,7 @@ ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name,
                 position = positions[i];
                 if (position > 0 && position <= sort_info->num_entries)
                 {
-                    yaz_log(YLOG_DEBUG, "got pos=%d (sorted)", position);
+                    yaz_log(log_level_sorting, "got pos=%d (sorted)", position);
                     sr[i].sysno = sort_info->entries[position-1]->sysno;
                     sr[i].score = sort_info->entries[position-1]->score;
                 }
@@ -381,7 +403,6 @@ ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name,
             while (num_i < num && rset_read (rfd, &key, 0))
             {
                 zint this_sys = key.mem[0];
-		yaz_log(YLOG_LOG, "RSET READ " ZINT_FORMAT, this_sys);
                 if (this_sys != psysno)
                 {
                     psysno = this_sys;
@@ -399,7 +420,7 @@ ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name,
                     if (position == positions[num_i])
                     {
                         sr[num_i].sysno = psysno;
-                        yaz_log(YLOG_DEBUG, "got pos=%d (unsorted)", position);
+                        yaz_log(log_level_sorting, "got pos=%d (unsorted)", position);
                         sr[num_i].score = -1;
                         num_i++;
                     }
@@ -564,7 +585,9 @@ void resultSetSort (ZebraHandle zh, NMEM nmem,
         zh->errCode = 230;
         return;
     }
-    yaz_log(YLOG_DEBUG, "result set sort input=%s output=%s",
+    if (!log_level_set)
+        loglevels();
+    yaz_log(log_level_sorting, "result set sort input=%s output=%s",
           *input_setnames, output_setname);
     sset = resultSetGet (zh, input_setnames[0]);
     if (!sset)
@@ -643,20 +666,20 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
         switch (sk->which)
         {
         case Z_SortKey_sortField:
-            yaz_log(YLOG_DEBUG, "Sort: key %d is of type sortField", i+1);
+            yaz_log(log_level_sorting, "Sort: key %d is of type sortField", i+1);
             zh->errCode = 207;
             return;
         case Z_SortKey_elementSpec:
-            yaz_log(YLOG_DEBUG, "Sort: key %d is of type elementSpec", i+1);
+            yaz_log(log_level_sorting, "Sort: key %d is of type elementSpec", i+1);
             zh->errCode = 207;
             return;
         case Z_SortKey_sortAttributes:
-            yaz_log(YLOG_DEBUG, "Sort: key %d is of type sortAttributes", i+1);
+            yaz_log(log_level_sorting, "Sort: key %d is of type sortAttributes", i+1);
             sort_criteria[i].attrUse =
                 zebra_maps_sort (zh->reg->zebra_maps,
                                  sk->u.sortAttributes,
                                  &sort_criteria[i].numerical);
-            yaz_log(YLOG_DEBUG, "use value = %d", sort_criteria[i].attrUse);
+            yaz_log(log_level_sorting, "use value = %d", sort_criteria[i].attrUse);
             if (sort_criteria[i].attrUse == -1)
             {
                 zh->errCode = 116;
@@ -685,10 +708,10 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
         }
     }
     rset_close (rfd);
-    yaz_log(YLOG_DEBUG, ZINT_FORMAT " keys, " ZINT_FORMAT " sysnos, sort",
+    yaz_log(log_level_sorting, ZINT_FORMAT " keys, " ZINT_FORMAT " sysnos, sort",
 		    kno, sset->hits);   
     for (i = 0; i < numTerms; i++)
-        yaz_log(YLOG_LOG, "term=\"%s\" type=%s count=" ZINT_FORMAT,
+        yaz_log(log_level_sorting, "term=\"%s\" type=%s count=" ZINT_FORMAT,
                  terms[i]->name, terms[i]->flags, rset_count(terms[i]->rset));
     *sort_status = Z_SortResponse_success;
 }
@@ -721,6 +744,8 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset, NMEM nmem)
     zint esthits;
     double ratio;
 
+    if (!log_level_set)
+        loglevels();
     sort_info = zebraSet->sort_info;
     sort_info->num_entries = 0;
     zebraSet->hits = 0;
@@ -754,7 +779,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset, NMEM nmem)
             zint this_sys = key.mem[0]; /* FIXME - assumes scope==2 */
             zint seqno = key.mem[key.len-1]; /* FIXME - assumes scope==2 */
             kno++;
-	    yaz_log(YLOG_LOG, "got sysno=%lld", this_sys);
+            key_logdump_txt(log_level_searchhits,&key," Got hit");
             if (this_sys != psysno)
             {
                 score = (*rc->calc) (handle, psysno);
@@ -771,7 +796,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset, NMEM nmem)
                 if (tot>0) {
                     ratio = cur/tot;
                     est = (zint)(0.5+zebraSet->hits/ratio);
-                    yaz_log(YLOG_LOG, "Estimating hits (%s) "
+                    yaz_log(log_level_searchhits, "Estimating hits (%s) "
                                   "%0.1f->" ZINT_FORMAT
                                   "; %0.1f->" ZINT_FORMAT,
                                   rset->control->desc,
@@ -795,11 +820,11 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset, NMEM nmem)
     }
     rset_close (rfd);
 
-    yaz_log(YLOG_DEBUG, ZINT_FORMAT " keys, " ZINT_FORMAT " sysnos, rank",
+    yaz_log(log_level_searchterms, ZINT_FORMAT " keys, " ZINT_FORMAT " sysnos, rank",
 	    kno, zebraSet->hits);
     for (i = 0; i < numTerms; i++)
     {
-        yaz_log(YLOG_LOG, "term=\"%s\" type=%s count=" ZINT_FORMAT,
+        yaz_log(log_level_searchterms, "term=\"%s\" type=%s count=" ZINT_FORMAT,
                  terms[i]->name, terms[i]->flags, rset_count(terms[i]->rset));
     }
 }

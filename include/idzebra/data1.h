@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.4 2004-10-04 09:20:31 adam Exp $
+/* $Id: data1.h,v 1.5 2004-12-10 11:56:21 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -30,8 +30,19 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/proto.h>
 
 #include <idzebra/version.h>
-#include <yaz/yaz-util.h>
+
+/* Old yaz-util includes */
+#include <yaz/yconfig.h>
+#include <yaz/yaz-version.h>
+#include <yaz/xmalloc.h>
+#include <yaz/ylog.h>  
+#include <yaz/tpath.h>
+#include <yaz/options.h>
 #include <yaz/wrbuf.h>
+#include <yaz/nmem.h>
+#include <yaz/readconf.h>
+#include <yaz/marcdisp.h>
+#include <yaz/yaz-iconv.h>
 
 #define d1_isspace(c) strchr(" \r\n\t\f", c)
 #define d1_isdigit(c) ((c) <= '9' && (c) >= '0')
