@@ -1,5 +1,5 @@
 /* $Id$
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -52,16 +52,16 @@ typedef struct ISAMD_M_s {
 
     int max_blocks_mem;
     int debug;
-} *ISAMD_M;
+} ISAMD_M;
 
 typedef struct ISAMD_I_s {  /* encapsulation of input data */
     int (*read_item)(void *clientData, char **dst, int *insertMode);
     void *clientData;
 } *ISAMD_I;
 
-ISAMD_M isamd_getmethod (ISAMD_M me);
+ISAMD_M *isamd_getmethod (ISAMD_M *me);
 
-ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method);
+ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M *method);
 int isamd_close (ISAMD is);
 /*ISAMD_P isamd_append (ISAMD is, ISAMD_P pos, ISAMD_I data);*/
 int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data);

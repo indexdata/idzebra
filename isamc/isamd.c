@@ -1,5 +1,5 @@
-/* $Id: isamd.c,v 1.25 2003-03-05 16:41:10 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: isamd.c,v 1.26 2003-06-23 15:36:11 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,9 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
-
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -40,7 +37,7 @@ static void init_fc (ISAMD is, int cat);
 
 #define SMALL_TEST 0
 
-ISAMD_M isamd_getmethod (ISAMD_M me)
+ISAMD_M *isamd_getmethod (ISAMD_M *me)
 {
     static struct ISAMD_filecat_s def_cat[] = {
 #if SMALL_TEST
@@ -81,7 +78,7 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
 #endif 
 
     };
-    ISAMD_M m = (ISAMD_M) xmalloc (sizeof(*m));  /* never released! */
+    ISAMD_M *m = (ISAMD_M *) xmalloc (sizeof(*m));  /* never released! */
     m->filecat = def_cat;                        /* ok, only alloc'd once */
 
     m->code_start = NULL;
@@ -100,7 +97,7 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
 
 
 
-ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method)
+ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M *method)
 {
     ISAMD is;
     ISAMD_filecat filecat;
@@ -108,7 +105,7 @@ ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method)
 
     is = (ISAMD) xmalloc (sizeof(*is));
 
-    is->method = (ISAMD_M) xmalloc (sizeof(*is->method));
+    is->method = (ISAMD_M *) xmalloc (sizeof(*is->method));
     memcpy (is->method, method, sizeof(*method));
     filecat = is->method->filecat;
     assert (filecat);
@@ -877,77 +874,3 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 #endif
 
-/*
- * $Log: isamd.c,v $
- * Revision 1.25  2003-03-05 16:41:10  adam
- * Fix GCC warnings
- *
- * Revision 1.24  2002/11/26 22:18:34  adam
- * Remove // comments
- *
- * Revision 1.23  2002/08/02 19:26:56  adam
- * Towards GPL
- *
- * Revision 1.22  2002/07/12 18:12:21  heikki
- * Isam-D now stores small entries directly in the dictionary.
- * Needs more tuning and cleaning...
- *
- * Revision 1.21  2002/07/11 16:16:00  heikki
- * Fixed a bug in isamd, failed to store a single key when its bits
- * did not fit into a singleton.
- *
- * Revision 1.20  2002/06/19 10:29:18  adam
- * align block sizes for isam sys. Better plot for test
- *
- * Revision 1.19  1999/11/30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.18  1999/10/06 15:18:13  heikki
- *
- * Improving block sizes again
- *
- * Revision 1.17  1999/10/06 11:46:36  heikki
- * mproved statistics on isam-d
- *
- * Revision 1.16  1999/10/05 09:57:40  heikki
- * Tuning the isam-d (and fixed a small "detail")
- *
- * Revision 1.15  1999/09/27 14:36:36  heikki
- * singletons
- *
- * Revision 1.14  1999/09/23 18:01:18  heikki
- * singleton optimising
- *
- * Revision 1.13  1999/09/20 15:48:06  heikki
- * Small changes
- *
- * Revision 1.12  1999/09/13 13:28:28  heikki
- * isam-d optimizing: merging input data in the same go
- *
- * Revision 1.11  1999/08/25 18:09:24  heikki
- * Starting to optimize
- *
- * Revision 1.10  1999/08/24 13:17:42  heikki
- * Block sizes, comments
- *
- * Revision 1.9  1999/08/20 12:25:58  heikki
- * Statistics in isamd
- *
- * Revision 1.8  1999/08/18 13:28:16  heikki
- * Set log levels to decent values
- *
- * Revision 1.6  1999/08/17 19:44:25  heikki
- * Fixed memory leaks
- *
- * Revision 1.4  1999/08/04 14:21:18  heikki
- * isam-d seems to be working.
- *
- * Revision 1.3  1999/07/21 14:24:50  heikki
- * isamd write and read functions ok, except when diff block full.
- * (merge not yet done)
- *
- * Revision 1.1  1999/07/14 12:34:43  heikki
- * Copied from isamh, starting to change things...
- *
- *
- */

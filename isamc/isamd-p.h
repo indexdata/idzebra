@@ -1,5 +1,5 @@
-/* $Id: isamd-p.h,v 1.12 2002-11-26 22:18:34 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: isamd-p.h,v 1.13 2003-06-23 15:36:11 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -69,7 +69,7 @@ typedef struct ISAMD_file_s {
 struct ISAMD_s {
     int no_files;
     int max_cat;
-    ISAMD_M method;
+    ISAMD_M *method;
     ISAMD_file files;
     int last_pos;   /* last read/write position for seek stats */
     int last_cat;   /* same for category */
@@ -141,7 +141,10 @@ int singleton_encode(struct it_key *k);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.12  2002-11-26 22:18:34  adam
+ * Revision 1.13  2003-06-23 15:36:11  adam
+ * Implemented isamb_unlink.
+ *
+ * Revision 1.12  2002/11/26 22:18:34  adam
  * Remove // comments
  *
  * Revision 1.11  2002/08/02 19:26:56  adam

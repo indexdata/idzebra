@@ -47,6 +47,8 @@ static inline_subfield *inline_mk_subfield(inline_subfield *parent)
     }
     return p;
 }
+
+#if 0
 static void inline_destroy_subfield(inline_subfield *p)
 {
     if (p)
@@ -57,6 +59,8 @@ static void inline_destroy_subfield(inline_subfield *p)
 	xfree(p);
     }
 }
+#endif
+
 static void inline_destroy_subfield_recursive(inline_subfield *p)
 {
     if (p)

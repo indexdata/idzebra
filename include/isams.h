@@ -1,5 +1,5 @@
-/* $Id: isams.h,v 1.3 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: isams.h,v 1.4 2003-06-23 15:36:11 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -45,17 +45,17 @@ typedef struct ISAMS_M_s {
 
     int debug;
     int block_size;
-} *ISAMS_M;
+} ISAMS_M;
 
 typedef struct ISAMS_I_s {
     int (*read_item)(void *clientData, char **dst, int *insertMode);
     void *clientData;
 } *ISAMS_I;
 
-void isams_getmethod (ISAMS_M me);
+void isams_getmethod (ISAMS_M *me);
 
 ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
-		  ISAMS_M method);
+		  ISAMS_M *method);
 int isams_close (ISAMS is);
 ISAMS_P isams_merge (ISAMS is, ISAMS_I data);
 ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos);

@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.2 2003-06-20 14:21:24 heikki Exp $
+/* $Id: t4.c,v 1.3 2003-06-23 15:36:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     zh = zebra_open (zs);
     zebra_select_database(zh, "Default");
 
-    for (i = 0; i<4; i++)
+    for (i = 0; i<2; i++)
     {
         ZebraRetrievalRecord retrievalRecord[1001];
         char setname[20];
@@ -67,8 +67,6 @@ int main(int argc, char **argv)
         
         sprintf(setname, "s%d", i+1);
         zebra_search_RPN (zh, odr_input, query, setname, &hits);
-
-	printf ("hits=%d\n", hits);
 
         yaz_pqf_destroy(parser);
 

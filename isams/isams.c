@@ -1,5 +1,5 @@
-/* $Id: isams.c,v 1.3 2002-08-02 19:26:56 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: isams.c,v 1.4 2003-06-23 15:36:12 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -37,7 +37,7 @@ typedef struct {
 typedef unsigned ISAMS_BLOCK_SIZE;
 
 struct ISAMS_s {
-    ISAMS_M method;
+    ISAMS_M *method;
     ISAMS_head head;
     ISAMS_head head_old;
     char *merge_buf;
@@ -57,7 +57,7 @@ struct ISAMS_PP_s {
     int numRead;
 };
 
-void isams_getmethod (ISAMS_M m)
+void isams_getmethod (ISAMS_M *m)
 {
     m->code_start = NULL;
     m->code_item = NULL;
@@ -70,11 +70,11 @@ void isams_getmethod (ISAMS_M m)
 }
 
 ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
-		  ISAMS_M method)
+		  ISAMS_M *method)
 {
     ISAMS is = (ISAMS) xmalloc (sizeof(*is));
 
-    is->method = (ISAMS_M) xmalloc (sizeof(*is->method));
+    is->method = (ISAMS_M *) xmalloc (sizeof(*is->method));
     memcpy (is->method, method, sizeof(*method));
     is->block_size = is->method->block_size;
     is->debug = is->method->debug;

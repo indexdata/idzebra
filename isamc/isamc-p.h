@@ -1,5 +1,5 @@
-/* $Id: isamc-p.h,v 1.8 2002-08-02 19:26:56 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: isamc-p.h,v 1.9 2003-06-23 15:36:11 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -67,7 +67,7 @@ struct ISAMC_s {
     int no_files;
     int max_cat;
     char *merge_buf;
-    ISAMC_M method;
+    ISAMC_M *method;
     ISAMC_file files;
 }; 
 

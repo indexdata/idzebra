@@ -1,5 +1,5 @@
-/* $Id: isamb.h,v 1.5 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: isamb.h,v 1.6 2003-06-23 15:36:11 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,8 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #ifndef ISAMB_H
 #define ISAMB_H
 
@@ -32,17 +30,19 @@ typedef struct ISAMB_s *ISAMB;
 typedef struct ISAMB_PP_s *ISAMB_PP;
 typedef ISAMC_P ISAMB_P;
 
-ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method,
+ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
                   int cache);
 void isamb_close (ISAMB isamb);
 
-ISAMB_P isamb_merge (ISAMB b, ISAMB_P pos, ISAMC_I data);
+ISAMB_P isamb_merge (ISAMB b, ISAMB_P pos, ISAMC_I *data);
 
 ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos);
 
 int isamb_pp_read (ISAMB_PP pp, void *buf);
 
 void isamb_pp_close (ISAMB_PP pp);
+
+int isamb_unlink (ISAMB b, ISAMC_P pos);
 
 int isamb_pp_num (ISAMB_PP pp);
 

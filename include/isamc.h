@@ -1,5 +1,5 @@
-/* $Id: isamc.h,v 1.10 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: isamc.h,v 1.11 2003-06-23 15:36:11 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -56,18 +56,18 @@ typedef struct ISAMC_M_s {
 
     int max_blocks_mem;
     int debug;
-} *ISAMC_M;
+} ISAMC_M;
 
 typedef struct ISAMC_I_s {
     int (*read_item)(void *clientData, char **dst, int *insertMode);
     void *clientData;
-} *ISAMC_I;
+} ISAMC_I;
 
-void isc_getmethod (ISAMC_M m);
+void isc_getmethod (ISAMC_M *m);
 
-ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method);
+ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method);
 int isc_close (ISAMC is);
-ISAMC_P isc_merge (ISAMC is, ISAMC_P pos, ISAMC_I data);
+ISAMC_P isc_merge (ISAMC is, ISAMC_P pos, ISAMC_I *data);
 
 ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P pos);
 void isc_pp_close (ISAMC_PP pp);

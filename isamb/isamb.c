@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.26 2003-04-15 16:38:32 adam Exp $
+/* $Id: isamb.c,v 1.27 2003-06-23 15:36:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -61,7 +61,7 @@ struct ISAMB_file {
 
 struct ISAMB_s {
     BFiles bfs;
-    ISAMC_M method;
+    ISAMC_M *method;
 
     struct ISAMB_file *file;
     int no_cat;
@@ -105,14 +105,14 @@ void decode_ptr (char **src, int *pos)
     (*src) += sizeof(*pos);
 }
 
-ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method,
+ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
                   int cache)
 {
     ISAMB isamb = xmalloc (sizeof(*isamb));
     int i, b_size = 32;
 
     isamb->bfs = bfs;
-    isamb->method = (ISAMC_M) xmalloc (sizeof(*method));
+    isamb->method = (ISAMC_M *) xmalloc (sizeof(*method));
     memcpy (isamb->method, method, sizeof(*method));
     isamb->no_cat = 4;
     isamb->log_io = 0;
@@ -415,14 +415,14 @@ void close_block (ISAMB b, struct ISAMB_block *p)
 
 int insert_sub (ISAMB b, struct ISAMB_block **p,
                 void *new_item, int *mode,
-                ISAMC_I stream,
+                ISAMC_I *stream,
                 struct ISAMB_block **sp,
                 void *sub_item, int *sub_size,
                 void *max_item);
 
 int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
                 int *mode,
-                ISAMC_I stream, struct ISAMB_block **sp,
+                ISAMC_I *stream, struct ISAMB_block **sp,
                 void *split_item, int *split_size, void *last_max_item)
 {
     char *startp = p->bytes;
@@ -531,7 +531,8 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
 
 
 int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
-                 int *lookahead_mode, ISAMC_I stream, struct ISAMB_block **sp2,
+                 int *lookahead_mode, ISAMC_I *stream,
+		 struct ISAMB_block **sp2,
                  void *sub_item, int *sub_size,
                  void *max_item)
 {
@@ -756,7 +757,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
 
 int insert_sub (ISAMB b, struct ISAMB_block **p, void *new_item,
                 int *mode,
-                ISAMC_I stream,
+                ISAMC_I *stream,
                 struct ISAMB_block **sp,
                 void *sub_item, int *sub_size,
                 void *max_item)
@@ -769,7 +770,36 @@ int insert_sub (ISAMB b, struct ISAMB_block **p, void *new_item,
                            sub_size, max_item);
 }
 
-int isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I stream)
+int isamb_unlink (ISAMB b, ISAMC_P pos)
+{
+    struct ISAMB_block *p1;
+
+    if (!pos)
+	return 0;
+    p1 = open_block(b, pos);
+    p1->deleted = 1;
+    if (!p1->leaf)
+    {
+	int sub_p;
+	int item_len;
+	char *src = p1->bytes + p1->offset;
+
+	decode_ptr(&src, &sub_p);
+	isamb_unlink(b, sub_p);
+	
+	while (src != p1->bytes + p1->size)
+	{
+	    decode_ptr(&src, &item_len);
+	    src += item_len;
+	    decode_ptr(&src, &sub_p);
+	    isamb_unlink(b, sub_p);
+	}
+    }
+    close_block(b, p1);
+    return 0;
+}
+
+int isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
 {
     char item_buf[DST_ITEM_MAX];
     char *item_ptr;

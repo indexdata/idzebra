@@ -1,5 +1,5 @@
-/* $Id: isamc.c,v 1.22 2002-08-02 19:26:56 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: isamc.c,v 1.23 2003-06-23 15:36:11 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -42,7 +42,7 @@ static void init_fc (ISAMC is, int cat);
 
 #define SMALL_TEST 0
 
-void isc_getmethod (ISAMC_M m)
+void isc_getmethod (ISAMC_M *m)
 {
 
     static struct ISAMC_filecat_s def_cat[] = {
@@ -72,7 +72,7 @@ void isc_getmethod (ISAMC_M m)
     m->max_blocks_mem = 10;
 }
 
-ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
+ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method)
 {
     ISAMC is;
     ISAMC_filecat filecat;
@@ -81,7 +81,7 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
 
     is = (ISAMC) xmalloc (sizeof(*is));
 
-    is->method = (ISAMC_M) xmalloc (sizeof(*is->method));
+    is->method = (ISAMC_M *) xmalloc (sizeof(*is->method));
     memcpy (is->method, method, sizeof(*method));
     filecat = is->method->filecat;
     assert (filecat);
