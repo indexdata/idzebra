@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.10  1996-06-04 10:18:58  adam
+ * Revision 1.11  1996-10-29 14:06:47  adam
+ * Include zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.10  1996/06/04 10:18:58  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.9  1996/04/23  12:39:07  adam
@@ -42,7 +45,6 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#include <alexutil.h>
 #include "index.h"
 
 struct dirs_info {

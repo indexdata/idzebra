@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.9  1996-05-01 13:46:36  adam
+ * Revision 1.10  1996-10-29 14:06:53  adam
+ * Include zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.9  1996/05/01 13:46:36  adam
  * First work on multiple records in one file.
  * New option, -offset, to the "unread" command in the filter module.
  *
@@ -42,7 +45,7 @@
  *
  */
 
-#include <alexutil.h>
+#include <zebrautl.h>
 
 #define REC_NO_INFO 8
 

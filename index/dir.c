@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.15  1996-06-04 10:18:58  adam
+ * Revision 1.16  1996-10-29 14:06:45  adam
+ * Include zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.15  1996/06/04 10:18:58  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.14  1996/04/09  06:49:18  adam
@@ -62,7 +65,6 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#include <alexutil.h>
 #include "index.h"
 
 struct dir_entry *dir_open (const char *rep)

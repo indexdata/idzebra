@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.10  1996-06-04 14:56:12  quinn
+ * Revision 1.11  1996-10-29 14:06:49  adam
+ * Include zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.10  1996/06/04 14:56:12  quinn
  * Fix
  *
  * Revision 1.9  1996/06/04  14:18:53  quinn
@@ -42,7 +45,6 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include <alexutil.h>
 #include <charmap.h>
 #include "index.h"
 

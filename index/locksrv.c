@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.5  1996-05-15 11:58:18  adam
+ * Revision 1.6  1996-10-29 14:06:52  adam
+ * Include zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.5  1996/05/15 11:58:18  adam
  * Changed some log messages.
  *
  * Revision 1.4  1996/04/10  16:01:27  quinn
@@ -32,7 +35,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include <alexutil.h>
 #include "zserver.h"
 
 static int server_lock_cmt = -1;

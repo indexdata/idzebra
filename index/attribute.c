@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: attribute.c,v $
- * Revision 1.3  1996-05-09 07:28:54  quinn
+ * Revision 1.4  1996-10-29 14:06:48  adam
+ * Include zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.3  1996/05/09 07:28:54  quinn
  * Work towards phrases and multiple registers
  *
  * Revision 1.2  1995/11/15  19:13:07  adam
@@ -18,10 +21,9 @@
 #include <stdio.h>
 
 #include <log.h>
-#include <alexutil.h>
 #include <res.h>
 #include <d1_attset.h>
-
+#include <zebrautl.h>
 #include "attribute.h"
 
 static int initialized = 0;

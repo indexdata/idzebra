@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.c,v $
- * Revision 1.1  1996-10-11 10:57:24  adam
+ * Revision 1.2  1996-10-29 14:03:16  adam
+ * Include zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.1  1996/10/11 10:57:24  adam
  * New module recctrl. Used to manage records (extract/retrieval).
  *
  * Revision 1.5  1996/06/04 10:18:59  adam
@@ -30,7 +33,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include "rectext.h"
 #include "recgrs.h"
 

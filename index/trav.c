@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.26  1996-06-04 10:19:01  adam
+ * Revision 1.27  1996-10-29 14:06:56  adam
+ * Include zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.26  1996/06/04 10:19:01  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.25  1996/05/01  13:46:37  adam
@@ -107,7 +110,6 @@
 #include <fcntl.h>
 #include <time.h>
 
-#include <alexutil.h>
 #include "index.h"
 
 static int repComp (const char *a, const char *b, size_t len)
