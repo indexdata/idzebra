@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.60  1996-06-04 10:18:12  adam
+ * Revision 1.61  1996-06-06 12:08:37  quinn
+ * Added showRecord function
+ *
+ * Revision 1.60  1996/06/04  10:18:12  adam
  * Search/scan uses character mapping module.
  *
  * Revision 1.59  1996/05/14  15:47:07  adam
@@ -849,6 +852,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.readf = file_read;
         extractCtrl.seekf = file_seek;
         extractCtrl.endf = file_end;
+	extractCtrl.group = rGroup;
         r = (*recType->extract)(&extractCtrl);
 
         if (r)      

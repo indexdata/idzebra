@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.42  1996-05-31 09:07:01  quinn
+ * Revision 1.43  1996-06-06 12:08:42  quinn
+ * Added showRecord function
+ *
+ * Revision 1.42  1996/05/31  09:07:01  quinn
  * Work on character-set handling
  *
  * Revision 1.41  1996/05/14  14:04:34  adam
@@ -191,6 +194,7 @@ int main (int argc, char **argv)
     rGroupDef.recordType = NULL;
     rGroupDef.flagStoreData = -1;
     rGroupDef.flagStoreKeys = -1;
+    rGroupDef.flagShowRecords = 0;
     rGroupDef.fileVerboseFlag = 1;
 
     prog = *argv;
@@ -210,13 +214,14 @@ int main (int argc, char **argv)
 	" -d <database> Records belong to Z39.50 database <database>.\n"
 	" -m <mbytes>   Use <mbytes> before flushing keys to disk.\n"
         " -n            Don't use shadow system\n"
+	" -s            Show analysis on stdout, but do no work\n"
 	" -v <level>    Set logging to <level>\n"
         " -V            Show version\n"
                  );
         exit (1);
     }
     log_event_end (abort_func, NULL);
-    while ((ret = options ("Vt:c:g:d:m:v:n", argv, argc, &arg)) != -2)
+    while ((ret = options ("sVt:c:g:d:m:v:n", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -385,6 +390,10 @@ int main (int argc, char **argv)
         {
             rGroupDef.databaseName = arg;
         }
+	else if (ret == 's')
+	{
+	    rGroupDef.flagShowRecords = 1;
+	}
         else if (ret == 'g')
         {
             rGroupDef.groupName = arg;

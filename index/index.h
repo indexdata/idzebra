@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.43  1996-06-04 10:18:12  adam
+ * Revision 1.44  1996-06-06 12:08:40  quinn
+ * Added showRecord function
+ *
+ * Revision 1.43  1996/06/04  10:18:12  adam
  * Search/scan uses character mapping module.
  *
  * Revision 1.42  1996/06/04  08:20:16  quinn
@@ -190,6 +193,7 @@ struct recordGroup {
     char *recordType;
     int  flagStoreData;
     int  flagStoreKeys;
+    int  flagShowRecords;
     int  fileVerboseFlag;
 };
 
