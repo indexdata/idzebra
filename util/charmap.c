@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.3  1996-06-03 15:17:46  quinn
+ * Revision 1.4  1996-06-03 16:32:13  quinn
+ * Temporary bug-fix
+ *
+ * Revision 1.3  1996/06/03  15:17:46  quinn
  * Fixed bug.
  *
  * Revision 1.2  1996/06/03  10:15:09  quinn
@@ -63,10 +66,7 @@ static chr_t_entry *set_map_string(chr_t_entry *root, char *from, int len,
 	    (char*) root->target == CHR_UNKNOWN)
 	    root->target = (unsigned char *) xstrdup(to);
 	else if ((char*) to != CHR_SPACE)
-	{
-	    logf(LOG_FATAL, "Character map overlap");
-	    return 0;
-	}
+	    logf(LOG_WARN, "Character map overlap");
     }
     else
     {
