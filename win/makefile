@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.25.2.2 2004-08-19 12:51:43 adam Exp $
+# $Id: makefile,v 1.25.2.3 2004-08-20 12:32:19 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -443,7 +443,6 @@ clean:
 	-del $(OBJDIR)\*.obj
 	-del $(OBJDIR)\*.sbr
 	-del $(BINDIR)\*.exe
-	-del $(BINDIR)\*.dll
 	-del $(TMPDIR)\*.
 	-del $(LIBDIR)\*.lib
 
