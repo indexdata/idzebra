@@ -2,13 +2,11 @@ Summary: Zebra - An Open Indexing Search Engine
 Name: zebra
 Version: 1.0
 Release: 1
-Copyright: commercial
-Group: Development/Libraries
+Copyright: distributable
+Group: Applications/Internet
 Vendor: Index Data ApS <info@indexdata.dk>
 Url: http://www.indexdata.dk/zebra/
 Source: zebra-1.0.tar.gz
-Requires: yaz
-BuildRequires: yaz
 BuildRoot: /var/tmp/%{name}-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 
@@ -33,7 +31,7 @@ make install
 
 %files
 %defattr(-,root,root)
-%doc README LICENSE.2 CHANGELOG
+%doc README LICENSE.zebra CHANGELOG
 %config /usr/lib/zebra/tab
 /usr/bin/zebraidx
 /usr/bin/zebrasrv

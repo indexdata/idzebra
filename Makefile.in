@@ -1,7 +1,6 @@
 # Copyright (C) 1994-1999, Index Data
 # All rights reserved.
-# Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.9 1999-12-01 19:11:42 adam Exp $
+# $Id: Makefile.in,v 1.10 1999-12-11 21:39:35 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -39,6 +38,7 @@ INCDIR=$(prefix)/include
 #  Misc tables, etc.
 ZEBRADIR=$(prefix)/lib/@PROGPREFIX@
 ZEBRATAB=$(prefix)/lib/@PROGPREFIX@/tab
+ZEBRADOC=$(prefix)/lib/@PROGPREFIX@/doc
 
 SUBDIR=@SUBDIR@
 
@@ -63,7 +63,7 @@ cleandepend:
 		if sed '/^#Depend/q' <Makefile >Makefile.tmp; then \
 		mv -f Makefile.tmp Makefile; fi; rm -f .depend); done
 
-install:
+install: all
 	$(INSTALL) -d $(BUILD)$(BINDIR)
 	$(INSTALL_PROGRAM) bin/@PROGPREFIX@idx $(BUILD)$(BINDIR)
 	$(INSTALL_PROGRAM) bin/@PROGPREFIX@srv $(BUILD)$(BINDIR)
@@ -71,6 +71,12 @@ install:
 	@cd tab; for f in *; do \
 		if [ -f $$f ]; then \
 			$(INSTALL_DATA) $$f $(BUILD)$(ZEBRATAB); \
+		fi; \
+	done
+	$(INSTALL) -d $(BUILD)$(ZEBRADOC)
+	@cd doc; for f in *; do \
+		if [ -f $$f ]; then \
+			$(INSTALL_DATA) $$f $(BUILD)$(ZEBRADOC); \
 		fi; \
 	done
 
