@@ -1,0 +1,81 @@
+$Id: Notes,v 1.1 2002-12-02 15:38:33 mike Exp $
+
+The secret guide to what to actually _do_ when configuring Zebra
+----------------------------------------------------------------
+
+(This is a not-for-public-consumption document that airs rather too
+much dirty laundry.  It throws up rather a lot of "why" questions, but
+should at least solve some "what" problems.)
+
+
+1.  Create a zebra.cfg file that specifies:
+	profilePath: .:../../tab
+	recordType: grs.sgml
+
+2.  Add a
+	attset: whatever.att
+    for every attribute set that you want clients to be able to use in
+    queries without being told "unsupported attribute set".
+
+3.  Add
+	tagsysno: 0
+    if you plan to generate your own unique identifiers as (for
+    example) a Zthes data-set must do.
+
+4.  Look at the document element of your XML input files.  What is the
+    element?  Create a "something.abs" file named after the document
+    element: for example, when dealing with Zthes data, you need to
+    make "Zthes.abs" (capitalisation as specified, because that's
+    what's in the XML).  In that file, put the following lines.
+
+5.  Add "attset whatever.att" directive for each attribute set that
+    you want to support.  Yes yes, I know you already did that in the
+    "zebra.cfg" file: this is just the way it is.
+
+6.  Add "tagset whatever.tag" for every tag-set used by the GRS-1
+    schema you want to present to clients.
+
+7.  Add "xpath enable" if you want clients to be able to use XPath
+    access points like this:
+	find @attr 1=/Zthes/termName sauroposeidon
+
+8.  For each element in the GRS-1 schema specified by the profile
+    you're trying to implement, add a line that says:
+	elm (<tagSet>,<tagValue>) <elementName> !
+    for example,
+	elm (1,14) termId !
+    For elements that you don't need to be able to search, substitute
+    "-" for the "!" at the end of the line.
+
+    Nested elements (within sub-structures) look like this:
+	elm (2,30)/(4,3) relationType -
+
+9.  For each tagset you referenced in the whatever.abs file, copy the
+    relevant file from the zebra/tab directory.  For every tag listed
+    in that file that you use, if your XML input files use a different
+    element name from what's already listed, add your element name
+    after the offical one, separated by a slash like this:
+	tag 1 title/termName string
+
+    These hacked tagset files will be used in preference to the
+    distributed one because your profilePath (see above) begins with
+    ".", the current directory.
+
+    For some profiles, you may need to create a brand new tagset file
+    because the Zebra distribution doesn't support them at all.  No
+    problem: just use an existing one as a template.
+
+That should handle record-presentation side.  Now for searching:
+
+10. For each attset that you referenced in the zebra.cfg and
+    whatever.abs files, either:
+	A. Copy the distributed .att file	### Is this right?
+	B. Create a new whatever.att file
+    For every access point that you want to be able to use, change the
+    access-point name to the corresponding element-name in the input
+    XML files.
+
+Issues:
+* How can we set up separately access points for elements with the
+  same tagnames but at different places in the record structure?
+* This is all a bit crap, isn't it?
