@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.40  1996-05-31 09:06:58  quinn
+ * Revision 1.41  1996-06-04 07:54:55  quinn
+ * Added output-map.
+ *
+ * Revision 1.40  1996/05/31  09:06:58  quinn
  * Work on character-set handling
  *
  * Revision 1.39  1996/05/14  14:04:33  adam
@@ -255,3 +258,4 @@ int zebraUnlock (int fd);
 
 void init_charmap(void);
 char **map_chrs_input(char **from, int len);
+char *map_chrs_output(const char **from);
