@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.6  1994-09-01 17:45:14  adam
+ * Revision 1.7  1994-09-06 13:01:03  quinn
+ * Removed const from declaration of res_get
+ *
+ * Revision 1.6  1994/09/01  17:45:14  adam
  * Work on resource manager.
  * CVS ----------------------------------------------------------------------
  *
@@ -187,7 +190,7 @@ void res_close (Res r)
     xfree (r);
 }
 
-const char *res_get (Res r, const char *name)
+char *res_get (Res r, const char *name)
 {
     struct res_entry *re;
 
