@@ -1,8 +1,10 @@
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
 
-<!-- $Id: marc_indexing.sgml,v 1.1 2003-03-10 13:27:38 oleg Exp $ -->
+    "/usr/local/share/xml/docbook/4.1.2/docbookx.dtd">
 
-<book>
+<!-- $Id: marc_indexing.xml,v 1.1 2003-03-11 13:24:10 oleg Exp $ -->
+
+<book id="marc_indexing">
 <bookinfo>
  <title>Indexing of MARC records by Zebra</title>
  <abstract>
@@ -13,12 +15,12 @@
  </abstract>
 </bookinfo>
 
-<chapter>
+<chapter id="simple">
  <title>Simple indexing of MARC records</title>
 <para>Simple indexing is not described yet.</para>
 </chapter>
 
-<chapter>
+<chapter id="extended">
  <title>Extended indexing of MARC records</title>
 
 <para>Extended indexing of MARC records will help you if you need index a
@@ -52,7 +54,7 @@ or use during indexing process embedded fields of MARC record.
 may increase (about 2-3 times) the time of indexing process for MARC
 records.</para></note>
 
-<sect1>
+<sect1 id="formula">
 <title>The index-formula</title>
 
 <para>At the beginning, we have to define the term <emphasis>index-formula</emphasis>
@@ -64,7 +66,7 @@ The document is available only in russian language.</para>
 <para>The <emphasis>index-formula</emphasis> is the combination of subfields presented in such way:</para>
 
 <screen>
-    71-00$a, $g, $h ($c){.$b ($c)} ,       (1)
+71-00$a, $g, $h ($c){.$b ($c)} , (1)
 </screen>
 
 <para>We know that Zebra supports a Bib-1 attribute - right truncation.
@@ -72,15 +74,15 @@ In this case, the <emphasis>index-formula</emphasis> (1) consists from
 forms, defined in the same way as (1)</para>
 
 <screen>
-    71-00$a, $g, $h
-    71-00$a, $g
-    71-00$a
+71-00$a, $g, $h
+71-00$a, $g
+71-00$a
 </screen>
 
 <note><para>The original MARC record may be without some elements, which included in <emphasis>index-formula</emphasis>.</para>
 </note>
 
-<para>This notation incudes such operands as:
+<para>This notation includes such operands as:
 <variablelist>
 
 <varlistentry>
@@ -94,15 +96,15 @@ forms, defined in the same way as (1)</para>
  For example, <emphasis>index-formula</emphasis></para>
 
 <screen>
-    70-#1$a, $g , (2)
+70-#1$a, $g , (2)
 </screen>
 
 <para>includes</para> 
 
 <screen>
-    700#1$a, $g
-    701#1$a, $g
-    702#1$a, $g
+700#1$a, $g
+701#1$a, $g
+702#1$a, $g
 </screen>
 
 </listitem>
@@ -115,15 +117,15 @@ forms, defined in the same way as (1)</para>
 
 
 <screen>
-    71-00$a, $g, $h ($c){.$b ($c)} , (3)
+71-00$a, $g, $h ($c){.$b ($c)} , (3)
 </screen>
 
 <para>includes</para>
 
 <screen>
-    71-00$a, $g, $h ($c). $b ($c)
-    71-00$a, $g, $h ($c). $b ($c). $b ($c)
-    71-00$a, $g, $h ($c). $b ($c). $b ($c). $b ($c)
+71-00$a, $g, $h ($c). $b ($c)
+71-00$a, $g, $h ($c). $b ($c). $b ($c)
+71-00$a, $g, $h ($c). $b ($c). $b ($c). $b ($c)
 </screen>
 
 </listitem>
@@ -132,10 +134,10 @@ forms, defined in the same way as (1)</para>
 
 <note><para>All another operands are the same as accepted in MARC world.</para>
 </note>
-
+</para>
 </sect1>
 
-<sect1>
+<sect1 id="notation">
 <title>Notation of <emphasis>index-formula</emphasis> for Zebra</title>
 
 
@@ -150,13 +152,13 @@ according to this formula.</para>
 <para>For example, <emphasis>index-formula</emphasis></para>
 
 <screen>
-    71-00$a, $g, $h ($c){.$b ($c)} , (4)
+71-00$a, $g, $h ($c){.$b ($c)} , (4)
 </screen>
 
 <para>in <literal>.abs</literal> file looks like:</para>
 
 <screen>
-    mc-71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}
+mc-71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}
 </screen>
 
 
@@ -174,15 +176,15 @@ according to this formula.</para>
 <emphasis>index-formula</emphasis></para>
 
 <screen>
-    70-#1$a, $g , (5)
+70-#1$a, $g , (5)
 </screen>
 
 <para>matches <literal>mc-70._1_$a,_$g_</literal> and includes</para>
 
 <screen>
-    700_1_$a,_$g_
-    701_1_$a,_$g_
-    702_1_$a,_$g_
+700_1_$a,_$g_
+701_1_$a,_$g_
+702_1_$a,_$g_
 </screen>
 </listitem>
 </varlistentry>
@@ -193,16 +195,16 @@ according to this formula.</para>
 <emphasis>index-formula</emphasis></para>
 
 <screen>
-    71#00$a, $g, $h ($c) {.$b ($c)} , (6)
+71#00$a, $g, $h ($c) {.$b ($c)} , (6)
 </screen>
 
 <para>matches <literal>mc-71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}</literal> and
 includes</para>
 
 <screen>
-    71.00_$a,_$g,_$h_(_$c_).$b_(_$c_)
-    71.00_$a,_$g,_$h_(_$c_).$b_(_$c_).$b_(_$c_)
-    71.00_$a,_$g,_$h_(_$c_).$b_(_$c_).$b_(_$c_).$b_(_$c_)
+71.00_$a,_$g,_$h_(_$c_).$b_(_$c_)
+71.00_$a,_$g,_$h_(_$c_).$b_(_$c_).$b_(_$c_)
+71.00_$a,_$g,_$h_(_$c_).$b_(_$c_).$b_(_$c_).$b_(_$c_)
 </screen>
 </listitem>
 </varlistentry>
@@ -214,14 +216,14 @@ includes</para>
 <emphasis>index-formula</emphasis></para>
 
 <screen>
-    4--#-$170-#1$a, $g ($c) , (7)
+4--#-$170-#1$a, $g ($c) , (7)
 </screen>
 
 <para>matches <literal>mc-4.._._$1&#60;70._1_$a,_$g_(_$c_)&#62;_</literal> and
 includes</para>
 
 <screen>
-    463_._$1&#60;70._1_$a,_$g_(_$c_)&#62;_
+463_._$1&#60;70._1_$a,_$g_(_$c_)&#62;_
 </screen>
 
 </listitem>
@@ -247,8 +249,8 @@ includes</para>
 and 7th position of LEADER</para>
 
 <screen>
-    elm mc-ldr[6]       	Record-type			!
-    elm mc-ldr[7]       	Bib-level			!
+elm mc-ldr[6] Record-type !
+elm mc-ldr[7] Bib-level   !
 </screen>
 
 </listitem>
@@ -260,13 +262,13 @@ and 7th position of LEADER</para>
 <para>indexing date (the time added to database)</para>
 
 <screen>
-    elm mc-008[0-5]     	Date/time-added-to-db		!	
+elm mc-008[0-5] Date/time-added-to-db !	
 </screen>
 
 <para>or for RUSMARC (this data included in 100th field)</para>
 
 <screen>
-    elm mc-100___$a[0-7]_   Date/time-added-to-db		!
+elm mc-100___$a[0-7]_ Date/time-added-to-db !
 </screen>
 
 </listitem>
@@ -279,7 +281,7 @@ and 7th position of LEADER</para>
 <literal>70-#1$a, $g</literal> matches</para>
 
 <screen>
-    elm 70._1_$a,_$g_       Author          !:w,!:p
+elm 70._1_$a,_$g_ Author !:w,!:p
 </screen>
 
 <para>When Zebra finds a field according to <literal>"70."</literal> pattern it checks
@@ -297,7 +299,7 @@ indexed.</para>
 <literal>4--#-$170-#1$a, $g ($c)</literal> matches</para>
 
 <screen>
-    elm mc-4.._._$1<70._1_$a,_$g_(_$c_)>_   Author          !:w,!:p
+elm mc-4.._._$1<70._1_$a,_$g_(_$c_)>_ Author !:w,!:p
 </screen>
 
 <para>Data are extracted from record if the field matches to
