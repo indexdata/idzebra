@@ -55,7 +55,7 @@ typedef struct chrmaptab
     int base_uppercase;         /* Start of upper-case ordinals */
 } chrmaptab, *CHRMAPTAB;
 
-chrmaptab *chr_read_maptab(char *name);
+chrmaptab *chr_read_maptab(const char *tabpath, const char *name);
 int chr_map_chrs(chr_t_entry *t, char **from, int len, int *read, char **to,
     int max);
 char **chr_map_input(chr_t_entry *t, char **from, int len);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.10  1997-07-01 13:01:08  adam
+ * Revision 1.11  1997-09-05 09:52:32  adam
+ * Extra argument added to function chr_read_maptab (tab path).
+ *
+ * Revision 1.10  1997/07/01 13:01:08  adam
  * Bug fix in routine find_entry: didn't take into account the len arg.
  *
  * Revision 1.9  1996/10/29 13:48:14  adam
@@ -57,8 +60,6 @@
 const char *CHR_UNKNOWN = "\001";
 const char *CHR_SPACE   = "\002";
 const char *CHR_BASE    = "\003";
-
-extern char *data1_tabpath;
 
 /*
  * Character map trie node.
@@ -347,14 +348,14 @@ static int scan_string(char *s, void (*fun)(char *c, void *data, int num),
     return 0;
 }
 
-chrmaptab *chr_read_maptab(char *name)
+chrmaptab *chr_read_maptab(const char *tabpath, const char *name)
 {
     FILE *f;
     char line[512], *argv[50];
     chrmaptab *res = xmalloc(sizeof(*res));
     int argc, num = (int) *CHR_BASE, i;
 
-    if (!(f = yaz_path_fopen(data1_tabpath, name, "r")))
+    if (!(f = yaz_path_fopen(tabpath, name, "r")))
     {
 	logf(LOG_WARN|LOG_ERRNO, "%s", name);
 	return 0;

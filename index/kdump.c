@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.11  1996-10-29 14:06:49  adam
+ * Revision 1.12  1997-09-05 09:52:32  adam
+ * Extra argument added to function chr_read_maptab (tab path).
+ *
+ * Revision 1.11  1996/10/29 14:06:49  adam
  * Include zebrautl.h instead of alexutil.h.
  *
  * Revision 1.10  1996/06/04 14:56:12  quinn
@@ -135,7 +138,7 @@ int main (int argc, char **argv)
         }
 	else if (ret == 'm')
 	{
-	    if (!(map = chr_read_maptab(arg)))
+	    if (!(map = chr_read_maptab (NULL, arg)))
 	    {
 		logf(LOG_FATAL, "Failed to open maptab");
 		exit(1);
