@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.44  1995-12-12 16:00:54  adam
+ * Revision 1.45  1995-12-15 12:37:41  adam
+ * In addRecordKeyAny: Writes key only when attrSet != -1.
+ *
+ * Revision 1.44  1995/12/12  16:00:54  adam
  * System call sync(2) used after update/commit.
  * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
  * and F_RDLCK.
@@ -485,7 +488,8 @@ static void addRecordKeyAny (const RecWord *p)
         w.attrUse = 1016;
         addRecordKey (&w);
     }
-    addRecordKey (p);
+    else if (p->attrSet != -1)
+        addRecordKey (p);
 }
 
 
