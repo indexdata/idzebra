@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: recgrs.c,v 1.56 2002-08-01 08:53:35 adam Exp $
+ * $Id: recgrs.c,v 1.57 2002-08-01 09:37:44 adam Exp $
  */
 
 #include <stdio.h>
@@ -177,6 +177,21 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
             data1_xattr *xp;
             (*p->tokenAdd)(wrd);
 
+#if 0
+            for (xp = n->u.tag.attributes; xp; xp = xp->next)
+            {
+                if (use == 1)
+                {   /* attribute  (no value) */
+                    wrd->reg_type = '0';
+                    wrd->attrUse = 3;
+                    wrd->string = xp->name;
+                    wrd->length = strlen(xp->name);
+                    
+                    wrd->seqno--;
+                    (*p->tokenAdd)(wrd);
+                }
+            }                
+#else
             for (xp = n->u.tag.attributes; xp; xp = xp->next)
             {
                 char comb[512];
@@ -227,6 +242,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                     (*p->tokenAdd)(wrd);
                 }
             }
+#endif
         }
         break;
     }
@@ -776,7 +792,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     else if (p->comp && !res)
 	selected = 1;
 
-#if 1
+#if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
     logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
