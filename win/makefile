@@ -1,13 +1,17 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.15 2002-08-20 12:01:00 adam Exp $
+# $Id: makefile,v 1.16 2002-08-30 11:28:31 adam Exp $
  
 ###########################################################
 ############### Parameters 
 ###########################################################
 
-DEBUG=0   # 0 for release, 1 for debug
+DEBUG=1   # 0 for release, 1 for debug
 
-# iconv
+# EXPAT is optional. It's required for grs.xml-filters.
+HAVE_EXPAT=1
+EXPAT_DIR= c:\Expat-1.95.4
+
+# iconv is optional
 HAVE_ICONV=0
 ICONV_DIR = c:\libiconv-1.7.0.1
 
@@ -28,7 +32,8 @@ YAZINCL=$(YAZDIR)\include
 YAZLIB=$(YAZDIR)\lib\yaz.lib
 YAZLIBS=$(YAZLIB)
 YAZBINDIR=$(YAZDIR)\bin
-YAZDLL=$(YAZBINDIR)\yaz.dll
+YAZ_DLL_SOURCE=$(YAZBINDIR)\yaz.dll
+YAZ_DLL_TARGET=$(BINDIR)\yaz.dll
 
 # BZIP2 settings. Uncomment and specify if you wish to use LIBBZIP2.
 # (C) 1996-1999 Julian Seward <jseward@acm.org> http://www.bzip2.org
@@ -84,15 +89,25 @@ apitest: $(APITEST)
 ############### Compiler and linker options 
 ###########################################################
 
-!if $(HAVE_ICONV)
-ICONV_DEF= \
-  /D HAVE_ICONV_H=1 \
-  /I"$(ICONV_DIR)\include"
-ICONV_LIB= \
-  $(ICONV_DIR)\lib\iconv.lib
+!if $(HAVE_EXPAT)
+EXPAT_DEF= /D HAVE_EXPAT_H=1 /I"$(EXPAT_DIR)\source\lib"
+EXPAT_LIB= "$(EXPAT_DIR)\libs\libexpat.lib"
+EXPAT_DLL_SOURCE= "$(EXPAT_DIR)\libs\libexpat.dll"
+EXPAT_DLL_TARGET="$(BINDIR)\libexpat.dll"
+$(EXPAT_DLL_TARGET) : $(EXPAT_DLL_SOURCE)
+	copy $(EXPAT_DLL_SOURCE) $(EXPAT_DLL_TARGET)
 !else
-ICONV_DEF= \
-  /D HAVE_ICONV_H=0
+EXPAT_DEF= /D HAVE_EXPAT_H=0
+EXPAT_LIB=
+EXPAT_DLL_SOURCE=
+EXPAT_DLL_TARGET=
+!endif
+
+!if $(HAVE_ICONV)
+ICONV_DEF= /D HAVE_ICONV_H=1 /I"$(ICONV_DIR)\include"
+ICONV_LIB= $(ICONV_DIR)\lib\iconv.lib
+!else
+ICONV_DEF= /D HAVE_ICONV_H=0
 ICONV_LIB=
 !endif
 
@@ -105,6 +120,7 @@ COMMON_C_OPTIONS=          \
   /D "WIN32"               \
   /D"_CONSOLE" /D"_MBCS"   \
   $(ICONV_DEF)             \
+  $(EXPAT_DEF)             \
   /FR"$(OBJDIR)\\"         \
   /Fo"$(OBJDIR)\\"         \
   /Fd"$(OBJDIR)\\"         \
@@ -145,7 +161,7 @@ LINK=link.exe
 LINK_LIBS= kernel32.lib user32.lib   gdi32.lib   winspool.lib \
            comdlg32.lib advapi32.lib shell32.lib ole32.lib    \
            oleaut32.lib uuid.lib     odbc32.lib  odbccp32.lib \
-           wsock32.lib  advapi32.lib $(ICONV_LIB)
+           wsock32.lib  advapi32.lib $(ICONV_LIB) $(EXPAT_LIB)
 
 COMMON_LNK_OPTIONS= /nologo \
                     /machine:i386 \
@@ -239,6 +255,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\recstat.obj \
 	$(OBJDIR)\rectext.obj \
 	$(OBJDIR)\regxread.obj \
+	$(OBJDIR)\xmlread.obj \
 	$(OBJDIR)\res.obj \
 	$(OBJDIR)\retrieve.obj \
 	$(OBJDIR)\rsbool.obj \
@@ -387,14 +404,19 @@ clean:
 	-del $(OBJDIR)\*.obj
 	-del $(OBJDIR)\*.sbr
 	-del $(BINDIR)\*.exe
+	-del $(BINDIR)\*.dll
 	-del $(TMPDIR)\*.
 	-del $(LIBDIR)\*.lib
 
 ########### check directories and create if needed
-dirs: $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR)
+dirs: $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR) \
+	$(EXPAT_DLL_TARGET) $(YAZ_DLL_TARGET)
 
 $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
  	if not exist "$@/$(NUL)" mkdir "$@"
+
+$(YAZ_DLL_TARGET) : $(YAZ_DLL_SOURCE)
+	copy $(YAZ_DLL_SOURCE) $(YAZ_DLL_TARGET)
 
 ###########################################################
 ############### Explicit dependencies
