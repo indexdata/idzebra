@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.21  1996-03-22 15:34:18  quinn
+ * Revision 1.22  1996-04-09 06:50:50  adam
+ * Bug fix: bad reference in function fileUpdateR.
+ *
+ * Revision 1.21  1996/03/22 15:34:18  quinn
  * Fixed bad reference
  *
  * Revision 1.20  1996/03/21  14:50:10  adam
@@ -200,7 +203,7 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
             src[++src_len] = '\0';
         }
         dirs_mkdir (di, src, 0);
-        if (repComp (dst->path, src, src_len))
+        if (dst && repComp (dst->path, src, src_len))
             dst = NULL;
     }
     else if (!e_src)
