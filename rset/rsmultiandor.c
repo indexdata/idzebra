@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.1 2004-09-28 13:06:35 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.2 2004-09-28 16:12:42 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -117,9 +117,11 @@ struct rset_multiandor_info {
 struct rset_multiandor_rfd {
     int flag;
     struct heap_item *items; /* we alloc and free them here */
-    HEAP h;
+    HEAP h; /* and move around here */
     zint hits; /* returned so far */
     int eof; /* seen the end of it */
+    int tailcount; /* how many items are tailing */
+    char *tailbits;
 };
 
 /* Heap functions ***********************/
@@ -240,6 +242,18 @@ static void heap_destroy (HEAP h)
     /* nothing to delete, all is nmem'd, and will go away in due time */
 }
 
+int compare_ands(const void *x, const void *y)
+{ /* used in qsort to get the multi-and args in optimal order */
+  /* that is, those with fewest occurrences first */
+    const struct heap_item *hx=x;
+    const struct heap_item *hy=y;
+    double cur, totx, toty;
+    rset_pos(hx->fd, &cur, &totx);
+    rset_pos(hy->fd, &cur, &toty);
+    if ( totx > toty +0.5 ) return 1;
+    if ( totx < toty -0.5 ) return -1;
+    return 0;  /* return totx - toty, except for overflows and rounding */
+}
 
 /* Creating and deleting rsets ***********************/
 
@@ -279,6 +293,7 @@ static void r_delete (RSET ct)
         rset_delete(info->rsets[i]);
 }
 
+
 /* Opening and closing fd's on them *********************/
 
 static RSFD r_open_andor (RSET ct, int flag, int is_and)
@@ -297,14 +312,20 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
     rfd=rfd_create_base(ct);
     if (rfd->priv) {
         p=(struct rset_multiandor_rfd *)rfd->priv;
-        heap_clear(p->h);
+        if (!is_and)
+            heap_clear(p->h);
         assert(p->items);
         /* all other pointers shouls already be allocated, in right sizes! */
     }
     else {
         p = (struct rset_multiandor_rfd *) nmem_malloc (ct->nmem,sizeof(*p));
         rfd->priv=p;
-        p->h = heap_create( ct->nmem, info->no_rsets, kctrl);
+        p->h=0;
+        p->tailbits=0;
+        if (is_and)
+            p->tailbits=nmem_malloc(ct->nmem, info->no_rsets*sizeof(char) );
+        else 
+            p->h = heap_create( ct->nmem, info->no_rsets, kctrl);
         p->items=(struct heap_item *) nmem_malloc(ct->nmem,
                               info->no_rsets*sizeof(*p->items));
         for (i=0; i<info->no_rsets; i++){
@@ -315,13 +336,16 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
     p->flag = flag;
     p->hits=0;
     p->eof=0;
+    p->tailcount=0;
     if (is_and)
     { /* read the array and sort it */
         for (i=0; i<info->no_rsets; i++){
             p->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
             if ( !rset_read(p->items[i].fd, p->items[i].buf) )
                 p->eof=1;
+            p->tailbits[i]=0;
         }
+        qsort(p->items, info->no_rsets, sizeof(p->items[0]), compare_ands);
     } else
     { /* fill the heap for ORing */
         for (i=0; i<info->no_rsets; i++){
@@ -346,11 +370,13 @@ static RSFD r_open_and (RSET ct, int flag)
 
 static void r_close (RSFD rfd)
 {
-    struct rset_multiandor_info *info=(struct rset_multiandor_info *)(rfd->rset->priv);
+    struct rset_multiandor_info *info=
+        (struct rset_multiandor_info *)(rfd->rset->priv);
     struct rset_multiandor_rfd *p=(struct rset_multiandor_rfd *)(rfd->priv);
     int i;
 
-    heap_destroy (p->h);
+    if (p->h)
+        heap_destroy (p->h);
     for (i = 0; i<info->no_rsets; i++) 
         if (p->items[i].fd)
             rset_close(p->items[i].fd);
@@ -391,9 +417,88 @@ static int r_read_or (RSFD rfd, void *buf)
 }
 
 static int r_read_and (RSFD rfd, void *buf)
-{
-    return 0;
+{ /* Has to return all hits where each item points to the */
+  /* same sysno (scope), in order. Keep an extra key (hitkey) */
+  /* as long as all records do not point to hitkey, forward */
+  /* them, and update hitkey to be the highest seen so far. */
+  /* (if any item eof's, mark eof, and return 0 thereafter) */
+  /* Once a hit has been found, scan all items for the smallest */
+  /* value. Mark all as being in the tail. Read next from that */
+  /* item, and if not in the same record, clear its tail bit */
+    struct rset_multiandor_rfd *p=rfd->priv;
+    const struct key_control *kctrl=rfd->rset->keycontrol;
+    struct rset_multiandor_info *info=rfd->rset->priv;
+    int i, mintail;
+    int cmp;
+
+    while (1) {
+        if (p->tailcount) 
+        { /* we are tailing, find lowest tail and return it */
+            mintail=0;
+            while ((mintail<info->no_rsets) && !p->tailbits[mintail])
+                mintail++; /* first tail */
+            for (i=mintail+1;i<info->no_rsets;i++)
+            {
+                if (p->tailbits[i])
+                {
+                    cmp=(*kctrl->cmp)(p->items[i].buf,p->items[mintail].buf);
+                    if (cmp<0) 
+                        mintail=i;
+                }
+            }
+            /* return the lowest tail */
+            memcpy(buf, p->items[mintail].buf, kctrl->key_size); 
+            if (!rset_read(p->items[mintail].fd, p->items[mintail].buf))
+            {
+                p->eof=1; /* game over, once tails have been returned */
+                p->tailbits[mintail]=0; 
+                (p->tailcount)--;
+                return 1;
+            }
+            /* still a tail? */
+            cmp=(*kctrl->cmp)(p->items[mintail].buf,buf);
+            if (cmp >= rfd->rset->scope){
+                p->tailbits[mintail]=0;
+                (p->tailcount)--;
+            }
+            return 1;
+        } 
+        /* not tailing, forward until all reocrds match, and set up */
+        /* as tails. the earlier 'if' will then return the hits */
+        if (p->eof)
+            return 0; /* nothing more to see */
+        i=1; /* assume items[0] is highest up */
+        while (i<info->no_rsets) {
+            cmp=(*kctrl->cmp)(p->items[0].buf,p->items[i].buf);
+            if (cmp<=-rfd->rset->scope) { /* [0] was behind, forward it */
+                if (!rset_forward(p->items[0].fd, p->items[0].buf, 
+                                  p->items[i].buf))
+                {
+                    p->eof=1; /* game over */
+                    return 0;
+                }
+                i=0; /* start frowarding from scratch */
+            } else if (cmp>=rfd->rset->scope)
+            { /* [0] was ahead, forward i */
+                if (!rset_forward(p->items[i].fd, p->items[i].buf, 
+                                  p->items[0].buf))
+                {
+                    p->eof=1; /* game over */
+                    return 0;
+                }
+            } else
+                i++;
+        } /* while i */
+        /* if we get this far, all rsets are now within +- scope of [0] */
+        /* ergo, we have a hit. Mark them all as tailing, and let the */
+        /* upper 'if' return the hits in right order */
+        for (i=0; i<info->no_rsets;i++)
+            p->tailbits[i]=1;
+        p->tailcount=info->no_rsets;
+    } /* while 1 */
 }
+
+
 static int r_forward_and(RSFD rfd, void *buf, const void *untilbuf)
 {
     return 0;
@@ -409,7 +514,7 @@ static void r_pos (RSFD rfd, double *current, double *total)
     int i;
     for (i=0; i<info->no_rsets; i++){
         rset_pos(mrfd->items[i].fd, &cur, &tot);
-        logf(LOG_LOG, "r_pos: %d %0.1f %0.1f", i, cur,tot);
+        logf(LOG_DEBUG, "r_pos: %d %0.1f %0.1f", i, cur,tot);
         scur += cur;
         stot += tot;
     }
