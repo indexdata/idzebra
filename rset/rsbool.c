@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.42 2004-08-25 13:21:43 adam Exp $
+/* $Id: rsbool.c,v 1.43 2004-08-25 13:23:13 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -96,8 +96,8 @@ struct rset_bool_info {
     RSET rset_r;
     int (*cmp)(const void *p1, const void *p2);
     void (*log_item)(int logmask, const void *p, const char *txt);
-    struct rset_bool_rfd *rfd_list;
-    struct rset_bool_rfd *free_list;
+    struct rset_bool_rfd *rfd_list;  /* RSFDs in use */
+    struct rset_bool_rfd *free_list; /* RSFDs that are freed (for reuse) */
 };
 
 struct rset_bool_rfd {
