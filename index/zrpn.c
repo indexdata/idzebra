@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.86  1998-09-22 10:48:20  adam
+ * Revision 1.87  1998-09-28 11:19:12  adam
+ * Fix for Compiled ASN.1.
+ *
+ * Revision 1.86  1998/09/22 10:48:20  adam
  * Minor changes in search API.
  *
  * Revision 1.85  1998/09/22 10:03:43  adam
@@ -1839,7 +1842,12 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     sks->caseSensitivity = nmem_malloc (stream, sizeof(*sks->caseSensitivity));
     *sks->caseSensitivity = 0;
 
+#ifdef ASN_COMPILED
+    sks->which = Z_SortKeySpec_null;
+    sks->u.null = odr_nullval ();
+#else
     sks->missingValueAction = 0;
+#endif
 
     sort_sequence->specs[i] = sks;
 
