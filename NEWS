@@ -1,3 +1,5 @@
+Added mechanism to ignore leading articles when doing full-field indexing,
+based on the character map files. See the manual for further discussion.
 
 Fixed bug in record management. Releasing blocks could result in
 partial read.

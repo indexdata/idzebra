@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.151 2004-09-13 09:02:16 adam Exp $
+/* $Id: zrpn.c,v 1.152 2004-09-14 14:38:07 quinn Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -64,7 +64,7 @@ typedef struct {
 static const char **rpn_char_map_handler (void *vp, const char **from, int len)
 {
     struct rpn_char_map_info *p = (struct rpn_char_map_info *) vp;
-    const char **out = zebra_maps_input (p->zm, p->reg_type, from, len);
+    const char **out = zebra_maps_input (p->zm, p->reg_type, from, len, 0);
 #if 0
     if (out && *out)
     {
@@ -261,7 +261,7 @@ static int grep_handle (char *name, const char *info, void *p)
 }
 
 static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
-                     const char *ct1, const char *ct2)
+                     const char *ct1, const char *ct2, int first)
 {
     const char *s1, *s0 = *src;
     const char **map;
@@ -274,7 +274,7 @@ static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
         if (ct2 && strchr (ct2, *s0))
             break;
         s1 = s0;
-        map = zebra_maps_input (zebra_maps, reg_type, &s1, strlen(s1));
+        map = zebra_maps_input (zebra_maps, reg_type, &s1, strlen(s1), first);
         if (**map != *CHR_SPACE)
             break;
         s0 = s1;
@@ -298,13 +298,13 @@ static int term_100 (ZebraMaps zebra_maps, int reg_type,
     const char *space_start = 0;
     const char *space_end = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, NULL, NULL))
+    if (!term_pre (zebra_maps, reg_type, src, NULL, NULL, !space_split))
         return 0;
     s0 = *src;
     while (*s0)
     {
         s1 = s0;
-        map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+        map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
         if (space_split)
         {
             if (**map == *CHR_SPACE)
@@ -356,7 +356,7 @@ static int term_101 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "#", "#"))
+    if (!term_pre (zebra_maps, reg_type, src, "#", "#", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -370,7 +370,7 @@ static int term_101 (ZebraMaps zebra_maps, int reg_type,
         else
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -398,7 +398,7 @@ static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
     const char *s0, *s1;
     const char **map;
 
-    if (!term_pre (zebra_maps, reg_type, src, "^\\()[].*+?|", "("))
+    if (!term_pre (zebra_maps, reg_type, src, "^\\()[].*+?|", "(", !space_split))
         return 0;
     s0 = *src;
     if (errors && *s0 == '+' && s0[1] && s0[2] == '+' && s0[3] &&
@@ -419,7 +419,7 @@ static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
         else
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (**map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -456,7 +456,7 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "?*#", "?*#"))
+    if (!term_pre (zebra_maps, reg_type, src, "?*#", "?*#", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -499,7 +499,7 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
         }
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -527,7 +527,7 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "*!", "*!"))
+    if (!term_pre (zebra_maps, reg_type, src, "*!", "*!", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -545,7 +545,7 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
         }
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -1245,7 +1245,7 @@ static int trans_scan_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             
         while ((len = (cp_end - cp)) > 0)
         {
-            map = zebra_maps_input (zh->reg->zebra_maps, reg_type, &cp, len);
+            map = zebra_maps_input (zh->reg->zebra_maps, reg_type, &cp, len, 0);
             if (**map == *CHR_SPACE)
                 space_map = *map;
             else

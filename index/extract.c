@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.160 2004-08-10 08:19:15 heikki Exp $
+/* $Id: extract.c,v 1.161 2004-09-14 14:38:07 quinn Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1738,7 +1738,7 @@ static void extract_add_incomplete_field (RecWord *p)
     const char **map = 0;
 
     if (remain > 0)
-	map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+	map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain, 0);
 
     while (map)
     {
@@ -1750,7 +1750,7 @@ static void extract_add_incomplete_field (RecWord *p)
 	{
 	    remain = p->length - (b - p->string);
 	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain, 0);
 	    else
 		map = 0;
 	}
@@ -1765,7 +1765,7 @@ static void extract_add_incomplete_field (RecWord *p)
 		buf[i++] = *(cp++);
 	    remain = p->length - (b - p->string);
 	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain, 0);
 	    else
 		map = 0;
 	}
@@ -1782,9 +1782,12 @@ static void extract_add_complete_field (RecWord *p)
     char buf[IT_MAX_WORD+1];
     const char **map = 0;
     int i = 0, remain = p->length;
+    int first; /* first position */
+
+yaz_log(LOG_DEBUG, "Complete field, w='%s'", p->string);
 
     if (remain > 0)
-	map = zebra_maps_input (p->zebra_maps, p->reg_type, &b, remain);
+	map = zebra_maps_input (p->zebra_maps, p->reg_type, &b, remain, 1);
 
     while (remain > 0 && i < IT_MAX_WORD)
     {
@@ -1793,7 +1796,10 @@ static void extract_add_complete_field (RecWord *p)
 	    remain = p->length - (b - p->string);
 
 	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+	    {
+		first = i ? 0 : 1;
+		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain, first);
+	    }
 	    else
 		map = 0;
 	}
@@ -1814,13 +1820,16 @@ static void extract_add_complete_field (RecWord *p)
 	    {
 		if (i >= IT_MAX_WORD)
 		    break;
+yaz_log(LOG_DEBUG, "Adding string to index '%d'", *map);
 		while (i < IT_MAX_WORD && *cp)
 		    buf[i++] = *(cp++);
 	    }
 	    remain = p->length  - (b - p->string);
 	    if (remain > 0)
+	    {
 		map = zebra_maps_input (p->zebra_maps, p->reg_type, &b,
-					remain);
+					remain, 0);
+	    }
 	    else
 		map = 0;
 	}

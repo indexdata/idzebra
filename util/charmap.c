@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.29 2004-07-28 09:47:42 adam Exp $
+/* $Id: charmap.c,v 1.30 2004-09-14 14:38:08 quinn Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -39,6 +39,8 @@ typedef unsigned ucs4_t;
 
 #define CHR_MAXSTR 1024
 #define CHR_MAXEQUIV 32
+
+const unsigned char CHR_FIELD_BEGIN = '^';
 
 const char *CHR_UNKNOWN = "\001";
 const char *CHR_SPACE   = "\002";
@@ -142,7 +144,7 @@ static chr_t_entry *find_entry(chr_t_entry *t, const char **from, int len)
     return t->target ? t : 0;
 }
 
-static chr_t_entry *find_entry_x(chr_t_entry *t, const char **from, int *len)
+static chr_t_entry *find_entry_x(chr_t_entry *t, const char **from, int *len, int first)
 {
     chr_t_entry *res;
 
@@ -153,35 +155,49 @@ static chr_t_entry *find_entry_x(chr_t_entry *t, const char **from, int *len)
 	from++;
 	len++;
     }
-    if (*len > 0 && t->children && t->children[(unsigned char) **from])
+    if (*len > 0 && t->children)
     {
 	const char *old_from = *from;
 	int old_len = *len;
+
+	res = 0;
+
+	if (first && t->children[CHR_FIELD_BEGIN])
+	{
+	    if ((res = find_entry_x(t->children[CHR_FIELD_BEGIN], from, len, 0)) && res != t->children[CHR_FIELD_BEGIN])
+		return res;
+            else
+	        res = 0;
+	    /* otherwhise there was no match on beginning of field, move on */
+	} 
 	
-	(*len)--;
-	(*from)++;
-	if ((res = find_entry_x(t->children[(unsigned char) *old_from],
-				from, len)))
-	    return res;
-	/* no match */
-	*len = old_len;
-	*from = old_from;
+	if (!res && t->children[(unsigned char) **from])
+	{
+	    (*len)--;
+	    (*from)++;
+	    if ((res = find_entry_x(t->children[(unsigned char) *old_from],
+				    from, len, 0)))
+		return res;
+	    /* no match */
+	    *len = old_len;
+	    *from = old_from;
+	}
     }
     /* no children match. use ourselves, if we have a target */
     return t->target ? t : 0;
 }
 
-const char **chr_map_input_x(chrmaptab maptab, const char **from, int *len)
+const char **chr_map_input_x(chrmaptab maptab, const char **from, int *len, int first)
 {
     chr_t_entry *t = maptab->input;
     chr_t_entry *res;
 
-    if (!(res = find_entry_x(t, from, len)))
+    if (!(res = find_entry_x(t, from, len, first)))
 	abort();
     return (const char **) (res->target);
 }
 
-const char **chr_map_input(chrmaptab maptab, const char **from, int len)
+const char **chr_map_input(chrmaptab maptab, const char **from, int len, int first)
 {
     chr_t_entry *t = maptab->input;
     chr_t_entry *res;
@@ -189,7 +205,7 @@ const char **chr_map_input(chrmaptab maptab, const char **from, int len)
 
     len_tmp[0] = len;
     len_tmp[1] = -1;
-    if (!(res = find_entry_x(t, from, len_tmp)))
+    if (!(res = find_entry_x(t, from, len_tmp, first)))
 	abort();
     return (const char **) (res->target);
 }
@@ -259,7 +275,7 @@ ucs4_t zebra_prim_w(ucs4_t **s)
     ucs4_t i = 0;
     char fmtstr[8];
 
-    yaz_log (LOG_DEBUG, "prim %.3s", (char *) *s);
+    yaz_log (LOG_DEBUG, "prim_w %.3s", (char *) *s);
     if (**s == '\\')
     {
 	(*s)++;
@@ -374,7 +390,7 @@ static void fun_mkstring(const char *s, void *data, int num)
     chrwork *arg = (chrwork *) data;
     const char **res, *p = s;
 
-    res = chr_map_input(arg->map, &s, strlen(s));
+    res = chr_map_input(arg->map, &s, strlen(s), 0);
     if (*res == (char*) CHR_UNKNOWN)
 	logf(LOG_WARN, "Map: '%s' has no mapping", p);
     strncat(arg->string, *res, CHR_MAXSTR - strlen(arg->string));
@@ -443,6 +459,7 @@ static int scan_string(char *s_native,
     char str[1024];
 
     ucs4_t arg[512];
+    ucs4_t arg_prim[512];
     ucs4_t *s0, *s = arg;
     ucs4_t c, begin, end;
     size_t i;
@@ -498,11 +515,11 @@ static int scan_string(char *s_native,
 	case '[': s++; abort(); break;
 	case '(':
             ++s;
-            s0 = s;
-            while (*s != ')' || s[-1] == '\\')
-                s++;
-	    *s = 0;
-            if (scan_to_utf8 (t_utf8, s0, s - s0, str, sizeof(str)-1))
+	    s0 = s; i = 0;
+	    while (*s != ')' || s[-1] == '\\')
+		arg_prim[i++] = zebra_prim_w(&s);
+	    arg_prim[i] = 0;
+            if (scan_to_utf8 (t_utf8, arg_prim, zebra_ucs4_strlen(arg_prim), str, sizeof(str)-1))
                 return -1;
 	    (*fun)(str, data, num ? (*num)++ : 0);
 	    s++;
