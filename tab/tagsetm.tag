@@ -1,6 +1,6 @@
 # TagSet-M Tags
 #
-# $Id: tagsetm.tag,v 1.1 2002-10-22 12:51:09 adam Exp $
+# $Id: tagsetm.tag,v 1.2 2002-12-01 23:28:30 mike Exp $
 name tagsetm
 reference TagsetM
 type 1
@@ -31,3 +31,5 @@ tag	23	type				string
 tag	24	scheme				string
 tag	25	costInfo			string
 tag	26	costFlag			bool
+tag	27	termCreatedBy			string
+tag	28	termModifiedBy			string

@@ -1,5 +1,5 @@
 # TagSet-G Tags
-# $Id: tagsetg.tag,v 1.1 2002-10-22 12:51:09 adam Exp $
+# $Id: tagsetg.tag,v 1.2 2002-12-01 23:28:30 mike Exp $
 name tagsetg
 reference TagsetG
 type 2
@@ -39,3 +39,4 @@ tag	32	contributor				string
 tag	33	source					string
 tag	34	coverage				string
 tag	35	private					string
+tag	36	sourceDb				string
