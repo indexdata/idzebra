@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.23 2003-03-26 16:52:48 adam Exp $
+# $Id: makefile,v 1.24 2003-09-22 12:35:58 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -27,7 +27,7 @@ all: dirs zebralib zserver zindex
 ROOTDIR=..   # The home of zebra
 
 # YAZ include files, libraries, etc.
-YAZDIR=$(ROOTDIR)\..\YAZ
+YAZDIR=$(ROOTDIR)\..\YAZ-2.0.4
 YAZINCL=$(YAZDIR)\include
 YAZLIB=$(YAZDIR)\lib\yaz.lib
 YAZLIBS=$(YAZLIB)

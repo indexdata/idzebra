@@ -1,6 +1,6 @@
-; $Id: zebra.nsi,v 1.16 2003-08-21 10:47:42 adam Exp $
+; $Id: zebra.nsi,v 1.17 2003-09-22 12:35:58 adam Exp $
 
-!define VERSION "1.3.12"
+!define VERSION "1.3.13"
 
 Name "Zebra"
 Caption "Index Data Yebra ${VERSION} Setup"
@@ -80,7 +80,7 @@ Section "Zebra Examples"
 	SetOutPath $INSTDIR
 
 	File /r ..\test
-;	File /r ..\examples
+	File /r ..\examples
 SectionEnd
 
 Section "Zebra Source"
