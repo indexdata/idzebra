@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.23 2004-10-29 14:16:22 heikki Exp $
+# $Id: Makefile.am,v 1.24 2004-10-29 14:30:27 heikki Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
@@ -9,7 +9,7 @@ xpathtests= xpath1 xpath2 xpath3 xpath4
 check_PROGRAMS = ${simpletests} ${xpathtests}
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg zebrazv.cfg
+EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg zebrazv.cfg zebraxpath.cfg
 
 t1_SOURCES = t1.c testlib.c testlib.h
 t2_SOURCES = t2.c testlib.c testlib.h
