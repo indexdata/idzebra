@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.2  1994-10-04 12:08:07  adam
+ * Revision 1.3  1994-10-05 12:16:50  adam
+ * Pagesize is a resource now.
+ *
+ * Revision 1.2  1994/10/04  12:08:07  adam
  * Some bug fixes and some optimizations.
  *
  * Revision 1.1  1994/10/03  17:23:04  adam
@@ -233,7 +236,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
     dict_bf_readp (dict->dbf, ptr, &p);
     lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));    
 
     while (lo <= hi)
     {
@@ -313,7 +316,8 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                     dict_grep (dict, subptr, mc, Rj1, pos+1,
                                   userfunc, prefix, dfas);
                     dict_bf_readp (dict->dbf, ptr, &p);
-                    indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
+                    indxp = (short*) ((char*) p+DICT_pagesize(dict)
+                                      -sizeof(short));
                 }
             }
         }

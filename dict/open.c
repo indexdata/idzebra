@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.5  1994-09-01 17:49:39  adam
+ * Revision 1.6  1994-10-05 12:16:52  adam
+ * Pagesize is a resource now.
+ *
+ * Revision 1.5  1994/09/01  17:49:39  adam
  * Removed stupid line. Work on insertion in dictionary. Not finished yet.
  *
  * Revision 1.4  1994/09/01  17:44:10  adam
@@ -32,15 +35,26 @@ Dict dict_open (const char *name, int cache, int rw)
     Dict dict;
     void *head_buf;
     struct Dict_head *dh;
+    char resource_str[80];
+    int page_size;
 
     dict = xmalloc (sizeof(*dict));
 
-    dict->dbf = dict_bf_open (name, DICT_PAGESIZE, cache, rw);
+    sprintf (resource_str, "dict.%s.pagesize", name);
+
+    page_size = atoi (res_get_def (common_resource, resource_str, 
+                                   DICT_DEFAULT_PAGESIZE));
+    if (page_size < 1024)
+    {
+        log (LOG_WARN, "Resource %s was too small. Set to 1024", resource_str);
+        page_size = 1024;
+    }
+    dict->dbf = dict_bf_open (name, page_size, cache, rw);
     dict->rw = rw;
 
     if(!dict->dbf)
     {
-        log (LOG_LOG, "cannot open `%s'", name);
+        log (LOG_WARN, "Cannot open `%s'", name);
         xfree (dict);
         return NULL;
     }
@@ -52,13 +66,13 @@ Dict dict_open (const char *name, int cache, int rw)
             dh = (struct Dict_head *) head_buf;
             strcpy(dh->magic_str, DICT_MAGIC);
             dh->free_list = dh->last = 1;
-            dh->page_size = DICT_PAGESIZE;
+            dh->page_size = page_size;
             memcpy (&dict->head, dh, sizeof(*dh));
         }
         else
         {   /* no header present, i.e. no dictionary at all */
             dict->head.free_list = dict->head.last = 0;
-            dict->head.page_size = DICT_PAGESIZE;
+            dict->head.page_size = page_size;
         }
     }
     else /* header was there, check magic and page size */
@@ -66,14 +80,15 @@ Dict dict_open (const char *name, int cache, int rw)
         dh = (struct Dict_head *) head_buf;
         if (strcmp (dh->magic_str, DICT_MAGIC))
         {
-            log (LOG_LOG, "bad magic of `%s'", name);
+            log (LOG_WARN, "Bad magic of `%s'", name);
             dict_bf_close (dict->dbf);
             xfree (dict);
             return NULL;
         }
-        if (dh->page_size != DICT_PAGESIZE)
+        if (dh->page_size != page_size)
         {
-            log (LOG_LOG, "page size mismatch of `%s'", name);
+            log (LOG_WARN, "Resource %s is %d and pagesize of `%s' is %d",
+                 resource_str, page_size, name, dh->page_size);
             dict_bf_close (dict->dbf);
             xfree (dict);
             return NULL;

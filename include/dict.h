@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.9  1994-10-04 12:08:19  adam
+ * Revision 1.10  1994-10-05 12:16:58  adam
+ * Pagesize is a resource now.
+ *
+ * Revision 1.9  1994/10/04  12:08:19  adam
  * Minor changes.
  *
  * Revision 1.8  1994/10/03  17:23:11  adam
@@ -23,7 +26,6 @@
  *
  * Revision 1.4  1994/09/01  17:44:40  adam
  * Work on insertion in dictionary. Not finished yet.
- * CVS ----------------------------------------------------------------------
  *
  * Revision 1.3  1994/08/18  12:41:12  adam
  * Some development of dictionary. Not finished at all!
@@ -86,7 +88,7 @@ typedef struct Dict_struct {
 
 #define DICT_MAGIC "dict00"
 
-#define DICT_PAGESIZE 8192
+#define DICT_DEFAULT_PAGESIZE "8192"
 
 int        dict_bf_readp (Dict_BFile bf, int no, void **bufp);
 int        dict_bf_newp (Dict_BFile bf, int no, void **bufp);
@@ -114,6 +116,7 @@ int        dict_strlen (const Dict_char *s);
 #define DICT_nodir(x)   0[(short*)((char*)(x)+3*sizeof(Dict_ptr))]
 #define DICT_size(x)    1[(short*)((char*)(x)+3*sizeof(Dict_ptr))]
 #define DICT_infoffset  (3*sizeof(Dict_ptr)+2*sizeof(short))
+#define DICT_pagesize(x) ((x)->head.page_size)
 
 #define DICT_to_str(x)  sizeof(Dict_info)+sizeof(Dict_ptr)
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.9  1994-09-16 15:39:13  adam
+ * Revision 1.10  1994-10-05 12:16:48  adam
+ * Pagesize is a resource now.
+ *
+ * Revision 1.9  1994/09/16  15:39:13  adam
  * Initial code of lookup - not tested yet.
  *
  * Revision 1.8  1994/09/16  12:35:01  adam
@@ -90,7 +93,7 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
     int best_no = -1, no_current = 1;
 
     /* determine splitting char... */
-    indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
+    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));
     for (i = DICT_nodir (p); --i >= 0; --indxp)
     {
         if (*indxp > 0) /* tail string here! */
@@ -163,8 +166,8 @@ static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
     short *indxp1, *indxp2;
     char *info1, *info2;
 
-    indxp1 = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
-    indxp2 = (short*) ((char*) np+DICT_PAGESIZE);
+    indxp1 = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));
+    indxp2 = (short*) ((char*) np+DICT_pagesize(dict));
     info2 = (char*) np + DICT_infoffset;
     for (i = DICT_nodir (p); --i >= 0; --indxp1)
     {
@@ -221,7 +224,7 @@ static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
         ++no;
     }
     memcpy ((char*)p+DICT_infoffset, (char*)np+DICT_infoffset,
-            DICT_PAGESIZE-DICT_infoffset);
+            DICT_pagesize(dict)-DICT_infoffset);
     DICT_size(p) = info2 - np;
     DICT_type(p) = 0;
     DICT_nodir(p) = no;
@@ -254,7 +257,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
 
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
+    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));
     while (lo <= hi)
     {
         mid = (lo+hi)/2;
@@ -333,7 +336,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
                     }
                     if (DICT_size(p)+sizeof(Dict_char)+sizeof(Dict_ptr)+
                         userlen >=
-                        DICT_PAGESIZE - (1+DICT_nodir(p))*sizeof(short))
+                        DICT_pagesize(dict) - (1+DICT_nodir(p))*sizeof(short))
                     {
                         if (DICT_type(p) == 1)
                         {
@@ -388,7 +391,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
         --indxp;
     slen = (dict_strlen(str)+1)*sizeof(Dict_char);
     if (DICT_size(p)+slen+userlen >=
-        DICT_PAGESIZE - (1+DICT_nodir(p))*sizeof(short)) /* overflow? */
+        DICT_pagesize(dict) - (1+DICT_nodir(p))*sizeof(short)) /* overflow? */
     {
         split_page (dict, ptr, p);
         return dict_ins (dict, str, ptr, userlen, userinfo);
@@ -397,12 +400,12 @@ static int dict_ins (Dict dict, const Dict_char *str,
     {
         short *indxp1;
         (DICT_nodir(p))++;
-        indxp1 = (short*)((char*) p + DICT_PAGESIZE
+        indxp1 = (short*)((char*) p + DICT_pagesize(dict)
                           - DICT_nodir(p)*sizeof(short));
         for (; indxp1 != indxp; indxp1++)
             indxp1[0] = indxp1[1];
 #if CHECK
-        indxp1 = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
+        indxp1 = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));
         for (i = DICT_nodir (p); --i >= 0; --indxp1)
         {
             if (*indxp1 < 0)

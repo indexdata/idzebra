@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookup.c,v $
- * Revision 1.3  1994-09-26 10:17:25  adam
+ * Revision 1.4  1994-10-05 12:16:51  adam
+ * Pagesize is a resource now.
+ *
+ * Revision 1.3  1994/09/26  10:17:25  adam
  * Minor changes.
  *
  * Revision 1.2  1994/09/16  15:39:14  adam
@@ -34,7 +37,7 @@ static char *dict_look (Dict dict, Dict_char *str)
     dict_bf_readp (dict->dbf, ptr, &p);
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));    
     while (lo <= hi)
     {
         mid = (lo+hi)/2;
@@ -77,7 +80,8 @@ static char *dict_look (Dict dict, Dict_char *str)
                     dict_bf_readp (dict->dbf, ptr, &p);
                     mid = lo = 0;
                     hi = DICT_nodir(p)-1;
-                    indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
+                    indxp = (short*) ((char*) p+DICT_pagesize(dict)
+                                      -sizeof(short));
                     continue;
                 }
             }

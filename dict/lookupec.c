@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookupec.c,v $
- * Revision 1.3  1994-09-26 16:31:06  adam
+ * Revision 1.4  1994-10-05 12:16:51  adam
+ * Pagesize is a resource now.
+ *
+ * Revision 1.3  1994/09/26  16:31:06  adam
  * Minor changes.
  *
  * Revision 1.2  1994/09/22  14:43:57  adam
@@ -46,7 +49,7 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
     dict_bf_readp (dict->dbf, ptr, &p);
     lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));    
     while (lo <= hi)
     {
         if (indxp[-lo] > 0)
@@ -116,7 +119,7 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
                     dict_look_ec (dict, subptr, mi, ri, pos+1,
                                   userfunc, range, prefix);
                     dict_bf_readp (dict->dbf, ptr, &p);
-                    indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
+                    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));
                 }
             }
         }
