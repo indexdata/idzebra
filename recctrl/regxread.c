@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: regxread.c,v $
- * Revision 1.37  2001-05-29 08:51:59  adam
+ * Revision 1.38  2002-04-04 20:50:37  adam
+ * Multi register works with record paths and data1 profile path
+ *
+ * Revision 1.37  2001/05/29 08:51:59  adam
  * More fixes for character encodings.
  *
  * Revision 1.36  2001/05/22 21:02:26  adam
@@ -753,13 +756,13 @@ int readFileSpec (struct lexSpec *spec)
     if (spec->tcl_interp)
     {
 	sprintf (fname, "%s.tflt", spec->name);
-	spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh), fname, "r");
+	spec_inf = data1_path_fopen (spec->dh, fname, "r");
     }
 #endif
     if (!spec_inf)
     {
 	sprintf (fname, "%s.flt", spec->name);
-	spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh), fname, "r");
+	spec_inf = data1_path_fopen (spec->dh, fname, "r");
     }
     if (!spec_inf)
     {

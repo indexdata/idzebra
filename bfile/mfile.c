@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.42  2002-04-04 14:14:13  adam
+ * Revision 1.43  2002-04-04 20:50:36  adam
+ * Multi register works with record paths and data1 profile path
+ *
+ * Revision 1.42  2002/04/04 14:14:13  adam
  * Multiple registers (alpha early)
  *
  * Revision 1.41  2000/11/29 14:24:01  adam
@@ -182,7 +185,7 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
             ad++;
         if (!*ad)
             break;
-        if (!zebra_is_abspath(ad) && base)
+        if (!yaz_is_abspath(ad) && base)
         {
             strcpy (dirname, base);
             i = strlen(dirname);

@@ -36,7 +36,10 @@
  * OF THIS SOFTWARE.
  *
  * $Log: charmap.h,v $
- * Revision 1.6  1999-11-30 13:48:03  adam
+ * Revision 1.7  2002-04-04 20:50:36  adam
+ * Multi register works with record paths and data1 profile path
+ *
+ * Revision 1.6  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.5  1999/09/07 07:19:21  adam
@@ -73,7 +76,7 @@ typedef struct chr_t_entry chr_t_entry;
 typedef struct chrmaptab_info *chrmaptab;
 
 YAZ_EXPORT chrmaptab chrmaptab_create(const char *tabpath, const char *name,
-				      int map_only);
+				      int map_only, const char *tabroot);
 YAZ_EXPORT void chrmaptab_destroy (chrmaptab tab);
 
 YAZ_EXPORT const char **chr_map_input(chrmaptab t, const char **from, int len);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.12  2001-11-14 22:06:27  adam
+ * Revision 1.13  2002-04-04 20:50:36  adam
+ * Multi register works with record paths and data1 profile path
+ *
+ * Revision 1.12  2001/11/14 22:06:27  adam
  * Rank-weight may be controlled via query.
  *
  * Revision 1.11  2001/01/22 10:42:56  adam
@@ -59,7 +62,7 @@ extern "C" {
 #endif
 
 typedef struct zebra_maps *ZebraMaps;
-ZebraMaps zebra_maps_open (Res res);
+ZebraMaps zebra_maps_open (Res res, const char *base);
 
 void zebra_maps_close (ZebraMaps zm);
 

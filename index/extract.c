@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: extract.c,v 1.114 2002-04-04 14:14:13 adam Exp $
+ * $Id: extract.c,v 1.115 2002-04-04 20:50:36 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -15,6 +15,7 @@
 #include <fcntl.h>
 
 #include "index.h"
+#include <direntz.h>
 #include <charmap.h>
 
 #if _FILE_OFFSET_BITS == 64
@@ -814,9 +815,21 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
         fd = -1;
     else
     {
-        if ((fd = open (fname, O_BINARY|O_RDONLY)) == -1)
+        char full_rep[1024];
+
+        if (zh->path_reg && !yaz_is_abspath (fname))
         {
-            logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
+            strcpy (full_rep, zh->path_reg);
+            strcat (full_rep, "/");
+            strcat (full_rep, fname);
+        }
+        else
+            strcpy (full_rep, fname);
+        
+
+        if ((fd = open (full_rep, O_BINARY|O_RDONLY)) == -1)
+        {
+            logf (LOG_WARN|LOG_ERRNO, "open %s", full_rep);
             return 0;
         }
     }

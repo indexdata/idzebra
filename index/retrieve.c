@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.15  2002-04-04 14:14:13  adam
+ * Revision 1.16  2002-04-04 20:50:37  adam
+ * Multi register works with record paths and data1 profile path
+ *
+ * Revision 1.15  2002/04/04 14:14:13  adam
  * Multiple registers (alpha early)
  *
  * Revision 1.14  2001/01/22 11:41:41  adam
@@ -65,6 +68,7 @@
 #endif
 
 #include "index.h"
+#include <direntz.h>
 
 int zebra_record_ext_read (void *fh, char *buf, size_t count)
 {
@@ -170,10 +174,22 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     }
     else
     {
-        if ((fc.fd = open (fname, O_BINARY|O_RDONLY)) == -1)
+        char full_rep[1024];
+
+        if (zh->path_reg && !yaz_is_abspath (fname))
+        {
+            strcpy (full_rep, zh->path_reg);
+            strcat (full_rep, "/");
+            strcat (full_rep, fname);
+        }
+        else
+            strcpy (full_rep, fname);
+        
+
+        if ((fc.fd = open (full_rep, O_BINARY|O_RDONLY)) == -1)
         {
             logf (LOG_WARN|LOG_ERRNO, "Retrieve fail; missing file: %s",
-		  fname);
+		  full_rep);
             rec_rm (&rec);
             return 14;
         }

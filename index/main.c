@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.83 2002-04-04 14:14:13 adam Exp $
+ * $Id: main.c,v 1.84 2002-04-04 20:50:37 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
@@ -96,13 +96,20 @@ int main (int argc, char **argv)
                           ZEBRAVER, ZEBRADATE);
 #endif
                     zs = zebra_start (configName ? configName : "zebra.cfg");
-
+                    if (!zs)
+                        exit (1);
                     zh = zebra_open (zs);
                 }
                 if (rGroupDef.databaseName)
-                    zebra_select_database (zh, rGroupDef.databaseName);
+                {
+                    if (zebra_select_database (zh, rGroupDef.databaseName))
+                        exit (1);
+                }
                 else
-                    zebra_select_database (zh, "Default");
+                {
+                    if (zebra_select_database (zh, "Default"))
+                        exit (1);
+                }
 
                 if (!strcmp (arg, "update"))
                     cmd = 'u';

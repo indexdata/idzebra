@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
- * $Id: index.h,v 1.75 2002-04-04 14:14:13 adam Exp $
+ * $Id: index.h,v 1.76 2002-04-04 20:50:37 adam Exp $
  */
 
 #ifndef INDEX_H
@@ -78,7 +78,7 @@ void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime);
 void dirs_del (struct dirs_info *p, const char *src);
 void dirs_free (struct dirs_info **pp);
 
-struct dir_entry *dir_open (const char *rep);
+struct dir_entry *dir_open (const char *rep, const char *base);
 void dir_sort (struct dir_entry *e);
 void dir_free (struct dir_entry **e_p);
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: direntz.h,v $
- * Revision 1.5  2002-04-04 14:14:13  adam
+ * Revision 1.6  2002-04-04 20:50:36  adam
+ * Multi register works with record paths and data1 profile path
+ *
+ * Revision 1.5  2002/04/04 14:14:13  adam
  * Multiple registers (alpha early)
  *
  * Revision 1.4  1999/05/26 07:49:13  adam
@@ -51,4 +54,3 @@ void closedir (DIR *dd);
 #include <dirent.h>
 #endif
 
-int zebra_is_abspath (const char *p);

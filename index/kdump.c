@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.20  2002-04-04 14:14:13  adam
+ * Revision 1.21  2002-04-04 20:50:37  adam
+ * Multi register works with record paths and data1 profile path
+ *
+ * Revision 1.20  2002/04/04 14:14:13  adam
  * Multiple registers (alpha early)
  *
  * Revision 1.19  2000/12/05 10:01:44  adam
@@ -192,7 +195,7 @@ int main (int argc, char **argv)
     }
     if (!res)
         res = res_open ("zebra.cfg", 0);
-    zm = zebra_maps_open (res);
+    zm = zebra_maps_open (res, 0);
     if (!(inf = fopen (key_fname, "r")))
     {
         logf (LOG_FATAL|LOG_ERRNO, "fopen %s", key_fname);

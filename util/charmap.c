@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: charmap.c,v 1.19 2002-02-18 11:47:23 adam Exp $
+ * $Id: charmap.c,v 1.20 2002-04-04 20:50:37 adam Exp $
  *
  */
 
@@ -357,7 +357,8 @@ static int scan_string(char *s,
     return 0;
 }
 
-chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only)
+chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
+                           const char *tabroot)
 {
     FILE *f;
     char line[512], *argv[50];
@@ -368,7 +369,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only)
     NMEM nmem;
 
     logf (LOG_DEBUG, "maptab %s open", name);
-    if (!(f = yaz_path_fopen(tabpath, name, "r")))
+    if (!(f = yaz_path_fopen_base(tabpath, name, "r", tabroot)))
     {
 	logf(LOG_WARN|LOG_ERRNO, "%s", name);
 	return 0;

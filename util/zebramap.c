@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.23  2001-11-15 08:41:24  adam
+ * Revision 1.24  2002-04-04 20:50:37  adam
+ * Multi register works with record paths and data1 profile path
+ *
+ * Revision 1.23  2001/11/15 08:41:24  adam
  * Fix for weight (bug introduced by previous commit).
  *
  * Revision 1.22  2001/11/14 22:06:27  adam
@@ -121,6 +124,7 @@ struct zebra_map {
 
 struct zebra_maps {
     char *tabpath;
+    char *tabroot;
     NMEM nmem;
     struct zebra_map *map_list;
     char temp_map_str[2];
@@ -153,7 +157,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
     int lineno = 0;
     struct zebra_map **zm = 0, *zp;
 
-    if (!(f = yaz_path_fopen(zms->tabpath, name, "r")))
+    if (!(f = yaz_path_fopen_base(zms->tabpath, name, "r", zms->tabroot)))
     {
 	logf(LOG_WARN|LOG_ERRNO, "%s", name);
 	return ;
@@ -276,7 +280,7 @@ static void zms_map_handle (void *p, const char *name, const char *value)
     zebra_map_read (zms, value);
 }
 
-ZebraMaps zebra_maps_open (Res res)
+ZebraMaps zebra_maps_open (Res res, const char *base)
 {
     ZebraMaps zms = (ZebraMaps) xmalloc (sizeof(*zms));
     int i;
@@ -284,6 +288,9 @@ ZebraMaps zebra_maps_open (Res res)
     zms->nmem = nmem_create ();
     zms->tabpath = nmem_strdup (zms->nmem,
 				res_get_def (res, "profilePath", "."));
+    zms->tabroot = 0;
+    if (base)
+        zms->tabroot = nmem_strdup (zms->nmem, base);
     zms->map_list = NULL;
 
     zms->temp_map_str[0] = '\0';
@@ -301,6 +308,7 @@ ZebraMaps zebra_maps_open (Res res)
 
     zms->wrbuf_1 = wrbuf_alloc();
     zms->wrbuf_2 = wrbuf_alloc();
+
     return zms;
 }
 
@@ -332,7 +340,8 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
 	if (!zm->maptab_name || !yaz_matchstr (zm->maptab_name, "@"))
 	    return NULL;
 	if (!(zm->maptab = chrmaptab_create (zms->tabpath,
-					     zm->maptab_name, 0)))
+					     zm->maptab_name, 0,
+                                             zms->tabroot)))
 	    logf(LOG_WARN, "Failed to read character table %s",
 		 zm->maptab_name);
 	else

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: res.c,v 1.29 2002-04-04 14:14:14 adam Exp $
+ * $Id: res.c,v 1.30 2002-04-04 20:50:37 adam Exp $
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -165,7 +165,7 @@ Res res_open (const char *name, Res def_res)
     if (access (name, R_OK))
 #endif
     {
-        logf (LOG_LOG|LOG_ERRNO, "Cannot access resource file `%s'", name);
+        logf (LOG_WARN|LOG_ERRNO, "Cannot access resource file `%s'", name);
 	return 0;
     }
     r = (Res) xmalloc (sizeof(*r));

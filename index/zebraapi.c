@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.51 2002-04-04 14:14:13 adam Exp $
+ * $Id: zebraapi.c,v 1.52 2002-04-04 20:50:37 adam Exp $
  */
 
 #include <assert.h>
@@ -35,7 +35,6 @@ static void zebra_chdir (ZebraService zh)
 #endif
 }
 
-
 static void zebra_flush_reg (ZebraHandle zh)
 {
     zebraExplain_flush (zh->reg->zei, 1, zh);
@@ -43,7 +42,6 @@ static void zebra_flush_reg (ZebraHandle zh)
     extract_flushWriteKeys (zh);
     zebra_index_merge (zh);
 }
-
 
 static struct zebra_register *zebra_register_open (ZebraService zs, 
                                                    const char *name,
@@ -59,7 +57,8 @@ ZebraHandle zebra_open (ZebraService zs)
 {
     ZebraHandle zh;
 
-    assert (zs);
+    if (!zs)
+        return 0;
 
     zh = (ZebraHandle) xmalloc (sizeof(*zh));
     yaz_log (LOG_LOG, "zebra_open zs=%p returns %p", zs, zh);
@@ -96,36 +95,40 @@ ZebraHandle zebra_open (ZebraService zs)
 
 ZebraService zebra_start (const char *configName)
 {
-    ZebraService zh = xmalloc (sizeof(*zh));
+    Res res;
 
     yaz_log (LOG_LOG, "zebra_start %s", configName);
 
-    zh->configName = xstrdup(configName);
-    zh->sessions = 0;
-
-    if (!(zh->global_res = res_open (zh->configName, 0)))
-    {
-	logf (LOG_WARN, "Failed to read resources `%s'", zh->configName);
-    }
+    if (!(res = res_open (configName, 0)))
+	yaz_log (LOG_WARN, "Cannot read resources `%s'", configName);
     else
     {
-	logf (LOG_LOG, "Read resources `%s'", zh->configName);
-    }
-    zebra_chdir (zh);
+        ZebraService zh = xmalloc (sizeof(*zh));
 
-    zebra_mutex_cond_init (&zh->session_lock);
-    if (!res_get (zh->global_res, "passwd"))
-	zh->passwd_db = NULL;
-    else
-    {
-	zh->passwd_db = passwd_db_open ();
-	if (!zh->passwd_db)
-	    logf (LOG_WARN|LOG_ERRNO, "passwd_db_open failed");
-	else
-	    passwd_db_file (zh->passwd_db, res_get (zh->global_res, "passwd"));
+	yaz_log (LOG_LOG, "Read resources `%s'", configName);
+        
+        zh->global_res = res;
+        zh->configName = xstrdup(configName);
+        zh->sessions = 0;
+        
+        zebra_chdir (zh);
+        
+        zebra_mutex_cond_init (&zh->session_lock);
+        if (!res_get (zh->global_res, "passwd"))
+            zh->passwd_db = NULL;
+        else
+        {
+            zh->passwd_db = passwd_db_open ();
+            if (!zh->passwd_db)
+                logf (LOG_WARN|LOG_ERRNO, "passwd_db_open failed");
+            else
+                passwd_db_file (zh->passwd_db,
+                                res_get (zh->global_res, "passwd"));
+        }
+        zh->path_root = res_get (zh->global_res, "root");
+        return zh;
     }
-    zh->path_root = res_get (zh->global_res, "root");
-    return zh;
+    return 0;
 }
 
 static
@@ -162,10 +165,11 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     if (useshadow)
         bf_cache (reg->bfs, res_get (res, "shadow"));
     data1_set_tabpath (reg->dh, res_get(res, "profilePath"));
+    data1_set_tabroot (reg->dh, reg_path);
     reg->recTypes = recTypes_init (reg->dh);
     recTypes_default_handlers (reg->recTypes);
 
-    reg->zebra_maps = zebra_maps_open (res);
+    reg->zebra_maps = zebra_maps_open (res, reg_path);
     reg->rank_classes = NULL;
 
     reg->key_buf = 0;
@@ -400,21 +404,22 @@ static Res zebra_open_res (ZebraHandle zh)
 {
     Res res = 0;
     char fname[512];
-    if (*zh->reg_name == 0)
-    {
-        res = zh->service->global_res;
-        yaz_log (LOG_LOG, "local res = global res");
-    }
-    else if (zh->path_reg)
+    if (zh->path_reg)
     {
         sprintf (fname, "%.200s/zebra.cfg", zh->path_reg);
-        yaz_log (LOG_LOG, "res_open(%s)", fname);
         res = res_open (fname, zh->service->global_res);
         if (!res)
-            return 0;
+            res = zh->service->global_res;
+    }
+    else if (*zh->reg_name == 0)
+    {
+        res = zh->service->global_res;
     }
     else
+    {
+        yaz_log (LOG_WARN, "no register root specified");
         return 0;  /* no path for register - fail! */
+    }
     return res;
 }
 
@@ -635,7 +640,6 @@ void zebra_search_rpn (ZebraHandle zh, ODR decode, ODR stream,
 
     zebra_end_read (zh);
 
-    logf(LOG_APP,"SEARCH:%d:",zh->hits);
     *hits = zh->hits;
 }
 

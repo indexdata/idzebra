@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.21  1999-05-26 07:49:13  adam
+ * Revision 1.22  2002-04-04 20:50:36  adam
+ * Multi register works with record paths and data1 profile path
+ *
+ * Revision 1.21  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.20  1999/02/02 14:50:50  adam
@@ -84,18 +87,28 @@
 
 #include "index.h"
 
-struct dir_entry *dir_open (const char *rep)
+struct dir_entry *dir_open (const char *rep, const char *base)
 {
     DIR *dir;
-    char path[256];
+    char path[1024];
+    char full_rep[1024];
     size_t pathpos;
     struct dirent *dent;
     size_t entry_max = 500;
     size_t idx = 0;
     struct dir_entry *entry;
 
-    logf (LOG_DEBUG, "dir_open %s", rep);
-    if (!(dir = opendir(rep)))
+    if (base && !yaz_is_abspath(rep))
+    {
+        strcpy (full_rep, base);
+        strcat (full_rep, "/");
+    }
+    else
+        *full_rep = '\0';
+    strcat (full_rep, rep);
+
+    logf (LOG_LOG, "dir_open %s", full_rep);
+    if (!(dir = opendir(full_rep)))
     {
         logf (LOG_WARN|LOG_ERRNO, "opendir %s", rep);
         if (errno != ENOENT && errno != EACCES)
@@ -124,7 +137,16 @@ struct dir_entry *dir_open (const char *rep)
             entry = entry_n;
         }
         strcpy (path + pathpos, dent->d_name);
-        stat (path, &finfo);
+
+        if (base && !yaz_is_abspath (path))
+        {
+            strcpy (full_rep, base);
+            strcat (full_rep, "/");
+            strcat (full_rep, path);
+            stat (full_rep, &finfo);
+        }
+        else
+            stat (path, &finfo);
         switch (finfo.st_mode & S_IFMT)
         {
         case S_IFREG:

@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2000, Index Data 
  * All rights reserved.
  *
- * $Id: zserver.c,v 1.85 2002-04-04 14:14:13 adam Exp $
+ * $Id: zserver.c,v 1.86 2002-04-04 20:50:37 adam Exp $
  */
 
 #include <stdio.h>
@@ -62,7 +62,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     sob = statserv_getcontrol ();
     if (!(zh = zebra_open (sob->handle)))
     {
-	logf (LOG_FATAL, "Failed to open Zebra `%s'", sob->configname);
+	yaz_log (LOG_FATAL, "Failed to open config `%s'", sob->configname);
 	r->errcode = 1;
 	return r;
     }
@@ -233,8 +233,12 @@ static int bend_scan (void *handle, bend_scan_rr *r)
     ZebraHandle zh = (ZebraHandle) handle;
     int is_partial, i;
 
-    zebra_select_databases (zh, r->num_bases, (const char **) r->basenames);
-    
+    if (zebra_select_databases (zh, r->num_bases, 
+                                (const char **) r->basenames))
+    {
+        zebra_result (zh, &r->errcode, &r->errstring);
+        return 0;
+    }
     r->entries = (struct scan_entry *)
 	odr_malloc (r->stream, sizeof(*r->entries) * r->num_entries);
     zebra_scan (zh, r->stream, r->term,
