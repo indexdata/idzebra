@@ -1,70 +1,27 @@
+/* $Id: d1_expout.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
 /*
- * Copyright (c) 1995-1999, Index Data.
- * See the file LICENSE for details.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: d1_expout.c,v $
- * Revision 1.1  2002-10-22 12:53:33  adam
- * data1 part of zebra
- *
- * Revision 1.17  1999/11/30 13:47:12  adam
- * Improved installation. Moved header files to include/yaz.
- *
- * Revision 1.16  1999/08/27 09:40:32  adam
- * Renamed logf function to yaz_log. Removed VC++ project files.
- *
- * Revision 1.15  1998/09/28 12:44:40  adam
- * Fixed bug in f_integer.
- *
- * Revision 1.14  1998/06/08 14:26:41  adam
- * Fixed bug in f_queryTypeDetails.
- *
- * Revision 1.13  1998/06/05 08:58:48  adam
- * Fixed un-initialised var in f_rpnCapabilities.
- *
- * Revision 1.12  1998/05/18 13:07:04  adam
- * Changed the way attribute sets are handled by the retriaval module.
- * Extended Explain conversion / schema.
- * Modified server and client to work with ASN.1 compiled protocol handlers.
- *
- * Revision 1.11  1998/04/02 08:27:37  adam
- * Minor change in definition of Z_TargetInfo. Furhter work on Explain
- * schema - added AttributeDetails.
- *
- * Revision 1.10  1998/03/31 15:13:20  adam
- * Development towards compiled ASN.1.
- *
- * Revision 1.9  1998/03/05 08:07:58  adam
- * Make data1 to EXPLAIN ignore local tags in root.
- *
- * Revision 1.8  1998/02/11 11:53:35  adam
- * Changed code so that it compiles as C++.
- *
- * Revision 1.7  1997/12/09 16:18:16  adam
- * Work on EXPLAIN schema. First implementation of sub-schema facility
- * in the *.abs files.
- *
- * Revision 1.6  1997/11/24 11:33:56  adam
- * Using function odr_nullval() instead of global ODR_NULLVAL when
- * appropriate.
- *
- * Revision 1.5  1997/11/19 10:30:06  adam
- * More explain work.
- *
- * Revision 1.4  1997/11/18 09:51:08  adam
- * Removed element num_children from data1_node. Minor changes in
- * data1 to Explain.
- *
- * Revision 1.3  1997/09/17 12:10:36  adam
- * YAZ version 1.4.
- *
- * Revision 1.2  1995/12/14 16:28:30  quinn
- * More explain stuff.
- *
- * Revision 1.1  1995/12/14  11:09:51  quinn
- * Work on Explain
- *
- *
+ * This module converts data1 tree to Z39.50 Explain records  
  */
 
 #include <assert.h>

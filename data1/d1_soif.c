@@ -1,19 +1,34 @@
-/*
- * Copyright (c) 1995-2002, Index Data.
- * See the file LICENSE for details.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Id: d1_soif.c,v 1.1 2002-10-22 12:53:33 adam Exp $
- */
+/* $Id: d1_soif.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
 
-#include <yaz/wrbuf.h>
-#include <data1.h>
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
 
 /*
  * This module generates SOIF (Simple Object Interchange Format) records
  * from d1-nodes. nested elements are flattened out, depth first, by
  * concatenating the tag names at each level.
  */
+
+#include <yaz/wrbuf.h>
+#include <data1.h>
 
 static int nodetoelement(data1_node *n, int select, char *prefix, WRBUF b)
 {

@@ -1,53 +1,24 @@
-/*
- * Copyright (c) 1995-1999, Index Data.
- * See the file LICENSE for details.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: d1_varset.c,v $
- * Revision 1.1  2002-10-22 12:53:33  adam
- * data1 part of zebra
- *
- * Revision 1.11  2002/04/04 20:49:46  adam
- * New functions yaz_is_abspath, yaz_path_fopen_base
- *
- * Revision 1.10  1999/11/30 13:47:12  adam
- * Improved installation. Moved header files to include/yaz.
- *
- * Revision 1.9  1999/08/27 09:40:32  adam
- * Renamed logf function to yaz_log. Removed VC++ project files.
- *
- * Revision 1.8  1998/10/13 16:09:54  adam
- * Added support for arbitrary OID's for tagsets, schemas and attribute sets.
- * Added support for multiple attribute set references and tagset references
- * from an abstract syntax file.
- * Fixed many bad logs-calls in routines that read the various
- * specifications regarding data1 (*.abs,*.att,...) and made the messages
- * consistent whenever possible.
- * Added extra 'lineno' argument to function readconf_line.
- *
- * Revision 1.7  1998/02/11 11:53:35  adam
- * Changed code so that it compiles as C++.
- *
- * Revision 1.6  1997/09/17 12:10:39  adam
- * YAZ version 1.4.
- *
- * Revision 1.5  1997/09/05 09:50:58  adam
- * Removed global data1_tabpath - uses data1_get_tabpath() instead.
- *
- * Revision 1.4  1997/05/14 06:54:04  adam
- * C++ support.
- *
- * Revision 1.3  1995/11/01 16:34:58  quinn
- * Making data1 look for tables in data1_tabpath
- *
- * Revision 1.2  1995/11/01  13:54:50  quinn
- * Minor adjustments
- *
- * Revision 1.1  1995/11/01  11:56:09  quinn
- * Added Retrieval (data management) functions en masse.
- *
- *
- */
+/* $Id: d1_varset.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
 
 #include <string.h>
 #include <stdlib.h>
