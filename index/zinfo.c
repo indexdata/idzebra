@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.34 2002-08-05 19:46:01 adam Exp $
+/* $Id: zinfo.c,v 1.35 2002-09-06 10:28:02 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1339,7 +1339,6 @@ int zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num)
     if (adjust_num)
     {
 	zei->dirty = 1;
-        yaz_log (LOG_LOG, "zinfo run number=%d", zei->runNumber+adjust_num);
     }
     return zei->runNumber += adjust_num;
 }

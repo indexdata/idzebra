@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.69 2002-08-29 08:47:08 adam Exp $
+/* $Id: zebraapi.c,v 1.70 2002-09-06 10:28:02 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -959,7 +959,7 @@ void zebra_set_state (ZebraHandle zh, int val, int seqno)
     fname = zebra_mk_fname (res_get(zh->res, "lockDir"), state_fname);
     f = fopen (fname, "w");
 
-    yaz_log (LOG_LOG, "%c %d %ld", val, seqno, p);
+    yaz_log (LOG_DEBUG, "%c %d %ld", val, seqno, p);
     fprintf (f, "%c %d %ld\n", val, seqno, p);
     fclose (f);
     xfree (fname);

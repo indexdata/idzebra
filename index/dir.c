@@ -1,4 +1,4 @@
-/* $Id: dir.c,v 1.25 2002-09-03 12:22:21 adam Exp $
+/* $Id: dir.c,v 1.26 2002-09-06 10:28:02 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -66,7 +66,7 @@ struct dir_entry *dir_open (const char *rep, const char *base,
         *full_rep = '\0';
     strcat (full_rep, rep);
 
-    logf (LOG_LOG, "dir_open %s", full_rep);
+    logf (LOG_DEBUG, "dir_open %s", full_rep);
     if (!(dir = opendir(full_rep)))
     {
         logf (LOG_WARN|LOG_ERRNO, "opendir %s", rep);

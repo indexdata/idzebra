@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.92 2002-08-29 08:47:08 adam Exp $
+/* $Id: zserver.c,v 1.93 2002-09-06 10:28:02 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -195,12 +195,12 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
         switch (type)
         {
         case Z_Term_characterString:
-            yaz_log (LOG_LOG, "term as characterString");
+            yaz_log (LOG_DEBUG, "term as characterString");
             term->which = Z_Term_characterString;
             term->u.characterString = odr_strdup (r->stream, outbuf);
             break;
         case Z_Term_general:
-            yaz_log (LOG_LOG, "term as general");
+            yaz_log (LOG_DEBUG, "term as general");
             term->which = Z_Term_general;
             term->u.general = odr_malloc (r->stream, sizeof(*term->u.general));
             term->u.general->size = term->u.general->len = len;
