@@ -1,11 +1,12 @@
 /*
-    $Id: marcomp.c,v 1.1 2003-02-28 12:33:39 oleg Exp $
+    $Id: marcomp.c,v 1.2 2003-02-28 14:34:37 adam Exp $
 
     marcomp.c - compiler of MARC statements.
 */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
 #include <yaz/yaz-util.h>
