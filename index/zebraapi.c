@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.142 2004-11-29 21:55:27 adam Exp $
+/* $Id: zebraapi.c,v 1.143 2004-12-02 17:27:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -847,9 +847,9 @@ int zebra_search_RPN (ZebraHandle zh, ODR o,
 }
 
 int zebra_records_retrieve (ZebraHandle zh, ODR stream,
-			     const char *setname, Z_RecordComposition *comp,
-			     oid_value input_format, int num_recs,
-			     ZebraRetrievalRecord *recs)
+			    const char *setname, Z_RecordComposition *comp,
+			    oid_value input_format, int num_recs,
+			    ZebraRetrievalRecord *recs)
 {
     ZebraMetaRecord *poset;
     int i, ret = 0;

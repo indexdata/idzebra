@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.72 2004-11-29 21:55:28 adam Exp $
+/* $Id: zsets.c,v 1.73 2004-12-02 17:27:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -276,6 +276,31 @@ void resultSetDestroy (ZebraHandle zh, int num, char **names,int *statuses)
         else
             ss = &s->next;
     }
+}
+
+ZebraMetaRecord *zebra_meta_records_create_range (ZebraHandle zh,
+						  const char *name, 
+						  zint start, int num)
+{
+    zint pos_small[10];
+    zint *pos = pos_small;
+    ZebraMetaRecord *mr;
+    int i;
+
+    if (num > 10000 || num <= 0)
+	return 0;
+
+    if (num > 10)
+	pos = xmalloc(sizeof(*pos) * num);
+    
+    for (i = 0; i<num; i++)
+	pos[i] = start+i;
+
+    mr = zebra_meta_records_create(zh, name, num, pos);
+    
+    if (num > 10)
+	xfree(pos);
+    return mr;
 }
 
 ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name, 
