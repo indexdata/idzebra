@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.12  1998-03-16 10:37:24  adam
+ * Revision 1.13  1998-03-18 09:23:55  adam
+ * Blocks are stored in chunks on free list - up to factor 2 in speed.
+ * Fixed bug that could occur in block category rearrangemen.
+ *
+ * Revision 1.12  1998/03/16 10:37:24  adam
  * Added more statistics.
  *
  * Revision 1.11  1998/03/13 15:30:50  adam
@@ -63,8 +67,11 @@
 #include <log.h>
 #include "isamc-p.h"
 
+static void flush_block (ISAMC is, int cat);
 static void release_fc (ISAMC is, int cat);
 static void init_fc (ISAMC is, int cat);
+
+#define ISAMC_FREELIST_CHUNK 1
 
 #define SMALL_TEST 0
 
@@ -72,13 +79,16 @@ ISAMC_M isc_getmethod (void)
 {
     static struct ISAMC_filecat_s def_cat[] = {
 #if SMALL_TEST
-        {   32,    28,     0,    3 },
-	{   64,    54,    30,    0 },
+        {    32,     28,      0,  3 },
+	{    64,     54,     30,  0 },
 #else
-        {   32,    28,    24,    20 },
-        {  512,   490,   350,    20 },
-        { 4096,  3950,  4200,    20 },
-        {32768, 32000, 30000,     0 },
+        {    32,     28,     20,  7 },
+	{   128,    120,    100,  7 },
+        {   512,    490,    350,  7 },
+        {  2048,   1900,   1700,  7 },
+        {  8192,   8000,   7900,  7 },
+        { 32768,  32000,  31000,  7 },
+        {131072, 129000, 121000,  0 }
 #endif
     };
     ISAMC_M m = xmalloc (sizeof(*m));
@@ -156,6 +166,10 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
             is->files[i].head.lastblock = 1;
             is->files[i].head.freelist = 0;
         }
+	is->files[i].alloc_entries_num = 0;
+	is->files[i].alloc_entries_max =
+	    is->method->filecat[i].bsize / sizeof(int) - 1;
+	is->files[i].alloc_buf = xmalloc (is->method->filecat[i].bsize);
         is->files[i].no_writes = 0;
         is->files[i].no_reads = 0;
         is->files[i].no_skip_writes = 0;
@@ -227,6 +241,7 @@ int isc_close (ISAMC is)
                   is->files[i].no_released,
                   is->files[i].no_remap);
         xfree (is->files[i].fc_list);
+	flush_block (is, i);
         bf_close (is->files[i].bf);
     }
     xfree (is->files);
@@ -252,7 +267,7 @@ int isc_write_block (ISAMC is, int cat, int pos, char *src)
 int isc_write_dblock (ISAMC is, int cat, int pos, char *src,
                       int nextpos, int offset)
 {
-    unsigned short size = offset + ISAMC_BLOCK_OFFSET_N;
+    ISAMC_BLOCK_SIZE size = offset + ISAMC_BLOCK_OFFSET_N;
     if (is->method->debug > 2)
         logf (LOG_LOG, "isc: write_dblock. size=%d nextpos=%d",
               (int) size, nextpos);
@@ -260,6 +275,109 @@ int isc_write_dblock (ISAMC is, int cat, int pos, char *src,
     memcpy (src, &nextpos, sizeof(int));
     memcpy (src + sizeof(int), &size, sizeof(size));
     return isc_write_block (is, cat, pos, src);
+}
+
+#if ISAMC_FREELIST_CHUNK
+static void flush_block (ISAMC is, int cat)
+{
+    char *abuf = is->files[cat].alloc_buf;
+    int block = is->files[cat].head.freelist;
+    if (block && is->files[cat].alloc_entries_num)
+    {
+	memcpy (abuf, &is->files[cat].alloc_entries_num, sizeof(int));
+	bf_write (is->files[cat].bf, block, 0, 0, abuf);
+	is->files[cat].alloc_entries_num = 0;
+    }
+    xfree (abuf);
+}
+
+static int alloc_block (ISAMC is, int cat)
+{
+    int block = is->files[cat].head.freelist;
+    char *abuf = is->files[cat].alloc_buf;
+
+    (is->files[cat].no_allocated)++;
+
+    if (!block)
+    {
+        block = (is->files[cat].head.lastblock)++;   /* no free list */
+	is->files[cat].head_is_dirty = 1;
+    }
+    else
+    {
+	if (!is->files[cat].alloc_entries_num) /* read first time */
+	{
+	    bf_read (is->files[cat].bf, block, 0, 0, abuf);
+	    memcpy (&is->files[cat].alloc_entries_num, abuf,
+		    sizeof(is->files[cat].alloc_entries_num));
+	    assert (is->files[cat].alloc_entries_num > 0);
+	}
+	/* have some free blocks now */
+	assert (is->files[cat].alloc_entries_num > 0);
+	is->files[cat].alloc_entries_num--;
+	if (!is->files[cat].alloc_entries_num)  /* last one in block? */
+	{
+	    memcpy (&is->files[cat].head.freelist, abuf + sizeof(int),
+		    sizeof(int));
+	    is->files[cat].head_is_dirty = 1;
+
+	    if (is->files[cat].head.freelist)
+	    {
+		bf_read (is->files[cat].bf, is->files[cat].head.freelist,
+			 0, 0, abuf);
+		memcpy (&is->files[cat].alloc_entries_num, abuf,
+			sizeof(is->files[cat].alloc_entries_num));
+		assert (is->files[cat].alloc_entries_num);
+	    }
+	}
+	else
+	    memcpy (&block, abuf + sizeof(int) + sizeof(int) *
+		    is->files[cat].alloc_entries_num, sizeof(int));
+    }
+    return block;
+}
+
+static void release_block (ISAMC is, int cat, int pos)
+{
+    char *abuf = is->files[cat].alloc_buf;
+    int block = is->files[cat].head.freelist;
+
+    (is->files[cat].no_released)++;
+
+    if (block && !is->files[cat].alloc_entries_num) /* must read block */
+    {
+	bf_read (is->files[cat].bf, block, 0, 0, abuf);
+	memcpy (&is->files[cat].alloc_entries_num, abuf,
+		sizeof(is->files[cat].alloc_entries_num));
+	assert (is->files[cat].alloc_entries_num > 0);
+    }
+    assert (is->files[cat].alloc_entries_num <= is->files[cat].alloc_entries_max);
+    if (is->files[cat].alloc_entries_num == is->files[cat].alloc_entries_max)
+    {
+	assert (block);
+	memcpy (abuf, &is->files[cat].alloc_entries_num, sizeof(int));
+	bf_write (is->files[cat].bf, block, 0, 0, abuf);
+	is->files[cat].alloc_entries_num = 0;
+    }
+    if (!is->files[cat].alloc_entries_num) /* make new buffer? */
+    {
+	memcpy (abuf + sizeof(int), &block, sizeof(int));
+	is->files[cat].head.freelist = pos;
+	is->files[cat].head_is_dirty = 1; 
+    }
+    else
+    {
+	memcpy (abuf + sizeof(int) +
+		is->files[cat].alloc_entries_num*sizeof(int),
+		&pos, sizeof(int));
+    }
+    is->files[cat].alloc_entries_num++;
+}
+#else
+static void flush_block (ISAMC is, int cat)
+{
+    char *abuf = is->files[cat].alloc_buf;
+    xfree (abuf);
 }
 
 static int alloc_block (ISAMC is, int cat)
@@ -278,6 +396,18 @@ static int alloc_block (ISAMC is, int cat)
         block = (is->files[cat].head.lastblock)++;
     return block;
 }
+
+static void release_block (ISAMC is, int cat, int pos)
+{
+    char buf[sizeof(int)];
+   
+    (is->files[cat].no_released)++;
+    is->files[cat].head_is_dirty = 1; 
+    memcpy (buf, &is->files[cat].head.freelist, sizeof(int));
+    is->files[cat].head.freelist = pos;
+    bf_write (is->files[cat].bf, pos, 0, sizeof(int), buf);
+}
+#endif
 
 int isc_alloc_block (ISAMC is, int cat)
 {
@@ -299,17 +429,6 @@ int isc_alloc_block (ISAMC is, int cat)
     if (is->method->debug > 3)
         logf (LOG_LOG, "isc: alloc_block in cat %d: %d", cat, block);
     return block;
-}
-
-static void release_block (ISAMC is, int cat, int pos)
-{
-    char buf[sizeof(int)];
-   
-    (is->files[cat].no_released)++;
-    is->files[cat].head_is_dirty = 1; 
-    memcpy (buf, &is->files[cat].head.freelist, sizeof(int));
-    is->files[cat].head.freelist = pos;
-    bf_write (is->files[cat].bf, pos, 0, sizeof(int), buf);
 }
 
 void isc_release_block (ISAMC is, int cat, int pos)

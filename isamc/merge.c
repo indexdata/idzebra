@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: merge.c,v $
- * Revision 1.7  1998-03-11 11:18:18  adam
+ * Revision 1.8  1998-03-18 09:23:55  adam
+ * Blocks are stored in chunks on free list - up to factor 2 in speed.
+ * Fixed bug that could occur in block category rearrangemen.
+ *
+ * Revision 1.7  1998/03/11 11:18:18  adam
  * Changed the isc_merge to take into account the mfill (minimum-fill).
  *
  * Revision 1.6  1998/03/06 13:54:03  adam
@@ -48,6 +52,31 @@ struct isc_merge_block {
     int dirty;        /* block is different from that on file */
 };
 
+static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr)
+{
+    int i, no_dirty = 0;
+    for (i = 0; i<ptr; i++)
+	if (mb[i].dirty)
+	    no_dirty++;
+    if (no_dirty*3 < ptr*2)
+	return;
+    /* bubble-sort it */
+    for (i = 0; i<ptr; i++)
+    {
+	int tmp, j, j_min = -1;
+	for (j = i; j<ptr; j++)
+	{
+	    if (j_min < 0 || mb[j_min].block > mb[j].block)
+		j_min = j;
+	}
+	assert (j_min >= 0);
+	tmp = mb[j_min].block;
+	mb[j_min].block = mb[i].block;
+	mb[i].block = tmp;
+	mb[i].dirty = 1;
+    }
+}
+
 static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
                           char *r_buf, int *firstpos, int cat, int last,
                           int *numkeys)
@@ -56,9 +85,6 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
 
     for (i = 0; i<ptr; i++)
     {
-        unsigned short ssize;
-        char *src;
-
         /* consider this block number */
         if (!mb[i].block) 
         {
@@ -75,8 +101,13 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             mb[i+1].dirty = 1;
             mb[i].dirty = 1;
         }
+    }
+    opt_blocks (is, mb, ptr);
+    for (i = 0; i<ptr; i++)
+    {
+        char *src;
+        ISAMC_BLOCK_SIZE ssize = mb[i+1].offset - mb[i].offset;
 
-        ssize = mb[i+1].offset - mb[i].offset;
         assert (ssize);
 
         /* skip rest if not dirty */
@@ -377,6 +408,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
             cat++;
             mb[j].dirty = 1;
             mb[j].block = 0;
+	    mb[ptr].offset = r_offset;
             for (i = 1; i < ptr; i++)
             {
                 int border = is->method->filecat[cat].ifill -
@@ -397,6 +429,8 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                       ptr, j, cat);
             ptr = j;
             border = get_border (is, mb, ptr, cat, firstpos);
+	    if (is->method->debug > 3)
+		logf (LOG_LOG, "isc: border=%d r_offset=%d", border, r_offset);
         }
     }
     if (mb[ptr].offset < r_offset)

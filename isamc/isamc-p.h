@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc-p.h,v $
- * Revision 1.5  1998-03-16 10:37:24  adam
+ * Revision 1.6  1998-03-18 09:23:55  adam
+ * Blocks are stored in chunks on free list - up to factor 2 in speed.
+ * Fixed bug that could occur in block category rearrangemen.
+ *
+ * Revision 1.5  1998/03/16 10:37:24  adam
  * Added more statistics.
  *
  * Revision 1.4  1996/11/08 11:15:28  adam
@@ -30,6 +34,8 @@ typedef struct {
     int freelist;
 } ISAMC_head;
 
+typedef unsigned ISAMC_BLOCK_SIZE;
+
 typedef struct ISAMC_file_s {
     ISAMC_head head;
     BFile bf;
@@ -49,6 +55,10 @@ typedef struct ISAMC_file_s {
     int no_next;
     int no_prev;
 
+    char *alloc_buf;
+    int alloc_entries_num;
+    int alloc_entries_max;
+
     int fc_max;
     int *fc_list;
 } *ISAMC_file;
@@ -63,8 +73,8 @@ struct ISAMC_s {
 
 struct ISAMC_PP_s {
     char *buf;
-    unsigned offset;
-    unsigned short size;
+    ISAMC_BLOCK_SIZE offset;
+    ISAMC_BLOCK_SIZE size;
     int cat;
     int pos;
     int next;
@@ -74,9 +84,8 @@ struct ISAMC_PP_s {
     int numKeys;
 };
 
-#define ISAMC_BLOCK_OFFSET_N (sizeof(int)+sizeof(short)) 
-#define ISAMC_BLOCK_OFFSET_1 (sizeof(int)+sizeof(short)+sizeof(int)) 
-
+#define ISAMC_BLOCK_OFFSET_N (sizeof(int)+sizeof(ISAMC_BLOCK_SIZE)) 
+#define ISAMC_BLOCK_OFFSET_1 (sizeof(int)+sizeof(ISAMC_BLOCK_SIZE)+sizeof(int)) 
 int isc_alloc_block (ISAMC is, int cat);
 void isc_release_block (ISAMC is, int cat, int pos);
 int isc_read_block (ISAMC is, int cat, int pos, char *dst);
