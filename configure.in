@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2002
-dnl $Id: configure.in,v 1.34 2002-04-05 19:45:20 adam Exp $
+dnl $Id: configure.in,v 1.35 2002-04-08 13:50:12 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -16,7 +16,6 @@ else
 fi
 AM_CONDITIONAL(ISZMBOL,test $PACKAGE = zmbol)
 dnl ------ Substitutions
-AC_SUBST(DEFS)
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
 AC_SUBST(PROGPREFIX)
@@ -26,7 +25,54 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
-
+dnl
+dnl ----- DOCBOOK DTD
+AC_SUBST(DTD_DIR)
+AC_ARG_WITH(dtd, [  --with-dtd[=DIR]        Use docbookx.dtd in DIR],
+[
+   if test -f "$withval/docbookx.dtd"; then
+      DTD_DIR=$withval
+   fi
+],[
+   AC_MSG_CHECKING(for docbookx.dtd)
+   for d in /usr/share/sgml/docbook/dtd/xml/4.1.2 \
+         /usr/share/sgml/docbook/xml-dtd-4.1.2 \
+         /usr/share/sgml/docbook/dtd/xml/4.0 \
+	    /usr/lib/sgml/dtd/docbook-xml 
+   do
+     if test -f $d/docbookx.dtd; then
+       AC_MSG_RESULT($d)
+       DTD_DIR=$d
+       break
+     fi
+   done
+   if test -z "$DTD_DIR"; then
+      AC_MSG_RESULT(Not found)
+   fi
+])
+AC_SUBST(DSSSL_DIR)
+AC_ARG_WITH(dsssl,[  --with-dsssl[=DIR]      Use DSSSL in DIR/{html,print}/docbook.dsl],
+[
+   if test -f "$withval/html/docbook.dsl"; then
+      DSSSL_DIR=$withval
+   fi
+],[
+   AC_MSG_CHECKING(for docbook.dsl)
+   for d in /usr/share/sgml/docbook/stylesheet/dsssl/modular \
+            /usr/share/sgml/docbook/dsssl-stylesheets-1.64 \
+            /usr/lib/sgml/stylesheet/dsssl/docbook/nwalsh 
+   do
+     if test -f $d/html/docbook.dsl; then
+       AC_MSG_RESULT($d)
+       DSSSL_DIR=$d
+       break
+     fi
+   done
+   if test -z "$DSSSL_DIR"; then
+      AC_MSG_RESULT(Not found)
+   fi
+])
+dnl
 YAZ_INIT(threads)
 dnl
 dnl ------ Look for Tcl
@@ -145,5 +191,8 @@ AC_OUTPUT([
   include/Makefile
   tab/Makefile
   doc/Makefile
+  doc/zebra.xml
+  doc/zebrahtml.dsl
+  doc/zebraprint.dsl
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
 ])

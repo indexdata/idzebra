@@ -1,0 +1,293 @@
+<chapter id="introduction">
+<title>Introduction</title>
+
+<sect1>
+<title>Overview</title>
+
+<para>
+The Zebra system is a fielded free-text indexing and retrieval engine with a
+Z39.50 frontend. You can use any commercial or freeware Z39.50 client
+to access data stored in Zebra.
+</para>
+
+<para>
+The Zebra server is our first step towards the development of a fully
+configurable, open information system. Eventually, it will be paired
+off with a powerful Z39.50 client to support complex information
+management tasks within almost any application domain. We're making
+the server available now because it's no fun to be in the open
+information retrieval business all by yourself. We want to allow
+people with interesting data to make their things
+available in interesting ways, without having to start out
+by implementing yet another protocol stack from scratch.
+</para>
+
+<para>
+This document is an introduction to the Zebra system. It will tell you
+how to compile the software, and how to prepare your first database.
+It also explains how the server can be configured to give you the
+functionality that you need.
+</para>
+
+<para>
+If you find the software interesting, you should join the support
+mailing-list by sending email to <literal>zebra-request@indexdata.dk</literal>.
+</para>
+
+</sect1>
+
+<sect1 id="features">
+<title>Features</title>
+
+<para>
+This is a list of some of the most important features of the
+system.
+</para>
+
+<para>
+
+<itemizedlist>
+<listitem>
+
+<para>
+Supports updating - records can be added and deleted without
+rebuilding the index from scratch.
+The update procedure is tolerant to crashes or hard interrupts
+during register updating - registers can be reconstructed following a crash.
+Registers can be safely updated even while users are accessing the server.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Supports large databases - files for indices, etc. can be
+automatically partitioned over multiple disks.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Supports arbitrarily complex records - base input format is an
+SGML-like syntax which allows nested (structured) data elements, as
+well as variant forms of data.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Supports random storage formats. A system of input filters driven by
+regular expressions allows you to easily process most ASCII-based
+data formats. SGML, ISO2709 (MARC), and raw text are also supported.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Supports boolean queries as well as relevance-ranking (free-text)
+searching. Right truncation and masking in terms are supported, as
+well as full regular expressions.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Supports multiple concrete syntaxes
+for record exchange (depending on the configuration): GRS-1, SUTRS,
+ISO2709 (*MARC). Records can be mapped between record syntaxes and
+schema on the fly.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Supports approximate matching in registers (ie. spelling mistakes,
+etc).
+
+</para>
+</listitem>
+
+</itemizedlist>
+
+</para>
+
+<para>
+Protocol support:
+</para>
+
+<para>
+
+<itemizedlist>
+<listitem>
+
+<para>
+Protocol facilities: Init, Search, Retrieve, Browse and Sort.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Piggy-backed presents are honored in the search-request.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Named result sets are supported.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Easily configured to support different application profiles, with
+tables for attribute sets, tag sets, and abstract syntaxes.
+Additional tables control facilities such as element mappings to
+different schema (eg., GILS-to-USMARC).
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Complex composition specifications using Espec-1 are partially
+supported (simple element requests only).
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Element Set Names are defined using the Espec-1 capability of the
+system, and are given in configuration files as simple element
+requests (and possibly variant requests).
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Some variant support (not fully implemented yet).
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Using the YAZ toolkit for the protocol implementation, the
+server can utilise a plug-in XTI/mOSI implementation (not included) to
+provide SR services over an OSI stack, as well as Z39.50 over TCP/IP.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Zebra runs on most Unix-like systems as well as Windows NT - a binary
+distribution for Windows NT is forthcoming - so far, the installation
+requires MSVC++ to compile the system (we use version 5.0).
+
+</para>
+</listitem>
+
+</itemizedlist>
+
+</para>
+
+</sect1>
+
+<sect1 id="future">
+<title>Future Work</title>
+
+<para>
+This is a beta-release of the software, to allow you to look at
+it - try it out, and assess whether it can be of use to you.
+</para>
+
+<para>
+These are some of the plans that we have for the software in the near
+and far future, approximately ordered after their relative importance.
+Items marked with an
+asterisk will be implemented before the
+last beta release.
+</para>
+
+<para>
+
+<itemizedlist>
+<listitem>
+
+<para>
+*Complete the support for variants.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+*Finalize the data element <emphasis>include</emphasis> facility
+to support multimedia data elements in records.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Add more sophisticated relevance ranking mechanisms. Add support for soundex
+and stemming. Add relevance <emphasis remap="it">feedback</emphasis> support.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Complete EXPLAIN support.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Add support for very large records by implementing segmentation and/or
+variant pieces.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+Support the Item Update extended service of the protocol.
+
+</para>
+</listitem>
+<listitem>
+
+<para>
+We want to add a management system that allows you to
+control your databases and configuration tables from a graphical
+interface. We'll probably use Tcl/Tk to stay platform-independent.
+
+</para>
+</listitem>
+
+</itemizedlist>
+
+</para>
+
+<para>
+Programmers thrive on user feedback. If you are interested in a facility that
+you don't see mentioned here, or if there's something you think we
+could do better, please drop us a mail. If you think it's all really
+neat, you're welcome to drop us a line saying that, too. You'll find
+contact info at the end of this file.
+</para>
+
+</sect1>
+</chapter>

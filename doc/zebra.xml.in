@@ -1,0 +1,43 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+                    "@DTD_DIR@/docbookx.dtd" [
+        <!ENTITY chap-introduction SYSTEM "introduction.xml">
+        <!ENTITY chap-installation SYSTEM "installation.xml">
+        <!ENTITY chap-administration SYSTEM "administration.xml">
+        <!ENTITY app-license SYSTEM "license.xml">
+        <!ENTITY app-indexdata SYSTEM "indexdata.xml">
+]>
+<book id="zebra">
+<bookinfo>
+
+<title>Zebra Server - Administrators's Guide and Reference</title>
+<author>
+<firstname>Sebastian</firstname><surname>Hammer</surname>
+</author>
+<copyright>
+<year>1995-2002</year>
+<simpara>Index Data</simpara>
+</copyright>
+<abstract>
+<simpara>
+The Zebra information server combines a versatile fielded/free-text
+search engine with a Z39.50-1995 frontend to provide a powerful and flexible
+information management system. This document explains the procedure for
+installing and configuring the system, and outlines the possibilities
+for managing data and providing Z39.50
+services with the software.
+</simpara>
+<simpara>
+This manual covers version @VERSION@ of Zebra.
+</simpara>
+</abstract>
+
+</bookinfo>
+
+&chap-introduction;
+&chap-installation;
+&chap-administration;
+&app-license;
+&app-indexdata;
+
+</book>
