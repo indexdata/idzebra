@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.72 2002-09-13 11:40:35 adam Exp $
+/* $Id: zebraapi.c,v 1.73 2002-09-17 12:27:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -863,7 +863,8 @@ int zebra_auth (ZebraHandle zh, const char *user, const char *pass)
     return 1;
 }
 
-void zebra_admin_import_begin (ZebraHandle zh, const char *database)
+void zebra_admin_import_begin (ZebraHandle zh, const char *database,
+                               const char *record_type)
 {
     if (zebra_select_database(zh, database))
         return;
@@ -913,6 +914,48 @@ void zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
     }
 }
 
+int zebra_admin_exchange_record (ZebraHandle zh,
+                                 const char *database,
+                                 const char *rec_buf,
+                                 size_t rec_len,
+                                 const char *recid_buf, size_t recid_len,
+                                 int action)
+{
+    int sysno = 0;
+    char *rinfo = 0;
+    char recid_z[256];
+
+    if (!recid_buf || recid_len <= 0 || recid_len >= sizeof(recid_z))
+        return -1;
+    memcpy (recid_z, recid_buf, recid_len);
+    recid_z[recid_len] = 0;
+
+    rinfo = dict_lookup (zh->reg->matchDict, recid_z);
+    if (rinfo)
+    {
+        if (action == 1)  /* fail if insert */
+            return -1;
+        memcpy (&sysno, rinfo+1, sizeof(sysno));
+    }
+    else
+    {
+        if (action == 2 || action == 3) /* fail if delete or update */
+            return -1;
+    }
+    extract_rec_in_mem (zh, "grs.sgml", rec_buf, rec_len, database,
+                        action == 3 ? 1 : 0 /* delete flag */,
+                        0, &sysno, 1, 1, 0);
+    if (action == 1)
+    {
+        dict_insert (zh->reg->matchDict, recid_z, sizeof(sysno), &sysno);
+    }
+    else if (action == 3)
+    {
+        dict_delete (zh->reg->matchDict, recid_z);
+    }
+    return 0;
+}
+
 void zebra_admin_create (ZebraHandle zh, const char *database)
 {
     ZebraService zs;
@@ -927,7 +970,7 @@ void zebra_admin_create (ZebraHandle zh, const char *database)
                                   /* explainDatabase */))
     {
 	zh->errCode = 224;
-	zh->errString = "Database already exist";
+	zh->errString = "database already exist";
     }
     zebra_end_trans (zh);
 }

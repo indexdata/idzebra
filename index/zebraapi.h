@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.20 2002-09-03 11:44:54 adam Exp $
+/* $Id: zebraapi.h,v 1.21 2002-09-17 12:27:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -124,12 +124,20 @@ YAZ_EXPORT void zebra_admin_start (ZebraHandle zh);
 
 YAZ_EXPORT void zebra_shutdown (ZebraService zs);
 
-YAZ_EXPORT void zebra_admin_import_begin (ZebraHandle zh, const char *database);
+YAZ_EXPORT void zebra_admin_import_begin (ZebraHandle zh, const char *database,
+                                          const char *record_type);
 
 YAZ_EXPORT void zebra_admin_import_segment (ZebraHandle zh,
 					    Z_Segment *segment);
 
 void zebra_admin_import_end (ZebraHandle zh);
+
+int zebra_admin_exchange_record (ZebraHandle zh,
+                                 const char *database,
+                                 const char *rec_buf,
+                                 size_t rec_len,
+                                 const char *recid_buf, size_t recid_len,
+                                 int action);
 
 void zebra_begin_trans (ZebraHandle zh);
 void zebra_end_trans (ZebraHandle zh);

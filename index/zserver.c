@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.97 2002-09-13 11:40:35 adam Exp $
+/* $Id: zserver.c,v 1.98 2002-09-17 12:27:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -33,9 +33,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #include <yaz/data1.h>
-#ifdef ASN_COMPILED
 #include <yaz/ill.h>
-#endif
 
 #include "zserver.h"
 
@@ -363,7 +361,8 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 	break;
     case Z_ESAdminOriginPartToKeep_import:
 	yaz_log(LOG_LOG, "adm-import");
-	zebra_admin_import_begin (zh, r->toKeep->databaseName);
+	zebra_admin_import_begin (zh, r->toKeep->databaseName,
+			r->toKeep->u.import->recordType);
 	break;
     case Z_ESAdminOriginPartToKeep_refresh:
 	yaz_log(LOG_LOG, "adm-refresh");
@@ -437,118 +436,6 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 
         zebra_result (zh, &rr->errcode, &rr->errstring);
     }
-    else if (rr->esr->taskSpecificParameters->which == Z_External_itemOrder)
-    {
-    	Z_ItemOrder *it = rr->esr->taskSpecificParameters->u.itemOrder;
-	yaz_log (LOG_LOG, "Received ItemOrder");
-	switch (it->which)
-	{
-#ifdef ASN_COMPILED
-	case Z_IOItemOrder_esRequest:
-#else
-	case Z_ItemOrder_esRequest:
-#endif
-	{
-	    Z_IORequest *ir = it->u.esRequest;
-	    Z_IOOriginPartToKeep *k = ir->toKeep;
-	    Z_IOOriginPartNotToKeep *n = ir->notToKeep;
-	    
-	    if (k && k->contact)
-	    {
-	        if (k->contact->name)
-		    yaz_log(LOG_LOG, "contact name %s", k->contact->name);
-		if (k->contact->phone)
-		    yaz_log(LOG_LOG, "contact phone %s", k->contact->phone);
-		if (k->contact->email)
-		    yaz_log(LOG_LOG, "contact email %s", k->contact->email);
-	    }
-	    if (k->addlBilling)
-	    {
-	        yaz_log(LOG_LOG, "Billing info (not shown)");
-	    }
-	    
-	    if (n->resultSetItem)
-	    {
-	        yaz_log(LOG_LOG, "resultsetItem");
-		yaz_log(LOG_LOG, "setId: %s", n->resultSetItem->resultSetId);
-		yaz_log(LOG_LOG, "item: %d", *n->resultSetItem->item);
-	    }
-#ifdef ASN_COMPILED
-	    if (n->itemRequest)
-	    {
-		Z_External *r = (Z_External*) n->itemRequest;
-		ILL_ItemRequest *item_req = 0;
-		ILL_Request *ill_req = 0;
-		if (r->direct_reference)
-		{
-		    oident *ent = oid_getentbyoid(r->direct_reference);
-		    if (ent)
-			yaz_log(LOG_LOG, "OID %s", ent->desc);
-		    if (ent && ent->value == VAL_ISO_ILL_1)
-		    {
-			yaz_log (LOG_LOG, "ItemRequest");
-			if (r->which == ODR_EXTERNAL_single)
-			{
-			    odr_setbuf(rr->decode,
-				       r->u.single_ASN1_type->buf,
-				       r->u.single_ASN1_type->len, 0);
-			    
-			    if (!ill_ItemRequest (rr->decode, &item_req, 0, 0))
-			    {
-				yaz_log (LOG_LOG,
-                                    "Couldn't decode ItemRequest %s near %d",
-                                       odr_errmsg(odr_geterror(rr->decode)),
-                                       odr_offset(rr->decode));
-                                yaz_log(LOG_LOG, "PDU dump:");
-                                odr_dumpBER(yaz_log_file(),
-                                     r->u.single_ASN1_type->buf,
-                                     r->u.single_ASN1_type->len);
-                            }
-			    if (rr->print)
-			    {
-				ill_ItemRequest (rr->print, &item_req, 0,
-                                    "ItemRequest");
-				odr_reset (rr->print);
- 			    }
-			}
-			if (!item_req && r->which == ODR_EXTERNAL_single)
-			{
-			    yaz_log (LOG_LOG, "ILLRequest");
-			    odr_setbuf(rr->decode,
-				       r->u.single_ASN1_type->buf,
-				       r->u.single_ASN1_type->len, 0);
-			    
-			    if (!ill_Request (rr->decode, &ill_req, 0, 0))
-			    {
-				yaz_log (LOG_LOG,
-                                    "Couldn't decode ILLRequest %s near %d",
-                                       odr_errmsg(odr_geterror(rr->decode)),
-                                       odr_offset(rr->decode));
-                                yaz_log(LOG_LOG, "PDU dump:");
-                                odr_dumpBER(yaz_log_file(),
-                                     r->u.single_ASN1_type->buf,
-                                     r->u.single_ASN1_type->len);
-                            }
-			    if (rr->print)
-                            {
-				ill_Request (rr->print, &ill_req, 0,
-                                    "ILLRequest");
-				odr_reset (rr->print);
-			    }
-			}
-		    }
-		}
-		if (item_req)
-		{
-		    yaz_log (LOG_LOG, "ILL protocol version = %d",
-			     *item_req->protocol_version_num);
-		}
-	    }
-#endif
-	}
-	break;
-	}
-    }
     else if (rr->esr->taskSpecificParameters->which == Z_External_update)
     {
     	Z_IUUpdate *up = rr->esr->taskSpecificParameters->u.update;
@@ -592,24 +479,43 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 	    if (toKeep->databaseName)
 	    {
 		yaz_log (LOG_LOG, "database: %s", toKeep->databaseName);
-		if (!strcmp(toKeep->databaseName, "fault"))
-		{
-		    rr->errcode = 109;
-		    rr->errstring = toKeep->databaseName;
-		}
-		if (!strcmp(toKeep->databaseName, "accept"))
-		    rr->errcode = -1;
+
+                if (zebra_select_database(zh, toKeep->databaseName))
+                    return;
 	    }
+            else
+            {
+                yaz_log (LOG_WARN, "no database supplied for ES Update");
+                rr->errcode = 1008;
+                rr->errstring = "database";
+                return;
+            }
 	    if (notToKeep)
 	    {
 		int i;
+                zebra_begin_trans (zh);
 		for (i = 0; i < notToKeep->num; i++)
 		{
 		    Z_External *rec = notToKeep->elements[i]->record;
+                    struct oident *oident = 0;
+                    Odr_oct *recid = notToKeep->elements[i]->u.opaque;
 
+                    if (!recid)
+                    {
+                        rr->errcode = 224;
+                        rr->errstring = "record Id not supplied";
+                        break;
+                    }
+                    if (notToKeep->elements[i]->which !=
+                        Z_IUSuppliedRecords_elem_opaque)
+                    {
+                        rr->errcode = 224;
+                        rr->errstring = "only opaque record ID supported";
+                        break;
+                    }
+                        
 		    if (rec->direct_reference)
 		    {
-			struct oident *oident;
 			oident = oid_getentbyoid(rec->direct_reference);
 			if (oident)
 			    yaz_log (LOG_LOG, "record %d type %s", i,
@@ -637,7 +543,63 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				     rec->u.octet_aligned->len,
 				     rec->u.octet_aligned->buf);
 		    }
+                    if (oident && oident->value != VAL_TEXT_XML)
+                    {
+                        rr->errcode = 224;
+                        rr->errstring = "only XML update supported";
+                        break;
+                    }
+                    if (rec->which == Z_External_octet)
+                    {
+                        int action = 0;
+
+                        if (*toKeep->action ==
+                            Z_IUOriginPartToKeep_recordInsert)
+                            action = 1;
+                        if (*toKeep->action ==
+                            Z_IUOriginPartToKeep_recordReplace)
+                            action = 2;
+                        if (*toKeep->action ==
+                            Z_IUOriginPartToKeep_recordDelete)
+                            action = 3;
+                        if (*toKeep->action ==
+                            Z_IUOriginPartToKeep_specialUpdate)
+                            action = 1;
+
+                        if (!action)
+                        {
+                            rr->errcode = 224;
+                            rr->errstring = "unsupported ES Update action";
+                            break;
+                        }
+                        else
+                        {
+                            int r = zebra_admin_exchange_record (
+                                zh, toKeep->databaseName,
+                                rec->u.octet_aligned->buf,
+                                rec->u.octet_aligned->len,
+                                recid->buf, recid->len,
+                                action);
+                            if (r && *toKeep->action ==
+                                Z_IUOriginPartToKeep_specialUpdate)
+                            {
+                                r = zebra_admin_exchange_record (
+                                    zh, toKeep->databaseName,
+                                    rec->u.octet_aligned->buf,
+                                    rec->u.octet_aligned->len,
+                                    recid->buf, recid->len,
+                                    2);
+                            }
+                            if (r)
+                            {
+                                rr->errcode = 224;
+                                rr->errstring = "record exchange failed";
+                                break;
+                            }
+                        }
+                    }
 		}
+                zebra_end_trans (zh);
 	    }
 	}
     }
@@ -645,6 +607,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
     {
         yaz_log (LOG_WARN, "Unknown Extended Service(%d)",
 		 rr->esr->taskSpecificParameters->which);
+        rr->errcode = 221;
 	
     }
     return 0;
