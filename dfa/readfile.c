@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: readfile.c,v $
- * Revision 1.5  1995-09-04 12:33:27  adam
+ * Revision 1.6  1996-01-08 09:09:21  adam
+ * Function dfa_parse got 'const' string argument.
+ * New functions to define char mappings made public.
+ *
+ * Revision 1.5  1995/09/04  12:33:27  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.4  1995/01/25  11:30:51  adam
@@ -88,6 +92,7 @@ static void read_defs (void)
 static void read_rules (struct DFA *dfa)
 {
     char *s;
+    const char *sc;
     int i;
     int no = 0;
 
@@ -106,7 +111,8 @@ static void read_rules (struct DFA *dfa)
             /* preprocess regular expression */
             prep (&s);                   
             /* now parse regular expression */
-            i = dfa_parse (dfa, &s);
+            sc = s;
+            i = dfa_parse (dfa, &sc);
             if (i)
             {
                 fprintf (stderr, "%s #%d: regular expression syntax error\n",
@@ -121,9 +127,9 @@ static void read_rules (struct DFA *dfa)
                 no++;
                 fprintf (outf, "\tcase %d:\n#line %d\n\t\t", no, line_no);
             }
-            while (*s == '\t' || *s == ' ')
-                s++;
-            fputs (s, outf);
+            while (*sc == '\t' || *sc == ' ')
+                sc++;
+            fputs (sc, outf);
         }
     }
     fputs ("\tYY_BREAK\n\t}\n}\n", outf);

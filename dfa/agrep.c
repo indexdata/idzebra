@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.7  1995-10-16 09:31:24  adam
+ * Revision 1.8  1996-01-08 09:09:16  adam
+ * Function dfa_parse got 'const' string argument.
+ * New functions to define char mappings made public.
+ *
+ * Revision 1.7  1995/10/16  09:31:24  adam
  * Bug fix.
  *
  * Revision 1.6  1995/09/28  09:18:51  adam
@@ -174,6 +178,7 @@ struct DFA_state **dfaar;
     char *p;
     int i;
     unsigned char c;
+    int start_line = 1;
 
     while (1)
     {
@@ -183,7 +188,8 @@ struct DFA_state **dfaar;
                 p = inf_ptr;
                 do
                 {
-                    if ((s = dfaar[t->to])->rule_no)
+                    if ((s = dfaar[t->to])->rule_no &&
+                        (start_line || s->rule_nno))
                     {
                         inf_ptr = prline (inf_ptr);
                         c = '\n';
@@ -200,6 +206,7 @@ struct DFA_state **dfaar;
             }
         if (c == '\n')
         {
+            start_line = 1;
             ++line_no;
             if (inf_ptr == inf_flsh)
             {
@@ -213,6 +220,8 @@ struct DFA_state **dfaar;
                 }
             }
         }
+        else
+            start_line = 0;
     }
     return 0;
 }
@@ -238,12 +247,21 @@ int main (argc, argv)
 int argc;
 char **argv;
 {
-    char *pattern = NULL;
+    const char *pattern = NULL;
     char outbuf[BUFSIZ];
     int fd, i, no = 0;
     struct DFA *dfa = dfa_init();
 
     prog = *argv;
+    if (argc < 2)
+    {
+        fprintf (stderr, "usage: agrep [options] pattern file..\n");
+        fprintf (stderr, " -v   dfa verbose\n");
+        fprintf (stderr, " -n   show lines\n");
+        fprintf (stderr, " -d   debug\n");
+        fprintf (stderr, " -V   show version\n");
+        exit (1);
+    }
     setbuf (stdout, outbuf);
     i = agrep_options (argc, argv);
     if (i)

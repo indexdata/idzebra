@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfap.h,v $
- * Revision 1.2  1995-01-25 11:30:50  adam
+ * Revision 1.3  1996-01-08 09:09:19  adam
+ * Function dfa_parse got 'const' string argument.
+ * New functions to define char mappings made public.
+ *
+ * Revision 1.2  1995/01/25  11:30:50  adam
  * Simple error reporting when parsing regular expressions.
  * Memory usage reduced.
  *
@@ -29,6 +33,8 @@ struct DFA_parse {
     int max_Tnode;            /* allocated Tnodes */
     struct Tblock *start;     /* start block of Tnodes */
     struct Tblock *end;       /* end block of Tnodes */
+    int *charMap;
+    int charMapSize;
 };
 
 typedef struct DFA_stateb_ {

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: grepper.c,v $
- * Revision 1.5  1995-09-04 12:33:26  adam
+ * Revision 1.6  1996-01-08 09:09:20  adam
+ * Function dfa_parse got 'const' string argument.
+ * New functions to define char mappings made public.
+ *
+ * Revision 1.5  1995/09/04  12:33:26  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.4  1995/01/24  16:00:21  adam
@@ -350,7 +354,7 @@ int main (int argc, char **argv)
     int ret;
     int range = 0;
     char *arg;
-    char *pattern = NULL;
+    const char *pattern = NULL;
     int no_files = 0;
     struct DFA *dfa = dfa_init();
 

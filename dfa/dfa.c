@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.9  1995-12-06 12:24:58  adam
+ * Revision 1.10  1996-01-08 09:09:17  adam
+ * Function dfa_parse got 'const' string argument.
+ * New functions to define char mappings made public.
+ *
+ * Revision 1.9  1995/12/06  12:24:58  adam
  * Removed verbatim mode code.
  *
  * Revision 1.8  1995/12/06  09:09:58  adam
@@ -84,7 +88,6 @@ static struct DFA_parse *parse_info = NULL;
 static int err_code;
 static int inside_string;
 static const unsigned char *expr_ptr;
-static unsigned short *ctrl_chars;
 static struct Tnode **posar;
 
 static SetType poset;
@@ -267,58 +270,12 @@ static struct Tnode *expr_4 (void)
     return t1;
 }
 
-static void do_parse (struct DFA_parse *dfap, char **s,
-		      const unsigned short *cc, struct Tnode **tnp)
+static void do_parse (struct DFA_parse *dfap, const char **s, struct Tnode **tnp)
 {
-    int i;
     int anchor_flag = 0;
+    int start_anchor_flag = 0;
     struct Tnode *t1, *t2, *tn;
 
-    for (i=0; cc[i]; i +=2)
-        ;
-    ctrl_chars = imalloc ((i+2) * sizeof(*ctrl_chars));
-    for (i=0; (ctrl_chars[i] = cc[i]); i ++)
-        switch (cc[++i])
-        {
-        case '(':
-            ctrl_chars[i] = L_LP;
-            break;
-        case ')':
-            ctrl_chars[i] = L_RP;
-            break;
-        case '.':
-            ctrl_chars[i] = L_ANY;
-            break;
-        case '|':
-            ctrl_chars[i] = L_ALT;
-            break;
-        case '?':
-            ctrl_chars[i] = L_QUEST;
-            break;
-        case '+':
-            ctrl_chars[i] = L_CLOS1;
-            break;
-        case '*':
-            ctrl_chars[i] = L_CLOS0;
-            break;
-        case '$':
-            ctrl_chars[i] = L_END;
-            break;
-        case '^':
-            ctrl_chars[i] = L_START;
-            break;
-        case '!':
-            ctrl_chars[i] = L_ANY;
-            break;
-        case '#':
-            ctrl_chars[i] = L_ANYZ;
-            break;
-        case '@':
-            ctrl_chars[i] = L_WILD;
-            break;
-        default:
-            ctrl_chars[i] = 0;
-        }
     parse_info = dfap;
     err_code = 0;
     expr_ptr = (unsigned char *) *s;
@@ -327,10 +284,7 @@ static void do_parse (struct DFA_parse *dfap, char **s,
     lex ();
     if (lookahead == L_START)
     {
-        t2 = mk_Tnode ();
-        t2->pos = ++parse_info->position;
-        t2->u.ch[1] = t2->u.ch[0] = '\n';
-        anchor_flag = 1;
+        start_anchor_flag = 1;
         lex ();
     }
     t1 = expr_1 ();
@@ -362,7 +316,7 @@ static void do_parse (struct DFA_parse *dfap, char **s,
         t2 = mk_Tnode();
         t2->pos = ++parse_info->position;
         t2->u.ch[0] = -(++parse_info->rule);
-        t2->u.ch[1] = anchor_flag;
+        t2->u.ch[1] = start_anchor_flag ? 0 : -(parse_info->rule);
         
         *tnp = mk_Tnode();
         (*tnp)->pos = CAT;
@@ -382,13 +336,12 @@ static void do_parse (struct DFA_parse *dfap, char **s,
         }
     }
     *s = (char *) expr_ptr;
-    ifree (ctrl_chars);
 }
 
 static int nextchar (int *esc)
 {
     *esc = 0;
-    if (*expr_ptr == '\0' || isspace(*expr_ptr))
+    if (*expr_ptr == '\0')
         return 0;
     else if (*expr_ptr != '\\')
         return *expr_ptr++;
@@ -471,32 +424,9 @@ static int read_charset (void)
     return L_CHARS;
 }
 
-unsigned short dfa_thompson_chars[] =
-{
-    '*', '*',
-    '+', '+',
-    '|', '|',
-    '^', '^',
-    '$', '$',
-    '?', '?',
-    '.', '.',
-    '(', '(',
-    ')', ')',
-    0
-};
-
-unsigned short dfa_ccl_chars[] =
-{
-    '#', '#',
-    '!', '!',
-    '?', '@',
-    0
-};
-
 static int lex_sub(void)
 {
     int esc;
-    const unsigned short *cc;
     while ((look_ch = nextchar (&esc)) != 0)
         if (look_ch == '\"')
         {
@@ -508,13 +438,18 @@ static int lex_sub(void)
             return L_CHAR;
         else if (look_ch == '[')
             return read_charset();
-        else if (look_ch == ' ')
-            return 0;
         else 
         {
-            for (cc = ctrl_chars; *cc; cc += 2)
+            const int *cc;
+            if (look_ch == '/')
+                logf (LOG_DEBUG, "xxxx / xxx");
+            for (cc = parse_info->charMap; *cc; cc += 2)
                 if (*cc == look_ch)
+                {
+                    if (!cc[1])
+                        --expr_ptr;
                     return cc[1];
+                }
             return L_CHAR;            
         }
     return 0;
@@ -741,7 +676,7 @@ static void dfa_trav (struct Tnode *n)
         n->lastpos = add_Set (poset, n->lastpos, n->pos);
         if (debug_dfa_trav)
             if (n->u.ch[0] < 0)
-                printf ("#%d", -n->u.ch[0]);
+                printf ("#%d (n#%d)", -n->u.ch[0], -n->u.ch[1]);
             else if (n->u.ch[1] > n->u.ch[0])
             {
                 putchar ('[');
@@ -775,7 +710,7 @@ static void init_followpos (void)
 
 static void mk_dfa_tran (struct DFA_states *dfas)
 {
-    int i, c;
+    int i, j, c;
     int max_char;
     short *pos, *pos_i;
     Set tran_set;
@@ -793,14 +728,21 @@ static void mk_dfa_tran (struct DFA_states *dfas)
     while ((dfa_from = get_DFA_state (dfas)))
     {
         pos_i = pos;
-        i = 0;
+        j = i = 0;
         for (tran_set = dfa_from->set; tran_set; tran_set = tran_set->next)
             if ((c = posar[tran_set->value]->u.ch[0]) >= 0 && c <= max_char) 
                 *pos_i++ = tran_set->value;
-            else if (c < 0 && (i == 0 || c > i))
-                i = c;
+            else if (c < 0)
+            {
+                if (i == 0 || c > i)
+                    i = c;
+                c = posar[tran_set->value]->u.ch[1];
+                if (j == 0 || c > j)
+                    j = c;
+            }
         *pos_i = -1;
         dfa_from->rule_no = -i;
+        dfa_from->rule_nno = -j;
 
         for (char_1 = 0; char_1 <= max_char; char_1++)
         {
@@ -852,6 +794,9 @@ static void pr_tran (struct DFA_states *dfas)
         printf ("DFA state %d", no);
         if (s->rule_no)
             printf ("#%d", s->rule_no);
+        if (s->rule_nno)
+            printf (" #%d", s->rule_nno);
+
         putchar (':');
         pr_Set (poset, s->set);
         prev_no = -1;
@@ -915,6 +860,106 @@ static void pr_followpos (void)
     putchar ('\n');
 }
 
+void dfa_parse_cmap_clean (struct DFA *d)
+{
+    struct DFA_parse *dfa = d->parse_info;
+
+    assert (dfa);
+    if (!dfa->charMap)
+    {
+        dfa->charMapSize = 7;
+        dfa->charMap = imalloc (dfa->charMapSize * sizeof(*dfa->charMap));
+    }
+    dfa->charMap[0] = 0;
+}
+
+void dfa_parse_cmap_new (struct DFA *d, const int *cmap)
+{
+    struct DFA_parse *dfa = d->parse_info;
+    const int *cp;
+    int size;
+
+    assert (dfa);
+    for (cp = cmap; *cp; cp += 2)
+        ;
+    size = cp - cmap + 1;
+    if (size > dfa->charMapSize)
+    {
+        if (dfa->charMap)
+            ifree (dfa->charMap);
+        dfa->charMapSize = size;
+        dfa->charMap = imalloc (size * sizeof(*dfa->charMap));
+    }
+    memcpy (dfa->charMap, cmap, size * sizeof(*dfa->charMap));
+}
+
+void dfa_parse_cmap_del (struct DFA *d, int from)
+{
+    struct DFA_parse *dfa = d->parse_info;
+    int *cc;
+
+    assert (dfa);
+    for (cc = dfa->charMap; *cc; cc += 2)
+        if (*cc == from)
+        {
+            while ((cc[0] = cc[2]))
+            {
+                cc[1] = cc[3]; 
+                cc += 2;
+            }
+            break;
+        }
+}
+
+void dfa_parse_cmap_add (struct DFA *d, int from, int to)
+{
+    struct DFA_parse *dfa = d->parse_info;
+    int *cc;
+    int indx, size;
+
+    assert (dfa);
+    for (cc = dfa->charMap; *cc; cc += 2)
+        if (*cc == from)
+        {
+            cc[1] = to;
+            return ;
+        }
+    indx = cc - dfa->charMap;
+    size = dfa->charMapSize;
+    if (indx >= size)
+    {
+        int *cn = imalloc ((size+16) * sizeof(*dfa->charMap));
+        memcpy (cn, dfa->charMap, indx*sizeof(*dfa->charMap));
+        ifree (dfa->charMap);
+        dfa->charMap = cn;
+        dfa->charMapSize = size+16;
+    }
+    dfa->charMap[indx] = from;
+    dfa->charMap[indx+1] = to;
+    dfa->charMap[indx+2] = 0;
+}
+
+void dfa_parse_cmap_thompson (struct DFA *d)
+{
+    static int thompson_chars[] =
+    {
+        '*',  L_CLOS0,
+        '+',  L_CLOS1,
+        '|',  L_ALT,
+        '^',  L_START,
+        '$',  L_END,
+        '?',  L_QUEST,
+        '.',  L_ANY,
+        '(',  L_LP,
+        ')',  L_RP,
+        ' ',  0,
+        '\t', 0,
+        '\n', 0,
+        0
+    };
+    dfa_parse_cmap_new (d, thompson_chars);
+}
+
 static struct DFA_parse *dfa_parse_init (void)
 {
     parse_info = (struct DFA_parse *) imalloc (sizeof (struct DFA_parse));
@@ -929,6 +974,8 @@ static struct DFA_parse *dfa_parse_init (void)
     add_BSet (parse_info->charset, parse_info->anyset, '\n');
     com_BSet (parse_info->charset, parse_info->anyset);
     parse_info->use_Tnode = parse_info->max_Tnode = 0;
+    parse_info->charMap = NULL;
+    parse_info->charMapSize = 0;
     return parse_info;
 }
 
@@ -938,6 +985,7 @@ static void rm_dfa_parse (struct DFA_parse **dfap)
     assert (parse_info);
     term_Tnode();
     rm_BSetHandle (&parse_info->charset);
+    ifree (parse_info->charMap);
     ifree (parse_info);
     *dfap = NULL;
 }
@@ -953,6 +1001,7 @@ static struct DFA_states *mk_dfas (struct DFA_parse *dfap, int poset_chunk)
     poset = mk_SetType (poset_chunk);
     init_pos();
     init_followpos();
+    assert (parse_info->root);
     dfa_trav (parse_info->root);
 
     if (debug_dfa_followpos)
@@ -977,15 +1026,17 @@ struct DFA *dfa_init (void)
     dfa->parse_info = dfa_parse_init ();
     dfa->state_info = NULL;
     dfa->states = NULL;
+    dfa_parse_cmap_thompson (dfa);
     return dfa;
 }
 
-int dfa_parse (struct DFA *dfa, char **pattern)
+int dfa_parse (struct DFA *dfa, const char **pattern)
 {
     struct Tnode *top;
 
     assert (dfa);
-    do_parse (dfa->parse_info, pattern, dfa_thompson_chars, &top);
+    assert (dfa->parse_info);
+    do_parse (dfa->parse_info, pattern, &top);
     if (err_code)
         return err_code;
     if ( !dfa->parse_info->root )
