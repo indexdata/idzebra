@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: rstemp.c,v 1.28 2002-03-14 18:41:59 adam Exp $
+ * $Id: rstemp.c,v 1.29 2002-03-15 20:11:36 adam Exp $
  */
 
 #include <fcntl.h>
@@ -126,7 +126,7 @@ static void r_flush (RSFD rfd, int mk)
 
     if (!info->fname && mk)
     {
-#if 0
+#if HAVE_MKSTEMP
         char template[1024];
 
         sprintf (template, "%s/zrsXXXXXX", info->temp_path);

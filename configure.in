@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2002
-dnl $Id: configure.in,v 1.31 2002-02-20 17:32:38 adam Exp $
+dnl $Id: configure.in,v 1.32 2002-03-15 20:11:36 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -78,6 +78,8 @@ fi
 dnl
 dnl ------ times
 AC_CHECK_HEADERS(sys/times.h)
+dnl ------ mkstemp
+AC_CHECK_FUNCS(mkstemp)
 dnl
 dnl ------- BZIP2
 AC_CHECK_LIB(bz2,bzCompressInit)

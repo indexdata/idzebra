@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.46 2002-02-20 23:07:54 adam Exp $
+ * $Id: zebraapi.c,v 1.47 2002-03-15 20:11:36 adam Exp $
  */
 
 #include <assert.h>
@@ -181,9 +181,9 @@ static int zebra_register_activate (ZebraHandle zh, int rw, int useshadow)
     }
     if (rw)
     {
-        zs->matchDict = dict_open (zs->bfs, GMATCH_DICT, 50, 1, 0);
+        zs->matchDict = dict_open (zs->bfs, GMATCH_DICT, 20, 1, 0);
     }
-    if (!(zs->dict = dict_open (zs->bfs, FNAME_DICT, 80, rw, 0)))
+    if (!(zs->dict = dict_open (zs->bfs, FNAME_DICT, 40, rw, 0)))
     {
 	logf (LOG_WARN, "dict_open");
 	return -1;
