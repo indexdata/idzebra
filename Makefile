@@ -1,12 +1,12 @@
 # Copyright (C) 1994-1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.45 1996-01-08 19:15:07 adam Exp $
+# $Id: Makefile,v 1.46 1996-01-11 10:15:33 quinn Exp $
 
 SHELL=/bin/sh
 MAKE=make
 RANLIB=ranlib
-VERSION=1.0a3
+VERSION=1.0a4
 
 # Where are Yaz libraries located?
 YAZLIB=../../yaz/lib/libyaz.a
