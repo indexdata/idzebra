@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.9 1995-12-01 11:37:31 adam Exp $
+  $Id: zebra.sgml,v 1.10 1995-12-13 13:45:21 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.9 $
+<date>$Revision: 1.10 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -61,7 +61,10 @@ system.
 
 <item>
 Supports updating - records can be added and deleted without
-rebuilding the index.
+rebuilding the index from scratch.
+The update procedure is tolerant to crashes or hard interrupts
+during register updating - registers can be reconstructed following a crash.
+Registers can be safely updated even while users are accessing the server.
 
 <item>
 Supports large databases - files for indices, etc. can be
@@ -127,7 +130,7 @@ provide SR services over an OSI stack, as well as Z39.50 over TCP/IP.
 <sect1>Future Work
 
 <p>
-This is an early alfa-release of the software, to allow you to look at
+This is an alfa-release of the software, to allow you to look at
 it - try it out, and assess whether it can be of use to you. We expect
 this version to be followed by a succession of beta-releases until we
 arrive at a stable first version.
@@ -141,7 +144,7 @@ last beta release.
 <itemize>
 
 <item>
-*Allow the system to handle additional input formats. Specifically
+*Allow the system to handle other input formats. Specifically
 MARC records and general, structured ASCII records (such as mail/news
 files) parameterized by regular expressions.
 
@@ -157,14 +160,6 @@ data elements in records.
 *Port the system to Windows NT.
 
 <item>
-Add robust database updating - tolerant to crashes or hard interrupts
-during register updating.
-
-<item>
-Add online updating, to permit register updating while users are
-accessing the system.
-
-<item>
 Add index and data compression to save disk space.
 
 <item>
@@ -175,7 +170,7 @@ and stemming. Add relevance feedback support.
 Add Explain support.
 
 <item>
-Add support for very large records by implementing segmentation and
+Add support for very large records by implementing segmentation and/or
 variant pieces.
 
 <item>
@@ -196,6 +191,7 @@ Programmers thrive on user feedback. If you are interested in a facility that
 you don't see mentioned here, or if there's something you think we
 could do better, please drop us a mail. If you think it's all really
 neat, you're of course welcome to drop us a line saying that, too.
+
 <sect>Introduction
 
 <sect>Compiling the software
@@ -210,8 +206,8 @@ As with YAZ, an ANSI C compiler is required in order to compile the Zebra
 server system &mdash; GNU C works fine.
 
 Unpack the Zebra software. You might put Zebra in the same directory level
-as YAZ, for example if YAZ is placed in ..<tt>/src/yaz-</tt>.., then
-Zebra is placed in ..<tt>/src/zebra-</tt>.
+as YAZ, for example if YAZ is placed in ..<tt>/src/yaz-xxx</tt>, then
+Zebra is placed in ..<tt>/src/zebra-yyy</tt>.
 
 Edit the top-level <tt>Makefile</tt> in the Zebra directory in which
 you specify the location of YAZ by setting make variables.
@@ -286,7 +282,8 @@ Z> find surficial
 Z> show 1
 </verb></tscreen>
 
-To try other retrieval formats for the same record, try:
+The default retrieval syntax for the client is USMARC. To try other
+formats for the same record, try:
 
 <tscreen><verb>
 Z>format sutrs
