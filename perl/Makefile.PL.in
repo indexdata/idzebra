@@ -16,8 +16,7 @@ WriteMakefile(
 
 sub MY::postamble {
 'IDZebra_wrap.c: IDZebra.i
-	swig -I../include -v -Wall -perl -proxy ./IDZebra.i
-	mv IDZebra.pm lib/'
+	./doswig
 	;
 }
 
