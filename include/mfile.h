@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.h,v $
- * Revision 1.4  1995-11-30 08:33:30  adam
+ * Revision 1.5  1995-12-05 11:15:03  quinn
+ * Fixed FILENAME_MAX for some Sun systems, hopefully.
+ *
+ * Revision 1.4  1995/11/30  08:33:30  adam
  * Started work on commit facility.
  *
  * Revision 1.3  1995/09/04  12:33:35  adam
@@ -24,6 +27,11 @@
 #include <stdio.h>
 
 #include <alexutil.h>
+
+#ifndef FILENAME_MAX
+#include <sys/param.h>
+#define FILENAME_MAX MAXPATHLEN
+#endif
 
 #define MF_MIN_BLOCKS_CREAT 1          /* minimum free blocks in new dir */
 #define MF_DEFAULT_AREA "register"      /* Use if no mf_init */
