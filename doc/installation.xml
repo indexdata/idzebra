@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.10 2003-03-06 13:16:02 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.11 2003-03-27 13:38:13 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -11,6 +11,7 @@
    <ulink url="http://www.debian.org/">Debian GNU/Linux</ulink>,
    <ulink url="http://www.redhat.com/">Redhat Linux</ulink>,
    <ulink url="http://www.gentoo.org/">Gentoo Linux</ulink>,
+   <ulink url="http://www.suse.com/">SuSE Linux</ulink>,
    <ulink url="http://www.netbsd.org/Ports/cobalt/">NetBSD (Cobalt)</ulink>,
    <ulink url="http://www.freebsd.org/">FreeBSD (i386)</ulink>,
    <ulink url="http://www.apple.com/macosx/">MAC OSX</ulink>,
@@ -24,7 +25,8 @@
 
    <variablelist>
     <varlistentry>
-     <term><ulink url="http://www.indexdata.dk/yaz/">yaz</ulink> (required)</term>
+     <term><ulink url="http://www.indexdata.dk/yaz/">yaz</ulink>
+      (required)</term>
      <listitem>
       <para>
        Zebra uses YAZ to support Z39.50/SRW. Also the memory management
