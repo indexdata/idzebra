@@ -1,12 +1,11 @@
 # Copyright (C) 1994-1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.50 1996-04-24 13:36:20 quinn Exp $
+# $Id: Makefile,v 1.51 1996-04-26 09:59:32 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
 RANLIB=ranlib
-VERSION=1.0a6
 
 # Where are Yaz libraries located?
 YAZLIB=../../yaz/lib/libyaz.a
@@ -59,17 +58,6 @@ gnudepend:
 		sed 's/^#endif/endif/' | \
 		sed 's/^depend: depend1/depend: depend2/g' >Makefile.tmp;then \
 		mv -f Makefile.tmp Makefile; fi); done
-
-distribution:
-	echo "Making distribution version $(VERSION). Did you commit?"
-	if [ -d tmp ]; then \
-		rm -fr tmp; \
-	fi
-	mkdir tmp; cd tmp; cvs export -f -D now zebra
-	cd tmp/zebra/doc; make all
-	cd tmp; mv zebra zebra-$(VERSION)
-	cd tmp; tar zcf ../zebra-$(VERSION).tar.gz zebra-$(VERSION)
-	rm -fr tmp
 
 wc:
 	wc `find . -name '*.[ch]'`

@@ -1,3 +1,7 @@
+The index processing ignores empty files - warning given.
+
+New option to zebraidx (-V) displays version information.
+
 --- 1.0a6 1996/2/24
 
 Fixed problem in file-update system.
