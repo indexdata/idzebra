@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.52 2002-08-02 19:26:55 adam Exp $
+/* $Id: kinput.c,v 1.53 2002-08-05 19:46:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -274,7 +274,7 @@ struct heap_info *key_heap_init (int nkeys,
 void key_heap_destroy (struct heap_info *hi, int nkeys)
 {
     int i;
-    yaz_log (LOG_LOG, "key_heap_destroy");
+    yaz_log (LOG_DEBUG, "key_heap_destroy");
     for (i = 0; i<=nkeys; i++)
         xfree (hi->info.buf[i]);
     

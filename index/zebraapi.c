@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.65 2002-08-02 19:26:55 adam Exp $
+/* $Id: zebraapi.c,v 1.66 2002-08-05 19:46:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -76,7 +76,7 @@ ZebraHandle zebra_open (ZebraService zs)
         return 0;
 
     zh = (ZebraHandle) xmalloc (sizeof(*zh));
-    yaz_log (LOG_LOG, "zebra_open zs=%p returns %p", zs, zh);
+    yaz_log (LOG_DEBUG, "zebra_open zs=%p returns %p", zs, zh);
 
     zh->service = zs;
     zh->reg = 0;          /* no register attached yet */
@@ -137,7 +137,7 @@ ZebraService zebra_start (const char *configName)
     {
         ZebraService zh = xmalloc (sizeof(*zh));
 
-	yaz_log (LOG_LOG, "Read resources `%s'", configName);
+	yaz_log (LOG_DEBUG, "Read resources `%s'", configName);
         
         zh->global_res = res;
         zh->configName = xstrdup(configName);
@@ -182,7 +182,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     assert (res);
 
-    yaz_log (LOG_LOG, "zebra_register_open rw = %d useshadow=%d p=%p",
+    yaz_log (LOG_DEBUG, "zebra_register_open rw = %d useshadow=%d p=%p",
              rw, useshadow, reg);
 
     reg->dh = data1_createx (DATA1_FLAG_XML);
@@ -330,7 +330,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	return 0;
     }
     reg->active = 2;
-    yaz_log (LOG_LOG, "zebra_register_open ok p=%p", reg);
+    yaz_log (LOG_DEBUG, "zebra_register_open ok p=%p", reg);
     return reg;
 }
 
@@ -351,7 +351,7 @@ void zebra_admin_start (ZebraHandle zh)
 
 static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 {
-    yaz_log(LOG_LOG, "zebra_register_close p=%p", reg);
+    yaz_log(LOG_DEBUG, "zebra_register_close p=%p", reg);
     reg->stop_flag = 0;
     zebra_chdir (zs);
     if (reg->records)
@@ -383,7 +383,7 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
     xfree (reg->key_buf);
     xfree (reg->name);
     xfree (reg);
-    yaz_log (LOG_LOG, "zebra_register_close 2");
+    yaz_log(LOG_DEBUG, "zebra_register_close 2");
 }
 
 void zebra_stop(ZebraService zs)
@@ -420,7 +420,7 @@ void zebra_close (ZebraHandle zh)
         return;
 
     zs = zh->service;
-    yaz_log (LOG_LOG, "zebra_close zh=%p", zh);
+    yaz_log (LOG_DEBUG, "zebra_close zh=%p", zh);
     if (!zh)
 	return ;
     resultSetDestroy (zh, -1, 0, 0);

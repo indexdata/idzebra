@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.33 2002-08-02 19:26:56 adam Exp $
+/* $Id: zinfo.c,v 1.34 2002-08-05 19:46:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -418,7 +418,7 @@ ZebraExplainInfo zebraExplain_open (
 	    np = np->child;
 	    assert (np && np->which == DATA1N_data);
 	    zei->runNumber = atoi_n (np->u.data.data, np->u.data.len);
-            yaz_log (LOG_LOG, "READ runnumber = %d", zei->runNumber);
+            yaz_log (LOG_DEBUG, "read runnumber = %d", zei->runNumber);
 	    *zdip = NULL;
 	}
 	rec_rm (&trec);
