@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.6  1997-09-22 12:39:06  adam
+ * Revision 1.7  1997-09-29 09:07:29  adam
+ * Minor change.
+ *
+ * Revision 1.6  1997/09/22 12:39:06  adam
  * Added get_pos method for the ranked result sets.
  *
  * Revision 1.5  1997/09/17 12:19:17  adam
@@ -103,9 +106,9 @@ static void heap_insert (struct trunc_info *ti, const char *buf, int indx)
     }
 }
 
-static
-struct trunc_info *heap_init (int size, int key_size,
-                              int (*cmp)(const void *p1, const void *p2))
+static struct trunc_info *heap_init (int size, int key_size,
+				     int (*cmp)(const void *p1,
+						const void *p2))
 {
     struct trunc_info *ti = xmalloc (sizeof(*ti));
     int i;
