@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: readfile.c,v $
- * Revision 1.6  1996-01-08 09:09:21  adam
+ * Revision 1.7  1996-10-29 13:57:28  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.6  1996/01/08 09:09:21  adam
  * Function dfa_parse got 'const' string argument.
  * New functions to define char mappings made public.
  *
@@ -34,7 +37,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <dfa.h>
 #include "lexer.h"
 

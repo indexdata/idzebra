@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.8  1995-12-11 09:15:23  adam
+ * Revision 1.9  1996-10-29 13:55:21  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.8  1995/12/11 09:15:23  adam
  * New set types: sand/sor/snot - ranked versions of and/or/not in
  * ranked/semi-ranked result sets.
  * Note: the snot not finished yet.
@@ -38,7 +41,7 @@
  */
 
 #include <stdio.h>
-#include <alexutil.h>
+#include <zebrautl.h>
 
 #include <rset.h>
 

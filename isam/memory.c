@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.13  1996-03-20 13:29:16  quinn
+ * Revision 1.14  1996-10-29 13:56:56  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.13  1996/03/20 13:29:16  quinn
  * Bug-fix
  *
  * Revision 1.12  1996/03/11  14:52:23  quinn
@@ -54,7 +57,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <isam.h>
 
 int is_mbuf_size[3] = { 0, 1024, 4096 };

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.12  1996-04-24 13:29:16  adam
+ * Revision 1.13  1996-10-29 13:56:16  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.12  1996/04/24 13:29:16  adam
  * Work on optimized on commit operation.
  *
  * Revision 1.11  1996/04/23  12:36:41  adam
@@ -48,7 +51,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <mfile.h>
 #include "cfile.h"
 

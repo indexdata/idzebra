@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isutil.c,v $
- * Revision 1.2  1995-09-04 12:33:46  adam
+ * Revision 1.3  1996-10-29 13:56:55  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.2  1995/09/04 12:33:46  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.1  1994/09/12  08:02:13  quinn
@@ -41,7 +44,7 @@ char *strconcat(const char *s1, ...)
 
 int is_default_cmp(const void *k1, const void *k2)
 {
-    SYSNO b1, b2;
+    int b1, b2;
 
     memcpy(&b1, k1, sizeof(b1));
     memcpy(&b2, k2, sizeof(b2));

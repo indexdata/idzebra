@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: imalloc.c,v $
- * Revision 1.5  1996-05-14 11:33:41  adam
+ * Revision 1.6  1996-10-29 13:57:25  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.5  1996/05/14 11:33:41  adam
  * MEMDEBUG turned off by default.
  *
  * Revision 1.4  1995/09/04  12:33:26  adam
@@ -25,7 +28,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include "imalloc.h"
 
 #if MEMDEBUG

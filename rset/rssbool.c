@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rssbool.c,v $
- * Revision 1.3  1996-10-08 13:00:41  adam
+ * Revision 1.4  1996-10-29 13:55:27  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.3  1996/10/08 13:00:41  adam
  * Bug fix: result sets with ranked operands in boolean operations weren't
  * sorted.
  *
@@ -24,7 +27,7 @@
 #include <assert.h>
 
 #include <rsbool.h>
-#include <alexutil.h>
+#include <zebrautl.h>
 
 static void *r_create_and(const struct rset_control *sel, void *parms,
                          int *flags);

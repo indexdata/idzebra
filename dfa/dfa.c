@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.13  1996-06-17 14:24:08  adam
+ * Revision 1.14  1996-10-29 13:57:22  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.13  1996/06/17 14:24:08  adam
  * Bug fix: read_charset didn't handle character mapping.
  *
  * Revision 1.12  1996/06/04 10:20:02  adam
@@ -54,7 +57,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include "dfap.h"
 #include "imalloc.h"
 
@@ -455,7 +458,7 @@ static int read_charset (void)
 static int map_l_char (void)
 {
     char **mapto;
-    const char *cp0 = expr_ptr-1;
+    const char *cp0 = (const char *) (expr_ptr-1);
     int i = 0, len = strlen(cp0);
 
     if (cp0[0] == 1 && cp0[1])
@@ -470,7 +473,7 @@ static int map_l_char (void)
     mapto = (*parse_info->cmap) (&cp0, len);
     assert (mapto);
     
-    expr_ptr = cp0;
+    expr_ptr = (const unsigned char *) cp0;
     look_ch = mapto[i][0];
     logf (LOG_DEBUG, "map from %c to %d", expr_ptr[-1], look_ch);
     return L_CHAR;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.12  1996-10-08 13:00:40  adam
+ * Revision 1.13  1996-10-29 13:55:26  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.12  1996/10/08 13:00:40  adam
  * Bug fix: result sets with ranked operands in boolean operations weren't
  * sorted.
  *
@@ -52,7 +55,7 @@
 
 #include <isam.h>
 #include <rsrel.h>
-#include <alexutil.h>
+#include <zebrautl.h>
 
 static void *r_create(const struct rset_control *sel, void *parms,
                       int *flags);

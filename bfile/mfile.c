@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.20  1996-05-14 12:10:16  quinn
+ * Revision 1.21  1996-10-29 13:56:18  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.20  1996/05/14 12:10:16  quinn
  * Bad areadef scan
  *
  * Revision 1.19  1996/05/01  07:16:30  quinn
@@ -81,7 +84,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <mfile.h>
 
 static MFile_area_struct *open_areas = 0;

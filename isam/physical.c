@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.12  1996-03-20 16:17:11  quinn
+ * Revision 1.13  1996-10-29 13:56:57  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.12  1996/03/20 16:17:11  quinn
  * Bug hunting
  *
  * Revision 1.11  1996/03/20  13:29:17  quinn
@@ -50,6 +53,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include <log.h>
 #include <isam.h>
 
 static int is_freestore_alloc(ISAM is, int type)

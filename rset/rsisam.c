@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.14  1995-12-11 09:15:24  adam
+ * Revision 1.15  1996-10-29 13:55:22  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.14  1995/12/11 09:15:24  adam
  * New set types: sand/sor/snot - ranked versions of and/or/not in
  * ranked/semi-ranked result sets.
  * Note: the snot not finished yet.
@@ -56,7 +59,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <rsisam.h>
-#include <alexutil.h>
+#include <zebrautl.h>
 
 static void *r_create(const struct rset_control *sel, void *parms,
                       int *flags);

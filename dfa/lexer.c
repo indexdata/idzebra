@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lexer.c,v $
- * Revision 1.9  1996-05-14 11:33:41  adam
+ * Revision 1.10  1996-10-29 13:57:27  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.9  1996/05/14 11:33:41  adam
  * MEMDEBUG turned off by default.
  *
  * Revision 1.8  1995/09/28  09:18:54  adam
@@ -45,7 +48,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <dfa.h>
 #include "imalloc.h"
 #include "lexer.h"

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.21  1996-03-29 14:11:47  quinn
+ * Revision 1.22  1996-10-29 13:56:53  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.21  1996/03/29 14:11:47  quinn
  * Change to is_merge
  *
  * Revision 1.20  1996/03/19  13:14:57  quinn
@@ -73,7 +76,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <bfile.h>
 #include <isam.h>
 #include <common.h>

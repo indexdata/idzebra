@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: states.c,v $
- * Revision 1.4  1995-09-04 12:33:28  adam
+ * Revision 1.5  1996-10-29 13:57:31  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.4  1995/09/04 12:33:28  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.3  1995/01/25  11:30:51  adam
@@ -26,7 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <alexutil.h>
 #include "dfap.h"
 #include "imalloc.h"
 

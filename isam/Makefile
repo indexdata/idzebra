@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.19 1996-05-22 08:26:50 adam Exp $
+# $Id: Makefile,v 1.20 1996-10-29 13:56:51 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -21,15 +21,15 @@ alll: $(LIB) # isam-test issh
 
 test: test.c $(LIB)
 	$(CC) -g -o test -I../include test.c \
-	../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
+	../lib/isam.a ../lib/bfile.a ../lib/zebrautl.a $(YAZLIB)
 
 isam-test: isam-test.c $(LIB)
 	$(CC) -g -o isam-test -I../include isam-test.c \
-	../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
+	../lib/isam.a ../lib/bfile.a ../lib/zebrautl.a $(YAZLIB)
 
 issh: issh.c $(LIB)
 	$(CC) -g -o issh $(INCLUDE) issh.c \
-	../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
+	../lib/isam.a ../lib/bfile.a ../lib/zebrautl.a $(YAZLIB)
 
 #$(TPROG): $(TPROG).o $(LIB) 
 #	$(CC) -o $(TPROG) $(TPROG).o $(LIB)

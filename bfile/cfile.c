@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.17  1996-04-19 16:49:00  adam
+ * Revision 1.18  1996-10-29 13:56:15  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.17  1996/04/19 16:49:00  adam
  * Minor changes.
  *
  * Revision 1.16  1996/04/19  16:23:47  adam
@@ -66,7 +69,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <mfile.h>
 #include "cfile.h"
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.20  1996-03-26 15:59:04  adam
+ * Revision 1.21  1996-10-29 13:56:13  adam
+ * Include of zebrautl.h instead of alexutil.h.
+ *
+ * Revision 1.20  1996/03/26 15:59:04  adam
  * The directory of the shadow table file can be specified by the new
  * bf_lockDir call.
  *
@@ -71,7 +74,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <bfile.h>
 #include "cfile.h"
 
