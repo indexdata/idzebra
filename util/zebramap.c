@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.12  1999-02-12 13:29:25  adam
+ * Revision 1.13  1999-02-18 15:01:04  adam
+ * Structure=key uses register type 0.
+ *
+ * Revision 1.12  1999/02/12 13:29:25  adam
  * Implemented position-flag for registers.
  *
  * Revision 1.11  1998/10/13 20:09:19  adam
@@ -433,7 +436,6 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     case -1:
     case 1:   /* phrase */
     case 2:   /* word */
-    case 3:   /* key */
     case 108: /* string */ 
 	*search_type = "phrase";
 	break;
@@ -449,6 +451,10 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 	*reg_id = 'u';
 	*search_type = "phrase";
 	break;
+    case 3:   /* key */
+        *reg_id = '0';
+        *search_type = "phrase";
+        break;
     default:
 	return -1;
     }
