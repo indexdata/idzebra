@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.101 2003-01-13 10:56:09 oleg Exp $
+/* $Id: zserver.c,v 1.102 2003-01-13 15:06:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -67,7 +67,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     q->implementation_name = "Zebra Information Server";
     q->implementation_version = "Zebra " ZEBRAVER;
 
-    logf (LOG_DEBUG, "bend_init");
+    yaz_log (LOG_DEBUG, "bend_init");
 
     sob = statserv_getcontrol ();
     if (!(zh = zebra_open (sob->handle)))
@@ -107,60 +107,54 @@ bend_initresult *bend_init (bend_initrequest *q)
         int num_langs = 0;
         int selected = 0;
         int i;
-        char *right_name;
+        NMEM nmem = nmem_create();
 
-        NMEM nmem = nmem_create ();
         yaz_log (LOG_LOG, "character set and language negotiation");
 
         yaz_get_proposal_charneg (nmem, q->charneg_request,
                                   &charsets, &num_charsets,
                                   &langs, &num_langs, &selected);
-        	
-        right_name = (char *)nmem_malloc(nmem, 32);
-               
+        
         for (i = 0; i < num_charsets; i++)
         {
-    	    *right_name = '\0';
-        	
+            const char *right_name = "";
     	    /*
 	     * FIXME! It is like rudiment :-))
     	     * We have to support this short names of character sets,
     	     * because a lot servers in Russia to use own in during
     	     * character set and language negotiation still.
     	     */
-
-            if (!yaz_matchstr(charsets[i], "win")) {
-		    strcpy(right_name, "WINDOWS-1251");
-        	} else if (!yaz_matchstr(charsets[i], "koi")) {
-		    strcpy(right_name, "KOI8-R");
-            } else if (!yaz_matchstr(charsets[i], "iso")) {
-        	    strcpy(right_name, "ISO-8859-5");
-            } else if (!yaz_matchstr(charsets[i], "dos")) {
-        	    strcpy(right_name, "CP866");
-        	} else if (!yaz_matchstr(charsets[i], "uni")) {
-        	    strcpy(right_name, "UTF-8");
-        	} else {
-        	    strcpy(right_name, charsets[i]);
-        }
-        	
-        logf (LOG_LOG, "charset %d %s (right name is %s)", i,
-    	    charsets[i], right_name);
             
-        if (odr_set_charset (q->decode, "UTF-8", right_name) == 0)
-        {
-    	    odr_set_charset (q->stream, right_name, "UTF-8");
-            if (selected)
-        	zebra_record_encoding (zh, right_name);
+            if (!yaz_matchstr(charsets[i], "win")) {
+                right_name = "WINDOWS-1251";
+            } else if (!yaz_matchstr(charsets[i], "koi")) {
+                right_name = "KOI8-R";
+            } else if (!yaz_matchstr(charsets[i], "iso")) {
+                right_name = "ISO-8859-5";
+            } else if (!yaz_matchstr(charsets[i], "dos")) {
+                right_name = "CP866";
+            } else if (!yaz_matchstr(charsets[i], "uni")) {
+                right_name = "UTF-8";
+            } else {
+                right_name = charsets[i];
+            }
+            if (odr_set_charset (q->decode, "UTF-8", right_name) == 0)
+            {
+                yaz_log (LOG_LOG, "charset %d %s (proper name %s): OK", i,
+                         charsets[i], right_name);
+                odr_set_charset (q->stream, right_name, "UTF-8");
+                if (selected)
+                    zebra_record_encoding (zh, right_name);
         	q->charneg_response =
         	    yaz_set_response_charneg (q->stream, right_name,
                                               0, selected);
         	break;
             } else {
-    		yaz_log(LOG_LOG, "odr_set_charset(): charset name %s unsupported",
-            		right_name);
+                yaz_log (LOG_LOG, "charset %d %s (proper name %s): unsupported", i,
+                         charsets[i], right_name);
             }
         }
-        nmem_destroy (nmem);
+        nmem_destroy(nmem);
     }
     return r;
 }
@@ -263,7 +257,7 @@ int bend_search (void *handle, bend_search_rr *r)
         zebra_result (zh, &r->errcode, &r->errstring);
         return 0;
     }
-    logf (LOG_LOG, "ResultSet '%s'", r->setname);
+    yaz_log (LOG_LOG, "ResultSet '%s'", r->setname);
     switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
@@ -654,7 +648,7 @@ static void bend_start (struct statserv_options_block *sob)
         char *pidfile = "zebrasrv.pid";
         int fd = creat (pidfile, 0666);
         if (fd == -1)
-            logf (LOG_WARN|LOG_ERRNO, "creat %s", pidfile);
+            yaz_log (LOG_WARN|LOG_ERRNO, "creat %s", pidfile);
         else
         {
 	    char pidstr[30];
@@ -680,14 +674,8 @@ static void bend_stop(struct statserv_options_block *sob)
 #ifdef WIN32
 
 #else
-    /*
-     * Fixme! Why commets?, because the first chaild process to invoke bend_stop().
-     *
-     
     if (!sob->inetd) 
         unlink ("zebrasrv.pid");
-    */
-    
 #endif
     if (sob->handle)
     {
