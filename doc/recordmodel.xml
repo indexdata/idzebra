@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.9 2002-10-17 21:54:22 mike Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.10 2002-10-18 08:31:37 mike Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -853,7 +853,7 @@
     
    </sect2>
    
-   <sect2>
+   <sect2 id="abs-file">
     <title>The Abstract Syntax (.abs) Files</title>
     
     <para>

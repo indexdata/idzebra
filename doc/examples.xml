@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.11 2002-10-17 21:54:22 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.12 2002-10-18 08:31:37 mike Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -218,6 +218,12 @@
    want to support the BIB-1 attribute set.  Then we need to tell it
    which elements of its record pertain to access point 1003.
   </para>
+  <para>
+   We need to create an <link linkend="abs-file">Abstract Syntax
+   file</link> named after the document element of the records we're
+   working with, plus a <literal>.abs</literal> suffix - in this case,
+   <literal>GENUS.abs</literal> - as follows:
+  </para>
   <itemizedlist>
    <listitem>
     <para>
@@ -232,39 +238,6 @@
  </sect1>
 </chapter>
 
-
-<!--
-  <para>
-   You may have noticed as <literal>zebraidx</literal> was building
-   the database that it issued a warning, which we ignored at the
-   time:
-   <screen>
-    $ zebraidx update records
-    00:45:46-08/10: ../../index/zebraidx(5016) [warn] records/genera.xml:0 Couldn't open GENUS.abs [No such file or directory]
-   </screen>
-   FIXME ### This needs more text
-  </para>
--->
-
-<!--
-
-   <listitem>
-    <para>
-     The master configuration file, <literal>zebra.cfg</literal>,
-     which is as short and simple as it can be:
-     <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.11 2002-10-17 21:54:22 mike Exp $
-	# Bare-bones master configuration file for Zebra
-	profilePath: .:../../tab:../../../yaz/tab
-     </screen>
-     Apart from the comments, which are ignored, all this specifies is
-     that the server should recognise the attribute set described in
-     the file called
-     <literal>bib1.att</literal>.
-     ### What is an attribute set?
-    </para>
-   </listitem>
--->
 
 <!--
 	The simplest hello-world example could go like this:
@@ -317,7 +290,7 @@ How to include images:
 	  </caption>
 	</mediaobject>
 
-Whene the three <*object> thingies inside the top-level <mediaobject>
+Where the three <*object> thingies inside the top-level <mediaobject>
 are decreasingly preferred version to include depending on what the
 rendering engine can handle.  I generated the EPS version of the image
 by exporting a line-drawing done in TGIF, then converted that to the
