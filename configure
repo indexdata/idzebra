@@ -979,7 +979,7 @@ if test "x$yazpath" != "xNONE"; then
 else
 	for i in ../yaz* ../yaz; do
 		if test -d $i; then
-			if test -r $i/include/yaz/yaz-version.h; then
+			if test -r $i/yaz-config; then
 				yazconfig=$i/yaz-config
 			fi
 		fi
@@ -1351,12 +1351,14 @@ EOF
 
 	PROGPREFIX=zmbol
 	SUBDIR="util bfile dfa dict isams isamc isam rset recctrl index"
+	SUBMAKE="Makefile util/Makefile bfile/Makefile dfa/Makefile dict/Makefile isams/Makefile isamc/Makefile isam/Makefile rset/Makefile recctrl/Makefile index/Makefile"
 	SUBLIBS="../lib/rset.a ../lib/dict.a ../lib/isams.a ../lib/isam.a\
  ../lib/recctrl.a ../lib/isamc.a ../lib/bfile.a ../lib/dfa.a\
  ../lib/zebrautl.a"
 else
 	PROGPREFIX=zebra
 	SUBDIR="util bfile dfa dict isams rset recctrl index"
+	SUBMAKE="Makefile util/Makefile bfile/Makefile dfa/Makefile dict/Makefile isams/Makefile rset/Makefile recctrl/Makefile index/Makefile"
 	SUBLIBS="../lib/rset.a ../lib/dict.a ../lib/isams.a\
  ../lib/recctrl.a ../lib/bfile.a ../lib/dfa.a\
  ../lib/zebrautl.a"
@@ -1364,18 +1366,6 @@ else
 #define ZMBOL 0
 EOF
 
-	if test ! -d isamc; then
-		mkdir isamc
-	fi
-	if test ! -r isamc/Makefile.in; then
-		touch isamc/Makefile.in
-	fi
-	if test ! -d isam; then
-		mkdir isam
-	fi
-	if test ! -r isam/Makefile.in; then
-		touch isam/Makefile.in
-	fi
 fi
 trap '' 1 2 15
 cat > confcache <<\EOF
@@ -1490,7 +1480,7 @@ done
 ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
-trap 'rm -fr `echo "Makefile util/Makefile bfile/Makefile dfa/Makefile dict/Makefile isams/Makefile isam/Makefile isamc/Makefile recctrl/Makefile rset/Makefile index/Makefile" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "$SUBMAKE" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -1580,7 +1570,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"Makefile util/Makefile bfile/Makefile dfa/Makefile dict/Makefile isams/Makefile isam/Makefile isamc/Makefile recctrl/Makefile rset/Makefile index/Makefile"}
+CONFIG_FILES=\${CONFIG_FILES-"$SUBMAKE"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
