@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.20 2004-08-06 10:09:28 heikki Exp $
+/* $Id: rsnull.c,v 1.21 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -33,7 +33,7 @@ static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static void r_pos (RSFD rfd, double *current, double *total);
-static int r_read (RSFD rfd, void *buf, int *term_index);
+static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 
 static const struct rset_control control = 
@@ -54,17 +54,6 @@ const struct rset_control *rset_kind_null = &control;
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
-    rset_null_parms *null_parms = (rset_null_parms *) parms;
-
-    ct->no_rset_terms = 1;
-    ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
-    if (parms && null_parms->rset_term)
-	ct->rset_terms[0] = null_parms->rset_term;
-    else
-	ct->rset_terms[0] = rset_term_create ("term", -1, "rank-0",
-                                              0);
-    ct->rset_terms[0]->nn = 0;
-
     return NULL;
 }
 
@@ -84,8 +73,6 @@ static void r_close (RSFD rfd)
 
 static void r_delete (RSET ct)
 {
-    rset_term_destroy (ct->rset_terms[0]);
-    xfree (ct->rset_terms);
 }
 
 static void r_rewind (RSFD rfd)
@@ -102,9 +89,8 @@ static void r_pos (RSFD rfd, double *current, double *total)
     *current=0;
 }
 
-static int r_read (RSFD rfd, void *buf, int *term_index)
+static int r_read (RSFD rfd, void *buf)
 {
-    *term_index = -1;
     return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.7 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rsisams.c,v 1.8 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -32,7 +32,7 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_read (RSFD rfd, void *buf, int *term_index);
+static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 
 static const struct rset_control control = 
@@ -73,9 +73,6 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     info->is = pt->is;
     info->pos = pt->pos;
     info->ispt_list = NULL;
-    ct->no_rset_terms = 1;
-    ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
-    ct->rset_terms[0] = pt->rset_term;
     return info;
 }
 
@@ -87,16 +84,14 @@ RSFD r_open (RSET ct, int flag)
     logf (LOG_DEBUG, "risams_open");
     if (flag & RSETF_WRITE)
     {
-	logf (LOG_FATAL, "ISAMS set type is read-only");
-	return NULL;
+        logf (LOG_FATAL, "ISAMS set type is read-only");
+        return NULL;
     }
     ptinfo = (struct rset_pp_info *) xmalloc (sizeof(*ptinfo));
     ptinfo->next = info->ispt_list;
     info->ispt_list = ptinfo;
     ptinfo->pt = isams_pp_open (info->is, info->pos);
     ptinfo->info = info;
-    if (ct->rset_terms[0]->nn < 0)
-	ct->rset_terms[0]->nn = isams_pp_num (ptinfo->pt);
     return ptinfo;
 }
 
@@ -123,8 +118,6 @@ static void r_delete (RSET ct)
 
     logf (LOG_DEBUG, "rsisams_delete");
     assert (info->ispt_list == NULL);
-    rset_term_destroy (ct->rset_terms[0]);
-    xfree (ct->rset_terms);
     xfree (info);
 }
 
@@ -135,9 +128,8 @@ static void r_rewind (RSFD rfd)
 }
 
 
-static int r_read (RSFD rfd, void *buf, int *term_index)
+static int r_read (RSFD rfd, void *buf)
 {
-    *term_index = 0;
     return isams_pp_read( ((struct rset_pp_info*) rfd)->pt, buf);
 }
 

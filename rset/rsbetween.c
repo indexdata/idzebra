@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.17 2004-08-06 14:09:02 heikki Exp $
+/* $Id: rsbetween.c,v 1.18 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -45,10 +45,10 @@ static RSFD r_open_between (RSET ct, int flag);
 static void r_close_between (RSFD rfd);
 static void r_delete_between (RSET ct);
 static void r_rewind_between (RSFD rfd);
-static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
+static int r_forward_between(RSET ct, RSFD rfd, void *buf, 
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
-static int r_read_between (RSFD rfd, void *buf, int *term_index);
+static int r_read_between (RSFD rfd, void *buf);
 static int r_write_between (RSFD rfd, const void *buf);
 static void r_pos_between (RSFD rfd, double *current, double *total);
 
@@ -75,7 +75,6 @@ struct rset_between_info {
     RSET rset_m;
     RSET rset_r;
     RSET rset_attr;
-    int term_index_s;
     int (*cmp)(const void *p1, const void *p2);
     char *(*printer)(const void *p1, char *buf);
     struct rset_between_rfd *rfd_list;
@@ -90,9 +89,6 @@ struct rset_between_rfd {
     int  more_m;
     int  more_r;
     int  more_attr;
-    int term_index_l;
-    int term_index_m;
-    int term_index_r;
     void *buf_l;
     void *buf_m;
     void *buf_r;
@@ -137,40 +133,6 @@ static void *r_create_between (RSET ct, const struct rset_control *sel,
     info->cmp = between_parms->cmp;
     info->printer = between_parms->printer;
     info->rfd_list = NULL;
-    
-    info->term_index_s = info->rset_l->no_rset_terms;
-    if (info->rset_m)
-    {
-        ct->no_rset_terms =
-            info->rset_l->no_rset_terms + 
-            info->rset_m->no_rset_terms + 
-            info->rset_r->no_rset_terms;
-        ct->rset_terms = (RSET_TERM *)
-            xmalloc (sizeof (*ct->rset_terms) * ct->no_rset_terms);
-        memcpy (ct->rset_terms, info->rset_l->rset_terms,
-                info->rset_l->no_rset_terms * sizeof(*ct->rset_terms));
-        memcpy (ct->rset_terms + info->rset_l->no_rset_terms,
-                info->rset_m->rset_terms,
-                info->rset_m->no_rset_terms * sizeof(*ct->rset_terms));
-        memcpy (ct->rset_terms + info->rset_l->no_rset_terms + 
-                info->rset_m->no_rset_terms,
-                info->rset_r->rset_terms,
-                info->rset_r->no_rset_terms * sizeof(*ct->rset_terms));
-    }
-    else
-    {
-        ct->no_rset_terms =
-            info->rset_l->no_rset_terms + 
-            info->rset_r->no_rset_terms;
-        ct->rset_terms = (RSET_TERM *)
-            xmalloc (sizeof (*ct->rset_terms) * ct->no_rset_terms);
-        memcpy (ct->rset_terms, info->rset_l->rset_terms,
-                info->rset_l->no_rset_terms * sizeof(*ct->rset_terms));
-        memcpy (ct->rset_terms + info->rset_l->no_rset_terms,
-                info->rset_r->rset_terms,
-                info->rset_r->no_rset_terms * sizeof(*ct->rset_terms));
-    }
-
     return info;
 }
 
@@ -198,18 +160,14 @@ static RSFD r_open_between (RSET ct, int flag)
     rfd->rfd_m = rset_open (info->rset_m, RSETF_READ);
     rfd->rfd_r = rset_open (info->rset_r, RSETF_READ);
     
-    rfd->more_l = rset_read (info->rset_l, rfd->rfd_l, rfd->buf_l,
-                             &rfd->term_index_l);
-    rfd->more_m = rset_read (info->rset_m, rfd->rfd_m, rfd->buf_m,
-                             &rfd->term_index_m);
-    rfd->more_r = rset_read (info->rset_r, rfd->rfd_r, rfd->buf_r,
-                             &rfd->term_index_r);
+    rfd->more_l = rset_read (info->rset_l, rfd->rfd_l, rfd->buf_l);
+    rfd->more_m = rset_read (info->rset_m, rfd->rfd_m, rfd->buf_m);
+    rfd->more_r = rset_read (info->rset_r, rfd->rfd_r, rfd->buf_r);
     if (info->rset_attr)
     {
-        int dummy;
         rfd->rfd_attr = rset_open (info->rset_attr, RSETF_READ);
         rfd->more_attr = rset_read (info->rset_attr, rfd->rfd_attr,
-                                    rfd->buf_attr, &dummy);
+                                    rfd->buf_attr);
     }
     rfd->level=0;
     rfd->hits=0;
@@ -247,7 +205,6 @@ static void r_delete_between (RSET ct)
     struct rset_between_info *info = (struct rset_between_info *) ct->buf;
 
     assert (info->rfd_list == NULL);
-    xfree (ct->rset_terms);
     rset_delete (info->rset_l);
     rset_delete (info->rset_m);
     rset_delete (info->rset_r);
@@ -267,15 +224,13 @@ static void r_rewind_between (RSFD rfd)
     rset_rewind (info->rset_l, p->rfd_l);
     rset_rewind (info->rset_m, p->rfd_m);
     rset_rewind (info->rset_r, p->rfd_r);
-    p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l, &p->term_index_l);
-    p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m, &p->term_index_m);
-    p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r, &p->term_index_r);
+    p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+    p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m);
+    p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
     if (info->rset_attr)
     {
-        int dummy;
         rset_rewind (info->rset_attr, p->rfd_attr);
-        p->more_attr = rset_read (info->rset_attr, p->rfd_attr, p->buf_attr,
-                                  &dummy);
+        p->more_attr = rset_read (info->rset_attr, p->rfd_attr, p->buf_attr);
     }
     p->level=0;
     p->hits=0;
@@ -283,7 +238,7 @@ static void r_rewind_between (RSFD rfd)
 
 
 
-static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
+static int r_forward_between(RSET ct, RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf)
 {
@@ -297,11 +252,11 @@ static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
     /* naturally forward the l, m, and attr pointers */
     if (p->more_m)
         p->more_m=rset_forward(info->rset_m,p->rfd_m, p->buf_m,
-                        &p->term_index_m, info->cmp,untilbuf);
+                        info->cmp,untilbuf);
 #if RSBETWEEN_DEBUG
     log2( p, "fwd: after forward M", 0,0);
 #endif
-    rc = r_read_between(rfd, buf, term_index);
+    rc = r_read_between(rfd, buf);
 #if RSBETWEEN_DEBUG
     log2( p, "fwd: after forward", 0,0);
 #endif
@@ -311,7 +266,7 @@ static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
 
 
 
-static int r_read_between (RSFD rfd, void *buf, int *term_index)
+static int r_read_between (RSFD rfd, void *buf)
 {
     struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
     struct rset_between_info *info = p->info;
@@ -350,7 +305,6 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                 else
                 {
                     int cmp_attr;
-                    int dummy_term;
                     attr_match = 0;
                     while (p->more_attr)
                     {
@@ -363,8 +317,8 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                         else if (cmp_attr > 0)
                             break;
                         else if (cmp_attr==-1) 
-                            p->more_attr = rset_read (info->rset_attr, p->rfd_attr,
-                                                  p->buf_attr, &dummy_term);
+                            p->more_attr = rset_read (info->rset_attr, 
+                                                  p->rfd_attr, p->buf_attr);
                             /* if we had a forward that went all the way to
                              * the seqno, we could use that. But fwd only goes
                              * to the sysno */
@@ -372,8 +326,7 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                         {
                             p->more_attr = rset_forward(
                                       info->rset_attr, p->rfd_attr,
-                                      p->buf_attr, &dummy_term,
-                                      info->cmp, p->buf_l);
+                                      p->buf_attr, info->cmp, p->buf_l);
 #if RSBETWEEN_DEBUG
                             logf(LOG_DEBUG, "btw: after frowarding attr m=%d",p->more_attr);
 #endif
@@ -387,10 +340,8 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
             {
                 if (p->more_l) 
                 {
-                    p->more_l=rset_forward(
-                                      info->rset_l, p->rfd_l,
-                                      p->buf_l, &p->term_index_l,
-                                      info->cmp, p->buf_m);
+                    p->more_l=rset_forward( info->rset_l, p->rfd_l,
+                                      p->buf_l, info->cmp, p->buf_m);
                     if (p->more_l)
                         cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
                     else
@@ -401,12 +352,10 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                 }
             } else
             {
-                p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
-                              &p->term_index_l);
+                p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
             }
 #else
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
-                              &p->term_index_l);
+            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
 #endif
             if (p->more_l)
             {
@@ -441,21 +390,17 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
 #if NEWCODE                
                 if (cmp_r==-2)
                 {
-                    p->more_r=rset_forward(
-                                      info->rset_r, p->rfd_r,
-                                      p->buf_r, &p->term_index_r,
-                                      info->cmp, p->buf_m);
+                    p->more_r=rset_forward( info->rset_r, p->rfd_r,
+                                      p->buf_r, info->cmp, p->buf_m);
                 } else
                 {
-                    p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
-                                       &p->term_index_r);
+                    p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
                 }
                 if (p->more_r)
                     cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
 
 #else
-                p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
-                                       &p->term_index_r);
+                p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
                 cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
 #endif
             }
@@ -472,12 +417,10 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
         if ( attr_match && p->level > 0)  /* within a tag pair (or deeper) */
         {
             memcpy (buf, p->buf_m, info->key_size);
-            *term_index = p->term_index_m;
 #if RSBETWEEN_DEBUG
             log2( p, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
 #endif
-            p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
-                                   &p->term_index_m);
+            p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m);
             if (cmp_l == 2)
                 p->level = 0;
             p->hits++;
@@ -494,20 +437,16 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
         if (cmp_l == 2)
         {
             p->level = 0;
-            p->more_m=rset_forward(
-                              info->rset_m, p->rfd_m,
-                              p->buf_m, &p->term_index_m,
-                              info->cmp, p->buf_l);
+            p->more_m=rset_forward( info->rset_m, p->rfd_m,
+                              p->buf_m, info->cmp, p->buf_l);
         } else
         {
-            p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
-                               &p->term_index_m);
+            p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m);
         }
 #else
         if (cmp_l == 2)
             p->level = 0;
-        p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
-                               &p->term_index_m);
+        p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m);
 #endif
 #if RSBETWEEN_DEBUG
         log2( p, "End of M loop", cmp_l, cmp_r);

@@ -1,4 +1,4 @@
-/* $Id: rstemp.h,v 1.9 2004-01-22 11:27:21 adam Exp $
+/* $Id: rstemp.h,v 1.10 2004-08-20 14:44:45 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -38,7 +38,6 @@ typedef struct rset_temp_parms
     int (*cmp)(const void *p1, const void *p2);
     int     key_size;
     const char *temp_path;
-    RSET_TERM rset_term;    
 } rset_temp_parms;
 
 #ifdef __cplusplus

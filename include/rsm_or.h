@@ -1,4 +1,4 @@
-/* $Id: rsm_or.h,v 1.7 2004-08-04 08:35:23 adam Exp $
+/* $Id: rsm_or.h,v 1.8 2004-08-20 14:44:45 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -38,7 +38,6 @@ typedef struct rset_m_or_parms
 
     ISAMC   isc;
     ISAMC_P  *isam_positions;
-    RSET_TERM rset_term;
 
     int     no_isam_positions;
     int     no_save_positions;

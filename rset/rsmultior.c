@@ -1,4 +1,4 @@
-/* $Id: rsmultior.c,v 1.3 2004-08-19 14:11:54 heikki Exp $
+/* $Id: rsmultior.c,v 1.4 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -37,9 +37,9 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_read (RSFD rfd, void *buf, int *term_index);
+static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
-static int r_forward(RSET ct, RSFD rfd, void *buf,  int *term_index,
+static int r_forward(RSET ct, RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
@@ -90,7 +90,6 @@ struct rset_multior_info {
     int     (*cmp)(const void *p1, const void *p2);
     int     no_rsets;
     RSET    *rsets;
-    int     term_index;
     struct rset_multior_rfd *rfd_list;
 };
 
@@ -101,9 +100,9 @@ struct rset_multior_rfd {
     HEAP h;
     struct rset_multior_rfd *next;
     struct rset_multior_info *info;
-    zint *countp; /* inc at every new record we see */
     zint hits; /* returned so far */
     char *prevvalue; /* to see if we are in another record */
+      /* FIXME - is this really needed? */
 };
 
 #if 0
@@ -234,10 +233,6 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     info->no_rsets= r_parms->no_rsets;
     info->rsets=r_parms->rsets; /* now we own it! */
     info->rfd_list=0;
-    info->term_index=0 ; /* r_parms->rset_term; */ /*??*/ /*FIXME */
-    ct->no_rset_terms = 1;
-    ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
-    ct->rset_terms[0] = r_parms->rset_term;
     return info;
 }
 
@@ -246,7 +241,6 @@ static RSFD r_open (RSET ct, int flag)
     struct rset_multior_rfd *rfd;
     struct rset_multior_info *info = (struct rset_multior_info *) ct->buf;
     int i;
-    int dummy_termindex;
 
     if (flag & RSETF_WRITE)
     {
@@ -258,10 +252,6 @@ static RSFD r_open (RSET ct, int flag)
     rfd->next = info->rfd_list;
     rfd->info = info;
     info->rfd_list = rfd;
-    if (ct->no_rset_terms==1)
-        rfd->countp=&ct->rset_terms[0]->count;
-    else
-        rfd->countp=0;
     rfd->h = heap_create( info->no_rsets, info->key_size, info->cmp);
     rfd->prevvalue=0;
     rfd->hits=0;
@@ -272,7 +262,7 @@ static RSFD r_open (RSET ct, int flag)
        rfd->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
 /*       if (item_readbuf(&(rfd->items[i]))) */
        if ( rset_read(rfd->items[i].rset, rfd->items[i].fd, 
-                      rfd->items[i].buf, &dummy_termindex) )
+                      rfd->items[i].buf) )
            heap_insert(rfd->h, &(rfd->items[i]));
     }
     return rfd;
@@ -316,10 +306,6 @@ static void r_delete (RSET ct)
         rset_delete(info->rsets[i]);
     xfree(info->rsets);
     xfree(info);
-
-    for (i = 0; i<ct->no_rset_terms; i++) /* usually only 1 */
-        rset_term_destroy (ct->rset_terms[i]);  
-    xfree (ct->rset_terms);
 }
 
 static void r_rewind (RSFD rfd)
@@ -328,7 +314,7 @@ static void r_rewind (RSFD rfd)
 }
 
 
-static int r_forward(RSET ct, RSFD rfd, void *buf,  int *term_index,
+static int r_forward(RSET ct, RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf)
 {
@@ -336,30 +322,17 @@ static int r_forward(RSET ct, RSFD rfd, void *buf,  int *term_index,
     struct rset_multior_info *info = mrfd->info;
     struct heap_item it;
     int rdres;
-    int dummycount=0;
     if (heap_empty(mrfd->h))
         return 0;
     if (cmpfunc)
         assert(cmpfunc==mrfd->info->cmp);
-    *term_index=0;
     it = *(mrfd->h->heap[1]);
     memcpy(buf,it.buf, info->key_size); 
     (mrfd->hits)++;
-    if (mrfd->countp) {
-        if (mrfd->prevvalue) {  /* in another record */
-            if ( (*mrfd->info->cmp)(mrfd->prevvalue,it.buf) < -1)
-                (*mrfd->countp)++; 
-        } else {
-            mrfd->prevvalue=xmalloc(info->key_size);
-            (*mrfd->countp)++; 
-        } 
-        memcpy(mrfd->prevvalue,it.buf, info->key_size); 
-    }
     if (untilbuf)
-        rdres=rset_forward(it.rset, it.fd, it.buf, &dummycount,
-                           cmpfunc,untilbuf);
+        rdres=rset_forward(it.rset, it.fd, it.buf, cmpfunc,untilbuf);
     else
-        rdres=rset_read(it.rset, it.fd, it.buf, &dummycount);
+        rdres=rset_read(it.rset, it.fd, it.buf);
     if ( rdres )
         heap_balance(mrfd->h);
     else
@@ -368,9 +341,9 @@ static int r_forward(RSET ct, RSFD rfd, void *buf,  int *term_index,
 
 }
 
-static int r_read (RSFD rfd, void *buf, int *term_index)
+static int r_read (RSFD rfd, void *buf)
 {
-    return r_forward(0,rfd, buf, term_index,0,0);
+    return r_forward(0,rfd, buf,0,0);
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)

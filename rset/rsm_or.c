@@ -1,4 +1,4 @@
-/* $Id: rsm_or.c,v 1.19 2004-08-16 16:17:49 heikki Exp $
+/* $Id: rsm_or.c,v 1.20 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -37,7 +37,7 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_read (RSFD rfd, void *buf, int *term_index);
+static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 
 static const struct rset_control control = 
@@ -88,7 +88,6 @@ struct rset_mor_rfd {
     struct rset_mor_rfd *next;
     struct rset_mor_info *info;
     struct trunc_info *ti;
-    zint *countp;
     char *pbuf;
 };
 
@@ -241,13 +240,7 @@ static RSFD r_open (RSET ct, int flag)
         }
     }
     rfd->position = info->no_save_positions;
-
-    if (ct->no_rset_terms == 1)
-        rfd->countp = &ct->rset_terms[0]->count;
-    else
-        rfd->countp = 0;
-    rfd->pbuf = xmalloc (info->key_size);
-
+    rfd->pbuf = 0;
     r_rewind (rfd);
     return rfd;
 }
@@ -279,15 +272,8 @@ static void r_close (RSFD rfd)
 static void r_delete (RSET ct)
 {
     struct rset_mor_info *info = (struct rset_mor_info *) ct->buf;
-    int i;
-
     assert (info->rfd_list == NULL);
     xfree (info->isam_positions);
-
-    for (i = 0; i<ct->no_rset_terms; i++)
-	rset_term_destroy (ct->rset_terms[i]);
-    xfree (ct->rset_terms);
-
     xfree (info);
 }
 
@@ -296,7 +282,7 @@ static void r_rewind (RSFD rfd)
 }
 
 
-static int r_read (RSFD rfd, void *buf, int *term_index)
+static int r_read (RSFD rfd, void *buf)
 {
     struct rset_mor_rfd *mrfd = (struct rset_mor_rfd *) rfd;
     struct trunc_info *ti = mrfd->ti;
@@ -304,7 +290,6 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
 
     if (!ti->heapnum)
         return 0;
-    *term_index = 0;
     memcpy (buf, ti->heap[ti->ptr[1]], ti->keysize);
     if (((struct rset_mor_rfd *) rfd)->position)
     {
@@ -317,6 +302,7 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
         }
         else
             heap_delete (ti);
+    rfd->pbuf = xmalloc (info->key_size);
         if (mrfd->countp && (
                 *mrfd->countp == 0 || (*ti->cmp)(buf, mrfd->pbuf) > 1))
         {

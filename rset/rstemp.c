@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.42 2004-08-06 12:55:03 adam Exp $
+/* $Id: rstemp.c,v 1.43 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -40,7 +40,7 @@ static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 /* static int r_count (RSET ct);*/
-static int r_read (RSFD rfd, void *buf, int *term_index);
+static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double  *total);
 
@@ -104,15 +104,12 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     info->rfd_list = NULL;
 
     if (!temp_parms->temp_path)
-	info->temp_path = NULL;
+        info->temp_path = NULL;
     else
     {
-	info->temp_path = (char *) xmalloc (strlen(temp_parms->temp_path)+1);
-	strcpy (info->temp_path, temp_parms->temp_path);
+        info->temp_path = (char *) xmalloc (strlen(temp_parms->temp_path)+1);
+        strcpy (info->temp_path, temp_parms->temp_path);
     }
-    ct->no_rset_terms = 1;
-    ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
-    ct->rset_terms[0] = temp_parms->rset_term;
 
     return info;
 }
@@ -140,7 +137,6 @@ static RSFD r_open (RSET ct, int flag)
     rfd->info = info;
     r_rewind (rfd);
 
-    rfd->countp = &ct->rset_terms[0]->count;
     *rfd->countp = 0;
     rfd->buf = xmalloc (info->key_size);
 
@@ -190,7 +186,7 @@ static void r_flush (RSFD rfd, int mk)
     if (info->fname && info->fd != -1 && info->dirty)
     {
         size_t count;
-	int r;
+        int r;
         
         if (lseek (info->fd, info->pos_buf, SEEK_SET) == -1)
         {
@@ -253,9 +249,7 @@ static void r_delete (RSET ct)
         xfree (info->fname);
     }
     if (info->temp_path)
-	xfree (info->temp_path);
-    rset_term_destroy (ct->rset_terms[0]);
-    xfree (ct->rset_terms);
+        xfree (info->temp_path);
     xfree (info);
 }
 
@@ -270,7 +264,7 @@ static void r_reread (RSFD rfd)
     if (info->fname)
     {
         size_t count;
-	int r;
+        int r;
 
         info->pos_border = ((struct rset_temp_rfd *)rfd)->pos_cur +
             info->buf_size;
@@ -318,7 +312,7 @@ static int r_count (RSET ct)
     return info->pos_end / info->key_size;
 }
 */
-static int r_read (RSFD rfd, void *buf, int *term_index)
+static int r_read (RSFD rfd, void *buf)
 {
     struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd;
     struct rset_temp_info *info = mrfd->info;
@@ -336,7 +330,6 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
     memcpy (buf, info->buf_mem + (mrfd->pos_cur - info->pos_buf),
             info->key_size);
     mrfd->pos_cur = nc;
-    *term_index = 0;
 
     if (*mrfd->countp == 0 || (*info->cmp)(buf, mrfd->buf) > 1)
     {

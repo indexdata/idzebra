@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.28 2004-08-06 12:55:01 adam Exp $
+/* $Id: rset.h,v 1.29 2004-08-20 14:44:45 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -33,7 +33,6 @@ extern "C" {
 typedef void *RSFD;
 
 typedef struct rset *RSET;
-typedef struct rset_term *RSET_TERM;
 
 struct rset_control
 {
@@ -43,16 +42,16 @@ struct rset_control
     void (*f_close)(RSFD rfd);
     void (*f_delete)(RSET ct);
     void (*f_rewind)(RSFD rfd);
-    int (*f_forward)(RSET ct, RSFD rfd, void *buf,  int *term_index,
+    int (*f_forward)(RSET ct, RSFD rfd, void *buf,
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
     void (*f_pos)(RSFD rfd, double *current, double *total);
        /* returns -1,-1 if pos function not implemented for this type */
-    int (*f_read)(RSFD rfd, void *buf, int *term_index);
+    int (*f_read)(RSFD rfd, void *buf);
     int (*f_write)(RSFD rfd, const void *buf);
 };
 
-int rset_default_forward(RSET ct, RSFD rfd, void *buf, int *term_index, 
+int rset_default_forward(RSET ct, RSFD rfd, void *buf, 
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
 void rset_default_pos(RSFD rfd, double *current, double *total);
@@ -71,14 +70,7 @@ typedef struct rset
     int  flags;
     int  count;
     void *buf;
-    RSET_TERM *rset_terms;
-    int no_rset_terms;
 } rset;
-
-RSET_TERM rset_term_create (const char *name, int length, const char *flags,
-                            int type);
-void rset_term_destroy (RSET_TERM t);
-RSET_TERM rset_term_dup (RSET_TERM t);
 
 #define RSETF_READ       0
 #define RSETF_WRITE      1
@@ -99,16 +91,16 @@ RSET rset_dup (RSET rs);
 /* void rset_rewind(RSET rs); */
 #define rset_rewind(rs, rfd) (*(rs)->control->f_rewind)((rfd))
 
-/* int rset_forward(RSET rs, void *buf, int *indx, void *untilbuf); */
-#define rset_forward(rs, fd, buf, indx, cmpfunc, untilbuf) \
-    (*(rs)->control->f_forward)((rs), (fd), (buf), (indx), (cmpfunc), (untilbuf))
+/* int rset_forward(RSET rs, void *buf, void *untilbuf); */
+#define rset_forward(rs, fd, buf, cmpfunc, untilbuf) \
+    (*(rs)->control->f_forward)((rs), (fd), (buf), (cmpfunc), (untilbuf))
 
 /* int rset_pos(RSET rs, RSFD fd, double *current, double *total); */
 #define rset_pos(rs,fd,cur,tot) \
     (*(rs)->control->f_pos)( (fd),(cur),(tot))
 
-/* int rset_read(RSET rs, void *buf, int *indx); */
-#define rset_read(rs, fd, buf, indx) (*(rs)->control->f_read)((fd), (buf), indx)
+/* int rset_read(RSET rs, void *buf); */
+#define rset_read(rs, fd, buf) (*(rs)->control->f_read)((fd), (buf))
 
 /* int rset_write(RSET rs, const void *buf); */
 #define rset_write(rs, fd, buf) (*(rs)->control->f_write)((fd), (buf))

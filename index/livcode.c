@@ -11,7 +11,7 @@ rights reserved.
 Licensed under the Academic Free License version 1.1.
 http://opensource.org/licenses/academic.php
 
-$Id: livcode.c,v 1.2 2004-08-04 08:35:23 adam Exp $
+$Id: livcode.c,v 1.3 2004-08-20 14:44:46 heikki Exp $
 
 */
 
@@ -590,14 +590,16 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
     int i;
 
     logf (LOG_DEBUG, "livrank begin");
-    si->no_entries = rset->no_rset_terms;
+    /* FIXME - Now that we don't have term counts in rsets, what do we */
+    /* do about this ??? */
+    si->no_entries = 0; /* rset->no_rset_terms; */ /* FIXME ??? */
     si->no_rank_entries = 0;
     si->entries = (struct rank_term_info *)
 	xmalloc (sizeof(*si->entries)*si->no_entries);
     for (i = 0; i < si->no_entries; i++)
     {
-        const char *flags = rset->rset_terms[i]->flags;
-	int g = rset->rset_terms[i]->nn;
+        const char *flags = ""; /* rset->rset_terms[i]->flags; *//* FIXME ???*/
+	int g = 0; /* rset->rset_terms[i]->nn; */ /* FIXME ??? */
         const char *cp = strstr(flags, ",u=");
 
         si->entries[i].rank_flag = 1;

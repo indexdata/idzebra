@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.16 2004-08-06 13:36:23 adam Exp $
+/* $Id: rank1.c,v 1.17 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -101,19 +101,24 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 #if DEBUG_RANK
     yaz_log (LOG_LOG, "rank-1 begin");
 #endif
-    si->no_entries = rset->no_rset_terms;
+    si->no_entries = 0; /* rset->no_rset_terms; */ /* FIXME - what to do here*/
+       /* Now that we don't count term occurrences, ranking will have to */
+       /* different! */
     si->no_rank_entries = 0;
     si->entries = (struct rank_term_info *)
 	xmalloc (sizeof(*si->entries)*si->no_entries);
     for (i = 0; i < si->no_entries; i++)
     {
-	zint g = rset->rset_terms[i]->nn;
+	zint g = 0; /* rset->rset_terms[i]->nn; */ /* FIXME ??? */
 #if DEBUG_RANK
         yaz_log(LOG_LOG, "i=%d flags=%s", i, rset->rset_terms[i]->flags);
 #endif
-	if (!strncmp (rset->rset_terms[i]->flags, "rank,", 5))
+	if (0) /* (!strncmp (rset->rset_terms[i]->flags, "rank,", 5)) */
+               /* FIXME */ /* ??? */
 	{
-            const char *cp = strstr(rset->rset_terms[i]->flags+4, ",w=");
+            const char *cp = "w"; 
+                         /*= strstr(rset->rset_terms[i]->flags+4, ",w=");*/
+                         /* FIXME ??? */
 	    si->entries[i].rank_flag = 1;
             if (cp)
                 si->entries[i].rank_weight = atoi (cp+3);

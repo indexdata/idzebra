@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.119 2004-08-06 13:36:23 adam Exp $
+/* $Id: zserver.c,v 1.120 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -178,7 +178,8 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
     Z_SearchInfoReport *sr;
 
     /* get no of terms for result set */
-    no_terms = zebra_resultSetTerms (zh, r->setname, 0, 0, 0, 0, 0);
+    no_terms = 0; /* zebra_resultSetTerms (zh, r->setname, 0, 0, 0, 0, 0); */
+      /* FIXME - Rsets don't know number of terms no more ??? */
     if (!no_terms)
         return;
 
@@ -208,9 +209,11 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
         Z_Term *term;
         char outbuf[1024];
         size_t len = sizeof(outbuf);
+        /* FIXME - Can we just skip this ??? */
+        /*
         zebra_resultSetTerms (zh, r->setname, i,
                               &count, &type, outbuf, &len);
-        
+        */
         sr->elements[i] = odr_malloc (r->stream, sizeof(**sr->elements));
         sr->elements[i]->subqueryId = 0;
         sr->elements[i]->fullQuery = odr_malloc (r->stream, 

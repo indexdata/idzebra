@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.143 2004-08-06 13:36:23 adam Exp $
+/* $Id: zrpn.c,v 1.144 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1391,9 +1391,6 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     if (rset_no == 0)
     {
 	rset_null_parms parms;
-	
-	parms.rset_term = rset_term_create (termz, -1, rank_type,
-                                            zapt->term->which);
         return rset_create (rset_kind_null, &parms);
     }
     else if (rset_no == 1)
@@ -1455,9 +1452,6 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
     if (rset_no == 0)
     {
 	rset_null_parms parms;
-	
-	parms.rset_term = rset_term_create (termz, -1, rank_type,
-                                            zapt->term->which);
         return rset_create (rset_kind_null, &parms);
     }
     result = rset[0];
@@ -1513,9 +1507,6 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
     if (rset_no == 0)
     {
 	rset_null_parms parms;
-	
-	parms.rset_term = rset_term_create (termz, -1, rank_type,
-                                            zapt->term->which);
         return rset_create (rset_kind_null, &parms);
     }
     result = rset[0];
@@ -1758,9 +1749,6 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
     if (rset_no == 0)
     {
 	rset_null_parms parms;
-	
-	parms.rset_term = rset_term_create (term_dst, -1, rank_type,
-                                            zapt->term->which);
         return rset_create (rset_kind_null, &parms);
     }
     result = rset[0];
@@ -1790,8 +1778,6 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int sys;
     rset_temp_parms parms;
 
-    parms.rset_term = rset_term_create (termz, -1, rank_type,
-                                        zapt->term->which);
     parms.cmp = key_compare_it;
     parms.key_size = sizeof (struct it_key);
     parms.temp_path = res_get (zh->res, "setTmpDir");
@@ -1907,9 +1893,6 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     sks->which = Z_SortKeySpec_null;
     sks->u.null = odr_nullval ();
     sort_sequence->specs[i] = sks;
-
-    parms.rset_term = rset_term_create (termz, -1, rank_type,
-                                        zapt->term->which);
     return rset_create (rset_kind_null, &parms);
 }
 
@@ -1950,20 +1933,12 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     if (grep_info_prepare (zh, 0 /* zapt */, &grep_info, '0', stream))
     {
 	rset_null_parms parms;
-	
-	parms.rset_term = rset_term_create (term, strlen(term),
-					    flags, term_type);
-	parms.rset_term->nn = 0;
 	return rset_create (rset_kind_null, &parms);
     }
 
     if (ord < 0)
     {
 	rset_null_parms parms;
-	
-	parms.rset_term = rset_term_create (term, strlen(term),
-					    flags, term_type);
-	parms.rset_term->nn = 0;
 	return rset_create (rset_kind_null, &parms);
     }
     if (prefix_len)
@@ -2467,13 +2442,12 @@ static void count_set (RSET r, int *count)
     int kno = 0;
     struct it_key key;
     RSFD rfd;
-    int term_index;
 
     logf (LOG_DEBUG, "count_set");
 
     *count = 0;
     rfd = rset_open (r, RSETF_READ);
-    while (rset_read (r, rfd, &key, &term_index))
+    while (rset_read (r, rfd, &key))
     {
 #if IT_KEY_NEW
         if (key.mem[0] != psysno)

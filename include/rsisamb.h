@@ -1,4 +1,4 @@
-/* $Id: rsisamb.h,v 1.2 2002-08-02 19:26:55 adam Exp $
+/* $Id: rsisamb.h,v 1.3 2004-08-20 14:44:45 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -40,7 +40,6 @@ typedef struct rset_isamb_parms
     int key_size;
     ISAMB is;
     ISAMB_P pos;
-    RSET_TERM rset_term;
 } rset_isamb_parms;
 
 #ifdef __cplusplus

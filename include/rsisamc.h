@@ -1,4 +1,4 @@
-/* $Id: rsisamc.h,v 1.7 2002-08-02 19:26:55 adam Exp $
+/* $Id: rsisamc.h,v 1.8 2004-08-20 14:44:45 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -40,7 +40,6 @@ typedef struct rset_isamc_parms
     int key_size;
     ISAMC is;
     ISAMC_P pos;
-    RSET_TERM rset_term;
 } rset_isamc_parms;
 
 #ifdef __cplusplus

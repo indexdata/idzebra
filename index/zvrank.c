@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.9 2004-08-06 12:28:22 adam Exp $
+/* $Id: zvrank.c,v 1.10 2004-08-20 14:44:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -693,7 +693,9 @@ static void *zv_begin(struct zebra_register *reg, void *class_handle, RSET rset)
     zint gocc;
     /**/
     yaz_log(LOG_DEBUG, "zv_begin");
-    veclen=rset->no_rset_terms; /* smaller vector here */
+    veclen= 0 ; /* rset->no_rset_terms;*/  /* smaller vector here */
+    /* FIXME - Now that we don't have term lists in rsets, what do */
+    /* we do here ??? */
     zv_init(rs, ci->rscheme);
     rs->veclen=veclen;
     prn_rs(rs);
@@ -712,7 +714,7 @@ static void *zv_begin(struct zebra_register *reg, void *class_handle, RSET rset)
     /* yaz_log(LOG_DEBUG, "zv_begin_init"); */
     for (i = 0; i < rs->veclen; i++)
     {
-        gocc=rset->rset_terms[i]->nn;
+        gocc= 0; /* rset->rset_terms[i]->nn; */ /* FIXME ??? */
         /* yaz_log(LOG_DEBUG, "zv_begin_init i=%d gocc=%d", i, gocc); */
         rs->qdoc->terms[i].gocc=gocc;
         rs->qdoc->terms[i].locc=1;  /* assume query has no duplicate terms */
