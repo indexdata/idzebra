@@ -1,0 +1,26 @@
+<record>
+  <title>foo</title>
+  <title>bar</title>
+  <author>gryf</author>
+</record>
+
+<record>
+  <title>foo bar</title>
+  <author>gryf</author>
+</record>
+
+<record>
+  <title lang=en>foo gryf</title>
+  <author>grunt</author>
+</record>
+
+<record>
+  <title lang=da>foo grunt</title>
+  <value>bar</value>
+</record>
+
+<record>
+  <title>hamlet</title>
+  <author>foo bar grunt</author>
+</record>
+  
