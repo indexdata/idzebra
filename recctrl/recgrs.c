@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.11  1997-10-27 14:34:00  adam
+ * Revision 1.12  1997-10-29 12:02:22  adam
+ * Using oid_ent_to_oid used instead of the non thread-safe oid_getoidbyent.
+ *
+ * Revision 1.11  1997/10/27 14:34:00  adam
  * Work on generic character mapping depending on "structure" field
  * in abstract syntax file.
  *
@@ -537,12 +540,13 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     {
 	oident oe;
 	Odr_oid *oid;
+	int oidtmp[OID_SIZE];
 
 	oe.proto = PROTO_Z3950;
 	oe.oclass = CLASS_SCHEMA;
 	oe.value = node->u.root.absyn->reference;
 
-	if ((oid = oid_getoidbyent(&oe)))
+	if ((oid = oid_ent_to_oid (&oe, oidtmp)))
 	{
 	    char tmp[128];
 	    data1_handle dh = p->dh;
