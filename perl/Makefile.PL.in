@@ -6,10 +6,10 @@ WriteMakefile(
               'INC'           => "-I../index -I../include @YAZINC@",
               'LIBS'          => "-L../index -lzebra -L../data1 -ldata1 @TCL_LIB@ @YAZLIB@ @ZPERL_LIBS@",
               'OPTIMIZE'      => '-g',
-              'PREREQ_FATAL'  => 1,
+#              'PREREQ_FATAL'  => 1,
               'PREREQ_PM'     => {
                   'Scalar::Util' => '1.0',
-                  'Test::More'   => '0.45',
+                  'Test::More'   => '0.40',
               }
  	
               );
