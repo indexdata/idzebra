@@ -1,5 +1,5 @@
-/* $Id: rsbool.c,v 1.21 2003-03-28 13:53:41 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: rsbool.c,v 1.22 2003-03-31 21:53:40 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
