@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.78  1998-06-08 14:43:17  adam
+ * Revision 1.79  1998-06-22 11:35:09  adam
+ * Minor changes.
+ *
+ * Revision 1.78  1998/06/08 14:43:17  adam
  * Added suport for EXPLAIN Proxy servers - added settings databasePath
  * and explainDatabase to facilitate this. Increased maximum number
  * of databases and attributes in one register.
@@ -1745,6 +1748,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         zh->errCode = 113;
 	return;
     }
+    /* prepare dictionary scanning */
     before = pos-1;
     after = 1+num-pos;
     scan_info_array = odr_malloc (stream, ord_no * sizeof(*scan_info_array));
@@ -1777,6 +1781,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                    scan_handle);
     }
     glist = odr_malloc (stream, (before+after)*sizeof(*glist));
+
+    /* consider terms after main term */
     for (i = 0; i < ord_no; i++)
         ptr[i] = before;
     
@@ -1840,6 +1846,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         *is_partial = 1;
     }
 
+    /* consider terms before main term */
     for (i = 0; i<ord_no; i++)
         ptr[i] = 0;
 
