@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Id: kinput.c,v 1.50 2002-04-23 13:39:10 adam Exp $
+ * $Id: kinput.c,v 1.51 2002-07-12 18:12:22 heikki Exp $
  *
  * Bugs
  *  - Allocates a lot of memory for the merge process, but never releases it.
@@ -528,35 +528,59 @@ int heap_inpd (struct heap_info *hi)
     while (hci.more)
     {
         char this_name[INP_NAME_MAX];
-        ISAMD_P isamd_p, isamd_p2;
         char *dict_info;
+        char dictentry[ISAMD_MAX_DICT_LEN+1];
+        char dictlen;
 
         strcpy (this_name, hci.cur_name);
+        
+        /* print_dict_item (hi->reg->zebra_maps, hci.cur_name); */
+        /*!*/ /* FIXME: depend on isamd-debug */
+
 	assert (hci.cur_name[1]);
         hi->no_diffs++;
         if ((dict_info = dict_lookup (hi->reg->dict, hci.cur_name)))
         {
-            memcpy (&isamd_p, dict_info+1, sizeof(ISAMD_P));
-            isamd_p2 = isamd_append (hi->reg->isamd, isamd_p, isamd_i);
-            if (!isamd_p2)
-            {
-                hi->no_deletions++;
-                if (!dict_delete (hi->reg->dict, this_name))
-                    abort();
-            }
-            else 
+            dictlen=dict_info[0];
+            memcpy (dictentry, dict_info+1, dictlen );
+#ifdef SKIPTHIS
+            logf(LOG_LOG,"dictentry before. len=%d: %d %d %d %d %d %d %d %d %d",
+               dictlen,dictentry[0], dictentry[1], dictentry[2],
+                       dictentry[3], dictentry[4], dictentry[5],
+                       dictentry[6], dictentry[7], dictentry[8]); /*!*/
+#endif
+            dictlen= isamd_append(hi->reg->isamd, dictentry, dictlen, isamd_i);
+             /* logf dictentry after */
+            if (dictlen)
             {
                 hi->no_updates++;
-                if (isamd_p2 != isamd_p)
-                    dict_insert (hi->reg->dict, this_name,
-                                 sizeof(ISAMD_P), &isamd_p2);
+                if ( (dictlen!=dict_info[0]) ||
+                     (0!=memcmp(dictentry, dict_info+1, dictlen)) )
+                {
+                    dict_insert(hi->reg->dict, this_name,
+                                dictlen,dictentry);
+                }
+            }
+            else
+            {
+                hi->no_deletions++;
+                if (!dict_delete (hi->reg->dict, this_name)) 
+                {
+	            logf (LOG_FATAL, "dict_delete failed");
+                    abort();
+                }
             }
         } 
         else
         {
-            isamd_p = isamd_append (hi->reg->isamd, 0, isamd_i);
+            dictlen=0;
+            memset (dictentry, '\0', ISAMD_MAX_DICT_LEN);
+            dictlen= isamd_append(hi->reg->isamd, dictentry, dictlen, isamd_i);
+             /* logf dictentry first */
             hi->no_insertions++;
-            dict_insert (hi->reg->dict, this_name, sizeof(ISAMD_P), &isamd_p);
+            if (dictlen)
+                dict_insert(hi->reg->dict, this_name,
+                                dictlen,dictentry);
         }
     }
     xfree (isamd_i);

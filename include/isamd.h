@@ -1,10 +1,13 @@
 /*
- * Copyright (c) 1995-2000, Index Data.
+ * Copyright (c) 1995-2002, Index Data.
  * See the file LICENSE for details.
  *
- * IsamH is a simple ISAM that can only append to the end of the list.
- * It will need a clean-up process occasionally...  Code stolen from
- * isamc...
+ * Isam-D, Heikki's second Isam. 
+ * The first block of an isam entry contains deltas to the
+ * (possibly long) sequence of keys. Thus small changes consist
+ * only of adding deltas to a small list, and affect only one 
+ * block. Occasionally the block gets full, and needs to be 
+ * merged with the rest.
  * 
  * Heikki Levanto
  *
@@ -53,11 +56,19 @@ ISAMD_M isamd_getmethod (ISAMD_M me);
 
 ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method);
 int isamd_close (ISAMD is);
-ISAMD_P isamd_append (ISAMD is, ISAMD_P pos, ISAMD_I data);
-  /* corresponds to isc_merge */
+/*ISAMD_P isamd_append (ISAMD is, ISAMD_P pos, ISAMD_I data);*/
+int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data);
+
   
   
-ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P pos);
+/* Shortcut: If the isam is relatively short, we store the */
+/* whole thing in the dictionary, and allocate no blocks at all! */
+#define ISAMD_MAX_DICT_LEN 16
+
+/*ISAMD_PP isamd_pp_open (ISAMD is, const char *dictbuf);*/
+ISAMD_PP isamd_pp_open (ISAMD is, const char *dictbuf, int dictlen);
+ISAMD_PP isamd_pp_create (ISAMD is, int cat);
+
 void isamd_pp_close (ISAMD_PP pp);
 int isamd_read_item (ISAMD_PP pp, char **dst);
 int isamd_read_main_item (ISAMD_PP pp, char **dst);

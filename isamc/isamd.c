@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.21 2002-07-11 16:16:00 heikki Exp $ 
+ * $Id: isamd.c,v 1.22 2002-07-12 18:12:21 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -557,9 +557,35 @@ void isamd_pp_close (ISAMD_PP pp)
 }
 
 
-
-ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
+ISAMD_PP isamd_pp_create (ISAMD is, int cat)
+/* creates a pp_buff without data in it. pos=0, cat as given */
 {
+    ISAMD_PP pp = (ISAMD_PP) xmalloc (sizeof(*pp));
+    int sz = is->method->filecat[is->max_cat].bsize;
+
+    pp->numKeys = 0;
+    pp->buf = (char *) xmalloc (sz);
+    memset(pp->buf,'\0',sz); /* clear the buffer, for new blocks */
+    
+    pp->next = 0;
+    pp->size = 0;
+    pp->offset = 0;
+    pp->is = is;
+    pp->diffs=0;
+    pp->diffbuf=0;
+    pp->diffinfo=0;
+    pp->decodeClientData = (*is->method->code_start)(ISAMD_DECODE);
+    pp->cat = cat;
+    pp->pos = 0;
+    is->no_op_new++; 
+    return pp;
+      
+}
+
+
+ISAMD_PP isamd_pp_open (ISAMD is, const char *dictbuf, int dictlen)
+{
+    ISAMD_P ipos;
     ISAMD_PP pp = (ISAMD_PP) xmalloc (sizeof(*pp));
     char *src;
     int sz = is->method->filecat[is->max_cat].bsize;
@@ -568,6 +594,7 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
     char *c_ptr; /* for fake encoding the singlekey */
     char *i_ptr;
     int ofs;
+    int dictnum;
     
     pp->numKeys = 0;
     src = pp->buf = (char *) xmalloc (sz);
@@ -582,36 +609,24 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
     pp->diffinfo=0;
     pp->decodeClientData = (*is->method->code_start)(ISAMD_DECODE);
     
-    if ( is_singleton(ipos) ) 
+    dictnum=*dictbuf;  // numkeys for internals, 0 for externals
+
+    if (0==dictnum)
+    {
+        memcpy(&ipos, dictbuf+1, sizeof(ISAMD_P) );
+    }
+    else /* dictionary block, fake a real one */
     {
        pp->cat=0; 
        pp->pos=0;
        if (is->method->debug > 5)
-          logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
-                pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
-                pp->next, isamd_type(pp->next), isamd_block(pp->next) );
-       singleton_decode(ipos, &singlekey );
-       pp->offset=ISAMD_BLOCK_OFFSET_1;
-       pp->numKeys = 1;
-       ofs=pp->offset+sizeof(int); /* reserve length of diffsegment */
-       singlekey.seqno = singlekey.seqno * 2 + 1; /* make an insert diff */  
-       c_ptr=&(pp->buf[ofs]);
-       i_ptr=(char*)(&singlekey); 
-       (*is->method->code_item)(ISAMD_ENCODE, pp->decodeClientData, 
-                                &c_ptr, &i_ptr);
-       (*is->method->code_reset)(pp->decodeClientData);
-       ofs += c_ptr-&(pp->buf[ofs]);
-       memcpy( &(pp->buf[pp->offset]), &ofs, sizeof(int) );
-       /* since we memset buf earlier, we already have a zero endmark! */
-       pp->size = ofs;
-       if (is->method->debug > 5)
-          logf (LOG_LOG, "isamd_pp_open single %d=%x: %d.%d sz=%d", 
-            ipos,ipos, 
-            singlekey.sysno, singlekey.seqno/2,
-            pp->size );
+          logf (LOG_LOG, "isamd_pp_open dict");
+       pp->numKeys=(unsigned char) dictbuf[0];
+       memcpy(pp->buf+ISAMD_BLOCK_OFFSET_1, dictbuf+1,dictlen-1);
+       pp->size=pp->offset=dictlen+ISAMD_BLOCK_OFFSET_1-1;
        is->no_op_single++;
        return pp;
-    } /* singleton */
+    } /* dict block */
    
     pp->cat = isamd_type(ipos);
     pp->pos = isamd_block(ipos); 
@@ -787,6 +802,8 @@ static char *hexdump(unsigned char *p, int len, char *buff) {
 }
 
 
+#ifdef SKIPTHIS
+  /* needs different arguments, or something */
 void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 {
   ISAMD_PP pp;
@@ -849,9 +866,15 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
   is->method->debug=olddebug;
 } /* dump */
 
+#endif
+
 /*
  * $Log: isamd.c,v $
- * Revision 1.21  2002-07-11 16:16:00  heikki
+ * Revision 1.22  2002-07-12 18:12:21  heikki
+ * Isam-D now stores small entries directly in the dictionary.
+ * Needs more tuning and cleaning...
+ *
+ * Revision 1.21  2002/07/11 16:16:00  heikki
  * Fixed a bug in isamd, failed to store a single key when its bits
  * did not fit into a singleton.
  *

@@ -68,9 +68,11 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     stat_info->no_dict_entries++;
     stat_info->no_dict_bytes += strlen(name);
 
-    assert (*info == sizeof(ISAMS_P));
-    memcpy (&isam_p, info+1, sizeof(ISAMS_P));
-
+    if (!stat_info->zh->reg->isamd)
+    {
+        assert (*info == sizeof(ISAMS_P));
+        memcpy (&isam_p, info+1, sizeof(ISAMS_P));
+    }
 
     if (stat_info->zh->reg->isams)
     {
@@ -136,8 +138,9 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         ISAMD_PP pp;
         int occurx = 0;
 	struct it_key key;
-
-        pp = isamd_pp_open (stat_info->zh->reg->isamd, isam_p);
+        /* printf("[%d: %d %d %d %d %d %d] ", */
+        /*    info[0], info[1], info[2], info[3], info[4], info[5], info[7]);*/
+        pp = isamd_pp_open (stat_info->zh->reg->isamd, info+1, info[0]);
         
         occur = isamd_pp_num (pp);
         while (isamd_pp_read(pp, &key))
@@ -145,6 +148,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
             stat_info->cksum = stat_info->cksum * 65509 + 
                 key.sysno + 11 * key.seqno;
             occurx++;
+            /* printf("%d.%d ", key.sysno, key.seqno); */ /*!*/
             if (-1==firstsys)
             {
                 firstseq=key.seqno;
@@ -158,17 +162,20 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 	           key.sysno, key.seqno,
 	           occur,occurx, pp->offset);
 	}
+        /* printf("\n"); */ /*!*/
+#ifdef SKIPTHIS
         if ( pp->is->method->debug >7 )
 	   logf(LOG_LOG,"item %d=%d:%d says %d keys, counted %d",
 	      isam_p, isamd_type(isam_p), isamd_block(isam_p),
 	      occur, occurx); 
+#endif
         if (occurx != occur) 
           logf(LOG_LOG,"Count error!!! read %d, counted %d", occur, occurx);
         assert (occurx == occur);
-        if ( is_singleton(isam_p) )
-  	    stat_info->no_isam_entries[SINGLETON_TYPE] += occur;
-	else
-	    stat_info->no_isam_entries[isamd_type(isam_p)] += occur;
+        i = pp->cat;
+        if (info[1])
+            i=SINGLETON_TYPE;
+	stat_info->no_isam_entries[i] += occur;
         isamd_pp_close (pp);
     }
     if (stat_info->zh->reg->isamb)
@@ -203,7 +210,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         stat_info->isamb_levels[cat][level] ++;
 	stat_info->no_isam_entries[cat] += occur;
     }
-
+    i=0;
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
         i++;
     ++(stat_info->isam_occurrences[i]);
@@ -376,7 +383,11 @@ void zebra_register_statistics (ZebraHandle zh, int dumpdict)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.31  2002-07-11 16:16:00  heikki
+ * Revision 1.32  2002-07-12 18:12:22  heikki
+ * Isam-D now stores small entries directly in the dictionary.
+ * Needs more tuning and cleaning...
+ *
+ * Revision 1.31  2002/07/11 16:16:00  heikki
  * Fixed a bug in isamd, failed to store a single key when its bits
  * did not fit into a singleton.
  *

@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.26 2002-07-11 16:16:00 heikki Exp $
+ * $Id: merge-d.c,v 1.27 2002-07-12 18:12:21 heikki Exp $
  *
  * bugs
  *  sinleton-bit has to be in the high end, not low, so as not to confuse
@@ -262,6 +262,7 @@ static void filter_backfill(FILTER F, struct it_key *k, int mode)
 
 int is_singleton(ISAMD_P ipos)
 {
+  return 0; /* no singletons any more */
   return ( ipos != 0 ) && ( ipos & SINGLETON_BIT );
 }
 
@@ -269,6 +270,7 @@ int is_singleton(ISAMD_P ipos)
 int singleton_encode(struct it_key *k)
 /* encodes the key into one int. If it does not fit, returns 0 */
 {
+  return 0; /* no more singletons */
   if ( (k->sysno & DEC_MASK(DEC_SYSBITS) ) != k->sysno )
     return 0;  /* no room dor sysno */
   if ( (k->seqno & DEC_MASK(DEC_SYSBITS) ) != k->seqno )
@@ -784,8 +786,9 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
 
 static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
                    struct it_key *p_key,  /* the data item that didn't fit*/
-              /*     ISAMD_I data) */     /* more input data comes here */
-                   FILTER filt)           /* more input data arriving here */
+                   FILTER filt,           /* more input data arriving here */
+                   char *dictentry,       /* the thin in the dictionary */
+                   int dictlen)           /* and its size */
 {
   int diffidx;  
   int killblk=0;
@@ -794,7 +797,7 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   int r_more = 1;
   ISAMD_PP pp;
   ISAMD_PP readpp=firstpp;
-  int retval=0;
+  int retpos=0;
   int diffcat = firstpp->cat;  /* keep the category of the diffblock even */
                                /* if it is going to be empty now. */
                                /* Alternative: Make it the minimal, and */
@@ -825,7 +828,6 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   
 
   r_ptr= (char *) &r_key;
-/*  r_more = isamd_read_item_merge( readpp, &r_ptr, p_key, data); */
   r_more = isamd_read_item_merge( readpp, &r_ptr, p_key, filt);
   if (!r_more)  
   { /* oops, all data has been deleted! what to do??? */
@@ -840,13 +842,14 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
 
 
   /* set up the new blocks for simple writing */
-  firstpp=isamd_pp_open(readpp->is,isamd_addr(0, diffcat));
+  /* firstpp=isamd_pp_open(readpp->is,isamd_addr(0, diffcat)); */
+  firstpp=isamd_pp_create(readpp->is, diffcat);
   firstpp->pos=isamd_alloc_block(firstpp->is,diffcat);
   if (readpp->is->method->debug >3)   
       logf(LOG_LOG,"isamd_merge: allocated new firstpp %d=%d:%d",
           isamd_addr(firstpp->pos,firstpp->cat), firstpp->cat, firstpp->pos );
   
-  pp=isamd_pp_open(readpp->is,isamd_addr(0,readpp->is->max_cat) );
+  pp=isamd_pp_create(readpp->is,readpp->is->max_cat );
   pp->offset=pp->size=ISAMD_BLOCK_OFFSET_N;
   
   while (r_more)
@@ -899,10 +902,17 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   firstpp->size = firstpp->offset = ISAMD_BLOCK_OFFSET_1;  /* nothing there */
   memset(firstpp->buf,'\0',firstpp->is->method->filecat[firstpp->cat].bsize);
   save_first_pp(firstpp);
-  retval = isamd_addr(firstpp->pos, firstpp->cat);
+  retpos = isamd_addr(firstpp->pos, firstpp->cat);
   isamd_pp_close(firstpp);
 
-  return retval; 
+  /* Create the dict entry */
+  /*!*/ /* it could be this could go in the dict as well, if there's */
+        /* been really many deletes. Somehow I suspect that is not the */
+        /* case. FIXME: Collect statistics and see if needed */
+  dictentry[0]=0; /* mark as a real isam */
+  memcpy(dictentry+1, &retpos, sizeof(ISAMD_P));
+  dictlen=sizeof(ISAMD_P)+1;
+  return dictlen;
   
 } /* merge */
 
@@ -917,10 +927,10 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
 
 static int append_diffs(
       ISAMD is, 
-      ISAMD_P ipos, 
-      /*ISAMD_I data)*/
+      char *dictentry, int dictlen,
       FILTER filt)
 {
+   ISAMD_P ipos;
    struct it_key i_key;    /* one input item */
    char *i_item = (char *) &i_key;  /* same as chars */
    char *i_ptr=i_item;
@@ -936,26 +946,31 @@ static int append_diffs(
    char *c_ptr = codebuff;
    int codelen;
    int merge_rc;
-   int retval=0;
+   ISAMD_P retpos;
+   int dsize;
 
-   if (0==ipos)
+   if (0==dictlen)
    {
-       firstpp=isamd_pp_open(is, isamd_addr(0,0) );
+       firstpp=isamd_pp_create(is, 0 );
        firstpp->size=firstpp->offset=ISAMD_BLOCK_OFFSET_1;
          /* create in smallest category, will expand later */
        ++(is->no_fbuilds);
    } 
    else
    {
-       firstpp=isamd_pp_open(is, ipos);
+       firstpp=isamd_pp_open(is, dictentry, dictlen);
+       if (dictentry[0] )
+          ipos=0;
+       else 
+           memcpy(&ipos,dictentry+1,sizeof(ISAMD_P));
        ++(is->no_appds);
    }
 
    if (is->method->debug >2) 
-      logf(LOG_LOG,"isamd_appd: Start ipos=%d=%d:%d n=%d=%d:%d nk=%d",
+      logf(LOG_LOG,"isamd_appd: Start ipos=%d=%d:%d n=%d=%d:%d nk=%d sz=%d",
         ipos, isamd_type(ipos), isamd_block(ipos),
         firstpp->next, isamd_type(firstpp->next), isamd_block(firstpp->next),
-        firstpp->numKeys);
+        firstpp->numKeys, firstpp->size);
    maxsize = is->method->filecat[firstpp->cat].bsize; 
    
    difflenidx = diffidx = firstpp->size;
@@ -1013,7 +1028,7 @@ static int append_diffs(
              if (is->method->debug >9)  //!!!!!
                 logf(LOG_LOG,"isamd_appd: going to merge with m=%d %d.%d",
                      i_mode, i_key.sysno, i_key.seqno);
-             merge_rc = merge (firstpp, &i_key, filt);
+             merge_rc = merge (firstpp, &i_key, filt, dictentry, dictlen);
              if (0!=merge_rc)
                return merge_rc;  /* merge handled them all ! */
              assert(!"merge returned zero ??");
@@ -1061,13 +1076,40 @@ static int append_diffs(
    while ( (difflenidx-diffidx<=sizeof(int)+1) && (difflenidx<maxsize))
      firstpp->buf[difflenidx++]='\0';
 
-   if (0==firstpp->pos)  /* need to (re)alloc the block */
-      firstpp->pos = isamd_alloc_block(is, firstpp->cat);
+   if (firstpp->numKeys==0)
+   { 
+       /* FIXME: Release blocks that may be allocated !!! */
+       return 0; /* don't bother storing this! */
+   }
 
-   retval = save_first_pp( firstpp );
-   isamd_pp_close(firstpp);
+   dsize=diffidx-ISAMD_BLOCK_OFFSET_1;
+   /* logf(LOG_LOG,"!! nxt=%d diffidx=%d ds=%d", 
+           firstpp->next, diffidx, dsize);  */
+
+   if ( (0==firstpp->next) && (dsize <ISAMD_MAX_DICT_LEN))
+   {
+        /* logf(LOG_LOG,"building a dict entry!!"); */
+        assert(firstpp->numKeys < 128);
+        assert(firstpp->numKeys >0);
+        /* actually, 255 is good enough, but sign mismatches... */
+        /* in real life, 4-5 is as much as we can hope for, as long */
+        /* as ISAMD_MAX_DICT_LEN is reasonably small (8) */
+        dictentry[0]=firstpp->numKeys;
+        memcpy(dictentry+1, firstpp->buf+ISAMD_BLOCK_OFFSET_1, dsize);
+        dictlen=dsize+1;
+   }
+   else 
+   {
+       if (0==firstpp->pos)  /* need to (re)alloc the block */
+           firstpp->pos = isamd_alloc_block(is, firstpp->cat);
+       retpos = save_first_pp( firstpp );
+       isamd_pp_close(firstpp);
+       dictentry[0]=0; /* mark as a real isam */
+       memcpy(dictentry+1, &retpos, sizeof(ISAMD_P));
+       dictlen=sizeof(ISAMD_P)+1;
+   }
     
-   return retval;
+   return dictlen;
 } /* append_diffs */
 
 
@@ -1077,24 +1119,23 @@ static int append_diffs(
  * isamd_append itself
  *************************************************************/
 
-ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
+int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
+/*ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data) */
 {
    FILTER F = filter_open(is,data);
-   ISAMD_P rc=0;
+   int newlen=0;
 
-   int olddebug= is->method->debug;
-   if (ipos == 7320)
-     is->method->debug = 99;  /*!*/
-     
    if ( filter_isempty(F) ) /* can be, if del-ins of the same */
    {
       if (is->method->debug >3) 
-         logf(LOG_LOG,"isamd_appd: nothing to do for %d=",ipos);
+         logf(LOG_LOG,"isamd_appd: nothing to do ");
       filter_close(F);
       ++(is->no_non);
-      return ipos; /* without doing anything at all */
+      return dictlen; /* without doing anything at all */
    }
 
+#ifdef SKIPTHIS 
+   /* The old way to handle singletons */
    if ( ( 0==ipos) && filter_only_one(F) )
    {
       struct it_key k;
@@ -1115,20 +1156,14 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
         is->no_singles++;
       assert ( (rc==0) || is_singleton(rc) );
    }
-   if ( 0==rc) /* either not single, or it did not fit */
-   {
-      rc = append_diffs(is,ipos,F); 
-      assert ( ! is_singleton(rc) ); 
-        /* can happen if we run out of bits, so that block numbers overflow */
-        /* to SINGLETON_BIT */
-   }
+   newlen = append_diffs(is,ipos,F); 
+#endif
+   newlen = append_diffs(is,dictentry,dictlen,F); 
    filter_close(F);
 
    if (is->method->debug >2) 
-      logf(LOG_LOG,"isamd_appd: ret %d=%x (%d=%x)",
-        rc,rc,ipos,ipos);
-   is->method->debug=olddebug; /*!*/
-   return rc;
+      logf(LOG_LOG,"isamd_appd: ret len=%d ", newlen);
+   return newlen;
 } /*  isamd_append */
 
 
@@ -1139,7 +1174,11 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.26  2002-07-11 16:16:00  heikki
+ * Revision 1.27  2002-07-12 18:12:21  heikki
+ * Isam-D now stores small entries directly in the dictionary.
+ * Needs more tuning and cleaning...
+ *
+ * Revision 1.26  2002/07/11 16:16:00  heikki
  * Fixed a bug in isamd, failed to store a single key when its bits
  * did not fit into a singleton.
  *

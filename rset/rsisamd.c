@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisamd.c,v $
- * Revision 1.2  2002-04-05 08:46:26  adam
+ * Revision 1.3  2002-07-12 18:12:22  heikki
+ * Isam-D now stores small entries directly in the dictionary.
+ * Needs more tuning and cleaning...
+ *
+ * Revision 1.2  2002/04/05 08:46:26  adam
  * Zebra with full functionality
  *
  * Revision 1.1  2001/01/16 19:17:18  heikki
@@ -50,8 +54,10 @@ struct rset_pp_info {
 };
 
 struct rset_isamd_info {
-    ISAMD   is;
-    ISAMD_P pos;
+    ISAMD   is; 
+    /* ISAMD_P pos; */
+    char dictentry[ISAMD_MAX_DICT_LEN];
+    int dictlen;
     struct rset_pp_info *ispt_list;
 };
 
@@ -63,7 +69,9 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     ct->flags |= RSET_FLAG_VOLATILE;
     info = (struct rset_isamd_info *) xmalloc (sizeof(*info));
     info->is = pt->is;
-    info->pos = pt->pos;
+    /*info->pos = pt->pos;*/
+    info->dictlen = pt->dictlen;
+    memcpy(info->dictentry, pt->dictentry, pt->dictlen);
     info->ispt_list = NULL;
     ct->no_rset_terms = 1;
     ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
@@ -85,7 +93,7 @@ RSFD r_open (RSET ct, int flag)
     ptinfo = (struct rset_pp_info *) xmalloc (sizeof(*ptinfo));
     ptinfo->next = info->ispt_list;
     info->ispt_list = ptinfo;
-    ptinfo->pt = isamd_pp_open (info->is, info->pos);
+    ptinfo->pt = isamd_pp_open (info->is, info->dictentry, info->dictlen);
     ptinfo->info = info;
     if (ct->rset_terms[0]->nn < 0)
 	ct->rset_terms[0]->nn = isamd_pp_num (ptinfo->pt);

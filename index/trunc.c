@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Id: trunc.c,v 1.24 2002-04-16 22:31:42 adam Exp $
+ * $Id: trunc.c,v 1.25 2002-07-12 18:12:22 heikki Exp $
  *
  */
 #include <stdio.h>
@@ -319,7 +319,9 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                         key_compare_it);
         for (i = to-from; --i >= 0; )
         {
-            ispt[i] = isamd_pp_open (zi->reg->isamd, isam_p[from+i]);
+            logf(LOG_FATAL, "isam_d does not (currently) support truncs");
+            abort();
+            /*ispt[i] = isamd_pp_open (zi->reg->isamd, isam_p[from+i]); */
             if (isamd_pp_read (ispt[i], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, i);
             else
@@ -578,7 +580,9 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
         {
             rset_isamd_parms parms;
 
-            parms.pos = *isam_p;
+            logf(LOG_FATAL, "isam_d does not (currently) support truncs");
+            abort();
+            /* parms.pos = *isam_p; */
             parms.is = zi->reg->isamd;
 	    parms.rset_term = rset_term_create (term, length, flags);
             return rset_create (rset_kind_isamd, &parms);
