@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.3  1994-08-18 09:43:51  adam
+ * Revision 1.4  1994-08-18 10:02:01  adam
+ * Module alexpath moved from res.c to alexpath.c. Minor changes in res-test.c
+ *
+ * Revision 1.3  1994/08/18  09:43:51  adam
  * Development of resource manager. Only missing is res_write.
  *
  * Revision 1.2  1994/08/18  08:23:26  adam
@@ -18,21 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <util.h>
-
-const char *alex_path (const char *name)
-{
-    static char path[256];
-    char *alex_prefix;
-
-    if (!(alex_prefix = getenv ("ALEXPREFIX")))
-        alex_prefix = "./";
-    
-    if (*alex_prefix && alex_prefix[strlen(alex_prefix)-1] == '/')
-        sprintf (path, "%s%s", alex_prefix, name);
-    else
-        sprintf (path, "%s/%s", alex_prefix, name);
-    return path;
-}
 
 static void reread (Res r)
 {
