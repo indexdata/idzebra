@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.12  1995-09-28 09:52:11  adam
+ * Revision 1.13  1995-10-06 14:38:06  adam
+ * New result set method: r_score.
+ * Local no (sysno) and score is transferred to retrieveCtrl.
+ *
+ * Revision 1.12  1995/09/28  09:52:11  adam
  * xfree/xmalloc used everywhere.
  *
  * Revision 1.11  1995/09/18  14:17:56  adam
@@ -61,6 +65,7 @@ static void r_rewind (RSFD rfd);
 static int r_count (rset_control *ct);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
+static int r_score (RSFD rfd, int *score);
 
 static const rset_control control = 
 {
@@ -73,7 +78,8 @@ static const rset_control control =
     r_rewind,
     r_count,
     r_read,
-    r_write
+    r_write,
+    r_score
 };
 
 const rset_control *rset_kind_temp = &control;
@@ -318,3 +324,8 @@ static int r_write (RSFD rfd, const void *buf)
     return 1;
 }
 
+static int r_score (RSFD rfd, int *score)
+{
+    *score = -1;
+    return -1;
+}

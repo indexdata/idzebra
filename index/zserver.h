@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.8  1995-10-06 13:52:06  adam
+ * Revision 1.9  1995-10-06 14:38:01  adam
+ * New result set method: r_score.
+ * Local no (sysno) and score is transferred to retrieveCtrl.
+ *
+ * Revision 1.8  1995/10/06  13:52:06  adam
  * Bug fixes. Handler may abort further scanning.
  *
  * Revision 1.7  1995/10/06  10:43:57  adam
@@ -42,6 +46,7 @@ typedef struct {
 
 typedef struct {
     int sysno;
+    int score;
 } ZServerSetSysno;
 
 typedef struct ZServerSet_ {

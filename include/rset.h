@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.7  1995-09-07 13:58:08  adam
+ * Revision 1.8  1995-10-06 14:37:53  adam
+ * New result set method: r_score.
+ * Local no (sysno) and score is transferred to retrieveCtrl.
+ *
+ * Revision 1.7  1995/09/07  13:58:08  adam
  * New parameter: result-set file descriptor (RSFD) to support multiple
  * positions within the same result-set.
  * Boolean operators: and, or, not implemented.
@@ -49,6 +53,7 @@ typedef struct rset_control
     int (*f_count)(struct rset_control *ct);
     int (*f_read)(RSFD rfd, void *buf);
     int (*f_write)(RSFD rfd, const void *buf);
+    int (*f_score)(RSFD rfd, int *score);
 } rset_control;
 
 typedef struct rset
@@ -77,5 +82,8 @@ void rset_delete(RSET rs);
 
 /* int rset_write(RSET rs, const void *buf); */
 #define rset_write(rs, fd, buf) ((*(rs)->control->f_write)((fd), (buf)))
+
+/* int rset_score(RSET rs, int *buf); */
+#define rset_score(rs, fd, score) ((*(rs)->control->f_score)((fd), (score)))
 
 #endif

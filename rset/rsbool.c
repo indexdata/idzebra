@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.5  1995-09-08 14:52:41  adam
+ * Revision 1.6  1995-10-06 14:38:05  adam
+ * New result set method: r_score.
+ * Local no (sysno) and score is transferred to retrieveCtrl.
+ *
+ * Revision 1.5  1995/09/08  14:52:41  adam
  * Work on relevance feedback.
  *
  * Revision 1.4  1995/09/08  08:54:04  adam
@@ -39,6 +43,7 @@ static int r_read_and (RSFD rfd, void *buf);
 static int r_read_or (RSFD rfd, void *buf);
 static int r_read_not (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
+static int r_score (RSFD rfd, int *score);
 
 static const rset_control control_and = 
 {
@@ -51,7 +56,8 @@ static const rset_control control_and =
     r_rewind,
     r_count,
     r_read_and,
-    r_write
+    r_write,
+    r_score
 };
 
 static const rset_control control_or = 
@@ -65,7 +71,8 @@ static const rset_control control_or =
     r_rewind,
     r_count,
     r_read_or,
-    r_write
+    r_write,
+    r_score
 };
 
 static const rset_control control_not = 
@@ -79,7 +86,8 @@ static const rset_control control_not =
     r_rewind,
     r_count,
     r_read_not,
-    r_write
+    r_write,
+    r_score
 };
 
 
@@ -320,3 +328,10 @@ static int r_write (RSFD rfd, const void *buf)
     logf (LOG_FATAL, "bool set type is read-only");
     return -1;
 }
+
+static int r_score (RSFD rfd, int *score)
+{
+    *score = -1;
+    return -1;
+}
+

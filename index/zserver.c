@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.12  1995-10-06 13:52:06  adam
+ * Revision 1.13  1995-10-06 14:38:00  adam
+ * New result set method: r_score.
+ * Local no (sysno) and score is transferred to retrieveCtrl.
+ *
+ * Revision 1.12  1995/10/06  13:52:06  adam
  * Bug fixes. Handler may abort further scanning.
  *
  * Revision 1.11  1995/10/06  10:43:57  adam
@@ -125,7 +129,7 @@ static int record_read (int fd, char *buf, size_t count)
     return read (fd, buf, count);
 }
 
-static int record_fetch (ZServerInfo *zi, int sysno, ODR stream,
+static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
                           oid_value input_format, oid_value *output_format,
                           char **rec_bufp, int *rec_lenp)
 {
@@ -158,6 +162,9 @@ static int record_fetch (ZServerInfo *zi, int sysno, ODR stream,
         logf (LOG_FATAL|LOG_ERRNO, "Retrieve: Open record file %s", fname);
         exit (1);
     }
+    logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
+    retrieveCtrl.localno = sysno;
+    retrieveCtrl.score = score;
     retrieveCtrl.odr = stream;
     retrieveCtrl.readf = record_read;
     retrieveCtrl.input_format = retrieveCtrl.output_format = input_format;
@@ -197,7 +204,8 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
         logf (LOG_DEBUG, "Out of range. pos=%d", q->number);
         return &r;
     }
-    r.errcode = record_fetch (&server_info, records[0].sysno, q->stream,
+    r.errcode = record_fetch (&server_info, records[0].sysno,
+                              records[0].score, q->stream,
                               q->format, &r.format, &r.record, &r.len);
     return &r;
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.8  1995-10-02 15:43:35  adam
+ * Revision 1.9  1995-10-06 14:37:53  adam
+ * New result set method: r_score.
+ * Local no (sysno) and score is transferred to retrieveCtrl.
+ *
+ * Revision 1.8  1995/10/02  15:43:35  adam
  * Extract uses file descriptors instead of FILE pointers.
  *
  * Revision 1.7  1995/10/02  15:18:09  adam
@@ -67,6 +71,8 @@ struct recRetrieveCtrl {
     int        fd;                     /* File descriptor and read function */
     int       (*readf)(int fd, char *buf, size_t count);
     oid_value  input_format;           /* Preferred record syntax */
+    int        localno;                /* local id of record */
+    int        score;                  /* score 0-1000 or -1 if none */
     
     /* response */
     oid_value  output_format;
