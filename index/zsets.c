@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.3  1995-09-06 16:11:19  adam
+ * Revision 1.4  1995-09-07 13:58:36  adam
+ * New parameter: result-set file descriptor (RSFD) to support multiple
+ * positions within the same result-set.
+ * Boolean operators: and, or, not implemented.
+ * Result-set references.
+ *
+ * Revision 1.3  1995/09/06  16:11:19  adam
  * Option: only one word key per file.
  *
  * Revision 1.2  1995/09/06  10:33:04  adam
@@ -63,6 +69,7 @@ ZServerRecord *resultSetRecordGet (ZServerInfo *zi, const char *name,
     int position = 0;
     int psysno = 0;
     struct it_key key;
+    RSFD rfd;
 
     if (!(sset = resultSetGet (zi, name)))
         return NULL;
@@ -70,8 +77,8 @@ ZServerRecord *resultSetRecordGet (ZServerInfo *zi, const char *name,
         return NULL;
     logf (LOG_DEBUG, "resultSetRecordGet");
     sr = xmalloc (sizeof(*sr) * num);
-    rset_open (rset, 0);
-    while (rset_read (rset, &key))
+    rfd = rset_open (rset, 0);
+    while (rset_read (rset, rfd, &key))
     {
         if (key.sysno != psysno)
         {
@@ -121,7 +128,7 @@ ZServerRecord *resultSetRecordGet (ZServerInfo *zi, const char *name,
             }
         }
     }
-    rset_close (rset);
+    rset_close (rset, rfd);
     while (num_i < num)
     {
         sr[num_i].buf = NULL;

@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.6  1995-09-06 16:11:18  adam
+ * Revision 1.7  1995-09-07 13:58:36  adam
+ * New parameter: result-set file descriptor (RSFD) to support multiple
+ * positions within the same result-set.
+ * Boolean operators: and, or, not implemented.
+ * Result-set references.
+ *
+ * Revision 1.6  1995/09/06  16:11:18  adam
  * Option: only one word key per file.
  *
  * Revision 1.5  1995/09/06  10:33:04  adam
@@ -34,6 +40,7 @@
 #include <rsisam.h>
 #include <rstemp.h>
 #include <rsnull.h>
+#include <rsbool.h>
 
 static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
 {
@@ -60,85 +67,41 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
     return rset_create (rset_kind_isam, &parms);
 }
 
-static RSET rpn_search_and (ZServerInfo *zi, RSET r_l, RSET r_r)
-{
-    struct it_key k1, k2;
-    RSET r_dst;
-    int i1, i2;
-    rset_open (r_l, 0);
-    rset_open (r_r, 0);
-    r_dst = rset_create (rset_kind_temp, NULL);
-    rset_open (r_dst, 1);
-    
-    i1 = rset_read (r_l, &k1);
-    i2 = rset_read (r_r, &k2);
-    while (i1 && i2)
-    {
-        if (k1.sysno > k2.sysno)
-            i2 = rset_read (r_r, &k2);
-        else if (k1.sysno < k2.sysno)
-            i1 = rset_read (r_l, &k1);
-        else if (!(i1 = key_compare_x (&k1, &k2)))
-        {
-            rset_write (r_dst, &k1);
-            i1 = rset_read (r_l, &k1);
-            i2 = rset_read (r_r, &k2);
-        }
-        else if (i1 > 0)
-        {
-            rset_write (r_dst, &k2);
-            i2 = rset_read (r_r, &k2);
-        }
-        else
-        {
-            rset_write (r_dst, &k1);
-            i1 = rset_read (r_l, &k1);
-        }
-    } 
-    rset_close (r_dst);
-    return r_dst;
-}
-
-static RSET rpn_search_or (ZServerInfo *zi, RSET r_l, RSET r_r)
-{
-    return r_l;
-}
-
-static RSET rpn_search_not (ZServerInfo *zi, RSET r_l, RSET r_r)
-{
-    return r_l;
-}
-
 static RSET rpn_search_ref (ZServerInfo *zi, Z_ResultSetId *resultSetId)
 {
-    return NULL;
+    ZServerSet *s;
+
+    if (!(s = resultSetGet (zi, resultSetId)))
+        return rset_create (rset_kind_null, NULL);
+    return s->rset;
 }
 
 static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs)
 {
-    RSET r;
+    RSET r = NULL;
     if (zs->which == Z_RPNStructure_complex)
     {
-        RSET r_l, r_r;
+        rset_bool_parms bool_parms;
 
-        r_l = rpn_search_structure (zi, zs->u.complex->s1);
-        r_r = rpn_search_structure (zi, zs->u.complex->s2);
+        bool_parms.rset_l = rpn_search_structure (zi, zs->u.complex->s1);
+        bool_parms.rset_r = rpn_search_structure (zi, zs->u.complex->s2);
+        bool_parms.key_size = sizeof(struct it_key);
+        bool_parms.cmp = key_compare;
 
         switch (zs->u.complex->operator->which)
         {
         case Z_Operator_and:
-            rset_delete (r_r);
+            r = rset_create (rset_kind_and, &bool_parms);
             break;
         case Z_Operator_or:
-            rset_delete (r_r);
+            r = rset_create (rset_kind_or, &bool_parms);
             break;
         case Z_Operator_and_not:
-            rset_delete (r_r);
+            r = rset_create (rset_kind_not, &bool_parms);
             break;
         default:
             assert (0);
         }
-        r = r_l;
     }
     else if (zs->which == Z_RPNStructure_simple)
     {
@@ -172,6 +135,7 @@ static RSET rpn_save_set (RSET r, int *count)
 #endif
     int psysno = 0;
     struct it_key key;
+    RSFD rfd;
 
     logf (LOG_DEBUG, "rpn_save_set");
     *count = 0;
@@ -181,8 +145,8 @@ static RSET rpn_save_set (RSET r, int *count)
     rset_open (d, 1);
 #endif
 
-    rset_open (r, 0);
-    while (rset_read (r, &key))
+    rfd = rset_open (r, 0);
+    while (rset_read (r, rfd, &key))
     {
         if (key.sysno != psysno)
         {
@@ -193,7 +157,7 @@ static RSET rpn_save_set (RSET r, int *count)
         rset_write (d, &key);
 #endif
     }
-    rset_close (r);
+    rset_close (r, rfd);
 #if 0
     rset_close (d);
 #endif
