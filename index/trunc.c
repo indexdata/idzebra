@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.7  1997-09-29 09:07:29  adam
+ * Revision 1.8  1997-10-31 12:34:27  adam
+ * Bug fix: memory leak.
+ *
+ * Revision 1.7  1997/09/29 09:07:29  adam
  * Minor change.
  *
  * Revision 1.6  1997/09/22 12:39:06  adam
@@ -138,6 +141,7 @@ static void heap_close (struct trunc_info *ti)
     xfree (ti->heap);
     xfree (ti->swapbuf);
     xfree (ti->tmpbuf);
+    xfree (ti->buf);
     xfree (ti);
 }
 
