@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.107 2003-10-07 09:18:43 adam Exp $
+/* $Id: main.c,v 1.108 2003-11-24 12:58:00 mike Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -62,7 +62,7 @@ int main (int argc, char **argv)
 #if HAVE_SYS_TIMES_H
     struct tms tms1, tms2;
     struct timeval start_time, end_time;
-    long usec;
+    double usec;
 #endif
 #ifndef WIN32
     char nbuf[100];
@@ -312,11 +312,11 @@ int main (int argc, char **argv)
     if (trans_started)
     {
         gettimeofday(&end_time, 0);
-        usec = (end_time.tv_sec - start_time.tv_sec) * 1000000L +
+        usec = (end_time.tv_sec - start_time.tv_sec) * 1000000.0 +
 	    end_time.tv_usec - start_time.tv_usec;
         times(&tms2);
         yaz_log (LOG_LOG, "zebraidx times: %5.2f %5.2f %5.2f",
-		(double) usec / 1000000.0,
+		usec / 1000000,
 		(double) (tms2.tms_utime - tms1.tms_utime)/100,
 		(double) (tms2.tms_stime - tms1.tms_stime)/100);
     }
