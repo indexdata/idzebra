@@ -1,0 +1,201 @@
+This is an experimental addon (or patch) for the Zebra server
+to faciliate ranked searches with the Vector Space Model.
+To install the addon, copy the file 'rank1.c' in the index
+directory of the Zebra distribution to 'rank1.c.orig' and 
+replace 'rank1.c' with 'zrank1.c'. Then recompile Zebra.
+(make sure you link with the math library, so add the linker option
+'-lm'  if necessary).
+
+
+Introduction:
+=============
+In the vector space model, queries and documents are
+represented as vectors of term weights. Positive weights 
+characterise terms assigned to a document while a zero weight 
+is used for terms that do not occur in the document.
+The most popular method to obtain term weights is the tf-idf 
+weighting schema, where the weight of a term is calculated as
+the product of a term factor (tf) and an inverse document factor
+(idf). Combining the tf and idf factors (usually the product) 
+and normalizing them yields a tf-idf vector (or term weight vector) 
+modelling a document (or query).
+The similarity score between a query and a document (or the
+similarity between two documents) depends on the term weight vectors and is 
+then computed by a similarity function combining these two 
+weight vectors (most often the cosine between the vectors is computed).
+
+Weighting functions:
+====================
+1) term frequency functions:
+   locc denotes the in document frequency of a term (local frequency)
+
+   none ('n'):      tf = locc
+   binary ('b'):    tf = 1
+   max_norm ('m'):  tf = locc/max_locc
+   aug_norm ('a'):  tf = K + (1 - K) * (locc/max_locc)  ; K = 0.5
+   square ('s'):    tf = locc * locc
+   log ('l'):       tf = log(locc) + 1
+
+2) inverse document functions:
+   gocc is the database frequency of a term (global frequncy)
+   num_docs is the number of documents in the database
+
+   none ('n'):      idf = 1
+   tfidf ('t'):     idf = log (num_docs / gocc)
+   prob ('p'):      idf = log ((num_docs - gocc) / gocc)
+   freq ('f'):      idf = 1 / n
+   squared ('s'):   idf = log (num_docs / gocc) ^ 2
+
+3) weight normalisation functions:
+   wt = tf * idf
+
+   none ('n'):      nwt = wt
+   sum ('s'):       nwt = wt / sum ( wt_i )
+   cosine ('c'):    nwt = wt / sqrt ( sum ( wt_i ^2 ))    
+   fourth ('f'):    nwt = wt / sum ( wt_i ^ 4 )
+   max ('m'):       nwt = wt / max ( wt_i )
+
+
+For example, the string 'atc' indicates that the 
+augmented normalized term frequency ('a'), the 
+usual tfidf weight ('t') and cosine normalisation ('c') is to be
+used for term weight caomputation.
+
+*) similarity function:
+   - cosine ('c')
+   others are (TODO, not yet implemented): 
+   - pivoted unqiue normalisation ('p')
+   - jaccard ('j')
+   - dice ('d')
+   - minkwoski ('m')
+
+(Note: at the moment, there are 6 * 5 * 5 * 6 * 5 * 5 (* 1)
+ranking schemes selectable, but not all of them work).
+
+
+Example query (for yaz-client):
+===============================
+  find @attr 1=4 @attr 2=102 @attr 4=105 "where do i find literature on medical databases"
+Relation attribute 102 indicates that the results should be ranked by relevance
+and the query should be treated as free text (or wordlist).
+
+
+
+Pitfalls and problems:
+======================
+- The name of the ranking schema should be read from the Zebra 
+  configuration file.
+- Some weighting schemas require values to be calculated
+  that are assigned constant values in this addon.
+  For example, the db_f_max is the maximum frequency of a term 
+  in the database.
+- Ranking (or weight computation) is done online, e. g. immediately before
+  records are retrieved. A faster way to get term weights would be to store 
+  them within inverted files. Adding this feature to Zebra would require major 
+  changes for the indexing process (as far as I can tell).
+- Stopwords are frequent words considered not useful for indexing
+  documents (for example, "and", "the", "above" are common stopwords).
+  Often these words do not carry semantic information. A stopword
+  list might considerably reduce the size of the index and will probably
+  enhance precision for natural language queries. In Zebra, stopword removal
+  is possible with input filters.
+- Stemming is often used to map various morphologic forms of a
+  concept to a single representation (for example, "countries" and
+  "country" should both be stemmed to "country"). Using stemming for indexing
+  is used to increase recall. In Zebra, stemming should be part of input 
+  filtering. 
+
+
+Literature:
+===========
+* Sebastian Hammer and Adam Dickmeiss and Heikki Levanto and Mike Taylor,
+  Zebra - user's guide and reference,
+  IndexData, 1995-2003.
+
+* Gerard Salton and Chris Buckley,
+  "Term Weighting Approaches in Automatic Text Retrieval",
+  Dept. of Computer Science, Cornell University,
+  TR 87-881, November 1987.
+  Also appeared in: 
+  Information Processing and Management, vol. 24, no. 5, pp. 513--523, 1988.
+
+* Justin Zobel and Alistair Moffat,
+  Exploring the Similarity Space,
+  SIGIR Forum 32(1), p. 18-34, 1998.
+  http://citeseer.nj.nec.com/zobel98exploring.html
+
+* SMART related documents:
+  http://www.dcs.gla.ac.uk/ftp/pub/Bruin/HTML/SMART.HTM
+
+
+
+Nomenclature / glossary:
+========================
+- Database and collection are used as synonyms
+- A Document is the indexed part of a record that is referred to in a query
+  (for a title search, the title entry)
+
+* Ranking schema 
+  A ranking schema is identified by a seven character string
+  (note: this may change in the future).
+  The first three characters indicate the function to be used
+  for the documents term frequency factor, the documents
+  inverse document frequency factor and the function to combine
+  these factors to assign a term weight. 
+  The middle character is the delimiter '-'.
+  The last three characters indicate the functions for query term weighting.
+  Note that different functions may be used for query and document vectors. 
+
+  The default similarity function calculates the cosine 
+  between a document term vector and the query term vector.
+
+* Term: 
+  an atomic concept used for indexing (a string), 
+  for example a word, a phrase or a number
+* Document: 
+  In Zebra, any part of a record that has index terms assigned to
+  it. As data can (sometimes) be structured, document also refers to the 
+  smallest substructure with index terms (for example, a newspaper
+  article may be structured into its title, abstract and its body of
+  text components, which can be considered as different documents). 
+* Term weighting function:
+  the function used to combine and normalize tf and idf 
+* Term frequency factor (tf) / Local weight: 
+  It indicates how important a term is to a particular document
+  and depends on how many times a term occurs in a document.
+* Inverse document factor (idf) / Global weight: 
+  The global weight indicates how important a term is to the entire 
+  database based on the number of documents in which the term occurs.
+  The inverse document frequency is based on the observation that a less 
+  frequently occurring term has better properties discriminating 
+  documents than a term that in more documents.
+* Normalisation:   
+  the normalisation function tries to compensate for ranking discrepancies
+  (for example different document lengths).
+* Score:
+  The score of a document indicates its similarity to the query 
+  (0 <= score <=1000)
+* Rank:
+  The rank of a document is the position in the ranked result set.
+  (first document: rank 1, etc.)
+
+TODO:
+=====
+- replace 'fprintf' with 'yaz_log'
+- produce small test database and test cases
+- extend naming schema to eight chars (include similarity functions)
+- warn if schema is not fully available (e.g. if 'num_docs' or 'tf_max' 
+  are used)
+- optimize implementation (!)
+- Some structure elements are declared as integers ('int'). 
+  For larger databases, they might have to be declared as 'unsigned long int'
+- 'd_f_max_str' and 'f_max_str' are not really needed (in DS, RS)
+- 'db_num_docs' is the number of documents in the database.
+  (probably the number of sysnos) 
+  This is computed for the DBs Explain record as 'recordCount'
+  and should be avaialable as reg-> ... -> recordCount
+- 'db_terms' is the number of distinct terms used in the database.
+  (probably the number of keys)
+- maybe maximum frequencies can be computed on-the-fly for result sets
+  (in contrast to the whole set of records)
+
