@@ -1,5 +1,5 @@
 # Z'mbol makefile for MS NMAKE
-# $Id: makefile,v 1.1 1999-12-08 22:11:56 adam Exp $
+# $Id: makefile,v 1.2 2000-02-08 12:34:17 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -382,7 +382,7 @@ $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
 ############### Explicit dependencies
 ###########################################################
 
-$(ALL_OBJS): zmbol.mak
+$(ALL_OBJS): makefile
 
 # force recompilation of everything, if makefile changed
 
@@ -391,7 +391,10 @@ $(ALL_OBJS): zmbol.mak
 ###########################################################
 #
 # $Log: makefile,v $
-# Revision 1.1  1999-12-08 22:11:56  adam
+# Revision 1.2  2000-02-08 12:34:17  adam
+# Fix: referred to zmbol.mak.
+#
+# Revision 1.1  1999/12/08 22:11:56  adam
 # Separate WIN32 sub directories for Zebra and Z'mbol.
 #
 # Revision 1.1  1999/12/02 10:26:49  adam
