@@ -2,7 +2,7 @@ Source: idzebra
 Standards-Version: 2.5.0.0
 Maintainer: Adam Dickmeiss <adam@indexdata.dk>
 Priority: extra
-Build-Depends: yaz-devel (>= 1.9), libexpat1-dev, tcl8.3-dev, libbz2-dev
+Build-Depends: yaz-devel (>= 1.9.2), libexpat1-dev, tcl8.3-dev, libbz2-dev
 
 Package: idzebra-doc
 Section: doc
