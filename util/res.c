@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.5  1994-08-18 11:02:28  adam
+ * Revision 1.6  1994-09-01 17:45:14  adam
+ * Work on resource manager.
+ * CVS ----------------------------------------------------------------------
+ *
+ * Revision 1.5  1994/08/18  11:02:28  adam
  * Implementation of res_write.
  *
  * Revision 1.4  1994/08/18  10:02:01  adam
@@ -24,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 #include <util.h>
 
 static struct res_entry *add_entry (Res r)
@@ -52,6 +57,7 @@ static void reread (Res r)
     char fr_buf[1024];
     FILE *fr;
 
+    assert (r);
     r->init = 1;
 
     val_buf = xmalloc (val_max);
@@ -150,7 +156,13 @@ static void reread (Res r)
 
 Res res_open (const char *name)
 {
-    Res r = xmalloc (sizeof(*r));
+    Res r;
+    if (access (name, R_OK))
+    {
+        log (LOG_LOG|LOG_ERRNO, "cannot access `%s'", name);
+        xfree (r);
+    }
+    r = xmalloc (sizeof(*r));
     r->init = 0;
     r->name = xstrdup (name);
     return r;
@@ -158,6 +170,7 @@ Res res_open (const char *name)
 
 void res_close (Res r)
 {
+    assert (r);
     if (r->init)
     {
         struct res_entry *re, *re1;
@@ -177,9 +190,10 @@ void res_close (Res r)
 const char *res_get (Res r, const char *name)
 {
     struct res_entry *re;
+
+    assert (r);
     if (!r->init)
         reread (r);
-    
     for (re = r->first; re; re=re->next)
         if (re->value && !strcmp (re->name, name))
             return re->value;
@@ -189,6 +203,7 @@ const char *res_get (Res r, const char *name)
 void res_put (Res r, const char *name, const char *value)
 {
     struct res_entry *re;
+    assert (r);
     if (!r->init)
         reread (r);
 
@@ -210,6 +225,7 @@ void res_trav (Res r, const char *prefix,
     struct res_entry *re;
     int l = 0;
 
+    assert (r);
     if (prefix)
         l = strlen(prefix);
     if (!r->init)
@@ -226,9 +242,10 @@ int res_write (Res r)
     struct res_entry *re;
     char path[256];
     FILE *fr;
+
+    assert (r);
     if (!r->init)
         reread (r);
-
     strcpy (path, alex_path(r->name));
 
     fr = fopen (path, "w");

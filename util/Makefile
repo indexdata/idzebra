@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.9 1994-08-18 14:09:42 quinn Exp $
+# $Id: Makefile,v 1.10 1994-09-01 17:45:14 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -34,6 +34,6 @@ clean:
 dep depend:
 	$(CPP) $(INCLUDE) -M *.c >.depend
 
-#ifeq (.depend,$(wildcard .depend))
+ifeq (.depend,$(wildcard .depend))
 include .depend
-#endif
+endif
