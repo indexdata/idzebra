@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: rsbool.c,v 1.17 2002-03-20 20:24:30 adam Exp $
+ * $Id: rsbool.c,v 1.18 2002-04-18 19:48:28 adam Exp $
  */
 
 #include <stdio.h>
@@ -237,6 +237,12 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				   &p->term_index_l);
     }
+    while (p->more_l)
+            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
+				   &p->term_index_l);
+    while (p->more_r)
+            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
+				   &p->term_index_r);
     return 0;
 }
 
