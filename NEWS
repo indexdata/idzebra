@@ -1,4 +1,7 @@
 
+Fixed bug in grs.regx. filter . 'end element' could pop off top tag
+element for XML tree. It may only pop off if -record is given.
+
 Added grs.danbib filter - for Danish Bibliographic Centre.
 
 Rename CHANGELOG to NEWS.
