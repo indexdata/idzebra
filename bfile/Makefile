@@ -4,7 +4,7 @@ TPROG=btest
 CFLAGS=-g -Wall
 DEFS=$(INCLUDE)
 LIB=../lib/bfile.a
-PO = bfile.o
+PO = bfile.o mfile.o
 CPP=cc -E
 
 all: $(LIB)
