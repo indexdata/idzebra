@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.3  1994-09-26 16:08:42  quinn
+ * Revision 1.4  1994-09-26 17:05:54  quinn
+ * Trivial.
+ *
+ * Revision 1.3  1994/09/26  16:08:42  quinn
  * Most of the functionality in place.
  *
  * Revision 1.2  1994/09/14  13:10:35  quinn
@@ -19,7 +22,6 @@
 #define ISAM_H
 
 #include <bfile.h>
-#include <isam.h>
 
 #define IS_MAX_BLOCKTYPES 4
 #define IS_MAX_RECORD 512
@@ -59,11 +61,10 @@ typedef struct isam_struct
     int (*cmp)(const void *k1, const void *k2); /* compare function */
 } isam_struct, *ISAM;
 
+struct is_mtable;
 typedef struct ispt_struct
 {
-    ISAM is;                       /* which file do we belong to? */
-    int ptr;                       /* current key offset */
-
+    struct is_mtable *tab;
     struct ispt_struct *next;      /* freelist */
 } ispt_struct, *ISPT; 
 
