@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.46 2000-02-10 10:23:34 adam Exp $
+  $Id: zebra.sgml,v 1.47 2000-02-25 11:35:41 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.46 $
+<date>$Revision: 1.47 $
 <abstract>
 
 
@@ -205,23 +205,24 @@ Bourne-compatible shell you may pass something like this:
 To customize Zebra the configure script accepts a set of options. The
 most important are
 <descrip>
-<tag><tt>--prefix </tt>path</tag> Specifies installation prefix. This is
+<tag><tt>-</tt><tt>-prefix </tt>path</tag> Specifies installation prefix. This is
 only needed if you run <tt>make install</tt> later to perform a
 "system" installation. The prefix is <tt>/usr/local</tt> if not
 specified.
-<tag><tt>--with-tclconfig </tt>path</tag> If Tcl is installed on
-the system you can tell configure where Tcl's <tt>tclConfig.sh</tt>
-installed. The <tt>tclConfig.sh</tt> include information about settings
-required to link with Tcl's libraries. If you don't specify this
-option, configure will see if Tcl's shell <tt>tclsh</tt> is in your
-path and if it is, it will guess where the equivalent tclConfig.sh
-is located. If tclsh is not found in your path and this option is not
-given Zebra will not include Tcl support.
-<tag><tt>--with-yazconfig </tt>path</tag> This options allows you to
-specify the path of YAZ's <tt>yaz-config</tt>. Therefore this option
-forces Zebra to use a particular version of YAZ. YAZ version 1.5 and
-later creates a script <tt>yaz-config</tt> that includes information
-on compiler settings needed to link with it.
+<tag><tt>-</tt><tt>-with-tclconfig=</tt>DIR</tag> If Tcl is installed on
+the system you can tell configure in which directory Tcl's
+<tt>tclConfig.sh</tt> is stored. The <tt>tclConfig.sh</tt> include
+information about settings required to link with Tcl's libraries.
+If you don't specify this option, configure will see if Tcl's shell
+<tt>tclsh</tt> is in your path and if it is, it will guess where
+the equivalent tclConfig.sh is located. If tclsh is not found in
+your path and this option is not given Zebra will not include Tcl support.
+<tag><tt>-</tt><tt>-with-yazconfig=</tt>DIR</tag> This options allows you to
+specify the directory that contains YAZ's <tt>yaz-config</tt>.
+This options is useful if you wish to compile Zebra with a specific 
+version of YAZ. YAZ version 1.5 and later creates a script
+<tt>yaz-config</tt> that includes information on compiler settings
+needed to link with it.
 </descrip>
 
 When configured build the software by typing:
