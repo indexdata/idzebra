@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.19 2004-08-23 12:38:53 heikki Exp $
+/* $Id: rsisamc.c,v 1.20 2004-08-24 08:52:30 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -57,7 +57,6 @@ struct rset_pp_info {
     ISAMC_PP pt;
     struct rset_pp_info *next;
     struct rset_isamc_info *info;
-    zint *countp;
     void *buf;
 };
 
@@ -141,14 +140,6 @@ static int r_read (RSFD rfd, void *buf)
     struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
     int r;
     r = isc_pp_read(pinfo->pt, buf);
-    if (r > 0)
-    {
-        if (*pinfo->countp == 0 || (*pinfo->info->cmp)(buf, pinfo->buf) > 1)
-        {
-            memcpy (pinfo->buf, buf, pinfo->info->key_size);
-            (*pinfo->countp)++;
-        }
-    }
     return r;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.43 2004-08-20 14:44:46 heikki Exp $
+/* $Id: rstemp.c,v 1.44 2004-08-24 08:52:30 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -79,7 +79,6 @@ struct rset_temp_info {
 struct rset_temp_rfd {
     struct rset_temp_info *info;
     struct rset_temp_rfd *next;
-    zint *countp;
     void *buf;
     size_t  pos_cur;       /* current position in set */
     zint cur; /* number of the current hit */
@@ -137,7 +136,6 @@ static RSFD r_open (RSET ct, int flag)
     rfd->info = info;
     r_rewind (rfd);
 
-    *rfd->countp = 0;
     rfd->buf = xmalloc (info->key_size);
 
     return rfd;
@@ -330,12 +328,6 @@ static int r_read (RSFD rfd, void *buf)
     memcpy (buf, info->buf_mem + (mrfd->pos_cur - info->pos_buf),
             info->key_size);
     mrfd->pos_cur = nc;
-
-    if (*mrfd->countp == 0 || (*info->cmp)(buf, mrfd->buf) > 1)
-    {
-        memcpy (mrfd->buf, buf, mrfd->info->key_size);
-        (*mrfd->countp)++;
-    }
     mrfd->cur++;
     return 1;
 }
