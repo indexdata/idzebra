@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.6  1995-09-04 12:33:47  adam
+ * Revision 1.7  1995-12-06 09:59:46  quinn
+ * Fixed memory-consumption bug in memory.c
+ * Added more blocksizes to the default ISAM configuration.
+ *
+ * Revision 1.6  1995/09/04  12:33:47  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.5  1994/09/28  16:58:33  quinn
@@ -343,6 +347,12 @@ int is_m_read_record(is_mtable *tab, void *buf)
     {
 	if (!mbuf->next) /* end of mblock */
 	{
+	    if (tab->cur_mblock->state == IS_MBSTATE_CLEAN)
+	    {
+		xfree_mbufs(tab->cur_mblock->data);
+		tab->cur_mblock->data = 0;
+		tab->cur_mblock->state = IS_MBSTATE_UNREAD;
+	    }
 	    if (tab->cur_mblock->next)
 	    {
 		tab->cur_mblock = tab->cur_mblock->next;

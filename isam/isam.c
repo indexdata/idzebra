@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.14  1995-11-24 17:26:19  quinn
+ * Revision 1.15  1995-12-06 09:59:45  quinn
+ * Fixed memory-consumption bug in memory.c
+ * Added more blocksizes to the default ISAM configuration.
+ *
+ * Revision 1.14  1995/11/24  17:26:19  quinn
  * Mostly about making some ISAM stuff in the config file optional.
  *
  * Revision 1.13  1995/10/17  18:03:15  adam
@@ -123,7 +127,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 
     /* determine number and size of blocktypes */
     if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
-	"blocktypes", 0), "64 1K")) ||
+	"blocktypes", 0), "64 512 4K 32K")) ||
 	!(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
@@ -211,7 +215,8 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 
     /* determine max keys/blocksize */
     if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
-	"maxkeys", 0), "50")) || !(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
+	"maxkeys", 0), "50 640 10000")) || !(num = splitargs(r, pp,
+	IS_MAX_BLOCKTYPES)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
@@ -253,7 +258,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 
     /* determine nice fill rates */
     if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
-	"nicefill", 0), "90 90")) || !(num = splitargs(r, pp,
+	"nicefill", 0), "90 90 90 95")) || !(num = splitargs(r, pp,
 	IS_MAX_BLOCKTYPES)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
@@ -462,11 +467,13 @@ void is_pt_free(ISPT ip)
  */
 int is_readkey(ISPT ip, void *buf)
 {
+fprintf(stderr, "XXReadkey.\n");
     return is_m_read_record(&ip->tab, buf);
 }    
 
 int is_numkeys(ISPT ip)
 {
+fprintf(stderr, "XXNumkeys.\n");
     return is_m_num_records(&ip->tab);
 }
 
