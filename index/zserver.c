@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.103 2003-02-25 21:51:05 adam Exp $
+/* $Id: zserver.c,v 1.104 2003-03-04 23:30:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -519,7 +519,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 	    if (notToKeep)
 	    {
 		int i;
-                zebra_begin_trans (zh);
+                zebra_begin_trans (zh, 1);
 		for (i = 0; i < notToKeep->num; i++)
 		{
 		    Z_External *rec = notToKeep->elements[i]->record;

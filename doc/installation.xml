@@ -1,95 +1,194 @@
-<chapter id="installation">
- <!-- $Id: installation.xml,v 1.6 2002-12-01 23:26:26 mike Exp $ -->
- <title>Installation</title>
- <para>
-  An ANSI C compiler is required to compile the Zebra
-  server system &mdash; <literal>gcc</literal> works fine if your
-  own system doesn't provide an adequate compiler.
- </para>
- 
- <para>
-  Unpack the distribution archive. The <literal>configure</literal>
-  shell script attempts to guess correct values for various
-  system-dependent variables used during compilation.
-  It uses those values to create a <literal>Makefile</literal> in each
-  directory of Zebra.
- </para>
- 
- <para>
-  To run the configure script type:
+<!-- $Id: installation.xml,v 1.7 2003-03-04 23:30:20 adam Exp $ -->
+ <chapter id="installation">
+  <title>Installation</title>
+  <para>
+   Zebra is very portable. An ANSI C compiler is required. We
+   primarily use GNU C on UNIX and Microsoft Visual C++ on Windows.
+  </para>
 
-  <screen>
-  ./configure
-  </screen>
+  <para>
+   Zebra uses following components. Most of these are optional.
+   <variablelist>
+    <varlistentry>
+     <term><ulink url="http://www.indexdata.dk/yaz/">yaz</ulink> (required)</term>
+     <listitem>
+      <para>
+       Zebra uses lots of utilities provided by YAZ. Most notably
+       Z39.50 support.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><ulink url="http://www.gnu.org/software/libiconv/">iconv</ulink>
+      (optional)</term>
+     <listitem>
+      <para>
+       Character set conversion. This is required if you're
+       going to use any other character set than UTF-8 and ISO-8859-1
+       for records. Note that some Unixes has iconv built-in.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><ulink url="http://expat.sourceforge.net/">Expat</ulink>
+      (optional)</term>
+     <listitem>
+      <para>
+       XML parser. If you're going to index real XML you should
+       install this (filter grs.xml). On most system, you should be able
+       to find binary Expat packages.
+      </para>
+     </listitem>
+    </varlistentry>
 
- </para>
- 
- <para>
-  The configure script attempts to use C compiler specified by
-  the <literal>CC</literal> environment variable.
-  If this is not set, <literal>cc</literal> or GNU C will be used.
-  The <literal>CFLAGS</literal> environment variable holds
-  options to be passed to the C compiler. If you're using a
-  Bourne-shell compatible shell you may pass something like this:
-  
-  <screen>
-  CC=/opt/ccs/bin/cc CFLAGS=-O ./configure
-  </screen>
- </para>
- <para>
-  The configure script support various options: you can see what they
-  are with
-  <screen>
-  ./configure --help
-  </screen>
- </para>
- 
- <para>
-  Once the build environment is configured, build the software by
-  typing:
-  <screen>
-  make
-  </screen>
- </para>
- 
- <para>
-  If the build is successful, two executables are created in the
-  sub-directory <literal>index</literal>:
-  <variablelist>
+    <varlistentry>
+     <term><ulink url="http://www.perl.com/">Perl</ulink> (optional)</term>
+     <listitem>
+      <para>
+       Perl is required if you're going to use the Zebra perl
+       filter facility or the Zebra perl API. Perl is preinstalled
+       on many Unixes. We've not tried the Perl extension on 
+       Windows ourselves.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term><ulink url="http://www.tcl.tk/">Tcl</ulink> (optional)</term>
+     <listitem>
+      <para>
+       Tcl is required if you  need to use the Tcl record filter
+       for Zebra. You can find binary packages for Tcl for many
+       Unices and Windows.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term>
+      <ulink url="http://www.gnu.org/software/autoconf/">Autoconf</ulink>,
+      <ulink url="
+      
+ (optional)</term>
+     <listitem>
+      <para>
+       GNU Automake and Autoconf are only required if you're
+       using the CVS version of Zebra. You do not need these
+       if you have fetched a Zebra tar.
+      </para>
+     </listitem>
+    </varlistentry>
+    
+    <varlistentry>
+     <term>Docbook and friends (optional)</term>
+     <listitem>
+      <para>
+       These tools are only required if you're writing
+       Documentation for Zebra. You need the following
+       Debian packages: jadetex, docbook, docbook-dsssl,
+       docbook-xml, docbook-utils.
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+
+  <sect1 id="installation.unix"><title>UNIX</title>
+   <para>
+    On Unix, <literal>gcc</literal> works fine, but any native
+    C compiler should be possible to use as long as it is 
+    ANSI C compliant.
+   </para>
    
-   <varlistentry>
-    <term><literal>zebrasrv</literal></term>
-    <listitem>
-     <para>
-      The Z39.50 server and search engine.
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term><literal>zebraidx</literal></term>
-    <listitem>
-     <para>
-      The administrative indexing tool.
-     </para>
-    </listitem>
-   </varlistentry>
-  </variablelist>
- </para>
- 
- <para>
-  You can now use Zebra. If you wish to install it system-wide, then
-  as root type
-  <screen>
-    make install
-  </screen>
-  By default this will install the Zebra executables in 
-  <filename>/usr/local/bin</filename>,
-  and the standard configuration files in 
-  <filename>/usr/local/share/idzebra</filename>
-  You can override this with the <literal>--prefix</literal> option
-  to configure.
- </para>
-</chapter>
+   <para>
+    Unpack the distribution archive. The <literal>configure</literal>
+    shell script attempts to guess correct values for various
+    system-dependent variables used during compilation.
+    It uses those values to create a <literal>Makefile</literal> in each
+    directory of Zebra.
+   </para>
+   
+   <para>
+    To run the configure script type:
+    
+    <screen>
+     ./configure
+    </screen>
+    
+   </para>
+   
+   <para>
+    The configure script attempts to use C compiler specified by
+    the <literal>CC</literal> environment variable.
+    If this is not set, <literal>cc</literal> or GNU C will be used.
+    The <literal>CFLAGS</literal> environment variable holds
+    options to be passed to the C compiler. If you're using a
+    Bourne-shell compatible shell you may pass something like this:
+    
+    <screen>
+     CC=/opt/ccs/bin/cc CFLAGS=-O ./configure
+    </screen>
+   </para>
+   <para>
+    The configure script support various options: you can see what they
+    are with
+    <screen>
+     ./configure --help
+    </screen>
+   </para>
+   
+   <para>
+    Once the build environment is configured, build the software by
+    typing:
+    <screen>
+     make
+    </screen>
+   </para>
+   
+   <para>
+    If the build is successful, two executables are created in the
+    sub-directory <literal>index</literal>:
+    <variablelist>
+     
+     <varlistentry>
+      <term><literal>zebrasrv</literal></term>
+      <listitem>
+       <para>
+        The Z39.50 server and search engine.
+       </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+     <term><literal>zebraidx</literal></term>
+      <listitem>
+       <para>
+        The administrative indexing tool.
+       </para>
+      </listitem>
+     </varlistentry>
+    </variablelist>
+   </para>
+   
+   <para>
+    You can now use Zebra. If you wish to install it system-wide, then
+    as root type
+    <screen>
+     make install
+    </screen>
+    By default this will install the Zebra executables in 
+    <filename>/usr/local/bin</filename>,
+    and the standard configuration files in 
+    <filename>/usr/local/share/idzebra</filename>
+    You can override this with the <literal>--prefix</literal> option
+    to configure.
+   </para>
+  </sect1>
+  <sect1><title>WIN32</title>
+   <para>
+    
+   </para>
+  </sect1>
+ </chapter>
  <!-- Keep this comment at the end of the file
  Local variables:
  mode: sgml

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.87 2003-03-04 23:05:30 pop Exp $
+/* $Id: zebraapi.c,v 1.88 2003-03-04 23:30:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -33,6 +33,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #include <yaz/diagbib1.h>
+#include <yaz/pquery.h>
+#include <yaz/sortspec.h>
 #include "index.h"
 #include <charmap.h>
 #include "zebraapi.h"
@@ -104,6 +106,7 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->basenames = 0;
 
     zh->trans_no = 0;
+    zh->trans_w_no = 0;
 
     zh->lock_normal = 0;
     zh->lock_shadow = 0;
@@ -931,7 +934,7 @@ void zebra_admin_import_begin (ZebraHandle zh, const char *database,
     zh->errCode=0;
     if (zebra_select_database(zh, database))
         return;
-    zebra_begin_trans (zh);
+    zebra_begin_trans (zh, 1);
     xfree (zh->admin_databaseName);
     zh->admin_databaseName = xstrdup(database);
 }
@@ -1033,7 +1036,7 @@ void zebra_admin_create (ZebraHandle zh, const char *database)
 
     if (zebra_select_database (zh, database))
         return;
-    zebra_begin_trans (zh);
+    zebra_begin_trans (zh, 1);
 
     zs = zh->service;
     /* announce database */
@@ -1111,181 +1114,168 @@ void zebra_get_state (ZebraHandle zh, char *val, int *seqno)
 
 int zebra_begin_read (ZebraHandle zh)
 {
-    int dirty = 0;
-    char val;
-    int seqno;
-    ASSERTZH;
-
-    assert (zh->res);
-
-    (zh->trans_no)++;
-
-    if (zh->trans_no != 1)
-    {
-        zebra_flush_reg (zh);
-        return 0;
-    }
-    zh->errCode=0;
-#if HAVE_SYS_TIMES_H
-    times (&zh->tms1);
-#endif
-    if (!zh->res)
-    {
-        (zh->trans_no)--;
-        zh->errCode = 109;
-        return -1;
-    }
-    if (!zh->lock_normal || !zh->lock_shadow)
-    {
-        (zh->trans_no)--;
-        zh->errCode = 2;
-	return -1;
-    }
-    zebra_get_state (zh, &val, &seqno);
-    if (val == 'd')
-        val = 'o';
-
-    if (!zh->reg)
-        dirty = 1;
-    else if (seqno != zh->reg->seqno)
-    {
-        yaz_log (LOG_LOG, "reopen seqno cur/old %d/%d",
-                 seqno, zh->reg->seqno);
-        dirty = 1;
-    }
-    else if (zh->reg->last_val != val)
-    {
-        yaz_log (LOG_LOG, "reopen last cur/old %d/%d",
-                 val, zh->reg->last_val);
-        dirty = 1;
-    }
-    if (!dirty)
-        return 0;
-
-    if (val == 'c')
-        zebra_lock_r (zh->lock_shadow);
-    else
-        zebra_lock_r (zh->lock_normal);
-    
-    if (zh->reg)
-        zebra_register_close (zh->service, zh->reg);
-    zh->reg = zebra_register_open (zh->service, zh->reg_name,
-                                   0, val == 'c' ? 1 : 0,
-                                   zh->res, zh->path_reg);
-    if (!zh->reg)
-    {
-        zh->errCode = 109;
-        return -1;
-    }
-    zh->reg->last_val = val;
-    zh->reg->seqno = seqno;
-
-    return 0;
+    return zebra_begin_trans(zh, 0);
 }
 
 void zebra_end_read (ZebraHandle zh)
 {
-    ASSERTZH;
-    (zh->trans_no)--;
-
-    if (zh->trans_no != 0)
-        return;
-#if HAVE_SYS_TIMES_H
-    times (&zh->tms2);
-    logf (LOG_LOG, "user/system: %ld/%ld",
-                    (long) (zh->tms2.tms_utime - zh->tms1.tms_utime),
-                    (long) (zh->tms2.tms_stime - zh->tms1.tms_stime));
-
-#endif
-
-    zebra_unlock (zh->lock_normal);
-    zebra_unlock (zh->lock_shadow);
+    zebra_end_trans(zh);
 }
 
-void zebra_begin_trans (ZebraHandle zh)
+int zebra_begin_trans (ZebraHandle zh, int rw)
 {
-    int pass;
-    int seqno = 0;
-    char val = '?';
-    const char *rval = 0;
     ASSERTZHRES;
-
     assert (zh->res);
-
-    (zh->trans_no++);
-    if (zh->trans_no != 1)
+    if (rw)
     {
-        return;
-    }
-    zh->errCode=0;
-    
-    yaz_log (LOG_LOG, "zebra_begin_trans");
-
-    zh->records_inserted = 0;
-    zh->records_updated = 0;
-    zh->records_deleted = 0;
-    zh->records_processed = 0;
-
-#if HAVE_SYS_TIMES_H
-    times (&zh->tms1);
-#endif
-    
-    /* lock */
-    if (zh->shadow_enable)
-        rval = res_get (zh->res, "shadow");
-
-    for (pass = 0; pass < 2; pass++)
-    {
-        if (rval)
-        {
-            zebra_lock_r (zh->lock_normal);
-            zebra_lock_w (zh->lock_shadow);
-        }
-        else
-        {
-            zebra_lock_w (zh->lock_normal);
-            zebra_lock_w (zh->lock_shadow);
-        }
+        int pass;
+        int seqno = 0;
+        char val = '?';
+        const char *rval = 0;
         
-        zebra_get_state (zh, &val, &seqno);
-        if (val == 'c')
-        {
-            yaz_log (LOG_LOG, "previous transaction didn't finish commit");
-            zebra_unlock (zh->lock_shadow);
-            zebra_unlock (zh->lock_normal);
-            zebra_commit (zh);
-            continue;
-        }
-        else if (val == 'd')
+        (zh->trans_no++);
+        if (zh->trans_w_no)
+            return 0;
+        zh->trans_w_no = zh->trans_no;
+        
+        zh->errCode=0;
+        
+        yaz_log (LOG_LOG, "zebra_begin_trans");
+        
+        zh->records_inserted = 0;
+        zh->records_updated = 0;
+        zh->records_deleted = 0;
+        zh->records_processed = 0;
+        
+#if HAVE_SYS_TIMES_H
+        times (&zh->tms1);
+#endif
+        /* lock */
+        if (zh->shadow_enable)
+            rval = res_get (zh->res, "shadow");
+        
+        for (pass = 0; pass < 2; pass++)
         {
             if (rval)
             {
-                BFiles bfs = bfs_create (res_get (zh->res, "shadow"),
-                                         zh->path_reg);
-                yaz_log (LOG_LOG, "previous transaction didn't reach commit");
-                bf_commitClean (bfs, rval);
-                bfs_destroy (bfs);
+                zebra_lock_r (zh->lock_normal);
+                zebra_lock_w (zh->lock_shadow);
             }
             else
             {
-                yaz_log (LOG_WARN, "your previous transaction didn't finish");
+                zebra_lock_w (zh->lock_normal);
+                zebra_lock_w (zh->lock_shadow);
             }
+            
+            zebra_get_state (zh, &val, &seqno);
+            if (val == 'c')
+            {
+                yaz_log (LOG_LOG, "previous transaction didn't finish commit");
+                zebra_unlock (zh->lock_shadow);
+                zebra_unlock (zh->lock_normal);
+                zebra_commit (zh);
+                continue;
+            }
+            else if (val == 'd')
+            {
+                if (rval)
+                {
+                    BFiles bfs = bfs_create (res_get (zh->res, "shadow"),
+                                             zh->path_reg);
+                    yaz_log (LOG_LOG, "previous transaction didn't reach commit");
+                    bf_commitClean (bfs, rval);
+                    bfs_destroy (bfs);
+            }
+                else
+                {
+                    yaz_log (LOG_WARN, "your previous transaction didn't finish");
+                }
+            }
+            break;
         }
-        break;
+        if (pass == 2)
+        {
+            yaz_log (LOG_FATAL, "zebra_begin_trans couldn't finish commit");
+            abort();
+            return -1;
+        }
+        zebra_set_state (zh, 'd', seqno);
+        
+        zh->reg = zebra_register_open (zh->service, zh->reg_name,
+                                       1, rval ? 1 : 0, zh->res,
+                                       zh->path_reg);
+        
+        zh->reg->seqno = seqno;
     }
-    if (pass == 2)
+    else
     {
-        yaz_log (LOG_FATAL, "zebra_begin_trans couldn't finish commit");
-        abort();
-        return;
+        int dirty = 0;
+        char val;
+        int seqno;
+        
+        (zh->trans_no)++;
+        
+        if (zh->trans_no != 1)
+        {
+            zebra_flush_reg (zh);
+            return 0;
+        }
+        zh->errCode=0;
+#if HAVE_SYS_TIMES_H
+        times (&zh->tms1);
+#endif
+        if (!zh->res)
+        {
+            (zh->trans_no)--;
+            zh->errCode = 109;
+            return -1;
+        }
+        if (!zh->lock_normal || !zh->lock_shadow)
+        {
+            (zh->trans_no)--;
+            zh->errCode = 2;
+            return -1;
+        }
+        zebra_get_state (zh, &val, &seqno);
+        if (val == 'd')
+            val = 'o';
+        
+        if (!zh->reg)
+            dirty = 1;
+        else if (seqno != zh->reg->seqno)
+        {
+            yaz_log (LOG_LOG, "reopen seqno cur/old %d/%d",
+                     seqno, zh->reg->seqno);
+            dirty = 1;
+        }
+        else if (zh->reg->last_val != val)
+        {
+            yaz_log (LOG_LOG, "reopen last cur/old %d/%d",
+                     val, zh->reg->last_val);
+            dirty = 1;
+        }
+        if (!dirty)
+            return 0;
+        
+        if (val == 'c')
+            zebra_lock_r (zh->lock_shadow);
+        else
+            zebra_lock_r (zh->lock_normal);
+        
+        if (zh->reg)
+            zebra_register_close (zh->service, zh->reg);
+        zh->reg = zebra_register_open (zh->service, zh->reg_name,
+                                       0, val == 'c' ? 1 : 0,
+                                       zh->res, zh->path_reg);
+        if (!zh->reg)
+        {
+            zh->errCode = 109;
+            return -1;
+        }
+        zh->reg->last_val = val;
+        zh->reg->seqno = seqno;
     }
-    zebra_set_state (zh, 'd', seqno);
-
-    zh->reg = zebra_register_open (zh->service, zh->reg_name,
-                                   1, rval ? 1 : 0, zh->res,
-                                   zh->path_reg);
-
-    zh->reg->seqno = seqno;
+    return 0;
 }
 
 void zebra_end_trans (ZebraHandle zh) {
@@ -1308,54 +1298,66 @@ void zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
     status->utime     = 0;
     status->stime     = 0;
 
-    zh->trans_no--;
-    if (zh->trans_no != 0)
-        return;
-    yaz_log (LOG_LOG, "zebra_end_trans");
-    rval = res_get (zh->res, "shadow");
-
-    zebraExplain_runNumberIncrement (zh->reg->zei, 1);
-
-    zebra_flush_reg (zh);
-
-    zebra_register_close (zh->service, zh->reg);
-    zh->reg = 0;
-
-    yaz_log (LOG_LOG, "Records: %7d i/u/d %d/%d/%d", 
-             zh->records_processed, zh->records_inserted,
-             zh->records_updated, zh->records_deleted);
-
-    status->processed = zh->records_processed;
-    status->inserted = zh->records_inserted;
-    status->updated = zh->records_updated;
-    status->deleted = zh->records_deleted;
-
-    zebra_get_state (zh, &val, &seqno);
-    if (val != 'd')
+    if (zh->trans_no != zh->trans_w_no)
     {
-        BFiles bfs = bfs_create (rval, zh->path_reg);
-        yaz_log (LOG_LOG, "deleting shadow stuff val=%c", val);
-        bf_commitClean (bfs, rval);
-        bfs_destroy (bfs);
+        zh->trans_no--;
+        if (zh->trans_no != 0)
+            return;
+
+        /* release read lock */
+
+        zebra_unlock (zh->lock_normal);
+        zebra_unlock (zh->lock_shadow);
     }
-    if (!rval)
-        seqno++;
-    zebra_set_state (zh, 'o', seqno);
-
-    zebra_unlock (zh->lock_shadow);
-    zebra_unlock (zh->lock_normal);
-
+    else
+    {   /* release write lock */
+        zh->trans_no--;
+        zh->trans_w_no = 0;
+        
+        yaz_log (LOG_LOG, "zebra_end_trans");
+        rval = res_get (zh->res, "shadow");
+        
+        zebraExplain_runNumberIncrement (zh->reg->zei, 1);
+        
+        zebra_flush_reg (zh);
+        
+        zebra_register_close (zh->service, zh->reg);
+        zh->reg = 0;
+        
+        yaz_log (LOG_LOG, "Records: %7d i/u/d %d/%d/%d", 
+                 zh->records_processed, zh->records_inserted,
+                 zh->records_updated, zh->records_deleted);
+        
+        status->processed = zh->records_processed;
+        status->inserted = zh->records_inserted;
+        status->updated = zh->records_updated;
+        status->deleted = zh->records_deleted;
+        
+        zebra_get_state (zh, &val, &seqno);
+        if (val != 'd')
+        {
+            BFiles bfs = bfs_create (rval, zh->path_reg);
+            yaz_log (LOG_LOG, "deleting shadow stuff val=%c", val);
+            bf_commitClean (bfs, rval);
+            bfs_destroy (bfs);
+        }
+        if (!rval)
+            seqno++;
+        zebra_set_state (zh, 'o', seqno);
+        
+        zebra_unlock (zh->lock_shadow);
+        zebra_unlock (zh->lock_normal);
+        
+    }
 #if HAVE_SYS_TIMES_H
     times (&zh->tms2);
     logf (LOG_LOG, "user/system: %ld/%ld",
-                    (long) (zh->tms2.tms_utime - zh->tms1.tms_utime),
-                    (long) (zh->tms2.tms_stime - zh->tms1.tms_stime));
-
+          (long) (zh->tms2.tms_utime - zh->tms1.tms_utime),
+          (long) (zh->tms2.tms_stime - zh->tms1.tms_stime));
+    
     status->utime = (long) (zh->tms2.tms_utime - zh->tms1.tms_utime);
     status->stime = (long) (zh->tms2.tms_stime - zh->tms1.tms_stime);
 #endif
-
-    return;
 }
 
 void zebra_repository_update (ZebraHandle zh)
@@ -1484,7 +1486,7 @@ int zebra_record_insert (ZebraHandle zh, const char *buf, int len)
     int olderr;
     ASSERTZH;
     zh->errCode=0;
-    zebra_begin_trans (zh);
+    zebra_begin_trans (zh, 1);
     if (zh->errCode)
       return 0; /* bad sysno */
     extract_rec_in_mem (zh, "grs.sgml",
@@ -1779,7 +1781,7 @@ int zebra_update_record (ZebraHandle zh,
 
     if (buf_size < 1) buf_size = strlen(buf);
 
-    zebra_begin_trans(zh);
+    zebra_begin_trans(zh, 1);
     res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
 			     0, // delete_flag 
 			     0, // test_mode,
@@ -1800,7 +1802,7 @@ int zebra_delete_record (ZebraHandle zh,
 
     if (buf_size < 1) buf_size = strlen(buf);
 
-    zebra_begin_trans(zh);
+    zebra_begin_trans(zh, 1);
     res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
 			     1, // delete_flag
 			     0, // test_mode, 
@@ -1838,23 +1840,23 @@ int zebra_search_PQF (ZebraHandle zh,
 		      ODR odr_input, ODR odr_output, 
 		      const char *pqf_query,
 		      const char *setname)
-
+    
 {
-  int hits;
-  Z_RPNQuery *query;
-  query = p_query_rpn (odr_input, PROTO_Z3950, pqf_query);
-
-  if (!query) {
-    logf (LOG_WARN, "bad query %s\n", pqf_query);
+    int hits;
+    Z_RPNQuery *query;
+    query = p_query_rpn (odr_input, PROTO_Z3950, pqf_query);
+    
+    if (!query) {
+        logf (LOG_WARN, "bad query %s\n", pqf_query);
+        odr_reset (odr_input);
+        return(0);
+    }
+    zebra_search_RPN (zh, odr_input, odr_output, query, setname, &hits);
+    
     odr_reset (odr_input);
-    return(0);
-  }
-  zebra_search_RPN (zh, odr_input, odr_output, query, setname, &hits);
-
-  odr_reset (odr_input);
-  odr_reset (odr_output);
-  
-  return(hits);
+    odr_reset (odr_output);
+    
+    return(hits);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1865,27 +1867,27 @@ int sort (ZebraHandle zh,
 	  const char *sort_spec,
 	  const char *output_setname,
 	  const char **input_setnames
-	  ) 
+    ) 
 {
-  int num_input_setnames = 0;
-  int sort_status = 0;
-  Z_SortKeySpecList *sort_sequence = yaz_sort_spec (stream, sort_spec);
-  if (!sort_sequence) {
-    logf(LOG_WARN,"invalid sort specs '%s'", sort_spec);
-    zh->errCode = 207;
+    int num_input_setnames = 0;
+    int sort_status = 0;
+    Z_SortKeySpecList *sort_sequence = yaz_sort_spec (stream, sort_spec);
+    if (!sort_sequence) {
+        logf(LOG_WARN,"invalid sort specs '%s'", sort_spec);
+        zh->errCode = 207;
     return (-1);
-  }
-  
-  /* we can do this, since the perl typemap code for char** will 
-     put a NULL at the end of list */
-  while (input_setnames[num_input_setnames]) num_input_setnames++;
+    }
+    
+    /* we can do this, since the perl typemap code for char** will 
+       put a NULL at the end of list */
+    while (input_setnames[num_input_setnames]) num_input_setnames++;
 
-  if (zebra_begin_read (zh))
-    return;
-  
-  resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
-		 output_setname, sort_sequence, &sort_status);
-  
-  zebra_end_read(zh);
-  return (sort_status);
+    if (zebra_begin_read (zh))
+        return -1;
+    
+    resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
+                   output_setname, sort_sequence, &sort_status);
+    
+    zebra_end_read(zh);
+    return (sort_status);
 }

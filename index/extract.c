@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.139 2003-02-27 23:08:10 pop Exp $
+/* $Id: extract.c,v 1.140 2003-03-04 23:30:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -973,33 +973,33 @@ int bufferExtractRecord (ZebraHandle zh,
         logf (LOG_WARN, "Invalid record group, no database name given");
 	return 0;
     }
-
+    
     if (zebraExplain_curDatabase (zh->reg->zei, rGroup->databaseName))
     {
-      if (zebraExplain_newDatabase (zh->reg->zei, rGroup->databaseName, 0))
-	return 0;
+        if (zebraExplain_newDatabase (zh->reg->zei, rGroup->databaseName, 0))
+            return 0;
     }
-
+    
     if (*recordType) {
-      logf (LOG_DEBUG, "Record type explicitly specified: %s", recordType);
-      recType = recType_byName (zh->reg->recTypes, recordType, subType,
-				&clientData);
+        logf (LOG_DEBUG, "Record type explicitly specified: %s", recordType);
+        recType = recType_byName (zh->reg->recTypes, recordType, subType,
+                                  &clientData);
     } else {
-      if (!(rGroup->recordType)) {
-        logf (LOG_WARN, "No such record type defined");
-        return 0;
-      }
-      logf (LOG_DEBUG, "Get record type from rgroup: %s",rGroup->recordType);
-      recType = recType_byName (zh->reg->recTypes, rGroup->recordType, subType,
-				&clientData);
-      recordType = rGroup->recordType;
+        if (!(rGroup->recordType)) {
+            logf (LOG_WARN, "No such record type defined");
+            return 0;
+        }
+        logf (LOG_DEBUG, "Get record type from rgroup: %s",rGroup->recordType);
+        recType = recType_byName (zh->reg->recTypes, rGroup->recordType, subType,
+                                  &clientData);
+        recordType = rGroup->recordType;
     }
-
+    
     if (!recType) {
-      logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
-      return 0;
+        logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
+        return 0;
     }
-
+    
     extractCtrl.subType = subType;
     extractCtrl.init = extract_init;
     extractCtrl.tokenAdd = extract_token_add;
@@ -1045,25 +1045,24 @@ int bufferExtractRecord (ZebraHandle zh,
     /* match criteria */
     matchStr = NULL;
 
-    if (! *sysno) {
-      char *rinfo;
-      if (strlen(match_criteria) > 0) {
-	matchStr = (char *)match_criteria;
-      } else {
-	if (rGroup->recordId && *rGroup->recordId) {
-	  matchStr = fileMatchStr (zh, &zh->reg->keys, rGroup, fname, 
-				   rGroup->recordId);
-	}
-      }
-      if (matchStr) {
-	rinfo = dict_lookup (zh->reg->matchDict, matchStr);
-	if (rinfo)
-	  memcpy (sysno, rinfo+1, sizeof(*sysno));
-      } else {
-	logf (LOG_WARN, "Bad match criteria (recordID)");
-	return 0;
-      }
-
+    if (! *sysno && match_criteria) {
+        char *rinfo;
+        if (*match_criteria) {
+            matchStr = (char *)match_criteria;
+        } else {
+            if (rGroup->recordId && *rGroup->recordId) {
+                matchStr = fileMatchStr (zh, &zh->reg->keys, rGroup, fname, 
+                                         rGroup->recordId);
+            }
+        }
+        if (matchStr) {
+            rinfo = dict_lookup (zh->reg->matchDict, matchStr);
+            if (rinfo)
+                memcpy (sysno, rinfo+1, sizeof(*sysno));
+        } else {
+            logf (LOG_WARN, "Bad match criteria (recordID)");
+            return 0;
+        }
     }
 
     if (! *sysno)

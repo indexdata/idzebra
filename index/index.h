@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.93 2003-02-27 17:12:11 adam Exp $
+/* $Id: index.h,v 1.94 2003-03-04 23:30:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -296,6 +296,8 @@ struct zebra_session {
     ZebraLockHandle lock_shadow;
 
     int trans_no;
+    int trans_w_no;
+
     int destroyed;
     ZebraSet sets;
     Res res;

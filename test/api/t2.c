@@ -1,4 +1,4 @@
-/* $Id: t2.c,v 1.3 2002-08-02 19:26:57 adam Exp $
+/* $Id: t2.c,v 1.4 2003-03-04 23:30:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -41,8 +41,8 @@ int main(int argc, char **argv)
     
     zs = zebra_start("t2.cfg");
     zh = zebra_open (zs);
-    
-    zebra_begin_trans (zh);
+    zebra_select_database(zh, "Default");
+    zebra_begin_trans (zh, 1);
     zebra_record_insert (zh, myrec, strlen(myrec));
     zebra_end_trans (zh);
     zebra_commit (zh);
