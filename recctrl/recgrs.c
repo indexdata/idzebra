@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: recgrs.c,v 1.53 2002-07-03 10:05:19 adam Exp $
+ * $Id: recgrs.c,v 1.54 2002-07-05 16:07:02 adam Exp $
  */
 
 #include <stdio.h>
@@ -358,6 +358,7 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
             (*p->schemaAdd)(p, oidtmp);
     }
     (*p->init)(p, &wrd);
+
     return dumpkeys(n, p, 0, &wrd);
 }
 
@@ -398,6 +399,8 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
 #if 0
     data1_pr_tree (p->dh, n, stdout);
 #endif
+    data1_iconv (p->dh, mem, n, "ISO-8859-1", "UTF-8");
+
     (*p->init)(p, &wrd);
     if (dumpkeys(n, p, 0, &wrd) < 0)
     {
@@ -707,6 +710,9 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 
 #if 0
     data1_pr_tree (p->dh, node, stdout);
+#endif
+#if 1
+    data1_iconv (p->dh, mem, node, "ISO-8859-1", "UTF-8");
 #endif
     logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
     switch (p->output_format = (p->input_format != VAL_NONE ?
