@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.16 2002-10-30 14:35:09 adam Exp $
+## $Id: Makefile.am,v 1.17 2002-11-26 22:18:17 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -33,4 +33,5 @@ libzebra.a: $(libzebra_a_OBJECTS) $(libzebra_a_DEPENDENCIES)
 	-rm -f atmp/*.o
 	for i in $(libzebra_a_LIBADD); do cd atmp; rm -f __*; ar x ../$$i; cd ..; done
 	ar cru libzebra.a $(libzebra_a_OBJECTS) atmp/*.o
+	-rm -fr atmp
 	$(RANLIB) libzebra.a
