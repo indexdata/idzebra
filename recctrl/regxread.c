@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: regxread.c,v 1.39 2002-04-15 09:07:10 adam Exp $
+ * $Id: regxread.c,v 1.40 2002-05-03 13:50:25 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -672,28 +672,14 @@ static void execData (struct lexSpec *spec,
     {
 	org_len = 0;
 
-	res = data1_mk_node (spec->dh, spec->m);
-	res->parent = parent;
-	res->which = DATA1N_data;
+	res = data1_mk_node (spec->dh, spec->m, DATA1N_data, parent);
 	res->u.data.what = DATA1I_text;
 	res->u.data.len = 0;
 	res->u.data.formatted_text = formatted_text;
-#if 0
-	if (elen > DATA1_LOCALDATA)
-	    res->u.data.data = nmem_malloc (spec->m, elen);
-	else
-	    res->u.data.data = res->lbuf;
-	memcpy (res->u.data.data, ebuf, elen);
-#else
 	res->u.data.data = 0;
-#endif
-	res->root = parent->root;
 	
-	parent->last_child = res;
 	if (spec->d1_stack[spec->d1_level])
 	    spec->d1_stack[spec->d1_level]->next = res;
-	else
-	    parent->child = res;
 	spec->d1_stack[spec->d1_level] = res;
     }
     if (org_len + elen >= spec->concatBuf[spec->d1_level].max)
@@ -776,21 +762,9 @@ static void variantBegin (struct lexSpec *spec,
     
     if (parent->which != DATA1N_variant)
     {
-	res = data1_mk_node (spec->dh, spec->m);
-	res->parent = parent;
-	res->which = DATA1N_variant;
-	res->u.variant.type = 0;
-	res->u.variant.value = 0;
-	res->root = parent->root;
-
-	parent->last_child = res;
+	res = data1_mk_node (spec->dh, spec->m, DATA1N_variant, parent);
 	if (spec->d1_stack[spec->d1_level])
-	{
 	    tagDataRelease (spec);
-	    spec->d1_stack[spec->d1_level]->next = res;
-	}
-	else
-	    parent->child = res;
 	spec->d1_stack[spec->d1_level] = res;
 	spec->d1_stack[++(spec->d1_level)] = NULL;
     }
@@ -805,10 +779,7 @@ static void variantBegin (struct lexSpec *spec,
     logf (LOG_LOG, "variant node (%d)", spec->d1_level);
 #endif
     parent = spec->d1_stack[spec->d1_level-1];
-    res = data1_mk_node (spec->dh, spec->m);
-    res->parent = parent;
-    res->which = DATA1N_variant;
-    res->root = parent->root;
+    res = data1_mk_node (spec->dh, spec->m, DATA1N_variant, parent);
     res->u.variant.type = tp;
 
     if (value_len >= DATA1_LOCALDATA)
@@ -818,14 +789,8 @@ static void variantBegin (struct lexSpec *spec,
 
     res->u.variant.value = res->lbuf;
     
-    parent->last_child = res;
     if (spec->d1_stack[spec->d1_level])
-    {
 	tagDataRelease (spec);
-        spec->d1_stack[spec->d1_level]->next = res;
-    }
-    else
-        parent->child = res;
     spec->d1_stack[spec->d1_level] = res;
     spec->d1_stack[++(spec->d1_level)] = NULL;
 }
@@ -863,8 +828,7 @@ static void tagBegin (struct lexSpec *spec,
     parent = spec->d1_stack[spec->d1_level -1];
     partag = get_parent_tag(spec->dh, parent);
    
-    res = data1_mk_node_type (spec->dh, spec->m, DATA1N_tag);
-    res->parent = parent;
+    res = data1_mk_node (spec->dh, spec->m, DATA1N_tag, parent);
 
     if (len >= DATA1_LOCALDATA)
 	res->u.tag.tag = (char *) nmem_malloc (spec->m, len+1);
@@ -887,16 +851,9 @@ static void tagBegin (struct lexSpec *spec,
 				      spec->d1_stack[0]->u.root.absyn,
 				      e, res->u.tag.tag);
     res->u.tag.element = elem;
-    res->root = parent->root;
 
-    parent->last_child = res;
     if (spec->d1_stack[spec->d1_level])
-    {
 	tagDataRelease (spec);
-        spec->d1_stack[spec->d1_level]->next = res;
-    }
-    else
-        parent->child = res;
     spec->d1_stack[spec->d1_level] = res;
     spec->d1_stack[++(spec->d1_level)] = NULL;
 }
@@ -1335,11 +1292,9 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 #endif
                     absyn = data1_get_absyn (spec->dh, absynName);
 
-                    res = data1_mk_node (spec->dh, spec->m);
-                    res->which = DATA1N_root;
+                    res = data1_mk_node (spec->dh, spec->m, DATA1N_root, 0);
                     res->u.root.type = absynName;
                     res->u.root.absyn = absyn;
-                    res->root = res;
                     
                     spec->d1_stack[spec->d1_level] = res;
                     spec->d1_stack[++(spec->d1_level)] = NULL;

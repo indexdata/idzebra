@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: recgrs.c,v $
- * Revision 1.46  2002-04-13 18:16:43  adam
+ * Revision 1.47  2002-05-03 13:50:25  adam
+ * data1 cleanup
+ *
+ * Revision 1.46  2002/04/13 18:16:43  adam
  * More XPATH work; common sequence numbers for extract keys
  *
  * Revision 1.45  2002/04/12 14:40:42  adam
@@ -766,8 +769,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     data1_pr_tree (p->dh, node, stdout);
 #endif
     logf (LOG_DEBUG, "grs_retrieve: size");
-    if ((dnew = data1_insert_taggeddata(p->dh, node, node,
-				       "size", mem)))
+    if ((dnew = data1_mk_tag_data_wd(p->dh, node, node,"size", mem)))
     {
 	dnew->u.data.what = DATA1I_text;
 	dnew->u.data.data = dnew->lbuf;
@@ -777,7 +779,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 
     tagname = res_get_def(p->res, "tagrank", "rank");
     if (strcmp(tagname, "0") && p->score >= 0 &&
-	(dnew = data1_insert_taggeddata(p->dh, node, node, tagname, mem)))
+	(dnew = data1_mk_tag_data_wd(p->dh, node, node, tagname, mem)))
     {
         logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_num;
@@ -788,7 +790,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 
     tagname = res_get_def(p->res, "tagsysno", "localControlNumber");
     if (strcmp(tagname, "0") && p->localno > 0 &&
-   	 (dnew = data1_insert_taggeddata(p->dh, node, node, tagname, mem)))
+   	 (dnew = data1_mk_tag_data_wd(p->dh, node, node, tagname, mem)))
     {
         logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_text;
@@ -796,6 +798,8 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	sprintf(dnew->u.data.data, "%d", p->localno);
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
+
+    data1_pr_tree (p->dh, node, stdout);
 
     if (p->comp && p->comp->which == Z_RecordComp_complex &&
 	p->comp->u.complex->generic &&
@@ -884,8 +888,8 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	    }
 	    *(p++) = '\0';
 		
-	    if ((dnew = data1_insert_taggeddata(dh, node, node,
-						"schemaIdentifier", mem)))
+	    if ((dnew = data1_mk_tag_data_wd(dh, node, node,
+                                             "schemaIdentifier", mem)))
 	    {
 		dnew->u.data.what = DATA1I_oid;
 		dnew->u.data.data = (char *) nmem_malloc(mem, p - tmp);

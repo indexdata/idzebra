@@ -1,39 +1,37 @@
 Zebra TODO
-$Id: TODO,v 1.10 2000-12-05 10:01:44 adam Exp $
+$Id: TODO,v 1.11 2002-05-03 13:50:24 adam Exp $
+
+Make test scripts.
+
+Add XML parser (EXPAT).
+
+Ensure that UTF-8 indexing works and that EXPAT using
+other character set is converted to it.
+
+Handle free lists for isamb (possibly others).
+
+Check that recordId: actually works.
+
+Finish X-path-like search including attributes.
+
+Make "fake" absyn even though no-one is found and warn
+first time. Make directive to enable/disable xpath-indexing.
+
+For traditional searches, allow string attributes that matches
+name in *.att-file.
 
 Explain category Attributedetails should include name/description
 of search- attrribute.
 
-String indexing/search (possibly including XPATH-like queres)
-
-Null-value search.
-
-Handle XML empty node constructs <tag/>
-
-Browse set.
-
-Multiple register areas.
-
-Hit Vector for each term in query in search-response PDU.
-
 Prefix configuration for externally stored records.
-
-Size of sort entries should be configurable.
-
-Use first field in sorting, i.e. author.
 
 System number sorting.
 
 Configurable default sorting criteria - used when query is not ranked.
 
+Use first field in sorting, i.e. author.
+
+Size of sort entries should be configurable.
+
 Configurable default search attributes.
-
-Better ranking in searches. Admin should be able specify initial
- weight to certain fields.
-
-ISAMC optimization: indirect block with pointers to all blocks
- in chain. The initial block should include the count as well.
-
-Create surrogate diagnostic when ONE record is missing insead of a
-non-surrogate diagnostic.
 

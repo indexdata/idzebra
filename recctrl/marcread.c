@@ -1,47 +1,9 @@
 /*
- * Copyright (C) 1997-1999, Index Data
+ * Copyright (C) 1997-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: marcread.c,v $
- * Revision 1.12  2002-04-09 14:36:53  adam
- * Fix XML attributes for MARC reader
- *
- * Revision 1.11  2000/05/15 15:32:51  adam
- * Added support for 64 bit input file support.
- *
- * Revision 1.10  1999/11/30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.9  1999/06/25 13:47:25  adam
- * Minor change that prevents MSVC warning.
- *
- * Revision 1.8  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.7  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.6  1999/02/02 14:51:27  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.5  1997/11/18 10:03:24  adam
- * Member num_children removed from data1_node.
- *
- * Revision 1.4  1997/10/27 14:34:26  adam
- * Fixed bug - data1 root node wasn't tagged at all!
- *
- * Revision 1.3  1997/09/24 13:36:51  adam
- * *** empty log message ***
- *
- * Revision 1.2  1997/09/17 12:19:21  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.1  1997/09/04 13:54:40  adam
- * Added MARC filter - type grs.marc.<syntax> where syntax refers
- * to abstract syntax. New method tellf in retrieve/extract method.
- *
+ * $Id: marcread.c,v 1.13 2002-05-03 13:50:25 adam Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -51,88 +13,6 @@
 #include <yaz/yaz-util.h>
 #include <yaz/marcdisp.h>
 #include "grsread.h"
-
-data1_node *data1_mk_node_wp (data1_handle dh, NMEM mem, data1_node *parent)
-{
-    data1_node *res = data1_mk_node (dh, mem);
-    
-    if (!parent)
-        res->root = res;
-    else
-    {
-        res->root = parent->root;
-        res->parent = parent;
-        if (!parent->child)
-            parent->child = parent->last_child = res;
-        else
-            parent->last_child->next = res;
-        parent->last_child = res;
-    }
-    return res;
-}
-
-static void destroy_data (struct data1_node *n)
-{
-    assert (n->which == DATA1N_data);
-    xfree (n->u.data.data);
-}
-
-data1_node *data1_mk_node_text (data1_handle dh, NMEM mem, data1_node *parent,
-                                const char *buf, size_t len)
-{
-    data1_node *res = data1_mk_node_wp (dh, mem, parent);
-    res->which = DATA1N_data;
-    res->u.data.formatted_text = 0;
-    res->u.data.what = DATA1I_text;
-    res->u.data.len = len;
-    if (res->u.data.len > DATA1_LOCALDATA) {
-        res->u.data.data = (char *) xmalloc (res->u.data.len);
-        res->destroy = destroy_data;
-    }
-    else
-        res->u.data.data = res->lbuf;
-    memcpy (res->u.data.data, buf, res->u.data.len);
-    return res;
-}
-
-data1_node *data1_mk_node_tag (data1_handle dh, NMEM mem, data1_node *parent,
-                               const char *tag, size_t len)
-{
-    data1_element *elem = NULL;
-    data1_node *partag = get_parent_tag(dh, parent);
-    data1_node *res;
-    data1_element *e = NULL;
-    int localtag = 0;
-    
-    res = data1_mk_node_wp (dh, mem, parent);
-
-    res->which = DATA1N_tag;
-    res->u.tag.tag = res->lbuf;
-    res->u.tag.get_bytes = -1;
-#if DATA1_USING_XATTR
-    res->u.tag.attributes = 0;
-#endif
-
-    if (len >= DATA1_LOCALDATA)
-        len = DATA1_LOCALDATA-1;
-
-    memcpy (res->u.tag.tag, tag, len);
-    res->u.tag.tag[len] = '\0';
-   
-    if (parent->which == DATA1N_variant)
-        return res;
-    if (partag)
-        if (!(e = partag->u.tag.element))
-            localtag = 1;
-    
-    elem = data1_getelementbytagname (dh, res->root->u.root.absyn, e,
-                                      res->u.tag.tag);
-    res->u.tag.element = elem;
-    res->u.tag.node_selected = 0;
-    res->u.tag.make_variantlist = 0;
-    res->u.tag.no_data_requested = 0;
-    return res;
-}
 
 #define MARC_DEBUG 0
 
@@ -153,7 +33,6 @@ data1_node *grs_read_marc (struct grs_read_info *p)
 #endif
 
     data1_node *res_root;
-    data1_absyn *absyn;
     char *absynName;
     data1_marctab *marctab;
 
@@ -181,19 +60,14 @@ data1_node *grs_read_marc (struct grs_read_info *p)
 	    (*p->endf)(p->fh, cur_offset - 1);
     }
     absynName = p->type;
-    logf (LOG_DEBUG, "absynName = %s", absynName);
-    if (!(absyn = data1_get_absyn (p->dh, absynName)))
+    res_root = data1_mk_root (p->dh, p->mem, absynName);
+    if (!res_root)
     {
-        logf (LOG_WARN, "Unknown abstract syntax: %s", absynName);
-        return NULL;
+        yaz_log (LOG_WARN, "cannot read MARC without an abstract syntax");
+        return 0;
     }
-    res_root = data1_mk_node_wp (p->dh, p->mem, NULL);
-    res_root->which = DATA1N_root;
-    res_root->u.root.type = (char *) nmem_malloc (p->mem, strlen(absynName)+1);
-    strcpy (res_root->u.root.type, absynName);
-    res_root->u.root.absyn = absyn;
 
-    marctab = absyn->marc;
+    marctab = res_root->u.root.absyn->marc;
 
     if (marctab && marctab->force_indicator_length >= 0)
 	indicator_length = marctab->force_indicator_length;
@@ -204,7 +78,6 @@ data1_node *grs_read_marc (struct grs_read_info *p)
     else
 	identifier_length = atoi_n (buf+11, 1);
     base_address = atoi_n (buf+12, 4);
-
 
     length_data_entry = atoi_n (buf+20, 1);
     length_starting = atoi_n (buf+21, 1);
@@ -227,8 +100,9 @@ data1_node *grs_read_marc (struct grs_read_info *p)
         entry_p += 3;
         tag[3] = '\0';
 
+
         /* generate field node */
-        res = data1_mk_node_tag (p->dh, p->mem, res_root, tag, 3);
+        res = data1_mk_tag_n (p->dh, p->mem, tag, 3, res_root);
 
 #if MARC_DEBUG
         fprintf (outf, "%s ", tag);
@@ -246,8 +120,8 @@ data1_node *grs_read_marc (struct grs_read_info *p)
 #if MARC_DEBUG
             int j;
 #endif
-            res = data1_mk_node_tag (p->dh, p->mem, res, buf+i,
-				     indicator_length);
+            res = data1_mk_tag_n (p->dh, p->mem, 
+                                  buf+i, indicator_length, res);
 #if MARC_DEBUG
             for (j = 0; j<indicator_length; j++)
                 fprintf (outf, "%c", buf[j+i]);
@@ -262,8 +136,8 @@ data1_node *grs_read_marc (struct grs_read_info *p)
             if (memcmp (tag, "00", 2) && identifier_length)
             {
 	        data1_node *res =
-		    data1_mk_node_tag (p->dh, p->mem, parent,
-				       buf+i+1, identifier_length-1);
+		    data1_mk_tag_n (p->dh, p->mem,
+                                    buf+i+1, identifier_length-1, parent);
 #if MARC_DEBUG
                 fprintf (outf, " $"); 
                 for (j = 1; j<identifier_length; j++)
@@ -280,7 +154,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
 #endif
                     i++;
                 }
-                data1_mk_node_text (p->dh, p->mem, res, buf + i0, i - i0);
+                data1_mk_text_n (p->dh, p->mem, buf + i0, i - i0, res);
 		i0 = i;
             }
             else
@@ -293,9 +167,9 @@ data1_node *grs_read_marc (struct grs_read_info *p)
         }
         if (i > i0)
 	{
-	    data1_node *res = data1_mk_node_tag (p->dh, p->mem,
-						 parent, "@", 1);
-            data1_mk_node_text (p->dh, p->mem, res, buf + i0, i - i0);
+	    data1_node *res = data1_mk_tag_n (p->dh, p->mem,
+                                              "@", 1, parent);
+            data1_mk_text_n (p->dh, p->mem, buf + i0, i - i0, res);
 	}
 #if MARC_DEBUG
         fprintf (outf, "\n");
