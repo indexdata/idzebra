@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.7 2003-02-28 18:38:28 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.8 2003-03-03 00:47:58 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -505,45 +505,44 @@ static void _swig_create_magic(CPerlObj *pPerl, SV *sv, const char *name, int (C
 #define  SWIGTYPE_p_ODR swig_types[4] 
 #define  SWIGTYPE_p_f_p_void__int swig_types[5] 
 #define  SWIGTYPE_p_p_char swig_types[6] 
-#define  SWIGTYPE_p_oid_value swig_types[7] 
-#define  SWIGTYPE_p_data1_absyn swig_types[8] 
-#define  SWIGTYPE_p_ZebraHandle swig_types[9] 
-#define  SWIGTYPE_p_void swig_types[10] 
-#define  SWIGTYPE_p_data1_attset swig_types[11] 
-#define  SWIGTYPE_p_size_t swig_types[12] 
-#define  SWIGTYPE_p_WRBUF swig_types[13] 
-#define  SWIGTYPE_p_f_data1_handle_p_void_p_data1_absyn__void swig_types[14] 
-#define  SWIGTYPE_p_Z_Espec1 swig_types[15] 
-#define  SWIGTYPE_p_off_t swig_types[16] 
-#define  SWIGTYPE_p_Odr_oid swig_types[17] 
-#define  SWIGTYPE_p_data1_varset swig_types[18] 
-#define  SWIGTYPE_p_RetrievalRecordBuf swig_types[19] 
-#define  SWIGTYPE_p_perl_context swig_types[20] 
-#define  SWIGTYPE_p_data1_node swig_types[21] 
-#define  SWIGTYPE_p_ScanObj swig_types[22] 
-#define  SWIGTYPE_p_RetrievalObj swig_types[23] 
-#define  SWIGTYPE_p_data1_tagset swig_types[24] 
-#define  SWIGTYPE_p_data1_tag swig_types[25] 
-#define  SWIGTYPE_p_ZebraRetrievalRecord swig_types[26] 
-#define  SWIGTYPE_p_RetrievalRecord swig_types[27] 
-#define  SWIGTYPE_p_NMEM swig_types[28] 
-#define  SWIGTYPE_p_Z_ExplainRecord swig_types[29] 
-#define  SWIGTYPE_p_data1_marctab swig_types[30] 
-#define  SWIGTYPE_p_ZebraTransactionStatus swig_types[31] 
-#define  SWIGTYPE_p_Z_BriefBib swig_types[32] 
-#define  SWIGTYPE_p_ScanEntry swig_types[33] 
-#define  SWIGTYPE_p_f_p_void_p_char_size_t__int swig_types[34] 
-#define  SWIGTYPE_p_FILE swig_types[35] 
-#define  SWIGTYPE_p_data1_element swig_types[36] 
-#define  SWIGTYPE_p_recordGroup swig_types[37] 
-#define  SWIGTYPE_p_int swig_types[38] 
-#define  SWIGTYPE_p_data1_handle swig_types[39] 
-#define  SWIGTYPE_p_p_int swig_types[40] 
-#define  SWIGTYPE_p_data1_absyn_cache swig_types[41] 
-#define  SWIGTYPE_p_data1_attset_cache swig_types[42] 
-#define  SWIGTYPE_p_Z_GenericRecord swig_types[43] 
-#define  SWIGTYPE_p_data1_vartype swig_types[44] 
-static swig_type_info *swig_types[46];
+#define  SWIGTYPE_p_data1_absyn swig_types[7] 
+#define  SWIGTYPE_p_ZebraHandle swig_types[8] 
+#define  SWIGTYPE_p_void swig_types[9] 
+#define  SWIGTYPE_p_data1_attset swig_types[10] 
+#define  SWIGTYPE_p_size_t swig_types[11] 
+#define  SWIGTYPE_p_WRBUF swig_types[12] 
+#define  SWIGTYPE_p_f_data1_handle_p_void_p_data1_absyn__void swig_types[13] 
+#define  SWIGTYPE_p_Z_Espec1 swig_types[14] 
+#define  SWIGTYPE_p_off_t swig_types[15] 
+#define  SWIGTYPE_p_Odr_oid swig_types[16] 
+#define  SWIGTYPE_p_data1_varset swig_types[17] 
+#define  SWIGTYPE_p_RetrievalRecordBuf swig_types[18] 
+#define  SWIGTYPE_p_perl_context swig_types[19] 
+#define  SWIGTYPE_p_data1_node swig_types[20] 
+#define  SWIGTYPE_p_ScanObj swig_types[21] 
+#define  SWIGTYPE_p_RetrievalObj swig_types[22] 
+#define  SWIGTYPE_p_data1_tagset swig_types[23] 
+#define  SWIGTYPE_p_data1_tag swig_types[24] 
+#define  SWIGTYPE_p_ZebraRetrievalRecord swig_types[25] 
+#define  SWIGTYPE_p_RetrievalRecord swig_types[26] 
+#define  SWIGTYPE_p_NMEM swig_types[27] 
+#define  SWIGTYPE_p_Z_ExplainRecord swig_types[28] 
+#define  SWIGTYPE_p_data1_marctab swig_types[29] 
+#define  SWIGTYPE_p_ZebraTransactionStatus swig_types[30] 
+#define  SWIGTYPE_p_Z_BriefBib swig_types[31] 
+#define  SWIGTYPE_p_ScanEntry swig_types[32] 
+#define  SWIGTYPE_p_f_p_void_p_char_size_t__int swig_types[33] 
+#define  SWIGTYPE_p_FILE swig_types[34] 
+#define  SWIGTYPE_p_data1_element swig_types[35] 
+#define  SWIGTYPE_p_recordGroup swig_types[36] 
+#define  SWIGTYPE_p_int swig_types[37] 
+#define  SWIGTYPE_p_data1_handle swig_types[38] 
+#define  SWIGTYPE_p_p_int swig_types[39] 
+#define  SWIGTYPE_p_data1_absyn_cache swig_types[40] 
+#define  SWIGTYPE_p_data1_attset_cache swig_types[41] 
+#define  SWIGTYPE_p_Z_GenericRecord swig_types[42] 
+#define  SWIGTYPE_p_data1_vartype swig_types[43] 
+static swig_type_info *swig_types[45];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -1799,12 +1798,128 @@ XS(_wrap_RetrievalRecord_base_get) {
 }
 
 
+XS(_wrap_RetrievalRecord_sysno_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecord *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: RetrievalRecord_sysno_set(self,sysno);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalRecord,0) < 0) {
+                SWIG_croak("Type error in argument 1 of RetrievalRecord_sysno_set. Expected _p_RetrievalRecord");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->sysno = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_RetrievalRecord_sysno_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecord *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: RetrievalRecord_sysno_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalRecord,0) < 0) {
+                SWIG_croak("Type error in argument 1 of RetrievalRecord_sysno_get. Expected _p_RetrievalRecord");
+            }
+        }
+        result = (int) ((arg1)->sysno);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_RetrievalRecord_score_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecord *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: RetrievalRecord_score_set(self,score);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalRecord,0) < 0) {
+                SWIG_croak("Type error in argument 1 of RetrievalRecord_score_set. Expected _p_RetrievalRecord");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->score = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_RetrievalRecord_score_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecord *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: RetrievalRecord_score_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalRecord,0) < 0) {
+                SWIG_croak("Type error in argument 1 of RetrievalRecord_score_get. Expected _p_RetrievalRecord");
+            }
+        }
+        result = (int) ((arg1)->score);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_RetrievalRecord_format_set) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
         RetrievalRecord *arg1 ;
-        oid_value arg2 ;
+        char *arg2 ;
         int argvi = 0;
         dXSARGS;
         
@@ -1816,15 +1931,13 @@ XS(_wrap_RetrievalRecord_format_set) {
                 SWIG_croak("Type error in argument 1 of RetrievalRecord_format_set. Expected _p_RetrievalRecord");
             }
         }
+        if (!SvOK((SV*) ST(1))) arg2 = 0;
+        else arg2 = (char *) SvPV(ST(1), PL_na);
         {
-            oid_value * argp;
-            if (SWIG_ConvertPtr(ST(1),(void **) &argp, SWIGTYPE_p_oid_value,0) < 0) {
-                SWIG_croak("Type error in argument 2 of RetrievalRecord_format_set. Expected _p_oid_value");
-            }
-            arg2 = *argp;
+            if (arg1->format) free((char*)arg1->format);
+            arg1->format = (char *) malloc(strlen(arg2)+1);
+            strcpy((char*)arg1->format,arg2);
         }
-        if (arg1) (arg1)->format = arg2;
-        
         
         XSRETURN(argvi);
         fail:
@@ -1839,7 +1952,7 @@ XS(_wrap_RetrievalRecord_format_get) {
     const char *_swigerr = _swigmsg;
     {
         RetrievalRecord *arg1 ;
-        oid_value result;
+        char *result;
         int argvi = 0;
         dXSARGS;
         
@@ -1851,13 +1964,13 @@ XS(_wrap_RetrievalRecord_format_get) {
                 SWIG_croak("Type error in argument 1 of RetrievalRecord_format_get. Expected _p_RetrievalRecord");
             }
         }
-        result =  ((arg1)->format);
+        result = (char *) ((arg1)->format);
         
-        {
-            oid_value * resultobj = (oid_value *) malloc(sizeof(oid_value));
-            memmove(resultobj, &result, sizeof(oid_value));
-            ST(argvi) = sv_newmortal();
-            SWIG_MakePtr(ST(argvi++), (void *) resultobj, SWIGTYPE_p_oid_value,0);
+        ST(argvi) = sv_newmortal();
+        if (result) {
+            sv_setpv((SV*)ST(argvi++), (char *) result);
+        }else {
+            sv_setsv((SV*)ST(argvi++), &PL_sv_undef);
         }
         XSRETURN(argvi);
         fail:
@@ -1920,7 +2033,11 @@ XS(_wrap_RetrievalRecord_buf_get) {
         result = (RetrievalRecordBuf *) ((arg1)->buf);
         
         {
-            ST(argvi) = newSVpv(result->buf,result->len);
+            if (result->len) {
+                ST(argvi) = newSVpv(result->buf,result->len);
+            }else {
+                ST(argvi) = newSVpv("",0);
+            }
             sv_2mortal(ST(argvi));
             argvi++;
         }
@@ -8099,7 +8216,6 @@ static swig_type_info _swigt__p_data1_maptab[] = {{"_p_data1_maptab", 0, "data1_
 static swig_type_info _swigt__p_ODR[] = {{"_p_ODR", 0, "ODR *", 0},{"_p_ODR"},{0}};
 static swig_type_info _swigt__p_f_p_void__int[] = {{"_p_f_p_void__int", 0, "int (*)(void *)", 0},{"_p_f_p_void__int"},{0}};
 static swig_type_info _swigt__p_p_char[] = {{"_p_p_char", 0, "char **", 0},{"_p_p_char"},{0}};
-static swig_type_info _swigt__p_oid_value[] = {{"_p_oid_value", 0, "oid_value *", 0},{"_p_oid_value"},{0}};
 static swig_type_info _swigt__p_data1_absyn[] = {{"_p_data1_absyn", 0, "data1_absyn *", 0},{"_p_data1_absyn"},{0}};
 static swig_type_info _swigt__p_ZebraHandle[] = {{"_p_ZebraHandle", 0, "ZebraHandle *", 0},{"_p_ZebraHandle"},{0}};
 static swig_type_info _swigt__p_void[] = {{"_p_void", 0, "void *", 0},{"_p_void"},{0}};
@@ -8146,7 +8262,6 @@ _swigt__p_data1_maptab,
 _swigt__p_ODR, 
 _swigt__p_f_p_void__int, 
 _swigt__p_p_char, 
-_swigt__p_oid_value, 
 _swigt__p_data1_absyn, 
 _swigt__p_ZebraHandle, 
 _swigt__p_void, 
@@ -8279,6 +8394,10 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::RetrievalRecord_position_get", _wrap_RetrievalRecord_position_get},
 {"IDZebrac::RetrievalRecord_base_set", _wrap_RetrievalRecord_base_set},
 {"IDZebrac::RetrievalRecord_base_get", _wrap_RetrievalRecord_base_get},
+{"IDZebrac::RetrievalRecord_sysno_set", _wrap_RetrievalRecord_sysno_set},
+{"IDZebrac::RetrievalRecord_sysno_get", _wrap_RetrievalRecord_sysno_get},
+{"IDZebrac::RetrievalRecord_score_set", _wrap_RetrievalRecord_score_set},
+{"IDZebrac::RetrievalRecord_score_get", _wrap_RetrievalRecord_score_get},
 {"IDZebrac::RetrievalRecord_format_set", _wrap_RetrievalRecord_format_set},
 {"IDZebrac::RetrievalRecord_format_get", _wrap_RetrievalRecord_format_get},
 {"IDZebrac::RetrievalRecord_buf_set", _wrap_RetrievalRecord_buf_set},

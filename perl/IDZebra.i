@@ -15,7 +15,11 @@
 /* RetrievalRecordBuff is a special construct, to allow to map a char * buf
    to non-null terminated perl string scalar value (SVpv). */
 %typemap(out) RetrievalRecordBuf * {
-  $result = newSVpv($1->buf,$1->len);
+  if ($1->len) {
+    $result = newSVpv($1->buf,$1->len);
+  } else {
+    $result = newSVpv("",0);
+  }
   sv_2mortal($result);
   argvi++;
 }
