@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.1 2002-08-29 01:16:12 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.2 2002-08-29 16:30:22 mike Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -54,7 +54,7 @@
   <para>
    Go to the
    <literal>zebra/examples/dinosauricon</literal>
-   directory.  There you will find three significant files:
+   directory.  There you will find two significant files:
   </para>
 
   <itemizedlist>
@@ -74,9 +74,9 @@
      which is as short and simple as it can be:
      <!-- ### Keep this up to date -->
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.1 2002-08-29 01:16:12 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.2 2002-08-29 16:30:22 mike Exp $
 	# Bare-bones master configuration file for Zebra
-	attset: bib1.att
+	profilePath: .:../../tab:../../../yaz/tab
      </screen>
      Apart from the comments, which are ignored, all this specifies is
      that the server should recognise the attribute set described in
@@ -86,13 +86,13 @@
     <!-- ### What is an attribute set? -->
    </listitem>
 
+<!--
    <listitem>
     <para>
      The BIB-1 attribute set configuration file,
      <literal>bib1.att</literal>, which is also as short as possible:
-     <!-- ### Keep this up to date -->
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.1 2002-08-29 01:16:12 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.2 2002-08-29 16:30:22 mike Exp $
 	# Bare-bones BIB-1 attribute set file for Zebra
 	reference Bib-1
      </screen>
@@ -101,13 +101,14 @@
      <literal>Bib-1</literal>, a name recognised by the system as
      referring to a well-known opaque identifier that is transmitted
      by clients as part of their searches.
-     <!-- ### Yeuch!  Surely we can say that better! -->
+     ### Yeuch!  Surely we can say that better!
     </para>
     <para>
      ### Can't we somehow say this trivial thing in the main
      configuration file?
     </para>
    </listitem>
+-->
   </itemizedlist>
 
   <para>
@@ -130,10 +131,24 @@
 	Z&gt; open tcp:@:9999
 	Connecting...Ok.
 	Z&gt; find @attr 1=/GENUS/MEANING @or vertebra jaw
-	Number of hits: 2
+	Number of hits: 1
 	Z&gt; format xml
 	Z&gt; show 1
-	&lt;GENUS name="Anurognathus" type="with" xmlns:idzebra="http://www.indexdata.dk/zebra/"&gt;&lt;SPECIES name="ammoni"&gt;&lt;AUTHOR name="Doederline" year="1923"&gt;&lt;/AUTHOR&gt;&lt;/SPECIES&gt;&lt;MEANING&gt;tailless&lt;I&gt;or&lt;/I&gt;anuran&lt;LOW&gt;(frog)&lt;/LOW&gt;jaw&lt;/MEANING&gt;&lt;TIME value="Tithonian" section="late"&gt;&lt;/TIME&gt;&lt;PLACE name="Germany"&gt;&lt;/PLACE&gt;&lt;LENGTH wingspan="1" value=".5"&gt;&lt;/LENGTH&gt;&lt;idzebra:size&gt;304&lt;/idzebra:size&gt;&lt;idzebra:localnumber&gt;70&lt;/idzebra:localnumber&gt;&lt;idzebra:filename&gt;records/genera.xml&lt;/idzebra:filename&gt;&lt;/GENUS&gt;
+	Z> show 1
+	&lt;GENUS name="Hudiesaurus" type="with" xmlns:idzebra="http://www.indexdata.dk/zebra/"&gt;
+	 &lt;MEANING&gt;
+	  butterfly &lt;LOW&gt;vertebra&lt;/LOW&gt; lizard
+	 &lt;/MEANING&gt;
+	 &lt;LENGTH value="30"&gt;&lt;/LENGTH&gt;
+	 &lt;PLACE name="China"&gt;&lt;/PLACE&gt;
+	 &lt;REMAINS content="4 teeth, forelimb, first dorsal vertebra"&gt;&lt;/REMAINS&gt;
+	 &lt;SPECIES name="sinojapanorum" status="nudum"&gt;
+	  &lt;AUTHOR name="Dong" year="1997"&gt;&lt;/AUTHOR&gt;
+	  &lt;MEANING&gt;
+	   Chinese-Japanese
+	  &lt;/MEANING&gt;
+	 &lt;/SPECIES&gt;
+	&lt;idzebra:size&gt;359&lt;/idzebra:size&gt;&lt;idzebra:localnumber&gt;447&lt;/idzebra:localnumber&gt;&lt;idzebra:filename&gt;records/genera.xml&lt;/idzebra:filename&gt;&lt;/GENUS&gt;
    </screen>
   </para>
  </sect1>
