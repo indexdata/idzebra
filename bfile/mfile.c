@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.28  1998-05-20 10:00:35  adam
+ * Revision 1.29  1998-05-27 14:28:34  adam
+ * Fixed bug in mf_write. 'Cap off' byte written at wrong offset.
+ *
+ * Revision 1.28  1998/05/20 10:00:35  adam
  * Fixed register spec so that colon isn't treated as size separator
  * unless followed by [0-9+-] in order to allow DOS drive specifications.
  *
@@ -508,8 +511,9 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 		    mf->files[mf->cur_file].path, nblocks);
 	    	if ((ps = file_position(mf,
 		    (mf->cur_file ? mf->files[mf->cur_file-1].top : 0) +
-		    mf->files[mf->cur_file].blocks + nblocks, 0)) < 0)
+		    mf->files[mf->cur_file].blocks + nblocks - 1, 0)) < 0)
 			exit(1);
+		logf (LOG_DEBUG, "ps = %d", ps);
 		if (write(mf->files[mf->cur_file].fd, &dummych, 1) < 1)
 		{
 		    logf (LOG_ERRNO|LOG_FATAL, "write dummy");
