@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.5  1997-10-27 14:33:05  adam
+ * Revision 1.6  1998-02-17 10:29:27  adam
+ * Moved towards 'automatic' EXPLAIN database.
+ *
+ * Revision 1.5  1997/10/27 14:33:05  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -83,6 +86,14 @@ void zebTargetInfo_close (ZebTargetInfo *zti, int writeFlag)
                 else
                 {
                     drec = rec_new (zti->records);
+		    
+		    drec->info[recInfo_fileType] =
+			rec_strdup ("grs.explain.databaseInfo",
+				    &drec->size[recInfo_fileType]);
+
+		    drec->info[recInfo_databaseName] =
+			rec_strdup ("IR-Explain-1",
+				    &drec->size[recInfo_databaseName]); 
                     zdi->sysno = drec->sysno;
                 }
                 assert (drec);
@@ -97,10 +108,10 @@ void zebTargetInfo_close (ZebTargetInfo *zti, int writeFlag)
                     memcpy (q, &zsui->info, sizeof(zsui->info));
                     q += sizeof(zsui->info);
                 }
-                xfree (drec->info[0]);
-                drec->size[0] = q-q0;
-                drec->info[0] = xmalloc (drec->size[0]);
-                memcpy (drec->info[0], q0, drec->size[0]);
+                xfree (drec->info[recInfo_storeData]);
+                drec->size[recInfo_storeData] = q-q0;
+                drec->info[recInfo_storeData] = xmalloc (drec->size[recInfo_storeData]);
+                memcpy (drec->info[recInfo_storeData], q0, drec->size[recInfo_storeData]);
                 rec_put (zti->records, &drec);
             }
             strcpy (p, zdi->databaseName);
@@ -114,10 +125,10 @@ void zebTargetInfo_close (ZebTargetInfo *zti, int writeFlag)
             Record grec = rec_get (zti->records, 1);
 
             assert (grec);
-            xfree (grec->info[0]);
-            grec->size[0] = p-p0;
-            grec->info[0] = xmalloc (grec->size[0]);
-            memcpy (grec->info[0], p0, grec->size[0]);
+            xfree (grec->info[recInfo_storeData]);
+            grec->size[recInfo_storeData] = p-p0;
+            grec->info[recInfo_storeData] = xmalloc (grec->size[recInfo_storeData]);
+            memcpy (grec->info[recInfo_storeData], p0, grec->size[recInfo_storeData]);
             rec_put (zti->records, &grec);
         }
     }
@@ -139,7 +150,7 @@ void zebTargetInfo_close (ZebTargetInfo *zti, int writeFlag)
 
 ZebTargetInfo *zebTargetInfo_open (Records records, int writeFlag)
 {
-    Record rec;
+    Record trec;
     ZebTargetInfo *zti;
     struct zebDatabaseInfoB **zdi;
 
@@ -150,12 +161,12 @@ ZebTargetInfo *zebTargetInfo_open (Records records, int writeFlag)
 
     zdi = &zti->databaseInfo;
     
-    rec = rec_get (records, 1);
-    if (rec)
+    trec = rec_get (records, 1);
+    if (trec)
     {
         const char *p;
 
-        p = rec->info[0];
+        p = trec->info[recInfo_storeData];
 
         memcpy (&zti->dictNum, p, sizeof(zti->dictNum));
         p += sizeof(zti->dictNum);
@@ -171,23 +182,31 @@ ZebTargetInfo *zebTargetInfo_open (Records records, int writeFlag)
             (*zdi)->dirty = 0;
             zdi = &(*zdi)->next;
         }
-        assert (p - rec->info[0] == rec->size[0]-1);
+        assert (p - trec->info[recInfo_storeData] == trec->size[recInfo_storeData]-1);
     }
     else
     {
         zti->dictNum = 1;
         if (writeFlag)
         {
-            rec = rec_new (records);
-            rec->info[0] = xmalloc (1+sizeof(zti->dictNum));
-            memcpy (rec->info[0], &zti->dictNum, sizeof(zti->dictNum));
-            rec->info[0][sizeof(zti->dictNum)] = '\0';
-            rec->size[0] = sizeof(zti->dictNum)+1;
-            rec_put (records, &rec);
+            trec = rec_new (records);
+
+	    trec->info[recInfo_fileType] =
+		rec_strdup ("grs.explain.targetInfo",
+			    &trec->size[recInfo_fileType]); 
+	    trec->info[recInfo_databaseName] =
+		rec_strdup ("IR-Explain-1",
+			    &trec->size[recInfo_databaseName]); 
+	    trec->info[recInfo_databaseName] = xstrdup ("IR-Explain-1");
+            trec->info[recInfo_storeData] = xmalloc (1+sizeof(zti->dictNum));
+            memcpy (trec->info[recInfo_storeData], &zti->dictNum, sizeof(zti->dictNum));
+            trec->info[recInfo_storeData][sizeof(zti->dictNum)] = '\0';
+            trec->size[recInfo_storeData] = sizeof(zti->dictNum)+1;
+            rec_put (records, &trec);
         }
     }
     *zdi = NULL;
-    rec_rm (&rec);
+    rec_rm (&trec);
     return zti;
 }
 
@@ -201,7 +220,7 @@ static void zebTargetInfo_readDatabase (ZebTargetInfo *zti,
 
     rec = rec_get (zti->records, zdi->sysno);
     assert (rec);
-    p = rec->info[0];
+    p = rec->info[recInfo_storeData];
     memcpy (&zdi->info, p, sizeof(zdi->info));
     p += sizeof(zdi->info);
     memcpy (&no, p, sizeof(no));
