@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.19 2002-08-02 19:26:57 adam Exp $
+/* $Id: rsbool.c,v 1.20 2003-01-13 22:16:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -103,6 +103,7 @@ struct rset_bool_rfd {
     int term_index_r;
     void *buf_l;
     void *buf_r;
+    int tail;
     struct rset_bool_rfd *next;
     struct rset_bool_info *info;
 };    
@@ -158,6 +159,7 @@ static RSFD r_open (RSET ct, int flag)
 			     &rfd->term_index_l);
     rfd->more_r = rset_read (info->rset_r, rfd->rfd_r, rfd->buf_r,
 			     &rfd->term_index_r);
+    rfd->tail = 0;
     return rfd;
 }
 
@@ -209,16 +211,37 @@ static int r_count (RSET ct)
     return 0;
 }
 
+
+/*
+    1,1         1,3
+    1,9         2,1
+    1,11        3,1
+    2,9
+
+  1,1     1,1
+  1,3     1,3
+          1,9
+          1,11
+  2,1     2,1
+          2,9
+          3,1
+*/
+
 static int r_read_and (RSFD rfd, void *buf, int *term_index)
 {
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
-    while (p->more_l && p->more_r)
+    while (p->more_l || p->more_r)
     {
         int cmp;
 
-        cmp = (*info->cmp)(p->buf_l, p->buf_r);
+        if (p->more_l && p->more_r)
+            cmp = (*info->cmp)(p->buf_l, p->buf_r);
+        else if (p->more_l)
+            cmp = -2;
+        else
+            cmp = 2;
         if (!cmp)
         {
             memcpy (buf, p->buf_l, info->key_size);
@@ -227,15 +250,16 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 				   &p->term_index_l);
             p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
 				   &p->term_index_r);
+            p->tail = 1;
             return 1;
         }
         else if (cmp == 1)
         {
             memcpy (buf, p->buf_r, info->key_size);
-
 	    *term_index = p->term_index_r + info->term_index_s;
             p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
 				   &p->term_index_r);
+            p->tail = 1;
             return 1;
         }
         else if (cmp == -1)
@@ -244,21 +268,37 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 	    *term_index = p->term_index_l;
             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				   &p->term_index_l);
+            p->tail = 1;
             return 1;
         }
         else if (cmp > 1)
+        {
+            memcpy (buf, p->buf_r, info->key_size);
+            *term_index = p->term_index_r + info->term_index_s;
+            
             p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
-				   &p->term_index_r);
+                                   &p->term_index_r);
+            if (p->tail)
+            {
+                if (!p->more_r || (*info->cmp)(p->buf_r, buf) > 1)
+                    p->tail = 0;
+                return 1;
+            }
+        }
         else
+        {
+            memcpy (buf, p->buf_l, info->key_size);
+	    *term_index = p->term_index_l;
             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				   &p->term_index_l);
+            if (p->tail)
+            {
+                if (!p->more_l || (*info->cmp)(p->buf_l, buf) > 1)
+                    p->tail = 0;
+                return 1;
+            }
+        }
     }
-    while (p->more_l)
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
-				   &p->term_index_l);
-    while (p->more_r)
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
-				   &p->term_index_r);
     return 0;
 }
 
