@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dcompact.c,v $
- * Revision 1.5  1999-05-26 07:49:12  adam
+ * Revision 1.6  1999-09-07 08:13:08  adam
+ * Removed log messages.
+ *
+ * Revision 1.5  1999/05/26 07:49:12  adam
  * C++ compilation.
  *
  * Revision 1.4  1999/05/15 14:36:37  adam
@@ -117,8 +120,10 @@ int dict_copy_compact (BFiles bfs, const char *from_name, const char *to_name)
 	map[i+1] = map[i] + size;
 	no_dir += DICT_nodir(buf);
     }
+#if 0
     logf (LOG_LOG, "map[%d] = %d", i, map[i]);
     logf (LOG_LOG, "nodir = %d", no_dir);
+#endif
     dict_to->head.root = map[1];
     dict_to->head.last = map[i];
     for (i = 1; i< (int) (dict_from->head.last); i++)
