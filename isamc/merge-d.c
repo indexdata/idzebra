@@ -3,6 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
+ * $Id: merge-d.c,v 1.4 1999-07-21 14:53:55 heikki Exp $
  * merge-d.c: merge routines for isamd
  *
  * todo
@@ -62,8 +63,14 @@ static char *hexdump(unsigned char *p, int len, char *buff) {
 static int separateDiffBlock(ISAMD_PP pp)
 {
   return ( 0 != pp->next);
+  /* Todo: This could be improved to check that there is a reasonable 
+     amount of space in the block, or something... */
 }
 
+
+/**************************************************************
+ * Reading 
+ **************************************************************/
 
 static void getDiffInfo(ISAMD_PP pp, int diffidx)
 { /* builds the diff info structures from a diffblock */
@@ -269,6 +276,11 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
 } /* isamd_read_item */
 
 
+
+/*******************************************************************
+ * Building main blocks (no diffs)
+ *******************************************************************/
+
 static void isamd_reduceblock(ISAMD_PP pp)
 /* takes a large block, and reduces its category if possible */
 /* Presumably the first block in an isam-list */
@@ -290,7 +302,8 @@ static void isamd_reduceblock(ISAMD_PP pp)
 
 static int isamd_build_first_block(ISAMD is, ISAMD_I data) 
 {
-   char i_item[128];    /* one input item */
+   struct it_key i_key;  /* input key */
+   char *i_item= (char *) &i_key;  /* same as char */
    char *i_ptr=i_item;
    int i_more =1;
    int i_mode;     /* 0 for delete, 1 for insert */ 
@@ -320,6 +333,8 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
    /* read first input */
    i_ptr = i_item;
    i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); 
+   if (i_more)
+     assert( i_ptr-i_item == sizeof(i_key) );
 
    if (is->method->debug >3)
       logf(LOG_LOG,"isamd: build_fi start: m=%d %s",
@@ -424,6 +439,10 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
    return retval;
 } /* build_first_block */
 
+
+/***************************************************************
+ * Appending diffs 
+ ***************************************************************/
 
 
 static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
@@ -571,6 +590,10 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 
 
+/*************************************************************
+ * isamd_append itself, Sweet, isn't it
+ *************************************************************/
+
 ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 {
    int retval=0;
@@ -586,9 +609,9 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.3  1999-07-21 14:24:50  heikki
- * isamd write and read functions ok, except when diff block full.
- * (merge not yet done)
+ * Revision 1.4  1999-07-21 14:53:55  heikki
+ * isamd read and write functions work, except when block full
+ * Merge missing still. Need to split some functions
  *
  * Revision 1.1  1999/07/14 13:14:47  heikki
  * Created empty
