@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.3  1994-11-22 13:15:37  quinn
+ * Revision 1.4  1995-09-04 09:10:55  adam
+ * Minor changes.
+ *
+ * Revision 1.3  1994/11/22  13:15:37  quinn
  * Simple
  *
  * Revision 1.2  1994/11/04  14:53:12  quinn
@@ -18,7 +21,7 @@
 #include <rsisam.h>
 #include <util.h>
 
-rset_control *r_create(const struct rset_control *sel, void *parms);
+static rset_control *r_create(const struct rset_control *sel, void *parms);
 static int r_open(rset_control *ct, int wflag);
 static void r_close(rset_control *ct);
 static void r_delete(rset_control *ct);
@@ -43,7 +46,7 @@ static const rset_control control =
 
 const rset_control *rset_kind_isam = &control;
 
-rset_control *r_create(const struct rset_control *sel, void *parms)
+static rset_control *r_create(const struct rset_control *sel, void *parms)
 {
     rset_control *newct;
     rset_isam_parms *pt = parms;

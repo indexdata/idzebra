@@ -4,14 +4,18 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.1  1994-11-04 13:21:30  quinn
+ * Revision 1.2  1995-09-04 09:10:56  adam
+ * Minor changes.
+ *
+ * Revision 1.1  1994/11/04  13:21:30  quinn
  * Working.
  *
  */
 
 #include <rstemp.h>
 
-struct rset_control *r_create(const struct rset_control *sel, void *parms);
+static struct rset_control *r_create(const struct rset_control *sel, 
+                                     void *parms);
 static int r_open(struct rset_control *ct, int wflag);
 static void r_close(struct rset_control *ct);
 static void r_delete(struct rset_control *ct);
@@ -36,7 +40,7 @@ static const rset_control control =
 
 const rset_control *rset_kind_temp = &control;
 
-struct rset_control *r_create(const struct rset_control *sel, void *parms)
+static struct rset_control *r_create(const struct rset_control *sel, void *parms)
 {}
 
 static int r_open(struct rset_control *ct, int wflag)
