@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.68 2004-10-22 11:33:28 heikki Exp $
+/* $Id: zsets.c,v 1.69 2004-10-26 15:32:11 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -727,13 +727,14 @@ RSET resultSetRef (ZebraHandle zh, const char *resultSetId)
     return NULL;
 }
 
-void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
+void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset, NMEM nmem)
 {
     zint kno = 0;
     struct it_key key;
     RSFD rfd;
     TERMID termid;
     TERMID *terms;
+    int numterms;
     int i,n;
     ZebraRankClass rank_class;
     struct rank_control *rc;
@@ -747,6 +748,12 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     sort_info = zebraSet->sort_info;
     sort_info->num_entries = 0;
     zebraSet->hits = 0;
+    n=0;
+    rset_getterms(rset,0,0,&n);
+    terms=malloc( sizeof(*terms)*n);
+    numterms=0;
+    rset_getterms(rset,terms,n,&numterms);
+
     rfd = rset_open (rset, RSETF_READ);
 
     rank_class = zebraRankLookup (zh, rank_handler_name);
@@ -762,14 +769,16 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
         zint psysno = key.mem[0];
         int score;
         void *handle =
-            (*rc->begin) (zh->reg, rank_class->class_handle, rset);
+            (*rc->begin) (zh->reg, rank_class->class_handle, rset, nmem,
+                          terms, numterms);
         (zebraSet->hits)++;
         esthits=atoi(res_get_def(zh->res,"estimatehits","0"));
         if (!esthits) 
             est=-1; /* can not do */
         do
         {
-            zint this_sys = key.mem[0];
+            zint this_sys = key.mem[0]; /* FIXME - assumes scope==2 */
+            zint seqno = key.mem[1]; /* FIXME - assumes scope==2 */
             kno++;
             if (this_sys != psysno)
             {
@@ -779,9 +788,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
                 (zebraSet->hits)++;
                 psysno = this_sys;
             }
-            /* FIXME - Ranking is broken, since rsets no longer have */
-            /* term lists! */
-            /* (*rc->add) (handle, this_sys, term_index); */
+            (*rc->add) (handle, seqno, termid);
             
             if ( (est==-2) && (zebraSet->hits==esthits))
             { /* time to estimate the hits */
@@ -811,15 +818,9 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
         (*rc->end) (zh->reg, handle);
     }
     rset_close (rfd);
-    n=0;
-    rset_getterms(rset,0,0,&n);
-    terms=xmalloc( sizeof(*terms)*n);
-    i=n;
-    n=0;
-    rset_getterms(rset,terms,i,&n);
 
 
-    for (i = 0; i < n; i++)
+    for (i = 0; i < numterms; i++)
     {
         yaz_log (LOG_LOG, "term=\"%s\" "
                     " type=%s count=" ZINT_FORMAT,
@@ -827,7 +828,6 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
                  terms[i]->flags,
                  rset_count(terms[i]->rset));
     }
-    xfree(terms);
     yaz_log (LOG_DEBUG, ZINT_FORMAT " keys, "ZINT_FORMAT" distinct sysnos", 
                     kno, zebraSet->hits);
 }

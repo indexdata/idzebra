@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.123 2004-09-28 12:39:55 adam Exp $
+/* $Id: index.h,v 1.124 2004-10-26 15:32:11 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -318,7 +318,9 @@ struct rank_control {
     char *name;
     void *(*create)(ZebraHandle zh);
     void (*destroy)(struct zebra_register *reg, void *class_handle);
-    void *(*begin)(struct zebra_register *reg, void *class_handle, RSET rset);
+    void *(*begin)(struct zebra_register *reg, 
+                   void *class_handle, RSET rset, NMEM nmem,
+                   TERMID *terms, int numterms);
     /* ### Could add parameters to begin:
      *	char *index;	// author, title, etc.
      *	int dbsize;	// number of records in database
@@ -326,7 +328,7 @@ struct rank_control {
      */
     void (*end)(struct zebra_register *reg, void *set_handle);
     int (*calc)(void *set_handle, zint sysno);
-    void (*add)(void *set_handle, int seqno, int term_index);
+    void (*add)(void *set_handle, int seqno, TERMID term);
 };
 
 struct term_set_entry {
@@ -379,7 +381,7 @@ void resultSetSort (ZebraHandle zh, NMEM nmem,
 void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 			  ZebraSet sset, RSET rset,
 			  Z_SortKeySpecList *sort_sequence, int *sort_status);
-void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset);
+void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset, NMEM nmem);
 void resultSetInvalidate (ZebraHandle zh);
 
 int zebra_server_lock_init (ZebraService zh);

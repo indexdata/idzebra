@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.136 2004-10-15 10:07:32 heikki Exp $
+/* $Id: zebraapi.c,v 1.137 2004-10-26 15:32:11 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -292,8 +292,10 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     reg->ptr_i=0;
     
     zebraRankInstall (reg, rank1_class);
+#ifdef SKIPTHIS /* FIXME - those ranks not yet converted to new interface */
     zebraRankInstall (reg, rankzv_class);
     zebraRankInstall (reg, rankliv_class);
+#endif
 
     recordCompression = res_get_def (res, "recordCompression", "none");
     if (!strcmp (recordCompression, "none"))
@@ -812,7 +814,9 @@ int zebra_search_RPN (ZebraHandle zh, ODR o,
     if (zebra_begin_read (zh))
 	return 1;
 
+#ifdef SKIPTHIS /* FIXME - livcode rank not yet available */
     zebra_livcode_transform(zh, query);
+#endif
 
     resultSetAddRPN (zh, odr_extract_mem(o), query, 
                      zh->num_basenames, zh->basenames, setname);

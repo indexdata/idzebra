@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.157 2004-10-15 10:07:32 heikki Exp $
+/* $Id: zrpn.c,v 1.158 2004-10-26 15:32:11 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -2304,7 +2304,7 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
         ;
     sort_sequence->num_specs = i;
     if (!i)
-        resultSetRank (zh, sset, rset);
+        resultSetRank (zh, sset, rset, rset_nmem);
     else
     {
         logf (LOG_DEBUG, "resultSetSortSingle in rpn_search");

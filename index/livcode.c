@@ -11,9 +11,11 @@ rights reserved.
 Licensed under the Academic Free License version 1.1.
 http://opensource.org/licenses/academic.php
 
-$Id: livcode.c,v 1.3 2004-08-20 14:44:46 heikki Exp $
+$Id: livcode.c,v 1.4 2004-10-26 15:32:11 heikki Exp $
 
 */
+
+#ifdef SKIPTHIS  /* Need to fix the interface - FIXME */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -538,6 +540,7 @@ struct rank_set_info {
     int last_pos;
     int no_entries;
     int no_rank_entries;
+    NMEM nmem;
     struct rank_term_info *entries;
 };
 
@@ -584,7 +587,8 @@ static void destroy (struct zebra_register *reg, void *class_handle)
  *  each result set. The returned handle is a "set handle" and
  *  will be used in each of the handlers below.
  */
-static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
+static void *begin (struct zebra_register *reg, void *class_handle, 
+                    RSET rset, NMEM nmem)
 {
     struct rank_set_info *si = (struct rank_set_info *) xmalloc (sizeof(*si));
     int i;
@@ -594,6 +598,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
     /* do about this ??? */
     si->no_entries = 0; /* rset->no_rset_terms; */ /* FIXME ??? */
     si->no_rank_entries = 0;
+    si->nmem=nmem;
     si->entries = (struct rank_term_info *)
 	xmalloc (sizeof(*si->entries)*si->no_entries);
     for (i = 0; i < si->no_entries; i++)
@@ -706,3 +711,5 @@ static struct rank_control rank_control = {
 };
  
 struct rank_control *rankliv_class = &rank_control;
+#endif
+

@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.7 2004-10-22 10:12:52 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.8 2004-10-26 15:32:11 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -562,17 +562,19 @@ static void r_pos (RSFD rfd, double *current, double *total)
     int i;
     for (i=0; i<info->no_rsets; i++){
         rset_pos(mrfd->items[i].fd, &cur, &tot);
-        logf(LOG_DEBUG, "r_pos: %d %0.1f %0.1f", i, cur,tot);
+        /*logf(LOG_LOG, "r_pos: %d %0.1f %0.1f", i, cur,tot); */
         scur += cur;
         stot += tot;
     }
     if (stot <1.0) { /* nothing there */
         *current=0;
         *total=0;
+        /* logf(LOG_LOG, "r_pos: NULL  %0.1f %0.1f",  *current, *total);*/
         return;
     }
     *current=mrfd->hits;
     *total=*current*stot/scur;
+    /*logf(LOG_LOG, "r_pos: =  %0.1f %0.1f",  *current, *total);*/
 }
 
 
@@ -595,12 +597,10 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
     for (i=0;i<info->no_rsets;i++)
     {
         rset_getterms(info->rsets[i], terms, maxterms, curterm);
-        yaz_log(LOG_DEBUG,"rsmulti: getterms: i=%d *cur=%d",i,*curterm);
-        /* FIXME - remove this log once we know it works */
         if ( ( (*curterm) > firstterm+1 ) &&
              ( (*curterm) <= maxterms ) &&
              ( terms[(*curterm)-1] == terms[firstterm] ) )
-            *curterm--; /* forget the term, seen that before */
+            (*curterm)--; /* forget the term, seen that before */
     }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.10 2004-08-20 14:44:46 heikki Exp $
+/* $Id: zvrank.c,v 1.11 2004-10-26 15:32:11 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -40,6 +40,8 @@ fernuni-hagen.de>
 ** "ntc-atn", "atc-atn", etc.
 */
 
+#if SKIPTHIS   /* FIXME - Disabled while changing the interface to ranking */
+
 #include <math.h>  /* for log */
 
 #include <stdio.h>
@@ -61,8 +63,7 @@ static double blog(double x) {
 
 /* structures */
 
-struct rank_class_info { /* now we need this */
-    int dummy;
+struct rank_class_info {
     char rscheme[8];    /* name of weighting scheme */
 };
 
@@ -76,6 +77,7 @@ struct rs_info {      /* for result set */
     char rscheme[8];    /* name of weighting scheme */
     /**/
     int veclen;
+    NMEM nmem;
     void (*d_tf_fct)(void *, void *);   /* doc term frequency function */
     void (*d_idf_fct)(void *, void *);  /* doc idf function */
     void (*d_norm_fct)(void *, void *); /* doc normalization function */
@@ -684,7 +686,8 @@ static void zv_destroy (struct zebra_register *reg, void *class_handle) {
  *  each result set. The returned handle is a "set handle" and
  *  will be used in each of the handlers below.
  */
-static void *zv_begin(struct zebra_register *reg, void *class_handle, RSET rset)
+static void *zv_begin(struct zebra_register *reg, void *class_handle, 
+                      RSET rset, NMEM nmem)
 {
     struct rs_info *rs=(struct rs_info *)xmalloc(sizeof(*rs));
     struct rank_class_info *ci=(struct rank_class_info *)class_handle;
@@ -697,6 +700,7 @@ static void *zv_begin(struct zebra_register *reg, void *class_handle, RSET rset)
     /* FIXME - Now that we don't have term lists in rsets, what do */
     /* we do here ??? */
     zv_init(rs, ci->rscheme);
+    rs->nmem=nmem;
     rs->veclen=veclen;
     prn_rs(rs);
   
@@ -815,4 +819,5 @@ static struct rank_control rank_control_vsm = {
  
 struct rank_control *rankzv_class = &rank_control_vsm;
 
+#endif /* SKIPTHIS */
 /* EOF */
