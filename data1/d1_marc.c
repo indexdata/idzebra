@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.6.2.3 2005-02-02 08:03:40 adam Exp $
+/* $Id: d1_marc.c,v 1.6.2.4 2005-02-02 20:26:44 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -317,7 +317,7 @@ static int nodetomarc(data1_handle dh,
         {
             if (!control_field)
                 len += p->identifier_length;
-	    get_data(subf, &dlen, 1);
+	    get_data(subf, &dlen, control_field ? 0 : 1);
             len += dlen;
         }
     }
@@ -434,7 +434,7 @@ static int nodetomarc(data1_handle dh,
                 memcpy (op + data_p+1, identifier, p->identifier_length-1);
                 data_p += p->identifier_length;
             }
-	    data = get_data(subf, &dlen, 1);
+	    data = get_data(subf, &dlen, control_field ? 0 : 1);
             memcpy (op + data_p, data, dlen);
             data_p += dlen;
         }
