@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.31 2004-08-03 12:15:45 heikki Exp $
+/* $Id: rsbool.c,v 1.32 2004-08-03 14:54:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -40,7 +40,7 @@ static void r_rewind (RSFD rfd);
 static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
-/* static int r_count (RSET ct); */
+/* static void r_pos (RSFD rfd, int *current, int *total);  */
 static int r_read_and (RSFD rfd, void *buf, int *term_index);
 static int r_read_or (RSFD rfd, void *buf, int *term_index);
 static int r_read_not (RSFD rfd, void *buf, int *term_index);
@@ -55,7 +55,7 @@ static const struct rset_control control_and =
     r_delete,
     r_rewind,
     r_forward, /* rset_default_forward, */
-    /* r_count, */
+    rset_default_pos,
     r_read_and,
     r_write,
 };
@@ -73,7 +73,7 @@ static const struct rset_control control_or =
 #else
     rset_default_forward,
 #endif
-    /* r_count, */
+    rset_default_pos,
     r_read_or,
     r_write,
 };
@@ -87,7 +87,7 @@ static const struct rset_control control_not =
     r_delete,
     r_rewind,
     r_forward, 
-    /* r_count, */
+    rset_default_pos,
     r_read_not,
     r_write,
 };
@@ -257,12 +257,6 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
     return rc;
 }
 
-/*
-static int r_count (RSET ct)
-{
-    return 0;
-}
-*/
 
 /*
     1,1         1,3

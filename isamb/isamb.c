@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.46 2004-06-16 20:34:25 adam Exp $
+/* $Id: isamb.c,v 1.47 2004-08-03 14:54:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -117,8 +117,6 @@ struct ISAMB_PP_s {
     struct ISAMB_block **block;
 };
 
-void isamb_pp_pos( ISAMB_PP pp, int *current, int *total );
-         /* FIXME - this should be in a header file */
 
 #if ISAMB_PTR_CODEC
 static void encode_ptr (char **dst, unsigned pos)

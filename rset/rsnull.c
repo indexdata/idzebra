@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.17 2004-08-03 12:15:45 heikki Exp $
+/* $Id: rsnull.c,v 1.18 2004-08-03 14:54:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -23,6 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 #include <stdio.h>
+#include <assert.h>
 #include <rsnull.h>
 #include <zebrautl.h>
 
@@ -31,7 +32,7 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-/* static int r_count (RSET ct); */
+static void r_pos (RSFD rfd, int *current, int *total);
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
 
@@ -44,7 +45,7 @@ static const struct rset_control control =
     r_delete,
     r_rewind,
     rset_default_forward,
-    /* r_count, */
+    r_pos,
     r_read,
     r_write,
 };
@@ -92,12 +93,14 @@ static void r_rewind (RSFD rfd)
     logf (LOG_DEBUG, "rsnull_rewind");
 }
 
-/*
-static int r_count (RSET ct)
+static void r_pos (RSFD rfd, int *current, int *total)
 {
-    return 0;
+    assert(rfd);
+    assert(current);
+    assert(total);
+    *total=0;
+    *current=0;
 }
-*/
 
 static int r_read (RSFD rfd, void *buf, int *term_index)
 {

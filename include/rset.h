@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.22 2004-08-03 12:15:44 heikki Exp $
+/* $Id: rset.h,v 1.23 2004-08-03 14:54:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -46,7 +46,9 @@ struct rset_control
     int (*f_forward)(RSET ct, RSFD rfd, void *buf,  int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
-/*    int (*f_count)(RSET ct); */ /* FIXME - remove this and add pos */
+    void (*f_pos)(RSFD rfd, int *current, int *total);
+       /* FIXME - Should be 64-bit ints !*/
+       /* returns -1,-1 if pos function not implemented for this type */
     int (*f_read)(RSFD rfd, void *buf, int *term_index);
     int (*f_write)(RSFD rfd, const void *buf);
 };
@@ -54,6 +56,7 @@ struct rset_control
 int rset_default_forward(RSET ct, RSFD rfd, void *buf, int *term_index, 
                      int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
+void rset_default_pos(RSFD rfd, int *current, int *total);
 
 struct rset_term {
     char *name;

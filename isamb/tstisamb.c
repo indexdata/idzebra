@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.6 2004-06-03 00:24:12 adam Exp $
+/* $Id: tstisamb.c,v 1.7 2004-08-03 14:54:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -96,7 +96,6 @@ void tst_forward(ISAMB isb, int n)
     struct read_info ri;
     int i;
     ISAMB_PP pp;
-    char key_buf[10];
 
     /* insert a number of entries */
     ri.no = 0;

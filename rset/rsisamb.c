@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.9 2004-08-03 12:15:45 heikki Exp $
+/* $Id: rsisamb.c,v 1.10 2004-08-03 14:54:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -39,7 +39,7 @@ static void r_rewind (RSFD rfd);
 static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
-/* static int r_count (RSET ct);*/
+static void r_pos (RSFD rfd, int *current, int *total);
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
 
@@ -52,7 +52,7 @@ static const struct rset_control control =
     r_delete,
     r_rewind,
     r_forward, /* rset_default_forward, */
-    /* r_count, */
+    r_pos,
     r_read,
     r_write,
 };
@@ -156,7 +156,7 @@ static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf)
 {
-    int i; /*!*/
+    int i; 
     struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
 #if RSET_DEBUG
     logf (LOG_DEBUG, "rset_rsisamb_forward starting '%s' (ct=%p rfd=%p)",
@@ -172,12 +172,12 @@ static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
     return i;
 }
 
-/*
-static int r_count (RSET ct)
+static void r_pos (RSFD rfd, int *current, int *total)
 {
-    return 0;
+    struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
+    assert(rfd);
+    isamb_pp_pos(pinfo->pt, current, total);
 }
-*/
 
 static int r_read (RSFD rfd, void *buf, int *term_index)
 {

@@ -1,4 +1,4 @@
-/* $Id: rsisamd.c,v 1.7 2004-08-03 12:15:45 heikki Exp $
+/* $Id: rsisamd.c,v 1.8 2004-08-03 14:54:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -34,7 +34,6 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-/* static int r_count (RSET ct); */
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
 
@@ -47,7 +46,7 @@ static const struct rset_control control =
     r_delete,
     r_rewind,
     rset_default_forward,
-    /* r_count, */
+    rset_default_pos,
     r_read,
     r_write,
 };
@@ -141,12 +140,6 @@ static void r_rewind (RSFD rfd)
     abort ();
 }
 
-/*
-static int r_count (RSET ct)
-{
-    return 0;
-}
-*/
 
 static int r_read (RSFD rfd, void *buf, int *term_index)
 {

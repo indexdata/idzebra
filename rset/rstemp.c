@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.37 2004-08-03 12:15:45 heikki Exp $
+/* $Id: rstemp.c,v 1.38 2004-08-03 14:54:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -52,7 +52,7 @@ static const struct rset_control control =
     r_delete,
     r_rewind,
     rset_default_forward,
-    /* r_count, */
+    rset_default_pos,
     r_read,
     r_write,
 };

@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.20 2004-01-30 11:43:41 heikki Exp $
+/* $Id: rset.c,v 1.21 2004-08-03 14:54:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,6 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <string.h>
 #include <zebrautl.h>
+#include <assert.h>
 
 #include <rset.h>
 #include <../index/index.h> /* for log_keydump. Debugging only */
@@ -63,6 +64,16 @@ RSET rset_dup (RSET rs)
     (rs->count)++;
     return rs;
 }
+
+void rset_default_pos (RSFD rfd, int *current, int *total)
+{ /* FIXME - This function should not be needed, only while */
+  /*         coding the pos functions. */
+    assert(rfd);
+    assert(current);
+    assert(total);
+    *current=-1; /* signal that pos is not implemented */
+    *total=-1;
+} /* rset_default_pos */
 
 int rset_default_forward(RSET ct, RSFD rfd, void *buf, int *term_index, 
                            int (*cmpfunc)(const void *p1, const void *p2), 
