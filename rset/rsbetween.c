@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.18 2004-08-20 14:44:46 heikki Exp $
+/* $Id: rsbetween.c,v 1.19 2004-08-23 12:38:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -126,10 +126,6 @@ static void *r_create_between (RSET ct, const struct rset_control *sel,
     info->rset_m = between_parms->rset_m;
     info->rset_r = between_parms->rset_r;
     info->rset_attr = between_parms->rset_attr;
-    if (rset_is_volatile(info->rset_l) || 
-        rset_is_volatile(info->rset_m) ||
-        rset_is_volatile(info->rset_r))
-        ct->flags |= RSET_FLAG_VOLATILE;
     info->cmp = between_parms->cmp;
     info->printer = between_parms->printer;
     info->rfd_list = NULL;

@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.25 2004-08-20 14:44:46 heikki Exp $
+/* $Id: rset.c,v 1.26 2004-08-23 12:38:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -37,7 +37,6 @@ RSET rset_create(const struct rset_control *sel, void *parms)
     logf (LOG_DEBUG, "rs_create(%s)", sel->desc);
     rnew = (RSET) xmalloc(sizeof(*rnew));
     rnew->control = sel;
-    rnew->flags = 0;
     rnew->count = 1;
     rnew->buf = (*sel->f_create)(rnew, sel, parms);
     return rnew;

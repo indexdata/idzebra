@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.38 2004-08-20 14:44:46 heikki Exp $
+/* $Id: rsbool.c,v 1.39 2004-08-23 12:38:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -125,8 +125,6 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     info->key_size = bool_parms->key_size;
     info->rset_l = bool_parms->rset_l;
     info->rset_r = bool_parms->rset_r;
-    if (rset_is_volatile(info->rset_l) || rset_is_volatile(info->rset_r))
-        ct->flags |= RSET_FLAG_VOLATILE;
     info->cmp = bool_parms->cmp;
     info->log_item = bool_parms->log_item;
     info->rfd_list = NULL;

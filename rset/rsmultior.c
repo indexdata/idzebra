@@ -1,4 +1,4 @@
-/* $Id: rsmultior.c,v 1.4 2004-08-20 14:44:46 heikki Exp $
+/* $Id: rsmultior.c,v 1.5 2004-08-23 12:38:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -223,9 +223,6 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_multior_parms *r_parms = (rset_multior_parms *) parms;
     struct rset_multior_info *info;
-
-    ct->flags |= RSET_FLAG_VOLATILE;
-        /* FIXME - Remove the whole flags thing, from all rsets */
     info = (struct rset_multior_info *) xmalloc (sizeof(*info));
     info->key_size = r_parms->key_size;
     assert (info->key_size > 1);

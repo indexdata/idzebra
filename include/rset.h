@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.29 2004-08-20 14:44:45 heikki Exp $
+/* $Id: rset.h,v 1.30 2004-08-23 12:38:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -56,6 +56,7 @@ int rset_default_forward(RSET ct, RSFD rfd, void *buf,
                      const void *untilbuf);
 void rset_default_pos(RSFD rfd, double *current, double *total);
 
+/*
 struct rset_term {
     char *name;
     zint nn;
@@ -63,11 +64,11 @@ struct rset_term {
     zint count;
     int  type;
 };
+*/
 
 typedef struct rset
 {
     const struct rset_control *control;
-    int  flags;
     int  count;
     void *buf;
 } rset;
@@ -108,9 +109,6 @@ RSET rset_dup (RSET rs);
 /* int rset_type (RSET) */
 #define rset_type(rs) ((rs)->control->desc)
 
-#define RSET_FLAG_VOLATILE 1
-
-#define rset_is_volatile(rs) ((rs)->flags & RSET_FLAG_VOLATILE)
 
 #ifdef __cplusplus
 }

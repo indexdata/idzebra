@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.9 2004-08-20 14:44:46 heikki Exp $
+/* $Id: rsprox.c,v 1.10 2004-08-23 12:38:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -79,14 +79,6 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_prox_parms *prox_parms = (rset_prox_parms *) parms;
     struct rset_prox_info *info;
-    int i;
-    /*
-    char prox_term[512];
-    int length_prox_term = 0;
-    zint min_nn = 10000000;
-    const char *flags = NULL;
-    int term_type = 0;
-*/
 
     info = (struct rset_prox_info *) xmalloc (sizeof(*info));
     memcpy(&info->p, prox_parms, sizeof(struct rset_prox_parms));
@@ -95,35 +87,6 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     memcpy(info->p.rset, prox_parms->rset,
            info->p.rset_no * sizeof(*info->p.rset));
     info->rfd_list = NULL;
-
-    for (i = 0; i<info->p.rset_no; i++)
-        if (rset_is_volatile(info->p.rset[i]))
-            ct->flags |= RSET_FLAG_VOLATILE;
-
-#if 0 /* This should all be about terms! */
-    *prox_term = '\0';
-    for (i = 0; i<info->p.rset_no; i++)
-    {
-        int j;
-        for (j = 0; j < info->p.rset[i]->no_rset_terms; j++)
-        {
-            const char *nflags = info->p.rset[i]->rset_terms[j]->flags;
-            char *term = info->p.rset[i]->rset_terms[j]->name;
-            int lterm = strlen(term);
-            if (lterm + length_prox_term < sizeof(prox_term)-1)
-            {
-                if (length_prox_term)
-                    prox_term[length_prox_term++] = ' ';
-                strcpy (prox_term + length_prox_term, term);
-                length_prox_term += lterm;
-            }
-            if (min_nn > info->p.rset[i]->rset_terms[j]->nn)
-                min_nn = info->p.rset[i]->rset_terms[j]->nn;
-            flags = nflags;
-            term_type = info->p.rset[i]->rset_terms[j]->type;
-        }
-    }
-#endif 
     return info;
 }
 

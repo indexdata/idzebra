@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.15 2004-08-20 14:44:46 heikki Exp $
+/* $Id: rsisamb.c,v 1.16 2004-08-23 12:38:53 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -79,7 +79,6 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     rset_isamb_parms *pt = (rset_isamb_parms *) parms;
     struct rset_isamb_info *info;
 
-    ct->flags |= RSET_FLAG_VOLATILE;
     info = (struct rset_isamb_info *) xmalloc (sizeof(*info));
     info->is = pt->is;
     info->pos = pt->pos;
