@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.16  1996-02-05 12:30:02  adam
+ * Revision 1.17  1996-02-12 18:45:17  adam
+ * Changed naming of some functions.
+ *
+ * Revision 1.16  1996/02/05  12:30:02  adam
  * Logging reduced a bit.
  * The remaining running time is estimated during register merge.
  *
@@ -125,7 +128,7 @@ static void stdinExtractR (int deleteFlag, struct recordGroup *rGroup)
         fileExtract (NULL, tmppath, rGroup, deleteFlag);
 }
 
-static void repositoryDeleteR (struct dirs_info *di, struct dirs_entry *dst,
+static void fileDeleteR (struct dirs_info *di, struct dirs_entry *dst,
 			       const char *base, char *src,
 			       struct recordGroup *rGroup)
 {
@@ -155,7 +158,7 @@ static void repositoryDeleteR (struct dirs_info *di, struct dirs_entry *dst,
     }
 }
 
-static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
+static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                                const char *base, char *src, 
                                struct recordGroup *rGroup)
 {
@@ -186,7 +189,7 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     else if (!e_src)
     {
         strcpy (src, dst->path);
-        repositoryDeleteR (di, dst, base, src, rGroup);
+        fileDeleteR (di, dst, base, src, rGroup);
         return;
     }
     else
@@ -238,7 +241,7 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                 dst = dirs_read (di);
                 break;
             case dirs_dir:
-                repositoryUpdateR (di, dst, base, src, rGroup);
+                fileUpdateR (di, dst, base, src, rGroup);
                 dst = dirs_last (di);
                 logf (LOG_DEBUG, "last is %s", dst ? dst->path : "null");
                 break;
@@ -260,7 +263,7 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                     dirs_add (di, src, sysno, e_src[i_src].ctime);            
                 break;
             case dirs_dir:
-                repositoryUpdateR (di, dst, base, src, rGroup);
+                fileUpdateR (di, dst, base, src, rGroup);
                 if (dst)
                     dst = dirs_last (di);
                 break;
@@ -280,7 +283,7 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                 dst = dirs_read (di);
                 break;
             case dirs_dir:
-                repositoryDeleteR (di, dst, base, src, rGroup);
+                fileDeleteR (di, dst, base, src, rGroup);
                 dst = dirs_last (di);
             }
         }
@@ -320,7 +323,7 @@ void repositoryUpdate (struct recordGroup *rGroup)
         assert (rGroup->path);
         di = dirs_open (dict, rGroup->path);
         strcpy (src, "");
-        repositoryUpdateR (di, dirs_read (di), rGroup->path, src, rGroup);
+        fileUpdateR (di, dirs_read (di), rGroup->path, src, rGroup);
         dirs_free (&di);
         dict_close (dict);
     }
