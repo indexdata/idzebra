@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.36 2004-08-06 12:28:23 adam Exp $
+/* $Id: rsbool.c,v 1.37 2004-08-06 14:09:02 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -55,8 +55,8 @@ static const struct rset_control control_and =
     r_close,
     r_delete,
     r_rewind,
-    r_forward, /* rset_default_forward, */
-    r_pos,     /* rset_default_pos */
+    r_forward, 
+    r_pos,    
     r_read_and,
     r_write,
 };

@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.16 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rsbetween.c,v 1.17 2004-08-06 14:09:02 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -38,7 +38,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include <rsbetween.h>
 
-#define RSBETWEEN_DEBUG 0
+#define RSBETWEEN_DEBUG 0 
 
 static void *r_create_between(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open_between (RSET ct, int flag);
@@ -50,6 +50,7 @@ static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
                      const void *untilbuf);
 static int r_read_between (RSFD rfd, void *buf, int *term_index);
 static int r_write_between (RSFD rfd, const void *buf);
+static void r_pos_between (RSFD rfd, double *current, double *total);
 
 static const struct rset_control control_between = 
 {
@@ -60,7 +61,7 @@ static const struct rset_control control_between =
     r_delete_between,
     r_rewind_between,
     r_forward_between, /* rset_default_forward, */
-    rset_default_pos,
+    r_pos_between,
     r_read_between,
     r_write_between,
 };
@@ -99,6 +100,7 @@ struct rset_between_rfd {
     int level;
     struct rset_between_rfd *next;
     struct rset_between_info *info;
+    zint hits;
 };    
 
 #if RSBETWEEN_DEBUG
@@ -210,6 +212,7 @@ static RSFD r_open_between (RSET ct, int flag)
                                     rfd->buf_attr, &dummy);
     }
     rfd->level=0;
+    rfd->hits=0;
     return rfd;
 }
 
@@ -275,6 +278,7 @@ static void r_rewind_between (RSFD rfd)
                                   &dummy);
     }
     p->level=0;
+    p->hits=0;
 }
 
 
@@ -476,6 +480,7 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                                    &p->term_index_m);
             if (cmp_l == 2)
                 p->level = 0;
+            p->hits++;
             return 1;
         }
         else if ( ! p->more_l )  /* not in data, no more starts */
@@ -524,3 +529,37 @@ static int r_write_between (RSFD rfd, const void *buf)
     return -1;
 }
 
+
+static void r_pos_between (RSFD rfd, double *current, double *total)
+{
+    struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
+    struct rset_between_info *info = p->info;
+    double lcur,ltot;
+    double mcur,mtot;
+    double rcur,rtot;
+    double r;
+    ltot=-1; rtot=-1;
+    rset_pos(info->rset_l, p->rfd_l,  &lcur, &ltot);
+    rset_pos(info->rset_m, p->rfd_m,  &mcur, &mtot);
+    rset_pos(info->rset_r, p->rfd_r,  &rcur, &rtot);
+    if ( (ltot<0) && (mtot<0) && (rtot<0) ) { /*no position */
+        *current=mcur;  /* return same as you got */
+        *total=mtot;    /* probably -1 for not available */
+    }
+    if ( ltot<0) { ltot=0; lcur=0;} /* if only one useful, use it */
+    if ( mtot<0) { mtot=0; mcur=0;}
+    if ( rtot<0) { rtot=0; rcur=0;}
+    if ( ltot+mtot+rtot < 1 ) { /* empty rset */
+        *current=0;
+        *total=0;
+        return;
+    }
+    r=1.0*(lcur+mcur+rcur)/(ltot+mtot+rtot); /* weighed average of l and r */
+    *current=p->hits;
+    *total=*current/r ; 
+#if RSBETWEEN_DEBUG
+    yaz_log(LOG_DEBUG,"betw_pos: (%s/%s) %0.1f/%0.1f= %0.4f ",
+                    info->rset_l->control->desc, info->rset_r->control->desc,
+                    *current, *total, r);
+#endif
+}

@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.7 2004-08-06 13:36:24 adam Exp $
+/* $Id: rsprox.c,v 1.8 2004-08-06 14:09:02 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -42,6 +42,7 @@ static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
                      const void *untilbuf);
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
+static void r_pos (RSFD rfd, double *current, double *total);
 
 static const struct rset_control control_prox = 
 {
@@ -52,7 +53,7 @@ static const struct rset_control control_prox =
     r_delete,
     r_rewind,
     r_forward,
-    rset_default_pos,
+    r_pos,
     r_read,
     r_write,
 };
@@ -71,6 +72,7 @@ struct rset_prox_rfd {
     char *more;  /* more in each lookahead? */
     struct rset_prox_rfd *next;
     struct rset_prox_info *info;
+    zint hits;
 };    
 
 static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
@@ -159,6 +161,7 @@ static RSFD r_open (RSET ct, int flag)
     for (i = 0; i < info->p.rset_no; i++)
 	rfd->more[i] = rset_read (info->p.rset[i], rfd->rfd[i],
 				  rfd->buf[i], &dummy);
+    rfd->hits=0;
     return rfd;
 }
 
@@ -215,6 +218,7 @@ static void r_rewind (RSFD rfd)
 	rset_rewind (info->p.rset[i], p->rfd[i]);
 	p->more[i] = rset_read (info->p.rset[i], p->rfd[i], p->buf[i], &dummy);
     }
+    p->hits=0;
 }
 
 static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
@@ -286,6 +290,7 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
 		
 		p->more[0] = rset_read (info->p.rset[0], p->rfd[0],
 					p->buf[0], &dummy);
+        p->hits++;
 		return 1;
 	    }
 	}
@@ -357,6 +362,7 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
 			p->more[1] = rset_read (info->p.rset[1],
 						p->rfd[1], p->buf[1],
 						term_index);
+            p->hits++;
 			return 1;
 		    }
 		}
@@ -372,6 +378,7 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
 
 static int r_read (RSFD rfd, void *buf, int *term_index)
 {
+    { double cur,tot; r_pos(rfd,&cur,&tot); } /*!*/
     return r_forward(0, rfd, buf, term_index, 0, 0);
 }
 
@@ -381,3 +388,36 @@ static int r_write (RSFD rfd, const void *buf)
     return -1;
 }
 
+static void r_pos (RSFD rfd, double *current, double *total)
+{
+    struct rset_prox_info *info = ((struct rset_prox_rfd*)rfd)->info;
+    struct rset_prox_rfd *p = (struct rset_prox_rfd *) rfd;
+    int i;
+    double cur,tot=-1;
+    double scur=0,stot=0;
+    double r;
+
+    logf (LOG_DEBUG, "rsprox_pos");
+
+    for (i = 0; i < info->p.rset_no; i++)
+    {
+        rset_pos(info->p.rset[i], p->rfd[i],  &cur, &tot);
+        if (tot>0) {
+            scur += cur;
+            stot += tot;
+        }
+    }
+    if (tot <0) {  /* nothing found */
+        *current=-1;
+        *total=-1;
+    } else if (tot <1) { /* most likely tot==0 */
+        *current=0;
+        *total=0;
+    } else {
+        r=scur/stot; 
+        *current=p->hits;
+        *total=*current/r ; 
+    }
+    logf(LOG_DEBUG,"prox_pos: [%d] %0.1f/%0.1f= %0.4f ",
+                    i,*current, *total, r);
+}
