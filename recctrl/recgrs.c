@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.79 2003-05-05 20:14:42 adam Exp $
+/* $Id: recgrs.c,v 1.80 2003-06-12 18:20:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -711,8 +711,8 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
 	{
             index_termlist (n, n, p, level, wrd);
             /* index start tag */
-            assert (n->root->u.root.absyn);
-      	    index_xpath (n, p, level, wrd, 1);
+	    if (n->root->u.root.absyn)
+      	        index_xpath (n, p, level, wrd, 1);
  	}
 
 	if (n->child)

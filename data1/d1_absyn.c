@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.8 2003-03-01 22:45:37 adam Exp $
+/* $Id: d1_absyn.c,v 1.9 2003-06-12 18:20:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -76,12 +76,15 @@ void data1_absyn_destroy (data1_handle dh)
     while (p)
     {
         data1_absyn *abs = p->absyn;
-        data1_xpelement *xpe = abs->xp_elements;
-        while (xpe) {
-            logf (LOG_DEBUG,"Destroy xp element %s",xpe->xpath_expr);
-            if (xpe->dfa) {  dfa_delete (&xpe->dfa); }
-            xpe = xpe->next;
-        } 
+	if (abs)
+	{
+	    data1_xpelement *xpe = abs->xp_elements;
+	    while (xpe) {
+		logf (LOG_DEBUG,"Destroy xp element %s",xpe->xpath_expr);
+		if (xpe->dfa) {  dfa_delete (&xpe->dfa); }
+		xpe = xpe->next;
+	    } 
+	}
         p = p->next;
     }
 }
