@@ -1,4 +1,9 @@
 
+Fixed bug in record management. Releasing blocks could result in
+partial read.
+
+Fixed bug in isam:b. A tree split could result in a lost item.
+
 Remove isamd. It's not been in use for a long time and isamb is better
 in most cases.
 
