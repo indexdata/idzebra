@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.98 2003-04-24 19:46:59 adam Exp $
+/* $Id: zebraapi.c,v 1.99 2003-05-13 13:52:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -196,9 +196,9 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     assert (res);
 
-    yaz_log (LOG_DEBUG, "zebra_register_open rw = %d useshadow=%d p=%p",
+    yaz_log (LOG_LOG, "zebra_register_open rw = %d useshadow=%d p=%p",
              rw, useshadow, reg);
-
+    
     reg->dh = data1_createx (DATA1_FLAG_XML);
     if (!reg->dh)
         return 0;
@@ -377,7 +377,7 @@ void zebra_admin_start (ZebraHandle zh)
 static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 {
     ASSERTZS;
-    yaz_log(LOG_DEBUG, "zebra_register_close p=%p", reg);
+    yaz_log(LOG_LOG, "zebra_register_close p=%p", reg);
     reg->stop_flag = 0;
     zebra_chdir (zs);
     if (reg->records)
@@ -1152,6 +1152,9 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
             zh->errString = "zebra_begin_trans: write trans not allowed within read trans";
             return -1;
         }
+        if (zh->reg)
+            zebra_register_close (zh->service, zh->reg);
+        
         zh->trans_w_no = zh->trans_no;
 
         zh->errCode=0;
@@ -1344,6 +1347,8 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
         
         zebra_flush_reg (zh);
         
+        resultSetInvalidate (zh);
+
         zebra_register_close (zh->service, zh->reg);
         zh->reg = 0;
         
