@@ -1,5 +1,5 @@
-/* $Id: zinfo.c,v 1.38 2004-08-04 08:35:23 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: zinfo.c,v 1.37.2.1 2005-01-16 23:28:54 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,7 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <stdlib.h>
+#include <sys/types.h>
 #include <assert.h>
 #include <string.h>
 #include <time.h>
@@ -44,7 +44,7 @@ struct zebSUInfoB {
 typedef struct zebAccessObjectB *zebAccessObject;
 struct zebAccessObjectB {
     void *handle;
-    SYSNO sysno;
+    int sysno;
     Odr_oid *oid;
     zebAccessObject next;
 };
@@ -57,7 +57,7 @@ struct zebAccessInfoB {
 
 typedef struct {
     struct zebSUInfoB *SUInfo;
-    SYSNO sysno;
+    int sysno;
     int dirty;
     int readFlag;
     data1_node *data1_tree;
@@ -67,9 +67,9 @@ struct zebDatabaseInfoB {
     zebAttributeDetails attributeDetails;
     char *databaseName;
     data1_node *data1_database;
-    zint recordCount;    /* records in db */
-    zint recordBytes;    /* size of records */
-    SYSNO sysno;         /* sysno of database info */
+    int recordCount;     /* records in db */
+    int recordBytes;     /* size of records */
+    int sysno;           /* sysno of database info */
     int readFlag;        /* 1: read is needed when referenced; 0 if not */
     int dirty;           /* 1: database is dirty: write is needed */
     struct zebDatabaseInfoB *next;
@@ -84,14 +84,14 @@ struct zebraExplainAttset {
 
 struct zebraCategoryListInfo {
     int dirty;
-    SYSNO sysno;
+    int sysno;
     data1_node *data1_categoryList;
 };
 
 struct zebraExplainInfo {
-    int ordinalSU;
-    zint runNumber;
-    int dirty;
+    int  ordinalSU;
+    int  runNumber;
+    int  dirty;
     int write_flag;
     Records records;
     data1_handle dh;
@@ -132,7 +132,7 @@ static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
 					    int key_flush);
 
 
-static Record createRecord (Records records, SYSNO *sysno)
+static Record createRecord (Records records, int *sysno)
 {
     Record rec;
     if (*sysno)
@@ -437,12 +437,12 @@ ZebraExplainInfo zebraExplain_open (
 	    memcpy ((*zdip)->databaseName, node_name->u.data.data,
 		    node_name->u.data.len);
 	    (*zdip)->databaseName[node_name->u.data.len] = '\0';
-	    (*zdip)->sysno = atoi_zn (node_id->u.data.data,
-				      node_id->u.data.len);
+	    (*zdip)->sysno = atoi_n (node_id->u.data.data,
+				     node_id->u.data.len);
 	    (*zdip)->attributeDetails = (zebAttributeDetails)
 		nmem_malloc (zei->nmem, sizeof(*(*zdip)->attributeDetails));
-	    (*zdip)->attributeDetails->sysno = atoi_zn (node_aid->u.data.data,
-							node_aid->u.data.len);
+	    (*zdip)->attributeDetails->sysno = atoi_n (node_aid->u.data.data,
+						       node_aid->u.data.len);
 	    (*zdip)->attributeDetails->readFlag = 1;
 	    (*zdip)->attributeDetails->dirty = 0;
 	    (*zdip)->attributeDetails->SUInfo = NULL;
@@ -461,8 +461,8 @@ ZebraExplainInfo zebraExplain_open (
 				   "runNumber");
 	    np = np->child;
 	    assert (np && np->which == DATA1N_data);
-	    zei->runNumber = atoi_zn (np->u.data.data, np->u.data.len);
-            yaz_log (LOG_DEBUG, "read runnumber=" ZINT_FORMAT, zei->runNumber);
+	    zei->runNumber = atoi_n (np->u.data.data, np->u.data.len);
+            yaz_log (LOG_DEBUG, "read runnumber = %d", zei->runNumber);
 	    *zdip = NULL;
 	}
 	rec_rm (&trec);
@@ -627,16 +627,16 @@ static void zebraExplain_readDatabase (ZebraExplainInfo zei,
 	&& (np = data1_search_tag (zei->dh, node_zebra->child,
 				   "recordBytes")) 
 	&& np->child && np->child->which == DATA1N_data)
-	zdi->recordBytes = atoi_zn (np->child->u.data.data,
-				    np->child->u.data.len);
+	zdi->recordBytes = atoi_n (np->child->u.data.data,
+				   np->child->u.data.len);
     if ((np = data1_search_tag (zei->dh, node_dbinfo->child,
 				"recordCount")) &&
 	(np = data1_search_tag (zei->dh, np->child,
 				"recordCountActual")) &&
 	np->child->which == DATA1N_data)
     {
-	zdi->recordCount = atoi_zn (np->child->u.data.data,
-				    np->child->u.data.len);
+	zdi->recordCount = atoi_n (np->child->u.data.data,
+				   np->child->u.data.len);
     }
     zdi->readFlag = 0;
     rec_rm (&rec);
@@ -900,7 +900,7 @@ static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
     int i;
     Record drec;
     data1_node *node_ci, *node_categoryList;
-    SYSNO sysno = 0;
+    int sysno = 0;
     static char *category[] = {
 	"CategoryList",
 	"TargetInfo",
@@ -1117,13 +1117,13 @@ static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
     /* record count */
     node_count = data1_mk_tag_uni (zei->dh, zei->nmem,
 				 "recordCount", node_dbinfo);
-    data1_mk_tag_data_zint (zei->dh, node_count, "recordCountActual",
-			    zdi->recordCount, zei->nmem);
+    data1_mk_tag_data_int (zei->dh, node_count, "recordCountActual",
+			      zdi->recordCount, zei->nmem);
 
     /* zebra info (private) */
     node_zebra = data1_mk_tag_uni (zei->dh, zei->nmem,
 				 "zebraInfo", node_dbinfo);
-    data1_mk_tag_data_zint (zei->dh, node_zebra,
+    data1_mk_tag_data_int (zei->dh, node_zebra,
 			   "recordBytes", zdi->recordBytes, zei->nmem);
     /* convert to "SGML" and write it */
 #if ZINFO_DEBUG
@@ -1275,16 +1275,16 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush)
                                 "database", 0 /* attr */, node_list);
 	data1_mk_tag_data_text (zei->dh, node_db, "name",
                                 zdi->databaseName, zei->nmem);
-	data1_mk_tag_data_zint (zei->dh, node_db, "id",
-				zdi->sysno, zei->nmem);
-	data1_mk_tag_data_zint (zei->dh, node_db, "attributeDetailsId",
-				zdi->attributeDetails->sysno, zei->nmem);
+	data1_mk_tag_data_int (zei->dh, node_db, "id",
+                               zdi->sysno, zei->nmem);
+	data1_mk_tag_data_int (zei->dh, node_db, "attributeDetailsId",
+                               zdi->attributeDetails->sysno, zei->nmem);
     }
     data1_mk_tag_data_int (zei->dh, node_zebra, "ordinalSU",
                            zei->ordinalSU, zei->nmem);
 
-    data1_mk_tag_data_zint (zei->dh, node_zebra, "runNumber",
-			    zei->runNumber, zei->nmem);
+    data1_mk_tag_data_int (zei->dh, node_zebra, "runNumber",
+			      zei->runNumber, zei->nmem);
 
 #if ZINFO_DEBUG
     data1_pr_tree (zei->dh, zei->data1_target, stderr);
