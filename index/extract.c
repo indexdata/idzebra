@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: extract.c,v 1.116 2002-04-13 18:16:43 adam Exp $
+ * $Id: extract.c,v 1.117 2002-04-15 14:05:43 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -24,20 +24,14 @@
 #define PRINTF_OFF_T "%ld"
 #endif
 
-static int records_inserted = 0;
-static int records_updated = 0;
-static int records_deleted = 0;
-static int records_processed = 0;
-
-static void logRecord (int showFlag)
+static void logRecord (ZebraHandle zh)
 {
-    if (!showFlag)
-        ++records_processed;
-    if (showFlag || !(records_processed % 1000))
+    ++zh->records_processed;
+    if (!(zh->records_processed % 1000))
     {
         logf (LOG_LOG, "Records: %7d i/u/d %d/%d/%d", 
-              records_processed, records_inserted, records_updated,
-              records_deleted);
+              zh->records_processed, zh->records_inserted, zh->records_updated,
+              zh->records_deleted);
     }
 }
 
@@ -458,7 +452,7 @@ static int recordExtract (ZebraHandle zh,
 	{
             /* error occured during extraction ... */
             if (rGroup->flagRw &&
-		records_processed < rGroup->fileVerboseLimit)
+		zh->records_processed < rGroup->fileVerboseLimit)
             {
                 logf (LOG_WARN, "fail %s %s " PRINTF_OFF_T, rGroup->recordType,
                       fname, recordOffset);
@@ -515,7 +509,7 @@ static int recordExtract (ZebraHandle zh,
             logf (LOG_WARN, "cannot delete record above (seems new)");
             return 1;
         }
-        if (records_processed < rGroup->fileVerboseLimit)
+        if (zh->records_processed < rGroup->fileVerboseLimit)
             logf (LOG_LOG, "add %s %s " PRINTF_OFF_T, rGroup->recordType,
                   fname, recordOffset);
         rec = rec_new (zh->reg->records);
@@ -531,7 +525,7 @@ static int recordExtract (ZebraHandle zh,
         extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
 	extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
 
-        records_inserted++;
+        zh->records_inserted++;
     }
     else
     {
@@ -550,7 +544,7 @@ static int recordExtract (ZebraHandle zh,
 		  fname, recordOffset);
 	    extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
 	    rec_rm (&rec);
-	    logRecord (0);
+	    logRecord (zh);
 	    return 1;
 	}
         delkeys.buf_used = rec->size[recInfo_delKeys];
@@ -568,16 +562,16 @@ static int recordExtract (ZebraHandle zh,
             }
             else
             {
-                if (records_processed < rGroup->fileVerboseLimit)
+                if (zh->records_processed < rGroup->fileVerboseLimit)
                     logf (LOG_LOG, "delete %s %s " PRINTF_OFF_T,
                          rGroup->recordType, fname, recordOffset);
-                records_deleted++;
+                zh->records_deleted++;
                 if (matchStr)
                     dict_delete (zh->reg->matchDict, matchStr);
                 rec_del (zh->reg->records, &rec);
             }
 	    rec_rm (&rec);
-            logRecord (0);
+            logRecord (zh);
             return 1;
         }
         else
@@ -591,11 +585,11 @@ static int recordExtract (ZebraHandle zh,
             }
             else
             {
-                if (records_processed < rGroup->fileVerboseLimit)
+                if (zh->records_processed < rGroup->fileVerboseLimit)
                     logf (LOG_LOG, "update %s %s " PRINTF_OFF_T,
                         rGroup->recordType, fname, recordOffset);
                 extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
-                records_updated++;
+                zh->records_updated++;
             }
         }
     }
@@ -680,7 +674,7 @@ static int recordExtract (ZebraHandle zh,
     
     /* commit this record */
     rec_put (zh->reg->records, &rec);
-    logRecord (0);
+    logRecord (zh);
     return 1;
 }
 
@@ -729,7 +723,7 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
     }
     if (!rGroup->recordType)
     {
-        if (records_processed < rGroup->fileVerboseLimit)
+        if (zh->records_processed < rGroup->fileVerboseLimit)
             logf (LOG_LOG, "? %s", fname);
         return 0;
     }
@@ -927,7 +921,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
 	yaz_log (LOG_WARN, "extract error");
 #else
 	if (rGroup->flagRw &&
-	    records_processed < rGroup->fileVerboseLimit)
+	    zh->records_processed < rGroup->fileVerboseLimit)
 	{
 	    logf (LOG_WARN, "fail %s %s %ld", rGroup->recordType,
 		  fname, (long) recordOffset);

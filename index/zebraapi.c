@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.55 2002-04-15 13:48:11 adam Exp $
+ * $Id: zebraapi.c,v 1.56 2002-04-15 14:05:43 adam Exp $
  */
 
 #include <assert.h>
@@ -384,7 +384,7 @@ void zebra_close (ZebraHandle zh)
     zebra_mutex_cond_unlock (&zs->session_lock);
     xfree (zh->reg_name);
     xfree (zh);
-    yaz_log (LOG_LOG, "zebra_close zh=%p end", zh);}
+}
 
 struct map_baseinfo {
     ZebraHandle zh;
@@ -998,6 +998,12 @@ void zebra_begin_trans (ZebraHandle zh)
     }
     
     yaz_log (LOG_LOG, "zebra_begin_trans");
+
+    zh->records_inserted = 0;
+    zh->records_updated = 0;
+    zh->records_deleted = 0;
+    zh->records_processed = 0;
+
 #if HAVE_SYS_TIMES_H
     times (&zh->tms1);
 #endif
@@ -1077,6 +1083,11 @@ void zebra_end_trans (ZebraHandle zh)
 
     zebra_register_close (zh->service, zh->reg);
     zh->reg = 0;
+
+    
+    yaz_log (LOG_LOG, "Records: %7d i/u/d %d/%d/%d", 
+             zh->records_processed, zh->records_inserted,
+             zh->records_updated, zh->records_deleted);
 
     zebra_get_state (zh, &val, &seqno);
     if (val != 'd')
