@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.32 2004-06-01 14:51:00 heikki Exp $
+/* $Id: isamb.c,v 1.33 2004-06-01 18:04:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 
 #ifndef ISAMB_DEBUG
-#define ISAMB_DEBUG 1
+#define ISAMB_DEBUG 0
 #endif
 
 struct ISAMB_head {
@@ -208,6 +208,9 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
         assert(isamb->file[i].head.block_size == b_size);
         b_size = b_size * 4;
     }
+#if ISAMB_DEBUG
+    logf(LOG_WARN, "isamb debug enabled. Things will be slower than usual");
+#endif
     return isamb;
 }
 
