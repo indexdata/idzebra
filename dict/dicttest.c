@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.19  1996-02-02 13:43:50  adam
+ * Revision 1.20  1996-03-20 09:35:16  adam
+ * Function dict_lookup_grep got extra parameter, init_pos, which marks
+ * from which position in pattern approximate pattern matching should occur.
+ *
+ * Revision 1.19  1996/02/02  13:43:50  adam
  * The public functions simply use char instead of Dict_char to represent
  * search strings. Dict_char is used internally only.
  *
@@ -97,6 +101,7 @@ int main (int argc, char **argv)
     const char *base = NULL;
     int do_delete = 0;
     int range = -1;
+    int srange = 0;
     int rw = 0;
     int infosize = 4;
     int cache = 10;
@@ -113,11 +118,12 @@ int main (int argc, char **argv)
     if (argc < 2)
     {
         fprintf (stderr, "usage:\n "
-                 " %s [-d] [-r n] [-u] [-g pat] [-s n] [-v n] [-i f] [-w]"
-                 " [-c n] base file\n\n",
+                 " %s [-d] [-r n] [-p n] [-u] [-g pat] [-s n] [-v n] [-i f]"
+                 " [-w] [-c n] base file\n\n",
                  prog);
         fprintf (stderr, "  -d      delete instead of insert\n");
         fprintf (stderr, "  -r n    set regular match range\n");
+        fprintf (stderr, "  -p n    set regular match start range\n");
         fprintf (stderr, "  -u      report if keys change during insert\n");
         fprintf (stderr, "  -g p    try pattern n (see -r)\n");
         fprintf (stderr, "  -s n    set info size to n (instead of 4)\n");
@@ -127,7 +133,7 @@ int main (int argc, char **argv)
         fprintf (stderr, "  -c n    cache size (number of pages)\n");
         exit (1);
     }
-    while ((ret = options ("dr:ug:s:v:i:wc:", argv, argc, &arg)) != -2)
+    while ((ret = options ("dr:p:ug:s:v:i:wc:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -150,6 +156,10 @@ int main (int argc, char **argv)
         else if (ret == 'r')
         {
             range = atoi (arg);
+        }
+        else if (ret == 'p')
+        {
+            srange = atoi (arg);
         }
         else if (ret == 'u')
         {
@@ -268,7 +278,7 @@ int main (int argc, char **argv)
                     {
                         look_hits = 0;
                         dict_lookup_grep (dict, ipf_ptr, range, NULL,
-                                          &max_pos, grep_handle);
+                                          &max_pos, srange, grep_handle);
                         if (look_hits)
                             no_of_hits++;
                         else
@@ -288,7 +298,7 @@ int main (int argc, char **argv)
             range = 0;
         logf (LOG_LOG, "Grepping '%s'", grep_pattern);
         dict_lookup_grep (dict, grep_pattern, range, NULL, &max_pos,
-                          grep_handle);
+                          srange, grep_handle);
     }
     if (rw)
     {

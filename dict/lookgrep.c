@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.14  1996-02-02 13:43:51  adam
+ * Revision 1.15  1996-03-20 09:35:18  adam
+ * Function dict_lookup_grep got extra parameter, init_pos, which marks
+ * from which position in pattern approximate pattern matching should occur.
+ *
+ * Revision 1.14  1996/02/02  13:43:51  adam
  * The public functions simply use char instead of Dict_char to represent
  * search strings. Dict_char is used internally only.
  *
@@ -232,7 +236,8 @@ static void or (MatchContext *mc, MatchWord *Rdst,
 }
 
 static INLINE int move (MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
-                 Dict_char ch, struct DFA *dfa, MatchWord *Rtmp)
+                        Dict_char ch, struct DFA *dfa, MatchWord *Rtmp,
+                        int range)
 {
     int d;
     MatchWord *Rtmp_2 = Rtmp + mc->n;
@@ -263,7 +268,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                       MatchWord *Rj, int pos, void *client,
                       int (*userfunc)(char *, const char *, void *),
                       Dict_char *prefix, struct DFA *dfa,
-                      int *max_pos)
+                      int *max_pos, int init_pos)
 {
     int lo, hi, d;
     void *p;
@@ -291,6 +296,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                 MatchWord *Rj0 =    Rj + j    *mc->fact;
                 MatchWord *Rj1 =    Rj + (j+1)*mc->fact;
                 MatchWord *Rj_tmp = Rj + (j+2)*mc->fact;
+                int range;
 
                 memcpy (&ch, info+j*sizeof(Dict_char), sizeof(Dict_char));
                 prefix[pos+j] = ch;
@@ -304,15 +310,19 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                             return 1;
                     break;
                 }
-                move (mc, Rj1, Rj0, ch, dfa, Rj_tmp);
+                if (pos+j >= init_pos)
+                    range = mc->range;
+                else
+                    range = 0;
+                move (mc, Rj1, Rj0, ch, dfa, Rj_tmp, range);
                 for (d = mc->n; --d >= 0; )
-                    if (Rj1[mc->range*mc->n + d])
+                    if (Rj1[range*mc->n + d])
                         break;
                 if (d < 0)
                     break;
                 was_match = 0;
                 for (d = mc->n; --d >= 0; )
-                    if (Rj1[mc->range*mc->n + d] & mc->match_mask[d])
+                    if (Rj1[range*mc->n + d] & mc->match_mask[d])
                     {
                         was_match = 1;
                         break;
@@ -324,6 +334,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
             MatchWord *Rj1 =    Rj+  mc->fact;
             MatchWord *Rj_tmp = Rj+2*mc->fact;
             Dict_char ch;
+            int range;
 
             /* Dict_ptr             subptr */
             /* Dict_char            sub char */
@@ -335,9 +346,13 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
             
             if (pos > *max_pos)
                 *max_pos = pos;
-            move (mc, Rj1, Rj, ch, dfa, Rj_tmp);
+            if (pos >= init_pos)
+                range = mc->range;
+            else
+                range = 0;
+            move (mc, Rj1, Rj, ch, dfa, Rj_tmp, range);
             for (d = mc->n; --d >= 0; )
-                if (Rj1[mc->range*mc->n + d])
+                if (Rj1[range*mc->n + d])
                     break;
             if (d >= 0)
             {
@@ -345,7 +360,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                 if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
                 {
                     for (d = mc->n; --d >= 0; )
-                        if (Rj1[mc->range*mc->n + d] & mc->match_mask[d])
+                        if (Rj1[range*mc->n + d] & mc->match_mask[d])
                         {
                             prefix[pos+1] = DICT_EOS;
                             if ((*userfunc)((char*) prefix,
@@ -359,7 +374,8 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                 if (subptr)
                 {
                     if (dict_grep (dict, subptr, mc, Rj1, pos+1,
-                                   client, userfunc, prefix, dfa, max_pos))
+                                   client, userfunc, prefix, dfa, max_pos,
+                                   init_pos))
                         return 1;
                     dict_bf_readp (dict->dbf, ptr, &p);
                     indxp = (short*) ((char*) p+DICT_pagesize(dict)
@@ -373,7 +389,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
 }
 
 int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
-                      int *max_pos,
+                      int *max_pos, int init_pos,
                       int (*userfunc)(char *name, const char *info,
                                       void *client))
 {
@@ -416,7 +432,7 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     *max_pos = 0;
     if (dict->head.last > 1)
         i = dict_grep (dict, 1, mc, Rj, 0, client, userfunc, prefix,
-                       dfa, max_pos);
+                       dfa, max_pos, init_pos);
     else
         i = 0;
     logf (LOG_DEBUG, "max_pos = %d", *max_pos);

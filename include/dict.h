@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.19  1996-02-02 13:43:54  adam
+ * Revision 1.20  1996-03-20 09:35:23  adam
+ * Function dict_lookup_grep got extra parameter, init_pos, which marks
+ * from which position in pattern approximate pattern matching should occur.
+ *
+ * Revision 1.19  1996/02/02  13:43:54  adam
  * The public functions simply use char instead of Dict_char to represent
  * search strings. Dict_char is used internally only.
  *
@@ -137,7 +141,7 @@ char      *dict_lookup (Dict dict, const char *p);
 int        dict_lookup_ec (Dict dict, char *p, int range,
                            int (*f)(char *name));
 int        dict_lookup_grep (Dict dict, const char *p, int range, void *client,
-                             int *max_pos,
+                             int *max_pos, int init_pos,
                              int (*f)(char *name, const char *info,
                                       void *client));
 int        dict_strcmp (const Dict_char *s1, const Dict_char *s2);
