@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.5 2003-02-26 11:40:04 pop Exp $
+/* $Id: perlread.c,v 1.6 2003-02-27 23:21:40 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -92,6 +92,9 @@ int Filter_process (struct perl_context *context)
 
   dSP;
 
+  ENTER;
+  SAVETMPS;
+
   PUSHMARK(SP) ;
   XPUSHs(context->filterRef);
   PUTBACK ;
@@ -99,6 +102,9 @@ int Filter_process (struct perl_context *context)
   SPAGAIN ;
   res = POPi;
   PUTBACK ;
+
+  FREETMPS;
+  LEAVE;
   return (res);
 }
 
@@ -138,6 +144,10 @@ int Filter_process (struct perl_context *context)
 */
 void Filter_store_buff (struct perl_context *context, char *buff, size_t len) {
   dSP;
+
+  ENTER;
+  SAVETMPS;
+
   PUSHMARK(SP) ;
   XPUSHs(context->filterRef);
   XPUSHs(sv_2mortal(newSVpv(buff, len)));  
@@ -145,6 +155,9 @@ void Filter_store_buff (struct perl_context *context, char *buff, size_t len) {
   call_method("_store_buff", 0);
   SPAGAIN ;
   PUTBACK ;
+
+  FREETMPS;
+  LEAVE;
 }
 /*  The "file" manipulation function wrappers */
 int grs_perl_readf(struct perl_context *context, size_t len) {
@@ -209,8 +222,10 @@ void grs_destroy_perl(void *clientData)
 
   logf (LOG_LOG, "Destroying perl interpreter context");
   if (context->perli_ready) {
+    /*
     FREETMPS;
     LEAVE;
+    */
     if (context->origi == NULL)  perl_destruct(context->perli);
    }
   if (context->origi == NULL) perl_free(context->perli);
@@ -242,13 +257,17 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
     char *arglist[6] = { "", "-I", "", "-M", "-e", "" };
 
     if (context->perli_ready) {
+      /*
       FREETMPS;
       LEAVE;
+      */
       if (context->origi == NULL) perl_destruct(context->perli);
     }
     if (context->origi == NULL) perl_construct(context->perli);
+    /*
     ENTER;
     SAVETMPS;
+    */
     context->perli_ready = 1;
 
     /* parse, and run the init call */
