@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.107 2003-06-20 16:27:55 adam Exp $
+/* $Id: zebraapi.c,v 1.108 2003-06-23 14:35:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1062,17 +1062,26 @@ int zebra_admin_exchange_record (ZebraHandle zh,
     memcpy (recid_z, recid_buf, recid_len);
     recid_z[recid_len] = 0;
 
+    zebra_begin_trans(zh,1);
+
     rinfo = dict_lookup (zh->reg->matchDict, recid_z);
     if (rinfo)
     {
         if (action == 1)  /* fail if insert */
-            return -1;
+        {
+	     zebra_end_trans(zh);
+	     return -1;
+	}
+
         memcpy (&sysno, rinfo+1, sizeof(sysno));
     }
     else
     {
         if (action == 2 || action == 3) /* fail if delete or update */
+        {
+	    zebra_end_trans(zh);
             return -1;
+	}
     }
     extract_rec_in_mem (zh, "grs.sgml", rec_buf, rec_len, database,
                         action == 3 ? 1 : 0 /* delete flag */,
@@ -1085,6 +1094,7 @@ int zebra_admin_exchange_record (ZebraHandle zh,
     {
         dict_delete (zh->reg->matchDict, recid_z);
     }
+    zebra_end_trans(zh);
     return 0;
 }
 

@@ -1,5 +1,5 @@
 /* zebrash.c - command-line interface to zebra API 
- *  $Id: zebrash.c,v 1.10 2003-06-20 14:21:23 heikki Exp $
+ *  $Id: zebrash.c,v 1.11 2003-06-23 14:35:41 heikki Exp $
  *
  * Copyrigth 2003 Index Data Aps
  *
@@ -295,7 +295,72 @@ static int cmd_create_database( char *args[], char *outbuff)
 	
     return zebra_create_database(zh, db);
 }
-/**************************************
+
+static int cmd_begin_trans( char *args[], char *outbuff)
+{
+    int rw=0;
+    if (args[1] && ( (args[1][0]=='1') || (args[1][0]=='w') ))
+        rw=1;
+    return zebra_begin_trans(zh,rw);
+}
+static int cmd_end_trans( char *args[], char *outbuff)
+{
+    return zebra_end_trans(zh);
+}
+/*************************************
+ * Inserting and deleting
+ */
+
+static int cmd_record_insert( char *args[], char *outbuff)
+{
+    int sysno=0;
+    char buf[MAX_ARG_LEN];
+    int i;
+    int rc;
+    
+    i=1;
+    buf[0]='\0';
+    while (args[i])
+    {
+	strcat(buf, args[i++]);
+	strcat(buf, " ");
+    }
+    rc=zebra_record_insert(zh,buf, strlen(buf), &sysno);
+    if (0==rc)
+    {
+        sprintf(buf,"ok sysno=%d\n",sysno);
+	strcat(outbuff,buf);
+    }
+    return rc;
+}
+
+
+static int cmd_exchange_record( char *args[], char *outbuff)
+{
+    char *base=args[1];
+    char *id = args[2];
+    char *action = args[3];
+    int i=4;
+    int rc;
+    char buf[MAX_ARG_LEN];
+    if (!(base && id && action && args[4] ))
+    {
+	strcat(outbuff,"Missing arguments!\n");
+	onecommand("help exchange_record", outbuff, "");
+	return -90;
+    }
+    while (args[i])
+    {
+	strcat(buf, args[i++]);
+	strcat(buf, " ");
+    }
+    rc=zebra_admin_exchange_record(zh, base, buf, strlen(buf),
+        id, strlen(id), atoi(action));
+    return rc;
+}
+
+
+/**************************************)
  * Command table, parser, and help 
  */
 
@@ -375,6 +440,21 @@ struct cmdstruct cmds[] = {
     { "create_database", "basename",
       "Creates a database",
       cmd_create_database},
+    { "begin_trans", "[rw]",
+      "Begins a transaction. rw=1 means write, otherwise read-only",
+      cmd_begin_trans},
+    { "end_trans","",
+      "Ends a transaction",
+      cmd_end_trans},
+
+    { "","Updating:","",0},
+    { "record_insert","record",
+      "inserts an sgml record into Default",
+      cmd_record_insert},
+    { "exchange_record","database record-id action record",
+      "inserts (1), updates (2), or deletes (3) a record \n"
+      "record-id must be a unique identifier for the record",
+      cmd_exchange_record},
     { "", "Misc:","", 0}, 
     { "echo", "string", 
       "ouputs the string", 
