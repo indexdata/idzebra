@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.64 2004-10-20 14:32:28 heikki Exp $
+/* $Id: zsets.c,v 1.65 2004-10-21 12:43:09 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -89,7 +89,7 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,
     zebraSet->locked = 1;
     zebraSet->rpn = 0;
     zebraSet->nmem = m;
-    zebraSet->rset_nmem=nmem_create(); /* FIXME - where to free this ?? */
+    zebraSet->rset_nmem=nmem_create(); 
 
     zebraSet->num_bases = num_bases;
     zebraSet->basenames = 
@@ -625,6 +625,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
     struct sortKeyInfo sort_criteria[3];
     int num_criteria;
     RSFD rfd;
+    TERMID termid;
 
     yaz_log (LOG_LOG, "resultSetSortSingle start");
     assert(nmem); /* compiler shut up about unused param */
@@ -690,7 +691,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
         }
     }
     rfd = rset_open (rset, RSETF_READ);
-    while (rset_read (rfd, &key,0))
+    while (rset_read (rfd, &key,&termid))
       /* FIXME - pass a TERMID *, and use it for something below !! */
     {
         zint this_sys = key.mem[0];
@@ -731,7 +732,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     zint kno = 0;
     struct it_key key;
     RSFD rfd;
-    /* int term_index; */
+    TERMID termid;
     int i;
     ZebraRankClass rank_class;
     struct rank_control *rc;
@@ -755,8 +756,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     }
     rc = rank_class->control;
 
-    if (rset_read (rfd, &key, 0))
-        /* FIXME - Pass a TERMID *, and use it for something ?? */
+    if (rset_read (rfd, &key, &termid))
     {
         zint psysno = key.mem[0];
         int score;
@@ -804,8 +804,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
                 }
             }
         }
-        while (rset_read (rfd, &key,0) && (est<0) );
-           /* FIXME - term ?? */
+        while (rset_read (rfd, &key,&termid) && (est<0) );
         score = (*rc->calc) (handle, psysno);
         resultSetInsertRank (zh, sort_info, psysno, score, 'A');
         (*rc->end) (zh->reg, handle);
