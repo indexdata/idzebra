@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.95 2004-12-13 20:51:32 adam Exp $
+/* $Id: recgrs.c,v 1.96 2004-12-21 22:02:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1059,9 +1059,6 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
     }
     data1_concat_text(p->dh, mem, node);
 
-    /* ensure our data1 tree is UTF-8 */
-    data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
-
 #if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
@@ -1108,7 +1105,6 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 #if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
-#if YAZ_VERSIONL >= 0x010903L
     if (p->comp && p->comp->which == Z_RecordComp_complex &&
 	p->comp->u.complex->generic &&
         p->comp->u.complex->generic->which == Z_Schema_oid &&
@@ -1118,16 +1114,6 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	if (oe)
 	    requested_schema = oe->value;
     }
-#else
-    if (p->comp && p->comp->which == Z_RecordComp_complex &&
-	p->comp->u.complex->generic && p->comp->u.complex->generic->schema)
-    {
-	oident *oe = oid_getentbyoid (p->comp->u.complex->generic->schema);
-	if (oe)
-	    requested_schema = oe->value;
-    }
-#endif
-
     /* If schema has been specified, map if possible, then check that
      * we got the right one 
      */
@@ -1237,13 +1223,13 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 				p->input_format : VAL_SUTRS))
     {
     case VAL_TEXT_XML:
-
 #if 0
         data1_pr_tree (p->dh, node, stdout);
 #endif
-
-        if (p->encoding)
-            data1_iconv (p->dh, mem, node, p->encoding, "UTF-8");
+	/* default output encoding for XML is UTF-8 */
+	data1_iconv (p->dh, mem, node,
+		     p->encoding ? p->encoding : "UTF-8",
+		     data1_get_encoding(p->dh, node));
 
 	if (!(p->rec_buf = data1_nodetoidsgml(p->dh, node, selected,
 					      &p->rec_len)))
@@ -1256,6 +1242,7 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	}
 	break;
     case VAL_GRS1:
+	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 	dummy = 0;
 	if (!(p->rec_buf = data1_nodetogr(p->dh, node, selected,
 					  p->odr, &dummy)))
@@ -1264,6 +1251,9 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	    p->rec_len = (size_t) (-1);
 	break;
     case VAL_EXPLAIN:
+	/* ensure our data1 tree is UTF-8 */
+	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
+	
 	if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
 					       p->odr)))
 	    p->diagnostic = 238;
@@ -1271,6 +1261,8 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	    p->rec_len = (size_t) (-1);
 	break;
     case VAL_SUMMARY:
+	/* ensure our data1 tree is UTF-8 */
+	data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
 					       p->odr)))
 	    p->diagnostic = 238;
@@ -1278,8 +1270,9 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	    p->rec_len = (size_t) (-1);
 	break;
     case VAL_SUTRS:
-        if (p->encoding)
-            data1_iconv (p->dh, mem, node, p->encoding, "UTF-8");
+	if (p->encoding)
+            data1_iconv (p->dh, mem, node, p->encoding,
+			 data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
 					   &p->rec_len)))
 	    p->diagnostic = 238;
@@ -1291,6 +1284,9 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	}
 	break;
     case VAL_SOIF:
+	if (p->encoding)
+            data1_iconv (p->dh, mem, node, p->encoding,
+			 data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
 					    &p->rec_len)))
 	    p->diagnostic = 238;
@@ -1316,8 +1312,9 @@ int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 	    p->diagnostic = 238;
 	    break;
 	}
-        if (p->encoding)
-            data1_iconv (p->dh, mem, node, p->encoding, "UTF-8");
+	if (p->encoding)
+            data1_iconv (p->dh, mem, node, p->encoding,
+			 data1_get_encoding(p->dh, node));
 	if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
 					selected, &p->rec_len)))
 	    p->diagnostic = 238;
