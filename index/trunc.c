@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.2  1996-11-08 11:10:28  adam
+ * Revision 1.3  1996-12-20 11:07:14  adam
+ * Multi-or result set.
+ *
+ * Revision 1.2  1996/11/08 11:10:28  adam
  * Buffers used during file match got bigger.
  * Compressed ISAM support everywhere.
  * Bug fixes regarding masking characters in queries.
@@ -22,6 +25,12 @@
 #include <rsisam.h>
 #include <rsisamc.h>
 #include <rsnull.h>
+
+#define NEW_TRUNC 0
+
+#if NEW_TRUNC
+#include <rsm_or.h>
+#endif
 
 struct trunc_info {
     int  *ptr;
@@ -324,6 +333,7 @@ static int isamc_trunc_cmp (const void *p1, const void *p2)
 
 RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no)
 {
+    logf (LOG_LOG, "rset_trunc no=%d", no);
     if (zi->isam)
     {
         if (no < 1)
@@ -350,6 +360,20 @@ RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no)
             parms.is = zi->isamc;
             return rset_create (rset_kind_isamc, &parms);
         }
+#if NEW_TRUNC
+        else if (no < 2000)
+        {
+            rset_m_or_parms parms;
+
+            logf (LOG_LOG, "new_trunc");
+            parms.key_size = sizeof(struct it_key);
+            parms.cmp = key_compare;
+            parms.isc = zi->isamc;
+            parms.isam_positions = isam_p;
+            parms.no_isam_positions = no;
+            return rset_create (rset_kind_m_or, &parms);
+        }
+#endif
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
     else
