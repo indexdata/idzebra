@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.155 2005-03-17 07:54:23 adam Exp $
+/* $Id: zebraapi.c,v 1.156 2005-03-17 08:31:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2159,7 +2159,7 @@ int zebra_sort_by_specstr (ZebraHandle zh, ODR stream,
     return sort_status;
 }
 
-struct BFile_struct *zebra_get_bfs(ZebraHandle zh)
+struct BFiles_struct *zebra_get_bfs(ZebraHandle zh)
 {
     if (zh && zh->reg)
 	return zh->reg->bfs;
