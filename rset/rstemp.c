@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.58 2005-01-16 23:14:57 adam Exp $
+/* $Id: rstemp.c,v 1.59 2005-01-17 00:01:51 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,17 +20,17 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <assert.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <stdio.h>
+#include <string.h>
 #ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>
 #endif
-#include <string.h>
 #include <sys/types.h>
-#include <stdio.h>
 
 #include <zebrautl.h>
 #include <rset.h>
@@ -85,7 +85,7 @@ static int log_level_initialized=0;
 
 RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
                     int scope, 
-                    const char *temp_path,TERMID term)
+                    const char *temp_path, TERMID term)
 {
     RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,term);
     struct rset_temp_info *info;
@@ -107,7 +107,7 @@ RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
     if (!temp_path)
         info->temp_path = NULL;
     else
-        info->temp_path = nmem_strdup(rnew->nmem,temp_path);
+        info->temp_path = nmem_strdup(rnew->nmem, temp_path);
     rnew->priv=info; 
     return rnew;
 } /* rstemp_create */
@@ -154,7 +154,7 @@ static RSFD r_open (RSET ct, int flag)
     prfd->pos_cur = 0;
     info->pos_buf = 0;
     r_reread (rfd);
-    prfd->cur=0;
+    prfd->cur = 0;
     return rfd;
 }
 
@@ -168,33 +168,30 @@ static void r_flush (RSFD rfd, int mk)
 
     if (!info->fname && mk)
     {
-        char template[1024];
 #if HAVE_MKSTEMP
-
+        char template[1024];
         if (info->temp_path)
-            sprintf (template, "%s/zrsXXXXXX", info->temp_path);
+            sprintf(template, "%s/zrsXXXXXX", info->temp_path);
         else
-            sprintf (template, "zrsXXXXXX");
+            sprintf(template, "zrsXXXXXX");
 
-        info->fd = mkstemp (template);
+        info->fd = mkstemp(template);
 
         if (info->fd == -1)
         {
-            yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: mkstemp %s", template);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: mkstemp %s", template);
             exit (1);
         }
-        info->fname= nmem_malloc(rfd->rset->nmem,strlen(template)+1);
-        strcpy (info->fname, template);
+	info->fname = nmem_strdup(rfd->rset->nmem, template);
 #else
         char *s = (char*) tempnam (info->temp_path, "zrs");
-        info->fname= nmem_malloc(rfd->rset->nmem,strlen(template)+1);
-        strcpy (info->fname, s);
+        info->fname= nmem_strdup(rfd->rset->nmem, s);
 
-        yaz_log (log_level, "creating tempfile %s", info->fname);
-        info->fd = open (info->fname, O_BINARY|O_RDWR|O_CREAT, 0666);
+        yaz_log(log_level, "creating tempfile %s", info->fname);
+        info->fd = open(info->fname, O_BINARY|O_RDWR|O_CREAT, 0666);
         if (info->fd == -1)
         {
-            yaz_log (YLOG_FATAL|YLOG_ERRNO, "rstemp: open %s", info->fname);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "rstemp: open %s", info->fname);
             exit (1);
         }
 #endif
