@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.11  1995-12-06 14:43:02  adam
+ * Revision 1.12  1995-12-11 09:04:48  adam
+ * Bug fix: the lookup/scan/lookgrep didn't handle empty dictionary.
+ *
+ * Revision 1.11  1995/12/06  14:43:02  adam
  * New function: dict_delete.
  *
  * Revision 1.10  1995/11/16  17:00:44  adam
@@ -403,8 +406,11 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
         }
     }
     *max_pos = 0;
-    i = dict_grep (dict, 1, mc, Rj, 0, client, userfunc, prefix, dfa,
-                   max_pos);
+    if (dict->head.last > 1)
+        i = dict_grep (dict, 1, mc, Rj, 0, client, userfunc, prefix,
+                       dfa, max_pos);
+    else
+        i = 0;
     logf (LOG_DEBUG, "max_pos = %d", *max_pos);
     dfa_delete (&dfa);
     xfree (Rj);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookup.c,v $
- * Revision 1.5  1995-09-04 09:09:15  adam
+ * Revision 1.6  1995-12-11 09:04:50  adam
+ * Bug fix: the lookup/scan/lookgrep didn't handle empty dictionary.
+ *
+ * Revision 1.5  1995/09/04  09:09:15  adam
  * String arg in lookup is const.
  *
  * Revision 1.4  1994/10/05  12:16:51  adam
@@ -99,7 +102,7 @@ static char *dict_look (Dict dict, const Dict_char *str)
 
 char *dict_lookup (Dict dict, const Dict_char *p)
 {
-    if (dict->head.last == 1)
+    if (dict->head.last <= 1)
         return NULL;
     return dict_look (dict, p);
 }

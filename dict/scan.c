@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.6  1995-11-20 11:58:04  adam
+ * Revision 1.7  1995-12-11 09:04:50  adam
+ * Bug fix: the lookup/scan/lookgrep didn't handle empty dictionary.
+ *
+ * Revision 1.6  1995/11/20  11:58:04  adam
  * Support for YAZ in standard located directories, such as /usr/local/..
  *
  * Revision 1.5  1995/10/09  16:18:32  adam
@@ -196,6 +199,8 @@ int dict_scan (Dict dict, Dict_char *str, int *before, int *after,
                int (*f)(Dict_char *name, const char *info, int pos,
                         void *client))
 {
+    if (dict->head.last <= 1)
+        return 0;
     return dict_scan_r (dict, 1, 0, str, before, after, client, f);
 }
 
