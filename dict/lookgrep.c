@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.9  1995-10-27 13:58:09  adam
+ * Revision 1.10  1995-11-16 17:00:44  adam
+ * Changed stupid log.
+ *
+ * Revision 1.9  1995/10/27  13:58:09  adam
  * Makes 'Database unavailable' diagnostic.
  *
  * Revision 1.8  1995/10/19  14:57:21  adam
@@ -398,7 +401,7 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
     *max_pos = 0;
     i = dict_grep (dict, 1, mc, Rj, 0, client, userfunc, prefix, dfa,
                    max_pos);
-    logf (LOG_DEBUG, "max_pos = %d", max_pos);
+    logf (LOG_DEBUG, "max_pos = %d", *max_pos);
     dfa_delete (&dfa);
     xfree (Rj);
     rm_MatchContext (&mc);
