@@ -5,7 +5,7 @@ Priority: extra
 Build-Depends: yaz-devel (>= 1.9), libexpat1-dev, tcl8.3-dev, libbz2-dev
 
 Package: zebra-doc
-Section: devel
+Section: doc
 Architecture: any
 Recommends: zebra-runtime
 Description: Zebra (documentation)
@@ -15,7 +15,7 @@ Description: Zebra (documentation)
  boolean search expressions and relevance-ranked free-text queries. 
 
 Package: zebra-runtime
-Section: libs
+Section: text
 Architecture: any
 Depends: ${shlibs:Depends}
 Description: Zebra (runtime files)
