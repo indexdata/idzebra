@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: lockutil.c,v 1.15 2002-04-04 14:14:13 adam Exp $
+ * $Id: lockutil.c,v 1.16 2002-06-02 19:28:53 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -76,7 +76,7 @@ ZebraLockHandle zebra_lock_create (const char *dir,
 	    (O_BINARY|O_CREAT|O_RDWR), 0666);
 #else
     h->fd= open (fname, ((h->excl_flag > 1) ? O_EXCL : 0)|
-	    (O_BINARY|O_CREAT|O_RDWR|O_SYNC), 0666);
+	    (O_BINARY|O_CREAT|O_RDWR), 0666);
 #endif
     if (h->fd == -1)
     {
