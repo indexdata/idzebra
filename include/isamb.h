@@ -1,5 +1,5 @@
-/* $Id: isamb.h,v 1.7 2004-06-01 12:32:18 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: isamb.h,v 1.8 2004-06-01 12:56:38 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.

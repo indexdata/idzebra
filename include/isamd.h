@@ -1,5 +1,5 @@
 /* $Id$
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -19,8 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
-
 
 #ifndef ISAMD_H
 #define ISAMD_H
@@ -42,6 +40,7 @@ typedef struct ISAMD_M_s {
     ISAMD_filecat filecat;
 
     int (*compare_item)(const void *a, const void *b);
+    void (*log_item)(int logmask, const void *p, const char *txt);
 
 #define ISAMD_DECODE 0
 #define ISAMD_ENCODE 1

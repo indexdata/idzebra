@@ -1,4 +1,4 @@
-/* $Id: isams.c,v 1.4 2003-06-23 15:36:12 adam Exp $
+/* $Id: isams.c,v 1.5 2004-06-01 12:56:39 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -64,6 +64,7 @@ void isams_getmethod (ISAMS_M *m)
     m->code_stop = NULL;
 
     m->compare_item = NULL;
+    m->log_item = NULL;
 
     m->debug = 1;
     m->block_size = 128;

@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.29 2004-06-01 12:32:19 heikki Exp $
+/* $Id: isamb.c,v 1.30 2004-06-01 12:56:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,7 +25,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <isamb.h>
 #include <assert.h>
-#include <../index/index.h> /* for log_keydump. Debugging only */
 
 struct ISAMB_head {
     int first_block;
@@ -1103,8 +1102,10 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
     if (!p)
         return 0;
     logf(LOG_DEBUG,"isamb_pp_forward starting [%p] p=%d",pp,p->pos);
-    key_logdump_txt(LOG_DEBUG, untilbuf," until");
-    key_logdump_txt(LOG_DEBUG, buf, " buf");
+    
+    (*pp->isamb->method->log_item)(LOG_DEBUG, untilbuf, "until");
+    (*pp->isamb->method->log_item)(LOG_DEBUG, buf, "buf");
+
     while (1)
     {
         while ( p->offset == p->size) 
@@ -1128,7 +1129,10 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
             { 
                 src = p->bytes + p->offset;
                 decode_ptr(&src, &item_len);
-                key_logdump_txt(LOG_DEBUG, src, " isamb_pp_forward climb skipping old key");
+		
+		(*pp->isamb->method->log_item)(LOG_DEBUG, src,
+					       " isamb_pp_forward "
+					       "climb skipping old key");
                 src += item_len;
                 decode_ptr(&src,&pos);
                 p->offset = src - (char*) p->bytes;
@@ -1147,7 +1151,9 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
                 decode_ptr(&src, &item_len);
                 logf(LOG_DEBUG,"isamb_pp_forward (B) on a high node. ofs=%d sz=%d nxtpos=%d ",
                         p->offset,p->size,pos);
-                key_logdump(LOG_DEBUG, src);
+
+
+		(*pp->isamb->method->log_item)(LOG_DEBUG, src, "");
                 if (untilbuf)
                     cmp=(*pp->isamb->method->compare_item)(untilbuf,src);
                 else
@@ -1200,15 +1206,20 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
                 cmp=-2;
             logf(LOG_DEBUG,"isamb_pp_forward on a leaf. cmp=%d", 
                               cmp);
-            key_logdump(LOG_DEBUG, buf);
+	    (*pp->isamb->method->log_item)(LOG_DEBUG, buf, "");
+
             if (cmp <2)
             {
                 if (untilbuf)
-                    key_logdump_txt(LOG_DEBUG, buf,
-                       "isamb_pp_forward returning 1");
+		{
+		    (*pp->isamb->method->log_item)(LOG_DEBUG, buf, 
+						   "isamb_pp_forward returning 1");
+		}
                 else
-                    key_logdump_txt(LOG_DEBUG, buf,
-                        "isamb_pp_read returning 1 (fwd)");
+		{
+		    (*pp->isamb->method->log_item)(LOG_DEBUG, buf, 
+						   "isamb_pp_read returning 1 (fwd)");
+		}
                 pp->returned_numbers++;
                 return 1;
             }

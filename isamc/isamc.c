@@ -1,4 +1,4 @@
-/* $Id: isamc.c,v 1.23 2003-06-23 15:36:11 adam Exp $
+/* $Id: isamc.c,v 1.24 2004-06-01 12:56:39 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -66,6 +66,7 @@ void isc_getmethod (ISAMC_M *m)
     m->code_reset = NULL;
 
     m->compare_item = NULL;
+    m->log_item = NULL;
 
     m->debug = 1;
 

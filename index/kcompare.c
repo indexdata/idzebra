@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.43 2004-06-01 12:32:18 heikki Exp $
+/* $Id: kcompare.c,v 1.44 2004-06-01 12:56:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -262,6 +262,7 @@ ISAMS_M *key_isams_m (Res res, ISAMS_M *me)
     isams_getmethod (me);
 
     me->compare_item = key_compare;
+    me->log_item = key_logdump_txt;
 
     me->code_start = iscz1_code_start;
     me->code_item = iscz1_code_item;
@@ -277,6 +278,7 @@ ISAMC_M *key_isamc_m (Res res, ISAMC_M *me)
     isc_getmethod (me);
 
     me->compare_item = key_compare;
+    me->log_item = key_logdump_txt;
 
     me->code_start = iscz1_code_start;
     me->code_item = iscz1_code_item;
@@ -293,6 +295,7 @@ ISAMD_M *key_isamd_m (Res res, ISAMD_M *me)
     me = isamd_getmethod (me);
 
     me->compare_item = key_compare;
+    me->log_item = key_logdump_txt;
 
     me->code_start = iscz1_code_start;
     me->code_item = iscz1_code_item;

@@ -1,5 +1,5 @@
-/* $Id: isamc.h,v 1.11 2003-06-23 15:36:11 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: isamc.h,v 1.12 2004-06-01 12:56:38 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -46,6 +46,7 @@ typedef struct ISAMC_M_s {
     ISAMC_filecat filecat;
 
     int (*compare_item)(const void *a, const void *b);
+    void (*log_item)(int logmask, const void *p, const char *txt);
 
 #define ISAMC_DECODE 0
 #define ISAMC_ENCODE 1
