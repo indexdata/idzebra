@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.64  1998-09-22 10:48:21  adam
+ * Revision 1.65  1998-10-18 07:54:54  adam
+ * Additional info added for diagnostics 114 (Unsupported use attribute) and
+ * 121 (Unsupported attribute set).
+ *
+ * Revision 1.64  1998/09/22 10:48:21  adam
  * Minor changes in search API.
  *
  * Revision 1.63  1998/09/02 13:53:21  adam
@@ -316,6 +320,10 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
 	r->errstring = zh->errString;
 	r->hits = zh->hits;
         break;
+    case Z_Query_type_2:
+	r->errcode = 107;
+	r->errstring = "type-2";
+	break;
     default:
         r->errcode = 107;
     }

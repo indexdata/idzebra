@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.87  1998-09-28 11:19:12  adam
+ * Revision 1.88  1998-10-18 07:54:52  adam
+ * Additional info added for diagnostics 114 (Unsupported use attribute) and
+ * 121 (Unsupported attribute set).
+ *
+ * Revision 1.87  1998/09/28 11:19:12  adam
  * Fix for Compiled ASN.1.
  *
  * Revision 1.86  1998/09/22 10:48:20  adam
@@ -920,7 +924,8 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
 static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			const char **term_sub, 
-			oid_value attributeSet, struct grep_info *grep_info,
+			oid_value attributeSet, NMEM stream,
+			struct grep_info *grep_info,
 			int reg_type, int complete_flag,
 			int num_bases, char **basenames,
 			char *term_dst)
@@ -959,9 +964,25 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
                   curAttributeSet, use_value, r);
 	    if (r == -1)
+	    {
+		char val_str[32];
+		sprintf (val_str, "%d", use_value);
 		zh->errCode = 114;
+		zh->errString = nmem_strdup (stream, val_str);
+	    }
 	    else
+	    {
+		int oid[OID_SIZE];
+		struct oident oident;
+
+		oident.proto = PROTO_Z3950;
+		oident.oclass = CLASS_ATTSET;
+		oident.value = curAttributeSet;
+		oid_ent_to_oid (&oident, oid);
+
 		zh->errCode = 121;
+		zh->errString = nmem_strdup (stream, oident.desc);
+	    }
             return -1;
         }
         if (zebraExplain_curDatabase (zh->zei, basenames[base_no]))
@@ -1349,6 +1370,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
                                    Z_AttributesPlusTerm *zapt,
 				   const char *termz,
                                    oid_value attributeSet,
+				   NMEM stream,
 				   int reg_type, int complete_flag,
 				   const char *rank_type,
 				   int num_bases, char **basenames)
@@ -1371,7 +1393,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     { 
 	logf (LOG_DEBUG, "APT_phrase termp=%s", termp);
 	grep_info.isam_p_indx = 0;
-        r = string_term (zh, zapt, &termp, attributeSet, &grep_info,
+        r = string_term (zh, zapt, &termp, attributeSet, stream, &grep_info,
 			reg_type, complete_flag, num_bases, basenames,
 			term_dst);
         if (r < 1)
@@ -1407,6 +1429,7 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
                                     Z_AttributesPlusTerm *zapt,
 				    const char *termz,
                                     oid_value attributeSet,
+				    NMEM stream,
 				    int reg_type, int complete_flag,
 				    const char *rank_type,
 				    int num_bases, char **basenames)
@@ -1429,7 +1452,7 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
     { 
 	logf (LOG_DEBUG, "APT_or_list termp=%s", termp);
 	grep_info.isam_p_indx = 0;
-        r = string_term (zh, zapt, &termp, attributeSet, &grep_info,
+        r = string_term (zh, zapt, &termp, attributeSet, stream, &grep_info,
 			reg_type, complete_flag, num_bases, basenames,
 			term_dst);
         if (r < 1)
@@ -1471,6 +1494,7 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
                                      Z_AttributesPlusTerm *zapt,
 				     const char *termz,
                                      oid_value attributeSet,
+				     NMEM stream,
 				     int reg_type, int complete_flag,
 				     const char *rank_type,
 				     int num_bases, char **basenames)
@@ -1493,7 +1517,7 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
     { 
 	logf (LOG_DEBUG, "APT_and_list termp=%s", termp);
 	grep_info.isam_p_indx = 0;
-        r = string_term (zh, zapt, &termp, attributeSet, &grep_info,
+        r = string_term (zh, zapt, &termp, attributeSet, stream, &grep_info,
 			reg_type, complete_flag, num_bases, basenames,
 			term_dst);
         if (r < 1)
@@ -1680,6 +1704,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
 				    Z_AttributesPlusTerm *zapt,
 				    const char *termz,
 				    oid_value attributeSet,
+				    NMEM stream,
 				    int reg_type, int complete_flag,
 				    const char *rank_type,
 				    int num_bases, char **basenames)
@@ -1743,6 +1768,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
 static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 				  const char *termz,
                                   oid_value attributeSet,
+				  NMEM stream,
 				  const char *rank_type)
 {
     RSET result;
@@ -1889,30 +1915,30 @@ static RSET rpn_search_APT (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     if (!strcmp (search_type, "phrase"))
     {
-	return rpn_search_APT_phrase (zh, zapt, termz, attributeSet,
+	return rpn_search_APT_phrase (zh, zapt, termz, attributeSet, stream,
 				      reg_id, complete_flag, rank_type,
 				      num_bases, basenames);
     }
     else if (!strcmp (search_type, "and-list"))
     {
-	return rpn_search_APT_and_list (zh, zapt, termz, attributeSet,
+	return rpn_search_APT_and_list (zh, zapt, termz, attributeSet, stream,
 			                reg_id, complete_flag, rank_type,
 				        num_bases, basenames);
     }
     else if (!strcmp (search_type, "or-list"))
     {
-	return rpn_search_APT_or_list (zh, zapt, termz, attributeSet,
+	return rpn_search_APT_or_list (zh, zapt, termz, attributeSet, stream,
 			               reg_id, complete_flag, rank_type,
 				       num_bases, basenames);
     }
     else if (!strcmp (search_type, "local"))
     {
-        return rpn_search_APT_local (zh, zapt, termz, attributeSet,
+        return rpn_search_APT_local (zh, zapt, termz, attributeSet, stream,
 				     rank_type);
     }
     else if (!strcmp (search_type, "numeric"))
     {
-	return rpn_search_APT_numeric (zh, zapt, termz, attributeSet,
+	return rpn_search_APT_numeric (zh, zapt, termz, attributeSet, stream,
 			               reg_id, complete_flag, rank_type,
 				       num_bases, basenames);
     }
