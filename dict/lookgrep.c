@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.21  1998-06-24 12:16:12  adam
+ * Revision 1.22  1999-02-02 14:50:23  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.21  1998/06/24 12:16:12  adam
  * Support for relations on text operands. Open range support in
  * DFA module (i.e. [-j], [g-]).
  *

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.21  1998-11-16 16:03:46  adam
+ * Revision 1.22  1999-02-02 14:51:15  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.21  1998/11/16 16:03:46  adam
  * Moved loggin utilities to Yaz. Was implemented in file zlogs.c.
  *
  * Revision 1.20  1998/11/16 10:10:53  adam
@@ -82,7 +85,7 @@
  */
 #include <stdio.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>

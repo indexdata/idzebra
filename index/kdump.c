@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.16  1998-05-20 10:12:17  adam
+ * Revision 1.17  1999-02-02 14:50:55  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.16  1998/05/20 10:12:17  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -63,7 +66,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>

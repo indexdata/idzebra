@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.24  1998-10-28 10:48:55  adam
+ * Revision 1.25  1999-02-02 14:50:05  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.24  1998/10/28 10:48:55  adam
  * Added type cast to prevent warning.
  *
  * Revision 1.23  1998/09/02 14:15:28  adam

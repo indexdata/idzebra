@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.11  1998-06-22 11:34:45  adam
+ * Revision 1.12  1999-02-02 14:50:28  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.11  1998/06/22 11:34:45  adam
  * Changed scan callback function so it doesn't stop further scanning.
  *
  * Revision 1.10  1998/03/06 16:58:04  adam

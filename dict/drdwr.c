@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: drdwr.c,v $
- * Revision 1.9  1997-09-09 13:38:01  adam
+ * Revision 1.10  1999-02-02 14:50:21  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.9  1997/09/09 13:38:01  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.8  1995/01/24 11:25:11  adam
@@ -25,7 +28,7 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
-#ifndef WINDOWS
+#ifndef WIN32
 #include <unistd.h>
 #endif
 #include <string.h>

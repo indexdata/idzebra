@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfap.h,v $
- * Revision 1.7  1997-09-29 09:05:17  adam
+ * Revision 1.8  1999-02-02 14:50:06  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.7  1997/09/29 09:05:17  adam
  * Thread safe DFA module. We simply had to put a few static vars to
  * the DFA_parse structure.
  *

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dclose.c,v $
- * Revision 1.4  1997-09-09 13:38:01  adam
+ * Revision 1.5  1999-02-02 14:50:16  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.4  1997/09/09 13:38:01  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.3  1994/09/01 17:49:36  adam

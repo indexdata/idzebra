@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.14  1998-01-12 15:04:07  adam
+ * Revision 1.15  1999-02-02 14:50:51  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.14  1998/01/12 15:04:07  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.13  1997/09/09 13:38:06  adam

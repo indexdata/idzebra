@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindxp.h,v $
- * Revision 1.4  1998-03-05 08:45:12  adam
+ * Revision 1.5  1999-02-02 14:51:05  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.4  1998/03/05 08:45:12  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *

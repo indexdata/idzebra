@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.60  1998-10-28 10:54:39  adam
+ * Revision 1.61  1999-02-02 14:51:00  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.60  1998/10/28 10:54:39  adam
  * SDRKit integration.
  *
  * Revision 1.59  1998/10/16 08:14:32  adam
@@ -225,7 +228,7 @@
  */
 #include <stdio.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>
@@ -362,7 +365,7 @@ int main (int argc, char **argv)
                         zebraIndexWait (1);
                         logf (LOG_LOG, "commit execute");
                         bf_commitExec (rGroupDef.bfs);
-#ifndef WINDOWS
+#ifndef WIN32
                         sync ();
 #endif
                         zebraIndexLockMsg ("d");
@@ -473,7 +476,7 @@ int main (int argc, char **argv)
                 {
                     logf (LOG_LOG, "merging with index");
                     key_input (rGroup.bfs, nsections, 60);
-#ifndef WINDOWS
+#ifndef WIN32
                     sync ();
 #endif
                 }

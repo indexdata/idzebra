@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dopen.c,v $
- * Revision 1.5  1997-09-17 12:19:07  adam
+ * Revision 1.6  1999-02-02 14:50:20  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.5  1997/09/17 12:19:07  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -18,7 +21,7 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
-#ifndef WINDOWS
+#ifndef WIN32
 #include <unistd.h>
 #endif
 #include <stdio.h>

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.6  1998-06-23 15:33:33  adam
+ * Revision 1.7  1999-02-02 14:50:46  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.6  1998/06/23 15:33:33  adam
  * Added feature to specify sort criteria in query (type 7 specifies
  * sort flags).
  *

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.26  1997-09-18 08:59:18  adam
+ * Revision 1.27  1999-02-02 14:50:32  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.26  1997/09/18 08:59:18  adam
  * Extra generic handle for the character mapping routines.
  *
  * Revision 1.25  1997/09/17 12:19:09  adam

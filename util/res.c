@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data ApS
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.23  1998-10-28 15:18:55  adam
+ * Revision 1.24  1999-02-02 14:51:42  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.23  1998/10/28 15:18:55  adam
  * Fix for DOS-formatted configuration files.
  *
  * Revision 1.22  1998/01/12 15:04:32  adam
@@ -79,7 +82,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>
@@ -215,7 +218,7 @@ static void reread (Res r)
 Res res_open (const char *name)
 {
     Res r;
-#ifdef WINDOWS
+#ifdef WIN32
     if (access (name, 4))
 #else
     if (access (name, R_OK))

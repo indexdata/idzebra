@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.19  1998-11-03 10:16:11  adam
+ * Revision 1.20  1999-02-02 14:50:50  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.19  1998/11/03 10:16:11  adam
  * Uses stat and not lstat so that file traversal follows symbolic links.
  *
  * Revision 1.18  1997/09/25 14:55:33  adam
@@ -67,7 +70,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#ifndef WINDOWS
+#ifndef WIN32
 #include <unistd.h>
 #endif
 #include <direntz.h>

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.14  1997-09-09 13:38:12  adam
+ * Revision 1.15  1999-02-02 14:51:22  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.14  1997/09/09 13:38:12  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.13  1996/10/29 13:56:57  adam

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recstat.c,v $
- * Revision 1.6  1998-01-12 15:04:08  adam
+ * Revision 1.7  1999-02-02 14:51:06  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.6  1998/01/12 15:04:08  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.5  1997/09/17 12:19:17  adam
@@ -32,7 +35,7 @@
 #include <assert.h>
 #include <string.h>
 #include <fcntl.h>
-#ifndef WINDOWS
+#ifndef WIN32
 #include <unistd.h>
 #endif
 #include "recindxp.h"

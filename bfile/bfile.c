@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.26  1998-02-17 10:32:52  adam
+ * Revision 1.27  1999-02-02 14:50:01  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.26  1998/02/17 10:32:52  adam
  * Fixed bug: binary files weren't opened with flag b on NT.
  *
  * Revision 1.25  1997/10/27 14:25:38  adam
@@ -88,7 +91,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>

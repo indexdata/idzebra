@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: grepper.c,v $
- * Revision 1.7  1996-10-29 13:57:24  adam
+ * Revision 1.8  1999-02-02 14:50:07  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.7  1996/10/29 13:57:24  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.6  1996/01/08 09:09:20  adam

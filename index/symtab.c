@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: symtab.c,v $
- * Revision 1.4  1997-09-09 13:38:09  adam
+ * Revision 1.5  1999-02-02 14:51:08  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.4  1997/09/09 13:38:09  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.3  1996/10/29 14:06:54  adam

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1997, Index Data I/S 
+ * Copyright (C) 1997-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.5  1997-11-18 10:03:24  adam
+ * Revision 1.6  1999-02-02 14:51:27  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.5  1997/11/18 10:03:24  adam
  * Member num_children removed from data1_node.
  *
  * Revision 1.4  1997/10/27 14:34:26  adam

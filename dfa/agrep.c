@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.10  1997-09-09 13:37:57  adam
+ * Revision 1.11  1999-02-02 14:50:03  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.10  1997/09/09 13:37:57  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.9  1996/10/29 13:57:18  adam
@@ -47,8 +50,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#ifdef WINDOWS
+
+#ifdef WIN32
+
 #include <io.h>
+
 #else
 #include <unistd.h>
 #endif

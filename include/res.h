@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.h,v $
- * Revision 1.9  1997-11-18 10:04:03  adam
+ * Revision 1.10  1999-02-02 14:50:36  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.9  1997/11/18 10:04:03  adam
  * Function res_trav returns number of 'hits'.
  *
  * Revision 1.8  1997/09/17 12:19:10  adam

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.21  1996-10-29 14:00:03  adam
+ * Revision 1.22  1999-02-02 14:50:19  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.21  1996/10/29 14:00:03  adam
  * Page size given by DICT_DEFAULT_PAGESIZE in dict.h.
  *
  * Revision 1.20  1996/03/20 09:35:16  adam

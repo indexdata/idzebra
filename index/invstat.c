@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.7  1998-03-13 15:30:50  adam
+ * Revision 1.8  1999-02-02 14:50:53  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.7  1998/03/13 15:30:50  adam
  * New functions isc_block_used and isc_block_size. Fixed 'leak'
  * in isc_alloc_block.
  *

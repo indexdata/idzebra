@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.h,v $
- * Revision 1.6  1998-03-05 08:37:44  adam
+ * Revision 1.7  1999-02-02 14:50:37  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.6  1998/03/05 08:37:44  adam
  * New result set model.
  *
  * Revision 1.5  1997/09/05 15:30:02  adam

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: delete.c,v $
- * Revision 1.4  1996-02-02 13:43:50  adam
+ * Revision 1.5  1999-02-02 14:50:17  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.4  1996/02/02 13:43:50  adam
  * The public functions simply use char instead of Dict_char to represent
  * search strings. Dict_char is used internally only.
  *

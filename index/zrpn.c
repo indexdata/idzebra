@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1998, Index Data
+ * Copyright (C) 1995-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.90  1998-11-16 16:03:43  adam
+ * Revision 1.91  1999-02-02 14:51:13  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.90  1998/11/16 16:03:43  adam
  * Moved loggin utilities to Yaz. Was implemented in file zlogs.c.
  *
  * Revision 1.89  1998/11/16 10:11:55  adam
@@ -316,7 +319,7 @@
  */
 #include <stdio.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.15  1998-02-17 10:31:33  adam
+ * Revision 1.16  1999-02-02 14:50:57  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.15  1998/02/17 10:31:33  adam
  * Fixed bug in zebraIndexUnlock. On NT, the lock files wasn't removed.
  *
  * Revision 1.14  1998/01/12 15:04:08  adam
@@ -61,7 +64,7 @@
  */
 #include <stdio.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>
@@ -116,7 +119,7 @@ int zebraIndexWait (int commitPhase)
         h = server_lock_org;
     if (zebra_lock_nb (h))
     {
-#ifndef WINDOWS
+#ifndef WIN32
         if (errno != EWOULDBLOCK)
         {
             logf (LOG_FATAL|LOG_ERRNO, "flock");
@@ -196,7 +199,7 @@ void zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
             }
             if (zebra_lock_nb (server_lock_main) == -1)
             {
-#ifdef WINDOWS
+#ifdef WIN32
                 logf (LOG_LOG, "waiting for other index process");
                 zebra_lock (server_lock_main);
                 zebra_unlock (server_lock_main);

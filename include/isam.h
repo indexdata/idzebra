@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.13  1997-09-17 12:19:09  adam
+ * Revision 1.14  1999-02-02 14:50:34  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.13  1997/09/17 12:19:09  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *

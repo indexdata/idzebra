@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: sgmlread.c,v $
- * Revision 1.4  1997-09-17 12:19:22  adam
+ * Revision 1.5  1999-02-02 14:51:31  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.4  1997/09/17 12:19:22  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *

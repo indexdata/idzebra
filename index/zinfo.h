@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.5  1998-06-08 14:43:16  adam
+ * Revision 1.6  1999-02-02 14:51:12  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.5  1998/06/08 14:43:16  adam
  * Added suport for EXPLAIN Proxy servers - added settings databasePath
  * and explainDatabase to facilitate this. Increased maximum number
  * of databases and attributes in one register.

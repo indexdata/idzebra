@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lexer.c,v $
- * Revision 1.10  1996-10-29 13:57:27  adam
+ * Revision 1.11  1999-02-02 14:50:10  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.10  1996/10/29 13:57:27  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.9  1996/05/14 11:33:41  adam

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: states.c,v $
- * Revision 1.5  1996-10-29 13:57:31  adam
+ * Revision 1.6  1999-02-02 14:50:14  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.5  1996/10/29 13:57:31  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.4  1995/09/04 12:33:28  adam

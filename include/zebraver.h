@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.12  1998-02-10 12:03:05  adam
+ * Revision 1.13  1999-02-02 14:50:48  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.12  1998/02/10 12:03:05  adam
  * Implemented Sort.
  *
  * Revision 1.11  1998/01/29 13:33:04  adam
@@ -47,6 +50,6 @@
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 1998-02-10 12:03:05 $"
+#define ZEBRADATE "$Date: 1999-02-02 14:50:48 $"
 #endif
 

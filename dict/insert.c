@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.18  1998-03-05 08:17:24  adam
+ * Revision 1.19  1999-02-02 14:50:22  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.18  1998/03/05 08:17:24  adam
  * Added a few comments - no code changed.
  *
  * Revision 1.17  1996/05/14 15:49:09  adam

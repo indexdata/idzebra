@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.29  1998-05-27 14:28:34  adam
+ * Revision 1.30  1999-02-02 14:50:02  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.29  1998/05/27 14:28:34  adam
  * Fixed bug in mf_write. 'Cap off' byte written at wrong offset.
  *
  * Revision 1.28  1998/05/20 10:00:35  adam
@@ -103,7 +106,7 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>

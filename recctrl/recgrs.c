@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.23  1998-10-18 07:51:10  adam
+ * Revision 1.24  1999-02-02 14:51:28  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.23  1998/10/18 07:51:10  adam
  * Changed one logf call.
  *
  * Revision 1.22  1998/10/16 08:14:37  adam
@@ -166,7 +169,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sys/types.h>
-#ifndef WINDOWS
+#ifndef WIN32
 #include <unistd.h>
 #endif
 

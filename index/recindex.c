@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.20  1998-01-12 15:04:08  adam
+ * Revision 1.21  1999-02-02 14:51:03  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.20  1998/01/12 15:04:08  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.19  1997/09/17 12:19:16  adam

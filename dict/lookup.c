@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookup.c,v $
- * Revision 1.8  1998-03-05 08:17:24  adam
+ * Revision 1.9  1999-02-02 14:50:25  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.8  1998/03/05 08:17:24  adam
  * Added a few comments - no code changed.
  *
  * Revision 1.7  1996/02/02 13:43:51  adam

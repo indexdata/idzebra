@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1998, Index Data I/S
+ * Copyright (C) 1998-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rank1.c,v $
- * Revision 1.3  1998-06-12 12:21:53  adam
+ * Revision 1.4  1999-02-02 14:51:01  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.3  1998/06/12 12:21:53  adam
  * Fixed memory-leak.
  *
  * Revision 1.2  1998/03/05 13:03:29  adam
@@ -18,7 +21,7 @@
 
 #include <stdio.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: close.c,v $
- * Revision 1.5  1994-09-01 17:49:36  adam
+ * Revision 1.6  1999-02-02 14:50:15  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.5  1994/09/01 17:49:36  adam
  * Removed stupid line. Work on insertion in dictionary. Not finished yet.
  *
  * Revision 1.4  1994/09/01  17:44:06  adam

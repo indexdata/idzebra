@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.10  1998-03-05 08:36:28  adam
+ * Revision 1.11  1999-02-02 14:51:36  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.10  1998/03/05 08:36:28  adam
  * New result set model.
  *
  * Revision 1.9  1997/12/18 10:54:25  adam

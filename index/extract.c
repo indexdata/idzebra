@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data 
+ * Copyright (C) 1994-1999, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.89  1998-10-28 10:54:38  adam
+ * Revision 1.90  1999-02-02 14:50:52  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.89  1998/10/28 10:54:38  adam
  * SDRKit integration.
  *
  * Revision 1.88  1998/10/16 08:14:29  adam
@@ -326,7 +329,7 @@
  */
 #include <stdio.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>

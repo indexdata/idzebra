@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.10  1997-09-29 09:08:36  adam
+ * Revision 1.11  1999-02-02 14:50:59  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.10  1997/09/29 09:08:36  adam
  * Revised locking system to be thread safe for the server.
  *
  * Revision 1.9  1997/09/25 14:54:43  adam
@@ -46,7 +49,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #include <sys/locking.h>
 #else
@@ -65,7 +68,7 @@ ZebraLockHandle zebra_lock_create (const char *name, int excl_flag)
     ZebraLockHandle h = xmalloc (sizeof(*h));
     h->excl_flag = excl_flag;
     h->fd = -1;
-#ifdef WINDOWS
+#ifdef WIN32
     if (!h->excl_flag)
         h->fd = open (name, O_BINARY|O_RDONLY);
     if (h->fd == -1)
@@ -103,9 +106,7 @@ void zebra_lock_prefix (Res res, char *path)
         strcat (path, "/");
 }
 
-#ifdef WINDOWS
-
-#else
+#ifndef WIN32
 static int unixLock (int fd, int type, int cmd)
 {
     struct flock area;
@@ -118,7 +119,7 @@ static int unixLock (int fd, int type, int cmd)
 
 int zebra_lock (ZebraLockHandle h)
 {
-#ifdef WINDOWS
+#ifdef WIN32
     return _locking (h->fd, _LK_LOCK, 1);
 #else
     return unixLock (h->fd, h->excl_flag ? F_WRLCK : F_RDLCK, F_SETLKW);
@@ -127,7 +128,7 @@ int zebra_lock (ZebraLockHandle h)
 
 int zebra_lock_nb (ZebraLockHandle h)
 {
-#ifdef WINDOWS
+#ifdef WIN32
     return _locking (h->fd, _LK_NBLCK, 1);
 #else
     return unixLock (h->fd, h->excl_flag ? F_WRLCK : F_RDLCK, F_SETLK);
@@ -136,7 +137,7 @@ int zebra_lock_nb (ZebraLockHandle h)
 
 int zebra_unlock (ZebraLockHandle h)
 {
-#ifdef WINDOWS
+#ifdef WIN32
     return _locking (h->fd, _LK_UNLCK, 1);
 #else
     return unixLock (h->fd, F_UNLCK, F_SETLKW);

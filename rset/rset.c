@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.12  1998-04-26 10:56:57  adam
+ * Revision 1.13  1999-02-02 14:51:33  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.12  1998/04/26 10:56:57  adam
  * Added include of string.h.
  *
  * Revision 1.11  1998/03/05 08:36:28  adam

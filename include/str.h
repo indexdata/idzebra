@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: str.h,v $
- * Revision 1.3  1997-09-05 15:30:06  adam
+ * Revision 1.4  1999-02-02 14:50:45  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.3  1997/09/05 15:30:06  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *

@@ -1,17 +1,20 @@
 /*
- * Copyright (C) 1998, Index Data ApS
+ * Copyright (C) 1998-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: passwddb.c,v $
- * Revision 1.3  1998-06-25 19:16:32  adam
+ * Revision 1.4  1999-02-02 14:51:39  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.3  1998/06/25 19:16:32  adam
  * Minor changes to Visual C++ project.
  *
  * Revision 1.2  1998/06/25 09:55:51  adam
  * Minor changes - fixex headers.
  *
  */
-#ifdef WINDOWS
+#ifdef WIN32
 #else
 #include <unistd.h>
 #endif

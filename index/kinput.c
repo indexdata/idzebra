@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.30  1998-10-28 10:53:57  adam
+ * Revision 1.31  1999-02-02 14:50:56  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.30  1998/10/28 10:53:57  adam
  * Added type cast to prevent warning.
  *
  * Revision 1.29  1998/06/11 15:41:39  adam
@@ -111,7 +114,7 @@
  */
 
 #include <fcntl.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>

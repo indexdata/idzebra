@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.11  1998-03-25 13:48:02  adam
+ * Revision 1.12  1999-02-02 14:51:10  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.11  1998/03/25 13:48:02  adam
  * Fixed bug in rset_trunc_r.
  *
  * Revision 1.10  1998/03/05 08:45:13  adam

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.34  1998-06-08 14:43:14  adam
+ * Revision 1.35  1999-02-02 14:51:09  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.34  1998/06/08 14:43:14  adam
  * Added suport for EXPLAIN Proxy servers - added settings databasePath
  * and explainDatabase to facilitate this. Increased maximum number
  * of databases and attributes in one register.
@@ -133,7 +136,7 @@
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #define S_ISREG(x) (x & _S_IFREG)
 #define S_ISDIR(x) (x & _S_IFDIR)

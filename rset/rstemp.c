@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.24  1998-03-05 08:36:28  adam
+ * Revision 1.25  1999-02-02 14:51:37  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.24  1998/03/05 08:36:28  adam
  * New result set model.
  *
  * Revision 1.23  1997/12/18 10:54:25  adam
@@ -91,7 +94,7 @@
 
 #include <fcntl.h>
 #include <assert.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>

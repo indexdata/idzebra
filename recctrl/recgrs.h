@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.h,v $
- * Revision 1.2  1997-04-30 08:56:08  quinn
+ * Revision 1.3  1999-02-02 14:51:29  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.2  1997/04/30 08:56:08  quinn
  * null
  *
  * Revision 1.1  1996/10/11  10:57:26  adam

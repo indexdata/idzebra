@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.24  1997-10-27 14:25:39  adam
+ * Revision 1.25  1999-02-02 14:51:16  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.24  1997/10/27 14:25:39  adam
  * Fixed memory leaks.
  *
  * Revision 1.23  1997/09/17 12:19:20  adam

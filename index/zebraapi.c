@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1998, Index Data
+ * Copyright (C) 1995-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.13  1998-12-16 12:23:30  adam
+ * Revision 1.14  1999-02-02 14:51:11  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.13  1998/12/16 12:23:30  adam
  * Added facility for database name mapping using resource mapdb.
  *
  * Revision 1.12  1998/11/16 10:18:10  adam
@@ -53,7 +56,7 @@
  */
 
 #include <stdio.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #include <process.h>
 #else
@@ -161,7 +164,7 @@ static void zebra_register_unlock (ZebraHandle zh)
         else
             waitSec = 0;
     }
-#ifdef WINDOWS
+#ifdef WIN32
 #else
     if (waitSec > 0)
         sleep (waitSec);

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1997, Index Data I/S 
+ * Copyright (C) 1995-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebrautl.h,v $
- * Revision 1.4  1997-10-27 14:33:04  adam
+ * Revision 1.5  1999-02-02 14:50:47  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.4  1997/10/27 14:33:04  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1998, Index Data 
+ * Copyright (C) 1995-1999, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.66  1998-10-28 10:54:41  adam
+ * Revision 1.67  1999-02-02 14:51:14  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.66  1998/10/28 10:54:41  adam
  * SDRKit integration.
  *
  * Revision 1.65  1998/10/18 07:54:54  adam
@@ -243,7 +246,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <fcntl.h>
-#ifdef WINDOWS
+#ifdef WIN32
 #include <io.h>
 #include <process.h>
 #else
@@ -421,7 +424,7 @@ int bend_sort (void *handle, bend_sort_rr *rr)
     return 0;
 }
 
-#ifndef WINDOWS
+#ifndef WIN32
 static void pre_init (struct statserv_options_block *sob)
 {
     char *pidfile = "zebrasrv.pid";
@@ -446,7 +449,7 @@ int main (int argc, char **argv)
 
     sob = statserv_getcontrol ();
     strcpy (sob->configname, FNAME_CONFIG);
-#ifndef WINDOWS
+#ifndef WIN32
     sob->pre_init = pre_init;
 #endif
     statserv_setcontrol (sob);
