@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebraidx-options.xml,v 1.2 2002-10-20 14:02:03 mike Exp $
+   $Id: zebraidx-options.xml,v 1.3 2003-12-03 13:57:16 adam Exp $
    Options for zebraidx.
    Included in both manual and man page for zebraidx
 -->
@@ -69,6 +69,15 @@
     Use <replaceable>mbytes</replaceable> of memory before flushing
     keys to background storage. This setting affects performance when
     updating large databases.
+   </para>
+  </listitem>
+ </varlistentry>
+ <varlistentry>
+  <term>-L</term>
+  <listitem>
+   <para>
+    Makes zebraidx skip symbolic links. By default, zebraidx follows
+    them.
    </para>
   </listitem>
  </varlistentry>
