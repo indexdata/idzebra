@@ -320,10 +320,6 @@ SOURCE=.\index\zinfo.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\index\zlogs.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\index\zrpn.c
 # End Source File
 # Begin Source File
