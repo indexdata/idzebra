@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zlogs.c,v $
- * Revision 1.8  1998-04-02 14:35:29  adam
+ * Revision 1.9  1998-10-13 20:36:02  adam
+ * Changed "indent" format string in log messages.
+ *
+ * Revision 1.8  1998/04/02 14:35:29  adam
  * First version of Zebra that works with compiled ASN.1.
  *
  * Revision 1.7  1998/01/29 13:40:11  adam
@@ -240,20 +243,20 @@ static void zlog_attributes (Z_AttributesPlusTerm *t, int level,
         case Z_AttributeValue_numeric:
 	    attrStr (*element->attributeType,
 		     *element->value.numeric, ast, str);
-            logf (LOG_LOG, "%*.s %s", level, "", str);
+            logf (LOG_LOG, "%*.0s %s", level, "", str);
             break;
         case Z_AttributeValue_complex:
-            logf (LOG_LOG, "%*.s attributeType=%d complex", level, "",
+            logf (LOG_LOG, "%*.0s attributeType=%d complex", level, "",
                   *element->attributeType);
             for (i = 0; i<element->value.complex->num_list; i++)
             {
                 if (element->value.complex->list[i]->which ==
                     Z_StringOrNumeric_string)
-                    logf (LOG_LOG, "%*.s  string: '%s'", level, "",
+                    logf (LOG_LOG, "%*.0s  string: '%s'", level, "",
                           element->value.complex->list[i]->u.string);
                 else if (element->value.complex->list[i]->which ==
                          Z_StringOrNumeric_numeric)
-                    logf (LOG_LOG, "%*.s  numeric: '%d'", level, "",
+                    logf (LOG_LOG, "%*.0s  numeric: '%d'", level, "",
                           *element->value.complex->list[i]->u.numeric);
             }
             break;
@@ -270,16 +273,16 @@ static void zlog_structure (Z_RPNStructure *zs, int level, enum oid_value ast)
         switch (zs->u.complex->roperator->which)
         {
         case Z_Operator_and:
-            logf (LOG_LOG, "%*.s and", level, "");
+            logf (LOG_LOG, "%*.0s and", level, "");
             break;
         case Z_Operator_or:
-            logf (LOG_LOG, "%*.s or", level, "");
+            logf (LOG_LOG, "%*.0s or", level, "");
             break;
         case Z_Operator_and_not:
-            logf (LOG_LOG, "%*.s and-not", level, "");
+            logf (LOG_LOG, "%*.0s and-not", level, "");
             break;
         default:
-            logf (LOG_LOG, "%*.s unknown complex", level, "");
+            logf (LOG_LOG, "%*.0s unknown complex", level, "");
             return;
         }
         zlog_structure (zs->u.complex->s1, level+2, ast);
@@ -293,34 +296,43 @@ static void zlog_structure (Z_RPNStructure *zs, int level, enum oid_value ast)
 
             if (zapt->term->which == Z_Term_general) 
             {
-                logf (LOG_LOG, "%*.s term '%.*s' (general)", level, "",
+                logf (LOG_LOG, "%*.0s term '%.*s' (general)", level, "",
                       zapt->term->u.general->len, zapt->term->u.general->buf);
             }
             else
             {
-                logf (LOG_LOG, "%*.s term (not general)", level, "");
+                logf (LOG_LOG, "%*.0s term (not general)", level, "");
             }
             zlog_attributes (zapt, level+2, ast);
         }
         else if (zs->u.simple->which == Z_Operand_resultSetId)
         {
-            logf (LOG_LOG, "%*.s set '%s'", level, "",
+            logf (LOG_LOG, "%*.0s set '%s'", level, "",
                   zs->u.simple->u.resultSetId);
         }
         else
-            logf (LOG_LOG, "%*.s unknown simple structure", level, "");
+            logf (LOG_LOG, "%*.0s unknown simple structure", level, "");
     }
     else
-        logf (LOG_LOG, "%*.s unknown structure", level, "");
+        logf (LOG_LOG, "%*.0s unknown structure", level, "");
 }
 
 void zlog_rpn (Z_RPNQuery *rpn)
 {
-    oident *attrset = oid_getentbyoid (rpn->attributeSetId);
+    oident *attrset;
     enum oid_value ast;
-
-    ast = attrset->value;
-    logf (LOG_LOG, "RPN query. Type: %s", attrset->desc);
+    
+    attrset = oid_getentbyoid (rpn->attributeSetId);
+    if (attrset)
+    {
+        ast = attrset->value;
+	logf (LOG_LOG, "RPN query. Type: %s", attrset->desc);
+    } 
+    else
+    {
+	ast = VAL_NONE;
+	logf (LOG_LOG, "RPN query. Unknown type");
+    }
     zlog_structure (rpn->RPNStructure, 0, ast);
 }
 
@@ -329,10 +341,10 @@ void zlog_scan (Z_AttributesPlusTerm *zapt, oid_value ast)
     int level = 0;
     if (zapt->term->which == Z_Term_general) 
     {
-	logf (LOG_LOG, "%*.s term '%.*s' (general)", level, "",
+	logf (LOG_LOG, "%*.0s term '%.*s' (general)", level, "",
 	      zapt->term->u.general->len, zapt->term->u.general->buf);
     }
     else
-	logf (LOG_LOG, "%*.s term (not general)", level, "");
+	logf (LOG_LOG, "%*.0s term (not general)", level, "");
     zlog_attributes (zapt, level+2, ast);
 }
