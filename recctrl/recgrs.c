@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: recgrs.c,v 1.55 2002-07-25 13:06:44 adam Exp $
+ * $Id: recgrs.c,v 1.56 2002-08-01 08:53:35 adam Exp $
  */
 
 #include <stdio.h>
@@ -105,6 +105,16 @@ static void grs_destroy(void *clientData)
     xfree (h);
 }
 
+/* use
+     1   start element (tag)
+     2   end element
+     3   start attr (and attr-exact)
+     4   end attr
+
+  1016   cdata
+  1015   attr data
+*/
+
 static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                          int level, RecWord *wrd, int use)
 {
@@ -164,7 +174,59 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
         }
         else
         {
+            data1_xattr *xp;
             (*p->tokenAdd)(wrd);
+
+            for (xp = n->u.tag.attributes; xp; xp = xp->next)
+            {
+                char comb[512];
+                
+                if (use == 1)
+                {   /* attribute start */
+                    wrd->reg_type = '0';
+                    wrd->attrUse = 3;
+                    wrd->string = xp->name;
+                    wrd->length = strlen(xp->name);
+                    
+                    wrd->seqno--;
+                    (*p->tokenAdd)(wrd);
+                }
+                
+                if (use == 1 && xp->value &&
+                    strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2)
+                {
+                    /* attribute value exact */
+                    strcpy (comb, xp->name);
+                    strcat (comb, "=");
+                    strcat (comb, xp->value);
+                    
+                    wrd->attrUse = 3;
+                    wrd->reg_type = '0';
+                    wrd->string = comb;
+                    wrd->length = strlen(comb);
+                    wrd->seqno--;
+                    
+                    (*p->tokenAdd)(wrd);
+
+                    /* attribute value phrase */
+
+                    wrd->attrUse = 1015;
+                    wrd->reg_type = 'w';
+                    wrd->string = xp->value;
+                    wrd->length = strlen(xp->value);
+
+                    (*p->tokenAdd)(wrd);
+                }
+                if (use == 2)
+                {
+                    wrd->reg_type = '0';
+                    wrd->attrUse = 4;
+                    wrd->string = xp->name;
+                    wrd->length = strlen(xp->name);
+                    
+                    (*p->tokenAdd)(wrd);
+                }
+            }
         }
         break;
     }

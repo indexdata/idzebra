@@ -1,12 +1,16 @@
 
 --- 1.3.0 2002/MM/DD
 
-Zebra uses UTF-8 internally:
+XPATH-like queries used when PQF string attributes are used, eg.
+   @attr 1=/portal/title sometitle
+   @attr 1=/portal/title[@xml:lang=da] danishtitle
+   @attr 1=/portal/title/@xml:lang da
+   @attr 1=//title sometitle
 
+Zebra uses UTF-8 internally:
 1) New setting "encoding" for zebra.cfg that specifies encoding for
 OCTET terms in queries and record encoding for most transfer syntaxes
 (except those that use International Strings, such as GRS-1).
-
 2) The encoding of International strings is UTF-8 by default. It
 may be changed by character set negotiation. If character set
 negotiation is in effect and if records are selected for conversion

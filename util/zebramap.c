@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.25  2002-04-05 12:54:29  adam
+ * Revision 1.26  2002-08-01 08:53:35  adam
+ * Work on xpath-like queries
+ *
+ * Revision 1.25  2002/04/05 12:54:29  adam
  * Using yaz_fclose
  *
  * Revision 1.24  2002/04/04 20:50:37  adam
@@ -573,7 +576,12 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
         if (weight_value == -1)
             weight_value = 34;
         sprintf (rank_type, "rank,%d", weight_value);
-    }    
+    }
+    if (relation_value == 103)
+    {
+        *search_type = "always";
+        return 0;
+    }
     if (*complete_flag)
 	*reg_id = 'p';
     else
