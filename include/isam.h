@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.10  1995-09-06 16:10:57  adam
+ * Revision 1.11  1996-10-29 13:43:44  adam
+ * Removed definition of SYSNO.
+ *
+ * Revision 1.10  1995/09/06 16:10:57  adam
  * More work on boolean sets.
  *
  * Revision 1.9  1994/09/28  16:58:26  quinn
@@ -47,8 +50,6 @@
 #define IS_MAX_BLOCKTYPES 4
 #define IS_MAX_RECORD 512
 #define IS_DEF_REPACK_PERCENT "30" /* how much relative change before repack */
-
-typedef unsigned int SYSNO; /* should be somewhere else */
 
 /*
  * Description of a blocktype (part of an isam file)
