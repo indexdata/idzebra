@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.108 2004-06-09 13:11:49 adam Exp $
+/* $Id: index.h,v 1.109 2004-06-14 10:31:56 mike Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -337,6 +337,11 @@ struct rank_control {
     void *(*create)(ZebraHandle zh);
     void (*destroy)(struct zebra_register *reg, void *class_handle);
     void *(*begin)(struct zebra_register *reg, void *class_handle, RSET rset);
+    /* ### Could add parameters to begin:
+     *	char *index;	// author, title, etc.
+     *	int dbsize;	// number of records in database
+     *	int rssize;	// number of records in result set (estimate?)
+     */
     void (*end)(struct zebra_register *reg, void *set_handle);
     int (*calc)(void *set_handle, int sysno);
     void (*add)(void *set_handle, int seqno, int term_index);
