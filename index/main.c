@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.82 2002-02-20 17:30:01 adam Exp $
+ * $Id: main.c,v 1.83 2002-04-04 14:14:13 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
@@ -15,9 +15,6 @@
 
 #include <yaz/data1.h>
 #include "zebraapi.h"
-#include "zserver.h"
-#include "index.h"
-#include "recindex.h"
 
 char *prog;
 
@@ -98,10 +95,15 @@ int main (int argc, char **argv)
                     logf (LOG_LOG, "zebra version %s %s",
                           ZEBRAVER, ZEBRADATE);
 #endif
-                    zs = zebra_start (configName ? configName : FNAME_CONFIG);
+                    zs = zebra_start (configName ? configName : "zebra.cfg");
 
                     zh = zebra_open (zs);
                 }
+                if (rGroupDef.databaseName)
+                    zebra_select_database (zh, rGroupDef.databaseName);
+                else
+                    zebra_select_database (zh, "Default");
+
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
                 else if (!strcmp (arg, "update1"))
@@ -140,10 +142,10 @@ int main (int argc, char **argv)
             }
 	    else
             {
-                memcpy (&zh->rGroup, &rGroupDef, sizeof(rGroupDef));
+                rGroupDef.path = arg;
+                zebra_set_group (zh, &rGroupDef);
                 zebra_begin_trans (zh);
 
-                zh->rGroup.path = arg;
                 switch (cmd)
                 {
                 case 'u':
@@ -153,7 +155,7 @@ int main (int argc, char **argv)
                     zebra_repository_delete (zh);
                     break;
                 case 's':
-                    logf (LOG_LOG, "dumping %s", zh->rGroup.path);
+                    logf (LOG_LOG, "dumping %s", rGroupDef.path);
                     zebra_repository_show (zh);
                     nsections = 0;
                     break;

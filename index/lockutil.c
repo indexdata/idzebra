@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: lockutil.c,v 1.14 2002-03-21 10:25:42 adam Exp $
+ * $Id: lockutil.c,v 1.15 2002-04-04 14:14:13 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -61,7 +61,6 @@ char *zebra_mk_fname (const char *dir, const char *name)
 ZebraLockHandle zebra_lock_create (const char *dir,
                                    const char *name, int excl_flag)
 {
-    int dlen = dir ? strlen(dir) : 0;
     char *fname = zebra_mk_fname(dir, name);
     ZebraLockHandle h = (ZebraLockHandle) xmalloc (sizeof(*h));
 

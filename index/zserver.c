@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2000, Index Data 
  * All rights reserved.
  *
- * $Id: zserver.c,v 1.84 2002-03-20 20:24:30 adam Exp $
+ * $Id: zserver.c,v 1.85 2002-04-04 14:14:13 adam Exp $
  */
 
 #include <stdio.h>
@@ -21,13 +21,6 @@
 #endif
 
 #include "zserver.h"
-
-#ifndef ZEBRASDR
-#define ZEBRASDR 0
-#endif
-#if ZEBRASDR
-#include "zebrasdr.h"
-#endif
 
 static int bend_sort (void *handle, bend_sort_rr *rr);
 static int bend_delete (void *handle, bend_delete_rr *rr);
@@ -88,7 +81,7 @@ bend_initresult *bend_init (bend_initrequest *q)
 	    xfree (openpass);
 	}
     }
-    if (zebra_auth (zh->service, user, passwd))
+    if (zebra_auth (zh, user, passwd))
     {
 	r->errcode = 222;
 	r->errstring = user;
@@ -177,15 +170,19 @@ int bend_search (void *handle, bend_search_rr *r)
     r->errcode = 0;
     r->errstring = NULL;
     
+    if (zebra_select_databases (zh, r->num_bases,
+                                (const char **) r->basenames))
+    {
+        zebra_result (zh, &r->errcode, &r->errstring);
+        return 0;
+    }
     logf (LOG_LOG, "ResultSet '%s'", r->setname);
     switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
 	zebra_search_rpn (zh, r->decode, r->stream, r->query->u.type_1,
-			  r->num_bases, r->basenames, r->setname);
-	r->errcode = zh->errCode;
-	r->errstring = zh->errString;
-	r->hits = zh->hits;
+			  r->setname, &r->hits);
+        zebra_result (zh, &r->errcode, &r->errstring);
         if (!r->errcode)
             search_terms (zh, r);
         break;
@@ -210,19 +207,16 @@ int bend_fetch (void *handle, bend_fetch_rr *r)
     r->last_in_set = 0;
     zebra_records_retrieve (zh, r->stream, r->setname, r->comp,
 			    r->request_format, 1, &retrievalRecord);
-    if (zh->errCode)                  /* non Surrogate Diagnostic */
-    {
-	r->errcode = zh->errCode;
-	r->errstring = zh->errString;
-    }
-    else if (retrievalRecord.errCode) /* Surrogate Diagnostic */
+    zebra_result (zh, &r->errcode, &r->errstring);
+    /*  non Surrogate Diagnostic OR Surrogate Diagnostic */
+    if (r->errcode == 0 && retrievalRecord.errCode)
     {
 	r->surrogate_flag = 1;
 	r->errcode = retrievalRecord.errCode;
 	r->errstring = retrievalRecord.errString;
 	r->basename = retrievalRecord.base;
     }
-    else                              /* Database Record */
+    else if (r->errcode == 0)        /* Database Record */
     {
 	r->errcode = 0;
 	r->basename = retrievalRecord.base;
@@ -238,12 +232,13 @@ static int bend_scan (void *handle, bend_scan_rr *r)
     ZebraScanEntry *entries;
     ZebraHandle zh = (ZebraHandle) handle;
     int is_partial, i;
+
+    zebra_select_databases (zh, r->num_bases, (const char **) r->basenames);
     
     r->entries = (struct scan_entry *)
 	odr_malloc (r->stream, sizeof(*r->entries) * r->num_entries);
     zebra_scan (zh, r->stream, r->term,
 		r->attributeset,
-		r->num_bases, r->basenames,
 		&r->term_position,
 		&r->num_entries, &entries, &is_partial);
     if (is_partial)
@@ -255,8 +250,7 @@ static int bend_scan (void *handle, bend_scan_rr *r)
 	r->entries[i].term = entries[i].term;
 	r->entries[i].occurrences = entries[i].occurrences;
     }
-    r->errcode = zh->errCode;
-    r->errstring = zh->errString;
+    zebra_result (zh, &r->errcode, &r->errstring);
     return 0;
 }
 
@@ -274,8 +268,7 @@ int bend_sort (void *handle, bend_sort_rr *rr)
     zebra_sort (zh, rr->stream,
                 rr->num_input_setnames, (const char **) rr->input_setnames,
 		rr->output_setname, rr->sort_sequence, &rr->sort_status);
-    rr->errcode = zh->errCode;
-    rr->errstring = zh->errString;
+    zebra_result (zh, &rr->errcode, &rr->errstring);
     return 0;
 }
 
@@ -326,7 +319,6 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 	break;
     default:
 	yaz_log(LOG_LOG, "unknown admin");
-	zh->errCode = 1001;
     }
     if (r->toKeep->databaseName)
     {
@@ -346,7 +338,6 @@ static int es_admin (ZebraHandle zh, Z_Admin *r)
 	yaz_log (LOG_LOG, "adm taskpackage (unhandled)");
 	break;
     default:
-	zh->errCode = 1001;
 	break;
     }
 
@@ -381,8 +372,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
     else if (rr->esr->taskSpecificParameters->which == Z_External_ESAdmin)
     {
 	es_admin (zh, rr->esr->taskSpecificParameters->u.adminService);
-	rr->errcode = zh->errCode;
-	rr->errstring = zh->errString;
+
+        zebra_result (zh, &rr->errcode, &rr->errstring);
     }
     else if (rr->esr->taskSpecificParameters->which == Z_External_itemOrder)
     {
@@ -637,7 +628,7 @@ int main (int argc, char **argv)
     struct statserv_options_block *sob;
 
     sob = statserv_getcontrol ();
-    strcpy (sob->configname, FNAME_CONFIG);
+    strcpy (sob->configname, "zebra.cfg");
     sob->bend_start = bend_start;
     sob->bend_stop = bend_stop;
 

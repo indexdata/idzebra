@@ -1,16 +1,16 @@
 #!/bin/sh
-# $Id: buildconf.sh,v 1.5 2001-02-28 09:01:41 adam Exp $
+# $Id: buildconf.sh,v 1.6 2002-04-04 14:14:13 adam Exp $
 dir=`aclocal --print-ac-dir`
 if [ -f $dir/yaz.m4 ]; then
-	aclocal || exit 1
+	aclocal
 else
-	aclocal -I . || exit 1
+	aclocal -I .
 fi
 test -d isamc || mkdir isamc
 test -d isamb || mkdir isamb
 test -d isam || mkdir isam
-automake -a >/dev/null 2>&1 || exit 2 
-autoconf || exit 3
+automake -a >/dev/null 2>&1 
+autoconf
 if [ -f config.cache ]; then
 	rm config.cache
 fi

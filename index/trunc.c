@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.20  2002-03-20 20:24:29  adam
+ * Revision 1.21  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.20  2002/03/20 20:24:29  adam
  * Hits per term. Returned in SearchResult-1
  *
  * Revision 1.19  2001/01/16 16:56:15  heikki
@@ -76,7 +79,7 @@
 
 #define NEW_TRUNC 1
 
-#include "zserver.h"
+#include "index.h"
 #include <rstemp.h>
 #include <rsnull.h>
 #include <rsisams.h>
@@ -195,7 +198,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
 
     parms.cmp = key_compare_it;
     parms.key_size = sizeof(struct it_key);
-    parms.temp_path = res_get (zi->service->res, "setTmpDir");
+    parms.temp_path = res_get (zi->res, "setTmpDir");
     parms.rset_term = rset_term_create (term, length, flags);
     result = rset_create (rset_kind_temp, &parms);
     result_rsfd = rset_open (result, RSETF_WRITE);
@@ -263,7 +266,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         heap_close (ti);
     }
 #if ZMBOL
-    else if (zi->service->isam)
+    else if (zi->reg->isam)
     {
         ISPT *ispt;
         int i;
@@ -275,7 +278,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                         key_compare_it);
         for (i = to-from; --i >= 0; )
         {
-            ispt[i] = is_position (zi->service->isam, isam_p[from+i]);
+            ispt[i] = is_position (zi->reg->isam, isam_p[from+i]);
             if (is_readkey (ispt[i], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, i);
             else
@@ -315,7 +318,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         heap_close (ti);
         xfree (ispt);
     }
-    else if (zi->service->isamc)
+    else if (zi->reg->isamc)
     {
         ISAMC_PP *ispt;
         int i;
@@ -327,7 +330,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                         key_compare_it);
         for (i = to-from; --i >= 0; )
         {
-            ispt[i] = isc_pp_open (zi->service->isamc, isam_p[from+i]);
+            ispt[i] = isc_pp_open (zi->reg->isamc, isam_p[from+i]);
             if (isc_pp_read (ispt[i], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, i);
             else
@@ -368,7 +371,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         xfree (ispt);
     }
 
-    else if (zi->service->isamd)
+    else if (zi->reg->isamd)
     {
         ISAMD_PP *ispt;
         int i;
@@ -380,7 +383,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                         key_compare_it);
         for (i = to-from; --i >= 0; )
         {
-            ispt[i] = isamd_pp_open (zi->service->isamd, isam_p[from+i]);
+            ispt[i] = isamd_pp_open (zi->reg->isamd, isam_p[from+i]);
             if (isamd_pp_read (ispt[i], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, i);
             else
@@ -422,7 +425,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
     }
 
 #endif
-    else if (zi->service->isams)
+    else if (zi->reg->isams)
     {
         ISAMS_PP *ispt;
         int i;
@@ -434,7 +437,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                         key_compare_it);
         for (i = to-from; --i >= 0; )
         {
-            ispt[i] = isams_pp_open (zi->service->isams, isam_p[from+i]);
+            ispt[i] = isams_pp_open (zi->reg->isams, isam_p[from+i]);
             if (isams_pp_read (ispt[i], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, i);
             else
@@ -526,34 +529,34 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 	parms.rset_term = rset_term_create (term, length, flags);
 	return rset_create (rset_kind_null, &parms);
     }
-    if (zi->service->isams)
+    if (zi->reg->isams)
     {
         if (no == 1)
         {
             rset_isams_parms parms;
 
             parms.pos = *isam_p;
-            parms.is = zi->service->isams;
+            parms.is = zi->reg->isams;
 	    parms.rset_term = rset_term_create (term, length, flags);
             return rset_create (rset_kind_isams, &parms);
         }
         qsort (isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
     }
 #if ZMBOL
-    else if (zi->service->isam)
+    else if (zi->reg->isam)
     {
         if (no == 1)
         {
             rset_isam_parms parms;
 
             parms.pos = *isam_p;
-            parms.is = zi->service->isam;
+            parms.is = zi->reg->isam;
 	    parms.rset_term = rset_term_create (term, length, flags);
             return rset_create (rset_kind_isam, &parms);
         }
         qsort (isam_p, no, sizeof(*isam_p), isam_trunc_cmp);
     }
-    else if (zi->service->isamc)
+    else if (zi->reg->isamc)
     {
         if (no == 1)
         {
@@ -562,7 +565,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             parms.key_size = sizeof(struct it_key);
             parms.cmp = key_compare_it;
             parms.pos = *isam_p;
-            parms.is = zi->service->isamc;
+            parms.is = zi->reg->isamc;
 	    parms.rset_term = rset_term_create (term, length, flags);
             return rset_create (rset_kind_isamc, &parms);
         }
@@ -573,7 +576,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 
             parms.key_size = sizeof(struct it_key);
             parms.cmp = key_compare_it;
-            parms.isc = zi->service->isamc;
+            parms.isc = zi->reg->isamc;
             parms.isam_positions = isam_p;
             parms.no_isam_positions = no;
             parms.no_save_positions = 100000;
@@ -583,14 +586,14 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 #endif
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
-    else if (zi->service->isamd)
+    else if (zi->reg->isamd)
     {
         if (no == 1)
         {
             rset_isamd_parms parms;
 
             parms.pos = *isam_p;
-            parms.is = zi->service->isamd;
+            parms.is = zi->reg->isamd;
 	    parms.rset_term = rset_term_create (term, length, flags);
             return rset_create (rset_kind_isamd, &parms);
         }
@@ -602,7 +605,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             parms.key_size = sizeof(struct it_key);
             parms.cmp = key_compare_it;
             parms.isc = 0;
-            parms.isamd=zi->service->isamd;
+            parms.isamd=zi->reg->isamd;
             parms.isam_positions = isam_p;
             parms.no_isam_positions = no;
             parms.no_save_positions = 100000;

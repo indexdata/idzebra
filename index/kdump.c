@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.19  2000-12-05 10:01:44  adam
+ * Revision 1.20  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.19  2000/12/05 10:01:44  adam
  * Fixed bug regarding user-defined attribute sets.
  *
  * Revision 1.18  1999/09/07 07:19:21  adam
@@ -170,7 +173,7 @@ int main (int argc, char **argv)
         }
 	else if (ret == 'c')
 	{
-	    if (!(res = res_open (arg)))
+	    if (!(res = res_open (arg, 0)))
             {
 		logf(LOG_FATAL, "Failed to open resource file %s", arg);
 	        exit (1);
@@ -188,7 +191,7 @@ int main (int argc, char **argv)
         exit (1);
     }
     if (!res)
-        res = res_open ("zebra.cfg");
+        res = res_open ("zebra.cfg", 0);
     zm = zebra_maps_open (res);
     if (!(inf = fopen (key_fname, "r")))
     {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirent.c,v $
- * Revision 1.3  1999-02-02 14:51:38  adam
+ * Revision 1.4  2002-04-04 14:14:14  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.3  1999/02/02 14:51:38  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.2  1997/09/17 12:19:24  adam
@@ -65,3 +68,16 @@ void closedir(DIR *dd)
 }
 
 #endif
+
+int zebra_is_abspath (const char *p)
+{
+    if (*p == '/')
+        return 1;
+#ifdef WIN32
+    if (*p == '\\')
+        return 1;
+    if (*p && p[1] == ':' && isalpha(*p))
+        return 1;
+#endif
+    return 0;
+}

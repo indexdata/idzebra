@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zebraapi.h,v 1.13 2002-02-20 17:30:01 adam Exp $
+ * $Id: zebraapi.h,v 1.14 2002-04-04 14:14:13 adam Exp $
  */
 
 #ifndef ZEBRAAPI_H
@@ -12,8 +12,23 @@
 #include <yaz/odr.h>
 #include <yaz/oid.h>
 #include <yaz/proto.h>
+#include <zebraver.h>
 
 YAZ_BEGIN_CDECL
+
+struct recordGroup {
+    char         *groupName;
+    char         *databaseName;
+    char         *path;
+    char         *recordId;
+    char         *recordType;
+    int          flagStoreData;
+    int          flagStoreKeys;
+    int          flagRw;
+    int          fileVerboseLimit;
+    int          databaseNamePath;
+    int          explainDatabase;
+};
 
 /* Retrieval Record Descriptor */
 typedef struct {
@@ -40,8 +55,8 @@ YAZ_EXPORT ZebraHandle zebra_open (ZebraService zs);
 
 /* Search using RPN-Query */
 YAZ_EXPORT void zebra_search_rpn (ZebraHandle zh, ODR input, ODR output,
-                       Z_RPNQuery *query, int num_bases, char **basenames, 
-		       const char *setname);
+                                  Z_RPNQuery *query,
+                                  const char *setname, int *hits);
 
 /* Retrieve record(s) */
 YAZ_EXPORT void zebra_records_retrieve (ZebraHandle zh, ODR stream,
@@ -53,7 +68,6 @@ YAZ_EXPORT void zebra_records_retrieve (ZebraHandle zh, ODR stream,
 YAZ_EXPORT void zebra_scan (ZebraHandle zh, ODR stream,
 			    Z_AttributesPlusTerm *zapt,
 			    oid_value attributeset,
-			    int num_bases, char **basenames,
 			    int *position, int *num_entries,
 			    ZebraScanEntry **list,
 			    int *is_partial);
@@ -74,11 +88,8 @@ YAZ_EXPORT const char *zebra_errString (ZebraHandle zh);
 /* extra information associated with error */
 YAZ_EXPORT char *zebra_errAdd (ZebraHandle zh);
 
-/* number of hits (after search) */
-YAZ_EXPORT int zebra_hits (ZebraHandle zh);
-
 /* do authentication */
-YAZ_EXPORT int zebra_auth (ZebraService zh, const char *user, const char *pass);
+YAZ_EXPORT int zebra_auth (ZebraHandle zh, const char *user, const char *pass);
 
 /* Character normalisation on specific register .
    This routine is subject to change - do not use. */
@@ -106,14 +117,39 @@ void zebra_admin_import_end (ZebraHandle zh);
 void zebra_begin_trans (ZebraHandle zh);
 void zebra_end_trans (ZebraHandle zh);
 
-void zebra_commit (ZebraHandle zh);
+int zebra_commit (ZebraHandle zh);
 
-void zebra_init (ZebraHandle zh);
-void zebra_compact (ZebraHandle zh);
+int zebra_init (ZebraHandle zh);
+int zebra_compact (ZebraHandle zh);
 void zebra_repository_update (ZebraHandle zh);
 void zebra_repository_delete (ZebraHandle zh);
 void zebra_repository_show (ZebraHandle zh);
 int zebra_record_insert (ZebraHandle zh, const char *buf, int len);
+
+YAZ_EXPORT void zebra_set_group (ZebraHandle zh, struct recordGroup *rg);
+
+YAZ_EXPORT void zebra_result (ZebraHandle zh, int *code, char **addinfo);
+
+YAZ_EXPORT const char *zebra_resultSetTerms (ZebraHandle zh,
+                                             const char *setname, 
+                                             int no, int *count, int *no_max);
+
+YAZ_EXPORT void zebra_sort (ZebraHandle zh, ODR stream,
+                            int num_input_setnames,
+                            const char **input_setnames,
+                            const char *output_setname,
+                            Z_SortKeySpecList *sort_sequence,
+                            int *sort_status);
+
+
+YAZ_EXPORT
+int zebra_select_databases (ZebraHandle zh, int num_bases, 
+                            const char **basenames);
+
+YAZ_EXPORT
+int zebra_select_database (ZebraHandle zh, const char *basename);
+
+
 
 YAZ_END_CDECL				      
 #endif

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: bfile.h,v 1.19 2000-03-15 15:00:30 adam Exp $
+ * $Id: bfile.h,v 1.20 2002-04-04 14:14:13 adam Exp $
  */
 
 #ifndef BFILE_H
@@ -19,7 +19,7 @@ extern "C" {
 
 typedef struct BFiles_struct *BFiles;
 
-BFiles bfs_create (const char *spec);
+BFiles bfs_create (const char *spec, const char *base);
 void bfs_destroy (BFiles bfiles);
 
 typedef struct BFile_struct
@@ -56,9 +56,6 @@ int bf_write (BFile bf, int no, int offset, int nbytes, const void *buf);
 
 /* bf_cache: enables bfile cache if spec is not NULL */
 void bf_cache (BFiles bfs, const char *spec);
-
-/* bf_lockDir: specifies locking directory for the cache system */
-void bf_lockDir (BFiles bfs, const char *lockDir);
 
 /* bf_commitExists: returns 1 if commit is pending; 0 otherwise */
 int bf_commitExists (BFiles bfs);

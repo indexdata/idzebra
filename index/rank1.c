@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rank1.c,v $
- * Revision 1.7  2001-11-14 22:06:27  adam
+ * Revision 1.8  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.7  2001/11/14 22:06:27  adam
  * Rank-weight may be controlled via query.
  *
  * Revision 1.6  2000/03/15 15:00:30  adam
@@ -36,7 +39,7 @@
 #include <unistd.h>
 #endif
 
-#include "zserver.h"
+#include "index.h"
 
 struct rank_class_info {
     int dummy;
@@ -69,7 +72,7 @@ static int log2_int (unsigned g)
  * create: Creates/Initialises this rank handler. This routine is 
  *  called exactly once. The routine returns the class_handle.
  */
-static void *create (ZebraService zh)
+static void *create (struct zebra_register *reg)
 {
     struct rank_class_info *ci = (struct rank_class_info *)
 	xmalloc (sizeof(*ci));
@@ -83,7 +86,7 @@ static void *create (ZebraService zh)
  *  when the handler is no longer needed - i.e. when the server
  *  dies. The class_handle was previously returned by create.
  */
-static void destroy (ZebraService zh, void *class_handle)
+static void destroy (struct zebra_register *reg, void *class_handle)
 {
     struct rank_class_info *ci = (struct rank_class_info *) class_handle;
 
@@ -97,7 +100,7 @@ static void destroy (ZebraService zh, void *class_handle)
  *  each result set. The returned handle is a "set handle" and
  *  will be used in each of the handlers below.
  */
-static void *begin (ZebraHandle zh, void *class_handle, RSET rset)
+static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 {
     struct rank_set_info *si = (struct rank_set_info *) xmalloc (sizeof(*si));
     int i;
@@ -132,7 +135,7 @@ static void *begin (ZebraHandle zh, void *class_handle, RSET rset)
  * end: Terminates ranking process. Called after a result set
  *  has been ranked.
  */
-static void end (ZebraHandle zh, void *set_handle)
+static void end (struct zebra_register *reg, void *set_handle)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
     logf (LOG_DEBUG, "rank-1 end");

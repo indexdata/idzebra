@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Id: kinput.c,v 1.46 2002-02-20 23:07:54 adam Exp $
+ * $Id: kinput.c,v 1.47 2002-04-04 14:14:13 adam Exp $
  *
  * Bugs
  *  - Allocates a lot of memory for the merge process, but never releases it.
@@ -23,7 +23,6 @@
 #include <assert.h>
 
 #include "index.h"
-#include "zserver.h"
 
 #define KEY_SIZE (1+sizeof(struct it_key))
 #define INP_NAME_MAX 768
@@ -65,7 +64,7 @@ void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no)
 {
     const char *pre;
     
-    pre = res_get_def (zh->service->res, "keyTmpDir", ".");
+    pre = res_get_def (zh->res, "keyTmpDir", ".");
     sprintf (fname, "%s/key%d.tmp", pre, no);
 }
 
@@ -639,7 +638,7 @@ void zebra_index_merge (ZebraHandle zh)
     int i, r;
     struct heap_info *hi;
     struct progressInfo progressInfo;
-    int nkeys = zh->key_file_no;
+    int nkeys = zh->reg->key_file_no;
     
     if (nkeys < 0)
     {
@@ -662,32 +661,32 @@ void zebra_index_merge (ZebraHandle zh)
     time (&progressInfo.lastTime);
     for (i = 1; i<=nkeys; i++)
     {
-        kf[i] = key_file_init (i, 8192, zh->service->res);
+        kf[i] = key_file_init (i, 8192, zh->res);
         kf[i]->readHandler = progressFunc;
         kf[i]->readInfo = &progressInfo;
         progressInfo.totalBytes += kf[i]->length;
         progressInfo.totalOffset += kf[i]->buf_size;
     }
     hi = key_heap_init (nkeys, key_qsort_compare);
-    hi->dict = zh->service->dict;
-    hi->isams = zh->service->isams;
+    hi->dict = zh->reg->dict;
+    hi->isams = zh->reg->isams;
 #if ZMBOL
-    hi->isam = zh->service->isam;
-    hi->isamc = zh->service->isamc;
-    hi->isamd = zh->service->isamd;
+    hi->isam = zh->reg->isam;
+    hi->isamc = zh->reg->isamc;
+    hi->isamd = zh->reg->isamd;
 #endif
     
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read (kf[i], rbuf)))
             key_heap_insert (hi, rbuf, r, kf[i]);
-    if (zh->service->isams)
+    if (zh->reg->isams)
 	heap_inps (hi);
 #if ZMBOL
-    else if (zh->service->isamc)
+    else if (zh->reg->isamc)
         heap_inpc (hi);
-    else if (zh->service->isam)
+    else if (zh->reg->isam)
 	heap_inp (hi);
-    else if (zh->service->isamd)
+    else if (zh->reg->isamd)
 	heap_inpd (hi);
 #endif
 	
@@ -701,7 +700,7 @@ void zebra_index_merge (ZebraHandle zh)
     logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
     logf (LOG_LOG, "Deletions. . . .%7d", no_deletions);
     logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
-    zh->key_file_no = 0;
+    zh->reg->key_file_no = 0;
 
     key_heap_destroy (hi, nkeys);
     for (i = 1; i<=nkeys; i++)

@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2000, Index Data
  * All rights reserved.
  *
- * $Header: /home/cvsroot/idis/index/Attic/apitest.c,v 1.10 2000-09-06 08:59:36 adam Exp $
+ * $Header: /home/cvsroot/idis/index/Attic/apitest.c,v 1.11 2002-04-04 14:14:13 adam Exp $
  */
 
 #include <stdio.h>
@@ -113,7 +113,7 @@ int main (int argc, char **argv)
     ZebraHandle zh;
     
     /* the database we specify in our example */
-    char *base = "Default";
+    const char *base = "Default";
     int argno;
 
     nmem_init ();
@@ -136,6 +136,7 @@ int main (int argc, char **argv)
 	printf ("zebras_open failed\n");
 	exit (1);
     }
+    zebra_select_databases (zh, 1, &base);
     /* Each argument to main will be a query */
     for (argno = 1; argno < argc; argno++)
     {
@@ -144,8 +145,8 @@ int main (int argc, char **argv)
 	char setname[64];
 	int errCode;
 	int i;
-	const char *errString;
-	char *errAdd;
+        int hits;
+	char *errString;
 	ZebraRetrievalRecord *records;
 	int noOfRecordsToFetch;
 
@@ -179,28 +180,26 @@ int main (int argc, char **argv)
 	sprintf (setname, "%d", argno);
 
 	/* fire up the search */
-	zebra_search_rpn (zh, odr_input, odr_output, query, 1, &base, setname);
+	zebra_search_rpn (zh, odr_input, odr_output, query, setname, &hits);
 	
 	/* status ... */
-	errCode = zebra_errCode (zh);
-	errString = zebra_errString (zh);
-	errAdd = zebra_errAdd (zh);
+        zebra_result (zh, &errCode, &errString);
 	
 	/* error? */
 	if (errCode)
 	{
-	    printf ("Zebra Search Error %d %s %s\n",
-		    errCode, errString, errAdd ? errAdd : "");
+	    printf ("Zebra Search Error %d %s\n",
+		    errCode, errString);
 	    continue;
 	}
 	/* ok ... */
-	printf ("Zebra Search gave %d hits\n", zebra_hits (zh));
+	printf ("Zebra Search gave %d hits\n", hits);
 	
 	/* Deterimine number of records to fetch ... */
-	if (zebra_hits(zh) > 10)
+	if (hits > 10)
 	    noOfRecordsToFetch = 10;
 	else
-	    noOfRecordsToFetch = zebra_hits(zh);
+	    noOfRecordsToFetch = hits;
 
 	/* reset our memory - we've finished dealing with search */
 	odr_reset (odr_input);
@@ -217,15 +216,14 @@ int main (int argc, char **argv)
 				noOfRecordsToFetch, records);
 
 	/* status ... */
-	errCode = zebra_errCode (zh);
-	errString = zebra_errString (zh);
-	errAdd = zebra_errAdd (zh);
-	
+
+        zebra_result (zh, &errCode, &errString);
+
 	/* error ? */
 	if (errCode)
 	{
-	    printf ("Zebra Search Error %d %s %s\n",
-		    errCode, errString, errAdd ? errAdd : "");
+	    printf ("Zebra Search Error %d %s\n",
+		    errCode, errString);
 	}
 	else
 	{

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.37  2002-02-20 17:30:01  adam
+ * Revision 1.38  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.37  2002/02/20 17:30:01  adam
  * Work on new API. Locking system re-implemented
  *
  * Revision 1.36  1999/05/15 14:36:38  adam
@@ -154,7 +157,6 @@
 #include <time.h>
 
 #include "index.h"
-#include "zserver.h"
 
 static int repComp (const char *a, const char *b, size_t len)
 {
@@ -377,7 +379,7 @@ static void fileUpdateR (ZebraHandle zh,
     dir_free (&e_src);
 }
 
-static void groupRes (ZebraService zs, struct recordGroup *rGroup)
+static void groupRes (ZebraHandle zh, struct recordGroup *rGroup)
 {
     char resStr[256];
     char gPrefix[256];
@@ -388,10 +390,10 @@ static void groupRes (ZebraService zs, struct recordGroup *rGroup)
         sprintf (gPrefix, "%s.", rGroup->groupName);
 
     sprintf (resStr, "%srecordId", gPrefix);
-    rGroup->recordId = res_get (zs->res, resStr);
+    rGroup->recordId = res_get (zh->res, resStr);
     sprintf (resStr, "%sdatabasePath", gPrefix);
     rGroup->databaseNamePath =
-	atoi (res_get_def (zs->res, resStr, "0"));
+	atoi (res_get_def (zh->res, resStr, "0"));
 }
 
 void repositoryShow (ZebraHandle zh)
@@ -404,7 +406,7 @@ void repositoryShow (ZebraHandle zh)
     Dict dict;
     struct dirs_info *di;
     
-    if (!(dict = dict_open (zh->service->bfs, FMATCH_DICT, 50, 0, 0)))
+    if (!(dict = dict_open (zh->reg->bfs, FMATCH_DICT, 50, 0, 0)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
 	return;
@@ -518,12 +520,12 @@ static void repositoryExtractG (ZebraHandle zh,
 void repositoryUpdate (ZebraHandle zh)
 {
     struct recordGroup *rGroup = &zh->rGroup;
-    groupRes (zh->service, rGroup);
+    groupRes (zh, rGroup);
     assert (rGroup->path);
     if (rGroup->recordId && !strcmp (rGroup->recordId, "file"))
     {
         Dict dict;
-        if (!(dict = dict_open (zh->service->bfs, FMATCH_DICT, 50,
+        if (!(dict = dict_open (zh->reg->bfs, FMATCH_DICT, 50,
 				rGroup->flagRw, 0)))
         {
             logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);

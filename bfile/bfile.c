@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.32  2000-03-15 15:00:30  adam
+ * Revision 1.33  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.32  2000/03/15 15:00:30  adam
  * First work on threaded version.
  *
  * Revision 1.31  1999/12/08 15:03:11  adam
@@ -119,15 +122,19 @@
 struct BFiles_struct {
     MFile_area commit_area;
     MFile_area_struct *register_area;
-    char *lockDir;
+    char *base;
+    char *cache_fname;
 };
 
-BFiles bfs_create (const char *spec)
+BFiles bfs_create (const char *spec, const char *base)
 {
     BFiles bfs = (BFiles) xmalloc (sizeof(*bfs));
     bfs->commit_area = NULL;
-    bfs->register_area = mf_init("register", spec);
-    bfs->lockDir = NULL;
+    bfs->base = 0;
+    bfs->cache_fname = 0;
+    if (base)
+        bfs->base = xstrdup (base);
+    bfs->register_area = mf_init("register", spec, base);
     if (!bfs->register_area)
     {
         bfs_destroy(bfs);
@@ -138,7 +145,8 @@ BFiles bfs_create (const char *spec)
 
 void bfs_destroy (BFiles bfs)
 {
-    xfree (bfs->lockDir);
+    xfree (bfs->cache_fname);
+    xfree (bfs->base);
     mf_destroy (bfs->commit_area);
     mf_destroy (bfs->register_area);
     xfree (bfs);
@@ -146,45 +154,32 @@ void bfs_destroy (BFiles bfs)
 
 static FILE *open_cache (BFiles bfs, const char *flags)
 {
-    char cacheFilename[1024];
     FILE *file;
 
-    sprintf (cacheFilename, "%scache",
-	     bfs->lockDir ? bfs->lockDir : "");
-    file = fopen (cacheFilename, flags);
+    file = fopen (bfs->cache_fname, flags);
     return file;
 }
 
 static void unlink_cache (BFiles bfs)
 {
-    char cacheFilename[1024];
-
-    sprintf (cacheFilename, "%scache",
-	     bfs->lockDir ? bfs->lockDir : "");
-    unlink (cacheFilename);
-}
-
-void bf_lockDir (BFiles bfs, const char *lockDir)
-{
-    size_t len;
-    
-    xfree (bfs->lockDir);
-    if (lockDir == NULL)
-        lockDir = "";
-    len = strlen(lockDir);
-    bfs->lockDir = (char *) xmalloc (len+2);
-    strcpy (bfs->lockDir, lockDir);
-    
-    if (len > 0 && bfs->lockDir[len-1] != '/')
-        strcpy (bfs->lockDir + len, "/");
+    unlink (bfs->cache_fname);
 }
 
 void bf_cache (BFiles bfs, const char *spec)
 {
     if (spec)
     {
+        yaz_log (LOG_LOG, "enabling cache spec=%s", spec);
         if (!bfs->commit_area)
-	    bfs->commit_area = mf_init ("shadow", spec);
+	    bfs->commit_area = mf_init ("shadow", spec, bfs->base);
+        if (bfs->commit_area)
+        {
+            bfs->cache_fname = xmalloc (strlen(bfs->commit_area->dirs->name)+
+                                       8);
+            strcpy (bfs->cache_fname, bfs->commit_area->dirs->name);
+            strcat (bfs->cache_fname, "/cache");
+            yaz_log (LOG_LOG, "cache_fname = %s", bfs->cache_fname);
+        }
     }
     else
         bfs->commit_area = NULL;
@@ -218,8 +213,7 @@ BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
             outf = open_cache (bfs, "ab");
             if (!outf)
             {
-                logf (LOG_FATAL|LOG_ERRNO, "open %scache",
-                      bfs->lockDir ? bfs->lockDir : "");
+                logf (LOG_FATAL|LOG_ERRNO, "open %s", bfs->cache_fname);
                 exit (1);
             }
             fprintf (outf, "%s %d\n", name, block_size);

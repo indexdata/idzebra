@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisamc.c,v $
- * Revision 1.9  2002-03-20 20:24:30  adam
+ * Revision 1.10  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.9  2002/03/20 20:24:30  adam
  * Hits per term. Returned in SearchResult-1
  *
  * Revision 1.8  1999/11/30 13:48:04  adam
@@ -92,7 +95,6 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     info->is = pt->is;
     info->pos = pt->pos;
     info->key_size = pt->key_size;
-    yaz_log (LOG_LOG, "info->key_size = %d\n", info->key_size);
     info->cmp = pt->cmp;
     info->ispt_list = NULL;
     ct->no_rset_terms = 1;

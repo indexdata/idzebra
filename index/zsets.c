@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zsets.c,v 1.33 2002-03-20 20:24:30 adam Exp $
+ * $Id: zsets.c,v 1.34 2002-04-04 14:14:13 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -13,7 +13,7 @@
 #include <unistd.h>
 #endif
 
-#include "zserver.h"
+#include "index.h"
 #include <rstemp.h>
 
 #define SORT_IDX_ENTRYSIZE 64
@@ -55,10 +55,12 @@ struct zset_sort_info {
 };
 
 ZebraSet resultSetAddRPN (ZebraHandle zh, ODR input, ODR output,
-			  Z_RPNQuery *rpn, int num_bases, char **basenames, 
+			  Z_RPNQuery *rpn, int num_bases,
+                          char **basenames, 
 			  const char *setname)
 {
     ZebraSet zebraSet;
+    int i;
 
     zh->errCode = 0;
     zh->errString = NULL;
@@ -69,9 +71,14 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, ODR input, ODR output,
 	return 0;
     zebraSet->locked = 1;
     zebraSet->rpn = 0;
+    zebraSet->nmem = nmem_create ();
+
     zebraSet->num_bases = num_bases;
-    zebraSet->basenames = basenames;
-    zebraSet->nmem = odr_extract_mem (input);
+    zebraSet->basenames = 
+        nmem_malloc (zebraSet->nmem, num_bases * sizeof(*zebraSet->basenames));
+    for (i = 0; i<num_bases; i++)
+        zebraSet->basenames[i] = nmem_strdup (zebraSet->nmem, basenames[i]);
+
 
     zebraSet->rset = rpn_search (zh, output->mem, rpn,
                                  zebraSet->num_bases,
@@ -273,8 +280,6 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 	sr = (ZebraPosSet) xmalloc (sizeof(*sr) * num);
 	for (i = 0; i<num; i++)
 	{
-	    struct zebra_set_term_entry *entry = sset->term_entries;
-
 	    sr[i].sysno = 0;
 	    sr[i].score = -1;
 	    sr[i].term = 0;
@@ -384,11 +389,11 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
     struct zset_sort_info *sort_info = sset->sort_info;
     int i, j;
 
-    sortIdx_sysno (zh->service->sortIdx, sysno);
+    sortIdx_sysno (zh->reg->sortIdx, sysno);
     for (i = 0; i<num_criteria; i++)
     {
-	sortIdx_type (zh->service->sortIdx, criteria[i].attrUse);
-	sortIdx_read (zh->service->sortIdx, this_entry.buf[i]);
+	sortIdx_type (zh->reg->sortIdx, criteria[i].attrUse);
+	sortIdx_read (zh->reg->sortIdx, this_entry.buf[i]);
     }
     i = sort_info->num_entries;
     while (--i >= 0)
@@ -594,7 +599,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 	case Z_SortKey_sortAttributes:
 	    logf (LOG_DEBUG, "Sort: key %d is of type sortAttributes", i+1);
 	    sort_criteria[i].attrUse =
-		zebra_maps_sort (zh->service->zebra_maps,
+		zebra_maps_sort (zh->reg->zebra_maps,
 				 sk->u.sortAttributes,
                                  &sort_criteria[i].numerical);
 	    logf (LOG_DEBUG, "use value = %d", sort_criteria[i].attrUse);
@@ -603,7 +608,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 		zh->errCode = 116;
 		return;
 	    }
-	    if (sortIdx_type (zh->service->sortIdx, sort_criteria[i].attrUse))
+	    if (sortIdx_type (zh->reg->sortIdx, sort_criteria[i].attrUse))
 	    {
 		zh->errCode = 207;
 		return;
@@ -669,7 +674,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 	int psysno = key.sysno;
 	int score;
 	void *handle =
-	    (*rc->begin) (zh, rank_class->class_handle, rset);
+	    (*rc->begin) (zh->reg, rank_class->class_handle, rset);
 	(zebraSet->hits)++;
 	do
 	{
@@ -687,7 +692,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 	while (rset_read (rset, rfd, &key, &term_index));
 	score = (*rc->calc) (handle, psysno);
 	resultSetInsertRank (zh, sort_info, psysno, score, 'A');
-	(*rc->end) (zh, handle);
+	(*rc->end) (zh->reg, handle);
     }
     rset_close (rset, rfd);
 
@@ -703,41 +708,41 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 
 ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name)
 {
-    ZebraRankClass p = zh->service->rank_classes;
+    ZebraRankClass p = zh->reg->rank_classes;
     while (p && strcmp (p->control->name, name))
 	p = p->next;
     if (p && !p->init_flag)
     {
 	if (p->control->create)
-	    p->class_handle = (*p->control->create)(zh->service);
+	    p->class_handle = (*p->control->create)(zh->reg);
 	p->init_flag = 1;
     }
     return p;
 }
 
-void zebraRankInstall (ZebraService zh, struct rank_control *ctrl)
+void zebraRankInstall (struct zebra_register *reg, struct rank_control *ctrl)
 {
     ZebraRankClass p = (ZebraRankClass) xmalloc (sizeof(*p));
     p->control = (struct rank_control *) xmalloc (sizeof(*p->control));
     memcpy (p->control, ctrl, sizeof(*p->control));
     p->control->name = xstrdup (ctrl->name);
     p->init_flag = 0;
-    p->next = zh->rank_classes;
-    zh->rank_classes = p;
+    p->next = reg->rank_classes;
+    reg->rank_classes = p;
 }
 
-void zebraRankDestroy (ZebraService zh)
+void zebraRankDestroy (struct zebra_register *reg)
 {
-    ZebraRankClass p = zh->rank_classes;
+    ZebraRankClass p = reg->rank_classes;
     while (p)
     {
 	ZebraRankClass p_next = p->next;
 	if (p->init_flag && p->control->destroy)
-	    (*p->control->destroy)(zh, p->class_handle);
+	    (*p->control->destroy)(reg, p->class_handle);
 	xfree (p->control->name);
 	xfree (p->control);
 	xfree (p);
 	p = p_next;
     }
-    zh->rank_classes = NULL;
+    reg->rank_classes = NULL;
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: attribute.c,v $
- * Revision 1.12  2000-03-15 15:00:30  adam
+ * Revision 1.13  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.12  2000/03/15 15:00:30  adam
  * First work on threaded version.
  *
  * Revision 1.11  1999/11/30 13:48:03  adam
@@ -51,7 +54,7 @@
 #include <yaz/log.h>
 #include <res.h>
 #include <zebrautl.h>
-#include "zserver.h"
+#include "index.h"
 
 static data1_att *getatt(data1_attset *p, int att)
 {
@@ -74,10 +77,10 @@ int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att)
     data1_att *r;
     data1_attset *p;
 
-    if (!(p = data1_attset_search_id (zi->service->dh, set)))
+    if (!(p = data1_attset_search_id (zi->reg->dh, set)))
     {
-	zebraExplain_loadAttsets (zi->service->dh, zi->service->res);
-	p = data1_attset_search_id (zi->service->dh, set);
+	zebraExplain_loadAttsets (zi->reg->dh, zi->res);
+	p = data1_attset_search_id (zi->reg->dh, set);
     }
     if (!p)
 	return -2;

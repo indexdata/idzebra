@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.14  2001-01-22 11:41:41  adam
+ * Revision 1.15  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.14  2001/01/22 11:41:41  adam
  * Added support for raw retrieval (element set name "R").
  *
  * Revision 1.13  2000/03/20 19:08:36  adam
@@ -61,16 +64,7 @@
 #include <unistd.h>
 #endif
 
-#include <recctrl.h>
-#include "zserver.h"
-
-#ifndef ZEBRASDR
-#define ZEBRASDR 0
-#endif
-
-#if ZEBRASDR
-#include "zebrasdr.h"
-#endif
+#include "index.h"
 
 int zebra_record_ext_read (void *fh, char *buf, size_t count)
 {
@@ -134,14 +128,14 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     RecordAttr *recordAttr;
     void *clientData;
 
-    rec = rec_get (zh->service->records, sysno);
+    rec = rec_get (zh->reg->records, sysno);
     if (!rec)
     {
         logf (LOG_DEBUG, "rec_get fail on sysno=%d", sysno);
 	*basenamep = 0;
         return 14;
     }
-    recordAttr = rec_init_attr (zh->service->zei, rec);
+    recordAttr = rec_init_attr (zh->reg->zei, rec);
 
     file_type = rec->info[recInfo_fileType];
     fname = rec->info[recInfo_filename];
@@ -155,7 +149,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
         if (!strcmp (comp->u.simple->u.generic, "R"))
             file_type = "text";
     }
-    if (!(rt = recType_byName (zh->service->recTypes,
+    if (!(rt = recType_byName (zh->reg->recTypes,
 			       file_type, subType, &clientData)))
     {
         logf (LOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
@@ -199,8 +193,8 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     retrieveCtrl.input_format = retrieveCtrl.output_format = input_format;
     retrieveCtrl.comp = comp;
     retrieveCtrl.diagnostic = 0;
-    retrieveCtrl.dh = zh->service->dh;
-    retrieveCtrl.res = zh->service->res;
+    retrieveCtrl.dh = zh->reg->dh;
+    retrieveCtrl.res = zh->res;
     (*rt->retrieve)(clientData, &retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = (char *) retrieveCtrl.rec_buf;

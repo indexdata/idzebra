@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.41  2000-11-29 14:24:01  adam
+ * Revision 1.42  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.41  2000/11/29 14:24:01  adam
  * Script configure uses yaz pthreads options. Added locking for
  * zebra_register_{lock,unlock}.
  *
@@ -159,7 +162,7 @@
 #include <zebrautl.h>
 #include <mfile.h>
 
-static int scan_areadef(MFile_area ma, const char *name, const char *ad)
+static int scan_areadef(MFile_area ma, const char *ad, const char *base)
 {
     /*
      * If no definition is given, use current directory, unlimited.
@@ -168,7 +171,7 @@ static int scan_areadef(MFile_area ma, const char *name, const char *ad)
     mf_dir **dp = &ma->dirs, *dir = *dp;
 
     if (!ad)
-	ad = ".:-1b";
+        ad = ".:-1b";
     for (;;)
     {
         const char *ad0 = ad;
@@ -179,6 +182,12 @@ static int scan_areadef(MFile_area ma, const char *name, const char *ad)
             ad++;
         if (!*ad)
             break;
+        if (!zebra_is_abspath(ad) && base)
+        {
+            strcpy (dirname, base);
+            i = strlen(dirname);
+            dirname[i++] = '/';
+        }
         while (*ad)
         {
 	    if (*ad == ':' && strchr ("+-0123456789", ad[1]))
@@ -283,7 +292,7 @@ static int cmp_part_file(const void *p1, const void *p2)
  * Create a new area, cotaining metafiles in directories.
  * Find the part-files in each directory, and inventory the existing metafiles.
  */
-MFile_area mf_init(const char *name, const char *spec)
+MFile_area mf_init(const char *name, const char *spec, const char *base)
 {
     MFile_area ma = (MFile_area) xmalloc(sizeof(*ma));
     mf_dir *dirp;
@@ -298,7 +307,7 @@ MFile_area mf_init(const char *name, const char *spec)
     strcpy(ma->name, name);
     ma->mfiles = 0;
     ma->dirs = 0;
-    if (scan_areadef(ma, name, spec) < 0)
+    if (scan_areadef(ma, spec, base) < 0)
     {
     	logf (LOG_WARN, "Failed to access description of '%s'", name);
     	return 0;

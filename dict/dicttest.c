@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.25  2000-12-05 09:59:10  adam
+ * Revision 1.26  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.25  2000/12/05 09:59:10  adam
  * Work on dict_delete_subtree.
  *
  * Revision 1.24  2000/09/05 14:04:05  adam
@@ -228,13 +231,13 @@ int main (int argc, char **argv)
         logf (LOG_FATAL, "no config and/or dictionary specified");
         exit (1);
     }
-    my_resource = res_open (config);
+    my_resource = res_open (config, 0);
     if (!my_resource)
     {
         logf (LOG_FATAL, "cannot open resource `%s'", config);
         exit (1);
     }
-    bfs = bfs_create (res_get(my_resource, "register"));
+    bfs = bfs_create (res_get(my_resource, "register"), 0);
     if (!bfs)
     {
         logf (LOG_FATAL, "bfs_create fail");

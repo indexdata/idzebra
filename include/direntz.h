@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: direntz.h,v $
- * Revision 1.4  1999-05-26 07:49:13  adam
+ * Revision 1.5  2002-04-04 14:14:13  adam
+ * Multiple registers (alpha early)
+ *
+ * Revision 1.4  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.3  1999/02/02 14:50:33  adam
@@ -47,3 +50,5 @@ void closedir (DIR *dd);
 /* include UNIX version */
 #include <dirent.h>
 #endif
+
+int zebra_is_abspath (const char *p);

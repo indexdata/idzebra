@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.h,v 1.16 2001-01-14 13:41:06 adam Exp $
+ * $Id: mfile.h,v 1.17 2002-04-04 14:14:13 adam Exp $
  */
 
 #ifndef MFILE_H
@@ -83,7 +83,7 @@ typedef struct MFile_area_struct
 /*
  * Open an area, cotaining metafiles in directories.
  */
-MFile_area mf_init(const char *name, const char *spec); 
+MFile_area mf_init(const char *name, const char *spec, const char *base); 
 
 /*
  * Release an area.

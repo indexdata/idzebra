@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zinfo.c,v 1.24 2002-02-20 23:07:54 adam Exp $
+ * $Id: zinfo.c,v 1.25 2002-04-04 14:14:13 adam Exp $
  */
 
 #include <stdlib.h>
@@ -702,6 +702,12 @@ static void zebraExplain_readDatabase (ZebraExplainInfo zei,
 int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database)
 {
     struct zebDatabaseInfoB *zdi;
+    const char *database_n = strrchr (database, '/');
+
+    if (database_n)
+        database_n++;
+    else
+        database_n = database;
     
     assert (zei);
     if (zei->curDatabaseInfo &&
@@ -709,7 +715,7 @@ int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database)
         return 0;
     for (zdi = zei->databaseInfo; zdi; zdi=zdi->next)
     {
-        if (!strcmp (zdi->databaseName, database))
+        if (!strcmp (zdi->databaseName, database_n))
             break;
     }
     if (!zdi)
@@ -786,6 +792,12 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 {
     struct zebDatabaseInfoB *zdi;
     data1_node *node_dbinfo, *node_adinfo;
+    const char *database_n = strrchr (database, '/');
+
+    if (database_n)
+        database_n++;
+    else
+        database_n = database;
 
 #if ZINFO_DEBUG
     logf (LOG_LOG, "zebraExplain_newDatabase: %s", database);
@@ -793,7 +805,7 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
     assert (zei);
     for (zdi = zei->databaseInfo; zdi; zdi=zdi->next)
     {
-        if (!strcmp (zdi->databaseName, database))
+        if (!strcmp (zdi->databaseName, database_n))
             break;
     }
     if (zdi)
@@ -806,7 +818,7 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
     zdi->recordCount = 0;
     zdi->recordBytes = 0;
     zdi->readFlag = 0;
-    zdi->databaseName = nmem_strdup (zei->nmem, database);
+    zdi->databaseName = nmem_strdup (zei->nmem, database_n);
 
     zebraExplain_mergeAccessInfo (zei, 0, &zdi->accessInfo);
     
