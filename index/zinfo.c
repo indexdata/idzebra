@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.13  1998-11-03 10:17:09  adam
+ * Revision 1.14  1998-11-04 16:31:32  adam
+ * Fixed bug regarding recordBytes in databaseInfo.
+ *
+ * Revision 1.13  1998/11/03 10:17:09  adam
  * Fixed bug regarding creation of some data1 nodes for Explain records.
  *
  * Revision 1.12  1998/10/13 20:37:11  adam
@@ -692,9 +695,10 @@ static void zebraExplain_readDatabase (ZebraExplainInfo zei,
 
     node_zebra = data1_search_tag (zei->dh, node_dbinfo->child,
 				 "zebraInfo");
-    np  = data1_search_tag (zei->dh, node_dbinfo->child,
-			    "recordBytes");
-    if (np && np->child && np->child->which == DATA1N_data)
+    if (node_zebra
+	&& (np = data1_search_tag (zei->dh, node_zebra->child,
+				   "recordBytes")) 
+	&& np->child && np->child->which == DATA1N_data)
 	zdi->recordBytes = atoi_n (np->child->u.data.data,
 				   np->child->u.data.len);
     if ((np = data1_search_tag (zei->dh, node_dbinfo->child,
