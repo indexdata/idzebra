@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.2 2004-06-14 23:43:32 adam Exp $
+/* $Id: t5.c,v 1.3 2004-06-16 22:06:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -84,6 +84,21 @@ int main(int argc, char **argv)
     expect(zh, "@attr 1=4 {my x title}", 1, &exit_code);
     expect(zh, "@attr 1=4 {my title}", 2, &exit_code);
     expect(zh, "@attr 1=4 @and x title", 2, &exit_code);
+
+    /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
+    expect(zh, "@prox 0 2 1 2 k 2 my x", 2, &exit_code);
+
+    /* exl=0 distance=2 order=1 relation=2 (<=), known, unit=word */
+    expect(zh, "@prox 0 2 1 2 k 2 x my", 0, &exit_code);
+
+    /* exl=0 distance=2 order=0 relation=2 (<=), known, unit=word */
+    expect(zh, "@prox 0 2 0 2 k 2 x my", 2, &exit_code);
+
+    /* exl=0 distance=2 order=0 relation=3 (=), known, unit=word */
+    expect(zh, "@prox 0 2 1 3 k 2 my x", 1, &exit_code);
+
+    /* exl=1 distance=2 order=0 relation=3 (=), known, unit=word */
+    expect(zh, "@prox 1 2 1 3 k 2 my x", 1, &exit_code);
 
     zebra_close (zh);
     zebra_stop (zs);
