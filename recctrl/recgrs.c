@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.37  2000-12-05 12:22:53  adam
+ * Revision 1.38  2000-12-05 14:44:58  adam
+ * Fixed minor bug that could cause zmbol to break it data were emitted
+ * with not parent tags.
+ *
+ * Revision 1.37  2000/12/05 12:22:53  adam
  * Termlist source implemented (so that we can index values of XML/SGML
  * attributes).
  *
@@ -444,10 +448,9 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 		    printf("NULL\n");
 	    }
 
-	    assert(par);
-
-	    index_tag (par, n, p, level, &wrd);
-	}
+	    if (par)
+		index_tag (par, n, p, level, &wrd);
+ 	}
 	if (p->flagShowRecords && n->which == DATA1N_root)
 	{
 	    printf("%*s-------------\n\n", level * 4, "");
