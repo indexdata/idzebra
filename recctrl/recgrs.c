@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.66 2002-09-02 11:19:33 adam Exp $
+/* $Id: recgrs.c,v 1.67 2002-09-24 19:45:14 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -592,46 +592,52 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
     }
 }
 
-static void add_nice_whitespace (struct recRetrieveCtrl *p, data1_node *top,
-                                 NMEM mem)
-{
-    data1_node *n = top->child;
-    while (n && n->which == DATA1N_data && n->u.data.what == DATA1I_text)
-    {
-        data1_mk_text_n(p->dh, mem, n->u.data.data, n->u.data.len, top);
-        n = n->next;
-    }
-}
+/* Add Zebra info in separate namespace ...
+        <root 
+         ...
+         <metadata xmlns="http://www.indexdata.dk/zebra/">
+          <size>359</size>
+          <localnumber>447</localnumber>
+          <filename>records/genera.xml</filename>
+         </metadata>
+        </root>
+*/
 
-static void add_idzebra_info (struct recRetrieveCtrl *p, data1_node *top,
-                              NMEM mem)
+static void zebra_xml_metadata (struct recRetrieveCtrl *p, data1_node *top,
+                                NMEM mem)
 {
-    const char *idzebra_ns[7];
+    const char *idzebra_ns[3];
+    const char *i2 = "\n  ";
+    const char *i4 = "\n    ";
+    data1_node *n;
 
-    idzebra_ns[0] = "xmlns:idzebra";
+    idzebra_ns[0] = "xmlns";
     idzebra_ns[1] = "http://www.indexdata.dk/zebra/";
     idzebra_ns[2] = 0;
 
-    data1_tag_add_attr (p->dh, mem, top, idzebra_ns);
+    data1_mk_text (p->dh, mem, i2, top);
 
-    add_nice_whitespace (p, top, mem);
-    data1_mk_tag_data_int (p->dh, top, "idzebra:size", p->recordSize,
-                           mem);
+    n = data1_mk_tag (p->dh, mem, "idzebra", idzebra_ns, top);
+
+    data1_mk_text (p->dh, mem, "\n", top);
+
+    data1_mk_text (p->dh, mem, i4, n);
+    
+    data1_mk_tag_data_int (p->dh, n, "size", p->recordSize, mem);
+
     if (p->score != -1)
     {
-        add_nice_whitespace (p, top, mem);
-        data1_mk_tag_data_int (p->dh, top, "idzebra:score",
-                               p->score, mem);
+        data1_mk_text (p->dh, mem, i4, n);
+        data1_mk_tag_data_int (p->dh, n, "score", p->score, mem);
     }
-    add_nice_whitespace (p, top, mem);
-    data1_mk_tag_data_int (p->dh, top, "idzebra:localnumber", p->localno,
-                           mem);
+    data1_mk_text (p->dh, mem, i4, n);
+    data1_mk_tag_data_int (p->dh, n, "localnumber", p->localno, mem);
     if (p->fname)
     {
-        add_nice_whitespace (p, top, mem);
-        data1_mk_tag_data_text(p->dh, top, "idzebra:filename",
-                               p->fname, mem);
+        data1_mk_text (p->dh, mem, i4, n);
+        data1_mk_tag_data_text(p->dh, n, "filename", p->fname, mem);
     }
+    data1_mk_text (p->dh, mem, i2, n);
 }
 
 static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
@@ -832,7 +838,11 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 				p->input_format : VAL_SUTRS))
     {
     case VAL_TEXT_XML:
-        add_idzebra_info (p, top, mem);
+        zebra_xml_metadata (p, top, mem);
+
+#if 0
+        data1_pr_tree (p->dh, node, stdout);
+#endif
 
         if (p->encoding)
             data1_iconv (p->dh, mem, node, p->encoding, "UTF-8");
