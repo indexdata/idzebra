@@ -1,5 +1,5 @@
-/* $Id: kcompare.c,v 1.41 2003-06-23 15:35:25 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: kcompare.c,v 1.42 2004-05-30 18:35:12 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,15 +20,16 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
 
 #include "index.h"
+
+#define INT_CODEC_NEW 0
+
+#define CODEC_INLINE inline
 
 void key_logdump (int logmask, const void *p)
 {
@@ -101,16 +102,10 @@ int key_qsort_compare (const void *p1, const void *p2)
     return cp1[l] - cp2[l];
 }
 
-int key_get_pos (const void *p)
-{
-    struct it_key key;
-    memcpy (&key, p, sizeof(key));
-    return key.seqno;
-}
-
 struct iscz1_code_info {
     struct it_key key;
 };
+
 
 static void *iscz1_code_start (int mode)
 {
@@ -133,7 +128,38 @@ static void iscz1_code_stop (int mode, void *p)
     xfree (p);
 }
 
-void iscz1_encode_int (unsigned d, char **dst)
+#if INT_CODEC_NEW 
+CODEC_INLINE void iscz1_encode_int (unsigned d, char **dst)
+{
+    unsigned char *bp = (unsigned char*) *dst;
+
+    while (d > 127)
+    {
+        *bp++ = 128 | (d & 127);
+	d = d >> 7;
+    }
+    *bp++ = d;
+    *dst = (char *) bp;
+}
+
+CODEC_INLINE int iscz1_decode_int (unsigned char **src)
+{
+    unsigned d = 0;
+    unsigned char c;
+    unsigned r = 0;
+
+    while (((c = *(*src)++) & 128))
+    {
+        d += ((c&127) << r);
+	r += 7;
+    }
+    d += (c << r);
+    return d;
+}
+#else
+/* ! INT_CODEC_NEW */
+
+CODEC_INLINE void iscz1_encode_int (unsigned d, char **dst)
 {
     unsigned char *bp = (unsigned char*) *dst;
 
@@ -160,7 +186,7 @@ void iscz1_encode_int (unsigned d, char **dst)
     *dst = (char *) bp;
 }
 
-int iscz1_decode_int (unsigned char **src)
+CODEC_INLINE int iscz1_decode_int (unsigned char **src)
 {
     unsigned c = *(*src)++;
     switch (c & 192)
@@ -183,6 +209,7 @@ int iscz1_decode_int (unsigned char **src)
     
     return c;
 }
+#endif
 
 static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
 {
