@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data 
+ * Copyright (C) 1994-2001, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.13  1999-09-07 07:19:21  adam
+ * Revision 1.14  2001-01-22 11:41:41  adam
+ * Added support for raw retrieval (element set name "R").
+ *
+ * Revision 1.13  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.12  1999/05/26 07:49:14  adam
@@ -170,6 +173,9 @@ static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
         p->comp->u.simple->which == Z_ElementSetNames_generic)
         elementSetName = p->comp->u.simple->u.generic;
 
+    /* don't make header for the R(aw) element set name */
+    if (elementSetName && !strcmp(elementSetName, "R"))
+        start_flag = 0;
     while (1)
     {
         if (text_ptr + 4096 >= text_size)

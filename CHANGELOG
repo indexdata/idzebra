@@ -1,3 +1,6 @@
+Added support for raw retrieval. Element Set Name R forces the
+text filter which returns the record in its original form.
+
 Added numerical sort - triggered by structure=numeric (4=109).
 
 Remote record import using Z39.50 Extended Services and Segments.

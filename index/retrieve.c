@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.13  2000-03-20 19:08:36  adam
+ * Revision 1.14  2001-01-22 11:41:41  adam
+ * Added support for raw retrieval (element set name "R").
+ *
+ * Revision 1.13  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -146,6 +149,12 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     *basenamep = (char *) odr_malloc (stream, strlen(basename)+1);
     strcpy (*basenamep, basename);
 
+    if (comp && comp->which == Z_RecordComp_simple &&
+        comp->u.simple->which == Z_ElementSetNames_generic)
+    {
+        if (!strcmp (comp->u.simple->u.generic, "R"))
+            file_type = "text";
+    }
     if (!(rt = recType_byName (zh->service->recTypes,
 			       file_type, subType, &clientData)))
     {
