@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.87 2002-09-03 11:44:54 adam Exp $
+/* $Id: index.h,v 1.88 2002-10-16 09:30:57 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -172,16 +172,22 @@ int key_SU_encode (int ch, char *out);
 
 // extern Res common_resource;
 
+#define ENCODE_BUFLEN 768
 struct encode_info {
-    int  sysno;
+    int  sysno;  /* previously written values for delta-compress */
     int  seqno;
     int  cmd;
-    char buf[768];
+    int prevsys; /* buffer for skipping insert/delete pairs */
+    int prevseq;
+    int prevcmd;
+    int keylen; /* tells if we have an unwritten key in buf, and how long*/
+    char buf[ENCODE_BUFLEN];
 };
 
 void encode_key_init (struct encode_info *i);
 char *encode_key_int (int d, char *bp);
 void encode_key_write (char *k, struct encode_info *i, FILE *outf);
+void encode_key_flush (struct encode_info *i, FILE *outf);
 
 typedef struct {
     char *term;

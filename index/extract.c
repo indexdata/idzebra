@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.123 2002-08-29 10:00:15 adam Exp $
+/* $Id: extract.c,v 1.124 2002-10-16 09:30:57 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1331,6 +1331,7 @@ void extract_flushWriteKeys (ZebraHandle zh)
         cp = (zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
         if (strcmp (cp, prevcp))
         {
+            encode_key_flush ( &encode_info, outf);
             encode_key_init (&encode_info);
             encode_key_write (cp, &encode_info, outf);
             prevcp = cp;
@@ -1338,6 +1339,7 @@ void extract_flushWriteKeys (ZebraHandle zh)
         else
             encode_key_write (cp + strlen(cp), &encode_info, outf);
     }
+    encode_key_flush ( &encode_info, outf);
 #else
     qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_x_compare);
     extract_get_fname_tmp (out_fname, key_file_no);
@@ -1369,6 +1371,7 @@ void extract_flushWriteKeys (ZebraHandle zh)
                 cp = key_buf[ptr_top-ptr_i];
                 encode_key_write (cp+key_y_len, &encode_info, outf);
             }
+            encode_key_flush ( &encode_info, outf);
             if (!i)
                 break;
             prevcp = key_buf[ptr_top-ptr_i];
@@ -1636,6 +1639,10 @@ void encode_key_init (struct encode_info *i)
     i->sysno = 0;
     i->seqno = 0;
     i->cmd = -1;
+    i->prevsys=0;
+    i->prevseq=0;
+    i->prevcmd=-1;
+    i->keylen=0;
 }
 
 char *encode_key_int (int d, char *bp)
@@ -1663,6 +1670,11 @@ char *encode_key_int (int d, char *bp)
     return bp;
 }
 
+#ifdef OLDENCODE
+/* this is the old encode_key_write 
+ * may be deleted once we are confident that the new works
+ * HL 15-oct-2002
+ */
 void encode_key_write (char *k, struct encode_info *i, FILE *outf)
 {
     struct it_key key;
@@ -1689,3 +1701,126 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
     }
 }
 
+void encode_key_flush (struct encode_info *i, FILE *outf)
+{ /* dummy routine */
+}
+
+#else
+
+/* new encode_key_write
+ * The idea is to buffer one more key, and compare them
+ * If we are going to delete and insert the same key, 
+ * we may as well not bother. Should make a difference in 
+ * updates with small modifications (appending to a mbox)
+ */
+void encode_key_write (char *k, struct encode_info *i, FILE *outf)
+{
+    struct it_key key;
+    char *bp; 
+
+    if (*k)  /* first time for new key */
+    {
+        bp = i->buf;
+        while ((*bp++ = *k++))
+            ;
+	i->keylen= bp - i->buf -1;    
+    }
+    else
+    {
+	bp=i->buf + i->keylen;
+	*bp++=0;
+	k++;
+    }
+
+    memcpy (&key, k+1, sizeof(struct it_key));
+    if (0==i->prevsys) /* no previous filter, fill up */
+    {
+        i->prevsys=key.sysno;
+	i->prevseq=key.seqno;
+	i->prevcmd=*k;
+    }
+    else if ( (i->prevsys==key.sysno) &&
+              (i->prevseq==key.seqno) &&
+	      (i->prevcmd!=*k) )
+    { /* same numbers, diff cmd, they cancel out */
+        i->prevsys=0;
+    }
+    else 
+    { /* different stuff, write previous, move buf */
+        bp = encode_key_int ( (i->prevsys - i->sysno) * 2 + i->prevcmd, bp);
+	if (i->sysno != i->prevsys)
+	{
+	    i->sysno = i->prevsys;
+	    i->seqno = 0;
+        }
+        else if (!i->seqno && !i->prevseq && i->cmd == i->prevcmd)
+	{
+	    return; /* ??? Filters some sort of duplicates away */
+	            /* ??? Can this ever happen   -H 15oct02 */
+	}
+        bp = encode_key_int (i->prevseq - i->seqno, bp);
+        i->seqno = i->prevseq;
+        i->cmd = i->prevcmd;
+        if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
+        {
+            logf (LOG_FATAL|LOG_ERRNO, "fwrite");
+            exit (1);
+        }
+        i->keylen=0; /* ok, it's written, forget it */
+	i->prevsys=key.sysno;
+	i->prevseq=key.seqno;
+	i->prevcmd=*k;
+    }
+#ifdef SKIPTHIS_OLDCODE
+    bp = encode_key_int ( (key.sysno - i->sysno) * 2 + *k, bp);
+    if (i->sysno != key.sysno)
+    {
+        i->sysno = key.sysno;
+        i->seqno = 0;
+    }
+    else if (!i->seqno && !key.seqno && i->cmd == *k)
+	return;
+    bp = encode_key_int (key.seqno - i->seqno, bp);
+    i->seqno = key.seqno;
+    i->cmd = *k;
+    if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fwrite");
+        exit (1);
+    }
+    i->keylen=0; /* ok, it's written, forget it */
+#endif
+}
+
+void encode_key_flush (struct encode_info *i, FILE *outf)
+{ /* flush the last key from i */
+    char *bp =i->buf + i->keylen;
+    if (0==i->prevsys)
+    {
+        return; /* nothing to flush */
+    }
+    *bp++=0;
+    bp = encode_key_int ( (i->prevsys - i->sysno) * 2 + i->prevcmd, bp);
+    if (i->sysno != i->prevsys)
+    {
+        i->sysno = i->prevsys;
+        i->seqno = 0;
+    }
+    else if (!i->seqno && !i->prevseq && i->cmd == i->prevcmd)
+    {
+        return; /* ??? Filters some sort of duplicates away */
+                /* ??? Can this ever happen   -H 15oct02 */
+    }
+    bp = encode_key_int (i->prevseq - i->seqno, bp);
+    i->seqno = i->prevseq;
+    i->cmd = i->prevcmd;
+    if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fwrite");
+        exit (1);
+    }
+    i->keylen=0; /* ok, it's written, forget it */
+    i->prevsys=0; /* forget the values too */
+    i->prevseq=0;
+}
+#endif
