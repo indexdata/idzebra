@@ -1,13 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.35 1997-02-19 16:22:26 adam Exp $
+  $Id: zebra.sgml,v 1.36 1998-01-19 15:26:18 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
-<author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.35 $
+<author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
+<tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
+<date>$Revision: 1.36 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -73,7 +74,7 @@ well as variant forms of data.
 <item>
 Supports random storage formats. A system of input filters driven by
 regular expressions allows you to easily process most ASCII-based
-data formats.
+data formats. SGML, ISO2709 (MARC), and raw text are also supported.
 
 <item>
 Supports boolean queries as well as relevance-ranking (free-text)
@@ -127,6 +128,11 @@ Using the YAZ toolkit for the protocol implementation, the
 server can utilise a plug-in XTI/mOSI implementation (not included) to
 provide SR services over an OSI stack, as well as Z39.50 over TCP/IP.
 
+<item>
+Zebra runs on most Unix-like systems as well as Windows NT - a binary
+distribution for Windows NT is forthcoming - so far, the installation
+requires MSVC++ to compile the system (we use version 5.0).
+
 </itemize>
 
 </itemize>
@@ -134,10 +140,8 @@ provide SR services over an OSI stack, as well as Z39.50 over TCP/IP.
 <sect1>Future Work
 
 <p>
-This is an alfa-release of the software, to allow you to look at
-it - try it out, and assess whether it can be of use to you. We expect
-this version to be followed by a succession of beta-releases until we
-arrive at a stable first version.
+This is a beta-release of the software, to allow you to look at
+it - try it out, and assess whether it can be of use to you.
 
 These are some of the plans that we have for the software in the near
 and far future, approximately ordered after their relative importance.
@@ -148,22 +152,18 @@ last beta release.
 <itemize>
 
 <item>
-*Complete the support for variants. Finalize support for the WAIS
-retrieval methodology.
+*Complete the support for variants.
 
 <item>
 *Finalize the data element <it/include/ facility to support multimedia
 data elements in records.
 
 <item>
-*Port the system to Windows NT.
-
-<item>
 Add more sophisticated relevance ranking mechanisms. Add support for soundex
 and stemming. Add relevance <it/feedback/ support.
 
 <item>
-Add Explain support.
+Complete EXPLAIN support.
 
 <item>
 Add support for very large records by implementing segmentation and/or
@@ -527,7 +527,7 @@ $ zebraidx -g esdd update /data1/records
 The corresponding configuration file includes:
 <tscreen><verb>
 esdd.recordId: file
-esdd.recordType: grs
+esdd.recordType: grs.sgml
 esdd.storeKeys: 1
 </verb></tscreen>
 
@@ -785,12 +785,13 @@ $ zebraidx &lsqb;options&rsqb; command &lsqb;directory&rsqb; ...
 <bf/Options/
 <descrip>
 <tag>-t <it/type/</tag>Update all files as <it/type/. Currently, the
-types supported are <tt/text/ and <tt/grs/<it/.filter/. If no
-<it/filter/ is provided for the GRS (General Record Structure) type,
+types supported are <tt/text/ and <tt/grs/<it/.subtype/. If no
+<it/subtype/ is provided for the GRS (General Record Structure) type,
 the canonical input format is assumed (see section <ref
 id="local-representation" name="Local Representation">). Generally, it
 is probably advisable to specify the record types in the
-<tt/zebra.cfg/ file (see section <ref id="record-types" name="Record Types">).
+<tt/zebra.cfg/ file (see section <ref id="record-types" name="Record
+Types">), to avoid confusion at subsequent updates.
 
 <tag>-c <it/config-file/</tag>Read the configuration file
 <it/config-file/ instead of <tt/zebra.cfg/.
@@ -947,10 +948,11 @@ the client. The maximum PDU size is negotiated down to a maximum of
 
 <p>
 The supported query type are 1 and 101. All operators are currently
-supported except that only proximity units of type "word" are supported
+supported with the restriction that only proximity units of type "word" are supported
 for the proximity operator. Queries can be arbitrarily complex. Named
-result sets are supported, and result sets can be used as operands with
-no limitations. Searches may span multiple databases.
+result sets are supported, and result sets can be used as operands
+without
+limitations. Searches may span multiple databases.
 
 The server has full support for piggy-backed present requests (see
 also the following section).
@@ -959,7 +961,7 @@ also the following section).
 have been loaded in the <tt/zebra.cfg/ file, and are matched against
 specific fields as specified in the <tt/.abs/ file which describes the
 profile of the records which have been loaded. If no <bf/Use/
-attribute is provided, a default of <bf/Any/ is assumed.
+attribute is provided, a default of Bib-1 <bf/Any/ is assumed.
 
 If a <bf/Structure/ attribute of <bf/Phrase/ is used in conjunction with a
 <bf/Completeness/ attribute of <bf/Complete (Sub)field/, the term is
@@ -994,8 +996,9 @@ Zebra interprets queries in one the following ways:
 <tag>1 Phrase search</tag>
  Each token separated by white space is truncated according to the
  value of truncation attribute. If the completeness attribute
- is <bf/complete subfield/ the search is directed to the phrase
- register. For other completeness attribute values the term is split
+ is <bf/complete subfield/ the search is directed to the separate
+complete field
+ register, if one exists for the given USE attribute. For other completeness attribute values the term is split
  into tokens according to the white-space specification in the
  character map. Only records in which each token exists in the order
  specified are matched.
@@ -1004,7 +1007,7 @@ Zebra interprets queries in one the following ways:
  The completeness attribute is ignored.
 <tag>3 Ranked search</tag>
  Each token separated by white space is truncated according to the value
- of truncation attribute. The completenss attribute is ignored.
+ of truncation attribute. The completeness attribute is ignored.
 <tag>4 Numeric relation</tag>
  The token should consist of decimal digits. The integer is matched
  against integers in the register according to the relation attribute.
@@ -1149,7 +1152,8 @@ record. Any number of record schema can coexist in the system.
 Although it may be wise to use only a single schema within
 one database, the system poses no such restrictions.
 
-The record model described in this chapter applies to the fundamental
+The record model described in this chapter applies to the fundamental,
+structured
 record type <tt>grs</tt> as introduced in
 section <ref id="record-types" name="Record Types">.
 
@@ -1162,7 +1166,7 @@ in their local, or native format. This might be SGML or HTML files,
 News or Mail archives, MARC records. If the system doesn't already
 know how to read the type of data you need to store, you can set up an
 input filter by preparing conversion rules based on regular
-expressions and a flexible scripting language (Tcl). The input filter
+expressions and possibly augmented by a flexible scripting language (Tcl). The input filter
 produces as output an internal representation:
 
 <item>When records are processed by the system, they are represented
@@ -1186,6 +1190,33 @@ the data, it is parsed by an input filter specific to that format, and
 turned into an internal structure that Zebra knows how to handle. This
 process takes place whenever the record is accessed - for indexing and
 retrieval.
+
+<p>
+The RecordType parameter in the <tt/zebra.cfg/ file, or the <tt/-t/
+option to the indexer tells Zebra how to process input records. Two
+basic types of processing are available - raw text and structured
+data. Raw text is just that, and it is selected by providing the
+argument <bf/text/ to Zebra. Structured records are all handled
+internally using the basic mechanisms described in the subsequent
+sections. Zebra can read structured records in many different formats.
+How this is done is governed by additional parameters after the
+&dquot;grs&dquot; keyboard, separated by &dquot;.&dquot; characters.
+
+Three basic subtypes to the <bf/grs/ type are currently available:
+
+<descrip>
+<tag>grs.sgml</tag>This is the canonical input format &mdash;
+described below. It is a simple SGML-like syntax.
+
+<tag>grs.regx.<it/filter/</tag>This enables a user-supplied input
+filter. The mechanisms of these filters are described below.
+
+<tag>grs.marc.<it/abstract syntax/</tag>This allows Zebra to read
+records in the ISO2709 (MARC) encoding standard. In this case, the
+last paramemeter <it/abstract syntax/ names the .abs file (see below)
+which describes the specific MARC structure of the input record as
+well as the indexing rules.
+</descrip>
 
 <sect2>Canonical Input Format
 
@@ -1683,8 +1714,12 @@ comma-separated list. A ! in
 place of the attribute name is equivalent to specifying an attribute
 name identical to the element name. A - in place of the attribute name
 specifies that no indexing is to take place for the given element. The
-attributes can be qualified with a &dquot;p&dquot; or &dquot;w&dquot;
-to specify either word or phrase (complete field) indexing.
+attributes can be qualified with <it/field types/ to specify which
+character set should govern the indexing procedure for that field. The
+same data element may be indexed into several different fields, using
+different character set definitions. See the section on character set
+processing below. The default field type is &dquot;w&dquot; for
+<it/word/.
 </descrip>
 
 <it>
@@ -1716,7 +1751,7 @@ elm (1,10)              rank                        -
 elm (1,12)              url                         -
 elm (1,14)              localControlNumber     Local-number
 elm (1,16)              dateOfLastModification Date/time-last-modified
-elm (2,1)               Title                       !
+elm (2,1)               Title                       w:!,p:!
 elm (4,1)               controlIdentifier      Identifier-standard
 elm (2,6)               abstract               Abstract
 elm (4,51)              purpose                     !
@@ -1799,8 +1834,9 @@ the tag set. The reference names can be found in the <bf/util/
 module of <bf/YAZ/. The directive is optional, since not all tag sets
 are registered outside of their schema.
 
-<tag>type <it/integer/</tag> (m) The type number of the tag within the schema
-profile.
+<tag>type <it/integer/</tag> (m) The type number of the tagset within the schema
+profile (note: this specification really should belong to the .abs
+file. This will be fixed in a future release).
 
 <tag>include <it/filename/</tag> (o,r) This directive is used
 to include the definitions of other tag sets into the current one.
@@ -2022,6 +2058,105 @@ header of the record.
 re-evaluating and most likely changing the way that MARC records are
 handled by the system.</it>
 
+<sect2>Field Structure and Character Sets
+
+<p>
+In order to provide a flexible approach to national character set
+handling, Zebra allows the administrator to configure the set up the
+system to handle any 8-bit character set &mdash; including sets that
+require multi-octet diacritics or other multi-octet characters. The
+definition of a character set includes a specification of the
+permissible values, their sort order (this affects the display in the
+SCAN function), and relationships between upper- and lowercase
+characters. Finally, the definition includes the specification of
+space characters for the set.
+
+The operator can define different character sets for different fields,
+typical examples being standard text fields, numerical fields, and
+special-purpose fields such as WWW-style linkages (URx).
+
+The field types, and hence character sets, are associated with data
+elements by the .abs files (see above). The file <tt/default.idx/
+provides the association between field type codes (as used in the .abs
+files) and the character map files (with the .chr suffix). The format
+of the .idx file is as follows
+
+<descrip>
+<tag>index <it/field type code/</tag>This directive introduces a new
+index code. The argument is a one-character code to be used in the
+.abs files to select this particular index type.
+
+<tag>completeness <it/boolean/</tag>This directive enables or disables
+complete field indexing. The value of the <it/boolean/ should be 0
+(disable) or 1. If completeness is enabled, the index entry will
+contain the complete contents of the field (up to a limit), with words
+(non-space characters) separated by single space characters
+(normalized to &dquot; &dquot; on display). When completeness is
+disabled, each word is indexed as a separate entry. Complete subfield
+indexing is most useful for fields which are typically browsed (eg.
+titles, authors, or subjects), or instances where a match on a
+complete subfield is essential (eg. exact title searching). For fields
+where completeness is disabled, the search engine will interpret a
+search containing space characters as a word proximity search.
+
+<tag>charmap <it/filename/</tag> This is the filename of the character
+map to be used for this index for field type.
+</descrip>
+
+The contents of the character map files are structured as follows:
+
+<descrip>
+<tag>lowercase <it/value-set/</tag>This directive introduces the basic
+value set of the field type. The format is an ordered list (without
+spaces) of the characters which may occur in &dquot;words&dquot; of
+the given type. The order of the entries in the list determines the
+sort order of the index. In addition to single characters, the
+following combinations are legal:
+
+<itemize>
+<item>Backslashes may be used to introduce three-digit octal, or
+two-digit hex representations of single characters (preceded by <tt/x/).
+In addition, the combinations
+\\, \\r, \\n, \\t, \\s (space &mdash; remember that real space-characters
+may ot occur in the value definition), and \\ are recognised,
+with their usual interpretation.
+
+<item>Curly braces {} may be used to enclose ranges of single
+characters (possibly using the escape convention described in the
+preceding point), eg. {a-z} to entroduce the standard range of ASCII
+characters. Note that the interpretation of such a range depends on
+the concrete representation in your local, physical character set.
+
+<item>Paranthesises () may be used to enclose multi-byte characters -
+eg. diacritics or special national combinations (eg. Spanish
+&dquot;ll&dquot;). When found in the input stream (or a search term),
+these characters are viewed and sorted as a single character, with a
+sorting value depending on the position of the group in the value
+statement.
+</itemize>
+
+<tag>uppercase <it/value-set/</tag>This directive introduces the
+upper-case equivalencis to the value set (if any). The number and
+order of the entries in the list should be the same as in the
+<tt/lowercase/ directive.
+
+<tag>space <it/value-set/</tag>This directive introduces the character
+which separate words in the input stream. Depending on the
+completeness mode of the field in question, these characters either
+terminate an index entry, or delimit individual &dquot;words&dquot; in
+the input stream. The order of the elements is not significant &mdash;
+otherwise the representation is the same as for the <tt/upercase/ and
+<tt/lowercase/ directives.
+
+<tag>map <it/value-set/ <it/target/</tag>This directive introduces a
+mapping between each of the members of the value-set on the left to
+the character on the right. The character on the right must occur in
+the value set (the <tt/lowercase/ directive) of the character set, but
+it may be a paranthesis-enclosed multi-octet character. This directive
+may be used to map diacritics to their base characters, or to map
+HTML-style character-representations to their natural form, etc.
+</descrip>
+
 <sect1>Exchange Formats
 
 <p>
@@ -2036,7 +2171,9 @@ applied variant and supported variant lists as required, if a record
 contains variant information.
 
 <item>SUTRS. Again, the mapping is fairly straighforward. Indentation
-is used to show the hierarchical structure of the record.
+is used to show the hierarchical structure of the record. All
+&dquot;GRS&dquot; type records support both the GRS-1 and SUTRS
+representations.
 
 <item>ISO2709-based formats (USMARC, etc.). Only records with a
 two-level structure (corresponding to fields and subfields) can be
@@ -2052,6 +2189,17 @@ approach.
 
 <item>Explain. This representation is only available for records
 belonging to the Explain schema.
+
+<item>Summary.  This ASN-1 based structure is only available for records
+belonging to the Summary schema - or schema which provide a mapping
+to this schema (see the description of the schema mapping facility
+above).
+
+<item>SOIF. Support for this syntax is experimental, and is currently
+keyed to a private Index Data OID (1.2.840.10003.5.1000.81.2). All
+abstract syntaxes can be mapped to the SOIF format, although nested
+elements are represented by concatenation of the tag names at each
+level.
 
 </itemize>
 
@@ -2118,11 +2266,11 @@ our advice - and if you need to adapt the software to a special
 purpose, our consulting services and expert knowledge of the software
 is available to you at favorable rates.
 
-<tscreen>
-Index Data&nl
-Ryesgade 3&nl
-DK-2200 K&oslash;benhavn N&nl
-</tscreen>
+<tscreen><verb>
+Index Data
+Ryesgade 3
+DK-2200 K&oslash;benhavn N
+</verb></tscreen>
 
 <p>
 <tscreen><verb>
