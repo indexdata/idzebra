@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.13  1996-03-21 14:50:08  adam
+ * Revision 1.14  1996-04-09 06:49:18  adam
+ * Traversal of directories doesn't follow symbolic links.
+ *
+ * Revision 1.13  1996/03/21 14:50:08  adam
  * File update uses modify-time instead of change-time.
  *
  * Revision 1.12  1996/02/05  12:29:55  adam
@@ -99,7 +102,7 @@ struct dir_entry *dir_open (const char *rep)
             entry = entry_n;
         }
         strcpy (path + pathpos, dent->d_name);
-        stat (path, &finfo);
+        lstat (path, &finfo);
         switch (finfo.st_mode & S_IFMT)
         {
         case S_IFREG:
