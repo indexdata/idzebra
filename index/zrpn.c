@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.141.2.4 2004-11-26 11:06:13 adam Exp $
+/* $Id: zrpn.c,v 1.141.2.5 2004-11-26 12:20:32 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -971,7 +971,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             if ((r=att_getentbyatt (zh, &attp, curAttributeSet, use_value,
 					    use_string)))
             {
-                yaz_log(LOG_LOG, "att_getentbyatt fail. set=%d use=%d r=%d",
+                yaz_log(LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
                       curAttributeSet, use_value, r);
                 if (r == -1)
                 {
@@ -2580,11 +2580,6 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     }
     if (ord_no == 0)
     {
-	char val_str[32];
-	sprintf (val_str, "%d", use_value);
-	zh->errCode = 114;
-	zh->errString = odr_strdup (stream, val_str);
-
 	*num_entries = 0;
 	return;
     }
