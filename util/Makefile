@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.3 1994-08-17 13:32:49 adam Exp $
+# $Id: Makefile,v 1.4 1994-08-17 15:34:22 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -9,7 +9,7 @@ TPROG=opt-test
 CFLAGS=-g -Wall
 DEFS=$(INCLUDE)
 LIB=../lib/util.a
-PO = options.o xmalloc.o log.o
+PO = options.o xmalloc.o log.o res.o
 CPP=cc -E
 
 all: $(LIB)
