@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.6 2004-05-25 10:21:25 adam Exp $
+/* $Id: d1_read.c,v 1.7 2004-07-26 12:20:07 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -213,6 +213,24 @@ void data1_set_root(data1_handle dh, data1_node *res,
     res->u.root.absyn = absyn;
 }
 
+void data1_add_attrs(data1_handle dh, NMEM nmem, const char **attr,
+		     data1_xattr **p)
+{
+    while (*p)
+        p = &(*p)->next;
+
+    while (attr && *attr)
+    {
+        *p = (data1_xattr*) nmem_malloc (nmem, sizeof(**p));
+        (*p)->name = nmem_strdup (nmem, *attr++);
+        (*p)->value = nmem_strdup (nmem, *attr++);
+        (*p)->what = DATA1I_text;
+
+        p = &(*p)->next;
+    }
+    *p = 0;
+}
+		     
 data1_node *data1_mk_preprocess (data1_handle dh, NMEM nmem,
                                  const char *target,
                                  const char **attr, data1_node *at)
@@ -225,22 +243,31 @@ data1_node *data1_mk_preprocess_n (data1_handle dh, NMEM nmem,
                                    const char *target, size_t len,
                                    const char **attr, data1_node *at)
 {
-    data1_xattr **p;
     data1_node *res = data1_mk_node2 (dh, nmem, DATA1N_preprocess, at);
     res->u.preprocess.target = data1_insert_string_n (dh, res, nmem,
                                                       target, len);
     
-    p = &res->u.preprocess.attributes;
-    while (attr && *attr)
-    {
-        *p = (data1_xattr*) nmem_malloc (nmem, sizeof(**p));
-        (*p)->name = nmem_strdup (nmem, *attr++);
-        (*p)->value = nmem_strdup (nmem, *attr++);
-        (*p)->what = DATA1I_text;
+    data1_add_attrs(dh, nmem, attr, &res->u.preprocess.attributes);
+    return res;
+}
 
-        p = &(*p)->next;
-    }
-    *p = 0;
+data1_node *data1_insert_preprocess (data1_handle dh, NMEM nmem,
+                                 const char *target,
+                                 const char **attr, data1_node *at)
+{
+    return data1_insert_preprocess_n (dh, nmem, target, strlen(target),
+				      attr, at);
+}
+
+data1_node *data1_insert_preprocess_n (data1_handle dh, NMEM nmem,
+                                   const char *target, size_t len,
+                                   const char **attr, data1_node *at)
+{
+    data1_node *res = data1_insert_node (dh, nmem, DATA1N_preprocess, at);
+    res->u.preprocess.target = data1_insert_string_n (dh, res, nmem,
+                                                      target, len);
+    
+    data1_add_attrs(dh, nmem, attr, &res->u.preprocess.attributes);
     return res;
 }
 
@@ -250,7 +277,6 @@ data1_node *data1_mk_tag_n (data1_handle dh, NMEM nmem,
 {
     data1_node *partag = get_parent_tag(dh, at);
     data1_node *res = data1_mk_node2 (dh, nmem, DATA1N_tag, at);
-    data1_xattr **p;
     data1_element *e = 0;
     
     res->u.tag.tag = data1_insert_string_n (dh, res, nmem, tag, len);
@@ -268,16 +294,7 @@ data1_node *data1_mk_tag_n (data1_handle dh, NMEM nmem,
                                            e, res->u.tag.tag);
     }
     res->u.tag.element = e;
-    p = &res->u.tag.attributes;
-    while (attr && *attr)
-    {
-        *p = (data1_xattr*) nmem_malloc (nmem, sizeof(**p));
-        (*p)->name = nmem_strdup (nmem, *attr++);
-        (*p)->value = nmem_strdup (nmem, *attr++);
-        (*p)->what = DATA1I_text;
-        p = &(*p)->next;
-    }
-    *p = 0;
+    data1_add_attrs(dh, nmem, attr, &res->u.tag.attributes);
     return res;
 }
 
@@ -290,17 +307,7 @@ void data1_tag_add_attr (data1_handle dh, NMEM nmem,
         return;
 
     p = &res->u.tag.attributes;
-    while (*p)
-        p = &(*p)->next;
-
-    while (attr && *attr)
-    {
-        *p = (data1_xattr*) nmem_malloc (nmem, sizeof(**p));
-        (*p)->name = nmem_strdup (nmem, *attr++);
-        (*p)->value = nmem_strdup (nmem, *attr++);
-        (*p)->what = DATA1I_text;
-        p = &(*p)->next;
-    }
+    data1_add_attrs(dh, nmem, attr, p);
     *p = 0;
 }
 

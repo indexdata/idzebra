@@ -1,5 +1,5 @@
-/* $Id: data1.h,v 1.8 2003-06-23 15:36:11 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: data1.h,v 1.9 2004-07-26 12:20:06 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -406,6 +406,17 @@ YAZ_EXPORT data1_node *data1_mk_preprocess (data1_handle dh, NMEM nmem,
                                             const char *target,
                                             const char **attr,
                                             data1_node *at);
+
+YAZ_EXPORT data1_node *data1_insert_preprocess_n (data1_handle dh, NMEM nmem,
+						  const char *target,
+						  size_t len,
+						  const char **attr,
+						  data1_node *at);
+
+YAZ_EXPORT data1_node *data1_insert_preprocess (data1_handle dh, NMEM nmem,
+						const char *target,
+						const char **attr,
+						data1_node *at);
 
 YAZ_EXPORT data1_node *data1_mk_root (data1_handle dh, NMEM nmem,
                                       const char *name);
