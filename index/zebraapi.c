@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.68 2002-08-28 19:52:29 adam Exp $
+/* $Id: zebraapi.c,v 1.69 2002-08-29 08:47:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -130,9 +130,7 @@ ZebraService zebra_start (const char *configName)
 
     yaz_log (LOG_LOG, "zebra_start %s", configName);
 
-    if (!(res = res_open (configName, 0)))
-	yaz_log (LOG_WARN, "Cannot read resources `%s'", configName);
-    else
+    if ((res = res_open (configName, 0)))
     {
         ZebraService zh = xmalloc (sizeof(*zh));
 

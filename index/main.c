@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.94 2002-08-05 14:08:08 adam Exp $
+/* $Id: main.c,v 1.95 2002-08-29 08:47:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -119,11 +119,15 @@ int main (int argc, char **argv)
             {
                 if (!zs)
                 {
+		    const char *config = configName ? configName : "zebra.cfg";
                     logf (LOG_LOG, "Zebra version %s %s",
                           ZEBRAVER, ZEBRADATE);
-                    zs = zebra_start (configName ? configName : "zebra.cfg");
+                    zs = zebra_start (config);
                     if (!zs)
+                    {
+			yaz_log (LOG_FATAL, "Cannot read config %s", config);
                         exit (1);
+	            }	
                     zh = zebra_open (zs);
                     if (disableCommit)
                         zebra_shadow_enable (zh, 0);

@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.91 2002-08-05 14:08:08 adam Exp $
+/* $Id: zserver.c,v 1.92 2002-08-29 08:47:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -74,7 +74,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     sob = statserv_getcontrol ();
     if (!(zh = zebra_open (sob->handle)))
     {
-	yaz_log (LOG_FATAL, "Failed to open config `%s'", sob->configname);
+	yaz_log (LOG_WARN, "Failed to open config `%s'", sob->configname);
 	r->errcode = 1;
 	return r;
     }

@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.121 2002-08-28 12:47:10 adam Exp $
+/* $Id: extract.c,v 1.122 2002-08-29 08:47:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -40,6 +40,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define PRINTF_OFF_T "%ld"
 #endif
 
+#define USE_SHELLSORT 0
+
+#if USE_SHELLSORT
 static void shellsort(void *ar, int r, size_t s,
                       int (*cmp)(const void *a, const void *b))
 {
@@ -62,7 +65,7 @@ static void shellsort(void *ar, int r, size_t s,
             memcpy (a+s*j, v, s);
         } 
 }
-
+#endif
 
 static void logRecord (ZebraHandle zh)
 {
@@ -419,7 +422,7 @@ static void recordLogPreamble (int level, const char *msg, void *info)
     if (level & LOG_LOG)
         return ;
     fprintf (outf, "File %s, offset %d, type %s\n",
-             p->rGroup->recordType, p->recordOffset, p->fname);
+             p->fname, p->recordOffset, p->rGroup->recordType);
     log_event_start (NULL, NULL);
 }
 
