@@ -274,13 +274,13 @@ int  zebra_init (ZebraHandle zh);
 int  zebra_compact (ZebraHandle zh);
 
 %name(repository_update)   
-void zebra_repository_update (ZebraHandle zh);
+void zebra_repository_update (ZebraHandle zh, const char *path);
 
 %name(repository_delete)   
-void zebra_repository_delete (ZebraHandle zh);
+void zebra_repository_delete (ZebraHandle zh, const char *path);
 
 %name(repository_show)     
-void zebra_repository_show (ZebraHandle zh); 
+void zebra_repository_show (ZebraHandle zh, const char *path); 
 
 
 /* == Record update/delete (zebra_api_ext.c) =============================== */
@@ -292,18 +292,15 @@ void zebra_repository_show (ZebraHandle zh);
 %apply int *REFERENCE { int *sysno };
 %name(insert_record)       
 int zebra_insert_record (ZebraHandle zh, 
-			 recordGroup *rGroup, 
 			 const char *recordType,
 			 int *sysno, 
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 
-			 int buf_size,
-			 int force_update);
+			 int buf_size);
 
 %name(update_record)       
 int zebra_update_record (ZebraHandle zh, 
-			 recordGroup *rGroup, 
 			 const char *recordType,
 			 int *sysno, 
 			 const char *match, 
@@ -314,7 +311,6 @@ int zebra_update_record (ZebraHandle zh,
      
 %name(delete_record)       
 int zebra_delete_record (ZebraHandle zh, 
-			 recordGroup *rGroup, 
 			 const char *recordType,
 			 int *sysno, 
 			 const char *match, 
@@ -322,7 +318,6 @@ int zebra_delete_record (ZebraHandle zh,
 			 const char *buf, 
 			 int buf_size,
 			 int force_update);
-
 
 /* == Search (zebraapi.c) ================================================== */
 %include "typemaps.i"
