@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.12 2005-01-21 19:07:25 adam Exp $
+/* $Id: api.h,v 1.13 2005-01-24 14:44:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,8 +29,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
     via zebra_errCode and friends. 
 */
 
-#ifndef ZEBRAAPI_H
-#define ZEBRAAPI_H
+#ifndef IDZEBRA_API_H
+#define IDZEBRA_API_H
 
 #include <yaz/odr.h>
 #include <yaz/oid.h>
@@ -225,7 +225,20 @@ YAZ_EXPORT int zebra_deleteResultSet(ZebraHandle zh, int function,
 				     int *statuses);
 
 
-/* Browse */
+/**
+   \fn int zebra_scan(ZebraHandle zh, ODR stream,
+   Z_AttributesPlusTerm *zapt, oid_value attributeset,
+   int *position, int *num_entries, ZebraScanEntry **list, int *is_partial)
+   \brief performs Scan (Z39.50 style)
+   \param zh session handle
+   \param stream ODR handle for result
+   \param zapt Attribute plus Term (start term)
+   \param attributeset Attributeset for Attribute plus Term
+   \param position input/output position
+   \param num_entries number of terms requested / returned 
+   \param list list of resulting terms (ODR allocated)
+   \param is_partial upon return 1=partial, 0=complete
+*/
 YAZ_EXPORT int zebra_scan(ZebraHandle zh, ODR stream,
 			  Z_AttributesPlusTerm *zapt,
 			  oid_value attributeset,
@@ -234,25 +247,46 @@ YAZ_EXPORT int zebra_scan(ZebraHandle zh, ODR stream,
 			  int *is_partial);
 
              
-/*********
- * Other 
+/**
+   \fn int zebra_auth(ZebraHandle zh, const char *user, const char *pass)
+   \brief authenticate user. Returns 0 if OK, != 0 on failure
+   \param zh session handle
+   \param user user name
+   \param pass password
  */
-                      
-/* do authentication */
 YAZ_EXPORT int zebra_auth(ZebraHandle zh, const char *user, const char *pass);
 
-/* Character normalisation on specific register .
-   This routine is subject to change - do not use. */
+
+/**
+   \fn int zebra_string_norm(ZebraHandle zh, unsigned reg_id,
+   const char *input_str, int input_len,
+   char *output_str, int output_len)
+   \brief normalize zebra term for register (subject to change!)
+   \param zh session handle
+   \param reg_id register ID, 'w', 'p',..
+   \param input_str input string buffer
+   \param input_len input string length
+   \param output_str output string buffer
+   \param output_len output string length
+ */
 YAZ_EXPORT int zebra_string_norm(ZebraHandle zh, unsigned reg_id,
 				  const char *input_str, int input_len,
 				  char *output_str, int output_len);
 
-
-/******
- * Admin 
- */                   
-          
+/**
+   \fn int zebra_create_database(ZebraHandle zh, const char *db)
+   \brief creates a database
+   \param zh session handle
+   \param db database to be created
+*/
 YAZ_EXPORT int zebra_create_database(ZebraHandle zh, const char *db);
+
+/**
+   \fn int zebra_drop_database(ZebraHandle zh, const char *db)
+   \brief deletes a database (drop)
+   \param zh session handle
+   \param db database to be deleted
+*/
 YAZ_EXPORT int zebra_drop_database(ZebraHandle zh, const char *db);
 
 YAZ_EXPORT int zebra_admin_shutdown(ZebraHandle zh);
@@ -268,38 +302,38 @@ YAZ_EXPORT int zebra_admin_import_segment(ZebraHandle zh,
 
 YAZ_EXPORT int zebra_admin_import_end(ZebraHandle zh);
 
-int zebra_admin_exchange_record(ZebraHandle zh,
+YAZ_EXPORT int zebra_admin_exchange_record(ZebraHandle zh,
                                  const char *rec_buf,
                                  size_t rec_len,
                                  const char *recid_buf, size_t recid_len,
                                  int action);
 
-int zebra_begin_trans(ZebraHandle zh, int rw);
-int zebra_end_trans(ZebraHandle zh);
-int zebra_end_transaction(ZebraHandle zh, ZebraTransactionStatus *stat);
+YAZ_EXPORT int zebra_begin_trans(ZebraHandle zh, int rw);
+YAZ_EXPORT int zebra_end_trans(ZebraHandle zh);
+YAZ_EXPORT int zebra_end_transaction(ZebraHandle zh, ZebraTransactionStatus *stat);
 
-int zebra_commit(ZebraHandle zh);
-int zebra_clean(ZebraHandle zh);
+YAZ_EXPORT int zebra_commit(ZebraHandle zh);
+YAZ_EXPORT int zebra_clean(ZebraHandle zh);
 
-int zebra_init(ZebraHandle zh);
-int zebra_compact(ZebraHandle zh);
-int zebra_repository_update(ZebraHandle zh, const char *path);
-int zebra_repository_delete(ZebraHandle zh, const char *path);
-int zebra_repository_show(ZebraHandle zh, const char *path);
+YAZ_EXPORT int zebra_init(ZebraHandle zh);
+YAZ_EXPORT int zebra_compact(ZebraHandle zh);
+YAZ_EXPORT int zebra_repository_update(ZebraHandle zh, const char *path);
+YAZ_EXPORT int zebra_repository_delete(ZebraHandle zh, const char *path);
+YAZ_EXPORT int zebra_repository_show(ZebraHandle zh, const char *path);
 
-int zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
+YAZ_EXPORT int zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
 			       
-int zebra_insert_record(ZebraHandle zh, 
+YAZ_EXPORT int zebra_insert_record(ZebraHandle zh, 
 			 const char *recordType,
 			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
-int zebra_update_record(ZebraHandle zh, 
+YAZ_EXPORT int zebra_update_record(ZebraHandle zh, 
 			 const char *recordType,
 			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
-int zebra_delete_record(ZebraHandle zh, 
+YAZ_EXPORT int zebra_delete_record(ZebraHandle zh, 
 			 const char *recordType,
 			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
