@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.12  1995-09-06 16:11:41  adam
+ * Revision 1.13  1995-10-17 18:03:15  adam
+ * Commented out qsort in is_merge.
+ *
+ * Revision 1.12  1995/09/06  16:11:41  adam
  * Keysize parameter to is_open (if non-zero).
  *
  * Revision 1.11  1995/09/04  12:33:46  adam
@@ -332,7 +335,9 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
     char operation, *record;
 
     extcmp = is->cmp;
+#if 0
     qsort(data, num, is_keysize(is) + 1, sort_input);
+#endif
     is_m_establish_tab(is, &tab, pos);
     if (pos)
     	if (is_m_read_full(&tab, tab.data) < 0)
