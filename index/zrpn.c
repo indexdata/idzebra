@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.15  1995-10-02 15:18:52  adam
+ * Revision 1.16  1995-10-02 16:24:40  adam
+ * Use attribute actually used in search requests.
+ *
+ * Revision 1.15  1995/10/02  15:18:52  adam
  * New member in recRetrieveCtrl: diagnostic.
  *
  * Revision 1.14  1995/09/28  12:10:32  adam
@@ -381,6 +384,29 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     return 0;
 }
 
+static void field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
+                        char *termz)
+{
+    size_t i, j, sizez;
+    AttrType use;
+    int use_value;
+    Z_Term *term = zapt->term;
+
+    attr_init (&use, zapt, 1);
+    use_value = attr_find (&use);
+    if (use_value == -1)
+        use_value = 1016;
+
+    i = index_word_prefix (termz, 1, use_value);
+    sizez = i + term->u.general->len;
+    if (sizez > IT_MAX_WORD)
+        sizez = IT_MAX_WORD;
+    for (j = 0; i < sizez; i++, j++)
+        termz[i] = index_char_cvt (term->u.general->buf[j]);
+    termz[i] = '\0';
+}
+
+
 static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
                                       Z_AttributesPlusTerm *zapt)
 {
@@ -389,7 +415,6 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     char term_sub[IT_MAX_WORD+1];
     char *p0 = termz, *p1 = NULL;
     Z_Term *term = zapt->term;
-    size_t sizez, i, j;
 
     parms.key_size = sizeof(struct it_key);
     parms.max_rec = 100;
@@ -401,14 +426,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    i = index_word_prefix (termz, 1, 1016);
-    sizez = i + term->u.general->len;
-    if (sizez > IT_MAX_WORD)
-        sizez = IT_MAX_WORD;
-    for (j = 0; i < sizez; i++, j++)
-        termz[i] = index_char_cvt (term->u.general->buf[j]);
-    termz[i] = '\0';
-
+    field_term (zi, zapt, termz);
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
     while (1)
     {
@@ -440,22 +458,13 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
 
     char termz[IT_MAX_WORD+1];
     Z_Term *term = zapt->term;
-    size_t sizez, i, j;
 
     if (term->which != Z_Term_general)
     {
         zi->errCode = 124;
         return NULL;
     }
-    i = index_word_prefix (termz, 1, 1016);
-    logf (LOG_DEBUG, "i=%d", i);
-    sizez = i + term->u.general->len;
-    if (sizez > IT_MAX_WORD)
-        sizez = IT_MAX_WORD;
-    for (j = 0; i < sizez; i++, j++)
-        termz[i] = index_char_cvt (term->u.general->buf[j]);
-    termz[i] = '\0';
-
+    field_term (zi, zapt, termz);
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
     if (trunc_term (zi, zapt, termz, &isam_positions))
         return NULL;
@@ -479,21 +488,13 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
 
     char termz[IT_MAX_WORD+1];
     Z_Term *term = zapt->term;
-    size_t sizez, i, j;
 
     if (term->which != Z_Term_general)
     {
         zi->errCode = 124;
         return NULL;
     }
-    i = index_word_prefix (termz, 1, 1016);
-    sizez = i + term->u.general->len;
-    if (sizez > IT_MAX_WORD)
-        sizez = IT_MAX_WORD;
-    for (j = 0 ; i < sizez; i++, j++)
-        termz[i] = index_char_cvt (term->u.general->buf[j]);
-    termz[i] = '\0';
-
+    field_term (zi, zapt, termz);
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
     if (trunc_term (zi, zapt, termz, &isam_positions))
         return NULL;
