@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.45  1995-12-15 12:37:41  adam
+ * Revision 1.46  1995-12-15 14:57:16  adam
+ * Bug fix.
+ *
+ * Revision 1.45  1995/12/15  12:37:41  adam
  * In addRecordKeyAny: Writes key only when attrSet != -1.
  *
  * Revision 1.44  1995/12/12  16:00:54  adam
@@ -488,7 +491,7 @@ static void addRecordKeyAny (const RecWord *p)
         w.attrUse = 1016;
         addRecordKey (&w);
     }
-    else if (p->attrSet != -1)
+    if (p->attrSet != -1)
         addRecordKey (p);
 }
 
