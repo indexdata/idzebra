@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.5  1994-09-27 20:03:36  quinn
+ * Revision 1.6  1994-09-28 11:29:28  quinn
+ * Added cmp parameter.
+ *
+ * Revision 1.5  1994/09/27  20:03:36  quinn
  * Seems relatively bug-free.
  *
  * Revision 1.4  1994/09/26  17:05:54  quinn
@@ -85,7 +88,8 @@ typedef struct ispt_struct
 /*
  * Open isam file.
  */
-ISAM is_open(const char *name, int writeflag);
+ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
+    int writeflag);
 
 /*
  * Close isam file.

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.4  1994-09-27 20:03:53  quinn
+ * Revision 1.5  1994-09-28 11:29:33  quinn
+ * Added cmp parameter.
+ *
+ * Revision 1.4  1994/09/27  20:03:53  quinn
  * Seems relatively bug-free.
  *
  * Revision 1.3  1994/09/26  17:11:31  quinn
@@ -160,11 +163,6 @@ void is_p_sync(is_mtable *tab)
     type = &tab->is->types[tab->pos_type];
     for (p = tab->data; p; p = p->next)
     {
-    int fummy;
-/*
-if (p->num_records == 0)
- 	fummy = 1/0;
-*/
     	if (p->state < IS_MBSTATE_DIRTY)
 	    continue;
 	/* make sure that blocks are allocated. */

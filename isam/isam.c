@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.5  1994-09-27 20:03:50  quinn
+ * Revision 1.6  1994-09-28 11:29:33  quinn
+ * Added cmp parameter.
+ *
+ * Revision 1.5  1994/09/27  20:03:50  quinn
  * Seems relatively bug-free.
  *
  * Revision 1.4  1994/09/26  17:11:29  quinn
@@ -56,7 +59,8 @@ static int splitargs(const char *s, char *bf[], int max)
  * Open isam file.
  * Process resources.
  */
-ISAM is_open(const char *name, int writeflag)
+ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
+    int writeflag)
 {
     ISAM new;
     char *nm, *r, *pp[IS_MAX_BLOCKTYPES+1], m[2];
@@ -217,7 +221,7 @@ ISAM is_open(const char *name, int writeflag)
 		new->types[i].nice_keys_block = 1;
     }
 
-    new->cmp = is_default_cmp;
+    new->cmp = cmp ? cmp : is_default_cmp;
     return new;
 }
 
