@@ -1,7 +1,7 @@
 #ifndef ZEBRA_PERL_H
 #define ZEBRA_PERL_H
 
-#include "zebraapi.h"
+#include <idzebra/api.h>
 
 typedef struct {
     char  *groupName;
