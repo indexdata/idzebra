@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.20  1998-05-20 10:12:26  adam
+ * Revision 1.21  1998-07-01 09:16:10  adam
+ * Element localno only added when it's greater than 0.
+ *
+ * Revision 1.20  1998/05/20 10:12:26  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -489,7 +492,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     }
 
     logf (LOG_DEBUG, "grs_retrieve: localControlNumber");
-    if ((dnew = data1_insert_taggeddata(p->dh, node, node,
+    if (p->localno > 0 && (dnew = data1_insert_taggeddata(p->dh, node, node,
 				       "localControlNumber", mem)))
     {
 	dnew->u.data.what = DATA1I_text;
