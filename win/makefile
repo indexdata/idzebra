@@ -1,14 +1,14 @@
 # Z'mbol/Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.13 2002-08-05 20:04:27 adam Exp $
+# $Id: makefile,v 1.14 2002-08-05 20:05:07 adam Exp $
  
 ###########################################################
 ############### Parameters 
 ###########################################################
 
-DEBUG=1   # 0 for release, 1 for debug
+DEBUG=0   # 0 for release, 1 for debug
 
 # iconv
-HAVE_ICONV=1
+HAVE_ICONV=0
 ICONV_DIR = c:\libiconv-1.7.0.1
 
 default: all
