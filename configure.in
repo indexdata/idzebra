@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2003
-dnl $Id: configure.in,v 1.74 2003-04-15 20:47:05 adam Exp $
+dnl $Id: configure.in,v 1.75 2003-04-15 20:56:47 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(idzebra,1.3.10)
@@ -304,7 +304,7 @@ if test "$perl" != "no"; then
 		],AM_CONDITIONAL(perl,true)
 	          AC_DEFINE(HAVE_PERL,1)
 		  AC_MSG_RESULT(found)
-	          ZPERL_LIBS="$LIBS"
+	          ZPERL_LIBS="$xLIBS"
 			,
                   AC_MSG_RESULT(not found)
 	          AC_DEFINE(HAVE_PERL,0)
