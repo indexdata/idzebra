@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.4  1994-09-01 14:51:07  quinn
+ * Revision 1.5  1994-09-12 08:01:51  quinn
+ * Small
+ *
+ * Revision 1.4  1994/09/01  14:51:07  quinn
  * Allowed mf_write to write beyond eof+1.
  *
  * Revision 1.3  1994/08/24  09:37:17  quinn
@@ -124,6 +127,7 @@ MFile_area mf_init(const char *name)
     int fd, number;
     char metaname[FILENAME_MAX+1], tmpnam[FILENAME_MAX+1];
 
+    log(LOG_DEBUG, "mf_init(%s)", name);
     for (mp = open_areas; mp; mp = mp->next)
     	if (!strcmp(name, mp->name))
     	    abort();
@@ -219,6 +223,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     char tmp[FILENAME_MAX+1];
     mf_dir *dp;
 
+    log(LOG_LOG, "mf_open(%s)", name);
     if (!ma)
     {
         if (!default_area && !(default_area = mf_init(MF_DEFAULT_AREA)))
