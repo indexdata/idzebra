@@ -34,6 +34,10 @@ sub new {
     $self->{errString}   = $args{errString};
 
     bless ($self, $class);
+
+#    $self->{session}{resultsets}{$args{name}} = $self;
+#    weaken ($self->{session}{resultsets}{$args{name}};
+
     return ($self);
 }
 
@@ -52,10 +56,9 @@ sub errString {
     return ($self->{errCode});
 }
 
+# =============================================================================
 sub DESTROY {
     my ($self) = @_;
-
-#    print STDERR "Destroy RS\n";
 
     # Deleteresultset?
 
@@ -66,6 +69,7 @@ sub DESTROY {
     }
 
     delete($self->{ro});
+#    delete($self->{session}{resultsets}{$self->{name}});
     delete($self->{session});
 }
 # -----------------------------------------------------------------------------
@@ -78,6 +82,8 @@ sub records {
     my $elementSet   = $args{elementSet}   ? $args{elementSet}    : 'R';
     my $schema       = $args{schema}       ? $args{schema}        : '';
     my $recordSyntax = $args{recordSyntax} ? $args{recordSyntax}  : '';
+    
+    my $class        = $args{class}        ? $args{class}         : '';
     
 
     my $ro = IDZebra::RetrievalObj->new();
@@ -97,7 +103,11 @@ sub records {
     for (my $i=$from; $i<=$to; $i++) {
 	my $rec = IDZebra::RetrievalRecord->new();
         IDZebra::record_retrieve($ro, $self->{odr_stream}, $rec, $i-$from+1);
-	push (@res, $rec);
+	if ($class) {
+	    
+	} else {
+	    push (@res, $rec);
+	}
     }
 
     IDZebra::odr_reset($self->{odr_stream});
@@ -105,6 +115,7 @@ sub records {
     return (@res);
 }
 
+# ============================================================================
 sub sort {
     my ($self, $sortspec, $setname) = @_;
     unless ($setname) {

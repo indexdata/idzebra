@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.6 2003-02-28 18:45:50 pop Exp $
+# $Id: Session.pm,v 1.7 2003-02-28 20:11:20 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -13,7 +13,7 @@ BEGIN {
     use IDZebra::Resultset;
     use Scalar::Util;
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.6 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.7 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -29,6 +29,7 @@ sub new {
     
     bless ($self, $class);
     $self->{cql_ct} = undef;
+    $self->{cql_mapfile} = "";
     return ($self);
 
     $self->{databases} = {};
@@ -193,7 +194,7 @@ sub _getRecordGroup {
     my $r = IDZebra::init_recordGroup($rg);
     $rg->{groupName} = $groupName if ($groupName ne "");  
     $ext = "" unless ($ext);
-    my $r = IDZebra::res_get_recordGroup($self->{zh}, $rg, $ext);
+    $r = IDZebra::res_get_recordGroup($self->{zh}, $rg, $ext);
     return ($rg);
 }
 
@@ -436,9 +437,9 @@ sub _record_update_args {
 	$buff = $args{data};
     } 
     elsif ($args{file}) {
-	open (F, $args{file}) || warn ("Cannot open $args{file}");
+	CORE::open (F, $args{file}) || warn ("Cannot open $args{file}");
 	$buff = join('',(<F>));
-	close (F);
+	CORE::close (F);
     }
     my $len = length($buff);
 
