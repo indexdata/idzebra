@@ -4,5 +4,6 @@ Makefile
 Makefile.in
 dictext
 dicttest
+scantest
 *.lo
 *.la
