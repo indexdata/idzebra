@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.14  1997-11-06 11:41:01  adam
+ * Revision 1.15  1998-01-26 10:37:57  adam
+ * Better diagnostics.
+ *
+ * Revision 1.14  1997/11/06 11:41:01  adam
  * Implemented "begin variant" for the sgml.regx filter.
  *
  * Revision 1.13  1997/10/31 12:35:44  adam
@@ -529,7 +532,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     node = read_grs_type (&gri, p->subType);
     if (!node)
     {
-	p->diagnostic = 2;
+	p->diagnostic = 14;
         nmem_destroy (mem);
 	return 0;
     }
@@ -637,39 +640,33 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	    dummy = 0;
 	    if (!(p->rec_buf = data1_nodetogr(p->dh, node, selected,
 					      p->odr, &dummy)))
-		p->diagnostic = 2; /* this should be better specified */
+		p->diagnostic = 238; /* not available in requested syntax */
 	    else
 		p->rec_len = -1;
 	    break;
 	case VAL_EXPLAIN:
 	    if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
 						   p->odr)))
-		p->diagnostic = 2; /* this should be better specified */
+		p->diagnostic = 238;
 	    else
 		p->rec_len = -1;
 	    break;
 	case VAL_SUMMARY:
 	    if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
 						   p->odr)))
-		p->diagnostic = 2;
+		p->diagnostic = 238;
 	    else
 		p->rec_len = -1;
 	    break;
 	case VAL_SUTRS:
 	    if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
 		(int*)&p->rec_len)))
-	    {
-		p->diagnostic = 2;
-		break;
-	    }
+		p->diagnostic = 238;
 	    break;
 	case VAL_SOIF:
 	    if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
 						(int*)&p->rec_len)))
-	    {
-		p->diagnostic = 2;
-		break;
-	    }
+		p->diagnostic = 238;
 	    break;
 	default:
 	    for (marctab = node->u.root.absyn->marc; marctab;
@@ -678,14 +675,14 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 		    break;
 	    if (!marctab)
 	    {
-		p->diagnostic = 227;
+		p->diagnostic = 238;
 		break;
 	    }
 	    if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
 						selected,
 						(int*)&p->rec_len)))
 	    {
-		p->diagnostic = 2;
+		p->diagnostic = 238;
 		break;
 	    }
     }
