@@ -1,5 +1,5 @@
-/* $Id: index.h,v 1.101 2003-06-20 14:21:23 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: index.h,v 1.102 2003-06-23 15:35:25 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -114,9 +114,9 @@ void key_logdump (int mask, const void *p);
 void inv_prstat (ZebraHandle zh);
 void inv_compact (BFiles bfs);
 void key_input (ZebraHandle zh, int nkeys, int cache, Res res);
-ISAMS_M key_isams_m (Res res, ISAMS_M me);
-ISAMC_M key_isamc_m (Res res, ISAMC_M me);
-ISAMD_M key_isamd_m (Res res, ISAMD_M me);
+ISAMS_M *key_isams_m (Res res, ISAMS_M *me);
+ISAMC_M *key_isamc_m (Res res, ISAMC_M *me);
+ISAMD_M *key_isamd_m (Res res, ISAMD_M *me);
 int merge_sort (char **buf, int from, int to);
 int key_SU_code (int ch, char *out);
 

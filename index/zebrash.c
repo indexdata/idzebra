@@ -1,5 +1,5 @@
 /* zebrash.c - command-line interface to zebra API 
- *  $Id: zebrash.c,v 1.11 2003-06-23 14:35:41 heikki Exp $
+ *  $Id: zebrash.c,v 1.12 2003-06-23 15:35:25 adam Exp $
  *
  * Copyrigth 2003 Index Data Aps
  *
@@ -286,7 +286,6 @@ static int cmd_select_database ( char *args[], char *outbuff)
 static int cmd_create_database( char *args[], char *outbuff)
 {
     char *db=args[1];
-	int rc;
     if (!db)
         db="Default";
     strcat(outbuff,"Creating database ");
@@ -504,7 +503,7 @@ int onecommand(
 	printf("expecting '%s'\n",rest); /*!*/
 	if (0==strstr(prevout,rest))
 	{
-	    printf( "Failed expectation, '%s' not found\n");
+	    printf( "Failed expectation, '%s' not found\n", res);
             exit(9); 
 	}
 	return 0;

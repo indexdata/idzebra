@@ -1,5 +1,5 @@
-/* $Id: kcompare.c,v 1.40 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: kcompare.c,v 1.41 2003-06-23 15:35:25 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -223,7 +223,7 @@ static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
     }
 }
 
-ISAMS_M key_isams_m (Res res, ISAMS_M me)
+ISAMS_M *key_isams_m (Res res, ISAMS_M *me)
 {
     isams_getmethod (me);
 
@@ -238,7 +238,7 @@ ISAMS_M key_isams_m (Res res, ISAMS_M me)
     return me;
 }
 
-ISAMC_M key_isamc_m (Res res, ISAMC_M me)
+ISAMC_M *key_isamc_m (Res res, ISAMC_M *me)
 {
     isc_getmethod (me);
 
@@ -254,9 +254,8 @@ ISAMC_M key_isamc_m (Res res, ISAMC_M me)
     return me;
 }
 
-ISAMD_M key_isamd_m (Res res,ISAMD_M me)
+ISAMD_M *key_isamd_m (Res res, ISAMD_M *me)
 {
-
     me = isamd_getmethod (me);
 
     me->compare_item = key_compare;
@@ -310,139 +309,3 @@ int key_SU_decode (int *ch, const unsigned char *out)
     return len;
 }
 
-/* 
- * $Log: kcompare.c,v $
- * Revision 1.40  2002-08-02 19:26:55  adam
- * Towards GPL
- *
- * Revision 1.39  2002/04/12 14:55:22  adam
- * key_print_it
- *
- * Revision 1.38  2002/04/05 08:46:26  adam
- * Zebra with full functionality
- *
- * Revision 1.37  2001/11/19 23:08:30  adam
- * Added const qualifier for name parameter of key_SU_decode.
- *
- * Revision 1.36  2001/10/15 19:53:43  adam
- * POSIX thread updates. First work on term sets.
- *
- * Revision 1.35  1999/11/30 13:48:03  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.34  1999/07/14 13:21:34  heikki
- * Added isam-d files. Compiles (almost) clean. Doesn't work at all
- *
- * Revision 1.33  1999/07/14 10:59:26  adam
- * Changed functions isc_getmethod, isams_getmethod.
- * Improved fatal error handling (such as missing EXPLAIN schema).
- *
- * Revision 1.32  1999/07/13 13:21:15  heikki
- * Managing negative deltas
- *
- * Revision 1.31  1999/07/06 09:37:04  heikki
- * Working on isamh - not ready yet.
- *
- * Revision 1.30  1999/06/30 15:07:23  heikki
- * Adding isamh stuff
- *
- * Revision 1.29  1999/06/30 09:08:23  adam
- * Added coder to reset.
- *
- * Revision 1.28  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.27  1999/05/12 13:08:06  adam
- * First version of ISAMS.
- *
- * Revision 1.26  1999/02/02 14:50:54  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.25  1998/06/08 15:26:06  adam
- * Minor changes.
- *
- * Revision 1.24  1998/06/08 14:43:12  adam
- * Added suport for EXPLAIN Proxy servers - added settings databasePath
- * and explainDatabase to facilitate this. Increased maximum number
- * of databases and attributes in one register.
- *
- * Revision 1.23  1998/03/05 08:45:12  adam
- * New result set model and modular ranking system. Moved towards
- * descent server API. System information stored as "SGML" records.
- *
- * Revision 1.22  1997/09/22 12:39:06  adam
- * Added get_pos method for the ranked result sets.
- *
- * Revision 1.21  1997/09/17 12:19:13  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.20  1996/12/23 15:30:44  adam
- * Work on truncation.
- * Bug fix: result sets weren't deleted after server shut down.
- *
- * Revision 1.19  1996/12/11 12:08:00  adam
- * Added better compression.
- *
- * Revision 1.18  1996/10/29 14:09:44  adam
- * Use of cisam system - enabled if setting isamc is 1.
- *
- * Revision 1.17  1996/06/04 10:18:58  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.16  1996/05/13  14:23:05  adam
- * Work on compaction of set/use bytes in dictionary.
- *
- * Revision 1.15  1995/11/20  16:59:46  adam
- * New update method: the 'old' keys are saved for each records.
- *
- * Revision 1.14  1995/10/30  15:08:08  adam
- * Bug fixes.
- *
- * Revision 1.13  1995/10/27  14:00:11  adam
- * Implemented detection of database availability.
- *
- * Revision 1.12  1995/10/17  18:02:08  adam
- * New feature: databases. Implemented as prefix to words in dictionary.
- *
- * Revision 1.11  1995/10/06  16:33:37  adam
- * Use attribute mappings.
- *
- * Revision 1.10  1995/09/29  14:01:41  adam
- * Bug fixes.
- *
- * Revision 1.9  1995/09/28  12:10:32  adam
- * Bug fixes. Field prefix used in queries.
- *
- * Revision 1.8  1995/09/28  09:19:42  adam
- * xfree/xmalloc used everywhere.
- * Extract/retrieve method seems to work for text records.
- *
- * Revision 1.7  1995/09/27  12:22:28  adam
- * More work on extract in record control.
- * Field name is not in isam keys but in prefix in dictionary words.
- *
- * Revision 1.6  1995/09/14  07:48:23  adam
- * Record control management.
- *
- * Revision 1.5  1995/09/11  13:09:34  adam
- * More work on relevance feedback.
- *
- * Revision 1.4  1995/09/08  14:52:27  adam
- * Minor changes. Dictionary is lower case now.
- *
- * Revision 1.3  1995/09/07  13:58:36  adam
- * New parameter: result-set file descriptor (RSFD) to support multiple
- * positions within the same result-set.
- * Boolean operators: and, or, not implemented.
- * Result-set references.
- *
- * Revision 1.2  1995/09/06  16:11:17  adam
- * Option: only one word key per file.
- *
- * Revision 1.1  1995/09/04  09:10:36  adam
- * More work on index add/del/update.
- * Merge sort implemented.
- * Initial work on z39 server.
- *
- */

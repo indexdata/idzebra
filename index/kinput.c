@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.55 2003-04-15 16:46:18 adam Exp $
+/* $Id: kinput.c,v 1.56 2003-06-23 15:35:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -494,7 +494,7 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
 int heap_inpc (struct heap_info *hi)
 {
     struct heap_cread_info hci;
-    ISAMC_I isamc_i = (ISAMC_I) xmalloc (sizeof(*isamc_i));
+    ISAMC_I *isamc_i = (ISAMC_I *) xmalloc (sizeof(*isamc_i));
 
     hci.key = (char *) xmalloc (KEY_SIZE);
     hci.key_1 = (char *) xmalloc (KEY_SIZE);
@@ -574,7 +574,7 @@ static void print_dict_item (ZebraMaps zm, const char *s)
 int heap_inpb (struct heap_info *hi)
 {
     struct heap_cread_info hci;
-    ISAMC_I isamc_i = (ISAMC_I) xmalloc (sizeof(*isamc_i));
+    ISAMC_I *isamc_i = (ISAMC_I *) xmalloc (sizeof(*isamc_i));
 
     hci.key = (char *) xmalloc (KEY_SIZE);
     hci.key_1 = (char *) xmalloc (KEY_SIZE);
