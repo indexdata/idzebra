@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.32 2004-08-31 10:43:35 heikki Exp $
+/* $Id: rset.h,v 1.33 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -27,6 +27,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdlib.h>
 
+/* unfortunately we need the isam includes here, for the arguments for */
+/* rsisamX_create */
+#include <isamb.h> 
+#include <isamc.h> 
+#include <isams.h> 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -49,9 +55,7 @@ struct rset_control
     RSFD (*f_open)(RSET ct, int wflag);
     void (*f_close)(RSFD rfd);
     void (*f_rewind)(RSFD rfd);
-    int (*f_forward)(RSFD rfd, void *buf,
-                     int (*cmpfunc)(const void *p1, const void *p2), 
-                     const void *untilbuf);
+    int (*f_forward)(RSFD rfd, void *buf, const void *untilbuf);
     void (*f_pos)(RSFD rfd, double *current, double *total);
        /* returns -1,-1 if pos function not implemented for this type */
     int (*f_read)(RSFD rfd, void *buf);
@@ -59,13 +63,22 @@ struct rset_control
 };
 
 int rset_default_forward(RSFD rfd, void *buf, 
-                     int (*cmpfunc)(const void *p1, const void *p2), 
                      const void *untilbuf);
 
+struct key_control {
+    int key_size;
+    int (*cmp) (const void *p1, const void *p2);
+    void (*key_logdump_txt) (int logmask, const void *p, const char *txt);
+    zint (*getseq)(const void *p);
+      /* FIXME - Should not need a getseq, it won't make much sense with */
+      /* higher-order keys. Use a (generalized) cmp instead, or something */
+    /* FIXME - decode and encode, and lots of other stuff */
+};
 
 typedef struct rset
 {
     const struct rset_control *control;
+    const struct key_control *keycontrol;
     int  count;  /* reference count */
     void *priv;  /* stuff private to the given type of rset */
     NMEM nmem;    /* nibble memory for various allocs */
@@ -80,7 +93,9 @@ typedef struct rset
 RSFD rfd_create_base(RSET rs);
 void rfd_delete_base(RSFD rfd);
 
-RSET rset_create_base(const struct rset_control *sel, NMEM nmem);
+RSET rset_create_base(const struct rset_control *sel, 
+                      NMEM nmem,
+                      const struct key_control *kcontrol);
 void rset_delete(RSET rs);
 RSET rset_dup (RSET rs);
 
@@ -97,10 +112,8 @@ RSET rset_dup (RSET rs);
 #define rset_rewind(rfd) (*(rfd)->rset->control->f_rewind)((rfd))
 
 /* int rset_forward(RSFD rfd, void *buf, void *untilbuf); */
-#define rset_forward(rfd, buf, cmpfunc, untilbuf) \
-    (*(rfd)->rset->control->f_forward)((rfd),(buf),(cmpfunc),(untilbuf))
-/*FIXME - get rid of the cmp function here, keep it in a general */
-/*        key_control block */
+#define rset_forward(rfd, buf, untilbuf) \
+    (*(rfd)->rset->control->f_forward)((rfd),(buf),(untilbuf))
 
 /* int rset_pos(RSFD fd, double *current, double *total); */
 #define rset_pos(rfd,cur,tot) \
@@ -114,6 +127,42 @@ RSET rset_dup (RSET rs);
 
 /* int rset_type (RSET) */
 #define rset_type(rs) ((rs)->control->desc)
+
+RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
+                    const char *temp_path);
+
+RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol);
+
+RSET rsbool_create_and( NMEM nmem, const struct key_control *kcontrol,
+                        RSET rset_l, RSET rset_r);
+
+RSET rsbool_create_or ( NMEM nmem, const struct key_control *kcontrol,
+                        RSET rset_l, RSET rset_r);
+
+RSET rsbool_create_not( NMEM nmem, const struct key_control *kcontrol,
+                        RSET rset_l, RSET rset_r);
+
+RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
+                        RSET rset_l, RSET rset_m, RSET rset_r, 
+                        RSET rset_attr);
+
+RSET rsmultior_create( NMEM nmem, const struct key_control *kcontrol,
+                      int no_rsets, RSET* rsets);
+
+RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol,
+                    int rset_no, RSET *rset,
+                    int ordered, int exclusion,
+                    int relation, int distance);
+
+RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol,
+                     ISAMB is, ISAMB_P pos);
+
+RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol,
+                     ISAMC is, ISAMC_P pos);
+
+RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol,
+                     ISAMS is, ISAMS_P pos);
+
 
 
 #ifdef __cplusplus

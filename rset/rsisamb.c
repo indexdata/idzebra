@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.20 2004-08-31 14:43:42 heikki Exp $
+/* $Id: rsisamb.c,v 1.21 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,9 +23,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 #include <zebrautl.h>
-#include <rsisamb.h>
+#include <rset.h>
 #include <string.h>
-#include <../index/index.h> /* for log_keydump. Debugging only */
 
 #ifndef RSET_DEBUG
 #define RSET_DEBUG 0
@@ -35,9 +34,7 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_forward(RSFD rfd, void *buf,
-                     int (*cmpfunc)(const void *p1, const void *p2),
-                     const void *untilbuf);
+static int r_forward(RSFD rfd, void *buf, const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
@@ -65,19 +62,14 @@ struct rset_pp_info {
 struct rset_isamb_info {
     ISAMB   is;
     ISAMB_P pos;
-    int key_size;
-    int (*cmp)(const void *p1, const void *p2);
 };
 
-RSET rsisamb_create( NMEM nmem, int key_size, 
-            int (*cmp)(const void *p1, const void *p2),
+RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol,
             ISAMB is, ISAMB_P pos)
 {
-    RSET rnew=rset_create_base(&control, nmem);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol);
     struct rset_isamb_info *info;
     info = (struct rset_isamb_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    info->key_size = key_size;
-    info->cmp = cmp;
     info->is=is;
     info->pos=pos;
     rnew->priv=info;
@@ -104,8 +96,8 @@ RSFD r_open (RSET ct, int flag)
     if (rfd->priv)
         ptinfo=(struct rset_pp_info *) (rfd->priv);
     else {
-        ptinfo = (struct rset_pp_info *) nmem_malloc (ct->nmem,sizeof(*ptinfo));
-        ptinfo->buf = nmem_malloc (ct->nmem,info->key_size);
+        ptinfo = (struct rset_pp_info *)nmem_malloc(ct->nmem,sizeof(*ptinfo));
+        ptinfo->buf = nmem_malloc (ct->nmem,ct->keycontrol->key_size);
         rfd->priv=ptinfo;
     }
     ptinfo->pt = isamb_pp_open (info->is, info->pos);
@@ -126,9 +118,7 @@ static void r_rewind (RSFD rfd)
     abort ();
 }
 
-static int r_forward(RSFD rfd, void *buf, 
-                     int (*cmpfunc)(const void *p1, const void *p2),
-                     const void *untilbuf)
+static int r_forward(RSFD rfd, void *buf, const void *untilbuf)
 {
     struct rset_pp_info *pinfo=(struct rset_pp_info *)(rfd->priv);
     return isamb_pp_forward(pinfo->pt, buf, untilbuf);

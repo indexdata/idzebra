@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.24 2004-08-31 10:43:39 heikki Exp $
+/* $Id: rsnull.c,v 1.25 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 #include <zebrautl.h>
-#include <rsnull.h>
+#include <rset.h>
 
 
 static RSFD r_open (RSET ct, int flag);
@@ -51,9 +51,9 @@ static const struct rset_control control =
 
 const struct rset_control *rset_kind_null = &control;
 
-RSET rsnull_create(NMEM nmem )
+RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol )
 {
-    RSET rnew=rset_create_base(&control, nmem);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol);
     rnew->priv=NULL;
     return rnew;
 }

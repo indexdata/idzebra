@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.50 2004-08-06 12:28:22 adam Exp $
+/* $Id: kcompare.c,v 1.51 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -162,12 +162,12 @@ int key_compare (const void *p1, const void *p2)
     return 0;
 }
 
-int key_get_seq(const void *p)
+zint key_get_seq(const void *p)
 {
     struct it_key k;
     memcpy (&k, p, sizeof(k));
 #if IT_KEY_NEW
-    return (int) k.mem[k.len-1];
+    return k.mem[k.len-1];
 #else
     return k.seqno;
 #endif

@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.148 2004-08-31 14:43:41 heikki Exp $
+/* $Id: zrpn.c,v 1.149 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -34,12 +34,17 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebra_xpath.h>
 
 #include <charmap.h>
-#include <rstemp.h>
-#include <rsnull.h>
-#include <rsbool.h>
-#include <rsmultior.h>
-#include <rsbetween.h>
-#include <rsprox.h>
+#include <rset.h>
+
+
+static const struct key_control it_ctrl={ 
+    sizeof(struct it_key),
+    key_compare_it, 
+    key_logdump_txt,   /* FIXME  - clean up these functions */
+    key_get_seq,
+};
+
+const struct key_control *key_it_ctrl=&it_ctrl;
 
 struct rpn_char_map_info {
     ZebraMaps zm;
@@ -891,7 +896,7 @@ static RSET term_trunc (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     return rset_trunc (zh, grep_info->isam_p_buf,
                        grep_info->isam_p_indx, term_dst,
                        strlen(term_dst), rank_type, 1 /* preserve pos */,
-                       zapt->term->which, rset_nmem);
+                       zapt->term->which, rset_nmem,key_it_ctrl);
 }
 
 
@@ -1392,12 +1397,11 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     }
     grep_info_delete (&grep_info);
     if (rset_no == 0)
-        return rsnull_create (NULL);  /* FIXME - Use a proper nmem */
+        return rsnull_create (rset_nmem,key_it_ctrl); 
     else if (rset_no == 1)
         return (rset[0]);
     else
-        result = rsprox_create( NULL, /* FIXME - use a proper nmem */
-                       sizeof(struct it_key), key_compare_it, key_get_seq,
+        result = rsprox_create( rset_nmem, key_it_ctrl,
                        rset_no, rset,
                        1 /* ordered */, 0 /* exclusion */,
                        3 /* relation */, 1 /* distance */);
@@ -1440,27 +1444,9 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
     }
     grep_info_delete (&grep_info);
     if (rset_no == 0)
-        return rsnull_create (rset_nmem);  
-    return rsmultior_create(rset_nmem,  
-                            sizeof(struct it_key),
-                            key_compare_it, 
+        return rsnull_create (rset_nmem,key_it_ctrl);  
+    return rsmultior_create(rset_nmem, key_it_ctrl,
                             rset_no, rset);
-
-#if 0    
-    /* The old code, kept for reference. May be deleted soon */
-    result = rset[0];
-    for (i = 1; i<rset_no; i++)
-    {  
-        rset_bool_parms bool_parms;
-        bool_parms.rset_l = result;
-        bool_parms.rset_r = rset[i];
-        bool_parms.key_size = sizeof(struct it_key);
-        bool_parms.cmp = key_compare_it;
-        bool_parms.log_item = key_logdump_txt;
-        result = rset_create (rset_kind_or, &bool_parms);
-    }
-    return result;
-#endif
 }
 
 static RSET rpn_search_APT_and_list (ZebraHandle zh,
@@ -1500,24 +1486,12 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
     }
     grep_info_delete (&grep_info);
     if (rset_no == 0)
-        return rsnull_create (rset_nmem); 
+        return rsnull_create (rset_nmem,key_it_ctrl); 
     result = rset[0];
     /* FIXME - Use a proper rsmultiand */
     for (i = 1; i<rset_no; i++)
-    {
-        /*
-        rset_bool_parms bool_parms;
-        bool_parms.rset_l = result;
-        bool_parms.rset_r = rset[i];
-        bool_parms.key_size = sizeof(struct it_key);
-        bool_parms.cmp = key_compare_it;
-        bool_parms.log_item = key_logdump_txt;
-        result = rset_create (rset_kind_and, &bool_parms);
-        */
-        result= rsbool_create_and(NULL, /* FIXME - use a proper nmem */
-                sizeof(struct it_key), key_compare_it,
-                result, rset[i], key_logdump_txt );
-    }
+        result= rsbool_create_and(rset_nmem,key_it_ctrl,
+                result, rset[i] );
     return result;
 }
 
@@ -1738,30 +1712,20 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
                                     grep_info.isam_p_indx, term_dst,
                                     strlen(term_dst), rank_type,
                                     0 /* preserve position */,
-                                    zapt->term->which, rset_nmem);
+                                    zapt->term->which, rset_nmem, key_it_ctrl);
         assert (rset[rset_no]);
         if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
             break;
     }
     grep_info_delete (&grep_info);
     if (rset_no == 0)
-        return rsnull_create (rset_nmem); 
+        return rsnull_create (rset_nmem,key_it_ctrl);
     result = rset[0];
     for (i = 1; i<rset_no; i++)
     {
-        /*
-        rset_bool_parms bool_parms;
-        bool_parms.rset_l = result;
-        bool_parms.rset_r = rset[i];
-        bool_parms.key_size = sizeof(struct it_key);
-        bool_parms.cmp = key_compare_it;
-        bool_parms.log_item = key_logdump_txt;
-        result = rset_create (rset_kind_and, &bool_parms);
-        */
         /* FIXME - Use a proper multi-and */
-        result= rsbool_create_and(NULL, /* FIXME - use a proper nmem */
-                sizeof(struct it_key), key_compare_it,
-                result, rset[i], key_logdump_txt );
+        result= rsbool_create_and(rset_nmem,key_it_ctrl,
+                result, rset[i] );
     }
     return result;
 }
@@ -1784,8 +1748,7 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     parms.temp_path = res_get (zh->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);
     */
-    result = rstemp_create( rset_nmem,
-                     sizeof (struct it_key), key_compare_it,
+    result = rstemp_create( rset_nmem,key_it_ctrl,
                      res_get (zh->res, "setTmpDir") );
     rsfd = rset_open (result, RSETF_WRITE);
 
@@ -1897,7 +1860,8 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     sks->which = Z_SortKeySpec_null;
     sks->u.null = odr_nullval ();
     sort_sequence->specs[i] = sks;
-    return rsnull_create (NULL);  /* FIXME - Use a proper nmem */
+    return rsnull_create (NULL,key_it_ctrl);
+        /* FIXME - nmem?? */
 }
 
 
@@ -1935,10 +1899,10 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     const char *flags = "void";
 
     if (grep_info_prepare (zh, 0 /* zapt */, &grep_info, '0', stream))
-        return rsnull_create (rset_nmem);
+        return rsnull_create (rset_nmem,key_it_ctrl);
 
     if (ord < 0)
-        return rsnull_create (rset_nmem);
+        return rsnull_create (rset_nmem,key_it_ctrl);
     if (prefix_len)
         term_dict[prefix_len++] = '|';
     else
@@ -1963,7 +1927,7 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
              grep_info.isam_p_indx);
     rset = rset_trunc (zh, grep_info.isam_p_buf,
                        grep_info.isam_p_indx, term, strlen(term),
-                       flags, 1, term_type,rset_nmem);
+                       flags, 1, term_type,rset_nmem,key_it_ctrl);
     grep_info_delete (&grep_info);
     return rset;
 }
@@ -2110,10 +2074,8 @@ static RSET rpn_search_xpath (ZebraHandle zh,
                 parms.printer = key_print_it;
                 rset = rset_create (rset_kind_between, &parms);
                 */
-                rset=rsbetween_create( rset_nmem,
-                        sizeof(struct it_key), key_compare_it,
-                        rset_start_tag, rset, rset_end_tag, rset_attr,
-                        key_print_it );
+                rset=rsbetween_create( rset_nmem,key_it_ctrl,
+                        rset_start_tag, rset, rset_end_tag, rset_attr);
             }
             first_path = 0;
         }
@@ -2239,19 +2201,13 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
         switch (zop->which)
         {
         case Z_Operator_and:
-            r = rsbool_create_and( rset_nmem,
-                    sizeof(struct it_key),  key_compare_it,
-                    rset_l, rset_r, key_logdump_txt );
+            r = rsbool_create_and(rset_nmem,key_it_ctrl, rset_l,rset_r );
             break;
         case Z_Operator_or:
-            r = rsbool_create_or( rset_nmem,
-                    sizeof(struct it_key),  key_compare_it,
-                    rset_l, rset_r, key_logdump_txt );
+            r = rsbool_create_or(rset_nmem,key_it_ctrl, rset_l,rset_r );
             break;
         case Z_Operator_and_not:
-            r = rsbool_create_not( rset_nmem,
-                    sizeof(struct it_key),  key_compare_it,
-                    rset_l, rset_r, key_logdump_txt );
+            r = rsbool_create_not(rset_nmem,key_it_ctrl, rset_l,rset_r );
             break;
         case Z_Operator_prox:
             if (zop->u.prox->which != Z_ProximityOperator_known)
@@ -2274,29 +2230,13 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
                 
                 twosets[0] = rset_l;
                 twosets[1] = rset_r;
-                r=rsprox_create(rset_nmem,
-                         sizeof(struct it_key), key_compare_it,
-                         key_get_seq, 
+                r=rsprox_create(rset_nmem,key_it_ctrl,
                          2, twosets, 
                          *zop->u.prox->ordered,
                          (!zop->u.prox->exclusion ? 
                               0 : *zop->u.prox->exclusion),
                          *zop->u.prox->relationType,
                          *zop->u.prox->distance );
-                /*
-                parms.rset = twosets;
-                parms.rset_no = 2;
-                parms.ordered = *zop->u.prox->ordered;
-                parms.exclusion = (!zop->u.prox->exclusion ? 0 :
-                                   *zop->u.prox->exclusion);
-                parms.relation = *zop->u.prox->relationType;
-                parms.distance = *zop->u.prox->distance;
-                parms.key_size = sizeof(struct it_key);
-                parms.cmp = key_compare_it;
-                parms.getseq = key_get_seq;
-                parms.log_item = key_logdump_txt;
-                r = rset_create(rset_kind_prox, &parms);
-                */
             }
             break;
         default:
@@ -2319,7 +2259,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
             r = resultSetRef (zh, zs->u.simple->u.resultSetId);
             if (!r)
             {
-                r = rsnull_create (rset_nmem);
+                r = rsnull_create (rset_nmem,key_it_ctrl);
                 zh->errCode = 30;
                 zh->errString =
                     nmem_strdup (stream, zs->u.simple->u.resultSetId);
@@ -2695,7 +2635,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                            &glist[i+before].term, mterm);
         rset = rset_trunc (zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
                            glist[i+before].term, strlen(glist[i+before].term),
-                           NULL, 0, zapt->term->which, rset_nmem);
+                           NULL, 0, zapt->term->which, rset_nmem, key_it_ctrl);
 
         ptr[j0]++;
         for (j = j0+1; j<ord_no; j++)
@@ -2710,19 +2650,17 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                    rset_trunc (zh, &scan_info_array[j].list[ptr[j]].isam_p, 1,
                                glist[i+before].term,
                                strlen(glist[i+before].term), NULL, 0,
-                               zapt->term->which,rset_nmem);
-                rset = rsbool_create_or(rset_nmem, 
-                            sizeof(struct it_key), key_compare_it,
-                            rset, rset2, key_logdump_txt);
+                               zapt->term->which,rset_nmem,key_it_ctrl);
+                rset = rsbool_create_or(rset_nmem,key_it_ctrl,
+                            rset, rset2);
+                /* FIXME - Use a proper multi-or */
 
                 ptr[j]++;
             }
         }
         if (limit_set)
-            rset = rsbool_create_and(rset_nmem,
-                            sizeof(struct it_key), key_compare_it,
-                            rset, rset_dup(limit_set), 
-                            key_logdump_txt);
+            rset = rsbool_create_and(rset_nmem,key_it_ctrl,
+                            rset, rset_dup(limit_set));
         count_set (rset, &glist[i+before].occurrences);
         rset_delete (rset);
     }
@@ -2762,7 +2700,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         rset = rset_trunc
                (zh, &scan_info_array[j0].list[before-1-ptr[j0]].isam_p, 1,
                 glist[before-1-i].term, strlen(glist[before-1-i].term),
-                NULL, 0, zapt->term->which,rset_nmem);
+                NULL, 0, zapt->term->which,rset_nmem,key_it_ctrl);
 
         ptr[j0]++;
 
@@ -2778,19 +2716,16 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                          &scan_info_array[j].list[before-1-ptr[j]].isam_p, 1,
                                     glist[before-1-i].term,
                                     strlen(glist[before-1-i].term), NULL, 0,
-                                    zapt->term->which, rset_nmem);
-                rset = rsbool_create_and(rset_nmem,
-                            sizeof(struct it_key), key_compare_it,
-                            rset, rset2,
-                            key_logdump_txt);
+                                    zapt->term->which, rset_nmem,key_it_ctrl);
+                rset = rsbool_create_and(rset_nmem,key_it_ctrl,
+                            rset, rset2);
+                /* FIXME - multi-and ?? */
                 ptr[j]++;
             }
         }
         if (limit_set)
-            rset = rsbool_create_and(rset_nmem,
-                            sizeof(struct it_key), key_compare_it,
-                            rset, rset_dup(limit_set),
-                            key_logdump_txt);
+            rset = rsbool_create_and(rset_nmem,key_it_ctrl,
+                            rset, rset_dup(limit_set));
         count_set (rset, &glist[before-1-i].occurrences);
         rset_delete (rset);
     }

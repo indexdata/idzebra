@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.13 2004-08-31 10:43:40 heikki Exp $
+/* $Id: rsprox.c,v 1.14 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,7 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 
 #include <zebrautl.h>
-#include <rsprox.h>
+#include <rset.h>
 
 #ifndef RSET_DEBUG
 #define RSET_DEBUG 0
@@ -36,9 +36,7 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_forward(RSFD rfd, void *buf, 
-                     int (*cmpfunc)(const void *p1, const void *p2),
-                     const void *untilbuf);
+static int r_forward(RSFD rfd, void *buf, const void *untilbuf);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double *total);
@@ -59,16 +57,12 @@ static const struct rset_control control =
 const struct rset_control *rset_kind_prox = &control;
 
 struct rset_prox_info {
-/*    struct rset_prox_parms p; */
-    RSET *rset;  
-    int rset_no;
+    RSET *rset;   /* array of 'child' rsets */
+    int rset_no;  /* how many of them */
     int ordered;
     int exclusion;
     int relation;
     int distance;
-    int key_size;
-    int (*cmp)(const void *p1, const void *p2);
-    int (*getseq)(const void *p);
 };
 
 struct rset_prox_rfd {
@@ -79,19 +73,14 @@ struct rset_prox_rfd {
 };    
 
 
-RSET rsprox_create( NMEM nmem, int key_size, 
-            int (*cmp)(const void *p1, const void *p2),
-            int (*getseq)(const void *p),
+RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol,
             int rset_no, RSET *rset,
             int ordered, int exclusion,
             int relation, int distance)
 {
-    RSET rnew=rset_create_base(&control, nmem);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol);
     struct rset_prox_info *info;
     info = (struct rset_prox_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    info->key_size = key_size;
-    info->cmp = cmp;
-    info->getseq=getseq; /* FIXME - what about multi-level stuff ?? */
     info->rset = nmem_malloc(rnew->nmem,rset_no * sizeof(*info->rset));
     memcpy(info->rset, rset,
            rset_no * sizeof(*info->rset));
@@ -136,10 +125,11 @@ static RSFD r_open (RSET ct, int flag)
         p->more = nmem_malloc (ct->nmem,sizeof(*p->more) * info->rset_no);
         p->buf = nmem_malloc(ct->nmem,sizeof(*p->buf) * info->rset_no);
         for (i = 0; i < info->rset_no; i++)
-            p->buf[i] = nmem_malloc(ct->nmem,info->key_size);
+            p->buf[i] = nmem_malloc(ct->nmem,ct->keycontrol->key_size);
         p->rfd = nmem_malloc(ct->nmem,sizeof(*p->rfd) * info->rset_no);
     }
-    logf(LOG_DEBUG,"rsprox (%s) open [%p]", ct->control->desc, rfd);
+    logf(LOG_DEBUG,"rsprox (%s) open [%p] n=%d", 
+            ct->control->desc, rfd, info->rset_no);
 
     for (i = 0; i < info->rset_no; i++) {
         p->rfd[i] = rset_open (info->rset[i], RSETF_READ);
@@ -176,21 +166,19 @@ static void r_rewind (RSFD rfd)
     p->hits=0;
 }
 
-static int r_forward (RSFD rfd, void *buf, 
-                      int (*cmpfunc)(const void *p1, const void *p2),
-                      const void *untilbuf)
+static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
 {
     struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
     struct rset_prox_rfd *p=(struct rset_prox_rfd *)(rfd->priv);
+    const struct key_control *kctrl=rfd->rset->keycontrol;
     int cmp=0;
     int i;
 
     if (untilbuf)
     {
         /* it is enough to forward first one. Other will follow. */
-        if ( p->more[0] && ((cmpfunc)(untilbuf, p->buf[0]) >= 2) )
-            p->more[0] = rset_forward(p->rfd[0], p->buf[0], 
-                                      info->cmp, untilbuf);
+        if ( p->more[0] && ((kctrl->cmp)(untilbuf, p->buf[0]) >= 2) )
+            p->more[0] = rset_forward(p->rfd[0], p->buf[0], untilbuf);
     }
     if (info->ordered && info->relation == 3 && info->exclusion == 0
         && info->distance == 1)
@@ -204,19 +192,18 @@ static int r_forward (RSFD rfd, void *buf,
                     p->more[0] = 0; /* saves us a goto out of while loop. */
                     break;
                 }
-                cmp = (*info->cmp) (p->buf[i], p->buf[i-1]);
+                cmp = (*kctrl->cmp) (p->buf[i], p->buf[i-1]);
                 if (cmp > 1)
                 {
                     p->more[i-1] = rset_forward (p->rfd[i-1],
                                                  p->buf[i-1],
-                                                 info->cmp,
                                                  p->buf[i]);
                     break;
                 }
                 else if (cmp == 1)
                 {
-                    if ((*info->getseq)(p->buf[i-1]) +1 != 
-                        (*info->getseq)(p->buf[i]))
+                    if ((*kctrl->getseq)(p->buf[i-1]) +1 != 
+                        (*kctrl->getseq)(p->buf[i]))
                     { /* FIXME - We need more flexible multilevel stuff */
                         p->more[i-1] = rset_read ( p->rfd[i-1], p->buf[i-1]);
                         break;
@@ -224,14 +211,14 @@ static int r_forward (RSFD rfd, void *buf,
                 }
                 else
                 {
-                    p->more[i] = rset_forward (p->rfd[i], p->buf[i], 
-                                               info->cmp, p->buf[i-1]);
+                    p->more[i] = rset_forward (p->rfd[i], 
+                                  p->buf[i], p->buf[i-1]);
                     break;
                 }
             }
             if (i == info->rset_no)
             {
-                memcpy (buf, p->buf[0], info->key_size);
+                memcpy (buf, p->buf[0], kctrl->key_size);
                 p->more[0] = rset_read (p->rfd[0], p->buf[0]);
                 p->hits++;
                 return 1;
@@ -242,28 +229,29 @@ static int r_forward (RSFD rfd, void *buf,
     {
         while (p->more[0] && p->more[1]) 
         {
-            int cmp = (*info->cmp)(p->buf[0], p->buf[1]);
+            int cmp = (*kctrl->cmp)(p->buf[0], p->buf[1]);
             if (cmp < -1)
                 p->more[0] = rset_forward (p->rfd[0],
-                                           p->buf[0], info->cmp, p->buf[0]);
+                                           p->buf[0], p->buf[0]);
+                /* FIXME - this certainly looks wrong! */
             else if (cmp > 1)
                 p->more[1] = rset_forward (p->rfd[1],
-                                           p->buf[1], info->cmp, p->buf[1]);
+                                           p->buf[1], p->buf[1]);
             else
             {
-                int seqno[500];
+                zint seqno[500]; /* FIXME - why 500 ?? */
                 int n = 0;
                 
-                seqno[n++] = (*info->getseq)(p->buf[0]);
+                seqno[n++] = (*kctrl->getseq)(p->buf[0]);
                 while ((p->more[0] = rset_read (p->rfd[0],
                                                 p->buf[0])) >= -1 &&
                        p->more[0] <= -1)
                     if (n < 500)
-                        seqno[n++] = (*info->getseq)(p->buf[0]);
+                        seqno[n++] = (*kctrl->getseq)(p->buf[0]);
                 
                 for (i = 0; i<n; i++)
                 {
-                    int diff = (*info->getseq)(p->buf[1]) - seqno[i];
+                    int diff = (*kctrl->getseq)(p->buf[1]) - seqno[i];
                     int excl = info->exclusion;
                     if (!info->ordered && diff < 0)
                         diff = -diff;
@@ -296,7 +284,7 @@ static int r_forward (RSFD rfd, void *buf,
                     }
                     if (excl)
                     {
-                        memcpy (buf, p->buf[1], info->key_size);
+                        memcpy (buf, p->buf[1], kctrl->key_size);
                         
                         p->more[1] = rset_read ( p->rfd[1], p->buf[1]);
                         p->hits++;
@@ -313,7 +301,7 @@ static int r_forward (RSFD rfd, void *buf,
 
 static int r_read (RSFD rfd, void *buf)
 {
-    return r_forward(rfd, buf, 0, 0);
+    return r_forward(rfd, buf, 0);
 }
 
 static int r_write (RSFD rfd, const void *buf)

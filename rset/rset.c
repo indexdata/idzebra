@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.30 2004-08-31 14:43:42 heikki Exp $
+/* $Id: rset.c,v 1.31 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -67,7 +67,8 @@ void rfd_delete_base(RSFD rfd)
 }
 
 
-RSET rset_create_base(const struct rset_control *sel, NMEM nmem)
+RSET rset_create_base(const struct rset_control *sel, 
+                      NMEM nmem, const struct key_control *kcontrol)
         /* FIXME - Add keysize and cmp function */
         /* FIXME - Add a general key-func block for cmp, dump, etc */
 {
@@ -89,6 +90,7 @@ RSET rset_create_base(const struct rset_control *sel, NMEM nmem)
     rnew->count = 1;
     rnew->priv = 0;
     rnew->free_list=NULL;
+    rnew->keycontrol=kcontrol;
     
     return rnew;
 }
@@ -125,7 +127,6 @@ void rset_default_pos (RSFD rfd, double *current, double *total)
 #endif
 
 int rset_default_forward(RSFD rfd, void *buf, 
-                           int (*cmpfunc)(const void *p1, const void *p2), 
                            const void *untilbuf)
 {
     int more=1;
@@ -138,7 +139,7 @@ int rset_default_forward(RSFD rfd, void *buf,
         logf (LOG_DEBUG, "rset_default_forward looping m=%d c=%d",more,cmp);
         more=rset_read(rfd, buf);
         if (more)
-            cmp=(*cmpfunc)(untilbuf,buf);
+            cmp=(rfd->rset->keycontrol->cmp)(untilbuf,buf);
 /*        if (more)
             key_logdump(LOG_DEBUG,buf); */
     }

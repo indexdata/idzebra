@@ -1,4 +1,4 @@
-/* $Id: rsmultior.c,v 1.8 2004-08-31 10:43:39 heikki Exp $
+/* $Id: rsmultior.c,v 1.9 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -30,7 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <zebrautl.h>
 #include <isamc.h>
-#include <rsmultior.h>
+#include <rset.h>
 
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
@@ -39,7 +39,6 @@ static void r_rewind (RSFD rfd);
 static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_forward(RSFD rfd, void *buf,
-                     int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
 
@@ -75,17 +74,13 @@ struct heap_item {
 struct heap {
     int heapnum;
     int heapmax;
-    int keysize;
-    int     (*cmp)(const void *p1, const void *p2);
+    const struct key_control *kctrl;
     struct heap_item **heap; /* ptrs to the rfd */
 };
 typedef struct heap *HEAP;
 
 
 struct rset_multior_info {
-    int     key_size;
-    int     no_rec;
-    int     (*cmp)(const void *p1, const void *p2);
     int     no_rsets;
     RSET    *rsets;
 };
@@ -96,8 +91,6 @@ struct rset_multior_rfd {
     struct heap_item *items; /* we alloc and free them here */
     HEAP h;
     zint hits; /* returned so far */
-    char *prevvalue; /* to see if we are in another record */
-      /* FIXME - is this really needed? */
 };
 
 #if 0
@@ -127,7 +120,7 @@ static void heap_swap (HEAP h, int x, int y)
 
 static int heap_cmp(HEAP h, int x, int y)
 {
-    return (*h->cmp)(h->heap[x]->buf,h->heap[y]->buf);
+    return (*h->kctrl->cmp)(h->heap[x]->buf,h->heap[y]->buf);
 }
 
 static int heap_empty(HEAP h)
@@ -192,17 +185,15 @@ static void heap_insert (HEAP h, struct heap_item *hi)
 
 
 static
-HEAP heap_create (NMEM nmem, int size, int key_size,
-      int (*cmp)(const void *p1, const void *p2))
+HEAP heap_create (NMEM nmem, int size, const struct key_control *kctrl)
 {
     HEAP h = (HEAP) nmem_malloc (nmem, sizeof(*h));
 
     ++size; /* heap array starts at 1 */
     h->heapnum = 0;
     h->heapmax = size;
-    h->keysize = key_size;
-    h->cmp = cmp;
-    h->heap = (struct heap_item**) nmem_malloc(nmem,(size)*sizeof(*h->heap));
+    h->kctrl=kctrl;
+    h->heap = (struct heap_item**) nmem_malloc(nmem,size*sizeof(*h->heap));
     h->heap[0]=0; /* not used */
     return h;
 }
@@ -219,15 +210,12 @@ static void heap_destroy (HEAP h)
 }
 
 
-RSET rsmultior_create( NMEM nmem, int key_size, 
-            int (*cmp)(const void *p1, const void *p2),
+RSET rsmultior_create( NMEM nmem, const struct key_control *kcontrol,
             int no_rsets, RSET* rsets)
 {
-    RSET rnew=rset_create_base(&control, nmem);
+    RSET rnew=rset_create_base(&control, nmem,kcontrol);
     struct rset_multior_info *info;
     info = (struct rset_multior_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    info->key_size = key_size;
-    info->cmp = cmp;
     info->no_rsets=no_rsets;
     info->rsets=(RSET*)nmem_malloc(rnew->nmem, no_rsets*sizeof(*rsets));
     memcpy(info->rsets,rsets,no_rsets*sizeof(*rsets));
@@ -248,6 +236,7 @@ static RSFD r_open (RSET ct, int flag)
     RSFD rfd;
     struct rset_multior_rfd *p;
     struct rset_multior_info *info = (struct rset_multior_info *) ct->priv;
+    const struct key_control *kctrl = ct->keycontrol;
     int i;
 
     if (flag & RSETF_WRITE)
@@ -265,17 +254,15 @@ static RSFD r_open (RSET ct, int flag)
     else {
         p = (struct rset_multior_rfd *) nmem_malloc (ct->nmem,sizeof(*p));
         rfd->priv=p;
-        p->h = heap_create( ct->nmem, info->no_rsets, 
-                              info->key_size, info->cmp);
+        p->h = heap_create( ct->nmem, info->no_rsets, kctrl);
         p->items=(struct heap_item *) nmem_malloc(ct->nmem,
                               info->no_rsets*sizeof(*p->items));
         for (i=0; i<info->no_rsets; i++){
             p->items[i].rset=info->rsets[i];
-            p->items[i].buf=nmem_malloc(ct->nmem,info->key_size);
+            p->items[i].buf=nmem_malloc(ct->nmem,kctrl->key_size);
         }
     }
     p->flag = flag;
-    p->prevvalue=0;
     p->hits=0;
     for (i=0; i<info->no_rsets; i++){
         p->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
@@ -305,23 +292,19 @@ static void r_rewind (RSFD rfd)
 }
 
 
-static int r_forward(RSFD rfd, void *buf,
-                     int (*cmpfunc)(const void *p1, const void *p2),
-                     const void *untilbuf)
+static int r_forward(RSFD rfd, void *buf, const void *untilbuf)
 {
-    struct rset_multior_info *info=(struct rset_multior_info *)(rfd->rset->priv);
-    struct rset_multior_rfd *mrfd=(struct rset_multior_rfd *)(rfd->priv);
+    struct rset_multior_rfd *mrfd=rfd->priv;
+    const struct key_control *kctrl=rfd->rset->keycontrol;
     struct heap_item it;
     int rdres;
     if (heap_empty(mrfd->h))
         return 0;
-    if (cmpfunc)
-        assert(cmpfunc==info->cmp);
     it = *(mrfd->h->heap[1]);
-    memcpy(buf,it.buf, info->key_size); 
+    memcpy(buf,it.buf, kctrl->key_size); 
     (mrfd->hits)++;
     if (untilbuf)
-        rdres=rset_forward(it.fd, it.buf, cmpfunc,untilbuf);
+        rdres=rset_forward(it.fd, it.buf, untilbuf);
     else
         rdres=rset_read(it.fd, it.buf);
     if ( rdres )
@@ -334,7 +317,7 @@ static int r_forward(RSFD rfd, void *buf,
 
 static int r_read (RSFD rfd, void *buf)
 {
-    return r_forward(rfd, buf,0,0);
+    return r_forward(rfd, buf,0);
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)

@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.11 2004-08-31 10:43:39 heikki Exp $
+/* $Id: rsisams.c,v 1.12 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 #include <zebrautl.h>
-#include <rsisams.h>
+#include <rset.h>
 
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
@@ -60,18 +60,15 @@ struct rset_isams_info {
 };
 
 
-RSET rsisams_create( NMEM nmem, int key_size, 
-            int (*cmp)(const void *p1, const void *p2),
+RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol,
             ISAMS is, ISAMS_P pos)
 {
-    RSET rnew=rset_create_base(&control, nmem);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol);
     struct rset_isams_info *info;
     info = (struct rset_isams_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    assert(key_size); /* FIXME - these belong to the general rset */
-    assert(cmp);
+    rnew->priv=info;
     info->is=is;
     info->pos=pos;
-    rnew->priv=info;
     return rnew;
 }
 

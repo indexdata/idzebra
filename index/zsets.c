@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.59 2004-08-31 10:43:35 heikki Exp $
+/* $Id: zsets.c,v 1.60 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -30,7 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #include "index.h"
-#include <rstemp.h>
+#include <rset.h>
 
 #define SORT_IDX_ENTRYSIZE 64
 #define ZSET_SORT_MAX_LEVEL 3

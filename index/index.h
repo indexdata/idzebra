@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.116 2004-08-31 14:43:41 heikki Exp $
+/* $Id: index.h,v 1.117 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -73,12 +73,6 @@ struct it_key {
 };
 #endif
 
-struct key_info {
-    int keysize;
-    int (*key_compare) (const void *p1, const void *p2);
-    void (*key_logdump_txt) (int logmask, const void *p, const char *txt);
-    /* FIXME - decode and encode, and lots of other stuff */
-};
 
 enum dirsKind { dirs_dir, dirs_file };
 
@@ -122,7 +116,7 @@ int key_close (ZebraHandle zh);
 int key_compare (const void *p1, const void *p2);
 void key_init(struct it_key *k);
 char *key_print_it (const void *p, char *buf);
-int key_get_seq (const void *p);
+zint key_get_seq (const void *p);
 int key_compare_it (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
@@ -379,7 +373,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
 RSET rset_trunc (ZebraHandle zh, ISAMS_P *isam_p, int no,
 		 const char *term, int length_term, const char *flags,
-                 int preserve_position, int term_type, NMEM rset_nmem);
+                 int preserve_position, int term_type, NMEM rset_nmem,
+                 const struct key_control *kctrl);
 
 void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       const char *db, int set,

@@ -1,4 +1,4 @@
-/* $Id: rsmultior.h,v 1.4 2004-08-24 14:25:15 heikki Exp $
+/* $Id: rsmultior.h,v 1.5 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,6 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <rset.h>
 
+#error "do not use rsmultior.h any more, it is all in rset.h"
 YAZ_BEGIN_CDECL
 
 RSET rsmultior_create( NMEM nmem, int key_size, 

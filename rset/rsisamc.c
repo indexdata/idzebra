@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.23 2004-08-31 10:43:39 heikki Exp $
+/* $Id: rsisamc.c,v 1.24 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #include <string.h>
 #include <zebrautl.h>
-#include <rsisamc.h>
+#include <rset.h>
 
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
@@ -54,31 +54,20 @@ const struct rset_control *rset_kind_isamc = &control;
 
 struct rset_pp_info {
     ISAMC_PP pt;
-    struct rset_pp_info *next;
-    struct rset_isamc_info *info;
     void *buf;
 };
 
 struct rset_isamc_info {
     ISAMC   is;
     ISAMC_P pos;
-    int key_size;
-    int (*cmp)(const void *p1, const void *p2);
-    struct rset_pp_info *ispt_list;
-    struct rset_pp_info *free_list;
 };
 
-RSET rsisamc_create( NMEM nmem, int key_size, 
-            int (*cmp)(const void *p1, const void *p2),
-            ISAMC is, ISAMC_P pos)
+RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol,
+                             ISAMC is, ISAMC_P pos)
 {
-    RSET rnew=rset_create_base(&control, nmem);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol);
     struct rset_isamc_info *info;
     info = (struct rset_isamc_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    info->key_size = key_size;
-    info->cmp = cmp;
-    info->ispt_list = NULL;
-    info->free_list = NULL;
     info->is=is;
     info->pos=pos;
     rnew->priv=info;
@@ -87,16 +76,12 @@ RSET rsisamc_create( NMEM nmem, int key_size,
 
 static void r_delete (RSET ct)
 {
-    struct rset_isamc_info *info = (struct rset_isamc_info *) ct->priv;
-
     logf (LOG_DEBUG, "rsisamc_delete");
-    assert (info->ispt_list == NULL);
 }
 
 
 RSFD r_open (RSET ct, int flag)
 {
-    struct rset_isamc_info *info = (struct rset_isamc_info *) ct->priv;
     RSFD rfd;
     struct rset_pp_info *ptinfo;
 
@@ -112,7 +97,7 @@ RSFD r_open (RSET ct, int flag)
     else {
         ptinfo = (struct rset_pp_info *) nmem_malloc (ct->nmem,sizeof(*ptinfo));
         rfd->priv=ptinfo;
-        ptinfo->buf = nmem_malloc (ct->nmem,info->key_size);
+        ptinfo->buf = nmem_malloc (ct->nmem,ct->keycontrol->key_size);
     }
     return rfd;
 }
@@ -151,3 +136,4 @@ static void r_pos (RSFD rfd, double *current, double *total)
     *current=-1;  /* sorry, not implemented yet */
     *total=-1;
 }
+

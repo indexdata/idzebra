@@ -1,4 +1,4 @@
-/* $Id: rsbool.h,v 1.10 2004-08-24 14:25:15 heikki Exp $
+/* $Id: rsbool.h,v 1.11 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -28,6 +28,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#error "rsbool.h no longer needed, use rset.h insted"
 
 RSET rsbool_create_and( NMEM nmem, int key_size, 
             int (*cmp)(const void *p1, const void *p2),

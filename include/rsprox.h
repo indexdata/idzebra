@@ -1,4 +1,4 @@
-/* $Id: rsprox.h,v 1.2 2004-08-24 14:25:15 heikki Exp $
+/* $Id: rsprox.h,v 1.3 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -28,6 +28,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#error "Do not use rsprox.h, it is all in rset.h"
 
 RSET rsprox_create( NMEM nmem, int key_size, 
             int (*cmp)(const void *p1, const void *p2),

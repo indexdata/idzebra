@@ -1,4 +1,4 @@
-/* $Id: rsnull.h,v 1.7 2004-08-24 14:25:15 heikki Exp $
+/* $Id: rsnull.h,v 1.8 2004-09-01 15:01:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -31,6 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern "C" {
 #endif
 
+#error "rsnull.h not used any more, use rset.h instead"
 RSET rsnull_create(NMEM nmem);
 
 #ifdef __cplusplus
