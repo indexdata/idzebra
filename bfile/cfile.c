@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.16  1996-04-19 16:23:47  adam
+ * Revision 1.17  1996-04-19 16:49:00  adam
+ * Minor changes.
+ *
+ * Revision 1.16  1996/04/19  16:23:47  adam
  * Serious bug fix in shadow implementation; function new_bucket might
  * set wrong bucket number on new bucket.
  *
@@ -183,11 +186,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
 
 static int cf_hash (CFile cf, int no)
 {
-#if 1
     return (no>>3) % cf->head.hash_size;
-#else
-    return (no/(HASH_BUCKET*2+2)) % cf->head.hash_size;
-#endif
 }
 
 static void release_bucket (CFile cf, struct CFile_hash_bucket *p)
@@ -323,7 +322,7 @@ static int cf_lookup_hash (CFile cf, int no)
         }
         if (hb)
             continue;
-#if 1
+#if 0
         /* extra check ... */
         for (hb = cf->bucket_lru_back; hb; hb = hb->lru_next)
         {
@@ -439,7 +438,7 @@ static int cf_new_hash (CFile cf, int no)
         if (hb)
             continue;
 
-#if 1
+#if 0
         /* extra check ... */
         for (hb = cf->bucket_lru_back; hb; hb = hb->lru_next)
         {
