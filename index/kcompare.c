@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.47 2004-08-04 08:35:23 adam Exp $
+/* $Id: kcompare.c,v 1.48 2004-08-04 09:00:00 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -118,10 +118,13 @@ char *key_print_it (const void *p, char *buf)
 int key_compare (const void *p1, const void *p2)
 {
     struct it_key i1, i2;
+#if IT_KEY_NEW
+    int i, l;
+#endif
     memcpy (&i1, p1, sizeof(i1));
     memcpy (&i2, p2, sizeof(i2));
 #if IT_KEY_NEW
-    int i, l = i1.len;
+    l = i1.len;
     if (i2.len > l)
 	l = i2.len;
     assert (l <= 4 && l > 0);
