@@ -1,0 +1,120 @@
+#!/bin/sh
+# $Id: idzebra-config.in,v 1.1 2004-08-29 12:31:32 adam Exp $
+idzebraprefix=@prefix@
+idzebra_echo_cflags=no
+idzebra_echo_libs=no
+idzebra_echo_help=no
+idzebra_echo_tabs=no
+idzebra_echo_source=yes
+idzebra_echo_lalibs=no
+idzebra_src_root=@IDZEBRA_SRC_ROOT@
+idzebra_build_root=@IDZEBRA_BUILD_ROOT@
+
+yazlibs="@YAZLIB@ @LIBS@"
+yazlalibs="@YAZLALIB@ @LIBS@"
+IDZEBRAVERSION=@VERSION@
+
+usage()
+{
+	cat <<EOF
+Usage: idzebra-config [OPTIONS] [LIBRARIES]
+Options:
+	[--prefix[=DIR]]
+	[--version]
+	[--libs]
+	[--lalibs]
+	[--cflags]
+EOF
+	exit $1
+}
+
+if test $# -eq 0; then
+	idzebra_echo_help=yes
+fi
+
+modules=""
+while test $# -gt 0; do
+  case "$1" in
+  -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+  *) optarg= ;;
+  esac
+
+  case $1 in
+    --prefix=*)
+      idzebraprefix=$optarg
+      ;;
+    --prefix)
+      echo $idzebraprefix
+      exit 0
+      ;;
+    --version)
+      echo $IDZEBRAVERSION
+      exit 0
+      ;;
+    --cflags)
+      idzebra_echo_cflags=yes
+      ;;
+    --libs)
+      idzebra_echo_libs=yes
+      ;;
+    --tabs)
+      idzebra_echo_tabs=yes
+      ;;
+    --lalibs)
+      idzebra_echo_lalibs=yes
+      ;;
+    -*)
+      idzebra_echo_help=yes
+      ;;
+    *)
+      modules="$modules $1"
+      ;;
+  esac
+  shift
+done
+
+IDZEBRALIB=""
+IDZEBRALALIB=""
+IDZEBRAINC="@YAZINC@"
+
+if test -z "$modules"; then
+    modules="util bfile dfa dict isamc isamb isams data1 recctrl rset api"
+fi
+for m in $modules; do
+    d=$m
+    if test "$m" = "api"; then
+        d="index"
+    fi
+    if test "$idzebra_echo_source" = "yes"; then
+	IDZEBRALIB="$IDZEBRALIB -L${idzebra_build_root}/$d/.libs -lidzebra-$m"
+        IDZEBRALALIB="$IDZEBRALALIB ${idzebra_build_root}/$d/libidzebra-$m.la"
+    else
+	IDZEBRALIB="$IDZEBRALIB -lidzebra-$m"
+    fi
+done
+
+if test "$idzebra_echo_source" = "yes"; then
+    IDZEBRALIB="$IDZEBRALIB $yazlibs"
+    IDZEBRALALIB="$IDZEBRALALIB $yazlalibs"
+    IDZEBRAINC="$IDZEBRAINC -I${idzebra_src_root}/include"
+else
+    if test "$idzebraprefix" != "/usr"; then
+	IDZEBRALIB="-L${idzebraprefix}/lib $IDZEBRALIB"
+	IDZEBRAINC="$IDZEBRAINC -I${idzebraprefix}/include"
+    fi
+    IDZEBRALIB="$IDZEBRALIB $yazlibs"
+    IDZEBRALALIB="$IDZEBRALIB"
+fi
+
+if test "$idzebra_echo_help" = "yes"; then
+	usage 1 1>&2
+fi
+if test "$idzebra_echo_cflags" = "yes"; then
+	echo $IDZEBRAINC
+fi
+if test "$idzebra_echo_libs" = "yes"; then
+	echo $IDZEBRALIB
+fi
+if test "$idzebra_echo_lalibs" = "yes"; then
+	echo $IDZEBRALALIB
+fi

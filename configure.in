@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.95 2004-08-25 09:23:35 adam Exp $
+dnl $Id: configure.in,v 1.96 2004-08-29 12:31:32 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -362,6 +362,10 @@ AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
 	AC_MSG_WARN(Your system doesn't seem to support ANSI C)
 fi
+AC_SUBST(IDZEBRA_SRC_ROOT)
+AC_SUBST(IDZEBRA_BUILD_ROOT)
+IDZEBRA_SRC_ROOT=`cd ${srcdir}; pwd`
+IDZEBRA_BUILD_ROOT=`pwd`
 dnl ------ Create Makefiles
 AC_OUTPUT([
   Makefile
@@ -393,7 +397,8 @@ AC_OUTPUT([
   test/marcxml/Makefile test/charmap/Makefile test/codec/Makefile
   examples/Makefile examples/gils/Makefile examples/zthes/Makefile
   idzebra.spec
-])
+  idzebra-config
+],[sed s%idzebra_echo_source=yes%idzebra_echo_source=no%g < idzebra-config > util/idzebra-config && chmod +x idzebra-config util/idzebra-config])
 if test -x "$perlbin"; then
 	res=`cd perl ; $perlbin Makefile.PL ; cd .. ;`;
 fi

@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.15 2004-08-06 13:14:46 adam Exp $
+## $Id: Makefile.am,v 1.16 2004-08-29 12:31:32 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -7,7 +7,7 @@ SUBDIRS=util bfile dfa dict isams isamb isamc rset data1 \
 
 SPEC_FILE=$(PACKAGE).spec
 
-EXTRA_DIST= README NEWS $(SPEC_FILE) idzebra.spec.in
+EXTRA_DIST= README NEWS $(SPEC_FILE) idzebra.spec.in idzebra-config.in
 
 dist-hook:
 	cp $(srcdir)/LICENSE* $(distdir)
