@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.99 2004-09-14 14:45:18 quinn Exp $
+dnl $Id: configure.in,v 1.100 2004-09-27 08:29:38 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -98,19 +98,13 @@ if test "$ac_cv_lib_readline_readline" = "yes"; then
         #include <stdio.h>
         #include <readline/readline.h>
         ],[
-        static void f()
-        {
                 rl_attempted_completion_over = 0;
-        }
         ],AC_DEFINE(HAVE_READLINE_COMPLETION_OVER))
         AC_TRY_LINK([
         #include <stdio.h>
         #include <readline/readline.h>
         ],[
-        static void f()
-        {
                 rl_completion_matches (0, 0);
-        }
         ],AC_DEFINE(HAVE_READLINE_RL_COMPLETION_MATCHES))
         LIBS=$xLIBS
 fi
@@ -128,7 +122,7 @@ if test "$with_iconv" != "no"; then
 	AC_TRY_LINK([
 		#include <iconv.h>
 	],[
-		static void f() {iconv_t t = iconv_open("", ""); }
+		iconv_t t = iconv_open("", "");
 	],[
 		AC_DEFINE(HAVE_ICONV_H)
 		AC_MSG_RESULT(yes)
@@ -137,7 +131,7 @@ if test "$with_iconv" != "no"; then
 		AC_TRY_LINK([
 			#include <iconv.h>
 		],[
-			static void f() {iconv_t t = iconv_open("", ""); }
+			iconv_t t = iconv_open("", "");
 		],[
 			AC_DEFINE(HAVE_ICONV_H)
 			AC_MSG_RESULT(yes)
@@ -250,10 +244,7 @@ if test "$perl" != "no"; then
             AC_TRY_LINK([
             #include <stdio.h>
              ],[
-            static void f()
-            {
-		;
-            }
+	     ;
 		],AM_CONDITIONAL(perl,true)
 	          AC_DEFINE(HAVE_PERL,1)
 		  AC_MSG_RESULT(found)
