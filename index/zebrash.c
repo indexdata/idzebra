@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.22 2003-09-23 10:09:38 adam Exp $
+/* $Id: zebrash.c,v 1.23 2003-11-21 15:30:16 heikki Exp $
    Copyright (C) 2002,2003
    Index Data Aps
 
@@ -303,7 +303,7 @@ static int cmd_init ( char *args[], WRBUF outbuff)
 static int cmd_select_database ( char *args[], WRBUF outbuff)
 {
     char *db=defarg(args[1],DEFAULTDATABASE);
-	wrbuf_puts(outbuff,"Selecting database 'Default'\n");
+	wrbuf_printf(outbuff,"Selecting database '%s'\n",db);
     return zebra_select_database(zh, db);
 }
  
@@ -445,7 +445,7 @@ static int cmd_show( char *args[], WRBUF outbuff)
             } else
                 wrbuf_printf(outbuff,"NO Record %d\n", recs[i].position);
         }
-        nextrecno=start+nrecs+1;
+        nextrecno=start+nrecs;
     }
     odr_destroy(odr);
     return rc;
