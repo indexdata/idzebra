@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.55  1996-05-09 07:28:55  quinn
+ * Revision 1.56  1996-05-09 09:54:42  adam
+ * Server supports maps from one logical attributes to a list of physical
+ * attributes.
+ * The extraction process doesn't make space consuming 'any' keys.
+ *
+ * Revision 1.55  1996/05/09  07:28:55  quinn
  * Work towards phrases and multiple registers
  *
  * Revision 1.54  1996/05/01  13:46:35  adam
@@ -550,21 +555,6 @@ static const char **searchRecordKey (struct recKeys *reckeys,
     return ws;
 }
 
-static void addRecordKeyAny (const RecWord *p)
-{
-    if (p->attrSet != 1 || p->attrUse != 1016)
-    {
-        RecWord w;
-
-        memcpy (&w, p, sizeof(w));
-        w.attrSet = 1;
-        w.attrUse = 1016;
-        addRecordKey (&w);
-    }
-    if (p->attrSet != -1)
-        addRecordKey (p);
-}
-
 struct file_read_info {
     off_t file_max;
     off_t file_offset;
@@ -816,7 +806,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.fh = fi;
         extractCtrl.subType = subType;
         extractCtrl.init = wordInit;
-        extractCtrl.add = addRecordKeyAny;
+        extractCtrl.add = addRecordKey;
 
         reckeys.buf_used = 0;
         reckeys.prevAttrUse = -1;
