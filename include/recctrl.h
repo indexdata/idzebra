@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.12  1996-01-17 15:01:25  adam
+ * Revision 1.13  1996-05-01 13:44:05  adam
+ * Added seek function to the recExtractCtrl and recRetrieveCtrl control
+ * structures. Added end-of-file indicator function and start offset to
+ * recExtractCtrl.
+ *
+ * Revision 1.12  1996/01/17  15:01:25  adam
  * Prototype changed for reader functions in extract/retrieve. File
  *  is identified by 'void *' instead of 'int'.
  *
@@ -68,8 +73,11 @@ typedef struct {
 
 /* Extract record control */
 struct recExtractCtrl {
-    void      *fh;                    /* File handle and read function */
+    void      *fh;                    /* File handle and read function     */
     int       (*readf)(void *fh, char *buf, size_t count);
+    off_t     (*seekf)(void *fh, off_t offset);  /* seek function          */
+    void      (*endf)(void *fh, off_t offset);   /* end of record position */
+    off_t     offset;                            /* start offset           */
     char      *subType;
     void      (*init)(RecWord *p);
     void      (*add)(const RecWord *p);
@@ -78,13 +86,14 @@ struct recExtractCtrl {
 /* Retrieve record control */
 struct recRetrieveCtrl {
     /* Input parameters ... */
-    ODR       odr;                    /* ODR used to create response */
+    ODR       odr;                    /* ODR used to create response       */
     void     *fh;                     /* File descriptor and read function */
     int       (*readf)(void *fh, char *buf, size_t count);
-    oid_value input_format;           /* Preferred record syntax */
-    Z_RecordComposition *comp;         /* formatting instructions */
-    int       localno;                /* local id of record */
-    int       score;                  /* score 0-1000 or -1 if none */
+    off_t     (*seekf)(void *fh, off_t offset);
+    oid_value input_format;           /* Preferred record syntax           */
+    Z_RecordComposition *comp;        /* formatting instructions           */
+    int       localno;                /* local id of record                */
+    int       score;                  /* score 0-1000 or -1 if none        */
     char      *subType;
     
     /* response */
@@ -97,10 +106,10 @@ struct recRetrieveCtrl {
 
 typedef struct recType
 {
-    char *name;                        /* Name of record type */
-    void (*init)(void);                /* Init function - called once */
-    int  (*extract)(struct recExtractCtrl *ctrl);     /* Extract proc */
-    int  (*retrieve)(struct recRetrieveCtrl *ctrl);   /* Retrieve proc */
+    char *name;                       /* Name of record type */
+    void (*init)(void);               /* Init function - called once       */
+    int  (*extract)(struct recExtractCtrl *ctrl);     /* Extract proc      */
+    int  (*retrieve)(struct recRetrieveCtrl *ctrl);   /* Retrieve proc     */
 } *RecType;
 
 RecType recType_byName (const char *name, char *subType);
