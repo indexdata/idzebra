@@ -2,6 +2,8 @@
 # Author: Peter Valkenburg / TERENA (valkenburg@terena.nl)
 # Version 0.2 (09/09/1998).
 # This sort of follows the Nordic Web Index convention of GILS attribute use.
+# Modified by Kang-Jin Lee (lee@arco.de)
+# 07/10/1999
 
 # We'll use GILS structured records.
 BEGIN					{ begin record gils }
@@ -14,34 +16,34 @@ BEGIN					{ begin record gils }
 					}
 
 # Type will be GILS' availability/linkageType
-/^[tT]ype{[0-9]+}:\t/  BODY /$/ {
+/^[tT]ype{[0-9]+}:\t/ BODY /$/		{
 					  begin element availability
 					  data -element linkageType $1
 					  end element
 					}
 
 # Last modification time will be Bib-1 Use Attribute 1012
-/^[lL]ast-[mM]odification-[tT]ime{[0-9]+}:\t/  BODY /$/	{
+/^[lL]ast-[mM]odification-[tT]ime{[0-9]+}:\t/ BODY /$/	{
 					  data -element dateOfLastModification $1
 					}
 
 # The MD5 checksum is used as a unique identifier under Bib-1 Use Attribute 1007
-/^[mM][dD]5{[0-9]+}:\t/  BODY /$/	{ data -element controlIdentifier $1 }
+/^[mM][dD]5{[0-9]+}:\t/ BODY /$/	{ data -element controlIdentifier $1 }
 
 # Description will be Bib-1 Use Attribute 62
-/^[dD]escription{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/ {
+/^[dD]escription{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/	{
 					  data -element abstract $1
 					  unread 2
 					}
 
 # Author will be Bib-1 Use Attribute 1003 (if gils.abs maps originator to it!!)
-/^[aA]uthor{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/ {
+/^[aA]uthor{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/	{
 					  data -element author $1
 					  unread 2
 					}
 
 # Keywords will be GILS' localSubjectIndex/localSubjectTerm
-/^[kK]eywords{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/ {
+/^[kK]eywords{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/	{
 					  begin element localSubjectIndex
 					  data -element localSubjectTerm $1
 					  unread 2
@@ -49,7 +51,7 @@ BEGIN					{ begin record gils }
 					}
 
 # File-size will be GILS' supplementalInformation/bytes
-/^[fF]ile-[sS]ize{[0-9]+}:\t/ BODY /$/ {
+/^[fF]ile-[sS]ize{[0-9]+}:\t/ BODY /$/	{
 					  begin element supplementalInformation
 					  data -element bytes $1
 					  unread 2
@@ -57,7 +59,7 @@ BEGIN					{ begin record gils }
 					}
 
 # Update-Time will be GILS' supplementalInformation/lastChecked
-/^[uU]pdate-[tT]ime{[0-9]+}:\t/ BODY /$/ {
+/^[uU]pdate-[tT]ime{[0-9]+}:\t/ BODY /$/	{
 					  begin element supplementalInformation
 					  data -element lastChecked $1
 					  unread 2
@@ -73,13 +75,18 @@ BEGIN					{ begin record gils }
 					}
 
 # Title will be Bib-1 Use Attribute 4
-/^[tT]itle{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/ {
+/^[tT]itle{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/	{
 					  data -element Title $1
 					  unread 2
 					}
 
 # Body and Partial-Text will be Bib-1 Use Attribute 1010
-/^[bB]ody{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/ {
+# Is Body really commonly used in SOIF? Anyway, Full-Text is used by Harvest.
+#/^[bB]ody{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/	{
+#					  data -element sampleText $1
+#					  unread 2
+#					}
+/^[fF]ull-[tT]ext{[0-9]+}:\t/ BODY /^([-._A-Za-z0-9]+{[0-9]+}:\t.*|})$/ {
 					  data -element sampleText $1
 					  unread 2
 					}

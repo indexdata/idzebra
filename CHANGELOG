@@ -1,4 +1,9 @@
 
+New version of SOIF filter (soif.flt). 
+ Kang-Jin Lee <lee@arco.de>
+
+Fixed a bug with >2GB files (overflow in integer expression).
+
 --- 1.3.10 2003/04/01
 
 Fix linker error for Perl module.
