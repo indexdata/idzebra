@@ -1,4 +1,4 @@
-/* $Id: t6.c,v 1.3 2004-08-25 09:23:39 adam Exp $
+/* $Id: t6.c,v 1.4 2004-10-28 15:24:36 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,14 +26,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
 
-/* read zebra.cfg from env var srcdir if it exists; otherwise current dir */
-static ZebraService start_service()
-{
-    char cfg[256];
-    char *srcdir = getenv("srcdir");
-    sprintf(cfg, "%.200s%szebra6.cfg", srcdir ? srcdir : "", srcdir ? "/" : "");
-    return zebra_start(cfg);
-}
+#include "testlib.h"
+
 	
 int main(int argc, char **argv)
 {
@@ -47,7 +41,7 @@ int main(int argc, char **argv)
     
     srand(17);
     
-    zs = start_service();
+    zs = start_service("");
     zh = zebra_open(zs);
     zebra_select_database(zh, "Default");
     zebra_init(zh);
@@ -84,5 +78,6 @@ int main(int argc, char **argv)
 
     nmem_exit ();
     xmalloc_trav ("x");
+    logf(LOG_LOG,"========= all tests OK");
     exit (0);
 }

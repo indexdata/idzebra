@@ -1,4 +1,4 @@
-/* $Id: t7.c,v 1.2 2004-10-01 09:13:06 heikki Exp $
+/* $Id: t7.c,v 1.3 2004-10-28 15:24:36 heikki Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -25,23 +25,18 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/sortspec.h>
 #include <idzebra/api.h>
 
-/* read zebra.cfg from env var srcdir if it exists; otherwise current dir */
-static ZebraService start_service()
-{
-    char cfg[256];
-    char *srcdir = getenv("srcdir");
-    sprintf(cfg, "%.200s%szebra.cfg", srcdir ? srcdir : "", srcdir ? "/" : "");
-    return zebra_start(cfg);
-}
+#include "testlib.h"
+
 	
 int main(int argc, char **argv)
 {
     ZebraService zs;
     ZebraHandle zh;
-    const char *myrec =
+    const char *recs[] = {
         "<gils>\n"
         "  <title>My title</title>\n"
-        "</gils>\n";
+        "</gils>\n",
+        0};
     const char *setname1="set1";
     const char *setname2="set2";
     const char *setname3="set3";
@@ -60,23 +55,29 @@ int main(int argc, char **argv)
 
     nmem_init ();
     
-    zs = start_service();
+    zs = start_service(""); /* default to zebra.cfg */
     zh = zebra_open (zs);
-    zebra_select_database(zh, "Default");
-    zebra_init(zh);
 
-    zebra_begin_trans (zh, 1);
-    zebra_add_record (zh, myrec, strlen(myrec));
-    zebra_end_trans (zh);
+    init_data(zh,recs);
+
 
     zebra_begin_trans (zh, 0);
         
     zebra_search_RPN (zh, odr_input, query, setname1, &hits);
 
     rc=zebra_sort(zh, odr_output, 1, &setname1, setname2, spec, &status);
-    if (rc) { printf("sort A returned %d %d \n",rc,status); exit(1);}
+    if (rc) 
+    { 
+        printf("sort A returned %d %d \n",rc,status); 
+        exit(1);
+    }
+    
     rc=zebra_sort(zh, odr_output, 1, &setname2, setname3, spec, &status);
-    if (rc) { printf("sort B returned %d %d \n",rc,status); exit(1);}
+    if (rc) 
+    { 
+        printf("sort B returned %d %d \n",rc,status); 
+        exit(1);
+    }
 
     zebra_end_trans (zh);
     yaz_pqf_destroy(parser);
@@ -84,7 +85,7 @@ int main(int argc, char **argv)
     /*
      zebra_deleleResultSet(zh, Z_DeleteRequest_list,
                           1, &setnamep, &status);
-    */
+    */  
     odr_destroy (odr_input);
     odr_destroy (odr_output);
 
@@ -94,5 +95,6 @@ int main(int argc, char **argv)
 
     nmem_exit ();
     xmalloc_trav ("x");
+    logf(LOG_LOG,"========= all tests OK");
     exit (0);
 }

@@ -1,4 +1,4 @@
-/* $Id: t8.c,v 1.3 2004-10-24 13:34:45 adam Exp $
+/* $Id: t8.c,v 1.4 2004-10-28 15:24:36 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,23 +26,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
+#include "testlib.h"
 
 #define LOGLEVEL LOG_ALL 
-static int testno=1;
 
-/* read zebra.cfg from env var srcdir if it exists; otherwise current dir */
-static ZebraService start_service()
-{
-    char cfg[256];
-    char *srcdir = getenv("srcdir");
-    sprintf(cfg, "%.200s%szebra8.cfg", 
-            srcdir ? srcdir : "", srcdir ? "/" : "");
-    return zebra_start(cfg);
-}
 	
-static void insertdata(ZebraHandle zh)
-{
-    const char *rec1 =
+const char *recs[] = {
         "<gils>\n"
         "  <title>My title</title>\n"
         "  <abstract>test record with single coordset, negatives</abstract>\n"
@@ -52,8 +41,8 @@ static void insertdata(ZebraHandle zh)
         "    <North-Bounding-Coordinate>  49 </North-Bounding-Coordinate>\n"
         "    <South-Bounding-Coordinate>  31 </South-Bounding-Coordinate>\n"
         "  </Bounding-Coordinates></Spatial-Domain>"
-        "</gils>\n";
-    const char *rec2 =
+        "</gils>\n",
+
         "<gils>\n"
         "  <title>Another title</title>\n"
         "  <abstract>second test with two coord sets</abstract>\n"
@@ -69,57 +58,10 @@ static void insertdata(ZebraHandle zh)
         "    <North-Bounding-Coordinate>  41 </North-Bounding-Coordinate>\n"
         "    <South-Bounding-Coordinate>  25 </South-Bounding-Coordinate>\n"
         "  </Bounding-Coordinates></Spatial-Domain>"
-        "</gils>\n";
-
-    zebra_select_database(zh, "Default");
-    zebra_init(zh);
-    zebra_begin_trans (zh, 1);
-    zebra_add_record (zh, rec1, strlen(rec1));
-    zebra_add_record (zh, rec2, strlen(rec2));
-    zebra_end_trans (zh);
-
-}
-
-static void query( ZebraHandle zh, int lineno, char *qry, int expectedhits)
-{
-    ODR odr_input = odr_createmem (ODR_DECODE);    
-    YAZ_PQF_Parser parser = yaz_pqf_create();
-    Z_RPNQuery *query;
-                                      
-    int hits;
-    int thistest=testno++;
-    int rc;
-
-    logf(LOG_LOG,"Test %d (line %d): expecting  %d", 
-            thistest, lineno,expectedhits);
-    logf(LOG_LOG,"%s", qry);
-
-    query = yaz_pqf_parse(parser, odr_input, qry);
-    assert(query);
-    zebra_begin_trans (zh, 0);
+        "</gils>\n",
+        0};
         
 
-    logf(LOG_DEBUG,"calling search");
-    rc=zebra_search_RPN (zh, odr_input, query, "nameless", &hits);
-    logf(LOG_DEBUG,"search returned %d",rc);
-    if (rc)
-        printf("search returned %d",rc);
-    if (hits != expectedhits) 
-    {
-        printf( "FAIL: Test %d (line %d):\n"
-                "got %d hits, expected %d\n"
-                "in '%s'\n", 
-                thistest, lineno,hits, expectedhits, qry);
-        logf( LOG_FATAL, "FAIL: Test %d (line %d): got %d hits, expected %d\n",
-                thistest, lineno, hits,expectedhits);
-        exit(1);
-    }
-
-    zebra_end_trans (zh);
-    yaz_pqf_destroy(parser);
-    odr_destroy (odr_input);
-    logf(LOG_LOG,"Test %d ok",thistest);
-}
 
 
 int main(int argc, char **argv)
@@ -133,12 +75,12 @@ int main(int argc, char **argv)
 
     nmem_init ();
     
-    zs = start_service();
+    zs = start_service("zebra8.cfg");
     zh = zebra_open (zs);
 
-    insertdata(zh);
+    init_data(zh, recs);
 
-#define Q(q,n) query(zh,__LINE__,q,n)
+#define Q(q,n) Query(__LINE__,zh,q,n)
     /* couple of simple queries just to see that we have indexed the stuff */
     Q( "@attr 1=4 title",2 );
     Q( "title",2 );

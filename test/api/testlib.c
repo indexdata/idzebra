@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.1 2004-10-28 10:37:15 heikki Exp $
+/* $Id: testlib.c,v 1.2 2004-10-28 15:24:36 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -22,6 +22,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /** testlib - utilities for the api tests */
 
+#include <assert.h>
 #include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
@@ -32,6 +33,7 @@ ZebraService start_service(char *cfgname)
 {
     char cfg[256];
     char *srcdir = getenv("srcdir");
+    ZebraService zs;
     if (!srcdir || ! *srcdir)
         srcdir=".";
     if (!cfgname || ! *cfgname )
@@ -39,34 +41,65 @@ ZebraService start_service(char *cfgname)
     /*sprintf(cfg, "%.200s%szebra.cfg", srcdir ? srcdir : "", srcdir ? "/" : "");     */
 
     sprintf(cfg, "%.200s/%s",srcdir, cfgname);
-    return zebra_start(cfg);
+    zs=zebra_start(cfg);
+    if (!zs)
+    {
+        printf("zebra_start failed, probably because missing config file \n"
+               "check %s\n", cfg);
+        exit(9);
+    }
+    return zs;
 }
 
-/** 
- * makes a query, checks number of hits, and for the first hit, that 
- * it contains the given string, and that it gets the right score
- */
-void RankingQuery(int lineno, ZebraHandle zh, char *query, 
-          int exphits, char *firstrec, int firstscore )
+/** inits the database and inserts test data */
+
+void init_data( ZebraHandle zh, const char **recs)
 {
-    ZebraRetrievalRecord retrievalRecord[10];
-    ODR odr_output = odr_createmem (ODR_DECODE);    
-    ODR odr_input = odr_createmem (ODR_DECODE);    
-    YAZ_PQF_Parser parser = yaz_pqf_create();
-    Z_RPNQuery *rpn = yaz_pqf_parse(parser, odr_input, query);
+    int i;
+    char *addinfo;
+    assert(zh);
+    zebra_select_database(zh, "Default");
+    logf(LOG_LOG,"going to call init");
+    i=zebra_init(zh);
+    logf(LOG_LOG,"init returned %d",i);
+    if (i) 
+    {
+        printf("init failed with %d\n",i);
+        zebra_result(zh, &i, &addinfo);
+        printf("  Error %d   %s\n",i,addinfo);
+        exit(1);
+    }
+    zebra_begin_trans (zh, 1);
+    for (i = 0; recs[i]; i++)
+        zebra_add_record (zh, recs[i], strlen(recs[i]));
+    zebra_end_trans (zh);
+    zebra_commit (zh);
+
+}
+
+
+
+int Query(int lineno, ZebraHandle zh, char *query, int exphits)
+{
+    ODR odr;
+    YAZ_PQF_Parser parser;
+    Z_RPNQuery *rpn;
     const char *setname="rsetname";
     int hits;
     int rc;
-    int i;
         
+
     logf(LOG_LOG,"======================================");
     logf(LOG_LOG,"qry[%d]: %s", lineno, query);
+    odr=odr_createmem (ODR_DECODE);    
 
+    parser = yaz_pqf_create();
+    rpn = yaz_pqf_parse(parser, odr, query);
     if (!rpn) {
         printf("Error: Parse failed \n%s\n",query);
         exit(1);
     }
-    rc=zebra_search_RPN (zh, odr_input, rpn, setname, &hits);
+    rc=zebra_search_RPN (zh, odr, rpn, setname, &hits);
     if (rc) {
         printf("Error: search returned %d \n%s\n",rc,query);
         exit (1);
@@ -78,12 +111,29 @@ void RankingQuery(int lineno, ZebraHandle zh, char *query,
         exit (1);
     }
     yaz_pqf_destroy(parser);
+    odr_destroy (odr);
+    return hits;
+}
+
+
+/** 
+ * makes a query, checks number of hits, and for the first hit, that 
+ * it contains the given string, and that it gets the right score
+ */
+void RankingQuery(int lineno, ZebraHandle zh, char *query, 
+          int exphits, char *firstrec, int firstscore )
+{
+    ZebraRetrievalRecord retrievalRecord[10];
+    ODR odr_output = odr_createmem (ODR_ENCODE);    
+    const char *setname="rsetname";
+    int hits;
+    int rc;
+    int i;
+        
+    hits=Query(lineno, zh, query, exphits);
 
     for (i = 0; i<10; i++)
-    {
         retrievalRecord[i].position = i+1;
-        retrievalRecord[i].score = i+20000;
-    }
 
     rc=zebra_records_retrieve (zh, odr_output, setname, 0,
                      VAL_TEXT_XML, hits, retrievalRecord);
@@ -108,6 +158,5 @@ void RankingQuery(int lineno, ZebraHandle zh, char *query,
         exit(1);
     }
     odr_destroy (odr_output);
-    odr_destroy (odr_input);
 }
 

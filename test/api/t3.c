@@ -1,4 +1,4 @@
-/* $Id: t3.c,v 1.10 2004-10-15 10:07:34 heikki Exp $
+/* $Id: t3.c,v 1.11 2004-10-28 15:24:36 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,15 +23,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
+#include "testlib.h"
 
-/* read zebra.cfg from env var srcdir if it exists; otherwise current dir */
-static ZebraService start_service()
-{
-    char cfg[256];
-    char *srcdir = getenv("srcdir");
-    sprintf(cfg, "%.200s%szebra.cfg", srcdir ? srcdir : "", srcdir ? "/" : "");
-    return zebra_start(cfg);
-}
 	
 int main(int argc, char **argv)
 {
@@ -48,7 +41,7 @@ int main(int argc, char **argv)
 
     nmem_init ();
     
-    zs = start_service();
+    zs = start_service(0);
     zh = zebra_open (zs);
     zebra_select_database(zh, "Default");
     zebra_init(zh);
@@ -81,6 +74,7 @@ int main(int argc, char **argv)
         zebra_end_trans (zh);
         yaz_pqf_destroy(parser);
 #if 0
+        /*FIXME Why is this disabled ??? */
         zebra_records_retrieve (zh, odr_output, setname, 0,
                                 VAL_TEXT_XML, 1, &retrievalRecord);
 #endif
@@ -97,5 +91,6 @@ int main(int argc, char **argv)
 
     nmem_exit ();
     xmalloc_trav ("x");
+    logf(LOG_LOG,"================ All tests OK ");
     exit (0);
 }

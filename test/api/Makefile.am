@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.20 2004-10-28 10:37:15 heikki Exp $
+# $Id: Makefile.am,v 1.21 2004-10-28 15:24:36 heikki Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c
@@ -8,14 +8,14 @@ TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg
 
-t1_SOURCES = t1.c
-t2_SOURCES = t2.c
-t3_SOURCES = t3.c
-t4_SOURCES = t4.c
-t5_SOURCES = t5.c
-t6_SOURCES = t6.c
-t7_SOURCES = t7.c
-t8_SOURCES = t8.c
+t1_SOURCES = t1.c testlib.c
+t2_SOURCES = t2.c testlib.c
+t3_SOURCES = t3.c testlib.c
+t4_SOURCES = t4.c testlib.c
+t5_SOURCES = t5.c testlib.c
+t6_SOURCES = t6.c testlib.c
+t7_SOURCES = t7.c testlib.c
+t8_SOURCES = t8.c testlib.c
 t9_SOURCES = t9.c testlib.c
 t10_SOURCES = t10.c testlib.c
 

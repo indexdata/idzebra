@@ -1,4 +1,4 @@
-/* $Id: t9.c,v 1.1 2004-10-28 10:37:15 heikki Exp $
+/* $Id: t9.c,v 1.2 2004-10-28 15:24:36 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,7 +25,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
+
 #include "testlib.h"
+
 #include "rankingrecords.h"
 
 #define qry(zh,query,hits,string,score) \
@@ -33,8 +35,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 int main(int argc, char **argv)
 {
-    int i;
-    char *addinfo;
     ZebraService zs;
     ZebraHandle zh;
 
@@ -45,21 +45,7 @@ int main(int argc, char **argv)
     
     zs = start_service(""); /* default to zebra.cfg */
     zh = zebra_open (zs);
-    zebra_select_database(zh, "Default");
-    logf(LOG_LOG,"going to call init");
-    i=zebra_init(zh);
-    logf(LOG_LOG,"init returned %d",i);
-    if (i) {
-        printf("init failed with %d\n",i);
-        zebra_result(zh, &i, &addinfo);
-        printf("  Error %d   %s\n",i,addinfo);
-        exit(1);
-    }
-
-    zebra_begin_trans (zh, 1);
-    for (i = 0; recs[i]; i++)
-	zebra_add_record (zh, recs[i], strlen(recs[i]));
-    zebra_end_trans (zh);
+    init_data(zh, recs);
 
     zebra_select_database(zh, "Default");
 
@@ -75,11 +61,11 @@ int main(int argc, char **argv)
             3, "third title", 895 );
 
     
-    zebra_commit (zh);
     zebra_close (zh);
     zebra_stop (zs);
 
     nmem_exit ();
     xmalloc_trav ("x");
-    exit (0);
+    logf(LOG_LOG,"============ ALL TESTS PASSED OK ============");
+    exit(0);
 }

@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.9 2004-08-25 09:23:39 adam Exp $
+/* $Id: t4.c,v 1.10 2004-10-28 15:24:36 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,43 +23,36 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
+#include "testlib.h"
 
-/* read zebra.cfg from env var srcdir if it exists; otherwise current dir */
-static ZebraService start_service()
-{
-    char cfg[256];
-    char *srcdir = getenv("srcdir");
-    sprintf(cfg, "%.200s%szebra.cfg", srcdir ? srcdir : "", srcdir ? "/" : "");
-    return zebra_start(cfg);
-}
 	
 int main(int argc, char **argv)
 {
     int i;
     ZebraService zs;
     ZebraHandle zh;
-    const char *myrec =
+    const char *myrec[] = {
         "<gils>\n"
         "  <title>My title</title>\n"
-        "</gils>\n";
+        "</gils>\n",
+        0};
 
     yaz_log_init_file("t4.log");
 
     nmem_init ();
     
-    zs = start_service();
+    zs = start_service(0);
     zh = zebra_open (zs);
-    zebra_init(zh);
-    zebra_select_database(zh, "Default");
+    init_data(zh,myrec);
 
     zebra_begin_trans (zh, 1);
     for (i = 0; i<1200; i++)
-	zebra_add_record (zh, myrec, strlen(myrec));
+	zebra_add_record (zh, myrec[0], strlen(myrec[0]));
     zebra_end_trans (zh);
     zebra_close(zh);
     zebra_stop(zs);
 
-    zs = start_service();
+    zs = start_service("");
     zh = zebra_open (zs);
     zebra_select_database(zh, "Default");
 
@@ -102,5 +95,6 @@ int main(int argc, char **argv)
 
     nmem_exit ();
     xmalloc_trav ("x");
+    logf(LOG_LOG,"================ All tests OK ");
     exit (0);
 }
