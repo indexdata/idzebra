@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.27 1996-06-04 08:21:13 quinn Exp $
+  $Id: zebra.sgml,v 1.28 1996-10-18 12:37:24 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.27 $
+<date>$Revision: 1.28 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -225,6 +225,9 @@ profilePath: ../../yaz/tab ../tab
 # Files that describe the attribute sets supported.
 attset: bib1.att
 attset: gils.att
+
+# Name of character map file.
+charMap: scan.chr
 </verb></tscreen>
 
 Now, edit the file and set <tt>profilePath</tt> to the path of the
@@ -234,11 +237,11 @@ archive).
 The 48 test records are located in the sub directory <tt>records</tt>.
 To index these, type:
 <tscreen><verb>
-$ ../index/zebraidx -t grs update records
+$ ../index/zebraidx -t grs.sgml update records
 </verb></tscreen>
 
 In the command above the option <tt>-t</tt> specified the record
-type &mdash; in this case <tt>grs</tt>. The word <tt>update</tt> followed
+type &mdash; in this case <tt>grs.sgml</tt>. The word <tt>update</tt> followed
 by a directory root updates all files below that directory node.
 
 If your indexing command was successful, you are now ready to
@@ -361,13 +364,12 @@ by <tt>zebraidx</tt>. If no <tt/-g/ option is specified, the settings
 with no prefix are used.
 
 In the configuration file, the group name is placed before the option
-name
-itself, separated by a dot (.). For instance, to set the record type
-for group <tt/public/ to <tt/grs/ (the common format for structured
+name itself, separated by a dot (.). For instance, to set the record type
+for group <tt/public/ to <tt/grs.sgml/ (the SGML-like format for structured
 records) you would write:
 
 <tscreen><verb>
-public.recordType: grs
+public.recordType: grs.sgml
 </verb></tscreen>
 
 To set the default value of the record type to <tt/text/ write:
@@ -384,8 +386,12 @@ explained further in the following sections.
  Specifies how records with the file extension <it>name</it> should
  be handled by the indexer. This option may also be specified
  as a command line option (<tt>-t</tt>). Note that if you do not
- specify a <it/name/, the setting applies to all files.
-<tag><it>group</it>.recordId</tag>
+ specify a <it/name/, the setting applies to all files. In general,
+ the record type specifier consists of the elements (each
+ element separated by dot), <it>fundamental-type</it>,
+ <it>file-read-type</it> and arguments. Currently, two
+ fundamental types exist, <tt>text</tt> and <tt>grs</tt>.
+ <tag><it>group</it>.recordId</tag>
  Specifies how the records are to be identified when updated. See
 section <ref id="locating-records" name="Locating Records">.
 <tag><it>group</it>.database</tag>
@@ -421,6 +427,9 @@ section <ref id="locating-records" name="Locating Records">.
  searching. At least the Bib-1 set should be loaded (<tt/bib1.att/).
  The <tt/profilePath/ setting is used to look for the specified files.
  See section <ref id="attset-files" name="The Attribute Set Files">
+<tag>charMap</tag>
+ Specifies the filename of a character mapping. Zebra uses the path,
+ <tt>profilePath</tt>, to locate this file.
 </descrip>
 
 <sect1>Locating Records<label id="locating-records">
@@ -1018,6 +1027,10 @@ record. Any number of record schema can coexist in the system.
 Although it may be wise to use only a single schema within
 one database, the system poses no such restrictions.
 
+The record model described in this chapter applies to the fundamental
+record type <tt>grs</tt> as introduced in
+section <ref id="record-types" name="Record Types">.
+
 Records pass through three different states during processing in the
 system.
 
@@ -1060,6 +1073,9 @@ describe the record processing capabilities of the system in terms of
 a single, canonical input format that gives access to the full
 spectrum of structure and flexibility in the system. In Zebra, this
 canonical format is an &dquot;SGML-like&dquot; syntax.
+
+To use the canonical format specify <tt>grs.sgml</tt> as the record
+type,
 
 Consider a record describing an information resource (such a record is
 sometimes known as a <it/locator record/). It might contain a field
@@ -1195,7 +1211,10 @@ work with.
 
 Input filters are ASCII files, generally with the suffix <tt/.flt/.
 The system looks for the files in the directories given in the
-<bf/profilePath/ setting in the <tt/zebra.cfg/ file.
+<bf/profilePath/ setting in the <tt/zebra.cfg/ files. The record type
+for the filter is <tt>grs.regx.</tt><it>filter-filename</it>
+(fundamental type <tt>grs</tt>, file read type <tt>regx</tt>, argument
+<it>filter-filename</it>).
 
 Generally, an input filter consists of a sequence of rules, where each
 rule consists of a sequence of expressions, followed by an action. The
