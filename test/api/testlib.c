@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.8 2004-12-13 20:51:33 adam Exp $
+/* $Id: testlib.c,v 1.9 2004-12-14 11:23:15 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -258,4 +258,33 @@ void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
     odr_destroy (odr_output);
     free(positions);
 }
+
+struct finfo {
+    const char *name;
+    int occurred;
+};
+
+static void filter_cb(void *cd, const char *name)
+{
+    struct finfo *f = (struct finfo*) cd;
+    if (!strcmp(f->name, name))
+	f->occurred = 1;
+}
+
+void check_filter(ZebraService zs, const char *name)
+{
+    struct finfo f;
+
+    f.name = name;
+    f.occurred = 0;
+    zebra_filter_info(zs, &f, filter_cb);
+    if (!f.occurred)
+    {
+	yaz_log(YLOG_WARN, "Filter %s does not exist.", name);
+	exit(0);
+    }
+}
+
+
+
 

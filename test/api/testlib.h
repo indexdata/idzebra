@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.8 2004-12-14 10:37:25 heikki Exp $
+/* $Id: testlib.h,v 1.9 2004-12-14 11:23:15 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -96,3 +96,8 @@ void ranking_query(int lineno, ZebraHandle zh, char *query,
  */
 void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
 		zint *ids);
+
+/**
+ * if filter given by name does not exist, exit nicely but warn in log 
+ */
+void check_filter(ZebraService zs, const char *name);
