@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.6 2004-06-01 12:32:19 heikki Exp $
+/* $Id: rsisamb.c,v 1.7 2004-06-01 14:51:00 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -164,6 +164,7 @@ static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
     key_logdump(LOG_DEBUG, buf);
 
     i=isamb_pp_forward(pinfo->pt, buf, untilbuf);
+    logf (LOG_DEBUG, "rset_rsisamb_forward returning %d",i);
     return i;
 }
 

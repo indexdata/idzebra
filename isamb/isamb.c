@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.31 2004-06-01 13:46:41 adam Exp $
+/* $Id: isamb.c,v 1.32 2004-06-01 14:51:00 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 
 #ifndef ISAMB_DEBUG
-#define ISAMB_DEBUG 0
+#define ISAMB_DEBUG 1
 #endif
 
 struct ISAMB_head {
@@ -1065,7 +1065,7 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
     (*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
                                     &dst, &src);
     p->offset = src - (char*) p->bytes;
-    key_logdump_txt(LOG_DEBUG,buf, "isamb_pp_read returning 1");
+    /* key_logdump_txt(LOG_DEBUG,buf, "isamb_pp_read returning 1"); */
     return 1;
 }
 
@@ -1103,6 +1103,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
     int item_len;
     int pos;
     int nxtpos;
+    int descending=0; /* used to prevent a border condition error */
     if (!p)
         return 0;
 #if ISAMB_DEBUG
@@ -1114,7 +1115,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
 
     while (1)
     {
-        while ( p->offset == p->size) 
+        while ( (p->offset == p->size) && !descending )
         {  /* end of this block - climb higher */
 #if ISAMB_DEBUG
             logf(LOG_DEBUG,"isamb_pp_forward climbing from l=%d",
@@ -1180,6 +1181,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
                 logf(LOG_DEBUG,"isambb_pp_forward descending l=%d p=%d ",
                             pp->level, pos);
 #endif
+                descending=1; /* prevent climbing for a while */
                 ++(pp->level);
                 p = open_block(pp->isamb,pos);
                 pp->block[pp->level] = p ;

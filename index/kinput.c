@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.57 2004-01-22 15:40:25 heikki Exp $
+/* $Id: kinput.c,v 1.58 2004-06-01 14:50:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -363,10 +363,11 @@ static void key_heap_insert (struct heap_info *hi, const char *buf, int nbytes,
 static int heap_read_one_raw (struct heap_info *hi, char *name, char *key)
 {
     ZebraHandle zh=hi->zh;
-    int ptr_i = zh->reg->ptr_i--;
+    int ptr_i = zh->reg->ptr_i;
     char *cp;
     if (!ptr_i)
         return 0;
+    --(zh->reg->ptr_i);
     cp=(zh->reg->key_buf)[zh->reg->ptr_top - ptr_i];
     logf (LOG_DEBUG, " raw: i=%d top=%d cp=%p", ptr_i, zh->reg->ptr_top,cp);
     strcpy(name, cp);
