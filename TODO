@@ -1,5 +1,5 @@
 Zebra TODO
-$Id: TODO,v 1.13 2002-08-20 12:01:00 adam Exp $
+$Id: TODO,v 1.14 2002-08-28 09:39:45 mike Exp $
 
 More test scripts.
 
@@ -7,10 +7,10 @@ Handle free lists for isamb (possibly others).
 
 Check that recordId: actually works.
 
-Finish X-path-like search including attributes.
+Finish XPath-like search including attributes.
 
 Make "fake" absyn even though no-one is found and warn
-first time. Make directive to enable/disable xpath-indexing.
+first time. Make directive to enable/disable XPath-indexing.
 
 For traditional searches, allow string attributes that matches
 name in *.att-file.
