@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.12 2002-10-30 11:09:39 adam Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.13 2002-10-31 10:11:39 adam Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -33,7 +33,7 @@
 
    <itemizedlist>
     <listitem>
-
+     
      <para>
       When records are accessed by the system, they are represented
       in their local, or native format. This might be SGML or HTML files,
@@ -483,7 +483,7 @@
          Begin a new
          data element. The type is one of the following:
          <variablelist>
-
+          
           <varlistentry>
            <term>record</term>
            <listitem>
@@ -692,35 +692,35 @@
      Which of the two elements are transmitted to the client by the server
      depends on the specifications provided by the client, if any.
     </para>
-
+    
     <para>
      In practice, each variant node is associated with a triple of class,
      type, value, corresponding to the variant mechanism of Z39.50.
     </para>
-
+    
    </sect2>
-
+   
    <sect2>
     <title>Data Elements</title>
-
+    
     <para>
      Data nodes have no children (they are always leaf nodes in the record
      tree).
     </para>
-
+    
     <!--
-      FIXME! Documentation needs extension here about types of nodes - numerical,
-      textual, etc., plus the various types of inclusion notes.
-     </para>
+    FIXME! Documentation needs extension here about types of nodes - numerical,
+    textual, etc., plus the various types of inclusion notes.
+   </para>
     -->
     
    </sect2>
-
+   
   </sect1>
-
+  
   <sect1 id="data-model">
    <title>Configuring Your Data Model</title>
-
+   
    <para>
     The following sections describe the configuration files that govern
     the internal management of data records. The system searches for the files
@@ -770,7 +770,7 @@
         known.
        </para>
       </listitem>
-
+      
       <listitem>
        <para>
         The variant set which is used in the profile. This provides a
@@ -884,12 +884,12 @@
     <para>
      The file may contain the following directives:
     </para>
-
+    
     <para>
      <variablelist>
-
+      
       <varlistentry>
-       <term>name <emphasis>symbolic-name</emphasis></term>
+       <term>name <replaceable>symbolic-name</replaceable></term>
        <listitem>
         <para>
          (m) This provides a shorthand name or
@@ -898,17 +898,17 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>reference <emphasis>OID-name</emphasis></term>
+       <term>reference <replaceable>OID-name</replaceable></term>
        <listitem>
         <para>
          (m) The reference name of the OID for the profile.
          The reference names can be found in the <emphasis>util</emphasis>
-         module of <emphasis>YAZ</emphasis>.
+         module of YAZ.
         </para>
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>attset <emphasis>filename</emphasis></term>
+       <term>attset <replaceable>filename</replaceable></term>
        <listitem>
         <para>
          (m) The attribute set that is used for
@@ -917,7 +917,7 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>tagset <emphasis>filename</emphasis></term>
+       <term>tagset <replaceable>filename</replaceable></term>
        <listitem>
         <para>
          (o) The tag set (if any) that describe
@@ -926,7 +926,7 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>varset <emphasis>filename</emphasis></term>
+       <term>varset <replaceable>filename</replaceable></term>
        <listitem>
         <para>
          (o) The variant set used in the profile.
@@ -934,25 +934,27 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>maptab <emphasis>filename</emphasis></term>
+       <term>maptab <replaceable>filename</replaceable></term>
        <listitem>
         <para>
          (o,r) This points to a
          conversion table that might be used if the client asks for the record
          in a different schema from the native one.
         </para>
-       </listitem></varlistentry>
+       </listitem>
+      </varlistentry>
       <varlistentry>
-       <term>marc <emphasis>filename</emphasis></term>
+       <term>marc <replaceable>filename</replaceable></term>
        <listitem>
         <para>
          (o) Points to a file containing parameters
-         for representing the record contents in the ISO2709 syntax. Read the
-         description of the MARC representation facility below.
+         for representing the record contents in the ISO2709 syntax.
+         Read the description of the MARC representation facility below.
         </para>
-       </listitem></varlistentry>
+       </listitem>
+      </varlistentry>
       <varlistentry>
-       <term>esetname <emphasis>name filename</emphasis></term>
+       <term>esetname <replaceable>name filename</replaceable></term>
        <listitem>
         <para>
          (o,r) Associates the
@@ -960,9 +962,10 @@
          given in place of the filename, this corresponds to a null mapping for
          the given element set name.
         </para>
-       </listitem></varlistentry>
+       </listitem>
+      </varlistentry>
       <varlistentry>
-       <term>any <emphasis>tags</emphasis></term>
+       <term>any <replaceable>tags</replaceable></term>
        <listitem>
         <para>
          (o) This directive specifies a list of attributes
@@ -972,49 +975,74 @@
          provides an efficient way of supporting free-text searching across all
          elements. However, it does increase the size of the index
          significantly. The attributes can be qualified with a structure, as in
-         the <emphasis>elm</emphasis> directive below.
+         the <replaceable>elm</replaceable> directive below.
         </para>
-       </listitem></varlistentry>
+       </listitem>
+      </varlistentry>
       <varlistentry>
-       <term>elm <emphasis>path name attributes</emphasis></term>
+       <term>elm <replaceable>path name attributes</replaceable></term>
        <listitem>
         <para>
          (o,r) Adds an element to the abstract record syntax of the schema.
-         The <emphasis>path</emphasis> follows the
+         The <replaceable>path</replaceable> follows the
          syntax which is suggested by the Z39.50 document - that is, a sequence
-         of tags separated by slashes (/). Each tag is given as a
+         of tags separated by slashes (&#x2f;). Each tag is given as a
          comma-separated pair of tag type and -value surrounded by parenthesis.
-         The <emphasis>name</emphasis> is the name of the element, and
-         the <emphasis>attributes</emphasis>
+         The <replaceable>name</replaceable> is the name of the element, and
+         the <replaceable>attributes</replaceable>
          specifies which attributes to use when indexing the element in a
          comma-separated list.
          A ! in place of the attribute name is equivalent to
          specifying an attribute name identical to the element name.
          A - in place of the attribute name
          specifies that no indexing is to take place for the given element.
-         The attributes can be qualified with <emphasis>field
-          types</emphasis> to specify which
+         The attributes can be qualified with <replaceable>field
+          types</replaceable> to specify which
          character set should govern the indexing procedure for that field.
          The same data element may be indexed into several different
          fields, using different character set definitions.
          See the <xref linkend="field-structure-and-character-sets"/>.
-         The default field type is "w" for <emphasis>word</emphasis>.
+         The default field type is <literal>w</literal> for
+         <emphasis>word</emphasis>.
         </para>
-       </listitem></varlistentry>
+       </listitem>
+      </varlistentry>
+      
       <varlistentry>
-       <term>encoding <emphasis>encodingname</emphasis></term>
+       <term>xelm <replaceable>xpath attributes</replaceable></term>
+       <listitem>
+        <para>
+         Specifies indexing for record nodes given by
+         <replaceable>xpath</replaceable>. Unlike directive
+         elm, this directive allows you to index attribute
+         contents. The <replaceable>xpath</replaceable> uses
+         a syntax similar to XPath. The <replaceable>attributes</replaceable>
+         have same syntax and meaning as directive elm, except that !
+         refers to the nodes selected by <replaceable>xpath</replaceable>.
+         <!--
+         xelm   /         !:w                 default index
+         xelm   //        !:w                 additional index
+         xelm   /gils/title/@att    myatt:w   index attribute @att in myatt
+         xelm   title/@att          myatt:w   same meaning.
+         -->
+        </para>
+       </listitem>
+      </varlistentry>
+      
+      <varlistentry>
+       <term>encoding <replaceable>encodingname</replaceable></term>
        <listitem>
         <para>
          This directive specifies character encoding for external records.
          For records such as XML that specifies encoding within the
          file via a header this directive is ignored.
          If neither this directive is given, nor an encoding is set
-         within external records, ISO-8859-1 encoding is assmed.
+         within external records, ISO-8859-1 encoding is assumed.
          </para>
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>xpath <emphasis>enable/disable</emphasis></term>
+       <term>xpath <literal>enable</literal>/<literal>disable</literal></term>
        <listitem>
         <para>
          If this directive is followed by <literal>enable</literal>,
@@ -1085,7 +1113,7 @@
     <title>The Attribute Set (.att) Files</title>
 
     <para>
-     This file type describes the <emphasis>Use</emphasis> elements of
+     This file type describes the <replaceable>Use</replaceable> elements of
      an attribute set. 
      It contains the following directives. 
     </para>
@@ -1093,7 +1121,7 @@
     <para>
      <variablelist>
       <varlistentry>
-       <term>name <emphasis>symbolic-name</emphasis></term>
+       <term>name <replaceable>symbolic-name</replaceable></term>
        <listitem>
         <para>
          (m) This provides a shorthand name or
@@ -1102,24 +1130,24 @@
         </para>
        </listitem></varlistentry>
       <varlistentry>
-       <term>reference <emphasis>OID-name</emphasis></term>
+       <term>reference <replaceable>OID-name</replaceable></term>
        <listitem>
         <para>
          (m) The reference name of the OID for
          the attribute set.
-         The reference names can be found in the <emphasis>util</emphasis>
-         module of <emphasis>YAZ</emphasis>.
+         The reference names can be found in the <replaceable>util</replaceable>
+         module of <replaceable>YAZ</replaceable>.
         </para>
        </listitem></varlistentry>
       <varlistentry>
-       <term>include <emphasis>filename</emphasis></term>
+       <term>include <replaceable>filename</replaceable></term>
        <listitem>
         <para>
          (o,r) This directive is used to
          include another attribute set as a part of the current one. This is
          used when a new attribute set is defined as an extension to another
          set. For instance, many new attribute sets are defined as extensions
-         to the <emphasis>bib-1</emphasis> set.
+         to the <replaceable>bib-1</replaceable> set.
          This is an important feature of the retrieval
          system of Z39.50, as it ensures the highest possible level of
          interoperability, as those access points of your database which are
@@ -1129,15 +1157,15 @@
        </listitem></varlistentry>
       <varlistentry>
        <term>att
-        <emphasis>att-value att-name [local-value]</emphasis></term>
+        <replaceable>att-value att-name [local-value]</replaceable></term>
        <listitem>
         <para>
          (o,r) This
          repeatable directive introduces a new attribute to the set. The
          attribute value is stored in the index (unless a
-         <emphasis>local-value</emphasis> is
+         <replaceable>local-value</replaceable> is
          given, in which case this is stored). The name is used to refer to the
-         attribute from the <emphasis>abstract syntax</emphasis>. 
+         attribute from the <replaceable>abstract syntax</replaceable>. 
         </para>
        </listitem></varlistentry>
      </variablelist>
