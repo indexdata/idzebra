@@ -1,54 +1,27 @@
 <chapter id="quick-start">
- <!-- $Id: quickstart.xml,v 1.7 2002-10-30 14:35:09 adam Exp $ -->
+ <!-- $Id: quickstart.xml,v 1.8 2002-12-01 23:26:26 mike Exp $ -->
  <title>Quick Start </title>
- 
- <!--
-  FIXME - Start with the new improved example scripts that run 
-  without any configuration file changes!
-	### do we want this now we have "examples.html"? - mike, 15/10/02
- -->
 
  <para>
-  In this section, we will test the system by indexing a small set of sample
-  GILS records that are included with the software distribution. Go to the
-  <literal>examples/gils</literal> subdirectory of the distribution archive.
-  There you will find a configuration
-  file named <literal>zebra.cfg</literal> with the following contents:
-  
-  <screen>
-   # Where the schema files, attribute files, etc are located.
-   profilePath: ../../tab
-
-   # Files that describe the attribute sets supported.
-   attset: bib1.att
-   attset: gils.att
-   attset: explain.att
-
-   recordtype: grs.sgml
-   isam: c
-  </screen>
+  <!-- ### ulink to GILS profile: what's the URL? -->
+  In this section, we will test the system by indexing a small set of
+  sample GILS records that are included with the Zebra distribution,
+  running Zebra a server against the newly created database, and
+  searching the indexes with a client that connects to that server.
  </para>
-
- <!--  No longer necessary
  <para>
-  If necessary, edit the file and set <literal>profilePath</literal> to the path of the
-  YAZ profile tables (sub directory <literal>tab</literal> of the YAZ
-  distribution archive).
- </para>
- -->
- 
- <para>
-  The 48 test records are located in the sub directory
-  <literal>records</literal>. To index these, type:
-  
+  Go to the <literal>examples/gils</literal> subdirectory of the
+  distribution archive.  The 48 test records are located in the sub
+  directory <literal>records</literal>. To index these, type:
   <screen>
    zebraidx update records
   </screen>
  </para>
  
  <para>
-  In the command above, the word <literal>update</literal> followed
-  by a directory root updates all files below that directory node.
+  In this command, the word <literal>update</literal> is followed
+  by the name of a directory: <literal>zebraidx</literal> updates all
+  files in the hierarchy rooted at that directory.
  </para>
  
  <para>
@@ -56,7 +29,7 @@
   fire up a server. To start a server on port 2100, type:
   
   <screen>
-   zebrasrv tcp:@:2100
+   zebrasrv @:2100
   </screen>
   
  </para>
@@ -66,17 +39,18 @@
   named <literal>Default</literal>.
   The database contains records structured according to
   the GILS profile, and the server will
-  return records in either either USMARC, GRS-1, or SUTRS depending
-  on what your client asks for.
+  return records in USMARC, GRS-1, or SUTRS format depending
+  on what the client asks for.
  </para>
  
  <para>
   To test the server, you can use any Z39.50 client.
-  For instance, you can use the demo client that comes with YAZ:
+  For instance, you can use the demo command-line client that comes
+  with YAZ:
  </para>
  <para>
   <screen>
-   yaz-client tcp:localhost:2100
+   yaz-client localhost:2100
   </screen>
  </para>
  
@@ -92,8 +66,9 @@
  </para>
  
  <para>
-  The default retrieval syntax for the client is USMARC. To try other
-  formats for the same record, try:
+  The default retrieval syntax for the client is USMARC, and the
+  default element set is <literal>F</literal> (``full record''). To
+  try other formats and element sets for the same record, try:
  </para>
  <para>
   <screen>
@@ -110,8 +85,8 @@
  
  <note>
   <para>You may notice that more fields are returned when your
-   client requests SUTRS or GRS-1 records. When retrieving GILS records,
-   this is normal - not all of the GILS data elements have mappings in
+   client requests SUTRS, GRS-1 or XML records.
+   This is normal - not all of the GILS data elements have mappings in
    the USMARC record format.
   </para>
  </note>

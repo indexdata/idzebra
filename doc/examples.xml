@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.17 2002-11-08 17:00:57 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.18 2002-12-01 23:26:26 mike Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -19,23 +19,35 @@
 
     <listitem>
      <para>
-      Where to find subsidiary configuration files, including
-      <literal>default.idx</literal>
+      Where to find subsidiary configuration files, including both
+      those that are named explicitly and a few ``magic'' files such
+      as <literal>default.idx</literal>,
       which specifies the default indexing rules.
      </para>
     </listitem>
 
     <listitem>
      <para>
-      What attribute sets to recognise in searches.
+      What record schemas to support.  (Subsidiary files specifiy how
+      to index the contents of records in those schemas, and what
+      format to use when presenting records in those schemas to client
+      software.)
      </para>
     </listitem>
 
     <listitem>
      <para>
-      Policy details such as what record type to expect, what
-      low-level indexing algorithm to use, how to identify potential
-      duplicate records, etc.
+      What attribute sets to recognise in searches.  (Subsidiary files
+      specify how to interpret the attributes in terms
+      of the indexes that are created on the records.)
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+      Policy details such as what type of input format to expect when
+      adding new records, what low-level indexing algorithm to use,
+      how to identify potential duplicate records, etc.
      </para>
     </listitem>
 
@@ -69,6 +81,10 @@
    <literal>dino.tree</literal>.)
    Type <literal>make records/dino.xml</literal>
    to make the XML data file.
+   (Or you could just type <literal>make</literal> to build the XML
+   data file, create the database and populate it with the taxonomic
+   records all in one shot - but then you wouldn't learn anything,
+   would you?  :-)
   </para>
   <para>
    Now we need to create a Zebra database to hold and index the XML
@@ -76,7 +92,7 @@
    Zebra indexer, <literal>zebraidx</literal>, which is
    driven by the <literal>zebra.cfg</literal> configuration file.
    For our purposes, we don't need any
-   special behaviour - we can use the defaults - so we start with a
+   special behaviour - we can use the defaults - so we can start with a
    minimal file that just tells <literal>zebraidx</literal> where to
    find the default indexing rules, and how to parse the records:
    <screen>
@@ -108,7 +124,7 @@
    XPath-based boolean queries and fetch the XML records that satisfy
    them:
    <screen>
-    $ yaz-client tcp:@:9999
+    $ yaz-client @:9999
     Connecting...Ok.
     Z&gt; find @attr 1=/Zthes/termName Sauroposeidon
     Number of hits: 1
@@ -118,6 +134,7 @@
      &lt;termId&gt;22&lt;/termId&gt;
      &lt;termName&gt;Sauroposeidon&lt;/termName&gt;
      &lt;termType&gt;PT&lt;/termType&gt;
+     &lt;termNote&gt;The tallest known dinosaur (18m)&lt;/termNote&gt;
      &lt;relation&gt;
       &lt;relationType&gt;BT&lt;/relationType&gt;
       &lt;termId&gt;21&lt;/termId&gt;
@@ -126,7 +143,7 @@
      &lt;/relation&gt;
 
       &lt;idzebra xmlns="http://www.indexdata.dk/zebra/"&gt;
-	&lt;size&gt;245&lt;/size&gt;
+	&lt;size&gt;300&lt;/size&gt;
 	&lt;localnumber&gt;23&lt;/localnumber&gt;
 	&lt;filename&gt;records/dino.xml&lt;/filename&gt;
       &lt;/idzebra&gt;
@@ -134,7 +151,7 @@
    </screen>
   </para>
   <para>
-   Now wasn't that easy?
+   Now wasn't that nice and easy?
   </para>
  </sect1>
 
@@ -158,7 +175,7 @@
    significantly because it ties searching semantics to the physical
    structure of the searched records.  You can't use the same search
    specification to search two databases if their internal
-   representations are different.  Consider an alternative taxonomy
+   representations are different.  Consider an different taxonomy
    database in which the records have taxon names specified
    inside a <literal>&lt;name&gt;</literal> element nested within a
    <literal>&lt;identification&gt;</literal> element
@@ -175,8 +192,8 @@
    said about implementation: in a given database, an access point
    might be implemented as an index, a path into physical records, an
    algorithm for interrogating relational tables or whatever works.
-   The key point is that the semantics of an access point are fixed
-   and well defined.
+   The only important thing point is that the semantics of an access
+   point are fixed and well defined.
   </para>
   <para>
    For convenience, access points are gathered into <firstterm>attribute
@@ -192,7 +209,7 @@
    In practice, the BIB-1 attribute set has tended to be a dumping
    ground for all sorts of access points, so that, for example, it
    includes some geospatial access points as well as strictly
-   bibliographic ones.  Nevertheless, the key point is that this model
+   bibliographic ones.  Nevertheless, this model
    allows a layer of abstraction over the physical representation of
    records in databases.
   </para>
@@ -208,6 +225,11 @@
    <literal>&lt;termName&gt;</literal> element,
    inside the top-level
    <literal>&lt;Zthes&gt;</literal> element.
+  </para>
+  <para>
+   ### Here's where it all goes to pieces.  The current arrangement is
+   very awkward (and somewhat embarrassing) to describe, and the new
+   arrangement hasn't actually been implemented yet.
   </para>
   <para>
    This is a two-step process.  First, we need to tell Zebra that we

@@ -1,15 +1,14 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.21 2002-11-08 17:00:57 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.22 2002-12-01 23:26:26 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
   <title>Overview</title>
   
   <para>
-   <ulink url="http://indexdata.dk/zebra/">
-     Zebra</ulink>
+   <ulink url="http://indexdata.dk/zebra/">Zebra</ulink>
    is a high-performance, general-purpose structured text
-   indexing and retrieval engine. It reads structured records in a
+   indexing and retrieval engine. It reads records in a
    variety of input formats (eg. email, XML, MARC) and provides access
    to them through a powerful combination of boolean search
    expressions and relevance-ranked free-text queries.
@@ -49,7 +48,7 @@
 
     <listitem>
      <para>
-      Very large databases: files for indexes, etc. can be
+      Very large databases: logical files can be
       automatically partitioned over multiple disks.
      </para>
     </listitem>
@@ -57,7 +56,7 @@
     <listitem>
      <para>
       Arbitrarily complex records.  The internal data format
-      is an structured format conceptually similar to XML or GRS-1,
+      is a structured format conceptually similar to XML or GRS-1,
       which allows lists, nested structured data elements and
       variant forms of data.
      </para>
@@ -304,8 +303,44 @@
     which is populated by the Harvest-NG web-crawling software.
    </para>
    <para>
-    For more information, contact John Gilbertson
+    For more information on Liverpool university's intranet search
+    architecture, contact John Gilbertson
     <email>jgilbert@liverpool.ac.uk</email>
+   </para>
+   <para>
+    Kang-Jin Lee
+    <email>lee@arco.de</email>,
+    has recently modified the Harvest-NG web crawler to use Zebra as
+    its native repository engine.  His comments on the switch over
+    from the old engine are revealing:
+    <blockquote>
+     <para>
+      The first results after some testing with Zebra are very
+      promising.  The tests were done with around 220,000 SOIF files,
+      which occupies 1.6GB of disk space.
+     </para>
+     <para>
+      Building the index from scratch takes around one hour with Zebra
+      where [old-engine] needs around five hours.  While [old-engine]
+      blocks search requests when updating its index, Zebra can still
+      answer search requests.
+      [...]
+      Zebra supports incremental indexing which will speed up indexing
+      even further.
+     </para>
+     <para>
+      While the search time of [old-engine] varies from some seconds
+      to some minutes depending how expensive the query is, Zebra
+      usually takes around one to three seconds, even for expensive
+      queries.
+      [...]
+      Zebra can search more than 100 times faster than [old-engine]
+      and can process multiple search requests simultaneously
+     </para>
+     <para>
+      I am very happy to see such nice software available under GPL.
+     </para>
+    </blockquote>
    </para>
   </sect2>
  </sect1>
@@ -331,7 +366,7 @@
    announcements from the authors (new
    releases, bug fixes, etc.) and general discussion.  You are welcome
    to seek support there.  Join by sending email to
-   <email>zebra-request@indexdata.dk</email>. Put the word
+   <email>zebra-request@indexdata.dk</email> with the word
    <literal>subscribe</literal> in the body of the message.
   </para>
   <para>
@@ -360,20 +395,17 @@
        Improved support for XML in search and retrieval. Eventually,
        the goal is for Zebra to pull double duty as a flexible
        information retrieval engine and high-performance XML
-       repository.
-     </para>
-     <para>
-       ### Partially done.
+       repository.  The recent addition of XPath searching is one
+       example of the kind of enhancement we're working on.
      </para>
     </listitem>
 
     <listitem>
      <para>
-       Access to search engine through SOAP/RPC API to allow the
+       Access to the search engine through SOAP/RPC API to allow the
        construction of applications without requiring Z39.50 tools.
-     </para>
-     <para>
-       ### Partially done, thanks to the new SRW/Z39.50 gateway.
+       This will shortly be available by means of Index Data's
+       SRW-to-Z39.50 gateway, currently in beta test.
      </para>
     </listitem>
 
@@ -383,6 +415,15 @@
        API, allowing updates, database management and other functions
        not readily expressed in Z39.50.  We will also consider
        exposing the API through SOAP.
+     </para>
+    </listitem>
+
+    <listitem>
+     <para>
+       Support for the use of Perl both for access to the Zebra API
+       and for building extension ``plug-ins'' such as input filters.
+       The code for this has been contributed to the source tree, and
+       is in the process of being integrated and tested.
      </para>
     </listitem>
 

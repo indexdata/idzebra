@@ -1,5 +1,5 @@
 <chapter id="installation">
- <!-- $Id: installation.xml,v 1.5 2002-10-08 08:09:43 mike Exp $ -->
+ <!-- $Id: installation.xml,v 1.6 2002-12-01 23:26:26 mike Exp $ -->
  <title>Installation</title>
  <para>
   An ANSI C compiler is required to compile the Zebra
@@ -11,7 +11,8 @@
   Unpack the distribution archive. The <literal>configure</literal>
   shell script attempts to guess correct values for various
   system-dependent variables used during compilation.
-  It uses those values to create a 'Makefile' in each directory of Zebra.
+  It uses those values to create a <literal>Makefile</literal> in each
+  directory of Zebra.
  </para>
  
  <para>
@@ -26,7 +27,7 @@
  <para>
   The configure script attempts to use C compiler specified by
   the <literal>CC</literal> environment variable.
-  If not set, <literal>cc</literal> or GNU C will be used.
+  If this is not set, <literal>cc</literal> or GNU C will be used.
   The <literal>CFLAGS</literal> environment variable holds
   options to be passed to the C compiler. If you're using a
   Bourne-shell compatible shell you may pass something like this:
@@ -34,27 +35,26 @@
   <screen>
   CC=/opt/ccs/bin/cc CFLAGS=-O ./configure
   </screen>
-  
-  The configure script takes a number of arguments, you can see
-  them all with
+ </para>
+ <para>
+  The configure script support various options: you can see what they
+  are with
   <screen>
   ./configure --help
   </screen>
-
  </para>
  
  <para>
-  When configured, build the software by typing:
-  
+  Once the build environment is configured, build the software by
+  typing:
   <screen>
   make
   </screen>
- 
  </para>
  
  <para>
-  If successful, two executables are created in the sub-directory
-  <literal>index</literal>.
+  If the build is successful, two executables are created in the
+  sub-directory <literal>index</literal>:
   <variablelist>
    
    <varlistentry>
@@ -85,7 +85,7 @@
   By default this will install the Zebra executables in 
   <filename>/usr/local/bin</filename>,
   and the standard configuration files in 
-  <filename>/usr/local/share/zebra</filename>
+  <filename>/usr/local/share/idzebra</filename>
   You can override this with the <literal>--prefix</literal> option
   to configure.
  </para>
