@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.5 2004-01-30 11:43:41 heikki Exp $
+/* $Id: rsisamb.c,v 1.6 2004-06-01 12:32:19 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -28,12 +28,17 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include <rsisamb.h>
 #include <string.h>
+#include <../index/index.h> /* for log_keydump. Debugging only */
+
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
+static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
+                     int (*cmpfunc)(const void *p1, const void *p2),
+                     const void *untilbuf);
 static int r_count (RSET ct);
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
@@ -46,7 +51,7 @@ static const struct rset_control control =
     r_close,
     r_delete,
     r_rewind,
-    rset_default_forward,
+    r_forward, /* rset_default_forward, */
     r_count,
     r_read,
     r_write,
@@ -145,6 +150,21 @@ static void r_rewind (RSFD rfd)
 {   
     logf (LOG_DEBUG, "rsisamb_rewind");
     abort ();
+}
+
+static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
+                     int (*cmpfunc)(const void *p1, const void *p2),
+                     const void *untilbuf)
+{
+    int i; /*!*/
+    struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
+    logf (LOG_DEBUG, "rset_rsisamb_forward starting '%s' (ct=%p rfd=%p)",
+                      ct->control->desc, ct,rfd);
+    key_logdump(LOG_DEBUG, untilbuf);
+    key_logdump(LOG_DEBUG, buf);
+
+    i=isamb_pp_forward(pinfo->pt, buf, untilbuf);
+    return i;
 }
 
 static int r_count (RSET ct)

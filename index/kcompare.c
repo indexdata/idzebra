@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.42 2004-05-30 18:35:12 adam Exp $
+/* $Id: kcompare.c,v 1.43 2004-06-01 12:32:18 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -28,15 +28,22 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "index.h"
 
 #define INT_CODEC_NEW 0
-
 #define CODEC_INLINE inline
+void key_logdump_txt (int logmask, const void *p, const char *txt)
+{
+    struct it_key key;
+    if (p)
+    {
+        memcpy (&key, p, sizeof(key));
+        logf (logmask, "%7d:%-4d %s", key.sysno, key.seqno,txt);
+    }
+    else
+        logf(logmask, " (null) %s",txt);
+}
 
 void key_logdump (int logmask, const void *p)
 {
-    struct it_key key;
-
-    memcpy (&key, p, sizeof(key));
-    logf (logmask, "%7d s=%-4d", key.sysno, key.seqno);
+    key_logdump_txt(logmask,p,"");
 }
 
 int key_compare_it (const void *p1, const void *p2)

@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.6 2003-06-23 15:36:11 adam Exp $
+/* $Id: isamb.h,v 1.7 2004-06-01 12:32:18 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -39,6 +39,8 @@ ISAMB_P isamb_merge (ISAMB b, ISAMB_P pos, ISAMC_I *data);
 ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos);
 
 int isamb_pp_read (ISAMB_PP pp, void *buf);
+
+int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf);
 
 void isamb_pp_close (ISAMB_PP pp);
 

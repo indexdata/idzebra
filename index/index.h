@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.106 2004-05-26 13:52:25 adam Exp $
+/* $Id: index.h,v 1.107 2004-06-01 12:32:18 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -111,6 +111,7 @@ int key_get_pos (const void *p);
 int key_compare_it (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
+void key_logdump_txt (int logmask, const void *p, const char *txt);
 void inv_prstat (ZebraHandle zh);
 void inv_compact (BFiles bfs);
 void key_input (ZebraHandle zh, int nkeys, int cache, Res res);

@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.28 2004-05-30 18:04:49 adam Exp $
+/* $Id: isamb.c,v 1.29 2004-06-01 12:32:19 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,6 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <isamb.h>
 #include <assert.h>
+#include <../index/index.h> /* for log_keydump. Debugging only */
 
 struct ISAMB_head {
     int first_block;
@@ -39,6 +40,7 @@ struct ISAMB_head {
 /* maximum size of encoded buffer */
 #define DST_ITEM_MAX 256
 
+#define ISAMB_MAX_LEVEL 10
 /* approx 2*max page + max size of item */
 #define DST_BUF_SIZE 16840
 
@@ -77,6 +79,10 @@ struct ISAMB_s {
     int cache; /* 0=no cache, 1=use cache, -1=dummy isam (for testing only) */
     int log_io;        /* log level for bf_read/bf_write calls */
     int log_freelist;  /* log level for freelist handling */
+    int skipped_numbers; /* on a leaf node */
+    int returned_numbers; 
+    int skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1=higher etc */
+    int accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
 };
 
 struct ISAMB_block {
@@ -97,8 +103,13 @@ struct ISAMB_PP_s {
     ISAMB isamb;
     ISAMB_P pos;
     int level;
+    int maxlevel; /* total depth */
     int total_size;
     int no_blocks;
+    int skipped_numbers; /* on a leaf node */
+    int returned_numbers; 
+    int skipped_nodes[ISAMB_MAX_LEVEL]; /* [0]=skipped leaves, 1=higher etc */
+    int accessed_nodes[ISAMB_MAX_LEVEL]; /* nodes we did not skip */
     struct ISAMB_block **block;
 };
 
@@ -160,6 +171,10 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
     isamb->log_io = 0;
     isamb->log_freelist = 0;
     isamb->cache = cache;
+    isamb->skipped_numbers=0;
+    isamb->returned_numbers=0;
+    for (i=0;i<ISAMB_MAX_LEVEL;i++)
+      isamb->skipped_nodes[i]= isamb->accessed_nodes[i]=0;
 
     assert (cache == 0);
     isamb->file = xmalloc (sizeof(*isamb->file) * isamb->no_cat);
@@ -286,6 +301,11 @@ static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
 void isamb_close (ISAMB isamb)
 {
     int i;
+    for (i=0;isamb->accessed_nodes[i];i++)
+        logf(LOG_DEBUG,"isamb_close  level leaf-%d: %d read, %d skipped",
+             i, isamb->accessed_nodes[i], isamb->skipped_nodes[i]);
+    logf(LOG_DEBUG,"isamb_close returned %d values, skipped %d",
+         isamb->skipped_numbers, isamb->returned_numbers);
     for (i = 0; i<isamb->no_cat; i++)
     {
         flush_blocks (isamb, i);
@@ -327,13 +347,14 @@ struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
     p->size = (p->buf[1] + 256 * p->buf[2]) - ISAMB_DATA_OFFSET;
     if (p->size < 0)
     {
-        fprintf (stderr, "pos=%d\n", pos);
+        yaz_log (LOG_FATAL, "Bad block size %d in pos=%d\n", p->size, pos);
     }
     assert (p->size >= 0);
     p->offset = 0;
     p->dirty = 0;
     p->deleted = 0;
     p->decodeClientData = (*b->method->code_start)(ISAMC_DECODE);
+    yaz_log (LOG_DEBUG, "isamb_open_block: Opened block %d ofs=%d",pos, p->offset);
     return p;
 }
 
@@ -898,14 +919,20 @@ int isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
 ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level)
 {
     ISAMB_PP pp = xmalloc (sizeof(*pp));
+    int i;
 
     pp->isamb = isamb;
-    pp->block = xmalloc (10 * sizeof(*pp->block));
+    pp->block = xmalloc (ISAMB_MAX_LEVEL * sizeof(*pp->block));
 
     pp->pos = pos;
     pp->level = 0;
+    pp->maxlevel=0;
     pp->total_size = 0;
     pp->no_blocks = 0;
+    pp->skipped_numbers=0;
+    pp->returned_numbers=0;
+    for (i=0;i<ISAMB_MAX_LEVEL;i++)
+        pp->skipped_nodes[i] = pp->accessed_nodes[i]=0;
     while (1)
     {
         struct ISAMB_block *p = open_block (isamb, pos);
@@ -914,15 +941,17 @@ ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level)
 
         pp->total_size += p->size;
         pp->no_blocks++;
-
         if (p->leaf)
             break;
 
+                                        
         decode_ptr (&src, &pos);
         p->offset = src - p->bytes;
         pp->level++;
+        pp->accessed_nodes[pp->level]++; 
     }
     pp->block[pp->level+1] = 0;
+    pp->maxlevel=pp->level;
     if (level)
         *level = pp->level;
     return pp;
@@ -938,6 +967,19 @@ void isamb_pp_close_x (ISAMB_PP pp, int *size, int *blocks)
     int i;
     if (!pp)
         return;
+    logf(LOG_DEBUG,"isamb_pp_close lev=%d returned %d values, skipped %d",
+        pp->maxlevel, pp->skipped_numbers, pp->returned_numbers);
+    for (i=pp->maxlevel;i>=0;i--)
+        if ( pp->skipped_nodes[i] || pp->accessed_nodes[i])
+            logf(LOG_DEBUG,"isamb_pp_close  level leaf-%d: %d read, %d skipped", i,
+                 pp->accessed_nodes[i], pp->skipped_nodes[i]);
+    pp->isamb->skipped_numbers += pp->skipped_numbers;
+    pp->isamb->returned_numbers += pp->returned_numbers;
+    for (i=pp->maxlevel;i>=0;i--)
+    {
+        pp->isamb->accessed_nodes[i] += pp->accessed_nodes[i];
+        pp->isamb->skipped_nodes[i] += pp->skipped_nodes[i];
+    }
     if (size)
         *size = pp->total_size;
     if (blocks)
@@ -960,6 +1002,12 @@ void isamb_pp_close (ISAMB_PP pp)
     isamb_pp_close_x (pp, 0, 0);
 }
 
+
+#if 0
+/* Old isamb_pp_read that Adam wrote, kept as a reference in case we need to
+   debug the more complex pp_read that also forwards. May be deleted near end
+   of 2004, if it has not shown to be useful */
+
 int isamb_pp_read (ISAMB_PP pp, void *buf)
 {
     char *dst = buf;
@@ -979,7 +1027,7 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
             pp->block[pp->level] = 0;
             (pp->level)--;
             p = pp->block[pp->level];
-            assert (!p->leaf);  /* must be int */
+            assert (!p->leaf);  
         }
         src = p->bytes + p->offset;
         
@@ -998,7 +1046,7 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
             pp->total_size += p->size;
             pp->no_blocks++;
             
-            if (p->leaf) /* leaf */
+            if (p->leaf) 
             {
                 break;
             }
@@ -1014,8 +1062,162 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
     (*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
                                     &dst, &src);
     p->offset = src - (char*) p->bytes;
+    key_logdump_txt(LOG_DEBUG,buf, "isamb_pp_read returning 1");
     return 1;
 }
+
+#else
+int isamb_pp_read (ISAMB_PP pp, void *buf)
+{
+    return isamb_pp_forward(pp,buf,0);
+}
+#endif
+
+int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
+{
+    /* pseudocode:
+     *   while 1
+     *     while at end of node
+     *       climb higher. If out, return 0
+     *     while not on a leaf (and not at its end)
+     *       decode next
+     *       if cmp
+     *         descend to node
+     *     decode next
+     *     if cmp
+     *       return 1
+     */
+        /* 
+         * The upper nodes consist of a sequence of nodenumbers and keys
+         * When opening a block,  the first node number is read in, and
+         * offset points to the first key, which is the upper limit of keys
+         * in the node just read.
+         */
+    char *dst = buf;
+    char *src;
+    struct ISAMB_block *p = pp->block[pp->level];
+    int cmp;
+    int item_len;
+    int pos;
+    int nxtpos;
+    if (!p)
+        return 0;
+    logf(LOG_DEBUG,"isamb_pp_forward starting [%p] p=%d",pp,p->pos);
+    key_logdump_txt(LOG_DEBUG, untilbuf," until");
+    key_logdump_txt(LOG_DEBUG, buf, " buf");
+    while (1)
+    {
+        while ( p->offset == p->size) 
+        {  /* end of this block - climb higher */
+            logf(LOG_DEBUG,"isamb_pp_forward climbing from l=%d",
+                            pp->level);
+            if (pp->level == 0)
+            {
+                logf(LOG_DEBUG,"isamb_pp_forward returning 0 at root");
+                return 0; /* at end of the root, nothing left */
+            }
+            close_block(pp->isamb, pp->block[pp->level]);
+            pp->block[pp->level]=0;
+            (pp->level)--;
+            p=pp->block[pp->level];
+            logf(LOG_DEBUG,"isamb_pp_forward climbed to node %d off=%d",
+                            p->pos, p->offset);
+            assert(!p->leaf);
+            /* skip the child we have handled */
+            if (p->offset != p->size)
+            { 
+                src = p->bytes + p->offset;
+                decode_ptr(&src, &item_len);
+                key_logdump_txt(LOG_DEBUG, src, " isamb_pp_forward climb skipping old key");
+                src += item_len;
+                decode_ptr(&src,&pos);
+                p->offset = src - (char*) p->bytes;
+                break; /* even if this puts us at the end of the block, we need to */
+                       /* descend to the last pos. UGLY coding, clean up some */
+                       /* day */
+            }
+        }
+        if (!p->leaf)
+        { 
+            src = p->bytes + p->offset;
+            if (p->offset == p->size)
+                cmp=-2 ; /* descend to the last node, as we have no value to cmp */
+            else
+            {
+                decode_ptr(&src, &item_len);
+                logf(LOG_DEBUG,"isamb_pp_forward (B) on a high node. ofs=%d sz=%d nxtpos=%d ",
+                        p->offset,p->size,pos);
+                key_logdump(LOG_DEBUG, src);
+                if (untilbuf)
+                    cmp=(*pp->isamb->method->compare_item)(untilbuf,src);
+                else
+                    cmp=-2;
+                src += item_len;
+                decode_ptr(&src,&nxtpos);
+            }
+            if (cmp<2)
+            { 
+                logf(LOG_DEBUG,"isambb_pp_forward descending l=%d p=%d ",
+                            pp->level, pos);
+                ++(pp->level);
+                p = open_block(pp->isamb,pos);
+                pp->block[pp->level] = p ;
+                pp->total_size += p->size;
+                (pp->accessed_nodes[pp->maxlevel - pp->level])++;
+                pp->no_blocks++;
+                if ( !p->leaf)
+                { /* block starts with a pos */
+                    src = p->bytes + p->offset;
+                    decode_ptr(&src,&pos);
+                    p->offset=src-(char*) p->bytes;
+                    logf(LOG_DEBUG,"isamb_pp_forward: block %d starts with %d",
+                                    p->pos, pos);
+                } 
+            } /* descend to the node */
+            else
+            { /* skip the node */
+                p->offset = src - (char*) p->bytes;
+                pos=nxtpos;
+                (pp->skipped_nodes[pp->maxlevel - pp->level -1])++;
+                logf(LOG_DEBUG,
+                    "isamb_pp_forward: skipping block on level %d, noting on %d (%d)",
+                    pp->level, pp->maxlevel - pp->level-1 , 
+                    pp->skipped_nodes[pp->maxlevel - pp->level-1 ]);
+                /* 0 is always leafs, 1 is one level above leafs etc, no
+                 * matter how high tree */
+            }
+        } /* not on a leaf */
+        else
+        { /* on a leaf */
+            src = p->bytes + p->offset;
+            dst=buf;
+            (*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
+                                            &dst, &src);
+            p->offset = src - (char*) p->bytes;
+            if (untilbuf)
+                cmp=(*pp->isamb->method->compare_item)(untilbuf,buf);
+            else
+                cmp=-2;
+            logf(LOG_DEBUG,"isamb_pp_forward on a leaf. cmp=%d", 
+                              cmp);
+            key_logdump(LOG_DEBUG, buf);
+            if (cmp <2)
+            {
+                if (untilbuf)
+                    key_logdump_txt(LOG_DEBUG, buf,
+                       "isamb_pp_forward returning 1");
+                else
+                    key_logdump_txt(LOG_DEBUG, buf,
+                        "isamb_pp_read returning 1 (fwd)");
+                pp->returned_numbers++;
+                return 1;
+            }
+            else
+                pp->skipped_numbers++;
+        } /* leaf */
+    } /* main loop */
+}
+
 
 int isamb_pp_num (ISAMB_PP pp)
 {
