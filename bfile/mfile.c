@@ -1,14 +1,14 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.43  2002-04-04 20:50:36  adam
- * Multi register works with record paths and data1 profile path
+ * Revision 1.41.2.1  2002-07-23 12:33:21  adam
+ * Towards 1.1.3
  *
- * Revision 1.42  2002/04/04 14:14:13  adam
- * Multiple registers (alpha early)
+ * Revision 1.41.4.1  2002/07/23 09:32:41  adam
+ * 64 bit file access on WIN32
  *
  * Revision 1.41  2000/11/29 14:24:01  adam
  * Script configure uses yaz pthreads options. Added locking for
@@ -165,7 +165,7 @@
 #include <zebrautl.h>
 #include <mfile.h>
 
-static int scan_areadef(MFile_area ma, const char *ad, const char *base)
+static int scan_areadef(MFile_area ma, const char *name, const char *ad)
 {
     /*
      * If no definition is given, use current directory, unlimited.
@@ -174,23 +174,17 @@ static int scan_areadef(MFile_area ma, const char *ad, const char *base)
     mf_dir **dp = &ma->dirs, *dir = *dp;
 
     if (!ad)
-        ad = ".:-1b";
+	ad = ".:-1b";
     for (;;)
     {
         const char *ad0 = ad;
         int i = 0, fact = 1, multi;
-	off_t size = 0;
+	mfile_off_t size = 0;
 
         while (*ad == ' ' || *ad == '\t')
             ad++;
         if (!*ad)
             break;
-        if (!yaz_is_abspath(ad) && base)
-        {
-            strcpy (dirname, base);
-            i = strlen(dirname);
-            dirname[i++] = '/';
-        }
         while (*ad)
         {
 	    if (*ad == ':' && strchr ("+-0123456789", ad[1]))
@@ -276,8 +270,14 @@ static int file_position(MFile mf, int pos, int offset)
     	logf (LOG_WARN|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
     	return -1;
     }
-    if (lseek(mf->files[c].fd, (ps = pos - off) * mf->blocksize + offset,
-    	SEEK_SET) < 0)
+    if (
+#ifdef WIN32
+	_lseeki64
+#else
+	lseek
+#endif
+	(mf->files[c].fd, (mfile_off_t) (ps = pos-off) * mf->blocksize + offset,
+    	SEEK_SET) == (mfile_off_t) (-1))
     {
     	logf (LOG_WARN|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
     	return -1;
@@ -295,7 +295,7 @@ static int cmp_part_file(const void *p1, const void *p2)
  * Create a new area, cotaining metafiles in directories.
  * Find the part-files in each directory, and inventory the existing metafiles.
  */
-MFile_area mf_init(const char *name, const char *spec, const char *base)
+MFile_area mf_init(const char *name, const char *spec)
 {
     MFile_area ma = (MFile_area) xmalloc(sizeof(*ma));
     mf_dir *dirp;
@@ -310,7 +310,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
     strcpy(ma->name, name);
     ma->mfiles = 0;
     ma->dirs = 0;
-    if (scan_areadef(ma, spec, base) < 0)
+    if (scan_areadef(ma, name, spec) < 0)
     {
     	logf (LOG_WARN, "Failed to access description of '%s'", name);
     	return 0;
@@ -372,7 +372,13 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
                       dent->d_name);
 	    	return 0;
 	    }
-	    if ((part_f->bytes = lseek(fd, 0, SEEK_END)) < 0)
+	    if ((part_f->bytes = 
+#ifdef WIN32
+		_lseeki64
+#else
+		lseek
+#endif
+		(fd, (mfile_off_t) 0, SEEK_END)) == (mfile_off_t)(-1))
 	    {
 	    	logf (LOG_FATAL|LOG_ERRNO, "Failed to seek in %s",
                       dent->d_name);
@@ -638,8 +644,8 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 	    mf->files[mf->cur_file].dir = dp;
 	    mf->files[mf->cur_file].number =
 		mf->files[mf->cur_file-1].number + 1;
-	    mf->files[mf->cur_file].blocks =
-	    	mf->files[mf->cur_file].bytes = 0;
+	    mf->files[mf->cur_file].blocks = 0;
+	    mf->files[mf->cur_file].bytes = 0;
 	    mf->files[mf->cur_file].fd = -1;
 	    sprintf(tmp, "%s/%s-%d.mf", dp->name, mf->name,
 		mf->files[mf->cur_file].number);

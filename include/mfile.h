@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.h,v 1.17 2002-04-04 14:14:13 adam Exp $
+ * $Id: mfile.h,v 1.16.2.1 2002-07-23 12:33:22 adam Exp $
  */
 
 #ifndef MFILE_H
@@ -13,9 +13,10 @@
 #include <yaz/yconfig.h>
 
 #ifdef WIN32
-typedef long off_t;
+typedef __int64 mfile_off_t;
 #else
 #include <sys/types.h>
+typedef off_t mfile_off_t;
 #endif
 
 #ifndef FILENAME_MAX
@@ -36,8 +37,8 @@ YAZ_BEGIN_CDECL
 typedef struct mf_dir
 {
     char name[FILENAME_MAX+1];
-    off_t max_bytes;      /* allocated bytes in this dir. */
-    off_t avail_bytes;    /* bytes left */
+    mfile_off_t max_bytes;      /* allocated bytes in this dir. */
+    mfile_off_t avail_bytes;    /* bytes left */
     struct mf_dir *next;
 } mf_dir;
 
@@ -46,7 +47,7 @@ typedef struct part_file
     int number;
     int top;
     int blocks;
-    off_t bytes;
+    mfile_off_t bytes;
     mf_dir *dir;
     char *path;
     int fd;
@@ -62,8 +63,8 @@ typedef struct meta_file
     int no_files;
     int cur_file;
     int open;                          /* is this file open? */
-    off_t blocksize;
-    off_t min_bytes_creat;  /* minimum bytes required to enter directory */
+    int blocksize;
+    mfile_off_t min_bytes_creat;  /* minimum bytes required to enter directory */
     MFile_area ma;
     int wr;
     Zebra_mutex mutex;
@@ -83,7 +84,7 @@ typedef struct MFile_area_struct
 /*
  * Open an area, cotaining metafiles in directories.
  */
-MFile_area mf_init(const char *name, const char *spec, const char *base); 
+MFile_area mf_init(const char *name, const char *spec); 
 
 /*
  * Release an area.
