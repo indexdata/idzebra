@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.31  1999-07-06 09:37:04  heikki
+ * Revision 1.32  1999-07-13 13:21:15  heikki
+ * Managing negative deltas
+ *
+ * Revision 1.31  1999/07/06 09:37:04  heikki
  * Working on isamh - not ready yet.
  *
  * Revision 1.30  1999/06/30 15:07:23  heikki
@@ -222,18 +225,18 @@ void iscz1_encode_int (unsigned d, char **dst)
         *bp++ = d;
     else if (d <= 16383)
     {
-        *bp++ = 64 + (d>>8);
+        *bp++ = 64 | (d>>8);
        *bp++ = d & 255;
     }
     else if (d <= 4194303)
     {
-        *bp++ = 128 + (d>>16);
+        *bp++ = 128 | (d>>16);
         *bp++ = (d>>8) & 255;
         *bp++ = d & 255;
     }
     else
     {
-        *bp++ = 192 + (d>>24);
+        *bp++ = 192 | (d>>24);
         *bp++ = (d>>16) & 255;
         *bp++ = (d>>8) & 255;
         *bp++ = d & 255;
@@ -255,9 +258,13 @@ int iscz1_decode_int (unsigned char **src)
         c = (c << 8) + *(*src)++;
         return c;
     }
-    c = ((c & 63) << 8) + *(*src)++;
+    if (c&32) /* expand sign bit to high bits */
+       c = ((c | 63) << 8) + *(*src)++;
+    else
+       c = ((c & 63) << 8) + *(*src)++;
     c = (c << 8) + *(*src)++;
     c = (c << 8) + *(*src)++;
+    
     return c;
 }
 
