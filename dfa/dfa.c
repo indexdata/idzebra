@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.4  1995-09-28 09:18:52  adam
+ * Revision 1.5  1995-10-02 15:17:58  adam
+ * Bug fix in dfa_delete.
+ *
+ * Revision 1.4  1995/09/28  09:18:52  adam
  * Removed various preprocessor defines.
  *
  * Revision 1.3  1995/09/04  12:33:26  adam
@@ -972,7 +975,8 @@ void dfa_delete (struct DFA **dfap)
     assert (*dfap);
     if ((*dfap)->parse_info)
         rm_dfa_parse (&(*dfap)->parse_info);
-    rm_DFA_states (&(*dfap)->state_info);
+    if ((*dfap)->state_info)
+        rm_DFA_states (&(*dfap)->state_info);
     ifree (*dfap);
     *dfap = NULL;
 }
