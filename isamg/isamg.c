@@ -1,4 +1,4 @@
-/* $Id: isamg.c,v 1.2 2002-08-02 19:26:56 adam Exp $
+/* $Id: isamg.c,v 1.3 2003-04-02 19:01:47 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -90,7 +90,6 @@ struct ISAMG_PP_s {
                               sizeof(ISAMG_BLOCK_SIZE) + \
                               sizeof(ISAMG_BLOCK_SIZE)) 
 /* == 12  (was 16) */
-//                              sizeof(int) + 
 
 
 int isamg_alloc_block (ISAMG is, int cat);
@@ -149,7 +148,10 @@ int isamg_close (ISAMG is){
 
 /*
  * $Log: isamg.c,v $
- * Revision 1.2  2002-08-02 19:26:56  adam
+ * Revision 1.3  2003-04-02 19:01:47  adam
+ * Remove // comment
+ *
+ * Revision 1.2  2002/08/02 19:26:56  adam
  * Towards GPL
  *
  * Revision 1.1  2001/01/16 19:05:45  heikki

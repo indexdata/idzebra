@@ -1,4 +1,7 @@
-//#include "zebraapi.h"
+#if 0
+#include "zebraapi.h"
+#endif
+
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
