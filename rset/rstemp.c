@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.7  1995-09-07 13:58:44  adam
+ * Revision 1.8  1995-09-08 14:52:42  adam
+ * Work on relevance feedback.
+ *
+ * Revision 1.7  1995/09/07  13:58:44  adam
  * New parameter: result-set file descriptor (RSFD) to support multiple
  * positions within the same result-set.
  * Boolean operators: and, or, not implemented.
@@ -88,7 +91,6 @@ static struct rset_control *r_create(const struct rset_control *sel,
     rset_temp_parms *temp_parms = parms;
     struct rset_temp_info *info;
     
-    logf (LOG_DEBUG, "ritemp_create(%s)", sel->desc);
     newct = xmalloc(sizeof(*newct));
     memcpy(newct, sel, sizeof(*sel));
     newct->buf = xmalloc (sizeof(struct rset_temp_info));

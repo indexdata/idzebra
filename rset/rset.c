@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.5  1995-09-07 13:58:43  adam
+ * Revision 1.6  1995-09-08 14:52:41  adam
+ * Work on relevance feedback.
+ *
+ * Revision 1.5  1995/09/07  13:58:43  adam
  * New parameter: result-set file descriptor (RSFD) to support multiple
  * positions within the same result-set.
  * Boolean operators: and, or, not implemented.
@@ -32,6 +35,7 @@ RSET rset_create(const rset_control *sel, void *parms)
 {
     RSET new;
 
+    logf (LOG_DEBUG, "rs_create(%s)", sel->desc);
     new = xmalloc(sizeof(*new));     /* make dynamic alloc scheme */
     if (!(new->control = (*sel->f_create)(sel, parms)))
     	return 0;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.4  1995-09-08 08:54:04  adam
+ * Revision 1.5  1995-09-08 14:52:41  adam
+ * Work on relevance feedback.
+ *
+ * Revision 1.4  1995/09/08  08:54:04  adam
  * More efficient and operation.
  *
  * Revision 1.3  1995/09/07  13:58:43  adam
@@ -109,7 +112,6 @@ static rset_control *r_create (const struct rset_control *sel, void *parms)
     rset_bool_parms *bool_parms = parms;
     struct rset_bool_info *info;
 
-    logf (LOG_DEBUG, "rsbool_create(%s)", sel->desc);
     newct = xmalloc(sizeof(*newct));
     memcpy (newct, sel, sizeof(*sel));
     newct->buf = xmalloc (sizeof(struct rset_bool_info));

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.2  1995-09-07 13:58:43  adam
+ * Revision 1.3  1995-09-08 14:52:42  adam
+ * Work on relevance feedback.
+ *
+ * Revision 1.2  1995/09/07  13:58:43  adam
  * New parameter: result-set file descriptor (RSFD) to support multiple
  * positions within the same result-set.
  * Boolean operators: and, or, not implemented.
@@ -47,7 +50,6 @@ static rset_control *r_create(const struct rset_control *sel, void *parms)
 {
     rset_control *newct;
 
-    logf (LOG_DEBUG, "rsnull_create(%s)", sel->desc);
     newct = xmalloc(sizeof(*newct));
     memcpy(newct, sel, sizeof(*sel));
     return newct;
