@@ -1,4 +1,7 @@
 
+For text filter, return only header if elementSetName=H . elementSetName=R
+returns contents only. Other elementSetName returns both header+content.
+
 Added test for charmap and rusmarc.
 
 Added feature charmaps (.chr) so that characters may be specified in

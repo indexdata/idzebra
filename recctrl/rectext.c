@@ -1,5 +1,5 @@
-/* $Id: rectext.c,v 1.15 2002-08-02 19:26:56 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: rectext.c,v 1.16 2004-03-22 20:52:11 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -111,7 +111,8 @@ static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
     int r, text_ptr = 0;
     static char *text_buf = NULL;
     static int text_size = 0;
-    int start_flag = 1;
+    int make_header = 1;
+    int make_body = 1;
     const char *elementSetName = NULL;
     int no_lines = 0;
 
@@ -119,9 +120,21 @@ static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
         p->comp->u.simple->which == Z_ElementSetNames_generic)
         elementSetName = p->comp->u.simple->u.generic;
 
-    /* don't make header for the R(aw) element set name */
-    if (elementSetName && !strcmp(elementSetName, "R"))
-        start_flag = 0;
+    if (elementSetName)
+    {
+	/* don't make header for the R(aw) element set name */
+	if (!strcmp(elementSetName, "R"))
+	{
+	    make_header = 0;
+	    make_body = 1;
+	}
+	/* only make header for the H(eader) element set name */
+	else if (!strcmp(elementSetName, "H"))
+	{
+	    make_header = 1;
+	    make_body = 0;
+	}
+    }
     while (1)
     {
         if (text_ptr + 4096 >= text_size)
@@ -137,9 +150,8 @@ static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
             }
             text_buf = nb;
         }
-        if (start_flag)
+        if (make_header && text_ptr == 0)
         {
-            start_flag = 0;
             if (p->score >= 0)
             {
                 sprintf (text_buf, "Rank: %d\n", p->score);
@@ -147,7 +159,15 @@ static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
             }
             sprintf (text_buf + text_ptr, "Local Number: %d\n", p->localno);
             text_ptr = strlen(text_buf);
+	    if (p->fname)
+	    {
+		sprintf (text_buf + text_ptr, "Filename: %s\n", p->fname);
+		text_ptr = strlen(text_buf);
+	    }
+	    strcpy(text_buf+text_ptr++, "\n");
         }
+	if (!make_body)
+	    break;
         r = (*p->readf)(p->fh, text_buf + text_ptr, 4096);
         if (r <= 0)
             break;
