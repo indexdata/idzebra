@@ -1,5 +1,5 @@
-/* $Id: rsbool.c,v 1.25 2004-02-12 15:15:54 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: rsbool.c,v 1.26 2004-05-30 18:09:31 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,7 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
+#define RSET_DEBUG 0
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,8 +30,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rsbool.h>
 #include <zebrautl.h>
 
-#include <../index/index.h> /* for log_keydump. Debugging only */
-
+/* for key_logdump. Debugging only */
+#include <../index/index.h> 
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
@@ -229,25 +229,31 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
     int cmp=0;
     int rc;
 
+#if RSET_DEBUG
     logf (LOG_DEBUG, "rsbool_forward (L) [%p] '%s' (ct=%p rfd=%p m=%d,%d)",
                       rfd, ct->control->desc, ct, rfd, p->more_l, p->more_r);
+#endif
     if ( p->more_l && ((cmpfunc)(untilbuf,p->buf_l)==2) )
         p->more_l = rset_forward(info->rset_l, p->rfd_l, p->buf_l,
                         &p->term_index_l, info->cmp, untilbuf);
-
+#if RSET_DEBUG
     logf (LOG_DEBUG, "rsbool_forward (R) [%p] '%s' (ct=%p rfd=%p m=%d,%d)",
                       rfd, ct->control->desc, ct, rfd, p->more_l, p->more_r);
+#endif
     if ( p->more_r && ((cmpfunc)(untilbuf,p->buf_r)==2))
         p->more_r = rset_forward(info->rset_r, p->rfd_r, p->buf_r,
                         &p->term_index_r, info->cmp, untilbuf);
-
+#if RSET_DEBUG
     logf (LOG_DEBUG, "rsbool_forward [%p] calling read, m=%d,%d t=%d", 
                        rfd, p->more_l, p->more_r, p->tail);
+#endif
     
     p->tail=0; 
     rc = rset_read(ct,rfd,buf,term_index); 
+#if RSET_DEBUG
     logf (LOG_DEBUG, "rsbool_forward returning [%p] %d m=%d,%d", 
                        rfd, rc, p->more_l, p->more_r);
+#endif
     return rc;
 
     if (p->more_l && p->more_r)
@@ -260,13 +266,17 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
     {
         memcpy (buf, p->buf_l, info->key_size);
 	    *term_index = p->term_index_l;
+#if RSET_DEBUG
         logf (LOG_DEBUG, "rsbool_forward returning L (cmp=%d)",cmp);
+#endif
         return 1;
     } else if ( (cmp>0) && (p->more_r) )
     {
         memcpy (buf, p->buf_r, info->key_size);
 	    *term_index = p->term_index_r + info->term_index_s;
+#if RSET_DEBUG
         logf (LOG_DEBUG, "rsbool_forward returning R (cmp=%d)",cmp);
+#endif
         return 1;
     }
     /* return ( p->more_l || p->more_r); */
@@ -309,10 +319,12 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             cmp = -2;
         else
             cmp = 2;
+#if RSET_DEBUG
         logf (LOG_DEBUG, "r_read_and [%p] looping: m=%d/%d c=%d t=%d",
                         rfd, p->more_l, p->more_r, cmp, p->tail);
         key_logdump(LOG_DEBUG,p->buf_l);
         key_logdump(LOG_DEBUG,p->buf_r);
+#endif
         if (!cmp)
         {
             memcpy (buf, p->buf_l, info->key_size);
@@ -328,9 +340,11 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
 				   &p->term_index_r);
             p->tail = 1;
+#if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_and [%p] returning R m=%d/%d c=%d",
                     rfd, p->more_l, p->more_r, cmp);
             key_logdump(LOG_DEBUG,buf);
+#endif
             return 1;
         }
         else if (cmp == -1)
@@ -340,9 +354,11 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				   &p->term_index_l);
             p->tail = 1;
+#if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_and [%p] returning L m=%d/%d c=%d",
                     rfd, p->more_l, p->more_r, cmp);
             key_logdump(LOG_DEBUG,buf);
+#endif
             return 1;
         }
         else if (cmp > 1)  /* cmp == 2 */
@@ -358,9 +374,11 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             {
                 if (!p->more_r || (*info->cmp)(p->buf_r, buf) > 1)
                     p->tail = 0;
+#if RSET_DEBUG
                 logf (LOG_DEBUG, "r_read_and returning C m=%d/%d c=%d",
                         p->more_l, p->more_r, cmp);
                 key_logdump(LOG_DEBUG,buf);
+#endif
                 return 1;
             }
 #else
@@ -373,14 +391,18 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
                                    &p->term_index_r);
                 if (!p->more_r || (*info->cmp)(p->buf_r, buf) > 1)
                     p->tail = 0;
+#if RSET_DEBUG
                 logf (LOG_DEBUG, "r_read_and [%p] returning R tail m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
                 key_logdump(LOG_DEBUG,buf);
+#endif
                 return 1;
             } else
             {
+#if RSET_DEBUG
                 logf (LOG_DEBUG, "r_read_and [%p] about to forward R m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
+#endif
                 if (p->more_r && p->more_l)
                     p->more_r = rset_forward( 
                                     info->rset_r, p->rfd_r, 
@@ -402,9 +424,11 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
              {
                  if (!p->more_l || (*info->cmp)(p->buf_l, buf) > 1)
                      p->tail = 0;
+#if RSET_DEBUG
                  logf (LOG_DEBUG, "r_read_and [%p] returning R tail m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
                  key_logdump(LOG_DEBUG,buf);
+#endif
                  return 1;
              }
 #else
@@ -416,15 +440,19 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 				   &p->term_index_l);
                 if (!p->more_l || (*info->cmp)(p->buf_l, buf) > 1)
                     p->tail = 0;
+#if RSET_DEBUG
                 logf (LOG_DEBUG, "r_read_and [%p] returning L tail m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
                 key_logdump(LOG_DEBUG,buf);
+#endif
                 return 1;
             }
             else
             {
+#if RSET_DEBUG
                 logf (LOG_DEBUG, "r_read_and [%p] about to forward L m=%d/%d c=%d",
                         rfd, p->more_l, p->more_r, cmp);
+#endif
                 if (p->more_r && p->more_l)
                     p->more_l = rset_forward( 
                     /* p->more_l = rset_default_forward( */
@@ -437,7 +465,9 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 #endif
         }
     }
+#if RSET_DEBUG
     logf (LOG_DEBUG, "r_read_and [%p] reached its end",rfd);
+#endif
     return 0;
 }
 
@@ -464,9 +494,11 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
 				   &p->term_index_l);
             p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
 				   &p->term_index_r);
+#if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_or returning A m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
             key_logdump(LOG_DEBUG,buf);
+#endif
             return 1;
         }
         else if (cmp > 0)
@@ -475,9 +507,11 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
 	        *term_index = p->term_index_r + info->term_index_s;
             p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
 				   &p->term_index_r);
+#if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_or returning B m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
             key_logdump(LOG_DEBUG,buf);
+#endif
             return 1;
         }
         else
@@ -486,9 +520,11 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
 	        *term_index = p->term_index_l;
             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				   &p->term_index_l);
+#if RSET_DEBUG
             logf (LOG_DEBUG, "r_read_or returning C m=%d/%d c=%d",
                     p->more_l, p->more_r, cmp);
             key_logdump(LOG_DEBUG,buf);
+#endif
             return 1;
         }
     }
