@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.25  1999-07-06 12:28:04  adam
+ * Revision 1.26  1999-07-06 13:34:57  adam
+ * Fixed bug (introduced by previous commit).
+ *
+ * Revision 1.25  1999/07/06 12:28:04  adam
  * Updated record index structure. Format includes version ID. Compression
  * algorithm ID is stored for each record block.
  *
@@ -419,6 +422,7 @@ static void rec_decode_unsigned(unsigned *np, unsigned char *buf, int *len)
     (*len)++;
     *np = n;
 }
+
 static void rec_cache_flush_block1 (Records p, Record rec, Record last_rec,
 				    char **out_buf, int *out_size,
 				    int *out_offset)
@@ -505,8 +509,8 @@ static void rec_write_multiple (Records p, int saveCount)
 	default:
 	    break;
         }
-        rec_rm (&e->rec);
     }
+
     *sysnop = -1;
     if (ref_count)
     {
@@ -562,6 +566,13 @@ static void rec_cache_flush (Records p, int saveCount)
         saveCount = 0;
 
     rec_write_multiple (p, saveCount);
+
+    for (i = 0; i<p->cache_cur - saveCount; i++)
+    {
+        struct record_cache_entry *e = p->record_cache + i;
+        rec_rm (&e->rec);
+    } 
+    /* i still being used ... */
     for (j = 0; j<saveCount; j++, i++)
         memcpy (p->record_cache+j, p->record_cache+i,
                 sizeof(*p->record_cache));
