@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.11 2004-10-26 15:32:11 heikki Exp $
+/* $Id: zvrank.c,v 1.12 2004-10-28 10:37:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -40,7 +40,6 @@ fernuni-hagen.de>
 ** "ntc-atn", "atc-atn", etc.
 */
 
-#if SKIPTHIS   /* FIXME - Disabled while changing the interface to ranking */
 
 #include <math.h>  /* for log */
 
@@ -645,6 +644,7 @@ static void zv_init(RS rs, const char *rscheme) {
     rs->db_terms=500000;  /* assign correct value here (for debugging) */
     rs->db_f_max=50;      /* assign correct value here */
     rs->db_f_max_str="a"; /* assign correct value here (for debugging) */
+    /* FIXME - get those values from somewhere */
     zv_init_scheme(rs, rscheme);
     return;
 }
@@ -687,38 +687,41 @@ static void zv_destroy (struct zebra_register *reg, void *class_handle) {
  *  will be used in each of the handlers below.
  */
 static void *zv_begin(struct zebra_register *reg, void *class_handle, 
-                      RSET rset, NMEM nmem)
+                      RSET rset, NMEM nmem, TERMID *terms, int numterms)
 {
-    struct rs_info *rs=(struct rs_info *)xmalloc(sizeof(*rs));
+    struct rs_info *rs=(struct rs_info *)nmem_malloc(nmem,sizeof(*rs));
     struct rank_class_info *ci=(struct rank_class_info *)class_handle;
     int i;
     int veclen;
+    int *ip;
     zint gocc;
     /**/
     yaz_log(LOG_DEBUG, "zv_begin");
-    veclen= 0 ; /* rset->no_rset_terms;*/  /* smaller vector here */
-    /* FIXME - Now that we don't have term lists in rsets, what do */
-    /* we do here ??? */
+    veclen= numterms;
     zv_init(rs, ci->rscheme);
     rs->nmem=nmem;
     rs->veclen=veclen;
     prn_rs(rs);
   
-    rs->qdoc=(struct ds_info *)xmalloc(sizeof(*rs->qdoc));
-    rs->qdoc->terms=(struct ts_info *)xmalloc(sizeof(*rs->qdoc->terms)*rs->veclen);
+    rs->qdoc=(struct ds_info *)nmem_malloc(nmem,sizeof(*rs->qdoc));
+    rs->qdoc->terms=(struct ts_info *)nmem_malloc(nmem,
+                                sizeof(*rs->qdoc->terms)*rs->veclen);
     rs->qdoc->veclen=veclen;
     rs->qdoc->d_f_max=1; /* no duplicates */ 
     rs->qdoc->d_f_max_str=""; 
 
-    rs->rdoc=(struct ds_info *)xmalloc(sizeof(*rs->rdoc));
-    rs->rdoc->terms=(struct ts_info *)xmalloc(sizeof(*rs->rdoc->terms)*rs->veclen);
+    rs->rdoc=(struct ds_info *)nmem_malloc(nmem,sizeof(*rs->rdoc));
+    rs->rdoc->terms=(struct ts_info *)nmem_malloc(nmem,
+                         sizeof(*rs->rdoc->terms)*rs->veclen);
     rs->rdoc->veclen=veclen;
     rs->rdoc->d_f_max=10; /* just a guess */
     rs->rdoc->d_f_max_str=""; 
     /* yaz_log(LOG_DEBUG, "zv_begin_init"); */
     for (i = 0; i < rs->veclen; i++)
     {
-        gocc= 0; /* rset->rset_terms[i]->nn; */ /* FIXME ??? */
+        gocc= rset_count(terms[i]->rset);
+        terms[i]->rankpriv=ip=nmem_malloc(nmem, sizeof(int));
+        *ip=i; /* save the index for add() */
         /* yaz_log(LOG_DEBUG, "zv_begin_init i=%d gocc=%d", i, gocc); */
         rs->qdoc->terms[i].gocc=gocc;
         rs->qdoc->terms[i].locc=1;  /* assume query has no duplicate terms */
@@ -737,13 +740,8 @@ static void *zv_begin(struct zebra_register *reg, void *class_handle,
  */
 static void zv_end (struct zebra_register *reg, void *rsi)
 {
-    RS rs=(RS)rsi;
     yaz_log(LOG_DEBUG, "zv_end");
-    xfree(rs->qdoc->terms);
-    xfree(rs->rdoc->terms);
-    xfree(rs->qdoc);
-    xfree(rs->rdoc);
-    xfree(rs);
+    /* they all are nmem'd */
     return;
 }
 
@@ -752,10 +750,13 @@ static void zv_end (struct zebra_register *reg, void *rsi)
  *  should be as fast as possible. This routine should "incrementally"
  *  update the score.
  */
-static void zv_add (void *rsi, int seqno, int i) {
+static void zv_add (void *rsi, int seqno, TERMID term) {
     RS rs=(RS)rsi;
-    /* yaz_log(LOG_DEBUG, "zvrank zv_add seqno=%d term_index=%d", seqno, term_index);*/
+    int *ip = term->rankpriv;
+    int i=*ip;
     rs->rdoc->terms[i].locc++;
+    yaz_log(LOG_DEBUG, "zvrank zv_add seqno=%d '%s' term_index=%d cnt=%d", 
+             seqno, term->name, i, rs->rdoc->terms[i].locc );
 }
 
 /*
@@ -782,8 +783,9 @@ static int zv_calc (void *rsi, zint sysno)
         (*rs->d_norm_fct)(rs, rs->rdoc);
         dscore=rs->sim_fct(rs->qdoc, rs->rdoc);
     }
-    score = (int) dscore * 1000;
-    yaz_log (LOG_LOG, "sysno=" ZINT_FORMAT " score=%d", sysno, score);
+    score = (int) (dscore * 1000 +.5);
+    yaz_log (LOG_DEBUG, "zv_calc: sysno=" ZINT_FORMAT " score=%d", 
+            sysno, score);
     if (score > 1000) /* should not happen */
         score = 1000;
     return (int) score;
@@ -819,5 +821,4 @@ static struct rank_control rank_control_vsm = {
  
 struct rank_control *rankzv_class = &rank_control_vsm;
 
-#endif /* SKIPTHIS */
 /* EOF */

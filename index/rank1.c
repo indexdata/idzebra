@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.18 2004-10-26 15:32:11 heikki Exp $
+/* $Id: rank1.c,v 1.19 2004-10-28 10:37:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -30,7 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <unistd.h>
 #endif
 
-#define DEBUG_RANK 1
+#define DEBUG_RANK 0
 
 #include "index.h"
 
