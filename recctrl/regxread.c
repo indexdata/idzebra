@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.16  1998-06-30 15:15:09  adam
+ * Revision 1.17  1998-07-01 10:13:51  adam
+ * Minor fix.
+ *
+ * Revision 1.16  1998/06/30 15:15:09  adam
  * Tags are trimmed: white space removed before- and after the tag.
  *
  * Revision 1.15  1998/06/30 12:55:45  adam
@@ -1625,6 +1628,7 @@ data1_node *grs_read_regx (struct grs_read_info *p)
             return NULL;
         }
     }
+    curLexSpec->dh = p->dh;
     if (!p->offset)
     {
         curLexSpec->f_win_start = 0;
