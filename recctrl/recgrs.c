@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.84 2003-09-16 19:35:19 adam Exp $
+/* $Id: recgrs.c,v 1.85 2003-10-07 09:18:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -137,26 +137,26 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
         if (p->which == XPATH_PREDICATE_RELATION) {
             if (p->u.relation.name[0]) {
                 if (*p->u.relation.name != '@') {
-                    logf(LOG_WARN, 
+                    yaz_log(LOG_WARN, 
                          "  Only attributes (@) are supported in xelm xpath predicates");
-                    logf(LOG_WARN, "predicate %s ignored", p->u.relation.name);
+                    yaz_log(LOG_WARN, "predicate %s ignored", p->u.relation.name);
                     return (1);
                 }
                 attname = p->u.relation.name + 1;
                 res = 0;
                 /* looking for the attribute with a specified name */
                 for (attr = n->u.tag.attributes; attr; attr = attr->next) {
-                    logf(LOG_DEBUG,"  - attribute %s <-> %s", attname, attr->name );
+                    yaz_log(LOG_DEBUG,"  - attribute %s <-> %s", attname, attr->name );
                     
                     if (!strcmp(attr->name, attname)) {
                         if (p->u.relation.op[0]) {
                             if (*p->u.relation.op != '=') {
-                                logf(LOG_WARN, 
+                                yaz_log(LOG_WARN, 
                                      "Only '=' relation is supported (%s)",p->u.relation.op);
-                                logf(LOG_WARN, "predicate %s ignored", p->u.relation.name);
+                                yaz_log(LOG_WARN, "predicate %s ignored", p->u.relation.name);
                                 res = 1; break;
                             } else {
-                                logf(LOG_DEBUG,"    - value %s <-> %s", 
+                                yaz_log(LOG_DEBUG,"    - value %s <-> %s", 
                                      p->u.relation.value, attr->value );
                                 if (!strcmp(attr->value, p->u.relation.value)) {
                                     res = 1; break;
@@ -168,6 +168,7 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
                         }
                     }
                 }
+		yaz_log(LOG_DEBUG, "return %d", res);
                 return res;
             } else {
                 return 1;
@@ -182,7 +183,7 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
                 return (d1_check_xpath_predicate(n, p->u.boolean.left) 
                         || d1_check_xpath_predicate(n, p->u.boolean.right)); 
             } else {
-                logf(LOG_WARN, "Unknown boolean relation %s, ignored",p->u.boolean.op);
+                yaz_log(LOG_WARN, "Unknown boolean relation %s, ignored",p->u.boolean.op);
                 return 1;
             }
         }
@@ -221,7 +222,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
     int ok = 0;
     
     sprintf (pexpr, "%s\n", tagpath);
-    logf(LOG_DEBUG,"Checking tagpath %s",tagpath);
+    yaz_log(LOG_DEBUG,"Checking tagpath %s",tagpath);
     while (xpe) 
     {
         struct DFA_state **dfaar = xpe->dfa->states;
@@ -231,8 +232,6 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
         int i;
         unsigned char c;
         int start_line = 1;
-
-	logf(LOG_DEBUG," - xpath %s",xpe->xpath_expr);
 
         c = *pexpr++; t = s->trans; i = s->tran_no;
 	if ((c >= t->ch[0] && c <= t->ch[1]) || (!t->ch[0])) {
@@ -250,6 +249,11 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
                 p++;
             } while (i >= 0);
 	}
+	if (ok)
+	    yaz_log(LOG_DEBUG," xpath match %s",xpe->xpath_expr);
+	else
+	    yaz_log(LOG_DEBUG," xpath no match %s",xpe->xpath_expr);
+
         pexpr--;
         if (ok) {
 #ifdef ENHANCED_XELM 
@@ -265,11 +269,11 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
                backwards trough xpath location steps ... */
             for (i=xpe->xpath_len - 1; i>0; i--) {
                 
-                logf(LOG_DEBUG,"Checking step %d: %s on tag %s",
+                yaz_log(LOG_DEBUG,"Checking step %d: %s on tag %s",
 		     i,xp[i].part,nn->u.tag.tag);
                 
                 if (!d1_check_xpath_predicate(nn, xp[i].predicate)) {
-                    logf(LOG_DEBUG,"  Predicates didn't match");
+                    yaz_log(LOG_DEBUG,"  Predicates didn't match");
                     ok = 0;
                     break;
                 }
@@ -289,7 +293,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
     xfree(pexpr);
     
     if (ok) {
-      logf(LOG_DEBUG,"Got it");
+      yaz_log(LOG_DEBUG,"Got it");
         return xpe->termlists;
     } else {
         return NULL;
@@ -351,6 +355,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
     data1_node *nn;
     int termlist_only = 1;
 
+    yaz_log(LOG_DEBUG, "index_xpath level=%d use=%d", level, use);
     if ((!n->root->u.root.absyn) ||
 	(n->root->u.root.absyn->enable_xpath_indexing)) {
       termlist_only = 0;
@@ -397,8 +402,8 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                         wrd->attrUse = use;
                         (*p->tokenAdd)(wrd);
                         xpdone = 1;
-                        /* this is just the old fashioned attribute based index */
                     } else {
+                        /* this is just the old fashioned attribute based index */
                         wrd->attrSet = (int) (tl->att->parent->reference);
                         wrd->attrUse = tl->att->locals->local;
                         (*p->tokenAdd)(wrd);
@@ -468,9 +473,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
             
             if (use == 1) /* only for the starting tag... */
             {
-                
 #define MAX_ATTR_COUNT 50
-                
                 data1_termlist *tll[MAX_ATTR_COUNT];
                 
                 int i = 0;
@@ -858,10 +861,10 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
 	if (!(eset = data1_getesetbyname(dh, n->u.root.absyn,
 					 c->u.simple->u.generic)))
 	{
-	    logf(LOG_LOG, "Unknown esetname '%s'", c->u.simple->u.generic);
+	    yaz_log(LOG_LOG, "Unknown esetname '%s'", c->u.simple->u.generic);
 	    return 25; /* invalid esetname */
 	}
-	logf(LOG_DEBUG, "Esetname '%s' in simple compspec",
+	yaz_log(LOG_DEBUG, "Esetname '%s' in simple compspec",
 	     c->u.simple->u.generic);
 	espec = eset->spec;
 	break;
@@ -878,23 +881,23 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
 			  data1_getesetbyname(dh, n->u.root.absyn,
 					      p->u.elementSetName)))
 		    {
-			logf(LOG_LOG, "Unknown esetname '%s'",
+			yaz_log(LOG_LOG, "Unknown esetname '%s'",
 			     p->u.elementSetName);
 			return 25; /* invalid esetname */
 		    }
-		    logf(LOG_DEBUG, "Esetname '%s' in complex compspec",
+		    yaz_log(LOG_DEBUG, "Esetname '%s' in complex compspec",
 			 p->u.elementSetName);
 		    espec = eset->spec;
 		    break;
 		case Z_ElementSpec_externalSpec:
 		    if (p->u.externalSpec->which == Z_External_espec1)
 		    {
-			logf(LOG_DEBUG, "Got Espec-1");
+			yaz_log(LOG_DEBUG, "Got Espec-1");
 			espec = p->u.externalSpec-> u.espec1;
 		    }
 		    else
 		    {
-			logf(LOG_LOG, "Unknown external espec.");
+			yaz_log(LOG_LOG, "Unknown external espec.");
 			return 25; /* bad. what is proper diagnostic? */
 		    }
 		    break;
@@ -906,12 +909,12 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
     }
     if (espec)
     {
-        logf (LOG_DEBUG, "Element: Espec-1 match");
+        yaz_log(LOG_DEBUG, "Element: Espec-1 match");
 	return data1_doespec1(dh, n, espec);
     }
     else
     {
-	logf (LOG_DEBUG, "Element: all match");
+	yaz_log(LOG_DEBUG, "Element: all match");
 	return -1;
     }
 }
@@ -988,7 +991,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     gri.mem = mem;
     gri.dh = p->dh;
 
-    logf (LOG_DEBUG, "grs_retrieve");
+    yaz_log(LOG_DEBUG, "grs_retrieve");
     if (read_grs_type (h, &gri, p->subType, &node))
     {
 	p->diagnostic = 14;
@@ -1011,7 +1014,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 #endif
     top = data1_get_root_tag (p->dh, node);
 
-    logf (LOG_DEBUG, "grs_retrieve: size");
+    yaz_log(LOG_DEBUG, "grs_retrieve: size");
     tagname = data1_systag_lookup(node->u.root.absyn, "size", "size");
     if (tagname &&
         (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
@@ -1026,7 +1029,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     if (tagname && p->score >= 0 &&
 	(dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
-        logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
+        yaz_log(LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_num;
 	dnew->u.data.data = dnew->lbuf;
 	sprintf(dnew->u.data.data, "%d", p->score);
@@ -1038,7 +1041,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     if (tagname && p->localno > 0 &&
         (dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
-        logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
+        yaz_log(LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_text;
 	dnew->u.data.data = dnew->lbuf;
         
@@ -1073,7 +1076,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
      */
     if (requested_schema != VAL_NONE)
     {
-	logf (LOG_DEBUG, "grs_retrieve: schema mapping");
+	yaz_log(LOG_DEBUG, "grs_retrieve: schema mapping");
 	for (map = node->u.root.absyn->maptabs; map; map = map->next)
 	{
 	    if (map->target_absyn_ref == requested_schema)
@@ -1101,7 +1104,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
      * the overlap of schema and formatting which is inherent in the MARC
      * family)
      */
-    yaz_log (LOG_DEBUG, "grs_retrieve: syntax mapping");
+    yaz_log(LOG_DEBUG, "grs_retrieve: syntax mapping");
     if (node->u.root.absyn)
         for (map = node->u.root.absyn->maptabs; map; map = map->next)
         {
@@ -1117,7 +1120,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
                 break;
             }
         }
-    yaz_log (LOG_DEBUG, "grs_retrieve: schemaIdentifier");
+    yaz_log(LOG_DEBUG, "grs_retrieve: schemaIdentifier");
     if (node->u.root.absyn &&
 	node->u.root.absyn->reference != VAL_NONE &&
 	p->input_format == VAL_GRS1)
@@ -1155,7 +1158,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	}
     }
 
-    logf (LOG_DEBUG, "grs_retrieve: element spec");
+    yaz_log(LOG_DEBUG, "grs_retrieve: element spec");
     if (p->comp && (res = process_comp(p->dh, node, p->comp)) > 0)
     {
 	p->diagnostic = res;
@@ -1171,7 +1174,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 #if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
-    logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
+    yaz_log(LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
     switch (p->output_format = (p->input_format != VAL_NONE ?
 				p->input_format : VAL_SUTRS))
     {
