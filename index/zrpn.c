@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.121 2002-08-23 14:30:51 adam Exp $
+/* $Id: zrpn.c,v 1.122 2002-08-28 19:52:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1105,8 +1105,7 @@ static int trans_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     switch (term->which)
     {
     case Z_Term_general:
-#if HAVE_ICONV_H
-        if (zh->iconv_to_utf8 != (iconv_t)(-1))
+        if (zh->iconv_to_utf8 != 0)
         {
             char *inbuf = term->u.general->buf;
             size_t inleft = term->u.general->len;
@@ -1115,18 +1114,17 @@ static int trans_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             size_t ret;
 
             yaz_log (LOG_DEBUG, "converting general from ISO-8859-1");
-            ret = iconv(zh->iconv_to_utf8, &inbuf, &inleft,
+            ret = yaz_iconv(zh->iconv_to_utf8, &inbuf, &inleft,
                         &outbuf, &outleft);
             if (ret == (size_t)(-1))
             {
-                ret = iconv(zh->iconv_to_utf8, 0, 0, 0, 0);
+                ret = yaz_iconv(zh->iconv_to_utf8, 0, 0, 0, 0);
                 zh->errCode = 125;
                 return -1;
             }
             *outbuf = 0;
             return 0;
         }
-#endif
         sizez = term->u.general->len;
         if (sizez > IT_MAX_WORD-1)
             sizez = IT_MAX_WORD-1;

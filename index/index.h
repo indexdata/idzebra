@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.85 2002-08-02 19:26:55 adam Exp $
+/* $Id: index.h,v 1.86 2002-08-28 19:52:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -33,10 +33,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #if HAVE_SYS_TIMES_H
 #include <sys/times.h>
-#endif
-
-#if HAVE_ICONV_H
-#include <iconv.h>
 #endif
 
 #include <dict.h>
@@ -303,10 +299,9 @@ struct zebra_session {
     int records_deleted;
     int records_processed;
     char *record_encoding;
-#if HAVE_ICONV_H
-    iconv_t iconv_to_utf8;
-    iconv_t iconv_from_utf8;
-#endif
+
+    yaz_iconv_t iconv_to_utf8;
+    yaz_iconv_t iconv_from_utf8;
 };
 
 struct rank_control {

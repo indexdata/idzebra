@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.38 2002-08-02 19:26:56 adam Exp $
+/* $Id: zsets.c,v 1.39 2002-08-28 19:52:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -160,13 +160,13 @@ int zebra_resultSetTerms (ZebraHandle zh, const char *setname,
         size_t inleft = strlen(inbuf);
         size_t outleft = *len - 1;
 	int converted = 0;
-#if HAVE_ICONV_H
-        if (zh->iconv_from_utf8 != (iconv_t)(-1))
+
+        if (zh->iconv_from_utf8 != 0)
         {
             char *outbuf = out;
             size_t ret;
             
-            ret = iconv(zh->iconv_from_utf8, &inbuf, &inleft,
+            ret = yaz_iconv(zh->iconv_from_utf8, &inbuf, &inleft,
                         &outbuf, &outleft);
             if (ret == (size_t)(-1))
                 *len = 0;
@@ -174,7 +174,6 @@ int zebra_resultSetTerms (ZebraHandle zh, const char *setname,
                 *len = outbuf - out;
 	    converted = 1;
         }
-#endif
         if (!converted)
         {
             if (inleft > outleft)

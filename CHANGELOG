@@ -1,4 +1,15 @@
 
+Fix MARC transfer . MARC fields had wrong data for multiple fields.
+
+XML record reader moved from YAZ to Zebra, to make YAZ less 
+dependant on external libraries.
+
+Zebra uses yaz_iconv which is mini iconv library supporting UTF-8,
+UCS4, ISO-8859-1. This means that Zebra does UNICODE even
+on systems that doesn't offer iconv.
+
+XML record reader supports external system entities.
+
 --- 1.3.1 2002/08/20
 
 New .abs-directive "xpath" that takes one argument: "enable"

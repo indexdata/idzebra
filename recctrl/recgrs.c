@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.62 2002-08-28 12:47:10 adam Exp $
+/* $Id: recgrs.c,v 1.63 2002-08-28 19:52:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -225,9 +225,10 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                 for (xp = n->u.tag.attributes; xp; xp = xp->next)
                 {
                     char attr_tag_path_full[1024];
+                    int int_len = flen;
                     
                     sprintf (attr_tag_path_full, "@%s/%.*s",
-                             xp->name, flen, tag_path_full);
+                             xp->name, int_len, tag_path_full);
 
                     wrd->reg_type = '0';
                     wrd->attrUse = 1;

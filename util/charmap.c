@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.25 2002-08-02 19:26:57 adam Exp $
+/* $Id: charmap.c,v 1.26 2002-08-28 19:52:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -30,17 +30,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 #include <string.h>
 #include <assert.h>
-
-#if HAVE_ICONV_H
-#include <iconv.h>
-#else
-typedef int iconv_t;
-static size_t iconv(iconv_t t, char **buf, size_t *inbytesleft,
-                    char **outbuf, size_t *outbytesleft)
-{
-    return -1;
-}
-#endif
 
 typedef unsigned ucs4_t;
 
@@ -383,18 +372,18 @@ static void fun_add_qmap(const char *s, void *data, int num)
 	logf (LOG_DEBUG, " %3d", (unsigned char) *s);
 }
 
-static int scan_to_utf8 (iconv_t t, ucs4_t *from, size_t inlen,
+static int scan_to_utf8 (yaz_iconv_t t, ucs4_t *from, size_t inlen,
                         char *outbuf, size_t outbytesleft)
 {
     size_t inbytesleft = inlen * sizeof(ucs4_t);
     char *inbuf = (char*) from;
     size_t ret;
    
-    if (t == (iconv_t)(-1))
+    if (t == 0)
         *outbuf++ = *from;  /* ISO-8859-1 is OK here */
     else
     {
-        ret = iconv (t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+        ret = yaz_iconv (t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
         if (ret == (size_t) (-1))
         {
             yaz_log (LOG_WARN|LOG_ERRNO, "bad unicode sequence");
@@ -406,7 +395,7 @@ static int scan_to_utf8 (iconv_t t, ucs4_t *from, size_t inlen,
 }
 
 static int scan_string(char *s_native,
-                       iconv_t t_unicode, iconv_t t_utf8,
+                       yaz_iconv_t t_unicode, yaz_iconv_t t_utf8,
 		       void (*fun)(const char *c, void *data, int num),
 		       void *data, int *num)
 {
@@ -415,16 +404,17 @@ static int scan_string(char *s_native,
     ucs4_t arg[512];
     ucs4_t *s0, *s = arg;
     ucs4_t c, begin, end;
-    size_t i, j;
+    size_t i;
 
-    if (t_unicode != (iconv_t)(-1))
+    if (t_unicode != 0)
     {
         char *outbuf = (char *) arg;
         char *inbuf = s_native;
         size_t outbytesleft = sizeof(arg)-4;
         size_t inbytesleft = strlen(s_native);
         size_t ret;
-        ret = iconv(t_unicode, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+        ret = yaz_iconv(t_unicode, &inbuf, &inbytesleft,
+                        &outbuf, &outbytesleft);
         if (ret == (size_t)(-1))
             return -1;
         i = (outbuf - (char*) arg)/sizeof(ucs4_t);
@@ -496,17 +486,15 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
     int errors = 0;
     int argc, num = (int) *CHR_BASE, i;
     NMEM nmem;
-    iconv_t t_unicode = (iconv_t)(-1);
-    iconv_t t_utf8 = (iconv_t)(-1);
+    yaz_iconv_t t_unicode = 0;
+    yaz_iconv_t t_utf8 = 0;
     unsigned endian = 31;
     const char *ucs4_native = "UCS-4";
 
     if (*(char*) &endian == 31)      /* little endian? */
         ucs4_native = "UCS-4LE";
 
-#if HAVE_ICONV_H
-    t_utf8 = iconv_open ("UTF-8", ucs4_native);
-#endif
+    t_utf8 = yaz_iconv_open ("UTF-8", ucs4_native);
     logf (LOG_DEBUG, "maptab %s open", name);
     if (!(f = yaz_fopen(tabpath, name, "r", tabroot)))
     {
@@ -654,13 +642,9 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	}
         else if (!yaz_matchstr(argv[0], "encoding"))
         {
-#if HAVE_ICONV_H
-            if (t_unicode != (iconv_t)(-1))
-                iconv_close (t_unicode);
-            t_unicode = iconv_open (ucs4_native, argv[1]);
-#else
-            logf (LOG_WARN, "Encoding ignored. iconv not installed");
-#endif
+            if (t_unicode != 0)
+                yaz_iconv_close (t_unicode);
+            t_unicode = yaz_iconv_open (ucs4_native, argv[1]);
         }
 	else
 	{
@@ -674,12 +658,10 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	res = 0;
     }
     logf (LOG_DEBUG, "maptab %s close %d errors", name, errors);
-#if HAVE_ICONV_H
-    if (t_utf8 != (iconv_t)(-1))
-        iconv_close(t_utf8);
-    if (t_unicode != (iconv_t)(-1))
-        iconv_close(t_unicode);
-#endif
+    if (t_utf8 != 0)
+        yaz_iconv_close(t_utf8);
+    if (t_unicode != 0)
+        yaz_iconv_close(t_unicode);
     return res;
 }
 
