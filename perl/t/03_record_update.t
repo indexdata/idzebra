@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 03_record_update.t,v 1.4 2003-04-15 20:55:14 pop Exp $
+# $Id: 03_record_update.t,v 1.5 2003-04-15 20:56:33 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -20,7 +20,7 @@ use Test::More tests => 17;
 # Session opening and closing
 BEGIN {
     use_ok('IDZebra');
-#    IDZebra::logFile("test.log");
+    IDZebra::logFile("test.log");
     use_ok('IDZebra::Session'); 
     use_ok('pod');
 }
@@ -38,8 +38,6 @@ isa_ok($sess,"IDZebra::Session");
 my $rec1=`cat lib/IDZebra/Data1.pm`;
 my $rec2=`cat lib/IDZebra/Filter.pm`;
 my $rec3=`cat lib/IDZebra/Session.pm`;
-
-# IDZebra::logLevel(15);
 
 my ($sysno, $stat);
 
