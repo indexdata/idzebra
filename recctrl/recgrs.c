@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.98 2005-01-15 19:38:32 adam Exp $
+/* $Id: recgrs.c,v 1.99 2005-01-17 22:32:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,9 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 #include <sys/types.h>
-#ifndef WIN32
-#include <unistd.h>
-#endif
+#include <ctype.h>
 
 #include <yaz/log.h>
 #include <yaz/oid.h>
@@ -40,6 +38,7 @@ struct source_parser {
     const char *tok;
     const char *src;
     int lookahead;
+    NMEM nmem;
 };
 
 static int sp_lex(struct source_parser *sp)
@@ -64,6 +63,101 @@ static int sp_lex(struct source_parser *sp)
     return sp->lookahead;
 }
 
+static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd);
+
+static int sp_range(struct source_parser *sp, data1_node *n, RecWord *wrd)
+{
+    int start, len;
+    RecWord tmp_w;
+    
+    /* ( */
+    sp_lex(sp);
+    if (sp->lookahead != '(')
+	return 0;
+    sp_lex(sp); /* skip ( */
+    
+    /* 1st arg: string */
+    if (!sp_expr(sp, n, wrd))
+	return 0;
+    
+    if (sp->lookahead != ',')
+	return 0;	
+    sp_lex(sp); /* skip , */
+    
+    /* 2nd arg: start */
+    if (!sp_expr(sp, n, &tmp_w))
+	return 0;
+    start = atoi_n(tmp_w.string, tmp_w.length);
+    
+    if (sp->lookahead == ',')
+    {
+	sp_lex(sp); /* skip , */
+	
+	/* 3rd arg: length */
+	if (!sp_expr(sp, n, &tmp_w))
+	    return 0;
+	len = atoi_n(tmp_w.string, tmp_w.length);
+    }
+    else
+	len = wrd->length;
+    
+    /* ) */
+    if (sp->lookahead != ')')
+	return 0;	
+    sp_lex(sp);
+    
+    if (wrd->string && wrd->length)
+    {
+	wrd->string += start;
+	wrd->length -= start;
+	if (wrd->length > len)
+	    wrd->length = len;
+    }
+    return 1;
+}
+
+static int sp_first(struct source_parser *sp, data1_node *n, RecWord *wrd)
+{
+    char num_str[20];
+    int min_pos = -1;
+    sp_lex(sp);
+    if (sp->lookahead != '(')
+	return 0;
+    sp_lex(sp); /* skip ( */
+    if (!sp_expr(sp, n, wrd))
+	return 0;
+    while (sp->lookahead == ',')
+    {
+	RecWord search_w;
+	int i;
+	sp_lex(sp); /* skip , */
+	
+	if (!sp_expr(sp, n, &search_w))
+	    return 0;
+	for (i = 0; i<wrd->length; i++)
+	{
+	    int j;
+	    for (j = 0; j<search_w.length && i+j < wrd->length; j++)
+		if (wrd->string[i+j] != search_w.string[j])
+		    break;
+	    if (j == search_w.length) /* match ? */
+	    {
+		if (min_pos == -1 || i < min_pos)
+		    min_pos = i;
+		break;
+	    }
+	}
+    }
+    if (sp->lookahead != ')')
+	return 0;
+    sp_lex(sp);
+    if (min_pos == -1)
+	min_pos = 0;  /* the default if not found */
+    sprintf(num_str, "%d", min_pos);
+    wrd->string = nmem_strdup(sp->nmem, num_str);
+    wrd->length = strlen(wrd->string);
+    return 1;
+}
 
 static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
 {
@@ -89,18 +183,22 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
     }
     else if (sp->len == 4 && !memcmp(sp->tok, "attr", sp->len))
     {
+	RecWord tmp_w;
 	sp_lex(sp);
 	if (sp->lookahead != '(')
 	    return 0;
 	sp_lex(sp);
-	if (sp->lookahead != 't')
+
+	if (!sp_expr(sp, n, &tmp_w))
 	    return 0;
 	
+	wrd->string = "";
+	wrd->length = 0;
 	if (n->which == DATA1N_tag)
 	{
 	    data1_xattr *p = n->u.tag.attributes;
-	    while (p && strlen(p->name) != sp->len && 
-		   memcmp (p->name, sp->tok, sp->len))
+	    while (p && strlen(p->name) != tmp_w.length && 
+		   memcmp (p->name, tmp_w.string, tmp_w.length))
 		p = p->next;
 	    if (p)
 	    {
@@ -108,63 +206,68 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
 		wrd->length = strlen(p->value);
 	    }
 	}
-	sp_lex(sp);
 	if (sp->lookahead != ')')
 	    return 0;
 	sp_lex(sp);
     }
+    else if (sp->len == 5 && !memcmp(sp->tok, "first", sp->len))
+    {
+	return sp_first(sp, n, wrd);
+    }
     else if (sp->len == 5 && !memcmp(sp->tok, "range", sp->len))
     {
-	int start, len;
+	return sp_range(sp, n, wrd);
+    }
+    else if (sp->len > 0 && isdigit(*(unsigned char *)sp->tok))
+    {
+	wrd->string = nmem_malloc(sp->nmem, sp->len);
+	memcpy(wrd->string, sp->tok, sp->len);
+	wrd->length = sp->len;
 	sp_lex(sp);
-	if (sp->lookahead != '(')
-	    return 0;
-	
+    }
+    else if (sp->len > 2 && sp->tok[0] == '\'' && sp->tok[sp->len-1] == '\'')
+    {
+	wrd->length = sp->len - 2;
+	wrd->string = nmem_malloc(sp->nmem, wrd->length);
+	memcpy(wrd->string, sp->tok+1, wrd->length);
 	sp_lex(sp);
-	sp_expr(sp, n, wrd);
-	if (sp->lookahead != ',')
-	    return 0;
-	
+    }
+    else 
+    {
+	wrd->string = "";
+	wrd->length = 0;
 	sp_lex(sp);
-	if (sp->lookahead != 't')
-	    return 0;
-	start = atoi_n(sp->tok, sp->len);
-	
-	sp_lex(sp);
-	if (sp->lookahead != ',')
-	    return 0;
-	
-	sp_lex(sp);
-	if (sp->lookahead != 't')
-	    return 0;
-	len = atoi_n(sp->tok, sp->len);
-	
-	sp_lex(sp);
-	if (sp->lookahead != ')')
-	    return 0;
-	
-	sp_lex(sp);
-	if (wrd->string && wrd->length)
-	{
-	    wrd->string += start;
-	    wrd->length -= start;
-	    if (wrd->length > len)
-		wrd->length = len;
-	}
     }
     return 1;
 }
 
-static int sp_parse(data1_node *n, RecWord *wrd, const char *src)
+static struct source_parser *source_parser_create()
 {
-    struct source_parser sp;
-    sp.len = 0;
-    sp.tok = 0;
-    sp.src = src;
-    sp.lookahead = 0;
-    sp_lex(&sp);
+    struct source_parser *sp = xmalloc(sizeof(*sp));
 
-    return sp_expr(&sp, n, wrd);
+    sp->nmem = nmem_create();
+    return sp;
+}
+
+static void source_parser_destroy(struct source_parser *sp)
+{
+    if (!sp)
+	return;
+    nmem_destroy(sp->nmem);
+    xfree(sp);
+}
+    
+static int sp_parse(struct source_parser *sp, 
+		    data1_node *n, RecWord *wrd, const char *src)
+{
+    sp->len = 0;
+    sp->tok = 0;
+    sp->src = src;
+    sp->lookahead = 0;
+    nmem_reset(sp->nmem);
+
+    sp_lex(sp);
+    return sp_expr(sp, n, wrd);
 }
 
 int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
@@ -388,7 +491,8 @@ static void index_xpath_attr (char *tag_path, char *name, char *value,
 }
 
 
-static void index_xpath (data1_node *n, struct recExtractCtrl *p,
+static void index_xpath (struct source_parser *sp, data1_node *n,
+			 struct recExtractCtrl *p,
                          int level, RecWord *wrd, int use)
 {
     int i;
@@ -402,7 +506,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
     yaz_log(YLOG_DEBUG, "index_xpath level=%d use=%d", level, use);
     if ((!n->root->u.root.absyn) ||
 	(n->root->u.root.absyn->enable_xpath_indexing)) {
-      termlist_only = 0;
+	termlist_only = 0;
     }
 
     switch (n->which)
@@ -414,15 +518,20 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
         flen = 0;
             
 	/* we have to fetch the whole path to the data tag */
-	for (nn = n; nn; nn = nn->parent) {
-	    if (nn->which == DATA1N_tag) {
+	for (nn = n; nn; nn = nn->parent)
+	{
+	    if (nn->which == DATA1N_tag)
+	    {
 		size_t tlen = strlen(nn->u.tag.tag);
-		if (tlen + flen > (sizeof(tag_path_full)-2)) return;
+		if (tlen + flen > (sizeof(tag_path_full)-2))
+		    break;
 		memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
 		flen += tlen;
 		tag_path_full[flen++] = '/';
 	    }
-	    else if (nn->which == DATA1N_root)  break;
+	    else
+		if (nn->which == DATA1N_root)
+		    break;
 	}
 	
 	tag_path_full[flen] = 0;
@@ -439,7 +548,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
 		/* this is the ! case, so structure is for the xpath index */
 		memcpy (&wrd_tl, wrd, sizeof(*wrd));
 		if (tl->source)
-		    sp_parse(n, &wrd_tl, tl->source);
+		    sp_parse(sp, n, &wrd_tl, tl->source);
 		if (!tl->att) {
 		    wrd_tl.attrSet = VAL_IDXPATH;
 		    wrd_tl.attrUse = use;
@@ -502,7 +611,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
             {
                 size_t tlen = strlen(nn->u.tag.tag);
                 if (tlen + flen > (sizeof(tag_path_full)-2))
-                    return;
+		    break;
                 memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
                 flen += tlen;
                 tag_path_full[flen++] = '/';
@@ -663,7 +772,8 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
     }
 }
 
-static void index_termlist (data1_node *par, data1_node *n,
+static void index_termlist (struct source_parser *sp, data1_node *par,
+			    data1_node *n,
                             struct recExtractCtrl *p, int level, RecWord *wrd)
 {
     data1_termlist *tlist = 0;
@@ -682,15 +792,15 @@ static void index_termlist (data1_node *par, data1_node *n,
         return;
     if (par->u.tag.element->tag)
         dtype = par->u.tag.element->tag->kind;
-    
+
     for (; tlist; tlist = tlist->next)
     {
 	/* consider source */
 	wrd->string = 0;
 	assert(tlist->source);
-	sp_parse(n, wrd, tlist->source);
+	sp_parse(sp, n, wrd, tlist->source);
 
-	if (wrd->string)
+	if (wrd->string && wrd->length)
 	{
 	    if (p->flagShowRecords)
 	    {
@@ -720,8 +830,9 @@ static void index_termlist (data1_node *par, data1_node *n,
     }
 }
 
-static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
-                    RecWord *wrd)
+static int dumpkeys_r(struct source_parser *sp,
+		      data1_node *n, struct recExtractCtrl *p, int level,
+		      RecWord *wrd)
 {
     for (; n; n = n->next)
     {
@@ -764,14 +875,14 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
 
 	if (n->which == DATA1N_tag)
 	{
-            index_termlist (n, n, p, level, wrd);
+            index_termlist(sp, n, n, p, level, wrd);
             /* index start tag */
 	    if (n->root->u.root.absyn)
-      	        index_xpath (n, p, level, wrd, 1);
+      	        index_xpath(sp, n, p, level, wrd, 1);
  	}
 
 	if (n->child)
-	    if (dumpkeys(n->child, p, level + 1, wrd) < 0)
+	    if (dumpkeys_r(sp, n->child, p, level + 1, wrd) < 0)
 		return -1;
 
 
@@ -793,15 +904,15 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
 	    }
 
 	    if (par)
-		index_termlist (par, n, p, level, wrd);
+		index_termlist(sp, par, n, p, level, wrd);
 
-	    index_xpath (n, p, level, wrd, 1016);
+	    index_xpath(sp, n, p, level, wrd, 1016);
  	}
 
 	if (n->which == DATA1N_tag)
 	{
             /* index end tag */
-	    index_xpath (n, p, level, wrd, 2);
+	    index_xpath(sp, n, p, level, wrd, 2);
 	}
 
 	if (p->flagShowRecords && n->which == DATA1N_root)
@@ -810,6 +921,14 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
 	}
     }
     return 0;
+}
+
+static int dumpkeys(data1_node *n, struct recExtractCtrl *p, RecWord *wrd)
+{
+    struct source_parser *sp = source_parser_create();
+    int r = dumpkeys_r(sp, n, p, 0, wrd);
+    source_parser_destroy(sp);
+    return r;
 }
 
 int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
@@ -829,7 +948,7 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
     }
     (*p->init)(p, &wrd);
 
-    return dumpkeys(n, p, 0, &wrd);
+    return dumpkeys(n, p, &wrd);
 }
 
 static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
@@ -877,7 +996,7 @@ static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
 #endif
 
     (*p->init)(p, &wrd);
-    if (dumpkeys(n, p, 0, &wrd) < 0)
+    if (dumpkeys(n, p, &wrd) < 0)
     {
 	data1_free_tree(p->dh, n);
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
