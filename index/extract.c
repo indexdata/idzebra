@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.137 2003-02-26 12:30:54 pop Exp $
+/* $Id: extract.c,v 1.138 2003-02-27 22:55:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -440,8 +440,6 @@ static int recordExtract (ZebraHandle zh,
 	zh->reg->keys.prevAttrSet = -1;
 	zh->reg->keys.prevSeqNo = 0;
 	zh->reg->sortKeys.buf_used = 0;
-	zh->reg->sortKeys.buf_max = 0;
-	zh->reg->sortKeys.buf = 0;
 	
 	recordOffset = fi->file_moffset;
 	extractCtrl.offset = fi->file_moffset;
@@ -975,8 +973,6 @@ int bufferExtractRecord (ZebraHandle zh,
     zh->reg->keys.prevAttrSet = -1;
     zh->reg->keys.prevSeqNo = 0;
     zh->reg->sortKeys.buf_used = 0;
-    zh->reg->sortKeys.buf_max = 0;
-    zh->reg->sortKeys.buf = 0;
 
     if (*recordType) {
       logf (LOG_DEBUG, "Record type explicitly specified: %s", recordType);

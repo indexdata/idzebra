@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.84 2003-02-25 21:46:52 adam Exp $
+/* $Id: zebraapi.c,v 1.85 2003-02-27 22:55:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -219,6 +219,8 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     reg->keys.buf_max = 0;
     reg->keys.buf = 0;
+    reg->sortKeys.buf = 0;
+    reg->sortKeys.buf_max = 0;
 
     reg->records = 0;
     reg->dict = 0;
@@ -234,6 +236,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     reg->key_file_no = 0;
     
     zebraRankInstall (reg, rank1_class);
+    zebraRankInstall (reg, rankzv_class);
 
     recordCompression = res_get_def (res, "recordCompression", "none");
     if (!strcmp (recordCompression, "none"))
@@ -398,6 +401,9 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
     bfs_destroy (reg->bfs);
     data1_destroy (reg->dh);
 
+    xfree (reg->sortKeys.buf);
+    xfree (reg->keys.buf);
+
     xfree (reg->key_buf);
     xfree (reg->name);
     xfree (reg);
@@ -430,6 +436,7 @@ void zebra_close (ZebraHandle zh)
 {
     ZebraService zs;
     struct zebra_session **sp;
+    int i;
 
     if (!zh)
         return;
@@ -442,12 +449,15 @@ void zebra_close (ZebraHandle zh)
         return ;
     resultSetDestroy (zh, -1, 0, 0);
 
-
     if (zh->reg)
         zebra_register_close (zh->service, zh->reg);
     zebra_close_res (zh);
 
     xfree (zh->record_encoding);
+
+    for (i = 0; i < zh->num_basenames; i++)
+        xfree (zh->basenames[i]);
+    xfree (zh->basenames);
 
     if (zh->iconv_to_utf8 != 0)
         yaz_iconv_close (zh->iconv_to_utf8);
