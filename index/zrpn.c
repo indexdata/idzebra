@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.99  1999-12-23 09:03:32  adam
+ * Revision 1.100  1999-12-28 15:48:12  adam
+ * Minor Fix.
+ *
+ * Revision 1.99  1999/12/23 09:03:32  adam
  * Changed behaviour of trunc=105 so that * is regular .* and ! is regular .
  *
  * Revision 1.98  1999/11/30 13:48:04  adam
@@ -736,7 +739,6 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    logf (LOG_LOG, "
     if (!term_pre (zebra_maps, reg_type, src, "*!", "*!"))
         return 0;
     s0 = *src;
