@@ -1,13 +1,14 @@
 # Copyright (C) 1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.14 1995-10-30 14:10:54 adam Exp $
+# $Id: Makefile,v 1.15 1995-10-30 15:12:42 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
 YAZ=../../yaz
 YAZLIB=$(YAZ)/lib/libyaz.a
-OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
+#OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
+#NETLIB=-lnsl -lsocket
 INCLUDE=-I../include -I$(YAZ)/include
 TPROG1=index
 TPROG2=kdump
@@ -38,7 +39,7 @@ $(TPROG3): $(O3) \
 	$(CC) $(CFLAGS) -o $(TPROG3) $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/bfile.a \
 		../lib/dfa.a ../lib/data1.a ../lib/alexutil.a \
-		$(YAZLIB) $(OSILIB) -lm
+		$(YAZLIB) $(OSILIB) $(NETLIB) -lm
 
 .c.o:
 	$(CC) -c $(DEFS) $(CFLAGS) $<
