@@ -4,24 +4,16 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.1  1994-08-17 15:34:23  adam
+ * Revision 1.2  1994-08-18 08:23:26  adam
+ * Res.c now use handles. xmalloc defines xstrdup.
+ *
+ * Revision 1.1  1994/08/17  15:34:23  adam
  * Initial version of resource manager.
  *
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <util.h>
-
-struct res {
-    char *name;
-    char *value;
-    struct res *next;
-};
-
-static struct res *first = NULL, *last = NULL;
-static int res_init = 0;
-
-static FILE *fr;
 
 const char *alex_path (const char *name)
 {
@@ -38,24 +30,21 @@ const char *alex_path (const char *name)
     return path;
 }
 
-static void reread (void)
+static void reread (Res r)
 {
-    struct res *resp;
+    struct res_entry *resp;
     char *line;
-    char *alex_base;
     char *val_buf;
     int val_size, val_max = 1024;
     char path[256];
     char fr_buf[1024];
+    FILE *fr;
 
-    res_init = 1;
+    r->init = 1;
 
     val_buf = xmalloc (val_max);
 
-    if (!(alex_base = getenv ("ALEXBASE")))
-        alex_base = "base";
-
-    strcpy (path, alex_path(alex_base));
+    strcpy (path, alex_path(r->name));
 
     fr = fopen (path, "r");
     if (!fr)
@@ -76,13 +65,13 @@ static void reread (void)
                 no++;
             fr_buf[no] = '\0';
 
-            if (!first)
-                resp = last = first = xmalloc (sizeof(*resp));
+            if (!r->first)
+                resp = r->last = r->first = xmalloc (sizeof(*resp));
             else
             {
                 resp = xmalloc (sizeof(*resp));
-                last->next = resp;
-                last = resp;
+                r->last->next = resp;
+                r->last = resp;
             }
             resp->next = NULL;
             resp->name = xmalloc (no+1);
@@ -106,13 +95,13 @@ static void reread (void)
             if (no < 0)
                 continue;
             fr_buf[no++] = '\0';
-            if (!first)
-                resp = last = first = xmalloc (sizeof(*resp));
+            if (!r->first)
+                resp = r->last = r->first = xmalloc (sizeof(*resp));
             else
             {
                 resp = xmalloc (sizeof(*resp));
-                last->next = resp;
-                last = resp;
+                r->last->next = resp;
+                r->last = resp;
             }
             resp->next = NULL;
             resp->name = xmalloc (no);
@@ -150,25 +139,38 @@ static void reread (void)
     fclose (fr);
 }
 
-
-const char *res_get (const char *name)
+Res res_open (const char *name)
 {
-    if (!res_init)
-        reread ();
+    Res r = xmalloc (sizeof(*r));
+    r->init = 0;
+    r->name = xstrdup (name);
+    return r;
+}
+
+void res_close (Res r)
+{
+    /* more to xfree... */
+    xfree (r);
+}
+
+const char *res_get (Res r, const char *name)
+{
+    if (!r->init)
+        reread (r);
     return NULL;
 }
 
-const char *res_put (const char *name, const char *value)
+const char *res_put (Res r, const char *name, const char *value)
 {
-    if (!res_init)
-        reread ();
+    if (!r->init)
+        reread (r);
     return NULL;
 }
     
-int res_write (void)
+int res_write (Res r)
 {
-    if (!res_init)
-        reread ();
+    if (!r->init)
+        reread (r);
     return 0;
 }
 
