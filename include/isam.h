@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.7  1994-09-28 11:56:13  quinn
+ * Revision 1.8  1994-09-28 12:56:09  quinn
+ * Added access functions (ISPT)
+ *
+ * Revision 1.7  1994/09/28  11:56:13  quinn
  * Removed const from input to is_merge
  *
  * Revision 1.6  1994/09/28  11:29:28  quinn
@@ -74,7 +77,7 @@ typedef struct isam_struct
 
 typedef struct ispt_struct
 {
-    struct is_mtable *tab;
+    struct is_mtable tab;
     struct ispt_struct *next;      /* freelist */
 } ispt_struct, *ISPT; 
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.8  1994-09-28 12:32:17  quinn
+ * Revision 1.9  1994-09-28 12:56:15  quinn
+ * Added access functions (ISPT)
+ *
+ * Revision 1.8  1994/09/28  12:32:17  quinn
  * Trivial
  *
  * Revision 1.7  1994/09/28  11:56:25  quinn
@@ -40,6 +43,27 @@
 #include "keyops.h"
 
 static int (*extcmp)(const void *p1, const void *p2);
+static ispt_struct *ispt_freelist = 0;
+
+static ISPT ispt_alloc()
+{
+    ISPT p;
+
+    if (ispt_freelist)
+    {
+    	p = ispt_freelist;
+    	ispt_freelist = ispt_freelist->next;
+    }
+    else
+    	p = xmalloc(sizeof(ispt_struct));
+    return p;
+}
+
+static void ispt_free(ISPT pt)
+{
+    pt->next = ispt_freelist;
+    ispt_freelist = pt;
+}
 
 static int splitargs(const char *s, char *bf[], int max)
 {
@@ -389,9 +413,28 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
  * Locate a table of keys in an isam file. The ISPT is an individual
  * position marker for that table.
  */
-ISPT is_position(ISAM is, ISAM_P pos);
+ISPT is_position(ISAM is, ISAM_P pos)
+{
+    ispt_struct *p;
+
+    p = ispt_alloc();
+    is_m_establish_tab(is, &p->tab, pos);
+    return p;
+}
 
 /*
  * Release ISPT.
  */
-void is_pt_free(ISPT ip);
+void is_pt_free(ISPT ip)
+{
+    is_m_release_tab(&ip->tab);
+    ispt_free(ip);
+}
+
+/*
+ * Read a key from a table.
+ */
+int is_readkey(ISPT ip, void *buf)
+{
+    return is_m_read_record(&ip->tab, buf);
+}    
