@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.9  1996-10-29 13:48:14  adam
+ * Revision 1.10  1997-07-01 13:01:08  adam
+ * Bug fix in routine find_entry: didn't take into account the len arg.
+ *
+ * Revision 1.9  1996/10/29 13:48:14  adam
  * Updated to use zebrautl.h instead of alexutil.h.
  *
  * Revision 1.8  1996/10/18 12:39:23  adam
@@ -145,7 +148,7 @@ static chr_t_entry *find_entry(chr_t_entry *t, char **from, int len)
 {
     chr_t_entry *res;
 
-    if (t->children && t->children[(unsigned char) **from])
+    if (len && t->children && t->children[(unsigned char) **from])
     {
 	char *pos = *from;
 
