@@ -1,3 +1,8 @@
+
+Fix bug with shadow and result set handling.
+
+Implement MARCXML to ISO2709 conversion.
+
 --- 1.3.13 2003/09/26
 
 Add missing examples for Windows install.
