@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.6  1994-09-16 15:39:12  adam
+ * Revision 1.7  1994-09-19 16:34:26  adam
+ * Depend rule change. Minor changes in dicttest.c
+ *
+ * Revision 1.6  1994/09/16  15:39:12  adam
  * Initial code of lookup - not tested yet.
  *
  * Revision 1.5  1994/09/06  13:05:14  adam
@@ -45,8 +48,9 @@ int main (int argc, char **argv)
     int infosize = 4;
     int cache = 10;
     int ret;
-    int no_of_insertions = 0;
+    int no_of_iterations = 0;
     int no_of_new = 0, no_of_same = 0, no_of_change = 0;
+    int no_of_hits = 0, no_of_misses = 0;
     int unique = 0;
     char *arg;
     
@@ -85,10 +89,7 @@ int main (int argc, char **argv)
         else if (ret == 'w')
             rw = 1;
         else if (ret == 'i')
-        {
             inputfile = arg;
-            rw = 1;
-        }
         else if (ret == 's')
         {
             infosize = atoi(arg);
@@ -148,23 +149,37 @@ int main (int argc, char **argv)
                         i++;
                     if (ipf_ptr[i])
                         ipf_ptr[i++] = '\0';
-                    switch(dict_insert (dict, ipf_ptr, infosize, infobytes))
+                    if (rw)
                     {
-                    case 0:
-                        no_of_new++;
-                        break;
-                    case 1:
-                        no_of_change++;
+                        switch(dict_insert (dict, ipf_ptr,
+                                            infosize, infobytes))
+                        {
+                        case 0:
+                            no_of_new++;
+                            break;
+                        case 1:
+                            no_of_change++;
                         if (unique)
                             log (LOG_LOG, "%s change\n", ipf_ptr);
-                        break;
-                    case 2:
-                        if (unique)
-                            log (LOG_LOG, "%s duplicate\n", ipf_ptr);
-                        no_of_same++;
-                        break;
+                            break;
+                        case 2:
+                            if (unique)
+                                log (LOG_LOG, "%s duplicate\n", ipf_ptr);
+                            no_of_same++;
+                            break;
+                        }
                     }
-                    ++no_of_insertions;
+                    else
+                    {
+                        char *cp;
+
+                        cp = dict_lookup (dict, ipf_ptr);
+                        if (cp)
+                            no_of_hits++;
+                        else
+                            no_of_misses++;
+                    }
+                    ++no_of_iterations;
                     ipf_ptr += (i-1);
                 }
             }
@@ -172,10 +187,19 @@ int main (int argc, char **argv)
         }
         fclose (ipf);
     }
-    log (LOG_LOG, "Insertions.... %d", no_of_insertions);
-    log (LOG_LOG, "No of new..... %d", no_of_new);
-    log (LOG_LOG, "No of change.. %d", no_of_change);
-    log (LOG_LOG, "No of same.... %d", no_of_same);
+    if (rw)
+    {
+        log (LOG_LOG, "Insertions.... %d", no_of_iterations);
+        log (LOG_LOG, "No of new..... %d", no_of_new);
+        log (LOG_LOG, "No of change.. %d", no_of_change);
+        log (LOG_LOG, "No of same.... %d", no_of_same);
+    }
+    else
+    {
+        log (LOG_LOG, "Lookups....... %d", no_of_iterations);
+        log (LOG_LOG, "No of hits.... %d", no_of_hits);
+        log (LOG_LOG, "No of misses.. %d", no_of_misses);
+    }
     dict_close (dict);
     res_close (common_resource);
     return 0;
