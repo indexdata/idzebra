@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.9 2004-05-21 11:58:56 adam Exp $
+## $Id: Makefile.am,v 1.10 2004-06-16 20:49:18 adam Exp $
 
 noinst_LIBRARIES = librecctrl.a
 
@@ -15,4 +15,4 @@ librecctrl_a_SOURCES = recctrl.c recgrs.c sgmlread.c regxread.c \
 	grsread.h recgrs.h rectext.h xmlread.c danbibr.c \
 	$(PERLREAD)
 
-INCLUDES = -I$(srcdir)/../include @YAZINC@ $(TCL_INCLUDE)
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)

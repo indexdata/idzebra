@@ -1,7 +1,7 @@
-## $Id: Makefile.am,v 1.1 2000-04-05 09:49:36 adam Exp $
+## $Id: Makefile.am,v 1.2 2004-06-16 20:49:18 adam Exp $
 
 noinst_LIBRARIES = libisams.a
 
-INCLUDES = -I$(srcdir)/../include @YAZINC@
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC)
 
 libisams_a_SOURCES = isams.c

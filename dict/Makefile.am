@@ -1,9 +1,9 @@
-## $Id: Makefile.am,v 1.5 2002-08-17 08:00:27 adam Exp $
+## $Id: Makefile.am,v 1.6 2004-06-16 20:49:18 adam Exp $
 
 noinst_LIBRARIES = libdict.a
 noinst_PROGRAMS = dicttest dictext
 
-INCLUDES = -I$(srcdir)/../include @YAZINC@
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC)
 
 LDADD = libdict.a ../bfile/libbfile.a ../dfa/libdfa.a ../util/libutil.a $(YAZLIB) $(TCL_LIB)
 

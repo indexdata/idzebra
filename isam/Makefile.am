@@ -1,8 +1,8 @@
-## $Id: Makefile.am,v 1.2 2002-08-17 08:00:27 adam Exp $
+## $Id: Makefile.am,v 1.3 2004-06-16 20:49:18 adam Exp $
 
 noinst_LIBRARIES = libisam.a
 
-INCLUDES = -I$(srcdir)/../include @YAZINC@
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC)
 
 LDADD = ../util/libutil.a ../bfile/libbfile.a $(YAZLIB) $(TCL_LIB)
 
