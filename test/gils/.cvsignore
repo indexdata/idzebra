@@ -1,0 +1,7 @@
+Makefile
+Makefile.in
+*.mf
+idx.log
+srv.log
+log
+*.LCK

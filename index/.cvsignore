@@ -1,0 +1,8 @@
+.deps
+Makefile
+Makefile.in
+apitest
+atmp
+kdump
+zebraidx
+zebrasrv

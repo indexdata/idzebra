@@ -1,0 +1,10 @@
+Makefile
+Makefile.in
+zebra.xml
+zebra.tex
+zebra.out
+zebra.log
+zebra.aux
+zebra.pdf
+*.html
+*.dsl
