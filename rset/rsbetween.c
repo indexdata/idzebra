@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.32 2004-11-19 10:27:13 heikki Exp $
+/* $Id: rsbetween.c,v 1.33 2004-11-19 15:52:58 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -243,8 +243,8 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     const struct key_control *kctrl=rfd->rset->keycontrol;
     int cmp;
-    yaz_log(log_level,"== read: term=%p",term);
     TERMID dummyterm=0;
+    yaz_log(log_level,"== read: term=%p",term);
     if (!term)
         term=&dummyterm;
     while ( rset_read(p->andrfd,buf,term) )

@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.13 2004-11-04 13:09:06 heikki Exp $
+/* $Id: zvrank.c,v 1.14 2004-11-19 15:52:58 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -764,13 +764,13 @@ static void zv_end (struct zebra_register *reg, void *rsi)
  */
 static void zv_add (void *rsi, int seqno, TERMID term) {
     RS rs=(RS)rsi;
+    int *ip = term->rankpriv;
+    int i=*ip;
     if (!term) 
     {
         yaz_log(log_level, "zvrank zv_add seqno=%d NULL term",seqno );
         return;
     }
-    int *ip = term->rankpriv;
-    int i=*ip;
     rs->rdoc->terms[i].locc++;
     yaz_log(log_level, "zvrank zv_add seqno=%d '%s' term_index=%d cnt=%d", 
              seqno, term->name, i, rs->rdoc->terms[i].locc );

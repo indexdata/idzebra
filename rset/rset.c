@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.40 2004-11-19 10:27:14 heikki Exp $
+/* $Id: rset.c,v 1.41 2004-11-19 15:52:59 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -41,13 +41,14 @@ static int log_level_initialized=0;
 
 RSFD rfd_create_base(RSET rs)
 {
+    RSFD rnew=rs->free_list;
+
     if (!log_level_initialized) 
     {
         log_level=yaz_log_module_level("rset");
         log_level_initialized=1;
     }
 
-    RSFD rnew=rs->free_list;
     if (rnew) 
     {
         rs->free_list=rnew->next;
