@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.33 1996-12-11 12:07:45 adam Exp $
+  $Id: zebra.sgml,v 1.34 1997-01-02 10:49:30 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.33 $
+<date>$Revision: 1.34 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -1663,16 +1663,28 @@ given element set name with an element selection file. If an (@) is
 given in place of the filename, this corresponds to a null mapping for
 the given element set name.
 
-<tag>elm <it/path name attribute/</tag> (o,r) Adds an element
+<tag>any <it/tags/</tag> (o) This directive specifies a list of
+attributes which should be appended to the attribute list given for each
+element. The effect is to make every single element in the abstract
+syntax searchable by way of the given attributes. This directive
+provides an efficient way of supporting free-text searching across all
+elements. However, it does increase the size of the index
+significantly. The attributes can be qualified with a structure, as in
+the <bf/elm/ directive below.
+
+<tag>elm <it/path name attributes/</tag> (o,r) Adds an element
 to the abstract record syntax of the schema. The <it/path/ follows the
 syntax which is suggested by the Z39.50 document - that is, a sequence
 of tags separated by slashes (/). Each tag is given as a
 comma-separated pair of tag type and -value surrounded by parenthesis.
-The <it/name/ is the name of the element, and the <it/attribute/
-specifies what attribute to use when indexing the element. A ! in
+The <it/name/ is the name of the element, and the <it/attributes/
+specifies which attributes to use when indexing the element in a
+comma-separated list. A ! in
 place of the attribute name is equivalent to specifying an attribute
 name identical to the element name. A - in place of the attribute name
-specifies that no indexing is to take place for the given element.
+specifies that no indexing is to take place for the given element. The
+attributes can be qualified with a &dquot;p&dquot; or &dquot;w&dquot;
+to specify either word or phrase (complete field) indexing.
 </descrip>
 
 <it>
