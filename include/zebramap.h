@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.4  1998-02-10 12:03:05  adam
+ * Revision 1.5  1998-03-05 08:39:26  adam
+ * Minor changes to zebramap data structures. Changed query
+ * mapping rules.
+ *
+ * Revision 1.4  1998/02/10 12:03:05  adam
  * Implemented Sort.
  *
  * Revision 1.3  1997/11/18 10:05:08  adam
@@ -33,21 +37,22 @@ extern "C" {
 #endif
 
 typedef struct zebra_maps *ZebraMaps;
-ZebraMaps zebra_maps_open (const char *tabpath, Res res);
+ZebraMaps zebra_maps_open (Res res);
 
 void zebra_maps_close (ZebraMaps zm);
 
-const char **zebra_maps_input (ZebraMaps zms, int reg_type,
+const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
 			       const char **from, int len);
-const char *zebra_maps_output(ZebraMaps, int reg_type, const char **from);
+const char *zebra_maps_output(ZebraMaps, unsigned reg_id, const char **from);
 
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
-		     int *reg_type, char **search_type, int *complete_flag);
+		     unsigned *reg_id, char **search_type, char **rank_type,
+		     int *complete_flag);
 
 int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes);
 
-int zebra_maps_is_complete (ZebraMaps zms, int structure);
-int zebra_maps_is_sort (ZebraMaps zms, int reg_type);
+int zebra_maps_is_complete (ZebraMaps zms, unsigned reg_id);
+int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id);
 #ifdef __cplusplus
 }
 #endif
