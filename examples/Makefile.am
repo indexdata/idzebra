@@ -1,5 +1,5 @@
 
-SUBDIRS=gils
+SUBDIRS=gils zthes
 
 EXTRA_DIST = README
 

@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.15 2002-12-03 16:40:17 adam Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.16 2002-12-30 10:25:24 adam Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -1053,7 +1053,7 @@
        </listitem>
       </varlistentry>
 
-	<!-- Adam's version -->
+      <!-- Adam's version 
       <varlistentry>
        <term>systag <replaceable>systemtag</replaceable> <replaceable>element</replaceable></term>
        <listitem>
@@ -1101,8 +1101,9 @@
         </para>
        </listitem>
       </varlistentry>
+      -->
 
-	<!-- Mike's version -->
+      <!-- Mike's version -->
       <varlistentry>
        <term>
         systag

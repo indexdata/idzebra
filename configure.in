@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2002
-dnl $Id: configure.in,v 1.60 2002-12-10 12:54:24 adam Exp $
+dnl $Id: configure.in,v 1.61 2002-12-30 10:25:24 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(idzebra,1.3.4)
@@ -335,7 +335,7 @@ AC_OUTPUT([
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
   perl/Makefile.PL
   test/dmoz/Makefile test/xpath/Makefile test/sort/Makefile
-  examples/Makefile examples/gils/Makefile
+  examples/Makefile examples/gils/Makefile examples/zthes/Makefile
 ])
 
 if test -x "$perlbin"; then
