@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.78  2000-10-17 12:37:09  adam
+ * Revision 1.79  2001-10-01 08:56:58  adam
+ * For UNIX process ID is logged.
+ *
+ * Revision 1.78  2000/10/17 12:37:09  adam
  * Fixed notification of live-updates. Fixed minor problem with mf_init
  * where it didn't handle shadow area file names correctly.
  *
@@ -284,6 +287,7 @@
  *
  */
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #ifdef WIN32
 #include <io.h>
@@ -317,10 +321,16 @@ int main (int argc, char **argv)
     int nsections = 0;
     int disableCommit = 0;
     size_t mem_max = 0;
-
+    char nbuf[100];
     struct recordGroup rGroupDef;
 
     nmem_init ();
+
+#ifdef WIN32
+#else
+    sprintf(nbuf, "%.40s(%d)", *argv, getpid());
+    yaz_log_init_prefix (nbuf);
+#endif
 
 #if ZEBRASDR
     zebraSdr_std ();
