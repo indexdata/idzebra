@@ -29,6 +29,8 @@ typedef struct {
   char *errString;     /* error string */
   int  position;       /* position of record in result set (1,2,..) */
   char *base; 
+  int  sysno;
+  int  score;
   oid_value format;    /* record syntax */
   RetrievalRecordBuf *buf;
 } RetrievalRecord;

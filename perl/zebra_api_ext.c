@@ -318,6 +318,8 @@ void record_retrieve(RetrievalObj *ro,
   res->buf        = buf;
   res->buf->len   = ro->records[i].len;
   res->buf->buf   = ro->records[i].buf;
+  res->score      = ro->records[i].score;
+  res->sysno      = ro->records[i].sysno;
 
 }
 
@@ -489,6 +491,7 @@ void api_records_retrieve (ZebraHandle zh, ODR stream,
 		recs[i].len = strlen(poset[i].term);
 		recs[i].buf = poset[i].term;
 		recs[i].base = poset[i].db;
+		recs[i].sysno = 0;
 	    
 	    }
 	    else if (poset[i].sysno)
@@ -505,6 +508,8 @@ void api_records_retrieve (ZebraHandle zh, ODR stream,
 		recs[i].buf = (char *) odr_malloc(stream,recs[i].len);
 		memcpy(recs[i].buf, b, recs[i].len);
 		recs[i].errString = NULL;
+		recs[i].sysno = poset[i].sysno;
+		recs[i].score = poset[i].score;
 	    }
 	    else
 	    {

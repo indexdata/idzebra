@@ -1,13 +1,11 @@
-#!/usr/bin/perl
-# ============================================================================
+# $Id: Session.pm,v 1.5 2003-02-28 18:38:29 pop Exp $
+# 
 # Zebra perl API header
 # =============================================================================
 use strict;
-# ============================================================================
 package IDZebra::Session;
 use IDZebra;
 use IDZebra::Logger qw(:flags :calls);
-#use IDZebra::Repository;
 use IDZebra::Resultset;
 use Scalar::Util;
 use Carp;
@@ -79,7 +77,7 @@ sub open {
     $self->{rscount} = 0;
 
     # This is needed in order to somehow initialize the service
-    $self->select_databases("Default");
+    $self->databases("Default");
 
     # Load the default configuration
     $self->group(%args);
@@ -238,20 +236,31 @@ sub _selectRecordGroup {
     unless ($dbName = $rg->{databaseName}) {
 	$dbName = 'Default';
     }
-    if ($self->select_databases($dbName)) {
+    unless ($self->databases($dbName)) {
 	croak("Fatal error selecting database $dbName");
     }
 }
 # -----------------------------------------------------------------------------
 # Selecting databases for search (and also for updating - internally)
 # -----------------------------------------------------------------------------
-sub select_databases {
+sub databases {
     my ($self, @databases) = @_;
+
+    unless ($#_ >0) {
+	return (keys(%{$self->{databases}}));
+    }
+
+    my %tmp;
 
     my $changed = 0;
     foreach my $db (@databases) {
 	next if ($self->{databases}{$db});
+	$tmp{$db}++;
 	$changed++;
+    }
+
+    foreach my $db (keys (%{$self->{databases}})) {
+	$changed++ unless ($tmp{$db});
     }
 
     if ($changed) {
@@ -261,19 +270,19 @@ sub select_databases {
 	    $self->{databases}{$db}++;
 	}
 
-	if (my $res = IDZebra::select_databases($self->{zh}, 
+	if (IDZebra::select_databases($self->{zh}, 
 						($#databases + 1), 
 						\@databases)) {
 	    logf(LOG_FATAL, 
 		 "Could not select database(s) %s errCode=%d",
 		 join(",",@databases),
 		 $self->errCode());
-	    return ($res);
+	    return (0);
 	} else {
 	    logf(LOG_LOG,"Database(s) selected: %s",join(",",@databases));
 	}
     }
-    return (0);
+    return (keys(%{$self->{databases}}));
 }
 
 # -----------------------------------------------------------------------------
@@ -507,9 +516,22 @@ sub search {
 	croak ("No query given to search");
     }
 
+    my @origdbs;
+
+    if ($args{databases}) {
+	@origdbs = $self->databases;
+	$self->databases(@{$args{databases}});
+    }
+
     my $rsname = $args{rsname} ? $args{rsname} : $self->_new_setname;
 
-    return ($self->_search_pqf($query, $rsname));
+    my $rs = $self->_search_pqf($query, $rsname);
+
+    if ($args{databases}) {
+	$self->databases(@origdbs);
+    }
+
+    return ($rs);
 }
 
 sub _new_setname {
@@ -532,15 +554,6 @@ sub _search_pqf {
 				      errCode     => $self->errCode,
 				      errString   => $self->errString);
     return($rs);
-}
-
-sub search_cql {
-    my ($self, $query, $transfile) = @_;
-}
-
-
-sub search_ccl {
-    my ($self, $query, $transfile) = @_;
 }
 
 # -----------------------------------------------------------------------------
@@ -580,6 +593,8 @@ sub sortResultsets {
     return ($rs);
 }
 
+# ============================================================================
+
 
 __END__
 
@@ -592,8 +607,29 @@ IDZebra::Session - A Zebra database server session for update and retrieval
   $sess = IDZebra::Session->new(configFile => 'demo/zebra.cfg');
   $sess->open();
 
-  $sess = IDZebra::Session->open(configFile => 'demo/zebra.cfg');
+  $sess = IDZebra::Session->open(configFile => 'demo/zebra.cfg',
+				 groupName  => 'demo1');
 
+  $sess->group(groupName => 'demo2');
+
+  $sess->init();
+
+  $sess->begin_trans;
+
+  $sess->update(path      =>  'lib');
+
+  my $s1=$sess->update_record(data       => $rec1,
+	 		      recordType => 'grs.perl.pod',
+			      groupName  => "demo1",
+			      );
+
+  my $stat = $sess->end_trans;
+
+  $sess->databases('demo1','demo2');
+
+  my $rs1 = $sess->search(cqlmap    => 'demo/cql.map',
+			  cql       => 'dc.title=IDZebra',
+			  databases => [qw(demo1 demo2)]);
   $sess->close;
 
 =head1 DESCRIPTION
@@ -651,7 +687,7 @@ This will select the named record group, and load the corresponding settings fro
 
 =item B<databaseName>
 
-The name of the (logical) database the updated records will belong to.
+The name of the (logical) database the updated records will belong to. 
 
 =item B<path>
 
@@ -777,8 +813,60 @@ Don't try this at home! This case, the record identifier string (which is normal
 
 B<Important:> Note, that one record can be updated only once within a transaction - all subsequent updates are skipped. 
 
+=head1 DATABASE SELECTION
+
+Within a zebra repository you can define logical databases. You can either do this by record groups, or by providing the databaseName argument for update methods. For each record the database name it belongs to is stored. 
+
+For searching, you can select databases by calling:
+
+  $sess->databases('db1','db2');
+
+This will not do anything if the given and only the given databases are already selected. You can get the list of the actually selected databases, by calling:
+  
+  @dblist = $sess->databases();
+
 =head1 SEARCHING
 
+It's nice to be able to store data in your repository... But it's useful to reach it as well. So this is how to do searching:
+
+  $rs = $sess->search(databases => [qw(demo1,demo2)], # optional
+                      pqf       => '@attr 1=4 computer');
+
+This is going to execute a search in databases demo1 and demo2, for title 'com,puter'. This is a PQF (Prefix Query Format) search, see YAZ documentation for details. The database selection is optional: if it's provided, the given list of databases is selected for this particular search, then the original selection is restored.
+
+=head2 CCL searching
+
+Not all users enjoy typing in prefix query structures and numerical attribute values, even in a minimalistic test client. In the library world, the more intuitive Common Command Language (or ISO 8777) has enjoyed some popularity - especially before the widespread availability of graphical interfaces. It is still useful in applications where you for some reason or other need to provide a symbolic language for expressing boolean query structures. 
+
+The CCL searching is not currently supported by this API.
+
+=head2 CQL searching
+
+CQL - Common Query Language - was defined for the SRW protocol. In many ways CQL has a similar syntax to CCL. The objective of CQL is different. Where CCL aims to be an end-user language, CQL is the protocol query language for SRW. 
+
+In order to map CQL queries to Zebra internal search structures, you have to define a mapping, the way it is described in YAZ documentation: I<Specification of CQL to RPN mapping>. The mapping is interpreted by the method:
+
+  $sess->cqlmap($mapfile);
+
+Or, you can directly provide the I<mapfile> parameter for the search:
+
+  my $rs1 = $sess->search(cqlmap    => 'demo/cql.map',
+	  		  cql       => 'dc.title=IDZebra');
+
+As you see, CQL searching is so simple: just give the query in the I<cql> parameter.
+
+=head1 RESULTSETS
+
+As you have seen, the result of the search request is a I<Resultset> object.
+It contains number of hits, and search status, and can be used to sort and retrieve the resulting records.
+
+  $count = $rs->count;
+
+  printf ("RS Status is %d (%s)\n", $rs->errCode, $rs->errString);
+
+I<$rs-E<gt>errCode> is 0, if there were no errors during search. Read the I<IDZebra::Resultset> manpage for more details.
+
+=head1 MISC FUNCTIONS
 
 =head1 COPYRIGHT
 

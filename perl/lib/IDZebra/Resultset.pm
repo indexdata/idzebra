@@ -37,6 +37,21 @@ sub new {
     return ($self);
 }
 
+sub count {
+    my ($self) = @_;
+    return ($self->{recordCount});
+}
+
+sub errCode {
+    my ($self) = @_;
+    return ($self->{errCode});
+}
+
+sub errString {
+    my ($self) = @_;
+    return ($self->{errCode});
+}
+
 sub DESTROY {
     my ($self) = @_;
 
@@ -102,15 +117,29 @@ sub sort {
     }
 }
 
+# ============================================================================
 __END__
 
 =head1 NAME
 
-IDZebra::Session - 
+IDZebra::Resultset - Representation of Zebra search results
 
 =head1 SYNOPSIS
 
 =head1 DESCRIPTION
+
+The I<Resultset> object represents results of a Zebra search. Contains number of hits, search status, and can be used to sort and retrieve the records.
+
+=head1 PROPERTIES
+
+  $count = $rs->count;
+
+  printf ("RS Status is %d (%s)\n", $rs->errCode, $rs->errString);
+
+I<$rs-E<gt>errCode> is 0, if there were no errors during search.
+
+=head1 RETRIEVING RECORDS
+
 
 =head1 COPYRIGHT
 

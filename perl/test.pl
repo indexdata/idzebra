@@ -1,16 +1,16 @@
 #!/usr/bin/perl
-
+# =============================================================================
+# $Id: test.pl,v 1.7 2003-02-28 18:38:28 pop Exp $
+#
+# Perl API header
+# =============================================================================
 BEGIN {
+    use Test::More tests => 15;
     push (@INC,'demo','blib/lib','blib/arch');
+    use_ok('IDZebra::Session'); 
 }
-
 use pod;
 
-use Test::More tests => 15;
-
-BEGIN { 
-  use_ok('IDZebra::Session'); 
-}
 
 IDZebra::logFile("test.log");
 
@@ -33,6 +33,7 @@ my $sess = IDZebra::Session->open(configFile => 'demo/zebra.cfg',
 				  groupName  => 'demo1');
 isa_ok($sess,"IDZebra::Session");
 ok(defined($sess->{zh}), "Zebra handle opened");
+#use IDZebra::Repository;
 
 # ----------------------------------------------------------------------------
 # Record group tests
@@ -50,7 +51,7 @@ $sess->init();
 # ----------------------------------------------------------------------------
 # repository upadte
 
-our $filecount = 6;
+our $filecount = 5;
 
 $sess->begin_trans;
 $sess->update(path      =>  'lib');
@@ -65,7 +66,7 @@ $sess->update(groupName => 'demo1',
 
 my $stat = $sess->end_trans;
 ok(($stat->{inserted} == $filecount), 
-   "Inserted $stat->{updated}/$filecount records");
+   "Inserted $stat->{inserted}/$filecount records");
 
 $sess->begin_trans;
 $sess->delete(groupName => 'demo1',
@@ -97,13 +98,13 @@ my $s1=$sess->update_record(data       => $rec2,
 my $stat = $sess->end_trans;
 ok(($stat->{updated} == 1), "Updated 1 records");
 
-#exit;
 # ----------------------------------------------------------------------------
 # search
-$sess->select_databases('demo2');
-$sess->begin_read;
-my $rs1 = $sess->search(cqlmap => 'demo/cql.map',
-			cql    => 'IDZebra');
+$sess->databases('demo2');
+#$sess->begin_read;
+my $rs1 = $sess->search(cqlmap    => 'demo/cql.map',
+			cql       => 'IDZebra',
+			databases => [qw(demo1 demo2)]);
 
 print STDERR "$rs1->{recordCount} hits.\n";
 
