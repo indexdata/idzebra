@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
+ * Heikki Levanto
  *
- * $Id: rsbetween.c,v 1.1 2002-04-09 15:24:13 heikki Exp $
+ * $Id: rsbetween.c,v 1.2 2002-04-12 14:51:34 heikki Exp $
  */
 
 #include <stdio.h>
@@ -14,26 +14,26 @@
 #include <rsbetween.h>
 #include <zebrautl.h>
 
-static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
-static RSFD r_open (RSET ct, int flag);
-static void r_close (RSFD rfd);
-static void r_delete (RSET ct);
-static void r_rewind (RSFD rfd);
-static int r_count (RSET ct);
-static int r_read (RSFD rfd, void *buf, int *term_index);
-static int r_write (RSFD rfd, const void *buf);
+static void *r_create_between(RSET ct, const struct rset_control *sel, void *parms);
+static RSFD r_open_between (RSET ct, int flag);
+static void r_close_between (RSFD rfd);
+static void r_delete_between (RSET ct);
+static void r_rewind_between (RSFD rfd);
+static int r_count_between (RSET ct);
+static int r_read_between (RSFD rfd, void *buf, int *term_index);
+static int r_write_between (RSFD rfd, const void *buf);
 
 static const struct rset_control control_between = 
 {
     "between",
-    r_create,
-    r_open,
-    r_close,
-    r_delete,
-    r_rewind,
-    r_count,
-    r_read,
-    r_write,
+    r_create_between,
+    r_open_between,
+    r_close_between,
+    r_delete_between,
+    r_rewind_between,
+    r_count_between,
+    r_read_between,
+    r_write_between,
 };
 
 
@@ -46,6 +46,7 @@ struct rset_between_info {
     RSET rset_r;
     int term_index_s;
     int (*cmp)(const void *p1, const void *p2);
+    char *(*printer)(void *p1, char *buf);
     struct rset_between_rfd *rfd_list;
 };
 
@@ -67,7 +68,7 @@ struct rset_between_rfd {
     struct rset_between_info *info;
 };    
 
-static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
+static void *r_create_between (RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_between_parms *between_parms = (rset_between_parms *) parms;
     struct rset_between_info *info;
@@ -82,6 +83,7 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
         rset_is_volatile(info->rset_r))
         ct->flags |= RSET_FLAG_VOLATILE;
     info->cmp = between_parms->cmp;
+    info->printer = between_parms->printer;
     info->rfd_list = NULL;
     
     info->term_index_s = info->rset_l->no_rset_terms;
@@ -104,7 +106,7 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     return info;
 }
 
-static RSFD r_open (RSET ct, int flag)
+static RSFD r_open_between (RSET ct, int flag)
 {
     struct rset_between_info *info = (struct rset_between_info *) ct->buf;
     struct rset_between_rfd *rfd;
@@ -135,7 +137,7 @@ static RSFD r_open (RSET ct, int flag)
     return rfd;
 }
 
-static void r_close (RSFD rfd)
+static void r_close_between (RSFD rfd)
 {
     struct rset_between_info *info = ((struct rset_between_rfd*)rfd)->info;
     struct rset_between_rfd **rfdp;
@@ -153,11 +155,11 @@ static void r_close (RSFD rfd)
             xfree (rfd);
             return;
         }
-    logf (LOG_FATAL, "r_close but no rfd match!");
+    logf (LOG_FATAL, "r_close_between but no rfd match!");
     assert (0);
 }
 
-static void r_delete (RSET ct)
+static void r_delete_between (RSET ct)
 {
     struct rset_between_info *info = (struct rset_between_info *) ct->buf;
 
@@ -169,7 +171,7 @@ static void r_delete (RSET ct)
     xfree (info);
 }
 
-static void r_rewind (RSFD rfd)
+static void r_rewind_between (RSFD rfd)
 {
     struct rset_between_info *info = ((struct rset_between_rfd*)rfd)->info;
     struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
@@ -184,18 +186,17 @@ static void r_rewind (RSFD rfd)
     p->level=0;
 }
 
-static int r_count (RSET ct)
+static int r_count_between (RSET ct)
 {
     return 0;
 }
 
-static int r_read (RSFD rfd, void *buf, int *term_index)
+static int r_read_between (RSFD rfd, void *buf, int *term_index)
 {
     struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
     struct rset_between_info *info = p->info;
     int cmp_l;
     int cmp_r;
-
 
     while (p->more_m)
     {
@@ -263,7 +264,7 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
 }  /* r_read */
 
 
-static int r_write (RSFD rfd, const void *buf)
+static int r_write_between (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "between set type is read-only");
     return -1;

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Id: rsbetween.h,v 1.1 2002-04-09 15:24:13 heikki Exp $
+ * $Id: rsbetween.h,v 1.2 2002-04-12 14:51:34 heikki Exp $
  *
  * Result set that returns anything in between two things,
  * typically start-tag, stuff, end-tag.
@@ -28,6 +28,7 @@ typedef struct rset_between_parms
     RSET    rset_m;
     RSET    rset_r;
     int (*cmp)(const void *p1, const void *p2);
+    char* (*printer)(void *p,char *buf);  /* prints p into buf and returns buf */
 } rset_between_parms;
 
 #ifdef __cplusplus
