@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.11 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rsisamb.c,v 1.10.2.1 2004-12-17 13:43:10 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -39,7 +39,7 @@ static void r_rewind (RSFD rfd);
 static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
-static void r_pos (RSFD rfd, zint *current, zint *total);
+static void r_pos (RSFD rfd, int *current, int *total);
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
 
@@ -51,11 +51,15 @@ static const struct rset_control control =
     r_close,
     r_delete,
     r_rewind,
-    r_forward, /* rset_default_forward, */
+    r_forward,  /* rset_default_forward,  */
     r_pos,
     r_read,
     r_write,
 };
+
+/* FIXME - using the default forward reads all items from the isam */
+/* and thus makes the term counts work OK. On the other hand, it   */
+/* negates the speedup from forwarding */
 
 const struct rset_control *rset_kind_isamb = &control;
 
@@ -172,7 +176,7 @@ static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
     return i;
 }
 
-static void r_pos (RSFD rfd, zint *current, zint *total)
+static void r_pos (RSFD rfd, int *current, int *total)
 {
     struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
     assert(rfd);

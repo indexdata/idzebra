@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.15.2.3 2004-12-17 11:38:18 heikki Exp $
+/* $Id: rsbetween.c,v 1.15.2.4 2004-12-17 13:43:09 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -39,7 +39,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rsbetween.h>
 #include <zebrautl.h>
 
-#define RSBETWEEN_DEBUG 1
+#define RSBETWEEN_DEBUG 0
 #if RSBETWEEN_DEBUG
 #define log_level LOG_DEBUG
 #endif
@@ -374,7 +374,9 @@ static void checkattr(struct rset_between_rfd *p)
         if (0==cmp) /* and the keys match */
         {
             p->attrdepth=p->depth;
+#if RSBETWEEN_DEBUG
             yaz_log(log_level, "found attribute match at depth %d",p->attrdepth);
+#endif
         }
     }
 }
@@ -501,11 +503,15 @@ static int r_read (RSFD rfd, void *buf, int *term)
     int thisterm=0;
     int which; 
     *term=0; /* just in case, should not be necessary */
+#if RSBETWEEN_DEBUG
     yaz_log(log_level,"btw: == read: term=%p",term);
+#endif
     while ( read_anded(p,buf,&thisterm,&which) )
     {
+#if RSBETWEEN_DEBUG
         yaz_log(log_level,"btw: read loop term=%p d=%d ad=%d",
                 term, p->depth, p->attrdepth);
+#endif
         if (p->hits<0) 
         {/* first time? */
             memcpy(p->recbuf,buf,info->key_size);
@@ -514,22 +520,30 @@ static int r_read (RSFD rfd, void *buf, int *term)
         }
         else {
             cmp=(*info->cmp)(buf,p->recbuf);
+#if RSBETWEEN_DEBUG
             yaz_log(log_level, "btw: cmp=%d",cmp);
+#endif
         }
 
         if (cmp>=2)
         { 
+#if RSBETWEEN_DEBUG
             yaz_log(log_level,"btw: new record");
+#endif
             p->depth=0;
             p->attrdepth=0;
             memcpy(p->recbuf,buf,info->key_size);
         }
 
+#if RSBETWEEN_DEBUG
         yaz_log(log_level,"btw:  which: %d", which); 
+#endif
         if (which==WHICH_L)
         {
             p->depth++;
+#if RSBETWEEN_DEBUG
             yaz_log(log_level,"btw: read start tag. d=%d",p->depth);
+#endif
             memcpy(p->startbuf,buf,info->key_size);
             p->startbufok=1;
             checkattr(rfd);  /* in case we already saw the attr here */
@@ -539,11 +553,16 @@ static int r_read (RSFD rfd, void *buf, int *term)
             if (p->depth == p->attrdepth)
                 p->attrdepth=0; /* ending the tag with attr match */
             p->depth--;
-            yaz_log(log_level,"btw: read end tag. d=%d ad=%d",p->depth, p->attrdepth);
+#if RSBETWEEN_DEBUG
+            yaz_log(log_level,"btw: read end tag. d=%d ad=%d",
+                    p->depth, p->attrdepth);
+#endif
         }
         else if (which==WHICH_A)
         {
+#if RSBETWEEN_DEBUG
             yaz_log(log_level,"btw: read attr");
+#endif
             memcpy(p->attrbuf,buf,info->key_size);
             p->attrbufok=1;
             checkattr(rfd); /* in case the start tag came first */
@@ -553,14 +572,20 @@ static int r_read (RSFD rfd, void *buf, int *term)
             if (p->depth && p->attrdepth)
             {
                 p->hits++;
+#if RSBETWEEN_DEBUG
                 yaz_log(log_level,"btw: got a hit h=%d d=%d ad=%d t=%d+%d", 
                         p->hits,p->depth,p->attrdepth,
                         info->rset_m->no_rset_terms,thisterm);
+#endif
                 *term= info->rset_m->no_rset_terms + thisterm;
                 return 1; /* everything else is in place already */
             } else
+            {
+#if RSBETWEEN_DEBUG
                 yaz_log(log_level, "btw: Ignoring hit. h=%d d=%d ad=%d",
                         p->hits,p->depth,p->attrdepth);
+#endif
+            }
         }
     } /* while read */
 
