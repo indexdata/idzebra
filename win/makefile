@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.21 2003-02-23 22:52:15 adam Exp $
+# $Id: makefile,v 1.22 2003-02-28 14:34:21 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -27,7 +27,7 @@ all: dirs zebralib zserver zindex
 ROOTDIR=..   # The home of zebra
 
 # YAZ include files, libraries, etc.
-YAZDIR=$(ROOTDIR)\..\YAZ-2.0
+YAZDIR=$(ROOTDIR)\..\YAZ
 YAZINCL=$(YAZDIR)\include
 YAZLIB=$(YAZDIR)\lib\yaz.lib
 YAZLIBS=$(YAZLIB)
@@ -246,9 +246,12 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\lookup.obj \
 	$(OBJDIR)\lookupec.obj \
 	$(OBJDIR)\marcread.obj \
+	$(OBJDIR)\marcomp.obj \
+	$(OBJDIR)\inline.obj \
 	$(OBJDIR)\mfile.obj \
 	$(OBJDIR)\open.obj \
 	$(OBJDIR)\passwddb.obj \
+	$(OBJDIR)\zvrank.obj \
 	$(OBJDIR)\rank1.obj \
 	$(OBJDIR)\readfile.obj \
 	$(OBJDIR)\recctrl.obj \
