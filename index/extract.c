@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.163 2004-09-27 10:44:49 adam Exp $
+/* $Id: extract.c,v 1.164 2004-10-01 14:50:22 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1542,7 +1542,7 @@ static void extract_add_complete_field (RecWord *p)
     int i = 0, remain = p->length;
     int first; /* first position */
 
-yaz_log(LOG_DEBUG, "Complete field, w='%s'", p->string);
+yaz_log(LOG_DEBUG, "Complete field, w='%.*s'", p->length, p->string);
 
     if (remain > 0)
 	map = zebra_maps_input (p->zebra_maps, p->reg_type, &b, remain, 1);
