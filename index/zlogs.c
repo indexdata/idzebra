@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zlogs.c,v $
- * Revision 1.4  1996-10-08 09:41:25  quinn
+ * Revision 1.5  1997-04-30 08:56:07  quinn
+ * null
+ *
+ * Revision 1.4  1996/10/08  09:41:25  quinn
  * Fixed diagnostic.
  *
  * Revision 1.3  1996/03/20  09:36:40  adam

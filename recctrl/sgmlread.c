@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: sgmlread.c,v $
- * Revision 1.1  1996-10-11 10:57:32  adam
+ * Revision 1.2  1997-04-30 08:56:08  quinn
+ * null
+ *
+ * Revision 1.1  1996/10/11  10:57:32  adam
  * New module recctrl. Used to manage records (extract/retrieval).
  *
  */

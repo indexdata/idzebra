@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.h,v $
- * Revision 1.1  1996-10-11 10:57:26  adam
+ * Revision 1.2  1997-04-30 08:56:08  quinn
+ * null
+ *
+ * Revision 1.1  1996/10/11  10:57:26  adam
  * New module recctrl. Used to manage records (extract/retrieval).
  *
  * Revision 1.1  1995/11/01 13:58:28  quinn

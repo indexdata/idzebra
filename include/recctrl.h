@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.16  1996-10-11 10:56:25  adam
+ * Revision 1.17  1997-04-30 08:56:04  quinn
+ * null
+ *
+ * Revision 1.16  1996/10/11  10:56:25  adam
  * New module recctrl. Used to manage records (extract/retrieval).
  * All record types are accessed by means of definitions in recctrl.h.
  *

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.3  1997-02-24 10:41:50  adam
+ * Revision 1.4  1997-04-30 08:56:08  quinn
+ * null
+ *
+ * Revision 1.2  1996/10/11  16:06:43  quinn
+ * Revision 1.3  1997/02/24 10:41:50  adam
  * Cleanup of code and commented out the "end element-end-record" code.
  *
  * Revision 1.2  1996/10/11 16:06:43  quinn
