@@ -142,9 +142,6 @@ typedef struct {
   long stime;
 } ZebraTransactionStatus;
 
-
-
-
 /* == Module initialization and cleanup (zebra_perl.c) ===================== */
 
 void init (void);
@@ -243,13 +240,6 @@ void zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *stat);
 
 %name(trans_no)
 int zebra_trans_no (ZebraHandle zh);
-
-%name(begin_read)          
-int zebra_begin_read (ZebraHandle zh);
-
-/* end retrieval (remove read lock) (zebraapi.c) */
-%name(end_read)            
-void zebra_end_read (ZebraHandle zh);
 
 /* commit changes from shadow (zebraapi.c) */
 %name(commit)              

@@ -148,9 +148,13 @@ sub getc {
 
 sub get_fh {
     my ($self) = @_;
-    my $fh = gensym;
-    tie (*$fh,'IDZebra::FilterFile', $self);
-    return ($fh);
+    if ($self->{testh}) {
+	return ($self->{testh});
+    } else {
+	my $fh = gensym;
+	tie (*$fh,'IDZebra::FilterFile', $self);
+	return ($fh);
+    }
 }
 
 sub readall {
@@ -292,27 +296,48 @@ where 'meta' is the abstract syntax identifier (in this case Zebra will try to l
 
 In order to get the input stream, you can use "virtual" file operators (as the source is not necessairly a file):
 
-=item readf($buf,$len,$offset)
+=over 4
+
+=item B<readf($buf,$len,$offset)>
 
 Going to read $len bytes of data from offset $offset into $buff
 
-=item readall($bufflen)
+=item B<readline()>
+
+Read one line
+
+=item B<getc()>
+
+Get one character (byte)
+
+=item B<readall($bufflen)>
 
 Read the entire stream, by reading $bufflen bytes at once
 
-=item seekf($offset)
+=item B<seekf($offset)>
 
 Position to $offset
 
-=item tellf
+=item B<tellf()>
 
 Tells the current offset (?)
 
-=item endf($offset)
+=item B<endf($offset)>
 
 ???
 
-Optionally, you can implement an init call for your class. This call is not going to be called in object, but in class context. Stupid, eh?
+=back
+
+You can optionally get a virtual perl filehandle as well:
+
+  my $fh = $self->get_fh();
+  while (<$fh>) {
+    # ...
+  }
+
+Note, that the virtual filehandle implementation is not finished yet, so some applications may have problems using that. See TODO.
+
+You can implement an init call for your class. This call is not going to be called in object, but in class context. Stupid, eh?
 
 =head1 TEST YOUR PERL FILTER
 
@@ -331,6 +356,14 @@ This will try to apply the filter on the file provided as argument, and display 
 
 This is quite simple. Read the Zebra manual, and follow the instructions to create your zebra.cfg. For your I<recordType> choose 'grs.perl.<YourFilterClass>'. 
 Copy your filter module (YourFilterClass.pm) to a directory listed in I<profilePath>. i<profilePath> is added to @INC, when interpreting your package: so if you need to load modules from different locations than the default perl include path, just add these directories.
+
+=head1 MISC OPTIONS
+
+By default, filter code (process method) is executed within an eval {} block, and only a warning is sent to the log, if there is an error. To turn this option off, set B<$IDZebra::Filter::SAFE_MODE> to B<0>;
+
+=head1 TODO
+
+Finish virtual (tied) filehandle methods (SEEK, EOF, TELL);
 
 =head1 COPYRIGHT
 

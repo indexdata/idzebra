@@ -1,6 +1,6 @@
 #!perl -Tw
 # =============================================================================
-# $Id: 01_base.t,v 1.3 2003-03-05 00:28:16 pop Exp $
+# $Id: 01_base.t,v 1.4 2003-03-05 13:55:22 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -57,10 +57,11 @@ ok(($sess->group->{databaseName} eq "demo2"),"Record group is selected");
 
 # ---------------------------------------------------------------------------
 # Transactions
-$sess->begin_read;
-eval {$sess->begin_trans;};
+$sess->begin_trans(TRANS_RO);
+eval {$sess->begin_trans(TRANS_RW);};
 ok (($@ ne ""), $@);
-$sess->end_read;
+$sess->end_trans;
+$sess->end_trans;
 
 
 

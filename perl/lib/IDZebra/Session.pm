@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.12 2003-03-05 00:28:16 pop Exp $
+# $Id: Session.pm,v 1.13 2003-03-05 13:55:22 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -7,7 +7,6 @@ package IDZebra::Session;
 use strict;
 use warnings;
 
-
 BEGIN {
     use IDZebra;
     use Scalar::Util;
@@ -15,9 +14,14 @@ BEGIN {
     use IDZebra::Resultset;
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
-    our $VERSION = do { my @r = (q$Revision: 1.12 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
-#    our @ISA = qw(IDZebra::Logger);
+    require Exporter;
+    our $VERSION = do { my @r = (q$Revision: 1.13 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our @ISA = qw(IDZebra::Logger Exporter);
+    our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
+
+use constant TRANS_RW => 1;
+use constant TRANS_RO => 0;
 
 1;
 # -----------------------------------------------------------------------------
@@ -89,6 +93,11 @@ sub open {
 
     # Load the default configuration
     $self->group(%args);
+
+
+    # Set shadow usage
+    my $shadow = defined($args{shadow}) ? $args{shadow} : 0;
+    $self->shadow($shadow);
     
     $self->{odr_input} = IDZebra::odr_createmem($IDZebra::ODR_DECODE);
     $self->{odr_output} = IDZebra::odr_createmem($IDZebra::ODR_ENCODE);
@@ -335,9 +344,9 @@ sub errAdd {
 # Transaction stuff
 # -----------------------------------------------------------------------------
 sub begin_trans {
-    my ($self) = @_;
-    $self->checkzh;
-    if (my $err = IDZebra::begin_trans($self->{zh},1)) {
+    my ($self, $m) = @_;
+    $m = TRANS_RW unless (defined ($m));
+    if (my $err = IDZebra::begin_trans($self->{zh},$m)) {
 	if ($self->errCode == 2) {
 	    croak ("TRANS_RW not allowed within TRANS_RO");
 	} else {
@@ -355,29 +364,20 @@ sub end_trans {
     return ($stat);
 }
 
-sub begin_read {
-    my ($self) =@_;
-    $self->checkzh;
-    return(IDZebra::begin_read($self->{zh}));
-}
-
-sub end_read {
-    my ($self) =@_;
-    $self->checkzh;
-    IDZebra::end_read($self->{zh});
-}
-
-sub shadow_enable {
+sub shadow {
     my ($self, $value) = @_;
     $self->checkzh;
-    if ($#_ > 0) { IDZebra::set_shadow_enable($self->{zh},$value); }
+    if ($#_ > 0) { 
+	$value = 0 unless (defined($value));
+	my $r =IDZebra::set_shadow_enable($self->{zh},$value); 
+    }
     return (IDZebra::get_shadow_enable($self->{zh}));
 }
 
 sub commit {
     my ($self) = @_;
     $self->checkzh;
-    if ($self->shadow_enable) {
+    if ($self->shadow) {
 	return(IDZebra::commit($self->{zh}));
     }
 }
@@ -743,8 +743,10 @@ where $sess is going to be the object representing a Zebra Session. Whenever thi
 
 This will
   - close all transactions
-  - destroy all result sets
+  - destroy all result sets and scan lists 
   - close the session
+
+Note, that if I<shadow registers> are enabled, the changes will not be committed automatically.
 
 In the future different database access methods are going to be available, 
 like:
@@ -761,7 +763,7 @@ You can also use the B<record group> arguments described below directly when cal
 
 If you manage different sets of records that share common characteristics, you can organize the configuration settings for each type into "groups". See the Zebra manual on the configuration file (zebra.cfg). 
 
-For each open session a default record group is assigned. You can configure it in the constructor, or by the B<set_group> method:
+For each open session a default record group is assigned. You can configure it in the constructor, or by the B<group> method:
 
   $sess->group(groupName => ..., ...)
 
@@ -821,13 +823,39 @@ Follow links when doing directory update.
 
 You can use the same parameters calling all update methods.
 
-=head1 TRANSACTIONS (WRITE LOCKS)
+=head1 TRANSACTIONS (READ / WRITE LOCKS)
 
-A transaction is a block of record update (insert / modify / delete) procedures. So, all call to such function will implicitly start a transaction, unless one is started by
+A transaction is a block of record update (insert / modify / delete) or retrieval procedures. So, all call to such function will implicitly start a transaction, unless one is already started by
 
   $sess->begin_trans;
 
-For multiple per record updates it's efficient to start transactions explicitly: otherwise registers (system files, vocabularies, etc..) are updated one by one. After finishing all requested updates, use
+or 
+
+  $sess->begin_trans(TRANS_RW)
+
+(these two are equivalents). The effect of this call is a kind of lock: if you call is a write lock is put on the registers, so other processes trying to update the database will be blocked. If there is already an RW (Read-Write) transaction opened by another process, the I<begin_trans> call will be blocked.
+
+You can also use
+
+  $sess->begin_trans(TRANS_RO),
+
+if you would like to put on a "read lock". This one is B<deprecated>, as while you have explicitly opened a transaction for read, you can't open another one for update. For example:
+
+  $sess->begin_trans(TRANS_RO);
+  $sess->begin_tran(TRANS_RW); # invalid, die here
+  $sess->end_trans;
+  $sess->end_trans;
+
+is invalid, but
+
+  $sess->begin_tran(TRANS_RW); 
+  $sess->begin_trans(TRANS_RO);
+  $sess->end_trans;
+  $sess->end_trans;
+
+is valid, but probably useless. Note again, that for each retrieval call, an RO transaction is opened. I<TRANS_RW> and I<TRANS_RO> are exported by default by IDZebra::Session.pm.
+
+For multiple per-record I<updates> it's efficient to start transactions explicitly: otherwise registers (system files, vocabularies, etc..) are updated one by one. After finishing all requested updates, use
 
   $stat = $sess->end_trans;
 
@@ -839,6 +867,35 @@ The return value is a ZebraTransactionStatus object, containing the following me
   $stat->{inserted}  # Number of records processed
   $stat->{stime}     # System time used
   $stat->{utime}     # User time used
+
+Normally, if the perl code dies due to some runtime error, or the session is closed, then the API attempts to close all pending transactions.
+
+=head1 THE SHADOW REGISTERS
+
+The Zebra server supports updating of the index structures. That is, you can add, modify, or remove records from databases managed by Zebra without rebuilding the entire index. Since this process involves modifying structured files with various references between blocks of data in the files, the update process is inherently sensitive to system crashes, or to process interruptions: Anything but a successfully completed update process will leave the register files in an unknown state, and you will essentially have no recourse but to re-index everything, or to restore the register files from a backup medium. Further, while the update process is active, users cannot be allowed to access the system, as the contents of the register files may change unpredictably. 
+
+You can solve these problems by enabling the shadow register system in Zebra. During the updating procedure, zebraidx will temporarily write changes to the involved files in a set of "shadow files", without modifying the files that are accessed by the active server processes. If the update procedure is interrupted by a system crash or a signal, you simply repeat the procedure - the register files have not been changed or damaged, and the partially written shadow files are automatically deleted before the new updating procedure commences. 
+
+At the end of the updating procedure (or in a separate operation, if you so desire), the system enters a "commit mode". First, any active server processes are forced to access those blocks that have been changed from the shadow files rather than from the main register files; the unmodified blocks are still accessed at their normal location (the shadow files are not a complete copy of the register files - they only contain those parts that have actually been modified). If the commit process is interrupted at any point during the commit process, the server processes will continue to access the shadow files until you can repeat the commit procedure and complete the writing of data to the main register files. You can perform multiple update operations to the registers before you commit the changes to the system files, or you can execute the commit operation at the end of each update operation. When the commit phase has completed successfully, any running server processes are instructed to switch their operations to the new, operational register, and the temporary shadow files are deleted. 
+
+By default, (in the API !) the use of shadow registers is disabled. If zebra is configured that way (there is a "shadow" entry in zebra.cfg), then the shadow system can be enabled by calling:
+
+ $sess->shadow(1);
+
+or disabled by
+
+ $sess->shadow(0);
+
+If shadow system is enabled, then you have to commit changes you did, by calling:
+ 
+ $sess->commit;
+
+Note, that you can also determine shadow usage in the session constructor:
+
+ $sess = IDZebra::Session->open(configFile => 'demo/zebra.cfg',
+			        shadow    => 1);
+ 
+Changes to I<shadow> will not have effect, within a I<transaction> (ie.: a transaction is started either with shadow enabled or disabled). For more details, read Zebra documentation: I<Safe Updating - Using Shadow Registers>.
 
 =head1 UPDATING DATA
 
@@ -938,10 +995,24 @@ In order to map CQL queries to Zebra internal search structures, you have to def
 
 Or, you can directly provide the I<mapfile> parameter for the search:
 
-  my $rs1 = $sess->search(cqlmap    => 'demo/cql.map',
-	  		  cql       => 'dc.title=IDZebra');
+  $rs = $sess->search(cqlmap    => 'demo/cql.map',
+		      cql       => 'dc.title=IDZebra');
 
 As you see, CQL searching is so simple: just give the query in the I<cql> parameter.
+
+=head2 Sorting
+
+If you'd like the search results to be sorted, use the I<sort> parameter:
+
+  $rs = $sess->search(cql       => 'IDZebra',
+		      sort      => '1=4 ia');
+  
+Note, that B<currently> this is (almost) equivalent to
+
+  $rs = $sess->search(cql       => 'IDZebra');
+  $rs->sort('1=4 ia');
+  
+but in the further versions of Zebra and this API a single phase search and sort will take place, optimizing performance. For more details on sorting, see I<IDZebra::ResultSet> manpage.
 
 =head1 RESULTSETS
 
@@ -954,7 +1025,106 @@ It contains number of hits, and search status, and can be used to sort and retri
 
 I<$rs-E<gt>errCode> is 0, if there were no errors during search. Read the I<IDZebra::Resultset> manpage for more details.
 
-=head1 MISC FUNCTIONS
+=head1 SCANNING
+
+Zebra supports scanning index values. The result of the 
+
+  $sl = $sess->scan(expression => "a");
+
+call is an I<IDZebra::ScanList> object, what you can use to list the values. The scan expression has to be provided in a PQF like format. Examples:
+
+B< a> (scan trough words of "default", "Any" indexes)
+
+
+B< @attr 1=1016 a> (same effect)
+
+
+B< @attr 1=4 @attr 6=2 a>  (scan trough titles as phrases)
+
+An illegal scan expression will cause your code to die. If you'd like to select databases just for the scan call, you can optionally use the I<databases> parameter:
+
+  $sl = $sess->scan(expression => "a",
+                    databases  => [qw(demo1 demo2)]);
+  
+You can use the I<IDZebra::ScanList> object returned by the i<scan> method, to reach the result. Check I<IDZebra::ScanList> manpage for more details.
+
+=head1 SESSION STATUS AND ERRORS
+
+Most of the API calls causes die, if an error occures. You avoid this, by using eval {} blocks. The following methods are available to get the status of Zebra service:
+
+=over 4
+
+=item B<errCode>
+
+The Zebra provided error code... (for the result of the last call);
+
+=item B<errString>
+
+Error string corresponding to the message
+
+=item B<errAdd>
+
+Additional information for the status
+
+=back
+
+This functionality may change, see TODO.
+
+=head1 LOGGING AND MISC. FUNCTIONS
+
+Zebra provides logging facility for the internal events, and also for application developers trough the API. See manpage I<IDZebra::Logger> for details.
+
+=over 4
+
+=item B<IDZebra::LogFile($filename)>
+
+Will set the output file for logging. By default it's STDERR;
+
+=item B<IDZebra::LogLevel(15)>
+
+Set log level. 0 for no logs. See IDZebra::Logger for usable flags.
+
+=back
+
+Some other functions
+
+=over 4
+
+=item B<$sess-E<gt>init>
+
+Initialize, and clean registers. This will remove all data!
+
+=item B<$sess-E<gt>compact>
+
+Compact the registers (? does this work)
+
+=item B<$sess-E<gt>show>
+
+Doesn't have too much meaning. Don't try :)
+
+=back
+
+=head1 TODO
+
+=over 4
+
+=item B<Clean up error handling>
+
+By default all zebra errors should cause die. (such situations could be avoided by using eval {}), and then check for errCode, errString... An optional flag or package variable should be introduced to override this, and skip zebra errors, to let the user decide what to do.
+
+=item B<Make the package self-distributable>
+
+Build and link with installed header and library files
+
+=item B<Testing>
+
+Test shadow system, unicode...
+
+=item B<C API>
+
+Cleanup, arrange, remove redundancy
+
+=back
 
 =head1 COPYRIGHT
 
@@ -966,6 +1136,6 @@ Peter Popovics, pop@technomat.hu
 
 =head1 SEE ALSO
 
-IDZebra, IDZebra::Data1, Zebra documentation
+Zebra documentation, Zebra::ResultSet, Zebra::ScanList, Zebra::Logger manpages
 
 =cut

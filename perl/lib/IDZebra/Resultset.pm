@@ -1,4 +1,4 @@
-# $Id: Resultset.pm,v 1.7 2003-03-03 18:27:25 pop Exp $
+# $Id: Resultset.pm,v 1.8 2003-03-05 13:55:22 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -12,7 +12,7 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.7 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.8 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -223,7 +223,23 @@ The record syntax for retrieval. The default is SUTRS.
 
 =head1 SORTING
 
+You can sort resultsets by calling:
 
+  $rs1->sort($sort_expr);
+
+or create a new sorted resultset:
+
+  $rs2 = $rs1->sort($sort_expr);
+
+The sort expression has the same format as described in the I<yaz_client> documentation. For example:
+
+  $rs1->sort('1=4 id');
+
+will sort thr results by title, in a case insensitive way, in descending order, while
+
+  $rs1->sort('1=4 a');
+
+will sort ascending by titles.
 
 =head1 COPYRIGHT
 
@@ -235,6 +251,6 @@ Peter Popovics, pop@technomat.hu
 
 =head1 SEE ALSO
 
-IDZebra, IDZebra::Data1, Zebra documentation
+Zebra documentation, IDZebra::ResultSet, IDZebra::RetrievalRecord manpages.
 
 =cut

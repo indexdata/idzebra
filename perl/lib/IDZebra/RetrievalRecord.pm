@@ -1,4 +1,4 @@
-# $Id: RetrievalRecord.pm,v 1.2 2003-03-03 12:14:27 pop Exp $
+# $Id: RetrievalRecord.pm,v 1.3 2003-03-05 13:55:22 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -9,7 +9,7 @@ use warnings;
 
 BEGIN {
     use IDZebra;
-    our $VERSION = do { my @r = (q$Revision: 1.2 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.3 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
 }
 
 1;
@@ -105,7 +105,7 @@ Peter Popovics, pop@technomat.hu
 
 =head1 SEE ALSO
 
-IDZebra, IDZebra::Session, IDZebra::Resultset, Zebra documentation
+Zebra documentation, IDZebra::Session, IDZebra::ResultSet manpages.
 
 =cut
 

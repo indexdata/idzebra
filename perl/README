@@ -1,1 +1,28 @@
-Write this
+IDZebra - Perl API for IndexData Zebra database server
+
+IDZebra package is distributed as a module, but also included in Zebra
+source distribution. 
+
+To compile this extension, run:
+ 
+  perl Makefile.PL 
+  make
+
+To test:
+
+  make test
+
+or
+
+  make test TEST_VERBOSE=1
+
+If the tests were successfull, you may want to:
+
+  make install
+ 
+There is an embeded POD manual page in lib/IDZebra/Session.pm.
+ 
+The original author of the module is Peter Popovics <pop@technomat.hu>.
+The maintenance is done by IndexData. (http://www.indexdata.dk), you may
+subscribe to zebralist@indexdata.dk.
+

@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.13 2003-03-05 00:35:57 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.14 2003-03-05 13:55:21 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -3699,66 +3699,6 @@ XS(_wrap_trans_no) {
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
-        XSRETURN(argvi);
-        fail:
-        (void) _swigerr;
-    }
-    croak(_swigerr);
-}
-
-
-XS(_wrap_begin_read) {
-    char _swigmsg[SWIG_MAX_ERRMSG] = "";
-    const char *_swigerr = _swigmsg;
-    {
-        ZebraHandle arg1 ;
-        int result;
-        int argvi = 0;
-        dXSARGS;
-        
-        if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: begin_read(zh);");
-        }
-        {
-            ZebraHandle * argp;
-            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_ZebraHandle,0) < 0) {
-                SWIG_croak("Type error in argument 1 of begin_read. Expected _p_ZebraHandle");
-            }
-            arg1 = *argp;
-        }
-        result = (int)zebra_begin_read(arg1);
-        
-        ST(argvi) = sv_newmortal();
-        sv_setiv(ST(argvi++), (IV) result);
-        XSRETURN(argvi);
-        fail:
-        (void) _swigerr;
-    }
-    croak(_swigerr);
-}
-
-
-XS(_wrap_end_read) {
-    char _swigmsg[SWIG_MAX_ERRMSG] = "";
-    const char *_swigerr = _swigmsg;
-    {
-        ZebraHandle arg1 ;
-        int argvi = 0;
-        dXSARGS;
-        
-        if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: end_read(zh);");
-        }
-        {
-            ZebraHandle * argp;
-            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_ZebraHandle,0) < 0) {
-                SWIG_croak("Type error in argument 1 of end_read. Expected _p_ZebraHandle");
-            }
-            arg1 = *argp;
-        }
-        zebra_end_read(arg1);
-        
-        
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -8512,8 +8452,6 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::begin_trans", _wrap_begin_trans},
 {"IDZebrac::end_trans", _wrap_end_trans},
 {"IDZebrac::trans_no", _wrap_trans_no},
-{"IDZebrac::begin_read", _wrap_begin_read},
-{"IDZebrac::end_read", _wrap_end_read},
 {"IDZebrac::commit", _wrap_commit},
 {"IDZebrac::get_shadow_enable", _wrap_get_shadow_enable},
 {"IDZebrac::set_shadow_enable", _wrap_set_shadow_enable},

@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 03_record_update.t,v 1.1 2003-03-03 00:44:39 pop Exp $
+# $Id: 03_record_update.t,v 1.2 2003-03-05 13:55:22 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -29,7 +29,8 @@ BEGIN {
 # ----------------------------------------------------------------------------
 # Session opening and closing
 my $sess = IDZebra::Session->open(configFile => 'demo/zebra.cfg',
-				  groupName => 'demo2');
+				  groupName => 'demo2',
+				  shadow    => 1);
 isa_ok($sess,"IDZebra::Session");
 
 # ----------------------------------------------------------------------------
@@ -69,4 +70,5 @@ ok(($stat->{inserted} == 1), "Inserted 1 records");
 # ----------------------------------------------------------------------------
 # Close session
 
+$sess->commit;
 $sess->close;

@@ -56,8 +56,6 @@ package IDZebra;
 *begin_trans = *IDZebrac::begin_trans;
 *end_trans = *IDZebrac::end_trans;
 *trans_no = *IDZebrac::trans_no;
-*begin_read = *IDZebrac::begin_read;
-*end_read = *IDZebrac::end_read;
 *commit = *IDZebrac::commit;
 *get_shadow_enable = *IDZebrac::get_shadow_enable;
 *set_shadow_enable = *IDZebrac::set_shadow_enable;

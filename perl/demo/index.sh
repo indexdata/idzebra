@@ -6,5 +6,7 @@ fi
 test -d demo/register || mkdir demo/register
 test -d demo/lock || mkdir demo/lock
 test -d demo/tmp || mkdir demo/tmp
+test -d demo/shadow || mkdir demo/shadow
+
 ../index/zebraidx -c demo/zebra.cfg init
-../index/zebraidx -c demo/zebra.cfg -g demo1 update /usr/lib/perl5
+../index/zebraidx -c demo/zebra.cfg -g demo1 -n update /usr/lib/perl5

@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 02_directory_update.t,v 1.2 2003-03-04 19:33:53 pop Exp $
+# $Id: 02_directory_update.t,v 1.3 2003-03-05 13:55:22 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -29,7 +29,7 @@ BEGIN {
 # ----------------------------------------------------------------------------
 # Session opening and closing
 my $sess = IDZebra::Session->open(configFile => 'demo/zebra.cfg',
-				  groupName => 'demo2');
+				  groupName  => 'demo2');
 isa_ok($sess,"IDZebra::Session");
 
 SKIP: {
@@ -38,7 +38,6 @@ SKIP: {
 # ----------------------------------------------------------------------------
 # init repository
 $sess->init();
-
 # ----------------------------------------------------------------------------
 # repository upadte
 
@@ -71,7 +70,7 @@ $sess->update(groupName => 'demo1',
 
 $stat = $sess->end_trans;
 ok(($stat->{inserted} == $filecount), 
-   "Inserted $stat->{inserted}/$filecount records");
+   "Inserted $stat->{inserted}/$filecount records with shadow");
 
 ok(($sess->group->{databaseName} eq "demo2"),"Original group is selected");
 
