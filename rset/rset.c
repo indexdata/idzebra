@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.37 2004-10-22 10:58:29 heikki Exp $
+/* $Id: rset.c,v 1.38 2004-10-22 11:33:29 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -86,12 +86,14 @@ RSET rset_create_base(const struct rset_control *sel,
     else 
         rnew->my_nmem=1;
     rnew->control = sel;
-    rnew->count = 1;
+    rnew->count = 1; /* refcount! */
     rnew->priv = 0;
     rnew->free_list=NULL;
     rnew->keycontrol=kcontrol;
     rnew->scope=scope;
     rnew->term=term;
+    if (term)
+        term->rset=rnew;
     return rnew;
 }
 
@@ -148,6 +150,22 @@ int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
     return more;
 }
 
+/** 
+ * rset_count uses rset_pos to get the total and returns that.
+ * This is ok for rsisamb, and for some other rsets, but in case of
+ * booleans etc it will give bad estimate, as nothing has been read
+ * from that rset
+ */
+zint rset_count(RSET rs)
+{
+    double cur,tot;
+    RSFD rfd=rset_open(rs,0);
+    rset_pos(rfd,&cur,&tot);
+    rset_close(rfd);
+    return (zint)(tot);
+}
+
+
 /** rset_get_no_terms is a getterms function for those that don't have any */
 void rset_get_no_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
@@ -188,9 +206,9 @@ TERMID rset_term_create (const char *name, int length, const char *flags,
         t->flags = NULL;
     else
         t->flags = nmem_strdup(nmem,flags);
-    t->nn = -1;
-    t->count = 0;
     t->type = type;
+    t->rankpriv=0;
+    t->rset=0;
     return t;
 }
 

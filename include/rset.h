@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.40 2004-10-22 10:58:28 heikki Exp $
+/* $Id: rset.h,v 1.41 2004-10-22 11:33:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -48,11 +48,14 @@ typedef struct rset *RSET; /* Result set */
  */
 
 struct rset_term {
+    /** the term itself */
     char *name;
-    zint  nn; /* FIXME - what is this used for */
     char *flags;
-    zint  count;
     int  type;
+    /** the rset corresponding to this term */
+    RSET rset;
+    /** private stuff for the ranking algorithm */
+    void *rankpriv;
 };
 
 typedef struct rset_term *TERMID; 
@@ -207,6 +210,9 @@ RSET rset_dup (RSET rs);
 
 /* int rset_type (RSET) */
 #define rset_type(rs) ((rs)->control->desc)
+
+/** rset_count counts or estimates the keys in it*/
+zint rset_count(RSET rs);
 
 RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
                     int scope, 

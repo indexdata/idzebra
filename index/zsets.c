@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.67 2004-10-22 10:58:28 heikki Exp $
+/* $Id: zsets.c,v 1.68 2004-10-22 11:33:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -821,15 +821,11 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 
     for (i = 0; i < n; i++)
     {
-        if (est>0)
-            terms[i]->count = 
-                est=(zint)(terms[i]->count/ratio);
-        yaz_log (LOG_LOG, "term=\"%s\" nn=" ZINT_FORMAT 
+        yaz_log (LOG_LOG, "term=\"%s\" "
                     " type=%s count=" ZINT_FORMAT,
                  terms[i]->name,
-                 terms[i]->nn,
                  terms[i]->flags,
-                 terms[i]->count);
+                 rset_count(terms[i]->rset));
     }
     xfree(terms);
     yaz_log (LOG_DEBUG, ZINT_FORMAT " keys, "ZINT_FORMAT" distinct sysnos", 
