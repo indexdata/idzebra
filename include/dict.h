@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.21  1996-05-24 14:46:07  adam
+ * Revision 1.22  1996-06-04 10:20:10  adam
+ * Added support for character mapping.
+ *
+ * Revision 1.21  1996/05/24  14:46:07  adam
  * Added dict_grep_cmap function to define user-mapping in grep lookups.
  *
  * Revision 1.20  1996/03/20  09:35:23  adam
@@ -121,7 +124,7 @@ typedef struct Dict_file_struct
 typedef struct Dict_struct {
     int rw;
     Dict_BFile dbf;
-    char **(*grep_cmap)(const char **from);
+    char **(*grep_cmap)(const char **from, int len);
     struct Dict_head head;
 } *Dict;
 
@@ -154,7 +157,8 @@ int	   dict_scan (Dict dict, char *str,
 		      int (*f)(char *name, const char *info, int pos,
                                void *client));
 
-void       dict_grep_cmap (Dict dict, char **(*cmap)(const char **from));
+void       dict_grep_cmap (Dict dict,
+                           char **(*cmap)(const char **from, int len));
 
 
 #define DICT_EOS        0

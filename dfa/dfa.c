@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.11  1996-01-08 19:15:24  adam
+ * Revision 1.12  1996-06-04 10:20:02  adam
+ * Added support for character mapping.
+ *
+ * Revision 1.11  1996/01/08  19:15:24  adam
  * Allow single $ in expressions.
  *
  * Revision 1.10  1996/01/08  09:09:17  adam
@@ -428,6 +431,30 @@ static int read_charset (void)
     return L_CHARS;
 }
 
+static int map_l_char (void)
+{
+    char **mapto;
+    const char *cp0 = expr_ptr-1;
+    int i = 0, len = strlen(cp0);
+
+    if (cp0[0] == 1 && cp0[1])
+    {
+        expr_ptr++;
+        look_ch = cp0[1];
+        return L_CHAR;
+    }
+    if (!parse_info->cmap)
+        return L_CHAR;
+
+    mapto = (*parse_info->cmap) (&cp0, len);
+    assert (mapto);
+    
+    expr_ptr = cp0;
+    look_ch = mapto[i][0];
+    logf (LOG_DEBUG, "map from %c to %d", expr_ptr[-1], look_ch);
+    return L_CHAR;
+}
+
 static int lex_sub(void)
 {
     int esc;
@@ -435,11 +462,11 @@ static int lex_sub(void)
         if (look_ch == '\"')
         {
             if (esc)
-                return L_CHAR;
+                return map_l_char ();
             inside_string = !inside_string;
         }
         else if (esc || inside_string)
-            return L_CHAR;
+            return map_l_char ();
         else if (look_ch == '[')
             return read_charset();
         else 
@@ -452,7 +479,7 @@ static int lex_sub(void)
                         --expr_ptr;
                     return cc[1];
                 }
-            return L_CHAR;            
+            return map_l_char ();     
         }
     return 0;
 }
@@ -978,6 +1005,7 @@ static struct DFA_parse *dfa_parse_init (void)
     parse_info->use_Tnode = parse_info->max_Tnode = 0;
     parse_info->charMap = NULL;
     parse_info->charMapSize = 0;
+    parse_info->cmap = NULL;
     return parse_info;
 }
 
@@ -1030,6 +1058,11 @@ struct DFA *dfa_init (void)
     dfa->states = NULL;
     dfa_parse_cmap_thompson (dfa);
     return dfa;
+}
+
+void dfa_set_cmap (struct DFA *dfa, char **(*cmap)(const char **from, int len))
+{
+    dfa->parse_info->cmap = cmap;
 }
 
 int dfa_parse (struct DFA *dfa, const char **pattern)

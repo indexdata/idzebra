@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.h,v $
- * Revision 1.5  1996-01-08 09:09:48  adam
+ * Revision 1.6  1996-06-04 10:20:10  adam
+ * Added support for character mapping.
+ *
+ * Revision 1.5  1996/01/08  09:09:48  adam
  * Function dfa_parse got 'const' string argument.
  *
  * Revision 1.4  1995/01/25  11:31:04  adam
@@ -59,6 +62,8 @@ struct DFA {
 };
 
 struct DFA *dfa_init (void);
+void dfa_set_cmap (struct DFA *dfa,
+                   char **(*cmap)(const char **from, int len));
 int dfa_parse (struct DFA *, const char **);
 void dfa_mkstate (struct DFA *);
 void dfa_delete (struct DFA **);

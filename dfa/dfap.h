@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfap.h,v $
- * Revision 1.3  1996-01-08 09:09:19  adam
+ * Revision 1.4  1996-06-04 10:20:03  adam
+ * Added support for character mapping.
+ *
+ * Revision 1.3  1996/01/08  09:09:19  adam
  * Function dfa_parse got 'const' string argument.
  * New functions to define char mappings made public.
  *
@@ -35,6 +38,7 @@ struct DFA_parse {
     struct Tblock *end;       /* end block of Tnodes */
     int *charMap;
     int charMapSize;
+    char **(*cmap)(const char **from, int len);
 };
 
 typedef struct DFA_stateb_ {

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.16  1996-05-24 14:46:04  adam
+ * Revision 1.17  1996-06-04 10:20:06  adam
+ * Added support for character mapping.
+ *
+ * Revision 1.16  1996/05/24  14:46:04  adam
  * Added dict_grep_cmap function to define user-mapping in grep lookups.
  *
  * Revision 1.15  1996/03/20  09:35:18  adam
@@ -404,6 +407,9 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     int i, d;
 
     logf (LOG_DEBUG, "dict_lookup_grep '%s' range=%d", pattern, range);
+   
+    dfa_set_cmap (dfa, dict->grep_cmap);
+
     i = dfa_parse (dfa, &this_pattern);
     if (i || *this_pattern)
     {
@@ -445,7 +451,7 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     return i;
 }
 
-void dict_grep_cmap (Dict dict, char **(*cmap)(const char **from))
+void dict_grep_cmap (Dict dict, char **(*cmap)(const char **from, int len))
 {
     dict->grep_cmap = cmap;
 }
