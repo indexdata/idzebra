@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.9 2003-06-12 18:14:49 adam Exp $
+/* $Id: rsbetween.c,v 1.10 2004-01-16 15:27:35 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -47,6 +47,7 @@ static const struct rset_control control_between =
     r_close_between,
     r_delete_between,
     r_rewind_between,
+    rset_default_forward,
     r_count_between,
     r_read_between,
     r_write_between,

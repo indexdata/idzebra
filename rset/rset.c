@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.17 2002-08-02 19:26:57 adam Exp $
+/* $Id: rset.c,v 1.18 2004-01-16 15:27:35 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -61,6 +61,11 @@ RSET rset_dup (RSET rs)
 {
     (rs->count)++;
     return rs;
+}
+
+int rset_default_forward(RSFD rfd, void *buf, const void *untilbuf)
+{
+    logf (LOG_FATAL, "rset_default-forward not yet implemented (%s)");
 }
 
 RSET_TERM *rset_terms(RSET rs, int *no)
