@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: idzebra-config.in,v 1.3 2004-08-30 22:12:45 adam Exp $
+# $Id: idzebra-config.in,v 1.4 2004-11-22 11:26:34 adam Exp $
 prefix=@prefix@
 idzebra_echo_cflags=no
 idzebra_echo_libs=no
@@ -10,8 +10,8 @@ idzebra_echo_lalibs=no
 idzebra_src_root=@IDZEBRA_SRC_ROOT@
 idzebra_build_root=@IDZEBRA_BUILD_ROOT@
 
-extralibs="@YAZLIB@ @TCL_LIB@ @LIBS@"
-extralalibs="@YAZLALIB@ @TCL_LIB@ @LIBS@"
+extralibs="@YAZLIB@ @TCL_LIB@ @EXPAT_LIBS@ @LIBS@"
+extralalibs="@YAZLALIB@ @TCL_LIB@ @EXPAT_LIBS@ @LIBS@"
 IDZEBRAVERSION=@VERSION@
 
 usage()
