@@ -8,6 +8,10 @@ CPP=cc -E
 
 all: $(LIB)
 
+test: test.c $(LIB)
+	$(CC) -g -o test -I../include test.c \
+	../lib/isam.a ../lib/bfile.a ../lib/util.a
+
 isam-test: isam-test.c $(LIB)
 	$(CC) -g -o isam-test -I../include isam-test.c \
 	../lib/isam.a ../lib/bfile.a ../lib/util.a

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.1  1994-09-26 16:07:57  quinn
+ * Revision 1.2  1994-09-26 17:06:36  quinn
+ * Back again...
+ *
+ * Revision 1.1  1994/09/26  16:07:57  quinn
  * Most of the functionality in place.
  *
  */
@@ -16,7 +19,7 @@
 #include <assert.h>
 
 #include <isam.h>
-#include "memory.h"
+#include <ismemory.h>
 
 static int is_freestore_alloc(ISAM is, int type)
 {

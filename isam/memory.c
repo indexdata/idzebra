@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.1  1994-09-26 16:07:56  quinn
+ * Revision 1.2  1994-09-26 17:06:35  quinn
+ * Back again...
+ *
+ * Revision 1.1  1994/09/26  16:07:56  quinn
  * Most of the functionality in place.
  *
  */
@@ -16,7 +19,7 @@
 #include <assert.h>
 
 #include <util.h>
-#include "memory.h"
+#include <ismemory.h>
 #include "physical.h"
 #include <isam.h>
 

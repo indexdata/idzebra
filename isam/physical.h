@@ -4,13 +4,18 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.h,v $
- * Revision 1.1  1994-09-26 16:07:59  quinn
+ * Revision 1.2  1994-09-26 17:06:37  quinn
+ * Back again...
+ *
+ * Revision 1.1  1994/09/26  16:07:59  quinn
  * Most of the functionality in place.
  *
  */
 
 #ifndef PHYSICAL_H
 #define PHYSICAL_H
+
+#include <ismemory.h>
 
 void is_p_sync(is_mtable *tab);
 void is_p_unmap(is_mtable *tab);

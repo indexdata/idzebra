@@ -4,8 +4,8 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.2  1994-09-26 16:07:53  quinn
- * Most of the functionality in place.
+ * Revision 1.3  1994-09-26 17:06:35  quinn
+ * Back again...
  *
  * Revision 1.1  1994/09/12  08:02:13  quinn
  * Not functional yet
@@ -17,12 +17,12 @@
 #include <ctype.h>
 
 #include <util.h>
-#include "isutil.h"
-#include "rootblk.h"
 #include <bfile.h>
 #include <isam.h>
 #include <common.h>
-#include "memory.h"
+#include "isutil.h"
+#include "rootblk.h"
+#include <ismemory.h>
 #include "physical.h"
 #include "keyops.h"
 
@@ -345,3 +345,14 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, const char *data)
     is_p_sync(&tab);
     return is_address(tab.pos_type, tab.data->diskpos);
 }
+
+/*
+ * Locate a table of keys in an isam file. The ISPT is an individual
+ * position marker for that table.
+ */
+ISPT is_position(ISAM is, ISAM_P pos);
+
+/*
+ * Release ISPT.
+ */
+void is_pt_free(ISPT ip);
