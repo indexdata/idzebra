@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2000
-dnl $Id: configure.in,v 1.25 2000-11-29 14:24:01 adam Exp $
+dnl $Id: configure.in,v 1.26 2001-02-21 09:52:39 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -87,6 +87,7 @@ fi
 dnl ------- 64 bit files
 AC_MSG_CHECKING(for LFS)
 AC_TRY_RUN([#define _FILE_OFFSET_BITS 64
+#include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
