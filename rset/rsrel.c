@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.11  1996-10-07 16:05:29  quinn
+ * Revision 1.12  1996-10-08 13:00:40  adam
+ * Bug fix: result sets with ranked operands in boolean operations weren't
+ * sorted.
+ *
+ * Revision 1.11  1996/10/07  16:05:29  quinn
  * Work.
  *
  * Revision 1.9  1995/12/11  09:15:26  adam
@@ -189,10 +193,10 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 		co_oc = 1;
 	    }
 	    else if (!r && last_term != parms->term_no[i]) /* new occurrence */
-		    co_oc++;
+                co_oc++;
 	    last_term = parms->term_no[i];
 	}
-
+        
         if (min < 0)
             break;
         memcpy (isam_tmp_buf, isam_buf[min], info->key_size);
@@ -207,10 +211,6 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
                 r = (*parms->cmp)(isam_buf[i], isam_tmp_buf);
             else 
                 r = 2;
-#if 0
-            if (r > 1 || r < -1)
-                wgt[parms->term_no[i]] = 0.0;
-#endif
 	    if (r <= 1 && r >= -1)
             {
                 do

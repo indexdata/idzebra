@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rssbool.c,v $
- * Revision 1.2  1996-05-15 18:35:17  adam
+ * Revision 1.3  1996-10-08 13:00:41  adam
+ * Bug fix: result sets with ranked operands in boolean operations weren't
+ * sorted.
+ *
+ * Revision 1.2  1996/05/15  18:35:17  adam
  * Implemented snot operation.
  *
  * Revision 1.1  1995/12/11  09:15:27  adam
@@ -90,6 +94,7 @@ struct rset_bool_info {
     RSET rset_r;
     char *key_buf;
     int *score_buf;
+    int *score_idx;
     int key_no;
     int key_max;
     int (*cmp)(const void *p1, const void *p2);
@@ -101,12 +106,21 @@ struct rset_bool_rfd {
     struct rset_bool_info *info;
     int position;
     int last_pos;
-    int open_flag;
+    int flag;
 };    
 
 static void *r_create_common (const struct rset_control *sel, 
                               rset_bool_parms *bool_parms, int *flags);
-            
+
+static struct rset_bool_info *qsort_info;
+
+static int qcomp (const void *p1, const void *p2)
+{
+    int i1 = *(int*) p1;
+    int i2 = *(int*) p2;
+    return qsort_info->score_buf[i2] - qsort_info->score_buf[i1];
+}
+
 static void key_add (struct rset_bool_info *info,
                      char *buf, int score)
 {
@@ -115,6 +129,7 @@ static void key_add (struct rset_bool_info *info,
     memcpy (info->key_buf + info->key_size * info->key_no,
             buf, info->key_size);
     info->score_buf[info->key_no] = score;
+    info->score_idx[info->key_no] = info->key_no;
     (info->key_no)++;
 }
 
@@ -164,19 +179,9 @@ static void *r_create_and (const struct rset_control *sel, void *parms,
             more_r = rset_read (info->rset_r, fd_r, buf_r);
         }
         else if (cmp > 1)
-        {
-            rset_score (info->rset_r, fd_r, &score_r);
-            if (score_r != -1)
-                key_add (info, buf_r, 1);
             more_r = rset_read (info->rset_r, fd_r, buf_r);
-        }
         else
-        {
-            rset_score (info->rset_l, fd_l, &score_l);
-            if (score_l != -1)
-                key_add (info, buf_l, 1);
             more_l = rset_read (info->rset_l, fd_l, buf_l);
-        }
     }
     rset_close (info->rset_l, fd_l);
     rset_close (info->rset_r, fd_r);
@@ -184,6 +189,8 @@ static void *r_create_and (const struct rset_control *sel, void *parms,
     rset_delete (info->rset_r);
     xfree (buf_l);
     xfree (buf_r);
+    qsort_info = info;
+    qsort (info->score_idx, info->key_no, sizeof(*info->score_idx), qcomp);
     return info;
 }
 
@@ -253,6 +260,8 @@ static void *r_create_or (const struct rset_control *sel, void *parms,
     rset_delete (info->rset_r);
     xfree (buf_l);
     xfree (buf_r);
+    qsort_info = info;
+    qsort (info->score_idx, info->key_no, sizeof(*info->score_idx), qcomp);
     return info;
 }
 
@@ -307,6 +316,8 @@ static void *r_create_not (const struct rset_control *sel, void *parms,
     rset_delete (info->rset_r);
     xfree (buf_l);
     xfree (buf_r);
+    qsort_info = info;
+    qsort (info->score_idx, info->key_no, sizeof(*info->score_idx), qcomp);
     return info;
 }
 
@@ -333,6 +344,7 @@ static void *r_create_common (const struct rset_control *sel,
         info->key_max = 1000;
     info->key_buf = xmalloc (info->key_size * info->key_max);
     info->score_buf = xmalloc (info->key_max * sizeof(*info->score_buf));
+    info->score_idx = xmalloc (info->key_max * sizeof(*info->score_idx));
     info->key_no = 0;
 
     return info;
@@ -355,7 +367,7 @@ static RSFD r_open (RSET ct, int flag)
 
     rfd->position = 0;
     rfd->last_pos = 0;
-    rfd->open_flag = flag;
+    rfd->flag = flag;
 
     return rfd;
 }
@@ -382,6 +394,7 @@ static void r_delete (RSET ct)
 
     assert (info->rfd_list == NULL);
     xfree (info->score_buf);
+    xfree (info->score_idx);
     xfree (info->key_buf);
     xfree (info);
 }
@@ -408,7 +421,10 @@ static int r_read (RSFD rfd, void *buf)
 
     if (p->position >= info->key_no)
         return 0;
-    p->last_pos = (p->position)++;
+    if (p->flag & RSETF_SORT_RANK)
+        p->last_pos = info->score_idx[(p->position)++];
+    else
+        p->last_pos = (p->position)++;
     memcpy (buf, info->key_buf + info->key_size * p->last_pos,
             info->key_size);
     return 1;
