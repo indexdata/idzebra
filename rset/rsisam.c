@@ -4,8 +4,8 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.1  1994-11-04 13:21:29  quinn
- * Working.
+ * Revision 1.2  1994-11-04 14:53:12  quinn
+ * Work
  *
  */
 
@@ -52,6 +52,11 @@ rset_control *r_create(const struct rset_control *sel, void *parms)
 
 static int r_open(rset_control *ct, int wflag)
 {
+    if (wflag)
+    {
+	log(LOG_FATAL, "ISAM set type is read-only");
+	return -1;
+    }
     r_rewind(ct);
     return 0;
 }
@@ -75,12 +80,10 @@ static void r_rewind(rset_control *ct)
 static int r_count(rset_control *ct)
 {return 0;}
 
-static int r_read(rset_control *ct, void *buf)
-{
-    return is_readkey((ISPT) ct->buf, buf);
-}
+static int r_read()
+{return 0;}
 
-static int r_write(rset_control *ct, const void *buf)
+static int r_write()
 {
     log(LOG_FATAL, "ISAM set type is read-only");
     return -1;
