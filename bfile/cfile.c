@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.12  1996-04-09 06:47:28  adam
+ * Revision 1.13  1996-04-09 14:48:49  adam
+ * Bug fix: offset calculation when using flat files was completely broken.
+ *
+ * Revision 1.12  1996/04/09  06:47:28  adam
  * Function scan_areadef doesn't use sscanf (%n fails on this Linux).
  *
  * Revision 1.11  1996/03/26 15:59:05  adam
@@ -125,7 +128,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         hash_bytes = cf->head.hash_size * sizeof(int);
         cf->head.flat_bucket = cf->head.next_bucket = cf->head.first_bucket = 
             (hash_bytes+sizeof(cf->head))/HASH_BSIZE + 2;
-        cf->head.next_block = 1;
+        cf->head.next_block = 0;
         if (wflag)
             mf_write (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
         cf->array = xmalloc (hash_bytes);
@@ -273,7 +276,7 @@ static struct CFile_hash_bucket *new_bucket (CFile cf, int *block_no, int hno)
 static int cf_lookup_flat (CFile cf, int no)
 {
     int hno = (no*sizeof(int))/HASH_BSIZE;
-    int off = (no*sizeof(int)) - hno*sizeof(HASH_BSIZE);
+    int off = (no*sizeof(int)) - hno*HASH_BSIZE;
     int vno = 0;
 
     mf_read (cf->hash_mf, hno+cf->head.next_bucket, off, sizeof(int), &vno);
@@ -316,7 +319,7 @@ static int cf_lookup_hash (CFile cf, int no)
 static void cf_write_flat (CFile cf, int no, int vno)
 {
     int hno = (no*sizeof(int))/HASH_BSIZE;
-    int off = (no*sizeof(int)) - hno*sizeof(HASH_BSIZE);
+    int off = (no*sizeof(int)) - hno*HASH_BSIZE;
 
     hno += cf->head.next_bucket;
     if (hno >= cf->head.flat_bucket)
