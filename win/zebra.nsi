@@ -1,8 +1,10 @@
-; $Id: zebra.nsi,v 1.20.2.4 2004-08-20 11:05:58 adam Exp $
+; $Id: zebra.nsi,v 1.20.2.5 2004-08-20 12:32:01 adam Exp $
 
 !define VERSION "1.3.18"
 
 !include "MUI.nsh"
+
+SetCompressor bzip2
 
 Name "Zebra"
 Caption "Index Data Zebra ${VERSION} Setup"
@@ -67,7 +69,11 @@ Section "Zebra Runtime"
 	SectionIn 1 2
 	SetOutPath $INSTDIR\bin
 	File ..\bin\*.exe
-	File ..\bin\*.dll
+	File ..\bin\iconv.dll
+	File ..\bin\zlib.dll
+	File ..\bin\libxml2.dll
+	File ..\bin\yaz.dll
+	File ..\bin\libexpat.dll
 	File c:\winnt\system32\msvcr71.dll
 SectionEnd
 
