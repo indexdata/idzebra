@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.96 2002-09-03 11:44:54 adam Exp $
+/* $Id: main.c,v 1.97 2002-09-13 10:33:17 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -49,6 +49,7 @@ int main (int argc, char **argv)
     int nsections = 0;
     int disableCommit = 0;
     size_t mem_max = 0;
+    int trans_started=0;
 #if HAVE_SYS_TIMES_H
     struct tms tms1, tms2;
     struct timeval start_time, end_time;
@@ -189,7 +190,11 @@ int main (int argc, char **argv)
             {
                 rGroupDef.path = arg;
                 zebra_set_group (zh, &rGroupDef);
-                zebra_begin_trans (zh);
+		if (!trans_started)
+		{
+		    trans_started=1;
+                    zebra_begin_trans (zh);
+		}
 
                 switch (cmd)
                 {
@@ -207,8 +212,6 @@ int main (int argc, char **argv)
                 default:
                     nsections = 0;
                 }
-                cmd = 0;
-                zebra_end_trans (zh);
                 log_event_end (NULL, NULL);
             }
         }
@@ -252,7 +255,11 @@ int main (int argc, char **argv)
             rGroupDef.followLinks = 0;
         else
             logf (LOG_WARN, "unknown option '-%s'", arg);
-    }
+    } /* while arg */
+
+    if (trans_started)
+        zebra_end_trans (zh);
+
     zebra_close (zh);
     zebra_stop (zs);
 #if HAVE_SYS_TIMES_H
