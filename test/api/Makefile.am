@@ -1,10 +1,10 @@
-# $Id: Makefile.am,v 1.24 2004-10-29 14:30:27 heikki Exp $
+# $Id: Makefile.am,v 1.25 2004-11-01 11:45:39 heikki Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
 
 simpletests = t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 
-xpathtests= xpath1 xpath2 xpath3 xpath4
+xpathtests= xpath1 xpath2 xpath3 xpath4 xpath5
 #check_PROGRAMS = t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 xpath1
 check_PROGRAMS = ${simpletests} ${xpathtests}
 TESTS = $(check_PROGRAMS)
@@ -26,6 +26,7 @@ xpath1_SOURCES = xpath1.c testlib.c testlib.h
 xpath2_SOURCES = xpath2.c testlib.c testlib.h
 xpath3_SOURCES = xpath3.c testlib.c testlib.h
 xpath4_SOURCES = xpath4.c testlib.c testlib.h
+xpath5_SOURCES = xpath5.c testlib.c testlib.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 
