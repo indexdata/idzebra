@@ -1,10 +1,10 @@
 #!/bin/sh
-# $Id: idzebra-config.in,v 1.2 2004-08-30 21:36:53 adam Exp $
-idzebraprefix=@prefix@
+# $Id: idzebra-config.in,v 1.3 2004-08-30 22:12:45 adam Exp $
+prefix=@prefix@
 idzebra_echo_cflags=no
 idzebra_echo_libs=no
 idzebra_echo_help=no
-idzebra_echo_tabs=no
+idzebra_echo_tab=no
 idzebra_echo_source=yes
 idzebra_echo_lalibs=no
 idzebra_src_root=@IDZEBRA_SRC_ROOT@
@@ -24,6 +24,7 @@ Options:
 	[--libs]
 	[--lalibs]
 	[--cflags]
+	[--tab]
 EOF
     exit $1
 }
@@ -41,10 +42,10 @@ while test $# -gt 0; do
     
     case $1 in
 	--prefix=*)
-	    idzebraprefix=$optarg
+	    prefix=$optarg
 	    ;;
 	--prefix)
-	    echo $idzebraprefix
+	    echo $prefix
 	    exit 0
 	    ;;
 	--version)
@@ -57,8 +58,8 @@ while test $# -gt 0; do
 	--libs)
 	    idzebra_echo_libs=yes
 	    ;;
-	--tabs)
-	    idzebra_echo_tabs=yes
+	--tab)
+	    idzebra_echo_tab=yes
 	    ;;
 	--lalibs)
 	    idzebra_echo_lalibs=yes
@@ -98,13 +99,15 @@ if test "$idzebra_echo_source" = "yes"; then
     IDZEBRALIB="$IDZEBRALIB $extralibs"
     IDZEBRALALIB="$IDZEBRALALIB $extralalibs"
     IDZEBRAINC="$IDZEBRAINC -I${idzebra_src_root}/include"
+    IDZEBRATAB="${idzebra_src_root}/tab"
 else
-    if test "$idzebraprefix" != "/usr"; then
-	IDZEBRALIB="-L${idzebraprefix}/lib $IDZEBRALIB"
-	IDZEBRAINC="$IDZEBRAINC -I${idzebraprefix}/include"
+    if test "$prefix" != "/usr"; then
+	IDZEBRALIB="-L${prefix}/lib $IDZEBRALIB"
+	IDZEBRAINC="$IDZEBRAINC -I${prefix}/include"
     fi
     IDZEBRALIB="$IDZEBRALIB $extralibs"
     IDZEBRALALIB="$IDZEBRALIB"
+    IDZEBRATAB="@datadir@/idzebra/tab"
 fi
 
 if test "$idzebra_echo_help" = "yes"; then
@@ -118,4 +121,7 @@ if test "$idzebra_echo_libs" = "yes"; then
 fi
 if test "$idzebra_echo_lalibs" = "yes"; then
     echo $IDZEBRALALIB
+fi
+if test "$idzebra_echo_tab" = "yes"; then
+    echo $IDZEBRATAB
 fi
