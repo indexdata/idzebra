@@ -1,4 +1,4 @@
-/* $Id: t2.c,v 1.9 2004-06-14 21:43:44 adam Exp $
+/* $Id: t2.c,v 1.10 2004-06-14 23:43:32 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,8 +20,18 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <stdlib.h>
 #include <yaz/log.h>
 #include <zebraapi.h>
+
+/* read zebra.cfg from env var srcdir if it exists; otherwise current dir */
+static ZebraService start_service()
+{
+    char cfg[256];
+    char *srcdir = getenv("srcdir");
+    sprintf(cfg, "%.200s%szebra.cfg", srcdir ? srcdir : "", srcdir ? "/" : "");
+    return zebra_start(cfg, 0, 0);
+}
 
 int main(int argc, char **argv)
 {
@@ -38,7 +48,7 @@ int main(int argc, char **argv)
 
     nmem_init ();
 
-    zs = zebra_start("zebra.cfg", 0, 0);
+    zs = start_service();
     zh = zebra_open (zs);
     zebra_select_database(zh, "Default");
     zebra_init(zh);
