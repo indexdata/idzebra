@@ -5,3 +5,4 @@ t[0-9]
 *.mf
 *.LCK
 t[0-9].log
+testclient
