@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.18  1996-03-19 12:43:27  adam
+ * Revision 1.19  1996-03-20 16:16:55  quinn
+ * Added diagnostic output
+ *
+ * Revision 1.18  1996/03/19  12:43:27  adam
  * Bug fix: File update traversal didn't handle trailing slashes correctly.
  * Bug fix: Update of sub directory groups wasn't handled correctly.
  *
@@ -80,6 +83,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include <time.h>
 
 #include <alexutil.h>
 #include "index.h"
@@ -245,6 +249,8 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                     {
                         dirs_add (di, src, dst->sysno, e_src[i_src].ctime);
                     }
+		    logf (LOG_LOG, "old: %s", ctime (&dst->ctime));
+                    logf (LOG_LOG, "new: %s", ctime (&e_src[i_src].ctime));
                 }
                 dst = dirs_read (di);
                 break;
