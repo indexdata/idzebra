@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.h,v $
- * Revision 1.2  1994-09-27 20:03:52  quinn
+ * Revision 1.3  1994-09-28 16:58:33  quinn
+ * Small mod.
+ *
+ * Revision 1.2  1994/09/27  20:03:52  quinn
  * Seems relatively bug-free.
  *
  * Revision 1.1  1994/09/26  17:12:32  quinn
@@ -92,5 +95,6 @@ int is_m_seek_record(is_mtable *tab, const void *rec);
 void is_m_delete_record(is_mtable *tab);
 int is_m_peek_record(is_mtable *tab, void *rec);
 int is_m_read_full(is_mtable *tab, is_mblock *mblock);
+int is_m_num_records(is_mtable *tab);
 
 #endif

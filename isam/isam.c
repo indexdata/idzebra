@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.9  1994-09-28 12:56:15  quinn
+ * Revision 1.10  1994-09-28 16:58:32  quinn
+ * Small mod.
+ *
+ * Revision 1.9  1994/09/28  12:56:15  quinn
  * Added access functions (ISPT)
  *
  * Revision 1.8  1994/09/28  12:32:17  quinn
@@ -437,4 +440,14 @@ void is_pt_free(ISPT ip)
 int is_readkey(ISPT ip, void *buf)
 {
     return is_m_read_record(&ip->tab, buf);
+}    
+
+int is_numkeys(ISPT ip)
+{
+    return is_m_num_records(&ip->tab);
+}
+
+void is_rewind(ISPT ip)
+{
+    is_m_rewind(&ip->tab);
 }    

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.4  1994-09-27 20:03:52  quinn
+ * Revision 1.5  1994-09-28 16:58:33  quinn
+ * Small mod.
+ *
+ * Revision 1.4  1994/09/27  20:03:52  quinn
  * Seems relatively bug-free.
  *
  * Revision 1.3  1994/09/26  17:11:30  quinn
@@ -377,4 +380,15 @@ int is_m_seek_record(is_mtable *tab, const void *rec)
 	else if (rs == 0)
 	    return 0;
     }
+}
+
+int is_m_num_records(is_mtable *tab)
+{
+    if (tab->data->state < IS_MBSTATE_PARTIAL)
+	if (read_current_full(tab, tab->data) < 0)
+	{
+	    log(LOG_FATAL, "read full failed");
+	    exit(1);
+	}
+    return tab->num_records;
 }

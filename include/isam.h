@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.8  1994-09-28 12:56:09  quinn
+ * Revision 1.9  1994-09-28 16:58:26  quinn
+ * Small mod.
+ *
+ * Revision 1.8  1994/09/28  12:56:09  quinn
  * Added access functions (ISPT)
  *
  * Revision 1.7  1994/09/28  11:56:13  quinn
@@ -119,6 +122,10 @@ void is_pt_free(ISPT ip);
 int is_readkey(ISPT ip, void *buf);
 
 int is_writekey(ISPT ip, const void *buf);
+
+int is_numkeys(ISPT ip);
+
+void is_rewind(ISPT ip);
 
 ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data);
 
