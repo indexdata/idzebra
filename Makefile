@@ -1,14 +1,14 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.31 1995-10-12 12:38:40 adam Exp $
+# $Id: Makefile,v 1.32 1995-10-30 14:10:44 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
 SUBDIR=util str bfile dfa dict isam rset data1 index base
 RANLIB=ranlib
 YAZ=../../yaz
-OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
+#OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
 
 all:
 	for i in $(SUBDIR); do cd $$i; if $(MAKE) OSILIB="$(OSILIB)" YAZ="$(YAZ)" RANLIB="$(RANLIB)" CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done

@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.12 1995-09-04 12:33:21 adam Exp $
+# $Id: Makefile,v 1.13 1995-10-30 14:10:47 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -15,7 +15,7 @@ CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 LIB=../lib/bfile.a
 PO = bfile.o mfile.o
-CPP=cc -E
+CPP=$(CC) -E
 
 all: $(LIB)
 

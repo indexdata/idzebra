@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.18 1995-10-10 16:28:17 quinn Exp $
+# $Id: Makefile,v 1.19 1995-10-30 14:11:03 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -11,7 +11,7 @@ INCLUDE=-I../include -I$(YAZ)/include
 TPROG=opt-test
 #CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
-CPP=cc -E
+CPP=$(CC) -E
 LIB=../lib/alexutil.a
 PO = xmalloc.o res.o alexpath.o common.o readconf.o
 

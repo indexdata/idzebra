@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.16 1995-10-06 09:04:03 adam Exp $
+# $Id: Makefile,v 1.17 1995-10-30 14:10:52 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -15,7 +15,7 @@ DEFS=$(INCLUDE)
 LIB=../lib/dict.a 
 PO = scan.o dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o \
  lookupec.o lookgrep.o
-CPP=cc -E
+CPP=$(CC) -E
 
 all: $(LIB)
 
