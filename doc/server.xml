@@ -1,16 +1,16 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.3 2002-04-10 14:47:49 heikki Exp $ -->
+ <!-- $Id: server.xml,v 1.4 2002-10-11 09:05:09 adam Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
   <title>Running the Z39.50 Server (zebrasrv)</title>
 
-  <para>
+  <!--
    FIXME - We need to be consistent here, zebraidx had the options at the
            end, and lots of explaining text before them. Same for zebrasvr! -H
    FIXME - At least we need a small intro, what is zebrasvr, and how it
            can be run (inetd, nt service, stand-alone program, daemon...) -H
-  </para>
+  -->
 
   <para>
    <emphasis remap="bf">Syntax</emphasis>
@@ -218,11 +218,11 @@
   <sect2 id="search">
    <title>Search</title>
 
-   <para>
+   <!--
     FIXME - Need to explain the string tag stuff before people get bogged 
             down with all these attribute numbers. Perhaps in its own
             chapter? -H
-   </para>
+   -->
 
    <para>
     The supported query type are 1 and 101. All operators are currently
@@ -388,8 +388,7 @@
        <term>x?</term>
        <listitem>
         <para>
-         Matches <emphasis>x</emphasis> once or twice. Priority: high.
-         FIXME Is this right? Std regexp has '?' meaning zero or one -H
+         Matches <emphasis>x</emphasis> zero or once. Priority: high.
         </para>
        </listitem>
       </varlistentry>

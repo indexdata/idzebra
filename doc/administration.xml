@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.7 2002-10-10 14:27:18 heikki Exp $ -->
+ <!-- $Id: administration.xml,v 1.8 2002-10-11 09:05:09 adam Exp $ -->
  <title>Administrating Zebra</title>
  
  <para>
@@ -146,9 +146,9 @@
    explained further in the following sections.
   </para>
   
-  <para>
+  <!--
    FIXME - Didn't Adam make something to have multiple databases in multiple dirs...
-  </para>
+  -->
   
   <para>
    <variablelist>
@@ -190,7 +190,7 @@
      <listitem>
       <para>
        Specifies the Z39.50 database name.
-       FIXME - now we can have multiple databases in one server. -H
+       <!-- FIXME - now we can have multiple databases in one server. -H -->
       </para>
      </listitem>
     </varlistentry>
@@ -436,7 +436,8 @@
    in order to modify the indexes correctly at a later time.
   </para>
   
-   <!--FIXME - There must be a simpler way to do this with Adams string tags -H
+   <!--
+    FIXME - There must be a simpler way to do this with Adams string tags -H
      -->
 
   <para>

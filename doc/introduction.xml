@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.15 2002-10-10 14:27:18 heikki Exp $ -->
+ <!-- $Id: introduction.xml,v 1.16 2002-10-11 09:05:09 adam Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -109,7 +109,7 @@
       Zebra is written in portable C, so it runs on most Unix-like systems 
       as well as Windows NT.  A binary distribution for Windows NT is
       available at
-      <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/">
+      <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/"/>
      </para>
     </listitem>
     

@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.6 2002-10-10 14:27:18 heikki Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.7 2002-10-11 09:05:09 adam Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -18,8 +18,10 @@
    structured
    record type <literal>grs</literal> as introduced in
    <xref linkend="record-types"/>.
+   <!--
    FIXME - Need to describe the simple string-tag model, or at least 
    refer to it here. -H
+   -->
   </para>
 
   <para>
@@ -249,7 +251,7 @@
 
       <screen>
        &#60;gils&#62;
-       &#60;title&#62;Zen and the Art of Motorcycle Maintenance&#60;/title&#62;
+          &#60;title&#62;Zen and the Art of Motorcycle Maintenance&#60;/title&#62;
        &#60;/gils&#62;
       </screen>
 
@@ -606,11 +608,10 @@
    <para>
 
     <screen>
-     TITLE     "Zen and the Art of Motorcycle Maintenance"
+        TITLE     "Zen and the Art of Motorcycle Maintenance"
      ROOT 
-     AUTHOR    "Robert Pirsig"
+        AUTHOR    "Robert Pirsig"
     </screen>
-   <!-- FIXME That screen makes no sense! -H  -->
 
    </para>
 
@@ -622,13 +623,12 @@
    <para>
 
     <screen>
-     TITLE     "Zen and the Art of Motorcycle Maintenance"
+        TITLE  "Zen and the Art of Motorcycle Maintenance"
      ROOT  
-     FIRST-NAME "Robert"
-     AUTHOR
-     SURNAME    "Pirsig"
+           FIRST-NAME "Robert"
+        AUTHOR
+           SURNAME    "Pirsig"
     </screen>
-   <!-- FIXME That screen makes even less sense! -H  -->
 
    </para>
 
@@ -707,12 +707,11 @@
      tree).
     </para>
 
-    <note>
-     <para>
+    <!--
       FIXME! Documentation needs extension here about types of nodes - numerical,
       textual, etc., plus the various types of inclusion notes.
      </para>
-    </note>
+    -->
     
    </sect2>
 
@@ -738,9 +737,9 @@
      or all of the following:
     </para>
 
-    <para>
+    <!--
      FIXME - Need a diagram here, or a simple explanation how it all hangs together -H
-    </para>
+    -->
 
     <para>
 
@@ -1564,12 +1563,12 @@
      is assumed by the MARC family in Z39.50.
     </para>
 
-    <para>
+    <!--
      <emphasis>NOTE: FIXME! The schema-mapping functions are so far limited to a
       straightforward mapping of elements. This should be extended with
       mechanisms for conversions of the element contents, and conditional
       mappings of elements based on the record contents.</emphasis>
-    </para>
+    -->
 
     <para>
      These are the directives of the schema mapping file format:
@@ -1619,11 +1618,11 @@
      header of the record.
     </para>
 
-    <para>
-     <emphasis>NOTE: FIXME! This will be described better. We're in the process of
+    <!--
+     NOTE: FIXME! This will be described better. We're in the process of
       re-evaluating and most likely changing the way that MARC records are
       handled by the system.</emphasis>
-    </para>
+    -->
 
    </sect2>
 
@@ -1855,7 +1854,7 @@
        is used to show the hierarchical structure of the record. All
        "GRS" type records support both the GRS-1 and SUTRS
        representations.
-       FIXME - What is SUTRS - should be expanded here
+       <!-- FIXME - What is SUTRS - should be expanded here -->
       </para>
      </listitem>
 
@@ -1898,7 +1897,7 @@
        abstract syntaxes can be mapped to the SOIF format, although nested
        elements are represented by concatenation of the tag names at each
        level.
-       FIXME - Is this used anywhere ? -H
+       <!-- FIXME - Is this used anywhere ? -H -->
       </para>
      </listitem>
 
