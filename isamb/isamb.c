@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.44 2004-06-04 13:54:56 heikki Exp $
+/* $Id: isamb.c,v 1.45 2004-06-08 15:15:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -56,7 +56,7 @@ struct ISAMB_head {
 #define CAT_NO 4
 
 /* ISAMB_PTR_CODEC=1 var, =0 fixed */
-#define ISAMB_PTR_CODEC  1
+#define ISAMB_PTR_CODEC  0
 
 struct ISAMB_cache_entry {
     ISAMB_P pos;
@@ -1816,7 +1816,7 @@ static void isamb_pp_leaf_pos( ISAMB_PP pp,
         dst=dummybuf;
         (*pp->isamb->method->code_item)
            (ISAMC_DECODE, p->decodeClientData,&dst, &src);
-        assert(dst<dummybuf+100); /*FIXME */
+        assert(dst<(char*) dummybuf+100); /*FIXME */
         (*total)++;
         if (src<=cur)
              (*current)++;
