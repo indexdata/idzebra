@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.38 1998-01-30 09:41:15 adam Exp $
+  $Id: zebra.sgml,v 1.39 1998-01-30 15:30:57 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.38 $
+<date>$Revision: 1.39 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -877,7 +877,9 @@ privileged port.
 
 <tag>-w <it/working-directory/</tag>Change working directory.
 
-<tag>-i <it/minutes/</tag>Run under the Internet superserver, <tt/inetd/.
+<tag>-i</tag>Run under the Internet superserver, <tt/inetd/. Make
+sure you use the logfile option <tt/-l/ in conjunction with this
+mode and specify the <tt/-l/ option before any other options.
 
 <tag>-t <it/timeout/</tag>Set the idle session timeout (default 60 minutes).
 
