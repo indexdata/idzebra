@@ -1,4 +1,4 @@
-/* $Id: danbibr.c,v 1.3 2004-05-26 13:26:17 adam Exp $
+/* $Id: danbibr.c,v 1.4 2004-05-26 13:47:08 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -84,13 +84,12 @@ static int read_rec(struct grs_read_info *p)
 static data1_node *mk_tree(struct grs_read_info *p, const char *rec_buf)
 {
     data1_node *root = data1_mk_root(p->dh, p->mem, "danbib");
+    data1_node *root_tag = data1_mk_tag(p->dh, p->mem, "danbib", 0, root);
     const char *cp = rec_buf;
-
-    root = data1_mk_tag(p->dh, p->mem, "danbib", 0, root);
 
     if (1)  /* <text> all </text> */
     {
-	data1_node *text_node = data1_mk_tag(p->dh, p->mem, "text", 0, root);
+	data1_node *text_node = data1_mk_tag(p->dh, p->mem, "text", 0, root_tag);
 	data1_mk_text_n(p->dh, p->mem, rec_buf, strlen(rec_buf), text_node);
     }
     while (*cp)
@@ -121,7 +120,7 @@ static data1_node *mk_tree(struct grs_read_info *p, const char *rec_buf)
 			data1_node *hnode;
 			sprintf(elemstr, "head%d", no);
 
-			hnode = data1_mk_tag(p->dh, p->mem, elemstr, 0, root);
+			hnode = data1_mk_tag(p->dh, p->mem, elemstr, 0, root_tag);
 			data1_mk_text_n(p->dh, p->mem, start_text,
 					cp - start_text, hnode);
 			start_text = cp+1;
@@ -137,7 +136,7 @@ static data1_node *mk_tree(struct grs_read_info *p, const char *rec_buf)
 	    {
 		data1_node *tag_node =
 		    data1_mk_tag_n(p->dh, p->mem,
-				   start_tag, cp - start_tag, 0, root);
+				   start_tag, cp - start_tag, 0, root_tag);
 		cp++;
 		start_text = cp;
 		while (*cp != '\n' && *cp)
