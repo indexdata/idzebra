@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.6 2002-04-09 13:26:26 adam Exp $
+## $Id: Makefile.am,v 1.7 2002-04-09 14:36:53 adam Exp $
 docdir=$(pkgdatadir)/doc
 
 doc_DATA = zebra.html zebra.pdf
@@ -51,6 +51,6 @@ gils.html: gils.sgml
 dist-hook:
 	cp $(srcdir)/*.html $(distdir)
 
-clean-hook:
+clean-data-hook:
 	rm -f [0-9]* *.bak
 	
