@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.1 2004-11-29 21:55:28 adam Exp $
+/* $Id: safari.c,v 1.2 2005-01-02 23:03:58 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -130,7 +130,7 @@ static int safari_extract(void *clientData, struct recExtractCtrl *p)
 	char field[40];
 	char *cp;
 	yaz_log(YLOG_LOG, "safari line: %s", line);
-	if (sscanf(line, "%lld %lld %lld %39s %n",
+	if (sscanf(line, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT " %39s %n",
 		   &recWord.record_id, &recWord.section_id, &recWord.seqno,
 		   field, &nor) < 4)
 	{
