@@ -1,24 +1,39 @@
-## $Id: Makefile.am,v 1.5 2002-04-08 19:52:29 adam Exp $
+## $Id: Makefile.am,v 1.6 2002-04-09 13:26:26 adam Exp $
 docdir=$(pkgdatadir)/doc
 
-doc_data = zebra.pdf zebra.html
+doc_DATA = zebra.html zebra.pdf
 
-SUPPORTFILES = zebrahtml.dsl.in zebraprint.dsl.in xml.dsl
-XMLFILES=administration.xml installation.xml introduction.xml \
- license.xml indexdata.xml
+SUPPORTFILES = \
+ zebrahtml.dsl.in \
+ zebraphp.dsl.in \
+ zebraprint.dsl.in \
+ xml.dcl
+XMLFILES = \
+ zebra.xml.in \
+ introduction.xml \
+ installation.xml \
+ quickstart.xml \
+ administration.xml \
+ zebraidx.xml \
+ server.xml \
+ recordmodel.xml \
+ license.xml \
+ indexdata.xml
  
-EXTRA_DIST = zebra.sgml gils.sgml zebra.txt zebra.ps zebra.html \
- zebra-1.html zebra-2.html zebra-3.html zebra-4.html zebra-5.html \
- zebra-6.html zebra-7.html zebra-8.html zebra-9.html \
- zebra.xml.in $(SUPPORTFILES)
+EXTRA_DIST = $(SUPPORTFILES) $(XMLFILES) zebra.pdf
 
-zebra.html: zebra.xml $(XMLFILES)
+install-data-hook:
+	for f in *.html; do \
+		$(INSTALL_DATA) $$f $(DESTDIR)$(docdir)/$$f; \
+	done	
+
+zebra.html: $(XMLFILES)
 	jade -E14 -d zebrahtml.dsl -t sgml xml.dcl zebra.xml
 
-zebra.php: zebra.xml $(XMLFILES)
+zebra.php: $(XMLFILES)
 	jade -E14 -d zebraphp.dsl -t sgml xml.dcl zebra.xml
 
-zebra.pdf: zebra.xml
+zebra.pdf: $(XMLFILES)
 	jade -E14 -d zebraprint.dsl -t tex xml.dcl zebra.xml
 	pdfjadetex zebra.tex
 	pdfjadetex zebra.tex
@@ -32,6 +47,9 @@ gils.ps: gils.sgml
 
 gils.html: gils.sgml
 	sgml2html gils.sgml
+
+dist-hook:
+	cp $(srcdir)/*.html $(distdir)
 
 clean-hook:
 	rm -f [0-9]* *.bak

@@ -1,4 +1,5 @@
 <chapter id="installation">
+ <!-- $Id: installation.xml,v 1.3 2002-04-09 13:26:26 adam Exp $ -->
  <title>Installation</title>
  <para>
   An ANSI C compiler is required to compile the Zebra

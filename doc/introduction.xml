@@ -1,4 +1,5 @@
 <chapter id="introduction">
+ <!-- $Id: introduction.xml,v 1.3 2002-04-09 13:26:26 adam Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -46,10 +47,8 @@
   </para>
   
   <para>
-   
    <itemizedlist>
     <listitem>
-     
      <para>
       Supports updating - records can be added and deleted without
       rebuilding the index from scratch.
@@ -60,57 +59,52 @@
       the server.
      </para>
     </listitem>
+
     <listitem>
-     
      <para>
       Supports large databases - files for indices, etc. can be
       automatically partitioned over multiple disks.
-      
      </para>
     </listitem>
+
     <listitem>
-     
      <para>
       Supports arbitrarily complex records - base input format is an
       SGML-like syntax which allows nested (structured) data elements, as
       well as variant forms of data.
-      
      </para>
     </listitem>
+
     <listitem>
-     
      <para>
       Supports random storage formats. A system of input filters driven by
       regular expressions allows you to easily process most ASCII-based
-      data formats. SGML, ISO2709 (MARC), and raw text are also supported.
-      
+      data formats. SGML, XML, ISO2709 (MARC), and raw text are also
+      supported.
      </para>
     </listitem>
-    <listitem>
-     
+
+    <listitem>     
      <para>
       Supports boolean queries as well as relevance-ranking (free-text)
       searching. Right truncation and masking in terms are supported, as
       well as full regular expressions.
-      
      </para>
     </listitem>
+
     <listitem>
-     
      <para>
       Supports multiple concrete syntaxes
       for record exchange (depending on the configuration): GRS-1, SUTRS,
-      ISO2709 (*MARC). Records can be mapped between record syntaxes and
-      schema on the fly.
-      
+      XML, ISO2709 (*MARC). Records can be mapped between record syntaxes
+      and schema on the fly.      
      </para>
     </listitem>
-    <listitem>
-     
+
+    <listitem>     
      <para>
       Supports approximate matching in registers (ie. spelling mistakes,
       etc).
-      
      </para>
     </listitem>
     
@@ -122,80 +116,59 @@
    Protocol support:
   </para>
   
-  <para>
-   
+  <para>   
    <itemizedlist>
     <listitem>
-     
      <para>
-      Protocol facilities: Init, Search, Retrieve, Browse and Sort.
-      
+      Protocol facilities: Init, Search, Retrieve, Delete, Browse and Sort.
      </para>
     </listitem>
+
     <listitem>
-     
      <para>
       Piggy-backed presents are honored in the search-request.
-      
      </para>
     </listitem>
+
     <listitem>
-     
      <para>
       Named result sets are supported.
-      
      </para>
     </listitem>
     <listitem>
-     
      <para>
       Easily configured to support different application profiles, with
       tables for attribute sets, tag sets, and abstract syntaxes.
       Additional tables control facilities such as element mappings to
       different schema (eg., GILS-to-USMARC).
-      
      </para>
     </listitem>
+
     <listitem>
-     
      <para>
       Complex composition specifications using Espec-1 are partially
       supported (simple element requests only).
-      
      </para>
     </listitem>
+
     <listitem>
-     
      <para>
       Element Set Names are defined using the Espec-1 capability of the
       system, and are given in configuration files as simple element
       requests (and possibly variant requests).
-      
      </para>
     </listitem>
+
     <listitem>
-     
      <para>
       Some variant support (not fully implemented yet).
-      
      </para>
     </listitem>
+
     <listitem>
-     
-     <para>
-      Using the YAZ toolkit for the protocol implementation, the
-      server can utilise a plug-in XTI/mOSI implementation (not included) to
-      provide SR services over an OSI stack, as well as Z39.50 over TCP/IP.
-      
-     </para>
-    </listitem>
-    <listitem>
-     
      <para>
       Zebra runs on most Unix-like systems as well as Windows NT - a binary
-      distribution for Windows NT is forthcoming - so far, the installation
-      requires MSVC++ to compile the system (we use version 5.0).
-      
+      distribution for Windows NT is available.
      </para>
     </listitem>
     
