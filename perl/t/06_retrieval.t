@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 06_retrieval.t,v 1.3 2003-03-04 19:33:53 pop Exp $
+# $Id: 06_retrieval.t,v 1.4 2003-03-04 23:32:55 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -65,9 +65,6 @@ ok (($rec1->{sysno}), "sysno: $rec1->{sysno}");
 ok (($rec1->{score}), "score: $rec1->{score}");
 ok (($rec1->{format} eq 'SUTRS'), "format: $rec1->{format}");
 ok ((length($rec1->{buf}) > 0), "buf: ". length($rec1->{buf})." bytes");
-
-
-#$rs1 = undef;
 
 # ----------------------------------------------------------------------------
 # Close session, check for rs availability

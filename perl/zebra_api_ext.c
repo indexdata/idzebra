@@ -15,7 +15,6 @@
 #include "zebra_perl.h"
 #include "zebra_api_ext.h"
 #include "yaz/log.h"
-#include <yaz/pquery.h>
 #include <yaz/sortspec.h>
 
 

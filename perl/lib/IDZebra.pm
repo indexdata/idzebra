@@ -334,84 +334,12 @@ sub STORE {
 }
 
 
-############# Class : IDZebra::RetrievalRecordBuf ##############
-
-package IDZebra::RetrievalRecordBuf;
-@ISA = qw( IDZebra );
-%OWNER = ();
-%BLESSEDMEMBERS = (
-);
-
-%ITERATORS = ();
-*swig_buf_get = *IDZebrac::RetrievalRecordBuf_buf_get;
-*swig_buf_set = *IDZebrac::RetrievalRecordBuf_buf_set;
-*swig_len_get = *IDZebrac::RetrievalRecordBuf_len_get;
-*swig_len_set = *IDZebrac::RetrievalRecordBuf_len_set;
-sub new {
-    my $pkg = shift;
-    my @args = @_;
-    my $self = IDZebrac::new_RetrievalRecordBuf(@args);
-    return undef if (!defined($self));
-    $OWNER{$self} = 1;
-    my %retval;
-    tie %retval, "IDZebra::RetrievalRecordBuf", $self;
-    return bless \%retval, $pkg;
-}
-
-sub DESTROY {
-    return unless $_[0]->isa('HASH');
-    my $self = tied(%{$_[0]});
-    return unless defined $self;
-    delete $ITERATORS{$self};
-    if (exists $OWNER{$self}) {
-        IDZebrac::delete_RetrievalRecordBuf($self);
-        delete $OWNER{$self};
-    }
-}
-
-sub DISOWN {
-    my $self = shift;
-    my $ptr = tied(%$self);
-    delete $OWNER{$ptr};
-    };
-
-sub ACQUIRE {
-    my $self = shift;
-    my $ptr = tied(%$self);
-    $OWNER{$ptr} = 1;
-    };
-
-sub FETCH {
-    my ($self,$field) = @_;
-    my $member_func = "swig_${field}_get";
-    my $val = $self->$member_func();
-    if (exists $BLESSEDMEMBERS{$field}) {
-        return undef if (!defined($val));
-        my %retval;
-        tie %retval,$BLESSEDMEMBERS{$field},$val;
-        return bless \%retval, $BLESSEDMEMBERS{$field};
-    }
-    return $val;
-}
-
-sub STORE {
-    my ($self,$field,$newval) = @_;
-    my $member_func = "swig_${field}_set";
-    if (exists $BLESSEDMEMBERS{$field}) {
-        $self->$member_func(tied(%{$newval}));
-    } else {
-        $self->$member_func($newval);
-    }
-}
-
-
 ############# Class : IDZebra::RetrievalRecord ##############
 
 package IDZebra::RetrievalRecord;
 @ISA = qw( IDZebra );
 %OWNER = ();
 %BLESSEDMEMBERS = (
-    buf => 'IDZebra::RetrievalRecordBuf',
 );
 
 %ITERATORS = ();

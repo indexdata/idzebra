@@ -1,6 +1,7 @@
 %module "IDZebra"
 %include typemaps.i                       // Load the typemaps librayr
 
+
 %{
 #include "zebraapi.h"
 #include "zebra_perl.h"
@@ -11,8 +12,6 @@
 
 /* == Typemaps ============================================================= */
 
-/* RetrievalRecordBuff is a special construct, to allow to map a char * buf
-   to non-null terminated perl string scalar value (SVpv). */
 %typemap(in) int * {
   int i;
   if (!SvIOK($input)) 
@@ -27,6 +26,8 @@
   argvi++;
 }
 
+/* RetrievalRecordBuff is a special construct, to allow to map a char * buf
+   to non-null terminated perl string scalar value (SVpv). */
 %typemap(out) RetrievalRecordBuf * {
   if ($1->len) {
     $result = newSVpv($1->buf,$1->len);
@@ -85,7 +86,52 @@
 
 /* == Structures for shadow classes  ======================================= */
 
-%include "zebra_perl.h"
+
+/*%include "zebra_perl.h" */
+typedef struct {
+    char  *groupName;
+    char  *databaseName;
+    char  *path;
+    char  *recordId;
+    char  *recordType;
+    int   flagStoreData;
+    int   flagStoreKeys;
+    int   flagRw;
+    int   fileVerboseLimit;
+    int   databaseNamePath;
+    int   explainDatabase;
+    int   followLinks;
+} recordGroup;
+
+typedef struct {
+  int noOfRecords;
+  ZebraRetrievalRecord *records;
+} RetrievalObj;
+
+typedef struct {
+  int  errCode;        /* non-zero if error when fetching this */
+  char *errString;     /* error string */
+  int  position;       /* position of record in result set (1,2,..) */
+  char *base; 
+  int  sysno;
+  int  score;
+  char *format;    /* record syntax */
+  RetrievalRecordBuf *buf;
+} RetrievalRecord;
+
+/* Scan Term Descriptor */
+typedef struct {
+    int occurrences;     /* scan term occurrences */
+    char *term;          /* scan term string */
+} scanEntry;
+
+typedef struct {
+  int num_entries;
+  int position;
+  int is_partial;
+  scanEntry *entries;
+} ScanObj;
+
 
 typedef struct {
   int processed;
@@ -95,6 +141,8 @@ typedef struct {
   long utime;
   long stime;
 } ZebraTransactionStatus;
+
+
 
 
 /* == Module initialization and cleanup (zebra_perl.c) ===================== */
