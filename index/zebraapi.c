@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.63 2002-07-25 13:06:43 adam Exp $
+ * $Id: zebraapi.c,v 1.64 2002-07-29 20:04:24 adam Exp $
  */
 
 #include <assert.h>
@@ -168,7 +168,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     yaz_log (LOG_LOG, "zebra_register_open rw = %d useshadow=%d p=%p",
              rw, useshadow, reg);
 
-    reg->dh = data1_create ();
+    reg->dh = data1_createx (DATA1_FLAG_XML);
     if (!reg->dh)
         return 0;
     reg->bfs = bfs_create (res_get (res, "register"), reg_path);
