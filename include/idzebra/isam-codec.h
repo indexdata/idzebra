@@ -1,4 +1,4 @@
-/* $Id: isam-codec.h,v 1.2 2004-08-06 12:28:22 adam Exp $
+/* $Id: isam-codec.h,v 1.1 2004-12-08 14:02:36 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 

@@ -1,4 +1,4 @@
-/* $Id: isamc.h,v 1.14 2004-12-08 12:23:09 adam Exp $
+/* $Id: isams.h,v 1.1 2004-12-08 14:02:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,59 +20,46 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#ifndef ISAMC_H
-#define ISAMC_H
 
-#include <isam-codec.h>
+#ifndef ISAMS_H
+#define ISAMS_H
+
+#include <idzebra/isam-codec.h>
 #include <idzebra/bfile.h>
+#include <idzebra/isamc.h>
 
 YAZ_BEGIN_CDECL
 
-typedef struct ISAMC_s *ISAMC;
-typedef zint ISAMC_P;
-typedef struct ISAMC_PP_s *ISAMC_PP;
+typedef struct ISAMS_s *ISAMS;
+typedef ISAMC_P ISAMS_P;
+typedef struct ISAMS_PP_s *ISAMS_PP;
 
-typedef struct ISAMC_filecat_s {
-    int bsize;         /* block size */
-    int ifill;         /* initial fill */
-    int mfill;         /* minimum fill */
-    int mblocks;       /* maximum blocks */
-} *ISAMC_filecat;
-
-typedef struct ISAMC_M_s {
-    ISAMC_filecat filecat;
-
+typedef struct ISAMS_M_s {
     int (*compare_item)(const void *a, const void *b);
     void (*log_item)(int logmask, const void *p, const char *txt);
 
     ISAM_CODEC codec;
 
-    int max_blocks_mem;
     int debug;
-} ISAMC_M;
+    int block_size;
+} ISAMS_M;
 
-typedef struct ISAMC_I_s {
+typedef struct ISAMS_I_s {
     int (*read_item)(void *clientData, char **dst, int *insertMode);
     void *clientData;
-} ISAMC_I;
+} *ISAMS_I;
 
-void isc_getmethod (ISAMC_M *m);
+void isams_getmethod (ISAMS_M *me);
 
-ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method);
-int isc_close (ISAMC is);
-ISAMC_P isc_merge (ISAMC is, ISAMC_P pos, ISAMC_I *data);
-
-ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P pos);
-void isc_pp_close (ISAMC_PP pp);
-int isc_read_item (ISAMC_PP pp, char **dst);
-int isc_pp_read (ISAMC_PP pp, void *buf);
-zint isc_pp_num (ISAMC_PP pp);
-
-zint isc_block_used (ISAMC is, int type);
-int isc_block_size (ISAMC is, int type);
-
-#define isc_type(x) ((x) & 7)
-#define isc_block(x) ((x) >> 3)
+ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
+		  ISAMS_M *method);
+int isams_close (ISAMS is);
+ISAMS_P isams_merge (ISAMS is, ISAMS_I data);
+ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos);
+void isams_pp_close (ISAMS_PP pp);
+int isams_read_item (ISAMS_PP pp, char **dst);
+int isams_pp_read (ISAMS_PP pp, void *buf);
+int isams_pp_num (ISAMS_PP pp);
 
 YAZ_END_CDECL
 

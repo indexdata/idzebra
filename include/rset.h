@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.42 2004-11-03 16:04:45 heikki Exp $
+/* $Id: rset.h,v 1.43 2004-12-08 14:02:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -29,9 +29,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* unfortunately we need the isam includes here, for the arguments for */
 /* rsisamX_create */
-#include <isamb.h> 
-#include <isamc.h> 
-#include <isams.h> 
+#include <idzebra/isamb.h> 
+#include <idzebra/isamc.h> 
+#include <idzebra/isams.h> 
 
 #ifdef __cplusplus
 extern "C" {

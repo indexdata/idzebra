@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.10 2004-11-19 10:27:14 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.11 2004-12-08 14:02:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -40,7 +40,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include <zebrautl.h>
-#include <isamc.h>
+#include <idzebra/isamc.h>
 #include <rset.h>
 
 static RSFD r_open_and (RSET ct, int flag);

@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.11 2004-11-19 10:27:09 heikki Exp $
+/* $Id: tstisamb.c,v 1.12 2004-12-08 14:02:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,7 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <yaz/xmalloc.h>
 #include <yaz/ylog.h>
-#include <isamb.h>
+#include <idzebra/isamb.h>
 #include <assert.h>
 
 static void log_item(int level, const void *b, const char *txt)

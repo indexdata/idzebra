@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.16 2004-12-08 12:23:09 adam Exp $
+/* $Id: isamb.h,v 1.1 2004-12-08 14:02:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ISAMB_H
 
 #include <idzebra/bfile.h>
-#include <isamc.h>
+#include <idzebra/isamc.h>
 
 YAZ_BEGIN_CDECL
 
