@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.51  1996-03-19 11:08:42  adam
+ * Revision 1.52  1996-04-25 13:27:57  adam
+ * Function recordExtract modified so that files with no keys (possibly empty)
+ * are ignored.
+ *
+ * Revision 1.51  1996/03/19  11:08:42  adam
  * Bug fix: Log preamble wasn't always turned off after recordExtract.
  *
  * Revision 1.50  1996/02/12  18:45:36  adam
@@ -832,6 +836,11 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
             return 0;
         }
+        if (reckeys.buf_used == 0)
+        {
+            logf (LOG_WARN, "Empty file %s", fname);
+            return 0;
+        }
     }
 
     /* perform match if sysno not known and if match criteria is specified */
@@ -997,7 +1006,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 int fileExtract (SYSNO *sysno, const char *fname, 
                  const struct recordGroup *rGroupP, int deleteFlag)
 {
-    int i, fd;
+    int r, i, fd;
     char gprefix[128];
     char ext[128];
     char ext_res[128];
@@ -1117,11 +1126,11 @@ int fileExtract (SYSNO *sysno, const char *fname,
         }
     }
     fi = file_read_start (fd);
-    recordExtract (sysno, fname, rGroup, deleteFlag, fi, recType, subType);
+    r = recordExtract (sysno, fname, rGroup, deleteFlag, fi, recType, subType);
     log_event_start (NULL, NULL);
     file_read_stop (fi);
     if (fd != -1)
         close (fd);
-    return 1;
+    return r;
 }
 
