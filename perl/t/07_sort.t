@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 07_sort.t,v 1.3 2004-09-15 14:11:06 heikki Exp $
+# $Id: 07_sort.t,v 1.4 2004-09-16 15:07:55 heikki Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,7 +14,7 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests => 24;
+use Test::More tests => 32;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -106,28 +106,27 @@ ok (($sortError == 0), "sorting ascending");
 
 # -----------------------------------------------------------------------------
 # Sort descending, new rs
-TODO: {
-  todo_skip "Sort into different rset crashes", 3;
-print STDERR "\nSort #4: $rs1\n";
+#TODO: {
+#  todo_skip "Sort into different rset crashes", 3;
 
 my $rs2 = $rs1->sort('1=4 id');
-print STDERR "\nSort #5: $rs1\n";
 
 isa_ok ($rs2, 'IDZebra::Resultset');
 
 $wasError = 0;
 $sortError = 0;
-foreach my $rec ($rs1->records()) {
+foreach my $rec ($rs2->records()) {
     if ($rec->{errCode}) { $wasError++; }
     my ($title) = ($rec->buf =~ /\n\s*package\s+([a-zA-Z0-9:]+)\s*\;\s*\n/);
-    if ($sortedi[$rs2->count - $rec->position] ne $title) { $sortError++; }
+    if ($sorted[$rs2->count - $rec->position] ne $title) { $sortError++; }
+    is ($title, $sorted[$rs2->count - $rec->position], "sort order $title");
 }
 
 
-ok (($wasError == 0), "retrieval");
-ok (($sortError == 0), "sorting descending");
+is ($wasError,0 , "retrieval");
+is ($sortError, 0, "sorting descending");
 
-} # end of SKIP
+# } # end of SKIP
 
 # -----------------------------------------------------------------------------
 # Search + sort ascending
