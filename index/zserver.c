@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.71  1999-07-14 10:59:26  adam
+ * Revision 1.72  1999-10-29 10:01:54  adam
+ * Minor fix in bend_init where handle wasn't set to NULL when
+ * zebra_init fails.
+ *
+ * Revision 1.71  1999/07/14 10:59:26  adam
  * Changed functions isc_getmethod, isams_getmethod.
  * Improved fatal error handling (such as missing EXPLAIN schema).
  *
@@ -288,6 +292,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     char *user = NULL;
     char *passwd = NULL;
 
+    r->handle = 0;
     r->errcode = 0;
     r->errstring = 0;
     q->bend_sort = bend_sort;
