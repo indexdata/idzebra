@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.h,v $
- * Revision 1.1  1996-10-29 13:40:37  adam
+ * Revision 1.2  1996-10-29 16:44:42  adam
+ * Added isc_type, isc_block macros.
+ *
+ * Revision 1.1  1996/10/29  13:40:37  adam
  * First work.
  *
  */
@@ -53,5 +56,8 @@ void isc_pp_close (ISAMC_PP pp);
 int isc_read_item (ISAMC_PP pp, char **dst);
 int isc_read_key (ISAMC_PP pp, void *buf);
 int isc_numkeys (ISAMC_PP pp);
+
+#define isc_type(x) ((x) & 7)
+#define isc_block(x) ((x) >> 3)
 
 #endif
