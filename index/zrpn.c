@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.26  1995-10-12 12:40:54  adam
+ * Revision 1.27  1995-10-12 17:07:22  adam
+ * Truncation works.
+ *
+ * Revision 1.26  1995/10/12  12:40:54  adam
  * Bug fixes in rpn_prox.
  *
  * Revision 1.25  1995/10/10  13:59:24  adam
@@ -216,6 +219,7 @@ static void attr_init (AttrType *src, Z_AttributesPlusTerm *zapt,
 }
 
 struct trunc_info {
+    int  *ptr;
     int  *indx;
     char **heap;
     int  heapnum;
@@ -230,13 +234,9 @@ static void heap_swap (struct trunc_info *ti, int i1, int i2)
 {
     int swap;
 
-    memcpy (ti->swapbuf, ti->heap[i1], ti->keysize);
-    memcpy (ti->heap[i1], ti->heap[i2], ti->keysize);
-    memcpy (ti->heap[i2], ti->swapbuf, ti->keysize);
-
-    swap = ti->indx[i1];
-    ti->indx[i1] = ti->indx[i2];
-    ti->indx[i2] = swap;
+    swap = ti->ptr[i1];
+    ti->ptr[i1] = ti->ptr[i2];
+    ti->ptr[i2] = swap;
 }
 
 static void heap_delete (struct trunc_info *ti)
@@ -244,13 +244,16 @@ static void heap_delete (struct trunc_info *ti)
     int cur = 1, child = 2;
 
     assert (ti->heapnum > 0);
-    memcpy (ti->heap[1], ti->heap[ti->heapnum], ti->keysize);
-    ti->indx[1] = ti->indx[ti->heapnum--];
+
+    heap_swap (ti, 1, ti->heapnum);
+    ti->heapnum--;
     while (child <= ti->heapnum) {
         if (child < ti->heapnum &&
-            (*ti->cmp)(ti->heap[child], ti->heap[1+child]) > 0)
+            (*ti->cmp)(ti->heap[ti->ptr[child]],
+                       ti->heap[ti->ptr[1+child]]) > 0)
             child++;
-        if ((*ti->cmp)(ti->heap[cur], ti->heap[child]) > 0)
+        if ((*ti->cmp)(ti->heap[ti->ptr[cur]],
+                       ti->heap[ti->ptr[child]]) > 0)
         {
             heap_swap (ti, cur, child);
             cur = child;
@@ -266,10 +269,11 @@ static void heap_insert (struct trunc_info *ti, const char *buf, int indx)
     int cur, parent;
 
     cur = ++(ti->heapnum);
-    memcpy (ti->heap[cur], buf, ti->keysize);
-    ti->indx[cur] = indx;
+    memcpy (ti->heap[ti->ptr[cur]], buf, ti->keysize);
+    ti->indx[ti->ptr[cur]] = indx;
     parent = cur/2;
-    while (parent && (*ti->cmp)(ti->heap[parent], ti->heap[cur]) > 0)
+    while (parent && (*ti->cmp)(ti->heap[ti->ptr[parent]],
+                                ti->heap[ti->ptr[cur]]) > 0)
     {
         heap_swap (ti, cur, parent);
         cur = parent;
@@ -290,16 +294,21 @@ struct trunc_info *heap_init (int size, int key_size,
     ti->cmp = cmp;
     ti->indx = xmalloc (size * sizeof(*ti->indx));
     ti->heap = xmalloc (size * sizeof(*ti->heap));
+    ti->ptr = xmalloc (size * sizeof(*ti->ptr));
     ti->swapbuf = xmalloc (ti->keysize);
     ti->tmpbuf = xmalloc (ti->keysize);
     ti->buf = xmalloc (size * ti->keysize);
     for (i = size; --i >= 0; )
+    {
+        ti->ptr[i] = i;
         ti->heap[i] = ti->buf + ti->keysize * i;
+    }
     return ti;
 }
 
 static void heap_close (struct trunc_info *ti)
 {
+    xfree (ti->ptr);
     xfree (ti->indx);
     xfree (ti->heap);
     xfree (ti->swapbuf);
@@ -310,24 +319,67 @@ static void heap_close (struct trunc_info *ti)
 static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
                         int merge_chunk)
 {
+    RSET result; 
+    RSFD result_rsfd;
+    rset_temp_parms parms;
+
     logf (LOG_DEBUG, "rset_trunc, range=%d-%d", from, to-1);
+
+    parms.key_size = sizeof(struct it_key);
+    result = rset_create (rset_kind_temp, &parms);
+    result_rsfd = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
+
     if (to - from > merge_chunk)
     {
-        return NULL;
+        RSFD *rsfd;
+        RSET *rset;
+        int i, i_add = (to-from)/merge_chunk + 1;
+        struct trunc_info *ti;
+        int rscur = 0;
+
+        rset = xmalloc (sizeof(*rset) * merge_chunk);
+        rsfd = xmalloc (sizeof(*rsfd) * merge_chunk);
+        
+        for (i = from; i < to; i += i_add)
+        {
+            if (i_add <= to - i)
+                rset[rscur] = rset_trunc (isam, isam_p, i, i+i_add, i_add);
+            else
+                rset[rscur] = rset_trunc (isam, isam_p, i, to,      to-i);
+            rscur++;
+        }
+        ti = heap_init (rscur, sizeof(struct it_key), key_compare);
+        for (i = rscur; --i >= 0; )
+        {
+            rsfd[i] = rset_open (rset[i], RSETF_READ|RSETF_SORT_SYSNO);
+            if (rset_read (rset[i], rsfd[i], ti->tmpbuf))
+                heap_insert (ti, ti->tmpbuf, i);
+        }
+        while (ti->heapnum)
+        {
+            int n = ti->indx[ti->ptr[1]];
+
+            rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+            heap_delete (ti);
+            if (rset_read (rset[n], rsfd[n], ti->tmpbuf))
+                heap_insert (ti, ti->tmpbuf, n);
+        }
+        for (i = rscur; --i >= 0; )
+        {
+            rset_close (rset[i], rsfd[i]);
+            rset_delete (rset[i]);
+        }
+        xfree (rset);
+        xfree (rsfd);
+        heap_close (ti);
     }
     else
     {
         ISPT *ispt;
         int i;
         struct trunc_info *ti;
-        RSET result;
-        RSFD rsfd;
-        rset_temp_parms parms;
 
         ispt = xmalloc (sizeof(*ispt) * (to-from));
-        parms.key_size = sizeof (struct it_key);
-        result = rset_create (rset_kind_temp, &parms);
-        rsfd = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
 
         ti = heap_init (to-from, sizeof(struct it_key),
                         key_compare);
@@ -339,20 +391,20 @@ static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
         }
         while (ti->heapnum)
         {
-            int n = ti->indx[1];
+            int n = ti->indx[ti->ptr[1]];
 
-            rset_write (result, rsfd, ti->heap[1]);
+            rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
             heap_delete (ti);
             if (is_readkey (ispt[n], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, n);
         }
         for (i = to-from; --i >= 0; )
             is_pt_free (ispt[i]);
-        rset_close (result, rsfd);
         heap_close (ti);
         xfree (ispt);
-        return result;
     }
+    rset_close (result, result_rsfd);
+    return result;
 }
 
 struct grep_info {
