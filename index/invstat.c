@@ -12,12 +12,14 @@
 #include "index.h"
 #include "recindex.h"
 #include "../isamc/isamh-p.h"
+#include "../isamc/isamd-p.h"
 
 struct inv_stat_info {
     ISAM isam;
     ISAMC isamc;
     ISAMS isams;
     ISAMH isamh;
+    ISAMD isamd;
     int no_isam_entries[8];
     int no_dict_entries;
     int no_dict_bytes;
@@ -91,6 +93,31 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 	stat_info->no_isam_entries[isamh_type(isam_p)] += occur;
         isamh_pp_close (pp);
     }
+    if (stat_info->isamd)
+    {
+        ISAMD_PP pp;
+        int occurx = 0;
+	struct it_key key;
+
+        pp = isamd_pp_open (stat_info->isamd, isam_p);
+        
+        occur = isamd_pp_num (pp);
+	  //  printf ("  opening item %d=%d:%d \n",
+  	  //    isam_p, isamh_type(isam_p),isamh_block(isam_p));
+        while (isamd_pp_read(pp, &key))
+	{
+            occurx++;
+	    logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
+	           key.sysno, key.seqno,
+	           key.sysno, key.seqno,
+	           occur,occurx, pp->offset);
+	}
+        if (occurx != occur) 
+          logf(LOG_LOG,"Count error!!! read %d, counted %d", occur, occurx);
+        assert (occurx == occur);
+	stat_info->no_isam_entries[isamd_type(isam_p)] += occur;
+        isamd_pp_close (pp);
+    }
     if (stat_info->isams)
     {
         ISAMS_PP pp;
@@ -122,6 +149,7 @@ void inv_prstat (BFiles bfs)
     ISAMC isamc = NULL;
     ISAMS isams = NULL;
     ISAMH isamh = NULL;
+    ISAMD isamd = NULL;
     Records records;
     int i, prev;
     int before = 0;
@@ -168,6 +196,17 @@ void inv_prstat (BFiles bfs)
             exit (1);
         }
     }
+    else if (res_get_match (common_resource, "isam", "d", NULL))
+    {
+	struct ISAMD_M_s isamd_m;
+        isamd = isamd_open (bfs, FNAME_ISAMD, 0, 
+                            key_isamd_m(common_resource,&isamd_m));
+        if (!isamd)
+        {
+            logf (LOG_FATAL, "isamd_open fail");
+            exit (1);
+        }
+    }
     else
     {
 	struct ISAMC_M_s isamc_m;
@@ -189,6 +228,7 @@ void inv_prstat (BFiles bfs)
     stat_info.isamc = isamc;
     stat_info.isams = isams;
     stat_info.isamh = isamh;
+    stat_info.isamd = isamd;
     stat_info.isam_bounds[0] = 1;
     stat_info.isam_bounds[1] = 2;
     stat_info.isam_bounds[2] = 3;
@@ -258,6 +298,8 @@ void inv_prstat (BFiles bfs)
         isams_close (isams);
     if (isamh)
         isamh_close (isamh);
+    if (isamd)
+        isamd_close (isamd);
     
 }
 
@@ -265,7 +307,10 @@ void inv_prstat (BFiles bfs)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.14  1999-07-14 10:59:26  adam
+ * Revision 1.15  1999-08-18 08:34:53  heikki
+ * isamd
+ *
+ * Revision 1.14  1999/07/14 10:59:26  adam
  * Changed functions isc_getmethod, isams_getmethod.
  * Improved fatal error handling (such as missing EXPLAIN schema).
  *
