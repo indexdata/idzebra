@@ -4,6 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
  * (log at the end)
+ *
+ * Bugs
+ *  - Allocates a lot of memory for the merge process, but never releases it.
+ *    Doesn't matter, as the program terminates soon after.  
  
  */
  
@@ -791,7 +795,10 @@ void key_input (BFiles bfs, int nkeys, int cache)
 
 /*
  * $Log: kinput.c,v $
- * Revision 1.38  1999-08-18 08:38:04  heikki
+ * Revision 1.39  1999-08-18 10:39:20  heikki
+ * Added a comment on memory leaks
+ *
+ * Revision 1.38  1999/08/18 08:38:04  heikki
  * Memory leak hunting
  *
  * Revision 1.37  1999/07/14 13:21:34  heikki
