@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.13  1995-09-28 14:22:56  adam
+ * Revision 1.14  1995-09-29 14:01:40  adam
+ * Bug fixes.
+ *
+ * Revision 1.13  1995/09/28  14:22:56  adam
  * Sort uses smaller temporary files.
  *
  * Revision 1.12  1995/09/28  12:10:32  adam
@@ -76,6 +79,7 @@ void key_open (int mem);
 int key_close (void);
 void key_write (int cmd, struct it_key *k, const char *str);
 int key_compare (const void *p1, const void *p2);
+int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
 void key_input (const char *dict_fname, const char *isam_fname, 
                 const char *key_fname, int cache);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.10  1995-09-28 14:22:57  adam
+ * Revision 1.11  1995-09-29 14:01:45  adam
+ * Bug fixes.
+ *
+ * Revision 1.10  1995/09/28  14:22:57  adam
  * Sort uses smaller temporary files.
  *
  * Revision 1.9  1995/09/14  07:48:24  adam
@@ -45,6 +48,7 @@
 #include "index.h"
 
 char *prog;
+size_t mem_max = 4*1024*1024;
 
 int main (int argc, char **argv)
 {
@@ -57,7 +61,7 @@ int main (int argc, char **argv)
     char **mbuf;
 
     prog = *argv;
-    while ((ret = options ("r:v:", argv, argc, &arg)) != -2)
+    while ((ret = options ("r:v:m:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -91,7 +95,7 @@ int main (int argc, char **argv)
             else
             {
                 unlink ("keys.tmp");
-                key_open (3000000);
+                key_open (mem_max);
                 repository (cmd, arg, base_path);
                 cmd = 0;
             }
@@ -103,6 +107,10 @@ int main (int argc, char **argv)
         else if (ret == 'r')
         {
             base_path = arg;
+        }
+        else if (ret == 'm')
+        {
+            mem_max = 1024*1024*atoi(arg);
         }
         else
         {
@@ -122,6 +130,7 @@ int main (int argc, char **argv)
     logf (LOG_LOG, "Merge sorting");
     mbuf = xmalloc (100000);
     merge_sort (mbuf, 1, nsections+1);
+    xfree (mbuf);
     logf (LOG_LOG, "Input");
     key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, "keys1.tmp", 60);
     exit (0);

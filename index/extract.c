@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.12  1995-09-28 14:22:56  adam
+ * Revision 1.13  1995-09-29 14:01:39  adam
+ * Bug fixes.
+ *
+ * Revision 1.12  1995/09/28  14:22:56  adam
  * Sort uses smaller temporary files.
  *
  * Revision 1.11  1995/09/28  12:10:31  adam
@@ -67,22 +70,6 @@ static size_t ptr_i;
 static size_t kused;
 static int key_file_no;
 
-static int sort_compare (const void *p1, const void *p2)
-{
-    int r;
-    size_t l;
-    char *cp1 = *(char**) p1;
-    char *cp2 = *(char**) p2;
-
-    if ((r = strcmp (cp1, cp2)))
-        return r;
-    l = strlen(cp1); 
-    if ((r = key_compare (cp1+l, cp2+l)))
-        return r;
-    return cp1[l+sizeof(struct it_key)] -
-           cp2[l+sizeof(struct it_key)];
-}
-
 void key_open (int mem)
 {
     void *file_key;
@@ -123,9 +110,8 @@ void key_flush (void)
 
     key_file_no++;
     logf (LOG_LOG, "sorting section %d", key_file_no);
-    qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), sort_compare);
+    qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_qsort_compare);
     sprintf (out_fname, TEMP_FNAME, key_file_no);
-
 
     if (!(outf = fopen (out_fname, "w")))
     {
@@ -211,12 +197,11 @@ static void wordAdd (const RecWord *p)
     default:
         return ;
     }
+    ((char*) key_buf)[kused++] = ((key_cmd == 'a') ? 1 : 0);
     key.sysno = key_sysno;
     key.seqno = p->seqno;
     memcpy ((char*)key_buf + kused, &key, sizeof(key));
     kused += sizeof(key);
-
-    ((char*) key_buf)[kused++] = ((key_cmd == 'a') ? 1 : 0);
 }
 
 void file_extract (int cmd, const char *fname, const char *kname)

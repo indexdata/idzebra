@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.4  1995-09-28 14:22:57  adam
+ * Revision 1.5  1995-09-29 14:01:43  adam
+ * Bug fixes.
+ *
+ * Revision 1.4  1995/09/28  14:22:57  adam
  * Sort uses smaller temporary files.
  *
  * Revision 1.3  1995/09/06  16:11:17  adam
@@ -42,7 +45,6 @@ static int read_one (FILE *inf, char *name, char *key)
 {
     int c;
     int i = 0;
-    name[0] = 0;
     do
     {
         if ((c=getc(inf)) == EOF)
@@ -65,6 +67,7 @@ static int inp (Dict dict, ISAM isam, const char *name)
     int key_buf_ptr;
     char *next_key;
     char *key_buf;
+    int more;
     
     next_key = xmalloc (KEY_SIZE);
     key_buf = xmalloc (key_buf_size * (KEY_SIZE));
@@ -73,14 +76,14 @@ static int inp (Dict dict, ISAM isam, const char *name)
         logf (LOG_FATAL|LOG_ERRNO, "cannot open `%s'", name);
         exit (1);
     }
-    read_one (inf, cur_name, key_buf);
-    while (cur_name[0])                   /* EOF ? */
+    more = read_one (inf, cur_name, key_buf);
+    while (more)                   /* EOF ? */
     {
         int nmemb;
         key_buf_ptr = KEY_SIZE;
         while (1)
         {
-            if (!read_one (inf, next_name, next_key))
+            if (!(more = read_one (inf, next_name, next_key)))
                 break;
             if (*next_name && strcmp (next_name, cur_name))
                 break;

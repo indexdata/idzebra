@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.5  1995-09-11 13:09:35  adam
+ * Revision 1.6  1995-09-29 14:01:42  adam
+ * Bug fixes.
+ *
+ * Revision 1.5  1995/09/11  13:09:35  adam
  * More work on relevance feedback.
  *
  * Revision 1.4  1995/09/08  14:52:27  adam
@@ -35,7 +38,6 @@ static int read_one (FILE *inf, char *name, char *key)
 {
     int c;
     int i = 0;
-    name[0] = 0;
     do
     {
         if ((c=getc(inf)) == EOF)
@@ -86,13 +88,15 @@ int main (int argc, char **argv)
     while (read_one (inf, key_string, key_info))
     {
         struct it_key k;
+        int op;
 
-        memcpy (&k, key_info+1, sizeof(k));
+        op = key_info[0];
+        memcpy (&k, 1+key_info, sizeof(k));
 #if IT_KEY_HAVE_SEQNO
-        printf ("%7d op=%d s=%-5d %s\n", k.sysno, *key_info, k.seqno,
+        printf ("%7d op=%d s=%-5d %s\n", k.sysno, op, k.seqno,
                 key_string);
 #else
-        printf ("%7d op=%d f=%-3d %s\n", k.sysno, *key_info, k.freq,
+        printf ("%7d op=%d f=%-3d %s\n", k.sysno, op, k.freq,
                 key_string);
 
 #endif

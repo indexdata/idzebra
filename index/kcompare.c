@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.9  1995-09-28 12:10:32  adam
+ * Revision 1.10  1995-09-29 14:01:41  adam
+ * Bug fixes.
+ *
+ * Revision 1.9  1995/09/28  12:10:32  adam
  * Bug fixes. Field prefix used in queries.
  *
  * Revision 1.8  1995/09/28  09:19:42  adam
@@ -84,6 +87,21 @@ int key_compare (const void *p1, const void *p2)
     }
 #endif
     return 0;
+}
+
+int key_qsort_compare (const void *p1, const void *p2)
+{
+    int r;
+    size_t l;
+    char *cp1 = *(char **) p1;
+    char *cp2 = *(char **) p2;
+ 
+    if ((r = strcmp (cp1, cp2)))
+        return r;
+    l = strlen(cp1)+1;
+    if ((r = key_compare (cp1+l+1, cp2+l+1)))
+        return r;
+    return cp1[l] - cp2[l];
 }
 
 int index_char_cvt (int c)
