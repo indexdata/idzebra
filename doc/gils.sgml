@@ -1,0 +1,309 @@
+<!doctype linuxdoc system>
+
+<!--
+  $Id: gils.sgml,v 1.1 1996-05-07 11:19:13 quinn Exp $
+-->
+
+<article>
+<title>Serving GILS Records with Zebra
+<author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
+<date>$Revision: 1.1 $
+<abstract>
+This document explains how to set up a simple database of Government
+Information Locator Records using the Zebra retrieval engine and
+Z39.50 server (version 1.0b1 or later).
+</abstract>
+
+<sect>Introduction
+
+<p>
+Zebra is a powerful and versatile information management system,
+allowing you to construct arbitrarily record structures and managing
+efficient, robust databases.
+
+Since the internal data modeling tools of Zebra are based on the
+Z39.50-1995 standard, the system is well-suited to support a complex
+database profile such as the one specified by the GILS profile.
+Because GILS is expected by many to play an important role in the
+evolving, global information society, and because the GILS profile has
+proven useful to a number of different applications outside of its
+dedicated domain, the public distribution of Zebra includes a
+configuration set-up which makes it a simple matter to establish a new
+GILS database.
+
+This document, which is a supplement to the general documentation set
+for Zebra, explains in simple terms how you can easily set up your own
+GILS-compliant database service.
+
+<sect>Retrieving and Unpacking Zebra
+
+<p>
+The first step is to download the software. If you are using a WWW
+browser, you can point it at the Zebra distribution archive at
+<htmlurl url="http://www.indexdata.dk/zebra.html"
+name="http://www.indexdata.dk/zebra.html">, and follow the link named
+<it/Download the latest version of the software (xxx)/, where <it/xxx/
+is the current version of Zebra.
+
+If you use an FTP client, you can use normal, anonymous FTP. Connect
+to the host <tt/ftp.indexdata.dk/, log in as <tt/ftp/, and give your
+Email-address as the password. Then type <tt>cd index/yaz</tt>, and
+use the <tt/dir/ command to locate the current version of Zebra. The
+file will be named <tt/zebra-xxx/, where <tt/xxx/ is the current
+version of the software. Remember to use the <it/bin/ command, before
+using <tt/get/ to download the software.
+
+Once the distribution archive has been dowloaded, it must be
+decompressed. For this, use the command <tt/gunzip/ command (if your
+system doesn't have the <tt/gunzip/ program, you will need to acquire
+this separately). Finally, use the command <tt>tar xvf
+&gt;file&lt;</tt> to unpack the archive.
+
+If you dosnloaded the source version of the software (this is the only
+option today, although we expect to release binary versions for Linux,
+SunOS, and Digital Unix shortly).
+
+On many of the major version of the Unix operating system, compiling
+Zebra is a simple matter of typing <tt/make/ in the top-level
+distribution directory (this is the directory that was created when
+you executed <tt/tar/). Normally, Zebra compiles cleanly at least on
+Linux, Digital Unix (DEC OSF/1), and IBM AIX. On certain platforms
+(such as SunOS), you will need to edit the top-level <tt/Makefile/ to
+set the <tt/NETLIB/ variable to include the &dquot;Berkeley Socket
+Libraries&dquot;. On other Unix platforms, you <it/may/ need to modify
+Makefiles or header files, but in general, we have found Zebra to be
+easily portable across modern Unix-versions. You do need an ANSI-C
+compliant compiler (you'll see a long list of Syntax-errors during the
+compile if your default compiler is not ANSI C), but again, this is
+standard on most modern Unix-systems. If you don't have one, the
+freely available GNU C compiler is available for many systems.
+
+<sect>The First GILS Database
+
+<p>
+Having successfully acquired the software, it's time to try it out.
+The directory <tt/test/ under the main distribution directory contains
+a small sample database of GILS records.
+
+<it>NOTE: The records included in the distribution are part of a
+sample set provided by the US Geological Survey, as a service to GILS
+implementors. They are included for testing and demonstrating the
+software, and neither the USGS or Index Data nor anyone else should be
+held responsible for their contents.</it>
+
+If you <tt/cd/ to the <tt/test/ directory, the first thing to notice
+is the file <tt/zebra.cfg/. There has to be a file like this present
+whenever you use Zebra - it establishes various settings and default,
+and we'll return to its contents below (a detailed
+description is found in the general Zebra documentation file).
+
+The subdirectory <tt/records/ contain the sample records. We'll get
+back to them, too.
+
+The first order of business is to index the sample records, and create
+the access files required by the Z39.50 server. To do this, position
+yourself in the <tt/test/ directory, and type the command
+<tt>../index/zebraidx update records</tt>.
+
+The indexing program will respond with a stream of control
+information, and when it completes, the database is ready. To start
+the Z39.50 server, type the command <tt>../index/zebrasrv</tt>.
+
+Assuming that nothing unfortunate happened, you are now running a
+GILS-compliant Z39.50 server on the port 9999 on your local machine
+(to learn how to run the server at a different port, and redirect the
+diagnostic output to a file, consult the section on <it/Running
+zebrasrv/ in the general documentation).
+The database containing the sample records is named <tt/Default/.
+
+To test the server, you can use any compatible Z39.50 client. You can
+also use the simple demonstration client which is included with Zebra
+itself. To do this, start a new session on your machine (or put the
+server in the background). Change to the directory <tt>yaz/client</tt>
+under the main Zebra distribution directory. Now execute the command
+<tt>./client tcp:localhost:9999</tt>.
+
+If all went well, the client will tell you that it has established an
+association with your test server. To test it, try out these commands:
+
+<tscreen><verb>
+Z> find surficial
+Z> show 1
+</verb></tscreen>
+
+The default retrieval syntax for the client is USMARC. To try other
+formats for the same record, try:
+
+<tscreen><verb>
+Z>format sutrs
+Z>show 1
+Z>format grs-1
+Z>show 1
+Z>elements B
+Z>show 1
+</verb></tscreen>
+
+You can learn more about the sample client by reading the <tt/README/
+file in the <tt/yaz/ directory.
+
+<sect>The Records
+
+<p>
+The GILS profile is only concerned with the communication that takes
+place between two compliant systems. It doesn't mandate how the client
+application should behave, and it doesn't tell you how you should
+maintain and process data at the server side. Specifically, while the
+profile specifies a number of different exchange format for retrieval
+records.
+
+For the purposes of this discussion, we will be using a simple,
+SGML-like representation of the GILS record structure. There is
+nothing magical or sacrosanct about this format, but it is easy to
+read and write, and because of its semblance of SGML and HTML, it is
+familiar to many people. If you would like to use a different, local
+representation for your GILS records, you can read the general Zebra
+documentation to learn how to establish a custom input filter for your
+particular record format.
+
+In the SGML-like syntax, each record should begin with the tag
+<tt/&lt;gils&gt;/. This selects the GILS profile, and provides context
+for the content tags which follow. Similarly, each record should
+finish with the end-tag <tt/&etago;gils&gt;/.
+
+The body of the record is made up by a sequence of tagged elements,
+reflecting the <it/abstract record syntax/ of the GILS profile. Some
+of these elements contain simple data, or text, while others contain
+more tagged elements - these are complex, or constructed, data
+elements. The tag names generally correspond to the tag names provided
+in the GILS profile. Capitalization is ignored in tag names, as are
+dashes (-). Hence, <tt/local-subject-index/ is equivalent to
+<tt/LocalSubjectIndex/ which is the same as <tt/LOCALSUBJECTINDEX/.
+
+It is useful to look at the records in the <tt>test/records</tt> as
+examples of how SGML-formatted GILS record can look. Note that
+whitespace is generally ignored, so you can choose whatever layout of
+your records suits you best. Note also that in some cases, the records
+are generated automatically rather than typed in by a human.
+
+<sect>The Zebra Configuration File
+
+<p>
+As mentioned, the Zebra indexer and server always look for the file
+<tt/zebra.cfg/ in their current working directory (unless they are
+told to look for it elsewhere with the <tt/-c/ option). The example
+file in the <tt/test/ directory represents all but the bare minimum
+for such a file. While it may seem daunting at first, we find the
+following to be a powerful setup for a GILS-like database (everything
+preceded by (#) is ignored by the software):
+
+<tscreen><verb>
+#
+# Sample configuration file for GILS database
+#
+
+# Where are the configuration tables located?
+profilePath: /usr/local/lib/zebra
+
+# Load attribute sets for searching
+attset bib1.att
+attset gils.att
+
+# Records are identified by their path in the file system
+recordId: file
+
+# Store information about records to allow deletion and updating
+storeKeys: 1
+
+# Records are structured
+recordType: grs
+
+# Where to store the indexes
+register: /datadisk/index:500M
+
+# Where to store temporary data while merging with register
+shadow: /datadisk/shadow:500M
+</verb></tscreen>
+
+If you like, you can paste this file straight into a <tt/zebra.cfg/
+file ready for your own use (with a bit of editing of the pathnames).
+In the following, we'll explain the individual settings. For the full
+story on the <tt/zebra.cfg/ file and the configuration options of
+Zebra, you should read the general documentation.
+
+<descrip>
+
+<tag/profilePath/ This field tells Zebra where to look for the
+configuration files. In the distribution, these files are located in
+the <tt/tab/ directory, but you may wish to put them someplace else
+for convenience. If necessary, you can provide multiple directory
+paths, separated by (:).
+
+<tag/attset/ This field tells the Zebra server which attribute sets it
+should support for searching. You could get by with just loading the
+GILS set, but if you load BIB-1 as well, Zebra will support both sets
+for those GILS attributes that are inherited from BIB-1.
+
+<tag/recordId/ The <tt/recordId: file/ setting tells Zebra that
+individual records should be identified by the physical files in which
+they are located. In this mode, your database will always (after an
+update operation) reflect the contents of the directory (or
+directories).
+
+<tag/storeKeys/ This setting tells Zebra to store additional
+information about each record, to facilitate updating. In combination
+with the <tt/recordId: file/ setting, this is a very convenient
+maintenance option. If you maintain your records as individual files
+in a directory tree, you have only to run <tt/zebraidx/ with the
+top-level directory as an argument. If new files are added, they are
+entered into the database. If they are modified, the indexes are
+changed accordingly, and if they are deleted from the filesystem (or
+renamed), the indexes are also updated correctly, the next time you
+run <tt/zebraidx/.
+
+<tag/recordType/ This setting selects the type of processing which is
+to take place when a record is accessed by the indexer or the Z39.50
+server. GRS stands for <it/Generic Record Syntax/, and signals that
+the records are structured.
+
+<tag/register/ In the first test above, you may have noticed that the
+<tt/zebraidx/ created a number of files in the working directory. Some
+of these files, which contain the indexing information for the
+database, can grow quite large, and it is sometimes useful to place
+them in a separate directory or file system. You should provide the
+path of the directory followed by a colon (:), followed by the maximum
+amounts of megabytes (M) or kilobytes (K) of disk space that Zebra is
+allowed to use in the given directory. If you specify more than one
+directory:size combination <it/on the same line/, Zebra will fill up
+each directory, one at a time. This feature is essential if your
+database is so large that the registers cannot fit into a single
+partition of your disk.
+
+<tag/shadow/ The format of this setting is the same as for the one
+above. If you provide one or more directory for the &dquot;shadow
+system&dquot;, you enable the safe updating system of the Zebra
+indexer. When changes to the records are merged into the register
+files, the files are not changed immediately. Instead, the changes are
+written into separate files, or &dquot;shadow files&dquot;. At the end
+of the merging process, or in a separate operation, the changes are
+&dquot;committed&dquot;, and written into the register files
+themselves. This final step is carried out by the command <tt/zebraidx
+commit/ - the <tt/commit/ directive can also be given on the same
+command line as the <tt/update/ directive - at the end of the command
+line. The shadow file system can consume a lot of disk space -
+particularly in a large update operation which involves almost all of
+the index, but the benefits are substantial. If the system crashes
+during an update procedure, or the process is otherwise interrupted,
+the registers are left in an unknown state, and are effectively
+rendered useless - this can be unfortunate if the index is very large,
+but the use of the shadow system greatly reduces the risk of an index
+being damaged in this way. Further, when the shadow system is enabled,
+your clients may access the Zebra server without interruption
+throughout the update and commit procedures - Zebra will ensure that
+the parts of the register accessed by the server are always
+consistent.
+
+<sect>Creating Your Own Database
+
+<p>
+
+</article>
