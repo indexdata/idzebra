@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.13  1995-11-30 17:00:50  adam
+ * Revision 1.14  1995-12-05 13:12:37  quinn
+ * Added <errno.h>
+ *
+ * Revision 1.13  1995/11/30  17:00:50  adam
  * Several bug fixes. Commit system runs now.
  *
  * Revision 1.12  1995/11/24  17:26:11  quinn
@@ -58,6 +61,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <errno.h>
 
 #include <alexutil.h>
 #include <mfile.h>
