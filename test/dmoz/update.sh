@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: update.sh,v 1.4 2002-06-19 11:37:11 adam Exp $
+# $Id: update.sh,v 1.5 2002-06-19 12:38:47 adam Exp $
 t=$1
 test -n "$t" || exit 1
 rm -f *.mf *.LCK *.tmp
@@ -19,15 +19,14 @@ while test -f dmoz.$i.xml; do
 done
 
 cat >plot.dem <<ENDOFMESSAGE
+set output "times-$t.ps"
+set terminal postscript
 set xlabel "runs"
 set ylabel "seconds"
 plot [0:] [0:] \
         'times-$t.log' using 2 title 'ISAM-$t(real)' with linespoints, \
         'times-$t.log' using 3 title 'ISAM-$t(user)' with linespoints, \
         'times-$t.log' using 4 title 'ISAM-$t(sys)' with linespoints
-set output "times-$t.ps"
-set terminal postscript
-replot
 ENDOFMESSAGE
 
 gnuplot plot.dem

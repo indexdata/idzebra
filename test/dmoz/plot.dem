@@ -1,6 +1,5 @@
+set output "times-b.ps"
+set terminal postscript
 set xlabel "runs"
 set ylabel "seconds"
 plot [0:] [0:]         'times-b.log' using 2 title 'ISAM-b(real)' with linespoints,         'times-b.log' using 3 title 'ISAM-b(user)' with linespoints,         'times-b.log' using 4 title 'ISAM-b(sys)' with linespoints
-set output "times-b.ps"
-set terminal postscript
-replot
