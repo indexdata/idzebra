@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 03_record_update.t,v 1.9 2004-09-09 15:23:07 heikki Exp $
+# $Id: 03_record_update.t,v 1.10 2004-09-15 14:11:06 heikki Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,7 +14,7 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 15;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -43,35 +43,59 @@ my $rec3=`cat lib/IDZebra/Session.pm`;
 my ($sysno, $stat, $ret);
 
 $sess->init;
-
-# ADAM: we must set database separately (cant be set from group)
 $sess->databases('demo1');
 
 $sess->begin_trans;
+
 ($ret,$sysno) = $sess->insert_record(data       => $rec1,
 			      recordType => 'grs.perl.pod',
-			      groupName  => "demo1",
 			      );
-
-print STDERR "\nAfter first insert_record. ret=$ret sysno=$sysno\n";
 
 ok(($ret == 0),"Must return ret=0 (OK)");
 
 $stat = $sess->end_trans;
 ok(($stat->{inserted} == 1), "Inserted 1 records");
-die;
 
 $sess->begin_trans;
-$sysno=-42;
-$ret = $sess->insert_record(data       => $rec2,
+($ret,$sysno) = $sess->insert_record(data       => $rec2,
 			      recordType => 'grs.perl.pod',
-			      groupName  => "demo1",
-			      sysno => \$sysno,
 			      );
-ok(($ret == 0 && $sysno != 42),"Inserted record got valid sysno");
+ok(($ret == 0),"Insert record ok");
 
 $stat = $sess->end_trans;
 ok(($stat->{inserted} == 1), "Inserted 1 records");
 
+
+$sess->begin_trans;
+($ret,$sysno) = $sess->update_record(data       => $rec3,
+			      recordType => 'grs.perl.pod',
+                              sysno => $sysno,
+			      );
+
+ok(($ret == 0),"update record ok");
+
+
+$stat = $sess->end_trans;
+ok(($stat->{inserted} == 0), "not inserted");
+ok(($stat->{updated} == 1), "updated ok");
 $sess->commit;
+
+$sess->begin_trans;
+#print STDERR "\nAbout to call delete. sysno=$sysno \n"; #!!!
+($ret,$sysno) = $sess->delete_record( data       => $rec3,
+                              sysno => $sysno,
+			      recordType => 'grs.perl.pod',
+			      );
+ok(($ret == 0),"delete record ok");
+
+#print STDERR "\nafter delete ret=$ret sysno=$sysno \n"; #!!!
+
+$stat = $sess->end_trans;
+ok(($stat->{inserted} == 0), "not inserted");
+ok(($stat->{updated} == 0), "updated ok");
+ok(($stat->{deleted} == 1), "deleted ok");
+$sess->commit;
+
+
+
 $sess->close;

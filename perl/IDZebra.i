@@ -298,7 +298,7 @@ int zebra_insert_record (ZebraHandle zh,
 			 const char *buf, 
 			 int buf_size,
 	 	         int force_update);
-/* actually, susno is only output param in insert_record, but kept */
+/* actually, sysno is only output param in insert_record, but kept */
 /* as inout for symmetry in the interface. The session class assures */
 /* that nothing goes in... */
 

@@ -1,4 +1,4 @@
-# $Id: Resultset.pm,v 1.11 2004-07-28 08:15:46 adam Exp $
+# $Id: Resultset.pm,v 1.12 2004-09-15 14:11:06 heikki Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -12,7 +12,7 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.11 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.12 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -59,30 +59,33 @@ sub errString {
     return ($self->{errCode});
 }
 
-sub terms {
-    use Data::Dumper;
-    my ($self) = @_;
-    my $count = 0; my $type = 0; my $len = 0;
-    my $tc = IDZebra::resultSetTerms($self->{session}{zh},$self->{name},
-				     0, \$count, \$type, "\0", \$len);
-
-    logf (LOG_LOG,"Got $tc terms");
-    
-    
-    my @res = ();
-    for (my $i=0; $i<$tc; $i++) {
-	my $len = 1024;
-	my $t = {term => "\0" x $len, count => 0, type => 0};
-	my $stat = IDZebra::resultSetTerms($self->{session}{zh},$self->{name},
-					   $i, \$t->{count}, \$t->{type}, 
-					   $t->{term}, \$len);
-	$t->{term} = substr($t->{term}, 0, $len);
-	logf (LOG_LOG,
-	      "term $i: type $t->{type}, '$t->{term}' ($t->{count})");
-	push (@res, $t);
-    }
-    return (@res);
-}
+######################
+# this is disabled, while the term counts are broken by the work done to
+# rsets. To be reinstantiated some day real soon now...
+#sub terms {
+#    use Data::Dumper;
+#    my ($self) = @_;
+#    my $count = 0; my $type = 0; my $len = 0;
+#    my $tc = IDZebra::resultSetTerms($self->{session}{zh},$self->{name},
+#				     0, \$count, \$type, "\0", \$len);
+#
+#    logf (LOG_LOG,"Got $tc terms");
+#    
+#    
+#    my @res = ();
+#    for (my $i=0; $i<$tc; $i++) {
+#	my $len = 1024;
+#	my $t = {term => "\0" x $len, count => 0, type => 0};
+#	my $stat = IDZebra::resultSetTerms($self->{session}{zh},$self->{name},
+#					   $i, \$t->{count}, \$t->{type}, 
+#					   $t->{term}, \$len);
+#	$t->{term} = substr($t->{term}, 0, $len);
+#	logf (LOG_LOG,
+#	      "term $i: type $t->{type}, '$t->{term}' ($t->{count})");
+#	push (@res, $t);
+#    }
+#    return (@res);
+#}
 
 # =============================================================================
 sub DESTROY {
@@ -170,7 +173,7 @@ sub sort {
 
     unless ($setname) {
 	return ($_[0] = $self->{session}->sortResultsets($sortspec, 
-						 $self->{session}->_new_setname, ($self)));
+			 $self->{session}->_new_setname, ($self)));
 	return ($_[0]);
     } else {
 	return ($self->{session}->sortResultsets($sortspec, 

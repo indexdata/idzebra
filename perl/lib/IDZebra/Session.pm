@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.22 2004-09-09 15:23:07 heikki Exp $
+# $Id: Session.pm,v 1.23 2004-09-15 14:11:06 heikki Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -16,7 +16,7 @@ BEGIN {
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
     require Exporter;
-    our $VERSION = do { my @r = (q$Revision: 1.22 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.23 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger Exporter);
     our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
@@ -476,11 +476,30 @@ sub _update_args_deleted {
 # -----------------------------------------------------------------------------
 # Per record update
 # -----------------------------------------------------------------------------
+sub _get_data_buff {
+    my %args=@_;
+    my $buff;
+    if ($args{data}) {
+	$buff = $args{data};
+    } 
+    elsif ($args{file}) {
+	CORE::open (F, $args{file}) || warn ("Cannot open $args{file}");
+	$buff = join('',(<F>));
+	CORE::close (F);
+    }
+    return $buff;
+}
+
 sub insert_record {
     my ($self, %args) = @_;
     $self->checkzh;
-    $args{sysno}=0; # make sure we don't overwrite any records
-    my @args = $self->_record_update_args(%args);
+    my $rectype = $args{recordType} ? $args{recordType} : "";
+    my $fname   = $args{file}       ? $args{file}       : "<no file>";
+    my $force   = $args{force}      ? $args{force}      : 0;
+    my $buff    =_get_data_buff(%args);
+    if (!$buff) { die ("insert_record needs a {data} or a {file}");}
+    my $len = length($buff);
+    my @args = ($rectype, 0, "", $fname, $buff, $len, $force);
     my @ret = IDZebra::insert_record($self->{zh}, @args);
     return @ret; # returns ($status, $sysno)
 }
@@ -488,17 +507,35 @@ sub insert_record {
 sub update_record {
     my ($self, %args) = @_;
     $self->checkzh;
-    my @args = $self->_record_update_args(%args);
+    my $sysno   = $args{sysno}      ? $args{sysno}      : 0;
+    my $match   = $args{match}      ? $args{match}      : "";
+    my $rectype = $args{recordType} ? $args{recordType} : "";
+    my $fname   = $args{file}       ? $args{file}       : "<no file>";
+    my $force   = $args{force}      ? $args{force}      : 0;
+    my $buff    =_get_data_buff(%args);
+    if (!$buff) { die ("update_record needs a {data} or a {file}");}
+    my $len = length($buff);
+    my @args = ($rectype, $sysno, $match, $fname, $buff, $len, $force);
     my @ret = IDZebra::update_record($self->{zh}, @args);
     return @ret; # ($status, $sysno)
 }
 
 sub delete_record {
+# can delete by sysno, or by given match string, or by extracting keys
+# from the record itself...
     my ($self, %args) = @_;
     $self->checkzh;
-    my @args = $self->_record_update_args(%args);
-    my $stat = IDZebra::delete_record($self->{zh}, @args);
-    return $stat;
+    my $sysno   = $args{sysno}      ? $args{sysno}      : 0;
+    my $match   = $args{match}      ? $args{match}      : "";
+    my $rectype = $args{recordType} ? $args{recordType} : "";
+    my $fname   = $args{file}       ? $args{file}       : "<no file>";
+    my $force   = $args{force}      ? $args{force}      : 0;
+    my $buff    =_get_data_buff(%args);
+    my $len=0;
+    if ($buff) {$len= length($buff)};
+    my @args = ($rectype, $sysno, $match, $fname, $buff, $len, $force);
+    my @ret = IDZebra::delete_record($self->{zh}, @args);
+    return @ret;
 }
 
 sub _record_update_args {
@@ -696,6 +733,7 @@ sub sortResultsets {
 			       $setname,
 			       \@setnames);
 
+
     my $errCode = $self->errCode;
     my $errString = $self->errString;
 
@@ -754,8 +792,7 @@ IDZebra::Session - A Zebra database server session for update and retrieval
   $sess->update(path      =>  'lib');
 
   my $s1=$sess->update_record(data       => $rec1,
-	 		      recordType => 'grs.perl.pod',
-			      groupName  => "demo1",
+	 		      recordType => 'grs.perl.pod'
 			      );
 
   my $stat = $sess->end_trans;

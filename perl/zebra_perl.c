@@ -20,12 +20,12 @@ NMEM handles;
 void init (void) {
   nmem_init ();
   yaz_log_init_prefix ("ZebraPerl");
-  yaz_log (LOG_LOG, "Zebra API initialized");
+  yaz_log (LOG_DEBUG, "Zebra API initialized");
 }
 
 void DESTROY (void) {
   nmem_exit ();
-  yaz_log (LOG_LOG, "Zebra API destroyed");
+  yaz_log (LOG_DEBUG, "Zebra API destroyed");
 }   
 
 /* Logging facilities from yaz */

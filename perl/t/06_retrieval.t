@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 06_retrieval.t,v 1.5 2004-07-28 08:15:47 adam Exp $
+# $Id: 06_retrieval.t,v 1.6 2004-09-15 14:11:06 heikki Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,7 +14,7 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests => 19;
+use Test::More tests => 30;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -31,9 +31,32 @@ BEGIN {
 # Session opening and closing
 my $sess = IDZebra::Session->open(configFile => 'demo/zebra.cfg',
 				  groupName => 'demo2');
+ok($sess,"session");
+
 # ----------------------------------------------------------------------------
+# Insert some test data
+my $ret;
+my $sysno;
+my $F;
+my $filecount=0;
+$sess->init;
+$sess->begin_trans;
+$sess->databases('demo1', 'demo2');
+$ret=$sess->end_trans;
+
+$sess->begin_trans;
+for $F (<lib/IDZebra/*.pm>)
+{
+    ($ret,$sysno)=$sess->insert_record (file=>$F, recordType => 'grs.perl.pod');
+    ok( $ret==0, "inserted $F");
+    #print STDERR "Inserted $F ok. ret=$ret sys=$sysno\n";
+    $filecount++;
+}
+$ret=$sess->end_trans;
+ok($filecount>0,"Inserted files");
+is($ret->{inserted},$filecount, "Inserted all");
+
 # search
-our $filecount = 8;
 
 my ($hits, $expected);
 
@@ -44,7 +67,7 @@ my $rs1 = $sess->search(cqlmap    => 'demo/cql.map',
 
 $expected = $filecount;
 $hits = $rs1->count;
-ok(($hits == $expected), "CQL search - found $hits/$expected records");
+is($hits, $expected, "CQL search ");
 
 foreach my $rec ($rs1->records(from =>1,
 			      to   =>5)) {
@@ -75,7 +98,6 @@ $sess=undef;
 eval { my ($rec2) = $rs1->records(from=>1,to=>1); };
 
 ok (($@ ne ""), "Resultset is invalidated with session");
-
 # ----------------------------------------------------------------------------
 # Code from doc...
 #  foreach my $rec ($rs1->records()) {
