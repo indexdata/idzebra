@@ -6,7 +6,6 @@
  * Isamh - append-only isam 
  *
  * todo
- *  (get invstat to work)
  *  implement dirty bit 
  *  implement direct address bit
  *  (result set stuff)
@@ -24,29 +23,38 @@
 #include <log.h>
 #include "isamh-p.h"
 
+#include "../index/index.h" /* for dump */
+
 static void flush_block (ISAMH is, int cat);
 static void release_fc (ISAMH is, int cat);
 static void init_fc (ISAMH is, int cat);
 
 #define ISAMH_FREELIST_CHUNK 1
 
-#define SMALL_TEST 0
+#define SMALL_TEST 1
 
 ISAMH_M isamh_getmethod (void)
 {
     static struct ISAMH_filecat_s def_cat[] = {
 #if SMALL_TEST
 /*        blocksz,   max keys before switching size */
-        {    32,  40 },
-	{    64,   0 },
+  /*      {    32,  40 }, */
+	{   128,   0 },
 #else
+        {    24,   40 },
+        {  2048, 2048 },
+        { 16384,    0  },
+
+#endif 
+#ifdef OLDVALUES
         {    24,   40 },
 	{   128,  256 },
         {   512, 1024 },
         {  2048, 4096 },
         {  8192,16384 },
         { 32768,   0  },
-#endif 
+
+#endif
 /* assume about 2 bytes per pointer, when compressed. The head uses */
 /* 16 bytes, and other blocks use 8 for header info... If you want 3 */
 /* blocks of 32 bytes, say max 16+24+24 = 64 keys */
@@ -622,11 +630,77 @@ int isamh_pp_num (ISAMH_PP pp)
     return pp->numKeys;
 }
 
+static char *hexdump(unsigned char *p, int len, char *buff) {
+  static char localbuff[128];
+  char bytebuff[8];
+  if (!buff) buff=localbuff;
+  *buff='\0';
+  while (len--) {
+    sprintf(bytebuff,"%02x",*p);
+    p++;
+    strcat(buff,bytebuff);
+    if (len) strcat(buff," ");
+  }
+  return buff;
+}
 
+
+void isamh_pp_dump (ISAMH is, ISAMH_P ipos)
+{
+  ISAMH_PP pp;
+  ISAMH_P oldaddr=0;
+  struct it_key key;
+  int i,n;
+  int occur =0;
+  int oldoffs;
+  char hexbuff[64];
+  
+  logf(LOG_LOG,"dumping isamh block %d (%d:%d)",
+                  (int)ipos, isamh_type(ipos), isamh_block(ipos) );
+  pp=isamh_pp_open(is,ipos);
+  logf(LOG_LOG,"numKeys=%d, last=%d (%d:%d) ofs=%d ",
+       pp->numKeys, 
+       pp->lastblock, 
+       isamh_type(pp->lastblock), isamh_block(pp->lastblock),
+       pp->offset);
+  oldoffs= pp->offset;
+  while(isamh_pp_read(pp, &key))
+  {
+     if (oldaddr != isamh_addr(pp->pos,pp->cat) )
+     {
+        oldaddr = isamh_addr(pp->pos,pp->cat); 
+        logf(LOG_LOG,"block %d (%d:%d) sz=%d nx=%d (%d:%d) ofs=%d",
+                  isamh_addr(pp->pos,pp->cat), 
+                  pp->cat, pp->pos, pp->size,
+                  pp->next, isamh_type(pp->next), isamh_block(pp->next),
+                  pp->offset);
+        i=0;      
+        while (i<pp->size) {
+          n=pp->size-i;
+          if (n>8) n=8;
+          logf(LOG_LOG,"  %05x: %s",i,hexdump(pp->buf+i,n,hexbuff));
+          i+=n;
+        }
+        if (oldoffs >  ISAMH_BLOCK_OFFSET_N)
+           oldoffs=ISAMH_BLOCK_OFFSET_N;
+     } /* new block */
+     occur++;
+     logf (LOG_LOG,"    got %d:%d=%x:%x from %s at %d=%x",
+      	          key.sysno, key.seqno,
+	          key.sysno, key.seqno,
+	          hexdump(pp->buf+oldoffs, pp->offset-oldoffs, hexbuff),
+	          oldoffs, oldoffs);
+     oldoffs = pp->offset;
+  }
+  isamh_pp_close(pp);
+} /* dump */
 
 /*
  * $Log: isamh.c,v $
- * Revision 1.5  1999-07-08 14:23:27  heikki
+ * Revision 1.6  1999-07-13 15:24:50  heikki
+ * Removed the one-block append, it had a serious flaw.
+ *
+ * Revision 1.5  1999/07/08 14:23:27  heikki
  * Fixed a bug in isamh_pp_read and cleaned up a bit
  *
  * Revision 1.4  1999/07/07 09:36:04  heikki
