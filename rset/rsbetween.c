@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.16 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rsbetween.c,v 1.15.2.1 2004-10-27 09:35:02 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -35,8 +35,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <assert.h>
 
-#include <zebrautl.h>
 #include <rsbetween.h>
+#include <zebrautl.h>
 
 #define RSBETWEEN_DEBUG 0
 
@@ -468,7 +468,7 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
         if ( attr_match && p->level > 0)  /* within a tag pair (or deeper) */
         {
             memcpy (buf, p->buf_m, info->key_size);
-            *term_index = p->term_index_m;
+            *term_index = p->term_index_m + info->rset_m->no_rset_terms;
 #if RSBETWEEN_DEBUG
             log2( p, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
 #endif
