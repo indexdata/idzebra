@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.114 2004-08-25 09:23:36 adam Exp $
+/* $Id: index.h,v 1.115 2004-08-30 12:32:24 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -359,7 +359,7 @@ struct term_set_list {
     struct term_set_entry *last;
 };
 
-RSET rpn_search (ZebraHandle zh, NMEM mem,
+RSET rpn_search (ZebraHandle zh, NMEM mem, NMEM rset_nmem,
 		 Z_RPNQuery *rpn, int num_bases, char **basenames, 
 		 const char *setname, ZebraSet sset);
 

@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.57 2004-08-20 14:44:46 heikki Exp $
+/* $Id: zsets.c,v 1.58 2004-08-30 12:32:24 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -46,6 +46,7 @@ struct zebra_set {
     char *name;
     RSET rset;
     NMEM nmem;
+    NMEM rset_nmem; /* for creating the rsets in */
     zint hits;
     int num_bases;
     char **basenames;
@@ -88,6 +89,7 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,
     zebraSet->locked = 1;
     zebraSet->rpn = 0;
     zebraSet->nmem = m;
+    zebraSet->rset_nmem=nmem_create(); /* FIXME - where to free this ?? */
 
     zebraSet->num_bases = num_bases;
     zebraSet->basenames = 
@@ -96,8 +98,8 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,
         zebraSet->basenames[i] = nmem_strdup (zebraSet->nmem, basenames[i]);
 
 
-    zebraSet->rset = rpn_search (zh, zebraSet->nmem, rpn,
-                                 zebraSet->num_bases,
+    zebraSet->rset = rpn_search (zh, zebraSet->nmem, zebraSet->rset_nmem,
+                                 rpn, zebraSet->num_bases,
                                  zebraSet->basenames, zebraSet->name,
                                  zebraSet);
     zh->hits = zebraSet->hits;
@@ -237,6 +239,7 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     s->term_entries = 0;
     s->hits = 0;
     s->rset = 0;
+    s->rset_nmem=0;
     s->nmem = 0;
     s->rpn = 0;
     return s;
@@ -254,7 +257,7 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
                 NMEM nmem = nmem_create ();
                 yaz_log (LOG_LOG, "research %s", name);
                 s->rset =
-                    rpn_search (zh, nmem, s->rpn, s->num_bases,
+                    rpn_search (zh, nmem, s->rset_nmem, s->rpn, s->num_bases,
                                 s->basenames, s->name, s);
                 nmem_destroy (nmem);
             }
@@ -272,6 +275,9 @@ void resultSetInvalidate (ZebraHandle zh)
         if (s->rset)
             rset_delete (s->rset);
         s->rset = 0;
+        if (s->rset_nmem)
+            nmem_destroy(s->rset_nmem);
+        s->rset_nmem=0;
     }
 }
 
@@ -312,6 +318,8 @@ void resultSetDestroy (ZebraHandle zh, int num, char **names,int *statuses)
                 nmem_destroy (s->nmem);
             if (s->rset)
                 rset_delete (s->rset);
+            if (s->rset_nmem)
+                nmem_destroy(s->rset_nmem);
             xfree (s->name);
             xfree (s);
         }

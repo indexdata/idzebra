@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.145 2004-08-24 14:25:16 heikki Exp $
+/* $Id: zrpn.c,v 1.146 2004-08-30 12:32:24 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -2199,7 +2199,8 @@ static RSET rpn_search_APT (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 }
 
 static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
-                                  oid_value attributeSet, NMEM stream,
+                                  oid_value attributeSet, 
+                                  NMEM stream, NMEM rset_nmem,
                                   Z_SortKeySpecList *sort_sequence,
                                   int num_bases, char **basenames)
 {
@@ -2211,13 +2212,13 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
         RSET rset_r;
 
         rset_l = rpn_search_structure (zh, zs->u.complex->s1,
-                                       attributeSet, stream,
+                                       attributeSet, stream, rset_nmem,
                                        sort_sequence,
                                        num_bases, basenames);
         if (rset_l == NULL)
             return NULL;
         rset_r = rpn_search_structure (zh, zs->u.complex->s2,
-                                       attributeSet, stream,
+                                       attributeSet, stream, rset_nmem,
                                        sort_sequence,
                                        num_bases, basenames);
         if (rset_r == NULL)
@@ -2229,17 +2230,17 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
         switch (zop->which)
         {
         case Z_Operator_and:
-            r = rsbool_create_and( NULL, /* FIXME - use a proper nmem */
+            r = rsbool_create_and( rset_nmem,
                     sizeof(struct it_key),  key_compare_it,
                     rset_l, rset_r, key_logdump_txt );
             break;
         case Z_Operator_or:
-            r = rsbool_create_or( NULL, /* FIXME - use a proper nmem */
+            r = rsbool_create_or( rset_nmem,
                     sizeof(struct it_key),  key_compare_it,
                     rset_l, rset_r, key_logdump_txt );
             break;
         case Z_Operator_and_not:
-            r = rsbool_create_not( NULL, /* FIXME - use a proper nmem */
+            r = rsbool_create_not( rset_nmem,
                     sizeof(struct it_key),  key_compare_it,
                     rset_l, rset_r, key_logdump_txt );
             break;
@@ -2264,7 +2265,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
                 
                 twosets[0] = rset_l;
                 twosets[1] = rset_r;
-                r=rsprox_create(NULL, /* FIXME - use a proper nmem */
+                r=rsprox_create(rset_nmem,
                          sizeof(struct it_key), key_compare_it,
                          key_get_seq, 
                          2, twosets, 
@@ -2309,7 +2310,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
             r = resultSetRef (zh, zs->u.simple->u.resultSetId);
             if (!r)
             {
-                r = rsnull_create (NULL);  /* FIXME - Use a proper nmem */
+                r = rsnull_create (rset_nmem);
                 zh->errCode = 30;
                 zh->errString =
                     nmem_strdup (stream, zs->u.simple->u.resultSetId);
@@ -2333,7 +2334,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
 }
 
 
-RSET rpn_search (ZebraHandle zh, NMEM nmem,
+RSET rpn_search (ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
                  Z_RPNQuery *rpn, int num_bases, char **basenames, 
                  const char *setname,
                  ZebraSet sset)
@@ -2360,7 +2361,8 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem,
     attrset = oid_getentbyoid (rpn->attributeSetId);
     attributeSet = attrset->value;
     rset = rpn_search_structure (zh, rpn->RPNStructure, attributeSet,
-                                 nmem, sort_sequence, num_bases, basenames);
+                                 nmem, rset_nmem,
+                                 sort_sequence, num_bases, basenames);
     if (!rset)
         return 0;
 
