@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.139 2004-06-02 12:29:03 adam Exp $
+/* $Id: zrpn.c,v 1.140 2004-06-16 21:29:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -38,6 +38,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rsnull.h>
 #include <rsbool.h>
 #include <rsbetween.h>
+#include <rsprox.h>
 
 struct rpn_char_map_info {
     ZebraMaps zm;
@@ -1252,238 +1253,6 @@ static int trans_scan_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     return 0;
 }
 
-static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
-		      int ordered, int exclusion, int relation, int distance)
-{
-    int i;
-    RSFD *rsfd;
-    int  *more;
-    struct it_key **buf;
-    RSET result;
-    char prox_term[1024];
-    int length_prox_term = 0;
-    int min_nn = 10000000;
-    int term_index;
-    int term_type = Z_Term_characterString;
-    const char *flags = NULL;
-    
-    rsfd = (RSFD *) xmalloc (sizeof(*rsfd)*rset_no);
-    more = (int *) xmalloc (sizeof(*more)*rset_no);
-    buf = (struct it_key **) xmalloc (sizeof(*buf)*rset_no);
-
-    *prox_term = '\0';
-    for (i = 0; i<rset_no; i++)
-    {
-	int j;
-	for (j = 0; j<rset[i]->no_rset_terms; j++)
-	{
-	    const char *nflags = rset[i]->rset_terms[j]->flags;
-	    char *term = rset[i]->rset_terms[j]->name;
-	    int lterm = strlen(term);
-	    if (lterm + length_prox_term < sizeof(prox_term)-1)
-	    {
-		if (length_prox_term)
-		    prox_term[length_prox_term++] = ' ';
-		strcpy (prox_term + length_prox_term, term);
-		length_prox_term += lterm;
-	    }
-	    if (min_nn > rset[i]->rset_terms[j]->nn)
-		min_nn = rset[i]->rset_terms[j]->nn;
-	    flags = nflags;
-            term_type = rset[i]->rset_terms[j]->type;
-
-            /* only if all term types are of type characterString .. */
-            /* the resulting term is of that type */
-            if (term_type != Z_Term_characterString)
-                term_type = Z_Term_general;
-	}
-    }
-    for (i = 0; i<rset_no; i++)
-    {
-	buf[i] = 0;
-	rsfd[i] = 0;
-    }
-    for (i = 0; i<rset_no; i++)
-    {
-	buf[i] = (struct it_key *) xmalloc (sizeof(**buf));
-	rsfd[i] = rset_open (rset[i], RSETF_READ);
-        if (!(more[i] = rset_read (rset[i], rsfd[i], buf[i], &term_index)))
-	    break;
-    }
-    if (i != rset_no)
-    {
-	/* at least one is empty ... return null set */
-	rset_null_parms parms;
-	
-	parms.rset_term = rset_term_create (prox_term, length_prox_term,
-					    flags, term_type);
-	parms.rset_term->nn = 0;
-	result = rset_create (rset_kind_null, &parms);
-    }
-    else if (ordered && relation == 3 && exclusion == 0 && distance == 1)
-    {
-	/* special proximity case = phrase search ... */
-	rset_temp_parms parms;
-	RSFD rsfd_result;
-
-	parms.rset_term = rset_term_create (prox_term, length_prox_term,
-					    flags, term_type);
-	parms.rset_term->nn = min_nn;
-        parms.cmp = key_compare_it;
-	parms.key_size = sizeof (struct it_key);
-	parms.temp_path = res_get (zh->res, "setTmpDir");
-	result = rset_create (rset_kind_temp, &parms);
-	rsfd_result = rset_open (result, RSETF_WRITE);
-
-	while (*more)
-	{
-	    for (i = 1; i<rset_no; i++)
-	    {
-		int cmp;
-		
-		if (!more[i])
-		{
-		    *more = 0;
-		    break;
-		}
-		cmp = key_compare_it (buf[i], buf[i-1]);
-		if (cmp > 1)
-		{
-		    more[i-1] = rset_read (rset[i-1], rsfd[i-1],
-					   buf[i-1], &term_index);
-		    break;
-		}
-		else if (cmp == 1)
-		{
-		    if (buf[i-1]->seqno+1 != buf[i]->seqno)
-		    {
-			more[i-1] = rset_read (rset[i-1], rsfd[i-1],
-					       buf[i-1], &term_index);
-			break;
-		    }
-		}
-		else
-		{
-		    more[i] = rset_read (rset[i], rsfd[i], buf[i],
-					 &term_index);
-		    break;
-		}
-	    }
-	    if (i == rset_no)
-	    {
-		rset_write (result, rsfd_result, buf[0]);
-		more[0] = rset_read (*rset, *rsfd, *buf, &term_index);
-	    }
-	}
-	rset_close (result, rsfd_result);
-    }
-    else if (rset_no == 2)
-    {
-	/* generic proximity case (two input sets only) ... */
-	rset_temp_parms parms;
-	RSFD rsfd_result;
-
-	yaz_log (LOG_LOG, "generic prox, dist=%d, relation=%d, ordered=%d"
-			  ", exclusion=%d",
-			  distance, relation, ordered, exclusion);
-	parms.rset_term = rset_term_create (prox_term, length_prox_term,
-					    flags, term_type);
-	parms.rset_term->nn = min_nn;
-        parms.cmp = key_compare_it;
-	parms.key_size = sizeof (struct it_key);
-	parms.temp_path = res_get (zh->res, "setTmpDir");
-	result = rset_create (rset_kind_temp, &parms);
-	rsfd_result = rset_open (result, RSETF_WRITE);
-
-	while (more[0] && more[1]) 
-	{
-	    int cmp = key_compare_it (buf[0], buf[1]);
-	    if (cmp < -1)
-		more[0] = rset_read (rset[0], rsfd[0], buf[0], &term_index);
-	    else if (cmp > 1)
-		more[1] = rset_read (rset[1], rsfd[1], buf[1], &term_index);
-	    else
-	    {
-		int sysno = buf[0]->sysno;
-		int seqno[500];
-		int n = 0;
-		
-		seqno[n++] = buf[0]->seqno;
-		while ((more[0] = rset_read (rset[0], rsfd[0], buf[0],
-					     &term_index)) &&
-		       sysno == buf[0]->sysno)
-		    if (n < 500)
-			seqno[n++] = buf[0]->seqno;
-		do
-		{
-		    for (i = 0; i<n; i++)
-		    {
-			int diff = buf[1]->seqno - seqno[i];
-			int excl = exclusion;
-			if (!ordered && diff < 0)
-			    diff = -diff;
-			switch (relation)
-			{
-			case 1:      /* < */
-			    if (diff < distance && diff >= 0)
-				excl = !excl;
-			    break;
-			case 2:      /* <= */
-			    if (diff <= distance && diff >= 0)
-				excl = !excl;
-			    break;
-			case 3:      /* == */
-			    if (diff == distance && diff >= 0)
-				excl = !excl;
-			    break;
-			case 4:      /* >= */
-			    if (diff >= distance && diff >= 0)
-				excl = !excl;
-			    break;
-			case 5:      /* > */
-			    if (diff > distance && diff >= 0)
-				excl = !excl;
-			    break;
-			case 6:      /* != */
-			    if (diff != distance && diff >= 0)
-				excl = !excl;
-			    break;
-			}
-			if (excl)
-			{
-			    rset_write (result, rsfd_result, buf[1]);
-			    break;
-			}
-		    }
-		} while ((more[1] = rset_read (rset[1], rsfd[1], buf[1],
-					       &term_index)) &&
-			 sysno == buf[1]->sysno);
-	    }
-	}
-	rset_close (result, rsfd_result);
-    }
-    else
-    {
-	rset_null_parms parms;
-	
-	parms.rset_term = rset_term_create (prox_term, length_prox_term,
-					    flags, term_type);
-	parms.rset_term->nn = 0;
-	result = rset_create (rset_kind_null, &parms);
-    }
-    for (i = 0; i<rset_no; i++)
-    {
-	if (rsfd[i])
-	    rset_close (rset[i], rsfd[i]);
-	xfree (buf[i]);
-    }
-    xfree (buf);
-    xfree (more);
-    xfree (rsfd);
-    return result;
-}
-
-
 char *normalize_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 		     const char *termz, NMEM stream, unsigned reg_id)
 {
@@ -1629,9 +1398,23 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     }
     else if (rset_no == 1)
         return (rset[0]);
-    result = rpn_prox (zh, rset, rset_no, 1, 0, 3, 1);
-    for (i = 0; i<rset_no; i++)
-        rset_delete (rset[i]);
+    else
+    {
+	/* new / old prox */
+	rset_prox_parms parms;
+	
+	parms.rset = rset;
+	parms.rset_no = rset_no;
+	parms.ordered = 1;
+	parms.exclusion = 0;
+	parms.relation = 3;
+	parms.distance = 1;
+	parms.key_size = sizeof(struct it_key);
+	parms.cmp = key_compare_it;
+	parms.getseq = key_get_seq;
+	parms.log_item = key_logdump_txt;
+	result = rset_create(rset_kind_prox, &parms);
+    }
     return result;
 }
 
@@ -2489,19 +2272,24 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
             }
 	    else
 	    {
-		RSET rsets[2];
-
-		rsets[0] = bool_parms.rset_l;
-		rsets[1] = bool_parms.rset_r;
+		/* new / old prox */
+		rset_prox_parms parms;
+		RSET twosets[2];
 		
-		r = rpn_prox (zh, rsets, 2, 
-			      *zop->u.prox->ordered,
-			      (!zop->u.prox->exclusion ? 0 :
-			       *zop->u.prox->exclusion),
-			      *zop->u.prox->relationType,
-			      *zop->u.prox->distance);
-		rset_delete (rsets[0]);
-		rset_delete (rsets[1]);
+		twosets[0] = bool_parms.rset_l;
+		twosets[1] = bool_parms.rset_r;
+		parms.rset = twosets;
+		parms.rset_no = 2;
+		parms.ordered = *zop->u.prox->ordered;
+		parms.exclusion = (!zop->u.prox->exclusion ? 0 :
+				   *zop->u.prox->exclusion);
+		parms.relation = *zop->u.prox->relationType;
+		parms.distance = *zop->u.prox->distance;
+		parms.key_size = sizeof(struct it_key);
+		parms.cmp = key_compare_it;
+		parms.getseq = key_get_seq;
+		parms.log_item = key_logdump_txt;
+		r = rset_create(rset_kind_prox, &parms);
 	    }
             break;
         default:
