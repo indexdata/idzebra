@@ -1,0 +1,6 @@
+# $Id: news.flt,v 1.1 1995-12-15 16:20:22 adam Exp $
+%tagset wais
+\nFrom:		.*	{b name p $1 e}
+\nSubject:	.*	{b title p $1 e}
+\nDate:		.*	{b dateOfLastModification p $1 e}
+\n\n		(\n|.)*	{b Body p $1 e}
