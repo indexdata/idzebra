@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.29 2004-06-09 11:11:33 adam Exp $
+/* $Id: rsbool.c,v 1.30 2004-06-16 20:32:07 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -227,7 +227,6 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
 {
     struct rset_bool_info *info = ((struct rset_bool_rfd*)rfd)->info;
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
-    int cmp=0;
     int rc;
 
 #if RSET_DEBUG

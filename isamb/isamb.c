@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.45 2004-06-08 15:15:51 adam Exp $
+/* $Id: isamb.c,v 1.46 2004-06-16 20:34:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -505,7 +505,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
     struct ISAMB_block *sub_p1 = 0, *sub_p2 = 0;
     char sub_item[DST_ITEM_MAX];
     int sub_size;
-    int more;
+    int more = 0;
 
     *sp = 0;
 

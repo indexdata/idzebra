@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.31 2004-06-15 09:29:31 adam Exp $
+/* $Id: zebramap.c,v 1.32 2004-06-16 20:30:47 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -573,7 +573,7 @@ int zebra_replace_sub(ZebraMaps zms, unsigned reg_id, const char *ex_list,
     {
 	struct zm_token *token;
 	char replace_string[128];
-	int replace_out;
+	int replace_out = 0;
 	int replace_in = 0;
 
 	for (token = zm->replace_tokens; !replace_in && token;
