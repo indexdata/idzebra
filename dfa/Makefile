@@ -1,19 +1,19 @@
-# Copyright (C) 1994, Index Data I/S 
+# Copyright (C) 1994-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.13 1995-12-04 14:20:05 adam Exp $
+# $Id: Makefile,v 1.14 1996-05-14 11:33:40 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
 
-YAZLIB=-lyaz
-YAZINC=
+YAZLIB=../../yaz/lib/libyaz.a
+YAZINC=-I../../yaz/include
 
 INCLUDE=-I../include $(YAZINC)
 TPROG1=agrep
 TPROG2=lexer
 TPROG3=grepper
-DEFS=$(INCLUDE) -DMEMDEBUG=1
+DEFS=$(INCLUDE)
 LIB=../lib/dfa.a 
 PO = dfa.o imalloc.o states.o set.o bset.o
 CPP=$(CC) -E
@@ -49,11 +49,11 @@ depend: depend2
 
 depend1:
 	sed '/^#Depend/q' <Makefile >Makefile.tmp
-	$(CPP) -M $(DEFS) *.c >>Makefile.tmp
+	$(CPP) $(DEFS) -M *.c >>Makefile.tmp
 	mv -f Makefile.tmp Makefile
 
 depend2:
-	$(CPP) -M $(DEFS) *.c >.depend
+	$(CPP) $(DEFS) -M *.c >.depend
 
 ifeq (.depend,$(wildcard .depend))
 include .depend

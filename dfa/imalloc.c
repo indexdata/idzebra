@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: imalloc.c,v $
- * Revision 1.4  1995-09-04 12:33:26  adam
+ * Revision 1.5  1996-05-14 11:33:41  adam
+ * MEMDEBUG turned off by default.
+ *
+ * Revision 1.4  1995/09/04  12:33:26  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.3  1994/09/27  16:31:19  adam
@@ -25,7 +28,7 @@
 #include <alexutil.h>
 #include "imalloc.h"
 
-#ifdef MEMDEBUG
+#if MEMDEBUG
 #define MAG1 0x8fe1
 #define MAG2 0x91
 #define MAG3 0xee
@@ -38,7 +41,7 @@ int  free_calls  = 0;
 
 void *imalloc (size_t size)
 {
-#ifdef MEMDEBUG
+#if MEMDEBUG
     size_t words = (4*sizeof(unsigned) -1 + size)/sizeof(unsigned);
     char *p = (char *)xmalloc( words*sizeof(unsigned) );
     if( !p )
@@ -63,7 +66,7 @@ void *imalloc (size_t size)
 
 void *icalloc (size_t size)
 {
-#ifdef MEMDEBUG
+#if MEMDEBUG
     unsigned words = (4*sizeof(unsigned) -1 + size)/sizeof(unsigned);
     char *p = (char *) xcalloc( words*sizeof(unsigned), 1 );
     if( !p )
@@ -79,14 +82,14 @@ void *icalloc (size_t size)
     ++alloc_calls;
     return (void *)p;
 #else
-    void *p = (void) xcalloc( size, 1 );
+    void *p = (void *) xcalloc( size, 1 );
     if( !p )
         logf (LOG_FATAL, "Out of memory (icalloc)" );
     return p;
 #endif
 }
 
-#ifdef MEMDEBUG
+#if MEMDEBUG
 void i_free (void *p)
 {
     size_t size;
@@ -105,17 +108,9 @@ void i_free (void *p)
         logf (LOG_FATAL,"Internal: ifree(%u) negative alloc.", size );
     xfree( (unsigned *) p-2 );
 }
-#else
-#ifndef ANSI
-void i_free (void *p)
-{
-    if (p)
-        xfree( p );
-}
-#endif
 #endif
 
-#ifdef MEMDEBUG
+#if MEMDEBUG
 void imemstat (void)
 {
     fprintf( stdout, "imalloc: calls malloc/free %d/%d, ",

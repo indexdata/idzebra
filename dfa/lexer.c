@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lexer.c,v $
- * Revision 1.8  1995-09-28 09:18:54  adam
+ * Revision 1.9  1996-05-14 11:33:41  adam
+ * MEMDEBUG turned off by default.
+ *
+ * Revision 1.8  1995/09/28  09:18:54  adam
  * Removed various preprocessor defines.
  *
  * Revision 1.7  1995/09/04  12:33:27  adam
@@ -135,12 +138,12 @@ int main (int argc, char **argv)
                 return i;
             dfa_mkstate (dfa);
 
-#ifdef MEMDEBUG
+#if MEMDEBUG
     imemstat();
 #endif
         }
     dfa_delete (&dfa);
-#ifdef MEMDEBUG
+#if MEMDEBUG
     imemstat();
 #endif
     if (!no)
