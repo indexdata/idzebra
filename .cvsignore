@@ -6,3 +6,4 @@ config.log
 config.status
 configure
 idzebra.spec
+autom4te.cache
