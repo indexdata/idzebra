@@ -1,20 +1,20 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.11 1995-12-13 17:14:00 quinn Exp $
+  $Id: zebra.sgml,v 1.12 1996-01-02 08:59:15 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.11 $
+<date>$Revision: 1.12 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
 information management system. This document explains the procedure for
 installing and configuring the system, and outlines the possibilities
 for managing data and providing Z39.50
-services using the software.
+services with the software.
 </abstract>
 
 <toc>
@@ -43,18 +43,13 @@ how to compile the software, and how to prepare your first database.
 It also explains how the server can be configured to give you the
 functionality that you need.
 
-You should read <it/Specifying and Using Application (Database)
-Profiles/, which is bundled with the YAZ documentation, to learn how
-records are formatted, and how you can configure Zebra to handle
-different types of Z39.50 application profiles.
-
-If you are interested in using the software, you should join the support
+If you find the software interesting, you should join the support
 mailing-list by sending Email to <tt/zebra-request@index.ping.dk/.
 
 <sect1>Features
 
 <p>
-This is a listing of some of the most important features of the
+This is a listof some of the most important features of the
 system.
 
 <itemize>
@@ -190,9 +185,10 @@ interface. We'll probably use Tcl/Tk to stay platform-independent.
 Programmers thrive on user feedback. If you are interested in a facility that
 you don't see mentioned here, or if there's something you think we
 could do better, please drop us a mail. If you think it's all really
-neat, you're of course welcome to drop us a line saying that, too.
+neat, you're welcome to drop us a line saying that, too. You'll find
+contact info at the end of this file.
 
-<sect>Introduction
+<sect>Getting Started
 
 <sect>Compiling the software
 
@@ -203,7 +199,8 @@ the YAZ header files in <tt>yaz/include/..</tt> and its public library
 <tt>yaz/lib/libyaz.a</tt>.
 
 As with YAZ, an ANSI C compiler is required in order to compile the Zebra
-server system &mdash; GNU C works fine.
+server system &mdash; <tt/gcc/ works fine if your own system doesn't
+provide an adequate compiler.
 
 Unpack the Zebra software. You might put Zebra in the same directory level
 as YAZ, for example if YAZ is placed in ..<tt>/src/yaz-xxx</tt>, then
@@ -257,7 +254,7 @@ In the command above the option <tt>-t</tt> specified the record
 type &mdash; in this case <tt>grs</tt>. The word <tt>update</tt> followed
 by a directory root updates all files below that directory node.
 
-If your indexing command went successful, you are now ready to
+If your indexing command was successful, you are now ready to
 fire up a server. To start a server on port 2100, type:
 <tscreen><verb>
 $ ../index/zebrasrv tcp:@:2100
@@ -293,16 +290,13 @@ Z>show 1
 </verb></tscreen>
 
 If you've made it this far, there's a reasonably good chance that
-you've made it through the compilation OK.
+you've got through the compilation OK.
 
-<sect>Administrating Zebra
+<sect><heading><label id="administrating">Administrating Zebra</>
 
 <p>
-
-Unlike many other retrieval systems, Zebra offers incremental
-modifications of an existing index. Needless to say, these facilities
-make the administration of Zebra a bit more complicated than
-systems that use the &dquot;index-it-all&dquot; approach.
+Unlike many simpler retrieval systems, Zebra supports safe, incremental
+updates to an existing index.
 
 Normally, when Zebra modifies the index it reads a number of records
 that you specify.
@@ -320,8 +314,8 @@ update-case it must be able to identify the record.
 </descrip>
 
 Please note that in both the modify- and delete- case the Zebra
-indexer must be able to make a unique key that identifies the record in
-question.
+indexer must be able to generate a unique key that identifies the record in
+question (more on this below).
 
 To administrate the Zebra retrieval system, you run the
 <tt>zebraidx</tt> program. This program supports a number of options
@@ -338,9 +332,9 @@ be run in the same directory where the configuration file if you do
 not indicate the location of the configuration file by option
 <tt>-c</tt>.
 
-<sect1>Record types
+<sect1><heading><label id="record-types">Record Types</>
 <p>
-Indexing is a record-per-record process, in which
+Indexing is a per-record process, in which
 either insert/modify/delete will occur. Before a record is indexed
 search keys are extracted from whatever might be the layout the
 original record (sgml,html,text, etc..). The Zebra system 
@@ -350,31 +344,34 @@ To specify a particular extraction process, use either the
 command line option <tt>-t</tt> or specify a
 <tt>recordType</tt> setting in the configuration file.
 
-<sect1>The Zebra Configuration File
+<sect1><heading><label id="configuration-file">The Zebra Configuration File</>
 <p>
 The Zebra configuration file, read by <tt>zebraidx</tt> and
 <tt>zebrasrv</tt> defaults to <tt>zebra.cfg</tt> unless specified
 by <tt>-c</tt> option.
 
 You can edit the configuration file with a normal text editor.
-Setting names and values are seperated by colons in the file. Lines
+Parameter names and values are seperated by colons in the file. Lines
 starting with a hash sign (<tt/#/) are treated as comments.
 
-A set of records that share common characteristics are called a group.
+If you manage different sets of records that each share common
+caracteristics, you can organize the configuration settings for each
+type into &dquot;groups&dquot;.
 When <tt>zebraidx</tt> is run and you wish to address a given group
 you specify that group with the <tt>-g</tt> option. In this case
 settings that have the group name as their prefix will be used
 by <tt>zebraidx</tt> and not default values. The default values have no prefix.
 
-The group is written before the option itself separated by a dot.
-For instance, to set the record type for group <tt/public/ to <tt/grs/ (structured records)
+The group is written before the option itself, separated by a dot (.).
+For instance, to set the record type for group <tt/public/ to <tt/grs/
+(the common format for structured records)
 you would write:
 
 <tscreen><verb>
 public.recordType: grs
 </verb></tscreen>
 
-To set the default value of the record type to text write:
+To set the default value of the record type to <tt/text/ write:
 
 <tscreen><verb>
 recordType: text
@@ -387,11 +384,12 @@ explained further in the following sections.
 <tag><it>group</it>recordType<it>name</it></tag>
  Specifies how records with the file extension <it>name</it> should
  be handled by the indexer. This option may also be specified
- as a command line option (<tt>-t</tt>).
+ as a command line option (<tt>-t</tt>). Note that if you do not
+ specify a <it/name/, the setting applies to all files.
 <tag><it>group</it>recordId</tag>
  Specifies how the record is to be identified when updated.
 <tag><it>group</it>database</tag>
- Specifies the Z39.50 database.
+ Specifies the Z39.50 database name.
 <tag><it>group</it>storeKeys</tag>
  Specifies whether key information should be saved for a given
  group of records. If you plan to update/delete this type of
@@ -399,7 +397,7 @@ explained further in the following sections.
  should be 0 (default).
 <tag><it>group</it>storeData</tag>
  Specifies whether the records should be stored internally
- in the Zebra system tables. If you want to maintain the raw records yourself,
+ in the Zebra system files. If you want to maintain the raw records yourself,
  this option should be false (0). If you want Zebra to take care of the records
  for you, it should be true(1).
 <tag>register</tag> 
@@ -411,7 +409,10 @@ explained further in the following sections.
 <tag>profilePath</tag>
  Specifies the location of profile specification paths.
 <tag>attset</tag> 
- Specifies the filename(s) of attribute set files for use in searching.
+ Specifies the filename(s) of attribute set files for use in
+ searching. At least the Bib-1 set should be loaded (<tt/bib1.att/).
+ The <tt/profilePath/ setting is used to search for attribute set
+ files.
 </descrip>
 
 <sect1>Locating Records
@@ -420,11 +421,11 @@ The default behaviour of the Zebra system is to reference the
 records from their original location, i.e. where they were found when you
 ran <tt/zebraidx/.
 
-If your records files are temporary - for example if you retrieve
-them from the outside, or if they where temporarily mounted on a CD-ROM,
-you may want Zebra to make a copy of them. To do this,
+If your input files are temporary - for example if you retrieve
+your records from an outside source, or if they where temporarily mounted on a CD-ROM,
+you may want Zebra to make an internal copy of them. To do this,
 you specify 1 (true) in the <tt>storedata</tt> setting. When
-the Z39.50 server retrieves records they will be read from the
+the Z39.50 server retrieves the records they will be read from the
 internal file structures of the system.
 
 <sect1>Indexing with no Record IDs (Simple Indexing)
@@ -439,7 +440,7 @@ To use this method, you simply don't provide the <tt>recordId</tt> entry
 for the group of files that you index. To add a set of records you use
 <tt>zebraidx</tt> with the <tt>update</tt> command. The
 <tt>update</tt> command will always add all of the records to the index
-becuase Zebra doesn't know how to match the new set of records with
+because Zebra doesn't know how to match the new set of records with
 existing records.
 
 Consider a system in which you have a group of text files called
@@ -449,41 +450,42 @@ called <tt>textbase</tt>. The following <tt/zebra.cfg/ file will suffice:
 <tscreen><verb>
 profilePath: /usr/local/yaz
 attset: bib1.att
-attset: gils.att
 simple.recordType: text
 simple.database: textbase
 </verb></tscreen>
 
 Since the existing records in an index can not be addressed by their
-IDs, it is impossible to delete records when using this method.
+IDs, it is impossible to delete or modify records when using this method.
 
 <sect1>Indexing with File Record IDs
 
 <p>
 If you have a set of external records that you wish to index you may
 use the file key feature of the Zebra system. In short, the file key
-feature mirrors a directory structure and its files efficiently. To
-perform indexing of a directory with file keys, you specify the top-level
-directory after the <tt>update</tt> command. The command will recursively
-traverse the directories and compare each with whatever have been
-indexed before in the same directory. If a file is new (not in
-the previous version of the directory) it is inserted;
-if a file was already indexed and it has been modified
-since the last insertion the index is also modified; if a file is missing
-since the last visit it is deleted from the index.
+methodology uses the paths of the files containing records as their
+unique identifiers. To perform indexing of a directory with file keys,
+again, you specify the top-level directory after the <tt>update</tt>
+command. The command will recursively traverse the directories and
+compare each with whatever have been indexed before in the same
+directory. If a file is new (not in the previous version of the
+directory) it is inserted into the registers; if a file was already
+indexed and it has been modified since the last insertionm, the index
+is also modified; if a file has been removed since the last visit, it
+is deleted from the index.
 
 The resulting system is easy to administer. To delete a record
-you simply have to delete the corresponding file (with <tt/rm/). 
+you simply have to delete the corresponding file (say, with the
+<tt/rm/ command). 
 To force update of a given file, you may use the <tt>touch</tt>
 command. And to add files create new files (or directories with files).
-For your changes to take effect you must run <tt>zebraidx</tt> with
+For your changes to take effect in the register you must run <tt>zebraidx</tt> with
 the same directory root again.
 
 To use this method, you must specify <tt>file</tt> as the value
-of <tt>recordId</tt> in the configuration file. In the configuration
-also set <tt>storeKeys</tt> to <tt>1</tt>, since the Zebra
-indexer must save additional information per record in order to
-modify/delete the records at a later time.
+of <tt>recordId</tt> in the configuration file. In addition, you
+should set <tt>storeKeys</tt> to <tt>1</tt>, since the Zebra
+indexer must save additional information about the keys to each record in order to
+modify the indices correctly at a later time.
 
 For example, to update group <tt>esdd</tt> records below
 <tt>/home/grs</tt> you could type:
@@ -505,19 +507,21 @@ index the group that
 the files should be indexed with file record IDs.
 </em>
 
-You cannot explicitly delete records when using this method. Instead
+You cannot explicitly delete records when using this method (using the
+<bf/delete/ command to <tt/zebraidx/. Instead
 you have to delete the files from the file system (or remove them)
-and then run <tt>zebraidx</tt> with the <tt>update</tt> again.
+and then run <tt>zebraidx</tt> with the <bf/update/ command again.
 
 <sect1>Indexing with General Record IDs
 <p>
-When using this method you specify an (almost) arbritrary record key
-based on the contents of the record itself and other system
-information. If you have a group of records that have an external
-ID associated with each records, this method is convenient. For
-example, the record may contain a title or a unique ID-number. In either
+When using this method you construct an (almost) arbritrary, internal
+record key based on the contents of the record itself and other system
+information. If you have a group of records that associates an ID with
+each record, this method is convenient. For example, the record may
+contain a title or a ID-number - unique within the group. In either
 case you specify the Z39.50 attribute set and use-attribute location
-in which this information is stored.
+in which this information is stored, and the system looks at this
+field to determine the identity of the record.
 
 As before, the record ID is defined by the <tt>recordId</tt> setting
 in the configuration file. The value of the record ID specification
@@ -540,19 +544,19 @@ may one of
  <tag>database</tag> Current database specified.
  <tag>type</tag> Record type.
  </descrip>
-<tag>Constant string</tag> A string used as part of id &mdash; surrounded
+<tag>Constant string</tag> A string used as part of the ID &mdash; surrounded
  by single- or double quotes.
 </descrip>
 
-The test GILS records that comes with the Zebra distribution contain a
+The sample GILS records that come with the Zebra distribution contain a
 unique ID
 in the Control-Identifier field. This field is mapped to the Bib-1
 use attribute 1007. To use this field as a record id, specify
 <tt>(1,1007)</tt> as the value of the <tt>recordId</tt> in the
-configuration file. If you have other record types that don't
-contain an ID in the same field, you might add the record type
-in the record id of the gils records as well, to prevent matches
-of other types of records. In this case the recordId might be
+configuration file. If you have other record types that uses
+the same field for a different purpose, you might add the record type (or group or database name)
+to the record id of the gils records as well, to prevent matches
+with other types of records. In this case the recordId might be
 set like this:
 <tscreen><verb>
 gils.recordId: $type (1,1007)
@@ -566,11 +570,12 @@ visited must be (re)read to find their IDs.
 
 You may have noticed that when using the general record IDs
 method, you can only add or modify existing records with the <tt>update</tt>
-command. If you wish to delete records, you must use another command,
-<tt>delete</tt>, which a root directory as a parameter. This will remove
-all records that match the files below the root directory.
+command. If you wish to delete records, you must use the,
+<tt>delete</tt> command, with a directory as a parameter.
+This will remove all records that match the files below that root
+directory.
 
-<sect1>Register location
+<sect1><heading><label id="register-location">Register Location</>
 
 <p>
 Normally, the index files that form dictionaries, inverted
@@ -589,7 +594,7 @@ Each token takes the form:
 </tscreen>
 The <em>dir</em> specifies a directory in which index files will be
 stored and the <em>size</em> specifies the maximum size of all
-files in that directory. The Zebra indexer system fill each directory
+files in that directory. The Zebra indexer system fills each directory
 in the order specified and use the next specified directories as needed.
 The <em>size</em> is an integer followed by a qualifier
 code, <tt>M</tt> for megabytes, <tt>k</tt> for kilobytes.
@@ -602,20 +607,1102 @@ put this entry in your configuration file:
 register: /d1:200M /d2:300M
 </verb></tscreen>
 
-<sect>The Z39.50 Server
+Note that Zebra does not verify that the amount of space specified is
+actually available on the directory (file system) specified - it is
+your responsibility to ensure that enough space is available, and that
+other applications do not use the free space. In a large production system,
+it is recommended that you allocate one or more filesystem exclusively
+to the Zebra register files.
+
+<sect1><heading><label id="shadow-registers">Safe Updating - Using Shadow Registers</>
+
+<sect2>Description
 
 <p>
+The Zebra server supports updating of the index structures. That is,
+you can add records to databases managed by Zebra without rebuilding
+the entire index. Since this process involves modifying structured
+files with various references between blocks of data in the files, the
+update process is inherently sensitive to system crashes, or to
+process interruptions: Anything but a successfully completed update
+process will leave the register files in an unknown state, and you
+will essentially have no recourse but to re-index everything, or to
+restore the register files from a backup medium. Further, while the
+update process is active, users cannot be allowed to access the
+system, as the contents of the register files may change unpredictably.
 
-<sect1>Running the server
+You can solve these problems by enabling the shadow register system in
+Zebra. During the updating procedure, <tt/zebraidx/ will temporarily
+write changes to the involved files in a set of &dquot;shadow
+files&dquot;, without modifying the files that are accessed by the
+active server processes. If the update procedure is interrupted by a
+system crash or a signal, you simply repeat the procedure - the
+register files have not been changed or damaged, and the partially
+written shadow files are automatically deleted before the new updating
+procedure commences.
+
+At the end of the updating procedure (or in a separate operation, if
+you so desire), the system enters a &dquot;commit mode&dquot;. First,
+any active server processes are forced to access those blocks that
+have been changed from the shadow files rather than from the main
+register files; the unmodified blocks are still accessed at their
+normal location (the shadow files are not a complete copy of the
+register files - they only contain those parts that have actually been
+modified). If the process is interrupted at any point during the
+commit process, the server processes will continue to access the
+shadow files until you can repeat the commit procedure and complete
+the writing of data to the main register files. You can perform
+multiple update operations to the registers before you commit the
+changes to the system files, or you can execute the commit operation
+at the end of each update operation. When the commit phase has
+completed successfully, any running server processes are instructed to
+switch their operations to the new, operational register, and the
+temporary shadow files are deleted.
+
+<sect2>How to Use Shadow Register Files
+
 <p>
-The server <tt>zebrasrv</tt> supports the same set of options as the 
-test server <tt>ztest</tt> that comes with YAZ. As for the 
-<tt>zebraidx</tt> the option <tt>-c</tt> specifies the configuration
-filename. When the Zebra server is executed with its normal log level it 
-prints (not too detailed) information about the incoming queries. 
-This is useful if you don't happen to know what attributes your client sends.
+The first step is to allocate space on your system for the shadow
+files. You do this by adding a <tt/shadow/ entry to the <tt/zebra.cfg/
+file. The syntax of the <tt/shadow/ entry is exactly the same as for
+the <tt/register/ entry (see section <ref name="Register Location"
+id="register-location">). The location of the shadow area should be
+<it/different/ from the location of the main register area (if you
+have specified one - remember that the default register area is the
+working directory of the server and indexing processes).
 
-Note that the server doesn't support the static mode (-S). 
+The following excerpt from a <tt/zebra.cfg/ file shows one example of
+a setup that configures both the main register location and the shadow
+file area. Note that two directories or partitions have been set aside
+for the shadow file area. You can specify any number of directories
+for each of the file areas.
+
+<tscreen><verb>
+register: /d1:500M
+
+shadow: /scratch1:100M /scratch2:200M
+</verb></tscreen>
+
+When shadow files are enabled, an extra command is available at the
+<tt/zebraidx/ command line. In order to make changes to the system
+take effect for the users, you'll have to submit a
+&dquot;commit&dquot; command after a (sequence of) update
+operation(s). You can ask the indexer to commit the changes
+immediately after the update operation:
+
+<tscreen><verb>
+$ zebraidx update /d1/records update /d2/more-records commit
+</verb></tscreen>
+
+Or you can execute multiple updates before committing the changes:
+
+<tscreen><verb>
+$ zebraidx -g books update /d1/records update /d2/more-records
+$ zebraidx -g fun update /d3/fun-records
+$ zebraidx commit
+</verb></tscreen>
+
+If one of the update operations above had been interrupted, the commit
+operation on the last line would fail: <tt/zebraidx/ will not let you
+commit changes that would destroy the running register. You'll have to
+rerun all of the update operations since your last commit operation,
+before you can commit the new changes.
+
+Similarly, if the commit operation fails, <tt/zebraidx/ will not let
+you start a new update operation before you have successfully repeated
+the commit operation. The server processes will keep accessing the
+shadow files rather than the (possibly damaged) blocks of the main
+register files until the commit operation has successfully completed.
+
+You should be aware that update operations may take slightly longer
+when the shadow register system is enabled, since more file access
+operations are involved. Further, while the disk space required for
+the shadow register data is modest for a small update operation, you
+may prefer to disable the system if you are adding a very large number
+of records to an already very large database (we use the terms
+<it/large/ and <it/modest/ very loosely here, since every
+application's perception of size is different). To update the system
+without the use of the the shadow files, simply run <tt/zebraidx/ with
+the <tt/-n/ option (note that you do not have to execute the
+<bf/commit/ command of <tt/zebraidx/ when you temporarily disable the
+use of the shadow registers in this fashion. Note also that, just as
+when the shadow registers are not enabled, server processes will be
+barred from accessing the main register while the update procedure
+takes place.
+
+<sect>Running the Maintenance Interface (zebraidx)
+
+<p>
+The following is a complete reference to the command line interface to
+the <tt/zebraidx/ application.
+
+<bf/Syntax/
+<tscreen><verb>
+$ zebraidx &lsqb;options&rsqb; command &lsqb;directory&rsqb; ...
+</verb></tscreen>
+<bf/Options/
+<descrip>
+<tag>-t <it/type/</tag>Update all files as <it/type/. Currently, the
+types supported are <tt/text/ and <tt/grs/<it/.filter/. If no
+<it/filter/ is provided for the GRS (General Record Structure) type,
+the canonical input format is assumed (see section <ref
+id="local-representation" name="Local Representation">). Generally, it
+is probably advisable to specify the record types in the
+<tt/zebra.cfg/ file (see section <ref id="record-types" name="Record Types">).
+
+<tag>-c <it/config-file/</tag>Read the configuration file
+<it/config-file/ instead of <tt/zebra.cfg/.
+
+<tag>-g <it/group/</tag>Update the files according to the group
+settings for <it/group/ (see section <ref id="configuration-file"
+name="The Zebra Configuration File">).
+
+<tag>-d <it/database/</tag>The records located should be associated
+with the database name <it/database/ for access through the Z39.50
+server.
+
+<tag>-d <it/mbytes/</tag>Use <it/mbytes/ of megabytes before flushing
+keys to background storage. This setting affects performance when
+updating large databases.
+
+<tag>-n</tag>Disable the use of shadow registers for this operation
+(see section <ref id="shadow-registers" name="Robust Updating - Using
+Shadow Registers">).
+
+<tag>-v <it/level/</tag>Set the log level to <it/level/. <it/level/
+should be one of <tt/none/, <tt/debug/, and <tt/all/.
+
+</descrip>
+
+<bf/Commands/
+<descrip>
+<tag>Update <it/directory/</tag>Update the register with the files
+contained in <it/directory/. If no directory is provided, a list of
+files is read from <tt/stdin/. See section <ref
+id="administrating" name="Administrating Zebra">.
+
+<tag>Delete <it/directory/</tag>Remove the records corresponding to
+the files found under <it/directory/ from the register.
+
+<tag/Commit/Write the changes resulting from the last <bf/update/
+commands to the register. This command is only available if the use of
+shadow register files is enabled (see section <ref
+id="shadow-registers" name="Robust Updating - Using Shadow
+Registers">).
+
+</descrip>
+
+<sect>Running the Z39.50 Server (zebrasrv)
+
+<p>
+<bf/Syntax/
+<tscreen><verb>
+zebrasrv &lsqb;options&rsqb; &lsqb;listener-address ...&rsqb;
+</verb></tscreen>
+
+<descrip>
+<tag>-a <it/APDU file/</tag> Specify a file for dumping PDUs (for diagnostic purposes).
+The special name &dquot;-&dquot; sends output to <tt/stderr/.
+
+<tag/-S/Don't fork on connection requests. This can be useful for
+symbolic-level debugging. The server can only accept a single
+connection in this mode.
+
+<tag/-s/Use the SR protocol.
+
+<tag/-z/Use the Z39.50 protocol (default). These two options complement
+eachother. You can use both multiple times on the same command
+line, between listener-specifications (see below). This way, you
+can set up the server to listen for connections in both protocols
+concurrently, on different local ports.
+
+<tag>-l <it/logfile/</tag>Specify an output file for the diagnostic
+messages. The default is to write this information to <tt/stderr/.
+
+<tag>-v <it/log-level/</tag>The log level. Use a comma-separated list of members of the set
+{fatal,debug,warn,log,all,none}.
+
+<tag>-u <it/username/</tag>Set user ID. Sets the real UID of the server process to that of the
+given <it/username/. It's useful if you aren't comfortable with having the
+server run as root, but you need to start it as such to bind a
+privileged port.
+</descrip>
+
+A <it/listener-address/ consists of a transport mode followed by a
+colon (:) followed by a listener address. The transport mode is
+either <tt/osi/ or <tt/tcp/.
+
+For TCP, an address has the form
+
+<tscreen><verb>
+hostname | IP-number &lsqb;: portnumber&rsqb;
+</verb></tscreen>
+
+The port number defaults to 210 (standard Z39.50 port).
+
+For OSI (only available if the server is compiled with XTI/mOSI
+support enabled), the address form is
+
+<tscreen><verb>
+&lsqb;t-selector /&rsqb; hostname | IP-number &lsqb;: portnumber&rsqb;
+</verb></tscreen>
+
+The transport selector is given as a string of hex digits (with an even
+number of digits). The default port number is 102 (RFC1006 port).
+
+Examples
+
+<tscreen>
+<verb>
+tcp:dranet.dra.com
+
+osi:0402/dbserver.osiworld.com:3000
+</verb>
+</tscreen>
+
+In both cases, the special hostname &dquot;@&dquot; is mapped to
+the address INADDR_ANY, which causes the server to listen on any local
+interface. To start the server listening on the registered ports for
+Z39.50 and SR over OSI/RFC1006, and to drop root privileges once the
+ports are bound, execute the server like this (from a root shell):
+
+<tscreen><verb>
+zebrasrv -u daemon tcp:@ -s osi:@
+</verb></tscreen>
+
+You can replace <tt/daemon/ with another user, eg. your own account, or
+a dedicated IR server account.
+
+The default behavior for <tt/zebrasrv/ is to establish a single TCP/IP
+listener, for the Z39.50 protocol, on port 9999.
+
+<sect>The Record Model
+
+<p>
+The Zebra system is designed to span a wide range of data management
+applications. The system can be configured to handle virtually any
+kind of structured data. Each record in the system is associated with
+a <it/record schema/ which lends context to the data elements of the
+record. Any number of record schema can coexist in the system.
+Although it may be wise to use only a single schema within
+one database, the system poses no such restrictions.
+
+Records pass through three different states during processing in the
+system.
+
+<itemize>
+<item>When records are first entered into the system, they are represented
+in their local, or native format. This might be SGML or HTML files,
+News or Mail archives, MARC records. If the system doesn't already
+know how to read the type of data you need to store, you can set up an
+input filter by preparing conversion rules based on regular
+expressions and a flexible scripting language (Tcl). The input filter
+produces as output an internal representation:
+
+<item>When records are processed by the system, they are represented
+in a tree-structure, constructed by tagged data elements hanging off a
+root node. The tagged elements may contain data or yet more tagged
+elements in a recursive structure. The system performs various
+actions on this tree structure (indexing, element selection, schema
+mapping, etc.),
+
+<item>Before transmitting records to the client, they are first
+converted from the internal structure to a form suitable for exchange
+over the network - according to the Z39.50 standard.
+</itemize>
+
+<sect1><heading><label id="local-representation">Local Representation</>
+
+<p>
+As mentioned earlier, Zebra places few restrictions on the type of
+data that you can index and manage. Generally, whatever the form of
+the data, it is parsed by an input filter specific to that format, and
+turned into an internal structure that Zebra knows how to handle. This
+process takes place whenever the record is accessed - for indexing and
+retrieval.
+
+<sect2>Canonical Input Format
+
+<p>
+Although input data can take any form, it is sometimes useful to
+describe the record processing capabilities of the system in terms of
+a single, canonical input format that gives access to the full
+spectrum of structure and flexibility in the system. In Zebra, this
+canonical format is an &dquot;SGML-like&dquot; syntax.
+
+Consider a record describing an information resource (such a record is
+sometimes known as a <it/locator record/). It might contain a field
+describing the distributor of the information resource, which might in
+turn be partitioned into various fields providing details about the
+distributor, like this:
+
+<tscreen><verb>
+<Distributor>
+    <Name> USGS/WRD &etago;Name>
+    <Organization> USGS/WRD &etago;Organization>
+    <Street-Address>
+	U.S. GEOLOGICAL SURVEY, 505 MARQUETTE, NW
+    &etago;Street-Address>
+    <City> ALBUQUERQUE &etago;City>
+    <State> NM &etago;State>
+    <Zip-Code> 87102 &etago;Zip-Code>
+    <Country> USA &etago;Country>
+    <Telephone> (505) 766-5560 &etago;Telephone>
+&etago;Distributor>
+</verb></tscreen>
+
+<it>NOTE: The indentation used above is used to illustrate how Zebra
+interprets the expression. The indentation, in itself, has no
+significance to the parser for the canonical input format, which
+ignores all whitespace.</it>
+
+The keywords surrounded by &lt;...&gt; are <it/tags/, while the
+sections of text in between are the <it/data elements/. A data element
+is characterized by its location in the tree that is made up by the
+nested elements. Each element is terminated by a closing tag -
+beginning with &etago;, and containing the same symbolic tag-name as
+the corresponding opening tag. The general closing tag - &etago;&gt; -
+terminates the element started by the last opening tag. The
+structuring of elements is significant. The element <bf/Telephone/,
+for instance, may be indexed and presented to the client differently,
+depending on whether it appears inside the <bf/Distributor/ element,
+or some other data element.
+
+<sect3>Record Root
+
+<p>
+The first tag in a record describes the root node of the tree that
+makes up the total record. In the canonical input format, the root tag
+should contain the name of the schema that lends context to the
+elements of the record (see section <ref id="internal-representation"
+name="Internal Representation">). The following is a GILS record that
+contains only a single element (strictly speaking, that makes it an
+illegal GILS record, since the GILS profile includes several mandatory
+elements - Zebra does not validate the contents of a record against
+the Z39.50 profile, however):
+
+<tscreen><verb>
+<gils>
+    <title>Zen and the Art of Motorcycle Maintenance&etago;title>
+&etago;gils>
+</verb></tscreen>
+
+<sect3>Variants
+
+<p>
+Zebra allows you to provide individual data elements in a number of
+<it/variant forms/. Examples of variant forms are textual data
+elements which might appear in different languages, and images which
+may appear in different formats or layouts. The variant system is
+essentially a clean representation of the variant mechanism of
+Z39.50-1995.
+
+The following is an example of a title element which occurs in two
+different languages.
+
+<tscreen><verb>
+<title>
+  <var lang lang "eng">
+    Zen and the Art of Motorcycle Maintenance&etago;>
+  <var lang lang "dan">
+    Zen og Kunsten at Vedligeholde en Motorcykel&etago;>
+&etago;title>
+</verb></tscreen>
+
+The syntax of the <it/variant element/ is <tt>&lt;<bf/var/ <it/class
+type value/&gt;</tt>. The available values for the <it/class/ and
+<it/type/ fields are given by the variant set that is associated with the
+current schema (see section <ref id="variant-set" name="Variant Set
+File">).
+
+Variant elements are terminated by the general end-tag &etago;>, by
+the variant end-tag &etago;var>, by the appearance of another variant
+tag with the same <it/class/ and <it/value/ settings, or by the
+appearance of another, normal tag. In other words, the end-tags for
+the variants used in the example above could have been saved.
+
+Variant elements can be nested. The element
+
+<tscreen><verb>
+<title>
+  <var lang lang "eng"><var body iana "text/plain">
+    Zen and the Art of Motorcycle Maintenance
+&etago;title>
+</verb></tscreen>
+
+Associates two variant components to the variant list for the title
+element. Given the nesting rules described above, we could write
+
+<tscreen><verb>
+<title>
+  <var body iana "text/plain>
+    <var lang lang "eng">
+      Zen and the Art of Motorcycle Maintenance
+    <var lang lang "dan">
+      Zen og Kunsten at Vedligeholde en Motorcykel
+&etago;title>
+</verb></tscreen>
+
+The title element above comes in two variants. Both have the IANA body
+type &dquot;text/plain&dquot;, but one is in English, and the other in
+Danish.
+
+<sect2>Input Filters
+
+<p>
+In order to handle general, text-based input formats, Zebra allows the
+operator to specify filters which read individual records in their native format
+and produce an internal representation that the system can
+work with.
+
+Input filters are ASCII files, generally with the suffix <tt/.flt/.
+The system looks for the files in the directories given in the
+<bf/profilePath/ setting in the <tt/zebra.cfg/ file.
+
+Generally, an input filter consists of a sequence of rules, where each
+rule consists of a sequence of expressions, followed by an action. The
+expressions are evaluated against the contents of the input record,
+and the actions normally contribute to the generation of an internal
+representation of the record.
+
+An expression can be either of the following:
+
+<descrip>
+<tag/INIT/The action associated with this expression is evaluated
+exactly once in the lifetime of the application, before any records
+are read. It can be used in conjunction with an action that
+initializes tables or other resources that are used in the processing
+of input records.
+
+<tag/BEGIN/Matches the beginning of the record. It can be used to
+initialize variables, etc. Typically, the <bf/BEGIN/ rule is also used
+to establish the root node of the record.
+
+<tag/END/Matches the end of the record - when all of the contents
+of the record has been processed.
+
+<tag>/pattern/</tag>Matches a string of characters from the input
+record.
+
+<tag/BODY/This keyword may only be used between two patterns. It
+matches everything between (not including) those patterns.
+
+<tag/FINISH/THe expression asssociated with this pattern is evaluated
+once, before the application terminates. It can be used to release
+system resources - typically ones allocated in the <bf/INIT/ step.
+
+</descrip>
+
+An action is surrounded by curly braces ({...}), and consists of a
+sequence of statements. Statements may be separated by newlines or
+semicolons (;). Within actions, the strings that matched the
+expressions immediately preceding the action can be referred to as
+$0, $1, $2, etc.
+
+The available statements are:
+
+<descrip>
+
+<tag>begin <it/type &lsqb;parameter ... &rsqb;/</tag>Begin a new
+data element. The type is one of the following:
+<descrip>
+<tag/record/Begin a new record. The parameter should be the
+name of the schema that describes the structure of the record, eg.
+<tt/gils/ or <tt/wais/. The <tt/begin record/ call should come before
+any other call to <bf/begin/.
+
+<tag/element/Begin a new tagged element. The parameter is the
+name of the tag. If the tag is not matched anywhere in the tagsets
+referenced by the current schema, it is treated as a local string
+tag.
+
+<tag/variant/Begin a new node in a variant tree. The parameters are
+<it/class type value/.
+
+</descrip>
+
+<tag/data/Create a data element under. The concatenated arguments make
+up the value of the data element. The option <tt/-text/ signals that
+the layout (whitespace) of the data should be retained for
+transmission. The option <tt/-element/ <it/tag/ wraps the data up in
+the <it/tag/. The use of the <tt/-element/ option is equivalent to
+preceding the command with a <bf/begin element/ command, and following
+it with the <bf/end/ command.
+
+<tag>end <it/&lsqb;type&rsqb;/</tag>Close a data element. If no parameter is given,
+the last element on the stack is terminated. The first parameter, if
+any, is a type name, similar to the <bf/begin/ statement. For the
+<bf/element/ type, a tag name can be provided to terminate a specific tag.
+
+</descrip>
+
+The following input filter reads a Usenet news file, producing a
+record in the WAIS schema.
+
+<tscreen><verb>
+BEGIN                { begin record wais }
+
+/^From:/ BODY /$/    { data -element name $1 }
+/^Subject:/ BODY /$/ { data -element title $1 }
+/^Date:/ BODY /$/    { data -element lastModified $1 }
+/\n\n/ BODY END      {
+                        begin element bodyOfDisplay
+                        begin variant body iana "text/plain"
+                        data -text $1
+                        end record
+                     }
+</verb></tscreen>
+
+If Zebra is compiled with support for Tcl (Tool Command Language)
+enabled, the statements described above are supplemented with a complete
+scripting environment, including control structures (conditional
+expressions and loop constructs), and powerful string manipulation
+mechanisms for modifying the elements of a record. Tcl is a popular
+scripting environment, with several tutorials available both online
+and in hardcopy.
+
+<it>NOTE: Tcl support is not currently available, but will be
+included with the next release.</it>
+
+<sect1><heading><label id="internal-representation">Internal Representation</>
+
+<p>
+When records are manipulated by the system, they're represented in a
+tree-structure, with data elements at the leaf nodes, and tags or
+variant components at the non-leaf nodes. The root-node identifies the
+schema that lends context to the tagging and structuring of the
+record. Imagine a simple record, consisting of a 'title' element and
+an 'author' element:
+
+<tscreen><verb>
+        TITLE     "Zen and the Art of Motorcycle Maintenance"
+ROOT 
+        AUTHOR    "Robert Pirsig"
+</verb></tscreen>
+
+A slightly more complex record would have the author element consist
+of two elements, a surname and a first name:
+
+<tscreen><verb>
+        TITLE     "Zen and the Art of Motorcycle Maintenance"
+ROOT  
+                  FIRST-NAME "Robert"
+        AUTHOR
+                  SURNAME    "Pirsig"
+</verb></tscreen>
+
+The root of the record will refer to the record schema that describes
+the structuring of this particular record. The schema defines the
+element tags (TITLE, FIRST-NAME, etc.) that occur in the record, as
+well as the structuring (SURNAME should appear below AUTHOR, etc.). In
+addition, the schema establishes element set names that are used by
+the client to request a subset of the elements of a given record. The
+schema may also establish rules for converting the record to a
+different schema, by stating, for each element, a mapping to a
+different tagging.
+
+The following sections describe the configuration files that govern
+the internal management of records. The system searches for the files
+in the directories specified by the <bf/profilePath/ setting in the
+<tt/zebra.cfg/ file.
+
+<sect2>The Abstract Syntax
+
+<p>
+The abstract syntax definition (ARS) is the focal point of the
+record schema description. For a given schema, it may state any
+or all of the following:
+
+<itemize>
+<item>The object identifier of the Z39.50 schema associated
+with the ARS, so that it can be referred to by the client.
+
+<item>The attribute set (which can possibly be a compound of multiple
+sets) which applies in the profile. This is used when indexing and
+searching the records belonging to the given profile.
+
+<item>The Tag set (again, this can consist of several different sets).
+This is used when reading the records from a file, to recognize the
+different tags, and when transmitting the record to the client -
+mapping the tags to their numerical representation, if they are
+known.
+
+<item>The variant set which is used in the profile. This provides a
+vocabulary for specifying the <it/forms/ of data that appear inside
+the records.
+
+<item>Element set names, which are a shorthand way for the client to
+ask for a subset of the data elements contained in a record. Element
+set names, in the retrieval module, are mapped to <it/element
+specifications/, which contain information equivalent to the
+<it/Espec-1/ syntax of Z39.50.
+
+<item>Map tables, which may specify mappings to <it/other/ database
+profiles, if desired.
+
+<item>Possibly, a set of rules describing the mapping of elements to a
+MARC representation.
+
+<item>A list of element descriptions (this is the actual ARS of the
+schema, in Z39.50 terms), which lists the ways in which the various
+tags can be used and organized hierarchically.
+</itemize>
+
+Several of the entries above simply refer to other files, which
+describe the given objects.
+
+<sect2>The Configuration Files
+
+<p>
+This section describes the syntax and use of the various tables which
+are used by the retrieval module.
+
+The number of different file types may appear daunting at first, but
+each type corresponds fairly clearly to a single aspect of the Z39.50
+retrieval facilities. Further, the average database administrator
+who is simply reusing an existing profile for which tables already
+exist, shouldn't have to worry too much about the contents of these tables.
+
+Generally, the files are simple ASCII files, which can be maintained
+using any text editor. Blank lines, and lines beginning with a (#) are
+ignored. Any characters followed by a (#) are also ignored. All other
+lines contain <it/directives/, which establish some setting or value
+to the system. Generally, settings are characterized by a single
+keyword, identifying the setting, followed by a number of parameters.
+Some settings are repeatable (r), while others may occur only once in a
+file. Some settings are optional (o), whicle others again are
+mandatory (m).
+
+<sect2>The Abstract Syntax (.abs) Files
+
+<p>
+The name of this file type is slightly misleading in Z39.50 terms,
+since, apart from the actual abstract syntax of the profile, it also
+includes most of the other definitions that go into a database
+profile.
+
+When a record in the canonical, SGML-like format is read from a file
+or from the database, the first tag of the file should reference the
+profile that governs the layout of the record. If the first tag of the
+record is, say, <tt>&lt;gils&gt;</tt>, the system will look for the profile
+definition in the file <tt/gils.abs/. Profile definitions are cached,
+so they only have to be read once during the lifespan of the current
+process.
+
+When writing your own input filters, the <bf/record-begin/ command
+introduces the profile, and should always be called first thing when
+introducing a new record.
+
+The file may contain the following directives:
+
+<descrip>
+<tag>name <it/symbolic-name/</tag> (m) This provides a shorthand name or
+description for the profile. Mostly useful for diagnostic purposes.
+
+<tag>reference <it/OID-name/</tag> (m) The reference name of the OID for
+the profile. The reference names can be found in the <bf/util/
+module of <bf/YAZ/.
+
+<tag>attset <it/filename/</tag> (m) The attribute set that is used for
+indexing and searching records belonging to this profile.
+
+<tag>tagset <it/filename/</tag> (o) The tag set (if any) that describe
+that fields of the records.
+
+<tag>varset <it/filename/</tag> (o) The variant set used in the profile.
+
+<tag>maptab <it/filename/</tag> (o,r) This points to a
+conversion table that might be used if the client asks for the record
+in a different schema from the native one.
+
+<tag>marc <it/filename/</tag> (o) Points to a file containing parameters
+for representing the record contents in the ISO2709 syntax. Read the
+description of the MARC representation facility below.
+
+<tag>esetname <it/name filename/</tag> (o,r) Associates the
+given element set name with an element selection file. If an (@) is
+given in place of the filename, this corresponds to a null mapping for
+the given element set name.
+
+<tag>elm <it/path name attribute/</tag> (o,r) Adds an element
+to the abstract record syntax of the schema. The <it/path/ follows the
+syntax which is suggested by the Z39.50 document - that is, a sequence
+of tags separated by slashes (/). Each tag is given as a
+comma-separated pair of tag type and -value surrounded by parenthesis.
+The <it/name/ is the name of the element, and the <it/attribute/
+specifies what attribute to use when indexing the element. A ! in
+place of the attribute name is equivalent to specifying an attribute
+name identical to the element name. A - in place of the attribute name
+specifies that no indexing is to take place for the given element.
+</descrip>
+
+<it>
+NOTE: The mechanism for controlling indexing is not adequate for
+complex databases, and will probably be moved into a separate
+configuration table eventually.
+</it>
+
+The following is an excerpt from the abstract syntax file for the GILS
+profile.
+
+<tscreen><verb>
+name gils
+reference GILS-schema
+attset gils.att
+tagset gils.tag
+varset var1.var
+
+maptab gils-usmarc.map
+
+# Element set names
+
+esetname VARIANT gils-variant.est  # for WAIS-compliance
+esetname B gils-b.est
+esetname G gils-g.est
+esetname F @
+
+elm (1,10)              rank                        -
+elm (1,12)              url                         -
+elm (1,14)              localControlNumber     Local-number
+elm (1,16)              dateOfLastModification Date/time-last-modified
+elm (2,1)               Title                       !
+elm (4,1)               controlIdentifier      Identifier-standard
+elm (2,6)               abstract               Abstract
+elm (4,51)              purpose                     !
+elm (4,52)              originator                  - 
+elm (4,53)              accessConstraints           !
+elm (4,54)              useConstraints              !
+elm (4,70)              availability                -
+elm (4,70)/(4,90)       distributor                 -
+elm (4,70)/(4,90)/(2,7) distributorName             !
+elm (4,70)/(4,90)/(2,10 distributorOrganization     !
+elm (4,70)/(4,90)/(4,2) distributorStreetAddress    !
+elm (4,70)/(4,90)/(4,3) distributorCity             !
+</verb></tscreen>
+
+<sect2>The Attribute Set (.att) Files
+
+<p>
+This file type describes the <bf/Use/ elements of an attribute set.
+It contains the following directives. 
+
+<descrip>
+
+<tag>name <it/symbolic-name/</tag> (m) This provides a shorthand name or
+description for the attribute set. Mostly useful for diagnostic purposes.
+
+<tag>reference <it/OID-name/</tag> (m) The reference name of the OID for
+the attribute set. The reference names can be found in the <bf/util/
+module of <bf/YAZ/.
+
+<tag>ordinal <it/integer/</tag> (m) This value will be used to represent the
+attribute set in the index. Care should be taken that each attribute
+set has a unique ordinal value.
+
+<tag>include <it/filename/</tag> (o,r) This directive is used to
+include another attribute set as a part of the current one. This is
+used when a new attribute set is defined as an extension to another
+set. For instance, many new attribute sets are defined as extensions
+to the <bf/bib-1/ set. This is an important feature of the retrieval
+system of Z39.50, as it ensures the highest possible level of
+interoperability, as those access points of your database which are
+derived from the external set (say, bib-1) can be used even by clients
+who are unaware of the new set.
+
+<tag>att <it/att-value att-name &lsqb;local-value&rsqb;/</tag> (o,r) This
+repeatable directive introduces a new attribute to the set. The
+attribute value is stored in the index (unless a <it/local-value/ is
+given, in which case this is stored). The name is used to refer to the
+attribute from the <it/abstract syntax/. </descrip>
+
+This is an excerpt from the GILS attribute set definition. Notice how
+the file describing the <it/bib-1/ attribute set is referenced.
+
+<tscreen><verb>
+name gils
+reference GILS-attset
+include bib1.att
+ordinal 2
+
+att 2001		distributorName
+att 2002		indexTermsControlled
+att 2003		purpose
+att 2004		accessConstraints
+att 2005		useConstraints
+</verb></tscreen>
+
+<sect2>The Tag Set (.tag) Files
+
+<p>
+This file type defines the tagset of the profile, possibly by
+referencing other tag sets (most tag sets, for instance, will include
+tagsetG and tagsetM from the Z39.50 specification. The file may
+contain the following directives.
+
+<descrip>
+<tag>name <it/symbolic-name/</tag> (m) This provides a shorthand name or
+description for the tag set. Mostly useful for diagnostic purposes.
+
+<tag>reference <it/OID-name/</tag> (o) The reference name of the OID for
+the tag set. The reference names can be found in the <bf/util/
+module of <bf/YAZ/. The directive is optional, since not all tag sets
+are registered outside of their schema.
+
+<tag>type <it/integer/</tag> (m) The type number of the tag within the schema
+profile.
+
+<tag>include <it/filename/</tag> (o,r) This directive is used
+to include the definitions of other tag sets into the current one.
+
+<tag>tag <it/number names type/</tag> (o,r) Introduces a new
+tag to the set. The <it/number/ is the tag number as used in the protocol
+(there is currently no mechanism for specifying string tags at this
+point, but this would be quick work to add). The <it/names/ parameter
+is a list of names by which the tag should be recognized in the input
+file format. The names should be separated by slashes (/). The
+<it/type/ is th recommended datatype of the tag. It should be one of
+the following:
+<itemize>
+<item>structured
+<item>string
+<item>numeric
+<item>bool
+<item>oid
+<item>generalizedtime
+<item>intunit
+<item>int
+<item>octetstring
+<item>null
+</itemize>
+</descrip>
+
+The following is an excerpt from the TagsetG definition file.
+
+<tscreen><verb>
+name tagsetg
+reference TagsetG
+type 2
+
+tag	1	title		string
+tag	2	author		string
+tag	3	publicationPlace string
+tag	4	publicationDate	string
+tag	5	documentId	string
+tag	6	abstract	string
+tag	7	name		string
+tag	8	date		generalizedtime
+tag	9	bodyOfDisplay	string
+tag	10	organization	string
+</verb></tscreen>
+
+<sect2><heading><label id="variant-set">The Variant Set (.var) Files</>
+
+<p>
+The variant set file is a straightforward representation of the
+variant set definitions associated with the protocol. At present, only
+the <it/Variant-1/ set is known.
+
+These are the directives allowed in the file.
+
+<descrip>
+<tag>name <it/symbolic-name/</tag> (m) This provides a shorthand name or
+description for the variant set. Mostly useful for diagnostic purposes.
+
+<tag>reference <it/OID-name/</tag> (o) The reference name of the OID for
+the variant set, if one is required. The reference names can be found
+in the <bf/util/ module of <bf/YAZ/.
+
+<tag>class <it/integer class-name/</tag> (m,r) Introduces a new
+class to the variant set.
+
+<tag>type <it/integer type-name datatype/</tag> (m,r) Addes a
+new type to the current class (the one introduced by the most recent
+<bf/class/ directive). The type names belong to the same name space as
+the one used in the tag set definition file.
+</descrip>
+
+The following is an excerpt from the file describing the variant set
+<it/Variant-1/.
+
+<tscreen><verb>
+name variant-1
+reference Variant-1
+
+class 1 variantId
+
+  type	1	variantId		octetstring
+
+class 2 body
+
+  type	1	iana			string
+  type	2	z39.50			string
+  type	3	other			string
+</verb></tscreen>
+
+<sect2>The Element Set (.est) Files
+
+<p>
+The element set specification files describe a selection of a subset
+of the elements of a database record. The element selection mechanism
+is equivalent to the one supplied by the <it/Espec-1/ syntax of the
+Z39.50 specification. In fact, the internal representation of an
+element set specification is identical to the <it/Espec-1/ structure,
+and we'll refer you to the description of that structure for most of
+the detailed semantics of the directives below.
+
+<it>
+NOTE: Not all of the Espec-1 functionality has been implemented yet.
+The fields that are mentioned below all work as expected, unless
+otherwise is noted.
+</it>
+
+The directives available in the element set file are as follows:
+
+<descrip>
+<tag>defaultVariantSetId <it/OID-name/</tag> (o) If variants are used in
+the following, this should provide the name of the variantset used
+(it's not currently possible to specify a different set in the
+individual variant request). In almost all cases (certainly all
+profiles known to us), the name <tt/Variant-1/ should be given here.
+
+<tag>defaultVariantRequest <it/variant-request/</tag> (o) This directive
+provides a default variant request for
+use when the individual element requests (see below) do not contain a
+variant request. Variant requests consist of a blank-separated list of
+variant components. A variant compont is a comma-separated,
+parenthesized triple of variant class, type, and value (the two former
+values being represented as integers). The value can currently only be
+entered as a string (this will change to depend on the definition of
+the variant in question). The special value (@) is interpreted as a
+null value, however.
+
+<tag>simpleElement <it/path &lsqb;'variant' variant-request&rsqb;/</tag>
+(o,r) This corresponds to a simple element request in <it/Espec-1/. The
+path consists of a sequence of tag-selectors, where each of these can
+consist of either:
+
+<itemize>
+<item>A simple tag, consisting of a comma-separated type-value pair in
+parenthesis, possibly followed by a colon (:) followed by an
+occurrences-specification (see below). The tag-value can be a number
+or a string. If the first character is an apostrophe ('), this forces
+the value to be interpreted as a string, even if it appears to be numerical.
+
+<item>A WildThing, represented as a question mark (?), possibly
+followed by a colon (:) followed by an occurrences specification (see
+below).
+
+<item>A WildPath, represented as an asterisk (*). Note that the last
+element of the path should not be a wildPath (wildpaths don't work in
+this version).
+</itemize>
+
+The occurrences-specification can be either the string <tt/all/, the
+string <tt/last/, or an explicit value-range. The value-range is
+represented as an integer (the starting point), possibly followed by a
+plus (+) and a second integer (the number of elements, default being
+one).
+
+The variant-request has the same syntax as the defaultVariantRequest
+above. Note that it may sometimes be useful to give an empty variant
+request, simply to disable the default for a specific set of fields
+(we aren't certain if this is proper <it/Espec-1/, but it works in
+this implementation).
+</descrip>
+
+The following is an example of an element specification belonging to
+the GILS profile.
+
+<tscreen><verb>
+simpleelement (1,10)
+simpleelement (1,12)
+simpleelement (2,1)
+simpleelement (1,14)
+simpleelement (4,1)
+simpleelement (4,52)
+</verb></tscreen>
+
+<sect2><heading><label id="schema-mapping">The Schema Mapping (.map) Files</>
+
+<p>
+Sometimes, the client might want to receive a database record in
+a schema that differs from the native schema of the record. For
+instance, a client might only know how to process WAIS records, while
+the database record is represented in a more specific schema, such as
+GILS. In this module, a mapping of data to one of the MARC formats is
+also thought of as a schema mapping (mapping the elements of the
+record into fields consistent with the given MARC specification, prior
+to actually converting the data to the ISO2709). This use of the
+object identifier for USMARC as a schema identifier represents an
+overloading of the OID which might not be entirely proper. However,
+it represents the dual role of schema and record syntax which
+is assumed by the MARC family in Z39.50.
+
+<it>
+NOTE: The schema-mapping functions are so far limited to a
+straightforward mapping of elements. This should be extended with
+mechanisms for conversions of the element contents, and conditional
+mappings of elements based on the record contents.
+</it>
+
+These are the directives of the schema mapping file format:
+
+<descrip>
+<tag>targetName <it/name/</tag> (m) A symbolic name for the target schema
+of the table. Useful mostly for diagnostic purposes.
+
+<tag>targetRef <it/OID-name/</tag> (m) An OID name for the target schema.
+This is used, for instance, by a server receiving a request to present
+a record in a different schema from the native one. The name, again,
+is found in the <bf/oid/ module of <bf/YAZ/.
+
+<tag>map <it/element-name target-path/</tag> (o,r) Adds
+an element mapping rule to the table.
+</descrip>
+
+<sect2>The MARC (ISO2709) Representation (.mar) Files
+
+<p>
+This file provides rules for representing a record in the ISO2709
+format. The rules pertain mostly to the values of the constant-length
+header of the record.
+
+<it>NOTE: This will be described better. We're in the process of
+re-evaluating and most likely changing the way that MARC records are
+handled by the system.</it>
+
+<sect1>Exchange Formats
+
+<p>
+Converting records from the internal structure to en exchange format
+is largely an automatic process. Currently, the following exchange
+formats are supported:
+
+<itemize>
+<item>GRS-1. The internal representation is based on GRS-1, so the
+conversion here is straightforward. The system will create
+applied variant and supported variant lists as required, if a record
+contains variant information.
+
+<item>SUTRS. Again, the mapping is fairly straighforward. Indentation
+is used to show the hierarchical structure of the record.
+
+<item>ISO2709-based formats (USMARC, etc.). Only records with a
+two-level structure (corresponding to fields and subfields) can be
+directly mapped to ISO2709. For records with a different structuring
+(eg., GILS), the representation in a structure like USMARC involves a
+schema-mapping (see section <ref id="schema-mapping" name="Schema
+Mapping">), to an &dquot;implied&dquot; USMARC schema (implied,
+because there is no formal schema which specifies the use of the
+USMARC fields outside of ISO2709). The resultant, two-level record is
+then mapped directly from the internal representation to ISO2709. See
+the GILS schema definition files for a detailed example of this
+approach.
+
+<item>Explain. This representation is only available for records
+belonging to the Explain schema.
+
+</itemize>
 
 <sect>License
 
@@ -636,11 +1723,15 @@ which appear at the beginning of any file must remain unchanged.
 endorse or promote products derived from this software without specific
 prior written permission.
 
-3. Source code or binary versions of this software and its documentation
-may be used in not-for-profit applications. For profit aplications -
-including marketing a product based in whole or in part on this software,
-or providing for-pay database services - must obtain a commercial
-license from Index Data.
+3. Source code or binary versions of this software and its
+documentation may be used freely in not-for-profit applications. For
+profit applications - such as providing for-pay database services,
+marketing a product based in whole or in part on this software or its
+documentation, or generally distributing this software or its
+documentation under a different license - requires a commercial
+license from Index Data. The software may be installed and used for
+evaluation purposes in conjunction with a commercial application for a
+trial period of no more than 60 days.
 
 THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND,
 EXPRESS, IMPLIED, OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
@@ -652,7 +1743,7 @@ NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
 LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
-<sect>About Index Data
+<sect>About Index Data and the Zebra Server
 
 <p>
 Index Data is a consulting and software-development enterprise that
@@ -662,12 +1753,19 @@ of our primary, long-term objectives is the development of a powerful
 information management
 system with open network interfaces and hypermedia capabilities.
 
-We make this software available free of charge for noncommercial
+We make this software available free of charge for not-for-profit
 purposes, as a service to the networking community, and to further
-the development of quality software for open network communication.
+the development and use of quality software for open network
+communication.
 
-We'll be happy to answer questions about the software, and about ourselves
-in general.
+If you like this software, and would like to use all or part of it in
+a commercial product, or to provide a commercial database service,
+please contact us to discuss the details. We'll be happy to answer
+questions about the software, and about our services in general. If
+you have specific requirements to the software, we'll be glad to offer
+our advice - and if you need to adapt the software to a special
+purpose, our consulting services and expert knowledge of the software
+is available to you at favorable rates.
 
 <tscreen>
 Index Data&nl
