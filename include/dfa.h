@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.h,v $
- * Revision 1.4  1995-01-25 11:31:04  adam
+ * Revision 1.5  1996-01-08 09:09:48  adam
+ * Function dfa_parse got 'const' string argument.
+ *
+ * Revision 1.4  1995/01/25  11:31:04  adam
  * Simple error reporting when parsing regular expressions.
  *
  * Revision 1.3  1995/01/24  16:01:30  adam
@@ -45,6 +48,7 @@ struct DFA_state {
     short no;                 /* no of this state */
     short tran_no;            /* no of transitions to other states */
     short rule_no;            /* if non-zero, this holds accept rule no */
+    short rule_nno;           /* accept rule no - except start rules */
 };
 
 struct DFA {
@@ -55,9 +59,14 @@ struct DFA {
 };
 
 struct DFA *dfa_init (void);
-int dfa_parse (struct DFA *, char **);
+int dfa_parse (struct DFA *, const char **);
 void dfa_mkstate (struct DFA *);
 void dfa_delete (struct DFA **);
+
+void dfa_parse_cmap_clean (struct DFA *d);
+void dfa_parse_cmap_new (struct DFA *d, const int *cmap);
+void dfa_parse_cmap_del (struct DFA *d, int from);
+void dfa_parse_cmap_add (struct DFA *d, int from, int to);
 
 extern int  debug_dfa_trav;
 extern int  debug_dfa_tran;
@@ -67,6 +76,20 @@ extern int  dfa_verbose;
 extern unsigned short
         dfa_thompson_chars[],
         dfa_ccl_chars[];
+
+#define L_LP 1
+#define L_RP 2
+#define L_CHAR 3
+#define L_CHARS 4
+#define L_ANY 5
+#define L_ALT 6
+#define L_ANYZ 7
+#define L_WILD 8
+#define L_QUEST 9
+#define L_CLOS1 10
+#define L_CLOS0 11
+#define L_END 12
+#define L_START 13
 
 #define DFA_ERR_SYNTAX 1
 #define DFA_ERR_LP     2

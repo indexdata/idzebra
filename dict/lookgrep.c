@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.12  1995-12-11 09:04:48  adam
+ * Revision 1.13  1996-01-08 09:09:30  adam
+ * Function dfa_parse got 'const' string argument.
+ *
+ * Revision 1.12  1995/12/11  09:04:48  adam
  * Bug fix: the lookup/scan/lookgrep didn't handle empty dictionary.
  *
  * Revision 1.11  1995/12/06  14:43:02  adam
@@ -371,7 +374,7 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
 {
     MatchWord *Rj;
     Dict_char prefix[MAX_LENGTH+1];
-    char *this_pattern = pattern;
+    const char *this_pattern = pattern;
     MatchContext *mc;
     struct DFA *dfa = dfa_init();
     int i, d;
