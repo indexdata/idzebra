@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.7 2005-01-15 21:45:43 adam Exp $
+/* $Id: api.h,v 1.8 2005-01-15 22:10:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -70,7 +70,14 @@ typedef struct {
     char *term;          /* scan term string */
 } ZebraScanEntry;
 
+/** \var ZebraHandle
+ * \brief a Zebra Handle - (session)
+ */
 typedef struct zebra_session *ZebraHandle;
+
+/** \var ZebraService
+ * \brief a Zebra Service handle
+ */
 typedef struct zebra_service *ZebraService;
 
 
@@ -80,16 +87,40 @@ typedef struct zebra_service *ZebraService;
 
 /* Start Zebra using file 'configName' (usually zebra.cfg) */
 /* There should be exactly one ZebraService */
-YAZ_EXPORT ZebraService zebra_start (const char *configName);
-YAZ_EXPORT ZebraService zebra_start_res (const char *configName,
-				         Res def_res, Res over_res);
 
-/* Close the whole Zebra */
-YAZ_EXPORT int zebra_stop (ZebraService zs);
+/** \fn ZebraService zebra_start(const char *configName)
+ * \brief starts a Zebra service
+ * \param configName name of configuration file
+ */
+YAZ_EXPORT ZebraService zebra_start
+(const char *configName);
 
-/* Report name of each record class (filter) */
-YAZ_EXPORT void zebra_filter_info(ZebraService zs, void *cd,
-				  void (*cb)(void *cd, const char *name));
+/** \fn ZebraService zebra_start_res(const char *configName, Res def_res, Res over_res)
+ * \brief starts a Zebra service with resources
+ * \param configName name of configuration file
+ * \param def_res default resources
+ * \param over_res overriding resources
+ */
+YAZ_EXPORT
+ZebraService zebra_start_res (const char *configName,
+		         Res def_res, Res over_res);
+
+/** \fn int zebra_stop(ZebraService zs)
+ * \brief stops a Zebra service
+ * \param zs service handle
+ */
+YAZ_EXPORT
+int zebra_stop (ZebraService zs);
+
+/** \fn void zebra_filter_info(ZebraService zs, void *cd, void (*cb)(void *cd, const char *name))
+ * \brief lists enabled Zebra filters
+ * \param zs service handle
+ * \param cd callback parameter (opaque)
+ * \param cb callback function
+ */
+YAZ_EXPORT
+void zebra_filter_info(ZebraService zs, void *cd,
+		  void (*cb)(void *cd, const char *name));
 
 
 /* Open a ZebraHandle */
