@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.11  1996-03-26 15:59:05  adam
+ * Revision 1.12  1996-04-09 06:47:28  adam
+ * Function scan_areadef doesn't use sscanf (%n fails on this Linux).
+ *
+ * Revision 1.11  1996/03/26 15:59:05  adam
  * The directory of the shadow table file can be specified by the new
  * bf_lockDir call.
  *
@@ -98,6 +101,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
     int hash_bytes;
    
     cf->rmf = mf; 
+    logf (LOG_LOG, "cf_open %s", cf->rmf->name);
     sprintf (path, "%s-b", fname);
     if (!(cf->block_mf = mf_open (area, path, block_size, wflag)))
     {
@@ -474,7 +478,7 @@ int cf_write (CFile cf, int no, int offset, int num, const void *buf)
 
 int cf_close (CFile cf)
 {
-    logf (LOG_LOG, "cf_close");
+    logf (LOG_LOG, "cf_close %s", cf->rmf->name);
     logf (LOG_LOG, "hits=%d miss=%d bucket_in_memory=%d total=%d",
           cf->no_hits, cf->no_miss, cf->bucket_in_memory,
           cf->head.next_bucket - cf->head.first_bucket);

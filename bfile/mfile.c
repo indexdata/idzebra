@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.17  1996-03-20 13:29:11  quinn
+ * Revision 1.18  1996-04-09 06:47:30  adam
+ * Function scan_areadef doesn't use sscanf (%n fails on this Linux).
+ *
+ * Revision 1.17  1996/03/20 13:29:11  quinn
  * Bug-fix
  *
  * Revision 1.16  1995/12/12  15:57:57  adam
@@ -84,8 +87,7 @@ static int scan_areadef(MFile_area ma, const char *name)
      * If no definition is given, use current directory, unlimited.
      */
     const char *ad = res_get_def(common_resource, name, ".:-1b");
-    int offset = 0, rs, size, multi, rd;
-    char dirname[FILENAME_MAX+1], unit; 
+    char dirname[FILENAME_MAX+1]; 
     mf_dir **dp = &ma->dirs, *dir = *dp;
 
     if (!ad)
@@ -95,29 +97,66 @@ static int scan_areadef(MFile_area ma, const char *name)
     }
     for (;;)
     {
-        rs = sscanf(ad + offset, "%[^:]:%d%c %n", dirname, &size, &unit, &rd);
-        if (rs <= 1)
-	    break;
-        if (rs != 3)
+        const char *ad0 = ad;
+        int i = 0, fact = 1, multi, size = 0;
+
+        while (*ad == ' ' || *ad == '\t')
+            ad++;
+        if (!*ad)
+            break;
+        while (*ad && *ad != ':')
         {
-	    logf (LOG_FATAL, "Illegal directory description: %s", ad + offset);
-	    return -1;
-	}
-	switch (unit)
+            if (i < FILENAME_MAX)
+                dirname[i++] = *ad;
+            ad++;
+        }
+        dirname[i] = '\0';
+        if (*ad++ != ':')
+        {
+	    logf (LOG_FATAL, "Missing colon after path: %s", ad0);
+            return -1;
+        }
+        if (i == 0)
+        {
+	    logf (LOG_FATAL, "Empty path: %s", ad0);
+            return -1;
+        }
+        while (*ad == ' ' || *ad == '\t')
+            ad++;
+        if (*ad == '-')
+        {
+            fact = -1;
+            ad++;
+        }
+        else if (*ad == '+')
+            ad++;
+        size = 0;
+        if (*ad <= '0' || *ad >= '9')
+        {
+	    logf (LOG_FATAL, "Missing size after path: %s", ad0);
+            return -1;
+        }
+        size = 0;
+        while (*ad >= '0' && *ad <= '9')
+            size = size*10 + (*ad++ - '0');
+        switch (*ad)
 	{
 	    case 'B': case 'b': multi = 1; break;
 	    case 'K': case 'k': multi = 1024; break;
 	    case 'M': case 'm': multi = 1048576; break;
+            case '\0':
+	        logf (LOG_FATAL, "Missing unit: %s", ad0);
+		return -1;
 	    default:
-	        logf (LOG_FATAL, "Illegal unit: %c in %s", unit, ad + offset);
+	        logf (LOG_FATAL, "Illegal unit: %c in %s", *ad, ad0);
 	        return -1;
 	}
+        ad++;
 	*dp = dir = xmalloc(sizeof(mf_dir));
 	dir->next = 0;
 	strcpy(dir->name, dirname);
-	dir->max_bytes = dir->avail_bytes = size * multi;
+	dir->max_bytes = dir->avail_bytes = fact * size * multi;
 	dp = &dir->next;
-	offset += rd;
     }
     return 0;
 }
