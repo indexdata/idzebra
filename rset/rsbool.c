@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.24 2004-01-30 11:43:41 heikki Exp $
+/* $Id: rsbool.c,v 1.25 2004-02-12 15:15:54 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -55,7 +55,7 @@ static const struct rset_control control_and =
     r_close,
     r_delete,
     r_rewind,
-    r_forward, /*rset_default_forward,*/
+    r_forward, /* rset_default_forward, */
     r_count,
     r_read_and,
     r_write,
@@ -160,6 +160,7 @@ static RSFD r_open (RSET ct, int flag)
 	return NULL;
     }
     rfd = (struct rset_bool_rfd *) xmalloc (sizeof(*rfd));
+    logf(LOG_DEBUG,"rsbool (%s) open [%p]", ct->control->desc, rfd);
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->info = info;
@@ -219,22 +220,36 @@ static void r_rewind (RSFD rfd)
     p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r, &p->term_index_r);
 }
 
-static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
+static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf)
 {
     struct rset_bool_info *info = ((struct rset_bool_rfd*)rfd)->info;
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     int cmp=0;
+    int rc;
 
-    logf (LOG_DEBUG, "rsbool_forward '%s' (ct=%p rfd=%p m=%d,%d)",
-                      ct->control->desc, ct, rfd, p->more_l, p->more_r);
-    if ( p->more_l)
+    logf (LOG_DEBUG, "rsbool_forward (L) [%p] '%s' (ct=%p rfd=%p m=%d,%d)",
+                      rfd, ct->control->desc, ct, rfd, p->more_l, p->more_r);
+    if ( p->more_l && ((cmpfunc)(untilbuf,p->buf_l)==2) )
         p->more_l = rset_forward(info->rset_l, p->rfd_l, p->buf_l,
                         &p->term_index_l, info->cmp, untilbuf);
-    if ( p->more_r)
+
+    logf (LOG_DEBUG, "rsbool_forward (R) [%p] '%s' (ct=%p rfd=%p m=%d,%d)",
+                      rfd, ct->control->desc, ct, rfd, p->more_l, p->more_r);
+    if ( p->more_r && ((cmpfunc)(untilbuf,p->buf_r)==2))
         p->more_r = rset_forward(info->rset_r, p->rfd_r, p->buf_r,
                         &p->term_index_r, info->cmp, untilbuf);
+
+    logf (LOG_DEBUG, "rsbool_forward [%p] calling read, m=%d,%d t=%d", 
+                       rfd, p->more_l, p->more_r, p->tail);
+    
+    p->tail=0; 
+    rc = rset_read(ct,rfd,buf,term_index); 
+    logf (LOG_DEBUG, "rsbool_forward returning [%p] %d m=%d,%d", 
+                       rfd, rc, p->more_l, p->more_r);
+    return rc;
+
     if (p->more_l && p->more_r)
            cmp = (*info->cmp)(p->buf_l, p->buf_r);
        else if (p->more_l)
@@ -245,12 +260,17 @@ static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
     {
         memcpy (buf, p->buf_l, info->key_size);
 	    *term_index = p->term_index_l;
+        logf (LOG_DEBUG, "rsbool_forward returning L (cmp=%d)",cmp);
+        return 1;
     } else if ( (cmp>0) && (p->more_r) )
     {
         memcpy (buf, p->buf_r, info->key_size);
 	    *term_index = p->term_index_r + info->term_index_s;
+        logf (LOG_DEBUG, "rsbool_forward returning R (cmp=%d)",cmp);
+        return 1;
     }
-    return ( p->more_l || p->more_r);
+    /* return ( p->more_l || p->more_r); */
+    return 0;
 }
 
 static int r_count (RSET ct)
@@ -289,8 +309,8 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             cmp = -2;
         else
             cmp = 2;
-        logf (LOG_DEBUG, "r_read_and looping: m=%d/%d c=%d t=%d",
-                        p->more_l, p->more_r, cmp, p->tail);
+        logf (LOG_DEBUG, "r_read_and [%p] looping: m=%d/%d c=%d t=%d",
+                        rfd, p->more_l, p->more_r, cmp, p->tail);
         key_logdump(LOG_DEBUG,p->buf_l);
         key_logdump(LOG_DEBUG,p->buf_r);
         if (!cmp)
@@ -308,8 +328,8 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
 				   &p->term_index_r);
             p->tail = 1;
-            logf (LOG_DEBUG, "r_read_and returning A m=%d/%d c=%d",
-                    p->more_l, p->more_r, cmp);
+            logf (LOG_DEBUG, "r_read_and [%p] returning R m=%d/%d c=%d",
+                    rfd, p->more_l, p->more_r, cmp);
             key_logdump(LOG_DEBUG,buf);
             return 1;
         }
@@ -320,12 +340,12 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				   &p->term_index_l);
             p->tail = 1;
-            logf (LOG_DEBUG, "r_read_and returning B m=%d/%d c=%d",
-                    p->more_l, p->more_r, cmp);
+            logf (LOG_DEBUG, "r_read_and [%p] returning L m=%d/%d c=%d",
+                    rfd, p->more_l, p->more_r, cmp);
             key_logdump(LOG_DEBUG,buf);
             return 1;
         }
-        else if (cmp > 1)
+        else if (cmp > 1)  /* cmp == 2 */
         {
 #define OLDCODE 0
 #if OLDCODE
@@ -347,22 +367,20 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             
             if (p->tail)
             {
-                logf (LOG_DEBUG, "r_read_and returning R tail m=%d/%d c=%d",
-                        p->more_l, p->more_r, cmp);
                 memcpy (buf, p->buf_r, info->key_size);
                 *term_index = p->term_index_r + info->term_index_s;
                 p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
                                    &p->term_index_r);
                 if (!p->more_r || (*info->cmp)(p->buf_r, buf) > 1)
                     p->tail = 0;
-                logf (LOG_DEBUG, "r_read_and returning D m=%d/%d c=%d",
-                        p->more_l, p->more_r, cmp);
+                logf (LOG_DEBUG, "r_read_and [%p] returning R tail m=%d/%d c=%d",
+                        rfd, p->more_l, p->more_r, cmp);
                 key_logdump(LOG_DEBUG,buf);
                 return 1;
             } else
             {
-                logf (LOG_DEBUG, "r_read_and about to forward R m=%d/%d c=%d",
-                        p->more_l, p->more_r, cmp);
+                logf (LOG_DEBUG, "r_read_and [%p] about to forward R m=%d/%d c=%d",
+                        rfd, p->more_l, p->more_r, cmp);
                 if (p->more_r && p->more_l)
                     p->more_r = rset_forward( 
                                     info->rset_r, p->rfd_r, 
@@ -373,7 +391,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             }
 #endif
         }
-        else
+        else  /* cmp == -2 */
         {
 #if OLDCODE
              memcpy (buf, p->buf_l, info->key_size);
@@ -384,31 +402,29 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
              {
                  if (!p->more_l || (*info->cmp)(p->buf_l, buf) > 1)
                      p->tail = 0;
-                 logf (LOG_DEBUG, "r_read_and returning E m=%d/%d c=%d",
-                        p->more_l, p->more_r, cmp);
+                 logf (LOG_DEBUG, "r_read_and [%p] returning R tail m=%d/%d c=%d",
+                        rfd, p->more_l, p->more_r, cmp);
                  key_logdump(LOG_DEBUG,buf);
                  return 1;
              }
 #else
             if (p->tail)
             {
-                logf (LOG_DEBUG, "r_read_and returning L tail m=%d/%d c=%d",
-                        p->more_l, p->more_r, cmp);
                 memcpy (buf, p->buf_l, info->key_size);
 	            *term_index = p->term_index_l;
                 p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				   &p->term_index_l);
                 if (!p->more_l || (*info->cmp)(p->buf_l, buf) > 1)
                     p->tail = 0;
-                 logf (LOG_DEBUG, "r_read_and returning F m=%d/%d c=%d",
-                        p->more_l, p->more_r, cmp);
-                 key_logdump(LOG_DEBUG,buf);
+                logf (LOG_DEBUG, "r_read_and [%p] returning L tail m=%d/%d c=%d",
+                        rfd, p->more_l, p->more_r, cmp);
+                key_logdump(LOG_DEBUG,buf);
                 return 1;
             }
             else
             {
-                logf (LOG_DEBUG, "r_read_and about to forward L m=%d/%d c=%d",
-                        p->more_l, p->more_r, cmp);
+                logf (LOG_DEBUG, "r_read_and [%p] about to forward L m=%d/%d c=%d",
+                        rfd, p->more_l, p->more_r, cmp);
                 if (p->more_r && p->more_l)
                     p->more_l = rset_forward( 
                     /* p->more_l = rset_default_forward( */
@@ -421,6 +437,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 #endif
         }
     }
+    logf (LOG_DEBUG, "r_read_and [%p] reached its end",rfd);
     return 0;
 }
 
@@ -515,7 +532,7 @@ static int r_read_not (RSFD rfd, void *buf, int *term_index)
         {
             memcpy (buf, p->buf_l, info->key_size);
             do
-            {
+            { 
                 p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				       &p->term_index_l);
                 if (!p->more_l)
