@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.6  1994-09-28 11:29:28  quinn
+ * Revision 1.7  1994-09-28 11:56:13  quinn
+ * Removed const from input to is_merge
+ *
+ * Revision 1.6  1994/09/28  11:29:28  quinn
  * Added cmp parameter.
  *
  * Revision 1.5  1994/09/27  20:03:36  quinn
@@ -114,6 +117,6 @@ int is_readkey(ISPT ip, void *buf);
 
 int is_writekey(ISPT ip, const void *buf);
 
-ISAM_P is_merge(ISAM is, ISAM_P pos, int num, const char *data);
+ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data);
 
 #endif
