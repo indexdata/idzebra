@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.67 2002-09-24 19:45:14 adam Exp $
+/* $Id: recgrs.c,v 1.68 2002-10-08 22:17:44 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -804,9 +804,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 		sprintf(p, "%d", *ii);
 		p += strlen(p);
 	    }
-	    *(p++) = '\0';
-		
-	    if ((dnew = data1_mk_tag_data_wd(dh, node, 
+	    if ((dnew = data1_mk_tag_data_wd(dh, top, 
                                              "schemaIdentifier", mem)))
 	    {
 		dnew->u.data.what = DATA1I_oid;
