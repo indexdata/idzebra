@@ -1,4 +1,4 @@
-/* $Id: tstcodec.c,v 1.4 2004-11-29 21:55:28 adam Exp $
+/* $Id: tstcodec.c,v 1.5 2005-01-02 20:11:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -113,8 +113,12 @@ void tstcodec1()
     char buf[100];
     char *dst = buf;
     const char *src;
-    struct it_key key1, key2;
+    struct it_key key1;
+    struct it_key key2;
     void *codec_handle =iscz1_start();
+
+    memset(&key1, 0, sizeof(key1));
+    memset(&key2, 0, sizeof(key2));
 
     key1.len = 4;
     key1.mem[0] = 4*65536+1016;
@@ -139,8 +143,11 @@ void tstcodec1()
 
     if (memcmp(&key1, &key2, sizeof(key1)))
     {
-	printf ("keys differ in tstcodec1\n");
-	exit(1);
+        const char *cp1 = (char*) &key1;
+        const char *cp2 = (char*) &key2;
+        int i;
+        for (i = 0; i<sizeof(key1); i++)
+            printf ("offset=%d char1=%d char2=%d\n", i, cp1[i], cp2[i]);
     }
 }
     
