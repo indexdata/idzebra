@@ -3,8 +3,10 @@ Zebra server,
 
 Introduction
 ------------
-Zebra is a search engine with a Z39.50 frontend. See home page
-at http://www.indexdata.dk/zebra/
+Zebra is a high-performance, general-purpose structured text indexing
+and retrieval engine. It reads structured records in a variety of input
+formats (eg. email, XML, MARC) and allows access to them through exact
+boolean search expressions and relevance-ranked free-text queries. 
 
 Documentation
 -------------
@@ -35,4 +37,4 @@ We maintain a mailing-list for the purpose of announcing new versions of
 the software, bug-reports, discussion etc. You can sign up at the URL
 http://www.indexdata.dk/mailman/listinfo/zebralist
 
-$Id: README,v 1.15 2002-08-04 22:42:44 adam Exp $
+$Id: README,v 1.16 2002-08-05 08:11:17 quinn Exp $
