@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.3  1994-09-26 17:11:31  quinn
+ * Revision 1.4  1994-09-27 20:03:53  quinn
+ * Seems relatively bug-free.
+ *
+ * Revision 1.3  1994/09/26  17:11:31  quinn
  * Trivial
  *
  * Revision 1.2  1994/09/26  17:06:36  quinn
@@ -22,7 +25,6 @@
 #include <assert.h>
 
 #include <isam.h>
-#include "memory.h"
 
 static int is_freestore_alloc(ISAM is, int type)
 {
@@ -41,6 +43,7 @@ static int is_freestore_alloc(ISAM is, int type)
     else
     	tmp = is->types[type].top++;
 
+    log(LOG_DEBUG, "Allocating block #%d", tmp);
     return tmp;
 }
 
@@ -48,6 +51,7 @@ static void is_freestore_free(ISAM is, int type, int block)
 {
     int tmp;
 
+    log(LOG_DEBUG, "Releasing block #%d", block);
     tmp = is->types[type].freelist;
     is->types[type].freelist = block;
     if (bf_write(is->types[type].bf, block, 0, sizeof(tmp), &tmp) < 0)
@@ -138,6 +142,7 @@ int is_p_read_full(is_mtable *tab, is_mblock *block)
 	    block->bread += toread * is_keysize(tab->is);
     	}
     }
+    log(LOG_DEBUG, "R: Block #%d contains %d records.", block->diskpos, block->num_records);
     return 0;
 }
 
@@ -155,6 +160,13 @@ void is_p_sync(is_mtable *tab)
     type = &tab->is->types[tab->pos_type];
     for (p = tab->data; p; p = p->next)
     {
+    int fummy;
+/*
+if (p->num_records == 0)
+ 	fummy = 1/0;
+*/
+    	if (p->state < IS_MBSTATE_DIRTY)
+	    continue;
 	/* make sure that blocks are allocated. */
     	if (p->diskpos < 0)
 	    p->diskpos = is_freestore_alloc(tab->is, tab->pos_type);
@@ -166,6 +178,8 @@ void is_p_sync(is_mtable *tab)
 	    else
 	    	p->nextpos = p->next->diskpos;
 	}
+	else
+	    p->nextpos = 0;
 	sum = 0;
 	memcpy(type->dbuf, &p->num_records, sizeof(p->num_records));
 	sum += sizeof(p->num_records);
@@ -189,6 +203,7 @@ void is_p_sync(is_mtable *tab)
 	    log(LOG_FATAL, "Failed to write block.");
 	    exit(1);
 	}
+	log(LOG_DEBUG, "W: Block #%d contains %d records.", p->diskpos, p->num_records);
     }
 }
 
@@ -212,6 +227,8 @@ static is_mbuf *mbuf_takehead(is_mbuf **mb, int *num, int keysize)
     is_mbuf *p = 0, **pp = &p, *new;
     int toget = *num;
 
+    if (!toget)
+    	return 0;
     while (*mb && toget >= (*mb)->num)
     {
 	toget -= (*mb)->num;
@@ -246,14 +263,33 @@ static is_mbuf *mbuf_takehead(is_mbuf **mb, int *num, int keysize)
  */
 void is_p_align(is_mtable *tab)
 {
-    is_mblock *mblock, *new;
+    is_mblock *mblock, *new, *last = 0, *next;
     is_mbuf *mbufs, *mbp;
     int blocks, recsblock;
 
     log(LOG_DEBUG, "Realigning table.");
-    for (mblock = tab->data; mblock; mblock = mblock->next)
+    for (mblock = tab->data; mblock; mblock = next)
     {
-    	if (mblock->state == IS_MBSTATE_DIRTY && mblock->num_records >
+        next = mblock->next;
+        if (mblock->state == IS_MBSTATE_DIRTY && mblock->num_records == 0)
+        {
+	    if (last)
+	    {
+	    	last->next = mblock->next;
+	    	last->state = IS_MBSTATE_DIRTY;
+	    	next = mblock->next;
+	    }
+	    else
+	    {
+	    	tab->data = tab->data->next;
+	    	tab->data->state = IS_MBSTATE_DIRTY;
+	    	next = tab->data;
+	    }
+	    if (mblock->diskpos >= 0)
+		is_freestore_free(tab->is, tab->pos_type, mblock->diskpos);
+	    xrelease_mblock(mblock);
+	}
+    	else if (mblock->state == IS_MBSTATE_DIRTY && mblock->num_records >
 	    (mblock == tab->data ?
 	    tab->is->types[tab->pos_type].max_keys_block0 :
 	    tab->is->types[tab->pos_type].max_keys_block))
@@ -268,18 +304,25 @@ void is_p_align(is_mtable *tab)
 		recsblock = 1;
 	    mbufs = mblock->data;
 	    while ((mbp = mbuf_takehead(&mbufs, &recsblock,
-		is_keysize(tab->is))))
+		is_keysize(tab->is))) && recsblock)
 	    {
-	    	new = xmalloc_mblock();
-	    	new->diskpos = -1;
-	    	new->state = IS_MBSTATE_DIRTY;
-	    	new->next = mblock->next;
-	    	mblock->next = new;
+	    	if (mbufs)
+	    	{
+		    new = xmalloc_mblock();
+		    new->diskpos = -1;
+		    new->state = IS_MBSTATE_DIRTY;
+		    new->next = mblock->next;
+		    mblock->next = new;
+		}
 	    	mblock->data = mbp;
 	    	mblock->num_records = recsblock;
+	    	last = mblock;
 	    	mblock = mblock->next;
 	    }
+	    next = mblock; 
 	}
+	else
+	    last = mblock;
     }
 }
 
@@ -300,6 +343,11 @@ void is_p_remap(is_mtable *tab)
     bufpp = &mbufs;
     for (blockp = tab->data; blockp; blockp = blockp->next)
     {
+    	if (blockp->state < IS_MBSTATE_CLEAN && is_m_read_full(tab, blockp) < 0)
+	{
+	    log(LOG_FATAL, "Read-full failed in remap.");
+	    exit(1);
+	}
     	*bufpp = blockp->data;
     	while (*bufpp)
 	    bufpp = &(*bufpp)->next;
@@ -308,11 +356,14 @@ void is_p_remap(is_mtable *tab)
     blocks = tab->num_records / tab->is->types[tab->pos_type].nice_keys_block;
     if (tab->num_records % tab->is->types[tab->pos_type].nice_keys_block)
     	blocks++;
-    recsblock = tab->num_records / blocks;
-    if (recsblock < 1)
-    	recsblock = 1;
+    if (blocks == 0)
+    	blocks = 1;
+    recsblock = tab->num_records / blocks + 1;
+    if (recsblock > tab->is->types[tab->pos_type].nice_keys_block)
+    	recsblock--;
     blockpp = &tab->data;
-    while ((mbp = mbuf_takehead(&mbufs, &recsblock, is_keysize(tab->is))))
+    while ((mbp = mbuf_takehead(&mbufs, &recsblock, is_keysize(tab->is))) &&
+    	recsblock)
     {
     	if (!*blockpp)
     	{
@@ -323,5 +374,15 @@ void is_p_remap(is_mtable *tab)
     	(*blockpp)->num_records = recsblock;
     	(*blockpp)->state = IS_MBSTATE_DIRTY;
     	blockpp = &(*blockpp)->next;
+    }
+    if (mbp)
+    	xfree_mbufs(mbp);
+    if (*blockpp)
+    {
+    	for (blockp = *blockpp; blockp; blockp = blockp->next)
+	    if (blockp->diskpos >= 0)
+		is_freestore_free(tab->is, tab->pos_type, blockp->diskpos);
+    	xfree_mblocks(*blockpp);
+    	*blockpp = 0;
     }
 }

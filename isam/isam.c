@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.4  1994-09-26 17:11:29  quinn
+ * Revision 1.5  1994-09-27 20:03:50  quinn
+ * Seems relatively bug-free.
+ *
+ * Revision 1.4  1994/09/26  17:11:29  quinn
  * Trivial
  *
  * Revision 1.3  1994/09/26  17:06:35  quinn
@@ -25,8 +28,6 @@
 #include <common.h>
 #include "isutil.h"
 #include "rootblk.h"
-#include "memory.h"
-#include "physical.h"
 #include "keyops.h"
 
 static int splitargs(const char *s, char *bf[], int max)
@@ -266,7 +267,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, const char *data)
     is_mtable tab;
     int res;
     char keybuf[IS_MAX_RECORD];
-    int oldnum, oldtype;
+    int oldnum, oldtype, i;
     char operation, *record;
 
     is_m_establish_tab(is, &tab, pos);
@@ -282,10 +283,10 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, const char *data)
     while (num)
     {
     	operation = *(data)++;
-    	record = (char*)data;
+    	record = (char*) data;
     	data += is_keysize(is);
     	num--;
-	while (num && !memcmp(record, data, is_keysize(tab.is) + 1))
+	while (num && !memcmp(record - 1, data, is_keysize(tab.is) + 1))
 	{
 	    data += 1 + is_keysize(is);
 	    num--;
@@ -337,16 +338,29 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, const char *data)
 	    }
 	}
     }
-    while (tab.pos_type < tab.is->num_types - 1 && tab.num_records >
-	tab.is->types[tab.pos_type].max_keys)
-	    tab.pos_type++;
+    i = tab.pos_type;
+    while (i < tab.is->num_types - 1 && tab.num_records >
+	tab.is->types[i].max_keys)
+	i++;
+    if (i != tab.pos_type)
+    {
+    	is_p_unmap(&tab);
+	tab.pos_type = i;
+    }
     if (!oldnum || tab.pos_type != oldtype || (abs(oldnum - tab.num_records) *
 	100) / oldnum > tab.is->repack)
     	is_p_remap(&tab);
     else
     	is_p_align(&tab);
-    is_p_sync(&tab);
-    return is_address(tab.pos_type, tab.data->diskpos);
+    if (tab.data)
+    {
+	is_p_sync(&tab);
+	pos = is_address(tab.pos_type, tab.data->diskpos);
+    }
+    else
+    	pos = 0;
+    is_m_release_tab(&tab);
+    return pos;
 }
 
 /*

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.h,v $
- * Revision 1.1  1994-09-26 17:12:32  quinn
+ * Revision 1.2  1994-09-27 20:03:52  quinn
+ * Seems relatively bug-free.
+ *
+ * Revision 1.1  1994/09/26  17:12:32  quinn
  * Back again
  *
  * Revision 1.1  1994/09/26  16:07:57  quinn
@@ -15,9 +18,9 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include <isam.h>
-
 extern int is_mbuf_size[3];
+
+typedef unsigned int ISAM_P;
 
 /*
  * Memory buffer. Used to manage records (keys) in memory for
@@ -58,6 +61,7 @@ typedef struct is_mblock
     struct is_mblock *next;       /* next diskblock */
 } is_mblock;
 
+typedef struct isam_struct *ISAM;
 /*
  * Descriptor for a specific table.
  */
@@ -73,8 +77,12 @@ typedef struct is_mtable
 is_mblock *xmalloc_mblock();
 is_mbuf *xmalloc_mbuf(int type);
 void xfree_mblock(is_mblock *p);
-void xfree_mbuf(is_mblock *p);
+void xfree_mblocks(is_mblock *l);
+void xfree_mbuf(is_mbuf *p);
+void xfree_mbufs(is_mbuf *l);
+void xrelease_mblock(is_mblock *p);
 void is_m_establish_tab(ISAM is, is_mtable *tab, ISAM_P pos);
+void is_m_release_tab(is_mtable *tab);
 void is_m_rewind(is_mtable *tab);
 void is_m_replace_record(is_mtable *tab, const void *rec);
 int is_m_write_record(is_mtable *tab, const void *rec);

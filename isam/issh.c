@@ -3,7 +3,6 @@
 #include <strings.h>
 #include <assert.h>
 
-#include <common.h>
 #include <isam.h>
 
 static ISAM is = 0;

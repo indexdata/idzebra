@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.3  1994-09-26 17:11:30  quinn
+ * Revision 1.4  1994-09-27 20:03:52  quinn
+ * Seems relatively bug-free.
+ *
+ * Revision 1.3  1994/09/26  17:11:30  quinn
  * Trivial
  *
  * Revision 1.2  1994/09/26  17:06:35  quinn
@@ -22,22 +25,32 @@
 #include <assert.h>
 
 #include <util.h>
-#include "memory.h"
-#include "physical.h"
 #include <isam.h>
 
 int is_mbuf_size[3] = { 0, 1024, 4096 };
 
-/*
- * TODO: make internal memory-management scheme for these units.
- */
+static is_mblock *mblock_tmplist = 0, *mblock_freelist = 0;
+static is_mbuf *mbuf_freelist[3] = {0, 0, 0};
+
+#define MALLOC_CHUNK 20
 
 is_mblock *xmalloc_mblock()
 {
     is_mblock *tmp;
+    int i;
 
-    tmp = xmalloc(sizeof(is_mblock));
+    if (!mblock_freelist)
+    {
+    	mblock_freelist = xmalloc(sizeof(is_mblock) * MALLOC_CHUNK);
+	for (i = 0; i < MALLOC_CHUNK - 1; i++)
+	    mblock_freelist[i].next = &mblock_freelist[i+1];
+	mblock_freelist[i].next = 0;
+    }
+    tmp = mblock_freelist;
+    mblock_freelist = mblock_freelist->next;
     tmp->next = 0;
+    tmp->state = IS_MBSTATE_UNREAD;
+    tmp->data = 0;
     return tmp;
 }
 
@@ -45,8 +58,16 @@ is_mbuf *xmalloc_mbuf(int type)
 {
     is_mbuf *tmp;
 
-    tmp = xmalloc(sizeof(is_mbuf) + is_mbuf_size[type]);
-    tmp->type = type;
+    if (mbuf_freelist[type])
+    {
+    	tmp = mbuf_freelist[type];
+    	mbuf_freelist[type] = tmp->next;
+    }
+    else
+    {
+    	tmp = xmalloc(sizeof(is_mbuf) + is_mbuf_size[type]);
+	tmp->type = type;
+    }
     tmp->refcount = type ? 1 : 0;
     tmp->offset = tmp->num = tmp->cur_record = 0;
     tmp->data = (char*) tmp + sizeof(is_mbuf);
@@ -54,19 +75,48 @@ is_mbuf *xmalloc_mbuf(int type)
     return tmp;
 }
 
-#if 0
+void xfree_mbuf(is_mbuf *p)
+{
+    p->next = mbuf_freelist[p->type];
+    mbuf_freelist[p->type] = p;
+}
+
+void xfree_mbufs(is_mbuf *l)
+{
+    is_mbuf *p;
+
+    while (l)
+    {
+    	p = l->next;
+    	xfree_mbuf(l);
+    	l = p;
+    }
+}
+
 void xfree_mblock(is_mblock *p)
 {
-    xfree(p);
+    xfree_mbufs(p->data);
+    p->next = mblock_freelist;
+    mblock_freelist = p;
 }
-#endif
 
-#if 0
-void xfree_mbuf(is_mblock *p)
+void xrelease_mblock(is_mblock *p)
 {
-    xfree(p);
+    p->next = mblock_tmplist;
+    mblock_tmplist = p;
 }
-#endif
+
+void xfree_mblocks(is_mblock *l)
+{
+    is_mblock *p;
+
+    while (l)
+    {
+    	p = l->next;
+    	xfree_mblock(l);
+    	l = p;
+    }
+}
 
 void is_m_establish_tab(ISAM is, is_mtable *tab, ISAM_P pos)
 {
@@ -95,6 +145,13 @@ void is_m_establish_tab(ISAM is, is_mtable *tab, ISAM_P pos)
 	tab->cur_mblock->cur_mbuf->cur_record = 0;
     }
     tab->is = is;
+}
+
+void is_m_release_tab(is_mtable *tab)
+{
+    xfree_mblocks(tab->data);
+    xfree_mblocks(mblock_tmplist);
+    mblock_tmplist = 0;
 }
 
 void is_m_rewind(is_mtable *tab)
@@ -234,23 +291,25 @@ void is_m_unread_record(is_mtable *tab)
 int is_m_peek_record(is_mtable *tab, void *rec)
 {
     is_mbuf *mbuf;
+    is_mblock *mblock;
 
     /* make sure block is all in memory */
     if (tab->cur_mblock->state <= IS_MBSTATE_PARTIAL)
     	if (read_current_full(tab, tab->cur_mblock) < 0)
 	    return -1;
-    mbuf = tab->cur_mblock->cur_mbuf;
+    mblock = tab->cur_mblock;
+    mbuf = mblock->cur_mbuf;
     if (mbuf->cur_record >= mbuf->num) /* are we at end of mbuf? */
     {
 	if (!mbuf->next) /* end of mblock */
 	{
-	    if (tab->cur_mblock->next)
+	    if (mblock->next)
 	    {
-		tab->cur_mblock = tab->cur_mblock->next;
-		if (tab->cur_mblock->next->state <= IS_MBSTATE_PARTIAL)
-		    if (read_current_full(tab, tab->cur_mblock->next) < 0)
+		mblock = mblock->next;
+		if (mblock->state <= IS_MBSTATE_PARTIAL)
+		    if (read_current_full(tab, mblock) < 0)
 			return -1;
-		mbuf = tab->cur_mblock->next->data;
+		mbuf = mblock->data;
 	    }
 	    else
 	    	return 0;   /* EOTable */
