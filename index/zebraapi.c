@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.79 2002-11-26 22:18:34 adam Exp $
+/* $Id: zebraapi.c,v 1.80 2003-01-13 10:56:09 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1396,7 +1396,29 @@ void zebra_shadow_enable (ZebraHandle zh, int value)
 int zebra_record_encoding (ZebraHandle zh, const char *encoding)
 {
     xfree (zh->record_encoding);
+
+    /*
+     * Fixme!
+     */
+
+    if (zh->iconv_to_utf8 != 0)
+	yaz_iconv_close(zh->iconv_to_utf8);
+    if (zh->iconv_from_utf8 != 0)
+	yaz_iconv_close(zh->iconv_from_utf8);
+    
     zh->record_encoding = xstrdup (encoding);
+    
+    logf(LOG_DEBUG, "Reset record encoding: %s", encoding);
+    
+    zh->iconv_to_utf8 =
+        yaz_iconv_open ("UTF-8", encoding);
+    if (zh->iconv_to_utf8 == 0)
+        yaz_log (LOG_WARN, "iconv: %s to UTF-8 unsupported", encoding);
+    zh->iconv_from_utf8 =
+        yaz_iconv_open (encoding, "UTF-8");
+    if (zh->iconv_to_utf8 == 0)
+        yaz_log (LOG_WARN, "iconv: UTF-8 to %s unsupported", encoding);
+
     return 0;
 }
 

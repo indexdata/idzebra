@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.100 2002-10-22 12:51:08 adam Exp $
+/* $Id: zserver.c,v 1.101 2003-01-13 10:56:09 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -107,6 +107,7 @@ bend_initresult *bend_init (bend_initrequest *q)
         int num_langs = 0;
         int selected = 0;
         int i;
+        char *right_name;
 
         NMEM nmem = nmem_create ();
         yaz_log (LOG_LOG, "character set and language negotiation");
@@ -114,19 +115,49 @@ bend_initresult *bend_init (bend_initrequest *q)
         yaz_get_proposal_charneg (nmem, q->charneg_request,
                                   &charsets, &num_charsets,
                                   &langs, &num_langs, &selected);
+        	
+        right_name = (char *)nmem_malloc(nmem, 32);
+               
         for (i = 0; i < num_charsets; i++)
         {
-            yaz_log (LOG_LOG, "charset %d %s", i, charsets[i]);
+    	    *right_name = '\0';
+        	
+    	    /*
+	     * FIXME! It is like rudiment :-))
+    	     * We have to support this short names of character sets,
+    	     * because a lot servers in Russia to use own in during
+    	     * character set and language negotiation still.
+    	     */
+
+            if (!yaz_matchstr(charsets[i], "win")) {
+		    strcpy(right_name, "WINDOWS-1251");
+        	} else if (!yaz_matchstr(charsets[i], "koi")) {
+		    strcpy(right_name, "KOI8-R");
+            } else if (!yaz_matchstr(charsets[i], "iso")) {
+        	    strcpy(right_name, "ISO-8859-5");
+            } else if (!yaz_matchstr(charsets[i], "dos")) {
+        	    strcpy(right_name, "CP866");
+        	} else if (!yaz_matchstr(charsets[i], "uni")) {
+        	    strcpy(right_name, "UTF-8");
+        	} else {
+        	    strcpy(right_name, charsets[i]);
+        }
+        	
+        logf (LOG_LOG, "charset %d %s (right name is %s)", i,
+    	    charsets[i], right_name);
             
-            if (odr_set_charset (q->decode, "UTF-8", charsets[i]) == 0)
-            {
-                odr_set_charset (q->stream, charsets[i], "UTF-8");
-                if (selected)
-                    zebra_record_encoding (zh, charsets[i]);
-                q->charneg_response =
-                    yaz_set_response_charneg (q->stream, charsets[i],
+        if (odr_set_charset (q->decode, "UTF-8", right_name) == 0)
+        {
+    	    odr_set_charset (q->stream, right_name, "UTF-8");
+            if (selected)
+        	zebra_record_encoding (zh, right_name);
+        	q->charneg_response =
+        	    yaz_set_response_charneg (q->stream, right_name,
                                               0, selected);
-                break;
+        	break;
+            } else {
+    		yaz_log(LOG_LOG, "odr_set_charset(): charset name %s unsupported",
+            		right_name);
             }
         }
         nmem_destroy (nmem);
@@ -649,8 +680,14 @@ static void bend_stop(struct statserv_options_block *sob)
 #ifdef WIN32
 
 #else
+    /*
+     * Fixme! Why commets?, because the first chaild process to invoke bend_stop().
+     *
+     
     if (!sob->inetd) 
         unlink ("zebrasrv.pid");
+    */
+    
 #endif
     if (sob->handle)
     {
