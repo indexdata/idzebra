@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.15.2.2 2004-12-16 19:11:41 heikki Exp $
+/* $Id: rsbetween.c,v 1.15.2.3 2004-12-17 11:38:18 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -359,28 +359,24 @@ static int r_write_between (RSFD rfd, const void *buf)
 
 static void checkattr(struct rset_between_rfd *p)
 {
-    p->attrdepth=-1; /* matches always */
-
-#ifdef SKIPTHIS /* not yet backported */
     struct rset_between_info *info =p->info;
     int cmp;
     if (p->attrdepth)
         return; /* already found one */
-    if (!info->attrterm) 
+    if (!info->rset_attr) 
     {
         p->attrdepth=-1; /* matches always */
         return;
     }
     if ( p->startbufok && p->attrbufok )
     { /* have buffers to compare */
-        cmp=(kctrl->cmp)(p->startbuf,p->attrbuf);
+        cmp=(*info->cmp)(p->startbuf,p->attrbuf);
         if (0==cmp) /* and the keys match */
         {
             p->attrdepth=p->depth;
             yaz_log(log_level, "found attribute match at depth %d",p->attrdepth);
         }
     }
-#endif
 }
 
 
