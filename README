@@ -1,13 +1,38 @@
-Copyright (C) 1995-2002, Index Data ApS.
-See the file LICENSE.zebra for details.
+Zebra server,
+ Copyright (c) 1995-2002, Index Data ApS
 
-Zebra: $Id: README,v 1.14 2002-08-02 20:31:42 adam Exp $
+Introduction
+------------
+Zebra is a search engine with a Z39.50 frontend. See home page
+at http://www.indexdata.dk/zebra/
 
-Documentation about this software can be found in the subdirectory
-'doc' and Zebra's home page:  http://www.indexdata.dk/zebra/
+Documentation
+-------------
+You'll find documentation in subdirectory 'doc' in various
+formats (PDF, HTML, Docbook XML). You can also browse the
+documentation from the zebra home page.
 
-To get more information or assistance, send mail to zebra-help@indexdata.dk.
+Installation
+------------
+Install YAZ. Optional external packages: Tcl, iconv and EXPAT.
+Many Unices already have Tcl, iconv and EXPAT installed.
+Quick compile and install:
+  ./configure
+  make
+  make install
+For detailed instructions and Windows installation refer to
+the documentation.
+
+License
+-------
+Zebra is covered by the GNU GPL v2. See LICENSE.zebra.
+
+Support
+------
+To get more information or assistance, send mail to zebra-help@indexdata.dk
 
 We maintain a mailing-list for the purpose of announcing new versions of
-the software, bug-reports, discussion etc. You can sign here:
+the software, bug-reports, discussion etc. You can sign up at the URL
 http://www.indexdata.dk/mailman/listinfo/zebralist
+
+$Id: README,v 1.15 2002-08-04 22:42:44 adam Exp $
