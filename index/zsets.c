@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.28  2000-07-07 12:49:20  adam
+ * Revision 1.29  2001-01-22 10:42:56  adam
+ * Added numerical sort.
+ *
+ * Revision 1.28  2000/07/07 12:49:20  adam
  * Optimized resultSetInsert{Rank,Sort}.
  *
  * Revision 1.27  2000/04/05 09:49:36  adam
@@ -371,6 +374,7 @@ void zebraPosSetDestroy (ZebraHandle zh, ZebraPosSet records, int num)
 struct sortKeyInfo {
     int relation;
     int attrUse;
+    int numerical;
 };
 
 void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
@@ -394,8 +398,21 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
 	int rel = 0;
 	for (j = 0; j<num_criteria; j++)
 	{
-	    rel = memcmp (this_entry.buf[j], sort_info->entries[i]->buf[j],
+            if (criteria[j].numerical)
+            {
+                double diff = atof(this_entry.buf[j]) -
+                              atof(sort_info->entries[i]->buf[j]);
+                rel = 0;
+                if (diff > 0.0)
+                    rel = 1;
+                else if (diff < 0.0)
+                    rel = -1;
+            }
+            else
+            {
+	        rel = memcmp (this_entry.buf[j], sort_info->entries[i]->buf[j],
 			  SORT_IDX_ENTRYSIZE);
+            }
 	    if (rel)
 		break;
 	}	
@@ -580,7 +597,8 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 	    logf (LOG_DEBUG, "Sort: key %d is of type sortAttributes", i+1);
 	    sort_criteria[i].attrUse =
 		zebra_maps_sort (zh->service->zebra_maps,
-				 sk->u.sortAttributes);
+				 sk->u.sortAttributes,
+                                 &sort_criteria[i].numerical);
 	    logf (LOG_DEBUG, "use value = %d", sort_criteria[i].attrUse);
 	    if (sort_criteria[i].attrUse == -1)
 	    {

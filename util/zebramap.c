@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.20  2000-03-02 14:35:19  adam
+ * Revision 1.21  2001-01-22 10:42:56  adam
+ * Added numerical sort.
+ *
+ * Revision 1.20  2000/03/02 14:35:19  adam
  * Added structure year and date.
  *
  * Revision 1.19  1999/11/30 13:48:04  adam
@@ -495,11 +498,19 @@ int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id)
     return 0;
 }
 
-int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes)
+int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes,
+                     int *numerical)
 {
     AttrType use;
+    AttrType structure;
+    int structure_value;
     attr_init_AttrList (&use, sortAttributes->list, 1);
+    attr_init_AttrList (&structure, sortAttributes->list, 4);
 
+    *numerical = 0;
+    structure_value = attr_find (&structure, 0);
+    if (structure_value == 109)
+        *numerical = 1;
     return attr_find (&use, NULL);
 }
 

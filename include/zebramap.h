@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.10  1999-11-30 13:48:03  adam
+ * Revision 1.11  2001-01-22 10:42:56  adam
+ * Added numerical sort.
+ *
+ * Revision 1.10  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.9  1999/09/07 07:19:21  adam
@@ -65,7 +68,8 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 		     unsigned *reg_id, char **search_type, char **rank_type,
 		     int *complete_flag, int *sort_flag);
 
-int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes);
+int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes,
+                     int *numerical);
 
 int zebra_maps_is_complete (ZebraMaps zms, unsigned reg_id);
 int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id);
