@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.24  1999-02-02 14:51:28  adam
+ * Revision 1.25  1999-02-18 15:01:26  adam
+ * Minor changes.
+ *
+ * Revision 1.24  1999/02/02 14:51:28  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.23  1998/10/18 07:51:10  adam
@@ -620,11 +623,23 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	    if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
 		(int*)&p->rec_len)))
 		p->diagnostic = 238;
+	    else
+	    {
+		char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
+		memcpy (new_buf, p->rec_buf, p->rec_len);
+		p->rec_buf = new_buf;
+	    }
 	    break;
 	case VAL_SOIF:
 	    if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
 						(int*)&p->rec_len)))
 		p->diagnostic = 238;
+	    else
+	    {
+		char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
+		memcpy (new_buf, p->rec_buf, p->rec_len);
+		p->rec_buf = new_buf;
+	    }
 	    break;
 	default:
             if (!node->u.root.absyn)
@@ -644,9 +659,12 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	    if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
 						selected,
 						(int*)&p->rec_len)))
-	    {
 		p->diagnostic = 238;
-		break;
+	    else
+	    {
+		char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
+		memcpy (new_buf, p->rec_buf, p->rec_len);
+		p->rec_buf = new_buf;
 	    }
     }
     if (node)

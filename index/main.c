@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.61  1999-02-02 14:51:00  adam
+ * Revision 1.62  1999-02-18 15:01:24  adam
+ * Minor changes.
+ *
+ * Revision 1.61  1999/02/02 14:51:00  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.60  1998/10/28 10:54:39  adam
@@ -302,6 +305,7 @@ int main (int argc, char **argv)
         " -n            Don't use shadow system.\n"
 	" -s            Show analysis on stdout, but do no work.\n"
 	" -v <level>    Set logging to <level>.\n"
+        " -l <file>     Write log to <file>.\n"
         " -f <n>        Display information for the first <n> records.\n"
         " -V            Show version.\n"
                  );
