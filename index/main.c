@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.26  1995-12-06 12:41:23  adam
+ * Revision 1.27  1995-12-07 17:38:47  adam
+ * Work locking mechanisms for concurrent updates/commit.
+ *
+ * Revision 1.26  1995/12/06  12:41:23  adam
  * New command 'stat' for the index program.
  * Filenames can be read from stdin by specifying '-'.
  * Bug fix/enhancement of the transformation from terms to regular
@@ -162,8 +165,15 @@ int main (int argc, char **argv)
                     }
                     data1_tabpath = res_get (common_resource, "profilePath");
                     rval = res_get (common_resource, "commitEnable");
+
+                    zebraIndexLock (1);
                     if (rval && atoi(rval))
+                    {
+                        zebraIndexLockMsg ("r");
                         bf_cache ();
+                    }
+                    else
+                        zebraIndexLockMsg ("w");
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
@@ -172,6 +182,7 @@ int main (int argc, char **argv)
                 else if (!strcmp (arg, "commit"))
                 {
                     logf (LOG_LOG, "Commit");
+                    zebraIndexLockMsg ("c");
                     bf_commit ();
                 }
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
@@ -237,6 +248,7 @@ int main (int argc, char **argv)
             exit (1);
         }
     }
+    zebraIndexUnlock (1);
     exit (0);
 }
 

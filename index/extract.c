@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.41  1995-12-06 16:06:42  adam
+ * Revision 1.42  1995-12-07 17:38:46  adam
+ * Work locking mechanisms for concurrent updates/commit.
+ *
+ * Revision 1.41  1995/12/06  16:06:42  adam
  * Better diagnostics. Work on 'real' dictionary deletion.
  *
  * Revision 1.40  1995/12/05  16:57:40  adam
@@ -170,8 +173,6 @@ static int records_inserted = 0;
 static int records_updated = 0;
 static int records_deleted = 0;
 
-#define MATCH_DICT "match"
-
 void key_open (int mem)
 {
     if (mem < 50000)
@@ -183,9 +184,9 @@ void key_open (int mem)
     key_buf_used = 0;
     key_file_no = 0;
 
-    if (!(matchDict = dict_open (MATCH_DICT, 20, 1)))
+    if (!(matchDict = dict_open (GMATCH_DICT, 50, 1)))
     {
-        logf (LOG_FATAL, "dict_open fail of %s", MATCH_DICT);
+        logf (LOG_FATAL, "dict_open fail of %s", GMATCH_DICT);
         exit (1);
     }
     assert (!records);
@@ -797,11 +798,10 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             }
             else
             {
-                SYSNO sysnoz = 0;
                 logf (LOG_LOG, "delete %s %s", rGroup->recordType, fname);
                 records_deleted++;
                 if (matchStr)
-                    dict_insert (matchDict, matchStr, sizeof(sysnoz), &sysnoz);
+                    dict_delete (matchDict, matchStr);
                 rec_del (records, &rec);
             }
             return 1;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.31  1995-12-06 12:41:22  adam
+ * Revision 1.32  1995-12-07 17:38:46  adam
+ * Work locking mechanisms for concurrent updates/commit.
+ *
+ * Revision 1.31  1995/12/06  12:41:22  adam
  * New command 'stat' for the index program.
  * Filenames can be read from stdin by specifying '-'.
  * Bug fix/enhancement of the transformation from terms to regular
@@ -183,6 +186,9 @@ int merge_sort (char **buf, int from, int to);
 #define FNAME_WORD_ISAM "wordisam"
 #define FNAME_CONFIG "zebra.cfg"
 
+#define GMATCH_DICT "gmatch"
+#define FMATCH_DICT "fmatch"
+
 struct strtab *strtab_mk (void);
 int strtab_src (struct strtab *t, const char *name, void ***infop);
 void strtab_del (struct strtab *t,
@@ -196,3 +202,16 @@ int fileExtract (SYSNO *sysno, const char *fname,
                  const struct recordGroup *rGroup, int deleteFlag);
 
 void rec_prstat (void);
+
+void zebraLockPrefix (char *pathPrefix);
+
+int zebraServerLock (void);
+void zebraServerUnlock (void);
+
+void zebraIndexLockMsg (const char *str);
+void zebraIndexUnlock (int rw);
+void zebraIndexLock (int rw);
+void zebraIndexLockCommit (void);
+int zebraServerLockGetState (void);
+
+#define FNAME_MAIN_LOCK "zebra.lock"

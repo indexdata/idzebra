@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.14  1995-12-06 12:41:26  adam
+ * Revision 1.15  1995-12-07 17:38:48  adam
+ * Work locking mechanisms for concurrent updates/commit.
+ *
+ * Revision 1.14  1995/12/06  12:41:26  adam
  * New command 'stat' for the index program.
  * Filenames can be read from stdin by specifying '-'.
  * Bug fix/enhancement of the transformation from terms to regular
@@ -305,8 +308,11 @@ void repositoryUpdate (struct recordGroup *rGroup)
         Dict dict;
         struct dirs_info *di;
 
-        dict = dict_open ("repdict", 40, 1);
-
+        if (!(dict = dict_open (FMATCH_DICT, 50, 1)))
+        {
+            logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
+            exit (1);
+        }
         assert (rGroup->path);
         di = dirs_open (dict, rGroup->path);
         strcpy (src, "");

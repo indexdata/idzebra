@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.15  1995-11-21 15:29:13  adam
+ * Revision 1.16  1995-12-07 17:38:48  adam
+ * Work locking mechanisms for concurrent updates/commit.
+ *
+ * Revision 1.15  1995/11/21  15:29:13  adam
  * Config file 'base' read by default by both indexer and server.
  *
  * Revision 1.14  1995/11/16  17:00:57  adam
@@ -72,6 +75,7 @@ typedef struct ZServerSet_ {
 } ZServerSet;
    
 typedef struct {
+    int registerState; /* 0 (no commit pages), 1 (use commit pages) */
     ZServerSet *sets;
     Dict wordDict;
     ISAM wordIsam;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.11  1995-12-06 13:58:26  adam
+ * Revision 1.12  1995-12-07 17:38:47  adam
+ * Work locking mechanisms for concurrent updates/commit.
+ *
+ * Revision 1.11  1995/12/06  13:58:26  adam
  * Improved flushing of records - all flushes except the last one
  * don't write the last accessed. Also flush takes place if record
  * info occupy more than about 256k.
@@ -499,6 +502,7 @@ void rec_del (Records p, Record *recpp)
 {
     Record *recp;
 
+    (p->head.no_records)--;
     if ((recp = rec_cache_lookup (p, (*recpp)->sysno, recordFlagDelete)))
     {
         rec_rm (recp);
