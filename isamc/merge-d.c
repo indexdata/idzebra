@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.20 1999-09-20 15:48:06 heikki Exp $
+ * $Id: merge-d.c,v 1.21 1999-09-21 17:36:43 heikki Exp $
  *
  * bugs
  *   (none)
@@ -127,31 +127,116 @@ struct ISAMD_DIFF_s {
  * Input preprocess filter
  ***************************************************************/
 
+
+#define FILTER_NOTYET -1  /* no data read in yet, to be done */
+
 struct ISAMD_FILTER_s {
   ISAMD_I data;          /* where the data comes from */
+  ISAMD is;              /* for debug flags */
   struct it_key k1;      /* the next item to be returned */
+  int           m1;      /* mode for k1 */
+  int           r1;      /* result for read of k1, or NOTYET */
   struct it_key k2;      /* the one after that */
+  int           m2;
+  int           r2;
 };
 
-static void init_filter( ISAMD_I data )
+typedef struct ISAMD_FILTER_s *FILTER;
+
+
+void filter_fill(FILTER F)
 {
+  while ( (F->r1 == FILTER_NOTYET) || (F->r2 == FILTER_NOTYET) )
+  {
+     if (F->r1==FILTER_NOTYET) 
+     { /* move data forward in the filter */
+        F->k1 = F->k2;
+        F->m1 = F->m2;
+        F->r1 = F->r2;
+        if ( 0 != F->r1 ) /* not eof */
+          F->r2 = FILTER_NOTYET; /* say we want more */
+        if (F->is->method->debug > 9)  
+          logf(LOG_LOG,"filt_fill: shift %d.%d m=%d r=%d",
+             F->k1.sysno, 
+             F->k1.seqno, 
+             F->m1, F->r1);
+     }
+     if (F->r2==FILTER_NOTYET)
+     { /* read new bottom value */
+        char *k_ptr = (char*) &F->k2;
+        F->r2 = (F->data->read_item)(F->data->clientData, &k_ptr, &F->m2); 
+        if (F->is->method->debug > 9)
+          logf(LOG_LOG,"filt_fill: read %d.%d m=%d r=%d",
+             F->k2.sysno, F->k2.seqno, F->m2, F->r2);
+     }  
+     if ( (F->k1.sysno == F->k2.sysno) && 
+          (F->k1.seqno == F->k2.seqno) &&
+          (F->m1 != F->m2) &&
+          (F->r1 >0 ) && (F->r2 >0) )
+     { /* del-ins pair of same key (not eof) , ignore both */
+       if (F->is->method->debug > 9)
+         logf(LOG_LOG,"filt_fill: skipped %d.%d m=%d/%d r=%d/%d",
+            F->k1.sysno, F->k1.seqno, 
+            F->m1,F->m2, F->r1,F->r2);
+       F->r1 = FILTER_NOTYET;
+       F->r2 = FILTER_NOTYET;
+     }
+  } /* while */
+} /* filter_fill */
+
+
+FILTER filter_open( ISAMD is, ISAMD_I data )
+{
+  FILTER F = (FILTER) xmalloc(sizeof(struct ISAMD_FILTER_s));
+  F->is = is;
+  F->data = data;
+  F->k1.sysno=0;
+  F->k1.seqno=0;
+  F->k2=F->k1; 
+  F->m1 = F->m2 = 0;
+  F->r1 = F->r2 = FILTER_NOTYET;
+  filter_fill(F);
 }
 
-static void close_filter ()
+static void filter_close (FILTER F)
 {
+  xfree(F);
 }
 
-static int filter_read( struct it_key *k)
+static int filter_read( FILTER F, 
+                        struct it_key *k,
+                        int *mode)
+{
+  int res;
+  filter_fill(F);
+  if (F->is->method->debug > 9)
+    logf(LOG_LOG,"filt_read: reading %d.%d m=%d r=%d",
+       F->k1.sysno, F->k1.seqno, F->m1, F->r1);
+  res  = F->r1;
+  if(res) 
+  {
+    *k = F->k1;
+    *mode= F->m1;
+  }
+  F->r1 = FILTER_NOTYET;
+  return res;
+  
+#ifdef SKIPTHIS
+  char *k_ptr = (char*) k;
+  int res = (F->data->read_item)(F->data->clientData, &k_ptr, mode); 
+  if (F->is->method->debug > 9)  
+    logf(LOG_LOG,"filt_read: start %d.%d m=%d r=%d",
+       k->sysno, k->seqno, *mode, res);
+  return res;
+#endif
+}
+
+static int filter_empty(FILTER F)
 {
   return 0;
 }
 
-static int filter_empty()
-{
-  return 0;
-}
-
-static int filter_only_one()
+static int filter_only_one(FILTER F)
 {
   return 0;
 }
@@ -434,7 +519,8 @@ int isamd_read_item_merge (
                      ISAMD_PP pp, 
                      char **dst,
                      struct it_key *p_key,  /* the data item that didn't fit*/
-                     ISAMD_I data)          /* more input data comes here */
+              /*       ISAMD_I data)  */    /* more input data comes here */
+                     FILTER filt)           /* more input data comes here */
 {                    /* The last two args can be null for ordinary reads */
   char *keyptr;
   char *codeptr;
@@ -470,7 +556,7 @@ int isamd_read_item_merge (
        p_key->sysno=p_key->seqno=0;  /* used it up */
      }
 
-     if (data)
+     if (filt)
      { /* we have a whole input stream to inject */
        pp->diffinfo[i].difftype=DT_INPU;
      }
@@ -479,41 +565,7 @@ int isamd_read_item_merge (
   while (retry)
 
   {
-     retry=0;
-
-#ifdef SKIPTHIS     
-
-     if (0==pp->diffinfo[0].key.sysno) 
-     { /* 0 is special case, main data. */
-        oldoffs=pp->offset;
-        keyptr=(char*) &(pp->diffinfo[0].key);
-        pp->diffinfo[0].mode = ! isamd_read_main_item(pp,&keyptr);
-        if (pp->is->method->debug > 7)
-          logf(LOG_LOG,"isamd_read_item: read main at %d-%d %d.%d (%x.%x)",
-            oldoffs,pp->offset,
-            pp->diffinfo[0].key.sysno, pp->diffinfo[0].key.seqno,
-            pp->diffinfo[0].key.sysno, pp->diffinfo[0].key.seqno);
-     } /* get main data */
-
-     if ( (0==pp->diffinfo[1].key.sysno) && (-1==pp->diffinfo[1].maxidx) )
-     { /* 1 is another special case, the input data at merge */
-        keyptr = (char *) &pp->diffinfo[1].key;
-        i = (*data->read_item)(data->clientData, &keyptr, &pp->diffinfo[1].mode); 
-        if (!i) 
-        {  /* did not get it */
-           pp->diffinfo[1].key.sysno=0;
-           pp->diffinfo[1].maxidx=0; /* signal the end */
-        }
-        if (pp->is->method->debug >7)
-           logf(LOG_LOG,"merge: read diff m=%d %d.%d (%x.%x)",
-              pp->diffinfo[1].mode, 
-              pp->diffinfo[1].key.sysno, pp->diffinfo[1].key.seqno,
-              pp->diffinfo[1].key.sysno, pp->diffinfo[1].key.seqno );        
-     } /* get input data */
-
-#endif // SKIPTHIS
-
-     
+     retry=0;     
      winner = 0;
      for (i=0; (!retry) && (pp->diffinfo[i].difftype); i++)
      {
@@ -570,7 +622,9 @@ int isamd_read_item_merge (
            else if (pp->diffinfo[i].difftype==DT_INPU)
            {
               keyptr = (char *) &pp->diffinfo[i].key;
-              rc = (*data->read_item)(data->clientData, &keyptr, &pp->diffinfo[i].mode); 
+         /*     rc = (*data->read_item)(data->clientData, &keyptr, &pp->diffinfo[i].mode); */
+              rc = filter_read(filt, &pp->diffinfo[i].key, 
+                                     &pp->diffinfo[i].mode); 
               if (!rc) 
               {  /* did not get it */
                  pp->diffinfo[i].key.sysno=0;
@@ -684,7 +738,8 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
 
 static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
                    struct it_key *p_key,  /* the data item that didn't fit*/
-                   ISAMD_I data)          /* more input data comes here */
+              /*     ISAMD_I data) */     /* more input data comes here */
+                   FILTER filt)           /* more input data arriving here */
 {
   int diffidx;  
   int killblk=0;
@@ -724,7 +779,8 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   
 
   r_ptr= (char *) &r_key;
-  r_more = isamd_read_item_merge( readpp, &r_ptr, p_key, data);
+/*  r_more = isamd_read_item_merge( readpp, &r_ptr, p_key, data); */
+  r_more = isamd_read_item_merge( readpp, &r_ptr, p_key, filt);
   if (!r_more)  
   { /* oops, all data has been deleted! what to do??? */
     /* never mind, we have at least one more delta to add to the block */
@@ -767,7 +823,7 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
 
      /* (try to) read next item */
      r_ptr= (char *) &r_key;
-     r_more = isamd_read_item_merge( readpp, &r_ptr,0,data);
+     r_more = isamd_read_item_merge( readpp, &r_ptr,0,filt);
 
   } /* while read */
   
@@ -814,7 +870,11 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
 
 
 
-static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
+static int append_diffs(
+      ISAMD is, 
+      ISAMD_P ipos, 
+      /*ISAMD_I data)*/
+      FILTER filt)
 {
    struct it_key i_key;    /* one input item */
    char *i_item = (char *) &i_key;  /* same as chars */
@@ -858,8 +918,9 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
    diffidx+=sizeof(int);  /* difflen will be stored here */
    
    /* read first input */
-   i_ptr = i_item;
-   i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); 
+   //i_ptr = i_item;   //!!!
+   i_more = filter_read(filt, &i_key, &i_mode); 
+   /* i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); */
 
    if (is->method->debug >6)
       logf(LOG_LOG,"isamd_appd: start m=%d %d.%d=%x.%x: %d",
@@ -875,7 +936,7 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
       i_key.seqno = i_key.seqno * 2 + i_mode;  
 
       c_ptr=codebuff;
-      i_ptr=i_item;
+      i_ptr=i_item; 
       (*is->method->code_item)(ISAMD_ENCODE, firstpp->decodeClientData, 
                                &c_ptr, &i_ptr);
       codelen = c_ptr - codebuff;
@@ -905,7 +966,7 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
              if (is->method->debug >9)  //!!!!!
                 logf(LOG_LOG,"isamd_appd: going to merge with m=%d %d.%d",
                      i_mode, i_key.sysno, i_key.seqno);
-             merge_rc = merge (firstpp, &i_key, data);
+             merge_rc = merge (firstpp, &i_key, filt);
              if (0!=merge_rc)
                return merge_rc;  /* merge handled them all ! */
              assert(!"merge returned zero ??");
@@ -929,7 +990,8 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
       
       /* (try to) read the next input */
       i_ptr = i_item;
-      i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); 
+      i_more = filter_read(filt, &i_key, &i_mode); 
+    /*  i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); */
       if ( (i_more) && (is->method->debug >6) )
          logf(LOG_LOG,"isamd_appd: got m=%d %d.%d=%x.%x: %d",
             i_mode, 
@@ -956,12 +1018,14 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 
 /*************************************************************
- * isamd_append itself, Sweet, isn't it
+ * isamd_append itself
  *************************************************************/
 
 ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 {
-   return append_diffs(is,ipos,data);
+   FILTER F = filter_open(is,data);
+   return append_diffs(is,ipos,F);
+   filter_close(F);
 } /*  isamd_append */
 
 
@@ -972,7 +1036,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.20  1999-09-20 15:48:06  heikki
+ * Revision 1.21  1999-09-21 17:36:43  heikki
+ * Added filter function. Not much of effect on the small test set...
+ *
+ * Revision 1.20  1999/09/20 15:48:06  heikki
  * Small changes
  *
  * Revision 1.19  1999/09/13 13:28:28  heikki
@@ -1029,7 +1096,5 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
  *
  *
  */
-
-
 
 
