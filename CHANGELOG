@@ -1,4 +1,6 @@
 
+Perl Filter and Perl API. By Peter Popovics.
+
 For zebra.cfg, if no profilePath is specified, directory
  (prefix)/share/idzebra/tab
 is used.

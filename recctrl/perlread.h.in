@@ -1,0 +1,8 @@
+/* Perl configuration */
+#include <EXTERN.h>
+#include <perl.h>
+
+#define PERL_BINARY @PERL_BINARY@
+#define PERL_XS_INIT @PERL_XS_INIT@
+
+@PERL_XS_INIT_INCLUDE@

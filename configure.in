@@ -1,11 +1,18 @@
 dnl Zebra, Index Data Aps, 1995-2002
-dnl $Id: configure.in,v 1.55 2002-11-09 22:26:19 adam Exp $
+dnl $Id: configure.in,v 1.56 2002-11-15 21:26:00 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(idzebra,1.3.3)
 dnl ------ Substitutions
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
+dnl ------ Perl substitutions
+AC_SUBST(PERL_BINARY)
+AC_SUBST(PERL_XS_INIT)
+AC_SUBST(PERL_XS_INIT_INCLUDE)
+AC_SUBST(PERL_LIBS)
+AC_SUBST(PERL_CFLAGS)
+AC_SUBST(ZPERL_LIBS)
 dnl
 dnl ------ Checking programs
 AC_PROG_CC
@@ -186,6 +193,73 @@ if test "$expat" != "no"; then
 		CFLAGS="$xCFLAGS"
 	fi
 fi
+dnl
+dnl ------ PERL
+perl=yes
+PERL_XS_INIT="NULL"
+PERL_XS_INIT_INCLUDE=''
+PERL_BINARY=""
+AC_ARG_WITH(perl,   [  --with-perl[=FILE]      perl binary location],[perl=$withval])
+if test "$perl" != "no"; then
+	AC_MSG_CHECKING(for perl binary)
+	if test "$perl" == "yes"; then
+	    perlbin=`which perl`
+	else
+            perlbin="$perl"
+        fi 
+        if test -x "$perlbin"; then
+	    AC_MSG_RESULT($perlbin)	
+	    AC_MSG_CHECKING(perl core directory)
+	    archdir=`$perlbin -MConfig -e 'print $Config{archlib}'`;
+	    perlcore="$archdir/CORE";
+	    if test "$perlcore"; then
+		PERL_BINARY="$perlbin"
+		AC_MSG_RESULT($perlcore)	
+	        AC_DEFINE(HAVE_PERL,1)
+	    else
+		AC_MSG_RESULT(Failed)	
+		AC_DEFINE(HAVE_PERL,0)
+	    fi
+
+	    AC_MSG_CHECKING("for ExtUtils::Embed to determine ccopts")
+	    PERL_CFLAGS=`$perlbin -MExtUtils::Embed -e ccopts 2>/dev/null`
+	    if test "$PERL_CFLAGS"; then
+		AC_MSG_RESULT(OK)	
+            else
+		PERL_CFLAGS="-I$perlcore"
+		AC_MSG_RESULT(Using defaults)	
+	    fi
+
+	    AC_MSG_CHECKING("for ExtUtils::Embed to determine ldflags")
+	    PERL_LIBS=`$perlbin -MExtUtils::Embed -e ldopts 2>/dev/null`
+	    if test "$PERL_LIBS"; then
+		AC_MSG_RESULT(OK)	
+            else
+                PERL_LIBS="-L$perlcore -lperl -lm"
+		AC_MSG_RESULT(Using defaults)	
+	    fi
+
+	    AC_MSG_CHECKING("for ExtUtils::Embed to create xs_init")
+	    xsf="recctrl/xsinit.h"
+	    `rm $xsf 2>/dev/null`;
+
+	    `$perlbin -MExtUtils::Embed -e xsinit -- -o $xsf 2>/dev/null`
+	    if test -r "$xsf"; then
+		AC_MSG_RESULT(OK)	
+		PERL_XS_INIT="xs_init"
+		PERL_XS_INIT_INCLUDE='#include "xsinit.h"'
+            else
+		AC_MSG_RESULT(XS libraries are not going to be available)
+            fi
+
+	    ZPERL_LIBS="$LIBS"
+	    CFLAGS="$PERL_CFLAGS $CFLAGS"
+	    LIBS="$PERL_LIBS $LIBS"
+        else
+	    AC_DEFINE(HAVE_PERL,0)
+	    AC_MSG_RESULT(Not found)
+	fi
+fi
 dnl ------- 64 bit files
 AC_MSG_CHECKING(for LFS)
 AC_TRY_RUN([#define _FILE_OFFSET_BITS 64
@@ -246,6 +320,7 @@ AC_OUTPUT([
   rset/Makefile
   data1/Makefile
   recctrl/Makefile
+  recctrl/perlread.h
   index/Makefile
   include/Makefile
   tab/Makefile
@@ -256,6 +331,11 @@ AC_OUTPUT([
   doc/zebraphp.dsl
   doc/tkl.xsl
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
+  perl/Makefile.PL
   test/dmoz/Makefile test/xpath/Makefile
   examples/Makefile examples/gils/Makefile
 ])
+
+if test -x "$perlbin"; then
+  res=`cd perl ; $perlbin Makefile.PL ; cd .. ;`;
+fi

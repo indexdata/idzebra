@@ -1,0 +1,3 @@
+#!/bin/sh
+swig -I../include -v -Wall -perl5 -proxy ./IDZebra.i 
+mv IDZebra.pm lib/
