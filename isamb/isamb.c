@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.41 2004-06-03 00:23:48 adam Exp $
+/* $Id: isamb.c,v 1.42 2004-06-03 10:29:49 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1142,6 +1142,11 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
 
 #if NEW_FORWARD == 1
 
+/*
+#undef ISAMB_DEBUB
+#define ISAMB_DEBUG 1
+*/
+
 static int isamb_pp_read_on_leaf(ISAMB_PP pp, void *buf)
 { /* reads the next item on the current leaf, returns 0 if end of leaf*/
     struct ISAMB_block *p = pp->block[pp->level];
@@ -1171,6 +1176,11 @@ static int isamb_pp_climb_level(ISAMB_PP pp, int *pos)
     struct ISAMB_block *p = pp->block[pp->level];
     char *src;
     int item_len;
+#if ISAMB_DEBUG
+    logf(LOG_DEBUG,"isamb_pp_climb_level starting "
+                   "at level %d node %d ofs=%d sz=%d",
+                    pp->level, p->pos, p->offset, p->size);
+#endif
     assert(p->offset <= p->size);
     if (pp->level==0)
     {
@@ -1183,8 +1193,10 @@ static int isamb_pp_climb_level(ISAMB_PP pp, int *pos)
     pp->block[pp->level]=0;
     (pp->level)--;
     p=pp->block[pp->level];
-    logf(LOG_DEBUG,"isamb_pp_climb_level climbed to node %d ofs=%d",
-                    p->pos, p->offset);
+#if ISAMB_DEBUG
+    logf(LOG_DEBUG,"isamb_pp_climb_level climbed to level %d node %d ofs=%d",
+                    pp->level, p->pos, p->offset);
+#endif
     assert (!p->leaf);
     assert (p->offset <= p->size);
     if (p->offset == p->size ) {
@@ -1193,13 +1205,20 @@ static int isamb_pp_climb_level(ISAMB_PP pp, int *pos)
             return 0;
         p=pp->block[pp->level];
     }
-    /* skip the child we just came from */
-    assert (p->offset < p->size );
-    src=p->bytes + p->offset;
-    decode_ptr(&src, &item_len);
-    src += item_len;
-    decode_ptr(&src, pos);
-    p->offset=src - (char *)p->bytes;
+    else
+    {
+        /* skip the child we just came from */
+#if ISAMB_DEBUG
+        logf(LOG_DEBUG,"isam_pp_climb_level: skipping lev=%d ofs=%d sz=%d", 
+                        pp->level, p->offset, p->size);
+#endif
+        assert (p->offset < p->size );
+        src=p->bytes + p->offset;
+        decode_ptr(&src, &item_len);
+        src += item_len;
+        decode_ptr(&src, pos);
+        p->offset=src - (char *)p->bytes;
+    }
     return 1;
 } /* climb_level */
 
@@ -1217,10 +1236,21 @@ static int isamb_pp_forward_unode(ISAMB_PP pp, int pos, const void *untilbuf)
     int item_len;
     int cmp;
     int nxtpos;
+#if ISAMB_DEBUG
+    logf(LOG_DEBUG,"isamb_pp_forward_unode starting "
+                   "at level %d node %d ofs=%di sz=%d",
+                    pp->level, p->pos, p->offset, p->size);
+#endif
     assert(!p->leaf);
     assert(p->offset <= p->size);
-    if (p->offset == p->size)
+    if (p->offset == p->size) {
+#if ISAMB_DEBUG
+            logf(LOG_DEBUG,"isamb_pp_forward_unode returning at end "
+                   "at level %d node %d ofs=%di sz=%d",
+                    pp->level, p->pos, p->offset, p->size);
+#endif
         return pos; /* already at the end of it */
+    }
     while(p->offset < p->size) {
         decode_ptr(&src,&item_len);
         cmp=(*pp->isamb->method->compare_item)(untilbuf,src);
@@ -1228,11 +1258,21 @@ static int isamb_pp_forward_unode(ISAMB_PP pp, int pos, const void *untilbuf)
         decode_ptr(&src,&nxtpos);
         if (cmp<2)
         {
+#if ISAMB_DEBUG
+            logf(LOG_DEBUG,"isamb_pp_forward_unode returning a hit "
+                   "at level %d node %d ofs=%di sz=%d",
+                    pp->level, p->pos, p->offset, p->size);
+#endif
             return pos;
         } /* found one */
         pos=nxtpos;
         p->offset=src-(char*)p->bytes;
     }
+#if ISAMB_DEBUG
+            logf(LOG_DEBUG,"isamb_pp_forward_unode returning at tail "
+                   "at level %d node %d ofs=%di sz=%d",
+                    pp->level, p->pos, p->offset, p->size);
+#endif
     return pos; /* that's the last one in the line */
     
 } /* forward_unode */
