@@ -1,4 +1,4 @@
-/* $Id: sort1.c,v 1.1 2004-12-02 15:02:52 adam Exp $
+/* $Id: sort1.c,v 1.2 2004-12-02 17:43:04 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -28,15 +28,18 @@ int main(int argc, char **argv)
     ZebraHandle  zh = zebra_open(zs);
     ZebraMetaRecord *recs;
     char path[256];
-    int errs = 0;
+    int i, errs = 0;
 
     zebra_select_database(zh, "Default");
 
     zebra_init(zh);
 
     zebra_begin_trans(zh, 1);
-    sprintf(path, "%.200s/recs", get_srcdir());
-    zebra_repository_update(zh, path);
+    for (i = 1; i <= 4; i++)
+    {
+        sprintf(path, "%.200s/rec%d.xml", get_srcdir(), i);
+        zebra_repository_update(zh, path);
+    }
     zebra_end_trans(zh);
     zebra_commit(zh);
 

@@ -4,9 +4,7 @@
 zebrasrv.pid
 Makefile
 tmp?
-reg
-lock
-recs
-shadow
-socket
 *.log
+.libs
+.deps
+sort1
