@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.112 2004-07-28 08:15:45 adam Exp $
+/* $Id: main.c,v 1.112.2.1 2004-09-26 20:49:02 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -55,7 +55,7 @@ int main (int argc, char **argv)
     char *arg;
     char *configName = 0;
     int nsections = 0;
-    int disableCommit = 0;
+    int enable_commit = 1;
     char *database = "Default";
     Res res = res_open(0, 0, 0);
     
@@ -129,8 +129,7 @@ int main (int argc, char **argv)
                         exit (1);
 	            }	
                     zh = zebra_open (zs);
-                    if (disableCommit)
-                        zebra_shadow_enable (zh, 0);
+		    zebra_shadow_enable (zh, enable_commit);
                 }
 
 		if (zebra_select_database (zh, database))
@@ -264,7 +263,7 @@ int main (int argc, char **argv)
         else if (ret == 't')
 	    res_set(res, "recordType", arg);
         else if (ret == 'n')
-	    res_set(res, "disableCommit", "1");
+	    enable_commit = 0;
         else if (ret == 'L')
 	    res_set(res, "followLinks", "0");
         else
