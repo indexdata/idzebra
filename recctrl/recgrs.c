@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.72 2003-02-04 12:06:47 pop Exp $
+/* $Id: recgrs.c,v 1.73 2003-02-18 11:57:58 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -968,14 +968,25 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 #if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
+#if YAZ_VERSIONL >= 0x010903L
     if (p->comp && p->comp->which == Z_RecordComp_complex &&
 	p->comp->u.complex->generic &&
-	p->comp->u.complex->generic->schema)
+        p->comp->u.complex->generic->which == Z_Schema_oid &&
+        p->comp->u.complex->generic->schema.oid)
+    {
+	oident *oe = oid_getentbyoid (p->comp->u.complex->generic->schema.oid);
+	if (oe)
+	    requested_schema = oe->value;
+    }
+#else
+    if (p->comp && p->comp->which == Z_RecordComp_complex &&
+	p->comp->u.complex->generic && p->comp->u.complex->generic->schema)
     {
 	oident *oe = oid_getentbyoid (p->comp->u.complex->generic->schema);
 	if (oe)
 	    requested_schema = oe->value;
     }
+#endif
 
     /* If schema has been specified, map if possible, then check that
      * we got the right one 

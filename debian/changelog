@@ -1,3 +1,9 @@
+idzebra (1.3.4-3) unstable; urgency=low
+
+  * Updated for YAZ 1.9.3.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Tue, 18 Feb 2003 13:05:19 +0100
+
 idzebra (1.3.4-2) unstable; urgency=low
 
   * Fixed bug in sort for unset entries at end of sort file.
