@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.8  1994-08-23 15:03:34  quinn
+ * Revision 1.9  1994-08-24 08:45:48  quinn
+ * Using mfile.
+ *
+ * Revision 1.8  1994/08/23  15:03:34  quinn
  * *** empty log message ***
  *
  * Revision 1.7  1994/08/23  14:25:45  quinn
@@ -36,7 +39,7 @@
 
 int bf_close (BFile bf)
 {
-    close(bf->fd);
+    mf_close(bf->mf);
     xfree(bf);
     return(0);
 }
@@ -45,23 +48,20 @@ BFile bf_open (const char *name, int block_size, int wflag)
 {
     BFile tmp = xmalloc(sizeof(BFile_struct));
 
-    if ((tmp->fd = open(name, wflag ? O_RDWR|O_CREAT : O_RDONLY, 0666)) < 0)
+    if (!(tmp->mf = mf_open(0, name, block_size, wflag)))
     {
-        log(LOG_FATAL|LOG_ERRNO, "open %s", name); 
+        log(LOG_FATAL|LOG_ERRNO, "mfopen %s", name); 
 	return(0);
     }
-    tmp->block_size = block_size;
     return(tmp);
 }
 
 int bf_read (BFile bf, int no, int offset, int num, void *buf)
 {
-    lseek(bf->fd, no * bf->block_size + offset, 0);
-    return(read(bf->fd, buf, num ? num : bf->block_size));
+    return mf_read(bf->mf, no, offset, num, buf);
 }
 
 int bf_write (BFile bf, int no, int offset, int num, const void *buf)
 {
-    lseek(bf->fd, no * bf->block_size + offset, 0);
-    return(write(bf->fd, buf, num ? num : bf->block_size));
+    return mf_write(bf->mf, no, offset, num, buf);
 }

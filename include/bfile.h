@@ -4,9 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  $Log: bfile.h,v $
- Revision 1.4  1994-08-17 15:38:28  adam
- Include of util.h.
+ Revision 1.5  1994-08-24 08:45:52  quinn
+ Using mfile.
 
+ * Revision 1.4  1994/08/17  15:38:28  adam
+ * Include of util.h.
+ *
  * Revision 1.3  1994/08/17  14:09:47  quinn
  * Small changes
  *
@@ -16,11 +19,11 @@
 #define BFILE_H
 
 #include <util.h>
+#include <mfile.h>
 
 typedef struct BFile_struct
 {
-    int fd;
-    int block_size;
+    MFile mf;
 } *BFile, BFile_struct;
 
 int bf_close (BFile);
