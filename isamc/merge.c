@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: merge.c,v $
- * Revision 1.4  1996-11-08 11:15:31  adam
+ * Revision 1.5  1997-02-12 20:42:43  adam
+ * Bug fix: during isc_merge operations, some pages weren't marked dirty
+ * even though they should be. At this point the merge operation marks
+ * a page dirty if the previous page changed at all. A better approach is
+ * to mark it dirty if the last key written changed in previous page.
+ *
+ * Revision 1.4  1996/11/08 11:15:31  adam
  * Number of keys in chain are stored in first block and the function
  * to retrieve this information, isc_pp_num is implemented.
  *
@@ -47,6 +53,26 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
         unsigned short ssize;
         char *src;
 
+        /* consider this block number */
+        if (!mb[i].block) 
+        {
+            mb[i].block = isc_alloc_block (is, cat);
+            mb[i].dirty = 1;
+        }
+
+        /* consider next block pointer */
+        if (last && i == ptr-1)
+            mb[i+1].block = 0;
+        else if (!mb[i+1].block)       
+        {
+            mb[i+1].block = isc_alloc_block (is, cat);
+            mb[i+1].dirty = 1;
+            mb[i].dirty = 1;
+        }
+
+        ssize = mb[i+1].offset - mb[i].offset;
+        assert (ssize);
+
         /* skip rest if not dirty */
         if (!mb[i].dirty)
         {
@@ -54,24 +80,12 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             if (!*firstpos)
                 *firstpos = mb[i].block;
             if (is->method->debug > 2)
-                logf (LOG_LOG, "isc: skip block %d %d", cat, mb[i].block);
+                logf (LOG_LOG, "isc: skip ptr=%d size=%d %d %d",
+                     i, ssize, cat, mb[i].block);
             ++(is->files[cat].no_skip_writes);
             continue;
         }
-        /* consider this block number */
-
-        if (!mb[i].block) 
-            mb[i].block = isc_alloc_block (is, cat);
-
-        /* consider next block pointer */
-        if (last && i == ptr-1)
-            mb[i+1].block = 0;
-        else if (!mb[i+1].block)       
-            mb[i+1].block = isc_alloc_block (is, cat);
-
         /* write block */
-        ssize = mb[i+1].offset - mb[i].offset;
-        assert (ssize);
 
         if (!*firstpos)
         {
@@ -82,16 +96,16 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             memcpy (src+sizeof(int)+sizeof(ssize), numkeys,
                     sizeof(*numkeys));
             if (is->method->debug > 2)
-                logf (LOG_LOG, "isc: flush numk=%d size=%d nextpos=%d",
-                     *numkeys, (int) ssize, mb[i+1].block);
+                logf (LOG_LOG, "isc: flush ptr=%d numk=%d size=%d nextpos=%d",
+                     i, *numkeys, (int) ssize, mb[i+1].block);
         }
         else
         {
             src = r_buf + mb[i].offset - ISAMC_BLOCK_OFFSET_N;
             ssize += ISAMC_BLOCK_OFFSET_N;
             if (is->method->debug > 2)
-                logf (LOG_LOG, "isc: flush size=%d nextpos=%d",
-                     (int) ssize, mb[i+1].block);
+                logf (LOG_LOG, "isc: flush ptr=%d size=%d nextpos=%d",
+                     i, (int) ssize, mb[i+1].block);
         }
         memcpy (src, &mb[i+1].block, sizeof(int));
         memcpy (src+sizeof(int), &ssize, sizeof(ssize));
@@ -184,14 +198,19 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                     if (mb[ptr].block)
                         isc_release_block (is, pp->cat, mb[ptr].block);
                     mb[ptr].block = pp->pos;
-                    mb[ptr].dirty = 0;
+                    mb[ptr].dirty = 2;
+                    if (ptr > 0)
+                        mb[ptr-1].dirty = 1;
                 }
                 else
                 {
                     /* indicate new boundary based on the original file */
                     mb[++ptr].block = pp->pos;
-                    mb[ptr].dirty = 0;
+                    mb[ptr].dirty = (mb[ptr-1].dirty > 1) ? 1 : 0;
                     mb[ptr].offset = r_offset;
+                    if (is->method->debug > 3)
+                        logf (LOG_LOG, "isc: bound ptr=%d,offset=%d",
+                            ptr, r_offset);
                     if (cat==is->max_cat && ptr >= is->method->max_blocks_mem)
                     {
                         /* We are dealing with block(s) of max size. Block(s)
@@ -247,7 +266,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                 {
                     /* no! delete the item */
                     r_item = NULL;
-                    mb[ptr].dirty = 1;
+                    mb[ptr].dirty = 2;
                 }
             }
             else
@@ -279,7 +298,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                 abort ();
             }
             memcpy (r_item, i_item, i_item_ptr - i_item);
-            mb[ptr].dirty = 1;
+            mb[ptr].dirty = 2;
             /* move i */
             i_item_ptr = i_item;
             i_more = (*data->read_item)(data->clientData, &i_item_ptr,

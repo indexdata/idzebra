@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.6  1996-11-08 11:15:29  adam
+ * Revision 1.7  1997-02-12 20:42:43  adam
+ * Bug fix: during isc_merge operations, some pages weren't marked dirty
+ * even though they should be. At this point the merge operation marks
+ * a page dirty if the previous page changed at all. A better approach is
+ * to mark it dirty if the last key written changed in previous page.
+ *
+ * Revision 1.6  1996/11/08 11:15:29  adam
  * Number of keys in chain are stored in first block and the function
  * to retrieve this information, isc_pp_num is implemented.
  *
@@ -171,8 +177,6 @@ int isc_close (ISAMC is)
 int isc_read_block (ISAMC is, int cat, int pos, char *dst)
 {
     ++(is->files[cat].no_reads);
-    if (is->method->debug > 2)
-        logf (LOG_LOG, "isc: read_block %d %d", cat, pos);
     return bf_read (is->files[cat].bf, pos, 0, 0, dst);
 }
 
@@ -325,6 +329,9 @@ ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P ipos)
         assert (pp->next != pp->pos);
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMC_BLOCK_OFFSET_1);
+        if (is->method->debug > 2)
+            logf (LOG_LOG, "isc: read_block size=%d %d %d",
+                 pp->size, pp->cat, pp->pos);
     }
     return pp;
 }
@@ -359,6 +366,9 @@ int isc_read_item (ISAMC_PP pp, char **dst)
             isc_release_block (is, pp->cat, pp->pos);
         (*is->method->code_item)(ISAMC_DECODE, pp->decodeClientData, dst, &src);
         pp->offset = src - pp->buf; 
+        if (is->method->debug > 2)
+            logf (LOG_LOG, "isc: read_block size=%d %d %d",
+                 pp->size, pp->cat, pp->pos);
         return 2;
     }
     (*is->method->code_item)(ISAMC_DECODE, pp->decodeClientData, dst, &src);
