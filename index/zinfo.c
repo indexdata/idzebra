@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.14  1998-11-04 16:31:32  adam
+ * Revision 1.15  1999-01-25 13:47:54  adam
+ * Fixed bug.
+ *
+ * Revision 1.14  1998/11/04 16:31:32  adam
  * Fixed bug regarding recordBytes in databaseInfo.
  *
  * Revision 1.13  1998/11/03 10:17:09  adam
@@ -277,7 +280,7 @@ static data1_node *data1_make_tagdata_text (data1_handle dh, data1_node *at,
     {
 	data1_node *node_data = node->child;
 	node_data->u.data.what = DATA1I_text;
-	node_data->u.data.len = strlen (node_data->u.data.data);
+	node_data->u.data.len = strlen (str);
 	node_data->u.data.data = data1_insert_string (dh, node_data,
 						      nmem, str);
 	return node_data;
@@ -957,7 +960,7 @@ static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
 
     /* convert to "SGML" and write it */
 #if ZINFO_DEBUG
-    data1_pr_tree (zei->dh, zad->data1_tree, stderr);
+    data1_pr_tree (zei->dh, node_categoryList, stderr);
 #endif
     sgml_buf = data1_nodetoidsgml(zei->dh, node_categoryList,
 				  0, &sgml_len);
