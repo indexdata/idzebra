@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.16 2002-10-03 10:29:41 adam Exp $
+## $Id: Makefile.am,v 1.17 2002-10-30 12:55:18 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -26,7 +26,7 @@ HTMLFILES = administration.html apps.html configuration-file.html \
  installation.html internal-representation.html introduction.html \
  license.html locating-records.html protocol-support.html quick-start.html \
  record-model.html register-location.html server.html shadow-registers.html \
- simple-indexing.html zebra.html zebraidx.html
+ simple-indexing.html support.html zebra.html zebraidx.html
 
 doc_DATA = $(HTMLFILES) zebra.pdf
 man_MANS = zebraidx.1 zebrasrv.8
