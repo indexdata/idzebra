@@ -1,12 +1,12 @@
 # Danish/Swedish character map.
 #
-# $Id: string.chr,v 1.1 1997-10-27 14:35:04 adam Exp $
+# $Id: string.chr,v 1.2 1998-01-26 10:36:49 adam Exp $
 
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.
 
-lowercase {0-9}{a-y}üzæäøöå(aa)
-uppercase {0-9}{A-Y}ÜZÆÄØÖÅ(AA)
+lowercase {0-9}{a-y}üzæäøöå
+uppercase {0-9}{A-Y}ÜZÆÄØÖÅ
 
 # Breaking characters
 

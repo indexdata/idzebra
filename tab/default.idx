@@ -1,3 +1,6 @@
+# Zebra indexes as referred to from the *.abs-files.
+#  $Id: default.idx,v 1.3 1998-01-26 10:36:49 adam Exp $
+#
 # Traditional word index
 index w
 completeness 0
