@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.16  1995-12-06 14:41:13  adam
+ * Revision 1.17  1995-12-07 11:47:04  adam
+ * Default pagesize is 4k instead of 8k.
+ *
+ * Revision 1.16  1995/12/06  14:41:13  adam
  * New function: dict_delete.
  *
  * Revision 1.15  1995/10/27  13:59:17  adam
@@ -108,7 +111,7 @@ typedef struct Dict_struct {
 
 #define DICT_MAGIC "dict00"
 
-#define DICT_DEFAULT_PAGESIZE "8192"
+#define DICT_DEFAULT_PAGESIZE "4096"
 
 int        dict_bf_readp (Dict_BFile bf, int no, void **bufp);
 int        dict_bf_newp (Dict_BFile bf, int no, void **bufp);
