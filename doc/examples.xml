@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.14 2002-10-30 13:59:42 adam Exp $ -->
+ <!-- $Id: examples.xml,v 1.15 2002-10-30 14:45:42 adam Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -125,12 +125,11 @@
       was perhaps the tallest. With its head raised, it stood 60 feet (nearly
       20 m) tall. &lt;/P&gt;
      &lt;/ESSAY&gt;
-
       &lt;idzebra xmlns="http://www.indexdata.dk/zebra/"&gt;
-	&lt;size&gt;593&lt;/size&gt;
-	&lt;localnumber&gt;891&lt;/localnumber&gt;
-	&lt;filename&gt;records/genera.xml&lt;/filename&gt;
-      &lt;/idzebra&gt;
+        &lt;size&gt;593&lt;/size&gt;
+        &lt;localnumber&gt;891&lt;/localnumber&gt;
+        &lt;filename&gt;records/genera.xml&lt;/filename&gt;
+     &lt;/idzebra&gt;
     &lt;/GENUS&gt;
    </screen>
   </para>
