@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.h,v $
- * Revision 1.4  1997-09-17 12:19:11  adam
+ * Revision 1.5  1998-03-05 08:37:44  adam
+ * New result set model.
+ *
+ * Revision 1.4  1997/09/17 12:19:11  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -29,12 +32,13 @@
 extern "C" {
 #endif
 
-extern const rset_control *rset_kind_temp;
+extern const struct rset_control *rset_kind_temp;
 
 typedef struct rset_temp_parms
 {
     int     key_size;
     char   *temp_path;
+    RSET_TERM rset_term;    
 } rset_temp_parms;
 
 #ifdef __cplusplus

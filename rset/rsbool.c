@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.13  1997-12-18 10:54:24  adam
+ * Revision 1.14  1998-03-05 08:36:27  adam
+ * New result set model.
+ *
+ * Revision 1.13  1997/12/18 10:54:24  adam
  * New method result set method rs_hits that returns the number of
  * hits in result-set (if known). The ranked result set returns real
  * number of hits but only when not combined with other operands.
@@ -63,21 +66,18 @@
 #include <rsbool.h>
 #include <zebrautl.h>
 
-static void *r_create(const struct rset_control *sel, void *parms,
-                      int *flags);
+static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
-static int r_hits (RSET ct, void *oi);
-static int r_read_and (RSFD rfd, void *buf);
-static int r_read_or (RSFD rfd, void *buf);
-static int r_read_not (RSFD rfd, void *buf);
+static int r_read_and (RSFD rfd, void *buf, int *term_index);
+static int r_read_or (RSFD rfd, void *buf, int *term_index);
+static int r_read_not (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
-static int r_score (RSFD rfd, int *score);
 
-static const rset_control control_and = 
+static const struct rset_control control_and = 
 {
     "and",
     r_create,
@@ -86,13 +86,11 @@ static const rset_control control_and =
     r_delete,
     r_rewind,
     r_count,
-    r_hits,
     r_read_and,
     r_write,
-    r_score
 };
 
-static const rset_control control_or = 
+static const struct rset_control control_or = 
 {
     "or",
     r_create,
@@ -101,13 +99,11 @@ static const rset_control control_or =
     r_delete,
     r_rewind,
     r_count,
-    r_hits,
     r_read_or,
     r_write,
-    r_score
 };
 
-static const rset_control control_not = 
+static const struct rset_control control_not = 
 {
     "not",
     r_create,
@@ -116,21 +112,20 @@ static const rset_control control_not =
     r_delete,
     r_rewind,
     r_count,
-    r_hits,
     r_read_not,
     r_write,
-    r_score
 };
 
 
-const rset_control *rset_kind_and = &control_and;
-const rset_control *rset_kind_or = &control_or;
-const rset_control *rset_kind_not = &control_not;
+const struct rset_control *rset_kind_and = &control_and;
+const struct rset_control *rset_kind_or = &control_or;
+const struct rset_control *rset_kind_not = &control_not;
 
 struct rset_bool_info {
     int key_size;
     RSET rset_l;
     RSET rset_r;
+    int term_index_s;
     int (*cmp)(const void *p1, const void *p2);
     struct rset_bool_rfd *rfd_list;
 };
@@ -140,14 +135,15 @@ struct rset_bool_rfd {
     RSFD rfd_r;
     int  more_l;
     int  more_r;
+    int term_index_l;
+    int term_index_r;
     void *buf_l;
     void *buf_r;
     struct rset_bool_rfd *next;
     struct rset_bool_info *info;
 };    
 
-static void *r_create (const struct rset_control *sel, void *parms,
-                       int *flags)
+static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_bool_parms *bool_parms = parms;
     struct rset_bool_info *info;
@@ -157,9 +153,20 @@ static void *r_create (const struct rset_control *sel, void *parms,
     info->rset_l = bool_parms->rset_l;
     info->rset_r = bool_parms->rset_r;
     if (rset_is_volatile(info->rset_l) || rset_is_volatile(info->rset_r))
-        *flags |= RSET_FLAG_VOLATILE;
+        ct->flags |= RSET_FLAG_VOLATILE;
     info->cmp = bool_parms->cmp;
     info->rfd_list = NULL;
+    
+    info->term_index_s = info->rset_l->no_rset_terms;
+    ct->no_rset_terms =
+	info->rset_l->no_rset_terms + info->rset_r->no_rset_terms;
+    ct->rset_terms = xmalloc (sizeof (*ct->rset_terms) * ct->no_rset_terms);
+
+    memcpy (ct->rset_terms, info->rset_l->rset_terms,
+	    info->rset_l->no_rset_terms * sizeof(*ct->rset_terms));
+    memcpy (ct->rset_terms + info->rset_l->no_rset_terms,
+	    info->rset_r->rset_terms,
+	    info->rset_r->no_rset_terms * sizeof(*ct->rset_terms));
     return info;
 }
 
@@ -180,10 +187,12 @@ static RSFD r_open (RSET ct, int flag)
 
     rfd->buf_l = xmalloc (info->key_size);
     rfd->buf_r = xmalloc (info->key_size);
-    rfd->rfd_l = rset_open (info->rset_l, RSETF_READ|RSETF_SORT_SYSNO);
-    rfd->rfd_r = rset_open (info->rset_r, RSETF_READ|RSETF_SORT_SYSNO);
-    rfd->more_l = rset_read (info->rset_l, rfd->rfd_l, rfd->buf_l);
-    rfd->more_r = rset_read (info->rset_r, rfd->rfd_r, rfd->buf_r);
+    rfd->rfd_l = rset_open (info->rset_l, RSETF_READ);
+    rfd->rfd_r = rset_open (info->rset_r, RSETF_READ);
+    rfd->more_l = rset_read (info->rset_l, rfd->rfd_l, rfd->buf_l,
+			     &rfd->term_index_l);
+    rfd->more_r = rset_read (info->rset_r, rfd->rfd_r, rfd->buf_r,
+			     &rfd->term_index_r);
     return rfd;
 }
 
@@ -212,6 +221,7 @@ static void r_delete (RSET ct)
     struct rset_bool_info *info = ct->buf;
 
     assert (info->rfd_list == NULL);
+    xfree (ct->rset_terms);
     rset_delete (info->rset_l);
     rset_delete (info->rset_r);
     xfree (info);
@@ -225,8 +235,8 @@ static void r_rewind (RSFD rfd)
     logf (LOG_DEBUG, "rsbool_rewind");
     rset_rewind (info->rset_l, p->rfd_l);
     rset_rewind (info->rset_r, p->rfd_r);
-    p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
-    p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+    p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l, &p->term_index_l);
+    p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r, &p->term_index_r);
 }
 
 static int r_count (RSET ct)
@@ -234,12 +244,7 @@ static int r_count (RSET ct)
     return 0;
 }
 
-static int r_hits (RSET ct, void *oi)
-{
-    return -1;
-}
-
-static int r_read_and (RSFD rfd, void *buf)
+static int r_read_and (RSFD rfd, void *buf, int *term_index)
 {
     struct rset_bool_rfd *p = rfd;
     struct rset_bool_info *info = p->info;
@@ -252,31 +257,41 @@ static int r_read_and (RSFD rfd, void *buf)
         if (!cmp)
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+	    *term_index = p->term_index_l;
+            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
+				   &p->term_index_l);
+            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
+				   &p->term_index_r);
             return 1;
         }
         else if (cmp == 1)
         {
             memcpy (buf, p->buf_r, info->key_size);
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+
+	    *term_index = p->term_index_r + info->term_index_s;
+            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
+				   &p->term_index_r);
             return 1;
         }
         else if (cmp == -1)
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+	    *term_index = p->term_index_l;
+            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
+				   &p->term_index_l);
             return 1;
         }
         else if (cmp > 1)
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
+				   &p->term_index_r);
         else
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
+				   &p->term_index_l);
     }
     return 0;
 }
 
-static int r_read_or (RSFD rfd, void *buf)
+static int r_read_or (RSFD rfd, void *buf, int *term_index)
 {
     struct rset_bool_rfd *p = rfd;
     struct rset_bool_info *info = p->info;
@@ -294,27 +309,34 @@ static int r_read_or (RSFD rfd, void *buf)
         if (!cmp)
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+	    *term_index = p->term_index_l;
+            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
+				   &p->term_index_l);
+            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
+				   &p->term_index_r);
             return 1;
         }
         else if (cmp > 0)
         {
             memcpy (buf, p->buf_r, info->key_size);
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+	    *term_index = p->term_index_r + info->term_index_s;
+            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
+				   &p->term_index_r);
             return 1;
         }
         else
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+	    *term_index = p->term_index_l;
+            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
+				   &p->term_index_l);
             return 1;
         }
     }
     return 0;
 }
 
-static int r_read_not (RSFD rfd, void *buf)
+static int r_read_not (RSFD rfd, void *buf, int *term_index)
 {
     struct rset_bool_rfd *p = rfd;
     struct rset_bool_info *info = p->info;
@@ -332,24 +354,29 @@ static int r_read_not (RSFD rfd, void *buf)
         if (cmp < -1)
         {
             memcpy (buf, p->buf_l, info->key_size);
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+	    *term_index = p->term_index_l;
+            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
+				   &p->term_index_l);
             return 1;
         }
         else if (cmp > 1)
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
+				   &p->term_index_r);
         else
         {
             memcpy (buf, p->buf_l, info->key_size);
             do
             {
-                p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l);
+                p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
+				       &p->term_index_l);
                 if (!p->more_l)
                     break;
                 cmp = (*info->cmp)(p->buf_l, buf);
             } while (cmp >= -1 && cmp <= 1);
             do
             {
-                p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r);
+                p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
+				       &p->term_index_r);
                 if (!p->more_r)
                     break;
                 cmp = (*info->cmp)(p->buf_r, buf);
@@ -363,12 +390,6 @@ static int r_read_not (RSFD rfd, void *buf)
 static int r_write (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "bool set type is read-only");
-    return -1;
-}
-
-static int r_score (RSFD rfd, int *score)
-{
-    *score = -1;
     return -1;
 }
 

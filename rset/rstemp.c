@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.23  1997-12-18 10:54:25  adam
+ * Revision 1.24  1998-03-05 08:36:28  adam
+ * New result set model.
+ *
+ * Revision 1.23  1997/12/18 10:54:25  adam
  * New method result set method rs_hits that returns the number of
  * hits in result-set (if known). The ranked result set returns real
  * number of hits but only when not combined with other operands.
@@ -100,19 +103,16 @@
 #include <zebrautl.h>
 #include <rstemp.h>
 
-static void *r_create(const struct rset_control *sel, void *parms,
-                      int *flags);
+static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
-static int r_hits (RSET ct, void *oi);
-static int r_read (RSFD rfd, void *buf);
+static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
-static int r_score (RSFD rfd, int *score);
 
-static const rset_control control = 
+static const struct rset_control control = 
 {
     "temp",
     r_create,
@@ -121,13 +121,11 @@ static const rset_control control =
     r_delete,
     r_rewind,
     r_count,
-    r_hits,
     r_read,
     r_write,
-    r_score
 };
 
-const rset_control *rset_kind_temp = &control;
+const struct rset_control *rset_kind_temp = &control;
 
 struct rset_temp_info {
     int     fd;
@@ -149,7 +147,7 @@ struct rset_temp_rfd {
     struct rset_temp_rfd *next;
 };
 
-static void *r_create(const struct rset_control *sel, void *parms, int *flags)
+static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_temp_parms *temp_parms = parms;
     struct rset_temp_info *info;
@@ -172,7 +170,9 @@ static void *r_create(const struct rset_control *sel, void *parms, int *flags)
 	info->temp_path = xmalloc (strlen(temp_parms->temp_path)+1);
 	strcpy (info->temp_path, temp_parms->temp_path);
     }
-
+    ct->no_rset_terms = 1;
+    ct->rset_terms = xmalloc (sizeof(*ct->rset_terms));
+    ct->rset_terms[0] = temp_parms->rset_term;
     return info;
 }
 
@@ -276,6 +276,8 @@ static void r_delete (RSET ct)
     }
     if (info->temp_path)
 	xfree (info->temp_path);
+    rset_term_destroy (ct->rset_terms[0]);
+    xfree (ct->rset_terms);
     xfree (info);
 }
 
@@ -334,14 +336,7 @@ static int r_count (RSET ct)
     return info->pos_end / info->key_size;
 }
 
-static int r_hits (RSET ct, void *oi)
-{
-    struct rset_temp_info *info = ct->buf;
-
-    return info->hits;
-}
-
-static int r_read (RSFD rfd, void *buf)
+static int r_read (RSFD rfd, void *buf, int *term_index)
 {
     struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
 
@@ -358,6 +353,7 @@ static int r_read (RSFD rfd, void *buf)
     memcpy (buf, info->buf_mem + (info->pos_cur - info->pos_buf),
             info->key_size);
     info->pos_cur = nc;
+    *term_index = 0;
     return 1;
 }
 
@@ -381,10 +377,4 @@ static int r_write (RSFD rfd, const void *buf)
     if (nc > info->pos_end)
         info->pos_border = info->pos_end = nc;
     return 1;
-}
-
-static int r_score (RSFD rfd, int *score)
-{
-    *score = -1;
-    return -1;
 }

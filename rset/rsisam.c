@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.17  1997-12-18 10:54:25  adam
+ * Revision 1.18  1998-03-05 08:36:28  adam
+ * New result set model.
+ *
+ * Revision 1.17  1997/12/18 10:54:25  adam
  * New method result set method rs_hits that returns the number of
  * hits in result-set (if known). The ranked result set returns real
  * number of hits but only when not combined with other operands.
@@ -69,19 +72,16 @@
 #include <rsisam.h>
 #include <zebrautl.h>
 
-static void *r_create(const struct rset_control *sel, void *parms,
-                      int *flags);
+static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
-static int r_hits (RSET ct, void *oi);
-static int r_read (RSFD rfd, void *buf);
+static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
-static int r_score (RSFD rfd, int *score);
 
-static const rset_control control = 
+static const struct rset_control control = 
 {
     "isam",
     r_create,
@@ -90,13 +90,11 @@ static const rset_control control =
     r_delete,
     r_rewind,
     r_count,
-    r_hits,
     r_read,
     r_write,
-    r_score
 };
 
-const rset_control *rset_kind_isam = &control;
+const struct rset_control *rset_kind_isam = &control;
 
 struct rset_ispt_info {
     ISPT   pt;
@@ -110,17 +108,20 @@ struct rset_isam_info {
     struct rset_ispt_info *ispt_list;
 };
 
-static void *r_create(const struct rset_control *sel, void *parms,
-                      int *flags)
+static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_isam_parms *pt = parms;
     struct rset_isam_info *info;
 
-    *flags |= RSET_FLAG_VOLATILE;
+    ct->flags |= RSET_FLAG_VOLATILE;
     info = xmalloc (sizeof(struct rset_isam_info));
     info->is = pt->is;
     info->pos = pt->pos;
     info->ispt_list = NULL;
+
+    ct->no_rset_terms = 1;
+    ct->rset_terms = xmalloc (sizeof(*ct->rset_terms));
+    ct->rset_terms[0] = pt->rset_term;
     return info;
 }
 
@@ -140,6 +141,9 @@ RSFD r_open (RSET ct, int flag)
     info->ispt_list = ptinfo;
     ptinfo->pt = is_position (info->is, info->pos);
     ptinfo->info = info;
+
+    if (ct->rset_terms[0]->nn < 0)
+	ct->rset_terms[0]->nn = is_numkeys (ptinfo->pt);
     return ptinfo;
 }
 
@@ -166,6 +170,8 @@ static void r_delete (RSET ct)
 
     logf (LOG_DEBUG, "rsisam_delete");
     assert (info->ispt_list == NULL);
+    rset_term_destroy (ct->rset_terms[0]);
+    xfree (ct->rset_terms);
     xfree (info);
 }
 
@@ -180,24 +186,14 @@ static int r_count (RSET ct)
     return 0;
 }
 
-static int r_hits (RSET ct, void *oi)
+static int r_read (RSFD rfd, void *buf, int *term_index)
 {
-    return -1;
-}
-
-static int r_read (RSFD rfd, void *buf)
-{
+    *term_index = 0;
     return is_readkey( ((struct rset_ispt_info*) rfd)->pt, buf);
 }
 
 static int r_write (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "ISAM set type is read-only");
-    return -1;
-}
-
-static int r_score (RSFD rfd, int *score)
-{
-    *score = -1;
     return -1;
 }

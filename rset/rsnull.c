@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.9  1997-12-18 10:54:25  adam
+ * Revision 1.10  1998-03-05 08:36:28  adam
+ * New result set model.
+ *
+ * Revision 1.9  1997/12/18 10:54:25  adam
  * New method result set method rs_hits that returns the number of
  * hits in result-set (if known). The ranked result set returns real
  * number of hits but only when not combined with other operands.
@@ -47,19 +50,16 @@
 #include <rsnull.h>
 #include <zebrautl.h>
 
-static void *r_create(const struct rset_control *sel, void *parms,
-                      int *flags);
+static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
-static int r_hits (RSET ct, void *oi);
-static int r_read (RSFD rfd, void *buf);
+static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
-static int r_score (RSFD rfd, int *score);
 
-static const rset_control control = 
+static const struct rset_control control = 
 {
     "null",
     r_create,
@@ -68,17 +68,24 @@ static const rset_control control =
     r_delete,
     r_rewind,
     r_count,
-    r_hits,
     r_read,
     r_write,
-    r_score
 };
 
-const rset_control *rset_kind_null = &control;
+const struct rset_control *rset_kind_null = &control;
 
-static void *r_create(const struct rset_control *sel, void *parms,
-                      int *flags)
+static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
+    rset_null_parms *null_parms = parms;
+
+    ct->no_rset_terms = 1;
+    ct->rset_terms = xmalloc (sizeof(*ct->rset_terms));
+    if (parms)
+	ct->rset_terms[0] = null_parms->rset_term;
+    else
+	ct->rset_terms[0] = rset_term_create ("term", -1, "rank-0");
+    ct->rset_terms[0]->nn = 0;
+
     return NULL;
 }
 
@@ -98,6 +105,8 @@ static void r_close (RSFD rfd)
 
 static void r_delete (RSET ct)
 {
+    rset_term_destroy (ct->rset_terms[0]);
+    xfree (ct->rset_terms);
 }
 
 static void r_rewind (RSFD rfd)
@@ -110,25 +119,15 @@ static int r_count (RSET ct)
     return 0;
 }
 
-static int r_hits (RSET ct, void *oi)
+static int r_read (RSFD rfd, void *buf, int *term_index)
 {
-    return 0;
-}
-
-static int r_read (RSFD rfd, void *buf)
-{
+    *term_index = -1;
     return 0;
 }
 
 static int r_write (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "NULL set type is read-only");
-    return -1;
-}
-
-static int r_score (RSFD rfd, int *score)
-{
-    *score = -1;
     return -1;
 }
 

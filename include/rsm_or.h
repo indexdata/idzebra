@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.h,v $
- * Revision 1.3  1997-09-05 15:30:04  adam
+ * Revision 1.4  1998-03-05 08:37:44  adam
+ * New result set model.
+ *
+ * Revision 1.3  1997/09/05 15:30:04  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -26,7 +29,7 @@
 extern "C" {
 #endif
 
-extern const rset_control *rset_kind_m_or;
+extern const struct rset_control *rset_kind_m_or;
 
 typedef struct rset_m_or_parms
 {
@@ -35,6 +38,7 @@ typedef struct rset_m_or_parms
 
     ISAMC   isc;
     ISAM_P  *isam_positions;
+    RSET_TERM rset_term;
 
     int     no_isam_positions;
     int     no_save_positions;

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.h,v $
- * Revision 1.5  1997-09-05 15:30:02  adam
+ * Revision 1.6  1998-03-05 08:37:44  adam
+ * New result set model.
+ *
+ * Revision 1.5  1997/09/05 15:30:02  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -37,13 +40,9 @@
 extern "C" {
 #endif
 
-extern const rset_control *rset_kind_and;
-extern const rset_control *rset_kind_or;
-extern const rset_control *rset_kind_not;
-
-extern const rset_control *rset_kind_sand;
-extern const rset_control *rset_kind_sor;
-extern const rset_control *rset_kind_snot;
+extern const struct rset_control *rset_kind_and;
+extern const struct rset_control *rset_kind_or;
+extern const struct rset_control *rset_kind_not;
 
 typedef struct rset_bool_parms
 {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.10  1998-02-10 11:56:46  adam
+ * Revision 1.11  1998-03-05 08:36:28  adam
+ * New result set model.
+ *
+ * Revision 1.10  1998/02/10 11:56:46  adam
  * Implemented rset_dup.
  *
  * Revision 1.9  1996/10/29 13:55:21  adam
@@ -48,16 +51,22 @@
 
 #include <rset.h>
 
-RSET rset_create(const rset_control *sel, void *parms)
+RSET rset_create(const struct rset_control *sel, void *parms)
 {
     RSET rnew;
+    int i;
 
     logf (LOG_DEBUG, "rs_create(%s)", sel->desc);
     rnew = xmalloc(sizeof(*rnew));
     rnew->control = sel;
     rnew->flags = 0;
     rnew->count = 1;
-    rnew->buf = (*sel->f_create)(sel, parms, &rnew->flags);
+    rnew->rset_terms = NULL;
+    rnew->no_rset_terms = 0;
+    rnew->buf = (*sel->f_create)(rnew, sel, parms);
+    logf (LOG_DEBUG, "no_rset_terms: %d", rnew->no_rset_terms);
+    for (i = 0; i<rnew->no_rset_terms; i++)
+	logf (LOG_DEBUG, " %s", rnew->rset_terms[i]->name);
     return rnew;
 }
 
@@ -65,12 +74,63 @@ void rset_delete (RSET rs)
 {
     (rs->count)--;
     if (!rs->count)
+    {
 	(*rs->control->f_delete)(rs);
-    xfree(rs);
+	xfree(rs);
+    }
 }
 
 RSET rset_dup (RSET rs)
 {
     (rs->count)++;
     return rs;
+}
+
+RSET_TERM *rset_terms(RSET rs, int *no)
+{
+    *no = rs->no_rset_terms;
+    return rs->rset_terms;
+}
+
+RSET_TERM rset_term_create (const char *name, int length, const char *flags)
+{
+    RSET_TERM t = xmalloc (sizeof(*t));
+    if (!name)
+	t->name = NULL;
+    else if (length == -1)
+	t->name = xstrdup (name);
+    else
+    {
+	t->name = xmalloc (length+1);
+	memcpy (t->name, name, length);
+	t->name[length] = '\0';
+    }
+    if (!flags)
+	t->flags = NULL;
+    else
+	t->flags = xstrdup (flags);
+    t->nn = 1;
+    return t;
+}
+
+void rset_term_destroy (RSET_TERM t)
+{
+    xfree (t->name);
+    xfree (t->flags);
+    xfree (t);
+}
+
+RSET_TERM rset_term_dup (RSET_TERM t)
+{
+    RSET_TERM nt = xmalloc (sizeof(*nt));
+    if (t->name)
+	nt->name = xstrdup (t->name);
+    else
+	nt->name = NULL;
+    if (t->flags)
+	nt->flags = xstrdup (t->flags);
+    else
+	nt->flags = NULL;
+    nt->nn = t->nn;
+    return nt;
 }

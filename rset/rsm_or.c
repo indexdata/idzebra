@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.c,v $
- * Revision 1.5  1997-12-18 10:54:25  adam
+ * Revision 1.6  1998-03-05 08:36:28  adam
+ * New result set model.
+ *
+ * Revision 1.5  1997/12/18 10:54:25  adam
  * New method result set method rs_hits that returns the number of
  * hits in result-set (if known). The ranked result set returns real
  * number of hits but only when not combined with other operands.
@@ -33,19 +36,16 @@
 #include <rsm_or.h>
 #include <zebrautl.h>
 
-static void *r_create(const struct rset_control *sel, void *parms,
-                      int *flags);
+static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
 static int r_count (RSET ct);
-static int r_hits (RSET ct, void *oi);
-static int r_read (RSFD rfd, void *buf);
+static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
-static int r_score (RSFD rfd, int *score);
 
-static const rset_control control = 
+static const struct rset_control control = 
 {
     "multi-or",
     r_create,
@@ -54,13 +54,11 @@ static const rset_control control =
     r_delete,
     r_rewind,
     r_count,
-    r_hits,
     r_read,
     r_write,
-    r_score
 };
 
-const rset_control *rset_kind_m_or = &control;
+const struct rset_control *rset_kind_m_or = &control;
 
 struct rset_mor_info {
     int     key_size;
@@ -179,14 +177,12 @@ static void heap_close (struct trunc_info *ti)
     xfree (ti);
 }
 
-
-static void *r_create (const struct rset_control *sel, void *parms,
-                       int *flags)
+static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
     rset_m_or_parms *r_parms = parms;
     struct rset_mor_info *info;
 
-    *flags |= RSET_FLAG_VOLATILE;
+    ct->flags |= RSET_FLAG_VOLATILE;
     info = xmalloc (sizeof(*info));
     info->key_size = r_parms->key_size;
     assert (info->key_size > 1);
@@ -202,6 +198,9 @@ static void *r_create (const struct rset_control *sel, void *parms,
             sizeof(*info->isam_positions) * info->no_isam_positions);
     info->rfd_list = NULL;
 
+    ct->no_rset_terms = 1;
+    ct->rset_terms = xmalloc (sizeof(*ct->rset_terms));
+    ct->rset_terms[0] = rset_term_dup (r_parms->rset_term);
     return info;
 }
 
@@ -226,9 +225,13 @@ static RSFD r_open (RSET ct, int flag)
         
     rfd->ti = heap_init (info->no_isam_positions, info->key_size, info->cmp);
 
+    ct->rset_terms[0]->nn = 0;
     for (i = 0; i<info->no_isam_positions; i++)
     {
         rfd->ispt[i] = isc_pp_open (info->isc, info->isam_positions[i]);
+	
+	ct->rset_terms[0]->nn += isc_pp_num (rfd->ispt[i]);
+
         if (isc_pp_read (rfd->ispt[i], rfd->ti->tmpbuf))
             heap_insert (rfd->ti, rfd->ti->tmpbuf, i);
         else
@@ -268,9 +271,15 @@ static void r_close (RSFD rfd)
 static void r_delete (RSET ct)
 {
     struct rset_mor_info *info = ct->buf;
+    int i;
 
     assert (info->rfd_list == NULL);
     xfree (info->isam_positions);
+
+    for (i = 0; i<ct->no_rset_terms; i++)
+	rset_term_destroy (ct->rset_terms[i]);
+    xfree (ct->rset_terms);
+
     xfree (info);
 }
 
@@ -283,18 +292,14 @@ static int r_count (RSET ct)
     return 0;
 }
 
-static int r_hits (RSET ct, void *oi)
-{
-    return -1;
-}
-
-static int r_read (RSFD rfd, void *buf)
+static int r_read (RSFD rfd, void *buf, int *term_index)
 {
     struct trunc_info *ti = ((struct rset_mor_rfd *) rfd)->ti;
     int n = ti->indx[ti->ptr[1]];
 
     if (!ti->heapnum)
         return 0;
+    *term_index = 0;
     memcpy (buf, ti->heap[ti->ptr[1]], ti->keysize);
     if (((struct rset_mor_rfd *) rfd)->position)
     {
@@ -324,12 +329,6 @@ static int r_read (RSFD rfd, void *buf)
         }
     }
     return 1;
-}
-
-static int r_score (RSFD rfd, int *score)
-{
-    *score = -1;
-    return -1;
 }
 
 static int r_write (RSFD rfd, const void *buf)
