@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.6  1995-09-14 07:48:23  adam
+ * Revision 1.7  1995-09-27 12:22:28  adam
+ * More work on extract in record control.
+ * Field name is not in isam keys but in prefix in dictionary words.
+ *
+ * Revision 1.6  1995/09/14  07:48:23  adam
  * Record control management.
  *
  * Revision 1.5  1995/09/11  13:09:34  adam
@@ -42,8 +46,7 @@ void key_logdump (int logmask, const void *p)
     struct it_key key;
 
     memcpy (&key, p, sizeof(key));
-    logf (logmask, "%7d s=%-4d f=%d,%d", key.sysno, key.seqno,
-             key.attrSet, key.attrUse);
+    logf (logmask, "%7d s=%-4d", key.sysno, key.seqno);
 }
 
 int key_compare (const void *p1, const void *p2)
@@ -75,20 +78,6 @@ int key_compare (const void *p1, const void *p2)
             return -1;
     }
 #endif
-    if (i1.attrSet != i2.attrSet)
-    {
-        if (i1.attrSet > i2.attrSet)
-            return 1;
-        else
-            return -1;
-    }
-    if (i1.attrUse != i2.attrUse)
-    {
-        if (i1.attrUse > i2.attrUse)
-            return 1;
-        else
-            return -1;
-    }
     return 0;
 }
 

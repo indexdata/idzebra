@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.10  1995-09-14 07:48:23  adam
+ * Revision 1.11  1995-09-27 12:22:28  adam
+ * More work on extract in record control.
+ * Field name is not in isam keys but in prefix in dictionary words.
+ *
+ * Revision 1.10  1995/09/14  07:48:23  adam
  * Record control management.
  *
  * Revision 1.9  1995/09/11  13:09:33  adam
@@ -47,10 +51,8 @@
 #define IT_KEY_HAVE_FIELD 0
 
 struct it_key {
-    int sysno;
-    int seqno;
-    unsigned attrSet : 3;
-    unsigned attrUse : 13;
+    int   sysno;
+    short seqno;
 };
 
 struct dir_entry {

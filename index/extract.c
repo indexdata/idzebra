@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.8  1995-09-14 07:48:22  adam
+ * Revision 1.9  1995-09-27 12:22:28  adam
+ * More work on extract in record control.
+ * Field name is not in isam keys but in prefix in dictionary words.
+ *
+ * Revision 1.8  1995/09/14  07:48:22  adam
  * Record control management.
  *
  * Revision 1.7  1995/09/11  13:09:32  adam
@@ -38,7 +42,7 @@
 #include <ctype.h>
 
 #include <alexutil.h>
-#include <rectext.h>
+#include <recctrl.h>
 #include "index.h"
 
 static Dict file_idx;
@@ -129,6 +133,7 @@ static void wordAdd (const RecWord *p)
     struct it_key key;
     char x;
     size_t i;
+    char wordPrefix[8];
 
     if (key_offset + 1000 > key_buf_size)
     {
@@ -140,6 +145,9 @@ static void wordAdd (const RecWord *p)
         xfree (key_buf);
         key_buf = new_key_buf;
     }
+    sprintf (wordPrefix, "%c%04d", p->attrSet + '0', p->attrUse);
+    strcpy (key_buf + key_offset, wordPrefix);
+    key_offset += strlen (wordPrefix);
     switch (p->which)
     {
     case Word_String:
@@ -155,8 +163,6 @@ static void wordAdd (const RecWord *p)
     key_offset++;
 
     key.sysno = key_sysno;
-    key.attrSet = p->attrSet;
-    key.attrUse = p->attrUse;
     key.seqno   = p->seqno;
     memcpy (key_buf + key_offset, &key, sizeof(key));
     key_offset += sizeof(key);
@@ -206,9 +212,7 @@ void file_extract (int cmd, const char *fname, const char *kname)
         logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
         return;
     }
-    if (!strcmp (file_type, "text"))
-        rt = recTypeText;
-    else
+    if (!(rt = recType_byName (file_type)))
         return;
     extractCtrl.inf = inf;
     extractCtrl.subType = "";
