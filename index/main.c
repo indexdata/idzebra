@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.97 2002-09-13 10:33:17 heikki Exp $
+/* $Id: main.c,v 1.98 2002-10-04 18:15:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -217,18 +217,18 @@ int main (int argc, char **argv)
         }
         else if (ret == 'V')
         {
-            fprintf (stderr, "Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
-	    fprintf (stderr, " (C) 1994-2002, Index Data ApS\n");
+            printf("Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
+	    printf(" (C) 1994-2002, Index Data ApS\n");
 #ifdef WIN32
 #ifdef _DEBUG
-            fprintf (stderr, " WIN32 Debug\n");
+            printf(" WIN32 Debug\n");
 #else
-            fprintf (stderr, " WIN32 Release\n");
+            printf(" WIN32 Release\n");
 #endif
 #endif
 #if HAVE_BZLIB_H
-            fprintf (stderr, "libbzip2\n"
-		     " (C) 1996-1999 Julian R Seward.  All rights reserved.\n");
+            printf("libbzip2\n"
+		   " (C) 1996-1999 Julian R Seward.  All rights reserved.\n");
 #endif
         }
         else if (ret == 'v')
@@ -263,14 +263,17 @@ int main (int argc, char **argv)
     zebra_close (zh);
     zebra_stop (zs);
 #if HAVE_SYS_TIMES_H
-    gettimeofday(&end_time, 0);
-    usec = (end_time.tv_sec - start_time.tv_sec) * 1000000L +
+    if (trans_started)
+    {
+        gettimeofday(&end_time, 0);
+        usec = (end_time.tv_sec - start_time.tv_sec) * 1000000L +
 	    end_time.tv_usec - start_time.tv_usec;
-    times(&tms2);
-    yaz_log (LOG_LOG, "zebraidx times: %5.2f %5.2f %5.2f",
+        times(&tms2);
+        yaz_log (LOG_LOG, "zebraidx times: %5.2f %5.2f %5.2f",
 		(double) usec / 1000000.0,
 		(double) (tms2.tms_utime - tms1.tms_utime)/100,
 		(double) (tms2.tms_stime - tms1.tms_stime)/100);
+    }
 #endif
     exit (0);
     return 0;
