@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.153 2004-06-01 14:50:59 heikki Exp $
+/* $Id: extract.c,v 1.154 2004-06-03 11:38:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -756,6 +756,7 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
     char ext[128];
     char ext_res[128];
     struct file_read_info *fi;
+    const char *original_record_type = 0;
 
     if (!zh->m_group || !*zh->m_group)
         *gprefix = '\0';
@@ -775,11 +776,16 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
             break;
         }
     /* determine file type - depending on extension */
+    yaz_log(LOG_LOG, "recordType 1=%s", zh->m_record_type ? 
+	    zh->m_record_type : "<none>");
+    original_record_type = zh->m_record_type;
     if (!zh->m_record_type)
     {
         sprintf (ext_res, "%srecordType.%s", gprefix, ext);
         zh->m_record_type = res_get (zh->res, ext_res);
     }
+    yaz_log(LOG_LOG, "recordType 2=%s", zh->m_record_type ? 
+	    zh->m_record_type : "<none>");
     if (!zh->m_record_type)
     {
 	if (zh->records_processed < zh->m_file_verbose_limit)
@@ -812,6 +818,7 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
         if ((fd = open (full_rep, O_BINARY|O_RDONLY)) == -1)
         {
             logf (LOG_WARN|LOG_ERRNO, "open %s", full_rep);
+	    zh->m_record_type = original_record_type;
             return 0;
         }
     }
@@ -824,6 +831,7 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
     file_read_stop (fi);
     if (fd != -1)
         close (fd);
+    zh->m_record_type = original_record_type;
     return r;
 }
 
@@ -1481,6 +1489,10 @@ void extract_add_index_string (RecWord *p, const char *string,
     }
     dst = keys->buf + keys->buf_used;
 
+    /* leader byte is encoded as follows:
+       bit 0 : 1 if attrset is unchanged; 0 if attrset is changed
+       bit 1 : 1 if attruse is unchanged; 0 if attruse is changed
+    */
     attrSet = p->attrSet;
     if (keys->buf_used > 0 && keys->prevAttrSet == attrSet)
         lead |= 1;
