@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.122 2005-01-16 23:14:57 adam Exp $
+/* $Id: main.c,v 1.123 2005-01-21 13:23:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -59,7 +59,7 @@ int main (int argc, char **argv)
     char *configName = 0;
     int nsections = 0;
     int enable_commit = 1;
-    char *database = "Default";
+    char *database = 0;
     Res res = res_open(0, 0, 0);
     
     int trans_started=0;
@@ -135,10 +135,10 @@ int main (int argc, char **argv)
 		    zebra_shadow_enable (zh, enable_commit);
                 }
 
-		if (zebra_select_database (zh, database))
+		if (database && zebra_select_database (zh, database))
 		{
 		    yaz_log(YLOG_FATAL, "Could not select database %s errCode=%d",
-			 database, zebra_errCode(zh) );
+			    database, zebra_errCode(zh) );
 		    exit (1);
 		}
                 if (!strcmp (arg, "update"))
@@ -228,7 +228,7 @@ int main (int argc, char **argv)
         else if (ret == 'V')
         {
             printf("Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
-	    printf(" (C) 1994-2004, Index Data ApS\n");
+	    printf(" (C) 1994-2005, Index Data ApS\n");
 #ifdef WIN32
 #ifdef _DEBUG
             printf(" WIN32 Debug\n");
