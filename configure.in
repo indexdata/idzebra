@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2002
-dnl $Id: configure.in,v 1.42 2002-08-28 12:47:09 adam Exp $
+dnl $Id: configure.in,v 1.43 2002-08-28 20:58:13 mike Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(zebra,1.3.1)
@@ -24,6 +24,7 @@ AC_ARG_WITH(dtd, [  --with-dtd[=DIR]        Use docbookx.dtd in DIR],
    AC_MSG_CHECKING(for docbookx.dtd)
    for d in /usr/share/sgml/docbook/dtd/xml/4.1.2 \
          /usr/share/sgml/docbook/xml-dtd-4.1.2 \
+         /usr/share/sgml/docbook/xml-dtd-4.1 \
          /usr/share/sgml/docbook/dtd/xml/4.0 \
 	    /usr/lib/sgml/dtd/docbook-xml 
    do
