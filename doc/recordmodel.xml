@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.17 2003-02-28 14:09:49 adam Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.18 2004-08-04 08:26:43 adam Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -1195,23 +1195,23 @@
       esetname G gils-g.est
       esetname F @
 
-      elm (1,10)              rank                        -
-      elm (1,12)              url                         -
-      elm (1,14)              localControlNumber     Local-number
-      elm (1,16)              dateOfLastModification Date/time-last-modified
-      elm (2,1)               title                       w:!,p:!
-      elm (4,1)               controlIdentifier      Identifier-standard
-      elm (2,6)               abstract               Abstract
-      elm (4,51)              purpose                     !
-      elm (4,52)              originator                  - 
-      elm (4,53)              accessConstraints           !
-      elm (4,54)              useConstraints              !
-      elm (4,70)              availability                -
-      elm (4,70)/(4,90)       distributor                 -
-      elm (4,70)/(4,90)/(2,7) distributorName             !
-      elm (4,70)/(4,90)/(2,10 distributorOrganization     !
-      elm (4,70)/(4,90)/(4,2) distributorStreetAddress    !
-      elm (4,70)/(4,90)/(4,3) distributorCity             !
+      elm (1,10)               rank                        -
+      elm (1,12)               url                         -
+      elm (1,14)               localControlNumber     Local-number
+      elm (1,16)               dateOfLastModification Date/time-last-modified
+      elm (2,1)                title                       w:!,p:!
+      elm (4,1)                controlIdentifier      Identifier-standard
+      elm (2,6)                abstract               Abstract
+      elm (4,51)               purpose                     !
+      elm (4,52)               originator                  - 
+      elm (4,53)               accessConstraints           !
+      elm (4,54)               useConstraints              !
+      elm (4,70)               availability                -
+      elm (4,70)/(4,90)        distributor                 -
+      elm (4,70)/(4,90)/(2,7)  distributorName             !
+      elm (4,70)/(4,90)/(2,10) distributorOrganization     !
+      elm (4,70)/(4,90)/(4,2)  distributorStreetAddress    !
+      elm (4,70)/(4,90)/(4,3)  distributorCity             !
      </screen>
 
     </para>
