@@ -232,14 +232,6 @@ SOURCE=.\rset\rsnull.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\rset\rsrel.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\rset\rssbool.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\rset\rstemp.c
 # End Source File
 # Begin Source File
