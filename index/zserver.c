@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.35  1996-03-26 16:01:14  adam
+ * Revision 1.36  1996-05-01 13:46:37  adam
+ * First work on multiple records in one file.
+ * New option, -offset, to the "unread" command in the filter module.
+ *
+ * Revision 1.35  1996/03/26  16:01:14  adam
  * New setting lockPath: directory of various lock files.
  *
  * Revision 1.34  1996/03/20  09:36:46  adam
@@ -270,14 +274,26 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     return &r;
 }
 
+static int record_offset;
+
 static int record_ext_read (void *fh, char *buf, size_t count)
 {
     return read (*((int*) fh), buf, count);
 }
 
+static off_t record_ext_seek (void *fh, off_t offset)
+{
+    return lseek (*((int*) fh), offset + record_offset, SEEK_SET);
+}
+
 static int record_int_pos;
 static char *record_int_buf;
 static int record_int_len;
+
+static off_t record_int_seek (void *fh, off_t offset)
+{
+    return (off_t) (record_int_pos = offset);
+}
 
 static int record_int_read (void *fh, char *buf, size_t count)
 {
@@ -325,6 +341,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     if (rec->size[recInfo_storeData] > 0)
     {
         retrieveCtrl.readf = record_int_read;
+        retrieveCtrl.seekf = record_int_seek;
         record_int_len = rec->size[recInfo_storeData];
         record_int_buf = rec->info[recInfo_storeData];
         record_int_pos = 0;
@@ -342,8 +359,15 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
             rec_rm (&rec);
             return 0;     /* or 14: System error in presenting records */
         }
+
+        memcpy (&record_offset, rec->info[recInfo_offset],
+                sizeof(record_offset));
+
         retrieveCtrl.fh = &fd;
         retrieveCtrl.readf = record_ext_read;
+        retrieveCtrl.seekf = record_ext_seek;
+
+        record_ext_seek (retrieveCtrl.fh, 0);
     }
     retrieveCtrl.subType = subType;
     retrieveCtrl.localno = sysno;

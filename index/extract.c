@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.53  1996-04-26 12:09:43  adam
+ * Revision 1.54  1996-05-01 13:46:35  adam
+ * First work on multiple records in one file.
+ * New option, -offset, to the "unread" command in the filter module.
+ *
+ * Revision 1.53  1996/04/26  12:09:43  adam
  * Added a few comments.
  *
  * Revision 1.52  1996/04/25  13:27:57  adam
@@ -216,6 +220,19 @@ static int key_file_no;
 static int records_inserted = 0;
 static int records_updated = 0;
 static int records_deleted = 0;
+static int records_processed = 0;
+
+static void logRecord (int showFlag)
+{
+    if (!showFlag)
+        ++records_processed;
+    if (showFlag || !(records_processed % 1000))
+    {
+        logf (LOG_LOG, "Records: %7d i/u/d %d/%d/%d", 
+              records_processed, records_inserted, records_updated,
+              records_deleted);
+    }
+}
 
 void key_open (int mem)
 {
@@ -351,9 +368,7 @@ int key_close (void)
     rec_close (&records);
     dict_close (matchDict);
 
-    logf (LOG_LOG, "Records inserted %6d", records_inserted);
-    logf (LOG_LOG, "Records updated  %6d", records_updated);
-    logf (LOG_LOG, "Records deleted  %6d", records_deleted);
+    logRecord (1);
     return key_file_no;
 }
 
@@ -547,15 +562,12 @@ static void addRecordKeyAny (const RecWord *p)
         addRecordKey (p);
 }
 
-#define FILE_READ_BUFSIZE 4096
 struct file_read_info {
-    int file_noread;
+    off_t file_max;
+    off_t file_offset;
+    off_t file_moffset;
+    int file_more;
     int fd;
-#if FILE_READ_BUFSIZE
-    char *file_buf;
-    int file_offset;
-    int file_bufsize;
-#endif
 };
 
 static struct file_read_info *file_read_start (int fd)
@@ -563,82 +575,56 @@ static struct file_read_info *file_read_start (int fd)
     struct file_read_info *fi = xmalloc (sizeof(*fi));
 
     fi->fd = fd;
-    fi->file_noread = 0;
-#if FILE_READ_BUFSIZE
-    fi->file_offset = 0;
-    fi->file_buf = xmalloc (FILE_READ_BUFSIZE);
-    fi->file_bufsize = read (fd, fi->file_buf, FILE_READ_BUFSIZE);
-#endif
+    fi->file_max = 0;
+    fi->file_moffset = 0;
     return fi;
 }
 
 static void file_read_stop (struct file_read_info *fi)
 {
     assert (fi);
-#if FILE_READ_BUFSIZE
-    xfree (fi->file_buf);
-    fi->file_buf = NULL;
-#endif
     xfree (fi);
+}
+
+static off_t file_seek (void *handle, off_t offset)
+{
+    struct file_read_info *p = handle;
+    p->file_offset = offset;
+    return lseek (p->fd, offset, SEEK_SET);
 }
 
 static int file_read (void *handle, char *buf, size_t count)
 {
     struct file_read_info *p = handle;
     int fd = p->fd;
-#if FILE_READ_BUFSIZE
-    int l = p->file_bufsize - p->file_offset;
-
-    if (count > l)
-    {
-        int r;
-        if (l > 0)
-            memcpy (buf, p->file_buf + p->file_offset, l);
-        count = count-l;
-        if (count > FILE_READ_BUFSIZE)
-        {
-            if ((r = read (fd, buf + l, count)) == -1)
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "read");
-                exit (1);
-            }
-            p->file_bufsize = 0;
-            p->file_offset = 0;
-            p->file_noread += l+r;
-            return l+r;
-        }
-        p->file_bufsize = r = read (fd, p->file_buf, FILE_READ_BUFSIZE);
-        if (r == -1)
-        {
-            logf (LOG_FATAL|LOG_ERRNO, "read");
-            exit (1);
-        }
-        else if (r <= count)
-        {
-            p->file_offset = r;
-            memcpy (buf + l, p->file_buf, r);
-            p->file_noread += l+r;
-            return l+r;
-        }
-        else
-        {
-            p->file_offset = count;
-            memcpy (buf + l, p->file_buf, count - l);
-            p->file_noread += count;
-            return count;
-        }
-    }
-    memcpy (buf, p->file_buf + p->file_offset, count);
-    p->file_offset += count;
-    p->file_noread += count;
-    return count;
-#else
     int r;
     r = read (fd, buf, count);
     if (r > 0)
-        p->file_noread += r;
+    {
+        p->file_offset += r;
+        if (p->file_offset > p->file_max)
+            p->file_max = p->file_offset;
+    }
     return r;
-#endif
+}
+
+static void file_begin (void *handle)
+{
+    struct file_read_info *p = handle;
+
+    p->file_offset = p->file_moffset;
+    if (p->file_moffset)
+        lseek (p->fd, p->file_moffset, SEEK_SET);
+    p->file_more = 0;
+}
+
+static void file_end (void *handle, off_t offset)
+{
+    struct file_read_info *p = handle;
+
+    assert (p->file_more == 0);
+    p->file_more = 1;
+    p->file_moffset = offset;
 }
 
 static int atois (const char **s)
@@ -812,6 +798,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     int r;
     char *matchStr;
     SYSNO sysnotmp;
+    off_t recordOffset = 0;
     Record rec;
     struct recordLogInfo logInfo;
 
@@ -831,7 +818,12 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         reckeys.buf_used = 0;
         reckeys.prevAttrUse = -1;
         reckeys.prevAttrSet = -1;
+
+        recordOffset = fi->file_moffset;
+        extractCtrl.offset = recordOffset;
         extractCtrl.readf = file_read;
+        extractCtrl.seekf = file_seek;
+        extractCtrl.endf = file_end;
         r = (*recType->extract)(&extractCtrl);
 
         if (r)      
@@ -886,7 +878,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         }
         logInfo.op = "add";
         if (rGroup->fileVerboseFlag)
-            logf (LOG_LOG, "add %s %s", rGroup->recordType, fname);
+            logf (LOG_LOG, "add %s %s %ld", rGroup->recordType,
+                  fname, (long) recordOffset);
         rec = rec_new (records);
         *sysno = rec->sysno;
 
@@ -919,12 +912,14 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             else
             {
                 if (rGroup->fileVerboseFlag)
-                    logf (LOG_LOG, "delete %s %s", rGroup->recordType, fname);
+                    logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
+                          fname, (long) recordOffset);
                 records_deleted++;
                 if (matchStr)
                     dict_delete (matchDict, matchStr);
                 rec_del (records, &rec);
             }
+            logRecord (0);
             return 1;
         }
         else
@@ -938,7 +933,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             else
             {
                 if (rGroup->fileVerboseFlag)
-                    logf (LOG_LOG, "update %s %s", rGroup->recordType, fname);
+                    logf (LOG_LOG, "update %s %s %ld", rGroup->recordType,
+                          fname, (long) recordOffset);
                 flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
                 records_updated++;
             }
@@ -980,27 +976,20 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     xfree (rec->info[recInfo_storeData]);
     if (rGroup->flagStoreData == 1)
     {
-        rec->size[recInfo_storeData] = fi->file_noread;
-        rec->info[recInfo_storeData] = xmalloc (fi->file_noread);
-#if FILE_READ_BUFSIZE
-        if (fi->file_noread < FILE_READ_BUFSIZE)
-	    memcpy (rec->info[recInfo_storeData], fi->file_buf,
-                    fi->file_noread);
-        else
-#endif
+        rec->size[recInfo_storeData] = fi->file_max;
+        rec->info[recInfo_storeData] = xmalloc (fi->file_max);
+        if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
         {
-            if (lseek (fi->fd, 0L, SEEK_SET) < 0)
-            {
-                logf (LOG_ERRNO|LOG_FATAL, "seek to 0 in %s", fname);
-                exit (1);
-            }
-            if (read (fi->fd, rec->info[recInfo_storeData], fi->file_noread) 
-                < fi->file_noread)
-            {
-                logf (LOG_ERRNO|LOG_FATAL, "read %d bytes of %s",
-                      fi->file_noread, fname);
-                exit (1);
-            }
+            logf (LOG_ERRNO|LOG_FATAL, "seek to %ld in %s", fname,
+                  (long) recordOffset);
+            exit (1);
+        }
+        if (read (fi->fd, rec->info[recInfo_storeData], fi->file_max)
+            < fi->file_max)
+        {
+            logf (LOG_ERRNO|LOG_FATAL, "read %d bytes of %s",
+                  fi->file_max, fname);
+            exit (1);
         }
     }
     else
@@ -1013,8 +1002,16 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     rec->info[recInfo_databaseName] =
         rec_strdup (rGroup->databaseName, &rec->size[recInfo_databaseName]); 
 
+    /* update offset */
+    xfree (rec->info[recInfo_offset]);
+
+    rec->size[recInfo_offset] = sizeof(recordOffset);
+    rec->info[recInfo_offset] = xmalloc (sizeof(recordOffset));
+    memcpy (rec->info[recInfo_offset], &recordOffset, sizeof(recordOffset));
+    
     /* commit this record */
     rec_put (records, &rec);
+    logRecord (0);
     return 1;
 }
 
@@ -1141,7 +1138,12 @@ int fileExtract (SYSNO *sysno, const char *fname,
         }
     }
     fi = file_read_start (fd);
-    r = recordExtract (sysno, fname, rGroup, deleteFlag, fi, recType, subType);
+    do
+    {
+        file_begin (fi);
+        r = recordExtract (sysno, fname, rGroup, deleteFlag, fi,
+                           recType, subType);
+    } while (r && !sysno && fi->file_more);
     log_event_start (NULL, NULL);
     file_read_stop (fi);
     if (fd != -1)

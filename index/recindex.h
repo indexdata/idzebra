@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.8  1995-12-06 12:41:25  adam
+ * Revision 1.9  1996-05-01 13:46:36  adam
+ * First work on multiple records in one file.
+ * New option, -offset, to the "unread" command in the filter module.
+ *
+ * Revision 1.8  1995/12/06  12:41:25  adam
  * New command 'stat' for the index program.
  * Filenames can be read from stdin by specifying '-'.
  * Bug fix/enhancement of the transformation from terms to regular
@@ -66,6 +70,7 @@ enum {
     recInfo_filename, 
     recInfo_delKeys, 
     recInfo_databaseName,
-    recInfo_storeData
+    recInfo_storeData,
+    recInfo_offset
 };
 

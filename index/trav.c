@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.24  1996-04-26 10:00:23  adam
+ * Revision 1.25  1996-05-01 13:46:37  adam
+ * First work on multiple records in one file.
+ * New option, -offset, to the "unread" command in the filter module.
+ *
+ * Revision 1.24  1996/04/26  10:00:23  adam
  * Added option -V to zebraidx to display version information.
  * Removed stupid warnings from file update.
  *
@@ -141,15 +145,6 @@ static void repositoryExtractR (int deleteFlag, char *rep,
     }
     dir_free (&e);
 
-}
-
-static void stdinExtractR (int deleteFlag, struct recordGroup *rGroup)
-{
-    char tmppath[1024];
-
-    logf (LOG_LOG, "stdinExtractR");
-    while (scanf ("%s", tmppath) == 1)
-        fileExtract (NULL, tmppath, rGroup, deleteFlag);
 }
 
 static void fileDeleteR (struct dirs_info *di, struct dirs_entry *dst,
@@ -334,7 +329,6 @@ static void groupRes (struct recordGroup *rGroup)
     rGroup->recordId = res_get (common_resource, resStr);
 }
 
-
 void repositoryShow (struct recordGroup *rGroup)
 {
     char src[1024];
@@ -419,6 +413,38 @@ static void fileUpdate (Dict dict, struct recordGroup *rGroup,
     }
 }
 
+
+static void repositoryExtract (int deleteFlag, struct recordGroup *rGroup,
+                               const char *path)
+{
+    struct stat sbuf;
+    char src[1024];
+
+    assert (path);
+    strcpy (src, path);
+
+    stat (src, &sbuf);
+    if (S_ISREG(sbuf.st_mode))
+        fileExtract (NULL, src, rGroup, deleteFlag);
+    else if (S_ISDIR(sbuf.st_mode))
+	repositoryExtractR (deleteFlag, src, rGroup);
+    else
+        logf (LOG_WARN, "Cannot handle file %s", src);
+}
+
+static void repositoryExtractG (int deleteFlag, struct recordGroup *rGroup)
+{
+    if (*rGroup->path == '\0' || !strcmp(rGroup->path, "-"))
+    {
+        char src[1024];
+
+        while (scanf ("%s", src) == 1)
+            repositoryExtract (deleteFlag, rGroup, src);
+    }
+    else
+        repositoryExtract (deleteFlag, rGroup, rGroup->path);
+}
+
 void repositoryUpdate (struct recordGroup *rGroup)
 {
     groupRes (rGroup);
@@ -442,27 +468,11 @@ void repositoryUpdate (struct recordGroup *rGroup)
         dict_close (dict);
     }
     else 
-    {
-        char src[1024];
-
-        strcpy (src, rGroup->path);
-        if (*src == '\0' || !strcmp (src, "-"))
-            stdinExtractR (0, rGroup);
-        else
-            repositoryExtractR (0, src, rGroup);
-    }
+        repositoryExtractG (0, rGroup);
 }
 
 void repositoryDelete (struct recordGroup *rGroup)
 {
-    char src[256];
-
-    assert (rGroup->path);
-    groupRes (rGroup);
-    strcpy (src, rGroup->path);
-    if (*src == '\0' || !strcmp(src, "-"))
-	stdinExtractR (1, rGroup);
-    else
-	repositoryExtractR (1, src, rGroup);
+    repositoryExtractG (1, rGroup);
 }
 
