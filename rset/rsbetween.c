@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.8 2002-11-11 15:05:29 heikki Exp $
+/* $Id: rsbetween.c,v 1.9 2003-06-12 18:14:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -261,11 +261,10 @@ static void log2 (struct rset_between_rfd *p, char *msg, int cmp_l, int cmp_r)
     logf(LOG_DEBUG,"btw: %s l=%s(%d/%d) m=%s(%d) r=%s(%d/%d), lev=%d",
       msg, 
       (*p->info->printer)(p->buf_l, buf_l), p->more_l, cmp_l,
-      (*p->info->printer)(p->buf_m, buf_m), p->more_l,
-      (*p->info->printer)(p->buf_r, buf_r), p->more_l, cmp_r,
+      (*p->info->printer)(p->buf_m, buf_m), p->more_m,
+      (*p->info->printer)(p->buf_r, buf_r), p->more_r, cmp_r,
       p->level);
 }
-
 
 static int r_read_between (RSFD rfd, void *buf, int *term_index)
 {
@@ -273,7 +272,7 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
     struct rset_between_info *info = p->info;
     int cmp_l=0;
     int cmp_r=0;
-    int attr_match;
+    int attr_match = 0;
 
     while (p->more_m)
     {
@@ -283,7 +282,10 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
 	if (p->more_l)
 	    cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
 	else
+	{
+	    p->level = 0;
 	    cmp_l=2; /* past this record */
+	}
         log2( p, "after first L", cmp_l, cmp_r);
 
         while (cmp_l < 0)   /* l before m */
@@ -324,7 +326,7 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
             }
             else
 		cmp_l=2; 
-        log2( p, "end of L loop", cmp_l, cmp_r);
+	    log2( p, "end of L loop", cmp_l, cmp_r);
         } /* forward L */
 
             
@@ -361,15 +363,17 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
             log2( p, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
             p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
                                    &p->term_index_m);
+	    if (cmp_l == 2)
+		p->level = 0;
 	    return 1;
 	}
-	else
-	    if ( ! p->more_l )  /* not in data, no more starts */
-	    {
-                log2( p, "no more starts, exiting without a hit", cmp_l, cmp_r);
-		return 0;  /* ergo, nothing can be found. stop scanning */
-	    }
-        
+	else if ( ! p->more_l )  /* not in data, no more starts */
+	{
+	    log2( p, "no more starts, exiting without a hit", cmp_l, cmp_r);
+	    return 0;  /* ergo, nothing can be found. stop scanning */
+	}
+	if (cmp_l == 2)
+	    p->level = 0;
         p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
                                &p->term_index_m);
         log2( p, "End of M loop", cmp_l, cmp_r);
