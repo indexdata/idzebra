@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.5 1999-07-23 13:58:52 heikki Exp $
+ * $Id: merge-d.c,v 1.6 1999-07-23 15:43:05 heikki Exp $
  *
  * todo
  *  - merge when needed
@@ -100,9 +100,10 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
       }
       memcpy( &pp->diffinfo[i].maxidx, &pp->diffbuf[diffidx], sizeof(int) );
 
-      if (pp->is->method->debug > 4)
+      if (pp->is->method->debug > 5)
         logf(LOG_LOG,"isamd_getDiffInfo: max=%d ix=%d dbuf=%p",
           pp->diffinfo[i].maxidx, diffidx, pp->diffbuf);
+      assert(pp->diffinfo[i].maxidx <= pp->is->method->filecat[pp->cat].bsize);
 
       if (0==pp->diffinfo[i].maxidx)
       {
@@ -558,7 +559,7 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
  
 static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
                    ISAMD_PP *p_pp,        /* diff block */
-                   struct it_key *p_key )
+                   struct it_key *p_key ) /* not used yet */
 {
   ISAMD_PP readpp = *p_firstpp;
   int diffidx;  
@@ -579,21 +580,22 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
      readpp->diffs = diffidx*2+0;
      readpp->diffbuf=readpp->buf;  /*? does this get freed right ???  */
      if (readpp->is->method->debug >3) 
-         logf(LOG_LOG,"isamd_merge:local diffs at %d", diffidx);
+         logf(LOG_LOG,"isamd_merge:local diffs at %d: %s", 
+           diffidx,hexdump(&(readpp->diffbuf[diffidx]),8,0));
   }
   else
   { /* separate diff block in *p_pp */
      killblk = readpp->diffs/2;
      diffidx = readpp->is->method->filecat[readpp->cat].bsize;
      readpp->diffbuf= xmalloc( diffidx); /* copy diffs to where read wants*/
-     memcpy( &readpp->diffbuf, &((*p_pp)->buf[0]), diffidx);
+     memcpy( readpp->diffbuf, &((*p_pp)->buf[0]), diffidx);
      diffidx = ISAMD_BLOCK_OFFSET_N;
-     if (readpp->is->method->debug >3) 
+     if (readpp->is->method->debug >3) {
          logf(LOG_LOG,"isamd_merge:separate diffs at ix=%d", 
                  diffidx);
-     if (readpp->is->method->debug >3) 
          logf(LOG_LOG,"isamd_merge: dbuf=%p (from %p) pp=%p", 
                   readpp->diffbuf, &((*p_pp)->buf[0]), (*p_pp) );
+     }
   }
   getDiffInfo(readpp,diffidx);
 
@@ -612,18 +614,17 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
   }
 
   if (killblk) 
-  {
-     isamd_release_block(readpp->is, isamd_type(killblk), isamd_block(killblk));
-     /* we have the data, let the block go */
+  {  /* we had a separate diff block, release it, we have the data */
+     isamd_release_block(readpp->is, readpp->cat, killblk);
      if (readpp->is->method->debug >3) 
-         logf(LOG_LOG,"isamd_merge: released diff block %d (%d:%d)",
-              killblk, isamd_type(killblk), isamd_block(killblk) );
+         logf(LOG_LOG,"isamd_merge: released diff block %d=%d:%d",
+              isamd_addr(killblk,readpp->cat), readpp->cat, killblk );
   }
-  killblk=isamd_addr(readpp->pos, readpp->cat);
-  isamd_release_block(readpp->is, isamd_type(killblk), isamd_block(killblk));
+  killblk=readpp->pos;
+  isamd_release_block(readpp->is, readpp->cat, killblk);
   if (readpp->is->method->debug >3) 
       logf(LOG_LOG,"isamd_merge: released old firstblock %d (%d:%d)",
-            killblk, isamd_type(killblk), isamd_block(killblk) );
+              isamd_addr(killblk,readpp->cat), readpp->cat, killblk );
    
   /* set up the new blocks for simple writing */
   firstpp=pp=isamd_pp_open(readpp->is,isamd_addr(0, readpp->is->max_cat));
@@ -637,13 +638,13 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
            r_key.sysno, r_key.seqno );
      pp= append_main_item(firstpp, pp, &r_key, encoder_data);
 
-     if ( isamd_addr(readpp->pos, readpp->cat) != killblk )
+     if ( readpp->pos != killblk )
      {
         isamd_release_block(readpp->is, readpp->cat, readpp->pos);
         if (readpp->is->method->debug >3) 
             logf(LOG_LOG,"isamd_merge: released data block %d (%d:%d)",
                   killblk, isamd_type(killblk), isamd_block(killblk) );
-        killblk=isamd_addr(readpp->pos, readpp->cat);
+        killblk=readpp->pos;
      }
 
      /* (try to) read next item */
@@ -657,10 +658,14 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
 
   /* set things up so that merge can continue */
   isamd_reduceblock(firstpp);
+  firstpp->diffs=0; 
 
   if (firstpp!=pp) 
   { /* the last data block is of no interest any more */
     save_last_pp(pp);
+    if (readpp->is->method->debug >3) 
+        logf(LOG_LOG,"isamd_merge: saved last block %d=%d:%d",
+              isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos);
     isamd_pp_close(pp);
   }
   
@@ -739,15 +744,20 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
          if (is->method->debug >3)
             logf(LOG_LOG,"isamd_appd: block full (ix=%d mx=%d lix=%d)",
                diffidx, maxsize, difflenidx);
-         if (is->method->debug >3)
+         if (is->method->debug >5)
             logf(LOG_LOG,"isamd_appd: block pp=%p buf=%p [%d]:%s",
-               pp, pp->buf, difflenidx, hexdump(&pp->buf[difflenidx],8,0));
+               pp, pp->buf, 
+               difflenidx, hexdump(&pp->buf[difflenidx],8,0));
          merge_rc = merge (&firstpp, &pp, &i_key);
          if (merge_rc)
            return merge_rc;  /* merge handled them all ! */
 
           /* set things up so we can continue */
           pp = read_diff_block(firstpp, &diffidx);
+          (*is->method->code_reset)(encoder_data);
+          maxsize = is->method->filecat[pp->cat].bsize; 
+          difflenidx=diffidx;
+          diffidx+=sizeof(int);
           
       } /* block full */
       
@@ -804,7 +814,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.5  1999-07-23 13:58:52  heikki
+ * Revision 1.6  1999-07-23 15:43:05  heikki
+ * Hunted a few bugs in isam-d. Still crashes on the long test run
+ *
+ * Revision 1.5  1999/07/23 13:58:52  heikki
  * merged closer to working, still fails on filling a separate, large block
  *
  * Revision 1.4  1999/07/21 14:53:55  heikki
