@@ -4,23 +4,28 @@ Maintainer: Adam Dickmeiss <adam@indexdata.dk>
 Priority: extra
 Build-Depends: yaz-devel (>= 1.9), libexpat1-dev, tcl8.3-dev, libbz2-dev
 
-Package: zebra-doc
+Package: idzebra-doc
 Section: doc
 Architecture: any
-Recommends: zebra-runtime
-Description: Zebra (documentation)
+Recommends: idzebra
+Description: Documentation for the Zebra engine.
  Zebra is a high-performance, general-purpose structured text indexing
  and retrieval engine. It reads structured records in a variety of input
  formats (eg. email, XML, MARC) and allows access to them through exact
  boolean search expressions and relevance-ranked free-text queries. 
+ .
+ This package contains documentation for the Zebra engine.
 
-Package: zebra-runtime
+Package: idzebra
 Section: text
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: Zebra (runtime files)
+Description: High-performance, text indexing and retrieval engine.
  Zebra is a high-performance, general-purpose structured text indexing
  and retrieval engine. It reads structured records in a variety of input
  formats (eg. email, XML, MARC) and allows access to them through exact
  boolean search expressions and relevance-ranked free-text queries. 
+ .
+ The Zebra software is copyright Index Data and distributed under the
+ GPLv2 license.
 

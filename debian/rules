@@ -11,7 +11,7 @@
 # This is the debhelper compatability version to use.
 export DH_COMPAT=2
 
-CONFIG_FLAGS=--with-tclconfig=/usr/lib/tcl8.3 --prefix=/usr
+CONFIG_FLAGS=--with-tclconfig=/usr/lib/tcl8.3 --with-yazconfig=/usr/bin --prefix=/usr
 
 # Enable parallel builds if CONCURRENCY_LEVEL is set
 ifdef CONCURRENCY_LEVEL
@@ -27,7 +27,7 @@ ZEBRASRCDIR?=$(shell pwd)
 export ZEBRA_VERSION
 
 # Local library path for linking with right dependencies
-LOCAL_LINK=-ldebian/zebra-runtime/usr/lib
+LOCAL_LINK=-ldebian/idzebra/usr/lib
 
 $(ZEBRASRCDIR)/configure: $(ZEBRASRCDIR)/configure.in
 	cd $(ZEBRASRCDIR); sh buildconf.sh
@@ -57,7 +57,7 @@ clean:
 	-rm -rf build
 
 	dh_clean
-	-rm -rf debian/zebra-runtime debian/*.debhelper debian/substvars
+	-rm -rf debian/idzebra debian/*.debhelper debian/substvars
 
 install: stamp-install
 stamp-install: stamp-build
@@ -76,22 +76,22 @@ stamp-install: stamp-build
 binary-indep: build install
 	dh_testdir
 	dh_testroot
-	dh_installdocs -p zebra-doc doc/
-	dh_installchangelogs -p zebra-doc
-	dh_link -p zebra-doc
-	dh_strip -p zebra-doc
-	dh_compress -p zebra-doc
-	dh_fixperms -p zebra-doc
-	dh_gencontrol -p zebra-doc
-	dh_md5sums -p zebra-doc
+	dh_installdocs -p idzebra-doc doc/
+	dh_installchangelogs -p idzebra-doc
+	dh_link -p idzebra-doc
+	dh_strip -p idzebra-doc
+	dh_compress -p idzebra-doc
+	dh_fixperms -p idzebra-doc
+	dh_gencontrol -p idzebra-doc
+	dh_md5sums -p idzebra-doc
 
-	dh_builddeb -p zebra-doc
+	dh_builddeb -p idzebra-doc
 
 # Build architecture-dependent files here.
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_movefiles -p zebra-runtime usr/share/zebra usr/bin
+	dh_movefiles -p idzebra usr/share/zebra usr/bin
 
 	cp LICENSE.zebra debian/copyright
 	cp CHANGELOG changelog
@@ -103,24 +103,23 @@ binary-arch: build install
 	dh_compress -a
 	dh_fixperms -a
 
-	dh_installdeb -p zebra-runtime
-	dh_installdeb -p zebra-devel
-	dh_undocumented -p zebra-runtime zebraidx.1 zebrasrv.1
-	dh_shlibdeps -p zebra-runtime $(LOCAL_LINK) 
+	dh_installdeb -p idzebra
+	dh_undocumented -p idzebra zebraidx.1 zebrasrv.1
+	dh_shlibdeps -p idzebra $(LOCAL_LINK) 
 
 	# Ugh Ugly hack
-	cat debian/postinst >> debian/zebra-runtime/DEBIAN/postinst
+	cat debian/postinst >> debian/idzebra/DEBIAN/postinst
 
-	dh_gencontrol -p zebra-runtime
-	dh_md5sums -p zebra-runtime
+	dh_gencontrol -p idzebra
+	dh_md5sums -p idzebra
 
 	# Go kill those CVS-dirs before build
 	-find debian/tmp -type d -name CVS | xargs rm -rf
-	# For some reason it is necessary to remove empty-dirs in zebra-doc
+	# For some reason it is necessary to remove empty-dirs in doc
 	-rm -rf debian/tmp/usr/include debian/tmp/usr/share/aclocal debian/tmp/usr/lib debian/tmp/usr/bin \
 	        debian/tmp/usr/share/zebra
 
-	dh_builddeb -p zebra-runtime
+	dh_builddeb -p idzebra
 
 
 binary: binary-indep binary-arch
