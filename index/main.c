@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.98 2002-10-04 18:15:09 adam Exp $
+/* $Id: main.c,v 1.99 2002-10-22 09:37:55 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -48,7 +48,8 @@ int main (int argc, char **argv)
     char *configName = 0;
     int nsections = 0;
     int disableCommit = 0;
-    size_t mem_max = 0;
+    char *mem_max = 0;
+    
     int trans_started=0;
 #if HAVE_SYS_TIMES_H
     struct tms tms1, tms2;
@@ -135,16 +136,27 @@ int main (int argc, char **argv)
                     if (disableCommit)
                         zebra_shadow_enable (zh, 0);
                 }
+
                 if (rGroupDef.databaseName)
                 {
                     if (zebra_select_database (zh, rGroupDef.databaseName))
+		    {
+			logf(LOG_FATAL, "Could not select database %s errCode=%d",
+					  rGroupDef.databaseName, zebra_errCode(zh) );
                         exit (1);
+		    }
                 }
                 else
                 {
                     if (zebra_select_database (zh, "Default"))
+		    {
+			logf(LOG_FATAL, "Could not select database Default errCode=%d",
+					zebra_errCode(zh) );
                         exit (1);
+		    }
                 }
+	        if (mem_max)
+	            zebra_set_resource(zh, "memmax",mem_max); 
 
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
@@ -236,7 +248,7 @@ int main (int argc, char **argv)
 	else if (ret == 'l')
 	    yaz_log_init_file (arg);
         else if (ret == 'm')
-            mem_max = 1024*1024*atoi(arg);
+            mem_max = arg; 
         else if (ret == 'd')
             rGroupDef.databaseName = arg;
 	else if (ret == 's')

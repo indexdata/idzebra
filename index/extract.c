@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.124 2002-10-16 09:30:57 heikki Exp $
+/* $Id: extract.c,v 1.125 2002-10-22 09:37:55 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1222,7 +1222,14 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 
     if (!zh->reg->key_buf)
     {
-	int mem = 8*1024*1024;
+	int mem= 1024*1024* atoi( res_get_def( zh->res, "memmax", "8"));
+	if (mem <= 0)
+	{
+	    logf(LOG_WARN, "Invalid memory setting, using default 8 MB");
+	    mem= 1024*1024*8;
+	}
+	/* FIXME: That "8" should be in a default settings include */
+	/* not hard-coded here! -H */
 	zh->reg->key_buf = (char**) xmalloc (mem);
 	zh->reg->ptr_top = mem/sizeof(char*);
 	zh->reg->ptr_i = 0;

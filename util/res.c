@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.32 2002-09-09 09:35:48 adam Exp $
+/* $Id: res.c,v 1.33 2002-10-22 09:37:56 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -77,6 +77,9 @@ static void reread (Res r)
     r->init = 1;
 
     val_buf = (char*) xmalloc (val_max);
+
+    if (!r->name)
+	return; 
 
     fr = fopen (r->name, "r");
     if (!fr)
@@ -175,19 +178,26 @@ static void reread (Res r)
 Res res_open (const char *name, Res def_res)
 {
     Res r;
-#ifdef WIN32
-    if (access (name, 4))
-#else
-    if (access (name, R_OK))
-#endif
+
+    if (name)
     {
-        logf (LOG_WARN|LOG_ERRNO, "Cannot open `%s'", name);
-	return 0;
+#ifdef WIN32
+        if (access (name, 4))
+#else
+        if (access (name, R_OK))
+#endif
+        {
+            logf (LOG_WARN|LOG_ERRNO, "Cannot open `%s'", name);
+	    return 0;
+        }
     }
     r = (Res) xmalloc (sizeof(*r));
     r->init = 0;
     r->first = r->last = NULL;
-    r->name = xstrdup (name);
+    if (name)
+        r->name = xstrdup (name);
+    else
+	r->name=0;
     r->def_res = def_res;
     return r;
 }
@@ -305,6 +315,8 @@ int res_write (Res r)
     assert (r);
     if (!r->init)
         reread (r);
+    if (!r->name)
+	return 0; /* ok, this was not from a file */
     fr = fopen (r->name, "w");
     if (!fr)
     {
