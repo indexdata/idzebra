@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.151 2004-01-29 13:11:01 adam Exp $
+/* $Id: extract.c,v 1.152 2004-06-01 12:56:14 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1284,7 +1284,9 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
         if (zh->reg->key_buf_used + 1024 > 
             (zh->reg->ptr_top -zh->reg->ptr_i)*sizeof(char*))
             extract_flushWriteKeys (zh,0);
+	assert(zh->reg->ptr_i >= 0);
         ++(zh->reg->ptr_i);
+	assert(zh->reg->ptr_i > 0);
         (zh->reg->key_buf)[zh->reg->ptr_top - zh->reg->ptr_i] =
 	    (char*)zh->reg->key_buf + zh->reg->key_buf_used;
 #if SU_SCHEME
