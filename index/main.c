@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.105 2003-06-30 19:37:12 adam Exp $
+/* $Id: main.c,v 1.106 2003-09-16 13:58:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -33,6 +33,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <time.h>
 #if HAVE_SYS_TIMES_H
 #include <sys/times.h>
+#endif
+
+#if HAVE_TCL_H
+#include <tcl.h>
 #endif
 
 #include <data1.h>
@@ -246,7 +250,7 @@ int main (int argc, char **argv)
         else if (ret == 'V')
         {
             printf("Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
-	    printf(" (C) 1994-2002, Index Data ApS\n");
+	    printf(" (C) 1994-2003, Index Data ApS\n");
 #ifdef WIN32
 #ifdef _DEBUG
             printf(" WIN32 Debug\n");
@@ -255,8 +259,10 @@ int main (int argc, char **argv)
 #endif
 #endif
 #if HAVE_BZLIB_H
-            printf("libbzip2\n"
-		   " (C) 1996-1999 Julian R Seward.  All rights reserved.\n");
+            printf("Using: libbzip2, (C) 1996-1999 Julian R Seward.  All rights reserved.\n");
+#endif
+#if HAVE_TCL_H
+	    printf("Using: Tcl %s\n", TCL_VERSION);
 #endif
         }
         else if (ret == 'v')
