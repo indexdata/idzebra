@@ -1,6 +1,5 @@
 IDZebra.i
 IDZebra_wrap.c
-MANIFEST
 Makefile.PL.in
 README
 demo/filter_test.pl
