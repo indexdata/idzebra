@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.149 2004-01-22 15:40:25 heikki Exp $
+/* $Id: extract.c,v 1.150 2004-01-22 16:23:23 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1353,15 +1353,21 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     qsort (zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
                sizeof(char*), key_qsort_compare);
 
-    /* Case 1: always use temp files (old way) */
-    /* Case 2: use temp files, if more than one (auto) */
-    /*         = if this is both the last and the first */
-    /* Case 3: never bother with temp files (new) */
-    temp_policy=2;
-    /* FIXME - will come from config file into zh */
+    /* zebra.cfg: tempfiles: 
+    /* Y: always use temp files (old way) */
+    /* A: use temp files, if more than one (auto) */
+    /*    = if this is both the last and the first */
+    /* N: never bother with temp files (new) */
 
-    if (   ( temp_policy ==3 )   ||     /* always from memory */
-         ( ( temp_policy ==2 ) &&       /* automatic */
+    temp_policy=toupper(res_get_def(zh->res,"tempfiles","auto")[0]);
+    if (temp_policy != 'Y' && temp_policy != 'N' && temp_policy != 'A') {
+        logf (LOG_WARN, "Illegal tempfiles setting '%c'. using 'Auto' ", 
+                        temp_policy);
+        temp_policy='A';
+    }
+
+    if (   ( temp_policy =='N' )   ||     /* always from memory */
+         ( ( temp_policy =='A' ) &&       /* automatic */
              (zh->reg->key_file_no == 1) &&  /* this is first time */
              (final) ) )                     /* and last (=only) time */
     { /* go directly from memory */
@@ -1369,7 +1375,7 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
         zebra_index_merge(zh); 
         zh->reg->ptr_i = 0;
         zh->reg->key_buf_used = 0; 
-        return; /*!*/
+        return; 
     }
 
     /* Not doing directly from memory, write into a temp file */

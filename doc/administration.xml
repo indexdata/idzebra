@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.16 2002-12-30 12:56:07 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.17 2004-01-22 16:23:23 heikki Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -305,6 +305,19 @@
        Specifies <replaceable>size</replaceable> of internal memory
        to use for the zebraidx program.
        The amount is given in megabytes - default is 4 (4 MB).
+       The more memory, the faster large updates happen, up to about
+       half the free memory available on the computer.
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term>tempfiles: <replaceable>Yes/Auto/No</replaceable></term>
+     <listitem>
+      <para>
+       Tells zebra if it should use temporary files when indexing. The
+       default is Auto, in which case zebra uses temporary files only
+       if it would need more that <replaceable>memMax</replaceable> 
+       megabytes of memory. This should be good for most uses.
       </para>
      </listitem>
     </varlistentry>
