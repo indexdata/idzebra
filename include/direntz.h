@@ -1,4 +1,4 @@
-/* $Id: direntz.h,v 1.7 2002-08-02 19:26:55 adam Exp $
+/* $Id: direntz.h,v 1.8 2003-01-13 15:43:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -47,6 +47,7 @@ void closedir (DIR *dd);
 
 #else
 /* include UNIX version */
+#include <sys/types.h>
 #include <dirent.h>
 #endif
 
