@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: grepper.c,v $
- * Revision 1.2  1994-10-03 17:22:18  adam
+ * Revision 1.3  1994-10-04 17:46:43  adam
+ * Function options now returns arg with error option.
+ *
+ * Revision 1.2  1994/10/03  17:22:18  adam
  * Optimization of grepper.
  *
  * Revision 1.1  1994/09/27  16:31:18  adam
@@ -394,7 +397,7 @@ int main (int argc, char **argv)
         }
         else
         {
-            log (LOG_FATAL, "unknown option");
+            log (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }

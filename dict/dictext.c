@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dictext.c,v $
- * Revision 1.2  1994-09-28 13:07:08  adam
+ * Revision 1.3  1994-10-04 17:46:54  adam
+ * Function options now returns arg with error option.
+ *
+ * Revision 1.2  1994/09/28  13:07:08  adam
  * Use log_mask_str now.
  *
  * Revision 1.1  1994/09/16  15:39:11  adam
@@ -55,7 +58,7 @@ int main (int argc, char **argv)
         }
         else
         {
-            log (LOG_FATAL, "unknown option");
+            log (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }

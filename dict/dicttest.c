@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.13  1994-10-04 12:08:05  adam
+ * Revision 1.14  1994-10-04 17:46:55  adam
+ * Function options now returns arg with error option.
+ *
+ * Revision 1.13  1994/10/04  12:08:05  adam
  * Some bug fixes and some optimizations.
  *
  * Revision 1.12  1994/10/03  17:23:03  adam
@@ -142,7 +145,7 @@ int main (int argc, char **argv)
         }
         else
         {
-            log (LOG_FATAL, "unknown option");
+            log (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }

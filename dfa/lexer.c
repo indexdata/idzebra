@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lexer.c,v $
- * Revision 1.3  1994-10-03 17:22:19  adam
+ * Revision 1.4  1994-10-04 17:46:44  adam
+ * Function options now returns arg with error option.
+ *
+ * Revision 1.3  1994/10/03  17:22:19  adam
  * Optimization of grepper.
  *
  * Revision 1.2  1994/09/27  16:31:20  adam
@@ -126,16 +129,16 @@ int main (int argc, char **argv)
         return 1;
     }
     else while (--argc > 0)
-            if (**++argv != '-' && **argv)
-            {
-                ++no;
-                i = read_file (*argv, &dfa);
-                if (i)
-                    return i;
-                dfas = mk_dfas (dfa, 2000);
-                rm_dfa (&dfa);
-                rm_dfas (&dfas);
-            }
+        if (**++argv != '-' && **argv)
+        {
+            ++no;
+            i = read_file (*argv, &dfa);
+            if (i)
+                return i;
+            dfas = mk_dfas (dfa, 2000);
+            rm_dfa (&dfa);
+            rm_dfas (&dfas);
+        }
 #ifdef MEMDEBUG
     imemstat();
 #endif

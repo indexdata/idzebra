@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.14 1994-09-22 10:45:19 adam Exp $
+# $Id: Makefile,v 1.15 1994-10-04 17:47:09 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -13,6 +13,8 @@ PO = options.o xmalloc.o log.o res.o alexpath.o common.o
 CPP=cc -E
 
 all: $(LIB)
+
+alll: opt-test res-test all
 
 opt-test: opt-test.o $(LIB) 
 	$(CC) -o opt-test opt-test.o $(LIB)

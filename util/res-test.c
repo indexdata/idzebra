@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res-test.c,v $
- * Revision 1.3  1994-08-18 11:02:27  adam
+ * Revision 1.4  1994-10-04 17:47:11  adam
+ * Function options now returns arg with error option.
+ *
+ * Revision 1.3  1994/08/18  11:02:27  adam
  * Implementation of res_write.
  *
  * Revision 1.2  1994/08/18  10:02:01  adam
@@ -45,12 +48,12 @@ int main(int argc, char **argv)
             write_flag = 1;
         else
         {
-            log (LOG_FATAL, "unknown option");
+            log (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     if (!resfile)
     {
-        log (LOG_FATAL, "Now resource file given.");
+        log (LOG_FATAL, "No resource file given.");
         exit (1);
     }
     res = res_open (resfile);
