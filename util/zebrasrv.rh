@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# chkconfig: 2345 85 15
+# description: Redhat init.d zebrasrv script.
+# processname: zebrasrv
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+zebradir=/home/meta/silkeborg/db
+srv=/home/meta/silkeborg/zmbol/index/zmbolsrv
+user=nobody
+	
+if [ ! -d ${zebradir} ]; then
+	echo "No directory $zebradir"
+	exit 0
+fi
+
+if [ ! -f ${srv} ]; then
+	echo "No server $srv"
+	exit 0
+fi
+
+cd $zebradir
+
+case "$1" in
+  start)
+	echo -n "Starting zebrasrv "
+
+	${srv} -l srv.log -u $user tcp:@:210 &
+
+	echo
+	;;
+  stop)
+	echo -n "Shutting zebrasrv "
+
+	kill `cat $zebradir/zebrasrv.pid`
+
+	echo ""
+	;;
+  restart|reload)
+	$0 stop
+	$0 start
+	;;
+  *)
+	echo "Usage: zebrasrv {start|stop|restart|reload}"
+	exit 1
+esac
+
+exit 0
+
