@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.21  2001-01-22 10:42:56  adam
+ * Revision 1.22  2001-11-14 22:06:27  adam
+ * Rank-weight may be controlled via query.
+ *
+ * Revision 1.21  2001/01/22 10:42:56  adam
  * Added numerical sort.
  *
  * Revision 1.20  2000/03/02 14:35:19  adam
@@ -515,27 +518,31 @@ int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes,
 }
 
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
-		     unsigned *reg_id, char **search_type, char **rank_type,
+		     unsigned *reg_id, char **search_type, char *rank_type,
 		     int *complete_flag, int *sort_flag)
 {
     AttrType completeness;
     AttrType structure;
     AttrType relation;
     AttrType sort_relation;
+    AttrType weight;
     int completeness_value;
     int structure_value;
     int relation_value;
     int sort_relation_value;
+    int weight_value;
 
     attr_init_APT (&structure, zapt, 4);
     attr_init_APT (&completeness, zapt, 6);
     attr_init_APT (&relation, zapt, 2);
     attr_init_APT (&sort_relation, zapt, 7);
+    attr_init_APT (&weight, zapt, 9);
 
     completeness_value = attr_find (&completeness, NULL);
     structure_value = attr_find (&structure, NULL);
     relation_value = attr_find (&relation, NULL);
     sort_relation_value = attr_find (&sort_relation, NULL);
+    weight_value = attr_find (&weight, NULL);
 
     if (completeness_value == 2 || completeness_value == 3)
 	*complete_flag = 1;
@@ -545,10 +552,13 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 
     *sort_flag = (sort_relation_value > 0) ? 1 : 0;
     *search_type = "phrase";
-    *rank_type = "void";
+    strcpy (rank_type, "void");
     if (relation_value == 102)
-	*rank_type = "rank";
-    
+    {
+        if (weight_value == -1)
+            weight_value == 34;
+        sprintf (rank_type, "rank,%d", weight_value);
+    }    
     if (*complete_flag)
 	*reg_id = 'p';
     else

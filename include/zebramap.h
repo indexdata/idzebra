@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.11  2001-01-22 10:42:56  adam
+ * Revision 1.12  2001-11-14 22:06:27  adam
+ * Rank-weight may be controlled via query.
+ *
+ * Revision 1.11  2001/01/22 10:42:56  adam
  * Added numerical sort.
  *
  * Revision 1.10  1999/11/30 13:48:03  adam
@@ -65,7 +68,7 @@ const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
 const char *zebra_maps_output(ZebraMaps, unsigned reg_id, const char **from);
 
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
-		     unsigned *reg_id, char **search_type, char **rank_type,
+		     unsigned *reg_id, char **search_type, char *rank_type,
 		     int *complete_flag, int *sort_flag);
 
 int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes,

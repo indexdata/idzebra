@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rank1.c,v $
- * Revision 1.6  2000-03-15 15:00:30  adam
+ * Revision 1.7  2001-11-14 22:06:27  adam
+ * Rank-weight may be controlled via query.
+ *
+ * Revision 1.6  2000/03/15 15:00:30  adam
  * First work on threaded version.
  *
  * Revision 1.5  1999/05/26 07:49:13  adam
@@ -44,6 +47,7 @@ struct rank_term_info {
     int global_occur;
     int global_inv;
     int rank_flag;
+    int rank_weight;
 };
 
 struct rank_set_info {
@@ -106,9 +110,12 @@ static void *begin (ZebraHandle zh, void *class_handle, RSET rset)
     for (i = 0; i < si->no_entries; i++)
     {
 	int g = rset->rset_terms[i]->nn;
-	if (!strcmp (rset->rset_terms[i]->flags, "rank"))
+	if (!strncmp (rset->rset_terms[i]->flags, "rank,", 5))
 	{
+            yaz_log (LOG_LOG, "%s", rset->rset_terms[i]->flags);
 	    si->entries[i].rank_flag = 1;
+            si->entries[i].rank_weight = atoi (rset->rset_terms[i]->flags+5);
+            yaz_log (LOG_LOG, "i=%d weight=%d", i, si->entries[i].rank_weight);
 	    (si->no_rank_entries)++;
 	}
 	else
@@ -163,10 +170,11 @@ static int calc (void *set_handle, int sysno)
 	return -1;
     for (i = 0; i < si->no_entries; i++)
 	if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
-	    score += (8+log2_int (lo)) * si->entries[i].global_inv;
-    score *= 34;
+	    score += (8+log2_int (lo)) * si->entries[i].global_inv *
+                si->entries[i].rank_weight;
     divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
     score = score / divisor;
+    yaz_log (LOG_LOG, "score=%d", score);
     if (score > 1000)
 	score = 1000;
     for (i = 0; i < si->no_entries; i++)

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.107  2001-10-15 19:53:43  adam
+ * Revision 1.108  2001-11-14 22:06:27  adam
+ * Rank-weight may be controlled via query.
+ *
+ * Revision 1.107  2001/10/15 19:53:43  adam
  * POSIX thread updates. First work on term sets.
  *
  * Revision 1.106  2001/04/11 07:58:13  adam
@@ -2252,13 +2255,13 @@ static RSET rpn_search_APT (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 {
     unsigned reg_id;
     char *search_type = NULL;
-    char *rank_type = NULL;
+    char rank_type[128];
     int complete_flag;
     int sort_flag;
     char termz[IT_MAX_WORD+1];
 
     zebra_maps_attr (zh->service->zebra_maps, zapt, &reg_id, &search_type,
-		     &rank_type, &complete_flag, &sort_flag);
+		     rank_type, &complete_flag, &sort_flag);
     
     logf (LOG_DEBUG, "reg_id=%c", reg_id);
     logf (LOG_DEBUG, "complete_flag=%d", complete_flag);
@@ -2583,7 +2586,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
     unsigned reg_id;
     char *search_type = NULL;
-    char *rank_type = NULL;
+    char rank_type[128];
     int complete_flag;
     int sort_flag;
     *list = 0;
@@ -2597,7 +2600,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     use_value = attr_find (&use, &attributeset);
 
     if (zebra_maps_attr (zh->service->zebra_maps, zapt, &reg_id, &search_type,
-			 &rank_type, &complete_flag, &sort_flag))
+			 rank_type, &complete_flag, &sort_flag))
     {
 	*num_entries = 0;
 	zh->errCode = 113;

@@ -1,9 +1,13 @@
+
+Rank weight can be controlled with attribute type 9. Default
+value is 34. Recommended values between 1-36.
+
 --- 1.1 2001/10/25
 
 Updated for YAZ version 1.8.
 
 Added support for termsets - a result set of terms matching
-a given query.
+a given query. For @attr 8=<set> creates termset named <set>.
 
 Added support for raw retrieval. Element Set Name R forces the
 text filter which returns the record in its original form.
