@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.49 2002-03-21 10:25:42 adam Exp $
+ * $Id: zebraapi.c,v 1.50 2002-03-27 07:53:13 adam Exp $
  */
 
 #include <assert.h>
@@ -65,8 +65,6 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->errString = 0;
 
     zh->trans_no = 0;
-    zh->seqno = 0;
-    zh->last_val = 0;
 
     zh->lock_normal = zebra_lock_create (res_get(zs->res, "lockDir"),
                                          "norm.LCK", 0);
@@ -103,6 +101,9 @@ ZebraService zebra_start (const char *configName)
 
     zh->registerState = -1;
     zh->registerChange = 0;
+
+    zh->seqno = 0;
+    zh->last_val = 0;
 
     if (!(zh->res = res_open (zh->configName)))
     {
@@ -742,14 +743,14 @@ static int zebra_begin_read (ZebraHandle zh)
     zebra_get_state (zh, &val, &seqno);
     if (val == 'd')
         val = 'o';
-    if (seqno != zh->seqno)
+    if (seqno != zh->service->seqno)
     {
-        yaz_log (LOG_LOG, "reopen seqno cur/old %d/%d", seqno, zh->seqno);
+        yaz_log (LOG_LOG, "reopen seqno cur/old %d/%d", seqno, zh->service->seqno);
         dirty = 1;
     }
-    else if (zh->last_val != val)
+    else if (zh->service->last_val != val)
     {
-        yaz_log (LOG_LOG, "reopen last cur/old %d/%d", val, zh->last_val);
+        yaz_log (LOG_LOG, "reopen last cur/old %d/%d", val, zh->service->last_val);
         dirty = 1;
     }
     if (!dirty)
@@ -760,8 +761,8 @@ static int zebra_begin_read (ZebraHandle zh)
     else
         zebra_lock_r (zh->lock_normal);
     
-    zh->last_val = val;
-    zh->seqno = seqno;
+    zh->service->last_val = val;
+    zh->service->seqno = seqno;
 
     zebra_register_deactivate (zh);
 
@@ -848,7 +849,7 @@ void zebra_begin_trans (ZebraHandle zh)
     zebra_set_state (zh, 'd', seqno);
 
     zebra_register_activate (zh, 1, rval ? 1 : 0);
-    zh->seqno = seqno;
+    zh->service->seqno = seqno;
 }
 
 void zebra_end_trans (ZebraHandle zh)

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zserver.h,v 1.53 2002-03-20 20:24:30 adam Exp $
+ * $Id: zserver.h,v 1.54 2002-03-27 07:53:13 adam Exp $
  */
 
 #if HAVE_SYS_TIMES_H
@@ -65,6 +65,8 @@ struct zebra_service {
     RecTypes recTypes;
     Passwd_db passwd_db;
     Zebra_mutex_cond session_lock;
+    int seqno;
+    int last_val;
     int stop_flag;
     int active; /* 0=shutdown, 1=enabled and inactive, 2=activated */
 };
@@ -104,8 +106,6 @@ struct zebra_session {
     ZebraLockHandle lock_shadow;
 
     int trans_no;
-    int seqno;
-    int last_val;
     int destroyed;
     ZebraSet sets;
     int errCode;
