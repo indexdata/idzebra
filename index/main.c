@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.30  1995-12-12 16:00:59  adam
+ * Revision 1.31  1996-01-08 19:15:46  adam
+ * New input filter that works!
+ *
+ * Revision 1.30  1995/12/12  16:00:59  adam
  * System call sync(2) used after update/commit.
  * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
  * and F_RDLCK.
@@ -160,7 +163,7 @@ int main (int argc, char **argv)
 	" -g <group>    Index files according to group settings.\n"
 	" -d <database> Records belong to Z39.50 database <database>.\n"
 	" -m <mbytes>   Use <mbytes> before flushing keys to disk.\n"
-        " -n            Don't use commit system\n"
+        " -n            Don't use shadow system\n"
 	" -v <level>    Set logging to <level>.\n");
         exit (1);
     }
@@ -190,14 +193,13 @@ int main (int argc, char **argv)
                 else if (!strcmp (arg, "commit"))
                 {
                     zebraIndexLock (1);
-                    rval = res_get (common_resource, "commit");
+                    rval = res_get (common_resource, "shadow");
                     if (rval && *rval)
                         bf_cache (1);
                     else
                     {
                         logf (LOG_FATAL, "Cannot perform commit");
-                        logf (LOG_FATAL, "No commit area defined "
-                              "in the configuration file");
+                        logf (LOG_FATAL, "No shadow area defined");
                         exit (1);
                     }
                     if (bf_commitExists ())
@@ -219,7 +221,7 @@ int main (int argc, char **argv)
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
                 {
                     zebraIndexLock (0);
-                    rval = res_get (common_resource, "commit");
+                    rval = res_get (common_resource, "shadow");
                     if (rval && *rval)
                     {
                         bf_cache (1);
@@ -238,7 +240,7 @@ int main (int argc, char **argv)
                 struct recordGroup rGroup;
 
                 zebraIndexLock (0);
-                rval = res_get (common_resource, "commit");
+                rval = res_get (common_resource, "shadow");
                 if (rval && *rval && !disableCommit)
                 {
                     bf_cache (1);
