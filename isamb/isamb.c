@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.54 2004-08-16 10:08:37 adam Exp $
+/* $Id: isamb.c,v 1.55 2004-08-18 20:00:35 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -710,7 +710,6 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         while (1)
         {
             const char *dst_item = 0;
-            char *dst_0 = dst;
             char *lookahead_next;
             int d = -1;
             
@@ -750,10 +749,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             if (d > 0)  
             {
                 if (dst > maxp)
-                {
-                    dst = dst_0;
                     lookahead_item = 0;
-                }
                 else
                 {
                     lookahead_next = lookahead_item;
