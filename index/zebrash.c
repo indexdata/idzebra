@@ -1,5 +1,5 @@
 /* zebrash.c - command-line interface to zebra API 
- *  $ID$
+ *  $Id: zebrash.c,v 1.6 2003-02-12 15:45:59 heikki Exp $
  *
  * Copyrigth 2003 Index Data Aps
  *
@@ -128,7 +128,7 @@ int onecommand( char *line, char *outbuff);
  {
    if (!zs)
      strcat(outbuff,"zebra seems not to have been started, "
-                    "stopping anyway");
+                    "stopping anyway\n");
    zebra_stop(zs);
    zs=0;
    return 0; /* ok */
@@ -138,7 +138,7 @@ static int cmd_zebra_open( char *args[], char *outbuff)
 {
   if (!zs)
     strcat(outbuff,"zebra seems not to have been started, "
-                   "trying anyway");
+                   "trying anyway\n");
   zh=zebra_open(zs);
   return 0; /* ok */
 }
@@ -147,7 +147,7 @@ static int cmd_zebra_close( char *args[], char *outbuff)
 {
   if (!zh)
     strcat(outbuff,"Seems like you have not called zebra_open,"
-                   "trying anyway");
+                   "trying anyway\n");
   zebra_close(zh);
   return 0; /* ok */
 }
@@ -380,7 +380,7 @@ int onecommand( char *line, char *outbuff)
   argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
   n=split_args(argbuf, args);
   if (0==n)
-    return 0; /* no command on line, too bad */
+    return -1; /* no command on line, too bad */
   for (i=0;cmds[i].cmd;i++)
     if (0==strcmp(cmds[i].cmd, args[0])) 
     {
@@ -394,7 +394,7 @@ int onecommand( char *line, char *outbuff)
   strcat(outbuff,args[0] );
   strcat(outbuff,"'. Try help");
   logf(LOG_APP,"Unknown command");
-  return -1; 
+  return -2; 
 }
  
  static int cmd_help( char *args[], char *outbuff)
@@ -452,7 +452,7 @@ int onecommand( char *line, char *outbuff)
 }
  
 /* If Zebra reports an error after an operation,
- * append it to the outbuff */
+ * append it to the outbuff and log it */
 static void Zerrors ( char *outbuff)
 {
   int ec;
@@ -462,10 +462,12 @@ static void Zerrors ( char *outbuff)
   ec=zebra_errCode (zh);
   if (ec)
   {
-    sprintf(tmp, "Zebra error %d: %s, (%s) \n",
+    sprintf(tmp, "Zebra error %d: %s, (%s)",
       ec, zebra_errString (zh),
       zebra_errAdd (zh) );
     strcat(outbuff, tmp);
+    strcat(outbuff, "\n");
+    logf(LOG_APP, tmp);
   }
 }
   
@@ -500,22 +502,25 @@ void shell()
 	  printf (PROMPT); 
 	  fflush (stdout);
 	  if (!fgets (buf, MAX_ARG_LEN-1, stdin))
-	    break;
+	    break; 
 #endif 
     outbuff[0]='\0';
     rc=onecommand(buf, outbuff);
     if (rc==0)
+    {
       strcat(outbuff, "OK\n");
+      logf(LOG_APP, "OK");
+    }
     else if (rc > 0)
     {
       sprintf(tmp, "command returned %d\n",rc);
       strcat(outbuff,tmp);
-    }
+    } 
     Zerrors(outbuff);
   	printf("%s\n", outbuff);
   } /* while */
 } /* shell() */
- 
+  
  
 /**************************************
  * Main 
