@@ -1,3 +1,8 @@
+# Copyright (C) 1994, Index Data I/S 
+# All rights reserved.
+# Sebastian Hammer, Adam Dickmeiss
+# $Id: Makefile,v 1.10 1994-09-27 16:31:40 adam Exp $
+
 SHELL=/bin/sh
 INCLUDE=-I../include
 CFLAGS=-g -Wall -pedantic
