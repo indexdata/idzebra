@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.4  1995-09-05 11:43:24  adam
+ * Revision 1.5  1995-09-05 16:36:59  adam
+ * Minor changes.
+ *
+ * Revision 1.4  1995/09/05  11:43:24  adam
  * Complete version of temporary sets. Not tested yet though.
  *
  * Revision 1.3  1995/09/04  15:20:40  adam
@@ -131,32 +134,28 @@ static void r_flush (struct rset_control *ct, int mk)
             exit (1);
         }
     }
-    if (info->fname)
+    if (info->fname && info->fd != -1 && info->dirty)
     {
-        assert (info->fd != -1);
-        if (info->dirty)
+        size_t r, count;
+        
+        if (lseek (info->fd, info->pos_buf, SEEK_SET) == -1)
         {
-            size_t r, count;
-
-            if (lseek (info->fd, info->pos_buf, SEEK_SET) == -1)
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "lseek %s", info->fname);
-                exit (1);
-            }
-            count = info->buf_size;
-            if (count > info->pos_end - info->pos_buf)
-                count = info->pos_end - info->pos_buf;
-            if ((r = write (info->fd, info->buf_mem, count)) < count)
-            {
-                if (r == -1)
-                    logf (LOG_FATAL|LOG_ERRNO, "read %s", info->fname);
-                else
-                    logf (LOG_FATAL, "write of %ld but got %ld",
-                          (long) count, (long) r);
-                exit (1);
-            }
-            info->dirty = 0;
+            logf (LOG_FATAL|LOG_ERRNO, "lseek %s", info->fname);
+            exit (1);
         }
+        count = info->buf_size;
+        if (count > info->pos_end - info->pos_buf)
+            count = info->pos_end - info->pos_buf;
+        if ((r = write (info->fd, info->buf_mem, count)) < count)
+        {
+            if (r == -1)
+                logf (LOG_FATAL|LOG_ERRNO, "read %s", info->fname);
+            else
+                logf (LOG_FATAL, "write of %ld but got %ld",
+                      (long) count, (long) r);
+            exit (1);
+        }
+        info->dirty = 0;
     }
 }
 
@@ -165,9 +164,8 @@ static void r_close (struct rset_control *ct)
     struct rset_temp_private *info = ct->buf;
 
     r_flush (ct, 0);
-    if (info->fname)
+    if (info->fname && info->fd != -1)
     {
-        assert (info->fd != -1);
         close (info->fd);
         info->fd = -1;
     }
