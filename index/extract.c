@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.85  1998-09-22 10:03:41  adam
+ * Revision 1.86  1998-10-13 20:33:53  adam
+ * Fixed one log message and change use ordinal to be an unsigned char.
+ *
+ * Revision 1.85  1998/09/22 10:03:41  adam
  * Changed result sets to be persistent in the sense that they can
  * be re-searched if needed.
  * Fixed memory leak in rsm_or.
@@ -612,8 +615,8 @@ static struct recKeys {
 static void addIndexString (RecWord *p, const char *string, int length)
 {
     char *dst;
-    char attrSet;
-    short attrUse;
+    unsigned char attrSet;
+    unsigned short attrUse;
     int lead = 0;
     int diff = 0;
     int *pseqno = &p->seqnos[p->reg_type];
@@ -821,8 +824,8 @@ static void flushSortKeys (SYSNO sysno, int cmd)
 
 static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys)
 {
-    char attrSet = -1;
-    short attrUse = -1;
+    unsigned char attrSet = (unsigned char) -1;
+    unsigned short attrUse = (unsigned short) -1;
     int seqno = 0;
     int off = 0;
 
@@ -1427,8 +1430,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         rec->info[recInfo_storeData] = xmalloc (recordAttr->recordSize);
         if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
         {
-            logf (LOG_ERRNO|LOG_FATAL, "seek to %ld in %s", fname,
-                  (long) recordOffset);
+            logf (LOG_ERRNO|LOG_FATAL, "seek to %ld in %s",
+                  (long) recordOffset, fname);
             exit (1);
         }
         if (read (fi->fd, rec->info[recInfo_storeData], recordAttr->recordSize)
