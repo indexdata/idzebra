@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.7  1995-10-12 12:41:57  adam
+ * Revision 1.8  1995-12-05 11:25:45  adam
+ * Doesn't include math.h.
+ *
+ * Revision 1.7  1995/10/12  12:41:57  adam
  * Private info (buf) moved from struct rset_control to struct rset.
  * Bug fixes in relevance.
  *
@@ -31,7 +34,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <assert.h>
 
 #include <isam.h>
