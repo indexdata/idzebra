@@ -1,4 +1,15 @@
 
+New .abs-directive "xpath" that takes one argument: "enable"
+or "disable" to enable and disable XPATH -indexing. If no "xpath"
+direcive is found in .abs-file , XPATH-indexing is disabled to ensure
+backwards compatibility. For missing .abs-files XPATH-indexing is
+enabled so that such records are searchable.
+
+Zebra warns about missing .abs-file only once (for each type).
+
+Fixed a bug in file update where already-inserted files could
+be treated as "new".
+
 --- 1.3.0 2002/08/05
 
 Zebra license changed to GNU GPL.
@@ -18,10 +29,9 @@ may be changed by character set negotiation. If character set
 negotiation is in effect and if records are selected for conversion
 these'll be converted to the selected character set - thus overriding
 the encoding setting in zebra.cfg.
-
-3) New directive "encoding" in .abs-files. This specifies the
-external for files indexed by zebra. However, if records themselves
-have an XML header that specifies and encoding that'll be used
+3) New directive "encoding" in .abs-files. This specifies the external
+character encoding for files indexed by zebra. However, if records
+themselves have an XML header that specifies and encoding that'll be used
 instead.
 
 XML filter (-t grs.xml).
