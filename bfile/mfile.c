@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.11  1995-11-13 09:32:43  quinn
+ * Revision 1.12  1995-11-24 17:26:11  quinn
+ * Mostly about making some ISAM stuff in the config file optional.
+ *
+ * Revision 1.11  1995/11/13  09:32:43  quinn
  * Comment work.
  *
  * Revision 1.10  1995/09/04  12:33:22  adam
@@ -61,7 +64,10 @@ static MFile_area_struct *default_area = 0;
 
 static int scan_areadef(MFile_area ma, const char *name)
 {
-    const char *ad = res_get(common_resource, name);
+    /*
+     * If no definition is given, use current directory, unlimited.
+     */
+    const char *ad = res_get_def(common_resource, name, ".:-1b");
     int offset = 0, rs, size, multi, rd;
     char dirname[FILENAME_MAX+1], unit; 
     mf_dir **dp = &ma->dirs, *dir = *dp;
@@ -180,11 +186,10 @@ MFile_area mf_init(const char *name)
 	{
 	    if (*dent->d_name == '.')
 	    	continue;
-	    if (sscanf(dent->d_name, "%[^.].%d", metaname, &number) != 2)
+	    if (sscanf(dent->d_name, "%[^.].mf.%d", metaname, &number) != 2)
 	    {
-	    	logf (LOG_FATAL, "Failed to resolve part-name %s",
-                      dent->d_name);
-	    	return 0;
+	    	logf (LOG_DEBUG, "bf: %s is not a part-file.", dent->d_name);
+	    	continue;
 	    }
 	    for (meta_f = ma->mfiles; meta_f; meta_f = meta_f->next)
 	    {
@@ -227,7 +232,8 @@ MFile_area mf_init(const char *name)
 	    	return 0;
 	    }
 	    close(fd);
-	    dirp->avail_bytes -= part_f->bytes;
+	    if (dirp->max_bytes >= 0)
+		dirp->avail_bytes -= part_f->bytes;
 	}
 	closedir(dd);
     }
@@ -280,15 +286,15 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     	new->files[0].number = 0;
     	new->files[0].fd = -1;
     	new->min_bytes_creat = MF_MIN_BLOCKS_CREAT * block_size;
-    	for (dp = ma->dirs; dp && dp->avail_bytes < new->min_bytes_creat;
-	    dp = dp->next);
+    	for (dp = ma->dirs; dp && dp->max_bytes >= 0 && dp->avail_bytes <
+	    new->min_bytes_creat; dp = dp->next);
 	if (!dp)
 	{
 	    logf (LOG_FATAL, "Insufficient space for new mfile.");
 	    return 0;
 	}
 	new->files[0].dir = dp;
-    	sprintf(tmp, "%s/%s.%d", dp->name, new->name, 0);
+    	sprintf(tmp, "%s/%s.mf.%d", dp->name, new->name, 0);
     	new->files[0].path = xstrdup(tmp);
     	new->ma = ma;
     }
@@ -379,7 +385,8 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
     {
     	logf (LOG_DEBUG, "File grows");
     	/* file overflow - allocate new file */
-    	if ((ps - mf->files[mf->cur_file].blocks + 1) * mf->blocksize >
+    	if (mf->files[mf->cur_file].dir->max_bytes >= 0 &&
+	    (ps - mf->files[mf->cur_file].blocks + 1) * mf->blocksize >
 	    mf->files[mf->cur_file].dir->avail_bytes)
 	{
 	    /* cap off file? */
@@ -404,8 +411,8 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 	    }
 	    /* get other bit */
     	    logf (LOG_DEBUG, "Creating new file.");
-    	    for (dp = mf->ma->dirs; dp && dp->avail_bytes < mf->min_bytes_creat;
-		dp = dp->next);
+    	    for (dp = mf->ma->dirs; dp && dp->max_bytes >= 0 &&
+		dp->avail_bytes < mf->min_bytes_creat; dp = dp->next);
 	    if (!dp)
 	    {
 	    	logf (LOG_FATAL, "Cannot allocate more space for %s",
@@ -422,7 +429,7 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 	    mf->files[mf->cur_file].blocks =
 	    	mf->files[mf->cur_file].bytes = 0;
 	    mf->files[mf->cur_file].fd = -1;
-	    sprintf(tmp, "%s/%s.%d", dp->name, mf->name,
+	    sprintf(tmp, "%s/%s.mf.%d", dp->name, mf->name,
 		mf->files[mf->cur_file].number);
 	    mf->files[mf->cur_file].path = xstrdup(tmp);
 	    mf->no_files++;
@@ -435,7 +442,9 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 	    nblocks = ps - mf->files[mf->cur_file].blocks + 1;
 	    mf->files[mf->cur_file].blocks += nblocks;
 	    mf->files[mf->cur_file].bytes += nblocks * mf->blocksize;
-	    mf->files[mf->cur_file].dir->avail_bytes -= nblocks * mf->blocksize;
+	    if (mf->files[mf->cur_file].dir->max_bytes >= 0)
+		mf->files[mf->cur_file].dir->avail_bytes -=
+		nblocks * mf->blocksize;
 	}
     }
     towrite = num ? num : mf->blocksize;

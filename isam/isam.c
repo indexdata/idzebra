@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.13  1995-10-17 18:03:15  adam
+ * Revision 1.14  1995-11-24 17:26:19  quinn
+ * Mostly about making some ISAM stuff in the config file optional.
+ *
+ * Revision 1.13  1995/10/17  18:03:15  adam
  * Commented out qsort in is_merge.
  *
  * Revision 1.12  1995/09/06  16:11:41  adam
@@ -119,8 +122,9 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 	new->types[i].index = 0;                        /* dummy */
 
     /* determine number and size of blocktypes */
-    if (!(r = res_get(common_resource, nm = strconcat(name, ".",
-	"blocktypes", 0))) || !(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
+    if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
+	"blocktypes", 0), "64 1K")) ||
+	!(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
@@ -206,8 +210,8 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     new->repack = atoi(r);
 
     /* determine max keys/blocksize */
-    if (!(r = res_get(common_resource, nm = strconcat(name, ".",
-	"maxkeys", 0))) || !(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
+    if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
+	"maxkeys", 0), "50")) || !(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
@@ -248,8 +252,9 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     }
 
     /* determine nice fill rates */
-    if (!(r = res_get(common_resource, nm = strconcat(name, ".",
-	"nicefill", 0))) || !(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
+    if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
+	"nicefill", 0), "90 90")) || !(num = splitargs(r, pp,
+	IS_MAX_BLOCKTYPES)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
