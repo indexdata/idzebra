@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.4 1994-08-17 15:34:22 adam Exp $
+# $Id: Makefile,v 1.5 1994-08-18 08:21:08 quinn Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -26,7 +26,7 @@ $(LIB): $(PO)
 	$(CC) -c $(DEFS) $(CFLAGS) $<
 
 clean:
-	rm -f *.[oa] $(TPROG) core mon.out gmon.out
+	rm -f *.[oa] $(TPROG) core mon.out gmon.out errlist
 
 dep depend:
 	$(CPP) $(INCLUDE) -M *.c >.depend
