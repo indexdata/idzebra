@@ -1,5 +1,5 @@
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
-<!-- $Id: zebrasrv-man.sgml,v 1.1 2002-09-19 21:06:51 adam Exp $ -->
+<!-- $Id: zebrasrv-man.sgml,v 1.2 2002-10-08 09:10:49 adam Exp $ -->
 <refentry id="zebrasrv">
  
  <refmeta>
@@ -28,6 +28,7 @@
    <arg choice="opt" rep="repeat">listener-spec</arg>
   </cmdsynopsis>
   
+ </refsynopsisdiv>
   <refsect1><title>DESCRIPTION</title>
    <para>
     <command>zebrasrv</command> is a Z39.50 server for Zebra.

@@ -1,7 +1,7 @@
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
      <!ENTITY zebraidx-options SYSTEM "zebraidx-options.xml">
 ]>
-<!-- $Id: zebraidx-man.sgml,v 1.1 2002-09-19 21:06:51 adam Exp $ -->
+<!-- $Id: zebraidx-man.sgml,v 1.2 2002-10-08 09:10:49 adam Exp $ -->
 <refentry id="zebraidx">
  
  <refmeta>
@@ -32,6 +32,7 @@
    <arg choice="req"><replaceable>command</replaceable></arg>
    <arg choice="opt" rep="repeat"><replaceable>file</replaceable></arg>
   </cmdsynopsis>
+ </refsynopsisdiv>
 
   <refsect1><title>DESCRIPTION</title>
    <para>
@@ -71,6 +72,7 @@
       </para></listitem>
     </varlistentry>
    </variablelist>
+  </refsect1>
   <refsect1>
    <title>OPTIONS</title>
     &zebraidx-options;
