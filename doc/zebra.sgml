@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.20 1996-03-18 10:48:13 quinn Exp $
+  $Id: zebra.sgml,v 1.21 1996-03-19 18:30:03 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.20 $
+<date>$Revision: 1.21 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -226,13 +226,14 @@ If successful, two executables have been created in the sub-directory
 <sect>Quick Start
 
 <p>
-This section will get you started quickly! We will try to index a few sample
-GILS records that are included with the Zebra distribution. Go to the
-<tt>test</tt> subdirectory. There you will find a configuration
+In this section, we will test the system by indexing a small set of sample
+GILS records that are included with the software distribution. Go to the
+<tt>test</tt> subdirectory of the distribution archive. There you will
+find a configuration
 file named <tt>zebra.cfg</tt> with the following contents:
 <tscreen><verb>
 # Where are the YAZ tables located.
-profilePath: /usr/local/yaz
+profilePath: ../../yaz/tab ../tab
 
 # Files that describe the attribute sets supported.
 attset: bib1.att
@@ -240,7 +241,8 @@ attset: gils.att
 </verb></tscreen>
 
 Now, edit the file and set <tt>profilePath</tt> to the path of the
-YAZ profile tables (sub directory <tt>tab</tt> of YAZ).
+YAZ profile tables (sub directory <tt>tab</tt> of the YAZ distribution
+archive).
 
 The 48 test records are located in the sub directory <tt>records</tt>.
 To index these, type:
@@ -258,8 +260,11 @@ fire up a server. To start a server on port 2100, type:
 $ ../index/zebrasrv tcp:@:2100
 </verb></tscreen>
 
-The Zebra index that you've just made has one database called Default. It will
-return either USMARC, GRS-1, or SUTRS depending on what your client asks
+The Zebra index that you have just created has a single database
+named <ztt/Default/. The database contains records structured according to
+the GILS profile, and the server will
+return records in either either USMARC, GRS-1, or SUTRS depending
+on what your client asks
 for.
 
 To test the server, you can use any Z39.50 client (1992 or later). For
@@ -285,9 +290,16 @@ Z>format sutrs
 Z>show 1
 Z>format grs-1
 Z>show 1
+Z>elements B
+Z>show 1
 </verb></tscreen>
 
-If you've made it this far, there's a reasonably good chance that
+<it>NOTE: You may notice that more fields are returned when your
+client requests SUTRS or GRS-1 records. When retrieving GILS records,
+this is normal - not all of the GILS data elements have mappings in
+the USMARC record format.</it>
+
+If you've made it this far, there's a good chance that
 you've got through the compilation OK.
 
 <sect>Administrating Zebra<label id="administrating">
@@ -381,43 +393,48 @@ The available configuration settings are summarized below. They will be
 explained further in the following sections.
 
 <descrip>
-<tag>&lsqb;<it>group</it>.&rsqb;recordType&lsqb;<it>.name</it>&rsqb;</tag>
+<tag><it>group</it>.recordType&lsqb;<it>.name</it>&rsqb;</tag>
  Specifies how records with the file extension <it>name</it> should
  be handled by the indexer. This option may also be specified
  as a command line option (<tt>-t</tt>). Note that if you do not
  specify a <it/name/, the setting applies to all files.
-<tag>&lsqb;<it>group</it>.&rsqb;recordId</tag>
- Specifies how the records are to be identified when updated.
-<tag>&lsqb;<it>group</it>.&rsqb;database</tag>
+<tag><it>group</it>.recordId</tag>
+ Specifies how the records are to be identified when updated. See
+section <ref id="locating-records" name="Locating Records">.
+<tag><it>group</it>.database</tag>
  Specifies the Z39.50 database name.
-<tag>&lsqb;<it>group</it>.&rsqb;storeKeys</tag>
+<tag><it>group</it>.storeKeys</tag>
  Specifies whether key information should be saved for a given
  group of records. If you plan to update/delete this type of
  records later this should be specified as 1; otherwise it
- should be 0 (default), to save register space.
-<tag>&lsqb;<it>group</it>.&rsqb;storeData</tag>
+ should be 0 (default), to save register space. See section
+<ref id="file-ids" name="Indexing With File Record IDs">.
+<tag><it>group</it>.storeData</tag>
  Specifies whether the records should be stored internally
  in the Zebra system files. If you want to maintain the raw records yourself,
  this option should be false (0). If you want Zebra to take care of the records
  for you, it should be true(1).
 <tag>register</tag> 
  Specifies the location of the various register files that Zebra uses
- to represent your databases.
+ to represent your databases. See section
+<ref id="register-location" name="Register Location">.
 <tag>shadow</tag>
  Enables the <it/safe update/ facility of Zebra, and tells the system
- where to place the required, temporary files.
+ where to place the required, temporary files. See section
+<ref id="shadow-registers" name="Safe Updating - Using Shadow Registers">.
 <tag>tempSetPath</tag>
  Specifies the directory that the server uses for temporary result sets.
  If not specified <tt>/tmp</tt> will be used.
 <tag>profilePath</tag>
- Specifies the location of profile specification paths.
+ Specifies the location of profile specification files.
 <tag>attset</tag> 
  Specifies the filename(s) of attribute set files for use in
  searching. At least the Bib-1 set should be loaded (<tt/bib1.att/).
  The <tt/profilePath/ setting is used to look for the specified files.
+ See section <ref id="attset-files" name="The Attribute Set Files">
 </descrip>
 
-<sect1>Locating Records
+<sect1>Locating Records<label="locating-records">
 <p>
 The default behaviour of the Zebra system is to reference the
 records from their original location, i.e. where they were found when you
@@ -465,7 +482,7 @@ simple.database: textbase
 Since the existing records in an index can not be addressed by their
 IDs, it is impossible to delete or modify records when using this method.
 
-<sect1>Indexing with File Record IDs
+<sect1>Indexing with File Record IDs<label id="file-ids">
 
 <p>
 If you have a set of files that regularly change over time: Old files
@@ -1479,7 +1496,7 @@ elm (4,70)/(4,90)/(4,2) distributorStreetAddress    !
 elm (4,70)/(4,90)/(4,3) distributorCity             !
 </verb></tscreen>
 
-<sect2>The Attribute Set (.att) Files
+<sect2>The Attribute Set (.att) Files<label id="attset-files">
 
 <p>
 This file type describes the <bf/Use/ elements of an attribute set.
