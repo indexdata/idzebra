@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.36 2004-06-15 08:05:54 adam Exp $
+/* $Id: res.c,v 1.37 2004-07-26 13:59:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -19,7 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -146,8 +145,6 @@ static void reread (Res r)
     assert (r);
     r->init = 1;
 
-    val_buf = (char*) xmalloc (val_max);
-
     if (!r->name)
 	return; 
 
@@ -157,6 +154,7 @@ static void reread (Res r)
         logf (LOG_WARN|LOG_ERRNO, "Cannot open `%s'", r->name);
 	return ;
     }
+    val_buf = (char*) xmalloc (val_max);
     while (1)
     {
         line = fgets (fr_buf, sizeof(fr_buf)-1, fr);
