@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.3  1996-11-01 09:00:33  adam
+ * Revision 1.4  1996-11-04 14:09:16  adam
+ * Minor changes.
+ *
+ * Revision 1.3  1996/11/01 09:00:33  adam
  * This simple "text" format now supports element specs B and M.
  *
  * Revision 1.2  1996/10/29 14:02:45  adam
@@ -69,10 +72,10 @@ struct buf_info *buf_open (struct recExtractCtrl *p)
 
 int buf_read (struct buf_info *fi, char *dst)
 {
-    if (fi->max <= 0)
-        return 0;
     if (fi->offset >= fi->max)
     {
+        if (fi->max <= 0)
+            return 0;
         fi->max = (*fi->p->readf)(fi->p->fh, fi->buf, 4096);
         fi->offset = 0;
         if (fi->max <= 0)
