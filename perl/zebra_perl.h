@@ -31,7 +31,7 @@ typedef struct {
   char *base; 
   int  sysno;
   int  score;
-  oid_value format;    /* record syntax */
+  char *format;    /* record syntax */
   RetrievalRecordBuf *buf;
 } RetrievalRecord;
 

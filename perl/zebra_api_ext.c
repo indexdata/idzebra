@@ -228,22 +228,22 @@ int zebra_cql2pqf (cql_transform_t ct,
 		   const char *query, char *res, int len) {
   
   int status;
-  const char *addinfo;
+  const char *addinfo = "";
   CQL_parser cp = cql_parser_create();
 
-  if (status = cql_transform_error(ct, &addinfo)) {
-    logf (LOG_WARN,"Transform error %d %s\n", status, addinfo ? addinfo : "");
+  if (status = cql_parser_string(cp, query)) {
+    cql_parser_destroy(cp);
     return (status);
   }
 
-  if (status = cql_parser_string(cp, query))
-    return (status);
-
-  if (status = cql_transform_buf(ct, cql_parser_result(cp), res, len)) {
+  if (cql_transform_buf(ct, cql_parser_result(cp), res, len)) {
+    status = cql_transform_error(ct, &addinfo);
     logf (LOG_WARN,"Transform error %d %s\n", status, addinfo ? addinfo : "");
+    cql_parser_destroy(cp);
     return (status);
   }
 
+  cql_parser_destroy(cp);
   return (0);
 }
 
@@ -311,10 +311,15 @@ void record_retrieve(RetrievalObj *ro,
     (RetrievalRecordBuf *) odr_malloc(stream, sizeof(*buf));  
 
   res->errCode    = ro->records[i].errCode;
-  res->errString  = ro->records[i].errString;
+  if (ro->records[i].errString) {
+    res->errString  = odr_strdup(stream, ro->records[i].errString);
+  } else {
+    res->errString = "";
+  }
   res->position   = ro->records[i].position;
   res->base       = ro->records[i].base;
-  res->format     = ro->records[i].format;
+  res->format     = (char *) 
+    yaz_z3950_oid_value_to_str(ro->records[i].format, CLASS_RECSYN); 
   res->buf        = buf;
   res->buf->len   = ro->records[i].len;
   res->buf->buf   = ro->records[i].buf;
@@ -507,7 +512,7 @@ void api_records_retrieve (ZebraHandle zh, ODR stream,
 					&recs[i].base);
 		recs[i].buf = (char *) odr_malloc(stream,recs[i].len);
 		memcpy(recs[i].buf, b, recs[i].len);
-		recs[i].errString = NULL;
+		recs[i].errString = 0; /* Hmmm !!! we should get this */ 
 		recs[i].sysno = poset[i].sysno;
 		recs[i].score = poset[i].score;
 	    }
