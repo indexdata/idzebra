@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.150 2004-01-22 16:23:23 heikki Exp $
+/* $Id: extract.c,v 1.151 2004-01-29 13:11:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,6 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 #include <assert.h>
+#include <ctype.h>
 #ifdef WIN32
 #include <io.h>
 #else
@@ -1353,11 +1354,11 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     qsort (zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
                sizeof(char*), key_qsort_compare);
 
-    /* zebra.cfg: tempfiles: 
-    /* Y: always use temp files (old way) */
-    /* A: use temp files, if more than one (auto) */
-    /*    = if this is both the last and the first */
-    /* N: never bother with temp files (new) */
+    /* zebra.cfg: tempfiles:  
+       Y: always use temp files (old way) 
+       A: use temp files, if more than one (auto) 
+          = if this is both the last and the first 
+       N: never bother with temp files (new) */
 
     temp_policy=toupper(res_get_def(zh->res,"tempfiles","auto")[0]);
     if (temp_policy != 'Y' && temp_policy != 'N' && temp_policy != 'A') {

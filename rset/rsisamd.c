@@ -1,5 +1,5 @@
-/* $Id: rsisamd.c,v 1.5 2004-01-16 15:27:35 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: rsisamd.c,v 1.6 2004-01-29 13:11:01 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -25,6 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 #include <zebrautl.h>
 #include <rsisamd.h>
 
