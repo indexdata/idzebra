@@ -1,4 +1,4 @@
-/* $Id: t3.c,v 1.11 2004-10-28 15:24:36 heikki Exp $
+/* $Id: t3.c,v 1.12 2004-10-29 13:02:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,35 +20,24 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <yaz/log.h>
-#include <yaz/pquery.h>
-#include <idzebra/api.h>
+/* Creates a few result sets */
+
 #include "testlib.h"
+
+const char *myrec[] ={
+        "<gils>\n"
+        "  <title>My title</title>\n"
+        "</gils>\n",
+        0};
 
 	
 int main(int argc, char **argv)
 {
     int i;
-    ZebraService zs;
-    ZebraHandle zh;
-    const char *myrec =
-        "<gils>\n"
-        "  <title>My title</title>\n"
-        "</gils>\n";
+    ZebraService zs = start_up(0, argc, argv);
+    ZebraHandle  zh = zebra_open (zs);
 
-    yaz_log_init_file("t3.log");
-     yaz_log_init_level(LOG_ALL);
-
-    nmem_init ();
-    
-    zs = start_service(0);
-    zh = zebra_open (zs);
-    zebra_select_database(zh, "Default");
-    zebra_init(zh);
-
-    zebra_begin_trans (zh, 1);
-    zebra_add_record (zh, myrec, strlen(myrec));
-    zebra_end_trans (zh);
+    init_data(zh,myrec);
 
     for (i = 0; i<4; i++)
     {
@@ -86,11 +75,6 @@ int main(int argc, char **argv)
         odr_destroy (odr_output);
     }
     zebra_commit (zh);
-    zebra_close (zh);
-    zebra_stop (zs);
 
-    nmem_exit ();
-    xmalloc_trav ("x");
-    logf(LOG_LOG,"================ All tests OK ");
-    exit (0);
+    return close_down(zh,zs,0);
 }

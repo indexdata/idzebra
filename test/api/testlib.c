@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.2 2004-10-28 15:24:36 heikki Exp $
+/* $Id: testlib.c,v 1.3 2004-10-29 13:02:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,9 +26,37 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
+#include "testlib.h"
 
+/** start_log: open a log file */
+/*    FIXME - parse command line arguments to set log levels etc */
+void start_log(int argc, char **argv)
+{
+    char logname[2048];
+    if (!argv) 
+        return;
+    if (!argv[0])
+        return;
+    sprintf(logname, "%s.log", argv[0]);
+    yaz_log_init_file(logname);
+}
 
-/* read zebra.cfg from env var srcdir if it exists; otherwise current dir */
+/** 
+ * start_up : do common start things, and a zebra_start
+ *    - nmem_init
+ *    - build the name of logfile from argv[0], and open it
+ *      if no argv passed, do not open a log
+ *    - read zebra.cfg from env var srcdir if it exists; otherwise current dir 
+ *      default to zebra.cfg, if no name is given
+ */
+ZebraService start_up(char *cfgname, int argc, char **argv)
+{
+    nmem_init();
+    start_log(argc, argv);
+    return start_service(cfgname);
+}
+
+/** start_service - do a zebra_start with a decent config name */
 ZebraService start_service(char *cfgname)
 {
     char cfg[256];
@@ -38,7 +66,6 @@ ZebraService start_service(char *cfgname)
         srcdir=".";
     if (!cfgname || ! *cfgname )
         cfgname="zebra.cfg";
-    /*sprintf(cfg, "%.200s%szebra.cfg", srcdir ? srcdir : "", srcdir ? "/" : "");     */
 
     sprintf(cfg, "%.200s/%s",srcdir, cfgname);
     zs=zebra_start(cfg);
@@ -49,6 +76,24 @@ ZebraService start_service(char *cfgname)
         exit(9);
     }
     return zs;
+}
+
+
+/** close_down closes down the zebra, logfile, nmem, xmalloc etc. logs an OK */
+int close_down(ZebraHandle zh, ZebraService zs, int retcode)
+{
+    if (zh)
+        zebra_close(zh);
+    if (zs)
+        zebra_stop(zs);
+
+    if (retcode)
+        logf(LOG_LOG,"========= Exiting with return code %d", retcode);
+    else
+        logf(LOG_LOG,"========= All tests OK");
+    nmem_exit();
+    xmalloc_trav("x");
+    return retcode;
 }
 
 /** inits the database and inserts test data */
@@ -69,17 +114,20 @@ void init_data( ZebraHandle zh, const char **recs)
         printf("  Error %d   %s\n",i,addinfo);
         exit(1);
     }
-    zebra_begin_trans (zh, 1);
-    for (i = 0; recs[i]; i++)
-        zebra_add_record (zh, recs[i], strlen(recs[i]));
-    zebra_end_trans (zh);
-    zebra_commit (zh);
+    if (recs)
+    {
+        zebra_begin_trans (zh, 1);
+        for (i = 0; recs[i]; i++)
+            zebra_add_record (zh, recs[i], strlen(recs[i]));
+        zebra_end_trans (zh);
+        zebra_commit (zh);
+    }
 
 }
 
 
 
-int Query(int lineno, ZebraHandle zh, char *query, int exphits)
+int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
 {
     ODR odr;
     YAZ_PQF_Parser parser;
@@ -120,7 +168,7 @@ int Query(int lineno, ZebraHandle zh, char *query, int exphits)
  * makes a query, checks number of hits, and for the first hit, that 
  * it contains the given string, and that it gets the right score
  */
-void RankingQuery(int lineno, ZebraHandle zh, char *query, 
+void ranking_query(int lineno, ZebraHandle zh, char *query, 
           int exphits, char *firstrec, int firstscore )
 {
     ZebraRetrievalRecord retrievalRecord[10];
@@ -130,7 +178,7 @@ void RankingQuery(int lineno, ZebraHandle zh, char *query,
     int rc;
     int i;
         
-    hits=Query(lineno, zh, query, exphits);
+    hits=do_query(lineno, zh, query, exphits);
 
     for (i = 0; i<10; i++)
         retrievalRecord[i].position = i+1;

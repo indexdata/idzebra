@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.10 2004-10-28 15:24:36 heikki Exp $
+/* $Id: t4.c,v 1.11 2004-10-29 13:02:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,29 +20,22 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <yaz/log.h>
-#include <yaz/pquery.h>
-#include <idzebra/api.h>
+/* t4 - insert a small pile of records, search and fetch them */
+
 #include "testlib.h"
 
-	
-int main(int argc, char **argv)
-{
-    int i;
-    ZebraService zs;
-    ZebraHandle zh;
-    const char *myrec[] = {
+const char *myrec[] = {
         "<gils>\n"
         "  <title>My title</title>\n"
         "</gils>\n",
         0};
+	
+int main(int argc, char **argv)
+{
+    int i;
+    ZebraService zs = start_up(0, argc, argv);;
+    ZebraHandle zh = zebra_open (zs);
 
-    yaz_log_init_file("t4.log");
-
-    nmem_init ();
-    
-    zs = start_service(0);
-    zh = zebra_open (zs);
     init_data(zh,myrec);
 
     zebra_begin_trans (zh, 1);
@@ -90,11 +83,5 @@ int main(int argc, char **argv)
 
     }
     zebra_commit (zh);
-    zebra_close (zh);
-    zebra_stop (zs);
-
-    nmem_exit ();
-    xmalloc_trav ("x");
-    logf(LOG_LOG,"================ All tests OK ");
-    exit (0);
+    return close_down(zh,zs,0);
 }

@@ -1,4 +1,4 @@
-/* $Id: t10.c,v 1.2 2004-10-28 15:24:36 heikki Exp $
+/* $Id: t10.c,v 1.3 2004-10-29 13:02:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -22,15 +22,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /** t10.c - test zv-rank */
 
-#include <yaz/log.h>
-#include <yaz/pquery.h>
-#include <idzebra/api.h>
-#include <assert.h>
 #include "testlib.h"
 #include "rankingrecords.h"
 
 #define qry(zh,query,hits,string,score) \
-    RankingQuery(__LINE__,(zh),(query),(hits),(string),(score))
+    ranking_query(__LINE__,(zh),(query),(hits),(string),(score))
 
 struct tst {
     char *schema;
@@ -79,23 +75,13 @@ struct tst tests[] = {
 int main(int argc, char **argv)
 {
     int i;
-    ZebraService zs;
-    ZebraHandle zh;
-
-    yaz_log_init_file("t10.log");
-    /* yaz_log_init_level(LOG_ALL);  */
-
-    nmem_init ();
-    
-    zs = start_service("zebrazv.cfg"); 
-    assert(zs);
-    zh = zebra_open (zs);
+    ZebraService zs = start_up("zebrazv.cfg", argc, argv);
+    ZebraHandle  zh = zebra_open (zs);
   
     init_data(zh, recs);
-
     zebra_close(zh);
 
-
+    yaz_log_init_level(LOG_ALL);
     for (i=0; tests[i].schema; i++)
     {
         zh = zebra_open (zs);
@@ -103,21 +89,16 @@ int main(int argc, char **argv)
         zebra_set_resource(zh, "zvrank.weighting-scheme", tests[i].schema);
         logf(LOG_LOG,"============%d: %s ============", i,tests[i].schema);
 
-        RankingQuery( __LINE__, zh, "@attr 1=1016 @attr 2=102 the",
+        ranking_query( __LINE__, zh, "@attr 1=1016 @attr 2=102 the",
                 3, tests[i].hit1, tests[i].score1);
-        RankingQuery( __LINE__, zh, "@attr 1=1016 @attr 2=102 @or foo bar",
+        ranking_query( __LINE__, zh, "@attr 1=1016 @attr 2=102 @or foo bar",
                 3, tests[i].hit2, tests[i].score2);
-        RankingQuery( __LINE__, zh, 
+        ranking_query( __LINE__, zh, 
                 "@attr 1=1016 @attr 2=102 @or @or the foo bar",
                 3, tests[i].hit3, tests[i].score3);
 
         zebra_close(zh);
     }
     
-    zebra_stop (zs);
-
-    nmem_exit ();
-    xmalloc_trav ("x");
-    logf(LOG_LOG,"============ ALL TESTS PASSED OK ============");
-    exit(0);
+    return close_down(0,zs,0);
 }

@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.2 2004-10-28 15:24:36 heikki Exp $
+/* $Id: testlib.h,v 1.3 2004-10-29 13:02:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -22,26 +22,63 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /** testlib - utilities for the api tests */
 
+#include <stdlib.h>
 #include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
 
 
-/** read zebra.cfg from env var srcdir if it exists; otherwise current dir */
-ZebraService start_service(char *cfgfile);
 
-/** initialises the zebra base and inserts some test data in it */
-void init_data( ZebraHandle zh, const char **recs);
+/** 
+ * start_up : Does all the usual start functions
+ *    - nmem_init
+ *    - build the name of logfile from argv[0], and open it
+ *      if no argv passed, do not open a log
+ *    - read zebra.cfg from env var srcdir if it exists; otherwise current dir 
+ *      default to zebra.cfg, if no name is given
+ */
+ZebraService start_up(char *cfgname, int argc, char **argv);
 
+/** 
+ * start_log: open a log file 
+ */
+/*    FIXME - parse command line arguments to set log levels etc */
+void start_log(int argc, char **argv);
 
-/** makes a query, and compares the number of hits to the expected */
-void Query(int lineno, ZebraHandle zh, char *query, int exphits);
+/** 
+ * start_service - do a zebra_start with a decent config name 
+ * Takes care of checking the environment for srcdir (as needed by distcheck)
+ * and uses that if need be. 
+ * The name defaults to zebra.cfg, if null or emtpy
+ */
+ZebraService start_service(char *cfgname);
 
 
 /** 
- * makes a query, checks number of hits, and for the first hit, that 
- * it contains the given string, and that it gets the right score
+ * close_down closes it all down
+ * Does a zebra_close on zh, if not null.
+ * Does a zebra_stop on zs, if not null 
+ * Writes a log message, OK if retcode is zero, error if not
+ * closes down nmem and xmalloc
+ * returns the retcode, for use in return or exit in main()
  */
-void RankingQuery(int lineno, ZebraHandle zh, char *query, 
-           int exphits, char *firstrec, int firstscore );
+int close_down(ZebraHandle zh, ZebraService zs, int retcode);
+
+/** inits the database and inserts test data */
+void init_data( ZebraHandle zh, const char **recs);
+
+
+/**
+ * do_query does a simple query, and checks that the number of hits matches
+ */
+int do_query(int lineno, ZebraHandle zh, char *query, int exphits);
+
+
+/** 
+ * ranking_query makes a query, checks number of hits, and for 
+ * the first hit, that it contains the given string, and that it 
+ * gets the right score
+ */
+void ranking_query(int lineno, ZebraHandle zh, char *query, 
+          int exphits, char *firstrec, int firstscore );
 

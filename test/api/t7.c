@@ -1,4 +1,4 @@
-/* $Id: t7.c,v 1.3 2004-10-28 15:24:36 heikki Exp $
+/* $Id: t7.c,v 1.4 2004-10-29 13:02:39 heikki Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -20,23 +20,23 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <yaz/log.h>
-#include <yaz/pquery.h>
-#include <yaz/sortspec.h>
-#include <idzebra/api.h>
+/** t7.c sorting  */
 
 #include "testlib.h"
+#include <yaz/sortspec.h>
 
-	
-int main(int argc, char **argv)
-{
-    ZebraService zs;
-    ZebraHandle zh;
-    const char *recs[] = {
+const char *recs[] = {
         "<gils>\n"
         "  <title>My title</title>\n"
         "</gils>\n",
         0};
+
+
+int main(int argc, char **argv)
+{
+    ZebraService zs = start_up(0, argc, argv);
+    ZebraHandle  zh = zebra_open (zs);
+
     const char *setname1="set1";
     const char *setname2="set2";
     const char *setname3="set3";
@@ -50,13 +50,6 @@ int main(int argc, char **argv)
     Z_SortKeySpecList *spec = 
           yaz_sort_spec (odr_output, "@attr 1=4 id");
     int hits;
-
-    yaz_log_init_file("t7.log");
-
-    nmem_init ();
-    
-    zs = start_service(""); /* default to zebra.cfg */
-    zh = zebra_open (zs);
 
     init_data(zh,recs);
 
@@ -90,11 +83,6 @@ int main(int argc, char **argv)
     odr_destroy (odr_output);
 
     zebra_commit (zh);
-    zebra_close (zh);
-    zebra_stop (zs);
 
-    nmem_exit ();
-    xmalloc_trav ("x");
-    logf(LOG_LOG,"========= all tests OK");
-    exit (0);
+    return close_down(zh,zs,0);
 }

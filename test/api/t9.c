@@ -1,4 +1,4 @@
-/* $Id: t9.c,v 1.2 2004-10-28 15:24:36 heikki Exp $
+/* $Id: t9.c,v 1.3 2004-10-29 13:02:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -22,32 +22,20 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /** t9.c - test rank-1 */
 
-#include <yaz/log.h>
-#include <yaz/pquery.h>
-#include <idzebra/api.h>
 
 #include "testlib.h"
 
 #include "rankingrecords.h"
 
 #define qry(zh,query,hits,string,score) \
-    RankingQuery(__LINE__,(zh),(query),(hits),(string),(score))
+    ranking_query(__LINE__,(zh),(query),(hits),(string),(score))
 
 int main(int argc, char **argv)
 {
-    ZebraService zs;
-    ZebraHandle zh;
+    ZebraService zs = start_up(0, argc, argv);
+    ZebraHandle  zh = zebra_open (zs);
 
-    yaz_log_init_file("t9.log");
-    /* yaz_log_init_level(LOG_ALL); */
-
-    nmem_init ();
-    
-    zs = start_service(""); /* default to zebra.cfg */
-    zh = zebra_open (zs);
     init_data(zh, recs);
-
-    zebra_select_database(zh, "Default");
 
     qry( zh, "@attr 1=1016 @attr 2=102 the",
             3, "first title", 872 );
@@ -61,11 +49,5 @@ int main(int argc, char **argv)
             3, "third title", 895 );
 
     
-    zebra_close (zh);
-    zebra_stop (zs);
-
-    nmem_exit ();
-    xmalloc_trav ("x");
-    logf(LOG_LOG,"============ ALL TESTS PASSED OK ============");
-    exit(0);
+    return close_down(zh,zs,0);
 }

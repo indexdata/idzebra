@@ -1,4 +1,4 @@
-/* $Id: t8.c,v 1.4 2004-10-28 15:24:36 heikki Exp $
+/* $Id: t8.c,v 1.5 2004-10-29 13:02:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,15 +20,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-/* t8: test numeric attributes */
+/** t8: test numeric attributes */
 
-#include <assert.h>
-#include <yaz/log.h>
-#include <yaz/pquery.h>
-#include <idzebra/api.h>
 #include "testlib.h"
 
-#define LOGLEVEL LOG_ALL 
 
 	
 const char *recs[] = {
@@ -66,21 +61,12 @@ const char *recs[] = {
 
 int main(int argc, char **argv)
 {
-    ZebraService zs;
-    ZebraHandle zh;
-    yaz_log_init_file("t8.log");
-#ifdef LOGLEVEL
-    yaz_log_init_level(LOGLEVEL); 
-#endif
-
-    nmem_init ();
-    
-    zs = start_service("zebra8.cfg");
-    zh = zebra_open (zs);
+    ZebraService zs = start_up("zebra8.cfg", argc, argv);
+    ZebraHandle  zh = zebra_open (zs);
 
     init_data(zh, recs);
 
-#define Q(q,n) Query(__LINE__,zh,q,n)
+#define Q(q,n) do_query(__LINE__,zh,q,n)
     /* couple of simple queries just to see that we have indexed the stuff */
     Q( "@attr 1=4 title",2 );
     Q( "title",2 );
@@ -107,12 +93,5 @@ int main(int argc, char **argv)
     /* N=41 and N=49 get only rec2 */
     Q( "@attr 2=3 @attr gils 1=2040 @attr 4=109 \"41 49\" ",1);
 
-    zebra_commit (zh);
-    zebra_close (zh);
-    zebra_stop (zs);
-
-    nmem_exit ();
-    xmalloc_trav ("x");
-    logf(LOG_LOG,"All tests OK");
-    exit (0);
+    return close_down(zh,zs,0);
 }

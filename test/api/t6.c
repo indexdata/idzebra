@@ -1,4 +1,4 @@
-/* $Id: t6.c,v 1.4 2004-10-28 15:24:36 heikki Exp $
+/* $Id: t6.c,v 1.5 2004-10-29 13:02:39 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,11 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <stdlib.h>
-
-#include <yaz/log.h>
-#include <yaz/pquery.h>
-#include <idzebra/api.h>
+/** t6.c Insert a number of randomly generated words */
 
 #include "testlib.h"
 
@@ -32,17 +28,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 int main(int argc, char **argv)
 {
     int i;
-    ZebraService zs;
-    ZebraHandle zh;
+    ZebraService zs = start_up(0, argc, argv);
+    ZebraHandle  zh = zebra_open (zs);
 
-    yaz_log_init_file("t6.log");
-
-    nmem_init ();
     
     srand(17);
     
-    zs = start_service("");
-    zh = zebra_open(zs);
     zebra_select_database(zh, "Default");
     zebra_init(zh);
     zebra_close(zh);
@@ -74,10 +65,6 @@ int main(int argc, char **argv)
 	zebra_end_trans (zh);
 	zebra_close(zh);
     }
-    zebra_stop(zs);
 
-    nmem_exit ();
-    xmalloc_trav ("x");
-    logf(LOG_LOG,"========= all tests OK");
-    exit (0);
+    return close_down(0 /*zh*/ ,zs,0);
 }
