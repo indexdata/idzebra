@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.8  1995-11-20 16:59:46  adam
+ * Revision 1.9  1995-11-21 09:20:32  adam
+ * Yet more work on record match.
+ *
+ * Revision 1.8  1995/11/20  16:59:46  adam
  * New update method: the 'old' keys are saved for each records.
  *
  * Revision 1.7  1995/11/20  11:56:28  adam
@@ -42,6 +45,7 @@
 #include <alexutil.h>
 #include "index.h"
 
+#if 0
 static void repository_extract_r (int cmd, char *rep, char *databaseName)
 {
     struct dir_entry *e;
@@ -293,6 +297,23 @@ void repository_update_r (int cmd, char *dst, char *src, char *databaseName)
     dir_free (&e_src);
 }
 
+void repository (int cmd, const char *rep, const char *base_path,
+                 char *databaseName)
+{
+    char rep_tmp1[2048];
+    char rep_tmp2[2048];
+
+    strcpy (rep_tmp1, rep);
+    if (base_path)
+    {
+        strcpy (rep_tmp2, base_path);
+        repository_update_r (cmd, rep_tmp2, rep_tmp1, databaseName);
+    }
+    else
+        repository_extract_r (cmd, rep_tmp1, databaseName);
+}
+#endif
+
 static int repComp (const char *a, const char *b, size_t len)
 {
     if (!len)
@@ -319,13 +340,11 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     {
         if (!e_src)
             return;
-#if 1
         if (src_len && src[src_len-1] == '/')
             --src_len;
         else
             src[src_len] = '/';
         src[src_len+1] = '\0';
-#endif
         dirs_mkdir (di, src, 0);
         dst = NULL;
     }
@@ -336,13 +355,11 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     }
     else
     {
-#if 1
         if (src_len && src[src_len-1] == '/')
             --src_len;
         else
             src[src_len] = '/';
         src[src_len+1] = '\0';
-#endif
         dst = dirs_read (di); 
     }
     dir_sort (e_src);
@@ -435,20 +452,3 @@ void repositoryUpdate (const char *path, char *databaseName)
 
     dict_close (dict);
 }
-
-void repository (int cmd, const char *rep, const char *base_path,
-                 char *databaseName)
-{
-    char rep_tmp1[2048];
-    char rep_tmp2[2048];
-
-    strcpy (rep_tmp1, rep);
-    if (base_path)
-    {
-        strcpy (rep_tmp2, base_path);
-        repository_update_r (cmd, rep_tmp2, rep_tmp1, databaseName);
-    }
-    else
-        repository_extract_r (cmd, rep_tmp1, databaseName);
-}
-
