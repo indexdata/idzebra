@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: update.sh,v 1.5 2002-06-19 12:38:47 adam Exp $
+# $Id: update.sh,v 1.6 2002-06-19 13:26:45 adam Exp $
 t=$1
 test -n "$t" || exit 1
 rm -f *.mf *.LCK *.tmp
@@ -21,12 +21,13 @@ done
 cat >plot.dem <<ENDOFMESSAGE
 set output "times-$t.ps"
 set terminal postscript
+set title "ISAM-$t"
 set xlabel "runs"
 set ylabel "seconds"
 plot [0:] [0:] \
-        'times-$t.log' using 2 title 'ISAM-$t(real)' with linespoints, \
-        'times-$t.log' using 3 title 'ISAM-$t(user)' with linespoints, \
-        'times-$t.log' using 4 title 'ISAM-$t(sys)' with linespoints
+        'times-$t.log' using 2 title 'real' with linespoints, \
+        'times-$t.log' using 3 title 'user' with linespoints, \
+        'times-$t.log' using 4 title 'sys' with linespoints
 ENDOFMESSAGE
 
 gnuplot plot.dem
