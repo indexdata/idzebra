@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.45 2002-08-19 21:11:27 adam Exp $
+/* $Id: regxread.c,v 1.46 2002-09-24 19:41:00 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -838,7 +838,7 @@ static void tagBegin (struct lexSpec *spec,
 	tagDataRelease (spec);
 
 #if REGX_DEBUG 
-    logf (LOG_LOG, "begin tag %s (%d)", res->u.tag.tag, spec->d1_level);
+    logf (LOG_LOG, "begin tag %s (%d)", tag, spec->d1_level);
 #endif
 
     spec->d1_stack[spec->d1_level] = data1_mk_tag_n (
