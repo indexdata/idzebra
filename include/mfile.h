@@ -3,22 +3,23 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.h,v 1.12 1999-12-08 15:03:11 adam Exp $
+ * $Id: mfile.h,v 1.13 2000-03-15 15:00:30 adam Exp $
  */
 
 #ifndef MFILE_H
 #define MFILE_H
 
 #include <stdio.h>
+#include <yaz/yconfig.h>
 
 #ifndef FILENAME_MAX
 #include <sys/param.h>
 #define FILENAME_MAX MAXPATHLEN
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <zebra-lock.h>
+
+YAZ_BEGIN_CDECL
 
 #define MF_MIN_BLOCKS_CREAT 1          /* minimum free blocks in new dir */
 #define MF_MAX_PARTS 28                 /* max # of part-files per metafile */
@@ -28,8 +29,8 @@ extern "C" {
 typedef struct mf_dir
 {
     char name[FILENAME_MAX+1];
-    int max_bytes;      /* allocated bytes in this dir. */
-    int avail_bytes;    /* bytes left */
+    off_t max_bytes;      /* allocated bytes in this dir. */
+    off_t avail_bytes;    /* bytes left */
     struct mf_dir *next;
 } mf_dir;
 
@@ -38,7 +39,7 @@ typedef struct part_file
     int number;
     int top;
     int blocks;
-    int bytes;
+    off_t bytes;
     mf_dir *dir;
     char *path;
     int fd;
@@ -58,6 +59,7 @@ typedef struct meta_file
     int min_bytes_creat;  /* minimum bytes required to enter directory */
     MFile_area ma;
     int wr;
+    Zebra_mutex mutex;
 
     struct meta_file *next;
 } *MFile, meta_file;
@@ -68,6 +70,7 @@ typedef struct MFile_area_struct
     mf_dir *dirs;
     struct meta_file *mfiles;
     struct MFile_area_struct *next;  /* global list of active areas */
+    Zebra_mutex mutex;
 } MFile_area_struct;
 
 /*
@@ -115,8 +118,7 @@ void mf_reset(MFile_area ma);
  * Unlink the file by name, rather than MFile-handle.
  */
 int mf_unlink_name(MFile_area, const char *name);
-#ifdef __cplusplus
-}
-#endif
+
+YAZ_END_CDECL
 
 #endif

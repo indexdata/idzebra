@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.24  1999-11-04 15:00:45  adam
+ * Revision 1.25  2000-03-15 15:00:31  adam
+ * First work on threaded version.
+ *
+ * Revision 1.24  1999/11/04 15:00:45  adam
  * Implemented delete result set(s).
  *
  * Revision 1.23  1999/05/26 07:49:13  adam
@@ -369,11 +372,11 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
     struct zset_sort_info *sort_info = sset->sort_info;
     int i, j;
 
-    sortIdx_sysno (zh->sortIdx, sysno);
+    sortIdx_sysno (zh->service->sortIdx, sysno);
     for (i = 0; i<num_criteria; i++)
     {
-	sortIdx_type (zh->sortIdx, criteria[i].attrUse);
-	sortIdx_read (zh->sortIdx, this_entry.buf[i]);
+	sortIdx_type (zh->service->sortIdx, criteria[i].attrUse);
+	sortIdx_read (zh->service->sortIdx, this_entry.buf[i]);
     }
     i = sort_info->num_entries;
     while (--i >= 0)
@@ -559,14 +562,15 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 	case Z_SortKey_sortAttributes:
 	    logf (LOG_DEBUG, "Sort: key %d is of type sortAttributes", i+1);
 	    sort_criteria[i].attrUse =
-		zebra_maps_sort (zh->zebra_maps, sk->u.sortAttributes);
+		zebra_maps_sort (zh->service->zebra_maps,
+				 sk->u.sortAttributes);
 	    logf (LOG_DEBUG, "use value = %d", sort_criteria[i].attrUse);
 	    if (sort_criteria[i].attrUse == -1)
 	    {
 		zh->errCode = 116;
 		return;
 	    }
-	    if (sortIdx_type (zh->sortIdx, sort_criteria[i].attrUse))
+	    if (sortIdx_type (zh->service->sortIdx, sort_criteria[i].attrUse))
 	    {
 		zh->errCode = 207;
 		return;
@@ -657,19 +661,19 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 
 ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name)
 {
-    ZebraRankClass p = zh->rank_classes;
+    ZebraRankClass p = zh->service->rank_classes;
     while (p && strcmp (p->control->name, name))
 	p = p->next;
     if (p && !p->init_flag)
     {
 	if (p->control->create)
-	    p->class_handle = (*p->control->create)(zh);
+	    p->class_handle = (*p->control->create)(zh->service);
 	p->init_flag = 1;
     }
     return p;
 }
 
-void zebraRankInstall (ZebraHandle zh, struct rank_control *ctrl)
+void zebraRankInstall (ZebraService zh, struct rank_control *ctrl)
 {
     ZebraRankClass p = (ZebraRankClass) xmalloc (sizeof(*p));
     p->control = (struct rank_control *) xmalloc (sizeof(*p->control));
@@ -680,7 +684,7 @@ void zebraRankInstall (ZebraHandle zh, struct rank_control *ctrl)
     zh->rank_classes = p;
 }
 
-void zebraRankDestroy (ZebraHandle zh)
+void zebraRankDestroy (ZebraService zh)
 {
     ZebraRankClass p = zh->rank_classes;
     while (p)

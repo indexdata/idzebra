@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.11  1999-10-29 10:00:00  adam
+ * Revision 1.12  2000-03-15 15:00:30  adam
+ * First work on threaded version.
+ *
+ * Revision 1.11  1999/10/29 10:00:00  adam
  * Fixed minor bug where database name wasn't set in zebra_record_fetch.
  *
  * Revision 1.10  1999/05/26 07:49:13  adam
@@ -126,14 +129,14 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     RecordAttr *recordAttr;
     void *clientData;
 
-    rec = rec_get (zh->records, sysno);
+    rec = rec_get (zh->service->records, sysno);
     if (!rec)
     {
         logf (LOG_DEBUG, "rec_get fail on sysno=%d", sysno);
 	*basenamep = 0;
         return 14;
     }
-    recordAttr = rec_init_attr (zh->zei, rec);
+    recordAttr = rec_init_attr (zh->service->zei, rec);
 
     file_type = rec->info[recInfo_fileType];
     fname = rec->info[recInfo_filename];
@@ -141,7 +144,8 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     *basenamep = (char *) odr_malloc (stream, strlen(basename)+1);
     strcpy (*basenamep, basename);
 
-    if (!(rt = recType_byName (zh->recTypes, file_type, subType, &clientData)))
+    if (!(rt = recType_byName (zh->service->recTypes,
+			       file_type, subType, &clientData)))
     {
         logf (LOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
 	return 14;
@@ -249,8 +253,8 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     retrieveCtrl.input_format = retrieveCtrl.output_format = input_format;
     retrieveCtrl.comp = comp;
     retrieveCtrl.diagnostic = 0;
-    retrieveCtrl.dh = zh->dh;
-    retrieveCtrl.res = zh->res;
+    retrieveCtrl.dh = zh->service->dh;
+    retrieveCtrl.res = zh->service->res;
     (*rt->retrieve)(clientData, &retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = (char *) retrieveCtrl.rec_buf;

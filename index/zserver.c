@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.75  1999-11-30 13:48:04  adam
+ * Revision 1.76  2000-03-15 15:00:31  adam
+ * First work on threaded version.
+ *
+ * Revision 1.75  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.74  1999/11/29 15:13:26  adam
@@ -276,6 +279,9 @@
 #endif
 
 #include <yaz/data1.h>
+#ifdef ASN_COMPILED
+#include <yaz/ill.h>
+#endif
 
 #include "zserver.h"
 
@@ -288,6 +294,7 @@
 
 static int bend_sort (void *handle, bend_sort_rr *rr);
 static int bend_delete (void *handle, bend_delete_rr *rr);
+static int bend_esrequest (void *handle, bend_esrequest_rr *rr);
 
 bend_initresult *bend_init (bend_initrequest *q)
 {
@@ -302,6 +309,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     r->errstring = 0;
     q->bend_sort = bend_sort;
     q->bend_delete = bend_delete;
+    q->bend_esrequest = bend_esrequest;
 
     q->implementation_name = "Z'mbol Information Server";
     q->implementation_version = "Z'mbol 1.0";
@@ -309,7 +317,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     logf (LOG_DEBUG, "bend_init");
 
     sob = statserv_getcontrol ();
-    if (!(zh = zebra_open (sob->configname)))
+    if (!(zh = zebra_open (sob->handle)))
     {
 	logf (LOG_FATAL, "Failed to open Zebra `%s'", sob->configname);
 	r->errcode = 1;
@@ -330,7 +338,7 @@ bend_initresult *bend_init (bend_initrequest *q)
 	    xfree (openpass);
 	}
     }
-    if (zebra_auth (zh, user, passwd))
+    if (zebra_auth (zh->service, user, passwd))
     {
 	r->errcode = 222;
 	r->errstring = user;
@@ -465,9 +473,292 @@ int bend_delete (void *handle, bend_delete_rr *rr)
     return 0;
 }
 
-#ifndef WIN32
+static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
+{
+    switch (r->toKeep->which)
+    {
+    case Z_ESAdminOriginPartToKeep_reIndex:
+	yaz_log(LOG_LOG, "adm-reindex");
+	break;
+    case Z_ESAdminOriginPartToKeep_truncate:
+	yaz_log(LOG_LOG, "adm-truncate");
+	break;
+    case Z_ESAdminOriginPartToKeep_delete:
+	yaz_log(LOG_LOG, "adm-delete");
+	break;
+    case Z_ESAdminOriginPartToKeep_create:
+	yaz_log(LOG_LOG, "adm-create");
+	zebra_admin_create (zh, r->toKeep->databaseName);
+	break;
+    case Z_ESAdminOriginPartToKeep_import:
+	yaz_log(LOG_LOG, "adm-import");
+	break;
+    case Z_ESAdminOriginPartToKeep_refresh:
+	yaz_log(LOG_LOG, "adm-refresh");
+	break;
+    case Z_ESAdminOriginPartToKeep_commit:
+	yaz_log(LOG_LOG, "adm-commit");
+	break;
+    default:
+	yaz_log(LOG_LOG, "unknown admin");
+	zh->errCode = 1001;
+    }
+    if (r->toKeep->databaseName)
+    {
+	yaz_log(LOG_LOG, "database %s", r->toKeep->databaseName);
+    }
+    return 0;
+}
+
+static int es_admin (ZebraHandle zh, Z_Admin *r)
+{
+    switch (r->which)
+    {
+    case Z_Admin_esRequest:
+	es_admin_request (zh, r->u.esRequest);
+	break;
+    case Z_Admin_taskPackage:
+	yaz_log (LOG_LOG, "adm taskpackage (unhandled)");
+	break;
+    default:
+	zh->errCode = 1001;
+	break;
+    }
+
+    return 0;
+}
+
+int bend_esrequest (void *handle, bend_esrequest_rr *rr)
+{
+    ZebraHandle zh = (ZebraHandle) handle;
+    
+    yaz_log(LOG_LOG, "function: %d", *rr->esr->function);
+    if (rr->esr->packageName)
+    	yaz_log(LOG_LOG, "packagename: %s", rr->esr->packageName);
+    yaz_log(LOG_LOG, "Waitaction: %d", *rr->esr->waitAction);
+
+    if (!rr->esr->taskSpecificParameters)
+    {
+        yaz_log (LOG_WARN, "No task specific parameters");
+    }
+    else if (rr->esr->taskSpecificParameters->which == Z_External_ESAdmin)
+    {
+	es_admin (zh, rr->esr->taskSpecificParameters->u.adminService);
+	rr->errcode = zh->errCode;
+	rr->errstring = zh->errString;
+    }
+    else if (rr->esr->taskSpecificParameters->which == Z_External_itemOrder)
+    {
+    	Z_ItemOrder *it = rr->esr->taskSpecificParameters->u.itemOrder;
+	yaz_log (LOG_LOG, "Received ItemOrder");
+	switch (it->which)
+	{
+#ifdef ASN_COMPILED
+	case Z_IOItemOrder_esRequest:
+#else
+	case Z_ItemOrder_esRequest:
+#endif
+	{
+	    Z_IORequest *ir = it->u.esRequest;
+	    Z_IOOriginPartToKeep *k = ir->toKeep;
+	    Z_IOOriginPartNotToKeep *n = ir->notToKeep;
+	    
+	    if (k && k->contact)
+	    {
+	        if (k->contact->name)
+		    yaz_log(LOG_LOG, "contact name %s", k->contact->name);
+		if (k->contact->phone)
+		    yaz_log(LOG_LOG, "contact phone %s", k->contact->phone);
+		if (k->contact->email)
+		    yaz_log(LOG_LOG, "contact email %s", k->contact->email);
+	    }
+	    if (k->addlBilling)
+	    {
+	        yaz_log(LOG_LOG, "Billing info (not shown)");
+	    }
+	    
+	    if (n->resultSetItem)
+	    {
+	        yaz_log(LOG_LOG, "resultsetItem");
+		yaz_log(LOG_LOG, "setId: %s", n->resultSetItem->resultSetId);
+		yaz_log(LOG_LOG, "item: %d", *n->resultSetItem->item);
+	    }
+#ifdef ASN_COMPILED
+	    if (n->itemRequest)
+	    {
+		Z_External *r = (Z_External*) n->itemRequest;
+		ILL_ItemRequest *item_req = 0;
+		ILL_Request *ill_req = 0;
+		if (r->direct_reference)
+		{
+		    oident *ent = oid_getentbyoid(r->direct_reference);
+		    if (ent)
+			yaz_log(LOG_LOG, "OID %s", ent->desc);
+		    if (ent && ent->value == VAL_ISO_ILL_1)
+		    {
+			yaz_log (LOG_LOG, "ItemRequest");
+			if (r->which == ODR_EXTERNAL_single)
+			{
+			    odr_setbuf(rr->decode,
+				       r->u.single_ASN1_type->buf,
+				       r->u.single_ASN1_type->len, 0);
+			    
+			    if (!ill_ItemRequest (rr->decode, &item_req, 0, 0))
+			    {
+				yaz_log (LOG_LOG,
+                                    "Couldn't decode ItemRequest %s near %d",
+                                       odr_errmsg(odr_geterror(rr->decode)),
+                                       odr_offset(rr->decode));
+                                yaz_log(LOG_LOG, "PDU dump:");
+                                odr_dumpBER(log_file(),
+                                     r->u.single_ASN1_type->buf,
+                                     r->u.single_ASN1_type->len);
+                            }
+			    if (rr->print)
+			    {
+				ill_ItemRequest (rr->print, &item_req, 0,
+                                    "ItemRequest");
+				odr_reset (rr->print);
+ 			    }
+			}
+			if (!item_req && r->which == ODR_EXTERNAL_single)
+			{
+			    yaz_log (LOG_LOG, "ILLRequest");
+			    odr_setbuf(rr->decode,
+				       r->u.single_ASN1_type->buf,
+				       r->u.single_ASN1_type->len, 0);
+			    
+			    if (!ill_Request (rr->decode, &ill_req, 0, 0))
+			    {
+				yaz_log (LOG_LOG,
+                                    "Couldn't decode ILLRequest %s near %d",
+                                       odr_errmsg(odr_geterror(rr->decode)),
+                                       odr_offset(rr->decode));
+                                yaz_log(LOG_LOG, "PDU dump:");
+                                odr_dumpBER(log_file(),
+                                     r->u.single_ASN1_type->buf,
+                                     r->u.single_ASN1_type->len);
+                            }
+			    if (rr->print)
+                            {
+				ill_Request (rr->print, &ill_req, 0,
+                                    "ILLRequest");
+				odr_reset (rr->print);
+			    }
+			}
+		    }
+		}
+		if (item_req)
+		{
+		    yaz_log (LOG_LOG, "ILL protocol version = %d",
+			     *item_req->protocol_version_num);
+		}
+	    }
+#endif
+	}
+	break;
+	}
+    }
+    else if (rr->esr->taskSpecificParameters->which == Z_External_update)
+    {
+    	Z_IUUpdate *up = rr->esr->taskSpecificParameters->u.update;
+	yaz_log (LOG_LOG, "Received DB Update");
+	if (up->which == Z_IUUpdate_esRequest)
+	{
+	    Z_IUUpdateEsRequest *esRequest = up->u.esRequest;
+	    Z_IUOriginPartToKeep *toKeep = esRequest->toKeep;
+	    Z_IUSuppliedRecords *notToKeep = esRequest->notToKeep;
+	    
+	    yaz_log (LOG_LOG, "action");
+	    if (toKeep->action)
+	    {
+		switch (*toKeep->action)
+		{
+		case Z_IUOriginPartToKeep_recordInsert:
+		    yaz_log (LOG_LOG, " recordInsert");
+		    break;
+		case Z_IUOriginPartToKeep_recordReplace:
+		    yaz_log (LOG_LOG, " recordUpdate");
+		    break;
+		case Z_IUOriginPartToKeep_recordDelete:
+		    yaz_log (LOG_LOG, " recordDelete");
+		    break;
+		case Z_IUOriginPartToKeep_elementUpdate:
+		    yaz_log (LOG_LOG, " elementUpdate");
+		    break;
+		case Z_IUOriginPartToKeep_specialUpdate:
+		    yaz_log (LOG_LOG, " specialUpdate");
+		    break;
+		default:
+		    yaz_log (LOG_LOG, " unknown (%d)", *toKeep->action);
+		}
+	    }
+	    if (toKeep->databaseName)
+	    {
+		yaz_log (LOG_LOG, "database: %s", toKeep->databaseName);
+		if (!strcmp(toKeep->databaseName, "fault"))
+		{
+		    rr->errcode = 109;
+		    rr->errstring = toKeep->databaseName;
+		}
+		if (!strcmp(toKeep->databaseName, "accept"))
+		    rr->errcode = -1;
+	    }
+	    if (notToKeep)
+	    {
+		int i;
+		for (i = 0; i < notToKeep->num; i++)
+		{
+		    Z_External *rec = notToKeep->elements[i]->record;
+
+		    if (rec->direct_reference)
+		    {
+			struct oident *oident;
+			oident = oid_getentbyoid(rec->direct_reference);
+			if (oident)
+			    yaz_log (LOG_LOG, "record %d type %s", i,
+				     oident->desc);
+		    }
+		    switch (rec->which)
+		    {
+		    case Z_External_sutrs:
+			if (rec->u.octet_aligned->len > 170)
+			    yaz_log (LOG_LOG, "%d bytes:\n%.168s ...",
+				     rec->u.sutrs->len,
+				     rec->u.sutrs->buf);
+			else
+			    yaz_log (LOG_LOG, "%d bytes:\n%s",
+				     rec->u.sutrs->len,
+				     rec->u.sutrs->buf);
+                        break;
+		    case Z_External_octet        :
+			if (rec->u.octet_aligned->len > 170)
+			    yaz_log (LOG_LOG, "%d bytes:\n%.168s ...",
+				     rec->u.octet_aligned->len,
+				     rec->u.octet_aligned->buf);
+			else
+			    yaz_log (LOG_LOG, "%d bytes\n%s",
+				     rec->u.octet_aligned->len,
+				     rec->u.octet_aligned->buf);
+		    }
+		}
+	    }
+	}
+    }
+    else
+    {
+        yaz_log (LOG_WARN, "Unknown Extended Service(%d)",
+		 rr->esr->taskSpecificParameters->which);
+	
+    }
+    return 0;
+}
+
 static void bend_start (struct statserv_options_block *sob)
 {
+#ifdef WIN32
+    
+#else
     if (!sob->inetd) 
     {
         char *pidfile = "zebrasrv.pid";
@@ -483,8 +774,18 @@ static void bend_start (struct statserv_options_block *sob)
 	    close (fd);
         }
     }
-}
 #endif
+    if (sob->handle)
+	zebra_stop((ZebraService) sob->handle);
+    sob->handle = zebra_start(sob->configname);
+}
+
+static void bend_stop(struct statserv_options_block *sob)
+{
+    if (sob->handle)
+	zebra_stop(sob->handle);
+    sob->handle = 0;
+}
 
 int main (int argc, char **argv)
 {
@@ -492,13 +793,15 @@ int main (int argc, char **argv)
 
     sob = statserv_getcontrol ();
     strcpy (sob->configname, FNAME_CONFIG);
-#ifndef WIN32
     sob->bend_start = bend_start;
-#endif
+    sob->bend_stop = bend_stop;
+
+    if (sob->dynamic)
+    {
+	sob->dynamic = 0;
+	sob->threads = 1;
+    }
     statserv_setcontrol (sob);
 
-#if ZEBRASDR
-    zebraSdr_std ();
-#endif
     return statserv_main (argc, argv);
 }

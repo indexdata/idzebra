@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rank1.c,v $
- * Revision 1.5  1999-05-26 07:49:13  adam
+ * Revision 1.6  2000-03-15 15:00:30  adam
+ * First work on threaded version.
+ *
+ * Revision 1.5  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.4  1999/02/02 14:51:01  adam
@@ -62,7 +65,7 @@ static int log2_int (unsigned g)
  * create: Creates/Initialises this rank handler. This routine is 
  *  called exactly once. The routine returns the class_handle.
  */
-static void *create (ZebraHandle zh)
+static void *create (ZebraService zh)
 {
     struct rank_class_info *ci = (struct rank_class_info *)
 	xmalloc (sizeof(*ci));
@@ -76,7 +79,7 @@ static void *create (ZebraHandle zh)
  *  when the handler is no longer needed - i.e. when the server
  *  dies. The class_handle was previously returned by create.
  */
-static void destroy (ZebraHandle zh, void *class_handle)
+static void destroy (ZebraService zh, void *class_handle)
 {
     struct rank_class_info *ci = (struct rank_class_info *) class_handle;
 

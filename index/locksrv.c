@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.13  1999-05-26 07:49:13  adam
+ * Revision 1.14  2000-03-15 15:00:30  adam
+ * First work on threaded version.
+ *
+ * Revision 1.13  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.12  1999/02/02 14:50:58  adam
@@ -64,7 +67,7 @@
 
 #include "zserver.h"
 
-int zebra_server_lock_init (ZebraHandle zi)
+int zebra_server_lock_init (ZebraService zi)
 {
     char path_prefix[1024];
 
@@ -80,7 +83,7 @@ int zebra_server_lock_init (ZebraHandle zi)
     return 0;
 }
 
-int zebra_server_lock_destroy (ZebraHandle zi)
+int zebra_server_lock_destroy (ZebraService zi)
 {
     xfree (zi->server_path_prefix);
     zebra_lock_destroy (zi->server_lock_cmt);
@@ -89,7 +92,7 @@ int zebra_server_lock_destroy (ZebraHandle zi)
     return 0;
 }
 
-int zebra_server_lock (ZebraHandle zi, int commitPhase)
+int zebra_server_lock (ZebraService zi, int commitPhase)
 {
     if (!zi->server_lock_cmt)
     {
@@ -125,7 +128,7 @@ int zebra_server_lock (ZebraHandle zi, int commitPhase)
     return 0;
 }
 
-void zebra_server_unlock (ZebraHandle zi, int commitPhase)
+void zebra_server_unlock (ZebraService zi, int commitPhase)
 {
     if (zi->server_lock_org == NULL)
         return;
@@ -141,7 +144,7 @@ void zebra_server_unlock (ZebraHandle zi, int commitPhase)
     }
 }
 
-int zebra_server_lock_get_state (ZebraHandle zi, time_t *timep)
+int zebra_server_lock_get_state (ZebraService zi, time_t *timep)
 {
     char path[1024];
     char buf[256];

@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-1999
-dnl $Id: configure.in,v 1.16 2000-03-01 10:02:04 adam Exp $
+dnl $Id: configure.in,v 1.17 2000-03-15 15:00:30 adam Exp $
 dnl See the file LICENSE.2 for details.
 dnl
 AC_INIT(include/zebraver.h)
@@ -58,6 +58,26 @@ if test -r $yazconfig; then
 	AC_MSG_RESULT($yazconfig)
 else
 	AC_MSG_RESULT(Not found)
+fi
+dnl
+dnl ------ Threads
+AC_ARG_ENABLE(threads, [  --disable-threads       disable threads],[enable_threads=$enableval],[enable_threads=yes])
+if test "$enable_threads" = "yes"; then
+	AC_CHECK_LIB(pthread,main)
+	AC_MSG_CHECKING(for working POSIX Threads)
+	AC_TRY_LINK([#include <pthread.h>
+	int func(void *p) { return 0; }
+	],[
+	pthread_t pthread_id;
+	int r = pthread_create (&pthread_id, 0, func, 0);],
+		thread_ok=yes,thread_ok=no)
+	if test "$thread_ok" = "yes"; then
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_PTHREAD_H)
+		AC_DEFINE(_REENTRANT)
+	else
+		AC_MSG_RESULT(no)
+	fi
 fi
 dnl
 dnl ------ Look for Tcl

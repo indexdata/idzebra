@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1998, Index Data ApS
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.4 1999-11-30 13:48:04 adam Exp $
+# $Id: Makefile.in,v 1.5 2000-03-15 15:00:31 adam Exp $
 
 SHELL=/bin/sh
 
@@ -18,7 +18,7 @@ INCLUDE=-I../include $(YAZINC)
 TPROG=opt-test
 DEFS=$(CDEFS) $(INCLUDE) -DUSE_CRYPT=0
 LIB=../lib/zebrautl.a
-PO = res.o charmap.o zebramap.o passwddb.o
+PO = res.o charmap.o zebramap.o passwddb.o zebra-lock.o
 
 all: $(LIB)
 

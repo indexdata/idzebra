@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.h,v $
- * Revision 1.9  2000-02-24 12:31:17  adam
+ * Revision 1.10  2000-03-15 15:00:31  adam
+ * First work on threaded version.
+ *
+ * Revision 1.9  2000/02/24 12:31:17  adam
  * Added zebra_string_norm.
  *
  * Revision 1.8  1999/11/30 13:48:03  adam
@@ -38,9 +41,7 @@
 #include <yaz/oid.h>
 #include <yaz/proto.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 /* Retrieval Record Descriptor */
 typedef struct {
@@ -59,10 +60,11 @@ typedef struct {
     char *term;          /* scan term string */
 } ZebraScanEntry;
 
-typedef struct zebra_info *ZebraHandle;
+typedef struct zebra_session *ZebraHandle;
+typedef struct zebra_service *ZebraService;
 
 /* Open Zebra using file 'configName' (usually zebra.cfg) */
-YAZ_EXPORT ZebraHandle zebra_open (const char *configName);
+YAZ_EXPORT ZebraHandle zebra_open (ZebraService zs);
 
 /* Search using RPN-Query */
 YAZ_EXPORT void zebra_search_rpn (ZebraHandle zh, ODR input, ODR output,
@@ -104,14 +106,17 @@ YAZ_EXPORT char *zebra_errAdd (ZebraHandle zh);
 YAZ_EXPORT int zebra_hits (ZebraHandle zh);
 
 /* do authentication */
-YAZ_EXPORT int zebra_auth (ZebraHandle zh, const char *user, const char *pass);
+YAZ_EXPORT int zebra_auth (ZebraService zh, const char *user, const char *pass);
 
 /* Character normalisation on specific register .
    This routine is subject to change - do not use. */
 YAZ_EXPORT int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
 				  const char *input_str, int input_len,
 				  char *output_str, int output_len);
-				      
-#ifdef __cplusplus
-}
-#endif
+
+YAZ_EXPORT void zebra_admin_create (ZebraHandle zh, const char *db);
+
+YAZ_EXPORT ZebraService zebra_start (const char *configName);
+YAZ_EXPORT void zebra_stop (ZebraService zs);
+
+YAZ_END_CDECL				      

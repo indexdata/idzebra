@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: attribute.c,v $
- * Revision 1.11  1999-11-30 13:48:03  adam
+ * Revision 1.12  2000-03-15 15:00:30  adam
+ * First work on threaded version.
+ *
+ * Revision 1.11  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.10  1999/02/02 14:50:49  adam
@@ -71,10 +74,10 @@ int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att)
     data1_att *r;
     data1_attset *p;
 
-    if (!(p = data1_attset_search_id (zi->dh, set)))
+    if (!(p = data1_attset_search_id (zi->service->dh, set)))
     {
-	zebraExplain_loadAttsets (zi->dh, zi->res);
-	p = data1_attset_search_id (zi->dh, set);
+	zebraExplain_loadAttsets (zi->service->dh, zi->service->res);
+	p = data1_attset_search_id (zi->service->dh, set);
     }
     if (!p)
 	return -2;

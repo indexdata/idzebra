@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.36  1999-12-08 15:03:11  adam
+ * Revision 1.37  2000-03-15 15:00:30  adam
+ * First work on threaded version.
+ *
+ * Revision 1.36  1999/12/08 15:03:11  adam
  * Implemented bf_reset.
  *
  * Revision 1.35  1999/10/14 14:33:50  adam
@@ -137,6 +140,7 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <zebra-lock.h>
 #include <zebrautl.h>
 #include <mfile.h>
 
@@ -153,7 +157,8 @@ static int scan_areadef(MFile_area ma, const char *name, const char *ad)
     for (;;)
     {
         const char *ad0 = ad;
-        int i = 0, fact = 1, multi, size = 0;
+        int i = 0, fact = 1, multi;
+	off_t size = 0;
 
         while (*ad == ' ' || *ad == '\t')
             ad++;
@@ -198,9 +203,10 @@ static int scan_areadef(MFile_area ma, const char *name, const char *ad)
             size = size*10 + (*ad++ - '0');
         switch (*ad)
 	{
-	    case 'B': case 'b': multi = 1; break;
-	    case 'K': case 'k': multi = 1024; break;
-	    case 'M': case 'm': multi = 1048576; break;
+	case 'B': case 'b': multi = 1; break;
+	case 'K': case 'k': multi = 1024; break;
+	case 'M': case 'm': multi = 1048576; break;
+	case 'G': case 'g': multi = 1073741824; break;
             case '\0':
 	        logf (LOG_FATAL, "Missing unit: %s", ad0);
 		return -1;
@@ -381,6 +387,7 @@ void mf_destroy(MFile_area ma)
 	{
 	    xfree (m->files[i].path);
 	}
+	zebra_mutex_destroy (&meta_f->mutex);
 	meta_f = meta_f->next;
 	xfree (m);
     }
@@ -438,8 +445,10 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     	mnew = (meta_file *) xmalloc(sizeof(*mnew));
     	strcpy(mnew->name, name);
     	/* allocate one, empty file */
+	zebra_mutex_init (&mnew->mutex);
     	mnew->no_files = 1;
-    	mnew->files[0].bytes = mnew->files[0].blocks = 0;
+    	mnew->files[0].bytes = 0;
+	mnew->files[0].blocks = 0;
     	mnew->files[0].top = -1;
     	mnew->files[0].number = 0;
     	mnew->files[0].fd = -1;
@@ -514,6 +523,7 @@ int mf_read(MFile mf, int no, int offset, int nbytes, void *buf)
 {
     int rd, toread;
 
+    zebra_mutex_lock (&mf->mutex);
     if ((rd = file_position(mf, no, offset)) < 0)
     {
         if (rd == -2)
@@ -528,7 +538,8 @@ int mf_read(MFile mf, int no, int offset, int nbytes, void *buf)
               mf->files[mf->cur_file].path);
     	exit(1);
     }
-    else if (rd < toread)
+    zebra_mutex_unlock (&mf->mutex);
+    if (rd < toread)
     	return 0;
     else
     	return 1;
@@ -544,6 +555,7 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
     char tmp[FILENAME_MAX+1];
     unsigned char dummych = '\xff';
 
+    zebra_mutex_lock (&mf->mutex);
     if ((ps = file_position(mf, no, offset)) < 0)
 	exit(1);
     /* file needs to grow */
@@ -620,6 +632,7 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 		mf->name, mf->cur_file);
     	exit(1);
     }
+    zebra_mutex_unlock (&mf->mutex);
     return 0;
 }
 

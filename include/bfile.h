@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: bfile.h,v 1.18 1999-12-08 15:03:11 adam Exp $
+ * $Id: bfile.h,v 1.19 2000-03-15 15:00:30 adam Exp $
  */
 
 #ifndef BFILE_H
@@ -25,6 +25,7 @@ void bfs_destroy (BFiles bfiles);
 typedef struct BFile_struct
 {
     MFile mf;
+    Zebra_lock_rdwr rdwr_lock;
     struct CFile_struct *cf;
 } *BFile, BFile_struct;
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.31  1999-12-08 15:03:11  adam
+ * Revision 1.32  2000-03-15 15:00:30  adam
+ * First work on threaded version.
+ *
+ * Revision 1.31  1999/12/08 15:03:11  adam
  * Implemented bf_reset.
  *
  * Revision 1.30  1999/10/14 14:33:49  adam
@@ -189,6 +192,7 @@ void bf_cache (BFiles bfs, const char *spec)
 
 int bf_close (BFile bf)
 {
+    zebra_lock_rdwr_destroy (&bf->rdwr_lock);
     if (bf->cf)
         cf_close (bf->cf);
     mf_close (bf->mf);
@@ -233,6 +237,7 @@ BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
         xfree (tmp);
         return 0;
     }
+    zebra_lock_rdwr_init (&tmp->rdwr_lock);
     return(tmp);
 }
 
@@ -240,16 +245,28 @@ int bf_read (BFile bf, int no, int offset, int nbytes, void *buf)
 {
     int r;
 
-    if (bf->cf && (r=cf_read (bf->cf, no, offset, nbytes, buf)) != -1)
-        return r;
-    return mf_read (bf->mf, no, offset, nbytes, buf);
+    zebra_lock_rdwr_rlock (&bf->rdwr_lock);
+    if (bf->cf)
+    {
+	if ((r = cf_read (bf->cf, no, offset, nbytes, buf)) == -1)
+	    r = mf_read (bf->mf, no, offset, nbytes, buf);
+    }
+    else 
+	r = mf_read (bf->mf, no, offset, nbytes, buf);
+    zebra_lock_rdwr_runlock (&bf->rdwr_lock);
+    return r;
 }
 
 int bf_write (BFile bf, int no, int offset, int nbytes, const void *buf)
 {
+    int r;
+    zebra_lock_rdwr_wlock (&bf->rdwr_lock);
     if (bf->cf)
-        return cf_write (bf->cf, no, offset, nbytes, buf);
-    return mf_write (bf->mf, no, offset, nbytes, buf);
+        r = cf_write (bf->cf, no, offset, nbytes, buf);
+    else
+	r = mf_write (bf->mf, no, offset, nbytes, buf);
+    zebra_lock_rdwr_wunlock (&bf->rdwr_lock);
+    return r;
 }
 
 int bf_commitExists (BFiles bfs)

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.101  2000-03-02 14:35:03  adam
+ * Revision 1.102  2000-03-15 15:00:31  adam
+ * First work on threaded version.
+ *
+ * Revision 1.101  2000/03/02 14:35:03  adam
  * Fixed proximity handling.
  *
  * Revision 1.100  1999/12/28 15:48:12  adam
@@ -377,9 +380,9 @@ static const char **rpn_char_map_handler (void *vp, const char **from, int len)
 static void rpn_char_map_prepare (ZebraHandle zh, int reg_type,
 				  struct rpn_char_map_info *map_info)
 {
-    map_info->zm = zh->zebra_maps;
+    map_info->zm = zh->service->zebra_maps;
     map_info->reg_type = reg_type;
-    dict_grep_cmap (zh->dict, map_info, rpn_char_map_handler);
+    dict_grep_cmap (zh->service->dict, map_info, rpn_char_map_handler);
 }
 
 typedef struct {
@@ -472,7 +475,8 @@ static void term_untrans  (ZebraHandle zh, int reg_type,
 {
     while (*src)
     {
-        const char *cp = zebra_maps_output (zh->zebra_maps, reg_type, &src);
+        const char *cp = zebra_maps_output (zh->service->zebra_maps,
+					    reg_type, &src);
 	if (!cp)
 	    *dst++ = *src++;
 	else
@@ -932,7 +936,8 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     switch (relation_value)
     {
     case 1:
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
+        if (!term_100 (zh->service->zebra_maps, reg_type,
+		       term_sub, term_component,
 		       space_split, term_dst))
             return 0;
         logf (LOG_DEBUG, "Relation <");
@@ -961,7 +966,8 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	*term_tmp = '\0';
         break;
     case 2:
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
+        if (!term_100 (zh->service->zebra_maps, reg_type,
+		       term_sub, term_component,
 		       space_split, term_dst))
             return 0;
         logf (LOG_DEBUG, "Relation <=");
@@ -991,8 +997,8 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	*term_tmp = '\0';
         break;
     case 5:
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
-		       space_split, term_dst))
+        if (!term_100 (zh->service->zebra_maps, reg_type,
+		       term_sub, term_component, space_split, term_dst))
             return 0;
         logf (LOG_DEBUG, "Relation >");
 
@@ -1023,8 +1029,8 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	*term_tmp = '\0';
         break;
     case 4:
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
-		       space_split, term_dst))
+        if (!term_100 (zh->service->zebra_maps, reg_type, term_sub,
+		       term_component, space_split, term_dst))
             return 0;
         logf (LOG_DEBUG, "Relation >=");
 
@@ -1060,8 +1066,8 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     case 3:
     default:
         logf (LOG_DEBUG, "Relation =");
-        if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_component,
-		       space_split, term_dst))
+        if (!term_100 (zh->service->zebra_maps, reg_type, term_sub,
+		       term_component, space_split, term_dst))
             return 0;
 	strcat (term_tmp, "(");
 	strcat (term_tmp, term_component);
@@ -1133,7 +1139,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    }
             return -1;
         }
-        if (zebraExplain_curDatabase (zh->zei, basenames[base_no]))
+        if (zebraExplain_curDatabase (zh->service->zei, basenames[base_no]))
         {
             zh->errCode = 109; /* Database unavailable */
             zh->errString = basenames[base_no];
@@ -1146,7 +1152,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    char ord_buf[32];
 	    int i, ord_len;
 
-            ord = zebraExplain_lookupSU (zh->zei, attp.attset_ordinal,
+            ord = zebraExplain_lookupSU (zh->service->zei, attp.attset_ordinal,
                                           local_attr->local);
             if (ord < 0)
                 continue;
@@ -1185,59 +1191,59 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 				  reg_type, space_split, term_dst))
 		return 0;
 	    logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict+prefix_len);
-	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info, &max_pos,
-				  0, grep_handle);
+	    r = dict_lookup_grep (zh->service->dict, term_dict, 0,
+				  grep_info, &max_pos, 0, grep_handle);
 	    if (r)
 		logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
 	    break;
 	case 1:          /* right truncation */
 	    term_dict[j++] = '(';
-	    if (!term_100 (zh->zebra_maps, reg_type,
+	    if (!term_100 (zh->service->zebra_maps, reg_type,
 			   &termp, term_dict + j, space_split, term_dst))
 		return 0;
 	    strcat (term_dict, ".*)");
-	    dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+	    dict_lookup_grep (zh->service->dict, term_dict, 0, grep_info,
 			      &max_pos, 0, grep_handle);
 	    break;
 	case 2:          /* keft truncation */
 	    term_dict[j++] = '('; term_dict[j++] = '.'; term_dict[j++] = '*';
-	    if (!term_100 (zh->zebra_maps, reg_type,
+	    if (!term_100 (zh->service->zebra_maps, reg_type,
 			   &termp, term_dict + j, space_split, term_dst))
 		return 0;
 	    strcat (term_dict, ")");
-	    dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+	    dict_lookup_grep (zh->service->dict, term_dict, 0, grep_info,
 			      &max_pos, 0, grep_handle);
 	    break;
 	case 3:          /* left&right truncation */
 	    term_dict[j++] = '('; term_dict[j++] = '.'; term_dict[j++] = '*';
-	    if (!term_100 (zh->zebra_maps, reg_type,
+	    if (!term_100 (zh->service->zebra_maps, reg_type,
 			   &termp, term_dict + j, space_split, term_dst))
 		return 0;
 	    strcat (term_dict, ".*)");
-	    dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+	    dict_lookup_grep (zh->service->dict, term_dict, 0, grep_info,
 			      &max_pos, 0, grep_handle);
 	    break;
 	    zh->errCode = 120;
 	    return -1;
 	case 101:        /* process # in term */
 	    term_dict[j++] = '(';
-	    if (!term_101 (zh->zebra_maps, reg_type,
+	    if (!term_101 (zh->service->zebra_maps, reg_type,
 			   &termp, term_dict + j, space_split, term_dst))
 		return 0;
 	    strcat (term_dict, ")");
-	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+	    r = dict_lookup_grep (zh->service->dict, term_dict, 0, grep_info,
 				  &max_pos, 0, grep_handle);
 	    if (r)
 		logf (LOG_WARN, "dict_lookup_grep err, trunc=#: %d", r);
 	    break;
 	case 102:        /* Regexp-1 */
 	    term_dict[j++] = '(';
-	    if (!term_102 (zh->zebra_maps, reg_type,
+	    if (!term_102 (zh->service->zebra_maps, reg_type,
 			   &termp, term_dict + j, space_split, term_dst))
 		return 0;
 	    strcat (term_dict, ")");
 	    logf (LOG_DEBUG, "Regexp-1 tolerance=%d", r);
-	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+	    r = dict_lookup_grep (zh->service->dict, term_dict, 0, grep_info,
 				  &max_pos, 0, grep_handle);
 	    if (r)
 		logf (LOG_WARN, "dict_lookup_grep err, trunc=regular: %d",
@@ -1246,12 +1252,12 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	case 103:       /* Regexp-2 */
 	    r = 1;
 	    term_dict[j++] = '(';
-	    if (!term_103 (zh->zebra_maps, reg_type,
+	    if (!term_103 (zh->service->zebra_maps, reg_type,
 			   &termp, term_dict + j, &r, space_split, term_dst))
 		return 0;
 	    strcat (term_dict, ")");
 	    logf (LOG_DEBUG, "Regexp-2 tolerance=%d", r);
-	    r = dict_lookup_grep (zh->dict, term_dict, r, grep_info,
+	    r = dict_lookup_grep (zh->service->dict, term_dict, r, grep_info,
 				  &max_pos, 2, grep_handle);
 	    if (r)
 		logf (LOG_WARN, "dict_lookup_grep err, trunc=eregular: %d",
@@ -1259,33 +1265,33 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    break;
 	case 104:        /* process # and ! in term */
 	    term_dict[j++] = '(';
-	    if (!term_104 (zh->zebra_maps, reg_type,
+	    if (!term_104 (zh->service->zebra_maps, reg_type,
 			   &termp, term_dict + j, space_split, term_dst))
 		return 0;
 	    strcat (term_dict, ")");
-	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+	    r = dict_lookup_grep (zh->service->dict, term_dict, 0, grep_info,
 				  &max_pos, 0, grep_handle);
 	    if (r)
 		logf (LOG_WARN, "dict_lookup_grep err, trunc=#/!: %d", r);
 	    break;
 	case 105:        /* process * and ! in term */
 	    term_dict[j++] = '(';
-	    if (!term_105 (zh->zebra_maps, reg_type,
+	    if (!term_105 (zh->service->zebra_maps, reg_type,
 			   &termp, term_dict + j, space_split, term_dst, 1))
 		return 0;
 	    strcat (term_dict, ")");
-	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+	    r = dict_lookup_grep (zh->service->dict, term_dict, 0, grep_info,
 				  &max_pos, 0, grep_handle);
 	    if (r)
 		logf (LOG_WARN, "dict_lookup_grep err, trunc=*/!: %d", r);
 	    break;
 	case 106:        /* process * and ! in term */
 	    term_dict[j++] = '(';
-	    if (!term_105 (zh->zebra_maps, reg_type,
+	    if (!term_105 (zh->service->zebra_maps, reg_type,
 			   &termp, term_dict + j, space_split, term_dst, 0))
 		return 0;
 	    strcat (term_dict, ")");
-	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+	    r = dict_lookup_grep (zh->service->dict, term_dict, 0, grep_info,
 				  &max_pos, 0, grep_handle);
 	    if (r)
 		logf (LOG_WARN, "dict_lookup_grep err, trunc=*/!: %d", r);
@@ -1324,7 +1330,7 @@ static void trans_scan_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     
     while ((len = (cp_end - cp)) > 0)
     {
-        map = zebra_maps_input (zh->zebra_maps, reg_type, &cp, len);
+        map = zebra_maps_input (zh->service->zebra_maps, reg_type, &cp, len);
         if (**map == *CHR_SPACE)
             space_map = *map;
         else
@@ -1411,7 +1417,7 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
 					    flags);
 	parms.rset_term->nn = min_nn;
 	parms.key_size = sizeof (struct it_key);
-	parms.temp_path = res_get (zh->res, "setTmpDir");
+	parms.temp_path = res_get (zh->service->res, "setTmpDir");
 	result = rset_create (rset_kind_temp, &parms);
 	rsfd_result = rset_open (result, RSETF_WRITE);
 	
@@ -1469,7 +1475,7 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
 					    flags);
 	parms.rset_term->nn = min_nn;
 	parms.key_size = sizeof (struct it_key);
-	parms.temp_path = res_get (zh->res, "setTmpDir");
+	parms.temp_path = res_get (zh->service->res, "setTmpDir");
 	result = rset_create (rset_kind_temp, &parms);
 	rsfd_result = rset_open (result, RSETF_WRITE);
 
@@ -1593,7 +1599,7 @@ char *normalize_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	break;
     }
     if (ex_list)
-	wrbuf = zebra_replace(zh->zebra_maps, reg_id, ex_list,
+	wrbuf = zebra_replace(zh->service->zebra_maps, reg_id, ex_list,
 			      termz, strlen(termz));
     if (!wrbuf)
 	return nmem_strdup(stream, termz);
@@ -1817,7 +1823,7 @@ static int numeric_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     logf (LOG_DEBUG, "numeric relation value=%d", relation_value);
 
-    if (!term_100 (zh->zebra_maps, reg_type, term_sub, term_tmp, 1,
+    if (!term_100 (zh->service->zebra_maps, reg_type, term_sub, term_tmp, 1,
 		   term_dst))
 	return 0;
     term_value = atoi (term_tmp);
@@ -1845,7 +1851,7 @@ static int numeric_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	sprintf (term_tmp, "(0*%d)", term_value);
     }
     logf (LOG_DEBUG, "dict_lookup_grep: %s", term_tmp);
-    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info, max_pos,
+    r = dict_lookup_grep (zh->service->dict, term_dict, 0, grep_info, max_pos,
                           0, grep_handle);
     if (r)
         logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
@@ -1893,7 +1899,7 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 		zh->errCode = 121;
             return -1;
         }
-        if (zebraExplain_curDatabase (zh->zei, basenames[base_no]))
+        if (zebraExplain_curDatabase (zh->service->zei, basenames[base_no]))
         {
             zh->errCode = 109; /* Database unavailable */
             zh->errString = basenames[base_no];
@@ -1906,7 +1912,7 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    char ord_buf[32];
 	    int i, ord_len;
 
-            ord = zebraExplain_lookupSU (zh->zei, attp.attset_ordinal,
+            ord = zebraExplain_lookupSU (zh->service->zei, attp.attset_ordinal,
                                           local_attr->local);
             if (ord < 0)
                 continue;
@@ -2020,7 +2026,7 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     parms.rset_term = rset_term_create (termz, -1, rank_type);
     parms.key_size = sizeof (struct it_key);
-    parms.temp_path = res_get (zh->res, "setTmpDir");
+    parms.temp_path = res_get (zh->service->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);
     rsfd = rset_open (result, RSETF_WRITE);
 
@@ -2145,7 +2151,7 @@ static RSET rpn_search_APT (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int sort_flag;
     char termz[IT_MAX_WORD+1];
 
-    zebra_maps_attr (zh->zebra_maps, zapt, &reg_id, &search_type,
+    zebra_maps_attr (zh->service->zebra_maps, zapt, &reg_id, &search_type,
 		     &rank_type, &complete_flag, &sort_flag);
     
     logf (LOG_DEBUG, "reg_id=%c", reg_id);
@@ -2478,7 +2484,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     attr_init (&use, zapt, 1);
     use_value = attr_find (&use, &attributeset);
 
-    if (zebra_maps_attr (zh->zebra_maps, zapt, &reg_id, &search_type,
+    if (zebra_maps_attr (zh->service->zebra_maps, zapt, &reg_id, &search_type,
 			 &rank_type, &complete_flag, &sort_flag))
     {
 	zh->errCode = 113;
@@ -2504,7 +2510,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    *num_entries = 0;
 	    return;
         }
-        if (zebraExplain_curDatabase (zh->zei, basenames[base_no]))
+        if (zebraExplain_curDatabase (zh->service->zei, basenames[base_no]))
         {
             zh->errString = basenames[base_no];
 	    zh->errCode = 109; /* Database unavailable */
@@ -2515,7 +2521,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         {
             int ord;
 
-            ord = zebraExplain_lookupSU (zh->zei, attp.attset_ordinal,
+            ord = zebraExplain_lookupSU (zh->service->zei, attp.attset_ordinal,
 					 local_attr->local);
             if (ord > 0)
                 ords[ord_no++] = ord;
@@ -2556,8 +2562,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
         trans_scan_term (zh, zapt, termz+prefix_len, reg_id);
                     
-        dict_scan (zh->dict, termz, &before_tmp, &after_tmp, scan_info,
-                   scan_handle);
+        dict_scan (zh->service->dict, termz, &before_tmp, &after_tmp,
+		   scan_info, scan_handle);
     }
     glist = (ZebraScanEntry *)
 	odr_malloc (stream, (before+after)*sizeof(*glist));

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data 
+ * Copyright (C) 1994-2000, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.45  1999-11-30 13:48:04  adam
+ * Revision 1.46  2000-03-15 15:00:31  adam
+ * First work on threaded version.
+ *
+ * Revision 1.45  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.44  1999/11/04 15:00:45  adam
@@ -163,6 +166,10 @@
 #include <sys/times.h>
 #endif
 
+#if HAVE_PTHREADS_H
+#include <pthreads.h>
+#endif
+
 #include <yaz/backend.h>
 #include <rset.h>
 
@@ -172,9 +179,7 @@
 #include "zebraapi.h"
 #include "zinfo.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 typedef struct {
     int sysno;
@@ -190,26 +195,22 @@ typedef struct zebra_rank_class {
     struct zebra_rank_class *next;
 } *ZebraRankClass;
 
-struct zebra_info {
-    int registerState; /* 0 (no commit pages), 1 (use commit pages) */
-    time_t registerChange;
-    ZebraSet sets;
-    Dict dict;
-    SortIdx sortIdx;
+struct zebra_service {
+    char *configName;
+    struct zebra_session *sessions;
     ISAMS isams;
 #if ZMBOL
     ISAM isam;
     ISAMC isamc;
 #endif
-    Records records;
-    int errCode;
-    int hits;
-    char *errString;
-    ZebraExplainInfo zei;
-    data1_handle dh;
+    Dict dict;
+    SortIdx sortIdx;
+    int registerState; /* 0 (no commit pages), 1 (use commit pages) */
+    time_t registerChange;
     BFiles bfs;
+    Records records;
+    ZebraExplainInfo zei;
     Res res;
-
     ZebraLockHandle server_lock_cmt;
     ZebraLockHandle server_lock_org;
     char *server_path_prefix;
@@ -217,16 +218,32 @@ struct zebra_info {
     struct tms tms1;
     struct tms tms2;    
 #endif
+    data1_handle dh;
     ZebraMaps zebra_maps;
     ZebraRankClass rank_classes;
     RecTypes recTypes;
     Passwd_db passwd_db;
 };
 
+struct zebra_session {
+#if HAVE_PTHREADS_H
+    pthread_t *pthread_session;
+#endif
+    struct zebra_session *next;
+    struct zebra_info *info;
+    struct zebra_service *service;
+
+    ZebraSet sets;
+    int errCode;
+    int hits;
+    char *errString;
+
+};
+
 struct rank_control {
     char *name;
-    void *(*create)(ZebraHandle zh);
-    void (*destroy)(ZebraHandle zh, void *class_handle);
+    void *(*create)(ZebraService zh);
+    void (*destroy)(ZebraService zh, void *class_handle);
     void *(*begin)(ZebraHandle zh, void *class_handle, RSET rset);
     void (*end)(ZebraHandle zh, void *set_handle);
     int (*calc)(void *set_handle, int sysno);
@@ -273,11 +290,11 @@ void zebra_sort (ZebraHandle zh, ODR stream,
 		 const char *output_setname, Z_SortKeySpecList *sort_sequence,
 		 int *sort_status);
 
-int zebra_server_lock_init (ZebraHandle zh);
-int zebra_server_lock_destroy (ZebraHandle zh);
-int zebra_server_lock (ZebraHandle zh, int lockCommit);
-void zebra_server_unlock (ZebraHandle zh, int commitPhase);
-int zebra_server_lock_get_state (ZebraHandle zh, time_t *timep);
+int zebra_server_lock_init (ZebraService zh);
+int zebra_server_lock_destroy (ZebraService zh);
+int zebra_server_lock (ZebraService zh, int lockCommit);
+void zebra_server_unlock (ZebraService zh, int commitPhase);
+int zebra_server_lock_get_state (ZebraService zh, time_t *timep);
 
 typedef struct attent
 {
@@ -285,9 +302,9 @@ typedef struct attent
     data1_local_attribute *local_attributes;
 } attent;
 
-void zebraRankInstall (ZebraHandle zh, struct rank_control *ctrl);
+void zebraRankInstall (ZebraService zh, struct rank_control *ctrl);
 ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name);
-void zebraRankDestroy (ZebraHandle zh);
+void zebraRankDestroy (ZebraService zh);
 
 int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att);
 
@@ -298,6 +315,4 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep);
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
