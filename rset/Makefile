@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.1 1994-11-03 14:13:29 quinn Exp $
+# $Id: Makefile,v 1.2 1994-11-04 13:21:28 quinn Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -9,7 +9,7 @@ CFLAGS=-g -Wall -pedantic
 DEFS=$(INCLUDE)
 LIB=../lib/rset.a
 PROG=
-PO=
+PO=rset.o rstemp.o rsisam.o
 CPP=cc -E
 
 all: $(PROG) $(LIB)
@@ -19,7 +19,8 @@ $(PROG): $(PROG).o
 
 
 $(LIB): $(PO)
-	ar aq $(LIB) $(PO)
+	rm -f $(LIB)
+	ar qc $(LIB) $(PO)
 	ranlib $(LIB)
 
 .c.o:
