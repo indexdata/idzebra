@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.11  1998-03-05 08:36:28  adam
+ * Revision 1.12  1998-04-26 10:56:57  adam
+ * Added include of string.h.
+ *
+ * Revision 1.11  1998/03/05 08:36:28  adam
  * New result set model.
  *
  * Revision 1.10  1998/02/10 11:56:46  adam
@@ -47,6 +50,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <zebrautl.h>
 
 #include <rset.h>
