@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.4 2003-11-13 23:57:41 adam Exp $
+/* $Id: d1_marc.c,v 1.5 2003-11-28 23:06:59 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -231,10 +231,10 @@ static int nodetomarc(data1_handle dh,
     char *op;
     data1_node *field, *subf;
 
-    data1_pr_tree (dh, n, stdout);
-
-    yaz_log (LOG_DEBUG, "nodetomarc");
+#if 0
     data1_pr_tree(dh, n, stdout);
+#endif
+    yaz_log (LOG_DEBUG, "nodetomarc");
 
     memcpy (leader+5, p->record_status, 1);
     memcpy (leader+6, p->implementation_codes, 4);
