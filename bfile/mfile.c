@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.7  1994-09-19 14:12:37  quinn
+ * Revision 1.8  1994-10-05 16:56:42  quinn
+ * Minor.
+ *
+ * Revision 1.7  1994/09/19  14:12:37  quinn
  * dunno.
  *
  * Revision 1.6  1994/09/14  13:10:15  quinn
@@ -134,7 +137,7 @@ MFile_area mf_init(const char *name)
     MFile_area ma = xmalloc(sizeof(MFile_area_struct)), mp;
     mf_dir *dirp;
     meta_file *meta_f;
-    part_file *part_f;
+    part_file *part_f = 0;
     DIR *dd;
     struct dirent *dent;
     int fd, number;
