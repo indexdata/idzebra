@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.25  1997-09-17 12:19:14  adam
+ * Revision 1.26  1998-01-29 13:39:13  adam
+ * Compress ISAM is default.
+ *
+ * Revision 1.25  1997/09/17 12:19:14  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -615,7 +618,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
         logf (LOG_FATAL, "dict_open fail");
         exit (1);
     }
-    if (res_get_match (common_resource, "isam", "c", NULL))
+    if (!res_get_match (common_resource, "isam", "i", NULL))
     {
         isamc = isc_open (bfs,
 			  FNAME_ISAMC, 1, key_isamc_m (common_resource));

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.53  1998-01-12 15:04:09  adam
+ * Revision 1.54  1998-01-29 13:39:13  adam
+ * Compress ISAM is default.
+ *
+ * Revision 1.53  1998/01/12 15:04:09  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.52  1997/11/18 10:05:08  adam
@@ -258,7 +261,7 @@ static int register_lock (ZServerInfo *zi)
         return -1;
     zi->isam = NULL;
     zi->isamc = NULL;
-    if (res_get_match (zi->res, "isam", "c", NULL))
+    if (!res_get_match (zi->res, "isam", "i", NULL))
     {
         if (!(zi->isamc = isc_open (zi->bfs, FNAME_ISAMC,
 				    0, key_isamc_m(zi->res))))
