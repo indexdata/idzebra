@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfap.h,v $
- * Revision 1.6  1997-09-18 08:59:17  adam
+ * Revision 1.7  1997-09-29 09:05:17  adam
+ * Thread safe DFA module. We simply had to put a few static vars to
+ * the DFA_parse structure.
+ *
+ * Revision 1.6  1997/09/18 08:59:17  adam
  * Extra generic handle for the character mapping routines.
  *
  * Revision 1.5  1997/09/05 15:29:58  adam
@@ -46,6 +50,19 @@ struct DFA_parse {
     int *charMap;
     int charMapSize;
     void *cmap_data;
+
+    unsigned look_ch;
+    int lookahead;
+    BSet look_chars;
+    int err_code;
+    int inside_string;
+    const unsigned char *expr_ptr;
+
+    struct Tnode **posar;
+
+    SetType poset;
+    Set *followpos;
+
     const char **(*cmap)(void *vp, const char **from, int len);
 };
 
