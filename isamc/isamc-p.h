@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc-p.h,v $
- * Revision 1.4  1996-11-08 11:15:28  adam
+ * Revision 1.5  1998-03-16 10:37:24  adam
+ * Added more statistics.
+ *
+ * Revision 1.4  1996/11/08 11:15:28  adam
  * Number of keys in chain are stored in first block and the function
  * to retrieve this information, isc_pp_num is implemented.
  *
@@ -38,6 +41,13 @@ typedef struct ISAMC_file_s {
     int no_allocated;
     int no_released;
     int no_remap;
+
+    int no_forward;
+    int no_backward;
+    int sum_forward;
+    int sum_backward;
+    int no_next;
+    int no_prev;
 
     int fc_max;
     int *fc_list;

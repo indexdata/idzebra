@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.11  1998-03-13 15:30:50  adam
+ * Revision 1.12  1998-03-16 10:37:24  adam
+ * Added more statistics.
+ *
+ * Revision 1.11  1998/03/13 15:30:50  adam
  * New functions isc_block_used and isc_block_size. Fixed 'leak'
  * in isc_alloc_block.
  *
@@ -159,6 +162,12 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
         is->files[i].no_allocated = 0;
         is->files[i].no_released = 0;
         is->files[i].no_remap = 0;
+	is->files[i].no_forward = 0;
+	is->files[i].no_backward = 0;
+	is->files[i].sum_forward = 0;
+	is->files[i].sum_backward = 0;
+	is->files[i].no_next = 0;
+	is->files[i].no_prev = 0;
 
         init_fc (is, i);
     }
@@ -184,6 +193,22 @@ int isc_close (ISAMC is)
 {
     int i;
 
+    if (is->method->debug)
+    {
+	logf (LOG_LOG, "isc:    next    forw   mid-f    prev   backw   mid-b");
+	for (i = 0; i<is->no_files; i++)
+	    logf (LOG_LOG, "isc:%8d%8d%8.1f%8d%8d%8.1f",
+		  is->files[i].no_next,
+		  is->files[i].no_forward,
+		  is->files[i].no_forward ?
+		  (double) is->files[i].sum_forward/is->files[i].no_forward
+		  : 0.0,
+		  is->files[i].no_prev,
+		  is->files[i].no_backward,
+		  is->files[i].no_backward ?
+		  (double) is->files[i].sum_backward/is->files[i].no_backward
+		  : 0.0);
+    }
     if (is->method->debug)
         logf (LOG_LOG, "isc:  writes   reads skipped   alloc released  remap");
     for (i = 0; i<is->no_files; i++)
@@ -391,10 +416,33 @@ int isc_read_item (ISAMC_PP pp, char **dst)
 
     if (pp->offset >= pp->size)
     {
+	if (!pp->next)
+	{
+	    pp->pos = 0;
+	    return 0; /* end of file */
+	}
+	if (pp->next > pp->pos)
+	{
+	    if (pp->next == pp->pos + 1)
+		is->files[pp->cat].no_next++;
+	    else
+	    {
+		is->files[pp->cat].no_forward++;
+		is->files[pp->cat].sum_forward += pp->next - pp->pos;
+	    }
+	}
+	else
+	{
+	    if (pp->next + 1 == pp->pos)
+		is->files[pp->cat].no_prev++;
+	    else
+	    {
+		is->files[pp->cat].no_backward++;
+		is->files[pp->cat].sum_backward += pp->pos - pp->next;
+	    }
+	}
 	/* out new block position */
         pp->pos = pp->next;
-        if (!pp->pos)
-            return 0;    /* end of file */
         src = pp->buf;
 	/* read block and save 'next' and 'size' entry */
         isc_read_block (is, pp->cat, pp->pos, src);
