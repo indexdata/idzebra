@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.35 2004-09-28 16:39:46 heikki Exp $
+/* $Id: rset.h,v 1.36 2004-09-30 13:07:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -54,7 +54,6 @@ struct rset_control
     void (*f_delete)(RSET ct);
     RSFD (*f_open)(RSET ct, int wflag);
     void (*f_close)(RSFD rfd);
-    void (*f_rewind)(RSFD rfd);
     int (*f_forward)(RSFD rfd, void *buf, const void *untilbuf);
     void (*f_pos)(RSFD rfd, double *current, double *total);
        /* returns -1,-1 if pos function not implemented for this type */
@@ -127,9 +126,6 @@ RSET rset_dup (RSET rs);
 
 /* void rset_close(RSFD rfd); */
 #define rset_close(rfd) (*(rfd)->rset->control->f_close)(rfd)
-
-/* void rset_rewind(RSFD rfd); */
-#define rset_rewind(rfd) (*(rfd)->rset->control->f_rewind)((rfd))
 
 /* int rset_forward(RSFD rfd, void *buf, void *untilbuf); */
 #define rset_forward(rfd, buf, untilbuf) \
