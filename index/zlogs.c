@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zlogs.c,v $
- * Revision 1.2  1996-01-03 16:22:11  quinn
+ * Revision 1.3  1996-03-20 09:36:40  adam
+ * Function dict_lookup_grep got extra parameter, init_pos, which marks
+ * from which position in pattern approximate pattern matching should occur.
+ * Approximate pattern matching is used in relevance=re-2.
+ *
+ * Revision 1.2  1996/01/03  16:22:11  quinn
  * operator->roperator
  *
  * Revision 1.1  1995/11/16  17:00:55  adam
@@ -14,13 +19,13 @@
 #include <stdio.h>
 #include <assert.h>
 
-
 #include "zserver.h"
 
 static char *attrStr (int type, int value, enum oid_value ast)
 {
     static char str[80];
 
+    *str = '\0';
     switch (ast)
     {
     case VAL_BIB1:
@@ -29,29 +34,169 @@ static char *attrStr (int type, int value, enum oid_value ast)
         switch (type)
         {
         case 1:
-            sprintf (str, "use=%d", value);
-            return str;
+            sprintf (str, "use");
+            break;
         case 2:
-            sprintf (str, "relation=%d", value);
-            return str;
+            switch (value)
+            {
+            case 1:
+                sprintf (str, "relation=Less than");
+                break;
+            case 2:
+                sprintf (str, "relation=Less than or equal");
+                break;
+            case 3:
+                sprintf (str, "relation=Equal");
+                break;
+            case 4:
+                sprintf (str, "relation=Greater or equal");
+                break;
+            case 5:
+                sprintf (str, "relation=Greater than");
+                break;
+            case 6:
+                sprintf (str, "relation=Not equal");
+                break;
+            case 100:
+                sprintf (str, "relation=Phonetic");
+                break;
+            case 101:
+                sprintf (str, "relation=Stem");
+                break;
+            case 102:
+                sprintf (str, "relation=Relevance");
+                break;
+            case 103:
+                sprintf (str, "relation=AlwaysMatches");
+                break;
+            default:
+                sprintf (str, "relation");
+            }
+            break;
         case 3:
-            sprintf (str, "position=%d", value);
-            return str;
+            switch (value)
+            {
+            case 1:
+                sprintf (str, "position=First in field");
+                break;
+            case 2:
+                sprintf (str, "position=First in any subfield");
+                break;
+            case 3:
+                sprintf (str, "position=Any position in field");
+                break;
+            default:
+                sprintf (str, "position");
+            }
+            break;
         case 4:
-            sprintf (str, "structure=%d", value);
-            return str;
+            switch (value)
+            {
+            case 1:
+                sprintf (str, "structure=Phrase");
+                break;
+            case 2:
+                sprintf (str, "structure=Word");
+                break;
+            case 3:
+                sprintf (str, "structure=Key");
+                break;
+            case 4:
+                sprintf (str, "structure=Year");
+                break;
+            case 5:
+                sprintf (str, "structure=Date");
+                break;
+            case 6:
+                sprintf (str, "structure=Word list");
+                break;
+            case 100:
+                sprintf (str, "structure=Date (un)");
+                break;
+            case 101:
+                sprintf (str, "structure=Name (norm)");
+                break;
+            case 102:
+                sprintf (str, "structure=Name (un)");
+                break;
+            case 103:
+                sprintf (str, "structure=Structure");
+                break;
+            case 104:
+                sprintf (str, "structure=urx");
+                break;
+            case 105:
+                sprintf (str, "structure=free-form-text");
+                break;
+            case 106:
+                sprintf (str, "structure=document-text");
+                break;
+            case 107:
+                sprintf (str, "structure=local-number");
+                break;
+            case 108:
+                sprintf (str, "structure=string");
+                break;
+            case 109:
+                sprintf (str, "structure=numeric string");
+                break;
+            default:
+                sprintf (str, "structure");
+            }
+            break;
         case 5:
-            sprintf (str, "truncation=%d", value);
-            return str;
+            switch (value)
+            {
+            case 1:
+                sprintf (str, "truncation=Right");
+                break;
+            case 2:
+                sprintf (str, "truncation=Left");
+                break;
+            case 3:
+                sprintf (str, "truncation=Left&right");
+                break;
+            case 100:
+                sprintf (str, "truncation=Do not truncate");
+                break;
+            case 101:
+                sprintf (str, "truncation=Process #");
+                break;
+            case 102:
+                sprintf (str, "truncation=re-1");
+                break;
+            case 103:
+                sprintf (str, "truncation=re-2");
+                break;
+            default:
+                sprintf (str, "truncation");
+            }
+            break;
         case 6:
-            sprintf (str, "completeness=%d", value);
-            return str;
+            switch (value)
+            {
+            case 1:
+                sprintf (str, "completeness=Incomplete subfield");
+                break;
+            case 2:
+                sprintf (str, "completeness=Complete subfield");
+                break;
+            case 3:
+                sprintf (str, "completeness=Complete field");
+                break;
+            default:
+                sprintf (str, "completeness");
+            }
+            break;
         }
         break;
     default:
         break;
     }
-    sprintf (str, "%d=%d", type, value);
+    if (*str)
+        sprintf (str + strlen(str), " (%d=%d)", type, value);
+    else
+        sprintf (str, "%d=%d", type, value);
     return str;
 }
 

@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.40  1996-02-02 13:44:44  adam
+ * Revision 1.41  1996-03-20 09:36:43  adam
+ * Function dict_lookup_grep got extra parameter, init_pos, which marks
+ * from which position in pattern approximate pattern matching should occur.
+ * Approximate pattern matching is used in relevance=re-2.
+ *
+ * Revision 1.40  1996/02/02  13:44:44  adam
  * The public dictionary functions simply use char instead of Dict_char
  * to represent search strings. Dict_char is used internally only.
  *
@@ -634,7 +639,7 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     }
     logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
     r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, max_pos,
-                          grep_handle);
+                          0, grep_handle);
     if (r)
         logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
     logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
@@ -685,35 +690,35 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         if (!relational_term (zi, zapt, term_sub, term_dict,
                               attributeSet, grep_info, &max_pos))
         {
+            const char *cp;
+
+            j = prefix_len;
             switch (truncation_value)
             {
             case -1:         /* not specified */
             case 100:        /* do not truncate */
-                j = strlen(term_dict);
                 term_dict[j++] = '(';
                 for (i = 0; term_sub[i]; i++)
                     verbatim_char (term_sub[i], &j, term_dict);
                 strcpy (term_dict+j, ")");
                 r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                      &max_pos, grep_handle);
+                                      &max_pos, 0, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=none:%d", r);
                 break;
             case 1:          /* right truncation */
-                j = strlen(term_dict);
                 term_dict[j++] = '(';
                 for (i = 0; term_sub[i]; i++)
                     verbatim_char (term_sub[i], &j, term_dict);
                 strcpy (term_dict+j, ".*)");
                 dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                  &max_pos, grep_handle);
+                                  &max_pos, 0, grep_handle);
                 break;
             case 2:          /* left truncation */
             case 3:          /* left&right truncation */
                 zi->errCode = 120;
                 return -1;
             case 101:        /* process # in term */
-                j = strlen(term_dict);
                 term_dict[j++] = '(';
                 for (i=0; term_sub[i]; i++)
                     if (term_sub[i] == '#' && i > 2)
@@ -725,17 +730,32 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                         verbatim_char (term_sub[i], &j, term_dict);
                 strcpy (term_dict+j, ")");
                 r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                      &max_pos, grep_handle);
+                                      &max_pos, 0, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=#: %d",
                           r);
                 break;
             case 102:        /* regular expression */
-		sprintf (term_dict + strlen(term_dict), "(%s)", term_sub);
+		sprintf (term_dict + j, "(%s)", term_sub);
                 r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                                      &max_pos, grep_handle);
+                                      &max_pos, 0, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=regular: %d",
+                          r);
+                break;
+            case 103:        /* regular expression with error correction */
+                cp = term_sub;
+                r = 0;
+		if (*cp == '*' && cp[1] && cp[2])
+                {
+                    r = atoi (cp+1);
+                    cp += 2;
+                }
+		sprintf (term_dict + j, "(%s)", cp);
+                r = dict_lookup_grep (zi->wordDict, term_dict, r, grep_info,
+                                      &max_pos, j, grep_handle);
+                if (r)
+                    logf (LOG_WARN, "dict_lookup_grep err, trunc=eregular: %d",
                           r);
                 break;
             }
@@ -1363,7 +1383,7 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         use_value = 1016;
     i = index_word_prefix (termz, 1, use_value, *basenames);
 
-    dict_lookup_grep (zi->wordDict, termz, 0, NULL, &max_pos,
+    dict_lookup_grep (zi->wordDict, termz, 0, NULL, &max_pos, 0,
                       dummy_handle);
     if (max_pos <= strlen(*basenames))
     {

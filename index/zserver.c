@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.33  1996-01-17 14:57:56  adam
+ * Revision 1.34  1996-03-20 09:36:46  adam
+ * Function dict_lookup_grep got extra parameter, init_pos, which marks
+ * from which position in pattern approximate pattern matching should occur.
+ * Approximate pattern matching is used in relevance=re-2.
+ *
+ * Revision 1.33  1996/01/17  14:57:56  adam
  * Prototype changed for reader functions in extract/retrieve. File
  *  is identified by 'void *' instead of 'int.
  *
@@ -300,6 +305,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
         *output_format = VAL_SUTRS;
         *rec_bufp = msg;
         *rec_lenp = strlen (msg);
+        logf (LOG_DEBUG, "rec_get fail on sysno=%d", sysno);
         return 0;
     }
     file_type = rec->info[recInfo_fileType];
