@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.11  1996-03-20 13:29:17  quinn
+ * Revision 1.12  1996-03-20 16:17:11  quinn
+ * Bug hunting
+ *
+ * Revision 1.11  1996/03/20  13:29:17  quinn
  * Bug-fix
  *
  * Revision 1.10  1996/03/19  19:22:44  quinn
@@ -109,6 +112,7 @@ int is_p_read_partial(is_mtable *tab, is_mblock *block)
     /* extract header info */
     buf->offset = 0;
     memcpy(&block->num_records, buf->data, sizeof(block->num_records));
+    assert(block->num_records > 0);
     buf->offset += sizeof(block->num_records);
     memcpy(&block->nextpos, buf->data + buf->offset,
 	sizeof(block->nextpos));
@@ -215,6 +219,7 @@ void is_p_sync(is_mtable *tab)
 	}
 	logf (LOG_DEBUG, "W: Block #%d contains %d records.", p->diskpos,
 	    p->num_records);
+	assert(p->num_records > 0);
 	for (b = p->data; b; b = b->next)
 	{
             logf(LOG_DEBUG, "   buf: offset %d, keys %d, type %d, ref %d",
