@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.9  1994-08-24 08:45:48  quinn
+ * Revision 1.10  1994-08-25 10:15:54  quinn
+ * Trivial
+ *
+ * Revision 1.9  1994/08/24  08:45:48  quinn
  * Using mfile.
  *
  * Revision 1.8  1994/08/23  15:03:34  quinn
@@ -50,7 +53,7 @@ BFile bf_open (const char *name, int block_size, int wflag)
 
     if (!(tmp->mf = mf_open(0, name, block_size, wflag)))
     {
-        log(LOG_FATAL|LOG_ERRNO, "mfopen %s", name); 
+        log(LOG_FATAL, "Mfopen failed for %s", name); 
 	return(0);
     }
     return(tmp);
