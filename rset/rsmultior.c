@@ -1,4 +1,4 @@
-/* $Id: rsmultior.c,v 1.2 2004-08-19 12:49:15 heikki Exp $
+/* $Id: rsmultior.c,v 1.3 2004-08-19 14:11:54 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -42,6 +42,7 @@ static int r_write (RSFD rfd, const void *buf);
 static int r_forward(RSET ct, RSFD rfd, void *buf,  int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
+static void r_pos (RSFD rfd, double *current, double *total);
 
 static const struct rset_control control = 
 {
@@ -52,7 +53,7 @@ static const struct rset_control control =
     r_delete,
     r_rewind,
     r_forward,
-    rset_default_pos, /* FIXME */
+    r_pos,
     r_read,
     r_write,
 };
@@ -100,7 +101,8 @@ struct rset_multior_rfd {
     HEAP h;
     struct rset_multior_rfd *next;
     struct rset_multior_info *info;
-    zint *countp;
+    zint *countp; /* inc at every new record we see */
+    zint hits; /* returned so far */
     char *prevvalue; /* to see if we are in another record */
 };
 
@@ -262,6 +264,7 @@ static RSFD r_open (RSET ct, int flag)
         rfd->countp=0;
     rfd->h = heap_create( info->no_rsets, info->key_size, info->cmp);
     rfd->prevvalue=0;
+    rfd->hits=0;
     rfd->items=(struct heap_item *) xmalloc(info->no_rsets*sizeof(*rfd->items));
     for (i=0; i<info->no_rsets; i++){
        rfd->items[i].rset=info->rsets[i];
@@ -341,6 +344,7 @@ static int r_forward(RSET ct, RSFD rfd, void *buf,  int *term_index,
     *term_index=0;
     it = *(mrfd->h->heap[1]);
     memcpy(buf,it.buf, info->key_size); 
+    (mrfd->hits)++;
     if (mrfd->countp) {
         if (mrfd->prevvalue) {  /* in another record */
             if ( (*mrfd->info->cmp)(mrfd->prevvalue,it.buf) < -1)
@@ -369,62 +373,27 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
     return r_forward(0,rfd, buf, term_index,0,0);
 }
 
-#if 0
-static int old_read
+static void r_pos (RSFD rfd, double *current, double *total)
 {
     struct rset_multior_rfd *mrfd = (struct rset_multior_rfd *) rfd;
-    struct trunc_info *ti = mrfd->ti;
-    int n = ti->indx[ti->ptr[1]];
-
-    if (!ti->heapnum)
-        return 0;
-    *term_index = 0;
-    memcpy (buf, ti->heap[ti->ptr[1]], ti->keysize);
-    if (((struct rset_multior_rfd *) rfd)->position)
-    {
-        if (isc_pp_read (((struct rset_multior_rfd *) rfd)->ispt[n], ti->tmpbuf))
-        {
-            heap_delete (ti);
-            if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
-                 ((struct rset_multior_rfd *) rfd)->position--;
-            heap_insert (ti, ti->tmpbuf, n);
-        }
-        else
-            heap_delete (ti);
-        if (mrfd->countp && (
-                *mrfd->countp == 0 || (*ti->cmp)(buf, mrfd->pbuf) > 1))
-        {
-            memcpy (mrfd->pbuf, buf, ti->keysize);
-            (*mrfd->countp)++;
-        }
-        return 1;
+    struct rset_multior_info *info = mrfd->info;
+    double cur, tot;
+    double scur=0.0, stot=0.0;
+    int i;
+    for (i=0; i<info->no_rsets; i++){
+        rset_pos(mrfd->items[i].rset, mrfd->items[i].fd, &cur, &tot);
+        logf(LOG_LOG, "r_pos: %d %0.1f %0.1f", i, cur,tot);
+        scur += cur;
+        stot += tot;
     }
-    while (1)
-    {
-        if (!isc_pp_read (((struct rset_multior_rfd *) rfd)->ispt[n], ti->tmpbuf))
-        {
-            heap_delete (ti);
-            break;
-        }
-        if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
-        {
-            heap_delete (ti);
-            heap_insert (ti, ti->tmpbuf, n);
-            break;
-        }
+    if (stot <1.0) { /* nothing there */
+        *current=0;
+        *total=0;
+        return;
     }
-    if (mrfd->countp && (
-            *mrfd->countp == 0 || (*ti->cmp)(buf, mrfd->pbuf) > 1))
-    {
-        memcpy (mrfd->pbuf, buf, ti->keysize);
-        (*mrfd->countp)++;
-    }
-    return 1;
+    *current=mrfd->hits;
+    *total=*current*stot/scur;
 }
-
-#endif
-/*!*/ /* FIXME Forward */
-/*!*/ /* FIXME pos */
 
 static int r_write (RSFD rfd, const void *buf)
 {
