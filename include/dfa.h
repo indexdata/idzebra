@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.h,v $
- * Revision 1.1  1994-09-26 10:17:43  adam
+ * Revision 1.2  1994-09-26 16:31:23  adam
+ * Minor changes. xmalloc declares xcalloc now.
+ *
+ * Revision 1.1  1994/09/26  10:17:43  adam
  * Dfa-module header files.
  *
  */
@@ -115,8 +118,6 @@ extern int  debug_dfa_followpos;
 extern int  dfa_verbose;
 
 extern unsigned short
-        thompson_chars[],
-        brief_chars[],
-        grep_chars[],
-        ccl_chars[];
+        dfa_thompson_chars[],
+        dfa_ccl_chars[];
 #endif
