@@ -1,5 +1,5 @@
-/* $Id: marcread.c,v 1.23 2003-12-10 23:30:15 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: marcread.c,v 1.24 2004-06-16 22:12:30 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -275,6 +275,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     }
     return res_root;
 }
+
 /*
  * Locate some data under this node. This routine should handle variants
  * prettily.
@@ -310,6 +311,7 @@ static char *get_data(data1_node *n, int *len)
     *len = strlen(r);
     return r;
 }
+
 static data1_node *lookup_subfield(data1_node *node, const char *name)
 {
     data1_node *p;
@@ -321,7 +323,9 @@ static data1_node *lookup_subfield(data1_node *node, const char *name)
     }
     return 0;
 }
-static inline_subfield *lookup_inline_subfield(inline_subfield *pisf, const char *name)
+
+static inline_subfield *lookup_inline_subfield(inline_subfield *pisf,
+					       const char *name)
 {
     inline_subfield *p;
     
@@ -332,7 +336,9 @@ static inline_subfield *lookup_inline_subfield(inline_subfield *pisf, const char
     }
     return 0;
 }
-static inline_subfield *cat_inline_subfield(mc_subfield *psf, char *buf, inline_subfield *pisf)
+
+static inline_subfield *cat_inline_subfield(mc_subfield *psf, WRBUF buf,
+					    inline_subfield *pisf)
 {
     mc_subfield *p;
     
@@ -346,20 +352,23 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, char *buf, inline_
 	    {
 	    	if (strcmp(p->prefix, "_"))
 		{
-		    strcat(strcat(buf, " "), p->prefix);
+		    wrbuf_puts(buf, " ");
+		    wrbuf_puts(buf, p->prefix);
 		}
 		if (p->interval.start == -1)
 		{
-		    strcat(buf, found->data);
+		    wrbuf_puts(buf, found->data);
 		}
 		else
 		{
-		    strncat(buf, found->data+p->interval.start,
-			p->interval.end-p->interval.start+1);
+		    wrbuf_write(buf, found->data+p->interval.start,
+				p->interval.end-p->interval.start);
+		    wrbuf_puts(buf, "");
 		}
 	    	if (strcmp(p->suffix, "_"))
 		{
-		    strcat(strcat(buf, p->suffix), " ");
+		    wrbuf_puts(buf, p->suffix);
+		    wrbuf_puts(buf, " ");
 		}
 #if MARCOMP_DEBUG
 		logf(LOG_LOG, "cat_inline_subfield(): add subfield $%s", found->name);
@@ -393,15 +402,16 @@ static inline_subfield *cat_inline_subfield(mc_subfield *psf, char *buf, inline_
 	    }
 	    if (found)
 	    {
-		strcat(buf, " (");
+		wrbuf_puts(buf, " (");
 		pisf = cat_inline_subfield(p->u.child, buf, pisf);
-		strcat(buf, ") ");
+		wrbuf_puts(buf, ") ");
 	    }
 	}
     }
     return pisf; 
 }
-static void cat_inline_field(mc_field *pf, char *buf, data1_node *subfield)
+
+static void cat_inline_field(mc_field *pf, WRBUF buf, data1_node *subfield)
 {    
     if (!pf || !subfield)
 	return;
@@ -439,7 +449,7 @@ static void cat_inline_field(mc_field *pf, char *buf, data1_node *subfield)
 	{
 	    if (!pf->list && pif->list)
 	    {
-		strcat(buf, pif->list->data);
+		wrbuf_puts(buf, pif->list->data);
 	    }
 	    else
 	    {
@@ -460,14 +470,14 @@ static void cat_inline_field(mc_field *pf, char *buf, data1_node *subfield)
 		    /*
 		    	add separator for inline fields
 		    */
-		    if (strlen(buf))
+		    if (wrbuf_len(buf))
 		    {
-		    	strcat(buf, "\n");
+			wrbuf_puts(buf, "\n");
 		    }
 		}
 		else
 		{
-		    logf(LOG_WARN, "In-line field %s missed -- indicators does not match", pif->name);
+		    logf(LOG_WARN, "In-line field %s missed -- indicators do not match", pif->name);
 		}
 	    }
 	}
@@ -477,7 +487,9 @@ static void cat_inline_field(mc_field *pf, char *buf, data1_node *subfield)
     logf(LOG_LOG, "cat_inline_field(): got buffer {%s}", buf);
 #endif
 }
-static data1_node *cat_subfield(mc_subfield *psf, char *buf, data1_node *subfield)
+
+static data1_node *cat_subfield(mc_subfield *psf, WRBUF buf,
+				data1_node *subfield)
 {
     mc_subfield *p;
     
@@ -493,7 +505,8 @@ static data1_node *cat_subfield(mc_subfield *psf, char *buf, data1_node *subfiel
 		
 		if (strcmp(p->prefix, "_"))
 		{
-		    strcat(strcat(buf, " "), p->prefix);
+		    wrbuf_puts(buf, " ");
+		    wrbuf_puts(buf, p->prefix);
 		}
 		
 		if (p->u.in_line)
@@ -502,16 +515,18 @@ static data1_node *cat_subfield(mc_subfield *psf, char *buf, data1_node *subfiel
 		}
 		else if (p->interval.start == -1)
 		{
-		    strcat(buf, get_data(found, &len));
+		    wrbuf_puts(buf, get_data(found, &len));
 		}
 		else
 		{
-		    strncat(buf, get_data(found, &len)+p->interval.start,
-			p->interval.end-p->interval.start+1);
+		    wrbuf_write(buf, get_data(found, &len)+p->interval.start,
+			p->interval.end-p->interval.start);
+		    wrbuf_puts(buf, "");
 		}
 		if (strcmp(p->suffix, "_"))
 		{
-		    strcat(strcat(buf, p->suffix), " ");
+		    wrbuf_puts(buf, p->suffix);
+		    wrbuf_puts(buf, " ");
 		}
 #if MARCOMP_DEBUG		
 		logf(LOG_LOG, "cat_subfield(): add subfield $%s", found->u.tag.tag);
@@ -544,15 +559,17 @@ static data1_node *cat_subfield(mc_subfield *psf, char *buf, data1_node *subfiel
 	    }
 	    if (found)
 	    {
-		strcat(buf, " (");
+		wrbuf_puts(buf, " (");
 		subfield = cat_subfield(p->u.child, buf, subfield);
-		strcat(buf, ") ");
+		wrbuf_puts(buf, ") ");
 	    }
 	}
     }
     return subfield;
 }
-static data1_node *cat_field(struct grs_read_info *p, mc_field *pf, char *buf, data1_node *field)
+
+static data1_node *cat_field(struct grs_read_info *p, mc_field *pf,
+			     WRBUF buf, data1_node *field)
 {
     data1_node *subfield;
     int ind1, ind2;
@@ -579,12 +596,13 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf, char *buf, d
 	
 	if (pf->interval.start == -1)
 	{
-	    strcat(buf, get_data(field, &len));
+	    wrbuf_puts(buf, get_data(field, &len));
 	}
 	else
 	{
-	    strncat(buf, get_data(field, &len)+pf->interval.start,
-		pf->interval.end-pf->interval.start+1);
+	    wrbuf_write(buf, get_data(field, &len)+pf->interval.start,
+			pf->interval.end-pf->interval.start);
+	    wrbuf_puts(buf, "");
 	}
 #if MARCOMP_DEBUG
         logf(LOG_LOG, "cat_field(): got buffer {%s}", buf);
@@ -623,6 +641,7 @@ static data1_node *cat_field(struct grs_read_info *p, mc_field *pf, char *buf, d
     
     return field->next;    
 }
+
 static int is_empty(char *s)
 {
     char *p = s;
@@ -634,14 +653,16 @@ static int is_empty(char *s)
     }
     return 1;
 }
-static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt, data1_node *root)
+
+static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt,
+			     data1_node *root)
 {
     data1_marctab *marctab = root->u.root.absyn->marc;
     data1_node *top = root->child;
     data1_node *field;
     mc_context *c;
     mc_field *pf;
-    char buf[1000000];
+    WRBUF buf;
     
     c = mc_mk_context(mc_stmnt+3);
     
@@ -655,6 +676,7 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt, data
 	mc_destroy_context(c);
 	return;
     }
+    buf = wrbuf_alloc();
 #if MARCOMP_DEBUG    
     logf(LOG_LOG, "parse_data1_tree(): statement -{%s}", mc_stmnt);
 #endif
@@ -678,13 +700,16 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt, data
 	    if (!yaz_matchstr(field->u.tag.tag, pf->name))
 	    {
 		data1_node *new;
-		char *pb = buf;
+		char *pb;
 #if MARCOMP_DEBUG		
 		logf(LOG_LOG, "parse_data1_tree(): try field {%s}", field->u.tag.tag);
 #endif		
-		*buf = '\0';	    
+		wrbuf_rewind(buf);
+		wrbuf_puts(buf, "");
+
 		field = cat_field(p, pf, buf, field);
 		
+		pb = wrbuf_buf(buf);
 		for (pb = strtok(pb, "\n"); pb; pb = strtok(NULL, "\n"))
 		{
 			if (!is_empty(pb))
@@ -702,6 +727,7 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt, data
     }
     mc_destroy_field(pf);
     mc_destroy_context(c);
+    wrbuf_free(buf, 1);
 }
 
 data1_node *grs_read_marcxml(struct grs_read_info *p)
@@ -723,7 +749,6 @@ data1_node *grs_read_marcxml(struct grs_read_info *p)
     return root;
 }
 
-
 data1_node *grs_read_marc(struct grs_read_info *p)
 {
     data1_node *root = grs_read_iso2709(p, 0);
@@ -742,6 +767,7 @@ data1_node *grs_read_marc(struct grs_read_info *p)
     }
     return root;
 }
+
 static void *grs_init_marc(void)
 {
     return 0;
