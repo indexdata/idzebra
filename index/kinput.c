@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.11  1995-12-06 16:06:43  adam
+ * Revision 1.12  1995-12-06 17:49:19  adam
+ * Uses dict_delete now.
+ *
+ * Revision 1.11  1995/12/06  16:06:43  adam
  * Better diagnostics. Work on 'real' dictionary deletion.
  *
  * Revision 1.10  1995/12/06  12:41:22  adam
@@ -355,14 +358,13 @@ int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
             logf (LOG_DEBUG, "updating %s", cur_name);
             memcpy (&isam_p, info+1, sizeof(ISAM_P));
             isam_p2 = is_merge (isam, isam_p, nmemb, key_buf);
-#if 0
             if (!isam_p2)
             {
                 no_deletions++;
-                dict_delete (dict, cur_name);
+                if (!dict_delete (dict, cur_name))
+                    abort ();
             }
             else 
-#endif
             {
                 no_updates++;
                 if (isam_p2 != isam_p)
