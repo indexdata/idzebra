@@ -11,4 +11,5 @@ int main (int argc, char **argv)
 	passwd_db_show (db);
 	passwd_db_auth (db, "adam", "xtx9Y=");
 	passwd_db_close (db);
+	return 0;
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.27  2000-04-05 09:49:36  adam
+ * Revision 1.28  2000-07-07 12:49:20  adam
+ * Optimized resultSetInsert{Rank,Sort}.
+ *
+ * Revision 1.27  2000/04/05 09:49:36  adam
  * On Unix, zebra/z'mbol uses automake.
  *
  * Revision 1.26  2000/03/20 19:08:36  adam
@@ -409,20 +412,23 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
 		break;
 	}
     }
-    j = sort_info->max_entries-1;
+    ++i;
+    j = sort_info->max_entries;
     if (i == j)
 	return;
-    ++i;
+
+    if (sort_info->num_entries == j)
+	--j;
+    else
+	j = (sort_info->num_entries)++;
     new_entry = sort_info->entries[j];
     while (j != i)
     {
 	sort_info->entries[j] = sort_info->entries[j-1];
 	--j;
     }
-    sort_info->entries[j] = new_entry;
+    sort_info->entries[i] = new_entry;
     assert (new_entry);
-    if (sort_info->num_entries != sort_info->max_entries)
-	(sort_info->num_entries)++;
     for (i = 0; i<num_criteria; i++)
 	memcpy (new_entry->buf[i], this_entry.buf[i], SORT_IDX_ENTRYSIZE);
     new_entry->sysno = sysno;
@@ -453,20 +459,24 @@ void resultSetInsertRank (ZebraHandle zh, struct zset_sort_info *sort_info,
 		break;
 	}
     }
-    j = sort_info->max_entries-1;
+    ++i;
+    j = sort_info->max_entries;
     if (i == j)
 	return;
-    ++i;
+
+    if (sort_info->num_entries == j)
+	--j;
+    else
+	j = (sort_info->num_entries)++;
+    
     new_entry = sort_info->entries[j];
     while (j != i)
     {
 	sort_info->entries[j] = sort_info->entries[j-1];
 	--j;
     }
-    sort_info->entries[j] = new_entry;
+    sort_info->entries[i] = new_entry;
     assert (new_entry);
-    if (sort_info->num_entries != sort_info->max_entries)
-	(sort_info->num_entries)++;
     new_entry->sysno = sysno;
     new_entry->score = score;
 }

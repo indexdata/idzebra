@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.34  2000-06-09 13:56:38  ian
+ * Revision 1.35  2000-07-07 12:49:20  adam
+ * Optimized resultSetInsert{Rank,Sort}.
+ *
+ * Revision 1.34  2000/06/09 13:56:38  ian
  * Added some logging on Authentication and searches.
  *
  * Revision 1.33  2000/05/18 12:01:36  adam
@@ -387,7 +390,7 @@ static int zebra_register_deactivate (ZebraService zh)
     zebra_chdir (zh);
     if (zh->records)
     {
-        zebraExplain_close (zh->zei, 1);
+        zebraExplain_close (zh->zei, 0);
         dict_close (zh->dict);
 	sortIdx_close (zh->sortIdx);
 	if (zh->isams)

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.18  2000-03-20 19:08:36  adam
+ * Revision 1.19  2000-07-07 12:49:20  adam
+ * Optimized resultSetInsert{Rank,Sort}.
+ *
+ * Revision 1.18  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -492,16 +495,19 @@ ZebraExplainInfo zebraExplain_open (
     zdip = &zei->databaseInfo;
     trec = rec_get (records, 1);      /* get "root" record */
 
+    zei->ordinalSU = 1;
+    zei->runNumber = 0;
+
     zebraExplain_mergeAccessInfo (zei, 0, &zei->accessInfo);
     if (trec)    /* targetInfo already exists ... */
     {
 	data1_node *node_tgtinfo, *node_zebra, *node_list, *np;
 
 	zei->data1_target = read_sgml_rec (zei->dh, zei->nmem, trec);
-	if (!zei->data1_target)
+	if (!zei->data1_target || !zei->data1_target->u.root.absyn)
 	{
-	    rec_rm (&trec);
-	    nmem_destroy(zei->nmem);
+	    logf (LOG_FATAL, "Explain schema missing. Check profilePath");
+	    nmem_destroy (zei->nmem);
 	    return 0;
 	}
 #if ZINFO_DEBUG
@@ -514,9 +520,15 @@ ZebraExplainInfo zebraExplain_open (
 
 	node_zebra = data1_search_tag (zei->dh, node_tgtinfo->child,
 				       "zebraInfo");
-	node_list = data1_search_tag (zei->dh, node_zebra->child,
-				      "databaseList");
-	for (np = node_list->child; np; np = np->next)
+	np = 0;
+	if (node_zebra)
+	{
+	    node_list = data1_search_tag (zei->dh, node_zebra->child,
+					  "databaseList");
+	    if (node_list)
+		np = node_list->child;
+	}
+	for (; np; np = np->next)
 	{
 	    data1_node *node_name = NULL;
 	    data1_node *node_id = NULL;
@@ -563,25 +575,26 @@ ZebraExplainInfo zebraExplain_open (
 
 	    zdip = &(*zdip)->next;
 	}
-	np = data1_search_tag (zei->dh, node_zebra->child,
-			       "ordinalSU");
-	np = np->child;
-	assert (np && np->which == DATA1N_data);
-	zei->ordinalSU = atoi_n (np->u.data.data, np->u.data.len);
-
-	np = data1_search_tag (zei->dh, node_zebra->child,
-			       "runNumber");
-	np = np->child;
-	assert (np && np->which == DATA1N_data);
-	zei->runNumber = atoi_n (np->u.data.data, np->u.data.len);
-	*zdip = NULL;
+	if (node_zebra)
+	{
+	    np = data1_search_tag (zei->dh, node_zebra->child,
+				   "ordinalSU");
+	    np = np->child;
+	    assert (np && np->which == DATA1N_data);
+	    zei->ordinalSU = atoi_n (np->u.data.data, np->u.data.len);
+	    
+	    np = data1_search_tag (zei->dh, node_zebra->child,
+				   "runNumber");
+	    np = np->child;
+	    assert (np && np->which == DATA1N_data);
+	    zei->runNumber = atoi_n (np->u.data.data, np->u.data.len);
+	    *zdip = NULL;
+	}
 	rec_rm (&trec);
     }
     else  /* create initial targetInfo */
     {
 	data1_node *node_tgtinfo;
-        zei->ordinalSU = 1;
-	zei->runNumber = 0;
 
 	*zdip = NULL;
 	if (writeFlag)
@@ -597,9 +610,9 @@ ZebraExplainInfo zebraExplain_open (
 				 "<multipleDBSearch>1</>\n"
 				 "<nicknames><name>Zebra</></>\n"
 				 "</></>\n" );
-
-	    if (!zei->data1_target)
+	    if (!zei->data1_target || !zei->data1_target->u.root.absyn)
 	    {
+		logf (LOG_FATAL, "Explain schema missing. Check profilePath");
 		nmem_destroy (zei->nmem);
 		return 0;
 	    }

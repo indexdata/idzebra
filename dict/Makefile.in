@@ -73,12 +73,17 @@ YAZLIB = @YAZLIB@
 yazconfig = @yazconfig@
 
 noinst_LIBRARIES = libdict.a
+noinst_PROGRAMS = dicttest dictext
 
 INCLUDES = -I$(srcdir)/../include @YAZINC@
-LDADD = ../bfile/libbfile.a ../dfa/libdfa.a ../util/libutil.a @YAZLIB@ @LIBS@
+LDADD = libdict.a ../bfile/libbfile.a ../dfa/libdfa.a ../util/libutil.a @YAZLIB@ @LIBS@
 
 libdict_a_SOURCES = scan.c dopen.c dclose.c drdwr.c open.c close.c insert.c  lookup.c lookupec.c lookgrep.c delete.c dcompact.c
 
+
+dicttest_SOURCES = dicttest.c
+
+dictext_SOURCES = dictext.c
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 LIBRARIES =  $(noinst_LIBRARIES)
@@ -90,6 +95,18 @@ libdict_a_LIBADD =
 libdict_a_OBJECTS =  scan.o dopen.o dclose.o drdwr.o open.o close.o \
 insert.o lookup.o lookupec.o lookgrep.o delete.o dcompact.o
 AR = ar
+PROGRAMS =  $(noinst_PROGRAMS)
+
+dicttest_OBJECTS =  dicttest.o
+dicttest_LDADD = $(LDADD)
+dicttest_DEPENDENCIES =  libdict.a ../bfile/libbfile.a ../dfa/libdfa.a \
+../util/libutil.a
+dicttest_LDFLAGS = 
+dictext_OBJECTS =  dictext.o
+dictext_LDADD = $(LDADD)
+dictext_DEPENDENCIES =  libdict.a ../bfile/libbfile.a ../dfa/libdfa.a \
+../util/libutil.a
+dictext_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -102,11 +119,11 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = gtar
 GZIP_ENV = --best
 DEP_FILES =  .deps/close.P .deps/dclose.P .deps/dcompact.P \
-.deps/delete.P .deps/dopen.P .deps/drdwr.P .deps/insert.P \
-.deps/lookgrep.P .deps/lookup.P .deps/lookupec.P .deps/open.P \
-.deps/scan.P
-SOURCES = $(libdict_a_SOURCES)
-OBJECTS = $(libdict_a_OBJECTS)
+.deps/delete.P .deps/dictext.P .deps/dicttest.P .deps/dopen.P \
+.deps/drdwr.P .deps/insert.P .deps/lookgrep.P .deps/lookup.P \
+.deps/lookupec.P .deps/open.P .deps/scan.P
+SOURCES = $(libdict_a_SOURCES) $(dicttest_SOURCES) $(dictext_SOURCES)
+OBJECTS = $(libdict_a_OBJECTS) $(dicttest_OBJECTS) $(dictext_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -148,6 +165,23 @@ libdict.a: $(libdict_a_OBJECTS) $(libdict_a_DEPENDENCIES)
 	-rm -f libdict.a
 	$(AR) cru libdict.a $(libdict_a_OBJECTS) $(libdict_a_LIBADD)
 	$(RANLIB) libdict.a
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
+
+dicttest: $(dicttest_OBJECTS) $(dicttest_DEPENDENCIES)
+	@rm -f dicttest
+	$(LINK) $(dicttest_LDFLAGS) $(dicttest_OBJECTS) $(dicttest_LDADD) $(LIBS)
+
+dictext: $(dictext_OBJECTS) $(dictext_DEPENDENCIES)
+	@rm -f dictext
+	$(LINK) $(dictext_LDFLAGS) $(dictext_OBJECTS) $(dictext_LDADD) $(LIBS)
 
 tags: TAGS
 
@@ -249,7 +283,7 @@ install-am: all-am
 install: install-am
 uninstall-am:
 uninstall: uninstall-am
-all-am: Makefile $(LIBRARIES)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
@@ -266,23 +300,25 @@ distclean-generic:
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+		mostlyclean-noinstPROGRAMS mostlyclean-tags \
+		mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-depend \
-		clean-generic mostlyclean-am
+clean-am:  clean-noinstLIBRARIES clean-compile clean-noinstPROGRAMS \
+		clean-tags clean-depend clean-generic mostlyclean-am
 
 clean: clean-am
 
 distclean-am:  distclean-noinstLIBRARIES distclean-compile \
-		distclean-tags distclean-depend distclean-generic \
-		clean-am
+		distclean-noinstPROGRAMS distclean-tags \
+		distclean-depend distclean-generic clean-am
 
 distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
-		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-compile \
+		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
 		maintainer-clean-depend maintainer-clean-generic \
 		distclean-am
 	@echo "This command is intended for maintainers to use;"
@@ -293,7 +329,9 @@ maintainer-clean: maintainer-clean-am
 .PHONY: mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
 clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile tags mostlyclean-tags distclean-tags \
+maintainer-clean-compile mostlyclean-noinstPROGRAMS \
+distclean-noinstPROGRAMS clean-noinstPROGRAMS \
+maintainer-clean-noinstPROGRAMS tags mostlyclean-tags distclean-tags \
 clean-tags maintainer-clean-tags distdir mostlyclean-depend \
 distclean-depend clean-depend maintainer-clean-depend info-am info \
 dvi-am dvi check check-am installcheck-am installcheck install-exec-am \

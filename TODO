@@ -1,5 +1,13 @@
 Zebra TODO
-$Id: TODO,v 1.8 1999-12-01 14:29:50 adam Exp $
+$Id: TODO,v 1.9 2000-07-07 12:49:20 adam Exp $
+
+Browse set.
+
+Multiple register areas.
+
+Hit Vector for each term in query in search-response PDU.
+
+Prefix configuration for externally stored records.
 
 Size of sort entries should be configurable.
 

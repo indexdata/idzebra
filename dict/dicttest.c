@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.22  1999-02-02 14:50:19  adam
+ * Revision 1.23  2000-07-07 12:49:20  adam
+ * Optimized resultSetInsert{Rank,Sort}.
+ *
+ * Revision 1.22  1999/02/02 14:50:19  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.21  1996/10/29 14:00:03  adam
@@ -103,9 +106,11 @@ static int grep_handle (char *name, const char *info, void *client)
 
 int main (int argc, char **argv)
 {
+    Res my_resource = 0;
+    BFiles bfs;
     const char *name = NULL;
     const char *inputfile = NULL;
-    const char *base = NULL;
+    const char *config = NULL;
     int do_delete = 0;
     int range = -1;
     int srange = 0;
@@ -126,7 +131,7 @@ int main (int argc, char **argv)
     {
         fprintf (stderr, "usage:\n "
                  " %s [-d] [-r n] [-p n] [-u] [-g pat] [-s n] [-v n] [-i f]"
-                 " [-w] [-c n] base file\n\n",
+                 " [-w] [-c n] config file\n\n",
                  prog);
         fprintf (stderr, "  -d      delete instead of insert\n");
         fprintf (stderr, "  -r n    set regular match range\n");
@@ -144,8 +149,8 @@ int main (int argc, char **argv)
     {
         if (ret == 0)
         {
-            if (!base)
-                base = arg;
+            if (!config)
+                config = arg;
             else if (!name)
                 name = arg;
             else
@@ -196,18 +201,24 @@ int main (int argc, char **argv)
             exit (1);
         }
     }
-    if (!base || !name)
+    if (!config || !name)
     {
-        logf (LOG_FATAL, "no base and/or dictionary specified");
+        logf (LOG_FATAL, "no config and/or dictionary specified");
         exit (1);
     }
-    common_resource = res_open (base);
-    if (!common_resource)
+    my_resource = res_open (config);
+    if (!my_resource)
     {
-        logf (LOG_FATAL, "cannot open resource `%s'", base);
+        logf (LOG_FATAL, "cannot open resource `%s'", config);
         exit (1);
     }
-    dict = dict_open (name, cache, rw);
+    bfs = bfs_create (res_get(my_resource, "register"));
+    if (!bfs)
+    {
+        logf (LOG_FATAL, "bfs_create fail");
+        exit (1);
+    }
+    dict = dict_open (bfs, name, cache, rw, 0);
     if (!dict)
     {
         logf (LOG_FATAL, "dict_open fail of `%s'", name);
@@ -292,6 +303,10 @@ int main (int argc, char **argv)
                             no_of_misses++;
                     }
                     ++no_of_iterations;
+		    if ((no_of_iterations % 10000) == 0)
+		    {
+			printf ("."); fflush(stdout);
+		    }
                     ipf_ptr += (i-1);
                 }
             }
@@ -328,6 +343,7 @@ int main (int argc, char **argv)
         logf (LOG_LOG, "No of misses.. %d", no_of_misses);
     }
     dict_close (dict);
-    res_close (common_resource);
+    bfs_destroy (bfs);
+    res_close (my_resource);
     return 0;
 }
