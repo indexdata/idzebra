@@ -1,4 +1,4 @@
-/* $Id: merge.c,v 1.21 2002-08-02 19:26:56 adam Exp $
+/* $Id: merge.c,v 1.22 2003-03-05 16:41:10 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -35,6 +35,7 @@ struct isc_merge_block {
     int dirty;        /* block is different from that on file */
 };
 
+#if 0
 static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
 			int last)
 {
@@ -62,6 +63,7 @@ static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
     if (!last)
 	mb[i].dirty = 1;
 }
+#endif
 
 static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
                           char *r_buf, int *firstpos, int cat, int last,
@@ -480,7 +482,10 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
 
 /*
  * $Log: merge.c,v $
- * Revision 1.21  2002-08-02 19:26:56  adam
+ * Revision 1.22  2003-03-05 16:41:10  adam
+ * Fix GCC warnings
+ *
+ * Revision 1.21  2002/08/02 19:26:56  adam
  * Towards GPL
  *
  * Revision 1.20  1999/11/30 13:48:04  adam

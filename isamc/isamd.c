@@ -1,4 +1,4 @@
-/* $Id: isamd.c,v 1.24 2002-11-26 22:18:34 adam Exp $
+/* $Id: isamd.c,v 1.25 2003-03-05 16:41:10 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -601,10 +601,6 @@ ISAMD_PP isamd_pp_open (ISAMD is, const char *dictbuf, int dictlen)
     char *src;
     int sz = is->method->filecat[is->max_cat].bsize;
                  /* always allocate for the largest blocks, saves trouble */
-    struct it_key singlekey;
-    char *c_ptr; /* for fake encoding the singlekey */
-    char *i_ptr;
-    int ofs;
     int dictnum;
     
     pp->numKeys = 0;
@@ -798,6 +794,8 @@ int isamd_pp_num (ISAMD_PP pp)
     return pp->numKeys;
 }
 
+#if 0
+/* for testing .. */
 static char *hexdump(unsigned char *p, int len, char *buff) {
   static char localbuff[128];
   char bytebuff[8];
@@ -811,7 +809,7 @@ static char *hexdump(unsigned char *p, int len, char *buff) {
   }
   return buff;
 }
-
+#endif
 
 #ifdef SKIPTHIS
   /* needs different arguments, or something */
@@ -881,7 +879,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.24  2002-11-26 22:18:34  adam
+ * Revision 1.25  2003-03-05 16:41:10  adam
+ * Fix GCC warnings
+ *
+ * Revision 1.24  2002/11/26 22:18:34  adam
  * Remove // comments
  *
  * Revision 1.23  2002/08/02 19:26:56  adam

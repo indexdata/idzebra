@@ -1,4 +1,4 @@
-/* $Id: merge-d.c,v 1.29 2002-11-26 22:18:34 adam Exp $
+/* $Id: merge-d.c,v 1.30 2003-03-05 16:41:10 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -156,16 +156,19 @@ static int filter_isempty(FILTER F)
   return ( (0 == F->r1) && (0 == F->r2)) ;
 }
 
+#if 0
 static int filter_only_one(FILTER F)
 {
   return ( (0 != F->r1) && (0 == F->r2));
 }
+#endif
 
 /* We may need backfilling, if we read a lonely key to make */
 /* a singleton, but its bitw will not fit in. Then we need to */
 /* process it normally, which means reading it again. So we  */
 /* need to unread it first. Luckily the filter is empty at that */
 /* point */
+#if 0
 static void filter_backfill(FILTER F, struct it_key *k, int mode)
 {
   assert(F->r1 == FILTER_NOTYET ); /* not overwriting data! */
@@ -173,7 +176,7 @@ static void filter_backfill(FILTER F, struct it_key *k, int mode)
   F->m1=mode;
   F->r1=1; /* ok read */
 }
-
+#endif
 
 /***************************************************************
  * Singleton encoding
@@ -1097,7 +1100,10 @@ int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.29  2002-11-26 22:18:34  adam
+ * Revision 1.30  2003-03-05 16:41:10  adam
+ * Fix GCC warnings
+ *
+ * Revision 1.29  2002/11/26 22:18:34  adam
  * Remove // comments
  *
  * Revision 1.28  2002/08/02 19:26:56  adam
