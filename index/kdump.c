@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.8  1996-06-04 10:18:59  adam
+ * Revision 1.9  1996-06-04 14:18:53  quinn
+ * Charmap work
+ *
+ * Revision 1.8  1996/06/04  10:18:59  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.7  1995/10/10  12:24:38  adam
@@ -37,6 +40,7 @@
 #include <assert.h>
 
 #include <alexutil.h>
+#include <charmap.h>
 #include "index.h"
 
 char *prog;
@@ -108,6 +112,7 @@ int main (int argc, char **argv)
     char key_info[256];
     FILE *inf;
     struct it_key prevk;
+    chrmaptab *map = 0;
 
     prevk.sysno = 0;
     prevk.seqno = 0;
@@ -123,6 +128,14 @@ int main (int argc, char **argv)
         {
             log_init (log_mask_str(arg), prog, NULL);
         }
+	else if (ret == 'm')
+	{
+	    if (!(map = chr_read_maptab(arg)))
+	    {
+		logf(LOG_FATAL, "Failed to open maptab");
+		exit(1);
+	    }
+	}
         else
         {
             logf (LOG_FATAL, "Unknown option '-%s'", arg);
@@ -131,7 +144,7 @@ int main (int argc, char **argv)
     }
     if (!key_fname)
     {
-        fprintf (stderr, "kdump [-v log] file\n");
+        fprintf (stderr, "kdump [-m maptab -v log] file\n");
         exit (1);
     }
     if (!(inf = fopen (key_fname, "r")))
@@ -143,9 +156,24 @@ int main (int argc, char **argv)
     {
         struct it_key k;
         int op;
+	char keybuf[IT_MAX_WORD+1];
 
         op = key_info[0];
         memcpy (&k, 1+key_info, sizeof(k));
+	if (map)
+	{
+	    char *to = keybuf, *from = key_string;
+
+	    while (*from)
+	    {
+		char *res = (char*)map->output[(unsigned char) *from];
+		while (*res)
+		    *(to++) = *(res++);
+	    }
+	    *to = '\0';
+	}
+	else
+	    strcpy(keybuf, key_string);
         printf ("%7d op=%d s=%-5d %s\n", k.sysno, op, k.seqno,
                 key_string);
     }
