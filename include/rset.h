@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.34 2004-09-09 10:08:04 heikki Exp $
+/* $Id: rset.h,v 1.35 2004-09-28 16:39:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -166,14 +166,18 @@ RSET rsbool_create_not( NMEM nmem, const struct key_control *kcontrol,
                         int scope,
                         RSET rset_l, RSET rset_r);
 
-RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
+RSET rsbetween_create(  NMEM nmem, const struct key_control *kcontrol,
                         int scope, 
                         RSET rset_l, RSET rset_m, RSET rset_r, 
                         RSET rset_attr);
 
-RSET rsmultior_create( NMEM nmem, const struct key_control *kcontrol,
+RSET rsmultior_create(  NMEM nmem, const struct key_control *kcontrol,
                         int scope, 
-                      int no_rsets, RSET* rsets);
+                        int no_rsets, RSET* rsets);
+
+RSET rsmultiand_create( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
+                        int no_rsets, RSET* rsets);
 
 RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol,
                         int scope, 

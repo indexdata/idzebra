@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.153 2004-09-15 08:13:51 adam Exp $
+/* $Id: zrpn.c,v 1.154 2004-09-28 16:39:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1464,8 +1464,8 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
                                      NMEM rset_nmem)
 {
     char term_dst[IT_MAX_WORD+1];
-    RSET rset[60], result;
-    int i, rset_no = 0;
+    RSET rset[60]; /* FIXME - bug 160 - should be dynamic somehow */
+    int rset_no = 0;
     struct grep_info grep_info;
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
@@ -1490,12 +1490,9 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
     grep_info_delete (&grep_info);
     if (rset_no == 0)
         return rsnull_create (rset_nmem,key_it_ctrl); 
-    result = rset[0];
-    /* FIXME - Use a proper rsmultiand */
-    for (i = 1; i<rset_no; i++)
-        result= rsbool_create_and(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
-                result, rset[i] );
-    return result;
+
+    return rsmultiand_create( rset_nmem, key_it_ctrl, key_it_ctrl->scope,
+                              rset_no, rset);
 }
 
 static int numeric_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,

@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.2 2004-09-28 16:12:42 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.3 2004-09-28 16:39:46 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -500,8 +500,36 @@ static int r_read_and (RSFD rfd, void *buf)
 
 
 static int r_forward_and(RSFD rfd, void *buf, const void *untilbuf)
-{
-    return 0;
+{ 
+    struct rset_multiandor_rfd *p=rfd->priv;
+    const struct key_control *kctrl=rfd->rset->keycontrol;
+    struct rset_multiandor_info *info=rfd->rset->priv;
+    int i;
+    int cmp;
+    int killtail=0;
+
+    for (i=0; i<info->no_rsets;i++)
+    {
+        cmp=(*kctrl->cmp)(p->items[i].buf,untilbuf);
+        if ( cmp <= -rfd->rset->scope )
+        {
+            killtail=1; /* we are moving to a different hit */
+            if (!rset_forward(p->items[i].fd, p->items[i].buf, 
+                              untilbuf))
+            {
+                p->eof=1; /* game over */
+                p->tailcount=0;
+                return 0;
+            }
+        }
+    }
+    if (killtail) 
+    {
+        for (i=0; i<info->no_rsets;i++)
+            p->tailbits[i]=0;
+        p->tailcount=0;
+    }
+    return r_read_and(rfd,buf);
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)
