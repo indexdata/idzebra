@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.61  1996-06-06 12:08:37  quinn
+ * Revision 1.62  1996-10-11 10:57:01  adam
+ * New module recctrl. Used to manage records (extract/retrieval).
+ * Several files have been moved to the recctrl sub directory.
+ *
+ * Revision 1.61  1996/06/06 12:08:37  quinn
  * Added showRecord function
  *
  * Revision 1.60  1996/06/04  10:18:12  adam
@@ -852,7 +856,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.readf = file_read;
         extractCtrl.seekf = file_seek;
         extractCtrl.endf = file_end;
-	extractCtrl.group = rGroup;
+        extractCtrl.map_chrs_input = map_chrs_input;
+        extractCtrl.flagShowRecords = rGroup->flagShowRecords;
         r = (*recType->extract)(&extractCtrl);
 
         if (r)      
