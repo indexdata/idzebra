@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.2  1996-05-14 06:16:41  adam
+ * Revision 1.3  1996-05-22 08:21:59  adam
+ * Added public ZebDatabaseInfo structure.
+ *
+ * Revision 1.2  1996/05/14 06:16:41  adam
  * Compact use/set bytes used in search service.
  *
  * Revision 1.1  1996/05/13 14:23:07  adam
@@ -28,26 +31,27 @@ struct zebSUInfoB {
     struct zebSUInfoB *next;
 };
 
-struct zebDatabaseInfo {
+struct zebDatabaseInfoB {
     struct zebSUInfoB *SUInfo;
     char *databaseName;
     int sysno;
     int readFlag;
     int dirty;
-    struct zebDatabaseInfo *next;
+    struct zebDatabaseInfo info;
+    struct zebDatabaseInfoB *next;
 };
 
 struct zebTargetInfo {
     int  dictNum;
     int  dirty;
     Records records;
-    struct zebDatabaseInfo *databaseInfo;
-    struct zebDatabaseInfo *curDatabaseInfo;
+    struct zebDatabaseInfoB *databaseInfo;
+    struct zebDatabaseInfoB *curDatabaseInfo;
 };
 
 void zebTargetInfo_close (ZebTargetInfo *zti, int writeFlag)
 {
-    struct zebDatabaseInfo *zdi, *zdi1;
+    struct zebDatabaseInfoB *zdi, *zdi1;
     
     if (writeFlag)
     {
@@ -74,6 +78,8 @@ void zebTargetInfo_close (ZebTargetInfo *zti, int writeFlag)
                 assert (drec);
                 for (zsui = zdi->SUInfo; zsui; zsui=zsui->next)
                     no++;
+		memcpy (q, &zdi->info, sizeof(zdi->info));
+                q += sizeof(zdi->info);
                 memcpy (q, &no, sizeof(no));
                 q += sizeof(no);
                 for (zsui = zdi->SUInfo; zsui; zsui=zsui->next)
@@ -125,7 +131,7 @@ ZebTargetInfo *zebTargetInfo_open (Records records, int writeFlag)
 {
     Record rec;
     ZebTargetInfo *zti;
-    struct zebDatabaseInfo **zdi;
+    struct zebDatabaseInfoB **zdi;
 
     zti = xmalloc (sizeof(*zti));
     zti->dirty = 0;
@@ -176,7 +182,7 @@ ZebTargetInfo *zebTargetInfo_open (Records records, int writeFlag)
 }
 
 static void zebTargetInfo_readDatabase (ZebTargetInfo *zti,
-                                        struct zebDatabaseInfo *zdi)
+                                        struct zebDatabaseInfoB *zdi)
 {
     const char *p;
     struct zebSUInfoB **zsuip = &zdi->SUInfo;
@@ -186,6 +192,8 @@ static void zebTargetInfo_readDatabase (ZebTargetInfo *zti,
     rec = rec_get (zti->records, zdi->sysno);
     assert (rec);
     p = rec->info[0];
+    memcpy (&zdi->info, p, sizeof(zdi->info));
+    p += sizeof(zdi->info);
     memcpy (&no, p, sizeof(no));
     p += sizeof(no);
     for (i = 0; i<no; i++)
@@ -202,7 +210,7 @@ static void zebTargetInfo_readDatabase (ZebTargetInfo *zti,
 
 int zebTargetInfo_curDatabase (ZebTargetInfo *zti, const char *database)
 {
-    struct zebDatabaseInfo *zdi;
+    struct zebDatabaseInfoB *zdi;
     
     assert (zti);
     if (zti->curDatabaseInfo &&
@@ -223,7 +231,7 @@ int zebTargetInfo_curDatabase (ZebTargetInfo *zti, const char *database)
 
 int zebTargetInfo_newDatabase (ZebTargetInfo *zti, const char *database)
 {
-    struct zebDatabaseInfo *zdi;
+    struct zebDatabaseInfoB *zdi;
 
     assert (zti);
     for (zdi = zti->databaseInfo; zdi; zdi=zdi->next)
@@ -274,4 +282,19 @@ int zebTargetInfo_addSU (ZebTargetInfo *zti, int set, int use)
     zsui->info.use = use;
     zsui->info.ordinal = (zti->dictNum)++;
     return zsui->info.ordinal;
+}
+
+ZebDatabaseInfo *zebTargetInfo_getDB (ZebTargetInfo *zti)
+{
+    assert (zti->curDatabaseInfo);
+
+    return &zti->curDatabaseInfo->info;
+}
+
+void zebTargetInfo_setDB (ZebTargetInfo *zti, ZebDatabaseInfo *zdi)
+{
+    assert (zti->curDatabaseInfo);
+
+    zti->curDatabaseInfo->dirty = 1;
+    memcpy (&zti->curDatabaseInfo->info, zdi, sizeof(*zdi));
 }
