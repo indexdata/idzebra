@@ -1,4 +1,4 @@
-/* $Id: grsread.h,v 1.12 2002-11-15 21:26:01 adam Exp $
+/* $Id: grsread.h,v 1.13 2003-08-21 10:29:00 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -55,6 +55,7 @@ extern RecTypeGrs recTypeGrs_sgml;
 extern RecTypeGrs recTypeGrs_regx;
 extern RecTypeGrs recTypeGrs_tcl;
 extern RecTypeGrs recTypeGrs_marc;
+extern RecTypeGrs recTypeGrs_marcxml;
 extern RecTypeGrs recTypeGrs_xml;
 extern RecTypeGrs recTypeGrs_perl;
 

@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.81 2003-06-17 22:22:57 adam Exp $
+/* $Id: recgrs.c,v 1.82 2003-08-21 10:29:00 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -62,7 +62,8 @@ static int read_grs_type (struct grs_handlers *h,
         strcpy (p->type, cp+1);
     for (gh = h->handlers; gh; gh = gh->next)
     {
-        if (!memcmp (type, gh->type->type, cp-type))
+        if (!memcmp (type, gh->type->type, cp-type) && 
+	    gh->type->type[cp-type] == '\0')
 	{
 	    if (!gh->initFlag)
 	    {
@@ -99,6 +100,7 @@ static void *grs_init(RecType recType)
     grs_add_handler (h, recTypeGrs_tcl);
 #endif
     grs_add_handler (h, recTypeGrs_marc);
+    grs_add_handler (h, recTypeGrs_marcxml);
 #if HAVE_EXPAT_H
     grs_add_handler (h, recTypeGrs_xml);
 #endif

@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.20 2003-03-05 16:43:31 adam Exp $
+/* $Id: marcread.c,v 1.21 2003-08-21 10:29:00 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -34,7 +34,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define MARC_DEBUG 0
 #define MARCOMP_DEBUG 0
 
-static data1_node *grs_read_iso2709 (struct grs_read_info *p)
+static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 {
     char buf[100000];
     int entry_p;
@@ -83,7 +83,18 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p)
         yaz_log (LOG_WARN, "cannot read MARC without an abstract syntax");
         return 0;
     }
-    res_top = data1_mk_tag (p->dh, p->mem, absynName, 0, res_root);
+    if (marc_xml)
+    {
+	data1_node *lead;
+	const char *attr[] = { "xmlns", "http://www.loc.gov/MARC21/slim", 0};
+			 
+	res_top = data1_mk_tag (p->dh, p->mem, "record", attr, res_root);
+
+	lead = data1_mk_tag(p->dh, p->mem, "leader", 0, res_top);
+	data1_mk_text_n(p->dh, p->mem, buf, 24, lead);
+    }
+    else
+	res_top = data1_mk_tag (p->dh, p->mem, absynName, 0, res_root);
 
     if ((marctab = res_root->u.root.absyn->marc))
     {
@@ -125,10 +136,11 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p)
         entry_p += 3;
         tag[3] = '\0';
 
-
-        /* generate field node */
-        res = data1_mk_tag_n (p->dh, p->mem, tag, 3, 0 /* attr */, parent);
-
+	if (marc_xml)
+	    res = parent;
+	else
+	    res = data1_mk_tag_n (p->dh, p->mem, tag, 3, 0 /* attr */, parent);
+	
 #if MARC_DEBUG
         fprintf (outf, "%s ", tag);
 #endif
@@ -142,17 +154,57 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p)
         if (memcmp (tag, "00", 2) && indicator_length)
         {
             /* generate indicator node */
+	    if (marc_xml)
+	    {
+		const char *attr[10];
+		int j;
+
+		attr[0] = "tag";
+		attr[1] = tag;
+		attr[2] = 0;
+
+		res = data1_mk_tag(p->dh, p->mem, "datafield", attr, res);
+
+		for (j = 0; j<indicator_length; j++)
+		{
+		    char str1[18], str2[2];
+		    sprintf (str1, "ind%d", j+1);
+		    str2[0] = buf[i+j];
+		    str2[1] = '\0';
+
+		    attr[0] = str1;
+		    attr[1] = str2;
+		    
+		    data1_tag_add_attr (p->dh, p->mem, res, attr);
+		}
+	    }
+	    else
+	    {
 #if MARC_DEBUG
-            int j;
+		int j;
 #endif
-            res = data1_mk_tag_n (p->dh, p->mem, 
-                                  buf+i, indicator_length, 0 /* attr */, res);
+		res = data1_mk_tag_n (p->dh, p->mem, 
+				      buf+i, indicator_length, 0 /* attr */, res);
 #if MARC_DEBUG
-            for (j = 0; j<indicator_length; j++)
-                fprintf (outf, "%c", buf[j+i]);
+		for (j = 0; j<indicator_length; j++)
+		    fprintf (outf, "%c", buf[j+i]);
 #endif
-            i += indicator_length;
-        }
+	    }
+	    i += indicator_length;
+        } 
+	else
+	{
+	    if (marc_xml)
+	    {
+		const char *attr[10];
+		
+		attr[0] = "tag";
+		attr[1] = tag;
+		attr[2] = 0;
+		
+		res = data1_mk_tag(p->dh, p->mem, "controlfield", attr, res);
+	    }
+	}
         parent = res;
         /* traverse sub fields */
         i0 = i;
@@ -190,10 +242,28 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p)
 	    }
             else if (memcmp (tag, "00", 2) && identifier_length)
             {
-	        data1_node *res =
-		    data1_mk_tag_n (p->dh, p->mem,
-                                    buf+i+1, identifier_length-1, 
-                                    0 /* attr */, parent);
+		data1_node *res;
+		if (marc_xml)
+		{
+		    int j;
+		    const char *attr[3];
+		    char code[10];
+		    
+		    for (j = 1; j<identifier_length && j < 9; j++)
+			code[j-1] = buf[i+j];
+		    code[j-1] = 0;
+		    attr[0] = "code";
+		    attr[1] = code;
+		    attr[2] = 0;
+		    res = data1_mk_tag(p->dh, p->mem, "subfield",
+				       attr, parent);
+		}
+		else
+		{
+		    res = data1_mk_tag_n (p->dh, p->mem,
+					   buf+i+1, identifier_length-1, 
+					   0 /* attr */, parent);
+		}
 #if MARC_DEBUG
                 fprintf (outf, " $"); 
                 for (j = 1; j<identifier_length; j++)
@@ -642,9 +712,29 @@ static void parse_data1_tree(struct grs_read_info *p, const char *mc_stmnt, data
     mc_destroy_context(c);
 }
 
+data1_node *grs_read_marcxml(struct grs_read_info *p)
+{
+    data1_node *root = grs_read_iso2709(p, 1);
+    data1_element *e;
+
+    if (!root)
+	return 0;
+	
+    for (e=root->u.root.absyn->main_elements; e; e=e->next)
+    {
+	data1_tag *tag = e->tag;
+	
+	if (tag && tag->which == DATA1T_string &&
+	    !yaz_matchstr(tag->value.string, "mc?"))
+		parse_data1_tree(p, tag->value.string, root);
+    }
+    return root;
+}
+
+
 data1_node *grs_read_marc(struct grs_read_info *p)
 {
-    data1_node *root = grs_read_iso2709(p);
+    data1_node *root = grs_read_iso2709(p, 0);
     data1_element *e;
 
     if (!root)
@@ -677,3 +767,12 @@ static struct recTypeGrs marc_type = {
 };
 
 RecTypeGrs recTypeGrs_marc = &marc_type;
+
+static struct recTypeGrs marcxml_type = {
+    "marcxml",
+    grs_init_marc,
+    grs_destroy_marc,
+    grs_read_marcxml
+};
+
+RecTypeGrs recTypeGrs_marcxml = &marcxml_type;

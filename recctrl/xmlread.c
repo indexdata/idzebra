@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.7 2003-05-05 09:58:42 adam Exp $
+/* $Id: xmlread.c,v 1.8 2003-08-21 10:29:00 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -379,7 +379,19 @@ static int cb_encoding_handler (void *userData, const char *name,
 /* HAVE_ICONV_H */
 #endif
 
+static void cb_ns_start(void *userData, const char *prefix, const char *uri)
+{
+    struct user_info *ui = (struct user_info*) userData;
+    if (prefix && uri)
+	yaz_log(ui->loglevel, "cb_ns_start %s %s", prefix, uri);
+}
 
+static void cb_ns_end(void *userData, const char *prefix)
+{
+    struct user_info *ui = (struct user_info*) userData;
+    if (prefix)
+	yaz_log(ui->loglevel, "cb_ns_end %s", prefix);
+}
 data1_node *zebra_read_xml (data1_handle dh,
                             int (*rf)(void *, char *, size_t), void *fh,
                             NMEM m)
@@ -406,6 +418,7 @@ data1_node *zebra_read_xml (data1_handle dh,
     XML_SetDoctypeDeclHandler (parser, cb_doctype_start, cb_doctype_end);
     XML_SetEntityDeclHandler (parser, cb_entity_decl);
     XML_SetExternalEntityRefHandler (parser, cb_external_entity);
+    XML_SetNamespaceDeclHandler(parser, cb_ns_start, cb_ns_end);
 #if HAVE_ICONV_H
     XML_SetUnknownEncodingHandler (parser, cb_encoding_handler, &uinfo);
 #endif
