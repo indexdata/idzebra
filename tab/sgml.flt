@@ -1,5 +1,5 @@
-# $Id: sgml.flt,v 1.2 1995-12-15 17:19:40 adam Exp $
-%tagset gils
-\n*<		[^>]+	>\n*	{b $1}
-\n*</		[^>]*	>\n*	{e}
-[ \n\t]+			{d { }}
+# $Id: sgml.flt,v 1.3 1996-01-08 19:15:54 adam Exp $
+BEGIN	/\n*</	BODY	/>\n*/	{ begin record $2 }
+/\n*</		BODY	/>\n*/	{ begin element $1 }
+/\n*<\//	BODY	/>\n*/	{ end element }
+/[ \n\t]+/			{ data " " }
