@@ -12,9 +12,11 @@
 #include "index.h"
 #include <charmap.h>
 #include <data1.h>
-#include "rg.h"
+#include "zebra_perl.h"
+#include "zebra_api_ext.h"
 #include "yaz/log.h"
 #include <yaz/pquery.h>
+#include <yaz/sortspec.h>
 
 void data1_print_tree(data1_handle dh, data1_node *n, FILE *out) {
   data1_pr_tree(dh, n, stdout);
@@ -26,13 +28,6 @@ int zebra_get_shadow_enable (ZebraHandle zh) {
 
 void zebra_set_shadow_enable (ZebraHandle zh, int value) {
   zh->shadow_enable = value;
-}
-/* recordGroup stuff */
-void describe_recordGroup (recordGroup *rg) {
-  printf ("name:%s\ndatabaseName%s\npath:%s\n",
-	  rg->groupName,
-	  rg->databaseName,
-	  rg->path);
 }
 
 void init_recordGroup (recordGroup *rg) {
@@ -171,6 +166,14 @@ int zebra_delete_record (ZebraHandle zh,
 			     match,fname);    
     return sysno;
 }
+
+/* ---------------------------------------------------------------------------
+  Searching 
+
+  zebra_search_RPN is the same as zebra_search_rpn, except that read locking
+  is not mandatory. (it's repeatable now, also in zebraapi.c)
+*/
+
 void zebra_search_RPN (ZebraHandle zh, ODR decode, ODR stream,
 		       Z_RPNQuery *query, const char *setname, int *hits)
 {
@@ -187,25 +190,6 @@ void zebra_search_RPN (ZebraHandle zh, ODR decode, ODR stream,
     *hits = zh->hits;
 }
 
-void zebra_retrieve_sysnos (ZebraHandle zh,
-			    const char *setname,
-			    int num_recs)
-{			    
-  if (!zh->res) {
-    zh->errCode = 30;
-    /* zh->errString = odr_strdup (stream, setname); */
-    logf(LOG_FATAL,"No resources open");
-    return;
-  }
-
-  zh->errCode = 0;
-    if (zebra_begin_read (zh))
-    	return;
-
-    zebra_end_read (zh);
-
-}
-
 int zebra_search_PQF (ZebraHandle zh, 
 		      ODR odr_input, ODR odr_output, 
 		      const char *pqf_query,
@@ -214,9 +198,7 @@ int zebra_search_PQF (ZebraHandle zh,
 {
   int hits;
   Z_RPNQuery *query;
-  logf (LOG_LOG, "11");
   query = p_query_rpn (odr_input, PROTO_Z3950, pqf_query);
-  logf (LOG_LOG, "22");
 
   if (!query) {
     logf (LOG_WARN, "bad query %s\n", pqf_query);
@@ -229,4 +211,259 @@ int zebra_search_PQF (ZebraHandle zh,
   odr_reset (odr_output);
   
   return(hits);
+}
+
+/* ---------------------------------------------------------------------------
+  Record retrieval 
+  2 phase retrieval - I didn't manage to return array of blessed references
+  to wrapped structures... it's feasible, but I'll need some time 
+  / pop - 2002-11-17
+*/
+
+void record_retrieve(RetrievalObj *ro,
+		     ODR stream,
+		     RetrievalRecord *res,
+		     int pos) 
+{
+  int i = pos - 1;
+
+
+  RetrievalRecordBuf *buf = 
+    (RetrievalRecordBuf *) odr_malloc(stream, sizeof(*buf));  
+
+  res->errCode    = ro->records[i].errCode;
+  res->errString  = ro->records[i].errString;
+  res->position   = ro->records[i].position;
+  res->base       = ro->records[i].base;
+  res->format     = ro->records[i].format;
+  res->buf        = buf;
+  res->buf->len   = ro->records[i].len;
+  res->buf->buf   = ro->records[i].buf;
+
+}
+
+/* most of the code here was copied from yaz-client */
+void records_retrieve(ZebraHandle zh,
+		      ODR stream,
+		      const char *setname,
+		      const char *a_eset, 
+		      const char *a_schema,
+		      const char *a_format,
+		      int from,
+		      int to,
+		      RetrievalObj *res) 
+{
+  static enum oid_value recordsyntax = VAL_SUTRS;
+  static enum oid_value schema = VAL_NONE;
+  static Z_ElementSetNames *elementSetNames = 0; 
+  static Z_RecordComposition compo;
+  static Z_ElementSetNames esn;
+  static char what[100];
+  int i;
+  int oid[OID_SIZE];
+
+  compo.which = -1;
+
+  if (from < 1) from = 1;
+  if (from > to) to = from;
+  res->noOfRecords = to - from + 1;
+
+  res->records = odr_malloc (stream, 
+			     sizeof(*res->records) * (res->noOfRecords));  
+
+  for (i = 0; i<res->noOfRecords; i++) res->records[i].position = from+i;
+
+  if (!a_eset || !*a_eset) {
+    elementSetNames = 0;
+  } else {
+    strcpy(what, a_eset);
+    esn.which = Z_ElementSetNames_generic;
+    esn.u.generic = what;
+    elementSetNames = &esn;
+  }
+
+  if (!a_schema || !*a_schema) {
+    schema = VAL_NONE;
+  } else {
+    schema = oid_getvalbyname (a_schema);
+    if (schema == VAL_NONE) {
+      logf(LOG_WARN,"unknown schema '%s'",a_schema);
+    }
+  }
+
+  
+  if (!a_format || !*a_format) {
+    recordsyntax = VAL_SUTRS;
+  } else {
+    recordsyntax = oid_getvalbyname (a_format);
+    if (recordsyntax == VAL_NONE) {
+      logf(LOG_WARN,"unknown record syntax '%s', using SUTRS",a_schema);
+      recordsyntax = VAL_SUTRS;
+    }
+  }
+
+  if (schema != VAL_NONE) {
+    oident prefschema;
+
+    prefschema.proto  = PROTO_Z3950;
+    prefschema.oclass = CLASS_SCHEMA;
+    prefschema.value  = schema;
+
+    compo.which = Z_RecordComp_complex;
+    compo.u.complex = (Z_CompSpec *)
+      odr_malloc(stream, sizeof(*compo.u.complex));
+    compo.u.complex->selectAlternativeSyntax = (bool_t *) 
+      odr_malloc(stream, sizeof(bool_t));
+    *compo.u.complex->selectAlternativeSyntax = 0;
+
+    compo.u.complex->generic = (Z_Specification *)
+      odr_malloc(stream, sizeof(*compo.u.complex->generic));
+    compo.u.complex->generic->schema = (Odr_oid *)
+      odr_oiddup(stream, oid_ent_to_oid(&prefschema, oid));
+
+    if (!compo.u.complex->generic->schema) {
+      /* OID wasn't a schema! Try record syntax instead. */
+      prefschema.oclass = CLASS_RECSYN;
+      compo.u.complex->generic->schema = (Odr_oid *)
+	odr_oiddup(stream, oid_ent_to_oid(&prefschema, oid));
+    }
+
+    if (!elementSetNames) {
+      compo.u.complex->generic->elementSpec = 0;
+    } else {
+      compo.u.complex->generic->elementSpec = (Z_ElementSpec *)
+	odr_malloc(stream, sizeof(Z_ElementSpec));
+      compo.u.complex->generic->elementSpec->which =
+	Z_ElementSpec_elementSetName;
+      compo.u.complex->generic->elementSpec->u.elementSetName =
+	elementSetNames->u.generic;
+    }
+    compo.u.complex->num_dbSpecific = 0;
+    compo.u.complex->dbSpecific = 0;
+    compo.u.complex->num_recordSyntax = 0;
+    compo.u.complex->recordSyntax = 0;
+  } 
+  else if (elementSetNames) {
+    compo.which = Z_RecordComp_simple;
+    compo.u.simple = elementSetNames;
+  }
+
+  if (compo.which == -1) {
+    api_records_retrieve (zh, stream, setname, 
+			    NULL, 
+			    recordsyntax,
+			    res->noOfRecords, res->records);
+  } else {
+    api_records_retrieve (zh, stream, setname, 
+			    &compo, 
+			    recordsyntax,
+			    res->noOfRecords, res->records);
+  }
+
+}
+
+/* almost the same as zebra_records_retrieve ... but how did it work? 
+   I mean for multiple records ??? CHECK ??? */
+void api_records_retrieve (ZebraHandle zh, ODR stream,
+			   const char *setname, Z_RecordComposition *comp,
+			   oid_value input_format, int num_recs,
+			   ZebraRetrievalRecord *recs)
+{
+    ZebraPosSet poset;
+    int i, *pos_array;
+
+    if (!zh->res)
+    {
+        zh->errCode = 30;
+        zh->errString = odr_strdup (stream, setname);
+        return;
+    }
+    
+    zh->errCode = 0;
+
+    if (zebra_begin_read (zh))
+	return;
+
+    pos_array = (int *) xmalloc (num_recs * sizeof(*pos_array));
+    for (i = 0; i<num_recs; i++)
+	pos_array[i] = recs[i].position;
+    poset = zebraPosSetCreate (zh, setname, num_recs, pos_array);
+    if (!poset)
+    {
+        logf (LOG_DEBUG, "zebraPosSetCreate error");
+        zh->errCode = 30;
+        zh->errString = nmem_strdup (stream->mem, setname);
+    }
+    else
+    {
+	for (i = 0; i<num_recs; i++)
+	{
+	    if (poset[i].term)
+	    {
+		recs[i].errCode = 0;
+		recs[i].format = VAL_SUTRS;
+		recs[i].len = strlen(poset[i].term);
+		recs[i].buf = poset[i].term;
+		recs[i].base = poset[i].db;
+	    
+	    }
+	    else if (poset[i].sysno)
+	    {
+	      /* changed here ??? CHECK ??? */
+	      char *b;
+		recs[i].errCode =
+		    zebra_record_fetch (zh, poset[i].sysno, poset[i].score,
+					stream, input_format, comp,
+					&recs[i].format, 
+					&b,
+					&recs[i].len,
+					&recs[i].base);
+		recs[i].buf = (char *) odr_malloc(stream,recs[i].len);
+		memcpy(recs[i].buf, b, recs[i].len);
+		recs[i].errString = NULL;
+	    }
+	    else
+	    {
+	        char num_str[20];
+
+		sprintf (num_str, "%d", pos_array[i]);	
+		zh->errCode = 13;
+                zh->errString = odr_strdup (stream, num_str);
+                break;
+	    }
+
+	}
+	zebraPosSetDestroy (zh, poset, num_recs);
+    }
+    zebra_end_read (zh);
+    xfree (pos_array);
+}
+
+
+/* ---------------------------------------------------------------------------
+  Sort - a simplified interface, with optional read locks.
+*/
+int sort (ZebraHandle zh, 
+	  ODR stream,
+	  const char *sort_spec,
+	  const char *output_setname,
+	  const char **input_setnames
+	  ) 
+{
+  int num_input_setnames = 0;
+  int sort_status = 0;
+  Z_SortKeySpecList *sort_sequence = yaz_sort_spec (stream, sort_spec);
+
+  /* we can do this, since the typemap code for char** will 
+     put a NULL at the end of list */
+    while (input_setnames[num_input_setnames]) num_input_setnames++;
+
+    if (zebra_begin_read (zh))
+	return;
+
+    resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
+		   output_setname, sort_sequence, &sort_status);
+
+    zebra_end_read(zh);
+    return (sort_status);
 }
