@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.20 2003-03-21 08:02:24 adam Exp $
+/* $Id: mfile.h,v 1.21 2003-03-25 23:47:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -91,6 +91,7 @@ typedef struct meta_file
     int no_files;
     int cur_file;
     int open;                          /* is this file open? */
+    int unlink_flag;
     int blocksize;
     mfile_off_t min_bytes_creat;  /* minimum bytes required to enter directory */
     MFile_area ma;

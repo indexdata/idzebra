@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.50 2003-02-28 15:28:36 adam Exp $
+/* $Id: mfile.c,v 1.51 2003-03-25 23:47:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -241,6 +241,7 @@ MFile_area mf_init(const char *name, const char *spec, const char *base)
 	    	meta_f->next = ma->mfiles;
 	    	meta_f->open = 0;
 	    	meta_f->cur_file = -1;
+                meta_f->unlink_flag = 0;
 	    	ma->mfiles = meta_f;
 	    	strcpy(meta_f->name, metaname);
 	    	part_f = &meta_f->files[0];
@@ -372,6 +373,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     	mnew->files[0].top = -1;
     	mnew->files[0].number = 0;
     	mnew->files[0].fd = -1;
+        mnew->unlink_flag = 0;
     	mnew->min_bytes_creat = MF_MIN_BLOCKS_CREAT * block_size;
     	for (dp = ma->dirs; dp && dp->max_bytes >= 0 && dp->avail_bytes <
 	    mnew->min_bytes_creat; dp = dp->next);
@@ -427,6 +429,7 @@ int mf_close(MFile mf)
     logf (LOG_DEBUG, "mf_close(%s)", mf->name);
     assert(mf->open);
     for (i = 0; i < mf->no_files; i++)
+    {
     	if (mf->files[i].fd >= 0)
     	{
 #ifndef WIN32
@@ -435,6 +438,9 @@ int mf_close(MFile mf)
     	    close(mf->files[i].fd);
     	    mf->files[i].fd = -1;
 	}
+        if (mf->unlink_flag)
+            unlink(mf->files[i].path);
+    }
     mf->open = 0;
     return 0;
 }
@@ -583,10 +589,14 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
  */
 int mf_unlink(MFile mf)
 {
-    int i;
-
-    for (i = 0; i < mf->no_files; i++)
-        unlink (mf->files[i].path);
+    if (mf->open)
+        mf->unlink_flag = 1;
+    else
+    {
+        int i;
+        for (i = 0; i<mf->no_files; i++)
+            unlink(mf->files[i].path);
+    }
     return 0;
 }
 
