@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1998, Index Data
+ * Copyright (C) 1995-1998, Index Data ApS
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.20  1998-08-07 15:07:13  adam
+ * Revision 1.21  1998-08-24 17:29:52  adam
+ * Minor changes.
+ *
+ * Revision 1.20  1998/08/07 15:07:13  adam
  * Fixed but in cf_commit_flat.
  *
  * Revision 1.19  1997/02/12 20:37:17  adam
@@ -536,7 +539,7 @@ int cf_write (CFile cf, int no, int offset, int num, const void *buf)
 
 int cf_close (CFile cf)
 {
-    logf (LOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=%d total=%d",
+    logf (LOG_LOG, "cf: close hits=%d miss=%d bucket_in_memory=%d total=%d",
           cf->no_hits, cf->no_miss, cf->bucket_in_memory,
           cf->head.next_bucket - cf->head.first_bucket);
     flush_bucket (cf, -1);

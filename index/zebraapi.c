@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1998, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data ApS
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.7  1998-06-24 12:16:13  adam
+ * Revision 1.8  1998-08-24 17:29:23  adam
+ * Minor changes.
+ *
+ * Revision 1.7  1998/06/24 12:16:13  adam
  * Support for relations on text operands. Open range support in
  * DFA module (i.e. [-j], [g-]).
  *
@@ -87,23 +90,35 @@ static int zebra_register_lock (ZebraHandle zh)
     zh->registerState = state;
     zh->records = rec_open (zh->bfs, 0);
     if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 40, 0)))
+    {
+	logf (LOG_WARN, "dict_open");
         return -1;
+    }
     if (!(zh->sortIdx = sortIdx_open (zh->bfs, 0)))
+    {
+	logf (LOG_WARN, "sortIdx_open");
 	return -1;
+    }
     zh->isam = NULL;
     zh->isamc = NULL;
     if (!res_get_match (zh->res, "isam", "i", NULL))
     {
         if (!(zh->isamc = isc_open (zh->bfs, FNAME_ISAMC,
 				    0, key_isamc_m(zh->res))))
+	{
+	    logf (LOG_WARN, "isc_open");
             return -1;
+	}
 
     }
     else
     {
         if (!(zh->isam = is_open (zh->bfs, FNAME_ISAM, key_compare, 0,
                                   sizeof (struct it_key), zh->res)))
+	{
+	    logf (LOG_WARN, "is_open");
             return -1;
+	}
     }
     zh->zei = zebraExplain_open (zh->records, zh->dh, zh->res, 0, 0, 0);
 
@@ -173,10 +188,6 @@ ZebraHandle zebra_open (const char *configName)
 	else
 	    passwd_db_file (zh->passwd_db, res_get (zh->res, "passwd"));
     }
-    zh->bfs = bfs_create (res_get (zh->res, "register"));
-    bf_lockDir (zh->bfs, res_get (zh->res, "lockDir"));
-    data1_set_tabpath (zh->dh, res_get(zh->res, "profilePath"));
-
     return zh;
 }
 
