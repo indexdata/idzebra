@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.16 1996-01-11 10:15:37 quinn Exp $
+  $Id: zebra.sgml,v 1.17 1996-01-22 15:30:37 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
-<author><htmlurl url="http://130.225.252.168/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.16 $
+<author><htmlurl url="http://www.index.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
+<date>$Revision: 1.17 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -803,7 +803,7 @@ zebrasrv &lsqb;options&rsqb; &lsqb;listener-address ...&rsqb;
 <tag>-a <it/APDU file/</tag> Specify a file for dumping PDUs (for diagnostic purposes).
 The special name &dquot;-&dquot; sends output to <tt/stderr/.
 
-<tag>-c <it/config-file/</tag> Read configuration information from <it/config-file/. The default configuration is <tt/./zebra.cfg/.
+<tag>-c <it/config-file/</tag> Read configuration information from <it/config-file/. The default configuration is <tt>./zebra.cfg</tt>.
 
 <tag/-S/Don't fork on connection requests. This can be useful for
 symbolic-level debugging. The server can only accept a single
