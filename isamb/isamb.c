@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.23 2003-03-02 23:12:50 adam Exp $
+/* $Id: isamb.c,v 1.24 2003-03-17 20:22:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -45,7 +45,7 @@ struct ISAMB_head {
 
 struct ISAMB_cache_entry {
     ISAMB_P pos;
-    char *buf;
+    unsigned char *buf;
     int dirty;
     int hits;
     struct ISAMB_cache_entry *next;
@@ -118,6 +118,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method,
     isamb->log_io = 0;
     isamb->cache = cache;
 
+    assert (cache == 0);
     isamb->file = xmalloc (sizeof(*isamb->file) * isamb->no_cat);
     for (i = 0; i<isamb->no_cat; i++)
     {
@@ -280,7 +281,12 @@ struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
     }
     p->bytes = p->buf + ISAMB_DATA_OFFSET;
     p->leaf = p->buf[0];
-    p->size = p->buf[1] + 256 * p->buf[2] - ISAMB_DATA_OFFSET;
+    p->size = (p->buf[1] + 256 * p->buf[2]) - ISAMB_DATA_OFFSET;
+    if (p->size < 0)
+    {
+        fprintf (stderr, "pos=%d\n", pos);
+    }
+    assert (p->size >= 0);
     p->offset = 0;
     p->dirty = 0;
     p->deleted = 0;
@@ -304,6 +310,7 @@ struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
     else
     {
         p->pos = b->file[cat].head.free_list;
+        assert((p->pos & 3) == cat);
         if (!get_block (b, p->pos, p->buf, 0))
         {
             yaz_log (b->log_io, "bf_read: new_block");
@@ -342,6 +349,34 @@ struct ISAMB_block *new_int (ISAMB b, int cat)
     return new_block (b, 0, cat);
 }
 
+static void check_block (ISAMB b, struct ISAMB_block *p)
+{
+    if (p->leaf)
+    {
+        ;
+    }
+    else
+    {
+        /* sanity check */
+        char *startp = p->bytes;
+        char *src = startp;
+        char *endp = p->bytes + p->size;
+        int pos;
+            
+        decode_ptr (&src, &pos);
+        assert ((pos&3) == p->cat);
+        while (src != endp)
+        {
+            int item_len;
+            decode_ptr (&src, &item_len);
+            assert (item_len > 0 && item_len < 30);
+            src += item_len;
+            decode_ptr (&src, &pos);
+            assert ((pos&3) == p->cat);
+        }
+    }
+}
+
 void close_block (ISAMB b, struct ISAMB_block *p)
 {
     if (!p)
@@ -354,16 +389,18 @@ void close_block (ISAMB b, struct ISAMB_block *p)
         b->file[p->cat].head.free_list = p->pos;
         if (!get_block (b, p->pos, p->buf, 1))
         {
-            yaz_log (b->log_io, "bf_write: close_block");
+            yaz_log (b->log_io, "bf_write: close_block (deleted)");
             bf_write (b->file[p->cat].bf, p->pos/4, 0, 0, p->buf);
         }
     }
     else if (p->dirty)
     {
         int size = p->size + ISAMB_DATA_OFFSET;
+        assert (p->size >= 0);
         p->buf[0] = p->leaf;
         p->buf[1] = size & 255;
         p->buf[2] = size >> 8;
+        check_block(b, p);
         if (!get_block (b, p->pos, p->buf, 1))
         {
             yaz_log (b->log_io, "bf_write: close_block");
@@ -398,11 +435,13 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
 
     *sp = 0;
 
+    assert(p->size >= 0);
     decode_ptr (&src, &pos);
     while (src != endp)
     {
         int item_len;
         int d;
+        char *src0 = src;
         decode_ptr (&src, &item_len);
         d = (*b->method->compare_item)(src, lookahead_item);
         if (d > 0)
@@ -412,6 +451,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             more = insert_sub (b, &sub_p1, lookahead_item, mode,
                                stream, &sub_p2, 
                                sub_item, &sub_size, src);
+            src = src0;
             break;
         }
         src += item_len;
@@ -448,6 +488,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             dst += endp - src;
         }
         p->size = dst - dst_buf;
+        assert (p->size >= 0);
         if (p->size <= b->file[p->cat].head.block_max)
         {
             memcpy (startp, dst_buf, dst - dst_buf);
