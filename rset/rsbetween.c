@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.7 2002-08-02 19:26:57 adam Exp $
+/* $Id: rsbetween.c,v 1.8 2002-11-11 15:05:29 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -252,36 +252,39 @@ static int r_count_between (RSET ct)
     return 0;
 }
 
-static void logit( struct rset_between_info *info, char *prefix, void *l, void *m, void *r)
+
+static void log2 (struct rset_between_rfd *p, char *msg, int cmp_l, int cmp_r)
 {
     char buf_l[32];
     char buf_m[32];
     char buf_r[32];
-    logf(LOG_DEBUG,"btw: %s l=%s m=%s r=%s",
-      prefix, 
-      (*info->printer)(l, buf_l),
-      (*info->printer)(m, buf_m),
-      (*info->printer)(r, buf_r) );
+    logf(LOG_DEBUG,"btw: %s l=%s(%d/%d) m=%s(%d) r=%s(%d/%d), lev=%d",
+      msg, 
+      (*p->info->printer)(p->buf_l, buf_l), p->more_l, cmp_l,
+      (*p->info->printer)(p->buf_m, buf_m), p->more_l,
+      (*p->info->printer)(p->buf_r, buf_r), p->more_l, cmp_r,
+      p->level);
 }
+
 
 static int r_read_between (RSFD rfd, void *buf, int *term_index)
 {
     struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
     struct rset_between_info *info = p->info;
-    int cmp_l;
-    int cmp_r;
+    int cmp_l=0;
+    int cmp_r=0;
     int attr_match;
 
     while (p->more_m)
     {
-        logit( info, "start of loop", p->buf_l, p->buf_m, p->buf_r);
+        log2( p, "start of loop", cmp_l, cmp_r);
 
 	/* forward L until past m, count levels, note rec boundaries */
 	if (p->more_l)
 	    cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
 	else
 	    cmp_l=2; /* past this record */
-        logf(LOG_DEBUG, "cmp_l=%d", cmp_l);
+        log2( p, "after first L", cmp_l, cmp_r);
 
         while (cmp_l < 0)   /* l before m */
 	{
@@ -313,25 +316,25 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                     }
                 }
             }
+            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
+	   		   &p->term_index_l);
             if (p->more_l)
             {
-                p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
-		    		   &p->term_index_l);
 	        cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
-                logit( info, "forwarded L", p->buf_l, p->buf_m, p->buf_r);
-                logf(LOG_DEBUG, "  cmp_l=%d", cmp_l);
             }
             else
 		cmp_l=2; 
+        log2( p, "end of L loop", cmp_l, cmp_r);
         } /* forward L */
 
             
 	/* forward R until past m, count levels */
+        log2( p, "Before moving R", cmp_l, cmp_r);
         if (p->more_r)
 	    cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
 	else
 	    cmp_r=2; 
-        logf(LOG_DEBUG, "cmp_r=%d", cmp_r);
+        log2( p, "after first R", cmp_l, cmp_r);
         while (cmp_r < 0)   /* r before m */
 	{
  	    /* -2, earlier record, doesn't matter */
@@ -342,11 +345,10 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                 p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
 		    		   &p->term_index_r);
 	        cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
-                logit( info, "forwarded R", p->buf_l, p->buf_m, p->buf_r);
-                logf(LOG_DEBUG, "  cmp_r=%d", cmp_r);
             }
             else
 		cmp_r=2; 
+        log2( p, "End of R loop", cmp_l, cmp_r);
         } /* forward R */
 	
 	if ( ( p->level <= 0 ) && ! p->more_l)
@@ -356,20 +358,24 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
 	{
 	    memcpy (buf, p->buf_m, info->key_size);
             *term_index = p->term_index_m;
-            logit( info, "Returning a hit (m)", p->buf_l, p->buf_m, p->buf_r);
+            log2( p, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
             p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
                                    &p->term_index_m);
 	    return 1;
 	}
 	else
 	    if ( ! p->more_l )  /* not in data, no more starts */
+	    {
+                log2( p, "no more starts, exiting without a hit", cmp_l, cmp_r);
 		return 0;  /* ergo, nothing can be found. stop scanning */
+	    }
         
         p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
                                &p->term_index_m);
+        log2( p, "End of M loop", cmp_l, cmp_r);
     } /* while more_m */
-      
-    logf(LOG_DEBUG,"Exiting, no more stuff in m");
+    
+    log2( p, "Exiting, nothing more in m", cmp_l, cmp_r);
     return 0;  /* no more data possible */
 
 
