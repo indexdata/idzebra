@@ -1,6 +1,10 @@
-# $Id: Makefile.am,v 1.9 2003-05-20 13:52:41 adam Exp $
+# $Id: Makefile.am,v 1.10 2003-05-21 14:39:22 adam Exp $
 
 TESTS = t1 t2 t3
+
+testclient_SOURCES = testclient.c
+
+noinst_PROGRAMS = testclient
 
 EXTRA_PROGRAMS = t1 t2 t3
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop04.sh,v 1.3 2003-05-06 20:09:28 adam Exp $
+# $Id: stop04.sh,v 1.4 2003-05-21 14:39:22 adam Exp $
 # test start and stop of the forked server 
 #
 
@@ -26,14 +26,14 @@ PID=`cat zebrasrv.pid`
 ps -p $PID | grep $PID >/dev/null || exit 1
 
 echo "  connecting to it..."
-../testclient localhost:9901 utah > log || exit 1
+../api/testclient localhost:9901 utah > log || exit 1
 sleep 1
 
 echo "  checking that it still runs..."
 ps -p $PID | grep $PID >/dev/null || exit 1
 
 echo "  connecting again, with a delay..."
-../testclient localhost:9901 utah 5 > log &
+../api/testclient localhost:9901 utah 5 > log &
 sleep 1 # let the client connect 
 
 echo "  killing it..."

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: timing1.sh,v 1.5 2003-05-06 20:09:28 adam Exp $
+# $Id: timing1.sh,v 1.6 2003-05-21 14:39:22 adam Exp $
 # tests that updates are reflected immediately # in the registers.
 # Repeatedly modifies a record and counts hits.
 # Test 1: with good sleeps in every between - should pass always
@@ -26,7 +26,7 @@ echo "  update 1..."
 sleep 2
 
 echo "  search 1..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 9$" log || exit 1
 sleep 2
 
@@ -38,7 +38,7 @@ echo "  indexing it..."
 sleep 2
 
 echo "  search 2..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 10$" log || exit 1
 
 sleep 2
@@ -51,7 +51,7 @@ echo "    indexing it..."
 
 sleep 2
 echo "    search 3..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 echo "    checking..."
 grep "^Result count: 9$" log || exit 1
 
@@ -65,7 +65,7 @@ echo "    indexing it..."
 
 sleep 2
 echo "    search 4..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 echo "    checking..."
 grep "^Result count: 10$" log || exit 1
 
@@ -79,7 +79,7 @@ echo "    indexing it..."
 
 sleep 2
 echo "    search 5..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 echo "    checking..."
 grep "^Result count: 9$" log || exit 1
 
@@ -94,7 +94,7 @@ echo "    indexing it..."
 
 sleep 2
 echo "    search 6..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 echo "    checking..."
 grep "^Result count: 10$" log || exit 1
 
@@ -110,7 +110,7 @@ echo "    indexing it..."
 
 sleep 2
 echo "    search 7..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 echo "    checking..."
 grep "^Result count: 9$" log || exit 1
 
@@ -124,7 +124,7 @@ echo "    indexing it..."
 
 sleep 2
 echo "    search 8..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 echo "    checking..."
 grep "^Result count: 10$" log || exit 1
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: timing2.sh,v 1.5 2003-05-06 20:09:28 adam Exp $ 
+# $Id: timing2.sh,v 1.6 2003-05-21 14:39:22 adam Exp $ 
 # Demonstrated that updates depend on file timestamps
 
 echo "Testing timings of updates"
@@ -24,7 +24,7 @@ echo "  update 1..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
 
 echo "  search 1..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 9$" log || exit 1
 
 echo "making a test record..."
@@ -35,7 +35,7 @@ echo "  indexing it..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
 
 echo "  search 2..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 10$" log || exit 1
 
 echo "  modifying a test record (xyz)..."
@@ -47,7 +47,7 @@ echo "    not indexing it..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
 
 echo "    search 3..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 echo "    checking..."
 grep "^Result count: 10$" log || exit 1
 
@@ -58,7 +58,7 @@ echo "    indexing it..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
 
 echo "    search 4..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 echo "    checking..."
 grep "^Result count: 9$" log || exit 1
 

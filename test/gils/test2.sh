@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test2.sh,v 1.5 2003-05-06 20:09:28 adam Exp $
+# $Id: test2.sh,v 1.6 2003-05-21 14:39:22 adam Exp $
 echo "Testing with storekeys (zebra2.cfg)"
 echo "init..."
 rm -f idx.log log
@@ -23,14 +23,14 @@ sleep 1
 test -f zebrasrv.pid || exit 1
 
 echo "search 1..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 9$" log || exit 1
 
 echo "update 3..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
 
 echo "search 2..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 9$" log || exit 1
 
 echo "making test records..."
@@ -40,7 +40,7 @@ echo "indexing them..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
 
 echo "search 3..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 10$" log || exit 1
 touch records/esdd0001.grs
 
@@ -48,7 +48,7 @@ echo "indexing again..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
 
 echo "search 4..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 10$" log || exit 1
 
 echo "making another test record..."
@@ -58,7 +58,7 @@ echo "indexing it too..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
 
 echo "search 5..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 10$" log || exit 1
 
 sleep 1
@@ -71,11 +71,11 @@ echo "indexing it..."
 sleep 1
 
 echo "search 6..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 9$" log || exit 1
 
 echo "search 7..."
-../testclient localhost:9901 "@attr 1=4 xyz" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 xyz" > log || exit 1
 grep "^Result count: 1$" log || exit 1
 
 echo "stopping server..."

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.5 2003-05-06 20:09:28 adam Exp $
+# $Id: test1.sh,v 1.6 2003-05-21 14:39:22 adam Exp $
 echo "testing without stored keys (zebra1.cfg)"
 
 sleep 1
@@ -26,26 +26,26 @@ echo "checking it runs..."
 test -f zebrasrv.pid || exit 1
 
 echo "search 1..."
-../testclient localhost:9901 utah > log || exit 1
+../api/testclient localhost:9901 utah > log || exit 1
 grep "^Result count: 17$" log || exit 1
 
 echo "search 2..."
-../testclient localhost:9901 "@or utah the" > log || exit 1
+../api/testclient localhost:9901 "@or utah the" > log || exit 1
 grep "^Result count: 40$" log || exit 1
 
 echo "search 3..."
-../testclient localhost:9901 "@attr 1=4 the" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 the" > log || exit 1
 grep "^Result count: 1$" log || exit 1
 
 echo "search 4..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 9$" log || exit 1
 
 echo "reindexing..."
 ../../index/zebraidx -l idx.log -c  zebra1.cfg update records || exit 1
 
 echo "search 5..."
-../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 18$" log || exit 1
 
 echo "stopping server..."

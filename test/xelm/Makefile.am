@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.2 2003-05-20 13:52:41 adam Exp $
+# $Id: Makefile.am,v 1.3 2003-05-21 14:39:22 adam Exp $
 
 dist-hook:
 	-mkdir $(distdir)/records
@@ -7,7 +7,9 @@ dist-hook:
 	-mkdir $(distdir)/lock
 	-mkdir $(distdir)/register
 
-TESTS = test.sh
+check_SCRIPTS = test.sh
 
-EXTRA_DIST = $(TESTS) zebra.cfg user.abs
+TESTS = $(check_SCRIPTS)
+
+EXTRA_DIST = zebra.cfg user.abs $(check_SCRIPTS)
 

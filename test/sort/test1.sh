@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.2 2003-05-06 17:39:01 adam Exp $
+# $Id: test1.sh,v 1.3 2003-05-21 14:39:22 adam Exp $
 LOG=test1.log
 rm -fr lock
 mkdir lock
@@ -12,7 +12,7 @@ cp rec*.xml recs
 ../../index/zebrasrv -l $LOG unix:socket &
 sleep 1
 test -f zebrasrv.pid || exit 2
-../testclient -n3 unix:socket '@or computer @attr 7=1 @attr 1=30 0' >tmp1
+../api/testclient -n3 unix:socket '@or computer @attr 7=1 @attr 1=30 0' >tmp1
 echo 'Result count: 3
 my:
   title: third computer

@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.10 2003-02-28 15:34:21 adam Exp $
+ * $Id: testclient.c,v 1.1 2003-05-21 14:39:22 adam Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
