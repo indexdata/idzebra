@@ -32,16 +32,3 @@ dep depend:
 	$(CPP) $(INCLUDE) -M *.c >>Makefile
 
 #Depend --- DOT NOT DELETE THIS LINE
-isam.o : isam.c /usr/include/stdlib.h /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/errno.h /usr/include/linux/errno.h \
-  /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h /usr/include/alloca.h /usr/include/string.h \
-  /usr/include/ctype.h ../include/util.h ../include/log.h ../include/options.h \
-  ../include/xmalloc.h /usr/include/sys/types.h /usr/include/linux/types.h ../include/res.h \
-  ../include/alexpath.h ../include/common.h isutil.h ../include/bfile.h ../include/mfile.h \
-  /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h ../include/isam.h 
-isutil.o : isutil.c /usr/include/string.h /usr/include/features.h /usr/include/sys/cdefs.h \
-  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h \
-  ../include/isam.h ../include/bfile.h ../include/util.h ../include/log.h ../include/options.h \
-  ../include/xmalloc.h /usr/include/sys/types.h /usr/include/linux/types.h ../include/res.h \
-  ../include/alexpath.h ../include/common.h ../include/mfile.h /usr/include/stdio.h \
-  /usr/include/libio.h /usr/include/_G_config.h isutil.h 
