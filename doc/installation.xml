@@ -1,9 +1,12 @@
-<!-- $Id: installation.xml,v 1.12 2003-03-31 20:48:12 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.13 2003-03-31 20:57:29 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
    Zebra is written in ANSI C and was implemented with portability in mind. 
-   We primarily use GCC on UNIX and Microsoft Visual C++ on Windows.
+   We primarily use <ulink url="http://gcc.gnu.org/">GCC</ulink> on UNIX and 
+   <ulink url="http://msdn.microsoft.com/vstudio/">
+    Microsoft Visual C++</ulink>
+   on Windows.
   </para>
 
   <para>
@@ -15,7 +18,8 @@
    <ulink url="http://www.netbsd.org/Ports/cobalt/">NetBSD (Cobalt)</ulink>,
    <ulink url="http://www.freebsd.org/">FreeBSD (i386)</ulink>,
    <ulink url="http://www.apple.com/macosx/">MAC OSX</ulink>,
-   <ulink url="http://wwws.sun.com/software/solaris/">SunOS 5.8 (sparc)</ulink>,
+   <ulink url="http://wwws.sun.com/software/solaris/">SunOS 5.8
+    (sparc)</ulink>,
    <ulink url="http://www.microsoft.com/windows2000/">Windows 2000 SP3</ulink>.
   </para>
   
