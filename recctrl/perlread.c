@@ -1,4 +1,24 @@
-/* $Id: perlread.c,v 1.1 2002-11-15 21:26:01 adam Exp $ */
+/* $Id: perlread.c,v 1.2 2002-11-15 22:01:42 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
 
 #if HAVE_PERL
 #define PERL_IMPLICIT_CONTEXT     
@@ -8,7 +28,6 @@
 #include "XSUB.h"
 
 #include <stdio.h>
-#include <assert.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -20,7 +39,7 @@
 
 #define GRS_PERL_MODULE_NAME_MAXLEN 255
 
-// Context information for the filter
+/* Context information for the filter */
 struct perl_context {
   PerlInterpreter *perli;
   PerlInterpreter *origi;
@@ -39,7 +58,7 @@ struct perl_context {
   data1_node *res;
 };
 
-// Constructor call for the filter object
+/* Constructor call for the filter object */
 void Filter_create (struct perl_context *context) 
 {
   dSP;
@@ -170,8 +189,8 @@ static void *grs_init_perl(void)
   struct perl_context *context = 
     (struct perl_context *) xmalloc (sizeof(*context));
 
-  // If there is an interpreter (context) running, - we are calling
-  // indexing and retrieval from the perl API - we don't create a new one. 
+  /* If there is an interpreter (context) running, - we are calling 
+     indexing and retrieval from the perl API - we don't create a new one. */
   context->origi = PERL_GET_CONTEXT;
   if (context->origi == NULL) {
     context->perli = perl_alloc();
@@ -204,19 +223,19 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
   struct perl_context *context = (struct perl_context *) p->clientData;
   char *filterClass = p->type;
 
-  // The "file" manipulation function wrappers
+  /* The "file" manipulation function wrappers */
   context->readf = p->readf;
   context->seekf = p->seekf;
   context->tellf = p->tellf;
   context->endf  = p->endf;
 
-  // The "file", data1 and NMEM handles
+  /* The "file", data1 and NMEM handles */
   context->fh  = p->fh;
   context->dh  = p->dh;
   context->mem = p->mem;
 
-  // If the class was not interpreted before...
-  // This is not too efficient, when indexing with many different filters...
+  /* If the class was not interpreted before... */
+  /* This is not too efficient, when indexing with many different filters... */
   if (strcmp(context->filterClass,filterClass)) {
 
     char modarg[GRS_PERL_MODULE_NAME_MAXLEN + 2];
@@ -233,7 +252,7 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
     SAVETMPS;
     context->perli_ready = 1;
 
-    // parse, and run the init call
+    /* parse, and run the init call */
     if (context->origi == NULL) {
       logf (LOG_LOG, "Interpreting filter class:%s", filterClass);
 
@@ -249,19 +268,19 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
 
     strcpy(context->filterClass, filterClass);
 
-    // create the filter object as a filterClass blessed reference
+    /* create the filter object as a filterClass blessed reference */
     Filter_create(context);
   }
 
-  // Wow... if calling with individual update_record calls from perl,
-  // the filter object reference may go out of scope...
+  /* Wow... if calling with individual update_record calls from perl,
+     the filter object reference may go out of scope... */
   if (!SvOK(context->filterRef)) Filter_create(context);
 
 
-  // call the process method 
+  /* call the process method */
   Filter_process(context);
 
-  // return the created data1 node
+  /* return the created data1 node */
   return (context->res);
 }
 
