@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rank1.c,v $
- * Revision 1.1  1998-03-05 08:45:12  adam
+ * Revision 1.2  1998-03-05 13:03:29  adam
+ * Improved ranking.
+ *
+ * Revision 1.1  1998/03/05 08:45:12  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -136,7 +139,7 @@ static void add (void *set_handle, int seqno, int term_index)
  */
 static int calc (void *set_handle, int sysno)
 {
-    int i, lu, score = 0;
+    int i, lo, divisor, score = 0;
     struct rank_set_info *si = set_handle;
 
     logf (LOG_DEBUG, "rank-1 calc sysno=%d", sysno);
@@ -144,11 +147,13 @@ static int calc (void *set_handle, int sysno)
     if (!si->no_rank_entries)
 	return -1;
     for (i = 0; i < si->no_entries; i++)
-	if (si->entries[i].rank_flag && (lu = si->entries[i].local_occur))
-	    score += (2+log2_int (lu)) * si->entries[i].global_inv;
-    logf (LOG_DEBUG, " dividend=%d", 60*score);
-    logf (LOG_DEBUG, " divisor=%d", si->no_rank_entries * log2_int (4+si->last_pos));
-    score = (60 * score)/(si->no_rank_entries * log2_int (4+si->last_pos));
+	if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
+	    score += (8+log2_int (lo)) * si->entries[i].global_inv;
+    score *= 34;
+    divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
+    score = score / divisor;
+    if (score > 1000)
+	score = 1000;
     for (i = 0; i < si->no_entries; i++)
 	si->entries[i].local_occur = 0;
     return score;
