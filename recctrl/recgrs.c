@@ -1,10 +1,12 @@
 /*
- * Copyright (C) 1994-2000, Index Data
+ * Copyright (C) 1994-2001, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.39  2000-12-05 19:09:15  adam
+ * Revision 1.40  2001-03-29 21:31:31  adam
+ * Fixed "record begin" for Tcl filter.
+ *
+ * Revision 1.39  2000/12/05 19:09:15  adam
  * Fixed problem where indexer could crash if abstract syntax was undefined.
  *
  * Revision 1.38  2000/12/05 14:44:58  adam
@@ -781,6 +783,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     else if (p->comp && !res)
 	selected = 1;
 
+    data1_pr_tree (p->dh, node, stdout);
     logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
     switch (p->output_format = (p->input_format != VAL_NONE ?
 				p->input_format : VAL_SUTRS))

@@ -1,10 +1,12 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2001, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.34  2000-11-29 14:24:01  adam
+ * Revision 1.35  2001-03-29 21:31:31  adam
+ * Fixed "record begin" for Tcl filter.
+ *
+ * Revision 1.34  2000/11/29 14:24:01  adam
  * Script configure uses yaz pthreads options. Added locking for
  * zebra_register_{lock,unlock}.
  *
@@ -710,7 +712,7 @@ int readOneSpec (struct lexSpec *spec, const char *s)
 	break;
     case REGX_PATTERN:
 #if REGX_DEBUG
-	logf (LOG_DEBUG, "rule %d %s", spec->context->ruleNo, s);
+	logf (LOG_LOG, "rule %d %s", spec->context->ruleNo, s);
 #endif
         r = dfa_parse (spec->context->dfa, &s);
         if (r)
@@ -842,12 +844,12 @@ static void execData (struct lexSpec *spec,
 	return ;
 #if REGX_DEBUG
     if (elen > 40)
-        logf (LOG_DEBUG, "data (%d bytes) %.15s ... %.*s", elen,
+        logf (LOG_LOG, "data (%d bytes) %.15s ... %.*s", elen,
 	      ebuf, 15, ebuf + elen-15);
     else if (elen > 0)
-        logf (LOG_DEBUG, "data (%d bytes) %.*s", elen, elen, ebuf);
+        logf (LOG_LOG, "data (%d bytes) %.*s", elen, elen, ebuf);
     else 
-        logf (LOG_DEBUG, "data (%d bytes)", elen);
+        logf (LOG_LOG, "data (%d bytes)", elen);
 #endif
         
     if (spec->d1_level <= 1)
@@ -955,7 +957,7 @@ static void variantBegin (struct lexSpec *spec,
     ttype[type_len] = '\0';
 
 #if REGX_DEBUG 
-    logf (LOG_DEBUG, "variant begin %s %s (%d)", tclass, ttype,
+    logf (LOG_LOG, "variant begin %s %s (%d)", tclass, ttype,
 	  spec->d1_level);
 #endif
 
@@ -992,7 +994,7 @@ static void variantBegin (struct lexSpec *spec,
 	}
 
 #if REGX_DEBUG 
-    logf (LOG_DEBUG, "variant node (%d)", spec->d1_level);
+    logf (LOG_LOG, "variant node (%d)", spec->d1_level);
 #endif
     parent = spec->d1_stack[spec->d1_level-1];
     res = data1_mk_node (spec->dh, spec->m);
@@ -1065,7 +1067,7 @@ static void tagBegin (struct lexSpec *spec,
     res->u.tag.tag[len] = '\0';
    
 #if REGX_DEBUG 
-    logf (LOG_DEBUG, "begin tag %s (%d)", res->u.tag.tag, spec->d1_level);
+    logf (LOG_LOG, "begin tag %s (%d)", res->u.tag.tag, spec->d1_level);
 #endif
     if (parent->which == DATA1N_variant)
         return ;
@@ -1109,7 +1111,7 @@ static void tagEnd (struct lexSpec *spec, int min_level,
             break;
     }
 #if REGX_DEBUG
-    logf (LOG_DEBUG, "end tag (%d)", spec->d1_level);
+    logf (LOG_LOG, "end tag (%d)", spec->d1_level);
 #endif
 }
 
@@ -1267,7 +1269,7 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
 	data1_absyn *absyn;
 
 #if REGX_DEBUG
-	logf (LOG_DEBUG, "begin record %s", absynName);
+	logf (LOG_LOG, "begin record %s", absynName);
 #endif
 	if (!(absyn = data1_get_absyn (spec->dh, absynName)))
 	    logf (LOG_WARN, "Unknown tagset: %s", absynName);
@@ -1277,7 +1279,8 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
 	    
 	    res = data1_mk_node (spec->dh, spec->m);
 	    res->which = DATA1N_root;
-	    res->u.root.type = absynName;
+	    res->u.root.type =
+                data1_insert_string(spec->dh, res, spec->m, absynName);
 	    res->u.root.absyn = absyn;
 	    res->root = res;
 	    
@@ -1299,7 +1302,7 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
     {
 	struct lexContext *lc = spec->context;
 #if REGX_DEBUG
-	logf (LOG_DEBUG, "begin context %s",argv[2]);
+	logf (LOG_LOG, "begin context %s",argv[2]);
 #endif
 	while (lc && strcmp (argv[2], lc->name))
 	    lc = lc->next;
@@ -1330,7 +1333,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
 	    (spec->d1_level)--;
 	}
 #if REGX_DEBUG
-	logf (LOG_DEBUG, "end record");
+	logf (LOG_LOG, "end record");
 #endif
 	spec->stop_flag = 1;
     }
@@ -1351,7 +1354,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
 	if (spec->d1_level == 0)
 	{
 #if REGX_DEBUG
-	    logf (LOG_DEBUG, "end element end records");
+	    logf (LOG_LOG, "end element end records");
 #endif
 	    spec->stop_flag = 1;
 	}
@@ -1359,7 +1362,7 @@ static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
     else if (!strcmp (argv[1], "context"))
     {
 #if REGX_DEBUG
-	logf (LOG_DEBUG, "end context");
+	logf (LOG_LOG, "end context");
 #endif
 	if (spec->context_stack_top)
 	    (spec->context_stack_top)--;
@@ -1516,7 +1519,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                     absynName[cmd_len] = '\0';
 
 #if REGX_DEBUG
-                    logf (LOG_DEBUG, "begin record %s", absynName);
+                    logf (LOG_LOG, "begin record %s", absynName);
 #endif
                     if (!(absyn = data1_get_absyn (spec->dh, absynName)))
                         logf (LOG_WARN, "Unknown tagset: %s", absynName);
@@ -1583,7 +1586,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 		    r = execTok (spec, &s, &cmd_str, &cmd_len);
 		    p = regxStrz (cmd_str, cmd_len, ptmp);
 #if REGX_DEBUG
-		    logf (LOG_DEBUG, "begin context %s", p);
+		    logf (LOG_LOG, "begin context %s", p);
 #endif
 		    while (lc && strcmp (p, lc->name))
 			lc = lc->next;
@@ -1618,7 +1621,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 		}
 		r = execTok (spec, &s, &cmd_str, &cmd_len);
 #if REGX_DEBUG
-		logf (LOG_DEBUG, "end record");
+		logf (LOG_LOG, "end record");
 #endif
 		spec->stop_flag = 1;
 	    }
@@ -1640,7 +1643,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 if (spec->d1_level == 0)
                 {
 #if REGX_DEBUG
-		    logf (LOG_DEBUG, "end element end records");
+		    logf (LOG_LOG, "end element end records");
 #endif
 		    spec->stop_flag = 1;
                 }
@@ -1649,7 +1652,7 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 	    else if (!strcmp (p, "context"))
 	    {
 #if REGX_DEBUG
-		logf (LOG_DEBUG, "end context");
+		logf (LOG_LOG, "end context");
 #endif
 		if (spec->context_stack_top)
 		    (spec->context_stack_top)--;
@@ -1845,7 +1848,7 @@ static int execRule (struct lexSpec *spec, struct lexContext *context,
                      int ruleNo, int start_ptr, int *pptr)
 {
 #if REGX_DEBUG
-    logf (LOG_DEBUG, "exec rule %d", ruleNo);
+    logf (LOG_LOG, "exec rule %d", ruleNo);
 #endif
     return execAction (spec, context->fastRule[ruleNo]->actionList,
                        start_ptr, pptr);
@@ -1923,7 +1926,7 @@ data1_node *lexNode (struct lexSpec *spec, int *ptr)
                         if (spec->f_win_ef && *ptr != F_WIN_EOF)
 			{
 #if REGX_DEBUG
-			    logf (LOG_DEBUG, "regx: endf ptr=%d", *ptr);
+			    logf (LOG_LOG, "regx: endf ptr=%d", *ptr);
 #endif
                             (*spec->f_win_ef)(spec->f_win_fh, *ptr);
 			}
@@ -2035,7 +2038,7 @@ data1_node *grs_read_regx (struct grs_read_info *p)
     struct lexSpec **curLexSpec = &specs->spec;
 
 #if REGX_DEBUG
-    logf (LOG_DEBUG, "grs_read_regx");
+    logf (LOG_LOG, "grs_read_regx");
 #endif
     if (!*curLexSpec || strcmp ((*curLexSpec)->name, p->type))
     {
@@ -2081,7 +2084,7 @@ data1_node *grs_read_tcl (struct grs_read_info *p)
     struct lexSpec **curLexSpec = &specs->spec;
 
 #if REGX_DEBUG
-    logf (LOG_DEBUG, "grs_read_tcl");
+    logf (LOG_LOG, "grs_read_tcl");
 #endif
     if (!*curLexSpec || strcmp ((*curLexSpec)->name, p->type))
     {
