@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.53 2004-08-10 08:54:40 heikki Exp $
+/* $Id: isamb.c,v 1.54 2004-08-16 10:08:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -30,6 +30,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ISAMB_DEBUG 0
 #endif
 
+#define ISAMB_MAJOR_VERSION 1
+#define ISAMB_MINOR_VERSION 0
+
 struct ISAMB_head {
     zint first_block;
     zint last_block;
@@ -56,7 +59,7 @@ struct ISAMB_head {
 #define CAT_NO 4
 
 /* ISAMB_PTR_CODEC=1 var, =0 fixed */
-#define ISAMB_PTR_CODEC 0
+#define ISAMB_PTR_CODEC 1
 
 struct ISAMB_cache_entry {
     ISAMB_P pos;
@@ -186,6 +189,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
     for (i = 0; i<isamb->no_cat; i++)
     {
         char fname[DST_BUF_SIZE];
+	char hbuf[DST_BUF_SIZE];
         isamb->file[i].cache_entries = 0;
         isamb->file[i].head_dirty = 0;
         sprintf (fname, "%s%c", name, i+'A');
@@ -195,15 +199,54 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
         else
             isamb->file[i].bf = bf_open (bfs, fname, b_size, writeflag);
 
-        
-        if (!bf_read (isamb->file[i].bf, 0, 0, sizeof(struct ISAMB_head),
-                      &isamb->file[i].head))
+        /* fill-in default values (for empty isamb) */
+	isamb->file[i].head.first_block = ISAMB_CACHE_ENTRY_SIZE/b_size+1;
+	isamb->file[i].head.last_block = isamb->file[i].head.first_block;
+	isamb->file[i].head.block_size = b_size;
+	isamb->file[i].head.block_max = b_size - ISAMB_DATA_OFFSET;
+	isamb->file[i].head.free_list = 0;
+	if (bf_read (isamb->file[i].bf, 0, 0, 0, hbuf))
 	{
-            isamb->file[i].head.first_block = ISAMB_CACHE_ENTRY_SIZE/b_size+1;
-            isamb->file[i].head.last_block = isamb->file[i].head.first_block;
-            isamb->file[i].head.block_size = b_size;
-            isamb->file[i].head.block_max = b_size - ISAMB_DATA_OFFSET;
-            isamb->file[i].head.free_list = 0;
+	    /* got header assume "isamb"major minor len can fit in 16 bytes */
+	    zint zint_tmp;
+	    int major, minor, len, pos = 0;
+	    int left;
+	    const char *src = 0;
+	    if (memcmp(hbuf, "isamb", 5))
+	    {
+		logf(LOG_WARN, "bad isamb header for file %s", fname);
+		return 0;
+	    }
+	    if (sscanf(hbuf+5, "%d %d %d", &major, &minor, &len) != 3)
+	    {
+		logf(LOG_WARN, "bad isamb header for file %s", fname);
+		return 0;
+	    }
+	    if (major != ISAMB_MAJOR_VERSION)
+	    {
+		logf(LOG_WARN, "bad major version for file %s %d, must be %d",
+		     fname, major, ISAMB_MAJOR_VERSION);
+		return 0;
+	    }
+	    for (left = len - b_size; left > 0; left = left - b_size)
+	    {
+		pos++;
+		if (!bf_read (isamb->file[i].bf, pos, 0, 0, hbuf + pos*b_size))
+		{
+		    logf(LOG_WARN, "truncated isamb header for " 
+			 "file=%s len=%d pos=%d",
+			 fname, len, pos);
+		    return 0;
+		}
+	    }
+	    src = hbuf + 16;
+	    decode_ptr(&src, &isamb->file[i].head.first_block);
+	    decode_ptr(&src, &isamb->file[i].head.last_block);
+	    decode_ptr(&src, &zint_tmp);
+	    isamb->file[i].head.block_size = zint_tmp;
+	    decode_ptr(&src, &zint_tmp);
+	    isamb->file[i].head.block_max = zint_tmp;
+	    decode_ptr(&src, &isamb->file[i].head.free_list);
 	}
         assert (isamb->file[i].head.block_size >= ISAMB_DATA_OFFSET);
         isamb->file[i].head_dirty = 0;
@@ -320,9 +363,35 @@ void isamb_close (ISAMB isamb)
     {
         flush_blocks (isamb, i);
         if (isamb->file[i].head_dirty)
-            bf_write (isamb->file[i].bf, 0, 0,
-                      sizeof(struct ISAMB_head), &isamb->file[i].head);
-        
+	{
+	    char hbuf[DST_BUF_SIZE];
+	    int major = ISAMB_MAJOR_VERSION;
+	    int minor = ISAMB_MINOR_VERSION;
+	    int len = 16;
+	    char *dst = hbuf + 16;
+	    int pos = 0, left;
+	    int b_size = isamb->file[i].head.block_size;
+
+	    encode_ptr(&dst, isamb->file[i].head.first_block);
+	    encode_ptr(&dst, isamb->file[i].head.last_block);
+	    encode_ptr(&dst, isamb->file[i].head.block_size);
+	    encode_ptr(&dst, isamb->file[i].head.block_max);
+	    encode_ptr(&dst, isamb->file[i].head.free_list);
+	    memset(dst, '\0', 16); /* ensure no random bytes are written */
+
+	    len = dst - hbuf;
+
+	    /* print exactly 16 bytes (including trailing 0) */
+	    sprintf(hbuf, "isamb%02d %02d %02d\r\n", major, minor, len);
+
+            bf_write (isamb->file[i].bf, pos, 0, 0, hbuf);
+
+	    for (left = len - b_size; left > 0; left = left - b_size)
+	    {
+		pos++;
+		bf_write (isamb->file[i].bf, pos, 0, 0, hbuf + pos*b_size);
+	    }
+	}
         bf_close (isamb->file[i].bf);
     }
     xfree (isamb->file);
