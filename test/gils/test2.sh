@@ -65,6 +65,7 @@ mv records/esdd0002x.grs records/esdd0002.grs
 
 echo "indexing it..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
+sleep 1
 
 echo "search 6..."
 ../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1

@@ -6,7 +6,10 @@ dist-hook:
 	-mkdir $(distdir)/records
 	cp $(srcdir)/records/*.grs $(distdir)/records
 
-TESTS = test01.sh test04.sh test1.sh test2.sh
+TESTS = test01.sh test02.sh test03.sh test04.sh \
+        test1.sh test2.sh \
+	timing1.sh
+
 # FIXME:
 # test02.sh fails
 # test03.sh fails with a segfault
