@@ -1,4 +1,4 @@
-; $Id: zebra.nsi,v 1.25 2004-12-08 12:23:10 adam Exp $
+; $Id: zebra.nsi,v 1.26 2005-01-16 00:30:59 adam Exp $
 
 !define VERSION "1.4.0"
 
@@ -70,7 +70,7 @@ Section "Zebra Runtime"
 	SetOutPath $INSTDIR\bin
 	File ..\bin\*.exe
 	File ..\bin\iconv.dll
-	File ..\bin\zlib.dll
+	File ..\bin\zlib1.dll
 	File ..\bin\libxml2.dll
 	File ..\bin\yaz.dll
 	File ..\bin\libexpat.dll
