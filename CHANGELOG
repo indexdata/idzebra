@@ -1,4 +1,10 @@
 
+Perl API updates and fixes.
+
+Fixed 'zebraidx delete'.
+
+Implemented 'zebraidx clean'.
+
 64-bit offsets for register files on WIN32.
 
 Fixed a few memory leaks wrt sorting.
