@@ -1,0 +1,180 @@
+<gils>
+
+<Title>
+UTAH GEOCHROMOMETRY
+<Acronym>
+UG
+</Acronym>
+</Title>
+
+<Originator>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+ARIZONA; COLORADO; GEOLOGY; IDAHO; IGNEOUS ROCK; NEVADA; RADIOMETRIC; ROCK; 
+UTAH; WYOMING
+</Local-Subject-Index>
+
+<Abstract>
+Utah radiometric dates, formations, investigations, constants, references 
+comprise this data set.  Searches by formation, age, location, constants, 
+methodology, and rock type will be possible.
+<Format>
+CATALOGS/INDEXES
+</Format>
+
+<Data-Category>
+TERRESTRIAL
+</Data-Category>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE
+</Geographic-Coverage>
+
+<Coverage-Description>
+UTAH AND NEIGHBORING STATES.
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-102
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+49
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+31
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+UTAH GEOCHROMOMETRY
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+INTERACTIVE
+</Access-Method>
+
+<Computer-Type>
+PC NETWORK
+</Computer-Type>
+
+<Computer-Location>
+SALT LAKE CITY, UT
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+UNDER DEVELOPMENT
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+GRANT WILLIS
+</Name>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0008
+</Control-Identifier>
+
+<Record-Source>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198903
+</Date-of-Last-Modification>
+</gils>
+

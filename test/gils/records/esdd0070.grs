@@ -1,0 +1,198 @@
+<gils>
+
+<Title>
+CENSUS DATA
+</Title>
+
+<Originator>
+DEPARTMENT OF ENVIRONMENTAL DEVELOPMENT
+</Originator>
+
+<Local-Subject-Index>
+AGRICULTURE; CENSUS; CONNECTICUT; DEMOGRAPHICS; ECONOMY; POPULATION
+</Local-Subject-Index>
+
+<Abstract>
+This data set contains:  1990 Census of Population and Housing; 1987 Economic 
+Census; 1987 Agricultural Census; current population survey; population 
+projections; current and historical data for the State of Connecticut and its 
+subdivisions pursuant to the State Data Center program with the U.S. Bureau of 
+the Census.
+<Format>
+MAP SETS; REPORT SETS; CATALOGS/INDEXES; DIGITAL DATA SETS; INDIVIDUAL MAPS; 
+MICROGRAPHICS
+</Format>
+
+<Comments>
+In addition to census data, assistance is provided for identification of 
+available State generated demographic data.  Alternate contact:  James Palma.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+CITIES; US STATE; COUNTIES; METROPOLITAN AREAS
+</Geographic-Coverage>
+
+<Coverage-Description>
+CONNECTICUT; METROPOLITAN AREAS SUCH AS CENSUS; TRACTS, BLOCK GROUPS, AND 
+STREET BLOCKS
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-74
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-71
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+41
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1940-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL DEVELOPMENT
+</Organization>
+
+<Street-Address>
+OFC. OF POLICY & MGMT., STATE DATA CTR., POLICY DEVELOPMENT & PLANNING 
+DIVISION, 80 WASHINGTON STREET
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106-4459
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-8285
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+CENSUS DATA
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<DBMS>
+SAS, CENSPAC
+</DBMS>
+
+<Access-Method>
+INTERACTIVE
+</Access-Method>
+
+<Bytes-Per-Record>
+80-1,956
+</Bytes-Per-Record>
+
+<Computer-Type>
+IBM 370/168
+</Computer-Type>
+
+<Computer-Location>
+HARTFORD, CT
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+Utilize Bureau of the Census technical documentation for each tape file.
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+THERON SCHNURE
+</Name>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL DEVELOPMENT
+</Organization>
+
+<Street-Address>
+OFC. OF POLICY & MGMT., STATE DATA CTR., POLICY DEVELOPMENT & PLANNING 
+DIVISION, 80 WASHINGTON STREET
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106-4459
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-8285
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0070
+</Control-Identifier>
+
+<Record-Source>
+DEPARTMENT OF ENVIRONMENTAL DEVELOPMENT
+</Record-Source>
+
+<Date-of-Last-Modification>
+199104
+</Date-of-Last-Modification>
+</gils>
+

@@ -1,0 +1,186 @@
+<gils>
+
+<Title>
+MAINE GEOLOGICAL SURVEY BEDROCK WATER WELL INVENTORY
+</Title>
+
+<Originator>
+MAINE GEOLOGICAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+BEDROCK; BEDROCK WELL; GROUNDWATER; HYDROLOGY; MAINE; WATER; WATER WELL
+</Local-Subject-Index>
+
+<Abstract>
+This data set contains a series of well inventory maps stored on tape.  The 
+series has no indexing.
+<Format>
+INVENTORY
+</Format>
+
+<Comments>
+Resumed within the next fiscal year (1985-86).
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+CITIES
+</Geographic-Coverage>
+
+<Coverage-Description>
+MAINE
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-71
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-67
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+48
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+43
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1972-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+MAINE GEOLOGICAL SURVEY
+</Organization>
+
+<Street-Address>
+MAINE GEOLOGICAL SURVEY, STATE HOUSE STATION 22
+</Street-Address>
+
+<City>
+AUGUSTA
+</City>
+
+<State>
+ME
+</State>
+
+<Zip-Code>
+04333
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(207) 289-2801
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+MAINE GEOLOGICAL SURVEY BEDROCK WATER WELL INVENTORY
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<Number-of-Records>
+15,000
+</Number-of-Records>
+
+<Bytes-Per-Record>
+400
+</Bytes-Per-Record>
+
+<Computer-Type>
+BURROUGHS B20
+</Computer-Type>
+
+<Computer-Location>
+AUGUSTA, ME.
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+Format and card image available from the Maine Geological Survey.
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+JOHN WILLIAMS
+</Name>
+
+<Organization>
+MAINE GEOLOGICAL SURVEY
+</Organization>
+
+<Street-Address>
+MAINE GEOLOGICAL SURVEY, STATE HOUSE STATION 22
+</Street-Address>
+
+<City>
+AUGUSTA
+</City>
+
+<State>
+ME
+</State>
+
+<Zip-Code>
+04333
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(207) 289-2801
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0063
+</Control-Identifier>
+
+<Record-Source>
+MAINE GEOLOGICAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198709
+</Date-of-Last-Modification>
+</gils>
+

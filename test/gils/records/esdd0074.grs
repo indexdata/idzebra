@@ -1,0 +1,177 @@
+<gils>
+
+<Title>
+INLAND WETLANDS OF CONNECTICUT
+</Title>
+
+<Originator>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Originator>
+
+<Local-Subject-Index>
+CONNECTICUT; HYDROLOGY; INLAND WETLAND; MAP; SOIL; WATER; WETLAND
+</Local-Subject-Index>
+
+<Abstract>
+This data set contains inland wetlands, as defined by State statute, which are 
+delineated at a scale of 1:12,000, based predominantly on location of wet 
+soils.
+<Format>
+MAP SETS; PHOTOGRAPHS; INDIVIDUAL MAPS; FILE FOLDERS
+</Format>
+
+<Comments>
+Inland wetlands in Connecticut are defined primarily by soil characteristics.  
+Soils which are very poorly drained, alluvial, or flood plain according to the 
+National Cooperative Soil Survey are inland wetland soils.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+CITIES
+</Geographic-Coverage>
+
+<Coverage-Description>
+CONNECTICUT
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-74
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-71
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+41
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1972-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Organization>
+
+<Street-Address>
+WATER RESOURCES UNIT, 165 CAPITOL AVENUE, ROOM 207
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-7280
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+INLAND WETLANDS OF CONNECTICUT
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+DOUGLAS COOPER
+</Name>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Organization>
+
+<Street-Address>
+WATER RESOURCES UNIT, 165 CAPITOL AVENUE, ROOM 207
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-7280
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0074
+</Control-Identifier>
+
+<Record-Source>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Record-Source>
+
+<Date-of-Last-Modification>
+198502
+</Date-of-Last-Modification>
+</gils>
+

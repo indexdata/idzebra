@@ -1,0 +1,179 @@
+<gils>
+
+<Title>
+SIGNIFICANT AQUIFERS MAP SERIES
+</Title>
+
+<Originator>
+MAINE GEOLOGICAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+AQUIFER; GEOCHEMISTRY; GROUNDWATER; HYDROLOGY; MAINE; MAP; SURFICIAL AQUIFER; 
+SURFICIAL DEPOSIT; WATER; WATER WELL
+</Local-Subject-Index>
+
+<Abstract>
+The Significant Aquifers Program is a more detailed study of selected major 
+surficial aquifers.  Data reported includes outline of aquifers, seismic 
+cross-sections, well yields, logs of borings, and regional groundwater 
+geochemistry.  Many are in extreme SW Maine at this time.  Areas in North and 
+Central Maine are not yet covered.
+<Format>
+MAP SETS; REPORT SETS
+</Format>
+
+<Comments>
+Detailed study of selected major surficial aquifers; replaced Sand and Gravel 
+Aquifer Mapping Program.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE
+</Geographic-Coverage>
+
+<Coverage-Description>
+MAINE; SOUTHWEST MAINE; SOUTHWESTERN MAINE
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-71
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-67
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+48
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+43
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1982-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+MAINE GEOLOGICAL SURVEY
+</Organization>
+
+<Street-Address>
+MAINE GEOLOGICAL SURVEY, STATE HOUSE STATION 22
+</Street-Address>
+
+<City>
+AUGUSTA
+</City>
+
+<State>
+ME
+</State>
+
+<Zip-Code>
+04333
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(207) 289-2801
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+SIGNIFICANT AQUIFERS MAP SERIES
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+JOHN WILLIAMS
+</Name>
+
+<Organization>
+MAINE GEOLOGICAL SURVEY
+</Organization>
+
+<Street-Address>
+MAINE GEOLOGICAL SURVEY, STATE HOUSE STATION 22
+</Street-Address>
+
+<City>
+AUGUSTA
+</City>
+
+<State>
+ME
+</State>
+
+<Zip-Code>
+04333
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(207) 289-2801
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0059
+</Control-Identifier>
+
+<Record-Source>
+MAINE GEOLOGICAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198709
+</Date-of-Last-Modification>
+</gils>
+

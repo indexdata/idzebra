@@ -1,0 +1,179 @@
+<gils>
+
+<Title>
+WATER WELL DATA
+</Title>
+
+<Originator>
+NV DEPT. OF CONS. AND NATURAL RESOURCES
+</Originator>
+
+<Local-Subject-Index>
+HYDROLOGY; LITHOLOGY; NEVADA; WATER; WATER WELL
+</Local-Subject-Index>
+
+<Abstract>
+This database contains the following information on water wells in Nevada: 
+driller's name, owner's name, location, formations encountered, lithologic 
+descriptions, water level, and water quality.
+<Format>
+REPORT SETS; CATALOGS/INDEXES; FILE FOLDERS; LOGS
+</Format>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+CITIES; COUNTIES
+</Geographic-Coverage>
+
+<Coordinate-System>
+UTM NORTHINGS AND EASTINGS; PUBLIC LAND SURVEY (SECTION, TOWNSHIP, AND RANGE)
+</Coordinate-System>
+
+<Coverage-Description>
+NEVADA
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-114
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+35
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1930-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+NV DEPT. OF CONS. AND NATURAL RESOURCES
+</Organization>
+
+<Street-Address>
+DCNR, DIVISION OF WATER RESOURCES, 123 W. NYE LANE
+</Street-Address>
+
+<City>
+CARSON CITY
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89710
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 687-4380
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+WATER WELL DATA
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+
+<Number-of-Records>
+20,000
+</Number-of-Records>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+MIKE TURNIPSEED
+</Name>
+
+<Organization>
+NV DEPT. OF CONS. AND NATURAL RESOURCES
+</Organization>
+
+<Street-Address>
+DCNR, DIVISION OF WATER RESOURCES, 123 W. NYE LANE
+</Street-Address>
+
+<City>
+CARSON CITY
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89710
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 687-4380
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0067
+</Control-Identifier>
+
+<Record-Source>
+NV DEPT. OF CONS. AND NATURAL RESOURCES
+</Record-Source>
+
+<Date-of-Last-Modification>
+199101
+</Date-of-Last-Modification>
+</gils>
+

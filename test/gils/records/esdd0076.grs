@@ -1,0 +1,186 @@
+<gils>
+
+<Title>
+AUTOMATED FLOOD WARNING NETWORK
+<Acronym>
+ASERT
+</Acronym>
+</Title>
+
+<Originator>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Originator>
+
+<Local-Subject-Index>
+CLIMATE; CONNECTICUT; FLOOD; FLOOD ZONE; HYDROLOGY; METEOROLOGY; PRECIPITATION; 
+RAINFALL; SOIL; STREAM; STREAMFLOW; WIND
+</Local-Subject-Index>
+
+<Abstract>
+The new system will collect rainfall, temperature, soil moisture, wind speed 
+and direction, humidity, and streamflow (above certain values).
+<Format>
+WEATHER AND STREAM DATA
+</Format>
+
+<Comments>
+Cooperative program with SCS, DEP, COE, and FEMA.  Plans call for 19 
+telemetering precipitation stations and 2 stream gauges.  Data will be 
+continuously relayed to a central facility that will predict flood situations.  
+
+Towns will be encouraged to participate.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE
+</Geographic-Coverage>
+
+<Coverage-Description>
+CONNECTICUT
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-74
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-71
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+41
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1982-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Organization>
+
+<Street-Address>
+NATURAL RESOURCES CENTER, 165 CAPITOL AVENUE, ROOM 553
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-3540
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+AUTOMATED FLOOD WARNING NETWORK
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<Computer-Type>
+IBM PC
+</Computer-Type>
+
+<Computer-Location>
+HARTFORD, CT
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+ALLAN WILLIAMS
+</Name>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Organization>
+
+<Street-Address>
+NATURAL RESOURCES CENTER, 165 CAPITOL AVENUE, ROOM 553
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-3540
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0076
+</Control-Identifier>
+
+<Record-Source>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Record-Source>
+
+<Date-of-Last-Modification>
+198502
+</Date-of-Last-Modification>
+</gils>
+

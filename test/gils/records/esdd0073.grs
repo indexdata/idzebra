@@ -1,0 +1,202 @@
+<gils>
+
+<Title>
+POPULATION PROJECTIONS
+</Title>
+
+<Originator>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Originator>
+
+<Local-Subject-Index>
+CENSUS; CONNECTICUT; DEMOGRAPHICS; POPULATION; POPULATION PROJECTIONS
+</Local-Subject-Index>
+
+<Abstract>
+This data set contains population projections by age and sex. Records contain 
+identifiers, geographic coding, and population projections for 18 unique 5-year 
+age cohorts for males and females from 0-4 cohort to 85 and over cohort.  
+<Format>
+REPORT SETS; DIGITAL DATA SETS; LOTUS, ASCII
+</Format>
+
+<Comments>
+This population projections data set is contained on a seven diskettes which 
+contains the June 1989 Projection Series published by this office in the report 
+
+cited above.  Also included are birth rates, survival rates, migration rates, 
+geographic codes and zip codes to municipal conversions.  Geographical 
+Coverage: State of Connecticut 8 Counties 16 Planning Regions 5 Health Service 
+Areas 9 Labor Department Service Areas 6 Children and Youth Service Areas 16 
+Metropolitan/Non Metro Areas 169 Municipalities  Alternate contact:  James 
+Palma.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+SEE COMMENTS SECTION.
+</Geographic-Coverage>
+
+<Coverage-Description>
+CONNECTICUT
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-74
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-71
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+41
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1980-2010
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Organization>
+
+<Street-Address>
+OFFICE OF POLICY AND MANAGEMENT, POLICY DEVELOPMENT AND PLANNING DIVISION, 80 
+WASHINGTON STREET
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106-4459
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-8285
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+POPULATION PROJECTIONS
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+INTERACTIVE
+</Access-Method>
+
+<Number-of-Records>
+2,415
+</Number-of-Records>
+
+<Bytes-Per-Record>
+148
+</Bytes-Per-Record>
+
+<Computer-Type>
+IBM COMPATIBLE PC'S
+</Computer-Type>
+
+<Computer-Location>
+HARTFORD, CT
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+State of Connecticut, Office of Policy and Management, Comprehensive Planning 
+Division, 1989: 'Connecticut Population Projections,' Series 89.1.
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+THERON SCHNURE
+</Name>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Organization>
+
+<Street-Address>
+OFFICE OF POLICY AND MANAGEMENT, POLICY DEVELOPMENT AND PLANNING DIVISION, 80 
+WASHINGTON STREET
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106-4459
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-8285
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0073
+</Control-Identifier>
+
+<Record-Source>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Record-Source>
+
+<Date-of-Last-Modification>
+199104
+</Date-of-Last-Modification>
+</gils>
+

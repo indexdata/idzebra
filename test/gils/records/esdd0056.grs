@@ -1,0 +1,173 @@
+<gils>
+
+<Title>
+COASTAL MARINE GEOLOGIC ENVIRONMENTS MAP SERIES
+</Title>
+
+<Originator>
+MAINE GEOLOGICAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+COAST; COASTAL MAINE; COASTLINE; GEOLOGY; HYDROLOGY; MAINE; MAP; MARINE; MARINE 
+GEOLOGY; TIDAL WATER; WATER
+</Local-Subject-Index>
+
+<Abstract>
+This data set contains a series of 1:24,000 scale maps of coastal marine 
+geologic environments, including the supratidal, intertidal, and subtidal 
+regimes.  The information is derived primarily from air photo interpretation 
+with representative field checking.
+<Format>
+MAP SETS
+</Format>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+7 1/2' OR 15' QUADS
+</Geographic-Coverage>
+
+<Coverage-Description>
+MAINE; COASTAL MAINE
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-71
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-67
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+48
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+43
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1977-1978
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+MAINE GEOLOGICAL SURVEY
+</Organization>
+
+<Street-Address>
+MAINE GEOLOGICAL SURVEY, STATE HOUSE STATION 22
+</Street-Address>
+
+<City>
+AUGUSTA
+</City>
+
+<State>
+ME
+</State>
+
+<Zip-Code>
+04333
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(207) 289-2801
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+COASTAL MARINE GEOLOGIC ENVIRONMENTS MAP SERIES
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+ROBERT TUCKER
+</Name>
+
+<Organization>
+MAINE GEOLOGICAL SURVEY
+</Organization>
+
+<Street-Address>
+MAINE GEOLOGICAL SURVEY, STATE HOUSE STATION 22
+</Street-Address>
+
+<City>
+AUGUSTA
+</City>
+
+<State>
+ME
+</State>
+
+<Zip-Code>
+04333
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(207) 289-2801
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0056
+</Control-Identifier>
+
+<Record-Source>
+MAINE GEOLOGICAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198709
+</Date-of-Last-Modification>
+</gils>
+

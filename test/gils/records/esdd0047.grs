@@ -1,0 +1,158 @@
+<gils>
+
+<Title>
+ISOTOPIC DATES OF ROCKS AND MINERALS
+</Title>
+
+<Originator>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Originator>
+
+<Local-Subject-Index>
+GEOLOGY; ISOTOPIC DATE; MINERAL; NEVADA; ROCK
+</Local-Subject-Index>
+
+<Abstract>
+Rock type, collection location, sample description, analytical method, 
+analytical data, lab performing analytical work, age in month-year, isotopic 
+method used, comments on reliability of age determination, and collector's 
+identification are components of this data set.
+<Format>
+CATALOGS/INDEXES; FILE FOLDERS
+</Format>
+
+<Comments>
+No easy search method; one must search through all the issues of the journal; 
+articles describe new dates or are a compilation of all dates from a particular 
+
+area, rock type, etc.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE; WESTERN HEMISPHERE
+</Geographic-Coverage>
+
+<Coordinate-System>
+LATITUDE/LONGITUDE; PUBLIC LAND SURVEY (SECTION, TOWNSHIP, AND RANGE)
+</Coordinate-System>
+
+<Coverage-Description>
+NEVADA; UNITED STATES; WESTERN HEMISPHERE
+</Coverage-Description>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1970-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+ISOTOPIC DATES OF ROCKS AND MINERALS
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+Data published in Isochron/West, a scientific journal published three times a 
+year.
+</Documentation>
+</Access-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+LARRY GARSIDE
+</Name>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0047
+</Control-Identifier>
+
+<Record-Source>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Record-Source>
+
+<Date-of-Last-Modification>
+199101
+</Date-of-Last-Modification>
+</gils>
+
