@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.65  1996-11-14 08:57:56  adam
+ * Revision 1.66  1996-11-14 09:52:21  adam
+ * Strings in record keys bound by IT_MAX_WORD.
+ *
+ * Revision 1.65  1996/11/14  08:57:56  adam
  * Reduction of storeKeys area.
  *
  * Revision 1.64  1996/11/08 11:10:16  adam
@@ -559,7 +562,7 @@ static void addRecordKey (const RecWord *p)
         case Word_Numeric:
             *dst++ = 'n';
     }
-    for (i = 0; p->u.string[i]; i++)
+    for (i = 0; p->u.string[i] && i < IT_MAX_WORD-3; i++)
         *dst++ = p->u.string[i];
     *dst++ = '\0';
 
