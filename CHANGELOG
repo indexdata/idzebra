@@ -1,3 +1,9 @@
+
+Documentation updates.
+
+Fixed bug in record retrieval module that occured on 64-bit OSF 
+architectures.
+
 --- 1.0.1 2000/2/10
 
 Fixed bug in makefile for WIN32.
