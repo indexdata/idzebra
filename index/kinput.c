@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.16  1996-04-09 10:05:20  adam
+ * Revision 1.17  1996-05-14 15:47:07  adam
+ * Cleanup of various buffer size entities.
+ *
+ * Revision 1.16  1996/04/09  10:05:20  adam
  * Bug fix: prev_name buffer possibly too small; allocated in key_file_init.
  *
  * Revision 1.15  1996/03/21  14:50:09  adam
@@ -72,7 +75,7 @@
 #include "index.h"
 
 #define KEY_SIZE (1+sizeof(struct it_key))
-#define INP_NAME_MAX 8192
+#define INP_NAME_MAX 768
 #define INP_BUF_START 60000
 #define INP_BUF_ADD  400000
 
@@ -159,7 +162,7 @@ struct key_file *key_file_init (int no, int chunk)
     f->length = 0;
     f->readHandler = NULL;
     f->buf = xmalloc (f->chunk);
-    f->prev_name = xmalloc (512);
+    f->prev_name = xmalloc (INP_NAME_MAX);
     *f->prev_name = '\0';
     key_file_chunk_read (f);
     return f;
@@ -268,7 +271,7 @@ struct heap_info *key_heap_init (int nkeys,
     for (i = 0; i<= nkeys; i++)
     {
         hi->ptr[i] = i;
-        hi->info.buf[i] = xmalloc (768);
+        hi->info.buf[i] = xmalloc (INP_NAME_MAX);
     }
     return hi;
 }
@@ -330,7 +333,7 @@ static void key_heap_insert (struct heap_info *hi, const char *buf, int nbytes,
 static int heap_read_one (struct heap_info *hi, char *name, char *key)
 {
     int n, r;
-    char rbuf[512];
+    char rbuf[INP_NAME_MAX];
     struct key_file *kf;
 
     if (!hi->heapnum)
@@ -350,8 +353,8 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
 int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
 {
     char *info;
-    char next_name[INP_NAME_MAX+1];
-    char cur_name[INP_NAME_MAX+1];
+    char next_name[INP_NAME_MAX];
+    char cur_name[INP_NAME_MAX];
     int key_buf_size = INP_BUF_START;
     int key_buf_ptr;
     char *next_key;
@@ -359,7 +362,7 @@ int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
     int more;
     
     next_key = xmalloc (KEY_SIZE);
-    key_buf = xmalloc (key_buf_size * (KEY_SIZE));
+    key_buf = xmalloc (key_buf_size);
     more = heap_read_one (hi, cur_name, key_buf);
     while (more)                   /* EOF ? */
     {

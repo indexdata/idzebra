@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.58  1996-05-14 06:16:38  adam
+ * Revision 1.59  1996-05-14 15:47:07  adam
+ * Cleanup of various buffer size entities.
+ *
+ * Revision 1.58  1996/05/14  06:16:38  adam
  * Compact use/set bytes used in search service.
  *
  * Revision 1.57  1996/05/13 14:23:04  adam
@@ -276,7 +279,7 @@ void key_open (int mem)
 struct encode_info {
     int  sysno;
     int  seqno;
-    char buf[512];
+    char buf[768];
 };
 
 void encode_key_init (struct encode_info *i)
