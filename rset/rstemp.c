@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: rstemp.c,v 1.29 2002-03-15 20:11:36 adam Exp $
+ * $Id: rstemp.c,v 1.30 2002-03-20 20:24:30 adam Exp $
  */
 
 #include <fcntl.h>
@@ -57,11 +57,14 @@ struct rset_temp_info {
     int     dirty;         /* window is dirty */
     int     hits;          /* no of hits */
     char   *temp_path;
+    int     (*cmp)(const void *p1, const void *p2);
 };
 
 struct rset_temp_rfd {
     struct rset_temp_info *info;
     struct rset_temp_rfd *next;
+    int *countp;
+    void *buf;
 };
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
@@ -80,6 +83,7 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     info->pos_buf = 0;
     info->dirty = 0;
     info->hits = -1;
+    info->cmp = temp_parms->cmp;
     if (!temp_parms->temp_path)
 	info->temp_path = NULL;
     else
@@ -90,6 +94,7 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     ct->no_rset_terms = 1;
     ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
     ct->rset_terms[0] = temp_parms->rset_term;
+
     return info;
 }
 
@@ -114,6 +119,10 @@ static RSFD r_open (RSET ct, int flag)
     rfd = (struct rset_temp_rfd *) xmalloc (sizeof(*rfd));
     rfd->info = info;
     r_rewind (rfd);
+
+    rfd->countp = &ct->rset_terms[0]->count;
+    rfd->buf = xmalloc (info->key_size);
+
     return rfd;
 }
 
@@ -190,6 +199,7 @@ static void r_close (RSFD rfd)
         close (info->fd);
         info->fd = -1;
     }
+    xfree (((struct rset_temp_rfd *)rfd)->buf);
     xfree (rfd);
 }
 
@@ -272,7 +282,8 @@ static int r_count (RSET ct)
 
 static int r_read (RSFD rfd, void *buf, int *term_index)
 {
-    struct rset_temp_info *info = ((struct rset_temp_rfd*)rfd)->info;
+    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd;
+    struct rset_temp_info *info = mrfd->info;
 
     size_t nc = info->pos_cur + info->key_size;
 
@@ -288,6 +299,12 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
             info->key_size);
     info->pos_cur = nc;
     *term_index = 0;
+
+    if (*mrfd->countp == 0 || (*info->cmp)(buf, mrfd->buf) > 1)
+    {
+        memcpy (mrfd->buf, buf, mrfd->info->key_size);
+        (*mrfd->countp)++;
+    }
     return 1;
 }
 

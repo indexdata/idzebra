@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisamc.c,v $
- * Revision 1.8  1999-11-30 13:48:04  adam
+ * Revision 1.9  2002-03-20 20:24:30  adam
+ * Hits per term. Returned in SearchResult-1
+ *
+ * Revision 1.8  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.7  1999/05/26 07:49:14  adam
@@ -67,11 +70,15 @@ struct rset_pp_info {
     ISAMC_PP pt;
     struct rset_pp_info *next;
     struct rset_isamc_info *info;
+    int *countp;
+    void *buf;
 };
 
 struct rset_isamc_info {
     ISAMC   is;
     ISAMC_P pos;
+    int key_size;
+    int (*cmp)(const void *p1, const void *p2);
     struct rset_pp_info *ispt_list;
 };
 
@@ -84,6 +91,9 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     info = (struct rset_isamc_info *) xmalloc (sizeof(*info));
     info->is = pt->is;
     info->pos = pt->pos;
+    info->key_size = pt->key_size;
+    yaz_log (LOG_LOG, "info->key_size = %d\n", info->key_size);
+    info->cmp = pt->cmp;
     info->ispt_list = NULL;
     ct->no_rset_terms = 1;
     ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
@@ -109,6 +119,9 @@ RSFD r_open (RSET ct, int flag)
     ptinfo->info = info;
     if (ct->rset_terms[0]->nn < 0)
 	ct->rset_terms[0]->nn = isc_pp_num (ptinfo->pt);
+    ct->rset_terms[0]->count = 0;
+    ptinfo->countp = &ct->rset_terms[0]->count;
+    ptinfo->buf = xmalloc (info->key_size);
     return ptinfo;
 }
 
@@ -120,6 +133,7 @@ static void r_close (RSFD rfd)
     for (ptinfop = &info->ispt_list; *ptinfop; ptinfop = &(*ptinfop)->next)
         if (*ptinfop == rfd)
         {
+            xfree ((*ptinfop)->buf);
             isc_pp_close ((*ptinfop)->pt);
             *ptinfop = (*ptinfop)->next;
             xfree (rfd);
@@ -153,8 +167,19 @@ static int r_count (RSET ct)
 
 static int r_read (RSFD rfd, void *buf, int *term_index)
 {
+    struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
+    int r;
     *term_index = 0;
-    return isc_pp_read( ((struct rset_pp_info*) rfd)->pt, buf);
+    r = isc_pp_read(pinfo->pt, buf);
+    if (r > 0)
+    {
+        if (*pinfo->countp == 0 || (*pinfo->info->cmp)(buf, pinfo->buf) > 1)
+        {
+            memcpy (pinfo->buf, buf, pinfo->info->key_size);
+            (*pinfo->countp)++;
+        }
+    }
+    return r;
 }
 
 static int r_write (RSFD rfd, const void *buf)

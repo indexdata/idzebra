@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.47 2002-03-15 20:11:36 adam Exp $
+ * $Id: zebraapi.c,v 1.48 2002-03-20 20:24:29 adam Exp $
  */
 
 #include <assert.h>
@@ -458,6 +458,8 @@ void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
 
     logf(LOG_APP,"SEARCH:%d:",zh->hits);
 }
+
+
 
 void zebra_records_retrieve (ZebraHandle zh, ODR stream,
 			     const char *setname, Z_RecordComposition *comp,

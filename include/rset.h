@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.16  1999-02-02 14:50:38  adam
+ * Revision 1.17  2002-03-20 20:24:29  adam
+ * Hits per term. Returned in SearchResult-1
+ *
+ * Revision 1.16  1999/02/02 14:50:38  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.15  1998/03/05 08:37:44  adam
@@ -96,6 +99,7 @@ struct rset_term {
     char *name;
     int  nn;
     char *flags;
+    int  count;
 };
 
 typedef struct rset

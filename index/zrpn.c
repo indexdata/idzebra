@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zrpn.c,v 1.109 2002-02-18 11:46:58 adam Exp $
+ * $Id: zrpn.c,v 1.110 2002-03-20 20:24:29 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -1136,6 +1136,7 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
 	parms.rset_term = rset_term_create (prox_term, length_prox_term,
 					    flags);
 	parms.rset_term->nn = min_nn;
+        parms.cmp = key_compare_it;
 	parms.key_size = sizeof (struct it_key);
 	parms.temp_path = res_get (zh->service->res, "setTmpDir");
 	result = rset_create (rset_kind_temp, &parms);
@@ -1194,6 +1195,7 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
 	parms.rset_term = rset_term_create (prox_term, length_prox_term,
 					    flags);
 	parms.rset_term->nn = min_nn;
+        parms.cmp = key_compare_it;
 	parms.key_size = sizeof (struct it_key);
 	parms.temp_path = res_get (zh->service->res, "setTmpDir");
 	result = rset_create (rset_kind_temp, &parms);
@@ -1769,6 +1771,7 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     rset_temp_parms parms;
 
     parms.rset_term = rset_term_create (termz, -1, rank_type);
+    parms.cmp = key_compare_it;
     parms.key_size = sizeof (struct it_key);
     parms.temp_path = res_get (zh->service->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);

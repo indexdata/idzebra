@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zserver.h,v 1.52 2002-02-20 17:30:01 adam Exp $
+ * $Id: zserver.h,v 1.53 2002-03-20 20:24:30 adam Exp $
  */
 
 #if HAVE_SYS_TIMES_H
@@ -163,6 +163,9 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, ODR stream, ODR decode,
 RSET resultSetRef (ZebraHandle zh, Z_ResultSetId *resultSetId);
 void resultSetDestroy (ZebraHandle zh, int num_names, char **names,
 		       int *statuses);
+
+const char *zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
+                                  int no, int *count, int *no_max);
 
 ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 			       int num, int *positions);

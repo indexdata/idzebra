@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.h,v $
- * Revision 1.6  1999-02-02 14:50:43  adam
+ * Revision 1.7  2002-03-20 20:24:29  adam
+ * Hits per term. Returned in SearchResult-1
+ *
+ * Revision 1.6  1999/02/02 14:50:43  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.5  1998/03/05 08:37:44  adam
@@ -39,6 +42,7 @@ extern const struct rset_control *rset_kind_temp;
 
 typedef struct rset_temp_parms
 {
+    int (*cmp)(const void *p1, const void *p2);
     int     key_size;
     char   *temp_path;
     RSET_TERM rset_term;    

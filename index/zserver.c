@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2000, Index Data 
  * All rights reserved.
  *
- * $Id: zserver.c,v 1.83 2002-02-20 17:30:01 adam Exp $
+ * $Id: zserver.c,v 1.84 2002-03-20 20:24:30 adam Exp $
  */
 
 #include <stdio.h>
@@ -99,6 +99,76 @@ bend_initresult *bend_init (bend_initrequest *q)
     return r;
 }
 
+static void search_terms (ZebraHandle zh, bend_search_rr *r)
+{
+    int count;
+    int no_terms;
+    int i;
+    struct Z_External *ext;
+    Z_SearchInfoReport *sr;
+
+    /* get no of terms for result set */
+    zebra_resultSetTerms (zh, r->setname, -1, &count, &no_terms);
+    if (!no_terms)
+        return;
+
+    r->search_info = odr_malloc (r->stream, sizeof(*r->search_info));
+
+    r->search_info->num_elements = 1;
+    r->search_info->list =
+        odr_malloc (r->stream, sizeof(*r->search_info->list));
+    r->search_info->list[0] =
+        odr_malloc (r->stream, sizeof(**r->search_info->list));
+    r->search_info->list[0]->category = 0;
+    r->search_info->list[0]->which = Z_OtherInfo_externallyDefinedInfo;
+    ext = odr_malloc (r->stream, sizeof(*ext));
+    r->search_info->list[0]->information.externallyDefinedInfo = ext;
+    ext->direct_reference =
+        yaz_oidval_to_z3950oid (r->stream, CLASS_USERINFO, VAL_SEARCHRES1);
+    ext->indirect_reference = 0;
+    ext->descriptor = 0;
+    ext->which = Z_External_searchResult1;
+    sr = odr_malloc (r->stream, sizeof(Z_SearchInfoReport));
+    ext->u.searchResult1 = sr;
+    sr->num = no_terms;
+    sr->elements = odr_malloc (r->stream, sr->num *
+                               sizeof(*sr->elements));
+    for (i = 0; i<no_terms; i++)
+    {
+        Z_Term *term;
+        const char *termz = zebra_resultSetTerms (zh, r->setname, i,
+                                                  &count, &no_terms);
+        
+        sr->elements[i] = odr_malloc (r->stream, sizeof(**sr->elements));
+        sr->elements[i]->subqueryId = 0;
+        sr->elements[i]->fullQuery = odr_malloc (r->stream, 
+                                                 sizeof(bool_t));
+        *sr->elements[i]->fullQuery = 0;
+        sr->elements[i]->subqueryExpression = 
+            odr_malloc (r->stream, sizeof(Z_QueryExpression));
+        sr->elements[i]->subqueryExpression->which = 
+            Z_QueryExpression_term;
+        sr->elements[i]->subqueryExpression->u.term =
+            odr_malloc (r->stream, sizeof(Z_QueryExpressionTerm));
+        term = odr_malloc (r->stream, sizeof(Z_Term));
+        sr->elements[i]->subqueryExpression->u.term->queryTerm = term;
+
+        term->which = Z_Term_general;
+        term->u.general = odr_malloc (r->stream, sizeof(Odr_oct));
+        term->u.general->buf = odr_strdup (r->stream, termz);
+
+        term->u.general->len = strlen (termz);
+        term->u.general->size = strlen (termz);
+        
+        sr->elements[i]->subqueryExpression->u.term->termComment = 0;
+        sr->elements[i]->subqueryInterpretation = 0;
+        sr->elements[i]->subqueryRecommendation = 0;
+        sr->elements[i]->subqueryCount = odr_intdup (r->stream, count);
+        sr->elements[i]->subqueryWeight = 0;
+        sr->elements[i]->resultsByDB = 0;
+    }
+}
+
 int bend_search (void *handle, bend_search_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
@@ -116,6 +186,8 @@ int bend_search (void *handle, bend_search_rr *r)
 	r->errcode = zh->errCode;
 	r->errstring = zh->errString;
 	r->hits = zh->hits;
+        if (!r->errcode)
+            search_terms (zh, r);
         break;
     case Z_Query_type_2:
 	r->errcode = 107;
@@ -126,6 +198,7 @@ int bend_search (void *handle, bend_search_rr *r)
     }
     return 0;
 }
+
 
 int bend_fetch (void *handle, bend_fetch_rr *r)
 {

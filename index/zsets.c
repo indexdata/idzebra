@@ -1,118 +1,9 @@
 /*
- * Copyright (C) 1994-2000, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: zsets.c,v $
- * Revision 1.32  2002-02-20 17:30:01  adam
- * Work on new API. Locking system re-implemented
- *
- * Revision 1.31  2001/11/19 23:05:22  adam
- * Added a few prototypes.
- *
- * Revision 1.30  2001/10/15 19:53:43  adam
- * POSIX thread updates. First work on term sets.
- *
- * Revision 1.29  2001/01/22 10:42:56  adam
- * Added numerical sort.
- *
- * Revision 1.28  2000/07/07 12:49:20  adam
- * Optimized resultSetInsert{Rank,Sort}.
- *
- * Revision 1.27  2000/04/05 09:49:36  adam
- * On Unix, zebra/z'mbol uses automake.
- *
- * Revision 1.26  2000/03/20 19:08:36  adam
- * Added remote record import using Z39.50 extended services and Segment
- * Requests.
- *
- * Revision 1.25  2000/03/15 15:00:31  adam
- * First work on threaded version.
- *
- * Revision 1.24  1999/11/04 15:00:45  adam
- * Implemented delete result set(s).
- *
- * Revision 1.23  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.22  1999/02/02 14:51:15  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.21  1998/11/16 16:03:46  adam
- * Moved loggin utilities to Yaz. Was implemented in file zlogs.c.
- *
- * Revision 1.20  1998/11/16 10:10:53  adam
- * Fixed problem with zebraPosSetCreate that occurred when positions were
- * less than 1.
- *
- * Revision 1.19  1998/09/22 10:48:22  adam
- * Minor changes in search API.
- *
- * Revision 1.18  1998/09/22 10:03:45  adam
- * Changed result sets to be persistent in the sense that they can
- * be re-searched if needed.
- * Fixed memory leak in rsm_or.
- *
- * Revision 1.17  1998/06/23 15:33:36  adam
- * Added feature to specify sort criteria in query (type 7 specifies
- * sort flags).
- *
- * Revision 1.16  1998/05/20 10:12:24  adam
- * Implemented automatic EXPLAIN database maintenance.
- * Modified Zebra to work with ASN.1 compiled version of YAZ.
- *
- * Revision 1.15  1998/03/05 08:45:14  adam
- * New result set model and modular ranking system. Moved towards
- * descent server API. System information stored as "SGML" records.
- *
- * Revision 1.14  1998/02/10 16:39:15  adam
- * Minor change.
- *
- * Revision 1.13  1998/02/10 12:03:06  adam
- * Implemented Sort.
- *
- * Revision 1.12  1997/09/25 14:57:36  adam
- * Windows NT port.
- *
- * Revision 1.11  1996/12/23 15:30:46  adam
- * Work on truncation.
- * Bug fix: result sets weren't deleted after server shut down.
- *
- * Revision 1.10  1995/10/30 15:08:08  adam
- * Bug fixes.
- *
- * Revision 1.9  1995/10/17  18:02:14  adam
- * New feature: databases. Implemented as prefix to words in dictionary.
- *
- * Revision 1.8  1995/10/10  13:59:25  adam
- * Function rset_open changed its wflag parameter to general flags.
- *
- * Revision 1.7  1995/10/06  14:38:01  adam
- * New result set method: r_score.
- * Local no (sysno) and score is transferred to retrieveCtrl.
- *
- * Revision 1.6  1995/09/28  09:19:49  adam
- * xfree/xmalloc used everywhere.
- * Extract/retrieve method seems to work for text records.
- *
- * Revision 1.5  1995/09/27  16:17:32  adam
- * More work on retrieve.
- *
- * Revision 1.4  1995/09/07  13:58:36  adam
- * New parameter: result-set file descriptor (RSFD) to support multiple
- * positions within the same result-set.
- * Boolean operators: and, or, not implemented.
- * Result-set references.
- *
- * Revision 1.3  1995/09/06  16:11:19  adam
- * Option: only one word key per file.
- *
- * Revision 1.2  1995/09/06  10:33:04  adam
- * More work on present. Some log messages removed.
- *
- * Revision 1.1  1995/09/05  15:28:40  adam
- * More work on search engine.
- *
+ * $Id: zsets.c,v 1.33 2002-03-20 20:24:30 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -219,6 +110,24 @@ void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
     }
     (s->hits)++;
 }
+
+
+const char *zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
+                                  int no, int *count, int *no_max)
+{
+    ZebraSet s = resultSetGet (zh, setname);
+
+    *count = 0;
+    *no_max = 0;
+    if (!s || !s->rset)
+        return 0;
+    *no_max = s->rset->no_rset_terms;
+    if (no < 0 || no >= *no_max)
+        return 0;
+    *count = s->rset->rset_terms[no]->count;
+    return s->rset->rset_terms[no]->name;
+}
+
 
 ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
 {
@@ -640,7 +549,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
     int term_index;
     RSFD rfd;
 
-    logf (LOG_DEBUG, "resultSetSortSingle start");
+    logf (LOG_LOG, "resultSetSortSingle start");
     sset->sort_info->num_entries = 0;
 
     sset->hits = 0;
@@ -715,8 +624,15 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
     }
     rset_close (rset, rfd);
 
+    for (i = 0; i < rset->no_rset_terms; i++)
+	yaz_log (LOG_LOG, "term=\"%s\" nn=%d type=%s count=%d",
+                 rset->rset_terms[i]->name,
+                 rset->rset_terms[i]->nn,
+                 rset->rset_terms[i]->flags,
+                 rset->rset_terms[i]->count);
+
     *sort_status = Z_SortStatus_success;
-    logf (LOG_DEBUG, "resultSetSortSingle end");
+    logf (LOG_LOG, "resultSetSortSingle end");
 }
 
 RSET resultSetRef (ZebraHandle zh, Z_ResultSetId *resultSetId)
@@ -743,12 +659,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     zebraSet->hits = 0;
     rfd = rset_open (rset, RSETF_READ);
 
-    logf (LOG_DEBUG, "resultSetRank");
-    for (i = 0; i < rset->no_rset_terms; i++)
-	logf (LOG_DEBUG, "term=\"%s\" cnt=%d type=%s",
-	      rset->rset_terms[i]->name,
-	      rset->rset_terms[i]->nn,
-	      rset->rset_terms[i]->flags);
+    yaz_log (LOG_LOG, "resultSetRank");
 
     rank_class = zebraRankLookup (zh, "rank-1");
     rc = rank_class->control;
@@ -779,7 +690,15 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 	(*rc->end) (zh, handle);
     }
     rset_close (rset, rfd);
-    logf (LOG_DEBUG, "%d keys, %d distinct sysnos", kno, zebraSet->hits);
+
+    for (i = 0; i < rset->no_rset_terms; i++)
+	yaz_log (LOG_LOG, "term=\"%s\" nn=%d type=%s count=%d",
+                 rset->rset_terms[i]->name,
+                 rset->rset_terms[i]->nn,
+                 rset->rset_terms[i]->flags,
+                 rset->rset_terms[i]->count);
+    
+    yaz_log (LOG_LOG, "%d keys, %d distinct sysnos", kno, zebraSet->hits);
 }
 
 ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name)

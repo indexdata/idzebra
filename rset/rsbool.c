@@ -1,67 +1,9 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: rsbool.c,v $
- * Revision 1.16  1999-05-26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.15  1999/02/02 14:51:32  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.14  1998/03/05 08:36:27  adam
- * New result set model.
- *
- * Revision 1.13  1997/12/18 10:54:24  adam
- * New method result set method rs_hits that returns the number of
- * hits in result-set (if known). The ranked result set returns real
- * number of hits but only when not combined with other operands.
- *
- * Revision 1.12  1997/10/31 12:37:01  adam
- * Code calls xfree() instead of free().
- *
- * Revision 1.11  1997/09/09 13:38:15  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.10  1996/10/29 13:55:20  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.9  1995/12/11 09:15:22  adam
- * New set types: sand/sor/snot - ranked versions of and/or/not in
- * ranked/semi-ranked result sets.
- * Note: the snot not finished yet.
- * New rset member: flag.
- * Bug fix: r_delete in rsrel.c did free bad memory block.
- *
- * Revision 1.8  1995/10/12  12:41:55  adam
- * Private info (buf) moved from struct rset_control to struct rset.
- * Bug fixes in relevance.
- *
- * Revision 1.7  1995/10/10  14:00:03  adam
- * Function rset_open changed its wflag parameter to general flags.
- *
- * Revision 1.6  1995/10/06  14:38:05  adam
- * New result set method: r_score.
- * Local no (sysno) and score is transferred to retrieveCtrl.
- *
- * Revision 1.5  1995/09/08  14:52:41  adam
- * Work on relevance feedback.
- *
- * Revision 1.4  1995/09/08  08:54:04  adam
- * More efficient and operation.
- *
- * Revision 1.3  1995/09/07  13:58:43  adam
- * New parameter: result-set file descriptor (RSFD) to support multiple
- * positions within the same result-set.
- * Boolean operators: and, or, not implemented.
- *
- * Revision 1.2  1995/09/06  16:11:55  adam
- * More work on boolean sets.
- *
- * Revision 1.1  1995/09/06  13:27:15  adam
- * New set type: bool. Not finished yet.
- *
+ * $Id: rsbool.c,v 1.17 2002-03-20 20:24:30 adam Exp $
  */
 
 #include <stdio.h>

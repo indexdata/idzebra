@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: rsisamc.h,v 1.5 1999-05-12 13:08:06 adam Exp $
+ * $Id: rsisamc.h,v 1.6 2002-03-20 20:24:29 adam Exp $
  */
 
 #ifndef RSET_ISAMC_H
@@ -20,6 +20,8 @@ extern const struct rset_control *rset_kind_isamc;
 
 typedef struct rset_isamc_parms
 {
+    int (*cmp)(const void *p1, const void *p2);
+    int key_size;
     ISAMC is;
     ISAMC_P pos;
     RSET_TERM rset_term;

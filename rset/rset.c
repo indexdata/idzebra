@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.14  1999-05-26 07:49:14  adam
+ * Revision 1.15  2002-03-20 20:24:30  adam
+ * Hits per term. Returned in SearchResult-1
+ *
+ * Revision 1.14  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.13  1999/02/02 14:51:33  adam
@@ -119,7 +122,8 @@ RSET_TERM rset_term_create (const char *name, int length, const char *flags)
 	t->flags = NULL;
     else
 	t->flags = xstrdup (flags);
-    t->nn = 1;
+    t->nn = -1;
+    t->count = 0;
     return t;
 }
 

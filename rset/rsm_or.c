@@ -1,42 +1,9 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: rsm_or.c,v $
- * Revision 1.10  1999-11-30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.9  1999/07/13 14:45:42  adam
- * Fixed memory leak.
- *
- * Revision 1.8  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.7  1998/09/22 10:03:46  adam
- * Changed result sets to be persistent in the sense that they can
- * be re-searched if needed.
- * Fixed memory leak in rsm_or.
- *
- * Revision 1.6  1998/03/05 08:36:28  adam
- * New result set model.
- *
- * Revision 1.5  1997/12/18 10:54:25  adam
- * New method result set method rs_hits that returns the number of
- * hits in result-set (if known). The ranked result set returns real
- * number of hits but only when not combined with other operands.
- *
- * Revision 1.4  1997/10/31 12:37:55  adam
- * Code calls xfree() instead of free().
- *
- * Revision 1.3  1997/09/09 13:38:16  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.2  1996/12/23 15:30:49  adam
- * Work on truncation.
- *
- * Revision 1.1  1996/12/20 11:07:21  adam
- * Implemented Multi-or result set.
+ * $Id: rsm_or.c,v 1.11 2002-03-20 20:24:30 adam Exp $
  *
  */
 
@@ -108,6 +75,8 @@ struct rset_mor_rfd {
     struct rset_mor_rfd *next;
     struct rset_mor_info *info;
     struct trunc_info *ti;
+    int  *countp;
+    char *pbuf;
 };
 
 static void heap_swap (struct trunc_info *ti, int i1, int i2)
@@ -259,6 +228,13 @@ static RSFD r_open (RSET ct, int flag)
         }
     }
     rfd->position = info->no_save_positions;
+
+    if (ct->no_rset_terms == 1)
+        rfd->countp = &ct->rset_terms[0]->count;
+    else
+        rfd->countp = 0;
+    rfd->pbuf = xmalloc (info->key_size);
+
     r_rewind (rfd);
     return rfd;
 }
@@ -279,6 +255,7 @@ static void r_close (RSFD rfd)
                 if (((struct rset_mor_rfd *) rfd)->ispt[i])
                     isc_pp_close (((struct rset_mor_rfd *) rfd)->ispt[i]);
             xfree (((struct rset_mor_rfd *)rfd)->ispt);
+            xfree (((struct rset_mor_rfd *)rfd)->pbuf);
             xfree (rfd);
             return;
         }
@@ -312,7 +289,8 @@ static int r_count (RSET ct)
 
 static int r_read (RSFD rfd, void *buf, int *term_index)
 {
-    struct trunc_info *ti = ((struct rset_mor_rfd *) rfd)->ti;
+    struct rset_mor_rfd *mrfd = (struct rset_mor_rfd *) rfd;
+    struct trunc_info *ti = mrfd->ti;
     int n = ti->indx[ti->ptr[1]];
 
     if (!ti->heapnum)
@@ -330,6 +308,12 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
         }
         else
             heap_delete (ti);
+        if (mrfd->countp && (
+                *mrfd->countp == 0 || (*ti->cmp)(buf, mrfd->pbuf) > 1))
+        {
+            memcpy (mrfd->pbuf, buf, ti->keysize);
+            (*mrfd->countp)++;
+        }
         return 1;
     }
     while (1)
@@ -345,6 +329,12 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
             heap_insert (ti, ti->tmpbuf, n);
             break;
         }
+    }
+    if (mrfd->countp && (
+            *mrfd->countp == 0 || (*ti->cmp)(buf, mrfd->pbuf) > 1))
+    {
+        memcpy (mrfd->pbuf, buf, ti->keysize);
+        (*mrfd->countp)++;
     }
     return 1;
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.19  2001-01-16 16:56:15  heikki
+ * Revision 1.20  2002-03-20 20:24:29  adam
+ * Hits per term. Returned in SearchResult-1
+ *
+ * Revision 1.19  2001/01/16 16:56:15  heikki
  * Searching in my isam-d
  *
  * Revision 1.18  2000/05/18 12:01:36  adam
@@ -190,6 +193,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
     RSFD result_rsfd;
     rset_temp_parms parms;
 
+    parms.cmp = key_compare_it;
     parms.key_size = sizeof(struct it_key);
     parms.temp_path = res_get (zi->service->res, "setTmpDir");
     parms.rset_term = rset_term_create (term, length, flags);
@@ -555,6 +559,8 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
         {
             rset_isamc_parms parms;
 
+            parms.key_size = sizeof(struct it_key);
+            parms.cmp = key_compare_it;
             parms.pos = *isam_p;
             parms.is = zi->service->isamc;
 	    parms.rset_term = rset_term_create (term, length, flags);
