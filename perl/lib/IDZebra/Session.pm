@@ -1,16 +1,21 @@
-# $Id: Session.pm,v 1.5 2003-02-28 18:38:29 pop Exp $
+# $Id: Session.pm,v 1.6 2003-02-28 18:45:50 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
-use strict;
 package IDZebra::Session;
-use IDZebra;
-use IDZebra::Logger qw(:flags :calls);
-use IDZebra::Resultset;
-use Scalar::Util;
-use Carp;
+
 use strict;
-our @ISA = qw(IDZebra::Logger);
+use warnings;
+
+BEGIN {
+    use IDZebra;
+    use IDZebra::Logger qw(:flags :calls);
+    use IDZebra::Resultset;
+    use Scalar::Util;
+    use Carp;
+    our $VERSION = do { my @r = (q$Revision: 1.6 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our @ISA = qw(IDZebra::Logger);
+}
 
 1;
 # -----------------------------------------------------------------------------
