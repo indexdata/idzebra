@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.22  1998-10-16 08:14:37  adam
+ * Revision 1.23  1998-10-18 07:51:10  adam
+ * Changed one logf call.
+ *
+ * Revision 1.22  1998/10/16 08:14:37  adam
  * Updated record control system.
  *
  * Revision 1.21  1998/07/01 09:16:10  adam
@@ -439,7 +442,7 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
     }
     if (espec)
     {
-        logf (LOG_LOG, "Element: Espec-1 match");
+        logf (LOG_DEBUG, "Element: Espec-1 match");
 	return data1_doespec1(dh, n, espec);
     }
     else
