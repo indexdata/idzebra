@@ -16,4 +16,11 @@ relation.scr               = 2=3
 
 position.any               = 3=3 6=1
 
-structure.*               = 4=1
+structure.*                = 4=1
+
+truncation.right           = 5=1
+truncation.left            = 5=2
+truncation.both            = 5=3
+truncation.none            = 5=100
+truncation.z3958           = 5=104
+
