@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.9  1995-10-10 12:24:39  adam
+ * Revision 1.10  1995-12-06 12:41:22  adam
+ * New command 'stat' for the index program.
+ * Filenames can be read from stdin by specifying '-'.
+ * Bug fix/enhancement of the transformation from terms to regular
+ * expressons in the search engine.
+ *
+ * Revision 1.9  1995/10/10  12:24:39  adam
  * Temporary sort files are compressed.
  *
  * Revision 1.8  1995/10/04  16:57:19  adam
@@ -364,7 +370,8 @@ int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
 }
 
 void key_input (const char *dict_fname, const char *isam_fname,
-                 int nkeys, int cache)
+                int nkeys, int cache)
+                
 {
     Dict dict;
     ISAM isam;

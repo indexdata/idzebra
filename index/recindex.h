@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.7  1995-11-28 09:09:45  adam
+ * Revision 1.8  1995-12-06 12:41:25  adam
+ * New command 'stat' for the index program.
+ * Filenames can be read from stdin by specifying '-'.
+ * Bug fix/enhancement of the transformation from terms to regular
+ * expressons in the search engine.
+ *
+ * Revision 1.7  1995/11/28  09:09:45  adam
  * Zebra config renamed.
  * Use setting 'recordId' to identify record now.
  * Bug fix in recindex.c: rec_release_blocks was invokeded even
@@ -62,3 +68,4 @@ enum {
     recInfo_databaseName,
     recInfo_storeData
 };
+

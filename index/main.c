@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.25  1995-12-01 16:24:39  adam
+ * Revision 1.26  1995-12-06 12:41:23  adam
+ * New command 'stat' for the index program.
+ * Filenames can be read from stdin by specifying '-'.
+ * Bug fix/enhancement of the transformation from terms to regular
+ * expressons in the search engine.
+ *
+ * Revision 1.25  1995/12/01  16:24:39  adam
  * Commit files use separate meta file area.
  *
  * Revision 1.24  1995/11/30  17:01:38  adam
@@ -104,13 +110,11 @@ extern char *data1_tabpath;
 
 int main (int argc, char **argv)
 {
-    int commit_at_end = 0;
     int ret;
     int cmd = 0;
     char *arg;
     char *configName = NULL;
     int nsections;
-    int key_open_flag = 0;
 
     struct recordGroup rGroupDef;
     
@@ -166,7 +170,14 @@ int main (int argc, char **argv)
                 else if (!strcmp (arg, "del") || !strcmp(arg, "delete"))
                     cmd = 'd';
                 else if (!strcmp (arg, "commit"))
-                    commit_at_end = 1;
+                {
+                    logf (LOG_LOG, "Commit");
+                    bf_commit ();
+                }
+                else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
+                {
+                    rec_prstat ();
+                }
                 else
                 {
                     logf (LOG_FATAL, "Unknown command: %s", arg);
@@ -178,17 +189,26 @@ int main (int argc, char **argv)
                 struct recordGroup rGroup;
 
                 memcpy (&rGroup, &rGroupDef, sizeof(rGroup));
-                if (!key_open_flag)
-                {
-                    key_open (mem_max);
-                    key_open_flag = 1;
-                }
+                key_open (mem_max);
                 rGroup.path = arg;
                 if (cmd == 'u')
+                {
+                    logf (LOG_LOG, "Updating %s", rGroup.path);
                     repositoryUpdate (&rGroup);
+                }
                 else if (cmd == 'd')
+                {
+                    logf (LOG_LOG, "Deleting %s", rGroup.path);
                     repositoryDelete (&rGroup);
+                }
                 cmd = 0;
+                nsections = key_close ();
+                if (nsections)
+                {
+                    logf (LOG_LOG, "Merging with index");
+                    key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, nsections,
+                               60);
+                }
             }
         }
         else if (ret == 'v')
@@ -216,20 +236,6 @@ int main (int argc, char **argv)
             logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
-    }
-    if (key_open_flag)
-    {
-        nsections = key_close ();
-        if (nsections)
-        {
-            logf (LOG_LOG, "Merging with index");
-            key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, nsections, 60);
-        }
-    }
-    if (commit_at_end)
-    {
-        logf (LOG_LOG, "commiting");
-        bf_commit ();
     }
     exit (0);
 }

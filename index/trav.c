@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.13  1995-11-28 09:09:46  adam
+ * Revision 1.14  1995-12-06 12:41:26  adam
+ * New command 'stat' for the index program.
+ * Filenames can be read from stdin by specifying '-'.
+ * Bug fix/enhancement of the transformation from terms to regular
+ * expressons in the search engine.
+ *
+ * Revision 1.13  1995/11/28  09:09:46  adam
  * Zebra config renamed.
  * Use setting 'recordId' to identify record now.
  * Bug fix in recindex.c: rec_release_blocks was invokeded even
@@ -311,7 +317,7 @@ void repositoryUpdate (struct recordGroup *rGroup)
     else 
     {
         strcpy (src, rGroup->path);
-        if (*src == '\0')
+        if (*src == '\0' || !strcmp (src, "-"))
             stdinExtractR (0, rGroup);
         else
             repositoryExtractR (0, src, rGroup);
@@ -325,7 +331,7 @@ void repositoryDelete (struct recordGroup *rGroup)
     assert (rGroup->path);
     groupRes (rGroup);
     strcpy (src, rGroup->path);
-    if (*src == '\0')
+    if (*src == '\0' || !strcmp(src, "-"))
 	stdinExtractR (1, rGroup);
     else
 	repositoryExtractR (1, src, rGroup);

@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.35  1995-11-27 09:29:00  adam
+ * Revision 1.36  1995-12-06 12:41:27  adam
+ * New command 'stat' for the index program.
+ * Filenames can be read from stdin by specifying '-'.
+ * Bug fix/enhancement of the transformation from terms to regular
+ * expressons in the search engine.
+ *
+ * Revision 1.35  1995/11/27  09:29:00  adam
  * Bug fixes regarding conversion to regular expressions.
  *
  * Revision 1.34  1995/11/16  17:00:56  adam
@@ -119,6 +125,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include "zserver.h"
 #include "attribute.h"
@@ -617,6 +624,13 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     return 1;
 }
 
+static void verbatim_char (int ch, int *indx, char *dst)
+{
+    if (!isalnum (ch))
+        dst[(*indx)++] = '\\';
+    dst[(*indx)++] = ch;
+}
+
 static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                        const char *term_sub,
                        oid_value attributeSet, struct grep_info *grep_info,
@@ -658,17 +672,22 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
             {
             case -1:         /* not specified */
             case 100:        /* do not truncate */
-		sprintf (term_dict + strlen(term_dict), 
-                         "([]%d %s)", strlen(term_sub), term_sub);
-                logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
+                j = strlen(term_dict);
+                term_dict[j++] = '(';
+                for (i = 0; term_sub[i]; i++)
+                    verbatim_char (term_sub[i], &j, term_dict);
+                strcpy (term_dict+j, ")");
                 r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
                                       &max_pos, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=none:%d", r);
                 break;
             case 1:          /* right truncation */
-		sprintf (term_dict + strlen(term_dict),
-			 "([]%d %s.*)", strlen(term_sub), term_sub);
+                j = strlen(term_dict);
+                term_dict[j++] = '(';
+                for (i = 0; term_sub[i]; i++)
+                    verbatim_char (term_sub[i], &j, term_dict);
+                strcpy (term_dict+j, ".*)");
                 dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
                                   &max_pos, grep_handle);
                 break;
@@ -677,19 +696,16 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 zi->errCode = 120;
                 return -1;
             case 101:        /* process # in term */
-                strcat (term_dict, "(");
                 j = strlen(term_dict);
+                term_dict[j++] = '(';
                 for (i=0; term_sub[i]; i++)
-                    if (i > 2 && term_sub[i] == '#')
+                    if (term_sub[i] == '#' && i > 2)
                     {
                         term_dict[j++] = '.';
                         term_dict[j++] = '*';
                     }
                     else
-                    {
-                        term_dict[j++] = '\\';
-                        term_dict[j++] = term_sub[i];
-                    }
+                        verbatim_char (term_sub[i], &j, term_dict);
                 strcpy (term_dict+j, ")");
                 r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
                                       &max_pos, grep_handle);
@@ -699,7 +715,6 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 break;
             case 102:        /* regular expression */
 		sprintf (term_dict + strlen(term_dict), "(%s)", term_sub);
-                logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
                 r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
                                       &max_pos, grep_handle);
                 if (r)

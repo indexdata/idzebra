@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.30  1995-12-05 11:25:02  adam
+ * Revision 1.31  1995-12-06 12:41:22  adam
+ * New command 'stat' for the index program.
+ * Filenames can be read from stdin by specifying '-'.
+ * Bug fix/enhancement of the transformation from terms to regular
+ * expressons in the search engine.
+ *
+ * Revision 1.30  1995/12/05  11:25:02  adam
  * Include of zebraver.h.
  *
  * Revision 1.29  1995/11/28  09:09:40  adam
@@ -144,6 +150,7 @@ struct recordGroup {
     int  flagStoreKeys;
 };
 
+        
 struct dirs_info *dirs_open (Dict dict, const char *rep);
 struct dirs_entry *dirs_read (struct dirs_info *p);
 struct dirs_entry *dirs_last (struct dirs_info *p);
@@ -187,3 +194,5 @@ int index_word_prefix (char *string, int attset_ordinal,
 
 int fileExtract (SYSNO *sysno, const char *fname,
                  const struct recordGroup *rGroup, int deleteFlag);
+
+void rec_prstat (void);
