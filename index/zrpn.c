@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.38  1995-12-11 09:12:55  adam
+ * Revision 1.39  1996-01-03 16:22:13  quinn
+ * operator->roperator
+ *
+ * Revision 1.38  1995/12/11  09:12:55  adam
  * The rec_get function returns NULL if record doesn't exist - will
  * happen in the server if the result set records have been deleted since
  * the creation of the set (i.e. the search).
@@ -1145,7 +1148,7 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
         bool_parms.key_size = sizeof(struct it_key);
         bool_parms.cmp = key_compare;
 
-        switch (zs->u.complex->operator->which)
+        switch (zs->u.complex->roperator->which)
         {
         case Z_Operator_and:
             r = rset_create (soft ? rset_kind_sand:rset_kind_and, &bool_parms);

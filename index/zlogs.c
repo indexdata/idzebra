@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zlogs.c,v $
- * Revision 1.1  1995-11-16 17:00:55  adam
+ * Revision 1.2  1996-01-03 16:22:11  quinn
+ * operator->roperator
+ *
+ * Revision 1.1  1995/11/16  17:00:55  adam
  * Better logging of rpn query.
  *
  */
@@ -95,7 +98,7 @@ static void zlog_structure (Z_RPNStructure *zs, int level, enum oid_value ast)
 {
     if (zs->which == Z_RPNStructure_complex)
     {
-        switch (zs->u.complex->operator->which)
+        switch (zs->u.complex->roperator->which)
         {
         case Z_Operator_and:
             logf (LOG_LOG, "%*.s and", level, "");
