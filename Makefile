@@ -1,9 +1,8 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.30 1995-10-06 09:08:14 quinn Exp $
+# $Id: Makefile,v 1.31 1995-10-12 12:38:40 adam Exp $
 
-CC=cc
 SHELL=/bin/sh
 MAKE=make
 SUBDIR=util str bfile dfa dict isam rset data1 index base
