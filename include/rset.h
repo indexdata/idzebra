@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.36 2004-09-30 13:07:06 heikki Exp $
+/* $Id: rset.h,v 1.37 2004-10-15 10:07:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -40,6 +40,14 @@ extern "C" {
 typedef struct rsfd *RSFD; /* Rset "file descriptor" */
 typedef struct rset *RSET; /* Result set */
 
+/*
+typedef struct terminfo *TERMID; 
+*/
+typedef int TERMID; 
+       /* term thing for the rsets. They don't need to   */
+       /* know what it is. FIXME - define that somewhere */
+/* using int while testing, to get more type checking to work */
+
 struct rsfd {  /* the stuff common to all rsfd's. */
     RSET rset;  /* ptr to the rset this FD is opened to */
     void *priv; /* private parameters for this type */
@@ -54,14 +62,14 @@ struct rset_control
     void (*f_delete)(RSET ct);
     RSFD (*f_open)(RSET ct, int wflag);
     void (*f_close)(RSFD rfd);
-    int (*f_forward)(RSFD rfd, void *buf, const void *untilbuf);
+    int (*f_forward)(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
     void (*f_pos)(RSFD rfd, double *current, double *total);
        /* returns -1,-1 if pos function not implemented for this type */
-    int (*f_read)(RSFD rfd, void *buf);
+    int (*f_read)(RSFD rfd, void *buf, TERMID *term);
     int (*f_write)(RSFD rfd, const void *buf);
 };
 
-int rset_default_forward(RSFD rfd, void *buf, 
+int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
 
 struct key_control {
@@ -87,6 +95,7 @@ typedef struct rset
                   /* 1 if created with it, 0 if passed from above */
     RSFD free_list; /* all rfd's allocated but not currently in use */
     int scope;    /* On what level do we count hits and compare them? */
+    TERMID term; /* the term thing for ranking etc */
 } rset;
 /* rset is a "virtual base class", which will never exist on its own 
  * all instances are rsets of some specific type, like rsisamb, or rsbool
@@ -104,9 +113,6 @@ typedef struct rset
  * occurences, whereas if we are only counting hits, we do not need anything
  * below the scope. Again 1 is seqnos, 2 sysnos (or verses), 3 books, etc.
  */
-/* FIXME - Add a resolution, to decide on what level we want to return */
-/* hits. That can well be below scope, if we need to get seqnos for prox */
-/* or suchlike... */
 
 RSFD rfd_create_base(RSET rs);
 void rfd_delete_base(RSFD rfd);
@@ -114,7 +120,9 @@ void rfd_delete_base(RSFD rfd);
 RSET rset_create_base(const struct rset_control *sel, 
                       NMEM nmem,
                       const struct key_control *kcontrol,
-                      int scope );
+                      int scope,
+                      TERMID term);
+
 void rset_delete(RSET rs);
 RSET rset_dup (RSET rs);
 
@@ -127,16 +135,17 @@ RSET rset_dup (RSET rs);
 /* void rset_close(RSFD rfd); */
 #define rset_close(rfd) (*(rfd)->rset->control->f_close)(rfd)
 
-/* int rset_forward(RSFD rfd, void *buf, void *untilbuf); */
-#define rset_forward(rfd, buf, untilbuf) \
-    (*(rfd)->rset->control->f_forward)((rfd),(buf),(untilbuf))
+/* int rset_forward(RSFD rfd, void *buf, TERMID term, void *untilbuf); */
+#define rset_forward(rfd, buf, term, untilbuf) \
+    (*(rfd)->rset->control->f_forward)((rfd),(buf),(term),(untilbuf))
 
 /* int rset_pos(RSFD fd, double *current, double *total); */
 #define rset_pos(rfd,cur,tot) \
     (*(rfd)->rset->control->f_pos)( (rfd),(cur),(tot))
 
-/* int rset_read(RSFD rfd, void *buf); */
-#define rset_read(rfd, buf) (*(rfd)->rset->control->f_read)((rfd), (buf))
+/* int rset_read(RSFD rfd, void *buf, TERMID term); */
+#define rset_read(rfd, buf, term) \
+    (*(rfd)->rset->control->f_read)((rfd), (buf), (term))
 
 /* int rset_write(RSFD rfd, const void *buf); */
 #define rset_write(rfd, buf) (*(rfd)->rset->control->f_write)((rfd), (buf))
@@ -183,15 +192,18 @@ RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol,
 
 RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol,
                         int scope, 
-                     ISAMB is, ISAMB_P pos);
+                     ISAMB is, ISAMB_P pos,
+                     TERMID term);
 
 RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol,
                         int scope, 
-                     ISAMC is, ISAMC_P pos);
+                     ISAMC is, ISAMC_P pos,
+                     TERMID term);
 
 RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol,
                         int scope,
-                     ISAMS is, ISAMS_P pos);
+                     ISAMS is, ISAMS_P pos,
+                     TERMID term);
 
 
 

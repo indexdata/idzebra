@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.50 2004-09-30 09:53:05 heikki Exp $
+/* $Id: rstemp.c,v 1.51 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -37,7 +37,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static int r_read (RSFD rfd, void *buf);
+static int r_read (RSFD rfd, void *buf, TERMID *term);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double  *total);
 static void r_flush (RSFD rfd, int mk);
@@ -82,7 +82,7 @@ RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
                     int scope, 
                     const char *temp_path)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,0);
     struct rset_temp_info *info;
    
     info = (struct rset_temp_info *) nmem_malloc(rnew->nmem, sizeof(*info));
@@ -272,7 +272,7 @@ static void r_reread (RSFD rfd)
 }
 
 
-static int r_read (RSFD rfd, void *buf)
+static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
     struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
@@ -289,6 +289,9 @@ static int r_read (RSFD rfd, void *buf)
     }
     memcpy (buf, info->buf_mem + (mrfd->pos_cur - info->pos_buf),
             rfd->rset->keycontrol->key_size);
+    if (term)
+        *term=rfd->rset->term; 
+        /* FIXME - should we store and return terms ?? */
     mrfd->pos_cur = nc;
     mrfd->cur++;
     return 1;

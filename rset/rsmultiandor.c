@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.5 2004-09-30 09:53:05 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.6 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -47,12 +47,12 @@ static RSFD r_open_and (RSET ct, int flag);
 static RSFD r_open_or (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static int r_read_and (RSFD rfd, void *buf);
-static int r_read_or (RSFD rfd, void *buf);
+static int r_read_and (RSFD rfd, void *buf, TERMID *term);
+static int r_read_or (RSFD rfd, void *buf, TERMID *term);
 static int r_write (RSFD rfd, const void *buf);
-static int r_forward_and(RSFD rfd, void *buf,
+static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
-static int r_forward_or(RSFD rfd, void *buf,
+static int r_forward_or(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
 
@@ -94,6 +94,7 @@ struct heap_item {
     RSFD fd;
     void *buf;
     RSET rset;
+    TERMID term;
 };
 
 struct heap {
@@ -258,7 +259,7 @@ static RSET rsmulti_andor_create( NMEM nmem, const struct key_control *kcontrol,
                            int scope, int no_rsets, RSET* rsets, 
                            const struct rset_control *ctrl)
 {
-    RSET rnew=rset_create_base(ctrl, nmem,kcontrol, scope);
+    RSET rnew=rset_create_base(ctrl, nmem,kcontrol, scope,0);
     struct rset_multiandor_info *info;
     info = (struct rset_multiandor_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->no_rsets=no_rsets;
@@ -338,7 +339,7 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
     { /* read the array and sort it */
         for (i=0; i<info->no_rsets; i++){
             p->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
-            if ( !rset_read(p->items[i].fd, p->items[i].buf) )
+            if (!rset_read(p->items[i].fd, p->items[i].buf, &p->items[i].term))
                 p->eof=1;
             p->tailbits[i]=0;
         }
@@ -347,7 +348,7 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
     { /* fill the heap for ORing */
         for (i=0; i<info->no_rsets; i++){
             p->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
-            if ( rset_read(p->items[i].fd, p->items[i].buf) )
+            if ( rset_read(p->items[i].fd, p->items[i].buf, &p->items[i].term))
                 heap_insert(p->h, &(p->items[i]));
         }
     }
@@ -382,7 +383,8 @@ static void r_close (RSFD rfd)
 
 
 
-static int r_forward_or(RSFD rfd, void *buf, const void *untilbuf)
+static int r_forward_or(RSFD rfd, void *buf, 
+                        TERMID *term,const void *untilbuf)
 { /* while heap head behind untilbuf, forward it and rebalance heap */
     struct rset_multiandor_rfd *p=rfd->priv;
     const struct key_control *kctrl=rfd->rset->keycontrol;
@@ -390,7 +392,8 @@ static int r_forward_or(RSFD rfd, void *buf, const void *untilbuf)
         return 0;
     while ( (*kctrl->cmp)(p->h->heap[1]->buf,untilbuf) < -rfd->rset->scope )
     {
-        if ( rset_forward(p->h->heap[1]->fd, p->h->heap[1]->buf, untilbuf) )
+        if (rset_forward(p->h->heap[1]->fd,p->h->heap[1]->buf,
+                         &p->h->heap[1]->term, untilbuf))
             heap_balance(p->h);
         else 
         {
@@ -400,11 +403,11 @@ static int r_forward_or(RSFD rfd, void *buf, const void *untilbuf)
         }
 
     }
-    return r_read_or(rfd,buf);
+    return r_read_or(rfd,buf,term);
 }
 
 
-static int r_read_or (RSFD rfd, void *buf)
+static int r_read_or (RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_multiandor_rfd *mrfd=rfd->priv;
     const struct key_control *kctrl=rfd->rset->keycontrol;
@@ -414,8 +417,10 @@ static int r_read_or (RSFD rfd, void *buf)
         return 0;
     it = mrfd->h->heap[1];
     memcpy(buf,it->buf, kctrl->key_size); 
+    if (term)
+        *term=it->term;
     (mrfd->hits)++;
-    rdres=rset_read(it->fd, it->buf);
+    rdres=rset_read(it->fd, it->buf, &it->term);
     if ( rdres )
         heap_balance(mrfd->h);
     else
@@ -424,7 +429,7 @@ static int r_read_or (RSFD rfd, void *buf)
 
 }
 
-static int r_read_and (RSFD rfd, void *buf)
+static int r_read_and (RSFD rfd, void *buf, TERMID *term)
 { /* Has to return all hits where each item points to the */
   /* same sysno (scope), in order. Keep an extra key (hitkey) */
   /* as long as all records do not point to hitkey, forward */
@@ -456,7 +461,10 @@ static int r_read_and (RSFD rfd, void *buf)
             }
             /* return the lowest tail */
             memcpy(buf, p->items[mintail].buf, kctrl->key_size); 
-            if (!rset_read(p->items[mintail].fd, p->items[mintail].buf))
+            if (term)
+                *term=p->items[mintail].term;
+            if (!rset_read(p->items[mintail].fd, p->items[mintail].buf,
+                           &p->items[mintail].term))
             {
                 p->eof=1; /* game over, once tails have been returned */
                 p->tailbits[mintail]=0; 
@@ -480,7 +488,7 @@ static int r_read_and (RSFD rfd, void *buf)
             cmp=(*kctrl->cmp)(p->items[0].buf,p->items[i].buf);
             if (cmp<=-rfd->rset->scope) { /* [0] was behind, forward it */
                 if (!rset_forward(p->items[0].fd, p->items[0].buf, 
-                                  p->items[i].buf))
+                                  &p->items[0].term, p->items[i].buf))
                 {
                     p->eof=1; /* game over */
                     return 0;
@@ -489,7 +497,7 @@ static int r_read_and (RSFD rfd, void *buf)
             } else if (cmp>=rfd->rset->scope)
             { /* [0] was ahead, forward i */
                 if (!rset_forward(p->items[i].fd, p->items[i].buf, 
-                                  p->items[0].buf))
+                                  &p->items[i].term, p->items[0].buf))
                 {
                     p->eof=1; /* game over */
                     return 0;
@@ -507,7 +515,8 @@ static int r_read_and (RSFD rfd, void *buf)
 }
 
 
-static int r_forward_and(RSFD rfd, void *buf, const void *untilbuf)
+static int r_forward_and(RSFD rfd, void *buf, TERMID *term, 
+                         const void *untilbuf)
 { 
     struct rset_multiandor_rfd *p=rfd->priv;
     const struct key_control *kctrl=rfd->rset->keycontrol;
@@ -523,7 +532,7 @@ static int r_forward_and(RSFD rfd, void *buf, const void *untilbuf)
         {
             killtail=1; /* we are moving to a different hit */
             if (!rset_forward(p->items[i].fd, p->items[i].buf, 
-                              untilbuf))
+                              &p->items[i].term, untilbuf))
             {
                 p->eof=1; /* game over */
                 p->tailcount=0;
@@ -537,7 +546,7 @@ static int r_forward_and(RSFD rfd, void *buf, const void *untilbuf)
             p->tailbits[i]=0;
         p->tailcount=0;
     }
-    return r_read_and(rfd,buf);
+    return r_read_and(rfd,buf,term);
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)

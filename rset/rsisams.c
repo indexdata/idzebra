@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.14 2004-09-30 09:53:05 heikki Exp $
+/* $Id: rsisams.c,v 1.15 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -30,7 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static int r_read (RSFD rfd, void *buf);
+static int r_read (RSFD rfd, void *buf, TERMID *term);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double *total);
 
@@ -59,9 +59,9 @@ struct rset_isams_info {
 
 
 RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol, int scope,
-            ISAMS is, ISAMS_P pos)
+            ISAMS is, ISAMS_P pos, TERMID term)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope, term);
     struct rset_isams_info *info;
     info = (struct rset_isams_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     rnew->priv=info;
@@ -109,10 +109,14 @@ static void r_close (RSFD rfd)
 }
 
 
-static int r_read (RSFD rfd, void *buf)
+static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_pp_info *ptinfo=(struct rset_pp_info *)(rfd->priv);
-    return isams_pp_read(ptinfo->pt, buf);
+    int rc;
+    rc=isams_pp_read(ptinfo->pt, buf);
+    if (rc && term)
+        *term=rfd->rset->term;
+    return rc;
 }
 
 static int r_write (RSFD rfd, const void *buf)

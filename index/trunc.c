@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.45 2004-09-29 11:00:56 heikki Exp $
+/* $Id: trunc.c,v 1.46 2004-10-15 10:07:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -176,7 +176,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         for (i = rscur; --i >= 0; )
         {
             rsfd[i] = rset_open (rset[i], RSETF_READ);
-            if (rset_read(rsfd[i], ti->tmpbuf))
+            if (rset_read(rsfd[i], ti->tmpbuf,0))
                 heap_insert (ti, ti->tmpbuf, i);
             else
             {
@@ -193,7 +193,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
 
             while (1)
             {
-                if (!rset_read (rsfd[n], ti->tmpbuf))
+                if (!rset_read (rsfd[n], ti->tmpbuf,0))
                 {
                     heap_delete (ti);
                     rset_close (rsfd[n]);
@@ -414,21 +414,23 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
     {
         if (no == 1)
             return rsisams_create(rset_nmem, kctrl, scope,
-                    zi->reg->isams, *isam_p); 
+                    zi->reg->isams, *isam_p, 
+                    0 /*FIXME - use proper TERMID*/); 
         qsort (isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
     }
     else if (zi->reg->isamc)
     {
         if (no == 1)
             return rsisamc_create(rset_nmem, kctrl, scope,
-                    zi->reg->isamc, *isam_p);
+                    zi->reg->isamc, *isam_p,
+                    0 /*FIXME - use proper TERMID*/); 
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
     else if (zi->reg->isamb)
     {
         if (no == 1)
             return rsisamb_create(rset_nmem,kctrl, scope,
-                    zi->reg->isamb, *isam_p);
+                    zi->reg->isamb, *isam_p, 0 /* FIXME - TERMID */ );
         else if (no <10000 ) /* FIXME - hardcoded number */
         {
             RSET r;
@@ -436,7 +438,8 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             int i;
             for (i=0;i<no;i++)
                 rsets[i]=rsisamb_create(rset_nmem, kctrl, scope,
-                    zi->reg->isamb, isam_p[i] );
+                    zi->reg->isamb, isam_p[i],
+                    0 /* FIXME - use a proper TERMID */ );
             r=rsmultior_create( rset_nmem, kctrl, scope, no, rsets);
             xfree(rsets);
             return r;

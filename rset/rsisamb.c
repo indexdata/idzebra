@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.23 2004-09-30 09:53:05 heikki Exp $
+/* $Id: rsisamb.c,v 1.24 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -33,9 +33,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static int r_forward(RSFD rfd, void *buf, const void *untilbuf);
+static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
-static int r_read (RSFD rfd, void *buf);
+static int r_read (RSFD rfd, void *buf, TERMID *term);
 static int r_write (RSFD rfd, const void *buf);
 
 static const struct rset_control control = 
@@ -63,9 +63,9 @@ struct rset_isamb_info {
 };
 
 RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol, int scope,
-            ISAMB is, ISAMB_P pos)
+            ISAMB is, ISAMB_P pos, TERMID term)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope, term);
     struct rset_isamb_info *info;
     info = (struct rset_isamb_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->is=is;
@@ -110,10 +110,14 @@ static void r_close (RSFD rfd)
 }
 
 
-static int r_forward(RSFD rfd, void *buf, const void *untilbuf)
+static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
 {
     struct rset_pp_info *pinfo=(struct rset_pp_info *)(rfd->priv);
-    return isamb_pp_forward(pinfo->pt, buf, untilbuf);
+    int rc;
+    rc=isamb_pp_forward(pinfo->pt, buf, untilbuf);
+    if (rc && term)
+        *term=rfd->rset->term;
+    return rc; 
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)
@@ -127,11 +131,14 @@ static void r_pos (RSFD rfd, double *current, double *total)
 #endif
 }
 
-static int r_read (RSFD rfd, void *buf)
+static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_pp_info *pinfo=(struct rset_pp_info *)(rfd->priv);
-
-    return isamb_pp_read(pinfo->pt, buf);
+    int rc;
+    rc=isamb_pp_read(pinfo->pt, buf);
+    if (rc && term)
+        *term=rfd->rset->term;
+    return rc;
 }
 
 static int r_write (RSFD rfd, const void *buf)

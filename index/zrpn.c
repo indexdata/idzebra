@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.156 2004-10-01 15:36:15 heikki Exp $
+/* $Id: zrpn.c,v 1.157 2004-10-15 10:07:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -2392,7 +2392,7 @@ static void count_set (RSET r, int *count)
 
     *count = 0;
     rfd = rset_open (r, RSETF_READ);
-    while (rset_read (rfd, &key))
+    while (rset_read (rfd, &key,0 /* never mind terms */))
     {
         if (key.mem[0] != psysno)
         {

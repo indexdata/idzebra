@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.26 2004-09-30 09:53:04 heikki Exp $
+/* $Id: rsbetween.c,v 1.27 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -43,8 +43,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open_between (RSET ct, int flag);
 static void r_close_between (RSFD rfd);
 static void r_delete_between (RSET ct);
-static int r_forward_between(RSFD rfd, void *buf, const void *untilbuf);
-static int r_read_between (RSFD rfd, void *buf);
+static int r_forward_between(RSFD rfd, void *buf, 
+                    TERMID *term, const void *untilbuf);
+static int r_read_between (RSFD rfd, void *buf, TERMID *term );
 static int r_write_between (RSFD rfd, const void *buf);
 static void r_pos_between (RSFD rfd, double *current, double *total);
 
@@ -83,6 +84,7 @@ struct rset_between_rfd {
     void *buf_m;
     void *buf_r;
     void *buf_attr;
+    TERMID term_m; /* we only return terms for the mid argument */
     int level;  /* counting start/end tags */
     zint hits;
 };    
@@ -106,7 +108,7 @@ RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
             int scope,
             RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,0);
     struct rset_between_info *info=
         (struct rset_between_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->rset_l = rset_l;
@@ -157,13 +159,13 @@ static RSFD r_open_between (RSET ct, int flag)
     p->rfd_m = rset_open (info->rset_m, RSETF_READ);
     p->rfd_r = rset_open (info->rset_r, RSETF_READ);
     
-    p->more_l = rset_read (p->rfd_l, p->buf_l);
-    p->more_m = rset_read (p->rfd_m, p->buf_m);
-    p->more_r = rset_read (p->rfd_r, p->buf_r);
+    p->more_l = rset_read (p->rfd_l, p->buf_l,NULL);
+    p->more_m = rset_read (p->rfd_m, p->buf_m, &p->term_m);
+    p->more_r = rset_read (p->rfd_r, p->buf_r,NULL);
     if (info->rset_attr)
     {
         p->rfd_attr = rset_open (info->rset_attr, RSETF_READ);
-        p->more_attr = rset_read (p->rfd_attr, p->buf_attr);
+        p->more_attr = rset_read (p->rfd_attr, p->buf_attr, NULL);
     }
     p->level=0;
     p->hits=0;
@@ -185,7 +187,8 @@ static void r_close_between (RSFD rfd)
 
 
 
-static int r_forward_between(RSFD rfd, void *buf, const void *untilbuf)
+static int r_forward_between(RSFD rfd, void *buf, 
+                             TERMID *term, const void *untilbuf)
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     int rc;
@@ -195,11 +198,11 @@ static int r_forward_between(RSFD rfd, void *buf, const void *untilbuf)
     /* It is enough to forward the m pointer here, the read will */
     /* naturally forward the l, m, and attr pointers */
     if (p->more_m)
-        p->more_m=rset_forward(p->rfd_m, p->buf_m,untilbuf);
+        p->more_m=rset_forward(p->rfd_m, p->buf_m, term, untilbuf);
 #if RSBETWEEN_DEBUG
     log2( p, "fwd: after forward M", 0,0);
 #endif
-    rc = r_read_between(rfd, buf);
+    rc = r_read_between(rfd, buf, term);
 #if RSBETWEEN_DEBUG
     log2( p, "fwd: after forward", 0,0);
 #endif
@@ -209,7 +212,7 @@ static int r_forward_between(RSFD rfd, void *buf, const void *untilbuf)
 
 
 
-static int r_read_between (RSFD rfd, void *buf)
+static int r_read_between (RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_between_info *info =(struct rset_between_info *)rfd->rset->priv;
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
@@ -261,14 +264,15 @@ static int r_read_between (RSFD rfd, void *buf)
                         else if (cmp_attr > 0)
                             break;
                         else if (cmp_attr > - rfd->rset->scope)  /* == -1 */
-                            p->more_attr = rset_read (p->rfd_attr, p->buf_attr);
+                            p->more_attr = rset_read (p->rfd_attr, 
+                                                      p->buf_attr,NULL);
                             /* if we had a forward that went all the way to
                              * the seqno, we could use that. But fwd only goes
                              * to the sysno */
                         else if (cmp_attr <= - rfd->rset->scope) /* ==-2 */
                         {
                             p->more_attr = rset_forward( p->rfd_attr,
-                                             p->buf_attr, p->buf_l);
+                                             p->buf_attr, NULL, p->buf_l);
 #if RSBETWEEN_DEBUG
                             logf(LOG_DEBUG, "btw: after frowarding attr m=%d",
                                       p->more_attr);
@@ -283,7 +287,7 @@ static int r_read_between (RSFD rfd, void *buf)
             {
                 if (p->more_l) 
                 {
-                    p->more_l=rset_forward(p->rfd_l, p->buf_l, p->buf_m);
+                    p->more_l=rset_forward(p->rfd_l, p->buf_l, NULL, p->buf_m);
                     if (p->more_l)
                         cmp_l= (*kctrl->cmp)(p->buf_l, p->buf_m);
                     else
@@ -294,10 +298,10 @@ static int r_read_between (RSFD rfd, void *buf)
                 }
             } else
             {
-                p->more_l = rset_read (p->rfd_l, p->buf_l);
+                p->more_l = rset_read (p->rfd_l, p->buf_l, NULL);
             }
 #else
-            p->more_l = rset_read (p->rfd_l, p->buf_l);
+            p->more_l = rset_read (p->rfd_l, p->buf_l, NULL);
 #endif
             if (p->more_l)
             {
@@ -332,16 +336,16 @@ static int r_read_between (RSFD rfd, void *buf)
 #if NEWCODE                
                 if (cmp_r <= - rfd->rset->scope) /* == -2 */
                 {
-                    p->more_r=rset_forward(p->rfd_r, p->buf_r, p->buf_m);
+                    p->more_r=rset_forward(p->rfd_r, p->buf_r, NULL, p->buf_m);
                 } else
                 {
-                    p->more_r = rset_read (p->rfd_r, p->buf_r);
+                    p->more_r = rset_read (p->rfd_r, p->buf_r, NULL);
                 }
                 if (p->more_r)
                     cmp_r= (*kctrl->cmp)(p->buf_r, p->buf_m);
 
 #else
-                p->more_r = rset_read (p->rfd_r, p->buf_r);
+                p->more_r = rset_read (p->rfd_r, p->buf_r, NULL);
                 cmp_r= (*kctrl->cmp)(p->buf_r, p->buf_m);
 #endif
             }
@@ -358,10 +362,12 @@ static int r_read_between (RSFD rfd, void *buf)
         if ( attr_match && p->level > 0)  /* within a tag pair (or deeper) */
         {
             memcpy (buf, p->buf_m, kctrl->key_size);
+            if (term)
+                *term=p->term_m;
 #if RSBETWEEN_DEBUG
             log2( p, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
 #endif
-            p->more_m = rset_read (p->rfd_m, p->buf_m);
+            p->more_m = rset_read (p->rfd_m, p->buf_m, NULL);
             if (cmp_l >= rfd->rset->scope)  /* == 2 */
                 p->level = 0;
             p->hits++;
@@ -378,10 +384,10 @@ static int r_read_between (RSFD rfd, void *buf)
         if (cmp_l >= rfd->rset->scope) /* == 2 */
         {
             p->level = 0;
-            p->more_m=rset_forward(p->rfd_m, p->buf_m,  p->buf_l);
+            p->more_m=rset_forward(p->rfd_m, p->buf_m, &p->term_m, p->buf_l);
         } else
         {
-            p->more_m = rset_read (p->rfd_m, p->buf_m);
+            p->more_m = rset_read (p->rfd_m, p->buf_m, &p->term_m);
         }
 #else
         if (cmp_l >= rfd->rset->scope )  /* == 2 */

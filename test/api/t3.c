@@ -1,4 +1,4 @@
-/* $Id: t3.c,v 1.9 2004-08-25 09:23:39 adam Exp $
+/* $Id: t3.c,v 1.10 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -44,6 +44,7 @@ int main(int argc, char **argv)
         "</gils>\n";
 
     yaz_log_init_file("t3.log");
+     yaz_log_init_level(LOG_ALL);
 
     nmem_init ();
     

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.135 2004-10-07 14:18:23 heikki Exp $
+/* $Id: zebraapi.c,v 1.136 2004-10-15 10:07:32 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -87,7 +87,6 @@ ZebraHandle zebra_open (ZebraService zs)
 {
     ZebraHandle zh;
     const char *default_encoding;
-    ASSERTZS;
     yaz_log(LOG_API,"zebra_open");
 
     if (!zs)

@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.17 2004-09-30 09:53:05 heikki Exp $
+/* $Id: rsprox.c,v 1.18 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,8 +35,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
-static int r_forward(RSFD rfd, void *buf, const void *untilbuf);
-static int r_read (RSFD rfd, void *buf);
+static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
+static int r_read (RSFD rfd, void *buf, TERMID *term);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double *total);
 
@@ -67,6 +67,7 @@ struct rset_prox_rfd {
     RSFD *rfd;
     char **buf;  /* lookahead key buffers */
     char *more;  /* more in each lookahead? */
+    TERMID *terms; /* lookahead terms */
     zint hits;
 };    
 
@@ -76,7 +77,7 @@ RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol, int scope,
             int ordered, int exclusion,
             int relation, int distance)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,0);
     struct rset_prox_info *info;
     info = (struct rset_prox_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->rset = nmem_malloc(rnew->nmem,rset_no * sizeof(*info->rset));
@@ -122,8 +123,12 @@ static RSFD r_open (RSET ct, int flag)
         rfd->priv=p;
         p->more = nmem_malloc (ct->nmem,sizeof(*p->more) * info->rset_no);
         p->buf = nmem_malloc(ct->nmem,sizeof(*p->buf) * info->rset_no);
-        for (i = 0; i < info->rset_no; i++)
+        p->terms = nmem_malloc(ct->nmem,sizeof(*p->terms) * info->rset_no);
+        for (i = 0; i < info->rset_no; i++) 
+        {
             p->buf[i] = nmem_malloc(ct->nmem,ct->keycontrol->key_size);
+            p->terms[i] = 0;
+        }
         p->rfd = nmem_malloc(ct->nmem,sizeof(*p->rfd) * info->rset_no);
     }
     logf(LOG_DEBUG,"rsprox (%s) open [%p] n=%d", 
@@ -131,7 +136,7 @@ static RSFD r_open (RSET ct, int flag)
 
     for (i = 0; i < info->rset_no; i++) {
         p->rfd[i] = rset_open (info->rset[i], RSETF_READ);
-        p->more[i] = rset_read (p->rfd[i], p->buf[i]);
+        p->more[i] = rset_read (p->rfd[i], p->buf[i], &p->terms[i]);
     }
     p->hits=0;
     return rfd;
@@ -148,7 +153,7 @@ static void r_close (RSFD rfd)
     rfd_delete_base(rfd);
 }
 
-static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
+static int r_forward (RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
 {
     struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
     struct rset_prox_rfd *p=(struct rset_prox_rfd *)(rfd->priv);
@@ -161,7 +166,8 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
         /* it is enough to forward first one. Other will follow. */
         if ( p->more[0] &&   /* was: cmp >=2 */
            ((kctrl->cmp)(untilbuf, p->buf[0]) >= rfd->rset->scope) ) 
-            p->more[0] = rset_forward(p->rfd[0], p->buf[0], untilbuf);
+            p->more[0] = rset_forward(p->rfd[0], p->buf[0], 
+                                      &p->terms[0], untilbuf);
     }
     if (info->ordered && info->relation == 3 && info->exclusion == 0
         && info->distance == 1)
@@ -180,6 +186,7 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
                 {
                     p->more[i-1] = rset_forward (p->rfd[i-1],
                                                  p->buf[i-1],
+                                                 &p->terms[i-1],
                                                  p->buf[i]);
                     break;
                 }
@@ -188,21 +195,24 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
                     if ((*kctrl->getseq)(p->buf[i-1]) +1 != 
                         (*kctrl->getseq)(p->buf[i]))
                     { /* FIXME - We need more flexible multilevel stuff */
-                        p->more[i-1] = rset_read ( p->rfd[i-1], p->buf[i-1]);
+                        p->more[i-1] = rset_read ( p->rfd[i-1], p->buf[i-1],
+                                                   &p->terms[i]);
                         break;
                     }
                 }
                 else
                 {
                     p->more[i] = rset_forward (p->rfd[i], 
-                                  p->buf[i], p->buf[i-1]);
+                                  p->buf[i], &p->terms[i], p->buf[i-1]);
                     break;
                 }
             }
             if (i == info->rset_no)
             {
                 memcpy (buf, p->buf[0], kctrl->key_size);
-                p->more[0] = rset_read (p->rfd[0], p->buf[0]);
+                if (term)
+                    *term=p->terms[i];
+                p->more[0] = rset_read (p->rfd[0], p->buf[0], &p->terms[i]);
                 p->hits++;
                 return 1;
             }
@@ -214,11 +224,11 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
         {
             int cmp = (*kctrl->cmp)(p->buf[0], p->buf[1]);
             if ( cmp <= - rfd->rset->scope) /* cmp<-1*/
-                p->more[0] = rset_forward (p->rfd[0],
-                                           p->buf[0], p->buf[1]);
+                p->more[0] = rset_forward (p->rfd[0], p->buf[0], 
+                                           &p->terms[0],p->buf[1]);
             else if ( cmp >= rfd->rset->scope ) /* cmp>1 */
-                p->more[1] = rset_forward (p->rfd[1],
-                                           p->buf[1], p->buf[0]);
+                p->more[1] = rset_forward (p->rfd[1], p->buf[1], 
+                                           &p->terms[1],p->buf[0]);
             else
             {
                 zint seqno[500]; /* FIXME - why 500 ?? */
@@ -226,7 +236,7 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
                 
                 seqno[n++] = (*kctrl->getseq)(p->buf[0]);
                 while ((p->more[0] = rset_read (p->rfd[0],
-                                                p->buf[0])) >= -1 &&
+                                        p->buf[0], &p->terms[0])) >= -1 &&
                        p->more[0] <= -1)
                     if (n < 500)
                         seqno[n++] = (*kctrl->getseq)(p->buf[0]);
@@ -267,13 +277,15 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
                     if (excl)
                     {
                         memcpy (buf, p->buf[1], kctrl->key_size);
-                        
-                        p->more[1] = rset_read ( p->rfd[1], p->buf[1]);
+                        if (term)
+                            *term=p->terms[1];
+                        p->more[1] = rset_read ( p->rfd[1], p->buf[1],
+                                                 &p->terms[1]);
                         p->hits++;
                         return 1;
                     }
                 }
-                p->more[1] = rset_read (p->rfd[1], p->buf[1]);
+                p->more[1] = rset_read (p->rfd[1], p->buf[1],&p->terms[i]);
             }
         }
     }
@@ -281,9 +293,9 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
 }
 
 
-static int r_read (RSFD rfd, void *buf)
+static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
-    return r_forward(rfd, buf, 0);
+    return r_forward(rfd, buf, term, 0);
 }
 
 static int r_write (RSFD rfd, const void *buf)

@@ -1,4 +1,4 @@
-/* $Id: t8.c,v 1.1 2004-10-01 15:36:41 heikki Exp $
+/* $Id: t8.c,v 1.2 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,6 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
 
+#define LOGLEVEL LOG_ALL 
 static int testno=1;
 
 /* read zebra.cfg from env var srcdir if it exists; otherwise current dir */
@@ -126,7 +127,9 @@ int main(int argc, char **argv)
     ZebraService zs;
     ZebraHandle zh;
     yaz_log_init_file("t8.log");
-    /* yaz_log_init_level(LOG_ALL); */
+#ifdef LOGLEVEL
+    yaz_log_init_level(LOGLEVEL); 
+#endif
 
     nmem_init ();
     

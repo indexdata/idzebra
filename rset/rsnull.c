@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.27 2004-09-30 09:53:05 heikki Exp $
+/* $Id: rsnull.c,v 1.28 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -32,7 +32,7 @@ static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_pos (RSFD rfd, double *current, double *total);
-static int r_read (RSFD rfd, void *buf);
+static int r_read (RSFD rfd, void *buf, TERMID *term);
 static int r_write (RSFD rfd, const void *buf);
 
 static const struct rset_control control = 
@@ -51,7 +51,7 @@ const struct rset_control *rset_kind_null = &control;
 
 RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol )
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol,0);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol,0,0);
     rnew->priv=NULL;
     return rnew;
 }
@@ -88,8 +88,10 @@ static void r_pos (RSFD rfd, double *current, double *total)
     *current=0;
 }
 
-static int r_read (RSFD rfd, void *buf)
+static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
+    if (term)
+        *term=0; /* NULL */
     return 0;
 }
 

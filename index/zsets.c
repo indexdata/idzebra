@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.62 2004-09-15 08:13:51 adam Exp $
+/* $Id: zsets.c,v 1.63 2004-10-15 10:07:34 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -403,7 +403,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
             while (num_i < num && positions[num_i] < position)
                 num_i++;
             rfd = rset_open (rset, RSETF_READ);
-            while (num_i < num && rset_read (rfd, &key))
+            while (num_i < num && rset_read (rfd, &key, 0))
             {
                 zint this_sys = key.mem[0];
                 if (this_sys != psysno)
@@ -686,7 +686,8 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
         }
     }
     rfd = rset_open (rset, RSETF_READ);
-    while (rset_read (rfd, &key))
+    while (rset_read (rfd, &key,0))
+      /* FIXME - pass a TERMID *, and use it for something below !! */
     {
         zint this_sys = key.mem[0];
         if (this_sys != psysno)
@@ -750,7 +751,8 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     }
     rc = rank_class->control;
 
-    if (rset_read (rfd, &key))
+    if (rset_read (rfd, &key, 0))
+        /* FIXME - Pass a TERMID *, and use it for something ?? */
     {
         zint psysno = key.mem[0];
         int score;
@@ -798,8 +800,8 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
             }
         }
         }
-        while (rset_read (rfd, &key) && (est<0) );
-           
+        while (rset_read (rfd, &key,0) && (est<0) );
+           /* FIXME - term ?? */
         score = (*rc->calc) (handle, psysno);
         resultSetInsertRank (zh, sort_info, psysno, score, 'A');
         (*rc->end) (zh->reg, handle);
