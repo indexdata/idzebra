@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.h,v 1.15 2000-04-17 14:22:00 adam Exp $
+ * $Id: mfile.h,v 1.16 2001-01-14 13:41:06 adam Exp $
  */
 
 #ifndef MFILE_H
@@ -11,6 +11,12 @@
 
 #include <stdio.h>
 #include <yaz/yconfig.h>
+
+#ifdef WIN32
+typedef long off_t;
+#else
+#include <sys/types.h>
+#endif
 
 #ifndef FILENAME_MAX
 #include <sys/param.h>
@@ -26,9 +32,6 @@ YAZ_BEGIN_CDECL
 
 #define mf_blocksize(mf) ((mf)->blocksize)
 
-#ifdef WIN32
-typedef long off_t;
-#endif
 
 typedef struct mf_dir
 {
