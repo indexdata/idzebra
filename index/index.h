@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.33  1995-12-08 16:22:53  adam
+ * Revision 1.34  1995-12-11 11:43:29  adam
+ * Locking based on fcntl instead of flock.
+ * Setting commitEnable removed. Command line option -n can be used to
+ * prevent commit if commit setting is defined in the configuration file.
+ *
+ * Revision 1.33  1995/12/08  16:22:53  adam
  * Work on update while servers are running. Three lock files introduced.
  * The servers reload their registers when necessary, but they don't
  * reestablish result sets yet.
@@ -219,3 +224,7 @@ int zebraIndexWait (int commitPhase);
 #define FNAME_COMMIT_LOCK "zebracmt.LCK"
 #define FNAME_ORG_LOCK    "zebraorg.LCK"
 #define FNAME_TOUCH_TIME  "zebraidx.time"
+
+int zebraLock (int fd, int wr);
+int zebraLockNB (int fd, int wr);
+int zebraUnlock (int fd);

@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.28  1995-12-08 16:22:56  adam
+ * Revision 1.29  1995-12-11 11:43:30  adam
+ * Locking based on fcntl instead of flock.
+ * Setting commitEnable removed. Command line option -n can be used to
+ * prevent commit if commit setting is defined in the configuration file.
+ *
+ * Revision 1.28  1995/12/08  16:22:56  adam
  * Work on update while servers are running. Three lock files introduced.
  * The servers reload their registers when necessary, but they don't
  * reestablish result sets yet.
@@ -123,6 +128,7 @@ int main (int argc, char **argv)
     char *arg;
     char *configName = NULL;
     int nsections;
+    int disableCommit = 0;
 
     struct recordGroup rGroupDef;
     
@@ -148,10 +154,11 @@ int main (int argc, char **argv)
 	" -g <group>    Index files according to group settings.\n"
 	" -d <database> Records belong to Z39.50 database <database>.\n"
 	" -m <mbytes>   Use <mbytes> before flushing keys to disk.\n"
+        " -n            Don't use commit system\n"
 	" -v <level>    Set logging to <level>.\n");
         exit (1);
     }
-    while ((ret = options ("t:c:g:d:m:v:", argv, argc, &arg)) != -2)
+    while ((ret = options ("t:c:g:d:m:v:n", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -177,10 +184,16 @@ int main (int argc, char **argv)
                 else if (!strcmp (arg, "commit"))
                 {
                     zebraIndexLock (1);
-                    rval = res_get (common_resource, "commitEnable");
-                    if (rval && atoi (rval))
+                    rval = res_get (common_resource, "commit");
+                    if (rval && *rval)
                         bf_cache (1);
-
+                    else
+                    {
+                        logf (LOG_FATAL, "Cannot perform commit");
+                        logf (LOG_FATAL, "No commit area defined "
+                              "in the configuration file");
+                        exit (1);
+                    }
                     if (bf_commitExists ())
                     {
                         logf (LOG_LOG, "Commit start");
@@ -205,8 +218,8 @@ int main (int argc, char **argv)
                 else if (!strcmp (arg, "cstat") || !strcmp (arg, "cstatus"))
                 {
                     zebraIndexLock (1);
-                    rval = res_get (common_resource, "commitEnable");
-                    if (rval && atoi(rval))
+                    rval = res_get (common_resource, "commit");
+                    if (rval && *rval)
                     {
                         bf_cache (1);
                         zebraIndexLockMsg ("r");
@@ -224,14 +237,17 @@ int main (int argc, char **argv)
                 struct recordGroup rGroup;
 
                 zebraIndexLock (0);
-                rval = res_get (common_resource, "commitEnable");
-                if (rval && atoi(rval))
+                rval = res_get (common_resource, "commit");
+                if (rval && *rval && !disableCommit)
                 {
                     bf_cache (1);
                     zebraIndexLockMsg ("r");
                 }
                 else
+                {
+                    bf_cache (0);
                     zebraIndexLockMsg ("w");
+                }
                 zebraIndexWait (0);
 
                 memcpy (&rGroup, &rGroupDef, sizeof(rGroup));
@@ -277,6 +293,8 @@ int main (int argc, char **argv)
             configName = arg;
         else if (ret == 't')
             rGroupDef.recordType = arg;
+        else if (ret == 'n')
+            disableCommit = 1;
         else
         {
             logf (LOG_FATAL, "Unknown option '-%s'", arg);

@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.2  1995-12-08 16:22:54  adam
+ * Revision 1.3  1995-12-11 11:43:29  adam
+ * Locking based on fcntl instead of flock.
+ * Setting commitEnable removed. Command line option -n can be used to
+ * prevent commit if commit setting is defined in the configuration file.
+ *
+ * Revision 1.2  1995/12/08  16:22:54  adam
  * Work on update while servers are running. Three lock files introduced.
  * The servers reload their registers when necessary, but they don't
  * reestablish result sets yet.
@@ -16,7 +21,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
-#include <sys/file.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
@@ -47,7 +51,7 @@ int zebraIndexWait (int commitPhase)
         }
     }
     else
-        flock (server_lock_cmt, LOCK_UN);
+        zebraUnlock (server_lock_cmt);
     if (server_lock_org == -1)
     {
         sprintf (path, "%s%s", FNAME_ORG_LOCK, pathPrefix);
@@ -59,12 +63,12 @@ int zebraIndexWait (int commitPhase)
         }
     }
     else
-        flock (server_lock_org, LOCK_UN);
+        zebraUnlock (server_lock_org);
     if (commitPhase)
         fd = server_lock_cmt;
     else
         fd = server_lock_org;
-    if (flock (fd, LOCK_EX|LOCK_NB) == -1)
+    if (zebraLockNB (fd, 1) == -1)
     {
         if (errno != EWOULDBLOCK)
         {
@@ -75,13 +79,13 @@ int zebraIndexWait (int commitPhase)
             logf (LOG_LOG, "Waiting for lock cmt");
         else
             logf (LOG_LOG, "Waiting for lock org");
-        if (flock (fd, LOCK_EX) == -1)
+        if (zebraLock (fd, 1) == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "flock");
             exit (1);
         }
     }
-    flock (fd, LOCK_UN);
+    zebraUnlock (fd);
     return 0;
 }
 
@@ -135,12 +139,12 @@ void zebraIndexLock (int commitNow)
         {
             lock_fd = open (path, O_RDONLY);
             assert (lock_fd != -1);
-            if (flock (lock_fd, LOCK_EX|LOCK_NB) == -1)
+            if (zebraLockNB (lock_fd, 1) == -1)
             {
                 if (errno == EWOULDBLOCK)
                 {
                     logf (LOG_LOG, "Waiting for other index process");
-                    flock (lock_fd, LOCK_EX);
+                    zebraLock (lock_fd, 1);
                     continue;
                 }
                 else
@@ -210,6 +214,6 @@ void zebraIndexLock (int commitNow)
         else
             break;
     }
-    flock (lock_fd, LOCK_EX);
+    zebraLock (lock_fd, 1);
 }
 
