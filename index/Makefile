@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.45 1997-11-18 10:05:08 adam Exp $
+# $Id: Makefile,v 1.46 1997-12-12 06:38:07 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -11,7 +11,6 @@ YAZLIB=../../yaz/lib/libyaz.a
 YAZINC=-I../../yaz/include
 #OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
 #OSILIB=../../xtimosi/src/libmosi.a -lrfc
-#NETLIB=-lnsl -lsocket
 
 INCLUDE=-I../include $(YAZINC)
 TPROG1=zebraidx
@@ -35,10 +34,11 @@ $(TPROG1): $(O1) ../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
 	$(CC) $(CFLAGS) -o $(TPROG1) $(O1) \
 		../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
 		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB)
+		$(YAZLIB) $(ELIBS)
 
 $(TPROG2): $(O2)
-	$(CC) $(CFLAGS) -o $(TPROG2) $(O2) ../lib/zebrautl.a $(YAZLIB)
+	$(CC) $(CFLAGS) -o $(TPROG2) $(O2) ../lib/zebrautl.a \
+		$(YAZLIB) $(ELIBS)
 
 $(TPROG3): $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
@@ -47,7 +47,7 @@ $(TPROG3): $(O3) \
 	$(CC) $(CFLAGS) -o $(TPROG3) $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
 		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB) $(OSILIB) $(NETLIB) -lm
+		$(YAZLIB) $(OSILIB) $(ELIBS) -lm
 
 $(TPROG4): $(O4) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
@@ -56,7 +56,7 @@ $(TPROG4): $(O4) \
 	$(CC) $(CFLAGS) -o $(TPROG4) $(O4) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
 		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB) $(OSILIB) $(NETLIB) -lm
+		$(YAZLIB) $(OSILIB) $(ELIBS) -lm 
 
 .c.o:
 	$(CC) -c $(DEFS) $(CFLAGS) $<
