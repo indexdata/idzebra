@@ -3,7 +3,7 @@
 
 Zebra license changed to GNU GPL.
 
-XPATH-like queries used when PQF string attributes are used, eg.
+XPATH-like queries used when RPN string attributes are used, eg.
    @attr 1=/portal/title sometitle
    @attr 1=/portal/title[@xml:lang=da] danishtitle
    @attr 1=/portal/title/@xml:lang da
