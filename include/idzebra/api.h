@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.9 2005-01-16 23:14:27 adam Exp $
+/* $Id: api.h,v 1.10 2005-01-21 13:19:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -86,8 +86,7 @@ typedef struct zebra_service *ZebraService;
  *
  * This function is a simplified version of zebra_start_res.
  */
-YAZ_EXPORT ZebraService zebra_start
-(const char *configName);
+YAZ_EXPORT ZebraService zebra_start(const char *configName);
 
 /** \fn ZebraService zebra_start_res(const char *configName,
     Res def_res, Res over_res)
@@ -176,25 +175,44 @@ YAZ_EXPORT int zebra_result(ZebraHandle zh, int *code, char **addinfo);
  */
 YAZ_EXPORT void zebra_clearError(ZebraHandle zh);
 
-/**************
- * Searching 
+/** \fn int zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
+    const char *setname, int *numhits)
+ * \brief Search using PQF Query 
+ * \param zh session handle
+ * \param pqf_query query
+ * \param setname name of resultset
+ * \param number of hits is returned
  */
-
-/* Search using PQF Query */
 YAZ_EXPORT int zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
-                                 const char *setname, int *numhits);
+				const char *setname, int *numhits);
 
-/* Search using RPN Query */
+/** \fn int zebra_search_RPN(ZebraHandle zh, Z_RPNQuery *query,
+    const char *setname, int *numhits)
+ * \brief Search using RPN Query 
+ * \param zh session handle
+ * \param query RPN query using YAZ structure
+ * \param setname name of resultset
+ * \param number of hits is returned
+ */
 YAZ_EXPORT int zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
-				 const char *setname, int *hits);
+				const char *setname, int *hits);
 
-/* Retrieve record(s) */
+/** \fn 
+    int zebra_records_retrieve(ZebraHandle zh, ODR stream, const char *setname, Z_RecordComposition *comp, oid_value input_format, int num_recs, ZebraRetrievalRecord *recs)
+    \brief retrieve records from result set (after search)
+ * \param zh session handle
+ * \param stream allocate records returned using this ODR
+ * \param setname name of result set to retrieve records from
+ * \param comp Z39.50 record composition
+ * \param input_format transfer syntax (OID)
+ * \param num_recs number of records to retrieve
+ * \param recs store records in this structure (size is num_recs)
+ */
 YAZ_EXPORT int zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		       const char *setname, Z_RecordComposition *comp,
 		       oid_value input_format,
 		       int num_recs, ZebraRetrievalRecord *recs);
 
-/* Delete Result Set(s) */
 YAZ_EXPORT int zebra_deleleResultSet(ZebraHandle zh, int function,
 				     int num_setnames, char **setnames,
 				     int *statuses);
