@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.7  1998-02-10 12:03:07  adam
+ * Revision 1.8  1998-03-05 08:42:44  adam
+ * Minor changes to zebramap data structures. Query mapping rules changed.
+ *
+ * Revision 1.7  1998/02/10 12:03:07  adam
  * Implemented Sort.
  *
  * Revision 1.6  1998/01/29 13:36:01  adam
@@ -39,10 +42,21 @@
 #include <charmap.h>
 #include <zebramap.h>
 
+#define ZEBRA_MAP_TYPE_SORT  1
+#define ZEBRA_MAP_TYPE_INDEX 2
+
 struct zebra_map {
-    int reg_type;
+    unsigned reg_id;
     int completeness;
-    int sort_flag;
+    int type;
+    union {
+        struct {
+            int dummy;
+        } index;
+        struct {
+            int entry_size;
+        } sort;
+    } u;
     chrmaptab maptab;
     const char *maptab_name;
     struct zebra_map *next;
@@ -85,47 +99,53 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
     }
     while ((argc = readconf_line(f, line, 512, argv, 10)))
     {
-	if (!strcmp (argv[0], "index") && argc == 2)
+	if (!yaz_matchstr (argv[0], "index") && argc == 2)
 	{
 	    if (!zm)
 		zm = &zms->map_list;
 	    else
 		zm = &(*zm)->next;
 	    *zm = nmem_malloc (zms->nmem, sizeof(**zm));
-	    (*zm)->reg_type = argv[1][0];
+	    (*zm)->reg_id = argv[1][0];
 	    (*zm)->maptab_name = NULL;
 	    (*zm)->maptab = NULL;
-	    (*zm)->sort_flag = 0;
+	    (*zm)->type = ZEBRA_MAP_TYPE_INDEX;
 	    (*zm)->completeness = 0;
 	}
-	else if (!strcmp (argv[0], "sort") && argc == 2)
+	else if (!yaz_matchstr (argv[0], "sort") && argc == 2)
 	{
 	    if (!zm)
 		zm = &zms->map_list;
 	    else
 		zm = &(*zm)->next;
 	    *zm = nmem_malloc (zms->nmem, sizeof(**zm));
-	    (*zm)->reg_type = argv[1][0];
+	    (*zm)->reg_id = argv[1][0];
 	    (*zm)->maptab_name = NULL;
-	    (*zm)->sort_flag = 1;
+	    (*zm)->type = ZEBRA_MAP_TYPE_SORT;
+            (*zm)->u.sort.entry_size = 80;
 	    (*zm)->maptab = NULL;
 	    (*zm)->completeness = 0;
 	}
-	else if (zm && !strcmp (argv[0], "charmap") && argc == 2)
+	else if (zm && !yaz_matchstr (argv[0], "charmap") && argc == 2)
 	{
 	    (*zm)->maptab_name = nmem_strdup (zms->nmem, argv[1]);
 	}
-	else if (zm && !strcmp (argv[0], "completeness") && argc == 2)
+	else if (zm && !yaz_matchstr (argv[0], "completeness") && argc == 2)
 	{
 	    (*zm)->completeness = atoi (argv[1]);
 	}
+        else if (zm && !yaz_matchstr (argv[0], "entrysize") && argc == 2)
+        {
+            if ((*zm)->type == ZEBRA_MAP_TYPE_SORT)
+		(*zm)->u.sort.entry_size = atoi (argv[1]);
+        }
     }
     if (zm)
 	(*zm)->next = NULL;
     fclose (f);
 
     for (zp = zms->map_list; zp; zp = zp->next)
-	zms->lookup_array[zp->reg_type & 255] = zp;
+	zms->lookup_array[zp->reg_id] = zp;
 }
 
 static void zms_map_handle (void *p, const char *name, const char *value)
@@ -135,13 +155,13 @@ static void zms_map_handle (void *p, const char *name, const char *value)
     zebra_map_read (zms, value);
 }
 
-ZebraMaps zebra_maps_open (const char *tabpath, Res res)
+ZebraMaps zebra_maps_open (Res res)
 {
     ZebraMaps zms = xmalloc (sizeof(*zms));
     int i;
 
     zms->nmem = nmem_create ();
-    zms->tabpath = nmem_strdup (zms->nmem, tabpath);
+    zms->tabpath = nmem_strdup (zms->nmem, res_get (res, "profilePath"));
     zms->map_list = NULL;
 
     zms->temp_map_str[0] = '\0';
@@ -154,27 +174,37 @@ ZebraMaps zebra_maps_open (const char *tabpath, Res res)
 	nmem_malloc (zms->nmem, sizeof(*zms->lookup_array)*256);
     for (i = 0; i<256; i++)
 	zms->lookup_array[i] = 0;
-    if (!res_trav (res, "index", zms, zms_map_handle))
+    if (!res || !res_trav (res, "index", zms, zms_map_handle))
 	zebra_map_read (zms, "default.idx");
     return zms;
 }
 
-struct zebra_map *zebra_map_get (ZebraMaps zms, int reg_type)
+struct zebra_map *zebra_map_get (ZebraMaps zms, unsigned reg_id)
 {
-    return zms->lookup_array[reg_type];
+    return zms->lookup_array[reg_id];
 }
 
-chrmaptab zebra_charmap_get (ZebraMaps zms, int reg_type)
+chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
 {
-    struct zebra_map *zm = zebra_map_get (zms, reg_type);
+    struct zebra_map *zm = zebra_map_get (zms, reg_id);
     if (!zm)
     {
-	logf (LOG_WARN, "Unknown register type: %c", reg_type);
-	return NULL;
+	zm = nmem_malloc (zms->nmem, sizeof(*zm));
+	logf (LOG_WARN, "Unknown register type: %c", reg_id);
+
+	zm->reg_id = reg_id;
+	zm->maptab_name = NULL;
+	zm->maptab = NULL;
+	zm->type = ZEBRA_MAP_TYPE_INDEX;
+	zm->completeness = 0;
+	zm->next = zms->map_list;
+	zms->map_list = zm->next;
+
+	zms->lookup_array[zm->reg_id & 255] = zm;
     }
     if (!zm->maptab)
     {
-	if (!strcmp (zm->maptab_name, "@"))
+	if (!zm->maptab_name || !yaz_matchstr (zm->maptab_name, "@"))
 	    return NULL;
 	if (!(zm->maptab = chrmaptab_create (zms->tabpath,
 					     zm->maptab_name, 0)))
@@ -186,12 +216,12 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, int reg_type)
     return zm->maptab;
 }
 
-const char **zebra_maps_input (ZebraMaps zms, int reg_type,
+const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
 			       const char **from, int len)
 {
     chrmaptab maptab;
 
-    maptab = zebra_charmap_get (zms, reg_type);
+    maptab = zebra_charmap_get (zms, reg_id);
     if (maptab)
 	return chr_map_input(maptab, from, len);
     
@@ -201,13 +231,14 @@ const char **zebra_maps_input (ZebraMaps zms, int reg_type,
     return zms->temp_map_ptr;
 }
 
-const char *zebra_maps_output(ZebraMaps zms, int reg_type, const char **from)
+const char *zebra_maps_output(ZebraMaps zms, unsigned reg_id,
+			      const char **from)
 {
     chrmaptab maptab;
     unsigned char i = (unsigned char) **from;
     static char buf[2] = {0,0};
 
-    maptab = zebra_charmap_get (zms, reg_type);
+    maptab = zebra_charmap_get (zms, reg_id);
     if (maptab)
 	return chr_map_output (maptab, from, 1);
     (*from)++;
@@ -292,19 +323,19 @@ static void attr_init_AttrList (AttrType *src, Z_AttributeList *list, int type)
 
 /* ------------------------------------ */
 
-int zebra_maps_is_complete (ZebraMaps zms, int reg_type)
+int zebra_maps_is_complete (ZebraMaps zms, unsigned reg_id)
 { 
-    struct zebra_map *zm = zebra_map_get (zms, reg_type);
+    struct zebra_map *zm = zebra_map_get (zms, reg_id);
     if (zm)
 	return zm->completeness;
     return 0;
 }
 
-int zebra_maps_is_sort (ZebraMaps zms, int reg_type)
+int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id)
 {
-    struct zebra_map *zm = zebra_map_get (zms, reg_type);
+    struct zebra_map *zm = zebra_map_get (zms, reg_id);
     if (zm)
-	return zm->sort_flag;
+	return zm->type == ZEBRA_MAP_TYPE_SORT;
     return 0;
 }
 
@@ -317,7 +348,8 @@ int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes)
 }
 
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
-		     int *reg_type, char **search_type, int *complete_flag)
+		     unsigned *reg_id, char **search_type, char **rank_type,
+		     int *complete_flag)
 {
     AttrType completeness;
     AttrType structure;
@@ -338,38 +370,46 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 	*complete_flag = 1;
     else
 	*complete_flag = 0;
-    *reg_type = 0;
+    *reg_id = 0;
 
     *search_type = "phrase";
+    *rank_type = "void";
     if (relation_value == 102)
-	*search_type = "ranked";
+	*rank_type = "rank";
     
+    if (*complete_flag)
+	*reg_id = 'p';
+    else
+	*reg_id = 'w';
     switch (structure_value)
     {
     case 6:   /* word list */
+	*search_type = "and-list";
+	break;
     case 105: /* free-form-text */
+	*search_type = "or-list";
+	break;
     case 106: /* document-text */
-        *search_type = "ranked";
-        *reg_type = 'w';
-        break;
+        *search_type = "or-list";
+	break;	
     case -1:
     case 1:   /* phrase */
     case 2:   /* word */
     case 3:   /* key */
     case 108: /* string */ 
-	if (*complete_flag)
-	    *reg_type = 'p';
-	else
-	    *reg_type = 'w';
+	*search_type = "phrase";
 	break;
     case 107: /* local-number */
 	*search_type = "local";
-	*reg_type = 0;
+	*reg_id = 0;
+	break;
     case 109: /* numeric string */
-	*reg_type = 'n';
+	*reg_id = 'n';
+	*search_type = "phrase";
         break;
     case 104: /* urx */
-	*reg_type = 'u';
+	*reg_id = 'u';
+	*search_type = "phrase";
 	break;
     default:
 	return -1;
