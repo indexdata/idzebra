@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.123 2002-09-18 21:01:15 adam Exp $
+/* $Id: zrpn.c,v 1.124 2002-09-24 19:44:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -279,7 +279,7 @@ static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
     return *s0;
 }
 
-#define REGEX_CHARS " []()|.*+!"
+#define REGEX_CHARS " []()|.*+?!"
 
 /* term_100: handle term, where trunc=none (no operators at all) */
 static int term_100 (ZebraMaps zebra_maps, int reg_type,
