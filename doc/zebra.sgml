@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.12 1996-01-02 08:59:15 quinn Exp $
+  $Id: zebra.sgml,v 1.13 1996-01-03 16:21:58 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.12 $
+<date>$Revision: 1.13 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -352,7 +352,7 @@ by <tt>-c</tt> option.
 
 You can edit the configuration file with a normal text editor.
 Parameter names and values are seperated by colons in the file. Lines
-starting with a hash sign (<tt/#/) are treated as comments.
+starting with a hash sign (<tt/&num;/) are treated as comments.
 
 If you manage different sets of records that each share common
 caracteristics, you can organize the configuration settings for each
@@ -804,6 +804,8 @@ zebrasrv &lsqb;options&rsqb; &lsqb;listener-address ...&rsqb;
 <tag>-a <it/APDU file/</tag> Specify a file for dumping PDUs (for diagnostic purposes).
 The special name &dquot;-&dquot; sends output to <tt/stderr/.
 
+<tag>-c <it/config-file/</tag> Read configuration information from <it/config-file/. The default configuration is <tt/./zebra.cfg/.
+
 <tag/-S/Don't fork on connection requests. This can be useful for
 symbolic-level debugging. The server can only accept a single
 connection in this mode.
@@ -1097,7 +1099,7 @@ An action is surrounded by curly braces ({...}), and consists of a
 sequence of statements. Statements may be separated by newlines or
 semicolons (;). Within actions, the strings that matched the
 expressions immediately preceding the action can be referred to as
-$0, $1, $2, etc.
+&dollar;0, &dollar;1, &dollar;2, etc.
 
 The available statements are:
 
@@ -1264,8 +1266,8 @@ who is simply reusing an existing profile for which tables already
 exist, shouldn't have to worry too much about the contents of these tables.
 
 Generally, the files are simple ASCII files, which can be maintained
-using any text editor. Blank lines, and lines beginning with a (#) are
-ignored. Any characters followed by a (#) are also ignored. All other
+using any text editor. Blank lines, and lines beginning with a (&num;) are
+ignored. Any characters followed by a (&num;) are also ignored. All other
 lines contain <it/directives/, which establish some setting or value
 to the system. Generally, settings are characterized by a single
 keyword, identifying the setting, followed by a number of parameters.
