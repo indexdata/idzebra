@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.99 2003-05-13 13:52:12 adam Exp $
+/* $Id: zebraapi.c,v 1.100 2003-05-20 12:52:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -757,7 +757,7 @@ void zebra_search_rpn (ZebraHandle zh, ODR decode, ODR stream,
 
     zebra_livcode_transform(zh, query);
 
-    resultSetAddRPN (zh, decode, stream, query, 
+    resultSetAddRPN (zh, query, 
                      zh->num_basenames, zh->basenames, setname);
 
     zebra_end_read (zh);
@@ -1032,7 +1032,7 @@ int zebra_admin_exchange_record (ZebraHandle zh,
     return 0;
 }
 
-void zebra_admin_create (ZebraHandle zh, const char *database)
+void zebra_create_database (ZebraHandle zh, const char *database)
 {
     ZebraService zs;
     ASSERTZH;
@@ -1894,43 +1894,38 @@ int zebra_delete_record (ZebraHandle zh,
   is not mandatory. (it's repeatable now, also in zebraapi.c)
 */
 
-void zebra_search_RPN (ZebraHandle zh, ODR decode, ODR stream,
-		       Z_RPNQuery *query, const char *setname, int *hits)
+void zebra_search_RPN (ZebraHandle zh, Z_RPNQuery *query,
+                       const char *setname, int *hits)
 {
     zh->hits = 0;
     *hits = 0;
 
     if (zebra_begin_read (zh))
     	return;
-    resultSetAddRPN (zh, decode, stream, query, 
-                     zh->num_basenames, zh->basenames, setname);
+    resultSetAddRPN (zh, query, zh->num_basenames, zh->basenames, setname);
 
     zebra_end_read (zh);
 
     *hits = zh->hits;
 }
 
-int zebra_search_PQF (ZebraHandle zh, 
-		      ODR odr_input, ODR odr_output, 
-		      const char *pqf_query,
+int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
 		      const char *setname)
-    
 {
-    int hits;
+    int hits = 0;
     Z_RPNQuery *query;
-    query = p_query_rpn (odr_input, PROTO_Z3950, pqf_query);
+    ODR odr = odr_createmem(ODR_ENCODE);
     
-    if (!query) {
-        logf (LOG_WARN, "bad query %s\n", pqf_query);
-        odr_reset (odr_input);
-        return(0);
-    }
-    zebra_search_RPN (zh, odr_input, odr_output, query, setname, &hits);
+    query = p_query_rpn (odr, PROTO_Z3950, pqf_query);
     
-    odr_reset (odr_input);
-    odr_reset (odr_output);
+    if (!query)
+        yaz_log (LOG_WARN, "bad query %s\n", pqf_query);
+    else
+        zebra_search_RPN (zh, query, setname, &hits);
     
-    return(hits);
+    odr_destroy(odr);
+
+    return hits;
 }
 
 /* ---------------------------------------------------------------------------

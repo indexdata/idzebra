@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.98 2003-03-26 16:41:48 adam Exp $
+/* $Id: index.h,v 1.99 2003-05-20 12:52:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -361,9 +361,9 @@ void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       int use, const char *term);
 ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov);
 ZebraSet resultSetGet (ZebraHandle zh, const char *name);
-ZebraSet resultSetAddRPN (ZebraHandle zh, ODR stream, ODR decode,
-                          Z_RPNQuery *rpn, int num_bases,
-                          char **basenames, const char *setname);
+ZebraSet resultSetAddRPN (ZebraHandle zh, Z_RPNQuery *rpn,
+                          int num_bases, char **basenames,
+                          const char *setname);
 RSET resultSetRef (ZebraHandle zh, const char *resultSetId);
 void resultSetDestroy (ZebraHandle zh, int num_names, char **names,
 		       int *statuses);

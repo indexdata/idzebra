@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.104 2003-03-04 23:30:20 adam Exp $
+/* $Id: zserver.c,v 1.105 2003-05-20 12:52:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -383,7 +383,7 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 	break;
     case Z_ESAdminOriginPartToKeep_create:
 	yaz_log(LOG_LOG, "adm-create %s", r->toKeep->databaseName);
-	zebra_admin_create (zh, r->toKeep->databaseName);
+	zebra_create_database (zh, r->toKeep->databaseName);
 	break;
     case Z_ESAdminOriginPartToKeep_import:
 	yaz_log(LOG_LOG, "adm-import");

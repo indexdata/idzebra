@@ -323,14 +323,12 @@ int zebra_delete_record (ZebraHandle zh,
 			 int force_update);
 
 
-/* == Search (zebra_api_ext.c) ============================================= */
+/* == Search (zebraapi.c) ================================================== */
 
 %name(search_PQF) 
 int zebra_search_PQF (ZebraHandle zh, 
-		      ODR odr_input, ODR odr_output, 
 		      const char *pqf_query,
 		      const char *setname);
-
 
 /* == YAZ - query tools ==================================================== */
 

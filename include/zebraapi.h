@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.3 2003-04-24 19:47:30 adam Exp $
+/* $Id: zebraapi.h,v 1.4 2003-05-20 12:52:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -132,6 +132,10 @@ YAZ_EXPORT void zebra_search_rpn (ZebraHandle zh, ODR input, ODR output,
                                   Z_RPNQuery *query,
                                   const char *setname, int *hits);
 
+YAZ_EXPORT int zebra_search_PQF (ZebraHandle zh, 
+                                 const char *pqf_query,
+                                 const char *setname);
+
 /* Retrieve record(s) */
 YAZ_EXPORT void zebra_records_retrieve (ZebraHandle zh, ODR stream,
 		       const char *setname, Z_RecordComposition *comp,
@@ -172,7 +176,7 @@ YAZ_EXPORT int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
  * Admin 
  */                   
           
-YAZ_EXPORT void zebra_admin_create (ZebraHandle zh, const char *db);
+YAZ_EXPORT void zebra_create_database (ZebraHandle zh, const char *db);
 
 
 YAZ_EXPORT void zebra_admin_shutdown (ZebraHandle zh);
