@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.15  1995-10-02 15:42:53  adam
+ * Revision 1.16  1995-10-03 14:28:45  adam
+ * Work on more effecient read handler in extract.
+ *
+ * Revision 1.15  1995/10/02  15:42:53  adam
  * Extract uses file descriptors instead of FILE pointers.
  *
  * Revision 1.14  1995/10/02  15:29:13  adam
@@ -210,8 +213,43 @@ static void wordAdd (const RecWord *p)
     kused += sizeof(key);
 }
 
+static char *file_buf;
+static int file_offset;
+static int file_bufsize;
+
 static int file_read (int fd, char *buf, size_t count)
 {
+    if (file_offset + count <= file_bufsize)
+    {
+        memcpy (buf, file_buf + file_offset, count);
+        file_offset += count;
+        return count;
+    }
+    else if (file_bufsize > 0)
+    {
+        int l = file_bufsize - file_offset;
+        if (l > 0)
+            memcpy (buf, file_buf + file_offset, l);
+        if (count - l > file_bufsize)
+        {
+            r = read (fd, buf, count);
+            if (r > 0)
+                file_bufsize = read (fd, file_buf, file_bufsize);
+            else
+                file_bufsize = 0;
+            file_offset = 0;
+            return r;
+        }
+        r = read (fd, file_buf, file_bufsize);
+        if (r == -1)
+        {
+            logf (LOG_FATAL|LOG_ERRNO, "read");
+            exit (1);
+        }
+        memcpy (buf + l, file_buf, count - l);
+        file_offset = count - l;
+        file_bufsize = r;
+    }
     return read (fd, buf, count);
 }
 
