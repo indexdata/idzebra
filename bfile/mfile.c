@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.c,v 1.44 2002-04-11 20:09:08 adam Exp $
+ * $Id: mfile.c,v 1.45 2002-07-09 10:05:31 adam Exp $
  */
 
 
@@ -133,13 +133,18 @@ static int file_position(MFile mf, int pos, int offset)
     }
     else
     	off = c ? (mf->files[c-1].top + 1) : 0;
-    if (mf->files[c].fd < 0 && (mf->files[c].fd = open(mf->files[c].path,
-	mf->wr ? (O_BINARY|O_RDWR|O_CREAT) : (O_BINARY|O_RDONLY), 0666)) < 0)
+    if (mf->files[c].fd < 0)
     {
-        if (!mf->wr && errno == ENOENT && off == 0)
-            return -2;
-    	logf (LOG_WARN|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
-    	return -1;
+        if ((mf->files[c].fd = open(mf->files[c].path,
+	                            mf->wr ?
+                                        (O_BINARY|O_RDWR|O_CREAT) :
+                                        (O_BINARY|O_RDONLY), 0666)) < 0)
+        {
+            if (!mf->wr && errno == ENOENT && off == 0)
+                return -2;
+    	    logf (LOG_WARN|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
+    	     return -1;
+        }
     }
     if (lseek(mf->files[c].fd, (ps = pos - off) * mf->blocksize + offset,
     	SEEK_SET) < 0)
@@ -428,7 +433,10 @@ int mf_read(MFile mf, int no, int offset, int nbytes, void *buf)
             return 0;
 	}
         else
+        {
+            yaz_log (LOG_FATAL, "mf_read %s internal error", mf->name);
             exit(1);
+        }
     }
     toread = nbytes ? nbytes : mf->blocksize;
     if ((rd = read(mf->files[mf->cur_file].fd, buf, toread)) < 0)
@@ -456,14 +464,18 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 
     zebra_mutex_lock (&mf->mutex);
     if ((ps = file_position(mf, no, offset)) < 0)
+    {
+        yaz_log (LOG_FATAL, "mf_write %s internal error (1)", mf->name);
 	exit(1);
+    }
     /* file needs to grow */
     while (ps >= mf->files[mf->cur_file].blocks)
     {
+        off_t needed = (ps - mf->files[mf->cur_file].blocks + 1) *
+                       mf->blocksize;
     	/* file overflow - allocate new file */
     	if (mf->files[mf->cur_file].dir->max_bytes >= 0 &&
-	    (ps - mf->files[mf->cur_file].blocks + 1) * mf->blocksize >
-	    mf->files[mf->cur_file].dir->avail_bytes)
+	    needed > mf->files[mf->cur_file].dir->avail_bytes)
 	{
 	    /* cap off file? */
 	    if ((nblocks = mf->files[mf->cur_file].dir->avail_bytes /
@@ -474,11 +486,16 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 	    	if ((ps = file_position(mf,
 		    (mf->cur_file ? mf->files[mf->cur_file-1].top : 0) +
 		    mf->files[mf->cur_file].blocks + nblocks - 1, 0)) < 0)
-			exit(1);
+                {
+                    yaz_log (LOG_FATAL, "mf_write %s internal error (2)",
+				 mf->name);
+		    exit(1);
+                }
 		logf (LOG_DEBUG, "ps = %d", ps);
 		if (write(mf->files[mf->cur_file].fd, &dummych, 1) < 1)
 		{
-		    logf (LOG_ERRNO|LOG_FATAL, "write dummy");
+		    logf (LOG_ERRNO|LOG_FATAL, "mf_write %s internal error (3)",
+				      mf->name);
 		    exit(1);
 		}
 		mf->files[mf->cur_file].blocks += nblocks;
@@ -489,7 +506,7 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 	    /* get other bit */
     	    logf (LOG_DEBUG, "Creating new file.");
     	    for (dp = mf->ma->dirs; dp && dp->max_bytes >= 0 &&
-		dp->avail_bytes < mf->min_bytes_creat; dp = dp->next);
+		dp->avail_bytes < needed; dp = dp->next);
 	    if (!dp)
 	    {
 	    	logf (LOG_FATAL, "Cannot allocate more space for %s",
@@ -512,7 +529,11 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 	    mf->no_files++;
 	    /* open new file and position at beginning */
 	    if ((ps = file_position(mf, no, offset)) < 0)
+            {
+                yaz_log (LOG_FATAL, "mf_write %s internal error (4)",
+				 mf->name);
 	    	exit(1);
+            }	
 	}
 	else
 	{
