@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.60  1997-01-31 11:10:34  adam
+ * Revision 1.61  1997-02-10 10:21:14  adam
+ * Bug fix: in search terms character (^) wasn't observed.
+ *
+ * Revision 1.60  1997/01/31 11:10:34  adam
  * Bug fix: Leading and trailing white space weren't removed in scan tokens.
  *
  * Revision 1.59  1997/01/17 11:31:46  adam
@@ -425,7 +428,7 @@ static int term_103 (char **src, char *dst, int *errors, int space_split)
     int i = 0;
     char *s0, *s1, **map;
 
-    if (!term_pre (src, "\\()[].*+?|", "("))
+    if (!term_pre (src, "^\\()[].*+?|", "("))
         return 0;
     s0 = *src;
     if (errors && *s0 == '+' && s0[1] && s0[2] == '+' && s0[3] &&
@@ -438,7 +441,7 @@ static int term_103 (char **src, char *dst, int *errors, int space_split)
     }
     while (*s0)
     {
-        if (strchr ("\\()[].*+?|-", *s0))
+        if (strchr ("^\\()[].*+?|-", *s0))
             dst[i++] = *s0++;
         else
         {
