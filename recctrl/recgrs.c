@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.65 2002-08-30 12:44:31 adam Exp $
+/* $Id: recgrs.c,v 1.66 2002-09-02 11:19:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -824,7 +824,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     else if (p->comp && !res)
 	selected = 1;
 
-#if 1
+#if 0
     data1_pr_tree (p->dh, node, stdout);
 #endif
     logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");

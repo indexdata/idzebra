@@ -1,4 +1,6 @@
 
+--- 1.3.2 2002/09/02
+
 Fix MARC transfer . MARC fields had wrong data for multiple fields.
 
 XML record reader moved from YAZ to Zebra, to make YAZ less 
