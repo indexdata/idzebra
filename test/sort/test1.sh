@@ -1,7 +1,6 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.4 2003-09-05 12:33:39 adam Exp $
+# $Id: test1.sh,v 1.5 2003-09-24 11:45:44 adam Exp $
 ulimit -c 10000
-set -x
 LOG=test1.log
 rm -fr lock
 mkdir lock

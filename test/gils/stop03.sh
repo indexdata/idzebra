@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop03.sh,v 1.5 2003-05-24 22:34:48 adam Exp $
+# $Id: stop03.sh,v 1.6 2003-09-24 11:45:44 adam Exp $
 # test start and stop of the threaded server (-T)
 
 LOG=stop03.log
@@ -17,11 +17,15 @@ test -f zebrasrv.pid && kill -9 `cat zebrasrv.pid`
 
 echo "Starting server with -T (threaded)..." >>$LOG
 (
-  ../../index/zebrasrv -T -c zebra1.cfg -l $LOG tcp:@:9901 ||
+  ../../index/zebrasrv -T -c zebra1.cfg -l $LOG tcp:@:9901 2>out ||
     echo "server failed with $?" > $LOG
 )&
 sleep 1
 
+if grep 'not available' out >/dev/null; then
+    test -f zebrasrv.pid && rm zebrasrv.pid
+    exit 0
+fi
 echo "  checking that it runs... " >>$LOG
 test -f zebrasrv.pid || exit 1
 PID=`cat zebrasrv.pid`

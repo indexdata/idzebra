@@ -19,5 +19,4 @@ then
     echo "Tests FAILED"
     exit 9
 fi
-echo OK
 exit 0
