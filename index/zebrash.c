@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.16 2003-07-03 16:16:22 heikki Exp $
+/* $Id: zebrash.c,v 1.17 2003-07-04 14:00:22 heikki Exp $
    Copyright (C) 2002,2003
    Index Data Aps
 
@@ -39,13 +39,16 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "zebraapi.h"
 #include <yaz/log.h>
 #include <yaz/proto.h>
+#include <yaz/wrbuf.h>
 
 #define MAX_NO_ARGS 32
 #define MAX_OUT_BUFF 4096
 #define MAX_ARG_LEN 1024
 #define PROMPT "ZebraSh>"
 #define DEFAULTCONFIG "./zebra.cfg"
+#define DEFAULTDATABASE "Default"
 #define DEFAULTRESULTSET "MyResultSet"
+
 
 /**************************************
  * Global variables (yuck!)
@@ -54,7 +57,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 ZebraService zs=0;  /* our global handle to zebra */
 ZebraHandle  zh=0;  /* the current session */
 /* time being, only one session works */
-int nextrecno=0;  /* record number to show next */
+int nextrecno=1;  /* record number to show next */
 
 /**************************************
  * Help functions
@@ -70,31 +73,31 @@ static int split_args( char *line, char** args )
     int n=0;
     args[0]=0; /* by default */
     while (*p==' ' || *p=='\t' || *p=='\n')
-	p++;
+	    p++;
     while (*p)
     {
-	while (*p==' ' || *p=='\t' || *p=='\n')
-	    p++;
-	if (*p=='#')  /* skip comments */
-	    break;  
-	args[i++]=p;
-	args[i]=0;
-	while (*p && *p!=' ' && *p!='\t' && *p!='\n' && *p!='#')
-	    p++;
-	*p++='\0';
+	    while (*p==' ' || *p=='\t' || *p=='\n')
+	        p++;
+	    if (*p=='#')  /* skip comments */
+	        break;  
+	    args[i++]=p;
+	    args[i]=0;
+	    while (*p && *p!=' ' && *p!='\t' && *p!='\n' && *p!='#')
+	        p++;
+	    *p++='\0';
     }
     n=i;
     while (n<MAX_NO_ARGS)
-	args[n++]=0;
+	    args[n++]=0;
     return i;
 }
 
 static char *defarg( char *arg, char *def )
 {
     if (!arg)
-	return def;
+	    return def;
     if (!*arg)
-	return def;
+	    return def;
     return arg;
 }
 static int defargint( char *arg, int def )
@@ -102,25 +105,35 @@ static int defargint( char *arg, int def )
     int v=def;
     char *a=defarg(arg,0);
     if (a)
-	sscanf(a," %i", &v);
+	    sscanf(a," %i", &v);
     return v;
 }
 
-int onecommand( char *line, char *outbuff, const char *prevout); 
+static char *restargs( char *args[], int n)
+{ /* Returns the rest of the arguments, starting at the nth, */
+  /* to the end of the command line. Assumes args[0] contains */
+  /* the original line, minus the command itself */
+    int skiplen= args[n]-args[1];
+    if (skiplen > strlen(args[0]))
+        return "";
+    return args[0]+skiplen;
+}
+
+int onecommand( char *line, WRBUF outbuff, const char *prevout); 
  
 /**************************************
  * Simple support commands
  */
 
-int cmd_echo( char *args[], char *outbuff)
+int cmd_echo( char *args[], WRBUF outbuff)
 {
-    strcpy(outbuff, args[0]);
+    wrbuf_printf(outbuff,"%s\n",restargs(args,1));
     return 0;
 }
  
-int cmd_quit( char *args[], char *outbuff)
+int cmd_quit( char *args[], WRBUF outbuff)
 {
-    strcpy(outbuff, "bye");
+    wrbuf_puts(outbuff, "bye");
     return -99; /* special stop signal */
 }
 
@@ -128,53 +141,53 @@ int cmd_quit( char *args[], char *outbuff)
  * Tests for starting and stopping zebra, etc
  */
  
-static int cmd_help( char *args[], char *outbuff); 
+static int cmd_help( char *args[], WRBUF outbuff); 
  
-static int cmd_zebra_start( char *args[], char *outbuff)
+static int cmd_zebra_start( char *args[], WRBUF outbuff)
 {
     char *conf=args[1];
     if (!conf || !*conf) {
-	strcat(outbuff,"no config file specified, using "
+	    wrbuf_puts(outbuff,"no config file specified, using "
 	       DEFAULTCONFIG "\n" );
-	conf=DEFAULTCONFIG;
+	    conf=DEFAULTCONFIG;
     }
     zs=zebra_start(conf);
     if (!zs) {
-	strcpy(outbuff, "zebra_start failed" );
-	return 2;
+	    wrbuf_puts(outbuff, "zebra_start failed" );
+	    return 2;
     }
     return 0; /* ok */
 }
  
-static int cmd_zebra_stop( char *args[], char *outbuff)
+static int cmd_zebra_stop( char *args[], WRBUF outbuff)
 {
     if (!zs)
-	strcat(outbuff,"zebra seems not to have been started, "
+	wrbuf_puts(outbuff,"zebra seems not to have been started, "
 	       "stopping anyway\n");
     zebra_stop(zs);
     zs=0;
     return 0; /* ok */
 }
 
-static int cmd_zebra_open( char *args[], char *outbuff)
+static int cmd_zebra_open( char *args[], WRBUF outbuff)
 {
     if (!zs)
-	strcat(outbuff,"zebra seems not to have been started, "
+	    wrbuf_puts(outbuff,"zebra seems not to have been started, "
 	       "trying anyway\n");
     zh=zebra_open(zs);
     return 0; /* ok */
 }
 
-static int cmd_zebra_close( char *args[], char *outbuff)
+static int cmd_zebra_close( char *args[], WRBUF outbuff)
 {
     if (!zh)
-	strcat(outbuff,"Seems like you have not called zebra_open,"
+	    wrbuf_puts(outbuff,"Seems like you have not called zebra_open,"
 	       "trying anyway\n");
     zebra_close(zh);
     return 0; /* ok */
 }
 
-static int cmd_quickstart( char *args[], char *outbuff)
+static int cmd_quickstart( char *args[], WRBUF outbuff)
 {
     char tmp[128];
     int rc=0;
@@ -201,89 +214,69 @@ static int cmd_quickstart( char *args[], char *outbuff)
  * Log file handling
  */
 
-static int cmd_yaz_log_file( char *args[], char *outbuff)
+static int cmd_yaz_log_file( char *args[], WRBUF outbuff)
 {
     char *fn = defarg(args[1],0);
-    char tmp[255];
-    sprintf(tmp, "sending yaz-log to %s\n",fn);
-    strcat(outbuff, tmp);
+    wrbuf_printf(outbuff, "sending yaz-log to %s\n",fn);
     yaz_log_init_file(fn);
     return 0; /* ok */
 }
 
-static int cmd_yaz_log_level( char *args[], char *outbuff)
+static int cmd_yaz_log_level( char *args[], WRBUF outbuff)
 {
     int  lev = defargint(args[1],LOG_DEFAULT_LEVEL);
-    char tmp[255];
-    sprintf(tmp, "setting yaz-log to level %d (ox%x)\n",lev,lev);
-    strcat(outbuff, tmp);
+    wrbuf_printf(outbuff, "setting yaz-log to level %d (ox%x)\n",lev,lev);
     yaz_log_init_level(lev);
     return 0; /* ok */
 }
 
-static int cmd_yaz_log_prefix( char *args[], char *outbuff)
+static int cmd_yaz_log_prefix( char *args[], WRBUF outbuff)
 {
     char *pref = defarg(args[1],"ZebraSh");
-    char tmp[255];
-    sprintf(tmp, "setting yaz-log prefix to %s\n",pref);
-    strcat(outbuff, tmp);
+    wrbuf_printf(outbuff, "setting yaz-log prefix to %s\n",pref);
     yaz_log_init_prefix(pref);
     return 0; /* ok */
 }
 
-static int cmd_logf( char *args[], char *outbuff)
+static int cmd_logf( char *args[], WRBUF outbuff)
 {
     int lev = defargint(args[1],0);
-    char tmp[MAX_OUT_BUFF]="";
-    int i=1;
+    int i=1;  
     if (lev)
-	i=2;
+	    i=2;
     else
-	lev=LOG_LOG; /* this is in the default set!*/
-    while (args[i])
-    {
-	strcat(tmp, args[i++]);
-	strcat(tmp, " ");
-    }
-    logf(lev,tmp);
+	    lev=LOG_LOG; /* this is in the default set!*/
+    logf( lev, restargs(args,i));
     return 0; /* ok */
 }
  
 /****************
  * Error handling 
  */
-static int cmd_err ( char *args[], char *outbuff)
+static int cmd_err ( char *args[], WRBUF outbuff)
 {
-    char tmp[MAX_OUT_BUFF];
-    sprintf(tmp, "errCode: %d \nerrStr:  %s\nerrAdd:  %s \n",
+    wrbuf_printf(outbuff, "errCode: %d \nerrStr:  %s\nerrAdd:  %s \n",
 	    zebra_errCode (zh),
 	    zebra_errString (zh),  
 	    zebra_errAdd (zh) );
-    strcat(outbuff, tmp);
     return 0; /* ok */
 }
-static int cmd_errcode ( char *args[], char *outbuff)
+static int cmd_errcode ( char *args[], WRBUF outbuff)
 {
-    char tmp[MAX_OUT_BUFF];
-    sprintf(tmp, "errCode: %d \n",
+    wrbuf_printf(outbuff, "errCode: %d \n",
 	    zebra_errCode (zh));
-    strcat(outbuff, tmp);
     return 0; /* ok */
 }
-static int cmd_errstr ( char *args[], char *outbuff)
+static int cmd_errstr ( char *args[], WRBUF outbuff)
 {
-    char tmp[MAX_OUT_BUFF];
-    sprintf(tmp, "errStr:  %s\n",
+    wrbuf_printf(outbuff, "errStr:  %s\n",
 	    zebra_errString (zh));
-    strcat(outbuff, tmp);
     return 0; /* ok */
 }
-static int cmd_erradd ( char *args[], char *outbuff)
+static int cmd_erradd ( char *args[], WRBUF outbuff)
 {
-    char tmp[MAX_OUT_BUFF];
-    sprintf(tmp, "errAdd:  %s \n",
+    wrbuf_printf(outbuff, "errAdd:  %s \n",
 	    zebra_errAdd (zh) ); 
-    strcat(outbuff, tmp);
     return 0; /* ok */
 }
 
@@ -291,54 +284,45 @@ static int cmd_erradd ( char *args[], char *outbuff)
  * Admin commands
  */
 
-static int cmd_init ( char *args[], char *outbuff)
+static int cmd_init ( char *args[], WRBUF outbuff)
 {
     zebra_init(zh);
     return 0; /* ok */
 }
 
-static int cmd_select_database ( char *args[], char *outbuff)
+static int cmd_select_database ( char *args[], WRBUF outbuff)
 {
-    char *db=args[1];
-    if (!db) {
-        db="Default";
-	strcat(outbuff,"Selecting database 'Default'\n");
-    }
+    char *db=defarg(args[1],DEFAULTDATABASE);
+	wrbuf_puts(outbuff,"Selecting database 'Default'\n");
     return zebra_select_database(zh, db);
 }
  
-static int cmd_create_database( char *args[], char *outbuff)
+static int cmd_create_database( char *args[], WRBUF outbuff)
 {
-    char *db=args[1];
-    if (!db)
-        db="Default";
-    strcat(outbuff,"Creating database ");
-    strcat(outbuff,db);
-    strcat(outbuff,"\n");
+    char *db=defarg(args[1],DEFAULTDATABASE);
+    wrbuf_printf(outbuff,"Creating database '%s'\n",db);
 	
     return zebra_create_database(zh, db);
 }
 
-static int cmd_drop_database( char *args[], char *outbuff)
+static int cmd_drop_database( char *args[], WRBUF outbuff)
 {
     char *db=args[1];
     if (!db)
         db="Default";
-    strcat(outbuff,"Dropping database ");
-    strcat(outbuff,db);
-    strcat(outbuff,"\n");
-	
+    wrbuf_printf(outbuff,"Dropping database '%s'\n",db);
     return zebra_drop_database(zh, db);
 }
 
-static int cmd_begin_trans( char *args[], char *outbuff)
+static int cmd_begin_trans( char *args[], WRBUF outbuff)
 {
     int rw=0;
     if (args[1] && ( (args[1][0]=='1') || (args[1][0]=='w') ))
         rw=1;
     return zebra_begin_trans(zh,rw);
 }
-static int cmd_end_trans( char *args[], char *outbuff)
+
+static int cmd_end_trans( char *args[], WRBUF outbuff)
 {
     return zebra_end_trans(zh);
 }
@@ -346,50 +330,35 @@ static int cmd_end_trans( char *args[], char *outbuff)
  * Inserting and deleting
  */
 
-static int cmd_record_insert( char *args[], char *outbuff)
+static int cmd_record_insert( char *args[], WRBUF outbuff)
 {
     int sysno=0;
-    char buf[MAX_ARG_LEN];
-    int i;
     int rc;
+    char *rec=restargs(args,1);
     
-    i=1;
-    buf[0]='\0';
-    while (args[i])
-    {
-	strcat(buf, args[i++]);
-	strcat(buf, " ");
-    }
-    rc=zebra_record_insert(zh,buf, strlen(buf), &sysno);
+    rc=zebra_record_insert(zh,rec, strlen(rec), &sysno);
     if (0==rc)
     {
-        sprintf(buf,"ok sysno=%d\n",sysno);
-	strcat(outbuff,buf);
+        wrbuf_printf(outbuff,"ok sysno=%d\n",sysno);
     }
     return rc;
 }
 
 
-static int cmd_exchange_record( char *args[], char *outbuff)
+static int cmd_exchange_record( char *args[], WRBUF outbuff)
 {
     char *base=args[1];
     char *id = args[2];
     char *action = args[3];
-    int i=4;
     int rc;
-    char buf[MAX_ARG_LEN];
+    char *rec=restargs(args,4);
     if (!(base && id && action && args[4] ))
     {
-	strcat(outbuff,"Missing arguments!\n");
-	onecommand("help exchange_record", outbuff, "");
-	return -90;
+	    wrbuf_puts(outbuff,"Missing arguments!\n");
+	    onecommand("help exchange_record", outbuff, "");
+	    return -90;
     }
-    while (args[i])
-    {
-	strcat(buf, args[i++]);
-	strcat(buf, " ");
-    }
-    rc=zebra_admin_exchange_record(zh, base, buf, strlen(buf),
+    rc=zebra_admin_exchange_record(zh, base, rec, strlen(rec),
         id, strlen(id), atoi(action));
     return rc;
 }
@@ -398,57 +367,41 @@ static int cmd_exchange_record( char *args[], char *outbuff)
  * Searching and retrieving
  */
 
-static int cmd_search_pqf( char *args[], char *outbuff)
+static int cmd_search_pqf( char *args[], WRBUF outbuff)
 {
     int hits=0;
     char *set=args[1];
-    char qry[MAX_ARG_LEN]="";
-    int i=2;
+    char *qry=restargs(args,2);
     int rc;
-    while (args[i])
-    {
-	    strcat(qry, args[i++]);
-	    strcat(qry, " ");
-    }
     rc=zebra_search_PQF(zh, qry, set, &hits);
     if (0==rc)
-    {
-        sprintf(qry,"%d hits found\n",hits);
-        strcat(outbuff,qry);
-    }
+        wrbuf_printf(outbuff,"%d hits found\n",hits);
     return rc;
 }
 
-static int cmd_find( char *args[], char *outbuff)
+static int cmd_find( char *args[], WRBUF outbuff)
 {
     char *setname=DEFAULTRESULTSET;
-    char qry[MAX_ARG_LEN]="";
-    int i=1;
     int rc;
     int hits=0;
+    WRBUF qry=wrbuf_alloc();
     if (0==strstr(args[0],"@attr"))
-        strcat(qry, "@attr 1=/ ");
-    while (args[i])
-    {
-	    strcat(qry, args[i++]);
-	    strcat(qry, " ");
-    }
+        wrbuf_puts(qry, "@attr 1=/ ");
+    wrbuf_puts(qry,restargs(args,1));
     if (!zh)
 	    onecommand("quickstart", outbuff, "");
-    strcat(outbuff, "find ");
-    strcat(outbuff, qry);
-    strcat(outbuff, "\n");
-    rc=zebra_search_PQF(zh, qry, setname, &hits);
+    wrbuf_printf(outbuff, "find %s\n",wrbuf_buf(qry));
+    rc=zebra_search_PQF(zh, wrbuf_buf(qry), setname, &hits);
     if (0==rc)
     {
-        sprintf(qry,"%d hits found\n",hits);
-        strcat(outbuff,qry);
-        nextrecno=0;
+        wrbuf_printf(outbuff,"%d hits found\n",hits);
+        nextrecno=1;
     }
+    wrbuf_free(qry,1);
     return rc;
 }
 
-static int cmd_show( char *args[], char *outbuff)
+static int cmd_show( char *args[], WRBUF outbuff)
 {
     int start=defargint(args[1], nextrecno);
     int nrecs=defargint(args[2],1);
@@ -456,27 +409,35 @@ static int cmd_show( char *args[], char *outbuff)
     int rc=0;
     ODR odr;
     Z_RecordComposition *pcomp=0;
-
+    int i;
     oid_value format;
-    ZebraRetrievalRecord recs;
+
     odr=odr_createmem(ODR_ENCODE);
+    ZebraRetrievalRecord *recs=
+              odr_malloc(odr,sizeof(ZebraRetrievalRecord)*nrecs);
     rc =z_RecordComposition(odr, &pcomp, 0,"recordComposition");
-    printf("rc1=%d\n",rc);
-    format=oid_getvalbyname ("xml"); /*FIXME*/
+    format=oid_getvalbyname ("xml"); /*FIXME - let the user specify*/
+    for (i=0;i<nrecs;i++)
+        recs[i].position=start+i;
 
     rc = zebra_records_retrieve (zh, odr, setname,
-            pcomp, format, nrecs, &recs);
-                    
-                    /*
-                    ODR stream,
-                    const char *setname, 
-                    Z_RecordComposition *comp,
-                    oid_value input_format,
-                    int num_recs, 
-                    ZebraRetrievalRecord *recs);
-                    */
-
-    nextrecno=start+1;
+            pcomp, format, nrecs,recs);
+    printf("rc=%d\n",rc);
+    if (0==rc)
+    {
+        for (i=0;i<nrecs;i++)
+        {
+            printf("Err %d: %d\n",i,recs[i].errCode);
+            if (recs[i].buf)
+            {
+                wrbuf_printf(outbuff,"Record %d\n", recs[i].position);
+                wrbuf_write(outbuff, recs[i].buf, recs[i].len);
+                wrbuf_puts(outbuff, "\n");
+            } else
+                wrbuf_printf(outbuff,"NO Record %d\n", recs[i].position);
+        }
+        nextrecno=start+nrecs+1;
+    }
     return rc;
 }
 /**************************************)
@@ -485,10 +446,10 @@ static int cmd_show( char *args[], char *outbuff)
 
 struct cmdstruct
 {
-    char * cmd;
-    char * args;
-    char * explanation;
-    int (*testfunc)(char *args[], char *outbuff);
+    char *cmd;
+    char *args;
+    char *explanation;
+    int (*testfunc)(char *args[], WRBUF outbuff);
 } ;
 
  
@@ -613,7 +574,7 @@ struct cmdstruct cmds[] = {
  
 int onecommand( 
 		char *line,     /* input line */
-		char *outbuff,  /* output goes here */
+		WRBUF outbuff,  /* output goes here */
 		const char *prevout) /* prev output, for 'expect' */
 {
     int i;
@@ -623,7 +584,7 @@ int onecommand(
     logf(LOG_APP,"%s",line);
     strncpy(argbuf,line, MAX_ARG_LEN-1);
     argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
-    memset(args,'\0',MAX_NO_ARGS*sizeof(char *));
+    /*memset(args,'\0',MAX_NO_ARGS*sizeof(char *));*/
     nargs=split_args(argbuf, args);
 
 #if 0
@@ -634,111 +595,94 @@ int onecommand(
     }
 #endif
     if (0==nargs)
-	return -90; /* no command on line, too bad */
+	    return -90; /* no command on line, too bad */
 
     if (0==strcmp(args[0],"expect")) 
     {
-	char *rest;
-        if (nargs>1)
+	    char *rest;
+        if (nargs>1) /* args[0] is not yet set, can't use restargs */
             rest= line + (args[1]-argbuf); /* rest of the line */
         else
             return -1; /* need something to expect */
-	printf("expecting '%s'\n",rest); /*!*/
-	if (0==strstr(prevout,rest))
-	{
-	    printf( "Failed expectation, '%s' not found\n", rest);
+	    if (0==strstr(prevout,rest))
+	    {
+	        printf( "Failed expectation, '%s' not found\n", rest);
             exit(9); 
-	}
-	return 0;
+	    }
+	    return 0;
     }
     for (i=0;cmds[i].cmd;i++)
-	if (0==strcmp(cmds[i].cmd, args[0])) 
-	{
-	    if (nargs>1)
-		args[0]= line + (args[1]-argbuf); /* rest of the line */
-	    else
-		args[0]=""; 
-	    return ((cmds[i].testfunc)(args,outbuff));
-	}
-    strcat(outbuff, "Unknown command '");
-    strcat(outbuff,args[0] );
-    strcat(outbuff,"'. Try help");
+	    if (0==strcmp(cmds[i].cmd, args[0])) 
+	    {
+	        if (nargs>1)
+		        args[0]= line + (args[1]-argbuf); /* rest of the line */
+	        else
+		        args[0]=""; 
+	        return ((cmds[i].testfunc)(args,outbuff));
+	    }
+    wrbuf_printf(outbuff, "Unknown command '%s'. Try help\n",args[0]);
     logf(LOG_APP,"Unknown command");
     return -90; 
 }
  
-static int cmd_help( char *args[], char *outbuff)
+static int cmd_help( char *args[], WRBUF outbuff)
 { 
     int i;
-    char tmp[MAX_ARG_LEN];
+    int linelen;
     if (args[1]) 
     { /* help for a single command */ 
-	for (i=0;cmds[i].cmd;i++)
-	    if (0==strcmp(cmds[i].cmd, args[1])) 
-	    {
-		strcat(outbuff,cmds[i].cmd);
-		strcat(outbuff,"  ");
-		strcat(outbuff,cmds[i].args);
-		strcat(outbuff,"\n");
-		strcat(outbuff,cmds[i].explanation);
-		strcat(outbuff,"\n");
-		return 0;
-	    }
-	strcat(outbuff, "Unknown command ");
-	strcat(outbuff, args[1] );
-    }
+	    for (i=0;cmds[i].cmd;i++)
+	        if (0==strcmp(cmds[i].cmd, args[1])) 
+	        {
+                wrbuf_printf(outbuff,"%s  %s\n%s\n",
+		             cmds[i].cmd, cmds[i].args, 
+                     cmds[i].explanation);
+		        return 0;
+	        }
+	        wrbuf_printf(outbuff, "Unknown command '%s'", args[1]);
+        }
     else 
     { /* list all commands */
-	strcpy(tmp,"    ");
-	for (i=0;cmds[i].cmd;i++)
-	    if (cmds[i].explanation)
-	    {
-		/* sprintf(tmp, "%s %s %s\n",
-		   cmds[i].cmd, cmds[i].args, cmds[i].explanation);
-		*/
-		strcat(tmp, cmds[i].cmd);
-		strcat(tmp,"  ");
-		if (!*cmds[i].cmd)
-		{
-		    strcat(outbuff, tmp);
-		    strcat(outbuff,"\n");
-		    strcpy(tmp,"    ");
-		    if (*cmds[i].args)
-		    {
-			strcat(outbuff, cmds[i].args);
-			strcat(outbuff,"\n");
-		    }
-		}
-		if (strlen(tmp)>50)
-		{
-		    strcat(outbuff,tmp);
-		    strcat(outbuff,"\n");
-		    strcpy(tmp,"    ");
-		}
-	    }
-	strcat(outbuff,tmp);
+        linelen=9999;
+	    for (i=0;cmds[i].cmd;i++)
+        {
+            if (*cmds[i].cmd)
+            { /* ordinary command */
+                if (linelen>50)
+                {
+                    wrbuf_puts(outbuff,"\n   ");
+                    linelen=0;
+                }
+                linelen += strlen(cmds[i].cmd) + 2;
+                wrbuf_printf(outbuff,"%s ", cmds[i].cmd);
+            } else
+            { /* section head */
+                wrbuf_printf(outbuff,"\n%s\n   ",cmds[i].args);
+                linelen=0;
+            }
+	    } /* for */
+        wrbuf_puts(outbuff,"\n");
     }
     return 0;
 }
  
 /* If Zebra reports an error after an operation,
  * append it to the outbuff and log it */
-static void Zerrors ( char *outbuff)
+static void Zerrors ( WRBUF outbuff)
 {
     int ec;
-    char tmp[MAX_OUT_BUFF];
     if (!zh)
-	return ;
+	    return ;
     ec=zebra_errCode (zh);
     if (ec)
     {
-	sprintf(tmp, "   Zebra error %d: %s, (%s)",
-		ec, zebra_errString (zh),
-		zebra_errAdd (zh) );
-	strcat(outbuff, tmp);
-	strcat(outbuff, "\n");
-	logf(LOG_APP, tmp);
-	zebra_clearError(zh);
+	    logf(LOG_APP, "   Zebra error %d: %s, (%s)",
+		    ec, zebra_errString (zh),
+		    zebra_errAdd (zh) );
+	    wrbuf_printf(outbuff, "   Zebra error %d: %s, (%s)\n",
+		    ec, zebra_errString (zh),
+		    zebra_errAdd (zh) );
+	    zebra_clearError(zh);
     }
 }
   
@@ -749,49 +693,48 @@ static void Zerrors ( char *outbuff)
 void shell()
 {
     int rc=0;
-    char tmp[MAX_ARG_LEN];
-    char outbuff[MAX_OUT_BUFF]="";
+    WRBUF outbuff=wrbuf_alloc();
     char prevout[MAX_OUT_BUFF]=""; /* previous output for 'expect' */
+    wrbuf_puts(outbuff,"Zebrash at your service");
     while (rc!=-99)
     {
-	char buf[MAX_ARG_LEN];
+	    char buf[MAX_ARG_LEN];
 #if HAVE_READLINE_READLINE_H
-	char* line_in;
-	line_in=readline(PROMPT);
-	if (!line_in)
-	    break;
+	    char* line_in;
+	    line_in=readline(PROMPT);
+	    if (!line_in)
+	        break;
 #if HAVE_READLINE_HISTORY_H
-	if (*line_in)
-	    add_history(line_in);
+	    if (*line_in)
+	        add_history(line_in);
 #endif
-	if(strlen(line_in) > MAX_ARG_LEN-1) {
-	    fprintf(stderr,"Input line too long\n");
-	    break;
-	};
-	strcpy(buf,line_in);
-	free (line_in);
+	    if(strlen(line_in) > MAX_ARG_LEN-1) {
+	        fprintf(stderr,"Input line too long\n");
+	        break;
+	    }
+	    strcpy(buf,line_in);
+	    free (line_in);
 #else    
-	printf (PROMPT); 
-	fflush (stdout);
-	if (!fgets (buf, MAX_ARG_LEN-1, stdin))
-	    break; 
+	    printf (PROMPT); 
+	    fflush (stdout);
+	    if (!fgets (buf, MAX_ARG_LEN-1, stdin))
+	        break; 
 #endif 
 	
-	strncpy(prevout, outbuff, MAX_OUT_BUFF);
-	outbuff[0]='\0';
-	rc=onecommand(buf, outbuff, prevout);
-	if (rc==0)
-	{
-	    strcat(outbuff, "   OK\n");
-	    logf(LOG_APP, "OK");
-	}
-	else if (rc>-90)
-	{
-	    sprintf(tmp, "   command returned %d\n",rc);
-	    strcat(outbuff,tmp);
-	} 
-	Zerrors(outbuff);
-  	printf("%s\n", outbuff);
+	    strncpy(prevout, wrbuf_buf(outbuff), MAX_OUT_BUFF);
+        wrbuf_rewind(outbuff);
+	    rc=onecommand(buf, outbuff, prevout);
+	    if (rc==0)
+	    {
+	        wrbuf_puts(outbuff, "   OK\n");
+	        logf(LOG_APP, "OK");
+	    }
+	    else if (rc>-90)
+	    {
+	        wrbuf_printf(outbuff, "   command returned %d\n",rc);
+	    } 
+	    Zerrors(outbuff);
+  	    printf("%s\n", wrbuf_buf(outbuff));
     } /* while */
 } /* shell() */
   
