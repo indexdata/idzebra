@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.51  1997-10-27 14:33:05  adam
+ * Revision 1.52  1997-10-31 12:34:04  adam
+ * Added missing nmem_init.
+ *
+ * Revision 1.51  1997/10/27 14:33:05  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -223,7 +226,9 @@ int main (int argc, char **argv)
     int disableCommit = 0;
 
     struct recordGroup rGroupDef;
-    
+
+    nmem_init ();
+
     rGroupDef.groupName = NULL;
     rGroupDef.databaseName = NULL;
     rGroupDef.path = NULL;
@@ -462,5 +467,6 @@ int main (int argc, char **argv)
     }
     data1_destroy (rGroupDef.dh);
     exit (0);
+    return 0;
 }
 
