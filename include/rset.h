@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.45 2005-01-15 20:47:15 adam Exp $
+/* $Id: rset.h,v 1.46 2005-01-16 23:14:56 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,8 +22,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef RSET_H
 #define RSET_H
-
-#include <stddef.h>
 
 /* unfortunately we need the isam includes here, for the arguments for */
 /* rsisamX_create */

@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.20 2005-01-15 19:38:24 adam Exp $
+/* $Id: apitest.c,v 1.21 2005-01-16 23:14:57 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,9 +20,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <yaz/log.h>
 #include <yaz/pquery.h>

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.121 2005-01-15 19:38:26 adam Exp $
+/* $Id: main.c,v 1.122 2005-01-16 23:14:57 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -21,6 +21,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #ifdef WIN32

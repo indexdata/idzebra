@@ -1,4 +1,4 @@
-/* $Id: d1_doespec.c,v 1.6 2005-01-15 19:38:18 adam Exp $
+/* $Id: d1_doespec.c,v 1.7 2005-01-16 23:14:56 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -21,6 +21,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 #include <assert.h>
+#include <stdlib.h>
 
 #include <yaz/log.h>
 #include <yaz/oid.h>

@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.57 2005-01-15 19:38:35 adam Exp $
+/* $Id: rstemp.c,v 1.58 2005-01-16 23:14:57 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -21,6 +21,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 #include <fcntl.h>
+#include <stdlib.h>
 #include <assert.h>
 #ifdef WIN32
 #include <io.h>

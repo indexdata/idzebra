@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.34 2005-01-15 19:38:41 adam Exp $
+/* $Id: charmap.c,v 1.35 2005-01-16 23:14:58 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,6 +29,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 #include <assert.h>
 
 typedef unsigned ucs4_t;

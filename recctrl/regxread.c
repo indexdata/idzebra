@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.56 2005-01-15 19:38:32 adam Exp $
+/* $Id: regxread.c,v 1.57 2005-01-16 23:14:57 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,8 +20,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
