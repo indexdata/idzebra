@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.8 2005-01-15 22:10:16 adam Exp $
+/* $Id: api.h,v 1.9 2005-01-16 23:14:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -80,39 +80,40 @@ typedef struct zebra_session *ZebraHandle;
  */
 typedef struct zebra_service *ZebraService;
 
-
-/******
- * Starting and stopping 
- */
-
-/* Start Zebra using file 'configName' (usually zebra.cfg) */
-/* There should be exactly one ZebraService */
-
 /** \fn ZebraService zebra_start(const char *configName)
- * \brief starts a Zebra service
+ * \brief starts a Zebra service. 
  * \param configName name of configuration file
+ *
+ * This function is a simplified version of zebra_start_res.
  */
 YAZ_EXPORT ZebraService zebra_start
 (const char *configName);
 
-/** \fn ZebraService zebra_start_res(const char *configName, Res def_res, Res over_res)
- * \brief starts a Zebra service with resources
+/** \fn ZebraService zebra_start_res(const char *configName,
+    Res def_res, Res over_res)
+ * \brief starts a Zebra service with resources.
  * \param configName name of configuration file
  * \param def_res default resources
  * \param over_res overriding resources
+ *
+ * This function typically called once in a program. A Zebra Service
+ * acts as a factory for Zebra session handles.
  */
 YAZ_EXPORT
-ZebraService zebra_start_res (const char *configName,
+ZebraService zebra_start_res(const char *configName,
 		         Res def_res, Res over_res);
 
 /** \fn int zebra_stop(ZebraService zs)
- * \brief stops a Zebra service
+ * \brief stops a Zebra service.
  * \param zs service handle
+ *
+ * Frees resources used by the service.
  */
 YAZ_EXPORT
-int zebra_stop (ZebraService zs);
+int zebra_stop(ZebraService zs);
 
-/** \fn void zebra_filter_info(ZebraService zs, void *cd, void (*cb)(void *cd, const char *name))
+/** \fn void zebra_filter_info(ZebraService zs, void *cd,
+                               void(*cb)(void *cd, const char *name))
  * \brief lists enabled Zebra filters
  * \param zs service handle
  * \param cd callback parameter (opaque)
@@ -123,33 +124,56 @@ void zebra_filter_info(ZebraService zs, void *cd,
 		  void (*cb)(void *cd, const char *name));
 
 
-/* Open a ZebraHandle */
-/* There should be one handle for each thred doing something */
-/* with zebra, be that searching or indexing. In simple apps */
-/* one handle is sufficient */
-YAZ_EXPORT ZebraHandle zebra_open (ZebraService zs);
+/** \fn ZebraHandle zebra_open(ZebraService zs)
+ * \brief creates a Zebra session handle within service.
+ * \param zs service handle.
+ *
+ * There should be one handle for each thread doing something
+ * with zebra, be that searching or indexing. In simple apps 
+ * one handle is sufficient 
+ */
+YAZ_EXPORT ZebraHandle zebra_open(ZebraService zs);
 
-/* Close handle */
-YAZ_EXPORT int zebra_close (ZebraHandle zh);
+/** \fn int zebra_close(ZebraHandle zh)
+ * \brief destroys Zebra session handle.
+ * \param zh zebra session handle.
+ */
+YAZ_EXPORT int zebra_close(ZebraHandle zh);
 
 /*********
  * Error handling 
  */
 
-/* last error code */
-YAZ_EXPORT int zebra_errCode (ZebraHandle zh);
+/** \fn int zebra_errCode(ZebraHandle zh)
+ * \brief returns error code for last error
+ * \param zh zebra session handle.
+ */
+YAZ_EXPORT int zebra_errCode(ZebraHandle zh);
 
-/* string representatio of above */
-YAZ_EXPORT const char *zebra_errString (ZebraHandle zh);
+/** \fn const char *zebra_errString(ZebraHandle zh)
+ * \brief returns error string for last error
+ * \param zh zebra session handle.
+ */
+YAZ_EXPORT const char *zebra_errString(ZebraHandle zh);
 
-/* extra information associated with error */
-YAZ_EXPORT char *zebra_errAdd (ZebraHandle zh);
+/** \fn char *zebra_errAdd(ZebraHandle zh)
+ * \brief returns additional info for last error
+ * \param zh zebra session handle.
+ */
+YAZ_EXPORT char *zebra_errAdd(ZebraHandle zh);
 
-/* get the result code and addinfo from zh */
-YAZ_EXPORT int zebra_result (ZebraHandle zh, int *code, char **addinfo);
-/* FIXME - why is this needed?? -H */
+/** \fn int zebra_result(ZebraHandle zh, int *code, char **addinfo)
+ * \brief returns error code and additional info for last error
+ * \param zh zebra session handle.
+ * \param code pointer to returned error code
+ * \param addinfo pointer to returned additional info
+ */
+YAZ_EXPORT int zebra_result(ZebraHandle zh, int *code, char **addinfo);
 
-/* clear them error things */
+/** \fn void zebra_clearError(ZebraHandle zh)
+ * \brief clears last error.
+ * \param zh zebra session handle.
+ */
 YAZ_EXPORT void zebra_clearError(ZebraHandle zh);
 
 /**************
@@ -157,15 +181,15 @@ YAZ_EXPORT void zebra_clearError(ZebraHandle zh);
  */
 
 /* Search using PQF Query */
-YAZ_EXPORT int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
+YAZ_EXPORT int zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
                                  const char *setname, int *numhits);
 
 /* Search using RPN Query */
-YAZ_EXPORT int zebra_search_RPN (ZebraHandle zh, ODR o, Z_RPNQuery *query,
+YAZ_EXPORT int zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
 				 const char *setname, int *hits);
 
 /* Retrieve record(s) */
-YAZ_EXPORT int zebra_records_retrieve (ZebraHandle zh, ODR stream,
+YAZ_EXPORT int zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		       const char *setname, Z_RecordComposition *comp,
 		       oid_value input_format,
 		       int num_recs, ZebraRetrievalRecord *recs);
@@ -177,7 +201,7 @@ YAZ_EXPORT int zebra_deleleResultSet(ZebraHandle zh, int function,
 
 
 /* Browse */
-YAZ_EXPORT int zebra_scan (ZebraHandle zh, ODR stream,
+YAZ_EXPORT int zebra_scan(ZebraHandle zh, ODR stream,
 			   Z_AttributesPlusTerm *zapt,
 			   oid_value attributeset,
 			   int *position, int *num_entries,
@@ -191,11 +215,11 @@ YAZ_EXPORT int zebra_scan (ZebraHandle zh, ODR stream,
  */
                       
 /* do authentication */
-YAZ_EXPORT int zebra_auth (ZebraHandle zh, const char *user, const char *pass);
+YAZ_EXPORT int zebra_auth(ZebraHandle zh, const char *user, const char *pass);
 
 /* Character normalisation on specific register .
    This routine is subject to change - do not use. */
-YAZ_EXPORT int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
+YAZ_EXPORT int zebra_string_norm(ZebraHandle zh, unsigned reg_id,
 				  const char *input_str, int input_len,
 				  char *output_str, int output_len);
 
@@ -204,64 +228,64 @@ YAZ_EXPORT int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
  * Admin 
  */                   
           
-YAZ_EXPORT int zebra_create_database (ZebraHandle zh, const char *db);
-YAZ_EXPORT int zebra_drop_database (ZebraHandle zh, const char *db);
+YAZ_EXPORT int zebra_create_database(ZebraHandle zh, const char *db);
+YAZ_EXPORT int zebra_drop_database(ZebraHandle zh, const char *db);
 
-YAZ_EXPORT int zebra_admin_shutdown (ZebraHandle zh);
-YAZ_EXPORT int zebra_admin_start (ZebraHandle zh);
+YAZ_EXPORT int zebra_admin_shutdown(ZebraHandle zh);
+YAZ_EXPORT int zebra_admin_start(ZebraHandle zh);
 
-YAZ_EXPORT int zebra_shutdown (ZebraService zs);
+YAZ_EXPORT int zebra_shutdown(ZebraService zs);
 
-YAZ_EXPORT int zebra_admin_import_begin (ZebraHandle zh, const char *database,
+YAZ_EXPORT int zebra_admin_import_begin(ZebraHandle zh, const char *database,
                                           const char *record_type);
 
-YAZ_EXPORT int zebra_admin_import_segment (ZebraHandle zh,
+YAZ_EXPORT int zebra_admin_import_segment(ZebraHandle zh,
 					    Z_Segment *segment);
 
-YAZ_EXPORT int zebra_admin_import_end (ZebraHandle zh);
+YAZ_EXPORT int zebra_admin_import_end(ZebraHandle zh);
 
-int zebra_admin_exchange_record (ZebraHandle zh,
+int zebra_admin_exchange_record(ZebraHandle zh,
                                  const char *rec_buf,
                                  size_t rec_len,
                                  const char *recid_buf, size_t recid_len,
                                  int action);
 
-int zebra_begin_trans (ZebraHandle zh, int rw);
-int zebra_end_trans (ZebraHandle zh);
-int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *stat);
+int zebra_begin_trans(ZebraHandle zh, int rw);
+int zebra_end_trans(ZebraHandle zh);
+int zebra_end_transaction(ZebraHandle zh, ZebraTransactionStatus *stat);
 
-int zebra_commit (ZebraHandle zh);
-int zebra_clean (ZebraHandle zh);
+int zebra_commit(ZebraHandle zh);
+int zebra_clean(ZebraHandle zh);
 
-int zebra_init (ZebraHandle zh);
-int zebra_compact (ZebraHandle zh);
-int zebra_repository_update (ZebraHandle zh, const char *path);
-int zebra_repository_delete (ZebraHandle zh, const char *path);
-int zebra_repository_show (ZebraHandle zh, const char *path);
+int zebra_init(ZebraHandle zh);
+int zebra_compact(ZebraHandle zh);
+int zebra_repository_update(ZebraHandle zh, const char *path);
+int zebra_repository_delete(ZebraHandle zh, const char *path);
+int zebra_repository_show(ZebraHandle zh, const char *path);
 
-int zebra_add_record (ZebraHandle zh, const char *buf, int buf_size);
+int zebra_add_record(ZebraHandle zh, const char *buf, int buf_size);
 			       
-int zebra_insert_record (ZebraHandle zh, 
+int zebra_insert_record(ZebraHandle zh, 
 			 const char *recordType,
 			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
-int zebra_update_record (ZebraHandle zh, 
+int zebra_update_record(ZebraHandle zh, 
 			 const char *recordType,
 			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
-int zebra_delete_record (ZebraHandle zh, 
+int zebra_delete_record(ZebraHandle zh, 
 			 const char *recordType,
 			 SYSNO *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
 
-YAZ_EXPORT int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
+YAZ_EXPORT int zebra_resultSetTerms(ZebraHandle zh, const char *setname, 
                                      int no, zint *count, 
                                      int *type, char *out, size_t *len);
 
-YAZ_EXPORT int zebra_sort (ZebraHandle zh, ODR stream,
+YAZ_EXPORT int zebra_sort(ZebraHandle zh, ODR stream,
 			   int num_input_setnames,
 			   const char **input_setnames,
 			   const char *output_setname,
@@ -269,23 +293,23 @@ YAZ_EXPORT int zebra_sort (ZebraHandle zh, ODR stream,
 			   int *sort_status);
 
 YAZ_EXPORT
-int zebra_select_databases (ZebraHandle zh, int num_bases, 
+int zebra_select_databases(ZebraHandle zh, int num_bases, 
                             const char **basenames);
 
 YAZ_EXPORT
-int zebra_select_database (ZebraHandle zh, const char *basename);
+int zebra_select_database(ZebraHandle zh, const char *basename);
 
 YAZ_EXPORT
-int zebra_shadow_enable (ZebraHandle zh, int value);
+int zebra_shadow_enable(ZebraHandle zh, int value);
 
 YAZ_EXPORT
-int zebra_register_statistics (ZebraHandle zh, int dumpdict);
+int zebra_register_statistics(ZebraHandle zh, int dumpdict);
 
 YAZ_EXPORT
-int zebra_record_encoding (ZebraHandle zh, const char *encoding);
+int zebra_record_encoding(ZebraHandle zh, const char *encoding);
 
 YAZ_EXPORT
-int zebra_record_encoding (ZebraHandle zh, const char *encoding);
+int zebra_record_encoding(ZebraHandle zh, const char *encoding);
 
 YAZ_EXPORT
 int zebra_octet_term_encoding(ZebraHandle zh, const char *encoding);
@@ -308,18 +332,18 @@ typedef struct {
 } ZebraMetaRecord;
 
 YAZ_EXPORT
-ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh,
-					    const char *name,
-					    int num, zint *positions);
+ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh,
+					   const char *name,
+					   int num, zint *positions);
 
 
 YAZ_EXPORT
-ZebraMetaRecord *zebra_meta_records_create_range (ZebraHandle zh,
-						  const char *name, 
-						  zint start, int num);
+ZebraMetaRecord *zebra_meta_records_create_range(ZebraHandle zh,
+						 const char *name, 
+						 zint start, int num);
 
 YAZ_EXPORT
-void zebra_meta_records_destroy (ZebraHandle zh, ZebraMetaRecord *records,
-				 int num);
+void zebra_meta_records_destroy(ZebraHandle zh, ZebraMetaRecord *records,
+				int num);
 YAZ_END_CDECL				      
 #endif
