@@ -1,11 +1,12 @@
-# Z'mbol makefile for MS NMAKE
-# $Id: makefile,v 1.5 2000-05-05 13:48:03 adam Exp $
+# Z'mbol/Zebra makefile for MS NMAKE
+# $Id: makefile,v 1.6 2000-05-23 21:28:03 adam Exp $
  
 ###########################################################
 ############### Parameters 
 ###########################################################
 
 DEBUG=1   # 0 for release, 1 for debug
+ZMBOL=1
 
 default: all
 
@@ -65,8 +66,13 @@ TEMP=$(TMPDIR)
 ###########################################################
 
 ZEBRALIB=$(LIBDIR)\zebra.lib
+!if $(ZMBOL)
 ZSERVER=$(BINDIR)\zmbolsrv.exe
 ZINDEX=$(BINDIR)\zmbolidx.exe
+!else
+ZSERVER=$(BINDIR)\zebrasrv.exe
+ZINDEX=$(BINDIR)\zebraidx.exe
+!endif
 APITEST=$(BINDIR)\apitest.exe
 
 # shortcut names defined here
@@ -90,7 +96,7 @@ COMMON_C_OPTIONS=          \
   /FR"$(OBJDIR)\\"         \
   /Fo"$(OBJDIR)\\"         \
   /Fd"$(OBJDIR)\\"         \
-  /D"ZMBOL=1"              \
+  /D"ZMBOL=$(ZMBOL)"       \
   $(BZIP2DEF)
 
 COMMON_C_INCLUDES= \
@@ -183,7 +189,22 @@ ZEBRAIDX_OBJS= \
 APITEST_OBJS= \
 	$(OBJDIR)\apitest.obj
 
+!if $(ZMBOL)
+ZMBOLLIB_OBJS= \
+	$(OBJDIR)\isam.obj \
+	$(OBJDIR)\isamc.obj \
+	$(OBJDIR)\isamd.obj \
+	$(OBJDIR)\isutil.obj \
+	$(OBJDIR)\memory.obj \
+	$(OBJDIR)\merge.obj \
+	$(OBJDIR)\merge-d.obj \
+	$(OBJDIR)\physical.obj \
+	$(OBJDIR)\rootblk.obj
+!else
+ZMBOLLIB_OBJS=
+!endif
 ZEBRALIB_OBJS= \
+    $(ZMBOLLIB_OBJS) \
 	$(OBJDIR)\zebra-lock.obj \
 	$(OBJDIR)\attribute.obj \
 	$(OBJDIR)\bfile.obj \
@@ -203,10 +224,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\imalloc.obj \
 	$(OBJDIR)\insert.obj \
 	$(OBJDIR)\invstat.obj \
-	$(OBJDIR)\isam.obj \
-	$(OBJDIR)\isamc.obj \
-	$(OBJDIR)\isamd.obj \
-	$(OBJDIR)\isutil.obj \
 	$(OBJDIR)\kcompare.obj \
 	$(OBJDIR)\lockidx.obj \
 	$(OBJDIR)\locksrv.obj \
@@ -215,13 +232,9 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\lookup.obj \
 	$(OBJDIR)\lookupec.obj \
 	$(OBJDIR)\marcread.obj \
-	$(OBJDIR)\memory.obj \
-	$(OBJDIR)\merge.obj \
-	$(OBJDIR)\merge-d.obj \
 	$(OBJDIR)\mfile.obj \
 	$(OBJDIR)\open.obj \
 	$(OBJDIR)\passwddb.obj \
-	$(OBJDIR)\physical.obj \
 	$(OBJDIR)\rank1.obj \
 	$(OBJDIR)\readfile.obj \
 	$(OBJDIR)\recctrl.obj \
@@ -232,7 +245,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\regxread.obj \
 	$(OBJDIR)\res.obj \
 	$(OBJDIR)\retrieve.obj \
-	$(OBJDIR)\rootblk.obj \
 	$(OBJDIR)\rsbool.obj \
 	$(OBJDIR)\rset.obj \
 	$(OBJDIR)\rsisam.obj \
@@ -314,7 +326,7 @@ ALL_OBJS=\
 ###########################################################
 
 $(ZSERVER) : "$(BINDIR)" $(ZSERVER_OBJS) $(ZEBRALIB) $(YAZLIBS)
-	@echo Linking the zmbol server  $(ZSERVER)
+	@echo Linking the server $(ZSERVER)
 	$(LINK) @<<
 		$(LNKOPT) 
 		$(ZSERVER_LINK_OPTIONS)
@@ -327,7 +339,7 @@ $(ZSERVER) : "$(BINDIR)" $(ZSERVER_OBJS) $(ZEBRALIB) $(YAZLIBS)
 <<
 
 $(ZINDEX) : "$(BINDIR)" $(ZEBRAIDX_OBJS) $(ZEBRALIB) $(YAZLIBS)
-	@echo Linking the zmbol indexer  $(ZINDEX)
+	@echo Linking the indexer $(ZINDEX)
 	$(LINK) @<<
 		$(LNKOPT) 
 		$(ZINDEX_LINK_OPTIONS)
@@ -349,11 +361,11 @@ $(APITEST) : "$(BINDIR)" $(APITEST_OBJS) $(ZEBRALIB) $(YAZLIBS)
 		$(ZEBRALIB)
 		$(BZIP2LIB)
 		$(LINK_LIBS) 
-		$(APITEST_OBJS) 
+		$(APITEST_OBJS)
 <<
 
 $(ZEBRALIB) : "$(BINDIR)" $(ZEBRALIB_OBJS) 
-	@echo Linking zebra/zmbol library  $(ZEBRALIB)
+	@echo Linking library  $(ZEBRALIB)
 	$(LINK) $(ZEBRALIB_LINK_OPTIONS) @<<
 		/nologo
 		$(ZEBRALIB_OBJS) 
@@ -392,7 +404,10 @@ $(ALL_OBJS): makefile
 ###########################################################
 #
 # $Log: makefile,v $
-# Revision 1.5  2000-05-05 13:48:03  adam
+# Revision 1.6  2000-05-23 21:28:03  adam
+# Combined zebra/zmbol makefile.
+#
+# Revision 1.5  2000/05/05 13:48:03  adam
 # Fixed locking for metafiles.
 #
 # Revision 1.4  2000/04/19 14:35:59  adam
