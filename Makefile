@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.44 1996-01-08 09:07:51 adam Exp $
+# $Id: Makefile,v 1.45 1996-01-08 19:15:07 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -9,14 +9,14 @@ RANLIB=ranlib
 VERSION=1.0a3
 
 # Where are Yaz libraries located?
-#YAZLIB=../../yaz/lib/libyaz.a
+YAZLIB=../../yaz/lib/libyaz.a
 #YAZLIB=/usr/local/lib/libyazchkr.a
-YAZLIB=-lyaz
+#YAZLIB=-lyazchkr
 # Where are Yaz header files located?
-#YAZINC=-I../../yaz/include
+YAZINC=-I../../yaz/include
 # If Yaz is compiled with mosi support uncomment and specify.
-#OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
-OSILIB=../../xtimosi/src/libmosi.a -lrfc
+OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
+#OSILIB=../../xtimosi/src/libmosi.a -lrfc
 
 # Some systems have seperate socket libraries
 #NETLIB=-lnsl -lsocket
