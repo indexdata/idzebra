@@ -1,5 +1,5 @@
-/* $Id: zrpn.c,v 1.134 2003-09-05 10:51:17 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: zrpn.c,v 1.135 2004-01-15 13:31:31 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -2312,18 +2312,25 @@ static RSET rpn_search_xpath (ZebraHandle zh,
                 xpath[level].predicate->which == XPATH_PREDICATE_RELATION &&
                 xpath[level].predicate->u.relation.name[0])
             {
-                char predicate_str[128];
-
-                strcpy (predicate_str,
-                        xpath[level].predicate->u.relation.name+1);
+		WRBUF wbuf = wrbuf_alloc();
+		wrbuf_puts(wbuf, xpath[level].predicate->u.relation.name+1);
                 if (xpath[level].predicate->u.relation.value)
                 {
-                    strcat (predicate_str, "=");
-                    strcat (predicate_str,
-                            xpath[level].predicate->u.relation.value);
+		    const char *cp = xpath[level].predicate->u.relation.value;
+		    wrbuf_putc(wbuf, '=');
+		    
+		    while (*cp)
+		    {
+			if (strchr(REGEX_CHARS, *cp))
+			    wrbuf_putc(wbuf, '\\');
+			wrbuf_putc(wbuf, *cp);
+			cp++;
+		    }
                 }
+		wrbuf_puts(wbuf, "");
                 rset_attr = xpath_trunc (
-                    zh, stream, '0', predicate_str, 3, curAttributeSet);
+                    zh, stream, '0', wrbuf_buf(wbuf), 3, curAttributeSet);
+		wrbuf_free(wbuf, 1);
             } 
             else 
             {

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.10 2003-08-21 10:30:04 adam Exp $
+/* $Id: zebraapi.h,v 1.11 2004-01-15 13:31:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -141,7 +141,7 @@ YAZ_EXPORT int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
 
 /* Search using RPN Query */
 YAZ_EXPORT int zebra_search_RPN (ZebraHandle zh, ODR o, Z_RPNQuery *query,
-                                  const char *setname, int *hits);
+				 const char *setname, int *hits);
 
 /* Retrieve record(s) */
 YAZ_EXPORT int zebra_records_retrieve (ZebraHandle zh, ODR stream,

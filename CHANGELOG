@@ -1,4 +1,6 @@
 
+Fix bug. X-Path attribute expressions with spaces in them now works.
+
 Fix base address for MARC output.
 
 --- 1.3.14 2003/11/29

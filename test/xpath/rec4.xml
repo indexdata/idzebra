@@ -1,0 +1,7 @@
+<root>
+  <!-- Space in attribute -->
+  <first attr="danish">content</first>
+  <second attr="danish lake">content</second>
+  <!-- Oslash in Latin-1 encoded below.. -->
+  <third attr="dansk sø">content<third>
+</root>
