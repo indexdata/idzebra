@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.21  1995-10-06 13:52:06  adam
+ * Revision 1.22  1995-10-06 15:07:39  adam
+ * Structure 'local-number' handled.
+ *
+ * Revision 1.21  1995/10/06  13:52:06  adam
  * Bug fixes. Handler may abort further scanning.
  *
  * Revision 1.20  1995/10/06  11:06:33  adam
@@ -521,6 +524,33 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
     return rset_create (rset_kind_isam, &parms);
 }
 
+static RSET rpn_search_APT_local (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
+{
+    RSET result;
+    RSFD rsfd;
+    struct it_key key;
+    rset_temp_parms parms;
+    char termz[IT_MAX_WORD+1];
+
+    if (zapt->term->which != Z_Term_general)
+    {
+        zi->errCode = 124;
+        return NULL;
+    }
+    parms.key_size = sizeof (struct it_key);
+    result = rset_create (rset_kind_temp, &parms);
+    rsfd = rset_open (result, 1);
+
+    trans_term (zi, zapt, termz);
+    key.sysno = atoi (termz);
+    if (key.sysno <= 0)
+        key.sysno = 1;
+    rset_write (result, rsfd, &key);
+    rset_close (result, rsfd);
+    return result;
+}
+
+
 static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
 {
     AttrType relation;
@@ -570,7 +600,7 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
     case 106: /* document-text */
         return rpn_search_APT_relevance (zi, zapt);
     case 107: /* local-number */
-        break;
+        return rpn_search_APT_local (zi, zapt);
     case 108: /* string */ 
         return rpn_search_APT_word (zi, zapt);
     case 109: /* numeric string */
