@@ -4,8 +4,8 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.12  2002-04-09 14:36:53  adam
- * Fix XML attributes for MARC reader
+ * Revision 1.11.2.1  2002-04-09 14:55:40  adam
+ * Fix attributes for MARC reader
  *
  * Revision 1.11  2000/05/15 15:32:51  adam
  * Added support for 64 bit input file support.
@@ -109,12 +109,12 @@ data1_node *data1_mk_node_tag (data1_handle dh, NMEM mem, data1_node *parent,
     res->which = DATA1N_tag;
     res->u.tag.tag = res->lbuf;
     res->u.tag.get_bytes = -1;
-#if DATA1_USING_XATTR
-    res->u.tag.attributes = 0;
-#endif
 
     if (len >= DATA1_LOCALDATA)
         len = DATA1_LOCALDATA-1;
+#if DATA1_USING_XATTR
+    res->u.tag.attributes = 0;
+#endif
 
     memcpy (res->u.tag.tag, tag, len);
     res->u.tag.tag[len] = '\0';

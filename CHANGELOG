@@ -1,19 +1,5 @@
 
---- 1.2.0 2002/04/05
-
-Multiple registers. New setting in resource 'root' that holds base
-directory for register(s). A group a databases may be put in separate
-register in directory root/reg by using db name 'reg/db1' ... 'reg/dbN'.
-
---- 1.1.1 2002/03/21
-
-Fixes for Digital Unix
-
-Implemented hits per term using USR:SearchResult-1.
-
-New Zebra API. Locking system re-implemented.
-
---- 1.1.stable 2002/02/20
+Fix XML attributes for MARC reader.
 
 Rank weight can be controlled with attribute type 9. Default
 value is 34. Recommended values between 1-36.
