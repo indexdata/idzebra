@@ -93,7 +93,6 @@ binary-arch: build install
 	dh_testroot
 	dh_movefiles -p idzebra usr/share/idzebra usr/bin
 
-	cp LICENSE.zebra debian/copyright
 	cp CHANGELOG changelog
 	dh_installdocs --all README TODO changelog debian/copyright
 

@@ -1,4 +1,2 @@
 #!/bin/bash
-
 # Postinst script for Zebra
-ldconfig

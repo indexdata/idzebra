@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.5 2002-09-05 14:36:20 adam Exp $
+## $Id: Makefile.am,v 1.6 2002-09-11 20:27:52 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -24,6 +24,7 @@ dist-hook:
 	cp $(srcdir)/debian/changelog $(distdir)/debian
 	cp $(srcdir)/debian/rules $(distdir)/debian
 	cp $(srcdir)/debian/postinst $(distdir)/debian
+	cp $(srcdir)/debian/copyright $(distdir)/debian
 
 
 rpm: $(PACKAGE)-$(VERSION).tar.gz
