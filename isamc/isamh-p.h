@@ -50,7 +50,9 @@ typedef struct ISAMH_file_s {
 struct ISAMH_s {
     int no_files;
     int max_cat;
-    char *merge_buf;
+  //  char *merge_buf;
+    char *startblock; /* start of the chain, update lastptr and numKeys here */
+    char *lastblock;  /* end of the chain, append here */
     ISAMH_M method;
     ISAMH_file files;
 }; 
@@ -59,17 +61,22 @@ struct ISAMH_PP_s {
     char *buf;
     ISAMH_BLOCK_SIZE offset;
     ISAMH_BLOCK_SIZE size;
-    int cat;
-    int pos;
-    int next;
+    int cat;  /* category of this block */
+    int pos;  /* block number of this block */
+    int next; /* number of the next block */
     ISAMH is;
     void *decodeClientData;
     int deleteFlag;
     int numKeys;
+    ISAMH_BLOCK_SIZE lastblock;  /* last block in chain */
 };
 
-#define ISAMH_BLOCK_OFFSET_N (sizeof(int)+sizeof(ISAMH_BLOCK_SIZE)) 
-#define ISAMH_BLOCK_OFFSET_1 (sizeof(int)+sizeof(ISAMH_BLOCK_SIZE)+sizeof(int)) 
+#define ISAMH_BLOCK_OFFSET_N (sizeof(int) +  \
+                              sizeof(ISAMH_BLOCK_SIZE)) 
+#define ISAMH_BLOCK_OFFSET_1 (sizeof(int) + \
+                              sizeof(ISAMH_BLOCK_SIZE) + \
+                              sizeof(int) + \
+                              sizeof(ISAMH_BLOCK_SIZE)) 
 int isamh_alloc_block (ISAMH is, int cat);
 void isamh_release_block (ISAMH is, int cat, int pos);
 int isamh_read_block (ISAMH is, int cat, int pos, char *dst);
@@ -83,7 +90,10 @@ int isamh_write_block (ISAMH is, int cat, int pos, char *src);
 
 /*
  * $Log: isamh-p.h,v $
- * Revision 1.1  1999-06-30 15:05:45  heikki
+ * Revision 1.2  1999-07-06 09:37:05  heikki
+ * Working on isamh - not ready yet.
+ *
+ * Revision 1.1  1999/06/30 15:05:45  heikki
  * opied from isamc.p.h, starting to simplify
  *
  */

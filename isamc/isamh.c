@@ -34,8 +34,9 @@ ISAMH_M isamh_getmethod (void)
 {
     static struct ISAMH_filecat_s def_cat[] = {
 #if SMALL_TEST
-        {    32,  3 },
-	{    64,  0 },
+/*        blocksz,   maxnum */
+        {    32,   3 },
+	{    64,   0 },
 #else
         {    24, 10 },
 	{   128, 10 },
@@ -85,15 +86,18 @@ ISAMH isamh_open (BFiles bfs, const char *name, int writeflag, ISAMH_M method)
         if (is->method->debug)
             logf (LOG_LOG, "isc:%6d %6d",
                   filecat[i].bsize, filecat[i].mblocks);
-        if (max_buf_size < filecat[i].mblocks * filecat[i].bsize)
-            max_buf_size = filecat[i].mblocks * filecat[i].bsize;
+        if (max_buf_size < filecat[i].bsize)
+            max_buf_size = filecat[i].bsize;
     } while (filecat[i++].mblocks);
     is->no_files = i;
     is->max_cat = --i;
+#ifdef SKIPTHIS
     /* max_buf_size is the larget buffer to be used during merge */
     max_buf_size = (1 + max_buf_size / filecat[i].bsize) * filecat[i].bsize;
     if (max_buf_size < (1+is->method->max_blocks_mem) * filecat[i].bsize)
         max_buf_size = (1+is->method->max_blocks_mem) * filecat[i].bsize;
+#endif
+
     if (is->method->debug)
         logf (LOG_LOG, "isc: max_buf_size %d", max_buf_size);
     
@@ -101,11 +105,20 @@ ISAMH isamh_open (BFiles bfs, const char *name, int writeflag, ISAMH_M method)
     is->files = (ISAMH_file) xmalloc (sizeof(*is->files)*is->no_files);
     if (writeflag)
     {
+#ifdef SKIPTHIS
         is->merge_buf = (char *) xmalloc (max_buf_size+256);
 	memset (is->merge_buf, 0, max_buf_size+256);
+#else
+        is->startblock = (char *) xmalloc (max_buf_size+256);
+	memset (is->startblock, 0, max_buf_size+256);
+        is->lastblock = (char *) xmalloc (max_buf_size+256);
+	memset (is->lastblock, 0, max_buf_size+256);
+	/* The spare 256 bytes should not be needed! */
+#endif
     }
     else
-        is->merge_buf = NULL;
+        is->startblock = is->lastblock = NULL;
+
     for (i = 0; i<is->no_files; i++)
     {
         char fname[512];
@@ -200,7 +213,8 @@ int isamh_close (ISAMH is)
         bf_close (is->files[i].bf);
     }
     xfree (is->files);
-    xfree (is->merge_buf);
+    xfree (is->startblock);
+    xfree (is->lastblock);
     xfree (is->method);
     xfree (is);
     return 0;
@@ -453,7 +467,8 @@ ISAMH_PP isamh_pp_open (ISAMH is, ISAMH_P ipos)
     pp->decodeClientData = (*is->method->code_start)(ISAMH_DECODE);
     pp->deleteFlag = 0;
     pp->numKeys = 0;
-
+    pp->lastblock=0;
+    
     if (pp->pos)
     {
         src = pp->buf;
@@ -464,6 +479,8 @@ ISAMH_PP isamh_pp_open (ISAMH is, ISAMH_P ipos)
         src += sizeof(pp->size);
         memcpy (&pp->numKeys, src, sizeof(pp->numKeys));
         src += sizeof(pp->numKeys);
+        memcpy (&pp->lastblock, src, sizeof(pp->lastblock));
+        src += sizeof(pp->lastblock);
         assert (pp->next != pp->pos);
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMH_BLOCK_OFFSET_1);
@@ -473,6 +490,40 @@ ISAMH_PP isamh_pp_open (ISAMH is, ISAMH_P ipos)
     }
     return pp;
 }
+
+void isamh_buildfirstblock(ISAMH_PP pp){
+  char *dst=pp->buf;
+  assert(pp->buf);
+  assert(pp->next != pp->pos); 
+  memcpy(dst, &pp->next, sizeof(pp->next) );
+  dst += sizeof(pp->next);
+  memcpy(dst, &pp->size,sizeof(pp->size));
+  dst += sizeof(pp->size);
+  memcpy(dst, &pp->numKeys, sizeof(pp->numKeys));
+  dst += sizeof(pp->numKeys);
+  memcpy(dst, &pp->lastblock, sizeof(pp->lastblock));
+  dst += sizeof(pp->lastblock);  
+  assert (dst - pp->buf  == ISAMH_BLOCK_OFFSET_1);
+  if (pp->is->method->debug > 2)
+     logf (LOG_LOG, "isamh: firstblock: sz=%d c=%d p=%d>%d>%d nk=%d",
+           pp->size, pp->cat, pp->pos, pp->next, pp->lastblock,pp->numKeys);
+}
+
+void isamh_buildlaterblock(ISAMH_PP pp){
+  char *dst=pp->buf;
+  assert(pp->buf);
+  assert(pp->next != pp->pos); 
+  memcpy(dst, &pp->next, sizeof(pp->next) );
+  dst += sizeof(pp->next);
+  memcpy(dst, &pp->size,sizeof(pp->size));
+  dst += sizeof(pp->size);
+  assert (dst - pp->buf  == ISAMH_BLOCK_OFFSET_N);
+  if (pp->is->method->debug > 2)
+     logf (LOG_LOG, "isamh: laterblock: sz=%d c=%d p=%d>%d",
+                 pp->size, pp->cat, pp->pos, pp->next);
+}
+
+
 
 /* returns non-zero if item could be read; 0 otherwise */
 int isamh_pp_read (ISAMH_PP pp, void *buf)
@@ -550,7 +601,10 @@ int isamh_pp_num (ISAMH_PP pp)
 
 /*
  * $Log: isamh.c,v $
- * Revision 1.1  1999-06-30 15:04:54  heikki
+ * Revision 1.2  1999-07-06 09:37:05  heikki
+ * Working on isamh - not ready yet.
+ *
+ * Revision 1.1  1999/06/30 15:04:54  heikki
  * Copied from isamc.c, slowly starting to simplify...
  *
  */

@@ -71,6 +71,8 @@ int isamh_block_size (ISAMH is, int type);
 #define isamh_type(x) ((x) & 7)
 #define isamh_block(x) ((x) >> 3)
 
+void isamh_buildfirstblock(ISAMH_PP pp);
+void isamh_buildlaterblock(ISAMH_PP pp);
 
 #ifdef __cplusplus
 }
@@ -81,7 +83,10 @@ int isamh_block_size (ISAMH is, int type);
 
 /*
  * $Log: isamh.h,v $
- * Revision 1.1  1999-06-30 15:06:28  heikki
+ * Revision 1.2  1999-07-06 09:37:04  heikki
+ * Working on isamh - not ready yet.
+ *
+ * Revision 1.1  1999/06/30 15:06:28  heikki
  * copied from isamc.h, simplifying
  *
  */

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.30  1999-06-30 15:07:23  heikki
+ * Revision 1.31  1999-07-06 09:37:04  heikki
+ * Working on isamh - not ready yet.
+ *
+ * Revision 1.30  1999/06/30 15:07:23  heikki
  * Adding isamh stuff
  *
  * Revision 1.29  1999/06/30 09:08:23  adam
@@ -352,8 +355,9 @@ ISAMH_M key_isamh_m (Res res)
     me->code_start = iscz1_code_start;
     me->code_item = iscz1_code_item;
     me->code_stop = iscz1_code_stop;
+    me->code_reset = iscz1_code_reset;
 
-    me->debug = atoi(res_get_def (res, "isamhDebug", "2"));
+    me->debug = atoi(res_get_def (res, "isamhDebug", "9"));
 
     return me;
 }
