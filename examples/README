@@ -1,0 +1,4 @@
+You could argue that these examples all belong in ../test, along with
+the gils, usmarc, cddb and dmoz examples.  You may well be right, but
+I am keeping them separate at the moment, because they are
+toys-in-progress rather than working test-cases.
