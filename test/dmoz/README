@@ -1,0 +1,7 @@
+
+fetch.sh fetches the dmoz archive. 
+con2.pl converts it into xml, multiple files with some 30.000 records in each
+update.sh is used for testing the performace of the various isams 
+(all but isam-b are soon obsolete!). all.sh runs those tests for ever.
+
+
