@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: merge.c,v $
- * Revision 1.8  1998-03-18 09:23:55  adam
+ * Revision 1.9  1998-03-19 10:04:38  adam
+ * Minor changes.
+ *
+ * Revision 1.8  1998/03/18 09:23:55  adam
  * Blocks are stored in chunks on free list - up to factor 2 in speed.
  * Fixed bug that could occur in block category rearrangemen.
  *
@@ -52,13 +55,13 @@ struct isc_merge_block {
     int dirty;        /* block is different from that on file */
 };
 
-static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr)
+static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr, int last)
 {
     int i, no_dirty = 0;
     for (i = 0; i<ptr; i++)
 	if (mb[i].dirty)
 	    no_dirty++;
-    if (no_dirty*3 < ptr*2)
+    if (no_dirty*4 < ptr*3)
 	return;
     /* bubble-sort it */
     for (i = 0; i<ptr; i++)
@@ -75,6 +78,8 @@ static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr)
 	mb[i].block = tmp;
 	mb[i].dirty = 1;
     }
+    if (!last)
+	mb[i].dirty = 1;
 }
 
 static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
@@ -102,7 +107,7 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             mb[i].dirty = 1;
         }
     }
-    opt_blocks (is, mb, ptr);
+    opt_blocks (is, mb, ptr, last);
     for (i = 0; i<ptr; i++)
     {
         char *src;
@@ -175,6 +180,8 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
     ISAMC_PP pp; 
     char f_item[128], *f_item_ptr;
     int f_more;
+    int last_dirty = 0;
+    int debug = is->method->debug;
  
     struct isc_merge_block mb[200];
 
@@ -199,7 +206,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
         f_more = 1;
     cat = pp->cat;
 
-    if (is->method->debug > 1)
+    if (debug > 1)
         logf (LOG_LOG, "isc: isc_merge begin %d %d", cat, pp->pos);
 
     /* read first item from i */
@@ -230,12 +237,13 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                     /* the resulting output block is too small/empty. Delete
                        the original (if any)
 		    */
-                    if (is->method->debug > 3)
+                    if (debug > 3)
                         logf (LOG_LOG, "isc: release A");
                     if (mb[ptr].block)
                         isc_release_block (is, pp->cat, mb[ptr].block);
                     mb[ptr].block = pp->pos;
-                    mb[ptr].dirty = 1;
+		    if (!mb[ptr].dirty)
+			mb[ptr].dirty = 1;
                     if (ptr > 0)
                         mb[ptr-1].dirty = 1;
                 }
@@ -243,9 +251,9 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                 {
                     /* indicate new boundary based on the original file */
                     mb[++ptr].block = pp->pos;
-                    mb[ptr].dirty = (mb[ptr-1].dirty > 1) ? 1 : 0;
+                    mb[ptr].dirty = last_dirty;
                     mb[ptr].offset = r_offset;
-                    if (is->method->debug > 3)
+                    if (debug > 3)
                         logf (LOG_LOG, "isc: bound ptr=%d,offset=%d",
                             ptr, r_offset);
                     if (cat==is->max_cat && ptr >= is->method->max_blocks_mem)
@@ -253,7 +261,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                         /* We are dealing with block(s) of max size. Block(s)
                            except 1 will be flushed.
                          */
-                        if (is->method->debug > 2)
+                        if (debug > 2)
                             logf (LOG_LOG, "isc: flush A %d sections", ptr);
                         flush_blocks (is, mb, ptr-1, r_buf, &firstpos, cat,
                                       0, &pp->numKeys);
@@ -273,6 +281,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
             }
             border = get_border (is, mb, ptr, cat, firstpos);
         }
+	last_dirty = 0;
         if (!f_more)
             cmp = -1;
         else if (!i_more)
@@ -302,6 +311,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                 {
                     /* no! delete the item */
                     r_item = NULL;
+		    last_dirty = 1;
                     mb[ptr].dirty = 2;
                 }
             }
@@ -335,6 +345,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
             }
             memcpy (r_item, i_item, i_item_ptr - i_item);
             mb[ptr].dirty = 2;
+	    last_dirty = 1;
             /* move i */
             i_item_ptr = i_item;
             i_more = (*data->read_item)(data->clientData, &i_item_ptr,
@@ -353,7 +364,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
 
             if (border < new_offset && border >= r_offset)
             {
-                if (is->method->debug > 2)
+                if (debug > 2)
                     logf (LOG_LOG, "isc: border %d %d", ptr, border);
                 /* Max size of current block category reached ...
                    make new virtual block entry */
@@ -366,7 +377,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                        except one will be flushed. Note: the block(s) are
                        surely not the last one(s).
                      */
-                    if (is->method->debug > 2)
+                    if (debug > 2)
                         logf (LOG_LOG, "isc: flush B %d sections", ptr-1);
                     flush_blocks (is, mb, ptr-1, r_buf, &firstpos, cat,
                                   0, &pp->numKeys);
@@ -413,23 +424,23 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
             {
                 int border = is->method->filecat[cat].ifill -
                          ISAMC_BLOCK_OFFSET_1 + mb[j].offset;
-                if (is->method->debug > 3)
+                if (debug > 3)
                     logf (LOG_LOG, "isc: remap %d border=%d", i, border);
                 if (mb[i+1].offset > border && mb[i].offset <= border)
                 {
-                    if (is->method->debug > 3)
+                    if (debug > 3)
                         logf (LOG_LOG, "isc:  to %d %d", j, mb[i].offset);
                     mb[++j].dirty = 1;
                     mb[j].block = 0;
                     mb[j].offset = mb[i].offset;
                 }
             }
-            if (is->method->debug > 2)
+            if (debug > 2)
                 logf (LOG_LOG, "isc: remap from %d to %d sections to cat %d",
                       ptr, j, cat);
             ptr = j;
             border = get_border (is, mb, ptr, cat, firstpos);
-	    if (is->method->debug > 3)
+	    if (debug > 3)
 		logf (LOG_LOG, "isc: border=%d r_offset=%d", border, r_offset);
         }
     }
@@ -443,7 +454,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
     {   /* empty output. Release last block if any */
         if (cat == pp->cat && mb[ptr].block)
         {
-            if (is->method->debug > 3)
+            if (debug > 3)
                 logf (LOG_LOG, "isc: release C");
             isc_release_block (is, pp->cat, mb[ptr].block);
             mb[ptr].block = 0;
@@ -452,7 +463,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
         }
     }
 
-    if (is->method->debug > 2)
+    if (debug > 2)
         logf (LOG_LOG, "isc: flush C, %d sections", ptr);
 
     if (firstpos)
@@ -461,7 +472,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
            has changed */
         if (numKeys != isc_pp_num (pp))
         {
-            if (is->method->debug > 2)
+            if (debug > 2)
                 logf (LOG_LOG, "isc: patch num keys firstpos=%d num=%d",
                                 firstpos, numKeys);
             bf_write (is->files[cat].bf, firstpos, ISAMC_BLOCK_OFFSET_N,
@@ -480,7 +491,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
     (*is->method->code_stop)(ISAMC_ENCODE, r_clientData);
     if (!firstpos)
         cat = 0;
-    if (is->method->debug > 1)
+    if (debug > 1)
         logf (LOG_LOG, "isc: isc_merge return %d %d", cat, firstpos);
     isc_pp_close (pp);
     return cat + firstpos * 8;

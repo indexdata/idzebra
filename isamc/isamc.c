@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.13  1998-03-18 09:23:55  adam
+ * Revision 1.14  1998-03-19 10:04:35  adam
+ * Minor changes.
+ *
+ * Revision 1.13  1998/03/18 09:23:55  adam
  * Blocks are stored in chunks on free list - up to factor 2 in speed.
  * Fixed bug that could occur in block category rearrangemen.
  *
@@ -82,13 +85,12 @@ ISAMC_M isc_getmethod (void)
         {    32,     28,      0,  3 },
 	{    64,     54,     30,  0 },
 #else
-        {    32,     28,     20,  7 },
-	{   128,    120,    100,  7 },
-        {   512,    490,    350,  7 },
-        {  2048,   1900,   1700,  7 },
-        {  8192,   8000,   7900,  7 },
-        { 32768,  32000,  31000,  7 },
-        {131072, 129000, 121000,  0 }
+        {    32,     28,     20,  7  },
+	{   128,    120,    100,  8  },
+        {   512,    490,    350,  9  },
+        {  2048,   1900,   1700,  10 },
+        {  8192,   8000,   7900,  10 },
+        { 32768,  32000,  31000,  0 },
 #endif
     };
     ISAMC_M m = xmalloc (sizeof(*m));
