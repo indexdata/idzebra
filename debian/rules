@@ -11,7 +11,7 @@
 # This is the debhelper compatability version to use.
 export DH_COMPAT=2
 
-CONFIG_FLAGS=--with-tclconfig=/usr/lib/tcl8.3 --with-yazconfig=/usr/bin --prefix=/usr
+CONFIG_FLAGS=--with-tclconfig=/usr/lib/tcl8.3 --with-yaz-config=/usr/bin --prefix=/usr
 
 # Enable parallel builds if CONCURRENCY_LEVEL is set
 ifdef CONCURRENCY_LEVEL
