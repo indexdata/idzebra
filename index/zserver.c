@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.45  1996-12-23 15:30:45  adam
+ * Revision 1.46  1997-07-28 08:30:47  adam
+ * Server returns diagnostic 14 when record doesn't exist.
+ *
+ * Revision 1.45  1996/12/23 15:30:45  adam
  * Work on truncation.
  * Bug fix: result sets weren't deleted after server shut down.
  *
@@ -390,12 +393,8 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     rec = rec_get (zi->records, sysno);
     if (!rec)
     {
-        char *msg = "Record is deleted\n";
-        *output_format = VAL_SUTRS;
-        *rec_bufp = msg;
-        *rec_lenp = strlen (msg);
         logf (LOG_DEBUG, "rec_get fail on sysno=%d", sysno);
-        return 0;
+        return 14;
     }
     file_type = rec->info[recInfo_fileType];
     fname = rec->info[recInfo_filename];
@@ -423,15 +422,11 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     {
         if ((fd = open (fname, O_RDONLY)) == -1)
         {
-            char *msg = "Record doesn't exist\n";
-            logf (LOG_WARN|LOG_ERRNO, "Retrieve: Open record file %s", fname);
-            *output_format = VAL_SUTRS;
-            *rec_bufp = msg;
-            *rec_lenp = strlen (msg);
+            logf (LOG_WARN|LOG_ERRNO, "Retrieve fail; missing file: %s",
+		  fname);
             rec_rm (&rec);
-            return 0;     /* or 14: System error in presenting records */
+            return 14;
         }
-
         memcpy (&record_offset, rec->info[recInfo_offset],
                 sizeof(record_offset));
 
