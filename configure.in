@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2002
-dnl $Id: configure.in,v 1.35 2002-04-08 13:50:12 adam Exp $
+dnl $Id: configure.in,v 1.36 2002-04-08 19:52:29 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -194,5 +194,6 @@ AC_OUTPUT([
   doc/zebra.xml
   doc/zebrahtml.dsl
   doc/zebraprint.dsl
+  doc/zebraphp.dsl
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
 ])
