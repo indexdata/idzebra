@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.41  1996-03-20 09:36:43  adam
+ * Revision 1.42  1996-05-09 07:28:56  quinn
+ * Work towards phrases and multiple registers
+ *
+ * Revision 1.41  1996/03/20  09:36:43  adam
  * Function dict_lookup_grep got extra parameter, init_pos, which marks
  * from which position in pattern approximate pattern matching should occur.
  * Approximate pattern matching is used in relevance=re-2.
@@ -169,7 +172,7 @@ int index_word_prefix_map (char *string, oid_value attrSet, int attrUse,
         return -1;
     logf (LOG_DEBUG, "ord=%d", attp->attset_ordinal);
     return index_word_prefix (string, attp->attset_ordinal,
-                              attp->local_attribute, basename);
+                              attp->local_attributes->local, basename);
 }
 
 typedef struct {

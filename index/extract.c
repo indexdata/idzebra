@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.54  1996-05-01 13:46:35  adam
+ * Revision 1.55  1996-05-09 07:28:55  quinn
+ * Work towards phrases and multiple registers
+ *
+ * Revision 1.54  1996/05/01  13:46:35  adam
  * First work on multiple records in one file.
  * New option, -offset, to the "unread" command in the filter module.
  *
@@ -420,7 +423,7 @@ static void addRecordKey (const RecWord *p)
 
     switch (p->which)
     {
-    case Word_String:
+    case Word_String: case Word_Phrase:
         *dst++ = lead;
 
         if (!(lead & 1))
@@ -878,7 +881,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         }
         logInfo.op = "add";
         if (rGroup->fileVerboseFlag)
-            logf (LOG_LOG, "add %s %s %ld", rGroup->recordType,
+            logf (LOG_LOG, "add %s %s+%ld", rGroup->recordType,
                   fname, (long) recordOffset);
         rec = rec_new (records);
         *sysno = rec->sysno;

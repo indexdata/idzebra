@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: attribute.c,v $
- * Revision 1.2  1995-11-15 19:13:07  adam
+ * Revision 1.3  1996-05-09 07:28:54  quinn
+ * Work towards phrases and multiple registers
+ *
+ * Revision 1.2  1995/11/15  19:13:07  adam
  * Work on record management.
  *
  *
@@ -78,6 +81,6 @@ attent *att_getentbyatt(oid_value set, int att)
     if (!p)
 	return 0;
     res.attset_ordinal = r->parent->ordinal;
-    res.local_attribute = r->local;
+    res.local_attributes = r->locals;
     return &res;
 }

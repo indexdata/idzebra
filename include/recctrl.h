@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.13  1996-05-01 13:44:05  adam
+ * Revision 1.14  1996-05-09 07:28:49  quinn
+ * Work towards phrases and multiple registers
+ *
+ * Revision 1.13  1996/05/01  13:44:05  adam
  * Added seek function to the recExtractCtrl and recRetrieveCtrl control
  * structures. Added end-of-file indicator function and start offset to
  * recExtractCtrl.
@@ -62,6 +65,7 @@ typedef struct {
     int  attrUse;
     enum {
 	Word_String,
+	Word_Phrase,
         Word_Numeric
     } which;
     union {
