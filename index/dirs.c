@@ -1,10 +1,12 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2001, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.16  1999-05-26 07:49:13  adam
+ * Revision 1.17  2001-03-29 14:07:14  adam
+ * Fixed nasty bug for fileUpdate.
+ *
+ * Revision 1.16  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.15  1999/02/02 14:50:51  adam
@@ -183,7 +185,7 @@ struct dirs_entry *dirs_read (struct dirs_info *p)
     logf (LOG_DEBUG, "dirs_read rescan");
     dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
     p->no_read = 1;
-    if (p->no_read < p->no_cur)
+    if (p->no_read <= p->no_cur)
         return p->last_entry = p->entries;
     return p->last_entry = NULL;
 }
