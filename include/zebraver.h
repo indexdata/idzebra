@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.6  1996-05-16 15:31:07  quinn
+ * Revision 1.7  1996-06-06 13:30:12  quinn
+ * Work
+ *
+ * Revision 1.6  1996/05/16  15:31:07  quinn
  * a7
  *
  * Revision 1.5  1996/04/26  09:59:47  adam
@@ -25,9 +28,9 @@
  */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.0a7"
+#define ZEBRAVER "1.0a8"
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 1996-05-16 15:31:07 $"
+#define ZEBRADATE "$Date: 1996-06-06 13:30:12 $"
 #endif

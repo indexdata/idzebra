@@ -1,8 +1,12 @@
---- XXXXXXXXXXXXXX
+--- 1.0a8 1996/6/6
 
-Added character-conversion subsystem.
+Added national character-handling subsystem.
 
---- 1.0a7 1997/5/16
+Various fixes.
+
+Small modifications to input filters and profiles.
+
+--- 1.0a7 1996/5/16
 
 Fixed buffer-size problem in indexing.
 
