@@ -3,7 +3,11 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.37  2000-10-17 12:37:09  adam
+ * Revision 1.38  2000-11-08 13:46:58  adam
+ * Fixed scan: server could break if bad attribute/database was selected.
+ * Work on remote update.
+ *
+ * Revision 1.37  2000/10/17 12:37:09  adam
  * Fixed notification of live-updates. Fixed minor problem with mf_init
  * where it didn't handle shadow area file names correctly.
  *
@@ -169,7 +173,7 @@ static void zebra_register_unlock (ZebraHandle zh);
 static int zebra_register_activate (ZebraService zh, int rw);
 static int zebra_register_deactivate (ZebraService zh);
 
-static int zebra_register_lock (ZebraHandle zh)
+static int zebra_register_lock (ZebraHandle zh, int rw)
 {
     time_t lastChange;
     int state;
@@ -197,17 +201,19 @@ static int zebra_register_lock (ZebraHandle zh)
     default:
         state = 0;
     }
-    if (zh->service->registerState == state)
+    if (rw)
+	logf (LOG_LOG, "Register in read/write mode");
+    else if (zh->service->registerState == state)
     {
-        if (zh->service->registerChange >= lastChange)
-            return 0;
-        logf (LOG_LOG, "Register completely updated since last access");
+	if (zh->service->registerChange >= lastChange)
+	    return 0;
+	logf (LOG_LOG, "Register completely updated since last access");
     }
     else if (zh->service->registerState == -1)
-        logf (LOG_LOG, "Reading register using state %d pid=%ld", state,
-              (long) getpid());
+	logf (LOG_LOG, "Reading register using state %d pid=%ld", state,
+	      (long) getpid());
     else
-        logf (LOG_LOG, "Register has changed state from %d to %d",
+	logf (LOG_LOG, "Register has changed state from %d to %d",
               zh->service->registerState, state);
     zh->service->registerChange = lastChange;
 
@@ -215,7 +221,7 @@ static int zebra_register_lock (ZebraHandle zh)
 
     zh->service->registerState = state;
 
-    zebra_register_activate (zh->service, 0);
+    zebra_register_activate (zh->service, rw);
     return 0;
 }
 
@@ -410,11 +416,6 @@ static int zebra_register_activate (ZebraService zh, int rw)
 
 void zebra_admin_shutdown (ZebraHandle zh)
 {
-    zebra_register_lock (zh);
-    zebraExplain_flush (zh->service->zei, 1, zh);
-    extract_index (zh);
-
-    zebra_register_unlock (zh);
     zebra_mutex_cond_lock (&zh->service->session_lock);
     zh->service->stop_flag = 1;
     if (!zh->service->sessions)
@@ -590,7 +591,7 @@ void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
 		       const char *setname)
 {
     zh->hits = 0;
-    if (zebra_register_lock (zh))
+    if (zebra_register_lock (zh, 0))
 	return;
     map_basenames (zh, stream, &num_bases, &basenames);
     resultSetAddRPN (zh, stream, decode, query, num_bases, basenames, setname);
@@ -608,7 +609,7 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
     ZebraPosSet poset;
     int i, *pos_array;
 
-    if (zebra_register_lock (zh))
+    if (zebra_register_lock (zh, 0))
 	return;
     pos_array = (int *) xmalloc (num_recs * sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
@@ -656,7 +657,7 @@ void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		 int *position, int *num_entries, ZebraScanEntry **entries,
 		 int *is_partial)
 {
-    if (zebra_register_lock (zh))
+    if (zebra_register_lock (zh, 0))
     {
 	*entries = 0;
 	*num_entries = 0;
@@ -674,7 +675,7 @@ void zebra_sort (ZebraHandle zh, ODR stream,
 		 const char *output_setname, Z_SortKeySpecList *sort_sequence,
 		 int *sort_status)
 {
-    if (zebra_register_lock (zh))
+    if (zebra_register_lock (zh, 0))
 	return;
     resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
 		   output_setname, sort_sequence, sort_status);
@@ -686,7 +687,7 @@ int zebra_deleleResultSet(ZebraHandle zh, int function,
 			  int *statuses)
 {
     int i, status;
-    if (zebra_register_lock (zh))
+    if (zebra_register_lock (zh, 0))
 	return Z_DeleteStatus_systemProblemAtTarget;
     switch (function)
     {
@@ -739,24 +740,24 @@ int zebra_auth (ZebraService zh, const char *user, const char *pass)
 
 void zebra_admin_import_begin (ZebraHandle zh, const char *database)
 {
-    if (zebra_register_lock (zh))
+    if (zebra_register_lock (zh, 1))
 	return;
     xfree (zh->admin_databaseName);
     zh->admin_databaseName = xstrdup(database);
-    zebra_register_unlock(zh);
 }
 
 void zebra_admin_import_end (ZebraHandle zh)
 {
     zebraExplain_flush (zh->service->zei, 1, zh);
     extract_index (zh);
+    zebra_register_unlock (zh);
 }
 
 void zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 {
     int sysno;
     int i;
-    if (zebra_register_lock (zh))
+    if (zh->service->active < 2)
 	return;
     for (i = 0; i<segment->num_segmentRecords; i++)
     {
@@ -788,13 +789,12 @@ void zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 	    }
 	}
     }
-    zebra_register_unlock(zh);
 }
 
 void zebra_admin_create (ZebraHandle zh, const char *database)
 {
     ZebraService zs = zh->service;
-    if (zebra_register_lock(zh))
+    if (zebra_register_lock(zh, 1))
     {
 	zh->errCode = 1019;
 	return;
@@ -805,6 +805,8 @@ void zebra_admin_create (ZebraHandle zh, const char *database)
 	zh->errCode = 224;
 	zh->errString = "Database already exist";
     }
+    zebraExplain_flush (zh->service->zei, 1, zh);
+    extract_index (zh);
     zebra_register_unlock(zh);
 }
 

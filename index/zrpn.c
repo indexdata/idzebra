@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.104  2000-04-05 09:49:35  adam
+ * Revision 1.105  2000-11-08 13:46:59  adam
+ * Fixed scan: server could break if bad attribute/database was selected.
+ * Work on remote update.
+ *
+ * Revision 1.104  2000/04/05 09:49:35  adam
  * On Unix, zebra/z'mbol uses automake.
  *
  * Revision 1.103  2000/03/20 19:08:36  adam
@@ -2494,6 +2498,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     if (zebra_maps_attr (zh->service->zebra_maps, zapt, &reg_id, &search_type,
 			 &rank_type, &complete_flag, &sort_flag))
     {
+	*num_entries = 0;
 	zh->errCode = 113;
 	return ;
     }
@@ -2521,6 +2526,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         {
             zh->errString = basenames[base_no];
 	    zh->errCode = 109; /* Database unavailable */
+	    *num_entries = 0;
 	    return;
         }
         for (local_attr = attp.local_attributes; local_attr && ord_no < 32;
@@ -2536,6 +2542,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     }
     if (ord_no == 0)
     {
+	*num_entries = 0;
         zh->errCode = 113;
 	return;
     }
