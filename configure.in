@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2000
-dnl $Id: configure.in,v 1.18 2000-04-05 09:49:35 adam Exp $
+dnl $Id: configure.in,v 1.19 2000-04-05 09:55:44 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -165,5 +165,6 @@ AC_OUTPUT([
   index/Makefile
   include/Makefile
   tab/Makefile
+  doc/Makefile
   test/Makefile test/gils/Makefile test/usmarc/Makefile
 ])

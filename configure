@@ -1910,6 +1910,7 @@ trap 'rm -fr `echo "
   index/Makefile
   include/Makefile
   tab/Makefile
+  doc/Makefile
   test/Makefile test/gils/Makefile test/usmarc/Makefile
 " | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
@@ -2022,6 +2023,7 @@ CONFIG_FILES=\${CONFIG_FILES-"Makefile
   index/Makefile
   include/Makefile
   tab/Makefile
+  doc/Makefile
   test/Makefile test/gils/Makefile test/usmarc/Makefile
 "}
 EOF

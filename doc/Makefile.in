@@ -10,6 +10,8 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+# $Id: Makefile.in,v 1.1 2000-04-05 09:55:44 adam Exp $
+
 
 SHELL = @SHELL@
 
@@ -73,18 +75,14 @@ YAZINC = @YAZINC@
 YAZLIB = @YAZLIB@
 yazconfig = @yazconfig@
 
-tabdatadir = $(pkgdatadir)/tab
+docdir = $(pkgdatadir)/doc
 
-tabdata_DATA = default.idx hci.flt mail.flt news.flt  numeric.chr nwi.flt refer.flt scan.chr sgml.flt soif.flt  string.chr urx.chr usmarc.flt
+doc_data = zebra.sgml gils.sgml
 
-
-EXTRA_DIST = default.idx hci.flt mail.flt news.flt  numeric.chr nwi.flt refer.flt scan.chr sgml.flt soif.flt  string.chr urx.chr usmarc.flt
-
+EXTRA_DIST = zebra.sgml gils.sgml
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
-DATA =  $(tabdata_DATA)
-
-DIST_COMMON =  Makefile.am Makefile.in
+DIST_COMMON =  README Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -94,45 +92,26 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu tab/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu doc/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-
-install-tabdataDATA: $(tabdata_DATA)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(tabdatadir)
-	@list='$(tabdata_DATA)'; for p in $$list; do \
-	  if test -f $(srcdir)/$$p; then \
-	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(tabdatadir)/$$p"; \
-	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(tabdatadir)/$$p; \
-	  else if test -f $$p; then \
-	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(tabdatadir)/$$p"; \
-	    $(INSTALL_DATA) $$p $(DESTDIR)$(tabdatadir)/$$p; \
-	  fi; fi; \
-	done
-
-uninstall-tabdataDATA:
-	@$(NORMAL_UNINSTALL)
-	list='$(tabdata_DATA)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(tabdatadir)/$$p; \
-	done
 tags: TAGS
 TAGS:
 
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = tab
+subdir = doc
 
 distdir: $(DISTFILES)
 	here=`cd $(top_builddir) && pwd`; \
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu tab/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu doc/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -154,20 +133,19 @@ installcheck: installcheck-am
 install-exec-am:
 install-exec: install-exec-am
 
-install-data-am: install-tabdataDATA
+install-data-am:
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-tabdataDATA
+uninstall-am:
 uninstall: uninstall-am
-all-am: Makefile $(DATA)
+all-am: Makefile
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(tabdatadir)
 
 
 mostlyclean-generic:
@@ -197,13 +175,34 @@ maintainer-clean-am:  maintainer-clean-generic distclean-am
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: uninstall-tabdataDATA install-tabdataDATA tags distdir info-am \
-info dvi-am dvi check check-am installcheck-am installcheck \
-install-exec-am install-exec install-data-am install-data install-am \
-install uninstall-am uninstall all-redirect all-am all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+.PHONY: tags distdir info-am info dvi-am dvi check check-am \
+installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
+
+zebra.txt: zebra.sgml
+	sgml2txt -f zebra.sgml
+
+zebra.ps: zebra.sgml
+	sgml2latex -o ps -p a4 zebra.sgml
+
+zebra.html: zebra.sgml
+	sgml2html zebra.sgml
+
+gils.txt: gils.sgml
+	sgml2txt -f gils.sgml
+
+gils.ps: gils.sgml
+	sgml2latex -o ps -p a4 gils.sgml
+
+gils.html: gils.sgml
+	sgml2html gils.sgml
+
+clean-hook:
+	rm -f [0-9]* *.bak
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
