@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.20  1995-11-27 13:58:53  adam
+ * Revision 1.21  1995-11-27 14:27:39  adam
+ * Renamed 'update' command to 'dir'.
+ *
+ * Revision 1.20  1995/11/27  13:58:53  adam
  * New option -t. storeStore data implemented in server.
  *
  * Revision 1.19  1995/11/25  10:24:06  adam
@@ -121,7 +124,7 @@ int main (int argc, char **argv)
                 {
                     cmd = 'd';
                 }
-                else if (!strcmp (arg, "update"))
+                else if (!strcmp (arg, "dir"))
                 {
                     cmd = 'u';
                 }
