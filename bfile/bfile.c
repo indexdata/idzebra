@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.29  1999-05-26 07:49:12  adam
+ * Revision 1.30  1999-10-14 14:33:49  adam
+ * Added truncation 5=106.
+ *
+ * Revision 1.29  1999/05/26 07:49:12  adam
  * C++ compilation.
  *
  * Revision 1.28  1999/05/12 13:08:05  adam
@@ -119,6 +122,11 @@ BFiles bfs_create (const char *spec)
     bfs->commit_area = NULL;
     bfs->register_area = mf_init("register", spec);
     bfs->lockDir = NULL;
+    if (!bfs->register_area)
+    {
+        bfs_destroy(bfs);
+        return 0;
+    }
     return bfs;
 }
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.34  1999-05-26 07:49:12  adam
+ * Revision 1.35  1999-10-14 14:33:50  adam
+ * Added truncation 5=106.
+ *
+ * Revision 1.34  1999/05/26 07:49:12  adam
  * C++ compilation.
  *
  * Revision 1.33  1999/05/12 13:08:06  adam
@@ -164,12 +167,12 @@ static int scan_areadef(MFile_area ma, const char *name, const char *ad)
         dirname[i] = '\0';
         if (*ad++ != ':')
         {
-	    logf (LOG_FATAL, "Missing colon after path: %s", ad0);
+	    logf (LOG_WARN, "Missing colon after path: %s", ad0);
             return -1;
         }
         if (i == 0)
         {
-	    logf (LOG_FATAL, "Empty path: %s", ad0);
+	    logf (LOG_WARN, "Empty path: %s", ad0);
             return -1;
         }
         while (*ad == ' ' || *ad == '\t')
@@ -234,13 +237,13 @@ static int file_position(MFile mf, int pos, int offset)
     {
         if (!mf->wr && errno == ENOENT && off == 0)
             return -2;
-    	logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
+    	logf (LOG_WARN|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
     	return -1;
     }
     if (lseek(mf->files[c].fd, (ps = pos - off) * mf->blocksize + offset,
     	SEEK_SET) < 0)
     {
-    	logf (LOG_FATAL|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
+    	logf (LOG_WARN|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
     	return -1;
     }
     mf->cur_file = c;
@@ -273,7 +276,7 @@ MFile_area mf_init(const char *name, const char *spec)
     ma->dirs = 0;
     if (scan_areadef(ma, name, spec) < 0)
     {
-    	logf (LOG_FATAL, "Failed to access description of '%s'", name);
+    	logf (LOG_WARN, "Failed to access description of '%s'", name);
     	return 0;
     }
     /* look at each directory */
@@ -281,7 +284,8 @@ MFile_area mf_init(const char *name, const char *spec)
     {
     	if (!(dd = opendir(dirp->name)))
     	{
-    	    logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", dirp->name);
+    	    logf (LOG_WARN|LOG_ERRNO, "Failed to open directory %s",
+                                     dirp->name);
     	    return 0;
 	}
 	/* look at each file */

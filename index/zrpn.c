@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.96  1999-09-23 10:05:05  adam
+ * Revision 1.97  1999-10-14 14:33:50  adam
+ * Added truncation 5=106.
+ *
+ * Revision 1.96  1999/09/23 10:05:05  adam
  * Implemented structure=105 searching.
  *
  * Revision 1.95  1999/09/07 07:19:21  adam
@@ -717,10 +720,10 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
     return i;
 }
 
-/* term_105: handle term, where trunc=Process # and ! and right trunc */
+/* term_105/106: handle term, where trunc=Process # and ! and right trunc */
 static int term_105 (ZebraMaps zebra_maps, int reg_type,
 		     const char **src, char *dst, int space_split,
-		     char *dst_term)
+		     char *dst_term, int right_truncate)
 {
     const char *s0, *s1;
     const char **map;
@@ -757,8 +760,11 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
             }
         }
     }
-    dst[i++] = '.';
-    dst[i++] = '*';
+    if (right_truncate)
+    {
+        dst[i++] = '.';
+        dst[i++] = '*';
+    }
     dst[i] = '\0';
     
     dst_term[j++] = '\0';
@@ -1253,7 +1259,18 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	case 105:        /* process * and ! in term */
 	    term_dict[j++] = '(';
 	    if (!term_105 (zh->zebra_maps, reg_type,
-			   &termp, term_dict + j, space_split, term_dst))
+			   &termp, term_dict + j, space_split, term_dst, 1))
+		return 0;
+	    strcat (term_dict, ")");
+	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+				  &max_pos, 0, grep_handle);
+	    if (r)
+		logf (LOG_WARN, "dict_lookup_grep err, trunc=*/!: %d", r);
+	    break;
+	case 106:        /* process * and ! in term */
+	    term_dict[j++] = '(';
+	    if (!term_105 (zh->zebra_maps, reg_type,
+			   &termp, term_dict + j, space_split, term_dst, 0))
 		return 0;
 	    strcat (term_dict, ")");
 	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,

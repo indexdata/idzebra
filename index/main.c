@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.71  1999-09-08 12:12:06  adam
+ * Revision 1.72  1999-10-14 14:33:50  adam
+ * Added truncation 5=106.
+ *
+ * Revision 1.71  1999/09/08 12:12:06  adam
  * Fixed bad message.
  *
  * Revision 1.70  1999/09/07 07:19:21  adam
@@ -372,6 +375,11 @@ int main (int argc, char **argv)
 
 		    rGroupDef.bfs =
 			bfs_create (res_get (common_resource, "register"));
+                    if (!rGroupDef.bfs)
+                    {
+                        logf (LOG_FATAL, "Cannot access register");
+                        exit(1);
+                    }
 
                     bf_lockDir (rGroupDef.bfs,
 				res_get (common_resource, "lockDir"));

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.23  1999-09-07 11:36:32  adam
+ * Revision 1.24  1999-10-14 14:33:50  adam
+ * Added truncation 5=106.
+ *
+ * Revision 1.23  1999/09/07 11:36:32  adam
  * Minor changes.
  *
  * Revision 1.22  1999/08/02 10:13:47  adam
@@ -275,7 +278,20 @@ ZebraHandle zebra_open (const char *configName)
     zebra_chdir (zh);
     zebra_server_lock_init (zh);
     zh->dh = data1_create ();
+    if (!zh->dh)
+    {
+        zebra_server_lock_destroy (zh);
+        xfree (zh);
+        return 0;
+    }
     zh->bfs = bfs_create (res_get (zh->res, "register"));
+    if (!zh->bfs)
+    {
+        zebra_server_lock_destroy (zh);
+        data1_destroy(zh->dh);
+        xfree (zh);
+        return 0;
+    }
     bf_lockDir (zh->bfs, res_get (zh->res, "lockDir"));
     data1_set_tabpath (zh->dh, res_get(zh->res, "profilePath"));
     zh->sets = NULL;
