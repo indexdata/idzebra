@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.11  1996-04-23 12:36:41  adam
+ * Revision 1.12  1996-04-24 13:29:16  adam
+ * Work on optimized on commit operation.
+ *
+ * Revision 1.11  1996/04/23  12:36:41  adam
  * Started work on more efficient commit operation.
  *
  * Revision 1.10  1996/04/18  16:02:56  adam
@@ -49,6 +52,8 @@
 #include <mfile.h>
 #include "cfile.h"
 
+#define CF_OPTIMIZE_COMMIT 0
+
 void cf_unlink (CFile cf)
 {
     if (cf->bucket_in_memory)
@@ -63,6 +68,7 @@ void cf_unlink (CFile cf)
 }
 
 
+#if CF_OPTIMIZE_COMMIT
 struct map_cache_entity {
     int from;
     int to;
@@ -91,13 +97,6 @@ static struct map_cache *map_cache_init (CFile cf)
     return m_p;
 }
 
-static void map_cache_del (struct map_cache *m_p)
-{
-    xfree (m_p->map);
-    xfree (m_p->buf);
-    xfree (m_p);
-}
-
 static int map_cache_cmp_from (const void *p1, const void *p2)
 {
     return ((struct map_cache_entity*) p1)->from -
@@ -115,22 +114,34 @@ static void map_cache_flush (struct map_cache *m_p)
     int i;
 
     qsort (m_p->map, m_p->no, sizeof(*m_p->map), map_cache_cmp_from);
+    assert (m_p->no < 2 || m_p->map[0].from < m_p->map[1].from);
     for (i = 0; i<m_p->no; i++)
     {
         if (!mf_read (m_p->cf->block_mf, m_p->map[i].from, 0, 0,
                       m_p->buf + i * m_p->cf->head.block_size))
         {
-            logf (LOG_FATAL, "read commit block");
+            logf (LOG_FATAL, "read commit block at position %d",
+                  m_p->map[i].from);
             exit (1);
         }
         m_p->map[i].from = i;
     }
     qsort (m_p->map, m_p->no, sizeof(*m_p->map), map_cache_cmp_to);
+    assert (m_p->no < 2 || m_p->map[0].to < m_p->map[1].to);
     for (i = 0; i<m_p->no; i++)
     {
         mf_write (m_p->cf->rmf, m_p->map[i].to, 0, 0,
                   m_p->buf + m_p->map[i].from * m_p->cf->head.block_size);
     }    
+    m_p->no = 0;
+}
+
+static void map_cache_del (struct map_cache *m_p)
+{
+    map_cache_flush (m_p);
+    xfree (m_p->map);
+    xfree (m_p->buf);
+    xfree (m_p);
 }
 
 static void map_cache_add (struct map_cache *m_p, int from, int to)
@@ -143,12 +154,22 @@ static void map_cache_add (struct map_cache *m_p, int from, int to)
     if (i == m_p->max)
         map_cache_flush (m_p);
 }
-   
+
+/* CF_OPTIMIZE_COMMIT */
+#endif
+
 static void cf_commit_hash (CFile cf)
 { 
     int i, bucket_no;
     int hash_bytes;
     struct CFile_ph_bucket *p;
+#if CF_OPTIMIZE_COMMIT
+    struct map_cache *m_p;
+#endif
+
+#if CF_OPTIMIZE_COMMIT
+    m_p = map_cache_init (cf);
+#endif
 
     p = xmalloc (sizeof(*p));
     hash_bytes = cf->head.hash_size * sizeof(int);
@@ -162,14 +183,21 @@ static void cf_commit_hash (CFile cf)
         }
         for (i = 0; i<HASH_BUCKET && p->vno[i]; i++)
         {
+#if CF_OPTIMIZE_COMMIT
+            map_cache_add (m_p, p->vno[i], p->no[i]);
+#else
             if (!mf_read (cf->block_mf, p->vno[i], 0, 0, cf->iobuf))
             {
                 logf (LOG_FATAL, "read commit block");
                 exit (1);
             }
             mf_write (cf->rmf, p->no[i], 0, 0, cf->iobuf);
+#endif
         }
     }
+#if CF_OPTIMIZE_COMMIT
+    map_cache_del (m_p);
+#endif
     xfree (p);
 }
 
@@ -179,6 +207,14 @@ static void cf_commit_flat (CFile cf)
     int hno;
     int i, vno = 0;
 
+#if CF_OPTIMIZE_COMMIT
+    struct map_cache *m_p;
+#endif
+
+
+#if CF_OPTIMIZE_COMMIT
+    m_p = map_cache_init (cf);
+#endif
     fp = xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
@@ -197,6 +233,9 @@ static void cf_commit_flat (CFile cf)
         {
             if (fp[i])
             {
+#if CF_OPTIMIZE_COMMIT
+                map_cache_add (m_p, fp[i], vno);
+#else
                 if (!mf_read (cf->block_mf, fp[i], 0, 0, cf->iobuf))
                 {
                     logf (LOG_FATAL, "read data block hno=%d (%d-%d) "
@@ -206,10 +245,15 @@ static void cf_commit_flat (CFile cf)
                     exit (1);
                 }
                 mf_write (cf->rmf, vno, 0, 0, cf->iobuf);
+
+#endif
             }
             vno++;
         }
     }
+#if CF_OPTIMIZE_COMMIT
+    map_cache_del (m_p);
+#endif
     xfree (fp);
 }
 
