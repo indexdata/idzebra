@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.14 2005-03-08 14:02:08 adam Exp $
+/* $Id: api.h,v 1.15 2005-03-17 07:54:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -352,7 +352,7 @@ YAZ_EXPORT int zebra_sort(ZebraHandle zh, ODR stream,
 
 YAZ_EXPORT
 int zebra_select_databases(ZebraHandle zh, int num_bases, 
-                            const char **basenames);
+			   const char **basenames);
 
 YAZ_EXPORT
 int zebra_select_database(ZebraHandle zh, const char *basename);
@@ -403,5 +403,8 @@ ZebraMetaRecord *zebra_meta_records_create_range(ZebraHandle zh,
 YAZ_EXPORT
 void zebra_meta_records_destroy(ZebraHandle zh, ZebraMetaRecord *records,
 				int num);
+
+YAZ_EXPORT 
+struct BFile_struct *zebra_get_bfs(ZebraHandle zh);
 YAZ_END_CDECL				      
 #endif
