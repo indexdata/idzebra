@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.12 2002-10-30 11:09:39 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.13 2002-12-02 15:10:58 mike Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -276,7 +276,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
-     <term>profilePath: <literal>path</literal></term>
+     <term>profilePath: <replaceable>path</replaceable></term>
      <listitem>
       <para>
        Specifies a path of profile specification files. 
@@ -318,6 +318,24 @@
        directory. This setting is useful if your Zebra server
        is running in a different directory from where
        <literal>zebra.cfg</literal> is located.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term>tagsysno: 0|1</term>
+     <listitem>
+      <para>
+       Species whether Zebra should include system-number data in XML
+       and GRS-1 records returned to clients, represented by the
+       <literal>&lt;localControlNumber&gt;</literal> element in XML
+       and the <literal>(1,14)</literal> tag in GRS-1.
+       The content of these elements is an internally-generated
+       integer uniquely identifying the record within its database.
+       It is included by default but may be turned off, with
+       <literal>tagsysno: 0</literal> for databases in which a local
+       control number is explicitly specified in the input records
+       themselves.
       </para>
      </listitem>
     </varlistentry>
