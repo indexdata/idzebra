@@ -1,3 +1,9 @@
+--- 1.0a2 1995/12/05
+
+A couple of portability-problems resolved.
+
+Changed some malloc() to xmalloc().
+
 --- 1.0a1 1995/11/28
 
 First release.
