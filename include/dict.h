@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.8  1994-10-03 17:23:11  adam
+ * Revision 1.9  1994-10-04 12:08:19  adam
+ * Minor changes.
+ *
+ * Revision 1.8  1994/10/03  17:23:11  adam
  * First version of dictionary lookup with regular expressions and errors.
  *
  * Revision 1.7  1994/09/22  10:44:47  adam
@@ -85,24 +88,24 @@ typedef struct Dict_struct {
 
 #define DICT_PAGESIZE 8192
 
-int dict_bf_readp (Dict_BFile bf, int no, void **bufp);
-     
-int dict_bf_newp (Dict_BFile bf, int no, void **bufp);
-int dict_bf_touch (Dict_BFile bf, int no);
-void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush);
+int        dict_bf_readp (Dict_BFile bf, int no, void **bufp);
+int        dict_bf_newp (Dict_BFile bf, int no, void **bufp);
+int        dict_bf_touch (Dict_BFile bf, int no);
+void       dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush);
 Dict_BFile dict_bf_open (const char *name, int block_size, int cache, int rw);
-int dict_bf_close (Dict_BFile dbf);
+int        dict_bf_close (Dict_BFile dbf);
      
-Dict dict_open (const char *name, int cache, int rw);
-int dict_close (Dict dict);
-int dict_insert (Dict dict, const Dict_char *p, int userlen, void *userinfo);
-char *dict_lookup (Dict dict, Dict_char *p);
-int dict_lookup_ec (Dict dict, Dict_char *p, int range,
-                    int (*f)(Dict_char *name));
-int dict_lookup_grep (Dict dict, Dict_char *p, int range, 
-                    int (*f)(Dict_char *name, char *info));       
-int dict_strcmp (const Dict_char *s1, const Dict_char *s2);
-int dict_strlen (const Dict_char *s);
+Dict       dict_open (const char *name, int cache, int rw);
+int        dict_close (Dict dict);
+int        dict_insert (Dict dict, const Dict_char *p, int userlen,
+                        void *userinfo);
+char      *dict_lookup (Dict dict, Dict_char *p);
+int        dict_lookup_ec (Dict dict, Dict_char *p, int range,
+                           int (*f)(Dict_char *name));
+int        dict_lookup_grep (Dict dict, Dict_char *p, int range, 
+                             int (*f)(Dict_char *name, char *info));       
+int        dict_strcmp (const Dict_char *s1, const Dict_char *s2);
+int        dict_strlen (const Dict_char *s);
 
 #define DICT_EOS        0
 #define DICT_type(x)    0[(Dict_ptr*) x]
