@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.22  1996-06-04 10:20:10  adam
+ * Revision 1.23  1996-10-29 13:45:33  adam
+ * Changed definition of DICT_DEFAULT_PAGESIZE.
+ *
+ * Revision 1.22  1996/06/04 10:20:10  adam
  * Added support for character mapping.
  *
  * Revision 1.21  1996/05/24  14:46:07  adam
@@ -84,6 +87,7 @@
 #define DICT_H
 
 #include <bfile.h>
+#include <log.h>
 
 typedef unsigned Dict_ptr;
 typedef unsigned char Dict_char;
@@ -130,7 +134,7 @@ typedef struct Dict_struct {
 
 #define DICT_MAGIC "dict00"
 
-#define DICT_DEFAULT_PAGESIZE "4096"
+#define DICT_DEFAULT_PAGESIZE 4096
 
 int        dict_bf_readp (Dict_BFile bf, int no, void **bufp);
 int        dict_bf_newp (Dict_BFile bf, int no, void **bufp);
