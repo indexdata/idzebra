@@ -1,5 +1,5 @@
-/* $Id: zebraapi.h,v 1.28 2003-03-04 23:30:20 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: zebraapi.h,v 1.1 2003-03-04 23:36:29 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -19,8 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
-
 
 #ifndef ZEBRAAPI_H
 #define ZEBRAAPI_H
