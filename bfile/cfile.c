@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.1  1995-11-30 08:33:11  adam
+ * Revision 1.2  1995-11-30 17:00:49  adam
+ * Several bug fixes. Commit system runs now.
+ *
+ * Revision 1.1  1995/11/30  08:33:11  adam
  * Started work on commit facility.
  *
  */
@@ -12,8 +15,10 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <alexutil.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include <alexutil.h>
 #include <mfile.h>
 #include "cfile.h"
 
@@ -118,6 +123,7 @@ CFile cf_open (MFile mf, const char *cname, const char *fname,
     cf->max_bucket_in_memory = 200;
     cf->dirty = 0;
     cf->iobuf = xmalloc (cf->head.block_size);
+    memset (cf->iobuf, 0, cf->head.block_size);
     return cf;
 }
 
@@ -222,7 +228,10 @@ static struct CFile_hash_bucket *new_bucket (CFile cf, int *block_no, int hno)
     p = alloc_bucket (cf, *block_no, hno);
 
     for (i = 0; i<HASH_BUCKET; i++)
+    {
         p->ph.vno[i] = 0;
+        p->ph.no[i] = 0;
+    }
     p->ph.next_bucket = 0;
     p->ph.this_bucket = *block_no;
     p->dirty = 1;
@@ -235,21 +244,21 @@ int cf_lookup (CFile cf, int no)
     struct CFile_hash_bucket *hb;
     int block_no, i;
 
-    logf (LOG_LOG, "cf_lookup pass 1");
     for (hb = cf->parray[hno]; hb; hb = hb->h_next)
     {
-        logf (LOG_LOG, "bucket_no=%d", hb->ph.this_bucket);
         for (i = 0; i<HASH_BUCKET && hb->ph.vno[i]; i++)
             if (hb->ph.no[i] == no)
                 return hb->ph.vno[i];
     }
-    logf (LOG_LOG, "cf_lookup pass 2");
     for (block_no = cf->array[hno]; block_no; block_no = hb->ph.next_bucket)
     {
-        logf (LOG_LOG, "bucket_no=%d", block_no);
         for (hb = cf->parray[hno]; hb; hb = hb->h_next)
+        {
             if (hb->ph.this_bucket == block_no)
-                continue;
+                break;
+        }
+        if (hb)
+            continue;
         hb = get_bucket (cf, block_no, hno);
         for (i = 0; i<HASH_BUCKET && hb->ph.vno[i]; i++)
             if (hb->ph.no[i] == no)
@@ -284,8 +293,10 @@ int cf_new (CFile cf, int no)
             {
                 bucketpp = &hb->ph.next_bucket;
                 hbprev = hb;
-                continue;
+                break;
             }
+        if (hb)
+            continue;
         hb = get_bucket (cf, *bucketpp, hno);
         assert (hb);
         for (i = 0; i<HASH_BUCKET; i++)
@@ -309,10 +320,9 @@ int cf_new (CFile cf, int no)
 
 int cf_read (CFile cf, int no, int offset, int num, void *buf)
 {
-    int block, r;
+    int tor, block, r;
     
     assert (cf);
-    logf (LOG_LOG, "cf_read no=%d, offset=%d, num=%d", no, offset, num);
     if (!(block = cf_lookup (cf, no)))
         return -1;
     if (lseek (cf->block_fd, cf->head.block_size * block + offset,
@@ -322,8 +332,9 @@ int cf_read (CFile cf, int no, int offset, int num, void *buf)
               no, block);
         exit (1);
     }
-    r = read (cf->block_fd, buf, num ? num : cf->head.block_size);
-    if (r != cf->head.block_size)
+    tor = num ? num : cf->head.block_size;
+    r = read (cf->block_fd, buf, tor);
+    if (r != tor)
     {
         logf (LOG_FATAL|LOG_ERRNO, "cf_read, read no=%d, block=%d",
               no, block);
@@ -334,11 +345,9 @@ int cf_read (CFile cf, int no, int offset, int num, void *buf)
 
 int cf_write (CFile cf, int no, int offset, int num, const void *buf)
 {
-    int block, r;
+    int block, r, tow;
 
     assert (cf);
-
-    logf (LOG_LOG, "cf_write no=%d, offset=%d, num=%d", no, offset, num);
     if (!(block = cf_lookup (cf, no)))
     {
         block = cf_new (cf, no);
@@ -358,8 +367,10 @@ int cf_write (CFile cf, int no, int offset, int num, const void *buf)
               no, block);
         exit (1);
     }
-    r = write (cf->block_fd, buf, num ? num : cf->head.block_size);
-    if (r != cf->head.block_size)
+
+    tow = num ? num : cf->head.block_size;
+    r = write (cf->block_fd, buf, tow);
+    if (r != tow)
     {
         logf (LOG_FATAL|LOG_ERRNO, "cf_write, read no=%d, block=%d",
               no, block);

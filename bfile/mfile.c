@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.12  1995-11-24 17:26:11  quinn
+ * Revision 1.13  1995-11-30 17:00:50  adam
+ * Several bug fixes. Commit system runs now.
+ *
+ * Revision 1.12  1995/11/24  17:26:11  quinn
  * Mostly about making some ISAM stuff in the config file optional.
  *
  * Revision 1.11  1995/11/13  09:32:43  quinn
@@ -126,6 +129,8 @@ static int file_position(MFile mf, int pos, int offset)
     if (mf->files[c].fd < 0 && (mf->files[c].fd = open(mf->files[c].path,
 	mf->wr ? O_RDWR|O_CREAT : O_RDONLY, 0666)) < 0)
     {
+        if (!mf->wr && errno == ENOENT && off == 0)
+            return -2;
     	logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
     	return -1;
     }
@@ -353,8 +358,11 @@ int mf_read(MFile mf, int no, int offset, int num, void *buf)
 {
     int rd, toread;
 
-    if (file_position(mf, no, offset) < 0)
-    	exit(1);
+    if ((rd = file_position(mf, no, offset)) < 0)
+        if (rd == -2)
+            return 0;
+        else
+            exit(1);
     toread = num ? num : mf->blocksize;
     if ((rd = read(mf->files[mf->cur_file].fd, buf, toread)) < 0)
     {

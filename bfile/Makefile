@@ -1,13 +1,13 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.15 1995-11-30 08:33:09 adam Exp $
+# $Id: Makefile,v 1.16 1995-11-30 17:00:49 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
 
 YAZLIB=-lyaz
-YAZINC=
+YAZINC=-I../../yaz/include
 
 INCLUDE=-I../include $(YAZINC)
 #CFLAGS=-g -Wall -pedantic -ansi

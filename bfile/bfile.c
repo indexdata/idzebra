@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.12  1995-11-30 08:33:10  adam
+ * Revision 1.13  1995-11-30 17:00:49  adam
+ * Several bug fixes. Commit system runs now.
+ *
+ * Revision 1.12  1995/11/30  08:33:10  adam
  * Started work on commit facility.
  *
  * Revision 1.11  1995/09/04  12:33:21  adam
@@ -75,7 +78,7 @@ BFile bf_open (const char *name, int block_size, int wflag)
         int first_time;
 
         logf (LOG_LOG, "cf,mf_open %s, cache_name=%s", name, cache_name);
-        tmp->mf = mf_open(0, name, block_size, wflag);
+        tmp->mf = mf_open(0, name, block_size, 0);
         tmp->cf = cf_open(tmp->mf, cache_name, name, block_size, wflag,
                           &first_time);
 
@@ -130,7 +133,7 @@ void bf_commit (const char *name)
         logf (LOG_FATAL|LOG_ERRNO, "cannot open commit %s", name);
         exit (1);
     }
-    while (fscanf (inf, "%s %d", path, &block_size) == 1)
+    while (fscanf (inf, "%s %d", path, &block_size) == 2)
     {
         mf = mf_open(0, path, block_size, 1);
         cf = cf_open(mf, name, path, block_size, 0, &first_time);
