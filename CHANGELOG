@@ -1,4 +1,6 @@
 
+Zebra Examples in examples . Zebra tests in test.
+
 Bug fix: sort index was not properly modified on 
 record updates/deletes.
 

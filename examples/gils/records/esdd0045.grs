@@ -1,0 +1,152 @@
+<gils>
+
+<Title>
+ENGINEERING GEOLOGY (UNPUBLISHED REPORTS AND MAPS)
+</Title>
+
+<Originator>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Originator>
+
+<Local-Subject-Index>
+CARTOGRAPHY; ENGINEERING; GEOLOGY; MAP; NEVADA
+</Local-Subject-Index>
+
+<Abstract>
+Project name, location, geologic information, engineering information, firm or 
+individual making report or map are components of this database.
+<Format>
+MAP SETS; REPORT SETS; INDIVIDUAL MAPS; FILE FOLDERS; LOGS
+</Format>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+7 1/2' OR 15' QUADS; COUNTIES; 1 DEG. X 2 DEG. QUAD
+</Geographic-Coverage>
+
+<Coverage-Description>
+NEVADA
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-114
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+35
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+ENGINEERING GEOLOGY (UNPUBLISHED REPORTS AND MAPS)
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+BECKY WEIMER PURKEY
+</Name>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0045
+</Control-Identifier>
+
+<Record-Source>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Record-Source>
+
+<Date-of-Last-Modification>
+199101
+</Date-of-Last-Modification>
+</gils>
+

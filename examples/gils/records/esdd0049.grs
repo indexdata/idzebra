@@ -1,0 +1,192 @@
+<gils>
+
+<Title>
+GEOTHERMAL WELLS DRILLED SINCE 1976
+</Title>
+
+<Originator>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Originator>
+
+<Local-Subject-Index>
+GEOTHERMAL; GEOTHERMAL WELL; NEVADA
+</Local-Subject-Index>
+
+<Abstract>
+Well name, operator, location, depth, highest temperature reached are 
+components of these data which describe those geothermal wells that have been 
+drilled since 1976.
+<Format>
+CATALOGS/INDEXES
+</Format>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+COUNTIES
+</Geographic-Coverage>
+
+<Coordinate-System>
+PUBLIC LAND SURVEY (SECTION, TOWNSHIP, AND RANGE)
+</Coordinate-System>
+
+<Coverage-Description>
+NEVADA
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-114
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+35
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1976-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+GEOTHERMAL WELLS DRILLED SINCE 1976
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<DBMS>
+WORDPERFECT
+</DBMS>
+
+<Access-Method>
+INTERACTIVE
+</Access-Method>
+
+<Number-of-Records>
+100
+</Number-of-Records>
+
+<Computer-Type>
+IBM COMPATIBLE
+</Computer-Type>
+
+<Computer-Location>
+RENO, NV
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+Nevada Bureau of Mines Open-File Report Special Publication List 4 (updates 
+Appendix 2 of Bulletin 91 Nevada Bureau of Mines and Geology).
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+BECKY WEIMER PURKEY
+</Name>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0049
+</Control-Identifier>
+
+<Record-Source>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Record-Source>
+
+<Date-of-Last-Modification>
+199101
+</Date-of-Last-Modification>
+</gils>
+

@@ -1,0 +1,190 @@
+<gils>
+
+<Title>
+CORE AND CUTTINGS IN NBMG 'LIBRARY'
+</Title>
+
+<Originator>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Originator>
+
+<Local-Subject-Index>
+CORE; GEOLOGY; MINE; NEVADA
+</Local-Subject-Index>
+
+<Abstract>
+This data set describes the NBMG holdings of core and cuttings for Nevada.  It 
+includes driller identification, hole name, location, depth of hole, and log 
+types.
+<Format>
+FILE FOLDERS; LOGS; CORE/CUTTINGS (SAMPLES)
+</Format>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+COUNTIES
+</Geographic-Coverage>
+
+<Coordinate-System>
+LATITUDE/LONGITUDE; PUBLIC LANE SURVEY (SECTION, TOWNSHIP, AND RANGE)
+</Coordinate-System>
+
+<Coverage-Description>
+NEVADA
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-114
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+35
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1960-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+CORE AND CUTTINGS IN NBMG 'LIBRARY'
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<DBMS>
+WORDPERFECT
+</DBMS>
+
+<Access-Method>
+BATCH
+</Access-Method>
+
+<Computer-Type>
+IBM COMPATIBLE
+</Computer-Type>
+
+<Computer-Location>
+RENO, NV
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+Listed in NBMG Report 30, The Nevada Bureau of Mines and Geology Sample Library 
+
+- An Index to Drill Core and Cuttings in the Collection and also in Special 
+Publication L3, which updates the list.
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+BECKY WEIMER PURKEY
+</Name>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0050
+</Control-Identifier>
+
+<Record-Source>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Record-Source>
+
+<Date-of-Last-Modification>
+199101
+</Date-of-Last-Modification>
+</gils>
+

@@ -1,0 +1,174 @@
+<gils>
+
+<Title>
+OIL IMPREGNATED ROCK DEPOSITS
+</Title>
+
+<Originator>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+BASALT; CRUDE OIL; GEOLOGY; LIMESTONE; OIL; PETROLEUM; PETROLEUM WELL; TAR; TAR 
+BASALT; TAR LIMESTONE; TAR SAND; UTAH
+</Local-Subject-Index>
+
+<Abstract>
+High viscosity, low volatile content, hydrocarbon deposits which are developed 
+using unconventional petroleum methods comprise this data set.  Deposits 
+include tar sands, limestones, basalts but not shales or solid hydrocarbons.  
+This file includes outcrop maps, field notes, references, logs, stratigraphy, 
+geologic report, and production from outside or in-house sources.
+<Format>
+FILE FOLDERS
+</Format>
+
+<Comments>
+Much unpublished data.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+7 1/2' OR 15' QUADS; US STATE
+</Geographic-Coverage>
+
+<Coverage-Description>
+UTAH
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-114
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-109
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+37
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+ECONOMIC PROGRAM, 606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+OIL IMPREGNATED ROCK DEPOSITS
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+ECONOMIC PROGRAM, 606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0044
+</Control-Identifier>
+
+<Record-Source>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198903
+</Date-of-Last-Modification>
+</gils>
+

@@ -1,0 +1,183 @@
+<gils>
+
+<Title>
+STATEWIDE PLANNING
+</Title>
+
+<Originator>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Originator>
+
+<Local-Subject-Index>
+AGRICULTURE; CONNECTICUT; FLOOD; FLOOD ZONE; HYDROLOGY; INSURANCE; LAND USE; 
+RECREATION; WASTE; WASTE TREATMENT; WASTEWATER; WATER; WATER SUPPLY
+</Local-Subject-Index>
+
+<Abstract>
+This data set contains:  1970 digitized land use maps, 1970 digitized zoning 
+maps, active agricultural areas maps (1979-1980), maps displaying current 
+National Flood Insurance Program data, locational guide map of the State 
+Policies Plan for Conservation and Development of Connecticut (1987-1992), 1970 
+land use statistical data and 1970 municipal zoning data, proposed sewer 
+service areas maps (1978) - DEP has update of this information, water 
+conservation handbooks, and various reports and maps of the areawide Waste 
+Treatment Management Planning Program (208). 
+<Format>
+MAP SETS; REPORT SETS; INDIVIDUAL MAPS; FILE FOLDERS
+</Format>
+
+<Comments>
+Alternate contact:  John Radacsi.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+7 1/2' OR 15' QUADS; US STATE; 1:125,000 SCALE MAPS
+</Geographic-Coverage>
+
+<Coverage-Description>
+CONNECTICUT
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-74
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-71
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+41
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1960-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Organization>
+
+<Street-Address>
+OFFICE OF POLICY AND MANAGEMENT, POLICY DEVELOPMENT AND PLANNING DIVISION, 80 
+WASHINGTON STREET
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106-4459
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-8341
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+STATEWIDE PLANNING
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+THERON SCHNURE
+</Name>
+
+<Organization>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Organization>
+
+<Street-Address>
+OFFICE OF POLICY AND MANAGEMENT, POLICY DEVELOPMENT AND PLANNING DIVISION, 80 
+WASHINGTON STREET
+</Street-Address>
+
+<City>
+HARTFORD
+</City>
+
+<State>
+CT
+</State>
+
+<Zip-Code>
+06106-4459
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(203) 566-8341
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0071
+</Control-Identifier>
+
+<Record-Source>
+DEPARTMENT OF ENVIRONMENTAL PROTECTION
+</Record-Source>
+
+<Date-of-Last-Modification>
+199104
+</Date-of-Last-Modification>
+</gils>
+

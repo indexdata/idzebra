@@ -1,0 +1,172 @@
+<gils>
+
+<Title>
+ELECTRIC LOG LIBRARY
+</Title>
+
+<Originator>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+AREAL GEOLOGY; CRUDE OIL; ELECTRICITY; GEOLOGY; GEOPHYSICAL; HYDROCARBON; 
+LITHOLOGY; MUD; OIL; PETROLEUM; PETROLEUM WELL; UTAH
+</Local-Subject-Index>
+
+<Abstract>
+Logs for selected petroleum wells include electric (all varieties) and 
+lithologic or hydrocarbon logs.  Duplicates from OG&amp;M well records file, 
+supplied by private concerns.  The areal coverage is Utah and vicinity.
+<Format>
+LOGS
+</Format>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE
+</Geographic-Coverage>
+
+<Coordinate-System>
+PUBLIC LAND SURVEY (SECTION, TOWNSHIP, AND RANGE)
+</Coordinate-System>
+
+<Coverage-Description>
+UTAH
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-114
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-109
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+37
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+ECONOMIC PROGRAM, 606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+ELECTRIC LOG LIBRARY
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+UNDER DEVELOPMENT
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+ECONOMIC PROGRAM, 606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0040
+</Control-Identifier>
+
+<Record-Source>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198903
+</Date-of-Last-Modification>
+</gils>
+

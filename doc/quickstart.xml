@@ -1,5 +1,5 @@
 <chapter id="quick-start">
- <!-- $Id: quickstart.xml,v 1.5 2002-10-16 20:33:31 mike Exp $ -->
+ <!-- $Id: quickstart.xml,v 1.6 2002-10-30 13:59:42 adam Exp $ -->
  <title>Quick Start </title>
  
  <!--
@@ -11,13 +11,13 @@
  <para>
   In this section, we will test the system by indexing a small set of sample
   GILS records that are included with the software distribution. Go to the
-  <literal>test/gils</literal> subdirectory of the distribution archive.
+  <literal>examples/gils</literal> subdirectory of the distribution archive.
   There you will find a configuration
   file named <literal>zebra.cfg</literal> with the following contents:
   
   <screen>
    # Where the schema files, attribute files, etc are located.
-   profilePath: .:../../tab:../../../yaz/tab:/usr/local/share/yaz/tab:/usr/share/yaz/tab
+   profilePath: .:../../tab
 
    # Files that describe the attribute sets supported.
    attset: bib1.att
@@ -28,12 +28,14 @@
    isam: c
   </screen>
  </para>
- 
+
+ <!--  No longer necessary
  <para>
   If necessary, edit the file and set <literal>profilePath</literal> to the path of the
   YAZ profile tables (sub directory <literal>tab</literal> of the YAZ
   distribution archive).
  </para>
+ -->
  
  <para>
   The 48 test records are located in the sub directory

@@ -1,0 +1,3 @@
+
+SUBDIRS=gils dinosauricon
+

@@ -1,0 +1,176 @@
+<gils>
+
+<Title>
+THESES ON NEVADA GEOLOGY
+</Title>
+
+<Originator>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Originator>
+
+<Local-Subject-Index>
+GEOLOGY; NEVADA
+</Local-Subject-Index>
+
+<Abstract>
+This database contains catalogs and indexes of geology theses in Nevada.  Some 
+of the information included are author, title, location, degree, and 
+university.
+<Format>
+CATALOGS/INDEXES
+</Format>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE
+</Geographic-Coverage>
+
+<Coordinate-System>
+LATITUDE/LONGITUDE
+</Coordinate-System>
+
+<Coverage-Description>
+NEVADA
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-114
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+35
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1976-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+THESES ON NEVADA GEOLOGY
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+Bibliography of Graduate Theses on Nevada Geology to 1976:  Nevada Bureau of 
+Mines and Geology, Report 31.
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+BECKY WEIMER PURKEY
+</Name>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0052
+</Control-Identifier>
+
+<Record-Source>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Record-Source>
+
+<Date-of-Last-Modification>
+199101
+</Date-of-Last-Modification>
+</gils>
+

@@ -1,0 +1,187 @@
+<gils>
+
+<Title>
+OPERATING MINES
+</Title>
+
+<Originator>
+STATE MINE INSPECTOR'S OFFICE
+</Originator>
+
+<Local-Subject-Index>
+INDUSTRY; MINE; NEVADA
+</Local-Subject-Index>
+
+<Abstract>
+This database contains information on operating mines in Nevada such as mine 
+name, operator, number of employees, address, manager's name, substance mined 
+or processed.
+<Format>
+CATALOGS/INDEXES; DIGITAL DATA SETS
+</Format>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE; COUNTIES
+</Geographic-Coverage>
+
+<Coordinate-System>
+PUBLIC LAND SURVEY (SECTION, TOWNSHIP, AND RANGE)
+</Coordinate-System>
+
+<Coverage-Description>
+NEVADA
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-114
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+35
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+STATE MINE INSPECTOR'S OFFICE
+</Organization>
+
+<Street-Address>
+STATE MINE INSPECTOR, NEVADA DEPT. OF INDUSTRIAL RELATIONS, 1380 S. CURRY
+</Street-Address>
+
+<City>
+CARSON CITY
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89710
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 687-5243
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+OPERATING MINES
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+INTERACTIVE
+</Access-Method>
+
+<Number-of-Records>
+500
+</Number-of-Records>
+
+<Computer-Type>
+GOLDSTAR
+</Computer-Type>
+
+<Computer-Location>
+CARSON CITY, NV
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+KATHY HALL
+</Name>
+
+<Organization>
+STATE MINE INSPECTOR'S OFFICE
+</Organization>
+
+<Street-Address>
+STATE MINE INSPECTOR, NEVADA DEPT. OF INDUSTRIAL RELATIONS, 1380 S. CURRY
+</Street-Address>
+
+<City>
+CARSON CITY
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89710
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 687-5243
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0064
+</Control-Identifier>
+
+<Record-Source>
+STATE MINE INSPECTOR'S OFFICE
+</Record-Source>
+
+<Date-of-Last-Modification>
+199101
+</Date-of-Last-Modification>
+</gils>
+

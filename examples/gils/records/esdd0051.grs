@@ -1,0 +1,212 @@
+<gils>
+
+<Title>
+OIL/GAS DRILLING
+<Acronym>
+NVOILWEL
+</Acronym>
+</Title>
+
+<Originator>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Originator>
+
+<Local-Subject-Index>
+CORE; CRUDE OIL; GAS; GAS WELL; NEVADA; OIL; OIL WELL; PETROLEUM; PETROLEUM 
+WELL
+</Local-Subject-Index>
+
+<Abstract>
+This database contains information on oil and gas drilling such as well name, 
+operator, driller, location, depth, copies of logs run, permits, samples 
+(cuttings, core), completion records.
+<Format>
+REPORT SETS; DIGITAL DATA SETS; FILE FOLDERS; MICROGRAPHICS; LOGS; COMPUTER 
+DATA BASE RECORDS
+</Format>
+
+<Data-Category>
+TERRESTRIAL
+</Data-Category>
+
+<Comments>
+DOCUMENTATION continued: Special Publication l4; Bulletin 104, Oil and Gas 
+Developments in Nevada, 1907-1986; Special Publication l8.  COMMENTS: Not all 
+data in this data set is available on-line.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE; COUNTIES
+</Geographic-Coverage>
+
+<Coordinate-System>
+UTM NORTHINGS AND EASTINGS; PUBLIC LAND SURVEY (SECTION, TOWNSHIP, AND RANGE)
+</Coordinate-System>
+
+<Coverage-Description>
+NEVADA
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-114
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+35
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1907-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA, M.S. 178
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557-0088
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+OIL/GAS DRILLING
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<DBMS>
+PC-FILE, VERSION 5.0
+</DBMS>
+
+<Access-Method>
+INTERACTIVE
+</Access-Method>
+
+<Number-of-Records>
+700
+</Number-of-Records>
+
+<Bytes-Per-Record>
+400
+</Bytes-Per-Record>
+
+<Computer-Type>
+IBM PC/XT/AT/386
+</Computer-Type>
+
+<Computer-Location>
+RENO, NV
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+Listed and described in NBMG Bulletin 52, Nevada Oil and Gas Drilling Data, 
+1906-1953; Report 18, Oil and Gas Developments in Nevada, 1953-1967; Report 
+29;(continued in COMMENTS section)
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+RONALD HESS
+</Name>
+
+<Organization>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Organization>
+
+<Street-Address>
+NEVADA BUREAU OF MINES AND GEOLOGY, UNIVERSITY OF NEVADA, M.S. 178
+</Street-Address>
+
+<City>
+RENO
+</City>
+
+<State>
+NV
+</State>
+
+<Zip-Code>
+89557-0088
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(702) 784-6691
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0051
+</Control-Identifier>
+
+<Record-Source>
+NEVADA BUREAU OF MINES AND GEOLOGY
+</Record-Source>
+
+<Date-of-Last-Modification>
+199101
+</Date-of-Last-Modification>
+</gils>
+

@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.13 2002-10-18 16:16:59 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.14 2002-10-30 13:59:42 adam Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -10,7 +10,7 @@
    driven by a master configuration file, which may refer to other
    subsidiary configuration files.  By default, they try to use
    <filename>zebra.cfg</filename> in the working directory as the
-   master file; but this can be changed using the <literal>-t</literal>
+   master file; but this can be changed using the <literal>-c</literal>
    option to specify an alternative master configuration file.
   </para>
   <para>
@@ -76,7 +76,7 @@
    minimal file that just tells <literal>zebraidx</literal> where to
    find the default indexing rules, and how to parse the records:
    <screen>
-    profilePath: .:../../tab:../../../yaz/tab
+    profilePath: .:../../tab
     recordType: grs.sgml
    </screen>
   </para>

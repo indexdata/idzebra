@@ -1,0 +1,183 @@
+<gils>
+
+<Title>
+SAND AND GRAVEL AQUIFER MAPS
+</Title>
+
+<Originator>
+MAINE GEOLOGICAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+AQUIFER; GROUNDWATER; HYDROLOGY; MAINE; MAP; SURFICIAL AQUIFER; SURFICIAL 
+DEPOSIT; WATER
+</Local-Subject-Index>
+
+<Abstract>
+A series of 1:50,000 scale maps showing the outlines of known deposits of 
+coarse surficial material with well yields greater than 10 gallons per minute 
+(gpm) and 50 gpm comprises this data set.  Other information pertaining to 
+wells, test pits, borings, etc., are also shown.  Tables describe other 
+geologic information pertaining to the deposits.
+<Format>
+MAP SETS; LOGS; TABLES
+</Format>
+
+<Comments>
+This program is superseded by the Significant Aquifers Program. More detailed 
+maps of significant surficial aquifers are published for some areas and planned 
+
+for others.  See Significant Aquifer Map Series.  1:50,000 scale base maps 
+derived from USGS quadrangles; no coverage in Northwest and parts of Eastern 
+Maine.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE
+</Geographic-Coverage>
+
+<Coverage-Description>
+MAINE
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-71
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-67
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+48
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+43
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+1978-1981
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+MAINE GEOLOGICAL SURVEY
+</Organization>
+
+<Street-Address>
+MAINE GEOLOGICAL SURVEY, STATE HOUSE STATION 22
+</Street-Address>
+
+<City>
+AUGUSTA
+</City>
+
+<State>
+ME
+</State>
+
+<Zip-Code>
+04333
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(207) 289-2801
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+SAND AND GRAVEL AQUIFER MAPS
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+JOHN WILLIAMS
+</Name>
+
+<Organization>
+MAINE GEOLOGICAL SURVEY
+</Organization>
+
+<Street-Address>
+MAINE GEOLOGICAL SURVEY, STATE HOUSE STATION 22
+</Street-Address>
+
+<City>
+AUGUSTA
+</City>
+
+<State>
+ME
+</State>
+
+<Zip-Code>
+04333
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(207) 289-2801
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0058
+</Control-Identifier>
+
+<Record-Source>
+MAINE GEOLOGICAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198709
+</Date-of-Last-Modification>
+</gils>
+

@@ -1,0 +1,181 @@
+<gils>
+
+<Title>
+WELL SAMPLE LIBRARY
+</Title>
+
+<Originator>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+CORE; CORE CHIPS; CRUDE OIL; DRILL CUTTINGS; GEOTHERMAL; GEOTHERMAL WELL; MINE; 
+OIL; PETROLEUM; PETROLEUM WELL; STRATIGRAPHY; UTAH
+</Local-Subject-Index>
+
+<Abstract>
+Petroleum, mining, geothermal, and stratigraphic samples, including cores, core 
+chips and drill cuttings comprise this data set.  This does not include logs or 
+description.  These data are supplied by outside agencies and private 
+organizations.
+<Format>
+SAMPLE CONTAINERS
+</Format>
+
+<Comments>
+Samples may be inspected by appointment only.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE
+</Geographic-Coverage>
+
+<Coordinate-System>
+PUBLIC LAND SURVEY (SECTION, TOWNSHIP, AND RANGE)
+</Coordinate-System>
+
+<Coverage-Description>
+UTAH AND NEIGHBORING STATES
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-102
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+49
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+31
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+WELL SAMPLE LIBRARY
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+NONAUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+MANUAL
+</Access-Method>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+CAROLYN OLSEN
+</Name>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0041
+</Control-Identifier>
+
+<Record-Source>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198903
+</Date-of-Last-Modification>
+</gils>
+

@@ -1,0 +1,188 @@
+<gils>
+
+<Title>
+UTAH GEOLOGIC MAP BIBLIOGRAPHY
+</Title>
+
+<Originator>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+ARIZONA; COLORADO; GEOLOGY; IDAHO; MAP; NEVADA; UTAH; WYOMING
+</Local-Subject-Index>
+
+<Abstract>
+This collection consists of theses, dissertations, and other unpublished maps 
+as well as published maps of the geology of Utah.  Some maps of the collection 
+are xeroxed from limited collections.  Cross-sections are included in set.  
+Data file consists of map bibliography.
+<Format>
+MAP SETS; BIBLIOGRAPHIES
+</Format>
+
+<Comments>
+Approximately 700 maps are in the set.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE
+</Geographic-Coverage>
+
+<Coverage-Description>
+UTAH AND NEIGHBORING STATES
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-102
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+49
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+31
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+UTAH GEOLOGIC MAP BIBLIOGRAPHY
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+INTERACTIVE
+</Access-Method>
+
+<Number-of-Records>
+1,100
+</Number-of-Records>
+
+<Computer-Type>
+PC NETWORK
+</Computer-Type>
+
+<Computer-Location>
+SALT LAKE CITY, UT
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+HELLMUT DOELLING
+</Name>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0035
+</Control-Identifier>
+
+<Record-Source>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198903
+</Date-of-Last-Modification>
+</gils>
+

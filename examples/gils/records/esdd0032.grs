@@ -1,0 +1,201 @@
+<gils>
+
+<Title>
+UTAH CRIB FILE
+<Acronym>
+UTAH-CRIB
+</Acronym>
+</Title>
+
+<Originator>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+FUEL; GEOLOGY; LAND USE; MAP; METAL; MINERAL; NON-METAL; TOPOGRAPHY; UTAH
+</Local-Subject-Index>
+
+<Abstract>
+CRIB-UTAH is a data base covering mineral occurrences in Utah, including 
+metals, non-metals, and fuels.  Each mineral occurrence is plotted on 
+topographic maps and described in a six page report.
+<Format>
+MAP SETS; REPORT SETS
+</Format>
+
+<Comments>
+CRIB-UTAH is currently accessible through the BLM, USGS, and Utah Geological 
+and Mineral Survey.  Future modes of access to the system are uncertain due to 
+systems changes.  Not identical to USGS MRDS/CRIB files; other data available 
+in file folder at UGMS.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+7 1/2' OR 15' QUADS; US STATE; COUNTIES
+</Geographic-Coverage>
+
+<Coordinate-System>
+UTM NORTHINGS AND EASTINGS; PUBLIC LAND SURVEY (SECTION, TOWNSHIP, AND RANGE)
+</Coordinate-System>
+
+<Coverage-Description>
+UTAH
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-114
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-109
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+42
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+37
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+UTAH CRIB FILE
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<DBMS>
+REVELATION
+</DBMS>
+
+<Access-Method>
+INTERACTIVE AND BATCH
+</Access-Method>
+
+<Number-of-Records>
+8,000
+</Number-of-Records>
+
+<Computer-Type>
+PC NETWORK
+</Computer-Type>
+
+<Computer-Location>
+SALT LAKE CITY, UT
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Name>
+BRYCE TRIPP
+</Name>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0032
+</Control-Identifier>
+
+<Record-Source>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198903
+</Date-of-Last-Modification>
+</gils>
+

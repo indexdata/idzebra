@@ -1,0 +1,184 @@
+<gils>
+
+<Title>
+BIBLIOGRAPHY OF UTAH GEOLOGY
+</Title>
+
+<Originator>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Originator>
+
+<Local-Subject-Index>
+COAL; EARTHQUAKE; GEOLOGY; GREAT SALT LAKE; LANDSLIDE; SEISMOLOGY; 
+STRATIGRAPHY; UTAH
+</Local-Subject-Index>
+
+<Abstract>
+Keyworded compilation of 11,300 bibliographic entries consisting of 
+commodities, applied geology, investigation procedures and stratigraphic units 
+related to Utah comprise this data set.  Entries are searchable by state, 
+county, quadrangle, as well as keywords.  Entries include theses and 
+dissertations referenced in GEOREF to 1980.
+<Format>
+BIBLIOGRAPHIES
+</Format>
+
+<Comments>
+Utah Radioactive Occurrences, Great Salt Lake, Landslide, Earthquakes, and Utah 
+
+Coal Bibliographies are included.
+</Comments>
+</Abstract>
+
+<Spatial-Domain>
+
+<Geographic-Coverage>
+US STATE
+</Geographic-Coverage>
+
+<Coverage-Description>
+UTAH AND NEIGHBORING STATES
+</Coverage-Description>
+
+<Bounding-Coordinates>
+
+<West-Bounding-Coordinate>
+-120
+</West-Bounding-Coordinate>
+
+<East-Bounding-Coordinate>
+-102
+</East-Bounding-Coordinate>
+
+<North-Bounding-Coordinate>
+49
+</North-Bounding-Coordinate>
+
+<South-Bounding-Coordinate>
+31
+</South-Bounding-Coordinate>
+</Bounding-Coordinates>
+</Spatial-Domain>
+
+<Time-Period>
+
+<Time-Period-Textual>
+-PRESENT
+</Time-Period-Textual>
+</Time-Period>
+
+<Availability>
+
+<Distributor>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+INFORMATION SECTION, 606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Distributor>
+
+<Resource-Description>
+BIBLIOGRAPHY OF UTAH GEOLOGY
+</Resource-Description>
+
+<Technical-Prerequisites>
+
+<Data-Set-Type>
+AUTOMATED
+</Data-Set-Type>
+
+<Access-Method>
+INTERACTIVE
+</Access-Method>
+
+<Computer-Type>
+PC NETWORK
+</Computer-Type>
+
+<Computer-Location>
+SALT LAKE CITY, UT
+</Computer-Location>
+</Technical-Prerequisites>
+</Availability>
+
+<Access-Constraints>
+
+<Documentation>
+NONE
+</Documentation>
+</Access-Constraints>
+
+<Use-Constraints>
+
+<Status>
+OPERATIONAL
+</Status>
+</Use-Constraints>
+
+<Point-of-Contact>
+
+<Organization>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Organization>
+
+<Street-Address>
+INFORMATION SECTION, 606 BLACK HAWK WAY
+</Street-Address>
+
+<City>
+SALT LAKE CITY
+</City>
+
+<State>
+UT
+</State>
+
+<Zip-Code>
+84108
+</Zip-Code>
+
+<Country>
+USA
+</Country>
+
+<Telephone>
+(801) 581-6831
+</Telephone>
+</Point-of-Contact>
+
+<Control-Identifier>
+ESDD0042
+</Control-Identifier>
+
+<Record-Source>
+UTAH GEOLOGICAL AND MINERAL SURVEY
+</Record-Source>
+
+<Date-of-Last-Modification>
+198903
+</Date-of-Last-Modification>
+</gils>
+
