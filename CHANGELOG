@@ -1,3 +1,9 @@
+Added "tagsysno" directive to zebra.cfg to control under which tag the
+sysstem ID is placed. Use tagsysno: 0 to disable Zebra's system number
+entirely.
+
+Added "tagrank" as above.
+
 Changed file naming scheme for register files from <name>.mf.<no> to
 <name>-<no>.mf.
 
