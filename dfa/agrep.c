@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.11  1999-02-02 14:50:03  adam
+ * Revision 1.12  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.11  1999/02/02 14:50:03  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.10  1997/09/09 13:37:57  adam
@@ -283,6 +286,7 @@ char **argv;
         return i;
     while (--argc > 0)
         if (**++argv != '-' && **argv)
+        {
             if (!pattern)
             {
                 pattern = *argv;
@@ -308,6 +312,7 @@ char **argv;
                 if (i)
                     return i;
             }
+        }
     if (!no)
     {
         fprintf (stderr, "usage:\n "

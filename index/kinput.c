@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.33  1999-05-15 14:36:38  adam
+ * Revision 1.34  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.33  1999/05/15 14:36:38  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.32  1999/05/12 13:08:06  adam
@@ -214,7 +217,7 @@ struct key_file *key_file_init (int no, int chunk)
 {
     struct key_file *f;
 
-    f = xmalloc (sizeof(*f));
+    f = (struct key_file *) xmalloc (sizeof(*f));
     f->sysno = 0;
     f->seqno = 0;
     f->no = no;
@@ -222,8 +225,8 @@ struct key_file *key_file_init (int no, int chunk)
     f->offset = 0;
     f->length = 0;
     f->readHandler = NULL;
-    f->buf = xmalloc (f->chunk);
-    f->prev_name = xmalloc (INP_NAME_MAX);
+    f->buf = (unsigned char *) xmalloc (f->chunk);
+    f->prev_name = (char *) xmalloc (INP_NAME_MAX);
     *f->prev_name = '\0';
     key_file_chunk_read (f);
     return f;
@@ -327,16 +330,17 @@ struct heap_info *key_heap_init (int nkeys,
     struct heap_info *hi;
     int i;
 
-    hi = xmalloc (sizeof(*hi));
-    hi->info.file = xmalloc (sizeof(*hi->info.file) * (1+nkeys));
-    hi->info.buf = xmalloc (sizeof(*hi->info.buf) * (1+nkeys));
+    hi = (struct heap_info *) xmalloc (sizeof(*hi));
+    hi->info.file = (struct key_file **)
+	xmalloc (sizeof(*hi->info.file) * (1+nkeys));
+    hi->info.buf = (char **) xmalloc (sizeof(*hi->info.buf) * (1+nkeys));
     hi->heapnum = 0;
-    hi->ptr = xmalloc (sizeof(*hi->ptr) * (1+nkeys));
+    hi->ptr = (int *) xmalloc (sizeof(*hi->ptr) * (1+nkeys));
     hi->cmp = cmp;
     for (i = 0; i<= nkeys; i++)
     {
         hi->ptr[i] = i;
-        hi->info.buf[i] = xmalloc (INP_NAME_MAX);
+        hi->info.buf[i] = (char *) xmalloc (INP_NAME_MAX);
     }
     return hi;
 }
@@ -426,7 +430,7 @@ struct heap_cread_info {
       
 int heap_cread_item (void *vp, char **dst, int *insertMode)
 {
-    struct heap_cread_info *p = vp;
+    struct heap_cread_info *p = (struct heap_cread_info *) vp;
     struct heap_info *hi = p->hi;
 
     if (p->mode == 1)
@@ -454,9 +458,9 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
 int heap_inpc (struct heap_info *hi)
 {
     struct heap_cread_info hci;
-    ISAMC_I isamc_i = xmalloc (sizeof(*isamc_i));
+    ISAMC_I isamc_i = (ISAMC_I) xmalloc (sizeof(*isamc_i));
 
-    hci.key = xmalloc (KEY_SIZE);
+    hci.key = (char *) xmalloc (KEY_SIZE);
     hci.mode = 1;
     hci.hi = hi;
     hci.more = heap_read_one (hi, hci.cur_name, hci.key);
@@ -505,9 +509,9 @@ int heap_inpc (struct heap_info *hi)
 int heap_inps (struct heap_info *hi)
 {
     struct heap_cread_info hci;
-    ISAMS_I isams_i = xmalloc (sizeof(*isams_i));
+    ISAMS_I isams_i = (ISAMS_I) xmalloc (sizeof(*isams_i));
 
-    hci.key = xmalloc (KEY_SIZE);
+    hci.key = (char *) xmalloc (KEY_SIZE);
     hci.mode = 1;
     hci.hi = hi;
     hci.more = heap_read_one (hi, hci.cur_name, hci.key);
@@ -549,8 +553,8 @@ int heap_inp (struct heap_info *hi)
     char *key_buf;
     int more;
     
-    next_key = xmalloc (KEY_SIZE);
-    key_buf = xmalloc (key_buf_size);
+    next_key = (char *) xmalloc (KEY_SIZE);
+    key_buf = (char *) xmalloc (key_buf_size);
     more = heap_read_one (hi, cur_name, key_buf);
     while (more)                   /* EOF ? */
     {
@@ -567,7 +571,7 @@ int heap_inp (struct heap_info *hi)
             if (key_buf_ptr+(int) KEY_SIZE >= key_buf_size)
             {
                 char *new_key_buf;
-                new_key_buf = xmalloc (key_buf_size + INP_BUF_ADD);
+                new_key_buf = (char *) xmalloc (key_buf_size + INP_BUF_ADD);
                 memcpy (new_key_buf, key_buf, key_buf_size);
                 key_buf_size += INP_BUF_ADD;
                 xfree (key_buf);
@@ -617,7 +621,7 @@ struct progressInfo {
 
 void progressFunc (struct key_file *keyp, void *info)
 {
-    struct progressInfo *p = info;
+    struct progressInfo *p = (struct progressInfo *) info;
     time_t now, remaining;
 
     if (keyp->buf_size <= 0 || p->totalBytes <= 0)
@@ -706,7 +710,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
             exit (1);
         }
     }
-    kf = xmalloc ((1+nkeys) * sizeof(*kf));
+    kf = (struct key_file **) xmalloc ((1+nkeys) * sizeof(*kf));
     progressInfo.totalBytes = 0;
     progressInfo.totalOffset = 0;
     time (&progressInfo.startTime);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.27  1999-05-12 13:08:06  adam
+ * Revision 1.28  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.27  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  * Revision 1.26  1999/02/02 14:50:54  adam
@@ -183,7 +186,8 @@ struct iscz1_code_info {
 
 static void *iscz1_code_start (int mode)
 {
-    struct iscz1_code_info *p = xmalloc (sizeof(*p));
+    struct iscz1_code_info *p = (struct iscz1_code_info *)
+	xmalloc (sizeof(*p));
     p->key.sysno = 0;
     p->key.seqno = 0;
     return p;
@@ -243,7 +247,7 @@ int iscz1_decode_int (unsigned char **src)
 
 static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
 {
-    struct iscz1_code_info *p = vp;
+    struct iscz1_code_info *p = (struct iscz1_code_info *) vp;
     struct it_key tkey;
     int d;
 

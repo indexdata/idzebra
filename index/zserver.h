@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.41  1999-05-12 13:08:06  adam
+ * Revision 1.42  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.41  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  * Revision 1.40  1998/11/16 16:03:45  adam
@@ -168,6 +171,10 @@
 #include "zebraapi.h"
 #include "zinfo.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     int sysno;
     int score;
@@ -288,3 +295,6 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep);
 
+#ifdef __cplusplus
+}
+#endif

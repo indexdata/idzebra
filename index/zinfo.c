@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.15  1999-01-25 13:47:54  adam
+ * Revision 1.16  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.15  1999/01/25 13:47:54  adam
  * Fixed bug.
  *
  * Revision 1.14  1998/11/04 16:31:32  adam
@@ -398,7 +401,7 @@ void zebraExplain_mergeOids (ZebraExplainInfo zei, data1_node *n,
 	    }
 	if (!ao)
 	{
-	    ao = nmem_malloc (zei->nmem, sizeof(*ao));
+	    ao = (zebAccessObject) nmem_malloc (zei->nmem, sizeof(*ao));
 	    ao->handle = NULL;
 	    ao->sysno = 1;
 	    ao->oid = oid;
@@ -415,7 +418,8 @@ void zebraExplain_mergeAccessInfo (ZebraExplainInfo zei, data1_node *n,
     
     if (!n)
     {
-	*accessInfo = nmem_malloc (zei->nmem, sizeof(**accessInfo));
+	*accessInfo = (zebAccessInfo)
+	    nmem_malloc (zei->nmem, sizeof(**accessInfo));
 	(*accessInfo)->attributeSetIds = NULL;
 	(*accessInfo)->schemas = NULL;
     }
@@ -446,7 +450,7 @@ ZebraExplainInfo zebraExplain_open (
     struct tm *tm;
 
     logf (LOG_DEBUG, "zebraExplain_open wr=%d", writeFlag);
-    zei = xmalloc (sizeof(*zei));
+    zei = (ZebraExplainInfo) xmalloc (sizeof(*zei));
     zei->updateHandle = updateHandle;
     zei->updateFunc = updateFunc;
     zei->dirty = 0;
@@ -456,8 +460,8 @@ ZebraExplainInfo zebraExplain_open (
     zei->dh = dh;
     zei->attsets = NULL;
     zei->res = res;
-    zei->categoryList = nmem_malloc (zei->nmem,
-				     sizeof(*zei->categoryList));
+    zei->categoryList = (struct zebraCategoryListInfo *)
+	nmem_malloc (zei->nmem, sizeof(*zei->categoryList));
     zei->categoryList->sysno = 0;
     zei->categoryList->dirty = 0;
     zei->categoryList->data1_categoryList = NULL;
@@ -511,8 +515,8 @@ ZebraExplainInfo zebraExplain_open (
 	    }
 	    assert (node_id && node_name && node_aid);
 	    
-	    *zdip = nmem_malloc (zei->nmem, sizeof(**zdip));
-
+	    *zdip = (struct zebDatabaseInfoB *) 
+		nmem_malloc (zei->nmem, sizeof(**zdip));
             (*zdip)->readFlag = 1;
             (*zdip)->dirty = 0;
 	    (*zdip)->data1_database = NULL;
@@ -520,14 +524,14 @@ ZebraExplainInfo zebraExplain_open (
 	    (*zdip)->recordBytes = 0;
 	    zebraExplain_mergeAccessInfo (zei, 0, &(*zdip)->accessInfo);
 
-	    (*zdip)->databaseName = nmem_malloc (zei->nmem,
-						 1+node_name->u.data.len);
+	    (*zdip)->databaseName = (char *)
+		nmem_malloc (zei->nmem, 1+node_name->u.data.len);
 	    memcpy ((*zdip)->databaseName, node_name->u.data.data,
 		    node_name->u.data.len);
 	    (*zdip)->databaseName[node_name->u.data.len] = '\0';
 	    (*zdip)->sysno = atoi_n (node_id->u.data.data,
 				     node_id->u.data.len);
-	    (*zdip)->attributeDetails =
+	    (*zdip)->attributeDetails = (zebAttributeDetails)
 		nmem_malloc (zei->nmem, sizeof(*(*zdip)->attributeDetails));
 	    (*zdip)->attributeDetails->sysno = atoi_n (node_aid->u.data.data,
 						       node_aid->u.data.len);
@@ -586,7 +590,7 @@ ZebraExplainInfo zebraExplain_open (
 		rec_strdup ("IR-Explain-1", &trec->size[recInfo_databaseName]);
 	    
 	    sgml_buf = data1_nodetoidsgml(dh, zei->data1_target, 0, &sgml_len);
-	    trec->info[recInfo_storeData] = xmalloc (sgml_len);
+	    trec->info[recInfo_storeData] = (char *) xmalloc (sgml_len);
 	    memcpy (trec->info[recInfo_storeData], sgml_buf, sgml_len);
 	    trec->size[recInfo_storeData] = sgml_len;
 	    
@@ -660,12 +664,13 @@ static void zebraExplain_readAttributeDetails (ZebraExplainInfo zei,
 	assert (node_set && node_use && node_ordinal);
 
 	oid_str_len = node_set->u.data.len;
-	if (oid_str_len >= sizeof(oid_str))
+	if (oid_str_len >= (int) sizeof(oid_str))
 	    oid_str_len = sizeof(oid_str)-1;
 	memcpy (oid_str, node_set->u.data.data, oid_str_len);
 	oid_str[oid_str_len] = '\0';
-	
-        *zsuip = nmem_malloc (zei->nmem, sizeof(**zsuip));
+
+        *zsuip = (struct zebSUInfoB *)
+	    nmem_malloc (zei->nmem, sizeof(**zsuip));
 	(*zsuip)->info.set = oid_getvalbyname (oid_str);
 
 	(*zsuip)->info.use = atoi_n (node_use->u.data.data,
@@ -817,7 +822,7 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
     if (zdi)
         return -1;
     /* it's new really. make it */
-    zdi = nmem_malloc (zei->nmem, sizeof(*zdi));
+    zdi = (struct zebDatabaseInfoB *) nmem_malloc (zei->nmem, sizeof(*zdi));
     zdi->next = zei->databaseInfo;
     zei->databaseInfo = zdi;
     zdi->sysno = 0;
@@ -863,7 +868,7 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
     zei->dirty = 1;
     zei->curDatabaseInfo = zdi;
 
-    zdi->attributeDetails =
+    zdi->attributeDetails = (zebAttributeDetails)
 	nmem_malloc (zei->nmem, sizeof(*zdi->attributeDetails));
     zdi->attributeDetails->readFlag = 0;
     zdi->attributeDetails->sysno = 0;
@@ -962,9 +967,8 @@ static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
 #if ZINFO_DEBUG
     data1_pr_tree (zei->dh, node_categoryList, stderr);
 #endif
-    sgml_buf = data1_nodetoidsgml(zei->dh, node_categoryList,
-				  0, &sgml_len);
-    drec->info[recInfo_storeData] = xmalloc (sgml_len);
+    sgml_buf = data1_nodetoidsgml(zei->dh, node_categoryList, 0, &sgml_len);
+    drec->info[recInfo_storeData] = (char *) xmalloc (sgml_len);
     memcpy (drec->info[recInfo_storeData], sgml_buf, sgml_len);
     drec->size[recInfo_storeData] = sgml_len;
     
@@ -1038,7 +1042,7 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 	    
 	    oe.proto = PROTO_Z3950;
 	    oe.oclass = CLASS_ATTSET;
-	    oe.value = set_ordinal;
+	    oe.value = (enum oid_value) set_ordinal;
 	    
 	    if (oid_ent_to_oid (&oe, oid))
 	    {
@@ -1073,7 +1077,7 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 	
 	oident.proto = PROTO_Z3950;
 	oident.oclass = CLASS_ATTSET;
-	oident.value = zsui->info.set;
+	oident.value = (enum oid_value) zsui->info.set;
 	oid_ent_to_oid (&oident, oid);
 	
 	data1_add_tagdata_text (zei->dh, node_attr, "set",
@@ -1089,7 +1093,7 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 #endif
     sgml_buf = data1_nodetoidsgml(zei->dh, zad->data1_tree,
 				  0, &sgml_len);
-    drec->info[recInfo_storeData] = xmalloc (sgml_len);
+    drec->info[recInfo_storeData] = (char *) xmalloc (sgml_len);
     memcpy (drec->info[recInfo_storeData], sgml_buf, sgml_len);
     drec->size[recInfo_storeData] = sgml_len;
     
@@ -1141,7 +1145,7 @@ static void zebraExplain_writeDatabase (ZebraExplainInfo zei,
 #endif
     sgml_buf = data1_nodetoidsgml(zei->dh, zdi->data1_database,
 				  0, &sgml_len);
-    drec->info[recInfo_storeData] = xmalloc (sgml_len);
+    drec->info[recInfo_storeData] = (char *) xmalloc (sgml_len);
     memcpy (drec->info[recInfo_storeData], sgml_buf, sgml_len);
     drec->size[recInfo_storeData] = sgml_len;
     
@@ -1237,7 +1241,7 @@ static void zebraExplain_writeAttributeSet (ZebraExplainInfo zei,
     data1_pr_tree (zei->dh, node_root, stderr);
 #endif
     sgml_buf = data1_nodetoidsgml(zei->dh, node_root, 0, &sgml_len);
-    drec->info[recInfo_storeData] = xmalloc (sgml_len);
+    drec->info[recInfo_storeData] = (char *) xmalloc (sgml_len);
     memcpy (drec->info[recInfo_storeData], sgml_buf, sgml_len);
     drec->size[recInfo_storeData] = sgml_len;
     
@@ -1299,7 +1303,7 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush)
 #endif
     sgml_buf = data1_nodetoidsgml(zei->dh, zei->data1_target,
 				  0, &sgml_len);
-    trec->info[recInfo_storeData] = xmalloc (sgml_len);
+    trec->info[recInfo_storeData] = (char *) xmalloc (sgml_len);
     memcpy (trec->info[recInfo_storeData], sgml_buf, sgml_len);
     trec->size[recInfo_storeData] = sgml_len;
     
@@ -1329,7 +1333,7 @@ zebAccessObject zebraExplain_announceOid (ZebraExplainInfo zei,
 	    break;
     if (!ao)
     {
-	ao = nmem_malloc (zei->nmem, sizeof(*ao));
+	ao = (zebAccessObject) nmem_malloc (zei->nmem, sizeof(*ao));
 	ao->handle = NULL;
 	ao->sysno = 0;
 	ao->oid = odr_oiddup_nmem (zei->nmem, oid);
@@ -1346,7 +1350,7 @@ void zebraExplain_addAttributeSet (ZebraExplainInfo zei, int set)
 
     oe.proto = PROTO_Z3950;
     oe.oclass = CLASS_ATTSET;
-    oe.value = set;
+    oe.value = (enum oid_value) set;
 
     if (oid_ent_to_oid (&oe, oid))
     {
@@ -1366,7 +1370,7 @@ int zebraExplain_addSU (ZebraExplainInfo zei, int set, int use)
         if (zsui->info.use == use && zsui->info.set == set)
             return -1;
     zebraExplain_addAttributeSet (zei, set);
-    zsui = nmem_malloc (zei->nmem, sizeof(*zsui));
+    zsui = (struct zebSUInfoB *) nmem_malloc (zei->nmem, sizeof(*zsui));
     zsui->next = zei->curDatabaseInfo->attributeDetails->SUInfo;
     zei->curDatabaseInfo->attributeDetails->SUInfo = zsui;
     zei->curDatabaseInfo->attributeDetails->dirty = 1;
@@ -1419,7 +1423,7 @@ RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec)
 
     if (rec->info[recInfo_attr])
 	return (RecordAttr *) rec->info[recInfo_attr];
-    recordAttr = xmalloc (sizeof(*recordAttr));
+    recordAttr = (RecordAttr *) xmalloc (sizeof(*recordAttr));
     rec->info[recInfo_attr] = (char *) recordAttr;
     rec->size[recInfo_attr] = sizeof(*recordAttr);
     
@@ -1431,7 +1435,7 @@ RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec)
 
 static void att_loadset(void *p, const char *n, const char *name)
 {
-    data1_handle dh = p;
+    data1_handle dh = (data1_handle) p;
     if (!data1_get_attset (dh, name))
 	logf (LOG_WARN, "Couldn't load attribute set %s", name);
 }

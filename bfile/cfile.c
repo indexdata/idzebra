@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.24  1999-05-12 13:08:06  adam
+ * Revision 1.25  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.24  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  * Revision 1.23  1998/10/15 13:09:29  adam
@@ -99,7 +102,7 @@ static int write_head (CFile cf)
 
     if (!tab)
         return 0;
-    while (left >= HASH_BSIZE)
+    while (left >= (int) HASH_BSIZE)
     {
         mf_write (cf->hash_mf, bno++, 0, 0, tab);
         tab += HASH_BSIZE;
@@ -118,7 +121,7 @@ static int read_head (CFile cf)
 
     if (!tab)
         return 0;
-    while (left >= HASH_BSIZE)
+    while (left >= (int) HASH_BSIZE)
     {
         mf_read (cf->hash_mf, bno++, 0, 0, tab);
         tab += HASH_BSIZE;
@@ -166,7 +169,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         cf->head.next_block = 1;
         if (wflag)
             mf_write (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
-        cf->array = xmalloc (hash_bytes);
+        cf->array = (int *) xmalloc (hash_bytes);
         for (i = 0; i<cf->head.hash_size; i++)
             cf->array[i] = 0;
         if (wflag)
@@ -181,14 +184,15 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         assert (cf->head.next_bucket > 0);
         assert (cf->head.next_block > 0);
         if (cf->head.state == 1)
-            cf->array = xmalloc (hash_bytes);
+            cf->array = (int *) xmalloc (hash_bytes);
         else
             cf->array = NULL;
         read_head (cf);
     }
     if (cf->head.state == 1)
     {
-        cf->parray = xmalloc (cf->head.hash_size * sizeof(*cf->parray));
+        cf->parray = (struct CFile_hash_bucket **)
+	    xmalloc (cf->head.hash_size * sizeof(*cf->parray));
         for (i = 0; i<cf->head.hash_size; i++)
             cf->parray[i] = NULL;
     }
@@ -198,7 +202,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
     cf->bucket_in_memory = 0;
     cf->max_bucket_in_memory = 100;
     cf->dirty = 0;
-    cf->iobuf = xmalloc (cf->head.block_size);
+    cf->iobuf = (char *) xmalloc (cf->head.block_size);
     memset (cf->iobuf, 0, cf->head.block_size);
     cf->no_hits = 0;
     cf->no_miss = 0;
@@ -256,7 +260,7 @@ static struct CFile_hash_bucket *alloc_bucket (CFile cf, int block_no, int hno)
         flush_bucket (cf, 1);
     assert (cf->bucket_in_memory < cf->max_bucket_in_memory);
     ++(cf->bucket_in_memory);
-    p = xmalloc (sizeof(*p));
+    p = (struct CFile_hash_bucket *) xmalloc (sizeof(*p));
 
     p->lru_next = NULL;
     p->lru_prev = cf->bucket_lru_front;
@@ -393,7 +397,7 @@ static void cf_moveto_flat (CFile cf)
     assert (cf->head.state == 1);
     flush_bucket (cf, -1);
     assert (cf->bucket_in_memory == 0);
-    p = xmalloc (sizeof(*p));
+    p = (struct CFile_hash_bucket *) xmalloc (sizeof(*p));
     for (i = cf->head.first_bucket; i < cf->head.next_bucket; i++)
     {
         if (!mf_read (cf->hash_mf, i, 0, 0, &p->ph))

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.14  1999-02-02 14:51:04  adam
+ * Revision 1.15  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.14  1999/02/02 14:51:04  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.13  1998/03/05 08:45:12  adam
@@ -62,6 +65,10 @@
 #include <zebrautl.h>
 #include <bfile.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define REC_NO_INFO 8
 
 typedef struct record_info {
@@ -93,3 +100,6 @@ enum {
     recInfo_attr
 };
 
+#ifdef __cplusplus
+}
+#endif

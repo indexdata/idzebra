@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: sortidx.c,v $
- * Revision 1.2  1998-06-25 09:55:50  adam
+ * Revision 1.3  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.2  1998/06/25 09:55:50  adam
  * Minor changes - fixex headers.
  *
  */
@@ -39,12 +42,12 @@ struct sortIdx {
 
 SortIdx sortIdx_open (BFiles bfs, int write_flag)
 {
-    SortIdx si = xmalloc (sizeof(*si));
+    SortIdx si = (SortIdx) xmalloc (sizeof(*si));
     si->bfs = bfs;
     si->write_flag = write_flag;
     si->current_file = NULL;
     si->files = NULL;
-    si->entry_buf = xmalloc (SORT_IDX_ENTRYSIZE);
+    si->entry_buf = (char *) xmalloc (SORT_IDX_ENTRYSIZE);
     return si;
 }
 
@@ -75,7 +78,7 @@ int sortIdx_type (SortIdx si, int type)
 	    si->current_file = sf;
 	    return 0;
 	}
-    sf = xmalloc (sizeof(*sf));
+    sf = (struct sortFile *) xmalloc (sizeof(*sf));
     sf->type = type;
     sf->bf = NULL;
     sf->next = si->files;

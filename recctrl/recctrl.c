@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.c,v $
- * Revision 1.4  1999-05-20 12:57:18  adam
+ * Revision 1.5  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.4  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.3  1998/10/16 08:14:36  adam
@@ -77,7 +80,8 @@ void recTypes_add_handler (RecTypes rts, RecType rt)
 {
     struct recTypeEntry *rte;
 
-    rte = nmem_malloc (data1_nmem_get (rts->dh), sizeof(*rte));
+    rte = (struct recTypeEntry *)
+	nmem_malloc (data1_nmem_get (rts->dh), sizeof(*rte));
 
     rte->recType = rt;
     rte->init_flag = 0;

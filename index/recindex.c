@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.22  1999-02-18 12:49:34  adam
+ * Revision 1.23  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.22  1999/02/18 12:49:34  adam
  * Changed file naming scheme for register files as well as record
  * store/index files.
  *
@@ -122,7 +125,7 @@ static void rec_tmp_expand (Records p, int size, int dst_type)
     {
         xfree (p->tmp_buf);
         p->tmp_size = size + p->head.block_size[dst_type]*2 + 2048;
-        p->tmp_buf = xmalloc (p->tmp_size);
+        p->tmp_buf = (char *) xmalloc (p->tmp_size);
     }
 }
 
@@ -280,10 +283,10 @@ Records rec_open (BFiles bfs, int rw)
     Records p;
     int i, r;
 
-    p = xmalloc (sizeof(*p));
+    p = (Records) xmalloc (sizeof(*p));
     p->rw = rw;
     p->tmp_size = 1024;
-    p->tmp_buf = xmalloc (p->tmp_size);
+    p->tmp_buf = (char *) xmalloc (p->tmp_size);
     p->index_fname = "reci";
     p->index_BFile = bf_open (bfs, p->index_fname, 128, rw);
     if (p->index_BFile == NULL)
@@ -329,7 +332,7 @@ Records rec_open (BFiles bfs, int rw)
     {
         char str[80];
         sprintf (str, "recd%c", i + 'A');
-        p->data_fname[i] = xmalloc (strlen(str)+1);
+        p->data_fname[i] = (char *) xmalloc (strlen(str)+1);
         strcpy (p->data_fname[i], str);
         p->data_BFile[i] = NULL;
     }
@@ -345,7 +348,8 @@ Records rec_open (BFiles bfs, int rw)
     }
     p->cache_max = 10;
     p->cache_cur = 0;
-    p->record_cache = xmalloc (sizeof(*p->record_cache)*p->cache_max);
+    p->record_cache = (struct record_cache_entry *)
+	xmalloc (sizeof(*p->record_cache)*p->cache_max);
     return p;
 }
 
@@ -477,7 +481,7 @@ Record rec_get (Records p, int sysno)
 
     assert (freeblock > 0);
     
-    rec = xmalloc (sizeof(*rec));
+    rec = (Record) xmalloc (sizeof(*rec));
     rec_tmp_expand (p, entry.size, dst_type);
 
     cptr = p->tmp_buf;
@@ -504,7 +508,7 @@ Record rec_get (Records p, int sysno)
         nptr += sizeof(*rec->size);
         if (rec->size[i])
         {
-            rec->info[i] = xmalloc (rec->size[i]);
+            rec->info[i] = (char *) xmalloc (rec->size[i]);
             memcpy (rec->info[i], nptr, rec->size[i]);
             nptr += rec->size[i];
         }
@@ -521,7 +525,7 @@ Record rec_new (Records p)
     Record rec;
 
     assert (p);
-    rec = xmalloc (sizeof(*rec));
+    rec = (Record) xmalloc (sizeof(*rec));
     if (1 || p->head.index_free == 0)
         sysno = (p->head.index_last)++;
     else
@@ -595,7 +599,7 @@ Record rec_cp (Record rec)
     Record n;
     int i;
 
-    n = xmalloc (sizeof(*n));
+    n = (Record) xmalloc (sizeof(*n));
     n->sysno = rec->sysno;
     for (i = 0; i < REC_NO_INFO; i++)
         if (!rec->info[i])
@@ -606,7 +610,7 @@ Record rec_cp (Record rec)
         else
         {
             n->size[i] = rec->size[i];
-            n->info[i] = xmalloc (rec->size[i]);
+            n->info[i] = (char *) xmalloc (rec->size[i]);
             memcpy (n->info[i], rec->info[i], rec->size[i]);
         }
     return n;
@@ -623,7 +627,7 @@ char *rec_strdup (const char *s, size_t *len)
         return NULL;
     }
     *len = strlen(s)+1;
-    p = xmalloc (*len);
+    p = (char *) xmalloc (*len);
     strcpy (p, s);
     return p;
 }

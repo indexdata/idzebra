@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: direntz.h,v $
- * Revision 1.3  1999-02-02 14:50:33  adam
+ * Revision 1.4  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.3  1999/02/02 14:50:33  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.2  1997/09/17 12:19:09  adam
@@ -19,8 +22,13 @@
 
 
 #ifdef WIN32
-/* make own version of dirent */
+/* make WIN32 version of dirent */
 #include <windows.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct dirent {
     char d_name[MAX_PATH];
 };
@@ -30,6 +38,11 @@ typedef struct DIR DIR;
 DIR *opendir (const char *path);
 struct dirent *readdir (DIR *dd);
 void closedir (DIR *dd);
+
+#ifdef __cplusplus
+}
+#endif
+
 #else
 /* include UNIX version */
 #include <dirent.h>

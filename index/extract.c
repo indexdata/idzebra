@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.95  1999-05-21 12:00:17  adam
+ * Revision 1.96  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.95  1999/05/21 12:00:17  adam
  * Better diagnostics for extraction process.
  *
  * Revision 1.94  1999/05/20 12:57:18  adam
@@ -407,7 +410,7 @@ int key_open (struct recordGroup *rGroup, int mem)
         mem = atoi(res_get_def (common_resource, "memMax", "4"))*1024*1024;
     if (mem < 50000)
         mem = 50000;
-    key_buf = xmalloc (mem);
+    key_buf = (char **) xmalloc (mem);
     ptr_top = mem/sizeof(char*);
     ptr_i = 0;
 
@@ -666,7 +669,7 @@ static void addIndexString (RecWord *p, const char *string, int length)
     {
         char *b;
 
-        b = xmalloc (reckeys.buf_max += 128000);
+        b = (char *) xmalloc (reckeys.buf_max += 128000);
         if (reckeys.buf_used > 0)
             memcpy (b, reckeys.buf, reckeys.buf_used);
         xfree (reckeys.buf);
@@ -728,11 +731,11 @@ static void addSortString (RecWord *p, const char *string, int length)
 	if (sk->attrSet == p->attrSet && sk->attrUse == p->attrUse)
 	    return;
 
-    sk = xmalloc (sizeof(*sk));
+    sk = (struct sortKey *) xmalloc (sizeof(*sk));
     sk->next = sortKeys;
     sortKeys = sk;
 
-    sk->string = xmalloc (length);
+    sk->string = (char *) xmalloc (length);
     sk->length = length;
     memcpy (sk->string, string, length);
 
@@ -996,7 +999,8 @@ struct file_read_info {
 
 static struct file_read_info *file_read_start (int fd)
 {
-    struct file_read_info *fi = xmalloc (sizeof(*fi));
+    struct file_read_info *fi = (struct file_read_info *)
+	xmalloc (sizeof(*fi));
 
     fi->fd = fd;
     fi->file_max = 0;
@@ -1013,7 +1017,7 @@ static void file_read_stop (struct file_read_info *fi)
 
 static off_t file_seek (void *handle, off_t offset)
 {
-    struct file_read_info *p = handle;
+    struct file_read_info *p = (struct file_read_info *) handle;
     p->file_offset = offset;
     if (p->sdrbuf)
 	return offset;
@@ -1022,13 +1026,13 @@ static off_t file_seek (void *handle, off_t offset)
 
 static off_t file_tell (void *handle)
 {
-    struct file_read_info *p = handle;
+    struct file_read_info *p = (struct file_read_info *) handle;
     return p->file_offset;
 }
 
 static int file_read (void *handle, char *buf, size_t count)
 {
-    struct file_read_info *p = handle;
+    struct file_read_info *p = (struct file_read_info *) handle;
     int fd = p->fd;
     int r;
     if (p->sdrbuf)
@@ -1052,7 +1056,7 @@ static int file_read (void *handle, char *buf, size_t count)
 
 static void file_begin (void *handle)
 {
-    struct file_read_info *p = handle;
+    struct file_read_info *p = (struct file_read_info *) handle;
 
     p->file_offset = p->file_moffset;
     if (!p->sdrbuf && p->file_moffset)
@@ -1062,7 +1066,7 @@ static void file_begin (void *handle)
 
 static void file_end (void *handle, off_t offset)
 {
-    struct file_read_info *p = handle;
+    struct file_read_info *p = (struct file_read_info *) handle;
 
     assert (p->file_more == 0);
     p->file_more = 1;
@@ -1226,7 +1230,7 @@ struct recordLogInfo {
      
 static void recordLogPreamble (int level, const char *msg, void *info)
 {
-    struct recordLogInfo *p = info;
+    struct recordLogInfo *p = (struct recordLogInfo *) info;
     FILE *outf = log_file ();
 
     if (level & LOG_LOG)
@@ -1491,7 +1495,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     if (rGroup->flagStoreData == 1)
     {
         rec->size[recInfo_storeData] = recordAttr->recordSize;
-        rec->info[recInfo_storeData] = xmalloc (recordAttr->recordSize);
+        rec->info[recInfo_storeData] = (char *)
+	    xmalloc (recordAttr->recordSize);
         if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
         {
             logf (LOG_ERRNO|LOG_FATAL, "seek to %ld in %s",

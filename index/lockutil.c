@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.11  1999-02-02 14:50:59  adam
+ * Revision 1.12  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.11  1999/02/02 14:50:59  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.10  1997/09/29 09:08:36  adam
@@ -65,7 +68,7 @@ struct zebra_lock_info {
 
 ZebraLockHandle zebra_lock_create (const char *name, int excl_flag)
 {
-    ZebraLockHandle h = xmalloc (sizeof(*h));
+    ZebraLockHandle h = (ZebraLockHandle) xmalloc (sizeof(*h));
     h->excl_flag = excl_flag;
     h->fd = -1;
 #ifdef WIN32

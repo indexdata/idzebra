@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: set.c,v $
- * Revision 1.6  1999-02-02 14:50:13  adam
+ * Revision 1.7  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.6  1999/02/02 14:50:13  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.5  1996/10/29 13:57:29  adam
@@ -140,16 +143,16 @@ Set rm_Set (SetType st, Set s)
 Set add_Set (SetType st, Set s, int n)
 {
     SetElement dummy;
-    Set p = &dummy, new;
+    Set p = &dummy, snew;
     p->next = s;
     while (p->next && p->next->value < n)
         p = p->next;
     assert (p);
     if (!(p->next && p->next->value == n))
     {
-        new = mk_SetElement (st, n);
-        new->next = p->next;
-        p->next = new;
+        snew = mk_SetElement (st, n);
+        snew->next = p->next;
+        p->next = snew;
     }
     return dummy.next;
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: passwddb.c,v $
- * Revision 1.4  1999-02-02 14:51:39  adam
+ * Revision 1.5  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.4  1999/02/02 14:51:39  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.3  1998/06/25 19:16:32  adam
@@ -46,7 +49,7 @@ struct passwd_db {
 
 Passwd_db passwd_db_open (void)
 {
-	struct passwd_db *p = xmalloc (sizeof(*p));
+	struct passwd_db *p = (struct passwd_db *) xmalloc (sizeof(*p));
 	p->entries = 0;
 	return p;
 }
@@ -86,7 +89,7 @@ int passwd_db_file (Passwd_db db, const char *fname)
 		get_entry (&cp, name, 128);
 		get_entry (&cp, des, 128);
 
-		pe = xmalloc (sizeof(*pe));
+		pe = (struct passwd_entry *) xmalloc (sizeof(*pe));
 		pe->name = xstrdup (name);
 		pe->des = xstrdup (des);
 		pe->next = db->entries;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookupec.c,v $
- * Revision 1.8  1999-05-15 14:36:37  adam
+ * Revision 1.9  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.8  1999/05/15 14:36:37  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.7  1999/02/02 14:50:26  adam
@@ -149,9 +152,9 @@ static MatchInfo *prepare_match (Dict_char *pattern)
     MatchWord *s;
     MatchInfo *mi;
 
-    mi = xmalloc (sizeof(*mi));
+    mi = (MatchInfo *) xmalloc (sizeof(*mi));
     mi->m = dict_strlen (pattern);
-    mi->s = s = xmalloc (sizeof(*s)*256);  /* 256 !!! */
+    mi->s = s = (MatchWord *) xmalloc (sizeof(*s)*256);  /* 256 !!! */
     for (i=0; i<256; i++)
         s[i] = 0;
     for (i=0; pattern[i]; i++)
@@ -172,8 +175,8 @@ int dict_lookup_ec (Dict dict, char *pattern, int range,
     
     mi = prepare_match ((Dict_char*) pattern);
 
-    ri = xmalloc ((dict_strlen((Dict_char*) pattern)+range+2)
-                  * (range+1)*sizeof(*ri));
+    ri = (MatchWord *) xmalloc ((dict_strlen((Dict_char*) pattern)+range+2)
+				* (range+1)*sizeof(*ri));
     for (i=0; i<=range; i++)
         ri[i] = (2<<i)-1;
     

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.14  1998-10-13 20:09:18  adam
+ * Revision 1.15  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.14  1998/10/13 20:09:18  adam
  * Changed call to readconf_line.
  *
  * Revision 1.13  1997/10/27 14:33:06  adam
@@ -112,7 +115,7 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
 {
     if (!root)
     {
-	root = nmem_malloc(nmem, sizeof(*root));
+	root = (chr_t_entry *) nmem_malloc(nmem, sizeof(*root));
 	root->children = 0;
 	root->target = 0;
     }
@@ -130,7 +133,8 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
 	{
 	    int i;
 
-	    root->children = nmem_malloc(nmem, sizeof(chr_t_entry*) * 256);
+	    root->children = (chr_t_entry **)
+		nmem_malloc(nmem, sizeof(chr_t_entry*) * 256);
 	    for (i = 0; i < 256; i++)
 		root->children[i] = 0;
 	}
@@ -241,7 +245,7 @@ static unsigned char prim(char **s)
  */
 static void fun_addentry(const char *s, void *data, int num)
 {
-    chrmaptab tab = data;
+    chrmaptab tab = (chrmaptab) data;
     char tmp[2];
 
     tmp[0] = num; tmp[1] = '\0';
@@ -256,7 +260,7 @@ static void fun_addentry(const char *s, void *data, int num)
  */
 static void fun_addspace(const char *s, void *data, int num)
 {
-    chrmaptab tab = data;
+    chrmaptab tab = (chrmaptab) data;
     tab->input = set_map_string(tab->input, tab->nmem, s, strlen(s),
 				(char*) CHR_SPACE);
 }
@@ -266,7 +270,7 @@ static void fun_addspace(const char *s, void *data, int num)
  */
 static void fun_mkstring(const char *s, void *data, int num)
 {
-    chrwork *arg = data;
+    chrwork *arg = (chrwork *) data;
     const char **res, *p = s;
 
     res = chr_map_input(arg->map, &s, strlen(s));
@@ -281,14 +285,15 @@ static void fun_mkstring(const char *s, void *data, int num)
  */
 static void fun_addmap(const char *s, void *data, int num)
 {
-    chrwork *arg = data;
+    chrwork *arg = (chrwork *) data;
 
     assert(arg->map->input);
     set_map_string(arg->map->input, arg->map->nmem, s, strlen(s), arg->string);
 }
 
-static int scan_string(char *s, void (*fun)(const char *c, void *data, int num),
-    void *data, int *num)
+static int scan_string(char *s,
+		       void (*fun)(const char *c, void *data, int num),
+		       void *data, int *num)
 {
     unsigned char c, str[1024], begin, end, *p;
 
@@ -357,21 +362,24 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only)
 	logf(LOG_WARN|LOG_ERRNO, "%s", name);
 	return 0;
     }
-    res = xmalloc(sizeof(*res));
+    res = (chrmaptab) xmalloc(sizeof(*res));
     res->nmem = nmem_create ();
-    res->tmp_buf = nmem_malloc (res->nmem, sizeof(*res->tmp_buf) * 100);
-    res->input = nmem_malloc(res->nmem, sizeof(*res->input));
+    res->tmp_buf = (char **)
+	nmem_malloc (res->nmem, sizeof(*res->tmp_buf) * 100);
+    res->input = (chr_t_entry *) nmem_malloc(res->nmem, sizeof(*res->input));
     res->input->target = (unsigned char*) CHR_UNKNOWN;
     res->input->equiv = 0;
-    res->input->children = nmem_malloc(res->nmem, sizeof(res->input) * 256);
+    res->input->children = (chr_t_entry **)
+	nmem_malloc(res->nmem, sizeof(res->input) * 256);
     for (i = 0; i < 256; i++)
     {
-	res->input->children[i] = nmem_malloc(res->nmem, sizeof(*res->input));
+	res->input->children[i] = (chr_t_entry *)
+	    nmem_malloc(res->nmem, sizeof(*res->input));
 	res->input->children[i]->children = 0;
 	if (map_only)
 	{
-	    res->input->children[i]->target = nmem_malloc (res->nmem,
-							   2 * sizeof(char));
+	    res->input->children[i]->target = (unsigned char *)
+		nmem_malloc (res->nmem, 2 * sizeof(char));
 	    res->input->children[i]->target[0] = i;
 	    res->input->children[i]->target[1] = 0;
 	}

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.11  1999-05-21 12:00:17  adam
+ * Revision 1.12  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.11  1999/05/21 12:00:17  adam
  * Better diagnostics for extraction process.
  *
  * Revision 1.10  1999/05/20 12:57:18  adam
@@ -91,10 +94,10 @@ struct buf_info {
 
 struct buf_info *buf_open (struct recExtractCtrl *p)
 {
-    struct buf_info *fi = xmalloc (sizeof(*fi));
+    struct buf_info *fi = (struct buf_info *) xmalloc (sizeof(*fi));
 
     fi->p = p;
-    fi->buf = xmalloc (4096);
+    fi->buf = (char *) xmalloc (4096);
     fi->offset = 1;
     fi->max = 1;
     return fi;
@@ -171,7 +174,7 @@ static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
             char *nb;
 
             text_size = 2*text_size + 8192;
-            nb = xmalloc (text_size);
+            nb = (char *) xmalloc (text_size);
             if (text_buf)
             {
                 memcpy (nb, text_buf, text_ptr);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.11  1999-02-02 14:51:36  adam
+ * Revision 1.12  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.11  1999/02/02 14:51:36  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.10  1998/03/05 08:36:28  adam
@@ -79,10 +82,10 @@ const struct rset_control *rset_kind_null = &control;
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
-    rset_null_parms *null_parms = parms;
+    rset_null_parms *null_parms = (rset_null_parms *) parms;
 
     ct->no_rset_terms = 1;
-    ct->rset_terms = xmalloc (sizeof(*ct->rset_terms));
+    ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
     if (parms)
 	ct->rset_terms[0] = null_parms->rset_term;
     else

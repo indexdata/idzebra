@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.14  1998-08-07 15:07:16  adam
+ * Revision 1.15  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.14  1998/08/07 15:07:16  adam
  * Fixed but in cf_commit_flat.
  *
  * Revision 1.13  1996/10/29 13:56:16  adam
@@ -177,7 +180,7 @@ static void cf_commit_hash (CFile cf)
     m_p = map_cache_init (cf);
 #endif
 
-    p = xmalloc (sizeof(*p));
+    p = (struct CFile_ph_bucket *) xmalloc (sizeof(*p));
     hash_bytes = cf->head.hash_size * sizeof(int);
     bucket_no = cf->head.first_bucket;
     for (; bucket_no < cf->head.next_bucket; bucket_no++)
@@ -221,10 +224,10 @@ static void cf_commit_flat (CFile cf)
 #if CF_OPTIMIZE_COMMIT
     m_p = map_cache_init (cf);
 #endif
-    fp = xmalloc (HASH_BSIZE);
+    fp = (int *) xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
-	for (i = 0; i < (HASH_BSIZE/sizeof(int)); i++)
+	for (i = 0; i < (int) (HASH_BSIZE/sizeof(int)); i++)
 	    fp[i] = 0;
         if (!mf_read (cf->hash_mf, hno, 0, 0, fp) &&
             hno != cf->head.flat_bucket-1)
@@ -232,7 +235,7 @@ static void cf_commit_flat (CFile cf)
             logf (LOG_FATAL, "read index block hno=%d (%d-%d) commit",
                   hno, cf->head.next_bucket, cf->head.flat_bucket-1);
         }
-        for (i = 0; i < (HASH_BSIZE/sizeof(int)); i++)
+        for (i = 0; i < (int) (HASH_BSIZE/sizeof(int)); i++)
         {
             if (fp[i])
             {

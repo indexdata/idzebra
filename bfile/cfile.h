@@ -3,11 +3,15 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: cfile.h,v 1.11 1999-05-12 13:08:06 adam Exp $
+ * $Id: cfile.h,v 1.12 1999-05-26 07:49:12 adam Exp $
  */
 
 #ifndef CFILE_H
 #define CFILE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define HASH_BUCKET 15
 
@@ -61,5 +65,9 @@ int cf_read (CFile cf, int no, int offset, int nbytes, void *buf);
 int cf_write (CFile cf, int no, int offset, int nbytes, const void *buf);
 void cf_unlink (CFile cf);
 void cf_commit (CFile cf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.23  1999-05-15 14:36:37  adam
+ * Revision 1.24  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.23  1999/05/15 14:36:37  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.22  1999/02/02 14:50:23  adam
@@ -124,13 +127,13 @@ static INLINE MatchWord get_bit (MatchContext *mc, MatchWord *m, int ch,
 
 static MatchContext *mk_MatchContext (struct DFA *dfa, int range)
 {
-    MatchContext *mc = xmalloc (sizeof(*mc));
+    MatchContext *mc = (MatchContext *) xmalloc (sizeof(*mc));
     int s;
 
     mc->n = (dfa->no_states+WORD_BITS) / WORD_BITS;
     mc->range = range;
     mc->fact = (range+1)*mc->n;
-    mc->match_mask = xcalloc (mc->n, sizeof(*mc->match_mask));
+    mc->match_mask = (MatchWord *) xcalloc (mc->n, sizeof(*mc->match_mask));
 
     for (s = 0; s<dfa->no_states; s++)
         if (dfa->states[s]->rule_no)
@@ -454,7 +457,7 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
 
     mc = mk_MatchContext (dfa, range);
 
-    Rj = xcalloc ((MAX_LENGTH+1) * mc->n, sizeof(*Rj));
+    Rj = (MatchWord *) xcalloc ((MAX_LENGTH+1) * mc->n, sizeof(*Rj));
 
     set_bit (mc, Rj, 0, 0);
     for (d = 1; d<=mc->range; d++)

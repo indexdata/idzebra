@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.h,v $
- * Revision 1.3  1999-02-02 14:51:29  adam
+ * Revision 1.4  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.3  1999/02/02 14:51:29  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.2  1997/04/30 08:56:08  quinn
@@ -27,5 +30,14 @@
 
 #include <recctrl.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern RecType recTypeGrs;
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

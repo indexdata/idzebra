@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isams.c,v $
- * Revision 1.3  1999-05-20 12:57:18  adam
+ * Revision 1.4  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.3  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.2  1999/05/15 14:35:48  adam
@@ -52,7 +55,7 @@ struct ISAMS_PP_s {
 
 ISAMS_M isams_getmethod (void)
 {
-    ISAMS_M m = xmalloc (sizeof(*m));
+    ISAMS_M m = (ISAMS_M) xmalloc (sizeof(*m));
 
     m->code_start = NULL;
     m->code_item = NULL;
@@ -69,9 +72,9 @@ ISAMS_M isams_getmethod (void)
 ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
 		  ISAMS_M method)
 {
-    ISAMS is = xmalloc (sizeof(*is));
+    ISAMS is = (ISAMS) xmalloc (sizeof(*is));
 
-    is->method = xmalloc (sizeof(*is->method));
+    is->method = (ISAMS_M) xmalloc (sizeof(*is->method));
     memcpy (is->method, method, sizeof(*method));
     is->block_size = is->method->block_size;
     is->debug = is->method->debug;
@@ -84,7 +87,7 @@ ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
 	is->head.last_offset = 0;
     }
     memcpy (&is->head_old, &is->head, sizeof(is->head));
-    is->merge_buf = xmalloc(2*is->block_size);
+    is->merge_buf = (char *) xmalloc(2*is->block_size);
     memset(is->merge_buf, 0, 2*is->block_size);
     return is;
 }
@@ -163,7 +166,7 @@ ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
 	assert (gap <= (int) sizeof(int));
 	if (gap > 0)
 	{
-	    if (gap < sizeof(int))
+	    if (gap < (int) sizeof(int))
 		bf_write(is->bf, first_block, first_offset, sizeof(int)-gap,
 			 &count);
 	    memcpy (is->merge_buf, ((char*)&count)+(sizeof(int)-gap), gap);
@@ -180,7 +183,7 @@ ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
 
 ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
 {
-    ISAMS_PP pp = xmalloc (sizeof(*pp));
+    ISAMS_PP pp = (ISAMS_PP) xmalloc (sizeof(*pp));
 
     if (is->debug > 1)
 	logf (LOG_LOG, "isams: isams_pp_open pos=%ld", (long) pos);
@@ -188,7 +191,7 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
     pp->decodeClientData = (*is->method->code_start)(ISAMC_DECODE);
     pp->numKeys = 0;
     pp->numRead = 0;
-    pp->buf = xmalloc(is->block_size*2);
+    pp->buf = (char *) xmalloc(is->block_size*2);
     pp->block_no = pos/is->block_size;
     pp->block_offset = pos - pp->block_no * is->block_size;
     logf (LOG_LOG, "isams: isams_pp_open off=%d no=%d",

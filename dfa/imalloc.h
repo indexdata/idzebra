@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: imalloc.h,v $
- * Revision 1.4  1999-02-02 14:50:09  adam
+ * Revision 1.5  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.4  1999/02/02 14:50:09  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.3  1997/10/27 14:27:13  adam
@@ -18,6 +21,10 @@
  * regular expressions. This should be hand-made instead.
  *
  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void *imalloc        (size_t);
 void *icalloc        (size_t);
@@ -33,4 +40,7 @@ extern int  free_calls;
 
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 

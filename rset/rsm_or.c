@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.c,v $
- * Revision 1.7  1998-09-22 10:03:46  adam
+ * Revision 1.8  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.7  1998/09/22 10:03:46  adam
  * Changed result sets to be persistent in the sense that they can
  * be re-searched if needed.
  * Fixed memory leak in rsm_or.
@@ -151,19 +154,19 @@ static
 struct trunc_info *heap_init (int size, int key_size,
                               int (*cmp)(const void *p1, const void *p2))
 {
-    struct trunc_info *ti = xmalloc (sizeof(*ti));
+    struct trunc_info *ti = (struct trunc_info *) xmalloc (sizeof(*ti));
     int i;
 
     ++size;
     ti->heapnum = 0;
     ti->keysize = key_size;
     ti->cmp = cmp;
-    ti->indx = xmalloc (size * sizeof(*ti->indx));
-    ti->heap = xmalloc (size * sizeof(*ti->heap));
-    ti->ptr = xmalloc (size * sizeof(*ti->ptr));
-    ti->swapbuf = xmalloc (ti->keysize);
-    ti->tmpbuf = xmalloc (ti->keysize);
-    ti->buf = xmalloc (size * ti->keysize);
+    ti->indx = (int *) xmalloc (size * sizeof(*ti->indx));
+    ti->heap = (char **) xmalloc (size * sizeof(*ti->heap));
+    ti->ptr = (int *) xmalloc (size * sizeof(*ti->ptr));
+    ti->swapbuf = (char *) xmalloc (ti->keysize);
+    ti->tmpbuf = (char *) xmalloc (ti->keysize);
+    ti->buf = (char *) xmalloc (size * ti->keysize);
     for (i = size; --i >= 0; )
     {
         ti->ptr[i] = i;
@@ -184,11 +187,11 @@ static void heap_close (struct trunc_info *ti)
 
 static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
-    rset_m_or_parms *r_parms = parms;
+    rset_m_or_parms *r_parms = (rset_m_or_parms *) parms;
     struct rset_mor_info *info;
 
     ct->flags |= RSET_FLAG_VOLATILE;
-    info = xmalloc (sizeof(*info));
+    info = (struct rset_mor_info *) xmalloc (sizeof(*info));
     info->key_size = r_parms->key_size;
     assert (info->key_size > 1);
     info->cmp = r_parms->cmp;
@@ -197,14 +200,14 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 
     info->isc = r_parms->isc;
     info->no_isam_positions = r_parms->no_isam_positions;
-    info->isam_positions = xmalloc (sizeof(*info->isam_positions) *
-                                    info->no_isam_positions);
+    info->isam_positions = (ISAM_P *)
+	xmalloc (sizeof(*info->isam_positions) * info->no_isam_positions);
     memcpy (info->isam_positions, r_parms->isam_positions,
             sizeof(*info->isam_positions) * info->no_isam_positions);
     info->rfd_list = NULL;
 
     ct->no_rset_terms = 1;
-    ct->rset_terms = xmalloc (sizeof(*ct->rset_terms));
+    ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
     ct->rset_terms[0] = r_parms->rset_term;
     return info;
 }
@@ -212,7 +215,7 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 static RSFD r_open (RSET ct, int flag)
 {
     struct rset_mor_rfd *rfd;
-    struct rset_mor_info *info = ct->buf;
+    struct rset_mor_info *info = (struct rset_mor_info *) ct->buf;
     int i;
 
     if (flag & RSETF_WRITE)
@@ -220,13 +223,14 @@ static RSFD r_open (RSET ct, int flag)
 	logf (LOG_FATAL, "m_or set type is read-only");
 	return NULL;
     }
-    rfd = xmalloc (sizeof(*rfd));
+    rfd = (struct rset_mor_rfd *) xmalloc (sizeof(*rfd));
     rfd->flag = flag;
     rfd->next = info->rfd_list;
     rfd->info = info;
     info->rfd_list = rfd;
 
-    rfd->ispt = xmalloc (sizeof(*rfd->ispt) * info->no_isam_positions);
+    rfd->ispt = (ISAMC_PP *)
+	xmalloc (sizeof(*rfd->ispt) * info->no_isam_positions);
         
     rfd->ti = heap_init (info->no_isam_positions, info->key_size, info->cmp);
 
@@ -275,7 +279,7 @@ static void r_close (RSFD rfd)
 
 static void r_delete (RSET ct)
 {
-    struct rset_mor_info *info = ct->buf;
+    struct rset_mor_info *info = (struct rset_mor_info *) ct->buf;
     int i;
 
     assert (info->rfd_list == NULL);

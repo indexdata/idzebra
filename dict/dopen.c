@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dopen.c,v $
- * Revision 1.7  1999-05-15 14:36:37  adam
+ * Revision 1.8  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.7  1999/05/15 14:36:37  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.6  1999/02/02 14:50:20  adam
@@ -47,12 +50,14 @@ static void common_init (Dict_BFile bf, int block_size, int cache)
     bf->all_data = xmalloc (block_size * cache);
 
     /* Allocate and initialize hash array (as empty) */
-    bf->hash_array = xmalloc(sizeof(*bf->hash_array) * bf->hash_size);
+    bf->hash_array = (struct Dict_file_block **)
+	xmalloc(sizeof(*bf->hash_array) * bf->hash_size);
     for (i=bf->hash_size; --i >= 0; )
         bf->hash_array[i] = NULL;
 
     /* Allocate all block descriptors in one chunk */
-    bf->all_blocks = xmalloc (sizeof(*bf->all_blocks) * cache);
+    bf->all_blocks = (struct Dict_file_block *)
+	xmalloc (sizeof(*bf->all_blocks) * cache);
 
     /* Initialize the free list */
     bf->free_list = bf->all_blocks;
@@ -75,7 +80,7 @@ Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
 {
     Dict_BFile dbf;
 
-    dbf = xmalloc (sizeof(*dbf));
+    dbf = (Dict_BFile) xmalloc (sizeof(*dbf));
     dbf->bf = bf_open (bfs, name, block_size, rw);
     if (!dbf->bf)
         return NULL;

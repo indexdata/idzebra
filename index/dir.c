@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.20  1999-02-02 14:50:50  adam
+ * Revision 1.21  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.20  1999/02/02 14:50:50  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.19  1998/11/03 10:16:11  adam
@@ -99,7 +102,7 @@ struct dir_entry *dir_open (const char *rep)
             exit (1);
         return NULL;
     }
-    entry = xmalloc (sizeof(*entry) * entry_max);
+    entry = (struct dir_entry *) xmalloc (sizeof(*entry) * entry_max);
     strcpy (path, rep);
     pathpos = strlen(path);
     if (!pathpos || path[pathpos-1] != '/')
@@ -114,7 +117,8 @@ struct dir_entry *dir_open (const char *rep)
         {
             struct dir_entry *entry_n;
 
-            entry_n = xmalloc (sizeof(*entry) * (entry_max += 1000));
+            entry_n = (struct dir_entry *)
+		xmalloc (sizeof(*entry) * (entry_max += 1000));
             memcpy (entry_n, entry, idx * sizeof(*entry));
             xfree (entry);
             entry = entry_n;
@@ -126,14 +130,14 @@ struct dir_entry *dir_open (const char *rep)
         case S_IFREG:
             entry[idx].kind = dirs_file;
             entry[idx].mtime = finfo.st_mtime;
-            entry[idx].name = xmalloc (strlen(dent->d_name)+1);
+            entry[idx].name = (char *) xmalloc (strlen(dent->d_name)+1);
             strcpy (entry[idx].name, dent->d_name);
             idx++;
             break;
         case S_IFDIR:
             entry[idx].kind = dirs_dir;
             entry[idx].mtime = finfo.st_mtime;
-            entry[idx].name = xmalloc (strlen(dent->d_name)+2);
+            entry[idx].name = (char *) xmalloc (strlen(dent->d_name)+2);
             strcpy (entry[idx].name, dent->d_name);
 	    strcat (entry[idx].name, "/");
             idx++;

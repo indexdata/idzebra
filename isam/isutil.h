@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isutil.h,v $
- * Revision 1.2  1999-02-02 14:51:18  adam
+ * Revision 1.3  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.2  1999/02/02 14:51:18  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.1  1994/09/12 08:02:14  quinn
@@ -20,8 +23,16 @@
 #ifndef ISUTIL_H
 #define ISUTIL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char *strconcat(const char *s1, ...);
 
 int is_default_cmp(const void *k1, const void *k2); /* compare function */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,10 +1,15 @@
-# Copyright (C) 1994-1996, Index Data ApS
+# Copyright (C) 1994-1999, Index Data ApS
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.2 1998-10-28 15:20:45 adam Exp $
+# $Id: Makefile.in,v 1.3 1999-05-26 07:49:12 adam Exp $
 
 SHELL=/bin/sh
-RANLIB=ranlib
+
+CC=@CC@
+CPP=@CPP@
+RANLIB=@RANLIB@
+CDEFS=@DEFS@ @ODEFS@
+LIBS=@LIBS@
 
 YAZLIB=../../yaz/lib/libyaz.a
 YAZINC=-I../../yaz/z39.50 -I../../yaz/include
@@ -13,10 +18,9 @@ INCLUDE=-I../include $(YAZINC)
 TPROG1=agrep
 TPROG2=lexer
 TPROG3=grepper
-DEFS=$(INCLUDE)
+DEFS=$(CDEFS) $(INCLUDE)
 LIB=../lib/dfa.a 
 PO = dfa.o imalloc.o states.o set.o bset.o
-CPP=$(CC) -E
 
 all: $(LIB)
 

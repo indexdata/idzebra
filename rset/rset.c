@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.13  1999-02-02 14:51:33  adam
+ * Revision 1.14  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.13  1999/02/02 14:51:33  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.12  1998/04/26 10:56:57  adam
@@ -64,7 +67,7 @@ RSET rset_create(const struct rset_control *sel, void *parms)
     int i;
 
     logf (LOG_DEBUG, "rs_create(%s)", sel->desc);
-    rnew = xmalloc(sizeof(*rnew));
+    rnew = (RSET) xmalloc(sizeof(*rnew));
     rnew->control = sel;
     rnew->flags = 0;
     rnew->count = 1;
@@ -101,14 +104,14 @@ RSET_TERM *rset_terms(RSET rs, int *no)
 
 RSET_TERM rset_term_create (const char *name, int length, const char *flags)
 {
-    RSET_TERM t = xmalloc (sizeof(*t));
+    RSET_TERM t = (RSET_TERM) xmalloc (sizeof(*t));
     if (!name)
 	t->name = NULL;
     else if (length == -1)
 	t->name = xstrdup (name);
     else
     {
-	t->name = xmalloc (length+1);
+	t->name = (char*) xmalloc (length+1);
 	memcpy (t->name, name, length);
 	t->name[length] = '\0';
     }
@@ -129,7 +132,7 @@ void rset_term_destroy (RSET_TERM t)
 
 RSET_TERM rset_term_dup (RSET_TERM t)
 {
-    RSET_TERM nt = xmalloc (sizeof(*nt));
+    RSET_TERM nt = (RSET_TERM) xmalloc (sizeof(*nt));
     if (t->name)
 	nt->name = xstrdup (t->name);
     else

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.28  1999-05-12 13:08:05  adam
+ * Revision 1.29  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.28  1999/05/12 13:08:05  adam
  * First version of ISAMS.
  *
  * Revision 1.27  1999/02/02 14:50:01  adam
@@ -112,7 +115,7 @@ struct BFiles_struct {
 
 BFiles bfs_create (const char *spec)
 {
-    BFiles bfs = xmalloc (sizeof(*bfs));
+    BFiles bfs = (BFiles) xmalloc (sizeof(*bfs));
     bfs->commit_area = NULL;
     bfs->register_area = mf_init("register", spec);
     bfs->lockDir = NULL;
@@ -155,7 +158,7 @@ void bf_lockDir (BFiles bfs, const char *lockDir)
     if (lockDir == NULL)
         lockDir = "";
     len = strlen(lockDir);
-    bfs->lockDir = xmalloc (len+2);
+    bfs->lockDir = (char *) xmalloc (len+2);
     strcpy (bfs->lockDir, lockDir);
     
     if (len > 0 && bfs->lockDir[len-1] != '/')
@@ -184,7 +187,7 @@ int bf_close (BFile bf)
 
 BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
 {
-    BFile tmp = xmalloc(sizeof(BFile_struct));
+    BFile tmp = (BFile) xmalloc(sizeof(BFile_struct));
 
     if (bfs->commit_area)
     {

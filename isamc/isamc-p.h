@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc-p.h,v $
- * Revision 1.6  1998-03-18 09:23:55  adam
+ * Revision 1.7  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.6  1998/03/18 09:23:55  adam
  * Blocks are stored in chunks on free list - up to factor 2 in speed.
  * Fixed bug that could occur in block category rearrangemen.
  *
@@ -28,6 +31,10 @@
 
 #include <bfile.h>
 #include <isamc.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct {
     int lastblock;
@@ -90,3 +97,8 @@ int isc_alloc_block (ISAMC is, int cat);
 void isc_release_block (ISAMC is, int cat, int pos);
 int isc_read_block (ISAMC is, int cat, int pos, char *dst);
 int isc_write_block (ISAMC is, int cat, int pos, char *src);
+
+#ifdef __cplusplus
+}
+#endif
+

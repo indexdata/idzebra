@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.16  1998-05-27 14:32:03  adam
+ * Revision 1.17  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.16  1998/05/27 14:32:03  adam
  * Changed default block category layout.
  *
  * Revision 1.15  1998/05/20 10:12:25  adam
@@ -100,7 +103,7 @@ ISAMC_M isc_getmethod (void)
         { 32768,  32000,  31000,  0 },
 #endif
     };
-    ISAMC_M m = xmalloc (sizeof(*m));
+    ISAMC_M m = (ISAMC_M) xmalloc (sizeof(*m));
     m->filecat = def_cat;
 
     m->code_start = NULL;
@@ -124,9 +127,9 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
     int i = 0;
     int max_buf_size = 0;
 
-    is = xmalloc (sizeof(*is));
+    is = (ISAMC) xmalloc (sizeof(*is));
 
-    is->method = xmalloc (sizeof(*is->method));
+    is->method = (ISAMC_M) xmalloc (sizeof(*is->method));
     memcpy (is->method, method, sizeof(*method));
     filecat = is->method->filecat;
     assert (filecat);
@@ -153,10 +156,10 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
         logf (LOG_LOG, "isc: max_buf_size %d", max_buf_size);
     
     assert (is->no_files > 0);
-    is->files = xmalloc (sizeof(*is->files)*is->no_files);
+    is->files = (ISAMC_file) xmalloc (sizeof(*is->files)*is->no_files);
     if (writeflag)
     {
-        is->merge_buf = xmalloc (max_buf_size+256);
+        is->merge_buf = (char *) xmalloc (max_buf_size+256);
 	memset (is->merge_buf, 0, max_buf_size+256);
     }
     else
@@ -178,7 +181,8 @@ ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
 	is->files[i].alloc_entries_num = 0;
 	is->files[i].alloc_entries_max =
 	    is->method->filecat[i].bsize / sizeof(int) - 1;
-	is->files[i].alloc_buf = xmalloc (is->method->filecat[i].bsize);
+	is->files[i].alloc_buf = (char *)
+	    xmalloc (is->method->filecat[i].bsize);
         is->files[i].no_writes = 0;
         is->files[i].no_reads = 0;
         is->files[i].no_skip_writes = 0;
@@ -463,7 +467,8 @@ static void init_fc (ISAMC is, int cat)
     int j = 100;
         
     is->files[cat].fc_max = j;
-    is->files[cat].fc_list = xmalloc (sizeof(*is->files[0].fc_list) * j);
+    is->files[cat].fc_list = (int *)
+	xmalloc (sizeof(*is->files[0].fc_list) * j);
     while (--j >= 0)
         is->files[cat].fc_list[j] = 0;
 }
@@ -491,13 +496,13 @@ void isc_pp_close (ISAMC_PP pp)
 
 ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P ipos)
 {
-    ISAMC_PP pp = xmalloc (sizeof(*pp));
+    ISAMC_PP pp = (ISAMC_PP) xmalloc (sizeof(*pp));
     char *src;
    
     pp->cat = isc_type(ipos);
     pp->pos = isc_block(ipos); 
 
-    src = pp->buf = xmalloc (is->method->filecat[pp->cat].bsize);
+    src = pp->buf = (char *) xmalloc (is->method->filecat[pp->cat].bsize);
 
     pp->next = 0;
     pp->size = 0;

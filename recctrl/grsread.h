@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: grsread.h,v $
- * Revision 1.6  1999-05-20 12:57:18  adam
+ * Revision 1.7  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.6  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.5  1999/02/02 14:51:26  adam
@@ -30,6 +33,11 @@
 #define GRSREAD_H
 
 #include <data1.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct grs_read_info {
     void *clientData;
     int (*readf)(void *, char *, size_t);
@@ -54,4 +62,9 @@ extern RecTypeGrs recTypeGrs_sgml;
 extern RecTypeGrs recTypeGrs_regx;
 extern RecTypeGrs recTypeGrs_tcl;
 extern RecTypeGrs recTypeGrs_marc;
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

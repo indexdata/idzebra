@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.15  1999-02-02 14:51:22  adam
+ * Revision 1.16  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.15  1999/02/02 14:51:22  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.14  1997/09/09 13:38:12  adam
@@ -268,7 +271,7 @@ void is_p_unmap(is_mtable *tab)
 
 static is_mbuf *mbuf_takehead(is_mbuf **mb, int *num, int keysize)
 {
-    is_mbuf *p = 0, **pp = &p, *new;
+    is_mbuf *p = 0, **pp = &p, *inew;
     int toget = *num;
 
     if (!toget)
@@ -283,13 +286,13 @@ static is_mbuf *mbuf_takehead(is_mbuf **mb, int *num, int keysize)
     }
     if (toget > 0 && *mb)
     {
-	new = xmalloc_mbuf(IS_MBUF_TYPE_SMALL);
-	new->next = (*mb)->next;
-	(*mb)->next = new;
-	new->data = (*mb)->data;
+	inew = xmalloc_mbuf(IS_MBUF_TYPE_SMALL);
+	inew->next = (*mb)->next;
+	(*mb)->next = inew;
+	inew->data = (*mb)->data;
 	(*mb)->refcount++;
-	new->offset = (*mb)->offset + toget * keysize;
-	new->num = (*mb)->num - toget;
+	inew->offset = (*mb)->offset + toget * keysize;
+	inew->num = (*mb)->num - toget;
 	(*mb)->num = toget;
 	*pp = *mb;
 	*mb = (*mb)->next;
@@ -307,7 +310,7 @@ static is_mbuf *mbuf_takehead(is_mbuf **mb, int *num, int keysize)
  */
 void is_p_align(is_mtable *tab)
 {
-    is_mblock *mblock, *new, *last = 0, *next;
+    is_mblock *mblock, *inew, *last = 0, *next;
     is_mbuf *mbufs, *mbp;
     int blocks, recsblock;
 
@@ -370,11 +373,11 @@ void is_p_align(is_mtable *tab)
 	    {
 	    	if (mbufs)
 	    	{
-		    new = xmalloc_mblock();
-		    new->diskpos = -1;
-		    new->state = IS_MBSTATE_DIRTY;
-		    new->next = mblock->next;
-		    mblock->next = new;
+		    inew = xmalloc_mblock();
+		    inew->diskpos = -1;
+		    inew->state = IS_MBSTATE_DIRTY;
+		    inew->next = mblock->next;
+		    mblock->next = inew;
 		}
 	    	mblock->data = mbp;
 	    	mblock->num_records = recsblock;

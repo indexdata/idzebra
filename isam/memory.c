@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.16  1999-02-02 14:51:20  adam
+ * Revision 1.17  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.16  1999/02/02 14:51:20  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.15  1997/09/09 13:38:11  adam
@@ -82,7 +85,8 @@ is_mblock *xmalloc_mblock()
 
     if (!mblock_freelist)
     {
-    	mblock_freelist = xmalloc(sizeof(is_mblock) * MALLOC_CHUNK);
+    	mblock_freelist = (is_mblock *)
+	    xmalloc(sizeof(is_mblock) * MALLOC_CHUNK);
 	for (i = 0; i < MALLOC_CHUNK - 1; i++)
 	    mblock_freelist[i].next = &mblock_freelist[i+1];
 	mblock_freelist[i].next = 0;
@@ -106,7 +110,7 @@ is_mbuf *xmalloc_mbuf(int type)
     }
     else
     {
-    	tmp = xmalloc(sizeof(is_mbuf) + is_mbuf_size[type]);
+    	tmp = (is_mbuf*) xmalloc(sizeof(is_mbuf) + is_mbuf_size[type]);
 	tmp->type = type;
     }
     tmp->refcount = type ? 1 : 0;
@@ -248,7 +252,7 @@ void is_m_replace_record(is_mtable *tab, const void *rec)
  */
 void is_m_delete_record(is_mtable *tab)
 {
-    is_mbuf *mbuf, *new;
+    is_mbuf *mbuf, *inew;
 
     mbuf = tab->cur_mblock->cur_mbuf;
     if (mbuf->cur_record >= mbuf->num)  /* top of mbuf */
@@ -265,19 +269,19 @@ void is_m_delete_record(is_mtable *tab)
     else /* middle of mbuf */
     {
 	/* insert block after current one */
-	new = xmalloc_mbuf(IS_MBUF_TYPE_SMALL);
-	new->next = mbuf->next;
-	mbuf->next = new;
+	inew = xmalloc_mbuf(IS_MBUF_TYPE_SMALL);
+	inew->next = mbuf->next;
+	mbuf->next = inew;
 
 	/* virtually transfer everything after current record to new one. */
-	new->data = mbuf->data;
+	inew->data = mbuf->data;
 	mbuf->refcount++;
-	new->offset = mbuf->offset + mbuf->cur_record * is_keysize(tab->is);
-	new->num = mbuf->num - mbuf->cur_record;
+	inew->offset = mbuf->offset + mbuf->cur_record * is_keysize(tab->is);
+	inew->num = mbuf->num - mbuf->cur_record;
 	
 	/* old buf now only contains stuff before current record */
 	mbuf->num = mbuf->cur_record -1;
-	tab->cur_mblock->cur_mbuf = new;
+	tab->cur_mblock->cur_mbuf = inew;
     }
     tab->num_records--;
     tab->cur_mblock->num_records--;

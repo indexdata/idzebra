@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.91  1999-02-02 14:51:13  adam
+ * Revision 1.92  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.91  1999/02/02 14:51:13  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.90  1998/11/16 16:03:43  adam
@@ -340,7 +343,7 @@ struct rpn_char_map_info {
 
 static const char **rpn_char_map_handler (void *vp, const char **from, int len)
 {
-    struct rpn_char_map_info *p = vp;
+    struct rpn_char_map_info *p = (struct rpn_char_map_info *) vp;
     return zebra_maps_input (p->zm, p->reg_type, from, len);
 }
 
@@ -459,8 +462,8 @@ static void add_isam_p (const char *name, const char *info,
         int *new_term_no;        
 #endif
         p->isam_p_size = 2*p->isam_p_size + 100;
-        new_isam_p_buf = xmalloc (sizeof(*new_isam_p_buf) *
-                                  p->isam_p_size);
+        new_isam_p_buf = (ISAM_P *) xmalloc (sizeof(*new_isam_p_buf) *
+					     p->isam_p_size);
         if (p->isam_p_buf)
         {
             memcpy (new_isam_p_buf, p->isam_p_buf,
@@ -470,8 +473,8 @@ static void add_isam_p (const char *name, const char *info,
         p->isam_p_buf = new_isam_p_buf;
 
 #ifdef TERM_COUNT
-        new_term_no = xmalloc (sizeof(*new_term_no) *
-                                  p->isam_p_size);
+        new_term_no = (int *) xmalloc (sizeof(*new_term_no) *
+				       p->isam_p_size);
         if (p->term_no)
         {
             memcpy (new_term_no, p->isam_p_buf,
@@ -493,7 +496,7 @@ static void add_isam_p (const char *name, const char *info,
 
 static int grep_handle (char *name, const char *info, void *p)
 {
-    add_isam_p (name, info, p);
+    add_isam_p (name, info, (struct grep_info *) p);
     return 0;
 }
 
@@ -1273,14 +1276,14 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no)
     int term_index;
     const char *flags = NULL;
     
-    rsfd = xmalloc (sizeof(*rsfd)*rset_no);
-    more = xmalloc (sizeof(*more)*rset_no);
-    buf = xmalloc (sizeof(*buf)*rset_no);
+    rsfd = (RSFD *) xmalloc (sizeof(*rsfd)*rset_no);
+    more = (int *) xmalloc (sizeof(*more)*rset_no);
+    buf = (struct it_key **) xmalloc (sizeof(*buf)*rset_no);
 
     for (i = 0; i<rset_no; i++)
     {
 	int j;
-	buf[i] = xmalloc (sizeof(**buf));
+	buf[i] = (struct it_key *) xmalloc (sizeof(**buf));
 	rsfd[i] = rset_open (rset[i], RSETF_READ);
         if (!(more[i] = rset_read (rset[i], rsfd[i], buf[i], &term_index)))
 	    break;
@@ -1415,7 +1418,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
                                     grep_info.isam_p_indx, term_dst,
 				    strlen(term_dst), rank_type);
         assert (rset[rset_no]);
-        if (++rset_no >= sizeof(rset)/sizeof(*rset))
+        if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
             break;
     }
 #ifdef TERM_COUNT
@@ -1474,7 +1477,7 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
                                     grep_info.isam_p_indx, term_dst,
 				    strlen(term_dst), rank_type);
         assert (rset[rset_no]);
-        if (++rset_no >= sizeof(rset)/sizeof(*rset))
+        if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
             break;
     }
 #ifdef TERM_COUNT
@@ -1539,7 +1542,7 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
                                     grep_info.isam_p_indx, term_dst,
 				    strlen(term_dst), rank_type);
         assert (rset[rset_no]);
-        if (++rset_no >= sizeof(rset)/sizeof(*rset))
+        if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
             break;
     }
 #ifdef TERM_COUNT
@@ -1749,7 +1752,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
                                     grep_info.isam_p_indx, term_dst,
 				    strlen(term_dst), rank_type);
         assert (rset[rset_no]);
-        if (++rset_no >= sizeof(rset)/sizeof(*rset))
+        if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
             break;
     }
 #ifdef TERM_COUNT
@@ -1829,15 +1832,17 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     if (!sort_sequence->specs)
     {
 	sort_sequence->num_specs = 10;
-	sort_sequence->specs = nmem_malloc (stream, sort_sequence->num_specs *
-					    sizeof(*sort_sequence->specs));
+	sort_sequence->specs = (Z_SortKeySpec **)
+	    nmem_malloc (stream, sort_sequence->num_specs *
+			 sizeof(*sort_sequence->specs));
 	for (i = 0; i<sort_sequence->num_specs; i++)
 	    sort_sequence->specs[i] = 0;
     }
     if (zapt->term->which != Z_Term_general)
 	i = 0;
     else
-	i = atoi_n (zapt->term->u.general->buf, zapt->term->u.general->len);
+	i = atoi_n ((char *) zapt->term->u.general->buf,
+		    zapt->term->u.general->len);
     if (i >= sort_sequence->num_specs)
 	i = 0;
 
@@ -1847,29 +1852,35 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     if (!oid_ent_to_oid (&oe, oid))
 	return 0;
 
-    sks = nmem_malloc (stream, sizeof(*sks));
-    sks->sortElement = nmem_malloc (stream, sizeof(*sks->sortElement));
+    sks = (Z_SortKeySpec *) nmem_malloc (stream, sizeof(*sks));
+    sks->sortElement = (Z_SortElement *)
+	nmem_malloc (stream, sizeof(*sks->sortElement));
     sks->sortElement->which = Z_SortElement_generic;
-    sk = sks->sortElement->u.generic = nmem_malloc (stream, sizeof(*sk));
+    sk = sks->sortElement->u.generic = (Z_SortKey *)
+	nmem_malloc (stream, sizeof(*sk));
     sk->which = Z_SortKey_sortAttributes;
-    sk->u.sortAttributes = nmem_malloc (stream, sizeof(*sk->u.sortAttributes));
+    sk->u.sortAttributes = (Z_SortAttributes *)
+	nmem_malloc (stream, sizeof(*sk->u.sortAttributes));
 
     sk->u.sortAttributes->id = oid;
-    sk->u.sortAttributes->list =
+    sk->u.sortAttributes->list = (Z_AttributeList *)
 	nmem_malloc (stream, sizeof(*sk->u.sortAttributes->list));
     sk->u.sortAttributes->list->num_attributes = 1;
-    sk->u.sortAttributes->list->attributes =
+    sk->u.sortAttributes->list->attributes = (Z_AttributeElement **)
 	nmem_malloc (stream, sizeof(*sk->u.sortAttributes->list->attributes));
-    ae = *sk->u.sortAttributes->list->attributes =
+    ae = *sk->u.sortAttributes->list->attributes = (Z_AttributeElement *)
 	nmem_malloc (stream, sizeof(**sk->u.sortAttributes->list->attributes));
     ae->attributeSet = 0;
-    ae->attributeType =	nmem_malloc (stream, sizeof(*ae->attributeType));
+    ae->attributeType =	(int *)
+	nmem_malloc (stream, sizeof(*ae->attributeType));
     *ae->attributeType = 1;
     ae->which = Z_AttributeValue_numeric;
-    ae->value.numeric = nmem_malloc (stream, sizeof(*ae->value.numeric));
+    ae->value.numeric = (int *)
+	nmem_malloc (stream, sizeof(*ae->value.numeric));
     *ae->value.numeric = use_value;
 
-    sks->sortRelation = nmem_malloc (stream, sizeof(*sks->sortRelation));
+    sks->sortRelation = (int *)
+	nmem_malloc (stream, sizeof(*sks->sortRelation));
     if (sort_relation_value == 1)
 	*sks->sortRelation = Z_SortRelation_ascending;
     else if (sort_relation_value == 2)
@@ -1877,7 +1888,8 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     else 
 	*sks->sortRelation = Z_SortRelation_ascending;
 
-    sks->caseSensitivity = nmem_malloc (stream, sizeof(*sks->caseSensitivity));
+    sks->caseSensitivity = (int *)
+	nmem_malloc (stream, sizeof(*sks->caseSensitivity));
     *sks->caseSensitivity = 0;
 
 #ifdef ASN_COMPILED
@@ -2016,7 +2028,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
 #ifdef ASN_COMPILED
             if (*zop->u.prox->u.known != Z_ProxUnit_word)
             {
-                char *val = nmem_malloc (stream, 16);
+                char *val = (char *) nmem_malloc (stream, 16);
                 zh->errCode = 132;
                 zh->errString = val;
                 sprintf (val, "%d", *zop->u.prox->u.known);
@@ -2025,7 +2037,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
 #else
             if (*zop->u.prox->proximityUnitCode != Z_ProxUnit_word)
             {
-                char *val = nmem_malloc (stream, 16);
+                char *val = (char *) nmem_malloc (stream, 16);
                 zh->errCode = 132;
                 zh->errString = val;
                 sprintf (val, "%d", *zop->u.prox->proximityUnitCode);
@@ -2090,10 +2102,12 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem,
     zh->errString = NULL;
     zh->hits = 0;
 
-    sort_sequence = nmem_malloc (nmem, sizeof(*sort_sequence));
+    sort_sequence = (Z_SortKeySpecList *)
+	nmem_malloc (nmem, sizeof(*sort_sequence));
     sort_sequence->num_specs = 10;
-    sort_sequence->specs = nmem_malloc (nmem, sort_sequence->num_specs *
-				       sizeof(*sort_sequence->specs));
+    sort_sequence->specs = (Z_SortKeySpec **)
+	nmem_malloc (nmem, sort_sequence->num_specs *
+		     sizeof(*sort_sequence->specs));
     for (i = 0; i<sort_sequence->num_specs; i++)
 	sort_sequence->specs[i] = 0;
     
@@ -2140,7 +2154,7 @@ struct scan_info {
 static int scan_handle (char *name, const char *info, int pos, void *client)
 {
     int len_prefix, idx;
-    struct scan_info *scan_info = client;
+    struct scan_info *scan_info = (struct scan_info *) client;
 
     len_prefix = strlen(scan_info->prefix);
     if (memcmp (name, scan_info->prefix, len_prefix))
@@ -2149,8 +2163,8 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
         idx = scan_info->after - pos + scan_info->before;
     else
         idx = - pos - 1;
-    scan_info->list[idx].term = odr_malloc (scan_info->odr,
-                                            strlen(name + len_prefix)+1);
+    scan_info->list[idx].term = (char *)
+	odr_malloc (scan_info->odr, strlen(name + len_prefix)+1);
     strcpy (scan_info->list[idx].term, name + len_prefix);
     assert (*info == sizeof(ISAM_P));
     memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAM_P));
@@ -2164,7 +2178,7 @@ static void scan_term_untrans (ZebraHandle zh, NMEM stream, int reg_type,
     
     term_untrans (zh, reg_type, term_dst, src);
     
-    *dst = nmem_malloc (stream, strlen(term_dst)+1);
+    *dst = (char *) nmem_malloc (stream, strlen(term_dst)+1);
     strcpy (*dst, term_dst);
 }
 
@@ -2276,7 +2290,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     /* prepare dictionary scanning */
     before = pos-1;
     after = 1+num-pos;
-    scan_info_array = odr_malloc (stream, ord_no * sizeof(*scan_info_array));
+    scan_info_array = (struct scan_info *)
+	odr_malloc (stream, ord_no * sizeof(*scan_info_array));
     for (i = 0; i < ord_no; i++)
     {
         int j, prefix_len = 0;
@@ -2290,8 +2305,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         scan_info->after = after;
         scan_info->odr = stream;
 
-        scan_info->list = odr_malloc (stream, (before+after)*
-                                      sizeof(*scan_info->list));
+        scan_info->list = (struct scan_info_entry *)
+	    odr_malloc (stream, (before+after) * sizeof(*scan_info->list));
         for (j = 0; j<before+after; j++)
             scan_info->list[j].term = NULL;
 
@@ -2305,7 +2320,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         dict_scan (zh->dict, termz, &before_tmp, &after_tmp, scan_info,
                    scan_handle);
     }
-    glist = odr_malloc (stream, (before+after)*sizeof(*glist));
+    glist = (ZebraScanEntry *)
+	odr_malloc (stream, (before+after)*sizeof(*glist));
 
     /* consider terms after main term */
     for (i = 0; i < ord_no; i++)

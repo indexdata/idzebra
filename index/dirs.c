@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.15  1999-02-02 14:50:51  adam
+ * Revision 1.16  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.15  1999/02/02 14:50:51  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.14  1998/01/12 15:04:07  adam
@@ -81,7 +84,7 @@ struct dirs_info {
 static int dirs_client_proc (char *name, const char *info, int pos,
                              void *client)
 {
-    struct dirs_info *ci = client;
+    struct dirs_info *ci = (struct dirs_info *) client;
     struct dirs_entry *entry;
 
     if (memcmp (name, ci->prefix, ci->prelen))
@@ -121,7 +124,7 @@ struct dirs_info *dirs_open (Dict dict, const char *rep, int rw)
     int before = 0, after;
 
     logf (LOG_DEBUG, "dirs_open %s", rep);
-    p = xmalloc (sizeof (*p));
+    p = (struct dirs_info *) xmalloc (sizeof (*p));
     p->dict = dict;
     p->rw = rw;
     strcpy (p->prefix, rep);
@@ -129,7 +132,8 @@ struct dirs_info *dirs_open (Dict dict, const char *rep, int rw)
     strcpy (p->nextpath, rep);
     p->no_read = p->no_cur = 0;
     after = p->no_max = 100;
-    p->entries = xmalloc (sizeof(*p->entries) * (p->no_max));
+    p->entries = (struct dirs_entry *)
+	xmalloc (sizeof(*p->entries) * (p->no_max));
     logf (LOG_DEBUG, "dirs_open first scan");
     dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
     return p;
@@ -141,10 +145,10 @@ struct dirs_info *dirs_fopen (Dict dict, const char *path)
     struct dirs_entry *entry;
     char *info;
 
-    p = xmalloc (sizeof(*p));
+    p = (struct dirs_info *) xmalloc (sizeof(*p));
     p->dict = dict;
     *p->prefix = '\0';
-    p->entries = xmalloc (sizeof(*p->entries));
+    p->entries = (struct dirs_entry *) xmalloc (sizeof(*p->entries));
     p->no_read = 0;
     p->no_cur = 0;
     p->no_max = 2;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.13  1999-05-12 13:08:06  adam
+ * Revision 1.14  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.13  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  * Revision 1.12  1999/02/02 14:51:10  adam
@@ -130,19 +133,19 @@ static struct trunc_info *heap_init (int size, int key_size,
 				     int (*cmp)(const void *p1,
 						const void *p2))
 {
-    struct trunc_info *ti = xmalloc (sizeof(*ti));
+    struct trunc_info *ti = (struct trunc_info *) xmalloc (sizeof(*ti));
     int i;
 
     ++size;
     ti->heapnum = 0;
     ti->keysize = key_size;
     ti->cmp = cmp;
-    ti->indx = xmalloc (size * sizeof(*ti->indx));
-    ti->heap = xmalloc (size * sizeof(*ti->heap));
-    ti->ptr = xmalloc (size * sizeof(*ti->ptr));
-    ti->swapbuf = xmalloc (ti->keysize);
-    ti->tmpbuf = xmalloc (ti->keysize);
-    ti->buf = xmalloc (size * ti->keysize);
+    ti->indx = (int *) xmalloc (size * sizeof(*ti->indx));
+    ti->heap = (char **) xmalloc (size * sizeof(*ti->heap));
+    ti->ptr = (int *) xmalloc (size * sizeof(*ti->ptr));
+    ti->swapbuf = (char *) xmalloc (ti->keysize);
+    ti->tmpbuf = (char *) xmalloc (ti->keysize);
+    ti->buf = (char *) xmalloc (size * ti->keysize);
     for (i = size; --i >= 0; )
     {
         ti->ptr[i] = i;
@@ -186,8 +189,8 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         int rscur = 0;
         int rsmax = (to-from)/i_add + 1;
         
-        rset = xmalloc (sizeof(*rset) * rsmax);
-        rsfd = xmalloc (sizeof(*rsfd) * rsmax);
+        rset = (RSET *) xmalloc (sizeof(*rset) * rsmax);
+        rsfd = (RSFD *) xmalloc (sizeof(*rsfd) * rsmax);
         
         for (i = from; i < to; i += i_add)
         {
@@ -244,7 +247,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         int i;
         struct trunc_info *ti;
 
-        ispt = xmalloc (sizeof(*ispt) * (to-from));
+        ispt = (ISPT *) xmalloc (sizeof(*ispt) * (to-from));
 
         ti = heap_init (to-from, sizeof(struct it_key),
                         key_compare_it);
@@ -296,7 +299,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         int i;
         struct trunc_info *ti;
 
-        ispt = xmalloc (sizeof(*ispt) * (to-from));
+        ispt = (ISAMC_PP *) xmalloc (sizeof(*ispt) * (to-from));
 
         ti = heap_init (to-from, sizeof(struct it_key),
                         key_compare_it);
@@ -348,7 +351,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         int i;
         struct trunc_info *ti;
 
-        ispt = xmalloc (sizeof(*ispt) * (to-from));
+        ispt = (ISAMS_PP *) xmalloc (sizeof(*ispt) * (to-from));
 
         ti = heap_init (to-from, sizeof(struct it_key),
                         key_compare_it);

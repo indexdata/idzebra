@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.24  1999-02-02 14:51:42  adam
+ * Revision 1.25  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.24  1999/02/02 14:51:42  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.23  1998/10/28 15:18:55  adam
@@ -96,10 +99,11 @@ static struct res_entry *add_entry (Res r)
     struct res_entry *resp;
 
     if (!r->first)
-        resp = r->last = r->first = xmalloc (sizeof(*resp));
+        resp = r->last = r->first =
+	    (struct res_entry *) xmalloc (sizeof(*resp));
     else
     {
-        resp = xmalloc (sizeof(*resp));
+        resp = (struct res_entry *) xmalloc (sizeof(*resp));
         r->last->next = resp;
         r->last = resp;
     }
@@ -119,7 +123,7 @@ static void reread (Res r)
     assert (r);
     r->init = 1;
 
-    val_buf = xmalloc (val_max);
+    val_buf = (char*) xmalloc (val_max);
 
     fr = fopen (r->name, "r");
     if (!fr)
@@ -141,7 +145,7 @@ static void reread (Res r)
             fr_buf[no] = '\0';
 
             resp = add_entry (r);
-            resp->name = xmalloc (no+1);
+            resp->name = (char*) xmalloc (no+1);
             resp->value = NULL;
             strcpy (resp->name, fr_buf);
         }
@@ -163,7 +167,7 @@ static void reread (Res r)
                 continue;
             fr_buf[no++] = '\0';
             resp = add_entry (r);
-            resp->name = xmalloc (no);
+            resp->name = (char*) xmalloc (no);
             strcpy (resp->name, fr_buf);
             
             while (strchr (" \t", fr_buf[no]))
@@ -178,7 +182,7 @@ static void reread (Res r)
                                val_buf[val_size-1] == '\t'))
                         val_size--;
                     val_buf[val_size++] = '\0';
-                    resp->value = xmalloc (val_size);
+                    resp->value = (char*) xmalloc (val_size);
                     strcpy (resp->value, val_buf);
                     logf (LOG_DEBUG, "(name=%s,value=%s)",
                          resp->name, resp->value);
@@ -189,7 +193,7 @@ static void reread (Res r)
                     line = fgets (fr_buf, sizeof(fr_buf)-1, fr);
                     if (!line)
                     {
-                        resp->value = xmalloc (val_size);
+                        resp->value = (char*) xmalloc (val_size);
                         strcpy (resp->value, val_buf);
                         break;
                     }
@@ -202,7 +206,7 @@ static void reread (Res r)
                     {
                         char *nb;
 
-                        nb = xmalloc (val_max+=1024);
+                        nb = (char*) xmalloc (val_max+=1024);
                         memcpy (nb, val_buf, val_size);
                         xfree (val_buf);
                         val_buf = nb;
@@ -227,7 +231,7 @@ Res res_open (const char *name)
         logf (LOG_LOG|LOG_ERRNO, "Cannot access resource file `%s'", name);
 	return NULL;
     }
-    r = xmalloc (sizeof(*r));
+    r = (Res) xmalloc (sizeof(*r));
     r->init = 0;
     r->first = r->last = NULL;
     r->name = xstrdup (name);

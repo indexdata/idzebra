@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.7  1999-05-20 12:57:18  adam
+ * Revision 1.8  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.7  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.6  1999/02/02 14:51:27  adam
@@ -71,7 +74,7 @@ data1_node *data1_mk_node_text (data1_handle dh, NMEM mem, data1_node *parent,
     res->u.data.what = DATA1I_text;
     res->u.data.len = len;
     if (res->u.data.len > DATA1_LOCALDATA) {
-        res->u.data.data = xmalloc (res->u.data.len);
+        res->u.data.data = (char *) xmalloc (res->u.data.len);
         res->destroy = destroy_data;
     }
     else
@@ -170,7 +173,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
     }
     res_root = data1_mk_node_wp (p->dh, p->mem, NULL);
     res_root->which = DATA1N_root;
-    res_root->u.root.type = nmem_malloc (p->mem, strlen(absynName)+1);
+    res_root->u.root.type = (char *) nmem_malloc (p->mem, strlen(absynName)+1);
     strcpy (res_root->u.root.type, absynName);
     res_root->u.root.absyn = absyn;
 

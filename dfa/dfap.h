@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfap.h,v $
- * Revision 1.8  1999-02-02 14:50:06  adam
+ * Revision 1.9  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.8  1999/02/02 14:50:06  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.7  1997/09/29 09:05:17  adam
@@ -39,6 +42,10 @@
 #define DFAP_H
 
 #include <dfa.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct DFA_parse {
     struct Tnode *root;       /* root of regular syntax tree */
@@ -96,4 +103,7 @@ void        sort_DFA_states (struct DFA_states *dfas);
 void        add_DFA_tran    (struct DFA_states *, struct DFA_state *,
                              int, int, int);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.22  1999-02-02 14:51:15  adam
+ * Revision 1.23  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.22  1999/02/02 14:51:15  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.21  1998/11/16 16:03:46  adam
@@ -171,18 +174,19 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     else
     {
 	logf (LOG_DEBUG, "adding result set %s", name);
-	s = xmalloc (sizeof(*s));
+	s = (ZebraSet) xmalloc (sizeof(*s));
 	s->next = zh->sets;
 	zh->sets = s;
-	s->name = xmalloc (strlen(name)+1);
+	s->name = (char *) xmalloc (strlen(name)+1);
 	strcpy (s->name, name);
 
-	s->sort_info = xmalloc (sizeof(*s->sort_info));
+	s->sort_info = (struct zset_sort_info *)
+	    xmalloc (sizeof(*s->sort_info));
 	s->sort_info->max_entries = 1000;
-	s->sort_info->entries =
+	s->sort_info->entries = (struct zset_sort_entry **)
 	    xmalloc (sizeof(*s->sort_info->entries) *
 		     s->sort_info->max_entries);
-	s->sort_info->all_entries =
+	s->sort_info->all_entries = (struct zset_sort_entry *)
 	    xmalloc (sizeof(*s->sort_info->all_entries) *
 		     s->sort_info->max_entries);
 	for (i = 0; i < s->sort_info->max_entries; i++)
@@ -249,7 +253,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
         return NULL;
     if (!(rset = sset->rset))
         return NULL;
-    sr = xmalloc (sizeof(*sr) * num);
+    sr = (ZebraPosSet) xmalloc (sizeof(*sr) * num);
     for (i = 0; i<num; i++)
     {
 	sr[i].sysno = 0;
@@ -642,8 +646,8 @@ ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name)
 
 void zebraRankInstall (ZebraHandle zh, struct rank_control *ctrl)
 {
-    ZebraRankClass p = xmalloc (sizeof(*p));
-    p->control = xmalloc (sizeof(*p->control));
+    ZebraRankClass p = (ZebraRankClass) xmalloc (sizeof(*p));
+    p->control = (struct rank_control *) xmalloc (sizeof(*p->control));
     memcpy (p->control, ctrl, sizeof(*p->control));
     p->control->name = xstrdup (ctrl->name);
     p->init_flag = 0;

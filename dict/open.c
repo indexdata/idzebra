@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.15  1999-05-15 14:36:37  adam
+ * Revision 1.16  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.15  1999/05/15 14:36:37  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.14  1999/03/09 13:07:06  adam
@@ -68,7 +71,7 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
     char resource_str[80];
     int page_size;
 
-    dict = xmalloc (sizeof(*dict));
+    dict = (Dict) xmalloc (sizeof(*dict));
 
     if (cache < 5)
 	cache = 5;

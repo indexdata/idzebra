@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.67  1999-02-02 14:51:14  adam
+ * Revision 1.68  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.67  1999/02/02 14:51:14  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.66  1998/10/28 10:54:41  adam
@@ -269,7 +272,8 @@ static int bend_sort (void *handle, bend_sort_rr *rr);
 
 bend_initresult *bend_init (bend_initrequest *q)
 {
-    bend_initresult *r = odr_malloc (q->stream, sizeof(*r));
+    bend_initresult *r = (bend_initresult *)
+	odr_malloc (q->stream, sizeof(*r));
     ZebraHandle zh;
     struct statserv_options_block *sob;
     char *user = NULL;
@@ -316,8 +320,9 @@ bend_initresult *bend_init (bend_initrequest *q)
 
 bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
 {
-    ZebraHandle zh = handle;
-    bend_searchresult *r = odr_malloc (q->stream, sizeof(*r));
+    ZebraHandle zh = (ZebraHandle) handle;
+    bend_searchresult *r = (bend_searchresult *)
+	odr_malloc (q->stream, sizeof(*r));
 
     r->hits = 0;
     r->errcode = 0;
@@ -345,8 +350,9 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
 
 bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
 {
-    ZebraHandle zh = handle;
-    bend_fetchresult *r = odr_malloc (q->stream, sizeof(*r));
+    ZebraHandle zh = (ZebraHandle) handle;
+    bend_fetchresult *r = (bend_fetchresult *)
+	odr_malloc (q->stream, sizeof(*r));
     ZebraRetrievalRecord retrievalRecord;
 
     retrievalRecord.position = q->number;
@@ -380,14 +386,16 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
 bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
 {
     ZebraScanEntry *entries;
-    ZebraHandle zh = handle;
-    bend_scanresult *r = odr_malloc (q->stream, sizeof(*r));
+    ZebraHandle zh = (ZebraHandle) handle;
+    bend_scanresult *r = (bend_scanresult *)
+	odr_malloc (q->stream, sizeof(*r));
     int is_partial, i;
     
     r->term_position = q->term_position;
     r->num_entries = q->num_entries;
 
-    r->entries = odr_malloc (q->stream, sizeof(*r->entries) * q->num_entries);
+    r->entries = (struct scan_entry *)
+	odr_malloc (q->stream, sizeof(*r->entries) * q->num_entries);
     zebra_scan (zh, q->stream, q->term,
 		q->attributeset,
 		q->num_bases, q->basenames,
@@ -414,7 +422,7 @@ void bend_close (void *handle)
 
 int bend_sort (void *handle, bend_sort_rr *rr)
 {
-    ZebraHandle zh = handle;
+    ZebraHandle zh = (ZebraHandle) handle;
 
     zebra_sort (zh, rr->stream,
                 rr->num_input_setnames, (const char **) rr->input_setnames,

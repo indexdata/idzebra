@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.25  1999-02-02 14:50:05  adam
+ * Revision 1.26  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.25  1999/02/02 14:50:05  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.24  1998/10/28 10:48:55  adam
@@ -988,7 +991,8 @@ void dfa_parse_cmap_clean (struct DFA *d)
     if (!dfa->charMap)
     {
         dfa->charMapSize = 7;
-        dfa->charMap = imalloc (dfa->charMapSize * sizeof(*dfa->charMap));
+        dfa->charMap = (int *)
+	    imalloc (dfa->charMapSize * sizeof(*dfa->charMap));
     }
     dfa->charMap[0] = 0;
 }
@@ -1008,7 +1012,7 @@ void dfa_parse_cmap_new (struct DFA *d, const int *cmap)
         if (dfa->charMap)
             ifree (dfa->charMap);
         dfa->charMapSize = size;
-        dfa->charMap = imalloc (size * sizeof(*dfa->charMap));
+        dfa->charMap = (int *) imalloc (size * sizeof(*dfa->charMap));
     }
     memcpy (dfa->charMap, cmap, size * sizeof(*dfa->charMap));
 }
@@ -1048,7 +1052,7 @@ void dfa_parse_cmap_add (struct DFA *d, int from, int to)
     size = dfa->charMapSize;
     if (indx >= size)
     {
-        int *cn = imalloc ((size+16) * sizeof(*dfa->charMap));
+        int *cn = (int *) imalloc ((size+16) * sizeof(*dfa->charMap));
         memcpy (cn, dfa->charMap, indx*sizeof(*dfa->charMap));
         ifree (dfa->charMap);
         dfa->charMap = cn;
@@ -1129,7 +1133,7 @@ static struct DFA_states *mk_dfas (struct DFA_parse *dfap, int poset_chunk)
 
     if (debug_dfa_followpos)
         pr_followpos(parse_info);
-    init_DFA_states (&dfas, parse_info->poset, STATE_HASH);
+    init_DFA_states (&dfas, parse_info->poset, (int) (STATE_HASH));
     mk_dfa_tran (parse_info, dfas);
     if (debug_dfa_tran)
         pr_tran (parse_info, dfas);
@@ -1145,7 +1149,7 @@ struct DFA *dfa_init (void)
 {
     struct DFA *dfa;
 
-    dfa = imalloc (sizeof(*dfa));
+    dfa = (struct DFA *) imalloc (sizeof(*dfa));
     dfa->parse_info = dfa_parse_init ();
     dfa->state_info = NULL;
     dfa->states = NULL;

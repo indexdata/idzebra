@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.28  1999-05-21 12:00:17  adam
+ * Revision 1.29  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.28  1999/05/21 12:00:17  adam
  * Better diagnostics for extraction process.
  *
  * Revision 1.27  1999/05/20 12:57:18  adam
@@ -238,7 +241,7 @@ static int read_grs_type (struct grs_handlers *h,
 
 static void grs_add_handler (struct grs_handlers *h, RecTypeGrs t)
 {
-    struct grs_handler *gh = malloc (sizeof(*gh));
+    struct grs_handler *gh = (struct grs_handler *) malloc (sizeof(*gh));
     gh->next = h->handlers;
     h->handlers = gh;
     gh->initFlag = 0;
@@ -248,7 +251,7 @@ static void grs_add_handler (struct grs_handlers *h, RecTypeGrs t)
 
 static void *grs_init(RecType recType)
 {
-    struct grs_handlers *h = malloc (sizeof(*h));
+    struct grs_handlers *h = (struct grs_handlers *) malloc (sizeof(*h));
     h->handlers = 0;
 
     grs_add_handler (h, recTypeGrs_sgml);
@@ -262,7 +265,7 @@ static void *grs_init(RecType recType)
 
 static void grs_destroy(void *clientData)
 {
-    struct grs_handlers *h = clientData;
+    struct grs_handlers *h = (struct grs_handlers *) clientData;
     struct grs_handler *gh = h->handlers, *gh_next;
     while (gh)
     {
@@ -407,7 +410,7 @@ static int grs_extract(void *clientData, struct recExtractCtrl *p)
     struct grs_read_info gri;
     oident oe;
     int oidtmp[OID_SIZE];
-    struct grs_handlers *h = clientData;
+    struct grs_handlers *h = (struct grs_handlers *) clientData;
 
     mem = nmem_create (); 
     gri.readf = p->readf;
@@ -523,7 +526,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     NMEM mem;
     struct grs_read_info gri;
     char *tagname;
-    struct grs_handlers *h = clientData;
+    struct grs_handlers *h = (struct grs_handlers *) clientData;
     
     mem = nmem_create();
     gri.readf = p->readf;
@@ -614,7 +617,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 					       "schemaIdentifier", mem)))
 	    {
 		dnew->u.data.what = DATA1I_oid;
-		dnew->u.data.data = nmem_malloc(mem, p - tmp);
+		dnew->u.data.data = (char *) nmem_malloc(mem, p - tmp);
 		memcpy(dnew->u.data.data, tmp, p - tmp);
 		dnew->u.data.len = p - tmp;
 	    }
@@ -668,21 +671,21 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 					      p->odr, &dummy)))
 		p->diagnostic = 238; /* not available in requested syntax */
 	    else
-		p->rec_len = -1;
+		p->rec_len = (size_t) (-1);
 	    break;
 	case VAL_EXPLAIN:
 	    if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
 						   p->odr)))
 		p->diagnostic = 238;
 	    else
-		p->rec_len = -1;
+		p->rec_len = (size_t) (-1);
 	    break;
 	case VAL_SUMMARY:
 	    if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
 						   p->odr)))
 		p->diagnostic = 238;
 	    else
-		p->rec_len = -1;
+		p->rec_len = (size_t) (-1);
 	    break;
 	case VAL_SUTRS:
 	    if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,

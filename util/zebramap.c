@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.14  1999-02-19 10:37:40  adam
+ * Revision 1.15  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.14  1999/02/19 10:37:40  adam
  * Minor fix.
  *
  * Revision 1.13  1999/02/18 15:01:04  adam
@@ -126,7 +129,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 		zm = &zms->map_list;
 	    else
 		zm = &(*zm)->next;
-	    *zm = nmem_malloc (zms->nmem, sizeof(**zm));
+	    *zm = (struct zebra_map *) nmem_malloc (zms->nmem, sizeof(**zm));
 	    (*zm)->reg_id = argv[1][0];
 	    (*zm)->maptab_name = NULL;
 	    (*zm)->maptab = NULL;
@@ -140,7 +143,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 		zm = &zms->map_list;
 	    else
 		zm = &(*zm)->next;
-	    *zm = nmem_malloc (zms->nmem, sizeof(**zm));
+	    *zm = (struct zebra_map *) nmem_malloc (zms->nmem, sizeof(**zm));
 	    (*zm)->reg_id = argv[1][0];
 	    (*zm)->maptab_name = NULL;
 	    (*zm)->type = ZEBRA_MAP_TYPE_SORT;
@@ -177,14 +180,14 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 
 static void zms_map_handle (void *p, const char *name, const char *value)
 {
-    ZebraMaps zms = p;
+    ZebraMaps zms = (ZebraMaps) p;
     
     zebra_map_read (zms, value);
 }
 
 ZebraMaps zebra_maps_open (Res res)
 {
-    ZebraMaps zms = xmalloc (sizeof(*zms));
+    ZebraMaps zms = (ZebraMaps) xmalloc (sizeof(*zms));
     int i;
 
     zms->nmem = nmem_create ();
@@ -197,7 +200,7 @@ ZebraMaps zebra_maps_open (Res res)
     zms->temp_map_ptr[0] = zms->temp_map_str;
     zms->temp_map_ptr[1] = NULL;
 
-    zms->lookup_array =
+    zms->lookup_array = (struct zebra_map**)
 	nmem_malloc (zms->nmem, sizeof(*zms->lookup_array)*256);
     for (i = 0; i<256; i++)
 	zms->lookup_array[i] = 0;
@@ -216,7 +219,7 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
     struct zebra_map *zm = zebra_map_get (zms, reg_id);
     if (!zm)
     {
-	zm = nmem_malloc (zms->nmem, sizeof(*zm));
+	zm = (struct zebra_map *) nmem_malloc (zms->nmem, sizeof(*zm));
 	logf (LOG_WARN, "Unknown register type: %c", reg_id);
 
 	zm->reg_id = reg_id;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.6  1999-02-02 14:51:12  adam
+ * Revision 1.7  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.6  1999/02/02 14:51:12  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.5  1998/06/08 14:43:16  adam
@@ -32,6 +35,10 @@
 
 #include <data1.h>
 #include "recindex.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct zebraExplainInfo *ZebraExplainInfo;
 typedef struct zebDatabaseInfo ZebDatabaseInfo;
@@ -61,5 +68,9 @@ typedef struct {
     int runNumber;
 } RecordAttr;
 RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

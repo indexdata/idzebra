@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.18  1999-05-15 14:36:38  adam
+ * Revision 1.19  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.18  1999/05/15 14:36:38  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.17  1999/05/12 13:08:06  adam
@@ -213,7 +216,7 @@ static void zebra_register_unlock (ZebraHandle zh)
 
 ZebraHandle zebra_open (const char *configName)
 {
-    ZebraHandle zh = xmalloc (sizeof(*zh));
+    ZebraHandle zh = (ZebraHandle) xmalloc (sizeof(*zh));
 
     if (!(zh->res = res_open (configName)))
     {
@@ -298,7 +301,7 @@ struct map_baseinfo {
 	
 void map_basenames_func (void *vp, const char *name, const char *value)
 {
-    struct map_baseinfo *p = vp;
+    struct map_baseinfo *p = (struct map_baseinfo *) vp;
     int i, no;
     char fromdb[128], todb[8][128];
     
@@ -379,7 +382,7 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
 
     zh->errCode = 0;
     zh->errString = NULL;
-    pos_array = xmalloc (num_recs * sizeof(*pos_array));
+    pos_array = (int *) xmalloc (num_recs * sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
 	pos_array[i] = recs[i].position;
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.15  1999-02-02 14:51:32  adam
+ * Revision 1.16  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.15  1999/02/02 14:51:32  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.14  1998/03/05 08:36:27  adam
@@ -148,10 +151,10 @@ struct rset_bool_rfd {
 
 static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
-    rset_bool_parms *bool_parms = parms;
+    rset_bool_parms *bool_parms = (rset_bool_parms *) parms;
     struct rset_bool_info *info;
 
-    info = xmalloc (sizeof(*info));
+    info = (struct rset_bool_info *) xmalloc (sizeof(*info));
     info->key_size = bool_parms->key_size;
     info->rset_l = bool_parms->rset_l;
     info->rset_r = bool_parms->rset_r;
@@ -163,7 +166,8 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     info->term_index_s = info->rset_l->no_rset_terms;
     ct->no_rset_terms =
 	info->rset_l->no_rset_terms + info->rset_r->no_rset_terms;
-    ct->rset_terms = xmalloc (sizeof (*ct->rset_terms) * ct->no_rset_terms);
+    ct->rset_terms = (RSET_TERM *)
+	xmalloc (sizeof (*ct->rset_terms) * ct->no_rset_terms);
 
     memcpy (ct->rset_terms, info->rset_l->rset_terms,
 	    info->rset_l->no_rset_terms * sizeof(*ct->rset_terms));
@@ -175,7 +179,7 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 
 static RSFD r_open (RSET ct, int flag)
 {
-    struct rset_bool_info *info = ct->buf;
+    struct rset_bool_info *info = (struct rset_bool_info *) ct->buf;
     struct rset_bool_rfd *rfd;
 
     if (flag & RSETF_WRITE)
@@ -183,7 +187,7 @@ static RSFD r_open (RSET ct, int flag)
 	logf (LOG_FATAL, "bool set type is read-only");
 	return NULL;
     }
-    rfd = xmalloc (sizeof(*rfd));
+    rfd = (struct rset_bool_rfd *) xmalloc (sizeof(*rfd));
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->info = info;
@@ -221,7 +225,7 @@ static void r_close (RSFD rfd)
 
 static void r_delete (RSET ct)
 {
-    struct rset_bool_info *info = ct->buf;
+    struct rset_bool_info *info = (struct rset_bool_info *) ct->buf;
 
     assert (info->rfd_list == NULL);
     xfree (ct->rset_terms);
@@ -233,7 +237,7 @@ static void r_delete (RSET ct)
 static void r_rewind (RSFD rfd)
 {
     struct rset_bool_info *info = ((struct rset_bool_rfd*)rfd)->info;
-    struct rset_bool_rfd *p = rfd;
+    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
 
     logf (LOG_DEBUG, "rsbool_rewind");
     rset_rewind (info->rset_l, p->rfd_l);
@@ -249,7 +253,7 @@ static int r_count (RSET ct)
 
 static int r_read_and (RSFD rfd, void *buf, int *term_index)
 {
-    struct rset_bool_rfd *p = rfd;
+    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
     while (p->more_l && p->more_r)
@@ -296,7 +300,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
 
 static int r_read_or (RSFD rfd, void *buf, int *term_index)
 {
-    struct rset_bool_rfd *p = rfd;
+    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
     while (p->more_l || p->more_r)
@@ -341,7 +345,7 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
 
 static int r_read_not (RSFD rfd, void *buf, int *term_index)
 {
-    struct rset_bool_rfd *p = rfd;
+    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
     while (p->more_l || p->more_r)

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rank1.c,v $
- * Revision 1.4  1999-02-02 14:51:01  adam
+ * Revision 1.5  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.4  1999/02/02 14:51:01  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.3  1998/06/12 12:21:53  adam
@@ -61,7 +64,8 @@ static int log2_int (unsigned g)
  */
 static void *create (ZebraHandle zh)
 {
-    struct rank_class_info *ci = xmalloc (sizeof(*ci));
+    struct rank_class_info *ci = (struct rank_class_info *)
+	xmalloc (sizeof(*ci));
 
     logf (LOG_DEBUG, "rank-1 create");
     return ci;
@@ -74,7 +78,7 @@ static void *create (ZebraHandle zh)
  */
 static void destroy (ZebraHandle zh, void *class_handle)
 {
-    struct rank_class_info *ci = class_handle;
+    struct rank_class_info *ci = (struct rank_class_info *) class_handle;
 
     logf (LOG_DEBUG, "rank-1 destroy");
     xfree (ci);
@@ -88,13 +92,14 @@ static void destroy (ZebraHandle zh, void *class_handle)
  */
 static void *begin (ZebraHandle zh, void *class_handle, RSET rset)
 {
-    struct rank_set_info *si = xmalloc (sizeof(*si));
+    struct rank_set_info *si = (struct rank_set_info *) xmalloc (sizeof(*si));
     int i;
 
     logf (LOG_DEBUG, "rank-1 begin");
     si->no_entries = rset->no_rset_terms;
     si->no_rank_entries = 0;
-    si->entries = xmalloc (sizeof(*si->entries)*si->no_entries);
+    si->entries = (struct rank_term_info *)
+	xmalloc (sizeof(*si->entries)*si->no_entries);
     for (i = 0; i < si->no_entries; i++)
     {
 	int g = rset->rset_terms[i]->nn;
@@ -119,7 +124,7 @@ static void *begin (ZebraHandle zh, void *class_handle, RSET rset)
  */
 static void end (ZebraHandle zh, void *set_handle)
 {
-    struct rank_set_info *si = set_handle;
+    struct rank_set_info *si = (struct rank_set_info *) set_handle;
     logf (LOG_DEBUG, "rank-1 end");
     xfree (si->entries);
     xfree (si);
@@ -132,7 +137,7 @@ static void end (ZebraHandle zh, void *set_handle)
  */
 static void add (void *set_handle, int seqno, int term_index)
 {
-    struct rank_set_info *si = set_handle;
+    struct rank_set_info *si = (struct rank_set_info *) set_handle;
     logf (LOG_DEBUG, "rank-1 add seqno=%d term_index=%d", seqno, term_index);
     si->last_pos = seqno;
     si->entries[term_index].local_occur++;
@@ -147,7 +152,7 @@ static void add (void *set_handle, int seqno, int term_index)
 static int calc (void *set_handle, int sysno)
 {
     int i, lo, divisor, score = 0;
-    struct rank_set_info *si = set_handle;
+    struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
     logf (LOG_DEBUG, "rank-1 calc sysno=%d", sysno);
 

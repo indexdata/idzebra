@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindxp.h,v $
- * Revision 1.5  1999-02-02 14:51:05  adam
+ * Revision 1.6  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.5  1999/02/02 14:51:05  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.4  1998/03/05 08:45:12  adam
@@ -32,6 +35,10 @@
 #include "recindex.h"
 
 #include <bfile.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define REC_BLOCK_TYPES 2
 #define REC_HEAD_MAGIC "recindx"
@@ -82,3 +89,6 @@ struct record_index_entry {
     int size;         /* size of record or 0 if free entry */
 };
 
+#ifdef __cplusplus
+}
+#endif

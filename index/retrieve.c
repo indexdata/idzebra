@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.9  1999-05-20 12:57:18  adam
+ * Revision 1.10  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.9  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.8  1999/03/09 16:27:49  adam
@@ -66,37 +69,37 @@ struct fetch_control {
 
 static int record_ext_read (void *fh, char *buf, size_t count)
 {
-    struct fetch_control *fc = fh;
+    struct fetch_control *fc = (struct fetch_control *) fh;
     return read (fc->fd, buf, count);
 }
 
 static off_t record_ext_seek (void *fh, off_t offset)
 {
-    struct fetch_control *fc = fh;
+    struct fetch_control *fc = (struct fetch_control *) fh;
     return lseek (fc->fd, offset + fc->record_offset, SEEK_SET);
 }
 
 static off_t record_ext_tell (void *fh)
 {
-    struct fetch_control *fc = fh;
+    struct fetch_control *fc = (struct fetch_control *) fh;
     return lseek (fc->fd, 0, SEEK_CUR) - fc->record_offset;
 }
 
 static off_t record_int_seek (void *fh, off_t offset)
 {
-    struct fetch_control *fc = fh;
+    struct fetch_control *fc = (struct fetch_control *) fh;
     return (off_t) (fc->record_int_pos = offset);
 }
 
 static off_t record_int_tell (void *fh)
 {
-    struct fetch_control *fc = fh;
+    struct fetch_control *fc = (struct fetch_control *) fh;
     return (off_t) fc->record_int_pos;
 }
 
 static int record_int_read (void *fh, char *buf, size_t count)
 {
-    struct fetch_control *fc = fh;
+    struct fetch_control *fc = (struct fetch_control *) fh;
     int l = fc->record_int_len - fc->record_int_pos;
     if (l <= 0)
         return 0;
@@ -131,7 +134,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     file_type = rec->info[recInfo_fileType];
     fname = rec->info[recInfo_filename];
     basename = rec->info[recInfo_databaseName];
-    *basenamep = odr_malloc (stream, strlen(basename)+1);
+    *basenamep = (char *) odr_malloc (stream, strlen(basename)+1);
     strcpy (*basenamep, basename);
 
     if (!(rt = recType_byName (zh->recTypes, file_type, subType, &clientData)))
@@ -246,7 +249,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     retrieveCtrl.res = zh->res;
     (*rt->retrieve)(clientData, &retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
-    *rec_bufp = retrieveCtrl.rec_buf;
+    *rec_bufp = (char *) retrieveCtrl.rec_buf;
     *rec_lenp = retrieveCtrl.rec_len;
     if (fc.fd != -1)
         close (fc.fd);

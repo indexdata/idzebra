@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.25  1999-02-02 14:51:16  adam
+ * Revision 1.26  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.25  1999/02/02 14:51:16  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.24  1997/10/27 14:25:39  adam
@@ -105,7 +108,7 @@ static struct
     int skipped_inserts;
     int delete_insert_noop;
     int delete_replace;
-    int delete;
+    int deletes;
     int remaps;
     int block_jumps;
     int tab_deletes;
@@ -122,7 +125,7 @@ static ISPT ispt_alloc()
     	ispt_freelist = ispt_freelist->next;
     }
     else
-    	p = xmalloc(sizeof(ispt_struct));
+    	p = (ISPT) xmalloc(sizeof(ispt_struct));
     return p;
 }
 
@@ -162,7 +165,7 @@ ISAM is_open(BFiles bfs, const char *name,
 	     int (*cmp)(const void *p1, const void *p2),
 	     int writeflag, int keysize, Res res)
 {
-    ISAM new;
+    ISAM inew;
     char *nm, *r, *pp[IS_MAX_BLOCKTYPES+1], m[2];
     int num, size, rs, tmp, i;
     is_type_header th;
@@ -178,17 +181,17 @@ ISAM is_open(BFiles bfs, const char *name,
 	statistics.skipped_inserts = 0;
 	statistics.delete_insert_noop = 0;
 	statistics.delete_replace = 0;
-	statistics.delete = 0;
+	statistics.deletes = 0;
 	statistics.remaps = 0;
 	statistics.new_tables = 0;
 	statistics.block_jumps = 0;
 	statistics.tab_deletes = 0;
     }
 
-    new = xmalloc(sizeof(*new));
-    new->writeflag = writeflag;
+    inew = (ISAM) xmalloc(sizeof(*inew));
+    inew->writeflag = writeflag;
     for (i = 0; i < IS_MAX_BLOCKTYPES; i++)
-	new->types[i].index = 0;                        /* dummy */
+	inew->types[i].index = 0;                        /* dummy */
 
     /* determine number and size of blocktypes */
     if (!(r = res_get_def(res,
@@ -199,7 +202,7 @@ ISAM is_open(BFiles bfs, const char *name,
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
-    new->num_types = num;
+    inew->num_types = num;
     for (i = 0; i < num; i++)
     {
     	if ((rs = sscanf(pp[i], "%d%1[bBkKmM]", &size, m)) < 1)
@@ -212,48 +215,48 @@ ISAM is_open(BFiles bfs, const char *name,
 	switch (*m)
 	{
 		case 'b': case 'B':
-		    new->types[i].blocksize = size; break;
+		    inew->types[i].blocksize = size; break;
 		case 'k': case 'K':
-		    new->types[i].blocksize = size * 1024; break;
+		    inew->types[i].blocksize = size * 1024; break;
 		case 'm': case 'M':
-		    new->types[i].blocksize = size * 1048576; break;
+		    inew->types[i].blocksize = size * 1048576; break;
 		default:
 		    logf (LOG_FATAL, "Illegal size suffix: %c", *m);
 		    return 0;
 	}
-	new->types[i].dbuf = xmalloc(new->types[i].blocksize);
+	inew->types[i].dbuf = (char *) xmalloc(inew->types[i].blocksize);
 	m[0] = 'A' + i;
 	m[1] = '\0';
-	if (!(new->types[i].bf = bf_open(bfs, strconcat(name, m, 0), 
-	    new->types[i].blocksize, writeflag)))
+	if (!(inew->types[i].bf = bf_open(bfs, strconcat(name, m, 0), 
+	    inew->types[i].blocksize, writeflag)))
 	{
 	    logf (LOG_FATAL, "bf_open failed");
 	    return 0;
 	}
-	if ((rs = is_rb_read(&new->types[i], &th)) > 0)
+	if ((rs = is_rb_read(&inew->types[i], &th)) > 0)
 	{
-	    if (th.blocksize != new->types[i].blocksize)
+	    if (th.blocksize != inew->types[i].blocksize)
 	    {
 	    	logf (LOG_FATAL, "File blocksize mismatch in %s", name);
 	    	exit(1);
 	    }
-	    new->types[i].freelist = th.freelist;
-	    new->types[i].top = th.top;
+	    inew->types[i].freelist = th.freelist;
+	    inew->types[i].top = th.top;
 	}
 	else if (writeflag) /* write dummy superblock to determine top */
 	{
-	    if ((rs = is_rb_write(&new->types[i], &th)) <=0)  /* dummy */
+	    if ((rs = is_rb_write(&inew->types[i], &th)) <=0)  /* dummy */
 	    {
 	    	logf (LOG_FATAL, "Failed to write initial superblock.");
 	    	exit(1);
 	    }
-	    new->types[i].freelist = -1;
-	    new->types[i].top = rs;
+	    inew->types[i].freelist = -1;
+	    inew->types[i].top = rs;
 	}
 	/* ELSE: this is an empty file opened in read-only mode. */
     }
     if (keysize > 0)
-        new->keysize = keysize;
+        inew->keysize = keysize;
     else
     {
         if (!(r = res_get_def(res, nm = strconcat(name, ".",
@@ -262,7 +265,7 @@ ISAM is_open(BFiles bfs, const char *name,
             logf (LOG_FATAL, "Failed to locate resource %s", nm);
             return 0;
         }
-        if ((new->keysize = atoi(r)) <= 0)
+        if ((inew->keysize = atoi(r)) <= 0)
         {
             logf (LOG_FATAL, "Must specify positive keysize.");
             return 0;
@@ -276,7 +279,7 @@ ISAM is_open(BFiles bfs, const char *name,
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
-    new->repack = atoi(r);
+    inew->repack = atoi(r);
 
     /* determine max keys/blocksize */
     if (!(r = res_get_def(res,
@@ -287,7 +290,7 @@ ISAM is_open(BFiles bfs, const char *name,
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
-    if (num < new->num_types -1)
+    if (num < inew->num_types -1)
     {
     	logf (LOG_FATAL, "Not enough elements in %s", nm);
     	return 0;
@@ -299,23 +302,23 @@ ISAM is_open(BFiles bfs, const char *name,
 	    logf (LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
 	    return 0;
 	}
-	new->types[i].max_keys = tmp;
+	inew->types[i].max_keys = tmp;
     }
 
     /* determine max keys/block */
-    for (i = 0; i < new->num_types; i++)
+    for (i = 0; i < inew->num_types; i++)
     {
-    	if (!new->types[i].index)
+    	if (!inew->types[i].index)
     	{
-	    new->types[i].max_keys_block = (new->types[i].blocksize - 2 *
-		sizeof(int)) / new->keysize;
-	    new->types[i].max_keys_block0 = (new->types[i].blocksize - 3 *
-		sizeof(int)) / new->keysize;
+	    inew->types[i].max_keys_block = (inew->types[i].blocksize - 2 *
+		sizeof(int)) / inew->keysize;
+	    inew->types[i].max_keys_block0 = (inew->types[i].blocksize - 3 *
+		sizeof(int)) / inew->keysize;
 	}
 	else
-	    new->types[i].max_keys_block = new->types[i].max_keys_block0 /
-		new->keysize;
-	if (new->types[i].max_keys_block0 < 1)
+	    inew->types[i].max_keys_block = inew->types[i].max_keys_block0 /
+		inew->keysize;
+	if (inew->types[i].max_keys_block0 < 1)
 	{
 	    logf (LOG_FATAL, "Blocksize too small in %s", name);
 	    exit(1);
@@ -331,7 +334,7 @@ ISAM is_open(BFiles bfs, const char *name,
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
-    if (num < new->num_types)
+    if (num < inew->num_types)
     {
     	logf (LOG_FATAL, "Not enough elements in %s", nm);
     	return 0;
@@ -343,14 +346,14 @@ ISAM is_open(BFiles bfs, const char *name,
 	    logf (LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
 	    return 0;
 	}
-	new->types[i].nice_keys_block = (new->types[i].max_keys_block0 * tmp) /
+	inew->types[i].nice_keys_block = (inew->types[i].max_keys_block0 * tmp) /
 	    100;
-	if (new->types[i].nice_keys_block < 1)
-		new->types[i].nice_keys_block = 1;
+	if (inew->types[i].nice_keys_block < 1)
+		inew->types[i].nice_keys_block = 1;
     }
 
-    new->cmp = cmp ? cmp : is_default_cmp;
-    return new;
+    inew->cmp = cmp ? cmp : is_default_cmp;
+    return inew;
 }
 
 /*
@@ -401,7 +404,7 @@ int is_close(ISAM is)
 	    statistics.delete_insert_noop);
 	logf(LOG_LOG, "delete_replace              %d",
 	    statistics.delete_replace);
-	logf(LOG_LOG, "delete                      %d", statistics.delete);
+	logf(LOG_LOG, "delete                      %d", statistics.deletes);
 	logf(LOG_LOG, "remaps                      %d", statistics.remaps);
 	logf(LOG_LOG, "block_jumps                 %d", statistics.block_jumps);
 	logf(LOG_LOG, "tab_deletes                 %d", statistics.tab_deletes);
@@ -517,7 +520,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 		}
 		logf (LOG_DEBUG, "Deleting record.");
 		is_m_delete_record(&tab);
-		statistics.delete++;
+		statistics.deletes++;
 	    }
 	}
     }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.62  1999-05-12 13:08:06  adam
+ * Revision 1.63  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.62  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  * Revision 1.61  1999/03/09 16:27:49  adam
@@ -235,6 +238,10 @@
 #include <data1.h>
 #include <recctrl.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define IT_MAX_WORD 256
 #define IT_KEY_HAVE_SEQNO 1
 #define IT_KEY_HAVE_FIELD 0
@@ -361,3 +368,7 @@ void zebra_lock_prefix (Res res, char *dst);
 void zebra_load_atts (data1_handle dh, Res res);
 
 extern Res common_resource;
+
+#ifdef __cplusplus
+}
+#endif

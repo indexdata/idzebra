@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.25  1999-05-25 12:33:32  adam
+ * Revision 1.26  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.25  1999/05/25 12:33:32  adam
  * Fixed bug in Tcl filter.
  *
  * Revision 1.24  1999/05/21 11:08:46  adam
@@ -295,7 +298,7 @@ static char *f_win_get (struct lexSpec *spec, off_t start_pos, off_t end_pos,
         spec->f_win_start = start_pos;
 
         if (!spec->f_win_buf)
-            spec->f_win_buf = xmalloc (spec->f_win_size);
+            spec->f_win_buf = (char *) xmalloc (spec->f_win_size);
         *size = (*spec->f_win_rf)(spec->f_win_fh, spec->f_win_buf,
                                   spec->f_win_size);
         spec->f_win_end = spec->f_win_start + *size;
@@ -351,8 +354,8 @@ static void regxCodeMk (struct regxCode **pp, const char *buf, int len)
 {
     struct regxCode *p;
 
-    p = xmalloc (sizeof(*p));
-    p->str = xmalloc (len+1);
+    p = (struct regxCode *) xmalloc (sizeof(*p));
+    p->str = (char *) xmalloc (len+1);
     memcpy (p->str, buf, len);
     p->str[len] = '\0';
     *pp = p;
@@ -392,7 +395,7 @@ static void actionListDel (struct lexRuleAction **rap)
 
 static struct lexContext *lexContextCreate (const char *name)
 {
-    struct lexContext *p = xmalloc (sizeof(*p));
+    struct lexContext *p = (struct lexContext *) xmalloc (sizeof(*p));
 
     p->name = xstrdup (name);
     p->ruleNo = 1;
@@ -429,8 +432,8 @@ static struct lexSpec *lexSpecCreate (const char *name, data1_handle dh)
     struct lexSpec *p;
     int i;
     
-    p = xmalloc (sizeof(*p));
-    p->name = xmalloc (strlen(name)+1);
+    p = (struct lexSpec *) xmalloc (sizeof(*p));
+    p->name = (char *) xmalloc (strlen(name)+1);
     strcpy (p->name, name);
 
 #if HAVE_TCL_H
@@ -439,19 +442,21 @@ static struct lexSpec *lexSpecCreate (const char *name, data1_handle dh)
     p->dh = dh;
     p->context = NULL;
     p->context_stack_size = 100;
-    p->context_stack = xmalloc (sizeof(*p->context_stack) *
-				p->context_stack_size);
+    p->context_stack = (struct lexContext **)
+	xmalloc (sizeof(*p->context_stack) * p->context_stack_size);
     p->f_win_buf = NULL;
 
     p->maxLevel = 128;
-    p->concatBuf = xmalloc (sizeof(*p->concatBuf) * p->maxLevel);
+    p->concatBuf = (struct lexConcatBuf **)
+	xmalloc (sizeof(*p->concatBuf) * p->maxLevel);
     for (i = 0; i < p->maxLevel; i++)
     {
-	p->concatBuf[i] = xmalloc (sizeof(**p->concatBuf));
+	p->concatBuf[i] = (struct lexConcatBuf *)
+	    xmalloc (sizeof(**p->concatBuf));
 	p->concatBuf[i]->len = p->concatBuf[i]->max = 0;
 	p->concatBuf[i]->buf = 0;
     }
-    p->d1_stack = xmalloc (sizeof(*p->d1_stack) * p->maxLevel);
+    p->d1_stack = (data1_node **) xmalloc (sizeof(*p->d1_stack) * p->maxLevel);
     p->d1_level = 0;
     return p;
 }
@@ -531,7 +536,7 @@ static int readParseToken (const char **cpp, int *len)
                 cmd[i] = *cp + 'a' - 'A';
             else
                 break;
-            if (i < sizeof(cmd)-2)
+            if (i < (int) sizeof(cmd)-2)
 		i++;
             cp++;
         }
@@ -579,13 +584,13 @@ static int actionListMk (struct lexSpec *spec, const char *s,
             bodyMark = 1;
             continue;
         case REGX_CODE:
-            *ap = xmalloc (sizeof(**ap));
+            *ap = (struct lexRuleAction *) xmalloc (sizeof(**ap));
             (*ap)->which = tok;
             regxCodeMk (&(*ap)->u.code, s, len);
             s += len+1;
             break;
         case REGX_PATTERN:
-            *ap = xmalloc (sizeof(**ap));
+            *ap = (struct lexRuleAction *) xmalloc (sizeof(**ap));
             (*ap)->which = tok;
             (*ap)->u.pattern.body = bodyMark;
             bodyMark = 0;
@@ -609,7 +614,7 @@ static int actionListMk (struct lexSpec *spec, const char *s,
             logf (LOG_WARN, "cannot use INIT here");
             continue;
         case REGX_END:
-            *ap = xmalloc (sizeof(**ap));
+            *ap = (struct lexRuleAction *) xmalloc (sizeof(**ap));
             (*ap)->which = tok;
             break;
         }
@@ -677,7 +682,7 @@ int readOneSpec (struct lexSpec *spec, const char *s)
             return -1;
         }
         s++;
-        rp = xmalloc (sizeof(*rp));
+        rp = (struct lexRule *) xmalloc (sizeof(*rp));
         rp->info.no = spec->context->ruleNo++;
         rp->next = spec->context->rules;
         spec->context->rules = rp;
@@ -694,7 +699,7 @@ int readFileSpec (struct lexSpec *spec)
     int c, i, errors = 0;
     FILE *spec_inf = 0;
 
-    lineBuf = xmalloc (1+lineSize);
+    lineBuf = (char *) xmalloc (1+lineSize);
 #if HAVE_TCL_H
     if (spec->tcl_interp)
     {
@@ -769,7 +774,8 @@ int readFileSpec (struct lexSpec *spec)
     for (lc = spec->context; lc; lc = lc->next)
     {
 	struct lexRule *rp;
-	lc->fastRule = xmalloc (sizeof(*lc->fastRule) * lc->ruleNo);
+	lc->fastRule = (struct lexRuleInfo **)
+	    xmalloc (sizeof(*lc->fastRule) * lc->ruleNo);
 	for (i = 0; i < lc->ruleNo; i++)
 	    lc->fastRule[i] = NULL;
 	for (rp = lc->rules; rp; rp = rp->next)
@@ -845,7 +851,7 @@ static void execData (struct lexSpec *spec,
 	char *old_buf, *new_buf;
 
 	spec->concatBuf[spec->d1_level]->max = org_len + elen + 256;
-	new_buf = xmalloc (spec->concatBuf[spec->d1_level]->max);
+	new_buf = (char *) xmalloc (spec->concatBuf[spec->d1_level]->max);
 	if ((old_buf = spec->concatBuf[spec->d1_level]->buf))
 	{
 	    memcpy (new_buf, old_buf, org_len);
@@ -875,7 +881,7 @@ static void tagDataRelease (struct lexSpec *spec)
 	assert (!res->u.data.data);
 	assert (res->u.data.len > 0);
 	if (res->u.data.len > DATA1_LOCALDATA)
-	    res->u.data.data = nmem_malloc (spec->m, res->u.data.len);
+	    res->u.data.data = (char *) nmem_malloc (spec->m, res->u.data.len);
 	else
 	    res->u.data.data = res->lbuf;
 	memcpy (res->u.data.data, spec->concatBuf[spec->d1_level]->buf,
@@ -1011,7 +1017,7 @@ static void tagBegin (struct lexSpec *spec,
     res->u.tag.get_bytes = -1;
 
     if (len >= DATA1_LOCALDATA)
-	res->u.tag.tag = nmem_malloc (spec->m, len+1);
+	res->u.tag.tag = (char *) nmem_malloc (spec->m, len+1);
     else
 	res->u.tag.tag = res->lbuf;
 
@@ -1213,7 +1219,7 @@ static char *regxStrz (const char *src, int len, char *str)
 static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
 			  int argc, char **argv)
 {
-    struct lexSpec *spec = clientData;
+    struct lexSpec *spec = (struct lexSpec *) clientData;
     if (argc < 2)
 	return TCL_ERROR;
     if (!strcmp(argv[1], "record") && argc == 3)
@@ -1273,7 +1279,7 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
 static int cmd_tcl_end (ClientData clientData, Tcl_Interp *interp,
 			int argc, char **argv)
 {
-    struct lexSpec *spec = clientData;
+    struct lexSpec *spec = (struct lexSpec *) clientData;
     if (argc < 2)
 	return TCL_ERROR;
     
@@ -1330,7 +1336,7 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
     int argi = 1;
     int textFlag = 0;
     const char *element = 0;
-    struct lexSpec *spec = clientData;
+    struct lexSpec *spec = (struct lexSpec *) clientData;
     
     while (argi < argc)
     {
@@ -1364,7 +1370,7 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
 static int cmd_tcl_unread (ClientData clientData, Tcl_Interp *interp,
 			   int argc, char **argv)
 {
-    struct lexSpec *spec = clientData;
+    struct lexSpec *spec = (struct lexSpec *) clientData;
     int argi = 1;
     int offset = 0;
     int no;
@@ -1955,7 +1961,7 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
 
 void grs_destroy(void *clientData)
 {
-    struct lexSpecs *specs = clientData;
+    struct lexSpecs *specs = (struct lexSpecs *) clientData;
     if (specs->spec)
     {
 	lexSpecDestroy(&specs->spec);
@@ -1965,7 +1971,7 @@ void grs_destroy(void *clientData)
 
 void *grs_init(void)
 {
-    struct lexSpecs *specs = xmalloc (sizeof(*specs));
+    struct lexSpecs *specs = (struct lexSpecs *) xmalloc (sizeof(*specs));
     specs->spec = 0;
     return specs;
 }
@@ -1973,7 +1979,7 @@ void *grs_init(void)
 data1_node *grs_read_regx (struct grs_read_info *p)
 {
     int res;
-    struct lexSpecs *specs = p->clientData;
+    struct lexSpecs *specs = (struct lexSpecs *) p->clientData;
     struct lexSpec **curLexSpec = &specs->spec;
 
 #if REGX_DEBUG
@@ -2019,7 +2025,7 @@ RecTypeGrs recTypeGrs_regx = &regx_type;
 data1_node *grs_read_tcl (struct grs_read_info *p)
 {
     int res;
-    struct lexSpecs *specs = p->clientData;
+    struct lexSpecs *specs = (struct lexSpecs *) p->clientData;
     struct lexSpec **curLexSpec = &specs->spec;
 
 #if REGX_DEBUG

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: merge.c,v $
- * Revision 1.10  1998-03-19 12:22:09  adam
+ * Revision 1.11  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.10  1998/03/19 12:22:09  adam
  * Minor change.
  *
  * Revision 1.9  1998/03/19 10:04:38  adam
@@ -58,7 +61,8 @@ struct isc_merge_block {
     int dirty;        /* block is different from that on file */
 };
 
-static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr, int last)
+static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
+			int last)
 {
     int i, no_dirty = 0;
     for (i = 0; i<ptr; i++)

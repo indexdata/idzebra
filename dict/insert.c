@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.20  1999-05-15 14:36:37  adam
+ * Revision 1.21  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.20  1999/05/15 14:36:37  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.19  1999/02/02 14:50:22  adam
@@ -198,7 +201,7 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
 static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
                         Dict_ptr subptr, char *userinfo)             
 {
-    char *np = xmalloc (dict->head.page_size);
+    char *np = (char *) xmalloc (dict->head.page_size);
     int i, slen, no = 0;
     short *indxp1, *indxp2;
     char *info1, *info2;
@@ -439,7 +442,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
         --indxp;
     slen = (dict_strlen(str)+1)*sizeof(Dict_char);
     if (DICT_size(p)+slen+userlen >=
-        DICT_bsize(p) - (1+DICT_nodir(p))*sizeof(short)) /* overflow? */
+        (int)(DICT_bsize(p) - (1+DICT_nodir(p))*sizeof(short)))/* overflow? */
     {
         if (DICT_type(p))
         {

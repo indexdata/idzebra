@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: symtab.c,v $
- * Revision 1.5  1999-02-02 14:51:08  adam
+ * Revision 1.6  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.5  1999/02/02 14:51:08  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.4  1997/09/09 13:38:09  adam
@@ -43,7 +46,7 @@ struct strtab {
 struct strtab *strtab_mk (void)
 {
     int i;
-    struct strtab *p = xmalloc (sizeof (*p));
+    struct strtab *p = (struct strtab *) xmalloc (sizeof (*p));
     for (i=0; i<STR_HASH; i++)
         p->ar[i] = NULL;
     return p;
@@ -64,8 +67,8 @@ int strtab_src (struct strtab *t, const char *name, void ***infop)
             *infop = &e->info;
             return 1;
         }
-    e = xmalloc (sizeof(*e));
-    e->name = xmalloc (strlen(name)+1);
+    e = (struct strentry *) xmalloc (sizeof(*e));
+    e->name = (char *) xmalloc (strlen(name)+1);
     strcpy (e->name, name);
     e->next = t->ar[hash];
     t->ar[hash] = e;

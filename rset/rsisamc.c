@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisamc.c,v $
- * Revision 1.6  1999-02-02 14:51:35  adam
+ * Revision 1.7  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.6  1999/02/02 14:51:35  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.5  1998/03/05 08:36:28  adam
@@ -69,23 +72,23 @@ struct rset_isamc_info {
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
-    rset_isamc_parms *pt = parms;
+    rset_isamc_parms *pt = (rset_isamc_parms *) parms;
     struct rset_isamc_info *info;
 
     ct->flags |= RSET_FLAG_VOLATILE;
-    info = xmalloc (sizeof(*info));
+    info = (struct rset_isamc_info *) xmalloc (sizeof(*info));
     info->is = pt->is;
     info->pos = pt->pos;
     info->ispt_list = NULL;
     ct->no_rset_terms = 1;
-    ct->rset_terms = xmalloc (sizeof(*ct->rset_terms));
+    ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
     ct->rset_terms[0] = pt->rset_term;
     return info;
 }
 
 RSFD r_open (RSET ct, int flag)
 {
-    struct rset_isamc_info *info = ct->buf;
+    struct rset_isamc_info *info = (struct rset_isamc_info *) ct->buf;
     struct rset_pp_info *ptinfo;
 
     logf (LOG_DEBUG, "risamc_open");
@@ -94,7 +97,7 @@ RSFD r_open (RSET ct, int flag)
 	logf (LOG_FATAL, "ISAMC set type is read-only");
 	return NULL;
     }
-    ptinfo = xmalloc (sizeof(*ptinfo));
+    ptinfo = (struct rset_pp_info *) xmalloc (sizeof(*ptinfo));
     ptinfo->next = info->ispt_list;
     info->ispt_list = ptinfo;
     ptinfo->pt = isc_pp_open (info->is, info->pos);
@@ -123,7 +126,7 @@ static void r_close (RSFD rfd)
 
 static void r_delete (RSET ct)
 {
-    struct rset_isamc_info *info = ct->buf;
+    struct rset_isamc_info *info = (struct rset_isamc_info *) ct->buf;
 
     logf (LOG_DEBUG, "rsisamc_delete");
     assert (info->ispt_list == NULL);

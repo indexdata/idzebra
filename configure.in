@@ -1,21 +1,21 @@
-# Zebra, Index Data Aps, 1994-1999
-# $Id: configure.in,v 1.7 1999-05-21 12:00:17 adam Exp $
-# See the file LICENSE.2 for details.
-#
+dnl Zebra, Index Data Aps, 1994-1999
+dnl $Id: configure.in,v 1.8 1999-05-26 07:49:12 adam Exp $
+dnl See the file LICENSE.2 for details.
+dnl
 AC_INIT(include/zebraver.h)
-# ------ Substitutions
+dnl ------ Substitutions
 AC_SUBST(ODEFS)
 AC_SUBST(DEFS)
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
-#
-# ------ Checking programs
+dnl
+dnl ------ Checking programs
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
-#
-# look for Tcl
+dnl
+dnl ------ Look for Tcl
 TCL_LIB=""
 TCL_INCLUDE=""
 tclconfig=NONE
@@ -45,8 +45,8 @@ if test -r ${tclconfig}/tclConfig.sh; then
 else
 	ODEFS="-DHAVE_TCL_H=0"
 fi
-#
-# sockets
+dnl
+dnl ------ Socket libraries
 checkBoth=0
 AC_CHECK_FUNC(connect)
 if test "$ac_cv_func_connect" = "no"; then
@@ -58,15 +58,15 @@ if test "$checkBoth" = "1"; then
 	AC_CHECK_FUNC(accept, , [LIBS=$oldLibs])
 fi
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, main, [LIBS="$LIBS -lnsl"]))
-#
-# tcpd wrapper
+dnl
+dnl ------ TCP wrapper (for Linux)
 AC_CHECK_LIB(wrap, main, [LIBS="$LIBS -lwrap"])
-# 
-# headers
+dnl 
+dnl ------ ANSI C Header files
 AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
 	AC_MSG_WARN(Your system doesn't seem to support ANSI C)
 fi
-#
-# makefiles
+dnl
+dnl ------ Create Makefiles
 AC_OUTPUT(Makefile util/Makefile bfile/Makefile dfa/Makefile dict/Makefile isam/Makefile isamc/Makefile recctrl/Makefile rset/Makefile index/Makefile)

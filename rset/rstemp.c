@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.25  1999-02-02 14:51:37  adam
+ * Revision 1.26  1999-05-26 07:49:14  adam
+ * C++ compilation.
+ *
+ * Revision 1.25  1999/02/02 14:51:37  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.24  1998/03/05 08:36:28  adam
@@ -152,15 +155,15 @@ struct rset_temp_rfd {
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 {
-    rset_temp_parms *temp_parms = parms;
+    rset_temp_parms *temp_parms = (rset_temp_parms *) parms;
     struct rset_temp_info *info;
    
-    info = xmalloc (sizeof(struct rset_temp_info));
+    info = (struct rset_temp_info *) xmalloc (sizeof(struct rset_temp_info));
     info->fd = -1;
     info->fname = NULL;
     info->key_size = temp_parms->key_size;
     info->buf_size = 4096;
-    info->buf_mem = xmalloc (info->buf_size);
+    info->buf_mem = (char *) xmalloc (info->buf_size);
     info->pos_cur = 0;
     info->pos_end = 0;
     info->pos_buf = 0;
@@ -170,18 +173,18 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 	info->temp_path = NULL;
     else
     {
-	info->temp_path = xmalloc (strlen(temp_parms->temp_path)+1);
+	info->temp_path = (char *) xmalloc (strlen(temp_parms->temp_path)+1);
 	strcpy (info->temp_path, temp_parms->temp_path);
     }
     ct->no_rset_terms = 1;
-    ct->rset_terms = xmalloc (sizeof(*ct->rset_terms));
+    ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
     ct->rset_terms[0] = temp_parms->rset_term;
     return info;
 }
 
 static RSFD r_open (RSET ct, int flag)
 {
-    struct rset_temp_info *info = ct->buf;
+    struct rset_temp_info *info = (struct rset_temp_info *) ct->buf;
     struct rset_temp_rfd *rfd;
 
     assert (info->fd == -1);
@@ -197,7 +200,7 @@ static RSFD r_open (RSET ct, int flag)
             exit (1);
         }
     }
-    rfd = xmalloc (sizeof(*rfd));
+    rfd = (struct rset_temp_rfd *) xmalloc (sizeof(*rfd));
     rfd->info = info;
     r_rewind (rfd);
     return rfd;
@@ -214,7 +217,7 @@ static void r_flush (RSFD rfd, int mk)
     {
         char *s = (char*) tempnam (info->temp_path, "zrs");
 
-        info->fname = xmalloc (strlen(s)+1);
+        info->fname = (char *) xmalloc (strlen(s)+1);
         strcpy (info->fname, s);
 
         logf (LOG_DEBUG, "creating tempfile %s", info->fname);
@@ -227,7 +230,8 @@ static void r_flush (RSFD rfd, int mk)
     }
     if (info->fname && info->fd != -1 && info->dirty)
     {
-        size_t r, count;
+        size_t count;
+	int r;
         
         if (lseek (info->fd, info->pos_buf, SEEK_SET) == -1)
         {
@@ -237,7 +241,7 @@ static void r_flush (RSFD rfd, int mk)
         count = info->buf_size;
         if (count > info->pos_end - info->pos_buf)
             count = info->pos_end - info->pos_buf;
-        if ((r = write (info->fd, info->buf_mem, count)) < count)
+        if ((r = write (info->fd, info->buf_mem, count)) < (int) count)
         {
             if (r == -1)
                 logf (LOG_FATAL|LOG_ERRNO, "read %s", info->fname);
@@ -265,7 +269,7 @@ static void r_close (RSFD rfd)
 
 static void r_delete (RSET ct)
 {
-    struct rset_temp_info *info = ct->buf;
+    struct rset_temp_info *info = (struct rset_temp_info*) ct->buf;
 
     if (info->fname)
         unlink (info->fname);        
@@ -294,7 +298,8 @@ static void r_reread (RSFD rfd)
 
     if (info->fname)
     {
-        size_t r, count;
+        size_t count;
+	int r;
 
         info->pos_border = info->pos_cur + info->buf_size;
         if (info->pos_border > info->pos_end)
@@ -307,7 +312,7 @@ static void r_reread (RSFD rfd)
                 logf (LOG_FATAL|LOG_ERRNO, "lseek %s", info->fname);
                 exit (1);
             }
-            if ((r = read (info->fd, info->buf_mem, count)) < count)
+            if ((r = read (info->fd, info->buf_mem, count)) < (int) count)
             {
                 if (r == -1)
                     logf (LOG_FATAL|LOG_ERRNO, "read %s", info->fname);
@@ -334,7 +339,7 @@ static void r_rewind (RSFD rfd)
 
 static int r_count (RSET ct)
 {
-    struct rset_temp_info *info = ct->buf;
+    struct rset_temp_info *info = (struct rset_temp_info *) ct->buf;
 
     return info->pos_end / info->key_size;
 }

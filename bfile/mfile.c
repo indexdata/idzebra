@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.33  1999-05-12 13:08:06  adam
+ * Revision 1.34  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.33  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  * Revision 1.32  1999/04/28 14:53:07  adam
@@ -200,7 +203,7 @@ static int scan_areadef(MFile_area ma, const char *name, const char *ad)
 	        return -1;
 	}
         ad++;
-	*dp = dir = xmalloc(sizeof(mf_dir));
+	*dp = dir = (mf_dir *) xmalloc(sizeof(mf_dir));
 	dir->next = 0;
 	strcpy(dir->name, dirname);
 	dir->max_bytes = dir->avail_bytes = fact * size * multi;
@@ -255,7 +258,7 @@ static int cmp_part_file(const void *p1, const void *p2)
  */
 MFile_area mf_init(const char *name, const char *spec)
 {
-    MFile_area ma = xmalloc(sizeof(*ma));
+    MFile_area ma = (MFile_area) xmalloc(sizeof(*ma));
     mf_dir *dirp;
     meta_file *meta_f;
     part_file *part_f = 0;
@@ -303,7 +306,7 @@ MFile_area mf_init(const char *name, const char *spec)
 	    /* new metafile */
 	    if (!meta_f)
 	    {
-	    	meta_f = xmalloc(sizeof(*meta_f));
+	    	meta_f = (meta_file *) xmalloc(sizeof(*meta_f));
 	    	meta_f->ma = ma;
 	    	meta_f->next = ma->mfiles;
 	    	meta_f->open = 0;
@@ -383,7 +386,7 @@ void mf_destroy(MFile_area ma)
  */
 MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 {
-    struct meta_file *mnew;
+    meta_file *mnew;
     int i;
     char tmp[FILENAME_MAX+1];
     mf_dir *dp;
@@ -401,7 +404,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 	}
     if (!mnew)
     {
-    	mnew = xmalloc(sizeof(*mnew));
+    	mnew = (meta_file *) xmalloc(sizeof(*mnew));
     	strcpy(mnew->name, name);
     	/* allocate one, empty file */
     	mnew->no_files = 1;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.12  1999-02-02 14:50:58  adam
+ * Revision 1.13  1999-05-26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.12  1999/02/02 14:50:58  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.11  1998/03/05 08:45:12  adam
@@ -70,7 +73,7 @@ int zebra_server_lock_init (ZebraHandle zi)
     zi->server_lock_org = NULL;
 
     zebra_lock_prefix (zi->res, path_prefix);
-    zi->server_path_prefix = xmalloc (strlen(path_prefix)+1);
+    zi->server_path_prefix = (char *) xmalloc (strlen(path_prefix)+1);
     strcpy (zi->server_path_prefix, path_prefix);
 
     logf (LOG_DEBUG, "Locking system initialized");

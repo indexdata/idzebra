@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dcompact.c,v $
- * Revision 1.4  1999-05-15 14:36:37  adam
+ * Revision 1.5  1999-05-26 07:49:12  adam
+ * C++ compilation.
+ *
+ * Revision 1.4  1999/05/15 14:36:37  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.3  1999/05/12 13:08:06  adam
@@ -92,7 +95,7 @@ int dict_copy_compact (BFiles bfs, const char *from_name, const char *to_name)
     dict_from = dict_open (bfs, from_name, 0, 0, 0);
     if (!dict_from)
 	return -1;
-    map = xmalloc ((dict_from->head.last+1) * sizeof(*map));
+    map = (int *) xmalloc ((dict_from->head.last+1) * sizeof(*map));
     for (i = 0; i <= (int) (dict_from->head.last); i++)
 	map[i] = -1;
     dict_to = dict_open (bfs, to_name, 0, 1, 1);
@@ -131,7 +134,7 @@ int dict_copy_compact (BFiles bfs, const char *from_name, const char *to_name)
 	DICT_backptr(new_p) = map[i-1];
 	DICT_bsize(new_p) = map[i+1] - map[i];
 
-	dict_copy_page(dict_from, new_p, old_p, map);
+	dict_copy_page(dict_from, (char*) new_p, (char*) old_p, map);
     }
     dict_close (dict_from);
     dict_close (dict_to);
