@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.5 2003-11-28 23:06:59 adam Exp $
+/* $Id: d1_marc.c,v 1.6 2003-12-17 12:03:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -240,7 +240,6 @@ static int nodetomarc(data1_handle dh,
     memcpy (leader+6, p->implementation_codes, 4);
     memint (leader+10, p->indicator_length, 1);
     memint (leader+11, p->identifier_length, 1);
-    memint (leader+12, base_address, 5);
     memcpy (leader+17, p->user_systems, 3);
     memint (leader+20, p->length_data_entry, 1);
     memint (leader+21, p->length_starting, 1);
@@ -322,6 +321,11 @@ static int nodetomarc(data1_handle dh,
 	*buf = (char *)xrealloc(*buf, *size = len);
 	
     op = *buf;
+
+    /* we know the base address now */
+    memint (leader+12, base_address, 5);
+
+    /* copy temp leader to real output buf op */
     memcpy (op, leader, 24);
     memint (op, len, 5);
     
