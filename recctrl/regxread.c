@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: regxread.c,v 1.40 2002-05-03 13:50:25 adam Exp $
+ * $Id: regxread.c,v 1.41 2002-05-03 17:59:17 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -1031,20 +1031,12 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
     if (!strcmp(argv[1], "record") && argc == 3)
     {
 	char *absynName = argv[2];
-	data1_absyn *absyn;
         data1_node *res;
 
 #if REGX_DEBUG
 	logf (LOG_LOG, "begin record %s", absynName);
 #endif
-	absyn = data1_get_absyn (spec->dh, absynName);
-        
-        res = data1_mk_node (spec->dh, spec->m);
-        res->which = DATA1N_root;
-        res->u.root.type =
-            data1_insert_string(spec->dh, res, spec->m, absynName);
-        res->u.root.absyn = absyn;
-        res->root = res;
+        res = data1_mk_root (spec->dh, spec->m, absynName);
         
         spec->d1_stack[spec->d1_level] = res;
         spec->d1_stack[++(spec->d1_level)] = NULL;
@@ -1279,22 +1271,16 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
                 if (spec->d1_level == 0)
                 {
                     static char absynName[64];
-                    data1_absyn *absyn;
                     data1_node *res;
 
                     if (cmd_len > 63)
                         cmd_len = 63;
                     memcpy (absynName, cmd_str, cmd_len);
                     absynName[cmd_len] = '\0';
-
 #if REGX_DEBUG
                     logf (LOG_LOG, "begin record %s", absynName);
 #endif
-                    absyn = data1_get_absyn (spec->dh, absynName);
-
-                    res = data1_mk_node (spec->dh, spec->m, DATA1N_root, 0);
-                    res->u.root.type = absynName;
-                    res->u.root.absyn = absyn;
+                    res = data1_mk_root (spec->dh, spec->m, absynName);
                     
                     spec->d1_stack[spec->d1_level] = res;
                     spec->d1_stack[++(spec->d1_level)] = NULL;
