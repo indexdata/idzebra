@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.19  1996-12-11 12:08:00  adam
+ * Revision 1.20  1996-12-23 15:30:44  adam
+ * Work on truncation.
+ * Bug fix: result sets weren't deleted after server shut down.
+ *
+ * Revision 1.19  1996/12/11 12:08:00  adam
  * Added better compression.
  *
  * Revision 1.18  1996/10/29 14:09:44  adam
@@ -85,6 +89,25 @@ void key_logdump (int logmask, const void *p)
     logf (logmask, "%7d s=%-4d", key.sysno, key.seqno);
 }
 
+int key_compare_it (const void *p1, const void *p2)
+{
+    if (((struct it_key *) p1)->sysno != ((struct it_key *) p2)->sysno)
+    {
+        if (((struct it_key *) p1)->sysno > ((struct it_key *) p2)->sysno)
+            return 2;
+        else
+            return -2;
+    }
+    if (((struct it_key *) p1)->seqno != ((struct it_key *) p2)->seqno)
+    {
+        if (((struct it_key *) p1)->seqno > ((struct it_key *) p2)->seqno)
+            return 1;
+        else
+            return -1;
+    }
+    return 0;
+}
+
 int key_compare (const void *p1, const void *p2)
 {
     struct it_key i1, i2;
@@ -97,7 +120,6 @@ int key_compare (const void *p1, const void *p2)
         else
             return -2;
     }
-#if IT_KEY_HAVE_SEQNO
     if (i1.seqno != i2.seqno)
     {
         if (i1.seqno > i2.seqno)
@@ -105,15 +127,6 @@ int key_compare (const void *p1, const void *p2)
         else
             return -1;
     }
-#else
-    if (i1.freq != i2.freq)
-    {
-        if (i1.freq > i2.freq)
-            return 1;
-        else
-            return -1;
-    }
-#endif
     return 0;
 }
 
@@ -195,7 +208,7 @@ int iscz1_decode_int (unsigned char **src)
     c = (c << 8) + *(*src)++;
     return c;
 }
-#if 1
+
 static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
 {
     struct iscz1_code_info *p = vp;
@@ -234,42 +247,6 @@ static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
         (*dst) += sizeof(struct it_key);
     }
 }
-#else
-static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
-{
-    struct iscz1_code_info *p = vp;
-    struct it_key tkey;
-    int d;
-
-    if (mode == ISAMC_ENCODE)
-    {
-        memcpy (&tkey, *src, sizeof(struct it_key));
-        d = tkey.sysno - p->key.sysno;
-        iscz1_encode_int (d, dst);
-        if (d)
-        {
-            p->key.sysno = tkey.sysno;
-            p->key.seqno = 0;
-        }
-        iscz1_encode_int (tkey.seqno - p->key.seqno, dst);
-        p->key.seqno = tkey.seqno;
-        (*src) += sizeof(struct it_key);
-    }
-    else
-    {
-        d = iscz1_decode_int ((unsigned char **) src);
-        if (d)
-        {
-            p->key.sysno += d;
-            p->key.seqno = 0;
-        }
-        d = iscz1_decode_int ((unsigned char **) src);
-        p->key.seqno += d;
-        memcpy (*dst, &p->key, sizeof(struct it_key));
-        (*dst) += sizeof(struct it_key);
-    }
-}
-#endif
 
 ISAMC_M key_isamc_m (void)
 {

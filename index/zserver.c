@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.44  1996-12-11 12:08:01  adam
+ * Revision 1.45  1996-12-23 15:30:45  adam
+ * Work on truncation.
+ * Bug fix: result sets weren't deleted after server shut down.
+ *
+ * Revision 1.44  1996/12/11 12:08:01  adam
  * Added better compression.
  *
  * Revision 1.43  1996/11/15 15:03:58  adam
@@ -171,6 +175,7 @@
 #include <recctrl.h>
 #include <dmalloc.h>
 
+#define USE_TIMES 1
 #ifdef __linux__
 #define USE_TIMES 1
 #endif
@@ -528,6 +533,7 @@ void bend_close (void *handle)
 {
     if (server_info.records)
     {
+        resultSetDestroy (&server_info);
         dict_close (server_info.dict);
         if (server_info.isam)
             is_close (server_info.isam);

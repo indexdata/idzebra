@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.3  1996-12-20 11:07:14  adam
+ * Revision 1.4  1996-12-23 15:30:44  adam
+ * Work on truncation.
+ * Bug fix: result sets weren't deleted after server shut down.
+ *
+ * Revision 1.3  1996/12/20 11:07:14  adam
  * Multi-or result set.
  *
  * Revision 1.2  1996/11/08 11:10:28  adam
@@ -26,7 +30,7 @@
 #include <rsisamc.h>
 #include <rsnull.h>
 
-#define NEW_TRUNC 0
+#define NEW_TRUNC 1
 
 #if NEW_TRUNC
 #include <rsm_or.h>
@@ -160,7 +164,7 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
                                             merge_chunk);
             rscur++;
         }
-        ti = heap_init (rscur, sizeof(struct it_key), key_compare);
+        ti = heap_init (rscur, sizeof(struct it_key), key_compare_it);
         for (i = rscur; --i >= 0; )
         {
             rsfd[i] = rset_open (rset[i], RSETF_READ|RSETF_SORT_SYSNO);
@@ -208,7 +212,7 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
         ispt = xmalloc (sizeof(*ispt) * (to-from));
 
         ti = heap_init (to-from, sizeof(struct it_key),
-                        key_compare);
+                        key_compare_it);
         for (i = to-from; --i >= 0; )
         {
             ispt[i] = is_position (zi->isam, isam_p[from+i]);
@@ -260,7 +264,7 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
         ispt = xmalloc (sizeof(*ispt) * (to-from));
 
         ti = heap_init (to-from, sizeof(struct it_key),
-                        key_compare);
+                        key_compare_it);
         for (i = to-from; --i >= 0; )
         {
             ispt[i] = isc_pp_open (zi->isamc, isam_p[from+i]);
@@ -361,16 +365,17 @@ RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no)
             return rset_create (rset_kind_isamc, &parms);
         }
 #if NEW_TRUNC
-        else if (no < 2000)
+        else if (no < 200)
         {
             rset_m_or_parms parms;
 
             logf (LOG_LOG, "new_trunc");
             parms.key_size = sizeof(struct it_key);
-            parms.cmp = key_compare;
+            parms.cmp = key_compare_it;
             parms.isc = zi->isamc;
             parms.isam_positions = isam_p;
             parms.no_isam_positions = no;
+            parms.no_save_positions = 100;
             return rset_create (rset_kind_m_or, &parms);
         }
 #endif

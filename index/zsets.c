@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.10  1995-10-30 15:08:08  adam
+ * Revision 1.11  1996-12-23 15:30:46  adam
+ * Work on truncation.
+ * Bug fix: result sets weren't deleted after server shut down.
+ *
+ * Revision 1.10  1995/10/30 15:08:08  adam
  * Bug fixes.
  *
  * Revision 1.9  1995/10/17  18:02:14  adam
@@ -77,6 +81,20 @@ ZServerSet *resultSetGet (ZServerInfo *zi, const char *name)
         if (!strcmp (s->name, name))
             return s;
     return NULL;
+}
+
+void resultSetDestroy (ZServerInfo *zi)
+{
+    ZServerSet *s, *s1;
+
+    for (s = zi->sets; s; s = s1)
+    {
+        s1 = s->next;
+        rset_delete (s->rset);
+        xfree (s->name);
+        xfree (s);
+    }
+    zi->sets = NULL;
 }
 
 ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name, 

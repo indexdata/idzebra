@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.46  1996-11-08 11:10:19  adam
+ * Revision 1.47  1996-12-23 15:30:44  adam
+ * Work on truncation.
+ * Bug fix: result sets weren't deleted after server shut down.
+ *
+ * Revision 1.46  1996/11/08 11:10:19  adam
  * Buffers used during file match got bigger.
  * Compressed ISAM support everywhere.
  * Bug fixes regarding masking characters in queries.
@@ -233,6 +237,7 @@ void repositoryShow (struct recordGroup *rGroup);
 void key_open (int mem);
 int key_close (void);
 int key_compare (const void *p1, const void *p2);
+int key_compare_it (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
 void inv_prstat (void);

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.57  1996-11-11 13:38:02  adam
+ * Revision 1.58  1996-12-23 15:30:45  adam
+ * Work on truncation.
+ * Bug fix: result sets weren't deleted after server shut down.
+ *
+ * Revision 1.57  1996/11/11 13:38:02  adam
  * Added proximity support in search.
  *
  * Revision 1.56  1996/11/08 11:10:32  adam
@@ -827,7 +831,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
 
     parms.key_size = sizeof(struct it_key);
     parms.max_rec = 100;
-    parms.cmp = key_compare;
+    parms.cmp = key_compare_it;
     parms.is = zi->isam;
     parms.isc = zi->isamc;
     parms.no_terms = 0;
@@ -931,7 +935,7 @@ static RSET rpn_proximity (RSET rset1, RSET rset2, int ordered,
           exclusion, ordered, relation, distance);
     while (more1 && more2)
     {
-        int cmp = key_compare (&buf1, &buf2);
+        int cmp = key_compare_it (&buf1, &buf2);
         if (cmp < -1)
             more1 = rset_read (rset1, rsfd1, &buf1);
         else if (cmp > 1)
@@ -1046,7 +1050,7 @@ static RSET rpn_prox (RSET *rset, int rset_no)
                 *more = 0;
                 break;
             }
-            cmp = key_compare (buf[i], buf[i-1]);
+            cmp = key_compare_it (buf[i], buf[i-1]);
             if (cmp > 1)
             {
                 more[i-1] = rset_read (rset[i-1], rsfd[i-1], buf[i-1]);
@@ -1286,7 +1290,7 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
         if (rset_is_ranked(bool_parms.rset_r))
             soft = 1;
         bool_parms.key_size = sizeof(struct it_key);
-        bool_parms.cmp = key_compare;
+        bool_parms.cmp = key_compare_it;
 
         switch (zop->which)
         {
@@ -1369,12 +1373,12 @@ void count_set_save (RSET *r, int *count)
     rfd = rset_open (*r, RSETF_READ|RSETF_SORT_SYSNO);
     while (rset_read (*r, rfd, &key))
     {
-        logf (LOG_DEBUG, "sysno=%-7d seqno=%d", key.sysno, key.seqno);
         if (key.sysno != psysno)
         {
-            rset_write (w, wfd, &key);
-            psysno = key.sysno;
+            if (*count < 400)
+                rset_write (w, wfd, &key);
             (*count)++;
+            psysno = key.sysno;
         }
         kno++;
     }
@@ -1622,7 +1626,7 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                    rset_trunc (zi, &scan_info_array[j].list[ptr[j]].isam_p, 1);
 
                 bool_parms.key_size = sizeof(struct it_key);
-                bool_parms.cmp = key_compare;
+                bool_parms.cmp = key_compare_it;
                 bool_parms.rset_l = rset;
                 bool_parms.rset_r = rset2;
               
@@ -1683,7 +1687,7 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                          &scan_info_array[j].list[before-1-ptr[j]].isam_p, 1);
 
                 bool_parms.key_size = sizeof(struct it_key);
-                bool_parms.cmp = key_compare;
+                bool_parms.cmp = key_compare_it;
                 bool_parms.rset_l = rset;
                 bool_parms.rset_r = rset2;
               

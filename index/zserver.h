@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.22  1996-11-04 14:07:49  adam
+ * Revision 1.23  1996-12-23 15:30:46  adam
+ * Work on truncation.
+ * Bug fix: result sets weren't deleted after server shut down.
+ *
+ * Revision 1.22  1996/11/04 14:07:49  adam
  * Moved truncation code to trunc.c.
  *
  * Revision 1.21  1996/10/29 14:09:58  adam
@@ -123,6 +127,8 @@ RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no);
 ZServerSet *resultSetAdd (ZServerInfo *zi, const char *name,
                           int ov, RSET rset);
 ZServerSet *resultSetGet (ZServerInfo *zi, const char *name);
+void resultSetDestroy (ZServerInfo *zi);
+
 ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
                                     int num, int *positions);
 void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num);
