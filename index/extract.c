@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.167 2004-11-29 21:55:25 adam Exp $
+/* $Id: extract.c,v 1.168 2004-12-01 11:37:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1454,7 +1454,7 @@ void extract_add_index_string (RecWord *p, const char *str, int length)
     key.mem[2] = p->section_id;
     key.mem[3] = p->seqno;
 
-#if 1
+#if 0
     /* just for debugging .. */
     yaz_log(YLOG_LOG, "add: set=%d use=%d "
 	    "record_id=%lld section_id=%lld seqno=%lld",
@@ -1622,7 +1622,7 @@ yaz_log(YLOG_DEBUG, "Complete field, w='%.*s'", p->length, p->string);
 void extract_token_add (RecWord *p)
 {
     WRBUF wrbuf;
-#if 1
+#if 0
     yaz_log (YLOG_LOG, "token_add "
 	     "reg_type=%c attrSet=%d attrUse=%d seqno=%d s=%.*s",
              p->reg_type, p->attrSet, p->attrUse, p->seqno, p->length,
