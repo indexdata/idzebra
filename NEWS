@@ -1,7 +1,12 @@
 
---- 1.3.19 2004/XX/YY
+--- 1.3.19 2005/01/17
 
 Fixed bug #248: hit counts in combinatoric (and) searches in specific ..
+
+Fixed bug #245: Time for getting records changes a lot based on record
+position.
+
+Fixed bug #235: weird x-path results.
 
 Avoid crash in ISAMB when isamb_pp_open gets ISAMB_POS = 0. In
 this case EOF (no entries) is signalled. It fixes problem with
