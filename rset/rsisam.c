@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.5  1995-09-04 12:33:56  adam
+ * Revision 1.6  1995-09-05 11:43:24  adam
+ * Complete version of temporary sets. Not tested yet though.
+ *
+ * Revision 1.5  1995/09/04  12:33:56  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.4  1995/09/04  09:10:55  adam
@@ -18,21 +21,18 @@
  *
  */
 
-/* TODO: Memory management
-   LINK DELETE TO CLOSE!  */
-
 #include <stdio.h>
 #include <rsisam.h>
 #include <alexutil.h>
 
 static rset_control *r_create(const struct rset_control *sel, void *parms);
-static int r_open(rset_control *ct, int wflag);
-static void r_close(rset_control *ct);
-static void r_delete(rset_control *ct);
-static void r_rewind(rset_control *ct);
-static int r_count(rset_control *ct);
-static int r_read();
-static int r_write();
+static int r_open (rset_control *ct, int wflag);
+static void r_close (rset_control *ct);
+static void r_delete (rset_control *ct);
+static void r_rewind (rset_control *ct);
+static int r_count (rset_control *ct);
+static int r_read (rset_control *ct, void *buf);
+static int r_write (rset_control *ct, const void *buf);
 
 static const rset_control control = 
 {
@@ -93,15 +93,17 @@ static void r_rewind(rset_control *ct)
     is_rewind((ISPT) ct->buf);
 }
 
-static int r_count(rset_control *ct)
-{return 0;}
+static int r_count (rset_control *ct)
+{
+    return 0;
+}
 
-static int r_read(rset_control *ct, void *buf)
+static int r_read (rset_control *ct, void *buf)
 {
     return is_readkey((ISPT) ct->buf, buf);
 }
 
-static int r_write()
+static int r_write (rset_control *ct, const void *buf)
 {
     logf (LOG_FATAL, "ISAM set type is read-only");
     return -1;
