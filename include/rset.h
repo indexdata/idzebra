@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.13  1997-12-18 10:54:24  adam
+ * Revision 1.14  1998-02-10 11:56:46  adam
+ * Implemented rset_dup.
+ *
+ * Revision 1.13  1997/12/18 10:54:24  adam
  * New method result set method rs_hits that returns the number of
  * hits in result-set (if known). The ranked result set returns real
  * number of hits but only when not combined with other operands.
@@ -89,6 +92,7 @@ typedef struct rset
 {
     const rset_control *control;
     int  flags;
+    int  count;
     void *buf;
 } rset;
 
@@ -107,6 +111,8 @@ RSET rset_create(const rset_control *sel, void *parms);       /* parameters? */
 #define rset_close(rs, rfd) (*(rs)->control->f_close)(rfd)
 
 void rset_delete(RSET rs);
+
+RSET rset_dup (RSET rs);
 
 /* void rset_rewind(RSET rs); */
 #define rset_rewind(rs, rfd) (*(rs)->control->f_rewind)((rfd))

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.9  1996-10-29 13:55:21  adam
+ * Revision 1.10  1998-02-10 11:56:46  adam
+ * Implemented rset_dup.
+ *
+ * Revision 1.9  1996/10/29 13:55:21  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.8  1995/12/11 09:15:23  adam
@@ -53,12 +56,21 @@ RSET rset_create(const rset_control *sel, void *parms)
     rnew = xmalloc(sizeof(*rnew));
     rnew->control = sel;
     rnew->flags = 0;
+    rnew->count = 1;
     rnew->buf = (*sel->f_create)(sel, parms, &rnew->flags);
     return rnew;
 }
 
 void rset_delete (RSET rs)
 {
-    (*rs->control->f_delete)(rs);
+    (rs->count)--;
+    if (!rs->count)
+	(*rs->control->f_delete)(rs);
     xfree(rs);
+}
+
+RSET rset_dup (RSET rs)
+{
+    (rs->count)++;
+    return rs;
 }
