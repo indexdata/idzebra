@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.59  1996-05-14 15:47:07  adam
+ * Revision 1.60  1996-06-04 10:18:12  adam
+ * Search/scan uses character mapping module.
+ *
+ * Revision 1.59  1996/05/14  15:47:07  adam
  * Cleanup of various buffer size entities.
  *
  * Revision 1.58  1996/05/14  06:16:38  adam
@@ -216,7 +219,6 @@
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <ctype.h>
 
 #include <alexutil.h>
 #include <recctrl.h>
@@ -482,13 +484,11 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
     short attrUse = -1;
     int off = 0;
 
-#if 1
     if (zebTargetInfo_curDatabase (zti, databaseName))
     {
         if (zebTargetInfo_newDatabase (zti, databaseName))
             abort ();
     }
-#endif
     while (off < reckeys->buf_used)
     {
         const char *src = reckeys->buf + off;
@@ -511,18 +511,14 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
             key_flush ();
         ++ptr_i;
         key_buf[ptr_top-ptr_i] = (char*)key_buf + key_buf_used;
-#if 1
+
         lead = zebTargetInfo_lookupSU (zti, attrSet, attrUse);
         if (lead < 0)
             lead = zebTargetInfo_addSU (zti, attrSet, attrUse);
         assert (lead > 0);
         ((char*) key_buf) [key_buf_used++] = lead;
-#else
-        key_buf_used += index_word_prefix ((char*)key_buf + key_buf_used,
-                                           attrSet, attrUse, databaseName);
-#endif
         while (*src)
-            ((char*)key_buf) [key_buf_used++] = index_char_cvt (*src++);
+            ((char*)key_buf) [key_buf_used++] = *src++;
         src++;
         ((char*)key_buf) [key_buf_used++] = '\0';
         

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1995-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.42  1996-06-04 08:20:16  quinn
+ * Revision 1.43  1996-06-04 10:18:12  adam
+ * Search/scan uses character mapping module.
+ *
+ * Revision 1.42  1996/06/04  08:20:16  quinn
  * Smallish
  *
  * Revision 1.41  1996/06/04  07:54:55  quinn
@@ -261,4 +264,4 @@ int zebraUnlock (int fd);
 
 void init_charmap(void);
 char **map_chrs_input(char **from, int len);
-char *map_chrs_output(char **from);
+const char *map_chrs_output(const char **from);
