@@ -1,5 +1,5 @@
-/* $Id: zebramap.h,v 1.14 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: zebramap.h,v 1.15 2004-07-28 09:47:41 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,17 +20,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #ifndef ZEBRAMAP_H
 #define ZEBRAMAP_H
 
 #include <yaz/proto.h>
 #include <res.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 typedef struct zebra_maps *ZebraMaps;
 ZebraMaps zebra_maps_open (Res res, const char *base);
@@ -55,8 +51,6 @@ int zebra_maps_is_positioned (ZebraMaps zms, unsigned reg_id);
 WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
 		    const char *input_str, int input_len);
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif

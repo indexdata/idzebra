@@ -1,4 +1,7 @@
 
+Added a new 'cut' directive to charmaps (.chr files) which specifies that
+only characters after the cutting char should be indexed.
+
 Update Perl internals so that it matches the current Zebra API.
 The recordGroup structure is no longer available. A group of resources
 can still be referenced by setting groupName=>..  in various methods.

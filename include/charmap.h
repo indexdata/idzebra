@@ -1,5 +1,5 @@
-/* $Id: charmap.h,v 1.8 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: charmap.h,v 1.9 2004-07-28 09:47:41 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -27,12 +27,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/yconfig.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 YAZ_EXPORT extern const char *CHR_UNKNOWN;
 YAZ_EXPORT extern const char *CHR_SPACE;
+YAZ_EXPORT extern const char *CHR_CUT;
 YAZ_EXPORT extern const char *CHR_BASE;
 
 struct chr_t_entry;
@@ -55,8 +54,6 @@ YAZ_EXPORT const char *chr_map_output(chrmaptab t, const char **from, int len);
 
 YAZ_EXPORT unsigned char zebra_prim(char **s);
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.7 2004-06-15 09:43:34 adam Exp $
+# $Id: test1.sh,v 1.8 2004-07-28 09:47:41 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -16,10 +16,12 @@ cp $pp/rec*.xml recs
 ../../index/zebrasrv -c $pp/zebra.cfg -l $LOG unix:socket &
 sleep 1
 test -f lock/zebrasrv.pid || exit 2
-../api/testclient -n3 unix:socket '@or computer @attr 7=1 @attr 1=30 0' >tmp1
-echo 'Result count: 3
+../api/testclient -n4 unix:socket '@or computer @attr 7=1 @attr 1=30 0' >tmp1
+echo 'Result count: 4
 my:
-  title: third computer
+  title: 3rd computer
+my:
+  title: third ^computer
 my:
   title: second computer
   dateTime: 1

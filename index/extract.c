@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.156 2004-07-28 08:15:45 adam Exp $
+/* $Id: extract.c,v 1.157 2004-07-28 09:47:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1655,6 +1655,7 @@ static void extract_add_complete_field (RecWord *p)
 	while (map && *map && **map == *CHR_SPACE)
 	{
 	    remain = p->length - (b - p->string);
+
 	    if (remain > 0)
 		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
 	    else
@@ -1669,10 +1670,17 @@ static void extract_add_complete_field (RecWord *p)
 	{
 	    const char *cp = *map;
 
-	    if (i >= IT_MAX_WORD)
-		break;
-	    while (i < IT_MAX_WORD && *cp)
-		buf[i++] = *(cp++);
+	    if (**map == *CHR_CUT)
+	    {
+		i = 0;
+	    }
+	    else
+	    {
+		if (i >= IT_MAX_WORD)
+		    break;
+		while (i < IT_MAX_WORD && *cp)
+		    buf[i++] = *(cp++);
+	    }
 	    remain = p->length  - (b - p->string);
 	    if (remain > 0)
 		map = zebra_maps_input (p->zebra_maps, p->reg_type, &b,

@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.28 2004-03-09 15:12:15 adam Exp $
+/* $Id: charmap.c,v 1.29 2004-07-28 09:47:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -42,7 +42,8 @@ typedef unsigned ucs4_t;
 
 const char *CHR_UNKNOWN = "\001";
 const char *CHR_SPACE   = "\002";
-const char *CHR_BASE    = "\003";
+const char *CHR_CUT     = "\003";
+const char *CHR_BASE    = "\005";
 
 struct chrmaptab_info
 {
@@ -354,6 +355,17 @@ static void fun_addspace(const char *s, void *data, int num)
 				(char*) CHR_SPACE, 0);
 }
 
+/* 
+ * Callback function.
+ * Add a space-entry to the value space.
+ */
+static void fun_addcut(const char *s, void *data, int num)
+{
+    chrmaptab tab = (chrmaptab) data;
+    tab->input = set_map_string(tab->input, tab->nmem, s, strlen(s),
+				(char*) CHR_CUT, 0);
+}
+
 /*
  * Create a string containing the mapped characters provided.
  */
@@ -612,13 +624,27 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	{
 	    if (argc != 2)
 	    {
-		logf(LOG_FATAL, "Syntax error in charmap");
+		logf(LOG_FATAL, "Syntax error in charmap for space");
 		++errors;
 	    }
 	    if (scan_string(argv[1], t_unicode, t_utf8,
                             fun_addspace, res, 0) < 0)
 	    {
 		logf(LOG_FATAL, "Bad space specification");
+		++errors;
+	    }
+	}
+	else if (!map_only && !yaz_matchstr(argv[0], "cut"))
+	{
+	    if (argc != 2)
+	    {
+		logf(LOG_FATAL, "Syntax error in charmap for cut");
+		++errors;
+	    }
+	    if (scan_string(argv[1], t_unicode, t_utf8,
+                            fun_addcut, res, 0) < 0)
+	    {
+		logf(LOG_FATAL, "Bad cut specification");
 		++errors;
 	    }
 	}
