@@ -1,4 +1,4 @@
-/* $Id: danbibr.c,v 1.1 2004-05-21 11:58:56 adam Exp $
+/* $Id: danbibr.c,v 1.2 2004-05-21 13:25:07 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -86,6 +86,8 @@ static data1_node *mk_tree(struct grs_read_info *p, const char *rec_buf)
     data1_node *root = data1_mk_root(p->dh, p->mem, "danbib");
     const char *cp = rec_buf;
 
+    root = data1_mk_tag(p->dh, p->mem, "danbib", 0, root);
+
     if (1)  /* <text> all </text> */
     {
 	data1_node *text_node = data1_mk_tag(p->dh, p->mem, "text", 0, root);
@@ -100,7 +102,7 @@ static data1_node *mk_tree(struct grs_read_info *p, const char *rec_buf)
 	    cp++;
 	    continue;
 	}
-	if (*cp == ' ')  /* continuation */
+	else if (*cp == ' ')  /* bad continuation */
 	{
 	    while (*cp && *cp != '\n')
 		cp++;
@@ -151,8 +153,23 @@ static data1_node *mk_tree(struct grs_read_info *p, const char *rec_buf)
 			    data1_mk_tag_n(p->dh, p->mem, cp, 1, 0, tag_node);
 			cp++;
 			start_text = cp;
-			while (*cp && *cp != '\n'&& *cp != '*')
-			    cp++;
+			while (*cp)
+			{
+			    if (*cp == '\n' && cp[1] == ' ')
+			    {
+				cp++;
+				if (start_text != cp)
+				    data1_mk_text_n(p->dh, p->mem, start_text,
+						    cp-start_text, sub_tag_node);
+				while (*cp == ' ')
+				    cp++;
+				start_text = cp;
+			    }
+			    else if (*cp == '\n')
+				break;
+			    else
+				cp++;
+			}
 			if (start_text != cp)
 			    data1_mk_text_n(p->dh, p->mem, start_text,
 					    cp-start_text, sub_tag_node);
