@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.h,v $
- * Revision 1.3  1995-09-07 13:58:08  adam
+ * Revision 1.4  1995-12-11 09:07:53  adam
+ * New rset member 'flag', that holds various flags about a result set -
+ * currently 'volatile' (set is register dependent) and 'ranked' (set is
+ * ranked).
+ * New set types sand/sor/snot. They handle and/or/not for ranked and
+ * semi-ranked result sets.
+ *
+ * Revision 1.3  1995/09/07  13:58:08  adam
  * New parameter: result-set file descriptor (RSFD) to support multiple
  * positions within the same result-set.
  * Boolean operators: and, or, not implemented.
@@ -25,6 +32,10 @@
 extern const rset_control *rset_kind_and;
 extern const rset_control *rset_kind_or;
 extern const rset_control *rset_kind_not;
+
+extern const rset_control *rset_kind_sand;
+extern const rset_control *rset_kind_sor;
+extern const rset_control *rset_kind_snot;
 
 typedef struct rset_bool_parms
 {

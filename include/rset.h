@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.10  1995-10-12 12:40:36  adam
+ * Revision 1.11  1995-12-11 09:07:53  adam
+ * New rset member 'flag', that holds various flags about a result set -
+ * currently 'volatile' (set is register dependent) and 'ranked' (set is
+ * ranked).
+ * New set types sand/sor/snot. They handle and/or/not for ranked and
+ * semi-ranked result sets.
+ *
+ * Revision 1.10  1995/10/12  12:40:36  adam
  * Private info (buf) moved from struct rset_control to struct rset.
  * Member control in rset is statically set in rset_create.
  *
@@ -53,7 +60,8 @@ typedef struct rset *RSET;
 typedef struct rset_control
 {
     char *desc; /* text description of set type (for debugging) */
-    void *(*f_create)(const struct rset_control *sel, void *parms);
+    void *(*f_create)(const struct rset_control *sel, void *parms,
+                      int *flags);
     RSFD (*f_open)(RSET ct, int wflag);
     void (*f_close)(RSFD rfd);
     void (*f_delete)(RSET ct);
@@ -67,6 +75,7 @@ typedef struct rset_control
 typedef struct rset
 {
     const rset_control *control;
+    int  flags;
     void *buf;
 } rset;
 
@@ -101,4 +110,12 @@ void rset_delete(RSET rs);
 /* int rset_score(RSET rs, int *buf); */
 #define rset_score(rs, fd, score) ((*(rs)->control->f_score)((fd), (score)))
 
+/* int rset_type (RSET) */
+#define rset_type(rs) ((rs)->control->desc)
+
+#define RSET_FLAG_VOLATILE 1
+#define RSET_FLAG_RANKED 2
+
+#define rset_is_volatile(rs) ((rs)->flags & RSET_FLAG_VOLATILE)
+#define rset_is_ranked(rs) ((rs)->flags & RSET_FLAG_RANKED)
 #endif
