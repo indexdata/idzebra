@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rssbool.c,v $
- * Revision 1.1  1995-12-11 09:15:27  adam
+ * Revision 1.2  1996-05-15 18:35:17  adam
+ * Implemented snot operation.
+ *
+ * Revision 1.1  1995/12/11  09:15:27  adam
  * New set types: sand/sor/snot - ranked versions of and/or/not in
  * ranked/semi-ranked result sets.
  * Note: the snot not finished yet.
@@ -257,12 +260,49 @@ static void *r_create_not (const struct rset_control *sel, void *parms,
                            int *flags)
 {
     char *buf_l, *buf_r;
+    int more_l, more_r;
+    RSFD fd_l, fd_r;
 
     struct rset_bool_info *info;
     info = r_create_common (sel, parms, flags);
 
     buf_l = xmalloc (info->key_size);
     buf_r = xmalloc (info->key_size);
+
+    fd_l = rset_open (info->rset_l, RSETF_SORT_SYSNO|RSETF_READ);
+    fd_r = rset_open (info->rset_r, RSETF_SORT_SYSNO|RSETF_READ);
+
+    more_l = rset_read(info->rset_l, fd_l, buf_l);
+    more_r = rset_read(info->rset_r, fd_r, buf_r);
+
+    while (more_l || more_r)
+    {
+        int cmp;
+        int score;
+
+        if (more_l && more_r)
+            cmp = (*info->cmp)(buf_l, buf_r);
+        else if (more_r)
+            cmp = 2;
+        else 
+            cmp = -2;
+
+        if (cmp >= -1 && cmp <= 1)
+            more_l = rset_read (info->rset_l, fd_l, buf_l);
+        else if (cmp > 1)
+        {
+            more_r = rset_read (info->rset_r, fd_r, buf_r);
+        }
+        else
+        {
+            rset_score (info->rset_l, fd_l, &score);
+            key_add (info, buf_l, score == -1 ? 1 : score);
+            more_l = rset_read (info->rset_l, fd_l, buf_l);
+        }
+    }
+    rset_close (info->rset_l, fd_l);
+    rset_close (info->rset_r, fd_r);
+
     rset_delete (info->rset_l);
     rset_delete (info->rset_r);
     xfree (buf_l);
