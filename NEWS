@@ -1,4 +1,6 @@
 
+Rename CHANGELOG to NEWS.
+
 --- 1.3.16 2004/03/29
 
 For text filter, return only header if elementSetName=H . elementSetName=R

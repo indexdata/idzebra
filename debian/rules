@@ -88,7 +88,7 @@ binary-arch: build install
 	dh_testroot
 	dh_movefiles -p idzebra usr/share/idzebra usr/bin
 
-	cp CHANGELOG changelog
+	cp NEWS changelog
 	dh_installdocs --all README TODO changelog debian/copyright
 
 	dh_installchangelogs

@@ -36,7 +36,7 @@ rm -fr ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
-%doc README LICENSE.zebra CHANGELOG 
+%doc README LICENSE.zebra NEWS
 %config /usr/share/idzebra/tab
 /usr/bin/*
 /usr/include/*
