@@ -61,7 +61,7 @@ void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush)
     {
         p = bf->lru_back;
         if (p->dirty)
-            bf_write (bf->bf, p->no, p->data);
+            bf_write (bf->bf, p->no, 0, 0, p->data);
         release_block (bf, p);
     }
 }
@@ -134,7 +134,7 @@ int bf_readp (Dict_BFile bf, int no, void **bufp)
     }
     bf->misses++;
     p = alloc_block (bf, no);
-    i = bf_read (bf->bf, no, p->data);
+    i = bf_read (bf->bf, no, 0, 0, p->data);
     if (i > 0)
     {
         *bufp = p->data;
