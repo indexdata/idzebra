@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.175 2005-03-16 15:26:37 adam Exp $
+/* $Id: extract.c,v 1.176 2005-03-17 08:31:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -491,18 +491,6 @@ static int file_extract_record(ZebraHandle zh,
             }
             return 0;
         }
-        if (zh->reg->keys.buf_used == 0)
-        {
-            /* the extraction process returned no information - the record
-               is probably empty - unless flagShowRecords is in use */
-            if (!zh->m_flag_rw)
-                return 1;
-	    
-	    if (zh->records_processed < zh->m_file_verbose_limit)
-	        yaz_log (YLOG_WARN, "empty %s %s " PRINTF_OFF_T, zh->m_record_type,
-		    fname, recordOffset);
-            return 1;
-        }
         if (extractCtrl.match_criteria[0])
             matchStr = extractCtrl.match_criteria;
     }
@@ -533,6 +521,18 @@ static int file_extract_record(ZebraHandle zh,
 		memcpy (sysno, rinfo+1, sizeof(*sysno));
 	    }
 	}
+    }
+    if (! *sysno && zh->reg->keys.buf_used == 0)
+    {
+         /* the extraction process returned no information - the record
+            is probably empty - unless flagShowRecords is in use */
+         if (!zh->m_flag_rw)
+             return 1;
+  
+         if (zh->records_processed < zh->m_file_verbose_limit)
+	     yaz_log (YLOG_WARN, "empty %s %s " PRINTF_OFF_T, zh->m_record_type,
+	    fname, recordOffset);
+         return 1;
     }
 
     if (! *sysno)
@@ -915,16 +915,6 @@ int buffer_extract_record (ZebraHandle zh,
 	yaz_log (YLOG_WARN, "extract error: no such filter");
 	return 0;
     }
-    if (zh->reg->keys.buf_used == 0)
-    {
-	/* the extraction process returned no information - the record
-	   is probably empty - unless flagShowRecords is in use */
-	if (test_mode)
-	    return 1;
-	yaz_log (YLOG_WARN, "No keys generated for record");
-	yaz_log (YLOG_WARN, " The file is probably empty");
-	return 1;
-    }
     /* match criteria */
     matchStr = NULL;
 
@@ -954,6 +944,16 @@ int buffer_extract_record (ZebraHandle zh,
                 memcpy (sysno, rinfo+1, sizeof(*sysno));
 	    }
         }
+    }
+    if (! *sysno && zh->reg->keys.buf_used == 0)
+    {
+	/* new record and it's empty .. we will skip it */
+	/* the extraction process returned no information - the record
+	   is probably empty - unless flagShowRecords is in use */
+	if (test_mode)
+	    return 1;
+	yaz_log (YLOG_WARN, "No keys generated for record.");
+	return 1;
     }
 
     if (! *sysno)
