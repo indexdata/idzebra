@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.102 2003-05-20 21:39:57 adam Exp $
+/* $Id: zebraapi.c,v 1.103 2003-05-22 16:16:22 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -44,6 +44,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ASSERTZHRES assert(zh && zh->service && zh->res)
 #define ASSERTZS assert(zs)
 
+/* A simple log macro */
+/* don't break with older yazen that lack log_app2 */
+#ifdef LOG_APP2
+#define LOG_API LOG_APP2
+#else
+#define LOG_API LOG_DEBUG
+#endif
+
 static Res zebra_open_res (ZebraHandle zh);
 static void zebra_close_res (ZebraHandle zh);
 
@@ -52,6 +60,7 @@ static void zebra_chdir (ZebraService zs)
 {
     const char *dir ;
     ASSERTZS;
+    yaz_log(LOG_API,"zebra_chdir");
     dir = res_get (zs->global_res, "chdir");
     if (!dir)
 	return;
@@ -66,6 +75,7 @@ static void zebra_chdir (ZebraService zs)
 static void zebra_flush_reg (ZebraHandle zh)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_flush_reg");
     zh->errCode=0;
     zebraExplain_flush (zh->reg->zei, zh);
     
@@ -85,6 +95,7 @@ ZebraHandle zebra_open (ZebraService zs)
     ZebraHandle zh;
     const char *default_encoding;
     ASSERTZS;
+    yaz_log(LOG_API,"zebra_open");
 
     if (!zs)
         return 0;
@@ -143,7 +154,7 @@ ZebraService zebra_start (const char *configName)
 {
     Res res;
 
-    yaz_log (LOG_LOG, "zebra_start %s", configName);
+    yaz_log(LOG_API|LOG_LOG,"zebra_start %s",configName);
 
     if ((res = res_open (configName, 0)))
     {
@@ -196,8 +207,8 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     assert (res);
 
-    yaz_log (LOG_LOG, "zebra_register_open rw = %d useshadow=%d p=%p",
-             rw, useshadow, reg);
+    yaz_log (LOG_LOG|LOG_API, "zebra_register_open rw = %d useshadow=%d p=%p,n=%s,rp=%s",
+             rw, useshadow, reg, name, reg_path);
     
     reg->dh = data1_createx (DATA1_FLAG_XML);
     if (!reg->dh)
@@ -357,6 +368,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 void zebra_admin_shutdown (ZebraHandle zh)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_admin_shutdown");
     zh->errCode=0;
 
     zebra_mutex_cond_lock (&zh->service->session_lock);
@@ -368,6 +380,7 @@ void zebra_admin_start (ZebraHandle zh)
 {
     ZebraService zs;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_admin_start");
     zh->errCode=0;
     zs = zh->service;
     zebra_mutex_cond_lock (&zs->session_lock);
@@ -377,7 +390,7 @@ void zebra_admin_start (ZebraHandle zh)
 static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 {
     ASSERTZS;
-    yaz_log(LOG_LOG, "zebra_register_close p=%p", reg);
+    yaz_log(LOG_LOG|LOG_API, "zebra_register_close p=%p", reg);
     reg->stop_flag = 0;
     zebra_chdir (zs);
     if (reg->records)
@@ -418,7 +431,7 @@ void zebra_stop(ZebraService zs)
 {
     if (!zs)
         return ;
-    yaz_log (LOG_LOG, "zebra_stop");
+    yaz_log (LOG_LOG|LOG_API, "zebra_stop");
 
     while (zs->sessions)
     {
@@ -442,6 +455,7 @@ void zebra_close (ZebraHandle zh)
     struct zebra_session **sp;
     int i;
 
+    yaz_log(LOG_API,"zebra_close");
     if (!zh)
         return;
     ASSERTZH;
@@ -635,6 +649,7 @@ void map_basenames (ZebraHandle zh, ODR stream,
     struct map_baseinfo *p = &info;
     int i;
     ASSERTZH;
+    yaz_log(LOG_API,"map_basenames ");
     zh->errCode=0;
 
     info.zh = zh;
@@ -663,6 +678,7 @@ void map_basenames (ZebraHandle zh, ODR stream,
 int zebra_select_database (ZebraHandle zh, const char *basename)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_select_database %s",basename);
     zh->errCode=0;
     return zebra_select_databases (zh, 1, &basename);
 }
@@ -675,6 +691,8 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
     int len = 0;
     char *new_reg = 0;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_select_databases n=%d [0]=%s",
+		    num_bases,basenames[0]);
     zh->errCode=0;
     
     if (num_bases < 1)
@@ -748,6 +766,7 @@ void zebra_search_RPN (ZebraHandle zh,
 		       Z_RPNQuery *query, const char *setname, int *hits)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_search_rpn");
     zh->errCode=0;
     zh->hits = 0;
     *hits = 0;
@@ -773,6 +792,7 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
     ZebraPosSet poset;
     int i, *pos_array;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_records_retrieve n=%d",num_recs);
     zh->errCode=0;
 
     if (!zh->res)
@@ -841,6 +861,7 @@ void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		 int *is_partial)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_scan");
     zh->errCode=0;
     if (zebra_begin_read (zh))
     {
@@ -860,6 +881,7 @@ void zebra_sort (ZebraHandle zh, ODR stream,
 		 int *sort_status)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_sort");
     zh->errCode=0;
     if (zebra_begin_read (zh))
 	return;
@@ -874,6 +896,7 @@ int zebra_deleleResultSet(ZebraHandle zh, int function,
 {
     int i, status;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_deleleResultSet n=%d",num_setnames);
     zh->errCode=0;
     if (zebra_begin_read(zh))
 	return Z_DeleteStatus_systemProblemAtTarget;
@@ -897,28 +920,37 @@ int zebra_deleleResultSet(ZebraHandle zh, int function,
 int zebra_errCode (ZebraHandle zh)
 {
     if (zh)
+    {
+        yaz_log(LOG_API,"zebra_errCode: %d",zh->errCode);
         return zh->errCode;
+    }
+    yaz_log(LOG_API,"zebra_errCode: o");
     return 0; 
 }
 
 const char *zebra_errString (ZebraHandle zh)
 {
+    const char *e="";
     if (zh)
-        return diagbib1_str (zh->errCode);
-    return "";
+        e= diagbib1_str (zh->errCode);
+    yaz_log(LOG_API,"zebra_errString: %s",e);
+    return e;
 }
 
 char *zebra_errAdd (ZebraHandle zh)
 {
+    char *a="";
     if (zh)
-        return zh->errString;
-    return "";
+        a= zh->errString;
+    yaz_log(LOG_API,"zebra_errAdd: %s",a);
+    return a;
 }
 
 int zebra_auth (ZebraHandle zh, const char *user, const char *pass)
 {
     ZebraService zs;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_auth u=%s p=%s",user,pass);
     zh->errCode=0;
     zs= zh->service;
     if (!zs->passwd_db || !passwd_db_auth (zs->passwd_db, user, pass))
@@ -935,6 +967,8 @@ void zebra_admin_import_begin (ZebraHandle zh, const char *database,
                                const char *record_type)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_admin_import_begin db=%s rt=%s", 
+		     database, record_type);
     zh->errCode=0;
     if (zebra_select_database(zh, database))
         return;
@@ -946,6 +980,7 @@ void zebra_admin_import_begin (ZebraHandle zh, const char *database,
 void zebra_admin_import_end (ZebraHandle zh)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_admin_import_end");
     zh->errCode=0;
     zebra_end_trans (zh);
 }
@@ -955,6 +990,7 @@ void zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
     int sysno;
     int i;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_admin_import_segment");
     zh->errCode=0;
     for (i = 0; i<segment->num_segmentRecords; i++)
     {
@@ -999,6 +1035,8 @@ int zebra_admin_exchange_record (ZebraHandle zh,
     char *rinfo = 0;
     char recid_z[256];
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_admin_exchange_record db=%s ac=%d",
+		    database, action);
     zh->errCode=0;
 
     if (!recid_buf || recid_len <= 0 || recid_len >= sizeof(recid_z))
@@ -1036,6 +1074,7 @@ void zebra_create_database (ZebraHandle zh, const char *database)
 {
     ZebraService zs;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_admin_create");
     zh->errCode=0;
 
     if (zebra_select_database (zh, database))
@@ -1060,6 +1099,7 @@ int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
 {
     WRBUF wrbuf;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_string_norm ");
     zh->errCode=0;
     if (!zh->reg->zebra_maps)
 	return -1;
@@ -1083,6 +1123,7 @@ void zebra_set_state (ZebraHandle zh, int val, int seqno)
     long p = getpid();
     FILE *f;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_set_state v=%d seq=%s", val, seqno);
     zh->errCode=0;
 
     sprintf (state_fname, "state.%s.LCK", zh->reg_name);
@@ -1102,6 +1143,7 @@ void zebra_get_state (ZebraHandle zh, char *val, int *seqno)
     FILE *f;
 
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_get_state ");
     zh->errCode=0;
     sprintf (state_fname, "state.%s.LCK", zh->reg_name);
     fname = zebra_mk_fname (res_get(zh->res, "lockDir"), state_fname);
@@ -1137,6 +1179,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         return -1;
     }
     ASSERTZHRES;
+    yaz_log(LOG_API,"zebra_begin_trans rw=%d",rw);
     assert (zh->res);
     if (rw)
     {
@@ -1318,6 +1361,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
 int zebra_end_trans (ZebraHandle zh)
 {
     ZebraTransactionStatus dummy;
+    yaz_log(LOG_API,"zebra_end_trans");
     return zebra_end_transaction(zh, &dummy);
 }
 
@@ -1328,6 +1372,7 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
     const char *rval;
 
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_end_transaction");
 
     status->processed = 0;
     status->inserted  = 0;
@@ -1411,7 +1456,7 @@ void zebra_repository_update (ZebraHandle zh)
 {
     ASSERTZH;
     zh->errCode=0;
-    logf (LOG_LOG, "updating %s", zh->rGroup.path);
+    logf (LOG_LOG|LOG_API, "updating %s", zh->rGroup.path);
     repositoryUpdate (zh);    
 }
 
@@ -1419,13 +1464,14 @@ void zebra_repository_delete (ZebraHandle zh)
 {
     ASSERTZH;
     zh->errCode=0;
-    logf (LOG_LOG, "deleting %s", zh->rGroup.path);
+    logf (LOG_LOG|LOG_API, "deleting %s", zh->rGroup.path);
     repositoryDelete (zh);
 }
 
 void zebra_repository_show (ZebraHandle zh)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_repository_show");
     zh->errCode=0;
     repositoryShow (zh);
 }
@@ -1493,11 +1539,13 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
 
 int zebra_clean (ZebraHandle zh)
 {
+    yaz_log(LOG_API,"zebra_clean");
     return zebra_commit_ex(zh, 1);
 }
 
 int zebra_commit (ZebraHandle zh)
 {
+    yaz_log(LOG_API,"zebra_commit");
     return zebra_commit_ex(zh, 0);
 }
 
@@ -1506,6 +1554,7 @@ int zebra_init (ZebraHandle zh)
     const char *rval;
     BFiles bfs = 0;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_init");
     zh->errCode=0;
 
     if (!zh->res)
@@ -1530,6 +1579,7 @@ int zebra_compact (ZebraHandle zh)
 {
     BFiles bfs;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_compact");
     zh->errCode=0;
     if (!zh->res)
     {
@@ -1546,6 +1596,7 @@ int zebra_record_insert (ZebraHandle zh, const char *buf, int len)
 {
     int sysno = 0;
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_record_insert");
     zh->errCode=0;
     if (zebra_begin_trans (zh, 1))
         return 0;
@@ -1566,6 +1617,7 @@ int zebra_record_insert (ZebraHandle zh, const char *buf, int len)
 void zebra_set_group (ZebraHandle zh, struct recordGroup *rg)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_set_group");
     zh->errCode=0;
     memcpy (&zh->rGroup, rg, sizeof(*rg));
 }
@@ -1573,6 +1625,7 @@ void zebra_set_group (ZebraHandle zh, struct recordGroup *rg)
 void zebra_result (ZebraHandle zh, int *code, char **addinfo)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_result");
     *code = zh->errCode;
     *addinfo = zh->errString;
 }
@@ -1580,6 +1633,7 @@ void zebra_result (ZebraHandle zh, int *code, char **addinfo)
 void zebra_shadow_enable (ZebraHandle zh, int value)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_shadow_enable");
     zh->errCode=0;
     zh->shadow_enable = value;
 }
@@ -1587,6 +1641,7 @@ void zebra_shadow_enable (ZebraHandle zh, int value)
 int zebra_record_encoding (ZebraHandle zh, const char *encoding)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_record_encoding");
     zh->errCode=0;
     xfree (zh->record_encoding);
 
@@ -1618,6 +1673,7 @@ int zebra_record_encoding (ZebraHandle zh, const char *encoding)
 void zebra_set_resource(ZebraHandle zh, const char *name, const char *value)
 {
     ASSERTZH;
+    yaz_log(LOG_API,"zebra_set_resource %s:%s",name,value);
     zh->errCode=0;
     res_put(zh->res, name, value);
 }
@@ -1625,28 +1681,37 @@ void zebra_set_resource(ZebraHandle zh, const char *name, const char *value)
 const char *zebra_get_resource(ZebraHandle zh,
                                const char *name, const char *defaultvalue)
 {
+    const char *v;
     ASSERTZH;
+    v= res_get_def( zh->res, name, (char *)defaultvalue);
     zh->errCode=0;
-    return res_get_def( zh->res, name, (char *)defaultvalue);
+    yaz_log(LOG_API,"zebra_get_resource %s:%s",name,v);
+    return v;
 }
 
 /* moved from zebra_api_ext.c by pop */
 
 int zebra_trans_no (ZebraHandle zh) {
+  ASSERTZH;
+  yaz_log(LOG_API,"zebra_trans_no");
   return (zh->trans_no);
 }
 
 
 
 int zebra_get_shadow_enable (ZebraHandle zh) {
-  return (zh->shadow_enable);
+    yaz_log(LOG_API,"zebra_get_shadow_enable");
+    return (zh->shadow_enable);
 }
 
 void zebra_set_shadow_enable (ZebraHandle zh, int value) {
-  zh->shadow_enable = value;
+    yaz_log(LOG_API,"zebra_set_shadow_enable %d",value);
+    zh->shadow_enable = value;
 }
 
 void init_recordGroup (struct recordGroup *rg) {
+    assert(rg);
+    yaz_log(LOG_API,"init_recordGroup");
     rg->groupName = NULL;
     rg->databaseName = NULL;
     rg->path = NULL;
@@ -1670,6 +1735,7 @@ void res_get_recordGroup (ZebraHandle zh,
   char gprefix[128];
   char ext_res[128]; 
     
+  yaz_log(LOG_API,"res_get_recordGroup e=%s",ext);
   if (!rGroup->groupName || !*rGroup->groupName)
     *gprefix = '\0';
   else 
@@ -1748,6 +1814,7 @@ void api_records_retrieve (ZebraHandle zh, ODR stream,
 {
     ZebraPosSet poset;
     int i, *pos_array;
+    yaz_log(LOG_API,"api_records_retrieve s=%s n=%d",setname,num_recs);
 
     if (!zh->res)
     {
@@ -1837,6 +1904,7 @@ int zebra_insert_record (ZebraHandle zh,
  
 {
     int res;
+    yaz_log(LOG_API,"zebra_insert_record sysno=%d",sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -1863,6 +1931,7 @@ int zebra_update_record (ZebraHandle zh,
 
 {
     int res;
+    yaz_log(LOG_API,"zebra_update_record sysno=%d",sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -1889,6 +1958,7 @@ int zebra_delete_record (ZebraHandle zh,
 			 int force_update) 
 {
     int res;
+    yaz_log(LOG_API,"zebra_delete_record sysno=%d",sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -1907,9 +1977,6 @@ int zebra_delete_record (ZebraHandle zh,
 
 /* ---------------------------------------------------------------------------
   Searching 
-
-  zebra_search_RPN is the same as zebra_search_rpn, except that read locking
-  is not mandatory. (it's repeatable now, also in zebraapi.c)
 */
 
 int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
@@ -1918,6 +1985,7 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
     int hits = 0;
     Z_RPNQuery *query;
     ODR odr = odr_createmem(ODR_ENCODE);
+    yaz_log(LOG_API,"zebra_search_PQF s=%s q=%s",setname, pqf_query);
     
     query = p_query_rpn (odr, PROTO_Z3950, pqf_query);
     
@@ -1933,6 +2001,7 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
 
 /* ---------------------------------------------------------------------------
   Sort - a simplified interface, with optional read locks.
+  FIXME - This is a horrible name, will conflict with half the applications
 */
 int sort (ZebraHandle zh, 
 	  ODR stream,
@@ -1944,6 +2013,7 @@ int sort (ZebraHandle zh,
     int num_input_setnames = 0;
     int sort_status = 0;
     Z_SortKeySpecList *sort_sequence = yaz_sort_spec (stream, sort_spec);
+    yaz_log(LOG_API,"sort (FIXME) ");
     if (!sort_sequence) {
         logf(LOG_WARN,"invalid sort specs '%s'", sort_spec);
         zh->errCode = 207;
