@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.13 2002-10-31 10:11:39 adam Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.14 2002-12-03 16:10:19 mike Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -1050,6 +1050,51 @@
          If this directive is not specified - equivalent to 
          <literal>disable</literal> - no extra XPath-indexing is performed.
         </para>
+       </listitem>
+      </varlistentry>
+      <varlistentry>
+       <term>
+        systag
+        <replaceable>systemTag</replaceable>
+        <replaceable>actualTag</replaceable>
+       </term>
+       <listitem>
+	<para>
+	 Specifies what information, if any, Zebra should
+	 automatically include in retrieval records for the 
+	 ``system fields'' that it supports.
+	 <replaceable>systemTag</replaceable> may
+	 be any of the following:
+	 <variablelist>
+	  <varlistentry>
+	   <term><literal>rank</literal></term>
+	   <listitem><para>
+	    An integer indicating the relevance-ranking score
+	    assigned to the record.
+	   </para></listitem>
+	  </varlistentry>
+	  <varlistentry>
+	   <term><literal>sysno</literal></term>
+	   <listitem><para>
+	    An automatically generated identifier for the record,
+	    unique within this database.  It is represented by the
+	    <literal>&lt;localControlNumber&gt;</literal> element in
+	    XML and the <literal>(1,14)</literal> tag in GRS-1.
+	   </para></listitem>
+	  </varlistentry>
+	  <varlistentry>
+	   <term><literal>size</literal></term>
+	   <listitem><para>
+	    The size, in bytes, of the retrieved record.
+	   </para></listitem>
+	  </varlistentry>
+	 </variablelist>
+	</para>
+	<para>
+	 The <replaceable>actualTag</replaceable> parameter may be
+	 <literal>none</literal> to indicate that the named element
+	 should be omitted from retrieval records.
+	</para>
        </listitem>
       </varlistentry>
      </variablelist>

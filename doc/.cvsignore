@@ -8,6 +8,7 @@ zebra.aux
 zebra.pdf
 manpage.links
 manpage.refs
+tkl.xsl
 *.8
 *.1
 *.html
