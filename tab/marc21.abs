@@ -1,9 +1,13 @@
-# $Id: marc21.abs,v 1.1 2005-01-04 16:44:29 quinn Exp $
+# $Id: marc21.abs,v 1.2 2005-01-04 16:48:03 quinn Exp $
 
 # This is a fairly simple example of a set of MARC21 indexing rules. It
 # results in a server which provides a passable Bath level 0 and 1 service
 # (author, title, subject, keyword and exact services). Feel free to
 # elaborate on it, and if you do, please consider sharing your additions.
+# NOTE: This is designed to be used with the grs.marcxml input filter
+# for ISO2709 (ANSI Z39.2) or grs.xml for MARCXML-formatted records. It
+# won't work for the old grs.marc input filter, which yields a different
+# internal structure.
 
 name marc21
 attset bib1.att
