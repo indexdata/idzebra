@@ -1,4 +1,4 @@
-; $Id: zebra.nsi,v 1.2 2002-09-05 14:36:20 adam Exp $
+; $Id: zebra.nsi,v 1.3 2002-09-06 19:55:25 adam Exp $
 
 !define VERSION "1.3.2"
 
@@ -57,8 +57,6 @@ Noservice:
 	File ..\bin\*.exe
 	File ..\bin\*.dll
 	SetOutPath $SMPROGRAMS\Zebra
- 	CreateShortCut "$SMPROGRAMS\Zebra\Zebraidx.lnk" \
-                 "$INSTDIR\bin\zebraidx.exe"
 	SetOutPath $SMPROGRAMS\Zebra\Server
  	CreateShortCut "$SMPROGRAMS\Zebra\Server\Server on console on port 9999.lnk" \
                  "$INSTDIR\bin\zebrasrv.exe"
@@ -93,7 +91,7 @@ Section "Zebra Examples"
 	SetOutPath $INSTDIR
 
 	File /r ..\test
-	File /r ..\examples
+;	File /r ..\examples
 SectionEnd
 
 Section "Zebra Source"
@@ -129,8 +127,6 @@ Section "Zebra Source"
 	SetOutPath $INSTDIR\test\api
 	File ..\test\api\*.c
 	File ..\test\api\*.cfg
-	SetOutPath $INSTDIR\isamg
-	File ..\isamg\*.c
 	SetOutPath $INSTDIR\win
 	File makefile
 	File *.nsi
