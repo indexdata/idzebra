@@ -1,12 +1,12 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.10 1994-09-01 17:45:14 adam Exp $
+# $Id: Makefile,v 1.11 1994-09-02 14:56:06 quinn Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
 TPROG=opt-test
-CFLAGS=-g -Wall
+CFLAGS=-g -Wall -pedantic
 DEFS=$(INCLUDE)
 LIB=../lib/util.a
 PO = options.o xmalloc.o log.o res.o alexpath.o common.o
