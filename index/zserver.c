@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.110 2003-08-21 10:30:04 adam Exp $
+/* $Id: zserver.c,v 1.111 2003-09-05 12:35:06 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -702,7 +702,7 @@ static void bend_stop(struct statserv_options_block *sob)
 #ifdef WIN32
 
 #else
-    if (!sob->inetd) 
+    if (!sob->inetd && sob->handle) 
     {
 	char pidfname[4096];
 	zebra_pidfname(sob->handle, pidfname);
