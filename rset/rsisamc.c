@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.27 2004-10-15 10:07:34 heikki Exp $
+/* $Id: rsisamc.c,v 1.28 2004-10-22 10:12:52 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -40,6 +40,7 @@ static const struct rset_control control =
 {
     "isamc",
     r_delete,
+    rset_get_one_term,
     r_open,
     r_close,
     rset_default_forward,
@@ -130,4 +131,6 @@ static void r_pos (RSFD rfd, double *current, double *total)
     *current=-1;  /* sorry, not implemented yet */
     *total=-1;
 }
+
+
 

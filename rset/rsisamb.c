@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.24 2004-10-15 10:07:34 heikki Exp $
+/* $Id: rsisamb.c,v 1.25 2004-10-22 10:12:52 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -42,6 +42,7 @@ static const struct rset_control control =
 {
     "isamb",
     r_delete,
+    rset_get_one_term,
     r_open,
     r_close,
     r_forward, 

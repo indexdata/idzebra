@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.38 2004-10-20 14:32:28 heikki Exp $
+/* $Id: rset.h,v 1.39 2004-10-22 10:12:51 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -78,11 +78,19 @@ struct rsfd {  /* the stuff common to all rsfd's. */
  */
 struct rset_control
 {
-    char *desc; /* text description of set type (for debugging) */
+    /** text description of set type (for debugging) */
+    char *desc; 
 /* RSET rs_something_create(const struct rset_control *sel, ...); */
     void (*f_delete)(RSET ct);
+
+    /** recursively fills the terms array with terms. call with curterm=0 */
+    /* always counts them all into cur, but of course won't touch the term */
+    /* array past max. You can use this to count, set max=0 */
+    void (*f_getterms)(RSET ct, TERMID *terms, int maxterms, int *curterm);
+
     RSFD (*f_open)(RSET ct, int wflag);
     void (*f_close)(RSFD rfd);
+    /** forward behaves like a read, but it skips some items first */
     int (*f_forward)(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
     void (*f_pos)(RSFD rfd, double *current, double *total);
        /* returns -1,-1 if pos function not implemented for this type */
@@ -93,6 +101,15 @@ struct rset_control
 /** rset_default_forward implements a generic forward with a read-loop */
 int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
+
+/** rset_get_no_terms is a getterms function for those that don't have any */
+void rset_get_no_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
+
+/** 
+ * rset_get_one_term is a getterms function for those rsets that have
+ * exactly one term, like all rsisamX types. 
+ */
+void rset_get_one_term(RSET ct,TERMID *terms,int maxterms,int *curterm);
 
 /**
  * key_control contains all there is to know about the keys stored in 
@@ -172,6 +189,10 @@ RSET rset_dup (RSET rs);
 /* int rset_forward(RSFD rfd, void *buf, TERMID term, void *untilbuf); */
 #define rset_forward(rfd, buf, term, untilbuf) \
     (*(rfd)->rset->control->f_forward)((rfd),(buf),(term),(untilbuf))
+
+/* void rset_getterms(RSET ct, TERMID *terms, int maxterms, int *curterm); */
+#define rset_getterms(ct, terms, maxterms, curterm) \
+    (*(ct)->control->f_getterms)((ct),(terms),(maxterms),(curterm))
 
 /* int rset_pos(RSFD fd, double *current, double *total); */
 #define rset_pos(rfd,cur,tot) \

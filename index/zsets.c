@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.65 2004-10-21 12:43:09 heikki Exp $
+/* $Id: zsets.c,v 1.66 2004-10-22 10:12:51 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -733,7 +733,8 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     struct it_key key;
     RSFD rfd;
     TERMID termid;
-    int i;
+    TERMID *terms;
+    int i,n;
     ZebraRankClass rank_class;
     struct rank_control *rc;
     struct zset_sort_info *sort_info;
@@ -810,6 +811,20 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
         (*rc->end) (zh->reg, handle);
     }
     rset_close (rfd);
+    n=0;
+    logf(LOG_LOG,"FIXME: Counting terms"); 
+    rset_getterms(rset,0,0,&n);
+    logf(LOG_LOG,"FIXME: Got %d terms", n);
+    terms=xmalloc( sizeof(*terms)*n);
+    i=n;
+    n=0;
+    rset_getterms(rset,terms,i,&n);
+    logf(LOG_LOG,"FIXME: Collected %d terms", n);
+    for (i=0;i<n;i++)
+        logf(LOG_LOG,"FIXME: term[%d]='%s'",i,terms[i]->name);
+    xfree(terms);
+
+
 /*
     for (i = 0; i < rset->no_rset_terms; i++)
     {

@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.6 2004-10-15 10:07:34 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.7 2004-10-22 10:12:52 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -55,11 +55,13 @@ static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
 static int r_forward_or(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
+static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
 static const struct rset_control control_or = 
 {
     "multi-or",
     r_delete,
+    r_get_terms,
     r_open_or,
     r_close,
     r_forward_or,
@@ -71,6 +73,7 @@ static const struct rset_control control_and =
 {
     "multi-and",
     r_delete,
+    r_get_terms,
     r_open_and,
     r_close,
     r_forward_and,
@@ -579,3 +582,26 @@ static int r_write (RSFD rfd, const void *buf)
     logf (LOG_FATAL, "multior set type is read-only");
     return -1;
 }
+
+static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
+    /* Special case: Some multi-ors have all terms pointing to the same */
+    /* term. We do not want to duplicate those. Other multiors (and ands) */
+    /* have different terms under them. Those we want. */
+{
+    struct rset_multiandor_info *info = 
+        (struct rset_multiandor_info *) ct->priv;
+    int firstterm= *curterm;
+    int i;
+    for (i=0;i<info->no_rsets;i++)
+    {
+        rset_getterms(info->rsets[i], terms, maxterms, curterm);
+        yaz_log(LOG_DEBUG,"rsmulti: getterms: i=%d *cur=%d",i,*curterm);
+        /* FIXME - remove this log once we know it works */
+        if ( ( (*curterm) > firstterm+1 ) &&
+             ( (*curterm) <= maxterms ) &&
+             ( terms[(*curterm)-1] == terms[firstterm] ) )
+            *curterm--; /* forget the term, seen that before */
+    }
+}
+
+

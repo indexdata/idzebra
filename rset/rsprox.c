@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.19 2004-10-20 14:32:29 heikki Exp $
+/* $Id: rsprox.c,v 1.20 2004-10-22 10:12:52 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -39,11 +39,13 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
 static int r_read (RSFD rfd, void *buf, TERMID *term);
 static int r_write (RSFD rfd, const void *buf);
 static void r_pos (RSFD rfd, double *current, double *total);
+static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
 static const struct rset_control control = 
 {
     "prox",
     r_delete,
+    r_get_terms,
     r_open,
     r_close,
     r_forward,
@@ -337,3 +339,15 @@ static void r_pos (RSFD rfd, double *current, double *total)
     logf(LOG_DEBUG,"prox_pos: [%d] %0.1f/%0.1f= %0.4f ",
                     i,*current, *total, r);
 }
+
+
+
+static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
+{
+    struct rset_prox_info *info =
+              (struct rset_prox_info *) ct->priv;
+    int i;
+    for (i=0;i<info->rset_no;i++)
+        rset_getterms(info->rset[i], terms, maxterms, curterm);
+}
+

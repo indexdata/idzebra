@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.35 2004-10-20 14:32:29 heikki Exp $
+/* $Id: rset.c,v 1.36 2004-10-22 10:12:51 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -147,6 +147,26 @@ int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
 
     return more;
 }
+
+/** rset_get_no_terms is a getterms function for those that don't have any */
+void rset_get_no_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
+{
+    return;
+}
+
+/* rset_get_one_term gets that one term from an rset. Used by rsisamX */
+void rset_get_one_term(RSET ct,TERMID *terms,int maxterms,int *curterm)
+{
+    yaz_log(LOG_LOG,"FIXME: get_one_term: max=%d cur=%d", maxterms, *curterm);
+    if (ct->term)
+    {
+        yaz_log(LOG_LOG,"FIXME: get_one_term: '%s'", ct->term->name);
+        if (*curterm < maxterms)
+            terms[*curterm]=ct->term;
+        (*curterm)++;
+    }
+}
+
 
 TERMID rset_term_create (const char *name, int length, const char *flags,
                                     int type, NMEM nmem)

@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.49 2004-10-15 10:07:34 heikki Exp $
+/* $Id: rsbool.c,v 1.50 2004-10-22 10:12:51 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -41,11 +41,14 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term);
 static int r_read_or (RSFD rfd, void *buf, TERMID *term);
 static int r_read_not (RSFD rfd, void *buf, TERMID *term);
 static int r_write (RSFD rfd, const void *buf);
+static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
+
 
 static const struct rset_control control_and = 
 {
     "and",
     r_delete,
+    r_get_terms,
     r_open,
     r_close,
     r_forward, 
@@ -58,6 +61,7 @@ static const struct rset_control control_or =
 {
     "or",
     r_delete,
+    r_get_terms,
     r_open,
     r_close,
     r_forward, 
@@ -70,6 +74,7 @@ static const struct rset_control control_not =
 {
     "not",
     r_delete,
+    r_get_terms,
     r_open,
     r_close,
     r_forward, 
@@ -512,3 +517,11 @@ static void r_pos (RSFD rfd, double *current, double *total)
                     *current, *total, r);
 #endif
 }
+
+static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
+{
+    struct rset_bool_info *info = (struct rset_bool_info *) ct->priv;
+    rset_getterms(info->rset_l, terms, maxterms, curterm);
+    rset_getterms(info->rset_r, terms, maxterms, curterm);
+}
+

@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.28 2004-10-15 10:07:34 heikki Exp $
+/* $Id: rsnull.c,v 1.29 2004-10-22 10:12:52 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -39,6 +39,7 @@ static const struct rset_control control =
 {
     "null",
     r_delete,
+    rset_get_no_terms,
     r_open,
     r_close,
     rset_default_forward,

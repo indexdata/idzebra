@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.27 2004-10-15 10:07:34 heikki Exp $
+/* $Id: rsbetween.c,v 1.28 2004-10-22 10:12:51 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -48,11 +48,13 @@ static int r_forward_between(RSFD rfd, void *buf,
 static int r_read_between (RSFD rfd, void *buf, TERMID *term );
 static int r_write_between (RSFD rfd, const void *buf);
 static void r_pos_between (RSFD rfd, double *current, double *total);
+static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
 
 static const struct rset_control control = 
 {
     "between",
     r_delete_between,
+    r_get_terms,
     r_open_between,
     r_close_between,
     r_forward_between, 
@@ -447,3 +449,10 @@ static void r_pos_between (RSFD rfd, double *current, double *total)
                     *current, *total, r);
 #endif
 }
+
+static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
+{
+    struct rset_between_info *info = (struct rset_between_info *) ct->priv;
+    rset_getterms(info->rset_m, terms, maxterms, curterm);
+}
+
