@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.7  1994-09-06 13:01:03  quinn
+ * Revision 1.8  1994-09-16 14:37:12  quinn
+ * added res_get_def
+ *
+ * Revision 1.7  1994/09/06  13:01:03  quinn
  * Removed const from declaration of res_get
  *
  * Revision 1.6  1994/09/01  17:45:14  adam
@@ -201,6 +204,16 @@ char *res_get (Res r, const char *name)
         if (re->value && !strcmp (re->name, name))
             return re->value;
     return NULL;
+}
+
+char *res_get_def (Res r, const char *name, char *def)
+{
+    char *t;
+
+    if (!(t = res_get (r, name)))
+    	return def;
+    else
+    	return t;
 }
 
 void res_put (Res r, const char *name, const char *value)
