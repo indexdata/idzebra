@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.4  1999-02-02 14:51:07  adam
+ * Revision 1.5  1999-02-17 11:29:56  adam
+ * Fixed in record_fetch. Minor updates to API.
+ *
+ * Revision 1.4  1999/02/02 14:51:07  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.3  1998/10/28 10:54:40  adam
@@ -229,8 +232,9 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     retrieveCtrl.dh = zh->dh;
     (*rt->retrieve)(&retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
-    *rec_bufp = retrieveCtrl.rec_buf;
     *rec_lenp = retrieveCtrl.rec_len;
+    *rec_bufp = odr_malloc (stream, *rec_lenp);
+    memcpy (*rec_bufp, retrieveCtrl.rec_buf, *rec_lenp);
     if (fc.fd != -1)
         close (fc.fd);
     rec_rm (&rec);

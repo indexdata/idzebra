@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.h,v $
- * Revision 1.5  1998-09-22 10:48:19  adam
+ * Revision 1.6  1999-02-17 11:29:57  adam
+ * Fixed in record_fetch. Minor updates to API.
+ *
+ * Revision 1.5  1998/09/22 10:48:19  adam
  * Minor changes in search API.
  *
  * Revision 1.4  1998/09/02 13:53:18  adam
@@ -25,6 +28,10 @@
 #include <odr.h>
 #include <oid.h>
 #include <proto.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Retrieval Record Descriptor */
 typedef struct {
@@ -85,3 +92,6 @@ YAZ_EXPORT int zebra_hits (ZebraHandle zh);
 /* do authentication */
 YAZ_EXPORT int zebra_auth (ZebraHandle zh, const char *user, const char *pass);
 
+#ifdef __cplusplus
+}
+#endif
