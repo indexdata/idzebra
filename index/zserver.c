@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.116 2004-07-28 08:15:45 adam Exp $
+/* $Id: zserver.c,v 1.117 2004-08-02 10:12:06 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -383,6 +383,10 @@ int bend_delete (void *handle, bend_delete_rr *rr)
 
 static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 {
+    if (r->toKeep->databaseName)
+    {
+	yaz_log(LOG_LOG, "adm request database %s", r->toKeep->databaseName);
+    }
     switch (r->toKeep->which)
     {
     case Z_ESAdminOriginPartToKeep_reIndex:
@@ -409,6 +413,9 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 	break;
     case Z_ESAdminOriginPartToKeep_commit:
 	yaz_log(LOG_LOG, "adm-commit");
+	if (r->toKeep->databaseName)
+	    zebra_select_database(zh, r->toKeep->databaseName);
+	zebra_commit(zh);
 	break;
     case Z_ESAdminOriginPartToKeep_shutdown:
 	yaz_log(LOG_LOG, "shutdown");
@@ -420,10 +427,6 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 	break;
     default:
 	yaz_log(LOG_LOG, "unknown admin");
-    }
-    if (r->toKeep->databaseName)
-    {
-	yaz_log(LOG_LOG, "database %s", r->toKeep->databaseName);
     }
     return 0;
 }
