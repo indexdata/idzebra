@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.17 1996-01-22 15:30:37 quinn Exp $
+  $Id: zebra.sgml,v 1.18 1996-02-10 12:20:46 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.index.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.17 $
+<date>$Revision: 1.18 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -827,6 +827,10 @@ messages. The default is to write this information to <tt/stderr/.
 given <it/username/. It's useful if you aren't comfortable with having the
 server run as root, but you need to start it as such to bind a
 privileged port.
+
+<tag>-w <it/working-directory/</tag>Change working directory.
+
+<tag/-i/Run under the Internet superserver, <tt/inetd/.
 </descrip>
 
 A <it/listener-address/ consists of a transport mode followed by a
