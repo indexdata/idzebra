@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.9  2000-03-20 19:08:36  adam
+ * Revision 1.10  2000-05-15 12:56:37  adam
+ * Record offset of size off_t.
+ *
+ * Revision 1.9  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -71,7 +74,7 @@ void zebraExplain_flush (ZebraExplainInfo zei, int writeFlag,
 
 typedef struct {
     int recordSize;
-    int recordOffset;
+    off_t recordOffset;
     int runNumber;
 } RecordAttr;
 RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec);
