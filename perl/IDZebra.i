@@ -3,7 +3,6 @@
 
 %{
 #include "zebraapi.h"
-#include "zebra_api_ext.h"
 #include "zebra_perl.h"
 #include "data1.h"
 #include "yaz/odr.h"
@@ -199,8 +198,6 @@ int zebra_trans_no (ZebraHandle zh);
 
 %name(begin_read)          
 int zebra_begin_read (ZebraHandle zh);
-
-void zts_test (ZebraTransactionStatus *stat);
 
 /* end retrieval (remove read lock) (zebraapi.c) */
 %name(end_read)            

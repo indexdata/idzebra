@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.86 2003-02-27 23:08:10 pop Exp $
+/* $Id: zebraapi.c,v 1.87 2003-03-04 23:05:30 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -35,6 +35,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/diagbib1.h>
 #include "index.h"
 #include <charmap.h>
+#include "zebraapi.h"
 
 /* simple asserts to validate the most essential input args */
 #define ASSERTZH assert(zh && zh->service)
@@ -1567,4 +1568,324 @@ const char *zebra_get_resource(ZebraHandle zh,
     ASSERTZH;
     zh->errCode=0;
     return res_get_def( zh->res, name, (char *)defaultvalue);
+}
+
+/* moved from zebra_api_ext.c by pop */
+
+int zebra_trans_no (ZebraHandle zh) {
+  return (zh->trans_no);
+}
+
+
+
+int zebra_get_shadow_enable (ZebraHandle zh) {
+  return (zh->shadow_enable);
+}
+
+void zebra_set_shadow_enable (ZebraHandle zh, int value) {
+  zh->shadow_enable = value;
+}
+
+void init_recordGroup (struct recordGroup *rg) {
+    rg->groupName = NULL;
+    rg->databaseName = NULL;
+    rg->path = NULL;
+    rg->recordId = NULL;
+    rg->recordType = NULL;
+    rg->flagStoreData = -1;
+    rg->flagStoreKeys = -1; 
+    rg->flagRw = 1;
+    rg->databaseNamePath = 0;
+    rg->explainDatabase = 0; 
+    rg->fileVerboseLimit = 100000; 
+    rg->followLinks = -1;
+} 
+
+
+/* This is from extract.c... it seems useful, when extract_rec_in mem is 
+   called... and in general... Should be moved to somewhere else */
+void res_get_recordGroup (ZebraHandle zh,
+			  struct recordGroup *rGroup,
+			  const char *ext) {
+  char gprefix[128];
+  char ext_res[128]; 
+    
+  if (!rGroup->groupName || !*rGroup->groupName)
+    *gprefix = '\0';
+  else 
+    sprintf (gprefix, "%s.", rGroup->groupName);
+  
+  /* determine file type - depending on extension */
+  if (!rGroup->recordType) {
+    sprintf (ext_res, "%srecordType.%s", gprefix, ext);
+    if (!(rGroup->recordType = res_get (zh->res, ext_res))) {
+      sprintf (ext_res, "%srecordType", gprefix);
+      rGroup->recordType = res_get (zh->res, ext_res);
+    }
+  }
+  /* determine match criteria */
+  if (!rGroup->recordId) { 
+    sprintf (ext_res, "%srecordId.%s", gprefix, ext);
+    if (!(rGroup->recordId = res_get (zh->res, ext_res))) {
+      sprintf (ext_res, "%srecordId", gprefix);
+      rGroup->recordId = res_get (zh->res, ext_res);
+    }
+  } 
+  
+  /* determine database name */
+  if (!rGroup->databaseName) {
+    sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
+    if (!(rGroup->databaseName = res_get (zh->res, ext_res))) { 
+      sprintf (ext_res, "%sdatabase", gprefix);
+      rGroup->databaseName = res_get (zh->res, ext_res);
+    }
+  }
+  if (!rGroup->databaseName)
+    rGroup->databaseName = "Default";
+
+  /* determine if explain database */
+  sprintf (ext_res, "%sexplainDatabase", gprefix);
+  rGroup->explainDatabase =
+    atoi (res_get_def (zh->res, ext_res, "0"));
+
+  /* storeData */
+  if (rGroup->flagStoreData == -1) {
+    const char *sval;
+    sprintf (ext_res, "%sstoreData.%s", gprefix, ext);
+    if (!(sval = res_get (zh->res, ext_res))) {
+      sprintf (ext_res, "%sstoreData", gprefix);
+      sval = res_get (zh->res, ext_res);
+    }
+    if (sval)
+      rGroup->flagStoreData = atoi (sval);
+  }
+  if (rGroup->flagStoreData == -1)  rGroup->flagStoreData = 0;
+
+  /* storeKeys */
+  if (rGroup->flagStoreKeys == -1)  {
+    const char *sval;
+    
+    sprintf (ext_res, "%sstoreKeys.%s", gprefix, ext);
+    sval = res_get (zh->res, ext_res);
+    if (!sval) {
+      sprintf (ext_res, "%sstoreKeys", gprefix);
+      sval = res_get (zh->res, ext_res);
+    }
+    if (!sval)  sval = res_get (zh->res, "storeKeys");
+    if (sval) rGroup->flagStoreKeys = atoi (sval);
+  }
+  if (rGroup->flagStoreKeys == -1) rGroup->flagStoreKeys = 0;
+  
+} 
+
+
+/* almost the same as zebra_records_retrieve ... but how did it work? 
+   I mean for multiple records ??? CHECK ??? */
+void api_records_retrieve (ZebraHandle zh, ODR stream,
+			   const char *setname, Z_RecordComposition *comp,
+			   oid_value input_format, int num_recs,
+			   ZebraRetrievalRecord *recs)
+{
+    ZebraPosSet poset;
+    int i, *pos_array;
+
+    if (!zh->res)
+    {
+        zh->errCode = 30;
+        zh->errString = odr_strdup (stream, setname);
+        return;
+    }
+    
+    zh->errCode = 0; 
+
+    if (zebra_begin_read (zh))
+	return;
+
+    pos_array = (int *) xmalloc (num_recs * sizeof(*pos_array));
+    for (i = 0; i<num_recs; i++)
+	pos_array[i] = recs[i].position;
+    poset = zebraPosSetCreate (zh, setname, num_recs, pos_array);
+    if (!poset)
+    {
+        logf (LOG_DEBUG, "zebraPosSetCreate error");
+        zh->errCode = 30;
+        zh->errString = nmem_strdup (stream->mem, setname);
+    }
+    else
+    {
+	for (i = 0; i<num_recs; i++)
+	{
+	    if (poset[i].term)
+	    {
+		recs[i].errCode = 0;
+		recs[i].format = VAL_SUTRS;
+		recs[i].len = strlen(poset[i].term);
+		recs[i].buf = poset[i].term;
+		recs[i].base = poset[i].db;
+		recs[i].sysno = 0;
+	    
+	    }
+	    else if (poset[i].sysno)
+	    {
+	      /* changed here ??? CHECK ??? */
+	      char *b;
+		recs[i].errCode =
+		    zebra_record_fetch (zh, poset[i].sysno, poset[i].score,
+					stream, input_format, comp,
+					&recs[i].format, 
+					&b,
+					&recs[i].len,
+					&recs[i].base);
+		recs[i].buf = (char *) odr_malloc(stream,recs[i].len);
+		memcpy(recs[i].buf, b, recs[i].len);
+		recs[i].errString = 0; /* Hmmm !!! we should get this */ 
+		recs[i].sysno = poset[i].sysno;
+		recs[i].score = poset[i].score;
+	    }
+	    else
+	    {
+	        char num_str[20];
+
+		sprintf (num_str, "%d", pos_array[i]);	
+		zh->errCode = 13;
+                zh->errString = odr_strdup (stream, num_str);
+                break;
+	    }
+
+	}
+	zebraPosSetDestroy (zh, poset, num_recs);
+    }
+    zebra_end_read (zh);
+    xfree (pos_array);
+}
+
+
+/* ---------------------------------------------------------------------------
+  Record insert(=update), delete 
+
+  If sysno is provided, then it's used to identify the reocord.
+  If not, and match_criteria is provided, then sysno is guessed
+  If not, and a record is provided, then sysno is got from there
+*/
+
+int zebra_update_record (ZebraHandle zh, 
+			 struct recordGroup *rGroup,
+			 const char *recordType,
+			 int sysno, const char *match, const char *fname,
+			 const char *buf, int buf_size)
+
+{
+    int res;
+
+    if (buf_size < 1) buf_size = strlen(buf);
+
+    zebra_begin_trans(zh);
+    res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
+			     0, // delete_flag 
+			     0, // test_mode,
+			     recordType,
+			     &sysno,   
+			     match, fname);     
+    zebra_end_trans(zh); 
+    return sysno; 
+}
+
+int zebra_delete_record (ZebraHandle zh, 
+			 struct recordGroup *rGroup, 
+			 const char *recordType,
+			 int sysno, const char *match, const char *fname,
+			 const char *buf, int buf_size)
+{
+    int res;
+
+    if (buf_size < 1) buf_size = strlen(buf);
+
+    zebra_begin_trans(zh);
+    res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
+			     1, // delete_flag
+			     0, // test_mode, 
+			     recordType,
+			     &sysno,
+			     match,fname);    
+    zebra_end_trans(zh);
+    return sysno;   
+}
+
+/* ---------------------------------------------------------------------------
+  Searching 
+
+  zebra_search_RPN is the same as zebra_search_rpn, except that read locking
+  is not mandatory. (it's repeatable now, also in zebraapi.c)
+*/
+
+void zebra_search_RPN (ZebraHandle zh, ODR decode, ODR stream,
+		       Z_RPNQuery *query, const char *setname, int *hits)
+{
+    zh->hits = 0;
+    *hits = 0;
+
+    if (zebra_begin_read (zh))
+    	return;
+    resultSetAddRPN (zh, decode, stream, query, 
+                     zh->num_basenames, zh->basenames, setname);
+
+    zebra_end_read (zh);
+
+    *hits = zh->hits;
+}
+
+int zebra_search_PQF (ZebraHandle zh, 
+		      ODR odr_input, ODR odr_output, 
+		      const char *pqf_query,
+		      const char *setname)
+
+{
+  int hits;
+  Z_RPNQuery *query;
+  query = p_query_rpn (odr_input, PROTO_Z3950, pqf_query);
+
+  if (!query) {
+    logf (LOG_WARN, "bad query %s\n", pqf_query);
+    odr_reset (odr_input);
+    return(0);
+  }
+  zebra_search_RPN (zh, odr_input, odr_output, query, setname, &hits);
+
+  odr_reset (odr_input);
+  odr_reset (odr_output);
+  
+  return(hits);
+}
+
+/* ---------------------------------------------------------------------------
+  Sort - a simplified interface, with optional read locks.
+*/
+int sort (ZebraHandle zh, 
+	  ODR stream,
+	  const char *sort_spec,
+	  const char *output_setname,
+	  const char **input_setnames
+	  ) 
+{
+  int num_input_setnames = 0;
+  int sort_status = 0;
+  Z_SortKeySpecList *sort_sequence = yaz_sort_spec (stream, sort_spec);
+  if (!sort_sequence) {
+    logf(LOG_WARN,"invalid sort specs '%s'", sort_spec);
+    zh->errCode = 207;
+    return (-1);
+  }
+  
+  /* we can do this, since the perl typemap code for char** will 
+     put a NULL at the end of list */
+  while (input_setnames[num_input_setnames]) num_input_setnames++;
+
+  if (zebra_begin_read (zh))
+    return;
+  
+  resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
+		 output_setname, sort_sequence, &sort_status);
+  
+  zebra_end_read(zh);
+  return (sort_status);
 }

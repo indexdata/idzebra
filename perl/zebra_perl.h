@@ -2,7 +2,6 @@
 #define ZEBRA_PERL_H
 
 #include "zebraapi.h"
-#include "zebra_api_ext.h"
 
 typedef struct {
     char  *groupName;
@@ -23,6 +22,12 @@ typedef struct {
   int noOfRecords;
   ZebraRetrievalRecord *records;
 } RetrievalObj;
+
+typedef struct {
+  char *buf;           /* record buffer (void pointer really) */
+  int len;             /* length */
+} RetrievalRecordBuf;
+
 
 typedef struct {
   int  errCode;        /* non-zero if error when fetching this */

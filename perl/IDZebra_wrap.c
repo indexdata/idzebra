@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.10 2003-03-04 19:33:52 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.11 2003-03-04 23:05:31 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -566,7 +566,6 @@ SWIGEXPORT(void) SWIG_init (CV *cv, CPerlObj *);
 
 
 #include "zebraapi.h"
-#include "zebra_api_ext.h"
 #include "zebra_perl.h"
 #include "data1.h"
 #include "yaz/odr.h"
@@ -1537,6 +1536,187 @@ XS(_wrap_delete_RetrievalObj) {
         {
             if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalObj,0) < 0) {
                 SWIG_croak("Type error in argument 1 of delete_RetrievalObj. Expected _p_RetrievalObj");
+            }
+        }
+        free((char *) arg1);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_RetrievalRecordBuf_buf_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecordBuf *arg1 ;
+        char *arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: RetrievalRecordBuf_buf_set(self,buf);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalRecordBuf,0) < 0) {
+                SWIG_croak("Type error in argument 1 of RetrievalRecordBuf_buf_set. Expected _p_RetrievalRecordBuf");
+            }
+        }
+        if (!SvOK((SV*) ST(1))) arg2 = 0;
+        else arg2 = (char *) SvPV(ST(1), PL_na);
+        {
+            if (arg1->buf) free((char*)arg1->buf);
+            arg1->buf = (char *) malloc(strlen(arg2)+1);
+            strcpy((char*)arg1->buf,arg2);
+        }
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_RetrievalRecordBuf_buf_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecordBuf *arg1 ;
+        char *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: RetrievalRecordBuf_buf_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalRecordBuf,0) < 0) {
+                SWIG_croak("Type error in argument 1 of RetrievalRecordBuf_buf_get. Expected _p_RetrievalRecordBuf");
+            }
+        }
+        result = (char *) ((arg1)->buf);
+        
+        ST(argvi) = sv_newmortal();
+        if (result) {
+            sv_setpv((SV*)ST(argvi++), (char *) result);
+        }else {
+            sv_setsv((SV*)ST(argvi++), &PL_sv_undef);
+        }
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_RetrievalRecordBuf_len_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecordBuf *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: RetrievalRecordBuf_len_set(self,len);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalRecordBuf,0) < 0) {
+                SWIG_croak("Type error in argument 1 of RetrievalRecordBuf_len_set. Expected _p_RetrievalRecordBuf");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->len = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_RetrievalRecordBuf_len_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecordBuf *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: RetrievalRecordBuf_len_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalRecordBuf,0) < 0) {
+                SWIG_croak("Type error in argument 1 of RetrievalRecordBuf_len_get. Expected _p_RetrievalRecordBuf");
+            }
+        }
+        result = (int) ((arg1)->len);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_new_RetrievalRecordBuf) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecordBuf *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 0) || (items > 0)) {
+            SWIG_croak("Usage: new_RetrievalRecordBuf();");
+        }
+        result = (RetrievalRecordBuf *)(RetrievalRecordBuf *) calloc(1, sizeof(RetrievalRecordBuf));
+        
+        {
+            if (result->len) {
+                ST(argvi) = newSVpv(result->buf,result->len);
+            }else {
+                ST(argvi) = newSVpv("",0);
+            }
+            sv_2mortal(ST(argvi));
+            argvi++;
+        }
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_delete_RetrievalRecordBuf) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        RetrievalRecordBuf *arg1 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: delete_RetrievalRecordBuf(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_RetrievalRecordBuf,0) < 0) {
+                SWIG_croak("Type error in argument 1 of delete_RetrievalRecordBuf. Expected _p_RetrievalRecordBuf");
             }
         }
         free((char *) arg1);
@@ -3727,33 +3907,6 @@ XS(_wrap_begin_read) {
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
-        XSRETURN(argvi);
-        fail:
-        (void) _swigerr;
-    }
-    croak(_swigerr);
-}
-
-
-XS(_wrap_zts_test) {
-    char _swigmsg[SWIG_MAX_ERRMSG] = "";
-    const char *_swigerr = _swigmsg;
-    {
-        ZebraTransactionStatus *arg1 ;
-        int argvi = 0;
-        dXSARGS;
-        
-        if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: zts_test(stat);");
-        }
-        {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
-                SWIG_croak("Type error in argument 1 of zts_test. Expected _p_ZebraTransactionStatus");
-            }
-        }
-        zts_test(arg1);
-        
-        
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -8306,7 +8459,7 @@ static swig_type_info _swigt__p_Z_Espec1[] = {{"_p_Z_Espec1", 0, "Z_Espec1 *", 0
 static swig_type_info _swigt__p_off_t[] = {{"_p_off_t", 0, "off_t *", 0},{"_p_off_t"},{0}};
 static swig_type_info _swigt__p_Odr_oid[] = {{"_p_Odr_oid", 0, "Odr_oid *", 0},{"_p_Odr_oid"},{0}};
 static swig_type_info _swigt__p_data1_varset[] = {{"_p_data1_varset", 0, "data1_varset *", 0},{"_p_data1_varset"},{0}};
-static swig_type_info _swigt__p_RetrievalRecordBuf[] = {{"_p_RetrievalRecordBuf", 0, "RetrievalRecordBuf *", 0},{"_p_RetrievalRecordBuf"},{0}};
+static swig_type_info _swigt__p_RetrievalRecordBuf[] = {{"IDZebra::RetrievalRecordBuf", 0, "RetrievalRecordBuf *", 0},{"IDZebra::RetrievalRecordBuf"},{0}};
 static swig_type_info _swigt__p_perl_context[] = {{"_p_perl_context", 0, "struct perl_context *", 0},{"_p_perl_context"},{0}};
 static swig_type_info _swigt__p_data1_node[] = {{"_p_data1_node", 0, "data1_node *", 0},{"_p_data1_node"},{0}};
 static swig_type_info _swigt__p_ScanObj[] = {{"IDZebra::ScanObj", 0, "ScanObj *", 0},{"IDZebra::ScanObj"},{0}};
@@ -8465,6 +8618,12 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::RetrievalObj_records_get", _wrap_RetrievalObj_records_get},
 {"IDZebrac::new_RetrievalObj", _wrap_new_RetrievalObj},
 {"IDZebrac::delete_RetrievalObj", _wrap_delete_RetrievalObj},
+{"IDZebrac::RetrievalRecordBuf_buf_set", _wrap_RetrievalRecordBuf_buf_set},
+{"IDZebrac::RetrievalRecordBuf_buf_get", _wrap_RetrievalRecordBuf_buf_get},
+{"IDZebrac::RetrievalRecordBuf_len_set", _wrap_RetrievalRecordBuf_len_set},
+{"IDZebrac::RetrievalRecordBuf_len_get", _wrap_RetrievalRecordBuf_len_get},
+{"IDZebrac::new_RetrievalRecordBuf", _wrap_new_RetrievalRecordBuf},
+{"IDZebrac::delete_RetrievalRecordBuf", _wrap_delete_RetrievalRecordBuf},
 {"IDZebrac::RetrievalRecord_errCode_set", _wrap_RetrievalRecord_errCode_set},
 {"IDZebrac::RetrievalRecord_errCode_get", _wrap_RetrievalRecord_errCode_get},
 {"IDZebrac::RetrievalRecord_errString_set", _wrap_RetrievalRecord_errString_set},
@@ -8537,7 +8696,6 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::end_trans", _wrap_end_trans},
 {"IDZebrac::trans_no", _wrap_trans_no},
 {"IDZebrac::begin_read", _wrap_begin_read},
-{"IDZebrac::zts_test", _wrap_zts_test},
 {"IDZebrac::end_read", _wrap_end_read},
 {"IDZebrac::commit", _wrap_commit},
 {"IDZebrac::get_shadow_enable", _wrap_get_shadow_enable},
@@ -8708,6 +8866,7 @@ XS(SWIG_init) {
     
     SWIG_TypeClientData(SWIGTYPE_p_recordGroup, (void*) "IDZebra::recordGroup");
     SWIG_TypeClientData(SWIGTYPE_p_RetrievalObj, (void*) "IDZebra::RetrievalObj");
+    SWIG_TypeClientData(SWIGTYPE_p_RetrievalRecordBuf, (void*) "IDZebra::RetrievalRecordBuf");
     SWIG_TypeClientData(SWIGTYPE_p_RetrievalRecord, (void*) "IDZebra::RetrievalRecord");
     SWIG_TypeClientData(SWIGTYPE_p_scanEntry, (void*) "IDZebra::scanEntry");
     SWIG_TypeClientData(SWIGTYPE_p_ScanObj, (void*) "IDZebra::ScanObj");

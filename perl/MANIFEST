@@ -10,6 +10,9 @@ demo/index.sh
 demo/pod.abs
 demo/pod.pm
 demo/zebra.cfg
+demo/register
+demo/lock
+demo/tmp
 lib/IDZebra.pm
 lib/IDZebra/Data1.pm
 lib/IDZebra/Filter.pm
