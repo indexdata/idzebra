@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.115 2004-05-05 16:22:18 mike Exp $
+/* $Id: zserver.c,v 1.116 2004-07-28 08:15:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -638,7 +638,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    0, /* match */
 				    0, /* fname */
 				    rec->u.octet_aligned->buf,
-				    rec->u.octet_aligned->len);
+				    rec->u.octet_aligned->len,
+				    0);
 				if (r)
 				{
 				    rr->errcode = 224;
@@ -700,7 +701,7 @@ static void bend_start (struct statserv_options_block *sob)
 {
     if (sob->handle)
 	zebra_stop((ZebraService) sob->handle);
-    sob->handle = zebra_start(sob->configname, 0, 0);
+    sob->handle = zebra_start(sob->configname);
     if (!sob->handle)
     {
 	yaz_log (LOG_FATAL, "Failed to read config `%s'", sob->configname);

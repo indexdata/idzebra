@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 06_retrieval.t,v 1.4 2003-03-04 23:32:55 pop Exp $
+# $Id: 06_retrieval.t,v 1.5 2004-07-28 08:15:47 adam Exp $
 #
 # Perl API header
 # =============================================================================
@@ -20,7 +20,8 @@ use Test::More tests => 19;
 # Session opening and closing
 BEGIN {
     use IDZebra;
-    IDZebra::logFile("test.log");
+    unlink("test06.log");
+    IDZebra::logFile("test06.log");
     use_ok('IDZebra::Session'); 
     use_ok('pod');
 }

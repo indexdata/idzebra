@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.12 2004-01-22 11:27:21 adam Exp $
+/* $Id: zebraapi.h,v 1.13 2004-07-28 08:15:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -82,8 +82,9 @@ typedef struct zebra_service *ZebraService;
 
 /* Start Zebra using file 'configName' (usually zebra.cfg) */
 /* There should be exactly one ZebraService */
-YAZ_EXPORT ZebraService zebra_start (const char *configName,
-				     Res def_res, Res over_res);
+YAZ_EXPORT ZebraService zebra_start (const char *configName);
+YAZ_EXPORT ZebraService zebra_start_res (const char *configName,
+				         Res def_res, Res over_res);
 
 /* Close the whole Zebra */
 YAZ_EXPORT int zebra_stop (ZebraService zs);
@@ -210,7 +211,8 @@ int zebra_add_record (ZebraHandle zh, const char *buf, int buf_size);
 int zebra_insert_record (ZebraHandle zh, 
 			 const char *recordType,
 			 int *sysno, const char *match, const char *fname,
-			 const char *buf, int buf_size);
+			 const char *buf, int buf_size,
+			 int force_update);
 int zebra_update_record (ZebraHandle zh, 
 			 const char *recordType,
 			 int* sysno, const char *match, const char *fname,
@@ -232,7 +234,6 @@ YAZ_EXPORT int zebra_sort (ZebraHandle zh, ODR stream,
                             const char *output_setname,
                             Z_SortKeySpecList *sort_sequence,
                             int *sort_status);
-
 
 YAZ_EXPORT
 int zebra_select_databases (ZebraHandle zh, int num_bases, 

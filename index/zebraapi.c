@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.119 2004-05-10 08:47:54 adam Exp $
+/* $Id: zebraapi.c,v 1.120 2004-07-28 08:15:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -147,7 +147,12 @@ ZebraHandle zebra_open (ZebraService zs)
     return zh;
 }
 
-ZebraService zebra_start (const char *configName, Res def_res, Res over_res)
+ZebraService zebra_start (const char *configName)
+{
+    return zebra_start_res(configName, 0, 0);
+}
+
+ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
 {
     Res res;
 
@@ -1340,7 +1345,10 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         
         (zh->trans_no++);
         if (zh->trans_w_no)
+	{
+	    read_res_for_transaction(zh);
             return 0;
+	}
         if (zh->trans_no != 1)
         {
             zh->errCode = 2;
@@ -1947,7 +1955,7 @@ int zebra_add_record(ZebraHandle zh,
 int zebra_insert_record (ZebraHandle zh, 
 			 const char *recordType,
 			 int *sysno, const char *match, const char *fname,
-			 const char *buf, int buf_size)
+			 const char *buf, int buf_size, int force_update)
 {
     int res;
     yaz_log(LOG_API,"zebra_insert_record sysno=%d", *sysno);
@@ -1990,6 +1998,7 @@ int zebra_update_record (ZebraHandle zh,
 				 match, fname,
 				 force_update, 
 				 1); /* allow_update */
+    yaz_log(LOG_LOG, "zebra_update_record returned res=%d", res);
     zebra_end_trans(zh); 
     return res; 
 }
@@ -2084,3 +2093,4 @@ int zebra_sort_by_specstr (ZebraHandle zh,
     zebra_end_read(zh);
     return sort_status;
 }
+

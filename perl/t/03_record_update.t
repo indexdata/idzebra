@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 03_record_update.t,v 1.6 2003-07-07 10:59:33 pop Exp $
+# $Id: 03_record_update.t,v 1.7 2004-07-28 08:15:47 adam Exp $
 #
 # Perl API header
 # =============================================================================
@@ -20,7 +20,8 @@ use Test::More tests => 18;
 # Session opening and closing
 BEGIN {
     use_ok('IDZebra');
-    IDZebra::logFile("test.log");
+    unlink("test03.log");
+    IDZebra::logFile("test03.log");
     use_ok('IDZebra::Session'); 
     use_ok('pod');
 }
@@ -41,6 +42,8 @@ my $rec3=`cat lib/IDZebra/Session.pm`;
 
 my ($sysno, $stat);
 
+# ADAM: we must set database separately (can't be set from group)
+$sess->databases('demo1');
 $sess->begin_trans;
 $sysno = $sess->update_record(data       => $rec1,
 			      recordType => 'grs.perl.pod',

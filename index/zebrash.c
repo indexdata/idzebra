@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.26 2004-06-15 07:42:45 adam Exp $
+/* $Id: zebrash.c,v 1.27 2004-07-28 08:15:45 adam Exp $
    Copyright (C) 2002,2003,2004
    Index Data Aps
 
@@ -166,7 +166,7 @@ static int cmd_zebra_start( char *args[], WRBUF outbuff)
 	wrbuf_puts(outbuff, "\n");
 	conf=default_config;
     }
-    zs=zebra_start(conf, 0, 0);
+    zs=zebra_start(conf);
     if (!zs) {
 	wrbuf_puts(outbuff, "zebra_start failed" );
 	return 2;
@@ -357,7 +357,8 @@ static int cmd_record_insert( char *args[], WRBUF outbuff)
 			     0,  /* match */
 			     0,  /* fname */
 			     rec,
-			     strlen(rec));
+			     strlen(rec),
+			     0);
     if (0==rc)
     {
         wrbuf_printf(outbuff,"ok sysno=%d\n",sysno);

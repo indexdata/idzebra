@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.111 2004-05-30 18:05:30 adam Exp $
+/* $Id: main.c,v 1.112 2004-07-28 08:15:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -122,7 +122,7 @@ int main (int argc, char **argv)
 		    const char *config = configName ? configName : "zebra.cfg";
                     logf (LOG_LOG, "Zebra version %s %s",
                           ZEBRAVER, ZEBRADATE);
-                    zs = zebra_start (config, 0, res);
+                    zs = zebra_start_res (config, 0, res);
                     if (!zs)
                     {
 			yaz_log (LOG_FATAL, "Cannot read config %s", config);

@@ -1,4 +1,4 @@
-# $Id: Resultset.pm,v 1.10 2003-07-26 16:27:46 pop Exp $
+# $Id: Resultset.pm,v 1.11 2004-07-28 08:15:46 adam Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -12,7 +12,7 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.10 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.11 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -131,6 +131,8 @@ sub records {
     
     my $class        = $args{class}        ? $args{class}         : '';
     
+    # ADAM: Reset before we use it (not after)
+    IDZebra::odr_reset($self->{odr_stream});
 
     my $ro = IDZebra::RetrievalObj->new();
     IDZebra::records_retrieve($self->{session}{zh},
@@ -154,8 +156,6 @@ sub records {
 	    push (@res, $rec); 
 	}
     }
-
-    IDZebra::odr_reset($self->{odr_stream});
 
     return (@res);
 }

@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 02_directory_update.t,v 1.3 2003-03-05 13:55:22 pop Exp $
+# $Id: 02_directory_update.t,v 1.4 2004-07-28 08:15:47 adam Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,13 +14,14 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests => 9;
+use Test::More tests => 8;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
 BEGIN {
     use_ok('IDZebra');
-    IDZebra::logFile("test.log");
+    unlink("test02.log");
+    IDZebra::logFile("test02.log");
     use_ok('IDZebra::Session'); 
     use_ok('pod');
 }
@@ -41,6 +42,9 @@ $sess->init();
 # ----------------------------------------------------------------------------
 # repository upadte
 
+# ADAM: we must set database separately (can't be used from group)
+$sess->databases('demo2');
+
 our $filecount = 8;
 $sess->begin_trans;
 $sess->update(path      =>  'lib');
@@ -48,6 +52,9 @@ my $stat = $sess->end_trans;
 
 ok(($stat->{inserted} == $filecount), 
    "Inserted $stat->{inserted}/$filecount records");
+
+# ADAM: we must set database separately (can't be used from group)
+$sess->databases('demo1');
 
 $sess->begin_trans;
 $sess->update(groupName => 'demo1',
@@ -72,7 +79,7 @@ $stat = $sess->end_trans;
 ok(($stat->{inserted} == $filecount), 
    "Inserted $stat->{inserted}/$filecount records with shadow");
 
-ok(($sess->group->{databaseName} eq "demo2"),"Original group is selected");
+# ok(($sess->group->{databaseName} eq "demo2"),"Original group is selected"); deleted
 
 # ----------------------------------------------------------------------------
 # Close session

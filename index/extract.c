@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.155 2004-06-03 11:45:28 adam Exp $
+/* $Id: extract.c,v 1.156 2004-07-28 08:15:45 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1032,7 +1032,7 @@ int buffer_extract_record (ZebraHandle zh,
 		extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
 		rec_rm (&rec);
 		logRecord(zh);
-		return 0;
+		return -1;
 	    }
 	}
 

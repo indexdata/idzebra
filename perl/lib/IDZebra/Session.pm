@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.19 2003-07-26 16:27:46 pop Exp $
+# $Id: Session.pm,v 1.20 2004-07-28 08:15:46 adam Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -16,7 +16,7 @@ BEGIN {
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
     require Exporter;
-    our $VERSION = do { my @r = (q$Revision: 1.19 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.20 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger Exporter);
     our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
@@ -91,10 +91,15 @@ sub open {
 
     # This is needed in order to somehow initialize the service
     $self->databases("Default");
-
+    
+    # ADAM: group call deleted
     # Load the default configuration
-    $self->group(%args);
+    # $self->group(%args);
 
+    # ADAM: Set group resource instead
+    if (defined($args{groupName})) {
+	IDZebra::set_resource($self->{zh}, "group", $args{groupName});
+    }
 
     # Set shadow usage
     my $shadow = defined($args{shadow}) ? $args{shadow} : 0;
@@ -162,7 +167,9 @@ sub DESTROY {
 # -----------------------------------------------------------------------------
 # Record group selection  This is a bit nasty... but used at many places 
 # -----------------------------------------------------------------------------
-sub group {
+
+# ADAM: All these group functions have been disabled.
+sub group_deleted {
     my ($self,%args) = @_;
     $self->checkzh;
     if ($#_ > 0) {
@@ -172,14 +179,14 @@ sub group {
     return($self->{rg});
 }
 
-sub selectRecordGroup {
+sub selectRecordGroup_deleted {
     my ($self, $groupName) = @_;
     $self->checkzh;
     $self->{rg} = $self->_getRecordGroup($groupName);
     $self->_selectRecordGroup($self->{rg});
 }
 
-sub _displayRecordGroup {
+sub _displayRecordGroup_deleted {
     my ($self, $rg) = @_;
     print STDERR "-----\n";
     foreach my $key qw (groupName 
@@ -197,7 +204,7 @@ sub _displayRecordGroup {
     }
 }
 
-sub _cloneRecordGroup {
+sub _cloneRecordGroup_deleted {
     my ($self, $orig) = @_;
     my $rg = IDZebra::recordGroup->new();
     my $r = IDZebra::init_recordGroup($rg);
@@ -218,7 +225,7 @@ sub _cloneRecordGroup {
     return ($rg);
 }
 
-sub _getRecordGroup {
+sub _getRecordGroup_deleted {
     my ($self, $groupName, $ext) = @_;
     my $rg = IDZebra::recordGroup->new();
     my $r = IDZebra::init_recordGroup($rg);
@@ -228,7 +235,7 @@ sub _getRecordGroup {
     return ($rg);
 }
 
-sub _makeRecordGroup {
+sub _makeRecordGroup_deleted {
     my ($self, %args) = @_;
     my $rg;
 
@@ -246,7 +253,7 @@ sub _makeRecordGroup {
     return ($rg);
 }
 
-sub _setRecordGroupOptions {
+sub _setRecordGroupOptions_deleted {
     my ($self, $rg, %args) = @_;
 
     foreach my $key qw (databaseName 
@@ -265,7 +272,7 @@ sub _setRecordGroupOptions {
 	}
     }
 }
-sub _selectRecordGroup {
+sub _selectRecordGroup_deleted {
     my ($self, $rg) = @_;
 
     my $r = IDZebra::set_group($self->{zh}, $rg);
@@ -412,37 +419,54 @@ sub compact {
 sub update {
     my ($self, %args) = @_;
     $self->checkzh;
-    my $rg = $self->_update_args(%args);
-    $self->_selectRecordGroup($rg);
+    # ADAM: Set group resource
+    if (defined($args{groupName})) {
+	IDZebra::set_resource($self->{zh}, "group", $args{groupName});
+    }
+    # ADAM: disabled
+#    my $rg = $self->_update_args(%args); deleted
+#    $self->_selectRecordGroup($rg); deleted
     $self->begin_trans;
-    IDZebra::repository_update($self->{zh});
-    $self->_selectRecordGroup($self->{rg});
+    IDZebra::repository_update($self->{zh}, $args{path});
+#     $self->_selectRecordGroup($self->{rg}); deleted
     $self->end_trans;
 }
 
 sub delete {
     my ($self, %args) = @_;
     $self->checkzh;
-    my $rg = $self->_update_args(%args);
-    $self->_selectRecordGroup($rg);
+    # ADAM: Set group resource
+    if (defined($args{groupName})) {
+	IDZebra::set_resource($self->{zh}, "group", $args{groupName});
+    }
+    # ADAM: disabled
+#    my $rg = $self->_update_args(%args); deleted
+#    $self->_selectRecordGroup($rg); deleted
     $self->begin_trans;
-    IDZebra::repository_delete($self->{zh});
-    $self->_selectRecordGroup($self->{rg});
+    IDZebra::repository_delete($self->{zh}, $args{path});
+    # ADAM: disabled
+#     $self->_selectRecordGroup($self->{rg});
     $self->end_trans;
 }
 
 sub show {
     my ($self, %args) = @_;
     $self->checkzh;
-    my $rg = $self->_update_args(%args);
-    $self->_selectRecordGroup($rg);
+    # ADAM: Set group resource
+    if (defined($args{groupName})) {
+	IDZebra::set_resource($self->{zh}, "group", $args{groupName});
+    }
+    # ADAM: disabled
+#    my $rg = $self->_update_args(%args);
+#    $self->_selectRecordGroup($rg);
+
     $self->begin_trans;
     IDZebra::repository_show($self->{zh});
     $self->_selectRecordGroup($self->{rg});
     $self->end_trans;
 }
 
-sub _update_args {
+sub _update_args_deleted {
     my ($self, %args) = @_;
     my $rg = $self->_makeRecordGroup(%args);
     $self->_selectRecordGroup($rg);
@@ -457,9 +481,9 @@ sub insert_record {
     $self->checkzh;
     my @args = $self->_record_update_args(%args);
     my $stat = IDZebra::insert_record($self->{zh}, @args);
-    my $sysno = $args[2]; $stat = -1 * $stat if ($stat > 0);
+    # ADAM: rg no longer part of vector
+    my $sysno = $args[1]; $stat = -1 * $stat if ($stat > 0);
     return $stat ? $stat : $$sysno;
-    if ($stat) { return ($stat); } else { return $sysno};
 }
 
 sub update_record {
@@ -467,9 +491,9 @@ sub update_record {
     $self->checkzh;
     my @args = $self->_record_update_args(%args);
     my $stat = IDZebra::update_record($self->{zh}, @args);
-    my $sysno = $args[2]; $stat = -1 * $stat if ($stat > 0);
+    # ADAM: rg no longer part of vector
+    my $sysno = $args[1]; $stat = -1 * $stat if ($stat > 0);
     return $stat ? $stat : $$sysno;
-    if ($stat) { return ($stat); } else { return $$sysno};
 }
 
 sub delete_record {
@@ -477,8 +501,8 @@ sub delete_record {
     $self->checkzh;
     my @args = $self->_record_update_args(%args);
     my $stat = IDZebra::delete_record($self->{zh}, @args);
-    my $sysno = $args[2]; $stat = -1 * $stat if ($stat > 0);
-    return $stat ? $stat : $$sysno;
+    # ADAM: rg no longer part of vector
+    my $sysno = $args[1]; $stat = -1 * $stat if ($stat > 0);
 }
 
 sub _record_update_args {
@@ -509,23 +533,30 @@ sub _record_update_args {
     delete ($args{data});
     delete ($args{force});
 
-    my $rg = $self->_makeRecordGroup(%args);
+# ADAM: recordGroup removed ...
+#    my $rg = $self->_makeRecordGroup(%args);
 
     # If no record type is given, then try to find it out from the
-    # file extension;
-    unless ($rectype) {
-	if (my ($ext) = $fname =~ /\.(\w+)$/) {
-	    my $rg2 = $self->_getRecordGroup($rg->{groupName},$ext);
-	    $rectype = $rg2->{recordType};
-	} 
-    }
+    # file extension; deleted
+    #unless ($rectype) { 
+#	if (my ($ext) = $fname =~ /\.(\w+)$/) {
+#	    my $rg2 = $self->_getRecordGroup($rg->{groupName},$ext);
+#	    $rectype = $rg2->{recordType};
+#	} 
+#    }
 
-    $rg->{databaseName} = "Default" unless ($rg->{databaseName});
+#    $rg->{databaseName} = "Default" unless ($rg->{databaseName});
 
     unless ($rectype) {
 	$rectype="";
     }
-    return ($rg, $rectype, \$sysno, $match, $fname, $buff, $len, $force);
+    # ADAM: set group resource
+    if (defined($args{groupName})) {
+	IDZebra::set_resource($self->{zh}, "group", $args{groupName});
+    }
+
+    # ADAM: rg no longer part of vector..
+    return ($rectype, \$sysno, $match, $fname, $buff, $len, $force);
 }
 
 # -----------------------------------------------------------------------------

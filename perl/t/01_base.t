@@ -1,6 +1,6 @@
 #!perl -Tw
 # =============================================================================
-# $Id: 01_base.t,v 1.5 2003-03-05 14:15:07 pop Exp $
+# $Id: 01_base.t,v 1.6 2004-07-28 08:15:47 adam Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,13 +14,14 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests=>10;
+use Test::More tests=>8;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
 BEGIN {
     use_ok('IDZebra');
-    IDZebra::logFile("test.log");
+    unlink("test01.log");
+    IDZebra::logFile("test01.log");
     use_ok('IDZebra::Session'); 
 }
 
@@ -49,12 +50,13 @@ isa_ok($sess,"IDZebra::Session");
 ok(defined($sess->{zh}), "Zebra handle opened");
 
 # ----------------------------------------------------------------------------
-# Record group tests
-ok(($sess->group->{databaseName} eq "demo1"),"Record group is selected");
+# Record group tests deleted
+# ADAM: we cant do this anymore!
+#ok(($sess->group->{databaseName} eq "demo1"),"Record group is selected");
 
-$sess->group(groupName => 'demo2');
+#$sess->group(groupName => 'demo2');
 
-ok(($sess->group->{databaseName} eq "demo2"),"Record group is selected");
+#ok(($sess->group->{databaseName} eq "demo2"),"Record group is selected");
 
 # ---------------------------------------------------------------------------
 # Transactions
@@ -63,8 +65,6 @@ eval {$sess->begin_trans(TRANS_RW);};
 ok (($@ ne ""), $@);
 $sess->end_trans;
 $sess->end_trans;
-
-
 
 
 # ----------------------------------------------------------------------------

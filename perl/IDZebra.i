@@ -88,20 +88,6 @@
 
 
 /*%include "zebra_perl.h" */
-typedef struct {
-    char  *groupName;
-    char  *databaseName;
-    char  *path;
-    char  *recordId;
-    char  *recordType;
-    int   flagStoreData;
-    int   flagStoreKeys;
-    int   flagRw;
-    int   fileVerboseLimit;
-    int   databaseNamePath;
-    int   explainDatabase;
-    int   followLinks;
-} recordGroup;
 
 typedef struct {
   int noOfRecords;
@@ -216,18 +202,16 @@ const char * zebra_errString (ZebraHandle zh);
 char *  zebra_errAdd (ZebraHandle zh); 
 
 
-/* == Record groups and database selection ================================= */
+/* == Zebra resources and database selection =============================== */
 
-/* initialize a recordGroup (zebra_api_ext.c); */
-void init_recordGroup (recordGroup *rg);
+/* set a resource */
+%name(set_resource)     
+void zebra_set_resource(ZebraHandle zh, const char *name, const char *value);
 
-/* set up a recordGroup for a specific file extension from zebra.cfg 
-   (zebra_api_ext.c); */
-void res_get_recordGroup (ZebraHandle zh, recordGroup *rg, 
-			  const char *ext); 
-/* set current record group for update purposes (zebraapi.c) */
-%name(set_group)           
-void zebra_set_group (ZebraHandle zh, struct recordGroup *rg);
+/* get a resource */
+%name(get_resource)     
+const char *zebra_set_resource(ZebraHandle zh, const char *name,
+                               const char *defaultvalue);
 
 /* select database for update purposes (zebraapi.c) */
 %name(select_database)     
@@ -297,7 +281,8 @@ int zebra_insert_record (ZebraHandle zh,
 			 const char *match, 
 			 const char *fname,
 			 const char *buf, 
-			 int buf_size);
+			 int buf_size,
+	 	         int force_update);
 
 %name(update_record)       
 int zebra_update_record (ZebraHandle zh, 

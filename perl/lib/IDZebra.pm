@@ -50,9 +50,8 @@ package IDZebra;
 *errCode = *IDZebrac::errCode;
 *errString = *IDZebrac::errString;
 *errAdd = *IDZebrac::errAdd;
-*init_recordGroup = *IDZebrac::init_recordGroup;
-*res_get_recordGroup = *IDZebrac::res_get_recordGroup;
-*set_group = *IDZebrac::set_group;
+*set_resource = *IDZebrac::set_resource;
+*get_resource = *IDZebrac::get_resource;
 *select_database = *IDZebrac::select_database;
 *select_databases = *IDZebrac::select_databases;
 *begin_trans = *IDZebrac::begin_trans;
@@ -173,97 +172,6 @@ sub getScanEntry {
 *grs_perl_get_dh = *IDZebrac::grs_perl_get_dh;
 *grs_perl_get_mem = *IDZebrac::grs_perl_get_mem;
 *grs_perl_set_res = *IDZebrac::grs_perl_set_res;
-
-############# Class : IDZebra::recordGroup ##############
-
-package IDZebra::recordGroup;
-@ISA = qw( IDZebra );
-%OWNER = ();
-%BLESSEDMEMBERS = (
-);
-
-%ITERATORS = ();
-*swig_groupName_get = *IDZebrac::recordGroup_groupName_get;
-*swig_groupName_set = *IDZebrac::recordGroup_groupName_set;
-*swig_databaseName_get = *IDZebrac::recordGroup_databaseName_get;
-*swig_databaseName_set = *IDZebrac::recordGroup_databaseName_set;
-*swig_path_get = *IDZebrac::recordGroup_path_get;
-*swig_path_set = *IDZebrac::recordGroup_path_set;
-*swig_recordId_get = *IDZebrac::recordGroup_recordId_get;
-*swig_recordId_set = *IDZebrac::recordGroup_recordId_set;
-*swig_recordType_get = *IDZebrac::recordGroup_recordType_get;
-*swig_recordType_set = *IDZebrac::recordGroup_recordType_set;
-*swig_flagStoreData_get = *IDZebrac::recordGroup_flagStoreData_get;
-*swig_flagStoreData_set = *IDZebrac::recordGroup_flagStoreData_set;
-*swig_flagStoreKeys_get = *IDZebrac::recordGroup_flagStoreKeys_get;
-*swig_flagStoreKeys_set = *IDZebrac::recordGroup_flagStoreKeys_set;
-*swig_flagRw_get = *IDZebrac::recordGroup_flagRw_get;
-*swig_flagRw_set = *IDZebrac::recordGroup_flagRw_set;
-*swig_fileVerboseLimit_get = *IDZebrac::recordGroup_fileVerboseLimit_get;
-*swig_fileVerboseLimit_set = *IDZebrac::recordGroup_fileVerboseLimit_set;
-*swig_databaseNamePath_get = *IDZebrac::recordGroup_databaseNamePath_get;
-*swig_databaseNamePath_set = *IDZebrac::recordGroup_databaseNamePath_set;
-*swig_explainDatabase_get = *IDZebrac::recordGroup_explainDatabase_get;
-*swig_explainDatabase_set = *IDZebrac::recordGroup_explainDatabase_set;
-*swig_followLinks_get = *IDZebrac::recordGroup_followLinks_get;
-*swig_followLinks_set = *IDZebrac::recordGroup_followLinks_set;
-sub new {
-    my $pkg = shift;
-    my @args = @_;
-    my $self = IDZebrac::new_recordGroup(@args);
-    return undef if (!defined($self));
-    $OWNER{$self} = 1;
-    my %retval;
-    tie %retval, "IDZebra::recordGroup", $self;
-    return bless \%retval, $pkg;
-}
-
-sub DESTROY {
-    return unless $_[0]->isa('HASH');
-    my $self = tied(%{$_[0]});
-    return unless defined $self;
-    delete $ITERATORS{$self};
-    if (exists $OWNER{$self}) {
-        IDZebrac::delete_recordGroup($self);
-        delete $OWNER{$self};
-    }
-}
-
-sub DISOWN {
-    my $self = shift;
-    my $ptr = tied(%$self);
-    delete $OWNER{$ptr};
-    };
-
-sub ACQUIRE {
-    my $self = shift;
-    my $ptr = tied(%$self);
-    $OWNER{$ptr} = 1;
-    };
-
-sub FETCH {
-    my ($self,$field) = @_;
-    my $member_func = "swig_${field}_get";
-    my $val = $self->$member_func();
-    if (exists $BLESSEDMEMBERS{$field}) {
-        return undef if (!defined($val));
-        my %retval;
-        tie %retval,$BLESSEDMEMBERS{$field},$val;
-        return bless \%retval, $BLESSEDMEMBERS{$field};
-    }
-    return $val;
-}
-
-sub STORE {
-    my ($self,$field,$newval) = @_;
-    my $member_func = "swig_${field}_set";
-    if (exists $BLESSEDMEMBERS{$field}) {
-        $self->$member_func(tied(%{$newval}));
-    } else {
-        $self->$member_func($newval);
-    }
-}
-
 
 ############# Class : IDZebra::RetrievalObj ##############
 
