@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.8  1995-12-06 14:48:27  quinn
+ * Revision 1.9  1995-12-06 15:48:46  quinn
+ * Fixed update-problem.
+ *
+ * Revision 1.8  1995/12/06  14:48:27  quinn
  * Fixed some strange bugs.
  *
  * Revision 1.7  1995/12/06  09:59:46  quinn
@@ -337,7 +340,7 @@ int is_m_peek_record(is_mtable *tab, void *rec)
     return 1;
 }
 
-int is_m_read_record(is_mtable *tab, void *buf)
+int is_m_read_record(is_mtable *tab, void *buf, int keep)
 {
     is_mbuf *mbuf;
 
@@ -350,7 +353,7 @@ int is_m_read_record(is_mtable *tab, void *buf)
     {
 	if (!mbuf->next) /* end of mblock */
 	{
-	    if (tab->cur_mblock->state == IS_MBSTATE_CLEAN &&
+	    if (!keep && tab->cur_mblock->state == IS_MBSTATE_CLEAN &&
 		tab->cur_mblock->diskpos > 0)
 	    {
 		xfree_mbufs(tab->cur_mblock->data);
@@ -388,7 +391,7 @@ int is_m_seek_record(is_mtable *tab, const void *rec)
 
     for (;;)
     {
-	if (is_m_read_record(tab, &peek) <= 0)
+	if (is_m_read_record(tab, &peek, 1) <= 0)
 	    return 1;
 	if ((rs = (*tab->is->cmp)(peek, rec)) > 0)
 	{

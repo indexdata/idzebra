@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.16  1995-12-06 14:48:26  quinn
+ * Revision 1.17  1995-12-06 15:48:44  quinn
+ * Fixed update-problem.
+ *
+ * Revision 1.16  1995/12/06  14:48:26  quinn
  * Fixed some strange bugs.
  *
  * Revision 1.15  1995/12/06  09:59:45  quinn
@@ -470,7 +473,7 @@ void is_pt_free(ISPT ip)
  */
 int is_readkey(ISPT ip, void *buf)
 {
-    return is_m_read_record(&ip->tab, buf);
+    return is_m_read_record(&ip->tab, buf, 0);
 }    
 
 int is_numkeys(ISPT ip)

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.h,v $
- * Revision 1.3  1994-09-28 16:58:33  quinn
+ * Revision 1.4  1995-12-06 15:48:47  quinn
+ * Fixed update-problem.
+ *
+ * Revision 1.3  1994/09/28  16:58:33  quinn
  * Small mod.
  *
  * Revision 1.2  1994/09/27  20:03:52  quinn
@@ -90,7 +93,7 @@ void is_m_rewind(is_mtable *tab);
 void is_m_replace_record(is_mtable *tab, const void *rec);
 int is_m_write_record(is_mtable *tab, const void *rec);
 void is_m_unread_record(is_mtable *tab);
-int is_m_read_record(is_mtable *tab, void *buf);
+int is_m_read_record(is_mtable *tab, void *buf, int keep);
 int is_m_seek_record(is_mtable *tab, const void *rec);
 void is_m_delete_record(is_mtable *tab);
 int is_m_peek_record(is_mtable *tab, void *rec);
