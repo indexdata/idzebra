@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.159 2004-11-03 16:04:45 heikki Exp $
+/* $Id: zrpn.c,v 1.160 2004-11-15 22:57:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -37,7 +37,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rset.h>
 
 
-static const struct key_control it_ctrl = { 
+static const struct key_control it_ctrl =
+{ 
     sizeof(struct it_key),
     2, /* we have sysnos and seqnos in this key, nothing more */
     key_compare_it, 
@@ -48,12 +49,14 @@ static const struct key_control it_ctrl = {
 
 const struct key_control *key_it_ctrl = &it_ctrl;
 
-struct rpn_char_map_info {
+struct rpn_char_map_info
+{
     ZebraMaps zm;
     int reg_type;
 };
 
-typedef struct {
+typedef struct
+{
     int type;
     int major;
     int minor;
@@ -61,18 +64,18 @@ typedef struct {
 } AttrType;
 
 
-static const char **rpn_char_map_handler (void *vp, const char **from, int len)
+static const char **rpn_char_map_handler(void *vp, const char **from, int len)
 {
     struct rpn_char_map_info *p = (struct rpn_char_map_info *) vp;
-    const char **out = zebra_maps_input (p->zm, p->reg_type, from, len, 0);
+    const char **out = zebra_maps_input(p->zm, p->reg_type, from, len, 0);
 #if 0
     if (out && *out)
     {
         const char *outp = *out;
-        yaz_log (LOG_LOG, "---");
+        yaz_log(LOG_LOG, "---");
         while (*outp)
         {
-            yaz_log (LOG_LOG, "%02X", *outp);
+            yaz_log(LOG_LOG, "%02X", *outp);
             outp++;
         }
     }
@@ -80,15 +83,15 @@ static const char **rpn_char_map_handler (void *vp, const char **from, int len)
     return out;
 }
 
-static void rpn_char_map_prepare (struct zebra_register *reg, int reg_type,
+static void rpn_char_map_prepare(struct zebra_register *reg, int reg_type,
                                   struct rpn_char_map_info *map_info)
 {
     map_info->zm = reg->zebra_maps;
     map_info->reg_type = reg_type;
-    dict_grep_cmap (reg->dict, map_info, rpn_char_map_handler);
+    dict_grep_cmap(reg->dict, map_info, rpn_char_map_handler);
 }
 
-static int attr_find_ex (AttrType *src, oid_value *attributeSetP,
+static int attr_find_ex(AttrType *src, oid_value *attributeSetP,
                          const char **string_value)
 {
     int num_attributes;
@@ -109,7 +112,7 @@ static int attr_find_ex (AttrType *src, oid_value *attributeSetP,
                 {
                     oident *attrset;
 
-                    attrset = oid_getentbyoid (element->attributeSet);
+                    attrset = oid_getentbyoid(element->attributeSet);
                     *attributeSetP = attrset->value;
                 }
                 return *element->value.numeric;
@@ -121,7 +124,7 @@ static int attr_find_ex (AttrType *src, oid_value *attributeSetP,
                 {
                     oident *attrset;
                     
-                    attrset = oid_getentbyoid (element->attributeSet);
+                    attrset = oid_getentbyoid(element->attributeSet);
                     *attributeSetP = attrset->value;
                 }
                 if (element->value.complex->list[src->minor]->which ==  
@@ -144,7 +147,7 @@ static int attr_find_ex (AttrType *src, oid_value *attributeSetP,
                 else
                     break;
             default:
-                assert (0);
+                assert(0);
             }
         }
         ++(src->major);
@@ -152,12 +155,12 @@ static int attr_find_ex (AttrType *src, oid_value *attributeSetP,
     return -1;
 }
 
-static int attr_find (AttrType *src, oid_value *attributeSetP)
+static int attr_find(AttrType *src, oid_value *attributeSetP)
 {
-    return attr_find_ex (src, attributeSetP, 0);
+    return attr_find_ex(src, attributeSetP, 0);
 }
 
-static void attr_init (AttrType *src, Z_AttributesPlusTerm *zapt,
+static void attr_init(AttrType *src, Z_AttributesPlusTerm *zapt,
                        int type)
 {
     src->zapt = zapt;
@@ -180,13 +183,13 @@ struct grep_info {
     ZebraSet termset;
 };        
 
-static void term_untrans  (ZebraHandle zh, int reg_type,
+static void term_untrans(ZebraHandle zh, int reg_type,
                            char *dst, const char *src)
 {
     int len = 0;
     while (*src)
     {
-        const char *cp = zebra_maps_output (zh->reg->zebra_maps,
+        const char *cp = zebra_maps_output(zh->reg->zebra_maps,
                                             reg_type, &src);
         if (!cp && len < IT_MAX_WORD-1)
             dst[len++] = *src++;
@@ -197,7 +200,7 @@ static void term_untrans  (ZebraHandle zh, int reg_type,
     dst[len] = '\0';
 }
 
-static void add_isam_p (const char *name, const char *info,
+static void add_isam_p(const char *name, const char *info,
                         struct grep_info *p)
 {
     if (p->isam_p_indx == p->isam_p_size)
@@ -207,30 +210,30 @@ static void add_isam_p (const char *name, const char *info,
         int *new_term_no;        
 #endif
         p->isam_p_size = 2*p->isam_p_size + 100;
-        new_isam_p_buf = (ISAMC_P *) xmalloc (sizeof(*new_isam_p_buf) *
+        new_isam_p_buf = (ISAMC_P *) xmalloc(sizeof(*new_isam_p_buf) *
                                              p->isam_p_size);
         if (p->isam_p_buf)
         {
-            memcpy (new_isam_p_buf, p->isam_p_buf,
+            memcpy(new_isam_p_buf, p->isam_p_buf,
                     p->isam_p_indx * sizeof(*p->isam_p_buf));
-            xfree (p->isam_p_buf);
+            xfree(p->isam_p_buf);
         }
         p->isam_p_buf = new_isam_p_buf;
 
 #ifdef TERM_COUNT
-        new_term_no = (int *) xmalloc (sizeof(*new_term_no) *
+        new_term_no = (int *) xmalloc(sizeof(*new_term_no) *
                                        p->isam_p_size);
         if (p->term_no)
         {
-            memcpy (new_term_no, p->isam_p_buf,
+            memcpy(new_term_no, p->isam_p_buf,
                     p->isam_p_indx * sizeof(*p->term_no));
-            xfree (p->term_no);
+            xfree(p->term_no);
         }
         p->term_no = new_term_no;
 #endif
     }
-    assert (*info == sizeof(*p->isam_p_buf));
-    memcpy (p->isam_p_buf + p->isam_p_indx, info+1, sizeof(*p->isam_p_buf));
+    assert(*info == sizeof(*p->isam_p_buf));
+    memcpy(p->isam_p_buf + p->isam_p_indx, info+1, sizeof(*p->isam_p_buf));
 
 #if 1
     if (p->termset)
@@ -242,25 +245,25 @@ static void add_isam_p (const char *name, const char *info,
         int len = key_SU_decode (&su_code, name);
         
         term_untrans  (p->zh, p->reg_type, term_tmp, name+len+1);
-        logf (LOG_LOG, "grep: %d %c %s", su_code, name[len], term_tmp);
+        yaz_log(LOG_LOG, "grep: %d %c %s", su_code, name[len], term_tmp);
         zebraExplain_lookup_ord (p->zh->reg->zei,
                                  su_code, &db, &set, &use);
-        logf (LOG_LOG, "grep:  set=%d use=%d db=%s", set, use, db);
+        yaz_log(LOG_LOG, "grep:  set=%d use=%d db=%s", set, use, db);
         
-        resultSetAddTerm (p->zh, p->termset, name[len], db,
-                          set, use, term_tmp);
+        resultSetAddTerm(p->zh, p->termset, name[len], db,
+			 set, use, term_tmp);
     }
 #endif
     (p->isam_p_indx)++;
 }
 
-static int grep_handle (char *name, const char *info, void *p)
+static int grep_handle(char *name, const char *info, void *p)
 {
-    add_isam_p (name, info, (struct grep_info *) p);
+    add_isam_p(name, info, (struct grep_info *) p);
     return 0;
 }
 
-static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
+static int term_pre(ZebraMaps zebra_maps, int reg_type, const char **src,
                      const char *ct1, const char *ct2, int first)
 {
     const char *s1, *s0 = *src;
@@ -269,12 +272,12 @@ static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
     /* skip white space */
     while (*s0)
     {
-        if (ct1 && strchr (ct1, *s0))
+        if (ct1 && strchr(ct1, *s0))
             break;
-        if (ct2 && strchr (ct2, *s0))
+        if (ct2 && strchr(ct2, *s0))
             break;
         s1 = s0;
-        map = zebra_maps_input (zebra_maps, reg_type, &s1, strlen(s1), first);
+        map = zebra_maps_input(zebra_maps, reg_type, &s1, strlen(s1), first);
         if (**map != *CHR_SPACE)
             break;
         s0 = s1;
@@ -285,8 +288,8 @@ static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
 
 #define REGEX_CHARS " []()|.*+?!"
 
-/* term_100: handle term, where trunc=none (no operators at all) */
-static int term_100 (ZebraMaps zebra_maps, int reg_type,
+/* term_100: handle term, where trunc=none(no operators at all) */
+static int term_100(ZebraMaps zebra_maps, int reg_type,
                      const char **src, char *dst, int space_split,
                      char *dst_term)
 {
@@ -298,13 +301,13 @@ static int term_100 (ZebraMaps zebra_maps, int reg_type,
     const char *space_start = 0;
     const char *space_end = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, NULL, NULL, !space_split))
+    if (!term_pre(zebra_maps, reg_type, src, NULL, NULL, !space_split))
         return 0;
     s0 = *src;
     while (*s0)
     {
         s1 = s0;
-        map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
+        map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
         if (space_split)
         {
             if (**map == *CHR_SPACE)
@@ -322,7 +325,7 @@ static int term_100 (ZebraMaps zebra_maps, int reg_type,
             {   /* reload last space */
                 while (space_start < space_end)
                 {
-                    if (strchr (REGEX_CHARS, *space_start))
+                    if (strchr(REGEX_CHARS, *space_start))
                         dst[i++] = '\\';
                     dst_term[j++] = *space_start;
                     dst[i++] = *space_start++;
@@ -347,7 +350,7 @@ static int term_100 (ZebraMaps zebra_maps, int reg_type,
 }
 
 /* term_101: handle term, where trunc=Process # */
-static int term_101 (ZebraMaps zebra_maps, int reg_type,
+static int term_101(ZebraMaps zebra_maps, int reg_type,
                      const char **src, char *dst, int space_split,
                      char *dst_term)
 {
@@ -356,7 +359,7 @@ static int term_101 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "#", "#", !space_split))
+    if (!term_pre(zebra_maps, reg_type, src, "#", "#", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -370,7 +373,7 @@ static int term_101 (ZebraMaps zebra_maps, int reg_type,
         else
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
+            map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -389,7 +392,7 @@ static int term_101 (ZebraMaps zebra_maps, int reg_type,
 }
 
 /* term_103: handle term, where trunc=re-2 (regular expressions) */
-static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
+static int term_103(ZebraMaps zebra_maps, int reg_type, const char **src,
                      char *dst, int *errors, int space_split,
                      char *dst_term)
 {
@@ -398,11 +401,11 @@ static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
     const char *s0, *s1;
     const char **map;
 
-    if (!term_pre (zebra_maps, reg_type, src, "^\\()[].*+?|", "(", !space_split))
+    if (!term_pre(zebra_maps, reg_type, src, "^\\()[].*+?|", "(", !space_split))
         return 0;
     s0 = *src;
     if (errors && *s0 == '+' && s0[1] && s0[2] == '+' && s0[3] &&
-        isdigit (s0[1]))
+        isdigit(s0[1]))
     {
         *errors = s0[1] - '0';
         s0 += 3;
@@ -411,7 +414,7 @@ static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
     }
     while (*s0)
     {
-        if (strchr ("^\\()[].*+?|-", *s0))
+        if (strchr("^\\()[].*+?|-", *s0))
         {
             dst_term[j++] = *s0;
             dst[i++] = *s0++;
@@ -419,7 +422,7 @@ static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
         else
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
+            map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (**map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -441,13 +444,13 @@ static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
 static int term_102 (ZebraMaps zebra_maps, int reg_type, const char **src,
                      char *dst, int space_split, char *dst_term)
 {
-    return term_103 (zebra_maps, reg_type, src, dst, NULL, space_split,
+    return term_103(zebra_maps, reg_type, src, dst, NULL, space_split,
                      dst_term);
 }
 
 
 /* term_104: handle term, where trunc=Process # and ! */
-static int term_104 (ZebraMaps zebra_maps, int reg_type,
+static int term_104(ZebraMaps zebra_maps, int reg_type,
                      const char **src, char *dst, int space_split,
                      char *dst_term)
 {
@@ -456,7 +459,7 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "?*#", "?*#", !space_split))
+    if (!term_pre(zebra_maps, reg_type, src, "?*#", "?*#", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -499,7 +502,7 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
         }
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
+            map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -527,7 +530,7 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "*!", "*!", !space_split))
+    if (!term_pre(zebra_maps, reg_type, src, "*!", "*!", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -545,7 +548,7 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
         }
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
+            map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -574,38 +577,38 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
  *  val:     border value (inclusive)
  *  islt:    1 if <=; 0 if >=.
  */
-static void gen_regular_rel (char *dst, int val, int islt)
+static void gen_regular_rel(char *dst, int val, int islt)
 {
     int dst_p;
     int w, d, i;
     int pos = 0;
     char numstr[20];
 
-    logf (LOG_DEBUG, "gen_regular_rel. val=%d, islt=%d", val, islt);
+    yaz_log(LOG_DEBUG, "gen_regular_rel. val=%d, islt=%d", val, islt);
     if (val >= 0)
     {
         if (islt)
-            strcpy (dst, "(-[0-9]+|(");
+            strcpy(dst, "(-[0-9]+|(");
         else
-            strcpy (dst, "((");
+            strcpy(dst, "((");
     } 
     else
     {
         if (!islt)
         {
-            strcpy (dst, "([0-9]+|-(");
-            dst_p = strlen (dst);
+            strcpy(dst, "([0-9]+|-(");
+            dst_p = strlen(dst);
             islt = 1;
         }
         else
         {
-            strcpy (dst, "(-(");
+            strcpy(dst, "(-(");
             islt = 0;
         }
         val = -val;
     }
-    dst_p = strlen (dst);
-    sprintf (numstr, "%d", val);
+    dst_p = strlen(dst);
+    sprintf(numstr, "%d", val);
     for (w = strlen(numstr); --w >= 0; pos++)
     {
         d = numstr[w];
@@ -625,7 +628,7 @@ static void gen_regular_rel (char *dst, int val, int islt)
             }
         }
         
-        strcpy (dst + dst_p, numstr);
+        strcpy(dst + dst_p, numstr);
         dst_p = strlen(dst) - pos - 1;
 
         if (islt)
@@ -668,21 +671,21 @@ static void gen_regular_rel (char *dst, int val, int islt)
     if (islt)
     {
         /* match everything less than 10^(pos-1) */
-        strcat (dst, "0*");
+        strcat(dst, "0*");
         for (i=1; i<pos; i++)
-            strcat (dst, "[0-9]?");
+            strcat(dst, "[0-9]?");
     }
     else
     {
         /* match everything greater than 10^pos */
         for (i = 0; i <= pos; i++)
-            strcat (dst, "[0-9]");
-        strcat (dst, "[0-9]*");
+            strcat(dst, "[0-9]");
+        strcat(dst, "[0-9]*");
     }
-    strcat (dst, "))");
+    strcat(dst, "))");
 }
 
-void string_rel_add_char (char **term_p, const char *src, int *indx)
+void string_rel_add_char(char **term_p, const char *src, int *indx)
 {
     if (src[*indx] == '\\')
         *(*term_p)++ = src[(*indx)++];
@@ -699,7 +702,7 @@ void string_rel_add_char (char **term_p, const char *src, int *indx)
  *   <= abc     ([-0].*|a[-a].*|ab[-b].*|abc)
  *              ([^a-].*|a[^b-].*|ab[^c-].*|abc)
  */
-static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+static int string_relation(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                             const char **term_sub, char *term_dict,
                             oid_value attributeSet,
                             int reg_type, int space_split, char *term_dst)
@@ -710,10 +713,10 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     char *term_tmp = term_dict + strlen(term_dict);
     char term_component[2*IT_MAX_WORD+20];
 
-    attr_init (&relation, zapt, 2);
-    relation_value = attr_find (&relation, NULL);
+    attr_init(&relation, zapt, 2);
+    relation_value = attr_find(&relation, NULL);
 
-    logf (LOG_DEBUG, "string relation value=%d", relation_value);
+    yaz_log(LOG_DEBUG, "string relation value=%d", relation_value);
     switch (relation_value)
     {
     case 1:
@@ -721,7 +724,7 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                        term_sub, term_component,
                        space_split, term_dst))
             return 0;
-        logf (LOG_DEBUG, "Relation <");
+        yaz_log(LOG_DEBUG, "Relation <");
         
         *term_tmp++ = '(';
         for (i = 0; term_component[i]; )
@@ -754,7 +757,7 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                        term_sub, term_component,
                        space_split, term_dst))
             return 0;
-        logf (LOG_DEBUG, "Relation <=");
+        yaz_log(LOG_DEBUG, "Relation <=");
 
         *term_tmp++ = '(';
         for (i = 0; term_component[i]; )
@@ -787,7 +790,7 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         if (!term_100 (zh->reg->zebra_maps, reg_type,
                        term_sub, term_component, space_split, term_dst))
             return 0;
-        logf (LOG_DEBUG, "Relation >");
+        yaz_log(LOG_DEBUG, "Relation >");
 
         *term_tmp++ = '(';
         for (i = 0; term_component[i];)
@@ -822,7 +825,7 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         if (!term_100 (zh->reg->zebra_maps, reg_type, term_sub,
                        term_component, space_split, term_dst))
             return 0;
-        logf (LOG_DEBUG, "Relation >=");
+        yaz_log(LOG_DEBUG, "Relation >=");
 
         *term_tmp++ = '(';
         for (i = 0; term_component[i];)
@@ -858,18 +861,18 @@ static int string_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         break;
     case 3:
     default:
-        logf (LOG_DEBUG, "Relation =");
+        yaz_log(LOG_DEBUG, "Relation =");
         if (!term_100 (zh->reg->zebra_maps, reg_type, term_sub,
                        term_component, space_split, term_dst))
             return 0;
-        strcat (term_tmp, "(");
-        strcat (term_tmp, term_component);
-        strcat (term_tmp, ")");
+        strcat(term_tmp, "(");
+        strcat(term_tmp, term_component);
+        strcat(term_tmp, ")");
     }
     return 1;
 }
 
-static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                         const char **term_sub, 
                         oid_value attributeSet, NMEM stream,
                         struct grep_info *grep_info,
@@ -877,7 +880,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                         int num_bases, char **basenames,
                         char *term_dst, int xpath_use);
 
-static RSET term_trunc (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+static RSET term_trunc(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                         const char **term_sub, 
                         oid_value attributeSet, NMEM stream,
                         struct grep_info *grep_info,
@@ -889,27 +892,32 @@ static RSET term_trunc (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 {
     int r;
     grep_info->isam_p_indx = 0;
-    r = string_term (zh, zapt, term_sub, attributeSet, stream, grep_info,
+    r = string_term(zh, zapt, term_sub, attributeSet, stream, grep_info,
                      reg_type, complete_flag, num_bases, basenames,
                      term_dst, xpath_use);
     if (r < 1)
         return 0;
-    logf (LOG_DEBUG, "term: %s", term_dst);
-    return rset_trunc (zh, grep_info->isam_p_buf,
+    yaz_log(LOG_DEBUG, "term: %s", term_dst);
+    return rset_trunc(zh, grep_info->isam_p_buf,
                        grep_info->isam_p_indx, term_dst,
                        strlen(term_dst), rank_type, 1 /* preserve pos */,
                        zapt->term->which, rset_nmem,
                        key_it_ctrl,key_it_ctrl->scope);
 }
+static char *nmem_strdup_i(NMEM nmem, int v)
+{
+    char val_str[64];
+    sprintf (val_str, "%d", v);
+    return nmem_strdup(nmem, val_str);
+}
 
-
-static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-                        const char **term_sub, 
-                        oid_value attributeSet, NMEM stream,
-                        struct grep_info *grep_info,
-                        int reg_type, int complete_flag,
-                        int num_bases, char **basenames,
-                        char *term_dst, int xpath_use)
+static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+		       const char **term_sub, 
+		       oid_value attributeSet, NMEM stream,
+		       struct grep_info *grep_info,
+		       int reg_type, int complete_flag,
+		       int num_bases, char **basenames,
+		       char *term_dst, int xpath_use)
 {
     char term_dict[2*IT_MAX_WORD+4000];
     int j, r, base_no;
@@ -930,15 +938,18 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     rpn_char_map_prepare (zh->reg, reg_type, &rcmi);
     attr_init (&use, zapt, 1);
     use_value = attr_find_ex (&use, &curAttributeSet, &use_string);
-    logf (LOG_DEBUG, "string_term, use value %d", use_value);
+    yaz_log(LOG_DEBUG, "string_term, use value %d", use_value);
     attr_init (&truncation, zapt, 5);
     truncation_value = attr_find (&truncation, NULL);
-    logf (LOG_DEBUG, "truncation value %d", truncation_value);
+    yaz_log(LOG_DEBUG, "truncation value %d", truncation_value);
 
     if (use_value == -1)    /* no attribute - assumy "any" */
         use_value = 1016;
     for (base_no = 0; base_no < num_bases; base_no++)
     {
+	int attr_ok = 0;
+	int regex_range = 0;
+	int init_pos = 0;
         attent attp;
         data1_local_attribute id_xpath_attr;
         data1_local_attribute *local_attr;
@@ -972,7 +983,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             if ((r=att_getentbyatt (zh, &attp, curAttributeSet, use_value,
                                             use_string)))
             {
-                logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
+                yaz_log(LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
                       curAttributeSet, use_value, r);
                 if (r == -1)
                 {
@@ -981,11 +992,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                     if (use_string)
                         errString = nmem_strdup(stream, use_string);
                     else
-                    {
-                        char val_str[32];
-                        sprintf (val_str, "%d", use_value);
-                        errString = nmem_strdup (stream, val_str);
-                    }
+                        errString = nmem_strdup_i (stream, use_value);
                 }
                 else
                 {
@@ -1031,19 +1038,21 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 #if 1
             bases_ok++;
 #else
-            char val_str[32];
-            sprintf (val_str, "%d", use_value);
             errCode = 114;
-            errString = nmem_strdup (stream, val_str);
-#endif
+            errString = nmem_strdup_i(stream, use_value);
             continue;
+#endif
         }
-        bases_ok++; /* this has OK attributes */
+	else
+	{
+	    bases_ok++; /* this has OK attributes */
+	    attr_ok = 1;
+	}
 
         term_dict[prefix_len++] = ')';
         term_dict[prefix_len++] = 1;
         term_dict[prefix_len++] = reg_type;
-        logf (LOG_DEBUG, "reg_type = %d", term_dict[prefix_len-1]);
+        yaz_log(LOG_DEBUG, "reg_type = %d", term_dict[prefix_len-1]);
         term_dict[prefix_len] = '\0';
         j = prefix_len;
         switch (truncation_value)
@@ -1054,113 +1063,86 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                                   attributeSet,
                                   reg_type, space_split, term_dst))
                 return 0;
-            logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict+prefix_len);
-            r = dict_lookup_grep (zh->reg->dict, term_dict, 0,
-                                  grep_info, &max_pos, 0, grep_handle);
-            if (r)
-                logf (LOG_WARN, "dict_lookup_grep fail %d", r);
-            break;
+	    break;
         case 1:          /* right truncation */
             term_dict[j++] = '(';
-            if (!term_100 (zh->reg->zebra_maps, reg_type,
-                           &termp, term_dict + j, space_split, term_dst))
+            if (!term_100(zh->reg->zebra_maps, reg_type,
+			  &termp, term_dict + j, space_split, term_dst))
                 return 0;
-            strcat (term_dict, ".*)");
-            dict_lookup_grep (zh->reg->dict, term_dict, 0, grep_info,
-                              &max_pos, 0, grep_handle);
+            strcat(term_dict, ".*)");
             break;
         case 2:          /* keft truncation */
             term_dict[j++] = '('; term_dict[j++] = '.'; term_dict[j++] = '*';
-            if (!term_100 (zh->reg->zebra_maps, reg_type,
-                           &termp, term_dict + j, space_split, term_dst))
+            if (!term_100(zh->reg->zebra_maps, reg_type,
+			  &termp, term_dict + j, space_split, term_dst))
                 return 0;
-            strcat (term_dict, ")");
-            dict_lookup_grep (zh->reg->dict, term_dict, 0, grep_info,
-                              &max_pos, 0, grep_handle);
+            strcat(term_dict, ")");
             break;
         case 3:          /* left&right truncation */
             term_dict[j++] = '('; term_dict[j++] = '.'; term_dict[j++] = '*';
-            if (!term_100 (zh->reg->zebra_maps, reg_type,
-                           &termp, term_dict + j, space_split, term_dst))
+            if (!term_100(zh->reg->zebra_maps, reg_type,
+			  &termp, term_dict + j, space_split, term_dst))
                 return 0;
-            strcat (term_dict, ".*)");
-            dict_lookup_grep (zh->reg->dict, term_dict, 0, grep_info,
-                              &max_pos, 0, grep_handle);
+            strcat(term_dict, ".*)");
             break;
-            zh->errCode = 120;
-            return -1;
         case 101:        /* process # in term */
             term_dict[j++] = '(';
-            if (!term_101 (zh->reg->zebra_maps, reg_type,
-                           &termp, term_dict + j, space_split, term_dst))
+            if (!term_101(zh->reg->zebra_maps, reg_type,
+			  &termp, term_dict + j, space_split, term_dst))
                 return 0;
-            strcat (term_dict, ")");
-            r = dict_lookup_grep (zh->reg->dict, term_dict, 0, grep_info,
-                                  &max_pos, 0, grep_handle);
-            if (r)
-                logf (LOG_WARN, "dict_lookup_grep err, trunc=#: %d", r);
+            strcat(term_dict, ")");
             break;
         case 102:        /* Regexp-1 */
             term_dict[j++] = '(';
-            if (!term_102 (zh->reg->zebra_maps, reg_type,
-                           &termp, term_dict + j, space_split, term_dst))
+            if (!term_102(zh->reg->zebra_maps, reg_type,
+			  &termp, term_dict + j, space_split, term_dst))
                 return 0;
-            strcat (term_dict, ")");
-            logf (LOG_DEBUG, "Regexp-1 tolerance=%d", r);
-            r = dict_lookup_grep (zh->reg->dict, term_dict, 0, grep_info,
-                                  &max_pos, 0, grep_handle);
-            if (r)
-                logf (LOG_WARN, "dict_lookup_grep err, trunc=regular: %d",
-                      r);
+            strcat(term_dict, ")");
             break;
         case 103:       /* Regexp-2 */
             r = 1;
             term_dict[j++] = '(';
+	    init_pos = 2;
             if (!term_103 (zh->reg->zebra_maps, reg_type,
-                           &termp, term_dict + j, &r, space_split, term_dst))
+                           &termp, term_dict + j, &regex_range,
+			   space_split, term_dst))
                 return 0;
-            strcat (term_dict, ")");
-            logf (LOG_DEBUG, "Regexp-2 tolerance=%d", r);
-            r = dict_lookup_grep (zh->reg->dict, term_dict, r, grep_info,
-                                  &max_pos, 2, grep_handle);
-            if (r)
-                logf (LOG_WARN, "dict_lookup_grep err, trunc=eregular: %d",
-                      r);
-            break;
+            strcat(term_dict, ")");
         case 104:        /* process # and ! in term */
             term_dict[j++] = '(';
             if (!term_104 (zh->reg->zebra_maps, reg_type,
                            &termp, term_dict + j, space_split, term_dst))
                 return 0;
-            strcat (term_dict, ")");
-            r = dict_lookup_grep (zh->reg->dict, term_dict, 0, grep_info,
-                                  &max_pos, 0, grep_handle);
-            if (r)
-                logf (LOG_WARN, "dict_lookup_grep err, trunc=#/!: %d", r);
+            strcat(term_dict, ")");
             break;
         case 105:        /* process * and ! in term */
             term_dict[j++] = '(';
             if (!term_105 (zh->reg->zebra_maps, reg_type,
                            &termp, term_dict + j, space_split, term_dst, 1))
                 return 0;
-            strcat (term_dict, ")");
-            r = dict_lookup_grep (zh->reg->dict, term_dict, 0, grep_info,
-                                  &max_pos, 0, grep_handle);
-            if (r)
-                logf (LOG_WARN, "dict_lookup_grep err, trunc=*/!: %d", r);
+            strcat(term_dict, ")");
             break;
         case 106:        /* process * and ! in term */
             term_dict[j++] = '(';
             if (!term_105 (zh->reg->zebra_maps, reg_type,
                            &termp, term_dict + j, space_split, term_dst, 0))
                 return 0;
-            strcat (term_dict, ")");
-            r = dict_lookup_grep (zh->reg->dict, term_dict, 0, grep_info,
-                                  &max_pos, 0, grep_handle);
-            if (r)
-                logf (LOG_WARN, "dict_lookup_grep err, trunc=*/!: %d", r);
+            strcat(term_dict, ")");
             break;
+	default:
+	    zh->errCode = 120;
+	    zh->errString = nmem_strdup_i(stream, truncation_value);
+	    return -1;
         }
+	if (attr_ok)
+	{
+	    yaz_log(LOG_DEBUG, "dict_lookup_grep: %s", term_dict+prefix_len);
+	    r = dict_lookup_grep(zh->reg->dict, term_dict, regex_range,
+				 grep_info, &max_pos, init_pos,
+				 grep_handle);
+	    if (r)
+		yaz_log(LOG_WARN, "dict_lookup_grep fail %d", r);
+	}
     }
     if (!bases_ok)
     {
@@ -1169,7 +1151,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         return -1;
     }
     *term_sub = termp;
-    logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
+    yaz_log(LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
     return 1;
 }
 
@@ -1226,7 +1208,7 @@ static int zapt_term_to_utf8 (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 }
 
 /* convert APT SCAN term to internal cmap */
-static int trans_scan_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+static int trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                             char *termz, int reg_type)
 {
     char termz0[IT_MAX_WORD];
@@ -1300,7 +1282,7 @@ char *normalize_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         return nmem_strdup(stream, termz);
     else
     {
-        char *buf = (char*) nmem_malloc (stream, wrbuf_len(wrbuf)+1);
+        char *buf = (char*) nmem_malloc(stream, wrbuf_len(wrbuf)+1);
         memcpy (buf, wrbuf_buf(wrbuf), wrbuf_len(wrbuf));
         buf[wrbuf_len(wrbuf)] = '\0';
         return buf;
@@ -1351,7 +1333,7 @@ static int grep_info_prepare (ZebraHandle zh,
         }
         else
             termset_name = termset_value_string;
-        logf (LOG_LOG, "creating termset set %s", termset_name);
+        yaz_log(LOG_LOG, "creating termset set %s", termset_name);
         grep_info->termset = resultSetAdd (zh, termset_name, 1);
         if (!grep_info->termset)
         {
@@ -1386,8 +1368,8 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
         return 0;
     while (1)
     { 
-        logf (LOG_DEBUG, "APT_phrase termp=%s", termp);
-        rset[rset_no] = term_trunc (zh, zapt, &termp, attributeSet,
+        yaz_log(LOG_DEBUG, "APT_phrase termp=%s", termp);
+        rset[rset_no] = term_trunc(zh, zapt, &termp, attributeSet,
                                     stream, &grep_info,
                                     reg_type, complete_flag,
                                     num_bases, basenames,
@@ -1433,8 +1415,8 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
         return 0;
     while (1)
     { 
-        logf (LOG_DEBUG, "APT_or_list termp=%s", termp);
-        rset[rset_no] = term_trunc (zh, zapt, &termp, attributeSet,
+        yaz_log(LOG_DEBUG, "APT_or_list termp=%s", termp);
+        rset[rset_no] = term_trunc(zh, zapt, &termp, attributeSet,
                                     stream, &grep_info,
                                     reg_type, complete_flag,
                                     num_bases, basenames,
@@ -1474,8 +1456,8 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
         return 0;
     while (1)
     { 
-        logf (LOG_DEBUG, "APT_and_list termp=%s", termp);
-        rset[rset_no] = term_trunc (zh, zapt, &termp, attributeSet,
+        yaz_log(LOG_DEBUG, "APT_and_list termp=%s", termp);
+        rset[rset_no] = term_trunc(zh, zapt, &termp, attributeSet,
                                     stream, &grep_info,
                                     reg_type, complete_flag,
                                     num_bases, basenames,
@@ -1513,7 +1495,7 @@ static int numeric_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     attr_init (&relation, zapt, 2);
     relation_value = attr_find (&relation, NULL);
 
-    logf (LOG_DEBUG, "numeric relation value=%d", relation_value);
+    yaz_log(LOG_DEBUG, "numeric relation value=%d", relation_value);
 
     if (!term_100 (zh->reg->zebra_maps, reg_type, term_sub, term_tmp, 1,
                    term_dst))
@@ -1522,36 +1504,36 @@ static int numeric_relation (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     switch (relation_value)
     {
     case 1:
-        logf (LOG_DEBUG, "Relation <");
+        yaz_log(LOG_DEBUG, "Relation <");
         gen_regular_rel (term_tmp, term_value-1, 1);
         break;
     case 2:
-        logf (LOG_DEBUG, "Relation <=");
+        yaz_log(LOG_DEBUG, "Relation <=");
         gen_regular_rel (term_tmp, term_value, 1);
         break;
     case 4:
-        logf (LOG_DEBUG, "Relation >=");
+        yaz_log(LOG_DEBUG, "Relation >=");
         gen_regular_rel (term_tmp, term_value, 0);
         break;
     case 5:
-        logf (LOG_DEBUG, "Relation >");
+        yaz_log(LOG_DEBUG, "Relation >");
         gen_regular_rel (term_tmp, term_value+1, 0);
         break;
     case 3:
     default:
-        logf (LOG_DEBUG, "Relation =");
+        yaz_log(LOG_DEBUG, "Relation =");
         sprintf (term_tmp, "(0*%d)", term_value);
     }
-    logf (LOG_DEBUG, "dict_lookup_grep: %s", term_tmp);
-    r = dict_lookup_grep (zh->reg->dict, term_dict, 0, grep_info, max_pos,
+    yaz_log(LOG_DEBUG, "dict_lookup_grep: %s", term_tmp);
+    r = dict_lookup_grep(zh->reg->dict, term_dict, 0, grep_info, max_pos,
                           0, grep_handle);
     if (r)
-        logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
-    logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
+        yaz_log(LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
+    yaz_log(LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
     return 1;
 }
 
-static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+static int numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                          const char **term_sub, 
                          oid_value attributeSet, struct grep_info *grep_info,
                          int reg_type, int complete_flag,
@@ -1606,13 +1588,11 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             if ((r=att_getentbyatt (zh, &attp, curAttributeSet, use_value,
                                             use_string)))
             {
-                logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
+                yaz_log(LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
                       curAttributeSet, use_value, r);
                 if (r == -1)
                 {
-                    char val_str[32];
-                    sprintf (val_str, "%d", use_value);
-                    errString = nmem_strdup (stream, val_str);
+                    errString = nmem_strdup_i(stream, use_value);
                     errCode = 114;
                 }
                 else
@@ -1651,17 +1631,15 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         if (!prefix_len)
         {
-            char val_str[32];
-            sprintf (val_str, "%d", use_value);
             errCode = 114;
-            errString = nmem_strdup (stream, val_str);
+            errString = nmem_strdup_i(stream, use_value);
             continue;
         }
         bases_ok++;
         term_dict[prefix_len++] = ')';        
         term_dict[prefix_len++] = 1;
         term_dict[prefix_len++] = reg_type;
-        logf (LOG_DEBUG, "reg_type = %d", term_dict[prefix_len-1]);
+        yaz_log(LOG_DEBUG, "reg_type = %d", term_dict[prefix_len-1]);
         term_dict[prefix_len] = '\0';
         if (!numeric_relation (zh, zapt, &termp, term_dict,
                                attributeSet, grep_info, &max_pos, reg_type,
@@ -1675,7 +1653,7 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         return -1;
     }
     *term_sub = termp;
-    logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
+    yaz_log(LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
     return 1;
 }
 
@@ -1695,21 +1673,21 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
     int  r, rset_no = 0;
     struct grep_info grep_info;
 
-    logf (LOG_DEBUG, "APT_numeric t='%s'",termz);
+    yaz_log(LOG_DEBUG, "APT_numeric t='%s'",termz);
     if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
         return 0;
     while (1)
     { 
-        logf (LOG_DEBUG, "APT_numeric termp=%s", termp);
+        yaz_log(LOG_DEBUG, "APT_numeric termp=%s", termp);
         grep_info.isam_p_indx = 0;
-        r = numeric_term (zh, zapt, &termp, attributeSet, &grep_info,
+        r = numeric_term(zh, zapt, &termp, attributeSet, &grep_info,
                           reg_type, complete_flag, num_bases, basenames,
                           term_dst, xpath_use,
                           stream);
         if (r < 1)
             break;
-        logf (LOG_DEBUG, "term: %s", term_dst);
-        rset[rset_no] = rset_trunc (zh, grep_info.isam_p_buf,
+        yaz_log(LOG_DEBUG, "term: %s", term_dst);
+        rset[rset_no] = rset_trunc(zh, grep_info.isam_p_buf,
                                     grep_info.isam_p_indx, term_dst,
                                     strlen(term_dst), rank_type,
                                     0 /* preserve position */,
@@ -1780,7 +1758,7 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     {
         sort_sequence->num_specs = 10;
         sort_sequence->specs = (Z_SortKeySpec **)
-            nmem_malloc (stream, sort_sequence->num_specs *
+            nmem_malloc(stream, sort_sequence->num_specs *
                          sizeof(*sort_sequence->specs));
         for (i = 0; i<sort_sequence->num_specs; i++)
             sort_sequence->specs[i] = 0;
@@ -1800,35 +1778,35 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     if (!oid_ent_to_oid (&oe, oid))
         return 0;
 
-    sks = (Z_SortKeySpec *) nmem_malloc (stream, sizeof(*sks));
+    sks = (Z_SortKeySpec *) nmem_malloc(stream, sizeof(*sks));
     sks->sortElement = (Z_SortElement *)
-        nmem_malloc (stream, sizeof(*sks->sortElement));
+        nmem_malloc(stream, sizeof(*sks->sortElement));
     sks->sortElement->which = Z_SortElement_generic;
     sk = sks->sortElement->u.generic = (Z_SortKey *)
-        nmem_malloc (stream, sizeof(*sk));
+        nmem_malloc(stream, sizeof(*sk));
     sk->which = Z_SortKey_sortAttributes;
     sk->u.sortAttributes = (Z_SortAttributes *)
-        nmem_malloc (stream, sizeof(*sk->u.sortAttributes));
+        nmem_malloc(stream, sizeof(*sk->u.sortAttributes));
 
     sk->u.sortAttributes->id = oid;
     sk->u.sortAttributes->list = (Z_AttributeList *)
-        nmem_malloc (stream, sizeof(*sk->u.sortAttributes->list));
+        nmem_malloc(stream, sizeof(*sk->u.sortAttributes->list));
     sk->u.sortAttributes->list->num_attributes = 1;
     sk->u.sortAttributes->list->attributes = (Z_AttributeElement **)
-        nmem_malloc (stream, sizeof(*sk->u.sortAttributes->list->attributes));
+        nmem_malloc(stream, sizeof(*sk->u.sortAttributes->list->attributes));
     ae = *sk->u.sortAttributes->list->attributes = (Z_AttributeElement *)
-        nmem_malloc (stream, sizeof(**sk->u.sortAttributes->list->attributes));
+        nmem_malloc(stream, sizeof(**sk->u.sortAttributes->list->attributes));
     ae->attributeSet = 0;
     ae->attributeType = (int *)
-        nmem_malloc (stream, sizeof(*ae->attributeType));
+        nmem_malloc(stream, sizeof(*ae->attributeType));
     *ae->attributeType = 1;
     ae->which = Z_AttributeValue_numeric;
     ae->value.numeric = (int *)
-        nmem_malloc (stream, sizeof(*ae->value.numeric));
+        nmem_malloc(stream, sizeof(*ae->value.numeric));
     *ae->value.numeric = use_value;
 
     sks->sortRelation = (int *)
-        nmem_malloc (stream, sizeof(*sks->sortRelation));
+        nmem_malloc(stream, sizeof(*sks->sortRelation));
     if (sort_relation_value == 1)
         *sks->sortRelation = Z_SortKeySpec_ascending;
     else if (sort_relation_value == 2)
@@ -1837,7 +1815,7 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         *sks->sortRelation = Z_SortKeySpec_ascending;
 
     sks->caseSensitivity = (int *)
-        nmem_malloc (stream, sizeof(*sks->caseSensitivity));
+        nmem_malloc(stream, sizeof(*sks->caseSensitivity));
     *sks->caseSensitivity = 0;
 
     sks->which = Z_SortKeySpec_null;
@@ -1901,14 +1879,14 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     term_dict[prefix_len++] = 1;
     term_dict[prefix_len++] = reg_type;
     
-    strcpy (term_dict+prefix_len, term);
+    strcpy(term_dict+prefix_len, term);
     
     grep_info.isam_p_indx = 0;
-    r = dict_lookup_grep (zh->reg->dict, term_dict, 0,
+    r = dict_lookup_grep(zh->reg->dict, term_dict, 0,
                           &grep_info, &max_pos, 0, grep_handle);
     yaz_log (LOG_LOG, "%s %d positions", term,
              grep_info.isam_p_indx);
-    rset = rset_trunc (zh, grep_info.isam_p_buf,
+    rset = rset_trunc(zh, grep_info.isam_p_buf,
                        grep_info.isam_p_indx, term, strlen(term),
                        flags, 1, term_type,rset_nmem,
                        key_it_ctrl, key_it_ctrl->scope);
@@ -2029,7 +2007,7 @@ static RSET rpn_search_xpath (ZebraHandle zh,
                     }
                 }
                 wrbuf_puts(wbuf, "");
-                rset_attr = xpath_trunc (
+                rset_attr = xpath_trunc(
                     zh, stream, '0', wrbuf_buf(wbuf), 3, 
                     curAttributeSet,rset_nmem);
                 wrbuf_free(wbuf, 1);
@@ -2090,10 +2068,10 @@ static RSET rpn_search_APT (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     zebra_maps_attr (zh->reg->zebra_maps, zapt, &reg_id, &search_type,
                      rank_type, &complete_flag, &sort_flag);
     
-    logf (LOG_DEBUG, "reg_id=%c", reg_id);
-    logf (LOG_DEBUG, "complete_flag=%d", complete_flag);
-    logf (LOG_DEBUG, "search_type=%s", search_type);
-    logf (LOG_DEBUG, "rank_type=%s", rank_type);
+    yaz_log(LOG_DEBUG, "reg_id=%c", reg_id);
+    yaz_log(LOG_DEBUG, "complete_flag=%d", complete_flag);
+    yaz_log(LOG_DEBUG, "search_type=%s", search_type);
+    yaz_log(LOG_DEBUG, "rank_type=%s", rank_type);
 
     if (zapt_term_to_utf8(zh, zapt, termz))
         return 0;
@@ -2203,7 +2181,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
             }
             if (*zop->u.prox->u.known != Z_ProxUnit_word)
             {
-                char *val = (char *) nmem_malloc (stream, 16);
+                char *val = (char *) nmem_malloc(stream, 16);
                 zh->errCode = 132;
                 zh->errString = val;
                 sprintf (val, "%d", *zop->u.prox->u.known);
@@ -2230,14 +2208,14 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
     {
         if (zs->u.simple->which == Z_Operand_APT)
         {
-            logf (LOG_DEBUG, "rpn_search_APT");
+            yaz_log(LOG_DEBUG, "rpn_search_APT");
             r = rpn_search_APT (zh, zs->u.simple->u.attributesPlusTerm,
                                 attributeSet, stream, sort_sequence,
                                 num_bases, basenames,rset_nmem);
         }
         else if (zs->u.simple->which == Z_Operand_resultSetId)
         {
-            logf (LOG_DEBUG, "rpn_search_ref");
+            yaz_log(LOG_DEBUG, "rpn_search_ref");
             r = resultSetRef (zh, zs->u.simple->u.resultSetId);
             if (!r)
             {
@@ -2281,10 +2259,10 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
     zh->hits = 0;
 
     sort_sequence = (Z_SortKeySpecList *)
-        nmem_malloc (nmem, sizeof(*sort_sequence));
+        nmem_malloc(nmem, sizeof(*sort_sequence));
     sort_sequence->num_specs = 10; /* FIXME - Hard-coded number */
     sort_sequence->specs = (Z_SortKeySpec **)
-        nmem_malloc (nmem, sort_sequence->num_specs *
+        nmem_malloc(nmem, sort_sequence->num_specs *
                      sizeof(*sort_sequence->specs));
     for (i = 0; i<sort_sequence->num_specs; i++)
         sort_sequence->specs[i] = 0;
@@ -2298,7 +2276,7 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
         return 0;
 
     if (zh->errCode)
-        logf (LOG_DEBUG, "search error: %d", zh->errCode);
+        yaz_log(LOG_DEBUG, "search error: %d", zh->errCode);
     
     for (i = 0; sort_sequence->specs[i]; i++)
         ;
@@ -2307,12 +2285,12 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
         resultSetRank (zh, sset, rset, rset_nmem);
     else
     {
-        logf (LOG_DEBUG, "resultSetSortSingle in rpn_search");
+        yaz_log(LOG_DEBUG, "resultSetSortSingle in rpn_search");
         resultSetSortSingle (zh, nmem, sset, rset,
                              sort_sequence, &sort_status);
         if (zh->errCode)
         {
-            logf (LOG_DEBUG, "resultSetSortSingle status = %d", zh->errCode);
+            yaz_log(LOG_DEBUG, "resultSetSortSingle status = %d", zh->errCode);
         }
     }
     return rset;
@@ -2342,8 +2320,8 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
     else
         idx = - pos - 1;
     scan_info->list[idx].term = (char *)
-        odr_malloc (scan_info->odr, strlen(name + len_prefix)+1);
-    strcpy (scan_info->list[idx].term, name + len_prefix);
+        odr_malloc(scan_info->odr, strlen(name + len_prefix)+1);
+    strcpy(scan_info->list[idx].term, name + len_prefix);
     assert (*info == sizeof(ISAMC_P));
     memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAMC_P));
     return 0;
@@ -2372,13 +2350,13 @@ static void scan_term_untrans (ZebraHandle zh, NMEM stream, int reg_type,
             len = 0;
         else
             len = outbuf - term_dst;
-        *dst = nmem_malloc (stream, len + 1);
+        *dst = nmem_malloc(stream, len + 1);
         if (len > 0)
             memcpy (*dst, term_dst, len);
         (*dst)[len] = '\0';
     }
     else
-        *dst = nmem_strdup (stream, term_src);
+        *dst = nmem_strdup(stream, term_src);
 }
 
 static void count_set (RSET r, int *count)
@@ -2388,7 +2366,7 @@ static void count_set (RSET r, int *count)
     struct it_key key;
     RSFD rfd;
 
-    logf (LOG_DEBUG, "count_set");
+    yaz_log(LOG_DEBUG, "count_set");
 
     *count = 0;
     rfd = rset_open (r, RSETF_READ);
@@ -2402,10 +2380,10 @@ static void count_set (RSET r, int *count)
         kno++;
     }
     rset_close (rfd);
-    logf (LOG_DEBUG, "%d keys, %d records", kno, *count);
+    yaz_log(LOG_DEBUG, "%d keys, %d records", kno, *count);
 }
 
-void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
+void rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                oid_value attributeset,
                int num_bases, char **basenames,
                int *position, int *num_entries, ZebraScanEntry **list,
@@ -2494,7 +2472,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         if ((r=att_getentbyatt (zh, &attp, attributeset, use_value,
                                 use_string)))
         {
-            logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
+            yaz_log(LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
                   attributeset, use_value);
             if (r == -1)
             {
@@ -2546,7 +2524,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     before = pos-1;
     after = 1+num-pos;
     scan_info_array = (struct scan_info *)
-        odr_malloc (stream, ord_no * sizeof(*scan_info_array));
+        odr_malloc(stream, ord_no * sizeof(*scan_info_array));
     for (i = 0; i < ord_no; i++)
     {
         int j, prefix_len = 0;
@@ -2561,25 +2539,25 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         scan_info->odr = stream;
 
         scan_info->list = (struct scan_info_entry *)
-            odr_malloc (stream, (before+after) * sizeof(*scan_info->list));
+            odr_malloc(stream, (before+after) * sizeof(*scan_info->list));
         for (j = 0; j<before+after; j++)
             scan_info->list[j].term = NULL;
 
         prefix_len += key_SU_encode (ords[i], termz + prefix_len);
         termz[prefix_len++] = reg_id;
         termz[prefix_len] = 0;
-        strcpy (scan_info->prefix, termz);
+        strcpy(scan_info->prefix, termz);
 
-        if (trans_scan_term (zh, zapt, termz+prefix_len, reg_id))
+        if (trans_scan_term(zh, zapt, termz+prefix_len, reg_id))
             return ;
                     
-        dict_scan (zh->reg->dict, termz, &before_tmp, &after_tmp,
-                   scan_info, scan_handle);
+        dict_scan(zh->reg->dict, termz, &before_tmp, &after_tmp,
+		  scan_info, scan_handle);
     }
     glist = (ZebraScanEntry *)
-        odr_malloc (stream, (before+after)*sizeof(*glist));
+        odr_malloc(stream, (before+after)*sizeof(*glist));
 
-    rset_nmem=nmem_create();
+    rset_nmem = nmem_create();
 
     /* consider terms after main term */
     for (i = 0; i < ord_no; i++)
@@ -2607,7 +2585,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             break;
         scan_term_untrans (zh, stream->mem, reg_id,
                            &glist[i+before].term, mterm);
-        rset = rset_trunc (zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
+        rset = rset_trunc(zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
                            glist[i+before].term, strlen(glist[i+before].term),
                            NULL, 0, zapt->term->which, rset_nmem, 
                            key_it_ctrl,key_it_ctrl->scope);
@@ -2621,7 +2599,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                 RSET rset2;
 
                 rset2 =
-                   rset_trunc (zh, &scan_info_array[j].list[ptr[j]].isam_p, 1,
+                   rset_trunc(zh, &scan_info_array[j].list[ptr[j]].isam_p, 1,
                                glist[i+before].term,
                                strlen(glist[i+before].term), NULL, 0,
                                zapt->term->which,rset_nmem,
@@ -2688,14 +2666,15 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             {
                 RSET rset2;
 
-                rset2 = rset_trunc (zh,
-                         &scan_info_array[j].list[before-1-ptr[j]].isam_p, 1,
-                                    glist[before-1-i].term,
-                                    strlen(glist[before-1-i].term), NULL, 0,
-                                    zapt->term->which, rset_nmem,
-                                    key_it_ctrl, key_it_ctrl->scope);
+                rset2 = rset_trunc(
+		    zh,
+		    &scan_info_array[j].list[before-1-ptr[j]].isam_p, 1,
+		    glist[before-1-i].term,
+		    strlen(glist[before-1-i].term), NULL, 0,
+		    zapt->term->which, rset_nmem,
+		    key_it_ctrl, key_it_ctrl->scope);
                 rset = rsbool_create_and(rset_nmem,key_it_ctrl,
-                            key_it_ctrl->scope, rset, rset2);
+					 key_it_ctrl->scope, rset, rset2);
                 /* FIXME - multi-and ?? */
                 ptr[j]++;
             }
@@ -2717,9 +2696,9 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     nmem_destroy(rset_nmem);
     *list = glist + i;               /* list is set to first 'real' entry */
     
-    logf (LOG_DEBUG, "position = %d, num_entries = %d",
+    yaz_log(LOG_DEBUG, "position = %d, num_entries = %d",
           *position, *num_entries);
     if (zh->errCode)
-        logf (LOG_DEBUG, "scan error: %d", zh->errCode);
+        yaz_log(LOG_DEBUG, "scan error: %d", zh->errCode);
 }
               
