@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.25  1995-10-10 13:59:24  adam
+ * Revision 1.26  1995-10-12 12:40:54  adam
+ * Bug fixes in rpn_prox.
+ *
+ * Revision 1.25  1995/10/10  13:59:24  adam
  * Function rset_open changed its wflag parameter to general flags.
  *
  * Revision 1.24  1995/10/09  16:18:37  adam
@@ -573,12 +576,24 @@ static RSET rpn_prox (RSET *rset, int rset_no)
     rsfd = xmalloc (sizeof(*rsfd)*rset_no);
     more = xmalloc (sizeof(*more)*rset_no);
     buf = xmalloc (sizeof(*buf)*rset_no);
-    
+
     for (i = 0; i<rset_no; i++)
     {
         buf[i] = xmalloc (sizeof(**buf));
         rsfd[i] = rset_open (rset[i], RSETF_READ|RSETF_SORT_SYSNO);
-        more[i] = rset_read (rset[i], rsfd[i], buf[i]);
+        if (!(more[i] = rset_read (rset[i], rsfd[i], buf[i])))
+        {
+            while (i >= 0)
+            {
+                rset_close (rset[i], rsfd[i]);
+                xfree (buf[i]);
+                --i;
+            }
+            xfree (rsfd);
+            xfree (more);
+            xfree (buf);
+            return rset_create (rset_kind_null, NULL);
+        }
     }
     parms.key_size = sizeof (struct it_key);
     result = rset_create (rset_kind_temp, &parms);
@@ -668,24 +683,23 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         grep_info.isam_p_indx = 0;
         if (trunc_term (zi, zapt, term_sub, attributeSet, &grep_info))
             return NULL;
-        if (grep_info.isam_p_indx > 0)
+        if (grep_info.isam_p_indx == 0)
+            rset[rset_no] = rset_create (rset_kind_null, NULL);
+        else if (grep_info.isam_p_indx > 1)
+            rset[rset_no] = rset_trunc (zi->wordIsam,
+                                        grep_info.isam_p_buf, 0,
+                                        grep_info.isam_p_indx, 400);
+        else
         {
-            if (grep_info.isam_p_indx > 1)
-                rset[rset_no] = rset_trunc (zi->wordIsam,
-                                            grep_info.isam_p_buf, 0,
-                                            grep_info.isam_p_indx, 400);
-            else
-            {
-                rset_isam_parms parms;
-
-                parms.is = zi->wordIsam;
-                parms.pos = *grep_info.isam_p_buf;
-                rset[rset_no] = rset_create (rset_kind_isam, &parms);
-            }
-            rset_no++;
-            if (rset_no >= sizeof(rset)/sizeof(*rset))
-                break;
+            rset_isam_parms parms;
+            
+            parms.is = zi->wordIsam;
+            parms.pos = *grep_info.isam_p_buf;
+            rset[rset_no] = rset_create (rset_kind_isam, &parms);
         }
+        assert (rset[rset_no]);
+        if (++rset_no >= sizeof(rset)/sizeof(*rset))
+            break;
         if (!p1)
             break;
         p0 = p1;

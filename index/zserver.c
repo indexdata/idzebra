@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.14  1995-10-09 16:18:37  adam
+ * Revision 1.15  1995-10-12 12:40:55  adam
+ * Bug fixes in rpn_prox.
+ *
+ * Revision 1.14  1995/10/09  16:18:37  adam
  * Function dict_lookup_grep got extra client data parameter.
  *
  * Revision 1.13  1995/10/06  14:38:00  adam
@@ -71,33 +74,38 @@ bend_initresult *bend_init (bend_initrequest *q)
     r.errstring = 0;
     r.handle = name;
 
+    logf (LOG_DEBUG, "bend_init");
     server_info.sets = NULL;
     if (!(server_info.sys_idx_fd = open (FNAME_SYS_IDX, O_RDONLY)))
     {
+        logf (LOG_WARN|LOG_ERRNO, "sys_idx open fail");
         r.errcode = 1;
-        r.errstring = "dict_open fail: filedict";
+        r.errstring = "sys_idx open fail";
         return &r;
     }
     if (!(server_info.fileDict = dict_open (FNAME_FILE_DICT, 10, 0)))
     {
+        logf (LOG_WARN, "dict_open fail: fname dict");
         r.errcode = 1;
-        r.errstring = "dict_open fail: filedict";
+        r.errstring = "dict_open fail: fname dict";
         return &r;
     }    
     if (!(server_info.wordDict = dict_open (FNAME_WORD_DICT, 40, 0)))
     {
+        logf (LOG_WARN, "dict_open fail: word dict");
         dict_close (server_info.fileDict);
         r.errcode = 1;
-        r.errstring = "dict_open fail: worddict";
+        r.errstring = "dict_open fail: word dict";
         return &r;
     }    
     if (!(server_info.wordIsam = is_open (FNAME_WORD_ISAM, key_compare, 0,
                                           sizeof (struct it_key))))
     {
+        logf (LOG_WARN, "is_open fail: word isam");
         dict_close (server_info.wordDict);
         dict_close (server_info.fileDict);
         r.errcode = 1;
-        r.errstring = "is_open fail: wordisam";
+        r.errstring = "is_open fail: word isam";
         return &r;
     }
     server_info.odr = odr_createmem (ODR_ENCODE);
@@ -160,12 +168,12 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
               file_type);
         exit (1);
     }
+    logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
     if ((retrieveCtrl.fd = open (fname, O_RDONLY)) == -1)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Retrieve: Open record file %s", fname);
-        exit (1);
+        logf (LOG_WARN|LOG_ERRNO, "Retrieve: Open record file %s", fname);
+        return 14;     /* System error in presenting records */
     }
-    logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
     retrieveCtrl.localno = sysno;
     retrieveCtrl.score = score;
     retrieveCtrl.odr = stream;
