@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.10  1996-01-08 09:09:17  adam
+ * Revision 1.11  1996-01-08 19:15:24  adam
+ * Allow single $ in expressions.
+ *
+ * Revision 1.10  1996/01/08  09:09:17  adam
  * Function dfa_parse got 'const' string argument.
  * New functions to define char mappings made public.
  *
@@ -270,15 +273,15 @@ static struct Tnode *expr_4 (void)
     return t1;
 }
 
-static void do_parse (struct DFA_parse *dfap, const char **s, struct Tnode **tnp)
+static void do_parse (struct DFA_parse *dfap, const char **s,
+                      struct Tnode **tnp)
 {
-    int anchor_flag = 0;
     int start_anchor_flag = 0;
     struct Tnode *t1, *t2, *tn;
 
     parse_info = dfap;
     err_code = 0;
-    expr_ptr = (unsigned char *) *s;
+    expr_ptr = (const unsigned char *) *s;
 
     inside_string = 0;
     lex ();
@@ -287,31 +290,32 @@ static void do_parse (struct DFA_parse *dfap, const char **s, struct Tnode **tnp
         start_anchor_flag = 1;
         lex ();
     }
-    t1 = expr_1 ();
-    if (anchor_flag)
+    if (lookahead == L_END)
     {
-        tn = mk_Tnode ();
-        tn->pos = CAT;
-        tn->u.p[0] = t2;
-        tn->u.p[1] = t1;
-        t1 = tn;
-    }
-    if (lookahead == L_END && t1)
-    {
-        t2 = mk_Tnode ();
-        t2->pos = ++parse_info->position;
-        t2->u.ch[1] = t2->u.ch[0] = '\n';
-
-        tn = mk_Tnode ();
-        tn->pos = CAT;
-        tn->u.p[0] = t1;
-        tn->u.p[1] = t2;
-        t1 = tn;
-        
-        anchor_flag |= 2;
+        t1 = mk_Tnode ();
+        t1->pos = ++parse_info->position;
+        t1->u.ch[1] = t1->u.ch[0] = '\n';
         lex ();
     }
-    if (lookahead == 0 && t1)
+    else
+    {
+        t1 = expr_1 ();
+        if (t1 && lookahead == L_END)
+        {
+            t2 = mk_Tnode ();
+            t2->pos = ++parse_info->position;
+            t2->u.ch[1] = t2->u.ch[0] = '\n';
+            
+            tn = mk_Tnode ();
+            tn->pos = CAT;
+            tn->u.p[0] = t1;
+            tn->u.p[1] = t2;
+            t1 = tn;
+            
+            lex ();
+        }
+    }
+    if (t1 && lookahead == 0)
     {
         t2 = mk_Tnode();
         t2->pos = ++parse_info->position;
@@ -335,7 +339,7 @@ static void do_parse (struct DFA_parse *dfap, const char **s, struct Tnode **tnp
                 err_code = DFA_ERR_SYNTAX;
         }
     }
-    *s = (char *) expr_ptr;
+    *s = (const char *) expr_ptr;
 }
 
 static int nextchar (int *esc)
@@ -441,8 +445,6 @@ static int lex_sub(void)
         else 
         {
             const int *cc;
-            if (look_ch == '/')
-                logf (LOG_DEBUG, "xxxx / xxx");
             for (cc = parse_info->charMap; *cc; cc += 2)
                 if (*cc == look_ch)
                 {
