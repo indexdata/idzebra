@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.26  1999-05-26 07:49:14  adam
+ * Revision 1.27  1999-06-28 13:25:40  quinn
+ * Improved diagnostics for Tcl
+ *
+ * Revision 1.26  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.25  1999/05/25 12:33:32  adam
@@ -1417,7 +1420,15 @@ static void execTcl (struct lexSpec *spec, struct regxCode *code)
 	    var_buf[var_len] = ch;
 	}
     }
-    Tcl_Eval (spec->tcl_interp, code->str);
+    if (Tcl_Eval (spec->tcl_interp, code->str) != TCL_OK)
+    {
+    	const char *err = Tcl_GetVar(spec->tcl_interp, "errorInfo", 0);
+	logf(LOG_FATAL, "Tcl error, line=%d, \"%s\"\n%s", 
+	    spec->tcl_interp->errorLine,
+	    spec->tcl_interp->result,
+	    err ? err : "[NO ERRORINFO]");
+    }
+
 }
 /* HAVE_TCL_H */
 #endif
