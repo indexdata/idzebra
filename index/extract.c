@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.101  2000-05-15 13:02:39  adam
+ * Revision 1.102  2000-05-15 15:32:33  adam
+ * Added 64 bit file input.
+ *
+ * Revision 1.101  2000/05/15 13:02:39  adam
  * Minor change.
  *
  * Revision 1.100  2000/03/20 19:08:36  adam
@@ -377,6 +380,12 @@
 #include "index.h"
 
 #include "zinfo.h"
+
+#if _FILE_OFFSET_BITS == 64
+#define PRINTF_OFF_T "%Ld"
+#else
+#define PRINTF_OFF_T "%ld"
+#endif
 
 #ifndef ZEBRASDR
 #define ZEBRASDR 0
@@ -1327,7 +1336,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 	extractCtrl.flagShowRecords = !rGroup->flagRw;
 
         if (!rGroup->flagRw)
-            printf ("File: %s %ld\n", fname, (long) recordOffset);
+            printf ("File: %s " PRINTF_OFF_T "\n", fname, recordOffset);
 
         logInfo.fname = fname;
         logInfo.recordOffset = recordOffset;
@@ -1346,8 +1355,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             if (rGroup->flagRw &&
 		records_processed < rGroup->fileVerboseLimit)
             {
-                logf (LOG_WARN, "fail %s %s %ld", rGroup->recordType,
-                      fname, (long) recordOffset);
+                logf (LOG_WARN, "fail %s %s " PRINTF_OFF_T, rGroup->recordType,
+                      fname, recordOffset);
             }
             return 0;
         }
@@ -1358,8 +1367,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             if (!rGroup->flagRw)
                 return 1;
 	    
-	    logf (LOG_WARN, "empty %s %s %ld", rGroup->recordType,
-		  fname, (long) recordOffset);
+	    logf (LOG_WARN, "empty %s %s " PRINTF_OFF_T, rGroup->recordType,
+		  fname, recordOffset);
             return 1;
         }
     }
@@ -1396,14 +1405,14 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         /* new record */
         if (deleteFlag)
         {
-	    logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
-		  fname, (long) recordOffset);
+	    logf (LOG_LOG, "delete %s %s " PRINTF_OFF_T, rGroup->recordType,
+		  fname, recordOffset);
             logf (LOG_WARN, "cannot delete record above (seems new)");
             return 1;
         }
         if (records_processed < rGroup->fileVerboseLimit)
-            logf (LOG_LOG, "add %s %s %ld", rGroup->recordType,
-                  fname, (long) recordOffset);
+            logf (LOG_LOG, "add %s %s " PRINTF_OFF_T, rGroup->recordType,
+                  fname, recordOffset);
         rec = rec_new (records);
 
         *sysno = rec->sysno;
@@ -1431,8 +1440,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 
 	if (recordAttr->runNumber == zebraExplain_runNumberIncrement (zti, 0))
 	{
-	    logf (LOG_LOG, "skipped %s %s %ld", rGroup->recordType,
-		  fname, (long) recordOffset);
+	    logf (LOG_LOG, "skipped %s %s " PRINTF_OFF_T, rGroup->recordType,
+		  fname, recordOffset);
 	    rec_rm (&rec);
 	    logRecord (0);
 	    return 1;
@@ -1446,15 +1455,15 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             /* record going to be deleted */
             if (!delkeys.buf_used)
             {
-                logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
-                      fname, (long) recordOffset);
+                logf (LOG_LOG, "delete %s %s " PRINTF_OFF_T,
+                      rGroup->recordType, fname, recordOffset);
                 logf (LOG_WARN, "cannot delete file above, storeKeys false");
             }
             else
             {
                 if (records_processed < rGroup->fileVerboseLimit)
-                    logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
-                          fname, (long) recordOffset);
+                    logf (LOG_LOG, "delete %s %s " PRINTF_OFF_T,
+                         rGroup->recordType, fname, recordOffset);
                 records_deleted++;
                 if (matchStr)
                     dict_delete (matchDict, matchStr);
@@ -1469,15 +1478,15 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             /* record going to be updated */
             if (!delkeys.buf_used)
             {
-                logf (LOG_LOG, "update %s %s %ld", rGroup->recordType,
-                      fname, (long) recordOffset);
+                logf (LOG_LOG, "update %s %s " PRINTF_OFF_T,
+                      rGroup->recordType, fname, recordOffset);
                 logf (LOG_WARN, "cannot update file above, storeKeys false");
             }
             else
             {
                 if (records_processed < rGroup->fileVerboseLimit)
-                    logf (LOG_LOG, "update %s %s %ld", rGroup->recordType,
-                          fname, (long) recordOffset);
+                    logf (LOG_LOG, "update %s %s " PRINTF_OFF_T,
+                        rGroup->recordType, fname, recordOffset);
                 flushRecordKeys (*sysno, 1, &reckeys);
                 records_updated++;
             }
@@ -1534,8 +1543,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 	    xmalloc (recordAttr->recordSize);
         if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
         {
-            logf (LOG_ERRNO|LOG_FATAL, "seek to %ld in %s",
-                  (long) recordOffset, fname);
+            logf (LOG_ERRNO|LOG_FATAL, "seek to " PRINTF_OFF_T " in %s",
+                  recordOffset, fname);
             exit (1);
         }
         if (read (fi->fd, rec->info[recInfo_storeData], recordAttr->recordSize)
