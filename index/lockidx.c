@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.10  1997-09-09 13:38:07  adam
+ * Revision 1.11  1997-09-17 12:19:15  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.10  1997/09/09 13:38:07  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.9  1997/09/04 13:58:04  adam
@@ -66,7 +70,7 @@ int zebraIndexWait (int commitPhase)
     char path[1024];
     int fd;
     
-    zebraLockPrefix (pathPrefix);
+    zebraLockPrefix (common_resource, pathPrefix);
 
     if (server_lock_cmt == -1)
     {
@@ -135,7 +139,7 @@ void zebraIndexLockMsg (const char *str)
         logf (LOG_FATAL|LOG_ERRNO, "write lock file");
         exit (1);
     }
-    zebraLockPrefix (pathPrefix);
+    zebraLockPrefix (common_resource, pathPrefix);
     sprintf (path, "%s%s", pathPrefix, FNAME_TOUCH_TIME);
     fd = creat (path, 0666);
     close (fd);
@@ -146,12 +150,12 @@ void zebraIndexUnlock (void)
     char path[1024];
     char pathPrefix[1024];
 
-    zebraLockPrefix (pathPrefix);
+    zebraLockPrefix (common_resource, pathPrefix);
     sprintf (path, "%s%s", pathPrefix, FNAME_MAIN_LOCK);
     unlink (path);
 }
 
-void zebraIndexLock (int commitNow)
+void zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
 {
     char path[1024];
     char pathPrefix[1024];
@@ -160,7 +164,7 @@ void zebraIndexLock (int commitNow)
 
     if (lock_fd != -1)
         return ;
-    zebraLockPrefix (pathPrefix);
+    zebraLockPrefix (common_resource, pathPrefix);
     sprintf (path, "%s%s", pathPrefix, FNAME_MAIN_LOCK);
     while (1)
     {
@@ -212,7 +216,7 @@ void zebraIndexLock (int commitNow)
                     logf (LOG_WARN, "previous transaction didn't"
                           " reach commit");
                     close (lock_fd);
-                    bf_commitClean ();
+                    bf_commitClean (bfs, rval);
                     unlink (path);
                     continue;
                 }
@@ -220,7 +224,7 @@ void zebraIndexLock (int commitNow)
                 {
                     logf (LOG_WARN, "commit file wan't deleted after commit");
                     close (lock_fd);
-                    bf_commitClean ();
+                    bf_commitClean (bfs, rval);
                     unlink (path);
                     continue;
                 }                    

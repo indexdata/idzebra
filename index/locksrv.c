@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.7  1997-09-04 13:58:04  adam
+ * Revision 1.8  1997-09-17 12:19:15  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.7  1997/09/04 13:58:04  adam
  * Added O_BINARY for open calls.
  *
  * Revision 1.6  1996/10/29 14:06:52  adam
@@ -43,12 +47,12 @@
 static int server_lock_cmt = -1;
 static int server_lock_org = -1;
 
-int zebraServerLock (int commitPhase)
+int zebraServerLock (Res res, int commitPhase)
 {
     char pathPrefix[1024];
     char path[1024];
     
-    zebraLockPrefix (pathPrefix);
+    zebraLockPrefix (res, pathPrefix);
 
     if (server_lock_cmt == -1)
     {
@@ -98,7 +102,7 @@ void zebraServerUnlock (int commitPhase)
     }
 }
 
-int zebraServerLockGetState (time_t *timep)
+int zebraServerLockGetState (Res res, time_t *timep)
 {
     char pathPrefix[1024];
     char path[1024];
@@ -106,7 +110,7 @@ int zebraServerLockGetState (time_t *timep)
     int fd;
     struct stat xstat;
     
-    zebraLockPrefix (pathPrefix);
+    zebraLockPrefix (res, pathPrefix);
 
     sprintf (path, "%s%s", pathPrefix, FNAME_TOUCH_TIME);
     if (stat (path, &xstat) == -1)

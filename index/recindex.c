@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.18  1997-07-15 16:28:42  adam
+ * Revision 1.19  1997-09-17 12:19:16  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.18  1997/07/15 16:28:42  adam
  * Bug fix: storeData didn't work with files with multiple records.
  * Bug fix: fixed memory management with records; not really well
  *  thought through.
@@ -261,7 +265,7 @@ static void rec_update_single (Records p, Record rec)
     rec_write_single (p, rec);
 }
 
-Records rec_open (int rw)
+Records rec_open (BFiles bfs, int rw)
 {
     Records p;
     int i, r;
@@ -271,7 +275,7 @@ Records rec_open (int rw)
     p->tmp_size = 1024;
     p->tmp_buf = xmalloc (p->tmp_size);
     p->index_fname = "recindex";
-    p->index_BFile = bf_open (p->index_fname, 128, rw);
+    p->index_BFile = bf_open (bfs, p->index_fname, 128, rw);
     if (p->index_BFile == NULL)
     {
         logf (LOG_FATAL|LOG_ERRNO, "open %s", p->index_fname);
@@ -321,7 +325,7 @@ Records rec_open (int rw)
     }
     for (i = 0; i<REC_BLOCK_TYPES; i++)
     {
-        if (!(p->data_BFile[i] = bf_open (p->data_fname[i],
+        if (!(p->data_BFile[i] = bf_open (bfs, p->data_fname[i],
                                           p->head.block_size[i],
                                           rw)))
         {

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.30  1997-09-09 13:38:09  adam
+ * Revision 1.31  1997-09-17 12:19:17  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.30  1997/09/09 13:38:09  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.29  1997/02/12 20:39:47  adam
@@ -356,7 +360,7 @@ void repositoryShow (struct recordGroup *rGroup)
     Dict dict;
     struct dirs_info *di;
     
-    if (!(dict = dict_open (FMATCH_DICT, 50, 1)))
+    if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50, 1)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
         exit (1);
@@ -471,7 +475,7 @@ void repositoryUpdate (struct recordGroup *rGroup)
     if (rGroup->recordId && !strcmp (rGroup->recordId, "file"))
     {
         Dict dict;
-        if (!(dict = dict_open (FMATCH_DICT, 50, 1)))
+        if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50, 1)))
         {
             logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
             exit (1);

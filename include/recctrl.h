@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.19  1997-09-05 15:30:02  adam
+ * Revision 1.20  1997-09-17 12:19:10  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.19  1997/09/05 15:30:02  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -77,6 +81,7 @@
 #include <proto.h>
 #include <oid.h>
 #include <odr.h>
+#include <data1.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -120,6 +125,7 @@ struct recExtractCtrl {
     void      (*add)(const RecWord *p);
     const char **(*map_chrs_input)(const char **from, int len);
     int       flagShowRecords;
+    data1_handle dh;
 };
 
 /* Retrieve record control */
@@ -135,6 +141,7 @@ struct recRetrieveCtrl {
     int       localno;                /* local id of record                */
     int       score;                  /* score 0-1000 or -1 if none        */
     char      *subType;
+    data1_handle dh;
     
     /* response */
     oid_value  output_format;

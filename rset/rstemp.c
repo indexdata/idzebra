@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.20  1997-09-09 13:38:17  adam
+ * Revision 1.21  1997-09-17 12:19:23  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.20  1997/09/09 13:38:17  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.19  1997/09/04 13:58:57  adam
@@ -99,9 +103,6 @@ static int r_read (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
 static int r_score (RSFD rfd, int *score);
 
-static int temppath_init = 0;
-static char *temppath_root = NULL;
-
 static const rset_control control = 
 {
     "temp",
@@ -129,6 +130,7 @@ struct rset_temp_info {
     size_t  pos_buf;       /* position of first byte in window */
     size_t  pos_border;    /* position of last byte+1 in window */
     int     dirty;         /* window is dirty */
+    char   *temp_path;
 };
 
 struct rset_temp_rfd {
@@ -151,12 +153,14 @@ static void *r_create(const struct rset_control *sel, void *parms, int *flags)
     info->pos_end = 0;
     info->pos_buf = 0;
     info->dirty = 0;
-
-    if (!temppath_init)
+    if (!temp_parms->temp_path)
+	info->temp_path = NULL;
+    else
     {
-        temppath_init = 1;
-        temppath_root = res_get (common_resource, "setTmpDir");
+	info->temp_path = xmalloc (strlen(temp_parms->temp_path)+1);
+	strcpy (info->temp_path, temp_parms->temp_path);
     }
+
     return info;
 }
 
@@ -193,7 +197,7 @@ static void r_flush (RSFD rfd, int mk)
 
     if (!info->fname && mk)
     {
-        char *s = (char*) tempnam (temppath_root, "zrs");
+        char *s = (char*) tempnam (info->temp_path, "zrs");
 
         info->fname = xmalloc (strlen(s)+1);
         strcpy (info->fname, s);
@@ -249,15 +253,17 @@ static void r_delete (RSET ct)
 
     if (info->fname)
         unlink (info->fname);        
-    free (info->buf_mem);
+    xfree (info->buf_mem);
     logf (LOG_DEBUG, "r_delete: set size %ld", (long) info->pos_end);
     if (info->fname)
     {
         logf (LOG_DEBUG, "r_delete: unlink %s", info->fname);
         unlink (info->fname);
-        free (info->fname);
+        xfree (info->fname);
     }
-    free (info);
+    if (info->temp_path)
+	xfree (info->temp_path);
+    xfree (info);
 }
 
 /* r_reread:

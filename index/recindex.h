@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.10  1996-10-29 14:06:53  adam
+ * Revision 1.11  1997-09-17 12:19:16  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.10  1996/10/29 14:06:53  adam
  * Include zebrautl.h instead of alexutil.h.
  *
  * Revision 1.9  1996/05/01 13:46:36  adam
@@ -46,6 +50,7 @@
  */
 
 #include <zebrautl.h>
+#include <bfile.h>
 
 #define REC_NO_INFO 8
 
@@ -65,7 +70,7 @@ void rec_put (Records p, Record *recpp);
 Record rec_new (Records p);
 Record rec_get (Records p, int sysno);
 void rec_close (Records *p);
-Records rec_open (int rw);
+Records rec_open (BFiles bfs, int rw);
 char *rec_strdup (const char *s, size_t *len);
 
 enum { 

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.7  1997-02-12 20:42:43  adam
+ * Revision 1.8  1997-09-17 12:19:20  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.7  1997/02/12 20:42:43  adam
  * Bug fix: during isc_merge operations, some pages weren't marked dirty
  * even though they should be. At this point the merge operation marks
  * a page dirty if the previous page changed at all. A better approach is
@@ -74,7 +78,7 @@ ISAMC_M isc_getmethod (void)
 }
 
 
-ISAMC isc_open (const char *name, int writeflag, ISAMC_M method)
+ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
 {
     ISAMC is;
     ISAMC_filecat filecat;
@@ -123,7 +127,7 @@ ISAMC isc_open (const char *name, int writeflag, ISAMC_M method)
         char fname[512];
 
         sprintf (fname, "%s%c", name, i+'A');
-        is->files[i].bf = bf_open (fname, is->method->filecat[i].bsize,
+        is->files[i].bf = bf_open (bfs, fname, is->method->filecat[i].bsize,
                                    writeflag);
         is->files[i].head_is_dirty = 0;
         if (!bf_read (is->files[i].bf, 0, 0, sizeof(ISAMC_head),

@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.74  1997-09-09 13:38:06  adam
+ * Revision 1.75  1997-09-17 12:19:12  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.74  1997/09/09 13:38:06  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.73  1997/09/04 13:57:20  adam
@@ -310,7 +314,7 @@ static void logRecord (int showFlag)
     }
 }
 
-void key_open (int mem)
+void key_open (BFiles bfs, int mem)
 {
     if (!mem)
         mem = atoi(res_get_def (common_resource, "memMax", "4"))*1024*1024;
@@ -323,13 +327,13 @@ void key_open (int mem)
     key_buf_used = 0;
     key_file_no = 0;
 
-    if (!(matchDict = dict_open (GMATCH_DICT, 50, 1)))
+    if (!(matchDict = dict_open (bfs, GMATCH_DICT, 50, 1)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", GMATCH_DICT);
         exit (1);
     }
     assert (!records);
-    records = rec_open (1);
+    records = rec_open (bfs, 1);
 #if 1
     zti = zebTargetInfo_open (records, 1);
 #endif
@@ -503,7 +507,7 @@ void key_flush (void)
     key_buf_used = 0;
 }
 
-int key_close (void)
+int key_close ()
 {
     key_flush ();
     xfree (key_buf);
@@ -985,6 +989,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.subType = subType;
         extractCtrl.init = wordInit;
         extractCtrl.add = addRecordKey;
+	extractCtrl.dh = rGroup->dh;
 
         reckeys.buf_used = 0;
         reckeys.prevAttrUse = -1;

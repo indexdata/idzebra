@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.11  1996-10-29 14:00:05  adam
+ * Revision 1.12  1997-09-17 12:19:07  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.11  1996/10/29 14:00:05  adam
  * Page size given by DICT_DEFAULT_PAGESIZE in dict.h.
  *
  * Revision 1.10  1996/05/24 14:46:04  adam
@@ -47,7 +51,7 @@
 
 #include <dict.h>
 
-Dict dict_open (const char *name, int cache, int rw)
+Dict dict_open (BFiles bfs, const char *name, int cache, int rw)
 {
     Dict dict;
     void *head_buf;
@@ -67,7 +71,7 @@ Dict dict_open (const char *name, int cache, int rw)
               resource_str);
         page_size = 2048;
     }
-    dict->dbf = dict_bf_open (name, page_size, cache, rw);
+    dict->dbf = dict_bf_open (bfs, name, page_size, cache, rw);
     dict->rw = rw;
 
     if(!dict->dbf)

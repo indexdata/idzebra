@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: grsread.h,v $
- * Revision 1.3  1997-09-04 13:54:40  adam
+ * Revision 1.4  1997-09-17 12:19:21  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.3  1997/09/04 13:54:40  adam
  * Added MARC filter - type grs.marc.<syntax> where syntax refers
  * to abstract syntax. New method tellf in retrieve/extract method.
  *
@@ -29,6 +33,7 @@ struct grs_read_info {
     off_t offset;
     char type[80];
     NMEM mem;
+    data1_handle dh;
 };
 
 data1_node *grs_read_regx (struct grs_read_info *p);

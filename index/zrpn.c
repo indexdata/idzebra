@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.62  1997-09-05 15:30:09  adam
+ * Revision 1.63  1997-09-17 12:19:18  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.62  1997/09/05 15:30:09  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -220,7 +224,6 @@
 #include <ctype.h>
 
 #include "zserver.h"
-#include "attribute.h"
 
 #include <charmap.h>
 #include <rstemp.h>
@@ -674,13 +677,12 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
     for (base_no = 0; base_no < num_bases; base_no++)
     {
-        attent *attp;
+        attent attp;
         data1_local_attribute *local_attr;
         int max_pos, prefix_len = 0;
 
         termp = *term_sub;
-        attp = att_getentbyatt (curAttributeSet, use_value);
-        if (!attp)
+        if (!att_getentbyatt (zi, &attp, curAttributeSet, use_value))
         {
             logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
                   curAttributeSet, use_value);
@@ -693,12 +695,12 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
             zi->errString = basenames[base_no];
             return -1;
         }
-        for (local_attr = attp->local_attributes; local_attr;
+        for (local_attr = attp.local_attributes; local_attr;
              local_attr = local_attr->next)
         {
             int ord;
 
-            ord = zebTargetInfo_lookupSU (zi->zti, attp->attset_ordinal,
+            ord = zebTargetInfo_lookupSU (zi->zti, attp.attset_ordinal,
                                           local_attr->local);
             if (ord < 0)
                 continue;
@@ -927,7 +929,8 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
     return result;
 }
 
-static RSET rpn_proximity (RSET rset1, RSET rset2, int ordered,
+static RSET rpn_proximity (ZServerInfo *zi, RSET rset1, RSET rset2,
+			   int ordered,
                            int exclusion, int relation, int distance)
 {
     int i;
@@ -945,6 +948,7 @@ static RSET rpn_proximity (RSET rset1, RSET rset2, int ordered,
     more2 = rset_read (rset2, rsfd2, &buf2);
 
     parms.key_size = sizeof (struct it_key);
+    parms.temp_path = res_get (zi->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);
     rsfd_result = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
    
@@ -1016,7 +1020,7 @@ static RSET rpn_proximity (RSET rset1, RSET rset2, int ordered,
     return result;
 }
 
-static RSET rpn_prox (RSET *rset, int rset_no)
+static RSET rpn_prox (ZServerInfo *zi, RSET *rset, int rset_no)
 {
     int i;
     RSFD *rsfd;
@@ -1049,6 +1053,7 @@ static RSET rpn_prox (RSET *rset, int rset_no)
         }
     }
     parms.key_size = sizeof (struct it_key);
+    parms.temp_path = res_get (zi->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);
     rsfd_result = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
     
@@ -1147,7 +1152,7 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         return rset_create (rset_kind_null, NULL);
     else if (rset_no == 1)
         return (rset[0]);
-    result = rpn_prox (rset, rset_no);
+    result = rpn_prox (zi, rset, rset_no);
     for (i = 0; i<rset_no; i++)
         rset_delete (rset[i]);
     return result;
@@ -1168,6 +1173,7 @@ static RSET rpn_search_APT_local (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         return NULL;
     }
     parms.key_size = sizeof (struct it_key);
+    parms.temp_path = res_get (zi->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);
     rsfd = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
 
@@ -1330,7 +1336,7 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
                 sprintf (val, "%d", *zop->u.prox->proximityUnitCode);
                 return NULL;
             }
-            r = rpn_proximity (bool_parms.rset_l, bool_parms.rset_r,
+            r = rpn_proximity (zi, bool_parms.rset_l, bool_parms.rset_r,
                                *zop->u.prox->ordered,
                                (!zop->u.prox->exclusion ? 0 :
                                          *zop->u.prox->exclusion),
@@ -1369,7 +1375,7 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
     return r;
 }
 
-void count_set_save (RSET *r, int *count)
+void count_set_save (ZServerInfo *zi, RSET *r, int *count)
 {
     int psysno = 0;
     int kno = 0;
@@ -1377,11 +1383,12 @@ void count_set_save (RSET *r, int *count)
     RSFD rfd, wfd;
     RSET w;
     rset_temp_parms parms;
-    int maxResultSetSize = atoi (res_get_def (common_resource,
+    int maxResultSetSize = atoi (res_get_def (zi->res,
                                         "maxResultSetSize", "400"));
     logf (LOG_DEBUG, "count_set_save");
     *count = 0;
     parms.key_size = sizeof(struct it_key);
+    parms.temp_path = res_get (zi->res, "setTmpDir");
     w = rset_create (rset_kind_temp, &parms);
     wfd = rset_open (w, RSETF_WRITE|RSETF_SORT_SYSNO);
     rfd = rset_open (*r, RSETF_READ|RSETF_SORT_SYSNO);
@@ -1447,7 +1454,7 @@ int rpn_search (ZServerInfo *zi,
     if (!rset)
         return zi->errCode;
     if (rset_is_volatile(rset))
-        count_set_save(&rset,hits);
+        count_set_save(zi, &rset,hits);
     else
         count_set (rset, hits);
     resultSetAdd (zi, setname, 1, rset);
@@ -1542,11 +1549,10 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         use_value = 1016;
     for (base_no = 0; base_no < num_bases && ord_no < 32; base_no++)
     {
-        attent *attp;
+        attent attp;
         data1_local_attribute *local_attr;
 
-        attp = att_getentbyatt (attributeset, use_value);
-        if (!attp)
+        if (!att_getentbyatt (zi, &attp, attributeset, use_value))
         {
             logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
                   attributeset, use_value);
@@ -1557,12 +1563,12 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
             zi->errString = basenames[base_no];
             return zi->errCode = 109; /* Database unavailable */
         }
-        for (local_attr = attp->local_attributes; local_attr && ord_no < 32;
+        for (local_attr = attp.local_attributes; local_attr && ord_no < 32;
              local_attr = local_attr->next)
         {
             int ord;
 
-            ord = zebTargetInfo_lookupSU (zi->zti, attp->attset_ordinal,
+            ord = zebTargetInfo_lookupSU (zi->zti, attp.attset_ordinal,
                                           local_attr->local);
             if (ord > 0)
                 ords[ord_no++] = ord;

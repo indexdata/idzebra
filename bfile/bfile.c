@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.22  1997-09-09 13:37:52  adam
+ * Revision 1.23  1997-09-17 12:19:06  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.22  1997/09/09 13:37:52  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.21  1996/10/29 13:56:13  adam
@@ -85,61 +89,70 @@
 #include <bfile.h>
 #include "cfile.h"
 
-static MFile_area commit_area = NULL;
-static char *commit_lockDir = NULL;
+struct BFiles_struct {
+    MFile_area commit_area;
+    MFile_area_struct *register_area;
+    char *lockDir;
+};
 
-static FILE *open_cache (const char *flags)
+BFiles bfs_create (const char *spec)
+{
+    BFiles bfs = xmalloc (sizeof(*bfs));
+    bfs->commit_area = NULL;
+    bfs->register_area = mf_init("register", spec);
+    bfs->lockDir = NULL;
+    return bfs;
+}
+
+void bfs_destroy (BFiles bfs)
+{
+    xfree (bfs);
+}
+
+static FILE *open_cache (BFiles bfs, const char *flags)
 {
     char cacheFilename[1024];
     FILE *file;
 
-    sprintf (cacheFilename, "%scache", commit_lockDir ? commit_lockDir : "");
+    sprintf (cacheFilename, "%scache",
+	     bfs->lockDir ? bfs->lockDir : "");
     file = fopen (cacheFilename, flags);
     return file;
 }
 
-static void unlink_cache (void)
+static void unlink_cache (BFiles bfs)
 {
     char cacheFilename[1024];
 
-    sprintf (cacheFilename, "%scache", commit_lockDir ? commit_lockDir : "");
+    sprintf (cacheFilename, "%scache",
+	     bfs->lockDir ? bfs->lockDir : "");
     unlink (cacheFilename);
 }
 
-void bf_lockDir (const char *lockDir)
+void bf_lockDir (BFiles bfs, const char *lockDir)
 {
     size_t len;
     
-    xfree (commit_lockDir);
-
+    xfree (bfs->lockDir);
     if (lockDir == NULL)
         lockDir = "";
     len = strlen(lockDir);
-    commit_lockDir = xmalloc (len+2);
-    strcpy (commit_lockDir, lockDir);
+    bfs->lockDir = xmalloc (len+2);
+    strcpy (bfs->lockDir, lockDir);
     
-    if (len > 0 && commit_lockDir[len-1] != '/')
-        strcpy (commit_lockDir + len, "/");
+    if (len > 0 && bfs->lockDir[len-1] != '/')
+        strcpy (bfs->lockDir + len, "/");
 }
 
-void bf_cache (int enableFlag)
+void bf_cache (BFiles bfs, const char *spec)
 {
-    if (enableFlag)
+    if (spec)
     {
-        if (!commit_area)
-            if (res_get (common_resource, "shadow"))
-            {
-                commit_area = mf_init ("shadow");
-            }
-            else
-            {
-                logf (LOG_FATAL, "Shadow area must be defined if commit"
-                      "is to be enabled");
-                exit (1);
-            }
+        if (!bfs->commit_area)
+	    bfs->commit_area = mf_init ("shadow", spec);
     }
     else
-        commit_area = NULL;
+        bfs->commit_area = NULL;
 }
 
 int bf_close (BFile bf)
@@ -151,26 +164,26 @@ int bf_close (BFile bf)
     return 0;
 }
 
-BFile bf_open (const char *name, int block_size, int wflag)
+BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
 {
     BFile tmp = xmalloc(sizeof(BFile_struct));
 
-    if (commit_area)
+    if (bfs->commit_area)
     {
         int first_time;
 
-        tmp->mf = mf_open (0, name, block_size, 0);
-        tmp->cf = cf_open (tmp->mf, commit_area, name, block_size,
+        tmp->mf = mf_open (bfs->register_area, name, block_size, 0);
+        tmp->cf = cf_open (tmp->mf, bfs->commit_area, name, block_size,
                            wflag, &first_time);
         if (first_time)
         {
             FILE *outf;
 
-            outf = open_cache ("a");
+            outf = open_cache (bfs, "a");
             if (!outf)
             {
                 logf (LOG_FATAL|LOG_ERRNO, "open %scache",
-                      commit_lockDir ? commit_lockDir : "");
+                      bfs->lockDir ? bfs->lockDir : "");
                 exit (1);
             }
             fprintf (outf, "%s %d\n", name, block_size);
@@ -179,7 +192,7 @@ BFile bf_open (const char *name, int block_size, int wflag)
     }
     else
     {
-        tmp->mf = mf_open(0, name, block_size, wflag);
+        tmp->mf = mf_open(bfs->register_area, name, block_size, wflag);
         tmp->cf = NULL;
     }
     if (!tmp->mf)
@@ -207,11 +220,11 @@ int bf_write (BFile bf, int no, int offset, int num, const void *buf)
     return mf_write (bf->mf, no, offset, num, buf);
 }
 
-int bf_commitExists (void)
+int bf_commitExists (BFiles bfs)
 {
     FILE *inf;
 
-    inf = open_cache ("r");
+    inf = open_cache (bfs, "r");
     if (inf)
     {
         fclose (inf);
@@ -220,7 +233,7 @@ int bf_commitExists (void)
     return 0;
 }
 
-void bf_commitExec (void)
+void bf_commitExec (BFiles bfs)
 {
     FILE *inf;
     int block_size;
@@ -229,16 +242,16 @@ void bf_commitExec (void)
     CFile cf;
     int first_time;
 
-    assert (commit_area);
-    if (!(inf = open_cache ("r")))
+    assert (bfs->commit_area);
+    if (!(inf = open_cache (bfs, "r")))
     {
         logf (LOG_LOG, "No commit file");
         return ;
     }
     while (fscanf (inf, "%s %d", path, &block_size) == 2)
     {
-        mf = mf_open (0, path, block_size, 1);
-        cf = cf_open (mf, commit_area, path, block_size, 0, &first_time);
+        mf = mf_open (bfs->register_area, path, block_size, 1);
+        cf = cf_open (mf, bfs->commit_area, path, block_size, 0, &first_time);
 
         cf_commit (cf);
 
@@ -248,7 +261,7 @@ void bf_commitExec (void)
     fclose (inf);
 }
 
-void bf_commitClean (void)
+void bf_commitClean (BFiles bfs, const char *spec)
 {
     FILE *inf;
     int block_size;
@@ -258,24 +271,24 @@ void bf_commitClean (void)
     int mustDisable = 0;
     int firstTime;
 
-    if (!commit_area)
+    if (!bfs->commit_area)
     {
-        bf_cache (1);
+        bf_cache (bfs, spec);
         mustDisable = 1;
     }
 
-    if (!(inf = open_cache ("r")))
+    if (!(inf = open_cache (bfs, "r")))
         return ;
     while (fscanf (inf, "%s %d", path, &block_size) == 2)
     {
-        mf = mf_open (0, path, block_size, 0);
-        cf = cf_open (mf, commit_area, path, block_size, 1, &firstTime);
+        mf = mf_open (bfs->register_area, path, block_size, 0);
+        cf = cf_open (mf, bfs->commit_area, path, block_size, 1, &firstTime);
         cf_unlink (cf);
         cf_close (cf);
         mf_close (mf);
     }
     fclose (inf);
-    unlink_cache ();
+    unlink_cache (bfs);
     if (mustDisable)
-        bf_cache (0);
+        bf_cache (bfs, 0);
 }

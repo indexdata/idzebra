@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.7  1997-09-09 13:38:08  adam
+ * Revision 1.8  1997-09-17 12:19:15  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.7  1997/09/09 13:38:08  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.6  1996/10/29 14:08:14  adam
@@ -46,10 +50,10 @@
 
 static char *lockDir = NULL;
 
-void zebraLockPrefix (char *pathPrefix)
+void zebraLockPrefix (Res res, char *pathPrefix)
 {
     if (!lockDir)
-        lockDir = res_get_def (common_resource, "lockDir", "");
+        lockDir = res_get_def (res, "lockDir", "");
     assert (lockDir);
     
     strcpy (pathPrefix, lockDir);

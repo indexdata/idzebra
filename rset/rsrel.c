@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.15  1997-09-09 13:38:16  adam
+ * Revision 1.16  1997-09-17 12:19:23  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.15  1997/09/09 13:38:16  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.14  1996/11/08 11:15:58  adam
@@ -205,6 +209,20 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
         }
         logf (LOG_DEBUG, "max tf %d = %d", i, max_tf[i]);
     }
+#if 0
+    while (1)
+    {
+	int min = -1;
+	int pos = 0;
+        for (i = 0; i<parms->no_isam_positions; i++)
+            if (isam_r[i] && 
+		(min < 0 ||
+		 (r = (*parms->cmp)(isam_buf[i], isam_buf[min])) < 1))
+                min = i;
+        if (min < 0)
+            break;
+	pos = (*parms->get_pos)(isam_buf[min]);
+#else
     while (1)
     {
         int min = -1, i, r;
@@ -262,6 +280,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
         /* if value is in the top score, then save it - don't emit yet */
         add_rec (info, score/parms->no_terms, isam_tmp_buf);
     }
+#endif
     for (i = 0; i<info->no_rec; i++)
         info->sysno_idx[i] = i;
     qsort_info = info;

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebrautl.h,v $
- * Revision 1.2  1997-09-05 15:30:06  adam
+ * Revision 1.3  1997-09-17 12:19:11  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.2  1997/09/05 15:30:06  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -22,7 +26,5 @@
 #include <xmalloc.h>
 #include <res.h>
 #include <readconf.h>
-
-#include <common.h>
 
 #endif

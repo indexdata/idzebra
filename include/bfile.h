@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.h,v $
- * Revision 1.14  1997-09-05 15:29:58  adam
+ * Revision 1.15  1997-09-17 12:19:07  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.14  1997/09/05 15:29:58  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -55,6 +59,11 @@ extern "C" {
 
 #define bf_blocksize(bf) mf_blocksize(bf->mf)
 
+typedef struct BFiles_struct *BFiles;
+
+BFiles bfs_create (const char *spec);
+void bfs_destroy (BFiles bfiles);
+
 typedef struct BFile_struct
 {
     MFile mf;
@@ -70,7 +79,7 @@ int bf_close (BFile);
    opens bfile with name 'name' and with 'block_size' as block size.
    returns bfile handle is successful; NULL otherwise 
  */
-BFile bf_open (const char *name, int block_size, int wflag);
+BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag);
 
 /* bf_read: reads bytes from bfile 'bf'.
    reads 'num' bytes (or whole block if 0) from offset 'offset' from
@@ -86,20 +95,20 @@ int bf_read (BFile bf, int no, int offset, int num, void *buf);
  */
 int bf_write (BFile bf, int no, int offset, int num, const void *buf);
 
-/* bf_cache: enables/disables bfile cache */
-void bf_cache (int enableFlag);
+/* bf_cache: enables bfile cache if spec is not NULL */
+void bf_cache (BFiles bfs, const char *spec);
 
 /* bf_lockDir: specifies locking directory for the cache system */
-void bf_lockDir (const char *lockDir);
+void bf_lockDir (BFiles bfs, const char *lockDir);
 
 /* bf_commitExists: returns 1 if commit is pending; 0 otherwise */
-int bf_commitExists (void);
+int bf_commitExists (BFiles bfs);
 
 /* bf_commitExec: executes commit */
-void bf_commitExec (void);
+void bf_commitExec (BFiles bfs);
 
 /* bf_commitClean: cleans commit files, etc */
-void bf_commitClean (void);
+void bf_commitClean (BFiles bfs, const char *spec);
 
 #ifdef __cplusplus
 }

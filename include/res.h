@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.h,v $
- * Revision 1.7  1997-09-05 15:30:02  adam
+ * Revision 1.8  1997-09-17 12:19:10  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.7  1997/09/05 15:30:02  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -50,8 +54,8 @@ char *res_get (Res r, const char *name);
 char *res_get_def (Res r, const char *name, char *def);
 int res_get_match (Res r, const char *name, const char *value, const char *s);
 void res_put (Res r, const char *name, const char *value);
-void res_trav (Res r, const char *prefix, 
-               void (*f)(const char *name, const char *value));
+void res_trav (Res r, const char *prefix, void *p,
+               void (*f)(void *p, const char *name, const char *value));
 int res_write (Res r);
 
 #ifdef __cplusplus

@@ -1,3 +1,17 @@
+/*
+ * Copyright (C) 1997, Index Data I/S 
+ * All rights reserved.
+ * Sebastian Hammer, Adam Dickmeiss
+ *
+ * $Log: dirent.c,v $
+ * Revision 1.2  1997-09-17 12:19:24  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * 
+ *
+ * This utility implements a opendir/readdir/close on Windows.
+ */
 
 #ifdef WINDOWS
 #include <assert.h>

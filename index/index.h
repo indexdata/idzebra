@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1995-1996, Index Data I/S 
+ * Copyright (C) 1995-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.49  1997-09-05 15:30:08  adam
+ * Revision 1.50  1997-09-17 12:19:13  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.49  1997/09/05 15:30:08  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -183,6 +187,7 @@
 #include <dict.h>
 #include <isam.h>
 #include <isamc.h>
+#include <data1.h>
 
 #define IT_MAX_WORD 256
 #define IT_KEY_HAVE_SEQNO 1
@@ -211,15 +216,17 @@ struct dirs_entry {
 };
 
 struct recordGroup {
-    char *groupName;
-    char *databaseName;
-    char *path;
-    char *recordId;
-    char *recordType;
-    int  flagStoreData;
-    int  flagStoreKeys;
-    int  flagShowRecords;
-    int  fileVerboseLimit;
+    char         *groupName;
+    char         *databaseName;
+    char         *path;
+    char         *recordId;
+    char         *recordType;
+    int          flagStoreData;
+    int          flagStoreKeys;
+    int          flagShowRecords;
+    int          fileVerboseLimit;
+    data1_handle dh;
+    BFiles       bfs;
 };
 
 void getFnameTmp (char *fname, int no);
@@ -243,15 +250,15 @@ void repositoryAdd (struct recordGroup *rGroup);
 void repositoryDelete (struct recordGroup *rGroup);
 void repositoryShow (struct recordGroup *rGroup);
 
-void key_open (int mem);
+void key_open (BFiles bfs, int mem);
 int key_close (void);
 int key_compare (const void *p1, const void *p2);
 int key_compare_it (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
-void inv_prstat (void);
-void key_input (int nkeys, int cache);
-ISAMC_M key_isamc_m (void);
+void inv_prstat (BFiles bfs);
+void key_input (BFiles bfs, int nkeys, int cache);
+ISAMC_M key_isamc_m (Res res);
 int merge_sort (char **buf, int from, int to);
 
 #define FNAME_DICT "dict"
@@ -276,11 +283,11 @@ int fileExtract (SYSNO *sysno, const char *fname,
 
 void rec_prstat (void);
 
-void zebraLockPrefix (char *pathPrefix);
+void zebraLockPrefix (Res res, char *pathPrefix);
 
 void zebraIndexLockMsg (const char *str);
 void zebraIndexUnlock (void);
-void zebraIndexLock (int commitNow);
+void zebraIndexLock (BFiles bfs, int commitNow, const char *rval);
 int zebraIndexWait (int commitPhase);
 
 #define FNAME_MAIN_LOCK   "zebraidx.LCK"
@@ -292,6 +299,8 @@ int zebraLock (int fd, int wr);
 int zebraLockNB (int fd, int wr);
 int zebraUnlock (int fd);
 
-void init_charmap(void);
+void init_charmap(Res res);
 const char **map_chrs_input(const char **from, int len);
 const char *map_chrs_output(const char **from);
+
+extern Res common_resource;

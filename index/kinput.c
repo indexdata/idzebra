@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.24  1997-09-09 13:38:07  adam
+ * Revision 1.25  1997-09-17 12:19:14  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.24  1997/09/09 13:38:07  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.23  1997/09/04 13:57:39  adam
@@ -579,7 +583,7 @@ void progressFunc (struct key_file *keyp, void *info)
 #define R_OK 4
 #endif
 
-void key_input (int nkeys, int cache)
+void key_input (BFiles bfs, int nkeys, int cache)
                 
 {
     Dict dict;
@@ -605,7 +609,7 @@ void key_input (int nkeys, int cache)
         if (!nkeys)
             return ;
     }
-    dict = dict_open (FNAME_DICT, cache, 1);
+    dict = dict_open (bfs, FNAME_DICT, cache, 1);
     if (!dict)
     {
         logf (LOG_FATAL, "dict_open fail");
@@ -613,7 +617,8 @@ void key_input (int nkeys, int cache)
     }
     if (res_get_match (common_resource, "isam", "c", NULL))
     {
-        isamc = isc_open (FNAME_ISAMC, 1, key_isamc_m ());
+        isamc = isc_open (bfs,
+			  FNAME_ISAMC, 1, key_isamc_m (common_resource));
         if (!isamc)
         {
             logf (LOG_FATAL, "isc_open fail");
@@ -622,7 +627,8 @@ void key_input (int nkeys, int cache)
     }
     else
     {
-        isam = is_open (FNAME_ISAM, key_compare, 1, sizeof(struct it_key));
+        isam = is_open (bfs, FNAME_ISAM, key_compare, 1,
+			sizeof(struct it_key), common_resource);
         if (!isam)
         {
             logf (LOG_FATAL, "is_open fail");

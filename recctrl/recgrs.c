@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.8  1997-09-09 13:38:14  adam
+ * Revision 1.9  1997-09-17 12:19:21  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.8  1997/09/09 13:38:14  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.7  1997/09/05 15:30:10  adam
@@ -322,7 +326,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 
 	if (n->which == DATA1N_data)
 	{
-	    data1_node *par = get_parent_tag(n);
+	    data1_node *par = get_parent_tag(p->dh, n);
 	    data1_termlist *tlist = 0;
 
 	    if (p->flagShowRecords)
@@ -346,7 +350,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	     */
 
 	    while (!par->u.tag.element)
-		if (!par->parent || !(par = get_parent_tag(par->parent)))
+		if (!par->parent || !(par = get_parent_tag(p->dh, par->parent)))
 		    break;
 	    if (!par)
 		tlist = 0;
@@ -404,16 +408,17 @@ static int grs_extract(struct recExtractCtrl *p)
     gri.fh = p->fh;
     gri.offset = p->offset;
     gri.mem = mem;
+    gri.dh = p->dh;
 
     n = read_grs_type (&gri, p->subType);
     if (!n)
         return -1;
     if (dumpkeys(n, p, 0) < 0)
     {
-	data1_free_tree(n);
+	data1_free_tree(p->dh, n);
 	return -2;
     }
-    data1_free_tree(n);
+    data1_free_tree(p->dh, n);
     nmem_destroy(mem);
     return 0;
 }
@@ -421,7 +426,7 @@ static int grs_extract(struct recExtractCtrl *p)
 /*
  * Return: -1: Nothing done. 0: Ok. >0: Bib-1 diagnostic.
  */
-static int process_comp(data1_node *n, Z_RecordComposition *c)
+static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
 {
     data1_esetname *eset;
     Z_Espec1 *espec = 0;
@@ -432,7 +437,7 @@ static int process_comp(data1_node *n, Z_RecordComposition *c)
 	case Z_RecordComp_simple:
 	    if (c->u.simple->which != Z_ElementSetNames_generic)
 		return 26; /* only generic form supported. Fix this later */
-	    if (!(eset = data1_getesetbyname(n->u.root.absyn,
+	    if (!(eset = data1_getesetbyname(dh, n->u.root.absyn,
 		c->u.simple->u.generic)))
 	    {
 		logf(LOG_LOG, "Unknown esetname '%s'", c->u.simple->u.generic);
@@ -450,8 +455,10 @@ static int process_comp(data1_node *n, Z_RecordComposition *c)
 		    switch (p->which)
 		    {
 			case Z_ElementSpec_elementSetName:
-			    if (!(eset = data1_getesetbyname(n->u.root.absyn,
-				p->u.elementSetName)))
+			    if (!(eset =
+				  data1_getesetbyname(dh,
+						      n->u.root.absyn,
+						      p->u.elementSetName)))
 			    {
 				logf(LOG_LOG, "Unknown esetname '%s'",
 				    p->u.elementSetName);
@@ -479,7 +486,7 @@ static int process_comp(data1_node *n, Z_RecordComposition *c)
 		return 26; /* fix */
     }
     if (espec)
-	return data1_doespec1(n, espec);
+	return data1_doespec1(dh, n, espec);
     else
 	return -1;
 }
@@ -500,23 +507,26 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     gri.fh = p->fh;
     gri.offset = 0;
     gri.mem = mem;
+    gri.dh = p->dh;
 
     node = read_grs_type (&gri, p->subType);
-/* node = data1_read_record(p->readf, p->fh, mem); */
     if (!node)
     {
 	p->diagnostic = 2;
 	return 0;
     }
-    if (p->score >= 0 && (new = data1_insert_taggeddata(node, node, "rank",
-	mem)))
+    if (p->score >= 0 && (new =
+			  data1_insert_taggeddata(p->dh, node,
+						  node, "rank",
+						  mem)))
     {
 	new->u.data.what = DATA1I_num;
 	new->u.data.data = new->u.data.lbuf;
 	sprintf(new->u.data.data, "%d", p->score);
 	new->u.data.len = strlen(new->u.data.data);
     }
-    if ((new = data1_insert_taggeddata(node, node, "localControlNumber", mem)))
+    if ((new = data1_insert_taggeddata(p->dh, node, node,
+				       "localControlNumber", mem)))
     {
 	new->u.data.what = DATA1I_text;
 	new->u.data.data = new->u.data.lbuf;
@@ -536,6 +546,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	if ((oid = oid_getoidbyent(&oe)))
 	{
 	    char tmp[128];
+	    data1_handle dh = p->dh;
 	    char *p = tmp;
 	    int *ii;
 
@@ -548,8 +559,8 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	    }
 	    *(p++) = '\0';
 
-	    if ((new = data1_insert_taggeddata(node, node, "schemaIdentifier",
-		mem)))
+	    if ((new = data1_insert_taggeddata(dh, node, node,
+					       "schemaIdentifier", mem)))
 	    {
 		new->u.data.what = DATA1I_oid;
 		new->u.data.data = nmem_malloc(mem, p - tmp);
@@ -570,7 +581,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	if (map->target_absyn_ref == p->input_format)
 	{
 	    onode = node;
-	    if (!(node = data1_map_record(onode, map, mem)))
+	    if (!(node = data1_map_record(p->dh, onode, map, mem)))
 	    {
 		p->diagnostic = 14;
 		return 0;
@@ -579,12 +590,12 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	    break;
 	}
 
-    if (p->comp && (res = process_comp(node, p->comp)) > 0)
+    if (p->comp && (res = process_comp(p->dh, node, p->comp)) > 0)
     {
 	p->diagnostic = res;
 	if (onode)
-	    data1_free_tree(onode);
-	data1_free_tree(node);
+	    data1_free_tree(p->dh, onode);
+	data1_free_tree(p->dh, node);
 	nmem_destroy(mem);
 	return 0;
     }
@@ -599,25 +610,28 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 
 	case VAL_GRS1:
 	    dummy = 0;
-	    if (!(p->rec_buf = data1_nodetogr(node, selected, p->odr, &dummy)))
+	    if (!(p->rec_buf = data1_nodetogr(p->dh, node, selected,
+					      p->odr, &dummy)))
 		p->diagnostic = 2; /* this should be better specified */
 	    else
 		p->rec_len = -1;
 	    break;
 	case VAL_EXPLAIN:
-	    if (!(p->rec_buf = data1_nodetoexplain(node, selected, p->odr)))
+	    if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
+						   p->odr)))
 		p->diagnostic = 2; /* this should be better specified */
 	    else
 		p->rec_len = -1;
 	    break;
 	case VAL_SUMMARY:
-	    if (!(p->rec_buf = data1_nodetosummary(node, selected, p->odr)))
+	    if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
+						   p->odr)))
 		p->diagnostic = 2;
 	    else
 		p->rec_len = -1;
 	    break;
 	case VAL_SUTRS:
-	    if (!(p->rec_buf = data1_nodetobuf(node, selected,
+	    if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
 		(int*)&p->rec_len)))
 	    {
 		p->diagnostic = 2;
@@ -625,8 +639,8 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	    }
 	    break;
 	case VAL_SOIF:
-	    if (!(p->rec_buf = data1_nodetosoif(node, selected,
-		(int*)&p->rec_len)))
+	    if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
+						(int*)&p->rec_len)))
 	    {
 		p->diagnostic = 2;
 		break;
@@ -642,17 +656,18 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 		p->diagnostic = 227;
 		break;
 	    }
-	    if (!(p->rec_buf = data1_nodetomarc(marctab, node, selected,
-		(int*)&p->rec_len)))
+	    if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
+						selected,
+						(int*)&p->rec_len)))
 	    {
 		p->diagnostic = 2;
 		break;
 	    }
     }
     if (node)
-	data1_free_tree(node);
+	data1_free_tree(p->dh, node);
     if (onode)
-	data1_free_tree(onode);
+	data1_free_tree(p->dh, onode);
     nmem_destroy(mem);
     return 0;
 }

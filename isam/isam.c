@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.22  1996-10-29 13:56:53  adam
+ * Revision 1.23  1997-09-17 12:19:20  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.22  1996/10/29 13:56:53  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.21  1996/03/29 14:11:47  quinn
@@ -79,7 +83,6 @@
 #include <zebrautl.h>
 #include <bfile.h>
 #include <isam.h>
-#include <common.h>
 #include "isutil.h"
 #include "rootblk.h"
 #include "keyops.h"
@@ -149,8 +152,9 @@ static int splitargs(const char *s, char *bf[], int max)
  * Open isam file.
  * Process resources.
  */
-ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
-    int writeflag, int keysize)
+ISAM is_open(BFiles bfs, const char *name,
+	     int (*cmp)(const void *p1, const void *p2),
+	     int writeflag, int keysize, Res res)
 {
     ISAM new;
     char *nm, *r, *pp[IS_MAX_BLOCKTYPES+1], m[2];
@@ -181,8 +185,9 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 	new->types[i].index = 0;                        /* dummy */
 
     /* determine number and size of blocktypes */
-    if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
-	"blocktypes", 0), "64 512 4K 32K")) ||
+    if (!(r = res_get_def(res,
+			  nm = strconcat(name, ".",
+					 "blocktypes", 0), "64 512 4K 32K")) ||
 	!(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
@@ -213,7 +218,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 	new->types[i].dbuf = xmalloc(new->types[i].blocksize);
 	m[0] = 'A' + i;
 	m[1] = '\0';
-	if (!(new->types[i].bf = bf_open(strconcat(name, m, 0), 
+	if (!(new->types[i].bf = bf_open(bfs, strconcat(name, m, 0), 
 	    new->types[i].blocksize, writeflag)))
 	{
 	    logf (LOG_FATAL, "bf_open failed");
@@ -245,9 +250,8 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
         new->keysize = keysize;
     else
     {
-        if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
-                                                              "keysize",
-                                                              0), "4")))
+        if (!(r = res_get_def(res, nm = strconcat(name, ".",
+						  "keysize", 0), "4")))
         {
             logf (LOG_FATAL, "Failed to locate resource %s", nm);
             return 0;
@@ -260,8 +264,8 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     }
 
     /* determine repack percent */
-    if (!(r = res_get_def(common_resource, nm = strconcat(name, ".", "repack",
-    	0), IS_DEF_REPACK_PERCENT)))
+    if (!(r = res_get_def(res, nm = strconcat(name, ".", "repack",
+					      0), IS_DEF_REPACK_PERCENT)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
@@ -269,9 +273,10 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     new->repack = atoi(r);
 
     /* determine max keys/blocksize */
-    if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
-	"maxkeys", 0), "50 640 10000")) || !(num = splitargs(r, pp,
-	IS_MAX_BLOCKTYPES)))
+    if (!(r = res_get_def(res,
+			  nm = strconcat(name, ".",
+					 "maxkeys", 0), "50 640 10000")) ||
+	!(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
@@ -312,9 +317,10 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     }
 
     /* determine nice fill rates */
-    if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
-	"nicefill", 0), "90 90 90 95")) || !(num = splitargs(r, pp,
-	IS_MAX_BLOCKTYPES)))
+    if (!(r = res_get_def(res,
+			  nm = strconcat(name, ".",
+					 "nicefill", 0), "90 90 90 95")) ||
+	!(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
     	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;

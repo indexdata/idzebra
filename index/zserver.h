@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.23  1996-12-23 15:30:46  adam
+ * Revision 1.24  1997-09-17 12:19:19  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.23  1996/12/23 15:30:46  adam
  * Work on truncation.
  * Bug fix: result sets weren't deleted after server shut down.
  *
@@ -110,6 +114,10 @@ typedef struct {
     char *errString;
     ODR odr;
     ZebTargetInfo *zti;
+    data1_handle dh;
+    data1_attset *registered_sets;
+    BFiles bfs;
+    Res res;
 } ZServerInfo;
 
 int rpn_search (ZServerInfo *zi, 
@@ -134,6 +142,14 @@ ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
 void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num);
 void zlog_rpn (Z_RPNQuery *rpn);
 
-int zebraServerLock (int lockCommit);
+int zebraServerLock (Res res, int lockCommit);
 void zebraServerUnlock (int commitPhase);
-int zebraServerLockGetState (time_t *timep);
+int zebraServerLockGetState (Res res, time_t *timep);
+
+typedef struct attent
+{
+    int attset_ordinal;
+    data1_local_attribute *local_attributes;
+} attent;
+
+int att_getentbyatt(ZServerInfo *zi, attent *res, oid_value set, int att);

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recstat.c,v $
- * Revision 1.4  1997-09-09 13:38:08  adam
+ * Revision 1.5  1997-09-17 12:19:17  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.4  1997/09/09 13:38:08  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.3  1996/06/04 10:19:00  adam
@@ -30,9 +34,9 @@
 #endif
 #include "recindxp.h"
 
-void rec_prstat (void)
+void rec_prstat (BFiles bfs)
 {
-    Records records = rec_open (0);
+    Records records = rec_open (bfs, 0);
     int i;
     int total_bytes = 0;
     

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.h,v $
- * Revision 1.3  1997-09-05 15:30:05  adam
+ * Revision 1.4  1997-09-17 12:19:11  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.3  1997/09/05 15:30:05  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -30,6 +34,7 @@ extern const rset_control *rset_kind_temp;
 typedef struct rset_temp_parms
 {
     int     key_size;
+    char   *temp_path;
 } rset_temp_parms;
 
 #ifdef __cplusplus

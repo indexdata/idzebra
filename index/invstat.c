@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.4  1996-11-08 11:10:21  adam
+ * Revision 1.5  1997-09-17 12:19:13  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.4  1996/11/08 11:10:21  adam
  * Buffers used during file match got bigger.
  * Compressed ISAM support everywhere.
  * Bug fixes regarding masking characters in queries.
@@ -83,7 +87,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     return 0;
 }
 
-void inv_prstat (void)
+void inv_prstat (BFiles bfs)
 {
     Dict dict;
     ISAM isam = NULL;
@@ -98,7 +102,7 @@ void inv_prstat (void)
     term_dict[0] = 1;
     term_dict[1] = 0;
 
-    dict = dict_open (FNAME_DICT, 100, 0);
+    dict = dict_open (bfs, FNAME_DICT, 100, 0);
     if (!dict)
     {
         logf (LOG_FATAL, "dict_open fail");
@@ -106,7 +110,7 @@ void inv_prstat (void)
     }
     if (res_get_match (common_resource, "isam", "c", NULL))
     {
-        isamc = isc_open (FNAME_ISAMC, 0, key_isamc_m ());
+        isamc = isc_open (bfs, FNAME_ISAMC, 0, key_isamc_m (common_resource));
         if (!isamc)
         {
             logf (LOG_FATAL, "isc_open fail");
@@ -115,14 +119,15 @@ void inv_prstat (void)
     }
     else
     {
-        isam = is_open (FNAME_ISAM, key_compare, 0, sizeof(struct it_key));
+        isam = is_open (bfs, FNAME_ISAM, key_compare, 0,
+			sizeof(struct it_key), common_resource);
         if (!isam)
         {
             logf (LOG_FATAL, "is_open fail");
             exit (1);
         }
     }
-    records = rec_open (0);
+    records = rec_open (bfs, 0);
 
     stat_info.no_dict_entries = 0;
     stat_info.no_dict_bytes = 0;

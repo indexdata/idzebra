@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dopen.c,v $
- * Revision 1.4  1997-09-09 13:38:01  adam
+ * Revision 1.5  1997-09-17 12:19:07  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.4  1997/09/09 13:38:01  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.3  1994/09/01 17:49:37  adam
@@ -59,12 +63,13 @@ static void common_init (Dict_BFile bf, int block_size, int cache)
 }
 
 
-Dict_BFile dict_bf_open (const char *name, int block_size, int cache, int rw)
+Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
+			 int cache, int rw)
 {
     Dict_BFile dbf;
 
     dbf = xmalloc (sizeof(*dbf));
-    dbf->bf = bf_open (name, block_size, rw);
+    dbf->bf = bf_open (bfs, name, block_size, rw);
     if (!dbf->bf)
         return NULL;
     common_init (dbf, block_size, cache);

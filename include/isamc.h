@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.h,v $
- * Revision 1.5  1997-09-05 15:30:00  adam
+ * Revision 1.6  1997-09-17 12:19:10  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.5  1997/09/05 15:30:00  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -25,6 +29,8 @@
 
 #ifndef ISAMC_H
 #define ISAMC_H
+
+#include <bfile.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,7 +69,7 @@ typedef struct ISAMC_I_s {
 
 ISAMC_M isc_getmethod (void);
 
-ISAMC isc_open (const char *name, int writeflag, ISAMC_M method);
+ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method);
 int isc_close (ISAMC is);
 ISAMC_P isc_merge (ISAMC is, ISAMC_P pos, ISAMC_I data);
 

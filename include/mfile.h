@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.h,v $
- * Revision 1.7  1997-09-05 15:30:01  adam
+ * Revision 1.8  1997-09-17 12:19:10  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.7  1997/09/05 15:30:01  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -44,7 +48,6 @@ extern "C" {
 #endif
 
 #define MF_MIN_BLOCKS_CREAT 1          /* minimum free blocks in new dir */
-#define MF_DEFAULT_AREA "register"      /* Use if no mf_init */
 #define MF_MAX_PARTS 28                 /* max # of part-files per metafile */
 
 #define mf_blocksize(mf) ((mf)->blocksize)
@@ -97,7 +100,7 @@ typedef struct MFile_area_struct
 /*
  * Open an area, cotaining metafiles in directories.
  */
-MFile_area mf_init(const char *name); 
+MFile_area mf_init(const char *name, const char *spec); 
 
 /*
  * Release an area.

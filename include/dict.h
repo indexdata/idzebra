@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.24  1997-09-05 15:30:00  adam
+ * Revision 1.25  1997-09-17 12:19:09  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.24  1997/09/05 15:30:00  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -148,10 +152,11 @@ int        dict_bf_readp (Dict_BFile bf, int no, void **bufp);
 int        dict_bf_newp (Dict_BFile bf, int no, void **bufp);
 int        dict_bf_touch (Dict_BFile bf, int no);
 void       dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush);
-Dict_BFile dict_bf_open (const char *name, int block_size, int cache, int rw);
+Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
+			 int cache, int rw);
 int        dict_bf_close (Dict_BFile dbf);
      
-Dict       dict_open (const char *name, int cache, int rw);
+Dict       dict_open (BFiles bfs, const char *name, int cache, int rw);
 int        dict_close (Dict dict);
 int        dict_insert (Dict dict, const char *p, int userlen, void *userinfo);
 int        dict_delete (Dict dict, const char *p);

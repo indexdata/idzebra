@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.7  1997-07-15 16:33:07  adam
+ * Revision 1.8  1997-09-17 12:19:22  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.7  1997/07/15 16:33:07  adam
  * Check for zero length in execData.
  *
  * Revision 1.6  1997/02/24 10:41:51  adam
@@ -165,6 +169,7 @@ struct lexSpec {
     struct lexTrans trans;
     int lineNo;
     NMEM m;
+    data1_handle dh;
     void *f_win_fh;
     void (*f_win_ef)(void *, off_t);
 
@@ -504,7 +509,8 @@ int readFileSpec (struct lexSpec *spec)
     lineBuf = xmalloc (1+lineSize);
     logf (LOG_LOG, "reading regx filter %s.flt", spec->name);
     sprintf (lineBuf, "%s.flt", spec->name);
-    if (!(spec_inf = yaz_path_fopen (data1_get_tabpath(), lineBuf, "r")))
+    if (!(spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh),
+				     lineBuf, "r")))
     {
         logf (LOG_ERRNO|LOG_WARN, "cannot read spec file %s", spec->name);
         xfree (lineBuf);
@@ -618,7 +624,7 @@ static void execData (struct lexSpec *spec,
     }
     else
     {
-        res = data1_mk_node (spec->m);
+        res = data1_mk_node (spec->dh, spec->m);
         res->parent = parent;
         res->which = DATA1N_data;
         res->u.data.what = DATA1I_text;
@@ -658,7 +664,7 @@ static void tagBegin (struct lexSpec *spec,
 {
     struct data1_node *parent = d1_stack[*d1_level -1];
     data1_element *elem = NULL;
-    data1_node *partag = get_parent_tag(parent);
+    data1_node *partag = get_parent_tag(spec->dh, parent);
     data1_node *res;
     data1_element *e = NULL;
     int localtag = 0;
@@ -669,7 +675,7 @@ static void tagBegin (struct lexSpec *spec,
         return ;
     }
     
-    res = data1_mk_node (spec->m);
+    res = data1_mk_node (spec->dh, spec->m);
     res->parent = parent;
     res->which = DATA1N_tag;
     res->u.tag.tag = res->lbuf;
@@ -690,8 +696,8 @@ static void tagBegin (struct lexSpec *spec,
         if (!(e = partag->u.tag.element))
             localtag = 1;
     
-    elem = data1_getelementbytagname (d1_stack[0]->u.root.absyn, e,
-                                      res->u.tag.tag);
+    elem = data1_getelementbytagname (spec->dh, d1_stack[0]->u.root.absyn,
+				      e, res->u.tag.tag);
     
     res->u.tag.element = elem;
     res->u.tag.node_selected = 0;
@@ -914,13 +920,13 @@ static int execCode (struct lexSpec *spec,
 #if REGX_DEBUG
                     logf (LOG_DEBUG, "begin record %s", absynName);
 #endif
-                    if (!(absyn = data1_get_absyn (absynName)))
+                    if (!(absyn = data1_get_absyn (spec->dh, absynName)))
                         logf (LOG_WARN, "Unknown tagset: %s", absynName);
                     else
                     {
                         data1_node *res;
 
-                        res = data1_mk_node (spec->m);
+                        res = data1_mk_node (spec->dh, spec->m);
                         res->which = DATA1N_root;
                         res->u.root.type = absynName;
                         res->u.root.absyn = absyn;
@@ -1322,6 +1328,7 @@ data1_node *grs_read_regx (struct grs_read_info *p)
         curLexSpec->f_win_size = 500000;
     }
     curLexSpec->m = p->mem;
+    curLexSpec->dh = p->dh;
     n = lexRoot (curLexSpec, p->offset);
     return n;
 }

@@ -1,7 +1,7 @@
-# Copyright (C) 1994-1996, Index Data I/S 
+# Copyright (C) 1994-1997, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.59 1997-09-04 13:59:27 adam Exp $
+# $Id: Makefile,v 1.60 1997-09-17 12:19:05 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make

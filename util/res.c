@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.17  1997-09-09 13:38:19  adam
+ * Revision 1.18  1997-09-17 12:19:24  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.17  1997/09/09 13:38:19  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.16  1996/10/29 13:47:49  adam
@@ -282,8 +286,8 @@ void res_put (Res r, const char *name, const char *value)
     re->value = xstrdup (value);
 }
 
-void res_trav (Res r, const char *prefix, 
-               void (*f)(const char *name, const char *value))
+void res_trav (Res r, const char *prefix, void *p,
+               void (*f)(void *p, const char *name, const char *value))
 {
     struct res_entry *re;
     int l = 0;
@@ -296,7 +300,7 @@ void res_trav (Res r, const char *prefix,
     for (re = r->first; re; re=re->next)
         if (re->value)
             if (l==0 || !memcmp (re->name, prefix, l))
-                (*f)(re->name, re->value);
+                (*f)(p, re->name, re->value);
 }
 
 

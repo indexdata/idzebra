@@ -1,0 +1,26 @@
+Zebra TODO $Id: TODO,v 1.1 1997-09-17 12:19:06 adam Exp $
+
+NT port: locking mechanisms needs to be ported. Locking should 
+ probably be moved to Zebra util instead.
+
+Better ranking in searches. Admin should be able specify initial
+ weight to certain fields.
+
+Search result should hold information about hits for each term,
+ especially when using ranked search.
+
+Admin should be able to specify set/attr when none is specified
+ (currently bib1,use=any is used).
+
+Explain support - including d1 to grs (d1_grs.c) in YAZ; Zebra
+ to auto-generate explain information depending on data1 system.
+
+Generic character set mapping (w, p, etc.)
+
+ISAMC optimization: indirect block with pointers to all blocks
+ in chain. The initial block should include the count as well.
+
+Test mode fix: when using test mode (-s) Zebra should only do
+ read-locking and not write-locking thus preventing Zebra thinking
+ the index is inconsistent.
+ 

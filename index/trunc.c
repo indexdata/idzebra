@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.4  1996-12-23 15:30:44  adam
+ * Revision 1.5  1997-09-17 12:19:17  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.4  1996/12/23 15:30:44  adam
  * Work on truncation.
  * Bug fix: result sets weren't deleted after server shut down.
  *
@@ -139,6 +143,7 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
     rset_temp_parms parms;
 
     parms.key_size = sizeof(struct it_key);
+    parms.temp_path = res_get (zi->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);
     result_rsfd = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
 

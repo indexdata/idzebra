@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.23  1997-09-09 13:37:53  adam
+ * Revision 1.24  1997-09-17 12:19:06  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.23  1997/09/09 13:37:53  adam
  * Partial port to WIN95/NT.
  *
  * Revision 1.22  1997/09/04 13:56:39  adam
@@ -98,23 +102,16 @@
 #include <zebrautl.h>
 #include <mfile.h>
 
-static MFile_area_struct *open_areas = 0;
-static MFile_area_struct *default_area = 0;
-
-static int scan_areadef(MFile_area ma, const char *name)
+static int scan_areadef(MFile_area ma, const char *name, const char *ad)
 {
     /*
      * If no definition is given, use current directory, unlimited.
      */
-    const char *ad = res_get_def(common_resource, name, ".:-1b");
     char dirname[FILENAME_MAX+1]; 
     mf_dir **dp = &ma->dirs, *dir = *dp;
 
     if (!ad)
-    {
-    	logf (LOG_FATAL, "Could not find resource '%s'", name);
-    	return -1;
-    }
+	ad = ".:-1b";
     for (;;)
     {
         const char *ad0 = ad;
@@ -225,9 +222,9 @@ static int cmp_part_file(const void *p1, const void *p2)
  * Create a new area, cotaining metafiles in directories.
  * Find the part-files in each directory, and inventory the existing metafiles.
  */
-MFile_area mf_init(const char *name)
+MFile_area mf_init(const char *name, const char *spec)
 {
-    MFile_area ma = xmalloc(sizeof(MFile_area_struct)), mp;
+    MFile_area ma = xmalloc(sizeof(MFile_area_struct));
     mf_dir *dirp;
     meta_file *meta_f;
     part_file *part_f = 0;
@@ -237,16 +234,11 @@ MFile_area mf_init(const char *name)
     char metaname[FILENAME_MAX+1], tmpnam[FILENAME_MAX+1];
 
     logf (LOG_DEBUG, "mf_init(%s)", name);
-    for (mp = open_areas; mp; mp = mp->next)
-    	if (!strcmp(name, mp->name))
-    	    return mp;
     ma = xmalloc(sizeof(MFile_area_struct));
     strcpy(ma->name, name);
-    ma->next = open_areas;
-    open_areas = ma;
     ma->mfiles = 0;
     ma->dirs = 0;
-    if (scan_areadef(ma, name) < 0)
+    if (scan_areadef(ma, name, spec) < 0)
     {
     	logf (LOG_FATAL, "Failed to access description of '%s'", name);
     	return 0;
@@ -338,15 +330,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 
     logf(LOG_DEBUG, "mf_open(%s bs=%d, %s)", name, block_size,
          wflag ? "RW" : "RDONLY");
-    if (!ma)
-    {
-        if (!default_area && !(default_area = mf_init(MF_DEFAULT_AREA)))
-        {
-            logf (LOG_FATAL, "Failed to open default area.");
-            return 0;
-	}
-	ma = default_area;
-    }
+    assert (ma);
     for (new = ma->mfiles; new; new = new->next)
     	if (!strcmp(name, new->name))
     	    if (new->open)

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.12  1997-09-05 15:30:00  adam
+ * Revision 1.13  1997-09-17 12:19:09  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.12  1997/09/05 15:30:00  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -46,6 +50,7 @@
 #ifndef ISAM_H
 #define ISAM_H
 
+#include <res.h>
 #include <bfile.h>
 
 #include "../isam/memory.h"
@@ -109,8 +114,9 @@ typedef struct ispt_struct
 /*
  * Open isam file.
  */
-ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
-    int writeflag, int keysize);
+ISAM is_open(BFiles bfs, const char *name,
+	     int (*cmp)(const void *p1, const void *p2),
+	     int writeflag, int keysize, Res res);
 
 /*
  * Close isam file.

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: sgmlread.c,v $
- * Revision 1.3  1997-09-04 13:54:41  adam
+ * Revision 1.4  1997-09-17 12:19:22  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.3  1997/09/04 13:54:41  adam
  * Added MARC filter - type grs.marc.<syntax> where syntax refers
  * to abstract syntax. New method tellf in retrieve/extract method.
  *
@@ -21,5 +25,5 @@
 
 data1_node *grs_read_sgml (struct grs_read_info *p)
 {
-    return data1_read_record (p->readf, p->fh, p->mem);
+    return data1_read_record (p->dh, p->readf, p->fh, p->mem);
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.20  1996-12-23 15:30:44  adam
+ * Revision 1.21  1997-09-17 12:19:13  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.20  1996/12/23 15:30:44  adam
  * Work on truncation.
  * Bug fix: result sets weren't deleted after server shut down.
  *
@@ -248,7 +252,7 @@ static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
     }
 }
 
-ISAMC_M key_isamc_m (void)
+ISAMC_M key_isamc_m (Res res)
 {
     static ISAMC_M me = NULL;
 
@@ -263,7 +267,7 @@ ISAMC_M key_isamc_m (void)
     me->code_item = iscz1_code_item;
     me->code_stop = iscz1_code_stop;
 
-    me->debug = atoi(res_get_def (common_resource, "isamcDebug", "0"));
+    me->debug = atoi(res_get_def (res, "isamcDebug", "0"));
 
     logf (LOG_LOG, "ISAMC system active");
     return me;
