@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.29 2004-08-20 12:37:56 adam Exp $
+# $Id: makefile,v 1.30 2004-08-25 09:18:49 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -270,7 +270,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\rsbool.obj \
 	$(OBJDIR)\rset.obj \
 	$(OBJDIR)\rsisamc.obj \
-	$(OBJDIR)\rsm_or.obj \
+	$(OBJDIR)\rsmultior.obj \
 	$(OBJDIR)\rsnull.obj \
 	$(OBJDIR)\rstemp.obj \
 	$(OBJDIR)\scan.obj \
