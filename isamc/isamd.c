@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.10 1999-08-24 13:17:42 heikki Exp $ 
+ * $Id: isamd.c,v 1.11 1999-08-25 18:09:24 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -27,7 +27,7 @@ static void init_fc (ISAMD is, int cat);
 
 #define ISAMD_FREELIST_CHUNK 1
 
-#define SMALL_TEST 0
+#define SMALL_TEST 1
 
 ISAMD_M isamd_getmethod (ISAMD_M me)
 {
@@ -717,7 +717,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.10  1999-08-24 13:17:42  heikki
+ * Revision 1.11  1999-08-25 18:09:24  heikki
+ * Starting to optimize
+ *
+ * Revision 1.10  1999/08/24 13:17:42  heikki
  * Block sizes, comments
  *
  * Revision 1.9  1999/08/20 12:25:58  heikki

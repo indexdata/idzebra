@@ -1,4 +1,4 @@
-/* $Id: isamd-p.h,v 1.5 1999-08-20 12:25:58 heikki Exp $
+/* $Id: isamd-p.h,v 1.6 1999-08-25 18:09:23 heikki Exp $
  * Copyright (c) 1995-1996, Index Data.
  * See the file LICENSE for details.
  * Heikki Levanto
@@ -68,15 +68,16 @@ typedef struct ISAMD_DIFF_s *ISAMD_DIFF;
 struct ISAMD_PP_s {
     char *buf;   /* buffer for read/write operations */
     ISAMD_BLOCK_SIZE offset; /* position for next read/write */
-    ISAMD_BLOCK_SIZE size;   /* size of actual pointer data */
+    ISAMD_BLOCK_SIZE size;   /* size of actual data */
     int cat;  /* category of this block */
     int pos;  /* block number of this block */
     int next; /* number of the next block */
     int diffs; /* either block or offset (in head) of start of diffs */
+               /* will not be used in the improved version! */
     ISAMD is;
-    void *decodeClientData;
+    void *decodeClientData;  /* delta-encoder's own data */
     ISAMD_DIFF diffinfo;
-    char *diffbuf; /* buffer for the diff block, only when reading */
+    char *diffbuf; /* buffer for the diff block */
     int numKeys;
 };
 
@@ -104,7 +105,10 @@ void isamd_free_diffs(ISAMD_PP pp);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.5  1999-08-20 12:25:58  heikki
+ * Revision 1.6  1999-08-25 18:09:23  heikki
+ * Starting to optimize
+ *
+ * Revision 1.5  1999/08/20 12:25:58  heikki
  * Statistics in isamd
  *
  * Revision 1.4  1999/07/21 14:24:50  heikki
