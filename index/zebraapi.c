@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.3 2005-01-21 13:23:03 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.4 2005-01-23 14:59:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -694,6 +694,21 @@ void map_basenames (ZebraHandle zh, ODR stream,
 	logf (LOG_LOG, "base %s", (*basenames)[i]);
 }
 
+int zebra_select_default_database(ZebraHandle zh)
+{
+    if (!zh->res)
+    {
+	/* no database has been selected - so we select based on
+	   resource setting (including group)
+	*/
+	const char *group = res_get(zh->service->global_res, "group");
+	const char *v = res_get_prefix(zh->service->global_res,
+				       "database", group, "Default");
+	zebra_select_database(zh, v);
+    }
+    return 0;
+}
+
 int zebra_select_database (ZebraHandle zh, const char *basename)
 {
     ASSERTZH;
@@ -1317,16 +1332,7 @@ static void read_res_for_transaction(ZebraHandle zh)
 
 int zebra_begin_trans (ZebraHandle zh, int rw)
 {
-    if (!zh->res)
-    {
-	/* no database has been selected - so we select based on
-	   resource setting (including group)
-	*/
-	const char *group = res_get(zh->service->global_res, "group");
-	const char *v = res_get_prefix(zh->service->global_res,
-				       "database", group, "Default");
-	zebra_select_database(zh, v);
-    }
+    zebra_select_default_database(zh);
     if (!zh->res)
     {
         zh->errCode = 2;
@@ -1663,6 +1669,7 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
     ASSERTZH;
     zh->errCode=0;
 
+    zebra_select_default_database(zh);
     if (!zh->res)
     {
         zh->errCode = 109;
@@ -1735,6 +1742,7 @@ int zebra_init (ZebraHandle zh)
     yaz_log(LOG_API,"zebra_init");
     zh->errCode=0;
 
+    zebra_select_default_database(zh);
     if (!zh->res)
     {
         zh->errCode = 109;
@@ -1742,8 +1750,7 @@ int zebra_init (ZebraHandle zh)
     }
     rval = res_get (zh->res, "shadow");
 
-    bfs = bfs_create (res_get (zh->service->global_res, "register"),
-                      zh->path_reg);
+    bfs = bfs_create (res_get (zh->res, "register"), zh->path_reg);
     if (!bfs)
 	return -1;
     if (rval && *rval)
