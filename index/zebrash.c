@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.19 2003-07-04 14:27:19 heikki Exp $
+/* $Id: zebrash.c,v 1.20 2003-07-07 14:56:04 heikki Exp $
    Copyright (C) 2002,2003
    Index Data Aps
 
@@ -417,14 +417,14 @@ static int cmd_show( char *args[], WRBUF outbuff)
     int nrecs=defargint(args[2],1);
     char *setname=defarg(args[3],DEFAULTRESULTSET);
     int rc=0;
+    ZebraRetrievalRecord *recs;
     ODR odr;
     Z_RecordComposition *pcomp=0;
     int i;
     oid_value format;
 
     odr=odr_createmem(ODR_ENCODE);
-    ZebraRetrievalRecord *recs=
-              odr_malloc(odr,sizeof(ZebraRetrievalRecord)*nrecs);
+    recs= odr_malloc(odr,sizeof(ZebraRetrievalRecord)*nrecs);
     rc =z_RecordComposition(odr, &pcomp, 0,"recordComposition");
     format=oid_getvalbyname ("xml"); /*FIXME - let the user specify*/
     for (i=0;i<nrecs;i++)

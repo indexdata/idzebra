@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.111 2003-07-07 13:55:37 pop Exp $
+/* $Id: zebraapi.c,v 1.112 2003-07-07 14:56:04 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -2107,7 +2107,7 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
     
     odr_destroy(odr);
 
-    yaz_log(LOG_API,"Hits: %d",numhits);
+    yaz_log(LOG_API,"Hits: %d",hits);
 
     if (numhits)
 	*numhits=hits;
