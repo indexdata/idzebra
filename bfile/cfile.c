@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.15  1996-04-18 16:02:56  adam
+ * Revision 1.16  1996-04-19 16:23:47  adam
+ * Serious bug fix in shadow implementation; function new_bucket might
+ * set wrong bucket number on new bucket.
+ *
+ * Revision 1.15  1996/04/18  16:02:56  adam
  * Changed logging a bit.
  * Removed warning message when commiting flat shadow files.
  *
@@ -179,7 +183,11 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
 
 static int cf_hash (CFile cf, int no)
 {
+#if 1
     return (no>>3) % cf->head.hash_size;
+#else
+    return (no/(HASH_BUCKET*2+2)) % cf->head.hash_size;
+#endif
 }
 
 static void release_bucket (CFile cf, struct CFile_hash_bucket *p)
@@ -262,13 +270,13 @@ static struct CFile_hash_bucket *get_bucket (CFile cf, int block_no, int hno)
     return p;
 }
 
-static struct CFile_hash_bucket *new_bucket (CFile cf, int *block_no, int hno)
+static struct CFile_hash_bucket *new_bucket (CFile cf, int *block_nop, int hno)
 {
     struct CFile_hash_bucket *p;
-    int i;
+    int i, block_no;
 
-    *block_no = cf->head.next_bucket++;
-    p = alloc_bucket (cf, *block_no, hno);
+    block_no = *block_nop = cf->head.next_bucket++;
+    p = alloc_bucket (cf, block_no, hno);
 
     for (i = 0; i<HASH_BUCKET; i++)
     {
@@ -276,7 +284,7 @@ static struct CFile_hash_bucket *new_bucket (CFile cf, int *block_no, int hno)
         p->ph.no[i] = 0;
     }
     p->ph.next_bucket = 0;
-    p->ph.this_bucket = *block_no;
+    p->ph.this_bucket = block_no;
     p->dirty = 1;
     return p;
 }
@@ -315,6 +323,23 @@ static int cf_lookup_hash (CFile cf, int no)
         }
         if (hb)
             continue;
+#if 1
+        /* extra check ... */
+        for (hb = cf->bucket_lru_back; hb; hb = hb->lru_next)
+        {
+            if (hb->ph.this_bucket == block_no)
+            {
+                logf (LOG_FATAL, "Found hash bucket on other chain (1)");
+                abort ();
+            }
+            for (i = 0; i<HASH_BUCKET && hb->ph.vno[i]; i++)
+                if (hb->ph.no[i] == no)
+                {
+                    logf (LOG_FATAL, "Found hash bucket on other chain (2)");
+                    abort ();
+                }
+        }
+#endif
         (cf->no_miss)++;
         hb = get_bucket (cf, block_no, hno);
         for (i = 0; i<HASH_BUCKET && hb->ph.vno[i]; i++)
@@ -413,6 +438,18 @@ static int cf_new_hash (CFile cf, int no)
             }
         if (hb)
             continue;
+
+#if 1
+        /* extra check ... */
+        for (hb = cf->bucket_lru_back; hb; hb = hb->lru_next)
+        {
+            if (hb->ph.this_bucket == *bucketpp)
+            {
+                logf (LOG_FATAL, "Found hash bucket on other chain");
+                abort ();
+            }
+        }
+#endif
         (cf->no_miss)++;
         hb = get_bucket (cf, *bucketpp, hno);
         assert (hb);
@@ -439,7 +476,7 @@ int cf_new (CFile cf, int no)
 {
     if (cf->head.state > 1)
         return cf_new_flat (cf, no);
-    if (cf->no_miss*5 > cf->no_hits)
+    if (cf->no_miss*2 > cf->no_hits)
     {
         cf_moveto_flat (cf);
         assert (cf->head.state > 1);
@@ -497,17 +534,18 @@ int cf_close (CFile cf)
     flush_bucket (cf, -1);
     if (cf->dirty)
     {
-        logf (LOG_LOG, "dirty. write header");
+        logf (LOG_LOG, "cf_close %s, dirty", cf->rmf->name);
         mf_write (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
         write_head (cf);
     }
+    else
+        logf (LOG_LOG, "cf_close %s", cf->rmf->name);
     mf_close (cf->hash_mf);
     mf_close (cf->block_mf);
     xfree (cf->array);
     xfree (cf->parray);
     xfree (cf->iobuf);
     xfree (cf);
-    logf (LOG_LOG, "cf_close %s", cf->rmf->name);
     return 0;
 }
 
