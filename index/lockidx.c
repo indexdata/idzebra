@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.6  1996-03-26 16:01:13  adam
+ * Revision 1.7  1996-10-29 14:08:13  adam
+ * Uses resource lockDir instead of lockPath.
+ *
+ * Revision 1.6  1996/03/26 16:01:13  adam
  * New setting lockPath: directory of various lock files.
  *
  * Revision 1.5  1995/12/13  08:46:09  adam
@@ -36,7 +39,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include <alexutil.h>
 #include "index.h"
 
 static int lock_fd = -1;

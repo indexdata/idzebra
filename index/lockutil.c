@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.5  1996-03-26 16:01:13  adam
+ * Revision 1.6  1996-10-29 14:08:14  adam
+ * Uses resource lockDir instead of lockPath.
+ *
+ * Revision 1.5  1996/03/26 16:01:13  adam
  * New setting lockPath: directory of various lock files.
  *
  * Revision 1.4  1995/12/13  08:46:10  adam
@@ -32,7 +35,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <alexutil.h>
 #include "index.h"
 
 static char *lockDir = NULL;
@@ -40,7 +42,7 @@ static char *lockDir = NULL;
 void zebraLockPrefix (char *pathPrefix)
 {
     if (!lockDir)
-        lockDir = res_get_def (common_resource, "lockPath", "");
+        lockDir = res_get_def (common_resource, "lockDir", "");
     assert (lockDir);
     
     strcpy (pathPrefix, lockDir);
