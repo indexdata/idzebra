@@ -1,5 +1,5 @@
-/* $Id: zsets.c,v 1.46 2003-06-18 11:46:34 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: zsets.c,v 1.47 2004-05-10 08:47:54 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -617,9 +617,9 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 	Z_SortKeySpec *sks = sort_sequence->specs[i];
 	Z_SortKey *sk;
 
-	if (*sks->sortRelation == Z_SortRelation_ascending)
+	if (*sks->sortRelation == Z_SortKeySpec_ascending)
 	    sort_criteria[i].relation = 'A';
-	else if (*sks->sortRelation == Z_SortRelation_descending)
+	else if (*sks->sortRelation == Z_SortKeySpec_descending)
 	    sort_criteria[i].relation = 'D';
 	else
 	{
@@ -687,7 +687,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
                  rset->rset_terms[i]->flags,
                  rset->rset_terms[i]->count);
 
-    *sort_status = Z_SortStatus_success;
+    *sort_status = Z_SortResponse_success;
     yaz_log (LOG_LOG, "resultSetSortSingle end");
 }
 

@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.136 2004-01-22 11:27:21 adam Exp $
+/* $Id: zrpn.c,v 1.137 2004-05-10 08:47:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -2091,11 +2091,11 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     sks->sortRelation = (int *)
 	nmem_malloc (stream, sizeof(*sks->sortRelation));
     if (sort_relation_value == 1)
-	*sks->sortRelation = Z_SortRelation_ascending;
+	*sks->sortRelation = Z_SortKeySpec_ascending;
     else if (sort_relation_value == 2)
-	*sks->sortRelation = Z_SortRelation_descending;
+	*sks->sortRelation = Z_SortKeySpec_descending;
     else 
-	*sks->sortRelation = Z_SortRelation_ascending;
+	*sks->sortRelation = Z_SortKeySpec_ascending;
 
     sks->caseSensitivity = (int *)
 	nmem_malloc (stream, sizeof(*sks->caseSensitivity));
@@ -2110,33 +2110,6 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     return rset_create (rset_kind_null, &parms);
 }
 
-/* pop - moved to xpath.c */
-#if 0
-
-struct xpath_predicate {
-    int which;
-    union {
-#define XPATH_PREDICATE_RELATION 1
-        struct {
-            char *name;
-            char *op;
-            char *value;
-        } relation;
-#define XPATH_PREDICATE_BOOLEAN 2
-        struct {
-            const char *op;
-            struct xpath_predicate *left;
-            struct xpath_predicate *right;
-        } boolean;
-    } u;
-};
-
-struct xpath_location_step {
-    char *part;
-    struct xpath_predicate *predicate;
-};
-
-#endif
 
 static int parse_xpath(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                        oid_value attributeSet,

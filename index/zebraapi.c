@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.118 2004-03-29 15:48:14 adam Exp $
+/* $Id: zebraapi.c,v 1.119 2004-05-10 08:47:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -921,10 +921,10 @@ int zebra_deleleResultSet(ZebraHandle zh, int function,
 	return Z_DeleteStatus_systemProblemAtTarget;
     switch (function)
     {
-    case Z_DeleteRequest_list:
+    case Z_DeleteResultSetRequest_list:
 	resultSetDestroy (zh, num_setnames, setnames, statuses);
 	break;
-    case Z_DeleteRequest_all:
+    case Z_DeleteResultSetRequest_all:
 	resultSetDestroy (zh, -1, 0, statuses);
 	break;
     }
