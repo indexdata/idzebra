@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.84 2002-04-04 20:50:37 adam Exp $
+ * $Id: main.c,v 1.85 2002-04-05 08:46:26 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
@@ -89,10 +89,10 @@ int main (int argc, char **argv)
                 if (!zs)
                 {
 #if ZMBOL
-                    logf (LOG_LOG, "zmbol version %s %s",
+                    logf (LOG_LOG, "Z'mbol version %s %s",
                           ZEBRAVER, ZEBRADATE);
 #else
-                    logf (LOG_LOG, "zebra version %s %s",
+                    logf (LOG_LOG, "Zebra version %s %s",
                           ZEBRAVER, ZEBRADATE);
 #endif
                     zs = zebra_start (configName ? configName : "zebra.cfg");

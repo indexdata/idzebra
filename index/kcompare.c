@@ -216,8 +216,6 @@ ISAMS_M key_isams_m (Res res, ISAMS_M me)
     return me;
 }
 
-#if ZMBOL
-
 ISAMC_M key_isamc_m (Res res, ISAMC_M me)
 {
     isc_getmethod (me);
@@ -250,8 +248,6 @@ ISAMD_M key_isamd_m (Res res,ISAMD_M me)
 
     return me;
 }
-
-#endif
 
 int key_SU_encode (int ch, char *out)
 {
@@ -294,7 +290,10 @@ int key_SU_decode (int *ch, const unsigned char *out)
 
 /* 
  * $Log: kcompare.c,v $
- * Revision 1.37  2001-11-19 23:08:30  adam
+ * Revision 1.38  2002-04-05 08:46:26  adam
+ * Zebra with full functionality
+ *
+ * Revision 1.37  2001/11/19 23:08:30  adam
  * Added const qualifier for name parameter of key_SU_decode.
  *
  * Revision 1.36  2001/10/15 19:53:43  adam

@@ -10,17 +10,13 @@
 #include <string.h>
 
 #include "index.h"
-#if ZMBOL
 #include "../isamc/isamd-p.h"
-#endif
 
 struct inv_stat_info {
     ISAMS isams;
-#if ZMBOL
     ISAM isam;
     ISAMC isamc;
     ISAMD isamd;
-#endif
     int no_isam_entries[9];
     int no_dict_entries;
     int no_dict_bytes;
@@ -63,7 +59,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 	stat_info->no_isam_entries[0] += occur;
         isams_pp_close (pp);
     }
-#if ZMBOL
     if (stat_info->isam)
     {
         ISPT ispt;
@@ -120,7 +115,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 	    stat_info->no_isam_entries[isamd_type(isam_p)] += occur;
         isamd_pp_close (pp);
     }
-#endif
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
         i++;
     ++(stat_info->isam_occurrences[i]);
@@ -133,14 +127,12 @@ void inv_prstat (ZebraHandle zh)
     BFiles bfs;
     Dict dict;
     ISAMS isams = NULL;
-#if ZMBOL
     ISAM  isam  = NULL;
     ISAMC isamc = NULL;
     ISAMD isamd = NULL;
     int blocks;
     int size;
     int count;
-#endif
     Records records;
     int i, prev;
     int before = 0;
@@ -173,7 +165,6 @@ void inv_prstat (ZebraHandle zh)
             exit (1);
         }
     }
-#if ZMBOL
     else if (res_get_match (res, "isam", "i", ISAM_DEFAULT))
     {
         isam = is_open (bfs, FNAME_ISAM, key_compare, 0,
@@ -206,7 +197,6 @@ void inv_prstat (ZebraHandle zh)
             exit (1);
         }
     }
-#endif
     records = rec_open (bfs, 0, 0);
 
     for (i = 0; i<=SINGLETON_TYPE; i++)
@@ -214,11 +204,9 @@ void inv_prstat (ZebraHandle zh)
     stat_info.no_dict_entries = 0;
     stat_info.no_dict_bytes = 0;
     stat_info.isams = isams;
-#if ZMBOL
     stat_info.isam = isam;
     stat_info.isamc = isamc;
     stat_info.isamd = isamd;
-#endif
     stat_info.isam_bounds[0] = 1;
     stat_info.isam_bounds[1] = 2;
     stat_info.isam_bounds[2] = 3;
@@ -244,7 +232,6 @@ void inv_prstat (ZebraHandle zh)
 
     dict_scan (dict, term_dict, &before, &after, &stat_info, inv_stat_handle);
 
-#if ZMBOL
     if (isamc)
     {
 	fprintf (stderr, "   Blocks    Occur  Size KB   Bytes/Entry\n");
@@ -296,7 +283,6 @@ void inv_prstat (ZebraHandle zh)
     if ( (isamd) && (isamd->method->debug>0))
         fprintf (stderr, "\n%d words using %d bytes\n",
              stat_info.no_dict_entries, stat_info.no_dict_bytes);
-#endif
     fprintf (stderr, "    Occurrences     Words\n");
     prev = 1;
     for (i = 0; stat_info.isam_bounds[i]; i++)
@@ -313,15 +299,12 @@ void inv_prstat (ZebraHandle zh)
 
     if (isams)
         isams_close (isams);
-#if ZMBOL
     if (isam)
         is_close (isam);
     if (isamc)
         isc_close (isamc);
     if (isamd)
         isamd_close (isamd);
-#endif
-
     xmalloc_trav("unfreed"); /*! while hunting memory leaks */    
 }
 
@@ -329,7 +312,10 @@ void inv_prstat (ZebraHandle zh)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.23  2002-04-04 14:14:13  adam
+ * Revision 1.24  2002-04-05 08:46:26  adam
+ * Zebra with full functionality
+ *
+ * Revision 1.23  2002/04/04 14:14:13  adam
  * Multiple registers (alpha early)
  *
  * Revision 1.22  2002/02/20 17:30:01  adam

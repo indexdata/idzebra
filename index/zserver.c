@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 1995-2000, Index Data 
+ * Copyright (C) 1995-2002, Index Data 
  * All rights reserved.
  *
- * $Id: zserver.c,v 1.86 2002-04-04 20:50:37 adam Exp $
+ * $Id: zserver.c,v 1.87 2002-04-05 08:46:26 adam Exp $
  */
 
 #include <stdio.h>

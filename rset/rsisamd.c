@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisamd.c,v $
- * Revision 1.1  2001-01-16 19:17:18  heikki
+ * Revision 1.2  2002-04-05 08:46:26  adam
+ * Zebra with full functionality
+ *
+ * Revision 1.1  2001/01/16 19:17:18  heikki
  * Added rsisamd.c
  *
  *
@@ -14,7 +17,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <zebrautl.h>
-#if ZMBOL
 #include <rsisamd.h>
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
@@ -140,4 +142,3 @@ static int r_write (RSFD rfd, const void *buf)
     logf (LOG_FATAL, "ISAMD set type is read-only");
     return -1;
 }
-#endif

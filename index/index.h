@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
- * $Id: index.h,v 1.76 2002-04-04 20:50:37 adam Exp $
+ * $Id: index.h,v 1.77 2002-04-05 08:46:26 adam Exp $
  */
 
 #ifndef INDEX_H
@@ -20,14 +20,10 @@
 
 #include <dict.h>
 #include <isams.h>
-#if ZMBOL
 #include <isam.h>
 #include <isamc.h>
 #include <isamd.h>
 #define ISAM_DEFAULT "c"
-#else
-#define ISAM_DEFAULT "s"
-#endif
 #include <yaz/data1.h>
 #include <recctrl.h>
 #include "recindex.h"
@@ -98,10 +94,8 @@ void inv_prstat (ZebraHandle zh);
 void inv_compact (BFiles bfs);
 void key_input (ZebraHandle zh, int nkeys, int cache, Res res);
 ISAMS_M key_isams_m (Res res, ISAMS_M me);
-#if ZMBOL
 ISAMC_M key_isamc_m (Res res, ISAMC_M me);
 ISAMD_M key_isamd_m (Res res, ISAMD_M me);
-#endif
 int merge_sort (char **buf, int from, int to);
 int key_SU_code (int ch, char *out);
 
@@ -205,11 +199,9 @@ struct zebra_register {
     char *name;
     
     ISAMS isams;
-#if ZMBOL
     ISAM isam;
     ISAMC isamc;
     ISAMD isamd;
-#endif
     Dict dict;
     Dict matchDict;
     SortIdx sortIdx;

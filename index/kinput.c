@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Id: kinput.c,v 1.47 2002-04-04 14:14:13 adam Exp $
+ * $Id: kinput.c,v 1.48 2002-04-05 08:46:26 adam Exp $
  *
  * Bugs
  *  - Allocates a lot of memory for the merge process, but never releases it.
@@ -231,11 +231,9 @@ struct heap_info {
     int    (*cmp)(const void *p1, const void *p2);
     Dict dict;
     ISAMS isams;
-#if ZMBOL
     ISAM isam;
     ISAMC isamc;
     ISAMD isamd;
-#endif
 };
 
 struct heap_info *key_heap_init (int nkeys,
@@ -382,7 +380,6 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
     return 1;
 }
 
-#if ZMBOL
 int heap_inpc (struct heap_info *hi)
 {
     struct heap_cread_info hci;
@@ -556,8 +553,6 @@ int heap_inp (struct heap_info *hi)
     return 0;
 }
 
-#endif
-
 int heap_inps (struct heap_info *hi)
 {
     struct heap_cread_info hci;
@@ -670,25 +665,21 @@ void zebra_index_merge (ZebraHandle zh)
     hi = key_heap_init (nkeys, key_qsort_compare);
     hi->dict = zh->reg->dict;
     hi->isams = zh->reg->isams;
-#if ZMBOL
     hi->isam = zh->reg->isam;
     hi->isamc = zh->reg->isamc;
     hi->isamd = zh->reg->isamd;
-#endif
     
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read (kf[i], rbuf)))
             key_heap_insert (hi, rbuf, r, kf[i]);
     if (zh->reg->isams)
 	heap_inps (hi);
-#if ZMBOL
     else if (zh->reg->isamc)
         heap_inpc (hi);
     else if (zh->reg->isam)
 	heap_inp (hi);
     else if (zh->reg->isamd)
 	heap_inpd (hi);
-#endif
 	
     for (i = 1; i<=nkeys; i++)
     {

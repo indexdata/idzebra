@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.10 2002-03-21 20:12:27 adam Exp $
+## $Id: Makefile.am,v 1.11 2002-04-05 08:46:26 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -9,15 +9,11 @@ libzebra_a_SOURCES = dir.c dirs.c trav.c kinput.c kcompare.c \
  zebraapi.c zinfo.c invstat.c sortidx.c compact.c zsets.c zrpn.c \
  rank1.c trunc.c retrieve.c extract.c index.h recindex.h recindxp.h \
  zebraapi.h zinfo.h zserver.h
-if ISZMBOL
-zmbol_libs = ../isam/libisam.a ../isamc/libisamc.a ../isamb/libisamb.a
-else
-zmbol_libs =
-endif
 
 libzebra_a_LIBADD = \
  ../rset/librset.a ../dict/libdict.a  ../isams/libisams.a \
- $(zmbol_libs) ../recctrl/librecctrl.a ../bfile/libbfile.a ../dfa/libdfa.a \
+ ../isam/libisam.a ../isamc/libisamc.a ../isamb/libisamb.a \
+ ../recctrl/librecctrl.a ../bfile/libbfile.a ../dfa/libdfa.a \
  ../util/libutil.a
 
 if ISZMBOL

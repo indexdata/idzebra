@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.52 2002-04-04 20:50:37 adam Exp $
+ * $Id: zebraapi.c,v 1.53 2002-04-05 08:46:26 adam Exp $
  */
 
 #include <assert.h>
@@ -182,11 +182,9 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     reg->sortIdx = 0;
     reg->isams = 0;
     reg->matchDict = 0;
-#if ZMBOL
     reg->isam = 0;
     reg->isamc = 0;
     reg->isamd = 0;
-#endif
     reg->zei = 0;
     reg->matchDict = 0;
     
@@ -227,7 +225,6 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	    return 0;
 	}
     }
-#if ZMBOL
     else if (res_get_match (res, "isam", "i", ISAM_DEFAULT))
     {
 	if (!(reg->isam = is_open (reg->bfs, FNAME_ISAM, key_compare, rw,
@@ -258,7 +255,6 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	    return 0;
 	}
     }
-#endif
     reg->zei = zebraExplain_open (reg->records, reg->dh,
                                   res, rw, reg,
                                   explain_extract);
@@ -301,14 +297,12 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 	sortIdx_close (reg->sortIdx);
 	if (reg->isams)
 	    isams_close (reg->isams);
-#if ZMBOL
         if (reg->isam)
             is_close (reg->isam);
         if (reg->isamc)
             isc_close (reg->isamc);
         if (reg->isamd)
             isamd_close (reg->isamd);
-#endif
         rec_close (&reg->records);
     }
 

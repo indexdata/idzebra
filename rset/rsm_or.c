@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: rsm_or.c,v 1.11 2002-03-20 20:24:30 adam Exp $
+ * $Id: rsm_or.c,v 1.12 2002-04-05 08:46:26 adam Exp $
  *
  */
 
@@ -14,7 +14,6 @@
 #include <string.h>
 
 #include <zebrautl.h>
-#if ZMBOL
 #include <isam.h>
 #include <isamc.h>
 #include <rsm_or.h>
@@ -344,4 +343,3 @@ static int r_write (RSFD rfd, const void *buf)
     logf (LOG_FATAL, "mor set type is read-only");
     return -1;
 }
-#endif

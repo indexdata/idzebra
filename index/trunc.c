@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.21  2002-04-04 14:14:13  adam
+ * Revision 1.22  2002-04-05 08:46:26  adam
+ * Zebra with full functionality
+ *
+ * Revision 1.21  2002/04/04 14:14:13  adam
  * Multiple registers (alpha early)
  *
  * Revision 1.20  2002/03/20 20:24:29  adam
@@ -83,13 +86,11 @@
 #include <rstemp.h>
 #include <rsnull.h>
 #include <rsisams.h>
-#if ZMBOL
 #include <rsisam.h>
 #include <rsisamc.h>
 #include <rsisamd.h>
 #if NEW_TRUNC
 #include <rsm_or.h>
-#endif
 #endif
 
 struct trunc_info {
@@ -265,7 +266,6 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         xfree (rsfd);
         heap_close (ti);
     }
-#if ZMBOL
     else if (zi->reg->isam)
     {
         ISPT *ispt;
@@ -424,7 +424,6 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         xfree (ispt);
     }
 
-#endif
     else if (zi->reg->isams)
     {
         ISAMS_PP *ispt;
@@ -482,7 +481,6 @@ static int isams_trunc_cmp (const void *p1, const void *p2)
     return i1 - i2;
 }
 
-#if ZMBOL
 static int isam_trunc_cmp (const void *p1, const void *p2)
 {
     ISAM_P i1 = *(ISAM_P*) p1;
@@ -517,7 +515,6 @@ static int isamd_trunc_cmp (const void *p1, const void *p2)
         return d;
     return isamd_block (i1) - isamd_block (i2);
 }
-#endif
 
 RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 		 const char *term, int length, const char *flags)
@@ -542,7 +539,6 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
         }
         qsort (isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
     }
-#if ZMBOL
     else if (zi->reg->isam)
     {
         if (no == 1)
@@ -615,7 +611,6 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 #endif
         qsort (isam_p, no, sizeof(*isam_p), isamd_trunc_cmp);
     }
-#endif
     else
     {
         logf (LOG_WARN, "Unknown isam set in rset_trunc");

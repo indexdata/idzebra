@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.31  2001-02-26 22:14:59  adam
+ * Revision 1.32  2002-04-05 08:46:26  adam
+ * Zebra with full functionality
+ *
+ * Revision 1.31  2001/02/26 22:14:59  adam
  * Updated for BZIP2 1.0.X. Configure script doesn't enable 64 bit LFS
  * on broken glibc on Redhat 7.0.
  *
@@ -841,14 +844,6 @@ static Record rec_new_int (Records p)
         sysno = p->head.index_free;
         p->head.index_free = entry.next;
     }
-#if ZMBOL
-#else
-    if (sysno > 100000)
-    {
-        logf (LOG_FATAL, "100,000 record limit reached");
-        exit (1);
-    }
-#endif
     (p->head.no_records)++;
     rec->sysno = sysno;
     for (i = 0; i < REC_NO_INFO; i++)

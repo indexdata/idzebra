@@ -1,48 +1,14 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: rsisamc.c,v $
- * Revision 1.10  2002-04-04 14:14:13  adam
- * Multiple registers (alpha early)
- *
- * Revision 1.9  2002/03/20 20:24:30  adam
- * Hits per term. Returned in SearchResult-1
- *
- * Revision 1.8  1999/11/30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.7  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.6  1999/02/02 14:51:35  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.5  1998/03/05 08:36:28  adam
- * New result set model.
- *
- * Revision 1.4  1997/12/18 10:54:25  adam
- * New method result set method rs_hits that returns the number of
- * hits in result-set (if known). The ranked result set returns real
- * number of hits but only when not combined with other operands.
- *
- * Revision 1.3  1997/10/31 12:37:01  adam
- * Code calls xfree() instead of free().
- *
- * Revision 1.2  1996/11/08 11:15:57  adam
- * Compressed isam fully supported.
- *
- * Revision 1.1  1996/10/29 13:41:48  adam
- * First use of isamc.
- *
+ * $Id: rsisamc.c,v 1.11 2002-04-05 08:46:26 adam Exp $
  */
 
 
 #include <stdio.h>
 #include <assert.h>
 #include <zebrautl.h>
-#if ZMBOL
 #include <rsisamc.h>
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
@@ -189,4 +155,3 @@ static int r_write (RSFD rfd, const void *buf)
     logf (LOG_FATAL, "ISAMC set type is read-only");
     return -1;
 }
-#endif
