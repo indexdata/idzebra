@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.19 2004-10-28 10:37:15 heikki Exp $
+/* $Id: rank1.c,v 1.20 2004-11-04 13:09:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -30,9 +30,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <unistd.h>
 #endif
 
-#define DEBUG_RANK 0
 
 #include "index.h"
+
+static int log_level=0;
+static int log_initialized=0;
 
 struct rank_class_info {
     int dummy;
@@ -73,7 +75,12 @@ static void *create (ZebraHandle zh)
     struct rank_class_info *ci = 
         (struct rank_class_info *) xmalloc (sizeof(*ci));
 
-    yaz_log (LOG_DEBUG, "rank-1 create");
+    if (!log_initialized)
+    {
+        log_level=yaz_log_module_level("rank1");
+        log_initialized=1;
+    }
+    yaz_log (log_level, "rank-1 create");
     return ci;
 }
 
@@ -86,7 +93,7 @@ static void destroy (struct zebra_register *reg, void *class_handle)
 {
     struct rank_class_info *ci = (struct rank_class_info *) class_handle;
 
-    yaz_log (LOG_DEBUG, "rank-1 destroy");
+    yaz_log (log_level, "rank-1 destroy");
     xfree (ci);
 }
 
@@ -104,9 +111,7 @@ static void *begin (struct zebra_register *reg,
         (struct rank_set_info *) nmem_malloc (nmem,sizeof(*si));
     int i;
 
-#if DEBUG_RANK
-    yaz_log (LOG_LOG, "rank-1 begin");
-#endif
+    yaz_log (log_level, "rank-1 begin");
     si->no_entries = numterms;
     si->no_rank_entries = 0;
     si->nmem=nmem;
@@ -115,10 +120,8 @@ static void *begin (struct zebra_register *reg,
     for (i = 0; i < numterms; i++)
     {
 	zint g = rset_count(terms[i]->rset);
-#if DEBUG_RANK
-        yaz_log(LOG_LOG, "i=%d flags=%s '%s'", i, 
+        yaz_log(log_level, "i=%d flags=%s '%s'", i, 
                 terms[i]->flags, terms[i]->name );
-#endif
 	if  (!strncmp (terms[i]->flags, "rank,", 5)) 
 	{
             const char *cp = strstr(terms[i]->flags+4, ",w=");
@@ -127,10 +130,8 @@ static void *begin (struct zebra_register *reg,
                 si->entries[i].rank_weight = atoi (cp+3);
             else
                 si->entries[i].rank_weight = 34;
-#if DEBUG_RANK
-            yaz_log (LOG_LOG, " i=%d weight=%d g="ZINT_FORMAT, i,
+            yaz_log (log_level, " i=%d weight=%d g="ZINT_FORMAT, i,
                      si->entries[i].rank_weight, g);
-#endif
 	    (si->no_rank_entries)++;
 	}
 	else
@@ -138,7 +139,7 @@ static void *begin (struct zebra_register *reg,
 	si->entries[i].local_occur = 0;  /* FIXME */
 	si->entries[i].global_occur = g;
 	si->entries[i].global_inv = 32 - log2_int (g);
-	yaz_log (LOG_DEBUG, " global_inv = %d g = " ZINT_FORMAT, 
+	yaz_log (log_level, " global_inv = %d g = " ZINT_FORMAT, 
                 (int) (32-log2_int (g)), g);
         si->entries[i].term=terms[i];
         si->entries[i].term_index=i;
@@ -153,7 +154,7 @@ static void *begin (struct zebra_register *reg,
  */
 static void end (struct zebra_register *reg, void *set_handle)
 {
-    yaz_log (LOG_DEBUG, "rank-1 end");
+    yaz_log (log_level, "rank-1 end");
     /* no need to free anything, they are in nmems */
 }
 
@@ -166,15 +167,19 @@ static void end (struct zebra_register *reg, void *set_handle)
 static void add (void *set_handle, int seqno, TERMID term)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
-    struct rank_term_info *ti= (struct rank_term_info *) term->rankpriv;
+    struct rank_term_info *ti;
     assert(si);
-    assert(term);
+    if (!term)
+    {
+        yaz_log (log_level, "rank-1 add NULL term");
+        return;
+    }
+    ti= (struct rank_term_info *) term->rankpriv;
     assert(ti);
-#if DEBUG_RANK
-    yaz_log (LOG_LOG, "rank-1 add seqno=%d term=%s", seqno, term->name);
-#endif
     si->last_pos = seqno;
     ti->local_occur++;
+    yaz_log (log_level, "rank-1 add seqno=%d term=%s count=%d", 
+            seqno, term->name,ti->local_occur);
 }
 
 /*
@@ -191,26 +196,20 @@ static int calc (void *set_handle, zint sysno)
     if (!si->no_rank_entries)
 	return -1;
 
-#if DEBUG_RANK
-    yaz_log(LOG_LOG, "calc");
-#endif
     for (i = 0; i < si->no_entries; i++)
     {
-#if DEBUG_RANK
-        yaz_log(LOG_LOG, "calc: i=%d rank_flag=%d lo=%d",
+        yaz_log(log_level, "calc: i=%d rank_flag=%d lo=%d",
                 i, si->entries[i].rank_flag, si->entries[i].local_occur);
-#endif
 	if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
 	    score += (8+log2_int (lo)) * si->entries[i].global_inv *
                 si->entries[i].rank_weight;
     }
     divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
     score = score / divisor;
-#if DEBUG_RANK
-    yaz_log (LOG_LOG, "calc sysno=" ZINT_FORMAT " score=%d", sysno, score);
-#endif
+    yaz_log (log_level, "calc sysno=" ZINT_FORMAT " score=%d", sysno, score);
     if (score > 1000)
 	score = 1000;
+    /* reset the counts for the next term */
     for (i = 0; i < si->no_entries; i++)
 	si->entries[i].local_occur = 0;
     return score;
