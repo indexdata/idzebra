@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.13  1996-10-29 13:56:16  adam
+ * Revision 1.14  1998-08-07 15:07:16  adam
+ * Fixed but in cf_commit_flat.
+ *
+ * Revision 1.13  1996/10/29 13:56:16  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.12  1996/04/24 13:29:16  adam
@@ -221,11 +224,8 @@ static void cf_commit_flat (CFile cf)
     fp = xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
-        if (hno == cf->head.flat_bucket-1)
-        {
-            for (i = 0; i < (HASH_BSIZE/sizeof(int)); i++)
-                fp[i] = 0;
-        }
+	for (i = 0; i < (HASH_BSIZE/sizeof(int)); i++)
+	    fp[i] = 0;
         if (!mf_read (cf->hash_mf, hno, 0, 0, fp) &&
             hno != cf->head.flat_bucket-1)
         {

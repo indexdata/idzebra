@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.19  1997-02-12 20:37:17  adam
+ * Revision 1.20  1998-08-07 15:07:13  adam
+ * Fixed but in cf_commit_flat.
+ *
+ * Revision 1.19  1997/02/12 20:37:17  adam
  * Changed the messages logged. No real code changed.
  *
  * Revision 1.18  1996/10/29 13:56:15  adam

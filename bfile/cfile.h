@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.h,v $
- * Revision 1.8  1996-04-18 16:02:56  adam
+ * Revision 1.9  1998-08-07 15:07:15  adam
+ * Fixed but in cf_commit_flat.
+ *
+ * Revision 1.8  1996/04/18 16:02:56  adam
  * Changed logging a bit.
  * Removed warning message when commiting flat shadow files.
  *
@@ -39,11 +42,11 @@
 #define HASH_BUCKET 15
 
 struct CFile_hash_bucket {
-    struct CFile_ph_bucket {
-        int no[HASH_BUCKET];
-        int vno[HASH_BUCKET];
-        int this_bucket;
-        int next_bucket;
+    struct CFile_ph_bucket {     /* structure on disc */
+        int no[HASH_BUCKET];     /* block number in original file */
+        int vno[HASH_BUCKET];    /* block number in shadow file */
+        int this_bucket;         /* this bucket number */
+        int next_bucket;         /* next bucket number */
     } ph;
     int dirty;
     struct CFile_hash_bucket *h_next, **h_prev;
@@ -57,13 +60,13 @@ struct CFile_hash_bucket {
 typedef struct CFile_struct
 {
     struct CFile_head {
-        int state;
-        int next_block;
-        int block_size;
-        int hash_size;
-        int first_bucket;
-        int next_bucket;
-        int flat_bucket;
+        int state;               /* 1 = hash, 2 = flat */
+        int next_block;          /* next free block / last block */
+        int block_size;          /* mfile/bfile block size */
+        int hash_size;           /* no of chains in hash table */
+        int first_bucket;        /* first hash bucket */
+        int next_bucket;         /* last hash bucket + 1 = first flat bucket */
+        int flat_bucket;         /* last flat bucket + 1 */
     } head;
     MFile block_mf;
     MFile hash_mf;
