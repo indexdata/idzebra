@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.2 2003-03-25 20:45:12 adam Exp $
+/* $Id: zebraapi.h,v 1.3 2003-04-24 19:47:30 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -196,8 +196,8 @@ int zebra_admin_exchange_record (ZebraHandle zh,
                                  int action);
 
 int zebra_begin_trans (ZebraHandle zh, int rw);
-void zebra_end_trans (ZebraHandle zh);
-void zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *stat);
+int zebra_end_trans (ZebraHandle zh);
+int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *stat);
 
 int zebra_commit (ZebraHandle zh);
 int zebra_clean (ZebraHandle zh);

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.97 2003-04-02 18:46:13 adam Exp $
+/* $Id: zebraapi.c,v 1.98 2003-04-24 19:46:59 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1128,6 +1128,12 @@ void zebra_end_read (ZebraHandle zh)
 
 int zebra_begin_trans (ZebraHandle zh, int rw)
 {
+    if (!zh->res)
+    {
+        zh->errCode = 2;
+        zh->errString = "zebra_begin_trans: no database selected";
+        return -1;
+    }
     ASSERTZHRES;
     assert (zh->res);
     if (rw)
@@ -1143,7 +1149,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         if (zh->trans_no != 1)
         {
             zh->errCode = 2;
-            zh->errString = "write trans not allowed within read trans";
+            zh->errString = "zebra_begin_trans: write trans not allowed within read trans";
             return -1;
         }
         zh->trans_w_no = zh->trans_no;
@@ -1214,8 +1220,8 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         zh->reg = zebra_register_open (zh->service, zh->reg_name,
                                        1, rval ? 1 : 0, zh->res,
                                        zh->path_reg);
-        
-        zh->reg->seqno = seqno;
+        if (zh->reg)
+            zh->reg->seqno = seqno;
     }
     else
     {
@@ -1288,12 +1294,13 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
     return 0;
 }
 
-void zebra_end_trans (ZebraHandle zh) {
-  ZebraTransactionStatus dummy;
-  zebra_end_transaction(zh, &dummy);
+int zebra_end_trans (ZebraHandle zh)
+{
+    ZebraTransactionStatus dummy;
+    return zebra_end_transaction(zh, &dummy);
 }
 
-void zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
+int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
 {
     char val;
     int seqno;
@@ -1308,11 +1315,17 @@ void zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
     status->utime     = 0;
     status->stime     = 0;
 
+    if (!zh->res || !zh->reg)
+    {
+        zh->errCode = 2;
+        zh->errString = "zebra_end_trans: no open transaction";
+        return -1;
+    }
     if (zh->trans_no != zh->trans_w_no)
     {
         zh->trans_no--;
         if (zh->trans_no != 0)
-            return;
+            return 0;
 
         /* release read lock */
 
@@ -1368,6 +1381,7 @@ void zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
     status->utime = (long) (zh->tms2.tms_utime - zh->tms1.tms_utime);
     status->stime = (long) (zh->tms2.tms_stime - zh->tms1.tms_stime);
 #endif
+    return 0;
 }
 
 void zebra_repository_update (ZebraHandle zh)
@@ -1508,12 +1522,10 @@ int zebra_compact (ZebraHandle zh)
 int zebra_record_insert (ZebraHandle zh, const char *buf, int len)
 {
     int sysno = 0;
-    int olderr;
     ASSERTZH;
     zh->errCode=0;
-    zebra_begin_trans (zh, 1);
-    if (zh->errCode)
-      return 0; /* bad sysno */
+    if (zebra_begin_trans (zh, 1))
+        return 0;
     extract_rec_in_mem (zh, "grs.sgml",
                         buf, len,
                         "Default",  /* database */
@@ -1523,10 +1535,8 @@ int zebra_record_insert (ZebraHandle zh, const char *buf, int len)
                         1 /* store_keys */,
                         1 /* store_data */,
                         0 /* match criteria */);
-    olderr=zh->errCode;
-    zebra_end_trans (zh);
-    if (olderr)
-      zh->errCode=olderr; 
+    if (zebra_end_trans (zh))
+        return 0;
     return sysno;
 }
 
