@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.20 2005-01-15 19:38:29 adam Exp $
+/* $Id: zinfo.h,v 1.21 2005-01-15 21:45:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,6 +27,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <d1_absyn.h>
 #include <idzebra/api.h>
 #include "recindex.h"
+
+/* Compare string (ignore case) */
+#ifdef WIN32
+#define STRCASECMP	stricmp
+#else
+#define STRCASECMP	strcasecmp
+#endif
 
 YAZ_BEGIN_CDECL
 

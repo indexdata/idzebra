@@ -1,4 +1,4 @@
-/* $Id: set.c,v 1.9 2005-01-15 19:38:19 adam Exp $
+/* $Id: set.c,v 1.10 2005-01-15 21:45:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,19 +27,18 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <string.h>
 
-#include <set.h>
+#include <dfaset.h>
 #include "imalloc.h"
 
+static DFASet mk_DFASetElement (DFASetType st, int n);
 
-static Set mk_SetElement (SetType st, int n);
-
-SetType mk_SetType (int chunk)
+DFASetType mk_DFASetType (int chunk)
 {
-    SetType st;
+    DFASetType st;
 
     assert (chunk > 8 && chunk < 8000);
 
-    st = (SetType) imalloc (sizeof(*st));
+    st = (DFASetType) imalloc (sizeof(*st));
     assert (st);
 
     st->alloclist = st->freelist = NULL;
@@ -48,20 +47,20 @@ SetType mk_SetType (int chunk)
     return st;
 }
 
-int inf_SetType (SetType st, long *used, long *allocated)
+int inf_DFASetType (DFASetType st, long *used, long *allocated)
 {
-    Set s;
+    DFASet s;
     assert (st);
     *used = st->used;
     *allocated = 0;
     for (s = st->alloclist; s; s = s->next)
          *allocated += st->chunk;
-    return sizeof (SetElement);
+    return sizeof (DFASetElement);
 }
 
-SetType rm_SetType (SetType st)
+DFASetType rm_DFASetType (DFASetType st)
 {
-    Set s, s1;
+    DFASet s, s1;
     for (s = st->alloclist; (s1 = s);)
     {
         s = s->next;
@@ -71,22 +70,22 @@ SetType rm_SetType (SetType st)
     return NULL;
 }
 
-Set mk_Set (SetType st)
+DFASet mk_DFASet (DFASetType st)
 {
     assert (st);
     return NULL;
 }
 
-static Set mk_SetElement (SetType st, int n)
+static DFASet mk_DFASetElement (DFASetType st, int n)
 {
-    Set s;
+    DFASet s;
     int i;
     assert (st);
 
     assert (st->chunk > 8);
     if (! st->freelist)
     {
-        s = (Set) imalloc (sizeof(*s) * (1+st->chunk));
+        s = (DFASet) imalloc (sizeof(*s) * (1+st->chunk));
         assert (s);
         s->next = st->alloclist;
         st->alloclist = s;
@@ -103,7 +102,7 @@ static Set mk_SetElement (SetType st, int n)
 }
 
 #if 0
-static void rm_SetElement (SetType st, SetElement *p)
+static void rm_DFASetElement (DFASetType st, DFASetElement *p)
 {
     assert (st);
     assert (st->used > 0);
@@ -113,9 +112,9 @@ static void rm_SetElement (SetType st, SetElement *p)
 }
 #endif
 
-Set rm_Set (SetType st, Set s)
+DFASet rm_DFASet (DFASetType st, DFASet s)
 {
-    Set s1 = s;
+    DFASet s1 = s;
     int i = 1;
 
     if (s)
@@ -133,27 +132,27 @@ Set rm_Set (SetType st, Set s)
     return NULL;
 }
 
-Set add_Set (SetType st, Set s, int n)
+DFASet add_DFASet (DFASetType st, DFASet s, int n)
 {
-    SetElement dummy;
-    Set p = &dummy, snew;
+    DFASetElement dummy;
+    DFASet p = &dummy, snew;
     p->next = s;
     while (p->next && p->next->value < n)
         p = p->next;
     assert (p);
     if (!(p->next && p->next->value == n))
     {
-        snew = mk_SetElement (st, n);
+        snew = mk_DFASetElement (st, n);
         snew->next = p->next;
         p->next = snew;
     }
     return dummy.next;
 }
 
-Set union_Set (SetType st, Set s1, Set s2)
+DFASet union_DFASet (DFASetType st, DFASet s1, DFASet s2)
 {
-    SetElement dummy;
-    Set p;
+    DFASetElement dummy;
+    DFASet p;
     assert (st);
 
     for (p = &dummy; s1 && s2;)
@@ -164,7 +163,7 @@ Set union_Set (SetType st, Set s1, Set s2)
         }
         else if (s1->value > s2->value)
         {
-            p = p->next = mk_SetElement (st, s2->value);
+            p = p->next = mk_DFASetElement (st, s2->value);
             s2 = s2->next;
         }
         else
@@ -179,7 +178,7 @@ Set union_Set (SetType st, Set s1, Set s2)
     {
         while (s2)
         {
-            p = p->next = mk_SetElement (st, s2->value);
+            p = p->next = mk_DFASetElement (st, s2->value);
             s2 = s2->next;
         }
         p->next = NULL;
@@ -187,30 +186,30 @@ Set union_Set (SetType st, Set s1, Set s2)
     return dummy.next;
 }
 
-Set cp_Set (SetType st, Set s)
+DFASet cp_DFASet (DFASetType st, DFASet s)
 {
-    return merge_Set (st, s, NULL);
+    return merge_DFASet (st, s, NULL);
 }
 
-Set merge_Set (SetType st, Set s1, Set s2)
+DFASet merge_DFASet (DFASetType st, DFASet s1, DFASet s2)
 {
-    SetElement dummy;
-    Set p;
+    DFASetElement dummy;
+    DFASet p;
     assert (st);
     for (p = &dummy; s1 && s2; p = p->next)
         if (s1->value < s2->value)
         {
-            p->next = mk_SetElement (st, s1->value);
+            p->next = mk_DFASetElement (st, s1->value);
             s1 = s1->next;
         }
         else if (s1->value > s2->value)
         {
-            p->next = mk_SetElement (st, s2->value);
+            p->next = mk_DFASetElement (st, s2->value);
             s2 = s2->next;
         }
         else
         {
-            p->next = mk_SetElement (st, s1->value);
+            p->next = mk_DFASetElement (st, s1->value);
             s1 = s1->next;
             s2 = s2->next;
         }
@@ -218,14 +217,14 @@ Set merge_Set (SetType st, Set s1, Set s2)
         s1 = s2;
     while (s1)
     {
-        p = p->next = mk_SetElement (st, s1->value);
+        p = p->next = mk_DFASetElement (st, s1->value);
         s1 = s1->next;
     }
     p->next = NULL;
     return dummy.next;
 }
 
-void pr_Set (SetType st, Set s)
+void pr_DFASet (DFASetType st, DFASet s)
 {
     assert (st);
     while (s)
@@ -236,7 +235,7 @@ void pr_Set (SetType st, Set s)
     putchar ('\n');
 }
 
-unsigned hash_Set (SetType st, Set s)
+unsigned hash_DFASet (DFASetType st, DFASet s)
 {
     unsigned n = 0;
     while (s)
@@ -247,7 +246,7 @@ unsigned hash_Set (SetType st, Set s)
     return n;
 }
 
-int eq_Set (SetType st, Set s1, Set s2)
+int eq_DFASet (DFASetType st, DFASet s1, DFASet s2)
 {
     for (; s1 && s2; s1=s1->next, s2=s2->next)
         if (s1->value != s2->value)

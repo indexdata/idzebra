@@ -1,4 +1,4 @@
-/* $Id: states.c,v 1.8 2005-01-15 19:38:19 adam Exp $
+/* $Id: states.c,v 1.9 2005-01-15 21:45:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -33,7 +33,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define DFA_CHUNK 40
 #define TRAN_CHUNK 100
 
-int init_DFA_states (struct DFA_states **dfasp, SetType st, int hash)
+int init_DFA_states (struct DFA_states **dfasp, DFASetType st, int hash)
 {
     struct DFA_states *dfas;
     struct DFA_trans *tm;
@@ -95,7 +95,7 @@ int rm_DFA_states (struct DFA_states **dfasp)
     return 0;
 }
 
-int add_DFA_state (struct DFA_states *dfas, Set *s, struct DFA_state **sp)
+int add_DFA_state (struct DFA_states *dfas, DFASet *s, struct DFA_state **sp)
 {
     int i;
     struct DFA_state *si, **sip;
@@ -104,12 +104,12 @@ int add_DFA_state (struct DFA_states *dfas, Set *s, struct DFA_state **sp)
     assert (dfas);
     assert (*s);
     assert (dfas->hasharray);
-    sip = dfas->hasharray + (hash_Set (dfas->st, *s) % dfas->hash);
+    sip = dfas->hasharray + (hash_DFASet (dfas->st, *s) % dfas->hash);
     for (si = *sip; si; si=si->link)
-        if (eq_Set (dfas->st, si->set, *s))
+        if (eq_DFASet (dfas->st, si->set, *s))
         {
             *sp = si;
-            *s = rm_Set (dfas->st, *s);
+            *s = rm_DFASet (dfas->st, *s);
             return 0;
         }
     if (!dfas->freelist)

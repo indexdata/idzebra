@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.19 2004-09-30 06:59:44 adam Exp $
+## $Id: Makefile.am,v 1.20 2005-01-15 21:45:42 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -11,7 +11,7 @@ aclocal_DATA = idzebra.m4
 SPEC_FILE=$(PACKAGE).spec
 
 EXTRA_DIST= README NEWS $(SPEC_FILE) idzebra.spec.in \
- idzebra-config.in idzebra.m4
+ idzebra-config.in idzebra.m4 Doxyfile.in
 
 dist-hook:
 	cp $(srcdir)/LICENSE* $(distdir)

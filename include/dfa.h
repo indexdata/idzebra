@@ -1,4 +1,4 @@
-/* $Id: dfa.h,v 1.11 2005-01-15 19:38:24 adam Exp $
+/* $Id: dfa.h,v 1.12 2005-01-15 21:45:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,17 +20,15 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #ifndef DFA_H
 #define DFA_H
 
 #include <bset.h>
-#include <set.h>
+#include <dfaset.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <yaz/yconfig.h>
+
+YAZ_BEGIN_CDECL
 
 struct DFA_tran {
     unsigned char ch[2];      /* transition on ch[0] <= c <= ch[1] to */
@@ -48,7 +46,7 @@ struct DFA_state {
     struct DFA_state *next;   /* next entry in free/unmarked/marked list */
     struct DFA_state *link;   /* link to next entry in hash chain */
     struct DFA_tran *trans;   /* transition list */
-    Set set;                  /* set of positions (important nfa states) */
+    DFASet set;               /* set of positions (important nfa states) */
     short no;                 /* no of this state */
     short tran_no;            /* no of transitions to other states */
     short rule_no;            /* if non-zero, this holds accept rule no */
@@ -101,8 +99,6 @@ extern unsigned short
 #define DFA_ERR_LP     2
 #define DFA_ERR_RP     3
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif

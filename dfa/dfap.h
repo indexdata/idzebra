@@ -1,4 +1,4 @@
-/* $Id: dfap.h,v 1.11 2005-01-15 19:38:18 adam Exp $
+/* $Id: dfap.h,v 1.12 2005-01-15 21:45:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -54,8 +54,8 @@ struct DFA_parse {
 
     struct Tnode **posar;
 
-    SetType poset;
-    Set *followpos;
+    DFASetType poset;
+    DFASet *followpos;
 
     const char **(*cmap)(void *vp, const char **from, int len);
 };
@@ -71,16 +71,16 @@ struct DFA_states {
     struct DFA_state *marked;     /* chain of marked DFA states */
     DFA_stateb *statemem;         /* state memory */
     int no;                       /* no of states (unmarked+marked) */
-    SetType st;                   /* Position set type */
+    DFASetType st;                   /* Position set type */
     int hash;                     /* no hash entries in hasharray */
     struct DFA_state **hasharray; /* hash pointers */
     struct DFA_state **sortarray; /* sorted DFA states */
     struct DFA_trans *transmem;   /* transition memory */
 };
 
-int         init_DFA_states (struct DFA_states **dfasp, SetType st, int hash);
+int         init_DFA_states (struct DFA_states **dfasp, DFASetType st, int hash);
 int         rm_DFA_states   (struct DFA_states **dfasp);
-int         add_DFA_state   (struct DFA_states *dfas, Set *s,
+int         add_DFA_state   (struct DFA_states *dfas, DFASet *s,
                              struct DFA_state **sp);
 struct DFA_state *get_DFA_state  (struct DFA_states *dfas);
 void        sort_DFA_states (struct DFA_states *dfas);

@@ -1,4 +1,4 @@
-/* $Id: sortidx.h,v 1.7 2005-01-15 19:38:24 adam Exp $
+/* $Id: sortidx.h,v 1.8 2005-01-15 21:45:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,12 +23,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef SORTIDX_H
 #define SORTIDX_H
 
+#include <yaz/yconfig.h>
 #include <idzebra/version.h>
 #include <idzebra/bfile.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 #define SORT_IDX_ENTRYSIZE 64
 
@@ -41,8 +40,6 @@ void sortIdx_sysno (SortIdx si, SYSNO sysno);
 void sortIdx_add (SortIdx si, const char *buf, int len);
 void sortIdx_read (SortIdx si, char *buf);
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: passwddb.h,v 1.5 2005-01-15 19:38:24 adam Exp $
+/* $Id: passwddb.h,v 1.6 2005-01-15 21:45:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,14 +20,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #ifndef PASSWDDB_H
 #define PASSWDDB_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <yaz/yconfig.h>
+
+YAZ_BEGIN_CDECL
 
 typedef struct passwd_db *Passwd_db;
 
@@ -37,9 +35,7 @@ int passwd_db_file (Passwd_db db, const char *fname);
 void passwd_db_close (Passwd_db db);
 void passwd_db_show (Passwd_db db);
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif
 

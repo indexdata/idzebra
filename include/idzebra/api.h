@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.6 2005-01-15 19:38:24 adam Exp $
+/* $Id: api.h,v 1.7 2005-01-15 21:45:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,6 +20,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+/**
+ * \file api.h
+ * \brief Zebra API
+ */
+
 /* Return codes:
  * Most functions return an int. Unix-like, 0 means OK, 
  * non-zero means an error. The error info should be available
@@ -34,13 +39,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/proto.h>
 #include <idzebra/res.h>
 #include <idzebra/version.h>
-
-/* Fixme! Compare string (ignore case) */
-#ifdef WIN32
-#define STRCASECMP	stricmp
-#else
-#define STRCASECMP	strcasecmp
-#endif
 
 YAZ_BEGIN_CDECL
 

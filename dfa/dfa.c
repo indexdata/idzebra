@@ -1,4 +1,4 @@
-/* $Id: dfa.c,v 1.32 2005-01-15 19:38:18 adam Exp $
+/* $Id: dfa.c,v 1.33 2005-01-15 21:45:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -50,8 +50,8 @@ struct Tnode {
     } u;
     unsigned pos : 15;        /* CAT/OR/STAR/EPSILON or non-neg. position */
     unsigned nullable : 1;
-    Set firstpos;             /* first positions */
-    Set lastpos;              /* last positions */
+    DFASet firstpos;             /* first positions */
+    DFASet lastpos;              /* last positions */
 };
 
 struct Tblock {               /* Tnode bucket (block) */
@@ -78,7 +78,7 @@ static void
     init_pos       (struct DFA_parse *parse_info), 
     del_pos        (struct DFA_parse *parse_info),
     mk_dfa_tran    (struct DFA_parse *parse_info, struct DFA_states *dfas),
-    add_follow     (struct DFA_parse *parse_info, Set lastpos, Set firstpos),
+    add_follow     (struct DFA_parse *parse_info, DFASet lastpos, DFASet firstpos),
     dfa_trav       (struct DFA_parse *parse_info, struct Tnode *n),
     init_followpos (struct DFA_parse *parse_info),
     pr_tran        (struct DFA_parse *parse_info, struct DFA_states *dfas),
@@ -628,12 +628,12 @@ static void del_pos (struct DFA_parse *parse_info)
 }
 
 static void add_follow (struct DFA_parse *parse_info,
-			Set lastpos, Set firstpos)
+			DFASet lastpos, DFASet firstpos)
 {
     while (lastpos)
     {
         parse_info->followpos[lastpos->value] = 
-	    union_Set (parse_info->poset,
+	    union_DFASet (parse_info->poset,
 		       parse_info->followpos[lastpos->value], firstpos);
         lastpos = lastpos->next;
     }                                                            
@@ -642,7 +642,7 @@ static void add_follow (struct DFA_parse *parse_info,
 static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
 {
     struct Tnode **posar = parse_info->posar;
-    SetType poset = parse_info->poset;
+    DFASetType poset = parse_info->poset;
     
     switch (n->pos)
     {
@@ -650,21 +650,21 @@ static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
         dfa_trav (parse_info, n->u.p[0]);
         dfa_trav (parse_info, n->u.p[1]);
         n->nullable = n->u.p[0]->nullable & n->u.p[1]->nullable;
-        n->firstpos = mk_Set (poset);
-        n->firstpos = union_Set (poset, n->firstpos, n->u.p[0]->firstpos);
+        n->firstpos = mk_DFASet (poset);
+        n->firstpos = union_DFASet (poset, n->firstpos, n->u.p[0]->firstpos);
         if (n->u.p[0]->nullable)
-            n->firstpos = union_Set (poset, n->firstpos, n->u.p[1]->firstpos);
-        n->lastpos = mk_Set (poset);
-        n->lastpos = union_Set (poset, n->lastpos, n->u.p[1]->lastpos);
+            n->firstpos = union_DFASet (poset, n->firstpos, n->u.p[1]->firstpos);
+        n->lastpos = mk_DFASet (poset);
+        n->lastpos = union_DFASet (poset, n->lastpos, n->u.p[1]->lastpos);
         if (n->u.p[1]->nullable)
-            n->lastpos = union_Set (poset, n->lastpos, n->u.p[0]->lastpos);
+            n->lastpos = union_DFASet (poset, n->lastpos, n->u.p[0]->lastpos);
 
         add_follow (parse_info, n->u.p[0]->lastpos, n->u.p[1]->firstpos);
 
-        n->u.p[0]->firstpos = rm_Set (poset, n->u.p[0]->firstpos);
-        n->u.p[0]->lastpos = rm_Set (poset, n->u.p[0]->lastpos);
-        n->u.p[1]->firstpos = rm_Set (poset, n->u.p[1]->firstpos);
-        n->u.p[1]->lastpos = rm_Set (poset, n->u.p[1]->lastpos);
+        n->u.p[0]->firstpos = rm_DFASet (poset, n->u.p[0]->firstpos);
+        n->u.p[0]->lastpos = rm_DFASet (poset, n->u.p[0]->lastpos);
+        n->u.p[1]->firstpos = rm_DFASet (poset, n->u.p[1]->firstpos);
+        n->u.p[1]->lastpos = rm_DFASet (poset, n->u.p[1]->lastpos);
         if (debug_dfa_trav)
             printf ("CAT");
         break;
@@ -673,14 +673,14 @@ static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
         dfa_trav (parse_info, n->u.p[1]);
         n->nullable = n->u.p[0]->nullable | n->u.p[1]->nullable;
 
-        n->firstpos = merge_Set (poset, n->u.p[0]->firstpos,
+        n->firstpos = merge_DFASet (poset, n->u.p[0]->firstpos,
                                  n->u.p[1]->firstpos);
-        n->lastpos = merge_Set (poset, n->u.p[0]->lastpos,
+        n->lastpos = merge_DFASet (poset, n->u.p[0]->lastpos,
                                 n->u.p[1]->lastpos);
-        n->u.p[0]->firstpos = rm_Set (poset, n->u.p[0]->firstpos);
-        n->u.p[0]->lastpos = rm_Set (poset, n->u.p[0]->lastpos);
-        n->u.p[1]->firstpos = rm_Set (poset, n->u.p[1]->firstpos);
-        n->u.p[1]->lastpos = rm_Set (poset, n->u.p[1]->lastpos);
+        n->u.p[0]->firstpos = rm_DFASet (poset, n->u.p[0]->firstpos);
+        n->u.p[0]->lastpos = rm_DFASet (poset, n->u.p[0]->lastpos);
+        n->u.p[1]->firstpos = rm_DFASet (poset, n->u.p[1]->firstpos);
+        n->u.p[1]->lastpos = rm_DFASet (poset, n->u.p[1]->lastpos);
         if (debug_dfa_trav)
             printf ("OR");
         break;
@@ -704,18 +704,18 @@ static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
         break;
     case EPSILON:
         n->nullable = 1;
-        n->lastpos = mk_Set (poset);
-        n->firstpos = mk_Set (poset);
+        n->lastpos = mk_DFASet (poset);
+        n->firstpos = mk_DFASet (poset);
         if (debug_dfa_trav)
             printf ("EPSILON");
         break;
     default:
         posar[n->pos] = n;
         n->nullable = 0;
-        n->firstpos = mk_Set (poset);
-        n->firstpos = add_Set (poset, n->firstpos, n->pos);
-        n->lastpos = mk_Set (poset);
-        n->lastpos = add_Set (poset, n->lastpos, n->pos);
+        n->firstpos = mk_DFASet (poset);
+        n->firstpos = add_DFASet (poset, n->firstpos, n->pos);
+        n->lastpos = mk_DFASet (poset);
+        n->lastpos = add_DFASet (poset, n->lastpos, n->pos);
         if (debug_dfa_trav)
 	{
             if (n->u.ch[0] < 0)
@@ -737,20 +737,20 @@ static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
     {
         printf ("\n nullable : %c\n", n->nullable ? '1' : '0');
         printf (" firstpos :");
-        pr_Set (poset, n->firstpos);
+        pr_DFASet (poset, n->firstpos);
         printf (" lastpos  :");
-        pr_Set (poset, n->lastpos);
+        pr_DFASet (poset, n->lastpos);
     }
 }
 
 static void init_followpos (struct DFA_parse *parse_info)
 {
-    Set *fa;
+    DFASet *fa;
     int i;
     parse_info->followpos = fa =
-	(Set *) imalloc (sizeof(Set) * (1+parse_info->position));
+	(DFASet *) imalloc (sizeof(DFASet) * (1+parse_info->position));
     for (i = parse_info->position+1; --i >= 0; fa++)
-        *fa = mk_Set (parse_info->poset);
+        *fa = mk_DFASet (parse_info->poset);
 }
 
 static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
@@ -758,12 +758,12 @@ static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
     int i, j, c;
     int max_char;
     short *pos, *pos_i;
-    Set tran_set;
+    DFASet tran_set;
     int char_0, char_1;
     struct DFA_state *dfa_from, *dfa_to;
     struct Tnode **posar;
-    SetType poset;
-    Set *followpos;
+    DFASetType poset;
+    DFASet *followpos;
 
     assert (parse_info);
 
@@ -771,7 +771,7 @@ static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
     max_char = parse_info->charset->size;
     pos = (short *) imalloc (sizeof(*pos) * (parse_info->position+1));
 
-    tran_set = cp_Set (parse_info->poset, parse_info->root->firstpos);
+    tran_set = cp_DFASet (parse_info->poset, parse_info->root->firstpos);
     i = add_DFA_state (dfas, &tran_set, &dfa_from);
     assert (i);
     dfa_from->rule_no = 0;
@@ -814,7 +814,7 @@ static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
 
             char_1 = max_char;
                 
-            tran_set = mk_Set (poset);
+            tran_set = mk_DFASet (poset);
             for (pos_i = pos; (i = *pos_i) != -1; ++pos_i)
             {
                 if ((c=posar[i]->u.ch[0]) > char_0 && c <= char_1)
@@ -822,7 +822,7 @@ static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
                 else if ((c=posar[i]->u.ch[1]) >= char_0 && c < char_1)
                     char_1 = c;                    /* backward chunk */
                 if (posar[i]->u.ch[1] >= char_0 && posar[i]->u.ch[0] <= char_0)
-                    tran_set = union_Set (poset, tran_set, followpos[i]);
+                    tran_set = union_DFASet (poset, tran_set, followpos[i]);
             }
             if (tran_set)
             {
@@ -852,7 +852,7 @@ static void pr_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
             printf (" #%d", s->rule_nno);
 
         putchar (':');
-        pr_Set (parse_info->poset, s->set);
+        pr_DFASet (parse_info->poset, s->set);
         prev_no = -1;
         for (i=s->tran_no, tran=s->trans; --i >= 0; tran++)
         {
@@ -881,7 +881,7 @@ static void pr_verbose (struct DFA_parse *parse_info, struct DFA_states *dfas)
     k = inf_BSetHandle (parse_info->charset, &i, &j);
     printf ("%ld/%ld character sets, %d bytes each\n",
             i/k, j/k, k*sizeof(BSetWord));
-    k = inf_SetType (parse_info->poset, &i, &j);
+    k = inf_DFASetType (parse_info->poset, &i, &j);
     printf ("%ld/%ld poset items, %d bytes each\n", i, j, k);
     printf ("%d DFA states\n", dfas->no);
 }
@@ -894,7 +894,7 @@ static void pr_followpos (struct DFA_parse *parse_info)
     for (i=1; i <= parse_info->position; i++)
     {
         printf ("%3d:", i);
-        pr_Set (parse_info->poset, parse_info->followpos[i]);
+        pr_DFASet (parse_info->poset, parse_info->followpos[i]);
         putchar ('\t');
 
         if (posar[i]->u.ch[0] < 0)
@@ -1056,7 +1056,7 @@ static struct DFA_states *mk_dfas (struct DFA_parse *dfap, int poset_chunk)
     assert (poset_chunk > 10);
     assert (dfap);
 
-    parse_info->poset = mk_SetType (poset_chunk);
+    parse_info->poset = mk_DFASetType (poset_chunk);
     init_pos(parse_info);
     init_followpos(parse_info);
     assert (parse_info->root);
@@ -1074,7 +1074,7 @@ static struct DFA_states *mk_dfas (struct DFA_parse *dfap, int poset_chunk)
         pr_verbose (parse_info, dfas);
     del_pos(parse_info);
     del_followpos(parse_info);
-    rm_SetType (parse_info->poset);
+    rm_DFASetType (parse_info->poset);
     return dfas;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: direntz.h,v 1.9 2005-01-15 19:38:24 adam Exp $
+/* $Id: direntz.h,v 1.10 2005-01-15 21:45:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,16 +20,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
-
 #ifdef WIN32
 /* make WIN32 version of dirent */
 #include <windows.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <yaz/yconfig.h>
+
+YAZ_BEGIN_CDECL
 
 struct dirent {
     char d_name[MAX_PATH];
@@ -41,9 +38,7 @@ DIR *opendir (const char *path);
 struct dirent *readdir (DIR *dd);
 void closedir (DIR *dd);
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_ENC_CDECL
 
 #else
 /* include UNIX version */
