@@ -1,11 +1,11 @@
 # Z'mbol/Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.7 2001-07-10 00:04:53 adam Exp $
+# $Id: makefile,v 1.8 2002-03-14 18:41:59 adam Exp $
  
 ###########################################################
 ############### Parameters 
 ###########################################################
 
-DEBUG=0   # 0 for release, 1 for debug
+DEBUG=1   # 0 for release, 1 for debug
 ZMBOL=1
 
 default: all
@@ -175,17 +175,10 @@ LNKOPT= $(COMMON_LNK_OPTIONS) $(RELEASE_LNK_OPTIONS) $(LNK_LIBS)
 # need to be specified, though
 
 ZSERVER_OBJS= \
-	$(OBJDIR)\kinput.obj \
 	$(OBJDIR)\zserver.obj 
 
 ZEBRAIDX_OBJS= \
-	$(OBJDIR)\dir.obj \
-	$(OBJDIR)\dirs.obj \
-	$(OBJDIR)\extract.obj \
-	$(OBJDIR)\kinput.obj \
-	$(OBJDIR)\main.obj \
-	$(OBJDIR)\trav.obj
-
+	$(OBJDIR)\main.obj 
 APITEST_OBJS= \
 	$(OBJDIR)\apitest.obj
 
@@ -266,7 +259,12 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\zsets.obj \
 	$(OBJDIR)\isams.obj \
 	$(OBJDIR)\rsisamd.obj \
-	$(OBJDIR)\rsisams.obj 
+	$(OBJDIR)\dir.obj \
+	$(OBJDIR)\dirs.obj \
+	$(OBJDIR)\extract.obj \
+	$(OBJDIR)\kinput.obj \
+	$(OBJDIR)\rsisams.obj \
+	$(OBJDIR)\trav.obj
 
 ALL_OBJS=\
   $(ZEBRALIB_OBJS) \
@@ -378,13 +376,11 @@ $(ZEBRALIB) : "$(BINDIR)" $(ZEBRALIB_OBJS)
 ###########################################################
 
 clean:
-	del $(OBJDIR)\*.obj
-	del $(OBJDIR)\*.sbr
-	del $(APITEST)
-	del $(ZINDEX)
-	del $(ZSERVER)
-	del $(TMPDIR)\*.
-	del $(ZEBRALIB)
+	-del $(OBJDIR)\*.obj
+	-del $(OBJDIR)\*.sbr
+	-del $(BINDIR)\*.exe
+	-del $(TMPDIR)\*.
+	-del $(ZEBRALIB)
 
 ########### check directories and create if needed
 dirs: $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR)
@@ -401,34 +397,3 @@ $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR):
 # force recompilation of everything, if makefile changed
 
 ###########################################################
-############### Log
-###########################################################
-#
-# $Log: makefile,v $
-# Revision 1.7  2001-07-10 00:04:53  adam
-# Added file rsidamd.obj.
-#
-# Revision 1.6  2000/05/23 21:28:03  adam
-# Combined zebra/zmbol makefile.
-#
-# Revision 1.5  2000/05/05 13:48:03  adam
-# Fixed locking for metafiles.
-#
-# Revision 1.4  2000/04/19 14:35:59  adam
-# WIN32 update (this version is known not to work on Windows).
-#
-# Revision 1.3  2000/04/17 14:22:00  adam
-# WIN32 update.
-#
-# Revision 1.2  2000/02/08 12:34:17  adam
-# Fix: referred to zmbol.mak.
-#
-# Revision 1.1  1999/12/08 22:11:56  adam
-# Separate WIN32 sub directories for Zebra and Z'mbol.
-#
-# Revision 1.1  1999/12/02 10:26:49  adam
-# Added zmbol makefile.
-#
-#
-
-

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: extract.c,v 1.111 2002-02-20 23:07:54 adam Exp $
+ * $Id: extract.c,v 1.112 2002-03-14 18:41:59 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -426,6 +426,7 @@ static int recordExtract (ZebraHandle zh,
 	zh->keys.prevAttrUse = -1;
 	zh->keys.prevAttrSet = -1;
 	zh->keys.prevSeqNo = 0;
+	zh->sortKeys = 0;
 	
 	recordOffset = fi->file_moffset;
 	extractCtrl.offset = fi->file_moffset;
@@ -855,7 +856,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
     RecordAttr *recordAttr;
     struct recExtractCtrl extractCtrl;
     int i, r;
-    char *matchStr;
+    char *matchStr = 0;
     RecType recType;
     char subType[1024];
     void *clientData;
