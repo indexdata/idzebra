@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.55 2004-11-19 10:27:14 heikki Exp $
+/* $Id: rstemp.c,v 1.56 2005-01-15 13:02:40 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -167,8 +167,8 @@ static void r_flush (RSFD rfd, int mk)
 
     if (!info->fname && mk)
     {
-#if HAVE_MKSTEMP
         char template[1024];
+#if HAVE_MKSTEMP
 
         if (info->temp_path)
             sprintf (template, "%s/zrsXXXXXX", info->temp_path);
