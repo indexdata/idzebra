@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.4  1995-09-01 14:06:36  adam
+ * Revision 1.5  1995-09-04 09:10:39  adam
+ * More work on index add/del/update.
+ * Merge sort implemented.
+ * Initial work on z39 server.
+ *
+ * Revision 1.4  1995/09/01  14:06:36  adam
  * Split of work into more files.
  *
  * Revision 1.3  1995/09/01  10:57:07  adam
@@ -68,6 +73,7 @@ int main (int argc, char **argv)
             }
             else
             {
+                unlink ("keys.tmp");
                 key_open ("keys.tmp");
                 repository (cmd, arg, base_path);
                 cmd = 0;
@@ -94,6 +100,12 @@ int main (int argc, char **argv)
         exit (1);
     }
     key_flush ();
-    key_close ();
+    if (!key_close ())
+        exit (0);
+    log (LOG_DEBUG, "Sorting");
+    if (!key_sort ("keys.tmp", 1000000))
+        exit (0);
+    log (LOG_DEBUG, "Input");
+    key_input ("dictinv", "isaminv", "keys.tmp", 50);
     exit (0);
 }

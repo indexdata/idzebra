@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.1  1995-09-01 14:06:35  adam
+ * Revision 1.2  1995-09-04 09:10:34  adam
+ * More work on index add/del/update.
+ * Merge sort implemented.
+ * Initial work on z39 server.
+ *
+ * Revision 1.1  1995/09/01  14:06:35  adam
  * Split of work into more files.
  *
  */
@@ -35,6 +40,7 @@ void key_open (const char *fname)
         log (LOG_FATAL|LOG_ERRNO, "Creat %s", fname);
         exit (1);
     }
+    log (LOG_DEBUG, "key_open of %s", fname);
     if (!(key_buf = malloc (KEY_BUF_SIZE)))
     {
         log (LOG_FATAL|LOG_ERRNO, "malloc");
@@ -53,21 +59,28 @@ void key_open (const char *fname)
         sysno_next = 1;
 }
 
-void key_close (void)
+int key_close (void)
 {
     if (key_fd == -1)
-        return;
+    {
+        log (LOG_DEBUG, "key_close - but no file");
+        return 0;
+    }
     close (key_fd);
     dict_insert (file_idx, ".", sizeof(sysno_next), &sysno_next);
     dict_close (file_idx);
     key_fd = -1;
+    log (LOG_DEBUG, "key close - key file exist");
+    return 1;
 }
 
 void key_flush (void)
 {
     size_t i = 0;
     int w;
-    
+
+    if (key_fd == -1)
+	return; 
     while (i < key_offset)
     {
         w = write (key_fd, key_buf + i, key_offset - i);
@@ -83,17 +96,18 @@ void key_flush (void)
 
 void key_write (int cmd, struct it_key *k, const char *str)
 {
-    char x = cmd;
+    char x;
     size_t slen = strlen(str);
 
     if (key_offset + sizeof(*k) + slen >= KEY_BUF_SIZE - 2)
         key_flush ();
+    x = (cmd == 'a') ? 1 : 0;
+    memcpy (key_buf + key_offset, str, slen+1);
+    key_offset += slen+1;
     memcpy (key_buf + key_offset, &x, 1);
     key_offset++;
     memcpy (key_buf + key_offset, k, sizeof(*k));
     key_offset += sizeof(*k);
-    memcpy (key_buf + key_offset, str, slen+1);
-    key_offset += slen+1;
 }
 
 void text_extract (SYSNO sysno, int cmd, const char *fname)
