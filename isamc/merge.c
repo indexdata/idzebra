@@ -486,6 +486,27 @@ static char *hexdump(unsigned char *p, int len, char *buff) {
  *       may make sense to reserve some extra space...
 */
 
+
+static void isamh_reduceblock(ISAMH is, ISAMH_PP pp, int numKeys)
+{
+  if (pp->is->method->debug > 2)
+     logf(LOG_LOG,"isamh_reduce: block p=%d c=%d o=%d nk=%d ", 
+       pp->pos, pp->cat, pp->offset, numKeys);
+  if (pp->pos != 0)
+    return; /* already allocated in some size */
+  while ( ( pp->cat > 0 ) &&
+          ( pp->offset < is->method->filecat[pp->cat-1].bsize) &&
+          ( numKeys < is->method->filecat[pp->cat-1].mblocks) )
+    pp->cat--;
+  pp->pos =  isamh_alloc_block(is,pp->cat) ;
+  if (pp->is->method->debug > 2)
+     logf(LOG_LOG,"isamh_reduced block p=%d to c=%d o=%d nk=%d bs=%d", 
+         pp->pos, pp->cat, pp->offset, numKeys, 
+         is->method->filecat[pp->cat].bsize);
+
+  
+} /* reduceblock */
+
 ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
 {
 
@@ -507,14 +528,21 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
     int maxkeys;
     int maxsize;
     int retval;
+    int maxcat;
             
     pp = firstpp = isamh_pp_open (is, ipos);
     assert (*is->method->code_reset);
     
+    maxcat=0; /* find the largest block size for default allocation */
+    for ( newcat=0; is->method->filecat[newcat].mblocks > 0; newcat++)
+      if ( is->method->filecat[newcat].bsize > 
+           is->method->filecat[maxcat].bsize)
+        maxcat = newcat;
+   
     if ( 0==ipos)
     {   /* new block */
-      pp->cat=0; /* start small... */
-      pp->pos = isamh_alloc_block(is,pp->cat);
+      pp->cat=maxcat; /* start large... */
+      pp->pos = 0; /* not allocated yet */ 
       pp->size= pp->offset = ISAMH_BLOCK_OFFSET_1 ;
       r_clientData = (*is->method->code_start)(ISAMH_ENCODE);
       if (pp->is->method->debug > 2)
@@ -581,11 +609,13 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
 
           if ( pp->offset + codelen > maxsize ) 
           { /* oops, block full, do something */
-            newcat = pp->cat;
+            newcat = maxcat; /* start with a large block again */
             maxkeys = is->method->filecat[pp->cat].mblocks;  /* max keys */
             if (pp->is->method->debug > 2)
               logf(LOG_LOG,"isamh_append: need new block: %d > %d (k:%d/%d)", 
                   pp->offset + codelen, maxsize, firstpp->numKeys,maxkeys );
+
+#ifdef SKIPTHIS
             if ( (maxkeys>0) && (firstpp->numKeys > maxkeys) ) 
             { /* time to increase block size */
                newcat++;
@@ -594,11 +624,13 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
                if (pp->is->method->debug > 2)
                  logf(LOG_LOG,"isamh_append: increased to cat %d ",newcat);
             }
+#endif
 
-            newblock = isamh_alloc_block(is,newcat);
+            newblock = 0; /* isamh_alloc_block(is,newcat);*/
             pp->next = isamh_addr(newblock,newcat);
             if (firstpp!=pp)
             {  /* not first block, write to disk already now */
+              isamh_reduceblock(is,pp,firstpp->numKeys);
               isamh_buildlaterblock(pp);
               isamh_write_block(is,pp->cat,pp->pos,pp->buf);    
             }
@@ -647,12 +679,14 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
     if (pp!=firstpp) 
     {
       pp->next=0; /* just to be sure */
+      isamh_reduceblock(is,pp,firstpp->numKeys);
       isamh_buildlaterblock(pp);
       isamh_write_block(is,pp->cat,pp->pos,pp->buf);    
     }
     
     /* update first block and write it */
     firstpp->lastblock = isamh_addr(pp->pos,pp->cat);
+    isamh_reduceblock(is,firstpp,firstpp->numKeys);
     isamh_buildfirstblock(firstpp);
     isamh_write_block(is,firstpp->cat,firstpp->pos,firstpp->buf);
 
@@ -672,7 +706,10 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
 
 /*
  * $Log: merge.c,v $
- * Revision 1.16  1999-07-08 14:23:27  heikki
+ * Revision 1.17  1999-07-13 14:22:17  heikki
+ * Better allocation strategy in isamh_merge
+ *
+ * Revision 1.16  1999/07/08 14:23:27  heikki
  * Fixed a bug in isamh_pp_read and cleaned up a bit
  *
  * Revision 1.15  1999/07/07 09:36:04  heikki
