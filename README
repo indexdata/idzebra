@@ -1,8 +1,8 @@
-Copyright (C) 1995-2001, Index Data ApS.
+Copyright (C) 1995-2002, Index Data ApS.
 See the file LICENSE.zebra for details.
 
 README for Zebra
-  $Id: README,v 1.5 2001-02-21 11:23:17 adam Exp $
+  $Id: README,v 1.6 2002-02-20 17:30:01 adam Exp $
 
 Documentation about this software can be found in the subdirectory
 'doc' and Zebra's home page:  http://www.indexdata.dk/zebra/

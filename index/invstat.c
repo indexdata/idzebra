@@ -14,6 +14,7 @@
 #if ZMBOL
 #include "../isamc/isamd-p.h"
 #endif
+#include "zserver.h"
 
 struct inv_stat_info {
     ISAMS isams;
@@ -128,8 +129,9 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     return 0;
 }
 
-void inv_prstat (BFiles bfs)
+void inv_prstat (ZebraHandle zh)
 {
+    BFiles bfs = zh->service->bfs;
     Dict dict;
     ISAMS isams = NULL;
 #if ZMBOL
@@ -156,11 +158,11 @@ void inv_prstat (BFiles bfs)
         logf (LOG_FATAL, "dict_open fail");
         exit (1);
     }
-    if (res_get_match (common_resource, "isam", "s", ISAM_DEFAULT))
+    if (res_get_match (zh->service->res, "isam", "s", ISAM_DEFAULT))
     {
 	struct ISAMS_M_s isams_m;
         isams = isams_open (bfs, FNAME_ISAMS, 0,
-			    key_isams_m(common_resource, &isams_m));
+			    key_isams_m(zh->service->res, &isams_m));
         if (!isams)
         {
             logf (LOG_FATAL, "isams_open fail");
@@ -168,32 +170,32 @@ void inv_prstat (BFiles bfs)
         }
     }
 #if ZMBOL
-    else if (res_get_match (common_resource, "isam", "i", ISAM_DEFAULT))
+    else if (res_get_match (zh->service->res, "isam", "i", ISAM_DEFAULT))
     {
         isam = is_open (bfs, FNAME_ISAM, key_compare, 0,
-			sizeof(struct it_key), common_resource);
+			sizeof(struct it_key), zh->service->res);
         if (!isam)
         {
             logf (LOG_FATAL, "is_open fail");
             exit (1);
         }
     }
-    else if (res_get_match (common_resource, "isam", "d", ISAM_DEFAULT))
+    else if (res_get_match (zh->service->res, "isam", "d", ISAM_DEFAULT))
     {
 	struct ISAMD_M_s isamd_m;
         isamd = isamd_open (bfs, FNAME_ISAMD, 0, 
-                            key_isamd_m(common_resource,&isamd_m));
+                            key_isamd_m(zh->service->res,&isamd_m));
         if (!isamd)
         {
             logf (LOG_FATAL, "isamd_open fail");
             exit (1);
         }
     }
-    else if (res_get_match (common_resource, "isam", "c", ISAM_DEFAULT))
+    else if (res_get_match (zh->service->res, "isam", "c", ISAM_DEFAULT))
     {
 	struct ISAMC_M_s isamc_m;
         isamc = isc_open (bfs, FNAME_ISAMC, 0,
-			  key_isamc_m (common_resource, &isamc_m));
+			  key_isamc_m (zh->service->res, &isamc_m));
         if (!isamc)
         {
             logf (LOG_FATAL, "isc_open fail");
@@ -323,7 +325,10 @@ void inv_prstat (BFiles bfs)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.21  2000-07-13 10:14:20  heikki
+ * Revision 1.22  2002-02-20 17:30:01  adam
+ * Work on new API. Locking system re-implemented
+ *
+ * Revision 1.21  2000/07/13 10:14:20  heikki
  * Removed compiler warnings when making zebra
  *
  * Revision 1.20  1999/12/01 13:30:30  adam

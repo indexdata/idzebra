@@ -1,50 +1,9 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: lockutil.c,v $
- * Revision 1.12  1999-05-26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.11  1999/02/02 14:50:59  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.10  1997/09/29 09:08:36  adam
- * Revised locking system to be thread safe for the server.
- *
- * Revision 1.9  1997/09/25 14:54:43  adam
- * WIN32 files lock support.
- *
- * Revision 1.8  1997/09/17 12:19:15  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.7  1997/09/09 13:38:08  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.6  1996/10/29 14:08:14  adam
- * Uses resource lockDir instead of lockPath.
- *
- * Revision 1.5  1996/03/26 16:01:13  adam
- * New setting lockPath: directory of various lock files.
- *
- * Revision 1.4  1995/12/13  08:46:10  adam
- * Locking uses F_WRLCK and F_RDLCK again!
- *
- * Revision 1.3  1995/12/12  16:00:57  adam
- * System call sync(2) used after update/commit.
- * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
- * and F_RDLCK.
- *
- * Revision 1.2  1995/12/11  11:43:29  adam
- * Locking based on fcntl instead of flock.
- * Setting commitEnable removed. Command line option -n can be used to
- * prevent commit if commit setting is defined in the configuration file.
- *
- * Revision 1.1  1995/12/07  17:38:47  adam
- * Work locking mechanisms for concurrent updates/commit.
- *
+ * $Id: lockutil.c,v 1.13 2002-02-20 17:30:01 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -119,6 +78,24 @@ static int unixLock (int fd, int type, int cmd)
     return fcntl (fd, cmd, &area);
 }
 #endif
+
+int zebra_lock_w (ZebraLockHandle h)
+{
+#ifdef WIN32
+    return _locking (h->fd, _LK_LOCK, 1);
+#else
+    return unixLock (h->fd, F_WRLCK, F_SETLKW);
+#endif
+}
+
+int zebra_lock_r (ZebraLockHandle h)
+{
+#ifdef WIN32
+    return _locking (h->fd, _LK_LOCK, 1);
+#else
+    return unixLock (h->fd, F_RDLCK, F_SETLKW);
+#endif
+}
 
 int zebra_lock (ZebraLockHandle h)
 {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.31  2001-11-19 23:05:22  adam
+ * Revision 1.32  2002-02-20 17:30:01  adam
+ * Work on new API. Locking system re-implemented
+ *
+ * Revision 1.31  2001/11/19 23:05:22  adam
  * Added a few prototypes.
  *
  * Revision 1.30  2001/10/15 19:53:43  adam
@@ -275,6 +278,7 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
             if (!s->term_entries && !s->rset && s->rpn)
             {
                 NMEM nmem = nmem_create ();
+                yaz_log (LOG_LOG, "research %s", name);
                 s->rset =
                     rpn_search (zh, nmem, s->rpn, s->num_bases,
 				s->basenames, s->name, s);
@@ -285,9 +289,21 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
     return NULL;
 }
 
+void resultSetInvalidate (ZebraHandle zh)
+{
+    ZebraSet s = zh->sets;
+    
+    for (; s; s = s->next)
+    {
+        if (s->rset)
+            rset_delete (s->rset);
+        s->rset = 0;
+    }
+}
+
 void resultSetDestroy (ZebraHandle zh, int num, char **names,int *statuses)
 {
-    ZebraSet *ss = &zh->sets;
+    ZebraSet * ss = &zh->sets;
     int i;
     
     if (statuses)

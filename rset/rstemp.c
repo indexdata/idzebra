@@ -1,98 +1,9 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: rstemp.c,v $
- * Revision 1.26  1999-05-26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.25  1999/02/02 14:51:37  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.24  1998/03/05 08:36:28  adam
- * New result set model.
- *
- * Revision 1.23  1997/12/18 10:54:25  adam
- * New method result set method rs_hits that returns the number of
- * hits in result-set (if known). The ranked result set returns real
- * number of hits but only when not combined with other operands.
- *
- * Revision 1.22  1997/10/31 12:38:12  adam
- * Bug fix: added missing xfree() call.
- *
- * Revision 1.21  1997/09/17 12:19:23  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.20  1997/09/09 13:38:17  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.19  1997/09/04 13:58:57  adam
- * Added O_BINARY for open calls.
- *
- * Revision 1.18  1996/10/29 13:54:52  adam
- * Changed name of setting tempSetDir to setTmpDir.
- *
- * Revision 1.17  1995/12/11 09:15:28  adam
- * New set types: sand/sor/snot - ranked versions of and/or/not in
- * ranked/semi-ranked result sets.
- * Note: the snot not finished yet.
- * New rset member: flag.
- * Bug fix: r_delete in rsrel.c did free bad memory block.
- *
- * Revision 1.16  1995/11/28  14:47:02  adam
- * New setting: tempSetPath. Location of temporary result sets.
- *
- * Revision 1.15  1995/10/12  12:41:58  adam
- * Private info (buf) moved from struct rset_control to struct rset.
- * Bug fixes in relevance.
- *
- * Revision 1.14  1995/10/10  14:00:04  adam
- * Function rset_open changed its wflag parameter to general flags.
- *
- * Revision 1.13  1995/10/06  14:38:06  adam
- * New result set method: r_score.
- * Local no (sysno) and score is transferred to retrieveCtrl.
- *
- * Revision 1.12  1995/09/28  09:52:11  adam
- * xfree/xmalloc used everywhere.
- *
- * Revision 1.11  1995/09/18  14:17:56  adam
- * Bug fixes.
- *
- * Revision 1.10  1995/09/15  14:45:39  adam
- * Bug fixes.
- *
- * Revision 1.9  1995/09/15  09:20:42  adam
- * Bug fixes.
- *
- * Revision 1.8  1995/09/08  14:52:42  adam
- * Work on relevance feedback.
- *
- * Revision 1.7  1995/09/07  13:58:44  adam
- * New parameter: result-set file descriptor (RSFD) to support multiple
- * positions within the same result-set.
- * Boolean operators: and, or, not implemented.
- *
- * Revision 1.6  1995/09/06  16:11:56  adam
- * More work on boolean sets.
- *
- * Revision 1.5  1995/09/05  16:36:59  adam
- * Minor changes.
- *
- * Revision 1.4  1995/09/05  11:43:24  adam
- * Complete version of temporary sets. Not tested yet though.
- *
- * Revision 1.3  1995/09/04  15:20:40  adam
- * More work on temp sets. is_open member removed.
- *
- * Revision 1.2  1995/09/04  09:10:56  adam
- * Minor changes.
- *
- * Revision 1.1  1994/11/04  13:21:30  quinn
- * Working.
- *
+ * $Id: rstemp.c,v 1.27 2002-02-20 17:30:01 adam Exp $
  */
 
 #include <fcntl.h>
@@ -215,8 +126,22 @@ static void r_flush (RSFD rfd, int mk)
 
     if (!info->fname && mk)
     {
-        char *s = (char*) tempnam (info->temp_path, "zrs");
+#if 1
+        char template[1024];
 
+        sprintf (template, "%s/zrsXXXXXX", info->temp_path);
+
+        info->fd = mkstemp (template);
+
+        if (info->fd == -1)
+        {
+            logf (LOG_FATAL|LOG_ERRNO, "mkstemp %s", template);
+            exit (1);
+        }
+        info->fname = (char *) xmalloc (strlen(template)+1);
+        strcpy (info->fname, template);
+#else
+        char *s = (char*) tempnam (info->temp_path, "zrs");
         info->fname = (char *) xmalloc (strlen(s)+1);
         strcpy (info->fname, s);
 
@@ -227,6 +152,7 @@ static void r_flush (RSFD rfd, int mk)
             logf (LOG_FATAL|LOG_ERRNO, "open %s", info->fname);
             exit (1);
         }
+#endif
     }
     if (info->fname && info->fd != -1 && info->dirty)
     {

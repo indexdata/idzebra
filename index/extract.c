@@ -1,392 +1,9 @@
 /*
- * Copyright (C) 1994-2001, Index Data 
+ * Copyright (C) 1994-2002, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: extract.c,v $
- * Revision 1.109  2001-10-15 19:53:43  adam
- * POSIX thread updates. First work on term sets.
- *
- * Revision 1.108  2001/06/14 11:44:56  adam
- * Bug fix: default storeKeys setting wasn't read when group was specified.
- *
- * Revision 1.107  2001/05/28 13:58:48  adam
- * Call flushSortKeys when record is skipped to fix bad re-use of
- * sort keys to whatever next record that comes in.
- *
- * Revision 1.106  2000/12/05 12:22:53  adam
- * Termlist source implemented (so that we can index values of XML/SGML
- * attributes).
- *
- * Revision 1.105  2000/12/05 10:01:44  adam
- * Fixed bug regarding user-defined attribute sets.
- *
- * Revision 1.104  2000/09/05 14:04:05  adam
- * Updates for prefix 'yaz_' for YAZ log functions.
- *
- * Revision 1.103  2000/05/18 12:01:36  adam
- * System call times(2) used again. More 64-bit fixes.
- *
- * Revision 1.102  2000/05/15 15:32:33  adam
- * Added 64 bit file input.
- *
- * Revision 1.101  2000/05/15 13:02:39  adam
- * Minor change.
- *
- * Revision 1.100  2000/03/20 19:08:36  adam
- * Added remote record import using Z39.50 extended services and Segment
- * Requests.
- *
- * Revision 1.99  2000/02/24 10:57:02  adam
- * Sequence number incremented after each incomplete-field.
- *
- * Revision 1.98  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.97  1999/07/06 12:28:04  adam
- * Updated record index structure. Format includes version ID. Compression
- * algorithm ID is stored for each record block.
- *
- * Revision 1.96  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.95  1999/05/21 12:00:17  adam
- * Better diagnostics for extraction process.
- *
- * Revision 1.94  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.93  1999/05/15 14:36:38  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.92  1999/03/09 16:27:49  adam
- * More work on SDRKit integration.
- *
- * Revision 1.91  1999/02/12 13:29:22  adam
- * Implemented position-flag for registers.
- *
- * Revision 1.90  1999/02/02 14:50:52  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.89  1998/10/28 10:54:38  adam
- * SDRKit integration.
- *
- * Revision 1.88  1998/10/16 08:14:29  adam
- * Updated record control system.
- *
- * Revision 1.87  1998/10/15 13:10:33  adam
- * Fixed bug in Zebra that caused it to stop indexing when empty
- * record was read.
- *
- * Revision 1.86  1998/10/13 20:33:53  adam
- * Fixed one log message and change use ordinal to be an unsigned char.
- *
- * Revision 1.85  1998/09/22 10:03:41  adam
- * Changed result sets to be persistent in the sense that they can
- * be re-searched if needed.
- * Fixed memory leak in rsm_or.
- *
- * Revision 1.84  1998/06/11 15:42:22  adam
- * Changed the way use attributes are specified in the recordId
- * specification.
- *
- * Revision 1.83  1998/06/08 14:43:10  adam
- * Added suport for EXPLAIN Proxy servers - added settings databasePath
- * and explainDatabase to facilitate this. Increased maximum number
- * of databases and attributes in one register.
- *
- * Revision 1.82  1998/05/20 10:12:15  adam
- * Implemented automatic EXPLAIN database maintenance.
- * Modified Zebra to work with ASN.1 compiled version of YAZ.
- *
- * Revision 1.81  1998/03/11 11:19:04  adam
- * Changed the way sequence numbers are generated.
- *
- * Revision 1.80  1998/03/05 08:45:11  adam
- * New result set model and modular ranking system. Moved towards
- * descent server API. System information stored as "SGML" records.
- *
- * Revision 1.79  1998/02/17 10:32:52  adam
- * Fixed bug: binary files weren't opened with flag b on NT.
- *
- * Revision 1.78  1998/02/10 12:03:05  adam
- * Implemented Sort.
- *
- * Revision 1.77  1998/01/12 15:04:08  adam
- * The test option (-s) only uses read-lock (and not write lock).
- *
- * Revision 1.76  1997/10/27 14:33:04  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- * Revision 1.75  1997/09/17 12:19:12  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.74  1997/09/09 13:38:06  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.73  1997/09/04 13:57:20  adam
- * New file extract/retrieve method tellf (added).
- * Added O_BINARY for open calls.
- *
- * Revision 1.72  1997/07/15 16:32:29  adam
- * Bug fix: Match handler didn't terminate the resulting string!
- *
- * Revision 1.71  1997/07/15 16:28:41  adam
- * Bug fix: storeData didn't work with files with multiple records.
- * Bug fix: fixed memory management with records; not really well
- *  thought through.
- *
- * Revision 1.70  1997/07/01 13:00:42  adam
- * Bug fix in routine searchRecordKey: uninitialized variables.
- *
- * Revision 1.69  1997/04/29 09:26:03  adam
- * Bug fix: generic recordId handling didn't work for compressed internal
- * keys.
- *
- * Revision 1.68  1997/02/12 20:39:45  adam
- * Implemented options -f <n> that limits the log to the first <n>
- * records.
- * Changed some log messages also.
- *
- * Revision 1.67  1996/11/15 15:02:14  adam
- * Minor changes regarding logging.
- *
- * Revision 1.66  1996/11/14  09:52:21  adam
- * Strings in record keys bound by IT_MAX_WORD.
- *
- * Revision 1.65  1996/11/14  08:57:56  adam
- * Reduction of storeKeys area.
- *
- * Revision 1.64  1996/11/08 11:10:16  adam
- * Buffers used during file match got bigger.
- * Compressed ISAM support everywhere.
- * Bug fixes regarding masking characters in queries.
- * Redesigned Regexp-2 queries.
- *
- * Revision 1.63  1996/10/29 14:09:39  adam
- * Use of cisam system - enabled if setting isamc is 1.
- *
- * Revision 1.62  1996/10/11 10:57:01  adam
- * New module recctrl. Used to manage records (extract/retrieval).
- * Several files have been moved to the recctrl sub directory.
- *
- * Revision 1.61  1996/06/06 12:08:37  quinn
- * Added showRecord function
- *
- * Revision 1.60  1996/06/04  10:18:12  adam
- * Search/scan uses character mapping module.
- *
- * Revision 1.59  1996/05/14  15:47:07  adam
- * Cleanup of various buffer size entities.
- *
- * Revision 1.58  1996/05/14  06:16:38  adam
- * Compact use/set bytes used in search service.
- *
- * Revision 1.57  1996/05/13 14:23:04  adam
- * Work on compaction of set/use bytes in dictionary.
- *
- * Revision 1.56  1996/05/09  09:54:42  adam
- * Server supports maps from one logical attributes to a list of physical
- * attributes.
- * The extraction process doesn't make space consuming 'any' keys.
- *
- * Revision 1.55  1996/05/09  07:28:55  quinn
- * Work towards phrases and multiple registers
- *
- * Revision 1.54  1996/05/01  13:46:35  adam
- * First work on multiple records in one file.
- * New option, -offset, to the "unread" command in the filter module.
- *
- * Revision 1.53  1996/04/26  12:09:43  adam
- * Added a few comments.
- *
- * Revision 1.52  1996/04/25  13:27:57  adam
- * Function recordExtract modified so that files with no keys (possibly empty)
- * are ignored.
- *
- * Revision 1.51  1996/03/19  11:08:42  adam
- * Bug fix: Log preamble wasn't always turned off after recordExtract.
- *
- * Revision 1.50  1996/02/12  18:45:36  adam
- * New fileVerboseFlag in record group control.
- *
- * Revision 1.49  1996/02/05  12:29:57  adam
- * Logging reduced a bit.
- * The remaining running time is estimated during register merge.
- *
- * Revision 1.48  1996/02/01  20:53:26  adam
- * The temporary per-record keys are compacted a little, and duplication
- * of the per-records keys are avoided when they are saved in the record
- * information buffer.
- *
- * Revision 1.47  1996/01/17  14:57:48  adam
- * Prototype changed for reader functions in extract/retrieve. File
- *  is identified by 'void *' instead of 'int.
- *
- * Revision 1.46  1995/12/15  14:57:16  adam
- * Bug fix.
- *
- * Revision 1.45  1995/12/15  12:37:41  adam
- * In addRecordKeyAny: Writes key only when attrSet != -1.
- *
- * Revision 1.44  1995/12/12  16:00:54  adam
- * System call sync(2) used after update/commit.
- * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
- * and F_RDLCK.
- *
- * Revision 1.43  1995/12/11  09:12:46  adam
- * The rec_get function returns NULL if record doesn't exist - will
- * happen in the server if the result set records have been deleted since
- * the creation of the set (i.e. the search).
- * The server saves a result temporarily if it is 'volatile', i.e. the
- * set is register dependent.
- *
- * Revision 1.42  1995/12/07  17:38:46  adam
- * Work locking mechanisms for concurrent updates/commit.
- *
- * Revision 1.41  1995/12/06  16:06:42  adam
- * Better diagnostics. Work on 'real' dictionary deletion.
- *
- * Revision 1.40  1995/12/05  16:57:40  adam
- * More work on regular patterns.
- *
- * Revision 1.39  1995/12/05  13:20:18  adam
- * Bug fix: file_read sometimes returned early EOF.
- *
- * Revision 1.38  1995/12/04  17:59:21  adam
- * More work on regular expression conversion.
- *
- * Revision 1.37  1995/12/04  14:22:27  adam
- * Extra arg to recType_byName.
- * Started work on new regular expression parsed input to
- * structured records.
- *
- * Revision 1.36  1995/11/30  08:34:29  adam
- * Started work on commit facility.
- * Changed a few malloc/free to xmalloc/xfree.
- *
- * Revision 1.35  1995/11/28  14:26:21  adam
- * Bug fix: recordId with constant wasn't right.
- * Bug fix: recordId dictionary entry wasn't deleted when needed.
- *
- * Revision 1.34  1995/11/28  09:09:38  adam
- * Zebra config renamed.
- * Use setting 'recordId' to identify record now.
- * Bug fix in recindex.c: rec_release_blocks was invokeded even
- * though the blocks were already released.
- * File traversal properly deletes records when needed.
- *
- * Revision 1.33  1995/11/27  09:56:20  adam
- * Record info elements better enumerated. Internal store of records.
- *
- * Revision 1.32  1995/11/25  10:24:05  adam
- * More record fields - they are enumerated now.
- * New options: flagStoreData flagStoreKey.
- *
- * Revision 1.31  1995/11/24  11:31:35  adam
- * Commands add & del read filenames from stdin if source directory is
- * empty.
- * Match criteria supports 'constant' strings.
- *
- * Revision 1.30  1995/11/22  17:19:16  adam
- * Record management uses the bfile system.
- *
- * Revision 1.29  1995/11/21  15:01:14  adam
- * New general match criteria implemented.
- * New feature: document groups.
- *
- * Revision 1.28  1995/11/21  09:20:30  adam
- * Yet more work on record match.
- *
- * Revision 1.27  1995/11/20  16:59:45  adam
- * New update method: the 'old' keys are saved for each records.
- *
- * Revision 1.26  1995/11/20  11:56:24  adam
- * Work on new traversal.
- *
- * Revision 1.25  1995/11/16  15:34:54  adam
- * Uses new record management system in both indexer and server.
- *
- * Revision 1.24  1995/11/15  19:13:08  adam
- * Work on record management.
- *
- * Revision 1.23  1995/10/27  14:00:10  adam
- * Implemented detection of database availability.
- *
- * Revision 1.22  1995/10/17  18:02:07  adam
- * New feature: databases. Implemented as prefix to words in dictionary.
- *
- * Revision 1.21  1995/10/10  12:24:38  adam
- * Temporary sort files are compressed.
- *
- * Revision 1.20  1995/10/06  13:52:05  adam
- * Bug fixes. Handler may abort further scanning.
- *
- * Revision 1.19  1995/10/04  12:55:16  adam
- * Bug fix in ranked search. Use=Any keys inserted.
- *
- * Revision 1.18  1995/10/04  09:37:08  quinn
- * Fixed bug.
- *
- * Revision 1.17  1995/10/03  14:28:57  adam
- * Buffered read in extract works.
- *
- * Revision 1.16  1995/10/03  14:28:45  adam
- * Work on more effecient read handler in extract.
- *
- * Revision 1.15  1995/10/02  15:42:53  adam
- * Extract uses file descriptors instead of FILE pointers.
- *
- * Revision 1.14  1995/10/02  15:29:13  adam
- * More logging in file_extract.
- *
- * Revision 1.13  1995/09/29  14:01:39  adam
- * Bug fixes.
- *
- * Revision 1.12  1995/09/28  14:22:56  adam
- * Sort uses smaller temporary files.
- *
- * Revision 1.11  1995/09/28  12:10:31  adam
- * Bug fixes. Field prefix used in queries.
- *
- * Revision 1.10  1995/09/28  09:19:41  adam
- * xfree/xmalloc used everywhere.
- * Extract/retrieve method seems to work for text records.
- *
- * Revision 1.9  1995/09/27  12:22:28  adam
- * More work on extract in record control.
- * Field name is not in isam keys but in prefix in dictionary words.
- *
- * Revision 1.8  1995/09/14  07:48:22  adam
- * Record control management.
- *
- * Revision 1.7  1995/09/11  13:09:32  adam
- * More work on relevance feedback.
- *
- * Revision 1.6  1995/09/08  14:52:27  adam
- * Minor changes. Dictionary is lower case now.
- *
- * Revision 1.5  1995/09/06  16:11:16  adam
- * Option: only one word key per file.
- *
- * Revision 1.4  1995/09/05  15:28:39  adam
- * More work on search engine.
- *
- * Revision 1.3  1995/09/04  12:33:41  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.2  1995/09/04  09:10:34  adam
- * More work on index add/del/update.
- * Merge sort implemented.
- * Initial work on z39 server.
- *
- * Revision 1.1  1995/09/01  14:06:35  adam
- * Split of work into more files.
- *
+ * $Id: extract.c,v 1.110 2002-02-20 17:30:01 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -401,7 +18,7 @@
 #include <charmap.h>
 #include <sortidx.h>
 #include "index.h"
-
+#include "zserver.h"
 #include "zinfo.h"
 
 #if _FILE_OFFSET_BITS == 64
@@ -418,24 +35,10 @@
 #include "zebrasdr.h"
 #endif
 
-static Dict matchDict;
-
-static Records records = NULL;
-static SortIdx sortIdx = NULL;
-
-static char **key_buf;
-static size_t ptr_top;
-static size_t ptr_i;
-static size_t key_buf_used;
-static int key_file_no;
-
 static int records_inserted = 0;
 static int records_updated = 0;
 static int records_deleted = 0;
 static int records_processed = 0;
-
-static ZebraExplainInfo zti = NULL;
-
 
 static void logRecord (int showFlag)
 {
@@ -449,246 +52,7 @@ static void logRecord (int showFlag)
     }
 }
 
-static int explain_extract (void *handle, Record drec, data1_node *n);
-
-int key_open (struct recordGroup *rGroup, int mem)
-{
-    BFiles bfs = rGroup->bfs;
-    int rw = rGroup->flagRw;
-    data1_handle dh = rGroup->dh;
-    char *recordCompression;
-    int record_compression = REC_COMPRESS_NONE;
-    if (!mem)
-        mem = atoi(res_get_def (common_resource, "memMax", "16"))*1024*1024;
-    if (mem < 50000)
-        mem = 50000;
-    key_buf = (char **) xmalloc (mem);
-    ptr_top = mem/sizeof(char*);
-    ptr_i = 0;
-
-    key_buf_used = 0;
-    key_file_no = 0;
-
-    if (!(matchDict = dict_open (bfs, GMATCH_DICT, 50, rw, 0)))
-    {
-        logf (LOG_FATAL, "dict_open fail of %s", GMATCH_DICT);
-	return -1;
-    }
-    assert (!records);
-    recordCompression = res_get_def (common_resource,
-				     "recordCompression", "none");
-    if (!strcmp (recordCompression, "none"))
-	record_compression = REC_COMPRESS_NONE;
-    if (!strcmp (recordCompression, "bzip2"))
-	record_compression = REC_COMPRESS_BZIP2;
-    records = rec_open (bfs, rw, record_compression);
-    if (!records)
-    {
-	dict_close (matchDict);
-	return -1;
-    }
-    zti = zebraExplain_open (records, dh, common_resource,
-			     rw, rGroup, explain_extract);
-    if (!zti)
-    {
-	rec_close (&records);
-	dict_close (matchDict);
-	return -1;	
-    }
-    sortIdx = sortIdx_open (bfs, 1);
-    return 0;
-}
-
-struct encode_info {
-    int  sysno;
-    int  seqno;
-    int  cmd;
-    char buf[768];
-};
-
-void encode_key_init (struct encode_info *i)
-{
-    i->sysno = 0;
-    i->seqno = 0;
-    i->cmd = -1;
-}
-
-char *encode_key_int (int d, char *bp)
-{
-    if (d <= 63)
-        *bp++ = d;
-    else if (d <= 16383)
-    {
-        *bp++ = 64 + (d>>8);
-        *bp++ = d  & 255;
-    }
-    else if (d <= 4194303)
-    {
-        *bp++ = 128 + (d>>16);
-        *bp++ = (d>>8) & 255;
-        *bp++ = d & 255;
-    }
-    else
-    {
-        *bp++ = 192 + (d>>24);
-        *bp++ = (d>>16) & 255;
-        *bp++ = (d>>8) & 255;
-        *bp++ = d & 255;
-    }
-    return bp;
-}
-
-void encode_key_write (char *k, struct encode_info *i, FILE *outf)
-{
-    struct it_key key;
-    char *bp = i->buf;
-
-    while ((*bp++ = *k++))
-        ;
-    memcpy (&key, k+1, sizeof(struct it_key));
-    bp = encode_key_int ( (key.sysno - i->sysno) * 2 + *k, bp);
-    if (i->sysno != key.sysno)
-    {
-        i->sysno = key.sysno;
-        i->seqno = 0;
-    }
-    else if (!i->seqno && !key.seqno && i->cmd == *k)
-	return;
-    bp = encode_key_int (key.seqno - i->seqno, bp);
-    i->seqno = key.seqno;
-    i->cmd = *k;
-    if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "fwrite");
-        exit (1);
-    }
-}
-
-#define SORT_EXTRA 0
-
-#if SORT_EXTRA
-static int key_y_len;
-
-static int key_y_compare (const void *p1, const void *p2)
-{
-    int r;
-
-    if ((r = key_compare (*(char**) p1 + key_y_len + 1,
-                          *(char**) p2 + key_y_len + 1)))
-         return r;
-    return *(*(char**) p1 + key_y_len) - *(*(char**) p2 + key_y_len);
-}
-
-static int key_x_compare (const void *p1, const void *p2)
-{
-    return strcmp (*(char**) p1, *(char**) p2);
-}
-#endif
-
-void key_flush (void)
-{
-    FILE *outf;
-    char out_fname[200];
-    char *prevcp, *cp;
-    struct encode_info encode_info;
-#if SORT_EXTRA
-    int i;
-#endif
-    
-    if (ptr_i <= 0)
-        return;
-
-    key_file_no++;
-    logf (LOG_LOG, "sorting section %d", key_file_no);
-#if !SORT_EXTRA
-    qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_qsort_compare);
-    getFnameTmp (common_resource, out_fname, key_file_no);
-
-    if (!(outf = fopen (out_fname, "wb")))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "fopen %s", out_fname);
-        exit (1);
-    }
-    logf (LOG_LOG, "writing section %d", key_file_no);
-    prevcp = cp = key_buf[ptr_top-ptr_i];
-    
-    encode_key_init (&encode_info);
-    encode_key_write (cp, &encode_info, outf);
-    while (--ptr_i > 0)
-    {
-        cp = key_buf[ptr_top-ptr_i];
-        if (strcmp (cp, prevcp))
-        {
-            encode_key_init (&encode_info);
-            encode_key_write (cp, &encode_info, outf);
-            prevcp = cp;
-        }
-        else
-            encode_key_write (cp + strlen(cp), &encode_info, outf);
-    }
-#else
-    qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_x_compare);
-    getFnameTmp (out_fname, key_file_no);
-
-    if (!(outf = fopen (out_fname, "wb")))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "fopen %s", out_fname);
-        exit (1);
-    }
-    logf (LOG_LOG, "writing section %d", key_file_no);
-    i = ptr_i;
-    prevcp =  key_buf[ptr_top-i];
-    while (1)
-        if (!--i || strcmp (prevcp, key_buf[ptr_top-i]))
-        {
-            key_y_len = strlen(prevcp)+1;
-#if 0
-            logf (LOG_LOG, "key_y_len: %2d %02x %02x %s",
-                      key_y_len, prevcp[0], prevcp[1], 2+prevcp);
-#endif
-            qsort (key_buf + ptr_top-ptr_i, ptr_i - i,
-                                   sizeof(char*), key_y_compare);
-            cp = key_buf[ptr_top-ptr_i];
-            --key_y_len;
-            encode_key_init (&encode_info);
-            encode_key_write (cp, &encode_info, outf);
-            while (--ptr_i > i)
-            {
-                cp = key_buf[ptr_top-ptr_i];
-                encode_key_write (cp+key_y_len, &encode_info, outf);
-            }
-            if (!i)
-                break;
-            prevcp = key_buf[ptr_top-ptr_i];
-        }
-#endif
-    if (fclose (outf))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "fclose %s", out_fname);
-        exit (1);
-    }
-    logf (LOG_LOG, "finished section %d", key_file_no);
-    ptr_i = 0;
-    key_buf_used = 0;
-}
-
-int key_close (struct recordGroup *rGroup)
-{
-    int rw = rGroup->flagRw;
-    if (rw)
-	zebraExplain_runNumberIncrement (zti, 1);
-    zebraExplain_close (zti, rw);
-    key_flush ();
-    xfree (key_buf);
-    rec_close (&records);
-    dict_close (matchDict);
-    sortIdx_close (sortIdx);
-
-    logRecord (1);
-    return key_file_no;
-}
-
-static void wordInit (struct recExtractCtrl *p, RecWord *w)
+static void extract_init (struct recExtractCtrl *p, RecWord *w)
 {
     w->zebra_maps = p->zebra_maps;
     w->seqnos = p->seqno;
@@ -698,339 +62,8 @@ static void wordInit (struct recExtractCtrl *p, RecWord *w)
     w->extractCtrl = p;
 }
 
-static struct sortKey {
-    char *string;
-    int length;
-    int attrSet;
-    int attrUse;
-    struct sortKey *next;
-} *sortKeys = NULL;
-
-static struct recKeys {
-    int buf_used;
-    int buf_max;
-    char *buf;
-    char prevAttrSet;
-    short prevAttrUse;
-    int prevSeqNo;
-} reckeys;
-
-static void addIndexString (RecWord *p, const char *string, int length)
-{
-    char *dst;
-    unsigned char attrSet;
-    unsigned short attrUse;
-    int lead = 0;
-    int diff = 0;
-    int *pseqno = &p->seqnos[p->reg_type];
-
-    if (reckeys.buf_used+1024 > reckeys.buf_max)
-    {
-        char *b;
-
-        b = (char *) xmalloc (reckeys.buf_max += 128000);
-        if (reckeys.buf_used > 0)
-            memcpy (b, reckeys.buf, reckeys.buf_used);
-        xfree (reckeys.buf);
-        reckeys.buf = b;
-    }
-    dst = reckeys.buf + reckeys.buf_used;
-
-    attrSet = p->attrSet;
-    if (reckeys.buf_used > 0 && reckeys.prevAttrSet == attrSet)
-        lead |= 1;
-    else
-        reckeys.prevAttrSet = attrSet;
-    attrUse = p->attrUse;
-    if (reckeys.buf_used > 0 && reckeys.prevAttrUse == attrUse)
-        lead |= 2;
-    else
-        reckeys.prevAttrUse = attrUse;
-#if 1
-    diff = 1 + *pseqno - reckeys.prevSeqNo;
-    if (diff >= 1 && diff <= 15)
-        lead |= (diff << 2);
-    else
-        diff = 0;
-#endif
-    reckeys.prevSeqNo = *pseqno;
-    
-    *dst++ = lead;
-
-#if SU_SCHEME
-    if ((lead & 3) < 3)
-    {
-        int ch = zebraExplain_lookupSU (zti, attrSet, attrUse);
-        if (ch < 0)
-        {
-            ch = zebraExplain_addSU (zti, attrSet, attrUse);
-        }
-	assert (ch > 0);
-	memcpy (dst, &ch, sizeof(ch));
-	dst += sizeof(ch);
-    }
-#else
-    if (!(lead & 1))
-    {
-        memcpy (dst, &attrSet, sizeof(attrSet));
-        dst += sizeof(attrSet);
-    }
-    if (!(lead & 2))
-    {
-        memcpy (dst, &attrUse, sizeof(attrUse));
-        dst += sizeof(attrUse);
-    }
-#endif
-    *dst++ = p->reg_type;
-    memcpy (dst, string, length);
-    dst += length;
-    *dst++ = '\0';
-
-    if (!diff)
-    {
-        memcpy (dst, pseqno, sizeof(*pseqno));
-        dst += sizeof(*pseqno);
-    }
-    reckeys.buf_used = dst - reckeys.buf;
-    if (*pseqno)
-	(*pseqno)++;
-}
-
-static void addSortString (RecWord *p, const char *string, int length)
-{
-    struct sortKey *sk;
-
-    for (sk = sortKeys; sk; sk = sk->next)
-	if (sk->attrSet == p->attrSet && sk->attrUse == p->attrUse)
-	    return;
-
-    sk = (struct sortKey *) xmalloc (sizeof(*sk));
-    sk->next = sortKeys;
-    sortKeys = sk;
-
-    sk->string = (char *) xmalloc (length);
-    sk->length = length;
-    memcpy (sk->string, string, length);
-
-    sk->attrSet = p->attrSet;
-    sk->attrUse = p->attrUse;
-}
-
-static void addString (RecWord *p, const char *string, int length)
-{
-    assert (length > 0);
-    if (zebra_maps_is_sort (p->zebra_maps, p->reg_type))
-	addSortString (p, string, length);
-    else
-	addIndexString (p, string, length);
-}
-
-static void addIncompleteField (RecWord *p)
-{
-    const char *b = p->string;
-    int remain = p->length;
-    const char **map = 0;
-
-    if (remain > 0)
-	map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
-
-    while (map)
-    {
-	char buf[IT_MAX_WORD+1];
-	int i, remain;
-
-	/* Skip spaces */
-	while (map && *map && **map == *CHR_SPACE)
-	{
-	    remain = p->length - (b - p->string);
-	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
-	    else
-		map = 0;
-	}
-	if (!map)
-	    break;
-	i = 0;
-	while (map && *map && **map != *CHR_SPACE)
-	{
-	    const char *cp = *map;
-
-	    while (i < IT_MAX_WORD && *cp)
-		buf[i++] = *(cp++);
-	    remain = p->length - (b - p->string);
-	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
-	    else
-		map = 0;
-	}
-	if (!i)
-	    return;
-	addString (p, buf, i);
-    }
-    (p->seqnos[p->reg_type])++; /* to separate this from next one  */
-}
-
-static void addCompleteField (RecWord *p)
-{
-    const char *b = p->string;
-    char buf[IT_MAX_WORD+1];
-    const char **map = 0;
-    int i = 0, remain = p->length;
-
-    if (remain > 0)
-	map = zebra_maps_input (p->zebra_maps, p->reg_type, &b, remain);
-
-    while (remain > 0 && i < IT_MAX_WORD)
-    {
-	while (map && *map && **map == *CHR_SPACE)
-	{
-	    remain = p->length - (b - p->string);
-	    if (remain > 0)
-		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
-	    else
-		map = 0;
-	}
-	if (!map)
-	    break;
-
-	if (i && i < IT_MAX_WORD)
-	    buf[i++] = *CHR_SPACE;
-	while (map && *map && **map != *CHR_SPACE)
-	{
-	    const char *cp = *map;
-
-	    if (i >= IT_MAX_WORD)
-		break;
-	    while (i < IT_MAX_WORD && *cp)
-		buf[i++] = *(cp++);
-	    remain = p->length  - (b - p->string);
-	    if (remain > 0)
-		map = zebra_maps_input (p->zebra_maps, p->reg_type, &b,
-					remain);
-	    else
-		map = 0;
-	}
-    }
-    if (!i)
-	return;
-    addString (p, buf, i);
-}
-
-static void addRecordKey (RecWord *p)
-{
-    WRBUF wrbuf;
-    if ((wrbuf = zebra_replace(p->zebra_maps, p->reg_type, 0,
-			       p->string, p->length)))
-    {
-	p->string = wrbuf_buf(wrbuf);
-	p->length = wrbuf_len(wrbuf);
-    }
-    if (zebra_maps_is_complete (p->zebra_maps, p->reg_type))
-	addCompleteField (p);
-    else
-	addIncompleteField(p);
-}
-
-static void flushSortKeys (SYSNO sysno, int cmd)
-{
-    struct sortKey *sk = sortKeys;
-
-    sortIdx_sysno (sortIdx, sysno);
-    while (sk)
-    {
-	struct sortKey *sk_next = sk->next;
-	if (cmd >= 0)
-	{
-	    sortIdx_type (sortIdx, sk->attrUse);
-	    sortIdx_add (sortIdx, sk->string, sk->length);
-	}
-	xfree (sk->string);
-	xfree (sk);
-	sk = sk_next;
-    }
-    sortKeys = NULL;
-}
-
-static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys)
-{
-#if SU_SCHEME
-#else
-    unsigned char attrSet = (unsigned char) -1;
-    unsigned short attrUse = (unsigned short) -1;
-#endif
-    int seqno = 0;
-    int off = 0;
-    int ch = 0;
-
-    zebraExplain_recordCountIncrement (zti, cmd ? 1 : -1);
-    while (off < reckeys->buf_used)
-    {
-        const char *src = reckeys->buf + off;
-        struct it_key key;
-        int lead;
-    
-        lead = *src++;
-
-#if SU_SCHEME
-	if ((lead & 3) < 3)
-	{
-	    memcpy (&ch, src, sizeof(ch));
-	    src += sizeof(ch);
-	}
-#else
-        if (!(lead & 1))
-        {
-            memcpy (&attrSet, src, sizeof(attrSet));
-            src += sizeof(attrSet);
-        }
-        if (!(lead & 2))
-        {
-            memcpy (&attrUse, src, sizeof(attrUse));
-            src += sizeof(attrUse);
-        }
-#endif
-        if (key_buf_used + 1024 > (ptr_top-ptr_i)*sizeof(char*))
-            key_flush ();
-        ++ptr_i;
-
-        key_buf[ptr_top-ptr_i] = (char*)key_buf + key_buf_used;
-
-#if SU_SCHEME
-#else
-        ch = zebraExplain_lookupSU (zti, attrSet, attrUse);
-        if (ch < 0)
-        {
-            ch = zebraExplain_addSU (zti, attrSet, attrUse);
-            yaz_log (LOG_LOG, "addSU cmd=%d set=%d use=%d SU=%d",
-                     cmd, attrSet, attrUse, ch);
-        }
-#endif
-        assert (ch > 0);
-	key_buf_used += key_SU_encode (ch, ((char*)key_buf) + key_buf_used);
-
-        while (*src)
-            ((char*)key_buf) [key_buf_used++] = *src++;
-        src++;
-        ((char*)key_buf) [key_buf_used++] = '\0';
-        ((char*) key_buf)[key_buf_used++] = cmd;
-
-        if (lead & 60)
-            seqno += ((lead>>2) & 15)-1;
-        else
-        {
-            memcpy (&seqno, src, sizeof(seqno));
-            src += sizeof(seqno);
-        }
-        key.seqno = seqno;
-        key.sysno = sysno;
-        memcpy ((char*)key_buf + key_buf_used, &key, sizeof(key));
-        key_buf_used += sizeof(key);
-        off = src - reckeys->buf;
-    }
-    assert (off == reckeys->buf_used);
-}
-
-static const char **searchRecordKey (struct recKeys *reckeys,
+static const char **searchRecordKey (ZebraHandle zh,
+                                     struct recKeys *reckeys,
 				     int attrSetS, int attrUseS)
 {
     static const char *ws[32];
@@ -1049,7 +82,7 @@ static const char **searchRecordKey (struct recKeys *reckeys,
         ws[i] = NULL;
 
 #if SU_SCHEME
-    chS = zebraExplain_lookupSU (zti, attrSetS, attrUseS);
+    chS = zebraExplain_lookupSU (zh->service->zei, attrSetS, attrUseS);
     if (chS < 0)
 	return ws;
 #endif
@@ -1199,10 +232,11 @@ static void file_end (void *handle, off_t offset)
     p->file_moffset = offset;
 }
 
-static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
+static char *fileMatchStr (ZebraHandle zh, 
+                           struct recKeys *reckeys, struct recordGroup *rGroup,
                            const char *fname, const char *spec)
 {
-    static char dstBuf[2048];
+    static char dstBuf[2048];      /* static here ??? */
     char *dst = dstBuf;
     const char *s = spec;
     static const char **w;
@@ -1237,17 +271,17 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
 		attname_str[i] = '\0';
 	    }
 	    
-	    if ((attset = data1_get_attset (rGroup->dh, attset_str)))
+	    if ((attset = data1_get_attset (zh->service->dh, attset_str)))
 	    {
 		data1_att *att;
 		attSet = attset->reference;
-		att = data1_getattbyname(rGroup->dh, attset, attname_str);
+		att = data1_getattbyname(zh->service->dh, attset, attname_str);
 		if (att)
 		    attUse = att->value;
 		else
 		    attUse = atoi (attname_str);
 	    }
-            w = searchRecordKey (reckeys, attSet, attUse);
+            w = searchRecordKey (zh, reckeys, attSet, attUse);
             assert (w);
 
             if (*s == ')')
@@ -1366,12 +400,9 @@ static void recordLogPreamble (int level, const char *msg, void *info)
     log_event_start (NULL, NULL);
 }
 
-void addSchema (struct recExtractCtrl *p, Odr_oid *oid)
-{
-    zebraExplain_addSchema (zti, oid);
-}
 
-static int recordExtract (SYSNO *sysno, const char *fname,
+static int recordExtract (ZebraHandle zh,
+                          SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
                           struct file_read_info *fi,
 			  RecType recType, char *subType, void *clientData)
@@ -1391,10 +422,10 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         /* we are going to read from a file, so prepare the extraction */
 	int i;
 
-	reckeys.buf_used = 0;
-	reckeys.prevAttrUse = -1;
-	reckeys.prevAttrSet = -1;
-	reckeys.prevSeqNo = 0;
+	zh->keys.buf_used = 0;
+	zh->keys.prevAttrUse = -1;
+	zh->keys.prevAttrSet = -1;
+	zh->keys.prevSeqNo = 0;
 	
 	recordOffset = fi->file_moffset;
 	extractCtrl.offset = fi->file_moffset;
@@ -1404,18 +435,19 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 	extractCtrl.endf = file_end;
 	extractCtrl.fh = fi;
 	extractCtrl.subType = subType;
-	extractCtrl.init = wordInit;
-	extractCtrl.tokenAdd = addRecordKey;
-	extractCtrl.schemaAdd = addSchema;
-	extractCtrl.dh = rGroup->dh;
+	extractCtrl.init = extract_init;
+	extractCtrl.tokenAdd = extract_token_add;
+	extractCtrl.schemaAdd = extract_schema_add;
+	extractCtrl.dh = zh->service->dh;
+        extractCtrl.handle = zh;
 	for (i = 0; i<256; i++)
 	{
-	    if (zebra_maps_is_positioned(rGroup->zebra_maps, i))
+	    if (zebra_maps_is_positioned(zh->service->zebra_maps, i))
 		extractCtrl.seqno[i] = 1;
 	    else
 		extractCtrl.seqno[i] = 0;
 	}
-	extractCtrl.zebra_maps = rGroup->zebra_maps;
+	extractCtrl.zebra_maps = zh->service->zebra_maps;
 	extractCtrl.flagShowRecords = !rGroup->flagRw;
 
         if (!rGroup->flagRw)
@@ -1443,7 +475,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             }
             return 0;
         }
-        if (reckeys.buf_used == 0)
+        if (zh->keys.buf_used == 0)
         {
             /* the extraction process returned no information - the record
                is probably empty - unless flagShowRecords is in use */
@@ -1467,11 +499,11 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         {
             char *rinfo;
         
-            matchStr = fileMatchStr (&reckeys, rGroup, fname, 
+            matchStr = fileMatchStr (zh, &zh->keys, rGroup, fname, 
                                      rGroup->recordId);
             if (matchStr)
             {
-                rinfo = dict_lookup (matchDict, matchStr);
+                rinfo = dict_lookup (zh->service->matchDict, matchStr);
                 if (rinfo)
                     memcpy (sysno, rinfo+1, sizeof(*sysno));
             }
@@ -1496,18 +528,18 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         if (records_processed < rGroup->fileVerboseLimit)
             logf (LOG_LOG, "add %s %s " PRINTF_OFF_T, rGroup->recordType,
                   fname, recordOffset);
-        rec = rec_new (records);
+        rec = rec_new (zh->service->records);
 
         *sysno = rec->sysno;
 
-	recordAttr = rec_init_attr (zti, rec);
+	recordAttr = rec_init_attr (zh->service->zei, rec);
 
         if (matchStr)
         {
-            dict_insert (matchDict, matchStr, sizeof(*sysno), sysno);
+            dict_insert (zh->service->matchDict, matchStr, sizeof(*sysno), sysno);
         }
-        flushRecordKeys (*sysno, 1, &reckeys);
-	flushSortKeys (*sysno, 1);
+        extract_flushRecordKeys (zh, *sysno, 1, &zh->keys);
+	extract_flushSortKeys (zh, *sysno, 1, &zh->sortKeys);
 
         records_inserted++;
     }
@@ -1516,24 +548,25 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         /* record already exists */
         struct recKeys delkeys;
 
-        rec = rec_get (records, *sysno);
+        rec = rec_get (zh->service->records, *sysno);
         assert (rec);
 	
-	recordAttr = rec_init_attr (zti, rec);
+	recordAttr = rec_init_attr (zh->service->zei, rec);
 
-	if (recordAttr->runNumber == zebraExplain_runNumberIncrement (zti, 0))
+	if (recordAttr->runNumber ==
+            zebraExplain_runNumberIncrement (zh->service->zei, 0))
 	{
 	    logf (LOG_LOG, "skipped %s %s " PRINTF_OFF_T, rGroup->recordType,
 		  fname, recordOffset);
-	    flushSortKeys (*sysno, -1);
+	    extract_flushSortKeys (zh, *sysno, -1, &zh->sortKeys);
 	    rec_rm (&rec);
 	    logRecord (0);
 	    return 1;
 	}
         delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
-	flushSortKeys (*sysno, 0);
-        flushRecordKeys (*sysno, 0, &delkeys);
+	extract_flushSortKeys (zh, *sysno, 0, &zh->sortKeys);
+        extract_flushRecordKeys (zh, *sysno, 0, &delkeys);
         if (deleteFlag)
         {
             /* record going to be deleted */
@@ -1550,8 +583,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
                          rGroup->recordType, fname, recordOffset);
                 records_deleted++;
                 if (matchStr)
-                    dict_delete (matchDict, matchStr);
-                rec_del (records, &rec);
+                    dict_delete (zh->service->matchDict, matchStr);
+                rec_del (zh->service->records, &rec);
             }
 	    rec_rm (&rec);
             logRecord (0);
@@ -1571,7 +604,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
                 if (records_processed < rGroup->fileVerboseLimit)
                     logf (LOG_LOG, "update %s %s " PRINTF_OFF_T,
                         rGroup->recordType, fname, recordOffset);
-                flushRecordKeys (*sysno, 1, &reckeys);
+                extract_flushRecordKeys (zh, *sysno, 1, &zh->keys);
                 records_updated++;
             }
         }
@@ -1588,13 +621,13 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 
     /* update delete keys */
     xfree (rec->info[recInfo_delKeys]);
-    if (reckeys.buf_used > 0 && rGroup->flagStoreKeys == 1)
+    if (zh->keys.buf_used > 0 && rGroup->flagStoreKeys == 1)
     {
 #if 1
-        rec->size[recInfo_delKeys] = reckeys.buf_used;
-        rec->info[recInfo_delKeys] = reckeys.buf;
-        reckeys.buf = NULL;
-        reckeys.buf_max = 0;
+        rec->size[recInfo_delKeys] = zh->keys.buf_used;
+        rec->info[recInfo_delKeys] = zh->keys.buf;
+        zh->keys.buf = NULL;
+        zh->keys.buf_max = 0;
 #else
         rec->info[recInfo_delKeys] = xmalloc (reckeys.buf_used);
         rec->size[recInfo_delKeys] = reckeys.buf_used;
@@ -1609,14 +642,17 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     }
 
     /* save file size of original record */
-    zebraExplain_recordBytesIncrement (zti, - recordAttr->recordSize);
+    zebraExplain_recordBytesIncrement (zh->service->zei,
+                                       - recordAttr->recordSize);
     recordAttr->recordSize = fi->file_moffset - recordOffset;
     if (!recordAttr->recordSize)
 	recordAttr->recordSize = fi->file_max - recordOffset;
-    zebraExplain_recordBytesIncrement (zti, recordAttr->recordSize);
+    zebraExplain_recordBytesIncrement (zh->service->zei,
+                                       recordAttr->recordSize);
 
     /* set run-number for this record */
-    recordAttr->runNumber = zebraExplain_runNumberIncrement (zti, 0);
+    recordAttr->runNumber = zebraExplain_runNumberIncrement (zh->service->zei,
+                                                             0);
 
     /* update store data */
     xfree (rec->info[recInfo_storeData]);
@@ -1653,12 +689,12 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     recordAttr->recordOffset = recordOffset;
     
     /* commit this record */
-    rec_put (records, &rec);
+    rec_put (zh->service->records, &rec);
     logRecord (0);
     return 1;
 }
 
-int fileExtract (SYSNO *sysno, const char *fname, 
+int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname, 
                  const struct recordGroup *rGroupP, int deleteFlag)
 {
     int r, i, fd;
@@ -1695,10 +731,10 @@ int fileExtract (SYSNO *sysno, const char *fname,
     if (!rGroup->recordType)
     {
         sprintf (ext_res, "%srecordType.%s", gprefix, ext);
-        if (!(rGroup->recordType = res_get (common_resource, ext_res)))
+        if (!(rGroup->recordType = res_get (zh->service->res, ext_res)))
         {
             sprintf (ext_res, "%srecordType", gprefix);
-            rGroup->recordType = res_get (common_resource, ext_res);
+            rGroup->recordType = res_get (zh->service->res, ext_res);
         }
     }
     if (!rGroup->recordType)
@@ -1710,7 +746,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
     if (!*rGroup->recordType)
 	return 0;
     if (!(recType =
-	  recType_byName (rGroup->recTypes, rGroup->recordType, subType,
+	  recType_byName (zh->service->recTypes, rGroup->recordType, subType,
 			  &clientData)))
     {
         logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
@@ -1721,17 +757,17 @@ int fileExtract (SYSNO *sysno, const char *fname,
     if (!rGroup->recordId)
     {
         sprintf (ext_res, "%srecordId.%s", gprefix, ext);
-        rGroup->recordId = res_get (common_resource, ext_res);
+        rGroup->recordId = res_get (zh->service->res, ext_res);
     }
 
     /* determine database name */
     if (!rGroup->databaseName)
     {
         sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
-        if (!(rGroup->databaseName = res_get (common_resource, ext_res)))
+        if (!(rGroup->databaseName = res_get (zh->service->res, ext_res)))
         {
             sprintf (ext_res, "%sdatabase", gprefix);
-            rGroup->databaseName = res_get (common_resource, ext_res);
+            rGroup->databaseName = res_get (zh->service->res, ext_res);
         }
     }
     if (!rGroup->databaseName)
@@ -1741,12 +777,12 @@ int fileExtract (SYSNO *sysno, const char *fname,
     
     sprintf (ext_res, "%sexplainDatabase", gprefix);
     rGroup->explainDatabase =
-	atoi (res_get_def (common_resource, ext_res, "0"));
+	atoi (res_get_def (zh->service->res, ext_res, "0"));
 
     /* announce database */
-    if (zebraExplain_curDatabase (zti, rGroup->databaseName))
+    if (zebraExplain_curDatabase (zh->service->zei, rGroup->databaseName))
     {
-        if (zebraExplain_newDatabase (zti, rGroup->databaseName,
+        if (zebraExplain_newDatabase (zh->service->zei, rGroup->databaseName,
 				      rGroup->explainDatabase))
 	    return 0;
     }
@@ -1755,10 +791,10 @@ int fileExtract (SYSNO *sysno, const char *fname,
     {
         const char *sval;
         sprintf (ext_res, "%sstoreData.%s", gprefix, ext);
-        if (!(sval = res_get (common_resource, ext_res)))
+        if (!(sval = res_get (zh->service->res, ext_res)))
         {
             sprintf (ext_res, "%sstoreData", gprefix);
-            sval = res_get (common_resource, ext_res);
+            sval = res_get (zh->service->res, ext_res);
         }
         if (sval)
             rGroup->flagStoreData = atoi (sval);
@@ -1771,14 +807,14 @@ int fileExtract (SYSNO *sysno, const char *fname,
         const char *sval;
 
         sprintf (ext_res, "%sstoreKeys.%s", gprefix, ext);
-        sval = res_get (common_resource, ext_res);
+        sval = res_get (zh->service->res, ext_res);
 	if (!sval)
         {
             sprintf (ext_res, "%sstoreKeys", gprefix);
-            sval = res_get (common_resource, ext_res);
+            sval = res_get (zh->service->res, ext_res);
         }
 	if (!sval)
-	    sval = res_get (common_resource, "storeKeys");
+	    sval = res_get (zh->service->res, "storeKeys");
         if (sval)
             rGroup->flagStoreKeys = atoi (sval);
     }
@@ -1799,7 +835,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
     do
     {
         file_begin (fi);
-        r = recordExtract (sysno, fname, rGroup, deleteFlag, fi,
+        r = recordExtract (zh, sysno, fname, rGroup, deleteFlag, fi,
                            recType, subType, clientData);
     } while (r && !sysno && fi->file_more);
     file_read_stop (fi);
@@ -1808,53 +844,817 @@ int fileExtract (SYSNO *sysno, const char *fname,
     return r;
 }
 
-static int explain_extract (void *handle, Record rec, data1_node *n)
+
+int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
+                        const char *buf, size_t buf_size,
+                        const char *databaseName, int delete_flag,
+                        int test_mode, int *sysno,
+                        int store_keys, int store_data,
+                        const char *match_criteria)
 {
-    struct recordGroup *rGroup = (struct recordGroup*) handle;
+    RecordAttr *recordAttr;
+    struct recExtractCtrl extractCtrl;
+    int i, r;
+    char *matchStr;
+    RecType recType;
+    char subType[1024];
+    void *clientData;
+    const char *fname = "<no file>";
+    Record rec;
+    long recordOffset = 0;
+    struct zebra_fetch_control fc;
+
+    fc.fd = -1;
+    fc.record_int_buf = buf;
+    fc.record_int_len = buf_size;
+    fc.record_int_pos = 0;
+    fc.offset_end = 0;
+    fc.record_offset = 0;
+
+    extractCtrl.offset = 0;
+    extractCtrl.readf = zebra_record_int_read;
+    extractCtrl.seekf = zebra_record_int_seek;
+    extractCtrl.tellf = zebra_record_int_tell;
+    extractCtrl.endf = zebra_record_int_end;
+    extractCtrl.fh = &fc;
+
+    /* announce database */
+    if (zebraExplain_curDatabase (zh->service->zei, databaseName))
+    {
+        if (zebraExplain_newDatabase (zh->service->zei, databaseName, 0))
+	    return 0;
+    }
+    if (!(recType =
+	  recType_byName (zh->service->recTypes, recordType, subType,
+			  &clientData)))
+    {
+        logf (LOG_WARN, "No such record type: %s", recordType);
+        return 0;
+    }
+
+    zh->keys.buf_used = 0;
+    zh->keys.prevAttrUse = -1;
+    zh->keys.prevAttrSet = -1;
+    zh->keys.prevSeqNo = 0;
+    zh->sortKeys = 0;
+
+    extractCtrl.subType = subType;
+    extractCtrl.init = extract_init;
+    extractCtrl.tokenAdd = extract_token_add;
+    extractCtrl.schemaAdd = extract_schema_add;
+    extractCtrl.dh = zh->service->dh;
+    extractCtrl.handle = zh;
+    extractCtrl.zebra_maps = zh->service->zebra_maps;
+    extractCtrl.flagShowRecords = 0;
+    for (i = 0; i<256; i++)
+    {
+	if (zebra_maps_is_positioned(zh->service->zebra_maps, i))
+	    extractCtrl.seqno[i] = 1;
+	else
+	    extractCtrl.seqno[i] = 0;
+    }
+
+    r = (*recType->extract)(clientData, &extractCtrl);
+
+    if (r == RECCTRL_EXTRACT_EOF)
+	return 0;
+    else if (r == RECCTRL_EXTRACT_ERROR)
+    {
+	/* error occured during extraction ... */
+#if 1
+	yaz_log (LOG_WARN, "extract error");
+#else
+	if (rGroup->flagRw &&
+	    records_processed < rGroup->fileVerboseLimit)
+	{
+	    logf (LOG_WARN, "fail %s %s %ld", rGroup->recordType,
+		  fname, (long) recordOffset);
+	}
+#endif
+	return 0;
+    }
+    if (zh->keys.buf_used == 0)
+    {
+	/* the extraction process returned no information - the record
+	   is probably empty - unless flagShowRecords is in use */
+	if (test_mode)
+	    return 1;
+	logf (LOG_WARN, "No keys generated for record");
+	logf (LOG_WARN, " The file is probably empty");
+	return 1;
+    }
+    /* match criteria */
+
+
+    if (! *sysno)
+    {
+        /* new record */
+        if (delete_flag)
+        {
+	    logf (LOG_LOG, "delete %s %s %ld", recordType,
+		  fname, (long) recordOffset);
+            logf (LOG_WARN, "cannot delete record above (seems new)");
+            return 1;
+        }
+	logf (LOG_LOG, "add %s %s %ld", recordType, fname,
+	      (long) recordOffset);
+        rec = rec_new (zh->service->records);
+
+        *sysno = rec->sysno;
+
+	recordAttr = rec_init_attr (zh->service->zei, rec);
+
+        if (matchStr)
+        {
+            dict_insert (zh->service->matchDict, matchStr,
+                         sizeof(*sysno), sysno);
+        }
+        extract_flushRecordKeys (zh, *sysno, 1, &zh->keys);
+	extract_flushSortKeys (zh, *sysno, 1, &zh->sortKeys);
+    }
+    else
+    {
+        /* record already exists */
+        struct recKeys delkeys;
+
+        rec = rec_get (zh->service->records, *sysno);
+        assert (rec);
+	
+	recordAttr = rec_init_attr (zh->service->zei, rec);
+
+	if (recordAttr->runNumber ==
+	    zebraExplain_runNumberIncrement (zh->service->zei, 0))
+	{
+	    logf (LOG_LOG, "skipped %s %s %ld", recordType,
+		  fname, (long) recordOffset);
+	    rec_rm (&rec);
+	    return 1;
+	}
+        delkeys.buf_used = rec->size[recInfo_delKeys];
+	delkeys.buf = rec->info[recInfo_delKeys];
+	extract_flushSortKeys (zh, *sysno, 0, &zh->sortKeys);
+        extract_flushRecordKeys (zh, *sysno, 0, &delkeys);
+        if (delete_flag)
+        {
+            /* record going to be deleted */
+            if (!delkeys.buf_used)
+            {
+                logf (LOG_LOG, "delete %s %s %ld", recordType,
+                      fname, (long) recordOffset);
+                logf (LOG_WARN, "cannot delete file above, storeKeys false");
+            }
+            else
+            {
+		logf (LOG_LOG, "delete %s %s %ld", recordType,
+		      fname, (long) recordOffset);
+#if 0
+                if (matchStr)
+                    dict_delete (matchDict, matchStr);
+#endif
+                rec_del (zh->service->records, &rec);
+            }
+	    rec_rm (&rec);
+            return 1;
+        }
+        else
+        {
+            /* record going to be updated */
+            if (!delkeys.buf_used)
+            {
+                logf (LOG_LOG, "update %s %s %ld", recordType,
+                      fname, (long) recordOffset);
+                logf (LOG_WARN, "cannot update file above, storeKeys false");
+            }
+            else
+            {
+		logf (LOG_LOG, "update %s %s %ld", recordType,
+		      fname, (long) recordOffset);
+                extract_flushRecordKeys (zh, *sysno, 1, &zh->keys);
+            }
+        }
+    }
+    /* update file type */
+    xfree (rec->info[recInfo_fileType]);
+    rec->info[recInfo_fileType] =
+        rec_strdup (recordType, &rec->size[recInfo_fileType]);
+
+    /* update filename */
+    xfree (rec->info[recInfo_filename]);
+    rec->info[recInfo_filename] =
+        rec_strdup (fname, &rec->size[recInfo_filename]);
+
+    /* update delete keys */
+    xfree (rec->info[recInfo_delKeys]);
+    if (zh->keys.buf_used > 0 && store_keys == 1)
+    {
+        rec->size[recInfo_delKeys] = zh->keys.buf_used;
+        rec->info[recInfo_delKeys] = zh->keys.buf;
+        zh->keys.buf = NULL;
+        zh->keys.buf_max = 0;
+    }
+    else
+    {
+        rec->info[recInfo_delKeys] = NULL;
+        rec->size[recInfo_delKeys] = 0;
+    }
+
+    /* save file size of original record */
+    zebraExplain_recordBytesIncrement (zh->service->zei,
+				       - recordAttr->recordSize);
+#if 0
+    recordAttr->recordSize = fi->file_moffset - recordOffset;
+    if (!recordAttr->recordSize)
+	recordAttr->recordSize = fi->file_max - recordOffset;
+#else
+    recordAttr->recordSize = buf_size;
+#endif
+    zebraExplain_recordBytesIncrement (zh->service->zei,
+				       recordAttr->recordSize);
+
+    /* set run-number for this record */
+    recordAttr->runNumber =
+	zebraExplain_runNumberIncrement (zh->service->zei, 0);
+
+    /* update store data */
+    xfree (rec->info[recInfo_storeData]);
+    if (store_data == 1)
+    {
+        rec->size[recInfo_storeData] = recordAttr->recordSize;
+        rec->info[recInfo_storeData] = (char *)
+	    xmalloc (recordAttr->recordSize);
+#if 1
+        memcpy (rec->info[recInfo_storeData], buf, recordAttr->recordSize);
+#else
+        if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
+        {
+            logf (LOG_ERRNO|LOG_FATAL, "seek to %ld in %s",
+                  (long) recordOffset, fname);
+            exit (1);
+        }
+        if (read (fi->fd, rec->info[recInfo_storeData], recordAttr->recordSize)
+	    < recordAttr->recordSize)
+        {
+            logf (LOG_ERRNO|LOG_FATAL, "read %d bytes of %s",
+                  recordAttr->recordSize, fname);
+            exit (1);
+        }
+#endif
+    }
+    else
+    {
+        rec->info[recInfo_storeData] = NULL;
+        rec->size[recInfo_storeData] = 0;
+    }
+    /* update database name */
+    xfree (rec->info[recInfo_databaseName]);
+    rec->info[recInfo_databaseName] =
+        rec_strdup (databaseName, &rec->size[recInfo_databaseName]); 
+
+    /* update offset */
+    recordAttr->recordOffset = recordOffset;
+    
+    /* commit this record */
+    rec_put (zh->service->records, &rec);
+
+    return 0;
+}
+
+int explain_extract (void *handle, Record rec, data1_node *n)
+{
+    ZebraHandle zh = (ZebraHandle) handle;
     struct recExtractCtrl extractCtrl;
     int i;
 
-    if (zebraExplain_curDatabase (zti, rec->info[recInfo_databaseName]))
+    if (zebraExplain_curDatabase (zh->service->zei,
+				  rec->info[recInfo_databaseName]))
     {
-        if (zebraExplain_newDatabase (zti, rec->info[recInfo_databaseName], 0))
+	abort();
+        if (zebraExplain_newDatabase (zh->service->zei,
+				      rec->info[recInfo_databaseName], 0))
             abort ();
     }
 
-    reckeys.buf_used = 0;
-    reckeys.prevAttrUse = -1;
-    reckeys.prevAttrSet = -1;
-    reckeys.prevSeqNo = 0;
+    zh->keys.buf_used = 0;
+    zh->keys.prevAttrUse = -1;
+    zh->keys.prevAttrSet = -1;
+    zh->keys.prevSeqNo = 0;
+    zh->sortKeys = 0;
     
-    extractCtrl.init = wordInit;
-    extractCtrl.tokenAdd = addRecordKey;
-    extractCtrl.schemaAdd = addSchema;
-    extractCtrl.dh = rGroup->dh;
+    extractCtrl.init = extract_init;
+    extractCtrl.tokenAdd = extract_token_add;
+    extractCtrl.schemaAdd = extract_schema_add;
+    extractCtrl.dh = zh->service->dh;
     for (i = 0; i<256; i++)
 	extractCtrl.seqno[i] = 0;
-    extractCtrl.zebra_maps = rGroup->zebra_maps;
-    extractCtrl.flagShowRecords = !rGroup->flagRw;
+    extractCtrl.zebra_maps = zh->service->zebra_maps;
+    extractCtrl.flagShowRecords = 0;
+    extractCtrl.handle = handle;
     
     grs_extract_tree(&extractCtrl, n);
 
-    logf (LOG_DEBUG, "flush explain record, sysno=%d", rec->sysno);
+    logf (LOG_LOG, "flush explain record, sysno=%d", rec->sysno);
 
     if (rec->size[recInfo_delKeys])
     {
 	struct recKeys delkeys;
+	struct sortKey *sortKeys = 0;
 
 	delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
-	flushSortKeys (rec->sysno, 0);
-	flushRecordKeys (rec->sysno, 0, &delkeys);
+	extract_flushSortKeys (zh, rec->sysno, 0, &sortKeys);
+	extract_flushRecordKeys (zh, rec->sysno, 0, &delkeys);
     }
-    flushRecordKeys (rec->sysno, 1, &reckeys);
-    flushSortKeys (rec->sysno, 1);
+    extract_flushRecordKeys (zh, rec->sysno, 1, &zh->keys);
+    extract_flushSortKeys (zh, rec->sysno, 1, &zh->sortKeys);
 
     xfree (rec->info[recInfo_delKeys]);
-    rec->size[recInfo_delKeys] = reckeys.buf_used;
-    rec->info[recInfo_delKeys] = reckeys.buf;
-    reckeys.buf = NULL;
-    reckeys.buf_max = 0;
-
+    rec->size[recInfo_delKeys] = zh->keys.buf_used;
+    rec->info[recInfo_delKeys] = zh->keys.buf;
+    zh->keys.buf = NULL;
+    zh->keys.buf_max = 0;
     return 0;
 }
+
+void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
+                              int cmd, struct recKeys *reckeys)
+{
+#if SU_SCHEME
+#else
+    unsigned char attrSet = (unsigned char) -1;
+    unsigned short attrUse = (unsigned short) -1;
+#endif
+    int seqno = 0;
+    int off = 0;
+    int ch = 0;
+    ZebraExplainInfo zei = zh->service->zei;
+
+    if (!zh->key_buf)
+    {
+	int mem = 8*1024*1024;
+	zh->key_buf = (char**) xmalloc (mem);
+	zh->ptr_top = mem/sizeof(char*);
+	zh->ptr_i = 0;
+	zh->key_buf_used = 0;
+	zh->key_file_no = 0;
+    }
+    zebraExplain_recordCountIncrement (zei, cmd ? 1 : -1);
+    while (off < reckeys->buf_used)
+    {
+        const char *src = reckeys->buf + off;
+        struct it_key key;
+        int lead;
+    
+        lead = *src++;
+
+#if SU_SCHEME
+	if ((lead & 3) < 3)
+	{
+	    memcpy (&ch, src, sizeof(ch));
+	    src += sizeof(ch);
+	}
+#else
+        if (!(lead & 1))
+        {
+            memcpy (&attrSet, src, sizeof(attrSet));
+            src += sizeof(attrSet);
+        }
+        if (!(lead & 2))
+        {
+            memcpy (&attrUse, src, sizeof(attrUse));
+            src += sizeof(attrUse);
+        }
+#endif
+        if (zh->key_buf_used + 1024 > (zh->ptr_top-zh->ptr_i)*sizeof(char*))
+            extract_flushWriteKeys (zh);
+        ++(zh->ptr_i);
+        (zh->key_buf)[zh->ptr_top - zh->ptr_i] =
+	    (char*)zh->key_buf + zh->key_buf_used;
+#if SU_SCHEME
+#else
+        ch = zebraExplain_lookupSU (zei, attrSet, attrUse);
+        if (ch < 0)
+            ch = zebraExplain_addSU (zei, attrSet, attrUse);
+#endif
+        assert (ch > 0);
+	zh->key_buf_used +=
+	    key_SU_encode (ch,((char*)zh->key_buf) + zh->key_buf_used);
+
+        while (*src)
+            ((char*)zh->key_buf) [(zh->key_buf_used)++] = *src++;
+        src++;
+        ((char*)(zh->key_buf))[(zh->key_buf_used)++] = '\0';
+        ((char*)(zh->key_buf))[(zh->key_buf_used)++] = cmd;
+
+        if (lead & 60)
+            seqno += ((lead>>2) & 15)-1;
+        else
+        {
+            memcpy (&seqno, src, sizeof(seqno));
+            src += sizeof(seqno);
+        }
+        key.seqno = seqno;
+        key.sysno = sysno;
+        memcpy ((char*)zh->key_buf + zh->key_buf_used, &key, sizeof(key));
+        (zh->key_buf_used) += sizeof(key);
+        off = src - reckeys->buf;
+    }
+    assert (off == reckeys->buf_used);
+}
+
+void extract_flushWriteKeys (ZebraHandle zh)
+{
+    FILE *outf;
+    char out_fname[200];
+    char *prevcp, *cp;
+    struct encode_info encode_info;
+    int ptr_i = zh->ptr_i;
+#if SORT_EXTRA
+    int i;
+#endif
+    if (!zh->key_buf || ptr_i <= 0)
+        return;
+
+    (zh->key_file_no)++;
+    logf (LOG_LOG, "sorting section %d", (zh->key_file_no));
+#if !SORT_EXTRA
+    qsort (zh->key_buf + zh->ptr_top - ptr_i, ptr_i, sizeof(char*),
+	    key_qsort_compare);
+    extract_get_fname_tmp (zh, out_fname, zh->key_file_no);
+
+    if (!(outf = fopen (out_fname, "wb")))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fopen %s", out_fname);
+        exit (1);
+    }
+    logf (LOG_LOG, "writing section %d", zh->key_file_no);
+    prevcp = cp = (zh->key_buf)[zh->ptr_top - ptr_i];
+    
+    encode_key_init (&encode_info);
+    encode_key_write (cp, &encode_info, outf);
+    
+    while (--ptr_i > 0)
+    {
+        cp = (zh->key_buf)[zh->ptr_top - ptr_i];
+        if (strcmp (cp, prevcp))
+        {
+            encode_key_init (&encode_info);
+            encode_key_write (cp, &encode_info, outf);
+            prevcp = cp;
+        }
+        else
+            encode_key_write (cp + strlen(cp), &encode_info, outf);
+    }
+#else
+    qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_x_compare);
+    extract_get_fname_tmp (out_fname, key_file_no);
+
+    if (!(outf = fopen (out_fname, "wb")))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fopen %s", out_fname);
+        exit (1);
+    }
+    logf (LOG_LOG, "writing section %d", key_file_no);
+    i = ptr_i;
+    prevcp =  key_buf[ptr_top-i];
+    while (1)
+        if (!--i || strcmp (prevcp, key_buf[ptr_top-i]))
+        {
+            key_y_len = strlen(prevcp)+1;
+#if 0
+            logf (LOG_LOG, "key_y_len: %2d %02x %02x %s",
+                      key_y_len, prevcp[0], prevcp[1], 2+prevcp);
+#endif
+            qsort (key_buf + ptr_top-ptr_i, ptr_i - i,
+                                   sizeof(char*), key_y_compare);
+            cp = key_buf[ptr_top-ptr_i];
+            --key_y_len;
+            encode_key_init (&encode_info);
+            encode_key_write (cp, &encode_info, outf);
+            while (--ptr_i > i)
+            {
+                cp = key_buf[ptr_top-ptr_i];
+                encode_key_write (cp+key_y_len, &encode_info, outf);
+            }
+            if (!i)
+                break;
+            prevcp = key_buf[ptr_top-ptr_i];
+        }
+#endif
+    if (fclose (outf))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fclose %s", out_fname);
+        exit (1);
+    }
+    logf (LOG_LOG, "finished section %d", zh->key_file_no);
+    zh->ptr_i = 0;
+    zh->key_buf_used = 0;
+}
+
+void extract_add_index_string (RecWord *p, const char *string,
+                               int length)
+{
+    char *dst;
+    unsigned char attrSet;
+    unsigned short attrUse;
+    int lead = 0;
+    int diff = 0;
+    int *pseqno = &p->seqnos[p->reg_type];
+    ZebraHandle zh = p->extractCtrl->handle;
+    ZebraExplainInfo zei = zh->service->zei;
+    struct recKeys *keys = &zh->keys;
+
+    if (keys->buf_used+1024 > keys->buf_max)
+    {
+        char *b;
+
+        b = (char *) xmalloc (keys->buf_max += 128000);
+        if (keys->buf_used > 0)
+            memcpy (b, keys->buf, keys->buf_used);
+        xfree (keys->buf);
+        keys->buf = b;
+    }
+    dst = keys->buf + keys->buf_used;
+
+    attrSet = p->attrSet;
+    if (keys->buf_used > 0 && keys->prevAttrSet == attrSet)
+        lead |= 1;
+    else
+        keys->prevAttrSet = attrSet;
+    attrUse = p->attrUse;
+    if (keys->buf_used > 0 && keys->prevAttrUse == attrUse)
+        lead |= 2;
+    else
+        keys->prevAttrUse = attrUse;
+#if 1
+    diff = 1 + *pseqno - keys->prevSeqNo;
+    if (diff >= 1 && diff <= 15)
+        lead |= (diff << 2);
+    else
+        diff = 0;
+#endif
+    keys->prevSeqNo = *pseqno;
+    
+    *dst++ = lead;
+
+#if SU_SCHEME
+    if ((lead & 3) < 3)
+    {
+        int ch = zebraExplain_lookupSU (zei, attrSet, attrUse);
+        if (ch < 0)
+        {
+            ch = zebraExplain_addSU (zei, attrSet, attrUse);
+            yaz_log (LOG_LOG, "addSU set=%d use=%d SU=%d",
+                     attrSet, attrUse, ch);
+        }
+	assert (ch > 0);
+	memcpy (dst, &ch, sizeof(ch));
+	dst += sizeof(ch);
+    }
+#else
+    if (!(lead & 1))
+    {
+        memcpy (dst, &attrSet, sizeof(attrSet));
+        dst += sizeof(attrSet);
+    }
+    if (!(lead & 2))
+    {
+        memcpy (dst, &attrUse, sizeof(attrUse));
+        dst += sizeof(attrUse);
+    }
+#endif
+    *dst++ = p->reg_type;
+    memcpy (dst, string, length);
+    dst += length;
+    *dst++ = '\0';
+
+    if (!diff)
+    {
+        memcpy (dst, pseqno, sizeof(*pseqno));
+        dst += sizeof(*pseqno);
+    }
+    keys->buf_used = dst - keys->buf;
+    if (*pseqno)
+	(*pseqno)++;
+}
+
+static void extract_add_sort_string (RecWord *p, const char *string,
+				     int length)
+{
+    struct sortKey *sk;
+    ZebraHandle zh = p->extractCtrl->handle;
+    struct sortKey *sortKeys = zh->sortKeys;
+
+    for (sk = sortKeys; sk; sk = sk->next)
+	if (sk->attrSet == p->attrSet && sk->attrUse == p->attrUse)
+	    return;
+
+    sk = (struct sortKey *) xmalloc (sizeof(*sk));
+    sk->next = sortKeys;
+    sortKeys = sk;
+
+    sk->string = (char *) xmalloc (length);
+    sk->length = length;
+    memcpy (sk->string, string, length);
+
+    sk->attrSet = p->attrSet;
+    sk->attrUse = p->attrUse;
+}
+
+void extract_add_string (RecWord *p, const char *string, int length)
+{
+    assert (length > 0);
+    if (zebra_maps_is_sort (p->zebra_maps, p->reg_type))
+	extract_add_sort_string (p, string, length);
+    else
+	extract_add_index_string (p, string, length);
+}
+
+static void extract_add_incomplete_field (RecWord *p)
+{
+    const char *b = p->string;
+    int remain = p->length;
+    const char **map = 0;
+
+    if (remain > 0)
+	map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+
+    while (map)
+    {
+	char buf[IT_MAX_WORD+1];
+	int i, remain;
+
+	/* Skip spaces */
+	while (map && *map && **map == *CHR_SPACE)
+	{
+	    remain = p->length - (b - p->string);
+	    if (remain > 0)
+		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+	    else
+		map = 0;
+	}
+	if (!map)
+	    break;
+	i = 0;
+	while (map && *map && **map != *CHR_SPACE)
+	{
+	    const char *cp = *map;
+
+	    while (i < IT_MAX_WORD && *cp)
+		buf[i++] = *(cp++);
+	    remain = p->length - (b - p->string);
+	    if (remain > 0)
+		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+	    else
+		map = 0;
+	}
+	if (!i)
+	    return;
+	extract_add_string (p, buf, i);
+    }
+    (p->seqnos[p->reg_type])++; /* to separate this from next one  */
+}
+
+static void extract_add_complete_field (RecWord *p)
+{
+    const char *b = p->string;
+    char buf[IT_MAX_WORD+1];
+    const char **map = 0;
+    int i = 0, remain = p->length;
+
+    if (remain > 0)
+	map = zebra_maps_input (p->zebra_maps, p->reg_type, &b, remain);
+
+    while (remain > 0 && i < IT_MAX_WORD)
+    {
+	while (map && *map && **map == *CHR_SPACE)
+	{
+	    remain = p->length - (b - p->string);
+	    if (remain > 0)
+		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain);
+	    else
+		map = 0;
+	}
+	if (!map)
+	    break;
+
+	if (i && i < IT_MAX_WORD)
+	    buf[i++] = *CHR_SPACE;
+	while (map && *map && **map != *CHR_SPACE)
+	{
+	    const char *cp = *map;
+
+	    if (i >= IT_MAX_WORD)
+		break;
+	    while (i < IT_MAX_WORD && *cp)
+		buf[i++] = *(cp++);
+	    remain = p->length  - (b - p->string);
+	    if (remain > 0)
+		map = zebra_maps_input (p->zebra_maps, p->reg_type, &b,
+					remain);
+	    else
+		map = 0;
+	}
+    }
+    if (!i)
+	return;
+    extract_add_string (p, buf, i);
+}
+
+void extract_token_add (RecWord *p)
+{
+    WRBUF wrbuf;
+    if ((wrbuf = zebra_replace(p->zebra_maps, p->reg_type, 0,
+			       p->string, p->length)))
+    {
+	p->string = wrbuf_buf(wrbuf);
+	p->length = wrbuf_len(wrbuf);
+    }
+    if (zebra_maps_is_complete (p->zebra_maps, p->reg_type))
+	extract_add_complete_field (p);
+    else
+	extract_add_incomplete_field(p);
+}
+
+void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid)
+{
+    ZebraHandle zh = (ZebraHandle) (p->handle);
+    zebraExplain_addSchema (zh->service->zei, oid);
+}
+
+void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
+                            int cmd, struct sortKey **skp)
+{
+    struct sortKey *sk = *skp;
+    SortIdx sortIdx = zh->service->sortIdx;
+
+    sortIdx_sysno (sortIdx, sysno);
+    while (sk)
+    {
+	struct sortKey *sk_next = sk->next;
+	sortIdx_type (sortIdx, sk->attrUse);
+	sortIdx_add (sortIdx, sk->string, sk->length);
+	xfree (sk->string);
+	xfree (sk);
+	sk = sk_next;
+    }
+    *skp = 0;
+}
+
+void encode_key_init (struct encode_info *i)
+{
+    i->sysno = 0;
+    i->seqno = 0;
+    i->cmd = -1;
+}
+
+char *encode_key_int (int d, char *bp)
+{
+    if (d <= 63)
+        *bp++ = d;
+    else if (d <= 16383)
+    {
+        *bp++ = 64 + (d>>8);
+        *bp++ = d  & 255;
+    }
+    else if (d <= 4194303)
+    {
+        *bp++ = 128 + (d>>16);
+        *bp++ = (d>>8) & 255;
+        *bp++ = d & 255;
+    }
+    else
+    {
+        *bp++ = 192 + (d>>24);
+        *bp++ = (d>>16) & 255;
+        *bp++ = (d>>8) & 255;
+        *bp++ = d & 255;
+    }
+    return bp;
+}
+
+void encode_key_write (char *k, struct encode_info *i, FILE *outf)
+{
+    struct it_key key;
+    char *bp = i->buf;
+
+    while ((*bp++ = *k++))
+        ;
+    memcpy (&key, k+1, sizeof(struct it_key));
+    bp = encode_key_int ( (key.sysno - i->sysno) * 2 + *k, bp);
+    if (i->sysno != key.sysno)
+    {
+        i->sysno = key.sysno;
+        i->seqno = 0;
+    }
+    else if (!i->seqno && !key.seqno && i->cmd == *k)
+	return;
+    bp = encode_key_int (key.seqno - i->seqno, bp);
+    i->seqno = key.seqno;
+    i->cmd = *k;
+    if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fwrite");
+        exit (1);
+    }
+}
+

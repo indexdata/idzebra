@@ -1,2 +1,2 @@
 
-SUBDIRS=gils usmarc
+SUBDIRS=gils usmarc api

@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 1994-2001, Index Data 
+ * Copyright (C) 1994-2002, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zserver.h,v 1.51 2001-10-15 19:53:43 adam Exp $
+ * $Id: zserver.h,v 1.52 2002-02-20 17:30:01 adam Exp $
  */
 
 #if HAVE_SYS_TIMES_H
@@ -47,6 +47,7 @@ struct zebra_service {
     ISAMD isamd;
 #endif
     Dict dict;
+    Dict matchDict;
     SortIdx sortIdx;
     int registerState; /* 0 (no commit pages), 1 (use commit pages) */
     time_t registerChange;
@@ -56,6 +57,7 @@ struct zebra_service {
     Res res;
     ZebraLockHandle server_lock_cmt;
     ZebraLockHandle server_lock_org;
+
     char *server_path_prefix;
     data1_handle dh;
     ZebraMaps zebra_maps;
@@ -98,6 +100,12 @@ struct zebra_session {
     int key_file_no;
     char *admin_databaseName;
 
+    ZebraLockHandle lock_normal;
+    ZebraLockHandle lock_shadow;
+
+    int trans_no;
+    int seqno;
+    int last_val;
     int destroyed;
     ZebraSet sets;
     int errCode;
@@ -107,6 +115,7 @@ struct zebra_session {
     struct tms tms1;
     struct tms tms2;    
 #endif
+    struct recordGroup rGroup;
 };
 
 struct rank_control {
@@ -167,6 +176,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
 			  ZebraSet sset, RSET rset,
 			  Z_SortKeySpecList *sort_sequence, int *sort_status);
 void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset);
+void resultSetInvalidate (ZebraHandle zh);
 
 void zebra_sort (ZebraHandle zh, ODR stream,
 		 int num_input_setnames, const char **input_setnames,
@@ -202,6 +212,15 @@ void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no);
 void zebra_index_merge (ZebraHandle zh);
 
 
+int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
+                        const char *buf, size_t buf_size,
+                        const char *databaseName, int delete_flag,
+                        int test_mode, int *sysno,
+                        int store_keys, int store_data,
+                        const char *match_criteria);
+
+void extract_flushWriteKeys (ZebraHandle zh);
+
 struct zebra_fetch_control {
     off_t offset_end;
     off_t record_offset;
@@ -218,5 +237,13 @@ off_t zebra_record_int_seek (void *fh, off_t offset);
 off_t zebra_record_int_tell (void *fh);
 int zebra_record_int_read (void *fh, char *buf, size_t count);
 void zebra_record_int_end (void *fh, off_t offset);
+
+void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
+                              int cmd, struct recKeys *reckeys);
+void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
+                            int cmd, struct sortKey **skp);
+void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid);
+void extract_token_add (RecWord *p);
+int explain_extract (void *handle, Record rec, data1_node *n);
 
 YAZ_END_CDECL

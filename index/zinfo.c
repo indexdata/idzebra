@@ -1,85 +1,9 @@
 /*
- * Copyright (C) 1994-2000, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: zinfo.c,v $
- * Revision 1.22  2001-10-15 19:53:43  adam
- * POSIX thread updates. First work on term sets.
- *
- * Revision 1.21  2000/12/05 10:01:44  adam
- * Fixed bug regarding user-defined attribute sets.
- *
- * Revision 1.20  2000/11/29 14:24:01  adam
- * Script configure uses yaz pthreads options. Added locking for
- * zebra_register_{lock,unlock}.
- *
- * Revision 1.19  2000/07/07 12:49:20  adam
- * Optimized resultSetInsert{Rank,Sort}.
- *
- * Revision 1.18  2000/03/20 19:08:36  adam
- * Added remote record import using Z39.50 extended services and Segment
- * Requests.
- *
- * Revision 1.17  1999/07/14 10:53:51  adam
- * Updated various routines to handle missing explain schema.
- *
- * Revision 1.16  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.15  1999/01/25 13:47:54  adam
- * Fixed bug.
- *
- * Revision 1.14  1998/11/04 16:31:32  adam
- * Fixed bug regarding recordBytes in databaseInfo.
- *
- * Revision 1.13  1998/11/03 10:17:09  adam
- * Fixed bug regarding creation of some data1 nodes for Explain records.
- *
- * Revision 1.12  1998/10/13 20:37:11  adam
- * Changed the way attribute sets are saved in Explain database to
- * reflect "dynamic" OIDs.
- *
- * Revision 1.11  1998/06/09 12:16:48  adam
- * Implemented auto-generation of CategoryList records.
- *
- * Revision 1.10  1998/06/08 14:43:15  adam
- * Added suport for EXPLAIN Proxy servers - added settings databasePath
- * and explainDatabase to facilitate this. Increased maximum number
- * of databases and attributes in one register.
- *
- * Revision 1.9  1998/06/02 12:10:27  adam
- * Fixed bug related to attributeDetails.
- *
- * Revision 1.8  1998/05/20 10:12:20  adam
- * Implemented automatic EXPLAIN database maintenance.
- * Modified Zebra to work with ASN.1 compiled version of YAZ.
- *
- * Revision 1.7  1998/03/05 08:45:13  adam
- * New result set model and modular ranking system. Moved towards
- * descent server API. System information stored as "SGML" records.
- *
- * Revision 1.6  1998/02/17 10:29:27  adam
- * Moved towards 'automatic' EXPLAIN database.
- *
- * Revision 1.5  1997/10/27 14:33:05  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- * Revision 1.4  1997/09/25 14:57:08  adam
- * Added string.h.
- *
- * Revision 1.3  1996/05/22 08:21:59  adam
- * Added public ZebDatabaseInfo structure.
- *
- * Revision 1.2  1996/05/14 06:16:41  adam
- * Compact use/set bytes used in search service.
- *
- * Revision 1.1  1996/05/13 14:23:07  adam
- * Work on compaction of set/use bytes in dictionary.
- *
+ * $Id: zinfo.c,v 1.23 2002-02-20 17:30:01 adam Exp $
  */
 
 #include <stdlib.h>

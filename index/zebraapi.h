@@ -1,48 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: zebraapi.h,v $
- * Revision 1.12  2000-04-05 09:49:35  adam
- * On Unix, zebra/z'mbol uses automake.
- *
- * Revision 1.11  2000/03/20 19:08:36  adam
- * Added remote record import using Z39.50 extended services and Segment
- * Requests.
- *
- * Revision 1.10  2000/03/15 15:00:31  adam
- * First work on threaded version.
- *
- * Revision 1.9  2000/02/24 12:31:17  adam
- * Added zebra_string_norm.
- *
- * Revision 1.8  1999/11/30 13:48:03  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.7  1999/11/04 15:00:45  adam
- * Implemented delete result set(s).
- *
- * Revision 1.6  1999/02/17 11:29:57  adam
- * Fixed in record_fetch. Minor updates to API.
- *
- * Revision 1.5  1998/09/22 10:48:19  adam
- * Minor changes in search API.
- *
- * Revision 1.4  1998/09/02 13:53:18  adam
- * Extra parameter decode added to search routines to implement
- * persistent queries.
- *
- * Revision 1.3  1998/06/22 11:36:48  adam
- * Added authentication check facility to zebra.
- *
- * Revision 1.2  1998/06/13 00:14:09  adam
- * Minor changes.
- *
- * Revision 1.1  1998/06/12 12:22:13  adam
- * Work on Zebra API.
- *
+ * $Id: zebraapi.h,v 1.13 2002-02-20 17:30:01 adam Exp $
  */
+
+#ifndef ZEBRAAPI_H
+#define ZEBRAAPI_H
 
 #include <yaz/odr.h>
 #include <yaz/oid.h>
@@ -137,4 +102,18 @@ YAZ_EXPORT void zebra_admin_import_segment (ZebraHandle zh,
 					    Z_Segment *segment);
 
 void zebra_admin_import_end (ZebraHandle zh);
+
+void zebra_begin_trans (ZebraHandle zh);
+void zebra_end_trans (ZebraHandle zh);
+
+void zebra_commit (ZebraHandle zh);
+
+void zebra_init (ZebraHandle zh);
+void zebra_compact (ZebraHandle zh);
+void zebra_repository_update (ZebraHandle zh);
+void zebra_repository_delete (ZebraHandle zh);
+void zebra_repository_show (ZebraHandle zh);
+int zebra_record_insert (ZebraHandle zh, const char *buf, int len);
+
 YAZ_END_CDECL				      
+#endif

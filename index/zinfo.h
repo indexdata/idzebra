@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.11  2001-10-15 19:53:43  adam
+ * Revision 1.12  2002-02-20 17:30:01  adam
+ * Work on new API. Locking system re-implemented
+ *
+ * Revision 1.11  2001/10/15 19:53:43  adam
  * POSIX thread updates. First work on term sets.
  *
  * Revision 1.10  2000/05/15 12:56:37  adam
@@ -47,6 +50,7 @@
 #define ZINFO_H
 
 #include <yaz/data1.h>
+#include "zebraapi.h"
 #include "recindex.h"
 
 YAZ_BEGIN_CDECL

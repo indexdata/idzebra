@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: recgrs.c,v $
- * Revision 1.41  2001-05-22 21:01:47  adam
+ * Revision 1.42  2002-02-20 17:30:01  adam
+ * Work on new API. Locking system re-implemented
+ *
+ * Revision 1.41  2001/05/22 21:01:47  adam
  * Removed print of data1 tree on stdout so that inetd works again.
  *
  * Revision 1.40  2001/03/29 21:31:31  adam
@@ -511,6 +514,9 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
     if ((oid_ent_to_oid (&oe, oidtmp)))
 	(*p->schemaAdd)(p, oidtmp);
 
+#if 0
+    data1_pr_tree (p->dh, n, stdout);
+#endif
     if (dumpkeys(n, p, 0) < 0)
     {
 	data1_free_tree(p->dh, n);

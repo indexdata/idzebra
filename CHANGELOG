@@ -1,4 +1,10 @@
 
+--- 1.2 2002/MM/DD
+
+New Zebra API. Locking system re-implemented. Beware!
+
+--- 1.1.stable 2002/02/20
+
 Rank weight can be controlled with attribute type 9. Default
 value is 34. Recommended values between 1-36.
 

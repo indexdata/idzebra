@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 1994-2001, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.81 2001-11-19 23:29:09 adam Exp $
+ * $Id: main.c,v 1.82 2002-02-20 17:30:01 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
@@ -14,28 +14,19 @@
 #endif
 
 #include <yaz/data1.h>
+#include "zebraapi.h"
+#include "zserver.h"
 #include "index.h"
 #include "recindex.h"
 
-#ifndef ZEBRASDR
-#define ZEBRASDR 0
-#endif
-
-#if ZEBRASDR
-#include "zebrasdr.h"
-#endif
-
 char *prog;
-
-Res common_resource = 0;
-
 
 int main (int argc, char **argv)
 {
     int ret;
     int cmd = 0;
     char *arg;
-    char *configName = FNAME_CONFIG;
+    char *configName = 0;
     int nsections = 0;
     int disableCommit = 0;
     size_t mem_max = 0;
@@ -43,6 +34,8 @@ int main (int argc, char **argv)
     char nbuf[100];
 #endif
     struct recordGroup rGroupDef;
+    ZebraService zs = 0;
+    ZebraHandle zh = 0;
 
     nmem_init ();
 
@@ -52,10 +45,6 @@ int main (int argc, char **argv)
     yaz_log_init_prefix (nbuf);
 #endif
 
-#if ZEBRASDR
-    zebraSdr_std ();
-    rGroupDef.useSDR = 0;
-#endif
     rGroupDef.groupName = NULL;
     rGroupDef.databaseName = NULL;
     rGroupDef.path = NULL;
@@ -67,10 +56,6 @@ int main (int argc, char **argv)
     rGroupDef.databaseNamePath = 0;
     rGroupDef.explainDatabase = 0;
     rGroupDef.fileVerboseLimit = 100000;
-    rGroupDef.zebra_maps = NULL;
-    rGroupDef.dh = data1_create ();
-    rGroupDef.recTypes = recTypes_init (rGroupDef.dh);
-    recTypes_default_handlers (rGroupDef.recTypes);
 
     prog = *argv;
     if (argc < 2)
@@ -93,25 +78,18 @@ int main (int argc, char **argv)
 	" -v <level>    Set logging to <level>.\n"
         " -l <file>     Write log to <file>.\n"
         " -f <n>        Display information for the first <n> records.\n"
-#if ZEBRASDR
-	" -S            Use SDRKit\n"
-#endif
         " -V            Show version.\n", *argv
                  );
         exit (1);
     }
     while ((ret = options ("sVt:c:g:d:m:v:nf:l:"
-#if ZEBRASDR
-			   "S"
-#endif
 			   , argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
-            const char *rval;
             if(cmd == 0) /* command */
             {
-                if (!common_resource)
+                if (!zs)
                 {
 #if ZMBOL
                     logf (LOG_LOG, "zmbol version %s %s",
@@ -120,27 +98,9 @@ int main (int argc, char **argv)
                     logf (LOG_LOG, "zebra version %s %s",
                           ZEBRAVER, ZEBRADATE);
 #endif
-                    common_resource = res_open (configName ?
-                                                configName : FNAME_CONFIG);
-                    if (!common_resource)
-                    {
-                        logf (LOG_FATAL, "cannot read file `%s'", configName);
-                        exit (1);
-                    }
-                    data1_set_tabpath (rGroupDef.dh, res_get (common_resource,
-							      "profilePath"));
+                    zs = zebra_start (configName ? configName : FNAME_CONFIG);
 
-		    rGroupDef.bfs =
-			bfs_create (res_get (common_resource, "register"));
-                    if (!rGroupDef.bfs)
-                    {
-                        logf (LOG_FATAL, "Cannot access register");
-                        exit(1);
-                    }
-
-                    bf_lockDir (rGroupDef.bfs,
-				res_get (common_resource, "lockDir"));
-		    rGroupDef.zebra_maps = zebra_maps_open (common_resource);
+                    zh = zebra_open (zs);
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
@@ -154,83 +114,23 @@ int main (int argc, char **argv)
                     cmd = 'd';
 		else if (!strcmp (arg, "init"))
 		{
-		    zebraIndexUnlock();	
-		    rval = res_get (common_resource, "shadow");
-		    zebraIndexLock (rGroupDef.bfs, 0, rval);
-		    if (rval && *rval)
-			bf_cache (rGroupDef.bfs, rval);
-		    zebraIndexLockMsg ("w");
-		    bf_reset (rGroupDef.bfs);
+                    zebra_init (zh);
 		}
                 else if (!strcmp (arg, "commit"))
                 {
-                    rval = res_get (common_resource, "shadow");
-                    zebraIndexLock (rGroupDef.bfs, 1, rval);
-                    if (rval && *rval)
-                        bf_cache (rGroupDef.bfs, rval);
-                    else
-                    {
-                        logf (LOG_FATAL, "Cannot perform commit");
-                        logf (LOG_FATAL, "No shadow area defined");
-                        exit (1);
-                    }
-                    if (bf_commitExists (rGroupDef.bfs))
-                    {
-                        logf (LOG_LOG, "commit start");
-                        zebraIndexLockMsg ("c");
-                        zebraIndexWait (1);
-                        logf (LOG_LOG, "commit execute");
-                        bf_commitExec (rGroupDef.bfs);
-#ifndef WIN32
-                        sync ();
-#endif
-                        zebraIndexLockMsg ("d");
-                        zebraIndexWait (0);
-                        logf (LOG_LOG, "commit clean");
-                        bf_commitClean (rGroupDef.bfs, rval);
-                    }
-                    else
-                        logf (LOG_LOG, "nothing to commit");
+                    zebra_commit (zh);
                 }
                 else if (!strcmp (arg, "clean"))
                 {
-                    rval = res_get (common_resource, "shadow");
-                    zebraIndexLock (rGroupDef.bfs, 1, rval);
-                    if (bf_commitExists (rGroupDef.bfs))
-                    {
-                        zebraIndexLockMsg ("d");
-                        zebraIndexWait (0);
-                        logf (LOG_LOG, "commit clean");
-                        bf_commitClean (rGroupDef.bfs, rval);
-                    }
-                    else
-                        logf (LOG_LOG, "nothing to clean");
+                    assert (!"todo");
                 }
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
                 {
-		    Records records;
-                    rval = res_get (common_resource, "shadow");
-                    zebraIndexLock (rGroupDef.bfs, 0, rval);
-                    if (rval && *rval)
-                    {
-                        bf_cache (rGroupDef.bfs, rval);
-                        zebraIndexLockMsg ("r");
-                    }
-		    records = rec_open (rGroupDef.bfs, 0, 0);
-                    rec_prstat (records);
-		    rec_close (&records);
-                    inv_prstat (rGroupDef.bfs);
+                    assert (!"todo");
                 }
                 else if (!strcmp (arg, "compact"))
                 {
-                    rval = res_get (common_resource, "shadow");
-                    zebraIndexLock (rGroupDef.bfs, 0, rval);
-                    if (rval && *rval)
-                    {
-                        bf_cache (rGroupDef.bfs, rval);
-                        zebraIndexLockMsg ("r");
-                    }
-                    inv_compact(rGroupDef.bfs);
+                    zebra_compact (zh);
                 }
                 else
                 {
@@ -240,81 +140,28 @@ int main (int argc, char **argv)
             }
 	    else
             {
-                struct recordGroup rGroup;
-#if ZMBOL
-#else
-		/* For zebra, delete lock file and reset register */
-		if (rGroupDef.flagRw)
-		{
-		    zebraIndexUnlock();
-		    bf_reset (rGroupDef.bfs);
-		}
-#endif
-                rval = res_get (common_resource, "shadow");
-                zebraIndexLock (rGroupDef.bfs, 0, rval);
-		if (rGroupDef.flagRw)
-		{
-		    if (rval && *rval && !disableCommit)
-		    {
-			bf_cache (rGroupDef.bfs, rval);
-			zebraIndexLockMsg ("r");
-		    }
-		    else
-		    {
-			bf_cache (rGroupDef.bfs, 0);
-			zebraIndexLockMsg ("w");
-		    }
-		    zebraIndexWait (0);
-		}
-                memcpy (&rGroup, &rGroupDef, sizeof(rGroup));
-                rGroup.path = arg;
+                memcpy (&zh->rGroup, &rGroupDef, sizeof(rGroupDef));
+                zebra_begin_trans (zh);
+
+                zh->rGroup.path = arg;
                 switch (cmd)
                 {
                 case 'u':
-                    if (!key_open (&rGroup, mem_max))
-		    {
-			logf (LOG_LOG, "updating %s", rGroup.path);
-			repositoryUpdate (&rGroup);
-			nsections = key_close (&rGroup);
-		    }
-                    break;
-                case 'U':
-                    if (!key_open (&rGroup, mem_max))
-		    {
-			logf (LOG_LOG, "updating (pass 1) %s", rGroup.path);
-			repositoryUpdate (&rGroup);
-			key_close (&rGroup);
-		    }
-                    nsections = 0;
+                    zebra_repository_update (zh);
                     break;
                 case 'd':
-                    if (!key_open (&rGroup,mem_max))
-		    {
-			logf (LOG_LOG, "deleting %s", rGroup.path);
-			repositoryDelete (&rGroup);
-			nsections = key_close (&rGroup);
-		    }
+                    zebra_repository_delete (zh);
                     break;
                 case 's':
-                    logf (LOG_LOG, "dumping %s", rGroup.path);
-                    repositoryShow (&rGroup);
+                    logf (LOG_LOG, "dumping %s", zh->rGroup.path);
+                    zebra_repository_show (zh);
                     nsections = 0;
-                    break;
-                case 'm':
-                    nsections = -1;
                     break;
                 default:
                     nsections = 0;
                 }
                 cmd = 0;
-                if (nsections)
-                {
-                    logf (LOG_LOG, "merging with index");
-                    key_input (rGroup.bfs, nsections, 60, common_resource);
-#ifndef WIN32
-                    sync ();
-#endif
-                }
+                zebra_end_trans (zh);
                 log_event_end (NULL, NULL);
             }
         }
@@ -325,7 +172,7 @@ int main (int argc, char **argv)
 #else
             fprintf (stderr, "Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
 #endif
-	    fprintf (stderr, " (C) 1994-2001, Index Data ApS\n");
+	    fprintf (stderr, " (C) 1994-2002, Index Data ApS\n");
 #ifdef WIN32
 #ifdef _DEBUG
             fprintf (stderr, " WIN32 Debug\n");
@@ -358,20 +205,11 @@ int main (int argc, char **argv)
             rGroupDef.recordType = arg;
         else if (ret == 'n')
             disableCommit = 1;
-#if ZEBRASDR
-	else if (ret == 'S')
-	    rGroupDef.useSDR = 1;
-#endif
         else
             logf (LOG_WARN, "unknown option '-%s'", arg);
     }
-    recTypes_destroy (rGroupDef.recTypes);
-    if (common_resource)
-    {
-        zebraIndexUnlock ();
-	bfs_destroy (rGroupDef.bfs);
-    }
-    data1_destroy (rGroupDef.dh);
+    zebra_close (zh);
+    zebra_stop (zs);
     exit (0);
     return 0;
 }

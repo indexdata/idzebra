@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.20  2000-10-16 20:16:00  adam
+ * Revision 1.21  2002-02-20 17:30:01  adam
+ * Work on new API. Locking system re-implemented
+ *
+ * Revision 1.20  2000/10/16 20:16:00  adam
  * Fixed problem with close of lock file for WIN32.
  *
  * Revision 1.19  2000/09/05 14:04:05  adam
@@ -86,12 +89,13 @@
 #include <errno.h>
 
 #include "index.h"
+#include "zserver.h"
 
 static ZebraLockHandle server_lock_main = NULL;
 static ZebraLockHandle server_lock_cmt = NULL;
 static ZebraLockHandle server_lock_org = NULL;
 
-int zebraIndexWait (int commitPhase)
+int zebraIndexWait (ZebraHandle zh, int commitPhase)
 {
     ZebraLockHandle h;
 
@@ -101,7 +105,7 @@ int zebraIndexWait (int commitPhase)
     {
 	char path[1024];
 
-	zebra_lock_prefix (common_resource, path);
+	zebra_lock_prefix (zh->service->res, path);
 	strcat (path, FNAME_COMMIT_LOCK);
 	server_lock_cmt = zebra_lock_create (path, 1);
 	if (!server_lock_cmt)
@@ -116,7 +120,7 @@ int zebraIndexWait (int commitPhase)
     {
 	char path[1024];
 
-	zebra_lock_prefix (common_resource, path);
+	zebra_lock_prefix (zh->service->res, path);
 	strcat (path, FNAME_ORG_LOCK);
 	server_lock_org = zebra_lock_create (path, 1);
 	if (!server_lock_org)
@@ -153,7 +157,7 @@ int zebraIndexWait (int commitPhase)
 }
 
 
-void zebraIndexLockMsg (const char *str)
+void zebraIndexLockMsg (ZebraHandle zh, const char *str)
 {
     char path[1024];
     int l, r, fd;
@@ -168,17 +172,17 @@ void zebraIndexLockMsg (const char *str)
         logf (LOG_FATAL|LOG_ERRNO, "write lock file");
         exit (1);
     }
-    zebra_lock_prefix (common_resource, path);
+    zebra_lock_prefix (zh->service->res, path);
     strcat (path, FNAME_TOUCH_TIME);
     fd = creat (path, 0666);
     close (fd);
 }
 
-void zebraIndexUnlock (void)
+void zebraIndexUnlock (ZebraHandle zh)
 {
     char path[1024];
     
-    zebra_lock_prefix (common_resource, path);
+    zebra_lock_prefix (zh->service->res, path);
     strcat (path, FNAME_MAIN_LOCK);
 #ifdef WIN32
     zebra_lock_destroy (server_lock_main);
@@ -192,7 +196,8 @@ void zebraIndexUnlock (void)
     server_lock_main = 0;
 }
 
-int zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
+int zebraIndexLock (BFiles bfs, ZebraHandle zh, int commitNow,
+                    const char *rval)
 {
     char path[1024];
     char buf[256];
@@ -201,7 +206,7 @@ int zebraIndexLock (BFiles bfs, int commitNow, const char *rval)
     if (server_lock_main)
         return 0;
 
-    zebra_lock_prefix (common_resource, path);
+    zebra_lock_prefix (zh->service->res, path);
     strcat (path, FNAME_MAIN_LOCK);
     while (1)
     {
