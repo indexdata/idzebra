@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test2.sh,v 1.4 2003-05-06 17:39:01 adam Exp $
+# $Id: test2.sh,v 1.5 2003-05-06 20:09:28 adam Exp $
 echo "Testing with storekeys (zebra2.cfg)"
 echo "init..."
 rm -f idx.log log
@@ -85,5 +85,3 @@ rm -f idx.log log
 rm -f records/esdd000[12].grs 
 rm -f zebrasrv.pid
 rm -f srv.log
-
-echo ok

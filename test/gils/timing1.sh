@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: timing1.sh,v 1.4 2003-05-06 17:39:01 adam Exp $
+# $Id: timing1.sh,v 1.5 2003-05-06 20:09:28 adam Exp $
 # tests that updates are reflected immediately # in the registers.
 # Repeatedly modifies a record and counts hits.
 # Test 1: with good sleeps in every between - should pass always
@@ -131,10 +131,9 @@ grep "^Result count: 10$" log || exit 1
 
 echo "stopping server..."
 test -f zebrasrv.pid || exit 1
-kill -9 `cat zebrasrv.pid` || exit 1
+kill `cat zebrasrv.pid` || exit 1
 rm -f idx.log log
 rm -f records/esdd000[12].grs 
 rm -f zebrasrv.pid
 rm -f srv.log
 
-echo ok

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop01.sh,v 1.2 2003-05-06 17:39:01 adam Exp $
+# $Id: stop01.sh,v 1.3 2003-05-06 20:09:28 adam Exp $
 # test start and stop of the server with -1
 
 echo "initializing"
@@ -22,15 +22,14 @@ sleep 1
 echo "  checking that it runs... "
 test -f zebrasrv.pid || exit 1
 PID=`cat zebrasrv.pid`
-ps -p $PID >/dev/null || exit 1
+ps -p $PID |grep $PID >/dev/null || exit 1
 
 echo "  connecting to it..."
 ../testclient localhost:9901 utah > log || exit 1
 sleep 1
 
 echo "  checking that server does not run any more"
-ps -p $PID >/dev/null && exit 1
+ps -p $PID | grep $PID >/dev/null && exit 1
 
-echo ok
 # clean up
 rm -rf reg idx.log srv.log zebrasrv.pid

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: timing2.sh,v 1.4 2003-05-06 17:39:01 adam Exp $ 
+# $Id: timing2.sh,v 1.5 2003-05-06 20:09:28 adam Exp $ 
 # Demonstrated that updates depend on file timestamps
 
 echo "Testing timings of updates"
@@ -64,10 +64,9 @@ grep "^Result count: 9$" log || exit 1
 
 echo "stopping server..."
 test -f zebrasrv.pid || exit 1
-kill -9 `cat zebrasrv.pid` || exit 1
+kill `cat zebrasrv.pid` || exit 1
 rm -f idx.log log timeref[12]
 rm -f records/esdd000[12].grs 
 rm -f zebrasrv.pid
 rm -f srv.log
 
-echo ok

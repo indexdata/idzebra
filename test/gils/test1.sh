@@ -1,9 +1,7 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.4 2003-05-06 17:39:01 adam Exp $
+# $Id: test1.sh,v 1.5 2003-05-06 20:09:28 adam Exp $
 echo "testing without stored keys (zebra1.cfg)"
 
-echo "See if servers are running...."
-ps ax|grep zebrasrv
 sleep 1
 
 echo  "initializing..."
@@ -55,4 +53,3 @@ test -f zebrasrv.pid || exit 1
 kill `cat zebrasrv.pid` || exit 1
 rm -f zebrasrv.pid
 
-echo "ok"

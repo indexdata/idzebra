@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop02.sh,v 1.2 2003-05-06 17:39:01 adam Exp $
+# $Id: stop02.sh,v 1.3 2003-05-06 20:09:28 adam Exp $
 # test start and stop of the server with -S
 #
 # FIXME - this test does not currently pass  (H 22-oct-2002)
@@ -25,14 +25,14 @@ sleep 1
 echo "  checking that it runs... "
 test -f zebrasrv.pid || exit 1
 PID=`cat zebrasrv.pid`
-ps -p $PID >/dev/null || exit 1
+ps -p $PID |grep $PID >/dev/null || exit 1
 
 echo "  connecting to it..."
 ../testclient localhost:9901 utah > log || exit 1
 sleep 1
 
 echo "  checking that it still runs..."
-ps -p $PID >/dev/null || exit 1
+ps -p $PID | grep $PID >/dev/null || exit 1
 
 echo "  connecting again, with a delay..."
 ../testclient -d 5 localhost:9901 utah > log &
@@ -43,8 +43,7 @@ kill  $PID
 
 sleep 1
 echo "  checking that it is dead..."
-ps -p $PID >/dev/null && exit 1
+ps -p $PID | grep $PID >/dev/null && exit 1
 
-echo ok
 # clean up
 rm -rf reg idx.log srv.log zebrasrv.pid
