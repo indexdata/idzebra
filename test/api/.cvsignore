@@ -1,7 +1,7 @@
 .deps
 Makefile
 Makefile.in
-t1
-t2
+t[0-9]
 *.mf
 *.LCK
+t[0-9].log

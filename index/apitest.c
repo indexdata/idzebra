@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.12 2002-08-02 19:26:55 adam Exp $
+/* $Id: apitest.c,v 1.13 2003-05-20 13:52:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -197,7 +197,7 @@ int main (int argc, char **argv)
 	sprintf (setname, "%d", argno);
 
 	/* fire up the search */
-	zebra_search_rpn (zh, odr_input, odr_output, query, setname, &hits);
+	zebra_search_RPN (zh, query, setname, &hits);
 	
 	/* status ... */
         zebra_result (zh, &errCode, &errString);

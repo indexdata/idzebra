@@ -1,4 +1,4 @@
-/* $Id: t2.c,v 1.5 2003-05-20 12:52:50 adam Exp $
+/* $Id: t2.c,v 1.6 2003-05-20 13:52:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,20 +20,21 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
+#include <yaz/log.h>
 #include <zebraapi.h>
 
 int main(int argc, char **argv)
 {
-    int ret, hits;
+    int exit_code = 0;
+    int hits;
     ZebraService zs;
     ZebraHandle zh;
     const char *myrec =
         "<gils>\n"
         "  <title>My title</title>\n"
         "</gils>\n";
-    ODR odr_input, odr_output;
+
+    yaz_log_init_file("t2.log");
 
     nmem_init ();
 
@@ -44,7 +45,11 @@ int main(int argc, char **argv)
     zebra_record_insert (zh, myrec, strlen(myrec));
 
     hits = zebra_search_PQF (zh, "@attr 1=4 my", "set1");
-    printf ("hits: %d\n", hits);
+    if (hits < 1)
+    {
+        yaz_log(LOG_FATAL, "At least one hit expected");
+        exit_code = 1;
+    }
 
     zebra_end_trans (zh);
     zebra_commit (zh);
@@ -53,5 +58,5 @@ int main(int argc, char **argv)
 
     nmem_exit ();
     xmalloc_trav ("x");
-    exit (0);
+    exit (exit_code);
 }

@@ -1,4 +1,4 @@
-/* $Id: t3.c,v 1.1 2003-05-19 21:37:38 adam Exp $
+/* $Id: t3.c,v 1.2 2003-05-20 13:52:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,7 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
+#include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <zebraapi.h>
 
@@ -33,6 +33,9 @@ int main(int argc, char **argv)
         "<gils>\n"
         "  <title>My title</title>\n"
         "</gils>\n";
+
+    yaz_log_init_file("t3.log");
+
     nmem_init ();
     
     zs = zebra_start("t2.cfg");
@@ -61,7 +64,7 @@ int main(int argc, char **argv)
         zebra_begin_trans (zh, 0);
         
         sprintf(setname, "s%d", i+1);
-        zebra_search_rpn (zh, odr_input, odr_output, query, setname, &hits);
+        zebra_search_RPN (zh, query, setname, &hits);
 
         zebra_end_trans (zh);
         zebra_end_trans (zh);

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.100 2003-05-20 12:52:50 adam Exp $
+/* $Id: zebraapi.c,v 1.101 2003-05-20 13:52:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -744,7 +744,7 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
     return 0;
 }
 
-void zebra_search_rpn (ZebraHandle zh, ODR decode, ODR stream,
+void zebra_search_RPN (ZebraHandle zh,
 		       Z_RPNQuery *query, const char *setname, int *hits)
 {
     ASSERTZH;
@@ -1893,21 +1893,6 @@ int zebra_delete_record (ZebraHandle zh,
   zebra_search_RPN is the same as zebra_search_rpn, except that read locking
   is not mandatory. (it's repeatable now, also in zebraapi.c)
 */
-
-void zebra_search_RPN (ZebraHandle zh, Z_RPNQuery *query,
-                       const char *setname, int *hits)
-{
-    zh->hits = 0;
-    *hits = 0;
-
-    if (zebra_begin_read (zh))
-    	return;
-    resultSetAddRPN (zh, query, zh->num_basenames, zh->basenames, setname);
-
-    zebra_end_read (zh);
-
-    *hits = zh->hits;
-}
 
 int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
 		      const char *setname)

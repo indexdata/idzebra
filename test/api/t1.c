@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.2 2002-08-02 19:26:57 adam Exp $
+/* $Id: t1.c,v 1.3 2003-05-20 13:52:41 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,8 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
+#include <yaz/log.h>
 #include <zebraapi.h>
 
 int main(int argc, char **argv)
@@ -29,6 +28,7 @@ int main(int argc, char **argv)
     ZebraService zs;
     ZebraHandle zh;
 
+    yaz_log_init_file("t1.log");
     nmem_init();
     zs = zebra_start("t1.cfg");
     zh = zebra_open (zs);
