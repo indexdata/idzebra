@@ -2,17 +2,18 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.90 2002-06-19 11:37:11 adam Exp $
+ * $Id: main.c,v 1.91 2002-06-19 13:19:43 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <time.h>
 #ifdef WIN32
 #include <io.h>
 #else
 #include <unistd.h>
+#include <sys/time.h>
 #endif
+#include <time.h>
 #if HAVE_SYS_TIMES_H
 #include <sys/times.h>
 #endif
