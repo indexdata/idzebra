@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.98 2002-09-17 12:27:12 adam Exp $
+/* $Id: zserver.c,v 1.99 2002-09-17 21:17:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -481,14 +481,14 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 		yaz_log (LOG_LOG, "database: %s", toKeep->databaseName);
 
                 if (zebra_select_database(zh, toKeep->databaseName))
-                    return;
+                    return 0;
 	    }
             else
             {
                 yaz_log (LOG_WARN, "no database supplied for ES Update");
                 rr->errcode = 1008;
                 rr->errstring = "database";
-                return;
+                return 0;
             }
 	    if (notToKeep)
 	    {
