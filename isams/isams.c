@@ -1,10 +1,13 @@
 /*
- * Copyright (c) 1995-1999, Index Data.
+ * Copyright (c) 1995-2001, Index Data.
  * See the file LICENSE for details.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isams.c,v $
- * Revision 1.1  1999-11-30 14:02:45  adam
+ * Revision 1.2  2001-10-26 20:22:31  adam
+ * Less LOG_LOG messages.
+ *
+ * Revision 1.1  1999/11/30 14:02:45  adam
  * Moved isams.
  *
  * Revision 1.5  1999/07/14 10:59:27  adam
@@ -197,14 +200,16 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
     pp->buf = (char *) xmalloc(is->block_size*2);
     pp->block_no = pos/is->block_size;
     pp->block_offset = pos - pp->block_no * is->block_size;
-    logf (LOG_LOG, "isams: isams_pp_open off=%d no=%d",
-	  pp->block_offset, pp->block_no);
+    if (is->debug)
+        logf (LOG_LOG, "isams: isams_pp_open off=%d no=%d",
+              pp->block_offset, pp->block_no);
     if (pos)
     {
 	bf_read (is->bf, pp->block_no, 0, 0, pp->buf);
 	bf_read (is->bf, pp->block_no+1, 0, 0, pp->buf + is->block_size);
 	memcpy(&pp->numKeys, pp->buf + pp->block_offset, sizeof(int));
-	logf (LOG_LOG, "isams: isams_pp_open numKeys=%d", pp->numKeys);
+        if (is->debug)
+	    logf (LOG_LOG, "isams: isams_pp_open numKeys=%d", pp->numKeys);
 	pp->block_offset += sizeof(int);
     }
     return pp;
