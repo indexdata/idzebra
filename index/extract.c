@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.100  2000-03-20 19:08:36  adam
+ * Revision 1.101  2000-05-15 13:02:39  adam
+ * Minor change.
+ *
+ * Revision 1.100  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *
@@ -1354,8 +1357,9 @@ static int recordExtract (SYSNO *sysno, const char *fname,
                is probably empty - unless flagShowRecords is in use */
             if (!rGroup->flagRw)
                 return 1;
-            logf (LOG_WARN, "No keys generated for file %s", fname);
-            logf (LOG_WARN, " The file is probably empty");
+	    
+	    logf (LOG_WARN, "empty %s %s %ld", rGroup->recordType,
+		  fname, (long) recordOffset);
             return 1;
         }
     }
