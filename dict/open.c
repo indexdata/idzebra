@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.10  1996-05-24 14:46:04  adam
+ * Revision 1.11  1996-10-29 14:00:05  adam
+ * Page size given by DICT_DEFAULT_PAGESIZE in dict.h.
+ *
+ * Revision 1.10  1996/05/24 14:46:04  adam
  * Added dict_grep_cmap function to define user-mapping in grep lookups.
  *
  * Revision 1.9  1996/02/02  13:43:51  adam
@@ -57,8 +60,7 @@ Dict dict_open (const char *name, int cache, int rw)
     sprintf (resource_str, "dict.%s.pagesize", name);
 
     dict->grep_cmap = NULL;
-    page_size = atoi (res_get_def (common_resource, resource_str, 
-                                   DICT_DEFAULT_PAGESIZE));
+    page_size = DICT_DEFAULT_PAGESIZE;
     if (page_size < 2048)
     {
         logf (LOG_WARN, "Resource %s was too small. Set to 2048",

@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.22 1996-05-22 08:26:46 adam Exp $
+# $Id: Makefile,v 1.23 1996-10-29 14:00:00 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -22,12 +22,12 @@ all: $(LIB)
 
 alll: $(LIB) $(TPROG1) $(TPROG2)
 
-$(TPROG1): $(TPROG1).o $(LIB) ../lib/bfile.a ../lib/alexutil.a ../lib/dfa.a
+$(TPROG1): $(TPROG1).o $(LIB) ../lib/bfile.a ../lib/zebrautl.a ../lib/dfa.a
 	$(CC) $(CFLAGS) -o $(TPROG1) $(TPROG1).o $(LIB) \
-		../lib/bfile.a ../lib/dfa.a ../lib/alexutil.a $(YAZLIB)
+		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a $(YAZLIB)
 
-$(TPROG2): $(TPROG2).o $(LIB) ../lib/alexutil.a
-	$(CC) $(CFLAGS) -o $(TPROG2) $(TPROG2).o ../lib/alexutil.a $(YAZLIB)
+$(TPROG2): $(TPROG2).o $(LIB) ../lib/zebrautl.a
+	$(CC) $(CFLAGS) -o $(TPROG2) $(TPROG2).o ../lib/zebrautl.a $(YAZLIB)
 
 $(LIB): $(PO)
 	rm -f $(LIB)

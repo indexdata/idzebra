@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dictext.c,v $
- * Revision 1.5  1996-01-31 21:03:59  adam
+ * Revision 1.6  1996-10-29 14:00:02  adam
+ * Page size given by DICT_DEFAULT_PAGESIZE in dict.h.
+ *
+ * Revision 1.5  1996/01/31 21:03:59  adam
  * Extra options.
  *
  * Revision 1.4  1995/09/04  12:33:31  adam
@@ -27,7 +30,7 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <alexutil.h>
+#include <zebrautl.h>
 
 char *prog;
 

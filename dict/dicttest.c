@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.20  1996-03-20 09:35:16  adam
+ * Revision 1.21  1996-10-29 14:00:03  adam
+ * Page size given by DICT_DEFAULT_PAGESIZE in dict.h.
+ *
+ * Revision 1.20  1996/03/20 09:35:16  adam
  * Function dict_lookup_grep got extra parameter, init_pos, which marks
  * from which position in pattern approximate pattern matching should occur.
  *
@@ -81,6 +84,7 @@
 #include <ctype.h>
 
 #include <dict.h>
+#include <zebrautl.h>
 
 char *prog;
 static Dict dict;
