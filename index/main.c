@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.44  1996-10-29 14:09:48  adam
+ * Revision 1.45  1996-11-08 11:10:26  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.44  1996/10/29 14:09:48  adam
  * Use of cisam system - enabled if setting isamc is 1.
  *
  * Revision 1.43  1996/06/06 12:08:42  quinn
@@ -305,7 +311,7 @@ int main (int argc, char **argv)
                         zebraIndexLockMsg ("r");
                     }
                     rec_prstat ();
-                    inv_prstat (FNAME_DICT, FNAME_ISAM);
+                    inv_prstat ();
                 }
                 else
                 {

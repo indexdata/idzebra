@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.55  1996-11-04 14:07:44  adam
+ * Revision 1.56  1996-11-08 11:10:32  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.55  1996/11/04 14:07:44  adam
  * Moved truncation code to trunc.c.
  *
  * Revision 1.54  1996/10/29 14:09:52  adam
@@ -317,6 +323,134 @@ static int grep_handle (char *name, const char *info, void *p)
     return 0;
 }
 
+static int term_pre (char **src, const char *ct1, const char *ct2)
+{
+    char *s1, *s0 = *src;
+    char **map;
+
+    /* skip white space */
+    while (*s0)
+    {
+        if (ct1 && strchr (ct1, *s0))
+            break;
+        if (ct2 && strchr (ct2, *s0))
+            break;
+        s1 = s0;
+        map = map_chrs_input (&s1, strlen(s1));
+        if (**map != *CHR_SPACE)
+            break;
+        s0 = s1;
+    }
+    *src = s0;
+    return *s0;
+}
+
+static int term_100 (char **src, char *dst)
+{
+    char *s0, *s1, **map;
+    int i = 0;
+
+    if (!term_pre (src, NULL, NULL))
+        return 0;
+    s0 = *src;
+    while (*s0)
+    {
+        s1 = s0;
+        map = map_chrs_input (&s0, strlen(s0));
+        if (**map == *CHR_SPACE)
+            break;
+        while (s1 < s0)
+        {
+            if (!isalnum (*s1))
+                dst[i++] = '\\';
+            dst[i++] = *s1++;
+        }
+    }
+    dst[i] = '\0';
+    *src = s0;
+    return i;
+}
+
+static int term_101 (char **src, char *dst)
+{
+    char *s0, *s1, **map;
+    int i = 0;
+
+    if (!term_pre (src, "#", "#"))
+        return 0;
+    s0 = *src;
+    while (*s0)
+    {
+        if (*s0 == '#')
+        {
+            dst[i++] = '.';
+            dst[i++] = '*';
+            s0++;
+        }
+        else
+        {
+            s1 = s0;
+            map = map_chrs_input (&s0, strlen(s0));
+            if (**map == *CHR_SPACE)
+                break;
+            while (s1 < s0)
+            {
+                if (!isalnum (*s1))
+                    dst[i++] = '\\';
+                dst[i++] = *s1++;
+            }
+        }
+    }
+    dst[i] = '\0';
+    *src = s0;
+    return i;
+}
+
+
+static int term_103 (char **src, char *dst, int *errors)
+{
+    int i = 0;
+    char *s0, *s1, **map;
+
+    if (!term_pre (src, "\\()[].*+?|", "("))
+        return 0;
+    s0 = *src;
+    if (errors && *s0 == '+' && s0[1] && s0[2] == '+' && s0[3] &&
+        isdigit (s0[1]))
+    {
+        *errors = s0[1] - '0';
+        s0 += 3;
+        if (*errors > 3)
+            *errors = 3;
+    }
+    while (*s0)
+    {
+        if (strchr ("\\()[].*+?|-", *s0))
+            dst[i++] = *s0++;
+        else
+        {
+            s1 = s0;
+            map = map_chrs_input (&s0, strlen(s0));
+            if (**map == *CHR_SPACE)
+                break;
+            while (s1 < s0)
+            {
+                if (!isalnum (*s1))
+                    dst[i++] = '\\';
+                dst[i++] = *s1++;
+            }
+        }
+    }
+    dst[i] = '\0';
+    *src = s0;
+    return i;
+}
+
+static int term_102 (char **src, char *dst)
+{
+    return term_103 (src, dst, NULL);
+}
+
 /* gen_regular_rel - generate regular expression from relation
  *  val:     border value (inclusive)
  *  islt:    1 if <=; 0 if >=.
@@ -427,7 +561,7 @@ static void gen_regular_rel (char *dst, int val, int islt)
 }
 
 static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                            const char *term_sub,
+                            char **term_sub,
                             char *term_dict,
                             oid_value attributeSet,
                             struct grep_info *grep_info,
@@ -440,29 +574,40 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
     attr_init (&relation, zapt, 2);
     relation_value = attr_find (&relation, NULL);
-    term_value = atoi (term_sub);
 
     switch (relation_value)
     {
     case 1:
+        if (!term_100 (term_sub, term_dict))
+            return 0;
+        term_value = atoi (term_dict);
         if (term_value <= 0)
             return 1;
         logf (LOG_DEBUG, "Relation <");
         gen_regular_rel (term_dict + strlen(term_dict), term_value-1, 1);
         break;
     case 2:
+        if (!term_100 (term_sub, term_dict))
+            return 0;
+        term_value = atoi (term_dict);
         if (term_value < 0)
             return 1;
         logf (LOG_DEBUG, "Relation <=");
         gen_regular_rel (term_dict + strlen(term_dict), term_value, 1);
         break;
     case 4:
+        if (!term_100 (term_sub, term_dict))
+            return 0;
+        term_value = atoi (term_dict);
         if (term_value < 0)
             term_value = 0;
         logf (LOG_DEBUG, "Relation >=");
         gen_regular_rel (term_dict + strlen(term_dict), term_value, 0);
         break;
     case 5:
+        if (!term_100 (term_sub, term_dict))
+            return 0;
+        term_value = atoi (term_dict);
         if (term_value < 0)
             term_value = 0;
         logf (LOG_DEBUG, "Relation >");
@@ -480,25 +625,19 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     return 1;
 }
 
-static void verbatim_char (int ch, int *indx, char *dst)
-{
-    if (!isalnum (ch))
-        dst[(*indx)++] = '\\';
-    dst[(*indx)++] = ch;
-}
-
 static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                       const char *term_sub, int regType,
+                       char **term_sub, int regType,
                        oid_value attributeSet, struct grep_info *grep_info,
                        int num_bases, char **basenames)
 {
     char term_dict[2*IT_MAX_WORD+2];
-    int i, j, r, base_no;
+    int j, r, base_no;
     AttrType truncation;
     int truncation_value;
     AttrType use;
     int use_value;
     oid_value curAttributeSet = attributeSet;
+    char *termp;
 
     attr_init (&use, zapt, 1);
     use_value = attr_find (&use, &curAttributeSet);
@@ -516,6 +655,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         data1_local_attribute *local_attr;
         int max_pos, prefix_len = 0;
 
+        termp = *term_sub;
         attp = att_getentbyatt (curAttributeSet, use_value);
         if (!attp)
         {
@@ -555,20 +695,18 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         term_dict[prefix_len++] = 1;
         term_dict[prefix_len++] = regType;
         term_dict[prefix_len] = '\0';
-        if (!relational_term (zi, zapt, term_sub, term_dict,
+        if (!relational_term (zi, zapt, &termp, term_dict,
                               attributeSet, grep_info, &max_pos))
         {
-            const char *cp;
-
             j = prefix_len;
             switch (truncation_value)
             {
             case -1:         /* not specified */
             case 100:        /* do not truncate */
                 term_dict[j++] = '(';
-                for (i = 0; term_sub[i]; i++)
-                    verbatim_char (term_sub[i], &j, term_dict);
-                strcpy (term_dict+j, ")");
+                if (!term_100 (&termp, term_dict + j))
+                    return 0;
+                strcat (term_dict, ")");
                 r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
                                       &max_pos, 0, grep_handle);
                 if (r)
@@ -576,9 +714,9 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 break;
             case 1:          /* right truncation */
                 term_dict[j++] = '(';
-                for (i = 0; term_sub[i]; i++)
-                    verbatim_char (term_sub[i], &j, term_dict);
-                strcpy (term_dict+j, ".*)");
+                if (!term_100 (&termp, term_dict + j))
+                    return 0;
+                strcat (term_dict, ".*)");
                 dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
                                   &max_pos, 0, grep_handle);
                 break;
@@ -588,40 +726,35 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 return -1;
             case 101:        /* process # in term */
                 term_dict[j++] = '(';
-                for (i=0; term_sub[i]; i++)
-                    if (term_sub[i] == '#' && i > 2)
-                    {
-                        term_dict[j++] = '.';
-                        term_dict[j++] = '*';
-                    }
-                    else
-                        verbatim_char (term_sub[i], &j, term_dict);
-                strcpy (term_dict+j, ")");
+                if (!term_101 (&termp, term_dict + j))
+                    return 0;
+                strcat (term_dict, ")");
                 r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
                                       &max_pos, 0, grep_handle);
                 if (r)
-                    logf (LOG_WARN, "dict_lookup_grep err, trunc=#: %d",
-                          r);
+                    logf (LOG_WARN, "dict_lookup_grep err, trunc=#: %d", r);
                 break;
-            case 102:        /* regular expression */
-		sprintf (term_dict + j, "(%s)", term_sub);
+            case 102:        /* Regexp-1 */
+                term_dict[j++] = '(';
+                if (!term_102 (&termp, term_dict + j))
+                    return 0;
+                strcat (term_dict, ")");
+                logf (LOG_DEBUG, "Regexp-1 tolerance=%d", r);
                 r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
                                       &max_pos, 0, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=regular: %d",
                           r);
                 break;
-            case 103:        /* regular expression with error correction */
-                cp = term_sub;
-                r = 0;
-		if (*cp == '*' && cp[1] && cp[2])
-                {
-                    r = atoi (cp+1);
-                    cp += 2;
-                }
-		sprintf (term_dict + j, "(%s)", cp);
+             case 103:       /* Regexp-1 */
+                r = 1;
+                term_dict[j++] = '(';
+                if (!term_103 (&termp, term_dict + j, &r))
+                    return 0;
+                strcat (term_dict, ")");
+                logf (LOG_DEBUG, "Regexp-2 tolerance=%d", r);
                 r = dict_lookup_grep (zi->dict, term_dict, r, grep_info,
-                                      &max_pos, j, grep_handle);
+                                      &max_pos, 2, grep_handle);
                 if (r)
                     logf (LOG_WARN, "dict_lookup_grep err, trunc=eregular: %d",
                           r);
@@ -629,8 +762,9 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
             }
         }
     }
+    *term_sub = termp;
     logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
-    return 0;
+    return 1;
 }
 
 static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
@@ -682,16 +816,17 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
 {
     rset_relevance_parms parms;
     char termz[IT_MAX_WORD+1];
-    char term_sub[IT_MAX_WORD+1];
+    char *termp = termz;
     struct grep_info grep_info;
-    char *p0 = termz;
     RSET result;
     int term_index = 0;
+    int r;
 
     parms.key_size = sizeof(struct it_key);
     parms.max_rec = 100;
     parms.cmp = key_compare;
     parms.is = zi->isam;
+    parms.isc = zi->isamc;
     parms.no_terms = 0;
 
     if (zapt->term->which != Z_Term_general)
@@ -709,34 +844,10 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     grep_info.isam_p_buf = NULL;
     while (1)
     {
-        char **map;
-        char *p2, *p1;
-
-        p1 = p0;
-        while (*(p0 = p1))
-        {
-            map = map_chrs_input (&p1, strlen(p1));
-            if (**map != *CHR_SPACE)
-                break;
-        }
-        if (!*p0)
+        r = field_term (zi, zapt, &termp, 'w', attributeSet, &grep_info,
+                        num_bases, basenames);
+        if (r <= 0)
             break;
-        
-        p1 = p0;
-        while (*(p2 = p1))
-        {
-            map = map_chrs_input (&p1, strlen(p1));
-            if (**map == *CHR_SPACE)
-                break;
-        }
-        if (p2 == p0)
-            break;
-        memcpy (term_sub, p0, p2-p0);
-        term_sub[p2-p0] = '\0';
-        p0 = p2;
-        if (field_term (zi, zapt, term_sub, 'w', attributeSet, &grep_info,
-                        num_bases, basenames))
-            return NULL;
 #ifdef TERM_COUNT
         for (; term_index < grep_info.isam_p_indx; term_index++)
             grep_info.term_no[term_index] = parms.no_terms;
@@ -765,6 +876,8 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
     char termz[IT_MAX_WORD+1];
     struct grep_info grep_info;
     RSET result;
+    char *termp = termz;
+    int r;
 
     if (zapt->term->which != Z_Term_general)
     {
@@ -780,9 +893,8 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
     grep_info.isam_p_size = 0;
     grep_info.isam_p_buf = NULL;
 
-    if (field_term (zi, zapt, termz, 'p', attributeSet, &grep_info,
-                    num_bases, basenames))
-        return NULL;
+    r = field_term (zi, zapt, &termp, 'p', attributeSet, &grep_info,
+                    num_bases, basenames);
     result = rset_trunc (zi, grep_info.isam_p_buf, grep_info.isam_p_indx);
 #ifdef TERM_COUNT
     xfree(grep_info.term_no);
@@ -883,10 +995,9 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
                                    int num_bases, char **basenames)
 {
     char termz[IT_MAX_WORD+1];
-    char term_sub[IT_MAX_WORD+1];
-    char *p0 = termz;
+    char *termp = termz;
     RSET rset[60], result;
-    int i, rset_no = 0;
+    int i, r, rset_no = 0;
     struct grep_info grep_info;
 
     if (zapt->term->which != Z_Term_general)
@@ -904,37 +1015,11 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
 
     while (1)
     {
-        char **map;
-        char *p2, *p1;
-
-        p1 = p0;
-        while (*(p0 = p1))
-        {
-            map = map_chrs_input (&p1, strlen(p1));
-            if (**map != *CHR_SPACE)
-                break;
-        }
-        if (!*p0)
-            break;
-        
-        p1 = p0;
-        while (*(p2 = p1))
-        {
-            map = map_chrs_input (&p1, strlen(p1));
-            if (**map == *CHR_SPACE)
-                break;
-        }
-        if (p2 == p0)
-            break;
-
-        memcpy (term_sub, p0, p2-p0);
-        term_sub[p2-p0] = '\0';
-        p0 = p2;
-
         grep_info.isam_p_indx = 0;
-        if (field_term (zi, zapt, term_sub, 'w', attributeSet, &grep_info,
-                        num_bases, basenames))
-            return NULL;
+        r = field_term (zi, zapt, &termp, 'w', attributeSet, &grep_info,
+                        num_bases, basenames);
+        if (r < 1)
+            break;
         rset[rset_no] = rset_trunc (zi, grep_info.isam_p_buf,
                                     grep_info.isam_p_indx);
         assert (rset[rset_no]);
@@ -949,7 +1034,6 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         return rset_create (rset_kind_null, NULL);
     else if (rset_no == 1)
         return (rset[0]);
-
     result = rpn_prox (rset, rset_no);
     for (i = 0; i<rset_no; i++)
         rset_delete (rset[i]);

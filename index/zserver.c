@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.41  1996-10-29 14:09:56  adam
+ * Revision 1.42  1996-11-08 11:10:36  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.41  1996/10/29 14:09:56  adam
  * Use of cisam system - enabled if setting isamc is 1.
  *
  * Revision 1.40  1996/06/04 10:19:02  adam
@@ -339,10 +345,10 @@ static int record_int_read (void *fh, char *buf, size_t count)
 static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
                           oid_value input_format, Z_RecordComposition *comp,
 			  oid_value *output_format, char **rec_bufp,
-			  int *rec_lenp)
+			  int *rec_lenp, char **basenamep)
 {
     Record rec;
-    char *fname, *file_type;
+    char *fname, *file_type, *basename;
     RecType rt;
     int fd = -1;
     struct recRetrieveCtrl retrieveCtrl;
@@ -360,6 +366,9 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     }
     file_type = rec->info[recInfo_fileType];
     fname = rec->info[recInfo_filename];
+    basename = rec->info[recInfo_databaseName];
+    *basenamep = odr_malloc (stream, strlen(basename)+1);
+    strcpy (*basenamep, basename);
 
     if (!(rt = recType_byName (file_type, subType)))
     {
@@ -450,7 +459,8 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     }
     r.errcode = record_fetch (&server_info, records[0].sysno,
                               records[0].score, q->stream, q->format,
-                              q->comp, &r.format, &r.record, &r.len);
+                              q->comp, &r.format, &r.record, &r.len,
+                              &r.basename);
     resultSetSysnoDel (&server_info, records, 1);
     register_unlock (&server_info);
     return &r;

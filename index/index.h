@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.45  1996-10-29 14:09:42  adam
+ * Revision 1.46  1996-11-08 11:10:19  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.45  1996/10/29 14:09:42  adam
  * Use of cisam system - enabled if setting isamc is 1.
  *
  * Revision 1.44  1996/06/06 12:08:40  quinn
@@ -229,7 +235,7 @@ int key_close (void);
 int key_compare (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
-void inv_prstat (const char *dict_fname, const char *isam_fname);
+void inv_prstat (void);
 void key_input (int nkeys, int cache);
 ISAMC_M key_isamc_m (void);
 int merge_sort (char **buf, int from, int to);

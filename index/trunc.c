@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.1  1996-11-04 14:07:40  adam
+ * Revision 1.2  1996-11-08 11:10:28  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.1  1996/11/04 14:07:40  adam
  * Moved truncation code to trunc.c.
  *
  */
@@ -207,7 +213,7 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
-#if 0
+#if 1
 /* section that preserve all keys */
             heap_delete (ti);
             if (is_readkey (ispt[n], ti->tmpbuf))
@@ -249,7 +255,7 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
         for (i = to-from; --i >= 0; )
         {
             ispt[i] = isc_pp_open (zi->isamc, isam_p[from+i]);
-            if (isc_read_key (ispt[i], ti->tmpbuf))
+            if (isc_pp_read (ispt[i], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, i);
             else
                 isc_pp_close (ispt[i]);
@@ -270,7 +276,7 @@ static RSET rset_trunc_r (ZServerInfo *zi, ISAM_P *isam_p, int from, int to,
 /* section that preserve all keys with unique sysnos */
             while (1)
             {
-                if (!isc_read_key (ispt[n], ti->tmpbuf))
+                if (!isc_pp_read (ispt[n], ti->tmpbuf))
                 {
                     heap_delete (ti);
                     isc_pp_close (ispt[n]);

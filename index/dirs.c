@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.11  1996-10-29 14:06:47  adam
+ * Revision 1.12  1996-11-08 11:10:13  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.11  1996/10/29 14:06:47  adam
  * Include zebrautl.h instead of alexutil.h.
  *
  * Revision 1.10  1996/06/04 10:18:58  adam
@@ -47,14 +53,16 @@
 
 #include "index.h"
 
+#define DIRS_MAX_PATH 1024
+
 struct dirs_info {
     Dict dict;
     int no_read;
     int no_cur;
     int no_max;
     struct dirs_entry *entries;
-    char nextpath[256];
-    char prefix[256];
+    char nextpath[DIRS_MAX_PATH];
+    char prefix[DIRS_MAX_PATH];
     int prelen;
     struct dirs_entry *last_entry;
 };
@@ -108,7 +116,7 @@ struct dirs_info *dirs_open (Dict dict, const char *rep)
     p->prelen = strlen(p->prefix);
     strcpy (p->nextpath, rep);
     p->no_read = p->no_cur = 0;
-    after = p->no_max = 400;
+    after = p->no_max = 100;
     p->entries = xmalloc (sizeof(*p->entries) * (p->no_max));
     logf (LOG_DEBUG, "dirs_open first scan");
     dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
@@ -171,7 +179,7 @@ struct dirs_entry *dirs_last (struct dirs_info *p)
 
 void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime)
 {
-    char path[256];
+    char path[DIRS_MAX_PATH];
 
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_mkdir %s", path);
@@ -180,7 +188,7 @@ void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime)
 
 void dirs_rmdir (struct dirs_info *p, const char *src)
 {
-    char path[256];
+    char path[DIRS_MAX_PATH];
 
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_rmdir %s", path);
@@ -189,7 +197,7 @@ void dirs_rmdir (struct dirs_info *p, const char *src)
 
 void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime)
 {
-    char path[256];
+    char path[DIRS_MAX_PATH];
     char info[16];
 
     sprintf (path, "%s%s", p->prefix, src);
@@ -201,7 +209,7 @@ void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime)
 
 void dirs_del (struct dirs_info *p, const char *src)
 {
-    char path[256];
+    char path[DIRS_MAX_PATH];
 
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_del %s", path);

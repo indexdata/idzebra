@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.20  1996-11-01 08:58:41  adam
+ * Revision 1.21  1996-11-08 11:10:23  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.20  1996/11/01 08:58:41  adam
  * Interface to isamc system now includes update and delete.
  *
  * Revision 1.19  1996/10/29 14:09:46  adam
@@ -421,6 +427,7 @@ int heap_inpc (struct heap_info *hi)
 
         strcpy (this_name, hci.cur_name);
         logf (LOG_DEBUG, "inserting %s", 1+hci.cur_name);
+        no_diffs++;
         if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
         {
             memcpy (&isamc_p, dict_info+1, sizeof(ISAMC_P));
@@ -437,7 +444,6 @@ int heap_inpc (struct heap_info *hi)
                 if (isamc_p2 != isamc_p)
                     dict_insert (hi->dict, this_name,
                                  sizeof(ISAMC_P), &isamc_p2);
-
             }
         } 
         else
@@ -591,8 +597,8 @@ void key_input (int nkeys, int cache)
         isamc = isc_open (FNAME_ISAMC, 1, key_isamc_m ());
         if (!isamc)
         {
-           logf (LOG_FATAL, "isc_open fail");
-           exit (1);
+            logf (LOG_FATAL, "isc_open fail");
+            exit (1);
         }
     }
     else

@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.63  1996-10-29 14:09:39  adam
+ * Revision 1.64  1996-11-08 11:10:16  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.63  1996/10/29 14:09:39  adam
  * Use of cisam system - enabled if setting isamc is 1.
  *
  * Revision 1.62  1996/10/11 10:57:01  adam
@@ -349,18 +355,37 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
     }
 }
 
+static int key_y_len;
+
+static int key_y_compare (const void *p1, const void *p2)
+{
+    int r;
+
+    if ((r = key_compare (*(char**) p1 + key_y_len + 1,
+                          *(char**) p2 + key_y_len + 1)))
+         return r;
+    return *(*(char**) p1 + key_y_len) - *(*(char**) p2 + key_y_len);
+}
+
+static int key_x_compare (const void *p1, const void *p2)
+{
+    return strcmp (*(char**) p1, *(char**) p2);
+}
+
 void key_flush (void)
 {
     FILE *outf;
     char out_fname[200];
     char *prevcp, *cp;
     struct encode_info encode_info;
+    int i;
     
     if (ptr_i <= 0)
         return;
 
     key_file_no++;
     logf (LOG_LOG, "sorting section %d", key_file_no);
+#if 1
     qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_qsort_compare);
     getFnameTmp (out_fname, key_file_no);
 
@@ -386,6 +411,42 @@ void key_flush (void)
         else
             encode_key_write (cp + strlen(cp), &encode_info, outf);
     }
+#else
+    qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_x_compare);
+    getFnameTmp (out_fname, key_file_no);
+
+    if (!(outf = fopen (out_fname, "w")))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "fopen (4) %s", out_fname);
+        exit (1);
+    }
+    logf (LOG_LOG, "writing section %d", key_file_no);
+    i = ptr_i;
+    prevcp =  key_buf[ptr_top-i];
+    while (1)
+        if (!--i || strcmp (prevcp, key_buf[ptr_top-i]))
+        {
+            key_y_len = strlen(prevcp)+1;
+#if 0
+            logf (LOG_LOG, "key_y_len: %2d %02x %02x %s",
+                      key_y_len, prevcp[0], prevcp[1], 2+prevcp);
+#endif
+            qsort (key_buf + ptr_top-ptr_i, ptr_i - i,
+                                   sizeof(char*), key_y_compare);
+            cp = key_buf[ptr_top-ptr_i];
+            --key_y_len;
+            encode_key_init (&encode_info);
+            encode_key_write (cp, &encode_info, outf);
+            while (--ptr_i > i)
+            {
+                cp = key_buf[ptr_top-ptr_i];
+                encode_key_write (cp+key_y_len, &encode_info, outf);
+            }
+            if (!i)
+                break;
+            prevcp = key_buf[ptr_top-ptr_i];
+        }
+#endif
     if (fclose (outf))
     {
         logf (LOG_FATAL|LOG_ERRNO, "fclose %s", out_fname);

@@ -4,7 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.3  1996-06-04 10:18:58  adam
+ * Revision 1.4  1996-11-08 11:10:21  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.3  1996/06/04 10:18:58  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.2  1996/05/22  08:25:56  adam
@@ -24,6 +30,7 @@
 
 struct inv_stat_info {
     ISAM isam;
+    ISAMC isamc;
     int no_dict_entries;
     int no_dict_bytes;
     int isam_bounds[20];
@@ -37,7 +44,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     int occur;
     int i = 0;
     struct inv_stat_info *stat_info = (struct inv_stat_info*) client;
-    ISPT ispt;
     ISAM_P isam_p;
 
     stat_info->no_dict_entries++;
@@ -46,11 +52,29 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     assert (*info == sizeof(ISAM_P));
     memcpy (&isam_p, info+1, sizeof(ISAM_P));
 
-    ispt = is_position (stat_info->isam, isam_p);
-    
-    occur = is_numkeys (ispt);
+    if (stat_info->isam)
+    {
+        ISPT ispt;
 
-    is_pt_free (ispt);
+        ispt = is_position (stat_info->isam, isam_p);
+        occur = is_numkeys (ispt);
+        is_pt_free (ispt);
+    }
+    if (stat_info->isamc)
+    {
+        ISAMC_PP pp;
+        int occurx = 0;
+        char buf[128];
+
+        pp = isc_pp_open (stat_info->isamc, isam_p);
+        occur = isc_pp_num (pp);
+#if 1
+        while (isc_pp_read(pp, buf))
+            occurx++;
+        assert (occurx == occur);
+#endif
+        isc_pp_close (pp);
+    }
 
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
         i++;
@@ -59,10 +83,11 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     return 0;
 }
 
-void inv_prstat (const char *dict_fname, const char *isam_fname)
+void inv_prstat (void)
 {
     Dict dict;
-    ISAM isam;
+    ISAM isam = NULL;
+    ISAMC isamc = NULL;
     Records records;
     int i, prev;
     int before = 0;
@@ -73,23 +98,36 @@ void inv_prstat (const char *dict_fname, const char *isam_fname)
     term_dict[0] = 1;
     term_dict[1] = 0;
 
-    dict = dict_open (dict_fname, 100, 0);
+    dict = dict_open (FNAME_DICT, 100, 0);
     if (!dict)
     {
-        logf (LOG_FATAL, "dict_open fail of `%s'", dict_fname);
+        logf (LOG_FATAL, "dict_open fail");
         exit (1);
     }
-    isam = is_open (isam_fname, key_compare, 0, sizeof(struct it_key));
-    if (!isam)
+    if (res_get_match (common_resource, "isam", "c", NULL))
     {
-        logf (LOG_FATAL, "is_open fail of `%s'", isam_fname);
-        exit (1);
+        isamc = isc_open (FNAME_ISAMC, 0, key_isamc_m ());
+        if (!isamc)
+        {
+            logf (LOG_FATAL, "isc_open fail");
+            exit (1);
+        }
+    }
+    else
+    {
+        isam = is_open (FNAME_ISAM, key_compare, 0, sizeof(struct it_key));
+        if (!isam)
+        {
+            logf (LOG_FATAL, "is_open fail");
+            exit (1);
+        }
     }
     records = rec_open (0);
 
     stat_info.no_dict_entries = 0;
     stat_info.no_dict_bytes = 0;
     stat_info.isam = isam;
+    stat_info.isamc = isamc;
     stat_info.isam_bounds[0] = 1;
     stat_info.isam_bounds[1] = 2;
     stat_info.isam_bounds[2] = 3;
@@ -117,7 +155,10 @@ void inv_prstat (const char *dict_fname, const char *isam_fname)
 
     rec_close (&records);
     dict_close (dict);
-    is_close (isam);
+    if (isam)
+        is_close (isam);
+    if (isamc)
+        isc_close (isamc);
 
     fprintf (stderr, "%d dictionary entries. %d bytes for strings\n",
              stat_info.no_dict_entries, stat_info.no_dict_bytes);
