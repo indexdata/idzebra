@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: delete.c,v $
- * Revision 1.6  1999-05-15 14:36:37  adam
+ * Revision 1.7  2000-12-05 09:59:10  adam
+ * Work on dict_delete_subtree.
+ *
+ * Revision 1.6  1999/05/15 14:36:37  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.5  1999/02/02 14:50:17  adam
@@ -33,7 +36,71 @@
 
 #include <dict.h>
 
-static int dict_del (Dict dict, const Dict_char *str, Dict_ptr ptr)
+static void dict_del_subtree (Dict dict, Dict_ptr ptr,
+			      void *client, 
+			      int (*f)(const char *, void *))
+{
+    int more = 1;
+    void *p = 0;
+    
+    if (!ptr)
+	return;
+    
+    while (more)
+    {
+	short *indxp;
+	int i, hi;
+	
+	dict_bf_readp (dict->dbf, ptr, &p);
+	hi = DICT_nodir(p)-1;
+	indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+	more = 0;
+	for (i = 0; i <= hi; i++)
+	{
+	    if (indxp[-i] > 0)
+	    {
+		/* string (Dict_char *) DICT_EOS terminated */
+		/* unsigned char        length of information */
+		/* char *               information */
+		char *info = (char*)p + indxp[-i];
+		if (f)
+		    (*f)(info + (dict_strlen((Dict_char*) info)+1)
+			 *sizeof(Dict_char), client);
+	    }
+	    else
+	    {
+		
+		Dict_ptr subptr;
+	    
+		/* Dict_ptr             subptr */
+		/* Dict_char            sub char */
+		/* unsigned char        length of information */
+		/* char *               information */
+		char *info = (char*)p - indxp[-i];
+		memcpy (&subptr, info, sizeof(Dict_ptr));
+
+		if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+		{
+		    if (f)
+			(*f)(info+sizeof(Dict_ptr)+sizeof(Dict_char), client);
+		}
+		if (subptr)
+		{
+		    dict_del_subtree (dict, subptr, client, f);
+		    more = 1;
+		    break;
+		}
+	    }
+	}
+    }
+    DICT_backptr(p) = dict->head.freelist;
+    dict->head.freelist = ptr;
+    dict_bf_touch (dict->dbf, ptr);
+}
+
+static int dict_del_string (Dict dict, const Dict_char *str, Dict_ptr ptr,
+			    int sub_flag, void *client, 
+			    int (*f)(const char *, void *))
 {
     int mid, lo, hi;
     int cmp;
@@ -41,6 +108,8 @@ static int dict_del (Dict dict, const Dict_char *str, Dict_ptr ptr)
     short *indxp;
     char *info;
 
+    if (!ptr)
+	return 0;
     dict_bf_readp (dict->dbf, ptr, &p);
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
@@ -54,20 +123,49 @@ static int dict_del (Dict dict, const Dict_char *str, Dict_ptr ptr)
             /* unsigned char        length of information */
             /* char *               information */
             info = (char*)p + indxp[-mid];
-            cmp = dict_strcmp((Dict_char*) info, str);
-            if (!cmp)
-            {
-                hi = DICT_nodir(p)-1;
-                while (mid < hi)
-                {
-                    indxp[-mid] = indxp[-mid-1];
-                    mid++;
-                }
-                DICT_type(p) = 1;
-                (DICT_nodir(p))--;
-                dict_bf_touch (dict->dbf, ptr);
-                return 1;
-            }
+
+	    cmp = dict_strcmp((Dict_char*) info, str);
+	    if (sub_flag)
+	    {
+		/* determine if prefix match */
+		if (!dict_strncmp (str, (Dict_char*) info, dict_strlen(str)))
+		{
+		    if (f)
+			(*f)(info + (dict_strlen((Dict_char*) info)+1)
+			     *sizeof(Dict_char), client);
+
+		    hi = DICT_nodir(p)-1;
+		    while (mid < hi)
+		    {
+			indxp[-mid] = indxp[-mid-1];
+			mid++;
+		    }
+		    DICT_type(p) = 1;
+		    (DICT_nodir(p))--;
+		    dict_bf_touch (dict->dbf, ptr);
+		    --hi;
+		    mid = lo = 0;
+                    /* start again (may not be the most efficient way to go)*/
+		    continue; 
+		}
+	    }
+	    else
+	    {
+		/* normal delete: delete if equal */
+		if (!cmp)
+		{
+		    hi = DICT_nodir(p)-1;
+		    while (mid < hi)
+		    {
+			indxp[-mid] = indxp[-mid-1];
+			mid++;
+		    }
+		    DICT_type(p) = 1;
+		    (DICT_nodir(p))--;
+		    dict_bf_touch (dict->dbf, ptr);
+		    return 1;
+		}
+	    }
         }
         else
         {
@@ -86,13 +184,30 @@ static int dict_del (Dict dict, const Dict_char *str, Dict_ptr ptr)
                 memcpy (&subptr, info, sizeof(Dict_ptr));
                 if (*++str == DICT_EOS)
                 {
+		    if (sub_flag && subptr)
+		    {
+			Dict null_ptr = 0;
+			memcpy (info, &null_ptr, sizeof(Dict_ptr));
+		    }
                     if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
                     {
                         info[sizeof(Dict_ptr)+sizeof(Dict_char)] = 0;
                         DICT_type(p) = 1;
                         dict_bf_touch (dict->dbf, ptr);
+
+			if (f)
+			    (*f)(info+sizeof(Dict_ptr)+sizeof(Dict_char),
+				 client);
+			if (sub_flag && subptr)
+			    dict_del_subtree (dict, subptr, client, f);
                         return 1;
                     }
+		    if (sub_flag && subptr)
+		    {
+                        DICT_type(p) = 1;
+                        dict_bf_touch (dict->dbf, ptr);
+			dict_del_subtree (dict, subptr, client, f);
+		    }
                     return 0;
                 }
                 else
@@ -118,7 +233,13 @@ static int dict_del (Dict dict, const Dict_char *str, Dict_ptr ptr)
 
 int dict_delete (Dict dict, const char *p)
 {
-    if (!dict->head.root)
-        return 0;
-    return dict_del (dict, (const Dict_char*) p, dict->head.root);
+    return dict_del_string (dict, (const Dict_char*) p, dict->head.root, 0,
+			    0, 0);
+}
+
+int dict_delete_subtree (Dict dict, const char *p, void *client,
+			 int (*f)(const char *info, void *client))
+{
+    return dict_del_string (dict, (const Dict_char*) p, dict->head.root, 1,
+			    client, f);
 }

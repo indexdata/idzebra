@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.30  1999-11-30 13:48:03  adam
+ * Revision 1.31  2000-12-05 09:59:10  adam
+ * Work on dict_delete_subtree.
+ *
+ * Revision 1.30  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.29  1999/05/15 14:36:37  adam
@@ -181,6 +184,8 @@ Dict       dict_open (BFiles bfs, const char *name, int cache, int rw,
 int        dict_close (Dict dict);
 int        dict_insert (Dict dict, const char *p, int userlen, void *userinfo);
 int        dict_delete (Dict dict, const char *p);
+int        dict_delete_subtree (Dict dict, const char *p, void *client,
+				int (*f)(const char *info, void *client));
 char      *dict_lookup (Dict dict, const char *p);
 int        dict_lookup_ec (Dict dict, char *p, int range,
                            int (*f)(char *name));
@@ -189,6 +194,7 @@ int        dict_lookup_grep (Dict dict, const char *p, int range, void *client,
                              int (*f)(char *name, const char *info,
                                       void *client));
 int        dict_strcmp (const Dict_char *s1, const Dict_char *s2);
+int        dict_strncmp (const Dict_char *s1, const Dict_char *s2, size_t n);
 int        dict_strlen (const Dict_char *s);
 int	   dict_scan (Dict dict, char *str, 
 		      int *before, int *after, void *client,

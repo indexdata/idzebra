@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.16  1999-05-26 07:49:13  adam
+ * Revision 1.17  2000-12-05 09:59:10  adam
+ * Work on dict_delete_subtree.
+ *
+ * Revision 1.16  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.15  1999/05/15 14:36:37  adam
@@ -130,6 +133,11 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
 int dict_strcmp (const Dict_char *s1, const Dict_char *s2)
 {
     return strcmp ((const char *) s1, (const char *) s2);
+}
+
+int dict_strncmp (const Dict_char *s1, const Dict_char *s2, size_t n)
+{
+    return strncmp ((const char *) s1, (const char *) s2, n);
 }
 
 int dict_strlen (const Dict_char *s)
