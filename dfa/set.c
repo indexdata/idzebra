@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: set.c,v $
- * Revision 1.2  1995-01-24 16:00:22  adam
+ * Revision 1.3  1995-02-06 10:12:55  adam
+ * Unused static function rm_SetElement was removed.
+ *
+ * Revision 1.2  1995/01/24  16:00:22  adam
  * Added -ansi to CFLAGS.
  * Some changes to the dfa module.
  *
@@ -24,7 +27,6 @@
 #include "imalloc.h"
 
 
-static void rm_SetElement (SetType st, SetElement *p);
 static Set mk_SetElement (SetType st, int n);
 
 SetType mk_SetType (int chunk)
@@ -96,6 +98,7 @@ static Set mk_SetElement (SetType st, int n)
     return s;
 }
 
+#if 0
 static void rm_SetElement (SetType st, SetElement *p)
 {
     assert (st);
@@ -104,6 +107,7 @@ static void rm_SetElement (SetType st, SetElement *p)
     st->freelist = p;
     st->used--;
 }
+#endif
 
 Set rm_Set (SetType st, Set s)
 {
