@@ -4,9 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.3  1994-09-01 17:44:06  adam
+ * Revision 1.4  1994-09-01 17:49:37  adam
+ * Removed stupid line. Work on insertion in dictionary. Not finished yet.
+ *
+ * Revision 1.3  1994/09/01  17:44:06  adam
  * depend include change.
- * CVS ----------------------------------------------------------------------
  *
  * Revision 1.2  1994/08/18  12:40:54  adam
  * Some development of dictionary. Not finished at all!

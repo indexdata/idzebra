@@ -1,3 +1,14 @@
+/*
+ * Copyright (C) 1994, Index Data I/S 
+ * All rights reserved.
+ * Sebastian Hammer, Adam Dickmeiss
+ *
+ * $Log: dopen.c,v $
+ * Revision 1.3  1994-09-01 17:49:37  adam
+ * Removed stupid line. Work on insertion in dictionary. Not finished yet.
+ *
+ */
+
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
