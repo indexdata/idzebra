@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.164 2004-10-01 14:50:22 heikki Exp $
+/* $Id: extract.c,v 1.165 2004-10-04 09:27:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -494,8 +494,9 @@ static int file_extract_record(ZebraHandle zh,
             if (!zh->m_flag_rw)
                 return 1;
 	    
-	    logf (LOG_WARN, "empty %s %s " PRINTF_OFF_T, zh->m_record_type,
-		  fname, recordOffset);
+	    if (zh->records_processed < zh->m_file_verbose_limit)
+	        logf (LOG_WARN, "empty %s %s " PRINTF_OFF_T, zh->m_record_type,
+		    fname, recordOffset);
             return 1;
         }
     }
