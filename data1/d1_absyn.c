@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.3 2002-12-02 16:55:14 adam Exp $
+/* $Id: d1_absyn.c,v 1.4 2002-12-16 20:27:18 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -63,6 +63,28 @@ data1_absyn *data1_absyn_search (data1_handle dh, const char *name)
     }
     return NULL;
 }
+/* *ostrich*
+   We need to destroy DFAs, in xp_element (xelm) definitions 
+   pop, 2002-12-13
+*/
+
+void data1_absyn_destroy (data1_handle dh)
+{
+    data1_absyn_cache p = *data1_absyn_cache_get (dh);
+    
+    while (p)
+    {
+        data1_absyn *abs = p->absyn;
+        data1_xpelement *xpe = abs->xp_elements;
+        while (xpe) {
+            logf (LOG_DEBUG,"Destroy xp element %s",xpe->xpath_expr);
+            if (xpe->dfa) {  dfa_delete (&xpe->dfa); }
+            xpe = xpe->next;
+        } 
+        p = p->next;
+    }
+}
+
 
 void data1_absyn_trav (data1_handle dh, void *handle,
 		       void (*fh)(data1_handle dh, void *h, data1_absyn *a))
@@ -246,11 +268,71 @@ void fix_element_ref (data1_handle dh, data1_absyn *absyn, data1_element *e)
 	}
     }
 }
+/* *ostrich*
+
+   New function, a bit dummy now... I've seen it in zrpn.c... We should build
+   more clever regexps...
 
 
+      //a    ->    ^a/.*$
+      //a/b  ->    ^b/a/.*$
+      /a     ->    ^a/$
+      /a/b   ->    ^b/a/$
+
+      /      ->    none
+
+   pop, 2002-12-13
+ */
+
+const char * mk_xpath_regexp (data1_handle dh, char *expr) 
+{
+    char *p = expr;
+    int abs = 1;
+    int i;
+    int e=0;
+    
+    static char *stack[32];
+    static char res[1024];
+    char *r = "";
+    
+    if (*p != '/') { return (""); }
+    p++;
+    if (*p == '/') { abs=0; p++; }
+    
+    while (*p) {
+        i=0;
+        while (*p && !strchr("/",*p)) { i++; p++; }
+        stack[e] = (char *) nmem_malloc (data1_nmem_get (dh), i+1);
+        memcpy (stack[e],  p - i, i);
+        stack[e][i] = 0;
+        e++;
+        if (*p) {p++;}
+    }
+    e--;  p = &res[0]; i=0;
+    sprintf (p, "^"); p++;
+    while (e >= 0) {
+        /* !!! res size is not checked !!! */
+        sprintf (p, "%s/",stack[e]);
+        p += strlen(stack[e]) + 1;
+        e--;
+    }
+    if (!abs) { sprintf (p, ".*"); p+=2; }
+    sprintf (p, "$"); p++;
+    r = nmem_strdup (data1_nmem_get (dh), res);
+    return (r);
+}
+
+/* *ostrich*
+
+   added arg xpelement... when called from xelm context, it's 1, saying
+   that ! means xpath, not element name as attribute name...
+
+   pop, 2002-12-13
+ */
 static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
 			    char *p, const char *file, int lineno,
-			    const char *element_name, data1_absyn *res)
+			    const char *element_name, data1_absyn *res,
+			    int xpelement)
 {
     data1_termlist **tp = *tpp;
     do
@@ -267,19 +349,27 @@ static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
 		    file, lineno, p);
 	    return -1;
 	}
-	if (*attname == '!')
-	    strcpy(attname, element_name);
+
 	*tp = (data1_termlist *)
-	    nmem_malloc(data1_nmem_get(dh), sizeof(**tp));
+	  nmem_malloc(data1_nmem_get(dh), sizeof(**tp));
 	(*tp)->next = 0;
-	if (!((*tp)->att = data1_getattbyname(dh, res->attset,
-					      attname)))
-	{
-	    yaz_log(LOG_WARN,
-		    "%s:%d: Couldn't find att '%s' in attset",
-		    file, lineno, attname);
-	    return -1;
+        
+	if (!xpelement) {
+            if (*attname == '!')
+                strcpy(attname, element_name);
 	}
+	if (!((*tp)->att = data1_getattbyname(dh, res->attset,
+                                              attname))) {
+            if ((!xpelement) || (*attname != '!')) {
+                yaz_log(LOG_WARN,
+                        "%s:%d: Couldn't find att '%s' in attset",
+                        file, lineno, attname);
+                return -1;
+            } else {
+                (*tp)->att = 0;
+            }
+	}
+        
 	if (r == 2 && (source = strchr(structure, ':')))
 	    *source++ = '\0';   /* cut off structure .. */
 	else
@@ -313,6 +403,8 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
                                int file_must_exist)
 {
     data1_sub_elements *cur_elements = NULL;
+    data1_xpelement *cur_xpelement = NULL;
+
     data1_absyn *res = 0;
     FILE *f;
     data1_element **ppl[D1_MAX_NESTING];
@@ -357,6 +449,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     marcp = &res->marc;
     res->sub_elements = NULL;
     res->main_elements = NULL;
+    res->xp_elements = NULL;
     
     while (f && (argc = readconf_line(f, &lineno, line, 512, argv, 50)))
     {
@@ -473,7 +566,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    {
 		assert (res->attset);
 		
-		if (parse_termlists (dh, &tp, p, file, lineno, name, res))
+		if (parse_termlists (dh, &tp, p, file, lineno, name, res, 0))
 		{
 		    fclose (f);
 		    return 0;
@@ -482,6 +575,75 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    }
 	    new_element->name = nmem_strdup(data1_nmem_get (dh), name);
 	}
+	/* *ostrich*
+	   New code to support xelm directive
+	   for each xelm a dfa is built. xelms are stored in res->xp_elements
+           
+	   maybe we should use a simple sscanf instead of dfa?
+           
+	   pop, 2002-12-13
+	*/
+
+	else if (!strcmp(cmd, "xelm")) {
+
+	    int i;
+	    char *p, *xpath_expr, *termlists;
+	    const char *regexp;
+	    int type, value;
+	    struct DFA *dfa = dfa = dfa_init();
+	    data1_termlist **tp;
+            
+	    if (argc < 3)
+	    {
+		yaz_log(LOG_WARN, "%s:%d: Bad # of args to xelm", file, lineno);
+		continue;
+	    }
+	    xpath_expr = argv[1];
+	    termlists = argv[2];
+	    regexp = mk_xpath_regexp(dh, xpath_expr);
+	    i = dfa_parse (dfa, &regexp);
+	    if (i || *regexp) {
+                yaz_log(LOG_WARN, "%s:%d: Bad xpath to xelm", file, lineno);
+                dfa_delete (&dfa);
+                continue;
+	    }
+            
+	    if (!cur_xpelement)
+	    {
+                cur_xpelement = (data1_xpelement *)
+		    nmem_malloc(data1_nmem_get(dh), sizeof(*cur_xpelement));
+		res->xp_elements = cur_xpelement;
+            } else {
+                cur_xpelement->next = (data1_xpelement *)
+                    nmem_malloc(data1_nmem_get(dh), sizeof(*cur_xpelement));
+                cur_xpelement = cur_xpelement->next;
+	    }
+	    cur_xpelement->next = NULL;
+	    cur_xpelement->xpath_expr = nmem_strdup(data1_nmem_get (dh), 
+						    xpath_expr); 
+	    
+	    dfa_mkstate (dfa);
+	    cur_xpelement->dfa = dfa;
+            
+	    cur_xpelement->termlists = 0;
+	    tp = &cur_xpelement->termlists;
+            
+	    /* parse termList definitions */
+	    p = termlists;
+	    if (*p != '-')
+	    {
+		assert (res->attset);
+		
+		if (parse_termlists (dh, &tp, p, file, lineno,
+                                     xpath_expr, res,1))
+		{
+		    fclose (f);
+		    return 0;
+		}
+	        *tp = all; /* append any ALL entries to the list */
+                
+	    }
+	}
  	else if (!strcmp(cmd, "section"))
 	{
 	    char *name;
@@ -489,7 +651,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    if (argc < 2)
 	    {
 		yaz_log(LOG_WARN, "%s:%d: Bad # of args to section",
-		     file, lineno);
+                        file, lineno);
 		continue;
 	    }
 	    name = argv[1];
@@ -537,7 +699,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 		     file, lineno);
 		continue;
 	    }
-	    if (parse_termlists (dh, &tp, argv[1], file, lineno, 0, res))
+	    if (parse_termlists (dh, &tp, argv[1], file, lineno, 0, res, 0))
 	    {
 		fclose (f);
 		return 0;

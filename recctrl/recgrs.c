@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.70 2002-12-02 16:55:14 adam Exp $
+/* $Id: recgrs.c,v 1.71 2002-12-16 20:27:18 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -123,6 +123,62 @@ static void grs_destroy(void *clientData)
     xfree (h);
 }
 
+/* *ostrich*
+   
+   New function, looking for xpath "element" definitions in abs, by
+   tagpath, using a kind of ugly regxp search.The DFA was built while
+   parsing abs, so here we just go trough them and try to match
+   against the given tagpath. The first matching entry is returned.
+
+   pop, 2002-12-13
+ */
+
+data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
+{
+    data1_absyn *abs = n->root->u.root.absyn;
+    data1_xpelement *xpe = abs->xp_elements;
+    char *pexpr = malloc(strlen(tagpath)+2);
+    int ok = 0;
+    
+    sprintf (pexpr, "%s\n", tagpath);
+    while (xpe) 
+    {
+        struct DFA_state **dfaar = xpe->dfa->states;
+        struct DFA_state *s=dfaar[0];
+        struct DFA_tran *t;
+        const char *p;
+        int i;
+        unsigned char c;
+        int start_line = 1;
+        
+        c = *pexpr++; t = s->trans; i = s->tran_no;
+        if (c >= t->ch[0] && c <= t->ch[1]) {
+            p = pexpr;
+            do {
+                if ((s = dfaar[t->to])->rule_no && 
+                    (start_line || s->rule_nno))  {
+                    ok = 1;
+                    break;
+                }
+                for (t=s->trans, i=s->tran_no; --i >= 0; t++) {
+                    if ((unsigned) *p >= t->ch[0] && (unsigned) *p <= t->ch[1])
+                        break;
+                }
+                p++;
+            } while (i >= 0);
+        }
+        pexpr--;
+        if (ok) break;
+        xpe = xpe->next;
+    } 
+    
+    if (ok) {
+        return xpe->termlists;
+    } else {
+        return NULL;
+    }
+}
+
 /* use
      1   start element (tag)
      2   end element
@@ -131,6 +187,14 @@ static void grs_destroy(void *clientData)
 
   1016   cdata
   1015   attr data
+
+  *ostrich*
+
+  Now, if there is a matching xelm described in abs, for the
+  indexed element or the attribute,  then the data is handled according 
+  to those definitions...
+
+  modified by pop, 2002-12-13
 */
 
 static void index_xpath (data1_node *n, struct recExtractCtrl *p,
@@ -144,24 +208,64 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
     switch (n->which)
     {
     case DATA1N_data:
-        wrd->reg_type = 'w';
         wrd->string = n->u.data.data;
         wrd->length = n->u.data.len;
-        wrd->attrSet = VAL_IDXPATH,
-        wrd->attrUse = use;
         if (p->flagShowRecords)
         {
             printf("%*s data=", (level + 1) * 4, "");
             for (i = 0; i<wrd->length && i < 8; i++)
                 fputc (wrd->string[i], stdout);
             printf("\n");
-        }
-        else
-        {
-            (*p->tokenAdd)(wrd);
+        }  
+        else  {
+            data1_termlist *tl;
+            int xpdone = 0;
+            flen = 0;
+            
+            /* we have to fetch the whole path to the data tag */
+            for (nn = n; nn; nn = nn->parent) {
+                if (nn->which == DATA1N_tag) {
+                    size_t tlen = strlen(nn->u.tag.tag);
+                    if (tlen + flen > (sizeof(tag_path_full)-2)) return;
+                    memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
+                    flen += tlen;
+                    tag_path_full[flen++] = '/';
+                }
+                else if (nn->which == DATA1N_root)  break;
+            }
+
+            tag_path_full[flen] = 0;
+            
+            /* If we have a matching termlist... */
+            if (tl = xpath_termlist_by_tagpath(tag_path_full, n)) {
+                for (; tl; tl = tl->next) {
+                    wrd->reg_type = *tl->structure;
+                    /* this is the ! case, so structure is for the xpath index */
+                    if (!tl->att) {
+                        wrd->attrSet = VAL_IDXPATH;
+                        wrd->attrUse = use;
+                        (*p->tokenAdd)(wrd);
+                        xpdone = 1;
+                        /* this is just the old fashioned attribute based index */
+                    } else {
+                        wrd->attrSet = (int) (tl->att->parent->reference);
+                        wrd->attrUse = tl->att->locals->local;
+                        (*p->tokenAdd)(wrd);
+                    }
+                }
+            }
+            /* xpath indexing is done, if there was no termlist given, 
+               or no ! attribute... */
+            if (!xpdone) {
+                wrd->attrSet = VAL_IDXPATH;
+                wrd->attrUse = use;
+                wrd->reg_type = 'w';
+                (*p->tokenAdd)(wrd);
+            }
         }
         break;
     case DATA1N_tag:
+        flen = 0;
         for (nn = n; nn; nn = nn->parent)
         {
             if (nn->which == DATA1N_tag)
@@ -176,6 +280,8 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
             else if (nn->which == DATA1N_root)
                 break;
         }
+
+
         wrd->reg_type = '0';
         wrd->string = tag_path_full;
         wrd->length = flen;
@@ -232,7 +338,6 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                     
                     sprintf (attr_tag_path_full, "@%s/%.*s",
                              xp->name, int_len, tag_path_full);
-
                     wrd->reg_type = '0';
                     wrd->attrUse = 1;
                     wrd->string = attr_tag_path_full;
@@ -241,13 +346,40 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                     
 		    if (xp->value)
  		    {
-                        wrd->attrUse = 1015;
-                        wrd->reg_type = 'w';
+                        /* the same jokes, as with the data nodes ... */
+                        data1_termlist *tl;
+                        int xpdone = 0;
+                        
                         wrd->string = xp->value;
                         wrd->length = strlen(xp->value);
-                        (*p->tokenAdd)(wrd);
+                        wrd->reg_type = 'w';
+                        
+                        if (tl = xpath_termlist_by_tagpath(attr_tag_path_full,
+                                                           n)) {
+                            for (; tl; tl = tl->next) {
+                                wrd->reg_type = *tl->structure;
+                                if (!tl->att) {
+                                    wrd->attrSet = VAL_IDXPATH;
+                                    wrd->attrUse = 1015;
+                                    (*p->tokenAdd)(wrd);
+                                    xpdone = 1;
+                                } else {
+                                    wrd->attrSet = (int) (tl->att->parent->reference);
+                                    wrd->attrUse = tl->att->locals->local;
+                                    (*p->tokenAdd)(wrd);
+                                }
+                            }
+                            
+                        } 
+                        if (!xpdone) {
+                            wrd->attrSet = VAL_IDXPATH;
+                            wrd->attrUse = 1015;
+                            wrd->reg_type = 'w';
+                            (*p->tokenAdd)(wrd);
+                        }
                     }
                     
+		    wrd->attrSet = VAL_IDXPATH;
                     wrd->reg_type = '0';
                     wrd->attrUse = 2;
                     wrd->string = attr_tag_path_full;
@@ -264,6 +396,7 @@ static void index_termlist (data1_node *par, data1_node *n,
 {
     data1_termlist *tlist = 0;
     data1_datatype dtype = DATA1K_string;
+
     /*
      * cycle up towards the root until we find a tag with an att..
      * this has the effect of indexing locally defined tags with
@@ -271,19 +404,20 @@ static void index_termlist (data1_node *par, data1_node *n,
      */
     
     while (!par->u.tag.element)
-	if (!par->parent || !(par=get_parent_tag(p->dh, par->parent)))
-	    break;
+        if (!par->parent || !(par=get_parent_tag(p->dh, par->parent)))
+            break;
     if (!par || !(tlist = par->u.tag.element->termlists))
-	return;
+        return;
     if (par->u.tag.element->tag)
-	dtype = par->u.tag.element->tag->kind;
+        dtype = par->u.tag.element->tag->kind;
     
     for (; tlist; tlist = tlist->next)
     {
+
 	char xattr[512];
 	/* consider source */
 	wrd->string = 0;
-	
+
 	if (!strcmp (tlist->source, "data") && n->which == DATA1N_data)
 	{
 	    wrd->string = n->u.data.data;

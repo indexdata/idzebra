@@ -1,4 +1,4 @@
-/* $Id: d1_handle.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_handle.c,v 1.3 2002-12-16 20:27:18 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -87,6 +87,13 @@ void data1_destroy (data1_handle dh)
 {
     if (!dh)
 	return;
+    
+    /* *ostrich*
+       We need to destroy DFAs, in xp_element (xelm) definitions 
+       pop, 2002-12-13
+    */
+    data1_absyn_destroy(dh);
+
     wrbuf_free (dh->wrbuf, 1);
     if (dh->tab_path)
 	xfree (dh->tab_path);

@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.3 2002-12-02 16:55:14 adam Exp $
+/* $Id: data1.h,v 1.4 2002-12-16 20:27:18 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -33,6 +33,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <d1_map.h>
 #include <yaz/yaz-util.h>
 #include <yaz/wrbuf.h>
+#include <dfa.h>         /* pop */
 
 #define d1_isspace(c) strchr(" \r\n\t\f", c)
 #define d1_isdigit(c) ((c) <= '9' && (c) >= '0')
@@ -187,6 +188,15 @@ typedef struct data1_sub_elements {
     data1_element *elements;
 } data1_sub_elements;
 
+/* pop */
+typedef struct data1_xpelement
+{
+    char *xpath_expr;
+    struct DFA *dfa;  
+    data1_termlist *termlists;
+    struct data1_xpelement *next;
+} data1_xpelement;
+
 typedef struct data1_xattr {
     char *name;
     char *value;
@@ -209,6 +219,7 @@ typedef struct data1_absyn
     data1_marctab *marc;
     data1_sub_elements *sub_elements;
     data1_element *main_elements;
+    data1_xpelement *xp_elements; /* pop */
     struct data1_systag *systags;
     char *encoding;
     int  enable_xpath_indexing;
