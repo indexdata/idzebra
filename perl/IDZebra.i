@@ -149,9 +149,20 @@ void DESTROY (void);
 
 /* == Logging facilities (yaz/log.h) ======================================= */
 
-void logLevel (int level);
-void logFile (const char *fname);
+%name(logLevel) 
+void yaz_log_init_level (int level);
+
+%name(logFile)
+void yaz_log_init_file (const char *fname);
+
+%name(logMsg)
 void logMsg  (int level, const char *message);
+
+%name(logPrefix)   
+void yaz_log_init_prefix (const char *prefix);
+
+%name(logPrefix2)   
+void yaz_log_init_prefix2 (const char *prefix);
 
 #define LOG_FATAL  0x0001
 #define LOG_DEBUG  0x0002

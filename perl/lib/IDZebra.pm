@@ -37,6 +37,8 @@ package IDZebra;
 *logLevel = *IDZebrac::logLevel;
 *logFile = *IDZebrac::logFile;
 *logMsg = *IDZebrac::logMsg;
+*logPrefix = *IDZebrac::logPrefix;
+*logPrefix2 = *IDZebrac::logPrefix2;
 *odr_createmem = *IDZebrac::odr_createmem;
 *odr_reset = *IDZebrac::odr_reset;
 *odr_destroy = *IDZebrac::odr_destroy;

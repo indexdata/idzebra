@@ -29,14 +29,6 @@ void DESTROY (void) {
 }   
 
 /* Logging facilities from yaz */
-void logLevel (int level) {
-  yaz_log_init_level(level);
-}
- 
-void logFile (const char *fname) {
-  yaz_log_init_file(fname);
-}
-
 void logMsg (int level, const char *message) {
   logf(level, "%s", message);
 }

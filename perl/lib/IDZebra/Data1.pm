@@ -103,7 +103,7 @@ sub tag_add_attr {
 
 sub mk_text {
     my ($self, $parent, $text) = @_;
-    $text = "" unless ($text);
+    $text = "" unless defined ($text);
     return (IDZebra::data1_mk_text($self->{dh}, $self->{mem},
 				   $text, $parent)); 
 }

@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.16 2003-03-13 04:25:17 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.17 2003-05-07 20:51:12 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -3010,7 +3010,7 @@ XS(_wrap_logLevel) {
             SWIG_croak("Usage: logLevel(level);");
         }
         arg1 = (int) SvIV(ST(0));
-        logLevel(arg1);
+        yaz_log_init_level(arg1);
         
         
         XSRETURN(argvi);
@@ -3034,7 +3034,7 @@ XS(_wrap_logFile) {
         }
         if (!SvOK((SV*) ST(0))) arg1 = 0;
         else arg1 = (char *) SvPV(ST(0), PL_na);
-        logFile((char const *)arg1);
+        yaz_log_init_file((char const *)arg1);
         
         
         XSRETURN(argvi);
@@ -3061,6 +3061,54 @@ XS(_wrap_logMsg) {
         if (!SvOK((SV*) ST(1))) arg2 = 0;
         else arg2 = (char *) SvPV(ST(1), PL_na);
         logMsg(arg1,(char const *)arg2);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_logPrefix) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        char *arg1 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: logPrefix(prefix);");
+        }
+        if (!SvOK((SV*) ST(0))) arg1 = 0;
+        else arg1 = (char *) SvPV(ST(0), PL_na);
+        yaz_log_init_prefix((char const *)arg1);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_logPrefix2) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        char *arg1 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: logPrefix2(prefix);");
+        }
+        if (!SvOK((SV*) ST(0))) arg1 = 0;
+        else arg1 = (char *) SvPV(ST(0), PL_na);
+        yaz_log_init_prefix2((char const *)arg1);
         
         
         XSRETURN(argvi);
@@ -8492,6 +8540,8 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::logLevel", _wrap_logLevel},
 {"IDZebrac::logFile", _wrap_logFile},
 {"IDZebrac::logMsg", _wrap_logMsg},
+{"IDZebrac::logPrefix", _wrap_logPrefix},
+{"IDZebrac::logPrefix2", _wrap_logPrefix2},
 {"IDZebrac::odr_createmem", _wrap_odr_createmem},
 {"IDZebrac::odr_reset", _wrap_odr_reset},
 {"IDZebrac::odr_destroy", _wrap_odr_destroy},

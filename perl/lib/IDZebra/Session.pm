@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.15 2003-03-13 04:25:18 pop Exp $
+# $Id: Session.pm,v 1.16 2003-05-07 20:51:12 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -6,6 +6,7 @@ package IDZebra::Session;
 
 use strict;
 use warnings;
+use Carp;
 
 BEGIN {
     use IDZebra;
@@ -15,7 +16,7 @@ BEGIN {
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
     require Exporter;
-    our $VERSION = do { my @r = (q$Revision: 1.15 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.16 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger Exporter);
     our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
