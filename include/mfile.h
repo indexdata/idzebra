@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.h,v 1.14 2000-03-20 19:08:36 adam Exp $
+ * $Id: mfile.h,v 1.15 2000-04-17 14:22:00 adam Exp $
  */
 
 #ifndef MFILE_H
@@ -25,6 +25,10 @@ YAZ_BEGIN_CDECL
 #define MF_MAX_PARTS 28                 /* max # of part-files per metafile */
 
 #define mf_blocksize(mf) ((mf)->blocksize)
+
+#ifdef WIN32
+typedef long off_t;
+#endif
 
 typedef struct mf_dir
 {

@@ -1,5 +1,5 @@
 # Z'mbol makefile for MS NMAKE
-# $Id: makefile,v 1.2 2000-02-08 12:34:17 adam Exp $
+# $Id: makefile,v 1.3 2000-04-17 14:22:00 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -22,8 +22,7 @@ ROOTDIR=..   # The home of Z'mbol
 YAZDIR=$(ROOTDIR)\..\YAZ
 YAZINCL=$(YAZDIR)\include
 YAZLIB=$(YAZDIR)\lib\yaz.lib
-YAZSERVLIB=$(YAZDIR)\lib\server.lib
-YAZLIBS=$(YAZLIB) $(YAZSERVLIB)
+YAZLIBS=$(YAZLIB)
 YAZBINDIR=$(YAZDIR)\bin
 YAZDLL=$(YAZBINDIR)\yaz.dll
 
@@ -391,7 +390,10 @@ $(ALL_OBJS): makefile
 ###########################################################
 #
 # $Log: makefile,v $
-# Revision 1.2  2000-02-08 12:34:17  adam
+# Revision 1.3  2000-04-17 14:22:00  adam
+# WIN32 update.
+#
+# Revision 1.2  2000/02/08 12:34:17  adam
 # Fix: referred to zmbol.mak.
 #
 # Revision 1.1  1999/12/08 22:11:56  adam
