@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.19  1996-05-01 07:16:30  quinn
+ * Revision 1.20  1996-05-14 12:10:16  quinn
+ * Bad areadef scan
+ *
+ * Revision 1.19  1996/05/01  07:16:30  quinn
  * Fixed ancient bug.
  *
  * Revision 1.18  1996/04/09  06:47:30  adam
@@ -134,7 +137,7 @@ static int scan_areadef(MFile_area ma, const char *name)
         else if (*ad == '+')
             ad++;
         size = 0;
-        if (*ad <= '0' || *ad >= '9')
+        if (*ad < '0' || *ad > '9')
         {
 	    logf (LOG_FATAL, "Missing size after path: %s", ad0);
             return -1;
