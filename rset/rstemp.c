@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.21  1997-09-17 12:19:23  adam
+ * Revision 1.22  1997-10-31 12:38:12  adam
+ * Bug fix: added missing xfree() call.
+ *
+ * Revision 1.21  1997/09/17 12:19:23  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -245,6 +248,7 @@ static void r_close (RSFD rfd)
         close (info->fd);
         info->fd = -1;
     }
+    xfree (rfd);
 }
 
 static void r_delete (RSET ct)
