@@ -1,6 +1,8 @@
 #!/bin/sh
 test -d tmp || mkdir tmp
 test -d lock || mkdir lock
+test -d register || mkdir register
+
 echo Loading Records
 if [ -x ../../index/zebraidx ]; then
 	../../index/zebraidx update records
