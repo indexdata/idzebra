@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.10  1996-03-19 19:22:44  quinn
+ * Revision 1.11  1996-03-20 13:29:17  quinn
+ * Bug-fix
+ *
+ * Revision 1.10  1996/03/19  19:22:44  quinn
  * Fixed update-bug
  *
  * Revision 1.9  1996/02/06  10:19:57  quinn
@@ -116,6 +119,9 @@ int is_p_read_partial(is_mtable *tab, is_mblock *block)
 	    sizeof(tab->num_records));
 	buf->offset +=sizeof(tab->num_records);
     }
+    logf(LOG_DEBUG, "R: Block #%d: num %d nextpos %d total %d",
+        block->diskpos, block->num_records, block->nextpos,
+	block == tab->data ? tab->num_records : -1);
     buf->num = (toread - buf->offset) / is_keysize(tab->is);
     if (buf->num >= block->num_records)
     {
@@ -207,10 +213,14 @@ void is_p_sync(is_mtable *tab)
 		sizeof(tab->num_records));
 	    sum += sizeof(tab->num_records);
 	}
+	logf (LOG_DEBUG, "W: Block #%d contains %d records.", p->diskpos,
+	    p->num_records);
 	for (b = p->data; b; b = b->next)
 	{
-	    memcpy(type->dbuf + sum, b->data + b->offset, v = b->num *
-		is_keysize(tab->is));
+            logf(LOG_DEBUG, "   buf: offset %d, keys %d, type %d, ref %d",
+	    	b->offset, b->num, b->type, b->refcount);
+	    if ((v = b->num * is_keysize(tab->is)) > 0)
+		memcpy(type->dbuf + sum, b->data + b->offset, v);
 
 	    sum += v;
 	    assert(sum <= type->blocksize);
@@ -220,7 +230,6 @@ void is_p_sync(is_mtable *tab)
 	    logf (LOG_FATAL, "Failed to write block.");
 	    exit(1);
 	}
-	logf (LOG_DEBUG, "W: Block #%d contains %d records.", p->diskpos, p->num_records);
     }
 }
 
@@ -300,8 +309,7 @@ void is_p_align(is_mtable *tab)
 	    }
 	    else
 	    {
-	    	tab->data = tab->data->next;
-	    	next = tab->data;
+	    	next = tab->data->next;
 		if (next)
 		{
 		    if (next->state < IS_MBSTATE_CLEAN)
@@ -320,6 +328,7 @@ void is_p_align(is_mtable *tab)
 			}
 		    }
 		    next->state = IS_MBSTATE_DIRTY; /* force re-process */
+		    tab->data = next;
 		}
 	    }
 	    if (mblock->diskpos >= 0)

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.12  1996-03-11 14:52:23  quinn
+ * Revision 1.13  1996-03-20 13:29:16  quinn
+ * Bug-fix
+ *
+ * Revision 1.12  1996/03/11  14:52:23  quinn
  * Fixed update bug. Repeated insertion in the same area sometimes caused
  * problems.
  *
@@ -307,7 +310,9 @@ int is_m_write_record(is_mtable *tab, const void *rec)
 	mbuf = tab->cur_mblock->cur_mbuf = mbuf->next;
 	mbuf->cur_record = 0;
     }
+    /*
     logf (LOG_DEBUG, "is_m_write_rec(rec == %d)", mbuf->cur_record);
+    */
     memcpy(mbuf->data + mbuf->offset + mbuf->cur_record * is_keysize(tab->is),
 	rec, is_keysize(tab->is));
     mbuf->num++;

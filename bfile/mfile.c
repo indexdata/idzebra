@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.16  1995-12-12 15:57:57  adam
+ * Revision 1.17  1996-03-20 13:29:11  quinn
+ * Bug-fix
+ *
+ * Revision 1.16  1995/12/12  15:57:57  adam
  * Implemented mf_unlink. cf_unlink uses mf_unlink.
  *
  * Revision 1.15  1995/12/08  16:21:14  adam
@@ -402,7 +405,6 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
     /* file needs to grow */
     while (ps >= mf->files[mf->cur_file].blocks)
     {
-    	logf (LOG_DEBUG, "File grows");
     	/* file overflow - allocate new file */
     	if (mf->files[mf->cur_file].dir->max_bytes >= 0 &&
 	    (ps - mf->files[mf->cur_file].blocks + 1) * mf->blocksize >
