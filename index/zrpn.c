@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.7  1995-09-07 13:58:36  adam
+ * Revision 1.8  1995-09-08 14:52:27  adam
+ * Minor changes. Dictionary is lower case now.
+ *
+ * Revision 1.7  1995/09/07  13:58:36  adam
  * New parameter: result-set file descriptor (RSFD) to support multiple
  * positions within the same result-set.
  * Boolean operators: and, or, not implemented.
@@ -44,19 +47,21 @@
 
 static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt)
 {
-    char termz[256];
+    char termz[IT_MAX_WORD+1];
     size_t sizez;
     struct rset_isam_parms parms;
     const char *info;
+    int i;
     Z_Term *term = zapt->term;
 
     if (term->which != Z_Term_general)
         return NULL; 
     sizez = term->u.general->len;
-    if (sizez > 255)
-        sizez = 255;
-    memcpy (termz, term->u.general->buf, sizez);
-    termz[sizez] = '\0';
+    if (sizez > IT_MAX_WORD)
+        sizez = IT_MAX_WORD;
+    for (i = 0; i<sizez; i++)
+        termz[i] = index_char_cvt (term->u.general->buf[i]);
+    termz[i] = '\0';
     logf (LOG_DEBUG, "dict_lookup: %s", termz);
     if (!(info = dict_lookup (zi->wordDict, termz)))
         return rset_create (rset_kind_null, NULL);

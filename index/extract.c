@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.5  1995-09-06 16:11:16  adam
+ * Revision 1.6  1995-09-08 14:52:27  adam
+ * Minor changes. Dictionary is lower case now.
+ *
+ * Revision 1.5  1995/09/06  16:11:16  adam
  * Option: only one word key per file.
  *
  * Revision 1.4  1995/09/05  15:28:39  adam
@@ -152,7 +155,7 @@ void text_extract (struct strtab *t, SYSNO sysno, int cmd, const char *fname)
     struct it_key k;
     int seqno = 1;
     int c;
-    char w[256];
+    char w[IT_MAX_WORD];
 
     logf (LOG_DEBUG, "Text extract of %d", sysno);
     k.sysno = sysno;
@@ -167,7 +170,7 @@ void text_extract (struct strtab *t, SYSNO sysno, int cmd, const char *fname)
         int i = 0;
         while (i < 254 && c != EOF && isalnum(c))
         {
-            w[i++] = c;
+            w[i++] = index_char_cvt (c);
             c = getc (inf);
         }
         if (i)

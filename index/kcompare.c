@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.3  1995-09-07 13:58:36  adam
+ * Revision 1.4  1995-09-08 14:52:27  adam
+ * Minor changes. Dictionary is lower case now.
+ *
+ * Revision 1.3  1995/09/07  13:58:36  adam
  * New parameter: result-set file descriptor (RSFD) to support multiple
  * positions within the same result-set.
  * Boolean operators: and, or, not implemented.
@@ -23,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <assert.h>
 
 #include "index.h"
@@ -58,16 +62,7 @@ int key_compare (const void *p1, const void *p2)
     return 0;
 }
 
-int key_compare_x (const struct it_key *i1, const struct it_key *i2)
+int index_char_cvt (int c)
 {
-    if ( i1->sysno != i2->sysno)
-        return i1->sysno - i2->sysno;
-#if IT_KEY_HAVE_FIELD
-    if ( i1->seqno != i2->seqno)
-        return i1->seqno - i2->seqno;
-    return i1->field - i2->field;
-#else
-    return i1->seqno - i2->seqno;
-#endif
+    return tolower (c);
 }
-

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.7  1995-09-06 16:11:16  adam
+ * Revision 1.8  1995-09-08 14:52:27  adam
+ * Minor changes. Dictionary is lower case now.
+ *
+ * Revision 1.7  1995/09/06  16:11:16  adam
  * Option: only one word key per file.
  *
  * Revision 1.6  1995/09/05  15:28:39  adam
@@ -33,6 +36,7 @@
 #include <dict.h>
 #include <isam.h>
 
+#define IT_MAX_WORD 256
 #define IT_KEY_HAVE_FIELD 0
 
 struct it_key {
@@ -59,7 +63,6 @@ int key_close (void);
 void key_flush (void);
 void key_write (int cmd, struct it_key *k, const char *str);
 int key_compare (const void *p1, const void *p2);
-int key_compare_x (const struct it_key *i1, const struct it_key *i2);
 void key_input (const char *dict_fname, const char *isam_fname, 
                 const char *key_fname, int cache);
 int key_sort (const char *key_fname, size_t mem);
@@ -75,3 +78,4 @@ int strtab_src (struct strtab *t, const char *name, void ***infop);
 void strtab_del (struct strtab *t,
                  void (*func)(const char *name, void *info, void *data),
                  void *data);
+int index_char_cvt (int c);

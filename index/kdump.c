@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.3  1995-09-06 16:11:17  adam
+ * Revision 1.4  1995-09-08 14:52:27  adam
+ * Minor changes. Dictionary is lower case now.
+ *
+ * Revision 1.3  1995/09/06  16:11:17  adam
  * Option: only one word key per file.
  *
  * Revision 1.2  1995/09/04  12:33:42  adam
@@ -46,7 +49,7 @@ int main (int argc, char **argv)
     int ret;
     char *arg;
     char *key_fname = NULL;
-    char key_string[1000];
+    char key_string[IT_MAX_WORD];
     char key_info[256];
     FILE *inf;
 
@@ -82,7 +85,8 @@ int main (int argc, char **argv)
         struct it_key k;
 
         memcpy (&k, key_info+1, sizeof(k));
-        printf ("%s sysno=%d op=%d\n", key_string, k.sysno, *key_info);
+        printf ("%7d op=%d s=%-3d %s\n", k.sysno, *key_info, k.seqno,
+                key_string);
     }
     if (fclose (inf))
     {

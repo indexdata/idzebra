@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.5  1995-09-06 16:11:16  adam
+ * Revision 1.6  1995-09-08 14:52:26  adam
+ * Minor changes. Dictionary is lower case now.
+ *
+ * Revision 1.5  1995/09/06  16:11:16  adam
  * Option: only one word key per file.
  *
  * Revision 1.4  1995/09/04  12:33:41  adam
@@ -36,7 +39,7 @@ struct dir_entry *dir_open (const char *rep)
 {
     DIR *dir;
     struct dirent *dent;
-    size_t entry_max = 20;
+    size_t entry_max = 50;
     size_t idx = 0;
     struct dir_entry *entry;
 
@@ -62,7 +65,7 @@ struct dir_entry *dir_open (const char *rep)
         {
             struct dir_entry *entry_n;
 
-            if (!(entry_n = malloc (sizeof(*entry) * (entry_max + 100))))
+            if (!(entry_n = malloc (sizeof(*entry) * (entry_max + 400))))
             {
                 logf (LOG_FATAL|LOG_ERRNO, "malloc");
                 exit (1);
