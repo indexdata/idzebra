@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.34.2.1 2004-08-18 16:17:13 adam Exp $
+/* $Id: recindex.c,v 1.34.2.2 2005-01-16 23:13:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -38,6 +38,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  *      (length, data) - pairs
  *      length = 0 if same as previous
  */
+#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.117.2.1 2004-08-13 09:56:29 adam Exp $
+/* $Id: zserver.c,v 1.117.2.2 2005-01-16 23:13:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,6 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <fcntl.h>
@@ -712,7 +713,7 @@ static void bend_start (struct statserv_options_block *sob)
     if (!sob->handle)
     {
 	yaz_log (LOG_FATAL, "Failed to read config `%s'", sob->configname);
-	exit (1);
+	exit(1);
     }
 #ifdef WIN32
     

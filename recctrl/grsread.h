@@ -1,4 +1,4 @@
-/* $Id: grsread.h,v 1.14 2004-05-21 11:58:56 adam Exp $
+/* $Id: grsread.h,v 1.14.2.1 2005-01-16 23:13:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -25,6 +25,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GRSREAD_H
 #define GRSREAD_H
 
+#include <sys/types.h>
+#include <stdlib.h>
 #include <data1.h>
 
 #ifdef __cplusplus

@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.29.2.3 2004-11-26 11:06:13 adam Exp $
+/* $Id: charmap.c,v 1.29.2.4 2005-01-16 23:13:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -28,6 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  */
 
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
