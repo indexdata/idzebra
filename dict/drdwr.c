@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: drdwr.c,v $
- * Revision 1.6  1994-09-06 13:05:14  adam
+ * Revision 1.7  1994-10-05 10:47:15  adam
+ * Function pr_lru is non-static now. No warning no more.
+ *
+ * Revision 1.6  1994/09/06  13:05:14  adam
  * Further development of insertion. Some special cases are
  * not properly handled yet! assert(0) are put here. The
  * binary search in each page definitely reduce usr CPU.
@@ -24,7 +27,7 @@
 
 #include <dict.h>
 
-static void pr_lru (Dict_BFile bf)
+void dict_pr_lru (Dict_BFile bf)
 {
     struct Dict_file_block *p;
     for (p=bf->lru_back; p; p = p->lru_next)
@@ -176,7 +179,7 @@ int dict_bf_newp (Dict_BFile dbf, int no, void **bufp)
     p->dirty = 1;
 #if 0
     printf ("bf_newp of %d:", no);
-    pr_lru (dbf);
+    dict_pr_lru (dbf);
 #endif
     return 1;
 }
