@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.69  1997-04-29 09:26:03  adam
+ * Revision 1.70  1997-07-01 13:00:42  adam
+ * Bug fix in routine searchRecordKey: uninitialized variables.
+ *
+ * Revision 1.69  1997/04/29 09:26:03  adam
  * Bug fix: generic recordId handling didn't work for compressed internal
  * keys.
  *
@@ -656,6 +659,9 @@ static const char **searchRecordKey (struct recKeys *reckeys,
     int off = 0;
     int startSeq = -1;
     int i;
+    short attrUse;
+    char attrSet;
+    int seqno = 0;
 
     for (i = 0; i<32; i++)
         ws[i] = NULL;
@@ -666,9 +672,6 @@ static const char **searchRecordKey (struct recKeys *reckeys,
         const char *src = reckeys->buf + off;
 	const char *wstart;
         int lead;
-	short attrUse;
-	char attrSet;
-	int seqno;
     
         lead = *src++;
 
