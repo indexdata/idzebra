@@ -5,12 +5,7 @@
  * 
  * Isamd - isam with diffs 
  *
- * todo: Move read_pp into merge-d
- *       get it to work
- *
  */
-
-
 
 
 #include <stdlib.h>
@@ -28,23 +23,23 @@ static void init_fc (ISAMD is, int cat);
 
 #define ISAMD_FREELIST_CHUNK 1
 
-#define SMALL_TEST 0
+#define SMALL_TEST 1
 
 ISAMD_M isamd_getmethod (ISAMD_M me)
 {
     static struct ISAMD_filecat_s def_cat[] = {
 #if SMALL_TEST
 /*        blocksz,   max keys before switching size. Unused time being */
-        {    32,   40 },
-	{   128,    0 },
+        {    20,   40 },
+	{    32,    0 },
 #else
+        {    24,    1 },
         {    32,    1 },
+        {    64,    1 },
         {   128,    1 },
-        {   512,    1 },
-        {  2048,    1 },
-        {  8092,    1 },
-        { 32768,    1 },
-        {131068,    0 },
+        {   256,    1 },
+        {  1024,    1 },
+        {  2048,    0 },
 #endif 
 
 /* old values from isamc, long time ago...
@@ -61,7 +56,7 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
 /* blocks of 32 bytes, say max 16+24+24 = 64 keys */
 
     };
-    ISAMD_M m = (ISAMD_M) xmalloc (sizeof(*m));
+    ISAMD_M m = (ISAMD_M) xmalloc (sizeof(*m));  /*??? never released??? */
     m->filecat = def_cat;
 
     m->code_start = NULL;
@@ -448,6 +443,10 @@ void isamd_pp_close (ISAMD_PP pp)
     isamd_free_diffs(pp);  /* see merge-d.h */
     xfree (pp->buf);
     xfree (pp);
+    if (is->method->debug > 2)
+       logf (LOG_LOG, "isamd_pp_close %p %d=%d:%d  sz=%d n=%d=%d:%d",
+             pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
+             pp->next, isamd_type(pp->next), isamd_block(pp->next) );
 }
 
 
@@ -462,13 +461,11 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
 
     src = pp->buf = (char *) xmalloc (is->method->filecat[is->max_cat].bsize);
                  /* always allocate for the largest blocks, saves trouble */
-    memset(pp->buf,'\0',is->method->filecat[is->max_cat].bsize);
     pp->next = 0;
     pp->size = 0;
     pp->offset = 0;
     pp->is = is;
     pp->decodeClientData = (*is->method->code_start)(ISAMD_DECODE);
-    //pp->deleteFlag = 0;
     pp->numKeys = 0;
     pp->diffs=0;
   
@@ -490,10 +487,16 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
         assert (pp->next != pp->pos);
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMD_BLOCK_OFFSET_1);
-        if (is->method->debug > 2)
-            logf (LOG_LOG, "isamd_pp_open sz=%d c=%d p=%d n=%d",
-                 pp->size, pp->cat, pp->pos, isamd_block(pp->next));
+//        if (is->method->debug > 2)
+//           logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
+//                 pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
+//                 pp->next, isamd_type(pp->next), isamd_block(pp->next) );
     }
+    if (is->method->debug > 2)
+       logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
+             pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
+             pp->next, isamd_type(pp->next), isamd_block(pp->next) );
+    
       
     return pp;
 }
@@ -513,13 +516,12 @@ void isamd_buildfirstblock(ISAMD_PP pp){
   memcpy(dst, &pp->diffs, sizeof(pp->diffs));
   dst += sizeof(pp->diffs);  
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_1);
-  if (pp->is->method->debug > 1) //!!! 2
-     logf (LOG_LOG, "isamd: 1st: sz=%d  p=%d:%d>%d:%d nk=%d d=%d=2*%d+%d",
+  if (pp->is->method->debug > 2)
+     logf (LOG_LOG, "isamd: first: sz=%d  p=%d/%d>%d/%d nk=%d d=%d",
            pp->size, 
            pp->cat, pp->pos, 
            isamd_type(pp->next), isamd_block(pp->next),
-           pp->numKeys, 
-           pp->diffs, pp->diffs/2, pp->diffs&1);
+           pp->numKeys, pp->diffs);
 }
 
 void isamd_buildlaterblock(ISAMD_PP pp){
@@ -531,7 +533,7 @@ void isamd_buildlaterblock(ISAMD_PP pp){
   memcpy(dst, &pp->size,sizeof(pp->size));
   dst += sizeof(pp->size);
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_N);
-  if (pp->is->method->debug > 1)  //!!! 2
+  if (pp->is->method->debug > 2)
      logf (LOG_LOG, "isamd: l8r: sz=%d  p=%d/%d>%d/%d",
            pp->size, 
            pp->pos, pp->cat, 
@@ -688,8 +690,8 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.5  1999-08-07 11:30:59  heikki
- * Bug fixing (still a mem leak somewhere)
+ * Revision 1.6  1999-08-17 19:44:25  heikki
+ * Fixed memory leaks
  *
  * Revision 1.4  1999/08/04 14:21:18  heikki
  * isam-d seems to be working.
