@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.134 2002-12-30 12:56:07 adam Exp $
+/* $Id: extract.c,v 1.135 2003-02-25 21:51:05 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -943,7 +943,6 @@ int bufferExtractRecord (ZebraHandle zh,
     RecType recType;
     char subType[1024];
     void *clientData;
-    SYSNO sysnotmp;
     Record rec;
     long recordOffset = 0;
     struct zebra_fetch_control fc;
@@ -1591,7 +1590,7 @@ static void extract_add_sort_string (RecWord *p, const char *string,
 {
     ZebraHandle zh = p->extractCtrl->handle;
     struct sortKeys *sk = &zh->reg->sortKeys;
-    size_t off = 0;
+    int off = 0;
 
     while (off < sk->buf_used)
     {
@@ -1754,13 +1753,13 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
                             int cmd, struct sortKeys *sk)
 {
     SortIdx sortIdx = zh->reg->sortIdx;
-    size_t off = 0;
+    int off = 0;
 
     sortIdx_sysno (sortIdx, sysno);
 
     while (off < sk->buf_used)
     {
-        int set, use, slen, l;
+        int set, use, slen;
         
         off += key_SU_decode(&set, sk->buf + off);
         off += key_SU_decode(&use, sk->buf + off);

@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.102 2003-01-13 15:06:23 adam Exp $
+/* $Id: zserver.c,v 1.103 2003-02-25 21:51:05 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -34,6 +34,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/log.h>
 #include <yaz/ill.h>
+#include <yaz/yaz-util.h>
 
 #include "zserver.h"
 
