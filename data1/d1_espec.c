@@ -1,4 +1,4 @@
-/* $Id: d1_espec.c,v 1.8 2005-02-08 00:36:08 adam Exp $
+/* $Id: d1_espec.c,v 1.9 2005-03-05 11:35:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,6 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <yaz/log.h>
 #include <yaz/odr.h>
@@ -191,7 +192,6 @@ static Z_ETagUnit *read_tagunit(char *buf, NMEM nmem,
     }
     else if ((terms = sscanf(buf, "%511[^)]", value)) >= 1)
     {
-	int numval;
 	Z_SpecificTag *t;
 	char *valp = value;
 
