@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.1 2003-05-21 14:39:22 adam Exp $
+ * $Id: testclient.c,v 1.2 2004-09-22 12:13:10 heikki Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -27,7 +27,6 @@ int main(int argc, char **argv)
     char *target = 0;
     char *arg;
     int delay_sec = 0;
-    int expected_hits=-1;
     int ret;
     int retrieve_number = 0;
     int retrieve_offset = 0;
@@ -79,6 +78,7 @@ int main(int argc, char **argv)
         printf (" -o off       offset for records - counting from 0.\n");
         printf (" -f format    set record syntax. Default: none\n");
         printf (" -d sec       delay a number of seconds before exit.\n");
+        printf (" -c count     expect count hits, fail if not.\n");
         exit (3);
     }
     z = ZOOM_connection_new (target, 0);
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 	if (check_count != -1 && check_count != ZOOM_resultset_size(r))
 	{
 	    printf("Wrong number of hits, expected %d, got %d\n",
-			    expected_hits, ZOOM_resultset_size(r) );
+			    check_count, ZOOM_resultset_size(r) );
 	    exit(3);
 	}
     }
