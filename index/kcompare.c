@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.48 2004-08-04 09:00:00 adam Exp $
+/* $Id: kcompare.c,v 1.49 2004-08-06 09:37:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -33,7 +33,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define INT_CODEC_NEW 0
 #endif
 
+#ifdef __GNUC__
 #define CODEC_INLINE inline
+#else
+#define CODEC_INLINE
+#endif
+
 void key_logdump_txt (int logmask, const void *p, const char *txt)
 {
     struct it_key key;
