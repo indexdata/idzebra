@@ -20,10 +20,9 @@ struct inv_stat_info {
     int isam_bounds[20];
     int isam_occurrences[20];
     char tmp[128];
-    int isamb_levels[10];
+    int isamb_levels[10][5];
     int isamb_sizes[10];
     int isamb_blocks[10];
-    int isamb_no[10];
 };
 
 #define SINGLETON_TYPE 8 /* the type to use for singletons that */ 
@@ -126,13 +125,15 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         int blocks;
         
         pp = isamb_pp_open_x(stat_info->zh->reg->isamb, isam_p, &level);
+
         while (isamb_pp_read(pp, &key))
             occur++;
         isamb_pp_close_x (pp, &size, &blocks);
-        stat_info->isamb_no[cat]++;
-        stat_info->isamb_levels[cat] += level;
         stat_info->isamb_blocks[cat] += blocks;
         stat_info->isamb_sizes[cat] += size;
+        if (level > 4)
+            level = 4;
+        stat_info->isamb_levels[cat][level] ++;
     }
 
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
@@ -189,10 +190,11 @@ void zebra_register_statistics (ZebraHandle zh)
 
     for (i = 0; i<10; i++)
     {
-        stat_info.isamb_levels[i] = 0;
+        int j;
+        for (j = 0; j<5; j++)
+            stat_info.isamb_levels[i][j] = 0;
         stat_info.isamb_sizes[i] = 0;
         stat_info.isamb_blocks[i] = 0;
-        stat_info.isamb_no[i] = 0;
     }
 
     dict_scan (zh->reg->dict, term_dict, &before, &after, &stat_info,
@@ -255,16 +257,20 @@ void zebra_register_statistics (ZebraHandle zh)
     {
         for (i = 0; i<4; i++)
         {
+            int j;
             int bsize = isamb_block_info(zh->reg->isamb, i);
             if (bsize < 0)
                 break;
             fprintf (stderr, "Category   %d\n", i);
             fprintf (stderr, "Block size %d\n", bsize);
-            fprintf (stderr, "Lists:     %d\n", stat_info.isamb_no[i]);
             fprintf (stderr, "Blocks:    %d\n", stat_info.isamb_blocks[i]);
             fprintf (stderr, "Size:      %d\n", stat_info.isamb_sizes[i]);
             fprintf (stderr, "Total      %d\n", stat_info.isamb_blocks[i]*
                      bsize);
+            for (j = 0; j<5; j++)
+                if (stat_info.isamb_levels[i][j])
+                    fprintf (stderr, "Level%d     %d\n", j,
+                             stat_info.isamb_levels[i][j]);
         }
     }
 
@@ -287,7 +293,10 @@ void zebra_register_statistics (ZebraHandle zh)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.26  2002-04-29 18:03:46  adam
+ * Revision 1.27  2002-04-30 08:28:37  adam
+ * isamb fixes for pp_read. Statistics
+ *
+ * Revision 1.26  2002/04/29 18:03:46  adam
  * More isamb statistics
  *
  * Revision 1.25  2002/04/26 08:44:47  adam

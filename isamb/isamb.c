@@ -2,7 +2,7 @@
  *  Copyright (c) 2000-2002, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.11 2002-04-29 18:03:46 adam Exp $
+ *  $Id: isamb.c,v 1.12 2002-04-30 08:28:37 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -39,7 +39,7 @@ struct ISAMB_s {
 };
 
 struct ISAMB_block {
-    int pos;
+    ISAMB_P pos;
     int cat;
     int size;
     int leaf;
@@ -52,6 +52,7 @@ struct ISAMB_block {
 
 struct ISAMB_PP_s {
     ISAMB isamb;
+    ISAMB_P pos;
     int level;
     int total_size;
     int no_blocks;
@@ -78,7 +79,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
     isamb->bfs = bfs;
     isamb->method = (ISAMC_M) xmalloc (sizeof(*method));
     memcpy (isamb->method, method, sizeof(*method));
-    isamb->no_cat = 4;
+    isamb->no_cat = 3;
 
     isamb->file = xmalloc (sizeof(*isamb->file) * isamb->no_cat);
     for (i = 0; i<isamb->no_cat; i++)
@@ -567,6 +568,7 @@ ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level)
     pp->isamb = isamb;
     pp->block = xmalloc (10 * sizeof(*pp->block));
 
+    pp->pos = pos;
     pp->level = 0;
     pp->total_size = 0;
     pp->no_blocks = 0;
@@ -579,7 +581,7 @@ ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level)
         pp->total_size += p->size;
         pp->no_blocks++;
 
-        if (p->bytes[0]) /* leaf */
+        if (p->leaf)
             break;
 
         decode_ptr (&src, &pos);
@@ -643,7 +645,7 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
             pp->block[pp->level] = 0;
             (pp->level)--;
             p = pp->block[pp->level];
-            assert (p->bytes[0] == 0);  /* must be int */
+            assert (!p->leaf);  /* must be int */
         }
         src = p->bytes + p->offset;
         
@@ -673,7 +675,7 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
         }
     }
     assert (p->offset < p->size);
-    assert (p->bytes[0]);
+    assert (p->leaf);
     src = p->bytes + p->offset;
     (*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
                                     &dst, &src);
