@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isams.c,v $
- * Revision 1.1  1999-05-12 13:08:06  adam
+ * Revision 1.2  1999-05-15 14:35:48  adam
+ * Minor changes.
+ *
+ * Revision 1.1  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  */
@@ -30,6 +33,7 @@ struct ISAMS_s {
     char *merge_buf;
 
     int block_size;
+    int debug;
     BFile bf;
 }; 
 
@@ -67,6 +71,7 @@ ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
     is->method = xmalloc (sizeof(*is->method));
     memcpy (is->method, method, sizeof(*method));
     is->block_size = is->method->block_size;
+    is->debug = is->method->debug;
 
     is->bf = bf_open (bfs, name, is->block_size, writeflag);
 
@@ -111,7 +116,8 @@ ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
     is->head.last_offset += sizeof(int);
     if (is->head.last_offset > is->block_size)
     {
-	logf (LOG_LOG, "first_block=%d", first_block);
+	if (is->debug > 2)
+	    logf (LOG_LOG, "first_block=%d", first_block);
 	bf_write(is->bf, is->head.last_block, 0, 0, is->merge_buf);
 	(is->head.last_block)++;
 	is->head.last_offset -= is->block_size;
@@ -173,7 +179,8 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
 {
     ISAMS_PP pp = xmalloc (sizeof(*pp));
 
-    logf (LOG_LOG, "isams: isams_pp_open pos=%ld", (long) pos);
+    if (is->debug = 1)
+	logf (LOG_LOG, "isams: isams_pp_open pos=%ld", (long) pos);
     pp->is = is;
     pp->decodeClientData = (*is->method->code_start)(ISAMC_DECODE);
     pp->numKeys = 0;
