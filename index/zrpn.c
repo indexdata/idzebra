@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-2000, Index Data
+ * Copyright (C) 1995-2001, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.105  2000-11-08 13:46:59  adam
+ * Revision 1.106  2001-04-11 07:58:13  adam
+ * Bug fix: multiple space mapped to one space when using complete subfield.
+ *
+ * Revision 1.105  2000/11/08 13:46:59  adam
  * Fixed scan: server could break if bad attribute/database was selected.
  * Work on remote update.
  *
@@ -578,6 +581,9 @@ static int term_100 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
+    const char *space_start = 0;
+    const char *space_end = 0;
+
     if (!term_pre (zebra_maps, reg_type, src, NULL, NULL))
         return 0;
     s0 = *src;
@@ -585,8 +591,33 @@ static int term_100 (ZebraMaps zebra_maps, int reg_type,
     {
         s1 = s0;
         map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
-        if (space_split && **map == *CHR_SPACE)
-            break;
+	if (space_split)
+	{
+	    if (**map == *CHR_SPACE)
+		break;
+	}
+	else  /* complete subfield only. */
+	{
+	    if (**map == *CHR_SPACE)
+	    {   /* save space mapping for later  .. */
+		space_start = s1;
+		space_end = s0;
+		continue;
+	    }
+	    else if (space_start)
+	    {   /* reload last space */
+		while (space_start < space_end)
+		{
+		    if (!isalnum (*space_start) && *space_start != '-')
+			dst[i++] = '\\';
+		    dst_term[j++] = *space_start;
+		    dst[i++] = *space_start++;
+		}
+		/* and reset */
+		space_start = space_end = 0;
+	    }
+	}
+	/* add non-space char */
         while (s1 < s0)
         {
             if (!isalnum (*s1) && *s1 != '-')
