@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.45  1996-05-14 11:34:00  adam
+ * Revision 1.46  1996-05-15 11:57:56  adam
+ * Fixed bug introduced by set/field mapping in search operations.
+ *
+ * Revision 1.45  1996/05/14  11:34:00  adam
  * Scan support in multiple registers/databases.
  *
  * Revision 1.44  1996/05/14  06:16:44  adam
@@ -668,7 +671,7 @@ static void verbatim_char (int ch, int *indx, char *dst)
 }
 
 static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                       const char *term_sub,
+                       const char *term_sub, int regType,
                        oid_value attributeSet, struct grep_info *grep_info,
                        int num_bases, char **basenames)
 {
@@ -736,6 +739,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
             return -1;
         }
         term_dict[prefix_len++] = ')';
+        term_dict[prefix_len++] = regType;
         term_dict[prefix_len] = '\0';
         if (!relational_term (zi, zapt, term_sub, term_dict,
                               attributeSet, grep_info, &max_pos))
@@ -816,7 +820,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 }
 
 static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                        int regType, char *termz)
+                        char *termz)
 {
     size_t i, sizez;
     Z_Term *term = zapt->term;
@@ -824,10 +828,9 @@ static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     sizez = term->u.general->len;
     if (sizez > IT_MAX_WORD-1)
         sizez = IT_MAX_WORD-1;
-    termz[0] = regType;
     for (i = 0; i < sizez; i++)
-        termz[i+1] = index_char_cvt (term->u.general->buf[i]);
-    termz[i+1] = '\0';
+        termz[i] = index_char_cvt (term->u.general->buf[i]);
+    termz[i] = '\0';
 }
 
 static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
@@ -852,7 +855,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    trans_term (zi, zapt, 'w', termz);
+    trans_term (zi, zapt, termz);
 
     grep_info.isam_p_indx = 0;
     grep_info.isam_p_size = 0;
@@ -866,7 +869,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
         }
         else
             strcpy (term_sub, p0);
-        if (field_term (zi, zapt, term_sub, attributeSet, &grep_info,
+        if (field_term (zi, zapt, term_sub, 'w', attributeSet, &grep_info,
                         num_bases, basenames))
             return NULL;
         if (!p1)
@@ -900,13 +903,13 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    trans_term (zi, zapt, 'p', termz);
+    trans_term (zi, zapt, termz);
 
     grep_info.isam_p_indx = 0;
     grep_info.isam_p_size = 0;
     grep_info.isam_p_buf = NULL;
 
-    if (field_term (zi, zapt, termz, attributeSet, &grep_info,
+    if (field_term (zi, zapt, termz, 'p', attributeSet, &grep_info,
                     num_bases, basenames))
         return NULL;
     if (grep_info.isam_p_indx < 1)
@@ -938,13 +941,13 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    trans_term (zi, zapt, 'w', termz);
+    trans_term (zi, zapt, termz);
 
     grep_info.isam_p_indx = 0;
     grep_info.isam_p_size = 0;
     grep_info.isam_p_buf = NULL;
 
-    if (field_term (zi, zapt, termz, attributeSet, &grep_info,
+    if (field_term (zi, zapt, termz, 'w', attributeSet, &grep_info,
                     num_bases, basenames))
         return NULL;
     if (grep_info.isam_p_indx < 1)
@@ -1065,7 +1068,7 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         zi->errCode = 124;
         return NULL;
     }
-    trans_term (zi, zapt, 'w', termz);
+    trans_term (zi, zapt, termz);
 
     grep_info.isam_p_size = 0;
     grep_info.isam_p_buf = NULL;
@@ -1081,7 +1084,7 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
             strcpy (term_sub, p0);
 
         grep_info.isam_p_indx = 0;
-        if (field_term (zi, zapt, term_sub, attributeSet, &grep_info,
+        if (field_term (zi, zapt, term_sub, 'w', attributeSet, &grep_info,
                         num_bases, basenames))
             return NULL;
         if (grep_info.isam_p_indx == 0)
@@ -1137,9 +1140,9 @@ static RSET rpn_search_APT_local (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     result = rset_create (rset_kind_temp, &parms);
     rsfd = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
 
-    trans_term (zi, zapt, 'w', termz);
+    trans_term (zi, zapt, termz);
 
-    key.sysno = atoi (termz+1);
+    key.sysno = atoi (termz);
     if (key.sysno <= 0)
         key.sysno = 1;
     rset_write (result, rsfd, &key);
@@ -1512,12 +1515,11 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         for (j = 0; j<before+after; j++)
             scan_info->list[j].term = NULL;
         termz[prefix_len++] = ords[i];
-        if (completeness_value == 2 || completeness_value == 3)
-            trans_term (zi, zapt, 'p', termz+prefix_len);
-        else
-            trans_term (zi, zapt, 'w', termz+prefix_len);
-        memcpy (scan_info->prefix, termz, prefix_len+1);
-        scan_info->prefix[prefix_len+1] = '\0';
+        termz[prefix_len++] =
+            (completeness_value==2 || completeness_value==3) ? 'p': 'w';
+        termz[prefix_len] = 0;
+        strcpy (scan_info->prefix, termz);
+        trans_term (zi, zapt, termz+prefix_len);
         dict_scan (zi->wordDict, termz, &before_tmp, &after_tmp, scan_info,
                    scan_handle);
     }
