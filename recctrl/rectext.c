@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.23 2005-01-15 19:38:32 adam Exp $
+/* $Id: rectext.c,v 1.24 2005-03-05 09:19:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -124,8 +124,8 @@ static int text_extract (void *clientData, struct recExtractCtrl *p)
 	}
         if (i)
         {
-            recWord.string = w;
-	    recWord.length = i;
+            recWord.term_buf = w;
+	    recWord.term_len = i;
             (*p->tokenAdd)(&recWord);
         }
     } while (r > 0);

@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.71 2005-01-16 23:14:57 adam Exp $
+/* $Id: isamb.c,v 1.72 2005-03-05 09:19:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -299,7 +299,7 @@ static void flush_blocks (ISAMB b, int cat)
     }
 }
 
-static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
+static int cache_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
 {
     int cat = (int) (pos&CAT_MASK);
     int off = (int) (((pos/CAT_MAX) & 
@@ -344,7 +344,7 @@ static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
         *ce_last = 0;  /* remove the last entry from list */
         if (ce_this->dirty)
         {
-            yaz_log(b->log_io, "bf_write: get_block");
+            yaz_log(b->log_io, "bf_write: cache_block");
             bf_write(b->file[cat].bf, ce_this->pos, 0, 0, ce_this->buf);
         }
         xfree(ce_this->buf);
@@ -355,7 +355,7 @@ static int get_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
     b->file[cat].cache_entries = ce_this;
     ce_this->buf = xmalloc(ISAMB_CACHE_ENTRY_SIZE);
     ce_this->pos = norm;
-    yaz_log(b->log_io, "bf_read: get_block");
+    yaz_log(b->log_io, "bf_read: cache_block");
     if (!bf_read(b->file[cat].bf, norm, 0, 0, ce_this->buf))
         memset (ce_this->buf, 0, ISAMB_CACHE_ENTRY_SIZE);
     if (wr)
@@ -446,7 +446,7 @@ static struct ISAMB_block *open_block(ISAMB b, ISAMC_P pos)
     p->buf = xmalloc(b->file[cat].head.block_size);
     p->cbuf = 0;
 
-    if (!get_block (b, pos, p->buf, 0))
+    if (!cache_block (b, pos, p->buf, 0))
     {
         yaz_log(b->log_io, "bf_read: open_block");
         if (!bf_read(b->file[cat].bf, pos/CAT_MAX, 0, 0, p->buf))
@@ -492,7 +492,7 @@ struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
     {
         p->pos = b->file[cat].head.free_list;
         assert((p->pos & CAT_MASK) == cat);
-        if (!get_block (b, p->pos, p->buf, 0))
+        if (!cache_block (b, p->pos, p->buf, 0))
         {
             yaz_log(b->log_io, "bf_read: new_block");
             if (!bf_read(b->file[cat].bf, p->pos/CAT_MAX, 0, 0, p->buf))
@@ -582,7 +582,7 @@ void close_block(ISAMB b, struct ISAMB_block *p)
                  p->pos, p->cat, p->pos/CAT_MAX);
         memcpy (p->buf, &b->file[p->cat].head.free_list, sizeof(zint));
         b->file[p->cat].head.free_list = p->pos;
-        if (!get_block (b, p->pos, p->buf, 1))
+        if (!cache_block (b, p->pos, p->buf, 1))
         {
             yaz_log(b->log_io, "bf_write: close_block (deleted)");
             bf_write(b->file[p->cat].bf, p->pos/CAT_MAX, 0, 0, p->buf);
@@ -602,7 +602,7 @@ void close_block(ISAMB b, struct ISAMB_block *p)
         p->buf[2] = size >> 8;
 	encode_ptr(&dst, p->no_items);
         check_block(b, p);
-        if (!get_block (b, p->pos, p->buf, 1))
+        if (!cache_block (b, p->pos, p->buf, 1))
         {
             yaz_log(b->log_io, "bf_write: close_block");
             bf_write(b->file[p->cat].bf, p->pos/CAT_MAX, 0, 0, p->buf);

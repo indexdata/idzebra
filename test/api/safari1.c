@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.3 2005-01-15 19:38:35 adam Exp $
+/* $Id: safari1.c,v 1.4 2005-03-05 09:19:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -50,13 +50,13 @@ int main(int argc, char **argv)
     ZebraHandle zh = zebra_open(zs);
 
     init_data(zh, myrec);
-    do_query(__LINE__, zh, "@attr 1=1016 the", 1);
-    do_query(__LINE__, zh, "@attr 1=1016 {the art}", 1);
-    do_query(__LINE__, zh, "@attr 1=1016 {den gamle}", 1);
-    do_query(__LINE__, zh, "@attr 1=1016 {the of}", 0);
+    do_query(__LINE__, zh, "@attr 1=any the", 1);
+    do_query(__LINE__, zh, "@attr 1=any {the art}", 1);
+    do_query(__LINE__, zh, "@attr 1=any {den gamle}", 1);
+    do_query(__LINE__, zh, "@attr 1=any {the of}", 0);
 
     ids[0] = 24338;
-    meta_query(__LINE__, zh, "@attr 1=1016 the", 1, ids);
+    meta_query(__LINE__, zh, "@attr 1=any the", 1, ids);
 	
     return close_down(zh, zs, 0);
 }

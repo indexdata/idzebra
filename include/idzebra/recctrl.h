@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.7 2005-01-16 23:13:06 adam Exp $
+/* $Id: recctrl.h,v 1.8 2005-03-05 09:19:14 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -38,8 +38,9 @@ typedef struct {
     int  attrSet;
     int  attrUse;
     unsigned reg_type;
-    char *string;
-    int  length;
+    char *attrStr;
+    char *term_buf;
+    int  term_len;
     zint seqno;
     zint record_id;
     zint section_id;

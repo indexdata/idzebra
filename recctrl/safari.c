@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.3 2005-01-15 19:38:32 adam Exp $
+/* $Id: safari.c,v 1.4 2005-03-05 09:19:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -139,8 +139,9 @@ static int safari_extract(void *clientData, struct recExtractCtrl *p)
 	}
 	for (cp = line + nor; *cp == ' '; cp++)
 	    ;
-	recWord.string = cp;
-	recWord.length = strlen(cp);
+	recWord.attrStr = field;
+	recWord.term_buf = cp;
+	recWord.term_len = strlen(cp);
 	(*p->tokenAdd)(&recWord);
     }
     fi_close(fi);

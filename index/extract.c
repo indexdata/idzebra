@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.171 2005-01-15 19:38:25 adam Exp $
+/* $Id: extract.c,v 1.172 2005-03-05 09:19:14 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -85,6 +85,7 @@ static void extract_init (struct recExtractCtrl *p, RecWord *w)
     w->seqno = 1;
     w->attrSet = VAL_BIB1;
     w->attrUse = 1016;
+    w->attrStr = 0;
     w->reg_type = 'w';
     w->extractCtrl = p;
     w->record_id = 0;
@@ -1235,13 +1236,9 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
         const char *src = reckeys->buf + off;
         struct it_key key;
 	char *dst = (char*) &key;
-	int attrSet, attrUse;
 
 	iscz1_decode(decode_handle, &dst, &src);
 	assert(key.len == 4);
-
-	attrSet = (int) key.mem[0] >> 16;
-	attrUse = (int) key.mem[0] & 65535;
 
         if (zh->reg->key_buf_used + 1024 > 
             (zh->reg->ptr_top -zh->reg->ptr_i)*sizeof(char*))
@@ -1251,11 +1248,8 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
         (zh->reg->key_buf)[zh->reg->ptr_top - zh->reg->ptr_i] =
 	    (char*)zh->reg->key_buf + zh->reg->key_buf_used;
 
-        ch = zebraExplain_lookupSU (zei, attrSet, attrUse);
-        if (ch < 0)
-            ch = zebraExplain_addSU (zei, attrSet, attrUse);
+	ch = key.mem[0];  /* ordinal for field/use/attribute */
 
-        assert (ch > 0);
 	zh->reg->key_buf_used +=
 	    key_SU_encode (ch,((char*)zh->reg->key_buf) +
                            zh->reg->key_buf_used);
@@ -1266,7 +1260,7 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
         ((char*)(zh->reg->key_buf))[(zh->reg->key_buf_used)++] = cmd;
 
         key.len = 3;
-	if (key.mem[1]) /* filter specify record ID */
+	if (key.mem[1]) /* filter specified record ID */
 	    key.mem[0] = key.mem[1];
 	else
 	    key.mem[0] = sysno;
@@ -1426,9 +1420,7 @@ void extract_add_it_key (ZebraHandle zh,
     
     if (keys->buf_used+1024 > keys->buf_max)
     {
-        char *b;
-
-        b = (char *) xmalloc (keys->buf_max += 128000);
+        char *b = (char *) xmalloc (keys->buf_max += 128000);
         if (keys->buf_used > 0)
             memcpy (b, keys->buf, keys->buf_used);
         xfree (keys->buf);
@@ -1448,8 +1440,25 @@ void extract_add_it_key (ZebraHandle zh,
 void extract_add_index_string (RecWord *p, const char *str, int length)
 {
     struct it_key key;
+
+    ZebraHandle zh = p->extractCtrl->handle;
+    ZebraExplainInfo zei = zh->reg->zei;
+    int ch;
+
+    if (p->attrStr)
+    {
+	ch = zebraExplain_lookup_attr_str(zei, p->attrStr);
+	if (ch < 0)
+	    ch = zebraExplain_add_attr_str(zei, p->attrStr);
+    }
+    else
+    {
+	ch = zebraExplain_lookup_attr_su(zei, p->attrSet, p->attrUse);
+	if (ch < 0)
+	    ch = zebraExplain_add_attr_su(zei, p->attrSet, p->attrUse);
+    }
     key.len = 4;
-    key.mem[0] = p->attrSet * 65536 + p->attrUse;
+    key.mem[0] = ch;
     key.mem[1] = p->record_id;
     key.mem[2] = p->section_id;
     key.mem[3] = p->seqno;
@@ -1513,11 +1522,11 @@ void extract_add_string (RecWord *p, const char *string, int length)
 
 static void extract_add_incomplete_field (RecWord *p)
 {
-    const char *b = p->string;
-    int remain = p->length;
+    const char *b = p->term_buf;
+    int remain = p->term_len;
     const char **map = 0;
     
-    yaz_log(YLOG_DEBUG, "Incomplete field, w='%.*s'", p->length, p->string);
+    yaz_log(YLOG_DEBUG, "Incomplete field, w='%.*s'", p->term_len, p->term_buf);
 
     if (remain > 0)
 	map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain, 0);
@@ -1530,7 +1539,7 @@ static void extract_add_incomplete_field (RecWord *p)
 	/* Skip spaces */
 	while (map && *map && **map == *CHR_SPACE)
 	{
-	    remain = p->length - (b - p->string);
+	    remain = p->term_len - (b - p->term_buf);
 	    if (remain > 0)
 		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain, 0);
 	    else
@@ -1545,7 +1554,7 @@ static void extract_add_incomplete_field (RecWord *p)
 
 	    while (i < IT_MAX_WORD && *cp)
 		buf[i++] = *(cp++);
-	    remain = p->length - (b - p->string);
+	    remain = p->term_len - (b - p->term_buf);
 	    if (remain > 0)
 		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain, 0);
 	    else
@@ -1560,13 +1569,13 @@ static void extract_add_incomplete_field (RecWord *p)
 
 static void extract_add_complete_field (RecWord *p)
 {
-    const char *b = p->string;
+    const char *b = p->term_buf;
     char buf[IT_MAX_WORD+1];
     const char **map = 0;
-    int i = 0, remain = p->length;
-    int first; /* first position */
+    int i = 0, remain = p->term_len;
 
-    yaz_log(YLOG_DEBUG, "Complete field, w='%.*s'", p->length, p->string);
+    yaz_log(YLOG_DEBUG, "Complete field, w='%.*s'",
+	    p->term_len, p->term_buf);
 
     if (remain > 0)
 	map = zebra_maps_input (p->zebra_maps, p->reg_type, &b, remain, 1);
@@ -1575,11 +1584,11 @@ static void extract_add_complete_field (RecWord *p)
     {
 	while (map && *map && **map == *CHR_SPACE)
 	{
-	    remain = p->length - (b - p->string);
+	    remain = p->term_len - (b - p->term_buf);
 
 	    if (remain > 0)
 	    {
-		first = i ? 0 : 1;
+		int first = i ? 0 : 1;  /* first position */
 		map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain, first);
 	    }
 	    else
@@ -1606,7 +1615,7 @@ static void extract_add_complete_field (RecWord *p)
 		while (i < IT_MAX_WORD && *cp)
 		    buf[i++] = *(cp++);
 	    }
-	    remain = p->length  - (b - p->string);
+	    remain = p->term_len  - (b - p->term_buf);
 	    if (remain > 0)
 	    {
 		map = zebra_maps_input (p->zebra_maps, p->reg_type, &b,
@@ -1631,10 +1640,10 @@ void extract_token_add (RecWord *p)
              p->string);
 #endif
     if ((wrbuf = zebra_replace(p->zebra_maps, p->reg_type, 0,
-			       p->string, p->length)))
+			       p->term_buf, p->term_len)))
     {
-	p->string = wrbuf_buf(wrbuf);
-	p->length = wrbuf_len(wrbuf);
+	p->term_buf = wrbuf_buf(wrbuf);
+	p->term_len = wrbuf_len(wrbuf);
     }
     if (zebra_maps_is_complete (p->zebra_maps, p->reg_type))
 	extract_add_complete_field (p);

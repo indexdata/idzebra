@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.99 2005-01-17 22:32:16 adam Exp $
+/* $Id: recgrs.c,v 1.100 2005-03-05 09:19:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -87,7 +87,7 @@ static int sp_range(struct source_parser *sp, data1_node *n, RecWord *wrd)
     /* 2nd arg: start */
     if (!sp_expr(sp, n, &tmp_w))
 	return 0;
-    start = atoi_n(tmp_w.string, tmp_w.length);
+    start = atoi_n(tmp_w.term_buf, tmp_w.term_len);
     
     if (sp->lookahead == ',')
     {
@@ -96,22 +96,22 @@ static int sp_range(struct source_parser *sp, data1_node *n, RecWord *wrd)
 	/* 3rd arg: length */
 	if (!sp_expr(sp, n, &tmp_w))
 	    return 0;
-	len = atoi_n(tmp_w.string, tmp_w.length);
+	len = atoi_n(tmp_w.term_buf, tmp_w.term_len);
     }
     else
-	len = wrd->length;
+	len = wrd->term_len;
     
     /* ) */
     if (sp->lookahead != ')')
 	return 0;	
     sp_lex(sp);
     
-    if (wrd->string && wrd->length)
+    if (wrd->term_buf && wrd->term_len)
     {
-	wrd->string += start;
-	wrd->length -= start;
-	if (wrd->length > len)
-	    wrd->length = len;
+	wrd->term_buf += start;
+	wrd->term_len -= start;
+	if (wrd->term_len > len)
+	    wrd->term_len = len;
     }
     return 1;
 }
@@ -134,13 +134,13 @@ static int sp_first(struct source_parser *sp, data1_node *n, RecWord *wrd)
 	
 	if (!sp_expr(sp, n, &search_w))
 	    return 0;
-	for (i = 0; i<wrd->length; i++)
+	for (i = 0; i<wrd->term_len; i++)
 	{
 	    int j;
-	    for (j = 0; j<search_w.length && i+j < wrd->length; j++)
-		if (wrd->string[i+j] != search_w.string[j])
+	    for (j = 0; j<search_w.term_len && i+j < wrd->term_len; j++)
+		if (wrd->term_buf[i+j] != search_w.term_buf[j])
 		    break;
-	    if (j == search_w.length) /* match ? */
+	    if (j == search_w.term_len) /* match ? */
 	    {
 		if (min_pos == -1 || i < min_pos)
 		    min_pos = i;
@@ -154,8 +154,8 @@ static int sp_first(struct source_parser *sp, data1_node *n, RecWord *wrd)
     if (min_pos == -1)
 	min_pos = 0;  /* the default if not found */
     sprintf(num_str, "%d", min_pos);
-    wrd->string = nmem_strdup(sp->nmem, num_str);
-    wrd->length = strlen(wrd->string);
+    wrd->term_buf = nmem_strdup(sp->nmem, num_str);
+    wrd->term_len = strlen(wrd->term_buf);
     return 1;
 }
 
@@ -167,8 +167,8 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
     {
 	if (n->which == DATA1N_data)
 	{
-	    wrd->string = n->u.data.data;
-	    wrd->length = n->u.data.len;
+	    wrd->term_buf = n->u.data.data;
+	    wrd->term_len = n->u.data.len;
 	}
 	sp_lex(sp);
     }
@@ -176,8 +176,8 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
     {
 	if (n->which == DATA1N_tag)
 	{		
-	    wrd->string = n->u.tag.tag;
-	    wrd->length = strlen(n->u.tag.tag);
+	    wrd->term_buf = n->u.tag.tag;
+	    wrd->term_len = strlen(n->u.tag.tag);
 	}
 	sp_lex(sp);
     }
@@ -192,18 +192,18 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
 	if (!sp_expr(sp, n, &tmp_w))
 	    return 0;
 	
-	wrd->string = "";
-	wrd->length = 0;
+	wrd->term_buf = "";
+	wrd->term_len = 0;
 	if (n->which == DATA1N_tag)
 	{
 	    data1_xattr *p = n->u.tag.attributes;
-	    while (p && strlen(p->name) != tmp_w.length && 
-		   memcmp (p->name, tmp_w.string, tmp_w.length))
+	    while (p && strlen(p->name) != tmp_w.term_len && 
+		   memcmp (p->name, tmp_w.term_buf, tmp_w.term_len))
 		p = p->next;
 	    if (p)
 	    {
-		wrd->string = p->value;
-		wrd->length = strlen(p->value);
+		wrd->term_buf = p->value;
+		wrd->term_len = strlen(p->value);
 	    }
 	}
 	if (sp->lookahead != ')')
@@ -220,22 +220,22 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
     }
     else if (sp->len > 0 && isdigit(*(unsigned char *)sp->tok))
     {
-	wrd->string = nmem_malloc(sp->nmem, sp->len);
-	memcpy(wrd->string, sp->tok, sp->len);
-	wrd->length = sp->len;
+	wrd->term_buf = nmem_malloc(sp->nmem, sp->len);
+	memcpy(wrd->term_buf, sp->tok, sp->len);
+	wrd->term_len = sp->len;
 	sp_lex(sp);
     }
     else if (sp->len > 2 && sp->tok[0] == '\'' && sp->tok[sp->len-1] == '\'')
     {
-	wrd->length = sp->len - 2;
-	wrd->string = nmem_malloc(sp->nmem, wrd->length);
-	memcpy(wrd->string, sp->tok+1, wrd->length);
+	wrd->term_len = sp->len - 2;
+	wrd->term_buf = nmem_malloc(sp->nmem, wrd->term_len);
+	memcpy(wrd->term_buf, sp->tok+1, wrd->term_len);
 	sp_lex(sp);
     }
     else 
     {
-	wrd->string = "";
-	wrd->length = 0;
+	wrd->term_buf = "";
+	wrd->term_len = 0;
 	sp_lex(sp);
     }
     return 1;
@@ -471,22 +471,22 @@ static void index_xpath_attr (char *tag_path, char *name, char *value,
     wrd->attrSet = VAL_IDXPATH;
     wrd->attrUse = 1;
     wrd->reg_type = '0';
-    wrd->string = tag_path;
-    wrd->length = strlen(tag_path);
+    wrd->term_buf = tag_path;
+    wrd->term_len = strlen(tag_path);
     (*p->tokenAdd)(wrd);
     
     if (value) {
         wrd->attrUse = 1015;
         wrd->reg_type = 'w';
-        wrd->string = value;
-        wrd->length = strlen(value);
+        wrd->term_buf = value;
+        wrd->term_len = strlen(value);
         (*p->tokenAdd)(wrd);
     }
     
     wrd->attrUse = 2;
     wrd->reg_type = '0';
-    wrd->string = tag_path;
-    wrd->length = strlen(tag_path);
+    wrd->term_buf = tag_path;
+    wrd->term_len = strlen(tag_path);
     (*p->tokenAdd)(wrd);
 }
 
@@ -512,8 +512,8 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
     switch (n->which)
     {
     case DATA1N_data:
-        wrd->string = n->u.data.data;
-        wrd->length = n->u.data.len;
+        wrd->term_buf = n->u.data.data;
+        wrd->term_len = n->u.data.len;
         xpdone = 0;
         flen = 0;
             
@@ -557,10 +557,10 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
 			int i;
 		        printf("%*sXPath index", (level + 1) * 4, "");
 			printf (" XData:\"");
-			for (i = 0; i<wrd_tl.length && i < 40; i++)
-			    fputc (wrd_tl.string[i], stdout);
+			for (i = 0; i<wrd_tl.term_len && i < 40; i++)
+			    fputc (wrd_tl.term_buf[i], stdout);
 			fputc ('"', stdout);
-			if (wrd_tl.length > 40)
+			if (wrd_tl.term_len > 40)
 			    printf (" ...");
 			fputc ('\n', stdout);
 		    }
@@ -581,10 +581,10 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
 			       tl->att->name, tl->att->value,
 			       tl->source);
 			printf (" XData:\"");
-			for (i = 0; i<wrd_tl.length && i < 40; i++)
-			    fputc (wrd_tl.string[i], stdout);
+			for (i = 0; i<wrd_tl.term_len && i < 40; i++)
+			    fputc (wrd_tl.term_buf[i], stdout);
 			fputc ('"', stdout);
-			if (wrd_tl.length > 40)
+			if (wrd_tl.term_len > 40)
 			    printf (" ...");
 			fputc ('\n', stdout);
 		    }
@@ -622,15 +622,15 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
 
 
         wrd->reg_type = '0';
-        wrd->string = tag_path_full;
-        wrd->length = flen;
+        wrd->term_buf = tag_path_full;
+        wrd->term_len = flen;
         wrd->attrSet = VAL_IDXPATH;
         wrd->attrUse = use;
         if (p->flagShowRecords)
         {
             printf("%*s tag=", (level + 1) * 4, "");
-            for (i = 0; i<wrd->length && i < 40; i++)
-                fputc (wrd->string[i], stdout);
+            for (i = 0; i<wrd->term_len && i < 40; i++)
+                fputc (wrd->term_buf[i], stdout);
             if (i == 40)
                 printf (" ..");
             printf("\n");
@@ -696,8 +696,8 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
                         /* attribute  (no value) */
                         wrd->reg_type = '0';
                         wrd->attrUse = 3;
-                        wrd->string = xp->name;
-                        wrd->length = strlen(xp->name);
+                        wrd->term_buf = xp->name;
+                        wrd->term_len = strlen(xp->name);
                         
                         wrd->seqno--;
                         (*p->tokenAdd)(wrd);
@@ -712,8 +712,8 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
                             
                             wrd->attrUse = 3;
                             wrd->reg_type = '0';
-                            wrd->string = comb;
-                            wrd->length = strlen(comb);
+                            wrd->term_buf = comb;
+                            wrd->term_len = strlen(comb);
                             wrd->seqno--;
                             
                             (*p->tokenAdd)(wrd);
@@ -750,8 +750,8 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
                                         (tl->att->parent->reference);
                                     wrd->attrUse = tl->att->locals->local;
                                     wrd->reg_type = *tl->structure;
-                                    wrd->string = xp->value;
-                                    wrd->length = strlen(xp->value);
+                                    wrd->term_buf = xp->value;
+                                    wrd->term_len = strlen(xp->value);
                                     (*p->tokenAdd)(wrd);
                                 }
                             }
@@ -796,11 +796,11 @@ static void index_termlist (struct source_parser *sp, data1_node *par,
     for (; tlist; tlist = tlist->next)
     {
 	/* consider source */
-	wrd->string = 0;
+	wrd->term_buf = 0;
 	assert(tlist->source);
 	sp_parse(sp, n, wrd, tlist->source);
 
-	if (wrd->string && wrd->length)
+	if (wrd->term_buf && wrd->term_len)
 	{
 	    if (p->flagShowRecords)
 	    {
@@ -812,10 +812,10 @@ static void index_termlist (struct source_parser *sp, data1_node *par,
 		       tlist->att->name, tlist->att->value,
 		       tlist->source);
 		printf (" XData:\"");
-		for (i = 0; i<wrd->length && i < 40; i++)
-		    fputc (wrd->string[i], stdout);
+		for (i = 0; i<wrd->term_len && i < 40; i++)
+		    fputc (wrd->term_buf[i], stdout);
 		fputc ('"', stdout);
-		if (wrd->length > 40)
+		if (wrd->term_len > 40)
 		    printf (" ...");
 		fputc ('\n', stdout);
 	    }

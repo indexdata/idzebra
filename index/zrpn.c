@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.169 2005-02-25 10:08:44 adam Exp $
+/* $Id: zrpn.c,v 1.170 2005-03-05 09:19:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -206,7 +206,7 @@ static void term_untrans(ZebraHandle zh, int reg_type,
 }
 
 static void add_isam_p(const char *name, const char *info,
-                        struct grep_info *p)
+		       struct grep_info *p)
 {
     if (!log_level_set)
     {
@@ -958,6 +958,7 @@ static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         use_value = 1016;
     for (base_no = 0; base_no < num_bases; base_no++)
     {
+	int ord = -1;
 	int attr_ok = 0;
 	int regex_range = 0;
 	int init_pos = 0;
@@ -976,23 +977,48 @@ static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         if (xpath_use > 0 && use_value == -2) 
         {
-            use_value = xpath_use;
+	    /* xpath mode and we have a string attribute */
+            attp.local_attributes = &id_xpath_attr;
+            attp.attset_ordinal = VAL_IDXPATH;
+            id_xpath_attr.next = 0;
+
+            use_value = xpath_use;  /* xpath_use as use-attribute now */
+            id_xpath_attr.local = use_value;
+        }
+        else if (curAttributeSet == VAL_IDXPATH && use_value >= 0)
+        {
+	    /* X-Path attribute, use numeric value directly */
             attp.local_attributes = &id_xpath_attr;
             attp.attset_ordinal = VAL_IDXPATH;
             id_xpath_attr.next = 0;
             id_xpath_attr.local = use_value;
         }
-        else if (curAttributeSet == VAL_IDXPATH)
+	else if (use_string &&
+		 (ord = zebraExplain_lookup_attr_str(zh->reg->zei,
+						     use_string)) >= 0)
+	{
+	    /* we have a match for a raw string attribute */
+            char ord_buf[32];
+            int i, ord_len;
+
+            if (prefix_len)
+                term_dict[prefix_len++] = '|';
+            else
+                term_dict[prefix_len++] = '(';
+            
+            ord_len = key_SU_encode (ord, ord_buf);
+            for (i = 0; i<ord_len; i++)
+            {
+                term_dict[prefix_len++] = 1;
+                term_dict[prefix_len++] = ord_buf[i];
+            }
+            attp.local_attributes = 0;  /* no more attributes */
+	}
+        else 
         {
-            attp.local_attributes = &id_xpath_attr;
-            attp.attset_ordinal = VAL_IDXPATH;
-            id_xpath_attr.next = 0;
-            id_xpath_attr.local = use_value;
-        }
-        else
-        {
+	    /* lookup in the .att files . Allow string as well */
             if ((r = att_getentbyatt (zh, &attp, curAttributeSet, use_value,
-                                            use_string)))
+				      use_string)))
             {
                 yaz_log(YLOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
                       curAttributeSet, use_value, r);
@@ -1021,29 +1047,29 @@ static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 continue;
             }
         }
-        for (local_attr = attp.local_attributes; local_attr;
-             local_attr = local_attr->next)
-        {
-            int ord;
-            char ord_buf[32];
-            int i, ord_len;
-            
-            ord = zebraExplain_lookupSU (zh->reg->zei, attp.attset_ordinal,
-                                         local_attr->local);
-            if (ord < 0)
-                continue;
-            if (prefix_len)
-                term_dict[prefix_len++] = '|';
-            else
-                term_dict[prefix_len++] = '(';
-            
-            ord_len = key_SU_encode (ord, ord_buf);
-            for (i = 0; i<ord_len; i++)
-            {
-                term_dict[prefix_len++] = 1;
-                term_dict[prefix_len++] = ord_buf[i];
-            }
-        }
+	for (local_attr = attp.local_attributes; local_attr;
+	     local_attr = local_attr->next)
+	{
+	    char ord_buf[32];
+	    int i, ord_len;
+	    
+	    ord = zebraExplain_lookup_attr_su(zh->reg->zei,
+					      attp.attset_ordinal,
+					      local_attr->local);
+	    if (ord < 0)
+		continue;
+	    if (prefix_len)
+		term_dict[prefix_len++] = '|';
+	    else
+		term_dict[prefix_len++] = '(';
+	    
+	    ord_len = key_SU_encode (ord, ord_buf);
+	    for (i = 0; i<ord_len; i++)
+	    {
+		term_dict[prefix_len++] = 1;
+		term_dict[prefix_len++] = ord_buf[i];
+	    }
+	}
         if (!prefix_len)
         {
 #if 1
@@ -1617,8 +1643,9 @@ static int numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             char ord_buf[32];
             int i, ord_len;
 
-            ord = zebraExplain_lookupSU (zh->reg->zei, attp.attset_ordinal,
-                                          local_attr->local);
+            ord = zebraExplain_lookup_attr_su(zh->reg->zei,
+					      attp.attset_ordinal,
+					      local_attr->local);
             if (ord < 0)
                 continue;
             if (prefix_len)
@@ -1858,7 +1885,7 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     char term_dict[2048];
     char ord_buf[32];
     int prefix_len = 0;
-    int ord = zebraExplain_lookupSU (zh->reg->zei, curAttributeSet, use);
+    int ord = zebraExplain_lookup_attr_su(zh->reg->zei, curAttributeSet, use);
     int ord_len, i, r, max_pos;
     int term_type = Z_Term_characterString;
     const char *flags = "void";
@@ -2499,8 +2526,9 @@ void rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         {
             int ord;
 
-            ord = zebraExplain_lookupSU (zh->reg->zei, attp.attset_ordinal,
-                                         local_attr->local);
+            ord = zebraExplain_lookup_attr_su(zh->reg->zei,
+					      attp.attset_ordinal,
+					      local_attr->local);
             if (ord > 0)
                 ords[ord_no++] = ord;
         }
