@@ -3,17 +3,18 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.13 1999-08-18 13:59:19 heikki Exp $
+ * $Id: merge-d.c,v 1.14 1999-08-20 12:25:58 heikki Exp $
  *
  * todo
- *  - Clean up log levels
  *  - Input filter: Eliminate del-ins pairs, tell if only one entry (or none)
- *  - single-entry optimizing
+ *  - single-entry optimizing (keep the one entry in the dict, no block)
  *  - study and optimize block sizes (later)
  *  - Clean up the different ways diffs are handled in writing and reading
  *  - Keep a merge-count in the firstpp, and if the block has already been
  *    merged, reduce it to a larger size even if it could fit in a small one!
  *  - Keep minimum freespace in the category table, and use that in reduce!
+ *  - pass a space-needed for separateDiffBlock and reduce to be able to 
+ *    reserve more room for diffs, or to force a separate (larger?) block
  *
  * bugs
  *  - Still has not been able to run a complete long test on bagel!
@@ -43,7 +44,7 @@
  *    7 = Log each record as it passes the system (once)
  *    8 = Log raw and (de)coded data
  *    9 = Anything else that may be useful
- *   .. = Anything needed toi hunt a specific bug
+ *   .. = Anything needed to hunt a specific bug
  *  (note that all tests in the code are like debug>3, which means 4 or above!)
  */
 
@@ -572,6 +573,8 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
    
    char hexbuff[64];
    
+   ++(is->files[0].no_fbuilds);
+
    firstpp=pp=isamd_pp_open(is, isamd_addr(0,is->max_cat));
    firstpp->size = firstpp->offset = ISAMD_BLOCK_OFFSET_1;
    
@@ -633,6 +636,8 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
   ISAMD_PP firstpp;  /* the new first, the one we write into */
   ISAMD_PP pp;
   void *encoder_data;
+
+  ++(readpp->is->files[0].no_merges);
      
   /* set up diffs as they should be for reading */
   readpp->offset= ISAMD_BLOCK_OFFSET_1; 
@@ -791,6 +796,9 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
    char *c_ptr = codebuff;
    int codelen;
    int merge_rc;
+   int mergecount=0;
+
+   ++(is->files[0].no_appds);
 
    firstpp=isamd_pp_open(is, ipos);
    if (is->method->debug >2) 
@@ -837,6 +845,8 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
             logf(LOG_LOG,"isamd_appd: block pp=%p buf=%p [%d]:%s",
                pp, pp->buf, 
                difflenidx, hexdump(&pp->buf[difflenidx],8,0));
+         if (mergecount++)
+             ++(is->files[0].no_remerges);
          merge_rc = merge (&firstpp, &pp, &i_key);
          if (0!=merge_rc)
            return merge_rc;  /* merge handled them all ! */
@@ -932,7 +942,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.13  1999-08-18 13:59:19  heikki
+ * Revision 1.14  1999-08-20 12:25:58  heikki
+ * Statistics in isamd
+ *
+ * Revision 1.13  1999/08/18 13:59:19  heikki
  * Fixed another unlikely difflen bug
  *
  * Revision 1.12  1999/08/18 13:28:17  heikki

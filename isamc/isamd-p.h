@@ -1,4 +1,4 @@
-/*
+/* $Id: isamd-p.h,v 1.5 1999-08-20 12:25:58 heikki Exp $
  * Copyright (c) 1995-1996, Index Data.
  * See the file LICENSE for details.
  * Heikki Levanto
@@ -38,6 +38,14 @@ typedef struct ISAMD_file_s {
     int sum_backward;
     int no_next;
     int no_prev;
+
+    int no_op_nodiff; /* existing blocks opened for reading without diffs */
+    int no_op_intdiff; /* - with internal diffs */
+    int no_op_extdiff; /* with separate diff blocks */
+    int no_fbuilds;    /* number of first-time builds */
+    int no_appds;      /* number of appends */
+    int no_merges;     /* number of merges done */
+    int no_remerges;   /* number of times more than one merge needed */
 
     char *alloc_buf;    /* free-list handling (?) */
     int alloc_entries_num;
@@ -96,7 +104,10 @@ void isamd_free_diffs(ISAMD_PP pp);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.4  1999-07-21 14:24:50  heikki
+ * Revision 1.5  1999-08-20 12:25:58  heikki
+ * Statistics in isamd
+ *
+ * Revision 1.4  1999/07/21 14:24:50  heikki
  * isamd write and read functions ok, except when diff block full.
  * (merge not yet done)
  *

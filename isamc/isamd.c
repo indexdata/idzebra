@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.8 1999-08-18 13:28:16 heikki Exp $ 
+ * $Id: isamd.c,v 1.9 1999-08-20 12:25:58 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -136,6 +136,13 @@ ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method)
 	is->files[i].sum_backward = 0;
 	is->files[i].no_next = 0;
 	is->files[i].no_prev = 0;
+        is->files[i].no_op_nodiff=0;
+        is->files[i].no_op_intdiff=0;
+        is->files[i].no_op_extdiff=0;
+        is->files[i].no_fbuilds=0;   
+        is->files[i].no_appds=0;     
+        is->files[i].no_merges=0;    
+        is->files[i].no_remerges=0;  
 
         init_fc (is, i);
     }
@@ -163,9 +170,10 @@ int isamd_close (ISAMD is)
 
     if (is->method->debug>0)
     {
-	logf (LOG_LOG, "isamd:    next    forw   mid-f    prev   backw   mid-b");
+        logf (LOG_LOG, "isamd statistics");
+	logf (LOG_LOG, "f      nxt    forw   mid-f    prev   backw   mid-b");
 	for (i = 0; i<is->no_files; i++)
-	    logf (LOG_LOG, "isamd:%8d%8d%8.1f%8d%8d%8.1f",
+	    logf (LOG_LOG, "%d%8d%8d%8.1f%8d%8d%8.1f",i,
 		  is->files[i].no_next,
 		  is->files[i].no_forward,
 		  is->files[i].no_forward ?
@@ -178,7 +186,7 @@ int isamd_close (ISAMD is)
 		  : 0.0);
     }
     if (is->method->debug>0)
-        logf (LOG_LOG, "isamd:  writes   reads skipped   alloc released  remap");
+        logf (LOG_LOG, "f  writes   reads skipped   alloc released ");
     for (i = 0; i<is->no_files; i++)
     {
         release_fc (is, i);
@@ -187,16 +195,36 @@ int isamd_close (ISAMD is)
             bf_write (is->files[i].bf, 0, 0, sizeof(ISAMD_head),
                  &is->files[i].head);
         if (is->method->debug>0)
-            logf (LOG_LOG, "isamd:%8d%8d%8d%8d%8d%8d",
+            logf (LOG_LOG, "%d%8d%8d%8d%8d%8d",i,
                   is->files[i].no_writes,
                   is->files[i].no_reads,
                   is->files[i].no_skip_writes,
                   is->files[i].no_allocated,
-                  is->files[i].no_released,
-                  is->files[i].no_remap);
+                  is->files[i].no_released);
         xfree (is->files[i].fc_list);
 	flush_block (is, i);
         bf_close (is->files[i].bf);
+    }
+    
+    if (is->method->debug>0) 
+    {
+        logf (LOG_LOG, "f   opens  simple     int     ext");
+        for (i = 0; i<is->no_files; i++)
+        {
+            logf (LOG_LOG, "%d%8d%8d%8d%8d",i,
+                  is->files[i].no_op_nodiff+
+                  is->files[i].no_op_intdiff+
+                  is->files[i].no_op_extdiff,
+                  is->files[i].no_op_nodiff,
+                  is->files[i].no_op_intdiff,
+                  is->files[i].no_op_extdiff);
+        }
+        logf (LOG_LOG, "    build  append   merge   remrg");
+        logf (LOG_LOG, "=%8d%8d%8d%8d",
+                  is->files[0].no_fbuilds,
+                  is->files[0].no_appds,
+                  is->files[0].no_merges,
+                  is->files[0].no_remerges);
     }
     xfree (is->files);
     xfree (is->method);
@@ -485,6 +513,13 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
         assert (pp->next != pp->pos);
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMD_BLOCK_OFFSET_1);
+        if (0==pp->diffs)
+           ++(is->files[pp->cat].no_op_nodiff);
+        else
+           if(pp->diffs&1)
+               ++(is->files[pp->cat].no_op_extdiff);
+           else
+               ++(is->files[pp->cat].no_op_intdiff);
     }
     if (is->method->debug > 5)
        logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
@@ -682,7 +717,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.8  1999-08-18 13:28:16  heikki
+ * Revision 1.9  1999-08-20 12:25:58  heikki
+ * Statistics in isamd
+ *
+ * Revision 1.8  1999/08/18 13:28:16  heikki
  * Set log levels to decent values
  *
  * Revision 1.6  1999/08/17 19:44:25  heikki
