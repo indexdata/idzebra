@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.c,v 1.47 2002-07-25 13:06:43 adam Exp $
+ * $Id: mfile.c,v 1.48 2002-07-25 13:45:49 adam Exp $
  */
 
 
@@ -413,7 +413,9 @@ int mf_close(MFile mf)
     for (i = 0; i < mf->no_files; i++)
     	if (mf->files[i].fd >= 0)
     	{
+#ifndef WIN32
 	    fsync(mf->files[i].fd);
+#endif
     	    close(mf->files[i].fd);
     	    mf->files[i].fd = -1;
 	}
