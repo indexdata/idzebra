@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: recgrs.c,v $
- * Revision 1.40  2001-03-29 21:31:31  adam
+ * Revision 1.41  2001-05-22 21:01:47  adam
+ * Removed print of data1 tree on stdout so that inetd works again.
+ *
+ * Revision 1.40  2001/03/29 21:31:31  adam
  * Fixed "record begin" for Tcl filter.
  *
  * Revision 1.39  2000/12/05 19:09:15  adam
@@ -783,7 +786,9 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     else if (p->comp && !res)
 	selected = 1;
 
+#if 0
     data1_pr_tree (p->dh, node, stdout);
+#endif
     logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
     switch (p->output_format = (p->input_format != VAL_NONE ?
 				p->input_format : VAL_SUTRS))
