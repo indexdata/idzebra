@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop04.sh,v 1.8 2005-01-02 23:21:31 adam Exp $
+# $Id: stop04.sh,v 1.9 2005-01-03 09:19:26 adam Exp $
 # test start and stop of the forked server 
 
 pp=${srcdir:-"."}
@@ -16,10 +16,9 @@ mkdir -p reg
 
 echo "Starting server with (forked)..." >>$LOG
 ../../index/zebrasrv -D -p z.pid -c $pp/zebra1.cfg -l $LOG tcp:@:9901 
-sleep 1
 
 echo "  checking that it runs... " >>$LOG
-test -f z.pid || sleep 5 || test -f z.pid || exit 1
+test -f z.pid || exit 1
 PID=`cat z.pid`
 kill -CHLD $PID >/dev/null 2>&1 || exit 1
 

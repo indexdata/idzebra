@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop02.sh,v 1.10 2005-01-02 23:21:31 adam Exp $
+# $Id: stop02.sh,v 1.11 2005-01-03 09:19:26 adam Exp $
 # test start and stop of the server with -S
 
 pp=${srcdir:-"."}
@@ -17,7 +17,7 @@ test -d reg || mkdir reg
 echo "Starting server with -S (static)..." >>$LOG
 ../../index/zebrasrv -D -p z.pid -S -c $pp/zebra1.cfg -l $LOG unix:socket
 echo "  checking that it runs... " >>$LOG
-test -f z.pid || sleep 1 || test -f z.pid || exit 1
+test -f z.pid || exit 1
 PID=`cat z.pid`
 kill -CHLD $PID >/dev/null 2>&1 || exit 1
 

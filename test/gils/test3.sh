@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test3.sh,v 1.5 2005-01-02 23:21:31 adam Exp $
+# $Id: test3.sh,v 1.6 2005-01-03 09:19:26 adam Exp $
 
 # Testing searches with lots of @and operators
 # in order to test the fast-forward operation of rsets
@@ -20,7 +20,6 @@ echo "updating..." >>$LOG
 
 echo "starting server..." >>$LOG
 ../../index/zebrasrv -D -p z.pid -S -c $pp/zebra1.cfg $DBG -l $LOG tcp:@:9901
-sleep 1
 
 echo "checking it runs..." >>$LOG
 test -f z.pid || exit 1

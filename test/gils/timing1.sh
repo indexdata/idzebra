@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: timing1.sh,v 1.10 2005-01-02 23:21:31 adam Exp $
+# $Id: timing1.sh,v 1.11 2005-01-03 09:19:26 adam Exp $
 # tests that updates are reflected immediately # in the registers.
 # Repeatedly modifies a record and counts hits.
 # Test 1: with good sleeps in every between - should pass always
@@ -16,7 +16,6 @@ rm -f $pp/records/esdd000[12].grs # these should not be here, will be created la
 
 echo "  starting server..." >>$LOG
 ../../index/zebrasrv -D -p z.pid -S -c $pp/zebra2.cfg -l $LOG tcp:@:9901
-sleep 1
 test -f z.pid || exit 1
 sleep 2
 
