@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.9  1998-04-02 14:35:30  adam
+ * Revision 1.10  1998-06-23 15:33:37  adam
+ * Added feature to specify sort criteria in query (type 7 specifies
+ * sort flags).
+ *
+ * Revision 1.9  1998/04/02 14:35:30  adam
  * First version of Zebra that works with compiled ASN.1.
  *
  * Revision 1.8  1998/03/05 08:42:44  adam
@@ -356,22 +360,26 @@ int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes)
 
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 		     unsigned *reg_id, char **search_type, char **rank_type,
-		     int *complete_flag)
+		     int *complete_flag, int *sort_flag)
 {
     AttrType completeness;
     AttrType structure;
     AttrType relation;
+    AttrType sort_relation;
     int completeness_value;
     int structure_value;
     int relation_value;
+    int sort_relation_value;
 
     attr_init_APT (&structure, zapt, 4);
     attr_init_APT (&completeness, zapt, 6);
     attr_init_APT (&relation, zapt, 2);
+    attr_init_APT (&sort_relation, zapt, 7);
 
     completeness_value = attr_find (&completeness, NULL);
     structure_value = attr_find (&structure, NULL);
     relation_value = attr_find (&relation, NULL);
+    sort_relation_value = attr_find (&sort_relation, NULL);
 
     if (completeness_value == 2 || completeness_value == 3)
 	*complete_flag = 1;
@@ -379,6 +387,7 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 	*complete_flag = 0;
     *reg_id = 0;
 
+    *sort_flag = (sort_relation_value > 0) ? 1 : 0;
     *search_type = "phrase";
     *rank_type = "void";
     if (relation_value == 102)
@@ -412,7 +421,7 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 	break;
     case 109: /* numeric string */
 	*reg_id = 'n';
-	*search_type = "phrase";
+	*search_type = "numeric";
         break;
     case 104: /* urx */
 	*reg_id = 'u';

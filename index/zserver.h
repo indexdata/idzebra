@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.34  1998-06-22 11:36:50  adam
+ * Revision 1.35  1998-06-23 15:33:35  adam
+ * Added feature to specify sort criteria in query (type 7 specifies
+ * sort flags).
+ *
+ * Revision 1.34  1998/06/22 11:36:50  adam
  * Added authentication check facility to zebra.
  *
  * Revision 1.33  1998/06/12 12:22:14  adam
@@ -221,9 +225,9 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 void zebraPosSetDestroy (ZebraHandle zh, ZebraPosSet records, int num);
 
 void resultSetSort (ZebraHandle zh, ODR stream,
-		    int num_input_setnames, char **input_setnames,
-		    char *output_setname, Z_SortKeySpecList *sort_sequence,
-		    int *sort_status);
+		    int num_input_setnames, const char **input_setnames,
+		    const char *output_setname,
+		    Z_SortKeySpecList *sort_sequence, int *sort_status);
 
 void zebra_sort (ZebraHandle zh, ODR stream,
 		 int num_input_setnames, char **input_setnames,

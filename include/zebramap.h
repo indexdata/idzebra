@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.5  1998-03-05 08:39:26  adam
+ * Revision 1.6  1998-06-23 15:33:33  adam
+ * Added feature to specify sort criteria in query (type 7 specifies
+ * sort flags).
+ *
+ * Revision 1.5  1998/03/05 08:39:26  adam
  * Minor changes to zebramap data structures. Changed query
  * mapping rules.
  *
@@ -47,7 +51,7 @@ const char *zebra_maps_output(ZebraMaps, unsigned reg_id, const char **from);
 
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 		     unsigned *reg_id, char **search_type, char **rank_type,
-		     int *complete_flag);
+		     int *complete_flag, int *sort_flag);
 
 int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes);
 

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.16  1998-05-20 10:12:24  adam
+ * Revision 1.17  1998-06-23 15:33:36  adam
+ * Added feature to specify sort criteria in query (type 7 specifies
+ * sort flags).
+ *
+ * Revision 1.16  1998/05/20 10:12:24  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -289,12 +293,12 @@ void resultSetInsertSort (ZebraHandle zh, ZebraSet sset,
 	}	
 	if (!rel)
 	    break;
-	if (criteria[j].relation == 'D')
+	if (criteria[j].relation == 'A')
         {
 	    if (rel > 0)
 	        break;
 	}
-        else if (criteria[j].relation == 'A')
+        else if (criteria[j].relation == 'D')
 	{
 	    if (rel < 0)
 		break;
@@ -363,9 +367,9 @@ void resultSetInsertRank (ZebraHandle zh, struct zset_sort_info *sort_info,
 }
 
 void resultSetSort (ZebraHandle zh, ODR stream,
-		    int num_input_setnames, char **input_setnames,
-		    char *output_setname, Z_SortKeySpecList *sort_sequence,
-		    int *sort_status)
+		    int num_input_setnames, const char **input_setnames,
+		    const char *output_setname,
+		    Z_SortKeySpecList *sort_sequence, int *sort_status)
 {
     ZebraSet sset;
     RSET rset;
@@ -386,17 +390,19 @@ void resultSetSort (ZebraHandle zh, ODR stream,
 	zh->errCode = 230;
 	return;
     }
+    logf (LOG_DEBUG, "result set sort input=%s output=%s",
+	  *input_setnames, output_setname);
     sset = resultSetGet (zh, input_setnames[0]);
     if (!sset)
     {
 	zh->errCode = 30;
-	zh->errString = input_setnames[0];
+	zh->errString = nmem_strdup (stream->mem, input_setnames[0]);
 	return;
     }
     if (!(rset = sset->rset))
     {
 	zh->errCode = 30;
-	zh->errString = input_setnames[0];
+	zh->errString = nmem_strdup (stream->mem, input_setnames[0]);
         return;
     }
     num_criteria = sort_sequence->num_specs;
