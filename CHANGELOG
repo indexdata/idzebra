@@ -1,5 +1,19 @@
+<<<<<<< CHANGELOG
+--- 1.0a7 1997/5/16
+
+Fixed buffer-size problem in indexing.
+
+Added compression to temporary files for updating.
+
+Added phrase registers.
+
+Added dynamic mapping of search attribute to multiple termlists (ANY).
+
+||||||| 1.18
+=======
 Scan support in multiple databases/registers.
 
+>>>>>>> /tmp/T4a11432
 Configuration settings are case-insensitive and single dash (-)
 characters are ignored in comparisons.
 
