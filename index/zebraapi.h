@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.26 2003-02-27 23:08:10 pop Exp $
+/* $Id: zebraapi.h,v 1.27 2003-02-28 20:12:18 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -72,6 +72,8 @@ typedef struct {
     int len;             /* length */
     oid_value format;    /* record syntax */
     char *base; 
+    int  sysno;
+    int  score;
 } ZebraRetrievalRecord;
 
 /* Scan Term Descriptor */
