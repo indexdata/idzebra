@@ -4,14 +4,16 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.1  1995-08-31 14:50:24  adam
+ * Revision 1.2  1995-09-01 10:30:24  adam
+ * More work on indexing. Not working yet.
+ *
+ * Revision 1.1  1995/08/31  14:50:24  adam
  * New simple file index tool.
  *
  */
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
-#include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -149,6 +151,7 @@ void file_extract (int cmd, struct stat *fs, const char *fname)
     void *file_info;
 
     log (LOG_DEBUG, "%c %s", cmd, fname);
+    return;
     for (i = strlen(fname); --i >= 0; )
         if (fname[i] == '/')
         {
@@ -178,30 +181,23 @@ void file_extract (int cmd, struct stat *fs, const char *fname)
 
 static void repository_extract_r (int cmd, char *rep)
 {
-    DIR *dir;
-    size_t rep_len;
-    struct dirent *dent;
+    struct dir_entry *e;
+    int i;
     struct stat fs;
+    size_t rep_len = strlen (rep);
 
-    rep_len = strlen(rep);
-    dir = opendir(rep);
-    if (!dir)
-    {
-        if (errno == ENOENT)
-        {
-            log (LOG_WARN|LOG_ERRNO, "opendir %s", rep);
-            return;
-        }
-        log (LOG_FATAL|LOG_ERRNO, "opendir %s", rep);
-        exit (1);
-    }
+    e = dir_open (rep);
+    if (!e)
+        return;
     if (rep[rep_len-1] != '/')
         rep[rep_len] = '/';
     else
         --rep_len;
-    while ((dent = readdir (dir)))
+    for (i=0; e[i].name; i++)
     {
-        strcpy (rep +rep_len+1, dent->d_name);
+        if (!strcmp (e[i].name, ".") || !strcmp (e[i].name, ".."))
+            continue;
+        strcpy (rep +rep_len+1, e[i].name);
         stat (rep, &fs);
         switch (fs.st_mode & S_IFMT)
         {
@@ -209,17 +205,116 @@ static void repository_extract_r (int cmd, char *rep)
             file_extract (cmd, &fs, rep);
             break;
         case S_IFDIR:
-            if (strcmp (dent->d_name, ".") && strcmp(dent->d_name, ".."))
-                repository_extract_r (cmd, rep);
+            repository_extract_r (cmd, rep);
             break;
         }
     }
-    closedir (dir);
+    dir_free (&e);
 }
 
-void repository_update_r (int cmd, const char *rep, const char *with_rep)
-{
+void repository_update_r (int cmd, char *dst, char *src);
 
+void repository_add_tree (int cmd, char *dst, char *src)
+{
+    mkdir (dst, 0755);
+    repository_update_r (cmd, dst, src);
+}
+
+void repository_del_tree (int cmd, char *dst, char *src)
+{
+    log (LOG_DEBUG, "rmdir of %s", dst);
+}
+
+void repository_update_r (int cmd, char *dst, char *src)
+{
+    struct dir_entry *e_dst, *e_src;
+    int i_dst = 0, i_src = 0;
+    struct stat fs_dst, fs_src;
+    size_t dst_len = strlen (dst);
+    size_t src_len = strlen (src);
+
+    e_dst = dir_open (dst);
+    e_src = dir_open (src);
+
+    if (!e_dst && !e_src)
+        return;
+    if (!e_dst)
+        repository_add_tree (cmd, dst, src);
+    else if (!e_src)
+        repository_del_tree (cmd, dst, src);
+
+    dir_sort (e_src);
+    dir_sort (e_dst);
+
+    if (src[src_len-1] != '/')
+        src[src_len] = '/';
+    else
+        --src_len;
+    if (dst[dst_len-1] != '/')
+        dst[dst_len] = '/';
+    else
+        --dst_len;
+    while (e_dst[i_dst].name && e_src[i_src].name)
+    {
+        int sd = strcmp (e_dst[i_dst].name, e_src[i_src].name);
+
+        strcpy (dst +dst_len+1, e_dst[i_dst].name);
+        strcpy (src +src_len+1, e_src[i_src].name);
+
+        if (sd == 0)
+        {
+            /* check type, date, length */
+
+            stat (dst, &fs_dst);
+            stat (src, &fs_src);
+
+            switch (fs_dst.st_mode & S_IFMT)
+            {
+            case S_IFREG:
+                if (fs_src.st_mtime != fs_dst.st_mtime)
+                {
+                    file_extract ('a', &fs_src, src);
+                    file_extract ('d', &fs_dst, dst);
+                }
+                break;
+            case S_IFDIR:
+                repository_update_r (cmd, dst, src);
+                break;
+            }
+            i_src++;
+            i_dst++;
+        }
+        else if (sd > 0)
+        {
+            stat (src, &fs_src);
+            switch (fs_src.st_mode & S_IFMT)
+            {
+            case S_IFREG:
+                file_extract ('a', &fs_src, src);
+                break;
+            case S_IFDIR:
+                repository_add_tree (cmd, dst, src);
+                break;
+            }
+            i_src++;
+        }
+        else 
+        {
+            stat (dst, &fs_dst);
+            switch (fs_dst.st_mode & S_IFMT)
+            {
+            case S_IFREG:
+                file_extract ('d', &fs_dst, dst);
+                break;
+            case S_IFDIR:
+                repository_del_tree (cmd, dst, src);
+                break;
+            }
+            i_dst++;
+        }
+    }
+    dir_free (&e_dst);
+    dir_free (&e_src);
 }
 
 void repository_traverse (int cmd, const char *rep)
@@ -231,7 +326,7 @@ void repository_traverse (int cmd, const char *rep)
     if (base_path)
     {
         strcpy (rep_tmp2, base_path);
-        repository_update_r (cmd, rep_tmp1, rep_tmp2);
+        repository_update_r (cmd, rep_tmp2, rep_tmp1);
     }
     else
         repository_extract_r (cmd, rep_tmp1);
@@ -246,7 +341,7 @@ int main (int argc, char **argv)
     char *base_name;
 
     prog = *argv;
-    while ((ret = options ("b:v:", argv, argc, &arg)) != -2)
+    while ((ret = options ("r:v:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -288,7 +383,7 @@ int main (int argc, char **argv)
         {
             log_init (log_mask_str(arg), prog, NULL);
         }
-        else if (ret == 'b')
+        else if (ret == 'r')
         {
             base_path = arg;
         }
