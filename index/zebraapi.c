@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.148 2005-01-21 13:23:25 adam Exp $
+/* $Id: zebraapi.c,v 1.149 2005-01-21 18:41:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -984,7 +984,7 @@ int zebra_sort (ZebraHandle zh, ODR stream,
     return 0;
 }
 
-int zebra_deleleResultSet(ZebraHandle zh, int function,
+int zebra_deleteResultSet(ZebraHandle zh, int function,
 			  int num_setnames, char **setnames,
 			  int *statuses)
 {

@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.128 2005-01-16 23:14:57 adam Exp $
+/* $Id: zserver.c,v 1.129 2005-01-21 18:41:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -382,7 +382,7 @@ int bend_delete (void *handle, bend_delete_rr *rr)
 {
     ZebraHandle zh = (ZebraHandle) handle;
 
-    rr->delete_status =	zebra_deleleResultSet(zh, rr->function,
+    rr->delete_status =	zebra_deleteResultSet(zh, rr->function,
 					      rr->num_setnames, rr->setnames,
 					      rr->statuses);
     return 0;

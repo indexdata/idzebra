@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.10 2005-01-21 13:19:25 adam Exp $
+/* $Id: api.h,v 1.11 2005-01-21 18:41:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -213,7 +213,7 @@ YAZ_EXPORT int zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		       oid_value input_format,
 		       int num_recs, ZebraRetrievalRecord *recs);
 
-YAZ_EXPORT int zebra_deleleResultSet(ZebraHandle zh, int function,
+YAZ_EXPORT int zebra_deleteResultSet(ZebraHandle zh, int function,
 				     int num_setnames, char **setnames,
 				     int *statuses);
 
