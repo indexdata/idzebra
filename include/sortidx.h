@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data ApS
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: sortidx.h,v $
- * Revision 1.1  1998-02-10 12:03:05  adam
+ * Revision 1.2  1998-06-25 09:55:49  adam
+ * Minor changes - fixex headers.
+ *
+ * Revision 1.1  1998/02/10 12:03:05  adam
  * Implemented Sort.
  *
  */

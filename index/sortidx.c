@@ -1,4 +1,14 @@
-
+/*
+ * Copyright (C) 1998, Index Data ApS
+ * All rights reserved.
+ * Sebastian Hammer, Adam Dickmeiss
+ *
+ * $Log: sortidx.c,v $
+ * Revision 1.2  1998-06-25 09:55:50  adam
+ * Minor changes - fixex headers.
+ *
+ */
+ 
 #include <string.h>
 
 #include <log.h>

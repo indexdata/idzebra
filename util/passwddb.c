@@ -1,7 +1,20 @@
-
+/*
+ * Copyright (C) 1998, Index Data ApS
+ * All rights reserved.
+ * Sebastian Hammer, Adam Dickmeiss
+ *
+ * $Log: passwddb.c,v $
+ * Revision 1.2  1998-06-25 09:55:51  adam
+ * Minor changes - fixex headers.
+ *
+ */
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+
+#ifndef USE_CRYPT
+#define USE_CRYPT 1
+#endif
 
 #if USE_CRYPT
 #include <crypt.h>
