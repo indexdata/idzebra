@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.2 2004-09-27 10:44:48 adam Exp $
+/* $Id: api.h,v 1.3 2004-11-29 21:55:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -265,5 +265,19 @@ const char *zebra_get_resource(ZebraHandle zh,
 
 YAZ_EXPORT void zebra_pidfname(ZebraService zs, char *path);
 
+typedef struct {
+    char *term;
+    char *db;
+    zint sysno;
+    int score;
+} ZebraMetaRecord;
+
+YAZ_EXPORT ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh,
+						       const char *name,
+						       int num,
+						       zint *positions);
+
+YAZ_EXPORT void zebra_meta_records_destroy (ZebraHandle zh,
+					    ZebraMetaRecord *records, int num);
 YAZ_END_CDECL				      
 #endif

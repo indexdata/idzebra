@@ -1,4 +1,4 @@
-/* $Id: tstcodec.c,v 1.3 2004-09-15 08:13:51 adam Exp $
+/* $Id: tstcodec.c,v 1.4 2004-11-29 21:55:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -42,7 +42,7 @@ int tst_encode(int num)
 	const char *src = (const char *) &key;
 
 	key.len = 2;
-	key.mem[0] = i >> 8;
+	key.mem[0] = i << 8;
 	key.mem[1] = i & 255;
 	iscz1_encode (codec_handle, &dst, &src);
 	if (dst > dst_buf + num*10)
@@ -76,7 +76,7 @@ int tst_encode(int num)
 		printf ("\n");
 		return 2;
 	    }
-	    if (key.mem[0] != (i>>8))
+	    if (key.mem[0] != (i<<8))
 	    {
 		printf ("%s: i=%d mem[0]=" ZINT_FORMAT " expected "
 			"%d\n", prog, i, key.mem[0], i>>8);
@@ -108,6 +108,43 @@ int tst_encode(int num)
     return 0;
 }
 
+void tstcodec1()
+{
+    char buf[100];
+    char *dst = buf;
+    const char *src;
+    struct it_key key1, key2;
+    void *codec_handle =iscz1_start();
+
+    key1.len = 4;
+    key1.mem[0] = 4*65536+1016;
+    key1.mem[1] = 24339;
+    key1.mem[2] = 125060;
+    key1.mem[3] = 1;
+
+    src = (char*) &key1;
+    dst = buf;
+    iscz1_encode(codec_handle, &dst, &src);
+
+    iscz1_stop(codec_handle);
+
+    codec_handle =iscz1_start();
+
+    dst = (char*) &key2;
+    src = buf;
+    
+    iscz1_decode(codec_handle, &dst, &src);
+
+    iscz1_stop(codec_handle);
+
+    if (memcmp(&key1, &key2, sizeof(key1)))
+    {
+	printf ("keys differ in tstcodec1\n");
+	exit(1);
+    }
+}
+    
+
 int main(int argc, char **argv)
 {
     int num = 0;
@@ -116,6 +153,7 @@ int main(int argc, char **argv)
 	num = atoi(argv[1]);
     if (num < 1 || num > 100000000)
 	num = 10000;
+    tstcodec1();
     exit(tst_encode(num));
 }
     

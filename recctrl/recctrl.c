@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.13 2004-11-19 10:27:12 heikki Exp $
+/* $Id: recctrl.c,v 1.14 2004-11-29 21:55:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -65,6 +65,9 @@ struct recTypes {
 #ifdef IDZEBRA_STATIC_GRS_DANBIB
     extern RecType idzebra_filter_grs_danbib[];
 #endif
+#ifdef IDZEBRA_STATIC_SAFARI
+    extern RecType idzebra_filter_safari[];
+#endif
 
 static void recTypeClass_add (struct recTypeClass **rts, RecType *rt,
 			      NMEM nmem, void *module_handle);
@@ -93,6 +96,9 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 #endif
 #ifdef IDZEBRA_STATIC_GRS_DANBIB
     recTypeClass_add (&rts, idzebra_filter_grs_danbib, nmem, 0);
+#endif
+#ifdef IDZEBRA_STATIC_SAFARI
+    recTypeClass_add (&rts, idzebra_filter_safari, nmem, 0);
 #endif
 
     if (module_path)

@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.166 2004-11-19 10:26:56 heikki Exp $
+/* $Id: extract.c,v 1.167 2004-11-29 21:55:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -87,6 +87,8 @@ static void extract_init (struct recExtractCtrl *p, RecWord *w)
     w->attrUse = 1016;
     w->reg_type = 'w';
     w->extractCtrl = p;
+    w->record_id = 0;
+    w->section_id = 0;
 }
 
 static const char **searchRecordKey (ZebraHandle zh,
@@ -113,9 +115,9 @@ static const char **searchRecordKey (ZebraHandle zh,
 	iscz1_decode(decode_handle, &dst, &src);
 	assert(key.len < 4 && key.len > 2);
 
-	attrSet = (int) key.mem[0];
-	attrUse = (int) key.mem[1];
-	seqno = (int) key.mem[2];
+	attrSet = (int) key.mem[0] >> 16;
+	attrUse = (int) key.mem[0] & 65535;
+	seqno = (int) key.mem[key.len-1];
 
 	if (attrUseS == attrUse && attrSetS == attrSet)
         {
@@ -394,7 +396,7 @@ static int file_extract_record(ZebraHandle zh,
 {
     RecordAttr *recordAttr;
     int r;
-    const char *matchStr;
+    const char *matchStr = 0;
     SYSNO sysnotmp;
     Record rec;
     off_t recordOffset = 0;
@@ -439,6 +441,7 @@ static int file_extract_record(ZebraHandle zh,
 	extractCtrl.tokenAdd = extract_token_add;
 	extractCtrl.schemaAdd = extract_schema_add;
 	extractCtrl.dh = zh->reg->dh;
+	extractCtrl.match_criteria[0] = '\0';
         extractCtrl.handle = zh;
 	for (i = 0; i<256; i++)
 	{
@@ -499,36 +502,36 @@ static int file_extract_record(ZebraHandle zh,
 		    fname, recordOffset);
             return 1;
         }
+        if (extractCtrl.match_criteria[0])
+            matchStr = extractCtrl.match_criteria;
     }
 
     /* perform match if sysno not known and if match criteria is specified */
-       
-    matchStr = NULL;
     if (!sysno) 
     {
         sysnotmp = 0;
         sysno = &sysnotmp;
-        if (zh->m_record_id && *zh->m_record_id)
+
+        if (matchStr == 0 && zh->m_record_id && *zh->m_record_id)
         {
-            char *rinfo;
         
             matchStr = fileMatchStr (zh, &zh->reg->keys, fname, 
 				     zh->m_record_id);
-            if (matchStr)
-            {
-                rinfo = dict_lookup (zh->reg->matchDict, matchStr);
-                if (rinfo)
-		{
-		    assert(*rinfo == sizeof(*sysno));
-                    memcpy (sysno, rinfo+1, sizeof(*sysno));
-		}
-            }
-            else
-            {
-                yaz_log (YLOG_WARN, "Bad match criteria");
-                return 0;
-            }
-        }
+	    if (!matchStr)
+	    {
+		yaz_log(YLOG_WARN, "Bad match criteria");
+		return 0;
+	    }
+	}
+	if (matchStr)
+	{
+            char *rinfo = dict_lookup (zh->reg->matchDict, matchStr);
+	    if (rinfo)
+	    {
+		assert(*rinfo == sizeof(*sysno));
+		memcpy (sysno, rinfo+1, sizeof(*sysno));
+	    }
+	}
     }
 
     if (! *sysno)
@@ -884,6 +887,7 @@ int buffer_extract_record (ZebraHandle zh,
     extractCtrl.handle = zh;
     extractCtrl.zebra_maps = zh->reg->zebra_maps;
     extractCtrl.flagShowRecords = 0;
+    extractCtrl.match_criteria[0] = '\0';
     for (i = 0; i<256; i++)
     {
 	if (zebra_maps_is_positioned(zh->reg->zebra_maps, i))
@@ -920,6 +924,9 @@ int buffer_extract_record (ZebraHandle zh,
     }
     /* match criteria */
     matchStr = NULL;
+
+    if (extractCtrl.match_criteria[0])
+	match_criteria = extractCtrl.match_criteria;
 
     if (! *sysno) {
         char *rinfo;
@@ -1159,6 +1166,7 @@ int explain_extract (void *handle, Record rec, data1_node *n)
 	extractCtrl.seqno[i] = 0;
     extractCtrl.zebra_maps = zh->reg->zebra_maps;
     extractCtrl.flagShowRecords = 0;
+    extractCtrl.match_criteria[0] = '\0';
     extractCtrl.handle = handle;
 
     if (n)
@@ -1230,10 +1238,10 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 	int attrSet, attrUse;
 
 	iscz1_decode(decode_handle, &dst, &src);
-	assert(key.len < 4 && key.len > 2);
+	assert(key.len == 4);
 
-	attrSet = (int) key.mem[0];
-	attrUse = (int) key.mem[1]; /* sequence in mem[2] */
+	attrSet = (int) key.mem[0] >> 16;
+	attrUse = (int) key.mem[0] & 65535;
 
         if (zh->reg->key_buf_used + 1024 > 
             (zh->reg->ptr_top -zh->reg->ptr_i)*sizeof(char*))
@@ -1257,10 +1265,14 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
         ((char*)(zh->reg->key_buf))[(zh->reg->key_buf_used)++] = '\0';
         ((char*)(zh->reg->key_buf))[(zh->reg->key_buf_used)++] = cmd;
 
-        key.len = 2;
-	key.mem[0] = sysno;
-	key.mem[1] = key.mem[2];  /* sequence .. */
-	
+        key.len = 3;
+	if (key.mem[1]) /* filter specify record ID */
+	    key.mem[0] = key.mem[1];
+	else
+	    key.mem[0] = sysno;
+	key.mem[1] = key.mem[2];  /* section_id */
+	key.mem[2] = key.mem[3];  /* sequence .. */
+
         memcpy ((char*)zh->reg->key_buf + zh->reg->key_buf_used,
 		&key, sizeof(key));
         (zh->reg->key_buf_used) += sizeof(key);
@@ -1404,13 +1416,13 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     zh->reg->key_buf_used = 0;
 }
 
-void extract_add_index_string (RecWord *p, const char *str, int length)
+void extract_add_it_key (ZebraHandle zh,
+			 int reg_type,
+			 const char *str, int slen, struct it_key *key)
 {
     char *dst;
-    ZebraHandle zh = p->extractCtrl->handle;
     struct recKeys *keys = &zh->reg->keys;
-    struct it_key key;
-    const char *src = (char*) &key;
+    const char *src = (char*) key;
     
     if (keys->buf_used+1024 > keys->buf_max)
     {
@@ -1424,24 +1436,33 @@ void extract_add_index_string (RecWord *p, const char *str, int length)
     }
     dst = keys->buf + keys->buf_used;
 
-    key.len = 3;
-    key.mem[0] = p->attrSet;
-    key.mem[1] = p->attrUse;
-    key.mem[2] = p->seqno;
-
-#if 0
-    /* just for debugging .. */
-    yaz_log(YLOG_LOG, "set=%d use=%d seqno=%d", p->attrSet, p->attrUse,
-	    p->seqno);
-#endif
-
     iscz1_encode(keys->codec_handle, &dst, &src);
 
-    *dst++ = p->reg_type;
-    memcpy (dst, str, length);
-    dst += length;
+    *dst++ = reg_type;
+    memcpy (dst, str, slen);
+    dst += slen;
     *dst++ = '\0';
     keys->buf_used = dst - keys->buf;
+}
+
+void extract_add_index_string (RecWord *p, const char *str, int length)
+{
+    struct it_key key;
+    key.len = 4;
+    key.mem[0] = p->attrSet * 65536 + p->attrUse;
+    key.mem[1] = p->record_id;
+    key.mem[2] = p->section_id;
+    key.mem[3] = p->seqno;
+
+#if 1
+    /* just for debugging .. */
+    yaz_log(YLOG_LOG, "add: set=%d use=%d "
+	    "record_id=%lld section_id=%lld seqno=%lld",
+	    p->attrSet, p->attrUse, p->record_id, p->section_id, p->seqno);
+#endif
+
+    extract_add_it_key(p->extractCtrl->handle,  p->reg_type, str,
+		       length, &key);
 }
 
 static void extract_add_sort_string (RecWord *p, const char *str,
@@ -1601,7 +1622,7 @@ yaz_log(YLOG_DEBUG, "Complete field, w='%.*s'", p->length, p->string);
 void extract_token_add (RecWord *p)
 {
     WRBUF wrbuf;
-#if 0
+#if 1
     yaz_log (YLOG_LOG, "token_add "
 	     "reg_type=%c attrSet=%d attrUse=%d seqno=%d s=%.*s",
              p->reg_type, p->attrSet, p->attrUse, p->seqno, p->length,

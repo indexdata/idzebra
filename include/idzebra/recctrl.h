@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.4 2004-11-29 21:45:11 adam Exp $
+/* $Id: recctrl.h,v 1.5 2004-11-29 21:55:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -39,7 +39,9 @@ typedef struct {
     unsigned reg_type;
     char *string;
     int  length;
-    int  seqno;
+    zint seqno;
+    zint record_id;
+    zint section_id;
     ZebraMaps zebra_maps;
     struct recExtractCtrl *extractCtrl;
 } RecWord;
@@ -58,6 +60,7 @@ struct recExtractCtrl {
     ZebraMaps zebra_maps;
     int       flagShowRecords;
     int       seqno[256];
+    char      match_criteria[256];
     void      (*schemaAdd)(struct recExtractCtrl *p, Odr_oid *oid);
     data1_handle dh;
     void      *handle;

@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.162 2004-11-26 12:20:48 adam Exp $
+/* $Id: zrpn.c,v 1.163 2004-11-29 21:55:27 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -2243,10 +2243,10 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
 }
 
 
-RSET rpn_search (ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
-                 Z_RPNQuery *rpn, int num_bases, char **basenames, 
-                 const char *setname,
-                 ZebraSet sset)
+RSET rpn_search(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
+		Z_RPNQuery *rpn, int num_bases, char **basenames, 
+		const char *setname,
+		ZebraSet sset)
 {
     RSET rset;
     oident *attrset;

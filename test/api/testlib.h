@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.4 2004-11-19 10:27:16 heikki Exp $
+/* $Id: testlib.h,v 1.5 2004-11-29 21:55:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -83,3 +83,9 @@ int do_query(int lineno, ZebraHandle zh, char *query, int exphits);
 void ranking_query(int lineno, ZebraHandle zh, char *query, 
           int exphits, char *firstrec, int firstscore );
 
+/** 
+ * meta_query makes a query, checks number of hits, and for 
+ * checks that the all records in result set has the proper identifiers (ids)
+ */
+void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
+		zint *ids);

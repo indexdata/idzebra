@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.106 2004-11-19 18:36:06 adam Exp $
+dnl $Id: configure.in,v 1.107 2004-11-29 21:55:25 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -253,6 +253,7 @@ ZEBRA_MODULE(grs-sgml,static,[  --enable-mod-grs-sgml   Simple SGML/XML filter])
 ZEBRA_MODULE(grs-regx,shared,[  --enable-mod-grs-regx   REGX/TCL filter])
 ZEBRA_MODULE(grs-marc,shared,[  --enable-mod-grs-marc   MARC filter])
 ZEBRA_MODULE(grs-danbib,shared,[  --enable-mod-grs-danbib DanBib filter (DBC)])
+ZEBRA_MODULE(safari,shared,[  --enable-mod-safari Safari filter (DBC)])
 if test "$ac_cv_header_expat_h" = "yes"; then
    def="shared"
 else

@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.5 2004-11-19 10:27:15 heikki Exp $
+/* $Id: testlib.c,v 1.6 2004-11-29 21:55:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -102,15 +102,15 @@ int close_down(ZebraHandle zh, ZebraService zs, int retcode)
 
 /** inits the database and inserts test data */
 
-void init_data( ZebraHandle zh, const char **recs)
+void init_data(ZebraHandle zh, const char **recs)
 {
     int i;
     char *addinfo;
     assert(zh);
     zebra_select_database(zh, "Default");
-    yaz_log(log_level,"going to call init");
-    i=zebra_init(zh);
-    yaz_log(log_level,"init returned %d",i);
+    yaz_log(log_level, "going to call init");
+    i = zebra_init(zh);
+    yaz_log(log_level, "init returned %d",i);
     if (i) 
     {
         printf("init failed with %d\n",i);
@@ -128,8 +128,6 @@ void init_data( ZebraHandle zh, const char **recs)
     }
 
 }
-
-
 
 int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
 {
@@ -151,7 +149,7 @@ int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
         printf("Error: Parse failed \n%s\n",query);
         exit(1);
     }
-    rc=zebra_search_RPN (zh, odr, rpn, setname, &hits);
+    rc = zebra_search_RPN (zh, odr, rpn, setname, &hits);
     if (rc) {
         printf("Error: search returned %d \n%s\n",rc,query);
         exit (1);
@@ -182,15 +180,16 @@ void ranking_query(int lineno, ZebraHandle zh, char *query,
     int rc;
     int i;
         
-    hits=do_query(lineno, zh, query, exphits);
+    hits = do_query(lineno, zh, query, exphits);
 
     for (i = 0; i<10; i++)
         retrievalRecord[i].position = i+1;
 
-    rc=zebra_records_retrieve (zh, odr_output, setname, 0,
-                     VAL_TEXT_XML, hits, retrievalRecord);
-
-    if (rc) {
+    rc = zebra_records_retrieve (zh, odr_output, setname, 0,
+				 VAL_TEXT_XML, hits, retrievalRecord);
+    
+    if (rc)
+    {
         printf("Error: retrieve returned %d \n%s\n",rc,query);
         exit (1);
     }
@@ -206,9 +205,47 @@ void ranking_query(int lineno, ZebraHandle zh, char *query,
     if (retrievalRecord[0].score != firstscore)
     {
         printf("Error: first rec got score %d instead of %d\n",
-                retrievalRecord[0].score, firstscore);
+	       retrievalRecord[0].score, firstscore);
         exit(1);
     }
     odr_destroy (odr_output);
+}
+
+void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
+		zint *ids)
+{
+    ZebraMetaRecord *meta;
+    ODR odr_output = odr_createmem (ODR_ENCODE);    
+    const char *setname="rsetname";
+    zint *positions = (zint *) malloc(1 + (exphits * sizeof(zint)));
+    int hits;
+    int rc;
+    int i;
+        
+    hits = do_query(lineno, zh, query, exphits);
+    
+    for (i = 0; i<exphits; i++)
+        positions[i] = i+1;
+
+    meta = zebra_meta_records_create (zh, setname,  exphits, positions);
+    
+    if (!meta)
+    {
+        printf("Error: retrieve returned %d \n%s\n",rc,query);
+        exit (1);
+    }
+
+    for (i = 0; i<exphits; i++)
+    {
+	if (meta[i].sysno != ids[i])
+	{
+	    printf("Expected id=" ZINT_FORMAT " but got id=" ZINT_FORMAT,
+		   ids[i], meta[i].sysno);
+	    exit(1);
+	}
+    }
+    zebra_meta_records_destroy(zh, meta, exphits);
+    odr_destroy (odr_output);
+    free(positions);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.125 2004-11-29 21:45:11 adam Exp $
+/* $Id: index.h,v 1.126 2004-11-29 21:55:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -182,13 +182,6 @@ char *encode_key_int (int d, char *bp);
 void encode_key_write (char *k, struct encode_info *i, FILE *outf);
 void encode_key_flush (struct encode_info *i, FILE *outf);
 
-typedef struct {
-    char *term;
-    char *db;
-    zint sysno;
-    int score;
-} *ZebraPosSet;
-
 typedef struct zebra_set *ZebraSet;
 
 typedef struct zebra_rank_class {
@@ -368,12 +361,6 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
 RSET resultSetRef (ZebraHandle zh, const char *resultSetId);
 void resultSetDestroy (ZebraHandle zh, int num_names, char **names,
 		       int *statuses);
-
-
-ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
-			       int num, int *positions);
-void zebraPosSetDestroy (ZebraHandle zh, ZebraPosSet records, int num);
-
 void resultSetSort (ZebraHandle zh, NMEM nmem,
 		    int num_input_setnames, const char **input_setnames,
 		    const char *output_setname,

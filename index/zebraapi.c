@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.141 2004-11-29 21:45:11 adam Exp $
+/* $Id: zebraapi.c,v 1.142 2004-11-29 21:55:27 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -851,8 +851,9 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
 			     oid_value input_format, int num_recs,
 			     ZebraRetrievalRecord *recs)
 {
-    ZebraPosSet poset;
-    int i, *pos_array, ret = 0;
+    ZebraMetaRecord *poset;
+    int i, ret = 0;
+    zint *pos_array;
     ASSERTZH;
     assert(stream);
     assert(setname);
@@ -865,7 +866,7 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
     if (!zh->res)
     {
         zh->errCode = 30;
-        zh->errString = odr_strdup (stream, setname);
+        zh->errString = odr_strdup(stream, setname);
         return -1;
     }
     
@@ -874,10 +875,10 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
     if (zebra_begin_read (zh))
 	return -1;
 
-    pos_array = (int *) xmalloc (num_recs * sizeof(*pos_array));
+    pos_array = (zint *) xmalloc(num_recs * sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
 	pos_array[i] = recs[i].position;
-    poset = zebraPosSetCreate (zh, setname, num_recs, pos_array);
+    poset = zebra_meta_records_create(zh, setname, num_recs, pos_array);
     if (!poset)
     {
         yaz_log (YLOG_DEBUG, "zebraPosSetCreate error");
@@ -899,13 +900,21 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
 	    }
 	    else if (poset[i].sysno)
 	    {
+		char *buf;
+		int len;
 		recs[i].errCode =
 		    zebra_record_fetch (zh, poset[i].sysno, poset[i].score,
 					stream, input_format, comp,
-					&recs[i].format, &recs[i].buf,
-					&recs[i].len,
-					&recs[i].base,
-					&recs[i].errString);
+					&recs[i].format, &buf, &len,
+					&recs[i].base, &recs[i].errString);
+		recs[i].len = len;
+		if (len > 0)
+		{
+		    recs[i].buf = (char*) odr_malloc(stream, len);
+		    memcpy(recs[i].buf, buf, len);
+		}
+		else
+		    recs[i].buf = buf;
                 recs[i].score=poset[i].score;
                 recs[i].sysno=poset[i].sysno;
 	    }
@@ -913,14 +922,14 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
 	    {
 	        char num_str[20];
 
-		sprintf (num_str, "%d", pos_array[i]);	
+		sprintf (num_str, ZINT_FORMAT, pos_array[i]);	
 		zh->errCode = 13;
                 zh->errString = odr_strdup (stream, num_str);
 		ret = -1;
                 break;
 	    }
 	}
-	zebraPosSetDestroy (zh, poset, num_recs);
+	zebra_meta_records_destroy(zh, poset, num_recs);
     }
     zebra_end_read (zh);
     xfree (pos_array);
@@ -1945,93 +1954,16 @@ int zebra_set_shadow_enable (ZebraHandle zh, int value)
     return 0;
 }
 
-/* almost the same as zebra_records_retrieve ... but how did it work? 
-   I mean for multiple records ??? CHECK ??? */
+/* Used by Perl API.. Added the record buffer dup to zebra_records_retrieve
+   so that it's identicical to the original api_records_retrieve */
 void api_records_retrieve (ZebraHandle zh, ODR stream,
 			   const char *setname, Z_RecordComposition *comp,
 			   oid_value input_format, int num_recs,
 			   ZebraRetrievalRecord *recs)
 {
-    ZebraPosSet poset;
-    int i, *pos_array;
-    ASSERTZH;
-    assert(stream);
-    assert(setname);
-    assert(comp);
-    assert(recs);
-    assert(num_recs>0);
-    yaz_log(log_level,"api_records_retrieve s=%s n=%d",setname,num_recs);
-
-    if (!zh->res)
-    {
-        zh->errCode = 30;
-        zh->errString = odr_strdup (stream, setname);
-        return;
-    }
-    
-    zh->errCode = 0; 
-
-    if (zebra_begin_read (zh))
-	return;
-
-    pos_array = (int *) xmalloc (num_recs * sizeof(*pos_array));
-    for (i = 0; i<num_recs; i++)
-	pos_array[i] = recs[i].position;
-    poset = zebraPosSetCreate (zh, setname, num_recs, pos_array);
-    if (!poset)
-    {
-        yaz_log (YLOG_DEBUG, "zebraPosSetCreate error");
-        zh->errCode = 30;
-        zh->errString = nmem_strdup (stream->mem, setname);
-    }
-    else
-    {
-	for (i = 0; i<num_recs; i++)
-	{
-	    if (poset[i].term)
-	    {
-		recs[i].errCode = 0;
-		recs[i].format = VAL_SUTRS;
-		recs[i].len = strlen(poset[i].term);
-		recs[i].buf = poset[i].term;
-		recs[i].base = poset[i].db;
-		recs[i].sysno = 0;
-	    
-	    }
-	    else if (poset[i].sysno)
-	    {
-	      /* changed here ??? CHECK ??? */
-	      char *b;
-		recs[i].errCode =
-		    zebra_record_fetch (zh, poset[i].sysno, poset[i].score,
-					stream, input_format, comp,
-					&recs[i].format, 
-					&b,
-					&recs[i].len,
-					&recs[i].base,
-					&recs[i].errString);
-		recs[i].buf = (char *) odr_malloc(stream,recs[i].len);
-		memcpy(recs[i].buf, b, recs[i].len);
-		recs[i].sysno = poset[i].sysno;
-		recs[i].score = poset[i].score;
-	    }
-	    else
-	    {
-	        char num_str[20];
-
-		sprintf (num_str, "%d", pos_array[i]);	
-		zh->errCode = 13;
-                zh->errString = odr_strdup (stream, num_str);
-                break;
-	    }
-
-	}
-	zebraPosSetDestroy (zh, poset, num_recs);
-    }
-    zebra_end_read (zh);
-    xfree (pos_array);
+    zebra_records_retrieve(zh, stream, setname, comp, input_format,
+			   num_recs, recs);
 }
-
 
 /* ---------------------------------------------------------------------------
   Record insert(=update), delete 

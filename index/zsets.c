@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.71 2004-11-19 10:27:09 heikki Exp $
+/* $Id: zsets.c,v 1.72 2004-11-29 21:55:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -136,60 +136,6 @@ void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
     }
     (s->hits)++;
 }
-
-#if 0 /* FIXME - Delete this, we don't count terms no more */
-int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
-                          int no, zint *count, 
-                          int *type, char *out, size_t *len)
-{
-    ZebraSet s = resultSetGet (zh, setname);
-    int no_max = 0;
-
-    if (count)
-        *count = 0;
-    if (!s || !s->rset)
-        return 0;
-    no_max = s->rset->no_rset_terms;
-    if (no < 0 || no >= no_max)
-        return 0;
-    if (count)
-        *count = s->rset->rset_terms[no]->count;
-    if (type)
-        *type = s->rset->rset_terms[no]->type;
-    
-    if (out)
-    {
-        char *inbuf = s->rset->rset_terms[no]->name;
-        size_t inleft = strlen(inbuf);
-        size_t outleft = *len - 1;
-        int converted = 0;
-
-        if (zh->iconv_from_utf8 != 0)
-        {
-            char *outbuf = out;
-            size_t ret;
-            
-            ret = yaz_iconv(zh->iconv_from_utf8, &inbuf, &inleft,
-                        &outbuf, &outleft);
-            if (ret == (size_t)(-1))
-                *len = 0;
-            else
-                *len = outbuf - out;
-            converted = 1;
-        }
-        if (!converted)
-        {
-            if (inleft > outleft)
-                inleft = outleft;
-            *len = inleft;
-            memcpy (out, inbuf, *len);
-        }
-        out[*len] = 0;
-    }
-    return no_max;
-}
-
-#endif
 
 ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
 {
@@ -332,11 +278,11 @@ void resultSetDestroy (ZebraHandle zh, int num, char **names,int *statuses)
     }
 }
 
-ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name, 
-                               int num, int *positions)
+ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name, 
+					    int num, zint *positions)
 {
     ZebraSet sset;
-    ZebraPosSet sr = 0;
+    ZebraMetaRecord *sr = 0;
     RSET rset;
     int i;
     struct zset_sort_info *sort_info;
@@ -347,7 +293,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
     {
         if (!sset->term_entries)
             return 0;
-        sr = (ZebraPosSet) xmalloc (sizeof(*sr) * num);
+        sr = (ZebraMetaRecord *) xmalloc (sizeof(*sr) * num);
         for (i = 0; i<num; i++)
         {
             sr[i].sysno = 0;
@@ -364,7 +310,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
     }
     else
     {
-        sr = (ZebraPosSet) xmalloc (sizeof(*sr) * num);
+        sr = (ZebraMetaRecord *) xmalloc (sizeof(*sr) * num);
         for (i = 0; i<num; i++)
         {
             sr[i].sysno = 0;
@@ -410,6 +356,7 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
             while (num_i < num && rset_read (rfd, &key, 0))
             {
                 zint this_sys = key.mem[0];
+		yaz_log(YLOG_LOG, "RSET READ " ZINT_FORMAT, this_sys);
                 if (this_sys != psysno)
                 {
                     psysno = this_sys;
@@ -439,7 +386,8 @@ ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
     return sr;
 }
 
-void zebraPosSetDestroy (ZebraHandle zh, ZebraPosSet records, int num)
+void zebra_meta_records_destroy (ZebraHandle zh, ZebraMetaRecord *records,
+				 int num)
 {
     assert(zh); /* compiler shut up about unused arg */
     xfree (records);
@@ -779,8 +727,9 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset, NMEM nmem)
         do
         {
             zint this_sys = key.mem[0]; /* FIXME - assumes scope==2 */
-            zint seqno = key.mem[1]; /* FIXME - assumes scope==2 */
+            zint seqno = key.mem[key.len-1]; /* FIXME - assumes scope==2 */
             kno++;
+	    yaz_log(YLOG_LOG, "got sysno=%lld", this_sys);
             if (this_sys != psysno)
             {
                 score = (*rc->calc) (handle, psysno);
@@ -863,9 +812,9 @@ void zebraRankDestroy (struct zebra_register *reg)
         ZebraRankClass p_next = p->next;
         if (p->init_flag && p->control->destroy)
             (*p->control->destroy)(reg, p->class_handle);
-        xfree (p->control->name);
-        xfree (p->control);
-        xfree (p);
+        xfree(p->control->name);
+        xfree(p->control);
+        xfree(p);
         p = p_next;
     }
     reg->rank_classes = NULL;
