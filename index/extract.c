@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.135 2003-02-25 21:51:05 adam Exp $
+/* $Id: extract.c,v 1.136 2003-02-26 09:13:51 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -916,6 +916,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
 				 &rGroup,
 				 delete_flag,
 				 test_mode,
+				 recordType,
 				 sysno,
 				 match_criteria,
 				 "<no file>"));
@@ -931,6 +932,7 @@ int bufferExtractRecord (ZebraHandle zh,
 			 struct recordGroup *rGroup, 
 			 int delete_flag,
 			 int test_mode, 
+			 const char *recordType,
 			 int *sysno,
 			 const char *match_criteria,
 			 const char *fname)
@@ -940,7 +942,7 @@ int bufferExtractRecord (ZebraHandle zh,
     struct recExtractCtrl extractCtrl;
     int i, r;
     char *matchStr = 0;
-    RecType recType;
+    RecType recType = NULL;
     char subType[1024];
     void *clientData;
     Record rec;
@@ -964,22 +966,30 @@ int bufferExtractRecord (ZebraHandle zh,
     /* announce database */
     if (zebraExplain_curDatabase (zh->reg->zei, rGroup->databaseName))
     {
-        if (zebraExplain_newDatabase (zh->reg->zei, rGroup->databaseName, 0))
-	    return 0;
+      if (zebraExplain_newDatabase (zh->reg->zei, rGroup->databaseName, 0))
+	return 0;
     }
 
-    if (!(rGroup->recordType)) {
+    if (*recordType) {
+      logf (LOG_DEBUG, "Record type explicitly specified: %s", recordType);
+      recType = recType_byName (zh->reg->recTypes, recordType, subType,
+				&clientData);
+    } else {
+      if (!(rGroup->recordType)) {
         logf (LOG_WARN, "No such record type defined");
         return 0;
+      }
+      logf (LOG_DEBUG, "Get record type from rgroup: %s",rGroup->recordType);
+      recType = recType_byName (zh->reg->recTypes, rGroup->recordType, subType,
+				&clientData);
+      recordType = rGroup->recordType;
     }
 
-    if (!(recType =
-	  recType_byName (zh->reg->recTypes, rGroup->recordType, subType,
-			  &clientData)))
-    {
-        logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
-        return 0;
+    if (!recType) {
+      logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
+      return 0;
     }
+
     zh->reg->keys.buf_used = 0;
     zh->reg->keys.prevAttrUse = -1;
     zh->reg->keys.prevAttrSet = -1;
@@ -1059,12 +1069,12 @@ int bufferExtractRecord (ZebraHandle zh,
         /* new record */
         if (delete_flag)
         {
-	    logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
+	    logf (LOG_LOG, "delete %s %s %ld", recordType,
 		  fname, (long) recordOffset);
             logf (LOG_WARN, "cannot delete record above (seems new)");
             return 1;
         }
-	logf (LOG_LOG, "add %s %s %ld", rGroup->recordType, fname,
+	logf (LOG_LOG, "add %s %s %ld", recordType, fname,
 	      (long) recordOffset);
         rec = rec_new (zh->reg->records);
 
@@ -1096,7 +1106,7 @@ int bufferExtractRecord (ZebraHandle zh,
 	if (recordAttr->runNumber ==
 	    zebraExplain_runNumberIncrement (zh->reg->zei, 0))
 	{
-	    logf (LOG_LOG, "skipped %s %s %ld", rGroup->recordType,
+	    logf (LOG_LOG, "skipped %s %s %ld", recordType,
 		  fname, (long) recordOffset);
 	    extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
 	    rec_rm (&rec);
@@ -1116,13 +1126,13 @@ int bufferExtractRecord (ZebraHandle zh,
             /* record going to be deleted */
             if (!delkeys.buf_used)
             {
-                logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
+                logf (LOG_LOG, "delete %s %s %ld", recordType,
                       fname, (long) recordOffset);
                 logf (LOG_WARN, "cannot delete file above, storeKeys false");
             }
             else
             {
-		logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
+		logf (LOG_LOG, "delete %s %s %ld", recordType,
 		      fname, (long) recordOffset);
                 zh->records_deleted++;
                 if (matchStr)
@@ -1138,13 +1148,13 @@ int bufferExtractRecord (ZebraHandle zh,
             /* record going to be updated */
             if (!delkeys.buf_used)
             {
-                logf (LOG_LOG, "update %s %s %ld", rGroup->recordType,
+                logf (LOG_LOG, "update %s %s %ld", recordType,
                       fname, (long) recordOffset);
                 logf (LOG_WARN, "cannot update file above, storeKeys false");
             }
             else
             {
-		logf (LOG_LOG, "update %s %s %ld", rGroup->recordType,
+		logf (LOG_LOG, "update %s %s %ld", recordType,
 		      fname, (long) recordOffset);
                 extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
                 extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
@@ -1155,7 +1165,7 @@ int bufferExtractRecord (ZebraHandle zh,
     /* update file type */
     xfree (rec->info[recInfo_fileType]);
     rec->info[recInfo_fileType] =
-        rec_strdup (rGroup->recordType, &rec->size[recInfo_fileType]);
+        rec_strdup (recordType, &rec->size[recInfo_fileType]);
 
     /* update filename */
     xfree (rec->info[recInfo_filename]);
