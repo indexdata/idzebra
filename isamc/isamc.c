@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.9  1998-03-06 13:54:02  adam
+ * Revision 1.10  1998-03-11 11:18:18  adam
+ * Changed the isc_merge to take into account the mfill (minimum-fill).
+ *
+ * Revision 1.9  1998/03/06 13:54:02  adam
  * Fixed two nasty bugs in isc_merge.
  *
  * Revision 1.8  1997/09/17 12:19:20  adam
@@ -65,10 +68,10 @@ ISAMC_M isc_getmethod (void)
         {   32,    28,     0,    3 },
 	{   64,    54,    30,    0 },
 #else
-        {   32,    28,     0,    20 },
-        {  512,   490,   100,    20 },
-        { 4096,  3950,  1000,    20 },
-        {32768, 32000, 10000,     0 },
+        {   32,    28,    20,    20 },
+        {  512,   490,   340,    20 },
+        { 4096,  3950,  3200,    20 },
+        {32768, 32000, 30000,     0 },
 #endif
     };
     ISAMC_M m = xmalloc (sizeof(*m));

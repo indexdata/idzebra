@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: merge.c,v $
- * Revision 1.6  1998-03-06 13:54:03  adam
+ * Revision 1.7  1998-03-11 11:18:18  adam
+ * Changed the isc_merge to take into account the mfill (minimum-fill).
+ *
+ * Revision 1.6  1998/03/06 13:54:03  adam
  * Fixed two nasty bugs in isc_merge.
  *
  * Revision 1.5  1997/02/12 20:42:43  adam
@@ -190,18 +193,18 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
             {
                 /* the resulting output is of the same category as the
                    the original 
-                 */
-                if (mb[ptr].offset == r_offset)
+		*/
+                if (r_offset <= mb[ptr].offset +is->method->filecat[cat].mfill)
                 {
-                    /* the resulting output block is empty. Delete
+                    /* the resulting output block is too small/empty. Delete
                        the original (if any)
-                     */
+		    */
                     if (is->method->debug > 3)
                         logf (LOG_LOG, "isc: release A");
                     if (mb[ptr].block)
                         isc_release_block (is, pp->cat, mb[ptr].block);
                     mb[ptr].block = pp->pos;
-                    mb[ptr].dirty = 2;
+                    mb[ptr].dirty = 1;
                     if (ptr > 0)
                         mb[ptr-1].dirty = 1;
                 }
@@ -256,7 +259,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                 /* is next input item the same as current except
                    for the delete flag? */
                 cmp = (*is->method->compare_item)(i_item, f_item);
-                if (!cmp && i_mode)
+                if (!cmp && i_mode)   /* delete/insert nop? */
                 {
                     /* yes! insert as if it was an insert only */
                     memcpy (r_item, i_item, i_item_ptr - i_item);
