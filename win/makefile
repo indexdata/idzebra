@@ -1,5 +1,5 @@
 # Z'mbol/Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.11 2002-07-15 12:31:40 adam Exp $
+# $Id: makefile,v 1.12 2002-07-25 13:45:59 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -7,6 +7,10 @@
 
 DEBUG=1   # 0 for release, 1 for debug
 ZMBOL=0
+
+# iconv
+HAVE_ICONV=1
+ICONV_DIR = c:\libiconv-1.7.0.1
 
 default: all
 
@@ -86,6 +90,18 @@ apitest: $(APITEST)
 ############### Compiler and linker options 
 ###########################################################
 
+!if $(HAVE_ICONV)
+ICONV_DEF= \
+  /D HAVE_ICONV_H=1 \
+  /I"$(ICONV_DIR)\include"
+ICONV_LIB= \
+  $(ICONV_DIR)\lib\iconv.lib
+!else
+ICONV_DEF= \
+  /D HAVE_ICONV_H=0
+ICONV_LIB=
+!endif
+
 ### C and CPP compiler  (the same thing)
 # Note: $(CPP) has already been defined in the environment
 # (if you set things up right!)
@@ -94,6 +110,7 @@ COMMON_C_OPTIONS=          \
   /nologo /W3 /GX /FD /c   \
   /D "WIN32"               \
   /D"_CONSOLE" /D"_MBCS"   \
+  $(ICONV_DEF)             \
   /FR"$(OBJDIR)\\"         \
   /Fo"$(OBJDIR)\\"         \
   /Fd"$(OBJDIR)\\"         \
@@ -135,7 +152,7 @@ LINK=link.exe
 LINK_LIBS= kernel32.lib user32.lib   gdi32.lib   winspool.lib \
            comdlg32.lib advapi32.lib shell32.lib ole32.lib    \
            oleaut32.lib uuid.lib     odbc32.lib  odbccp32.lib \
-           wsock32.lib  advapi32.lib
+           wsock32.lib  advapi32.lib $(ICONV_LIB)
 
 COMMON_LNK_OPTIONS= /nologo \
                     /machine:i386 \
