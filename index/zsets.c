@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.39 2002-08-28 19:52:29 adam Exp $
+/* $Id: zsets.c,v 1.40 2003-01-13 22:37:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -730,6 +730,8 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 	do
 	{
 	    kno++;
+	    yaz_log(LOG_LOG, "sysno=%d seqno=%d idx=%d", key.sysno, key.seqno,
+			    	term_index);
 	    if (key.sysno != psysno)
 	    {
 		score = (*rc->calc) (handle, psysno);
