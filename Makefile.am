@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.20 2005-01-15 21:45:42 adam Exp $
+## $Id: Makefile.am,v 1.21 2005-01-16 20:19:20 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -30,6 +30,5 @@ dist-hook:
 	cp $(srcdir)/debian/copyright $(distdir)/debian
 	cp $(srcdir)/debian/rules $(distdir)/debian
 
-rpm: $(PACKAGE)-$(VERSION).tar.gz
-	cp $(PACKAGE)-$(VERSION).tar.gz /usr/src/redhat/SOURCES
-	rpm -ba $(SPEC_FILE)
+cvs2cl:
+	cvs2cl
