@@ -1,5 +1,5 @@
-/* $Id: rank1.c,v 1.13 2003-03-26 16:41:48 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: rank1.c,v 1.14 2003-03-26 16:57:24 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -30,7 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <unistd.h>
 #endif
 
-#define DEBUG_RANK 1
+#define DEBUG_RANK 0
 
 #include "index.h"
 
