@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.14  1996-05-09 07:28:49  quinn
+ * Revision 1.15  1996-06-06 12:08:16  quinn
+ * Added showRecord Group entry
+ *
+ * Revision 1.14  1996/05/09  07:28:49  quinn
  * Work towards phrases and multiple registers
  *
  * Revision 1.13  1996/05/01  13:44:05  adam
@@ -83,6 +86,7 @@ struct recExtractCtrl {
     void      (*endf)(void *fh, off_t offset);   /* end of record position */
     off_t     offset;                            /* start offset           */
     char      *subType;
+    struct recordGroup *group;
     void      (*init)(RecWord *p);
     void      (*add)(const RecWord *p);
 };
