@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.16  1995-10-10 12:24:38  adam
+ * Revision 1.17  1995-10-13 16:01:49  adam
+ * Work on relations.
+ *
+ * Revision 1.16  1995/10/10  12:24:38  adam
  * Temporary sort files are compressed.
  *
  * Revision 1.15  1995/10/04  16:57:19  adam
@@ -66,8 +69,8 @@
 #define IT_KEY_HAVE_FIELD 0
 
 struct it_key {
-    int   sysno : 24;
-    int   seqno : 16;
+    int   sysno;
+    int   seqno;
 };
 
 struct dir_entry {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.28  1995-10-13 12:26:43  adam
+ * Revision 1.29  1995-10-13 16:01:49  adam
+ * Work on relations.
+ *
+ * Revision 1.28  1995/10/13  12:26:43  adam
  * Optimization of truncation.
  *
  * Revision 1.27  1995/10/12  17:07:22  adam
@@ -496,17 +499,60 @@ static int grep_handle (Dict_char *name, const char *info, void *p)
     return 0;
 }
 
+static void gen_regular_ge (char *dst, int val)
+{
+    int dst_p = 0;
+    int w = 1;
+    int d;
+    int pos = 0;
+    int i;
+
+    if (val < 0) 
+        val = 0;
+    while ((d=(val % (w*10))/w))
+    {
+        sprintf (dst + dst_p, "%d", val);
+
+        dst_p = strlen(dst) - pos - 1;
+
+        dst[dst_p++] = '[';
+        dst[dst_p++] = d +'1';
+        dst[dst_p++] = '-';
+        dst[dst_p++] = '9';
+        dst[dst_p++] = ']';
+
+        for (i = 0; i<pos; i++)
+        {
+            dst[dst_p++] = '[';
+            dst[dst_p++] = '0';
+            dst[dst_p++] = '-';
+            dst[dst_p++] = '9';
+            dst[dst_p++] = ']';
+        }
+        dst[dst_p++] = '|';
+
+        w = w * 10;
+        pos++;
+    }
+    dst[dst_p] = '\0';
+    for (i = 0; i<pos; i++)
+        strcat (dst, "[0-9]");
+    strcat (dst, "[0-9]*");
+}
+
 static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                        const char *term_sub,
                        oid_value attributeSet, struct grep_info *grep_info)
 {
-    char term_dict[2*IT_MAX_WORD+2];
+    char term_dict[10*IT_MAX_WORD+2];
     int i, j;
     const char *info;    
     AttrType truncation;
     int truncation_value;
     AttrType use;
     int use_value;
+    AttrType relation;
+    int relation_value;
     oid_value curAttributeSet = attributeSet;
 
     attr_init (&use, zapt, 1);
@@ -516,6 +562,9 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     truncation_value = attr_find (&truncation, NULL);
     logf (LOG_DEBUG, "truncation value %d", truncation_value);
 
+    attr_init (&relation, zapt, 2);
+    relation_value = attr_find (&relation, NULL);
+
     if (use_value == -1)
         use_value = 1016;
     i = index_word_prefix_map (term_dict, curAttributeSet, use_value);
@@ -524,7 +573,26 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         zi->errCode = 114;
         return -1;
     }
-    
+    switch (relation_value)
+    {
+    case 1:
+    case 2:
+        break;
+    case 4:
+        logf (LOG_LOG, "Relation ge");
+        gen_regular_ge (term_dict + strlen(term_dict), atoi(term_sub));
+        logf (LOG_LOG, "dict_lookup_grep: %s", term_dict);
+        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, grep_handle);
+        logf (LOG_LOG, "%d positions", grep_info->isam_p_indx);
+        return 0;
+    case 5:
+        logf (LOG_LOG, "Relation gt");
+        gen_regular_ge (term_dict + strlen(term_dict), atoi(term_sub)+1);
+        logf (LOG_LOG, "dict_lookup_grep: %s", term_dict);
+        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, grep_handle);
+        logf (LOG_LOG, "%d positions", grep_info->isam_p_indx);
+        return 0;
+    }
     switch (truncation_value)
     {
     case -1:         /* not specified */
@@ -562,7 +630,7 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, grep_handle);
         break;
     }
-    logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
+    logf (LOG_LOG, "%d positions", grep_info->isam_p_indx);
     return 0;
 }
 
@@ -850,7 +918,6 @@ static RSET rpn_search_APT_local (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     rset_close (result, rsfd);
     return result;
 }
-
 
 static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                             oid_value attributeSet)
