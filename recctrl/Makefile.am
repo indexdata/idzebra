@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.10 2004-06-16 20:49:18 adam Exp $
+## $Id: Makefile.am,v 1.11 2004-08-24 10:37:18 adam Exp $
 
-noinst_LIBRARIES = librecctrl.a
+lib_LTLIBRARIES = libidzebra-recctrl.la
 
 EXTRA_DIST=perlread.c perlread.h.in
 
@@ -10,7 +10,7 @@ else
 PERLREAD=
 endif	
 
-librecctrl_a_SOURCES = recctrl.c recgrs.c sgmlread.c regxread.c \
+libidzebra_recctrl_la_SOURCES = recctrl.c recgrs.c sgmlread.c regxread.c \
 	marcread.c marcomp.c marcomp.h inline.c inline.h rectext.c \
 	grsread.h recgrs.h rectext.h xmlread.c danbibr.c \
 	$(PERLREAD)

@@ -1,16 +1,16 @@
-## $Id: Makefile.am,v 1.4 2004-06-16 20:49:18 adam Exp $
+## $Id: Makefile.am,v 1.5 2004-08-24 10:37:18 adam Exp $
 
-noinst_LIBRARIES = libisamb.a
+lib_LTLIBRARIES = libidzebra-isamb.la
 
 check_PROGRAMS = tstisamb
 
 TESTS = $(check_PROGRAMS)
 
 tstisamb_SOURCES = tstisamb.c
-tstisamb_LDADD = libisamb.a ../bfile/libbfile.a ../util/libutil.a $(YAZLIB)
+tstisamb_LDADD = libisamb.a ../bfile/libbfile.a ../util/libutil.a $(YAZLALIB)
 
-libisamb_a_SOURCES = isamb.c
+libidzebra_isamb_la_SOURCES = isamb.c
 
 AM_CPPFLAGS=-I$(srcdir)/../include $(YAZINC)
 
-LDADD = ../util/libutil.a ../bfile/libbfile.a libisamc.a $(YAZLIB) $(TCL_LIB)
+LDADD = ../util/libutil.a ../bfile/libbfile.a libisamc.a $(YAZLALIB) $(TCL_LIB)

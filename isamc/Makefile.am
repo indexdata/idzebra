@@ -1,9 +1,9 @@
-## $Id: Makefile.am,v 1.5 2004-08-04 08:35:24 adam Exp $
+## $Id: Makefile.am,v 1.6 2004-08-24 10:37:18 adam Exp $
 
-noinst_LIBRARIES = libisamc.a
+lib_LTLIBRARIES = libidzebra-isamc.la
 
-libisamc_a_SOURCES = isamc.c merge.c isamc-p.h
+libidzebra_isamc_la_SOURCES = isamc.c merge.c isamc-p.h
 
 AM_CPPFLAGS = -I$(srcdir)/../include -I$(srcdir)/../index $(YAZINC)
 
-LDADD = ../util/libutil.a ../bfile/libbfile.a libisamc.a $(YAZLIB) $(TCL_LIB)
+LDADD = ../util/libutil.a ../bfile/libbfile.a libisamc.a $(YAZLALIB) $(TCL_LIB)
