@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.78 2002-11-18 11:07:59 adam Exp $
+/* $Id: zebraapi.c,v 1.79 2002-11-26 22:18:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -448,8 +448,6 @@ void zebra_close (ZebraHandle zh)
 	}
 	sp = &(*sp)->next;
     }
-//    if (!zs->sessions && zs->stop_flag)
-//	zebra_register_deactivate(zs);
     zebra_mutex_cond_unlock (&zs->session_lock);
     xfree (zh->reg_name);
     xfree (zh);

@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.131 2002-11-15 21:26:00 adam Exp $
+/* $Id: extract.c,v 1.132 2002-11-26 22:18:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -944,7 +944,6 @@ int bufferExtractRecord (ZebraHandle zh,
     char subType[1024];
     void *clientData;
     SYSNO sysnotmp;
-    //    const char *fname = "<no file>";
     Record rec;
     long recordOffset = 0;
     struct zebra_fetch_control fc;

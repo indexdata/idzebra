@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.91 2002-11-15 21:26:00 adam Exp $
+/* $Id: index.h,v 1.92 2002-11-26 22:18:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -169,8 +169,6 @@ void zebra_load_atts (data1_handle dh, Res res);
 
 int key_SU_decode (int *ch, const unsigned char *out);
 int key_SU_encode (int ch, char *out);
-
-// extern Res common_resource;
 
 #define ENCODE_BUFLEN 768
 struct encode_info {

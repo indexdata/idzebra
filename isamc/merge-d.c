@@ -1,4 +1,4 @@
-/* $Id: merge-d.c,v 1.28 2002-08-02 19:26:56 adam Exp $
+/* $Id: merge-d.c,v 1.29 2002-11-26 22:18:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -43,11 +43,11 @@ struct ISAMD_DIFF_s {
   int difftype;  
 };
 
-#define DT_NONE 0 // no diff, marks end of sequence
-#define DT_DIFF 1 // ordinarry diff
-#define DT_MAIN 2 // main data
-#define DT_INPU 3 // input data to be merged
-#define DT_DONE 4 // done with all input here
+#define DT_NONE 0 /* no diff, marks end of sequence */
+#define DT_DIFF 1 /* ordinarry diff */
+#define DT_MAIN 2 /* main data */
+#define DT_INPU 3 /* input data to be merged */
+#define DT_DONE 4 /* done with all input here */
 
 
 
@@ -374,7 +374,7 @@ static void getDiffInfo(ISAMD_PP pp )
 
       if (0==pp->diffinfo[i].maxidx)
       {
-         if (pp->is->method->debug > 5)  //!!! 4
+         if (pp->is->method->debug > 5)  /* !!! 4 */
            logf(LOG_LOG,"isamd_getDiffInfo:End mark at ix=%d n=%d",
                diffidx, i);
          return; /* end marker */
@@ -514,7 +514,7 @@ int isamd_read_item_merge (
        ;  /* find last diff */
      if (p_key)  
      {  /* we have an extra item to inject into the merge */
-       if (pp->is->method->debug >9)  //!!!!!
+       if (pp->is->method->debug >9)  /* !!!!! */
           logf(LOG_LOG,"isamd_read_item: going to merge with %d.%d",
                p_key->sysno, p_key->seqno);
        pp->diffinfo[i].key = *p_key;  /* the key merge could not handle */
@@ -737,8 +737,6 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
      
   /* set up diffs as they should be for reading */
   diffidx = ISAMD_BLOCK_OFFSET_1; 
-  //readpp->diffbuf=readpp->buf;  // diffinfo has to duplicate it!
-  //getDiffInfo(readpp);  // first read will make the diffinfo, at init
   
   if (readpp->is->method->debug >4) 
       logf(LOG_LOG,"isamd_merge: f=%d=%d:%d n=%d=%d:%d",
@@ -805,9 +803,6 @@ static int merge ( ISAMD_PP firstpp,      /* first pp (with diffs) */
   } /* while read */
   
   
-//  firstpp->diffs=0; 
-
-
   isamd_reduceblock(pp);  /* reduce size if possible */
   if (0==firstpp->next)
     firstpp->next = isamd_addr(pp->pos,pp->cat);
@@ -907,7 +902,6 @@ static int append_diffs(
    diffidx+=sizeof(int);  /* difflen will be stored here */
    
    /* read first input */
-   //i_ptr = i_item;   //!!!
    i_more = filter_read(filt, &i_key, &i_mode); 
    /* i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); */
 
@@ -954,7 +948,7 @@ static int append_diffs(
          { /* max size - can't help, need to merge it */
              if (is->method->debug >7)
                 logf(LOG_LOG,"isamd_appd: need to merge");
-             if (is->method->debug >9)  //!!!!!
+             if (is->method->debug >9)  /* !!!!! */
                 logf(LOG_LOG,"isamd_appd: going to merge with m=%d %d.%d",
                      i_mode, i_key.sysno, i_key.seqno);
              merge_rc = merge (firstpp, &i_key, filt, dictentry, dictlen);
@@ -1103,7 +1097,10 @@ int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.28  2002-08-02 19:26:56  adam
+ * Revision 1.29  2002-11-26 22:18:34  adam
+ * Remove // comments
+ *
+ * Revision 1.28  2002/08/02 19:26:56  adam
  * Towards GPL
  *
  * Revision 1.27  2002/07/12 18:12:21  heikki

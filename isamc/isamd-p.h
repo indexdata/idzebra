@@ -1,4 +1,4 @@
-/* $Id: isamd-p.h,v 1.11 2002-08-02 19:26:56 adam Exp $
+/* $Id: isamd-p.h,v 1.12 2002-11-26 22:18:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -119,7 +119,7 @@ struct ISAMD_PP_s {
                               sizeof(ISAMD_BLOCK_SIZE) + \
                               sizeof(ISAMD_BLOCK_SIZE)) 
 /* == 12  (was 16) */
-//                              sizeof(int) + 
+/*                              sizeof(int) +  */
 
 
 int isamd_alloc_block (ISAMD is, int cat);
@@ -141,7 +141,10 @@ int singleton_encode(struct it_key *k);
 
 /*
  * $Log: isamd-p.h,v $
- * Revision 1.11  2002-08-02 19:26:56  adam
+ * Revision 1.12  2002-11-26 22:18:34  adam
+ * Remove // comments
+ *
+ * Revision 1.11  2002/08/02 19:26:56  adam
  * Towards GPL
  *
  * Revision 1.10  2002/04/29 18:10:24  adam

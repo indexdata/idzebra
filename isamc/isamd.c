@@ -1,4 +1,4 @@
-/* $Id: isamd.c,v 1.23 2002-08-02 19:26:56 adam Exp $
+/* $Id: isamd.c,v 1.24 2002-11-26 22:18:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -620,7 +620,7 @@ ISAMD_PP isamd_pp_open (ISAMD is, const char *dictbuf, int dictlen)
     pp->diffinfo=0;
     pp->decodeClientData = (*is->method->code_start)(ISAMD_DECODE);
     
-    dictnum=*dictbuf;  // numkeys for internals, 0 for externals
+    dictnum=*dictbuf;  /* numkeys for internals, 0 for externals */
 
     if (0==dictnum)
     {
@@ -881,7 +881,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.23  2002-08-02 19:26:56  adam
+ * Revision 1.24  2002-11-26 22:18:34  adam
+ * Remove // comments
+ *
+ * Revision 1.23  2002/08/02 19:26:56  adam
  * Towards GPL
  *
  * Revision 1.22  2002/07/12 18:12:21  heikki
