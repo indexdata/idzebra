@@ -1,5 +1,5 @@
-/* $Id: zsets.c,v 1.75 2004-12-10 12:37:07 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: zsets.c,v 1.76 2005-01-07 14:44:54 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -56,6 +56,10 @@ struct zebra_set {
     int term_entries_max;
     struct zebra_set *next;
     int locked;
+
+    zint cache_position;  /* last position */
+    RSFD cache_rfd;       /* rfd (NULL if not existing) */
+    zint cache_psysno;    /* sysno for last position */
 };
 
 struct zset_sort_entry {
@@ -171,7 +175,11 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
         if (!ov || s->locked)
             return NULL;
         if (s->rset)
+	{
+	    if (s->cache_rfd)
+		rset_close(s->cache_rfd);
             rset_delete (s->rset);
+	}
         if (s->rset_nmem)
             nmem_destroy (s->rset_nmem);
         if (s->nmem)
@@ -210,6 +218,8 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     s->rset_nmem=0;
     s->nmem = 0;
     s->rpn = 0;
+    s->cache_position = 0;
+    s->cache_rfd = 0;
     return s;
 }
 
@@ -244,8 +254,14 @@ void resultSetInvalidate (ZebraHandle zh)
     for (; s; s = s->next)
     {
         if (s->rset)
+	{
+	    if (s->cache_rfd)
+		rset_close(s->cache_rfd);
             rset_delete (s->rset);
+	}
         s->rset = 0;
+	s->cache_rfd = 0;
+	s->cache_position = 0;
         if (s->rset_nmem)
             nmem_destroy(s->rset_nmem);
         s->rset_nmem=0;
@@ -288,7 +304,11 @@ void resultSetDestroy (ZebraHandle zh, int num, char **names,int *statuses)
             if (s->nmem)
                 nmem_destroy (s->nmem);
             if (s->rset)
+	    {
+		if (s->cache_rfd)
+		    rset_close(s->cache_rfd);
                 rset_delete (s->rset);
+	    }
             if (s->rset_nmem)
                 nmem_destroy(s->rset_nmem);
             xfree (s->name);
@@ -369,14 +389,15 @@ ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name,
         sort_info = sset->sort_info;
         if (sort_info)
         {
-            int position;
+            zint position;
             
             for (i = 0; i<num; i++)
             {
                 position = positions[i];
                 if (position > 0 && position <= sort_info->num_entries)
                 {
-                    yaz_log(log_level_sorting, "got pos=%d (sorted)", position);
+                    yaz_log(log_level_sorting, "got pos=" ZINT_FORMAT
+			    " (sorted)", position);
                     sr[i].sysno = sort_info->entries[position-1]->sysno;
                     sr[i].score = sort_info->entries[position-1]->score;
                 }
@@ -390,7 +411,7 @@ ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name,
         }
         if (i < num) /* nope, get the rest, unsorted - sorry */
         {
-            int position = 0;
+            zint position = 0;
             int num_i = 0;
             zint psysno = 0;
             RSFD rfd;
@@ -400,7 +421,20 @@ ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name,
                 position = sort_info->num_entries;
             while (num_i < num && positions[num_i] < position)
                 num_i++;
-            rfd = rset_open (rset, RSETF_READ);
+	    
+	    if (sset->cache_rfd &&
+		num_i < num && positions[num_i] > sset->cache_position)
+	    {
+		position = sset->cache_position;
+		rfd = sset->cache_rfd;
+		psysno = sset->cache_psysno;
+	    }
+	    else
+	    {
+		if (sset->cache_rfd)
+		    rset_close(sset->cache_rfd);
+		rfd = rset_open (rset, RSETF_READ);
+	    }
             while (num_i < num && rset_read (rfd, &key, 0))
             {
                 zint this_sys = key.mem[0];
@@ -421,13 +455,15 @@ ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name,
                     if (position == positions[num_i])
                     {
                         sr[num_i].sysno = psysno;
-                        yaz_log(log_level_sorting, "got pos=%d (unsorted)", position);
+                        yaz_log(log_level_sorting, "got pos=" ZINT_FORMAT " (unsorted)", position);
                         sr[num_i].score = -1;
                         num_i++;
                     }
                 }
             }
-            rset_close (rfd);
+	    sset->cache_position = position;
+	    sset->cache_psysno = psysno;
+	    sset->cache_rfd = rfd;
         }
     }
     return sr;
