@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.22 1996-03-20 09:20:39 adam Exp $
+  $Id: zebra.sgml,v 1.23 1996-03-26 15:59:46 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.22 $
+<date>$Revision: 1.23 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -261,7 +261,7 @@ $ ../index/zebrasrv tcp:@:2100
 </verb></tscreen>
 
 The Zebra index that you have just created has a single database
-named <ztt/Default/. The database contains records structured according to
+named <tt/Default/. The database contains records structured according to
 the GILS profile, and the server will
 return records in either either USMARC, GRS-1, or SUTRS depending
 on what your client asks
@@ -422,6 +422,8 @@ section <ref id="locating-records" name="Locating Records">.
  Enables the <it/safe update/ facility of Zebra, and tells the system
  where to place the required, temporary files. See section
 <ref id="shadow-registers" name="Safe Updating - Using Shadow Registers">.
+<tag>lockPath</tag>
+ Directory in which various lock files are stored.
 <tag>tempSetPath</tag>
  Specifies the directory that the server uses for temporary result sets.
  If not specified <tt>/tmp</tt> will be used.
@@ -434,7 +436,7 @@ section <ref id="locating-records" name="Locating Records">.
  See section <ref id="attset-files" name="The Attribute Set Files">
 </descrip>
 
-<sect1>Locating Records<label="locating-records">
+<sect1>Locating Records<label id="locating-records">
 <p>
 The default behaviour of the Zebra system is to reference the
 records from their original location, i.e. where they were found when you
