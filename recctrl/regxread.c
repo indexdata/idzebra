@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.44 2002-08-02 19:26:56 adam Exp $
+/* $Id: regxread.c,v 1.45 2002-08-19 21:11:27 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -828,50 +828,21 @@ static void tagStrip (const char **tag, int *len)
 static void tagBegin (struct lexSpec *spec, 
                       const char *tag, int len)
 {
-    struct data1_node *parent;
-    data1_element *elem = NULL;
-    data1_node *partag;
-    data1_node *res;
-    data1_element *e = NULL;
-    int localtag = 0;
-
     if (spec->d1_level == 0)
     {
         logf (LOG_WARN, "in element begin. No record type defined");
         return ;
     }
     tagStrip (&tag, &len);
+    if (spec->d1_stack[spec->d1_level])
+	tagDataRelease (spec);
 
-    parent = spec->d1_stack[spec->d1_level -1];
-    partag = get_parent_tag(spec->dh, parent);
-   
-    res = data1_mk_node2 (spec->dh, spec->m, DATA1N_tag, parent);
-
-    if (len >= DATA1_LOCALDATA)
-	res->u.tag.tag = (char *) nmem_malloc (spec->m, len+1);
-    else
-	res->u.tag.tag = res->lbuf;
-
-    memcpy (res->u.tag.tag, tag, len);
-    res->u.tag.tag[len] = '\0';
-   
 #if REGX_DEBUG 
     logf (LOG_LOG, "begin tag %s (%d)", res->u.tag.tag, spec->d1_level);
 #endif
-    if (parent->which == DATA1N_variant)
-        return ;
-    if (partag)
-        if (!(e = partag->u.tag.element))
-            localtag = 1;
-    
-    elem = data1_getelementbytagname (spec->dh,
-				      spec->d1_stack[0]->u.root.absyn,
-				      e, res->u.tag.tag);
-    res->u.tag.element = elem;
 
-    if (spec->d1_stack[spec->d1_level])
-	tagDataRelease (spec);
-    spec->d1_stack[spec->d1_level] = res;
+    spec->d1_stack[spec->d1_level] = data1_mk_tag_n (
+        spec->dh, spec->m, tag, len, 0, spec->d1_stack[spec->d1_level -1]);
     spec->d1_stack[++(spec->d1_level)] = NULL;
 }
 
