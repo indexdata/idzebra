@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.21  1999-07-14 10:59:26  adam
+ * Revision 1.22  1999-08-02 10:13:47  adam
+ * Fixed bug regarding zebra_hits.
+ *
+ * Revision 1.21  1999/07/14 10:59:26  adam
  * Changed functions isc_getmethod, isams_getmethod.
  * Improved fatal error handling (such as missing EXPLAIN schema).
  *
@@ -112,7 +115,6 @@ static int zebra_register_lock (ZebraHandle zh)
 
     zh->errCode = 0;
     zh->errString = 0;
-    zh->hits = 0;
 
     zebra_chdir (zh);
 
@@ -406,6 +408,7 @@ void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
 		       Z_RPNQuery *query, int num_bases, char **basenames, 
 		       const char *setname)
 {
+    zh->hits = 0;
     if (zebra_register_lock (zh))
 	return;
     map_basenames (zh, stream, &num_bases, &basenames);
