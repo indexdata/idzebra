@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.39 2004-06-02 18:50:37 heikki Exp $
+/* $Id: isamb.c,v 1.40 2004-06-02 23:05:55 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -97,6 +97,7 @@ struct ISAMB_block {
     int deleted;
     int offset;
     char *bytes;
+    char *cbuf;
     unsigned char *buf;
     void *decodeClientData;
     int log_rw;
@@ -336,6 +337,7 @@ static struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
     p->pos = pos;
     p->cat = pos & CAT_MASK;
     p->buf = xmalloc (b->file[cat].head.block_size);
+    p->cbuf = 0;
 
     if (!get_block (b, pos, p->buf, 0))
     {
@@ -1070,6 +1072,7 @@ void isamb_dump (ISAMB b, ISAMB_P pos, void (*pr)(const char *str))
    debug the more complex pp_read that also forwards. May be deleted near end
    of 2004, if it has not shown to be useful */
 
+
 int isamb_pp_read (ISAMB_PP pp, void *buf)
 {
     char *dst = buf;
@@ -1136,9 +1139,8 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
 #endif
 
 #define NEW_FORWARD 0
-#if NEW_FORWARD
 
-#define ISAMB_DEBUG 1  /* while coding this part */
+#if NEW_FORWARD == 1
 
 static int isamb_pp_read_on_leaf(ISAMB_PP pp, void *buf)
 { /* reads the next item on the current leaf, returns 0 if end of leaf*/
@@ -1331,7 +1333,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
     }
 } /* isam_pp_forward (new version) */
 
-#else
+#elif NEW_FORWARD == 0
 
 int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
 {
@@ -1520,6 +1522,94 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
 	    }
         } /* leaf */
     } /* main loop */
+}
+
+#elif NEW_FORWARD == 2
+
+int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilb)
+{
+    char *dst = buf;
+    char *src;
+    struct ISAMB_block *p = pp->block[pp->level];
+    if (!p)
+        return 0;
+
+    while (p->offset == p->size)
+    {
+        int pos, item_len;
+        while (p->offset == p->size)
+        {
+            if (pp->level == 0)
+                return 0;
+            close_block (pp->isamb, pp->block[pp->level]);
+            pp->block[pp->level] = 0;
+            (pp->level)--;
+            p = pp->block[pp->level];
+            assert (!p->leaf);  
+        }
+
+        src = p->bytes + p->offset;
+        
+        decode_ptr (&src, &item_len);
+        src += item_len;
+        decode_ptr (&src, &pos);
+        
+        p->offset = src - (char*) p->bytes;
+
+	src = p->bytes + p->offset;
+
+	while(1)
+	{
+	    if (!untilb || p->offset == p->size)
+		break;
+	    assert(p->offset < p->size);
+	    decode_ptr (&src, &item_len);
+	    if ((*pp->isamb->method->compare_item)(untilb, src) <= 1)
+		break;
+	    src += item_len;
+	    decode_ptr (&src, &pos);
+	    p->offset = src - (char*) p->bytes;
+	}
+
+	pp->level++;
+
+        while (1)
+        {
+            pp->block[pp->level] = p = open_block (pp->isamb, pos);
+
+            pp->total_size += p->size;
+            pp->no_blocks++;
+            
+            if (p->leaf) 
+            {
+                break;
+            }
+	    
+            src = p->bytes + p->offset;
+	    while(1)
+	    {
+		decode_ptr (&src, &pos);
+		p->offset = src - (char*) p->bytes;
+		
+		if (!untilb || p->offset == p->size)
+		    break;
+		assert(p->offset < p->size);
+		decode_ptr (&src, &item_len);
+		if ((*pp->isamb->method->compare_item)(untilb, src) <= 1)
+		    break;
+		src += item_len;
+	    }
+            pp->level++;
+        }
+    }
+    assert (p->offset < p->size);
+    assert (p->leaf);
+    src = p->bytes + p->offset;
+    (*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
+                                    &dst, &src);
+    p->offset = src - (char*) p->bytes;
+    /* key_logdump_txt(LOG_DEBUG,buf, "isamb_pp_read returning 1"); */
+    return 1;
 }
 
 #endif
