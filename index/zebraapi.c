@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.33  2000-05-18 12:01:36  adam
+ * Revision 1.34  2000-06-09 13:56:38  ian
+ * Added some logging on Authentication and searches.
+ *
+ * Revision 1.33  2000/05/18 12:01:36  adam
  * System call times(2) used again. More 64-bit fixes.
  *
  * Revision 1.32  2000/04/19 14:35:59  adam
@@ -204,6 +207,9 @@ ZebraHandle zebra_open (ZebraService zs)
     zs->sessions = zh;
 
     zebra_mutex_cond_unlock (&zs->session_lock);
+
+    logf(LOG_APP,"CONNECT:");
+
     return zh;
 }
 
@@ -535,6 +541,8 @@ void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
     resultSetAddRPN (zh, stream, decode, query, num_bases, basenames, setname);
 
     zebra_register_unlock (zh);
+
+    logf(LOG_APP,"SEARCH:%d:",zh->hits);
 }
 
 void zebra_records_retrieve (ZebraHandle zh, ODR stream,
@@ -665,7 +673,12 @@ int zebra_hits (ZebraHandle zh)
 int zebra_auth (ZebraService zh, const char *user, const char *pass)
 {
     if (!zh->passwd_db || !passwd_db_auth (zh->passwd_db, user, pass))
+    {
+        logf(LOG_APP,"AUTHOK:%s", user?user:"ANONYMOUS");
 	return 0;
+    }
+
+    logf(LOG_APP,"AUTHFAIL:%s", user?user:"ANONYMOUS");
     return 1;
 }
 
