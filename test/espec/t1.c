@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.2 2004-12-14 11:23:32 adam Exp $
+/* $Id: t1.c,v 1.3 2005-01-06 11:13:10 heikki Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -26,7 +26,6 @@ int main(int argc, char **argv)
 {
     ZebraService zs = start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs);
-    ZebraMetaRecord *recs;
     char path[256];
     int i, errs = 0;
 
