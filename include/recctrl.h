@@ -4,13 +4,19 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.1  1995-09-14 07:48:13  adam
+ * Revision 1.2  1995-09-15 14:45:03  adam
+ * Retrieve control.
+ *
+ * Revision 1.1  1995/09/14  07:48:13  adam
  * Record control management.
  *
  */
 
 #ifndef RECCTRL_H
 #define RECCTRL_H
+
+#include <oid.h>
+#include <odr.h>
 
 typedef struct {
     int  attrSet;
@@ -33,11 +39,24 @@ struct recExtractCtrl {
     void (*add)(const RecWord *p);
 };
 
+struct recRetrieveCtrl {
+    ODR        odr;
+    int        fd;
+    int       (*readf)(int fd, char *buf, size_t count);
+    oid_value  input_format;
+    
+    /* response */
+    oid_value  output_format;
+    void       *rec_buf;
+    size_t     rec_len;
+};
+
 typedef struct recType
 {
     char *name;
     void (*init)(void);
     int  (*extract)(struct recExtractCtrl *ctrl);
+    int  (*retrieve)(struct recRetrieveCtrl *ctrl);
 } *RecType;
 
 #endif
