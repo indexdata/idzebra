@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.18  1995-10-04 16:57:20  adam
+ * Revision 1.19  1995-10-06 10:43:56  adam
+ * Scan added. 'occurrences' in scan entries not set yet.
+ *
+ * Revision 1.18  1995/10/04  16:57:20  adam
  * Key input and merge sort in one pass.
  *
  * Revision 1.17  1995/10/04  12:55:17  adam
@@ -349,7 +352,7 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
     attr_init (&use, zapt, 1);
     use_value = attr_find (&use);
-    logf (LOG_DEBUG, "use value %d", truncation_value);
+    logf (LOG_DEBUG, "use value %d", use_value);
     attr_init (&truncation, zapt, 5);
     truncation_value = attr_find (&truncation);
     logf (LOG_DEBUG, "truncation value %d", truncation_value);
@@ -675,3 +678,62 @@ int rpn_search (ZServerInfo *zi,
     return zi->errCode;
 }
 
+static struct scan_entry *scan_list;
+static ODR scan_odr;
+static int scan_before, scan_after;
+static int scan_prefix;
+
+static int scan_handle (Dict_char *name, const char *info, int pos)
+{
+    int idx;
+
+    if (pos > 0)
+        idx = scan_after - pos + scan_before;
+    else
+        idx = - pos - 1;
+    scan_list[idx].term = odr_malloc (scan_odr, strlen(name + scan_prefix)+1);
+    strcpy (scan_list[idx].term, name + scan_prefix);
+    scan_list[idx].occurrences = 1;
+    logf (LOG_DEBUG, "pos=%3d idx=%3d name=%s", pos, idx, name);
+    return 0;
+}
+
+int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
+              int *position, int *num_entries, struct scan_entry **list)
+{
+    int i, j, sizez;
+    int pos = *position;
+    int num = *num_entries;
+    int before;
+    int after;
+    char termz[IT_MAX_WORD+20];
+    AttrType use;
+    int use_value;
+    Z_Term *term = zapt->term;
+
+    logf (LOG_DEBUG, "scan, position = %d, num = %d", pos, num);
+    scan_before = before = pos-1;
+    scan_after = after = 1+num-pos;
+    scan_odr = odr;
+
+    logf (LOG_DEBUG, "scan, before = %d, after = %d", before, after);
+    
+    scan_list = *list = odr_malloc (odr, (before+after)*sizeof(**list));
+    attr_init (&use, zapt, 1);
+    use_value = attr_find (&use);
+    logf (LOG_DEBUG, "use value %d", use_value);
+
+    if (use_value == -1)
+        use_value = 1016;
+    scan_prefix = i = index_word_prefix (termz, 1, use_value);
+    sizez = term->u.general->len;
+    if (sizez > IT_MAX_WORD)
+        sizez = IT_MAX_WORD;
+    for (j = 0; j<sizez; j++)
+        termz[j+i] = index_char_cvt (term->u.general->buf[j]);
+    termz[j+i] = '\0';
+    
+    dict_scan (zi->wordDict, termz, &before, &after, scan_handle);
+    return 0;
+}
+              

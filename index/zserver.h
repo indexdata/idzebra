@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.6  1995-09-28 09:19:48  adam
+ * Revision 1.7  1995-10-06 10:43:57  adam
+ * Scan added. 'occurrences' in scan entries not set yet.
+ *
+ * Revision 1.6  1995/09/28  09:19:48  adam
  * xfree/xmalloc used everywhere.
  * Extract/retrieve method seems to work for text records.
  *
@@ -26,7 +29,7 @@
  */
 
 #include "index.h"
-#include <proto.h>
+#include <backend.h>
 #include <rset.h>
 
 typedef struct {
@@ -54,11 +57,15 @@ typedef struct {
     char *recordBuf;
     int errCode;
     char *errString;
+    ODR odr;
 } ZServerInfo;
 
 int rpn_search (ZServerInfo *zi, 
                 Z_RPNQuery *rpn, int num_bases, char **basenames, 
                 const char *setname, int *hits);
+
+int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
+              int *position, int *num_entries, struct scan_entry **list);
 
 ZServerSet *resultSetAdd (ZServerInfo *zi, const char *name,
                           int ov, RSET rset);

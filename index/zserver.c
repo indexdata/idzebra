@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.10  1995-10-02 16:43:32  quinn
+ * Revision 1.11  1995-10-06 10:43:57  adam
+ * Scan added. 'occurrences' in scan entries not set yet.
+ *
+ * Revision 1.10  1995/10/02  16:43:32  quinn
  * Set default resulting record type in fetch.
  *
  * Revision 1.9  1995/10/02  15:18:52  adam
@@ -44,7 +47,6 @@
 #include <fcntl.h>
 
 #include <recctrl.h>
-#include <backend.h>
 #include <dmalloc.h>
 #include "zserver.h"
 
@@ -89,6 +91,7 @@ bend_initresult *bend_init (bend_initrequest *q)
         return &r;
     }
     server_info.recordBuf = NULL;
+    server_info.odr = odr_createmem (ODR_ENCODE);
     return &r;
 }
 
@@ -201,21 +204,15 @@ bend_deleteresult *bend_delete (void *handle, bend_deleterequest *q, int *num)
 
 bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
 {
-    static struct scan_entry list[200];
-    static char buf[200][200];
     static bend_scanresult r;
-    int i;
+
+    odr_reset (server_info.odr);
 
     r.term_position = q->term_position;
     r.num_entries = q->num_entries;
-    r.entries = list;
-    for (i = 0; i < r.num_entries; i++)
-    {
-    	list[i].term = buf[i];
-	sprintf(list[i].term, "term-%d", i+1);
-	list[i].occurrences = rand() % 100000;
-    }
-    r.errcode = 0;
+    r.errcode = rpn_scan (&server_info, server_info.odr, q->term,
+                          &r.term_position,
+                          &r.num_entries, &r.entries);
     r.errstring = 0;
     return &r;
 }
