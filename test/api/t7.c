@@ -1,4 +1,4 @@
-/* $Id: t7.c,v 1.1 2004-09-22 11:59:25 heikki Exp $
+/* $Id: t7.c,v 1.2 2004-10-01 09:13:06 heikki Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -36,7 +36,6 @@ static ZebraService start_service()
 	
 int main(int argc, char **argv)
 {
-    int i;
     ZebraService zs;
     ZebraHandle zh;
     const char *myrec =
