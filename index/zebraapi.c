@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.3  1998-05-27 16:57:44  adam
+ * Revision 1.4  1998-06-12 12:22:12  adam
+ * Work on Zebra API.
+ *
+ * Revision 1.3  1998/05/27 16:57:44  adam
  * Zebra returns surrogate diagnostic for single records when
  * appropriate.
  *
@@ -26,6 +29,7 @@
 #include <unistd.h>
 #endif
 
+#include <diagbib1.h>
 #include "zserver.h"
 
 static int zebra_register_lock (ZebraHandle zh)
@@ -123,7 +127,7 @@ static void zebra_register_unlock (ZebraHandle zh)
         zebra_server_unlock (zh, zh->registerState);
 }
 
-ZebraHandle zebra_open (const char *host, const char *configName)
+ZebraHandle zebra_open (const char *configName)
 {
     ZebraHandle zh = xmalloc (sizeof(*zh));
 
@@ -195,7 +199,7 @@ void zebra_records_retrieve (ZebraHandle zh, ODR stream,
     int i, *pos_array;
 
     zh->errCode = 0;
-    pos_array = xmalloc (sizeof(*pos_array));
+    pos_array = xmalloc (num_recs * sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
 	pos_array[i] = recs[i].position;
 
@@ -256,6 +260,26 @@ void zebra_sort (ZebraHandle zh, ODR stream,
     resultSetSort (zh, stream, num_input_setnames, input_setnames,
 		   output_setname, sort_sequence, sort_status);
     zebra_register_unlock (zh);
+}
+
+int zebra_errCode (ZebraHandle zh)
+{
+    return zh->errCode;
+}
+
+const char *zebra_errString (ZebraHandle zh)
+{
+    return diagbib1_str (zh->errCode);
+}
+
+char *zebra_errAdd (ZebraHandle zh)
+{
+    return zh->errString;
+}
+
+int zebra_hits (ZebraHandle zh)
+{
+    return zh->hits;
 }
 
 void zebra_setDB (ZebraHandle zh, int num_bases, char **basenames)

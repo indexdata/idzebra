@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.32  1998-05-27 16:57:47  adam
+ * Revision 1.33  1998-06-12 12:22:14  adam
+ * Work on Zebra API.
+ *
+ * Revision 1.32  1998/05/27 16:57:47  adam
  * Zebra returns surrogate diagnostic for single records when
  * appropriate.
  *
@@ -132,6 +135,7 @@
 
 #include <sortidx.h>
 #include "index.h"
+#include "zebraapi.h"
 #include "zinfo.h"
 
 typedef struct {
@@ -176,7 +180,6 @@ struct zebra_info {
     ZebraRankClass rank_classes;
 };
 
-typedef struct zebra_info *ZebraHandle;
 
 struct rank_control {
     char *name;
@@ -192,11 +195,6 @@ void rpn_search (ZebraHandle zh, ODR stream,
 		 Z_RPNQuery *rpn, int num_bases, char **basenames, 
 		 const char *setname);
 
-
-typedef struct {
-    int occurrences;
-    char *term;
-} ZebraScanEntry;
 
 void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	       oid_value attributeset,
@@ -250,36 +248,8 @@ int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att);
 
 extern struct rank_control *rank1_class;
 
-ZebraHandle zebra_open (const char *host, const char *configName);
-void zebra_search_rpn (ZebraHandle zh, ODR stream,
-		       Z_RPNQuery *query, int num_bases, char **basenames, 
-		       const char *setname);
-
-typedef struct {
-    int errCode;
-    char *errString;
-    int position;
-    char *buf;
-    int len;
-    oid_value format;
-    char *base;
-} ZebraRetrievalRecord;
-
-void zebra_records_retrieve (ZebraHandle zh, ODR stream,
-			     const char *setname, Z_RecordComposition *comp,
-			     oid_value input_format,
-			     int num_recs, ZebraRetrievalRecord *recs);
-
 int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep);
-
-void zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		 oid_value attributeset,
-		 int num_bases, char **basenames,
-		 int *position, int *num_entries, ZebraScanEntry **list,
-		 int *is_partial);
-
-void zebra_close (ZebraHandle zh);
 

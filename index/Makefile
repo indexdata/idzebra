@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1998, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.49 1998-03-05 08:45:11 adam Exp $
+# $Id: Makefile,v 1.50 1998-06-12 12:22:11 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -17,6 +17,7 @@ TPROG1=zebraidx
 TPROG2=kdump
 TPROG3=zebrasrv
 TPROG4=hlvltest
+TPROG5=apitest
 DEFS=$(INCLUDE)
 O1 = main.o dir.o dirs.o trav.o extract.o kinput.o kcompare.o \
  symtab.o recindex.o recstat.o lockutil.o lockidx.o \
@@ -26,6 +27,9 @@ O3 = zserver.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
  zlogs.o lockutil.o locksrv.o zinfo.o trunc.o sortidx.o rank1.o zebraapi.o \
  retrieve.o
 O4 = hlvl.o hlvltest.o kcompare.o
+O5 = apitest.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
+ zlogs.o lockutil.o locksrv.o zinfo.o trunc.o sortidx.o rank1.o zebraapi.o \
+ retrieve.o
 CPP=$(CC) -E
 
 all: $(TPROG1) $(TPROG2) $(TPROG3)
@@ -58,6 +62,16 @@ $(TPROG4): $(O4) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
 		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
 		$(YAZLIB) $(OSILIB) $(ELIBS) -lm 
+
+$(TPROG5): $(O5) \
+		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
+		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
+		$(YAZLIB)
+	$(CC) $(CFLAGS) -o $(TPROG5) $(O5) \
+		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
+		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
+		$(YAZLIB) $(OSILIB) $(ELIBS) -lm
+
 
 .c.o:
 	$(CC) -c $(DEFS) $(CFLAGS) $<

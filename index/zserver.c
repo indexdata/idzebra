@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.58  1998-05-27 16:57:46  adam
+ * Revision 1.59  1998-06-12 12:22:13  adam
+ * Work on Zebra API.
+ *
+ * Revision 1.58  1998/05/27 16:57:46  adam
  * Zebra returns surrogate diagnostic for single records when
  * appropriate.
  *
@@ -243,7 +246,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     logf (LOG_DEBUG, "bend_init");
 
     sob = statserv_getcontrol ();
-    if (!(zh = zebra_open (NULL, sob->configname)))
+    if (!(zh = zebra_open (sob->configname)))
     {
 	logf (LOG_FATAL, "Failed to open Zebra `%s'", sob->configname);
 	r->errcode = 1;
