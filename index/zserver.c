@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.95 2002-09-06 20:38:01 adam Exp $
+/* $Id: zserver.c,v 1.96 2002-09-09 09:35:17 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -74,7 +74,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     sob = statserv_getcontrol ();
     if (!(zh = zebra_open (sob->handle)))
     {
-	yaz_log (LOG_WARN, "Failed to open config `%s'", sob->configname);
+	yaz_log (LOG_WARN, "Failed to read config `%s'", sob->configname);
 	r->errcode = 1;
 	return r;
     }
@@ -674,6 +674,11 @@ static void bend_start (struct statserv_options_block *sob)
     if (sob->handle)
 	zebra_stop((ZebraService) sob->handle);
     sob->handle = zebra_start(sob->configname);
+    if (!sob->handle)
+    {
+	yaz_log (LOG_FATAL, "Failed to read config `%s'", sob->configname);
+	exit (1);
+    }
 }
 
 static void bend_stop(struct statserv_options_block *sob)
