@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.67 2005-01-15 18:43:05 adam Exp $
+/* $Id: isamb.c,v 1.68 2005-01-15 18:53:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -44,7 +44,7 @@ struct ISAMB_head {
     int block_offset;
 };
 
-/* if 1, interior nodes items are encoded; 0 if not encoded */
+/* if 1, upper nodes items are encoded; 0 if not encoded */
 #define INT_ENCODE 1
 
 /* maximum size of encoded buffer */
@@ -703,7 +703,9 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
         /* there was a split - must insert pointer in this one */
         char dst_buf[DST_BUF_SIZE];
         char *dst = dst_buf;
-
+#if INT_ENCODE
+	const char *sub_item_ptr = sub_item;
+#endif
         assert (sub_size < 80 && sub_size > 1);
 
         memcpy (dst, startp, src - startp);
@@ -711,7 +713,6 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
         dst += src - startp;
 
 #if INT_ENCODE
-	const char *sub_item_ptr = sub_item;
 	(*b->method->codec.reset)(c1);
         (*b->method->codec.encode)(c1, &dst, &sub_item_ptr);
 #else
@@ -741,6 +742,8 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
 	    /* must split _this_ block as well .. */
 	    struct ISAMB_block *sub_p3;
 #if INT_ENCODE
+	    char file_item_buf[DST_ITEM_MAX];
+	    char *file_item = file_item_buf;
 #else
 	    zint split_size_tmp;
 #endif
@@ -761,8 +764,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             while (src <= half)
             {
 #if INT_ENCODE
-		char file_item_buf[DST_ITEM_MAX];
-		char *file_item = file_item_buf;
+	        file_item = file_item_buf;
 		(*b->method->codec.reset)(c1);
 		(*b->method->codec.decode)(c1, &file_item, &src);
 #else
@@ -782,8 +784,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             memcpy (p->bytes, dst_buf, p_new_size);
 
 #if INT_ENCODE
-	    char file_item_buf[DST_ITEM_MAX];
-	    char *file_item = file_item_buf;
+	    file_item = file_item_buf;
 	    (*b->method->codec.reset)(c1);
 	    (*b->method->codec.decode)(c1, &file_item, &src);
 	    *split_size = file_item - file_item_buf;
@@ -1112,10 +1113,11 @@ int isamb_unlink (ISAMB b, ISAMC_P pos)
     {
 	zint sub_p;
 	const char *src = p1->bytes + p1->offset;
-
+#if INT_ENCODE
+	void *c1 = (*b->method->codec.start)();
+#endif
 	decode_ptr(&src, &sub_p);
 	isamb_unlink(b, sub_p);
-	void *c1 = (*b->method->codec.start)();
 	
 	while (src != p1->bytes + p1->size)
 	{
@@ -1132,7 +1134,9 @@ int isamb_unlink (ISAMB b, ISAMC_P pos)
 	    decode_ptr(&src, &sub_p);
 	    isamb_unlink(b, sub_p);
 	}
+#if INT_ENCODE
 	(*b->method->codec.stop)(c1);
+#endif
     }
     close_block(b, p1);
     return 0;
@@ -1173,12 +1177,14 @@ ISAMB_P isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
         {    /* increase level of tree by one */
             struct ISAMB_block *p2 = new_int (b, p->cat);
             char *dst = p2->bytes + p2->size;
+#if INT_ENCODE
 	    void *c1 = (*b->method->codec.start)();
-            
+	    const char *sub_item_ptr = sub_item;
+#endif
+
             encode_ptr(&dst, p->pos);
 	    assert (sub_size < 80 && sub_size > 1);
 #if INT_ENCODE
-	    const char *sub_item_ptr = sub_item;
 	    (*b->method->codec.reset)(c1);
 	    (*b->method->codec.encode)(c1, &dst, &sub_item_ptr);
 #else
@@ -1193,7 +1199,9 @@ ISAMB_P isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
             pos = p2->pos;  /* return new super page */
             close_block(b, sp);
             close_block(b, p2);
+#if INT_ENCODE
 	    (*b->method->codec.stop)(c1);
+#endif
         }
         else
 	{
@@ -1504,7 +1512,6 @@ static int isamb_pp_climb_level(ISAMB_PP pp, ISAMB_P *pos)
   /* returns the node to (consider to) descend to in *pos) */
     struct ISAMB_block *p = pp->block[pp->level];
     const char *src;
-    ISAMB b = pp->isamb;
 #if ISAMB_DEBUG
     yaz_log(YLOG_DEBUG, "isamb_pp_climb_level starting "
                    "at level %d node %d ofs=%d sz=%d",
@@ -1539,6 +1546,14 @@ static int isamb_pp_climb_level(ISAMB_PP pp, ISAMB_P *pos)
     }
     else
     {
+#if INT_ENCODE
+	char file_item_buf[DST_ITEM_MAX];
+	char *file_item = file_item_buf;
+        ISAMB b = pp->isamb;
+	void *c1 = (*b->method->codec.start)();
+#else
+	zint item_len;
+#endif
         /* skip the child we just came from */
 #if ISAMB_DEBUG
         yaz_log(YLOG_DEBUG, "isam_pp_climb_level: skipping lev=%d ofs=%d sz=%d", 
@@ -1547,13 +1562,9 @@ static int isamb_pp_climb_level(ISAMB_PP pp, ISAMB_P *pos)
         assert (p->offset < p->size);
         src = p->bytes + p->offset;
 #if INT_ENCODE
-	char file_item_buf[DST_ITEM_MAX];
-	char *file_item = file_item_buf;
-	void *c1 = (*b->method->codec.start)();
 	(*b->method->codec.decode)(c1, &file_item, &src);
 	(*b->method->codec.stop)(c1);
 #else
-	zint item_len;
 	decode_item_len(&src, &item_len);
         src += item_len;
 #endif
