@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.7  1995-10-10 12:24:38  adam
+ * Revision 1.8  1996-06-04 10:18:59  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.7  1995/10/10  12:24:38  adam
  * Temporary sort files are compressed.
  *
  * Revision 1.6  1995/09/29  14:01:42  adam

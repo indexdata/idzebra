@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.19  1996-05-14 11:34:01  adam
+ * Revision 1.20  1996-06-04 10:19:02  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.19  1996/05/14  11:34:01  adam
  * Scan support in multiple registers/databases.
  *
  * Revision 1.18  1996/05/14  06:16:50  adam

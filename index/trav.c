@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.25  1996-05-01 13:46:37  adam
+ * Revision 1.26  1996-06-04 10:19:01  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.25  1996/05/01  13:46:37  adam
  * First work on multiple records in one file.
  * New option, -offset, to the "unread" command in the filter module.
  *
@@ -102,7 +105,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <ctype.h>
 #include <time.h>
 
 #include <alexutil.h>

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.14  1996-04-09 06:49:18  adam
+ * Revision 1.15  1996-06-04 10:18:58  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.14  1996/04/09  06:49:18  adam
  * Traversal of directories doesn't follow symbolic links.
  *
  * Revision 1.13  1996/03/21 14:50:08  adam
@@ -58,7 +61,6 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <ctype.h>
 
 #include <alexutil.h>
 #include "index.h"

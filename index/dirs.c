@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.9  1996-04-23 12:39:07  adam
+ * Revision 1.10  1996-06-04 10:18:58  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.9  1996/04/23  12:39:07  adam
  * Bug fix: In function dirs_del dict_delete is used to remove a file
  * rather than a bogus dict_insert.
  *
@@ -38,7 +41,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <ctype.h>
 
 #include <alexutil.h>
 #include "index.h"

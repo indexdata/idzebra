@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.15  1996-05-13 14:23:06  adam
+ * Revision 1.16  1996-06-04 10:19:00  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.15  1996/05/13  14:23:06  adam
  * Work on compaction of set/use bytes in dictionary.
  *
  * Revision 1.14  1996/02/01  20:48:15  adam
@@ -70,7 +73,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "recindxp.h"
 

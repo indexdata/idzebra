@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recstat.c,v $
- * Revision 1.2  1996-05-14 14:04:34  adam
+ * Revision 1.3  1996-06-04 10:19:00  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.2  1996/05/14  14:04:34  adam
  * In zebraidx, the 'stat' command is improved. Statistics about ISAM/DICT
  * is collected.
  *
@@ -18,7 +21,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <ctype.h>
 #include <fcntl.h>
 #include <unistd.h>
 

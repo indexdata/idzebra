@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.2  1996-05-22 08:25:56  adam
+ * Revision 1.3  1996-06-04 10:18:58  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.2  1996/05/22  08:25:56  adam
  * Minor change.
  *
  * Revision 1.1  1996/05/14 14:04:34  adam
@@ -15,7 +18,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "index.h"
 #include "recindex.h"

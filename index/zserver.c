@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1995-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.39  1996-05-31 09:07:05  quinn
+ * Revision 1.40  1996-06-04 10:19:02  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.39  1996/05/31  09:07:05  quinn
  * Work on character-set handling
  *
  * Revision 1.38  1996/05/14  11:34:01  adam
@@ -199,6 +202,7 @@ static int register_lock (ZServerInfo *zi)
                                   sizeof (struct it_key))))
         return -1;
     zi->zti = zebTargetInfo_open (zi->records, 0);
+    init_charmap ();
     return 0;
 }
 

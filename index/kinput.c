@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.17  1996-05-14 15:47:07  adam
+ * Revision 1.18  1996-06-04 10:18:59  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.17  1996/05/14  15:47:07  adam
  * Cleanup of various buffer size entities.
  *
  * Revision 1.16  1996/04/09  10:05:20  adam
@@ -69,7 +72,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <assert.h>
 
 #include "index.h"

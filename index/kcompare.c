@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.16  1996-05-13 14:23:05  adam
+ * Revision 1.17  1996-06-04 10:18:58  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.16  1996/05/13  14:23:05  adam
  * Work on compaction of set/use bytes in dictionary.
  *
  * Revision 1.15  1995/11/20  16:59:46  adam
@@ -64,7 +67,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <assert.h>
 
 #include "index.h"
@@ -124,21 +126,3 @@ int key_qsort_compare (const void *p1, const void *p2)
     return cp1[l] - cp2[l];
 }
 
-int index_char_cvt (int c)
-{
-    return tolower (c);
-}
-
-#if 1
-int index_word_prefix (char *string, int attset_ordinal,
-                       int local_attribute,
-                       const char *databaseName)
-{
-    int i;
-    sprintf (string, "%s@%c%04d", databaseName,
-             attset_ordinal + '0', local_attribute);
-    for (i = 0; string[i]; i++)
-        string[i] = index_char_cvt (string[i]);
-    return i;
-}
-#endif
