@@ -24,10 +24,32 @@ struct inv_stat_info {
     int isamb_sizes[10];
     int isamb_blocks[10];
     unsigned long cksum;
+    int dumpwords;
 };
 
 #define SINGLETON_TYPE 8 /* the type to use for singletons that */ 
                          /* have no block and no block type */
+
+static void print_dict_item (ZebraMaps zm, const char *s, int count )
+{
+    int reg_type = s[1];
+    char keybuf[IT_MAX_WORD+1];
+    char *to = keybuf;
+    const char *from = s + 2;
+
+    while (*from)
+    {
+        const char *res = zebra_maps_output (zm, reg_type, &from);
+        if (!res)
+            *to++ = *from++;
+        else
+            while (*res)
+                *to++ = *res++;
+    }
+    *to = '\0';
+    /* yaz_log (LOG_LOG, "%s", keybuf); */
+    printf("%10d %s\n",count, keybuf);
+}
 
 static int inv_stat_handle (char *name, const char *info, int pos,
                             void *client)
@@ -42,6 +64,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 
     assert (*info == sizeof(ISAMS_P));
     memcpy (&isam_p, info+1, sizeof(ISAMS_P));
+
 
     if (stat_info->zh->reg->isams)
     {
@@ -150,10 +173,12 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
         i++;
     ++(stat_info->isam_occurrences[i]);
+    if (stat_info->dumpwords)
+       print_dict_item(stat_info->zh->reg->zebra_maps, name, occur);
     return 0;
 }
 
-void zebra_register_statistics (ZebraHandle zh)
+void zebra_register_statistics (ZebraHandle zh, int dumpdict)
 {
     int blocks;
     int size;
@@ -169,6 +194,7 @@ void zebra_register_statistics (ZebraHandle zh)
 	return;
 
     stat_info.zh = zh;
+    stat_info.dumpwords=dumpdict;
 
     term_dict[0] = 1;
     term_dict[1] = 0;
@@ -315,7 +341,11 @@ void zebra_register_statistics (ZebraHandle zh)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.29  2002-06-19 10:29:17  adam
+ * Revision 1.30  2002-07-11 13:03:01  heikki
+ * Added dumpdict command line option to dump the
+ * dictionary before doing the usual stats
+ *
+ * Revision 1.29  2002/06/19 10:29:17  adam
  * align block sizes for isam sys. Better plot for test
  *
  * Revision 1.28  2002/04/30 19:31:09  adam
