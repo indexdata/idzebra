@@ -4,8 +4,8 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.10  1996-06-11 10:54:29  quinn
- * Relevance work
+ * Revision 1.11  1996-10-07 16:05:29  quinn
+ * Work.
  *
  * Revision 1.9  1995/12/11  09:15:26  adam
  * New set types: sand/sor/snot - ranked versions of and/or/not in
