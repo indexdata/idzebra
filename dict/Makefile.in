@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1998, Index Data 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.2 1998-10-28 15:20:46 adam Exp $
+# $Id: Makefile.in,v 1.3 1999-03-09 13:07:05 adam Exp $
 
 SHELL=/bin/sh
 
@@ -20,7 +20,7 @@ TPROG2=dictext
 DEFS=$(CDEFS) $(INCLUDE)
 LIB=../lib/dict.a 
 PO = scan.o dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o \
- lookupec.o lookgrep.o delete.o
+ lookupec.o lookgrep.o delete.o dcompact.o
 
 all: $(LIB)
 

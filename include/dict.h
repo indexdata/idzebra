@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.27  1999-02-02 14:50:32  adam
+ * Revision 1.28  1999-03-09 13:07:06  adam
+ * Work on dict_compact routine.
+ *
+ * Revision 1.27  1999/02/02 14:50:32  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.26  1997/09/18 08:59:18  adam
@@ -184,6 +187,7 @@ int	   dict_scan (Dict dict, char *str,
 void       dict_grep_cmap (Dict dict, void *vp,
                            const char **(*cmap)(void *vp,
 						const char **from, int len));
+int        dict_compact (BFiles bfs, const char *from, const char *to);
 
 
 #define DICT_EOS        0

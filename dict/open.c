@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.13  1999-02-02 14:50:27  adam
+ * Revision 1.14  1999-03-09 13:07:06  adam
+ * Work on dict_compact routine.
+ *
+ * Revision 1.13  1999/02/02 14:50:27  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.12  1997/09/17 12:19:07  adam
@@ -64,6 +67,8 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw)
 
     dict = xmalloc (sizeof(*dict));
 
+    if (cache < 5)
+	cache = 5;
     sprintf (resource_str, "dict.%s.pagesize", name);
 
     dict->grep_cmap = NULL;
