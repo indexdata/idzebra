@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res-test.c,v $
- * Revision 1.2  1994-08-18 10:02:01  adam
+ * Revision 1.3  1994-08-18 11:02:27  adam
+ * Implementation of res_write.
+ *
+ * Revision 1.2  1994/08/18  10:02:01  adam
  * Module alexpath moved from res.c to alexpath.c. Minor changes in res-test.c
  *
  * Revision 1.1  1994/08/18  09:43:51  adam
@@ -28,15 +31,18 @@ int main(int argc, char **argv)
     int ret;
     char *prog = *argv;
     Res res;
+    int write_flag = 0;
 
     log_init (LOG_DEFAULT_LEVEL, prog, NULL);
-    while ((ret = options ("p:v", argv, argc, &arg)) != -2)
+    while ((ret = options ("wp:v", argv, argc, &arg)) != -2)
         if (ret == 0)
             resfile = arg;
         else if (ret == 'v')
             log_init (LOG_ALL, prog, NULL);
         else if (ret == 'p')
             prefix = arg;
+        else if (ret == 'w')
+            write_flag = 1;
         else
         {
             log (LOG_FATAL, "unknown option");
@@ -49,6 +55,8 @@ int main(int argc, char **argv)
     }
     res = res_open (resfile);
     res_trav (res, prefix, res_print);
+    if (write_flag)
+        res_write (res);
     res_close (res);
     return 0;
 }
