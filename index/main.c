@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.49  1997-09-17 12:19:15  adam
+ * Revision 1.50  1997-09-25 14:55:52  adam
+ * Minor changes.
+ *
+ * Revision 1.49  1997/09/17 12:19:15  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -308,7 +311,9 @@ int main (int argc, char **argv)
                         zebraIndexWait (1);
                         logf (LOG_LOG, "commit execute");
                         bf_commitExec (rGroupDef.bfs);
+#ifndef WINDOWS
                         sync ();
+#endif
                         zebraIndexLockMsg ("d");
                         zebraIndexWait (0);
                         logf (LOG_LOG, "commit clean");
@@ -407,7 +412,9 @@ int main (int argc, char **argv)
                 {
                     logf (LOG_LOG, "merging with index");
                     key_input (rGroup.bfs, nsections, 60);
+#ifndef WINDOWS
                     sync ();
+#endif
                 }
                 log_event_end (NULL, NULL);
             }
