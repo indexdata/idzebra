@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.9  1995-10-02 15:18:52  adam
+ * Revision 1.10  1995-10-02 16:43:32  quinn
+ * Set default resulting record type in fetch.
+ *
+ * Revision 1.9  1995/10/02  15:18:52  adam
  * New member in recRetrieveCtrl: diagnostic.
  *
  * Revision 1.8  1995/09/28  09:19:47  adam
@@ -150,7 +153,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, ODR stream,
     }
     retrieveCtrl.odr = stream;
     retrieveCtrl.readf = record_read;
-    retrieveCtrl.input_format = input_format;
+    retrieveCtrl.input_format = retrieveCtrl.output_format = input_format;
     retrieveCtrl.diagnostic = 0;
     (*rt->retrieve)(&retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
