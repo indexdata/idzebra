@@ -1,7 +1,7 @@
 # Copyright (C) 1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.24 1995-11-27 13:58:53 adam Exp $
+# $Id: Makefile,v 1.25 1995-11-27 14:21:53 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -12,9 +12,9 @@ OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
 #NETLIB=-lnsl -lsocket
 
 INCLUDE=-I../include $(YAZINC)
-TPROG1=index
+TPROG1=zebraidx
 TPROG2=kdump
-TPROG3=zserver
+TPROG3=zebrasrv
 DEFS=$(INCLUDE)
 O1 = main.o dir.o dirs.o trav.o extract.o kinput.o kcompare.o \
  symtab.o text.o recctrl.o structrec.o recindex.o
