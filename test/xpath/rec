@@ -1,0 +1,40 @@
+<Zthes>
+ <termId>10</termId>
+ <termName>Sauropoda</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>5</termId>
+  <termName>Brontosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>11</termId>
+  <termName>Eusauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>
+<Zthes>
+ <termId>5</termId>
+ <termName>Brontosauria</termName>
+ <termType>PT</termType>
+ <relation>
+  <relationType>BT</relationType>
+  <termId>4</termId>
+  <termName>Sauropodomorpha</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>6</termId>
+  <termName>Plateosauria</termName>
+  <termType>PT</termType>
+ </relation>
+ <relation>
+  <relationType>NT</relationType>
+  <termId>10</termId>
+  <termName>Sauropoda</termName>
+  <termType>PT</termType>
+ </relation>
+</Zthes>

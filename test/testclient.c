@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.4 2002-10-23 13:55:37 adam Exp $
+ * $Id: testclient.c,v 1.5 2002-11-09 22:26:19 adam Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -27,8 +27,10 @@ int main(int argc, char **argv)
     int retrieve_offset = 0;
     char *format = 0;
     int pos;
+    int check_count = -1;
+    int exit_code = 0;
 
-    while ((ret = options("d:n:o:f:", argv, argc, &arg)) != -2)
+    while ((ret = options("d:n:o:f:c:", argv, argc, &arg)) != -2)
     {
         switch (ret)
         {
@@ -50,6 +52,9 @@ int main(int argc, char **argv)
         case 'f':
             format = xstrdup(arg);
             break;
+        case 'c':
+	    check_count = atoi(arg);
+	    break;
         default:
             printf ("%s: unknown option %s\n", prog, arg);
             printf ("usage:\n%s [options] target query \n", prog);
@@ -81,10 +86,17 @@ int main(int argc, char **argv)
 
     r = ZOOM_connection_search_pqf (z, query);
     if ((error = ZOOM_connection_error(z, &errmsg, &addinfo)))
-	fprintf (stderr, "Error: %s (%d) %s\n", errmsg, error, addinfo);
+    {
+	printf ("Error: %s (%d) %s\n", errmsg, error, addinfo);
+	if (check_count != -1)
+            exit_code = 10;
+    }
     else
+    {
 	printf ("Result count: %d\n", ZOOM_resultset_size(r));
-    
+	if (check_count != -1 && check_count != ZOOM_resultset_size(r))
+            exit_code = 10;
+    }
     if (format)
         ZOOM_resultset_option_set(r, "preferredRecordSyntax", format);
     for (pos = 0; pos < retrieve_number; pos++)

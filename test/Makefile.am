@@ -1,5 +1,5 @@
 
-SUBDIRS=gils usmarc api dmoz
+SUBDIRS=gils usmarc api dmoz xpath
 
 testclient_SOURCES = testclient.c
 

@@ -1,0 +1,6 @@
+Makefile
+Makefile.in
+*.mf
+*.log
+*.tmp
+*.LCK
