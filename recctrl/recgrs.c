@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.10  1997-09-18 08:59:21  adam
+ * Revision 1.11  1997-10-27 14:34:00  adam
+ * Work on generic character mapping depending on "structure" field
+ * in abstract syntax file.
+ *
+ * Revision 1.10  1997/09/18 08:59:21  adam
  * Extra generic handle for the character mapping routines.
  *
  * Revision 1.9  1997/09/17 12:19:21  adam
@@ -173,8 +177,8 @@ static void grs_init(void)
 {
 }
 
-static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
-    data1_att *att)
+static void dumpkeys_incomplete_field(data1_node *n, struct recExtractCtrl *p,
+				      data1_att *att, int reg_type)
 {
     const char *b = n->u.data.data;
     int remain;
@@ -182,7 +186,7 @@ static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
 
     remain = n->u.data.len - (b - n->u.data.data);
     if (remain > 0)
-	map = (*p->map_chrs_input)(0, &b, remain);
+	map = zebra_maps_input(p->zebra_maps, reg_type, &b, remain);
 
     while (map)
     {
@@ -195,7 +199,7 @@ static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
 	{
 	    remain = n->u.data.len - (b - n->u.data.data);
 	    if (remain > 0)
-		map = (*p->map_chrs_input)(0, &b, remain);
+		map = zebra_maps_input(p->zebra_maps, reg_type, &b, remain);
 	    else
 		map = 0;
 	}
@@ -210,7 +214,7 @@ static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
 		buf[i++] = *(cp++);
 	    remain = n->u.data.len - (b - n->u.data.data);
 	    if (remain > 0)
-		map = (*p->map_chrs_input)(0, &b, remain);
+		map = zebra_maps_input(p->zebra_maps, reg_type, &b, remain);
 	    else
 		map = 0;
 	}
@@ -218,17 +222,17 @@ static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
 	    return;
 	buf[i] = '\0';
 	(*p->init)(&wrd);      /* set defaults */
-	wrd.which = Word_String;
+	wrd.reg_type = reg_type;
 	wrd.seqno = seqno++;
-	wrd.u.string = buf;
+	wrd.string = buf;
 	wrd.attrSet = att->parent->ordinal;
 	wrd.attrUse = att->locals->local;
 	(*p->add)(&wrd);
     }
 }
 
-static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
-    data1_att *att)
+static void dumpkeys_complete_field(data1_node *n, struct recExtractCtrl *p,
+				    data1_att *att, int reg_type)
 {
     const char *b = n->u.data.data;
     char buf[GRS_MAX_WORD+1];
@@ -238,7 +242,7 @@ static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
 
     remain = n->u.data.len - (b - n->u.data.data);
     if (remain > 0)
-	map = (*p->map_chrs_input)(0, &b, remain);
+	map = zebra_maps_input (p->zebra_maps, reg_type, &b, remain);
 
     while (remain > 0 && i < GRS_MAX_WORD)
     {
@@ -246,7 +250,7 @@ static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
 	{
 	    remain = n->u.data.len - (b - n->u.data.data);
 	    if (remain > 0)
-		map = (*p->map_chrs_input)(0, &b, remain);
+		map = zebra_maps_input(p->zebra_maps, reg_type, &b, remain);
 	    else
 		map = 0;
 	}
@@ -265,7 +269,7 @@ static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
 		buf[i++] = *(cp++);
 	    remain = n->u.data.len - (b - n->u.data.data);
 	    if (remain > 0)
-		map = (*p->map_chrs_input)(0, &b, remain);
+		map = zebra_maps_input (p->zebra_maps, reg_type, &b, remain);
 	    else
 		map = 0;
 	}
@@ -274,9 +278,10 @@ static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
 	return;
     buf[i] = '\0';
     (*p->init)(&wrd);
-    wrd.which = Word_Phrase;
+    
+    wrd.reg_type = reg_type;
     wrd.seqno = seqno++;
-    wrd.u.string = buf;
+    wrd.string = buf;
     wrd.attrSet = att->parent->ordinal;
     wrd.attrUse = att->locals->local;
     (*p->add)(&wrd);
@@ -331,6 +336,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	{
 	    data1_node *par = get_parent_tag(p->dh, n);
 	    data1_termlist *tlist = 0;
+	    data1_datatype dtype = DATA1K_string;
 
 	    if (p->flagShowRecords)
 	    {
@@ -353,40 +359,30 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	     */
 
 	    while (!par->u.tag.element)
-		if (!par->parent || !(par = get_parent_tag(p->dh, par->parent)))
+		if (!par->parent || !(par=get_parent_tag(p->dh, par->parent)))
 		    break;
-	    if (!par)
-		tlist = 0;
-	    else if (par->u.tag.element->termlists)
-		tlist = par->u.tag.element->termlists;
-	    else
+	    if (!par || !(tlist = par->u.tag.element->termlists))
 		continue;
-
+	    if (par->u.tag.element->tag)
+		dtype = par->u.tag.element->tag->kind;
 	    for (; tlist; tlist = tlist->next)
 	    {
 		if (p->flagShowRecords)
 		{
-		    printf("%*sIdx: [", (level + 1) * 4, "");
-		    switch (tlist->structure)
-		    {
-			case DATA1S_word: printf("w"); break;
-			case DATA1S_phrase: printf("p"); break;
-			default: printf("?"); break;
-		    }
-		    printf("] ");
-		    printf("%s:%s [%d]\n", tlist->att->parent->name,
-			tlist->att->name, tlist->att->value);
+		    printf("%*sIdx: [%s]", (level + 1) * 4, "",
+			   tlist->structure);
+		    printf("%s:%s [%d]\n",
+			   tlist->att->parent->name,
+			   tlist->att->name, tlist->att->value);
 		}
-		else switch (tlist->structure)
-		{
-		    case DATA1S_word:
-			dumpkeys_word(n, p, tlist->att); break;
-		    case DATA1S_phrase:
-			dumpkeys_phrase(n, p, tlist->att); break;
-		    default:
-			logf(LOG_FATAL, "Bad structure type in dumpkeys");
-			abort();
-		}
+		else
+		    if (zebra_maps_is_complete (p->zebra_maps,
+						*tlist->structure))
+			dumpkeys_complete_field(n, p, tlist->att,
+						*tlist->structure);
+		    else
+			dumpkeys_incomplete_field(n, p, tlist->att,
+						  *tlist->structure);
 	    }
 	}
 	if (p->flagShowRecords && n->which == DATA1N_root)
@@ -524,7 +520,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 						  mem)))
     {
 	new->u.data.what = DATA1I_num;
-	new->u.data.data = new->u.data.lbuf;
+	new->u.data.data = new->lbuf;
 	sprintf(new->u.data.data, "%d", p->score);
 	new->u.data.len = strlen(new->u.data.data);
     }
@@ -532,7 +528,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 				       "localControlNumber", mem)))
     {
 	new->u.data.what = DATA1I_text;
-	new->u.data.data = new->u.data.lbuf;
+	new->u.data.data = new->lbuf;
 	sprintf(new->u.data.data, "%d", p->localno);
 	new->u.data.len = strlen(new->u.data.data);
     }
