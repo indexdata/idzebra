@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.13  1995-10-12 12:41:56  adam
+ * Revision 1.14  1995-12-11 09:15:24  adam
+ * New set types: sand/sor/snot - ranked versions of and/or/not in
+ * ranked/semi-ranked result sets.
+ * Note: the snot not finished yet.
+ * New rset member: flag.
+ * Bug fix: r_delete in rsrel.c did free bad memory block.
+ *
+ * Revision 1.13  1995/10/12  12:41:56  adam
  * Private info (buf) moved from struct rset_control to struct rset.
  * Bug fixes in relevance.
  *
@@ -51,7 +58,8 @@
 #include <rsisam.h>
 #include <alexutil.h>
 
-static void *r_create(const struct rset_control *sel, void *parms);
+static void *r_create(const struct rset_control *sel, void *parms,
+                      int *flags);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -63,7 +71,7 @@ static int r_score (RSFD rfd, int *score);
 
 static const rset_control control = 
 {
-    "ISAM set type",
+    "isam",
     r_create,
     r_open,
     r_close,
@@ -89,11 +97,13 @@ struct rset_isam_info {
     struct rset_ispt_info *ispt_list;
 };
 
-static void *r_create(const struct rset_control *sel, void *parms)
+static void *r_create(const struct rset_control *sel, void *parms,
+                      int *flags)
 {
     rset_isam_parms *pt = parms;
     struct rset_isam_info *info;
 
+    *flags |= RSET_FLAG_VOLATILE;
     info = xmalloc (sizeof(struct rset_isam_info));
     info->is = pt->is;
     info->pos = pt->pos;

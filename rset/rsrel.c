@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.8  1995-12-05 11:25:45  adam
+ * Revision 1.9  1995-12-11 09:15:26  adam
+ * New set types: sand/sor/snot - ranked versions of and/or/not in
+ * ranked/semi-ranked result sets.
+ * Note: the snot not finished yet.
+ * New rset member: flag.
+ * Bug fix: r_delete in rsrel.c did free bad memory block.
+ *
+ * Revision 1.8  1995/12/05  11:25:45  adam
  * Doesn't include math.h.
  *
  * Revision 1.7  1995/10/12  12:41:57  adam
@@ -40,7 +47,8 @@
 #include <rsrel.h>
 #include <alexutil.h>
 
-static void *r_create(const struct rset_control *sel, void *parms);
+static void *r_create(const struct rset_control *sel, void *parms,
+                      int *flags);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -52,7 +60,7 @@ static int r_score (RSFD rfd, int *score);
 
 static const rset_control control = 
 {
-    "relevance set type",
+    "relevance",
     r_create,
     r_open,
     r_close,
@@ -164,7 +172,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
         /* find min with lowest sysno */
         for (i = 0; i<parms->no_isam_positions; i++)
             if (isam_r[i] && 
-               (min < 0 || (*parms->cmp)(isam_buf[i], isam_buf[min]) < 1))
+               (min < 0 || (*parms->cmp)(isam_buf[i], isam_buf[min]) < 2))
                 min = i;
         if (min < 0)
             break;
@@ -197,7 +205,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
         for (i = 0; i<parms->no_isam_positions; i++)
             score += wgt[i];
         /* if value is in the top score, then save it - don't emit yet */
-        add_rec (info, score, isam_tmp_buf);
+        add_rec (info, score/parms->no_isam_positions, isam_tmp_buf);
     }
     for (i = 0; i<info->no_rec; i++)
         info->sysno_idx[i] = i;
@@ -216,11 +224,13 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     xfree (wgt);
 }
 
-static void *r_create (const struct rset_control *sel, void *parms)
+static void *r_create (const struct rset_control *sel, void *parms,
+                       int *flags)
 {
     rset_relevance_parms *r_parms = parms;
     struct rset_rel_info *info;
 
+    *flags |= RSET_FLAG_RANKED;
     info = xmalloc (sizeof(struct rset_rel_info));
     info->key_size = r_parms->key_size;
     assert (info->key_size > 1);
@@ -284,7 +294,6 @@ static void r_delete (RSET ct)
     xfree (info->sort_idx);
     xfree (info->sysno_idx);
     xfree (info);
-    xfree (ct);
 }
 
 static void r_rewind (RSFD rfd)

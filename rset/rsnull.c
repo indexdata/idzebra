@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.6  1995-10-12 12:41:57  adam
+ * Revision 1.7  1995-12-11 09:15:25  adam
+ * New set types: sand/sor/snot - ranked versions of and/or/not in
+ * ranked/semi-ranked result sets.
+ * Note: the snot not finished yet.
+ * New rset member: flag.
+ * Bug fix: r_delete in rsrel.c did free bad memory block.
+ *
+ * Revision 1.6  1995/10/12  12:41:57  adam
  * Private info (buf) moved from struct rset_control to struct rset.
  * Bug fixes in relevance.
  *
@@ -32,7 +39,8 @@
 #include <rsnull.h>
 #include <alexutil.h>
 
-static void *r_create(const struct rset_control *sel, void *parms);
+static void *r_create(const struct rset_control *sel, void *parms,
+                      int *flags);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -44,7 +52,7 @@ static int r_score (RSFD rfd, int *score);
 
 static const rset_control control = 
 {
-    "NULL set type",
+    "null",
     r_create,
     r_open,
     r_close,
@@ -58,7 +66,8 @@ static const rset_control control =
 
 const rset_control *rset_kind_null = &control;
 
-static void *r_create(const struct rset_control *sel, void *parms)
+static void *r_create(const struct rset_control *sel, void *parms,
+                      int *flags)
 {
     return NULL;
 }

@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.16  1995-11-28 14:47:02  adam
+ * Revision 1.17  1995-12-11 09:15:28  adam
+ * New set types: sand/sor/snot - ranked versions of and/or/not in
+ * ranked/semi-ranked result sets.
+ * Note: the snot not finished yet.
+ * New rset member: flag.
+ * Bug fix: r_delete in rsrel.c did free bad memory block.
+ *
+ * Revision 1.16  1995/11/28  14:47:02  adam
  * New setting: tempSetPath. Location of temporary result sets.
  *
  * Revision 1.15  1995/10/12  12:41:58  adam
@@ -67,7 +74,8 @@
 #include <alexutil.h>
 #include <rstemp.h>
 
-static void *r_create(const struct rset_control *sel, void *parms);
+static void *r_create(const struct rset_control *sel, void *parms,
+                      int *flags);
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
@@ -82,7 +90,7 @@ static char *temppath_root = NULL;
 
 static const rset_control control = 
 {
-    "Temporary set",
+    "temp",
     r_create,
     r_open,
     r_close,
@@ -114,11 +122,11 @@ struct rset_temp_rfd {
     struct rset_temp_rfd *next;
 };
 
-static void *r_create(const struct rset_control *sel, void *parms)
+static void *r_create(const struct rset_control *sel, void *parms, int *flags)
 {
     rset_temp_parms *temp_parms = parms;
     struct rset_temp_info *info;
-    
+   
     info = xmalloc (sizeof(struct rset_temp_info));
     info->fd = -1;
     info->fname = NULL;

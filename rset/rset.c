@@ -4,7 +4,14 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.7  1995-10-12 12:41:56  adam
+ * Revision 1.8  1995-12-11 09:15:23  adam
+ * New set types: sand/sor/snot - ranked versions of and/or/not in
+ * ranked/semi-ranked result sets.
+ * Note: the snot not finished yet.
+ * New rset member: flag.
+ * Bug fix: r_delete in rsrel.c did free bad memory block.
+ *
+ * Revision 1.7  1995/10/12  12:41:56  adam
  * Private info (buf) moved from struct rset_control to struct rset.
  * Bug fixes in relevance.
  *
@@ -37,13 +44,14 @@
 
 RSET rset_create(const rset_control *sel, void *parms)
 {
-    RSET new;
+    RSET rnew;
 
     logf (LOG_DEBUG, "rs_create(%s)", sel->desc);
-    new = xmalloc(sizeof(*new));
-    new->control = sel;
-    new->buf = (*sel->f_create)(sel, parms);
-    return new;
+    rnew = xmalloc(sizeof(*rnew));
+    rnew->control = sel;
+    rnew->flags = 0;
+    rnew->buf = (*sel->f_create)(sel, parms, &rnew->flags);
+    return rnew;
 }
 
 void rset_delete (RSET rs)
