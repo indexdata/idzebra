@@ -2,7 +2,7 @@ echo "Testing with storekeys (zebra2.cfg)"
 echo "init..."
 rm -f idx.log log
 rm -f records/esdd000[12].grs # these should not be here, will be created later
-../../index/zebraidx -l idx.log init || exit 1
+../../index/zebraidx -l idx.log -c zebra2.cfg init || exit 1
 
 echo "update 1..."
 ../../index/zebraidx -l idx.log -c zebra2.cfg update records || exit 1
@@ -59,6 +59,7 @@ echo "search 5..."
 ../testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 10$" log || exit 1
 
+sleep 1
 echo "modifying a test record..."
 sed 's/UTAH/XYZ/g' <records/esdd0002.grs >records/esdd0002x.grs
 mv records/esdd0002x.grs records/esdd0002.grs
@@ -77,7 +78,7 @@ grep "^Result count: 1$" log || exit 1
 
 echo "stopping server..."
 test -f zebrasrv.pid || exit 1
-kill -9 `cat zebrasrv.pid` || exit 1
+kill `cat zebrasrv.pid` || exit 1
 rm -f idx.log log
 rm -f records/esdd000[12].grs 
 rm -f zebrasrv.pid

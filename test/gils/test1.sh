@@ -1,5 +1,9 @@
 echo "testing without stored keys (zebra1.cfg)"
 
+echo "See if servers are running...."
+ps ax|grep zebrasrv
+sleep 1
+
 echo  "initializing..."
 mkdir -p reg
 rm -f records/esdd000[12].grs # these should not be here, will be created later
@@ -10,7 +14,7 @@ echo "updating..."
 ../../index/zebraidx -l idx.log -c zebra1.cfg update records  || exit 1
 
 echo "killing old server (if any)..."
-test -f zebrasrv.pid && kill -9 `cat zebrasrv.pid`
+test -f zebrasrv.pid && kill `cat zebrasrv.pid`
 rm -f zebrasrv.pid
 rm -f srv.log
 
@@ -46,7 +50,7 @@ grep "^Result count: 18$" log || exit 1
 
 echo "stopping server..."
 test -f zebrasrv.pid || exit 1
-kill -9 `cat zebrasrv.pid` || exit 1
+kill `cat zebrasrv.pid` || exit 1
 rm -f zebrasrv.pid
 
 echo "ok"

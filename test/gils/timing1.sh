@@ -6,7 +6,7 @@ echo "Testing timings of updates"
 echo "  init..."
 rm -f idx.log log
 rm -f records/esdd000[12].grs # these should not be here, will be created later
-../../index/zebraidx -l idx.log init || exit 1
+../../index/zebraidx -c zebra2.cfg -l idx.log init || exit 1
 
 echo "  killing old server (if any)..."
 test -f zebrasrv.pid && kill -9 `cat zebrasrv.pid`
