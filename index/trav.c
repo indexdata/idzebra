@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.1  1995-09-01 14:06:36  adam
+ * Revision 1.2  1995-09-04 12:33:43  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.1  1995/09/01  14:06:36  adam
  * Split of work into more files.
  *
  */
@@ -17,7 +20,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include "index.h"
 
 static void repository_extract_r (int cmd, char *rep)
@@ -60,17 +63,17 @@ void copy_file (const char *dst, const char *src)
 
     if (d_fd == -1)
     {
-        log (LOG_FATAL|LOG_ERRNO, "Cannot create %s", dst);
+        logf (LOG_FATAL|LOG_ERRNO, "Cannot create %s", dst);
         exit (1);
     }
     if (s_fd == -1)
     {
-        log (LOG_FATAL|LOG_ERRNO, "Cannot open %s", src);
+        logf (LOG_FATAL|LOG_ERRNO, "Cannot open %s", src);
         exit (1);
     }
     if (!(buf = malloc (4096)))
     {
-        log (LOG_FATAL|LOG_ERRNO, "malloc");
+        logf (LOG_FATAL|LOG_ERRNO, "malloc");
         exit (1);
     }
     while ((r=read (s_fd, buf, 4096))>0)
@@ -79,13 +82,13 @@ void copy_file (const char *dst, const char *src)
             i = write (d_fd, buf + w, r - w);
             if (i == -1)
             {
-                log (LOG_FATAL|LOG_ERRNO, "write");
+                logf (LOG_FATAL|LOG_ERRNO, "write");
                 exit (1);
             }
         }
     if (r)
     {
-        log (LOG_FATAL|LOG_ERRNO, "read");
+        logf (LOG_FATAL|LOG_ERRNO, "read");
         exit (1);
     }
     free (buf);
@@ -100,9 +103,9 @@ void del_file (const char *dst)
 
 void del_dir (const char *dst)
 {
-    log (LOG_DEBUG, "rmdir of %s", dst);
+    logf (LOG_DEBUG, "rmdir of %s", dst);
     if (rmdir (dst) == -1)
-        log (LOG_ERRNO|LOG_WARN, "rmdir");
+        logf (LOG_ERRNO|LOG_WARN, "rmdir");
 }
 
 void repository_update_r (int cmd, char *dst, char *src);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: grepper.c,v $
- * Revision 1.4  1995-01-24 16:00:21  adam
+ * Revision 1.5  1995-09-04 12:33:26  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.4  1995/01/24  16:00:21  adam
  * Added -ansi to CFLAGS.
  * Some changes to the dfa module.
  *
@@ -24,7 +27,7 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include <dfa.h>
 #include "imalloc.h"
 
@@ -326,7 +329,7 @@ static int grep_file (struct DFA *dfa, const char *fname, int range)
         inf = fopen (fname, "r");
         if (!inf)
         {
-            log (LOG_FATAL|LOG_ERRNO, "cannot open `%s'", fname);
+            logf (LOG_FATAL|LOG_ERRNO, "cannot open `%s'", fname);
             exit (1);
         }
     }
@@ -398,7 +401,7 @@ int main (int argc, char **argv)
         }
         else
         {
-            log (LOG_FATAL, "Unknown option '-%s'", arg);
+            logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.14  1994-10-04 17:46:55  adam
+ * Revision 1.15  1995-09-04 12:33:31  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.14  1994/10/04  17:46:55  adam
  * Function options now returns arg with error option.
  *
  * Revision 1.13  1994/10/04  12:08:05  adam
@@ -109,7 +112,7 @@ int main (int argc, char **argv)
                 name = arg;
             else
             {
-                log (LOG_FATAL, "too many files specified\n");
+                logf (LOG_FATAL, "too many files specified\n");
                 exit (1);
             }
         }
@@ -145,25 +148,25 @@ int main (int argc, char **argv)
         }
         else
         {
-            log (LOG_FATAL, "Unknown option '-%s'", arg);
+            logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }
     if (!base || !name)
     {
-        log (LOG_FATAL, "no base and/or dictionary specified");
+        logf (LOG_FATAL, "no base and/or dictionary specified");
         exit (1);
     }
     common_resource = res_open (base);
     if (!common_resource)
     {
-        log (LOG_FATAL, "cannot open resource `%s'", base);
+        logf (LOG_FATAL, "cannot open resource `%s'", base);
         exit (1);
     }
     dict = dict_open (name, cache, rw);
     if (!dict)
     {
-        log (LOG_FATAL, "dict_open fail of `%s'", name);
+        logf (LOG_FATAL, "dict_open fail of `%s'", name);
         exit (1);
     }
     if (inputfile)
@@ -176,7 +179,7 @@ int main (int argc, char **argv)
 
         if (!(ipf = fopen(inputfile, "r")))
         {
-            log (LOG_FATAL|LOG_ERRNO, "cannot open %s", inputfile);
+            logf (LOG_FATAL|LOG_ERRNO, "cannot open %s", inputfile);
             exit (1);
         }
         
@@ -205,11 +208,11 @@ int main (int argc, char **argv)
                         case 1:
                             no_of_change++;
                         if (unique)
-                            log (LOG_LOG, "%s change\n", ipf_ptr);
+                            logf (LOG_LOG, "%s change\n", ipf_ptr);
                             break;
                         case 2:
                             if (unique)
-                                log (LOG_LOG, "%s duplicate\n", ipf_ptr);
+                                logf (LOG_LOG, "%s duplicate\n", ipf_ptr);
                             no_of_same++;
                             break;
                         }
@@ -245,21 +248,21 @@ int main (int argc, char **argv)
     {
         if (range < 0)
             range = 0;
-        log (LOG_LOG, "Grepping '%s'", grep_pattern);
+        logf (LOG_LOG, "Grepping '%s'", grep_pattern);
         dict_lookup_grep (dict, grep_pattern, range, grep_handle);
     }
     if (rw)
     {
-        log (LOG_LOG, "Insertions.... %d", no_of_iterations);
-        log (LOG_LOG, "No of new..... %d", no_of_new);
-        log (LOG_LOG, "No of change.. %d", no_of_change);
-        log (LOG_LOG, "No of same.... %d", no_of_same);
+        logf (LOG_LOG, "Insertions.... %d", no_of_iterations);
+        logf (LOG_LOG, "No of new..... %d", no_of_new);
+        logf (LOG_LOG, "No of change.. %d", no_of_change);
+        logf (LOG_LOG, "No of same.... %d", no_of_same);
     }
     else
     {
-        log (LOG_LOG, "Lookups....... %d", no_of_iterations);
-        log (LOG_LOG, "No of hits.... %d", no_of_hits);
-        log (LOG_LOG, "No of misses.. %d", no_of_misses);
+        logf (LOG_LOG, "Lookups....... %d", no_of_iterations);
+        logf (LOG_LOG, "No of hits.... %d", no_of_hits);
+        logf (LOG_LOG, "No of misses.. %d", no_of_misses);
     }
     dict_close (dict);
     res_close (common_resource);

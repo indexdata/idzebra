@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.12  1995-01-24 16:40:32  adam
+ * Revision 1.13  1995-09-04 12:34:05  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.12  1995/01/24  16:40:32  adam
  * Bug fix.
  *
  * Revision 1.11  1994/10/05  16:54:52  adam
@@ -46,7 +49,7 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
-#include <util.h>
+#include <alexutil.h>
 
 static struct res_entry *add_entry (Res r)
 {
@@ -84,7 +87,7 @@ static void reread (Res r)
     fr = fopen (path, "r");
     if (!fr)
     {
-        log (LOG_FATAL|LOG_ERRNO, "Cannot open %s", path);
+        logf (LOG_FATAL|LOG_ERRNO, "Cannot open %s", path);
         exit (1);
     }
     while (1)
@@ -136,7 +139,7 @@ static void reread (Res r)
                     val_buf[val_size++] = '\0';
                     resp->value = xmalloc (val_size);
                     strcpy (resp->value, val_buf);
-                    log (LOG_DEBUG, "(name=%s,value=%s)",
+                    logf (LOG_DEBUG, "(name=%s,value=%s)",
                          resp->name, resp->value);
                     break;
                 }
@@ -175,7 +178,7 @@ Res res_open (const char *name)
 {
     Res r;
     if (access (name, R_OK))
-        log (LOG_LOG|LOG_ERRNO, "Cannot access `%s'", name);
+        logf (LOG_LOG|LOG_ERRNO, "Cannot access `%s'", name);
     r = xmalloc (sizeof(*r));
     r->init = 0;
     r->first = r->last = NULL;
@@ -221,7 +224,7 @@ char *res_get_def (Res r, const char *name, char *def)
 
     if (!(t = res_get (r, name)))
     {
-    	log(LOG_DEBUG, "CAUTION: Using default resource %s:%s", name, def);
+    	logf (LOG_DEBUG, "CAUTION: Using default resource %s:%s", name, def);
     	return def;
     }
     else
@@ -279,7 +282,7 @@ int res_write (Res r)
     fr = fopen (path, "w");
     if (!fr)
     {
-        log (LOG_FATAL|LOG_ERRNO, "Cannot create %s", path);
+        logf (LOG_FATAL|LOG_ERRNO, "Cannot create %s", path);
         exit (1);
     }
 

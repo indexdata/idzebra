@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rootblk.c,v $
- * Revision 1.1  1994-09-26 16:08:00  quinn
+ * Revision 1.2  1995-09-04 12:33:47  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.1  1994/09/26  16:08:00  quinn
  * Most of the functionality in place.
  *
  */
@@ -13,6 +16,7 @@
  * Read and write the blocktype header.
  */
 
+#include <stdio.h>
 #include <isam.h>
 #include "rootblk.h"
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.1  1995-09-04 09:10:36  adam
+ * Revision 1.2  1995-09-04 12:33:42  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.1  1995/09/04  09:10:36  adam
  * More work on index add/del/update.
  * Merge sort implemented.
  * Initial work on z39 server.
@@ -14,7 +17,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include "index.h"
 
 char *prog;
@@ -57,7 +60,7 @@ int main (int argc, char **argv)
         }
         else
         {
-            log (LOG_FATAL, "Unknown option '-%s'", arg);
+            logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }
@@ -68,7 +71,7 @@ int main (int argc, char **argv)
     }
     if (!(inf = fopen (key_fname, "r")))
     {
-        log (LOG_FATAL|LOG_ERRNO, "fopen %s", key_fname);
+        logf (LOG_FATAL|LOG_ERRNO, "fopen %s", key_fname);
         exit (1);
     }
     while (read_one (inf, key_string, key_info))
@@ -80,7 +83,7 @@ int main (int argc, char **argv)
     }
     if (fclose (inf))
     {
-        log (LOG_FATAL|LOG_ERRNO, "fclose %s", key_fname);
+        logf (LOG_FATAL|LOG_ERRNO, "fclose %s", key_fname);
         exit (1);
     }
     

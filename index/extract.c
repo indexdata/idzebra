@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.2  1995-09-04 09:10:34  adam
+ * Revision 1.3  1995-09-04 12:33:41  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.2  1995/09/04  09:10:34  adam
  * More work on index add/del/update.
  * Merge sort implemented.
  * Initial work on z39 server.
@@ -19,7 +22,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include "index.h"
 
 #define KEY_BUF_SIZE 100000
@@ -37,19 +40,19 @@ void key_open (const char *fname)
         return;
     if ((key_fd = open (fname, O_RDWR|O_CREAT, 0666)) == -1)
     {
-        log (LOG_FATAL|LOG_ERRNO, "Creat %s", fname);
+        logf (LOG_FATAL|LOG_ERRNO, "Creat %s", fname);
         exit (1);
     }
-    log (LOG_DEBUG, "key_open of %s", fname);
+    logf (LOG_DEBUG, "key_open of %s", fname);
     if (!(key_buf = malloc (KEY_BUF_SIZE)))
     {
-        log (LOG_FATAL|LOG_ERRNO, "malloc");
+        logf (LOG_FATAL|LOG_ERRNO, "malloc");
         exit (1);
     }
     key_offset = 0;
     if (!(file_idx = dict_open ("fileidx", 10, 1)))
     {
-        log (LOG_FATAL, "dict_open fail of %s", "fileidx");
+        logf (LOG_FATAL, "dict_open fail of %s", "fileidx");
         exit (1);
     }
     file_key = dict_lookup (file_idx, ".");
@@ -63,14 +66,14 @@ int key_close (void)
 {
     if (key_fd == -1)
     {
-        log (LOG_DEBUG, "key_close - but no file");
+        logf (LOG_DEBUG, "key_close - but no file");
         return 0;
     }
     close (key_fd);
     dict_insert (file_idx, ".", sizeof(sysno_next), &sysno_next);
     dict_close (file_idx);
     key_fd = -1;
-    log (LOG_DEBUG, "key close - key file exist");
+    logf (LOG_DEBUG, "key close - key file exist");
     return 1;
 }
 
@@ -86,7 +89,7 @@ void key_flush (void)
         w = write (key_fd, key_buf + i, key_offset - i);
         if (w == -1)
         {
-            log (LOG_FATAL|LOG_ERRNO, "Write key fail");
+            logf (LOG_FATAL|LOG_ERRNO, "Write key fail");
             exit (1);
         }
         i += w;
@@ -118,12 +121,12 @@ void text_extract (SYSNO sysno, int cmd, const char *fname)
     int c;
     char w[256];
 
-    log (LOG_DEBUG, "Text extract of %d", sysno);
+    logf (LOG_DEBUG, "Text extract of %d", sysno);
     k.sysno = sysno;
     inf = fopen (fname, "r");
     if (!inf)
     {
-        log (LOG_WARN|LOG_ERRNO, "open %s", fname);
+        logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
         return;
     }
     while ((c=getc (inf)) != EOF)
@@ -157,7 +160,7 @@ void file_extract (int cmd, const char *fname, const char *kname)
     const char *file_type;
     void *file_info;
 
-    log (LOG_DEBUG, "%c %s k=%s", cmd, fname, kname);
+    logf (LOG_DEBUG, "%c %s k=%s", cmd, fname, kname);
     for (i = strlen(fname); --i >= 0; )
         if (fname[i] == '/')
         {

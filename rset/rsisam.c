@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.4  1995-09-04 09:10:55  adam
+ * Revision 1.5  1995-09-04 12:33:56  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.4  1995/09/04  09:10:55  adam
  * Minor changes.
  *
  * Revision 1.3  1994/11/22  13:15:37  quinn
@@ -18,8 +21,9 @@
 /* TODO: Memory management
    LINK DELETE TO CLOSE!  */
 
+#include <stdio.h>
 #include <rsisam.h>
-#include <util.h>
+#include <alexutil.h>
 
 static rset_control *r_create(const struct rset_control *sel, void *parms);
 static int r_open(rset_control *ct, int wflag);
@@ -51,7 +55,7 @@ static rset_control *r_create(const struct rset_control *sel, void *parms)
     rset_control *newct;
     rset_isam_parms *pt = parms;
 
-    log(LOG_DEBUG, "risam_create(%s)", sel->desc);
+    logf (LOG_DEBUG, "risam_create(%s)", sel->desc);
     newct = xmalloc(sizeof(*newct));
     memcpy(newct, sel, sizeof(*sel));
     if (!(newct->buf = (char*) is_position(pt->is, pt->pos)))
@@ -61,10 +65,10 @@ static rset_control *r_create(const struct rset_control *sel, void *parms)
 
 static int r_open(rset_control *ct, int wflag)
 {
-    log(LOG_DEBUG, "risam_open");
+    logf (LOG_DEBUG, "risam_open");
     if (wflag)
     {
-	log(LOG_FATAL, "ISAM set type is read-only");
+	logf (LOG_FATAL, "ISAM set type is read-only");
 	return -1;
     }
     r_rewind(ct);
@@ -78,14 +82,14 @@ static void r_close(rset_control *ct)
 
 static void r_delete(rset_control *ct)
 {
-    log(LOG_DEBUG, "risam_delete");
+    logf (LOG_DEBUG, "risam_delete");
     is_pt_free((ISPT) ct->buf);
     xfree(ct);
 }
 
 static void r_rewind(rset_control *ct)
 {
-    log(LOG_DEBUG, "risam_rewind");
+    logf (LOG_DEBUG, "risam_rewind");
     is_rewind((ISPT) ct->buf);
 }
 
@@ -99,6 +103,6 @@ static int r_read(rset_control *ct, void *buf)
 
 static int r_write()
 {
-    log(LOG_FATAL, "ISAM set type is read-only");
+    logf (LOG_FATAL, "ISAM set type is read-only");
     return -1;
 }

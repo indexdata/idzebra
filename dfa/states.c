@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: states.c,v $
- * Revision 1.3  1995-01-25 11:30:51  adam
+ * Revision 1.4  1995-09-04 12:33:28  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.3  1995/01/25  11:30:51  adam
  * Simple error reporting when parsing regular expressions.
  * Memory usage reduced.
  *
@@ -23,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include "dfap.h"
 #include "imalloc.h"
 

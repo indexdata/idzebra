@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.10  1994-08-25 10:15:54  quinn
+ * Revision 1.11  1995-09-04 12:33:21  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.10  1994/08/25  10:15:54  quinn
  * Trivial
  *
  * Revision 1.9  1994/08/24  08:45:48  quinn
@@ -33,12 +36,14 @@
  *
  */
 
-#include <util.h>
-#include <bfile.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+
+#include <alexutil.h>
+#include <bfile.h>
 
 int bf_close (BFile bf)
 {
@@ -53,7 +58,7 @@ BFile bf_open (const char *name, int block_size, int wflag)
 
     if (!(tmp->mf = mf_open(0, name, block_size, wflag)))
     {
-        log(LOG_FATAL, "Mfopen failed for %s", name); 
+        logf (LOG_FATAL, "Mfopen failed for %s", name); 
 	return(0);
     }
     return(tmp);

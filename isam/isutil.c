@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isutil.c,v $
- * Revision 1.1  1994-09-12 08:02:13  quinn
+ * Revision 1.2  1995-09-04 12:33:46  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.1  1994/09/12  08:02:13  quinn
  * Not functional yet
  *
  */
@@ -14,6 +17,7 @@
  * may move to util/ along the way.
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 

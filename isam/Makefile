@@ -1,11 +1,14 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.12 1995-01-24 16:01:34 adam Exp $
+# $Id: Makefile,v 1.13 1995-09-04 12:33:46 adam Exp $
 
 SHELL=/bin/sh
-INCLUDE=-I../include
-CFLAGS=-g -Wall -pedantic -ansi
+RANLIB=ranlib
+YAZ=../../yaz
+YAZLIB=$(YAZ)/lib/libyaz.a
+INCLUDE=-I../include -I$(YAZ)/include
+#CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 LIB=../lib/isam.a
 PO = isam.o isutil.o rootblk.o memory.o physical.o
@@ -17,15 +20,15 @@ alll: $(LIB) isam-test issh
 
 test: test.c $(LIB)
 	$(CC) -g -o test -I../include test.c \
-	../lib/isam.a ../lib/bfile.a ../lib/util.a
+	../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
 
 isam-test: isam-test.c $(LIB)
 	$(CC) -g -o isam-test -I../include isam-test.c \
-	../lib/isam.a ../lib/bfile.a ../lib/util.a
+	../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
 
 issh: issh.c $(LIB)
 	$(CC) -g -o issh -I../include issh.c \
-	../lib/isam.a ../lib/bfile.a ../lib/util.a
+	../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
 
 #$(TPROG): $(TPROG).o $(LIB) 
 #	$(CC) -o $(TPROG) $(TPROG).o $(LIB)
@@ -33,7 +36,7 @@ issh: issh.c $(LIB)
 $(LIB): $(PO)
 	rm -f $(LIB)
 	ar qc $(LIB) $(PO)
-	ranlib $(LIB)
+	$(RANLIB) $(LIB)
 
 .c.o:
 	$(CC) -c $(DEFS) $(CFLAGS) $<
@@ -44,13 +47,12 @@ clean:
 depend: depend2
 
 depend1:
-	mv Makefile Makefile.tmp
-	sed '/^#Depend/q' <Makefile.tmp >Makefile
-	$(CPP) $(INCLUDE) -M *.c >>Makefile
-	-rm Makefile.tmp
+	sed '/^#Depend/q' <Makefile >Makefile.tmp
+	$(CPP) $(DEFS) -M *.c >>Makefile.tmp
+	mv -f Makefile.tmp Makefile
 
 depend2:
-	$(CPP) $(INCLUDE) -M *.c >.depend	
+	$(CPP) $(DEFS) -M *.c >.depend	
 
 ifeq (.depend,$(wildcard .depend))
 include .depend

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.10  1994-10-05 12:16:48  adam
+ * Revision 1.11  1995-09-04 12:33:31  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.10  1994/10/05  12:16:48  adam
  * Pagesize is a resource now.
  *
  * Revision 1.9  1994/09/16  15:39:13  adam
@@ -346,7 +349,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
                         }
                         if (split_page (dict, ptr, p)) 
                         {
-                            log (LOG_FATAL, "Unable to split page %d\n", ptr);
+                            logf (LOG_FATAL, "Unable to split page %d\n", ptr);
                             abort ();
                         }
                         return dict_ins (dict, str-1, ptr, userlen, userinfo);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: set.c,v $
- * Revision 1.3  1995-02-06 10:12:55  adam
+ * Revision 1.4  1995-09-04 12:33:27  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.3  1995/02/06  10:12:55  adam
  * Unused static function rm_SetElement was removed.
  *
  * Revision 1.2  1995/01/24  16:00:22  adam
@@ -22,7 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include <set.h>
 #include "imalloc.h"
 

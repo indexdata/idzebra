@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.1  1995-09-04 09:10:41  adam
+ * Revision 1.2  1995-09-04 12:33:43  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.1  1995/09/04  09:10:41  adam
  * More work on index add/del/update.
  * Merge sort implemented.
  * Initial work on z39 server.
@@ -14,7 +17,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include "index.h"
 
 char *prog;
@@ -37,7 +40,7 @@ int main (int argc, char **argv)
                 common_resource = res_open (base_name);
                 if (!common_resource)
                 {
-                    log (LOG_FATAL, "Cannot open resource `%s'", base_name);
+                    logf (LOG_FATAL, "Cannot open resource `%s'", base_name);
                     exit (1);
                 }
             }
@@ -48,13 +51,13 @@ int main (int argc, char **argv)
         }
         else
         {
-            log (LOG_FATAL, "Unknown option '-%s'", arg);
+            logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }
     if (!base_name)
     {
-        fprintf (stderr, "search [-v log] base ...\n");
+        fprintf (stderr, "zserver [-v log] base ...\n");
         exit (1);
     }
     exit (0);

@@ -1,48 +1,47 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.16 1995-01-24 16:01:50 adam Exp $
+# $Id: Makefile,v 1.17 1995-09-04 12:34:05 adam Exp $
 
 SHELL=/bin/sh
-INCLUDE=-I../include
+RANLIB=ranlib
+YAZ=../../yaz
+YAZLIB=$(YAZ)/lib/libyaz.a
+INCLUDE=-I../include -I$(YAZ)/include
 TPROG=opt-test
-CFLAGS=-g -Wall -pedantic -ansi
+#CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
-LIB=../lib/util.a
-PO = options.o xmalloc.o log.o res.o alexpath.o common.o
 CPP=cc -E
+LIB=../lib/alexutil.a
+PO = xmalloc.o res.o alexpath.o common.o
 
 all: $(LIB)
 
-alll: opt-test res-test all
+alll: res-test all
 
-opt-test: opt-test.o $(LIB) 
-	$(CC) -o opt-test opt-test.o $(LIB)
-
-res-test: res-test.o $(LIB)
-	$(CC) -o res-test res-test.o $(LIB)
+res-test: res-test.o $(LIB) $(YAZLIB)
+	$(CC) -o res-test res-test.o $(LIB) $(YAZLIB)
 
 $(LIB): $(PO)
 	rm -f $(LIB)
 	ar qc $(LIB) $(PO)
-	ranlib $(LIB)
+	$(RANLIB) $(LIB)
 
 .c.o:
 	$(CC) -c $(DEFS) $(CFLAGS) $<
 
 clean:
-	rm -f *.[oa] opt-test res-test core mon.out gmon.out errlist
+	rm -f *.[oa] res-test core mon.out gmon.out errlist
 
 depend: depend2
 
 depend1:
-	mv Makefile Makefile.tmp
-	sed '/^#Depend/q' <Makefile.tmp >Makefile
-	$(CPP) $(INCLUDE) -M *.c >>Makefile
-	-rm Makefile.tmp
+	sed '/^#Depend/q' <Makefile >Makefile.tmp
+	$(CPP) $(DEFS) -M *.c >>Makefile.tmp
+	mv -f Makefile.tmp Makefile
 
 depend2:
-	$(CPP) $(INCLUDE) -M *.c >.depend	
+	$(CPP) $(DEFS) -M *.c >.depend	
 
 ifeq (.depend,$(wildcard .depend))
 include .depend

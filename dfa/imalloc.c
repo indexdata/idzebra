@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: imalloc.c,v $
- * Revision 1.3  1994-09-27 16:31:19  adam
+ * Revision 1.4  1995-09-04 12:33:26  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.3  1994/09/27  16:31:19  adam
  * First version of grepper: grep with error correction.
  *
  * Revision 1.2  1994/09/26  16:30:56  adam
@@ -19,7 +22,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include "imalloc.h"
 
 #ifdef MEMDEBUG
@@ -39,7 +42,7 @@ void *imalloc (size_t size)
     size_t words = (4*sizeof(unsigned) -1 + size)/sizeof(unsigned);
     char *p = (char *)xmalloc( words*sizeof(unsigned) );
     if( !p )
-        log (LOG_FATAL, "No memory: imalloc(%u); c/f %d/%d; %ld/%ld",
+        logf (LOG_FATAL, "No memory: imalloc(%u); c/f %d/%d; %ld/%ld",
            size, alloc_calls, free_calls, alloc, max_alloc );
     *((unsigned *)p) = size;
     ((unsigned *)p)[1] = MAG1;
@@ -53,7 +56,7 @@ void *imalloc (size_t size)
 #else
     void *p = (void *)xmalloc( size );
     if( !p )
-        log (LOG_FATAL, "Out of memory (imalloc)" );
+        logf (LOG_FATAL, "Out of memory (imalloc)" );
     return p;
 #endif
 }
@@ -64,7 +67,7 @@ void *icalloc (size_t size)
     unsigned words = (4*sizeof(unsigned) -1 + size)/sizeof(unsigned);
     char *p = (char *) xcalloc( words*sizeof(unsigned), 1 );
     if( !p )
-        log (LOG_FATAL, "No memory: icalloc(%u); c/f %d/%d; %ld/%ld",
+        logf (LOG_FATAL, "No memory: icalloc(%u); c/f %d/%d; %ld/%ld",
            size, alloc_calls, free_calls, alloc, max_alloc );
     ((unsigned *)p)[0] = size;
     ((unsigned *)p)[1] = MAG1;
@@ -78,7 +81,7 @@ void *icalloc (size_t size)
 #else
     void *p = (void) xcalloc( size, 1 );
     if( !p )
-        log (LOG_FATAL, "Out of memory (icalloc)" );
+        logf (LOG_FATAL, "Out of memory (icalloc)" );
     return p;
 #endif
 }
@@ -92,14 +95,14 @@ void i_free (void *p)
     ++free_calls;
     size = (-2)[(unsigned *) p];
     if( (-1)[(unsigned *) p] != MAG1 )
-        log (LOG_FATAL,"Internal: ifree(%u) magic 1 corrupted", size );
+        logf (LOG_FATAL,"Internal: ifree(%u) magic 1 corrupted", size );
     if( size[(unsigned char *) p] != MAG2 )
-        log (LOG_FATAL,"Internal: ifree(%u) magic 2 corrupted", size );
+        logf (LOG_FATAL,"Internal: ifree(%u) magic 2 corrupted", size );
     if( (size+1)[(unsigned char *) p] != MAG3 )
-        log (LOG_FATAL,"Internal: ifree(%u) magic 3 corrupted", size );
+        logf (LOG_FATAL,"Internal: ifree(%u) magic 3 corrupted", size );
     alloc -= size;
     if( alloc < 0L )
-        log (LOG_FATAL,"Internal: ifree(%u) negative alloc.", size );
+        logf (LOG_FATAL,"Internal: ifree(%u) negative alloc.", size );
     xfree( (unsigned *) p-2 );
 }
 #else

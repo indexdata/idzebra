@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.h,v $
- * Revision 1.2  1994-09-14 13:10:36  quinn
+ * Revision 1.3  1995-09-04 12:33:35  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.2  1994/09/14  13:10:36  quinn
  * Small changes
  *
  * Revision 1.1  1994/08/23  14:41:46  quinn
@@ -17,7 +20,7 @@
 
 #include <stdio.h>
 
-#include <util.h>
+#include <alexutil.h>
 
 #define MF_MIN_BLOCKS_CREAT 1          /* minimum free blocks in new dir */
 #define MF_DEFAULT_AREA "register"      /* Use if no mf_init */

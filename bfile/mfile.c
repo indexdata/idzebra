@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.9  1994-11-04 14:26:39  quinn
+ * Revision 1.10  1995-09-04 12:33:22  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.9  1994/11/04  14:26:39  quinn
  * bug-fix.
  *
  * Revision 1.8  1994/10/05  16:56:42  quinn
@@ -44,9 +47,10 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include <mfile.h>
 
 static MFile_area_struct *open_areas = 0;
@@ -61,7 +65,7 @@ static int scan_areadef(MFile_area ma, const char *name)
 
     if (!ad)
     {
-    	log(LOG_FATAL, "Could not find resource '%s'", name);
+    	logf (LOG_FATAL, "Could not find resource '%s'", name);
     	return -1;
     }
     for (;;)
@@ -71,7 +75,7 @@ static int scan_areadef(MFile_area ma, const char *name)
 	    break;
         if (rs != 3)
         {
-	    log(LOG_FATAL, "Illegal directory description: %s", ad + offset);
+	    logf (LOG_FATAL, "Illegal directory description: %s", ad + offset);
 	    return -1;
 	}
 	switch (unit)
@@ -80,7 +84,7 @@ static int scan_areadef(MFile_area ma, const char *name)
 	    case 'K': case 'k': multi = 1024; break;
 	    case 'M': case 'm': multi = 1048576; break;
 	    default:
-	        log(LOG_FATAL, "Illegal unit: %c in %s", unit, ad + offset);
+	        logf (LOG_FATAL, "Illegal unit: %c in %s", unit, ad + offset);
 	        return -1;
 	}
 	*dp = dir = xmalloc(sizeof(mf_dir));
@@ -113,13 +117,13 @@ static int file_position(MFile mf, int pos, int offset)
     if (mf->files[c].fd < 0 && (mf->files[c].fd = open(mf->files[c].path,
 	mf->wr ? O_RDWR|O_CREAT : O_RDONLY, 0666)) < 0)
     {
-    	log(LOG_FATAL|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
+    	logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
     	return -1;
     }
     if (lseek(mf->files[c].fd, (ps = pos - off) * mf->blocksize + offset,
     	SEEK_SET) < 0)
     {
-    	log(LOG_FATAL|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
+    	logf (LOG_FATAL|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
     	return -1;
     }
     mf->cur_file = c;
@@ -146,7 +150,7 @@ MFile_area mf_init(const char *name)
     int fd, number;
     char metaname[FILENAME_MAX+1], tmpnam[FILENAME_MAX+1];
 
-    log(LOG_DEBUG, "mf_init(%s)", name);
+    logf (LOG_DEBUG, "mf_init(%s)", name);
     for (mp = open_areas; mp; mp = mp->next)
     	if (!strcmp(name, mp->name))
     	    abort();
@@ -157,7 +161,7 @@ MFile_area mf_init(const char *name)
     ma->dirs = 0;
     if (scan_areadef(ma, name) < 0)
     {
-    	log(LOG_FATAL, "Failed to access description of '%s'", name);
+    	logf (LOG_FATAL, "Failed to access description of '%s'", name);
     	return 0;
     }
     /* look at each directory */
@@ -165,7 +169,7 @@ MFile_area mf_init(const char *name)
     {
     	if (!(dd = opendir(dirp->name)))
     	{
-    	    log(LOG_FATAL|LOG_ERRNO, "Failed to open %s", dirp->name);
+    	    logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", dirp->name);
     	    return 0;
 	}
 	/* look at each file */
@@ -175,7 +179,8 @@ MFile_area mf_init(const char *name)
 	    	continue;
 	    if (sscanf(dent->d_name, "%[^.].%d", metaname, &number) != 2)
 	    {
-	    	log(LOG_FATAL, "Failed to resolve part-name %s", dent->d_name);
+	    	logf (LOG_FATAL, "Failed to resolve part-name %s",
+                      dent->d_name);
 	    	return 0;
 	    }
 	    for (meta_f = ma->mfiles; meta_f; meta_f = meta_f->next)
@@ -208,12 +213,14 @@ MFile_area mf_init(const char *name)
 	    /* get size */
 	    if ((fd = open(part_f->path, O_RDONLY)) < 0)
 	    {
-	    	log(LOG_FATAL|LOG_ERRNO, "Failed to access %s", dent->d_name);
+	    	logf (LOG_FATAL|LOG_ERRNO, "Failed to access %s",
+                      dent->d_name);
 	    	return 0;
 	    }
 	    if ((part_f->bytes = lseek(fd, 0, SEEK_END)) < 0)
 	    {
-	    	log(LOG_FATAL|LOG_ERRNO, "Failed to seek in %s", dent->d_name);
+	    	logf (LOG_FATAL|LOG_ERRNO, "Failed to seek in %s",
+                      dent->d_name);
 	    	return 0;
 	    }
 	    close(fd);
@@ -223,10 +230,10 @@ MFile_area mf_init(const char *name)
     }
     for (meta_f = ma->mfiles; meta_f; meta_f = meta_f->next)
     {
-    	log(LOG_DEBUG, "mf_init: %s consists of %d part(s)", meta_f->name,
-    	    meta_f->no_files);
+    	logf (LOG_DEBUG, "mf_init: %s consists of %d part(s)", meta_f->name,
+              meta_f->no_files);
     	qsort(meta_f->files, meta_f->no_files, sizeof(part_file),
-    	    cmp_part_file);
+              cmp_part_file);
     }
     return ma;
 }
@@ -242,13 +249,13 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     char tmp[FILENAME_MAX+1];
     mf_dir *dp;
 
-    log(LOG_LOG, "mf_open(%s bs=%d, %s)", name, block_size,
-    	wflag ? "RW" : "RDONLY");
+    logf(LOG_LOG, "mf_open(%s bs=%d, %s)", name, block_size,
+         wflag ? "RW" : "RDONLY");
     if (!ma)
     {
         if (!default_area && !(default_area = mf_init(MF_DEFAULT_AREA)))
         {
-            log(LOG_FATAL, "Failed to open default area.");
+            logf (LOG_FATAL, "Failed to open default area.");
             return 0;
 	}
 	ma = default_area;
@@ -274,7 +281,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
 	    dp = dp->next);
 	if (!dp)
 	{
-	    log(LOG_FATAL, "Insufficient space for new mfile.");
+	    logf (LOG_FATAL, "Insufficient space for new mfile.");
 	    return 0;
 	}
 	new->files[0].dir = dp;
@@ -318,7 +325,7 @@ int mf_close(MFile mf)
 {
     int i;
 
-    log(LOG_DEBUG, "mf_close(%s)", mf->name);
+    logf (LOG_DEBUG, "mf_close(%s)", mf->name);
     assert(mf->open);
     for (i = 0; i < mf->no_files; i++)
     	if (mf->files[i].fd >= 0)
@@ -342,8 +349,8 @@ int mf_read(MFile mf, int no, int offset, int num, void *buf)
     toread = num ? num : mf->blocksize;
     if ((rd = read(mf->files[mf->cur_file].fd, buf, toread)) < 0)
     {
-    	log(LOG_FATAL|LOG_ERRNO, "mf_read: Read failed (%s)",
-    		mf->files[mf->cur_file].path);
+    	logf (LOG_FATAL|LOG_ERRNO, "mf_read: Read failed (%s)",
+              mf->files[mf->cur_file].path);
     	exit(1);
     }
     else if (rd < toread)
@@ -367,7 +374,7 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
     /* file needs to grow */
     while (ps >= mf->files[mf->cur_file].blocks)
     {
-    	log(LOG_DEBUG, "File grows");
+    	logf (LOG_DEBUG, "File grows");
     	/* file overflow - allocate new file */
     	if ((ps - mf->files[mf->cur_file].blocks + 1) * mf->blocksize >
 	    mf->files[mf->cur_file].dir->avail_bytes)
@@ -376,7 +383,7 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 	    if ((nblocks = mf->files[mf->cur_file].dir->avail_bytes /
 		mf->blocksize) > 0)
 	    {
-	    	log(LOG_DEBUG, "Capping off file %s at pos %d",
+	    	logf (LOG_DEBUG, "Capping off file %s at pos %d",
 		    mf->files[mf->cur_file].path, nblocks);
 	    	if ((ps = file_position(mf,
 		    (mf->cur_file ? mf->files[mf->cur_file-1].top : 0) +
@@ -384,7 +391,7 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 			exit(1);
 		if (write(mf->files[mf->cur_file].fd, &dummych, 1) < 1)
 		{
-		    log(LOG_ERRNO|LOG_FATAL, "write dummy");
+		    logf (LOG_ERRNO|LOG_FATAL, "write dummy");
 		    exit(1);
 		}
 		mf->files[mf->cur_file].blocks += nblocks;
@@ -393,12 +400,13 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 		    mf->blocksize;
 	    }
 	    /* get other bit */
-    	    log(LOG_DEBUG, "Creating new file.");
+    	    logf (LOG_DEBUG, "Creating new file.");
     	    for (dp = mf->ma->dirs; dp && dp->avail_bytes < mf->min_bytes_creat;
 		dp = dp->next);
 	    if (!dp)
 	    {
-	    	log(LOG_FATAL, "Cannot allocate more space for %s", mf->name);
+	    	logf (LOG_FATAL, "Cannot allocate more space for %s",
+                      mf->name);
 	    	exit(1);
 	    }
 	    mf->files[mf->cur_file].top = (mf->cur_file ?
@@ -430,7 +438,7 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
     towrite = num ? num : mf->blocksize;
     if (write(mf->files[mf->cur_file].fd, buf, towrite) < towrite)
     {
-    	log(LOG_FATAL|LOG_ERRNO, "Write failed");
+    	logf (LOG_FATAL|LOG_ERRNO, "Write failed");
     	exit(1);
     }
     return 0;

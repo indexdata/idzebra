@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.5  1994-09-28 16:58:33  quinn
+ * Revision 1.6  1995-09-04 12:33:47  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.5  1994/09/28  16:58:33  quinn
  * Small mod.
  *
  * Revision 1.4  1994/09/27  20:03:52  quinn
@@ -26,8 +29,9 @@
  */
 
 #include <assert.h>
+#include <stdio.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include <isam.h>
 
 int is_mbuf_size[3] = { 0, 1024, 4096 };
@@ -271,7 +275,7 @@ int is_m_write_record(is_mtable *tab, const void *rec)
 	mbuf = tab->cur_mblock->cur_mbuf = mbuf->next;
 	mbuf->cur_record = 0;
     }
-    log(LOG_DEBUG, "is_m_write_rec(rec == %d)", mbuf->cur_record);
+    logf (LOG_DEBUG, "is_m_write_rec(rec == %d)", mbuf->cur_record);
     memcpy(mbuf->data + mbuf->offset + mbuf->cur_record * is_keysize(tab->is),
 	rec, is_keysize(tab->is));
     mbuf->num++;
@@ -387,7 +391,7 @@ int is_m_num_records(is_mtable *tab)
     if (tab->data->state < IS_MBSTATE_PARTIAL)
 	if (read_current_full(tab, tab->data) < 0)
 	{
-	    log(LOG_FATAL, "read full failed");
+	    logf (LOG_FATAL, "read full failed");
 	    exit(1);
 	}
     return tab->num_records;

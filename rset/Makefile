@@ -1,27 +1,25 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.3 1995-01-24 16:01:44 adam Exp $
+# $Id: Makefile,v 1.4 1995-09-04 12:33:55 adam Exp $
 
 SHELL=/bin/sh
-INCLUDE=-I../include
-CFLAGS=-g -Wall -pedantic -ansi
+RANLIB=ranlib
+YAZ=../../yaz
+INCLUDE=-I../include -I$(YAZ)/include
+#CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 LIB=../lib/rset.a
 PROG=
 PO=rset.o rstemp.o rsisam.o
 CPP=cc -E
 
-all: $(PROG) $(LIB)
-
-$(PROG): $(PROG).o
-	$(CC) -o $(PROG) $(INCLUDE) $(CFLAGS) $(PROG).o $(LIB)
-
+all: $(LIB)
 
 $(LIB): $(PO)
 	rm -f $(LIB)
 	ar qc $(LIB) $(PO)
-	ranlib $(LIB)
+	$(RANLIB) $(LIB)
 
 .c.o:
 	$(CC) -c $(DEFS) $(CFLAGS) $<
@@ -32,13 +30,12 @@ clean:
 depend: depend2
 
 depend1:
-	mv Makefile Makefile.tmp
-	sed '/^#Depend/q' <Makefile.tmp >Makefile
-	$(CPP) $(INCLUDE) -M *.c >>Makefile
-	-rm Makefile.tmp
+	sed '/^#Depend/q' <Makefile >Makefile.tmp
+	$(CPP) $(DEFS) -M *.c >>Makefile.tmp
+	mv -f Makefile.tmp Makefile
 
 depend2:
-	$(CPP) $(INCLUDE) -M *.c >.depend	
+	$(CPP) $(DEFS) -M *.c >.depend	
 
 ifeq (.depend,$(wildcard .depend))
 include .depend

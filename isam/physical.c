@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.5  1994-09-28 11:29:33  quinn
+ * Revision 1.6  1995-09-04 12:33:47  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.5  1994/09/28  11:29:33  quinn
  * Added cmp parameter.
  *
  * Revision 1.4  1994/09/27  20:03:53  quinn
@@ -26,6 +29,7 @@
  */
 
 #include <assert.h>
+#include <stdio.h>
 
 #include <isam.h>
 
@@ -39,14 +43,14 @@ static int is_freestore_alloc(ISAM is, int type)
     	if (bf_read(is->types[type].bf, tmp, 0, sizeof(tmp),
 	    &is->types[type].freelist) <=0)
 	{
-	    log(LOG_FATAL, "Failed to allocate block");
+	    logf (LOG_FATAL, "Failed to allocate block");
 	    exit(1);
 	}
     }
     else
     	tmp = is->types[type].top++;
 
-    log(LOG_DEBUG, "Allocating block #%d", tmp);
+    logf (LOG_DEBUG, "Allocating block #%d", tmp);
     return tmp;
 }
 
@@ -54,12 +58,12 @@ static void is_freestore_free(ISAM is, int type, int block)
 {
     int tmp;
 
-    log(LOG_DEBUG, "Releasing block #%d", block);
+    logf (LOG_DEBUG, "Releasing block #%d", block);
     tmp = is->types[type].freelist;
     is->types[type].freelist = block;
     if (bf_write(is->types[type].bf, block, 0, sizeof(tmp), &tmp) < 0)
     {
-    	log(LOG_FATAL, "Failed to deallocate block.");
+    	logf (LOG_FATAL, "Failed to deallocate block.");
     	exit(1);
     }
 }
@@ -83,7 +87,7 @@ int is_p_read_partial(is_mtable *tab, is_mblock *block)
     if (bf_read(tab->is->types[tab->pos_type].bf, block->diskpos, 0, toread,
 	buf->data) < 0)
     {
-    	log(LOG_FATAL, "bfread failed.");
+    	logf (LOG_FATAL, "bfread failed.");
     	return -1;
     }
     /* extract header info */
@@ -117,7 +121,7 @@ int is_p_read_full(is_mtable *tab, is_mblock *block)
 
     if (block->state == IS_MBSTATE_UNREAD && is_p_read_partial(tab, block) < 0)
     {
-    	log(LOG_FATAL, "partial read failed.");
+    	logf (LOG_FATAL, "partial read failed.");
     	return -1;
     }
     if (block->state == IS_MBSTATE_PARTIAL)
@@ -136,7 +140,7 @@ int is_p_read_full(is_mtable *tab, is_mblock *block)
 	    if (bf_read(tab->is->types[tab->pos_type].bf, block->diskpos, block->bread, toread *
 		is_keysize(tab->is), buf->data) < 0)
 	    {
-	    	log(LOG_FATAL, "bfread failed.");
+	    	logf (LOG_FATAL, "bfread failed.");
 	    	return -1;
 	    }
 	    buf->offset = 0;
@@ -145,7 +149,7 @@ int is_p_read_full(is_mtable *tab, is_mblock *block)
 	    block->bread += toread * is_keysize(tab->is);
     	}
     }
-    log(LOG_DEBUG, "R: Block #%d contains %d records.", block->diskpos, block->num_records);
+    logf (LOG_DEBUG, "R: Block #%d contains %d records.", block->diskpos, block->num_records);
     return 0;
 }
 
@@ -198,10 +202,10 @@ void is_p_sync(is_mtable *tab)
 	}
 	if (bf_write(type->bf, p->diskpos, 0, sum, type->dbuf) < 0)
 	{
-	    log(LOG_FATAL, "Failed to write block.");
+	    logf (LOG_FATAL, "Failed to write block.");
 	    exit(1);
 	}
-	log(LOG_DEBUG, "W: Block #%d contains %d records.", p->diskpos, p->num_records);
+	logf (LOG_DEBUG, "W: Block #%d contains %d records.", p->diskpos, p->num_records);
     }
 }
 
@@ -265,7 +269,7 @@ void is_p_align(is_mtable *tab)
     is_mbuf *mbufs, *mbp;
     int blocks, recsblock;
 
-    log(LOG_DEBUG, "Realigning table.");
+    logf (LOG_DEBUG, "Realigning table.");
     for (mblock = tab->data; mblock; mblock = next)
     {
         next = mblock->next;
@@ -336,14 +340,14 @@ void is_p_remap(is_mtable *tab)
     is_mblock *blockp, **blockpp;
     int recsblock, blocks;
 
-    log(LOG_DEBUG, "Remapping table.");
+    logf (LOG_DEBUG, "Remapping table.");
     /* collect all data */
     bufpp = &mbufs;
     for (blockp = tab->data; blockp; blockp = blockp->next)
     {
     	if (blockp->state < IS_MBSTATE_CLEAN && is_m_read_full(tab, blockp) < 0)
 	{
-	    log(LOG_FATAL, "Read-full failed in remap.");
+	    logf (LOG_FATAL, "Read-full failed in remap.");
 	    exit(1);
 	}
     	*bufpp = blockp->data;

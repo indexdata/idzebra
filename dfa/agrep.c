@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.4  1995-01-24 16:00:21  adam
+ * Revision 1.5  1995-09-04 12:33:25  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.4  1995/01/24  16:00:21  adam
  * Added -ansi to CFLAGS.
  * Some changes to the dfa module.
  *
@@ -31,7 +34,7 @@
 #include <unistd.h>
 
 
-#include <util.h>
+#include <alexutil.h>
 #include <dfa.h>
 #include "imalloc.h"
 

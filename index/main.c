@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.5  1995-09-04 09:10:39  adam
+ * Revision 1.6  1995-09-04 12:33:43  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.5  1995/09/04  09:10:39  adam
  * More work on index add/del/update.
  * Merge sort implemented.
  * Initial work on z39 server.
@@ -26,7 +29,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include "index.h"
 
 char *prog;
@@ -51,7 +54,7 @@ int main (int argc, char **argv)
                 common_resource = res_open (base_name);
                 if (!common_resource)
                 {
-                    log (LOG_FATAL, "Cannot open resource `%s'", base_name);
+                    logf (LOG_FATAL, "Cannot open resource `%s'", base_name);
                     exit (1);
                 }
             }
@@ -67,7 +70,7 @@ int main (int argc, char **argv)
                 }
                 else
                 {
-                    log (LOG_FATAL, "Unknown command: %s", arg);
+                    logf (LOG_FATAL, "Unknown command: %s", arg);
                     exit (1);
                 }
             }
@@ -89,7 +92,7 @@ int main (int argc, char **argv)
         }
         else
         {
-            log (LOG_FATAL, "Unknown option '-%s'", arg);
+            logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }
@@ -102,10 +105,10 @@ int main (int argc, char **argv)
     key_flush ();
     if (!key_close ())
         exit (0);
-    log (LOG_DEBUG, "Sorting");
+    logf (LOG_DEBUG, "Sorting");
     if (!key_sort ("keys.tmp", 1000000))
         exit (0);
-    log (LOG_DEBUG, "Input");
+    logf (LOG_DEBUG, "Input");
     key_input ("dictinv", "isaminv", "keys.tmp", 50);
     exit (0);
 }

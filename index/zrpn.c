@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.1  1995-09-04 09:10:40  adam
+ * Revision 1.2  1995-09-04 12:33:43  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.1  1995/09/04  09:10:40  adam
  * More work on index add/del/update.
  * Merge sort implemented.
  * Initial work on z39 server.
@@ -14,7 +17,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include <dict.h>
 #include <isam.h>
 #include <rsisam.h>

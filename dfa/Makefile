@@ -1,14 +1,17 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.7 1995-02-06 10:12:55 adam Exp $
+# $Id: Makefile,v 1.8 1995-09-04 12:33:25 adam Exp $
 
 SHELL=/bin/sh
-INCLUDE=-I../include
+RANLIB=ranlib
+YAZ=../../yaz
+YAZLIB=$(YAZ)/lib/libyaz.a
+INCLUDE=-I../include -I$(YAZ)/include
 TPROG1=agrep
 TPROG2=lexer
 TPROG3=grepper
-CFLAGS=-g -Wall -pedantic -ansi
+#CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE) -DYACC -DYYDEBUG=1 -DMEMDEBUG=1
 LIB=../lib/dfa.a 
 PO = dfa.o imalloc.o states.o set.o bset.o
@@ -19,19 +22,22 @@ all: $(LIB)
 
 alll: $(LIB) $(TPROG1) $(TPROG2) $(TPROG3)
 
-$(TPROG1): $(TPROG1).o $(LIB) ../lib/util.a
-	$(CC) $(CFLAGS) -o $(TPROG1) $(TPROG1).o $(LIB) ../lib/util.a
+$(TPROG1): $(TPROG1).o $(LIB) ../lib/alexutil.a $(YAZLIB)
+	$(CC) $(CFLAGS) -o $(TPROG1) $(TPROG1).o $(LIB) \
+		../lib/alexutil.a $(YAZLIB)
 
-$(TPROG2): $(TPROG2).o readfile.o $(LIB) ../lib/util.a
-	$(CC) $(CFLAGS) -o $(TPROG2) $(TPROG2).o readfile.o $(LIB) ../lib/util.a
+$(TPROG2): $(TPROG2).o readfile.o $(LIB) ../lib/alexutil.a $(YAZLIB)
+	$(CC) $(CFLAGS) -o $(TPROG2) $(TPROG2).o readfile.o $(LIB) \
+		../lib/alexutil.a $(YAZLIB)
 
-$(TPROG3): $(TPROG3).o $(LIB) 
-	$(CC) $(CFLAGS) -o $(TPROG3) $(TPROG3).o $(LIB) ../lib/util.a
+$(TPROG3): $(TPROG3).o $(LIB) ../lib/alexutil.a $(YAZLIB)
+	$(CC) $(CFLAGS) -o $(TPROG3) $(TPROG3).o $(LIB) $(YAZLIB) \
+		../lib/alexutil.a $(YAZLIB)
 
 $(LIB): $(PO)
 	rm -f $(LIB)
 	ar qc $(LIB) $(PO)
-	ranlib $(LIB)
+	$(RANLIB) $(LIB)
 
 .c.o:
 	$(CC) -c $(DEFS) $(CFLAGS) $<
@@ -47,12 +53,12 @@ clean:
 depend: depend2
 
 depend1:
-	mv Makefile Makefile.tmp
 	$(YACC) $(YFLAGS) regexp.y
 	mv y.tab.c regexp.c
-	sed '/^#Depend/q' <Makefile.tmp >Makefile
-	$(CPP) -M $(DEFS) *.c |sed 's/regexp\.c/regexp.y/g' >>Makefile
-	rm -f Makefile.tmp regexp.c
+	sed '/^#Depend/q' <Makefile >Makefile.tmp
+	$(CPP) -M $(DEFS) *.c |sed 's/regexp\.c/regexp.y/g' >>Makefile.tmp
+	mv -f Makefile.tmp Makefile
+	rm -f regexp.c
 
 depend2:
 	$(YACC) $(YFLAGS) regexp.y

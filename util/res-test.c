@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res-test.c,v $
- * Revision 1.4  1994-10-04 17:47:11  adam
+ * Revision 1.5  1995-09-04 12:34:05  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.4  1994/10/04  17:47:11  adam
  * Function options now returns arg with error option.
  *
  * Revision 1.3  1994/08/18  11:02:27  adam
@@ -19,11 +22,11 @@
  */
 
 #include <stdio.h>
-#include <util.h>
+#include <alexutil.h>
 
 static void res_print (const char *name, const char *value)
 {
-    log (LOG_LOG, "%s=%s", name, value);
+    logf (LOG_LOG, "%s=%s", name, value);
 }
 
 int main(int argc, char **argv)
@@ -48,12 +51,12 @@ int main(int argc, char **argv)
             write_flag = 1;
         else
         {
-            log (LOG_FATAL, "Unknown option '-%s'", arg);
+            logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     if (!resfile)
     {
-        log (LOG_FATAL, "No resource file given.");
+        logf (LOG_FATAL, "No resource file given.");
         exit (1);
     }
     res = res_open (resfile);

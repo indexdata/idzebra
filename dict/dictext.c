@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dictext.c,v $
- * Revision 1.3  1994-10-04 17:46:54  adam
+ * Revision 1.4  1995-09-04 12:33:31  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.3  1994/10/04  17:46:54  adam
  * Function options now returns arg with error option.
  *
  * Revision 1.2  1994/09/28  13:07:08  adam
@@ -21,7 +24,7 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <util.h>
+#include <alexutil.h>
 
 char *prog;
 
@@ -42,7 +45,7 @@ int main (int argc, char **argv)
                 inputfile = arg;
             else
             {
-                log (LOG_FATAL, "too many files specified\n");
+                logf (LOG_FATAL, "too many files specified\n");
                 exit (1);
             }
         }
@@ -58,7 +61,7 @@ int main (int argc, char **argv)
         }
         else
         {
-            log (LOG_FATAL, "Unknown option '-%s'", arg);
+            logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }
@@ -67,7 +70,7 @@ int main (int argc, char **argv)
         ipf = fopen (inputfile, "r");
         if (!ipf)
         {
-            log (LOG_FATAL|LOG_ERRNO, "cannot open '%s'", inputfile);
+            logf (LOG_FATAL|LOG_ERRNO, "cannot open '%s'", inputfile);
             exit (1);
         }
     }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.1  1995-09-04 09:10:37  adam
+ * Revision 1.2  1995-09-04 12:33:42  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.1  1995/09/04  09:10:37  adam
  * More work on index add/del/update.
  * Merge sort implemented.
  * Initial work on z39 server.
@@ -61,7 +64,7 @@ static int inp (Dict dict, ISAM isam, const char *name)
     key_buf = xmalloc (key_buf_size * (KEY_SIZE));
     if (!(inf = fopen (name, "r")))
     {
-        log (LOG_FATAL|LOG_ERRNO, "cannot open `%s'", name);
+        logf (LOG_FATAL|LOG_ERRNO, "cannot open `%s'", name);
         exit (1);
     }
     read_one (inf, cur_name, key_buf);
@@ -93,7 +96,7 @@ static int inp (Dict dict, ISAM isam, const char *name)
         if ((info = dict_lookup (dict, cur_name)))
         {
             ISAM_P isam_p, isam_p2;
-            log (LOG_DEBUG, "updating %s", cur_name);
+            logf (LOG_DEBUG, "updating %s", cur_name);
             no_updates++;
             memcpy (&isam_p, info+1, sizeof(ISAM_P));
             isam_p2 = is_merge (isam, isam_p, nmemb, key_buf);
@@ -103,7 +106,7 @@ static int inp (Dict dict, ISAM isam, const char *name)
         else
         {
             ISAM_P isam_p;
-            log (LOG_DEBUG, "inserting %s", cur_name);
+            logf (LOG_DEBUG, "inserting %s", cur_name);
             no_insertions++;
             isam_p = is_merge (isam, 0, nmemb, key_buf);
             dict_insert (dict, cur_name, sizeof(ISAM_P), &isam_p);
@@ -124,20 +127,20 @@ void key_input (const char *dict_fname, const char *isam_fname,
     dict = dict_open (dict_fname, cache, 1);
     if (!dict)
     {
-        log (LOG_FATAL, "dict_open fail of `%s'", dict_fname);
+        logf (LOG_FATAL, "dict_open fail of `%s'", dict_fname);
         exit (1);
     }
     isam = is_open (isam_fname, key_compare, 1);
     if (!isam)
     {
-        log (LOG_FATAL, "is_open fail of `%s'", isam_fname);
+        logf (LOG_FATAL, "is_open fail of `%s'", isam_fname);
         exit (1);
     }
     inp (dict, isam, key_fname);
     dict_close (dict);
     is_close (isam);
-    log (LOG_LOG, "Iterations . . .%7d", no_iterations);
-    log (LOG_LOG, "Distinct words .%7d", no_diffs);
-    log (LOG_LOG, "Updates. . . . .%7d", no_updates);
-    log (LOG_LOG, "Insertions . . .%7d", no_insertions);
+    logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
+    logf (LOG_LOG, "Distinct words .%7d", no_diffs);
+    logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
+    logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.4  1995-09-04 09:10:35  adam
+ * Revision 1.5  1995-09-04 12:33:42  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.4  1995/09/04  09:10:35  adam
  * More work on index add/del/update.
  * Merge sort implemented.
  * Initial work on z39 server.
@@ -20,7 +23,7 @@
  *
  */
 
-#include <util.h>
+#include <alexutil.h>
 #include <dict.h>
 #include <isam.h>
 

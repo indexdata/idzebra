@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.10  1994-09-28 16:58:32  quinn
+ * Revision 1.11  1995-09-04 12:33:46  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.10  1994/09/28  16:58:32  quinn
  * Small mod.
  *
  * Revision 1.9  1994/09/28  12:56:15  quinn
@@ -33,11 +36,12 @@
  *
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include <bfile.h>
 #include <isam.h>
 #include <common.h>
@@ -81,7 +85,7 @@ static int splitargs(const char *s, char *bf[], int max)
 	ct++;
 	if (ct > max)
 	{
-	    log(LOG_WARN, "Ignoring extra args to is resource");
+	    logf (LOG_WARN, "Ignoring extra args to is resource");
 	    bf[ct] = '\0';
 	    return(ct - 1);
 	}
@@ -102,7 +106,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     int num, size, rs, tmp, i;
     is_type_header th;
 
-    log(LOG_DEBUG, "is_open(%s, %s)", name, writeflag ? "RW" : "RDONLY");
+    logf (LOG_DEBUG, "is_open(%s, %s)", name, writeflag ? "RW" : "RDONLY");
     new = xmalloc(sizeof(*new));
     new->writeflag = writeflag;
     for (i = 0; i < IS_MAX_BLOCKTYPES; i++)
@@ -112,7 +116,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     if (!(r = res_get(common_resource, nm = strconcat(name, ".",
 	"blocktypes", 0))) || !(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
-    	log(LOG_FATAL, "Failed to locate resource %s", nm);
+    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
     new->num_types = num;
@@ -120,7 +124,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     {
     	if ((rs = sscanf(pp[i], "%d%1[bBkKmM]", &size, m)) < 1)
     	{
-	    log(LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
+	    logf (LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
 	    return 0;
 	}
 	if (rs == 1)
@@ -134,7 +138,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 		case 'm': case 'M':
 		    new->types[i].blocksize = size * 1048576; break;
 		default:
-		    log(LOG_FATAL, "Illegal size suffix: %c", *m);
+		    logf (LOG_FATAL, "Illegal size suffix: %c", *m);
 		    return 0;
 	}
 	new->types[i].dbuf = xmalloc(new->types[i].blocksize);
@@ -143,14 +147,14 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 	if (!(new->types[i].bf = bf_open(strconcat(name, m, 0), 
 	    new->types[i].blocksize, writeflag)))
 	{
-	    log(LOG_FATAL, "bf_open failed");
+	    logf (LOG_FATAL, "bf_open failed");
 	    return 0;
 	}
 	if ((rs = is_rb_read(&new->types[i], &th)) > 0)
 	{
 	    if (th.blocksize != new->types[i].blocksize)
 	    {
-	    	log(LOG_FATAL, "File blocksize mismatch in %s", name);
+	    	logf (LOG_FATAL, "File blocksize mismatch in %s", name);
 	    	exit(1);
 	    }
 	    new->types[i].freelist = th.freelist;
@@ -160,7 +164,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 	{
 	    if ((rs = is_rb_write(&new->types[i], &th)) <=0)  /* dummy */
 	    {
-	    	log(LOG_FATAL, "Failed to write initial superblock.");
+	    	logf (LOG_FATAL, "Failed to write initial superblock.");
 	    	exit(1);
 	    }
 	    new->types[i].freelist = -1;
@@ -171,12 +175,12 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     if (!(r = res_get_def(common_resource, nm = strconcat(name, ".", "keysize",
     	0), "4")))
     {
-    	log(LOG_FATAL, "Failed to locate resource %s", nm);
+    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
     if ((new->keysize = atoi(r)) <= 0)
     {
-    	log(LOG_FATAL, "Must specify positive keysize.");
+    	logf (LOG_FATAL, "Must specify positive keysize.");
     	return 0;
     }
 
@@ -184,7 +188,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     if (!(r = res_get_def(common_resource, nm = strconcat(name, ".", "repack",
     	0), IS_DEF_REPACK_PERCENT)))
     {
-    	log(LOG_FATAL, "Failed to locate resource %s", nm);
+    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
     new->repack = atoi(r);
@@ -193,19 +197,19 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     if (!(r = res_get(common_resource, nm = strconcat(name, ".",
 	"maxkeys", 0))) || !(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
-    	log(LOG_FATAL, "Failed to locate resource %s", nm);
+    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
     if (num < new->num_types -1)
     {
-    	log(LOG_FATAL, "Not enough elements in %s", nm);
+    	logf (LOG_FATAL, "Not enough elements in %s", nm);
     	return 0;
     }
     for (i = 0; i < num; i++)
     {
     	if ((rs = sscanf(pp[i], "%d", &tmp)) < 1)
     	{
-	    log(LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
+	    logf (LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
 	    return 0;
 	}
 	new->types[i].max_keys = tmp;
@@ -226,7 +230,7 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 		new->keysize;
 	if (new->types[i].max_keys_block0 < 1)
 	{
-	    log(LOG_FATAL, "Blocksize too small in %s", name);
+	    logf (LOG_FATAL, "Blocksize too small in %s", name);
 	    exit(1);
 	}
     }
@@ -235,19 +239,19 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     if (!(r = res_get(common_resource, nm = strconcat(name, ".",
 	"nicefill", 0))) || !(num = splitargs(r, pp, IS_MAX_BLOCKTYPES)))
     {
-    	log(LOG_FATAL, "Failed to locate resource %s", nm);
+    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
     	return 0;
     }
     if (num < new->num_types)
     {
-    	log(LOG_FATAL, "Not enough elements in %s", nm);
+    	logf (LOG_FATAL, "Not enough elements in %s", nm);
     	return 0;
     }
     for (i = 0; i < num; i++)
     {
     	if ((rs = sscanf(pp[i], "%d", &tmp)) < 1)
     	{
-	    log(LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
+	    logf (LOG_FATAL, "Error in resource %s: %s", r, pp[i]);
 	    return 0;
 	}
 	new->types[i].nice_keys_block = (new->types[i].max_keys_block0 * tmp) /
@@ -268,7 +272,7 @@ int is_close(ISAM is)
     int i;
     is_type_header th;
 
-    log(LOG_DEBUG, "is_close()");
+    logf (LOG_DEBUG, "is_close()");
     for (i = 0; i < is->num_types; i++)
     {
     	if (is->types[i].bf)
@@ -281,7 +285,7 @@ int is_close(ISAM is)
 		th.top = is->types[i].top;
 		if (is_rb_write(&is->types[i], &th) < 0)
 		{
-		    log(LOG_FATAL, "Failed to write headerblock");
+		    logf (LOG_FATAL, "Failed to write headerblock");
 		    exit(1);
 		}
 	    }
@@ -324,7 +328,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
     if (pos)
     	if (is_m_read_full(&tab, tab.data) < 0)
     	{
-	    log(LOG_FATAL, "read_full failed");
+	    logf (LOG_FATAL, "read_full failed");
 	    exit(1);
 	}
     oldnum = tab.num_records;
@@ -344,17 +348,17 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 	{
 	    if (operation == KEYOP_INSERT)
 	    {
-	        log(LOG_DEBUG, "XXInserting new record.");
+	        logf (LOG_DEBUG, "XXInserting new record.");
 		is_m_write_record(&tab, record);
 	    }
 	    else
-	    	log(LOG_DEBUG, "XXDeletion failed to find match.");
+	    	logf (LOG_DEBUG, "XXDeletion failed to find match.");
 	}
 	else /* match found */
 	{
 	    if (operation == KEYOP_INSERT)
 	    {
-	        log(LOG_DEBUG, "XXSkipping insertion - match found.");
+	        logf (LOG_DEBUG, "XXSkipping insertion - match found.");
 	    	continue;
 	    }
 	    else if (operation == KEYOP_DELETE)
@@ -365,7 +369,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 		    /* next key is identical insert? - NOOP - skip it */
 		    if (!memcmp(record, data + 1, is_keysize(is)))
 		    {
-		        log(LOG_DEBUG, "XXNoop delete. skipping.");
+		        logf (LOG_DEBUG, "XXNoop delete. skipping.");
 		    	data += 1 + is_keysize(is);
 		    	num--;
 		    	continue;
@@ -375,14 +379,14 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 		    res = (*is->cmp)(data + 1, keybuf);
 		    if (res < 0)
 		    {
-		        log(LOG_DEBUG, "XXReplacing record.");
+		        logf (LOG_DEBUG, "XXReplacing record.");
 		    	is_m_replace_record(&tab, data + 1);
 		    	data += 1 + is_keysize(is);
 		    	num--;
 			continue;
 		    }
 		}
-		log(LOG_DEBUG, "Deleting record.");
+		logf (LOG_DEBUG, "Deleting record.");
 		is_m_delete_record(&tab);
 	    }
 	}

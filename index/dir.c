@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.3  1995-09-01 14:06:35  adam
+ * Revision 1.4  1995-09-04 12:33:41  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.3  1995/09/01  14:06:35  adam
  * Split of work into more files.
  *
  * Revision 1.2  1995/09/01  10:57:07  adam
@@ -23,7 +26,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include "index.h"
 
 struct dir_entry *dir_open (const char *rep)
@@ -34,17 +37,17 @@ struct dir_entry *dir_open (const char *rep)
     size_t idx = 0;
     struct dir_entry *entry;
 
-    log (LOG_DEBUG, "dir_open %s", rep);
+    logf (LOG_DEBUG, "dir_open %s", rep);
     if (!(dir = opendir(rep)))
     {
-        log (LOG_WARN|LOG_ERRNO, "opendir %s", rep);
+        logf (LOG_WARN|LOG_ERRNO, "opendir %s", rep);
         if (errno != ENOENT)
             exit (1);
         return NULL;
     }
     if (!(entry = malloc (sizeof(*entry) * entry_max)))
     {
-        log (LOG_FATAL|LOG_ERRNO, "malloc");
+        logf (LOG_FATAL|LOG_ERRNO, "malloc");
         exit (1);
     }    
     while ((dent = readdir (dir)))
@@ -58,7 +61,7 @@ struct dir_entry *dir_open (const char *rep)
 
             if (!(entry_n = malloc (sizeof(*entry) * (entry_max + 100))))
             {
-                log (LOG_FATAL|LOG_ERRNO, "malloc");
+                logf (LOG_FATAL|LOG_ERRNO, "malloc");
                 exit (1);
             }
             memcpy (entry_n, entry, idx * sizeof(*entry));
@@ -68,7 +71,7 @@ struct dir_entry *dir_open (const char *rep)
         }
         if (!(entry[idx].name = malloc (strlen(dent->d_name)+1)))
         {
-            log (LOG_FATAL|LOG_ERRNO, "malloc");
+            logf (LOG_FATAL|LOG_ERRNO, "malloc");
             exit (1);
         }
         strcpy (entry[idx].name, dent->d_name);

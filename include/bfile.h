@@ -4,9 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  $Log: bfile.h,v $
- Revision 1.6  1994-09-14 13:10:35  quinn
- Small changes
+ Revision 1.7  1995-09-04 12:33:35  adam
+ Various cleanup. YAZ util used instead.
 
+ * Revision 1.6  1994/09/14  13:10:35  quinn
+ * Small changes
+ *
  * Revision 1.5  1994/08/24  08:45:52  quinn
  * Using mfile.
  *
@@ -21,7 +24,7 @@
 #ifndef BFILE_H
 #define BFILE_H
 
-#include <util.h>
+#include <alexutil.h>
 #include <mfile.h>
 
 #define bf_blocksize(bf) mf_blocksize(bf->mf)

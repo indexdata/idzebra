@@ -4,14 +4,18 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.1  1994-11-04 13:21:28  quinn
+ * Revision 1.2  1995-09-04 12:33:56  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.1  1994/11/04  13:21:28  quinn
  * Working.
  *
  */
 
 /* TODO: mem management */
 
-#include <util.h>
+#include <stdio.h>
+#include <alexutil.h>
 
 #include <rset.h>
 

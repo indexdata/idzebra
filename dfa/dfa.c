@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.2  1995-01-25 11:30:50  adam
+ * Revision 1.3  1995-09-04 12:33:26  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.2  1995/01/25  11:30:50  adam
  * Simple error reporting when parsing regular expressions.
  * Memory usage reduced.
  *
@@ -20,7 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <util.h>
+#include <alexutil.h>
 #include "dfap.h"
 #include "imalloc.h"
 
