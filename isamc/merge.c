@@ -486,11 +486,34 @@ static char *hexdump(unsigned char *p, int len, char *buff) {
  *       may make sense to reserve some extra space...
 */
 
+
+static void isamh_reduceblock(ISAMH is, ISAMH_PP pp, int numKeys)
+{
+  if (pp->is->method->debug > 2)
+     logf(LOG_LOG,"isamh_reduce: block p=%d c=%d o=%d nk=%d ", 
+       pp->pos, pp->cat, pp->offset, numKeys);
+  if (pp->pos != 0)
+    return; /* already allocated in some size */
+  while ( ( pp->cat > 0 ) &&
+          ( pp->offset < is->method->filecat[pp->cat-1].bsize) &&
+          ( numKeys < is->method->filecat[pp->cat-1].mblocks) )
+    pp->cat--;
+  pp->pos =  isamh_alloc_block(is,pp->cat) ;
+  if (pp->is->method->debug > 2)
+     logf(LOG_LOG,"isamh_reduced block p=%d to c=%d o=%d nk=%d bs=%d", 
+         pp->pos, pp->cat, pp->offset, numKeys, 
+         is->method->filecat[pp->cat].bsize);
+} /* reduceblock */
+
+
 ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
 {
 
-    ISAMH_PP pp; 
-
+    ISAMH_PP pp;      /* always the last pp in the chain */ 
+    ISAMH_PP firstpp; /* always the first one in the chain, may ==pp */
+    ISAMH_PP prevpp;  /* the one that points to pp, may be null or ==firstpp */
+                      /* needed to postpone the writing of its next field until */
+                      /* pp itself has been categorized */
     char i_item[128];
     char *i_item_ptr;
     int i_more=1, i_mode;
@@ -500,29 +523,39 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
     char *bufptr;
     int codelen;
 
-    ISAMH_PP firstpp;
     void *r_clientData;   /* encode client data */
     int newblock;
     int newcat;
     int maxkeys;
     int maxsize;
     int retval;
+    int maxcat;
             
     pp = firstpp = isamh_pp_open (is, ipos);
+    prevpp =0; /* only used when new blocks allocated */
+    
     assert (*is->method->code_reset);
     
+    maxcat=0; /* find the largest block size for default allocation */
+    for ( newcat=0; is->method->filecat[newcat].mblocks > 0; newcat++)
+      if ( is->method->filecat[newcat].bsize > 
+           is->method->filecat[maxcat].bsize)
+        maxcat = newcat;
+   
     if ( 0==ipos)
     {   /* new block */
-      pp->cat=0; /* start small... */
-      pp->pos = isamh_alloc_block(is,pp->cat);
+      pp->cat=maxcat; /* start large... */
+      pp->pos = 0; /* not allocated yet */ 
       pp->size= pp->offset = ISAMH_BLOCK_OFFSET_1 ;
+      pp->buf=xrealloc(pp->buf,is->method->filecat[maxcat].bsize);
       r_clientData = (*is->method->code_start)(ISAMH_ENCODE);
       if (pp->is->method->debug > 2)
-        logf(LOG_LOG,"isamh_append: starting with new block %d",pp->pos);
+        logf(LOG_LOG,"isamh_append: starting with new block");
     }
     else
     { /* existing block */
       if (isamh_block(firstpp->lastblock) == firstpp->pos) 
+        /*!!! TODO: BUG: Compare whole addresses !!! (later) */
       { /* only one block, we have it already */
         pp->offset=ISAMH_BLOCK_OFFSET_1;
         if (pp->is->method->debug > 2)
@@ -581,39 +614,86 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
 
           if ( pp->offset + codelen > maxsize ) 
           { /* oops, block full, do something */
-            newcat = pp->cat;
+            newcat = maxcat; /* start with a large block again */
             maxkeys = is->method->filecat[pp->cat].mblocks;  /* max keys */
             if (pp->is->method->debug > 2)
               logf(LOG_LOG,"isamh_append: need new block: %d > %d (k:%d/%d)", 
                   pp->offset + codelen, maxsize, firstpp->numKeys,maxkeys );
-            if ( (maxkeys>0) && (firstpp->numKeys > maxkeys) ) 
-            { /* time to increase block size */
-               newcat++;
-               maxsize = is->method->filecat[newcat].bsize;
-               pp->buf=xrealloc(pp->buf,maxsize);
-               if (pp->is->method->debug > 2)
-                 logf(LOG_LOG,"isamh_append: increased to cat %d ",newcat);
-            }
 
-            newblock = isamh_alloc_block(is,newcat);
-            pp->next = isamh_addr(newblock,newcat);
-            if (firstpp!=pp)
-            {  /* not first block, write to disk already now */
-              isamh_buildlaterblock(pp);
-              isamh_write_block(is,pp->cat,pp->pos,pp->buf);    
+            newblock = 0; 
+            pp->next = 0; 
+            
+            /* Four possibilities: */
+            if (prevpp!=0) 
+            {  /* 1: we have a prevpp that can go on the disk */
+               /*    reduce pp, set next ptr, and store block */
+               /*    set pp up as new last block, and remember the just */
+               /*    filled as (pp) the new prev */
+              assert(pp!=firstpp); 
+              isamh_reduceblock(is,pp,firstpp->numKeys);
+              prevpp->next=isamh_addr(pp->pos,pp->cat);
+              isamh_buildlaterblock(prevpp);
+              isamh_write_block(is,prevpp->cat,prevpp->pos,prevpp->buf);
+              if (pp->is->method->debug > 2)
+                logf(LOG_LOG,"isamh_append N1: Wrote prevpp (%d:%d) -> %d:%d",
+                      prevpp->pos, prevpp->cat, pp->pos, pp->cat);
+              isamh_pp_close(prevpp); /* it's done its job */
+              prevpp = pp;
+              pp=isamh_pp_open(is,isamh_addr(0,maxcat)); /* start a large one */ 
+              pp->size=pp->offset=ISAMH_BLOCK_OFFSET_N ;
+              pp->next=0;
+              pp->lastblock=0;
+            }
+            else if ( (firstpp!=pp) && (firstpp->next != 0))
+            { /* 2: we are working at end of list, but have no prevpp */
+              /*    some block (already on disk) points to pp */ 
+              /*    set the newly filled block as prev, don't save yet */
+              /*    allocate new pp */
+              if (pp->is->method->debug > 2)
+                logf(LOG_LOG,"isamh_append N2: set up a new prevpp (%d:%d)",
+                      pp->pos, pp->cat);
+              prevpp = pp;
+              pp=isamh_pp_open(is,isamh_addr(0,maxcat)); /* start a large one */ 
+              pp->size=pp->offset=ISAMH_BLOCK_OFFSET_N ;
+              pp->next=0;
+              pp->lastblock=0;              
+            }
+            else if ( (firstpp!=pp) && (firstpp->next==0))
+            { /* 3: we have earlier allocated pp as the second block */
+              /*    reduce it to get its address. Set first->next to it */
+              /*    move it to prevpp, and create a new pp */
+              isamh_reduceblock(is,pp,firstpp->numKeys);
+              firstpp->next=isamh_addr(pp->pos,pp->cat);
+              if (pp->is->method->debug > 2)
+                logf(LOG_LOG,"isamh_append N3: set up a new firstpp->next (%d:%d)",
+                      pp->pos, pp->cat);
+              prevpp=pp;
+              pp=isamh_pp_open(is,isamh_addr(0,maxcat)); /* start a large one */ 
+              pp->size=pp->offset=ISAMH_BLOCK_OFFSET_N ;
+              pp->next=0;
+              pp->lastblock=0;                            
             }
             else 
-            {  /* we had only one block, allocate a second buffer */
-              pp = isamh_pp_open(is,0);
+            { /* 4: firstpp itself has got full. */
+              /* allocate a new pp for it, store nothing */
+              assert(firstpp==pp);
+              assert(firstpp->next==0);
+              if (pp->is->method->debug > 2)
+                logf(LOG_LOG,"isamh_append N4: allocated new pp for full first (%d:%d)",
+                      firstpp->pos, firstpp->cat);
+              pp=isamh_pp_open(is,isamh_addr(0,maxcat)); /* start a large one */ 
+              pp->size=pp->offset=ISAMH_BLOCK_OFFSET_N ;
+              pp->next=0;
+              pp->lastblock=0;       
             }
-            pp->cat = newcat; 
-            pp->pos = newblock;
-         
+
+            maxsize = is->method->filecat[pp->cat].bsize;
             pp->size=pp->offset=ISAMH_BLOCK_OFFSET_N ;
             pp->next=0;
             pp->lastblock=0;
             if (pp->is->method->debug > 2)
-              logf(LOG_LOG,"isamh_append: got a new block %d:%d",pp->cat,pp->pos);
+              logf(LOG_LOG,"isamh_append: got a new block c=%d p=%d",pp->cat,pp->pos);
+
 
             /* reset the encoding, and code again */
             (*is->method->code_reset)(r_clientData);
@@ -643,16 +723,32 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
     
     } /* while */
 
+    isamh_reduceblock(is,pp,firstpp->numKeys);
+      /* may be the same as firstpp! */
+
+    if (prevpp)
+    { /* Write the prev block we have been holding off */
+      assert(prevpp->pos);
+      prevpp->next = isamh_addr(pp->pos, pp->cat);
+      isamh_buildlaterblock(prevpp);
+      isamh_write_block(is,prevpp->cat,prevpp->pos,prevpp->buf);
+      if (firstpp->next==0) /* can happen if extending many blocks */
+        firstpp->next=isamh_addr(prevpp->pos,prevpp->cat);
+      isamh_pp_close(prevpp);
+    }
     /* Write the last (partial) block, if needed. */
     if (pp!=firstpp) 
     {
       pp->next=0; /* just to be sure */
+      if (firstpp->next==0)
+        firstpp->next=isamh_addr(pp->pos,pp->cat);
       isamh_buildlaterblock(pp);
       isamh_write_block(is,pp->cat,pp->pos,pp->buf);    
     }
     
     /* update first block and write it */
     firstpp->lastblock = isamh_addr(pp->pos,pp->cat);
+    isamh_reduceblock(is,firstpp,firstpp->numKeys);
     isamh_buildfirstblock(firstpp);
     isamh_write_block(is,firstpp->cat,firstpp->pos,firstpp->buf);
 
@@ -663,7 +759,7 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
     /* get return value (before it disappears at close! */
     retval = isamh_addr(firstpp->pos,firstpp->cat);
 
-    isamh_pp_close(firstpp);    
+    isamh_pp_close(firstpp);
     
     return retval;
     
@@ -672,8 +768,11 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
 
 /*
  * $Log: merge.c,v $
- * Revision 1.18  1999-07-13 15:24:50  heikki
- * Removed the one-block append, it had a serious flaw.
+ * Revision 1.19  1999-07-14 12:12:07  heikki
+ * Large-block isam-h  (may not work too well... Abandoning for isam-d)
+ *
+ * Revision 1.17  1999/07/13 14:22:17  heikki
+ * Better allocation strategy in isamh_merge
  *
  * Revision 1.16  1999/07/08 14:23:27  heikki
  * Fixed a bug in isamh_pp_read and cleaned up a bit
