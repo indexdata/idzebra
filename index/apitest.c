@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 1995-2000, Index Data
+ * All rights reserved.
+ *
+ * $Header: /home/cvsroot/idis/index/Attic/apitest.c,v 1.10 2000-09-06 08:59:36 adam Exp $
+ */
 
 #include <stdio.h>
 
@@ -100,7 +106,10 @@ int main (int argc, char **argv)
        various functions */
     ODR odr_input, odr_output;
     
-    /* zh is our Zebra Handle - describes the server as a whole */
+    /* zs is our Zebra Service - decribes whole server */
+    ZebraService zs;
+
+    /* zh is our Zebra Handle - describes database session */
     ZebraHandle zh;
     
     /* the database we specify in our example */
@@ -114,19 +123,19 @@ int main (int argc, char **argv)
     odr_input = odr_createmem (ODR_DECODE);    
     odr_output = odr_createmem (ODR_ENCODE);    
     
-   /* open Zebra */
-    zh = zebra_open ("zebra.cfg");
-    if (!zh)
+    zs = zebra_start ("zebra.cfg");
+    if (!zs)
     {
-	printf ("Couldn't init zebra\n");
+	printf ("zebra_start failed; missing zebra.cfg?\n");
 	exit (1);
     }
-
-    /* This call controls the logging facility in YAZ/Zebra */
-#if 0
-    log_init(LOG_ALL, "", "out.log");
-#endif
-
+    /* open Zebra */
+    zh = zebra_open (zs);
+    if (!zh)
+    {
+	printf ("zebras_open failed\n");
+	exit (1);
+    }
     /* Each argument to main will be a query */
     for (argno = 1; argno < argc; argno++)
     {
@@ -257,5 +266,6 @@ int main (int argc, char **argv)
     odr_destroy (odr_input);
     odr_destroy (odr_output);
     zebra_close (zh);
+    zebra_stop (zs);
     return 0;
 }

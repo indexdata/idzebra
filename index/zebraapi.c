@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.35  2000-07-07 12:49:20  adam
+ * Revision 1.36  2000-09-06 08:59:36  adam
+ * Using read-only (for now) for server.
+ *
+ * Revision 1.35  2000/07/07 12:49:20  adam
  * Optimized resultSetInsert{Rank,Sort}.
  *
  * Revision 1.34  2000/06/09 13:56:38  ian
@@ -216,7 +219,7 @@ ZebraHandle zebra_open (ZebraService zs)
     return zh;
 }
 
-static int zebra_register_activate (ZebraService zh);
+static int zebra_register_activate (ZebraService zh, int rw);
 static int zebra_register_deactivate (ZebraService zh);
 
 ZebraService zebra_start (const char *configName)
@@ -230,11 +233,11 @@ ZebraService zebra_start (const char *configName)
     zh->stop_flag = 0;
     zh->active = 0;
     zebra_mutex_cond_init (&zh->session_lock);
-    zebra_register_activate (zh);
+    zebra_register_activate (zh, 0);
     return zh;
 }
 
-static int zebra_register_activate (ZebraService zh)
+static int zebra_register_activate (ZebraService zh, int rw)
 {
     if (zh->active)
 	return 0;
@@ -289,17 +292,17 @@ static int zebra_register_activate (ZebraService zh)
 	    passwd_db_file (zh->passwd_db, res_get (zh->res, "passwd"));
     }
 
-    if (!(zh->records = rec_open (zh->bfs, 1, 0)))
+    if (!(zh->records = rec_open (zh->bfs, rw, 0)))
     {
 	logf (LOG_WARN, "rec_open");
 	return -1;
     }
-    if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 80, 1, 0)))
+    if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 80, rw, 0)))
     {
 	logf (LOG_WARN, "dict_open");
 	return -1;
     }
-    if (!(zh->sortIdx = sortIdx_open (zh->bfs, 0)))
+    if (!(zh->sortIdx = sortIdx_open (zh->bfs, rw)))
     {
 	logf (LOG_WARN, "sortIdx_open");
 	return -1;
@@ -307,7 +310,7 @@ static int zebra_register_activate (ZebraService zh)
     if (res_get_match (zh->res, "isam", "s", ISAM_DEFAULT))
     {
 	struct ISAMS_M_s isams_m;
-	if (!(zh->isams = isams_open (zh->bfs, FNAME_ISAMS, 1,
+	if (!(zh->isams = isams_open (zh->bfs, FNAME_ISAMS, rw,
 				      key_isams_m(zh->res, &isams_m))))
 	{
 	    logf (LOG_WARN, "isams_open");
@@ -317,7 +320,7 @@ static int zebra_register_activate (ZebraService zh)
 #if ZMBOL
     else if (res_get_match (zh->res, "isam", "i", ISAM_DEFAULT))
     {
-	if (!(zh->isam = is_open (zh->bfs, FNAME_ISAM, key_compare, 1,
+	if (!(zh->isam = is_open (zh->bfs, FNAME_ISAM, key_compare, rw,
 				  sizeof (struct it_key), zh->res)))
 	{
 	    logf (LOG_WARN, "is_open");
@@ -328,7 +331,7 @@ static int zebra_register_activate (ZebraService zh)
     {
 	struct ISAMC_M_s isamc_m;
 	if (!(zh->isamc = isc_open (zh->bfs, FNAME_ISAMC,
-				    1, key_isamc_m(zh->res, &isamc_m))))
+				    rw, key_isamc_m(zh->res, &isamc_m))))
 	{
 	    logf (LOG_WARN, "isc_open");
 	    return -1;
@@ -339,7 +342,7 @@ static int zebra_register_activate (ZebraService zh)
 	struct ISAMD_M_s isamd_m;
 	
 	if (!(zh->isamd = isamd_open (zh->bfs, FNAME_ISAMD,
-				      1, key_isamd_m(zh->res, &isamd_m))))
+				      rw, key_isamd_m(zh->res, &isamd_m))))
 	{
 	    logf (LOG_WARN, "isamd_open");
 	    return -1;
@@ -347,7 +350,7 @@ static int zebra_register_activate (ZebraService zh)
     }
 #endif
     zh->zei = zebraExplain_open (zh->records, zh->dh,
-				 zh->res, 1, 0 /* rGroup */,
+				 zh->res, rw, 0 /* rGroup */,
 				 explain_extract);
     if (!zh->zei)
     {
@@ -377,7 +380,7 @@ void zebra_admin_start (ZebraHandle zh)
     zh->errCode = 0;
     zebra_mutex_cond_lock (&zs->session_lock);
     if (!zs->stop_flag)
-	zebra_register_activate(zs);
+	zebra_register_activate(zs, 0);
     zebra_mutex_cond_unlock (&zs->session_lock);
 }
 
