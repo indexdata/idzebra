@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.14  1996-04-12 07:01:55  adam
+ * Revision 1.15  1996-04-18 16:02:56  adam
+ * Changed logging a bit.
+ * Removed warning message when commiting flat shadow files.
+ *
+ * Revision 1.14  1996/04/12  07:01:55  adam
  * Yet another bug fix (next_block was initialized to 0; now set to 1).
  *
  * Revision 1.13  1996/04/09 14:48:49  adam
@@ -107,7 +111,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
     int hash_bytes;
    
     cf->rmf = mf; 
-    logf (LOG_LOG, "cf_open %s", cf->rmf->name);
+    logf (LOG_LOG, "cf_open %s %s", cf->rmf->name, wflag ? "rdwr" : "rd");
     sprintf (path, "%s-b", fname);
     if (!(cf->block_mf = mf_open (area, path, block_size, wflag)))
     {
@@ -147,6 +151,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         assert (cf->head.hash_size > 2);
         hash_bytes = cf->head.hash_size * sizeof(int);
         assert (cf->head.next_bucket > 0);
+        assert (cf->head.next_block > 0);
         if (cf->head.state == 1)
             cf->array = xmalloc (hash_bytes);
         else
@@ -360,6 +365,7 @@ static void cf_moveto_flat (CFile cf)
     xfree (cf->parray);
     cf->parray = NULL;
     cf->head.state = 2;
+    cf->dirty = 1;
 }
 
 static int cf_lookup (CFile cf, int no)
@@ -485,13 +491,13 @@ int cf_write (CFile cf, int no, int offset, int num, const void *buf)
 
 int cf_close (CFile cf)
 {
-    logf (LOG_LOG, "cf_close %s", cf->rmf->name);
     logf (LOG_LOG, "hits=%d miss=%d bucket_in_memory=%d total=%d",
           cf->no_hits, cf->no_miss, cf->bucket_in_memory,
           cf->head.next_bucket - cf->head.first_bucket);
     flush_bucket (cf, -1);
     if (cf->dirty)
     {
+        logf (LOG_LOG, "dirty. write header");
         mf_write (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
         write_head (cf);
     }
@@ -501,6 +507,7 @@ int cf_close (CFile cf)
     xfree (cf->parray);
     xfree (cf->iobuf);
     xfree (cf);
+    logf (LOG_LOG, "cf_close %s", cf->rmf->name);
     return 0;
 }
 

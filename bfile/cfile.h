@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.h,v $
- * Revision 1.7  1996-02-07 14:03:48  adam
+ * Revision 1.8  1996-04-18 16:02:56  adam
+ * Changed logging a bit.
+ * Removed warning message when commiting flat shadow files.
+ *
+ * Revision 1.7  1996/02/07  14:03:48  adam
  * Work on flat indexed shadow files.
  *
  * Revision 1.6  1996/02/07  10:08:45  adam
@@ -32,7 +36,7 @@
 #ifndef CFILE_H
 #define CFILE_H
 
-#define HASH_BUCKET 31
+#define HASH_BUCKET 15
 
 struct CFile_hash_bucket {
     struct CFile_ph_bucket {

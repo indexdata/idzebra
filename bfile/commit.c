@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.9  1996-04-12 07:01:57  adam
+ * Revision 1.10  1996-04-18 16:02:56  adam
+ * Changed logging a bit.
+ * Removed warning message when commiting flat shadow files.
+ *
+ * Revision 1.9  1996/04/12  07:01:57  adam
  * Yet another bug fix (next_block was initialized to 0; now set to 1).
  *
  * Revision 1.8  1996/02/07 14:03:49  adam
@@ -94,16 +98,16 @@ static void cf_commit_flat (CFile cf)
     fp = xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
-        if (hno == cf->head.next_bucket || hno == cf->head.flat_bucket-1)
+        if (hno == cf->head.flat_bucket-1)
         {
             for (i = 0; i < (HASH_BSIZE/sizeof(int)); i++)
                 fp[i] = 0;
         }
-        if (!mf_read (cf->hash_mf, hno, 0, 0, fp))
+        if (!mf_read (cf->hash_mf, hno, 0, 0, fp) &&
+            hno != cf->head.flat_bucket-1)
         {
-            logf (LOG_WARN, "read index block hno=%d (%d-%d) commit",
-                             hno, cf->head.next_bucket,
-                             cf->head.flat_bucket-1);
+            logf (LOG_FATAL, "read index block hno=%d (%d-%d) commit",
+                  hno, cf->head.next_bucket, cf->head.flat_bucket-1);
         }
         for (i = 0; i < (HASH_BSIZE/sizeof(int)); i++)
         {
