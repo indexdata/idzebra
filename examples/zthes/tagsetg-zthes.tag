@@ -1,10 +1,11 @@
 # TagSet-G Tags
-# $Id: tagsetg.tag,v 1.1 2002-11-08 01:07:10 mike Exp $
+# $Id: tagsetg-zthes.tag,v 1.1 2002-12-01 23:25:06 mike Exp $
+# Hacked for Zthes: compare with ../../tab/tagsetg.tag
 name tagsetg
 reference TagsetG
 type 2
 
-tag	1	termName				string
+tag	1	title/termName				string
 tag	2	author					string
 tag	3	publicationPlace			string
 tag	4	publicationDate/date-of-publication	string
@@ -39,3 +40,4 @@ tag	32	contributor				string
 tag	33	source					string
 tag	34	coverage				string
 tag	35	private					string
+tag	36	sourceDb				string

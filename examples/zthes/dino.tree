@@ -1,43 +1,43 @@
 Dinosauria	The MRCA of Saurischia and Ornithischia, and its descendants
  *** Eoraptor	The most basal known dinosaur
- Saurischia
-  Sauropodomorpha
+ Saurischia	Everything closer to Megalosaurus than to Iguanodon
+  Sauropodomorpha	Sauropods and their ancestors and close relatives
    Brontosauria
     Plateosauria
      Massospondylidae
       Yunnanosaurinae
        *** Yunnanosaurus
-    Sauropoda
+    Sauropoda	Huge, long-necked herbivores
      Eusauropoda
-      *** Jobaria
+      *** Jobaria	A surprisingly primitive Early Cretaceous form
       Neosauropoda
-       Diplodocimorpha
+       Diplodocimorpha	Diplodocus, Apatosaurus, Seismosaurus and kin
 	Rebbachisauridae
 	 Rebbachisaurinae
-	  *** Rebbachisaurus
+	  *** Rebbachisaurus	Had a sail on its back
        Macronaria
 	Camarasauromorpha
 	 Titanosauriformes
 	  Brachiosauridae
-	   *** Sauroposeidon
+	   *** Sauroposeidon	The tallest known dinosaur (18m)
 	  Titanosauria
 	   Eutitanosauria
-	    *** Argentinosaurus
-  Theropoda
+	    *** Argentinosaurus	The heaviest known dinosaur (100 tonnes)
+  Theropoda		Bipedal carnivores
    Neotheropoda
-    Ceratosauria
+    Ceratosauria	May be polyphyletic if neoceratosaurs are tenanuran
      Coelophysoidea
       Coelophysidae
        Coelophysinae
-        *** Dilophosaurus
+        *** Dilophosaurus	Had a pair of long crests on its nose
      Neoceratosauria
       *** Xenotarsosaurus
     Tetanurae
-     Spinosauria
+     Spinosauria	Large carnivores with sails on their backs
       Spinosauridae
        Spinosaurinae
 	Irritatorini
-	 *** Irritator
+	 *** Irritator	
      Avetheropoda		aka. Neotetanurae
       Carnosauria		Previously used just to mean "large theropods"
        *** Fukuiraptor
@@ -51,68 +51,69 @@ Dinosauria	The MRCA of Saurischia and Ornithischia, and its descendants
 	 Arctometatarsalia
 	  Ornithomimosauria
 	   *** Harpymimus
-	 Tyrannosauroidea
+	 Tyrannosauroidea	Includes early form Eotyrannus
 	  Tyrannosauridae
 	   Tyrannosaurinae
-	    Tyrannosaurini
+	    Tyrannosaurini	Could be defined as {Tyrannosaurs+Tarbosaurus}
 	     *** Tyrannosaurus
 	Maniraptora
-	 Oviraptorosauria
+	 Oviraptorosauria	Includes Caenagnathidae
 	  Oviraptoridae
-	   *** Oviraptor
-	 Therizinosauria
+	   *** Oviraptor	Some specimens found brooding their nests
+	 Therizinosauria	Truly freaky long-necked, huge-clawed fatsos
 	  Therizinosauroidea
 	   Therizinosauridae
 	    *** Nanshiungosaurus
 	 Paraves
 	  Eumaniraptora
 	   Deinonychosauria
-	    Troodontidae
+	    Troodontidae	Highest encephalisation quotient on known dinos
 	     *** Byronosaurus
 	    Dromaeosauridae
 	     Velociraptorinae
-	      *** Velociraptor
+	      *** Velociraptor	Much smaller in real life than in Jurassic Park
 	   Avialae
-	    Aves
+	    Aves		Birds, including modern birds
 	     Metornithes
-	      Alvarezsauria
+	      Alvarezsauria	Short, stong args; long, gracile legs.  Weird
 	       Alvarezsauridae
-	        Mononykinae
+	        Mononykinae	Hands had only a single, spike-like finger
 	         *** Parvicursor
- Ornithischia
+ Ornithischia	Everything closer to Iguanodon than to Megalosaurus
   Genasauria
-   Thyreophora
+   Thyreophora	The armoured dinosaurs, ankylosaurs and stegosaurs
     Thyreophoroidea
      Eurypoda
-      Stegosauria
+      Stegosauria	Single or double row of plates down the back
        Stegosauridae
-	*** Kentrosaurus
-      Ankylosauria
+	*** Kentrosaurus	Had spikes on its back instead of plates
+      Ankylosauria	Heavily armoured, above and below
        *** Minmi
-   Cerapoda
-    Marginocephalia
+   Cerapoda		Defined as {Triceratops+Iguanodon}
+    Marginocephalia	Defined as {Triceratops+Pachycephalosaurus}
      Ceratopsia
-      Neoceratopsia
+      Neoceratopsia	Everything closer to Triceratops than to Psittacosaurus
        *** Udanoceratops
        Coronosauria
 	Ceratopsoidea
 	 Ceratopsomorpha
-	  *** Zuniceratops
-     Pachycephalosauria
+	  Ceratopsidae	{Chasmosaurinae+Centrosaurinae}
+	   *** Zuniceratops
+     Pachycephalosauria	Thick-headed, wide-bodied herbivorous bipeds
       *** Wannanosaurus
-    Ornithopoda
-     *** Qantassaurus
+    Ornithopoda		The least interesting of all the dinosaur groups
+     *** Qantassaurus	A profoundly dull basal ornithopod
      Euornithopoda
       Iguanodontia
        Euiguanodontia
 	Dryomorpha
 	 Ankylopollexia
 	  Styracosterna
-	   *** Lurdosaurus
+	   *** Lurdosaurus	Looks a lot like a fat Iguanodon
 	   Iguanodontoidea
 	    Hadrosauroidea
 	     Hadrosauridae
-	      Euhadrosauria
-	       Lambeosaurinae
+	      Euhadrosauria	Lambeosaurs (crested) + Hadrosaurs (not)
+	       Lambeosaurinae	The least dull of all the ornithopods
 		Lambeosaurini
 		 *** Corythosaurus

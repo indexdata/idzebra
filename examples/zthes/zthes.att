@@ -1,0 +1,28 @@
+# $Id: zthes.att,v 1.1 2002-12-01 23:25:06 mike Exp $
+# Zthes-1 Attribute Set
+name zthes
+reference Zthes
+
+att 1	termQualifier
+att 2	termType
+att 3	thesAdmin
+att 4	relatedTermID
+
+#   ###	The remainder of these "access points" are not really in the
+#	Zthes attribute set: see the definition in the profile at
+#		http://zthes.z3950.org/profile/current.html#3.5
+#	They're just here (for now) to shut Zebra up with all the
+#		Couldn't find att 'termId' in attset
+#	messages that it emits, until such time as we add the tab
+#	files for the Utility and Cross Domain attribute sets (which,
+#	by the way, I can't believe are not yet part of the Zebra
+#	distribution.)
+
+att 1001	termId
+att 1002	termName
+att 1003	termLanguage
+att 1004	termNote
+att 1005	termCreatedDate
+att 1006	termCreatedBy
+att 1007	termModifiedDate
+att 1008	termModifiedBy
