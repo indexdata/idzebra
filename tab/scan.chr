@@ -1,6 +1,6 @@
 # Danish/Swedish character map.
 #
-# $Id: scan.chr,v 1.1.6.1 2004-09-16 14:07:50 adam Exp $
+# $Id: scan.chr,v 1.1.6.2 2004-09-17 18:24:18 quinn Exp $
 
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.
@@ -31,11 +31,6 @@ map (&Aelig;)      ∆
 map (&Oslash;)     ÿ
 map (&Aring;)      ≈
 map (&Ouml;)       ÷
-
-map (^the )	#
-map (^The )	#
-map (^a )       #
-map (^A )	#
 
 map È…		e
 map ·		a
