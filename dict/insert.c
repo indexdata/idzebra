@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.11  1995-09-04 12:33:31  adam
+ * Revision 1.12  1995-09-06 10:34:44  adam
+ * Memcpy in clean_page edited to satisfy checkergcc.
+ *
+ * Revision 1.11  1995/09/04  12:33:31  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.10  1994/10/05  12:16:48  adam
@@ -162,7 +165,7 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
 }
 
 static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
-        	Dict_ptr subptr, char *userinfo)             
+                        Dict_ptr subptr, char *userinfo)             
 {
     char *np = xmalloc (dict->head.page_size);
     int i, slen, no = 0;
@@ -226,8 +229,17 @@ static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
         info2 += slen;
         ++no;
     }
+#if 1
+    memcpy ((char*)p+DICT_infoffset, 
+            (char*)np+DICT_infoffset,
+            info2 - ((char*)np+DICT_infoffset));
+    memcpy ((char*)p + ((char*)indxp2 - (char*)np),
+            indxp2,
+            ((char*) np+DICT_pagesize(dict)) - (char*)indxp2);
+#else
     memcpy ((char*)p+DICT_infoffset, (char*)np+DICT_infoffset,
             DICT_pagesize(dict)-DICT_infoffset);
+#endif
     DICT_size(p) = info2 - np;
     DICT_type(p) = 0;
     DICT_nodir(p) = no;
