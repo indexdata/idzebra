@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: marcread.c,v 1.14 2002-05-13 14:13:43 adam Exp $
+ * $Id: marcread.c,v 1.15 2002-05-28 21:10:34 adam Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -168,9 +168,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
         }
         if (i > i0)
 	{
-	    data1_node *res = data1_mk_tag (p->dh, p->mem, "@", 0 /* attr */,
-                                            parent);
-            data1_mk_text_n (p->dh, p->mem, buf + i0, i - i0, res);
+            data1_mk_text_n (p->dh, p->mem, buf + i0, i - i0, parent);
 	}
 #if MARC_DEBUG
         fprintf (outf, "\n");

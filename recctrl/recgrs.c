@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: recgrs.c,v 1.50 2002-05-14 20:48:47 adam Exp $
+ * $Id: recgrs.c,v 1.51 2002-05-28 21:10:34 adam Exp $
  */
 
 #include <stdio.h>
@@ -615,7 +615,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
      * the overlap of schema and formatting which is inherent in the MARC
      * family)
      */
-    logf (LOG_DEBUG, "grs_retrieve: syntax mapping");
+    yaz_log (LOG_DEBUG, "grs_retrieve: syntax mapping");
     if (node->u.root.absyn)
         for (map = node->u.root.absyn->maptabs; map; map = map->next)
         {
@@ -631,7 +631,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
                 break;
             }
         }
-    logf (LOG_DEBUG, "grs_retrieve: schemaIdentifier");
+    yaz_log (LOG_DEBUG, "grs_retrieve: schemaIdentifier");
     if (node->u.root.absyn &&
 	node->u.root.absyn->reference != VAL_NONE &&
 	p->input_format == VAL_GRS1)
