@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.9 2004-08-23 13:06:46 adam Exp $
+/* $Id: tstisamb.c,v 1.10 2004-09-09 10:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -109,7 +109,7 @@ void tst_forward(ISAMB isb, int n)
     isamc_p = isamb_merge (isb, 0 /* new list */ , &isamc_i);
 
     /* read the entries */
-    pp = isamb_pp_open (isb, isamc_p);
+    pp = isamb_pp_open (isb, isamc_p, 2);
     
     for (i = 0; i<ri.max; i +=2 )
     {
@@ -126,7 +126,7 @@ void tst_forward(ISAMB isb, int n)
     }
     isamb_pp_close(pp);
     
-    pp = isamb_pp_open (isb, isamc_p);
+    pp = isamb_pp_open (isb, isamc_p, 2);
     for (i = 0; i<ri.max; i += 100)
     {
 	int x = -1;
@@ -165,7 +165,7 @@ void tst_insert(ISAMB isb, int n)
     isamc_p = isamb_merge (isb, 0 /* new list */ , &isamc_i);
 
     /* read the entries */
-    pp = isamb_pp_open (isb, isamc_p);
+    pp = isamb_pp_open (isb, isamc_p, 2);
     
     ri.no = 0;
     while(isamb_pp_read (pp, key_buf))

@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.24 2004-09-01 15:01:32 heikki Exp $
+/* $Id: rsbetween.c,v 1.25 2004-09-09 10:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -105,9 +105,10 @@ static void log2 (struct rset_between_rfd *p, char *msg, int cmp_l, int cmp_r)
 #endif
 
 RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
+            int scope,
             RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
     struct rset_between_info *info=
         (struct rset_between_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->rset_l = rset_l;
@@ -254,7 +255,7 @@ static int r_read_between (RSFD rfd, void *buf)
         else
         {
             p->level = 0;
-            cmp_l=2; /* past this record */
+            cmp_l=rfd->rset->scope; /* past this record */
         }
 #if RSBETWEEN_DEBUG
         log2( p, "after first L", cmp_l, cmp_r);
@@ -262,9 +263,9 @@ static int r_read_between (RSFD rfd, void *buf)
 
         while (cmp_l < 0)   /* l before m */
         {
-            if (cmp_l == -2)
+            if (cmp_l <= - rfd->rset->scope)  /* ==-2 */
                 p->level=0; /* earlier record */
-            if (cmp_l == -1)
+            if (cmp_l > - rfd->rset->scope)  /* == -1 */
             {
                 p->level++; /* relevant start tag */
 
@@ -284,12 +285,12 @@ static int r_read_between (RSFD rfd, void *buf)
                         }
                         else if (cmp_attr > 0)
                             break;
-                        else if (cmp_attr==-1) 
+                        else if (cmp_attr > - rfd->rset->scope)  /* == -1 */
                             p->more_attr = rset_read (p->rfd_attr, p->buf_attr);
                             /* if we had a forward that went all the way to
                              * the seqno, we could use that. But fwd only goes
                              * to the sysno */
-                        else if (cmp_attr==-2) 
+                        else if (cmp_attr <= - rfd->rset->scope) /* ==-2 */
                         {
                             p->more_attr = rset_forward( p->rfd_attr,
                                              p->buf_attr, p->buf_l);
@@ -303,7 +304,7 @@ static int r_read_between (RSFD rfd, void *buf)
             }
 #define NEWCODE 1 
 #if NEWCODE                
-            if (cmp_l==-2)
+            if (cmp_l <= - rfd->rset->scope )/* ==-2 */
             {
                 if (p->more_l) 
                 {
@@ -311,7 +312,7 @@ static int r_read_between (RSFD rfd, void *buf)
                     if (p->more_l)
                         cmp_l= (*kctrl->cmp)(p->buf_l, p->buf_m);
                     else
-                        cmp_l=2;
+                        cmp_l=rfd->rset->scope;  /*2*/
 #if RSBETWEEN_DEBUG
                     log2( p, "after forwarding L", cmp_l, cmp_r);
 #endif
@@ -328,7 +329,7 @@ static int r_read_between (RSFD rfd, void *buf)
                 cmp_l= (*kctrl->cmp)(p->buf_l, p->buf_m);
             }
             else
-                cmp_l=2; 
+                cmp_l=rfd->rset->scope;   /*2*/
 #if RSBETWEEN_DEBUG
             log2( p, "end of L loop", cmp_l, cmp_r);
 #endif
@@ -342,19 +343,19 @@ static int r_read_between (RSFD rfd, void *buf)
         if (p->more_r)
             cmp_r= (*kctrl->cmp)(p->buf_r, p->buf_m);
         else
-            cmp_r=2; 
+            cmp_r=rfd->rset->scope;  /*2*/
 #if RSBETWEEN_DEBUG
         log2( p, "after first R", cmp_l, cmp_r);
 #endif
         while (cmp_r < 0)   /* r before m */
         {
              /* -2, earlier record, don't count level */
-            if (cmp_r == -1)
+            if (cmp_r > -rfd->rset->scope) /* == -1 */
                 p->level--; /* relevant end tag */
             if (p->more_r)
             {
 #if NEWCODE                
-                if (cmp_r==-2)
+                if (cmp_r <= - rfd->rset->scope) /* == -2 */
                 {
                     p->more_r=rset_forward(p->rfd_r, p->buf_r, p->buf_m);
                 } else
@@ -370,7 +371,7 @@ static int r_read_between (RSFD rfd, void *buf)
 #endif
             }
             else
-                cmp_r=2; 
+                cmp_r=rfd->rset->scope;  /*2*/
 #if RSBETWEEN_DEBUG
         log2( p, "End of R loop", cmp_l, cmp_r);
 #endif
@@ -386,7 +387,7 @@ static int r_read_between (RSFD rfd, void *buf)
             log2( p, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
 #endif
             p->more_m = rset_read (p->rfd_m, p->buf_m);
-            if (cmp_l == 2)
+            if (cmp_l >= rfd->rset->scope)  /* == 2 */
                 p->level = 0;
             p->hits++;
             return 1;
@@ -399,7 +400,7 @@ static int r_read_between (RSFD rfd, void *buf)
             return 0;  /* ergo, nothing can be found. stop scanning */
         }
 #if NEWCODE                
-        if (cmp_l == 2)
+        if (cmp_l >= rfd->rset->scope) /* == 2 */
         {
             p->level = 0;
             p->more_m=rset_forward(p->rfd_m, p->buf_m,  p->buf_l);
@@ -408,7 +409,7 @@ static int r_read_between (RSFD rfd, void *buf)
             p->more_m = rset_read (p->rfd_m, p->buf_m);
         }
 #else
-        if (cmp_l == 2)
+        if (cmp_l >= rfd->rset->scope )  /* == 2 */
             p->level = 0;
         p->more_m = rset_read (p->rfd_m, p->buf_m);
 #endif

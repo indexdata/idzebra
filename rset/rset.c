@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.32 2004-09-03 14:59:50 heikki Exp $
+/* $Id: rset.c,v 1.33 2004-09-09 10:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -68,7 +68,8 @@ void rfd_delete_base(RSFD rfd)
 
 
 RSET rset_create_base(const struct rset_control *sel, 
-                      NMEM nmem, const struct key_control *kcontrol)
+                      NMEM nmem, const struct key_control *kcontrol,
+                      int scope)
 {
     RSET rnew;
     NMEM M;
@@ -89,6 +90,7 @@ RSET rset_create_base(const struct rset_control *sel,
     rnew->priv = 0;
     rnew->free_list=NULL;
     rnew->keycontrol=kcontrol;
+    rnew->scope=scope;
     return rnew;
 }
 
@@ -127,11 +129,11 @@ int rset_default_forward(RSFD rfd, void *buf,
                            const void *untilbuf)
 {
     int more=1;
-    int cmp=2;
+    int cmp=rfd->rset->scope;
     logf (LOG_DEBUG, "rset_default_forward starting '%s' (ct=%p rfd=%p)",
                     rfd->rset->control->desc, rfd->rset, rfd);
     /* key_logdump(LOG_DEBUG, untilbuf); */
-    while ( (cmp==2) && (more))
+    while ( (cmp>=rfd->rset->scope) && (more))
     {
         logf (LOG_DEBUG, "rset_default_forward looping m=%d c=%d",more,cmp);
         more=rset_read(rfd, buf);

@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.149 2004-09-01 15:01:32 heikki Exp $
+/* $Id: zrpn.c,v 1.150 2004-09-09 10:08:05 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -39,10 +39,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static const struct key_control it_ctrl={ 
     sizeof(struct it_key),
+    2, /* we have sysnos and seqnos in this key, nothing more */
     key_compare_it, 
     key_logdump_txt,   /* FIXME  - clean up these functions */
     key_get_seq,
 };
+
 
 const struct key_control *key_it_ctrl=&it_ctrl;
 
@@ -896,7 +898,8 @@ static RSET term_trunc (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     return rset_trunc (zh, grep_info->isam_p_buf,
                        grep_info->isam_p_indx, term_dst,
                        strlen(term_dst), rank_type, 1 /* preserve pos */,
-                       zapt->term->which, rset_nmem,key_it_ctrl);
+                       zapt->term->which, rset_nmem,
+                       key_it_ctrl,key_it_ctrl->scope);
 }
 
 
@@ -1401,7 +1404,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     else if (rset_no == 1)
         return (rset[0]);
     else
-        result = rsprox_create( rset_nmem, key_it_ctrl,
+        result = rsprox_create( rset_nmem, key_it_ctrl, key_it_ctrl->scope,
                        rset_no, rset,
                        1 /* ordered */, 0 /* exclusion */,
                        3 /* relation */, 1 /* distance */);
@@ -1445,7 +1448,7 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
     grep_info_delete (&grep_info);
     if (rset_no == 0)
         return rsnull_create (rset_nmem,key_it_ctrl);  
-    return rsmultior_create(rset_nmem, key_it_ctrl,
+    return rsmultior_create(rset_nmem, key_it_ctrl,key_it_ctrl->scope,
                             rset_no, rset);
 }
 
@@ -1490,7 +1493,7 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
     result = rset[0];
     /* FIXME - Use a proper rsmultiand */
     for (i = 1; i<rset_no; i++)
-        result= rsbool_create_and(rset_nmem,key_it_ctrl,
+        result= rsbool_create_and(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
                 result, rset[i] );
     return result;
 }
@@ -1712,7 +1715,8 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
                                     grep_info.isam_p_indx, term_dst,
                                     strlen(term_dst), rank_type,
                                     0 /* preserve position */,
-                                    zapt->term->which, rset_nmem, key_it_ctrl);
+                                    zapt->term->which, rset_nmem, 
+                                    key_it_ctrl,key_it_ctrl->scope);
         assert (rset[rset_no]);
         if (++rset_no >= (int) (sizeof(rset)/sizeof(*rset)))
             break;
@@ -1724,7 +1728,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
     for (i = 1; i<rset_no; i++)
     {
         /* FIXME - Use a proper multi-and */
-        result= rsbool_create_and(rset_nmem,key_it_ctrl,
+        result= rsbool_create_and(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
                 result, rset[i] );
     }
     return result;
@@ -1748,7 +1752,7 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     parms.temp_path = res_get (zh->res, "setTmpDir");
     result = rset_create (rset_kind_temp, &parms);
     */
-    result = rstemp_create( rset_nmem,key_it_ctrl,
+    result = rstemp_create( rset_nmem,key_it_ctrl,key_it_ctrl->scope,
                      res_get (zh->res, "setTmpDir") );
     rsfd = rset_open (result, RSETF_WRITE);
 
@@ -1927,7 +1931,8 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
              grep_info.isam_p_indx);
     rset = rset_trunc (zh, grep_info.isam_p_buf,
                        grep_info.isam_p_indx, term, strlen(term),
-                       flags, 1, term_type,rset_nmem,key_it_ctrl);
+                       flags, 1, term_type,rset_nmem,
+                       key_it_ctrl, key_it_ctrl->scope);
     grep_info_delete (&grep_info);
     return rset;
 }
@@ -2074,7 +2079,7 @@ static RSET rpn_search_xpath (ZebraHandle zh,
                 parms.printer = key_print_it;
                 rset = rset_create (rset_kind_between, &parms);
                 */
-                rset=rsbetween_create( rset_nmem,key_it_ctrl,
+                rset=rsbetween_create( rset_nmem,key_it_ctrl,key_it_ctrl->scope,
                         rset_start_tag, rset, rset_end_tag, rset_attr);
             }
             first_path = 0;
@@ -2201,13 +2206,16 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
         switch (zop->which)
         {
         case Z_Operator_and:
-            r = rsbool_create_and(rset_nmem,key_it_ctrl, rset_l,rset_r );
+            r = rsbool_create_and(rset_nmem,key_it_ctrl, key_it_ctrl->scope,
+                    rset_l,rset_r );
             break;
         case Z_Operator_or:
-            r = rsbool_create_or(rset_nmem,key_it_ctrl, rset_l,rset_r );
+            r = rsbool_create_or(rset_nmem,key_it_ctrl, key_it_ctrl->scope,
+                    rset_l,rset_r );
             break;
         case Z_Operator_and_not:
-            r = rsbool_create_not(rset_nmem,key_it_ctrl, rset_l,rset_r );
+            r = rsbool_create_not(rset_nmem,key_it_ctrl, key_it_ctrl->scope,
+                    rset_l,rset_r );
             break;
         case Z_Operator_prox:
             if (zop->u.prox->which != Z_ProximityOperator_known)
@@ -2230,7 +2238,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
                 
                 twosets[0] = rset_l;
                 twosets[1] = rset_r;
-                r=rsprox_create(rset_nmem,key_it_ctrl,
+                r=rsprox_create(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
                          2, twosets, 
                          *zop->u.prox->ordered,
                          (!zop->u.prox->exclusion ? 
@@ -2635,8 +2643,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                            &glist[i+before].term, mterm);
         rset = rset_trunc (zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
                            glist[i+before].term, strlen(glist[i+before].term),
-                           NULL, 0, zapt->term->which, rset_nmem, key_it_ctrl);
-
+                           NULL, 0, zapt->term->which, rset_nmem, 
+                           key_it_ctrl,key_it_ctrl->scope);
         ptr[j0]++;
         for (j = j0+1; j<ord_no; j++)
         {
@@ -2650,16 +2658,17 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                    rset_trunc (zh, &scan_info_array[j].list[ptr[j]].isam_p, 1,
                                glist[i+before].term,
                                strlen(glist[i+before].term), NULL, 0,
-                               zapt->term->which,rset_nmem,key_it_ctrl);
+                               zapt->term->which,rset_nmem,
+                               key_it_ctrl, key_it_ctrl->scope);
                 rset = rsbool_create_or(rset_nmem,key_it_ctrl,
-                            rset, rset2);
+                               key_it_ctrl->scope, rset, rset2);
                 /* FIXME - Use a proper multi-or */
 
                 ptr[j]++;
             }
         }
         if (limit_set)
-            rset = rsbool_create_and(rset_nmem,key_it_ctrl,
+            rset = rsbool_create_and(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
                             rset, rset_dup(limit_set));
         count_set (rset, &glist[i+before].occurrences);
         rset_delete (rset);
@@ -2700,7 +2709,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         rset = rset_trunc
                (zh, &scan_info_array[j0].list[before-1-ptr[j0]].isam_p, 1,
                 glist[before-1-i].term, strlen(glist[before-1-i].term),
-                NULL, 0, zapt->term->which,rset_nmem,key_it_ctrl);
+                NULL, 0, zapt->term->which,rset_nmem,
+                key_it_ctrl,key_it_ctrl->scope);
 
         ptr[j0]++;
 
@@ -2716,15 +2726,16 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                          &scan_info_array[j].list[before-1-ptr[j]].isam_p, 1,
                                     glist[before-1-i].term,
                                     strlen(glist[before-1-i].term), NULL, 0,
-                                    zapt->term->which, rset_nmem,key_it_ctrl);
+                                    zapt->term->which, rset_nmem,
+                                    key_it_ctrl, key_it_ctrl->scope);
                 rset = rsbool_create_and(rset_nmem,key_it_ctrl,
-                            rset, rset2);
+                            key_it_ctrl->scope, rset, rset2);
                 /* FIXME - multi-and ?? */
                 ptr[j]++;
             }
         }
         if (limit_set)
-            rset = rsbool_create_and(rset_nmem,key_it_ctrl,
+            rset = rsbool_create_and(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
                             rset, rset_dup(limit_set));
         count_set (rset, &glist[before-1-i].occurrences);
         rset_delete (rset);

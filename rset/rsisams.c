@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.12 2004-09-01 15:01:32 heikki Exp $
+/* $Id: rsisams.c,v 1.13 2004-09-09 10:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -60,10 +60,10 @@ struct rset_isams_info {
 };
 
 
-RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol,
+RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol, int scope,
             ISAMS is, ISAMS_P pos)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
     struct rset_isams_info *info;
     info = (struct rset_isams_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     rnew->priv=info;

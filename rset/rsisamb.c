@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.21 2004-09-01 15:01:32 heikki Exp $
+/* $Id: rsisamb.c,v 1.22 2004-09-09 10:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -64,10 +64,10 @@ struct rset_isamb_info {
     ISAMB_P pos;
 };
 
-RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol,
+RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol, int scope,
             ISAMB is, ISAMB_P pos)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
     struct rset_isamb_info *info;
     info = (struct rset_isamb_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->is=is;
@@ -100,7 +100,7 @@ RSFD r_open (RSET ct, int flag)
         ptinfo->buf = nmem_malloc (ct->nmem,ct->keycontrol->key_size);
         rfd->priv=ptinfo;
     }
-    ptinfo->pt = isamb_pp_open (info->is, info->pos);
+    ptinfo->pt = isamb_pp_open (info->is, info->pos, ct->scope );
     return rfd;
 }
 

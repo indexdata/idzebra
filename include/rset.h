@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.33 2004-09-01 15:01:32 heikki Exp $
+/* $Id: rset.h,v 1.34 2004-09-09 10:08:04 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -67,6 +67,8 @@ int rset_default_forward(RSFD rfd, void *buf,
 
 struct key_control {
     int key_size;
+    int scope;  /* default for what level we operate (book/chapter/verse) on*/
+                /* usual sysno/seqno is 2 */
     int (*cmp) (const void *p1, const void *p2);
     void (*key_logdump_txt) (int logmask, const void *p, const char *txt);
     zint (*getseq)(const void *p);
@@ -85,17 +87,35 @@ typedef struct rset
     char my_nmem; /* Should the nmem be destroyed with the rset?  */
                   /* 1 if created with it, 0 if passed from above */
     RSFD free_list; /* all rfd's allocated but not currently in use */
+    int scope;    /* On what level do we count hits and compare them? */
 } rset;
-/* rset is a "virtual base class", which will never exist on its own */
-/* all instances are rsets of some specific type, like rsisamb, or rsbool */
-/* They keep their own stuff behind the priv pointer. */
+/* rset is a "virtual base class", which will never exist on its own 
+ * all instances are rsets of some specific type, like rsisamb, or rsbool
+ * They keep their own stuff behind the priv pointer.  */
+
+/* On the old sysno-seqno type isams, the scope was hard-coded to be 2.
+ * This means that we count hits on the sysno level, and when matching an
+ * 'and', we consider it a match if both term occur within the same sysno.
+ * In more complex isams we can specify on what level we wish to do the
+ * matching and counting of hits. For example, we can have book / chapter /
+ * verse, and a seqno. Scope 2 means then "give me all verses that match",
+ * 3 would be chapters, 4 books. 
+ * The resolution tells how much of the occurences we need to return. If we 
+ * are doing some sort of proximity, we need to get the seqnos of all
+ * occurences, whereas if we are only counting hits, we do not need anything
+ * below the scope. Again 1 is seqnos, 2 sysnos (or verses), 3 books, etc.
+ */
+/* FIXME - Add a resolution, to decide on what level we want to return */
+/* hits. That can well be below scope, if we need to get seqnos for prox */
+/* or suchlike... */
 
 RSFD rfd_create_base(RSET rs);
 void rfd_delete_base(RSFD rfd);
 
 RSET rset_create_base(const struct rset_control *sel, 
                       NMEM nmem,
-                      const struct key_control *kcontrol);
+                      const struct key_control *kcontrol,
+                      int scope );
 void rset_delete(RSET rs);
 RSET rset_dup (RSET rs);
 
@@ -129,38 +149,48 @@ RSET rset_dup (RSET rs);
 #define rset_type(rs) ((rs)->control->desc)
 
 RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
+                    int scope, 
                     const char *temp_path);
 
 RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol);
 
 RSET rsbool_create_and( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
                         RSET rset_l, RSET rset_r);
 
 RSET rsbool_create_or ( NMEM nmem, const struct key_control *kcontrol,
+                        int scope,
                         RSET rset_l, RSET rset_r);
 
 RSET rsbool_create_not( NMEM nmem, const struct key_control *kcontrol,
+                        int scope,
                         RSET rset_l, RSET rset_r);
 
 RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
                         RSET rset_l, RSET rset_m, RSET rset_r, 
                         RSET rset_attr);
 
 RSET rsmultior_create( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
                       int no_rsets, RSET* rsets);
 
 RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
                     int rset_no, RSET *rset,
                     int ordered, int exclusion,
                     int relation, int distance);
 
 RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
                      ISAMB is, ISAMB_P pos);
 
 RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
                      ISAMC is, ISAMC_P pos);
 
 RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol,
+                        int scope,
                      ISAMS is, ISAMS_P pos);
 
 

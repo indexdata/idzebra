@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.48 2004-09-01 15:01:32 heikki Exp $
+/* $Id: rstemp.c,v 1.49 2004-09-09 10:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -79,9 +79,10 @@ struct rset_temp_rfd {
 };
 
 RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
+                    int scope, 
                     const char *temp_path)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
     struct rset_temp_info *info;
    
     info = (struct rset_temp_info *) nmem_malloc(rnew->nmem, sizeof(*info));

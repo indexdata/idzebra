@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.118 2004-09-09 09:07:12 adam Exp $
+/* $Id: index.h,v 1.119 2004-09-09 10:08:04 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -374,7 +374,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 RSET rset_trunc (ZebraHandle zh, ISAMS_P *isam_p, int no,
 		 const char *term, int length_term, const char *flags,
                  int preserve_position, int term_type, NMEM rset_nmem,
-                 const struct key_control *kctrl);
+                 const struct key_control *kctrl, int scope);
 
 void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       const char *db, int set,

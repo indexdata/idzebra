@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.46 2004-09-01 15:01:32 heikki Exp $
+/* $Id: rsbool.c,v 1.47 2004-09-09 10:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -105,9 +105,10 @@ struct rset_bool_rfd {
 
 static RSET rsbool_create_base( const struct rset_control *ctrl,
             NMEM nmem, const struct key_control *kcontrol,
+            int scope, 
             RSET rset_l, RSET rset_r)
 {
-    RSET rnew=rset_create_base(ctrl, nmem, kcontrol);
+    RSET rnew=rset_create_base(ctrl, nmem, kcontrol, scope);
     struct rset_bool_info *info;
     info = (struct rset_bool_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->rset_l = rset_l;
@@ -118,23 +119,29 @@ static RSET rsbool_create_base( const struct rset_control *ctrl,
 
 
 RSET rsbool_create_and( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
                         RSET rset_l, RSET rset_r)
 {
     return rsbool_create_base(rset_kind_and, nmem, kcontrol,
+                              scope,
                               rset_l, rset_r);
 }
 
 RSET rsbool_create_or( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
                        RSET rset_l, RSET rset_r)
 {
     return rsbool_create_base(rset_kind_or, nmem, kcontrol,
+                              scope,
                               rset_l, rset_r);
 }
 
 RSET rsbool_create_not( NMEM nmem, const struct key_control *kcontrol,
+                        int scope, 
                         RSET rset_l, RSET rset_r)
 {
     return rsbool_create_base(rset_kind_not, nmem, kcontrol,
+                              scope, 
                               rset_l, rset_r);
 }
 
@@ -209,9 +216,9 @@ static int r_forward (RSFD rfd, void *buf,
     struct rset_bool_rfd *p=(struct rset_bool_rfd *)rfd->priv;
     const struct key_control *kctrl=rfd->rset->keycontrol;
 
-    if ( p->more_l && ((kctrl->cmp)(untilbuf,p->buf_l)==2) )
+    if ( p->more_l && ((kctrl->cmp)(untilbuf,p->buf_l)>=rfd->rset->scope) )
         p->more_l = rset_forward(p->rfd_l, p->buf_l, untilbuf);
-    if ( p->more_r && ((kctrl->cmp)(untilbuf,p->buf_r)==2))
+    if ( p->more_r && ((kctrl->cmp)(untilbuf,p->buf_r)>=rfd->rset->scope))
         p->more_r = rset_forward(p->rfd_r, p->buf_r, untilbuf);
     p->tail=0; 
     return rset_read(rfd,buf); 
@@ -245,9 +252,9 @@ static int r_read_and (RSFD rfd, void *buf)
         if (p->more_l && p->more_r)
             cmp = (*kctrl->cmp)(p->buf_l, p->buf_r);
         else if (p->more_l)
-            cmp = -2;
+            cmp = -rfd->rset->scope;
         else
-            cmp = 2;
+            cmp = rfd->rset->scope;
 #if RSET_DEBUG
         logf (LOG_DEBUG, "r_read_and [%p] looping: m=%d/%d c=%d t=%d",
                         rfd, p->more_l, p->more_r, cmp, p->tail);
@@ -255,13 +262,13 @@ static int r_read_and (RSFD rfd, void *buf)
         (*kctrl->log_item)(LOG_DEBUG, p->buf_r, "right ");
 #endif
         if (!cmp)
-        {
+        {  /* cmp==0 */
             memcpy (buf, p->buf_l, kctrl->key_size);
             p->more_l = rset_read (p->rfd_l, p->buf_l);
             p->tail = 1;
         }
-        else if (cmp == 1)
-        {
+        else if ( (cmp>0) && (cmp<rfd->rset->scope))
+        {  /* typically cmp == 1 */
             memcpy (buf, p->buf_r, kctrl->key_size);
             p->more_r = rset_read (p->rfd_r, p->buf_r);
             p->tail = 1;
@@ -274,8 +281,8 @@ static int r_read_and (RSFD rfd, void *buf)
             p->hits++;
             return 1;
         }
-        else if (cmp == -1)
-        {
+        else if ( (cmp<0) && (-cmp<rfd->rset->scope))
+        {  /* cmp == -1 */
             memcpy (buf, p->buf_l, kctrl->key_size);
             p->more_l = rset_read (p->rfd_l, p->buf_l);
             p->tail = 1;
@@ -287,8 +294,8 @@ static int r_read_and (RSFD rfd, void *buf)
             p->hits++;
             return 1;
         }
-        else if (cmp > 1)  /* cmp == 2 */
-        {
+        else if (cmp >= rfd->rset->scope )  
+        {  /* cmp == 2 */
             if (p->tail)
             {
                 memcpy (buf, p->buf_r, kctrl->key_size);
@@ -316,8 +323,8 @@ static int r_read_and (RSFD rfd, void *buf)
                     return 0; /* no point in reading further */
             }
         }
-        else  /* cmp == -2 */
-        {
+        else  
+        { /* cmp == -2 */
             if (p->tail)
             {
                 memcpy (buf, p->buf_l, kctrl->key_size);
@@ -364,11 +371,11 @@ static int r_read_or (RSFD rfd, void *buf)
         if (p->more_l && p->more_r)
             cmp = (*kctrl->cmp)(p->buf_l, p->buf_r);
         else if (p->more_r)
-            cmp = 2;
+            cmp = rfd->rset->scope;
         else
-            cmp = -2;
+            cmp = -rfd->rset->scope;
         if (!cmp)
-        {
+        { /* cmp==0 */
             memcpy (buf, p->buf_l, kctrl->key_size);
             p->more_l = rset_read (p->rfd_l, p->buf_l);
             p->more_r = rset_read (p->rfd_r, p->buf_r);
@@ -420,20 +427,21 @@ static int r_read_not (RSFD rfd, void *buf)
         if (p->more_l && p->more_r)
             cmp = (*kctrl->cmp)(p->buf_l, p->buf_r);
         else if (p->more_r)
-            cmp = 2;
+            cmp = rfd->rset->scope;
         else
-            cmp = -2;
-        if (cmp < -1)
-        {
+            cmp = -rfd->rset->scope;
+
+        if (cmp <= -rfd->rset->scope)
+        { /* cmp == -2 */
             memcpy (buf, p->buf_l, kctrl->key_size);
             p->more_l = rset_read (p->rfd_l, p->buf_l);
             p->hits++;
             return 1;
         }
-        else if (cmp > 1)
+        else if (cmp >= rfd->rset->scope)   /* cmp >1 */
             p->more_r = rset_forward( p->rfd_r, p->buf_r, p->buf_l);
         else
-        {
+        { /* cmp== -1, 0, or 1 */
             memcpy (buf, p->buf_l, kctrl->key_size);
             do
             { 
@@ -441,14 +449,16 @@ static int r_read_not (RSFD rfd, void *buf)
                 if (!p->more_l)
                     break;
                 cmp = (*kctrl->cmp)(p->buf_l, buf);
-            } while (cmp >= -1 && cmp <= 1);
+            } while (abs(cmp)<rfd->rset->scope);
+                /*  (cmp >= -1 && cmp <= 1) */
             do
             {
                 p->more_r = rset_read (p->rfd_r, p->buf_r);
                 if (!p->more_r)
                     break;
                 cmp = (*kctrl->cmp)(p->buf_r, buf);
-            } while (cmp >= -1 && cmp <= 1);
+            } while (abs(cmp)<rfd->rset->scope);
+               /* (cmp >= -1 && cmp <= 1) */
         }
     }
     return 0;

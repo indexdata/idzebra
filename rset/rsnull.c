@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.25 2004-09-01 15:01:32 heikki Exp $
+/* $Id: rsnull.c,v 1.26 2004-09-09 10:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -53,7 +53,7 @@ const struct rset_control *rset_kind_null = &control;
 
 RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol )
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol,0);
     rnew->priv=NULL;
     return rnew;
 }

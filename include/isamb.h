@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.14 2004-08-23 13:06:45 adam Exp $
+/* $Id: isamb.h,v 1.15 2004-09-09 10:08:04 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -38,7 +38,7 @@ void isamb_close (ISAMB isamb);
 
 ISAMB_P isamb_merge (ISAMB b, ISAMB_P pos, ISAMC_I *data);
 
-ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos);
+ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos, int scope);
 
 int isamb_pp_read (ISAMB_PP pp, void *buf);
 
@@ -50,7 +50,7 @@ void isamb_pp_close (ISAMB_PP pp);
 
 int isamb_unlink (ISAMB b, ISAMC_P pos);
 
-ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level);
+ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level, int scope);
 void isamb_pp_close_x (ISAMB_PP pp, int *size, int *blocks);
 
 int isamb_block_info (ISAMB isamb, int cat);

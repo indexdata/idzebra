@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.15 2004-09-03 15:04:11 heikki Exp $
+/* $Id: rsprox.c,v 1.16 2004-09-09 10:08:06 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -73,12 +73,12 @@ struct rset_prox_rfd {
 };    
 
 
-RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol,
+RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol, int scope,
             int rset_no, RSET *rset,
             int ordered, int exclusion,
             int relation, int distance)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol);
+    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope);
     struct rset_prox_info *info;
     info = (struct rset_prox_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->rset = nmem_malloc(rnew->nmem,rset_no * sizeof(*info->rset));
@@ -177,7 +177,8 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
     if (untilbuf)
     {
         /* it is enough to forward first one. Other will follow. */
-        if ( p->more[0] && ((kctrl->cmp)(untilbuf, p->buf[0]) >= 2) )
+        if ( p->more[0] &&   /* was: cmp >=2 */
+           ((kctrl->cmp)(untilbuf, p->buf[0]) >= rfd->rset->scope) ) 
             p->more[0] = rset_forward(p->rfd[0], p->buf[0], untilbuf);
     }
     if (info->ordered && info->relation == 3 && info->exclusion == 0
@@ -193,14 +194,14 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
                     break;
                 }
                 cmp = (*kctrl->cmp) (p->buf[i], p->buf[i-1]);
-                if (cmp > 1)
+                if (cmp >= rfd->rset->scope )  /* cmp>1 */
                 {
                     p->more[i-1] = rset_forward (p->rfd[i-1],
                                                  p->buf[i-1],
                                                  p->buf[i]);
                     break;
                 }
-                else if (cmp == 1)
+                else if ( cmp>0 ) /* cmp == 1*/
                 {
                     if ((*kctrl->getseq)(p->buf[i-1]) +1 != 
                         (*kctrl->getseq)(p->buf[i]))
@@ -230,11 +231,10 @@ static int r_forward (RSFD rfd, void *buf, const void *untilbuf)
         while (p->more[0] && p->more[1]) 
         {
             int cmp = (*kctrl->cmp)(p->buf[0], p->buf[1]);
-            if (cmp < -1)
+            if ( cmp <= - rfd->rset->scope) /* cmp<-1*/
                 p->more[0] = rset_forward (p->rfd[0],
                                            p->buf[0], p->buf[1]);
-                /* FIXME - this certainly looks wrong! */
-            else if (cmp > 1)
+            else if ( cmp >= rfd->rset->scope ) /* cmp>1 */
                 p->more[1] = rset_forward (p->rfd[1],
                                            p->buf[1], p->buf[0]);
             else

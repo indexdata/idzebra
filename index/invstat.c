@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.39 2004-08-06 13:14:46 adam Exp $
+/* $Id: invstat.c,v 1.40 2004-09-09 10:08:05 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -151,7 +151,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         int size;
         int blocks;
         
-        pp = isamb_pp_open_x(stat_info->zh->reg->isamb, isam_p, &level);
+        pp = isamb_pp_open_x(stat_info->zh->reg->isamb, isam_p, &level, 0);
 
         while (isamb_pp_read(pp, &key))
         {
