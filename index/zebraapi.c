@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.83 2003-02-12 15:45:59 heikki Exp $
+/* $Id: zebraapi.c,v 1.84 2003-02-25 21:46:52 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1180,8 +1180,6 @@ void zebra_end_read (ZebraHandle zh)
 
     if (zh->trans_no != 0)
         return;
-    zh->errCode=0;
-
 #if HAVE_SYS_TIMES_H
     times (&zh->tms2);
     logf (LOG_LOG, "user/system: %ld/%ld",
@@ -1290,8 +1288,6 @@ void zebra_end_trans (ZebraHandle zh)
     zh->trans_no--;
     if (zh->trans_no != 0)
         return;
-    zh->errCode=0;
-
     yaz_log (LOG_LOG, "zebra_end_trans");
     rval = res_get (zh->res, "shadow");
 
