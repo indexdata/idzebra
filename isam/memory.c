@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.11  1996-02-10 12:20:58  quinn
+ * Revision 1.12  1996-03-11 14:52:23  quinn
+ * Fixed update bug. Repeated insertion in the same area sometimes caused
+ * problems.
+ *
+ * Revision 1.11  1996/02/10  12:20:58  quinn
  * *** empty log message ***
  *
  * Revision 1.10  1995/12/12  14:12:47  quinn
@@ -154,6 +158,7 @@ void is_m_establish_tab(ISAM is, is_mtable *tab, ISAM_P pos)
 	tab->data->data = 0;
 	tab->cur_mblock = tab->data;
 	tab->cur_mblock->cur_mbuf = 0;
+	tab->last_mbuf = 0;
     }
     else /* new block */
     {
@@ -166,6 +171,7 @@ void is_m_establish_tab(ISAM is, is_mtable *tab, ISAM_P pos)
 	tab->cur_mblock = tab->data;
 	tab->cur_mblock->cur_mbuf = tab->data->data;
 	tab->cur_mblock->cur_mbuf->cur_record = 0;
+	tab->last_mbuf = 0;
     }
     tab->is = is;
 }
@@ -315,7 +321,10 @@ int is_m_write_record(is_mtable *tab, const void *rec)
 void is_m_unread_record(is_mtable *tab)
 {
     assert(tab->cur_mblock->cur_mbuf->cur_record);
-    tab->cur_mblock->cur_mbuf->cur_record--;
+    if (tab->last_mbuf)
+	tab->cur_mblock->cur_mbuf = tab->last_mbuf;
+    else
+	tab->cur_mblock->cur_mbuf->cur_record--;
 }
 
 /*
@@ -383,14 +392,20 @@ int is_m_read_record(is_mtable *tab, void *buf, int keep)
 		    if (read_current_full(tab, tab->cur_mblock) < 0)
 			return -1;
 		tab->cur_mblock->cur_mbuf = mbuf = tab->cur_mblock->data;
+		tab->last_mbuf = 0;
 	    }
 	    else
 	    	return 0;   /* EOTable */
 	}
 	else
+	{
+	    tab->last_mbuf = mbuf;
 	    tab->cur_mblock->cur_mbuf = mbuf = mbuf->next;
+	}
 	mbuf->cur_record = 0;
     }
+    else
+	tab->last_mbuf = 0;
     memcpy(buf, mbuf->data + mbuf->offset + mbuf->cur_record *
 	is_keysize(tab->is), is_keysize(tab->is));
     mbuf->cur_record++;

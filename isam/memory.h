@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.h,v $
- * Revision 1.4  1995-12-06 15:48:47  quinn
+ * Revision 1.5  1996-03-11 14:52:25  quinn
+ * Fixed update bug. Repeated insertion in the same area sometimes caused
+ * problems.
+ *
+ * Revision 1.4  1995/12/06  15:48:47  quinn
  * Fixed update-problem.
  *
  * Revision 1.3  1994/09/28  16:58:33  quinn
@@ -76,6 +80,7 @@ typedef struct is_mtable
     int num_records;               /* total number of records */
     int pos_type;                  /* blocktype */
     is_mblock *cur_mblock;
+    is_mbuf *last_mbuf;
     is_mblock *data;               /* blocks contained in this table */
     ISAM is;
 } is_mtable;
