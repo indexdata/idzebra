@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.17  1998-07-01 10:13:51  adam
+ * Revision 1.18  1998-10-15 13:11:47  adam
+ * Added support for option -record for "end element". When specified
+ * end element will mark end-of-record when at outer-level.
+ *
+ * Revision 1.17  1998/07/01 10:13:51  adam
  * Minor fix.
  *
  * Revision 1.16  1998/06/30 15:15:09  adam
@@ -904,13 +908,15 @@ static void tagBegin (struct lexSpec *spec,
 }
 
 static void tagEnd (struct lexSpec *spec, 
-                    data1_node **d1_stack, int *d1_level,
+                    data1_node **d1_stack, int *d1_level, int min_level,
                     const char *tag, int len)
 {
     tagStrip (&tag, &len);
-    while (*d1_level > 1)
+    while (*d1_level > min_level)
     {
         (*d1_level)--;
+        if (*d1_level == 0)
+	    break;
         if ((d1_stack[*d1_level]->which == DATA1N_tag) &&
 	    (!tag ||
 	     (strlen(d1_stack[*d1_level]->u.tag.tag) == (size_t) len &&
@@ -1225,23 +1231,30 @@ static int execCode (struct lexSpec *spec,
 	    }
 	    else if (!strcmp (p, "element"))
 	    {
-		r = execTok (spec, &s, arg_no, arg_start, arg_end,
-			     &cmd_str, &cmd_len);
-#if 0
-		if (*d1_level == 1)
-		{
-		    *d1_level = 0;
-		    returnCode = 0;
-		}
-#endif
+                int min_level = 1;
+                while ((r = execTok (spec, &s, arg_no, arg_start, arg_end,
+                                     &cmd_str, &cmd_len)) == 3)
+                {
+                    if (cmd_len==7 && !memcmp ("-record", cmd_str, cmd_len))
+                        min_level = 0;
+                }
 		if (r > 2)
 		{
-		    tagEnd (spec, d1_stack, d1_level, cmd_str, cmd_len);
+		    tagEnd (spec, d1_stack, d1_level, min_level,
+                            cmd_str, cmd_len);
 		    r = execTok (spec, &s, arg_no, arg_start, arg_end,
 				 &cmd_str, &cmd_len);
 		}
 		else
-		    tagEnd (spec, d1_stack, d1_level, NULL, 0);
+		    tagEnd (spec, d1_stack, d1_level, min_level, NULL, 0);
+                if (*d1_level == 0)
+                {
+#if REGX_DEBUG
+		    logf (LOG_DEBUG, "end element end records");
+#endif
+		    returnCode = 0;
+                }
+
 	    }
 	    else if (!strcmp (p, "context"))
 	    {
@@ -1293,7 +1306,7 @@ static int execCode (struct lexSpec *spec,
                          &cmd_str, &cmd_len);
             } while (r > 1);
             if (element_str)
-                tagEnd (spec, d1_stack, d1_level, NULL, 0);
+                tagEnd (spec, d1_stack, d1_level, 1, NULL, 0);
         }
         else if (!strcmp (p, "unread"))
         {

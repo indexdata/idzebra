@@ -1,8 +1,8 @@
-# $Id: sgml.flt,v 1.4 1997-11-06 11:41:01 adam Exp $
+# $Id: sgml.flt,v 1.5 1998-10-15 13:11:46 adam Exp $
 BEGIN	/\n*</	BODY	/>\n*/	{ begin record $2 }
 /\n*<[Vv][Aa][Rr][ ]+/  /[^ >]+/   /[ ]+/  /[^ >]+/  /[ ]+/ /[^ >]+/ /[ ]*>/ {
                                   begin variant $1 $3 $5
                                 }
 /\n*</		BODY	/>\n*/	{ begin element $1 }
-/\n*<\//	BODY	/>\n*/	{ end element }
+/\n*<\//	BODY	/>\n*/	{ end element -record }
 /[ \n\t]+/			{ data " " }
