@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.4  1997-04-30 08:56:08  quinn
+ * Revision 1.5  1997-07-15 16:29:03  adam
+ * Initialized dummy variable to keep checker gcc happy.
+ *
+ * Revision 1.4  1997/04/30 08:56:08  quinn
  * null
  *
  * Revision 1.2  1996/10/11  16:06:43  quinn
@@ -575,9 +578,10 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	p->input_format : VAL_SUTRS))
     {
 	data1_marctab *marctab;
-	int dummy;
+        int dummy;
 
 	case VAL_GRS1:
+	    dummy = 0;
 	    if (!(p->rec_buf = data1_nodetogr(node, selected, p->odr, &dummy)))
 		p->diagnostic = 2; /* this should be better specified */
 	    else
