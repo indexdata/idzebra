@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.1  1996-10-11 10:57:25  adam
+ * Revision 1.2  1996-10-11 16:06:43  quinn
+ * Fixed arguments to nodetogr
+ *
+ * Revision 1.1  1996/10/11  10:57:25  adam
  * New module recctrl. Used to manage records (extract/retrieval).
  *
  * Revision 1.29  1996/10/08 10:30:21  quinn
@@ -565,9 +568,10 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
 	p->input_format : VAL_SUTRS))
     {
 	data1_marctab *marctab;
+	int dummy;
 
 	case VAL_GRS1:
-	    if (!(p->rec_buf = data1_nodetogr(node, selected, p->odr)))
+	    if (!(p->rec_buf = data1_nodetogr(node, selected, p->odr, &dummy)))
 		p->diagnostic = 2; /* this should be better specified */
 	    else
 		p->rec_len = -1;
