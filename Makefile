@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.6 1994-08-17 13:31:21 adam Exp $
+# $Id: Makefile,v 1.7 1994-08-18 11:02:08 adam Exp $
 
 SUBDIR=util bfile dict
 
@@ -13,3 +13,7 @@ dep depend:
 
 clean:
 	for i in $(SUBDIR); do (cd $$i; make clean); done
+
+wc:
+	wc `find . -name '*.[ch]'`
+	
