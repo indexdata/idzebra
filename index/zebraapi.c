@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.77 2002-11-07 09:07:07 adam Exp $
+/* $Id: zebraapi.c,v 1.78 2002-11-18 11:07:59 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -218,6 +218,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     reg->isamb = 0;
     reg->zei = 0;
     reg->matchDict = 0;
+    reg->key_file_no = 0;
     
     zebraRankInstall (reg, rank1_class);
 
