@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.25 1996-05-09 09:59:57 quinn Exp $
+  $Id: zebra.sgml,v 1.26 1996-05-13 10:20:17 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.25 $
+<date>$Revision: 1.26 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -865,7 +865,12 @@ privileged port.
 
 <tag>-w <it/working-directory/</tag>Change working directory.
 
-<tag/-i/Run under the Internet superserver, <tt/inetd/.
+<tag>-i <it/minutes/</tag>Run under the Internet superserver, <tt/inetd/.
+
+<tag>-t <it/timeout/</tag>Set the idle session timeout (default 60 minutes).
+
+<tag>-k <it/kilobytes/</tag>Set the (approximate) maximum size of
+present response messages. Default is 1024 Kb (1 Mb).
 </descrip>
 
 A <it/listener-address/ consists of a transport mode followed by a
@@ -924,7 +929,8 @@ listener, for the Z39.50 protocol, on port 9999.
 During initialization, the server will negotiate to version 3 of the
 Z39.50 protocol, and the option bits for Search, Present, Scan,
 NamedResultSets, and concurrentOperations will be set, if requested by
-the client. The maximum PDU size is negotiated down to a maximum of 1Mb.
+the client. The maximum PDU size is negotiated down to a maximum of
+1Mb by default.
 
 <sect2>Search
 
@@ -995,7 +1001,7 @@ If a Close PDU is received, the server will respond with a Close PDU
 with reason=FINISHED, no matter which protocol version was negotiated
 during initialization. If the protocol version is 3 or more, the
 server will generate a Close PDU under certain circumstances,
-including a session timeout (ca. 60 minutes), and certain kinds of
+including a session timeout (60 minutes by default), and certain kinds of
 protocol errors. Once a Close PDU has been sent, the protocol
 association is considered broken, and the transport connection will be
 closed immediately upon receipt of further data, or following a short
