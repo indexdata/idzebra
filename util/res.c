@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.20  1997-10-31 12:39:15  adam
+ * Revision 1.21  1997-11-18 10:04:03  adam
+ * Function res_trav returns number of 'hits'.
+ *
+ * Revision 1.20  1997/10/31 12:39:15  adam
  * Resouce name can be terminated with either white-space or colon.
  *
  * Revision 1.19  1997/10/27 14:27:59  adam
@@ -293,12 +296,13 @@ void res_put (Res r, const char *name, const char *value)
     re->value = xstrdup (value);
 }
 
-void res_trav (Res r, const char *prefix, void *p,
-               void (*f)(void *p, const char *name, const char *value))
+int res_trav (Res r, const char *prefix, void *p,
+	      void (*f)(void *p, const char *name, const char *value))
 {
     struct res_entry *re;
     int l = 0;
-
+    int no = 0;
+    
     assert (r);
     if (prefix)
         l = strlen(prefix);
@@ -307,7 +311,11 @@ void res_trav (Res r, const char *prefix, void *p,
     for (re = r->first; re; re=re->next)
         if (re->value)
             if (l==0 || !memcmp (re->name, prefix, l))
+	    {
                 (*f)(p, re->name, re->value);
+		no++;
+	    }
+    return no;
 }
 
 

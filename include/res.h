@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.h,v $
- * Revision 1.8  1997-09-17 12:19:10  adam
+ * Revision 1.9  1997-11-18 10:04:03  adam
+ * Function res_trav returns number of 'hits'.
+ *
+ * Revision 1.8  1997/09/17 12:19:10  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -54,8 +57,8 @@ char *res_get (Res r, const char *name);
 char *res_get_def (Res r, const char *name, char *def);
 int res_get_match (Res r, const char *name, const char *value, const char *s);
 void res_put (Res r, const char *name, const char *value);
-void res_trav (Res r, const char *prefix, void *p,
-               void (*f)(void *p, const char *name, const char *value));
+int res_trav (Res r, const char *prefix, void *p,
+	      void (*f)(void *p, const char *name, const char *value));
 int res_write (Res r);
 
 #ifdef __cplusplus
