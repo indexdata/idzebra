@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.20  1996-03-19 13:14:57  quinn
+ * Revision 1.21  1996-03-29 14:11:47  quinn
+ * Change to is_merge
+ *
+ * Revision 1.20  1996/03/19  13:14:57  quinn
  * Moved an xfree()
  *
  * Revision 1.19  1996/02/10  12:20:56  quinn
@@ -476,9 +479,8 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 		    	continue;
 		    }
 		    /* else check if next key can fit in this position */
-		    is_m_peek_record(&tab, keybuf);
-		    res = (*is->cmp)(data + 1, keybuf);
-		    if (res < 0)
+		    if (is_m_peek_record(&tab, keybuf) &&
+			(*is->cmp)(data + 1, keybuf) < 0)
 		    {
 		        logf (LOG_DEBUG, "XXReplacing record.");
 		    	is_m_replace_record(&tab, data + 1);
