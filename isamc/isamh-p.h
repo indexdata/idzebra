@@ -73,10 +73,12 @@ struct ISAMH_PP_s {
 
 #define ISAMH_BLOCK_OFFSET_N (sizeof(int) +  \
                               sizeof(ISAMH_BLOCK_SIZE)) 
+/* == 8 */
 #define ISAMH_BLOCK_OFFSET_1 (sizeof(int) + \
                               sizeof(ISAMH_BLOCK_SIZE) + \
                               sizeof(int) + \
                               sizeof(ISAMH_BLOCK_SIZE)) 
+/* == 16 */
 int isamh_alloc_block (ISAMH is, int cat);
 void isamh_release_block (ISAMH is, int cat, int pos);
 int isamh_read_block (ISAMH is, int cat, int pos, char *dst);
@@ -90,7 +92,10 @@ int isamh_write_block (ISAMH is, int cat, int pos, char *src);
 
 /*
  * $Log: isamh-p.h,v $
- * Revision 1.2  1999-07-06 09:37:05  heikki
+ * Revision 1.3  1999-07-07 09:36:04  heikki
+ * Fixed an assertion in isamh
+ *
+ * Revision 1.2  1999/07/06 09:37:05  heikki
  * Working on isamh - not ready yet.
  *
  * Revision 1.1  1999/06/30 15:05:45  heikki

@@ -5,10 +5,6 @@
  * 
  * Isamh - append-only isam 
  *
- * TODO
- * All of it
- * Define structures
- * Get append to work
  */
 
 
@@ -28,7 +24,7 @@ static void init_fc (ISAMH is, int cat);
 
 #define ISAMH_FREELIST_CHUNK 1
 
-#define SMALL_TEST 1
+#define SMALL_TEST 0
 
 ISAMH_M isamh_getmethod (void)
 {
@@ -522,7 +518,7 @@ void isamh_buildfirstblock(ISAMH_PP pp){
 void isamh_buildlaterblock(ISAMH_PP pp){
   char *dst=pp->buf;
   assert(pp->buf);
-  assert(pp->next != pp->pos); 
+  assert(pp->next != isamh_addr(pp->pos,pp->cat)); 
   memcpy(dst, &pp->next, sizeof(pp->next) );
   dst += sizeof(pp->next);
   memcpy(dst, &pp->size,sizeof(pp->size));
@@ -613,8 +609,8 @@ int isamh_pp_num (ISAMH_PP pp)
 
 /*
  * $Log: isamh.c,v $
- * Revision 1.3  1999-07-06 16:30:20  heikki
- * IsamH startss to work - at least it builds indexes. Can not search yet...
+ * Revision 1.4  1999-07-07 09:36:04  heikki
+ * Fixed an assertion in isamh
  *
  * Revision 1.2  1999/07/06 09:37:05  heikki
  * Working on isamh - not ready yet.

@@ -478,10 +478,12 @@ static char *hexdump(unsigned char *p, int len, char *buff) {
 
 
 /* isamh - heikki's append-only isam 
- * missing: 
- * read the code from an existing block, to synch encoding
- * append to single-block entries
- * append to multi-block entries
+ * Idea: When allocating a new block, allocate memory for a very large block
+ *       (maximal blocksize). When done, see if you can shrink it to some 
+ *       smaller size. First-time indexing will go in optimal blocks, and
+ *       following small additions will go to the end of the last of the 
+ *       maximal ones. Only later, when new blocks need to be allocated, it
+ *       may make sense to reserve some extra space...
 */
 
 ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
@@ -515,37 +517,41 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
       pp->pos = isamh_alloc_block(is,pp->cat);
       pp->size= pp->offset = ISAMH_BLOCK_OFFSET_1 ;
       r_clientData = (*is->method->code_start)(ISAMH_ENCODE);
-      logf(LOG_LOG,"isamh_append: starting with new block %d",pp->pos);
+      if (pp->is->method->debug > 2)
+        logf(LOG_LOG,"isamh_append: starting with new block %d",pp->pos);
     }
     else
     { /* existing block */
       if (isamh_block(firstpp->lastblock) == firstpp->pos) 
       { /* only one block, we have it already */
         pp->offset=ISAMH_BLOCK_OFFSET_1;
-        logf(LOG_LOG,"isamh_append: starting with one block %d",pp->pos);
+        if (pp->is->method->debug > 2)
+          logf(LOG_LOG,"isamh_append: starting with one block %d",pp->pos);
       }
       else
       { 
-        logf(LOG_LOG,"isamh_append: starting with multiple blocks %d>%d>%d",
-          firstpp->pos,isamh_block(firstpp->next),isamh_block(firstpp->lastblock));
+        if (pp->is->method->debug > 2)
+          logf(LOG_LOG,"isamh_append: starting with multiple blocks %d>%d>%d",
+            firstpp->pos,isamh_block(firstpp->next),isamh_block(firstpp->lastblock));
         pp=isamh_pp_open(is,firstpp->lastblock);
           /* dirty, but this can also read a N-block. Just clear extra values*/
         pp->lastblock=0;
         pp->offset=ISAMH_BLOCK_OFFSET_N;
       } /* get last */ 
-      /* read pointers in it to synchronize the encoder ??!! */
       r_clientData = (*is->method->code_start)(ISAMH_ENCODE);
-      logf(LOG_LOG,"isamh_append: scanning to end of block %d %d->%d",
-        pp->pos, pp->offset, pp->size);
+      if (pp->is->method->debug > 3)
+        logf(LOG_LOG,"isamh_append: scanning to end of block %d %d->%d",
+             pp->pos, pp->offset, pp->size);
       codeptr=codebuffer;
       while (pp->offset<pp->size) {
         codeptr=codebuffer;
         bufptr=pp->buf + pp->offset;
         (*is->method->code_item)(ISAMH_DECODE, r_clientData, &codeptr, &bufptr);
         codelen = bufptr - (pp->buf+pp->offset) ;
-        logf(LOG_LOG,"isamh_append: dec at %d %d/%d:%s",
-          pp->offset, codelen, codeptr-codebuffer,
-          hexdump(codebuffer,codeptr-codebuffer,0) );
+        if (pp->is->method->debug > 3)
+          logf(LOG_LOG,"isamh_append: dec at %d %d/%d:%s",
+            pp->offset, codelen, codeptr-codebuffer,
+            hexdump(codebuffer,codeptr-codebuffer,0) );
         pp->offset += codelen;
       }
     } /* existing block */
@@ -553,8 +559,9 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
     
     i_item_ptr = i_item;
     i_more = (*data->read_item)(data->clientData,&i_item_ptr,&i_mode);
-    logf(LOG_LOG,"isamh_append 1: m=%d l=%d %s",
-      i_mode, i_item_ptr-i_item, hexdump(i_item,i_item_ptr-i_item,0));
+    if (pp->is->method->debug > 3)
+      logf(LOG_LOG,"isamh_append 1: m=%d l=%d %s",
+        i_mode, i_item_ptr-i_item, hexdump(i_item,i_item_ptr-i_item,0));
 
     maxsize = is->method->filecat[pp->cat].bsize;
     
@@ -568,21 +575,24 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
    
           assert( (codelen < 128) && (codelen>0));
        
-          logf(LOG_LOG,"isamh_append: coded into %d:%s", 
+          if (pp->is->method->debug > 3)
+            logf(LOG_LOG,"isamh_append: coded into %d:%s", 
                codelen,hexdump(codebuffer,codelen,0));
 
           if ( pp->offset + codelen > maxsize ) 
-          {
+          { /* oops, block full, do something */
             newcat = pp->cat;
             maxkeys = is->method->filecat[pp->cat].mblocks;  /* max keys */
-            logf(LOG_LOG,"isamh_append: need new block: %d > %d (k:%d/%d)", 
-                pp->offset + codelen, maxsize, firstpp->numKeys,maxkeys );
+            if (pp->is->method->debug > 2)
+              logf(LOG_LOG,"isamh_append: need new block: %d > %d (k:%d/%d)", 
+                  pp->offset + codelen, maxsize, firstpp->numKeys,maxkeys );
             if ( (maxkeys>0) && (firstpp->numKeys > maxkeys) ) 
             { /* time to increase block size */
                newcat++;
                maxsize = is->method->filecat[newcat].bsize;
                pp->buf=xrealloc(pp->buf,maxsize);
-               logf(LOG_LOG,"isamh_append: increased to cat %d ",newcat);
+               if (pp->is->method->debug > 2)
+                 logf(LOG_LOG,"isamh_append: increased to cat %d ",newcat);
             }
 
             newblock = isamh_alloc_block(is,newcat);
@@ -591,8 +601,6 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
             {  /* not first block, write to disk already now */
               isamh_buildlaterblock(pp);
               isamh_write_block(is,pp->cat,pp->pos,pp->buf);    
-              //if (cat != newcat)
-              //  realloc buf !!!! 
             }
             else 
             {  /* we had only one block, allocate a second buffer */
@@ -604,7 +612,8 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
             pp->size=pp->offset=ISAMH_BLOCK_OFFSET_N ;
             pp->next=0;
             pp->lastblock=0;
-            logf(LOG_LOG,"isamh_append: got a new block %d:%d",pp->cat,pp->pos);
+            if (pp->is->method->debug > 2)
+              logf(LOG_LOG,"isamh_append: got a new block %d:%d",pp->cat,pp->pos);
 
             /* reset the encoding, and code again */
             (*is->method->code_reset)(r_clientData);
@@ -612,10 +621,11 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
             i_item_ptr=i_item;
             (*is->method->code_item)(ISAMH_ENCODE, r_clientData, &codeptr, &i_item_ptr);
             codelen = codeptr-codebuffer;
-            logf(LOG_LOG,"isamh_append: coded again %d:%s", 
-                 codelen,hexdump(codebuffer,codelen,0));
+            if (pp->is->method->debug > 3)
+              logf(LOG_LOG,"isamh_append: coded again %d:%s", 
+                   codelen,hexdump(codebuffer,codelen,0));
 
-          } /* new block needed */
+          } /* block full */
 
           /* ok, now we can write it */
           memcpy(&(pp->buf[pp->offset]), codebuffer, codelen);
@@ -627,7 +637,8 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
        /* try to read the next element */
        i_item_ptr = i_item;
        i_more = (*data->read_item)(data->clientData,&i_item_ptr,&i_mode);
-       logf(LOG_LOG,"isamh_append 2: m=%d l=%d %s",
+       if (pp->is->method->debug > 3)
+         logf(LOG_LOG,"isamh_append 2: m=%d l=%d %s",
              i_mode, i_item_ptr-i_item, hexdump(i_item,i_item_ptr-i_item,0));
     
     } /* while */
@@ -635,6 +646,7 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
     /* Write the last (partial) block, if needed. */
     if (pp!=firstpp) 
     {
+      pp->next=0; /* just to be sure */
       isamh_buildlaterblock(pp);
       isamh_write_block(is,pp->cat,pp->pos,pp->buf);    
     }
@@ -660,8 +672,8 @@ ISAMC_P isamh_append (ISAMH is, ISAMH_P ipos, ISAMH_I data)
 
 /*
  * $Log: merge.c,v $
- * Revision 1.14  1999-07-06 16:30:20  heikki
- * IsamH startss to work - at least it builds indexes. Can not search yet...
+ * Revision 1.15  1999-07-07 09:36:04  heikki
+ * Fixed an assertion in isamh
  *
  * Revision 1.13  1999/07/06 09:37:05  heikki
  * Working on isamh - not ready yet.
