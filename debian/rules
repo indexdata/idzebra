@@ -102,6 +102,7 @@ binary-arch: build install
 	dh_shlibdeps -p idzebra $(LOCAL_LINK) 
 
 	cat debian/postinst >> debian/idzebra/DEBIAN/postinst
+	chmod +x debian/idzebra/DEBIAN/postinst
 
 	dh_gencontrol -p idzebra
 	dh_md5sums -p idzebra
