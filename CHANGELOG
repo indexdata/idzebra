@@ -1,4 +1,8 @@
-Fixed bug with configure script - used bash-specific features.
+--- 1.0.1 2000/2/10
+
+Fixed bug in makefile for WIN32.
+
+Fixed bug in configure script - used bash-specific features.
 
 --- 1.0 1999/12/10
 
