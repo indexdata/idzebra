@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.25  1997-10-27 14:25:38  adam
+ * Revision 1.26  1998-02-17 10:32:52  adam
+ * Fixed bug: binary files weren't opened with flag b on NT.
+ *
+ * Revision 1.25  1997/10/27 14:25:38  adam
  * Fixed memory leaks.
  *
  * Revision 1.24  1997/09/18 08:59:16  adam
@@ -188,7 +191,7 @@ BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
         {
             FILE *outf;
 
-            outf = open_cache (bfs, "a");
+            outf = open_cache (bfs, "ab");
             if (!outf)
             {
                 logf (LOG_FATAL|LOG_ERRNO, "open %scache",
@@ -233,7 +236,7 @@ int bf_commitExists (BFiles bfs)
 {
     FILE *inf;
 
-    inf = open_cache (bfs, "r");
+    inf = open_cache (bfs, "rb");
     if (inf)
     {
         fclose (inf);
@@ -252,7 +255,7 @@ void bf_commitExec (BFiles bfs)
     int first_time;
 
     assert (bfs->commit_area);
-    if (!(inf = open_cache (bfs, "r")))
+    if (!(inf = open_cache (bfs, "rb")))
     {
         logf (LOG_LOG, "No commit file");
         return ;
@@ -286,7 +289,7 @@ void bf_commitClean (BFiles bfs, const char *spec)
         mustDisable = 1;
     }
 
-    if (!(inf = open_cache (bfs, "r")))
+    if (!(inf = open_cache (bfs, "rb")))
         return ;
     while (fscanf (inf, "%s %d", path, &block_size) == 2)
     {

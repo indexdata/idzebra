@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.78  1998-02-10 12:03:05  adam
+ * Revision 1.79  1998-02-17 10:32:52  adam
+ * Fixed bug: binary files weren't opened with flag b on NT.
+ *
+ * Revision 1.78  1998/02/10 12:03:05  adam
  * Implemented Sort.
  *
  * Revision 1.77  1998/01/12 15:04:08  adam
@@ -465,7 +468,7 @@ void key_flush (void)
     qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_qsort_compare);
     getFnameTmp (out_fname, key_file_no);
 
-    if (!(outf = fopen (out_fname, "w")))
+    if (!(outf = fopen (out_fname, "wb")))
     {
         logf (LOG_FATAL|LOG_ERRNO, "fopen %s", out_fname);
         exit (1);
@@ -491,7 +494,7 @@ void key_flush (void)
     qsort (key_buf + ptr_top-ptr_i, ptr_i, sizeof(char*), key_x_compare);
     getFnameTmp (out_fname, key_file_no);
 
-    if (!(outf = fopen (out_fname, "w")))
+    if (!(outf = fopen (out_fname, "wb")))
     {
         logf (LOG_FATAL|LOG_ERRNO, "fopen %s", out_fname);
         exit (1);
@@ -659,6 +662,7 @@ static void addSortString (RecWord *p, const char *string, int length)
 
 static void addString (RecWord *p, const char *string, int length)
 {
+    assert (length > 0);
     if (zebra_maps_is_sort (p->zebra_maps, p->reg_type))
 	addSortString (p, string, length);
     else

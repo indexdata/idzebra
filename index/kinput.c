@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.26  1998-01-29 13:39:13  adam
+ * Revision 1.27  1998-02-17 10:32:52  adam
+ * Fixed bug: binary files weren't opened with flag b on NT.
+ *
+ * Revision 1.26  1998/01/29 13:39:13  adam
  * Compress ISAM is default.
  *
  * Revision 1.25  1997/09/17 12:19:14  adam
@@ -449,6 +452,7 @@ int heap_inpc (struct heap_info *hi)
 
         strcpy (this_name, hci.cur_name);
         logf (LOG_DEBUG, "inserting %s", 1+hci.cur_name);
+	assert (hci.cur_name[1]);
         no_diffs++;
         if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
         {

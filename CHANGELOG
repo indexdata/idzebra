@@ -1,3 +1,5 @@
+Bug fix: Lock files weren't removed as they should when using NT.
+
 Implemented Z39.50 Sort. Zebra's sort handler uses use attributes to
 specify a "sort register". Refer to the gils sample records which
 refer to index type "s" which is specified as "sort" in the default.idx
