@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.26  1999-07-06 13:34:57  adam
+ * Revision 1.27  1999-10-29 10:02:33  adam
+ * Fixed decompression buffer overflow.
+ *
+ * Revision 1.26  1999/07/06 13:34:57  adam
  * Fixed bug (introduced by previous commit).
  *
  * Revision 1.25  1999/07/06 12:28:04  adam
@@ -652,7 +655,7 @@ void rec_close (Records *pp)
 
 Record rec_get (Records p, int sysno)
 {
-    int i, in_size;
+    int i, in_size, r;
     Record rec, *recp;
     struct record_index_entry entry;
     int freeblock, dst_type;
@@ -668,7 +671,7 @@ Record rec_get (Records p, int sysno)
     if ((recp = rec_cache_lookup (p, sysno, recordFlagNop)))
         return rec_cp (*recp);
 
-    if (!read_indx (p, sysno, &entry, sizeof(entry), 1))
+    if (read_indx (p, sysno, &entry, sizeof(entry), 1) < 1)
         return NULL;       /* record is not there! */
 
     if (!entry.size)
@@ -680,11 +683,12 @@ Record rec_get (Records p, int sysno)
 
     assert (freeblock > 0);
     
-    rec = (Record) xmalloc (sizeof(*rec));
     rec_tmp_expand (p, entry.size);
 
     cptr = p->tmp_buf;
-    bf_read (p->data_BFile[dst_type], freeblock, 0, 0, cptr);
+    r = bf_read (p->data_BFile[dst_type], freeblock, 0, 0, cptr);
+    if (r < 0)
+	return 0;
     memcpy (&freeblock, cptr, sizeof(freeblock));
 
     while (freeblock)
@@ -694,11 +698,14 @@ Record rec_get (Records p, int sysno)
         cptr += p->head.block_size[dst_type] - sizeof(freeblock);
         
         memcpy (&tmp, cptr, sizeof(tmp));
-        bf_read (p->data_BFile[dst_type], freeblock, 0, 0, cptr);
+        r = bf_read (p->data_BFile[dst_type], freeblock, 0, 0, cptr);
+	if (r < 0)
+	    return 0;
         memcpy (&freeblock, cptr, sizeof(freeblock));
         memcpy (cptr, &tmp, sizeof(tmp));
     }
 
+    rec = (Record) xmalloc (sizeof(*rec));
     rec->sysno = sysno;
     memcpy (&compression_method, p->tmp_buf + sizeof(int) + sizeof(short),
 	    sizeof(compression_method));
@@ -708,14 +715,17 @@ Record rec_get (Records p, int sysno)
     {
     case REC_COMPRESS_BZIP2:
 #if HAVE_BZLIB_H
-	bz_size = entry.size * 30+100;
-	bz_buf = (char *) xmalloc (bz_size);
-	i = bzBuffToBuffDecompress (bz_buf, &bz_size, in_buf, in_size, 0, 0);
-	logf (LOG_LOG, "decompress %5d %5d", in_size, bz_size);
-	if (i != BZ_OK)
+	bz_size = entry.size * 20 + 100;
+	while (1)
 	{
-	    logf (LOG_FATAL, "bzBuffToBuffDecompress error code=%d", i);
-	    exit (1);
+	    bz_buf = (char *) xmalloc (bz_size);
+	    i = bzBuffToBuffDecompress (bz_buf, &bz_size, in_buf, in_size, 0, 0);
+	    logf (LOG_LOG, "decompress %5d %5d", in_size, bz_size);
+	    if (i == BZ_OK)
+		break;
+	    logf (LOG_LOG, "failed");
+	    xfree (bz_buf);
+            bz_size *= 2;
 	}
 	in_buf = bz_buf;
 	in_size = bz_size;
