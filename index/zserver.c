@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.43  1996-11-15 15:03:58  adam
+ * Revision 1.44  1996-12-11 12:08:01  adam
+ * Added better compression.
+ *
+ * Revision 1.43  1996/11/15 15:03:58  adam
  * Logging of execution speed by using the times(2) call.
  *
  * Revision 1.42  1996/11/08  11:10:36  adam
@@ -168,7 +171,7 @@
 #include <recctrl.h>
 #include <dmalloc.h>
 
-#ifdef __LINUX__
+#ifdef __linux__
 #define USE_TIMES 1
 #endif
 
