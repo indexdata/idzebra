@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2005
-dnl $Id: configure.in,v 1.116 2005-03-31 12:42:06 adam Exp $
+dnl $Id: configure.in,v 1.117 2005-03-31 12:55:55 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -11,7 +11,7 @@ dnl
 dnl ------ Checking programs
 AC_PROG_CC
 AC_PROG_CPP
-dnl AM_DISABLE_SHARED
+AM_DISABLE_SHARED
 AM_PROG_LIBTOOL
 dnl
 dnl ------ headers
