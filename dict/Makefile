@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.13 1995-01-24 16:01:02 adam Exp $
+# $Id: Makefile,v 1.14 1995-02-06 10:13:17 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -18,12 +18,11 @@ all: $(LIB)
 
 alll: $(LIB) $(TPROG1) $(TPROG2)
 
-$(TPROG1): $(TPROG1).o $(LIB) 
+$(TPROG1): $(TPROG1).o $(LIB) ../lib/bfile.a ../lib/util.a ../lib/dfa.a
 	$(CC) $(CFLAGS) -o $(TPROG1) $(TPROG1).o $(LIB) ../lib/bfile.a ../lib/dfa.a ../lib/util.a 
 
-$(TPROG2): $(TPROG2).o $(LIB) 
+$(TPROG2): $(TPROG2).o $(LIB) ../lib/util.a
 	$(CC) $(CFLAGS) -o $(TPROG2) $(TPROG2).o ../lib/util.a
-
 
 $(LIB): $(PO)
 	rm -f $(LIB)
