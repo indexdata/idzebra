@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.10  1995-10-16 14:03:06  quinn
+ * Revision 1.11  1995-12-04 14:20:54  adam
+ * Extra arg to recType_byName.
+ *
+ * Revision 1.10  1995/10/16  14:03:06  quinn
  * Changes to support element set names and espec1
  *
  * Revision 1.9  1995/10/06  14:37:53  adam
@@ -61,23 +64,24 @@ typedef struct {
 
 /* Extract record control */
 struct recExtractCtrl {
-    int        fd;                     /* File descriptor and read function */
+    int       fd;                     /* File descriptor and read function */
     int       (*readf)(int fd, char *buf, size_t count);
-    char *subType;
-    void (*init)(RecWord *p);
-    void (*add)(const RecWord *p);
+    char      *subType;
+    void      (*init)(RecWord *p);
+    void      (*add)(const RecWord *p);
 };
 
 /* Retrieve record control */
 struct recRetrieveCtrl {
     /* Input parameters ... */
-    ODR        odr;                    /* ODR used to create response */
-    int        fd;                     /* File descriptor and read function */
+    ODR       odr;                    /* ODR used to create response */
+    int       fd;                     /* File descriptor and read function */
     int       (*readf)(int fd, char *buf, size_t count);
-    oid_value  input_format;           /* Preferred record syntax */
+    oid_value input_format;           /* Preferred record syntax */
     Z_RecordComposition *comp;         /* formatting instructions */
-    int        localno;                /* local id of record */
-    int        score;                  /* score 0-1000 or -1 if none */
+    int       localno;                /* local id of record */
+    int       score;                  /* score 0-1000 or -1 if none */
+    char      *subType;
     
     /* response */
     oid_value  output_format;
@@ -95,6 +99,6 @@ typedef struct recType
     int  (*retrieve)(struct recRetrieveCtrl *ctrl);   /* Retrieve proc */
 } *RecType;
 
-RecType recType_byName (const char *name);
+RecType recType_byName (const char *name, char *subType);
 
 #endif
