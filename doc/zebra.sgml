@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.21 1996-03-19 18:30:03 quinn Exp $
+  $Id: zebra.sgml,v 1.22 1996-03-20 09:20:39 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.21 $
+<date>$Revision: 1.22 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -365,7 +365,7 @@ Parameter names and values are seperated by colons in the file. Lines
 starting with a hash sign (<tt/&num;/) are treated as comments.
 
 If you manage different sets of records that share common
-caracteristics, you can organize the configuration settings for each
+characteristics, you can organize the configuration settings for each
 type into &dquot;groups&dquot;.
 When <tt>zebraidx</tt> is run and you wish to address a given group
 you specify the group name with the <tt>-g</tt> option. In this case
@@ -440,7 +440,7 @@ The default behaviour of the Zebra system is to reference the
 records from their original location, i.e. where they were found when you
 ran <tt/zebraidx/. That is, when a client wishes to retrieve a record
 following a search operation, the files are accessed from the place
-where you originally put them - if you remove the files (whithout
+where you originally put them - if you remove the files (without
 running <tt/zebraidx/ again, the client will receive a diagnostic
 message.
 
