@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.20 2002-11-26 22:20:06 adam Exp $
+# $Id: makefile,v 1.21 2003-02-23 22:52:15 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -12,8 +12,8 @@ HAVE_EXPAT=1
 EXPAT_DIR= c:\Expat-1.95.4
 
 # iconv is optional
-HAVE_ICONV=0
-ICONV_DIR = c:\libiconv-1.7.0.1
+HAVE_ICONV=1
+ICONV_DIR = c:\iconv-1.8.win32
 
 default: all
 
@@ -27,7 +27,7 @@ all: dirs zebralib zserver zindex
 ROOTDIR=..   # The home of zebra
 
 # YAZ include files, libraries, etc.
-YAZDIR=$(ROOTDIR)\..\YAZ
+YAZDIR=$(ROOTDIR)\..\YAZ-2.0
 YAZINCL=$(YAZDIR)\include
 YAZLIB=$(YAZDIR)\lib\yaz.lib
 YAZLIBS=$(YAZLIB)
@@ -307,7 +307,8 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\d1_sutrs.obj \
 	$(OBJDIR)\d1_tagset.obj \
 	$(OBJDIR)\d1_varset.obj \
-	$(OBJDIR)\d1_write.obj
+	$(OBJDIR)\d1_write.obj \
+	$(OBJDIR)\xpath.obj
 
 ALL_OBJS=\
   $(ZEBRALIB_OBJS) \
