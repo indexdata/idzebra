@@ -1,3 +1,19 @@
+Bug fix: the path name buffers used by file match traversal routines
+have been extended to support long file names.
+
+New C(ompressed) ISAM system. To enable it, specify "isam: c" in the
+configuration file. The resulting register without "storeKeys" is about
+half the size, and the memory used by zebraidx during phase 2 (merge) is
+reduced to a minimum.
+
+Reworked the way Regexp-2 queries with error tolerance are handled and
+specified. The documentation has been updated accordingly.
+
+Bug fix: Zebrasrv didn't search correctly when queries contained masking
+characters. This bug was introduced in 1.0a8.
+
+Zebrasrv now tag records with the proper database name.
+
 New settings, memMax and keyTmpDir.
 
 Changed name of setting lockDir (previously called lockPath) and
