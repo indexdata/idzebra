@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.3 2005-01-15 19:38:24 adam Exp $
+/* $Id: isamb.h,v 1.4 2005-03-08 14:02:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -65,7 +65,7 @@ int isamb_unlink(ISAMB b, ISAMC_P pos);
 YAZ_EXPORT
 ISAMB_PP isamb_pp_open_x(ISAMB isamb, ISAMB_P pos, int *level, int scope);
 YAZ_EXPORT
-void isamb_pp_close_x(ISAMB_PP pp, int *size, int *blocks);
+void isamb_pp_close_x(ISAMB_PP pp, zint *size, zint *blocks);
 
 YAZ_EXPORT
 int isamb_block_info(ISAMB isamb, int cat);

@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.72 2005-03-05 09:19:15 adam Exp $
+/* $Id: isamb.c,v 1.73 2005-03-08 14:02:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -141,10 +141,10 @@ static void encode_ptr(char **dst, zint pos)
 
     while (pos > 127)
     {
-         *bp++ = 128 | (pos & 127);
+         *bp++ = (unsigned char) (128 | (pos & 127));
          pos = pos >> 7;
     }
-    *bp++ = pos;
+    *bp++ = (unsigned char) pos;
     *dst = (char *) bp;
 }
 #else
@@ -266,9 +266,9 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 	    decode_ptr(&src, &isamb->file[i].head.first_block);
 	    decode_ptr(&src, &isamb->file[i].head.last_block);
 	    decode_ptr(&src, &zint_tmp);
-	    isamb->file[i].head.block_size = zint_tmp;
+	    isamb->file[i].head.block_size = (int) zint_tmp;
 	    decode_ptr(&src, &zint_tmp);
-	    isamb->file[i].head.block_max = zint_tmp;
+	    isamb->file[i].head.block_max = (int) zint_tmp;
 	    decode_ptr(&src, &isamb->file[i].head.free_list);
 	}
         assert (isamb->file[i].head.block_size >= isamb->file[i].head.block_offset);
@@ -1269,7 +1269,7 @@ ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos, int scope)
     return isamb_pp_open_x(isamb, pos, 0, scope);
 }
 
-void isamb_pp_close_x(ISAMB_PP pp, int *size, int *blocks)
+void isamb_pp_close_x(ISAMB_PP pp, zint *size, zint *blocks)
 {
     int i;
     if (!pp)
@@ -1798,7 +1798,7 @@ void isamb_pp_pos(ISAMB_PP pp, double *current, double *total)
     assert(current);
     assert(p->leaf);
 
-    *total = pp->block[0]->no_items;
+    *total = (double) (pp->block[0]->no_items);
     *current = (double) pp->returned_numbers;
 #if ISAMB_DEBUG
     yaz_log(YLOG_LOG, "isamb_pp_pos returning: cur= %0.1f tot=%0.1f rn="

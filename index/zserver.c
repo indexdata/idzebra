@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.129 2005-01-21 18:41:19 adam Exp $
+/* $Id: zserver.c,v 1.130 2005-03-08 14:02:12 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -262,6 +262,7 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
 int bend_search (void *handle, bend_search_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
+    zint zhits = 0;
 
     r->hits = 0;
     r->errcode = 0;
@@ -278,7 +279,11 @@ int bend_search (void *handle, bend_search_rr *r)
     {
     case Z_Query_type_1: case Z_Query_type_101:
 	zebra_search_RPN (zh, r->stream, r->query->u.type_1,
-			  r->setname, &r->hits);
+			  r->setname, &zhits);
+	if (zhits >   2147483646)
+	    r->hits = 2147483647;
+	else
+	    r->hits = (int) zhits;
         zebra_result (zh, &r->errcode, &r->errstring);
         if (!r->errcode)
             search_terms (zh, r);

@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.13 2005-01-24 14:44:23 adam Exp $
+/* $Id: api.h,v 1.14 2005-03-08 14:02:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -178,10 +178,10 @@ YAZ_EXPORT void zebra_clearError(ZebraHandle zh);
     \param hits of hits is returned
  */
 YAZ_EXPORT int zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
-				const char *setname, int *hits);
+				const char *setname, zint *hits);
 
 /** \fn int zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
-    const char *setname, int *hits)
+    const char *setname, zint *hits)
     \brief Search using RPN Query 
     \param zh session handle
     \param o ODR handle
@@ -190,7 +190,7 @@ YAZ_EXPORT int zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
     \param hits number of hits is returned
  */
 YAZ_EXPORT int zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
-				const char *setname, int *hits);
+				const char *setname, zint *hits);
 
 /** 
     \fn int zebra_records_retrieve(ZebraHandle zh, ODR stream,

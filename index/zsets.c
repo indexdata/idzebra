@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.77 2005-01-15 19:38:30 adam Exp $
+/* $Id: zsets.c,v 1.78 2005-03-08 14:02:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -825,7 +825,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset, NMEM nmem)
                 (zebraSet->hits)++;
                 psysno = this_sys;
             }
-            (*rc->add) (handle, seqno, termid);
+            (*rc->add) (handle, CAST_ZINT_TO_INT(seqno), termid);
             
             if ((est==-2) && (zebraSet->hits==esthits))
             { /* time to estimate the hits */

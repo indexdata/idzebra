@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.22 2005-03-05 09:19:15 adam Exp $
+/* $Id: zinfo.h,v 1.23 2005-03-08 14:02:12 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -72,7 +72,7 @@ int zebraExplain_removeDatabase(ZebraExplainInfo zei, void *updateHandle);
 typedef struct {
     int recordSize;
     off_t recordOffset;
-    int runNumber;
+    zint runNumber;
 } RecordAttr;
 RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec);
 

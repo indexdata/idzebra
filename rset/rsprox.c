@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.24 2005-01-17 01:16:37 adam Exp $
+/* $Id: rsprox.c,v 1.25 2005-03-08 14:02:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -245,7 +245,7 @@ static int r_forward (RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                 
                 for (i = 0; i<n; i++)
                 {
-                    int diff = (*kctrl->getseq)(p->buf[1]) - seqno[i];
+                    zint diff = (*kctrl->getseq)(p->buf[1]) - seqno[i];
                     int excl = info->exclusion;
                     if (!info->ordered && diff < 0)
                         diff = -diff;
@@ -333,7 +333,7 @@ static void r_pos (RSFD rfd, double *current, double *total)
         *total = 0;
     } else {
         r = scur/stot; 
-        *current = p->hits;
+        *current = (double) p->hits;
         *total=*current/r ; 
     }
     yaz_log(YLOG_DEBUG,"prox_pos: [%d] %0.1f/%0.1f= %0.4f ",

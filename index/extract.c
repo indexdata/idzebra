@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.172 2005-03-05 09:19:14 adam Exp $
+/* $Id: extract.c,v 1.173 2005-03-08 14:02:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1248,7 +1248,7 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
         (zh->reg->key_buf)[zh->reg->ptr_top - zh->reg->ptr_i] =
 	    (char*)zh->reg->key_buf + zh->reg->key_buf_used;
 
-	ch = key.mem[0];  /* ordinal for field/use/attribute */
+	ch = (int) key.mem[0];  /* ordinal for field/use/attribute */
 
 	zh->reg->key_buf_used +=
 	    key_SU_encode (ch,((char*)zh->reg->key_buf) +

@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.43 2005-01-15 19:38:25 adam Exp $
+/* $Id: invstat.c,v 1.44 2005-03-08 14:02:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,8 +36,8 @@ struct inv_stat_info {
     int isam_occurrences[20];
     char tmp[128];
     int isamb_levels[10][5];
-    int isamb_sizes[10];
-    int isamb_blocks[10];
+    zint isamb_sizes[10];
+    zint isamb_blocks[10];
     unsigned long cksum;
     int dumpwords;
 };
@@ -124,8 +124,8 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         struct it_key key;
         int cat = (int) (isam_p & 3);
         int level;
-        int size;
-        int blocks;
+        zint size;
+        zint blocks;
         
         pp = isamb_pp_open_x(stat_info->zh->reg->isamb, isam_p, &level, 0);
 

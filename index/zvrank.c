@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.15 2005-01-15 19:38:30 adam Exp $
+/* $Id: zvrank.c,v 1.16 2005-03-08 14:02:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -342,7 +342,7 @@ static void idf_squared(void *rsi, void *dsi) {
         if (gocc==0)
             idf=0.0;
         else 
-            idf=blog(num_docs/gocc);
+            idf=blog(CAST_ZINT_TO_DOUBLE(num_docs/gocc));
         idf=idf*idf;
         ds->terms[i].idf=idf;
     }

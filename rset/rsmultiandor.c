@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.13 2005-01-15 20:47:16 adam Exp $
+/* $Id: rsmultiandor.c,v 1.14 2005-03-08 14:02:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -586,7 +586,7 @@ static void r_pos (RSFD rfd, double *current, double *total)
     }
     else
     {
-	*current = mrfd->hits;
+	*current = (double) (mrfd->hits);
 	*total = *current*stot/scur;
 	yaz_log(log_level, "r_pos: =  %0.1f %0.1f",  *current, *total);
     }

@@ -1,4 +1,4 @@
-/* $Id: zebrautl.h,v 1.13 2005-01-15 19:38:24 adam Exp $
+/* $Id: zebrautl.h,v 1.14 2005-03-08 14:02:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,5 +36,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 YAZ_BEGIN_CDECL
 zint atoi_zn (const char *buf, zint len);
 YAZ_END_CDECL
+
+#define CAST_ZINT_TO_INT(x) (int)(x)
+#define CAST_ZINT_TO_DOUBLE(x) (double)(x)
 
 #endif

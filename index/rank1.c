@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.22 2005-01-15 19:38:26 adam Exp $
+/* $Id: rank1.c,v 1.23 2005-03-08 14:02:12 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -56,7 +56,7 @@ struct rank_set_info {
     NMEM nmem;
 };
 
-static int log2_int (unsigned g)
+static int log2_int (zint g)
 {
     int n = 0;
     while ((g = g>>1))

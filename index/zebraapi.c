@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.152 2005-01-23 12:36:27 adam Exp $
+/* $Id: zebraapi.c,v 1.153 2005-03-08 14:02:12 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -823,7 +823,7 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
 }
 
 int zebra_search_RPN (ZebraHandle zh, ODR o,
-		       Z_RPNQuery *query, const char *setname, int *hits)
+		       Z_RPNQuery *query, const char *setname, zint *hits)
 {
     const char *max;
     zint maxhits;
@@ -1687,10 +1687,10 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
                  zh->records_processed, zh->records_inserted,
                  zh->records_updated, zh->records_deleted);
         
-        status->processed = zh->records_processed;
-        status->inserted = zh->records_inserted;
-        status->updated = zh->records_updated;
-        status->deleted = zh->records_deleted;
+        status->processed = (int) zh->records_processed;
+        status->inserted = (int) zh->records_inserted;
+        status->updated = (int) zh->records_updated;
+        status->deleted = (int) zh->records_deleted;
         
         zebra_get_state (zh, &val, &seqno);
         if (val != 'd')
@@ -2091,9 +2091,9 @@ int zebra_delete_record (ZebraHandle zh,
 */
 
 int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
-		      const char *setname, int *numhits)
+		      const char *setname, zint *numhits)
 {
-    int hits = 0;
+    zint hits = 0;
     int res = -1;
     Z_RPNQuery *query;
     ODR odr = odr_createmem(ODR_ENCODE);
