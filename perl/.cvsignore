@@ -1,1 +1,4 @@
 Makefile.PL
+Makefile
+zebrasrv.pid
+*.log

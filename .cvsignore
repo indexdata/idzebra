@@ -5,3 +5,4 @@ config.cache
 config.log
 config.status
 configure
+idzebra.spec

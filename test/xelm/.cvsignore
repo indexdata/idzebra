@@ -1,7 +1,6 @@
-.deps
 Makefile
 Makefile.in
-t1
-t2
 *.mf
+*.log
+log
 *.LCK

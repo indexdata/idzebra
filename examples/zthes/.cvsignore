@@ -1,0 +1,4 @@
+*.mf
+*.LCK
+*.in
+Makefile
