@@ -5,7 +5,7 @@ TPROG=btest
 CFLAGS=-g -Wall
 DEFS=$(INCLUDE)
 LIB=../lib/bfile.a
-PO = open.o close.o xmalloc.o rdwr.o
+PO = open.o close.o rdwr.o
 CPP=cc -E
 
 all: $(LIB)
