@@ -1,4 +1,4 @@
-/* $Id: dir.c,v 1.26 2002-09-06 10:28:02 adam Exp $
+/* $Id: dir.c,v 1.27 2002-10-30 12:58:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -52,7 +52,7 @@ struct dir_entry *dir_open (const char *rep, const char *base,
     char path[1024];
     char full_rep[1024];
     size_t pathpos;
-    struct dirent *dent;
+    struct dirent dent_s, *dent = &dent_s;
     size_t entry_max = 500;
     size_t idx = 0;
     struct dir_entry *entry;
@@ -79,7 +79,13 @@ struct dir_entry *dir_open (const char *rep, const char *base,
     pathpos = strlen(path);
     if (!pathpos || path[pathpos-1] != '/')
         path[pathpos++] = '/';
-    while ((dent = readdir (dir)))
+    while (
+#if _REENTRANT
+		    (readdir_r (dir, &dent_s, &dent) == 0 && dent)
+#else
+		    (dent = readdir (dir))
+#endif
+		    )
     {
         struct stat finfo;
         if (strcmp (dent->d_name, ".") == 0 ||
