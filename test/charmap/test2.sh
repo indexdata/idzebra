@@ -1,13 +1,17 @@
 #!/bin/sh
+# $id$
+
+pp=${srcdir:-"."}
+
 LOG=test2.log
 rm -f $LOG
-if ../../index/zebraidx -l $LOG -V|grep Expat >/dev/null; then
-	../../index/zebraidx -l$LOG init
+if ../../index/zebraidx -c $pp/zebra.cfg -l $LOG -V|grep Expat >/dev/null; then
+	../../index/zebraidx -c $pp/zebra.cfg -l$LOG init
 else
 	exit 0
 fi
-../../index/zebraidx -l$LOG update *.xml
-../../index/zebrasrv -l$LOG unix:socket &
+../../index/zebraidx -c $pp/zebra.cfg -l$LOG update *.xml
+../../index/zebrasrv -c $pp/zebra.cfg -l$LOG unix:socket &
 sleep 1
 # search for UNICODE 1E25 - letter h with dot below
 ../api/testclient unix:socket '@term string ḥ' >tmp1

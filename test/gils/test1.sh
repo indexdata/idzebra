@@ -1,5 +1,7 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.7 2003-05-24 22:34:48 adam Exp $
+# $Id: test1.sh,v 1.8 2004-06-15 08:06:34 adam Exp $
+
+pp=${srcdir:-"."}
 
 LOG=test1.log
 
@@ -7,16 +9,16 @@ rm -f $LOG
 echo  "initializing..." >>$LOG
 mkdir -p reg
 rm -f records/esdd000[12].grs # these should not be here, will be created later
-../../index/zebraidx -l $LOG -c zebra1.cfg init || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg init || exit 1
 
 echo "updating..." >>$LOG
-../../index/zebraidx -l $LOG -c zebra1.cfg update records  || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records  || exit 1
 
 echo "killing old server (if any)..." >>$LOG
 test -f zebrasrv.pid && kill `cat zebrasrv.pid`
 
 echo "starting server..." >>$LOG
-../../index/zebrasrv -S -c zebra1.cfg -l $LOG tcp:@:9901 &
+../../index/zebrasrv -S -c $pp/zebra1.cfg -l $LOG tcp:@:9901 &
 sleep 1
 
 echo "checking it runs..." >>$LOG
@@ -39,7 +41,7 @@ echo "search 4..." >>$LOG
 grep "^Result count: 9$" log >/dev/null || exit 1
 
 echo "reindexing..." >>$LOG
-../../index/zebraidx -l $LOG -c  zebra1.cfg update records || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records || exit 1
 
 echo "search 5..." >>$LOG
 ../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1

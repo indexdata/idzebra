@@ -1,5 +1,8 @@
 #!/bin/sh
-# $Id: test4.sh,v 1.1 2004-01-15 13:31:31 adam Exp $
+# $Id: test4.sh,v 1.2 2004-06-15 08:06:35 adam Exp $
+
+pp=${srcdir:-"."}
+
 LOG=test4.log
 TMP1=test4-1.tmp
 TMP2=test4-2.tmp
@@ -8,10 +11,10 @@ TMP4=test4-4.tmp
 TMP5=test4-5.tmp
 rm -f $LOG
 rm -f $TMP
-../../index/zebraidx -l $LOG init || exit 1
-../../index/zebraidx -l $LOG -t grs.sgml update rec4.xml || exit 2
+../../index/zebraidx -c $pp/zebra.cfg -l $LOG init || exit 1
+../../index/zebraidx -c $pp/zebra.cfg -l $LOG -t grs.sgml update rec4.xml || exit 2
 test -f dict*.mf || exit 1
-../../index/zebrasrv -l $LOG -S unix:socket & 
+../../index/zebrasrv -c $pp/zebra.cfg -l $LOG -S unix:socket & 
 sleep 1
 test -f zebrasrv.pid || exit 2
 ../api/testclient unix:socket '@attr 1=/root content' >$TMP1

@@ -1,9 +1,13 @@
 #!/bin/sh
+# $Id: test2.sh,v 1.2 2004-06-15 08:06:34 adam Exp $
+
+pp=${srcdir:-"."}
+
 LOG=test2.log
 rm -f $LOG
-../../index/zebraidx -l$LOG init
-../../index/zebraidx -l$LOG -t grs.marcxml.record update sample-marc
-../../index/zebrasrv -l$LOG unix:socket &
+../../index/zebraidx -c $pp/zebra.cfg -l$LOG init
+../../index/zebraidx -c $pp/zebra.cfg -l$LOG -t grs.marcxml.record update sample-marc
+../../index/zebrasrv -c $pp/zebra.cfg -l$LOG unix:socket &
 sleep 1
 ../api/testclient unix:socket '@and @attr 1=1003 jack @attr 1=4 computer' >tmp1
 echo 'Result count: 2' >tmp2

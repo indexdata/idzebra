@@ -1,24 +1,26 @@
 #!/bin/sh
-# $Id: test2.sh,v 1.7 2003-05-24 22:34:48 adam Exp $
+# $Id: test2.sh,v 1.8 2004-06-15 08:06:34 adam Exp $
+
+pp=${srcdir:-"."}
 
 LOG=test2.log
 
 rm -f $LOG
 echo "init..." >>$LOG
 rm -f records/esdd000[12].grs # these should not be here, will be created later
-../../index/zebraidx -l $LOG -c zebra2.cfg init || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra2.cfg init || exit 1
 
 echo "update 1..." >>$LOG
-../../index/zebraidx -l $LOG -c zebra2.cfg update records || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update records || exit 1
 
 echo "update 2..." >>$LOG
-../../index/zebraidx -l $LOG -c zebra2.cfg update records || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update records || exit 1
 
 echo "killing old server (if any)..." >>$LOG
 test -f zebrasrv.pid && kill -9 `cat zebrasrv.pid`
 
 echo "starting server..." >>$LOG
-../../index/zebrasrv -S -c zebra2.cfg -l $LOG tcp:@:9901 &
+../../index/zebrasrv -S -c $pp/zebra2.cfg -l $LOG tcp:@:9901 &
 sleep 1
 test -f zebrasrv.pid || exit 1
 
@@ -27,7 +29,7 @@ echo "search 1..." >>$LOG
 grep "^Result count: 9$" log >/dev/null || exit 1
 
 echo "update 3..." >>$LOG
-../../index/zebraidx -l $LOG -c zebra2.cfg update records || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update records || exit 1
 
 echo "search 2..." >>$LOG
 ../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
@@ -37,7 +39,7 @@ echo "making test records..." >>$LOG
 cp records/esdd0006.grs records/esdd0001.grs
 
 echo "indexing them..." >>$LOG
-../../index/zebraidx -l $LOG -c zebra2.cfg update records || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update records || exit 1
 
 echo "search 3..." >>$LOG
 ../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
@@ -45,7 +47,7 @@ grep "^Result count: 10$" log >/dev/null || exit 1
 touch records/esdd0001.grs
 
 echo "indexing again..." >>$LOG
-../../index/zebraidx -l $LOG -c zebra2.cfg update records || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update records || exit 1
 
 echo "search 4..." >>$LOG
 ../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
@@ -55,7 +57,7 @@ echo "making another test record..." >>$LOG
 mv records/esdd0001.grs records/esdd0002.grs
 
 echo "indexing it too..." >>$LOG
-../../index/zebraidx -l $LOG -c zebra2.cfg update records || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update records || exit 1
 
 echo "search 5..." >>$LOG
 ../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
@@ -67,7 +69,7 @@ sed 's/UTAH/XYZ/g' <records/esdd0002.grs >records/esdd0002x.grs
 mv records/esdd0002x.grs records/esdd0002.grs
 
 echo "indexing it..." >>$LOG
-../../index/zebraidx -l $LOG -c zebra2.cfg update records || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update records || exit 1
 sleep 1
 
 echo "search 6..." >>$LOG

@@ -1,23 +1,25 @@
 #!/bin/sh
-# $Id: stop03.sh,v 1.6 2003-09-24 11:45:44 adam Exp $
+# $Id: stop03.sh,v 1.7 2004-06-15 08:06:34 adam Exp $
 # test start and stop of the threaded server (-T)
+
+pp=${srcdir:-"."}
 
 LOG=stop03.log
 
 rm -f $LOG
 echo "initializing" >>$LOG
 mkdir -p reg
-../../index/zebraidx -l $LOG -c zebra1.cfg init || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg init || exit 1
 
 #create a base to test on
-../../index/zebraidx -l $LOG -c zebra1.cfg update records  || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records  || exit 1
 
 #kill old server (if any)
 test -f zebrasrv.pid && kill -9 `cat zebrasrv.pid`
 
 echo "Starting server with -T (threaded)..." >>$LOG
 (
-  ../../index/zebrasrv -T -c zebra1.cfg -l $LOG tcp:@:9901 2>out ||
+  ../../index/zebrasrv -T -c $pp/zebra1.cfg -l $LOG tcp:@:9901 2>out ||
     echo "server failed with $?" > $LOG
 )&
 sleep 1

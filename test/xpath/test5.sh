@@ -1,14 +1,17 @@
 #!/bin/sh
-# $Id: test5.sh,v 1.1 2004-02-09 17:44:49 heikki Exp $
+# $Id: test5.sh,v 1.2 2004-06-15 08:06:35 adam Exp $
+
+pp=${srcdir:-"."}
+
 LOG="test5.log"
 TMP="test5.tmp"
 DBG="-v 1647"
 rm -f $LOG
 rm -f $TMP.*
-../../index/zebraidx -l $LOG init || exit 1
-../../index/zebraidx -l $LOG -t grs.sgml update rec5.xml || exit 2
+../../index/zebraidx -c $pp/zebra.cfg -l $LOG init || exit 1
+../../index/zebraidx -c $pp/zebra.cfg -l $LOG -t grs.sgml update rec5.xml || exit 2
 test -f dict*.mf || exit 1
-../../index/zebrasrv -l $LOG $DBG -S unix:socket & 
+../../index/zebrasrv -c $pp/zebra.cfg -l $LOG $DBG -S unix:socket & 
 sleep 1
 test -f zebrasrv.pid || exit 2
 ../api/testclient unix:socket '@attr 1=/record/title foo' >$TMP.1

@@ -1,8 +1,10 @@
 #!/bin/sh
-# $Id: test3.sh,v 1.2 2004-02-12 15:14:19 heikki Exp $
+# $Id: test3.sh,v 1.3 2004-06-15 08:06:34 adam Exp $
 
 # Testing searches with lots of @and operators
 # in order to test the fast-forward operation of rsets
+
+pp=${srcdir:-"."}
 
 LOG=test3.log
 DBG="-v 1647"
@@ -14,13 +16,13 @@ rm -f zebrasrv.pid
 
 echo  "initializing..." >>$LOG
 mkdir -p reg
-../../index/zebraidx -l $LOG -c zebra1.cfg init || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg init || exit 1
 
 echo "updating..." >>$LOG
-../../index/zebraidx -l $LOG -c zebra1.cfg update records  || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records  || exit 1
 
 echo "starting server..." >>$LOG
-../../index/zebrasrv -S -c zebra1.cfg $DBG -l $LOG tcp:@:9901 &
+../../index/zebrasrv -S -c $pp/zebra1.cfg $DBG -l $LOG tcp:@:9901 &
 sleep 1
 
 echo "checking it runs..." >>$LOG
@@ -83,7 +85,7 @@ echo "search D7..." >>$LOG
 ../api/testclient -c 15 localhost:9901 '@and @and in data the' > log || exit 1
 
 echo "search D8..." >>$LOG
-../api/testclient -c2 localhost:9901 "@attr 1=4 @and UNPUBLISHED @and REPORTS AND" >log || exit 1
+../api/testclient -c 2 localhost:9901 "@attr 1=4 @and UNPUBLISHED @and REPORTS AND" >log || exit 1
 # This one failed at early fast-forwards
 
 echo "search E1..." >>$LOG

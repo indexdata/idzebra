@@ -1,13 +1,16 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.2 2004-03-09 18:52:37 adam Exp $
+# $Id: test1.sh,v 1.3 2004-06-15 08:06:34 adam Exp $
+
+pp=${srcdir:-"."}
+
 LOG=test1.log
 rm -f $LOG
 test -d tmp || mkdir tmp
 test -d lock || mkdir lock
 test -d register || mkdir register
-../../index/zebraidx -l$LOG init
-../../index/zebraidx -l$LOG update records/*marc
-../../index/zebrasrv -l$LOG unix:socket &
+../../index/zebraidx -c $pp/zebra.cfg -l$LOG init
+../../index/zebraidx -c $pp/zebra.cfg -l$LOG update records/*marc
+../../index/zebrasrv -c $pp/zebra.cfg -l$LOG unix:socket &
 sleep 1
 # search text located in first record 600 $a
 # term is koi8-r encoded

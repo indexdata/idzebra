@@ -1,12 +1,16 @@
 #!/bin/sh
+# $Id: testall.sh,v 1.3 2004-06-15 08:06:36 adam Exp $
 # run all zebrash tests
-mkdir -p reg
+
+pp=${srcdir:-"."}
+
+test -d reg || mkdir reg
 rm -f *.mf reg/*.mf *.out
 
 for F in *.zsh
 do
   echo $F
-  ../../index/zebrash <$F >$F.out 
+  ../../index/zebrash -c $pp/zebra.cfg <$F >$F.out 
   RC=$?
   if [ "$RC" -gt "0" ]
   then 
