@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.1  1996-05-14 14:04:34  adam
+ * Revision 1.2  1996-05-22 08:25:56  adam
+ * Minor change.
+ *
+ * Revision 1.1  1996/05/14 14:04:34  adam
  * In zebraidx, the 'stat' command is improved. Statistics about ISAM/DICT
  * is collected.
  *
@@ -125,6 +128,6 @@ void inv_prstat (const char *dict_fname, const char *isam_fname)
                  prev, here, stat_info.isam_occurrences[i]);
         prev = here+1;
     }
-    fprintf (stderr, "%7d-         %7d\n",
+    fprintf (stderr, "%7d-        %7d\n",
              prev, stat_info.isam_occurrences[i]);
 }
