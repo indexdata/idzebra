@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.54  1996-10-29 14:09:52  adam
+ * Revision 1.55  1996-11-04 14:07:44  adam
+ * Moved truncation code to trunc.c.
+ *
+ * Revision 1.54  1996/10/29 14:09:52  adam
  * Use of cisam system - enabled if setting isamc is 1.
  *
  * Revision 1.53  1996/06/26 09:21:43  adam
@@ -194,8 +197,6 @@
 #include "attribute.h"
 
 #include <charmap.h>
-#include <rsisam.h>
-#include <rsisamc.h>
 #include <rstemp.h>
 #include <rsnull.h>
 #include <rsbool.h>
@@ -207,27 +208,6 @@ typedef struct {
     int minor;
     Z_AttributesPlusTerm *zapt;
 } AttrType;
-
-static RSET rset_create_isamx (ZServerInfo *zi, int pos)
-{
-    if (zi->isam)
-    {
-        rset_isam_parms parms;
-
-        parms.pos = pos;
-        parms.is = zi->isam;
-        return rset_create (rset_kind_isam, &parms);
-    }
-    if (zi->isamc)
-    {
-        rset_isamc_parms parms;
-
-        parms.pos = pos;
-        parms.is = zi->isamc;
-        return rset_create (rset_kind_isamc, &parms);
-    }
-    return rset_create (rset_kind_null, NULL);
-}
 
 static int attr_find (AttrType *src, oid_value *attributeSetP)
 {
@@ -281,248 +261,6 @@ static void attr_init (AttrType *src, Z_AttributesPlusTerm *zapt,
     src->type = type;
     src->major = 0;
     src->minor = 0;
-}
-
-struct trunc_info {
-    int  *ptr;
-    int  *indx;
-    char **heap;
-    int  heapnum;
-    int  (*cmp)(const void *p1, const void *p2);
-    int  keysize;
-    char *swapbuf;
-    char *tmpbuf;
-    char *buf;
-};
-
-static void heap_swap (struct trunc_info *ti, int i1, int i2)
-{
-    int swap;
-
-    swap = ti->ptr[i1];
-    ti->ptr[i1] = ti->ptr[i2];
-    ti->ptr[i2] = swap;
-}
-
-static void heap_delete (struct trunc_info *ti)
-{
-    int cur = 1, child = 2;
-
-    heap_swap (ti, 1, ti->heapnum--);
-    while (child <= ti->heapnum) {
-        if (child < ti->heapnum &&
-            (*ti->cmp)(ti->heap[ti->ptr[child]],
-                       ti->heap[ti->ptr[1+child]]) > 0)
-            child++;
-        if ((*ti->cmp)(ti->heap[ti->ptr[cur]],
-                       ti->heap[ti->ptr[child]]) > 0)
-        {
-            heap_swap (ti, cur, child);
-            cur = child;
-            child = 2*cur;
-        }
-        else
-            break;
-    }
-}
-
-static void heap_insert (struct trunc_info *ti, const char *buf, int indx)
-{
-    int cur, parent;
-
-    cur = ++(ti->heapnum);
-    memcpy (ti->heap[ti->ptr[cur]], buf, ti->keysize);
-    ti->indx[ti->ptr[cur]] = indx;
-    parent = cur/2;
-    while (parent && (*ti->cmp)(ti->heap[ti->ptr[parent]],
-                                ti->heap[ti->ptr[cur]]) > 0)
-    {
-        heap_swap (ti, cur, parent);
-        cur = parent;
-        parent = cur/2;
-    }
-}
-
-static
-struct trunc_info *heap_init (int size, int key_size,
-                              int (*cmp)(const void *p1, const void *p2))
-{
-    struct trunc_info *ti = xmalloc (sizeof(*ti));
-    int i;
-
-    ++size;
-    ti->heapnum = 0;
-    ti->keysize = key_size;
-    ti->cmp = cmp;
-    ti->indx = xmalloc (size * sizeof(*ti->indx));
-    ti->heap = xmalloc (size * sizeof(*ti->heap));
-    ti->ptr = xmalloc (size * sizeof(*ti->ptr));
-    ti->swapbuf = xmalloc (ti->keysize);
-    ti->tmpbuf = xmalloc (ti->keysize);
-    ti->buf = xmalloc (size * ti->keysize);
-    for (i = size; --i >= 0; )
-    {
-        ti->ptr[i] = i;
-        ti->heap[i] = ti->buf + ti->keysize * i;
-    }
-    return ti;
-}
-
-static void heap_close (struct trunc_info *ti)
-{
-    xfree (ti->ptr);
-    xfree (ti->indx);
-    xfree (ti->heap);
-    xfree (ti->swapbuf);
-    xfree (ti->tmpbuf);
-    xfree (ti);
-}
-
-static RSET rset_trunc_r (ISAM isam, ISAM_P *isam_p, int from, int to,
-                         int merge_chunk)
-{
-    RSET result; 
-    RSFD result_rsfd;
-    rset_temp_parms parms;
-
-    parms.key_size = sizeof(struct it_key);
-    result = rset_create (rset_kind_temp, &parms);
-    result_rsfd = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
-
-    if (to - from > merge_chunk)
-    {
-        RSFD *rsfd;
-        RSET *rset;
-        int i, i_add = (to-from)/merge_chunk + 1;
-        struct trunc_info *ti;
-        int rscur = 0;
-        int rsmax = (to-from)/i_add + 1;
-        
-        rset = xmalloc (sizeof(*rset) * rsmax);
-        rsfd = xmalloc (sizeof(*rsfd) * rsmax);
-        
-        for (i = from; i < to; i += i_add)
-        {
-            if (i_add <= to - i)
-                rset[rscur] = rset_trunc_r (isam, isam_p, i, i+i_add,
-                                            merge_chunk);
-            else
-                rset[rscur] = rset_trunc_r (isam, isam_p, i, to,
-                                            merge_chunk);
-            rscur++;
-        }
-        ti = heap_init (rscur, sizeof(struct it_key), key_compare);
-        for (i = rscur; --i >= 0; )
-        {
-            rsfd[i] = rset_open (rset[i], RSETF_READ|RSETF_SORT_SYSNO);
-            if (rset_read (rset[i], rsfd[i], ti->tmpbuf))
-                heap_insert (ti, ti->tmpbuf, i);
-            else
-            {
-                rset_close (rset[i], rsfd[i]);
-                rset_delete (rset[i]);
-            }
-        }
-        while (ti->heapnum)
-        {
-            int n = ti->indx[ti->ptr[1]];
-
-            rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
-
-            while (1)
-            {
-                if (!rset_read (rset[n], rsfd[n], ti->tmpbuf))
-                {
-                    heap_delete (ti);
-                    rset_close (rset[n], rsfd[n]);
-                    rset_delete (rset[n]);
-                    break;
-                }
-                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
-                {
-                    heap_delete (ti);
-                    heap_insert (ti, ti->tmpbuf, n);
-                    break;
-                }
-            }
-        }
-        xfree (rset);
-        xfree (rsfd);
-        heap_close (ti);
-    }
-    else
-    {
-        ISPT *ispt;
-        int i;
-        struct trunc_info *ti;
-
-        ispt = xmalloc (sizeof(*ispt) * (to-from));
-
-        ti = heap_init (to-from, sizeof(struct it_key),
-                        key_compare);
-        for (i = to-from; --i >= 0; )
-        {
-            ispt[i] = is_position (isam, isam_p[from+i]);
-            if (is_readkey (ispt[i], ti->tmpbuf))
-                heap_insert (ti, ti->tmpbuf, i);
-            else
-                is_pt_free (ispt[i]);
-        }
-        while (ti->heapnum)
-        {
-            int n = ti->indx[ti->ptr[1]];
-
-            rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
-#if 0
-/* section that preserve all keys */
-            heap_delete (ti);
-            if (is_readkey (ispt[n], ti->tmpbuf))
-                heap_insert (ti, ti->tmpbuf, n);
-            else
-                is_pt_free (ispt[n]);
-#else
-/* section that preserve all keys with unique sysnos */
-            while (1)
-            {
-                if (!is_readkey (ispt[n], ti->tmpbuf))
-                {
-                    heap_delete (ti);
-                    is_pt_free (ispt[n]);
-                    break;
-                }
-                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
-                {
-                    heap_delete (ti);
-                    heap_insert (ti, ti->tmpbuf, n);
-                    break;
-                }
-            }
-#endif
-        }
-        heap_close (ti);
-        xfree (ispt);
-    }
-    rset_close (result, result_rsfd);
-    return result;
-}
-
-static int isam_trunc_cmp (const void *p1, const void *p2)
-{
-    ISAM_P i1 = *(ISAM_P*) p1;
-    ISAM_P i2 = *(ISAM_P*) p2;
-    int d;
-
-    d = is_type (i1) - is_type (i2);
-    if (d)
-        return d;
-    return is_block (i1) - is_block (i2);
-}
-
-static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int no)
-{
-    assert (isam);
-    qsort (isam_p, no, sizeof(*isam_p), isam_trunc_cmp);
-    return rset_trunc_r (isam, isam_p, 0, no, 100);
 }
 
 #define TERM_COUNT        
@@ -913,7 +651,7 @@ static void trans_scan_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 {
     Z_Term *term = zapt->term;
     char **map;
-    const char *cp = (const char *) term->u.general->buf;
+    char *cp = (char*) term->u.general->buf;
     const char *cp_end = cp + term->u.general->len;
     const char *src;
     int i = 0;
@@ -1045,15 +783,7 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
     if (field_term (zi, zapt, termz, 'p', attributeSet, &grep_info,
                     num_bases, basenames))
         return NULL;
-    if (grep_info.isam_p_indx < 1)
-        result = rset_create (rset_kind_null, NULL);
-    else if (grep_info.isam_p_indx == 1)
-    {
-        result = rset_create_isamx (zi, *grep_info.isam_p_buf);
-    }
-    else
-        result = rset_trunc (zi->isam, grep_info.isam_p_buf,
-                             grep_info.isam_p_indx);
+    result = rset_trunc (zi, grep_info.isam_p_buf, grep_info.isam_p_indx);
 #ifdef TERM_COUNT
     xfree(grep_info.term_no);
 #endif
@@ -1205,16 +935,8 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         if (field_term (zi, zapt, term_sub, 'w', attributeSet, &grep_info,
                         num_bases, basenames))
             return NULL;
-        if (grep_info.isam_p_indx == 0)
-            rset[rset_no] = rset_create (rset_kind_null, NULL);
-        else if (grep_info.isam_p_indx > 1)
-            rset[rset_no] = rset_trunc (zi->isam,
-                                        grep_info.isam_p_buf,
-                                        grep_info.isam_p_indx);
-        else
-        {
-            rset[rset_no] = rset_create_isamx (zi, *grep_info.isam_p_buf);
-        }
+        rset[rset_no] = rset_trunc (zi, grep_info.isam_p_buf,
+                                    grep_info.isam_p_indx);
         assert (rset[rset_no]);
         if (++rset_no >= sizeof(rset)/sizeof(*rset))
             break;
@@ -1678,8 +1400,7 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         if (j0 == -1)
             break;
         scan_term_untrans (zi->odr, &glist[i+before].term, mterm);
-        rset =
-            rset_create_isamx (zi, scan_info_array[j0].list[ptr[j0]].isam_p);
+        rset = rset_trunc (zi, &scan_info_array[j0].list[ptr[j0]].isam_p, 1);
 
         ptr[j0]++;
         for (j = j0+1; j<ord_no; j++)
@@ -1691,8 +1412,8 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 rset_bool_parms bool_parms;
                 RSET rset2;
 
-                rset2 = rset_create_isamx
-                         (zi, scan_info_array[j].list[ptr[j]].isam_p);
+                rset2 =
+                   rset_trunc (zi, &scan_info_array[j].list[ptr[j]].isam_p, 1);
 
                 bool_parms.key_size = sizeof(struct it_key);
                 bool_parms.cmp = key_compare;
@@ -1738,8 +1459,8 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
         scan_term_untrans (zi->odr, &glist[before-1-i].term, mterm);
 
-        rset = rset_create_isamx
-                  (zi, scan_info_array[j0].list[before-1-ptr[j0]].isam_p);
+        rset = rset_trunc
+               (zi, &scan_info_array[j0].list[before-1-ptr[j0]].isam_p, 1);
 
         ptr[j0]++;
 
@@ -1752,8 +1473,8 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 rset_bool_parms bool_parms;
                 RSET rset2;
 
-                rset2 = rset_create_isamx (zi,
-                            scan_info_array[j].list[before-1-ptr[j]].isam_p);
+                rset2 = rset_trunc (zi,
+                         &scan_info_array[j].list[before-1-ptr[j]].isam_p, 1);
 
                 bool_parms.key_size = sizeof(struct it_key);
                 bool_parms.cmp = key_compare;

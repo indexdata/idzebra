@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.21  1996-10-29 14:09:58  adam
+ * Revision 1.22  1996-11-04 14:07:49  adam
+ * Moved truncation code to trunc.c.
+ *
+ * Revision 1.21  1996/10/29 14:09:58  adam
  * Use of cisam system - enabled if setting isamc is 1.
  *
  * Revision 1.20  1996/06/04 10:19:02  adam
@@ -114,6 +117,8 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
               int num_bases, char **basenames,
               int *position, int *num_entries, struct scan_entry **list,
               int *status);
+
+RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no);
 
 ZServerSet *resultSetAdd (ZServerInfo *zi, const char *name,
                           int ov, RSET rset);
