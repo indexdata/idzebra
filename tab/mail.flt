@@ -1,8 +1,8 @@
-# $Id: mail.flt,v 1.1 1996-05-01 13:46:51 adam Exp $
+# $Id: mail.flt,v 1.2 1996-06-11 10:53:55 quinn Exp $
 BEGIN				{ begin record wais }
 /^From:/	BODY	/$/	{ data -element name $1 }
 /^Subject:/	BODY	/$/	{ data -element title $1 }
-/^Date:/	BODY	/$/	{ data -element dateOfLastModification $1 }
+/^Date:/	BODY	/$/	{ data -element date $1 }
 /^$/		BODY	/^From /	{
 						data -text -element Body $1
 				  		unread 2
