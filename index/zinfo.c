@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.8  1998-05-20 10:12:20  adam
+ * Revision 1.9  1998-06-02 12:10:27  adam
+ * Fixed bug related to attributeDetails.
+ *
+ * Revision 1.8  1998/05/20 10:12:20  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -795,6 +798,7 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database)
     zdi->attributeDetails->readFlag = 0;
     zdi->attributeDetails->sysno = 0;
     zdi->attributeDetails->dirty = 1;
+    zdi->attributeDetails->SUInfo = NULL;
     zdi->attributeDetails->data1_tree =
 	data1_read_sgml (zei->dh, zei->nmem,
 			 "<explain><attributeDetails>AttributeDetails\n"
