@@ -34,17 +34,21 @@ ISAMH_M isamh_getmethod (void)
 {
     static struct ISAMH_filecat_s def_cat[] = {
 #if SMALL_TEST
-/*        blocksz,   maxnum */
-        {    32,   3 },
+/*        blocksz,   max keys before switching size */
+        {    32,  40 },
 	{    64,   0 },
 #else
-        {    24, 10 },
-	{   128, 10 },
-        {   512, 10 },
-        {  2048, 10 },
-        {  8192, 10 },
-        { 32768,  0 },
+        {    24,   40 },
+	{   128,  256 },
+        {   512, 1024 },
+        {  2048, 4096 },
+        {  8192,16384 },
+        { 32768,   0  },
 #endif 
+/* assume about 2 bytes per pointer, when compressed. The head uses */
+/* 16 bytes, and other blocks use 8 for header info... If you want 3 */
+/* blocks of 32 bytes, say max 16+24+24 = 64 keys */
+
     };
     ISAMH_M m = (ISAMH_M) xmalloc (sizeof(*m));
     m->filecat = def_cat;
@@ -485,11 +489,13 @@ ISAMH_PP isamh_pp_open (ISAMH is, ISAMH_P ipos)
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMH_BLOCK_OFFSET_1);
         if (is->method->debug > 2)
-            logf (LOG_LOG, "isc: read_block size=%d %d %d next=%d",
-                 pp->size, pp->cat, pp->pos, pp->next);
+            logf (LOG_LOG, "isamh_pp_open sz=%d c=%d p=%d n=%d",
+                 pp->size, pp->cat, pp->pos, isamh_block(pp->next));
     }
     return pp;
 }
+
+
 
 void isamh_buildfirstblock(ISAMH_PP pp){
   char *dst=pp->buf;
@@ -505,8 +511,12 @@ void isamh_buildfirstblock(ISAMH_PP pp){
   dst += sizeof(pp->lastblock);  
   assert (dst - pp->buf  == ISAMH_BLOCK_OFFSET_1);
   if (pp->is->method->debug > 2)
-     logf (LOG_LOG, "isamh: firstblock: sz=%d c=%d p=%d>%d>%d nk=%d",
-           pp->size, pp->cat, pp->pos, pp->next, pp->lastblock,pp->numKeys);
+     logf (LOG_LOG, "isamh: first: sz=%d  p=%d/%d>%d/%d>%d/%d nk=%d",
+           pp->size, 
+           pp->pos, pp->cat, 
+           isamh_block(pp->next), isamh_type(pp->next),
+           isamh_block(pp->lastblock), isamh_type(pp->lastblock),
+           pp->numKeys);
 }
 
 void isamh_buildlaterblock(ISAMH_PP pp){
@@ -519,8 +529,10 @@ void isamh_buildlaterblock(ISAMH_PP pp){
   dst += sizeof(pp->size);
   assert (dst - pp->buf  == ISAMH_BLOCK_OFFSET_N);
   if (pp->is->method->debug > 2)
-     logf (LOG_LOG, "isamh: laterblock: sz=%d c=%d p=%d>%d",
-                 pp->size, pp->cat, pp->pos, pp->next);
+     logf (LOG_LOG, "isamh: l8r: sz=%d  p=%d/%d>%d/%d",
+           pp->size, 
+           pp->pos, pp->cat, 
+           isamh_block(pp->next), isamh_type(pp->next) );
 }
 
 
@@ -601,7 +613,10 @@ int isamh_pp_num (ISAMH_PP pp)
 
 /*
  * $Log: isamh.c,v $
- * Revision 1.2  1999-07-06 09:37:05  heikki
+ * Revision 1.3  1999-07-06 16:30:20  heikki
+ * IsamH startss to work - at least it builds indexes. Can not search yet...
+ *
+ * Revision 1.2  1999/07/06 09:37:05  heikki
  * Working on isamh - not ready yet.
  *
  * Revision 1.1  1999/06/30 15:04:54  heikki

@@ -27,7 +27,7 @@ typedef struct ISAMH_PP_s *ISAMH_PP;
 
 typedef struct ISAMH_filecat_s {  /* filecategories, mostly block sizes */
     int bsize;         /* block size */
-    int mblocks;       /* maximum blocks */
+    int mblocks;       /* maximum keys before switching to larger sizes */
 } *ISAMH_filecat;
 
 typedef struct ISAMH_M_s {
@@ -68,8 +68,10 @@ int isamh_pp_num (ISAMH_PP pp);
 int isamh_block_used (ISAMH is, int type);
 int isamh_block_size (ISAMH is, int type);
 
+
 #define isamh_type(x) ((x) & 7)
 #define isamh_block(x) ((x) >> 3)
+#define isamh_addr(blk,typ) (((blk)<<3)+(typ))
 
 void isamh_buildfirstblock(ISAMH_PP pp);
 void isamh_buildlaterblock(ISAMH_PP pp);
@@ -83,7 +85,10 @@ void isamh_buildlaterblock(ISAMH_PP pp);
 
 /*
  * $Log: isamh.h,v $
- * Revision 1.2  1999-07-06 09:37:04  heikki
+ * Revision 1.3  1999-07-06 16:30:20  heikki
+ * IsamH startss to work - at least it builds indexes. Can not search yet...
+ *
+ * Revision 1.2  1999/07/06 09:37:04  heikki
  * Working on isamh - not ready yet.
  *
  * Revision 1.1  1999/06/30 15:06:28  heikki
