@@ -1,7 +1,7 @@
 # Copyright (C) 1996-1998, Index Data 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.4 1999-06-09 11:58:48 adam Exp $
+# $Id: Makefile.in,v 1.5 1999-06-30 15:03:55 heikki Exp $
 
 SHELL=/bin/sh
 
@@ -18,7 +18,7 @@ INCLUDE=-I../include $(YAZINC)
 TPROG1=isamctst
 DEFS=$(CDEFS) $(INCLUDE)
 LIB=../lib/isamc.a 
-PO = isamc.o merge.o isams.o
+PO = isamc.o isamh.o merge.o isams.o
 
 all: $(LIB)
 
