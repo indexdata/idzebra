@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.18  1997-09-17 12:19:24  adam
+ * Revision 1.19  1997-10-27 14:27:59  adam
+ * Fixed memory leak.
+ *
+ * Revision 1.18  1997/09/17 12:19:24  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -229,6 +232,7 @@ void res_close (Res r)
             xfree (re);
         }
     }
+    xfree (r->name);
     xfree (r);
 }
 
