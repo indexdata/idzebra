@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.11 2003-03-27 13:38:13 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.12 2003-03-31 20:48:12 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -200,8 +200,136 @@
    </para>
   </sect1>
   <sect1 id="installation.win32"><title>WIN32</title>
+   <para>The easiest way to install Zebra on Windows is by downloading
+    an installer from 
+    <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/">here</ulink>.
+    The installer comes with source too - in case you wish to
+    compile Zebra with different Compiler options.
+   </para>
+   
    <para>
-    [to be written]
+    Zebra is shipped with "makefiles" for the NMAKE tool that comes
+    with <ulink url="http://msdn.microsoft.com/vstudio/">
+     Microsoft Visual C++</ulink>.
+    Version 6 has been tested. We expect that zebra compiles
+    with version 5 as well.
+   </para>
+   <para>
+    Start a command prompt and switch the sub directory
+    <filename>WIN</filename> where the file <filename>makefile</filename>
+    is located. Customize the installation by editing the
+    <filename>makefile</filename> file (for example by using notepad).
+    
+    The following summarizes the most important settings in that file:
+    
+    <variablelist>
+     <varlistentry><term><literal>DEBUG</literal></term>
+      <listitem><para>
+        If set to 1, the software is
+        compiled with debugging libraries (code generation is
+        multi-threaded debug DLL).
+        If set to 0, the software is compiled with release libraries
+        (code generation is multi-threaded DLL).
+       </para></listitem>
+     </varlistentry>
+     
+     <varlistentry>
+      <term><literal>YAZDIR</literal></term>
+      <listitem><para>
+        Directory of YAZ source. Zebra's makefile expects to find
+        <filename>yaz.lib</filename>, <filename>yaz.dll</filename> 
+        in <replaceable>yazdir</replaceable><literal>/lib</literal> and
+        <replaceable>yazdir</replaceable><literal>/bin</literal> respectively.
+       </para>
+      </listitem>
+     </varlistentry>
+     
+     <varlistentry>
+      <term><literal>HAVE_EXPAT</literal>,
+       <literal>EXPAT_DIR</literal></term>
+      <listitem><para>
+        If <literal>HAVE_EXPAT</literal> is set to 1, Zebra is compiled
+        with Expat support. In this configuration, set 
+        <literal>ZEBRA_DIR</literal> to the Expat source directory.
+       </para></listitem>
+     </varlistentry>
+     
+     <varlistentry>
+      <term><literal>HAVE_ICONV</literal>,
+       <literal>ICONV_DIR</literal></term>
+       <listitem><para>
+        If <literal>HAVE_ICONV</literal> is set to 1, Zebra is compiled
+        with iconv support. In this configuration, set 
+        <literal>ICONV_DIR</literal> to the iconv source directory.
+        
+        iconv binaries can be downloaded from
+        <ulink url="http://www.zlatkovic.com/projects/libxml/binaries.html">
+         this site</ulink>.
+        </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><literal>BZIP2INCLUDE</literal>,
+       <literal>BZIP2LIB</literal>,
+       <literal>BZIP2DEF</literal>
+      </term>
+      <listitem><para>
+        Define these symbols if Zebra is to be compiled with
+        BZIP2 record compression support.
+       </para></listitem>
+     </varlistentry>
+     
+    </variablelist>
+   </para>
+   <warning>
+    <para>
+     The <literal>DEBUG</literal> setting in the makefile for Zebra must
+     be set to the same value as <literal>DEBUG</literal> setting in the
+     makefile for YAZ.
+     If not, the Zebra server/indexer will crash.
+    </para>
+   </warning>
+   <para>
+    When satisfied with the settings in the makefile, type
+    <screen>
+     nmake
+    </screen>
+   </para>
+   <note>
+    <para>
+     If the <filename>nmake</filename> command is not found on your system
+     you probably haven't defined the environment variables required to
+     use that tool. To fix that, find and run the batch file
+     <filename>vcvars32.bat</filename>. You need to run it from within
+     the command prompt or set the environment variables "globally";
+     otherwise it doesn't work.
+    </para>
+   </note>
+   <para>
+    If you wish to recompile Zebra - for example if you modify
+     settings in the <filename>makefile</filename> you can delete
+    object files, etc by running.
+    <screen>
+     nmake clean
+    </screen>
+   </para>
+   <para>
+    The following files are generated upon successful compilation:
+    
+    <variablelist>
+     <varlistentry><term><filename>bin/zebraidx.exe</filename></term>
+      <listitem><para>
+        The Zebra indexer.
+       </para></listitem></varlistentry>
+     
+     <varlistentry><term><filename>bin/zebrasrv.exe</filename></term>
+      <listitem><para>
+        The Zebra server.
+       </para></listitem></varlistentry>
+     
+    </variablelist>
+    
    </para>
   </sect1>
  </chapter>
