@@ -38,13 +38,13 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
         {    32,   40 },
 	{   128,    0 },
 #else
-        {    24,    1 },
         {    32,    1 },
-        {    64,    1 },
         {   128,    1 },
-        {   256,    1 },
-        {  1024,    1 },
-        {  2048,    0 },
+        {   512,    1 },
+        {  2048,    1 },
+        {  8092,    1 },
+        { 32768,    1 },
+        {131068,    0 },
 #endif 
 
 /* old values from isamc, long time ago...
@@ -462,6 +462,7 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
 
     src = pp->buf = (char *) xmalloc (is->method->filecat[is->max_cat].bsize);
                  /* always allocate for the largest blocks, saves trouble */
+    memset(pp->buf,'\0',is->method->filecat[is->max_cat].bsize);
     pp->next = 0;
     pp->size = 0;
     pp->offset = 0;
@@ -512,12 +513,13 @@ void isamd_buildfirstblock(ISAMD_PP pp){
   memcpy(dst, &pp->diffs, sizeof(pp->diffs));
   dst += sizeof(pp->diffs);  
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_1);
-  if (pp->is->method->debug > 2)
-     logf (LOG_LOG, "isamd: first: sz=%d  p=%d/%d>%d/%d nk=%d d=%d",
+  if (pp->is->method->debug > 1) //!!! 2
+     logf (LOG_LOG, "isamd: 1st: sz=%d  p=%d:%d>%d:%d nk=%d d=%d=2*%d+%d",
            pp->size, 
            pp->cat, pp->pos, 
            isamd_type(pp->next), isamd_block(pp->next),
-           pp->numKeys, pp->diffs);
+           pp->numKeys, 
+           pp->diffs, pp->diffs/2, pp->diffs&1);
 }
 
 void isamd_buildlaterblock(ISAMD_PP pp){
@@ -529,7 +531,7 @@ void isamd_buildlaterblock(ISAMD_PP pp){
   memcpy(dst, &pp->size,sizeof(pp->size));
   dst += sizeof(pp->size);
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_N);
-  if (pp->is->method->debug > 2)
+  if (pp->is->method->debug > 1)  //!!! 2
      logf (LOG_LOG, "isamd: l8r: sz=%d  p=%d/%d>%d/%d",
            pp->size, 
            pp->pos, pp->cat, 
@@ -686,7 +688,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.4  1999-08-04 14:21:18  heikki
+ * Revision 1.5  1999-08-07 11:30:59  heikki
+ * Bug fixing (still a mem leak somewhere)
+ *
+ * Revision 1.4  1999/08/04 14:21:18  heikki
  * isam-d seems to be working.
  *
  * Revision 1.3  1999/07/21 14:24:50  heikki
