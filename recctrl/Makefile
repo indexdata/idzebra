@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.1 1996-10-11 10:57:22 adam Exp $
+# $Id: Makefile,v 1.2 1997-09-04 13:54:39 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -13,7 +13,7 @@ INCLUDE=-I../include $(YAZINC)
 DEFS=$(INCLUDE)
 LIB=../lib/recctrl.a
 PROG=
-PO=recctrl.o recgrs.o regxread.o sgmlread.o rectext.o
+PO=recctrl.o recgrs.o sgmlread.o regxread.o marcread.o rectext.o
 CPP=$(CC) -E
 
 all: $(LIB)

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.5  1997-07-15 16:29:03  adam
+ * Revision 1.6  1997-09-04 13:54:40  adam
+ * Added MARC filter - type grs.marc.<syntax> where syntax refers
+ * to abstract syntax. New method tellf in retrieve/extract method.
+ *
+ * Revision 1.5  1997/07/15 16:29:03  adam
  * Initialized dummy variable to keep checker gcc happy.
  *
  * Revision 1.4  1997/04/30 08:56:08  quinn
@@ -128,6 +132,7 @@ static data1_node *read_grs_type (struct grs_read_info *p, const char *type)
     } tab[] = {
         { "sgml",  grs_read_sgml },
         { "regx",  grs_read_regx },
+        { "marc",  grs_read_marc },
         { NULL, NULL }
     };
     const char *cp = strchr (type, '.');
@@ -384,6 +389,7 @@ static int grs_extract(struct recExtractCtrl *p)
 
     gri.readf = p->readf;
     gri.seekf = p->seekf;
+    gri.tellf = p->tellf;
     gri.endf = p->endf;
     gri.fh = p->fh;
     gri.offset = p->offset;
@@ -479,6 +485,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     
     gri.readf = p->readf;
     gri.seekf = p->seekf;
+    gri.tellf = p->tellf;
     gri.endf = NULL;
     gri.fh = p->fh;
     gri.offset = 0;
