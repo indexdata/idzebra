@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.5  1995-09-29 14:01:43  adam
+ * Revision 1.6  1995-09-29 15:51:56  adam
+ * First work on multi-way read.
+ *
+ * Revision 1.5  1995/09/29  14:01:43  adam
  * Bug fixes.
  *
  * Revision 1.4  1995/09/28  14:22:57  adam
@@ -23,6 +26,8 @@
  *
  */
 
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -153,3 +158,151 @@ void key_input (const char *dict_fname, const char *isam_fname,
     logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
     logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
 }
+
+
+struct key_file {
+    int   no;
+    off_t offset;
+    char *buf;
+    size_t buf_size;
+    size_t chunk;
+    size_t buf_ptr;
+};
+
+void key_file_chunk_read (struct key_file *f)
+{
+    int nr = 0, r, fd;
+    char  fname[256];
+    sprintf (fname, TEMP_FNAME, f->no);
+    fd = open (fname, O_RDONLY);
+    if (fd == -1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "cannot open %s", fname);
+        exit (1);
+    }
+    if (lseek (fd, f->offset, SEEK_SET) == -1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "lseek to %ld in file %s",
+              (long) f->offset, fname);
+        exit (1);
+    }
+    f->buf = xmalloc (f->chunk);
+    while (f->chunk - nr > 0)
+    {
+        r = read (fd, f->buf + nr, f->chunk - nr);
+        if (r <= 0)
+            break;
+        nr += r;
+    }
+    if (r == -1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "read of %s", fname);
+        exit (1);
+    }
+    f->buf_size = nr;
+}
+
+void key_file_chunk_discard (struct key_file *f)
+{
+
+
+}
+
+int inp2 (Dict dict, ISAM isam, const char *name)
+{
+    FILE *inf;
+    char *info;
+    char next_name[INP_NAME_MAX+1];
+    char cur_name[INP_NAME_MAX+1];
+    int key_buf_size = INP_BUF_START;
+    int key_buf_ptr;
+    char *next_key;
+    char *key_buf;
+    int more;
+    
+    next_key = xmalloc (KEY_SIZE);
+    key_buf = xmalloc (key_buf_size * (KEY_SIZE));
+    if (!(inf = fopen (name, "r")))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "cannot open `%s'", name);
+        exit (1);
+    }
+    more = read_one (inf, cur_name, key_buf);
+    while (more)                   /* EOF ? */
+    {
+        int nmemb;
+        key_buf_ptr = KEY_SIZE;
+        while (1)
+        {
+            if (!(more = read_one (inf, next_name, next_key)))
+                break;
+            if (*next_name && strcmp (next_name, cur_name))
+                break;
+            memcpy (key_buf + key_buf_ptr, next_key, KEY_SIZE);
+            key_buf_ptr += KEY_SIZE;
+            if (key_buf_ptr+KEY_SIZE >= key_buf_size)
+            {
+                char *new_key_buf;
+                new_key_buf = xmalloc (key_buf_size + INP_BUF_ADD);
+                memcpy (new_key_buf, key_buf, key_buf_size);
+                key_buf_size += INP_BUF_ADD;
+                xfree (key_buf);
+                key_buf = new_key_buf;
+            }
+        }
+        no_diffs++;
+        nmemb = key_buf_ptr / KEY_SIZE;
+        assert (nmemb*KEY_SIZE == key_buf_ptr);
+        if ((info = dict_lookup (dict, cur_name)))
+        {
+            ISAM_P isam_p, isam_p2;
+            logf (LOG_DEBUG, "updating %s", cur_name);
+            no_updates++;
+            memcpy (&isam_p, info+1, sizeof(ISAM_P));
+            isam_p2 = is_merge (isam, isam_p, nmemb, key_buf);
+            if (isam_p2 != isam_p)
+                dict_insert (dict, cur_name, sizeof(ISAM_P), &isam_p2);
+        }
+        else
+        {
+            ISAM_P isam_p;
+            logf (LOG_DEBUG, "inserting %s", cur_name);
+            no_insertions++;
+            isam_p = is_merge (isam, 0, nmemb, key_buf);
+            dict_insert (dict, cur_name, sizeof(ISAM_P), &isam_p);
+        }
+        memcpy (key_buf, next_key, KEY_SIZE);
+        strcpy (cur_name, next_name);
+    }
+    fclose (inf);
+    return 0;
+}
+
+void key_input2 (const char *dict_fname, const char *isam_fname,
+                 int nkeys, int cache)
+{
+    Dict dict;
+    ISAM isam;
+
+    dict = dict_open (dict_fname, cache, 1);
+    if (!dict)
+    {
+        logf (LOG_FATAL, "dict_open fail of `%s'", dict_fname);
+        exit (1);
+    }
+    isam = is_open (isam_fname, key_compare, 1, sizeof(struct it_key));
+    if (!isam)
+    {
+        logf (LOG_FATAL, "is_open fail of `%s'", isam_fname);
+        exit (1);
+    }
+    inp2 (dict, isam, NULL);
+    dict_close (dict);
+    is_close (isam);
+    logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
+    logf (LOG_LOG, "Distinct words .%7d", no_diffs);
+    logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
+    logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
+}
+
+
