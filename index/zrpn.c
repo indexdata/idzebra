@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.46  1996-05-15 11:57:56  adam
+ * Revision 1.47  1996-05-15 18:36:28  adam
+ * Function trans_term transforms unsearchable characters to blanks.
+ *
+ * Revision 1.46  1996/05/15  11:57:56  adam
  * Fixed bug introduced by set/field mapping in search operations.
  *
  * Revision 1.45  1996/05/14  11:34:00  adam
@@ -823,14 +826,27 @@ static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                         char *termz)
 {
     size_t i, sizez;
+    int sep = 0;
     Z_Term *term = zapt->term;
 
     sizez = term->u.general->len;
     if (sizez > IT_MAX_WORD-1)
         sizez = IT_MAX_WORD-1;
     for (i = 0; i < sizez; i++)
-        termz[i] = index_char_cvt (term->u.general->buf[i]);
-    termz[i] = '\0';
+    {
+        if (!isalnum(term->u.general->buf[i]))
+            sep = 1;
+        else
+        {
+            if (sep)
+                 *termz++ = ' ';
+            *termz++ = index_char_cvt (term->u.general->buf[i]);
+            sep = 0;
+        }
+    }
+    if (sep)
+        *termz++ = ' ';
+    *termz = '\0';
 }
 
 static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
