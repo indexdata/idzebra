@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.8 2003-03-05 00:08:04 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.9 2003-03-05 16:40:51 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -8,8 +8,8 @@
 
   <para>
    The software is regularly tested on Debian GNU/Linux, Redhat Linux,
-   Gentoo Linux, NetBSD (Cobalt), FreeBSD (i386), SunOS 5.8 (sparc),
-   Windows 2000 SP3.
+   Gentoo Linux, NetBSD (Cobalt qube), FreeBSD (i386), MAC OSX,
+   SunOS 5.8 (sparc), Windows 2000 SP3.
   </para>
   
   <para>
