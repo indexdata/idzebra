@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.30 1996-11-08 11:07:33 adam Exp $
+  $Id: zebra.sgml,v 1.31 1996-11-08 14:17:24 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.30 $
+<date>$Revision: 1.31 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -157,9 +157,6 @@ data elements in records.
 
 <item>
 *Port the system to Windows NT.
-
-<item>
-Add index and data compression to save disk space.
 
 <item>
 Add more sophisticated relevance ranking mechanisms. Add support for soundex
@@ -1007,10 +1004,11 @@ and the operators:
 </descrip>
 The order of evaluation may be changed by using parentheses.
 
-If the <bf/Regxp-2/ query begins with a plus sign (<tt/+/) it marks the
-beginning of a section with non-standard specifiers. The next minus sign
-marks the end of the section. Currently Zebra only supports one
-specifier, the error tolerance, which consists one digit. 
+If the first character of the <bf/Regxp-2/ query is a plus character
+(<tt/+/) it marks the beginning of a section with non-standard
+specifiers. The next plus character marks the end of the section.
+Currently Zebra only supports one specifier, the error tolerance,
+which consists one digit. 
 
 Since the plus operator is normally a suffix operator the addition to
 the query syntax doesn't violate the syntax for standard regular
