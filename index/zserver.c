@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.28  1995-11-28 09:09:48  adam
+ * Revision 1.29  1995-12-04 14:22:32  adam
+ * Extra arg to recType_byName.
+ * Started work on new regular expression parsed input to
+ * structured records.
+ *
+ * Revision 1.28  1995/11/28  09:09:48  adam
  * Zebra config renamed.
  * Use setting 'recordId' to identify record now.
  * Bug fix in recindex.c: rec_release_blocks was invokeded even
@@ -216,12 +221,13 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     char *fname, *file_type;
     RecType rt;
     struct recRetrieveCtrl retrieveCtrl;
+    char subType[128];
 
     rec = rec_get (zi->records, sysno);
     file_type = rec->info[recInfo_fileType];
     fname = rec->info[recInfo_filename];
 
-    if (!(rt = recType_byName (file_type)))
+    if (!(rt = recType_byName (file_type, subType)))
     {
         logf (LOG_FATAL|LOG_ERRNO, "Retrieve: Cannot handle type %s", 
               file_type);
@@ -250,6 +256,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
         }
         retrieveCtrl.readf = record_ext_read;
     }
+    retrieveCtrl.subType = subType;
     retrieveCtrl.localno = sysno;
     retrieveCtrl.score = score;
     retrieveCtrl.odr = stream;

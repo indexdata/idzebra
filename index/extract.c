@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.36  1995-11-30 08:34:29  adam
+ * Revision 1.37  1995-12-04 14:22:27  adam
+ * Extra arg to recType_byName.
+ * Started work on new regular expression parsed input to
+ * structured records.
+ *
+ * Revision 1.36  1995/11/30  08:34:29  adam
  * Started work on commit facility.
  * Changed a few malloc/free to xmalloc/xfree.
  *
@@ -674,7 +679,8 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
 static int recordExtract (SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
                           int fd,
-                          RecType recType)
+                          RecType recType,
+                          const char *subType)
 {
     struct recExtractCtrl extractCtrl;
     int r;
@@ -855,6 +861,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
     char gprefix[128];
     char ext[128];
     char ext_res[128];
+    char subType[128];
     RecType recType;
     struct recordGroup rGroupM;
     struct recordGroup *rGroup = &rGroupM;
@@ -899,7 +906,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
         logf (LOG_LOG, "? record %s", fname);
         return 0;
     }
-    if (!(recType = recType_byName (rGroup->recordType)))
+    if (!(recType = recType_byName (rGroup->recordType, subType)))
     {
         logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
         return 0;
@@ -967,7 +974,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
         }
     }
     file_read_start (fd);
-    recordExtract (sysno, fname, rGroup, deleteFlag, fd, recType);
+    recordExtract (sysno, fname, rGroup, deleteFlag, fd, recType, subType);
     file_read_stop (fd);
     if (fd != -1)
         close (fd);
