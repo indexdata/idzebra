@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.127 2002-10-23 14:28:20 adam Exp $
+/* $Id: extract.c,v 1.128 2002-10-24 13:07:02 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1798,6 +1798,7 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
         while ((*bp++ = *k++))
             ;
 	i->keylen= bp - i->buf -1;    
+	assert(i->keylen+1+sizeof(struct it_key) < ENCODE_BUFLEN);
     }
     else
     {
@@ -1845,25 +1846,6 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
 	i->prevseq=key.seqno;
 	i->prevcmd=*k;
     }
-#ifdef SKIPTHIS_OLDCODE
-    bp = encode_key_int ( (key.sysno - i->sysno) * 2 + *k, bp);
-    if (i->sysno != key.sysno)
-    {
-        i->sysno = key.sysno;
-        i->seqno = 0;
-    }
-    else if (!i->seqno && !key.seqno && i->cmd == *k)
-	return;
-    bp = encode_key_int (key.seqno - i->seqno, bp);
-    i->seqno = key.seqno;
-    i->cmd = *k;
-    if (fwrite (i->buf, bp - i->buf, 1, outf) != 1)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "fwrite");
-        exit (1);
-    }
-    i->keylen=0; /* ok, it's written, forget it */
-#endif
 }
 
 void encode_key_flush (struct encode_info *i, FILE *outf)
