@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.73  1999-11-30 13:48:03  adam
+ * Revision 1.74  1999-12-08 15:03:11  adam
+ * Implemented bf_reset.
+ *
+ *
+ * Revision 1.73  1999/11/30 13:48:03  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.72  1999/10/14 14:33:50  adam
@@ -289,6 +293,7 @@ char *prog;
 
 Res common_resource = 0;
 
+
 int main (int argc, char **argv)
 {
     int ret;
@@ -398,6 +403,14 @@ int main (int argc, char **argv)
                     cmd = 's';
                 else if (!strcmp (arg, "del") || !strcmp(arg, "delete"))
                     cmd = 'd';
+		else if (!strcmp (arg, "init"))
+		{
+		    zebraIndexUnlock();	
+		    rval = res_get (common_resource, "shadow");
+		    zebraIndexLock (rGroupDef.bfs, 0, rval);
+		    zebraIndexLockMsg ("w");
+		    bf_reset (rGroupDef.bfs);
+		}
                 else if (!strcmp (arg, "commit"))
                 {
                     rval = res_get (common_resource, "shadow");
@@ -477,7 +490,15 @@ int main (int argc, char **argv)
 	    else
             {
                 struct recordGroup rGroup;
-
+#if ZMBOL
+#else
+		/* For zebra, delete lock file and reset register */
+		if (rGroupDef.flagRw)
+		{
+		    zebraIndexUnlock();
+		    bf_reset (rGroupDef.bfs);
+		}
+#endif
                 rval = res_get (common_resource, "shadow");
                 zebraIndexLock (rGroupDef.bfs, 0, rval);
 		if (rGroupDef.flagRw)
@@ -548,7 +569,11 @@ int main (int argc, char **argv)
         }
         else if (ret == 'V')
         {
+#if ZMBOL
+            fprintf (stderr, "Z'mbol %s %s\n", ZEBRAVER, ZEBRADATE);
+#else
             fprintf (stderr, "Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
+#endif
 	    fprintf (stderr, " (C) 1994-1999, Index Data ApS\n");
 #ifdef WIN32
 #ifdef _DEBUG

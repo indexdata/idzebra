@@ -1,21 +1,25 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.42 1998-09-22 10:03:39 adam Exp $
+  $Id: zebra.sgml,v 1.43 1999-12-08 15:03:11 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.42 $
+<date>$Revision: 1.43 $
 <abstract>
-The Zebra information server combines a versatile fielded/free-text
-search engine with a Z39.50-1995 frontend to provide a powerful and flexible
-information management system. This document explains the procedure for
-installing and configuring the system, and outlines the possibilities
+
+
+The Zebra server combines a versatile fielded/free-text
+indexing/search engine with a Z39.50-1995 frontend to provide a powerful and flexible
+information mining tool. This document explains the procedure for
+installing and configuring Zebra, and outlines the possibilities
 for managing data and providing Z39.50
-services with the software.
+services with the software. Zebra is a free version of the Index Data Z'mbol
+information system, and it excludes some functionality such as incremental
+database updating and support for large databases.
 </abstract>
 
 <toc>
@@ -25,27 +29,31 @@ services with the software.
 <sect1>Overview
 
 <p>
-The Zebra system is a fielded free-text indexing and retrieval engine with a
+Zebra is a fielded free-text indexing and retrieval engine with a
 Z39.50 frontend. You can use any commercial or freeware Z39.50 client
 to access data stored in Zebra.
 
-The Zebra server is our first step towards the development of a fully
-configurable, open information system. Eventually, it will be paired
-off with a powerful Z39.50 client to support complex information
-management tasks within almost any application domain. We're making
-the server available now because it's no fun to be in the open
-information retrieval business all by yourself. We want to allow
-people with interesting data to make their things
-available in interesting ways, without having to start out
-by implementing yet another protocol stack from scratch.
-
-This document is an introduction to the Zebra system. It will tell you
+Zebra server can be used at the core of a Z39.50-based information retrieval
+framework. We're making
+the server available now to allow researchers and small organisations to
+share their information in the best possible way. We believe that Z39.50
+currently represents one of the best ways of sharing information with others, and
+we would like to encourage as many people as possible to do so.
+This document is a guide to using Zebra. It will tell you
 how to compile the software, and how to prepare your first database.
 It also explains how the server can be configured to give you the
 functionality that you need.
 
 If you find the software interesting, you should join the support
 mailing-list by sending email to <tt/zebra-request@indexdata.dk/.
+
+If you are interested in running a commercial service, if you wish to run large
+databases, or if you wish to make incremental updates to your databases even
+while users are accessing your system, then you might be interested in the Z'mbol
+Information Server which is available from <htmlurl
+url="http://www.indexdata.dk/zmbol/" name="Index Data"> or Fretwell-Downing
+Informatics. Z'mbol is a complete and supported package which offers many
+exciting possibilities that we have not been able to fit into this package.
 
 <sect1>Features
 
@@ -56,25 +64,14 @@ system.
 <itemize>
 
 <item>
-Supports updating - records can be added and deleted without
-rebuilding the index from scratch.
-The update procedure is tolerant to crashes or hard interrupts
-during register updating - registers can be reconstructed following a crash.
-Registers can be safely updated even while users are accessing the server.
-
-<item>
-Supports large databases - files for indices, etc. can be
-automatically partitioned over multiple disks.
-
-<item>
 Supports arbitrarily complex records - base input format is an
-SGML-like syntax which allows nested (structured) data elements, as
+XML-like syntax which allows nested (structured) data elements, as
 well as variant forms of data.
 
 <item>
 Supports random storage formats. A system of input filters driven by
 regular expressions allows you to easily process most ASCII-based
-data formats. SGML, ISO2709 (MARC), and raw text are also supported.
+data formats. SGML/XML, ISO2709 (MARC), and raw text are also supported.
 
 <item>
 Supports boolean queries as well as relevance-ranking (free-text)
@@ -84,12 +81,15 @@ well as full regular expressions.
 <item>
 Supports multiple concrete syntaxes
 for record exchange (depending on the configuration): GRS-1, SUTRS,
-ISO2709 (*MARC). Records can be mapped between record syntaxes and
+ISO2709 (*MARC), XML. Records can be mapped between record syntaxes and
 schema on the fly.
 
 <item>
 Supports approximate matching in registers (ie. spelling mistakes,
 etc).
+
+<item> Supports a subset of the Z39.50 Explain Facility. Zebra's Explain database
+is automatically updated when a set of records is loaded into Zebra.
 
 </itemize>
 
@@ -99,7 +99,7 @@ Protocol support:
 <itemize>
 
 <item>
-Protocol facilities: Init, Search, Retrieve, Browse and Sort.
+Protocol facilities: Init, Search, Retrieve, Browse, Sort, Close, and Explain.
 
 <item>
 Piggy-backed presents are honored in the search-request.
@@ -123,25 +123,15 @@ system, and are given in configuration files as simple element
 requests (and possibly variant requests).
 
 <item>
-Some variant support (not fully implemented yet).
-
-<item>
-Using the YAZ toolkit for the protocol implementation, the
-server can utilise a plug-in XTI/mOSI implementation (not included) to
-provide SR services over an OSI stack, as well as Z39.50 over TCP/IP.
-
-<item>
 Zebra runs on most Unix-like systems as well as Windows NT - a binary
 distribution for Windows NT is forthcoming - so far, the installation
-requires MSVC++ to compile the system (we use version 5.0).
+requires Microsoft Visual C++ to compile the system (we use version 6.0).
 
 </itemize>
 
 <sect1>Future Work
 
 <p>
-This is a beta-release of the software, to allow you to look at
-it - try it out, and assess whether it can be of use to you.
 
 These are some of the plans that we have for the software in the near
 and far future, approximately ordered after their relative importance.
@@ -166,13 +156,6 @@ and stemming. Add relevance <it/feedback/ support.
 Complete EXPLAIN support.
 
 <item>
-Add support for very large records by implementing segmentation and/or
-variant pieces.
-
-<item>
-Support the Item Update extended service of the protocol.
-
-<item>
 We want to add a management system that allows you to
 control your databases and configuration tables from a graphical
 interface. We'll probably use Tcl/Tk to stay platform-independent.
@@ -186,10 +169,18 @@ neat, you're welcome to drop us a line saying that, too. You'll find
 contact info at the end of this file.
 
 <sect>Compiling the software
+<p>
+You need the 
+<bf><htmlurl url="http://www.indexdata.dk/yaz/" name="YAZ"></>
+package in order to compile this software. We suggest you
+unpack <bf/YAZ/ in the same directory as Zebra. Running
+./configure (UNIX Only) and running make (nmake on WIN32) is
+in usully what it takes to compile YAZ.
 
+<sect1>UNIX
 <p>
 An ANSI C compiler is required to compile the Zebra
-server system &mdash; <tt/gcc/ works fine if your own system doesn't
+server system &mdash; <tt/gcc/ works very well if your own system doesn't
 provide an adequate compiler.
 
 Unpack the distribution archive. The <tt>configure</tt> shell script
@@ -202,14 +193,36 @@ To run the configure script type:
   ./configure
 </verb></tscreen>
 
-The configure script attempts to use C compiler specified by
-the <tt>CC</tt> environment variable. If not set, <tt>cc</tt>
-will be used. The <tt>CFLAGS</tt> environment variable holds
-options to be passed to the C compiler. If you're using a Bourne-shell
-compatible shell you may pass something like this:
+The configure script attempts to use the C compiler specified by
+the <tt>CC</tt> environment variable. If not set, GNU C
+will be used if it is available. The <tt>CFLAGS</tt> environment variable
+holds options to be passed to the C compiler. If you're using a
+Bourne-compatible shell you may pass something like this:
 <tscreen><verb>
   CC=/opt/ccs/bin/cc CFLAGS=-O ./configure
 </verb></tscreen>
+
+To customize Zebra the configure script accepts a set of options. The
+most important are
+<descrip>
+<tag><tt>--prefix </tt>path</tag> Specifies installation prefix. This is
+only needed if you run <tt>make install</tt> later to perform a
+"system" installation. The prefix is <tt>/usr/local</tt> if not
+specified.
+<tag><tt>--with-tclconfig </tt>path</tag> If Tcl is installed on
+the system you can tell configure where Tcl's <tt>tclConfig.sh</tt>
+installed. The <tt>tclConfig.sh</tt> include information about settings
+required to link with Tcl's libraries. If you don't specify this
+option, configure will see if Tcl's shell <tt>tclsh</tt> is in your
+path and if it is, it will guess where the equivalent tclConfig.sh
+is located. If tclsh is not found in your path and this option is not
+given Zebra will not include Tcl support.
+<tag><tt>--with-yazconfig </tt>path</tag> This options allows you to
+specify the path of YAZ's <tt>yaz-config</tt>. Therefore this option
+forces Zebra to use a particular version of YAZ. YAZ version 1.5 and
+later creates a script <tt>yaz-config</tt> that includes information
+on compiler settings needed to link with it.
+</descrip>
 
 When configured build the software by typing:
 <tscreen><verb>
@@ -218,14 +231,57 @@ When configured build the software by typing:
 
 As an option you may type <tt>make depend</tt> to create
 source file dependencies for the package. This is only needed,
-however, if you alter the source.
+however, if you modify the source code later.
 
 If successful, two executables have been created in the sub-directory
-<tt/index/.
+<tt>bin</tt>.
 <descrip>
 <tag><tt>zebrasrv</tt></tag> The Z39.50 server and search engine.
 <tag><tt>zebraidx</tt></tag> The administrative tool for the search index.
 </descrip>
+
+<p>
+The next step is optional and is only needed if you wish to install
+zebra in system directories such as /usr/bin, /usr/lib, etc.
+
+To perform this step, type
+<tscreen><verb>
+  make install
+</verb></tscreen>
+
+The executables will be installed in prefix/bin, and profile
+tables will be installed in prefix/lib/zebra/tab. Here prefix
+represents the prefix as specified -- default being /usr/local.
+
+<sect1>WIN32
+
+<p>
+Zebra is shipped with "makefiles" for the NMAKE tool that comes
+with Visual C++.
+
+Start an MS-DOS prompt and switch the sub directory <tt>WIN</tt> where
+the file <tt>zebra.mak</tt> is located. Customize the installation
+by editing the <tt>zebra.mak</tt> file (for example by using notepad).
+
+The following summarises the most important settings in that
+file.
+
+<descrip>
+<tag><tt>YAZDIR</tt></tag> Specifies where YAZ is located.
+<tag><tt>DEBUG</tt></tag> If set to 1, the software is
+compiled with debugging libraries. If set to 0, the software
+is compiled with release (non-debugging) libraries.
+<tag>BZIP2</tag> A group of settings (<tt>BZIP2LIB</tt>,..)
+that must be defined if BZIP2 compression support is desired.
+</descrip>
+
+When satisfied with the settings in the makefile type
+<tscreen><verb>
+nmake /f zebra.mak
+</verb></tscreen>
+
+If compilation was successful the executables <tt>zebraidx.exe</tt>
+and <tt>zebrasrv.exe</tt> are put in the sub directory <tt>BIN</tt>.
 
 <sect>Quick Start 
 <p>
@@ -239,6 +295,7 @@ file named <tt>zebra.cfg</tt> with the following contents:
 profilePath: ../../../yaz/tab ../../tab
 
 # Files that describe the attribute sets supported.
+attset: explain.att
 attset: bib1.att
 attset: gils.att
 </verb></tscreen>
@@ -250,7 +307,7 @@ archive).
 The 48 test records are located in the sub directory <tt>records</tt>.
 To index these, type:
 <tscreen><verb>
-$ ../../index/zebraidx -t grs.sgml update records
+$ ../../bin/zebraidx -t grs.sgml update records
 </verb></tscreen>
 
 In the command above the option <tt>-t</tt> specified the record
@@ -260,22 +317,21 @@ by a directory root updates all files below that directory node.
 If your indexing command was successful, you are now ready to
 fire up a server. To start a server on port 2100, type:
 <tscreen><verb>
-$ ../../index/zebrasrv tcp:@:2100
+$ ../../bin/zebrasrv tcp:@:2100
 </verb></tscreen>
 
 The Zebra index that you have just created has a single database
 named <tt/Default/. The database contains records structured according to
 the GILS profile, and the server will
-return records in either either USMARC, GRS-1, or SUTRS depending
-on what your client asks
-for.
+return records in either either XML, USMARC, GRS-1, or SUTRS depending
+on what your client asks for.
 
 To test the server, you can use any Z39.50 client (1992 or later). For
 instance, you can use the demo client that comes with YAZ: Just cd to
 the <tt/client/ subdirectory of the YAZ distribution and type:
 
 <tscreen><verb>
-$ client tcp:localhost:2100
+$ ./yaz-client tcp:localhost:2100
 </verb></tscreen>
 
 When the client has connected, you can type:
@@ -293,6 +349,8 @@ Z>format sutrs
 Z>show 1
 Z>format grs-1
 Z>show 1
+Z>format xml
+Z>show 1
 Z>elements B
 Z>show 1
 </verb></tscreen>
@@ -308,29 +366,8 @@ you've got through the compilation OK.
 <sect>Administrating Zebra<label id="administrating">
 
 <p>
-Unlike many simpler retrieval systems, Zebra supports safe, incremental
-updates to an existing index.
 
-Normally, when Zebra modifies the index it reads a number of records
-that you specify.
-Depending on your specifications and on the contents of each record
-one the following events take place for each record:
-<descrip>
-<tag>Insert</tag> The record is indexed as if it never occurred
-before. Either the Zebra system doesn't know how to identify the record or
-Zebra can identify the record but didn't find it to be already indexed.
-<tag>Modify</tag> The record has already been indexed. In this case
-either the contents of the record or the location (file) of the record
-indicates that it has been indexed before.
-<tag>Delete</tag> The record is deleted from the index. As in the
-update-case it must be able to identify the record.
-</descrip>
-
-Please note that in both the modify- and delete- case the Zebra
-indexer must be able to generate a unique key that identifies the record in
-question (more on this below).
-
-To administrate the Zebra retrieval system, you run the
+To administrate Zebra, you run the
 <tt>zebraidx</tt> program. This program supports a number of options
 which are preceded by a minus, and a few commands (not preceded by
 minus).
@@ -347,9 +384,9 @@ indicate the location of the configuration file by option
 
 <sect1>Record Types<label id="record-types">
 <p>
-Indexing is a per-record process, in which either insert/modify/delete
-will occur. Before a record is indexed search keys are extracted from
-whatever might be the layout the original record (sgml,html,text, etc..).
+Indexing is a per-record process. Before a record is indexed search
+keys are extracted from whatever might be the layout the original
+record (sgml,html,text, etc..).
 The Zebra system currently supports two fundamantal types of records:
 structured and simple text.
 To specify a particular extraction process, use either the
@@ -419,14 +456,6 @@ section <ref id="locating-records" name="Locating Records">.
  in the Zebra system files. If you want to maintain the raw records yourself,
  this option should be false (0). If you want Zebra to take care of the records
  for you, it should be true(1).
-<tag>register</tag> 
- Specifies the location of the various register files that Zebra uses
- to represent your databases. See section
-<ref id="register-location" name="Register Location">.
-<tag>shadow</tag>
- Enables the <it/safe update/ facility of Zebra, and tells the system
- where to place the required, temporary files. See section
-<ref id="shadow-registers" name="Safe Updating - Using Shadow Registers">.
 <tag>lockDir</tag>
  Directory in which various lock files are stored.
 <tag>keyTmpDir</tag>
@@ -464,325 +493,20 @@ you specify 1 (true) in the <tt>storeData</tt> setting. When
 the Z39.50 server retrieves the records they will be read from the
 internal file structures of the system.
 
-<sect1>Indexing with no Record IDs (Simple Indexing)
+<sect1>Indexing example
 
 <p>
-If you have a set of records that are not expected to change over time
-you may can build your database without record IDs.
-This indexing method uses less space than the other methods and
-is simple to use. 
-
-To use this method, you simply omit the <tt>recordId</tt> entry
-for the group of files that you index. To add a set of records you use
-<tt>zebraidx</tt> with the <tt>update</tt> command. The
-<tt>update</tt> command will always add all of the records that it
-encounters to the index - whether they have already been indexed or
-not. If the set of indexed files change, you should delete all of the
-index files, and build a new index from scratch.
-
 Consider a system in which you have a group of text files called
 <tt>simple</tt>. That group of records should belong to a Z39.50 database
 called <tt>textbase</tt>. The following <tt/zebra.cfg/ file will suffice:
 
 <tscreen><verb>
-profilePath: /usr/local/yaz
+profilePath: /usr/lib/yaz/tab:/usr/lib/zebra/tab
+attset: explain.att
 attset: bib1.att
 simple.recordType: text
 simple.database: textbase
 </verb></tscreen>
-
-Since the existing records in an index can not be addressed by their
-IDs, it is impossible to delete or modify records when using this method.
-
-<sect1>Indexing with File Record IDs<label id="file-ids">
-
-<p>
-If you have a set of files that regularly change over time: Old files
-are deleted, new ones are added, or existing files are modified, you
-can benefit from using the <it/file ID/ indexing methodology. Examples
-of this type of database might include an index of WWW resources, or a
-USENET news spool area. Briefly speaking, the file key methodology
-uses the directory paths of the individual records as a unique
-identifier for each record. To perform indexing of a directory with
-file keys, again, you specify the top-level directory after the
-<tt>update</tt> command. The command will recursively traverse the
-directories and compare each one with whatever have been indexed before in
-that same directory. If a file is new (not in the previous version of
-the directory) it is inserted into the registers; if a file was
-already indexed and it has been modified since the last update,
-the index is also modified; if a file has been removed since the last
-visit, it is deleted from the index.
-
-The resulting system is easy to administrate. To delete a record you
-simply have to delete the corresponding file (say, with the <tt/rm/
-command). And to add records you create new files (or directories with
-files). For your changes to take effect in the register you must run
-<tt>zebraidx update</tt> with the same directory root again. This mode
-of operation requires more disk space than simpler indexing methods,
-but it makes it easier for you to keep the index in sync with a
-frequently changing set of data. If you combine this system with the
-<it/safe update/ facility (see below), you never have to take your
-server offline for maintenance or register updating purposes.
-
-To enable indexing with pathname IDs, you must specify <tt>file</tt> as
-the value of <tt>recordId</tt> in the configuration file. In addition,
-you should set <tt>storeKeys</tt> to <tt>1</tt>, since the Zebra
-indexer must save additional information about the contents of each record
-in order to modify the indices correctly at a later time.
-
-For example, to update records of group <tt>esdd</tt> located below
-<tt>/data1/records/</tt> you should type:
-<tscreen><verb>
-$ zebraidx -g esdd update /data1/records
-</verb></tscreen>
-
-The corresponding configuration file includes:
-<tscreen><verb>
-esdd.recordId: file
-esdd.recordType: grs.sgml
-esdd.storeKeys: 1
-</verb></tscreen>
-
-<em>Important note: You cannot start out with a group of records with simple
-indexing (no record IDs as in the previous section) and then later
-enable file record Ids. Zebra must know from the first time that you
-index the group that
-the files should be indexed with file record IDs.
-</em>
-
-You cannot explicitly delete records when using this method (using the
-<bf/delete/ command to <tt/zebraidx/. Instead
-you have to delete the files from the file system (or move them to a
-different location)
-and then run <tt>zebraidx</tt> with the <bf/update/ command.
-
-<sect1>Indexing with General Record IDs
-<p>
-When using this method you construct an (almost) arbritrary, internal
-record key based on the contents of the record itself and other system
-information. If you have a group of records that explicitly associates
-an ID with each record, this method is convenient. For example, the
-record format may contain a title or a ID-number - unique within the group.
-In either case you specify the Z39.50 attribute set and use-attribute
-location in which this information is stored, and the system looks at
-that field to determine the identity of the record.
-
-As before, the record ID is defined by the <tt>recordId</tt> setting
-in the configuration file. The value of the record ID specification
-consists of one or more tokens separated by whitespace. The resulting
-ID is
-represented in the index by concatenating the tokens and separating them by
-ASCII value (1).
-
-There are three kinds of tokens:
-<descrip>
-<tag>Internal record info</tag> The token refers to a key that is
-extracted from the record. The syntax of this token is
- <tt/(/ <em/set/ <tt/,/ <em/use/ <tt/)/, where <em/set/ is the
-attribute set name <em/use/ is the name or value of the attribute.
-<tag>System variable</tag> The system variables are preceded by
-<verb>$</verb> and immediately followed by the system variable name, which
-may one of
- <descrip>
- <tag>group</tag> Group name.
- <tag>database</tag> Current database specified.
- <tag>type</tag> Record type.
- </descrip>
-<tag>Constant string</tag> A string used as part of the ID &mdash; surrounded
- by single- or double quotes.
-</descrip>
-
-For instance, the sample GILS records that come with the Zebra
-distribution contain a unique ID in the data tagged Control-Identifier.
-The data is mapped to the Bib-1 use attribute Identifier-standard
-(code 1007). To use this field as a record id, specify
-<tt>(bib1,Identifier-standard)</tt> as the value of the
-<tt>recordId</tt> in the configuration file.
-If you have other record types that uses the same field for a
-different purpose, you might add the record type
-(or group or database name) to the record id of the gils
-records as well, to prevent matches with other types of records.
-In this case the recordId might be set like this:
-<tscreen><verb>
-gils.recordId: $type (bib1,Identifier-standard)
-</verb></tscreen>
-
-(see section <ref id="data-model" name="Configuring Your Data Model">
-for details of how the mapping between elements of your records and
-searchable attributes is established).
-
-As for the file record ID case described in the previous section,
-updating your system is simply a matter of running <tt>zebraidx</tt>
-with the <tt>update</tt> command. However, the update with general
-keys is considerably slower than with file record IDs, since all files
-visited must be (re)read to discover their IDs. 
-
-As you might expect, when using the general record IDs
-method, you can only add or modify existing records with the <tt>update</tt>
-command. If you wish to delete records, you must use the,
-<tt>delete</tt> command, with a directory as a parameter.
-This will remove all records that match the files below that root
-directory.
-
-<sect1>Register Location<label id="register-location">
-
-<p>
-Normally, the index files that form dictionaries, inverted
-files, record info, etc., are stored in the directory where you run
-<tt>zebraidx</tt>. If you wish to store these, possibly large, files
-somewhere else, you must add the <tt>register</tt> entry to the
-<tt/zebra.cfg/ file. Furthermore, the Zebra system allows its file
-structures to
-span multiple file systems, which is useful for managing very large
-databases. 
-
-The value of the <tt>register</tt> setting is a sequence of tokens.
-Each token takes the form:
-<tscreen>
-<em>dir</em><tt>:</tt><em>size</em>. 
-</tscreen>
-The <em>dir</em> specifies a directory in which index files will be
-stored and the <em>size</em> specifies the maximum size of all
-files in that directory. The Zebra indexer system fills each directory
-in the order specified and use the next specified directories as needed.
-The <em>size</em> is an integer followed by a qualifier
-code, <tt>M</tt> for megabytes, <tt>k</tt> for kilobytes.
-
-For instance, if you have allocated two disks for your register, and
-the first disk is mounted
-on <tt>/d1</tt> and has 200 Mb of free space and the
-second, mounted on <tt>/d2</tt> has 300 Mb, you could
-put this entry in your configuration file:
-<tscreen><verb>
-register: /d1:200M /d2:300M
-</verb></tscreen>
-
-Note that Zebra does not verify that the amount of space specified is
-actually available on the directory (file system) specified - it is
-your responsibility to ensure that enough space is available, and that
-other applications do not attempt to use the free space. In a large production system,
-it is recommended that you allocate one or more filesystem exclusively
-to the Zebra register files.
-
-<sect1>Safe Updating - Using Shadow Registers<label id="shadow-registers">
-
-<sect2>Description
-
-<p>
-The Zebra server supports <it/updating/ of the index structures. That is,
-you can add, modify, or remove records from databases managed by Zebra
-without rebuilding the entire index. Since this process involves
-modifying structured files with various references between blocks of
-data in the files, the update process is inherently sensitive to
-system crashes, or to process interruptions: Anything but a
-successfully completed update process will leave the register files in
-an unknown state, and you will essentially have no recourse but to
-re-index everything, or to restore the register files from a backup
-medium. Further, while the update process is active, users cannot be
-allowed to access the system, as the contents of the register files
-may change unpredictably.
-
-You can solve these problems by enabling the shadow register system in
-Zebra. During the updating procedure, <tt/zebraidx/ will temporarily
-write changes to the involved files in a set of &dquot;shadow
-files&dquot;, without modifying the files that are accessed by the
-active server processes. If the update procedure is interrupted by a
-system crash or a signal, you simply repeat the procedure - the
-register files have not been changed or damaged, and the partially
-written shadow files are automatically deleted before the new updating
-procedure commences.
-
-At the end of the updating procedure (or in a separate operation, if
-you so desire), the system enters a &dquot;commit mode&dquot;. First,
-any active server processes are forced to access those blocks that
-have been changed from the shadow files rather than from the main
-register files; the unmodified blocks are still accessed at their
-normal location (the shadow files are not a complete copy of the
-register files - they only contain those parts that have actually been
-modified). If the commit process is interrupted at any point during the
-commit process, the server processes will continue to access the
-shadow files until you can repeat the commit procedure and complete
-the writing of data to the main register files. You can perform
-multiple update operations to the registers before you commit the
-changes to the system files, or you can execute the commit operation
-at the end of each update operation. When the commit phase has
-completed successfully, any running server processes are instructed to
-switch their operations to the new, operational register, and the
-temporary shadow files are deleted.
-
-<sect2>How to Use Shadow Register Files
-
-<p>
-The first step is to allocate space on your system for the shadow
-files. You do this by adding a <tt/shadow/ entry to the <tt/zebra.cfg/
-file. The syntax of the <tt/shadow/ entry is exactly the same as for
-the <tt/register/ entry (see section <ref name="Register Location"
-id="register-location">). The location of the shadow area should be
-<it/different/ from the location of the main register area (if you
-have specified one - remember that if you provide no <tt/register/
-setting, the default register area is the
-working directory of the server and indexing processes).
-
-The following excerpt from a <tt/zebra.cfg/ file shows one example of
-a setup that configures both the main register location and the shadow
-file area. Note that two directories or partitions have been set aside
-for the shadow file area. You can specify any number of directories
-for each of the file areas, but remember that there should be no
-overlaps between the directories used for the main registers and the
-shadow files, respectively.
-
-<tscreen><verb>
-register: /d1:500M
-
-shadow: /scratch1:100M /scratch2:200M
-</verb></tscreen>
-
-When shadow files are enabled, an extra command is available at the
-<tt/zebraidx/ command line. In order to make changes to the system
-take effect for the users, you'll have to submit a
-&dquot;commit&dquot; command after a (sequence of) update
-operation(s). You can ask the indexer to commit the changes
-immediately after the update operation:
-
-<tscreen><verb>
-$ zebraidx update /d1/records update /d2/more-records commit
-</verb></tscreen>
-
-Or you can execute multiple updates before committing the changes:
-
-<tscreen><verb>
-$ zebraidx -g books update /d1/records update /d2/more-records
-$ zebraidx -g fun update /d3/fun-records
-$ zebraidx commit
-</verb></tscreen>
-
-If one of the update operations above had been interrupted, the commit
-operation on the last line would fail: <tt/zebraidx/ will not let you
-commit changes that would destroy the running register. You'll have to
-rerun all of the update operations since your last commit operation,
-before you can commit the new changes.
-
-Similarly, if the commit operation fails, <tt/zebraidx/ will not let
-you start a new update operation before you have successfully repeated
-the commit operation. The server processes will keep accessing the
-shadow files rather than the (possibly damaged) blocks of the main
-register files until the commit operation has successfully completed.
-
-You should be aware that update operations may take slightly longer
-when the shadow register system is enabled, since more file access
-operations are involved. Further, while the disk space required for
-the shadow register data is modest for a small update operation, you
-may prefer to disable the system if you are adding a very large number
-of records to an already very large database (we use the terms
-<it/large/ and <it/modest/ very loosely here, since every
-application will have a different perception of size). To update the system
-without the use of the the shadow files, simply run <tt/zebraidx/ with
-the <tt/-n/ option (note that you do not have to execute the
-<bf/commit/ command of <tt/zebraidx/ when you temporarily disable the
-use of the shadow registers in this fashion. Note also that, just as
-when the shadow registers are not enabled, server processes will be
-barred from accessing the main register while the update procedure
-takes place.
 
 <sect>Running the Maintenance Interface (zebraidx)
 
@@ -820,10 +544,6 @@ server.
 keys to background storage. This setting affects performance when
 updating large databases.
 
-<tag>-n</tag>Disable the use of shadow registers for this operation
-(see section <ref id="shadow-registers" name="Robust Updating - Using
-Shadow Registers">).
-
 <tag>-s</tag>Show analysis of the indexing process. The maintenance
 program works in a read-only mode and doesn't change the state
 of the index. This options is very useful when you wish to test a
@@ -842,15 +562,6 @@ should be one of <tt/none/, <tt/debug/, and <tt/all/.
 contained in <it/directory/. If no directory is provided, a list of
 files is read from <tt/stdin/. See section <ref
 id="administrating" name="Administrating Zebra">.
-
-<tag>Delete <it/directory/</tag>Remove the records corresponding to
-the files found under <it/directory/ from the register.
-
-<tag/Commit/Write the changes resulting from the last <bf/update/
-commands to the register. This command is only available if the use of
-shadow register files is enabled (see section <ref
-id="shadow-registers" name="Robust Updating - Using Shadow
-Registers">).
 
 </descrip>
 
@@ -874,14 +585,6 @@ The special name &dquot;-&dquot; sends output to <tt/stderr/.
 <tag/-S/Don't fork on connection requests. This can be useful for
 symbolic-level debugging. The server can only accept a single
 connection in this mode.
-
-<tag/-s/Use the SR protocol.
-
-<tag/-z/Use the Z39.50 protocol (default). These two options complement
-eachother. You can use both multiple times on the same command
-line, between listener-specifications (see below). This way, you
-can set up the server to listen for connections in both protocols
-concurrently, on different local ports.
 
 <tag>-l <it/logfile/</tag>Specify an output file for the diagnostic
 messages. The default is to write this information to <tt/stderr/.
@@ -918,34 +621,14 @@ hostname | IP-number &lsqb;: portnumber&rsqb;
 
 The port number defaults to 210 (standard Z39.50 port).
 
-For OSI (only available if the server is compiled with XTI/mOSI
-support enabled), the address form is
-
-<tscreen><verb>
-&lsqb;t-selector /&rsqb; hostname | IP-number &lsqb;: portnumber&rsqb;
-</verb></tscreen>
-
-The transport selector is given as a string of hex digits (with an even
-number of digits). The default port number is 102 (RFC1006 port).
-
-Examples
-
-<tscreen>
-<verb>
-tcp:dranet.dra.com
-
-osi:0402/dbserver.osiworld.com:3000
-</verb>
-</tscreen>
-
-In both cases, the special hostname &dquot;@&dquot; is mapped to
+The special hostname &dquot;@&dquot; is mapped to
 the address INADDR_ANY, which causes the server to listen on any local
-interface. To start the server listening on the registered ports for
-Z39.50 and SR over OSI/RFC1006, and to drop root privileges once the
-ports are bound, execute the server like this (from a root shell):
+interface. To start the server listening on the registered port for
+Z39.50, and to drop root privileges once the
+port is bound, execute the server like this (from a root shell):
 
 <tscreen><verb>
-zebrasrv -u daemon tcp:@ -s osi:@
+zebrasrv -u daemon tcp:@
 </verb></tscreen>
 
 You can replace <tt/daemon/ with another user, eg. your own account, or
@@ -960,7 +643,7 @@ listener, for the Z39.50 protocol, on port 9999.
 
 <p>
 During initialization, the server will negotiate to version 3 of the
-Z39.50 protocol, and the option bits for Search, Present, Scan,
+Z39.50 protocol (unless the client specifies a lower version), and the option bits for Search, Present, Scan,
 NamedResultSets, and concurrentOperations will be set, if requested by
 the client. The maximum PDU size is negotiated down to a maximum of
 1Mb by default.
@@ -1145,7 +828,7 @@ timeout.
 <sect>The Record Model
 
 <p>
-The Zebra system is designed to support a wide range of data management
+Zebra is designed to support a wide range of data management
 applications. The system can be configured to handle virtually any
 kind of structured data. Each record in the system is associated with
 a <it/record schema/ which lends context to the data elements of the
@@ -1211,6 +894,10 @@ described below. It is a simple SGML-like syntax.
 
 <tag>grs.regx.<it/filter/</tag>This enables a user-supplied input
 filter. The mechanisms of these filters are described below.
+
+<tag>grs.tcl.<it/filter/</tag>This enables a user-supplied input
+filter with Tcl rules (only availble if zebra is compiled with Tcl
+support).
 
 <tag>grs.marc.<it/abstract syntax/</tag>This allows Zebra to read
 records in the ISO2709 (MARC) encoding standard. In this case, the
@@ -1475,11 +1162,8 @@ mechanisms for modifying the elements of a record. Tcl is a popular
 scripting environment, with several tutorials available both online
 and in hardcopy.
 
-<it>NOTE: Tcl support is not currently available, but will be
-included with one of the next alpha or beta releases.</it>
-
 <it>NOTE: Variant support is not currently available in the input
-filter, but will be included with one of the next alpha or beta
+filter, but will be included with one of the next 
 releases.</it>
 
 <sect1>Internal Representation<label id="internal-representation">
@@ -1574,6 +1258,14 @@ The following sections describe the configuration files that govern
 the internal management of data records. The system searches for the files
 in the directories specified by the <bf/profilePath/ setting in the
 <tt/zebra.cfg/ file.
+
+<sect2>About Object Identifers
+<p>
+When Object Identifiers (or OID's) need to be specified in the following
+a named OID reference or a raw OID reference may be used. For the named
+OID's refer to the source file <tt>util/oid.c</tt> from YAZ. The raw
+canonical OID's are specified in dot-notation (for example
+1.2.840.10003.3.1000.81.1).
 
 <sect2>The Abstract Syntax
 
@@ -1670,15 +1362,16 @@ The file may contain the following directives:
 <tag>name <it/symbolic-name/</tag> (m) This provides a shorthand name or
 description for the profile. Mostly useful for diagnostic purposes.
 
-<tag>reference <it/OID-name/</tag> (m) The reference name of the OID for
-the profile. The reference names can be found in the <bf/util/
-module of <bf/YAZ/.
+<tag>reference <it/OID-name/</tag> (m) The OID for
+the profile (name or dotted-numerical list).
 
 <tag>attset <it/filename/</tag> (m) The attribute set that is used for
 indexing and searching records belonging to this profile.
 
-<tag>tagset <it/filename/</tag> (o) The tag set (if any) that describe
-that fields of the records.
+<tag>tagset <it/filename/ &lsqb;<it/type/&rsqb;</tag> (o) The tag
+set (if any) that describe that fields of the records. The type, which
+is optional, specifies the tag type. If not given, the type-specifier
+in the Tag Set files is used.
 
 <tag>varset <it/filename/</tag> (o) The variant set used in the profile.
 
@@ -1711,7 +1404,7 @@ of tags separated by slashes (/). Each tag is given as a
 comma-separated pair of tag type and -value surrounded by parenthesis.
 The <it/name/ is the name of the element, and the <it/attributes/
 specifies which attributes to use when indexing the element in a
-comma-separated list. A ! in
+comma-separated list. A &excl; in
 place of the attribute name is equivalent to specifying an attribute
 name identical to the element name. A - in place of the attribute name
 specifies that no indexing is to take place for the given element. The
@@ -1724,12 +1417,6 @@ name="Field Structure and Character Sets">.
 The default field type is &dquot;w&dquot; for
 <it/word/.
 </descrip>
-
-<it>
-NOTE: The mechanism for controlling indexing is not adequate for
-complex databases, and will probably be moved into a separate
-configuration table eventually.
-</it>
 
 The following is an excerpt from the abstract syntax file for the GILS
 profile.
@@ -1781,12 +1468,7 @@ It contains the following directives.
 description for the attribute set. Mostly useful for diagnostic purposes.
 
 <tag>reference <it/OID-name/</tag> (m) The reference name of the OID for
-the attribute set. The reference names can be found in the <bf/util/
-module of <bf/YAZ/.
-
-<tag>ordinal <it/integer/</tag> (m) This value will be used to represent the
-attribute set in the index. Care should be taken that each attribute
-set has a unique ordinal value.
+the attribute set.
 
 <tag>include <it/filename/</tag> (o,r) This directive is used to
 include another attribute set as a part of the current one. This is
@@ -1811,7 +1493,6 @@ the file describing the <it/bib-1/ attribute set is referenced.
 name gils
 reference GILS-attset
 include bib1.att
-ordinal 2
 
 att 2001		distributorName
 att 2002		indexTermsControlled
@@ -1833,9 +1514,8 @@ contain the following directives.
 description for the tag set. Mostly useful for diagnostic purposes.
 
 <tag>reference <it/OID-name/</tag> (o) The reference name of the OID for
-the tag set. The reference names can be found in the <bf/util/
-module of <bf/YAZ/. The directive is optional, since not all tag sets
-are registered outside of their schema.
+the tag set. The directive is optional, since not all tag sets are
+registered outside of their schema.
 
 <tag>type <it/integer/</tag> (m) The type number of the tagset within the schema
 profile (note: this specification really should belong to the .abs
@@ -1899,8 +1579,7 @@ These are the directives allowed in the file.
 description for the variant set. Mostly useful for diagnostic purposes.
 
 <tag>reference <it/OID-name/</tag> (o) The reference name of the OID for
-the variant set, if one is required. The reference names can be found
-in the <bf/util/ module of <bf/YAZ/.
+the variant set, if one is required.
 
 <tag>class <it/integer class-name/</tag> (m,r) Introduces a new
 class to the variant set.
@@ -2043,8 +1722,7 @@ of the table. Useful mostly for diagnostic purposes.
 
 <tag>targetRef <it/OID-name/</tag> (m) An OID name for the target schema.
 This is used, for instance, by a server receiving a request to present
-a record in a different schema from the native one. The name, again,
-is found in the <bf/oid/ module of <bf/YAZ/.
+a record in a different schema from the native one.
 
 <tag>map <it/element-name target-path/</tag> (o,r) Adds
 an element mapping rule to the table.
@@ -2214,70 +1892,90 @@ abstract syntaxes can be mapped to the SOIF format, although nested
 elements are represented by concatenation of the tag names at each
 level.
 
+<item>XML. The use of XML as a transfer syntax in Z39.50 is not yet widely established
+so the use of it here must be characterised as somewhat experimental. The
+tag-names used are taken from the tag-set in use, except for local string tags
+where the tag itself is passed through unchanged.
+
 </itemize>
 
 <sect>License
 
 <p>
-Copyright &copy; 1995-1998 Index Data.
+Zebra
+Copyright (c) 1995-1999 Index Data ApS.
 
 All rights reserved.
 
 Use and redistribution in source or binary form, with or without
 modification, of any or all of this software and documentation is
-permitted, provided that the following conditions are met:
+permitted, provided that the following Conditions 1 to 6 set out below
+are met.
 
-1. This copyright and permission notice appear with all copies of the
-software and its documentation. Notices of copyright or attribution
-which appear at the beginning of any file must remain unchanged.
+1. Unless prior specific written permission is obtained this copyright
+and permission notice appear with all copies of the software and its
+documentation. Notices of copyright or attribution which appear at the
+beginning of any file must remain unchanged.
+ 
+2. The names of Index Data or the individual authors may not be used
+to endorse or promote products derived from this software without
+specific prior written permission.
+ 
+3. Source code or binary versions of this software and its documentation
+may be used freely in not for profit applications limited to databases
+of 100,000 records maximum. Other applications - such as publishing over
+100,000 records, providing for-pay services, distributing a product based
+in whole or in part on this software or its documentation, or generally 
+distributing this software or its documentation under a different license 
+require a commercial license from Index Data. 
 
-2. The names of Index Data or the individual authors may not be used to
-endorse or promote products derived from this software without specific
-prior written permission.
+4. The software may be installed and used for evaluation purposes in
+conjunction with such commercially licensed applications for a trial
+period no longer than 60 days.
+ 
+5. Unless a prior specific written agreement is obtained THIS SOFTWARE
+IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED,
+OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF
+MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
+INDEX DATA BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING
+FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF THE
+POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-3. Source code or binary versions of this software and its
-documentation may be used freely in not-for-profit applications. For
-profit applications - such as providing for-pay database services,
-marketing a product based in whole or in part on this software or its
-documentation, or generally distributing this software or its
-documentation under a different license - requires a commercial
-license from Index Data. The software may be installed and used for
-evaluation purposes in conjunction with a commercial application for a
-trial period of no more than 60 days.
+6. Commercial licenses and support agreements for Zebra and related
+Index Data products such as Z'bol (c) - and written agreements
+relating to these Conditions may be obtained only from Index Data
+or its appointed agents as follows: 
 
-THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND,
-EXPRESS, IMPLIED, OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
-WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
-IN NO EVENT SHALL INDEX DATA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
-INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES
-WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR
-NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
-LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-OF THIS SOFTWARE.
+Index Data: www.indexdata.dk
+Fretwell-Downing Informatics: www.fdgroup.co.uk
+Fretwell-Downing Informatics USA: www.fdi.com
 
 <sect>About Index Data and the Zebra Server
 
 <p>
 Index Data is a consulting and software-development enterprise that
-specialises in library and information management systems. Our
+specialises in information management and retrieval applications. Our
 interests and expertise span a broad range of related fields, and one
 of our primary, long-term objectives is the development of a powerful
 information management
-system with open network interfaces and hypermedia capabilities.
+system with open network interfaces and hypermedia capabilities. Zebra is an
+important component in this strategy.
 
 We make this software available free of charge for not-for-profit
 purposes, as a service to the networking community, and to further
 the development and use of quality software for open network
-communication.
+communication. We encourage your comments and questions if you have ideas, things
+you would like to  see in future versions, or things you would like to
+contribute.
 
 If you like this software, and would like to use all or part of it in
 a commercial product, or to provide a commercial database service,
-please contact us to discuss the details. We'll be happy to answer
-questions about the software, and about our services in general. If
-you have specific requirements to the software, we'll be glad to offer
-our advice - and if you need to adapt the software to a special
-purpose, our consulting services and expert knowledge of the software
-is available to you at favorable rates.
+please contact us. The Z'mbol Information System represents the commercial
+variant of Zebra. It includes full support; additional functionality and
+performance-boosting features, and it has what we think is a very exciting
+development path.
 
 <tscreen><verb>
 Index Data

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: mfile.h,v 1.11 1999-05-12 13:08:06 adam Exp $
+ * $Id: mfile.h,v 1.12 1999-12-08 15:03:11 adam Exp $
  */
 
 #ifndef MFILE_H
@@ -104,6 +104,12 @@ int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf);
  * Destroy a metafile, unlinking component files. File must be open.
  */
 int mf_unlink(MFile mf);
+
+
+/*
+ * Destroy all metafiles. No files may be opened.
+ */
+void mf_reset(MFile_area ma);
 
 /*
  * Unlink the file by name, rather than MFile-handle.

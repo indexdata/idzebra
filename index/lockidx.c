@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.16  1999-02-02 14:50:57  adam
+ * Revision 1.17  1999-12-08 15:03:11  adam
+ * Implemented bf_reset.
+ *
+ * Revision 1.16  1999/02/02 14:50:57  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.15  1998/02/17 10:31:33  adam
@@ -167,10 +170,11 @@ void zebraIndexUnlock (void)
     char path[1024];
     
     zebra_lock_destroy (server_lock_main);
+    server_lock_main = 0;
     zebra_lock_prefix (common_resource, path);
     strcat (path, FNAME_MAIN_LOCK);
-    if (unlink (path))
-        logf (LOG_WARN|LOG_ERRNO, "unlink %s", path);
+    if (unlink (path) && errno != ENOENT)
+        logf (LOG_WARN|LOG_ERRNO, "unlink %s failed", path);
 }
 
 void zebraIndexLock (BFiles bfs, int commitNow, const char *rval)

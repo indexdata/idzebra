@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.30  1999-10-14 14:33:49  adam
+ * Revision 1.31  1999-12-08 15:03:11  adam
+ * Implemented bf_reset.
+ *
+ * Revision 1.30  1999/10/14 14:33:49  adam
  * Added truncation 5=106.
  *
  * Revision 1.29  1999/05/26 07:49:12  adam
@@ -260,6 +263,12 @@ int bf_commitExists (BFiles bfs)
         return 1;
     }
     return 0;
+}
+
+void bf_reset (BFiles bfs)
+{
+    mf_reset (bfs->commit_area);
+    mf_reset (bfs->register_area);
 }
 
 void bf_commitExec (BFiles bfs)

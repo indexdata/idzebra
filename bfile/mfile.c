@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.35  1999-10-14 14:33:50  adam
+ * Revision 1.36  1999-12-08 15:03:11  adam
+ * Implemented bf_reset.
+ *
+ * Revision 1.35  1999/10/14 14:33:50  adam
  * Added truncation 5=106.
  *
  * Revision 1.34  1999/05/26 07:49:12  adam
@@ -382,6 +385,30 @@ void mf_destroy(MFile_area ma)
 	xfree (m);
     }
     xfree (ma);
+}
+
+void mf_reset(MFile_area ma)
+{
+    meta_file *meta_f;
+
+    if (!ma)
+	return;
+    meta_f = ma->mfiles;
+    while (meta_f)
+    {
+	int i;
+	meta_file *m = meta_f;
+
+	assert (!m->open);
+	for (i = 0; i<m->no_files; i++)
+	{
+	    unlink (m->files[i].path);
+	    xfree (m->files[i].path);
+	}
+	meta_f = meta_f->next;
+	xfree (m);
+    }
+    ma->mfiles = 0;
 }
 
 /*

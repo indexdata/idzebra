@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: bfile.h,v 1.17 1999-05-12 13:08:06 adam Exp $
+ * $Id: bfile.h,v 1.18 1999-12-08 15:03:11 adam Exp $
  */
 
 #ifndef BFILE_H
@@ -67,6 +67,9 @@ void bf_commitExec (BFiles bfs);
 
 /* bf_commitClean: cleans commit files, etc */
 void bf_commitClean (BFiles bfs, const char *spec);
+
+/* bf_reset: delete register and shadow completely */
+void bf_reset (BFiles bfs);
 
 #ifdef __cplusplus
 }
