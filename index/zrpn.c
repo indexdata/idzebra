@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.141.2.6 2005-01-23 15:06:21 adam Exp $
+/* $Id: zrpn.c,v 1.141.2.7 2005-02-25 10:09:15 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -489,6 +489,7 @@ static int term_104(ZebraMaps zebra_maps, int reg_type,
             dst[i++] = '.';
 	    dst_term[j++] = *s0++;
 	}
+	else
         {
             s1 = s0;
             map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
@@ -535,6 +536,7 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
             dst[i++] = '.';
 	    dst_term[j++] = *s0++;
 	}
+	else
         {
             s1 = s0;
             map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
