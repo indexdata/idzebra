@@ -18,6 +18,7 @@
 #endif
 
 #include "zebraapi.h"
+#include <yaz/log.h>
 
 #define MAX_NO_ARGS 32
 #define MAX_OUT_BUFF 4096
@@ -41,8 +42,10 @@ ZebraHandle  zh=0;  /* the current session */
 static int split_args( char *line, char** args )
 { /* splits line into individual null-terminated strings, 
    * returns pointers to them in args */
+  /* FIXME - do we need to handle quoted args ?? */
   char *p=line;
   int i=0;
+  int n=0;
   args[0]=0; /* by default */
   while (*p==' ' || *p=='\t' || *p=='\n')
     p++;
@@ -50,18 +53,39 @@ static int split_args( char *line, char** args )
   {
     while (*p==' ' || *p=='\t' || *p=='\n')
       p++;
+    if (*p=='#')  /* skip comments */
+      break;  
     args[i++]=p;
     args[i]=0;
-    while (*p && *p!=' ' && *p!='\t' && *p!='\n')
+    while (*p && *p!=' ' && *p!='\t' && *p!='\n' && *p!='#')
       p++;
     *p++='\0';
   }
+  n=i;
+  while (n<MAX_NO_ARGS)
+    args[n++]=0;
   return i;
 }
 
+static char *defarg( char *arg, char *def )
+{
+  if (!arg)
+    return def;
+  if (!*arg)
+    return def;
+  return arg;
+}
+static int defargint( char *arg, int def )
+{
+  int v=def;
+  char *a=defarg(arg,0);
+  if (a)
+    sscanf(a," %i", &v);
+  return v;
+}
  
  /**************************************
- * Individual commands
+ * Simple support commands
  */
 
  int cmd_echo( char *args[], char *outbuff)
@@ -75,10 +99,14 @@ static int split_args( char *line, char** args )
    strcpy(outbuff, "bye");
    return -99; /* special stop signal */
  }
+
+/**************************************
+ * Tests for starting and stopping zebra, etc
+ */
  
- int cmd_help( char *args[], char *outbuff); 
+ static int cmd_help( char *args[], char *outbuff); 
  
- int cmd_zebra_start( char *args[], char *outbuff)
+ static int cmd_zebra_start( char *args[], char *outbuff)
  {
    char *conf=args[1];
    if (!conf || !*conf) {
@@ -88,13 +116,13 @@ static int split_args( char *line, char** args )
    }
    zs=zebra_start(conf);
    if (!zs) {
-     strcpy(outbuff, "zebra_open failed" );
+     strcpy(outbuff, "zebra_start failed" );
      return 2;
    }
    return 0; /* ok */
  }
  
- int cmd_zebra_stop( char *args[], char *outbuff)
+ static int cmd_zebra_stop( char *args[], char *outbuff)
  {
    if (!zs)
      strcat(outbuff,"zebra seems not to have been started, "
@@ -104,7 +132,7 @@ static int split_args( char *line, char** args )
    return 0; /* ok */
  }
 
-int cmd_zebra_open( char *args[], char *outbuff)
+static int cmd_zebra_open( char *args[], char *outbuff)
 {
   if (!zs)
     strcat(outbuff,"zebra seems not to have been started, "
@@ -113,12 +141,74 @@ int cmd_zebra_open( char *args[], char *outbuff)
   return 0; /* ok */
 }
 
-int cmd_zebra_close( char *args[], char *outbuff)
+static int cmd_zebra_close( char *args[], char *outbuff)
 {
   if (!zh)
     strcat(outbuff,"Seems like you have not called zebra_open,"
                    "trying anyway");
   zebra_close(zh);
+  return 0; /* ok */
+}
+
+static int cmd_quickstart( char *args[], char *outbuff)
+{
+  cmd_zebra_start(args,outbuff);
+  cmd_zebra_open(args,outbuff);
+  yaz_log_init_file("zebrash.log");
+  yaz_log_init_prefix("ZebraSh");
+  strcat(outbuff,"Started zebra, log in zebrash.log");
+  return 0; /* ok */
+}
+
+/**************************************
+ * Log file handling
+ */
+
+static int cmd_yaz_log_file( char *args[], char *outbuff)
+{
+  char *fn = defarg(args[1],0);
+  char tmp[255];
+  sprintf(tmp, "sending yaz-log to %s ",fn);
+  strcat(outbuff, tmp);
+  yaz_log_init_file(fn);
+  return 0; /* ok */
+}
+
+static int cmd_yaz_log_level( char *args[], char *outbuff)
+{
+  int  lev = defargint(args[1],LOG_DEFAULT_LEVEL);
+  char tmp[255];
+  sprintf(tmp, "setting yaz-log to level %d (ox%x)",lev,lev);
+  strcat(outbuff, tmp);
+  yaz_log_init_level(lev);
+  return 0; /* ok */
+}
+
+static int cmd_yaz_log_prefix( char *args[], char *outbuff)
+{
+  char *pref = defarg(args[1],"ZebraSh");
+  char tmp[255];
+  sprintf(tmp, "setting yaz-log prefix to %s",pref);
+  strcat(outbuff, tmp);
+  yaz_log_init_prefix(pref);
+  return 0; /* ok */
+}
+
+static int cmd_logf( char *args[], char *outbuff)
+{
+  int lev = defargint(args[1],0);
+  char tmp[MAX_OUT_BUFF]="";
+  int i=1;
+  if (lev)
+    i=2;
+  else
+    lev=LOG_LOG; /* this is in the default set!*/
+  while (args[i])
+  {
+    strcat(tmp, args[i++]);
+    strcat(tmp, " ");
+  }
+  logf(lev,tmp);
   return 0; /* ok */
 }
  
@@ -150,14 +240,36 @@ struct cmdstruct cmds[] = {
   { "zebra_stop",   "", 
     "stops the zebra service", 
     cmd_zebra_stop },
-  { "zebra_open", "", 
+  { "zebra_open", "",  
     "starts a zebra session. Once you have called zebra_start\n"
     "you can call zebra_open to start working", 
     cmd_zebra_open },
   { "zebra_close", "", 
     "closes a zebra session", 
-    cmd_zebra_close },
-  { "", "Misc:","", 0},
+    cmd_zebra_close }, 
+  { "quickstart", "[configfile]", 
+    "Does a zebra_start, zebra_open, and sets up the log", 
+    cmd_quickstart }, 
+  
+  { "", "Log file:","", 0},  
+  { "yaz_log_file", 
+    "[filename]",
+    "Directs the log to filename (or stderr)",
+    cmd_yaz_log_file },
+  { "yaz_log_file", 
+    "[level]",
+    "Sets the logging level (or returns to default)",
+    cmd_yaz_log_level },
+  { "yaz_log_prefix", 
+    "[prefix]",
+    "Sets the log prefix",
+    cmd_yaz_log_prefix},    
+  { "logf", 
+    "[level] text...",
+    "writes an entry in the log",
+    cmd_logf},    
+  
+  { "", "Misc:","", 0}, 
   { "echo", "string", 
     "ouputs the string", 
     cmd_echo },
@@ -168,6 +280,7 @@ struct cmdstruct cmds[] = {
     "Gives help on command, or lists them all", 
     cmd_help },
   { "", "help [command] gives more info on command", "",0 },   
+  
   {0,0,0,0} /* end marker */
 };
  
@@ -195,22 +308,25 @@ int onecommand( char *line, char *outbuff)
   return -1; 
 }
  
- int cmd_help( char *args[], char *outbuff)
+ static int cmd_help( char *args[], char *outbuff)
  { 
   int i;
   char tmp[MAX_ARG_LEN];
   if (args[1])
   { /* help for a single command */
-   for (i=0;cmds[i].cmd;i++)
-     if (0==strcmp(cmds[i].cmd, args[0])) 
-     {
-       strcat(outbuff,cmds[i].cmd);
-       strcat(outbuff,"  ");
-       strcat(outbuff,cmds[i].args);
-       strcat(outbuff,"\n");
-       strcat(outbuff,cmds[i].explanation);
-       strcat(outbuff,"\n");
-     }
+    for (i=0;cmds[i].cmd;i++)
+      if (0==strcmp(cmds[i].cmd, args[1])) 
+      {
+        strcat(outbuff,cmds[i].cmd);
+        strcat(outbuff,"  ");
+        strcat(outbuff,cmds[i].args);
+        strcat(outbuff,"\n");
+        strcat(outbuff,cmds[i].explanation);
+        strcat(outbuff,"\n");
+        return 0;
+      }
+    strcat(outbuff, "Unknown command ");
+    strcat(outbuff, args[1] );
   }
   else 
   { /* list all commands */
