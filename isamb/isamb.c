@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.59 2004-11-19 10:27:09 heikki Exp $
+/* $Id: isamb.c,v 1.60 2004-11-29 21:53:00 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -384,7 +384,7 @@ void isamb_close (ISAMB isamb)
 	    encode_ptr(&dst, isamb->file[i].head.block_size);
 	    encode_ptr(&dst, isamb->file[i].head.block_max);
 	    encode_ptr(&dst, isamb->file[i].head.free_list);
-	    memset(dst, '\0', 16); /* ensure no random bytes are written */
+	    memset(dst, '\0', b_size); /* ensure no random bytes are written */
 
 	    len = dst - hbuf;
 
