@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zsets.c,v 1.35 2002-04-16 22:31:42 adam Exp $
+ * $Id: zsets.c,v 1.36 2002-04-18 20:22:09 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -679,7 +679,6 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 	do
 	{
 	    kno++;
-            yaz_log (LOG_LOG, "%d:%d", key.sysno, key.seqno);
 	    if (key.sysno != psysno)
 	    {
 		score = (*rc->calc) (handle, psysno);
