@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.29 2004-07-28 09:47:42 adam Exp $
+/* $Id: charmap.c,v 1.29.2.1 2004-08-06 10:08:19 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -42,8 +42,8 @@ typedef unsigned ucs4_t;
 
 const char *CHR_UNKNOWN = "\001";
 const char *CHR_SPACE   = "\002";
-const char *CHR_CUT     = "\003";
-const char *CHR_BASE    = "\005";
+const char *CHR_BASE    = "\003";
+const char *CHR_CUT     = "\376";  /* high number to keep BASE stable */
 
 struct chrmaptab_info
 {
