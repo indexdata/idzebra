@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.71 2002-09-13 11:03:46 heikki Exp $
+/* $Id: zebraapi.c,v 1.72 2002-09-13 11:40:35 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -865,6 +865,8 @@ int zebra_auth (ZebraHandle zh, const char *user, const char *pass)
 
 void zebra_admin_import_begin (ZebraHandle zh, const char *database)
 {
+    if (zebra_select_database(zh, database))
+        return;
     zebra_begin_trans (zh);
     xfree (zh->admin_databaseName);
     zh->admin_databaseName = xstrdup(database);
@@ -915,6 +917,8 @@ void zebra_admin_create (ZebraHandle zh, const char *database)
 {
     ZebraService zs;
 
+    if (zebra_select_database (zh, database))
+        return;
     zebra_begin_trans (zh);
 
     zs = zh->service;
