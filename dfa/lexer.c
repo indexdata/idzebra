@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lexer.c,v $
- * Revision 1.2  1994-09-27 16:31:20  adam
+ * Revision 1.3  1994-10-03 17:22:19  adam
+ * Optimization of grepper.
+ *
+ * Revision 1.2  1994/09/27  16:31:20  adam
  * First version of grepper: grep with error correction.
  *
  * Revision 1.1  1994/09/26  10:16:55  adam
@@ -58,7 +61,7 @@ static int lexer_options (int argc, char **argv)
                 case 'V':
                     fprintf (stderr, "%s: %s %s\n", prog, __DATE__, __TIME__);
                     continue;
-                case 'v':
+                case 's':
                     dfa_verbose = 1;
                     continue;
                 case 't':
@@ -118,7 +121,7 @@ int main (int argc, char **argv)
 
     if (argc < 2)
     {
-        fprintf (stderr, "usage\n  %s [-c] [-V] [-v] [-t] [-d[stf]] file\n",
+        fprintf (stderr, "usage\n  %s [-c] [-V] [-s] [-t] [-d[stf]] file\n",
                  prog);
         return 1;
     }
