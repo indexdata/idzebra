@@ -16,6 +16,7 @@ BEGIN                { begin record meta }
 
 /^%. /               { end element }
 
+/^$/                 { end record }
+
 /\n/                 { data " " }
 
-END                 { end record }
