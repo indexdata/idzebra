@@ -1,6 +1,8 @@
-## $Id: Makefile.am,v 1.6 2002-11-26 21:45:29 adam Exp $
+## $Id: Makefile.am,v 1.7 2003-02-25 14:18:00 adam Exp $
 
 noinst_LIBRARIES = librecctrl.a
+
+EXTRA_DIST=perlread.c perlread.h.in
 
 if perl
 PERLREAD=perlread.c
