@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.4 1994-10-03 17:22:17 adam Exp $
+# $Id: Makefile,v 1.5 1994-10-05 10:46:41 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -52,12 +52,13 @@ depend1:
 	mv y.tab.c regexp.c
 	sed '/^#Depend/q' <Makefile.tmp >Makefile
 	$(CPP) -M $(DEFS) *.c |sed 's/regexp\.c/regexp.y/g' >>Makefile
-	-rm Makefile.tmp
+	rm -f Makefile.tmp regexp.c
 
 depend2:
 	$(YACC) $(YFLAGS) regexp.y
 	mv y.tab.c regexp.c
 	$(CPP) -M $(DEFS) *.c |sed 's/regexp\.c/regexp.y/g' >.depend
+	rm -f regexp.c
 
 ifeq (.depend,$(wildcard .depend))
 include .depend
