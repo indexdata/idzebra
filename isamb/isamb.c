@@ -2,7 +2,7 @@
  *  Copyright (c) 1995-1998, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.4 2002-04-17 08:17:13 adam Exp $
+ *  $Id: isamb.c,v 1.5 2002-04-17 08:48:54 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -436,7 +436,7 @@ int insert_flat (ISAMB b, const void *new_item, ISAMC_P *posp)
             p->dirty = 1;
     }
     new_size = dst - dst_buf + ISAMB_DATA_OFFSET;
-    if (p && new_size > p->size)
+    if (p && new_size > b->file[p->cat].head.block_size)
     {
         yaz_log (LOG_LOG, "resize %d -> %d", p->size, new_size);
         close_block (b, p);
