@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.h,v $
- * Revision 1.2  1996-10-29 16:44:42  adam
+ * Revision 1.3  1996-11-01 13:35:03  adam
+ * New element, max_blocks_mem, that control how many blocks of max size
+ * to store in memory during isc_merge.
+ *
+ * Revision 1.2  1996/10/29  16:44:42  adam
  * Added isc_type, isc_block macros.
  *
  * Revision 1.1  1996/10/29  13:40:37  adam
@@ -37,6 +41,7 @@ typedef struct ISAMC_M_s {
     void (*code_stop)(int mode, void *p);
     void (*code_item)(int mode, void *p, char **dst, char **src);
 
+    int max_blocks_mem;
     int debug;
 } *ISAMC_M;
 
