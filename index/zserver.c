@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zserver.c,v $
- * Revision 1.80  2000-09-05 14:04:05  adam
+ * Revision 1.81  2001-02-14 21:42:07  adam
+ * Fixed versions as returned in INIT response.
+ *
+ * Revision 1.80  2000/09/05 14:04:05  adam
  * Updates for prefix 'yaz_' for YAZ log functions.
  *
  * Revision 1.79  2000/05/09 10:56:50  adam
@@ -331,8 +334,13 @@ bend_initresult *bend_init (bend_initrequest *q)
     q->bend_fetch = bend_fetch;
     q->bend_scan = bend_scan;
 
+#if ZMBOL
     q->implementation_name = "Z'mbol Information Server";
-    q->implementation_version = "Z'mbol 1.0";
+    q->implementation_version = "Z'mbol " VERSION;
+#else
+    q->implementation_name = "Zebra Information Server";
+    q->implementation_version = "Zebra " VERSION;
+#endif
 
     logf (LOG_DEBUG, "bend_init");
 
