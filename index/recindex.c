@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.39 2004-11-19 10:27:03 heikki Exp $
+/* $Id: recindex.c,v 1.40 2005-01-15 13:03:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -67,7 +67,8 @@ static void rec_tmp_expand (Records p, int size)
         p->tmp_size < p->head.block_size[REC_BLOCK_TYPES-1]*2)
     {
         xfree (p->tmp_buf);
-        p->tmp_size = size + p->head.block_size[REC_BLOCK_TYPES-1]*2 + 2048;
+        p->tmp_size = size + (int)
+	        	(p->head.block_size[REC_BLOCK_TYPES-1])*2 + 2048;
         p->tmp_buf = (char *) xmalloc (p->tmp_size);
     }
 }
@@ -85,7 +86,8 @@ static int read_indx (Records p, SYSNO sysno, void *buf, int itemsize,
 
     r = bf_read (p->index_BFile, 1+pos/RIDX_CHUNK, off, sz1, buf);
     if (r == 1 && sz1 < itemsize) /* boundary? - must read second part */
-	r = bf_read (p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1, buf + sz1);
+	r = bf_read (p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1,
+			(char*) buf + sz1);
     if (r != 1 && !ignoreError)
     {
         yaz_log (YLOG_FATAL|YLOG_ERRNO, "read in %s at pos %ld",
@@ -106,7 +108,8 @@ static void write_indx (Records p, SYSNO sysno, void *buf, int itemsize)
 
     bf_write(p->index_BFile, 1+pos/RIDX_CHUNK, off, sz1, buf);
     if (sz1 < itemsize)   /* boundary? must write second part */
-	bf_write(p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1, buf + sz1);
+	bf_write(p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1,
+		(char*) buf + sz1);
 }
 
 static void rec_release_blocks (Records p, SYSNO sysno)
@@ -225,7 +228,7 @@ static void rec_write_tmp_buf (Records p, int size, SYSNO *sysnos)
             cptr = p->tmp_buf + no_written;
         }
         block_prev = block_free;
-        no_written += p->head.block_size[dst_type] - sizeof(zint);
+        no_written += (int)(p->head.block_size[dst_type]) - sizeof(zint);
         p->head.block_used[dst_type]++;
     }
     assert (block_prev != -1);
@@ -306,7 +309,7 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
     for (i = 0; i<REC_BLOCK_TYPES; i++)
     {
         if (!(p->data_BFile[i] = bf_open (bfs, p->data_fname[i],
-                                          p->head.block_size[i],
+                                          (int) (p->head.block_size[i]),
                                           rw)))
         {
             yaz_log (YLOG_FATAL|YLOG_ERRNO, "bf_open %s", p->data_fname[i]);
