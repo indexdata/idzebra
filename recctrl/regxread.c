@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: regxread.c,v 1.42 2002-05-07 11:05:20 adam Exp $
+ * $Id: regxread.c,v 1.43 2002-07-05 12:43:30 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -1038,8 +1038,13 @@ static int cmd_tcl_begin (ClientData clientData, Tcl_Interp *interp,
 #endif
         res = data1_mk_root (spec->dh, spec->m, absynName);
         
-        spec->d1_stack[spec->d1_level] = res;
-        spec->d1_stack[++(spec->d1_level)] = NULL;
+        spec->d1_stack[spec->d1_level++] = res;
+
+        res = data1_mk_tag (spec->dh, spec->m, absynName, 0, res);
+
+        spec->d1_stack[spec->d1_level++] = res;
+
+        spec->d1_stack[spec->d1_level] = NULL;
     }
     else if (!strcmp(argv[1], "element") && argc == 3)
     {
@@ -1282,8 +1287,13 @@ static void execCode (struct lexSpec *spec, struct regxCode *code)
 #endif
                     res = data1_mk_root (spec->dh, spec->m, absynName);
                     
-                    spec->d1_stack[spec->d1_level] = res;
-                    spec->d1_stack[++(spec->d1_level)] = NULL;
+                    spec->d1_stack[spec->d1_level++] = res;
+
+                    res = data1_mk_tag (spec->dh, spec->m, absynName, 0, res);
+
+                    spec->d1_stack[spec->d1_level++] = res;
+
+                    spec->d1_stack[spec->d1_level] = NULL;
                 }
                 r = execTok (spec, &s, &cmd_str, &cmd_len);
             }

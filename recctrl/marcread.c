@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: marcread.c,v 1.15 2002-05-28 21:10:34 adam Exp $
+ * $Id: marcread.c,v 1.16 2002-07-05 12:43:30 adam Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -31,8 +31,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
 #if MARC_DEBUG
     FILE *outf = stdout;
 #endif
-
-    data1_node *res_root;
+    data1_node *res_root, *res_top;
     char *absynName;
     data1_marctab *marctab;
 
@@ -66,6 +65,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
         yaz_log (LOG_WARN, "cannot read MARC without an abstract syntax");
         return 0;
     }
+    res_top = data1_mk_tag (p->dh, p->mem, absynName, 0, res_root);
 
     marctab = res_root->u.root.absyn->marc;
 
@@ -94,7 +94,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
         int i, i0;
         char tag[4];
         data1_node *res;
-        data1_node *parent = res_root;
+        data1_node *parent = res_top;
 
         memcpy (tag, buf+entry_p, 3);
         entry_p += 3;
@@ -102,7 +102,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
 
 
         /* generate field node */
-        res = data1_mk_tag_n (p->dh, p->mem, tag, 3, 0 /* attr */, res_root);
+        res = data1_mk_tag_n (p->dh, p->mem, tag, 3, 0 /* attr */, parent);
 
 #if MARC_DEBUG
         fprintf (outf, "%s ", tag);
