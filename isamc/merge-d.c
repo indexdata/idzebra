@@ -3,9 +3,10 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.10 1999-08-18 09:13:31 heikki Exp $
+ * $Id: merge-d.c,v 1.11 1999-08-18 10:37:11 heikki Exp $
  *
  * todo
+ *  - Clean up log levels
  *  - Input filter: Eliminate del-ins pairs, tell if only one entry (or none)
  *  - single-entry optimizing
  *  - study and optimize block sizes (later)
@@ -23,6 +24,22 @@
  *  in that order. This conflicts with the order these are often mentioned in 
  *  the debug log calls, and other places, leading to small mistakes here
  *  and there. 
+ *
+ *  Needs cleaning! The way diff blocks are handled in append and reading is
+ *  quite different, and likely to give maintenance problems.
+ *
+ *  log levels (set isamd=x in zebra.cfg (or what ever cfg file you use) )
+ *  NOT IMPLEMEMTED YET !!!
+ *    0 = no logging. Default
+ *    1 = Each call to isamd_append with start address and no more
+ *    2 = Start and type of append, start of merge, and result of append
+ *    3 = Block allocations
+ *    4 = Block-level operations (read/write)
+ *    5 = Details about diff blocks etc.
+ *    6 = Log each record as it passes the system (once)
+ *    7 = Log raw and (de)coded data
+ *    8 = Anything else that may be useful
+ *    9 = Anything needed toi hunt a specific bug
  */
 
 #include <stdlib.h>
@@ -522,6 +539,12 @@ static ISAMD_PP  append_main_item(ISAMD_PP firstpp,
    pp->offset += codelen;
    pp->size += codelen;
    firstpp->numKeys++;
+   /* clear the next 4 bytes in block, to avoid confusions with diff lens */
+   /* dirty, it should not be done here, but something slips somewhere, and */
+   /* I hope this fixes it...  - Heikki */
+   codelen = pp->offset;
+   while ( (codelen < maxsize ) && (codelen <= pp->offset+4) )
+     pp->buf[codelen++] = '\0';
    return pp;    
 } /* append_main_item */
 
@@ -624,7 +647,7 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
      assert ( *p_pp == *p_firstpp );  /* can only be in the first block */
      diffidx=readpp->size;
      readpp->diffs = diffidx*2+0;
-     readpp->diffbuf=readpp->buf;  /*? does this get freed right??  */
+     readpp->diffbuf=readpp->buf; 
      if (readpp->is->method->debug >1)  //!!! 3 
          logf(LOG_LOG,"isamd_merge:local diffs at %d: %s", 
            diffidx,hexdump(&(readpp->diffbuf[diffidx]),8,0));
@@ -893,7 +916,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.10  1999-08-18 09:13:31  heikki
+ * Revision 1.11  1999-08-18 10:37:11  heikki
+ * Fixed (another) difflen bug
+ *
+ * Revision 1.10  1999/08/18 09:13:31  heikki
  * Fixed a detail
  *
  * Revision 1.9  1999/08/17 19:46:53  heikki
