@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.9 2003-06-30 19:37:12 adam Exp $
+/* $Id: zebraapi.h,v 1.10 2003-08-21 10:30:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -258,6 +258,8 @@ YAZ_EXPORT
 const char *zebra_get_resource(ZebraHandle zh, 
 		const char *name, const char *defaultvalue);
 
+
+YAZ_EXPORT void zebra_pidfname(ZebraService zs, char *path);
 
 YAZ_END_CDECL				      
 #endif

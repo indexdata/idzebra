@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.112 2003-07-07 14:56:04 heikki Exp $
+/* $Id: zebraapi.c,v 1.113 2003-08-21 10:30:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -184,6 +184,13 @@ ZebraService zebra_start (const char *configName)
         return zh;
     }
     return 0;
+}
+
+
+void zebra_pidfname(ZebraService zs, char *path)
+{
+    zebra_lock_prefix (zs->global_res, path);
+    strcat(path, "zebrasrv.pid");
 }
 
 static

@@ -1,4 +1,8 @@
 
+New filter grs.marcxml which works like grs.marc but produces MARCXML.
+
+Write zebrasrv.pid to lockdir.
+
 Bug fix: result sets were not recovered correctly. Had to
 add ODR handle for zebra_search_RPN in order to make it work.
 

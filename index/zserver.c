@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.109 2003-07-02 22:00:06 adam Exp $
+/* $Id: zserver.c,v 1.110 2003-08-21 10:30:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -657,20 +657,24 @@ static void bend_start (struct statserv_options_block *sob)
 #else
     if (!sob->inetd) 
     {
+	char pidfname[4096];
         struct flock area;
-        char *pidfile = "zebrasrv.pid";
-        int fd = open (pidfile, O_EXCL|O_WRONLY|O_CREAT, 0666);
+	int fd;
+
+	zebra_pidfname(sob->handle, pidfname);
+
+        fd = open (pidfname, O_EXCL|O_WRONLY|O_CREAT, 0666);
         if (fd == -1)
         {
             if (errno != EEXIST)
             {
-                yaz_log(LOG_FATAL|LOG_ERRNO, "lock file %s", pidfile);
+                yaz_log(LOG_FATAL|LOG_ERRNO, "lock file %s", pidfname);
                 exit(1);
             }
-            fd = open(pidfile, O_RDWR, 0666);
+            fd = open(pidfname, O_RDWR, 0666);
             if (fd == -1)
             {
-                yaz_log(LOG_FATAL|LOG_ERRNO, "lock file %s", pidfile);
+                yaz_log(LOG_FATAL|LOG_ERRNO, "lock file %s", pidfname);
                 exit(1);
             }
         }
@@ -699,7 +703,11 @@ static void bend_stop(struct statserv_options_block *sob)
 
 #else
     if (!sob->inetd) 
-        unlink ("zebrasrv.pid");
+    {
+	char pidfname[4096];
+	zebra_pidfname(sob->handle, pidfname);
+        unlink (pidfname);
+    }
 #endif
     if (sob->handle)
     {
