@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.29  1999-05-26 07:49:14  adam
+ * Revision 1.30  1999-07-06 12:26:41  adam
+ * Retrieval handler obeys schema and handles XML transfer syntax.
+ *
+ * Revision 1.29  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.28  1999/05/21 12:00:17  adam
@@ -454,56 +457,57 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
 
     switch (c->which)
     {
-	case Z_RecordComp_simple:
-	    if (c->u.simple->which != Z_ElementSetNames_generic)
-		return 26; /* only generic form supported. Fix this later */
-	    if (!(eset = data1_getesetbyname(dh, n->u.root.absyn,
-		c->u.simple->u.generic)))
-	    {
-		logf(LOG_LOG, "Unknown esetname '%s'", c->u.simple->u.generic);
+    case Z_RecordComp_simple:
+	if (c->u.simple->which != Z_ElementSetNames_generic)
+	    return 26; /* only generic form supported. Fix this later */
+	if (!(eset = data1_getesetbyname(dh, n->u.root.absyn,
+					 c->u.simple->u.generic)))
+	{
+	    logf(LOG_LOG, "Unknown esetname '%s'", c->u.simple->u.generic);
 		return 25; /* invalid esetname */
-	    }
-	    logf(LOG_DEBUG, "Esetname '%s' in simple compspec",
-	        c->u.simple->u.generic);
-	    espec = eset->spec;
-	    break;
-	case Z_RecordComp_complex:
-	    if (c->u.complex->generic)
+	}
+	logf(LOG_DEBUG, "Esetname '%s' in simple compspec",
+	     c->u.simple->u.generic);
+	espec = eset->spec;
+	break;
+    case Z_RecordComp_complex:
+	if (c->u.complex->generic)
+	{
+	    /* insert check for schema */
+	    if ((p = c->u.complex->generic->elementSpec))
 	    {
-		/* insert check for schema */
-		if ((p = c->u.complex->generic->elementSpec))
-		    switch (p->which)
+		switch (p->which)
+		{
+		case Z_ElementSpec_elementSetName:
+		    if (!(eset =
+			  data1_getesetbyname(dh, n->u.root.absyn,
+					      p->u.elementSetName)))
 		    {
-			case Z_ElementSpec_elementSetName:
-			    if (!(eset =
-				  data1_getesetbyname(dh,
-						      n->u.root.absyn,
-						      p->u.elementSetName)))
-			    {
-				logf(LOG_LOG, "Unknown esetname '%s'",
-				    p->u.elementSetName);
-				return 25; /* invalid esetname */
-			    }
-			    logf(LOG_DEBUG, "Esetname '%s' in complex compspec",
-			    	p->u.elementSetName);
-			    espec = eset->spec;
-			    break;
-			case Z_ElementSpec_externalSpec:
-			    if (p->u.externalSpec->which == Z_External_espec1)
-			    {
-				logf(LOG_DEBUG, "Got Espec-1");
-				espec = p->u.externalSpec-> u.espec1;
-			    }
-			    else
-			    {
-				logf(LOG_LOG, "Unknown external espec.");
-				return 25; /* bad. what is proper diagnostic? */
-			    }
-			    break;
+			logf(LOG_LOG, "Unknown esetname '%s'",
+			     p->u.elementSetName);
+			return 25; /* invalid esetname */
 		    }
+		    logf(LOG_DEBUG, "Esetname '%s' in complex compspec",
+			 p->u.elementSetName);
+		    espec = eset->spec;
+		    break;
+		case Z_ElementSpec_externalSpec:
+		    if (p->u.externalSpec->which == Z_External_espec1)
+		    {
+			logf(LOG_DEBUG, "Got Espec-1");
+			espec = p->u.externalSpec-> u.espec1;
+		    }
+		    else
+		    {
+			logf(LOG_LOG, "Unknown external espec.");
+			return 25; /* bad. what is proper diagnostic? */
+		    }
+		    break;
+		}
 	    }
-	    else
-		return 26; /* fix */
+	}
+	else
+	    return 26; /* fix */
     }
     if (espec)
     {
@@ -527,6 +531,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     struct grs_read_info gri;
     char *tagname;
     struct grs_handlers *h = (struct grs_handlers *) clientData;
+    int requested_schema = VAL_NONE;
     
     mem = nmem_create();
     gri.readf = p->readf;
@@ -562,10 +567,8 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     }
 
     tagname = res_get_def(p->res, "tagrank", "rank");
-    if (strcmp(tagname, "0") && p->score >= 0 && (dnew =
-			  data1_insert_taggeddata(p->dh, node,
-						  node, tagname,
-						  mem)))
+    if (strcmp(tagname, "0") && p->score >= 0 &&
+	(dnew = data1_insert_taggeddata(p->dh, node, node, tagname, mem)))
     {
         logf (LOG_DEBUG, "grs_retrieve: %s", tagname);
 	dnew->u.data.what = DATA1I_num;
@@ -585,54 +588,51 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
 
-    logf (LOG_DEBUG, "grs_retrieve: schemaIdentifier");
-    if (p->input_format == VAL_GRS1 && node->u.root.absyn &&
-	node->u.root.absyn->reference != VAL_NONE)
+    if (p->comp && p->comp->which == Z_RecordComp_complex &&
+	p->comp->u.complex->generic &&
+	p->comp->u.complex->generic->schema)
     {
-	oident oe;
-	Odr_oid *oid;
-	int oidtmp[OID_SIZE];
-
-	oe.proto = PROTO_Z3950;
-	oe.oclass = CLASS_SCHEMA;
-	oe.value = node->u.root.absyn->reference;
-
-	if ((oid = oid_ent_to_oid (&oe, oidtmp)))
-	{
-	    char tmp[128];
-	    data1_handle dh = p->dh;
-	    char *p = tmp;
-	    int *ii;
-
-	    for (ii = oid; *ii >= 0; ii++)
-	    {
-		if (p != tmp)
-		    *(p++) = '.';
-		sprintf(p, "%d", *ii);
-		p += strlen(p);
-	    }
-	    *(p++) = '\0';
-
-	    if ((dnew = data1_insert_taggeddata(dh, node, node,
-					       "schemaIdentifier", mem)))
-	    {
-		dnew->u.data.what = DATA1I_oid;
-		dnew->u.data.data = (char *) nmem_malloc(mem, p - tmp);
-		memcpy(dnew->u.data.data, tmp, p - tmp);
-		dnew->u.data.len = p - tmp;
-	    }
-	}
+	oident *oe = oid_getentbyoid (p->comp->u.complex->generic->schema);
+	if (oe)
+	    requested_schema = oe->value;
     }
 
-    logf (LOG_DEBUG, "grs_retrieve: schema mapping");
+    /* If schema has been specified, map if possible, then check that
+     * we got the right one 
+     */
+    if (requested_schema != VAL_NONE)
+    {
+	logf (LOG_DEBUG, "grs_retrieve: schema mapping");
+	for (map = node->u.root.absyn->maptabs; map; map = map->next)
+	{
+	    if (map->target_absyn_ref == requested_schema)
+	    {
+		onode = node;
+		if (!(node = data1_map_record(p->dh, onode, map, mem)))
+		{
+		    p->diagnostic = 14;
+		    nmem_destroy (mem);
+		    return 0;
+		}
+		break;
+	    }
+	}
+	if (node->u.root.absyn &&
+	    requested_schema != node->u.root.absyn->reference)
+	{
+	    p->diagnostic = 238;
+	    nmem_destroy (mem);
+	    return 0;
+	}
+    }
     /*
-     * Does the requested format match a known schema-mapping? (this reflects
+     * Does the requested format match a known syntax-mapping? (this reflects
      * the overlap of schema and formatting which is inherent in the MARC
      * family)
-     * NOTE: This should look at the schema-specification in the compspec
-     * as well.
      */
+    logf (LOG_DEBUG, "grs_retrieve: syntax mapping");
     for (map = node->u.root.absyn->maptabs; map; map = map->next)
+    {
 	if (map->target_absyn_ref == p->input_format)
 	{
 	    onode = node;
@@ -644,6 +644,46 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	    }
 	    break;
 	}
+    }
+    logf (LOG_DEBUG, "grs_retrieve: schemaIdentifier");
+    if (node->u.root.absyn &&
+	node->u.root.absyn->reference != VAL_NONE &&
+	p->input_format == VAL_GRS1)
+    {
+	oident oe;
+	Odr_oid *oid;
+	int oidtmp[OID_SIZE];
+	
+	oe.proto = PROTO_Z3950;
+	oe.oclass = CLASS_SCHEMA;
+	oe.value = node->u.root.absyn->reference;
+	
+	if ((oid = oid_ent_to_oid (&oe, oidtmp)))
+	{
+	    char tmp[128];
+	    data1_handle dh = p->dh;
+	    char *p = tmp;
+	    int *ii;
+	    
+	    for (ii = oid; *ii >= 0; ii++)
+	    {
+		if (p != tmp)
+			*(p++) = '.';
+		sprintf(p, "%d", *ii);
+		p += strlen(p);
+	    }
+	    *(p++) = '\0';
+		
+	    if ((dnew = data1_insert_taggeddata(dh, node, node,
+						"schemaIdentifier", mem)))
+	    {
+		dnew->u.data.what = DATA1I_oid;
+		dnew->u.data.data = (char *) nmem_malloc(mem, p - tmp);
+		memcpy(dnew->u.data.data, tmp, p - tmp);
+		dnew->u.data.len = p - tmp;
+	    }
+	}
+    }
 
     logf (LOG_DEBUG, "grs_retrieve: element spec");
     if (p->comp && (res = process_comp(p->dh, node, p->comp)) > 0)
@@ -660,80 +700,91 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 
     logf (LOG_DEBUG, "grs_retrieve: transfer syntax mapping");
     switch (p->output_format = (p->input_format != VAL_NONE ?
-	p->input_format : VAL_SUTRS))
+				p->input_format : VAL_SUTRS))
     {
 	data1_marctab *marctab;
         int dummy;
-
-	case VAL_GRS1:
-	    dummy = 0;
-	    if (!(p->rec_buf = data1_nodetogr(p->dh, node, selected,
-					      p->odr, &dummy)))
-		p->diagnostic = 238; /* not available in requested syntax */
-	    else
-		p->rec_len = (size_t) (-1);
+	
+    case VAL_TEXT_XML:
+	if (!(p->rec_buf = data1_nodetoidsgml(p->dh, node, selected,
+					      (int*)&p->rec_len)))
+	    p->diagnostic = 238;
+	else
+	{
+	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
+	    memcpy (new_buf, p->rec_buf, p->rec_len);
+	    p->rec_buf = new_buf;
+	}
+	break;
+    case VAL_GRS1:
+	dummy = 0;
+	if (!(p->rec_buf = data1_nodetogr(p->dh, node, selected,
+					  p->odr, &dummy)))
+	    p->diagnostic = 238; /* not available in requested syntax */
+	else
+	    p->rec_len = (size_t) (-1);
+	break;
+    case VAL_EXPLAIN:
+	if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
+					       p->odr)))
+	    p->diagnostic = 238;
+	else
+	    p->rec_len = (size_t) (-1);
+	break;
+    case VAL_SUMMARY:
+	if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
+					       p->odr)))
+	    p->diagnostic = 238;
+	else
+	    p->rec_len = (size_t) (-1);
+	break;
+    case VAL_SUTRS:
+	if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
+					   (int*)&p->rec_len)))
+	    p->diagnostic = 238;
+	else
+	{
+	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
+	    memcpy (new_buf, p->rec_buf, p->rec_len);
+	    p->rec_buf = new_buf;
+	}
+	break;
+    case VAL_SOIF:
+	if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
+					    (int*)&p->rec_len)))
+	    p->diagnostic = 238;
+	else
+	{
+	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
+	    memcpy (new_buf, p->rec_buf, p->rec_len);
+	    p->rec_buf = new_buf;
+	}
+	break;
+    default:
+	if (!node->u.root.absyn)
+	{
+	    p->diagnostic = 238;
 	    break;
-	case VAL_EXPLAIN:
-	    if (!(p->rec_buf = data1_nodetoexplain(p->dh, node, selected,
-						   p->odr)))
-		p->diagnostic = 238;
-	    else
-		p->rec_len = (size_t) (-1);
-	    break;
-	case VAL_SUMMARY:
-	    if (!(p->rec_buf = data1_nodetosummary(p->dh, node, selected,
-						   p->odr)))
-		p->diagnostic = 238;
-	    else
-		p->rec_len = (size_t) (-1);
-	    break;
-	case VAL_SUTRS:
-	    if (!(p->rec_buf = data1_nodetobuf(p->dh, node, selected,
-		(int*)&p->rec_len)))
-		p->diagnostic = 238;
-	    else
-	    {
-		char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
-		memcpy (new_buf, p->rec_buf, p->rec_len);
-		p->rec_buf = new_buf;
-	    }
-	    break;
-	case VAL_SOIF:
-	    if (!(p->rec_buf = data1_nodetosoif(p->dh, node, selected,
-						(int*)&p->rec_len)))
-		p->diagnostic = 238;
-	    else
-	    {
-		char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
-		memcpy (new_buf, p->rec_buf, p->rec_len);
-		p->rec_buf = new_buf;
-	    }
-	    break;
-	default:
-            if (!node->u.root.absyn)
-            {
-		p->diagnostic = 238;
+	}
+	for (marctab = node->u.root.absyn->marc; marctab;
+	     marctab = marctab->next)
+	    if (marctab->reference == p->input_format)
 		break;
-	    }
-	    for (marctab = node->u.root.absyn->marc; marctab;
-		marctab = marctab->next)
-		if (marctab->reference == p->input_format)
-		    break;
-	    if (!marctab)
-	    {
-		p->diagnostic = 238;
-		break;
-	    }
-	    if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
+	if (!marctab)
+	{
+	    p->diagnostic = 238;
+	    break;
+	}
+	if (!(p->rec_buf = data1_nodetomarc(p->dh, marctab, node,
 						selected,
-						(int*)&p->rec_len)))
-		p->diagnostic = 238;
-	    else
-	    {
-		char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
-		memcpy (new_buf, p->rec_buf, p->rec_len);
+					    (int*)&p->rec_len)))
+	    p->diagnostic = 238;
+	else
+	{
+	    char *new_buf = (char*) odr_malloc (p->odr, p->rec_len);
+	    memcpy (new_buf, p->rec_buf, p->rec_len);
 		p->rec_buf = new_buf;
-	    }
+	}
     }
     if (node)
 	data1_free_tree(p->dh, node);
