@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.1 2003-06-23 15:36:11 adam Exp $
+/* $Id: tstisamb.c,v 1.2 2004-06-01 13:04:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -120,6 +120,10 @@ void tst_insert(ISAMB isb, int n)
     isamb_unlink(isb, isamc_p);
 }
 
+static void log_item(int level, void *b, const char *txt)
+{
+}
+
 int main(int argc, char **argv)
 {
     BFiles bfs;
@@ -131,6 +135,7 @@ int main(int argc, char **argv)
 	
     /* setup method (attributes) */
     method.compare_item = compare_item;
+    method.log_item = log_item;
     method.code_start = code_start;
     method.code_item = code_item;
     method.code_reset = code_reset;
