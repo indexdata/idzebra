@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.16  1996-02-02 13:43:50  adam
+ * Revision 1.17  1996-05-14 15:49:09  adam
+ * Bug fix: In function split_page. In rare cases variable best_indxp was
+ * referenced.
+ *
+ * Revision 1.16  1996/02/02  13:43:50  adam
  * The public functions simply use char instead of Dict_char to represent
  * search strings. Dict_char is used internally only.
  *
@@ -127,6 +131,7 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
             {   /* first entry met */
                 best_char = prev_char = dc;
                 best_no = 1;
+                best_indxp = indxp;
             }
             else if (prev_char == dc)
             {   /* same char prefix. update */
