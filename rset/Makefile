@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.4 1995-09-04 12:33:55 adam Exp $
+# $Id: Makefile,v 1.5 1995-09-06 10:35:44 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -11,7 +11,7 @@ INCLUDE=-I../include -I$(YAZ)/include
 DEFS=$(INCLUDE)
 LIB=../lib/rset.a
 PROG=
-PO=rset.o rstemp.o rsisam.o
+PO=rset.o rstemp.o rsisam.o rsnull.o
 CPP=cc -E
 
 all: $(LIB)
