@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.21 2004-09-09 14:12:10 adam Exp $
+# $Id: Session.pm,v 1.22 2004-09-09 15:23:07 heikki Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -16,7 +16,7 @@ BEGIN {
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
     require Exporter;
-    our $VERSION = do { my @r = (q$Revision: 1.21 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.22 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger Exporter);
     our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
@@ -479,21 +479,18 @@ sub _update_args_deleted {
 sub insert_record {
     my ($self, %args) = @_;
     $self->checkzh;
+    $args{sysno}=0; # make sure we don't overwrite any records
     my @args = $self->_record_update_args(%args);
-    my $stat = IDZebra::insert_record($self->{zh}, @args);
-    # ADAM: rg no longer part of vector
-    print STDERR "\nsub insert_record stat=$stat sys=${$args[1]}\n";
-    return $stat;
+    my @ret = IDZebra::insert_record($self->{zh}, @args);
+    return @ret; # returns ($status, $sysno)
 }
 
 sub update_record {
     my ($self, %args) = @_;
     $self->checkzh;
     my @args = $self->_record_update_args(%args);
-    my $stat = IDZebra::update_record($self->{zh}, @args);
-    # ADAM: rg no longer part of vector
-    my $sysno = $args[1]; $stat = -1 * $stat if ($stat > 0);
-    return $stat ? $stat : $$sysno;
+    my @ret = IDZebra::update_record($self->{zh}, @args);
+    return @ret; # ($status, $sysno)
 }
 
 sub delete_record {
@@ -501,14 +498,12 @@ sub delete_record {
     $self->checkzh;
     my @args = $self->_record_update_args(%args);
     my $stat = IDZebra::delete_record($self->{zh}, @args);
-    # ADAM: rg no longer part of vector
-    my $sysno = $args[1]; $stat = -1 * $stat if ($stat > 0);
+    return $stat;
 }
 
 sub _record_update_args {
     my ($self, %args) = @_;
-    my $dummysysno=0;
-    my $sysno   = $args{sysno}      ? $args{sysno}      : \$dummysysno;
+    my $sysno   = $args{sysno}      ? $args{sysno}      : 0;
     my $match   = $args{match}      ? $args{match}      : "";
     my $rectype = $args{recordType} ? $args{recordType} : "";
     my $fname   = $args{file}       ? $args{file}       : "<no file>";

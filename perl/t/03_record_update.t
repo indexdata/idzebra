@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 03_record_update.t,v 1.8 2004-09-09 14:12:10 adam Exp $
+# $Id: 03_record_update.t,v 1.9 2004-09-09 15:23:07 heikki Exp $
 #
 # Perl API header
 # =============================================================================
@@ -40,20 +40,20 @@ my $rec1=`cat lib/IDZebra/Data1.pm`;
 my $rec2=`cat lib/IDZebra/Filter.pm`;
 my $rec3=`cat lib/IDZebra/Session.pm`;
 
-my ($sysno, $stat);
+my ($sysno, $stat, $ret);
 
 $sess->init;
 
-# ADAM: we must set database separately (can't be set from group)
+# ADAM: we must set database separately (cant be set from group)
 $sess->databases('demo1');
 
 $sess->begin_trans;
-my $ret = $sess->insert_record(data       => $rec1,
+($ret,$sysno) = $sess->insert_record(data       => $rec1,
 			      recordType => 'grs.perl.pod',
 			      groupName  => "demo1",
 			      );
 
-print STDERR "\nAfter first insert_record. ret=$ret\n";
+print STDERR "\nAfter first insert_record. ret=$ret sysno=$sysno\n";
 
 ok(($ret == 0),"Must return ret=0 (OK)");
 
