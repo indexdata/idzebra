@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.9 1999-08-17 19:46:53 heikki Exp $
+ * $Id: merge-d.c,v 1.10 1999-08-18 09:13:31 heikki Exp $
  *
  * todo
  *  - Input filter: Eliminate del-ins pairs, tell if only one entry (or none)
@@ -12,9 +12,6 @@
  *  - Clean up the different ways diffs are handled in writing and reading
  *
  * bugs
- * - memory leak somewhere. 
- *    - Some pp_opens do not get closed. 
- *    - Diffinfo's get left behind.
  *
  * caveat
  *  There is a confusion about the block addresses. cat or type is the category,
@@ -392,9 +389,10 @@ static ISAMD_PP read_diff_block(ISAMD_PP firstpp, int* p_diffidx)
       { /* prepare to append diffs in head */
         diffidx = pp->size;
         pp->diffs = diffidx *2 +0; 
-        i=diffidx; /* clear the rest of the block. ??? */
-        if ( i < pp->is->method->filecat[pp->cat].bsize)
-            pp->buf[i]='\0';
+        i=diffidx; /* make an end marker */
+        while ( ( i < pp->is->method->filecat[pp->cat].bsize) && 
+                ( i <= diffidx + sizeof(int)))
+            pp->buf[i++]='\0';
         if (pp->is->method->debug >1) //!!! 3
              logf(LOG_LOG,"isamd_appd: set up diffhead  (d=%d) %d=%d:%d ix=%d",
                    firstpp->diffs,
@@ -454,7 +452,7 @@ static ISAMD_PP get_new_main_block( ISAMD_PP firstpp, ISAMD_PP pp)
       pp->pos=newblock; 
       pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N; 
       pp->next=0;
-      if (pp->is->method->debug >1)  //!!! 3
+      if (pp->is->method->debug >3) 
          logf(LOG_LOG,"isamd_build: Alloc2 f=%d (%d:%d) n=%d(%d:%d)",
             isamd_addr(firstpp->pos,firstpp->cat), 
             firstpp->cat, firstpp->pos,
@@ -464,7 +462,7 @@ static ISAMD_PP get_new_main_block( ISAMD_PP firstpp, ISAMD_PP pp)
    { /* it was not the first block */
       newblock = isamd_alloc_block(pp->is, firstpp->cat);
       pp->next = isamd_addr(newblock,firstpp->cat);
-      if (pp->is->method->debug >1)  //!!! 3
+      if (pp->is->method->debug >3) 
          logf(LOG_LOG,"isamd_build: Alloc new after p=%d=%d:%d  n=%d=%d:%d",
             isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos,
             isamd_addr(newblock,pp->cat), pp->cat, newblock );
@@ -895,7 +893,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.9  1999-08-17 19:46:53  heikki
+ * Revision 1.10  1999-08-18 09:13:31  heikki
+ * Fixed a detail
+ *
+ * Revision 1.9  1999/08/17 19:46:53  heikki
  * Fixed a memory leak
  *
  * Revision 1.8  1999/08/07 11:30:59  heikki
