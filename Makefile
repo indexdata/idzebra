@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.57 1996-12-20 11:06:37 adam Exp $
+# $Id: Makefile,v 1.58 1997-02-19 16:22:22 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -15,12 +15,12 @@ YAZINC=-I../../yaz/include
 #OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
 
 # Some systems have seperate socket libraries
-#NETLIB=-lnsl -lsocket
+#ELIBS=-lnsl -lsocket
 
 SUBDIR=util bfile dfa dict isamc isam rset recctrl index
 
 all:
-	for i in $(SUBDIR); do cd $$i; if $(MAKE) OSILIB="$(OSILIB)" YAZLIB="$(YAZLIB)" YAZINC="$(YAZINC)" RANLIB="$(RANLIB)" NETLIB="$(NETLIB)" CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done
+	for i in $(SUBDIR); do cd $$i; if $(MAKE) OSILIB="$(OSILIB)" YAZLIB="$(YAZLIB)" YAZINC="$(YAZINC)" RANLIB="$(RANLIB)" ELIBS="$(ELIBS)" CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done
 
 dep depend:
 	for i in $(SUBDIR); do cd $$i; if $(MAKE) YAZINC="$(YAZINC)" depend; then cd ..; else exit 1; fi; done

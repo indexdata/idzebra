@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.34 1997-01-02 10:49:30 quinn Exp $
+  $Id: zebra.sgml,v 1.35 1997-02-19 16:22:26 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.34 $
+<date>$Revision: 1.35 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -194,7 +194,7 @@ provide an adequate compiler.
 
 Unpack the distribution archive. In some cases, you may want to edit
 the top-level <tt/Makefile/, eg. to select a different C compiler, or
-to specify machine-specific libraries in the <bf/NETLIB/ variable.
+to specify machine-specific libraries in the <bf/ELIBS/ variable.
 
 When you are done editing the <tt>Makefile</tt> type:
 <tscreen><verb>

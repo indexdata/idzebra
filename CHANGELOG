@@ -1,3 +1,6 @@
+Added feature in regx-filters: "end element" on outer-most level will
+perform an implicit "end record".
+
 Bug fix: The show records facility (-s) only displayed information for
 the first record in a file (and not for every record in the file).
 
