@@ -1,5 +1,5 @@
 # TagSet-G Tags
-# $Id: tagsetg-zthes.tag,v 1.1 2002-12-01 23:25:06 mike Exp $
+# $Id: tagsetg-zthes.tag,v 1.2 2002-12-02 15:19:12 mike Exp $
 # Hacked for Zthes: compare with ../../tab/tagsetg.tag
 name tagsetg
 reference TagsetG
@@ -21,7 +21,7 @@ tag	13	eMailAddress				string
 tag	14	phoneNumber/telephone			string
 tag	15	faxNumber/fax				string
 tag	16	country					string
-tag	17	description				string
+tag	17	description/termNote			string
 tag	18	time					intunit
 tag	19	documentcontent				octetstring
 tag	20	language				string

@@ -1,6 +1,6 @@
 # TagSet-M Tags
 #
-# $Id: tagsetm-zthes.tag,v 1.1 2002-12-01 23:25:06 mike Exp $
+# $Id: tagsetm-zthes.tag,v 1.2 2002-12-02 15:19:12 mike Exp $
 # Hacked for Zthes: compare with ../../tab/tagsetm.tag
 name tagsetm
 reference TagsetM
@@ -19,7 +19,7 @@ tag	10	rank				int
 tag	11	userMessage			string
 tag	12	url				string
 tag	13	record				structured
-tag	14	local-control-number		string
+tag	14	local-control-number/termId	string
 tag	15	creation-date			generalizedtime
 tag	16	dateOfLastModification/lastModified generalizedtime
 tag	17	dateOfLastReview		generalizedtime
