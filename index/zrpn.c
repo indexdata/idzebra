@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.66  1997-09-25 14:58:03  adam
+ * Revision 1.67  1997-09-29 09:06:10  adam
+ * Removed one static var in order to make this module thread safe.
+ *
+ * Revision 1.66  1997/09/25 14:58:03  adam
  * Windows NT port.
  *
  * Revision 1.65  1997/09/22 12:39:06  adam
@@ -1344,7 +1347,7 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
             }
             if (*zop->u.prox->proximityUnitCode != Z_ProxUnit_word)
             {
-                static char val[16];
+                char *val = odr_malloc (zi->odr, 16);
                 zi->errCode = 132;
                 zi->errString = val;
                 sprintf (val, "%d", *zop->u.prox->proximityUnitCode);
