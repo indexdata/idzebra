@@ -12,7 +12,7 @@ else
 fi
 ../../index/zebraidx -c $pp/zebra.cfg -l$LOG update $pp/*.xml
 ../../index/zebrasrv -c $pp/zebra.cfg -l$LOG unix:socket &
-sleep 1
+sleep 2
 # search for UNICODE 1E25 - letter h with dot below
 ../api/testclient unix:socket '@term string ḥ' >tmp1
 echo 'Result count: 1' >tmp2

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.4 2004-09-27 10:44:50 adam Exp $
+# $Id: test1.sh,v 1.5 2004-09-27 11:22:39 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -12,7 +12,7 @@ else
 fi
 ../../index/zebraidx -c $pp/zebra.cfg -l$LOG update $pp/*.xml
 ../../index/zebrasrv -c $pp/zebra.cfg -l$LOG unix:socket &
-sleep 1
+sleep 2
 ../api/testclient unix:socket '@term string æ' >tmp1
 echo 'Result count: 1' >tmp2
 kill `cat zebrasrv.pid` || exit 1
