@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.14 2002-08-02 19:26:55 adam Exp $
+/* $Id: attribute.c,v 1.15 2004-05-26 13:52:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -29,23 +29,26 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include "index.h"
 
-static data1_att *getatt(data1_attset *p, int att)
+static data1_att *getatt(data1_attset *p, int att, const char *sattr)
 {
     data1_att *a;
     data1_attset_child *c;
 
     /* scan local set */
     for (a = p->atts; a; a = a->next)
-	if (a->value == att)
+	if (sattr && !yaz_matchstr(sattr, a->name))
+	    return a;
+	else if (a->value == att)
 	    return a;
     /* scan included sets */
     for (c = p->children; c; c = c->next)
-	if ((a = getatt(c->child, att)))
+	if ((a = getatt(c->child, att, sattr)))
 	    return a;
     return 0;
 }
 
-int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att)
+int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att,
+		const char *sattr)
 {
     data1_att *r;
     data1_attset *p;
@@ -57,7 +60,7 @@ int att_getentbyatt(ZebraHandle zi, attent *res, oid_value set, int att)
     }
     if (!p)
 	return -2;
-    if (!(r = getatt(p, att)))
+    if (!(r = getatt(p, att, sattr)))
 	return -1;
     res->attset_ordinal = r->parent->reference;
     res->local_attributes = r->locals;

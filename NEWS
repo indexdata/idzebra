@@ -1,4 +1,8 @@
 
+Allow use of string use attributes for regular attribute sets. The
+name matches the name given in the attribute set file. All strings
+starting with / are considered X-Path as usual.
+
 Fixed bug in grs.regx. filter . 'end element' could pop off top tag
 element for XML tree. It may only pop off if -record is given.
 

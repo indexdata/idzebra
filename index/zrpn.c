@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.137 2004-05-10 08:47:54 adam Exp $
+/* $Id: zrpn.c,v 1.138 2004-05-26 13:52:26 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -941,7 +941,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             zh->errString = basenames[base_no];
             return -1;
         }
-        if (use_value == -2)  /* string attribute (assume IDXPATH/any) */
+        if (xpath_use > 0 && use_value == -2) 
         {
             use_value = xpath_use;
             attp.local_attributes = &id_xpath_attr;
@@ -958,17 +958,23 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         else
         {
-            if ((r=att_getentbyatt (zh, &attp, curAttributeSet, use_value)))
+            if ((r=att_getentbyatt (zh, &attp, curAttributeSet, use_value,
+					    use_string)))
             {
                 logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
                       curAttributeSet, use_value, r);
                 if (r == -1)
                 {
                     /* set was found, but value wasn't defined */
-                    char val_str[32];
-                    sprintf (val_str, "%d 1", use_value);
                     errCode = 114;
-                    errString = nmem_strdup (stream, val_str);
+		    if (use_string)
+			errString = nmem_strdup(stream, use_string);
+	            else
+                    {
+                        char val_str[32];
+                        sprintf (val_str, "%d", use_value);
+                        errString = nmem_strdup (stream, val_str);
+		    }
                 }
                 else
                 {
@@ -1015,7 +1021,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    bases_ok++;
 #else
             char val_str[32];
-            sprintf (val_str, "%d 2", use_value);
+            sprintf (val_str, "%d", use_value);
             errCode = 114;
             errString = nmem_strdup (stream, val_str);
 #endif
@@ -1850,7 +1856,8 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         else
         {
-            if ((r=att_getentbyatt (zh, &attp, curAttributeSet, use_value)))
+            if ((r=att_getentbyatt (zh, &attp, curAttributeSet, use_value,
+					    use_string)))
             {
                 logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
                       curAttributeSet, use_value, r);
@@ -2692,6 +2699,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     char termz[IT_MAX_WORD+20];
     AttrType use;
     int use_value;
+    const char *use_string = 0;
     struct scan_info *scan_info_array;
     ZebraScanEntry *glist;
     int ords[32], ord_no = 0;
@@ -2742,7 +2750,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
              pos, num, attributeset);
         
     attr_init (&use, zapt, 1);
-    use_value = attr_find (&use, &attributeset);
+    use_value = attr_find_ex (&use, &attributeset, &use_string);
 
     if (zebra_maps_attr (zh->reg->zebra_maps, zapt, &reg_id, &search_type,
 			 rank_type, &complete_flag, &sort_flag))
@@ -2761,7 +2769,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         attent attp;
         data1_local_attribute *local_attr;
 
-        if ((r=att_getentbyatt (zh, &attp, attributeset, use_value)))
+        if ((r=att_getentbyatt (zh, &attp, attributeset, use_value,
+				use_string)))
         {
             logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
                   attributeset, use_value);

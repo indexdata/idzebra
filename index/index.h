@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.105 2004-03-29 15:48:14 adam Exp $
+/* $Id: index.h,v 1.106 2004-05-26 13:52:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -409,7 +409,8 @@ void zebraRankInstall (struct zebra_register *reg, struct rank_control *ctrl);
 ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name);
 void zebraRankDestroy (struct zebra_register *reg);
 
-int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att);
+int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att,
+		const char *sattr);
 
 extern struct rank_control *rank1_class;
 extern struct rank_control *rankzv_class;
