@@ -23,6 +23,7 @@ struct inv_stat_info {
     int isamb_levels[10][5];
     int isamb_sizes[10];
     int isamb_blocks[10];
+    unsigned long cksum;
 };
 
 #define SINGLETON_TYPE 8 /* the type to use for singletons that */ 
@@ -52,7 +53,8 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         occur = isams_pp_num (pp);
         while (isams_pp_read(pp, &key))
 	{
-	    //printf ("sysno=%d seqno=%d\n", key.sysno, key.seqno);
+            stat_info->cksum = stat_info->cksum * 65509 + 
+                key.sysno + 11 * key.seqno;
             occurx++;
 	}
         assert (occurx == occur);
@@ -65,6 +67,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 
         ispt = is_position (stat_info->zh->reg->isam, isam_p);
         occur = is_numkeys (ispt);
+	stat_info->no_isam_entries[is_type(isam_p)] += occur;
         is_pt_free (ispt);
     }
     if (stat_info->zh->reg->isamc)
@@ -77,7 +80,8 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         occur = isc_pp_num (pp);
         while (isc_pp_read(pp, &key))
 	{
-	    //printf ("sysno=%d seqno=%d\n", key.sysno, key.seqno);
+            stat_info->cksum = stat_info->cksum * 65509 + 
+                key.sysno + 11 * key.seqno;
             occurx++;
 	}
         assert (occurx == occur);
@@ -95,6 +99,8 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         occur = isamd_pp_num (pp);
         while (isamd_pp_read(pp, &key))
 	{
+            stat_info->cksum = stat_info->cksum * 65509 + 
+                key.sysno + 11 * key.seqno;
             occurx++;
             if ( pp->is->method->debug >8 )
 	       logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
@@ -127,13 +133,18 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         pp = isamb_pp_open_x(stat_info->zh->reg->isamb, isam_p, &level);
 
         while (isamb_pp_read(pp, &key))
+        {
+            stat_info->cksum = stat_info->cksum * 65509 + 
+                key.sysno + 11 * key.seqno;
             occur++;
+        }
         isamb_pp_close_x (pp, &size, &blocks);
         stat_info->isamb_blocks[cat] += blocks;
         stat_info->isamb_sizes[cat] += size;
         if (level > 4)
             level = 4;
         stat_info->isamb_levels[cat][level] ++;
+	stat_info->no_isam_entries[cat] += occur;
     }
 
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
@@ -149,6 +160,7 @@ void zebra_register_statistics (ZebraHandle zh)
     int count;
     int i, prev;
     int before = 0;
+    int occur;
     int after = 1000000000;
     struct inv_stat_info stat_info;
     char term_dict[2*IT_MAX_WORD+2];
@@ -184,6 +196,8 @@ void zebra_register_statistics (ZebraHandle zh)
     stat_info.isam_bounds[16] = 500000;
     stat_info.isam_bounds[17] = 1000000;
     stat_info.isam_bounds[18] = 0;
+
+    stat_info.cksum = 0;
 
     for (i = 0; i<20; i++)
         stat_info.isam_occurrences[i] = 0;
@@ -265,15 +279,23 @@ void zebra_register_statistics (ZebraHandle zh)
             fprintf (stderr, "Block size %d\n", bsize);
             fprintf (stderr, "Blocks:    %d\n", stat_info.isamb_blocks[i]);
             fprintf (stderr, "Size:      %d\n", stat_info.isamb_sizes[i]);
+            fprintf (stderr, "Entries:   %d\n", stat_info.no_isam_entries[i]);
             fprintf (stderr, "Total      %d\n", stat_info.isamb_blocks[i]*
                      bsize);
             for (j = 0; j<5; j++)
                 if (stat_info.isamb_levels[i][j])
                     fprintf (stderr, "Level%d     %d\n", j,
                              stat_info.isamb_levels[i][j]);
+            fprintf (stderr, "\n");
         }
     }
+    fprintf (stderr, "Checksum       %08lX\n", stat_info.cksum);
 
+    fprintf (stderr, "Distinct words %d\n", stat_info.no_dict_entries);
+    occur = 0;
+    for (i = 0; i<9; i++)
+        occur += stat_info.no_isam_entries[i];
+    fprintf (stderr, "Word pos       %d\n", occur);
     fprintf (stderr, "    Occurrences     Words\n");
     prev = 1;
     for (i = 0; stat_info.isam_bounds[i]; i++)
@@ -293,7 +315,10 @@ void zebra_register_statistics (ZebraHandle zh)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.27  2002-04-30 08:28:37  adam
+ * Revision 1.28  2002-04-30 19:31:09  adam
+ * isamb delete; more statistics
+ *
+ * Revision 1.27  2002/04/30 08:28:37  adam
  * isamb fixes for pp_read. Statistics
  *
  * Revision 1.26  2002/04/29 18:03:46  adam

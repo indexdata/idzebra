@@ -2,7 +2,7 @@
  *  Copyright (c) 2000-2002, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.12 2002-04-30 08:28:37 adam Exp $
+ *  $Id: isamb.c,v 1.13 2002-04-30 19:31:09 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -91,7 +91,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
         isamb->file[i].head.block_max = b_size - ISAMB_DATA_OFFSET;
         b_size = b_size * 4;
         isamb->file[i].head_dirty = 0;
-        sprintf (fname, "%s-%d", name, i);
+        sprintf (fname, "%s%c", name, i+'A');
         isamb->file[i].bf =
             bf_open (bfs, fname, isamb->file[i].head.block_size, writeflag);
     
@@ -186,13 +186,14 @@ void close_block (ISAMB b, struct ISAMB_block *p)
 }
 
 int insert_sub (ISAMB b, struct ISAMB_block **p,
-                void *new_item,
+                void *new_item, int *mode,
                 ISAMC_I stream,
                 struct ISAMB_block **sp,
                 void *sub_item, int *sub_size,
                 void *max_item);
 
 int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
+                int *mode,
                 ISAMC_I stream, struct ISAMB_block **sp,
                 void *split_item, int *split_size)
 {
@@ -218,7 +219,8 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
         {
             sub_p1 = open_block (b, pos);
             assert (sub_p1);
-            more = insert_sub (b, &sub_p1, lookahead_item, stream, &sub_p2, 
+            more = insert_sub (b, &sub_p1, lookahead_item, mode,
+                               stream, &sub_p2, 
                                sub_item, &sub_size, src);
             break;
         }
@@ -229,7 +231,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
     {
         sub_p1 = open_block (b, pos);
         assert (sub_p1);
-        more = insert_sub (b, &sub_p1, lookahead_item, stream, &sub_p2, 
+        more = insert_sub (b, &sub_p1, lookahead_item, mode, stream, &sub_p2, 
                            sub_item, &sub_size, 0);
     }
     if (sub_p2)
@@ -297,7 +299,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
 
 
 int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
-                 ISAMC_I stream, struct ISAMB_block **sp2,
+                 int *lookahead_mode, ISAMC_I stream, struct ISAMB_block **sp2,
                  void *sub_item, int *sub_size,
                  void *max_item)
 {
@@ -329,17 +331,23 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             char *dst_item = 0;
             char *dst_0 = dst;
             char *lookahead_next;
-            int lookahead_mode;
             int d = -1;
             
             if (lookahead_item)
                 d = (*b->method->compare_item)(file_item_buf, lookahead_item);
             
-            if (d > 0)  
+            if (d > 0)
+            {
                 dst_item = lookahead_item;
+                assert (*lookahead_mode);
+            }
             else
                 dst_item = file_item_buf;
-            if (!half1 && dst > cut)   
+            if (!*lookahead_mode && d == 0)
+            {
+                p->dirty = 1;
+            }
+            else if (!half1 && dst > cut)
             {
                 char *dst_item_0 = dst_item;
                 half1 = dst; /* candidate for splitting */
@@ -365,7 +373,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
                     lookahead_next = lookahead_item;
                     if (!(*stream->read_item)(stream->clientData,
                                               &lookahead_next,
-                                              &lookahead_mode))
+                                              lookahead_mode))
                     {
                         lookahead_item = 0;
                         more = 0;
@@ -384,7 +392,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             {
                 lookahead_next = lookahead_item;
                 if (!(*stream->read_item)(stream->clientData,
-                                          &lookahead_next, &lookahead_mode))
+                                          &lookahead_next, lookahead_mode))
                 {
                     lookahead_item = 0;
                     more = 0;
@@ -406,7 +414,6 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
     maxp = dst_buf + b->file[b->no_cat-1].head.block_max + quater;
     while (lookahead_item)
     {
-        int lookahead_mode;
         char *dst_item = lookahead_item;
         char *dst_0 = dst;
         
@@ -416,7 +423,12 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
  	    yaz_log (LOG_LOG, "max_item 2");
             break;
         }
-        if (!half1 && dst > cut)   
+        if (!*lookahead_mode)
+        {
+            yaz_log (LOG_WARN, "Inconsistent register (2)");
+            abort();
+        }
+        else if (!half1 && dst > cut)   
         {
             char *dst_item_0 = dst_item;
             half1 = dst; /* candidate for splitting */
@@ -440,7 +452,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             p->dirty = 1;
         dst_item = lookahead_item;
         if (!(*stream->read_item)(stream->clientData, &dst_item,
-                                  &lookahead_mode))
+                                  lookahead_mode))
         {
             lookahead_item = 0;
             more = 0;
@@ -506,16 +518,18 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
 }
 
 int insert_sub (ISAMB b, struct ISAMB_block **p, void *new_item,
+                int *mode,
                 ISAMC_I stream,
                 struct ISAMB_block **sp,
                 void *sub_item, int *sub_size,
                 void *max_item)
 {
     if (!*p || (*p)->leaf)
-        return insert_leaf (b, p, new_item, stream, sp, sub_item, sub_size, 
-                            max_item);
+        return insert_leaf (b, p, new_item, mode, stream, sp, sub_item, 
+                            sub_size, max_item);
     else
-        return insert_int (b, *p, new_item, stream, sp, sub_item, sub_size);
+        return insert_int (b, *p, new_item, mode, stream, sp, sub_item,
+                           sub_size);
 }
 
 int isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I stream)
@@ -535,7 +549,7 @@ int isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I stream)
         
         if (pos)
             p = open_block (b, pos);
-        more = insert_sub (b, &p, item_buf, stream, &sp,
+        more = insert_sub (b, &p, item_buf, &i_mode, stream, &sp,
                             sub_item, &sub_size, 0);
         if (sp)
         {    /* increase level of tree by one */
