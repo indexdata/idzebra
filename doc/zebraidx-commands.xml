@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebraidx-commands.xml,v 1.1 2003-09-05 10:50:33 adam Exp $
+   $Id: zebraidx-commands.xml,v 1.1.2.1 2005-02-08 01:00:17 adam Exp $
    Commands for zebraidx.
    Included in both manual and man page for zebraidx
 -->
@@ -52,6 +52,12 @@
   <term>drop <replaceable>database</replaceable></term>
   <listitem><para>
     Drop database (delete database).
+   </para></listitem>
+ </varlistentry>
+ <varlistentry>
+  <term>init</term>
+  <listitem><para>
+    Deletes an entire register (all files in shadow+register areas).
    </para></listitem>
  </varlistentry>
 </variablelist>
