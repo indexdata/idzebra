@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: buildconf.sh,v 1.9 2002-11-26 20:15:44 adam Exp $
+# $Id: buildconf.sh,v 1.10 2003-05-06 12:09:24 adam Exp $
 set -x
 dir=`aclocal --print-ac-dir`
 if [ -f $dir/yaz.m4 ]; then
@@ -7,6 +7,7 @@ if [ -f $dir/yaz.m4 ]; then
 else
 	aclocal -I .
 fi
+automake -a 
 automake -a 
 autoconf
 if [ -f config.cache ]; then
