@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.49 2004-08-04 09:59:03 heikki Exp $
+/* $Id: isamb.c,v 1.50 2004-08-06 09:43:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1152,10 +1152,6 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
 
 #if NEW_FORWARD == 1
 
-/*
-#undef ISAMB_DEBUB
-#define ISAMB_DEBUG 1
-*/
 static int isamb_pp_on_right_node(ISAMB_PP pp, int level, const void *untilbuf)
 { /* looks one node higher to see if we should be on this node at all */
   /* useful in backing off quickly, and in avoiding tail descends */
@@ -1811,24 +1807,30 @@ static void isamb_pp_leaf_pos( ISAMB_PP pp,
     char *end=p->bytes+p->size;
     char *cur=p->bytes+p->offset;
     char *dst;
+    void *decodeClientData;
     assert(p->offset <= p->size);
     assert(cur <= end);
     assert(p->leaf);
     *current=0;
     *total=0;
 
+    decodeClientData = (pp->isamb->method->codec.start)();
+
     while(src < end) {
         dst=dummybuf;
-        (*pp->isamb->method->codec.decode)(p->decodeClientData,&dst, &src);
+        (*pp->isamb->method->codec.decode)(decodeClientData,&dst, &src);
         assert(dst<(char*) dummybuf+100); /*FIXME */
         (*total)++;
         if (src<=cur)
              (*current)++;
     }
+#if ISAMB_DEBUG
     logf(LOG_DEBUG, "isamb_pp_leaf_pos: cur="ZINT_FORMAT" tot="ZINT_FORMAT
                     " ofs=%d sz=%d lev=%d",
                     *current, *total, p->offset, p->size, pp->level);
+#endif
     assert(src==end);
+    (pp->isamb->method->codec.stop)(decodeClientData);
 }
 
 static void isamb_pp_upper_pos( ISAMB_PP pp, zint *current, zint *total, 
@@ -1840,12 +1842,16 @@ static void isamb_pp_upper_pos( ISAMB_PP pp, zint *current, zint *total,
     char *cur=p->bytes+p->offset;
     zint item_size;
     ISAMB_P child;
+    
     assert(level>=0);
     assert(!p->leaf);
+   
+#if ISAMB_DEBUG
     logf(LOG_DEBUG,"isamb_pp_upper_pos at beginning     l=%d "
                    "cur="ZINT_FORMAT" tot="ZINT_FORMAT
                    " ofs=%d sz=%d pos=" ZINT_FORMAT, 
                    level, *current, *total, p->offset, p->size, p->pos);
+#endif    
     assert (p->offset <= p->size);
     decode_ptr (&src, &child ); /* first child */
     while(src < end) {

@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.33 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rsbool.c,v 1.34 2004-08-06 09:43:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,6 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 
 #include <zebrautl.h>
+#include <rset.h>
 #include <rsbool.h>
 
 #ifndef RSET_DEBUG
@@ -40,7 +41,7 @@ static void r_rewind (RSFD rfd);
 static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
-/* static void r_pos (RSFD rfd, int *current, int *total);  */
+static void r_pos (RSFD rfd, zint *current, zint *total); 
 static int r_read_and (RSFD rfd, void *buf, int *term_index);
 static int r_read_or (RSFD rfd, void *buf, int *term_index);
 static int r_read_not (RSFD rfd, void *buf, int *term_index);
@@ -55,7 +56,7 @@ static const struct rset_control control_and =
     r_delete,
     r_rewind,
     r_forward, /* rset_default_forward, */
-    rset_default_pos,
+    r_pos,     /* rset_default_pos */
     r_read_and,
     r_write,
 };
@@ -68,12 +69,8 @@ static const struct rset_control control_or =
     r_close,
     r_delete,
     r_rewind,
-#if 1
     r_forward, 
-#else
-    rset_default_forward,
-#endif
-    rset_default_pos,
+    r_pos,
     r_read_or,
     r_write,
 };
@@ -87,7 +84,7 @@ static const struct rset_control control_not =
     r_delete,
     r_rewind,
     r_forward, 
-    rset_default_pos,
+    r_pos,
     r_read_not,
     r_write,
 };
@@ -108,6 +105,7 @@ struct rset_bool_info {
 };
 
 struct rset_bool_rfd {
+    zint hits;
     RSFD rfd_l;
     RSFD rfd_r;
     int  more_l;
@@ -165,6 +163,7 @@ static RSFD r_open (RSET ct, int flag)
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->info = info;
+    rfd->hits=0;
 
     rfd->buf_l = xmalloc (info->key_size);
     rfd->buf_r = xmalloc (info->key_size);
@@ -219,6 +218,7 @@ static void r_rewind (RSFD rfd)
     rset_rewind (info->rset_r, p->rfd_r);
     p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l, &p->term_index_l);
     p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r, &p->term_index_r);
+    p->hits=0;
 }
 
 static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
@@ -278,6 +278,8 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
+    { zint cur,tot; r_pos(rfd, &cur, &tot); } 
+
     while (p->more_l || p->more_r)
     {
         int cmp;
@@ -315,6 +317,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
             key_logdump(LOG_DEBUG,buf);
 	    (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
+            p->hits++;
             return 1;
         }
         else if (cmp == -1)
@@ -329,6 +332,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
                     rfd, p->more_l, p->more_r, cmp);
 	    (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
+            p->hits++;
             return 1;
         }
         else if (cmp > 1)  /* cmp == 2 */
@@ -349,6 +353,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
                         p->more_l, p->more_r, cmp);
 		(*info->log_item)(LOG_DEBUG, buf, "");
 #endif
+                p->hits++;
                 return 1;
             }
 #else
@@ -366,6 +371,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
                         rfd, p->more_l, p->more_r, cmp);
 		(*info->log_item)(LOG_DEBUG, buf, "");
 #endif
+                p->hits++;
                 return 1;
             }
 	    else
@@ -400,6 +406,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
                         rfd, p->more_l, p->more_r, cmp);
 		 (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
+                 p->hits++;
                  return 1;
              }
 #else
@@ -416,6 +423,7 @@ static int r_read_and (RSFD rfd, void *buf, int *term_index)
                         rfd, p->more_l, p->more_r, cmp);
 		(*info->log_item)(LOG_DEBUG, buf, "");
 #endif
+                p->hits++;
                 return 1;
             }
             else
@@ -447,6 +455,7 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
+    { zint cur,tot; r_pos(rfd, &cur, &tot); }
     while (p->more_l || p->more_r)
     {
         int cmp;
@@ -470,6 +479,7 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
                     p->more_l, p->more_r, cmp);
             (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
+            p->hits++;
             return 1;
         }
         else if (cmp > 0)
@@ -483,6 +493,7 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
                     p->more_l, p->more_r, cmp);
             (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
+            p->hits++;
             return 1;
         }
         else
@@ -496,6 +507,7 @@ static int r_read_or (RSFD rfd, void *buf, int *term_index)
                     p->more_l, p->more_r, cmp);
             (*info->log_item)(LOG_DEBUG, buf, "");
 #endif
+            p->hits++;
             return 1;
         }
     }
@@ -507,6 +519,7 @@ static int r_read_not (RSFD rfd, void *buf, int *term_index)
     struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
     struct rset_bool_info *info = p->info;
 
+    { zint cur,tot; r_pos(rfd, &cur, &tot); }
     while (p->more_l || p->more_r)
     {
         int cmp;
@@ -523,20 +536,16 @@ static int r_read_not (RSFD rfd, void *buf, int *term_index)
 	        *term_index = p->term_index_l;
             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
 				   &p->term_index_l);
+            p->hits++;
             return 1;
         }
         else if (cmp > 1)
-	{
-#if 0
-            p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
-				   &p->term_index_r);
-#else
-	    p->more_r = rset_forward( 
-		info->rset_r, p->rfd_r, 
-		p->buf_r, &p->term_index_r, 
-		(info->cmp), p->buf_l);
-#endif
-	}
+        {
+	        p->more_r = rset_forward( 
+	            info->rset_r, p->rfd_r, 
+	            p->buf_r, &p->term_index_r, 
+	            (info->cmp), p->buf_l);
+        }
         else
         {
             memcpy (buf, p->buf_l, info->key_size);
@@ -568,3 +577,33 @@ static int r_write (RSFD rfd, const void *buf)
     return -1;
 }
 
+static void r_pos (RSFD rfd, zint *current, zint *total)
+{
+    struct rset_bool_rfd *p = (struct rset_bool_rfd *) rfd;
+    struct rset_bool_info *info = p->info;
+    zint lcur,ltot;
+    zint rcur,rtot;
+    float r;
+    ltot=-1; rtot=-1;
+    rset_pos(info->rset_l, p->rfd_l,  &lcur, &ltot);
+    rset_pos(info->rset_r, p->rfd_r,  &rcur, &rtot);
+    if ( (rtot<0) && (ltot<0)) { /*no position */
+        *current=rcur;  /* return same as you got */
+        *total=rtot;    /* probably -1 for not available */
+    }
+    if ( rtot<0) { rtot=0; rcur=0;} /* if only one useful, use it */
+    if ( ltot<0) { ltot=0; lcur=0;}
+    if ( rtot+ltot == 0 ) { /* empty rset */
+        *current=0;
+        *total=0;
+        return;
+    }
+    r=1.0*(lcur+rcur)/(ltot+rtot); /* weighed average of l and r */
+    *current=p->hits;
+    *total=(zint)(0.5+*current/r); 
+#if RSET_DEBUG
+    yaz_log(LOG_DEBUG,"bool_pos: (%s/%s) "ZINT_FORMAT"/"ZINT_FORMAT"= %0.4f ",
+                    info->rset_l->control->desc, info->rset_r->control->desc,
+                    *current, *total, r);
+#endif
+}

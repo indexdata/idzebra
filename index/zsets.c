@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.50 2004-08-04 08:35:24 adam Exp $
+/* $Id: zsets.c,v 1.51 2004-08-06 09:43:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -718,7 +718,7 @@ RSET resultSetRef (ZebraHandle zh, const char *resultSetId)
 
 void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 {
-    int kno = 0;
+    zint kno = 0;
     struct it_key key;
     RSFD rfd;
     int term_index, i;
@@ -726,6 +726,9 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     struct rank_control *rc;
     struct zset_sort_info *sort_info;
     const char *rank_handler_name = res_get_def(zh->res, "rank", "rank-1");
+    zint cur,tot; 
+    zint est=-2; /* -2 not done, -1 can't do, >0 actual estimate*/
+    zint esthits;
 
     sort_info = zebraSet->sort_info;
     sort_info->num_entries = 0;
@@ -753,6 +756,8 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 	void *handle =
 	    (*rc->begin) (zh->reg, rank_class->class_handle, rset);
 	(zebraSet->hits)++;
+    esthits=atoi(res_get_def(zh->res,"estimatehits","0"));
+    if (!esthits) est=-1; /* can not do */
 	do
 	{
 #if IT_KEY_NEW
@@ -770,8 +775,26 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
 		psysno = this_sys;
 	    }
 	    (*rc->add) (handle, this_sys, term_index);
+        if ( (est==-2) && (zebraSet->hits==esthits))
+        { /* time to estimate the hits */
+            float f;
+            rset_pos(rset,rfd,&cur,&tot); 
+            if (tot>0) {
+                f=1.0*cur/tot;
+                est=(zint)(zebraSet->hits/f);
+                /* FIXME - round the guess to 3 digits */
+                logf(LOG_LOG, "Estimating hits (%s) "
+                              ZINT_FORMAT"->%d"
+                              "; "ZINT_FORMAT"->"ZINT_FORMAT,
+                              rset->control->desc,
+                              cur, zebraSet->hits,
+                              tot,est);
+                zebraSet->hits=est;
+            }
+        }
 	}
-	while (rset_read (rset, rfd, &key, &term_index));
+	while (rset_read (rset, rfd, &key, &term_index) && (est<0) );
+           
 	score = (*rc->calc) (handle, psysno);
 	resultSetInsertRank (zh, sort_info, psysno, score, 'A');
 	(*rc->end) (zh->reg, handle);
@@ -785,7 +808,8 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
                  rset->rset_terms[i]->flags,
                  rset->rset_terms[i]->count);
     
-    yaz_log (LOG_LOG, "%d keys, %d distinct sysnos", kno, zebraSet->hits);
+    yaz_log (LOG_LOG, ZINT_FORMAT " keys, %d distinct sysnos", 
+                    kno, zebraSet->hits);
 }
 
 ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name)

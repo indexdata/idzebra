@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.38 2004-08-03 14:54:41 heikki Exp $
+/* $Id: rstemp.c,v 1.39 2004-08-06 09:43:04 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -42,6 +42,7 @@ static void r_rewind (RSFD rfd);
 /* static int r_count (RSET ct);*/
 static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write (RSFD rfd, const void *buf);
+static void r_pos (RSFD rfd, zint *current, zint *total);
 
 static const struct rset_control control = 
 {
@@ -52,7 +53,7 @@ static const struct rset_control control =
     r_delete,
     r_rewind,
     rset_default_forward,
-    rset_default_pos,
+    r_pos, 
     r_read,
     r_write,
 };
@@ -69,7 +70,7 @@ struct rset_temp_info {
     size_t  pos_buf;       /* position of first byte in window */
     size_t  pos_border;    /* position of last byte+1 in window */
     int     dirty;         /* window is dirty */
-    int     hits;          /* no of hits */
+    zint     hits;          /* no of hits */
     char   *temp_path;
     int     (*cmp)(const void *p1, const void *p2);
     struct rset_temp_rfd *rfd_list;
@@ -81,6 +82,7 @@ struct rset_temp_rfd {
     int *countp;
     void *buf;
     size_t  pos_cur;       /* current position in set */
+    zint cur; /* number of the current hit */
 };
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
@@ -97,7 +99,7 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
     info->pos_end = 0;
     info->pos_buf = 0;
     info->dirty = 0;
-    info->hits = -1;
+    info->hits = 0;
     info->cmp = temp_parms->cmp;
     info->rfd_list = NULL;
 
@@ -305,6 +307,7 @@ static void r_rewind (RSFD rfd)
     ((struct rset_temp_rfd *)rfd)->pos_cur = 0;
     info->pos_buf = 0;
     r_reread (rfd);
+    ((struct rset_temp_rfd *)rfd)->cur=0;
 }
 
 /*
@@ -340,6 +343,7 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
         memcpy (mrfd->buf, buf, mrfd->info->key_size);
         (*mrfd->countp)++;
     }
+    mrfd->cur++;
     return 1;
 }
 
@@ -363,5 +367,13 @@ static int r_write (RSFD rfd, const void *buf)
     mrfd->pos_cur = nc;
     if (nc > info->pos_end)
         info->pos_border = info->pos_end = nc;
+    info->hits++;
     return 1;
+}
+
+static void r_pos (RSFD rfd, zint *current, zint *total)
+{
+    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd;
+    *current=mrfd->cur;
+    *total=mrfd->info->hits;
 }

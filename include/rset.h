@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.24 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rset.h,v 1.25 2004-08-06 09:43:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -103,8 +103,9 @@ RSET rset_dup (RSET rs);
 #define rset_forward(rs, fd, buf, indx, cmpfunc, untilbuf) \
     (*(rs)->control->f_forward)((rs), (fd), (buf), (indx), (cmpfunc), (untilbuf))
 
-/* int rset_count(RSET rs); */
-#define rset_count(rs) (*(rs)->control->f_count)(rs)
+/* int rset_pos(RSET rs, RSFD fd, zint *current, zint *total); */
+#define rset_pos(rs,fd,cur,tot) \
+    (*(rs)->control->f_pos)( (fd),(cur),(tot))
 
 /* int rset_read(RSET rs, void *buf, int *indx); */
 #define rset_read(rs, fd, buf, indx) (*(rs)->control->f_read)((fd), (buf), indx)

@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.22 2004-08-04 08:35:23 adam Exp $
+/* $Id: retrieve.c,v 1.23 2004-08-06 09:43:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -101,7 +101,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
     if (!rec)
     {
         logf (LOG_DEBUG, "rec_get fail on sysno=" ZINT_FORMAT, sysno);
-	*basenamep = 0;
+        *basenamep = 0;
         return 14;
     }
     recordAttr = rec_init_attr (zh->reg->zei, rec);
