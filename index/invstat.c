@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.11  1999-05-15 14:36:38  adam
+ * Revision 1.12  1999-07-06 12:28:04  adam
+ * Updated record index structure. Format includes version ID. Compression
+ * algorithm ID is stored for each record block.
+ *
+ * Revision 1.11  1999/05/15 14:36:38  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.10  1999/05/12 13:08:06  adam
@@ -177,7 +181,7 @@ void inv_prstat (BFiles bfs)
             exit (1);
         }
     }
-    records = rec_open (bfs, 0);
+    records = rec_open (bfs, 0, 0);
 
     for (i = 0; i<8; i++)
 	stat_info.no_isam_entries[i] = 0;

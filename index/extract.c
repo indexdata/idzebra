@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.96  1999-05-26 07:49:13  adam
+ * Revision 1.97  1999-07-06 12:28:04  adam
+ * Updated record index structure. Format includes version ID. Compression
+ * algorithm ID is stored for each record block.
+ *
+ * Revision 1.96  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.95  1999/05/21 12:00:17  adam
@@ -406,6 +410,8 @@ int key_open (struct recordGroup *rGroup, int mem)
     BFiles bfs = rGroup->bfs;
     int rw = rGroup->flagRw;
     data1_handle dh = rGroup->dh;
+    char *recordCompression;
+    int record_compression = REC_COMPRESS_NONE;
     if (!mem)
         mem = atoi(res_get_def (common_resource, "memMax", "4"))*1024*1024;
     if (mem < 50000)
@@ -423,7 +429,13 @@ int key_open (struct recordGroup *rGroup, int mem)
 	return -1;
     }
     assert (!records);
-    records = rec_open (bfs, rw);
+    recordCompression = res_get_def (common_resource,
+				     "recordCompression", "none");
+    if (!strcmp (recordCompression, "none"))
+	record_compression = REC_COMPRESS_NONE;
+    if (!strcmp (recordCompression, "bzip2"))
+	record_compression = REC_COMPRESS_BZIP2;
+    records = rec_open (bfs, rw, record_compression);
     if (!records)
     {
 	dict_close (matchDict);

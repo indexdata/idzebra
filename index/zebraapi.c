@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.19  1999-05-26 07:49:13  adam
+ * Revision 1.20  1999-07-06 12:28:04  adam
+ * Updated record index structure. Format includes version ID. Compression
+ * algorithm ID is stored for each record block.
+ *
+ * Revision 1.19  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.18  1999/05/15 14:36:38  adam
@@ -141,7 +145,7 @@ static int zebra_register_lock (ZebraHandle zh)
     }
     bf_cache (zh->bfs, state ? res_get (zh->res, "shadow") : NULL);
     zh->registerState = state;
-    zh->records = rec_open (zh->bfs, 0);
+    zh->records = rec_open (zh->bfs, 0, 0);
     if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 40, 0, 0)))
     {
 	logf (LOG_WARN, "dict_open");

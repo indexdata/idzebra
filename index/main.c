@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.66  1999-06-25 13:48:02  adam
+ * Revision 1.67  1999-07-06 12:28:04  adam
+ * Updated record index structure. Format includes version ID. Compression
+ * algorithm ID is stored for each record block.
+ *
+ * Revision 1.66  1999/06/25 13:48:02  adam
  * Updated MSVC project files.
  * Added BZIP2 record compression (not very well tested).
  *
@@ -425,7 +429,7 @@ int main (int argc, char **argv)
                         bf_cache (rGroupDef.bfs, rval);
                         zebraIndexLockMsg ("r");
                     }
-		    records = rec_open (rGroupDef.bfs, 0);
+		    records = rec_open (rGroupDef.bfs, 0, 0);
                     rec_prstat (records);
 		    rec_close (&records);
                     inv_prstat (rGroupDef.bfs);

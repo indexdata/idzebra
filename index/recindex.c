@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.24  1999-06-25 13:48:02  adam
+ * Revision 1.25  1999-07-06 12:28:04  adam
+ * Updated record index structure. Format includes version ID. Compression
+ * algorithm ID is stored for each record block.
+ *
+ * Revision 1.24  1999/06/25 13:48:02  adam
  * Updated MSVC project files.
  * Added BZIP2 record compression (not very well tested).
  *
@@ -180,11 +184,10 @@ static void rec_release_blocks (Records p, int sysno)
 {
     struct record_index_entry entry;
     int freeblock;
-    int block_and_ref[2];
+    char block_and_ref[sizeof(short) + sizeof(int)];
     int dst_type;
     int first = 1;
 
-    logf (LOG_LOG, "release_blocks for sysno=%d", sysno);
     if (read_indx (p, sysno, &entry, sizeof(entry), 1) != 1)
         return ;
 
@@ -203,8 +206,11 @@ static void rec_release_blocks (Records p, int sysno)
         }
 	if (first)
 	{
-	    block_and_ref[1]--;
-	    if (block_and_ref[1])
+	    short ref;
+	    memcpy (&ref, block_and_ref + sizeof(int), sizeof(ref));
+	    --ref;
+	    memcpy (block_and_ref + sizeof(int), &ref, sizeof(ref));
+	    if (ref)
 	    {
 		if (bf_write (p->data_BFile[dst_type], freeblock, 0,
 			      sizeof(block_and_ref), block_and_ref))
@@ -224,7 +230,7 @@ static void rec_release_blocks (Records p, int sysno)
             exit (1);
         }
         p->head.block_free[dst_type] = freeblock;
-        freeblock = block_and_ref[0];
+        memcpy (&freeblock, block_and_ref, sizeof(int));
 
         p->head.block_used[dst_type]--;
     }
@@ -241,40 +247,6 @@ static void rec_delete_single (Records p, Record rec)
     entry.size = 0;
     p->head.index_free = rec->sysno;
     write_indx (p, rec->sysno, &entry, sizeof(entry));
-}
-
-static void rec_write_tmp_buf (Records p, int size, int *sysnos);
-
-static void rec_write_single (Records p, Record rec)
-{
-
-    int sysnos[2];
-    int i, size = 0;
-    char *cptr;
-
-    logf (LOG_LOG, " rec_write_single !!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    for (i = 0; i < REC_NO_INFO; i++)
-        if (!rec->info[i])
-            size += sizeof(*rec->size);
-        else
-            size += sizeof(*rec->size) + rec->size[i];
-
-    rec_tmp_expand (p, size);
-
-    cptr = p->tmp_buf + sizeof(int);           /* a hack! */
-    for (i = 0; i < REC_NO_INFO; i++)
-    {
-        memcpy (cptr, &rec->size[i], sizeof(*rec->size));
-        cptr += sizeof(*rec->size);
-        if (rec->info[i])
-        {
-            memcpy (cptr, rec->info[i], rec->size[i]);
-            cptr += rec->size[i];
-        }
-    }
-    sysnos[0] = rec->sysno;
-    sysnos[1] = -1;
-    rec_write_tmp_buf (p, size, sysnos);
 }
 
 static void rec_write_tmp_buf (Records p, int size, int *sysnos)
@@ -333,18 +305,14 @@ static void rec_write_tmp_buf (Records p, int size, int *sysnos)
               sizeof(int) + (p->tmp_buf+size) - cptr, cptr);
 }
 
-static void rec_update_single (Records p, Record rec)
-{
-    rec_release_blocks (p, rec->sysno);
-    rec_write_single (p, rec);
-}
-
-Records rec_open (BFiles bfs, int rw)
+Records rec_open (BFiles bfs, int rw, int compression_method)
 {
     Records p;
     int i, r;
+    int version;
 
     p = (Records) xmalloc (sizeof(*p));
+    p->compression_method = compression_method;
     p->rw = rw;
     p->tmp_size = 1024;
     p->tmp_buf = (char *) xmalloc (p->tmp_size);
@@ -360,6 +328,7 @@ Records rec_open (BFiles bfs, int rw)
     {
     case 0:
         memcpy (p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic));
+	sprintf (p->head.version, "%3d", REC_VERSION);
         p->head.index_free = 0;
         p->head.index_last = 1;
         p->head.no_records = 0;
@@ -375,7 +344,7 @@ Records rec_open (BFiles bfs, int rw)
         for (i = 1; i<REC_BLOCK_TYPES; i++)
         {
             p->head.block_size[i] = p->head.block_size[i-1] * 4;
-            p->head.block_move[i] = p->head.block_size[i] * 3;
+            p->head.block_move[i] = p->head.block_size[i] * 24;
         }
         if (rw)
             rec_write_head (p);
@@ -384,9 +353,16 @@ Records rec_open (BFiles bfs, int rw)
         memcpy (&p->head, p->tmp_buf, sizeof(p->head));
         if (memcmp (p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic)))
         {
-            logf (LOG_FATAL, "read %s. bad header", p->index_fname);
+            logf (LOG_FATAL, "file %s has bad format", p->index_fname);
             exit (1);
         }
+	version = atoi (p->head.version);
+	if (version != REC_VERSION)
+	{
+	    logf (LOG_FATAL, "file %s is version %d, but version"
+		  " %d is required", p->index_fname, version, REC_VERSION);
+	    exit (1);
+	}
         break;
     }
     for (i = 0; i<REC_BLOCK_TYPES; i++)
@@ -491,7 +467,8 @@ static void rec_cache_flush_block1 (Records p, Record rec, Record last_rec,
 static void rec_write_multiple (Records p, int saveCount)
 {
     int i;
-    int ref_count = 0;
+    short ref_count = 0;
+    char compression_method;
     Record last_rec = 0;
     int out_size = 1000;
     int out_offset = 0;
@@ -521,31 +498,57 @@ static void rec_write_multiple (Records p, int saveCount)
 	    e->flag = recordFlagNop;
 	    last_rec = e->rec;
             break;
+        case recordFlagDelete:
+            rec_delete_single (p, e->rec);
+	    e->flag = recordFlagNop;
+            break;
 	default:
 	    break;
         }
+        rec_rm (&e->rec);
     }
     *sysnop = -1;
     if (ref_count)
     {
-	int csize = out_offset + (out_offset >> 6) + 620;
-
-	rec_tmp_expand (p, csize);
-#if HAVE_BZLIB_H	
-	i = bzBuffToBuffCompress (p->tmp_buf+2*sizeof(int), &csize,
-				  out_buf, out_offset, 9, 0, 30);
-	if (i != BZ_OK)
+	int csize = 0;  /* indicate compression "not performed yet" */
+	compression_method = p->compression_method;
+	switch (compression_method)
 	{
-	    logf (LOG_FATAL, "bzBuffToCompress error code=%d", i);
-	    exit (1);
-	}
-#else
-	memcpy (p->tmp_buf + 2*sizeof(int), out_buf, out_offset);
-	csize = out_offset;
+	case REC_COMPRESS_BZIP2:
+#if HAVE_BZLIB_H	
+	    csize = out_offset + (out_offset >> 6) + 620;
+	    rec_tmp_expand (p, csize);
+	    i = bzBuffToBuffCompress (p->tmp_buf+sizeof(int)+sizeof(short)+
+				      sizeof(char),
+				      &csize, out_buf, out_offset, 1, 0, 30);
+	    if (i != BZ_OK)
+	    {
+		logf (LOG_WARN, "bzBuffToBuffCompress error code=%d", i);
+		csize = 0;
+	    }
+	    logf (LOG_LOG, "compress %4d %5d %5d", ref_count, out_offset,
+		  csize);
 #endif
+	    break;
+	case REC_COMPRESS_NONE:
+	    break;
+	}
+	if (!csize)  
+	{
+	    /* either no compression or compression not supported ... */
+	    csize = out_offset;
+	    rec_tmp_expand (p, csize);
+	    memcpy (p->tmp_buf + sizeof(int) + sizeof(short) + sizeof(char),
+		    out_buf, out_offset);
+	    csize = out_offset;
+	    compression_method = REC_COMPRESS_NONE;
+	}
 	memcpy (p->tmp_buf + sizeof(int), &ref_count, sizeof(ref_count));
+	memcpy (p->tmp_buf + sizeof(int)+sizeof(short),
+		&compression_method, sizeof(compression_method));
+		
 	/* -------- compression */
-	rec_write_tmp_buf (p, csize + sizeof(int), sysnos);
+	rec_write_tmp_buf (p, csize + sizeof(short) + sizeof(char), sysnos);
     }
     xfree (out_buf);
     xfree (sysnos);
@@ -559,25 +562,6 @@ static void rec_cache_flush (Records p, int saveCount)
         saveCount = 0;
 
     rec_write_multiple (p, saveCount);
-    for (i = 0; i<p->cache_cur - saveCount; i++)
-    {
-        struct record_cache_entry *e = p->record_cache + i;
-        switch (e->flag)
-        {
-        case recordFlagNop:
-            break;
-        case recordFlagNew:
-            rec_write_single (p, e->rec);
-            break;
-        case recordFlagWrite:
-            rec_update_single (p, e->rec);
-            break;
-        case recordFlagDelete:
-            rec_delete_single (p, e->rec);
-            break;
-        }
-        rec_rm (&e->rec);
-    }
     for (j = 0; j<saveCount; j++, i++)
         memcpy (p->record_cache+j, p->record_cache+i,
                 sizeof(*p->record_cache));
@@ -617,7 +601,7 @@ static void rec_cache_insert (Records p, Record rec, enum recordCacheFlag flag)
             for (j = 0; j<REC_NO_INFO; j++)
                 used += r->size[j];
         }
-        if (used > 256000)
+        if (used > 90000)
             rec_cache_flush (p, 1);
     }
     assert (p->cache_cur < p->cache_max);
@@ -663,6 +647,9 @@ Record rec_get (Records p, int sysno)
     int freeblock, dst_type;
     char *nptr, *cptr;
     char *in_buf = 0;
+    char *bz_buf = 0;
+    int bz_size;
+    char compression_method;
 
     assert (sysno > 0);
     assert (p);
@@ -702,20 +689,36 @@ Record rec_get (Records p, int sysno)
     }
 
     rec->sysno = sysno;
-#if HAVE_BZLIB_H
-    in_size = entry.size * 30+100;
-    in_buf = (char *) xmalloc (in_size);
-    i = bzBuffToBuffDecompress (in_buf, &in_size, p->tmp_buf+2*sizeof(int),
-				entry.size-sizeof(int), 0, 4);
-    if (i != BZ_OK)
+    memcpy (&compression_method, p->tmp_buf + sizeof(int) + sizeof(short),
+	    sizeof(compression_method));
+    in_buf = p->tmp_buf + sizeof(int) + sizeof(short) + sizeof(char);
+    in_size = entry.size - sizeof(short) - sizeof(char);
+    switch (compression_method)
     {
-	logf (LOG_FATAL, "bzBuffToDecompress error code=%d", i);
-	exit (1);
-    }
+    case REC_COMPRESS_BZIP2:
+#if HAVE_BZLIB_H
+	bz_size = entry.size * 30+100;
+	bz_buf = (char *) xmalloc (bz_size);
+	i = bzBuffToBuffDecompress (bz_buf, &bz_size, in_buf, in_size, 0, 0);
+	logf (LOG_LOG, "decompress %5d %5d", in_size, bz_size);
+	if (i != BZ_OK)
+	{
+	    logf (LOG_FATAL, "bzBuffToBuffDecompress error code=%d", i);
+	    exit (1);
+	}
+	in_buf = bz_buf;
+	in_size = bz_size;
 #else
-    in_buf = p->tmp_buf + 2*sizeof(int);
-    in_size = entry.size - sizeof(int);
+	logf (LOG_FATAL, "cannot decompress record(s) in BZIP2 format");
+	exit (1);
 #endif
+	break;
+    case REC_COMPRESS_NONE:
+	break;
+    }
+    for (i = 0; i<REC_NO_INFO; i++)
+	rec->info[i] = 0;
+
     nptr = in_buf;                /* skip ref count */
     while (nptr < in_buf + in_size)
     {
@@ -736,8 +739,7 @@ Record rec_get (Records p, int sysno)
 
 	    if (rec->size[i])
 	    {
-		rec->info[i] = (char *) xmalloc (rec->size[i]);
-		memcpy (rec->info[i], nptr, rec->size[i]);
+		rec->info[i] = nptr;
 		nptr += rec->size[i];
 	    }
 	    else
@@ -746,7 +748,21 @@ Record rec_get (Records p, int sysno)
 	if (this_sysno == sysno)
 	    break;
     }
-    xfree (in_buf);
+    for (i = 0; i<REC_NO_INFO; i++)
+    {
+	if (rec->info[i] && rec->size[i])
+	{
+	    char *np = xmalloc (rec->size[i]);
+	    memcpy (np, rec->info[i], rec->size[i]);
+	    rec->info[i] = np;
+	}
+	else
+	{
+	    assert (rec->info[i] == 0);
+	    assert (rec->size[i] == 0);
+	}
+    }
+    xfree (bz_buf);
     rec_cache_insert (p, rec, recordFlagNop);
     return rec;
 }

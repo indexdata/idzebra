@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindxp.h,v $
- * Revision 1.6  1999-05-26 07:49:13  adam
+ * Revision 1.7  1999-07-06 12:28:04  adam
+ * Updated record index structure. Format includes version ID. Compression
+ * algorithm ID is stored for each record block.
+ *
+ * Revision 1.6  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.5  1999/02/02 14:51:05  adam
@@ -41,10 +45,12 @@ extern "C" {
 #endif
 
 #define REC_BLOCK_TYPES 2
-#define REC_HEAD_MAGIC "recindx"
+#define REC_HEAD_MAGIC "recindex"
+#define REC_VERSION 1
 
 struct records_info {
     int rw;
+    int compression_method;
 
     char *index_fname;
     BFile index_BFile;
@@ -62,6 +68,7 @@ struct records_info {
 
     struct records_head {
         char magic[8];
+	char version[4];
         int block_size[REC_BLOCK_TYPES];
         int block_free[REC_BLOCK_TYPES];
         int block_last[REC_BLOCK_TYPES];

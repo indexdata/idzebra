@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.16  1999-06-25 13:48:02  adam
+ * Revision 1.17  1999-07-06 12:28:04  adam
+ * Updated record index structure. Format includes version ID. Compression
+ * algorithm ID is stored for each record block.
+ *
+ * Revision 1.16  1999/06/25 13:48:02  adam
  * Updated MSVC project files.
  * Added BZIP2 record compression (not very well tested).
  *
@@ -93,9 +97,12 @@ void rec_put (Records p, Record *recpp);
 Record rec_new (Records p);
 Record rec_get (Records p, int sysno);
 void rec_close (Records *p);
-Records rec_open (BFiles bfs, int rw);
+Records rec_open (BFiles bfs, int rw, int compression_method);
 char *rec_strdup (const char *s, size_t *len);
 void rec_prstat (Records p);
+
+#define REC_COMPRESS_NONE   0
+#define REC_COMPRESS_BZIP2  1
 
 enum { 
     recInfo_fileType, 

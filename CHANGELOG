@@ -1,3 +1,11 @@
+Changed record index structure. New layout is incompatible with
+previous releases. Added setting "recordcompression" to control
+compression of records. Possible values are "none" (no
+compression) and bzip2 (compression using libbz2).
+
+Added XML transfer syntax support for retrieval of structured records.
+Schema in CompSpec is recognised in retrieval of structured records.
+
 Changed Tcl record filter so that it attemps to read  <filt>.tflt. If
 that fails, the filter reads the file <filt>.flt (regx style filter).
 
