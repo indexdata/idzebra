@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.45 2000-02-10 10:19:47 adam Exp $
+  $Id: zebra.sgml,v 1.46 2000-02-10 10:23:34 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.45 $
+<date>$Revision: 1.46 $
 <abstract>
 
 
@@ -448,8 +448,7 @@ section <ref id="locating-records" name="Locating Records">.
  Specifies whether key information should be saved for a given
  group of records. If you plan to update/delete this type of
  records later this should be specified as 1; otherwise it
- should be 0 (default), to save register space. See section
-<ref id="file-ids" name="Indexing With File Record IDs">.
+ should be 0 (default), to save register space.
 <tag><it>group</it>.storeData</tag>
  Specifies whether the records should be stored internally
  in the Zebra system files. If you want to maintain the raw records yourself,
