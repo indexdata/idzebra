@@ -1,4 +1,4 @@
 #!/bin/sh
 
-rm register/* lock/*
-../../index/zebraidx update /usr/lib/perl5
+rm demo/register/* demo/lock/*
+../index/zebraidx -c demo/zebra.cfg -g demo1 -v 255 update lib

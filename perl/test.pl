@@ -3,138 +3,107 @@
 BEGIN {
     push (@INC,'demo','blib/lib','blib/arch');
 }
-use Test::More tests => 3;
-use Data::Dumper;
-use IDZebra::Logger qw(:flags :calls);
-use IDZebra::Repository;
+
 use pod;
 
+use Test::More tests => 15;
+
 BEGIN { 
-  use_ok('IDZebra'); 
-  use_ok('IDZebra::Service'); 
-  use_ok('IDZebra::Data1'); 
+  use_ok('IDZebra::Session'); 
 }
 
-mkdir ("demo/tmp");
-mkdir ("demo/register");
-mkdir ("demo/lock");
+IDZebra::logFile("test.log");
 
-#Zebra::API::LogFile("a.log");
+#IDZebra::logLevel(15);
+
+#IDZebra::init();
+
+# ----------------------------------------------------------------------------
+# Session opening and closing
+my $sess = IDZebra::Session->new(configFile => 'demo/zebra.cfg');
+isa_ok($sess,"IDZebra::Session");
+
+$sess->open();
+ok(defined($sess->{zh}), "Zebra handle opened");
+$sess->close();
+ok(!defined($sess->{zh}), "Zebra handle closed");
 
 
-#my $arr = IDZebra::give_me_array("strucc",6);
+my $sess = IDZebra::Session->open(configFile => 'demo/zebra.cfg',
+				  groupName  => 'demo1');
+isa_ok($sess,"IDZebra::Session");
+ok(defined($sess->{zh}), "Zebra handle opened");
 
-#print "$arr\n";
+# ----------------------------------------------------------------------------
+# Record group tests
 
-#for (@arr) {print "$_\n";}
+ok(($sess->group->{databaseName} eq "demo1"),"Record group is selected");
 
-#exit;
+$sess->group(groupName => 'demo2');
 
-IDZebra::init();
+ok(($sess->group->{databaseName} eq "demo2"),"Record group is selected");
 
-chdir('demo');
+# ----------------------------------------------------------------------------
+# init repository
+$sess->init();
 
-my $service = IDZebra::Service->start('zebra.cfg');
-my $sess = $service->openSession;
-#my $sess = $service->createSession;
-#$sess->open;
-#my $session = IDZebra::open($service);
-#IDZebra::close($session);
-#IDZebra::stop($service);
-#$sess->close;
+# ----------------------------------------------------------------------------
+# repository upadte
+$sess->begin_trans;
+$sess->update(path      =>  'lib');
+my $stat = $sess->end_trans;
 
-my $rec1=`cat ../lib/IDZebra/Data1.pm`;
-my $rec2=`cat ../lib/IDZebra/Filter.pm`;
-
-#$sess->Repository->readConfig;
-$sess->Repository->readConfig("","pm");
+ok(($stat->{inserted} == 6), "Inserted 6 records");
 
 $sess->begin_trans;
+$sess->update(groupName => 'demo1',
+	      path      =>  'lib');
 
-#$sess->Repository->update(databaseName => 'Default',
-#			  path  => '/usr/local/work/cvs/zebra/perl/lib');
-my $s1 = $sess->Repository->update_record($rec1,0,"","Data1.pm");
-my $s2 = $sess->Repository->update_record($rec2,0,"","Filter.pm");
-print STDERR "s1:$s1, s2:$s2\n";
+my $stat = $sess->end_trans;
+ok(($stat->{updated} == 6), "Updated 6 records");
 
-$sess->end_trans;
-#$sess->begin_trans;
-#$sess->Repository->delete_record($rec1,0,"","Data1.pm");
-#$sess->end_trans;
+$sess->begin_trans;
+$sess->delete(groupName => 'demo1',
+	      path      =>  'lib');
+my $stat = $sess->end_trans;
+ok(($stat->{deleted} == 6), "Deleted 6 records");
 
-$sess->select_databases('Default');
+$sess->begin_trans;
+$sess->update(groupName => 'demo1',
+	      path      =>  'lib');
 
-goto scan;
+my $stat = $sess->end_trans;
+ok(($stat->{inserted} == 6), "Inserted 6 records");
 
-$sess->begin_read;
-#print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1'), "\n";
-#print STDERR "Hits:", $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1'), "\n";
+ok(($sess->group->{databaseName} eq "demo2"),"Original group is selected");
 
-my $rs1 = $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_1');
-print STDERR "Rs1 '$rs1->{name}' has $rs1->{recordCount} hits\n";
+# ----------------------------------------------------------------------------
+# per record update
+my $rec1=`cat lib/IDZebra/Data1.pm`;
+my $rec2=`cat lib/IDZebra/Filter.pm`;
 
-my $rs2 = $sess->search_pqf('@or @attr 1=4 Filter @attr 1=4 Data1','test_2');
-#print STDERR "Rs2 '$rs2->{name}' has $rs2->{recordCount} hits\n";
+$sess->begin_trans;
+my $s1=$sess->update_record(data       => $rec1,
+			    recordType => 'grs.perl.pod',
+			    groupName  => "demo1",
+			    );
 
-my $rs3 = $sess->sortResultsets ('1=4 id','test_3',($rs1));
-#print STDERR "Rs3 '$rs3->{name}' has $rs3->{recordCount} hits\n";
-#print STDERR "Rs3 '$rs3->{name}' error $rs3->{errCode}: $rs3->{errString}\n";
-
-$rs1->sort('1=4 id');
-
-#for ($i=1; $i<100000; $i++) {
-my @recs1 = $rs1->records(from=>1,to=>2);
-#}
-#my $res=$sess->retrieve_records('test_1',1,1);
-
-$sess->end_read;
+#my $s2=$sess->update_record(data       => $rec2);
+#					recordType => "grs.perl.pod");
 
 
-#IDZebra::describe_recordGroup($rep->{rg});
-#$rep->update;
-#    print "HOW did we got back???\n";
+#my $s3=$sess->update_record(file       => "lib/IDZebra/Data1.pm");
 
-scan:
 
-my $so = IDZebra::ScanObj->new;
-$so->{position} = 1;
-$so->{num_entries} = 20;
-$so->{is_partial} = 0;
-#print STDERR "Pos:$so->{position}\nNum:$so->{num_entries}\nPartial:$so->{is_partial}\n";
 
-IDZebra::scan_PQF($sess->{zh}, $so,
-		  $sess->{odr_output}, 
-		  "\@attr 1=4 a");
+my $stat = $sess->end_trans;
+ok(($stat->{updated} == 1), "Updated 1 records");
 
-#print STDERR "Pos:$so->{position}\nNum:$so->{num_entries}\nPartial:$so->{is_partial}\n";
-
-for ($i=1; $i<=$so->{num_entries}; $i++) {
-    my $se = IDZebra::getScanEntry($so, $i);
-    print STDERR "$se->{term} ($se->{occurrences})\n";
-}
+#$sess->cqlmap("cql.map");
+#print STDERR $sess->cql2pqf("job.id <= 5");
+#print STDERR $sess->cql2pqf("job.id=5 and dc.title=computer");
+#print STDERR "RES:$res\n";
 
 $sess->close;
-$service->stop;
-			  
-foreach my $rec (@recs1) {
-    foreach my $line (split (/\n/, $rec->{buf})) {
-	if ($line =~ /^package/) { print STDERR "$line\n";}
-    }
-}
+ok(!defined($sess->{zh}), "Zebra handle closed");
 
-#$rep->{groupName} = "Strucc";
-#$rep->describe();
-
-sub test_data1 {
-    $m = IDZebra::nmem_create();
-    my $d1=IDZebra::Data1->new($m,$IDZebra::DATA1_FLAG_XML);
-    my $root=$d1->mk_root('strucc');
-    my $tag1 = $d1->mk_tag($root,'emu',('asd' => 1,
-					'bsd' => 2));
-    my $tag2 = $d1->mk_tag($root,'emu');
-    $d1->pr_tree($root);
-    IDZebra::nmem_destroy($m);
-    $d1->DESTROY();
-}
-
-IDZebra::DESTROY;

@@ -8,6 +8,10 @@ use Carp;
 package IDZebra::Filter;
 use IDZebra;
 use IDZebra::Data1;
+use IDZebra::Logger qw(:flags :calls);
+use Devel::Leak;
+
+our $SAFE_MODE = 1;
 
 BEGIN {
     IDZebra::init(); # ??? Do we need that at all (this is jus nmem init...)
@@ -31,13 +35,28 @@ sub new {
 # -----------------------------------------------------------------------------
 sub _process {
     my ($self) = @_;
+
+#    if ($self->{dl}) {
+#	print STDERR "LEAK",Devel::Leak::CheckSV($self->{dl}),"\n";
+#    }
+
+#    print STDERR "LEAK",Devel::Leak::NoteSV($self->{dl}),"\n";
+
     # This is ugly... could be passed as parameters... but didn't work.
     # I don't know why...
     my $dh  = IDZebra::grs_perl_get_dh($self->{context});
     my $mem = IDZebra::grs_perl_get_mem($self->{context});
     my $d1  = IDZebra::Data1->get($dh,$mem);
 
-    my $rootnode = $self->process($d1);
+    my $rootnode;
+    if ($SAFE_MODE) {
+	eval {$rootnode = $self->process($d1)};
+	if ($@) {
+	    logf(LOG_WARN,"Error processing perl filter:%s\n",$@);
+	}
+    } else {
+	$rootnode = $self->process($d1);
+    }
     IDZebra::grs_perl_set_res($self->{context},$rootnode);
     return (0);
 }

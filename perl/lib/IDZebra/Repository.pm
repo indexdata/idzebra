@@ -33,20 +33,28 @@ sub new {
 
 sub modify {
     my ($self,%args) = @_;
+    if ($args{name}) {
+	if ($args{name} ne $self->{rg}{groupName}) {
+	    $self->readConfig($args{name},"");
+	}
+	delete($args{name});
+    }
     $self->_set_options(%args);
 }
 
 sub readConfig {
     my ($self, $groupName, $ext) = @_;
-    if ($#_ > 0) { $self->{rg}{groupName} = $groupName;  }
+    if ($#_ > 0) { 
+      IDZebra::init_recordGroup($self->{rg});
+	$self->{rg}{groupName} = $groupName;  
+    }
     $ext = "" unless ($ext);
     IDZebra::res_get_recordGroup($self->{session}{zh}, $self->{rg}, $ext);
     $self->_prepare();
-    print "recordType:",$self->{rg}{recordType},"\n";
 }
 
 sub _set_options {
-    my ($self, %args) = @_;
+    my ($self, %args) = @_; 
     my $i = 0;
     foreach my $key (keys(%args)) {
 	$self->{rg}{$key} = $args{$key};
@@ -72,8 +80,29 @@ sub _prepare {
 	     "Could not select database %s errCode=%d",
 	     $self->{rg}{databaseName},
 	     $self->{session}->errCode());
-	croak("Fatal error selecting database");
+	croak("Fatal error opening/selecting database (record group)");
+    } else {
+	logf(LOG_LOG,"Database %s selected",$dbName);
     }
+}
+
+sub DEBUG {
+    my ($self) = @_;
+    foreach my $key qw (groupName databaseName path recordId recordType flagStoreData flagStoreKeys flagRw fileVerboseLimit databaseNamePath explainDatabase followLinks) {
+	print STDERR "RG:$key:",$self->{rg}{$key},"\n";
+    }
+}
+
+sub init {
+    my ($self, %args) = @_;
+    $self->_set_options(%args);
+    IDZebra::init($self->{session}{zh});
+}
+
+sub compact {
+    my ($self, %args) = @_;
+    $self->_set_options(%args);
+    IDZebra::compact($self->{session}{zh});
 }
 
 sub update {
@@ -95,34 +124,52 @@ sub show {
 }
 
 sub update_record {
-    my ($self, $buf, $sysno, $match, $fname) = @_;
-
-    $sysno = 0 unless ($sysno > 0);
-    $match = "" unless ($match);
-    $fname = "<no file>" unless ($fname);
-
+    my ($self, %args) = @_;
     return(IDZebra::update_record($self->{session}{zh},
-				 $self->{rg},
-				 $sysno,$match,$fname,
-				 $buf, -1)); 
+				  $self->{rg},
+				  $self->update_args(%args)));
 }
 
 sub delete_record {
-    my ($self, $buf, $sysno, $match, $fname) = @_;
-    
-    $sysno = 0 unless ($sysno > 0);
-    $match = "" unless ($match);
-    $fname = "<no file>" unless ($fname);
-
+    my ($self, %args) = @_;
     return(IDZebra::delete_record($self->{session}{zh},
-				 $self->{rg},
-				 $sysno,$match,$fname,
-				 $buf, -1)); 
+				  $self->{rg},
+				  $self->update_args(%args)));
+}
+
+sub update_args {
+    my ($self, %args) = @_;
+
+    my $sysno   = $args{sysno}      ? $args{sysno}      : 0;
+    my $match   = $args{match}      ? $args{match}      : "";
+    my $rectype = $args{recordType} ? $args{recordType} : "";
+    my $fname   = $args{file}       ? $args{file}       : "<no file>";
+
+    my $buff;
+
+    if ($args{data}) {
+	$buff = $args{data};
+    } 
+    elsif ($args{file}) {
+	open (F, $args{file}) || warn ("Cannot open $args{file}");
+	$buff = join('',(<F>));
+	close (F);
+    }
+    my $len = length($buff);
+
+    # If no record type is given, then try to find it out from the
+    # file extension;
+
+    unless ($rectype) {
+	my ($ext) = $fname =~ /\.(\w+)$/;
+	$self->readConfig( $self->{rg}{groupName},$ext);
+    }
+
+    return ($rectype, $sysno, $match, $fname, $buff, $len);
 }
 
 sub DESTROY {
     my ($self) = @_;
-    print STDERR "Destroy repository\n";
 }
 
 __END__

@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.4 2002-12-02 10:23:30 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.5 2003-02-27 23:12:18 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -499,49 +499,51 @@ static void _swig_create_magic(CPerlObj *pPerl, SV *sv, const char *name, int (C
 /* -------- TYPES TABLE (BEGIN) -------- */
 
 #define  SWIGTYPE_p_ZebraService swig_types[0] 
-#define  SWIGTYPE_p_data1_esetname swig_types[1] 
-#define  SWIGTYPE_p_data1_maptab swig_types[2] 
-#define  SWIGTYPE_p_ODR swig_types[3] 
-#define  SWIGTYPE_p_f_p_void__int swig_types[4] 
-#define  SWIGTYPE_p_p_char swig_types[5] 
-#define  SWIGTYPE_p_oid_value swig_types[6] 
-#define  SWIGTYPE_p_data1_absyn swig_types[7] 
-#define  SWIGTYPE_p_ZebraHandle swig_types[8] 
-#define  SWIGTYPE_p_void swig_types[9] 
-#define  SWIGTYPE_p_data1_attset swig_types[10] 
-#define  SWIGTYPE_p_size_t swig_types[11] 
-#define  SWIGTYPE_p_WRBUF swig_types[12] 
-#define  SWIGTYPE_p_f_data1_handle_p_void_p_data1_absyn__void swig_types[13] 
-#define  SWIGTYPE_p_Z_Espec1 swig_types[14] 
-#define  SWIGTYPE_p_off_t swig_types[15] 
-#define  SWIGTYPE_p_Odr_oid swig_types[16] 
-#define  SWIGTYPE_p_data1_varset swig_types[17] 
-#define  SWIGTYPE_p_RetrievalRecordBuf swig_types[18] 
-#define  SWIGTYPE_p_perl_context swig_types[19] 
-#define  SWIGTYPE_p_data1_node swig_types[20] 
-#define  SWIGTYPE_p_ScanObj swig_types[21] 
-#define  SWIGTYPE_p_RetrievalObj swig_types[22] 
-#define  SWIGTYPE_p_data1_tagset swig_types[23] 
-#define  SWIGTYPE_p_data1_tag swig_types[24] 
-#define  SWIGTYPE_p_ZebraRetrievalRecord swig_types[25] 
-#define  SWIGTYPE_p_RetrievalRecord swig_types[26] 
-#define  SWIGTYPE_p_NMEM swig_types[27] 
-#define  SWIGTYPE_p_Z_ExplainRecord swig_types[28] 
-#define  SWIGTYPE_p_data1_marctab swig_types[29] 
-#define  SWIGTYPE_p_Z_BriefBib swig_types[30] 
-#define  SWIGTYPE_p_ScanEntry swig_types[31] 
-#define  SWIGTYPE_p_f_p_void_p_char_size_t__int swig_types[32] 
-#define  SWIGTYPE_p_FILE swig_types[33] 
-#define  SWIGTYPE_p_data1_element swig_types[34] 
-#define  SWIGTYPE_p_recordGroup swig_types[35] 
-#define  SWIGTYPE_p_int swig_types[36] 
-#define  SWIGTYPE_p_data1_handle swig_types[37] 
-#define  SWIGTYPE_p_p_int swig_types[38] 
-#define  SWIGTYPE_p_data1_absyn_cache swig_types[39] 
-#define  SWIGTYPE_p_data1_attset_cache swig_types[40] 
-#define  SWIGTYPE_p_Z_GenericRecord swig_types[41] 
-#define  SWIGTYPE_p_data1_vartype swig_types[42] 
-static swig_type_info *swig_types[44];
+#define  SWIGTYPE_p_cql_transform_t swig_types[1] 
+#define  SWIGTYPE_p_data1_esetname swig_types[2] 
+#define  SWIGTYPE_p_data1_maptab swig_types[3] 
+#define  SWIGTYPE_p_ODR swig_types[4] 
+#define  SWIGTYPE_p_f_p_void__int swig_types[5] 
+#define  SWIGTYPE_p_p_char swig_types[6] 
+#define  SWIGTYPE_p_oid_value swig_types[7] 
+#define  SWIGTYPE_p_data1_absyn swig_types[8] 
+#define  SWIGTYPE_p_ZebraHandle swig_types[9] 
+#define  SWIGTYPE_p_void swig_types[10] 
+#define  SWIGTYPE_p_data1_attset swig_types[11] 
+#define  SWIGTYPE_p_size_t swig_types[12] 
+#define  SWIGTYPE_p_WRBUF swig_types[13] 
+#define  SWIGTYPE_p_f_data1_handle_p_void_p_data1_absyn__void swig_types[14] 
+#define  SWIGTYPE_p_Z_Espec1 swig_types[15] 
+#define  SWIGTYPE_p_off_t swig_types[16] 
+#define  SWIGTYPE_p_Odr_oid swig_types[17] 
+#define  SWIGTYPE_p_data1_varset swig_types[18] 
+#define  SWIGTYPE_p_RetrievalRecordBuf swig_types[19] 
+#define  SWIGTYPE_p_perl_context swig_types[20] 
+#define  SWIGTYPE_p_data1_node swig_types[21] 
+#define  SWIGTYPE_p_ScanObj swig_types[22] 
+#define  SWIGTYPE_p_RetrievalObj swig_types[23] 
+#define  SWIGTYPE_p_data1_tagset swig_types[24] 
+#define  SWIGTYPE_p_data1_tag swig_types[25] 
+#define  SWIGTYPE_p_ZebraRetrievalRecord swig_types[26] 
+#define  SWIGTYPE_p_RetrievalRecord swig_types[27] 
+#define  SWIGTYPE_p_NMEM swig_types[28] 
+#define  SWIGTYPE_p_Z_ExplainRecord swig_types[29] 
+#define  SWIGTYPE_p_data1_marctab swig_types[30] 
+#define  SWIGTYPE_p_ZebraTransactionStatus swig_types[31] 
+#define  SWIGTYPE_p_Z_BriefBib swig_types[32] 
+#define  SWIGTYPE_p_ScanEntry swig_types[33] 
+#define  SWIGTYPE_p_f_p_void_p_char_size_t__int swig_types[34] 
+#define  SWIGTYPE_p_FILE swig_types[35] 
+#define  SWIGTYPE_p_data1_element swig_types[36] 
+#define  SWIGTYPE_p_recordGroup swig_types[37] 
+#define  SWIGTYPE_p_int swig_types[38] 
+#define  SWIGTYPE_p_data1_handle swig_types[39] 
+#define  SWIGTYPE_p_p_int swig_types[40] 
+#define  SWIGTYPE_p_data1_absyn_cache swig_types[41] 
+#define  SWIGTYPE_p_data1_attset_cache swig_types[42] 
+#define  SWIGTYPE_p_Z_GenericRecord swig_types[43] 
+#define  SWIGTYPE_p_data1_vartype swig_types[44] 
+static swig_type_info *swig_types[46];
 
 /* -------- TYPES TABLE (END) -------- */
 
@@ -569,6 +571,7 @@ SWIGEXPORT(void) SWIG_init (CV *cv, CPerlObj *);
 #include "zebra_perl.h"
 #include "data1.h"
 #include "yaz/odr.h"
+#include "yaz/cql.h"
 
 #ifdef PERL_OBJECT
 #define MAGIC_CLASS _wrap_IDZebra_var::
@@ -2439,6 +2442,404 @@ XS(_wrap_delete_ScanObj) {
 }
 
 
+XS(_wrap_ZebraTransactionStatus_processed_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_processed_set(self,processed);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_processed_set. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->processed = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_processed_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_processed_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_processed_get. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        result = (int) ((arg1)->processed);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_inserted_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_inserted_set(self,inserted);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_inserted_set. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->inserted = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_inserted_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_inserted_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_inserted_get. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        result = (int) ((arg1)->inserted);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_updated_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_updated_set(self,updated);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_updated_set. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->updated = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_updated_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_updated_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_updated_get. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        result = (int) ((arg1)->updated);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_deleted_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_deleted_set(self,deleted);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_deleted_set. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        arg2 = (int) SvIV(ST(1));
+        if (arg1) (arg1)->deleted = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_deleted_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_deleted_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_deleted_get. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        result = (int) ((arg1)->deleted);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_utime_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        long arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_utime_set(self,utime);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_utime_set. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        arg2 = (long) SvIV(ST(1));
+        if (arg1) (arg1)->utime = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_utime_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        long result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_utime_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_utime_get. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        result = (long) ((arg1)->utime);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_stime_set) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        long arg2 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_stime_set(self,stime);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_stime_set. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        arg2 = (long) SvIV(ST(1));
+        if (arg1) (arg1)->stime = arg2;
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_ZebraTransactionStatus_stime_get) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        long result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: ZebraTransactionStatus_stime_get(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of ZebraTransactionStatus_stime_get. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        result = (long) ((arg1)->stime);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_new_ZebraTransactionStatus) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 0) || (items > 0)) {
+            SWIG_croak("Usage: new_ZebraTransactionStatus();");
+        }
+        result = (ZebraTransactionStatus *)(ZebraTransactionStatus *) calloc(1, sizeof(ZebraTransactionStatus));
+        
+        ST(argvi) = sv_newmortal();
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_ZebraTransactionStatus,0);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_delete_ZebraTransactionStatus) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: delete_ZebraTransactionStatus(self);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of delete_ZebraTransactionStatus. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        free((char *) arg1);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_init__SWIG_0) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
@@ -3125,11 +3526,12 @@ XS(_wrap_end_trans) {
     const char *_swigerr = _swigmsg;
     {
         ZebraHandle arg1 ;
+        ZebraTransactionStatus *arg2 ;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: end_trans(zh);");
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: end_trans(zh,stat);");
         }
         {
             ZebraHandle * argp;
@@ -3138,9 +3540,45 @@ XS(_wrap_end_trans) {
             }
             arg1 = *argp;
         }
-        zebra_end_trans(arg1);
+        {
+            if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 2 of end_trans. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        zebra_end_transaction(arg1,arg2);
         
         
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_trans_no) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraHandle arg1 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: trans_no(zh);");
+        }
+        {
+            ZebraHandle * argp;
+            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_ZebraHandle,0) < 0) {
+                SWIG_croak("Type error in argument 1 of trans_no. Expected _p_ZebraHandle");
+            }
+            arg1 = *argp;
+        }
+        result = (int)zebra_trans_no(arg1);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -3172,6 +3610,33 @@ XS(_wrap_begin_read) {
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_zts_test) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraTransactionStatus *arg1 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: zts_test(stat);");
+        }
+        {
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ZebraTransactionStatus,0) < 0) {
+                SWIG_croak("Type error in argument 1 of zts_test. Expected _p_ZebraTransactionStatus");
+            }
+        }
+        zts_test(arg1);
+        
+        
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -3484,17 +3949,18 @@ XS(_wrap_update_record) {
     {
         ZebraHandle arg1 ;
         recordGroup *arg2 ;
-        int arg3 ;
-        char *arg4 ;
+        char *arg3 ;
+        int arg4 ;
         char *arg5 ;
         char *arg6 ;
-        int arg7 ;
+        char *arg7 ;
+        int arg8 ;
         int result;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 7) || (items > 7)) {
-            SWIG_croak("Usage: update_record(zh,rGroup,sysno,match,fname,buf,buf_size);");
+        if ((items < 8) || (items > 8)) {
+            SWIG_croak("Usage: update_record(zh,rGroup,recordType,sysno,match,fname,buf,buf_size);");
         }
         {
             ZebraHandle * argp;
@@ -3508,15 +3974,17 @@ XS(_wrap_update_record) {
                 SWIG_croak("Type error in argument 2 of update_record. Expected _p_recordGroup");
             }
         }
-        arg3 = (int) SvIV(ST(2));
-        if (!SvOK((SV*) ST(3))) arg4 = 0;
-        else arg4 = (char *) SvPV(ST(3), PL_na);
+        if (!SvOK((SV*) ST(2))) arg3 = 0;
+        else arg3 = (char *) SvPV(ST(2), PL_na);
+        arg4 = (int) SvIV(ST(3));
         if (!SvOK((SV*) ST(4))) arg5 = 0;
         else arg5 = (char *) SvPV(ST(4), PL_na);
         if (!SvOK((SV*) ST(5))) arg6 = 0;
         else arg6 = (char *) SvPV(ST(5), PL_na);
-        arg7 = (int) SvIV(ST(6));
-        result = (int)zebra_update_record(arg1,arg2,arg3,(char const *)arg4,(char const *)arg5,(char const *)arg6,arg7);
+        if (!SvOK((SV*) ST(6))) arg7 = 0;
+        else arg7 = (char *) SvPV(ST(6), PL_na);
+        arg8 = (int) SvIV(ST(7));
+        result = (int)zebra_update_record(arg1,arg2,(char const *)arg3,arg4,(char const *)arg5,(char const *)arg6,(char const *)arg7,arg8);
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
@@ -3534,17 +4002,18 @@ XS(_wrap_delete_record) {
     {
         ZebraHandle arg1 ;
         recordGroup *arg2 ;
-        int arg3 ;
-        char *arg4 ;
+        char *arg3 ;
+        int arg4 ;
         char *arg5 ;
         char *arg6 ;
-        int arg7 ;
+        char *arg7 ;
+        int arg8 ;
         int result;
         int argvi = 0;
         dXSARGS;
         
-        if ((items < 7) || (items > 7)) {
-            SWIG_croak("Usage: delete_record(zh,rGroup,sysno,match,fname,buf,buf_size);");
+        if ((items < 8) || (items > 8)) {
+            SWIG_croak("Usage: delete_record(zh,rGroup,recordType,sysno,match,fname,buf,buf_size);");
         }
         {
             ZebraHandle * argp;
@@ -3558,15 +4027,17 @@ XS(_wrap_delete_record) {
                 SWIG_croak("Type error in argument 2 of delete_record. Expected _p_recordGroup");
             }
         }
-        arg3 = (int) SvIV(ST(2));
-        if (!SvOK((SV*) ST(3))) arg4 = 0;
-        else arg4 = (char *) SvPV(ST(3), PL_na);
+        if (!SvOK((SV*) ST(2))) arg3 = 0;
+        else arg3 = (char *) SvPV(ST(2), PL_na);
+        arg4 = (int) SvIV(ST(3));
         if (!SvOK((SV*) ST(4))) arg5 = 0;
         else arg5 = (char *) SvPV(ST(4), PL_na);
         if (!SvOK((SV*) ST(5))) arg6 = 0;
         else arg6 = (char *) SvPV(ST(5), PL_na);
-        arg7 = (int) SvIV(ST(6));
-        result = (int)zebra_delete_record(arg1,arg2,arg3,(char const *)arg4,(char const *)arg5,(char const *)arg6,arg7);
+        if (!SvOK((SV*) ST(6))) arg7 = 0;
+        else arg7 = (char *) SvPV(ST(6), PL_na);
+        arg8 = (int) SvIV(ST(7));
+        result = (int)zebra_delete_record(arg1,arg2,(char const *)arg3,arg4,(char const *)arg5,(char const *)arg6,(char const *)arg7,arg8);
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
@@ -3620,6 +4091,161 @@ XS(_wrap_search_PQF) {
         if (!SvOK((SV*) ST(4))) arg5 = 0;
         else arg5 = (char *) SvPV(ST(4), PL_na);
         result = (int)zebra_search_PQF(arg1,arg2,arg3,(char const *)arg4,(char const *)arg5);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_cql_transform_open_fname) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        char *arg1 ;
+        cql_transform_t result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: cql_transform_open_fname(fname);");
+        }
+        if (!SvOK((SV*) ST(0))) arg1 = 0;
+        else arg1 = (char *) SvPV(ST(0), PL_na);
+        result = cql_transform_open_fname((char const *)arg1);
+        
+        {
+            cql_transform_t * resultobj = (cql_transform_t *) malloc(sizeof(cql_transform_t));
+            memmove(resultobj, &result, sizeof(cql_transform_t));
+            ST(argvi) = sv_newmortal();
+            SWIG_MakePtr(ST(argvi++), (void *) resultobj, SWIGTYPE_p_cql_transform_t,0);
+        }
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_cql_transform_close) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        cql_transform_t arg1 ;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 1) || (items > 1)) {
+            SWIG_croak("Usage: cql_transform_close(ct);");
+        }
+        {
+            cql_transform_t * argp;
+            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_cql_transform_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of cql_transform_close. Expected _p_cql_transform_t");
+            }
+            arg1 = *argp;
+        }
+        cql_transform_close(arg1);
+        
+        
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_cql_transform_error) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        cql_transform_t arg1 ;
+        char **arg2 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 2) || (items > 2)) {
+            SWIG_croak("Usage: cql_transform_error(ct,addinfo);");
+        }
+        {
+            cql_transform_t * argp;
+            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_cql_transform_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of cql_transform_error. Expected _p_cql_transform_t");
+            }
+            arg1 = *argp;
+        }
+        {
+            AV *tempav;
+            I32 len;
+            int i;
+            SV  **tv;
+            STRLEN na;
+            if (!SvROK(ST(1)))
+            croak("Argument 2 is not a reference.");
+            if (SvTYPE(SvRV(ST(1))) != SVt_PVAV)
+            croak("Argument 2 is not an array.");
+            tempav = (AV*)SvRV(ST(1));
+            len = av_len(tempav);
+            arg2 = (char **) malloc((len+2)*sizeof(char *));
+            for (i = 0; i <= len; i++) {
+                tv = av_fetch(tempav, i, 0);	
+                arg2[i] = (char *) SvPV(*tv,na);
+            }
+            arg2[i] = NULL;
+        }
+        result = (int)cql_transform_error(arg1,(char const **)arg2);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        {
+            free(arg2);
+        }
+        XSRETURN(argvi);
+        fail:
+        {
+            free(arg2);
+        }
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_cql2pqf) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        cql_transform_t arg1 ;
+        char *arg2 ;
+        char *arg3 ;
+        int arg4 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 4) || (items > 4)) {
+            SWIG_croak("Usage: cql2pqf(ct,query,res,len);");
+        }
+        {
+            cql_transform_t * argp;
+            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_cql_transform_t,0) < 0) {
+                SWIG_croak("Type error in argument 1 of cql2pqf. Expected _p_cql_transform_t");
+            }
+            arg1 = *argp;
+        }
+        if (!SvOK((SV*) ST(1))) arg2 = 0;
+        else arg2 = (char *) SvPV(ST(1), PL_na);
+        if (!SvOK((SV*) ST(2))) arg3 = 0;
+        else arg3 = (char *) SvPV(ST(2), PL_na);
+        arg4 = (int) SvIV(ST(3));
+        result = (int)zebra_cql2pqf(arg1,(char const *)arg2,arg3,arg4);
         
         ST(argvi) = sv_newmortal();
         sv_setiv(ST(argvi++), (IV) result);
@@ -7409,6 +8035,7 @@ XS(_wrap_grs_perl_set_res) {
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
 static swig_type_info _swigt__p_ZebraService[] = {{"_p_ZebraService", 0, "ZebraService *", 0},{"_p_ZebraService"},{0}};
+static swig_type_info _swigt__p_cql_transform_t[] = {{"_p_cql_transform_t", 0, "cql_transform_t *", 0},{"_p_cql_transform_t"},{0}};
 static swig_type_info _swigt__p_data1_esetname[] = {{"_p_data1_esetname", 0, "data1_esetname *", 0},{"_p_data1_esetname"},{0}};
 static swig_type_info _swigt__p_data1_maptab[] = {{"_p_data1_maptab", 0, "data1_maptab *", 0},{"_p_data1_maptab"},{0}};
 static swig_type_info _swigt__p_ODR[] = {{"_p_ODR", 0, "ODR *", 0},{"_p_ODR"},{0}};
@@ -7438,6 +8065,7 @@ static swig_type_info _swigt__p_RetrievalRecord[] = {{"IDZebra::RetrievalRecord"
 static swig_type_info _swigt__p_NMEM[] = {{"_p_NMEM", 0, "NMEM *", 0},{"_p_NMEM"},{0}};
 static swig_type_info _swigt__p_Z_ExplainRecord[] = {{"_p_Z_ExplainRecord", 0, "Z_ExplainRecord *", 0},{"_p_Z_ExplainRecord"},{0}};
 static swig_type_info _swigt__p_data1_marctab[] = {{"_p_data1_marctab", 0, "data1_marctab *", 0},{"_p_data1_marctab"},{0}};
+static swig_type_info _swigt__p_ZebraTransactionStatus[] = {{"IDZebra::ZebraTransactionStatus", 0, "ZebraTransactionStatus *", 0},{"IDZebra::ZebraTransactionStatus"},{0}};
 static swig_type_info _swigt__p_Z_BriefBib[] = {{"_p_Z_BriefBib", 0, "Z_BriefBib *", 0},{"_p_Z_BriefBib"},{0}};
 static swig_type_info _swigt__p_ScanEntry[] = {{"IDZebra::ScanEntry", 0, "ScanEntry *", 0},{"IDZebra::ScanEntry"},{0}};
 static swig_type_info _swigt__p_f_p_void_p_char_size_t__int[] = {{"_p_f_p_void_p_char_size_t__int", 0, "int (*)(void *,char *,size_t)", 0},{"_p_f_p_void_p_char_size_t__int"},{0}};
@@ -7454,6 +8082,7 @@ static swig_type_info _swigt__p_data1_vartype[] = {{"_p_data1_vartype", 0, "data
 
 static swig_type_info *swig_types_initial[] = {
 _swigt__p_ZebraService, 
+_swigt__p_cql_transform_t, 
 _swigt__p_data1_esetname, 
 _swigt__p_data1_maptab, 
 _swigt__p_ODR, 
@@ -7483,6 +8112,7 @@ _swigt__p_RetrievalRecord,
 _swigt__p_NMEM, 
 _swigt__p_Z_ExplainRecord, 
 _swigt__p_data1_marctab, 
+_swigt__p_ZebraTransactionStatus, 
 _swigt__p_Z_BriefBib, 
 _swigt__p_ScanEntry, 
 _swigt__p_f_p_void_p_char_size_t__int, 
@@ -7613,6 +8243,20 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::ScanObj_entries_get", _wrap_ScanObj_entries_get},
 {"IDZebrac::new_ScanObj", _wrap_new_ScanObj},
 {"IDZebrac::delete_ScanObj", _wrap_delete_ScanObj},
+{"IDZebrac::ZebraTransactionStatus_processed_set", _wrap_ZebraTransactionStatus_processed_set},
+{"IDZebrac::ZebraTransactionStatus_processed_get", _wrap_ZebraTransactionStatus_processed_get},
+{"IDZebrac::ZebraTransactionStatus_inserted_set", _wrap_ZebraTransactionStatus_inserted_set},
+{"IDZebrac::ZebraTransactionStatus_inserted_get", _wrap_ZebraTransactionStatus_inserted_get},
+{"IDZebrac::ZebraTransactionStatus_updated_set", _wrap_ZebraTransactionStatus_updated_set},
+{"IDZebrac::ZebraTransactionStatus_updated_get", _wrap_ZebraTransactionStatus_updated_get},
+{"IDZebrac::ZebraTransactionStatus_deleted_set", _wrap_ZebraTransactionStatus_deleted_set},
+{"IDZebrac::ZebraTransactionStatus_deleted_get", _wrap_ZebraTransactionStatus_deleted_get},
+{"IDZebrac::ZebraTransactionStatus_utime_set", _wrap_ZebraTransactionStatus_utime_set},
+{"IDZebrac::ZebraTransactionStatus_utime_get", _wrap_ZebraTransactionStatus_utime_get},
+{"IDZebrac::ZebraTransactionStatus_stime_set", _wrap_ZebraTransactionStatus_stime_set},
+{"IDZebrac::ZebraTransactionStatus_stime_get", _wrap_ZebraTransactionStatus_stime_get},
+{"IDZebrac::new_ZebraTransactionStatus", _wrap_new_ZebraTransactionStatus},
+{"IDZebrac::delete_ZebraTransactionStatus", _wrap_delete_ZebraTransactionStatus},
 {"IDZebrac::DESTROY", _wrap_DESTROY},
 {"IDZebrac::logLevel", _wrap_logLevel},
 {"IDZebrac::logFile", _wrap_logFile},
@@ -7635,7 +8279,9 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::select_databases", _wrap_select_databases},
 {"IDZebrac::begin_trans", _wrap_begin_trans},
 {"IDZebrac::end_trans", _wrap_end_trans},
+{"IDZebrac::trans_no", _wrap_trans_no},
 {"IDZebrac::begin_read", _wrap_begin_read},
+{"IDZebrac::zts_test", _wrap_zts_test},
 {"IDZebrac::end_read", _wrap_end_read},
 {"IDZebrac::commit", _wrap_commit},
 {"IDZebrac::get_shadow_enable", _wrap_get_shadow_enable},
@@ -7648,6 +8294,10 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::update_record", _wrap_update_record},
 {"IDZebrac::delete_record", _wrap_delete_record},
 {"IDZebrac::search_PQF", _wrap_search_PQF},
+{"IDZebrac::cql_transform_open_fname", _wrap_cql_transform_open_fname},
+{"IDZebrac::cql_transform_close", _wrap_cql_transform_close},
+{"IDZebrac::cql_transform_error", _wrap_cql_transform_error},
+{"IDZebrac::cql2pqf", _wrap_cql2pqf},
 {"IDZebrac::records_retrieve", _wrap_records_retrieve},
 {"IDZebrac::record_retrieve", _wrap_record_retrieve},
 {"IDZebrac::sort", _wrap_sort},
@@ -7802,6 +8452,7 @@ XS(SWIG_init) {
     SWIG_TypeClientData(SWIGTYPE_p_RetrievalRecord, (void*) "IDZebra::RetrievalRecord");
     SWIG_TypeClientData(SWIGTYPE_p_ScanEntry, (void*) "IDZebra::ScanEntry");
     SWIG_TypeClientData(SWIGTYPE_p_ScanObj, (void*) "IDZebra::ScanObj");
+    SWIG_TypeClientData(SWIGTYPE_p_ZebraTransactionStatus, (void*) "IDZebra::ZebraTransactionStatus");
     ST(0) = &PL_sv_yes;
     XSRETURN(1);
 }

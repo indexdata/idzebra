@@ -20,7 +20,7 @@ void init (void) {
 void DESTROY (void) {
   nmem_exit ();
   yaz_log (LOG_LOG, "Zebra API destroyed");
-}
+}   
 
 /* Logging facilities from yaz */
 void logLevel (int level) {
@@ -35,5 +35,6 @@ void logMsg (int level, const char *message) {
   logf(level, "%s", message);
 }
 
-
-
+void zts_test (ZebraTransactionStatus *stat) {
+  stat->processed++;
+}

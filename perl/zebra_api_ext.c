@@ -16,6 +16,7 @@
 #include "zebra_api_ext.h"
 #include "yaz/log.h"
 #include <yaz/pquery.h>
+#include <yaz/cql.h>
 #include <yaz/sortspec.h>
 
 void data1_print_tree(data1_handle dh, data1_node *n, FILE *out) {
@@ -37,13 +38,13 @@ void init_recordGroup (recordGroup *rg) {
     rg->recordId = NULL;
     rg->recordType = NULL;
     rg->flagStoreData = -1;
-    rg->flagStoreKeys = -1;
+    rg->flagStoreKeys = -1; 
     rg->flagRw = 1;
     rg->databaseNamePath = 0;
-    rg->explainDatabase = 0;
-    rg->fileVerboseLimit = 100000;
+    rg->explainDatabase = 0; 
+    rg->fileVerboseLimit = 100000; 
     rg->followLinks = -1;
-}
+} 
 
 
 /* This is from extract.c... it seems useful, when extract_rec_in mem is 
@@ -52,11 +53,11 @@ void res_get_recordGroup (ZebraHandle zh,
 			  recordGroup *rGroup,
 			  const char *ext) {
   char gprefix[128];
-  char ext_res[128];
+  char ext_res[128]; 
     
   if (!rGroup->groupName || !*rGroup->groupName)
     *gprefix = '\0';
-  else
+  else 
     sprintf (gprefix, "%s.", rGroup->groupName);
   
   /* determine file type - depending on extension */
@@ -68,18 +69,18 @@ void res_get_recordGroup (ZebraHandle zh,
     }
   }
   /* determine match criteria */
-  if (!rGroup->recordId) {
+  if (!rGroup->recordId) { 
     sprintf (ext_res, "%srecordId.%s", gprefix, ext);
     if (!(rGroup->recordId = res_get (zh->res, ext_res))) {
       sprintf (ext_res, "%srecordId", gprefix);
       rGroup->recordId = res_get (zh->res, ext_res);
     }
-  }
+  } 
   
   /* determine database name */
   if (!rGroup->databaseName) {
     sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
-    if (!(rGroup->databaseName = res_get (zh->res, ext_res))) {
+    if (!(rGroup->databaseName = res_get (zh->res, ext_res))) { 
       sprintf (ext_res, "%sdatabase", gprefix);
       rGroup->databaseName = res_get (zh->res, ext_res);
     }
@@ -120,6 +121,10 @@ void res_get_recordGroup (ZebraHandle zh,
   }
   if (rGroup->flagStoreKeys == -1) rGroup->flagStoreKeys = 0;
   
+} 
+
+int zebra_trans_processed(ZebraTransactionStatus s) {
+  return (s.processed);
 }
 
 /* ---------------------------------------------------------------------------
@@ -128,11 +133,11 @@ void res_get_recordGroup (ZebraHandle zh,
   If sysno is provided, then it's used to identify the reocord.
   If not, and match_criteria is provided, then sysno is guessed
   If not, and a record is provided, then sysno is got from there
-
 */
 
 int zebra_update_record (ZebraHandle zh, 
-			 struct recordGroup *rGroup, 
+			 struct recordGroup *rGroup,
+			 const char *recordType,
 			 int sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size)
 
@@ -141,17 +146,20 @@ int zebra_update_record (ZebraHandle zh,
 
     if (buf_size < 1) buf_size = strlen(buf);
 
+    zebra_begin_trans(zh);
     res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
-			     0, // delete_flag
-			     0, // test_mode, 
-			     &sysno,
-			     match, fname);    
-  
-    return sysno;
+			     0, // delete_flag 
+			     0, // test_mode,
+			     recordType,
+			     &sysno,   
+			     match, fname);     
+    zebra_end_trans(zh); 
+    return sysno; 
 }
 
 int zebra_delete_record (ZebraHandle zh, 
 			 struct recordGroup *rGroup, 
+			 const char *recordType,
 			 int sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size)
 {
@@ -159,12 +167,15 @@ int zebra_delete_record (ZebraHandle zh,
 
     if (buf_size < 1) buf_size = strlen(buf);
 
+    zebra_begin_trans(zh);
     res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
 			     1, // delete_flag
 			     0, // test_mode, 
+			     recordType,
 			     &sysno,
 			     match,fname);    
-    return sysno;
+    zebra_end_trans(zh);
+    return sysno;   
 }
 
 /* ---------------------------------------------------------------------------
@@ -185,7 +196,7 @@ void zebra_search_RPN (ZebraHandle zh, ODR decode, ODR stream,
     resultSetAddRPN (zh, decode, stream, query, 
                      zh->num_basenames, zh->basenames, setname);
 
-        zebra_end_read (zh);
+    zebra_end_read (zh);
 
     *hits = zh->hits;
 }
@@ -211,6 +222,31 @@ int zebra_search_PQF (ZebraHandle zh,
   odr_reset (odr_output);
   
   return(hits);
+}
+
+int zebra_cql2pqf (cql_transform_t ct, 
+		   const char *query, char *res, int len) {
+  
+  int status;
+  const char *addinfo;
+  CQL_parser cp = cql_parser_create();
+
+  if (status = cql_transform_error(ct, &addinfo)) {
+    logf (LOG_WARN,"Transform error %d %s\n", status, addinfo ? addinfo : "");
+    return (status);
+  }
+
+  if (status = cql_parser_string(cp, query))
+    return (status);
+
+  if (status = cql_transform_buf(ct, cql_parser_result(cp), res, len)) {
+    logf (LOG_WARN,"Transform error %d %s\n", status, addinfo ? addinfo : "");
+    return (status);
+  }
+
+  logf (LOG_LOG,"PQF:%s",res);
+
+  return (0);
 }
 
 void zebra_scan_PQF (ZebraHandle zh,
@@ -350,39 +386,40 @@ void records_retrieve(ZebraHandle zh,
   if (schema != VAL_NONE) {
     oident prefschema;
 
-    prefschema.proto  = PROTO_Z3950;
+    prefschema.proto = PROTO_Z3950;
     prefschema.oclass = CLASS_SCHEMA;
-    prefschema.value  = schema;
-
+    prefschema.value = schema;
+    
     compo.which = Z_RecordComp_complex;
     compo.u.complex = (Z_CompSpec *)
       odr_malloc(stream, sizeof(*compo.u.complex));
     compo.u.complex->selectAlternativeSyntax = (bool_t *) 
       odr_malloc(stream, sizeof(bool_t));
     *compo.u.complex->selectAlternativeSyntax = 0;
-
+    
     compo.u.complex->generic = (Z_Specification *)
       odr_malloc(stream, sizeof(*compo.u.complex->generic));
-    compo.u.complex->generic->schema = (Odr_oid *)
+    compo.u.complex->generic->which = Z_Schema_oid;
+    compo.u.complex->generic->schema.oid = (Odr_oid *)
       odr_oiddup(stream, oid_ent_to_oid(&prefschema, oid));
-
-    if (!compo.u.complex->generic->schema) {
-      /* OID wasn't a schema! Try record syntax instead. */
-      prefschema.oclass = CLASS_RECSYN;
-      compo.u.complex->generic->schema = (Odr_oid *)
-	odr_oiddup(stream, oid_ent_to_oid(&prefschema, oid));
-    }
-
-    if (!elementSetNames) {
+    if (!compo.u.complex->generic->schema.oid)
+      {
+	/* OID wasn't a schema! Try record syntax instead. */
+	prefschema.oclass = CLASS_RECSYN;
+	compo.u.complex->generic->schema.oid = (Odr_oid *)
+	  odr_oiddup(stream, oid_ent_to_oid(&prefschema, oid));
+      }
+    if (!elementSetNames)
       compo.u.complex->generic->elementSpec = 0;
-    } else {
-      compo.u.complex->generic->elementSpec = (Z_ElementSpec *)
-	odr_malloc(stream, sizeof(Z_ElementSpec));
-      compo.u.complex->generic->elementSpec->which =
-	Z_ElementSpec_elementSetName;
-      compo.u.complex->generic->elementSpec->u.elementSetName =
-	elementSetNames->u.generic;
-    }
+    else
+      {
+	compo.u.complex->generic->elementSpec = (Z_ElementSpec *)
+	  odr_malloc(stream, sizeof(Z_ElementSpec));
+	compo.u.complex->generic->elementSpec->which =
+	  Z_ElementSpec_elementSetName;
+	compo.u.complex->generic->elementSpec->u.elementSetName =
+	  elementSetNames->u.generic;
+      }
     compo.u.complex->num_dbSpecific = 0;
     compo.u.complex->dbSpecific = 0;
     compo.u.complex->num_recordSyntax = 0;
@@ -400,11 +437,15 @@ void records_retrieve(ZebraHandle zh,
 			    res->noOfRecords, res->records);
   } else {
     api_records_retrieve (zh, stream, setname, 
-			    &compo, 
+			    &compo,
 			    recordsyntax,
 			    res->noOfRecords, res->records);
   }
 
+}
+ 
+int zebra_trans_no (ZebraHandle zh) {
+  return (zh->trans_no);
 }
 
 /* almost the same as zebra_records_retrieve ... but how did it work? 
@@ -424,7 +465,7 @@ void api_records_retrieve (ZebraHandle zh, ODR stream,
         return;
     }
     
-    zh->errCode = 0;
+    zh->errCode = 0; 
 
     if (zebra_begin_read (zh))
 	return;

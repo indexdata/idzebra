@@ -7,6 +7,7 @@
 #include "zebra_perl.h"
 #include "data1.h"
 #include "yaz/odr.h"
+#include "yaz/cql.h"
 %}
 
 /* == Typemaps ============================================================= */
@@ -69,11 +70,20 @@
 
 %include "zebra_perl.h"
 
+typedef struct {
+  int processed;
+  int inserted;
+  int updated;
+  int deleted;
+  long utime;
+  long stime;
+} ZebraTransactionStatus;
+
+
 /* == Module initialization and cleanup (zebra_perl.c) ===================== */
 
 void init (void);
 void DESTROY (void);
-
 
 /* == Logging facilities (yaz/log.h) ======================================= */
 
@@ -164,11 +174,15 @@ void zebra_begin_trans (ZebraHandle zh);
 
 /* end transaction (remove write lock) (zebraapi.c) */
 %name(end_trans)           
-void zebra_end_trans (ZebraHandle zh); 
+void zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *stat); 
 
-/* begin retrieval (add read lock) (zebraapi.c) */
+%name(trans_no)
+int zebra_trans_no (ZebraHandle zh);
+
 %name(begin_read)          
 int zebra_begin_read (ZebraHandle zh);
+
+void zts_test (ZebraTransactionStatus *stat);
 
 /* end retrieval (remove read lock) (zebraapi.c) */
 %name(end_read)            
@@ -214,6 +228,7 @@ void zebra_repository_show (ZebraHandle zh);
 %name(update_record)       
 int zebra_update_record (ZebraHandle zh, 
 			 recordGroup *rGroup, 
+			 const char *recordType,
 			 int sysno, 
 			 const char *match, 
 			 const char *fname,
@@ -223,6 +238,7 @@ int zebra_update_record (ZebraHandle zh,
 %name(delete_record)       
 int zebra_delete_record (ZebraHandle zh, 
 			 recordGroup *rGroup, 
+			 const char *recordType,
 			 int sysno, 
 			 const char *match, 
 			 const char *fname,
@@ -238,8 +254,16 @@ int zebra_search_PQF (ZebraHandle zh,
 		      const char *setname);
 
 
-/* TODO: search_CCL */
+/* == YAZ - query tools ==================================================== */
 
+
+cql_transform_t cql_transform_open_fname(const char *fname);
+void cql_transform_close(cql_transform_t ct);
+int cql_transform_error(cql_transform_t ct, const char **addinfo);
+
+%name(cql2pqf) 
+int zebra_cql2pqf (cql_transform_t ct, 
+		   const char *query, char *res, int len);
 
 /* == Retrieval (zebra_api_ext.c) ========================================== */
 
@@ -272,19 +296,6 @@ int sort (ZebraHandle zh,
 	  ); 
 
 /* == Scan ================================================================= */
-/*
-%apply int *INOUT {int *position};
-%apply int *INOUT {int *num_entries};
-%apply int *INOUT {int *is_partial};
-
-%name(scan_PQF) 
-void zebra_scan_PQF (ZebraHandle zh,
-		     ODR stream,
-		     const char *pqf_query,
-		     int *position,
-		     int *num_entries,
-		     int *is_partial);
-*/
 %name(scan_PQF) 
 void zebra_scan_PQF (ZebraHandle zh,
 		     ScanObj *so,
