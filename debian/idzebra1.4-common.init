@@ -1,0 +1,232 @@
+#! /bin/sh
+# $Id: idzebra1.4-common.init,v 1.1 2004-10-18 13:29:25 marc Exp $
+# Start and stop toolkit lite administered idzebra script for Debian.
+# change runlevels using update-rc.d 
+
+test -x /usr/bin/zebrasrv || exit 0
+test -x /usr/bin/zebraidx || exit 0
+test -f /etc/default/zebra || exit 0
+source /etc/default/zebra
+
+# Now sourced from /etc/default/zebra 
+ZEBRA_USER=zebra
+ZEBRA_GROUP=zebra
+
+#ZEBRA_CONF_FILE=/etc/zebra.conf
+#ZEBRA_LOG_DIR=/var/log/zebra
+#ZEBRA_PID_DIR=/var/run/zebra
+#ZEBRA_TMP_DIR=/var/tmp/zebra
+
+ZEBRA_DIRS="/home/marc/projects/alvis"
+ZEBRA_INDEX_DIRS="data"
+
+# set socket connection method
+#ZEBRA_SOCKET="tcp:@:210"
+ZEBRA_SOCKET="unix:db/socket"
+
+
+# define display message 
+display_ZEBRA_message(){
+    echo "Usage:"
+    echo "  As root:"
+    echo -n "    /etc/init.d/zebra {start|stop|reload|force-reload|restart}"
+    echo " [/path/to/root/dir]"
+    echo "  As root or $ZEBRA_USER:"
+    echo "    /etc/init.d/zebra {index|reindex} [/path/to/root/dir [sub/dir] ]"
+}
+
+# make sure we are root or $ZEBRA_USER
+ZEBRA_CURR_USER=`whoami`;
+if [ $ZEBRA_CURR_USER != $ZEBRA_USER  -a  $ZEBRA_CURR_USER != "root" ] ; then
+    display_ZEBRA_message ;
+    echo "  Error: you are not root or $ZEBRA_USER";
+    exit 1;
+fi
+
+
+# perform usual init.d daemon services
+case "$1" in
+  start)
+	# make sure we are root
+	if [ `whoami` != root ]; then
+	    display_ZEBRA_message ;
+	    echo "  Error: you are not root";
+	    exit 1;
+	fi
+
+        # read zebra dir from command line
+	if [ $2 ] ; then
+	    ZEBRA_DIRS=$2
+	fi
+
+	# loop through all entries defined in /etc/zebra.conf
+	for d in $ZEBRA_DIRS; do
+	    echo -n "Starting zebra: "
+	    echo -n "$d " ;
+
+	    if [ ! -f $d/db/zebra.cfg ] ; then
+                echo "";
+		echo "  Error: config file $d/db/zebra.cfg not found";
+		continue;
+	    fi
+
+	    if [ ! -f $d/db/lock/zebrasrv.pid ] ; then
+	    start-stop-daemon --start --quiet --background --pidfile $d/db/lock/zebrasrv.pid --exec /usr/bin/zebrasrv -- -w $d -u $ZEBRA_USER -c db/zebra.cfg -l db/server.log $ZEBRA_SOCKET ;
+
+                # check for running zebra not performed
+		#sleep 1
+		#if  [ -f $d/db/lock/zebrasrv.pid ] ; then
+		#    echo -n "started "
+		    #cat $d/db/lock/zebrasrv.pid
+		#    echo -n " "
+		#else
+		#    echo -n "error "
+		#fi
+	    else
+		echo -n "already running "
+	    fi
+	    echo 
+	done
+	#ps -C zebrasrv | grep `cat $d/db/lock/zebrasrv.pid`
+	;;
+
+  stop)
+	# make sure we are root
+	if [ `whoami` != root ]; then
+	    display_ZEBRA_message ;
+	    echo "  Error: you are not root";
+	    exit 1;
+	fi
+	
+        # read zebra dir from command line
+	if [ $2 ] ; then
+	    ZEBRA_DIRS=$2
+	fi
+
+	# loop through all entries defined in /etc/zebra.conf
+	for d in $ZEBRA_DIRS; do
+	    echo -n "Stopping zebra: "
+	    echo -n "$d " ;
+
+	    if [ ! -f $d/db/zebra.cfg ] ; then
+                echo "";
+		echo "  Error: config file $d/db/zebra.cfg not found";
+		continue;
+	    fi
+
+	    if  [ -f $d/db/lock/zebrasrv.pid ] ; then
+	    start-stop-daemon --stop --quiet --oknodo --pidfile $d/db/lock/zebrasrv.pid ;
+		#sleep 1
+		#if  ps -C zebrasrv | grep `cat $d/db/lock/zebrasrv.pid`  ; then
+		#    kill -9 `cat $d/db/lock/zebrasrv.pid`
+		#    echo -n "-9 "
+		#fi
+		#if   [ -f $d/db/lock/zebrasrv.pid ] && ps -C zebrasrv | grep `cat $d/db/lock/zebrasrv.pid`  ; then
+		#    echo -n "error "
+		#else 
+		#    echo -n "stopped "
+		#fi
+		#if  [ -f $d/db/lock/zebrasrv.pid ] ; then
+		    #rm  -f $d/db/lock/zebrasrv.pid
+		    #echo -n "removed  PID file"
+		#fi
+	    else
+		echo -n "already dead "
+	    fi
+	    echo 
+	done
+	#ps -C zebrasrv | grep `cat $d/db/lock/zebrasrv.pid`
+	;;
+
+  restart|reload|force-reload)
+	# make sure we are root
+	if [ `whoami` != root ]; then
+	    display_ZEBRA_message ;
+	    echo "  Error: you are not root";
+	    exit 1;
+	fi
+	
+	$0 stop $2
+	#sleep 1
+	$0 start $2
+	;;
+
+  reindex|index)
+	# make sure that indexing is done as user $ZEBRA_USER
+	if test `whoami` != $ZEBRA_USER; then
+	    su -s /bin/sh -c "$0 $*" $ZEBRA_USER
+	    exit 0
+	fi
+
+        # read zebra dir from command line
+	if [ $2 ] ; then
+	    ZEBRA_DIRS=$2
+	fi
+
+	for d in $ZEBRA_DIRS; do
+            # allow all scripts to be called with one specific entrie 
+            # directory as third argument
+
+	    if [ ! -f $d/db/zebra.cfg ] ; then
+		echo -n "Indexing zebra: "
+		echo "$d "               
+		echo "  Error: config file $d/db/zebra.cfg not found";
+		continue;
+	    fi
+
+	    if [ $3 ] ; then
+		# only indexing one additionally directory
+		ZEBRA_INDEX_DIRS=$3;
+		if [ ! -d $d/$ZEBRA_INDEX_DIRS ] ; then
+		    #$0 ;  # trigger user info
+		    echo "  Error: there is no directory $3";
+		    echo "     in zebra dir $d";
+		    echo "     Can not index $d/$ZEBRA_INDEX_DIRS";
+		    exit 1;
+		fi
+		if ( echo $ZEBRA_INDEX_DIRS | grep "^/"  ) ; then
+		    #$0 ;  # trigger user info
+		    echo "  Error: third argument $3";
+		    echo "     must not contain leading slash";
+		    exit 1;
+		fi
+		    
+		echo -n "Indexing zebra: "
+		echo -n "$d "
+               
+		(cd $d ;
+		    # initalization and commiting db to get a fresh slate
+		    for DIR in $ZEBRA_INDEX_DIRS ; do
+			echo -n "$DIR "
+			zebraidx -L -l db/index.log -c db/zebra.cfg update $DIR ;
+		    done
+		    zebraidx -l db/index.log -c db/zebra.cfg commit ;
+		)
+		echo 
+	    else
+		# indexing a whole entrie - findZEBRA_INDEX_DIRD makes the work
+		# findZEBRA_INDEX_DIRS "$d" ;
+		echo -n "Indexing zebra: "
+		echo -n "$d "
+		(cd $d ;
+		    # initalization and commiting db to get a fresh slate
+		    zebraidx -l db/index.log -c db/zebra.cfg init ;
+		    for DIR in $ZEBRA_INDEX_DIRS ; do
+			echo -n "$DIR "
+			zebraidx -L -l db/index.log -c db/zebra.cfg update $DIR ;
+		    done
+		    zebraidx -l db/index.log -c db/zebra.cfg commit ;
+		)
+		echo 
+	    fi
+	done
+	;;
+
+  *)
+	display_ZEBRA_message ;
+	exit 1;
+esac
+
+exit 0
+
+
