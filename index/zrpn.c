@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.81  1998-06-24 12:16:14  adam
+ * Revision 1.82  1998-06-26 11:16:40  quinn
+ * Added support (un-optimised) for left and left/right truncation
+ *
+ * Revision 1.81  1998/06/24 12:16:14  adam
  * Support for relations on text operands. Open range support in
  * DFA module (i.e. [-j], [g-]).
  *
@@ -1006,8 +1009,24 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
 			      &max_pos, 0, grep_handle);
 	    break;
-	case 2:          /* left truncation */
+	case 2:          /* keft truncation */
+	    term_dict[j++] = '('; term_dict[j++] = '.'; term_dict[j++] = '*';
+	    if (!term_100 (zh->zebra_maps, reg_type,
+			   &termp, term_dict + j, space_split, term_dst))
+		return 0;
+	    strcat (term_dict, ")");
+	    dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+			      &max_pos, 0, grep_handle);
+	    break;
 	case 3:          /* left&right truncation */
+	    term_dict[j++] = '('; term_dict[j++] = '.'; term_dict[j++] = '*';
+	    if (!term_100 (zh->zebra_maps, reg_type,
+			   &termp, term_dict + j, space_split, term_dst))
+		return 0;
+	    strcat (term_dict, ".*)");
+	    dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+			      &max_pos, 0, grep_handle);
+	    break;
 	    zh->errCode = 120;
 	    return -1;
 	case 101:        /* process # in term */
