@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.52 2004-09-15 08:13:51 adam Exp $
+/* $Id: kcompare.c,v 1.53 2004-11-04 11:47:23 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -46,9 +46,9 @@ void key_logdump_txt (int logmask, const void *p, const char *txt)
 	*formstr = '\0';
 	for (i = 0; i<key.len; i++)
 	{
-	    sprintf(formstr + strlen(formstr), ZINT_FORMAT, key.mem[i]);
 	    if (i)
-		strcat(formstr, " ");
+		strcat(formstr, ".");
+	    sprintf(formstr + strlen(formstr), ZINT_FORMAT, key.mem[i]);
 	}
         logf (logmask, "%s %s", formstr, txt);
     }
