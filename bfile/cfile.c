@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.6  1995-12-11 09:03:53  adam
+ * Revision 1.7  1995-12-15 10:35:07  adam
+ * Changed names of commit files.
+ *
+ * Revision 1.6  1995/12/11  09:03:53  adam
  * New function: cf_unlink.
  * New member of commit file head: state (0) deleted, (1) hash file.
  *
@@ -77,13 +80,13 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
     int hash_bytes;
    
     cf->rmf = mf; 
-    sprintf (path, "%s.b", fname);
+    sprintf (path, "%s-b", fname);
     if (!(cf->block_mf = mf_open (area, path, block_size, wflag)))
     {
         logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", path);
         exit (1);
     }
-    sprintf (path, "%s.h", fname);
+    sprintf (path, "%s-i", fname);
     if (!(cf->hash_mf = mf_open (area, path, HASH_BSIZE, wflag)))
     {
         logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", path);
