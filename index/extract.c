@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.174 2005-03-09 12:14:42 adam Exp $
+/* $Id: extract.c,v 1.175 2005-03-16 15:26:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -833,6 +833,7 @@ int buffer_extract_record (ZebraHandle zh,
     long recordOffset = 0;
     struct zebra_fetch_control fc;
     const char *pr_fname = fname;  /* filename to print .. */
+    int show_progress = zh->records_processed < zh->m_file_verbose_limit ? 1:0;
 
     if (!pr_fname)
 	pr_fname = "<no file>";  /* make it printable if file is omitted */
@@ -960,13 +961,15 @@ int buffer_extract_record (ZebraHandle zh,
         /* new record */
         if (delete_flag)
         {
-	    yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
-		  pr_fname, (long) recordOffset);
+	    if (show_progress)
+		yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
+			 pr_fname, (long) recordOffset);
             yaz_log (YLOG_WARN, "cannot delete record above (seems new)");
             return 1;
         }
-	yaz_log (YLOG_LOG, "add %s %s %ld", recordType, pr_fname,
-	      (long) recordOffset);
+	if (show_progress)
+	    yaz_log (YLOG_LOG, "add %s %s %ld", recordType, pr_fname,
+		     (long) recordOffset);
         rec = rec_new (zh->reg->records);
 
         *sysno = rec->sysno;
@@ -989,11 +992,13 @@ int buffer_extract_record (ZebraHandle zh,
         struct recKeys delkeys;
         struct sortKeys sortKeys;
 
-	if (!allow_update) {
-	      yaz_log (YLOG_LOG, "skipped %s %s %ld", 
-		    recordType, pr_fname, (long) recordOffset);
-	      logRecord(zh);
-	      return -1;
+	if (!allow_update)
+	{
+	    if (show_progress)
+		yaz_log (YLOG_LOG, "skipped %s %s %ld", 
+			 recordType, pr_fname, (long) recordOffset);
+	    logRecord(zh);
+	    return -1;
 	}
 
         rec = rec_get (zh->reg->records, *sysno);
@@ -1005,8 +1010,9 @@ int buffer_extract_record (ZebraHandle zh,
 	    if (recordAttr->runNumber ==
 		zebraExplain_runNumberIncrement (zh->reg->zei, 0))
 	    {
-		yaz_log (YLOG_LOG, "skipped %s %s %ld", recordType,
-		      pr_fname, (long) recordOffset);
+		if (show_progress)
+		    yaz_log (YLOG_LOG, "skipped %s %s %ld", recordType,
+			     pr_fname, (long) recordOffset);
 		extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
 		rec_rm (&rec);
 		logRecord(zh);
@@ -1027,14 +1033,19 @@ int buffer_extract_record (ZebraHandle zh,
             /* record going to be deleted */
             if (!delkeys.buf_used)
             {
-                yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
-                      pr_fname, (long) recordOffset);
-                yaz_log (YLOG_WARN, "cannot delete file above, storeKeys false");
-            }
+		if (show_progress)
+		{
+		    yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
+			     pr_fname, (long) recordOffset);
+		    yaz_log (YLOG_WARN, "cannot delete file above, "
+			     "storeKeys false");
+		}
+	    }
             else
             {
-		yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
-		      pr_fname, (long) recordOffset);
+		if (show_progress)
+		    yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
+			     pr_fname, (long) recordOffset);
                 zh->records_deleted++;
                 if (matchStr)
                     dict_delete (zh->reg->matchDict, matchStr);
@@ -1049,14 +1060,18 @@ int buffer_extract_record (ZebraHandle zh,
             /* record going to be updated */
             if (!delkeys.buf_used)
             {
-                yaz_log (YLOG_LOG, "update %s %s %ld", recordType,
-                      pr_fname, (long) recordOffset);
-                yaz_log (YLOG_WARN, "cannot update file above, storeKeys false");
-            }
+		if (show_progress)
+		{
+		    yaz_log (YLOG_LOG, "update %s %s %ld", recordType,
+			     pr_fname, (long) recordOffset);
+		    yaz_log (YLOG_WARN, "cannot update file above, storeKeys false");
+		}
+	    }
             else
             {
-		yaz_log (YLOG_LOG, "update %s %s %ld", recordType,
-		      pr_fname, (long) recordOffset);
+		if (show_progress)
+		    yaz_log (YLOG_LOG, "update %s %s %ld", recordType,
+			     pr_fname, (long) recordOffset);
                 extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
                 extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
                 zh->records_updated++;
