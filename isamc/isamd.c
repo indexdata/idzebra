@@ -28,20 +28,23 @@ static void init_fc (ISAMD is, int cat);
 
 #define ISAMD_FREELIST_CHUNK 1
 
-#define SMALL_TEST 1
+#define SMALL_TEST 0
 
 ISAMD_M isamd_getmethod (ISAMD_M me)
 {
     static struct ISAMD_filecat_s def_cat[] = {
 #if SMALL_TEST
-/*        blocksz,   max keys before switching size */
+/*        blocksz,   max keys before switching size. Unused time being */
         {    32,   40 },
 	{   128,    0 },
 #else
-        {    24,   40 },
-        {  2048, 2048 },
-        { 16384,    0 },
-
+        {    24,    1 },
+        {    32,    1 },
+        {    64,    1 },
+        {   128,    1 },
+        {   256,    1 },
+        {  1024,    1 },
+        {  2048,    0 },
 #endif 
 
 /* old values from isamc, long time ago...
@@ -101,8 +104,10 @@ ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method)
     } while (filecat[i++].mblocks);
     is->no_files = i;
     is->max_cat = --i;
-
+ 
     assert (is->no_files > 0);
+    assert (is->max_cat <=8 ); /* we have only 3 bits for it */
+    
     is->files = (ISAMD_file) xmalloc (sizeof(*is->files)*is->no_files);
     if (writeflag)
     {
@@ -397,6 +402,8 @@ void isamd_release_block (ISAMD is, int cat, int pos)
 {
     if (is->method->debug > 3)
         logf (LOG_LOG, "isamd: release_block in cat %d: %d", cat, pos);
+    assert(pos!=0);
+    
     if (is->files[cat].fc_list)
     {
         int j;
@@ -679,7 +686,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.3  1999-07-21 14:24:50  heikki
+ * Revision 1.4  1999-08-04 14:21:18  heikki
+ * isam-d seems to be working.
+ *
+ * Revision 1.3  1999/07/21 14:24:50  heikki
  * isamd write and read functions ok, except when diff block full.
  * (merge not yet done)
  *
