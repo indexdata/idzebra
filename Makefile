@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.54 1996-05-22 08:26:36 adam Exp $
+# $Id: Makefile,v 1.55 1996-10-11 10:54:52 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -19,7 +19,7 @@ YAZINC=-I../../yaz/include
 # Some systems have seperate socket libraries
 #NETLIB=-lnsl -lsocket
 
-SUBDIR=util bfile dfa dict isam rset index
+SUBDIR=util bfile dfa dict isam rset recctrl index
 
 all:
 	for i in $(SUBDIR); do cd $$i; if $(MAKE) OSILIB="$(OSILIB)" YAZLIB="$(YAZLIB)" YAZINC="$(YAZINC)" RANLIB="$(RANLIB)" NETLIB="$(NETLIB)" CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done
