@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.11  1997-11-06 11:41:01  adam
+ * Revision 1.12  1997-11-18 10:03:24  adam
+ * Member num_children removed from data1_node.
+ *
+ * Revision 1.11  1997/11/06 11:41:01  adam
  * Implemented "begin variant" for the sgml.regx filter.
  *
  * Revision 1.10  1997/10/31 12:36:12  adam
@@ -649,7 +652,6 @@ static void execData (struct lexSpec *spec,
         memcpy (res->u.data.data, ebuf, elen);
         res->root = parent->root;
         
-        parent->num_children++;
         parent->last_child = res;
         if (d1_stack[*d1_level])
             d1_stack[*d1_level]->next = res;
@@ -711,7 +713,6 @@ static void variantBegin (struct lexSpec *spec,
 	res->u.variant.value = 0;
 	res->root = parent->root;
 
-	parent->num_children++;
 	parent->last_child = res;
 	if (d1_stack[*d1_level])
 	    d1_stack[*d1_level]->next = res;
@@ -744,7 +745,6 @@ static void variantBegin (struct lexSpec *spec,
 
     res->u.variant.value = res->lbuf;
     
-    parent->num_children++;
     parent->last_child = res;
     if (d1_stack[*d1_level])
         d1_stack[*d1_level]->next = res;
@@ -800,7 +800,6 @@ static void tagBegin (struct lexSpec *spec,
     res->u.tag.no_data_requested = 0;
     res->root = parent->root;
 
-    parent->num_children++;
     parent->last_child = res;
     if (d1_stack[*d1_level])
         d1_stack[*d1_level]->next = res;

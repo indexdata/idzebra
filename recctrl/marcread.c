@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.4  1997-10-27 14:34:26  adam
+ * Revision 1.5  1997-11-18 10:03:24  adam
+ * Member num_children removed from data1_node.
+ *
+ * Revision 1.4  1997/10/27 14:34:26  adam
  * Fixed bug - data1 root node wasn't tagged at all!
  *
  * Revision 1.3  1997/09/24 13:36:51  adam
@@ -42,7 +45,6 @@ data1_node *data1_mk_node_wp (data1_handle dh, NMEM mem, data1_node *parent)
             parent->child = parent->last_child = res;
         else
             parent->last_child->next = res;
-        parent->num_children++;
         parent->last_child = res;
     }
     return res;
