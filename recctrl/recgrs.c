@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.59 2002-08-02 19:26:56 adam Exp $
+/* $Id: recgrs.c,v 1.60 2002-08-17 07:59:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -378,7 +378,11 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
 	{
             index_termlist (n, n, p, level, wrd);
             /* index start tag */
+            assert (n->root->u.root.absyn);
+            
             if (!n->root->u.root.absyn)
+                index_xpath (n, p, level, wrd, 1);
+            else if (n->root->u.root.absyn->enable_xpath_indexing)
                 index_xpath (n, p, level, wrd, 1);
 	}
 
@@ -408,7 +412,8 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
 		index_termlist (par, n, p, level, wrd);
             if (!n->root->u.root.absyn)
                 index_xpath (n, p, level, wrd, 1016);
-
+            else if (n->root->u.root.absyn->enable_xpath_indexing)
+                index_xpath (n, p, level, wrd, 1016);
  	}
 
 	if (n->which == DATA1N_tag)
@@ -416,8 +421,9 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
             /* index end tag */
             if (!n->root->u.root.absyn)
                 index_xpath (n, p, level, wrd, 2);
+            else if (n->root->u.root.absyn->enable_xpath_indexing)
+                index_xpath (n, p, level, wrd, 2);
 	}
-
 
 	if (p->flagShowRecords && n->which == DATA1N_root)
 	{
