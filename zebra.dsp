@@ -88,10 +88,6 @@ SOURCE=.\bfile\cfile.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\bfile\cfile.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\util\charmap.c
 # End Source File
 # Begin Source File
@@ -116,15 +112,7 @@ SOURCE=.\dfa\dfa.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\dfa\dfap.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\util\dirent.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\direntz.h
 # End Source File
 # Begin Source File
 
@@ -136,15 +124,7 @@ SOURCE=.\dict\drdwr.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\recctrl\grsread.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\dfa\imalloc.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\dfa\imalloc.h
 # End Source File
 # Begin Source File
 
@@ -156,27 +136,11 @@ SOURCE=.\isam\isam.c
 # End Source File
 # Begin Source File
 
-SOURCE=".\isamc\isamc-p.h"
-# End Source File
-# Begin Source File
-
 SOURCE=.\isamc\isamc.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\isam\isutil.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\isam\isutil.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\isam\keyops.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\dfa\lexer.h
 # End Source File
 # Begin Source File
 
@@ -200,10 +164,6 @@ SOURCE=.\isam\memory.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\isam\memory.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\isamc\merge.c
 # End Source File
 # Begin Source File
@@ -220,10 +180,6 @@ SOURCE=.\isam\physical.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\isam\physical.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\dfa\readfile.c
 # End Source File
 # Begin Source File
@@ -236,15 +192,7 @@ SOURCE=.\recctrl\recgrs.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\recctrl\recgrs.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\recctrl\rectext.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\recctrl\rectext.h
 # End Source File
 # Begin Source File
 
@@ -257,10 +205,6 @@ SOURCE=.\util\res.c
 # Begin Source File
 
 SOURCE=.\isam\rootblk.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\isam\rootblk.h
 # End Source File
 # Begin Source File
 
@@ -313,6 +257,10 @@ SOURCE=.\recctrl\sgmlread.c
 # Begin Source File
 
 SOURCE=.\dfa\states.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\util\zebramap.c
 # End Source File
 # End Target
 # End Project
