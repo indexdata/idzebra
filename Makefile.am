@@ -1,18 +1,16 @@
-## $Id: Makefile.am,v 1.10 2002-11-15 23:00:59 adam Exp $
+## $Id: Makefile.am,v 1.11 2003-02-20 21:06:47 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
-
-EXTRA_DIST= README CHANGELOG 
 
 SUBDIRS=util bfile dfa dict isams isamb isamc isam rset data1 \
  recctrl tab index test examples include doc
 
 SPEC_FILE=$(PACKAGE).spec
 
+EXTRA_DIST= README CHANGELOG $(SPEC_FILE) idzebra.spec.in
+
 dist-hook:
-	cd doc; make
 	cp $(srcdir)/LICENSE* $(distdir)
-	cp $(srcdir)/*.spec $(distdir)
 	mkdir $(distdir)/win
 	for i in $(srcdir)/win/*; do \
 		if test -f $$i; then \

@@ -1,12 +1,12 @@
 Name: idzebra
-Version: 1.3.4
+Version: @VERSION@
 Release: 1
 Requires: yaz expat bzip2-libs tcl
 Copyright: GPL
 Group: Applications/Databases
 Vendor: Index Data ApS <info@indexdata.dk>
 Source: idzebra-%{version}.tar.gz
-BuildRoot: /var/tmp/%{name}-%{version}-root
+BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 URL: http://www.indexdata.dk/zebra/
 BuildRequires: yaz expat-devel bzip2-devel tcl
