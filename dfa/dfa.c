@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.18  1997-09-29 09:05:17  adam
+ * Revision 1.19  1998-01-12 14:39:39  adam
+ * Fixed bug in term_Tnode.
+ *
+ * Revision 1.18  1997/09/29 09:05:17  adam
  * Thread safe DFA module. We simply had to put a few static vars to
  * the DFA_parse structure.
  *
@@ -1059,6 +1062,7 @@ static struct DFA_parse *dfa_parse_init (void)
     add_BSet (parse_info->charset, parse_info->anyset, '\n');
     com_BSet (parse_info->charset, parse_info->anyset);
     parse_info->use_Tnode = parse_info->max_Tnode = 0;
+    parse_info->start = parse_info->end = NULL;
     parse_info->charMap = NULL;
     parse_info->charMapSize = 0;
     parse_info->cmap = NULL;
