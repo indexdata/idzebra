@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.2  1994-09-26 16:30:56  adam
+ * Revision 1.3  1994-09-27 16:31:18  adam
+ * First version of grepper: grep with error correction.
+ *
+ * Revision 1.2  1994/09/26  16:30:56  adam
  * Minor changes. imalloc uses xmalloc now.
  *
  * Revision 1.1  1994/09/26  10:16:52  adam
@@ -34,14 +37,14 @@
 
 static char *prog;
 
-void error( const char *format, ... )
+void error (const char *format, ...)
 {
     va_list argptr;
-    va_start( argptr, format );
-    fprintf( stderr, "%s error: ", prog );
-    (void) vfprintf( stderr, format, argptr );
-    putc( '\n', stderr );
-    exit( 1 );
+    va_start (argptr, format);
+    fprintf (stderr, "%s error: ", prog);
+    (void) vfprintf (stderr, format, argptr);
+    putc ('\n', stderr);
+    exit (1);
 }
 
 #ifdef YYDEBUG
@@ -54,18 +57,18 @@ extern int alexdebug;
 
 static int show_lines = 0;
 
-int agrep_options( argc, argv )
+int agrep_options (argc, argv)
 int argc;
 char **argv;
 {
-    while( --argc > 0 )
-        if( **++argv == '-' )
-            while( *++*argv )
+    while (--argc > 0)
+        if (**++argv == '-')
+            while (*++*argv)
             {
-                switch( **argv )
+                switch (**argv)
                 {
                 case 'V':
-                    fprintf( stderr, "%s: %s %s\n", prog, __DATE__, __TIME__ );
+                    fprintf (stderr, "%s: %s %s\n", prog, __DATE__, __TIME__);
                     continue;
                 case 'v':
                     dfa_verbose = 1;
@@ -83,7 +86,7 @@ char **argv;
                     continue;
 #endif
                 case 'd':
-                    switch( *++*argv )
+                    switch (*++*argv)
                     {
                     case 's':
                         debug_dfa_tran = 1;
@@ -102,7 +105,7 @@ char **argv;
                     }
                     continue;
                 default:
-                    fprintf( stderr, "%s: unknown option `-%s'\n", prog, *argv );
+                    fprintf (stderr, "%s: unknown option `-%s'\n", prog, *argv);
                     return 1;
                 }
                 break;
@@ -115,21 +118,21 @@ static char *inf_buf;
 static char *inf_ptr, *inf_flsh;
 static int inf_eof, line_no;
 
-static int inf_flush( fd )
+static int inf_flush (fd)
 int fd;
 {
     char *p;
     unsigned b, r;
 
     r = (unsigned) (inf_buf+INF_BUF_SIZE - inf_ptr);  /* no of `wrap' bytes */
-    if( r )
-        memcpy( inf_buf, inf_ptr, r );
+    if (r)
+        memcpy (inf_buf, inf_ptr, r);
     inf_ptr = p = inf_buf + r;
     b = INF_BUF_SIZE - r;
     do
-        if( (r = read( fd, p, b ) ) == (unsigned) -1 )
+        if ((r = read (fd, p, b)) == (unsigned) -1)
             return -1;
-        else if( r )
+        else if (r)
             p +=  r;
         else
         {
@@ -137,36 +140,36 @@ int fd;
             inf_eof = 1;
             break;
         }
-    while( (b -= r) > 0 );
-    while( p != inf_buf && *--p != '\n' )
+    while ((b -= r) > 0);
+    while (p != inf_buf && *--p != '\n')
         ;
-    while( p != inf_buf && *--p != '\n' )
+    while (p != inf_buf && *--p != '\n')
         ;
     inf_flsh = p+1;
     return 0;
 }
 
-static char *prline( p )
+static char *prline (p)
 char *p;
 {
     char *p0;
 
     --p;
-    while( p != inf_buf && p[-1] != '\n' )
+    while (p != inf_buf && p[-1] != '\n')
         --p;
     p0 = p;
-    while( *p++ != '\n' )
+    while (*p++ != '\n')
         ;
     p[-1] = '\0';
-    if( show_lines )
-        printf( "%5d:\t%s\n", line_no, p0 );
+    if (show_lines)
+        printf ("%5d:\t%s\n", line_no, p0);
     else
-        puts( p0 );
+        puts (p0);
     p[-1] = '\n';
     return p;
 }
 
-static int go( fd, dfaar )
+static int go (fd, dfaar)
 int fd;
 DFA_state **dfaar;
 {
@@ -176,40 +179,40 @@ DFA_state **dfaar;
     int i;
     unsigned char c;
 
-    while( 1 )
+    while (1)
     {
-        for( c = *inf_ptr++, t=s->trans, i=s->tran_no; --i >= 0; t++ )
-            if( c >= t->ch[0] && c <= t->ch[1] )
+        for (c = *inf_ptr++, t=s->trans, i=s->tran_no; --i >= 0; t++)
+            if (c >= t->ch[0] && c <= t->ch[1])
             {
                 p = inf_ptr;
                 do
                 {
-                    if( (s = dfaar[t->to] )->rule_no )
+                    if ((s = dfaar[t->to])->rule_no)
                     {
-                        inf_ptr = prline( inf_ptr );
+                        inf_ptr = prline (inf_ptr);
                         c = '\n';
                         break;
                     }
-                    for( t=s->trans, i=s->tran_no; --i >= 0; t++ )
-                        if( (unsigned) *p >= t->ch[0] 
-                           && (unsigned) *p <= t->ch[1] )
+                    for (t=s->trans, i=s->tran_no; --i >= 0; t++)
+                        if ((unsigned) *p >= t->ch[0] 
+                           && (unsigned) *p <= t->ch[1])
                             break;
                     p++;
-                } while( i >= 0 );
+                } while (i >= 0);
                 s = dfaar[0];
                 break;
             }
-        if( c == '\n' )
+        if (c == '\n')
         {
             ++line_no;
-            if( inf_ptr == inf_flsh )
+            if (inf_ptr == inf_flsh)
             {
-                if( inf_eof )
+                if (inf_eof)
                     break;
                 ++line_no;
-                if( inf_flush( fd ) )
+                if (inf_flush (fd))
                 {
-                    fprintf( stderr, "%s: read error\n", prog );
+                    fprintf (stderr, "%s: read error\n", prog);
                     return -1;
                 }
             }
@@ -218,24 +221,24 @@ DFA_state **dfaar;
     return 0;
 }
 
-int agrep( dfas, fd )
+int agrep (dfas, fd)
 DFA_states *dfas;
 int fd;
 {
-    inf_buf = imalloc( sizeof(char)*INF_BUF_SIZE );
+    inf_buf = imalloc (sizeof(char)*INF_BUF_SIZE);
     inf_eof = 0;
     inf_ptr = inf_buf+INF_BUF_SIZE;
-    inf_flush( fd );
+    inf_flush (fd);
     line_no = 1;
 
-    go( fd, dfas->sortarray);
+    go (fd, dfas->sortarray);
 
-    ifree( inf_buf );
+    ifree (inf_buf);
     return 0;
 }
 
 
-int main( argc, argv )
+int main (argc, argv)
 int argc;
 char **argv;
 {
@@ -253,42 +256,42 @@ char **argv;
     alexdebug = 0;
 #endif
 #endif
-    setbuf( stdout, outbuf );
-    i = agrep_options( argc, argv );
-    if( i )
+    setbuf (stdout, outbuf);
+    i = agrep_options (argc, argv);
+    if (i)
         return i;
-    while( --argc > 0 )
-        if( **++argv != '-' && **argv )
-            if( !pattern )
+    while (--argc > 0)
+        if (**++argv != '-' && **argv)
+            if (!pattern)
             {
                 pattern = *argv;
-                i = parse_dfa( dfa, &pattern, dfa_thompson_chars );
-                if( i || *pattern )
+                i = parse_dfa (dfa, &pattern, dfa_thompson_chars);
+                if (i || *pattern)
                 {
-                    fprintf( stderr, "%s: illegal pattern\n", prog );
+                    fprintf (stderr, "%s: illegal pattern\n", prog);
                     return 1;
                 }
                 dfa->root = dfa->top;
-                dfas = mk_dfas( dfa, 200 );
-                rm_dfa( &dfa );
+                dfas = mk_dfas (dfa, 200);
+                rm_dfa (&dfa);
             }
             else
             {
                 ++no;
-                fd = open( *argv, O_RDONLY | O_BINARY);
-                if( fd == -1 )
+                fd = open (*argv, O_RDONLY | O_BINARY);
+                if (fd == -1)
                 {
-                    fprintf( stderr, "%s: couldn't open `%s'\n", prog, *argv );
+                    fprintf (stderr, "%s: couldn't open `%s'\n", prog, *argv);
                     return 1;
                 }
-                i = agrep( dfas, fd );
-                close( fd );
-                if( i )
+                i = agrep (dfas, fd);
+                close (fd);
+                if (i)
                     return i;
             }
-    if( !no )
+    if (!no)
     {
-        fprintf( stderr, "%s: no files specified\n", prog );
+        fprintf (stderr, "%s: no files specified\n", prog);
         return 2;
     }
     fflush(stdout);

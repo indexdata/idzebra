@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lexer.c,v $
- * Revision 1.1  1994-09-26 10:16:55  adam
+ * Revision 1.2  1994-09-27 16:31:20  adam
+ * First version of grepper: grep with error correction.
+ *
+ * Revision 1.1  1994/09/26  10:16:55  adam
  * First version of dfa module in alex. This version uses yacc to parse
  * regular expressions. This should be hand-made instead.
  *
@@ -27,14 +30,14 @@
 static char *prog;
 
 
-void error( const char *format, ... )
+void error (const char *format, ...)
 {
     va_list argptr;
-    va_start( argptr, format );
-    fprintf( stderr, "%s error: ", prog );
-    (void) vfprintf( stderr, format, argptr );
-    putc( '\n', stderr );
-    exit( 1 );
+    va_start (argptr, format);
+    fprintf (stderr, "%s error: ", prog);
+    (void) vfprintf (stderr, format, argptr);
+    putc ('\n', stderr);
+    exit (1);
 }
 
 #ifdef YACC
@@ -44,21 +47,17 @@ extern int alexdebug;
 #endif
 int ccluse = 0;
 
-static int alex_options (int argc, char **argv);
-
-static int alex_options (int argc, char **argv)
+static int lexer_options (int argc, char **argv)
 {
-    while( --argc > 0 )
-        if( **++argv == '-' )
-            while( *++*argv )
+    while (--argc > 0)
+        if (**++argv == '-')
+            while (*++*argv)
             {
-                switch( **argv )
+                switch (**argv)
                 {
-#ifdef __STDC__
                 case 'V':
-                    fprintf( stderr, "%s: %s %s\n", prog, __DATE__, __TIME__ );
+                    fprintf (stderr, "%s: %s %s\n", prog, __DATE__, __TIME__);
                     continue;
-#endif
                 case 'v':
                     dfa_verbose = 1;
                     continue;
@@ -73,7 +72,7 @@ static int alex_options (int argc, char **argv)
                     ccluse = 1;
                     continue;
                 case 'd':
-                    switch( *++*argv )
+                    switch (*++*argv)
                     {
                     case 's':
                         debug_dfa_tran = 1;
@@ -92,7 +91,8 @@ static int alex_options (int argc, char **argv)
                     }
                     continue;
                 default:
-                    fprintf( stderr, "%s: unknown option `-%s'\n", prog, *argv );
+                    fprintf (stderr, "%s: unknown option `-%s'\n",
+                             prog, *argv);
                     return 1;
                 }
                 break;
@@ -100,7 +100,7 @@ static int alex_options (int argc, char **argv)
     return 0;
 }
 
-int main (int argc, char **argv )
+int main (int argc, char **argv)
 {
     int i, no = 0;
     DFA *dfa;
@@ -112,32 +112,33 @@ int main (int argc, char **argv )
 #else
     alexdebug = 0;
 #endif
-    i = alex_options( argc, argv );
-    if( i )
+    i = lexer_options (argc, argv);
+    if (i)
         return i;
 
-    if( argc < 2 )
+    if (argc < 2)
     {
-        fprintf( stderr, "%s: usage %s -cVvt -d[stf]\n", prog, prog );
+        fprintf (stderr, "usage\n  %s [-c] [-V] [-v] [-t] [-d[stf]] file\n",
+                 prog);
         return 1;
     }
-    else while( --argc > 0 )
-            if( **++argv != '-' && **argv )
+    else while (--argc > 0)
+            if (**++argv != '-' && **argv)
             {
                 ++no;
-                i = read_file( *argv, &dfa );
-                if( i )
+                i = read_file (*argv, &dfa);
+                if (i)
                     return i;
-                dfas = mk_dfas( dfa, 2000 );
-                rm_dfa( &dfa );
-                rm_dfas( &dfas );
+                dfas = mk_dfas (dfa, 2000);
+                rm_dfa (&dfa);
+                rm_dfas (&dfas);
             }
 #ifdef MEMDEBUG
     imemstat();
 #endif
-    if( !no )
+    if (!no)
     {
-        fprintf( stderr, "%s: no files specified\n", prog );
+        fprintf (stderr, "%s: no files specified\n", prog);
         return 2;
     }
     return 0;

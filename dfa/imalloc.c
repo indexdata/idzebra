@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: imalloc.c,v $
- * Revision 1.2  1994-09-26 16:30:56  adam
+ * Revision 1.3  1994-09-27 16:31:19  adam
+ * First version of grepper: grep with error correction.
+ *
+ * Revision 1.2  1994/09/26  16:30:56  adam
  * Minor changes. imalloc uses xmalloc now.
  *
  * Revision 1.1  1994/09/26  10:16:54  adam
@@ -73,7 +76,7 @@ void *icalloc (size_t size)
     ++alloc_calls;
     return (void *)p;
 #else
-    void p = (void) xcalloc( size, 1 );
+    void *p = (void) xcalloc( size, 1 );
     if( !p )
         log (LOG_FATAL, "Out of memory (icalloc)" );
     return p;
