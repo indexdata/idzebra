@@ -12,3 +12,6 @@ always get the up-to-date version from
 http://dinosauricon.com/data/
 
 (These were current at Thu Aug 29 17:11:27 BST 2002)
+
+Search in this database with XPath queries like:
+	@attr 1=/GENUS/MEANING bird

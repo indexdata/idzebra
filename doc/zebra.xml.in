@@ -1,10 +1,10 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
                     "@DTD_DIR@/docbookx.dtd" [
-        <!ENTITY chap-examples SYSTEM "examples.xml">
         <!ENTITY chap-introduction SYSTEM "introduction.xml">
         <!ENTITY chap-installation SYSTEM "installation.xml">
         <!ENTITY chap-quickstart SYSTEM "quickstart.xml">
+        <!ENTITY chap-examples SYSTEM "examples.xml">
         <!ENTITY chap-administration SYSTEM "administration.xml">
         <!ENTITY chap-zebraidx SYSTEM "zebraidx.xml">
         <!ENTITY chap-server SYSTEM "server.xml">
@@ -12,7 +12,7 @@
         <!ENTITY app-license SYSTEM "license.xml">
         <!ENTITY app-indexdata SYSTEM "indexdata.xml">
 ]>
-<!-- $Id: zebra.xml.in,v 1.8 2002-08-29 16:30:22 mike Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.9 2002-08-30 01:17:10 mike Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -50,10 +50,10 @@
   </abstract>
  </bookinfo>
  
-  &chap-examples;
   &chap-introduction;
   &chap-installation;
   &chap-quickstart;
+  &chap-examples;
   &chap-administration;
   &chap-zebraidx;
   &chap-server;

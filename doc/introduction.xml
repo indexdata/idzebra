@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.11 2002-08-29 14:05:11 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.12 2002-08-30 01:17:10 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -221,6 +221,62 @@
     <ulink url="http://www.dtv.dk/help/dads/index_e.htm"/>
    </para>
   </sect2>
+
+<!--
+Envelope-to: zebra@miketaylor.org.uk
+From: Johannes Leveling <Johannes.Leveling@FernUni-Hagen.de>
+Content-Type: text/plain; charset=iso-8859-1
+Date: Thu, 29 Aug 2002 19:19:55 +0200
+To: zebra@miketaylor.org.uk
+Subject: [Zebralist] Looking for Deployment Stories
+In-Reply-To: <200208281002.LAA16526@seatbooker.net>
+X-Virus-Scanned: by AMaViS perl-11
+X-MIME-Autoconverted: from quoted-printable to 8bit by localhost.localdomain id g7TLWR905724
+
+Mike Taylor writes:
+ > People,
+ > 
+ > In collaboration with Sebastian, Adam and Heikki, I am reworking some
+ > parts of the Zebra documentation in preparation for the forthcoming
+ > release.  One area I am keen to expand on is (briefly) describing
+ > interesting applications of Zebra.  If you've deployed it in a way
+ > that you consider interesting, I'd love to hear from you, however
+ > briefly.  Think of this as a chance to get some free publicity for
+ > your application in the Zebra documentation.
+ > 
+ > Replies off-list to <zebra@miketaylor.org.uk>, please.
+ > 
+ >  _/|_	 _______________________________________________________________
+ > /o ) \/  Mike Taylor   <mike@miketaylor.org.uk>   www.miketaylor.org.uk
+ > )_v__/\  There are some good things you can never have too much of.
+ > 
+ > 
+ > _______________________________________________
+ > Zebralist mailing list
+ > Zebralist@indexdata.dk
+ > http://www.indexdata.dk/mailman/listinfo/zebralist
+ > 
+Intersting?
+We have developed a natural language interface (NLI-Z39.50) for access
+to library databases at the Fernuniversität Hagen, Germany
+(http://ki212.fernuni-hagen.de/nli/NLI.html).
+To prepare formal information retrieval evaluation,
+we chose the Zebra server as the basis for
+evaluating retrieval effectiveness (measuring recall 
+and precision for the GIRT database). The Zebra database 
+consists of more than 76000 records in SGML format (bibliographic 
+records from social science), which are mapped to MARC for presentation. 
+Evaluation will take place as part of the TREC/CLEF campaign 2003 
+(see http://clef.iei.pi.cnr.it or http://www4.eurospider.ch/CLEF/).
+
+
+Johannes Leveling        Praktische Informatik VII/KI           
+                         FernUniversität Hagen
+
+Email : Johannes.Leveling@FernUni-Hagen.De  
+Tel.  : +49 2331 987-4525
+
+-->
 
   <sect2>
    <title>Various web indexes</title>

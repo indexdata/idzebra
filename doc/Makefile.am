@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.10 2002-06-02 19:30:07 adam Exp $
+## $Id: Makefile.am,v 1.11 2002-08-30 01:17:10 mike Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 doc_DATA = zebra.html zebra.pdf
@@ -13,6 +13,7 @@ XMLFILES = \
  introduction.xml \
  installation.xml \
  quickstart.xml \
+ examples.xml \
  administration.xml \
  zebraidx.xml \
  server.xml \
@@ -53,4 +54,4 @@ dist-hook: zebra.html
 
 clean-data-hook:
 	rm -f [0-9]* *.bak
-	
+
