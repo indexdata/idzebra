@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.60  1998-10-16 08:14:31  adam
+ * Revision 1.61  1999-03-09 16:27:49  adam
+ * More work on SDRKit integration.
+ *
+ * Revision 1.60  1998/10/16 08:14:31  adam
  * Updated record control system.
  *
  * Revision 1.59  1998/06/08 14:43:11  adam
@@ -266,6 +269,9 @@ struct recordGroup {
     int          fileVerboseLimit;
     int          databaseNamePath;
     int          explainDatabase;
+#if ZEBRASDR
+    int          useSDR;
+#endif
     data1_handle dh;
     BFiles       bfs;
     ZebraMaps    zebra_maps;
@@ -301,6 +307,7 @@ int key_compare_it (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
 void inv_prstat (BFiles bfs);
+void inv_compact (BFiles bfs);
 void key_input (BFiles bfs, int nkeys, int cache);
 ISAMC_M key_isamc_m (Res res);
 int merge_sort (char **buf, int from, int to);

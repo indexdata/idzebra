@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dcompact.c,v $
- * Revision 1.1  1999-03-09 13:07:06  adam
+ * Revision 1.2  1999-03-09 16:27:49  adam
+ * More work on SDRKit integration.
+ *
+ * Revision 1.1  1999/03/09 13:07:06  adam
  * Work on dict_compact routine.
  *
  */
@@ -26,7 +29,7 @@ int dict_compact (BFiles bfs, const char *from_name, const char *to_name)
     if (!from)
 	return -1;
     map = xmalloc ((from->head.last+1) * sizeof(*map));
-    for (i = 0; i <= from->head.last; i++)
+    for (i = 0; i <= (int) (from->head.last); i++)
 	map[i] = -1;
     to = dict_open (bfs, to_name, 0, 1);
     if (!to)
@@ -34,7 +37,7 @@ int dict_compact (BFiles bfs, const char *from_name, const char *to_name)
     map[0] = 0;
     map[1] = DICT_pagesize(from);
     
-    for (i = 1; i < from->head.last; i++)
+    for (i = 1; i < (int) (from->head.last); i++)
     {
 	void *buf;
 	logf (LOG_LOG, "map[%d] = %d", i, map[i]);

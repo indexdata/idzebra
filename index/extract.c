@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.91  1999-02-12 13:29:22  adam
+ * Revision 1.92  1999-03-09 16:27:49  adam
+ * More work on SDRKit integration.
+ *
+ * Revision 1.91  1999/02/12 13:29:22  adam
  * Implemented position-flag for registers.
  *
  * Revision 1.90  1999/02/02 14:50:52  adam
@@ -1634,14 +1637,17 @@ int fileExtract (SYSNO *sysno, const char *fname,
         rGroup->flagStoreKeys = 0;
 
 #if ZEBRASDR
-    if (1)
+    if (rGroup->useSDR)
     {
 	ZebraSdrHandle h;
 	char xname[128], *xp;
 
 	strncpy (xname, fname, 127);
-	if ((xp = strchr (xname, '.')))
-	    *xp = '\0';
+	if (!(xp = strchr (xname, '.')))
+	    return 0;
+	*xp = '\0';
+	if (strcmp (xp+1, "sdr.bits"))
+	    return 0;
 
         h = zebraSdr_open (xname);
 	if (!h)
@@ -1657,9 +1663,8 @@ int fileExtract (SYSNO *sysno, const char *fname,
 
 	    segmentno = zebraSdr_segment (h, 0);
 	    sprintf (sdr_name, "%%%s.%d", xname, segmentno);
-	    logf (LOG_LOG, "SDR: %s", sdr_name);
 
-#if 1
+#if 0
 	    if (segmentno > 20)
 		break;
 #endif

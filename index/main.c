@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.62  1999-02-18 15:01:24  adam
+ * Revision 1.63  1999-03-09 16:27:49  adam
+ * More work on SDRKit integration.
+ *
+ * Revision 1.62  1999/02/18 15:01:24  adam
  * Minor changes.
  *
  * Revision 1.61  1999/02/02 14:51:00  adam
@@ -269,6 +272,7 @@ int main (int argc, char **argv)
 
 #if ZEBRASDR
     zebraSdr_std ();
+    rGroupDef.useSDR = 0;
 #endif
     rGroupDef.groupName = NULL;
     rGroupDef.databaseName = NULL;
@@ -307,11 +311,18 @@ int main (int argc, char **argv)
 	" -v <level>    Set logging to <level>.\n"
         " -l <file>     Write log to <file>.\n"
         " -f <n>        Display information for the first <n> records.\n"
+#if ZEBRASDR
+	" -S            Use SDRKit\n"
+#endif
         " -V            Show version.\n"
                  );
         exit (1);
     }
-    while ((ret = options ("sVt:c:g:d:m:v:nf:l:", argv, argc, &arg)) != -2)
+    while ((ret = options ("sVt:c:g:d:m:v:nf:l:"
+#if ZEBRASDR
+			   "S"
+#endif
+			   , argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -409,6 +420,18 @@ int main (int argc, char **argv)
 		    rec_close (&records);
                     inv_prstat (rGroupDef.bfs);
                 }
+                else if (!strcmp (arg, "compact"))
+                {
+		    printf ("--------- compact ------\n");
+                    rval = res_get (common_resource, "shadow");
+                    zebraIndexLock (rGroupDef.bfs, 0, rval);
+                    if (rval && *rval)
+                    {
+                        bf_cache (rGroupDef.bfs, rval);
+                        zebraIndexLockMsg ("r");
+                    }
+                    inv_compact(rGroupDef.bfs);
+                }
                 else
                 {
                     logf (LOG_FATAL, "unknown command: %s", arg);
@@ -489,7 +512,13 @@ int main (int argc, char **argv)
         }
         else if (ret == 'V')
         {
-            fprintf (stderr, "Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
+            fprintf (stderr, "Zebra %s %s\n", 
+#if ZEBRASDR
+			"SDR",
+#else
+			ZEBRAVER,
+#endif
+		        ZEBRADATE);
         }
         else if (ret == 'v')
             log_init_level (log_mask_str(arg));
@@ -511,6 +540,10 @@ int main (int argc, char **argv)
             rGroupDef.recordType = arg;
         else if (ret == 'n')
             disableCommit = 1;
+#if ZEBRASDR
+	else if (ret == 'S')
+	    rGroupDef.useSDR = 1;
+#endif
         else
             logf (LOG_WARN, "unknown option '-%s'", arg);
     }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.7  1999-03-02 16:15:43  quinn
+ * Revision 1.8  1999-03-09 16:27:49  adam
+ * More work on SDRKit integration.
+ *
+ * Revision 1.7  1999/03/02 16:15:43  quinn
  * Added "tagsysno" and "tagrank" directives to zebra.cfg.
  *
  * Revision 1.6  1999/02/18 15:01:25  adam
@@ -193,12 +196,12 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 	    recordAttr->recordOffset);
 	if (fc.record_int_len > 180)
 	{
-	    logf (LOG_LOG, "%0.70s", fc.record_int_buf);
-	    logf (LOG_LOG, "%0.70s", fc.record_int_buf +
+	    logf (LOG_LOG, "%.70s", fc.record_int_buf);
+	    logf (LOG_LOG, "%.70s", fc.record_int_buf +
 		(fc.record_int_len - 70));
 	}
 	else
-	    logf (LOG_LOG, "%0.*s",
+	    logf (LOG_LOG, "%.*s",
 		fc.record_int_len, fc.record_int_buf);
 
 	/* the following two lines makes rec_rm delete buf */

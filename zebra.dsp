@@ -104,7 +104,15 @@ SOURCE=.\bfile\commit.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\index\compact.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\dict\dclose.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\dict\dcompact.c
 # End Source File
 # Begin Source File
 
