@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.6 2004-08-04 09:59:03 heikki Exp $
+/* $Id: rsprox.c,v 1.7 2004-08-06 13:36:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -80,7 +80,7 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     int i;
     char prox_term[512];
     int length_prox_term = 0;
-    int min_nn = 10000000;
+    zint min_nn = 10000000;
     const char *flags = NULL;
     int term_type = 0;
 

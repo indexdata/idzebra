@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.15 2004-08-04 08:35:23 adam Exp $
+/* $Id: rank1.c,v 1.16 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -40,7 +40,7 @@ struct rank_class_info {
 
 struct rank_term_info {
     int local_occur;
-    int global_occur;
+    zint global_occur;
     int global_inv;
     int rank_flag;
     int rank_weight;
@@ -107,7 +107,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 	xmalloc (sizeof(*si->entries)*si->no_entries);
     for (i = 0; i < si->no_entries; i++)
     {
-	int g = rset->rset_terms[i]->nn;
+	zint g = rset->rset_terms[i]->nn;
 #if DEBUG_RANK
         yaz_log(LOG_LOG, "i=%d flags=%s", i, rset->rset_terms[i]->flags);
 #endif
@@ -130,7 +130,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 	si->entries[i].local_occur = 0;
 	si->entries[i].global_occur = g;
 	si->entries[i].global_inv = 32 - log2_int (g);
-	yaz_log (LOG_DEBUG, " global_inv = %d g = %d", 32 - log2_int (g), g);
+	yaz_log (LOG_DEBUG, " global_inv = %d g = " ZINT_FORMAT, (int) (32-log2_int (g)), g);
     }
     return si;
 }

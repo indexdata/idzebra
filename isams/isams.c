@@ -1,4 +1,4 @@
-/* $Id: isams.c,v 1.6 2004-08-04 08:35:24 adam Exp $
+/* $Id: isams.c,v 1.7 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -194,8 +194,8 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
     pp->numKeys = 0;
     pp->numRead = 0;
     pp->buf = (char *) xmalloc(is->block_size*2);
-    pp->block_no = pos/is->block_size;
-    pp->block_offset = pos - pp->block_no * is->block_size;
+    pp->block_no = (int) (pos/is->block_size);
+    pp->block_offset = (int) (pos - pp->block_no * is->block_size);
     if (is->debug)
         logf (LOG_LOG, "isams: isams_pp_open off=%d no=%d",
               pp->block_offset, pp->block_no);

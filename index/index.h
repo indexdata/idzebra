@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.111 2004-08-06 13:14:46 adam Exp $
+/* $Id: index.h,v 1.112 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -201,7 +201,7 @@ void encode_key_flush (struct encode_info *i, FILE *outf);
 typedef struct {
     char *term;
     char *db;
-    int sysno;
+    zint sysno;
     int score;
 } *ZebraPosSet;
 

@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.53 2004-08-06 12:55:01 adam Exp $
+/* $Id: zsets.c,v 1.54 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -136,7 +136,7 @@ void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 
 
 int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
-                          int no, int *count, 
+                          int no, zint *count, 
                           int *type, char *out, size_t *len)
 {
     ZebraSet s = resultSetGet (zh, setname);

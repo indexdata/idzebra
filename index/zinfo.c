@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.38 2004-08-04 08:35:23 adam Exp $
+/* $Id: zinfo.c,v 1.39 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1430,7 +1430,7 @@ void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num)
     }
 }
 
-int zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num)
+zint zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num)
 {
     if (adjust_num)
     {

@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.118 2004-08-04 08:35:24 adam Exp $
+/* $Id: zserver.c,v 1.119 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -170,7 +170,7 @@ bend_initresult *bend_init (bend_initrequest *q)
 
 static void search_terms (ZebraHandle zh, bend_search_rr *r)
 {
-    int count;
+    zint count;
     int no_terms;
     int i;
     int type;
@@ -246,7 +246,9 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
         sr->elements[i]->subqueryExpression->u.term->termComment = 0;
         sr->elements[i]->subqueryInterpretation = 0;
         sr->elements[i]->subqueryRecommendation = 0;
-        sr->elements[i]->subqueryCount = odr_intdup (r->stream, count);
+	if (count > 2000000000)
+	    count = 2000000000;
+        sr->elements[i]->subqueryCount = odr_intdup (r->stream, (int) count);
         sr->elements[i]->subqueryWeight = 0;
         sr->elements[i]->resultsByDB = 0;
     }

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.14 2004-08-04 08:35:23 adam Exp $
+/* $Id: zebraapi.h,v 1.15 2004-08-06 13:36:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -225,7 +225,7 @@ int zebra_delete_record (ZebraHandle zh,
 			 int force_update);
 
 YAZ_EXPORT int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
-                                     int no, int *count, 
+                                     int no, zint *count, 
                                      int *type, char *out, size_t *len);
 
 YAZ_EXPORT int zebra_sort (ZebraHandle zh, ODR stream,

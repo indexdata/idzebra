@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.31 2004-08-06 13:14:46 adam Exp $
+/* $Id: trunc.c,v 1.32 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -393,12 +393,11 @@ static int isamc_trunc_cmp (const void *p1, const void *p2)
 {
     ISAMC_P i1 = *(ISAMC_P*) p1;
     ISAMC_P i2 = *(ISAMC_P*) p2;
-    int d;
+    zint d;
 
-    d = (int) (isc_type (i1) - isc_type (i2));
-    if (d)
-        return d;
-    d = isc_block (i1) - isc_block (i2);
+    d = (isc_type (i1) - isc_type (i2));
+    if (d == 0)
+        d = isc_block (i1) - isc_block (i2);
     if (d > 0)
 	return 1;
     else if (d < 0)

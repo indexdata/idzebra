@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.87 2004-08-06 12:55:03 adam Exp $
+/* $Id: recgrs.c,v 1.88 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -959,7 +959,7 @@ static void zebra_xml_metadata (struct recRetrieveCtrl *p, data1_node *top,
         data1_mk_tag_data_int (p->dh, n, "score", p->score, mem);
     }
     data1_mk_text (p->dh, mem, i4, n);
-    data1_mk_tag_data_int (p->dh, n, "localnumber", p->localno, mem);
+    data1_mk_tag_data_zint (p->dh, n, "localnumber", p->localno, mem);
     if (p->fname)
     {
         data1_mk_text (p->dh, mem, i4, n);

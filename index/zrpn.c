@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.142 2004-08-04 08:35:23 adam Exp $
+/* $Id: zrpn.c,v 1.143 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -2463,7 +2463,7 @@ static void scan_term_untrans (ZebraHandle zh, NMEM stream, int reg_type,
 
 static void count_set (RSET r, int *count)
 {
-    int psysno = 0;
+    zint psysno = 0;
     int kno = 0;
     struct it_key key;
     RSFD rfd;

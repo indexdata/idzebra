@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.16 2003-06-30 19:37:12 adam Exp $
+/* $Id: zinfo.h,v 1.17 2004-08-06 13:36:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -48,7 +48,7 @@ int zebraExplain_addSU (ZebraExplainInfo zei, int set, int use);
 void zebraExplain_addSchema (ZebraExplainInfo zei, Odr_oid *oid);
 void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_recordBytesIncrement (ZebraExplainInfo zei, int adjust_num);
-int zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num);
+zint zebraExplain_runNumberIncrement (ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_loadAttsets (data1_handle dh, Res res);
 void zebraExplain_flush (ZebraExplainInfo zei, void *updateHandle);
 

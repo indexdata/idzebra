@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.158 2004-08-04 08:35:23 adam Exp $
+/* $Id: extract.c,v 1.159 2004-08-06 13:36:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -114,9 +114,9 @@ static const char **searchRecordKey (ZebraHandle zh,
 	iscz1_decode(decode_handle, &dst, &src);
 	assert(key.len < 4 && key.len > 2);
 
-	attrSet = key.mem[0];
-	attrUse = key.mem[1];
-	seqno = key.mem[2];
+	attrSet = (int) key.mem[0];
+	attrUse = (int) key.mem[1];
+	seqno = (int) key.mem[2];
 
 	if (attrUseS == attrUse && attrSetS == attrSet)
         {
@@ -1331,8 +1331,8 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 	iscz1_decode(decode_handle, &dst, &src);
 	assert(key.len < 4 && key.len > 2);
 
-	attrSet = key.mem[0];
-	attrUse = key.mem[1]; /* sequence in mem[2] */
+	attrSet = (int) key.mem[0];
+	attrUse = (int) key.mem[1]; /* sequence in mem[2] */
 
         if (zh->reg->key_buf_used + 1024 > 
             (zh->reg->ptr_top -zh->reg->ptr_i)*sizeof(char*))
