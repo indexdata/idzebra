@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.138 2004-10-28 10:37:15 heikki Exp $
+/* $Id: zebraapi.c,v 1.139 2004-10-29 11:23:52 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1586,8 +1586,8 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
 
 int zebra_end_trans (ZebraHandle zh)
 {
-    ASSERTZH;
     ZebraTransactionStatus dummy;
+    ASSERTZH;
     yaz_log(LOG_API,"zebra_end_trans");
     return zebra_end_transaction(zh, &dummy);
 }
