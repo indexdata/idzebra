@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.15 2002-09-25 21:48:43 adam Exp $
+## $Id: Makefile.am,v 1.16 2002-10-03 10:29:41 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -61,6 +61,9 @@ gils.ps: gils.sgml
 
 gils.html: gils.sgml
 	sgml2html gils.sgml
+
+dist-hook: zebra.html
+	cp *.html $(distdir)
 
 clean-data-hook:
 	rm -f [0-9]* *.bak
