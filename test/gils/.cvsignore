@@ -7,3 +7,4 @@ log
 shadow
 reg
 zebrasrv.pid
+socket

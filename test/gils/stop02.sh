@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop02.sh,v 1.8 2004-12-04 01:38:50 adam Exp $
+# $Id: stop02.sh,v 1.9 2004-12-04 01:48:26 adam Exp $
 # test start and stop of the server with -S
 
 pp=${srcdir:-"."}
@@ -20,7 +20,7 @@ test -f z.pid && kill -9 `cat z.pid`
 echo "Starting server with -S (static)..." >>$LOG
 ../../index/zebrasrv -D -p z.pid -S -c $pp/zebra1.cfg -l $LOG unix:socket
 echo "  checking that it runs... " >>$LOG
-test -f z.pid || sleep 2 || test -f z.pid || exit 1
+test -f z.pid || sleep 1 || test -f z.pid || exit 1
 PID=`cat z.pid`
 kill -CHLD $PID >/dev/null 2>&1 || exit 1
 
@@ -38,8 +38,8 @@ sleep 1 # let the client connect
 echo "  killing it..." >>$LOG
 kill $PID
 
-sleep 1
 echo "  checking that it is dead..." >>$LOG
+kill -CHLD $PID >/dev/null 2>&1 && sleep 1 && \
 kill -CHLD $PID >/dev/null 2>&1 && exit 1
 
 # clean up
