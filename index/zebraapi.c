@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.103 2003-05-22 16:16:22 heikki Exp $
+/* $Id: zebraapi.c,v 1.104 2003-06-17 13:53:27 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1198,8 +1198,10 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
             return -1;
         }
         if (zh->reg)
+	{
+            resultSetInvalidate (zh);
             zebra_register_close (zh->service, zh->reg);
-        
+	}
         zh->trans_w_no = zh->trans_no;
 
         zh->errCode=0;
