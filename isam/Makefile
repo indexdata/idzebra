@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.16 1995-11-20 17:00:18 adam Exp $
+# $Id: Makefile,v 1.17 1995-11-27 10:16:12 quinn Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -18,7 +18,7 @@ CPP=$(CC) -E
 
 all: $(LIB)
 
-alll: $(LIB) isam-test issh
+alll: $(LIB) # isam-test issh
 
 test: test.c $(LIB)
 	$(CC) -g -o test -I../include test.c \

@@ -1,3 +1,7 @@
+/*
+ * Excersizer-application for the isam subsystem. Don't play with it.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
