@@ -1,0 +1,6 @@
+usr/bin/idzebra-config
+usr/lib/libidzebra-*.so
+usr/lib/libidzebra-*.la
+usr/lib/libidzebra-*.a
+usr/share/aclocal
+usr/include/idzebra

@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.18 2004-09-28 12:52:03 adam Exp $
+## $Id: Makefile.am,v 1.19 2004-09-30 06:59:44 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
@@ -22,11 +22,13 @@ dist-hook:
 		fi; \
 	done
 	mkdir $(distdir)/debian
-	cp $(srcdir)/debian/control $(distdir)/debian
+	cp $(srcdir)/debian/*.install $(distdir)/debian
+	cp $(srcdir)/debian/*.manpages $(distdir)/debian
 	cp $(srcdir)/debian/changelog $(distdir)/debian
-	cp $(srcdir)/debian/rules $(distdir)/debian
-	cp $(srcdir)/debian/postinst $(distdir)/debian
+	cp $(srcdir)/debian/compat $(distdir)/debian
+	cp $(srcdir)/debian/control $(distdir)/debian
 	cp $(srcdir)/debian/copyright $(distdir)/debian
+	cp $(srcdir)/debian/rules $(distdir)/debian
 
 rpm: $(PACKAGE)-$(VERSION).tar.gz
 	cp $(PACKAGE)-$(VERSION).tar.gz /usr/src/redhat/SOURCES

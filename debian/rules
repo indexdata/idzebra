@@ -1,126 +1,104 @@
 #!/usr/bin/make -f
-# 
-# Script for building Zebra from source to .deb-packages.
-#
-# Created by Adam Dickmeiss, based on script by
-# Morten Hendriksen <mgh@dbc.dk>  and from Joey Hess.
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-# This is the debhelper compatability version to use.
-export DH_COMPAT=2
+# These are used for cross-compiling and for saving the configure script
+# from having to guess our platform (since we know it already)
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
-CONFIG_FLAGS=--with-tclconfig=/usr/lib/tcl8.3 --with-yaz=/usr/bin --prefix=/usr
 
-# Enable parallel builds if CONCURRENCY_LEVEL is set
-ifdef CONCURRENCY_LEVEL
-MCFLAGS=-j$(CONCURRENCY_LEVEL)
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
 else
-MCFLAGS=
+	CFLAGS += -O2
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
 endif
 
-ZEBRASRCDIR?=$(shell pwd)
-
-# Local library path for linking with right dependencies
-LOCAL_LINK=-ldebian/idzebra/usr/lib
-
-$(ZEBRASRCDIR)/configure: $(ZEBRASRCDIR)/configure.in
-	cd $(ZEBRASRCDIR); sh buildconf.sh
-
-stamp-configure: $(ZEBRASRCDIR)/configure
+config.status: configure
 	dh_testdir
+	# Add here commands to configure the package.
+	CFLAGS="$(CFLAGS)" ./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info --enable-shared --with-yaz=/usr/bin --with-tclconfig=/usr/lib/tcl8.3
 
-	-rm -rf build
-	mkdir build
-	cd build; $(ZEBRASRCDIR)/configure $(CONFIG_FLAGS)
-	touch stamp-configure
-
-build: stamp-build
-stamp-build: stamp-configure
+build: build-stamp
+build-stamp:  config.status
 	dh_testdir
 
 	# Add here commands to compile the package.
-	$(MAKE) -C build $(MCFLAGS)
+	$(MAKE)
 
-	touch stamp-build
+	touch build-stamp
 
 clean:
 	dh_testdir
-	#dh_testroot
-	-rm -f stamp-*
-	-rm -rf build
+	dh_testroot
+	rm -f build-stamp 
 
-	dh_clean
-	-rm -rf debian/idzebra debian/*.debhelper debian/substvars
+	# Add here commands to clean up after the build process.
+	-$(MAKE) distclean
+ifneq "$(wildcard /usr/share/misc/config.sub)" ""
+	cp -f /usr/share/misc/config.sub config.sub
+endif
+ifneq "$(wildcard /usr/share/misc/config.guess)" ""
+	cp -f /usr/share/misc/config.guess config.guess
+endif
 
-install: stamp-install
-stamp-install: stamp-build
+
+	dh_clean 
+
+install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k -a
-	dh_installdirs -a
+	dh_clean -k 
+	dh_installdirs
 
-	# Add here commands to install the package into debian/tmp.
-	-mkdirhier debian/tmp/usr
-	$(MAKE) -C build install prefix=`pwd`/debian/tmp/usr
+	# Add here commands to install the package into debian/tmp
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
 
-	touch stamp-install
 
 # Build architecture-independent files here.
 binary-indep: build install
-	dh_testdir
-	dh_testroot
-	dh_installdocs -p idzebra-doc doc/*.html doc/*.pdf doc/*.png
-	dh_installchangelogs -p idzebra-doc
-	dh_link -p idzebra-doc
-	dh_strip -p idzebra-doc
-	dh_compress -p idzebra-doc
-	dh_fixperms -p idzebra-doc
-	dh_gencontrol -p idzebra-doc
-	dh_md5sums -p idzebra-doc
-
-	dh_builddeb -p idzebra-doc
+# We have nothing to do by default.
 
 # Build architecture-dependent files here.
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_movefiles -p idzebra usr/share/idzebra usr/bin
-
-	cp NEWS changelog
-	dh_installdocs --all README TODO changelog debian/copyright
-
-	dh_installchangelogs
+	dh_installchangelogs 
+	dh_installdocs
+	dh_installexamples
+	mv debian/tmp/usr/share/doc/idzebra debian/tmp/usr/share/doc/idzebra-doc
+	dh_install --sourcedir=debian/tmp
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman
 	dh_link
-
-	dh_installdeb -p idzebra
-	dh_installman -p idzebra doc/zebraidx.1 doc/zebrasrv.8
-
 	dh_strip
-	dh_compress -a
-	dh_fixperms -a
-
-	dh_shlibdeps -p idzebra $(LOCAL_LINK) 
-
-	cat debian/postinst >> debian/idzebra/DEBIAN/postinst
-	chmod +x debian/idzebra/DEBIAN/postinst
-
-	dh_gencontrol -p idzebra
-	dh_md5sums -p idzebra
-
-	# Go kill those CVS-dirs before build
-	-find debian/tmp -type d -name CVS | xargs rm -rf
-	# For some reason it is necessary to remove empty-dirs in doc
-	-rm -rf debian/tmp/usr/include debian/tmp/usr/share/aclocal debian/tmp/usr/lib debian/tmp/usr/bin \
-	        debian/tmp/usr/share/idzebra
-
-	dh_builddeb -p idzebra
+	dh_compress
+	dh_fixperms
+#	dh_perl
+#	dh_python
+	dh_makeshlibs -V 'libidzebra1.4 (>= 1.4.0)' -X mod-
+	dh_installdeb
+	dh_shlibdeps -l debian/libidzebra1.4/usr/lib
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install install-stamp configure
-
-zebrarelease:
-	# Conveniency target for building zebra
-	dh_testdir
-	dpkg-buildpackage $(EXTRA_OPTS) -rfakeroot
+.PHONY: build clean binary-indep binary-arch binary install 
