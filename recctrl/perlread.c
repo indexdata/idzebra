@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.4 2002-11-18 13:11:30 pop Exp $
+/* $Id: perlread.c,v 1.5 2003-02-26 11:40:04 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -70,7 +70,7 @@ void Filter_create (struct perl_context *context)
   sv_setref_pv(msv, "_p_perl_context", (void*)context);
   XPUSHs(msv) ;
   PUTBACK ;
-  call_method("new", 0);
+  call_method("new", G_EVAL);
 
   SPAGAIN ;
   context->filterRef = POPs;
@@ -275,6 +275,10 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
      the filter object reference may go out of scope... */
   if (!SvOK(context->filterRef)) Filter_create(context);
 
+  if (!SvTRUE(context->filterRef)) {
+    logf (LOG_WARN,"Failed to initialize perl filter %s",context->filterClass);
+    return (0);
+  }
 
   /* call the process method */
   Filter_process(context);
