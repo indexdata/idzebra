@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.7  1995-10-06 14:38:01  adam
+ * Revision 1.8  1995-10-10 13:59:25  adam
+ * Function rset_open changed its wflag parameter to general flags.
+ *
+ * Revision 1.7  1995/10/06  14:38:01  adam
  * New result set method: r_score.
  * Local no (sysno) and score is transferred to retrieveCtrl.
  *
@@ -88,7 +91,7 @@ ZServerSetSysno *resultSetSysnoGet  (ZServerInfo *zi, const char *name,
         return NULL;
     logf (LOG_DEBUG, "resultSetRecordGet");
     sr = xmalloc (sizeof(*sr) * num);
-    rfd = rset_open (rset, 0);
+    rfd = rset_open (rset, RSETF_READ|RSETF_SORT_RANK);
     while (rset_read (rset, rfd, &key))
     {
         if (key.sysno != psysno)

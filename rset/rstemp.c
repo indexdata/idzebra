@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.13  1995-10-06 14:38:06  adam
+ * Revision 1.14  1995-10-10 14:00:04  adam
+ * Function rset_open changed its wflag parameter to general flags.
+ *
+ * Revision 1.13  1995/10/06  14:38:06  adam
  * New result set method: r_score.
  * Local no (sysno) and score is transferred to retrieveCtrl.
  *
@@ -58,7 +61,7 @@
 #include <rstemp.h>
 
 static rset_control *r_create(const struct rset_control *sel, void *parms);
-static RSFD r_open (rset_control *ct, int wflag);
+static RSFD r_open (rset_control *ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (rset_control *ct);
 static void r_rewind (RSFD rfd);
@@ -127,7 +130,7 @@ static struct rset_control *r_create(const struct rset_control *sel,
     return newct;
 }
 
-static RSFD r_open (struct rset_control *ct, int wflag)
+static RSFD r_open (struct rset_control *ct, int flag)
 {
     struct rset_temp_info *info = ct->buf;
     struct rset_temp_rfd *rfd;
@@ -135,7 +138,7 @@ static RSFD r_open (struct rset_control *ct, int wflag)
     assert (info->fd == -1);
     if (info->fname)
     {
-        if (wflag)
+        if (flag & RSETF_WRITE)
             info->fd = open (info->fname, O_RDWR|O_CREAT, 0666);
         else
             info->fd = open (info->fname, O_RDONLY);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.6  1995-10-06 14:38:05  adam
+ * Revision 1.7  1995-10-10 14:00:03  adam
+ * Function rset_open changed its wflag parameter to general flags.
+ *
+ * Revision 1.6  1995/10/06  14:38:05  adam
  * New result set method: r_score.
  * Local no (sysno) and score is transferred to retrieveCtrl.
  *
@@ -34,7 +37,7 @@
 #include <alexutil.h>
 
 static rset_control *r_create(const struct rset_control *sel, void *parms);
-static RSFD r_open (rset_control *ct, int wflag);
+static RSFD r_open (rset_control *ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (rset_control *ct);
 static void r_rewind (RSFD rfd);
@@ -132,12 +135,12 @@ static rset_control *r_create (const struct rset_control *sel, void *parms)
     return newct;
 }
 
-static RSFD r_open (rset_control *ct, int wflag)
+static RSFD r_open (rset_control *ct, int flag)
 {
     struct rset_bool_info *info = ct->buf;
     struct rset_bool_rfd *rfd;
 
-    if (wflag)
+    if (flag & RSETF_WRITE)
     {
 	logf (LOG_FATAL, "bool set type is read-only");
 	return NULL;
@@ -148,8 +151,8 @@ static RSFD r_open (rset_control *ct, int wflag)
 
     rfd->buf_l = xmalloc (info->key_size);
     rfd->buf_r = xmalloc (info->key_size);
-    rfd->rfd_l = rset_open (info->rset_l, wflag);
-    rfd->rfd_r = rset_open (info->rset_r, wflag);
+    rfd->rfd_l = rset_open (info->rset_l, flag);
+    rfd->rfd_r = rset_open (info->rset_r, flag);
     rfd->more_l = rset_read (info->rset_l, rfd->rfd_l, rfd->buf_l);
     rfd->more_r = rset_read (info->rset_r, rfd->rfd_r, rfd->buf_r);
     rfd->info = info;

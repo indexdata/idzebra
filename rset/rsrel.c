@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.5  1995-10-06 14:38:06  adam
+ * Revision 1.6  1995-10-10 14:00:04  adam
+ * Function rset_open changed its wflag parameter to general flags.
+ *
+ * Revision 1.5  1995/10/06  14:38:06  adam
  * New result set method: r_score.
  * Local no (sysno) and score is transferred to retrieveCtrl.
  *
@@ -32,7 +35,7 @@
 #include <alexutil.h>
 
 static rset_control *r_create(const struct rset_control *sel, void *parms);
-static RSFD r_open (rset_control *ct, int wflag);
+static RSFD r_open (rset_control *ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (rset_control *ct);
 static void r_rewind (RSFD rfd);
@@ -63,15 +66,17 @@ struct rset_rel_info {
     int     max_rec;
     int     no_rec;
     int     (*cmp)(const void *p1, const void *p2);
-    char    *key_buf;
-    float   *score_buf;
-    int     *sort_idx;
-
+    char    *key_buf;                   /* key buffer */
+    float   *score_buf;                 /* score buffer */
+    int     *sort_idx;                  /* score sorted index */
+    int     *sysno_idx;                 /* sysno sorted index (ring buffer) */
+    int     sysno_idx_p;                /* last sysno sort index */
     struct rset_rel_rfd *rfd_list;
 };
 
 struct rset_rel_rfd {
     int     position;
+    int     flag;
     struct rset_rel_rfd *next;
     struct rset_rel_info *info;
 };
@@ -88,23 +93,27 @@ static void add_rec (struct rset_rel_info *info, double score, void *key)
             break;
     }
     if (info->no_rec < info->max_rec)
-    {
+    {                                        /* there is room for this entry */
         for (j = info->no_rec; j > i; --j)
             info->sort_idx[j] = info->sort_idx[j-1];
         idx = info->sort_idx[j] = info->no_rec;
         ++(info->no_rec);
     }
     else if (i == 0)
-        return;
+        return;                              /* score too low */
     else
     {
-        idx = info->sort_idx[0];
+        idx = info->sort_idx[0];             /* remove this entry */
 
         --i;
-        for (j = 0; j < i; ++j)
+        for (j = 0; j < i; ++j)              /* make room */
             info->sort_idx[j] = info->sort_idx[j+1];
-        info->sort_idx[j] = idx;
+        info->sort_idx[j] = idx;             /* allocate sort entry */
     }
+    info->sysno_idx[info->sysno_idx_p] = idx;
+    if (++(info->sysno_idx_p) == info->max_rec)
+        info->sysno_idx_p = 0;
+
     memcpy (info->key_buf + idx*info->key_size, key, info->key_size);
     info->score_buf[idx] = score;
 }
@@ -211,6 +220,8 @@ static rset_control *r_create (const struct rset_control *sel, void *parms)
     info->key_buf = xmalloc (info->key_size * info->max_rec);
     info->score_buf = xmalloc (sizeof(*info->score_buf) * info->max_rec);
     info->sort_idx = xmalloc (sizeof(*info->sort_idx) * info->max_rec);
+    info->sysno_idx = xmalloc (sizeof(*info->sysno_idx) * info->max_rec);
+    info->sysno_idx_p = 0;
     info->no_rec = 0;
     info->rfd_list = NULL;
 
@@ -218,17 +229,18 @@ static rset_control *r_create (const struct rset_control *sel, void *parms)
     return newct;
 }
 
-static RSFD r_open (rset_control *ct, int wflag)
+static RSFD r_open (rset_control *ct, int flag)
 {
     struct rset_rel_rfd *rfd;
     struct rset_rel_info *info = ct->buf;
 
-    if (wflag)
+    if (flag & RSETF_WRITE)
     {
 	logf (LOG_FATAL, "relevance set type is read-only");
 	return NULL;
     }
     rfd = xmalloc (sizeof(*rfd));
+    rfd->flag = flag;
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->position = info->no_rec;
@@ -260,6 +272,7 @@ static void r_delete (rset_control *ct)
     xfree (info->key_buf);
     xfree (info->score_buf);
     xfree (info->sort_idx);
+    xfree (info->sysno_idx);
     xfree (info);
     xfree (ct);
 }

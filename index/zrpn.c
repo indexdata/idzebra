@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.24  1995-10-09 16:18:37  adam
+ * Revision 1.25  1995-10-10 13:59:24  adam
+ * Function rset_open changed its wflag parameter to general flags.
+ *
+ * Revision 1.24  1995/10/09  16:18:37  adam
  * Function dict_lookup_grep got extra client data parameter.
  *
  * Revision 1.23  1995/10/06  16:33:37  adam
@@ -321,7 +324,7 @@ static RSET rset_trunc (ISAM isam, ISAM_P *isam_p, int from, int to,
         ispt = xmalloc (sizeof(*ispt) * (to-from));
         parms.key_size = sizeof (struct it_key);
         result = rset_create (rset_kind_temp, &parms);
-        rsfd = rset_open (result, 1);
+        rsfd = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
 
         ti = heap_init (to-from, sizeof(struct it_key),
                         key_compare);
@@ -574,12 +577,12 @@ static RSET rpn_prox (RSET *rset, int rset_no)
     for (i = 0; i<rset_no; i++)
     {
         buf[i] = xmalloc (sizeof(**buf));
-        rsfd[i] = rset_open (rset[i], 0);
+        rsfd[i] = rset_open (rset[i], RSETF_READ|RSETF_SORT_SYSNO);
         more[i] = rset_read (rset[i], rsfd[i], buf[i]);
     }
     parms.key_size = sizeof (struct it_key);
     result = rset_create (rset_kind_temp, &parms);
-    rsfd_result = rset_open (result, 1);
+    rsfd_result = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
     
     while (*more)
     {
@@ -717,7 +720,7 @@ static RSET rpn_search_APT_local (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     }
     parms.key_size = sizeof (struct it_key);
     result = rset_create (rset_kind_temp, &parms);
-    rsfd = rset_open (result, 1);
+    rsfd = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
 
     trans_term (zi, zapt, termz);
     key.sysno = atoi (termz);
@@ -868,7 +871,7 @@ static void count_set (RSET r, int *count)
 
     logf (LOG_DEBUG, "rpn_save_set");
     *count = 0;
-    rfd = rset_open (r, 0);
+    rfd = rset_open (r, RSETF_READ|RSETF_SORT_SYSNO);
     while (rset_read (r, rfd, &key))
     {
         if (key.sysno != psysno)

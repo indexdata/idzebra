@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.4  1995-10-06 14:38:06  adam
+ * Revision 1.5  1995-10-10 14:00:04  adam
+ * Function rset_open changed its wflag parameter to general flags.
+ *
+ * Revision 1.4  1995/10/06  14:38:06  adam
  * New result set method: r_score.
  * Local no (sysno) and score is transferred to retrieveCtrl.
  *
@@ -26,7 +29,7 @@
 #include <alexutil.h>
 
 static rset_control *r_create(const struct rset_control *sel, void *parms);
-static RSFD r_open (rset_control *ct, int wflag);
+static RSFD r_open (rset_control *ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (rset_control *ct);
 static void r_rewind (RSFD rfd);
@@ -61,9 +64,9 @@ static rset_control *r_create(const struct rset_control *sel, void *parms)
     return newct;
 }
 
-static RSFD r_open (rset_control *ct, int wflag)
+static RSFD r_open (rset_control *ct, int flag)
 {
-    if (wflag)
+    if (flag & RSETF_WRITE)
     {
 	logf (LOG_FATAL, "NULL set type is read-only");
 	return NULL;

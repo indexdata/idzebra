@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.7  1995-09-28 09:19:40  adam
+ * Revision 1.8  1995-10-10 13:59:23  adam
+ * Function rset_open changed its wflag parameter to general flags.
+ *
+ * Revision 1.7  1995/09/28  09:19:40  adam
  * xfree/xmalloc used everywhere.
  * Extract/retrieve method seems to work for text records.
  *
@@ -43,7 +46,7 @@ struct dir_entry *dir_open (const char *rep)
 {
     DIR *dir;
     struct dirent *dent;
-    size_t entry_max = 50;
+    size_t entry_max = 500;
     size_t idx = 0;
     struct dir_entry *entry;
 
@@ -65,7 +68,7 @@ struct dir_entry *dir_open (const char *rep)
         {
             struct dir_entry *entry_n;
 
-            entry_n = xmalloc (sizeof(*entry) * (entry_max + 400));
+            entry_n = xmalloc (sizeof(*entry) * (entry_max + 1000));
             memcpy (entry_n, entry, idx * sizeof(*entry));
             xfree (entry);
             entry = entry_n;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.8  1995-10-06 14:37:53  adam
+ * Revision 1.9  1995-10-10 14:00:01  adam
+ * Function rset_open changed its wflag parameter to general flags.
+ *
+ * Revision 1.8  1995/10/06  14:37:53  adam
  * New result set method: r_score.
  * Local no (sysno) and score is transferred to retrieveCtrl.
  *
@@ -60,6 +63,12 @@ typedef struct rset
 {
     rset_control *control;
 } rset, *RSET;
+
+#define RSETF_READ       0
+#define RSETF_WRITE      1
+
+#define RSETF_SORT_SYSNO 0
+#define RSETF_SORT_RANK  2
 
 RSET rset_create(const rset_control *sel, void *parms);       /* parameters? */
 
