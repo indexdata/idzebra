@@ -3,7 +3,7 @@
  * All rights reserved.
  * Heikki Levanto
  *
- * $Id: rsbetween.c,v 1.4 2002-04-12 15:03:46 heikki Exp $
+ * $Id: rsbetween.c,v 1.5 2002-04-12 15:25:03 heikki Exp $
  */
 
 #include <stdio.h>
@@ -270,6 +270,8 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
 	    memcpy (buf, p->buf_m, info->key_size);
             *term_index = p->term_index_m;
             logit( info, "Returning a hit (m)", p->buf_l, p->buf_m, p->buf_r);
+            p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
+                                   &p->term_index_m);
 	    return 1;  
 	}
 	else
