@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.13  1999-02-18 15:01:04  adam
+ * Revision 1.14  1999-02-19 10:37:40  adam
+ * Minor fix.
+ *
+ * Revision 1.13  1999/02/18 15:01:04  adam
  * Structure=key uses register type 0.
  *
  * Revision 1.12  1999/02/12 13:29:25  adam
@@ -185,7 +188,7 @@ ZebraMaps zebra_maps_open (Res res)
     int i;
 
     zms->nmem = nmem_create ();
-    zms->tabpath = nmem_strdup (zms->nmem, res_get (res, "profilePath"));
+    zms->tabpath = nmem_strdup (zms->nmem, res_get_def (res, "profilePath", "."));
     zms->map_list = NULL;
 
     zms->temp_map_str[0] = '\0';
