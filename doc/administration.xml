@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.6 2002-08-28 08:14:47 mike Exp $ -->
+ <!-- $Id: administration.xml,v 1.7 2002-10-10 14:27:18 heikki Exp $ -->
  <title>Administrating Zebra</title>
  
  <para>
@@ -436,9 +436,8 @@
    in order to modify the indexes correctly at a later time.
   </para>
   
-  <para>
-   FIXME - There must be a simpler way to do this with Adams string tags -H
-  </para>
+   <!--FIXME - There must be a simpler way to do this with Adams string tags -H
+     -->
 
   <para>
    For example, to update records of group <literal>esdd</literal>
@@ -776,14 +775,13 @@
     In order to make changes to the system take effect for the
     users, you'll have to submit a "commit" command after a
     (sequence of) update operation(s).
-    You can ask the indexer to commit the changes immediately
-    after the update operation:
    </para>
    
    <para>
     
     <screen>
-     $ zebraidx update /d1/records update /d2/more-records commit
+     $ zebraidx update /d1/records 
+     $ zebraidx commit
     </screen>
     
    </para>
@@ -795,7 +793,7 @@
    <para>
     
     <screen>
-     $ zebraidx -g books update /d1/records update /d2/more-records
+     $ zebraidx -g books update /d1/records  /d2/more-records
      $ zebraidx -g fun update /d3/fun-records
      $ zebraidx commit
     </screen>

@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.14 2002-10-08 08:09:43 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.15 2002-10-10 14:27:18 heikki Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -109,7 +109,7 @@
       Zebra is written in portable C, so it runs on most Unix-like systems 
       as well as Windows NT.  A binary distribution for Windows NT is
       available at
-      <ulink url="http://indexdata.dk/zebra/###"/>
+      <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/">
      </para>
     </listitem>
     
@@ -315,13 +315,16 @@
    announcements from the authors (new
    releases, bug fixes, etc.) and general discussion.  You are welcome
    to seek support there.  Join by sending email to
-   <email>zebra-subscribe-###@mailman.indexdata.dk</email>
+   <email>zebra-request@indexdata.dk</email>. Put the word 'subscribe'
+   in the body of the message.
+   <!-- zebra-subscribe-###@mailman.indexdata.dk-->
   </para>
   <para>
    Third, it's possible to buy a commercial support contract, with
    well defined service levels and response times, from Index Data.
    See
-   <ulink url="http://www.indexdata.dk/support/###"/>
+   <ulink url="http://www.indexdata.dk/support/?lang=en"/>
+   <!-- ulink url="http://www.indexdata.dk/support/###"/-->
    for details.
   </para>
  </sect1>  
@@ -390,7 +393,7 @@
   <para>
    If you think it's all really neat, you're welcome to drop us a line
    saying that, too. You can email us on
-   <email>indo@indexdata.dk</email>
+   <email>info@indexdata.dk</email>
    or check the contact info at the end of this manual.
   </para>
   

@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.5 2002-08-28 09:39:45 mike Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.6 2002-10-10 14:27:18 heikki Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -198,14 +198,17 @@
 
     </para>
 
-    <note>
-     <para>
+    <!-- There is no indentation in the example above!  -H
+    -note-
+     -para-
       The indentation used above is used to illustrate how Zebra
       interprets the mark-up. The indentation, in itself, has no
       significance to the parser for the canonical input format, which
       discards superfluous whitespace.
-     </para>
-    </note>
+     -/para-
+    -/note-
+    -->
+
     <para>
      The keywords surrounded by &lt;...&gt; are
      <emphasis>tags</emphasis>, while the sections of text
@@ -607,6 +610,7 @@
      ROOT 
      AUTHOR    "Robert Pirsig"
     </screen>
+   <!-- FIXME That screen makes no sense! -H  -->
 
    </para>
 
@@ -624,6 +628,7 @@
      AUTHOR
      SURNAME    "Pirsig"
     </screen>
+   <!-- FIXME That screen makes even less sense! -H  -->
 
    </para>
 

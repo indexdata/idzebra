@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.7 2002-10-08 08:09:43 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.8 2002-10-10 14:27:18 heikki Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -150,6 +150,7 @@
     $ zebraidx update records
     00:45:46-08/10: ../../index/zebraidx(5016) [warn] records/genera.xml:0 Couldn't open GENUS.abs [No such file or directory]
    </screen>
+   <!-- FIXME ### This needs more text -->
   </para>
  </sect1>
 </chapter>
@@ -161,7 +162,7 @@
      The master configuration file, <literal>zebra.cfg</literal>,
      which is as short and simple as it can be:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.7 2002-10-08 08:09:43 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.8 2002-10-10 14:27:18 heikki Exp $
 	# Bare-bones master configuration file for Zebra
 	profilePath: .:../../tab:../../../yaz/tab
      </screen>
@@ -178,7 +179,7 @@
      The BIB-1 attribute set configuration file,
      <literal>bib1.att</literal>, which is also as short as possible:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.7 2002-10-08 08:09:43 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.8 2002-10-10 14:27:18 heikki Exp $
 	# Bare-bones BIB-1 attribute set file for Zebra
 	reference Bib-1
      </screen>
