@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.2  1995-09-06 16:11:19  adam
+ * Revision 1.3  1995-09-08 08:53:23  adam
+ * Record buffer maintained in server_info.
+ *
+ * Revision 1.2  1995/09/06  16:11:19  adam
  * Option: only one word key per file.
  *
  * Revision 1.1  1995/09/05  15:28:40  adam
@@ -34,6 +37,7 @@ typedef struct {
     ISAM wordIsam;
     Dict fileDict;
     int sys_idx_fd;
+    char *recordBuf;
 } ZServerInfo;
 
 int rpn_search (ZServerInfo *zi, 

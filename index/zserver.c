@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.5  1995-09-06 16:11:18  adam
+ * Revision 1.6  1995-09-08 08:53:22  adam
+ * Record buffer maintained in server_info.
+ *
+ * Revision 1.5  1995/09/06  16:11:18  adam
  * Option: only one word key per file.
  *
  * Revision 1.4  1995/09/06  10:33:04  adam
@@ -72,6 +75,7 @@ bend_initresult *bend_init (bend_initrequest *q)
         r.errstring = "is_open fail: wordisam";
         return &r;
     }
+    server_info.recordBuf = NULL;
     return &r;
 }
 
@@ -106,6 +110,8 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     r.last_in_set = 0;
     r.basename = "base";
 
+    xfree (server_info.recordBuf);
+    server_info.recordBuf = NULL;
     positions[0] = q->number;
     records = resultSetRecordGet (&server_info, q->setname, 1, positions);
     if (!records)
@@ -121,7 +127,7 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
         return &r;
     }
     r.len = records[0].size;
-    r.record = malloc (r.len+1);
+    server_info.recordBuf = r.record = xmalloc (r.len+1);
     strcpy (r.record, records[0].buf);
     resultSetRecordDel (&server_info, records, 1);
     r.format = VAL_SUTRS;
@@ -161,6 +167,8 @@ void bend_close (void *handle)
     dict_close (server_info.wordDict);
     is_close (server_info.wordIsam);
     close (server_info.sys_idx_fd);
+    xfree (server_info.recordBuf);
+    server_info.recordBuf = NULL;
     return;
 }
 
