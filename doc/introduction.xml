@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.13 2002-09-20 09:58:04 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.14 2002-10-08 08:09:43 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -35,17 +35,6 @@
    and how to configure the server to give you the
    functionality that you need.
   </para>
-  
-  <para>
-   If you use Zebra, you should visit its
-   <ulink url="http://www.indexdata.dk/zebra/">web site</ulink>,
-   where you can join the
-   <ulink url="http://www.indexdata.dk/mailman/listinfo/zebralist">
-   mailing-list</ulink>
-   by sending email to
-   <email>### zebra-subscribe@mailman.indexdata.dk</email>
-  </para>
-  
  </sect1>
  
  <sect1 id="features">
@@ -69,7 +58,7 @@
      <para>
       Arbitrarily complex records.  The internal data format
       is an structured format conceptually similar to XML or GRS-1,
-      which allows nested structured data elements and
+      which allows lists, nested structured data elements and
       variant forms of data.
      </para>
     </listitem>
@@ -90,8 +79,9 @@
      <para>
       Configurable to understand many input formats.
       A system of input filters driven by
-      regular expressions allows you to easily process most ASCII-based
-      data formats. SGML, XML, ISO2709 (MARC), and raw text are also
+      regular expressions allows most ASCII-based
+      data formats to be easily processed.
+      SGML, XML, ISO2709 (MARC), and raw text are also
       supported.
      </para>
     </listitem>
@@ -101,7 +91,7 @@
       Searching supports a powerful combination of boolean queries as
       well as relevance-ranking (free-text) queries.  Truncation,
       masking, full regular expression matching and "approximate
-      matching" (eg. spelling mistakes) are all supported.
+      matching" (eg. spelling mistakes) are all handled.
      </para>
     </listitem>
 
@@ -118,7 +108,8 @@
      <para>
       Zebra is written in portable C, so it runs on most Unix-like systems 
       as well as Windows NT.  A binary distribution for Windows NT is
-      available.
+      available at
+      <ulink url="http://indexdata.dk/zebra/###"/>
      </para>
     </listitem>
     
@@ -134,14 +125,18 @@
    <itemizedlist>
     <listitem>
      <para>
-      Protocol facilities: Init, Search, Present (retrieval), Delete,
-      Scan (index browsing) and Sort.
+      Protocol facilities: Init, Search, Present (retrieval),
+      Segmentation (support for very large records), Delete, Scan
+      (index browsing), Sort, Close and some Extended Services.
      </para>
     </listitem>
 
     <listitem>
      <para>
-      Piggy-backed presents are honored in the search-request.
+      Piggy-backed presents are honored in the search request - that
+      is, a subset of the found records can be returned directly with
+      a search response, enabling search and retrieval to happen in a
+      single round-trip.
      </para>
     </listitem>
 
@@ -238,7 +233,7 @@
     (GIRT is the German Indexing and Retrieval Testdatabase.  It is a
     standard German-language test database for intelligent indexing
     and retrieval systems.  See
-    <ulink url="http://www.gesis.org/forschung/informationstechnologie/clef-delos.htm"/>
+    <ulink url="http://www.gesis.org/forschung/informationstechnologie/clef-delos.htm"/>)
    </para>
    <para>
     Evaluation will take place as part of the TREC/CLEF campaign 2003 
@@ -253,8 +248,9 @@
   <sect2>
    <title>ULS (Union List of Serials)</title>
    <para>
-    The London School of Economics (### I think)
-    are involved in a projects called ULS to provide a union catalogue
+    The M25-Link systems team
+    (<ulink url="http://www.m25lib.ac.uk/M25link/"/>)
+    are involved in a project called ULS to provide a union catalogue
     for periodicals in 21 member libraries.  They do this with an
     unusual architecture which they call a
     ``non-distributed virtual union catalogue''.
@@ -265,7 +261,9 @@
     holdings.  Then 21 individual Z39.50 targets are created, each
     using Zebra, and all mounted on the single hardware server.
     The live service provides a web gateway allowing Z39.50 searching
-    of all 21 targets or a selection of them.
+    of all of the targets or a selection of them.  Zebra's small
+    footprint allows a relatively modest system to comfortably host
+    the 21 servers.
    </para>
    <para>
     More information can be found at
@@ -280,7 +278,7 @@
     indexes of large web sites, typically in the region of tens of
     millions of pages.  In this role, it functions somewhat similarly
     to the engine of google or altavista, but for a selected intranet
-    or subset of the whole Web.
+    or a subset of the whole Web.
    </para>
    <para>
     For example, Liverpool University's web-search facility (see on
@@ -295,6 +293,39 @@
    </para>
   </sect2>
  </sect1>
+
+
+ <sect1 id="support">
+  <title>Support</title>
+  <para>
+   You can get support for Zebra from at least three sources.
+  </para>
+  <para>
+   First, there's the Zebra web site at
+   <ulink url="http://www.indexdata.dk/zebra/"/>,
+   which always has the most recent version available for download.
+   If you have a problem with Zebra, the first thing to do is see
+   whether it's fixed in the current release.
+  </para>
+  <para>
+   Second, there's the Zebra mailing list.  Its home page at
+   <ulink url="http://www.indexdata.dk/mailman/listinfo/zebralist"/>
+   includes a complete archive of all messages that have ever been
+   posted on the list.  The Zebra mailing list is used both for
+   announcements from the authors (new
+   releases, bug fixes, etc.) and general discussion.  You are welcome
+   to seek support there.  Join by sending email to
+   <email>zebra-subscribe-###@mailman.indexdata.dk</email>
+  </para>
+  <para>
+   Third, it's possible to buy a commercial support contract, with
+   well defined service levels and response times, from Index Data.
+   See
+   <ulink url="http://www.indexdata.dk/support/###"/>
+   for details.
+  </para>
+ </sect1>  
+
 
  <sect1 id="future">
   <title>Future Directions</title>
@@ -314,12 +345,18 @@
        information retrieval engine and high-performance XML
        repository.
      </para>
+     <para>
+       ### Partially done.
+     </para>
     </listitem>
 
     <listitem>
      <para>
        Access to search engine through SOAP/RPC API to allow the
        construction of applications without requiring Z39.50 tools.
+     </para>
+     <para>
+       ### Partially done, thanks to the new SRW/Z39.50 gateway.
      </para>
     </listitem>
 
@@ -352,7 +389,9 @@
   </para>
   <para>
    If you think it's all really neat, you're welcome to drop us a line
-   saying that, too. You'll find contact info at the end of this file.
+   saying that, too. You can email us on
+   <email>indo@indexdata.dk</email>
+   or check the contact info at the end of this manual.
   </para>
   
  </sect1>

@@ -1,5 +1,5 @@
 <chapter id="quick-start">
- <!-- $Id: quickstart.xml,v 1.2 2002-04-10 14:47:49 heikki Exp $ -->
+ <!-- $Id: quickstart.xml,v 1.3 2002-10-08 08:09:43 mike Exp $ -->
  <title>Quick Start </title>
  
  <para>
@@ -15,17 +15,21 @@
   file named <literal>zebra.cfg</literal> with the following contents:
   
   <screen>
-   # Where are the YAZ tables located.
-   profilePath: ../../../yaz/tab ../../tab
-   
+   # Where the schema files, attribute files, etc are located.
+   profilePath: .:../../tab:../../../yaz/tab:/usr/local/share/yaz/tab:/usr/share/yaz/tab
+
    # Files that describe the attribute sets supported.
    attset: bib1.att
    attset: gils.att
+   attset: explain.att
+
+   recordtype: grs.sgml
+   isam: c
   </screen>
  </para>
  
  <para>
-  Now, edit the file and set <literal>profilePath</literal> to the path of the
+  If necessary, edit the file and set <literal>profilePath</literal> to the path of the
   YAZ profile tables (sub directory <literal>tab</literal> of the YAZ
   distribution archive).
  </para>
@@ -35,14 +39,12 @@
   <literal>records</literal>. To index these, type:
   
   <screen>
-   $ ../../index/zebraidx -t grs.sgml update records
+   zebraidx update records
   </screen>
  </para>
  
  <para>
-  In the command above the option <literal>-t</literal> specified the record
-  type &mdash; in this case <literal>grs.sgml</literal>.
-  The word <literal>update</literal> followed
+  In the command above, the word <literal>update</literal> followed
   by a directory root updates all files below that directory node.
  </para>
  
@@ -51,7 +53,7 @@
   fire up a server. To start a server on port 2100, type:
   
   <screen>
-   $ ../../index/zebrasrv tcp:@:2100
+   zebrasrv tcp:@:2100
   </screen>
   
  </para>
@@ -66,14 +68,12 @@
  </para>
  
  <para>
-  To test the server, you can use any Z39.50 client (1992 or later).
-  For instance, you can use the demo client that comes with YAZ: Just
-  cd to the <literal>client</literal> subdirectory of the YAZ distribution
-  and type:
+  To test the server, you can use any Z39.50 client.
+  For instance, you can use the demo client that comes with YAZ:
  </para>
  <para>
   <screen>
-   $ ./yaz-client tcp:localhost:2100
+   yaz-client tcp:localhost:2100
   </screen>
  </para>
  
@@ -81,8 +81,7 @@
   When the client has connected, you can type:
  </para>
  
-<para>
-  
+ <para>
   <screen>
    Z&#62; find surficial
    Z&#62; show 1
@@ -114,8 +113,12 @@
   </para>
  </note>
  <para>
-  If you've made it this far, there's a good chance that
-  you've got through the compilation OK.
+  If you've made it this far, you know that your installation is
+  working, but there's a certain amount of voodoo going on - for
+  example, the mysterious incantations in the
+  <literal>zebra.cfg</literal> file.  In order to help us understand
+  these fully, the next chapter will work through a series of
+  increasingly complex example configurations.
  </para>
  
 </chapter>

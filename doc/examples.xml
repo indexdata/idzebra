@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.6 2002-09-20 09:58:04 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.7 2002-10-08 08:09:43 mike Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -19,106 +19,119 @@
 
     <listitem>
      <para>
-      Where to find the default indexing rules (### default.idx)
+      Where to find subsidiary configuration files, including
+      <literal>default.idx</literal>
+      which specifies the default indexing rules.
      </para>
     </listitem>
 
     <listitem>
      <para>
-      ### Something to do with explain.abs?!
+      What attribute sets to recognise in searches.
      </para>
     </listitem>
 
     <listitem>
      <para>
-      ### Where to find other configuration files, e.g. searches using
-      BIB-1 attributes require a bib1.att configuration file (even if
-      the access point is actually an XPath expression).  These are
-      searched for in the working directory unless otherwise
-      specified.
+      Policy details such as what record type to expect, what
+      low-level indexing algorithm to use, how to identify potential
+      duplicate records, etc.
      </para>
     </listitem>
 
    </itemizedlist>
   </para>
+  <para>
+   Now let's see what goes in the <literal>zebra.cfg</literal> file
+   for some example configurations.
+  </para>
  </sect1>
 
  <sect1 id="example1">
-  <title>Example 1: Minimal Configuration</title>
+  <title>Example 1: XML Indexing And Searching</title>
 
   <para>
    This example shows how Zebra can be used with absolutely minimal
-   configuration to index a body of XML documents, and search them
-   using XPath expressions to specify access points.
+   configuration to index a body of
+   <ulink url="http://www.w3.org/xml/###">XML</ulink>
+   documents, and search them using
+   <ulink url="http://www.w3.org/xpath/###">XPath</ulink>
+   expressions to specify access points.
   </para>
   <para>
-   Go to the <literal>zebra/examples/dinosauricon</literal> directory.
+   Go to the <literal>examples/dinosauricon</literal> subdirectory
+   of the distribution archive.
    There you will find a <literal>records</literal> subdirectory,
    which contains some raw XML data to be added to the database: in
-   this case, two files, <literal>genera.xml</literal> and
-   <literal>taxa.xml</literal>, which contain information about all
-   the known dinosaur genera as of August 2002.
+   this case, as single file, <literal>genera.xml</literal>,
+   which contain information about all the known dinosaur genera as of
+   August 2002.
   </para>
   <para>
    Now we need to create the Zebra database, which we do with the
-   Zebra indexer, <literal>zebraidx</literal>.  This program's
-   behaviour is driven by a configuration life, generally called
-   <literal>zebra.cfg</literal>, although this can be changed with the
-   <literal>-c</literal> option.  For our purposes, we don't need any
-   special behaviour - we can use the defaults - so an empty
-   configuration will do just fine.  We can either create an empty
-   <literal>zebra.cfg</literal> or specify the name of an existing
-   empty file using, for example, <literal>-c /dev/null</literal>.
-  </para>
-  <para>
-   In this case, we'll use an empty <literal>zebra.cfg</literal> so
-   we can add more configuration to it later.
+   Zebra indexer, <literal>zebraidx</literal>, which is
+   driven by the <literal>zebra.cfg</literal> configuration file.
+   For our purposes, we don't need any
+   special behaviour - we can use the defaults - so we start with a
+   minimal file that just tells <literal>zebraidx</literal> where to
+   find the default indexing rules, and how to parse the records:
+   <screen>
+    profilePath: .:../../tab:../../../yaz/tab
+    recordType: grs.sgml
+   </screen>
   </para>
   <para>
    That's all you need for a minimal Zebra configuration.  Now you can
    roll the XML records into the database and build the indexes:
    <screen>
-	zebraidx -t grs.sgml update records
+    zebraidx update records
    </screen>
-   (### What does "grs.sgml" actually mean?)
   </para>
   <para>
    Now start the server.  Like the indexer, its behaviour is
-   controlled by a configuration file, generally
-   <literal>zebra.cfg</literal>; and like the indexer, it works just
-   fine with an empty configuration.
+   controlled by the
+   <literal>zebra.cfg</literal> file; and like the indexer, it works
+   just fine with this minimal configuration.
    <screen>
 	zebrasrv
    </screen>
    By default, the server listens on IP port number 9999, although
-   this can easily be changed.
+   this can easily be changed - see 
+   <xref linkend="zebrasrv"/>.
   </para>
   <para>
    Now you can use the Z39.50 client program of your choice to execute
    XPath-based boolean queries and fetch the XML records that satisfy
    them:
    <screen>
-	Z&gt; open tcp:@:9999
-	Connecting...Ok.
-	Z&gt; find @attr 1=/GENUS/MEANING @or vertebra jaw
-	Number of hits: 1
-	Z&gt; format xml
-	Z&gt; show 1
-	Z> show 1
-	&lt;GENUS name="Hudiesaurus" type="with" xmlns:idzebra="http://www.indexdata.dk/zebra/"&gt;
-	 &lt;MEANING&gt;
-	  butterfly &lt;LOW&gt;vertebra&lt;/LOW&gt; lizard
-	 &lt;/MEANING&gt;
-	 &lt;LENGTH value="30"&gt;&lt;/LENGTH&gt;
-	 &lt;PLACE name="China"&gt;&lt;/PLACE&gt;
-	 &lt;REMAINS content="4 teeth, forelimb, first dorsal vertebra"&gt;&lt;/REMAINS&gt;
-	 &lt;SPECIES name="sinojapanorum" status="nudum"&gt;
-	  &lt;AUTHOR name="Dong" year="1997"&gt;&lt;/AUTHOR&gt;
-	  &lt;MEANING&gt;
-	   Chinese-Japanese
-	  &lt;/MEANING&gt;
-	 &lt;/SPECIES&gt;
-	&lt;idzebra:size&gt;359&lt;/idzebra:size&gt;&lt;idzebra:localnumber&gt;447&lt;/idzebra:localnumber&gt;&lt;idzebra:filename&gt;records/genera.xml&lt;/idzebra:filename&gt;&lt;/GENUS&gt;
+    $ yaz-client tcp:@:9999
+    Connecting...Ok.
+    Z&gt; find @attr 1=/GENUS/MEANING @and lizard earthquakes
+    Number of hits: 1
+    Z&gt; format xml
+    Z&gt; show 1
+    &lt;GENUS name="Sauroposeidon" type="with"&gt;
+     &lt;MEANING&gt;lizard Poseidon &lt;LOW&gt;(Greek god of, among other things, earthquakes)&lt;/LOW&gt;&lt;/MEANING&gt;
+     &lt;SPECIES name="proteles"&gt;
+      &lt;AUTHOR type="vide" name="Franklin" year="2000"&gt;&lt;/AUTHOR&gt;
+      &lt;AUTHOR name="Wedel, Cifelli, Sanders"&gt;&lt;/AUTHOR&gt;
+     &lt;/SPECIES&gt;
+     &lt;PLACE name="Oklahoma"&gt;&lt;/PLACE&gt;
+     &lt;TIME value="Albian"&gt;&lt;/TIME&gt;
+     &lt;LENGTH value="30" q="1"&gt;&lt;/LENGTH&gt;
+     &lt;REMAINS content="rib, cervical vertebrae"&gt;&lt;/REMAINS&gt;
+     &lt;ESSAY&gt;
+      &lt;P&gt; This new &lt;NOMEN name="Brachiosaurus"&gt;&lt;/NOMEN&gt;-like &lt;LINK content="dinosaur"&gt;&lt;/LINK&gt;
+      was perhaps the tallest. With its head raised, it stood 60 feet (nearly
+      20 m) tall. &lt;/P&gt;
+     &lt;/ESSAY&gt;
+
+      &lt;idzebra xmlns="http://www.indexdata.dk/zebra/"&gt;
+	&lt;size&gt;593&lt;/size&gt;
+	&lt;localnumber&gt;891&lt;/localnumber&gt;
+	&lt;filename&gt;records/genera.xml&lt;/filename&gt;
+      &lt;/idzebra&gt;
+    &lt;/GENUS&gt;
    </screen>
   </para>
   <para>
@@ -127,28 +140,15 @@
  </sect1>
 
  <sect1 id="example2">
-  <title>Example 2: Adding Some Configuration</title>
+  <title>Example 2: Supporting Z39.50 Searches</title>
 
   <para>
    You may have noticed as <literal>zebraidx</literal> was building
-   the database that it issued several warnings, which we ignored at
-   the time:
+   the database that it issued a warning, which we ignored at the
+   time:
    <screen>
-zebraidx -t grs.sgml update records
-02:12:32-30/08: zebraidx(18151) [warn] default.idx [No such file or directory]
-02:12:32-30/08: zebraidx(18151) [warn] Couldn't open explain.abs [No such file or directory]
-02:12:32-30/08: zebraidx(18151) [warn] records/genera.xml:0 Couldn't open GENUS.abs [No such file or directory]
-02:12:32-30/08: zebraidx(18151) [warn] records/genera.xml:0 Unknown register type: 0
-02:12:32-30/08: zebraidx(18151) [warn] records/genera.xml:0 Unknown register type: w
-02:12:35-30/08: zebraidx(18151) [warn] records/taxa.xml:0 Couldn't open TAXON.abs [No such file or directory]
-   </screen>
-   And the server issued several more as the client connected to it,
-   then searched for and retrieved a record:
-   <screen>
-02:17:10-30/08: zebrasrv(18165) [warn] default.idx [No such file or directory]
-02:17:10-30/08: zebrasrv(18165) [warn] Couldn't open explain.abs [No such file or directory]
-02:17:57-30/08: zebrasrv(18165) [warn] Unknown register type: w
-02:18:42-30/08: zebrasrv(18165) [warn] Couldn't open GENUS.abs [No such file or directory]
+    $ zebraidx update records
+    00:45:46-08/10: ../../index/zebraidx(5016) [warn] records/genera.xml:0 Couldn't open GENUS.abs [No such file or directory]
    </screen>
   </para>
  </sect1>
@@ -161,7 +161,7 @@ zebraidx -t grs.sgml update records
      The master configuration file, <literal>zebra.cfg</literal>,
      which is as short and simple as it can be:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.6 2002-09-20 09:58:04 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.7 2002-10-08 08:09:43 mike Exp $
 	# Bare-bones master configuration file for Zebra
 	profilePath: .:../../tab:../../../yaz/tab
      </screen>
@@ -178,7 +178,7 @@ zebraidx -t grs.sgml update records
      The BIB-1 attribute set configuration file,
      <literal>bib1.att</literal>, which is also as short as possible:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.6 2002-09-20 09:58:04 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.7 2002-10-08 08:09:43 mike Exp $
 	# Bare-bones BIB-1 attribute set file for Zebra
 	reference Bib-1
      </screen>

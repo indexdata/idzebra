@@ -1,5 +1,5 @@
 <chapter id="installation">
- <!-- $Id: installation.xml,v 1.4 2002-04-10 14:47:49 heikki Exp $ -->
+ <!-- $Id: installation.xml,v 1.5 2002-10-08 08:09:43 mike Exp $ -->
  <title>Installation</title>
  <para>
   An ANSI C compiler is required to compile the Zebra
@@ -44,7 +44,7 @@
  </para>
  
  <para>
-  When configured build the software by typing:
+  When configured, build the software by typing:
   
   <screen>
   make
@@ -53,7 +53,7 @@
  </para>
  
  <para>
-  If successful, two executables have been created in the sub-directory
+  If successful, two executables are created in the sub-directory
   <literal>index</literal>.
   <variablelist>
    
@@ -77,7 +77,8 @@
  </para>
  
  <para>
-  You can now use Zebra. If you wish to install it system-wide, type
+  You can now use Zebra. If you wish to install it system-wide, then
+  as root type
   <screen>
     make install
   </screen>

@@ -13,7 +13,7 @@
         <!ENTITY app-indexdata SYSTEM "indexdata.xml">
         <!ENTITY zebraidx-options SYSTEM "zebraidx-options.xml">
 ]>
-<!-- $Id: zebra.xml.in,v 1.10 2002-09-19 21:06:51 adam Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.11 2002-10-08 08:09:43 mike Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -38,7 +38,7 @@
     Zebra is a free, fast, friendly information management system.  It
     can index records in XML/SGML, MARC, e-mail archives and many
     other formats, and quickly find them using a combination of
-    boolean searching and relevance ranking.  Search/retrieval
+    boolean searching and relevance ranking.  Search-and-retrieve
     applications can be written using APIs in a wide variety of
     languages, communicating with the Zebra server using
     industry-standard information-retrieval protocols.
