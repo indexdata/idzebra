@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.10  1997-02-12 20:45:21  adam
+ * Revision 1.11  1998-01-29 13:33:04  adam
+ * 1.0b1.
+ *
+ * Revision 1.10  1997/02/12 20:45:21  adam
  * Internal release.
  *
  * Revision 1.9  1996/11/08 11:08:03  adam
@@ -37,10 +40,10 @@
  */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.0a8"
+#define ZEBRAVER "1.0b1"
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 1997-02-12 20:45:21 $"
+#define ZEBRADATE "$Date: 1998-01-29 13:33:04 $"
 #endif
 
