@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.161 2004-11-19 10:27:06 heikki Exp $
+/* $Id: zrpn.c,v 1.162 2004-11-26 12:20:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -2512,11 +2512,6 @@ void rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     }
     if (ord_no == 0)
     {
-        char val_str[32];
-        sprintf (val_str, "%d", use_value);
-        zh->errCode = 114;
-        zh->errString = odr_strdup (stream, val_str);
-
         *num_entries = 0;
         return;
     }
