@@ -1,5 +1,5 @@
-/* $Id: rsisamb.h,v 1.2 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: rsisamb.h,v 1.2.2.1 2005-01-14 14:32:25 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -33,6 +33,7 @@ extern "C" {
 #endif
 
 extern const struct rset_control *rset_kind_isamb;
+extern const struct rset_control *rset_kind_isamb_forward;
 
 typedef struct rset_isamb_parms
 {

@@ -1,5 +1,5 @@
-/* $Id: rsisamb.c,v 1.10.2.1 2004-12-17 13:43:10 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: rsisamb.c,v 1.10.2.2 2005-01-14 14:32:25 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -51,7 +51,21 @@ static const struct rset_control control =
     r_close,
     r_delete,
     r_rewind,
-    r_forward,  /* rset_default_forward,  */
+    rset_default_forward,
+    r_pos,
+    r_read,
+    r_write,
+};
+
+static const struct rset_control control_forward = 
+{
+    "isamb",
+    r_create,
+    r_open,
+    r_close,
+    r_delete,
+    r_rewind,
+    r_forward,
     r_pos,
     r_read,
     r_write,
@@ -62,6 +76,7 @@ static const struct rset_control control =
 /* negates the speedup from forwarding */
 
 const struct rset_control *rset_kind_isamb = &control;
+const struct rset_control *rset_kind_isamb_forward = &control_forward;
 
 struct rset_pp_info {
     ISAMB_PP pt;

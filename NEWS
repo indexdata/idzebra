@@ -1,6 +1,8 @@
 
 --- 1.3.19 2004/XX/YY
 
+Fixed bug #248: hit counts in combinatoric (and) searches in specific ..
+
 Avoid crash in ISAMB when isamb_pp_open gets ISAMB_POS = 0. In
 this case EOF (no entries) is signalled. It fixes problem with
 terms being deleted. See bug #109.

@@ -1,5 +1,5 @@
-/* $Id: trunc.c,v 1.28.2.1 2004-08-11 13:31:10 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: trunc.c,v 1.28.2.2 2005-01-14 14:32:25 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -651,7 +651,10 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             parms.is = zi->reg->isamb;
 	    parms.rset_term = rset_term_create (term, length, flags,
                                                 term_type);
-            return rset_create (rset_kind_isamb, &parms);
+	    if (res_get(zi->res, "isambforward"))
+		return rset_create (rset_kind_isamb_forward, &parms);
+	    else
+		return rset_create (rset_kind_isamb, &parms);
         }
         qsort (isam_p, no, sizeof(*isam_p), isamd_trunc_cmp);
     }
