@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.26  1995-11-22 17:19:17  adam
+ * Revision 1.27  1995-11-25 10:24:06  adam
+ * More record fields - they are enumerated now.
+ * New options: flagStoreData flagStoreKey.
+ *
+ * Revision 1.26  1995/11/22  17:19:17  adam
  * Record management uses the bfile system.
  *
  * Revision 1.25  1995/11/21  15:29:12  adam
@@ -120,6 +124,9 @@ struct recordGroup {
     char *groupName;
     char *databaseName;
     char *path;
+    char *fileMatch;
+    int  flagStoreData;
+    int  flagStoreKeys;
 };
 
 struct dirs_info *dirs_open (Dict dict, const char *rep);

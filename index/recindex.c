@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.5  1995-11-22 17:19:18  adam
+ * Revision 1.6  1995-11-25 10:24:06  adam
+ * More record fields - they are enumerated now.
+ * New options: flagStoreData flagStoreKey.
+ *
+ * Revision 1.5  1995/11/22  17:19:18  adam
  * Record management uses the bfile system.
  *
  * Revision 1.4  1995/11/20  16:59:46  adam
@@ -249,6 +253,7 @@ static void rec_write_single (Records p, Record rec)
         else
         {
             memcpy (cptr, &block_free, sizeof(int));
+            logf (LOG_LOG, "writing block %d (1)", block_prev);
             bf_write (p->data_BFile[dst_type], block_prev, 0, 0, cptr);
             cptr = p->tmp_buf + no_written;
         }
@@ -259,6 +264,7 @@ static void rec_write_single (Records p, Record rec)
     assert (block_prev != -1);
     block_free = 0;
     memcpy (cptr, &block_free, sizeof(int));
+    logf (LOG_LOG, "writing block %d (2) dst=%d", block_prev, dst_type);
     bf_write (p->data_BFile[dst_type], block_prev, 0,
               sizeof(int) + (p->tmp_buf+size) - cptr, cptr);
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.25  1995-11-21 15:29:13  adam
+ * Revision 1.26  1995-11-25 10:24:07  adam
+ * More record fields - they are enumerated now.
+ * New options: flagStoreData flagStoreKey.
+ *
+ * Revision 1.25  1995/11/21  15:29:13  adam
  * Config file 'base' read by default by both indexer and server.
  *
  * Revision 1.24  1995/11/20  16:59:47  adam
@@ -189,8 +193,8 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     struct recRetrieveCtrl retrieveCtrl;
 
     rec = rec_get (zi->records, sysno);
-    file_type = rec->info[0];
-    fname = rec->info[1];
+    file_type = rec->info[recInfo_fileType];
+    fname = rec->info[recInfo_filename];
 
     if (!(rt = recType_byName (file_type)))
     {

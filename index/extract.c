@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.31  1995-11-24 11:31:35  adam
+ * Revision 1.32  1995-11-25 10:24:05  adam
+ * More record fields - they are enumerated now.
+ * New options: flagStoreData flagStoreKey.
+ *
+ * Revision 1.31  1995/11/24  11:31:35  adam
  * Commands add & del read filenames from stdin if source directory is
  * empty.
  * Match criteria supports 'constant' strings.
@@ -641,76 +645,20 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
     return dstBuf;
 }
 
-int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
-                 int deleteFlag)
+static int recordExtract (SYSNO *sysno, const char *fname,
+                          struct recordGroup *rGroup, int deleteFlag,
+                          int fd,
+                          const char *file_type,
+                          RecType recType)
 {
-    SYSNO sysnotmp;
-    int i, r;
-    char gprefix[128];
-    char ext[128];
-    char ext_res[128];
-    const char *file_type;
-    const char *file_match;
     struct recExtractCtrl extractCtrl;
-    RecType recType;
-    Record rec;
+    int r;
     char *matchStr;
+    SYSNO sysnotmp;
+    Record rec;
 
-    if (!rGroup->groupName || !*rGroup->groupName)
-        *gprefix = '\0';
-    else
-        sprintf (gprefix, "%s.", rGroup->groupName);
-
-    logf (LOG_DEBUG, "fileExtract %s", fname);
-
-    /* determine file extension */
-    for (i = strlen(fname); --i >= 0; )
-        if (fname[i] == '/')
-        {
-            strcpy (ext, "");
-            break;
-        }
-        else if (fname[i] == '.')
-        {
-            strcpy (ext, fname+i+1);
-            break;
-        }
-    /* determine file type - depending on extension */
-    sprintf (ext_res, "%sfileExtension.%s", gprefix, ext);
-    if (!(file_type = res_get (common_resource, ext_res)))
-        return 0;
-    if (!(recType = recType_byName (file_type)))
-        return 0;
-
-    /* determine match criteria */
-    sprintf (ext_res, "%sfileMatch.%s", gprefix, ext);
-    file_match = res_get (common_resource, ext_res);
-    if (!file_match)
-    {
-        sprintf (ext_res, "%sfileMatch", gprefix);
-        file_match = res_get (common_resource, ext_res);
-    }
-
-    /* determine database name */
-    if (!rGroup->databaseName)
-    {
-        sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
-        if (!(rGroup->databaseName = res_get (common_resource, ext_res)))
-        {
-            sprintf (ext_res, "%sdatabase", gprefix);
-            rGroup->databaseName = res_get (common_resource, ext_res);
-        }
-    }
-    if (!rGroup->databaseName)
-        rGroup->databaseName = "Default";
-
-    /* open input file */
-    if ((extractCtrl.fd = open (fname, O_RDONLY)) == -1)
-    {
-        logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
-        return 0;
-    }
-
+    extractCtrl.fd = fd;
+    
     /* extract keys */
     extractCtrl.subType = "";
     extractCtrl.init = wordInit;
@@ -736,12 +684,12 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
     {
         sysnotmp = 0;
         sysno = &sysnotmp;
-        if (file_match)
+        if (rGroup->fileMatch)
         {
             char *rinfo;
         
             matchStr = fileMatchStr(&reckeys, rGroup, fname, file_type,
-                                    file_match);
+                                    rGroup->fileMatch);
             if (matchStr)
             {
                 rinfo = dict_lookup (matchDict, matchStr);
@@ -780,44 +728,170 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
 
         rec = rec_get (records, *sysno);
 
-        delkeys.buf_used = rec->size[2];
-	delkeys.buf = rec->info[2];
-        flushRecordKeys (*sysno, 0, &delkeys, rec->info[3]);
+        delkeys.buf_used = rec->size[recInfo_delKeys];
+	delkeys.buf = rec->info[recInfo_delKeys];
+        flushRecordKeys (*sysno, 0, &delkeys, rec->info[recInfo_databaseName]);
         if (deleteFlag)
         {
-            logf (LOG_LOG, "delete record %s", fname);
+            if (!delkeys.buf_used)
+            {
+                logf (LOG_WARN, "cannot delete %s - no delete keys",
+                      fname);
+            }
+            else
+                logf (LOG_LOG, "delete record %s", fname);
             records_deleted++;
             rec_del (records, &rec);
             return 1;
         }
         else
         {
-            logf (LOG_LOG, "update record %s", fname);
-            flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
-            records_updated++;
+            if (!delkeys.buf_used)
+            {
+                logf (LOG_WARN, "cannot update %s - no delete keys",
+                      fname);
+            }
+            else
+            {
+                logf (LOG_LOG, "update record %s", fname);
+                flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
+                records_updated++;
+            }
         }
     }
-    free (rec->info[0]);
-    rec->info[0] = rec_strdup (file_type, &rec->size[0]);
+    free (rec->info[recInfo_fileType]);
+    rec->info[recInfo_fileType] =
+        rec_strdup (file_type, &rec->size[recInfo_fileType]);
 
-    free (rec->info[1]);
-    rec->info[1] = rec_strdup (fname, &rec->size[1]);
+    free (rec->info[recInfo_filename]);
+    rec->info[recInfo_filename] =
+        rec_strdup (fname, &rec->size[recInfo_filename]);
 
-    free (rec->info[2]);
-    if (reckeys.buf_used > 0)
+    free (rec->info[recInfo_delKeys]);
+    if (reckeys.buf_used > 0 && rGroup->flagStoreKeys == 1)
     {
-        rec->info[2] = malloc (reckeys.buf_used);
-        rec->size[2] = reckeys.buf_used;
-        memcpy (rec->info[2], reckeys.buf, rec->size[2]);
+        logf (LOG_LOG, "Storing keys...");
+        rec->info[recInfo_delKeys] = malloc (reckeys.buf_used);
+        rec->size[recInfo_delKeys] = reckeys.buf_used;
+        memcpy (rec->info[recInfo_delKeys], reckeys.buf,
+                rec->size[recInfo_delKeys]);
     }
     else
     {
-        rec->info[2] = NULL;
-        rec->size[2] = 0;
+        rec->info[recInfo_delKeys] = NULL;
+        rec->size[recInfo_delKeys] = 0;
     }
-    free (rec->info[3]);
-    rec->info[3] = rec_strdup (rGroup->databaseName, &rec->size[3]); 
+    free (rec->info[recInfo_databaseName]);
+    rec->info[recInfo_databaseName] =
+        rec_strdup (rGroup->databaseName, &rec->size[recInfo_databaseName]); 
 
     rec_put (records, &rec);
     return 1;
 }
+
+int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
+                 int deleteFlag)
+{
+    int i, fd;
+    char gprefix[128];
+    char ext[128];
+    char ext_res[128];
+    const char *file_type;
+    RecType recType;
+
+    if (!rGroup->groupName || !*rGroup->groupName)
+        *gprefix = '\0';
+    else
+        sprintf (gprefix, "%s.", rGroup->groupName);
+
+    logf (LOG_DEBUG, "fileExtract %s", fname);
+
+    /* determine file extension */
+    for (i = strlen(fname); --i >= 0; )
+        if (fname[i] == '/')
+        {
+            strcpy (ext, "");
+            break;
+        }
+        else if (fname[i] == '.')
+        {
+            strcpy (ext, fname+i+1);
+            break;
+        }
+    /* determine file type - depending on extension */
+    sprintf (ext_res, "%sfileExtension.%s", gprefix, ext);
+    if (!(file_type = res_get (common_resource, ext_res)))
+        return 0;
+    if (!(recType = recType_byName (file_type)))
+        return 0;
+
+    /* determine match criteria */
+    if (rGroup->fileMatch)
+    {
+        sprintf (ext_res, "%sfileMatch.%s", gprefix, ext);
+        rGroup->fileMatch = res_get (common_resource, ext_res);
+        if (!rGroup->fileMatch)
+        {
+            sprintf (ext_res, "%sfileMatch", gprefix);
+            rGroup->fileMatch = res_get (common_resource, ext_res);
+        }
+    }
+
+    /* determine database name */
+    if (!rGroup->databaseName)
+    {
+        sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
+        if (!(rGroup->databaseName = res_get (common_resource, ext_res)))
+        {
+            sprintf (ext_res, "%sdatabase", gprefix);
+            rGroup->databaseName = res_get (common_resource, ext_res);
+        }
+    }
+    if (!rGroup->databaseName)
+        rGroup->databaseName = "Default";
+
+    if (rGroup->flagStoreData == -1)
+    {
+        const char *sval;
+        sprintf (ext_res, "%sstoreData.%s", gprefix, ext);
+        if (!(sval = res_get (common_resource, ext_res)))
+        {
+            sprintf (ext_res, "%sstoreData", gprefix);
+            sval = res_get (common_resource, ext_res);
+        }
+        if (sval)
+            rGroup->flagStoreData = atoi (sval);
+    }
+    if (rGroup->flagStoreData == -1)
+        rGroup->flagStoreData = 0;
+
+
+    if (rGroup->flagStoreKeys == -1)
+    {
+        const char *sval;
+
+        sprintf (ext_res, "%sstoreKeys.%s", gprefix, ext);
+        if (!(sval = res_get (common_resource, ext_res)))
+        {
+            sprintf (ext_res, "%sstoreKeys", gprefix);
+            sval = res_get (common_resource, ext_res);
+        }
+        if (sval)
+            rGroup->flagStoreKeys = atoi (sval);
+    }
+    if (rGroup->flagStoreKeys == -1)
+        rGroup->flagStoreKeys = 0;
+
+
+    /* open input file */
+    if ((fd = open (fname, O_RDONLY)) == -1)
+    {
+        logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
+        return 0;
+    }
+    recordExtract (sysno, fname, rGroup, deleteFlag, fd,
+                   file_type, recType);
+    close (fd);
+    return 1;
+}
+

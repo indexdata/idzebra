@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.4  1995-11-22 17:19:19  adam
+ * Revision 1.5  1995-11-25 10:24:07  adam
+ * More record fields - they are enumerated now.
+ * New options: flagStoreData flagStoreKey.
+ *
+ * Revision 1.4  1995/11/22  17:19:19  adam
  * Record management uses the bfile system.
  *
  * Revision 1.3  1995/11/20  16:59:46  adam
@@ -39,3 +43,11 @@ Record rec_get (Records p, int sysno);
 void rec_close (Records *p);
 Records rec_open (int rw);
 char *rec_strdup (const char *s, size_t *len);
+
+enum { recInfo_fileType,
+           recInfo_filename,
+           recInfo_delKeys,
+           recInfo_databaseName,
+           recInfo_recordData
+   };
+           

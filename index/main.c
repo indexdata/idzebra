@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.18  1995-11-22 17:19:17  adam
+ * Revision 1.19  1995-11-25 10:24:06  adam
+ * More record fields - they are enumerated now.
+ * New options: flagStoreData flagStoreKey.
+ *
+ * Revision 1.18  1995/11/22  17:19:17  adam
  * Record management uses the bfile system.
  *
  * Revision 1.17  1995/11/21  15:01:16  adam
@@ -88,6 +92,9 @@ int main (int argc, char **argv)
     rGroup.groupName = NULL;
     rGroup.databaseName = NULL;
     rGroup.path = NULL;
+    rGroup.fileMatch = NULL;
+    rGroup.flagStoreData = -1;
+    rGroup.flagStoreKeys = -1;
 
     prog = *argv;
     if (argc < 2)
