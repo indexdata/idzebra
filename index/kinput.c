@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.23  1997-09-04 13:57:39  adam
+ * Revision 1.24  1997-09-09 13:38:07  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.23  1997/09/04 13:57:39  adam
  * Added O_BINARY for open calls.
  *
  * Revision 1.22  1997/02/12 20:39:45  adam
@@ -88,7 +91,11 @@
  */
 
 #include <fcntl.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -567,6 +574,10 @@ void progressFunc (struct key_file *keyp, void *info)
     }
     p->totalOffset += keyp->buf_size;
 }
+
+#ifndef R_OK
+#define R_OK 4
+#endif
 
 void key_input (int nkeys, int cache)
                 

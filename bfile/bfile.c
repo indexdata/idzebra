@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.21  1996-10-29 13:56:13  adam
+ * Revision 1.22  1997-09-09 13:37:52  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.21  1996/10/29 13:56:13  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.20  1996/03/26 15:59:04  adam
@@ -72,7 +75,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <zebrautl.h>
 #include <bfile.h>

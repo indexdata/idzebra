@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: symtab.c,v $
- * Revision 1.3  1996-10-29 14:06:54  adam
+ * Revision 1.4  1997-09-09 13:38:09  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.3  1996/10/29 14:06:54  adam
  * Include zebrautl.h instead of alexutil.h.
  *
  * Revision 1.2  1995/09/28 09:19:44  adam
@@ -17,6 +20,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "index.h"

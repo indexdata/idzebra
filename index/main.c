@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.47  1997-02-12 20:39:46  adam
+ * Revision 1.48  1997-09-09 13:38:08  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.47  1997/02/12 20:39:46  adam
  * Implemented options -f <n> that limits the log to the first <n>
  * records.
  * Changed some log messages also.
@@ -177,7 +180,11 @@
  */
 #include <stdio.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <data1.h>
 #include "index.h"

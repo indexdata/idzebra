@@ -4,14 +4,16 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dclose.c,v $
- * Revision 1.3  1994-09-01 17:49:36  adam
+ * Revision 1.4  1997-09-09 13:38:01  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.3  1994/09/01 17:49:36  adam
  * Removed stupid line. Work on insertion in dictionary. Not finished yet.
  *
  */
 
 #include <sys/types.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 

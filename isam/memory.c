@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.14  1996-10-29 13:56:56  adam
+ * Revision 1.15  1997-09-09 13:38:11  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.14  1996/10/29 13:56:56  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.13  1996/03/20 13:29:16  quinn
@@ -56,6 +59,8 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <zebrautl.h>
 #include <isam.h>

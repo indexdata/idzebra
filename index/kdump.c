@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.12  1997-09-05 09:52:32  adam
+ * Revision 1.13  1997-09-09 13:38:07  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.12  1997/09/05 09:52:32  adam
  * Extra argument added to function chr_read_maptab (tab path).
  *
  * Revision 1.11  1996/10/29 14:06:49  adam
@@ -44,8 +47,13 @@
  *
  */
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <assert.h>
 
 #include <charmap.h>

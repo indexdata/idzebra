@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.c,v $
- * Revision 1.10  1996-10-29 13:55:20  adam
+ * Revision 1.11  1997-09-09 13:38:15  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.10  1996/10/29 13:55:20  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.9  1995/12/11 09:15:22  adam
@@ -45,6 +48,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include <rsbool.h>

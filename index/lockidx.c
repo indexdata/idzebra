@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.9  1997-09-04 13:58:04  adam
+ * Revision 1.10  1997-09-09 13:38:07  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.9  1997/09/04 13:58:04  adam
  * Added O_BINARY for open calls.
  *
  * Revision 1.8  1997/02/12 20:39:46  adam
@@ -42,7 +45,11 @@
  */
 #include <stdio.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>

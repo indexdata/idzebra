@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.7  1997-09-05 15:30:10  adam
+ * Revision 1.8  1997-09-09 13:38:14  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.7  1997/09/05 15:30:10  adam
  * Changed prototype for chr_map_input - added const.
  * Added support for C++, headers uses extern "C" for public definitions.
  *
@@ -115,7 +118,9 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sys/types.h>
+#ifndef WINDOWS
 #include <unistd.h>
+#endif
 
 #include <log.h>
 #include <oid.h>

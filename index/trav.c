@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.29  1997-02-12 20:39:47  adam
+ * Revision 1.30  1997-09-09 13:38:09  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.29  1997/02/12 20:39:47  adam
  * Implemented options -f <n> that limits the log to the first <n>
  * records.
  * Changed some log messages also.
@@ -111,10 +114,14 @@
  */
 #include <stdio.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
-#include <dirent.h>
-#include <sys/stat.h>
+#endif
+#include <direntz.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.9  1996-10-29 13:57:18  adam
+ * Revision 1.10  1997-09-09 13:37:57  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.9  1996/10/29 13:57:18  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.8  1996/01/08 09:09:16  adam
@@ -44,8 +47,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
-
+#endif
 
 #include <zebrautl.h>
 #include <dfa.h>

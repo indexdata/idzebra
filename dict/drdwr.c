@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: drdwr.c,v $
- * Revision 1.8  1995-01-24 11:25:11  adam
+ * Revision 1.9  1997-09-09 13:38:01  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.8  1995/01/24 11:25:11  adam
  * Removed stupid assertion.
  *
  * Revision 1.7  1994/10/05  10:47:15  adam
@@ -22,7 +25,9 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
+#ifndef WINDOWS
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

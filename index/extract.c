@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.73  1997-09-04 13:57:20  adam
+ * Revision 1.74  1997-09-09 13:38:06  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.73  1997/09/04 13:57:20  adam
  * New file extract/retrieve method tellf (added).
  * Added O_BINARY for open calls.
  *
@@ -266,7 +269,11 @@
  */
 #include <stdio.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <fcntl.h>
 
 #include <recctrl.h>

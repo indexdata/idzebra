@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.14  1996-11-08 11:15:58  adam
+ * Revision 1.15  1997-09-09 13:38:16  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.14  1996/11/08 11:15:58  adam
  * Compressed isam fully supported.
  *
  * Revision 1.13  1996/10/29 13:55:26  adam
@@ -54,6 +57,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include <isam.h>

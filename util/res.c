@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.16  1996-10-29 13:47:49  adam
+ * Revision 1.17  1997-09-09 13:38:19  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.16  1996/10/29 13:47:49  adam
  * Implemented res_get_match. Updated to use zebrautl instead of alexpath.
  *
  * Revision 1.15  1996/05/22 08:23:43  adam
@@ -57,7 +60,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 #include <zebrautl.h>
 #include <yaz-util.h>
@@ -189,7 +196,11 @@ static void reread (Res r)
 Res res_open (const char *name)
 {
     Res r;
+#ifdef WINDOWS
+    if (access (name, 4))
+#else
     if (access (name, R_OK))
+#endif
         logf (LOG_LOG|LOG_ERRNO, "Cannot access `%s'", name);
     r = xmalloc (sizeof(*r));
     r->init = 0;

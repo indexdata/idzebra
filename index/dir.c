@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.16  1996-10-29 14:06:45  adam
+ * Revision 1.17  1997-09-09 13:38:06  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.16  1996/10/29 14:06:45  adam
  * Include zebrautl.h instead of alexutil.h.
  *
  * Revision 1.15  1996/06/04 10:18:58  adam
@@ -58,8 +61,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#ifndef WINDOWS
 #include <unistd.h>
-#include <dirent.h>
+#endif
+#include <direntz.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>

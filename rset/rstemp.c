@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.19  1997-09-04 13:58:57  adam
+ * Revision 1.20  1997-09-09 13:38:17  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.19  1997/09/04 13:58:57  adam
  * Added O_BINARY for open calls.
  *
  * Revision 1.18  1996/10/29 13:54:52  adam
@@ -73,7 +76,12 @@
 
 #include <fcntl.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
+#include <string.h>
 #include <sys/types.h>
 #include <stdio.h>
 

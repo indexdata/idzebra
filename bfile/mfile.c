@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.22  1997-09-04 13:56:39  adam
+ * Revision 1.23  1997-09-09 13:37:53  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.22  1997/09/04 13:56:39  adam
  * Added O_BINARY to open calls.
  *
  * Revision 1.21  1996/10/29 13:56:18  adam
@@ -80,8 +83,13 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
-#include <dirent.h>
+#endif
+#include <direntz.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.c,v $
- * Revision 1.2  1996-12-23 15:30:49  adam
+ * Revision 1.3  1997-09-09 13:38:16  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.2  1996/12/23 15:30:49  adam
  * Work on truncation.
  *
  * Revision 1.1  1996/12/20 11:07:21  adam
@@ -12,9 +15,10 @@
  *
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <string.h>
 
 #include <isam.h>
 #include <isamc.h>

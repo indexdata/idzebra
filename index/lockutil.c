@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.6  1996-10-29 14:08:14  adam
+ * Revision 1.7  1997-09-09 13:38:08  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.6  1996/10/29 14:08:14  adam
  * Uses resource lockDir instead of lockPath.
  *
  * Revision 1.5  1996/03/26 16:01:13  adam
@@ -33,7 +36,11 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 #include "index.h"
 

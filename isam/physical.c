@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.13  1996-10-29 13:56:57  adam
+ * Revision 1.14  1997-09-09 13:38:12  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.13  1996/10/29 13:56:57  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.12  1996/03/20 16:17:11  quinn
@@ -52,6 +55,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <log.h>
 #include <isam.h>

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.12  1996-11-08 11:10:13  adam
+ * Revision 1.13  1997-09-09 13:38:06  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.12  1996/11/08 11:10:13  adam
  * Buffers used during file match got bigger.
  * Compressed ISAM support everywhere.
  * Bug fixes regarding masking characters in queries.
@@ -47,6 +50,7 @@
  * Started work on virtual directory structure.
  */
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
