@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.19 2003-02-28 15:28:36 adam Exp $
+/* $Id: mfile.h,v 1.20 2003-03-21 08:02:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -30,15 +30,16 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifdef WIN32
 
-/* 32-bit access .. */
 #if 0
+/* 32-bit access .. */
 typedef long mfile_off_t;
 #define mfile_seek lseek
-#endif
 
-/* 64-but access .. */
+#else
+/* 64-bit access .. */
 typedef __int64 mfile_off_t;
 #define mfile_seek _lseeki64
+#endif
 
 #else
 #include <sys/types.h>
