@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: delete.c,v $
- * Revision 1.1  1995-12-06 14:52:21  adam
+ * Revision 1.2  1995-12-06 17:48:30  adam
+ * Bug fix: delete didn't work.
+ *
+ * Revision 1.1  1995/12/06  14:52:21  adam
  * New function: dict_delete.
  *
  */
@@ -41,6 +44,7 @@ static int dict_del (Dict dict, const Dict_char *str)
             cmp = dict_strcmp((Dict_char*) info, str);
             if (!cmp)
             {
+                hi = DICT_nodir(p)-1;
                 while (mid < hi)
                 {
                     indxp[-mid] = indxp[-mid-1];

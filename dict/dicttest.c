@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.16  1995-10-09 16:18:31  adam
+ * Revision 1.17  1995-12-06 17:48:30  adam
+ * Bug fix: delete didn't work.
+ *
+ * Revision 1.16  1995/10/09  16:18:31  adam
  * Function dict_lookup_grep got extra client data parameter.
  *
  * Revision 1.15  1995/09/04  12:33:31  adam
@@ -83,6 +86,7 @@ int main (int argc, char **argv)
     const char *name = NULL;
     const char *inputfile = NULL;
     const char *base = NULL;
+    int do_delete = 0;
     int range = -1;
     int rw = 0;
     int infosize = 4;
@@ -93,19 +97,19 @@ int main (int argc, char **argv)
     char *arg;
     int no_of_iterations = 0;
     int no_of_new = 0, no_of_same = 0, no_of_change = 0;
-    int no_of_hits = 0, no_of_misses = 0;
-
+    int no_of_hits = 0, no_of_misses = 0, no_not_found = 0, no_of_deleted = 0;
+    int max_pos;
     
     prog = argv[0];
     if (argc < 2)
     {
         fprintf (stderr, "usage:\n "
-                 " %s [-r n] [-u] [-g pat] [-s n] [-v n] [-i f] [-w] [-c n]"
-                 " base file\n",
+                 " %s [-d] [-r n] [-u] [-g pat] [-s n] [-v n] [-i f] [-w]"
+                 " [-c n] base file\n",
                  prog);
         exit (1);
     }
-    while ((ret = options ("r:ug:s:v:i:wc:", argv, argc, &arg)) != -2)
+    while ((ret = options ("dr:ug:s:v:i:wc:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -119,6 +123,8 @@ int main (int argc, char **argv)
                 exit (1);
             }
         }
+        else if (ret == 'd')
+            do_delete = 1;
         else if (ret == 'g')
         {
             grep_pattern = arg;
@@ -202,23 +208,33 @@ int main (int argc, char **argv)
                         ipf_ptr[i++] = '\0';
                     if (rw)
                     {
-                        switch(dict_insert (dict, ipf_ptr,
-                                            infosize, infobytes))
-                        {
-                        case 0:
-                            no_of_new++;
-                            break;
-                        case 1:
-                            no_of_change++;
-                        if (unique)
-                            logf (LOG_LOG, "%s change\n", ipf_ptr);
-                            break;
-                        case 2:
-                            if (unique)
-                                logf (LOG_LOG, "%s duplicate\n", ipf_ptr);
-                            no_of_same++;
-                            break;
-                        }
+                        if (do_delete)
+                            switch (dict_delete (dict, ipf_ptr))
+                            {
+                            case 0:
+                                no_not_found++;
+                                break;
+                            case 1:
+                                no_of_deleted++;
+                            }
+                        else
+                            switch(dict_insert (dict, ipf_ptr,
+                                                infosize, infobytes))
+                            {
+                            case 0:
+                                no_of_new++;
+                                break;
+                            case 1:
+                                no_of_change++;
+                                if (unique)
+                                    logf (LOG_LOG, "%s change\n", ipf_ptr);
+                                break;
+                            case 2:
+                                if (unique)
+                                    logf (LOG_LOG, "%s duplicate\n", ipf_ptr);
+                                no_of_same++;
+                                break;
+                            }
                     }
                     else if(range < 0)
                     {
@@ -234,7 +250,7 @@ int main (int argc, char **argv)
                     {
                         look_hits = 0;
                         dict_lookup_grep (dict, ipf_ptr, range, NULL,
-                                          grep_handle);
+                                          &max_pos, grep_handle);
                         if (look_hits)
                             no_of_hits++;
                         else
@@ -253,14 +269,22 @@ int main (int argc, char **argv)
         if (range < 0)
             range = 0;
         logf (LOG_LOG, "Grepping '%s'", grep_pattern);
-        dict_lookup_grep (dict, grep_pattern, range, NULL, grep_handle);
+        dict_lookup_grep (dict, grep_pattern, range, NULL, &max_pos,
+                          grep_handle);
     }
     if (rw)
     {
-        logf (LOG_LOG, "Insertions.... %d", no_of_iterations);
-        logf (LOG_LOG, "No of new..... %d", no_of_new);
-        logf (LOG_LOG, "No of change.. %d", no_of_change);
-        logf (LOG_LOG, "No of same.... %d", no_of_same);
+        logf (LOG_LOG, "Iterations.... %d", no_of_iterations);            
+        if (do_delete)
+        {
+            logf (LOG_LOG, "No of deleted. %d", no_of_deleted);
+            logf (LOG_LOG, "No not found.. %d", no_not_found);
+        }
+        else
+        {
+            logf (LOG_LOG, "No of new..... %d", no_of_new);
+            logf (LOG_LOG, "No of change.. %d", no_of_change);
+        }
     }
     else
     {

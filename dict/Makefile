@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.19 1995-12-06 14:43:01 adam Exp $
+# $Id: Makefile,v 1.20 1995-12-06 17:48:30 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -27,7 +27,7 @@ $(TPROG1): $(TPROG1).o $(LIB) ../lib/bfile.a ../lib/alexutil.a ../lib/dfa.a
 	$(CC) $(CFLAGS) -o $(TPROG1) $(TPROG1).o $(LIB) \
 		../lib/bfile.a ../lib/dfa.a ../lib/alexutil.a $(YAZLIB)
 
-$(TPROG2): $(TPROG2).o $(LIB) ../lib/alexutil.a $(YAZLIB)
+$(TPROG2): $(TPROG2).o $(LIB) ../lib/alexutil.a
 	$(CC) $(CFLAGS) -o $(TPROG2) $(TPROG2).o ../lib/alexutil.a $(YAZLIB)
 
 $(LIB): $(PO)
