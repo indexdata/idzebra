@@ -1,7 +1,10 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.1 2004-03-09 18:45:17 adam Exp $
+# $Id: test1.sh,v 1.2 2004-03-09 18:52:37 adam Exp $
 LOG=test1.log
 rm -f $LOG
+test -d tmp || mkdir tmp
+test -d lock || mkdir lock
+test -d register || mkdir register
 ../../index/zebraidx -l$LOG init
 ../../index/zebraidx -l$LOG update records/*marc
 ../../index/zebrasrv -l$LOG unix:socket &
