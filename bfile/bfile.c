@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.6  1994-08-23 14:21:38  quinn
+ * Revision 1.7  1994-08-23 14:25:45  quinn
+ * Added O_CREAT because some geek wanted it. Sheesh.
+ *
+ * Revision 1.6  1994/08/23  14:21:38  quinn
  * Fixed call to log
  *
  * Revision 1.5  1994/08/18  08:10:08  quinn
@@ -39,7 +42,7 @@ BFile bf_open (const char *name, int block_size, int wflag)
 {
     BFile tmp = xmalloc(sizeof(BFile_struct));
 
-    if ((tmp->fd = open(name, wflag ? O_RDWR : O_RDONLY, 0666)) < 0)
+    if ((tmp->fd = open(name, wflag ? O_RDWR|O_CREAT : O_RDONLY, 0666)) < 0)
     {
         log(LOG_FATAL|LOG_ERRNO, "open"); 
 	return(0);
