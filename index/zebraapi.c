@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.94 2003-03-25 19:56:01 adam Exp $
+/* $Id: zebraapi.c,v 1.95 2003-03-26 00:02:05 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1452,12 +1452,12 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
 
 int zebra_clean (ZebraHandle zh)
 {
-    zebra_commit_ex(zh, 1);
+    return zebra_commit_ex(zh, 1);
 }
 
 int zebra_commit (ZebraHandle zh)
 {
-    zebra_commit_ex(zh, 0);
+    return zebra_commit_ex(zh, 0);
 }
 
 int zebra_init (ZebraHandle zh)
