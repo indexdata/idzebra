@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.23 2002-12-02 15:11:49 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.24 2003-03-31 20:56:28 adam Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -424,7 +424,7 @@
        and for building extension ``plug-ins'' such as input filters.
        The code for this has been contributed to the source tree by
        Peter Popovics
-       <email>pop@indexdata.dk</email>,
+       <email>pop@technomat.hu</email>,
        and is in the process of being integrated and tested.
      </para>
     </listitem>
