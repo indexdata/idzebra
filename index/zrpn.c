@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.141.2.2 2004-11-15 21:53:45 adam Exp $
+/* $Id: zrpn.c,v 1.141.2.3 2004-11-15 22:52:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -937,6 +937,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     {
 	int attr_ok = 0;
 	int regex_range = 0;
+	int init_pos = 0;
         attent attp;
         data1_local_attribute id_xpath_attr;
         data1_local_attribute *local_attr;
@@ -1089,11 +1090,12 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	case 103:       /* Regexp-2 */
 	    r = 1;
 	    term_dict[j++] = '(';
+	    init_pos = 2;
 	    if (!term_103 (zh->reg->zebra_maps, reg_type,
-			   &termp, term_dict + j, &r, space_split, term_dst))
+			   &termp, term_dict + j, &regex_range,
+			   space_split, term_dst))
 		return 0;
 	    strcat (term_dict, ")");
-	    regex_range = 2;
 	    break;
 	case 104:        /* process # and ! in term */
 	    term_dict[j++] = '(';
@@ -1124,8 +1126,8 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	if (attr_ok)
 	{
 	    yaz_log(LOG_DEBUG, "dict_lookup_grep: %s", term_dict+prefix_len);
-	    r = dict_lookup_grep (zh->reg->dict, term_dict, 0,
-				  grep_info, &max_pos, regex_range,
+	    r = dict_lookup_grep (zh->reg->dict, term_dict, regex_range,
+				  grep_info, &max_pos, init_pos,
 				  grep_handle);
 	    if (r)
 		yaz_log(LOG_WARN, "dict_lookup_grep fail %d", r);
