@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.1  1994-08-23 14:41:33  quinn
+ * Revision 1.2  1994-08-23 14:50:48  quinn
+ * Fixed mf_close().
+ *
+ * Revision 1.1  1994/08/23  14:41:33  quinn
  * First functional version.
  *
  */
@@ -248,10 +251,15 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     	new->files[0].path = xstrdup(tmp);
     	new->ma = ma;
     }
+    else
+    {
+    	assert(!new->open);
+    }
     new->blocksize = block_size;
     new->min_bytes_creat = MF_MIN_BLOCKS_CREAT * block_size;
     new->wr=wflag;
     new->cur_file = 0;
+    new->open = 1;
 
     for (i = 0; i < new->no_files; i++)
     {
@@ -270,7 +278,13 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
  */
 int mf_close(MFile mf)
 {
-    abort();
+    int i;
+
+    assert(mf->open);
+    for (i = 0; i < mf->no_files; i++)
+    	if (mf->files[i].fd >= 0)
+    	    close(mf->files[i].fd);
+    mf->open = 0;
     return 0;
 }
 
