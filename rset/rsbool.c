@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.40 2004-08-24 14:25:16 heikki Exp $
+/* $Id: rsbool.c,v 1.41 2004-08-24 15:00:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -167,7 +167,6 @@ static void r_delete (RSET ct)
     assert (info->rfd_list == NULL);
     rset_delete (info->rset_l);
     rset_delete (info->rset_r);
-    /* xfree (info); */ /* nmem'd */
 }
 
 #if 0
@@ -198,15 +197,15 @@ static RSFD r_open (RSET ct, int flag)
         logf (LOG_FATAL, "bool set type is read-only");
         return NULL;
     }
-    rfd = (struct rset_bool_rfd *) xmalloc (sizeof(*rfd));
+    rfd = (struct rset_bool_rfd *) nmem_malloc(ct->nmem, sizeof(*rfd));
     logf(LOG_DEBUG,"rsbool (%s) open [%p]", ct->control->desc, rfd);
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->info = info;
     rfd->hits=0;
 
-    rfd->buf_l = xmalloc (info->key_size);
-    rfd->buf_r = xmalloc (info->key_size);
+    rfd->buf_l = nmem_malloc(ct->nmem, info->key_size);
+    rfd->buf_r = nmem_malloc(ct->nmem, info->key_size);
     rfd->rfd_l = rset_open (info->rset_l, RSETF_READ);
     rfd->rfd_r = rset_open (info->rset_r, RSETF_READ);
     rfd->more_l = rset_read (info->rset_l, rfd->rfd_l, rfd->buf_l);
@@ -223,12 +222,9 @@ static void r_close (RSFD rfd)
     for (rfdp = &info->rfd_list; *rfdp; rfdp = &(*rfdp)->next)
         if (*rfdp == rfd)
         {
-            xfree ((*rfdp)->buf_l);
-            xfree ((*rfdp)->buf_r);
             rset_close (info->rset_l, (*rfdp)->rfd_l);
             rset_close (info->rset_r, (*rfdp)->rfd_r);
             *rfdp = (*rfdp)->next;
-            xfree (rfd);
             return;
         }
     logf (LOG_FATAL, "r_close but no rfd match!");

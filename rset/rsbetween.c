@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.20 2004-08-24 14:25:16 heikki Exp $
+/* $Id: rsbetween.c,v 1.21 2004-08-24 15:00:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -164,7 +164,6 @@ static void r_delete_between (RSET ct)
     rset_delete (info->rset_r);
     if (info->rset_attr)
         rset_delete (info->rset_attr);
-   /* xfree (info); */
 }
 
 
@@ -178,15 +177,15 @@ static RSFD r_open_between (RSET ct, int flag)
         logf (LOG_FATAL, "between set type is read-only");
         return NULL;
     }
-    rfd = (struct rset_between_rfd *) xmalloc (sizeof(*rfd));
+    rfd = (struct rset_between_rfd *) nmem_malloc(ct->nmem, (sizeof(*rfd)));
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
     rfd->info = info;
 
-    rfd->buf_l = xmalloc (info->key_size);
-    rfd->buf_m = xmalloc (info->key_size);
-    rfd->buf_r = xmalloc (info->key_size);
-    rfd->buf_attr = xmalloc (info->key_size);
+    rfd->buf_l = nmem_malloc(ct->nmem, (info->key_size));
+    rfd->buf_m = nmem_malloc(ct->nmem, (info->key_size));
+    rfd->buf_r = nmem_malloc(ct->nmem, (info->key_size));
+    rfd->buf_attr = nmem_malloc(ct->nmem, (info->key_size));
 
     rfd->rfd_l = rset_open (info->rset_l, RSETF_READ);
     rfd->rfd_m = rset_open (info->rset_m, RSETF_READ);
@@ -214,10 +213,6 @@ static void r_close_between (RSFD rfd)
     for (rfdp = &info->rfd_list; *rfdp; rfdp = &(*rfdp)->next)
         if (*rfdp == rfd)
         {
-            xfree ((*rfdp)->buf_l);
-            xfree ((*rfdp)->buf_m);
-            xfree ((*rfdp)->buf_r);
-            xfree ((*rfdp)->buf_attr);
             rset_close (info->rset_l, (*rfdp)->rfd_l);
             rset_close (info->rset_m, (*rfdp)->rfd_m);
             rset_close (info->rset_r, (*rfdp)->rfd_r);
@@ -225,7 +220,6 @@ static void r_close_between (RSFD rfd)
                 rset_close (info->rset_attr, (*rfdp)->rfd_attr);
             
             *rfdp = (*rfdp)->next;
-            xfree (rfd);
             return;
         }
     logf (LOG_FATAL, "r_close_between but no rfd match!");

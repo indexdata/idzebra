@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.37 2004-08-24 14:25:16 heikki Exp $
+/* $Id: trunc.c,v 1.38 2004-08-24 15:00:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -487,15 +487,18 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 #if 1
         else if (no <10000 ) /* FIXME - hardcoded number */
         {
+            RSET r;
             RSET *rsets=xmalloc(no*sizeof(RSET)); /* use nmem! */
             int i;
             for (i=0;i<no;i++)
                 rsets[i]=rsisamb_create(NULL, /* */
                     sizeof(struct it_key), key_compare_it,
                     zi->reg->isamb, isam_p[i] );
-            return rsmultior_create( NULL, /* FIXME - use some nmem */
+            r=rsmultior_create( NULL, /* FIXME - use some nmem */
                       sizeof(struct it_key), key_compare_it, 
                       no, rsets);
+            xfree(rsets);
+            return r;
             /*
             rset_multior_parms m_parms;
             rset_isamb_parms b_parms;

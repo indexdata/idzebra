@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.27 2004-08-24 14:25:16 heikki Exp $
+/* $Id: rset.c,v 1.28 2004-08-24 15:00:16 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -34,19 +34,22 @@ RSET rset_create_base(const struct rset_control *sel, NMEM nmem)
         /* FIXME - Add a general key-func block for cmp, dump, etc */
 {
     RSET rnew;
-
+    NMEM M;
     logf (LOG_DEBUG, "rs_create(%s)", sel->desc);
-    rnew = (RSET) xmalloc(sizeof(*rnew));
+    if (nmem) 
+        M=nmem;
+    else
+        M=nmem_create();
+    rnew = (RSET) nmem_malloc(M,sizeof(*rnew));
+    rnew->nmem=M;
+    if (nmem)
+        rnew->my_nmem=0;
+    else 
+        rnew->my_nmem=1;
     rnew->control = sel;
     rnew->count = 1;
     rnew->priv = 0;
-    rnew->nmem=nmem;
-    if (nmem)
-        rnew->my_nmem=0;
-    else {
-        rnew->nmem=nmem_create();
-        rnew->my_nmem=1;
-    }
+    
     return rnew;
 }
 
@@ -58,7 +61,6 @@ void rset_delete (RSET rs)
         (*rs->control->f_delete)(rs);
         if (rs->my_nmem)
             nmem_destroy(rs->nmem);
-        xfree(rs);
     }
 }
 
