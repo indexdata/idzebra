@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.h,v $
- * Revision 1.11  1995-12-08 16:20:39  adam
+ * Revision 1.12  1996-03-26 16:00:44  adam
+ * The directory of the shadow table can be specified by the new
+ * bf_lockDir call.
+ *
+ * Revision 1.11  1995/12/08  16:20:39  adam
  * New commit utilities - used for 'save' update.
  *
  * Revision 1.10  1995/12/01  16:24:33  adam
@@ -52,6 +56,7 @@ BFile bf_open (const char *name, int block_size, int wflag);
 int bf_read (BFile bf, int no, int offset, int num, void *buf);
 int bf_write (BFile bf, int no, int offset, int num, const void *buf);
 void bf_cache (int enableFlag);
+void bf_lockDir (const char *lockDir);
 int bf_commitExists (void);
 void bf_commitExec (void);
 void bf_commitClean (void);
