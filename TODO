@@ -1,7 +1,4 @@
-Zebra TODO $Id: TODO,v 1.1 1997-09-17 12:19:06 adam Exp $
-
-NT port: locking mechanisms needs to be ported. Locking should 
- probably be moved to Zebra util instead.
+Zebra TODO $Id: TODO,v 1.2 1997-09-29 09:09:04 adam Exp $
 
 Better ranking in searches. Admin should be able specify initial
  weight to certain fields.
