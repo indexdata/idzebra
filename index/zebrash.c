@@ -1,5 +1,5 @@
 /* zebrash.c - command-line interface to zebra API 
- *  $Id: zebrash.c,v 1.12 2003-06-23 15:35:25 adam Exp $
+ *  $Id: zebrash.c,v 1.13 2003-06-23 15:38:16 adam Exp $
  *
  * Copyrigth 2003 Index Data Aps
  *
@@ -503,7 +503,7 @@ int onecommand(
 	printf("expecting '%s'\n",rest); /*!*/
 	if (0==strstr(prevout,rest))
 	{
-	    printf( "Failed expectation, '%s' not found\n", res);
+	    printf( "Failed expectation, '%s' not found\n", rest);
             exit(9); 
 	}
 	return 0;
