@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.21 2004-11-19 10:27:14 heikki Exp $
+/* $Id: rsprox.c,v 1.22 2005-01-04 19:59:59 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -311,9 +311,9 @@ static void r_pos (RSFD rfd, double *current, double *total)
     struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
     struct rset_prox_rfd *p=(struct rset_prox_rfd *)(rfd->priv);
     int i;
-    double cur,tot=-1;
-    double scur=0,stot=0;
-    double r;
+    double r = 0.0;
+    double cur, tot = -1.0;
+    double scur = 0.0, stot = 0.0;
 
     yaz_log (YLOG_DEBUG, "rsprox_pos");
 
