@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.126 2002-10-22 12:51:08 adam Exp $
+/* $Id: extract.c,v 1.127 2002-10-23 14:28:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -438,7 +438,9 @@ static int recordExtract (ZebraHandle zh,
 	zh->reg->keys.prevAttrUse = -1;
 	zh->reg->keys.prevAttrSet = -1;
 	zh->reg->keys.prevSeqNo = 0;
-	zh->reg->sortKeys = 0;
+	zh->reg->sortKeys.buf_used = 0;
+	zh->reg->sortKeys.buf_max = 0;
+	zh->reg->sortKeys.buf = 0;
 	
 	recordOffset = fi->file_moffset;
 	extractCtrl.offset = fi->file_moffset;
@@ -563,8 +565,8 @@ static int recordExtract (ZebraHandle zh,
         {
             dict_insert (zh->reg->matchDict, matchStr, sizeof(*sysno), sysno);
         }
-        extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
 	extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
+        extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
 
         zh->records_inserted++;
     }
@@ -572,6 +574,7 @@ static int recordExtract (ZebraHandle zh,
     {
         /* record already exists */
         struct recKeys delkeys;
+        struct sortKeys sortKeys;
 
         rec = rec_get (zh->reg->records, *sysno);
         assert (rec);
@@ -591,7 +594,11 @@ static int recordExtract (ZebraHandle zh,
 	}
         delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
-	extract_flushSortKeys (zh, *sysno, 0, &zh->reg->sortKeys);
+
+        sortKeys.buf_used = rec->size[recInfo_sortKeys];
+        sortKeys.buf = rec->info[recInfo_sortKeys];
+
+	extract_flushSortKeys (zh, *sysno, 0, &sortKeys);
         extract_flushRecordKeys (zh, *sysno, 0, &delkeys);
         if (deleteFlag)
         {
@@ -630,6 +637,7 @@ static int recordExtract (ZebraHandle zh,
                 if (zh->records_processed < rGroup->fileVerboseLimit)
                     logf (LOG_LOG, "update %s %s " PRINTF_OFF_T,
                         rGroup->recordType, fname, recordOffset);
+                extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
                 extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
                 zh->records_updated++;
             }
@@ -649,23 +657,24 @@ static int recordExtract (ZebraHandle zh,
     xfree (rec->info[recInfo_delKeys]);
     if (zh->reg->keys.buf_used > 0 && rGroup->flagStoreKeys == 1)
     {
-#if 1
         rec->size[recInfo_delKeys] = zh->reg->keys.buf_used;
         rec->info[recInfo_delKeys] = zh->reg->keys.buf;
         zh->reg->keys.buf = NULL;
         zh->reg->keys.buf_max = 0;
-#else
-        rec->info[recInfo_delKeys] = xmalloc (reckeys.buf_used);
-        rec->size[recInfo_delKeys] = reckeys.buf_used;
-        memcpy (rec->info[recInfo_delKeys], reckeys.buf,
-                rec->size[recInfo_delKeys]);
-#endif
     }
     else
     {
         rec->info[recInfo_delKeys] = NULL;
         rec->size[recInfo_delKeys] = 0;
     }
+
+    /* update sort keys */
+    xfree (rec->info[recInfo_sortKeys]);
+
+    rec->size[recInfo_sortKeys] = zh->reg->sortKeys.buf_used;
+    rec->info[recInfo_sortKeys] = zh->reg->sortKeys.buf;
+    zh->reg->sortKeys.buf = NULL;
+    zh->reg->sortKeys.buf_max = 0;
 
     /* save file size of original record */
     zebraExplain_recordBytesIncrement (zh->reg->zei,
@@ -934,7 +943,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
     zh->reg->keys.prevAttrUse = -1;
     zh->reg->keys.prevAttrSet = -1;
     zh->reg->keys.prevSeqNo = 0;
-    zh->reg->sortKeys = 0;
+    zh->reg->sortKeys.buf_used = 0;
 
     extractCtrl.subType = subType;
     extractCtrl.init = extract_init;
@@ -1003,8 +1012,8 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
             dict_insert (zh->reg->matchDict, matchStr,
                          sizeof(*sysno), sysno);
         }
-        extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
 	extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
+        extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
     }
     else
     {
@@ -1063,6 +1072,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
             {
 		logf (LOG_LOG, "update %s %s %ld", recordType,
 		      fname, (long) recordOffset);
+                extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
                 extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
             }
         }
@@ -1172,7 +1182,7 @@ int explain_extract (void *handle, Record rec, data1_node *n)
     zh->reg->keys.prevAttrUse = -1;
     zh->reg->keys.prevAttrSet = -1;
     zh->reg->keys.prevSeqNo = 0;
-    zh->reg->sortKeys = 0;
+    zh->reg->sortKeys.buf_used = 0;
     
     extractCtrl.init = extract_init;
     extractCtrl.tokenAdd = extract_token_add;
@@ -1189,11 +1199,15 @@ int explain_extract (void *handle, Record rec, data1_node *n)
     if (rec->size[recInfo_delKeys])
     {
 	struct recKeys delkeys;
-	struct sortKey *sortKeys = 0;
+	struct sortKeys sortkeys;
 
 	delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
-	extract_flushSortKeys (zh, rec->sysno, 0, &sortKeys);
+
+	sortkeys.buf_used = rec->size[recInfo_sortKeys];
+	sortkeys.buf = rec->info[recInfo_sortKeys];
+
+	extract_flushSortKeys (zh, rec->sysno, 0, &sortkeys);
 	extract_flushRecordKeys (zh, rec->sysno, 0, &delkeys);
     }
     extract_flushRecordKeys (zh, rec->sysno, 1, &zh->reg->keys);
@@ -1204,6 +1218,13 @@ int explain_extract (void *handle, Record rec, data1_node *n)
     rec->info[recInfo_delKeys] = zh->reg->keys.buf;
     zh->reg->keys.buf = NULL;
     zh->reg->keys.buf_max = 0;
+
+    xfree (rec->info[recInfo_sortKeys]);
+    rec->size[recInfo_sortKeys] = zh->reg->sortKeys.buf_used;
+    rec->info[recInfo_sortKeys] = zh->reg->sortKeys.buf;
+    zh->reg->sortKeys.buf = NULL;
+    zh->reg->sortKeys.buf_max = 0;
+
     return 0;
 }
 
@@ -1482,8 +1503,47 @@ void extract_add_index_string (RecWord *p, const char *string,
 static void extract_add_sort_string (RecWord *p, const char *string,
 				     int length)
 {
+#if 1
+    ZebraHandle zh = p->extractCtrl->handle;
+    struct sortKeys *sk = &zh->reg->sortKeys;
+    size_t off = 0;
+    int slen;
+
+    while (off < sk->buf_used)
+    {
+        int set, use, l;
+
+        l = key_SU_decode(&set, sk->buf + off);
+        off += l;
+        l = key_SU_decode(&use, sk->buf + off);
+        off += l;
+        l = key_SU_decode(&slen, sk->buf + off);
+        off += l + slen;
+        if (p->attrSet == set && p->attrUse == use)
+            return;
+    }
+    assert (off == sk->buf_used);
+    
+    if (sk->buf_used + IT_MAX_WORD > sk->buf_max)
+    {
+        char *b;
+        
+        b = (char *) xmalloc (sk->buf_max += 128000);
+        if (sk->buf_used > 0)
+            memcpy (b, sk->buf, sk->buf_used);
+        xfree (sk->buf);
+        sk->buf = b;
+    }
+    off += key_SU_encode(p->attrSet, sk->buf + off);
+    off += key_SU_encode(p->attrUse, sk->buf + off);
+    slen = strlen(string);
+    off += key_SU_encode(slen, sk->buf + off);
+    memcpy (sk->buf + off, string, slen);
+    sk->buf_used = off + slen;
+#else
     struct sortKey *sk;
     ZebraHandle zh = p->extractCtrl->handle;
+
 
     for (sk = zh->reg->sortKeys; sk; sk = sk->next)
 	if (sk->attrSet == p->attrSet && sk->attrUse == p->attrUse)
@@ -1499,6 +1559,7 @@ static void extract_add_sort_string (RecWord *p, const char *string,
 
     sk->attrSet = p->attrSet;
     sk->attrUse = p->attrUse;
+#endif
 }
 
 void extract_add_string (RecWord *p, const char *string, int length)
@@ -1623,31 +1684,28 @@ void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid)
 }
 
 void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
-                            int cmd, struct sortKey **skp)
+                            int cmd, struct sortKeys *sk)
 {
-    struct sortKey *sk = *skp;
     SortIdx sortIdx = zh->reg->sortIdx;
+    size_t off = 0;
 
     sortIdx_sysno (sortIdx, sysno);
-    while (sk)
+
+    while (off < sk->buf_used)
     {
-	struct sortKey *sk_next = sk->next;
+        int set, use, slen, l;
+        
+        off += key_SU_decode(&set, sk->buf + off);
+        off += key_SU_decode(&use, sk->buf + off);
+        off += key_SU_decode(&slen, sk->buf + off);
+        
+        sortIdx_type(sortIdx, use);
         if (cmd == 1)
-        {
-            /* insert/update: set it */
-            sortIdx_type (sortIdx, sk->attrUse);
-            sortIdx_add (sortIdx, sk->string, sk->length);
-        }
-        else if (cmd == 0)
-        {   /* delete : zero it  */
-            sortIdx_type (sortIdx, sk->attrUse);
-            sortIdx_add (sortIdx, "", 1);
-        }
-	xfree (sk->string);
-	xfree (sk);
-	sk = sk_next;
+            sortIdx_add(sortIdx, sk->buf + off, slen);
+        else
+            sortIdx_add(sortIdx, "", 1);
+        off += slen;
     }
-    *skp = 0;
 }
 
 void encode_key_init (struct encode_info *i)

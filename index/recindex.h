@@ -1,4 +1,4 @@
-/* $Id: recindex.h,v 1.19 2002-08-02 19:26:55 adam Exp $
+/* $Id: recindex.h,v 1.20 2002-10-23 14:28:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -64,7 +64,8 @@ enum {
     recInfo_delKeys, 
     recInfo_databaseName,
     recInfo_storeData,
-    recInfo_attr
+    recInfo_attr,
+    recInfo_sortKeys
 };
 
 YAZ_END_CDECL

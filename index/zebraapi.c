@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.74 2002-10-22 09:37:56 heikki Exp $
+/* $Id: zebraapi.c,v 1.75 2002-10-23 14:28:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -389,14 +389,11 @@ void zebra_stop(ZebraService zs)
 	return ;
     yaz_log (LOG_LOG, "zebra_stop");
 
-    zebra_mutex_cond_lock (&zs->session_lock);
     while (zs->sessions)
     {
         zebra_close (zs->sessions);
     }
         
-    zebra_mutex_cond_unlock (&zs->session_lock);
-
     zebra_mutex_cond_destroy (&zs->session_lock);
 
     if (zs->passwd_db)
