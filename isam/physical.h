@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.h,v $
- * Revision 1.2  1994-09-26 17:06:37  quinn
+ * Revision 1.3  1994-09-26 17:11:32  quinn
+ * Trivial
+ *
+ * Revision 1.2  1994/09/26  17:06:37  quinn
  * Back again...
  *
  * Revision 1.1  1994/09/26  16:07:59  quinn
@@ -15,7 +18,7 @@
 #ifndef PHYSICAL_H
 #define PHYSICAL_H
 
-#include <ismemory.h>
+#include "memory.h"
 
 void is_p_sync(is_mtable *tab);
 void is_p_unmap(is_mtable *tab);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.3  1994-09-26 17:06:35  quinn
+ * Revision 1.4  1994-09-26 17:11:29  quinn
+ * Trivial
+ *
+ * Revision 1.3  1994/09/26  17:06:35  quinn
  * Back again...
  *
  * Revision 1.1  1994/09/12  08:02:13  quinn
@@ -22,7 +25,7 @@
 #include <common.h>
 #include "isutil.h"
 #include "rootblk.h"
-#include <ismemory.h>
+#include "memory.h"
 #include "physical.h"
 #include "keyops.h"
 
