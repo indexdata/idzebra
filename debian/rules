@@ -20,7 +20,7 @@ else
 MCFLAGS=
 endif
 
-ZEBRA_VERSION=1.3.8
+ZEBRA_VERSION=1.3.10
 ZEBRASRCDIR?=$(shell pwd)
 # If this is not IndexData's release, then it is a cvs-checkout. Go cheat!
 #   YAZ_VERSION:=$(YAZ_VERSION)-$(shell date -r$(YAZSRCDIR)/CVS +"CVS%Y%m%d")

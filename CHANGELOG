@@ -1,4 +1,6 @@
 
+--- 1.3.10 2003/04/01
+
 Fix bug in and operation which in some cases could result in "extra"
 hits. Bug was introduced in 1.3.5.
 
