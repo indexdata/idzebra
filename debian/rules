@@ -71,7 +71,8 @@ stamp-install: stamp-build
 binary-indep: build install
 	dh_testdir
 	dh_testroot
-	dh_installdocs -p idzebra-doc doc/*.html doc/*.pdf doc/*.png
+	#dh_installdocs -p idzebra-doc doc/*.html doc/*.pdf doc/*.png
+	dh_installdocs -p idzebra-doc debian/tmp/usr/share/doc/idzebra/*.html debian/tmp/usr/share/doc/idzebra/*.pdf debian/tmp/usr/share/doc/idzebra/*.png
 	dh_installchangelogs -p idzebra-doc
 	dh_link -p idzebra-doc
 	dh_strip -p idzebra-doc
@@ -95,7 +96,8 @@ binary-arch: build install
 	dh_link
 
 	dh_installdeb -p idzebra
-	dh_installman -p idzebra doc/zebraidx.1 doc/zebrasrv.8
+	#dh_installman -p idzebra doc/zebraidx.1 doc/zebrasrv.8
+	dh_installman -p idzebra debian/tmp/usr/man/man1/zebraidx.1 debian/tmp/usr/man/man8/zebrasrv.8
 
 	dh_strip
 	dh_compress -a
