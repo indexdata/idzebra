@@ -1,15 +1,16 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.24 1995-01-24 15:59:26 adam Exp $
+# $Id: Makefile,v 1.25 1995-02-06 10:08:31 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
 SUBDIR=util str bfile dfa dict isam rset it base
-CFLAGS=-Wall -g -pedantic -ansi
+CFLAGS=-Wall -g -pedantic -ansi 
+CC=gcc
 
 all:
-	for i in $(SUBDIR); do cd $$i; if $(MAKE) CFLAGS="$(CFLAGS)"; then cd ..; else exit 1; fi; done
+	for i in $(SUBDIR); do cd $$i; if $(MAKE) CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done
 
 dep depend:
 	for i in $(SUBDIR); do cd $$i; if $(MAKE) depend; then cd ..; else exit 1; fi; done
