@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.18  1996-02-06 10:19:56  quinn
+ * Revision 1.19  1996-02-10 12:20:56  quinn
+ * *** empty log message ***
+ *
+ * Revision 1.18  1996/02/06  10:19:56  quinn
  * Attempt at fixing bug. Not all blocks were read before they were unlinked
  * prior to a remap operation.
  *
@@ -72,8 +75,24 @@
 #include "rootblk.h"
 #include "keyops.h"
 
-static int (*extcmp)(const void *p1, const void *p2);
 static ispt_struct *ispt_freelist = 0;
+
+static struct
+{
+    int total_merge_operations;
+    int total_items;
+    int dub_items_removed;
+    int new_items;
+    int failed_deletes;
+    int skipped_inserts;
+    int delete_insert_noop;
+    int delete_replace;
+    int delete;
+    int remaps;
+    int block_jumps;
+    int tab_deletes;
+    int new_tables;
+} statistics;
 
 static ISPT ispt_alloc()
 {
@@ -130,6 +149,23 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
     is_type_header th;
 
     logf (LOG_DEBUG, "is_open(%s, %s)", name, writeflag ? "RW" : "RDONLY");
+    if (writeflag)
+    {
+	statistics.total_merge_operations = 0;
+	statistics.total_items = 0;
+	statistics.dub_items_removed = 0;
+	statistics.new_items = 0;
+	statistics.failed_deletes = 0;
+	statistics.skipped_inserts = 0;
+	statistics.delete_insert_noop = 0;
+	statistics.delete_replace = 0;
+	statistics.delete = 0;
+	statistics.remaps = 0;
+	statistics.new_tables = 0;
+	statistics.block_jumps = 0;
+	statistics.tab_deletes = 0;
+    }
+
     new = xmalloc(sizeof(*new));
     new->writeflag = writeflag;
     for (i = 0; i < IS_MAX_BLOCKTYPES; i++)
@@ -325,6 +361,28 @@ int is_close(ISAM is)
 	}
     }
     xfree(is);
+    if (is->writeflag)
+    {
+	logf(LOG_LOG, "ISAM statistics:");
+	logf(LOG_LOG, "total_merge_operations      %d",
+	    statistics.total_merge_operations);
+	logf(LOG_LOG, "total_items                 %d", statistics.total_items);
+	logf(LOG_LOG, "dub_items_removed           %d",
+	    statistics.dub_items_removed);
+	logf(LOG_LOG, "new_items                   %d", statistics.new_items);
+	logf(LOG_LOG, "failed_deletes              %d",
+	    statistics.failed_deletes);
+	logf(LOG_LOG, "skipped_inserts             %d",
+	    statistics.skipped_inserts);
+	logf(LOG_LOG, "delete_insert_noop          %d",
+	    statistics.delete_insert_noop);
+	logf(LOG_LOG, "delete_replace              %d",
+	    statistics.delete_replace);
+	logf(LOG_LOG, "delete                      %d", statistics.delete);
+	logf(LOG_LOG, "remaps                      %d", statistics.remaps);
+	logf(LOG_LOG, "block_jumps                 %d", statistics.block_jumps);
+	logf(LOG_LOG, "tab_deletes                 %d", statistics.tab_deletes);
+    }
     return 0;
 }
 
@@ -337,15 +395,6 @@ static ISAM_P is_address(int type, int pos)
     return r;
 }
 
-int sort_input(const void *p1, const void *p2)
-{
-    int rs;
-
-    if ((rs = (*extcmp)(((char *)p1) + 1, ((char *)p2) + 1)))
-    	return rs;
-    return *((char *)p1) - *((char*)p2);
-}
-
 ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 {
     is_mtable tab;
@@ -354,10 +403,11 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
     int oldnum, oldtype, i;
     char operation, *record;
 
-    extcmp = is->cmp;
-#if 0
-    qsort(data, num, is_keysize(is) + 1, sort_input);
-#endif
+    statistics.total_merge_operations++;
+    statistics.total_items += num;
+    if (!pos)
+	statistics.new_tables++;
+
     is_m_establish_tab(is, &tab, pos);
     if (pos)
     	if (is_m_read_full(&tab, tab.data) < 0)
@@ -377,6 +427,7 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 	{
 	    data += 1 + is_keysize(is);
 	    num--;
+	    statistics.dub_items_removed++;
 	}
 	if ((res = is_m_seek_record(&tab, record)) > 0)  /* no match */
 	{
@@ -384,15 +435,20 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 	    {
 	        logf (LOG_DEBUG, "XXInserting new record.");
 		is_m_write_record(&tab, record);
+		statistics.new_items++;
 	    }
 	    else
+	    {
 	    	logf (LOG_DEBUG, "XXDeletion failed to find match.");
+		statistics.failed_deletes++;
+	    }
 	}
 	else /* match found */
 	{
 	    if (operation == KEYOP_INSERT)
 	    {
 	        logf (LOG_DEBUG, "XXSkipping insertion - match found.");
+		statistics.skipped_inserts++;
 	    	continue;
 	    }
 	    else if (operation == KEYOP_DELETE)
@@ -406,6 +462,14 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 		        logf (LOG_DEBUG, "XXNoop delete. skipping.");
 		    	data += 1 + is_keysize(is);
 		    	num--;
+			while (num && !memcmp(data, data + is_keysize(tab.is) +
+			    1, is_keysize(tab.is) + 1))
+			{
+			    data += 1 + is_keysize(is);
+			    num--;
+			    statistics.dub_items_removed++;
+			}
+			statistics.delete_insert_noop++;
 		    	continue;
 		    }
 		    /* else check if next key can fit in this position */
@@ -417,11 +481,20 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 		    	is_m_replace_record(&tab, data + 1);
 		    	data += 1 + is_keysize(is);
 		    	num--;
+			while (num && !memcmp(data, data + is_keysize(tab.is) +
+			    1, is_keysize(tab.is) + 1))
+			{
+			    data += 1 + is_keysize(is);
+			    num--;
+			    statistics.dub_items_removed++;
+			}
+			statistics.delete_replace++;
 			continue;
 		    }
 		}
 		logf (LOG_DEBUG, "Deleting record.");
 		is_m_delete_record(&tab);
+		statistics.delete++;
 	    }
 	}
     }
@@ -437,10 +510,15 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 		is_m_read_full(&tab, tab.cur_mblock);
     	is_p_unmap(&tab);
 	tab.pos_type = i;
+	if (pos)
+	    statistics.block_jumps++;
     }
     if (!oldnum || tab.pos_type != oldtype || (abs(oldnum - tab.num_records) *
 	100) / oldnum > tab.is->repack)
+    {
     	is_p_remap(&tab);
+	statistics.remaps++;
+    }
     else
     	is_p_align(&tab);
     if (tab.data)
@@ -449,7 +527,10 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 	pos = is_address(tab.pos_type, tab.data->diskpos);
     }
     else
+    {
     	pos = 0;
+	statistics.tab_deletes++;
+    }
     is_m_release_tab(&tab);
     return pos;
 }

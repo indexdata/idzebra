@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.17 1995-11-27 10:16:12 quinn Exp $
+# $Id: Makefile,v 1.18 1996-02-10 12:20:54 quinn Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -29,7 +29,7 @@ isam-test: isam-test.c $(LIB)
 	../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
 
 issh: issh.c $(LIB)
-	$(CC) -g -o issh -I../include issh.c \
+	$(CC) -g -o issh $(INCLUDE) issh.c \
 	../lib/isam.a ../lib/bfile.a ../lib/alexutil.a $(YAZLIB)
 
 #$(TPROG): $(TPROG).o $(LIB) 

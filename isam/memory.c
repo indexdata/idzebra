@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.c,v $
- * Revision 1.10  1995-12-12 14:12:47  quinn
+ * Revision 1.11  1996-02-10 12:20:58  quinn
+ * *** empty log message ***
+ *
+ * Revision 1.10  1995/12/12  14:12:47  quinn
  * *** empty log message ***
  *
  * Revision 1.9  1995/12/06  15:48:46  quinn
@@ -233,18 +236,28 @@ void is_m_delete_record(is_mtable *tab)
     	mbuf->num--;
     	mbuf->cur_record--;
     }
-    else /* middle of a block */
+    else if (mbuf->cur_record == 1) /* beginning of mbuf */
     {
+	mbuf->num--;
+	mbuf->offset +=is_keysize(tab->is);
+	mbuf->cur_record = 0;
+    }
+    else /* middle of mbuf */
+    {
+	/* insert block after current one */
 	new = xmalloc_mbuf(IS_MBUF_TYPE_SMALL);
 	new->next = mbuf->next;
 	mbuf->next = new;
+
+	/* virtually transfer everything after current record to new one. */
 	new->data = mbuf->data;
 	mbuf->refcount++;
 	new->offset = mbuf->offset + mbuf->cur_record * is_keysize(tab->is);
 	new->num = mbuf->num - mbuf->cur_record;
+	
+	/* old buf now only contains stuff before current record */
 	mbuf->num = mbuf->cur_record -1;
-	mbuf = mbuf->next;
-	mbuf->cur_record = 0;
+	tab->cur_mblock->cur_mbuf = new;
     }
     tab->num_records--;
     tab->cur_mblock->num_records--;
