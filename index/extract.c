@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.28  1995-11-21 09:20:30  adam
+ * Revision 1.29  1995-11-21 15:01:14  adam
+ * New general match criteria implemented.
+ * New feature: document groups.
+ *
+ * Revision 1.28  1995/11/21  09:20:30  adam
  * Yet more work on record match.
  *
  * Revision 1.27  1995/11/20  16:59:45  adam
@@ -105,7 +109,7 @@
 
 #include "recindex.h"
 
-static Dict file_idx;
+static Dict matchDict;
 
 static Records records = NULL;
 
@@ -114,6 +118,12 @@ static size_t ptr_top;
 static size_t ptr_i;
 static size_t key_buf_used;
 static int key_file_no;
+
+static int records_inserted = 0;
+static int records_updated = 0;
+static int records_deleted = 0;
+
+#define MATCH_DICT "match"
 
 void key_open (int mem)
 {
@@ -126,9 +136,9 @@ void key_open (int mem)
     key_buf_used = 0;
     key_file_no = 0;
 
-    if (!(file_idx = dict_open (FNAME_FILE_DICT, 40, 1)))
+    if (!(matchDict = dict_open (MATCH_DICT, 20, 1)))
     {
-        logf (LOG_FATAL, "dict_open fail of %s", "fileidx");
+        logf (LOG_FATAL, "dict_open fail of %s", MATCH_DICT);
         exit (1);
     }
     assert (!records);
@@ -247,8 +257,11 @@ int key_close (void)
     key_flush ();
     xfree (key_buf);
     rec_close (&records);
-    dict_close (file_idx);
+    dict_close (matchDict);
 
+    logf (LOG_LOG, "Records inserted %6d", records_inserted);
+    logf (LOG_LOG, "Records updated  %6d", records_updated);
+    logf (LOG_LOG, "Records deleted  %6d", records_deleted);
     return key_file_no;
 }
 
@@ -333,6 +346,7 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
                                            attrSet, attrUse, databaseName);
         while (*src)
             ((char*)key_buf) [key_buf_used++] = index_char_cvt (*src++);
+        src++;
         ((char*)key_buf) [key_buf_used++] = '\0';
         
         ((char*) key_buf)[key_buf_used++] = cmd;
@@ -344,88 +358,61 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
         key_buf_used += sizeof(key);
         off = src - reckeys->buf;
     }
-    assert (off = reckeys->buf_used);
+    assert (off == reckeys->buf_used);
 }
 
-#if 0
-static int key_cmd;
-static int key_sysno;
-static const char *key_databaseName;
-static int key_del_max;
-static int key_del_used;
-static char *key_del_buf;
-
-static void wordAdd (const RecWord *p)
+static const char **searchRecordKey (struct recKeys *reckeys,
+                               int attrSetS, int attrUseS)
 {
-    struct it_key key;
-    size_t i;
+    static const char *ws[32];
+    int off = 0;
+    int startSeq = -1;
+    int i;
 
-    if (key_buf_used + 1024 > (ptr_top-ptr_i)*sizeof(char*))
-        key_flush ();
-    ++ptr_i;
-    key_buf[ptr_top-ptr_i] = (char*)key_buf + key_buf_used;
-    key_buf_used += index_word_prefix ((char*)key_buf + key_buf_used,
-                                p->attrSet, p->attrUse,
-                                key_databaseName);
-    switch (p->which)
+    for (i = 0; i<32; i++)
+        ws[i] = NULL;
+    
+    while (off < reckeys->buf_used)
     {
-    case Word_String:
-        for (i = 0; p->u.string[i]; i++)
-            ((char*)key_buf) [key_buf_used++] =
-                index_char_cvt (p->u.string[i]);
-        ((char*)key_buf) [key_buf_used++] = '\0';
-        break;
-    default:
-        return ;
-    }
-    ((char*) key_buf)[key_buf_used++] = ((key_cmd == 'a') ? 1 : 0);
-    key.sysno = key_sysno;
-    key.seqno = p->seqno;
-    memcpy ((char*)key_buf + key_buf_used, &key, sizeof(key));
-    key_buf_used += sizeof(key);
-
-    if (key_cmd == 'a' && key_del_used >= 0)
-    {
+        const char *src = reckeys->buf + off;
         char attrSet;
         short attrUse;
-        if (key_del_used + 1024 > key_del_max)
-        {
-            char *kbn;
-            
-            if (!(kbn = malloc (key_del_max += 64000)))
-            {
-                logf (LOG_FATAL, "malloc");
-                exit (1);
-            }
-            if (key_del_buf)
-                memcpy (kbn, key_del_buf, key_del_used);
-            free (key_del_buf);
-            key_del_buf = kbn;
-        }
-        switch (p->which)
-        {
-        case Word_String:
-            for (i = 0; p->u.string[i]; i++)
-                ((char*)key_del_buf) [key_del_used++] = p->u.string[i];
-            ((char*)key_del_buf) [key_del_used++] = '\0';
-            break;
-        default:
-            return ;
-        }
-        attrSet = p->attrSet;
-        memcpy (key_del_buf + key_del_used, &attrSet, sizeof(attrSet));
-        key_del_used += sizeof(attrSet);
+        int seqno;
+        const char *wstart;
+        
+        memcpy (&attrSet, src, sizeof(attrSet));
+        src += sizeof(attrSet);
 
-        attrUse = p->attrUse;
-        memcpy (key_del_buf + key_del_used, &attrUse, sizeof(attrUse));
-        key_del_used += sizeof(attrUse);
+        memcpy (&attrUse, src, sizeof(attrUse));
+        src += sizeof(attrUse);
 
-        memcpy (key_del_buf + key_del_used, &p->seqno, sizeof(p->seqno));
-        key_del_used += sizeof(p->seqno);
-    }
-}
+        wstart = src;
+        while (*src++)
+            ;
 
+        memcpy (&seqno, src, sizeof(seqno));
+        src += sizeof(seqno);
+
+#if 0
+        logf (LOG_LOG, "(%d,%d) %d %s", attrSet, attrUse, seqno, wstart);
 #endif
+        if (attrUseS == attrUse && attrSetS == attrSet)
+        {
+            int woff;
+
+
+            if (startSeq == -1)
+                startSeq = seqno;
+            woff = seqno - startSeq;
+            if (woff >= 0 && woff < 31)
+                ws[woff] = wstart;
+        }
+
+        off = src - reckeys->buf;
+    }
+    assert (off == reckeys->buf_used);
+    return ws;
+}
 
 static void addRecordKeyAny (const RecWord *p)
 {
@@ -502,19 +489,156 @@ static int file_read (int fd, char *buf, size_t count)
     return count;
 }
 
-int fileExtract (SYSNO *sysno, const char *fname, const char *databaseName,
+static int atois (const char **s)
+{
+    int val = 0, c;
+    while ( (c=**s) >= '0' && c <= '9')
+    {
+        val = val*10 + c - '0';
+        ++(*s);
+    }
+    return val;
+}
+
+static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
+                           const char *fname,
+                           const char *recordType,
+                           const char *spec)
+{
+    static char dstBuf[2048];
+    char *dst = dstBuf;
+    const char *s = spec;
+    static const char **w;
+    int i;
+
+    while (1)
+    {
+        while (*s == ' ' || *s == '\t')
+            s++;
+        if (!*s)
+            break;
+        if (*s == '(')
+        {
+            char matchFlag[32];
+            int attrSet, attrUse;
+            int first = 1;
+
+            s++;
+            attrSet = atois (&s);
+            if (*s != ',')
+            {
+                logf (LOG_WARN, "Missing , in match criteria %s in group %s",
+                      spec, rGroup->groupName ? rGroup->groupName : "none");
+                return NULL;
+            }
+            s++;
+            attrUse = atois (&s);
+            w = searchRecordKey (reckeys, attrSet, attrUse);
+            assert (w);
+
+            if (*s == ')')
+            {
+                for (i = 0; i<32; i++)
+                    matchFlag[i] = 1;
+            }
+            else
+            {
+                logf (LOG_WARN, "Missing ) in match criteria %s in group %s",
+                      spec, rGroup->groupName ? rGroup->groupName : "none");
+                return NULL;
+            }
+            s++;
+
+            for (i = 0; i<32; i++)
+                if (matchFlag[i] && w[i])
+                {
+                    if (first)
+                    {
+                        *dst++ = ' ';
+                        first = 0;
+                    }
+                    strcpy (dst, w[i]);
+                    dst += strlen(w[i]);
+                }
+            if (first)
+            {
+                logf (LOG_WARN, "Record in file %s didn't contain match"
+                      " fields in (%d,%d)", fname, attrSet, attrUse);
+                return NULL;
+            }
+        }
+        else if (*s == '$')
+        {
+            int spec_len;
+            char special[32];
+            const char *spec_src = NULL;
+            const char *s1 = ++s;
+            while (*s1 && *s1 != ' ' && *s1 != '\t')
+                s1++;
+
+            spec_len = s1 - s;
+            if (spec_len > 31)
+                spec_len = 31;
+            memcpy (special, s, spec_len);
+            special[spec_len] = '\0';
+            s = s1;
+
+            if (strcmp (special, "group"))
+                spec_src = rGroup->groupName;
+            else if (strcmp (special, "database"))
+                spec_src = rGroup->databaseName;
+            else if (strcmp (special, "filename"))
+                spec_src = fname;
+            else if (strcmp (special, "type"))
+                spec_src = recordType;
+            else 
+                spec_src = NULL;
+            if (spec_src)
+            {
+                strcpy (dst, spec_src);
+                dst += strlen(spec_src);
+            }
+        }
+        else
+        {
+            logf (LOG_WARN, "Syntax error in match criteria %s in group %s",
+                  spec, rGroup->groupName ? rGroup->groupName : "none");
+            return NULL;
+        }
+        *dst++ = 1;
+    }
+    if (dst == dstBuf)
+    {
+        logf (LOG_WARN, "No match criteria for record %s in group %s",
+              fname, rGroup->groupName ? rGroup->groupName : "none");
+        return NULL;
+    }
+    return dstBuf;
+}
+
+int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
                  int deleteFlag)
 {
+    SYSNO sysnotmp;
     int i, r;
+    char gprefix[128];
     char ext[128];
     char ext_res[128];
     const char *file_type;
+    const char *file_match;
     struct recExtractCtrl extractCtrl;
-    RecType rt;
+    RecType recType;
     Record rec;
+    char *matchStr;
+
+    if (!rGroup->groupName || !*rGroup->groupName)
+        *gprefix = '\0';
+    else
+        sprintf (gprefix, "%s.", rGroup->groupName);
 
     logf (LOG_DEBUG, "fileExtractAdd %s", fname);
 
+    /* determine file extension */
     for (i = strlen(fname); --i >= 0; )
         if (fname[i] == '/')
         {
@@ -526,18 +650,43 @@ int fileExtract (SYSNO *sysno, const char *fname, const char *databaseName,
             strcpy (ext, fname+i+1);
             break;
         }
-    sprintf (ext_res, "fileExtension.%s", ext);
+    /* determine file type - depending on extension */
+    sprintf (ext_res, "%sfileExtension.%s", gprefix, ext);
     if (!(file_type = res_get (common_resource, ext_res)))
         return 0;
-    if (!(rt = recType_byName (file_type)))
+    if (!(recType = recType_byName (file_type)))
         return 0;
 
+    /* determine match criteria */
+    sprintf (ext_res, "%sfileMatch.%s", gprefix, ext);
+    file_match = res_get (common_resource, ext_res);
+    if (!file_match)
+    {
+        sprintf (ext_res, "%sfileMatch", gprefix);
+        file_match = res_get (common_resource, ext_res);
+    }
+
+    /* determine database name */
+    if (!rGroup->databaseName)
+    {
+        sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
+        if (!(rGroup->databaseName = res_get (common_resource, ext_res)))
+        {
+            sprintf (ext_res, "%sdatabase", gprefix);
+            rGroup->databaseName = res_get (common_resource, ext_res);
+        }
+    }
+    if (!rGroup->databaseName)
+        rGroup->databaseName = "Default";
+
+    /* open input file */
     if ((extractCtrl.fd = open (fname, O_RDONLY)) == -1)
     {
         logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
         return 0;
     }
 
+    /* extract keys */
     extractCtrl.subType = "";
     extractCtrl.init = wordInit;
     extractCtrl.add = addRecordKeyAny;
@@ -545,7 +694,7 @@ int fileExtract (SYSNO *sysno, const char *fname, const char *databaseName,
     reckeys.buf_used = 0;
     file_read_start (extractCtrl.fd);
     extractCtrl.readf = file_read;
-    r = (*rt->extract)(&extractCtrl);
+    r = (*recType->extract)(&extractCtrl);
     file_read_stop (extractCtrl.fd);
     close (extractCtrl.fd);
   
@@ -554,13 +703,44 @@ int fileExtract (SYSNO *sysno, const char *fname, const char *databaseName,
         logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
         return 0;
     }
-    if (! *sysno)  /* match criteria */
+
+    /* perform match if sysno not known and if match criteria is specified */
+       
+    matchStr = NULL;
+    if (!sysno && file_match)
+    {
+        char *rinfo;
+        
+        sysno = &sysnotmp;
+        matchStr = fileMatchStr(&reckeys, rGroup, fname, file_type,
+                                file_match);
+        if (matchStr)
+        {
+            rinfo = dict_lookup (matchDict, matchStr);
+            if (rinfo)
+                memcpy (sysno, rinfo+1, sizeof(*sysno));
+            else
+                *sysno = 0;
+        }
+        else
+        {
+            logf (LOG_WARN, "Record not inserted");
+            return 0;
+        }
+    }
+
+    /* new record ? */
+    if (! *sysno)
     {
         logf (LOG_LOG, "add record %s", fname);
         rec = rec_new (records);
         *sysno = rec->sysno;
 
-        flushRecordKeys (*sysno, 1, &reckeys, databaseName);
+        if (matchStr)
+            dict_insert (matchDict, matchStr, sizeof(*sysno), sysno);
+        flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName);
+
+        records_inserted++;
     }
     else
     {
@@ -571,7 +751,9 @@ int fileExtract (SYSNO *sysno, const char *fname, const char *databaseName,
         delkeys.buf_used = rec->size[2];
 	delkeys.buf = rec->info[2];
         flushRecordKeys (*sysno, 0, &delkeys, rec->info[3]);
-        flushRecordKeys (*sysno, 1, &reckeys, databaseName); 
+        flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
+
+        records_updated++;
     }
     free (rec->info[0]);
     rec->info[0] = rec_strdup (file_type, &rec->size[0]);
@@ -592,7 +774,7 @@ int fileExtract (SYSNO *sysno, const char *fname, const char *databaseName,
         rec->size[2] = 0;
     }
     free (rec->info[3]);
-    rec->info[3] = rec_strdup (databaseName, &rec->size[3]); 
+    rec->info[3] = rec_strdup (rGroup->databaseName, &rec->size[3]); 
 
     rec_put (records, &rec);
     return 1;

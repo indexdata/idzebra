@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.16  1995-11-20 11:56:27  adam
+ * Revision 1.17  1995-11-21 15:01:16  adam
+ * New general match criteria implemented.
+ * New feature: document groups.
+ *
+ * Revision 1.16  1995/11/20  11:56:27  adam
  * Work on new traversal.
  *
  * Revision 1.15  1995/11/01  16:25:51  quinn
@@ -65,36 +69,35 @@
 
 char *prog;
 size_t mem_max = 4*1024*1024;
+extern char *data1_tabpath;
 
 int main (int argc, char **argv)
 {
     int ret;
     int cmd = 0;
     char *arg;
-    char *base_name = NULL;
-    char *base_path = NULL;
-    char *databaseName = "Default";
+    char *configName = NULL;
     int nsections;
     int key_open_flag = 0;
 
+    struct recordGroup rGroup;
+    
+    rGroup.groupName = NULL;
+    rGroup.databaseName = NULL;
+    rGroup.path = NULL;
+
     prog = *argv;
-    while ((ret = options ("r:v:m:d:", argv, argc, &arg)) != -2)
+    if (argc < 2)
+    {
+        fprintf (stderr, "index [-v log] [-m meg] [-c config] [-d base]"
+                 " [-g group] cmd1 dir1 cmd2 dir2 ...\n");
+        exit (1);
+    }
+    while ((ret = options ("c:g:v:m:d:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
-            if (!base_name)
-            {
-                base_name = arg;
-
-                common_resource = res_open (base_name);
-                if (!common_resource)
-                {
-                    logf (LOG_FATAL, "Cannot open resource `%s'", base_name);
-                    exit (1);
-                }
-		data1_tabpath = res_get(common_resource, "data1_tabpath");
-            }
-            else if(cmd == 0) /* command */
+            if(cmd == 0) /* command */
             {
                 if (!strcmp (arg, "add"))
                 {
@@ -104,6 +107,10 @@ int main (int argc, char **argv)
                 {
                     cmd = 'd';
                 }
+                else if (!strcmp (arg, "update"))
+                {
+                    cmd = 'u';
+                }
                 else
                 {
                     logf (LOG_FATAL, "Unknown command: %s", arg);
@@ -112,16 +119,34 @@ int main (int argc, char **argv)
             }
             else
             {
+                if (!common_resource)
+                {
+                    common_resource = res_open (configName ?
+                                                configName : "base");
+                    if (!common_resource)
+                    {
+                        logf (LOG_FATAL, "Cannot open resource `%s'",
+                              configName);
+                        exit (1);
+                    }
+                    data1_tabpath = res_get (common_resource, "data1_tabpath");
+                    assert (data1_tabpath);
+                }
                 if (!key_open_flag)
                 {
                     key_open (mem_max);
                     key_open_flag = 1;
                 }
-#if 0
-                repository (cmd, arg, base_path, databaseName);
-#else
-                repositoryUpdate (arg, databaseName);
-#endif
+                rGroup.path = arg;
+                if (cmd == 'u')
+                    repositoryUpdate (&rGroup);
+                else if (cmd == 'a')
+                    repositoryExtract (&rGroup);
+                else if (cmd == 'd')
+                {
+                    logf (LOG_FATAL, "Not implemented yet.");
+                    exit (1);
+                }
                 cmd = 0;
             }
         }
@@ -129,29 +154,25 @@ int main (int argc, char **argv)
         {
             log_init (log_mask_str(arg), prog, NULL);
         }
-        else if (ret == 'r')
-        {
-            base_path = arg;
-        }
         else if (ret == 'm')
         {
             mem_max = 1024*1024*atoi(arg);
         }
         else if (ret == 'd')
         {
-            databaseName = arg;
+            rGroup.databaseName = arg;
         }
+        else if (ret == 'g')
+        {
+            rGroup.groupName = arg;
+        }
+        else if (ret == 'c')
+            configName = arg;
         else
         {
             logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
-    }
-    if (!base_name)
-    {
-        fprintf (stderr, "index [-v log] [-r repository] [-m meg] [-d base]"
-                 " base cmd1 dir1 cmd2 dir2 ...\n");
-        exit (1);
     }
     if (!key_open_flag)
         exit (0);

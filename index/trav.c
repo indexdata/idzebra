@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.9  1995-11-21 09:20:32  adam
+ * Revision 1.10  1995-11-21 15:01:16  adam
+ * New general match criteria implemented.
+ * New feature: document groups.
+ *
+ * Revision 1.9  1995/11/21  09:20:32  adam
  * Yet more work on record match.
  *
  * Revision 1.8  1995/11/20  16:59:46  adam
@@ -45,12 +49,17 @@
 #include <alexutil.h>
 #include "index.h"
 
-#if 0
-static void repository_extract_r (int cmd, char *rep, char *databaseName)
+static int repComp (const char *a, const char *b, size_t len)
+{
+    if (!len)
+        return 0;
+    return memcmp (a, b, len);
+}
+
+static void repositoryExtractR (char *rep, struct recordGroup *rGroup)
 {
     struct dir_entry *e;
     int i;
-    struct stat fs;
     size_t rep_len = strlen (rep);
 
     e = dir_open (rep);
@@ -63,266 +72,23 @@ static void repository_extract_r (int cmd, char *rep, char *databaseName)
     for (i=0; e[i].name; i++)
     {
         strcpy (rep +rep_len+1, e[i].name);
-        stat (rep, &fs);
-        switch (fs.st_mode & S_IFMT)
+        switch (e[i].kind)
         {
-        case S_IFREG:
-            file_extract (cmd, rep, rep, databaseName);
+        case dirs_file:
+            fileExtract (NULL, rep, rGroup, 0);
             break;
-        case S_IFDIR:
-            repository_extract_r (cmd, rep, databaseName);
+        case dirs_dir:
+            repositoryExtractR (rep, rGroup);
             break;
         }
     }
     dir_free (&e);
-}
 
-void copy_file (const char *dst, const char *src)
-{
-    int d_fd = open (dst, O_WRONLY|O_CREAT, 0666);
-    int s_fd = open (src, O_RDONLY);
-    char *buf;
-    size_t i, r, w;
-
-    if (d_fd == -1)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "Cannot create %s", dst);
-        exit (1);
-    }
-    if (s_fd == -1)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "Cannot open %s", src);
-        exit (1);
-    }
-    buf = xmalloc (4096);
-    while ((r=read (s_fd, buf, 4096))>0)
-        for (w = 0; w < r; w += i)
-        {
-            i = write (d_fd, buf + w, r - w);
-            if (i == -1)
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "write");
-                exit (1);
-            }
-        }
-    if (r)
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "read");
-        exit (1);
-    }
-    xfree (buf);
-    close (d_fd);
-    close (s_fd);
-}
-
-void del_file (const char *dst)
-{
-    unlink (dst);
-}
-
-void del_dir (const char *dst)
-{
-    logf (LOG_DEBUG, "rmdir of %s", dst);
-    if (rmdir (dst) == -1)
-        logf (LOG_ERRNO|LOG_WARN, "rmdir");
-}
-
-void repository_update_r (int cmd, char *dst, char *src, char *databaseName);
-
-void repository_add_tree (int cmd, char *dst, char *src, char *databaseName)
-{
-    mkdir (dst, 0755);
-    repository_update_r (cmd, dst, src, databaseName);
-}
-
-void repository_del_tree (int cmd, char *dst, char *src, char *databaseName)
-{
-    size_t dst_len = strlen (dst);
-    size_t src_len = strlen (src);
-    struct dir_entry *e_dst;
-    int i_dst = 0;
-    struct stat fs_dst;
-
-    e_dst = dir_open (dst);
-
-    dir_sort (e_dst);
-
-    if (src[src_len-1] != '/')
-        src[src_len] = '/';
-    else
-        --src_len;
-    if (dst[dst_len-1] != '/')
-        dst[dst_len] = '/';
-    else
-        --dst_len;
-    while (e_dst[i_dst].name)
-    {
-        strcpy (dst +dst_len+1, e_dst[i_dst].name);
-        strcpy (src +src_len+1, e_dst[i_dst].name);
-        
-        stat (dst, &fs_dst);
-        switch (fs_dst.st_mode & S_IFMT)
-        {
-        case S_IFREG:
-            file_extract ('d', dst, dst, databaseName);
-            del_file (dst);
-            break;
-        case S_IFDIR:
-            repository_del_tree (cmd, dst, src, databaseName);
-            break;
-        }
-        i_dst++;
-    }
-    dir_free (&e_dst);
-    if (dst_len > 0)
-    {
-        dst[dst_len] = '\0';
-        del_dir (dst);
-    }
-}
-
-void repository_update_r (int cmd, char *dst, char *src, char *databaseName)
-{
-    struct dir_entry *e_dst, *e_src;
-    int i_dst = 0, i_src = 0;
-    struct stat fs_dst, fs_src;
-    size_t dst_len = strlen (dst);
-    size_t src_len = strlen (src);
-
-    e_dst = dir_open (dst);
-    e_src = dir_open (src);
-
-    if (!e_dst && !e_src)
-        return;
-    if (!e_dst)
-    {
-        dir_free (&e_src);
-        repository_add_tree (cmd, dst, src, databaseName);
-        return;
-    }
-    else if (!e_src)
-    {
-        dir_free (&e_dst);
-        repository_del_tree (cmd, dst, src, databaseName);
-        return;
-    }
-
-    dir_sort (e_src);
-    dir_sort (e_dst);
-
-    if (src[src_len-1] != '/')
-        src[src_len] = '/';
-    else
-        --src_len;
-    if (dst[dst_len-1] != '/')
-        dst[dst_len] = '/';
-    else
-        --dst_len;
-    while (e_dst[i_dst].name || e_src[i_src].name)
-    {
-        int sd;
-
-        if (e_dst[i_dst].name && e_src[i_src].name)
-            sd = strcmp (e_dst[i_dst].name, e_src[i_src].name);
-        else if (e_src[i_src].name)
-            sd = 1;
-        else
-            sd = -1;
-                
-        if (sd == 0)
-        {
-            strcpy (dst +dst_len+1, e_dst[i_dst].name);
-            strcpy (src +src_len+1, e_src[i_src].name);
-            
-            /* check type, date, length */
-
-            stat (dst, &fs_dst);
-            stat (src, &fs_src);
-                
-            switch (fs_dst.st_mode & S_IFMT)
-            {
-            case S_IFREG:
-                if (fs_src.st_ctime > fs_dst.st_ctime)
-                {
-                    file_extract ('d', dst, dst, databaseName);
-                    file_extract ('a', src, dst, databaseName);
-                    copy_file (dst, src);
-                }
-                break;
-            case S_IFDIR:
-                repository_update_r (cmd, dst, src, databaseName);
-                break;
-            }
-            i_src++;
-            i_dst++;
-        }
-        else if (sd > 0)
-        {
-            strcpy (dst +dst_len+1, e_src[i_src].name);
-            strcpy (src +src_len+1, e_src[i_src].name);
-            
-            stat (src, &fs_src);
-            switch (fs_src.st_mode & S_IFMT)
-            {
-            case S_IFREG:
-                file_extract ('a', src, dst, databaseName);
-                copy_file (dst, src);
-                break;
-            case S_IFDIR:
-                repository_add_tree (cmd, dst, src, databaseName);
-                break;
-            }
-            i_src++;
-        }
-        else 
-        {
-            strcpy (dst +dst_len+1, e_dst[i_dst].name);
-            strcpy (src +src_len+1, e_dst[i_dst].name);
-            
-            stat (dst, &fs_dst);
-            switch (fs_dst.st_mode & S_IFMT)
-            {
-            case S_IFREG:
-                file_extract ('d', dst, dst, databaseName);
-                del_file (dst);
-                break;
-            case S_IFDIR:
-                repository_del_tree (cmd, dst, src, databaseName);
-                break;
-            }
-            i_dst++;
-        }
-    }
-    dir_free (&e_dst);
-    dir_free (&e_src);
-}
-
-void repository (int cmd, const char *rep, const char *base_path,
-                 char *databaseName)
-{
-    char rep_tmp1[2048];
-    char rep_tmp2[2048];
-
-    strcpy (rep_tmp1, rep);
-    if (base_path)
-    {
-        strcpy (rep_tmp2, base_path);
-        repository_update_r (cmd, rep_tmp2, rep_tmp1, databaseName);
-    }
-    else
-        repository_extract_r (cmd, rep_tmp1, databaseName);
-}
-#endif
-
-static int repComp (const char *a, const char *b, size_t len)
-{
-    if (!len)
-        return 0;
-    return memcmp (a, b, len);
 }
 
 static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
-                               const char *base, char *src, char *databaseName)
+                               const char *base, char *src, 
+                               struct recordGroup *rGroup)
 {
     struct dir_entry *e_src;
     int i_src = 0;
@@ -394,13 +160,13 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
             case dirs_file:
                 if (e_src[i_src].ctime > dst->ctime)
                 {
-                    if (fileExtract (&dst->sysno, tmppath, databaseName, 0))
+                    if (fileExtract (&dst->sysno, tmppath, rGroup, 0))
                         dirs_add (di, src, dst->sysno, e_src[i_src].ctime);
                 }
                 dst = dirs_read (di);
                 break;
             case dirs_dir:
-                repositoryUpdateR (di, dst, base, src, databaseName);
+                repositoryUpdateR (di, dst, base, src, rGroup);
                 dst = dirs_last (di);
                 logf (LOG_DEBUG, "last is %s", dst ? dst->path : "null");
                 break;
@@ -418,11 +184,11 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
             switch (e_src[i_src].kind)
             {
             case dirs_file:
-                if (fileExtract (&sysno, tmppath, databaseName, 0))
+                if (fileExtract (&sysno, tmppath, rGroup, 0))
                     dirs_add (di, src, sysno, e_src[i_src].ctime);            
                 break;
             case dirs_dir:
-                repositoryUpdateR (di, dst, base, src, databaseName);
+                repositoryUpdateR (di, dst, base, src, rGroup);
                 if (dst)
                     dst = dirs_last (di);
                 break;
@@ -437,18 +203,28 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     dir_free (&e_src);
 }
 
-void repositoryUpdate (const char *path, char *databaseName)
+void repositoryUpdate (struct recordGroup *rGroup)
 {
     struct dirs_info *di;
     char src[256];
     Dict dict;
 
     dict = dict_open ("repdict", 40, 1);
-    
-    di = dirs_open (dict, path);
+
+    assert (rGroup->path);
+    di = dirs_open (dict, rGroup->path);
     strcpy (src, "");
-    repositoryUpdateR (di, dirs_read (di), path, src, databaseName);
+    repositoryUpdateR (di, dirs_read (di), rGroup->path, src, rGroup);
     dirs_free (&di);
 
     dict_close (dict);
+}
+
+void repositoryExtract (struct recordGroup *rGroup)
+{
+    char src[256];
+
+    assert (rGroup->path);
+    strcpy (src, rGroup->path);
+    repositoryExtractR (src, rGroup);
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.23  1995-11-20 16:59:45  adam
+ * Revision 1.24  1995-11-21 15:01:15  adam
+ * New general match criteria implemented.
+ * New feature: document groups.
+ *
+ * Revision 1.23  1995/11/20  16:59:45  adam
  * New update method: the 'old' keys are saved for each records.
  *
  * Revision 1.22  1995/11/20  11:56:26  adam
@@ -106,6 +110,12 @@ struct dirs_entry {
     int ctime;
 };
 
+struct recordGroup {
+    char *groupName;
+    char *databaseName;
+    char *path;
+};
+
 struct dirs_info *dirs_open (Dict dict, const char *rep);
 struct dirs_entry *dirs_read (struct dirs_info *p);
 struct dirs_entry *dirs_last (struct dirs_info *p);
@@ -118,12 +128,9 @@ void dirs_free (struct dirs_info **pp);
 struct dir_entry *dir_open (const char *rep);
 void dir_sort (struct dir_entry *e);
 void dir_free (struct dir_entry **e_p);
-void repository (int cmd, const char *rep, const char *base_path,
-                 char *databaseName);
-void repositoryUpdate (const char *path, char *databaseName);
 
-SYSNO file_extract (int cmd, const char *fname, const char *kname,
-                    char *databaseName);
+void repositoryUpdate (struct recordGroup *rGroup);
+void repositoryExtract (struct recordGroup *rGroup);
 
 void key_open (int mem);
 int key_close (void);
@@ -156,5 +163,5 @@ int index_char_cvt (int c);
 int index_word_prefix (char *string, int attset_ordinal,
                        int local_attribute, const char *databaseName);
 
-int fileExtract (SYSNO *sysno, const char *fname, const char *databaseName,
-                 int deleteFlag);
+int fileExtract (SYSNO *sysno, const char *fname,
+                 struct recordGroup *rGroup, int deleteFlag);
