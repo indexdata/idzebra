@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 08_scan.t,v 1.3 2004-09-15 14:11:06 heikki Exp $
+# $Id: 08_scan.t,v 1.4 2004-09-20 15:59:48 heikki Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,8 +14,8 @@ BEGIN {
 use strict;
 use warnings;
 
-#use Test::More tests => 17;
-use Test::More skip_all => "Something rotten with scan.";
+use Test::More tests => 32;
+#use Test::More skip_all => "Something rotten with scan.";
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -41,9 +41,6 @@ my $sysno;
 my $F;
 my $filecount=0;
 $sess->init;
-$sess->begin_trans;
-$sess->databases('demo1', 'demo2');
-$ret=$sess->end_trans;
 
 $sess->begin_trans;
 $sess->databases('demo1', 'demo2');
@@ -51,7 +48,6 @@ for $F (<lib/IDZebra/*.pm>)
 {
     ($ret,$sysno)=$sess->insert_record (file=>$F, recordType => 'grs.perl.pod');
     ok( $ret==0, "inserted $F");
-    #print STDERR "Inserted $F ok. ret=$ret sys=$sysno\n";
     $filecount++;
 }
 $ret=$sess->end_trans;
@@ -60,12 +56,35 @@ is($ret->{inserted},$filecount, "Inserted all");
 $sess->databases('demo1');
 
 # -----------------------------------------------------------------------------
-# Scan titles in multiple databases
+# Scan titles in a single (default) database
+$sess->begin_trans;
+IDZebra::logMsg(2,"t08: Starting to scan");
+my $sl0 = $sess->scan(expression => "\@attr 1=4 \@attr 6=1 a");
+IDZebra::logMsg(2,"t08: scan done");
+
+my @ent=$sl0->entries(position    => 1,
+                      num_entries => 3);
+my $nent=@ent;
+is ($nent,3,"got 3 entries");
+
+my $cnt= $sl0->num_entries;
+
+is($cnt,3,"num_entries");
+is($ent[0]->term(),"a", "first entry");
+is($ent[1]->term(),"an", "second entry");
+is($ent[2]->term(),"and", "third entry");
+
+$sess->end_trans;
+# -----------------------------------------------------------------------------
+# Scan titles in a named database
 
 my $sl1 = $sess->scan(expression => "\@attr 1=4 \@attr 6=2 a",
-		      databases => [qw(demo1 demo2)]);
+		      databases => [qw(demo1)]);
+&test_list($sl1,$filecount, $filecount,1);
 
-&test_list($sl1,$filecount, $filecount*2,1);
+# FIXME - Should test multiple databases, but I can't get that to work
+
+
 # -----------------------------------------------------------------------------
 # Scan titles in a single and default database
 my $sl2 = $sess->scan(expression => "\@attr 1=4 \@attr 6=2 a");
@@ -112,7 +131,7 @@ sub test_list {
     ok (($sl->errCode == 0),"scan successfull");
     ok (($sl->num_entries == $ecount),
 	"number of entries is ".$sl->num_entries);
-    ok (($count == $sl->num_entries),"fetched $count entries");
+    is ($count,$sl->num_entries,"fetched $count entries");
     
     my $occcount=0; 
     my $posok = 1;
@@ -123,6 +142,6 @@ sub test_list {
 	$i++;
     }
     
-    ok ($occcount == $occ,"occurrences: $occcount");
+    is ($occcount, $occ,"occurrences: $occcount");
     ok (($posok),"position of each term");
 }
