@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.12  1998-10-13 20:37:11  adam
+ * Revision 1.13  1998-11-03 10:17:09  adam
+ * Fixed bug regarding creation of some data1 nodes for Explain records.
+ *
+ * Revision 1.12  1998/10/13 20:37:11  adam
  * Changed the way attribute sets are saved in Explain database to
  * reflect "dynamic" OIDs.
  *
@@ -271,9 +274,9 @@ static data1_node *data1_make_tagdata_text (data1_handle dh, data1_node *at,
     {
 	data1_node *node_data = node->child;
 	node_data->u.data.what = DATA1I_text;
-	node_data->u.data.data = node_data->lbuf;
-	strcpy (node_data->u.data.data, str);
 	node_data->u.data.len = strlen (node_data->u.data.data);
+	node_data->u.data.data = data1_insert_string (dh, node_data,
+						      nmem, str);
 	return node_data;
     }
 }
