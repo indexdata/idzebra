@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.22  1998-06-24 12:16:10  adam
+ * Revision 1.23  1998-09-02 14:15:28  adam
+ * Zebra uses GNU Configure.
+ *
+ * Revision 1.22  1998/06/24 12:16:10  adam
  * Support for relations on text operands. Open range support in
  * DFA module (i.e. [-j], [g-]).
  *
@@ -773,6 +776,7 @@ static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
         n->lastpos = mk_Set (poset);
         n->lastpos = add_Set (poset, n->lastpos, n->pos);
         if (debug_dfa_trav)
+	{
             if (n->u.ch[0] < 0)
                 printf ("#%d (n#%d)", -n->u.ch[0], -n->u.ch[1]);
             else if (n->u.ch[1] > n->u.ch[0])
@@ -786,6 +790,7 @@ static void dfa_trav (struct DFA_parse *parse_info, struct Tnode *n)
             }
             else
                 out_char (n->u.ch[0]);
+	}
     }
     if (debug_dfa_trav)
     {
@@ -856,10 +861,12 @@ static void mk_dfa_tran (struct DFA_parse *parse_info, struct DFA_states *dfas)
             for (pos_i = pos; (i = *pos_i) != -1; ++pos_i)
                 if (posar[i]->u.ch[1] >= char_1 
                     && (c=posar[i]->u.ch[0]) < char_0)
+		{
                     if (c < char_1)
                         char_0 = char_1;
                     else
                         char_0 = c;
+		}
 
             if (char_0 > max_char)
                 break;

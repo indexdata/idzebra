@@ -1,13 +1,17 @@
-# Copyright (C) 1995-1998, Index Data I/S 
+# Copyright (C) 1995-1998, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.50 1998-06-12 12:22:11 adam Exp $
+# $Id: Makefile.in,v 1.1 1998-09-02 14:15:31 adam Exp $
 
 SHELL=/bin/sh
-RANLIB=ranlib
+
+CC=@CC@
+CPP=@CPP@
+RANLIB=@RANLIB@
+CDEFS=@DEFS@ @ODEFS@
+LIBS=@LIBS@
 
 YAZLIB=../../yaz/lib/libyaz.a
-#YAZLIB=-lyaz
 YAZINC=-I../../yaz/include
 #OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
 #OSILIB=../../xtimosi/src/libmosi.a -lrfc
@@ -18,7 +22,7 @@ TPROG2=kdump
 TPROG3=zebrasrv
 TPROG4=hlvltest
 TPROG5=apitest
-DEFS=$(INCLUDE)
+DEFS=$(CDEFS) $(INCLUDE)
 O1 = main.o dir.o dirs.o trav.o extract.o kinput.o kcompare.o \
  symtab.o recindex.o recstat.o lockutil.o lockidx.o \
  zinfo.o invstat.o sortidx.o
@@ -30,7 +34,6 @@ O4 = hlvl.o hlvltest.o kcompare.o
 O5 = apitest.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
  zlogs.o lockutil.o locksrv.o zinfo.o trunc.o sortidx.o rank1.o zebraapi.o \
  retrieve.o
-CPP=$(CC) -E
 
 all: $(TPROG1) $(TPROG2) $(TPROG3)
 
@@ -39,11 +42,11 @@ $(TPROG1): $(O1) ../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
 	$(CC) $(CFLAGS) -o $(TPROG1) $(O1) \
 		../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
 		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB) $(ELIBS)
+		$(YAZLIB) $(LIBS)
 
 $(TPROG2): $(O2)
 	$(CC) $(CFLAGS) -o $(TPROG2) $(O2) ../lib/zebrautl.a \
-		$(YAZLIB) $(ELIBS)
+		$(YAZLIB) $(LIBS)
 
 $(TPROG3): $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
@@ -52,7 +55,7 @@ $(TPROG3): $(O3) \
 	$(CC) $(CFLAGS) -o $(TPROG3) $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
 		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB) $(OSILIB) $(ELIBS) -lm
+		$(YAZLIB) $(OSILIB) $(LIBS) -lm
 
 $(TPROG4): $(O4) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
@@ -61,7 +64,7 @@ $(TPROG4): $(O4) \
 	$(CC) $(CFLAGS) -o $(TPROG4) $(O4) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
 		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB) $(OSILIB) $(ELIBS) -lm 
+		$(YAZLIB) $(OSILIB) $(LIBS) -lm 
 
 $(TPROG5): $(O5) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
@@ -70,7 +73,7 @@ $(TPROG5): $(O5) \
 	$(CC) $(CFLAGS) -o $(TPROG5) $(O5) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
 		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB) $(OSILIB) $(ELIBS) -lm
+		$(YAZLIB) $(OSILIB) $(LIBS) -lm
 
 
 .c.o:
@@ -80,18 +83,9 @@ clean:
 	rm -f *.[oa] $(TPROG1) $(TPROG2) $(TPROG3)
 	rm -f core mon.out gmon.out errlist
 
-depend: depend2
-
-depend1:
+depend:
 	sed '/^#Depend/q' <Makefile >Makefile.tmp
 	$(CPP) $(DEFS) -M *.c >>Makefile.tmp
 	mv -f Makefile.tmp Makefile
-
-depend2:
-	$(CPP) $(DEFS) -M *.c >.depend	
-
-ifeq (.depend,$(wildcard .depend))
-include .depend
-endif
 
 #Depend --- DOT NOT DELETE THIS LINE

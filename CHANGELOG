@@ -1,3 +1,5 @@
+Zebra now uses GNU configure to generate Makefile(s).
+
 Added un-optimised support for left and left/right truncation attributes.
 
 Added support for relational operators on text when using

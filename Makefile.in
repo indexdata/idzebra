@@ -1,0 +1,49 @@
+# Copyright (C) 1994-1998, Index Data
+# All rights reserved.
+# Sebastian Hammer, Adam Dickmeiss
+# $Id: Makefile.in,v 1.1 1998-09-02 14:15:26 adam Exp $
+
+SHELL=/bin/sh
+MAKE=make
+RANLIB=@RANLIB@
+CC=@CC@
+CPP=@CPP@
+CDEFS=@DEFS@ @ODEFS@
+
+# Where are Yaz libraries located?
+YAZLIB=../../yaz/lib/libyaz.a
+# Where are Yaz header files located?
+YAZINC=-I../../yaz/include
+#YAZINC=-I../../yaz/z39.50 -I../../yaz/include
+# If Yaz is compiled with mosi support uncomment and specify.
+#OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
+
+# Some systems have seperate socket libraries
+LIBS=@LIBS@
+
+SUBDIR=util bfile dfa dict isamc isam rset recctrl index
+
+all:
+	for i in $(SUBDIR); do cd $$i; if $(MAKE) OSILIB="$(OSILIB)" YAZLIB="$(YAZLIB)" YAZINC="$(YAZINC)" RANLIB="$(RANLIB)" CDEFS="$(CDEFS)" LIBS="$(LIBS)" CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done
+
+dep depend:
+	for i in $(SUBDIR); do cd $$i; if $(MAKE) CPP="$(CPP)" CDEFS="$(CDEFS)" YAZINC="$(YAZINC)" depend; then cd ..; else exit 1; fi; done
+
+clean:
+	for i in $(SUBDIR); do (cd $$i; $(MAKE) clean); done
+	rm -f lib/*.a
+
+cleanup:
+	rm -f `find $(SUBDIR) -name "*.[oa]" -print`
+	rm -f `find $(SUBDIR) -name "core" -print`
+	rm -f `find $(SUBDIR) -name "errlist" -print`
+	rm -f `find $(SUBDIR) -name "a.out" -print`
+
+cleandepend: 
+	for i in $(SUBDIR); do (cd $$i; \
+		if sed '/^#Depend/q' <Makefile >Makefile.tmp; then \
+		mv -f Makefile.tmp Makefile; fi; rm -f .depend); done
+
+wc:
+	wc `find . -name '*.[ch]'`
+

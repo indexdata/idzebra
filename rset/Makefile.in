@@ -1,20 +1,24 @@
-# Copyright (C) 1994-1998, Index Data I/S 
+# Copyright (C) 1994-1998, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.15 1998-03-05 08:36:27 adam Exp $
+# $Id: Makefile.in,v 1.1 1998-09-02 14:15:36 adam Exp $
 
 SHELL=/bin/sh
-RANLIB=ranlib
+
+CC=@CC@
+CPP=@CPP@
+RANLIB=@RANLIB@
+CDEFS=@DEFS@ @ODEFS@
+LIBS=@LIBS@
 
 YAZLIB=../../yaz/lib/libyaz.a
 YAZINC=-I../../yaz/include
 
 INCLUDE=-I../include $(YAZINC)
-DEFS=$(INCLUDE)
+DEFS=$(CDEFS) $(INCLUDE)
 LIB=../lib/rset.a
 PROG=
 PO=rset.o rstemp.o rsisam.o rsnull.o rsbool.o rsisamc.o rsm_or.o
-CPP=$(CC) -E
 
 all: $(LIB)
 
@@ -29,18 +33,9 @@ $(LIB): $(PO)
 clean:
 	rm -f *.[oa] core mon.out gmon.out errlist
 
-depend: depend2
-
-depend1:
+depend:
 	sed '/^#Depend/q' <Makefile >Makefile.tmp
 	$(CPP) $(DEFS) -M *.c >>Makefile.tmp
 	mv -f Makefile.tmp Makefile
-
-depend2:
-	$(CPP) $(DEFS) -M *.c >.depend	
-
-ifeq (.depend,$(wildcard .depend))
-include .depend
-endif
 
 #Depend --- DOT NOT DELETE THIS LINE
