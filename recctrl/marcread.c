@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.10  1999-11-30 13:48:04  adam
+ * Revision 1.11  2000-05-15 15:32:51  adam
+ * Added support for 64 bit input file support.
+ *
+ * Revision 1.10  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.9  1999/06/25 13:47:25  adam
@@ -166,7 +169,8 @@ data1_node *grs_read_marc (struct grs_read_info *p)
     if (read_bytes == record_length - 4)
     {
         off_t cur_offset = (*p->tellf)(p->fh);
-        assert (cur_offset > 26);
+	if (cur_offset <= 27)
+	    return NULL;
 	if (p->endf)
 	    (*p->endf)(p->fh, cur_offset - 1);
     }

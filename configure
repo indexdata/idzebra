@@ -1681,13 +1681,60 @@ fi
 done
 
 fi
+echo $ac_n "checking for large files""... $ac_c" 1>&6
+echo "configure:1686: checking for large files" >&5
+if test "$cross_compiling" = yes; then
+  bits=32
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1691 "configure"
+#include "confdefs.h"
+#define _FILE_OFFSET_BITS 64
+#include <unistd.h>
+#include <string.h>
+#include <stdio.h>
+int main(int argc, char **argv)
+{
+	off_t o;
+	char tmp_str[32];
+	if (sizeof(off_t) == 8) {
+		o = 2000000000;
+		sprintf (tmp_str, "%Ld", o+o+o);
+		if (!strcmp (tmp_str, "6000000000"))
+			exit (0);
+	}
+	exit (1);
+}
+
+EOF
+if { (eval echo configure:1711: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+then
+  bits=64
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -fr conftest*
+  bits=32
+fi
+rm -fr conftest*
+fi
+
+if test "$bits" = "64"; then
+	cat >> confdefs.h <<\EOF
+#define _FILE_OFFSET_BITS 64
+EOF
+
+	echo "$ac_t""yes" 1>&6
+else
+	echo "$ac_t""no" 1>&6
+fi
 echo $ac_n "checking for ANSI C header files""... $ac_c" 1>&6
-echo "configure:1686: checking for ANSI C header files" >&5
+echo "configure:1733: checking for ANSI C header files" >&5
 if eval "test \"`echo '$''{'ac_cv_header_stdc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1691 "configure"
+#line 1738 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 #include <stdarg.h>
@@ -1695,7 +1742,7 @@ else
 #include <float.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1699: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1746: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1712,7 +1759,7 @@ rm -f conftest*
 if test $ac_cv_header_stdc = yes; then
   # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 1716 "configure"
+#line 1763 "configure"
 #include "confdefs.h"
 #include <string.h>
 EOF
@@ -1730,7 +1777,7 @@ fi
 if test $ac_cv_header_stdc = yes; then
   # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 1734 "configure"
+#line 1781 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 EOF
@@ -1751,7 +1798,7 @@ if test "$cross_compiling" = yes; then
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 1755 "configure"
+#line 1802 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 #define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
@@ -1762,7 +1809,7 @@ if (XOR (islower (i), ISLOWER (i)) || toupper (i) != TOUPPER (i)) exit(2);
 exit (0); }
 
 EOF
-if { (eval echo configure:1766: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:1813: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   :
 else
