@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.20  1998-11-03 14:51:28  adam
+ * Revision 1.21  1998-11-03 15:43:39  adam
+ * Fixed bug introduced by previous commit.
+ *
+ * Revision 1.20  1998/11/03 14:51:28  adam
  * Changed code so that it creates as few data1 nodes as possible.
  *
  * Revision 1.19  1998/11/03 10:22:39  adam
@@ -1668,7 +1671,7 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
     struct lexContext *lt = spec->context;
     data1_node *d1_stack[128];
     int d1_level = 0;
-    int ptr = offset;
+    int i, ptr = offset;
 
     spec->context_stack_top = 0;    
     while (lt)
@@ -1687,6 +1690,8 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
     if (lt->beginActionList)
         execAction (spec, lt->beginActionList, d1_stack, &d1_level, 0, &ptr);
     lexNode (spec, d1_stack, &d1_level, &ptr);
+    for (i = d1_level; i; --i)
+	tagDataRelease (spec, d1_stack, i);
     if (lt->endActionList)
         execAction (spec, lt->endActionList, d1_stack, &d1_level, ptr, &ptr);
     return *d1_stack;
