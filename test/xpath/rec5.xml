@@ -24,3 +24,8 @@
   <author>foo bar grunt</author>
 </record>
   
+<record>
+  <title lang=da>Danish Title</title>
+  <title lang=en>English Title</title>
+</record>
+
