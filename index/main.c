@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.35  1996-02-12 15:56:11  adam
+ * Revision 1.36  1996-02-12 18:45:37  adam
+ * New fileVerboseFlag in record group control.
+ *
+ * Revision 1.35  1996/02/12  15:56:11  adam
  * New code command: unread.
  *
  * Revision 1.34  1996/02/07  14:06:39  adam
@@ -167,6 +170,7 @@ int main (int argc, char **argv)
     rGroupDef.recordType = NULL;
     rGroupDef.flagStoreData = -1;
     rGroupDef.flagStoreKeys = -1;
+    rGroupDef.fileVerboseFlag = 1;
 
     prog = *argv;
     if (argc < 2)

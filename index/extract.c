@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.49  1996-02-05 12:29:57  adam
+ * Revision 1.50  1996-02-12 18:45:36  adam
+ * New fileVerboseFlag in record group control.
+ *
+ * Revision 1.49  1996/02/05  12:29:57  adam
  * Logging reduced a bit.
  * The remaining running time is estimated during register merge.
  *
@@ -864,10 +867,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             return 1;
         }
         logInfo.op = "add";
-#if 0
-        logf (LOG_LOG, "update %s %s", rGroup->recordType,
-              fname);
-#endif
+        if (rGroup->fileVerboseFlag)
+            logf (LOG_LOG, "add %s %s", rGroup->recordType, fname);
         rec = rec_new (records);
         *sysno = rec->sysno;
 
@@ -897,9 +898,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             }
             else
             {
-#if 0
-                logf (LOG_LOG, "delete %s %s", rGroup->recordType, fname);
-#endif
+                if (rGroup->fileVerboseFlag)
+                    logf (LOG_LOG, "delete %s %s", rGroup->recordType, fname);
                 records_deleted++;
                 if (matchStr)
                     dict_delete (matchDict, matchStr);
@@ -916,10 +916,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             }
             else
             {
-#if 0
-                logf (LOG_LOG, "update %s %s", rGroup->recordType,
-                      fname);
-#endif
+                if (rGroup->fileVerboseFlag)
+                    logf (LOG_LOG, "update %s %s", rGroup->recordType, fname);
                 flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
                 records_updated++;
             }
@@ -1037,18 +1035,16 @@ int fileExtract (SYSNO *sysno, const char *fname,
             sprintf (ext_res, "%srecordType", gprefix);
             if (!(rGroup->recordType = res_get (common_resource, ext_res)))
             {
-#if 0
-                logf (LOG_LOG, "? %s", fname);
-#endif
+                if (rGroup->fileVerboseFlag)
+                    logf (LOG_LOG, "? %s", fname);
                 return 0;
             }
         }
     }
     if (!rGroup->recordType)
     {
-#if 0
-        logf (LOG_LOG, "? record %s", fname);
-#endif
+        if (rGroup->fileVerboseFlag)
+            logf (LOG_LOG, "? record %s", fname);
         return 0;
     }
     if (!(recType = recType_byName (rGroup->recordType, subType)))

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.34  1995-12-11 11:43:29  adam
+ * Revision 1.35  1996-02-12 18:45:36  adam
+ * New fileVerboseFlag in record group control.
+ *
+ * Revision 1.34  1995/12/11  11:43:29  adam
  * Locking based on fcntl instead of flock.
  * Setting commitEnable removed. Command line option -n can be used to
  * prevent commit if commit setting is defined in the configuration file.
@@ -161,6 +164,7 @@ struct recordGroup {
     char *recordType;
     int  flagStoreData;
     int  flagStoreKeys;
+    int  fileVerboseFlag;
 };
 
         
