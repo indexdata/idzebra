@@ -1,3 +1,5 @@
+#!/bin/sh
+# $Id: test1.sh,v 1.4 2003-05-06 17:39:01 adam Exp $
 echo "testing without stored keys (zebra1.cfg)"
 
 echo "See if servers are running...."

@@ -1,4 +1,5 @@
 #!/bin/sh
+# $Id: test.sh,v 1.8 2003-05-06 17:39:01 adam Exp $
 if [ -x ../../index/zebraidx ]; then 
 	IDX=../../index/zebraidx
 	SRV=../../index/zebrasrv

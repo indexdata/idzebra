@@ -1,5 +1,7 @@
-# timing1.sh - tests that updates are reflected immediately
-# in the registers. Repeatedly modifies a record and counts hits.
+#!/bin/sh
+# $Id: timing1.sh,v 1.4 2003-05-06 17:39:01 adam Exp $
+# tests that updates are reflected immediately # in the registers.
+# Repeatedly modifies a record and counts hits.
 # Test 1: with good sleeps in every between - should pass always
 
 echo "Testing timings of updates"

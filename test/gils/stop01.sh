@@ -1,5 +1,6 @@
-# test01.sh - test start and stop of the server with -1
-#
+#!/bin/sh
+# $Id: stop01.sh,v 1.2 2003-05-06 17:39:01 adam Exp $
+# test start and stop of the server with -1
 
 echo "initializing"
 mkdir -p reg

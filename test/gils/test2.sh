@@ -1,3 +1,5 @@
+#!/bin/sh
+# $Id: test2.sh,v 1.4 2003-05-06 17:39:01 adam Exp $
 echo "Testing with storekeys (zebra2.cfg)"
 echo "init..."
 rm -f idx.log log

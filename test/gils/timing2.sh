@@ -1,4 +1,5 @@
-# timing2.sh 
+#!/bin/sh
+# $Id: timing2.sh,v 1.4 2003-05-06 17:39:01 adam Exp $ 
 # Demonstrated that updates depend on file timestamps
 
 echo "Testing timings of updates"

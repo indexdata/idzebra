@@ -1,7 +1,11 @@
 #!/bin/sh
+# $Id: test3.sh,v 1.2 2003-05-06 17:39:01 adam Exp $
 LOG=test3.log
 TMP=test3.tmp
 rm -f $LOG
+rm -f $TMP
+../../index/zebraidx -l $LOG init || exit 1
+../../index/zebraidx -l $LOG -t grs.sgml update rec || exit 2
 test -f dict*.mf || exit 1
 ../../index/zebrasrv -l $LOG -S unix:socket & 
 sleep 1

@@ -1,4 +1,6 @@
-# test04.sh - test start and stop of the forked server 
+#!/bin/sh
+# $Id: stop04.sh,v 1.2 2003-05-06 17:39:01 adam Exp $
+# test start and stop of the forked server 
 #
 
 echo "initializing"

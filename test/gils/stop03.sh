@@ -1,4 +1,6 @@
-# test03.sh - test start and stop of the threaded server (-T)
+#!/bin/sh
+# $Id: stop03.sh,v 1.2 2003-05-06 17:39:01 adam Exp $
+# test start and stop of the threaded server (-T)
 #
 # FIXME - this test does not currently pass  (H 22-oct-2002)
 # When the client exits, the process dies with a segfault

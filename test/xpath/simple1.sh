@@ -1,4 +1,6 @@
-# simple1.sh - test with one simple sgml record
+#!/bin/sh
+# $Id: simple1.sh,v 1.2 2003-05-06 17:39:01 adam Exp $
+# test with one simple sgml record
 
 LOG=simple1.log
 ../../index/zebraidx -l $LOG init || exit 1
