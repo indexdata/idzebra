@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.30  2000-07-13 10:14:20  heikki
+ * Revision 1.31  2001-02-26 22:14:59  adam
+ * Updated for BZIP2 1.0.X. Configure script doesn't enable 64 bit LFS
+ * on broken glibc on Redhat 7.0.
+ *
+ * Revision 1.30  2000/07/13 10:14:20  heikki
  * Removed compiler warnings when making zebra
  *
  * Revision 1.29  2000/04/05 09:49:35  adam
@@ -535,7 +539,12 @@ static void rec_write_multiple (Records p, int saveCount)
 #if HAVE_BZLIB_H	
 	    csize = out_offset + (out_offset >> 6) + 620;
 	    rec_tmp_expand (p, csize);
-	    i = bzBuffToBuffCompress (p->tmp_buf+sizeof(int)+sizeof(short)+
+#ifdef BZ_CONFIG_ERROR
+	    i = BZ2_bzBuffToBuffCompress 
+#else
+	    i = bzBuffToBuffCompress 
+#endif
+			 	     (p->tmp_buf+sizeof(int)+sizeof(short)+
 				      sizeof(char),
 				      &csize, out_buf, out_offset, 1, 0, 30);
 	    if (i != BZ_OK)
@@ -731,7 +740,12 @@ static Record rec_get_int (Records p, int sysno)
 	while (1)
 	{
 	    bz_buf = (char *) xmalloc (bz_size);
-	    i = bzBuffToBuffDecompress (bz_buf, &bz_size, in_buf, in_size, 0, 0);
+#ifdef BZ_CONFIG_ERROR
+	    i = BZ2_bzBuffToBuffDecompress
+#else
+	    i = bzBuffToBuffDecompress
+#endif
+                 (bz_buf, &bz_size, in_buf, in_size, 0, 0);
 	    logf (LOG_LOG, "decompress %5d %5d", in_size, bz_size);
 	    if (i == BZ_OK)
 		break;
