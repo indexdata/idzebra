@@ -1,10 +1,10 @@
 
- * Copyright (C) 1995-1998, Index Data.
+ * Copyright (C) 1995-1999, Index Data.
  * See the file LICENSE.2 for details.
  * Sebastian Hammer, Adam Dickmeiss
 
 README for Zebra
-  $Id: README,v 1.1 1998-01-29 13:33:23 adam Exp $
+  $Id: README,v 1.2 1999-05-21 12:00:35 adam Exp $
 
 Documentation about this software can be found in the subdirectory
 'doc' and Zebra's home page:  http://www.indexdata.dk/zebra
