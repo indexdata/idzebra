@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.4  1996-06-03 16:32:13  quinn
+ * Revision 1.5  1996-06-04 08:32:15  quinn
+ * Moved default keymap to keychars.c
+ *
+ * Revision 1.4  1996/06/03  16:32:13  quinn
  * Temporary bug-fix
  *
  * Revision 1.3  1996/06/03  15:17:46  quinn
@@ -134,22 +137,9 @@ static chr_t_entry *find_entry(chr_t_entry *t, char **from, int len)
 
 char **chr_map_input(chr_t_entry *t, char **from, int len)
 {
-    static char *buf[2] = {0, 0}, str[2] = {0, 0};
+    static char *buf[2] = {0, 0};
     chr_t_entry *res;
 
-    if (!t) /* no table loaded. Null mapping */
-    {
-	if (isalnum(**from))
-	{
-	    str[0] = **from;
-	    buf[0] = str;
-	}
-	else
-	    buf[0] = (char*) CHR_SPACE;
-	(*from)++;
-	return buf;
-    }
-    /* no children match. use our target string */
     if (!(res = find_entry(t, from, len)))
 	abort();
     buf[0] = (char *) res->target;
