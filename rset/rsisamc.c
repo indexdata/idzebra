@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.29 2004-11-04 13:11:51 heikki Exp $
+/* $Id: rsisamc.c,v 1.30 2004-11-04 13:54:08 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -61,15 +61,19 @@ struct rset_isamc_info {
     ISAMC_P pos;
 };
 
-static int log_level=-1;
+static int log_level=0;
+static int log_level_initialized=0;
 
 RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol, int scope,
                              ISAMC is, ISAMC_P pos, TERMID term)
 {
     RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,term);
     struct rset_isamc_info *info;
-    if (log_level<0)
+    if (!log_level_initialized)
+    {
         log_level=yaz_log_module_level("rsisamc");
+        log_level_initialized=1;
+    }
     info = (struct rset_isamc_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->is=is;
     info->pos=pos;

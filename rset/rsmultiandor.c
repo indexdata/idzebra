@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.8 2004-10-26 15:32:11 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.9 2004-11-04 13:54:08 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -125,6 +125,10 @@ struct rset_multiandor_rfd {
     char *tailbits;
 };
 
+static int log_level=0;
+static int log_level_initialized=0;
+
+
 /* Heap functions ***********************/
 
 #if 0
@@ -133,13 +137,13 @@ static void heap_dump_item( HEAP h, int i, int level) {
     if (i>h->heapnum)
         return;
     (void)rset_pos(h->heap[i]->rset,h->heap[i]->fd, &cur, &tot);
-    logf(LOG_LOG," %d %*s i=%p buf=%p %0.1f/%0.1f",i, level, "",  
+    logf(log_level," %d %*s i=%p buf=%p %0.1f/%0.1f",i, level, "",  
                     &(h->heap[i]), h->heap[i]->buf, cur,tot );
     heap_dump_item(h, 2*i, level+1);
     heap_dump_item(h, 2*i+1, level+1);
 }
 static void heap_dump( HEAP h,char *msg) {
-    logf(LOG_LOG, "heap dump: %s num=%d max=%d",msg, h->heapnum, h->heapmax);
+    logf(log_level, "heap dump: %s num=%d max=%d",msg, h->heapnum, h->heapmax);
     heap_dump_item(h,1,1);
 }
 #endif
@@ -264,6 +268,11 @@ static RSET rsmulti_andor_create( NMEM nmem, const struct key_control *kcontrol,
 {
     RSET rnew=rset_create_base(ctrl, nmem,kcontrol, scope,0);
     struct rset_multiandor_info *info;
+    if (!log_level_initialized)
+    {
+        log_level=yaz_log_module_level("rsmultiandor");
+        log_level_initialized=1;
+    }
     info = (struct rset_multiandor_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->no_rsets=no_rsets;
     info->rsets=(RSET*)nmem_malloc(rnew->nmem, no_rsets*sizeof(*rsets));
@@ -562,19 +571,19 @@ static void r_pos (RSFD rfd, double *current, double *total)
     int i;
     for (i=0; i<info->no_rsets; i++){
         rset_pos(mrfd->items[i].fd, &cur, &tot);
-        /*logf(LOG_LOG, "r_pos: %d %0.1f %0.1f", i, cur,tot); */
+        logf(log_level, "r_pos: %d %0.1f %0.1f", i, cur,tot); 
         scur += cur;
         stot += tot;
     }
     if (stot <1.0) { /* nothing there */
         *current=0;
         *total=0;
-        /* logf(LOG_LOG, "r_pos: NULL  %0.1f %0.1f",  *current, *total);*/
+        logf(log_level, "r_pos: NULL  %0.1f %0.1f",  *current, *total);
         return;
     }
     *current=mrfd->hits;
     *total=*current*stot/scur;
-    /*logf(LOG_LOG, "r_pos: =  %0.1f %0.1f",  *current, *total);*/
+    logf(log_level, "r_pos: =  %0.1f %0.1f",  *current, *total);
 }
 
 

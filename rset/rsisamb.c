@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.25 2004-10-22 10:12:52 heikki Exp $
+/* $Id: rsisamb.c,v 1.26 2004-11-04 13:54:08 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,9 +26,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rset.h>
 #include <string.h>
 
-#ifndef RSET_DEBUG
-#define RSET_DEBUG 0
-#endif
 
 static RSFD r_open (RSET ct, int flag);
 static void r_close (RSFD rfd);
@@ -63,21 +60,30 @@ struct rset_isamb_info {
     ISAMB_P pos;
 };
 
+static int log_level=0;
+static int log_level_initialized=0;
+
 RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol, int scope,
             ISAMB is, ISAMB_P pos, TERMID term)
 {
     RSET rnew=rset_create_base(&control, nmem, kcontrol, scope, term);
     struct rset_isamb_info *info;
+    if (!log_level_initialized)
+    {
+        log_level=yaz_log_module_level("rsisamb");
+        log_level_initialized=1;
+    }
     info = (struct rset_isamb_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->is=is;
     info->pos=pos;
     rnew->priv=info;
+    logf(log_level,"rsisamb_create");
     return rnew;
 }
 
 static void r_delete (RSET ct)
 {
-    logf (LOG_DEBUG, "rsisamb_delete");
+    logf (log_level, "rsisamb_delete");
 }
 
 RSFD r_open (RSET ct, int flag)
@@ -100,6 +106,7 @@ RSFD r_open (RSET ct, int flag)
         rfd->priv=ptinfo;
     }
     ptinfo->pt = isamb_pp_open (info->is, info->pos, ct->scope );
+    logf(log_level,"rsisamb_open");
     return rfd;
 }
 
@@ -108,6 +115,7 @@ static void r_close (RSFD rfd)
     struct rset_pp_info *ptinfo=(struct rset_pp_info *)(rfd->priv);
     isamb_pp_close (ptinfo->pt);
     rfd_delete_base(rfd);
+    logf(log_level,"rsisamb_close");
 }
 
 
@@ -118,6 +126,7 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
     rc=isamb_pp_forward(pinfo->pt, buf, untilbuf);
     if (rc && term)
         *term=rfd->rset->term;
+    logf(log_level,"rsisamb_forward");
     return rc; 
 }
 
@@ -126,10 +135,8 @@ static void r_pos (RSFD rfd, double *current, double *total)
     struct rset_pp_info *pinfo=(struct rset_pp_info *)(rfd->priv);
     assert(rfd);
     isamb_pp_pos(pinfo->pt, current, total);
-#if RSET_DEBUG
-    logf(LOG_DEBUG,"isamb.r_pos returning %0.1f/%0.1f",
+    logf(log_level,"isamb.r_pos returning %0.1f/%0.1f",
               *current, *total);
-#endif
 }
 
 static int r_read (RSFD rfd, void *buf, TERMID *term)
@@ -139,6 +146,7 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
     rc=isamb_pp_read(pinfo->pt, buf);
     if (rc && term)
         *term=rfd->rset->term;
+    logf(log_level,"isamb.r_read ");
     return rc;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.38 2004-10-22 11:33:29 heikki Exp $
+/* $Id: rset.c,v 1.39 2004-11-04 13:54:08 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -29,26 +29,37 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/nmem.h>
 #include <rset.h>
 
+static int log_level=0;
+static int log_level_initialized=0;
 
-/* creates an rfd. Either allocates a new one, in which case the priv */
-/* pointer is null, and will have to be filled in, or picks up one */
-/* from the freelist, in which case the priv is already allocated, */
-/* and presumably everything that hangs from it as well */
+/**
+ * creates an rfd. Either allocates a new one, in which case the priv 
+ * pointer is null, and will have to be filled in, or picks up one 
+ * from the freelist, in which case the priv is already allocated,
+ * and presumably everything that hangs from it as well 
+ */
 
 RSFD rfd_create_base(RSET rs)
 {
+    if (!log_level_initialized) 
+    {
+        log_level=yaz_log_module_level("rset");
+        log_level_initialized=1;
+    }
+
     RSFD rnew=rs->free_list;
-    if (rnew) {
+    if (rnew) 
+    {
         rs->free_list=rnew->next;
         assert(rnew->rset==rs);
-  /*    logf(LOG_DEBUG,"rfd-create_base (fl): rfd=%p rs=%p fl=%p priv=%p", 
-                       rnew, rs, rs->free_list, rnew->priv); */
+        logf(log_level,"rfd-create_base (fl): rfd=%p rs=%p fl=%p priv=%p", 
+                       rnew, rs, rs->free_list, rnew->priv); 
     } else {
         rnew=nmem_malloc(rs->nmem, sizeof(*rnew));
         rnew->priv=NULL;
         rnew->rset=rs;
-  /*    logf(LOG_DEBUG,"rfd_create_base (new): rfd=%p rs=%p fl=%p priv=%p", 
-                       rnew, rs, rs->free_list, rnew->priv); */
+        logf(log_level,"rfd_create_base (new): rfd=%p rs=%p fl=%p priv=%p", 
+                       rnew, rs, rs->free_list, rnew->priv); 
     }
     rnew->next=NULL; /* not part of any (free?) list */
     return rnew;
@@ -59,8 +70,8 @@ RSFD rfd_create_base(RSET rs)
 void rfd_delete_base(RSFD rfd) 
 {
     RSET rs=rfd->rset;
- /* logf(LOG_DEBUG,"rfd_delete_base: rfd=%p rs=%p priv=%p fl=%p",
-            rfd, rs, rfd->priv, rs->free_list); */
+    logf(log_level,"rfd_delete_base: rfd=%p rs=%p priv=%p fl=%p",
+            rfd, rs, rfd->priv, rs->free_list); 
     assert(NULL == rfd->next); 
     rfd->next=rs->free_list;
     rs->free_list=rfd;
@@ -79,7 +90,7 @@ RSET rset_create_base(const struct rset_control *sel,
     else
         M=nmem_create();
     rnew = (RSET) nmem_malloc(M,sizeof(*rnew));
- /* logf (LOG_DEBUG, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rnew, nmem); */
+    logf (log_level, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rnew, nmem); 
     rnew->nmem=M;
     if (nmem)
         rnew->my_nmem=0;
@@ -100,8 +111,8 @@ RSET rset_create_base(const struct rset_control *sel,
 void rset_delete (RSET rs)
 {
     (rs->count)--;
-/*  logf(LOG_DEBUG,"rs_delete(%s), rs=%p, count=%d",
-            rs->control->desc, rs, rs->count); */
+    logf(log_level,"rs_delete(%s), rs=%p, count=%d",
+            rs->control->desc, rs, rs->count); 
     if (!rs->count)
     {
         (*rs->control->f_delete)(rs);
@@ -113,46 +124,41 @@ void rset_delete (RSET rs)
 RSET rset_dup (RSET rs)
 {
     (rs->count)++;
+    logf(log_level,"rs_dup(%s), rs=%p, count=%d",
+            rs->control->desc, rs, rs->count); 
     return rs;
 }
-
-#if 0
-void rset_default_pos (RSFD rfd, double *current, double *total)
-{ /* This should never really be needed, but it is still used in */
-  /* those rsets that we don't really plan to use, like isam-s */
-    assert(rfd);
-    assert(current);
-    assert(total);
-    *current=-1; /* signal that pos is not implemented */
-    *total=-1;
-} /* rset_default_pos */
-#endif
 
 int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
                            const void *untilbuf)
 {
     int more=1;
     int cmp=rfd->rset->scope;
-    logf (LOG_DEBUG, "rset_default_forward starting '%s' (ct=%p rfd=%p)",
+    if (log_level)
+    {
+        logf (log_level, "rset_default_forward starting '%s' (ct=%p rfd=%p)",
                     rfd->rset->control->desc, rfd->rset, rfd);
-    /* key_logdump(LOG_DEBUG, untilbuf); */
+        /* key_logdump(log_level, untilbuf); */
+    }
     while ( (cmp>=rfd->rset->scope) && (more))
     {
-        logf (LOG_DEBUG, "rset_default_forward looping m=%d c=%d",more,cmp);
+        if (log_level)  /* time-critical, check first */
+            logf(log_level,"rset_default_forward looping m=%d c=%d",more,cmp);
         more=rset_read(rfd, buf, term);
         if (more)
             cmp=(rfd->rset->keycontrol->cmp)(untilbuf,buf);
 /*        if (more)
-            key_logdump(LOG_DEBUG,buf); */
+            key_logdump(log_level,buf); */
     }
-    logf (LOG_DEBUG, "rset_default_forward exiting m=%d c=%d",more,cmp);
+    if (log_level)
+        logf (log_level, "rset_default_forward exiting m=%d c=%d",more,cmp);
 
     return more;
 }
 
 /** 
  * rset_count uses rset_pos to get the total and returns that.
- * This is ok for rsisamb, and for some other rsets, but in case of
+ * This is ok for rsisamb/c/s, and for some other rsets, but in case of
  * booleans etc it will give bad estimate, as nothing has been read
  * from that rset
  */
@@ -189,7 +195,7 @@ TERMID rset_term_create (const char *name, int length, const char *flags,
 
 {
     TERMID t;
-    logf (LOG_DEBUG, "term_create '%s' %d f=%s type=%d nmem=%p",
+    logf (log_level, "term_create '%s' %d f=%s type=%d nmem=%p",
             name, length, flags, type, nmem);
     t= (TERMID) nmem_malloc (nmem, sizeof(*t));
     if (!name)
