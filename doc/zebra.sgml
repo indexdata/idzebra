@@ -1,0 +1,296 @@
+<!doctype linuxdoc system>
+
+<!--
+  $Id: zebra.sgml,v 1.1 1995-11-27 14:23:53 adam Exp $
+-->
+
+<article>
+<title>Zebra server Administrators's Guide and Reference
+<author>Index Data, <tt/info@index.ping.dk/
+<date>$Revision: 1.1 $
+<abstract>
+This document describes Zebra &mdash; an information retrieval server
+that uses the Z39.50 protocol.
+</abstract>
+
+<toc>
+
+<sect>Introduction
+
+<p>
+- gils
+- UNI*X (not NT yet)
+- goals
+
+<sect>Compiling the software
+
+<p>
+
+Zebra uses the YAZ package in order to provide Z39.50 access. So you
+must compile YAZ before going further. Specifically, Zebra uses
+the YAZ header files in <tt>yaz/include/..</tt> and its public library
+<tt>yaz/lib/libyaz.a</tt>.
+
+As with YAZ, an ANSI C compiler is required in order to compile the Zebra
+server system &mdash; GNU C works fine.
+
+Unpack the Zebra software. You might put Zebra in the same directory level
+as YAZ, for example if YAZ is placed in ..<tt>/src/yaz-</tt>.. Zebra
+is placed in ..<tt>/src/zebra-</tt>.
+
+Edit the top-level <tt>Makefile</tt> in the Zebra directory in which
+you specify the location of YAZ by setting make variables.
+The <tt>OSILIB</tt> should be empty if YAZ wasn't compiled with
+MOSI support. Some systems, such as Solaris, have separate socket
+libraries and for such systems you need to specify the
+<tt>NETLIB</tt> variable.
+
+When finished with the editing of the <tt>Makefile</tt> type:
+<tscreen><verb>
+$ make
+</verb></tscreen>
+
+If successful, two executables have been created in the sub-directory
+index.
+<descrip>
+<tag><tt>zebrasrv</tt></tag> The Z39.50 server and search engine.
+<tag><tt>zebraidx</tt></tag> The administrative tool for the search index.
+</descrip>
+
+<sect>Administrating Zebra
+
+<p>
+
+Unlike many other retrieval systems, the Zebra offers incremental
+modifications of an existing index. Needless to say, these facilities
+makes the administration of Zebra somewhat more complicated.
+
+Normally, when Zebra modifies the index it reads a number of records.
+Depending on your specifications and on the contents of each record
+one the following situations occur:
+<descrip>
+<tag>Insert</tag> The record is indexed as if it never occurred
+before. Either the Zebra system doesn't know how to identify the record or
+Zebra can identify the record but didn't find it to be already indexed.
+<tag>Update</tag> The record has already been indexed. In this case
+either the contents of the record or the location (file) of the record
+indicates that it has been indexed before.
+<tag>Delete</tag> The record is deleted from the index. As in the
+update-case it must be able to identify the record.
+</descrip>
+
+Please note, that in both the update- and delete- case the Zebra
+system must be able to make a key that identifies the record in
+question.
+
+To administrate the Zebra retrieval system, you run the
+<tt>zebraidx</tt> program. This program supports a number of options
+which are preceded by a minus, and a set of commands (not preceded by
+minus).
+
+Both the Zebra administrative tool and the Z39.50 server share a
+set of indexing files and a global configuration file. The
+name of the configuration file defaults to <tt>zebra.cfg</tt>.
+The configuration file includes specifications on how to index
+various kinds of records and where the other configuration files
+are located. <tt>zebrasrv</tt> and <tt>zebraidx</tt> <em>must</em>
+be run in the same directory where the configuration file if you do
+not indicate the location of the configuration file by option <tt>-c</tt>.
+
+<sect1>Indexing
+
+<p>
+As said before, indexing is a record-per-record process, in which
+either insert/update/delete will occur. Before a record is indexed
+search keys are extracted from whatever might be the layout the
+original record (sgml,html,text, etc..). To specify a particular
+extraction process, specify either the command line option <tt>-t</tt>
+or specify a <tt>fileExtension</tt> line in the configuration file.
+
+<sect2>Simple indexing
+
+<p>
+In the simple case, in which you wish to index a set of files and you
+run the <tt>zebraidx</tt> program with the <tt>add</tt> command.
+
+For example to index the files below the directory <tt>/home/grs</tt>
+as GRS records you would type:
+<tscreen><verb>
+$ zebraidx -t grs add /home/grs
+</verb></tscreen>
+
+The <tt>-t</tt> options indicates that the files should be treated
+as GRS records. The <tt>zebra.cfg</tt> must be located in the current
+directory and the configuation must specify where the profile tables
+and attribute specification files that comes with YAZ are located.
+For example, if your version of YAZ is located <tt>/home/yaz</tt>
+the configation file should include the following:
+<tscreen><verb>
+profilePath: /home/yaz/tab
+attset: bib1.att
+attset: gils.att
+</verb></tscreen>
+
+The <tt>attset</tt>-lines specify the locations of attribute set 
+specification files.
+
+At a later time, you can add another set of records with the
+<tt>add</tt> command. However, records will always be inserted
+and not updated because, we didn't specify a match criteria for
+the record(s).
+
+One other property of the system just created, is that records are stored
+externally, i.e. the system reads the records when they are
+retrieved from their original location by the Z39.50 server.
+Therefore, you shouldn't delete files that you indexed this way.
+
+<sect2>Indexing with file keys
+
+<p>
+If you have a set of external records that you wish to index you may
+use the file key feature of the Zebra system. In short, the file key
+feature, mirrors a directory and the files below efficiently. To
+perform indexing of a directory with file keys you specify the top-level
+directory after the <tt>dir</tt> command. The command will recursively
+traverse the directories and compare each with whatever have been
+indexed before in the same directory. If a file is new (not in
+the previous version of the directory) it is inserted;
+if a file was already indexed and it has been modified
+since last insertion it is updated; if a file is missing since last
+visit it is deleted.
+
+For example, to index the GRS files below <tt>/home/grs</tt> you
+would type:
+<tscreen><verb>
+$ zebraidx -t grs dir /home/grs
+</verb></tscreen>
+
+<sect2>Indexing with general keys
+
+<p>
+About the fileMatch thing.
+
+<sect1>File areas
+
+<p>
+About the register thing.
+
+<sect1>The Zebra configuration file
+
+<p>
+The Zebra configuration file, read by <tt>zebraidx</tt> and
+<tt>zebrasrv</tt> defaults to <tt>zebra.cfg</tt> unless specified
+by <tt>-c</tt> option.
+
+<descrip>
+<tag><it>group</it>fileExtension<it>name</it></tag>
+ Specifies how records with the file extension <it>name</it> should
+ be handled by the indexer.
+<tag><it>group</it>fileMatch</tag>
+ Specifies the key information that identifies the record.
+<tag><it>group</it>database</tag>
+ Specifies the Z39.50 database of a group of records.
+<tag><it>group</it>storeKeys</tag>
+ Specifies whether key information should be saved for a given
+ group of records. If you plan to update/delete this type of
+ record a later this should be specified as 1; otherwise it
+ should be 0 (default).
+<tag><it>group</it>storeData</tag>
+ Specifies whether original copy of record should be stored internally
+ in the Zebra system indexes. If your externally indexed files
+ are temporary this option should certainly be true (1); otherwise
+ false (0).
+<tag>register</tag> 
+ Specifies the location of the indexes.
+<tag>profilePath</tag>
+ Specifies the location of profile specification paths.
+<tag>attset</tag> 
+ Specifies the filename(s) of attribute specification files.
+</descrip>
+
+<sect>The Z39.50 Server
+
+<p>
+
+<sect1>Running the server
+<p>
+Starting the server and how to configure the server.
+
+<sect1>How the server handles queries
+<p>
+What elements of Bib-1 are supported and where are result sets
+stored.
+
+<sect>About Index Data
+<p>
+Copyright &copy; 1995, Index Data.
+
+Permission to use, copy, modify, distribute, and sell this software and
+its documentation, in whole or in part, for any purpose, is hereby granted,
+provided that:
+
+1. This copyright and permission notice appear in all copies of the
+software and its documentation. Notices of copyright or attribution
+which appear at the beginning of any file must remain unchanged.
+
+2. The names of Index Data or the individual authors may not be used to
+endorse or promote products derived from this software without specific
+prior written permission.
+
+THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND,
+EXPRESS, IMPLIED, OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
+WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+IN NO EVENT SHALL INDEX DATA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR
+NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
+LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
+
+<sect>About Index Data
+
+<p>
+Index Data is a consulting and software-development enterprise that
+specialises in library and information management systems. Our
+interests and expertise span a broad range of related fields, and one
+of our primary, long-term objectives is the development of a powerful
+information management
+system with open network interfaces and hypermedia capabilities.
+
+We make this software available free of charge, on a fairly unrestrictive
+license; as a service to the networking community, and to further the
+development of quality software for open network communication.
+
+We'll be happy to answer questions about the software, and about ourselves
+in general.
+
+<tscreen>
+Index Data&nl
+Ryesgade 3&nl
+2200 K&oslash;benhavn N&nl
+DENMARK
+</tscreen>
+
+<p>
+<tscreen><verb>
+Phone: +45 3536 3672
+Fax  : +45 3536 0449
+Email: info@index.ping.dk
+</verb></tscreen>
+
+<sect>References
+
+<p>
+
+<descrip>
+<tag>1 Ousterhout, John K.:</tag>
+Tcl and the Tk Toolkit. Addison-Wesley Company Inc (ISBN
+0-201-63337-X). Source and documentation
+can be found in <tt>URL:ftp://ftp.cs.berkeley.edu/pub/tcl</tt>
+and mirrors.
+<tag>2 Furniss, Peter:</tag>
+RFC 1698: Octet Sequences for Upper-Layer OSI to Support
+Basic Communications Applications.
+</descrip>
+
+</article>
