@@ -1,14 +1,16 @@
 #!/bin/sh
-# $Id: update.sh,v 1.3 2002-06-19 10:29:18 adam Exp $
+# $Id: update.sh,v 1.4 2002-06-19 11:37:11 adam Exp $
 t=$1
 test -n "$t" || exit 1
 rm -f *.mf *.LCK *.tmp
-../../index/zebraidx -l zebraidx.log init 
+../../index/zebraidx -l zebraidx-$t.log init 
 i=0
-rm -f times-$t.log zebraidx-$t.log stat-$t.log
+rm -f times-$t.log stat-$t.log
 while test -f dmoz.$i.xml; do
 	echo -n "$i " >>times-$1.log
-	/usr/bin/time -f '%e %U %S %P' -a -o times-$t.log ../../index/zebraidx -l zebraidx-$t.log -c zebra-$t.cfg -f 10 update dmoz.$i.xml 
+	rm -f zebraidx-$t.log
+	../../index/zebraidx -l zebraidx-$t.log -c zebra-$t.cfg -f 10 update dmoz.$i.xml 
+	grep ' zebraidx times:' zebraidx-$t.log | sed 's/.*zebraidx times://g' >>times-$t.log
 	../../index/zebraidx -l zebraidx-$t.log -c zebra-$t.cfg stat >>stat-$t.log 
 	i=`expr $i + 1`
 	if test $i = 30; then

@@ -2,11 +2,12 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.89 2002-04-26 08:44:47 adam Exp $
+ * $Id: main.c,v 1.90 2002-06-19 11:37:11 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 #ifdef WIN32
 #include <io.h>
 #else
@@ -32,6 +33,8 @@ int main (int argc, char **argv)
     size_t mem_max = 0;
 #if HAVE_SYS_TIMES_H
     struct tms tms1, tms2;
+    struct timeval start_time, end_time;
+    long usec;
 #endif
 #ifndef WIN32
     char nbuf[100];
@@ -49,6 +52,7 @@ int main (int argc, char **argv)
 #endif
 #if HAVE_SYS_TIMES_H
     times(&tms1);
+    gettimeofday(&start_time, 0);
 #endif
 
     rGroupDef.groupName = NULL;
@@ -231,10 +235,14 @@ int main (int argc, char **argv)
     zebra_close (zh);
     zebra_stop (zs);
 #if HAVE_SYS_TIMES_H
+    gettimeofday(&end_time, 0);
+    usec = (end_time.tv_sec - start_time.tv_sec) * 1000000L +
+	    end_time.tv_usec - start_time.tv_usec;
     times(&tms2);
-    yaz_log (LOG_LOG, "zebraidx user/system: %ld/%ld",
-		(long) tms2.tms_utime - tms1.tms_utime,
-		(long) tms2.tms_stime - tms1.tms_stime);
+    yaz_log (LOG_LOG, "zebraidx times: %5.2f %5.2f %5.2f",
+		(double) usec / 1000000.0,
+		(double) (tms2.tms_utime - tms1.tms_utime)/100,
+		(double) (tms2.tms_stime - tms1.tms_stime)/100);
 #endif
     exit (0);
     return 0;
