@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.51  1996-06-11 10:54:15  quinn
+ * Revision 1.52  1996-06-17 14:26:20  adam
+ * Function gen_regular_rel changed to handle negative numbers.
+ *
+ * Revision 1.51  1996/06/11 10:54:15  quinn
  * Relevance work
  *
  * Revision 1.50  1996/06/07  08:51:53  adam
@@ -544,19 +547,45 @@ static void add_isam_p (const char *info, struct grep_info *p)
 
 static int grep_handle (char *name, const char *info, void *p)
 {
-    logf (LOG_DEBUG, "dict name: %s", name);
     add_isam_p (info, p);
     return 0;
 }
 
+/* gen_regular_rel - generate regular expression from relation
+ *  val:     border value (inclusive)
+ *  islt:    1 if <=; 0 if >=.
+ */
 static void gen_regular_rel (char *dst, int val, int islt)
 {
-    int dst_p = 1;
+    int dst_p;
     int w, d, i;
     int pos = 0;
     char numstr[20];
 
-    *dst = '(';
+    logf (LOG_DEBUG, "gen_regular_rel. val=%d, islt=%d", val, islt);
+    if (val >= 0)
+    {
+        if (islt)
+            strcpy (dst, "(-[0-9]+|");
+        else
+            strcpy (dst, "(");
+    } 
+    else
+    {
+        if (!islt)
+        {
+            strcpy (dst, "([0-9]+|-");
+            dst_p = strlen (dst);
+            islt = 1;
+        }
+        else
+        {
+            strcpy (dst, "(-");
+            islt = 0;
+        }
+        val = -val;
+    }
+    dst_p = strlen (dst);
     sprintf (numstr, "%d", val);
     for (w = strlen(numstr); --w >= 0; pos++)
     {
