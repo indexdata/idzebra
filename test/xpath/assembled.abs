@@ -1,0 +1,5 @@
+attset bib1.att
+
+xpath enable
+
+xelm /assembled/basic/names/CASno !:w,!:p,!:s,NAL-call-number:p,Title-key:s

@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.15.2.1 2004-10-27 09:35:02 heikki Exp $
+/* $Id: rsbetween.c,v 1.15.2.2 2004-12-16 19:11:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -28,6 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  * specified, they must match the "left" rset (start tag). "Hamlet" between
  * "<title lang=eng>" and "</title>". (This assumes that the attributes are
  * indexed to the same seqno as the tags).
+
 */ 
 
 #include <stdio.h>
@@ -38,7 +39,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rsbetween.h>
 #include <zebrautl.h>
 
-#define RSBETWEEN_DEBUG 0
+#define RSBETWEEN_DEBUG 1
+#if RSBETWEEN_DEBUG
+#define log_level LOG_DEBUG
+#endif
 
 static void *r_create_between(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open_between (RSET ct, int flag);
@@ -48,7 +52,7 @@ static void r_rewind_between (RSFD rfd);
 static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
                      int (*cmpfunc)(const void *p1, const void *p2),
                      const void *untilbuf);
-static int r_read_between (RSFD rfd, void *buf, int *term_index);
+static int r_read (RSFD rfd, void *buf, int *term_index);
 static int r_write_between (RSFD rfd, const void *buf);
 
 static const struct rset_control control_between = 
@@ -59,14 +63,19 @@ static const struct rset_control control_between =
     r_close_between,
     r_delete_between,
     r_rewind_between,
-    r_forward_between, /* rset_default_forward, */
+    r_forward_between,  /* rset_default_forward,  */
     rset_default_pos,
-    r_read_between,
+    r_read,
     r_write_between,
 };
 
 
 const struct rset_control *rset_kind_between = &control_between;
+
+#define WHICH_L 0
+#define WHICH_M 1
+#define WHICH_R 2
+#define WHICH_A 3
 
 struct rset_between_info {
     int key_size;
@@ -99,6 +108,20 @@ struct rset_between_rfd {
     int level;
     struct rset_between_rfd *next;
     struct rset_between_info *info;
+    /* 1.4 backport */
+    void *recbuf; /* a key that tells which record we are in */
+    void *startbuf; /* the start tag */
+    int startbufok; /* we have seen the first start tag */
+    void *attrbuf;  /* the attr tag. If these two match, we have attr match */
+    int attrbufok; /* we have seen the first attr tag, can compare */
+    int depth; /* number of start-tags without end-tags */
+    int attrdepth; /* on what depth the attr matched */
+    int hits; /* number of hits returned so far */
+    /* Stuff for the multi-and read, also backported */
+    /* uses more_l/m/r/a etc from above */
+    int tailcount;
+    int tailbits[4]; 
+    int and_eof; 
 };    
 
 #if RSBETWEEN_DEBUG
@@ -210,6 +233,20 @@ static RSFD r_open_between (RSET ct, int flag)
                                     rfd->buf_attr, &dummy);
     }
     rfd->level=0;
+    rfd->recbuf=xmalloc (info->key_size); 
+    rfd->startbuf=xmalloc (info->key_size);
+    rfd->attrbuf=xmalloc (info->key_size); 
+    rfd->startbufok=0; 
+    rfd->attrbufok=0; 
+    rfd->depth=0;
+    rfd->attrdepth=0;
+    rfd->hits=-1; /* signals uninitialized */
+    rfd->tailcount=0;
+    rfd->tailbits[WHICH_L]=0; 
+    rfd->tailbits[WHICH_M]=0; 
+    rfd->tailbits[WHICH_R]=0; 
+    rfd->tailbits[WHICH_A]=0; 
+    rfd->and_eof=0; 
     return rfd;
 }
 
@@ -225,6 +262,9 @@ static void r_close_between (RSFD rfd)
             xfree ((*rfdp)->buf_m);
             xfree ((*rfdp)->buf_r);
             xfree ((*rfdp)->buf_attr);
+            xfree ((*rfdp)->recbuf);
+            xfree ((*rfdp)->startbuf);
+            xfree ((*rfdp)->attrbuf);
             rset_close (info->rset_l, (*rfdp)->rfd_l);
             rset_close (info->rset_m, (*rfdp)->rfd_m);
             rset_close (info->rset_r, (*rfdp)->rfd_r);
@@ -297,7 +337,8 @@ static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
 #if RSBETWEEN_DEBUG
     log2( p, "fwd: after forward M", 0,0);
 #endif
-    rc = r_read_between(rfd, buf, term_index);
+    /* rc = r_read_between(rfd, buf, term_index);*/
+    rc = r_read(rfd, buf, term_index);
 #if RSBETWEEN_DEBUG
     log2( p, "fwd: after forward", 0,0);
 #endif
@@ -306,221 +347,228 @@ static int r_forward_between(RSET ct, RSFD rfd, void *buf, int *term_index,
 
 
 
-
-static int r_read_between (RSFD rfd, void *buf, int *term_index)
-{
-    struct rset_between_rfd *p = (struct rset_between_rfd *) rfd;
-    struct rset_between_info *info = p->info;
-    int cmp_l=0;
-    int cmp_r=0;
-    int attr_match = 0;
-
-    while (p->more_m)
-    {
-#if RSBETWEEN_DEBUG
-        log2( p, "start of loop", cmp_l, cmp_r);
-#endif
-
-        /* forward L until past m, count levels, note rec boundaries */
-        if (p->more_l)
-            cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
-        else
-        {
-            p->level = 0;
-            cmp_l=2; /* past this record */
-        }
-#if RSBETWEEN_DEBUG
-        log2( p, "after first L", cmp_l, cmp_r);
-#endif
-
-        while (cmp_l < 0)   /* l before m */
-        {
-            if (cmp_l == -2)
-                p->level=0; /* earlier record */
-            if (cmp_l == -1)
-            {
-                p->level++; /* relevant start tag */
-
-                if (!info->rset_attr)
-                    attr_match = 1;
-                else
-                {
-                    int cmp_attr;
-                    int dummy_term;
-                    attr_match = 0;
-                    while (p->more_attr)
-                    {
-                        cmp_attr = (*info->cmp)(p->buf_attr, p->buf_l);
-                        if (cmp_attr == 0)
-                        {
-                            attr_match = 1;
-                            break;
-                        }
-                        else if (cmp_attr > 0)
-                            break;
-                        else if (cmp_attr==-1) 
-                            p->more_attr = rset_read (info->rset_attr, p->rfd_attr,
-                                                  p->buf_attr, &dummy_term);
-                            /* if we had a forward that went all the way to
-                             * the seqno, we could use that. But fwd only goes
-                             * to the sysno */
-                        else if (cmp_attr==-2) 
-                        {
-                            p->more_attr = rset_forward(
-                                      info->rset_attr, p->rfd_attr,
-                                      p->buf_attr, &dummy_term,
-                                      info->cmp, p->buf_l);
-#if RSBETWEEN_DEBUG
-                            logf(LOG_DEBUG, "btw: after frowarding attr m=%d",p->more_attr);
-#endif
-                        }
-                    } /* while more_attr */
-                }
-            }
-#define NEWCODE 1 
-#if NEWCODE                
-            if (cmp_l==-2)
-            {
-                if (p->more_l) 
-                {
-                    p->more_l=rset_forward(
-                                      info->rset_l, p->rfd_l,
-                                      p->buf_l, &p->term_index_l,
-                                      info->cmp, p->buf_m);
-                    if (p->more_l)
-                        cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
-                    else
-                        cmp_l=2;
-#if RSBETWEEN_DEBUG
-                    log2( p, "after forwarding L", cmp_l, cmp_r);
-#endif
-                }
-            } else
-            {
-                p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
-                              &p->term_index_l);
-            }
-#else
-            p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
-                              &p->term_index_l);
-#endif
-            if (p->more_l)
-            {
-                cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
-            }
-            else
-                cmp_l=2; 
-#if RSBETWEEN_DEBUG
-            log2( p, "end of L loop", cmp_l, cmp_r);
-#endif
-        } /* forward L */
-
-            
-        /* forward R until past m, count levels */
-#if RSBETWEEN_DEBUG
-        log2( p, "Before moving R", cmp_l, cmp_r);
-#endif
-        if (p->more_r)
-            cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
-        else
-            cmp_r=2; 
-#if RSBETWEEN_DEBUG
-        log2( p, "after first R", cmp_l, cmp_r);
-#endif
-        while (cmp_r < 0)   /* r before m */
-        {
-             /* -2, earlier record, don't count level */
-            if (cmp_r == -1)
-                p->level--; /* relevant end tag */
-            if (p->more_r)
-            {
-#if NEWCODE                
-                if (cmp_r==-2)
-                {
-                    p->more_r=rset_forward(
-                                      info->rset_r, p->rfd_r,
-                                      p->buf_r, &p->term_index_r,
-                                      info->cmp, p->buf_m);
-                } else
-                {
-                    p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
-                                       &p->term_index_r);
-                }
-                if (p->more_r)
-                    cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
-
-#else
-                p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
-                                       &p->term_index_r);
-                cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
-#endif
-            }
-            else
-                cmp_r=2; 
-#if RSBETWEEN_DEBUG
-        log2( p, "End of R loop", cmp_l, cmp_r);
-#endif
-        } /* forward R */
-        
-        if ( ( p->level <= 0 ) && ! p->more_l)
-            return 0; /* no more start tags, nothing more to find */
-        
-        if ( attr_match && p->level > 0)  /* within a tag pair (or deeper) */
-        {
-            memcpy (buf, p->buf_m, info->key_size);
-            *term_index = p->term_index_m + info->rset_m->no_rset_terms;
-#if RSBETWEEN_DEBUG
-            log2( p, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
-#endif
-            p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
-                                   &p->term_index_m);
-            if (cmp_l == 2)
-                p->level = 0;
-            return 1;
-        }
-        else if ( ! p->more_l )  /* not in data, no more starts */
-        {
-#if RSBETWEEN_DEBUG
-            log2( p, "no more starts, exiting without a hit", cmp_l, cmp_r);
-#endif
-            return 0;  /* ergo, nothing can be found. stop scanning */
-        }
-#if NEWCODE                
-        if (cmp_l == 2)
-        {
-            p->level = 0;
-            p->more_m=rset_forward(
-                              info->rset_m, p->rfd_m,
-                              p->buf_m, &p->term_index_m,
-                              info->cmp, p->buf_l);
-        } else
-        {
-            p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
-                               &p->term_index_m);
-        }
-#else
-        if (cmp_l == 2)
-            p->level = 0;
-        p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
-                               &p->term_index_m);
-#endif
-#if RSBETWEEN_DEBUG
-        log2( p, "End of M loop", cmp_l, cmp_r);
-#endif
-    } /* while more_m */
-    
-#if RSBETWEEN_DEBUG
-    log2( p, "Exiting, nothing more in m", cmp_l, cmp_r);
-#endif
-    return 0;  /* no more data possible */
-
-
-}  /* r_read */
-
-
 static int r_write_between (RSFD rfd, const void *buf)
 {
     logf (LOG_FATAL, "between set type is read-only");
     return -1;
 }
+
+
+
+/* Heikki's back-port of the cleaner 1.4 algorithm */
+
+static void checkattr(struct rset_between_rfd *p)
+{
+    p->attrdepth=-1; /* matches always */
+
+#ifdef SKIPTHIS /* not yet backported */
+    struct rset_between_info *info =p->info;
+    int cmp;
+    if (p->attrdepth)
+        return; /* already found one */
+    if (!info->attrterm) 
+    {
+        p->attrdepth=-1; /* matches always */
+        return;
+    }
+    if ( p->startbufok && p->attrbufok )
+    { /* have buffers to compare */
+        cmp=(kctrl->cmp)(p->startbuf,p->attrbuf);
+        if (0==cmp) /* and the keys match */
+        {
+            p->attrdepth=p->depth;
+            yaz_log(log_level, "found attribute match at depth %d",p->attrdepth);
+        }
+    }
+#endif
+}
+
+
+/* Implements a multi-and between the l,r, and m rfds. Returns all */
+/* hits from those, provided that all three point to the same record */
+/* See rsmultiandor.c in zebra 1.4 for details */
+static int read_anded(struct rset_between_rfd *p,void *buf,
+                      int *term, int *which) {
+    RSFD rfds[4];
+    RSET rsets[4];
+    void *bufs[4];
+    int *terms[4];
+    int dummyterm;
+    struct rset_between_info *info =p->info;
+    int i, mintail;
+    int n;
+    int cmp;
+
+    /* make the individual args into arrays, to match rsmultiandor */
+    rfds[WHICH_L]=p->rfd_l;
+    rfds[WHICH_M]=p->rfd_m;
+    rfds[WHICH_R]=p->rfd_r;
+    rfds[WHICH_A]=p->rfd_attr;
+    rsets[WHICH_L]=info->rset_l;
+    rsets[WHICH_M]=info->rset_m;
+    rsets[WHICH_R]=info->rset_r;
+    rsets[WHICH_A]=info->rset_attr;
+    bufs[WHICH_L]=p->buf_l;
+    bufs[WHICH_M]=p->buf_m;
+    bufs[WHICH_R]=p->buf_r;
+    bufs[WHICH_A]=p->buf_attr;
+    terms[WHICH_L]=&(p->term_index_l);
+    terms[WHICH_M]=&(p->term_index_m);
+    terms[WHICH_R]=&(p->term_index_r);
+    terms[WHICH_A]=&dummyterm;
+    dummyterm=0;
+    if (info->rset_attr)
+        n=4;
+    else
+        n=3;
+    while (1) {
+        if (p->tailcount)
+        { /* we are tailing */
+            mintail=0;
+            while ((mintail<n) && !p->tailbits[mintail])
+                mintail++; /* first tail */
+            for (i=mintail+1;i<n;i++)
+            {
+                if (p->tailbits[i])
+                {
+                    cmp=(*info->cmp)(bufs[i],bufs[mintail]);
+                    if (cmp<0)
+                        mintail=i;
+                }
+            }
+            /* return the lowest tail */
+            memcpy(buf, bufs[mintail], info->key_size);
+            *which=mintail;
+            *term=*terms[mintail];
+            /* and read that one further */
+            if (!rset_read(rsets[mintail],rfds[mintail], 
+                           bufs[mintail],terms[mintail]))
+            {
+                p->and_eof=1; 
+                p->tailbits[mintail]=0;
+                (p->tailcount)--;
+                return 1;
+            }
+            /* still a tail? */
+            cmp=(info->cmp)(bufs[mintail],buf);
+            if (cmp>=2) 
+            {
+                p->tailbits[mintail]=0;
+                (p->tailcount)--;
+            }
+            return 1;
+        }
+        else
+        { /* not tailing */
+            if (p->and_eof)
+                return 0; /* game over */
+            i=1; /* assume items[0] is highest up */
+            while (i<n) 
+            {
+                cmp=(*info->cmp)(bufs[0],bufs[i]);
+                if (cmp<=-2)
+                { /* [0] was behid, forward it and start anew */
+                    if (!rset_forward(rsets[0],rfds[0], bufs[0], 
+                                      terms[0], info->cmp, bufs[i])) 
+                    {
+                        p->and_eof=1;
+                        return 0;
+                    }
+                    i=0; /* all over again */
+                }
+                else if (cmp>=2)
+                {/* [0] was ahead, forward i */
+                    if (!rset_forward(rsets[i],rfds[i], bufs[i], 
+                                      terms[i], info->cmp, bufs[0])) 
+                    {
+                        p->and_eof=1;
+                        return 0;
+                    }
+
+                } else
+                    i++; 
+            } /* while i */
+            /* now all are within the same records, set tails and let upper 
+             * if return hits */
+            for (i=0; i<n;i++)
+                p->tailbits[i]=1;
+            p->tailcount=n;
+        }
+    } 
+} /* read_anded */
+
+static int r_read (RSFD rfd, void *buf, int *term)
+{
+    struct rset_between_rfd *p=(struct rset_between_rfd *)rfd;
+    struct rset_between_info *info =p->info;
+    int cmp;
+    int thisterm=0;
+    int which; 
+    *term=0; /* just in case, should not be necessary */
+    yaz_log(log_level,"btw: == read: term=%p",term);
+    while ( read_anded(p,buf,&thisterm,&which) )
+    {
+        yaz_log(log_level,"btw: read loop term=%p d=%d ad=%d",
+                term, p->depth, p->attrdepth);
+        if (p->hits<0) 
+        {/* first time? */
+            memcpy(p->recbuf,buf,info->key_size);
+            p->hits=0;
+            cmp=2;
+        }
+        else {
+            cmp=(*info->cmp)(buf,p->recbuf);
+            yaz_log(log_level, "btw: cmp=%d",cmp);
+        }
+
+        if (cmp>=2)
+        { 
+            yaz_log(log_level,"btw: new record");
+            p->depth=0;
+            p->attrdepth=0;
+            memcpy(p->recbuf,buf,info->key_size);
+        }
+
+        yaz_log(log_level,"btw:  which: %d", which); 
+        if (which==WHICH_L)
+        {
+            p->depth++;
+            yaz_log(log_level,"btw: read start tag. d=%d",p->depth);
+            memcpy(p->startbuf,buf,info->key_size);
+            p->startbufok=1;
+            checkattr(rfd);  /* in case we already saw the attr here */
+        }
+        else if (which==WHICH_R)  
+        {
+            if (p->depth == p->attrdepth)
+                p->attrdepth=0; /* ending the tag with attr match */
+            p->depth--;
+            yaz_log(log_level,"btw: read end tag. d=%d ad=%d",p->depth, p->attrdepth);
+        }
+        else if (which==WHICH_A)
+        {
+            yaz_log(log_level,"btw: read attr");
+            memcpy(p->attrbuf,buf,info->key_size);
+            p->attrbufok=1;
+            checkattr(rfd); /* in case the start tag came first */
+        }
+        else 
+        { /* mut be a real hit */
+            if (p->depth && p->attrdepth)
+            {
+                p->hits++;
+                yaz_log(log_level,"btw: got a hit h=%d d=%d ad=%d t=%d+%d", 
+                        p->hits,p->depth,p->attrdepth,
+                        info->rset_m->no_rset_terms,thisterm);
+                *term= info->rset_m->no_rset_terms + thisterm;
+                return 1; /* everything else is in place already */
+            } else
+                yaz_log(log_level, "btw: Ignoring hit. h=%d d=%d ad=%d",
+                        p->hits,p->depth,p->attrdepth);
+        }
+    } /* while read */
+
+    return 0;
+
+}  /* r_read */
 
