@@ -1,5 +1,5 @@
-/* $Id: zserver.c,v 1.112 2003-11-09 11:48:16 oleg Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: zserver.c,v 1.113 2004-01-22 11:27:21 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -527,22 +527,21 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 		{
 		    Z_External *rec = notToKeep->elements[i]->record;
                     struct oident *oident = 0;
-                    Odr_oct *recid = notToKeep->elements[i]->u.opaque;
+                    Odr_oct *opaque_recid = 0;
+		    int sysno = 0;
 
-                    if (!recid)
-                    {
-                        rr->errcode = 224;
-                        rr->errstring = "record Id not supplied";
-                        break;
+		    if (notToKeep->elements[i]->u.opaque)
+		    {
+			switch(notToKeep->elements[i]->which)
+			{
+			case Z_IUSuppliedRecords_elem_opaque:
+			    opaque_recid = notToKeep->elements[i]->u.opaque;
+			    break; /* OK, recid already set */
+			case Z_IUSuppliedRecords_elem_number:
+			    sysno = *notToKeep->elements[i]->u.number;
+			    break;
+			}
                     }
-                    if (notToKeep->elements[i]->which !=
-                        Z_IUSuppliedRecords_elem_opaque)
-                    {
-                        rr->errcode = 224;
-                        rr->errstring = "only opaque record ID supported";
-                        break;
-                    }
-                        
 		    if (rec->direct_reference)
 		    {
 			oident = oid_getentbyoid(rec->direct_reference);
@@ -593,7 +592,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                             action = 3;
                         if (*toKeep->action ==
                             Z_IUOriginPartToKeep_specialUpdate)
-                            action = 1;
+                            action = 4;
 
                         if (!action)
                         {
@@ -601,31 +600,75 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                             rr->errstring = "unsupported ES Update action";
                             break;
                         }
-                        else
-                        {
+                        else if (opaque_recid)
+			{
                             int r = zebra_admin_exchange_record (
-                                zh, toKeep->databaseName,
+                                zh,
                                 rec->u.octet_aligned->buf,
                                 rec->u.octet_aligned->len,
-                                recid->buf, recid->len,
+                                opaque_recid->buf, opaque_recid->len,
                                 action);
-                            if (r && *toKeep->action ==
-                                Z_IUOriginPartToKeep_specialUpdate)
-                            {
-                                r = zebra_admin_exchange_record (
-                                    zh, toKeep->databaseName,
-                                    rec->u.octet_aligned->buf,
-                                    rec->u.octet_aligned->len,
-                                    recid->buf, recid->len,
-                                    2);
-                            }
                             if (r)
                             {
                                 rr->errcode = 224;
                                 rr->errstring = "record exchange failed";
                                 break;
                             }
-                        }
+			}
+			else
+			{
+			    int r = -1;
+			    switch(action) {
+			    case 1:
+				r = zebra_insert_record(
+				    zh,
+				    0, /* recordType */
+				    &sysno,
+				    0, /* match */
+				    0, /* fname */
+				    rec->u.octet_aligned->buf,
+				    rec->u.octet_aligned->len);
+				if (r)
+				{
+				    rr->errcode = 224;
+				    rr->errstring = "insert_record failed";
+				}
+				break;
+			    case 2:
+			    case 4:
+				r = zebra_update_record(
+				    zh,
+				    0, /* recordType */
+				    &sysno,
+				    0, /* match */
+				    0, /* fname */
+				    rec->u.octet_aligned->buf,
+				    rec->u.octet_aligned->len,
+				    1);
+				if (r)
+				{
+				    rr->errcode = 224;
+				    rr->errstring = "update_record failed";
+				}
+				break;
+			    case 3:
+				r = zebra_delete_record(
+				    zh,
+				    0, /* recordType */
+				    &sysno,
+				    0, /* match */
+				    0, /* fname */
+				    rec->u.octet_aligned->buf,
+				    rec->u.octet_aligned->len,
+				    0);
+				if (r)
+				{
+				    rr->errcode = 224;
+				    rr->errstring = "delete_record failed";
+				}
+				break;
+			    }				
+			}
                     }
 		}
                 zebra_end_trans (zh);
@@ -646,7 +689,7 @@ static void bend_start (struct statserv_options_block *sob)
 {
     if (sob->handle)
 	zebra_stop((ZebraService) sob->handle);
-    sob->handle = zebra_start(sob->configname);
+    sob->handle = zebra_start(sob->configname, 0, 0);
     if (!sob->handle)
     {
 	yaz_log (LOG_FATAL, "Failed to read config `%s'", sob->configname);

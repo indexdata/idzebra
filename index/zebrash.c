@@ -1,5 +1,5 @@
-/* $Id: zebrash.c,v 1.24 2003-12-04 11:20:39 heikki Exp $
-   Copyright (C) 2002,2003
+/* $Id: zebrash.c,v 1.25 2004-01-22 11:27:21 adam Exp $
+   Copyright (C) 2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -163,7 +163,7 @@ static int cmd_zebra_start( char *args[], WRBUF outbuff)
 		   DEFAULTCONFIG "\n" );
 	conf=DEFAULTCONFIG;
     }
-    zs=zebra_start(conf);
+    zs=zebra_start(conf, 0, 0);
     if (!zs) {
 	wrbuf_puts(outbuff, "zebra_start failed" );
 	return 2;
@@ -348,7 +348,13 @@ static int cmd_record_insert( char *args[], WRBUF outbuff)
     int rc;
     char *rec=restargs(args,1);
     
-    rc=zebra_record_insert(zh,rec, strlen(rec), &sysno);
+    rc = zebra_insert_record(zh,
+			     0,  /* record type */
+			     &sysno,
+			     0,  /* match */
+			     0,  /* fname */
+			     rec,
+			     strlen(rec));
     if (0==rc)
     {
         wrbuf_printf(outbuff,"ok sysno=%d\n",sysno);
@@ -359,18 +365,17 @@ static int cmd_record_insert( char *args[], WRBUF outbuff)
 
 static int cmd_exchange_record( char *args[], WRBUF outbuff)
 {
-    char *base=args[1];
-    char *id = args[2];
-    char *action = args[3];
+    char *id = args[1];
+    char *action = args[2];
     int rc;
-    char *rec=restargs(args,4);
-    if (!(base && id && action && args[4] ))
+    char *rec=restargs(args,3);
+    if (!(id && action && args[4] ))
     {
 	wrbuf_puts(outbuff,"Missing arguments!\n");
 	onecommand("help exchange_record", outbuff, "");
 	return -90;
     }
-    rc=zebra_admin_exchange_record(zh, base, rec, strlen(rec),
+    rc=zebra_admin_exchange_record(zh, rec, strlen(rec),
         id, strlen(id), atoi(action));
     return rc;
 }

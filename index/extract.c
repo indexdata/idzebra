@@ -1,5 +1,5 @@
-/* $Id: extract.c,v 1.146 2003-10-07 09:18:43 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: extract.c,v 1.147 2004-01-22 11:27:21 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -259,7 +259,7 @@ static void file_end (void *handle, off_t offset)
 }
 
 static char *fileMatchStr (ZebraHandle zh,
-                           struct recKeys *reckeys, struct recordGroup *rGroup,
+                           struct recKeys *reckeys,
                            const char *fname, const char *spec)
 {
     static char dstBuf[2048];      /* static here ??? */
@@ -318,7 +318,7 @@ static char *fileMatchStr (ZebraHandle zh,
             else
             {
                 logf (LOG_WARN, "Missing ) in match criteria %s in group %s",
-                      spec, rGroup->groupName ? rGroup->groupName : "none");
+                      spec, zh->m_group ? zh->m_group : "none");
                 return NULL;
             }
             s++;
@@ -358,14 +358,14 @@ static char *fileMatchStr (ZebraHandle zh,
             s = s1;
 
             if (!strcmp (special, "group"))
-                spec_src = rGroup->groupName;
+                spec_src = zh->m_group;
             else if (!strcmp (special, "database"))
-                spec_src = rGroup->databaseName;
+                spec_src = zh->basenames[0];
             else if (!strcmp (special, "filename")) {
                 spec_src = fname;
 	    }
             else if (!strcmp (special, "type"))
-                spec_src = rGroup->recordType;
+                spec_src = zh->m_record_type;
             else 
                 spec_src = NULL;
             if (spec_src)
@@ -394,7 +394,7 @@ static char *fileMatchStr (ZebraHandle zh,
         else
         {
             logf (LOG_WARN, "Syntax error in match criteria %s in group %s",
-                  spec, rGroup->groupName ? rGroup->groupName : "none");
+                  spec, zh->m_group ? zh->m_group : "none");
             return NULL;
         }
         *dst++ = 1;
@@ -402,7 +402,7 @@ static char *fileMatchStr (ZebraHandle zh,
     if (dst == dstBuf)
     {
         logf (LOG_WARN, "No match criteria for record %s in group %s",
-              fname, rGroup->groupName ? rGroup->groupName : "none");
+              fname, zh->m_group ? zh->m_group : "none");
         return NULL;
     }
     *dst = '\0';
@@ -415,12 +415,11 @@ struct recordLogInfo {
     struct recordGroup *rGroup;
 };
      
-static int recordExtract (ZebraHandle zh,
-                          SYSNO *sysno, const char *fname,
-                          struct recordGroup *rGroup, int deleteFlag,
-                          struct file_read_info *fi,
-			  RecType recType, char *subType, void *clientData,
-                          int force_update)
+static int file_extract_record(ZebraHandle zh,
+			       SYSNO *sysno, const char *fname,
+			       int deleteFlag,
+			       struct file_read_info *fi,
+			       int force_update)
 {
     RecordAttr *recordAttr;
     int r;
@@ -428,6 +427,25 @@ static int recordExtract (ZebraHandle zh,
     SYSNO sysnotmp;
     Record rec;
     off_t recordOffset = 0;
+    RecType recType;
+    void *clientData;
+    char subType[128];
+    
+    if (!(recType =
+	  recType_byName (zh->reg->recTypes, zh->m_record_type, subType,
+			  &clientData)))
+    {
+        logf (LOG_WARN, "No such record type: %s", zh->m_record_type);
+        return 0;
+    }
+
+    /* announce database */
+    if (zebraExplain_curDatabase (zh->reg->zei, zh->basenames[0]))
+    {
+        if (zebraExplain_newDatabase (zh->reg->zei, zh->basenames[0],
+				      zh->m_explain_database))
+	    return 0;
+    }
 
     if (fi->fd != -1)
     {
@@ -463,11 +481,11 @@ static int recordExtract (ZebraHandle zh,
 		extractCtrl.seqno[i] = 0;
 	}
 	extractCtrl.zebra_maps = zh->reg->zebra_maps;
-	extractCtrl.flagShowRecords = !rGroup->flagRw;
+	extractCtrl.flagShowRecords = !zh->m_flag_rw;
 
-        if (!rGroup->flagRw)
+        if (!zh->m_flag_rw)
             printf ("File: %s " PRINTF_OFF_T "\n", fname, recordOffset);
-        if (rGroup->flagRw)
+        if (zh->m_flag_rw)
         {
             char msg[512];
             sprintf (msg, "%s:" PRINTF_OFF_T , fname, recordOffset);
@@ -482,10 +500,10 @@ static int recordExtract (ZebraHandle zh,
 	else if (r == RECCTRL_EXTRACT_ERROR_GENERIC)
 	{
             /* error occured during extraction ... */
-            if (rGroup->flagRw &&
-		zh->records_processed < rGroup->fileVerboseLimit)
+            if (zh->m_flag_rw &&
+		zh->records_processed < zh->m_file_verbose_limit)
             {
-                logf (LOG_WARN, "fail %s %s " PRINTF_OFF_T, rGroup->recordType,
+                logf (LOG_WARN, "fail %s %s " PRINTF_OFF_T, zh->m_record_type,
                       fname, recordOffset);
             }
             return 0;
@@ -493,11 +511,11 @@ static int recordExtract (ZebraHandle zh,
 	else if (r == RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER)
 	{
             /* error occured during extraction ... */
-            if (rGroup->flagRw &&
-		zh->records_processed < rGroup->fileVerboseLimit)
+            if (zh->m_flag_rw &&
+		zh->records_processed < zh->m_file_verbose_limit)
             {
                 logf (LOG_WARN, "no filter for %s %s " 
-                      PRINTF_OFF_T, rGroup->recordType,
+                      PRINTF_OFF_T, zh->m_record_type,
                       fname, recordOffset);
             }
             return 0;
@@ -506,10 +524,10 @@ static int recordExtract (ZebraHandle zh,
         {
             /* the extraction process returned no information - the record
                is probably empty - unless flagShowRecords is in use */
-            if (!rGroup->flagRw)
+            if (!zh->m_flag_rw)
                 return 1;
 	    
-	    logf (LOG_WARN, "empty %s %s " PRINTF_OFF_T, rGroup->recordType,
+	    logf (LOG_WARN, "empty %s %s " PRINTF_OFF_T, zh->m_record_type,
 		  fname, recordOffset);
             return 1;
         }
@@ -522,12 +540,12 @@ static int recordExtract (ZebraHandle zh,
     {
         sysnotmp = 0;
         sysno = &sysnotmp;
-        if (rGroup->recordId && *rGroup->recordId)
+        if (zh->m_record_id && *zh->m_record_id)
         {
             char *rinfo;
         
-            matchStr = fileMatchStr (zh, &zh->reg->keys, rGroup, fname, 
-                                     rGroup->recordId);
+            matchStr = fileMatchStr (zh, &zh->reg->keys, fname, 
+				     zh->m_record_id);
             if (matchStr)
             {
                 rinfo = dict_lookup (zh->reg->matchDict, matchStr);
@@ -547,13 +565,13 @@ static int recordExtract (ZebraHandle zh,
         /* new record */
         if (deleteFlag)
         {
-	    logf (LOG_LOG, "delete %s %s " PRINTF_OFF_T, rGroup->recordType,
+	    logf (LOG_LOG, "delete %s %s " PRINTF_OFF_T, zh->m_record_type,
 		  fname, recordOffset);
             logf (LOG_WARN, "cannot delete record above (seems new)");
             return 1;
         }
-        if (zh->records_processed < rGroup->fileVerboseLimit)
-            logf (LOG_LOG, "add %s %s " PRINTF_OFF_T, rGroup->recordType,
+        if (zh->records_processed < zh->m_file_verbose_limit)
+            logf (LOG_LOG, "add %s %s " PRINTF_OFF_T, zh->m_record_type,
                   fname, recordOffset);
         rec = rec_new (zh->reg->records);
 
@@ -586,7 +604,7 @@ static int recordExtract (ZebraHandle zh,
 	{
             yaz_log (LOG_LOG, "run number = %d", recordAttr->runNumber);
 	    yaz_log (LOG_LOG, "skipped %s %s " PRINTF_OFF_T,
-                     rGroup->recordType, fname, recordOffset);
+                     zh->m_record_type, fname, recordOffset);
 	    extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
 	    rec_rm (&rec);
 	    logRecord (zh);
@@ -606,14 +624,14 @@ static int recordExtract (ZebraHandle zh,
             if (!delkeys.buf_used)
             {
                 logf (LOG_LOG, "delete %s %s " PRINTF_OFF_T,
-                      rGroup->recordType, fname, recordOffset);
+                      zh->m_record_type, fname, recordOffset);
                 logf (LOG_WARN, "cannot delete file above, storeKeys false");
             }
             else
             {
-                if (zh->records_processed < rGroup->fileVerboseLimit)
+                if (zh->records_processed < zh->m_file_verbose_limit)
                     logf (LOG_LOG, "delete %s %s " PRINTF_OFF_T,
-                         rGroup->recordType, fname, recordOffset);
+                         zh->m_record_type, fname, recordOffset);
                 zh->records_deleted++;
                 if (matchStr)
                     dict_delete (zh->reg->matchDict, matchStr);
@@ -629,14 +647,14 @@ static int recordExtract (ZebraHandle zh,
             if (!delkeys.buf_used)
             {
                 logf (LOG_LOG, "update %s %s " PRINTF_OFF_T,
-                      rGroup->recordType, fname, recordOffset);
+                      zh->m_record_type, fname, recordOffset);
                 logf (LOG_WARN, "cannot update file above, storeKeys false");
             }
             else
             {
-                if (zh->records_processed < rGroup->fileVerboseLimit)
+                if (zh->records_processed < zh->m_file_verbose_limit)
                     logf (LOG_LOG, "update %s %s " PRINTF_OFF_T,
-                        rGroup->recordType, fname, recordOffset);
+                        zh->m_record_type, fname, recordOffset);
                 extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
                 extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
                 zh->records_updated++;
@@ -646,7 +664,7 @@ static int recordExtract (ZebraHandle zh,
     /* update file type */
     xfree (rec->info[recInfo_fileType]);
     rec->info[recInfo_fileType] =
-        rec_strdup (rGroup->recordType, &rec->size[recInfo_fileType]);
+        rec_strdup (zh->m_record_type, &rec->size[recInfo_fileType]);
 
     /* update filename */
     xfree (rec->info[recInfo_filename]);
@@ -655,7 +673,7 @@ static int recordExtract (ZebraHandle zh,
 
     /* update delete keys */
     xfree (rec->info[recInfo_delKeys]);
-    if (zh->reg->keys.buf_used > 0 && rGroup->flagStoreKeys == 1)
+    if (zh->reg->keys.buf_used > 0 && zh->m_store_keys == 1)
     {
         rec->size[recInfo_delKeys] = zh->reg->keys.buf_used;
         rec->info[recInfo_delKeys] = zh->reg->keys.buf;
@@ -691,7 +709,7 @@ static int recordExtract (ZebraHandle zh,
 
     /* update store data */
     xfree (rec->info[recInfo_storeData]);
-    if (rGroup->flagStoreData == 1)
+    if (zh->m_store_data)
     {
         rec->size[recInfo_storeData] = recordAttr->recordSize;
         rec->info[recInfo_storeData] = (char *)
@@ -718,7 +736,7 @@ static int recordExtract (ZebraHandle zh,
     /* update database name */
     xfree (rec->info[recInfo_databaseName]);
     rec->info[recInfo_databaseName] =
-        rec_strdup (rGroup->databaseName, &rec->size[recInfo_databaseName]); 
+        rec_strdup (zh->basenames[0], &rec->size[recInfo_databaseName]); 
 
     /* update offset */
     recordAttr->recordOffset = recordOffset;
@@ -730,26 +748,19 @@ static int recordExtract (ZebraHandle zh,
 }
 
 int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname, 
-                 const struct recordGroup *rGroupP, int deleteFlag)
+		 int deleteFlag)
 {
     int r, i, fd;
     char gprefix[128];
     char ext[128];
     char ext_res[128];
-    char subType[128];
-    RecType recType;
-    struct recordGroup rGroupM;
-    struct recordGroup *rGroup = &rGroupM;
     struct file_read_info *fi;
-    void *clientData;
 
-    memcpy (rGroup, rGroupP, sizeof(*rGroupP));
-   
-    if (!rGroup->groupName || !*rGroup->groupName)
+    if (!zh->m_group || !*zh->m_group)
         *gprefix = '\0';
     else
-        sprintf (gprefix, "%s.", rGroup->groupName);
-
+        sprintf (gprefix, "%s.", zh->m_group);
+    
     logf (LOG_DEBUG, "fileExtract %s", fname);
 
     /* determine file extension */
@@ -763,98 +774,23 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
             break;
         }
     /* determine file type - depending on extension */
-    if (!rGroup->recordType)
+    if (!zh->m_record_type)
     {
         sprintf (ext_res, "%srecordType.%s", gprefix, ext);
-        if (!(rGroup->recordType = res_get (zh->res, ext_res)))
-        {
-            sprintf (ext_res, "%srecordType", gprefix);
-            rGroup->recordType = res_get (zh->res, ext_res);
-        }
+        zh->m_record_type = res_get (zh->res, ext_res);
     }
-    if (!rGroup->recordType)
+    if (!zh->m_record_type)
     {
-        if (zh->records_processed < rGroup->fileVerboseLimit)
+	if (zh->records_processed < zh->m_file_verbose_limit)
             logf (LOG_LOG, "? %s", fname);
         return 0;
     }
-    if (!*rGroup->recordType)
-	return 0;
-    if (!(recType =
-	  recType_byName (zh->reg->recTypes, rGroup->recordType, subType,
-			  &clientData)))
-    {
-        logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
-        return 0;
-    }
-
     /* determine match criteria */
-    if (!rGroup->recordId)
+    if (!zh->m_record_id)
     {
         sprintf (ext_res, "%srecordId.%s", gprefix, ext);
-        rGroup->recordId = res_get (zh->res, ext_res);
+        zh->m_record_id = res_get (zh->res, ext_res);
     }
-
-    /* determine database name */
-    if (!rGroup->databaseName)
-    {
-        sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
-        if (!(rGroup->databaseName = res_get (zh->res, ext_res)))
-        {
-            sprintf (ext_res, "%sdatabase", gprefix);
-            rGroup->databaseName = res_get (zh->res, ext_res);
-        }
-    }
-    if (!rGroup->databaseName)
-        rGroup->databaseName = "Default";
-
-    /* determine if explain database */
-    
-    sprintf (ext_res, "%sexplainDatabase", gprefix);
-    rGroup->explainDatabase =
-	atoi (res_get_def (zh->res, ext_res, "0"));
-
-    /* announce database */
-    if (zebraExplain_curDatabase (zh->reg->zei, rGroup->databaseName))
-    {
-        if (zebraExplain_newDatabase (zh->reg->zei, rGroup->databaseName,
-				      rGroup->explainDatabase))
-	    return 0;
-    }
-
-    if (rGroup->flagStoreData == -1)
-    {
-        const char *sval;
-        sprintf (ext_res, "%sstoreData.%s", gprefix, ext);
-        if (!(sval = res_get (zh->res, ext_res)))
-        {
-            sprintf (ext_res, "%sstoreData", gprefix);
-            sval = res_get (zh->res, ext_res);
-        }
-        if (sval)
-            rGroup->flagStoreData = atoi (sval);
-    }
-    if (rGroup->flagStoreData == -1)
-        rGroup->flagStoreData = 0;
-
-    if (rGroup->flagStoreKeys == -1)
-    {
-        const char *sval;
-
-        sprintf (ext_res, "%sstoreKeys.%s", gprefix, ext);
-        sval = res_get (zh->res, ext_res);
-	if (!sval)
-        {
-            sprintf (ext_res, "%sstoreKeys", gprefix);
-            sval = res_get (zh->res, ext_res);
-        }
-	if (!sval)
-	    sval = res_get (zh->res, "storeKeys");
-        if (sval)
-            rGroup->flagStoreKeys = atoi (sval);
-    }
-    if (rGroup->flagStoreKeys == -1)
-        rGroup->flagStoreKeys = 0;
 
     if (sysno && deleteFlag)
         fd = -1;
@@ -882,63 +818,30 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
     do
     {
         file_begin (fi);
-        r = recordExtract (zh, sysno, fname, rGroup, deleteFlag, fi,
-                           recType, subType, clientData, 1);
+        r = file_extract_record (zh, sysno, fname, deleteFlag, fi, 1);
     } while (r && !sysno && fi->file_more);
     file_read_stop (fi);
     if (fd != -1)
         close (fd);
     return r;
 }
-int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
-                        const char *buf, size_t buf_size,
-                        const char *databaseName, int delete_flag,
-                        int test_mode, int *sysno,
-                        int store_keys, int store_data,
-                        const char *match_criteria)
-{
-    struct recordGroup rGroup;
-    rGroup.groupName = NULL;
-    rGroup.databaseName = (char *)databaseName;
-    rGroup.path = NULL;
-    rGroup.recordId = NULL;
-    rGroup.recordType = (char *)recordType;
-    rGroup.flagStoreData = store_data;
-    rGroup.flagStoreKeys = store_keys;
-    rGroup.flagRw = 1;
-    rGroup.databaseNamePath = 0;
-    rGroup.explainDatabase = 0;
-    rGroup.fileVerboseLimit = 100000;
-    rGroup.followLinks = -1;
-    return (bufferExtractRecord (zh,
-				 buf, buf_size,
-				 &rGroup,
-				 delete_flag,
-				 test_mode,
-				 recordType,
-				 sysno,
-				 match_criteria,
-				 "<no file>",
-				 0,1));
-}
+
 /*
   If sysno is provided, then it's used to identify the reocord.
   If not, and match_criteria is provided, then sysno is guessed
   If not, and a record is provided, then sysno is got from there
   
  */
-int bufferExtractRecord (ZebraHandle zh, 
-			 const char *buf, size_t buf_size,
-			 struct recordGroup *rGroup, 
-			 int delete_flag,
-			 int test_mode, 
-			 const char *recordType,
-			 int *sysno,
-			 const char *match_criteria,
-			 const char *fname,
-			 int force_update,
-			 int allow_update)
-
+int buffer_extract_record (ZebraHandle zh, 
+			   const char *buf, size_t buf_size,
+			   int delete_flag,
+			   int test_mode, 
+			   const char *recordType,
+			   int *sysno,
+			   const char *match_criteria,
+			   const char *fname,
+			   int force_update,
+			   int allow_update)
 {
     RecordAttr *recordAttr;
     struct recExtractCtrl extractCtrl;
@@ -950,6 +853,10 @@ int bufferExtractRecord (ZebraHandle zh,
     Record rec;
     long recordOffset = 0;
     struct zebra_fetch_control fc;
+    const char *pr_fname = fname;  /* filename to print .. */
+
+    if (!pr_fname)
+	pr_fname = "<no file>";  /* make it printable if file is omitted */
 
     fc.fd = -1;
     fc.record_int_buf = buf;
@@ -971,36 +878,30 @@ int bufferExtractRecord (ZebraHandle zh,
     zh->reg->keys.prevSeqNo = 0;
     zh->reg->sortKeys.buf_used = 0;
 
-    /* announce database */
-
-    if (!(rGroup->databaseName)) {
-        logf (LOG_WARN, "Invalid record group, no database name given");
-	return 0;
-    }
-    
-    if (zebraExplain_curDatabase (zh->reg->zei, rGroup->databaseName))
+    if (zebraExplain_curDatabase (zh->reg->zei, zh->basenames[0]))
     {
-        if (zebraExplain_newDatabase (zh->reg->zei, rGroup->databaseName, 0))
+        if (zebraExplain_newDatabase (zh->reg->zei, zh->basenames[0], 
+				      zh->m_explain_database))
             return 0;
     }
     
-    if (*recordType) {
+    if (recordType && *recordType) {
         logf (LOG_DEBUG, "Record type explicitly specified: %s", recordType);
         recType = recType_byName (zh->reg->recTypes, recordType, subType,
                                   &clientData);
     } else {
-        if (!(rGroup->recordType)) {
+        if (!(zh->m_record_type)) {
             logf (LOG_WARN, "No such record type defined");
             return 0;
         }
-        logf (LOG_DEBUG, "Get record type from rgroup: %s",rGroup->recordType);
-        recType = recType_byName (zh->reg->recTypes, rGroup->recordType, subType,
+        logf (LOG_DEBUG, "Get record type from rgroup: %s",zh->m_record_type);
+        recType = recType_byName (zh->reg->recTypes, zh->m_record_type, subType,
                                   &clientData);
-        recordType = rGroup->recordType;
+        recordType = zh->m_record_type;
     }
     
     if (!recType) {
-        logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
+        logf (LOG_WARN, "No such record type: %s", zh->m_record_type);
         return 0;
     }
     
@@ -1049,14 +950,14 @@ int bufferExtractRecord (ZebraHandle zh,
     /* match criteria */
     matchStr = NULL;
 
-    if (! *sysno && match_criteria) {
+    if (! *sysno) {
         char *rinfo;
-        if (*match_criteria) {
+        if (match_criteria && *match_criteria) {
             matchStr = (char *)match_criteria;
         } else {
-            if (rGroup->recordId && *rGroup->recordId) {
-                matchStr = fileMatchStr (zh, &zh->reg->keys, rGroup, fname, 
-                                         rGroup->recordId);
+            if (zh->m_record_id && *zh->m_record_id) {
+                matchStr = fileMatchStr (zh, &zh->reg->keys, pr_fname, 
+                                         zh->m_record_id);
             }
         }
         if (matchStr) {
@@ -1075,11 +976,11 @@ int bufferExtractRecord (ZebraHandle zh,
         if (delete_flag)
         {
 	    logf (LOG_LOG, "delete %s %s %ld", recordType,
-		  fname, (long) recordOffset);
+		  pr_fname, (long) recordOffset);
             logf (LOG_WARN, "cannot delete record above (seems new)");
             return 1;
         }
-	logf (LOG_LOG, "add %s %s %ld", recordType, fname,
+	logf (LOG_LOG, "add %s %s %ld", recordType, pr_fname,
 	      (long) recordOffset);
         rec = rec_new (zh->reg->records);
 
@@ -1105,7 +1006,7 @@ int bufferExtractRecord (ZebraHandle zh,
 
 	if (!allow_update) {
 	      logf (LOG_LOG, "skipped %s %s %ld", 
-		    recordType, fname, (long) recordOffset);
+		    recordType, pr_fname, (long) recordOffset);
 	      logRecord(zh);
 	      return -1;
 	}
@@ -1114,17 +1015,17 @@ int bufferExtractRecord (ZebraHandle zh,
         assert (rec);
 	
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
-
+	
 	if (!force_update) {
-	  if (recordAttr->runNumber ==
-	      zebraExplain_runNumberIncrement (zh->reg->zei, 0))
+	    if (recordAttr->runNumber ==
+		zebraExplain_runNumberIncrement (zh->reg->zei, 0))
 	    {
-	      logf (LOG_LOG, "skipped %s %s %ld", recordType,
-		    fname, (long) recordOffset);
-	      extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
-	      rec_rm (&rec);
-	      logRecord(zh);
-	      return 1;
+		logf (LOG_LOG, "skipped %s %s %ld", recordType,
+		      pr_fname, (long) recordOffset);
+		extract_flushSortKeys (zh, *sysno, -1, &zh->reg->sortKeys);
+		rec_rm (&rec);
+		logRecord(zh);
+		return 0;
 	    }
 	}
 
@@ -1142,13 +1043,13 @@ int bufferExtractRecord (ZebraHandle zh,
             if (!delkeys.buf_used)
             {
                 logf (LOG_LOG, "delete %s %s %ld", recordType,
-                      fname, (long) recordOffset);
+                      pr_fname, (long) recordOffset);
                 logf (LOG_WARN, "cannot delete file above, storeKeys false");
             }
             else
             {
 		logf (LOG_LOG, "delete %s %s %ld", recordType,
-		      fname, (long) recordOffset);
+		      pr_fname, (long) recordOffset);
                 zh->records_deleted++;
                 if (matchStr)
                     dict_delete (zh->reg->matchDict, matchStr);
@@ -1156,7 +1057,7 @@ int bufferExtractRecord (ZebraHandle zh,
             }
 	    rec_rm (&rec);
             logRecord(zh);
-            return 1;
+            return 0;
         }
         else
         {
@@ -1164,13 +1065,13 @@ int bufferExtractRecord (ZebraHandle zh,
             if (!delkeys.buf_used)
             {
                 logf (LOG_LOG, "update %s %s %ld", recordType,
-                      fname, (long) recordOffset);
+                      pr_fname, (long) recordOffset);
                 logf (LOG_WARN, "cannot update file above, storeKeys false");
             }
             else
             {
 		logf (LOG_LOG, "update %s %s %ld", recordType,
-		      fname, (long) recordOffset);
+		      pr_fname, (long) recordOffset);
                 extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
                 extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
                 zh->records_updated++;
@@ -1189,7 +1090,7 @@ int bufferExtractRecord (ZebraHandle zh,
 
     /* update delete keys */
     xfree (rec->info[recInfo_delKeys]);
-    if (zh->reg->keys.buf_used > 0 && rGroup->flagStoreKeys == 1)
+    if (zh->reg->keys.buf_used > 0 && zh->m_store_keys == 1)
     {
         rec->size[recInfo_delKeys] = zh->reg->keys.buf_used;
         rec->info[recInfo_delKeys] = zh->reg->keys.buf;
@@ -1229,28 +1130,12 @@ int bufferExtractRecord (ZebraHandle zh,
 
     /* update store data */
     xfree (rec->info[recInfo_storeData]);
-    if (rGroup->flagStoreData == 1)
+    if (zh->m_store_data)
     {
         rec->size[recInfo_storeData] = recordAttr->recordSize;
         rec->info[recInfo_storeData] = (char *)
 	    xmalloc (recordAttr->recordSize);
-#if 1
         memcpy (rec->info[recInfo_storeData], buf, recordAttr->recordSize);
-#else
-        if (lseek (fi->fd, recordOffset, SEEK_SET) < 0)
-        {
-            logf (LOG_ERRNO|LOG_FATAL, "seek to %ld in %s",
-                  (long) recordOffset, fname);
-            exit (1);
-        }
-        if (read (fi->fd, rec->info[recInfo_storeData], recordAttr->recordSize)
-	    < recordAttr->recordSize)
-        {
-            logf (LOG_ERRNO|LOG_FATAL, "read %d bytes of %s",
-                  recordAttr->recordSize, fname);
-            exit (1);
-        }
-#endif
     }
     else
     {
@@ -1260,7 +1145,7 @@ int bufferExtractRecord (ZebraHandle zh,
     /* update database name */
     xfree (rec->info[recInfo_databaseName]);
     rec->info[recInfo_databaseName] =
-        rec_strdup (rGroup->databaseName, &rec->size[recInfo_databaseName]); 
+        rec_strdup (zh->basenames[0], &rec->size[recInfo_databaseName]); 
 
     /* update offset */
     recordAttr->recordOffset = recordOffset;
@@ -1270,8 +1155,6 @@ int bufferExtractRecord (ZebraHandle zh,
     logRecord(zh);
     return 0;
 }
-
-
 
 int explain_extract (void *handle, Record rec, data1_node *n)
 {

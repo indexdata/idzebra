@@ -1,5 +1,5 @@
-/* $Id: rset.c,v 1.18 2004-01-16 15:27:35 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: rset.c,v 1.19 2004-01-22 11:27:22 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -65,7 +65,8 @@ RSET rset_dup (RSET rs)
 
 int rset_default_forward(RSFD rfd, void *buf, const void *untilbuf)
 {
-    logf (LOG_FATAL, "rset_default-forward not yet implemented (%s)");
+    logf (LOG_FATAL, "rset_default-forward not yet implemented");
+    return 0;
 }
 
 RSET_TERM *rset_terms(RSET rs, int *no)

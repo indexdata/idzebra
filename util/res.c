@@ -1,5 +1,5 @@
-/* $Id: res.c,v 1.33 2002-10-22 09:37:56 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: res.c,v 1.34 2004-01-22 11:27:22 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -45,6 +45,7 @@ struct res_struct {
     char *name;
     int  init;
     Res def_res;
+    Res over_res;
 };
 
 static struct res_entry *add_entry (Res r)
@@ -175,7 +176,7 @@ static void reread (Res r)
     fclose (fr);
 }
 
-Res res_open (const char *name, Res def_res)
+Res res_open (const char *name, Res def_res, Res over_res)
 {
     Res r;
 
@@ -199,6 +200,7 @@ Res res_open (const char *name, Res def_res)
     else
 	r->name=0;
     r->def_res = def_res;
+    r->over_res = over_res;
     return r;
 }
 
@@ -223,12 +225,40 @@ void res_close (Res r)
     xfree (r);
 }
 
-char *res_get (Res r, const char *name)
+const char *res_get_prefix (Res r, const char *name, const char *prefix,
+			    const char *def)
+{
+    const char *v = 0;;
+    if (prefix)
+    {
+	char rname[128];
+	
+	if (strlen(name) + strlen(prefix) >= (sizeof(rname)-2))
+	    return 0;
+	strcpy(rname, prefix);
+	strcat(rname, ".");
+	strcat(rname, name);
+	v = res_get(r, rname);
+    }
+    if (!v)
+	v = res_get(r, name);
+    if (!v)
+	v = def;
+    return v;
+}
+
+const char *res_get (Res r, const char *name)
 {
     struct res_entry *re;
+    const char *v;
 
     if (!r)
 	return 0;
+    
+    v = res_get(r->over_res, name);
+    if (v)
+	return v;
+
     if (!r->init)
         reread (r);
     for (re = r->first; re; re=re->next)
@@ -238,9 +268,9 @@ char *res_get (Res r, const char *name)
     return res_get (r->def_res, name);
 }
 
-char *res_get_def (Res r, const char *name, char *def)
+const char *res_get_def (Res r, const char *name, const char *def)
 {
-    char *t;
+    const char *t;
 
     if (!(t = res_get (r, name)))
     {
@@ -262,7 +292,7 @@ int res_get_match (Res r, const char *name, const char *value, const char *s)
     return 0;
 }
 
-void res_put (Res r, const char *name, const char *value)
+void res_set (Res r, const char *name, const char *value)
 {
     struct res_entry *re;
     assert (r);

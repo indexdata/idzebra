@@ -1,5 +1,5 @@
-/* $Id: t2.c,v 1.7 2003-06-20 14:21:24 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: t2.c,v 1.8 2004-01-22 11:27:22 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -38,11 +38,12 @@ int main(int argc, char **argv)
 
     nmem_init ();
 
-    zs = zebra_start("t2.cfg");
+    zs = zebra_start("t2.cfg", 0, 0);
     zh = zebra_open (zs);
     zebra_select_database(zh, "Default");
     zebra_begin_trans (zh, 1);
-    zebra_record_insert (zh, myrec, strlen(myrec),0);
+
+    zebra_add_record (zh, myrec, strlen(myrec));
 
     zebra_search_PQF (zh, "@attr 1=4 my", "set1", &hits);
     if (hits < 1)

@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.3 2003-05-20 13:52:41 adam Exp $
+/* $Id: t1.c,v 1.4 2004-01-22 11:27:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 
     yaz_log_init_file("t1.log");
     nmem_init();
-    zs = zebra_start("t1.cfg");
+    zs = zebra_start("t1.cfg", 0, 0);
     zh = zebra_open (zs);
     
     zebra_close (zh);

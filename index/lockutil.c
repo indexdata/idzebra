@@ -1,4 +1,4 @@
-/* $Id: lockutil.c,v 1.17 2002-08-02 19:26:55 adam Exp $
+/* $Id: lockutil.c,v 1.18 2004-01-22 11:27:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -116,7 +116,7 @@ void zebra_lock_destroy (ZebraLockHandle h)
 
 void zebra_lock_prefix (Res res, char *path)
 {
-    char *lock_dir = res_get_def (res, "lockDir", "");
+    const char *lock_dir = res_get_def (res, "lockDir", "");
 
     strcpy (path, lock_dir);
     if (*path && path[strlen(path)-1] != '/')

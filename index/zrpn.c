@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.135 2004-01-15 13:31:31 adam Exp $
+/* $Id: zrpn.c,v 1.136 2004-01-22 11:27:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -966,7 +966,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 {
                     /* set was found, but value wasn't defined */
                     char val_str[32];
-                    sprintf (val_str, "%d", use_value);
+                    sprintf (val_str, "%d 1", use_value);
                     errCode = 114;
                     errString = nmem_strdup (stream, val_str);
                 }
@@ -1011,10 +1011,14 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         if (!prefix_len)
         {
+#if 1
+	    bases_ok++;
+#else
             char val_str[32];
-            sprintf (val_str, "%d", use_value);
+            sprintf (val_str, "%d 2", use_value);
             errCode = 114;
             errString = nmem_strdup (stream, val_str);
+#endif
 	    continue;
         }
 	bases_ok++; /* this has OK attributes */

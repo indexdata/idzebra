@@ -1,4 +1,4 @@
-/* $Id: dicttest.c,v 1.27 2002-08-02 19:26:55 adam Exp $
+/* $Id: dicttest.c,v 1.28 2004-01-22 11:27:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -160,7 +160,7 @@ int main (int argc, char **argv)
         logf (LOG_FATAL, "no config and/or dictionary specified");
         exit (1);
     }
-    my_resource = res_open (config, 0);
+    my_resource = res_open (config, 0, 0);
     if (!my_resource)
     {
         logf (LOG_FATAL, "cannot open resource `%s'", config);

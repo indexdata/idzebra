@@ -1,4 +1,4 @@
-/* $Id: kdump.c,v 1.23 2003-05-24 22:35:11 adam Exp $
+/* $Id: kdump.c,v 1.24 2004-01-22 11:27:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -125,7 +125,7 @@ int main (int argc, char **argv)
         }
 	else if (ret == 'c')
 	{
-	    if (!(res = res_open (arg, 0)))
+	    if (!(res = res_open (arg, 0, 0)))
             {
 		logf(LOG_FATAL, "Failed to open resource file %s", arg);
 	        exit (1);
@@ -143,7 +143,7 @@ int main (int argc, char **argv)
         exit (1);
     }
     if (!res)
-        res = res_open ("zebra.cfg", 0);
+        res = res_open ("zebra.cfg", 0, 0);
     zm = zebra_maps_open (res, 0);
     if (!(inf = fopen (key_fname, "r")))
     {

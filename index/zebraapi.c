@@ -1,5 +1,5 @@
-/* $Id: zebraapi.c,v 1.115 2003-11-28 14:47:45 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: zebraapi.c,v 1.116 2004-01-22 11:27:21 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -120,8 +120,6 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->lock_normal = 0;
     zh->lock_shadow = 0;
 
-    zh->admin_databaseName = 0;
-
     zh->shadow_enable = 1;
 
     default_encoding = res_get_def(zs->global_res, "encoding", "ISO-8859-1");
@@ -148,13 +146,13 @@ ZebraHandle zebra_open (ZebraService zs)
     return zh;
 }
 
-ZebraService zebra_start (const char *configName)
+ZebraService zebra_start (const char *configName, Res def_res, Res over_res)
 {
     Res res;
 
     yaz_log(LOG_API|LOG_LOG,"zebra_start %s",configName);
 
-    if ((res = res_open (configName, 0)))
+    if ((res = res_open (configName, def_res, over_res)))
     {
         ZebraService zh = xmalloc (sizeof(*zh));
 
@@ -198,7 +196,9 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 {
     struct zebra_register *reg;
     int record_compression = REC_COMPRESS_NONE;
-    char *recordCompression = 0;
+    const char *recordCompression = 0;
+    const char *profilePath;
+    char cwd[1024];
 
     ASSERTZS;
     
@@ -226,8 +226,12 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     }
     if (useshadow)
         bf_cache (reg->bfs, res_get (res, "shadow"));
-    data1_set_tabpath (reg->dh, res_get_def(res, "profilePath",
-                                            DEFAULT_PROFILE_PATH));
+
+    getcwd(cwd, sizeof(cwd)-1);
+    profilePath = res_get_def(res, "profilePath", DEFAULT_PROFILE_PATH);
+    yaz_log(LOG_LOG, "profilePath=%s cwd=%s", profilePath, cwd);
+
+    data1_set_tabpath (reg->dh, profilePath);
     data1_set_tabroot (reg->dh, reg_path);
     reg->recTypes = recTypes_init (reg->dh);
     recTypes_default_handlers (reg->recTypes);
@@ -452,7 +456,6 @@ int zebra_stop(ZebraService zs)
 
     res_close (zs->global_res);
     xfree (zs->configName);
-    xfree (zs->path_root);
     xfree (zs);
     return 0;
 }
@@ -488,7 +491,6 @@ int zebra_close (ZebraHandle zh)
     if (zh->iconv_from_utf8 != 0)
         yaz_iconv_close (zh->iconv_from_utf8);
 
-    xfree (zh->admin_databaseName);
     zebra_mutex_cond_lock (&zs->session_lock);
     zebra_lock_destroy (zh->lock_normal);
     zebra_lock_destroy (zh->lock_shadow);
@@ -506,6 +508,7 @@ int zebra_close (ZebraHandle zh)
     zebra_mutex_cond_unlock (&zs->session_lock);
     xfree (zh->reg_name);
     zh->service=0; /* more likely to trigger an assert */
+    xfree (zh->path_reg);
     xfree (zh);
     return 0;
 }
@@ -530,7 +533,7 @@ static Res zebra_open_res (ZebraHandle zh)
     if (zh->path_reg)
     {
         sprintf (fname, "%.200s/zebra.cfg", zh->path_reg);
-        res = res_open (fname, zh->service->global_res);
+        res = res_open (fname, zh->service->global_res, 0);
         if (!res)
             res = zh->service->global_res;
     }
@@ -608,7 +611,7 @@ static int zebra_select_register (ZebraHandle zh, const char *new_reg)
         const char *lock_area  =res_get (zh->res, "lockDir");
         
         if (!lock_area && zh->path_reg)
-            res_put (zh->res, "lockDir", zh->path_reg);
+            res_set (zh->res, "lockDir", zh->path_reg);
         sprintf (fname, "norm.%s.LCK", zh->reg_name);
         zh->lock_normal =
             zebra_lock_create (res_get(zh->res, "lockDir"), fname, 0);
@@ -995,8 +998,6 @@ int zebra_admin_import_begin (ZebraHandle zh, const char *database,
     if (zebra_select_database(zh, database))
         return 1;
     zebra_begin_trans (zh, 1);
-    xfree (zh->admin_databaseName);
-    zh->admin_databaseName = xstrdup(database);
     return 0;
 }
 
@@ -1019,10 +1020,7 @@ int zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
     for (i = 0; i<segment->num_segmentRecords; i++)
     {
 	Z_NamePlusRecord *npr = segment->segmentRecords[i];
-	const char *databaseName = npr->databaseName;
 
-	if (!databaseName)
-	    databaseName = zh->admin_databaseName;
 	printf ("--------------%d--------------------\n", i);
 	if (npr->which == Z_NamePlusRecord_intermediateFragment)
 	{
@@ -1034,15 +1032,14 @@ int zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 			oct->buf);
 		
 		sysno = 0;
-		extract_rec_in_mem (zh, "grs.sgml",
+		
+		zebra_update_record(zh, 
+				    0, /* record Type */
+				    &sysno,
+				    0, /* match */
+				    0, /* fname */
 				    oct->buf, oct->len,
-				    databaseName,
-				    0 /* delete_flag */,
-				    0 /* test_mode */,
-				    &sysno /* sysno */,
-				    1 /* store_keys */,
-				    1 /* store_data */,
-				    0 /* match criteria */);
+				    0);
 	    }
 	}
     }
@@ -1050,18 +1047,20 @@ int zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 }
 
 int zebra_admin_exchange_record (ZebraHandle zh,
-                                 const char *database,
                                  const char *rec_buf,
                                  size_t rec_len,
                                  const char *recid_buf, size_t recid_len,
                                  int action)
+    /* 1 = insert. Fail it already exists */
+    /* 2 = replace. Fail it does not exist */
+    /* 3 = delete. Fail if does not exist */
+    /* 4 = update. Insert/replace */
 {
     int sysno = 0;
     char *rinfo = 0;
     char recid_z[256];
     ASSERTZH;
-    yaz_log(LOG_API,"zebra_admin_exchange_record db=%s ac=%d",
-		    database, action);
+    yaz_log(LOG_API,"zebra_admin_exchange_record ac=%d", action);
     zh->errCode=0;
 
     if (!recid_buf || recid_len <= 0 || recid_len >= sizeof(recid_z))
@@ -1089,10 +1088,18 @@ int zebra_admin_exchange_record (ZebraHandle zh,
 	    zebra_end_trans(zh);
             return -1;
 	}
+	action = 1;  /* make it an insert (if it's an update).. */
     }
-    extract_rec_in_mem (zh, "grs.sgml", rec_buf, rec_len, database,
-                        action == 3 ? 1 : 0 /* delete flag */,
-                        0, &sysno, 1, 1, 0);
+    buffer_extract_record (zh, rec_buf, rec_len,
+			   action == 3 ? 1 : 0 /* delete flag */,
+			   0, /* test mode */
+			   0, /* recordType */
+			   &sysno, 
+			   0, /* match */
+			   0, /* fname */
+			   0, /* force update */
+			   1  /* allow update */
+	);
     if (action == 1)
     {
         dict_insert (zh->reg->matchDict, recid_z, sizeof(sysno), &sysno);
@@ -1260,6 +1267,34 @@ int zebra_begin_read (ZebraHandle zh)
 int zebra_end_read (ZebraHandle zh)
 {
     return zebra_end_trans(zh);
+}
+
+static void read_res_for_transaction(ZebraHandle zh)
+{
+    const char *group = res_get(zh->res, "group");
+    const char *v;
+    
+    zh->m_group = group;
+    v = res_get_prefix(zh->res, "followLinks", group, "1");
+    zh->m_follow_links = atoi(v);
+
+    zh->m_record_id = res_get_prefix(zh->res, "recordId", group, 0);
+    zh->m_record_type = res_get_prefix(zh->res, "recordType", group, 0);
+
+    v = res_get_prefix(zh->res, "storeKeys", group, "1");
+    zh->m_store_keys = atoi(v);
+
+    v = res_get_prefix(zh->res, "storeData", group, "1");
+    zh->m_store_data = atoi(v);
+
+    v = res_get_prefix(zh->res, "explainDatabase", group, "0");
+    zh->m_explain_database = atoi(v);
+
+    v = res_get_prefix(zh->res, "openRW", group, "1");
+    zh->m_flag_rw = atoi(v);
+
+    v = res_get_prefix(zh->res, "fileVerboseLimit", group, "100000");
+    zh->m_file_verbose_limit = atoi(v);
 }
 
 int zebra_begin_trans (ZebraHandle zh, int rw)
@@ -1452,6 +1487,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         zh->reg->last_val = val;
         zh->reg->seqno = seqno;
     }
+    read_res_for_transaction(zh);
     return 0;
 }
 
@@ -1549,30 +1585,30 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
     return 0;
 }
 
-int zebra_repository_update (ZebraHandle zh)
+int zebra_repository_update (ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     zh->errCode=0;
-    logf (LOG_LOG|LOG_API, "updating %s", zh->rGroup.path);
-    repositoryUpdate (zh);    
+    logf (LOG_LOG|LOG_API, "updating %s", path);
+    repositoryUpdate (zh, path);
     return zh->errCode;
 }
 
-int zebra_repository_delete (ZebraHandle zh)
+int zebra_repository_delete (ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     zh->errCode=0;
-    logf (LOG_LOG|LOG_API, "deleting %s", zh->rGroup.path);
-    repositoryDelete (zh);
+    logf (LOG_LOG|LOG_API, "deleting %s", path);
+    repositoryDelete (zh, path);
     return zh->errCode;
 }
 
-int zebra_repository_show (ZebraHandle zh)
+int zebra_repository_show (ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     yaz_log(LOG_API,"zebra_repository_show");
     zh->errCode=0;
-    repositoryShow (zh);
+    repositoryShow (zh, path);
     return zh->errCode;
 }
 
@@ -1692,41 +1728,6 @@ int zebra_compact (ZebraHandle zh)
     return 0;
 }
 
-int zebra_record_insert (ZebraHandle zh, const char *buf, int len, int *sysno)
-{
-    int sysn=0;
-    ASSERTZH;
-    yaz_log(LOG_API,"zebra_record_insert");
-    if (sysno)
-	*sysno=0;
-    zh->errCode=0;
-    if (zebra_begin_trans (zh, 1))
-        return -1;
-    extract_rec_in_mem (zh, "grs.sgml",
-                        buf, len,
-                        "Default",  /* database */
-                        0 /* delete_flag */,
-                        0 /* test_mode */,
-                        &sysn /* sysno */,
-                        1 /* store_keys */,
-                        1 /* store_data */,
-                        0 /* match criteria */);
-    if (zebra_end_trans (zh))
-        return -1;
-    if (sysno)
-	*sysno=sysn;
-    return 0;
-}
-
-int zebra_set_group (ZebraHandle zh, struct recordGroup *rg)
-{
-    ASSERTZH;
-    yaz_log(LOG_API,"zebra_set_group");
-    zh->errCode=0;
-    memcpy (&zh->rGroup, rg, sizeof(*rg));
-    return 0;
-}
-
 int zebra_result (ZebraHandle zh, int *code, char **addinfo)
 {
     ASSERTZH;
@@ -1783,7 +1784,7 @@ int zebra_set_resource(ZebraHandle zh, const char *name, const char *value)
     ASSERTZH;
     yaz_log(LOG_API,"zebra_set_resource %s:%s",name,value);
     zh->errCode=0;
-    res_put(zh->res, name, value);
+    res_set(zh->res, name, value);
     return 0;
 }
 
@@ -1820,112 +1821,6 @@ int zebra_set_shadow_enable (ZebraHandle zh, int value)
     zh->shadow_enable = value;
     return 0;
 }
-
-int init_recordGroup (struct recordGroup *rg)
-{
-    assert(rg);
-    yaz_log(LOG_API,"init_recordGroup");
-    rg->groupName = NULL;
-    rg->databaseName = NULL;
-    rg->path = NULL;
-    rg->recordId = NULL;
-    rg->recordType = NULL;
-    rg->flagStoreData = -1;
-    rg->flagStoreKeys = -1; 
-    rg->flagRw = 1;
-    rg->databaseNamePath = 0;
-    rg->explainDatabase = 0; 
-    rg->fileVerboseLimit = 100000; 
-    rg->followLinks = -1;
-    return 0;
-} 
-
-
-/* This is from extract.c... it seems useful, when extract_rec_in mem is 
-   called... and in general... Should be moved to somewhere else */
-void res_get_recordGroup (ZebraHandle zh,
-			  struct recordGroup *rGroup,
-			  const char *ext)
-{
-    char gprefix[128];
-    char ext_res[128]; 
-    
-    yaz_log(LOG_API,"res_get_recordGroup e=%s",ext);
-    if (!rGroup->groupName || !*rGroup->groupName)
-	*gprefix = '\0';
-    else 
-	sprintf (gprefix, "%s.", rGroup->groupName);
-    
-    /* determine file type - depending on extension */
-    if (!rGroup->recordType) {
-	sprintf (ext_res, "%srecordType.%s", gprefix, ext);
-	if (!(rGroup->recordType = res_get (zh->res, ext_res))) {
-	    sprintf (ext_res, "%srecordType", gprefix);
-	    rGroup->recordType = res_get (zh->res, ext_res);
-	}
-    }
-    /* determine match criteria */
-    if (!rGroup->recordId) { 
-	sprintf (ext_res, "%srecordId.%s", gprefix, ext);
-	if (!(rGroup->recordId = res_get (zh->res, ext_res))) {
-	    sprintf (ext_res, "%srecordId", gprefix);
-	    rGroup->recordId = res_get (zh->res, ext_res);
-	}
-    } 
-    
-    /* determine database name */
-    if (!rGroup->databaseName) {
-	sprintf (ext_res, "%sdatabase.%s", gprefix, ext);
-	if (!(rGroup->databaseName = res_get (zh->res, ext_res))) { 
-	    sprintf (ext_res, "%sdatabase", gprefix);
-	    rGroup->databaseName = res_get (zh->res, ext_res);
-	}
-    }
-    if (!rGroup->databaseName)
-	rGroup->databaseName = "Default";
-    
-    /* determine if explain database */
-    sprintf (ext_res, "%sexplainDatabase", gprefix);
-    rGroup->explainDatabase =
-	atoi (res_get_def (zh->res, ext_res, "0"));
-    
-    /* storeData */
-    if (rGroup->flagStoreData == -1)
-    {
-	const char *sval;
-	sprintf (ext_res, "%sstoreData.%s", gprefix, ext);
-	if (!(sval = res_get (zh->res, ext_res)))
-	{
-	    sprintf (ext_res, "%sstoreData", gprefix);
-	    sval = res_get (zh->res, ext_res);
-	}
-	if (sval)
-	    rGroup->flagStoreData = atoi (sval);
-    }
-    if (rGroup->flagStoreData == -1) 
-	rGroup->flagStoreData = 0;
-    
-    /* storeKeys */
-    if (rGroup->flagStoreKeys == -1)
-    {
-	const char *sval;
-	
-	sprintf (ext_res, "%sstoreKeys.%s", gprefix, ext);
-	sval = res_get (zh->res, ext_res);
-	if (!sval)
-	{
-	    sprintf (ext_res, "%sstoreKeys", gprefix);
-	    sval = res_get (zh->res, ext_res);
-	}
-	if (!sval)
-	    sval = res_get (zh->res, "storeKeys");
-	if (sval)
-	    rGroup->flagStoreKeys = atoi (sval);
-    }
-    if (rGroup->flagStoreKeys == -1)
-	rGroup->flagStoreKeys = 0;
-} 
-
 
 /* almost the same as zebra_records_retrieve ... but how did it work? 
    I mean for multiple records ??? CHECK ??? */
@@ -2012,20 +1907,24 @@ void api_records_retrieve (ZebraHandle zh, ODR stream,
 /* ---------------------------------------------------------------------------
   Record insert(=update), delete 
 
-  If sysno is provided, then it's used to identify the reocord.
+  If sysno is provided, then it's used to identify the record.
   If not, and match_criteria is provided, then sysno is guessed
   If not, and a record is provided, then sysno is got from there
 NOTE: Now returns 0 at success and updates sysno, which is an int*
   20-jun-2003 Heikki
 */
 
+int zebra_add_record(ZebraHandle zh,
+		     const char *buf, int buf_size)
+{
+    int sysno = 0;
+    return zebra_update_record(zh, 0, &sysno, 0, 0, buf, buf_size, 0);
+}
+
 int zebra_insert_record (ZebraHandle zh, 
-			 struct recordGroup *rGroup,
 			 const char *recordType,
 			 int *sysno, const char *match, const char *fname,
-			 const char *buf, int buf_size,
-			 int force_update) /* This one is ignored */
- 
+			 const char *buf, int buf_size)
 {
     int res;
     yaz_log(LOG_API,"zebra_insert_record sysno=%d", *sysno);
@@ -2033,21 +1932,19 @@ int zebra_insert_record (ZebraHandle zh,
     if (buf_size < 1) buf_size = strlen(buf);
 
     zebra_begin_trans(zh, 1);
-    res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
-			     0, /* delete_flag  */
-			     0, /* test_mode */
-			     recordType,
-			     sysno,   
-			     match, fname,
-			     force_update, 
-			     0); /* allow_update */
+    res = buffer_extract_record (zh, buf, buf_size, 
+				 0, /* delete_flag  */
+				 0, /* test_mode */
+				 recordType,
+				 sysno,   
+				 match, fname,
+				 0, 
+				 0); /* allow_update */
     zebra_end_trans(zh); 
-    if (res < 0) return (res);
     return res; 
 }
 
 int zebra_update_record (ZebraHandle zh, 
-			 struct recordGroup *rGroup,
 			 const char *recordType,
 			 int* sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
@@ -2060,20 +1957,19 @@ int zebra_update_record (ZebraHandle zh,
     if (buf_size < 1) buf_size = strlen(buf);
 
     zebra_begin_trans(zh, 1);
-    res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
-			     0, /* delete_flag */
-			     0, /* test_mode */
-			     recordType,
-			     sysno,   
-			     match, fname,
-			     force_update, 
-			     1); /* allow_update */
+    res = buffer_extract_record (zh, buf, buf_size, 
+				 0, /* delete_flag */
+				 0, /* test_mode */
+				 recordType,
+				 sysno,   
+				 match, fname,
+				 force_update, 
+				 1); /* allow_update */
     zebra_end_trans(zh); 
     return res; 
 }
 
 int zebra_delete_record (ZebraHandle zh, 
-			 struct recordGroup *rGroup, 
 			 const char *recordType,
 			 int *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
@@ -2085,14 +1981,14 @@ int zebra_delete_record (ZebraHandle zh,
     if (buf_size < 1) buf_size = strlen(buf);
 
     zebra_begin_trans(zh, 1);
-    res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
-			     1, /* delete_flag */
-			     0, /* test_mode */
-			     recordType,
-			     sysno,
-			     match,fname,
-			     force_update,
-			     1); /* allow_update */
+    res = buffer_extract_record (zh, buf, buf_size,
+				 1, /* delete_flag */
+				 0, /* test_mode */
+				 recordType,
+				 sysno,
+				 match,fname,
+				 force_update,
+				 1); /* allow_update */
     zebra_end_trans(zh);
     return res;   
 }

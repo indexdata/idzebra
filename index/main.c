@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.109 2004-01-15 14:22:22 adam Exp $
+/* $Id: main.c,v 1.110 2004-01-22 11:27:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -56,7 +56,8 @@ int main (int argc, char **argv)
     char *configName = 0;
     int nsections = 0;
     int disableCommit = 0;
-    char *mem_max = 0;
+    char *database = "Default";
+    Res res = res_open(0, 0, 0);
     
     int trans_started=0;
 #if HAVE_SYS_TIMES_H
@@ -67,7 +68,6 @@ int main (int argc, char **argv)
 #ifndef WIN32
     char nbuf[100];
 #endif
-    struct recordGroup rGroupDef;
     ZebraService zs = 0;
     ZebraHandle zh = 0;
 
@@ -82,20 +82,6 @@ int main (int argc, char **argv)
     times(&tms1);
     gettimeofday(&start_time, 0);
 #endif
-
-    rGroupDef.groupName = NULL;
-    rGroupDef.databaseName = NULL;
-    rGroupDef.path = NULL;
-    rGroupDef.recordId = NULL;
-    rGroupDef.recordType = NULL;
-    rGroupDef.flagStoreData = -1;
-    rGroupDef.flagStoreKeys = -1;
-    rGroupDef.flagRw = 1;
-    rGroupDef.databaseNamePath = 0;
-    rGroupDef.explainDatabase = 0;
-    rGroupDef.fileVerboseLimit = 100000;
-    rGroupDef.followLinks = -1;
-
     prog = *argv;
     if (argc < 2)
     {
@@ -136,7 +122,7 @@ int main (int argc, char **argv)
 		    const char *config = configName ? configName : "zebra.cfg";
                     logf (LOG_LOG, "Zebra version %s %s",
                           ZEBRAVER, ZEBRADATE);
-                    zs = zebra_start (config);
+                    zs = zebra_start (config, 0, res);
                     if (!zs)
                     {
 			yaz_log (LOG_FATAL, "Cannot read config %s", config);
@@ -147,27 +133,12 @@ int main (int argc, char **argv)
                         zebra_shadow_enable (zh, 0);
                 }
 
-                if (rGroupDef.databaseName)
-                {
-                    if (zebra_select_database (zh, rGroupDef.databaseName))
-		    {
-			logf(LOG_FATAL, "Could not select database %s errCode=%d",
-					  rGroupDef.databaseName, zebra_errCode(zh) );
-                        exit (1);
-		    }
-                }
-                else
-                {
-                    if (zebra_select_database (zh, "Default"))
-		    {
-			logf(LOG_FATAL, "Could not select database Default errCode=%d",
-					zebra_errCode(zh) );
-                        exit (1);
-		    }
-                }
-	        if (mem_max)
-	            zebra_set_resource(zh, "memmax",mem_max); 
-
+		if (zebra_select_database (zh, database))
+		{
+		    logf(LOG_FATAL, "Could not select database %s errCode=%d",
+			 database, zebra_errCode(zh) );
+		    exit (1);
+		}
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
                 else if (!strcmp (arg, "update1"))
@@ -218,8 +189,6 @@ int main (int argc, char **argv)
             }
 	    else
             {
-                rGroupDef.path = arg;
-                zebra_set_group (zh, &rGroupDef);
 		if (!trans_started)
 		{
 		    trans_started=1;
@@ -229,21 +198,20 @@ int main (int argc, char **argv)
                 switch (cmd)
                 {
                 case 'u':
-                    zebra_repository_update (zh);
+                    zebra_repository_update (zh, arg);
                     break;
                 case 'd':
-                    zebra_repository_delete (zh);
+                    zebra_repository_delete (zh, arg);
                     break;
                 case 's':
-                    logf (LOG_LOG, "dumping %s", rGroupDef.path);
-                    zebra_repository_show (zh);
+                    zebra_repository_show (zh, arg);
                     nsections = 0;
                     break;
 		case 'C':
-		    zebra_create_database(zh, rGroupDef.path);
+		    zebra_create_database(zh, arg);
 		    break;
 		case 'D':
-		    zebra_drop_database(zh, rGroupDef.path);
+		    zebra_drop_database(zh, arg);
 		    break;
                 default:
                     nsections = 0;
@@ -282,23 +250,23 @@ int main (int argc, char **argv)
 	else if (ret == 'l')
 	    yaz_log_init_file (arg);
         else if (ret == 'm')
-            mem_max = arg; 
+	    res_set(res, "memMax", arg);
         else if (ret == 'd')
-            rGroupDef.databaseName = arg;
+            database = arg;
 	else if (ret == 's')
-	    rGroupDef.flagRw = 0;
+	    res_set(res, "openRW", "0");
         else if (ret == 'g')
-            rGroupDef.groupName = arg;
+	    res_set(res, "group", arg);
         else if (ret == 'f')
-            rGroupDef.fileVerboseLimit = atoi(arg);
+	    res_set(res, "verboseLimit", arg);
         else if (ret == 'c')
             configName = arg;
         else if (ret == 't')
-            rGroupDef.recordType = arg;
+	    res_set(res, "recordType", arg);
         else if (ret == 'n')
-            disableCommit = 1;
+	    res_set(res, "disableCommit", "1");
         else if (ret == 'L')
-            rGroupDef.followLinks = 0;
+	    res_set(res, "followLinks", "0");
         else
             logf (LOG_WARN, "unknown option '-%s'", arg);
     } /* while arg */

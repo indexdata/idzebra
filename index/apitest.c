@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.14 2003-06-18 11:46:33 adam Exp $
+/* $Id: apitest.c,v 1.15 2004-01-22 11:27:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -140,7 +140,7 @@ int main (int argc, char **argv)
     odr_input = odr_createmem (ODR_DECODE);    
     odr_output = odr_createmem (ODR_ENCODE);    
     
-    zs = zebra_start ("zebra.cfg");
+    zs = zebra_start ("zebra.cfg", 0, 0);
     if (!zs)
     {
 	printf ("zebra_start failed; missing zebra.cfg?\n");

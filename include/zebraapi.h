@@ -1,5 +1,5 @@
-/* $Id: zebraapi.h,v 1.11 2004-01-15 13:31:31 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: zebraapi.h,v 1.12 2004-01-22 11:27:21 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -32,6 +32,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/odr.h>
 #include <yaz/oid.h>
 #include <yaz/proto.h>
+#include <res.h>
 #include <zebraver.h>
 
 /* Fixme! Compare string (ignore case) */
@@ -42,21 +43,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 YAZ_BEGIN_CDECL
-
-struct recordGroup {
-    char  *groupName;
-    char  *databaseName;
-    char  *path;
-    char  *recordId;
-    char  *recordType;
-    int   flagStoreData;
-    int   flagStoreKeys;
-    int   flagRw;
-    int   fileVerboseLimit;
-    int   databaseNamePath;
-    int   explainDatabase;
-    int   followLinks;
-};
 
 typedef struct {
   int processed;
@@ -96,7 +82,8 @@ typedef struct zebra_service *ZebraService;
 
 /* Start Zebra using file 'configName' (usually zebra.cfg) */
 /* There should be exactly one ZebraService */
-YAZ_EXPORT ZebraService zebra_start (const char *configName);
+YAZ_EXPORT ZebraService zebra_start (const char *configName,
+				     Res def_res, Res over_res);
 
 /* Close the whole Zebra */
 YAZ_EXPORT int zebra_stop (ZebraService zs);
@@ -200,7 +187,6 @@ YAZ_EXPORT int zebra_admin_import_segment (ZebraHandle zh,
 YAZ_EXPORT int zebra_admin_import_end (ZebraHandle zh);
 
 int zebra_admin_exchange_record (ZebraHandle zh,
-                                 const char *database,
                                  const char *rec_buf,
                                  size_t rec_len,
                                  const char *recid_buf, size_t recid_len,
@@ -215,13 +201,26 @@ int zebra_clean (ZebraHandle zh);
 
 int zebra_init (ZebraHandle zh);
 int zebra_compact (ZebraHandle zh);
-int zebra_repository_update (ZebraHandle zh);
-int zebra_repository_delete (ZebraHandle zh);
-int zebra_repository_show (ZebraHandle zh);
-int zebra_record_insert (ZebraHandle zh, const char *buf, int len, int *sysno);
+int zebra_repository_update (ZebraHandle zh, const char *path);
+int zebra_repository_delete (ZebraHandle zh, const char *path);
+int zebra_repository_show (ZebraHandle zh, const char *path);
 
-YAZ_EXPORT int zebra_set_group (ZebraHandle zh, struct recordGroup *rg);
-
+int zebra_add_record (ZebraHandle zh, const char *buf, int buf_size);
+			       
+int zebra_insert_record (ZebraHandle zh, 
+			 const char *recordType,
+			 int *sysno, const char *match, const char *fname,
+			 const char *buf, int buf_size);
+int zebra_update_record (ZebraHandle zh, 
+			 const char *recordType,
+			 int* sysno, const char *match, const char *fname,
+			 const char *buf, int buf_size,
+			 int force_update);
+int zebra_delete_record (ZebraHandle zh, 
+			 const char *recordType,
+			 int *sysno, const char *match, const char *fname,
+			 const char *buf, int buf_size,
+			 int force_update);
 
 YAZ_EXPORT int zebra_resultSetTerms (ZebraHandle zh, const char *setname, 
                                      int no, int *count, 

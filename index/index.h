@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.102 2003-06-23 15:35:25 adam Exp $
+/* $Id: index.h,v 1.103 2004-01-22 11:27:21 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -98,10 +98,10 @@ struct dir_entry *dir_open (const char *rep, const char *base,
 void dir_sort (struct dir_entry *e);
 void dir_free (struct dir_entry **e_p);
 
-void repositoryUpdate (ZebraHandle zh);
-void repositoryAdd (ZebraHandle zh);
-void repositoryDelete (ZebraHandle zh);
-void repositoryShow (ZebraHandle zh);
+void repositoryUpdate (ZebraHandle zh, const char *path);
+void repositoryAdd (ZebraHandle zh, const char *path);
+void repositoryDelete (ZebraHandle zh, const char *path);
+void repositoryShow (ZebraHandle zh, const char *path);
 
 int key_open (ZebraHandle zh, int mem);
 int key_close (ZebraHandle zh);
@@ -276,7 +276,7 @@ struct zebra_service {
     struct zebra_register *regs;
     Zebra_mutex_cond session_lock;
     Passwd_db passwd_db;
-    char *path_root;
+    const char *path_root;
 };
 
 
@@ -285,7 +285,7 @@ struct zebra_session {
     struct zebra_service *service;
     struct zebra_register *reg;
 
-    char *admin_databaseName;
+    char *xadmin_databaseName;
 
     char **basenames;
     int num_basenames;
@@ -308,7 +308,6 @@ struct zebra_session {
     struct tms tms1;
     struct tms tms2;    
 #endif
-    struct recordGroup rGroup;
     int  shadow_enable;
 
     int records_inserted;
@@ -319,6 +318,16 @@ struct zebra_session {
 
     yaz_iconv_t iconv_to_utf8;
     yaz_iconv_t iconv_from_utf8;
+
+    int m_follow_links;
+    const char *m_group;
+    const char *m_record_id;
+    const char *m_record_type;
+    int m_store_data;
+    int m_store_keys;
+    int m_explain_database;
+    int m_flag_rw;
+    int m_file_verbose_limit;
 };
 
 struct rank_control {
@@ -413,24 +422,26 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no);
 void zebra_index_merge (ZebraHandle zh);
 
-int bufferExtractRecord (ZebraHandle zh, 
-			 const char *buf, size_t buf_size,
-			 struct recordGroup *rGroup, 
-			 int delete_flag,
-			 int test_mode, 
-			 const char *recordType,
-			 int *sysno,
-			 const char *match_criteria,
-			 const char *fname,
-			 int force_update,
-			 int allow_update);
+int buffer_extract_record (ZebraHandle zh, 
+			   const char *buf, size_t buf_size,
+			   int delete_flag,
+			   int test_mode, 
+			   const char *recordType,
+			   int *sysno,
+			   const char *match_criteria,
+			   const char *fname,
+			   int force_update,
+			   int allow_update);
 
+#if 0
 int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
                         const char *buf, size_t buf_size,
                         const char *databaseName, int delete_flag,
                         int test_mode, int *sysno,
                         int store_keys, int store_data,
                         const char *match_criteria);
+#endif
+
 void extract_flushWriteKeys (ZebraHandle zh);
 
 struct zebra_fetch_control {
@@ -459,7 +470,7 @@ void extract_token_add (RecWord *p);
 int explain_extract (void *handle, Record rec, data1_node *n);
 
 int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
-                 const struct recordGroup *rGroup, int deleteFlag);
+		 int deleteFlag);
 
 int zebra_begin_read (ZebraHandle zh);
 int zebra_end_read (ZebraHandle zh);

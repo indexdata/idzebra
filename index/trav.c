@@ -1,5 +1,5 @@
-/* $Id: trav.c,v 1.43 2003-10-20 19:26:05 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: trav.c,v 1.44 2004-01-22 11:27:21 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -44,14 +44,13 @@ static int repComp (const char *a, const char *b, size_t len)
 }
 
 static void repositoryExtractR (ZebraHandle zh, int deleteFlag, char *rep,
-                                struct recordGroup *rGroup,
 				int level)
 {
     struct dir_entry *e;
     int i;
     size_t rep_len = strlen (rep);
 
-    e = dir_open (rep, zh->path_reg, rGroup->followLinks);
+    e = dir_open (rep, zh->path_reg, zh->m_follow_links);
     if (!e)
         return;
     yaz_log (LOG_LOG, "dir %s", rep);
@@ -66,16 +65,14 @@ static void repositoryExtractR (ZebraHandle zh, int deleteFlag, char *rep,
         strcpy (rep +rep_len+1, e[i].name);
 	if ((ecp = strrchr (e[i].name, '/')))
 	    *ecp = '\0';
-	if (level == 0 && rGroup->databaseNamePath)
-	    rGroup->databaseName = e[i].name;
 
         switch (e[i].kind)
         {
         case dirs_file:
-            fileExtract (zh, NULL, rep, rGroup, deleteFlag);
+            fileExtract (zh, NULL, rep, deleteFlag);
             break;
         case dirs_dir:
-            repositoryExtractR (zh, deleteFlag, rep, rGroup, level+1);
+            repositoryExtractR (zh, deleteFlag, rep, level+1);
             break;
         }
     }
@@ -85,8 +82,7 @@ static void repositoryExtractR (ZebraHandle zh, int deleteFlag, char *rep,
 
 static void fileDeleteR (ZebraHandle zh,
                          struct dirs_info *di, struct dirs_entry *dst,
-                         const char *base, char *src,
-                         struct recordGroup *rGroup)
+                         const char *base, char *src)
 {
     char tmppath[1024];
     size_t src_len = strlen (src);
@@ -97,7 +93,7 @@ static void fileDeleteR (ZebraHandle zh,
         {
         case dirs_file:
             sprintf (tmppath, "%s%s", base, dst->path);
-            fileExtract (zh, &dst->sysno, tmppath, rGroup, 1);
+            fileExtract (zh, &dst->sysno, tmppath, 1);
              
             strcpy (tmppath, dst->path);
             dst = dirs_read (di); 
@@ -117,7 +113,6 @@ static void fileDeleteR (ZebraHandle zh,
 static void fileUpdateR (ZebraHandle zh,
                          struct dirs_info *di, struct dirs_entry *dst,
 			 const char *base, char *src, 
-			 struct recordGroup *rGroup,
 			 int level)
 {
     struct dir_entry *e_src;
@@ -126,7 +121,7 @@ static void fileUpdateR (ZebraHandle zh,
     size_t src_len = strlen (src);
 
     sprintf (tmppath, "%s%s", base, src);
-    e_src = dir_open (tmppath, zh->path_reg, rGroup->followLinks);
+    e_src = dir_open (tmppath, zh->path_reg, zh->m_follow_links);
     yaz_log (LOG_LOG, "dir %s", tmppath);
 
 #if 0
@@ -150,7 +145,7 @@ static void fileUpdateR (ZebraHandle zh,
     else if (!e_src)
     {
         strcpy (src, dst->path);
-        fileDeleteR (zh, di, dst, base, src, rGroup);
+        fileDeleteR (zh, di, dst, base, src);
         return;
     }
     else
@@ -185,8 +180,6 @@ static void fileUpdateR (ZebraHandle zh,
             break;
         yaz_log (LOG_DEBUG, "trav sd=%d", sd);
 
-	if (level == 0 && rGroup->databaseNamePath)
-	    rGroup->databaseName = e_src[i_src].name;
         if (sd == 0)
         {
             strcpy (src + src_len, e_src[i_src].name);
@@ -197,7 +190,7 @@ static void fileUpdateR (ZebraHandle zh,
             case dirs_file:
                 if (e_src[i_src].mtime > dst->mtime)
                 {
-                    if (fileExtract (zh, &dst->sysno, tmppath, rGroup, 0))
+                    if (fileExtract (zh, &dst->sysno, tmppath, 0))
                     {
                         dirs_add (di, src, dst->sysno, e_src[i_src].mtime);
                     }
@@ -207,7 +200,7 @@ static void fileUpdateR (ZebraHandle zh,
                 dst = dirs_read (di);
                 break;
             case dirs_dir:
-                fileUpdateR (zh, di, dst, base, src, rGroup, level+1);
+                fileUpdateR (zh, di, dst, base, src, level+1);
                 dst = dirs_last (di);
                 yaz_log (LOG_DEBUG, "last is %s", dst ? dst->path : "null");
                 break;
@@ -225,11 +218,11 @@ static void fileUpdateR (ZebraHandle zh,
             switch (e_src[i_src].kind)
             {
             case dirs_file:
-                if (fileExtract (zh, &sysno, tmppath, rGroup, 0))
+                if (fileExtract (zh, &sysno, tmppath, 0))
                     dirs_add (di, src, sysno, e_src[i_src].mtime);            
                 break;
             case dirs_dir:
-                fileUpdateR (zh, di, dst, base, src, rGroup, level+1);
+                fileUpdateR (zh, di, dst, base, src, level+1);
                 if (dst)
                     dst = dirs_last (di);
                 break;
@@ -244,12 +237,12 @@ static void fileUpdateR (ZebraHandle zh,
             switch (dst->kind)
             {
             case dirs_file:
-                fileExtract (zh, &dst->sysno, tmppath, rGroup, 1);
+                fileExtract (zh, &dst->sysno, tmppath, 1);
                 dirs_del (di, dst->path);
                 dst = dirs_read (di);
                 break;
             case dirs_dir:
-                fileDeleteR (zh, di, dst, base, src, rGroup);
+                fileDeleteR (zh, di, dst, base, src);
                 dst = dirs_last (di);
             }
         }
@@ -257,51 +250,22 @@ static void fileUpdateR (ZebraHandle zh,
     dir_free (&e_src);
 }
 
-static void groupRes (ZebraHandle zh, struct recordGroup *rGroup)
+void repositoryShow (ZebraHandle zh, const char *path)
 {
-    char resStr[256];
-    char gPrefix[256];
-
-    if (!rGroup->groupName || !*rGroup->groupName)
-        *gPrefix = '\0';
-    else
-        sprintf (gPrefix, "%s.", rGroup->groupName);
-
-    sprintf (resStr, "%srecordId", gPrefix);
-    rGroup->recordId = res_get (zh->res, resStr);
-    sprintf (resStr, "%sdatabasePath", gPrefix);
-    rGroup->databaseNamePath =
-	atoi (res_get_def (zh->res, resStr, "0"));
-
-    rGroup->databaseNamePath =
-	atoi (res_get_def (zh->res, resStr, "0"));
-
-    if (rGroup->followLinks == -1)
-    {
-        sprintf (resStr, "%sfollowLinks", gPrefix);
-        rGroup->followLinks = 
-            atoi (res_get_def (zh->res, resStr, "1"));
-    }
-}
-
-void repositoryShow (ZebraHandle zh)
-                     
-{
-    struct recordGroup *rGroup = &zh->rGroup;
     char src[1024];
     int src_len;
     struct dirs_entry *dst;
     Dict dict;
     struct dirs_info *di;
-    
+
     if (!(dict = dict_open (zh->reg->bfs, FMATCH_DICT, 50, 0, 0)))
     {
         yaz_log (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
 	return;
     }
     
-    assert (rGroup->path);    
-    strcpy (src, rGroup->path);
+    strncpy(src, path, sizeof(src)-1);
+    src[sizeof(src)-1]='\0';
     src_len = strlen (src);
     
     if (src_len && src[src_len-1] != '/')
@@ -310,7 +274,7 @@ void repositoryShow (ZebraHandle zh)
         src[++src_len] = '\0';
     }
     
-    di = dirs_open (dict, src, rGroup->flagRw);
+    di = dirs_open (dict, src, zh->m_flag_rw);
     
     while ( (dst = dirs_read (di)) )
         yaz_log (LOG_LOG, "%s", dst->path);
@@ -318,9 +282,7 @@ void repositoryShow (ZebraHandle zh)
     dict_close (dict);
 }
 
-static void fileUpdate (ZebraHandle zh,
-                        Dict dict, struct recordGroup *rGroup,
-                        const char *path)
+static void fileUpdate (ZebraHandle zh, Dict dict, const char *path)
 {
     struct dirs_info *di;
     struct stat sbuf;
@@ -338,7 +300,7 @@ static void fileUpdate (ZebraHandle zh,
     else
         *src = '\0';
     strcat (src, path);
-    ret = zebra_file_stat (src, &sbuf, rGroup->followLinks);
+    ret = zebra_file_stat (src, &sbuf, zh->m_follow_links);
 
     strcpy (src, path);
     src_len = strlen (src);
@@ -356,13 +318,13 @@ static void fileUpdate (ZebraHandle zh,
         if (e_dst)
         {
             if (sbuf.st_mtime > e_dst->mtime)
-                if (fileExtract (zh, &e_dst->sysno, src, rGroup, 0))
+                if (fileExtract (zh, &e_dst->sysno, src, 0))
                     dirs_add (di, src, e_dst->sysno, sbuf.st_mtime);
         }
         else
         {
             SYSNO sysno = 0;
-            if (fileExtract (zh, &sysno, src, rGroup, 0))
+            if (fileExtract (zh, &sysno, src, 0))
                  dirs_add (di, src, sysno, sbuf.st_mtime);
         }
         dirs_free (&di);
@@ -374,9 +336,9 @@ static void fileUpdate (ZebraHandle zh,
             src[src_len] = '/';
             src[++src_len] = '\0';
         }
-        di = dirs_open (dict, src, rGroup->flagRw);
+        di = dirs_open (dict, src, zh->m_flag_rw);
         *dst = '\0';
-        fileUpdateR (zh, di, dirs_read (di), src, dst, rGroup, 0);
+        fileUpdateR (zh, di, dirs_read (di), src, dst, 0);
         dirs_free (&di);
     }
     else
@@ -386,8 +348,7 @@ static void fileUpdate (ZebraHandle zh,
 }
 
 static void repositoryExtract (ZebraHandle zh,
-                               int deleteFlag, struct recordGroup *rGroup,
-                               const char *path)
+                               int deleteFlag, const char *path)
 {
     struct stat sbuf;
     char src[1024];
@@ -403,67 +364,63 @@ static void repositoryExtract (ZebraHandle zh,
     else
         *src = '\0';
     strcat (src, path);
-    ret = zebra_file_stat (src, &sbuf, rGroup->followLinks);
+    ret = zebra_file_stat (src, &sbuf, zh->m_follow_links);
 
     strcpy (src, path);
 
     if (ret == -1)
         yaz_log (LOG_WARN|LOG_ERRNO, "Cannot access path %s", src);
     else if (S_ISREG(sbuf.st_mode))
-        fileExtract (zh, NULL, src, rGroup, deleteFlag);
+        fileExtract (zh, NULL, src, deleteFlag);
     else if (S_ISDIR(sbuf.st_mode))
-	repositoryExtractR (zh, deleteFlag, src, rGroup, 0);
+	repositoryExtractR (zh, deleteFlag, src, 0);
     else
         yaz_log (LOG_WARN, "Skipping path %s", src);
 }
 
-static void repositoryExtractG (ZebraHandle zh,
-                                int deleteFlag, struct recordGroup *rGroup)
+static void repositoryExtractG (ZebraHandle zh, const char *path, 
+				int deleteFlag)
 {
-    if (*rGroup->path == '\0' || !strcmp(rGroup->path, "-"))
+    if (!strcmp(path, "") || !strcmp(path, "-"))
     {
         char src[1024];
-
+	
         while (scanf ("%1020s", src) == 1)
-            repositoryExtract (zh, deleteFlag, rGroup, src);
+            repositoryExtract (zh, deleteFlag, src);
     }
     else
-        repositoryExtract (zh, deleteFlag, rGroup, rGroup->path);
+        repositoryExtract (zh, deleteFlag, path);
 }
 
-void repositoryUpdate (ZebraHandle zh)
+void repositoryUpdate (ZebraHandle zh, const char *path)
 {
-    struct recordGroup *rGroup = &zh->rGroup;
-    groupRes (zh, rGroup);
-    assert (rGroup->path);
-    if (rGroup->recordId && !strcmp (rGroup->recordId, "file"))
+    assert (path);
+    if (zh->m_record_id && !strcmp (zh->m_record_id, "file"))
     {
         Dict dict;
         if (!(dict = dict_open (zh->reg->bfs, FMATCH_DICT, 50,
-				rGroup->flagRw, 0)))
+				zh->m_flag_rw, 0)))
         {
             yaz_log (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
 	    return ;
         }
-        if (*rGroup->path == '\0' || !strcmp(rGroup->path, "-"))
+        if (!strcmp(path, "") || !strcmp(path, "-"))
         {
             char src[1024];
             while (scanf ("%s", src) == 1)
-                fileUpdate (zh, dict, rGroup, src);
+                fileUpdate (zh, dict, src);
         }
         else
-            fileUpdate (zh, dict, rGroup, rGroup->path);
+            fileUpdate (zh, dict, path);
         dict_close (dict);
     }
     else 
-        repositoryExtractG (zh, 0, rGroup);
+        repositoryExtractG (zh, path, 0);
 }
 
-void repositoryDelete (ZebraHandle zh)
+void repositoryDelete (ZebraHandle zh, const char *path)
 {
-    struct recordGroup *rGroup = &zh->rGroup;
-    groupRes (zh, rGroup);
-    assert (rGroup->path);
-    repositoryExtractG (zh, 1, rGroup);
+    assert (path);
+    repositoryExtractG (zh, path, 1);
 }
 
