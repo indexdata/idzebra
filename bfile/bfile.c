@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.7  1994-08-23 14:25:45  quinn
+ * Revision 1.8  1994-08-23 15:03:34  quinn
+ * *** empty log message ***
+ *
+ * Revision 1.7  1994/08/23  14:25:45  quinn
  * Added O_CREAT because some geek wanted it. Sheesh.
  *
  * Revision 1.6  1994/08/23  14:21:38  quinn
@@ -44,7 +47,7 @@ BFile bf_open (const char *name, int block_size, int wflag)
 
     if ((tmp->fd = open(name, wflag ? O_RDWR|O_CREAT : O_RDONLY, 0666)) < 0)
     {
-        log(LOG_FATAL|LOG_ERRNO, "open"); 
+        log(LOG_FATAL|LOG_ERRNO, "open %s", name); 
 	return(0);
     }
     tmp->block_size = block_size;
