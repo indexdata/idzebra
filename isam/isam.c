@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.11  1995-09-04 12:33:46  adam
+ * Revision 1.12  1995-09-06 16:11:41  adam
+ * Keysize parameter to is_open (if non-zero).
+ *
+ * Revision 1.11  1995/09/04  12:33:46  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.10  1994/09/28  16:58:32  quinn
@@ -99,7 +102,7 @@ static int splitargs(const char *s, char *bf[], int max)
  * Process resources.
  */
 ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
-    int writeflag)
+    int writeflag, int keysize)
 {
     ISAM new;
     char *nm, *r, *pp[IS_MAX_BLOCKTYPES+1], m[2];
@@ -172,16 +175,22 @@ ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
 	}
 	/* ELSE: this is an empty file opened in read-only mode. */
     }
-    if (!(r = res_get_def(common_resource, nm = strconcat(name, ".", "keysize",
-    	0), "4")))
+    if (keysize > 0)
+        new->keysize = keysize;
+    else
     {
-    	logf (LOG_FATAL, "Failed to locate resource %s", nm);
-    	return 0;
-    }
-    if ((new->keysize = atoi(r)) <= 0)
-    {
-    	logf (LOG_FATAL, "Must specify positive keysize.");
-    	return 0;
+        if (!(r = res_get_def(common_resource, nm = strconcat(name, ".",
+                                                              "keysize",
+                                                              0), "4")))
+        {
+            logf (LOG_FATAL, "Failed to locate resource %s", nm);
+            return 0;
+        }
+        if ((new->keysize = atoi(r)) <= 0)
+        {
+            logf (LOG_FATAL, "Must specify positive keysize.");
+            return 0;
+        }
     }
 
     /* determine repack percent */
