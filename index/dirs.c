@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.4  1995-11-30 08:34:27  adam
+ * Revision 1.5  1996-01-17 14:54:44  adam
+ * Function dirs_rmdir uses dict_delete.
+ *
+ * Revision 1.4  1995/11/30  08:34:27  adam
  * Started work on commit facility.
  * Changed a few malloc/free to xmalloc/xfree.
  *
@@ -132,12 +135,10 @@ void dirs_mkdir (struct dirs_info *p, const char *src, int ctime)
 void dirs_rmdir (struct dirs_info *p, const char *src)
 {
     char path[256];
-    char info[2];
 
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_rmdir %s", path);
-    info[0] = 'r';
-    dict_insert (p->dict, path, 1, info);
+    dict_delete (p->dict, path);
 }
 
 void dirs_add (struct dirs_info *p, const char *src, int sysno, int ctime)
