@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: extract.c,v 1.117 2002-04-15 14:05:43 adam Exp $
+ * $Id: extract.c,v 1.118 2002-05-03 13:49:04 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -23,6 +23,30 @@
 #else
 #define PRINTF_OFF_T "%ld"
 #endif
+
+static void shellsort(void *ar, int r, size_t s,
+                      int (*cmp)(const void *a, const void *b))
+{
+    char *a = ar;
+    char v[100];
+    int h, i, j, k;
+    static const int incs[16] = { 1391376, 463792, 198768, 86961, 33936,
+                                  13776, 4592, 1968, 861, 336, 
+                                  112, 48, 21, 7, 3, 1 };
+    for ( k = 0; k < 16; k++)
+        for (h = incs[k], i = h; i < r; i++)
+        { 
+            memcpy (v, a+s*i, s);
+            j = i;
+            while (j > h && (*cmp)(a + s*(j-h), v) > 0)
+            {
+                memcpy (a + s*j, a + s*(j-h), s);
+                j -= h;
+            }
+            memcpy (a+s*j, v, s);
+        } 
+}
+
 
 static void logRecord (ZebraHandle zh)
 {
@@ -1272,8 +1296,8 @@ void extract_flushWriteKeys (ZebraHandle zh)
     (zh->reg->key_file_no)++;
     logf (LOG_LOG, "sorting section %d", (zh->reg->key_file_no));
 #if !SORT_EXTRA
-    qsort (zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i, sizeof(char*),
-	    key_qsort_compare);
+    qsort (zh->reg->key_buf + zh->reg->ptr_top - ptr_i, ptr_i,
+               sizeof(char*), key_qsort_compare);
     extract_get_fname_tmp (zh, out_fname, zh->reg->key_file_no);
 
     if (!(outf = fopen (out_fname, "wb")))

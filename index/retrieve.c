@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.16  2002-04-04 20:50:37  adam
+ * Revision 1.17  2002-05-03 13:49:04  adam
+ * play with shellsort
+ *
+ * Revision 1.16  2002/04/04 20:50:37  adam
  * Multi register works with record paths and data1 profile path
  *
  * Revision 1.15  2002/04/04 14:14:13  adam
@@ -211,6 +214,9 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     retrieveCtrl.diagnostic = 0;
     retrieveCtrl.dh = zh->reg->dh;
     retrieveCtrl.res = zh->res;
+    retrieveCtrl.rec_buf = 0;
+    retrieveCtrl.rec_len = -1;
+    
     (*rt->retrieve)(clientData, &retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = (char *) retrieveCtrl.rec_buf;
