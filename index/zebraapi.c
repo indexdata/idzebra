@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.66 2002-08-05 19:46:01 adam Exp $
+/* $Id: zebraapi.c,v 1.67 2002-08-18 10:20:35 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -694,6 +694,11 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
         zh->errCode = 109;
         return -1;
     }
+    if (!zh->lock_normal || !zh->lock_shadow)
+    {
+        zh->errCode = 2;
+	return -1;
+    }
     return 0;
 }
 
@@ -1007,6 +1012,12 @@ int zebra_begin_read (ZebraHandle zh)
         (zh->trans_no)--;
         zh->errCode = 109;
         return -1;
+    }
+    if (!zh->lock_normal || !zh->lock_shadow)
+    {
+        (zh->trans_no)--;
+        zh->errCode = 2;
+	return -1;
     }
     zebra_get_state (zh, &val, &seqno);
     if (val == 'd')
