@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.59  1997-01-17 11:31:46  adam
+ * Revision 1.60  1997-01-31 11:10:34  adam
+ * Bug fix: Leading and trailing white space weren't removed in scan tokens.
+ *
+ * Revision 1.59  1997/01/17 11:31:46  adam
  * Bug fix: complete phrase search didn't work.
  *
  * Revision 1.58  1996/12/23 15:30:45  adam
@@ -709,18 +712,13 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                               attributeSet, grep_info, &max_pos))
         {
             j = prefix_len;
-            logf (LOG_LOG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
             switch (truncation_value)
             {
             case -1:         /* not specified */
             case 100:        /* do not truncate */
                 term_dict[j++] = '(';   
-                logf (LOG_LOG, "termp=%s", termp);
                 if (!term_100 (&termp, term_dict + j, space_split))
-                {
-                    logf (LOG_LOG, "aaaaaaaaaaaaargh");
                     return 0;
-                }
                 strcat (term_dict, ")");
                 r = dict_lookup_grep (zi->dict, term_dict, 0, grep_info,
                                       &max_pos, 0, grep_handle);
@@ -804,22 +802,23 @@ static void trans_scan_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     const char *cp_end = cp + term->u.general->len;
     const char *src;
     int i = 0;
-    int prev_space = 0;
+    const char *space_map = NULL;
     int len;
     
     while ((len = (cp_end - cp)) > 0)
     {
         map = map_chrs_input (&cp, len);
         if (**map == *CHR_SPACE)
-        {
-            if (prev_space)
-                continue;
-            prev_space = 1;
-        } 
+            space_map = *map;
         else
-            prev_space = 0;
-        for (src = *map; *src; src++)
-            termz[i++] = *src;
+        {
+            if (i && space_map)
+                for (src = space_map; *src; src++)
+                    termz[i++] = *src;
+            space_map = NULL;
+            for (src = *map; *src; src++)
+                termz[i++] = *src;
+        }
     }
     termz[i] = '\0';
 }
@@ -1368,7 +1367,8 @@ void count_set_save (RSET *r, int *count)
     RSFD rfd, wfd;
     RSET w;
     rset_temp_parms parms;
-
+    int maxResultSetSize = atoi (res_get_def (common_resource,
+                                        "maxResultSetSize", "400"));
     logf (LOG_DEBUG, "count_set_save");
     *count = 0;
     parms.key_size = sizeof(struct it_key);
@@ -1379,7 +1379,7 @@ void count_set_save (RSET *r, int *count)
     {
         if (key.sysno != psysno)
         {
-            if (*count < 400)
+            if (*count < maxResultSetSize)
                 rset_write (w, wfd, &key);
             (*count)++;
             psysno = key.sysno;
