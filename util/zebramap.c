@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.27 2002-08-02 19:26:57 adam Exp $
+/* $Id: zebramap.c,v 1.28 2002-10-30 14:35:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -225,7 +225,8 @@ ZebraMaps zebra_maps_open (Res res, const char *base)
 
     zms->nmem = nmem_create ();
     zms->tabpath = nmem_strdup (zms->nmem,
-				res_get_def (res, "profilePath", "."));
+				res_get_def (res, "profilePath",
+                                             DEFAULT_PROFILE_PATH));
     zms->tabroot = 0;
     if (base)
         zms->tabroot = nmem_strdup (zms->nmem, base);

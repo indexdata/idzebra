@@ -1,4 +1,8 @@
 
+For zebra.cfg, if no profilePath is specified, directory
+ (prefix)/share/idzebra/tab
+is used.
+
 Zebra Examples in examples . Zebra tests in test.
 
 Bug fix: sort index was not properly modified on 

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.75 2002-10-23 14:28:20 adam Exp $
+/* $Id: zebraapi.c,v 1.76 2002-10-30 14:35:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -193,7 +193,8 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     }
     if (useshadow)
         bf_cache (reg->bfs, res_get (res, "shadow"));
-    data1_set_tabpath (reg->dh, res_get(res, "profilePath"));
+    data1_set_tabpath (reg->dh, res_get_def(res, "profilePath",
+                                            DEFAULT_PROFILE_PATH));
     data1_set_tabroot (reg->dh, reg_path);
     reg->recTypes = recTypes_init (reg->dh);
     recTypes_default_handlers (reg->recTypes);

@@ -1,5 +1,5 @@
 <chapter id="quick-start">
- <!-- $Id: quickstart.xml,v 1.6 2002-10-30 13:59:42 adam Exp $ -->
+ <!-- $Id: quickstart.xml,v 1.7 2002-10-30 14:35:09 adam Exp $ -->
  <title>Quick Start </title>
  
  <!--
@@ -17,7 +17,7 @@
   
   <screen>
    # Where the schema files, attribute files, etc are located.
-   profilePath: .:../../tab
+   profilePath: ../../tab
 
    # Files that describe the attribute sets supported.
    attset: bib1.att
