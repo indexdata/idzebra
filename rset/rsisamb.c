@@ -1,5 +1,5 @@
-/* $Id: rsisamb.c,v 1.7 2004-06-01 14:51:00 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: rsisamb.c,v 1.8 2004-06-01 15:22:58 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,9 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
-
 #include <stdio.h>
 #include <assert.h>
 #include <zebrautl.h>
@@ -30,6 +27,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <../index/index.h> /* for log_keydump. Debugging only */
 
+#ifndef RSET_DEBUG
+#define RSET_DEBUG 0
+#endif
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
@@ -158,13 +158,17 @@ static int r_forward(RSET ct, RSFD rfd, void *buf, int *term_index,
 {
     int i; /*!*/
     struct rset_pp_info *pinfo = (struct rset_pp_info *) rfd;
+#if RSET_DEBUG
     logf (LOG_DEBUG, "rset_rsisamb_forward starting '%s' (ct=%p rfd=%p)",
                       ct->control->desc, ct,rfd);
     key_logdump(LOG_DEBUG, untilbuf);
     key_logdump(LOG_DEBUG, buf);
+#endif
 
     i=isamb_pp_forward(pinfo->pt, buf, untilbuf);
+#if RSET_DEBUG
     logf (LOG_DEBUG, "rset_rsisamb_forward returning %d",i);
+#endif
     return i;
 }
 

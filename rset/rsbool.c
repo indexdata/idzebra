@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.26 2004-05-30 18:09:31 adam Exp $
+/* $Id: rsbool.c,v 1.27 2004-06-01 15:22:58 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,8 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#define RSET_DEBUG 0
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,6 +30,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* for key_logdump. Debugging only */
 #include <../index/index.h> 
+
+#ifndef RSET_DEBUG
+#define RSET_DEBUG 0
+#endif
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
