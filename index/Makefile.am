@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.18 2003-02-04 12:06:47 pop Exp $
+## $Id: Makefile.am,v 1.19 2003-02-06 16:58:57 heikki Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -17,14 +17,17 @@ libzebra_a_LIBADD = \
  ../recctrl/librecctrl.a ../data1/libdata1.a ../bfile/libbfile.a \
  ../dfa/libdfa.a ../util/libutil.a
 
-bin_PROGRAMS = zebraidx zebrasrv
+bin_PROGRAMS = zebraidx zebrasrv zebrash
 
 zebraidx_SOURCES = main.c
 zebrasrv_SOURCES = zserver.c
+zebrash_SOURCES = zebrash.c
 apitest_SOURCES = apitest.c
 kdump_SOURCES=kdump.c kcompare.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE) -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
+
+zebrash_LDADD= libzebra.a $(YAZLIB) $(READLINE_LIBS)
 
 LDADD = libzebra.a $(YAZLIB) $(TCL_LIB)
 
