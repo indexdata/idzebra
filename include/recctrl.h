@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.4  1995-09-27 16:17:29  adam
+ * Revision 1.5  1995-10-02 14:55:52  quinn
+ * *** empty log message ***
+ *
+ * Revision 1.4  1995/09/27  16:17:29  adam
  * More work on retrieve.
  *
  * Revision 1.3  1995/09/27  12:21:25  adam
@@ -41,11 +44,23 @@ typedef struct {
 
 /* Extract record control */
 struct recExtractCtrl {
+<<<<<<< recctrl.h
+    int inf;
+    char *subType;
+    void (*init)(RecWord *p);
+    void (*add)(const RecWord *p);
+||||||| 1.4
+    FILE *inf;
+    char *subType;
+    void (*init)(RecWord *p);
+    void (*add)(const RecWord *p);
+=======
     /* input parameters ... */
     FILE *inf;                         /* Extract from this file */
     char *subType;                     /* Sub type - may be NULL */
     void (*init)(RecWord *p);          /* Init of word spec */
     void (*add)(const RecWord *p);     /* Addition of a single word */
+>>>>>>> /tmp/T4a00136
 };
 
 /* Retrieve record control */
@@ -56,10 +71,24 @@ struct recRetrieveCtrl {
     int       (*readf)(int fd, char *buf, size_t count);
     oid_value  input_format;           /* Preferred record syntax */
     
+<<<<<<< recctrl.h
+    /* response */
+    oid_value  output_format;
+    void       *rec_buf;
+    size_t     rec_len;
+    int diagnostic;
+    char *message;
+||||||| 1.4
+    /* response */
+    oid_value  output_format;
+    void       *rec_buf;
+    size_t     rec_len;
+=======
     /* output parameters ... */
     oid_value  output_format;          /* Record syntax of returned record */
     void       *rec_buf;               /* Record buffer */
     size_t     rec_len;                /* Length of record */
+>>>>>>> /tmp/T4a00136
 };
 
 typedef struct recType
