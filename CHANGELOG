@@ -1,5 +1,8 @@
 Simple ranked searches now return correct number of hits.
 
+The test option (-s) only makes a read-lock on the index as well
+as using read-only operations anywhere.
+
 Moved towards generic character mapping. Configuration file default.idx
 specifies character map files for register types w, p, u, etc.
 

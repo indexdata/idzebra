@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.21  1997-11-18 10:04:03  adam
+ * Revision 1.22  1998-01-12 15:04:32  adam
+ * Removed exit - call.
+ *
+ * Revision 1.21  1997/11/18 10:04:03  adam
  * Function res_trav returns number of 'hits'.
  *
  * Revision 1.20  1997/10/31 12:39:15  adam
@@ -115,8 +118,8 @@ static void reread (Res r)
     fr = fopen (r->name, "r");
     if (!fr)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Cannot open %s", r->name);
-        exit (1);
+        logf (LOG_WARN|LOG_ERRNO, "Cannot open %s", r->name);
+	return ;
     }
     while (1)
     {
@@ -214,7 +217,10 @@ Res res_open (const char *name)
 #else
     if (access (name, R_OK))
 #endif
-        logf (LOG_LOG|LOG_ERRNO, "Cannot access `%s'", name);
+    {
+        logf (LOG_LOG|LOG_ERRNO, "Cannot access resource file `%s'", name);
+	return NULL;
+    }
     r = xmalloc (sizeof(*r));
     r->init = 0;
     r->first = r->last = NULL;
