@@ -1,5 +1,7 @@
 --- XXXX XXXX/XX/XX
 
+New zebraidx command: clean - removes temporary shadow files.
+
 Fixed bug in ISAM system. Occurred rarely during register updates.
 
 Logging during index merge phase is improved. The remaining running
