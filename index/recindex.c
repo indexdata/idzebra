@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.13  1995-12-11 09:12:49  adam
+ * Revision 1.14  1996-02-01 20:48:15  adam
+ * The total size of records are always checked in rec_cache_insert to
+ * reduce memory usage.
+ *
+ * Revision 1.13  1995/12/11  09:12:49  adam
  * The rec_get function returns NULL if record doesn't exist - will
  * happen in the server if the result set records have been deleted since
  * the creation of the set (i.e. the search).
@@ -370,7 +374,7 @@ static void rec_cache_insert (Records p, Record rec, enum recordCacheFlag flag)
 
     if (p->cache_cur == p->cache_max)
         rec_cache_flush (p, 1);
-    else if (p->cache_cur > 2)
+    else if (p->cache_cur > 0)
     {
         int i, j;
         int used = 0;
