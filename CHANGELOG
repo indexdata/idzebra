@@ -1,3 +1,5 @@
+Bug fix: temporary result sets weren't deleted.
+
 Reduced disk space for saved keys (storeKeys = 1).
 
 Implemented proximity operator in search.
