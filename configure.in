@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.98 2004-09-13 07:44:10 adam Exp $
+dnl $Id: configure.in,v 1.99 2004-09-14 14:45:18 quinn Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -343,7 +343,7 @@ AC_OUTPUT([
   doc/tkl.xsl
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
   test/rusmarc/Makefile test/cddb/Makefile test/malxml/Makefile 
-  test/config/Makefile
+  test/config/Makefile test/sort2/Makefile
   perl/Makefile.PL test/xelm/Makefile
   test/dmoz/Makefile test/xpath/Makefile test/sort/Makefile test/zsh/Makefile
   test/marcxml/Makefile test/charmap/Makefile test/codec/Makefile
