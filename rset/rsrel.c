@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.3  1995-09-11 15:23:40  adam
+ * Revision 1.4  1995-09-14 07:48:56  adam
+ * Other score calculation.
+ *
+ * Revision 1.3  1995/09/11  15:23:40  adam
  * More work on relevance search.
  *
  * Revision 1.2  1995/09/11  13:09:41  adam
@@ -71,21 +74,22 @@ static void add_rec (struct rset_rel_info *info, double score, void *key)
 {
     int idx, i, j;
 
+    logf (LOG_DEBUG, "add %f", score);
     for (i = 0; i<info->no_rec; i++)
     {
         idx = info->sort_idx[i];
         if (score <= info->score_buf[idx])
             break;
     }
-    if (i == 0)
+    if (info->no_rec < info->max_rec)
     {
-        if (info->no_rec == info->max_rec)
-            return;
-        for (j = info->no_rec; j > 0; --j)
+        for (j = info->no_rec; j > i; --j)
             info->sort_idx[j] = info->sort_idx[j-1];
         idx = info->sort_idx[j] = info->no_rec;
         ++(info->no_rec);
     }
+    else if (i == 0)
+        return;
     else
     {
         idx = info->sort_idx[0];
@@ -94,7 +98,6 @@ static void add_rec (struct rset_rel_info *info, double score, void *key)
         for (j = 0; j < i; ++j)
             info->sort_idx[j] = info->sort_idx[j+1];
         info->sort_idx[j] = idx;
-        
     }
     memcpy (info->key_buf + idx*info->key_size, key, info->key_size);
     info->score_buf[idx] = score;
@@ -129,7 +132,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     while (1)
     {
         int min = -1, i;
-        double length, score;
+        double score;
 
         /* find min with lowest sysno */
         for (i = 0; i<parms->no_isam_positions; i++)
@@ -140,7 +143,6 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
             break;
         memcpy (isam_tmp_buf, isam_buf[min], info->key_size);
         /* calculate for all with those sysno */
-        length = 0.0;
         for (i = 0; i<parms->no_isam_positions; i++)
         {
             int r;
@@ -160,20 +162,13 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
                     isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
                 } while (isam_r[i] && 
                          (*parms->cmp)(isam_buf[i], isam_tmp_buf) <= 1);
-                wgt[i] = 0.5+tf*0.5/max_tf[i];
-                length += wgt[i] * wgt[i];
+                wgt[i] = 0.1+tf*0.9/max_tf[i];
             }
         }
         /* calculate relevance value */
-        length = sqrt (length);
         score = 0.0;
         for (i = 0; i<parms->no_isam_positions; i++)
-            score += wgt[i]/length;
-        if (score > 1.0)
-        {
-            key_logdump (LOG_LOG, isam_tmp_buf);
-            logf (LOG_LOG, " %f", score);
-        }
+            score += wgt[i];
         /* if value is in the top score, then save it - don't emit yet */
         add_rec (info, score, isam_tmp_buf);
     }
