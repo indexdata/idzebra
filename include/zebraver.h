@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.3  1996-01-11 10:15:44  quinn
+ * Revision 1.4  1996-04-24 13:36:22  quinn
+ * a6
+ *
+ * Revision 1.3  1996/01/11  10:15:44  quinn
  * Alfa 4 release.
  *
  * Revision 1.2  1995/12/06  16:05:50  adam
@@ -16,5 +19,5 @@
  */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.0a4"
+#define ZEBRAVER "1.0a6"
 #endif
