@@ -1,5 +1,5 @@
-/* $Id: xmlread.c,v 1.10 2003-09-08 09:50:04 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: xmlread.c,v 1.11 2003-09-08 09:51:02 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
