@@ -2,7 +2,7 @@
  *  Copyright (c) 2000-2002, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.13 2002-04-30 19:31:09 adam Exp $
+ *  $Id: isamb.c,v 1.14 2002-05-06 17:45:21 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -85,18 +85,21 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
     for (i = 0; i<isamb->no_cat; i++)
     {
         char fname[DST_BUF_SIZE];
-        isamb->file[i].head.first_block = 1;
-        isamb->file[i].head.last_block = 1;
-        isamb->file[i].head.block_size = b_size;
-        isamb->file[i].head.block_max = b_size - ISAMB_DATA_OFFSET;
-        b_size = b_size * 4;
         isamb->file[i].head_dirty = 0;
         sprintf (fname, "%s%c", name, i+'A');
-        isamb->file[i].bf =
-            bf_open (bfs, fname, isamb->file[i].head.block_size, writeflag);
+        isamb->file[i].bf = bf_open (bfs, fname, b_size, writeflag);
     
-        bf_read (isamb->file[i].bf, 0, 0, sizeof(struct ISAMB_head),
-                 &isamb->file[i].head);
+        if (!bf_read (isamb->file[i].bf, 0, 0, sizeof(struct ISAMB_head),
+                 &isamb->file[i].head))
+	{
+            isamb->file[i].head.first_block = 1;
+            isamb->file[i].head.last_block = 1;
+            isamb->file[i].head.block_size = b_size;
+            isamb->file[i].head.block_max = b_size - ISAMB_DATA_OFFSET;
+	}
+        assert (isamb->file[i].head.block_size >= ISAMB_DATA_OFFSET);
+        isamb->file[i].head_dirty = 0;
+        b_size = b_size * 4;
     }
     return isamb;
 }
@@ -125,7 +128,12 @@ struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
     p->pos = pos;
     p->cat = pos & 3;
     p->buf = xmalloc (b->file[cat].head.block_size);
-    bf_read (b->file[cat].bf, pos/4, 0, 0, p->buf);
+    if (!bf_read (b->file[cat].bf, pos/4, 0, 0, p->buf))
+    {
+        yaz_log (LOG_FATAL, "read failure for pos=%ld block=%ld",
+                 (long) pos, (long) pos/4);
+        abort();
+    }
     p->bytes = p->buf + ISAMB_DATA_OFFSET;
     p->leaf = p->buf[0];
     p->size = p->buf[1] + 256 * p->buf[2] - ISAMB_DATA_OFFSET;
