@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.21  1996-10-29 13:56:18  adam
+ * Revision 1.22  1997-09-04 13:56:39  adam
+ * Added O_BINARY to open calls.
+ *
+ * Revision 1.21  1996/10/29 13:56:18  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.20  1996/05/14 12:10:16  quinn
@@ -188,7 +191,7 @@ static int file_position(MFile mf, int pos, int offset)
     else
     	off = c ? (mf->files[c-1].top + 1) : 0;
     if (mf->files[c].fd < 0 && (mf->files[c].fd = open(mf->files[c].path,
-	mf->wr ? O_RDWR|O_CREAT : O_RDONLY, 0666)) < 0)
+	mf->wr ? (O_BINARY|O_RDWR|O_CREAT) : (O_BINARY|O_RDONLY), 0666)) < 0)
     {
         if (!mf->wr && errno == ENOENT && off == 0)
             return -2;
@@ -286,7 +289,7 @@ MFile_area mf_init(const char *name)
 	    sprintf(tmpnam, "%s/%s", dirp->name, dent->d_name);
 	    part_f->path = xstrdup(tmpnam);
 	    /* get size */
-	    if ((fd = open(part_f->path, O_RDONLY)) < 0)
+	    if ((fd = open(part_f->path, O_BINARY|O_RDONLY)) < 0)
 	    {
 	    	logf (LOG_FATAL|LOG_ERRNO, "Failed to access %s",
                       dent->d_name);
