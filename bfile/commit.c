@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.10  1996-04-18 16:02:56  adam
+ * Revision 1.11  1996-04-23 12:36:41  adam
+ * Started work on more efficient commit operation.
+ *
+ * Revision 1.10  1996/04/18  16:02:56  adam
  * Changed logging a bit.
  * Removed warning message when commiting flat shadow files.
  *
@@ -59,6 +62,87 @@ void cf_unlink (CFile cf)
     mf_unlink (cf->hash_mf);
 }
 
+
+struct map_cache_entity {
+    int from;
+    int to;
+};
+
+struct map_cache {
+    int max;
+    int no;
+
+    struct map_cache_entity *map;
+    char *buf;
+    CFile cf;
+};
+
+static struct map_cache *map_cache_init (CFile cf)
+{
+    int mem_max = 2000000;
+    struct map_cache *m_p;
+
+    m_p = xmalloc (sizeof(*m_p));
+    m_p->cf = cf;
+    m_p->max = mem_max / cf->head.block_size;
+    m_p->buf = xmalloc (mem_max);
+    m_p->no = 0;
+    m_p->map = xmalloc (sizeof(*m_p->map) * m_p->max);
+    return m_p;
+}
+
+static void map_cache_del (struct map_cache *m_p)
+{
+    xfree (m_p->map);
+    xfree (m_p->buf);
+    xfree (m_p);
+}
+
+static int map_cache_cmp_from (const void *p1, const void *p2)
+{
+    return ((struct map_cache_entity*) p1)->from -
+        ((struct map_cache_entity*) p2)->from;
+}
+
+static int map_cache_cmp_to (const void *p1, const void *p2)
+{
+    return ((struct map_cache_entity*) p1)->to -
+        ((struct map_cache_entity*) p2)->to;
+}
+
+static void map_cache_flush (struct map_cache *m_p)
+{
+    int i;
+
+    qsort (m_p->map, m_p->no, sizeof(*m_p->map), map_cache_cmp_from);
+    for (i = 0; i<m_p->no; i++)
+    {
+        if (!mf_read (m_p->cf->block_mf, m_p->map[i].from, 0, 0,
+                      m_p->buf + i * m_p->cf->head.block_size))
+        {
+            logf (LOG_FATAL, "read commit block");
+            exit (1);
+        }
+        m_p->map[i].from = i;
+    }
+    qsort (m_p->map, m_p->no, sizeof(*m_p->map), map_cache_cmp_to);
+    for (i = 0; i<m_p->no; i++)
+    {
+        mf_write (m_p->cf->rmf, m_p->map[i].to, 0, 0,
+                  m_p->buf + m_p->map[i].from * m_p->cf->head.block_size);
+    }    
+}
+
+static void map_cache_add (struct map_cache *m_p, int from, int to)
+{
+    int i = m_p->no;
+
+    m_p->map[i].from = from;
+    m_p->map[i].to = to;
+    m_p->no = ++i;
+    if (i == m_p->max)
+        map_cache_flush (m_p);
+}
    
 static void cf_commit_hash (CFile cf)
 { 
