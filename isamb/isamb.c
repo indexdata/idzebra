@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.21 2002-09-03 19:05:02 adam Exp $
+/* $Id: isamb.c,v 1.22 2003-02-04 12:06:47 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -20,7 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
+#include <string.h>
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
 #include <isamb.h>

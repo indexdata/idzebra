@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.4 2002-12-16 20:27:18 adam Exp $
+/* $Id: data1.h,v 1.5 2003-02-04 12:06:47 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -23,6 +23,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef DATA1_H
 #define DATA1_H
 
+#define ENHANCED_XELM 1
+
 #include <stdio.h>
 
 #include <yaz/nmem.h>
@@ -34,6 +36,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/yaz-util.h>
 #include <yaz/wrbuf.h>
 #include <dfa.h>         /* pop */
+#include <zebra_xpath.h> /* pop */
 
 #define d1_isspace(c) strchr(" \r\n\t\f", c)
 #define d1_isdigit(c) ((c) <= '9' && (c) >= '0')
@@ -192,6 +195,10 @@ typedef struct data1_sub_elements {
 typedef struct data1_xpelement
 {
     char *xpath_expr;
+#ifdef ENHANCED_XELM 
+    struct xpath_location_step xpath[XPATH_STEP_COUNT];
+    int xpath_len;
+#endif
     struct DFA *dfa;  
     data1_termlist *termlists;
     struct data1_xpelement *next;

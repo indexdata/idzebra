@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.5 2002-12-16 22:59:34 adam Exp $
+/* $Id: d1_absyn.c,v 1.6 2003-02-04 12:06:46 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -28,6 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/oid.h>
 #include <yaz/log.h>
 #include <data1.h>
+#include <zebra_xpath.h>
 
 #define D1_MAX_NESTING  128
 
@@ -282,14 +283,23 @@ void fix_element_ref (data1_handle dh, data1_absyn *absyn, data1_element *e)
       /      ->    none
 
    pop, 2002-12-13
+
+   Now [] predicates are supported
+
+   pop, 2003-01-17
+
  */
 
 const char * mk_xpath_regexp (data1_handle dh, char *expr) 
 {
     char *p = expr;
+    char *pp;
+    char *s;
     int abs = 1;
     int i;
+    int j;
     int e=0;
+    int is_predicate = 0;
     
     static char *stack[32];
     static char res[1024];
@@ -301,10 +311,28 @@ const char * mk_xpath_regexp (data1_handle dh, char *expr)
     
     while (*p) {
         i=0;
-        while (*p && !strchr("/",*p)) { i++; p++; }
+        while (*p && !strchr("/",*p)) { 
+	  i++; p++; 
+	}
         stack[e] = (char *) nmem_malloc (data1_nmem_get (dh), i+1);
-        memcpy (stack[e],  p - i, i);
-        stack[e][i] = 0;
+	s = stack[e];
+	for (j=0; j< i; j++) {
+	  pp = p-i+j;
+	  if (*pp == '[') {
+	    is_predicate=1;
+	  }
+	  else if (*pp == ']') {
+	    is_predicate=0;
+	  }
+	  else {
+	    if (!is_predicate) {
+	      if (*pp == '*') 
+		 *s++ = '.';
+	      *s++ = *pp;
+	    }
+	  }
+	}
+	*s = 0;
         e++;
         if (*p) {p++;}
     }
@@ -319,6 +347,7 @@ const char * mk_xpath_regexp (data1_handle dh, char *expr)
     if (!abs) { sprintf (p, ".*"); p+=2; }
     sprintf (p, "$"); p++;
     r = nmem_strdup (data1_nmem_get (dh), res);
+    yaz_log(LOG_DEBUG,"Got regexp: %s",r);
     return (r);
 }
 
@@ -399,6 +428,48 @@ const char *data1_systag_lookup(data1_absyn *absyn, const char *tag,
     return default_value;
 }
 
+#define l_isspace(c) ((c) == '\t' || (c) == ' ' || (c) == '\n' || (c) == '\r')
+
+int read_absyn_line(FILE *f, int *lineno, char *line, int len,
+		    char *argv[], int num)
+{
+    char *p;
+    int argc;
+    int quoted = 0;
+    
+    while ((p = fgets(line, len, f)))
+    {
+	(*lineno)++;
+	while (*p && l_isspace(*p))
+	    p++;
+	if (*p && *p != '#')
+	    break;
+    }
+    if (!p)
+	return 0;
+    
+    for (argc = 0; *p ; argc++)
+    {
+	if (*p == '#')  /* trailing comment */
+	    break;
+	argv[argc] = p;
+	while (*p && !(l_isspace(*p) && !quoted)) {
+  	  if (*p =='"') quoted = 1 - quoted;
+  	  if (*p =='[') quoted = 1;
+  	  if (*p ==']') quoted = 0;
+	  p++;
+	}
+	if (*p)
+	{
+	    *(p++) = '\0';
+	    while (*p && l_isspace(*p))
+		p++;
+	}
+    }
+    return argc;
+}
+
+
 data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
                                int file_must_exist)
 {
@@ -451,7 +522,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
     res->main_elements = NULL;
     res->xp_elements = NULL;
     
-    while (f && (argc = readconf_line(f, &lineno, line, 512, argv, 50)))
+    while (f && (argc = read_absyn_line(f, &lineno, line, 512, argv, 50)))
     {
 	char *cmd = *argv;
 	if (!strcmp(cmd, "elm") || !strcmp(cmd, "element"))
@@ -582,6 +653,11 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	   maybe we should use a simple sscanf instead of dfa?
            
 	   pop, 2002-12-13
+
+	   Now [] predicates are supported. regexps and xpath structure is
+	   a bit redundant, however it's comfortable later...
+
+	   pop, 2003-01-17
 	*/
 
 	else if (!strcmp(cmd, "xelm")) {
@@ -624,7 +700,16 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    
 	    dfa_mkstate (dfa);
 	    cur_xpelement->dfa = dfa;
-            
+
+#ifdef ENHANCED_XELM 
+            cur_xpelement->xpath_len = parse_xpath_str(xpath_expr, 
+						       cur_xpelement->xpath, 
+						       data1_nmem_get(dh));
+
+	    /*
+	    dump_xp_steps(cur_xpelement->xpath,cur_xpelement->xpath_len);
+	    */
+#endif
 	    cur_xpelement->termlists = 0;
 	    tp = &cur_xpelement->termlists;
             

@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.126 2002-12-16 22:59:34 adam Exp $
+/* $Id: zrpn.c,v 1.127 2003-02-04 12:06:47 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -31,6 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 
 #include "index.h"
+#include <zebra_xpath.h>
 
 #include <charmap.h>
 #include <rstemp.h>
@@ -42,6 +43,14 @@ struct rpn_char_map_info {
     ZebraMaps zm;
     int reg_type;
 };
+
+typedef struct {
+    int type;
+    int major;
+    int minor;
+    Z_AttributesPlusTerm *zapt;
+} AttrType;
+
 
 static const char **rpn_char_map_handler (void *vp, const char **from, int len)
 {
@@ -69,13 +78,6 @@ static void rpn_char_map_prepare (struct zebra_register *reg, int reg_type,
     map_info->reg_type = reg_type;
     dict_grep_cmap (reg->dict, map_info, rpn_char_map_handler);
 }
-
-typedef struct {
-    int type;
-    int major;
-    int minor;
-    Z_AttributesPlusTerm *zapt;
-} AttrType;
 
 static int attr_find_ex (AttrType *src, oid_value *attributeSetP,
 			 const char **string_value)
@@ -2034,6 +2036,9 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     return rset_create (rset_kind_null, &parms);
 }
 
+/* pop - moved to xpath.c */
+#if 0
+
 struct xpath_predicate {
     int which;
     union {
@@ -2057,6 +2062,8 @@ struct xpath_location_step {
     struct xpath_predicate *predicate;
 };
 
+#endif
+
 static int parse_xpath(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                        oid_value attributeSet,
                        struct xpath_location_step *xpath, NMEM mem)
@@ -2064,7 +2071,6 @@ static int parse_xpath(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     oid_value curAttributeSet = attributeSet;
     AttrType use;
     const char *use_string = 0;
-    const char *cp;
     int no = 0;
     
     attr_init (&use, zapt, 1);
@@ -2072,87 +2078,11 @@ static int parse_xpath(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     if (!use_string || *use_string != '/')
         return -1;
-    cp = use_string;
-    while (*cp)
-    {
-        int i = 0;
-        while (*cp && !strchr("/[",*cp))
-        {
-            i++;
-            cp++;
-        }
-        xpath[no].predicate = 0;
-        xpath[no].part = nmem_malloc (mem, i+1);
-        memcpy (xpath[no].part,  cp - i, i);
-        xpath[no].part[i] = 0;
 
-        if (*cp == '[')
-        {
-            struct xpath_predicate *p = xpath[no].predicate =
-                nmem_malloc (mem, sizeof(struct xpath_predicate));
-
-            p->which = XPATH_PREDICATE_RELATION;
-            cp++;
-            while (*cp == ' ')
-                cp++;
-
-            for (i = 0; *cp && !strchr("><=] ", *cp); i++)
-                cp++;
-            p->u.relation.name = nmem_malloc (mem, i+1);
-            memcpy (p->u.relation.name, cp - i, i);
-            p->u.relation.name[i] = 0;
-            while (*cp == ' ')
-                cp++;
-            if (*cp != ']')
-            {
-                for (i = 0; *cp && strchr(">=<!", *cp); i++)
-                    cp++;
-
-                p->u.relation.op = nmem_malloc (mem, i+1);
-                if (i)
-                    memcpy (p->u.relation.op, cp - i, i);
-                p->u.relation.op[i] = 0;
-                
-                while (*cp == ' ')
-                    cp++;
-                
-                if (strchr("\"'", *cp))
-                {
-                    cp++;
-                    for (i = 0; *cp && !strchr("\"'", *cp); i++)
-                        cp++;
-
-                    p->u.relation.value = nmem_malloc (mem, i+1);
-                    if (i)
-                        memcpy (p->u.relation.value, cp - i, i);
-                    p->u.relation.value[i] = 0;
-                    yaz_log (LOG_LOG, "value=%s", p->u.relation.value);
-
-                    cp++;
-                }                           
-                else
-                {
-                    for (i = 0; *cp && !strchr(" ]", *cp); i++)
-                        cp++;
-                    p->u.relation.value = nmem_malloc (mem, i+1);
-                    if (i)
-                        memcpy (p->u.relation.value, cp - i, i);
-                    p->u.relation.value[i] = 0;
-                }
-                while (*cp == ' ')
-                    cp++;
-            }
-            if (*cp == ']')
-                cp++;
-        } /* end of ] predicate */
-        no++;
-        if (*cp != '/')
-            break;
-        cp++;
-    }
-    return no;
+    return (parse_xpath_str(use_string, xpath, mem));
 }
-                
+ 
+               
 
 static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
                         int reg_type, const char *term, int use,

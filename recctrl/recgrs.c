@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.71 2002-12-16 20:27:18 adam Exp $
+/* $Id: recgrs.c,v 1.72 2003-02-04 12:06:47 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -123,6 +123,71 @@ static void grs_destroy(void *clientData)
     xfree (h);
 }
 
+int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p) {
+  int res = 1;
+  char *attname;
+  data1_xattr *attr;
+
+  if (!p) {
+    return (1);
+  } else {
+    if (p->which == XPATH_PREDICATE_RELATION) {
+      if (p->u.relation.name[0]) {
+	if (*p->u.relation.name != '@') {
+	  logf(LOG_WARN, 
+	       "  Only attributes (@) are supported in xelm xpath predicates");
+	  logf(LOG_WARN, "predicate %s ignored", p->u.relation.name);
+	  return (1);
+	}
+	attname = p->u.relation.name + 1;
+	res = 0;
+	/* looking for the attribute with a specified name */
+	for (attr = n->u.tag.attributes; attr; attr = attr->next) {
+	  logf(LOG_DEBUG,"  - attribute %s <-> %s", attname, attr->name );
+
+	  if (!strcmp(attr->name, attname)) {
+	    if (p->u.relation.op[0]) {
+	      if (*p->u.relation.op != '=') {
+		logf(LOG_WARN, 
+		     "Only '=' relation is supported (%s)",p->u.relation.op);
+		logf(LOG_WARN, "predicate %s ignored", p->u.relation.name);
+		res = 1; break;
+	      } else {
+		logf(LOG_DEBUG,"    - value %s <-> %s", 
+		     p->u.relation.value, attr->value );
+		if (!strcmp(attr->value, p->u.relation.value)) {
+		  res = 1; break;
+		} 
+	      }
+	    } else {
+	      /* attribute exists, no value specified */
+	      res = 1; break;
+	    }
+	  }
+	}
+	return (res);
+      } else {
+	return (1);
+      }
+    } 
+    else if (p->which == XPATH_PREDICATE_BOOLEAN) {
+      if (!strcmp(p->u.boolean.op,"and")) {
+	return (d1_check_xpath_predicate(n, p->u.boolean.left) 
+		&& d1_check_xpath_predicate(n, p->u.boolean.right)); 
+      }
+      else if (!strcmp(p->u.boolean.op,"or")) {
+	return (d1_check_xpath_predicate(n, p->u.boolean.left) 
+		|| d1_check_xpath_predicate(n, p->u.boolean.right)); 
+      } else {
+	logf(LOG_WARN, "Unknown boolean relation %s, ignored",p->u.boolean.op);
+	return (1);
+      }
+    }
+  }
+  return 0;
+}
+
+
 /* *ostrich*
    
    New function, looking for xpath "element" definitions in abs, by
@@ -131,12 +196,24 @@ static void grs_destroy(void *clientData)
    against the given tagpath. The first matching entry is returned.
 
    pop, 2002-12-13
+
+   Added support for enhanced xelm. Now [] predicates are considered
+   as well, when selecting indexing rules... (why the hell it's called
+   termlist???)
+
+   pop, 2003-01-17
+
  */
 
 data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 {
     data1_absyn *abs = n->root->u.root.absyn;
     data1_xpelement *xpe = abs->xp_elements;
+    data1_node *nn;
+#ifdef ENHANCED_XELM 
+    struct xpath_location_step *xp;
+
+#endif
     char *pexpr = malloc(strlen(tagpath)+2);
     int ok = 0;
     
@@ -168,11 +245,43 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
             } while (i >= 0);
         }
         pexpr--;
-        if (ok) break;
+        if (ok) {
+#ifdef ENHANCED_XELM 
+	  /* we have to check the perdicates up to the root node */
+	  xp = xpe->xpath;
+
+	  /* find the first tag up in the node structure */
+	  nn = n; while (nn && nn->which != DATA1N_tag) {
+	    nn = nn->parent;
+	  }
+
+	  /* go from inside out in the node structure, while going
+	     backwards trough xpath location steps ... */
+	  for (i=xpe->xpath_len - 1; i>0; i--) {
+	    
+	    logf(LOG_DEBUG,"Checking step %d: %s on tag %s",
+		     i,xp[i].part,nn->u.tag.tag);
+
+	    if (!d1_check_xpath_predicate(nn, xp[i].predicate)) {
+	      logf(LOG_DEBUG,"  Predicates didn't match");
+	      ok = 0;
+	      break;
+	    }
+
+	    if (nn->which == DATA1N_tag) {
+	      nn = nn->parent;
+	    }
+	  }
+#endif
+	  if (ok) {
+	    break;
+	  }
+	}
         xpe = xpe->next;
     } 
     
     if (ok) {
+      logf(LOG_DEBUG,"Got it");
         return xpe->termlists;
     } else {
         return NULL;
@@ -237,7 +346,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
             tag_path_full[flen] = 0;
             
             /* If we have a matching termlist... */
-            if (tl = xpath_termlist_by_tagpath(tag_path_full, n)) {
+            if ((tl = xpath_termlist_by_tagpath(tag_path_full, n))) {
                 for (; tl; tl = tl->next) {
                     wrd->reg_type = *tl->structure;
                     /* this is the ! case, so structure is for the xpath index */
@@ -354,8 +463,8 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                         wrd->length = strlen(xp->value);
                         wrd->reg_type = 'w';
                         
-                        if (tl = xpath_termlist_by_tagpath(attr_tag_path_full,
-                                                           n)) {
+                        if ((tl = xpath_termlist_by_tagpath(attr_tag_path_full,
+                                                           n))) {
                             for (; tl; tl = tl->next) {
                                 wrd->reg_type = *tl->structure;
                                 if (!tl->att) {
