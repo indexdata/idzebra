@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.5  1995-09-04 12:33:25  adam
+ * Revision 1.6  1995-09-28 09:18:51  adam
+ * Removed various preprocessor defines.
+ *
+ * Revision 1.5  1995/09/04  12:33:25  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.4  1995/01/24  16:00:21  adam
@@ -54,14 +57,6 @@ void error (const char *format, ...)
     exit (1);
 }
 
-#ifdef YYDEBUG
-#ifdef YACC
-extern int yydebug;
-#else
-extern int alexdebug;
-#endif
-#endif
-
 static int show_lines = 0;
 
 int agrep_options (argc, argv)
@@ -83,15 +78,6 @@ char **argv;
                 case 'n':
                     show_lines = 1;
                     continue;
-#ifdef YYDEBUG
-                case 't':
-#ifdef YACC
-                    yydebug = 1;
-#else
-                    alexdebug = 1;
-#endif
-                    continue;
-#endif
                 case 'd':
                     switch (*++*argv)
                     {
@@ -255,13 +241,6 @@ char **argv;
     struct DFA *dfa = dfa_init();
 
     prog = *argv;
-#ifdef YYDEBUG
-#ifdef YACC
-    yydebug = 0;
-#else
-    alexdebug = 0;
-#endif
-#endif
     setbuf (stdout, outbuf);
     i = agrep_options (argc, argv);
     if (i)

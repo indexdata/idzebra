@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.9 1995-09-15 09:32:08 adam Exp $
+# $Id: Makefile,v 1.10 1995-09-28 09:18:50 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -11,7 +11,7 @@ INCLUDE=-I../include -I$(YAZ)/include
 TPROG1=agrep
 TPROG2=lexer
 TPROG3=grepper
-DEFS=$(INCLUDE) -DYACC -DYYDEBUG=1 -DMEMDEBUG=1
+DEFS=$(INCLUDE) -DMEMDEBUG=1
 LIB=../lib/dfa.a 
 PO = dfa.o imalloc.o states.o set.o bset.o
 CPP=cc -E

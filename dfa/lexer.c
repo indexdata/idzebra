@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lexer.c,v $
- * Revision 1.7  1995-09-04 12:33:27  adam
+ * Revision 1.8  1995-09-28 09:18:54  adam
+ * Removed various preprocessor defines.
+ *
+ * Revision 1.7  1995/09/04  12:33:27  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.6  1995/01/25  11:30:51  adam
@@ -57,11 +60,6 @@ void error (const char *format, ...)
     exit (1);
 }
 
-#ifdef YACC
-extern int yydebug;
-#else
-extern int alexdebug;
-#endif
 int ccluse = 0;
 
 static int lexer_options (int argc, char **argv)
@@ -77,13 +75,6 @@ static int lexer_options (int argc, char **argv)
                     continue;
                 case 's':
                     dfa_verbose = 1;
-                    continue;
-                case 't':
-#ifdef YACC
-                    yydebug = 1;
-#else
-                    alexdebug = 1;
-#endif
                     continue;
 	        case 'c':
                     ccluse = 1;
@@ -123,11 +114,6 @@ int main (int argc, char **argv)
     struct DFA *dfa;
 
     prog = *argv;
-#ifdef YACC
-    yydebug = 0;
-#else
-    alexdebug = 0;
-#endif
     dfa = dfa_init ();
     i = lexer_options (argc, argv);
     if (i)
