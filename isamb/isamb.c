@@ -2,7 +2,7 @@
  *  Copyright (c) 1995-1998, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.8 2002-04-23 13:39:10 adam Exp $
+ *  $Id: isamb.c,v 1.9 2002-04-23 17:56:54 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -283,8 +283,6 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             (*sp)->size = endp - src;
             memcpy ((*sp)->bytes, src, (*sp)->size);
 
-            yaz_log (LOG_LOG, "i split %d -> %d %d",
-                     p->size, p_new_size, (*sp)->size);
             p->size = p_new_size;
         }
         p->dirty = 1;
@@ -372,7 +370,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
                     if (max_item &&
                         (*b->method->compare_item)(max_item, lookahead_item) <= 0)
                     {
-                        assert (0);
+			yaz_log (LOG_LOG, "max_item 1");
                         lookahead_item = 0;
                     }
                     
@@ -412,7 +410,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         if (max_item &&
             (*b->method->compare_item)(max_item, lookahead_item) <= 0)
         {
-            assert (0);
+ 	    yaz_log (LOG_LOG, "max_item 2");
             break;
         }
         if (!half1 && dst > cut)   
@@ -492,8 +490,6 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         p->dirty = 1;
         memcpy (sub_item, cut_item_buf, cut_item_size);
         *sub_size = cut_item_size;
-
-        yaz_log (LOG_LOG, "l split %d / %d", p->size, (*sp2)->size);
     }
     else
     {
