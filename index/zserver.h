@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.43  1999-07-14 10:59:27  adam
+ * Revision 1.44  1999-11-04 15:00:45  adam
+ * Implemented delete result set(s).
+ *
+ * Revision 1.43  1999/07/14 10:59:27  adam
  * Changed functions isc_getmethod, isams_getmethod.
  * Improved fatal error handling (such as missing EXPLAIN schema).
  *
@@ -244,7 +247,8 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name);
 ZebraSet resultSetAddRPN (ZebraHandle zh, ODR stream, ODR decode,                                         Z_RPNQuery *rpn, int num_bases, char **basenames,
                           const char *setname);
 RSET resultSetRef (ZebraHandle zh, Z_ResultSetId *resultSetId);
-void resultSetDestroy (ZebraHandle zh);
+void resultSetDestroy (ZebraHandle zh, int num_names, char **names,
+		       int *statuses);
 
 ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name,
 			       int num, int *positions);

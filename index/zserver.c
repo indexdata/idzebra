@@ -4,9 +4,8 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.72  1999-10-29 10:01:54  adam
- * Minor fix in bend_init where handle wasn't set to NULL when
- * zebra_init fails.
+ * Revision 1.73  1999-11-04 15:00:45  adam
+ * Implemented delete result set(s).
  *
  * Revision 1.71  1999/07/14 10:59:26  adam
  * Changed functions isc_getmethod, isams_getmethod.
@@ -282,6 +281,7 @@
 #endif
 
 static int bend_sort (void *handle, bend_sort_rr *rr);
+static int bend_delete (void *handle, bend_delete_rr *rr);
 
 bend_initresult *bend_init (bend_initrequest *q)
 {
@@ -292,10 +292,10 @@ bend_initresult *bend_init (bend_initrequest *q)
     char *user = NULL;
     char *passwd = NULL;
 
-    r->handle = 0;
     r->errcode = 0;
     r->errstring = 0;
     q->bend_sort = bend_sort;
+    q->bend_delete = bend_delete;
 
     logf (LOG_DEBUG, "bend_init");
 
@@ -443,6 +443,16 @@ int bend_sort (void *handle, bend_sort_rr *rr)
 		rr->output_setname, rr->sort_sequence, &rr->sort_status);
     rr->errcode = zh->errCode;
     rr->errstring = zh->errString;
+    return 0;
+}
+
+int bend_delete (void *handle, bend_delete_rr *rr)
+{
+    ZebraHandle zh = (ZebraHandle) handle;
+
+    rr->delete_status =	zebra_deleleResultSet(zh, rr->function,
+					      rr->num_setnames, rr->setnames,
+					      rr->statuses);
     return 0;
 }
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.h,v $
- * Revision 1.6  1999-02-17 11:29:57  adam
+ * Revision 1.7  1999-11-04 15:00:45  adam
+ * Implemented delete result set(s).
+ *
+ * Revision 1.6  1999/02/17 11:29:57  adam
  * Fixed in record_fetch. Minor updates to API.
  *
  * Revision 1.5  1998/09/22 10:48:19  adam
@@ -74,6 +77,11 @@ YAZ_EXPORT void zebra_scan (ZebraHandle zh, ODR stream,
 			    int *position, int *num_entries,
 			    ZebraScanEntry **list,
 			    int *is_partial);
+    
+/* Delete Result Set(s) */
+YAZ_EXPORT int zebra_deleleResultSet(ZebraHandle zh, int function,
+				     int num_setnames, char **setnames,
+				     int *statuses);
 
 /* Close zebra and destroy handle */
 YAZ_EXPORT void zebra_close (ZebraHandle zh);

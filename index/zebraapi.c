@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.24  1999-10-14 14:33:50  adam
+ * Revision 1.25  1999-11-04 15:00:45  adam
+ * Implemented delete result set(s).
+ *
+ * Revision 1.24  1999/10/14 14:33:50  adam
  * Added truncation 5=106.
  *
  * Revision 1.23  1999/09/07 11:36:32  adam
@@ -328,7 +331,7 @@ void zebra_close (ZebraHandle zh)
     zebra_chdir (zh);
     if (zh->records)
     {
-        resultSetDestroy (zh);
+        resultSetDestroy (zh, -1, 0, 0);
         zebraExplain_close (zh->zei, 0, 0);
         dict_close (zh->dict);
 	sortIdx_close (zh->sortIdx);
@@ -514,6 +517,30 @@ void zebra_sort (ZebraHandle zh, ODR stream,
     resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
 		   output_setname, sort_sequence, sort_status);
     zebra_register_unlock (zh);
+}
+
+int zebra_deleleResultSet(ZebraHandle zh, int function,
+			  int num_setnames, char **setnames,
+			  int *statuses)
+{
+    int i, status;
+    if (zebra_register_lock (zh))
+	return Z_DeleteStatus_systemProblemAtTarget;
+    switch (function)
+    {
+    case Z_DeleteRequest_list:
+	resultSetDestroy (zh, num_setnames, setnames, statuses);
+	break;
+    case Z_DeleteRequest_all:
+	resultSetDestroy (zh, -1, 0, statuses);
+	break;
+    }
+    zebra_register_unlock (zh);
+    status = Z_DeleteStatus_success;
+    for (i = 0; i<num_setnames; i++)
+	if (statuses[i] == Z_DeleteStatus_resultSetDidNotExist)
+	    status = statuses[i];
+    return status;
 }
 
 int zebra_errCode (ZebraHandle zh)

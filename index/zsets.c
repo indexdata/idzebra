@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.23  1999-05-26 07:49:13  adam
+ * Revision 1.24  1999-11-04 15:00:45  adam
+ * Implemented delete result set(s).
+ *
+ * Revision 1.23  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.22  1999/02/02 14:51:15  adam
@@ -218,26 +221,48 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
     return NULL;
 }
 
-    
-void resultSetDestroy (ZebraHandle zh)
+void resultSetDestroy (ZebraHandle zh, int num, char **names,int *statuses)
 {
-    ZebraSet s, s1;
-
-    for (s = zh->sets; s; s = s1)
+    ZebraSet *ss = &zh->sets;
+    int i;
+    
+    if (statuses)
+	for (i = 0; i<num; i++)
+	    statuses[i] = Z_DeleteStatus_resultSetDidNotExist;
+    zh->errCode = 0;
+    zh->errString = NULL;
+    while (*ss)
     {
-        s1 = s->next;
-
-	xfree (s->sort_info->all_entries);
-	xfree (s->sort_info->entries);
-	xfree (s->sort_info);
-
-        if (s->nmem)
-            nmem_destroy (s->nmem);
-        rset_delete (s->rset);
-        xfree (s->name);
-        xfree (s);
+	int i = -1;
+	ZebraSet s = *ss;
+	if (num >= 0)
+	{
+	    for (i = 0; i<num; i++)
+		if (!strcmp (s->name, names[i]))
+		{
+		    if (statuses)
+			statuses[i] = Z_DeleteStatus_success;
+		    i = -1;
+		    break;
+		}
+	}
+	if (i < 0)
+	{
+	    *ss = s->next;
+	    
+	    xfree (s->sort_info->all_entries);
+	    xfree (s->sort_info->entries);
+	    xfree (s->sort_info);
+	    
+	    if (s->nmem)
+		nmem_destroy (s->nmem);
+	    rset_delete (s->rset);
+	    xfree (s->name);
+	    xfree (s);
+	}
+	else
+	    ss = &s->next;
     }
-    zh->sets = NULL;
 }
 
 ZebraPosSet zebraPosSetCreate (ZebraHandle zh, const char *name, 
