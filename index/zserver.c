@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.118 2004-08-04 08:35:24 adam Exp $
+/* $Id: zserver.c,v 1.117.2.1 2004-08-13 09:56:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -542,7 +542,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 		    Z_External *rec = notToKeep->elements[i]->record;
                     struct oident *oident = 0;
                     Odr_oct *opaque_recid = 0;
-		    SYSNO sysno = 0;
+		    int sysno = 0;
 
 		    if (notToKeep->elements[i]->u.opaque)
 		    {
@@ -645,6 +645,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    0);
 				if (r)
 				{
+				    yaz_log(LOG_WARN, "zebra_insert_record failed r=%d", r);
 				    rr->errcode = 224;
 				    rr->errstring = "insert_record failed";
 				}
@@ -662,8 +663,10 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    1);
 				if (r)
 				{
+				    yaz_log(LOG_WARN, "zebra_update_record failed r=%d", r);
 				    rr->errcode = 224;
-				    rr->errstring = "update_record failed";
+				    rr->errstring = 
+					"update_record failed";
 				}
 				break;
 			    case 3:
@@ -678,6 +681,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    0);
 				if (r)
 				{
+				    yaz_log(LOG_WARN, "zebra_delete_record failed r=%d", r);
 				    rr->errcode = 224;
 				    rr->errstring = "delete_record failed";
 				}
