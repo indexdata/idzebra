@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.169 2004-12-02 14:05:03 adam Exp $
+/* $Id: extract.c,v 1.170 2004-12-21 21:55:58 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1454,7 +1454,7 @@ void extract_add_index_string (RecWord *p, const char *str, int length)
     key.mem[2] = p->section_id;
     key.mem[3] = p->seqno;
 
-#if 1
+#if 0
     /* just for debugging .. */
     yaz_log(YLOG_LOG, "add: set=%d use=%d "
 	    "record_id=%lld section_id=%lld seqno=%lld",
