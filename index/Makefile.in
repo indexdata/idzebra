@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1998, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.7 1999-05-20 12:57:18 adam Exp $
+# $Id: Makefile.in,v 1.8 1999-06-09 11:58:48 adam Exp $
 
 SHELL=/bin/sh
 
@@ -13,7 +13,7 @@ LIBS=@LIBS@
 TCL_LIB=@TCL_LIB@
 
 YAZLIB=../../yaz/lib/libyaz.a
-YAZINC=-I../../yaz/z39.50 -I../../yaz/include
+YAZINC=-I../../yaz/include
 #OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
 #OSILIB=../../xtimosi/src/libmosi.a -lrfc
 
