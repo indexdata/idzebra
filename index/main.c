@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.54  1998-01-12 15:04:08  adam
+ * Revision 1.55  1998-01-26 10:37:34  adam
+ * Minor changes.
+ *
+ * Revision 1.54  1998/01/12 15:04:08  adam
  * The test option (-s) only uses read-lock (and not write lock).
  *
  * Revision 1.53  1997/11/18 10:05:08  adam
@@ -376,7 +379,6 @@ int main (int argc, char **argv)
             {
                 struct recordGroup rGroup;
 
-                log_event_end (abort_func, NULL);
                 rval = res_get (common_resource, "shadow");
                 zebraIndexLock (rGroupDef.bfs, 0, rval);
 		if (rGroupDef.flagRw)
