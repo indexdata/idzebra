@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.8.2.2 2004-09-03 10:36:26 adam Exp $
+/* $Id: perlread.c,v 1.8.2.3 2004-09-06 09:23:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -242,13 +242,9 @@ static void *grs_init_perl(void)
     
     /* If there is an interpreter (context) running, - we are calling 
        indexing and retrieval from the perl API - we don't create a new one. */
-#if PERL_VERSION >= 8
-    /* with Perl 5.8 context may be non-NULL even though it's not there! */
-    context->origi = 0;
-#else
-    context->origi = PERL_GET_CONTEXT;
-#endif
-    if (context->origi == NULL) {
+    context->origi = PL_curinterp;
+
+    if (!context->origi) {
 	context->perli = perl_alloc();
 	PERL_SET_CONTEXT(context->perli);
 	logf (LOG_LOG, "Initializing new perl interpreter context (%p)",context->perli);
