@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.18  1996-04-09 06:47:30  adam
+ * Revision 1.19  1996-05-01 07:16:30  quinn
+ * Fixed ancient bug.
+ *
+ * Revision 1.18  1996/04/09  06:47:30  adam
  * Function scan_areadef doesn't use sscanf (%n fails on this Linux).
  *
  * Revision 1.17  1996/03/20 13:29:11  quinn
@@ -169,7 +172,7 @@ static int file_position(MFile mf, int pos, int offset)
 	(c < mf->no_files -1 && pos > mf->files[c].top))
     {
 	c = 0;
-	while (mf->files[c].top >= 0 && mf->files[c].top < pos)
+	while (c + 1 < mf->no_files && mf->files[c].top < pos)
 	{
 	    off += mf->files[c].blocks;
 	    c++;
@@ -376,7 +379,7 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     for (i = 0; i < new->no_files; i++)
     {
     	new->files[i].blocks = new->files[i].bytes / new->blocksize;
-    	if (i == new->no_files)
+    	if (i == new->no_files - 1)
 	    new->files[i].top = -1;
 	else
 	    new->files[i].top = i ? (new->files[i-1].top + new->files[i].blocks)
