@@ -1,4 +1,6 @@
 
+--- 1.3.4 2002/11/26
+
 Perl Filter and Perl API. By Peter Popovics.
 
 For zebra.cfg, if no profilePath is specified, directory
@@ -9,6 +11,8 @@ Zebra Examples in examples . Zebra tests in test.
 
 Bug fix: sort index was not properly modified on 
 record updates/deletes.
+
+Fix handling of character entities for sgml filter.
 
 Move data1 to Zebra (used to be part of YAZ).
 
