@@ -1,5 +1,5 @@
 <chapter id="record-model">
- <!-- $Id: recordmodel.xml,v 1.1 2002-04-09 13:26:26 adam Exp $ -->
+ <!-- $Id: recordmodel.xml,v 1.2 2002-04-09 19:20:23 adam Exp $ -->
  <title>The Record Model</title>
  
  <para>
@@ -132,7 +132,7 @@
       <para>
        This allows Zebra to read
        records in the ISO2709 (MARC) encoding standard. In this case, the
-       last paramemeter <emphasis>abstract syntax</emphasis> names the
+       last parameter <emphasis>abstract syntax</emphasis> names the
        <literal>.abs</literal> file (see below)
        which describes the specific MARC structure of the input record as
        well as the indexing rules.
@@ -188,7 +188,7 @@
    <note>
    <para>
     The indentation used above is used to illustrate how Zebra
-     interprets the markup. The indentation, in itself, has no
+     interprets the mark-up. The indentation, in itself, has no
      significance to the parser for the canonical input format, which
      discards superfluous whitespace.
     </para>
@@ -431,7 +431,7 @@
       <term>FINISH</term>
       <listitem>
        <para>
-        The expression asssociated with this pattern is evaluated
+        The expression associated with this pattern is evaluated
         once, before the application terminates. It can be used to release
         system resources - typically ones allocated in the
         <emphasis>INIT</emphasis> step.
@@ -469,7 +469,7 @@
           <term>record</term>
           <listitem>
            <para>
-            Begin a new record. The followingparameter should be the
+            Begin a new record. The following parameter should be the
             name of the schema that describes the structure of the record, eg.
             <literal>gils</literal> or <literal>wais</literal> (see below).
             The <literal>begin record</literal> call should precede
@@ -826,7 +826,7 @@
     Generally, settings are characterized by a single
     keyword, identifying the setting, followed by a number of parameters.
     Some settings are repeatable (r), while others may occur only once in a
-    file. Some settings are optional (o), whicle others again are
+    file. Some settings are optional (o), while others again are
     mandatory (m).
    </para>
    
@@ -1183,7 +1183,7 @@
         The <emphasis>names</emphasis> parameter is a list of names
         by which the tag should be recognized in the input file format.
         The names should be separated by slashes (/).
-        The <emphasis>type</emphasis> is th recommended datatype of
+        The <emphasis>type</emphasis> is the recommended data type of
         the tag.
         It should be one of the following:
 
@@ -1697,8 +1697,8 @@
            (preceded by <literal>x</literal>).
            In addition, the combinations
            \\, \\r, \\n, \\t, \\s (space &mdash; remember that real
-           space-characters may ot occur in the value definition), and
-           \\ are recognised, with their usual interpretation.
+           space-characters may not occur in the value definition), and
+           \\ are recognized, with their usual interpretation.
           </para>
          </listitem>
 
@@ -1706,7 +1706,7 @@
           <para>
            Curly braces &lcub;&rcub; may be used to enclose ranges of single
            characters (possibly using the escape convention described in the
-           preceding point), eg. &lcub;a-z&rcub; to entroduce the
+           preceding point), eg. &lcub;a-z&rcub; to introduce the
            standard range of ASCII characters.
            Note that the interpretation of such a range depends on
            the concrete representation in your local, physical character set.
@@ -1806,7 +1806,7 @@
 
     <listitem>
      <para>
-      SUTRS. Again, the mapping is fairly straighforward. Indentation
+      SUTRS. Again, the mapping is fairly straightforward. Indentation
       is used to show the hierarchical structure of the record. All
       "GRS" type records support both the GRS-1 and SUTRS
       representations.

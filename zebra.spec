@@ -13,7 +13,7 @@ Summary: Zebra: a fielded free-text engine with a Z39.50 frontend.
 
 %description
 Zebra is a fielded free-text indexing and retrieval engine with a Z39.50
-frontend. You can use any compatible, commercial or freeware Z39.50 client to
+front-end. You can use any compatible, commercial or freeware Z39.50 client to
 access data stored in Zebra. Zebra may be used free-of-charge in non-profit
 applications by non-commercial organisations. 
 

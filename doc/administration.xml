@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.3 2002-04-09 13:26:26 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.4 2002-04-09 19:20:22 adam Exp $ -->
  <title>Administrating Zebra</title>
  
  <para>
@@ -79,7 +79,7 @@
    Indexing is a per-record process, in which either insert/modify/delete
    will occur. Before a record is indexed search keys are extracted from
    whatever might be the layout the original record (sgml,html,text, etc..).
-   The Zebra system currently supports two fundamantal types of records:
+   The Zebra system currently supports two fundamental types of records:
    structured and simple text.
    To specify a particular extraction process, use either the
    command line option <literal>-t</literal> or specify a
@@ -99,7 +99,7 @@
   
   <para>
    You can edit the configuration file with a normal text editor.
-   parameter names and values are seperated by colons in the file. Lines
+   parameter names and values are separated by colons in the file. Lines
    starting with a hash sign (<literal>&num;</literal>) are
    treated as comments.
   </para>
@@ -318,7 +318,7 @@
   <title>Locating Records</title>
   
   <para>
-   The default behaviour of the Zebra system is to reference the
+   The default behavior of the Zebra system is to reference the
    records from their original location, i.e. where they were found when you
    ran <literal>zebraidx</literal>.
    That is, when a client wishes to retrieve a record
@@ -418,7 +418,7 @@
    disk space than simpler indexing methods, but it makes it easier for
    you to keep the index in sync with a frequently changing set of data.
    If you combine this system with the <emphasis>safe update</emphasis>
-   facility (see below), you never have to take your server offline for
+   facility (see below), you never have to take your server off-line for
    maintenance or register updating purposes.
   </para>
   
@@ -472,7 +472,7 @@
   <title>Indexing with General Record IDs</title>
   
   <para>
-   When using this method you construct an (almost) arbritrary, internal
+   When using this method you construct an (almost) arbitrary, internal
    record key based on the contents of the record itself and other system
    information. If you have a group of records that explicitly associates
    an ID with each record, this method is convenient. For example, the
@@ -642,8 +642,8 @@
   <para>
    For instance, if you have allocated two disks for your register, and
    the first disk is mounted
-   on <literal>/d1</literal> and has 200 Mb of free space and the
-   second, mounted on <literal>/d2</literal> has 300 Mb, you could
+   on <literal>/d1</literal> and has 200 MB of free space and the
+   second, mounted on <literal>/d2</literal> has 300 MB, you could
    put this entry in your configuration file:
    
    <screen>
@@ -658,7 +658,7 @@
    your responsibility to ensure that enough space is available, and that
    other applications do not attempt to use the free space. In a large
    production system, it is recommended that you allocate one or more
-   filesystem exclusively to the Zebra register files.
+   file system exclusively to the Zebra register files.
   </para>
   
  </sect1>

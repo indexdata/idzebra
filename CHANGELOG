@@ -1,5 +1,5 @@
 
---- 1.2.0 2002/04/05
+--- 1.2.0 2002/MM/DD
 
 Multiple registers. New setting in resource 'root' that holds base
 directory for register(s). A group a databases may be put in separate

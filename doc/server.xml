@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.1 2002-04-09 13:26:26 adam Exp $ -->
+ <!-- $Id: server.xml,v 1.2 2002-04-09 19:20:23 adam Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -52,7 +52,7 @@
      <listitem>
       <para>
        Use the Z39.50 protocol (default). These two options complement
-       eachother. You can use both multiple times on the same command
+       each other. You can use both multiple times on the same command
        line, between listener-specifications (see below). This way, you
        can set up the server to listen for connections in both protocols
        concurrently, on different local ports.
@@ -121,7 +121,7 @@
      <listitem>
       <para>
        Set the (approximate) maximum size of
-       present response messages. Default is 1024 Kb (1 Mb).
+       present response messages. Default is 1024 KB (1 MB).
       </para>
      </listitem>
     </varlistentry>
@@ -204,7 +204,7 @@
     Z39.50 protocol, and the option bits for Search, Present, Scan,
     NamedResultSets, and concurrentOperations will be set, if requested by
     the client. The maximum PDU size is negotiated down to a maximum of
-    1Mb by default.
+    1 MB by default.
    </para>
 
   </sect2>
@@ -488,7 +488,7 @@
    <title>Sort</title>
 
    <para>
-    Z39.50 specifies three diffent types of sort criterias.
+    Z39.50 specifies three different types of sort criteria.
     Of these Zebra supports the attribute specification type in which
     case the use attribute specifies the "Sort register".
     Sort registers are created for those fields that are of type "sort" in
