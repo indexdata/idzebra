@@ -1,5 +1,5 @@
 <chapter id="zebraidx">
- <!-- $Id: zebraidx.xml,v 1.2 2002-04-10 14:47:49 heikki Exp $ -->
+ <!-- $Id: zebraidx.xml,v 1.3 2002-09-19 21:06:51 adam Exp $ -->
  <title>Running the Maintenance Interface (zebraidx)</title>
  
  <para>
@@ -15,115 +15,7 @@
   </screen>
   
   Options:
-  <variablelist>
-   
-   <varlistentry>
-    <term>-t <replaceable>type</replaceable></term>
-    <listitem>
-     <para>
-      Update all files as <replaceable>type</replaceable>. Currently, the
-      types supported are <literal>text</literal> and
-      <literal>grs</literal><replaceable>.subtype</replaceable>.
-      If no <replaceable>subtype</replaceable> is provided for the GRS
-      (General Record Structure) type, the canonical input format
-      is assumed (see <xref linkend="local-representation"/>).
-       Generally, it is probably advisable to specify the record types
-       in the <literal>zebra.cfg</literal> file (see
-       <xref linkend="record-types"/>), to avoid confusion at
-        subsequent updates.
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term>-c <replaceable>config-file</replaceable></term>
-    <listitem>
-     <para>
-      Read the configuration file
-      <replaceable>config-file</replaceable> instead of
-      <literal>zebra.cfg</literal>.
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term>-g <replaceable>group</replaceable></term>
-    <listitem>
-     <para>
-      Update the files according to the group
-      settings for <replaceable>group</replaceable>
-      (see <xref linkend="configuration-file"/>).
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term>-d <replaceable>database</replaceable></term>
-    <listitem>
-     <para>
-      The records located should be associated with the database name
-      <replaceable>database</replaceable> for access through the Z39.50 server.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>-l <replaceable>file</replaceable></term>
-    <listitem>
-     <para>
-      Write log messages to <replaceable>file</replaceable> instead
-      of <literal>stderr</literal>.
-     </para>
-    </listitem>
-   </varlistentry>
-
-   <varlistentry>
-    <term>-m <replaceable>mbytes</replaceable></term>
-    <listitem>
-     <para>
-      Use <replaceable>mbytes</replaceable> of memory before flushing
-      keys to background storage. This setting affects performance when
-      updating large databases.
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term>-n</term>
-    <listitem>
-     <para>
-      Disable the use of shadow registers for this operation
-      (see <xref linkend="shadow-registers"/>).
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term>-s</term>
-    <listitem>
-     <para>
-      Show analysis of the indexing process. The maintenance
-      program works in a read-only mode and doesn't change the state
-      of the index. This options is very useful when you wish to test a
-      new profile.
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term>-V</term>
-    <listitem>
-     <para>
-      Show Zebra version.
-     </para>
-    </listitem>
-   </varlistentry>
-   <varlistentry>
-    <term>-v <replaceable>level</replaceable></term>
-    <listitem>
-     <para>
-      Set the log level to <replaceable>level</replaceable>.
-      <replaceable>level</replaceable> should be one of
-      <literal>none</literal>, <literal>debug</literal>, and
-      <literal>all</literal>.
-     </para>
-    </listitem>
-   </varlistentry>
-  </variablelist>
+   &zebraidx-options;
  </para>
  
  <para>

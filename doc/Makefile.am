@@ -1,7 +1,8 @@
-## $Id: Makefile.am,v 1.12 2002-09-16 22:23:22 adam Exp $
+## $Id: Makefile.am,v 1.13 2002-09-19 21:06:50 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 doc_DATA = zebra.html zebra.pdf
+man_MANS = zebraidx.1 zebrasrv.8
 
 SUPPORTFILES = \
  zebrahtml.dsl.in \
@@ -20,13 +21,20 @@ XMLFILES = \
  recordmodel.xml \
  license.xml \
  indexdata.xml
- 
-EXTRA_DIST = $(SUPPORTFILES) $(XMLFILES) zebra.pdf
+
+EXTRA_DIST = $(SUPPORTFILES) $(XMLFILES) zebra.pdf \
+ $(man_MANS) zebraidx-man.sgml zebrasrv-man.sgml
 
 install-data-hook:
 	for f in $(srcdir)/*.html; do \
 		$(INSTALL_DATA) $$f $(DESTDIR)$(docdir)/$$f; \
-	done	
+	done
+
+zebraidx.1: zebraidx-man.sgml zebraidx-options.xml
+	cd $(srcdir); docbook2man zebraidx-man.sgml
+
+zebrasrv.8: zebrasrv-man.sgml
+	cd $(srcdir); docbook2man zebrasrv-man.sgml
 
 zebra.html: $(XMLFILES)
 	jade -E14 -d zebrahtml.dsl -t sgml xml.dcl zebra.xml

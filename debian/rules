@@ -102,7 +102,7 @@ binary-arch: build install
 	dh_fixperms -a
 
 	dh_installdeb -p idzebra
-	dh_undocumented -p idzebra zebraidx.1 zebrasrv.1
+	dh_installman -p idzebra doc/zebraidx.1 doc/zebrasrv.8
 	dh_shlibdeps -p idzebra $(LOCAL_LINK) 
 
 	cat debian/postinst >> debian/idzebra/DEBIAN/postinst
