@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.1 2004-09-28 10:15:03 adam Exp $
+/* $Id: data1.h,v 1.2 2004-09-28 10:43:37 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -30,8 +30,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/proto.h>
 
 #include <idzebra/version.h>
-#include <d1_attset.h>
-#include <d1_map.h>
 #include <yaz/yaz-util.h>
 #include <yaz/wrbuf.h>
 
@@ -43,6 +41,90 @@ YAZ_BEGIN_CDECL
 #define data1_matchstr(s1, s2) yaz_matchstr(s1, s2)
 
 #define DATA1_MAX_SYMBOL 31
+
+/*
+ * This structure describes a attset, perhaps made up by inclusion
+ * (supersetting) of other attribute sets. When indexing and searching,
+ * we perform a normalisation, where we associate a given tag with
+ * the set that originally defined it, rather than the superset. This
+ * allows the most flexible access. Eg, the tags common to GILS and BIB-1
+ * should be searchable by both names.
+ */
+
+struct data1_attset;
+
+typedef struct data1_local_attribute
+{
+    int local;
+    struct data1_local_attribute *next;
+} data1_local_attribute;
+
+typedef struct data1_attset data1_attset;    
+typedef struct data1_att data1_att;
+typedef struct data1_attset_child data1_attset_child;
+
+struct data1_att
+{
+    data1_attset *parent;          /* attribute set */
+    char *name;                    /* symbolic name of this attribute */
+    int value;                     /* attribute value */
+    data1_local_attribute *locals; /* local index values */
+    data1_att *next;
+};
+
+struct data1_attset_child {
+    data1_attset *child;
+    data1_attset_child *next;
+};
+
+struct data1_attset
+{
+    char *name;          /* symbolic name */
+    oid_value reference;   /* external ID of attset */
+    data1_att *atts;          /* attributes */
+    data1_attset_child *children;  /* included attset */
+    data1_attset *next;       /* next in cache */
+};
+
+typedef struct data1_handle_info *data1_handle;
+
+YAZ_EXPORT data1_att *data1_getattbyname(data1_handle dh, data1_attset *s,
+					 char *name);
+YAZ_EXPORT data1_attset *data1_read_attset(data1_handle dh, const char *file);
+
+YAZ_EXPORT data1_attset *data1_empty_attset(data1_handle dh);
+
+typedef struct data1_maptag
+{
+    int new_field;
+    int type;
+#define D1_MAPTAG_numeric 1
+#define D1_MAPTAG_string 2
+    int which;
+    union
+    {
+	int numeric;
+	char *string;
+    } value;
+    struct data1_maptag *next;
+} data1_maptag;
+
+typedef struct data1_mapunit
+{
+    int no_data;
+    char *source_element_name;
+    data1_maptag *target_path;
+    struct data1_mapunit *next;
+} data1_mapunit;
+
+typedef struct data1_maptab
+{
+    char *name;
+    oid_value target_absyn_ref;
+    char *target_absyn_name;
+    data1_mapunit *map;
+    struct data1_maptab *next;
+} data1_maptab;
 
 typedef struct data1_name
 {

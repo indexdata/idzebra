@@ -1,5 +1,5 @@
-/* $Id: d1_attset.c,v 1.3 2004-09-28 10:15:03 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: d1_attset.c,v 1.4 2004-09-28 10:43:37 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -25,7 +25,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 
 #include <yaz/log.h>
-#include <d1_attset.h>
 #include <idzebra/data1.h>
 
 data1_att *data1_getattbyname(data1_handle dh, data1_attset *s, char *name)
