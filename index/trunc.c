@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.32 2004-08-06 13:36:23 adam Exp $
+/* $Id: trunc.c,v 1.33 2004-08-11 13:35:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -326,11 +326,13 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                         key_compare_it);
         for (i = to-from; --i >= 0; )
         {
-            ispt[i] = isamb_pp_open (zi->reg->isamb, isam_p[from+i]);
-            if (isamb_pp_read (ispt[i], ti->tmpbuf))
-                heap_insert (ti, ti->tmpbuf, i);
-            else
-                isamb_pp_close (ispt[i]);
+	    if (isam_p[from+i]) {
+                ispt[i] = isamb_pp_open (zi->reg->isamb, isam_p[from+i]);
+                if (isamb_pp_read (ispt[i], ti->tmpbuf))
+                    heap_insert (ti, ti->tmpbuf, i);
+                else
+                    isamb_pp_close (ispt[i]);
+	    }
         }
         while (ti->heapnum)
         {
