@@ -3,9 +3,11 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.15 1999-08-22 08:26:34 heikki Exp $
+ * $Id: merge-d.c,v 1.16 1999-08-24 10:12:02 heikki Exp $
  *
- * todo
+ * missing
+ *
+ * optimize
  *  - Input filter: Eliminate del-ins pairs, tell if only one entry (or none)
  *  - single-entry optimizing (keep the one entry in the dict, no block)
  *  - study and optimize block sizes (later)
@@ -15,16 +17,15 @@
  *  - Keep minimum freespace in the category table, and use that in reduce!
  *  - pass a space-needed for separateDiffBlock and reduce to be able to 
  *    reserve more room for diffs, or to force a separate (larger?) block
- *  - Idea: Simplify the stryucture, so that the first block is always diffs.
+ *  - Idea: Simplify the structure, so that the first block is always diffs.
  *    On small blocks, that is all we have. Once a block has been merged, we
  *    allocate the first main block and a (new) firstblock ffor diffs. From
- *    that point on the word has two blocks for it. Order the allocations 
- *    right, and you should always get sequential reads!
+ *    that point on the word has two blocks for it. 
  *  - On allocating more blocks (in append), check the order of blocks, and
  *    if needed, swap them. 
+ *  - In merge, merge also with the input data.
  *
  * bugs
- *  - Still has not been able to run a complete long test on bagel!
  *
  * caveat
  *  There is a confusion about the block addresses. cat or type is the category,
@@ -40,7 +41,7 @@
  *  Needs cleaning! The way diff blocks are handled in append and reading is
  *  quite different, and likely to give maintenance problems.
  *
- *  log levels (set isamd=x in zebra.cfg (or what ever cfg file you use) )
+ *  log levels (set isamddebug=x in zebra.cfg (or what ever cfg file you use) )
  *    0 = no logging. Default
  *    1 = no logging here. isamd logs overall statistics
  *    2 = Each call to isamd_append with start address and no more
@@ -741,9 +742,6 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
 
   } /* while read */
   
-  /* TODO: while pkey is an insert, and after last key inserted, append it */
-  /* will prevent multiple merges on large insert runs */  
-
   /* set things up so that append can continue */
   isamd_reduceblock(firstpp);
   firstpp->diffs=0; 
@@ -933,23 +931,16 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
    else
       retval = append_diffs(is,ipos,data);
 
-   if (0)  /*!*/ 
-   {
-     void *p1=xmalloc(100);
-     void *p2=xmalloc(100);
-     void *p3=xmalloc(100);
-     logf(LOG_LOG,"Traversing xmalloc stuff. p1=%p p2=%p p3=%p",p1,p2,p3);
-     xmalloc_trav("end of append"); /*!*/
-     assert(!"foo");
-   }
-   
    return retval;
 } /*  isamd_append */
 
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.15  1999-08-22 08:26:34  heikki
+ * Revision 1.16  1999-08-24 10:12:02  heikki
+ * Comments about optimising
+ *
+ * Revision 1.15  1999/08/22 08:26:34  heikki
  * COmments
  *
  * Revision 1.14  1999/08/20 12:25:58  heikki
