@@ -1,0 +1,14 @@
+# $Id: my.abs,v 1.1 2002-12-10 12:54:24 adam Exp $
+
+name my
+reference WAIS-schema
+attset bib1.att
+tagset generic.tag
+
+varset var1.var
+
+esetname B @
+esetname F @
+
+elm (2,1)		Title			!:p,!:w
+elm (2,8)		Date			!:s

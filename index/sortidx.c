@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.7 2002-08-02 19:26:55 adam Exp $
+/* $Id: sortidx.c,v 1.8 2002-12-10 12:54:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -138,5 +138,7 @@ void sortIdx_add (SortIdx si, const char *buf, int len)
 
 void sortIdx_read (SortIdx si, char *buf)
 {
-    bf_read (si->current_file->bf, si->sysno+1, 0, 0, buf);
+    int r = bf_read (si->current_file->bf, si->sysno+1, 0, 0, buf);
+    if (!r)
+        memset (buf, 0, SORT_IDX_ENTRYSIZE);
 }

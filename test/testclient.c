@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.7 2002-11-11 15:41:19 heikki Exp $
+ * $Id: testclient.c,v 1.8 2002-12-10 12:54:24 adam Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         default:
             printf ("%s: unknown option %s\n", prog, arg);
             printf ("usage:\n%s [options] target query \n", prog);
-            printf (" eg.  bagel.indexdata.dk/gils computer\n");
+            printf (" eg.  indexdata.dk/gils computer\n");
             exit (1);
         }
     }
@@ -74,7 +74,6 @@ int main(int argc, char **argv)
         printf (" -o off       offset for records - counting from 0.\n");
         printf (" -f format    set record syntax. Default: none\n");
         printf (" -d sec       delay a number of seconds before exit.\n");
-        printf ("Options\n");
         exit (3);
     }
     z = ZOOM_connection_new (target, 0);
