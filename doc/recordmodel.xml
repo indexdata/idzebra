@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.8 2002-10-17 08:10:08 mike Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.9 2002-10-17 21:54:22 mike Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -608,8 +608,8 @@
    <para>
 
     <screen>
-        TITLE     "Zen and the Art of Motorcycle Maintenance"
      ROOT 
+        TITLE     "Zen and the Art of Motorcycle Maintenance"
         AUTHOR    "Robert Pirsig"
     </screen>
 
@@ -623,10 +623,10 @@
    <para>
 
     <screen>
-        TITLE  "Zen and the Art of Motorcycle Maintenance"
      ROOT  
-           FIRST-NAME "Robert"
+        TITLE  "Zen and the Art of Motorcycle Maintenance"
         AUTHOR
+           FIRST-NAME "Robert"
            SURNAME    "Pirsig"
     </screen>
 

@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.9 2002-10-17 08:10:08 mike Exp $ -->
+ <!-- $Id: administration.xml,v 1.10 2002-10-17 21:54:21 mike Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -484,6 +484,7 @@
    and then run <literal>zebraidx</literal> with the
    <literal>update</literal> command.
   </para>
+  <!-- ### what happens if a file contains multiple records? -->
 </sect1>
  
  <sect1 id="generic-ids">

@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.10 2002-10-17 08:10:08 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.11 2002-10-17 21:54:22 mike Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -147,7 +147,9 @@
    The problem with the previous example is that you need to know the
    structure of the documents in order to find them.  For example,
    when we wanted to know the genera for which Matt Wedel is an
-   author, we had to formulate a complex XPath 
+   author
+   (<phrase role="taxon">Sauroposeidon proteles</phrase>),
+   we had to formulate a complex XPath 
    <literal>1=/GENUS/SPECIES/AUTHOR/@name</literal>
    which embodies the knowledge that author names are specified in the
    <literal>name</literal> attribute of the
@@ -251,7 +253,7 @@
      The master configuration file, <literal>zebra.cfg</literal>,
      which is as short and simple as it can be:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.10 2002-10-17 08:10:08 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.11 2002-10-17 21:54:22 mike Exp $
 	# Bare-bones master configuration file for Zebra
 	profilePath: .:../../tab:../../../yaz/tab
      </screen>
