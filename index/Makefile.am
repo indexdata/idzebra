@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.19 2003-02-06 16:58:57 heikki Exp $
+## $Id: Makefile.am,v 1.20 2003-02-10 09:42:42 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -27,7 +27,7 @@ kdump_SOURCES=kdump.c kcompare.c
 
 AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE) -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
 
-zebrash_LDADD= libzebra.a $(YAZLIB) $(READLINE_LIBS)
+zebrash_LDADD= libzebra.a $(YAZLIB) $(READLINE_LIBS) $(TCL_LIB)
 
 LDADD = libzebra.a $(YAZLIB) $(TCL_LIB)
 
