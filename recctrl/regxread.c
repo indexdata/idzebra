@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.1  1996-10-11 10:57:30  adam
+ * Revision 1.2  1996-10-29 14:02:09  adam
+ * Doesn't use the global data1_tabpath (from YAZ). Instead the function
+ * data1_get_tabpath is used.
+ *
+ * Revision 1.1  1996/10/11 10:57:30  adam
  * New module recctrl. Used to manage records (extract/retrieval).
  *
  * Revision 1.24  1996/06/17 14:25:31  adam
@@ -92,13 +96,11 @@
 #include <string.h>
 
 #include <tpath.h>
-#include <alexutil.h>
+#include <zebrautl.h>
 #include <dfa.h>
 #include "grsread.h"
 
 #define REGX_DEBUG 0
-
-extern char *data1_tabpath;
 
 #define F_WIN_EOF 2000000000
 #define F_WIN_READ 1
@@ -495,7 +497,7 @@ int readFileSpec (struct lexSpec *spec)
     lineBuf = xmalloc (1+lineSize);
     logf (LOG_LOG, "Reading spec %s", spec->name);
     sprintf (lineBuf, "%s.flt", spec->name);
-    if (!(spec_inf = yaz_path_fopen (data1_tabpath, lineBuf, "r")))
+    if (!(spec_inf = yaz_path_fopen (data1_get_tabpath(), lineBuf, "r")))
     {
         logf (LOG_ERRNO|LOG_WARN, "Cannot read spec file %s", spec->name);
         xfree (lineBuf);
