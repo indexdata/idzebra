@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.13  1997-12-12 06:33:58  adam
+ * Revision 1.14  1998-03-05 08:41:00  adam
+ * Implemented rule contexts.
+ *
+ * Revision 1.13  1997/12/12 06:33:58  adam
  * Fixed bug that showed up when multiple filter where used.
  * Made one routine thread-safe.
  *
@@ -146,6 +149,7 @@
 #define REGX_BEGIN   3
 #define REGX_END     4
 #define REGX_CODE    5
+#define REGX_CONTEXT 6
 
 struct regxCode {
     char *str;
@@ -173,40 +177,53 @@ struct lexRule {
     struct lexRule *next;
 };
 
-struct lexTrans {
+struct lexContext {
+    char *name;
     struct DFA *dfa;
     struct lexRule *rules;
     struct lexRuleInfo **fastRule;
     int ruleNo;
+
+    struct lexRuleAction *beginActionList;
+    struct lexRuleAction *endActionList;
+    struct lexContext *next;
 };
 
 struct lexSpec {
     char *name;
-    struct lexTrans trans;
+    struct lexContext *context;
+
+    struct lexContext **context_stack;
+    int context_stack_size;
+    int context_stack_top;
+
     int lineNo;
     NMEM m;
     data1_handle dh;
     void *f_win_fh;
     void (*f_win_ef)(void *, off_t);
 
-    int f_win_start;
-    int f_win_end;
-    int f_win_size;
-    char *f_win_buf;
+    int f_win_start;      /* first byte of buffer is this file offset */
+    int f_win_end;        /* last byte of buffer is this offset - 1 */
+    int f_win_size;       /* size of buffer */
+    char *f_win_buf;      /* buffer itself */
     int (*f_win_rf)(void *, char *, size_t);
     off_t (*f_win_sf)(void *, off_t);
 
-    struct lexRuleAction *beginActionList;
-    struct lexRuleAction *endActionList;
 };
 
 
 static char *f_win_get (struct lexSpec *spec, off_t start_pos, off_t end_pos,
                         int *size)
 {
-    int i, r, off;
+    int i, r, off = start_pos - spec->f_win_start;
 
-    if (start_pos < spec->f_win_start || start_pos >= spec->f_win_end)
+    if (off >= 0 && end_pos <= spec->f_win_end)
+    {
+        *size = end_pos - start_pos;
+        return spec->f_win_buf + off;
+    }
+    if (off < 0 || start_pos >= spec->f_win_end)
     {
         (*spec->f_win_sf)(spec->f_win_fh, start_pos);
         spec->f_win_start = start_pos;
@@ -221,12 +238,6 @@ static char *f_win_get (struct lexSpec *spec, off_t start_pos, off_t end_pos,
             *size = end_pos - start_pos;
         return spec->f_win_buf;
     }
-    if (end_pos <= spec->f_win_end)
-    {
-        *size = end_pos - start_pos;
-        return spec->f_win_buf + (start_pos - spec->f_win_start);
-    }
-    off = start_pos - spec->f_win_start;
     for (i = 0; i<spec->f_win_end - start_pos; i++)
         spec->f_win_buf[i] = spec->f_win_buf[i + off];
     r = (*spec->f_win_rf)(spec->f_win_fh,
@@ -292,22 +303,6 @@ static struct DFA *lexSpecDFA (void)
     return dfa;
 }
 
-static struct lexSpec *lexSpecMk (const char *name)
-{
-    struct lexSpec *p;
-
-    p = xmalloc (sizeof(*p));
-    p->name = xmalloc (strlen(name)+1);
-    strcpy (p->name, name);
-    p->trans.dfa = lexSpecDFA ();
-    p->trans.rules = NULL;
-    p->trans.fastRule = NULL;
-    p->beginActionList = NULL;
-    p->endActionList = NULL;
-    p->f_win_buf = NULL;
-    return p;
-}
-
 static void actionListDel (struct lexRuleAction **rap)
 {
     struct lexRuleAction *ra1, *ra;
@@ -329,19 +324,27 @@ static void actionListDel (struct lexRuleAction **rap)
     *rap = NULL;
 }
 
-static void lexSpecDel (struct lexSpec **pp)
+static struct lexContext *lexContextCreate (const char *name)
 {
-    struct lexSpec *p;
+    struct lexContext *p = xmalloc (sizeof(*p));
+
+    p->name = xstrdup (name);
+    p->ruleNo = 1;
+    p->dfa = lexSpecDFA ();
+    p->rules = NULL;
+    p->fastRule = NULL;
+    p->beginActionList = NULL;
+    p->endActionList = NULL;
+    p->next = NULL;
+    return p;
+}
+
+static void lexContextDestroy (struct lexContext *p)
+{
     struct lexRule *rp, *rp1;
 
-    assert (pp);
-    p = *pp;
-    if (!p)
-        return ;
-    dfa_delete (&p->trans.dfa);
-    xfree (p->name);
-    xfree (p->trans.fastRule);
-    for (rp = p->trans.rules; rp; rp = rp1)
+    xfree (p->fastRule);
+    for (rp = p->rules; rp; rp = rp1)
     {
 	rp1 = rp->next;
         actionListDel (&rp->info.actionList);
@@ -349,7 +352,45 @@ static void lexSpecDel (struct lexSpec **pp)
     }
     actionListDel (&p->beginActionList);
     actionListDel (&p->endActionList);
+    xfree (p->name);
+    xfree (p);
+}
+
+static struct lexSpec *lexSpecCreate (const char *name)
+{
+    struct lexSpec *p;
+
+    p = xmalloc (sizeof(*p));
+    p->name = xmalloc (strlen(name)+1);
+    strcpy (p->name, name);
+
+    p->context = NULL;
+    p->context_stack_size = 100;
+    p->context_stack = xmalloc (sizeof(*p->context_stack) *
+				p->context_stack_size);
+    p->f_win_buf = NULL;
+    return p;
+}
+
+static void lexSpecDestroy (struct lexSpec **pp)
+{
+    struct lexSpec *p;
+    struct lexContext *lt;
+
+    assert (pp);
+    p = *pp;
+    if (!p)
+        return ;
+    lt = p->context;
+    while (lt)
+    {
+	struct lexContext *lt_next = lt->next;
+	lexContextDestroy (lt);
+	lt = lt_next;
+    }
+    xfree (p->name);
     xfree (p->f_win_buf);
+    xfree (p->context_stack);
     xfree (p);
     *pp = NULL;
 }
@@ -395,9 +436,8 @@ static int readParseToken (const char **cpp, int *len)
                 cmd[i] = *cp + 'a' - 'A';
             else
                 break;
-            if (i > sizeof(cmd)-2)
-                break;
-            i++;
+            if (i < sizeof(cmd)-2)
+		i++;
             cp++;
         }
         cmd[i] = '\0';
@@ -417,6 +457,8 @@ static int readParseToken (const char **cpp, int *len)
             return REGX_END;
         else if (!strcmp (cmd, "body"))
             return REGX_BODY;
+	else if (!strcmp (cmd, "context"))
+	    return REGX_CONTEXT;
         else
         {
             logf (LOG_WARN, "bad command %s", cmd);
@@ -430,6 +472,7 @@ static int actionListMk (struct lexSpec *spec, const char *s,
 {
     int r, tok, len;
     int bodyMark = 0;
+    const char *s0;
 
     while ((tok = readParseToken (&s, &len)))
     {
@@ -450,12 +493,13 @@ static int actionListMk (struct lexSpec *spec, const char *s,
             (*ap)->u.pattern.body = bodyMark;
             bodyMark = 0;
             (*ap)->u.pattern.dfa = lexSpecDFA ();
+	    s0 = s;
             r = dfa_parse ((*ap)->u.pattern.dfa, &s);
             if (r || *s != '/')
             {
                 xfree (*ap);
                 *ap = NULL;
-                logf (LOG_WARN, "regular expression error. r=%d", r);
+                logf (LOG_WARN, "regular expression error '%.*s'", s-s0, s0);
                 return -1;
             }
             dfa_mkstate ((*ap)->u.pattern.dfa);
@@ -477,24 +521,47 @@ static int actionListMk (struct lexSpec *spec, const char *s,
 
 int readOneSpec (struct lexSpec *spec, const char *s)
 {
-    int tok, len;
+    int len, r, tok;
+    struct lexRule *rp;
+    struct lexContext *lc;
 
     tok = readParseToken (&s, &len);
-    if (tok == REGX_BEGIN)
+    if (tok == REGX_CONTEXT)
     {
-        actionListDel (&spec->beginActionList);
-        actionListMk (spec, s, &spec->beginActionList);
+	char context_name[32];
+	tok = readParseToken (&s, &len);
+	if (tok != REGX_CODE)
+	{
+	    logf (LOG_WARN, "missing name after CONTEXT keyword");
+	    return 0;
+	}
+	if (len > 31)
+	    len = 31;
+	memcpy (context_name, s, len);
+	context_name[len] = '\0';
+	lc = lexContextCreate (context_name);
+	lc->next = spec->context;
+	spec->context = lc;
+	return 0;
     }
-    else if (tok == REGX_END)
+    if (!spec->context)
+	spec->context = lexContextCreate ("main");
+       
+    switch (tok)
     {
-        actionListDel (&spec->endActionList);
-        actionListMk (spec, s, &spec->endActionList);
-    }
-    else if (tok == REGX_PATTERN)
-    {
-        int r;
-        struct lexRule *rp;
-        r = dfa_parse (spec->trans.dfa, &s);
+    case REGX_BEGIN:
+        actionListDel (&spec->context->beginActionList);
+        actionListMk (spec, s, &spec->context->beginActionList);
+	break;
+    case REGX_END:
+        actionListDel (&spec->context->endActionList);
+        actionListMk (spec, s, &spec->context->endActionList);
+	break;
+    case REGX_PATTERN:
+#if REGX_DEBUG
+	logf (LOG_DEBUG, "rule %d %s", spec->context->ruleNo, s);
+#endif
+        r = dfa_parse (spec->context->dfa, &s);
         if (r)
         {
             logf (LOG_WARN, "regular expression error. r=%d", r);
@@ -507,9 +574,9 @@ int readOneSpec (struct lexSpec *spec, const char *s)
         }
         s++;
         rp = xmalloc (sizeof(*rp));
-        rp->info.no = spec->trans.ruleNo++;
-        rp->next = spec->trans.rules;
-        spec->trans.rules = rp;
+        rp->info.no = spec->context->ruleNo++;
+        rp->next = spec->context->rules;
+        spec->context->rules = rp;
         actionListMk (spec, s, &rp->info.actionList);
     }
     return 0;
@@ -517,9 +584,9 @@ int readOneSpec (struct lexSpec *spec, const char *s)
 
 int readFileSpec (struct lexSpec *spec)
 {
+    struct lexContext *lc;
     char *lineBuf;
     int lineSize = 512;
-    struct lexRule *rp;
     int c, i, errors = 0;
     FILE *spec_inf;
 
@@ -534,7 +601,6 @@ int readFileSpec (struct lexSpec *spec)
         return -1;
     }
     spec->lineNo = 0;
-    spec->trans.ruleNo = 1;
     c = getc (spec_inf);
     while (c != EOF)
     {
@@ -575,21 +641,25 @@ int readFileSpec (struct lexSpec *spec)
     }
     fclose (spec_inf);
     xfree (lineBuf);
-    spec->trans.fastRule = xmalloc (sizeof(*spec->trans.fastRule) *
-                                   spec->trans.ruleNo);
-    for (i = 0; i<spec->trans.ruleNo; i++)
-        spec->trans.fastRule[i] = NULL;
-    for (rp = spec->trans.rules; rp; rp = rp->next)
-        spec->trans.fastRule[rp->info.no] = &rp->info;
-    if (errors)
-        return -1;
+
 #if 0
     debug_dfa_trav = 1;
     debug_dfa_tran = 1;
     debug_dfa_followpos = 1;
     dfa_verbose = 1;
 #endif
-    dfa_mkstate (spec->trans.dfa);
+    for (lc = spec->context; lc; lc = lc->next)
+    {
+	struct lexRule *rp;
+	lc->fastRule = xmalloc (sizeof(*lc->fastRule) * lc->ruleNo);
+	for (i = 0; i < lc->ruleNo; i++)
+	    lc->fastRule[i] = NULL;
+	for (rp = lc->rules; rp; rp = rp->next)
+	    lc->fastRule[rp->info.no] = &rp->info;
+	dfa_mkstate (lc->dfa);
+    }
+    if (errors)
+        return -1;
     return 0;
 }
 
@@ -611,11 +681,12 @@ static void execData (struct lexSpec *spec,
 	return ;
 #if REGX_DEBUG
     if (elen > 40)
-        logf (LOG_DEBUG, "execData %.15s ... %.*s", ebuf, 15, ebuf + elen-15);
+        logf (LOG_DEBUG, "data (%d bytes) %.15s ... %.*s", elen,
+	      ebuf, 15, ebuf + elen-15);
     else if (elen > 0)
-        logf (LOG_DEBUG, "execData %.*s", elen, ebuf);
+        logf (LOG_DEBUG, "data (%d bytes) %.*s", elen, elen, ebuf);
     else 
-        logf (LOG_DEBUG, "execData len=%d", elen);
+        logf (LOG_DEBUG, "data (%d bytes)", elen);
 #endif
         
     if (*d1_level <= 1)
@@ -648,10 +719,7 @@ static void execData (struct lexSpec *spec,
         res->u.data.len = elen;
         res->u.data.formatted_text = formatted_text;
         if (elen > DATA1_LOCALDATA)
-        {
-            res->u.data.data = xmalloc (elen);
-            res->destroy = destroy_data;
-        }
+            res->u.data.data = nmem_malloc (spec->m, elen);
         else
             res->u.data.data = res->lbuf;
         memcpy (res->u.data.data, ebuf, elen);
@@ -788,7 +856,7 @@ static void tagBegin (struct lexSpec *spec,
     res->u.tag.tag = res->lbuf;
    
 #if REGX_DEBUG 
-    logf (LOG_DEBUG, "tag begin %s (%d)", res->u.tag.tag, *d1_level);
+    logf (LOG_DEBUG, "begin tag %s (%d)", res->u.tag.tag, *d1_level);
 #endif
     if (parent->which == DATA1N_variant)
         return ;
@@ -827,7 +895,7 @@ static void tagEnd (struct lexSpec *spec,
             break;
     }
 #if REGX_DEBUG
-    logf (LOG_DEBUG, "tag end (%d)", *d1_level);
+    logf (LOG_DEBUG, "end tag (%d)", *d1_level);
 #endif
 }
 
@@ -839,10 +907,10 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
     struct DFA_tran *t;
     unsigned char c;
     unsigned char c_prev = 0;
-    int ptr = *pptr;
-    int start_ptr = *pptr;
-    int last_rule = 0;
-    int last_ptr = 0;
+    int ptr = *pptr;          /* current pointer */
+    int start_ptr = *pptr;    /* first char of match */
+    int last_ptr = 0;         /* last char of match */
+    int last_rule = 0;        /* rule number of current match */
     int i;
 
     while (1)
@@ -997,7 +1065,10 @@ static int execCode (struct lexSpec *spec,
             r = execTok (spec, &s, arg_no, arg_start, arg_end,
                          &cmd_str, &cmd_len);
             if (r < 2)
+	    {
+		logf (LOG_WARN, "missing keyword after 'begin'");
                 continue;
+	    }
             p = regxStrz (cmd_str, cmd_len, ptmp);
             if (!strcmp (p, "record"))
             {
@@ -1082,50 +1153,86 @@ static int execCode (struct lexSpec *spec,
 		r = execTok (spec, &s, arg_no, arg_start, arg_end,
 			     &cmd_str, &cmd_len);
 	    }
+	    else if (!strcmp (p, "context"))
+	    {
+		if (r > 1)
+		{
+		    struct lexContext *lc = spec->context;
+		    r = execTok (spec, &s, arg_no, arg_start, arg_end,
+				 &cmd_str, &cmd_len);
+		    p = regxStrz (cmd_str, cmd_len, ptmp);
+#if REGX_DEBUG
+		    logf (LOG_DEBUG, "begin context %s", p);
+#endif
+		    while (lc && strcmp (p, lc->name))
+			lc = lc->next;
+		    if (lc)
+			spec->context_stack[++(spec->context_stack_top)] = lc;
+		    else
+			logf (LOG_WARN, "unknown context %s", p);
+		    
+		}
+		r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			     &cmd_str, &cmd_len);
+	    }
+	    else
+	    {
+		logf (LOG_WARN, "bad keyword '%s' after begin", p);
+	    }
         }
         else if (!strcmp (p, "end"))
         {
             r = execTok (spec, &s, arg_no, arg_start, arg_end,
                          &cmd_str, &cmd_len);
-            if (r > 1)
-            {
-                p = regxStrz (cmd_str, cmd_len, ptmp);
-                if (!strcmp (p, "record"))
-                {
-                    *d1_level = 0;
-                    r = execTok (spec, &s, arg_no, arg_start, arg_end,
-                                 &cmd_str, &cmd_len);
+            if (r < 2)
+	    {
+		logf (LOG_WARN, "missing keyword after 'end'");
+		continue;
+	    }
+	    p = regxStrz (cmd_str, cmd_len, ptmp);
+	    if (!strcmp (p, "record"))
+	    {
+		*d1_level = 0;
+		r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			     &cmd_str, &cmd_len);
 #if REGX_DEBUG
-                    logf (LOG_DEBUG, "end record");
+		logf (LOG_DEBUG, "end record");
 #endif
-                    returnCode = 0;
-                }
-                else if (!strcmp (p, "element"))
-                {
-                    r = execTok (spec, &s, arg_no, arg_start, arg_end,
-                                 &cmd_str, &cmd_len);
+		returnCode = 0;
+	    }
+	    else if (!strcmp (p, "element"))
+	    {
+		r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			     &cmd_str, &cmd_len);
 #if 0
-                    if (*d1_level == 1)
-                    {
-                        *d1_level = 0;
-                        returnCode = 0;
-                    }
+		if (*d1_level == 1)
+		{
+		    *d1_level = 0;
+		    returnCode = 0;
+		}
 #endif
-                    if (r > 2)
-                    {
-                        tagEnd (spec, d1_stack, d1_level, cmd_str, cmd_len);
-                        r = execTok (spec, &s, arg_no, arg_start, arg_end,
-                                     &cmd_str, &cmd_len);
-                    }
-                    else
-                        tagEnd (spec, d1_stack, d1_level, NULL, 0);
-                }
-                else
-                    logf (LOG_WARN, "missing record/element/variant");
-            }
-            else
-                logf (LOG_WARN, "missing record/element/variant");
-        }
+		if (r > 2)
+		{
+		    tagEnd (spec, d1_stack, d1_level, cmd_str, cmd_len);
+		    r = execTok (spec, &s, arg_no, arg_start, arg_end,
+				 &cmd_str, &cmd_len);
+		}
+		else
+		    tagEnd (spec, d1_stack, d1_level, NULL, 0);
+	    }
+	    else if (!strcmp (p, "context"))
+	    {
+#if REGX_DEBUG
+		logf (LOG_DEBUG, "end context");
+#endif
+		if (spec->context_stack_top)
+		    (spec->context_stack_top)--;
+		r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			     &cmd_str, &cmd_len);
+	    }	    
+	    else
+		logf (LOG_WARN, "bad keyword '%s' after end", p);
+	}
         else if (!strcmp (p, "data"))
         {
             int textFlag = 0;
@@ -1206,9 +1313,29 @@ static int execCode (struct lexSpec *spec,
             r = execTok (spec, &s, arg_no, arg_start, arg_end,
                          &cmd_str, &cmd_len);
         }
+	else if (!strcmp (p, "context"))
+	{
+            if (r > 1)
+	    {
+		struct lexContext *lc = spec->context;
+		r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			     &cmd_str, &cmd_len);
+		p = regxStrz (cmd_str, cmd_len, ptmp);
+		
+		while (lc && strcmp (p, lc->name))
+		    lc = lc->next;
+		if (lc)
+		    spec->context_stack[spec->context_stack_top] = lc;
+		else
+		    logf (LOG_WARN, "unknown context %s", p);
+
+	    }
+	    r = execTok (spec, &s, arg_no, arg_start, arg_end,
+			 &cmd_str, &cmd_len);
+	}
         else
         {
-            logf (LOG_WARN, "unknown code command: %.*s", cmd_len, cmd_str);
+            logf (LOG_WARN, "unknown code command '%.*s'", cmd_len, cmd_str);
             r = execTok (spec, &s, arg_no, arg_start, arg_end,
                          &cmd_str, &cmd_len);
             continue;
@@ -1226,6 +1353,11 @@ static int execCode (struct lexSpec *spec,
 }
 
 
+/*
+ * execAction: Execute action specified by 'ap'. Returns 0 if
+ *  the pattern(s) associated by rule and code could be executed
+ *  ok; returns 1 if code couldn't be executed.
+ */
 static int execAction (struct lexSpec *spec, struct lexRuleAction *ap,
                        data1_node **d1_stack, int *d1_level,
                        int start_ptr, int *pptr)
@@ -1289,54 +1421,61 @@ static int execAction (struct lexSpec *spec, struct lexRuleAction *ap,
     return 1;
 }
 
-static int execRule (struct lexSpec *spec, struct lexTrans *trans,
+static int execRule (struct lexSpec *spec, struct lexContext *context,
                      data1_node **d1_stack, int *d1_level,
                      int ruleNo, int start_ptr, int *pptr)
 {
 #if REGX_DEBUG
-    logf (LOG_DEBUG, "execRule %d", ruleNo);
+    logf (LOG_DEBUG, "exec rule %d", ruleNo);
 #endif
-    return execAction (spec, trans->fastRule[ruleNo]->actionList,
+    return execAction (spec, context->fastRule[ruleNo]->actionList,
                        d1_stack, d1_level, start_ptr, pptr);
 }
 
-data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
-                     data1_node **d1_stack, int *d1_level,
-                     int *ptr)
+data1_node *lexNode (struct lexSpec *spec,
+		     data1_node **d1_stack, int *d1_level, int *ptr)
 {
-    struct DFA_state *state = trans->dfa->states[0];
+    struct lexContext *context = spec->context_stack[spec->context_stack_top];
+    struct DFA_state *state = context->dfa->states[0];
     struct DFA_tran *t;
     unsigned char c;
     unsigned char c_prev = '\n';
     int i;
-    int last_rule = 0;
-    int last_ptr = *ptr;
-    int start_ptr = *ptr;
-    int skip_ptr = *ptr;
+    int last_rule = 0;        /* rule number of current match */
+    int last_ptr = *ptr;      /* last char of match */
+    int start_ptr = *ptr;     /* first char of match */
+    int skip_ptr = *ptr;      /* first char of run */
 
     while (1)
     {
         c = f_win_advance (spec, ptr);
         if (*ptr == F_WIN_EOF)
         {
+	    /* end of file met */
             if (last_rule)
             {
+		/* there was a match */
                 if (skip_ptr < start_ptr)
                 {
+		    /* deal with chars that didn't match */
                     int size;
                     char *buf;
                     buf = f_win_get (spec, skip_ptr, start_ptr, &size);
                     execDataP (spec, d1_stack, d1_level, buf, size, 0);
                 }
+		/* restore pointer */
                 *ptr = last_ptr;
-                if (!execRule (spec, trans, d1_stack, d1_level, last_rule,
-                               start_ptr, ptr))
+		/* execute rule */
+                if (!execRule (spec, context, d1_stack, d1_level,
+			       last_rule, start_ptr, ptr))
                     break;
+		/* restore skip pointer */
                 skip_ptr = *ptr;
                 last_rule = 0;
             }
             else if (skip_ptr < *ptr)
             {
+		/* deal with chars that didn't match */
                 int size;
                 char *buf;
                 buf = f_win_get (spec, skip_ptr, *ptr, &size);
@@ -1354,14 +1493,16 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
                 {
                     if (skip_ptr < start_ptr)
                     {
+			/* deal with chars that didn't match */
                         int size;
                         char *buf;
                         buf = f_win_get (spec, skip_ptr, start_ptr, &size);
                         execDataP (spec, d1_stack, d1_level, buf, size, 0);
                     }
+		    /* restore pointer */
                     *ptr = last_ptr;
-                    if (!execRule (spec, trans, d1_stack, d1_level, last_rule,
-                                   start_ptr, ptr))
+                    if (!execRule (spec, context, d1_stack, d1_level,
+				   last_rule, start_ptr, ptr))
                     {
                         if (spec->f_win_ef && *ptr != F_WIN_EOF)
 			{
@@ -1372,9 +1513,10 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
 			}
                         return NULL;
                     }
+		    context = spec->context_stack[spec->context_stack_top];
                     skip_ptr = *ptr;
                     last_rule = 0;
-                    start_ptr = *ptr;
+                    last_ptr = start_ptr = *ptr;
                     if (start_ptr > 0)
                     {
                         --start_ptr;
@@ -1386,12 +1528,12 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
                     c_prev = f_win_advance (spec, &start_ptr);
                     *ptr = start_ptr;
                 }
-                state = trans->dfa->states[0];
+                state = context->dfa->states[0];
                 break;
             }
             else if (c >= t->ch[0] && c <= t->ch[1])
             {   /* transition ... */
-                state = trans->dfa->states[t->to];
+                state = context->dfa->states[t->to];
                 if (state->rule_no)
                 {
                     if (c_prev == '\n')
@@ -1413,20 +1555,33 @@ data1_node *lexNode (struct lexSpec *spec, struct lexTrans *trans,
     return NULL;
 }
 
-static data1_node *lexRoot (struct lexSpec *spec, off_t offset)
+static data1_node *lexRoot (struct lexSpec *spec, off_t offset,
+			    const char *context_name)
 {
+    struct lexContext *lt = spec->context;
     data1_node *d1_stack[512];
     int d1_level = 0;
     int ptr = offset;
 
+    spec->context_stack_top = 0;    
+    while (lt)
+    {
+	if (!strcmp (lt->name, context_name))
+	    break;
+	lt = lt->next;
+    }
+    if (!lt)
+    {
+	logf (LOG_WARN, "cannot find context %s", context_name);
+	return NULL;
+    }
+    spec->context_stack[spec->context_stack_top] = lt;
     d1_stack[d1_level] = NULL;
-    if (spec->beginActionList)
-        execAction (spec, spec->beginActionList,
-                    d1_stack, &d1_level, 0, &ptr);
-    lexNode (spec, &spec->trans, d1_stack, &d1_level, &ptr);
-    if (spec->endActionList)
-        execAction (spec, spec->endActionList,
-                    d1_stack, &d1_level, ptr, &ptr);
+    if (lt->beginActionList)
+        execAction (spec, lt->beginActionList, d1_stack, &d1_level, 0, &ptr);
+    lexNode (spec, d1_stack, &d1_level, &ptr);
+    if (lt->endActionList)
+        execAction (spec, lt->endActionList, d1_stack, &d1_level, ptr, &ptr);
     return *d1_stack;
 }
 
@@ -1440,13 +1595,13 @@ data1_node *grs_read_regx (struct grs_read_info *p)
     if (!curLexSpec || strcmp (curLexSpec->name, p->type))
     {
         if (curLexSpec)
-            lexSpecDel (&curLexSpec);
-        curLexSpec = lexSpecMk (p->type);
+            lexSpecDestroy (&curLexSpec);
+        curLexSpec = lexSpecCreate (p->type);
 	curLexSpec->dh = p->dh;
         res = readFileSpec (curLexSpec);
         if (res)
         {
-            lexSpecDel (&curLexSpec);
+            lexSpecDestroy (&curLexSpec);
             return NULL;
         }
     }
@@ -1461,5 +1616,5 @@ data1_node *grs_read_regx (struct grs_read_info *p)
         curLexSpec->f_win_size = 500000;
     }
     curLexSpec->m = p->mem;
-    return lexRoot (curLexSpec, p->offset);
+    return lexRoot (curLexSpec, p->offset, "main");
 }
