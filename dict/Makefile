@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.21 1996-03-20 09:35:15 adam Exp $
+# $Id: Makefile,v 1.22 1996-05-22 08:26:46 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -12,7 +12,6 @@ YAZINC=-I../../yaz/include
 INCLUDE=-I../include $(YAZINC)
 TPROG1=dicttest
 TPROG2=dictext
-#CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 LIB=../lib/dict.a 
 PO = scan.o dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o \

@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.16 1995-11-30 17:00:49 adam Exp $
+# $Id: Makefile,v 1.17 1996-05-22 08:26:40 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -10,10 +10,8 @@ YAZLIB=-lyaz
 YAZINC=-I../../yaz/include
 
 INCLUDE=-I../include $(YAZINC)
-#CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 TPROG=btest
-CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 LIB=../lib/bfile.a
 PO = bfile.o mfile.o cfile.o commit.o
