@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.9 2004-06-15 09:43:30 adam Exp $
+# $Id: test1.sh,v 1.10 2004-09-24 15:03:19 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -22,7 +22,7 @@ echo "starting server..." >>$LOG
 sleep 1
 
 echo "checking it runs..." >>$LOG
-test -f zebrasrv.pid || exit 1
+test -f zebrasrv.pid || sleep 5 || test -f zebrasrv.pid || exit 1
 
 echo "search 1..." >>$LOG
 ../api/testclient localhost:9901 utah > log || exit 1

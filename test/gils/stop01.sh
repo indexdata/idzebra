@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop01.sh,v 1.6 2004-06-14 23:45:11 adam Exp $
+# $Id: stop01.sh,v 1.7 2004-09-24 15:03:19 adam Exp $
 # test start and stop of the server with -1
 
 pp=${srcdir:-"."}
@@ -20,9 +20,8 @@ test -f zebrasrv.pid && kill -9 `cat zebrasrv.pid`
 echo "Starting server with -1 (one shot)..." >>$LOG
 ../../index/zebrasrv -1 -c $pp/zebra1.cfg -l $LOG tcp:@:9901 &
 sleep 1
-
 echo "  checking that it runs... " >>$LOG
-test -f zebrasrv.pid || exit 1
+test -f zebrasrv.pid || sleep 5 || test -f zebrasrv.pid || exit 1
 PID=`cat zebrasrv.pid`
 ps -p $PID |grep $PID >/dev/null || exit 1
 

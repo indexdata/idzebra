@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop03.sh,v 1.7 2004-06-15 08:06:34 adam Exp $
+# $Id: stop03.sh,v 1.8 2004-09-24 15:03:19 adam Exp $
 # test start and stop of the threaded server (-T)
 
 pp=${srcdir:-"."}
@@ -29,7 +29,7 @@ if grep 'not available' out >/dev/null; then
     exit 0
 fi
 echo "  checking that it runs... " >>$LOG
-test -f zebrasrv.pid || exit 1
+test -f zebrasrv.pid || sleep 5 || test -f zebrasrv.pid || exit 1
 PID=`cat zebrasrv.pid`
 ps -p $PID | grep $PID >/dev/null || exit 1
 

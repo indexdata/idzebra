@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop02.sh,v 1.6 2004-06-14 23:45:11 adam Exp $
+# $Id: stop02.sh,v 1.7 2004-09-24 15:03:19 adam Exp $
 # test start and stop of the server with -S
 
 pp=${srcdir:-"."}
@@ -22,7 +22,7 @@ echo "Starting server with -S (static)..." >>$LOG
 sleep 1
 
 echo "  checking that it runs... " >>$LOG
-test -f zebrasrv.pid || exit 1
+test -f zebrasrv.pid || sleep 5 || test -f zebrasrv.pid || exit 1
 PID=`cat zebrasrv.pid`
 ps -p $PID |grep $PID >/dev/null || exit 1
 

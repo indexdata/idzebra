@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test2.sh,v 1.9 2004-06-15 09:43:30 adam Exp $
+# $Id: test2.sh,v 1.10 2004-09-24 15:03:19 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -22,7 +22,7 @@ test -f zebrasrv.pid && kill -9 `cat zebrasrv.pid`
 echo "starting server..." >>$LOG
 ../../index/zebrasrv -S -c $pp/zebra2.cfg -l $LOG tcp:@:9901 &
 sleep 1
-test -f zebrasrv.pid || exit 1
+test -f zebrasrv.pid || sleep 5 || test -f zebrasrv.pid || exit 1
 
 echo "search 1..." >>$LOG
 ../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
