@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.10  1998-06-08 14:43:15  adam
+ * Revision 1.11  1998-06-09 12:16:48  adam
+ * Implemented auto-generation of CategoryList records.
+ *
+ * Revision 1.10  1998/06/08 14:43:15  adam
  * Added suport for EXPLAIN Proxy servers - added settings databasePath
  * and explainDatabase to facilitate this. Increased maximum number
  * of databases and attributes in one register.
@@ -105,6 +108,12 @@ struct zebraExplainAttset {
     struct zebraExplainAttset *next;
 };
 
+struct zebraCategoryListInfo {
+    int dirty;
+    int sysno;
+    data1_node *data1_categoryList;
+};
+
 struct zebraExplainInfo {
     int  ordinalSU;
     int  runNumber;
@@ -115,6 +124,7 @@ struct zebraExplainInfo {
     struct zebraExplainAttset *attsets;
     NMEM nmem;
     data1_node *data1_target;
+    struct zebraCategoryListInfo *categoryList;
     struct zebDatabaseInfoB *databaseInfo;
     struct zebDatabaseInfoB *curDatabaseInfo;
     zebAccessInfo accessInfo;
@@ -275,6 +285,10 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush);
 static void zebraExplain_writeAttributeSet (ZebraExplainInfo zei,
 					    zebAccessObject o,
 					    int key_flush);
+static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
+					    struct zebraCategoryListInfo *zcl,
+					    int key_flush);
+
 
 static Record createRecord (Records records, int *sysno)
 {
@@ -315,7 +329,9 @@ void zebraExplain_close (ZebraExplainInfo zei, int writeFlag,
 						zdi->databaseName, 1);
 	}
 	zebraExplain_writeTarget (zei, 1);
-	
+	zebraExplain_writeCategoryList (zei,
+					zei->categoryList,
+					1);
 	assert (zei->accessInfo);
 	for (o = zei->accessInfo->attributeSetIds; o; o = o->next)
 	    if (!o->sysno)
@@ -427,6 +443,11 @@ ZebraExplainInfo zebraExplain_open (
     zei->dh = dh;
     zei->attsets = NULL;
     zei->res = res;
+    zei->categoryList = nmem_malloc (zei->nmem,
+				     sizeof(*zei->categoryList));
+    zei->categoryList->sysno = 0;
+    zei->categoryList->dirty = 0;
+    zei->categoryList->data1_categoryList = NULL;
 
     time (&our_time);
     tm = localtime (&our_time);
@@ -541,7 +562,6 @@ ZebraExplainInfo zebraExplain_open (
 					    "targetInfo");
 	    assert (node_tgtinfo);
 
-
 	    zebraExplain_initCommonInfo (zei, node_tgtinfo);
 	    zebraExplain_initAccessInfo (zei, node_tgtinfo);
 
@@ -562,6 +582,23 @@ ZebraExplainInfo zebraExplain_open (
 	*zdip = NULL;
 	rec_rm (&trec);
 	zebraExplain_newDatabase (zei, "IR-Explain-1", 0);
+
+	if (!zei->categoryList->dirty)
+	{
+	    struct zebraCategoryListInfo *zcl = zei->categoryList;
+	    data1_node *node_cl;
+
+	    zcl->dirty = 1;
+	    zcl->data1_categoryList =
+		data1_read_sgml (zei->dh, zei->nmem,
+				 "<explain><categoryList>CategoryList\n"
+				 "/></>\n");
+	    node_cl = data1_search_tag (zei->dh,
+					zcl->data1_categoryList->child,
+					"categoryList");
+	    assert (node_cl);
+	    zebraExplain_initCommonInfo (zei, node_cl);
+	}
     }
     return zei;
 }
@@ -847,6 +884,68 @@ static void writeAttributeValueDetails (ZebraExplainInfo zei,
 	data1_add_tagdata_int (zei->dh, node_value, "numeric",
 			       zsui->info.use, zei->nmem);
     }
+}
+
+static void zebraExplain_writeCategoryList (ZebraExplainInfo zei,
+					    struct zebraCategoryListInfo *zcl,
+					    int key_flush)
+{
+    char *sgml_buf;
+    int sgml_len;
+    int i;
+    Record drec;
+    data1_node *node_ci, *node_categoryList;
+    int sysno = 0;
+    static char *category[] = {
+	"CategoryList",
+	"TargetInfo",
+	"DatabaseInfo",
+	"AttributeDetails",
+	NULL
+    };
+
+    assert (zcl);
+    if (!zcl->dirty)
+	return ;
+    zcl->dirty = 1;
+    node_categoryList = zcl->data1_categoryList;
+
+#if ZINFO_DEBUG
+    logf (LOG_LOG, "zebraExplain_writeCategoryList");
+#endif
+
+    drec = createRecord (zei->records, &sysno);
+
+    node_ci = data1_search_tag (zei->dh, node_categoryList->child,
+				"categoryList");
+    assert (node_ci);
+    node_ci = data1_add_tag (zei->dh, node_ci, "categories", zei->nmem);
+    assert (node_ci);
+    
+    for (i = 0; category[i]; i++)
+    {
+	data1_node *node_cat = data1_add_tag (zei->dh, node_ci, 
+					      "category", zei->nmem);
+
+	data1_add_tagdata_text (zei->dh, node_cat, "name",
+				category[i], zei->nmem);
+    }
+    /* extract *searchable* keys from it. We do this here, because
+       record count, etc. is affected */
+    if (key_flush)
+	(*zei->updateFunc)(zei->updateHandle, drec, node_categoryList);
+
+    /* convert to "SGML" and write it */
+#if ZINFO_DEBUG
+    data1_pr_tree (zei->dh, zad->data1_tree, stderr);
+#endif
+    sgml_buf = data1_nodetoidsgml(zei->dh, node_categoryList,
+				  0, &sgml_len);
+    drec->info[recInfo_storeData] = xmalloc (sgml_len);
+    memcpy (drec->info[recInfo_storeData], sgml_buf, sgml_len);
+    drec->size[recInfo_storeData] = sgml_len;
+    
+    rec_put (zei->records, &drec);
 }
 
 static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
