@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.5  1995-09-04 12:33:42  adam
+ * Revision 1.6  1995-09-05 15:28:39  adam
+ * More work on search engine.
+ *
+ * Revision 1.5  1995/09/04  12:33:42  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.4  1995/09/04  09:10:35  adam
@@ -53,3 +56,9 @@ int key_compare_x (const struct it_key *i1, const struct it_key *i2);
 void key_input (const char *dict_fname, const char *isam_fname, 
                 const char *key_fname, int cache);
 int key_sort (const char *key_fname, size_t mem);
+
+#define FNAME_WORD_DICT "worddict"
+#define FNAME_WORD_ISAM "wordisam"
+#define FNAME_FILE_DICT "filedict"
+#define FNAME_SYS_IDX "sysidx"
+#define SYS_IDX_ENTRY_LEN 120

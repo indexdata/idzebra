@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.2  1995-09-04 12:33:43  adam
+ * Revision 1.3  1995-09-05 15:28:40  adam
+ * More work on search engine.
+ *
+ * Revision 1.2  1995/09/04  12:33:43  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.1  1995/09/04  09:10:41  adam
@@ -16,49 +19,146 @@
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
+#include <fcntl.h>
 
-#include <alexutil.h>
-#include "index.h"
+#include "zserver.h"
 
-char *prog;
+#include <backend.h>
+#include <dmalloc.h>
+
+ZServerInfo server_info;
+
+bend_initresult *bend_init (bend_initrequest *q)
+{
+    static bend_initresult r;
+    static char *name = "zserver";
+
+    r.errcode = 0;
+    r.errstring = 0;
+    r.handle = name;
+
+    server_info.sets = NULL;
+    if (!(server_info.sys_idx_fd = open (FNAME_SYS_IDX, O_RDONLY)))
+    {
+        r.errcode = 1;
+        r.errstring = "dict_open fail: filedict";
+        return &r;
+    }
+    if (!(server_info.fileDict = dict_open (FNAME_FILE_DICT, 5, 0)))
+    {
+        r.errcode = 1;
+        r.errstring = "dict_open fail: filedict";
+        return &r;
+    }    
+    if (!(server_info.wordDict = dict_open (FNAME_WORD_DICT, 20, 0)))
+    {
+        dict_close (server_info.fileDict);
+        r.errcode = 1;
+        r.errstring = "dict_open fail: worddict";
+        return &r;
+    }    
+    if (!(server_info.wordIsam = is_open (FNAME_WORD_ISAM, key_compare, 0)))
+    {
+        dict_close (server_info.wordDict);
+        dict_close (server_info.fileDict);
+        r.errcode = 1;
+        r.errstring = "is_open fail: wordisam";
+        return &r;
+    }
+    return &r;
+}
+
+bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
+{
+    static bend_searchresult r;
+
+    r.errcode = 0;
+    r.errstring = 0;
+    r.hits = 0;
+
+    switch (q->query->which)
+    {
+    case Z_Query_type_1:
+        r.errcode = rpn_search (&server_info, q->query->u.type_1,
+                                q->num_bases, q->basenames, q->setname,
+                                &r.hits);
+        break;
+    default:
+        r.errcode = 107;
+    }
+    return &r;
+}
+
+bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
+{
+    static bend_fetchresult r;
+    int positions[2];
+    ZServerRecord *records;
+
+    r.errstring = 0;
+    r.last_in_set = 0;
+    r.basename = "base";
+
+    positions[0] = q->number;
+    records = resultSetRecordGet (&server_info, q->setname, 1, positions);
+    if (!records)
+    {
+        logf (LOG_DEBUG, "resultSetRecordGet, error");
+        r.errcode = 13;
+        return &r;
+    }
+    r.len = records[0].size;
+    r.record = malloc (r.len+1);
+    strcpy (r.record, records[0].buf);
+    resultSetRecordDel (&server_info, records, 1);
+    r.format = VAL_SUTRS;
+    r.errcode = 0;
+    return &r;
+}
+
+bend_deleteresult *bend_delete (void *handle, bend_deleterequest *q, int *num)
+{
+    return 0;
+}
+
+bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
+{
+    static struct scan_entry list[200];
+    static char buf[200][200];
+    static bend_scanresult r;
+    int i;
+
+    r.term_position = q->term_position;
+    r.num_entries = q->num_entries;
+    r.entries = list;
+    for (i = 0; i < r.num_entries; i++)
+    {
+    	list[i].term = buf[i];
+	sprintf(list[i].term, "term-%d", i+1);
+	list[i].occurrences = rand() % 100000;
+    }
+    r.errcode = 0;
+    r.errstring = 0;
+    return &r;
+}
+
+void bend_close (void *handle)
+{
+    dict_close (server_info.fileDict);
+    dict_close (server_info.wordDict);
+    is_close (server_info.wordIsam);
+    close (server_info.sys_idx_fd);
+    return;
+}
 
 int main (int argc, char **argv)
 {
-    int ret;
-    char *arg;
-    char *base_name = NULL;
+    char *base_name = "base";
 
-    prog = *argv;
-    while ((ret = options ("v:", argv, argc, &arg)) != -2)
+    if (!(common_resource = res_open (base_name)))
     {
-        if (ret == 0)
-        {
-            if (!base_name)
-            {
-                base_name = arg;
-
-                common_resource = res_open (base_name);
-                if (!common_resource)
-                {
-                    logf (LOG_FATAL, "Cannot open resource `%s'", base_name);
-                    exit (1);
-                }
-            }
-        }
-        else if (ret == 'v')
-        {
-            log_init (log_mask_str(arg), prog, NULL);
-        }
-        else
-        {
-            logf (LOG_FATAL, "Unknown option '-%s'", arg);
-            exit (1);
-        }
-    }
-    if (!base_name)
-    {
-        fprintf (stderr, "zserver [-v log] base ...\n");
+        logf (LOG_FATAL, "Cannot open resource `%s'", base_name);
         exit (1);
     }
-    exit (0);
+    return statserv_main (argc, argv);
 }

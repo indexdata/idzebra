@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.3  1995-09-04 12:33:41  adam
+ * Revision 1.4  1995-09-05 15:28:39  adam
+ * More work on search engine.
+ *
+ * Revision 1.3  1995/09/04  12:33:41  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.2  1995/09/04  09:10:34  adam
@@ -30,6 +33,7 @@
 static Dict file_idx;
 static SYSNO sysno_next;
 static int key_fd = -1;
+static int sys_idx_fd = -1;
 static char *key_buf;
 static int key_offset;
 
@@ -40,7 +44,7 @@ void key_open (const char *fname)
         return;
     if ((key_fd = open (fname, O_RDWR|O_CREAT, 0666)) == -1)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "Creat %s", fname);
+        logf (LOG_FATAL|LOG_ERRNO, "open %s", fname);
         exit (1);
     }
     logf (LOG_DEBUG, "key_open of %s", fname);
@@ -50,7 +54,7 @@ void key_open (const char *fname)
         exit (1);
     }
     key_offset = 0;
-    if (!(file_idx = dict_open ("fileidx", 10, 1)))
+    if (!(file_idx = dict_open (FNAME_FILE_DICT, 10, 1)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", "fileidx");
         exit (1);
@@ -60,6 +64,11 @@ void key_open (const char *fname)
         memcpy (&sysno_next, (char*)file_key+1, sizeof(sysno_next));
     else
         sysno_next = 1;
+    if ((sys_idx_fd = open (FNAME_SYS_IDX, O_RDWR|O_CREAT, 0666)) == -1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "open %s", FNAME_SYS_IDX);
+        exit (1);
+    }
 }
 
 int key_close (void)
@@ -70,6 +79,7 @@ int key_close (void)
         return 0;
     }
     close (key_fd);
+    close (sys_idx_fd);
     dict_insert (file_idx, ".", sizeof(sysno_next), &sysno_next);
     dict_close (file_idx);
     key_fd = -1;
@@ -181,6 +191,8 @@ void file_extract (int cmd, const char *fname, const char *kname)
     {
         sysno = sysno_next++;
         dict_insert (file_idx, kname, sizeof(sysno), &sysno);
+        lseek (sys_idx_fd, sysno * SYS_IDX_ENTRY_LEN, SEEK_SET);
+        write (sys_idx_fd, kname, strlen(kname)+1);
     }
     else
         memcpy (&sysno, (char*) file_info+1, sizeof(sysno));

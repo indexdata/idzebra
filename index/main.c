@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.6  1995-09-04 12:33:43  adam
+ * Revision 1.7  1995-09-05 15:28:39  adam
+ * More work on search engine.
+ *
+ * Revision 1.6  1995/09/04  12:33:43  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.5  1995/09/04  09:10:39  adam
@@ -109,6 +112,7 @@ int main (int argc, char **argv)
     if (!key_sort ("keys.tmp", 1000000))
         exit (0);
     logf (LOG_DEBUG, "Input");
-    key_input ("dictinv", "isaminv", "keys.tmp", 50);
+    key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, "keys.tmp", 50);
     exit (0);
 }
+
