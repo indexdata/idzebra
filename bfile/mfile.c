@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.40  2000-10-17 12:37:09  adam
+ * Revision 1.41  2000-11-29 14:24:01  adam
+ * Script configure uses yaz pthreads options. Added locking for
+ * zebra_register_{lock,unlock}.
+ *
+ * Revision 1.40  2000/10/17 12:37:09  adam
  * Fixed notification of live-updates. Fixed minor problem with mf_init
  * where it didn't handle shadow area file names correctly.
  *
@@ -316,10 +320,7 @@ MFile_area mf_init(const char *name, const char *spec)
 	    if (strchr (".-", *dent->d_name))
 		continue;
 	    if (len < 5 || !cp || strcmp (dent->d_name + len - 3, ".mf"))
-	    {
-	    	logf (LOG_WARN, "bf: %s is not a part-file.", dent->d_name);
 		continue;
-	    }
 	    number = atoi(cp+1);
 	    memcpy (metaname, dent->d_name, cp - dent->d_name);
 	    metaname[ cp - dent->d_name] = '\0';

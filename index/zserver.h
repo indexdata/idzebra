@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.49  2000-05-18 12:01:36  adam
+ * Revision 1.50  2000-11-29 14:24:01  adam
+ * Script configure uses yaz pthreads options. Added locking for
+ * zebra_register_{lock,unlock}.
+ *
+ * Revision 1.49  2000/05/18 12:01:36  adam
  * System call times(2) used again. More 64-bit fixes.
  *
  * Revision 1.48  2000/04/05 09:49:35  adam
@@ -232,7 +236,7 @@ struct zebra_service {
     Passwd_db passwd_db;
     Zebra_mutex_cond session_lock;
     int stop_flag;
-    int active;
+    int active; /* 0=shutdown, 1=enabled and inactive, 2=activated */
 };
 
 struct recKeys {

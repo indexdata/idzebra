@@ -144,14 +144,14 @@ AC_DEFUN([YAZ_INIT],
 	fi
 	AC_MSG_CHECKING(for YAZ)
 	if $yazconfig --version >/dev/null 2>&1; then
-		YAZLIB=`$yazconfig --libs`
+		YAZLIB=`$yazconfig --libs $1`
 		# if this is empty, it's a simple version YAZ 1.6 script
 		# so we have to source it instead...
 		if test "X$YAZLIB" = "X"; then
 			. $yazconfig
 		else
-			YAZLALIB=`$yazconfig --lalibs`
-			YAZINC=`$yazconfig --cflags`
+			YAZLALIB=`$yazconfig --lalibs $1`
+			YAZINC=`$yazconfig --cflags $1`
 			YAZVERSION=`$yazconfig --version`
 		fi
 		AC_MSG_RESULT($yazconfig)

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.33  1999-11-30 13:48:04  adam
+ * Revision 1.34  2000-11-29 14:24:01  adam
+ * Script configure uses yaz pthreads options. Added locking for
+ * zebra_register_{lock,unlock}.
+ *
+ * Revision 1.33  1999/11/30 13:48:04  adam
  * Improved installation. Updated for inclusion of YAZ header files.
  *
  * Revision 1.32  1999/09/07 07:19:21  adam
@@ -1049,10 +1053,8 @@ static void tagBegin (struct lexSpec *spec,
     parent = spec->d1_stack[spec->d1_level -1];
     partag = get_parent_tag(spec->dh, parent);
    
-    res = data1_mk_node (spec->dh, spec->m);
+    res = data1_mk_node_type (spec->dh, spec->m, DATA1N_tag);
     res->parent = parent;
-    res->which = DATA1N_tag;
-    res->u.tag.get_bytes = -1;
 
     if (len >= DATA1_LOCALDATA)
 	res->u.tag.tag = (char *) nmem_malloc (spec->m, len+1);
@@ -1075,9 +1077,6 @@ static void tagBegin (struct lexSpec *spec,
 				      spec->d1_stack[0]->u.root.absyn,
 				      e, res->u.tag.tag);
     res->u.tag.element = elem;
-    res->u.tag.node_selected = 0;
-    res->u.tag.make_variantlist = 0;
-    res->u.tag.no_data_requested = 0;
     res->root = parent->root;
 
     parent->last_child = res;

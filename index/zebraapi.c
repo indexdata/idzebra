@@ -3,7 +3,11 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.38  2000-11-08 13:46:58  adam
+ * Revision 1.39  2000-11-29 14:24:01  adam
+ * Script configure uses yaz pthreads options. Added locking for
+ * zebra_register_{lock,unlock}.
+ *
+ * Revision 1.38  2000/11/08 13:46:58  adam
  * Fixed scan: server could break if bad attribute/database was selected.
  * Work on remote update.
  *
@@ -189,6 +193,8 @@ static int zebra_register_lock (ZebraHandle zh, int rw)
     times (&zh->tms1);
 #endif
 
+    zebra_mutex_cond_lock (&zh->service->session_lock);
+
     state = zebra_server_lock_get_state(zh->service, &lastChange);
 
     zebra_server_lock (zh->service, state);
@@ -230,6 +236,7 @@ static void zebra_register_unlock (ZebraHandle zh)
 {
     if (zh->service->registerState != -1)
         zebra_server_unlock (zh->service, zh->service->registerState);
+    zebra_mutex_cond_unlock (&zh->service->session_lock);
 #if HAVE_SYS_TIMES_H
     times (&zh->tms2);
     logf (LOG_LOG, "user/system: %ld/%ld",
@@ -248,6 +255,7 @@ ZebraHandle zebra_open (ZebraService zs)
 	return 0;
 
     zh = (ZebraHandle) xmalloc (sizeof(*zh));
+    yaz_log (LOG_LOG, "zebra_open zs=%p returns %p", zs, zh);
 
     zh->service = zs;
     zh->sets = 0;
@@ -297,7 +305,11 @@ ZebraService zebra_start (const char *configName)
 static int zebra_register_activate (ZebraService zh, int rw)
 {
     if (zh->active > 1)
+    {
+	yaz_log (LOG_LOG, "zebra_register_activate (ignored since active=%d)",
+		 zh->active);
 	return 0;
+    }
     yaz_log (LOG_LOG, "zebra_register_activate shadow=%s",
 	     zh->registerState ? "yes" : "no");
 
@@ -434,62 +446,68 @@ void zebra_admin_start (ZebraHandle zh)
     zebra_mutex_cond_unlock (&zs->session_lock);
 }
 
-static int zebra_register_deactivate (ZebraService zh)
+static int zebra_register_deactivate (ZebraService zs)
 {
-    zh->stop_flag = 0;
-    if (zh->active <= 1)
-	return 0;
-    yaz_log(LOG_LOG, "zebra_register_deactivate");
-    zebra_chdir (zh);
-    if (zh->records)
+    zs->stop_flag = 0;
+    if (zs->active <= 1)
     {
-        zebraExplain_close (zh->zei, 0);
-        dict_close (zh->dict);
-	sortIdx_close (zh->sortIdx);
-	if (zh->isams)
-	    isams_close (zh->isams);
-#if ZMBOL
-        if (zh->isam)
-            is_close (zh->isam);
-        if (zh->isamc)
-            isc_close (zh->isamc);
-        if (zh->isamd)
-            isamd_close (zh->isamd);
-#endif
-        rec_close (&zh->records);
+	yaz_log(LOG_LOG, "zebra_register_deactivate (ignored since active=%d)",
+		zs->active);
+	return 0;
     }
-    recTypes_destroy (zh->recTypes);
-    zebra_maps_close (zh->zebra_maps);
-    zebraRankDestroy (zh);
-    bfs_destroy (zh->bfs);
-    data1_destroy (zh->dh);
+    yaz_log(LOG_LOG, "zebra_register_deactivate");
+    zebra_chdir (zs);
+    if (zs->records)
+    {
+        zebraExplain_close (zs->zei, 0);
+        dict_close (zs->dict);
+	sortIdx_close (zs->sortIdx);
+	if (zs->isams)
+	    isams_close (zs->isams);
+#if ZMBOL
+        if (zs->isam)
+            is_close (zs->isam);
+        if (zs->isamc)
+            isc_close (zs->isamc);
+        if (zs->isamd)
+            isamd_close (zs->isamd);
+#endif
+        rec_close (&zs->records);
+    }
+    recTypes_destroy (zs->recTypes);
+    zebra_maps_close (zs->zebra_maps);
+    zebraRankDestroy (zs);
+    bfs_destroy (zs->bfs);
+    data1_destroy (zs->dh);
 
-    if (zh->passwd_db)
-	passwd_db_close (zh->passwd_db);
-    zh->active = 1;
+    if (zs->passwd_db)
+	passwd_db_close (zs->passwd_db);
+    zs->active = 1;
     return 0;
 }
 
-void zebra_stop(ZebraService zh)
+void zebra_stop(ZebraService zs)
 {
-    if (!zh)
+    if (!zs)
 	return ;
     yaz_log (LOG_LOG, "zebra_stop");
 
-    assert (!zh->sessions);
+    assert (!zs->sessions);
 
-    zebra_mutex_cond_destroy (&zh->session_lock);
+    zebra_mutex_cond_destroy (&zs->session_lock);
 
-    zebra_register_deactivate(zh);
-    res_close (zh->res);
-    xfree (zh->configName);
-    xfree (zh);
+    zebra_register_deactivate(zs);
+    res_close (zs->res);
+    xfree (zs->configName);
+    xfree (zs);
 }
 
 void zebra_close (ZebraHandle zh)
 {
     ZebraService zs = zh->service;
     struct zebra_session **sp;
+
+    yaz_log (LOG_LOG, "zebra_close zh=%p", zh);
     if (!zh)
 	return ;
     resultSetDestroy (zh, -1, 0, 0);

@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2000
-dnl $Id: configure.in,v 1.24 2000-10-17 12:37:09 adam Exp $
+dnl $Id: configure.in,v 1.25 2000-11-29 14:24:01 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -39,27 +39,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
-YAZ_INIT
-
-dnl ------ Threads
-AC_ARG_ENABLE(threads, [  --disable-threads       disable threads],[enable_threads=$enableval],[enable_threads=yes])
-if test "$enable_threads" = "yes"; then
-	AC_CHECK_LIB(pthread,main)
-	AC_MSG_CHECKING(for working POSIX Threads)
-	AC_TRY_LINK([#include <pthread.h>
-	int func(void *p) { return 0; }
-	],[
-	pthread_t pthread_id;
-	int r = pthread_create (&pthread_id, 0, func, 0);],
-		thread_ok=yes,thread_ok=no)
-	if test "$thread_ok" = "yes"; then
-		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_PTHREAD_H)
-		AC_DEFINE(_REENTRANT)
-	else
-		AC_MSG_RESULT(no)
-	fi
-fi
+YAZ_INIT(threads)
 dnl
 dnl ------ Look for Tcl
 dnl See if user has specified location of tclConfig.sh; otherwise
@@ -97,7 +77,7 @@ else
 fi
 dnl
 dnl ------ times
-AC_CHECK_HEADERS(sys/times.h)
+AC_CHECK_HEADERS(sys/times.h pthread.h)
 dnl
 dnl ------- BZIP2
 AC_CHECK_LIB(bz2,bzCompressInit)

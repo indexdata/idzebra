@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.19  2000-07-07 12:49:20  adam
+ * Revision 1.20  2000-11-29 14:24:01  adam
+ * Script configure uses yaz pthreads options. Added locking for
+ * zebra_register_{lock,unlock}.
+ *
+ * Revision 1.19  2000/07/07 12:49:20  adam
  * Optimized resultSetInsert{Rank,Sort}.
  *
  * Revision 1.18  2000/03/20 19:08:36  adam
@@ -186,16 +190,11 @@ static data1_node *data1_add_tag (data1_handle dh, data1_node *at,
 				  const char *tag, NMEM nmem)
 {
     data1_node *partag = get_parent_tag(dh, at);
-    data1_node *res = data1_mk_node (dh, nmem);
+    data1_node *res = data1_mk_node_type (dh, nmem, DATA1N_tag);
     data1_element *e = NULL;
 
     res->parent = at;
-    res->which = DATA1N_tag;
     res->u.tag.tag = data1_insert_string (dh, res, nmem, tag);
-    res->u.tag.node_selected = 0;
-    res->u.tag.make_variantlist = 0;
-    res->u.tag.no_data_requested = 0;
-    res->u.tag.get_bytes = -1;
    
     if (partag)
 	e = partag->u.tag.element;
