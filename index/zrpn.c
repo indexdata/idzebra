@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zrpn.c,v 1.110 2002-03-20 20:24:29 adam Exp $
+ * $Id: zrpn.c,v 1.111 2002-03-21 10:25:42 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -1397,6 +1397,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
 
+    *term_dst = 0;
     if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
 	return 0;
     while (1)
@@ -1424,7 +1425,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     {
 	rset_null_parms parms;
 	
-	parms.rset_term = rset_term_create (term_dst, -1, rank_type);
+	parms.rset_term = rset_term_create (termz, -1, rank_type);
         return rset_create (rset_kind_null, &parms);
     }
     else if (rset_no == 1)
@@ -1478,7 +1479,7 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
     {
 	rset_null_parms parms;
 	
-	parms.rset_term = rset_term_create (term_dst, -1, rank_type);
+	parms.rset_term = rset_term_create (termz, -1, rank_type);
         return rset_create (rset_kind_null, &parms);
     }
     result = rset[0];
@@ -1538,7 +1539,7 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
     {
 	rset_null_parms parms;
 	
-	parms.rset_term = rset_term_create (term_dst, -1, rank_type);
+	parms.rset_term = rset_term_create (termz, -1, rank_type);
         return rset_create (rset_kind_null, &parms);
     }
     result = rset[0];
@@ -1802,6 +1803,7 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     Z_AttributeElement *ae;
     int oid[OID_SIZE];
     oident oe;
+    char termz[20];
     
     attr_init (&sort_relation_type, zapt, 7);
     sort_relation_value = attr_find (&sort_relation_type, &attributeSet);
@@ -1825,6 +1827,7 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 		    zapt->term->u.general->len);
     if (i >= sort_sequence->num_specs)
 	i = 0;
+    sprintf (termz, "%d", i);
 
     oe.proto = PROTO_Z3950;
     oe.oclass = CLASS_ATTSET;
@@ -1881,7 +1884,7 @@ static RSET rpn_sort_spec (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     sort_sequence->specs[i] = sks;
 
-    parms.rset_term = rset_term_create ("", -1, rank_type);
+    parms.rset_term = rset_term_create (termz, -1, rank_type);
     return rset_create (rset_kind_null, &parms);
 }
 

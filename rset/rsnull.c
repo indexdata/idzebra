@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsnull.c,v $
- * Revision 1.12  1999-05-26 07:49:14  adam
+ * Revision 1.13  2002-03-21 10:25:42  adam
+ * use lockDir. Fixes for searchResult for null/sort sets
+ *
+ * Revision 1.12  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.11  1999/02/02 14:51:36  adam
@@ -86,7 +89,7 @@ static void *r_create(RSET ct, const struct rset_control *sel, void *parms)
 
     ct->no_rset_terms = 1;
     ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
-    if (parms)
+    if (parms && null_parms->rset_term)
 	ct->rset_terms[0] = null_parms->rset_term;
     else
 	ct->rset_terms[0] = rset_term_create ("term", -1, "rank-0");

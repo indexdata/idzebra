@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
- * $Id: index.h,v 1.73 2002-02-20 17:30:01 adam Exp $
+ * $Id: index.h,v 1.74 2002-03-21 10:25:42 adam Exp $
  */
 
 #ifndef INDEX_H
@@ -144,13 +144,15 @@ int zebraIndexWait (ZebraHandle zh, int commitPhase);
 #define FNAME_TOUCH_TIME  "zebraidx.time"
 
 typedef struct zebra_lock_info *ZebraLockHandle;
-ZebraLockHandle zebra_lock_create(const char *file, int excl_flag);
+ZebraLockHandle zebra_lock_create(const char *dir,
+                                  const char *file, int excl_flag);
 void zebra_lock_destroy (ZebraLockHandle h);
 int zebra_lock (ZebraLockHandle h);
 int zebra_lock_nb (ZebraLockHandle h);
 int zebra_unlock (ZebraLockHandle h);
 int zebra_lock_fd (ZebraLockHandle h);
 void zebra_lock_prefix (Res res, char *dst);
+char *zebra_mk_fname (const char *dir, const char *name);
 
 int zebra_lock_w (ZebraLockHandle h);
 int zebra_lock_r (ZebraLockHandle h);

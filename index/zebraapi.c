@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.48 2002-03-20 20:24:29 adam Exp $
+ * $Id: zebraapi.c,v 1.49 2002-03-21 10:25:42 adam Exp $
  */
 
 #include <assert.h>
@@ -68,8 +68,10 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->seqno = 0;
     zh->last_val = 0;
 
-    zh->lock_normal = zebra_lock_create ("norm.LCK", 0);
-    zh->lock_shadow = zebra_lock_create ("shadow.LCK", 0);
+    zh->lock_normal = zebra_lock_create (res_get(zs->res, "lockDir"),
+                                         "norm.LCK", 0);
+    zh->lock_shadow = zebra_lock_create (res_get(zs->res, "lockDir"),
+                                         "shadow.LCK", 0);
 
     zh->key_buf = 0;
     zh->admin_databaseName = 0;
@@ -694,17 +696,22 @@ int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
 }
 
 
-void zebra_set_state (int val, int seqno)
+void zebra_set_state (ZebraHandle zh, int val, int seqno)
 {
+    char *fname = zebra_mk_fname (res_get(zh->service->res, "lockDir"),
+                                  "state.LCK");
     long p = getpid();
-    FILE *f = fopen ("state.LCK", "w");
+    FILE *f = fopen (fname, "w");
     fprintf (f, "%c %d %ld\n", val, seqno, p);
     fclose (f);
+    xfree (fname);
 }
 
-void zebra_get_state (char *val, int *seqno)
+void zebra_get_state (ZebraHandle zh, char *val, int *seqno)
 {
-    FILE *f = fopen ("state.LCK", "r");
+    char *fname = zebra_mk_fname (res_get(zh->service->res, "lockDir"),
+                                  "state.LCK");
+    FILE *f = fopen (fname, "r");
 
     *val = 'o';
     *seqno = 0;
@@ -714,6 +721,7 @@ void zebra_get_state (char *val, int *seqno)
         fscanf (f, "%c %d", val, seqno);
         fclose (f);
     }
+    xfree (fname);
 }
 
 static int zebra_begin_read (ZebraHandle zh)
@@ -731,7 +739,7 @@ static int zebra_begin_read (ZebraHandle zh)
         return 0;
     }
 
-    zebra_get_state (&val, &seqno);
+    zebra_get_state (zh, &val, &seqno);
     if (val == 'd')
         val = 'o';
     if (seqno != zh->seqno)
@@ -806,7 +814,7 @@ void zebra_begin_trans (ZebraHandle zh)
             zebra_lock_w (zh->lock_shadow);
         }
         
-        zebra_get_state (&val, &seqno);
+        zebra_get_state (zh, &val, &seqno);
         if (val == 'c')
         {
             yaz_log (LOG_LOG, "previous transaction didn't finish commit");
@@ -837,7 +845,7 @@ void zebra_begin_trans (ZebraHandle zh)
         abort();
         return;
     }
-    zebra_set_state ('d', seqno);
+    zebra_set_state (zh, 'd', seqno);
 
     zebra_register_activate (zh, 1, rval ? 1 : 0);
     zh->seqno = seqno;
@@ -860,7 +868,7 @@ void zebra_end_trans (ZebraHandle zh)
 
     zebra_register_deactivate (zh);
 
-    zebra_get_state (&val, &seqno);
+    zebra_get_state (zh, &val, &seqno);
     if (val != 'd')
     {
         BFiles bfs = bfs_create (res_get (zh->service->res, "shadow"));
@@ -869,7 +877,7 @@ void zebra_end_trans (ZebraHandle zh)
     }
     if (!rval)
         seqno++;
-    zebra_set_state ('o', seqno);
+    zebra_set_state (zh, 'o', seqno);
 
     zebra_unlock (zh->lock_shadow);
     zebra_unlock (zh->lock_normal);
@@ -921,13 +929,13 @@ void zebra_commit (ZebraHandle zh)
 
     bfs = bfs_create (res_get (zh->service->res, "register"));
 
-    zebra_get_state (&val, &seqno);
+    zebra_get_state (zh, &val, &seqno);
 
     if (rval && *rval)
         bf_cache (bfs, rval);
     if (bf_commitExists (bfs))
     {
-        zebra_set_state ('c', seqno);
+        zebra_set_state (zh, 'c', seqno);
 
         logf (LOG_LOG, "commit start");
         bf_commitExec (bfs);
@@ -937,7 +945,7 @@ void zebra_commit (ZebraHandle zh)
         logf (LOG_LOG, "commit clean");
         bf_commitClean (bfs, rval);
         seqno++;
-        zebra_set_state ('o', seqno);
+        zebra_set_state (zh, 'o', seqno);
     }
     else
     {
@@ -960,7 +968,7 @@ void zebra_init (ZebraHandle zh)
     
     bf_reset (bfs);
     bfs_destroy (bfs);
-    zebra_set_state ('o', 0);
+    zebra_set_state (zh, 'o', 0);
 }
 
 void zebra_compact (ZebraHandle zh)

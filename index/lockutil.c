@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: lockutil.c,v 1.13 2002-02-20 17:30:01 adam Exp $
+ * $Id: lockutil.c,v 1.14 2002-03-21 10:25:42 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -25,28 +25,68 @@ struct zebra_lock_info {
     int excl_flag;
 };
 
-ZebraLockHandle zebra_lock_create (const char *name, int excl_flag)
+char *zebra_mk_fname (const char *dir, const char *name)
 {
+    int dlen = dir ? strlen(dir) : 0;
+    char *fname = xmalloc (dlen + strlen(name) + 3);
+
+#ifdef WIN32
+    if (dlen)
+    {
+        int last_one = dir[dlen-1];
+
+        if (!strchr ("/\\:", last_one))
+            sprintf (fname, "%s\\%s", dir, name);
+        else
+            sprintf (fname, "%s%s", dir, name);
+    }
+    else
+        sprintf (fname, "%s", name);
+#else
+    if (dlen)
+    {
+        int last_one = dir[dlen-1];
+
+        if (!strchr ("/", last_one))
+            sprintf (fname, "%s/%s", dir, name);
+        else
+            sprintf (fname, "%s%s", dir, name);
+    }
+    else
+        sprintf (fname, "%s", name);
+#endif
+    return fname;
+}
+
+ZebraLockHandle zebra_lock_create (const char *dir,
+                                   const char *name, int excl_flag)
+{
+    int dlen = dir ? strlen(dir) : 0;
+    char *fname = zebra_mk_fname(dir, name);
     ZebraLockHandle h = (ZebraLockHandle) xmalloc (sizeof(*h));
+
     h->excl_flag = excl_flag;
     h->fd = -1;
+
+    
 #ifdef WIN32
     if (!h->excl_flag)
         h->fd = open (name, O_BINARY|O_RDONLY);
     if (h->fd == -1)
-        h->fd = open (name, ((h->excl_flag > 1) ? O_EXCL : 0)|
+        h->fd = open (fname, ((h->excl_flag > 1) ? O_EXCL : 0)|
 	    (O_BINARY|O_CREAT|O_RDWR), 0666);
 #else
-    h->fd= open (name, ((h->excl_flag > 1) ? O_EXCL : 0)|
+    h->fd= open (fname, ((h->excl_flag > 1) ? O_EXCL : 0)|
 	    (O_BINARY|O_CREAT|O_RDWR|O_SYNC), 0666);
 #endif
     if (h->fd == -1)
     {
 	if (h->excl_flag <= 1)
-            logf (LOG_WARN|LOG_ERRNO, "open %s", name);
+            logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
 	xfree (h);
-	return NULL;
+        h = 0;
     }
+    xfree (fname);
     return h;
 }
 
