@@ -1,4 +1,4 @@
-/* $Id: xpath5.c,v 1.4 2004-12-02 11:28:20 adam Exp $
+/* $Id: xpath5.c,v 1.1 2004-12-02 14:05:04 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -20,11 +20,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include "testlib.h"
-
+#include "../api/testlib.h"
 
 /** xpath4.c - Ranking in xpath */
-
 
 const char *recs[] = {
         "<record>\n"

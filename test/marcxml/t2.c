@@ -1,4 +1,4 @@
-/* $Id: t2.c,v 1.1 2004-12-02 12:04:49 adam Exp $
+/* $Id: t2.c,v 1.2 2004-12-02 14:05:04 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -26,6 +26,7 @@ int main(int argc, char **argv)
 {
     ZebraService zs = start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs);
+    char path[256];
 
     zebra_select_database(zh, "Default");
 
@@ -34,7 +35,9 @@ int main(int argc, char **argv)
     zebra_set_resource(zh, "recordType", "grs.marcxml.record");
     
     zebra_begin_trans(zh, 1);
-    zebra_repository_update(zh, "sample-marc");
+
+    sprintf(path, "%.200s/sample-marc", get_srcdir());
+    zebra_repository_update(zh, path);
     zebra_end_trans(zh);
     zebra_commit(zh);
 

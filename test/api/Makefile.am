@@ -1,16 +1,14 @@
-# $Id: Makefile.am,v 1.26 2004-11-29 21:55:28 adam Exp $
+# $Id: Makefile.am,v 1.27 2004-12-02 14:05:04 adam Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
 
 simpletests = t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 
-xpathtests= xpath1 xpath2 xpath3 xpath4 xpath5
 safaritests = safari1
-check_PROGRAMS = $(simpletests) $(xpathtests) $(safaritests)
+check_PROGRAMS = $(simpletests) $(safaritests)
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg zebrazv.cfg \
- zebraxpath.cfg safari.cfg
+EXTRA_DIST=zebra.cfg zebra6.cfg zebra8.cfg zebrazv.cfg safari.cfg
 
 noinst_LIBRARIES = libtestlib.a
 
@@ -26,12 +24,6 @@ t7_SOURCES = t7.c
 t8_SOURCES = t8.c
 t9_SOURCES = t9.c rankingrecords.h
 t10_SOURCES = t10.c rankingrecords.h
-
-xpath1_SOURCES = xpath1.c
-xpath2_SOURCES = xpath2.c
-xpath3_SOURCES = xpath3.c
-xpath4_SOURCES = xpath4.c
-xpath5_SOURCES = xpath5.c
 
 safari1_SOURCES = safari1.c testlib.c
 

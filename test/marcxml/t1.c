@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.1 2004-12-02 12:04:49 adam Exp $
+/* $Id: t1.c,v 1.2 2004-12-02 14:05:04 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -26,19 +26,25 @@ int main(int argc, char **argv)
 {
     ZebraService zs = start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs);
+    char path[256];
 
     zebra_select_database(zh, "Default");
 
     zebra_init(zh);
 
     zebra_begin_trans(zh, 1);
-    zebra_repository_update(zh, "m1.xml");
-    zebra_repository_update(zh, "m2.xml");
-    zebra_repository_update(zh, "m3.xml");
+    sprintf(path, "%.200s/m1.xml", get_srcdir());
+    zebra_repository_update(zh, path);
+    sprintf(path, "%.200s/m2.xml", get_srcdir());
+    zebra_repository_update(zh, path);
+    sprintf(path, "%.200s/m3.xml", get_srcdir());
+    zebra_repository_update(zh, path);
     zebra_end_trans(zh);
     zebra_commit(zh);
 
-    do_query(__LINE__,zh, "@and @attr 1=54 eng @and @attr 1=1003 jack @attr 1=4 computer", 2);
+    do_query(__LINE__,zh, "@and "
+	     "@attr 1=54 eng "
+	     "@and @attr 1=1003 jack @attr 1=4 computer", 2);
 
     return close_down(zh, zs, 0);
 }

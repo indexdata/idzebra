@@ -1,4 +1,4 @@
-/* $Id: xpath1.c,v 1.3 2004-12-02 11:28:20 adam Exp $
+/* $Id: xpath1.c,v 1.1 2004-12-02 14:05:04 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -20,9 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <stdlib.h>
-#include <idzebra/api.h>
-#include "testlib.h"
+#include "../api/testlib.h"
 
 /** xpath1.c - index a simple sgml record and search in it */
 

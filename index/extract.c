@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.168 2004-12-01 11:37:45 adam Exp $
+/* $Id: extract.c,v 1.169 2004-12-02 14:05:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1454,7 +1454,7 @@ void extract_add_index_string (RecWord *p, const char *str, int length)
     key.mem[2] = p->section_id;
     key.mem[3] = p->seqno;
 
-#if 0
+#if 1
     /* just for debugging .. */
     yaz_log(YLOG_LOG, "add: set=%d use=%d "
 	    "record_id=%lld section_id=%lld seqno=%lld",
@@ -1516,6 +1516,8 @@ static void extract_add_incomplete_field (RecWord *p)
     const char *b = p->string;
     int remain = p->length;
     const char **map = 0;
+    
+    yaz_log(YLOG_DEBUG, "Incomplete field, w='%.*s'", p->length, p->string);
 
     if (remain > 0)
 	map = zebra_maps_input(p->zebra_maps, p->reg_type, &b, remain, 0);
@@ -1564,7 +1566,7 @@ static void extract_add_complete_field (RecWord *p)
     int i = 0, remain = p->length;
     int first; /* first position */
 
-yaz_log(YLOG_DEBUG, "Complete field, w='%.*s'", p->length, p->string);
+    yaz_log(YLOG_DEBUG, "Complete field, w='%.*s'", p->length, p->string);
 
     if (remain > 0)
 	map = zebra_maps_input (p->zebra_maps, p->reg_type, &b, remain, 1);

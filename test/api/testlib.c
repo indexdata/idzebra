@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.6 2004-11-29 21:55:28 adam Exp $
+/* $Id: testlib.c,v 1.7 2004-12-02 14:05:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -60,18 +60,27 @@ ZebraService start_up(char *cfgname, int argc, char **argv)
     return start_service(cfgname);
 }
 
+/**
+ * get_srcdir: return env srcdir or . (if does does not exist)
+ */
+const char *get_srcdir()
+{
+    const char *srcdir = getenv("srcdir");
+    if (!srcdir || ! *srcdir)
+        srcdir=".";
+    return srcdir;
+
+}
 /** start_service - do a zebra_start with a decent config name */
 ZebraService start_service(char *cfgname)
 {
     char cfg[256];
-    char *srcdir = getenv("srcdir");
+    const char *srcdir = get_srcdir();
     ZebraService zs;
-    if (!srcdir || ! *srcdir)
-        srcdir=".";
     if (!cfgname || ! *cfgname )
         cfgname="zebra.cfg";
 
-    sprintf(cfg, "%.200s/%s",srcdir, cfgname);
+    sprintf(cfg, "%.200s/%.50s", srcdir, cfgname);
     zs=zebra_start(cfg);
     if (!zs)
     {
