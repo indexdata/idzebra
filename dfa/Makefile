@@ -1,17 +1,17 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.5 1994-10-05 10:46:41 adam Exp $
+# $Id: Makefile,v 1.6 1995-01-24 16:00:20 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
 TPROG1=agrep
 TPROG2=lexer
 TPROG3=grepper
-CFLAGS=-g -Wall 
+CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE) -DYACC -DYYDEBUG=1 -DMEMDEBUG=1
 LIB=../lib/dfa.a 
-PO = regexp.o imalloc.o states.o set.o bset.o
+PO = dfa.o imalloc.o states.o set.o bset.o
 CPP=cc -E
 YACC=yacc
 

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: agrep.c,v $
- * Revision 1.3  1994-09-27 16:31:18  adam
+ * Revision 1.4  1995-01-24 16:00:21  adam
+ * Added -ansi to CFLAGS.
+ * Some changes to the dfa module.
+ *
+ * Revision 1.3  1994/09/27  16:31:18  adam
  * First version of grepper: grep with error correction.
  *
  * Revision 1.2  1994/09/26  16:30:56  adam
@@ -171,10 +175,10 @@ char *p;
 
 static int go (fd, dfaar)
 int fd;
-DFA_state **dfaar;
+struct DFA_state **dfaar;
 {
-    DFA_state *s = dfaar[0];
-    DFA_tran *t;
+    struct DFA_state *s = dfaar[0];
+    struct DFA_tran *t;
     char *p;
     int i;
     unsigned char c;
@@ -222,7 +226,7 @@ DFA_state **dfaar;
 }
 
 int agrep (dfas, fd)
-DFA_states *dfas;
+struct DFA_state **dfas;
 int fd;
 {
     inf_buf = imalloc (sizeof(char)*INF_BUF_SIZE);
@@ -231,7 +235,7 @@ int fd;
     inf_flush (fd);
     line_no = 1;
 
-    go (fd, dfas->sortarray);
+    go (fd, dfas);
 
     ifree (inf_buf);
     return 0;
@@ -245,8 +249,7 @@ char **argv;
     char *pattern = NULL;
     char outbuf[BUFSIZ];
     int fd, i, no = 0;
-    DFA *dfa = init_dfa();
-    DFA_states *dfas;
+    struct DFA *dfa = dfa_init();
 
     prog = *argv;
 #ifdef YYDEBUG
@@ -265,15 +268,13 @@ char **argv;
             if (!pattern)
             {
                 pattern = *argv;
-                i = parse_dfa (dfa, &pattern, dfa_thompson_chars);
+                i = dfa_parse (dfa, &pattern);
                 if (i || *pattern)
                 {
                     fprintf (stderr, "%s: illegal pattern\n", prog);
                     return 1;
                 }
-                dfa->root = dfa->top;
-                dfas = mk_dfas (dfa, 200);
-                rm_dfa (&dfa);
+                dfa_mkstate (dfa);
             }
             else
             {
@@ -284,7 +285,7 @@ char **argv;
                     fprintf (stderr, "%s: couldn't open `%s'\n", prog, *argv);
                     return 1;
                 }
-                i = agrep (dfas, fd);
+                i = agrep (dfa->states, fd);
                 close (fd);
                 if (i)
                     return i;
@@ -295,5 +296,6 @@ char **argv;
         return 2;
     }
     fflush(stdout);
+    dfa_delete (&dfa);
     return 0;
 }

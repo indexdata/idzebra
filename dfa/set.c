@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: set.c,v $
- * Revision 1.1  1994-09-26 10:16:57  adam
+ * Revision 1.2  1995-01-24 16:00:22  adam
+ * Added -ansi to CFLAGS.
+ * Some changes to the dfa module.
+ *
+ * Revision 1.1  1994/09/26  10:16:57  adam
  * First version of dfa module in alex. This version uses yacc to parse
  * regular expressions. This should be hand-made instead.
  *
@@ -27,10 +31,10 @@ SetType mk_SetType (int chunk)
 {
     SetType st;
 
-    assert( chunk > 8 && chunk < 8000 );
+    assert (chunk > 8 && chunk < 8000);
 
-    st = (SetType) imalloc( sizeof(*st) );
-    assert( st );
+    st = (SetType) imalloc (sizeof(*st));
+    assert (st);
 
     st->alloclist = st->freelist = NULL;
     st->used = 0;
@@ -41,29 +45,29 @@ SetType mk_SetType (int chunk)
 int inf_SetType (SetType st, long *used, long *allocated)
 {
     Set s;
-    assert( st );
+    assert (st);
     *used = st->used;
     *allocated = 0;
-    for( s = st->alloclist; s; s = s->next )
+    for (s = st->alloclist; s; s = s->next)
          *allocated += st->chunk;
-    return sizeof( SetElement );
+    return sizeof (SetElement);
 }
 
 SetType rm_SetType (SetType st)
 {
     Set s, s1;
-    for( s = st->alloclist; (s1 = s); )
+    for (s = st->alloclist; (s1 = s);)
     {
         s = s->next;
-        ifree( s1 );
+        ifree (s1);
     }
-    ifree( st );
+    ifree (st);
     return NULL;
 }
 
 Set mk_Set (SetType st)
 {
-    assert( st );
+    assert (st);
     return NULL;
 }
 
@@ -71,17 +75,17 @@ static Set mk_SetElement (SetType st, int n)
 {
     Set s;
     int i;
-    assert( st );
+    assert (st);
 
-    assert( st->chunk > 8 );
-    if( ! st->freelist )
+    assert (st->chunk > 8);
+    if (! st->freelist)
     {
-        s = (Set) imalloc( sizeof(*s) * (1+st->chunk) );
-        assert( s );
+        s = (Set) imalloc (sizeof(*s) * (1+st->chunk));
+        assert (s);
         s->next = st->alloclist;
         st->alloclist = s;
         st->freelist = ++s;
-        for( i=st->chunk; --i > 0; s++ )
+        for (i=st->chunk; --i > 0; s++)
             s->next = s+1;
         s->next = NULL;
     }
@@ -94,8 +98,8 @@ static Set mk_SetElement (SetType st, int n)
 
 static void rm_SetElement (SetType st, SetElement *p)
 {
-    assert( st );
-    assert( st->used > 0 );
+    assert (st);
+    assert (st->used > 0);
     p->next = st->freelist;
     st->freelist = p;
     st->used--;
@@ -106,9 +110,9 @@ Set rm_Set (SetType st, Set s)
     Set s1 = s;
     int i = 1;
 
-    if( s )
+    if (s)
     {
-        while( s->next )
+        while (s->next)
         {
             s = s->next;
             ++i;
@@ -116,7 +120,7 @@ Set rm_Set (SetType st, Set s)
         s->next = st->freelist;
         st->freelist = s1;
         st->used -= i;
-        assert( st->used >= 0 );
+        assert (st->used >= 0);
     }
     return NULL;
 }
@@ -126,12 +130,12 @@ Set add_Set (SetType st, Set s, int n)
     SetElement dummy;
     Set p = &dummy, new;
     p->next = s;
-    while( p->next && p->next->value < n )
+    while (p->next && p->next->value < n)
         p = p->next;
-    assert( p );
-    if( !(p->next && p->next->value == n ) )
+    assert (p);
+    if (!(p->next && p->next->value == n))
     {
-        new = mk_SetElement( st, n );
+        new = mk_SetElement (st, n);
         new->next = p->next;
         p->next = new;
     }
@@ -142,17 +146,17 @@ Set union_Set (SetType st, Set s1, Set s2)
 {
     SetElement dummy;
     Set p;
-    assert( st );
+    assert (st);
 
-    for( p = &dummy; s1 && s2; )
-        if( s1->value < s2->value )
+    for (p = &dummy; s1 && s2;)
+        if (s1->value < s2->value)
         {
             p = p->next = s1;
             s1 = s1->next;
         }
-        else if( s1->value > s2->value )
+        else if (s1->value > s2->value)
         {
-            p = p->next = mk_SetElement( st, s2->value );
+            p = p->next = mk_SetElement (st, s2->value);
             s2 = s2->next;
         }
         else
@@ -161,13 +165,13 @@ Set union_Set (SetType st, Set s1, Set s2)
             s1 = s1->next;
             s2 = s2->next;
         }
-    if( s1 )
+    if (s1)
         p->next = s1;
     else
     {
-        while( s2 )
+        while (s2)
         {
-            p = p->next = mk_SetElement( st, s2->value );
+            p = p->next = mk_SetElement (st, s2->value);
             s2 = s2->next;
         }
         p->next = NULL;
@@ -177,36 +181,36 @@ Set union_Set (SetType st, Set s1, Set s2)
 
 Set cp_Set (SetType st, Set s)
 {
-    return merge_Set( st, s, NULL );
+    return merge_Set (st, s, NULL);
 }
 
 Set merge_Set (SetType st, Set s1, Set s2)
 {
     SetElement dummy;
     Set p;
-    assert( st );
-    for( p = &dummy; s1 && s2; p = p->next )
-        if( s1->value < s2->value )
+    assert (st);
+    for (p = &dummy; s1 && s2; p = p->next)
+        if (s1->value < s2->value)
         {
-            p->next = mk_SetElement( st, s1->value );
+            p->next = mk_SetElement (st, s1->value);
             s1 = s1->next;
         }
-        else if( s1->value > s2->value )
+        else if (s1->value > s2->value)
         {
-            p->next = mk_SetElement( st, s2->value );
+            p->next = mk_SetElement (st, s2->value);
             s2 = s2->next;
         }
         else
         {
-            p->next = mk_SetElement( st, s1->value );
+            p->next = mk_SetElement (st, s1->value);
             s1 = s1->next;
             s2 = s2->next;
         }
-    if( !s1 )
+    if (!s1)
         s1 = s2;
-    while( s1 )
+    while (s1)
     {
-        p = p->next = mk_SetElement( st, s1->value );
+        p = p->next = mk_SetElement (st, s1->value);
         s1 = s1->next;
     }
     p->next = NULL;
@@ -215,19 +219,19 @@ Set merge_Set (SetType st, Set s1, Set s2)
 
 void pr_Set (SetType st, Set s)
 {
-    assert( st );
-    while( s )
+    assert (st);
+    while (s)
     {
-        printf( " %d", s->value );
+        printf (" %d", s->value);
         s = s->next;
     }
-    putchar( '\n' );
+    putchar ('\n');
 }
 
 unsigned hash_Set (SetType st, Set s)
 {
     unsigned n = 0;
-    while( s )
+    while (s)
     {
         n += 11*s->value;
         s = s->next;
@@ -237,8 +241,8 @@ unsigned hash_Set (SetType st, Set s)
 
 int eq_Set (SetType st, Set s1, Set s2)
 {
-    for( ; s1 && s2; s1=s1->next, s2=s2->next )
-        if( s1->value != s2->value )
+    for (; s1 && s2; s1=s1->next, s2=s2->next)
+        if (s1->value != s2->value)
             return 0;
     return s1 == s2;
 }

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: readfile.c,v $
- * Revision 1.2  1994-09-26 16:30:57  adam
+ * Revision 1.3  1995-01-24 16:00:22  adam
+ * Added -ansi to CFLAGS.
+ * Some changes to the dfa module.
+ *
+ * Revision 1.2  1994/09/26  16:30:57  adam
  * Minor changes. imalloc uses xmalloc now.
  *
  * Revision 1.1  1994/09/26  10:16:56  adam
@@ -34,7 +38,7 @@ static int err_no;
 static void
     prep        (char **s),
     read_defs   (void),
-    read_rules  (DFA **dfap),
+    read_rules  (struct DFA *dfap),
     read_tail   (void);
 
 static char
@@ -47,7 +51,7 @@ static void prep (char **s)
     const char *src = *s;
     int c;
 
-    while( (c = *src++) )
+    while ((c = *src++))
         *dst++ = c;
 
     *dst = '\0';
@@ -58,110 +62,97 @@ static char *read_line (void)
 {
     static char linebuf[MAXLINE+1];
     ++line_no;
-    return fgets( linebuf, MAXLINE, inf );
+    return fgets (linebuf, MAXLINE, inf);
 }
 
 static void read_defs (void)
 {
     const char *s;
-    while( (s=read_line()) )
+    while ((s=read_line()))
     {
-        if( *s == '%' && s[1] == '%' )
+        if (*s == '%' && s[1] == '%')
             return;
-        else if( *s == '\0' || isspace( *s ) )
-            fputs( s, outf );
+        else if (*s == '\0' || isspace (*s))
+            fputs (s, outf);
     }
-    error( "missing rule section" );
+    error ("missing rule section");
 }
 
-static void read_rules (DFA **dfap)
+static void read_rules (struct DFA *dfa)
 {
     char *s;
-    Tnode *n;
     int i;
-    DFA *dfa;
+    int no = 0;
 
-    *dfap = dfa = init_dfa();
-    fputs( "\n#ifndef YY_BREAK\n#define YY_BREAK break;\n#endif\n", outf );
-    fputs( "void lexact( int no )\n{\n", outf );
-    fputs(   "\tswitch( no )\n\t{\n", outf );
-    dfa->root = NULL;
-    while( (s=read_line()) )
+    fputs ("\n#ifndef YY_BREAK\n#define YY_BREAK break;\n#endif\n", outf);
+    fputs ("void lexact (int no)\n{\n", outf);
+    fputs (  "\tswitch (no)\n\t{\n", outf);
+    while ((s=read_line()))
     {
-        if( *s == '%' && s[1] == '%' )
+        if (*s == '%' && s[1] == '%')
             break;
-        else if( *s == '\0' || isspace( *s ) )
+        else if (*s == '\0' || isspace (*s))
             /* copy rest of line to output */
-            fputs( s, outf );
+            fputs (s, outf);
         else
         { 
             /* preprocess regular expression */
-            prep( &s );                   
+            prep (&s);                   
             /* now parse regular expression */
-	    if (ccluse)
-                i = parse_dfa( dfa, &s, dfa_ccl_chars );
-            else
-                i = parse_dfa( dfa, &s, dfa_thompson_chars );
-
-            if( dfa->rule > 1 )
-                fputs( "\t\tYY_BREAK\n", outf );
-            fprintf( outf, "\tcase %d:\n#line %d\n\t\t", dfa->rule, line_no );
-            if( i )
+            i = dfa_parse (dfa, &s);
+            if (i)
             {
-                fprintf( stderr, "%s #%d: regular expression syntax error\n",
-                         inf_name, line_no );
+                fprintf (stderr, "%s #%d: regular expression syntax error\n",
+                        inf_name, line_no);
                 err_no++;
             }
-            else if( !dfa->root )
-                dfa->root = dfa->top;
             else
             {
-                n = mk_Tnode();
-                n->pos = OR;
-                n->u.p[0] = dfa->root;
-                n->u.p[1] = dfa->top;
-                dfa->root = n;
+                if (no)
+                    fputs ("\t\tYY_BREAK\n", outf);
+                no++;
+                fprintf (outf, "\tcase %d:\n#line %d\n\t\t", no, line_no);
             }
-            while( *s == '\t' || *s == ' ' )
+            while (*s == '\t' || *s == ' ')
                 s++;
-            fputs( s, outf );
+            fputs (s, outf);
         }
     }
-    fputs( "\tYY_BREAK\n\t}\n}\n", outf );
-    if( !dfa->root )
-        error( "no regular expressions in rule section" );
+    fputs ("\tYY_BREAK\n\t}\n}\n", outf);
+    if (!no)
+        error ("no regular expressions in rule section");
 }
 
 static void read_tail (void)
 {
     const char *s;
-    while( (s=read_line()) )
-        fputs( s, outf );
+    while ((s=read_line()))
+        fputs (s, outf);
 }
 
-int read_file (const char *s, DFA **dfap)
+int read_file (const char *s, struct DFA *dfa)
 {
     inf_name = s;
-    if( !(inf=fopen( s,"r" )) )
+    if (!(inf=fopen (s,"r")))
     {
-        error( "cannot open `%s'", s );
+        error ("cannot open `%s'", s);
         return -1;
     }
 
-    if( !(outf=fopen( "lex.yy.c", "w" )) )
+    if (!(outf=fopen ("lex.yy.c", "w")))
     {
-        error( "cannot open `%s'", "lex.yy.c" );
+        error ("cannot open `%s'", "lex.yy.c");
         return -2;
     }
 
     line_no = 0;
     err_no = 0;
 
-    read_defs();
-    read_rules( dfap );
-    read_tail();
+    read_defs ();
+    read_rules (dfa);
+    read_tail ();
 
-    fclose( outf );
-    fclose( inf );
+    fclose (outf);
+    fclose (inf);
     return err_no;
 }

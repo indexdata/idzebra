@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: grepper.c,v $
- * Revision 1.3  1994-10-04 17:46:43  adam
+ * Revision 1.4  1995-01-24 16:00:21  adam
+ * Added -ansi to CFLAGS.
+ * Some changes to the dfa module.
+ *
+ * Revision 1.3  1994/10/04  17:46:43  adam
  * Function options now returns arg with error option.
  *
  * Revision 1.2  1994/10/03  17:22:18  adam
@@ -66,19 +70,19 @@ static INLINE MatchWord get_bit (MatchContext *mc, MatchWord *m, int ch,
     return m[mc->n * ch + wno] & (1<<off);
 }
 
-static MatchContext *mk_MatchContext (DFA_states *dfas, int range)
+static MatchContext *mk_MatchContext (struct DFA *dfa, int range)
 {
     MatchContext *mc = imalloc (sizeof(*mc));
     int i;
 
-    mc->n = (dfas->no+WORD_BITS) / WORD_BITS;
+    mc->n = (dfa->no_states+WORD_BITS) / WORD_BITS;
     mc->range = range;
     mc->Sc = icalloc (sizeof(*mc->Sc) * 256 * mc->n);
     
-    for (i=0; i<dfas->no; i++)
+    for (i=0; i<dfa->no_states; i++)
     {
         int j;
-        DFA_state *state = dfas->sortarray[i];
+        struct DFA_state *state = dfa->states[i];
 
         for (j=0; j<state->tran_no; j++)
         {
@@ -96,7 +100,7 @@ static MatchContext *mk_MatchContext (DFA_states *dfas, int range)
 
 
 static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
-                   DFA_states *dfas, int ch)
+                        struct DFA *dfa, int ch)
 {
     int j, s = 0;
     MatchWord *Rsrc_p = Rsrc, mask;
@@ -113,7 +117,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
             {
                 if (mask & 1)
                 {
-                    DFA_state *state = dfas->sortarray[s];
+                    struct DFA_state *state = dfa->states[s];
                     int i = state->tran_no;
                     while (--i >= 0)
                         if (ch >= state->trans[i].ch[0] &&
@@ -122,7 +126,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                 }
                 if (mask & 2)
                 {
-                    DFA_state *state = dfas->sortarray[s+1];
+                    struct DFA_state *state = dfa->states[s+1];
                     int i = state->tran_no;
                     while (--i >= 0)
                         if (ch >= state->trans[i].ch[0] &&
@@ -131,7 +135,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                 }
                 if (mask & 4)
                 {
-                    DFA_state *state = dfas->sortarray[s+2];
+                    struct DFA_state *state = dfa->states[s+2];
                     int i = state->tran_no;
                     while (--i >= 0)
                         if (ch >= state->trans[i].ch[0] &&
@@ -140,7 +144,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                 }
                 if (mask & 8)
                 {
-                    DFA_state *state = dfas->sortarray[s+3];
+                    struct DFA_state *state = dfa->states[s+3];
                     int i = state->tran_no;
                     while (--i >= 0)
                         if (ch >= state->trans[i].ch[0] &&
@@ -149,7 +153,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                 }
             }
             s += 4;
-            if (s >= dfas->no)
+            if (s >= dfa->no_states)
                 return;
             mask >>= 4;
         }
@@ -157,7 +161,7 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
 }
 
 static void shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
-                   DFA_states *dfas)
+                   struct DFA *dfa)
 {
     int j, s = 0;
     MatchWord *Rsrc_p = Rsrc, mask;
@@ -172,35 +176,35 @@ static void shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
             {
                 if (mask & 1)
                 {
-                    DFA_state *state = dfas->sortarray[s];
+                    struct DFA_state *state = dfa->states[s];
                     int i = state->tran_no;
                     while (--i >= 0)
                         set_bit (mc, Rdst, 0, state->trans[i].to);
                 }
                 if (mask & 2)
                 {
-                    DFA_state *state = dfas->sortarray[s+1];
+                    struct DFA_state *state = dfa->states[s+1];
                     int i = state->tran_no;
                     while (--i >= 0)
                         set_bit (mc, Rdst, 0, state->trans[i].to);
                 }
                 if (mask & 4)
                 {
-                    DFA_state *state = dfas->sortarray[s+2];
+                    struct DFA_state *state = dfa->states[s+2];
                     int i = state->tran_no;
                     while (--i >= 0)
                         set_bit (mc, Rdst, 0, state->trans[i].to);
                 }
                 if (mask & 8)
                 {
-                    DFA_state *state = dfas->sortarray[s+3];
+                    struct DFA_state *state = dfa->states[s+3];
                     int i = state->tran_no;
                     while (--i >= 0)
                         set_bit (mc, Rdst, 0, state->trans[i].to);
                 }
             }
             s += 4;
-            if (s >= dfas->no)
+            if (s >= dfa->no_states)
                 return;
             mask >>= 4;
         }
@@ -216,7 +220,7 @@ static void or (MatchContext *mc, MatchWord *Rdst,
 }
 
 
-static int go (MatchContext *mc, DFA_states *dfas, FILE *inf)
+static int go (MatchContext *mc, struct DFA *dfa, FILE *inf)
 {
     MatchWord *Rj, *Rj1, *Rj_a, *Rj_b, *Rj_c;
     int s, d, ch;
@@ -238,11 +242,11 @@ static int go (MatchContext *mc, DFA_states *dfas, FILE *inf)
     {
         int s;
         memcpy (Rj + mc->n * d, Rj + mc->n * (d-1), mc->n * sizeof(*Rj));
-        for (s = 0; s<dfas->no; s++)
+        for (s = 0; s<dfa->no_states; s++)
         {
             if (get_bit (mc, Rj, d-1, s))
             {
-                DFA_state *state = dfas->sortarray[s];
+                struct DFA_state *state = dfa->states[s];
                 int i = state->tran_no;
                 while (--i >= 0)
                     set_bit (mc, Rj, d, state->trans[i].to);
@@ -278,27 +282,27 @@ static int go (MatchContext *mc, DFA_states *dfas, FILE *inf)
         }
         if (++inf_ptr == INFBUF_SIZE)
             inf_ptr = 0;
-        mask_shift (mc, Rj1, Rj, dfas, ch);
+        mask_shift (mc, Rj1, Rj, dfa, ch);
         for (d = 1; d <= mc->range; d++)
         {
-            mask_shift (mc, Rj_b, Rj+d*mc->n, dfas, ch);    /* 1 */
+            mask_shift (mc, Rj_b, Rj+d*mc->n, dfa, ch);    /* 1 */
 
             or (mc, Rj_a, Rj+(d-1)*mc->n, Rj1+(d-1)*mc->n); /* 2,3 */
 
-            shift (mc, Rj_c, Rj_a, dfas);
+            shift (mc, Rj_c, Rj_a, dfa);
 
             or (mc, Rj_a, Rj_b, Rj_c);                      /* 1,2,3*/
 
             or (mc, Rj1+d*mc->n, Rj_a, Rj+(d-1)*mc->n);     /* 1,2,3,4 */
         }
-        for (s = 0; s<dfas->no; s++)
+        for (s = 0; s<dfa->no_states; s++)
         {
-            if (dfas->sortarray[s]->rule_no)
+            if (dfa->states[s]->rule_no)
                 if (get_bit (mc, Rj1+mc->range*mc->n, 0, s))
                     no_match++;
         }
         for (d = 0; d <= mc->range; d++)
-            reset_bit (mc, Rj1+d*mc->n, 0, dfas->no);
+            reset_bit (mc, Rj1+d*mc->n, 0, dfa->no_states);
         Rj_t = Rj1;
         Rj1 = Rj;
         Rj = Rj_t;
@@ -312,7 +316,7 @@ static int go (MatchContext *mc, DFA_states *dfas, FILE *inf)
     return 0;
 }
 
-static int grep_file (DFA_states *dfas, const char *fname, int range)
+static int grep_file (struct DFA *dfa, const char *fname, int range)
 {
     FILE *inf;
     MatchContext *mc;
@@ -329,9 +333,9 @@ static int grep_file (DFA_states *dfas, const char *fname, int range)
     else
         inf = stdin;
      
-    mc = mk_MatchContext (dfas, range);
+    mc = mk_MatchContext (dfa, range);
 
-    go (mc, dfas, inf);
+    go (mc, dfa, inf);
 
     if (fname)
         fclose (inf);
@@ -344,8 +348,8 @@ int main (int argc, char **argv)
     int range = 0;
     char *arg;
     char *pattern = NULL;
-    DFA_states *dfas = NULL;
     int no_files = 0;
+    struct DFA *dfa = dfa_init();
 
     prog = argv[0];
     while ((ret = options ("nr:dsv:", argv, argc, &arg)) != -2)
@@ -355,22 +359,19 @@ int main (int argc, char **argv)
             if (!pattern)
             {
                 int i;
-                DFA *dfa = init_dfa();
                 pattern = arg;
-                i = parse_dfa (dfa, &pattern, dfa_thompson_chars);
+                i = dfa_parse (dfa, &pattern);
                 if (i || *pattern)
                 {
                     fprintf (stderr, "%s: illegal pattern\n", prog);
                     return 1;
                 }
-                dfa->root = dfa->top;
-                dfas = mk_dfas (dfa, 200);
-                rm_dfa (&dfa);
+                dfa_mkstate (dfa);
             }
             else
             {
                 no_files++;
-                grep_file (dfas, arg, range);
+                grep_file (dfa, arg, range);
             }
         }
         else if (ret == 'v')
@@ -409,7 +410,8 @@ int main (int argc, char **argv)
     }
     else if (no_files == 0)
     {
-        grep_file (dfas, NULL, range);
+        grep_file (dfa, NULL, range);
     }
+    dfa_delete (&dfa);
     return 0;
 }

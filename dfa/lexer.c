@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lexer.c,v $
- * Revision 1.4  1994-10-04 17:46:44  adam
+ * Revision 1.5  1995-01-24 16:00:22  adam
+ * Added -ansi to CFLAGS.
+ * Some changes to the dfa module.
+ *
+ * Revision 1.4  1994/10/04  17:46:44  adam
  * Function options now returns arg with error option.
  *
  * Revision 1.3  1994/10/03  17:22:19  adam
@@ -109,8 +113,7 @@ static int lexer_options (int argc, char **argv)
 int main (int argc, char **argv)
 {
     int i, no = 0;
-    DFA *dfa;
-    DFA_states *dfas;
+    struct DFA *dfa;
 
     prog = *argv;
 #ifdef YACC
@@ -118,6 +121,7 @@ int main (int argc, char **argv)
 #else
     alexdebug = 0;
 #endif
+    dfa = dfa_init ();
     i = lexer_options (argc, argv);
     if (i)
         return i;
@@ -132,13 +136,13 @@ int main (int argc, char **argv)
         if (**++argv != '-' && **argv)
         {
             ++no;
-            i = read_file (*argv, &dfa);
+            
+            i = read_file (*argv, dfa);
             if (i)
                 return i;
-            dfas = mk_dfas (dfa, 2000);
-            rm_dfa (&dfa);
-            rm_dfas (&dfas);
+            dfa_mkstate (dfa);
         }
+    dfa_delete (&dfa);
 #ifdef MEMDEBUG
     imemstat();
 #endif

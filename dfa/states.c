@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: states.c,v $
- * Revision 1.1  1994-09-26 10:16:58  adam
+ * Revision 1.2  1995-01-24 16:00:23  adam
+ * Added -ansi to CFLAGS.
+ * Some changes to the dfa module.
+ *
+ * Revision 1.1  1994/09/26  10:16:58  adam
  * First version of dfa module in alex. This version uses yacc to parse
  * regular expressions. This should be hand-made instead.
  *
@@ -16,22 +20,23 @@
 #include <string.h>
 
 #include <util.h>
-#include <dfa.h>
+#include "dfap.h"
 #include "imalloc.h"
 
 #define DFA_CHUNK 200
 #define TRAN_CHUNK 800
 
-int init_DFA_states (DFA_states **dfasp, SetType st, int hash)
+int init_DFA_states (struct DFA_states **dfasp, SetType st, int hash)
 {
-    DFA_states *dfas;
-    DFA_trans *tm;
+    struct DFA_states *dfas;
+    struct DFA_trans *tm;
     int i;
-
-    dfas = (DFA_states *) imalloc( sizeof(DFA_states) );
-    assert( dfas );
-    dfas->hasharray = (DFA_state **) imalloc( sizeof(DFA_state*) * hash );
-    assert( dfas->hasharray );
+    
+    dfas = (struct DFA_states *) imalloc (sizeof(struct DFA_states));
+    assert (dfas);
+    dfas->hasharray = (struct DFA_state **)
+        imalloc (sizeof(struct DFA_state*) * hash);
+    assert (dfas->hasharray);
     *dfasp = dfas;
     dfas->freelist = dfas->unmarked = dfas->marked = NULL;
     dfas->statemem = NULL;
@@ -39,71 +44,73 @@ int init_DFA_states (DFA_states **dfasp, SetType st, int hash)
     dfas->st = st;
     dfas->no = 0;
 
-    dfas->transmem = tm = (DFA_trans *) imalloc( sizeof(DFA_trans) );
-    assert( tm );
+    dfas->transmem = tm = (struct DFA_trans *)
+        imalloc (sizeof(struct DFA_trans));
+    assert (tm);
     tm->next = NULL;
     tm->size = TRAN_CHUNK;
     tm->ptr = 0;
-    tm->tran_block = (DFA_tran *) imalloc( sizeof(DFA_tran) * tm->size );
-    assert( tm->tran_block );
+    tm->tran_block = (struct DFA_tran *)
+        imalloc (sizeof(struct DFA_tran) * tm->size);
+    assert (tm->tran_block);
 
     dfas->sortarray = NULL;
-    for( i=0; i<dfas->hash; i++ )
+    for (i=0; i<dfas->hash; i++)
         dfas->hasharray[i] = NULL;
     return 0;
 }
 
-int rm_DFA_states (DFA_states **dfasp)
+int rm_DFA_states (struct DFA_states **dfasp)
 {
-    DFA_states *dfas = *dfasp;
+    struct DFA_states *dfas = *dfasp;
     DFA_stateb *sm, *sm1;
-    DFA_trans  *tm, *tm1;
+    struct DFA_trans  *tm, *tm1;
 
-    assert( dfas );
-    ifree( dfas->hasharray );
-    ifree( dfas->sortarray );
+    assert (dfas);
+    ifree (dfas->hasharray);
+    ifree (dfas->sortarray);
 
-    for( tm=dfas->transmem; tm; tm=tm1 )
+    for (tm=dfas->transmem; tm; tm=tm1)
     {
-        ifree( tm->tran_block );
+        ifree (tm->tran_block);
         tm1 = tm->next;
-        ifree( tm );
+        ifree (tm);
     }
-    for( sm=dfas->statemem; sm; sm=sm1 )
+    for (sm=dfas->statemem; sm; sm=sm1)
     {
-        ifree( sm->state_block );
+        ifree (sm->state_block);
         sm1 = sm->next;
-        ifree( sm );
+        ifree (sm);
     }
-    ifree( dfas );
+    ifree (dfas);
     *dfasp = NULL;
     return 0;
 }
 
-int add_DFA_state (DFA_states *dfas, Set *s, DFA_state **sp)
+int add_DFA_state (struct DFA_states *dfas, Set *s, struct DFA_state **sp)
 {
     int i;
-    DFA_state *si, **sip;
+    struct DFA_state *si, **sip;
     DFA_stateb *sb;
 
-    assert( dfas );
-    assert( *s );
-    sip = dfas->hasharray + (hash_Set( dfas->st, *s ) % dfas->hash);
-    for( si = *sip; si; si=si->link )
-        if( eq_Set( dfas->st, si->set, *s ) )
+    assert (dfas);
+    assert (*s);
+    sip = dfas->hasharray + (hash_Set (dfas->st, *s) % dfas->hash);
+    for (si = *sip; si; si=si->link)
+        if (eq_Set (dfas->st, si->set, *s))
         {
             *sp = si;
-            *s = rm_Set( dfas->st, *s );
+            *s = rm_Set (dfas->st, *s);
             return 0;
         }
-    if( !dfas->freelist )
+    if (!dfas->freelist)
     {
-        sb = (DFA_stateb *) imalloc( sizeof(*sb) );
+        sb = (DFA_stateb *) imalloc (sizeof(*sb));
         sb->next = dfas->statemem;
         dfas->statemem = sb;
         sb->state_block = si = dfas->freelist = 
-            (DFA_state *) imalloc( sizeof(DFA_state)*DFA_CHUNK);
-        for( i = 0; i<DFA_CHUNK-1; i++, si++ )
+            (struct DFA_state *) imalloc (sizeof(struct DFA_state)*DFA_CHUNK);
+        for (i = 0; i<DFA_CHUNK-1; i++, si++)
             si->next = si+1;
         si->next = NULL;
     }
@@ -125,23 +132,26 @@ int add_DFA_state (DFA_states *dfas, Set *s, DFA_state **sp)
     return 1;
 }
 
-void add_DFA_tran (DFA_states *dfas, DFA_state *s, int ch0, int ch1, int to)
+void add_DFA_tran (struct DFA_states *dfas, struct DFA_state *s,
+                   int ch0, int ch1, int to)
 {
-    DFA_trans *tm;
-    DFA_tran *t;
+    struct DFA_trans *tm;
+    struct DFA_tran *t;
 
     tm = dfas->transmem;
-    if( tm->ptr == tm->size )
+    if (tm->ptr == tm->size)
     {
-        tm = (DFA_trans *) imalloc( sizeof(DFA_trans) );
-        assert( tm );
+        tm = (struct DFA_trans *) imalloc (sizeof(struct DFA_trans));
+        assert (tm);
         tm->next = dfas->transmem;
         dfas->transmem = tm;
         tm->size = s->tran_no >= TRAN_CHUNK ? s->tran_no+8 : TRAN_CHUNK;
-        tm->tran_block = (DFA_tran *) imalloc( sizeof(DFA_tran) * tm->size );
-        assert( tm->tran_block );
-        if( s->tran_no )
-            memcpy( tm->tran_block, s->trans, s->tran_no*sizeof( DFA_tran ) );
+        tm->tran_block = (struct DFA_tran *)
+            imalloc (sizeof(struct DFA_tran) * tm->size);
+        assert (tm->tran_block);
+        if (s->tran_no)
+            memcpy (tm->tran_block, s->trans,
+                    s->tran_no*sizeof (struct DFA_tran));
         tm->ptr = s->tran_no;
         s->trans = tm->tran_block;
     }
@@ -152,11 +162,11 @@ void add_DFA_tran (DFA_states *dfas, DFA_state *s, int ch0, int ch1, int to)
     t->to = to;
 }
 
-DFA_state *get_DFA_state (DFA_states *dfas)
+struct DFA_state *get_DFA_state (struct DFA_states *dfas)
 {
-    DFA_state *si;
-    assert( dfas );
-    if( !(si = dfas->unmarked) )
+    struct DFA_state *si;
+    assert (dfas);
+    if (!(si = dfas->unmarked))
         return NULL;
     dfas->unmarked = si->next;
     si->next = dfas->marked;
@@ -166,11 +176,12 @@ DFA_state *get_DFA_state (DFA_states *dfas)
     return si;
 }
 
-void sort_DFA_states (DFA_states *dfas)
+void sort_DFA_states (struct DFA_states *dfas)
 {
-    DFA_state *s;
-    assert( dfas );
-    dfas->sortarray = (DFA_state **) imalloc( sizeof(DFA_state *)*dfas->no );
-    for( s = dfas->marked; s; s=s->next )
+    struct DFA_state *s;
+    assert (dfas);
+    dfas->sortarray = (struct DFA_state **)
+        imalloc (sizeof(struct DFA_state *)*dfas->no);
+    for (s = dfas->marked; s; s=s->next)
         dfas->sortarray[s->no] = s;
 }
