@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.36 2004-08-06 12:28:22 adam Exp $
+/* $Id: recindex.c,v 1.37 2004-08-18 17:02:05 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,13 +23,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /*
  *  Format of first block
- *      next       (4 bytes)
- *      ref_count  (4 bytes)
- *      block      (504 bytes)
+ *      next       (8 bytes)
+ *      ref_count  (2 bytes)
+ *      block      (500 bytes)
  *
  *  Format of subsequent blocks 
- *      next  (4 bytes)
- *      block (508 bytes)
+ *      next  (8 bytes)
+ *      block (502 bytes)
  *
  *  Format of each record
  *      sysno
@@ -98,7 +98,7 @@ static void rec_release_blocks (Records p, SYSNO sysno)
 {
     struct record_index_entry entry;
     zint freeblock;
-    char block_and_ref[sizeof(short) + sizeof(zint)];
+    char block_and_ref[sizeof(zint) + sizeof(short)];
     int dst_type;
     int first = 1;
 
@@ -113,7 +113,8 @@ static void rec_release_blocks (Records p, SYSNO sysno)
     while (freeblock)
     {
         if (bf_read (p->data_BFile[dst_type], freeblock, 0,
-		     sizeof(block_and_ref), block_and_ref) != 1)
+		     first ? sizeof(block_and_ref) : sizeof(zint),
+		     block_and_ref) != 1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "read in rec_del_single");
             exit (1);
