@@ -2,7 +2,7 @@ Copyright (C) 1995-2002, Index Data ApS.
 See the file LICENSE.zebra for details.
 
 README for Zebra
-  $Id: README,v 1.10 2002-03-15 20:35:37 adam Exp $
+  $Id: README,v 1.11 2002-03-15 20:45:33 adam Exp $
 
 Documentation about this software can be found in the subdirectory
 'doc' and Zebra's home page:  http://www.indexdata.dk/zebra/
@@ -13,4 +13,4 @@ We maintain a mailing-list for the purpose of announcing new versions of
 the software, bug-reports, discussion etc. You can sign up by sending
 mail to zebra-request@indexdata.dk and include the following command
 in your email:
-    subscribe zebra-l
+   subscribe zebra-l
