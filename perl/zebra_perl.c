@@ -4,7 +4,7 @@
 
 #include <yaz/yaz-util.h>
 #include <yaz/proto.h>
-#include <yaz/ylog.h>
+#include <yaz/log.h>
 #include <yaz/cql.h>
 #include <yaz/pquery.h>
 

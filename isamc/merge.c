@@ -1,4 +1,4 @@
-/* $Id: merge.c,v 1.27 2004-11-19 10:27:09 heikki Exp $
+/* $Id: merge.c,v 1.28 2004-12-13 20:51:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
-#include <yaz/ylog.h>
+#include <yaz/log.h>
 #include "isamc-p.h"
 
 struct isc_merge_block {

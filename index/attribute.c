@@ -1,4 +1,4 @@
-/* $Id: attribute.c,v 1.17 2004-11-19 10:26:56 heikki Exp $
+/* $Id: attribute.c,v 1.18 2004-12-13 20:51:30 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 
-#include <yaz/ylog.h>
+#include <yaz/log.h>
 #include <idzebra/res.h>
 #include <zebrautl.h>
 #include "index.h"

@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.94 2004-11-29 21:45:12 adam Exp $
+/* $Id: recgrs.c,v 1.95 2004-12-13 20:51:32 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -28,7 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <dlfcn.h>
 #endif
 
-#include <yaz/ylog.h>
+#include <yaz/log.h>
 #include <yaz/oid.h>
 
 #include <d1_absyn.h>

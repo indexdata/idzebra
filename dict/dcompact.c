@@ -1,4 +1,4 @@
-/* $Id: dcompact.c,v 1.11 2004-12-08 12:23:08 adam Exp $
+/* $Id: dcompact.c,v 1.12 2004-12-13 20:51:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -27,7 +27,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <stdio.h>
 
-#include <yaz/ylog.h>
 #include "dict-p.h"
 
 static void dict_copy_page(Dict dict, char *to_p, char *from_p, int *map)

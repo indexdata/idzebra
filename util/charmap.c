@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.32 2004-12-10 11:56:23 heikki Exp $
+/* $Id: charmap.c,v 1.33 2004-12-13 20:51:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,19 +35,7 @@ typedef unsigned ucs4_t;
 
 #include <charmap.h>
 
-/* Old yaz-util includes */
-#include <yaz/yconfig.h>
-#include <yaz/yaz-version.h>
-#include <yaz/xmalloc.h>
-#include <yaz/ylog.h>  
-#include <yaz/tpath.h>
-#include <yaz/options.h>
-#include <yaz/wrbuf.h>
-#include <yaz/nmem.h>
-#include <yaz/readconf.h>
-#include <yaz/marcdisp.h>
-#include <yaz/yaz-iconv.h>
-
+#include <yaz/yaz-util.h>
 
 #define CHR_MAXSTR 1024
 #define CHR_MAXEQUIV 32

@@ -1,5 +1,5 @@
 /*
-    $Id: marcomp.c,v 1.3 2004-12-10 11:56:22 heikki Exp $
+    $Id: marcomp.c,v 1.4 2004-12-13 20:51:32 adam Exp $
 
     marcomp.c - compiler of MARC statements.
 */
@@ -9,19 +9,7 @@
 #include <string.h>
 #include <ctype.h>
 
-
-/* Old yaz-util includes (FIXME - clean up what is not needed)*/
-#include <yaz/yconfig.h>
-#include <yaz/yaz-version.h>
-#include <yaz/xmalloc.h>
-#include <yaz/ylog.h>  
-#include <yaz/tpath.h>
-#include <yaz/options.h>
-#include <yaz/wrbuf.h>
-#include <yaz/nmem.h>
-#include <yaz/readconf.h>
-#include <yaz/marcdisp.h>
-#include <yaz/yaz-iconv.h>
+#include <yaz/yaz-util.h>
 
 #include "marcomp.h"
 

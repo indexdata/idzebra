@@ -1,4 +1,4 @@
-/* $Id: dict-p.h,v 1.1 2004-12-08 12:23:08 adam Exp $
+/* $Id: dict-p.h,v 1.2 2004-12-13 20:51:29 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -23,6 +23,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef DICT_P_H
 #define DICT_P_H
 
+#include <yaz/log.h>
+#include <yaz/xmalloc.h>
 #include <idzebra/dict.h>
 
 YAZ_BEGIN_CDECL

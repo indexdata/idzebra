@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.5 2004-11-29 21:55:28 adam Exp $
+/* $Id: testlib.h,v 1.6 2004-12-13 20:51:33 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -23,7 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /** testlib - utilities for the api tests */
 
 #include <stdlib.h>
-#include <yaz/ylog.h>
+#include <yaz/yconfig.h>
 #include <yaz/pquery.h>
 #include <idzebra/api.h>
 
