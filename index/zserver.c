@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.56  1998-03-05 08:45:13  adam
+ * Revision 1.57  1998-04-03 14:45:18  adam
+ * Fixed setting of last_in_set in bend_fetch.
+ *
+ * Revision 1.56  1998/03/05 08:45:13  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -279,6 +282,7 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
 
     retrievalRecord.position = q->number;
     
+    r->last_in_set = 0;
     zebra_records_retrieve (zh, q->stream, q->setname, q->comp,
 			    q->format, 1, &retrievalRecord);
 
