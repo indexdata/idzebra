@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.52  1996-06-17 14:26:20  adam
+ * Revision 1.53  1996-06-26 09:21:43  adam
+ * Bug fix: local attribute set wasn't obeyed in scan.
+ *
+ * Revision 1.52  1996/06/17  14:26:20  adam
  * Function gen_regular_rel changed to handle negative numbers.
  *
  * Revision 1.51  1996/06/11 10:54:15  quinn
@@ -1560,17 +1563,17 @@ int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
     logf (LOG_DEBUG, "scan, position = %d, num = %d", pos, num);
 
+    if (attributeset == VAL_NONE)
+        attributeset = VAL_BIB1;
+        
     attr_init (&use, zapt, 1);
-    use_value = attr_find (&use, NULL);
+    use_value = attr_find (&use, &attributeset);
     logf (LOG_DEBUG, "use value %d", use_value);
 
     attr_init (&completeness, zapt, 6);
     completeness_value = attr_find (&completeness, NULL);
     logf (LOG_DEBUG, "completeness value %d", completeness_value);
 
-    if (attributeset == VAL_NONE)
-        attributeset = VAL_BIB1;
-        
     if (use_value == -1)
         use_value = 1016;
     for (base_no = 0; base_no < num_bases && ord_no < 32; base_no++)
