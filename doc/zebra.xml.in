@@ -23,7 +23,7 @@
 	<!ENTITY ref-shadow-registers '
 		<xref linkend="shadow-registers"/>'>
 ]>
-<!-- $Id: zebra.xml.in,v 1.13 2002-10-30 14:45:42 adam Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.14 2003-02-20 21:24:42 adam Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -40,7 +40,7 @@
    <firstname>Mike</firstname><surname>Taylor</surname>
   </author>
   <copyright>
-   <year>1995-2002</year>
+   <year>1995-2003</year>
    <holder>Index Data</holder>
   </copyright>
   <abstract>
