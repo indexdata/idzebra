@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.10  1998-03-05 08:45:13  adam
+ * Revision 1.11  1998-03-25 13:48:02  adam
+ * Fixed bug in rset_trunc_r.
+ *
+ * Revision 1.10  1998/03/05 08:45:13  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -152,7 +155,8 @@ static void heap_close (struct trunc_info *ti)
     xfree (ti);
 }
 
-static RSET rset_trunc_r (ZebraHandle zi, ISAM_P *isam_p, int from, int to,
+static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
+			 const char *flags, ISAM_P *isam_p, int from, int to,
                          int merge_chunk)
 {
     RSET result; 
@@ -161,6 +165,7 @@ static RSET rset_trunc_r (ZebraHandle zi, ISAM_P *isam_p, int from, int to,
 
     parms.key_size = sizeof(struct it_key);
     parms.temp_path = res_get (zi->res, "setTmpDir");
+    parms.rset_term = rset_term_create (term, length, flags);
     result = rset_create (rset_kind_temp, &parms);
     result_rsfd = rset_open (result, RSETF_WRITE);
 
@@ -180,11 +185,11 @@ static RSET rset_trunc_r (ZebraHandle zi, ISAM_P *isam_p, int from, int to,
         for (i = from; i < to; i += i_add)
         {
             if (i_add <= to - i)
-                rset[rscur] = rset_trunc_r (zi, isam_p, i, i+i_add,
-                                            merge_chunk);
+                rset[rscur] = rset_trunc_r (zi, term, length, flags,
+				            isam_p, i, i+i_add, merge_chunk);
             else
-                rset[rscur] = rset_trunc_r (zi, isam_p, i, to,
-                                            merge_chunk);
+                rset[rscur] = rset_trunc_r (zi, term, length, flags,
+                                            isam_p, i, to, merge_chunk);
             rscur++;
         }
         ti = heap_init (rscur, sizeof(struct it_key), key_compare_it);
@@ -412,6 +417,6 @@ RSET rset_trunc (ZebraHandle zi, ISAM_P *isam_p, int no,
         logf (LOG_WARN, "Neither isam nor isamc set in rset_trunc");
 	return rset_create (rset_kind_null, NULL);
     }
-    return rset_trunc_r (zi, isam_p, 0, no, 100);
+    return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100);
 }
 
