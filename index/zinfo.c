@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zinfo.c,v 1.31 2002-07-03 10:05:19 adam Exp $
+ * $Id: zinfo.c,v 1.32 2002-07-11 13:15:57 heikki Exp $
  */
 
 #include <stdlib.h>
@@ -291,12 +291,17 @@ ZebraExplainInfo zebraExplain_open (
     zei->categoryList->dirty = 0;
     zei->categoryList->data1_categoryList = NULL;
 
-    time (&our_time);
-    tm = localtime (&our_time);
-    sprintf (zei->date, "%04d%02d%02d%02d%02d%02d",
-	     tm->tm_year+1900, tm->tm_mon+1,  tm->tm_mday,
-	     tm->tm_hour, tm->tm_min, tm->tm_sec);
-
+    if ( atoi (res_get_def (res, "notimestamps", "0") )== 0)
+    {
+        time (&our_time);
+        tm = localtime (&our_time);
+        sprintf (zei->date, "%04d%02d%02d%02d%02d%02d",
+	         tm->tm_year+1900, tm->tm_mon+1,  tm->tm_mday,
+	         tm->tm_hour, tm->tm_min, tm->tm_sec);
+    } else {
+        sprintf (zei->date, "%04d%02d%02d%02d%02d%02d",
+	         0, 0, 0,  0, 0, 0);
+    }
     zdip = &zei->databaseInfo;
     trec = rec_get (records, 1);      /* get "root" record */
 
