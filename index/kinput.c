@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.53 2002-08-05 19:46:01 adam Exp $
+/* $Id: kinput.c,v 1.54 2003-03-05 16:44:02 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -446,6 +446,7 @@ int heap_inpc (struct heap_info *hi)
     return 0;
 } 
 
+#if 0
 /* for debugging only */
 static void print_dict_item (ZebraMaps zm, const char *s)
 {
@@ -466,6 +467,7 @@ static void print_dict_item (ZebraMaps zm, const char *s)
     *to = '\0';
     yaz_log (LOG_LOG, "%s", keybuf);
 }
+#endif
 
 int heap_inpb (struct heap_info *hi)
 {

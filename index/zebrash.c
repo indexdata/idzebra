@@ -1,5 +1,5 @@
 /* zebrash.c - command-line interface to zebra API 
- *  $Id: zebrash.c,v 1.6 2003-02-12 15:45:59 heikki Exp $
+ *  $Id: zebrash.c,v 1.7 2003-03-05 16:44:02 adam Exp $
  *
  * Copyrigth 2003 Index Data Aps
  *
@@ -374,7 +374,6 @@ int onecommand( char *line, char *outbuff)
   char *args[MAX_NO_ARGS];
   int n;
   char argbuf[MAX_ARG_LEN];
-  int rc;
   logf(LOG_APP,"%s",line);
   strncpy(argbuf,line, MAX_ARG_LEN-1);
   argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
