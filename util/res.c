@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.19  1997-10-27 14:27:59  adam
+ * Revision 1.20  1997-10-31 12:39:15  adam
+ * Resouce name can be terminated with either white-space or colon.
+ *
+ * Revision 1.19  1997/10/27 14:27:59  adam
  * Fixed memory leak.
  *
  * Revision 1.18  1997/09/17 12:19:24  adam
@@ -114,7 +117,7 @@ static void reread (Res r)
     }
     while (1)
     {
-        line = fgets (fr_buf, 1023, fr);
+        line = fgets (fr_buf, sizeof(fr_buf)-1, fr);
         if (!line)
             break;
         if (*line == '#')
@@ -137,21 +140,21 @@ static void reread (Res r)
             {
                 if (fr_buf[no] == 0 || fr_buf[no] == '\n' )
                 {
-                    no = -1;
+                    no = 0;
                     break;
                 }
-                if (fr_buf[no] == ':')
+                if (strchr (": \t", fr_buf[no]))
                     break;
                 no++;
             }
-            if (no < 0)
+            if (!no)
                 continue;
             fr_buf[no++] = '\0';
             resp = add_entry (r);
             resp->name = xmalloc (no);
             strcpy (resp->name, fr_buf);
             
-            while (fr_buf[no] == ' ')
+            while (strchr (" \t", fr_buf[no]))
                 no++;
             val_size = 0;
             while (1)
@@ -171,7 +174,7 @@ static void reread (Res r)
                 }
                 else if (fr_buf[no] == '\\' && fr_buf[no+1] == '\n')
                 {
-                    line = fgets (fr_buf, 1023, fr);
+                    line = fgets (fr_buf, sizeof(fr_buf)-1, fr);
                     if (!line)
                     {
                         resp->value = xmalloc (val_size);
