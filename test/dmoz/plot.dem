@@ -1,5 +1,6 @@
-set output "times-b.ps"
+set output "times-d.ps"
 set terminal postscript
+set title "ISAM-d Thu Jun 20 09:26:52 CEST 2002"
 set xlabel "runs"
 set ylabel "seconds"
-plot [0:] [0:]         'times-b.log' using 2 title 'ISAM-b(real)' with linespoints,         'times-b.log' using 3 title 'ISAM-b(user)' with linespoints,         'times-b.log' using 4 title 'ISAM-b(sys)' with linespoints
+plot [0:] [0:]         'times-d.log' using 2 title 'real' with linespoints,         'times-d.log' using 3 title 'user' with linespoints,         'times-d.log' using 4 title 'sys' with linespoints
