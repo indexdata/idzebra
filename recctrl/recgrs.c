@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.82 2003-08-21 10:29:00 adam Exp $
+/* $Id: recgrs.c,v 1.83 2003-09-16 12:18:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -390,7 +390,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
             tag_path_full[flen] = 0;
             
             /* If we have a matching termlist... */
-            if ((tl = xpath_termlist_by_tagpath(tag_path_full, n))) {
+            if (n->root->u.root.absyn && (tl = xpath_termlist_by_tagpath(tag_path_full, n))) {
                 for (; tl; tl = tl->next) {
                     wrd->reg_type = *tl->structure;
                     /* this is the ! case, so structure is for the xpath index */
