@@ -1,33 +1,26 @@
-/*
- * Copyright (c) 1995-1996, Index Data.
- * See the file LICENSE for details.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: isamc-p.h,v $
- * Revision 1.7  1999-05-26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.6  1998/03/18 09:23:55  adam
- * Blocks are stored in chunks on free list - up to factor 2 in speed.
- * Fixed bug that could occur in block category rearrangemen.
- *
- * Revision 1.5  1998/03/16 10:37:24  adam
- * Added more statistics.
- *
- * Revision 1.4  1996/11/08 11:15:28  adam
- * Number of keys in chain are stored in first block and the function
- * to retrieve this information, isc_pp_num is implemented.
- *
- * Revision 1.3  1996/11/04 14:08:55  adam
- * Optimized free block usage.
- *
- * Revision 1.2  1996/11/01 08:59:13  adam
- * First version of isc_merge that supports update/delete.
- *
- * Revision 1.1  1996/10/29 13:40:47  adam
- * First work.
- *
- */
+/* $Id: isamc-p.h,v 1.8 2002-08-02 19:26:56 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <bfile.h>
 #include <isamc.h>

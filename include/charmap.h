@@ -1,61 +1,26 @@
-/*
- * Copyright (c) 1995-1999, Index Data.
- * 
- * All rights reserved.
- * 
- * Use and redistribution in source or binary form, with or without
- * modification, of any or all of this software and documentation is
- * permitted, provided that the following conditions are met:
- * 
- * 1. This copyright and permission notice appear with all copies of the
- * software and its documentation. Notices of copyright or attribution
- * which appear at the beginning of any file must remain unchanged.
- * 
- * 2. The names of Index Data or the individual authors may not be used to
- * endorse or promote products derived from this software without specific
- * prior written permission.
- * 
- * 3. Source code or binary versions of this software and its
- * documentation may be used freely in not-for-profit applications. For
- * profit applications - such as providing for-pay database services,
- * marketing a product based in whole or in part on this software or its
- * documentation, or generally distributing this software or its
- * documentation under a different license - requires a commercial
- * license from Index Data. The software may be installed and used for
- * evaluation purposes in conjunction with a commercial application for a
- * trial period no longer than 60 days.
- * 
- * THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED, OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL INDEX DATA BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR
- * NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
- * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
- * OF THIS SOFTWARE.
- *
- * $Log: charmap.h,v $
- * Revision 1.7  2002-04-04 20:50:36  adam
- * Multi register works with record paths and data1 profile path
- *
- * Revision 1.6  1999/11/30 13:48:03  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.5  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.4  1997/10/27 14:33:04  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- * Revision 1.3  1997/09/05 15:29:59  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- */
+/* $Id: charmap.h,v 1.8 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifndef CHARMAP_H
 #define CHARMAP_H

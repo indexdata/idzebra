@@ -1,80 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: insert.c,v $
- * Revision 1.21  1999-05-26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.20  1999/05/15 14:36:37  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.19  1999/02/02 14:50:22  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.18  1998/03/05 08:17:24  adam
- * Added a few comments - no code changed.
- *
- * Revision 1.17  1996/05/14 15:49:09  adam
- * Bug fix: In function split_page. In rare cases variable best_indxp was
- * referenced.
- *
- * Revision 1.16  1996/02/02  13:43:50  adam
- * The public functions simply use char instead of Dict_char to represent
- * search strings. Dict_char is used internally only.
- *
- * Revision 1.15  1996/02/01  20:39:59  adam
- * Bug fix: insert didn't work on 8-bit characters due to unsigned char
- * compares in dict_strcmp (strcmp) and signed Dict_char. Dict_char is
- * unsigned now.
- *
- * Revision 1.14  1995/12/07  11:48:56  adam
- * Insert operation obeys DICT_type = 1 (slack in page).
- * Function dict_open exists if page size or magic aren't right.
- *
- * Revision 1.13  1995/11/28  09:06:37  adam
- * Fixed potential dangling pointer.
- *
- * Revision 1.12  1995/09/06  10:34:44  adam
- * Memcpy in clean_page edited to satisfy checkergcc.
- *
- * Revision 1.11  1995/09/04  12:33:31  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.10  1994/10/05  12:16:48  adam
- * Pagesize is a resource now.
- *
- * Revision 1.9  1994/09/16  15:39:13  adam
- * Initial code of lookup - not tested yet.
- *
- * Revision 1.8  1994/09/16  12:35:01  adam
- * New version of split_page which use clean_page for splitting.
- *
- * Revision 1.7  1994/09/12  08:06:42  adam
- * Futher development of insert.c
- *
- * Revision 1.6  1994/09/06  13:05:15  adam
- * Further development of insertion. Some special cases are
- * not properly handled yet! assert(0) are put here. The
- * binary search in each page definitely reduce usr CPU.
- *
- * Revision 1.5  1994/09/01  17:49:39  adam
- * Removed stupid line. Work on insertion in dictionary. Not finished yet.
- *
- * Revision 1.4  1994/09/01  17:44:09  adam
- * depend include change.
- *
- * Revision 1.3  1994/08/18  12:40:56  adam
- * Some development of dictionary. Not finished at all!
- *
- * Revision 1.2  1994/08/17  13:32:19  adam
- * Use cache in dict - not in bfile.
- *
- * Revision 1.1  1994/08/16  16:26:48  adam
- * Added dict.
- *
- */
+/* $Id: insert.c,v 1.22 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <string.h>
 #include <stdlib.h>

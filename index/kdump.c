@@ -1,80 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: kdump.c,v $
- * Revision 1.21  2002-04-04 20:50:37  adam
- * Multi register works with record paths and data1 profile path
- *
- * Revision 1.20  2002/04/04 14:14:13  adam
- * Multiple registers (alpha early)
- *
- * Revision 1.19  2000/12/05 10:01:44  adam
- * Fixed bug regarding user-defined attribute sets.
- *
- * Revision 1.18  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.17  1999/02/02 14:50:55  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.16  1998/05/20 10:12:17  adam
- * Implemented automatic EXPLAIN database maintenance.
- * Modified Zebra to work with ASN.1 compiled version of YAZ.
- *
- * Revision 1.15  1998/03/05 08:45:12  adam
- * New result set model and modular ranking system. Moved towards
- * descent server API. System information stored as "SGML" records.
- *
- * Revision 1.14  1997/10/27 14:33:04  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- * Revision 1.13  1997/09/09 13:38:07  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.12  1997/09/05 09:52:32  adam
- * Extra argument added to function chr_read_maptab (tab path).
- *
- * Revision 1.11  1996/10/29 14:06:49  adam
- * Include zebrautl.h instead of alexutil.h.
- *
- * Revision 1.10  1996/06/04 14:56:12  quinn
- * Fix
- *
- * Revision 1.9  1996/06/04  14:18:53  quinn
- * Charmap work
- *
- * Revision 1.8  1996/06/04  10:18:59  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.7  1995/10/10  12:24:38  adam
- * Temporary sort files are compressed.
- *
- * Revision 1.6  1995/09/29  14:01:42  adam
- * Bug fixes.
- *
- * Revision 1.5  1995/09/11  13:09:35  adam
- * More work on relevance feedback.
- *
- * Revision 1.4  1995/09/08  14:52:27  adam
- * Minor changes. Dictionary is lower case now.
- *
- * Revision 1.3  1995/09/06  16:11:17  adam
- * Option: only one word key per file.
- *
- * Revision 1.2  1995/09/04  12:33:42  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.1  1995/09/04  09:10:36  adam
- * More work on index add/del/update.
- * Merge sort implemented.
- * Initial work on z39 server.
- *
- */
+/* $Id: kdump.c,v 1.22 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>

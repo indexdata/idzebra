@@ -1,41 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: lookup.c,v $
- * Revision 1.10  1999-05-15 14:36:37  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.9  1999/02/02 14:50:25  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.8  1998/03/05 08:17:24  adam
- * Added a few comments - no code changed.
- *
- * Revision 1.7  1996/02/02 13:43:51  adam
- * The public functions simply use char instead of Dict_char to represent
- * search strings. Dict_char is used internally only.
- *
- * Revision 1.6  1995/12/11  09:04:50  adam
- * Bug fix: the lookup/scan/lookgrep didn't handle empty dictionary.
- *
- * Revision 1.5  1995/09/04  09:09:15  adam
- * String arg in lookup is const.
- *
- * Revision 1.4  1994/10/05  12:16:51  adam
- * Pagesize is a resource now.
- *
- * Revision 1.3  1994/09/26  10:17:25  adam
- * Minor changes.
- *
- * Revision 1.2  1994/09/16  15:39:14  adam
- * Initial code of lookup - not tested yet.
- *
- * Revision 1.1  1994/08/16  16:26:48  adam
- * Added dict.
- *
- */
+/* $Id: lookup.c,v 1.11 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdlib.h>
 #include <string.h>

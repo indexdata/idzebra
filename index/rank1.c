@@ -1,38 +1,26 @@
-/*
- * Copyright (C) 1998-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: rank1.c,v $
- * Revision 1.9  2002-04-11 11:39:59  heikki
- * Removed to logf calls from tight inside loops
- *
- * Revision 1.8  2002/04/04 14:14:13  adam
- * Multiple registers (alpha early)
- *
- * Revision 1.7  2001/11/14 22:06:27  adam
- * Rank-weight may be controlled via query.
- *
- * Revision 1.6  2000/03/15 15:00:30  adam
- * First work on threaded version.
- *
- * Revision 1.5  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.4  1999/02/02 14:51:01  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.3  1998/06/12 12:21:53  adam
- * Fixed memory-leak.
- *
- * Revision 1.2  1998/03/05 13:03:29  adam
- * Improved ranking.
- *
- * Revision 1.1  1998/03/05 08:45:12  adam
- * New result set model and modular ranking system. Moved towards
- * descent server API. System information stored as "SGML" records.
- *
- */
+/* $Id: rank1.c,v 1.10 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdio.h>
 #include <assert.h>

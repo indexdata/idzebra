@@ -1,135 +1,26 @@
-/*
- * Copyright (C) 1994-1998, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: recctrl.h,v $
- * Revision 1.37  2002-07-25 13:06:43  adam
- * Character set negotiation updates
- *
- * Revision 1.36  2002/07/02 20:20:09  adam
- * idzebra:{filename,score,size,localnumber} tags for XML
- *
- * Revision 1.35  2002/04/13 18:16:42  adam
- * More XPATH work; common sequence numbers for extract keys
- *
- * Revision 1.34  2000/03/20 19:08:36  adam
- * Added remote record import using Z39.50 extended services and Segment
- * Requests.
- *
- * Revision 1.33  2000/02/25 13:24:49  adam
- * Fixed bug regarding pointer conversion that showed up on OSF V5.
- *
- * Revision 1.32  1999/11/30 13:48:03  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.31  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.30  1999/05/21 12:00:17  adam
- * Better diagnostics for extraction process.
- *
- * Revision 1.29  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.28  1999/03/02 16:15:42  quinn
- * Added "tagsysno" and "tagrank" directives to zebra.cfg.
- *
- * Revision 1.27  1998/10/16 08:14:28  adam
- * Updated record control system.
- *
- * Revision 1.26  1998/05/20 10:12:12  adam
- * Implemented automatic EXPLAIN database maintenance.
- * Modified Zebra to work with ASN.1 compiled version of YAZ.
- *
- * Revision 1.25  1998/03/11 11:19:04  adam
- * Changed the way sequence numbers are generated.
- *
- * Revision 1.24  1998/03/05 08:38:46  adam
- * New member recordSize in recRetrieveCtrl.
- *
- * Revision 1.23  1998/02/10 12:03:05  adam
- * Implemented Sort.
- *
- * Revision 1.22  1997/10/27 14:33:04  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- * Revision 1.21  1997/09/18 08:59:19  adam
- * Extra generic handle for the character mapping routines.
- *
- * Revision 1.20  1997/09/17 12:19:10  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.19  1997/09/05 15:30:02  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.18  1997/09/04 13:56:15  adam
- * Added new filter grs.marc.<syntax> where <syntax> refers to
- * abstract syntax. New method tellf in extract/retrieve control
- * block.
- *
- * Revision 1.17  1997/04/30 08:56:04  quinn
- * null
- *
- * Revision 1.16  1996/10/11  10:56:25  adam
- * New module recctrl. Used to manage records (extract/retrieval).
- * All record types are accessed by means of definitions in recctrl.h.
- *
- * Revision 1.15  1996/06/06 12:08:16  quinn
- * Added showRecord Group entry
- *
- * Revision 1.14  1996/05/09  07:28:49  quinn
- * Work towards phrases and multiple registers
- *
- * Revision 1.13  1996/05/01  13:44:05  adam
- * Added seek function to the recExtractCtrl and recRetrieveCtrl control
- * structures. Added end-of-file indicator function and start offset to
- * recExtractCtrl.
- *
- * Revision 1.12  1996/01/17  15:01:25  adam
- * Prototype changed for reader functions in extract/retrieve. File
- *  is identified by 'void *' instead of 'int'.
- *
- * Revision 1.11  1995/12/04  14:20:54  adam
- * Extra arg to recType_byName.
- *
- * Revision 1.10  1995/10/16  14:03:06  quinn
- * Changes to support element set names and espec1
- *
- * Revision 1.9  1995/10/06  14:37:53  adam
- * New result set method: r_score.
- * Local no (sysno) and score is transferred to retrieveCtrl.
- *
- * Revision 1.8  1995/10/02  15:43:35  adam
- * Extract uses file descriptors instead of FILE pointers.
- *
- * Revision 1.7  1995/10/02  15:18:09  adam
- * Minor changes.
- *
- * Revision 1.6  1995/10/02  15:05:26  quinn
- * Added a few fields.
- *
- * Revision 1.5  1995/10/02  14:55:52  quinn
- * *** empty log message ***
- *
- * Revision 1.4  1995/09/27  16:17:29  adam
- * More work on retrieve.
- *
- * Revision 1.3  1995/09/27  12:21:25  adam
- * New function: recType_byName.
- *
- * Revision 1.2  1995/09/15  14:45:03  adam
- * Retrieve control.
- *
- * Revision 1.1  1995/09/14  07:48:13  adam
- * Record control management.
- *
- */
+/* $Id: recctrl.h,v 1.38 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifndef RECCTRL_H
 #define RECCTRL_H

@@ -1,38 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: rsbool.h,v $
- * Revision 1.7  1999-02-02 14:50:37  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.6  1998/03/05 08:37:44  adam
- * New result set model.
- *
- * Revision 1.5  1997/09/05 15:30:02  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.4  1995/12/11 09:07:53  adam
- * New rset member 'flag', that holds various flags about a result set -
- * currently 'volatile' (set is register dependent) and 'ranked' (set is
- * ranked).
- * New set types sand/sor/snot. They handle and/or/not for ranked and
- * semi-ranked result sets.
- *
- * Revision 1.3  1995/09/07  13:58:08  adam
- * New parameter: result-set file descriptor (RSFD) to support multiple
- * positions within the same result-set.
- * Boolean operators: and, or, not implemented.
- *
- * Revision 1.2  1995/09/06  16:10:57  adam
- * More work on boolean sets.
- *
- * Revision 1.1  1995/09/06  13:27:37  adam
- * New set type: bool. Not finished yet.
- *
- */
+/* $Id: rsbool.h,v 1.8 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifndef RSET_BOOL_H
 #define RSET_BOOL_H

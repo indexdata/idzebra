@@ -1,97 +1,26 @@
-/*
- * Copyright (C) 1994-2000, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: dicttest.c,v $
- * Revision 1.26  2002-04-04 14:14:13  adam
- * Multiple registers (alpha early)
- *
- * Revision 1.25  2000/12/05 09:59:10  adam
- * Work on dict_delete_subtree.
- *
- * Revision 1.24  2000/09/05 14:04:05  adam
- * Updates for prefix 'yaz_' for YAZ log functions.
- *
- * Revision 1.23  2000/07/07 12:49:20  adam
- * Optimized resultSetInsert{Rank,Sort}.
- *
- * Revision 1.22  1999/02/02 14:50:19  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.21  1996/10/29 14:00:03  adam
- * Page size given by DICT_DEFAULT_PAGESIZE in dict.h.
- *
- * Revision 1.20  1996/03/20 09:35:16  adam
- * Function dict_lookup_grep got extra parameter, init_pos, which marks
- * from which position in pattern approximate pattern matching should occur.
- *
- * Revision 1.19  1996/02/02  13:43:50  adam
- * The public functions simply use char instead of Dict_char to represent
- * search strings. Dict_char is used internally only.
- *
- * Revision 1.18  1996/02/01  20:39:52  adam
- * Bug fix: insert didn't work on 8-bit characters due to unsigned char
- * compares in dict_strcmp (strcmp) and signed Dict_char. Dict_char is
- * unsigned now.
- *
- * Revision 1.17  1995/12/06  17:48:30  adam
- * Bug fix: delete didn't work.
- *
- * Revision 1.16  1995/10/09  16:18:31  adam
- * Function dict_lookup_grep got extra client data parameter.
- *
- * Revision 1.15  1995/09/04  12:33:31  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.14  1994/10/04  17:46:55  adam
- * Function options now returns arg with error option.
- *
- * Revision 1.13  1994/10/04  12:08:05  adam
- * Some bug fixes and some optimizations.
- *
- * Revision 1.12  1994/10/03  17:23:03  adam
- * First version of dictionary lookup with regular expressions and errors.
- *
- * Revision 1.11  1994/09/28  13:07:09  adam
- * Use log_mask_str now.
- *
- * Revision 1.10  1994/09/26  10:17:24  adam
- * Minor changes.
- *
- * Revision 1.9  1994/09/22  14:43:56  adam
- * First functional version of lookup with error correction. A 'range'
- * specified the maximum number of insertions+deletions+substitutions.
- *
- * Revision 1.8  1994/09/22  10:43:44  adam
- * Two versions of depend. Type 1 is the tail-type compatible with
- * all make programs. Type 2 is the GNU make with include facility.
- * Type 2 is default. depend rule chooses current rule.
- *
- * Revision 1.7  1994/09/19  16:34:26  adam
- * Depend rule change. Minor changes in dicttest.c
- *
- * Revision 1.6  1994/09/16  15:39:12  adam
- * Initial code of lookup - not tested yet.
- *
- * Revision 1.5  1994/09/06  13:05:14  adam
- * Further development of insertion. Some special cases are
- * not properly handled yet! assert(0) are put here. The
- * binary search in each page definitely reduce usr CPU.
- *
- * Revision 1.4  1994/09/01  17:49:37  adam
- * Removed stupid line. Work on insertion in dictionary. Not finished yet.
- *
- * Revision 1.3  1994/09/01  17:44:06  adam
- * depend include change.
- *
- * Revision 1.2  1994/08/18  12:40:54  adam
- * Some development of dictionary. Not finished at all!
- *
- * Revision 1.1  1994/08/16  16:26:47  adam
- * Added dict.
- *
- */
+/* $Id: dicttest.c,v 1.27 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,49 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: agrep.c,v $
- * Revision 1.12  1999-05-26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.11  1999/02/02 14:50:03  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.10  1997/09/09 13:37:57  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.9  1996/10/29 13:57:18  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.8  1996/01/08 09:09:16  adam
- * Function dfa_parse got 'const' string argument.
- * New functions to define char mappings made public.
- *
- * Revision 1.7  1995/10/16  09:31:24  adam
- * Bug fix.
- *
- * Revision 1.6  1995/09/28  09:18:51  adam
- * Removed various preprocessor defines.
- *
- * Revision 1.5  1995/09/04  12:33:25  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.4  1995/01/24  16:00:21  adam
- * Added -ansi to CFLAGS.
- * Some changes to the dfa module.
- *
- * Revision 1.3  1994/09/27  16:31:18  adam
- * First version of grepper: grep with error correction.
- *
- * Revision 1.2  1994/09/26  16:30:56  adam
- * Minor changes. imalloc uses xmalloc now.
- *
- * Revision 1.1  1994/09/26  10:16:52  adam
- * First version of dfa module in alex. This version uses yacc to parse
- * regular expressions. This should be hand-made instead.
- *
- */
+/* $Id: agrep.c,v 1.13 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>

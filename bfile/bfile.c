@@ -1,112 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: bfile.c,v $
- * Revision 1.34  2002-07-16 13:17:53  heikki
- * Removed a crash on zebraidx init, if the register area isn't there
- *
- * Revision 1.33  2002/04/04 14:14:13  adam
- * Multiple registers (alpha early)
- *
- * Revision 1.32  2000/03/15 15:00:30  adam
- * First work on threaded version.
- *
- * Revision 1.31  1999/12/08 15:03:11  adam
- * Implemented bf_reset.
- *
- * Revision 1.30  1999/10/14 14:33:49  adam
- * Added truncation 5=106.
- *
- * Revision 1.29  1999/05/26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.28  1999/05/12 13:08:05  adam
- * First version of ISAMS.
- *
- * Revision 1.27  1999/02/02 14:50:01  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.26  1998/02/17 10:32:52  adam
- * Fixed bug: binary files weren't opened with flag b on NT.
- *
- * Revision 1.25  1997/10/27 14:25:38  adam
- * Fixed memory leaks.
- *
- * Revision 1.24  1997/09/18 08:59:16  adam
- * Extra generic handle for the character mapping routines.
- *
- * Revision 1.23  1997/09/17 12:19:06  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.22  1997/09/09 13:37:52  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.21  1996/10/29 13:56:13  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.20  1996/03/26 15:59:04  adam
- * The directory of the shadow table file can be specified by the new
- * bf_lockDir call.
- *
- * Revision 1.19  1996/02/05  12:28:58  adam
- * Removed a LOG_LOG message.
- *
- * Revision 1.18  1996/01/02  08:59:06  quinn
- * Changed "commit" setting to "shadow".
- *
- * Revision 1.17  1995/12/11  09:03:51  adam
- * New function: cf_unlink.
- * New member of commit file head: state (0) deleted, (1) hash file.
- *
- * Revision 1.16  1995/12/08  16:21:13  adam
- * Work on commit/update.
- *
- * Revision 1.15  1995/12/01  16:24:28  adam
- * Commit files use separate meta file area.
- *
- * Revision 1.14  1995/12/01  11:37:21  adam
- * Cached/commit files implemented as meta-files.
- *
- * Revision 1.13  1995/11/30  17:00:49  adam
- * Several bug fixes. Commit system runs now.
- *
- * Revision 1.12  1995/11/30  08:33:10  adam
- * Started work on commit facility.
- *
- * Revision 1.11  1995/09/04  12:33:21  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.10  1994/08/25  10:15:54  quinn
- * Trivial
- *
- * Revision 1.9  1994/08/24  08:45:48  quinn
- * Using mfile.
- *
- * Revision 1.8  1994/08/23  15:03:34  quinn
- * *** empty log message ***
- *
- * Revision 1.7  1994/08/23  14:25:45  quinn
- * Added O_CREAT because some geek wanted it. Sheesh.
- *
- * Revision 1.6  1994/08/23  14:21:38  quinn
- * Fixed call to log
- *
- * Revision 1.5  1994/08/18  08:10:08  quinn
- * Minimal changes
- *
- * Revision 1.4  1994/08/17  14:27:32  quinn
- * last mods
- *
- * Revision 1.2  1994/08/17  14:09:32  quinn
- * Compiles cleanly (still only dummy).
- *
- * Revision 1.1  1994/08/17  13:55:08  quinn
- * New blocksystem. dummy only
- *
- */
+/* $Id: bfile.c,v 1.35 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdio.h>
 #include <stdlib.h>

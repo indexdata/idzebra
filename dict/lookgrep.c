@@ -1,91 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: lookgrep.c,v $
- * Revision 1.24  1999-05-26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.23  1999/05/15 14:36:37  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.22  1999/02/02 14:50:23  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.21  1998/06/24 12:16:12  adam
- * Support for relations on text operands. Open range support in
- * DFA module (i.e. [-j], [g-]).
- *
- * Revision 1.20  1997/10/27 14:33:03  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- * Revision 1.19  1997/09/18 08:59:18  adam
- * Extra generic handle for the character mapping routines.
- *
- * Revision 1.18  1997/09/05 15:29:58  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.17  1996/06/04 10:20:06  adam
- * Added support for character mapping.
- *
- * Revision 1.16  1996/05/24  14:46:04  adam
- * Added dict_grep_cmap function to define user-mapping in grep lookups.
- *
- * Revision 1.15  1996/03/20  09:35:18  adam
- * Function dict_lookup_grep got extra parameter, init_pos, which marks
- * from which position in pattern approximate pattern matching should occur.
- *
- * Revision 1.14  1996/02/02  13:43:51  adam
- * The public functions simply use char instead of Dict_char to represent
- * search strings. Dict_char is used internally only.
- *
- * Revision 1.13  1996/01/08  09:09:30  adam
- * Function dfa_parse got 'const' string argument.
- *
- * Revision 1.12  1995/12/11  09:04:48  adam
- * Bug fix: the lookup/scan/lookgrep didn't handle empty dictionary.
- *
- * Revision 1.11  1995/12/06  14:43:02  adam
- * New function: dict_delete.
- *
- * Revision 1.10  1995/11/16  17:00:44  adam
- * Changed stupid log.
- *
- * Revision 1.9  1995/10/27  13:58:09  adam
- * Makes 'Database unavailable' diagnostic.
- *
- * Revision 1.8  1995/10/19  14:57:21  adam
- * New feature: grep lookup saves length of longest prefix match.
- *
- * Revision 1.7  1995/10/17  18:01:22  adam
- * Userfunc may return non-zero in which case the the grepping stops
- * immediately.
- *
- * Revision 1.6  1995/10/09  16:18:32  adam
- * Function dict_lookup_grep got extra client data parameter.
- *
- * Revision 1.5  1995/09/14  11:52:59  adam
- * Grep handle function parameter info is const now.
- *
- * Revision 1.4  1995/01/24  16:01:02  adam
- * Added -ansi to CFLAGS.
- * Use new API of dfa module.
- *
- * Revision 1.3  1994/10/05  12:16:50  adam
- * Pagesize is a resource now.
- *
- * Revision 1.2  1994/10/04  12:08:07  adam
- * Some bug fixes and some optimizations.
- *
- * Revision 1.1  1994/10/03  17:23:04  adam
- * First version of dictionary lookup with regular expressions and errors.
- *
- */
+/* $Id: lookgrep.c,v 1.25 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,76 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: rset.h,v $
- * Revision 1.18  2002-07-25 13:06:43  adam
- * Character set negotiation updates
- *
- * Revision 1.17  2002/03/20 20:24:29  adam
- * Hits per term. Returned in SearchResult-1
- *
- * Revision 1.16  1999/02/02 14:50:38  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.15  1998/03/05 08:37:44  adam
- * New result set model.
- *
- * Revision 1.14  1998/02/10 11:56:46  adam
- * Implemented rset_dup.
- *
- * Revision 1.13  1997/12/18 10:54:24  adam
- * New method result set method rs_hits that returns the number of
- * hits in result-set (if known). The ranked result set returns real
- * number of hits but only when not combined with other operands.
- *
- * Revision 1.12  1997/09/05 15:30:03  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.11  1995/12/11 09:07:53  adam
- * New rset member 'flag', that holds various flags about a result set -
- * currently 'volatile' (set is register dependent) and 'ranked' (set is
- * ranked).
- * New set types sand/sor/snot. They handle and/or/not for ranked and
- * semi-ranked result sets.
- *
- * Revision 1.10  1995/10/12  12:40:36  adam
- * Private info (buf) moved from struct rset_control to struct rset.
- * Member control in rset is statically set in rset_create.
- *
- * Revision 1.9  1995/10/10  14:00:01  adam
- * Function rset_open changed its wflag parameter to general flags.
- *
- * Revision 1.8  1995/10/06  14:37:53  adam
- * New result set method: r_score.
- * Local no (sysno) and score is transferred to retrieveCtrl.
- *
- * Revision 1.7  1995/09/07  13:58:08  adam
- * New parameter: result-set file descriptor (RSFD) to support multiple
- * positions within the same result-set.
- * Boolean operators: and, or, not implemented.
- *
- * Revision 1.6  1995/09/06  16:10:58  adam
- * More work on boolean sets.
- *
- * Revision 1.5  1995/09/04  15:20:13  adam
- * More work on temp sets. is_open member removed.
- *
- * Revision 1.4  1995/09/04  09:09:52  adam
- * String arg in dict lookup is const.
- * Minor changes.
- *
- * Revision 1.3  1994/11/22  13:15:27  quinn
- * Simple
- *
- * Revision 1.2  1994/11/04  13:21:21  quinn
- * Working.
- *
- * Revision 1.1  1994/11/03  14:13:22  quinn
- * Result set manipulation
- *
- */
+/* $Id: rset.h,v 1.19 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifndef RSET_H
 #define RSET_H

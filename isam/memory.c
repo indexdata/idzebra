@@ -1,63 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: memory.c,v $
- * Revision 1.17  1999-05-26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.16  1999/02/02 14:51:20  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.15  1997/09/09 13:38:11  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.14  1996/10/29 13:56:56  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.13  1996/03/20 13:29:16  quinn
- * Bug-fix
- *
- * Revision 1.12  1996/03/11  14:52:23  quinn
- * Fixed update bug. Repeated insertion in the same area sometimes caused
- * problems.
- *
- * Revision 1.11  1996/02/10  12:20:58  quinn
- * *** empty log message ***
- *
- * Revision 1.10  1995/12/12  14:12:47  quinn
- * *** empty log message ***
- *
- * Revision 1.9  1995/12/06  15:48:46  quinn
- * Fixed update-problem.
- *
- * Revision 1.8  1995/12/06  14:48:27  quinn
- * Fixed some strange bugs.
- *
- * Revision 1.7  1995/12/06  09:59:46  quinn
- * Fixed memory-consumption bug in memory.c
- * Added more blocksizes to the default ISAM configuration.
- *
- * Revision 1.6  1995/09/04  12:33:47  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.5  1994/09/28  16:58:33  quinn
- * Small mod.
- *
- * Revision 1.4  1994/09/27  20:03:52  quinn
- * Seems relatively bug-free.
- *
- * Revision 1.3  1994/09/26  17:11:30  quinn
- * Trivial
- *
- * Revision 1.2  1994/09/26  17:06:35  quinn
- * Back again...
- *
- * Revision 1.1  1994/09/26  16:07:56  quinn
- * Most of the functionality in place.
- *
- */
+/* $Id: memory.c,v 1.18 2002-08-02 19:26:56 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 /*
  * This module accesses and rearranges the records of the tables.

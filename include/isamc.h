@@ -1,42 +1,26 @@
-/*
- * Copyright (c) 1995-1997, Index Data.
- * See the file LICENSE for details.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: isamc.h,v $
- * Revision 1.9  1999-07-14 10:59:26  adam
- * Changed functions isc_getmethod, isams_getmethod.
- * Improved fatal error handling (such as missing EXPLAIN schema).
- *
- * Revision 1.8  1999/06/30 09:08:23  adam
- * Added coder to reset.
- *
- * Revision 1.7  1998/03/13 15:30:50  adam
- * New functions isc_block_used and isc_block_size. Fixed 'leak'
- * in isc_alloc_block.
- *
- * Revision 1.6  1997/09/17 12:19:10  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.5  1997/09/05 15:30:00  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.4  1996/11/08 11:08:01  adam
- * New internal release.
- *
- * Revision 1.3  1996/11/01 13:35:03  adam
- * New element, max_blocks_mem, that control how many blocks of max size
- * to store in memory during isc_merge.
- *
- * Revision 1.2  1996/10/29  16:44:42  adam
- * Added isc_type, isc_block macros.
- *
- * Revision 1.1  1996/10/29  13:40:37  adam
- * First work.
- *
- */
+/* $Id: isamc.h,v 1.10 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifndef ISAMC_H
 #define ISAMC_H

@@ -1,82 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: lockidx.c,v $
- * Revision 1.21  2002-02-20 17:30:01  adam
- * Work on new API. Locking system re-implemented
- *
- * Revision 1.20  2000/10/16 20:16:00  adam
- * Fixed problem with close of lock file for WIN32.
- *
- * Revision 1.19  2000/09/05 14:04:05  adam
- * Updates for prefix 'yaz_' for YAZ log functions.
- *
- * Revision 1.18  2000/02/24 11:00:07  adam
- * Fixed bug: indexer would run forever when lock dir was non-existant.
- *
- * Revision 1.17  1999/12/08 15:03:11  adam
- * Implemented bf_reset.
- *
- * Revision 1.16  1999/02/02 14:50:57  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.15  1998/02/17 10:31:33  adam
- * Fixed bug in zebraIndexUnlock. On NT, the lock files wasn't removed.
- *
- * Revision 1.14  1998/01/12 15:04:08  adam
- * The test option (-s) only uses read-lock (and not write lock).
- *
- * Revision 1.13  1997/09/29 09:08:36  adam
- * Revised locking system to be thread safe for the server.
- *
- * Revision 1.12  1997/09/25 14:54:43  adam
- * WIN32 files lock support.
- *
- * Revision 1.11  1997/09/17 12:19:15  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.10  1997/09/09 13:38:07  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.9  1997/09/04 13:58:04  adam
- * Added O_BINARY for open calls.
- *
- * Revision 1.8  1997/02/12 20:39:46  adam
- * Implemented options -f <n> that limits the log to the first <n>
- * records.
- * Changed some log messages also.
- *
- * Revision 1.7  1996/10/29 14:08:13  adam
- * Uses resource lockDir instead of lockPath.
- *
- * Revision 1.6  1996/03/26 16:01:13  adam
- * New setting lockPath: directory of various lock files.
- *
- * Revision 1.5  1995/12/13  08:46:09  adam
- * Locking uses F_WRLCK and F_RDLCK again!
- *
- * Revision 1.4  1995/12/12  16:00:57  adam
- * System call sync(2) used after update/commit.
- * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
- * and F_RDLCK.
- *
- * Revision 1.3  1995/12/11  11:43:29  adam
- * Locking based on fcntl instead of flock.
- * Setting commitEnable removed. Command line option -n can be used to
- * prevent commit if commit setting is defined in the configuration file.
- *
- * Revision 1.2  1995/12/08  16:22:54  adam
- * Work on update while servers are running. Three lock files introduced.
- * The servers reload their registers when necessary, but they don't
- * reestablish result sets yet.
- *
- * Revision 1.1  1995/12/07  17:38:47  adam
- * Work locking mechanisms for concurrent updates/commit.
- *
- */
+/* $Id: lockidx.c,v 1.22 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 #include <stdio.h>
 #include <assert.h>
 #ifdef WIN32

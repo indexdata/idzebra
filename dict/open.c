@@ -1,67 +1,26 @@
-/*
- * Copyright (C) 1994-2002, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: open.c,v $
- * Revision 1.18  2002-05-03 13:47:15  adam
- * make checkergcc happy
- *
- * Revision 1.17  2000/12/05 09:59:10  adam
- * Work on dict_delete_subtree.
- *
- * Revision 1.16  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.15  1999/05/15 14:36:37  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.14  1999/03/09 13:07:06  adam
- * Work on dict_compact routine.
- *
- * Revision 1.13  1999/02/02 14:50:27  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.12  1997/09/17 12:19:07  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.11  1996/10/29 14:00:05  adam
- * Page size given by DICT_DEFAULT_PAGESIZE in dict.h.
- *
- * Revision 1.10  1996/05/24 14:46:04  adam
- * Added dict_grep_cmap function to define user-mapping in grep lookups.
- *
- * Revision 1.9  1996/02/02  13:43:51  adam
- * The public functions simply use char instead of Dict_char to represent
- * search strings. Dict_char is used internally only.
- *
- * Revision 1.8  1995/12/07  11:48:56  adam
- * Insert operation obeys DICT_type = 1 (slack in page).
- * Function dict_open exists if page size or magic aren't right.
- *
- * Revision 1.7  1995/09/04  12:33:32  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.6  1994/10/05  12:16:52  adam
- * Pagesize is a resource now.
- *
- * Revision 1.5  1994/09/01  17:49:39  adam
- * Removed stupid line. Work on insertion in dictionary. Not finished yet.
- *
- * Revision 1.4  1994/09/01  17:44:10  adam
- * depend include change.
- *
- * Revision 1.3  1994/08/18  12:40:58  adam
- * Some development of dictionary. Not finished at all!
- *
- * Revision 1.2  1994/08/17  13:32:20  adam
- * Use cache in dict - not in bfile.
- *
- * Revision 1.1  1994/08/16  16:26:49  adam
- * Added dict.
- *
- */
+/* $Id: open.c,v 1.19 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdlib.h>
 #include <string.h>

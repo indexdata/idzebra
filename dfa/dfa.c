@@ -1,97 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: dfa.c,v $
- * Revision 1.27  1999-07-15 12:05:32  adam
- * Bug fix: Anyset (.) includes all 8-bit characters when charmap is defined.
- *
- * Revision 1.26  1999/05/26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.25  1999/02/02 14:50:05  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.24  1998/10/28 10:48:55  adam
- * Added type cast to prevent warning.
- *
- * Revision 1.23  1998/09/02 14:15:28  adam
- * Zebra uses GNU Configure.
- *
- * Revision 1.22  1998/06/24 12:16:10  adam
- * Support for relations on text operands. Open range support in
- * DFA module (i.e. [-j], [g-]).
- *
- * Revision 1.21  1998/06/22 11:33:39  adam
- * Added two type casts.
- *
- * Revision 1.20  1998/06/08 14:40:44  adam
- * Fixed problem with signed character(s) in regular expressions.
- *
- * Revision 1.19  1998/01/12 14:39:39  adam
- * Fixed bug in term_Tnode.
- *
- * Revision 1.18  1997/09/29 09:05:17  adam
- * Thread safe DFA module. We simply had to put a few static vars to
- * the DFA_parse structure.
- *
- * Revision 1.17  1997/09/18 08:59:17  adam
- * Extra generic handle for the character mapping routines.
- *
- * Revision 1.16  1997/09/05 15:29:57  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.15  1997/02/10 10:19:20  adam
- * Added facility for open character sets, eg [a-].
- *
- * Revision 1.14  1996/10/29 13:57:22  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.13  1996/06/17 14:24:08  adam
- * Bug fix: read_charset didn't handle character mapping.
- *
- * Revision 1.12  1996/06/04 10:20:02  adam
- * Added support for character mapping.
- *
- * Revision 1.11  1996/01/08  19:15:24  adam
- * Allow single $ in expressions.
- *
- * Revision 1.10  1996/01/08  09:09:17  adam
- * Function dfa_parse got 'const' string argument.
- * New functions to define char mappings made public.
- *
- * Revision 1.9  1995/12/06  12:24:58  adam
- * Removed verbatim mode code.
- *
- * Revision 1.8  1995/12/06  09:09:58  adam
- * Work on left and right anchors.
- *
- * Revision 1.7  1995/11/27  09:23:02  adam
- * New berbatim hook in regular expressions. "[]n ..".
- *
- * Revision 1.6  1995/10/16  09:31:25  adam
- * Bug fix.
- *
- * Revision 1.5  1995/10/02  15:17:58  adam
- * Bug fix in dfa_delete.
- *
- * Revision 1.4  1995/09/28  09:18:52  adam
- * Removed various preprocessor defines.
- *
- * Revision 1.3  1995/09/04  12:33:26  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.2  1995/01/25  11:30:50  adam
- * Simple error reporting when parsing regular expressions.
- * Memory usage reduced.
- *
- * Revision 1.1  1995/01/24  16:02:52  adam
- * New private header file in dfa module (dfap.h).
- * Module no longer uses yacc to parse regular expressions.
- *
- */
+/* $Id: dfa.c,v 1.28 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 #include <stdio.h>
 #include <assert.h>
 

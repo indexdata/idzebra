@@ -1,36 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: drdwr.c,v $
- * Revision 1.12  1999-05-18 20:00:33  adam
- * Minor fix.
- *
- * Revision 1.11  1999/05/15 14:36:37  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.10  1999/02/02 14:50:21  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.9  1997/09/09 13:38:01  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.8  1995/01/24 11:25:11  adam
- * Removed stupid assertion.
- *
- * Revision 1.7  1994/10/05  10:47:15  adam
- * Function pr_lru is non-static now. No warning no more.
- *
- * Revision 1.6  1994/09/06  13:05:14  adam
- * Further development of insertion. Some special cases are
- * not properly handled yet! assert(0) are put here. The
- * binary search in each page definitely reduce usr CPU.
- *
- * Revision 1.5  1994/09/01  17:49:38  adam
- * Removed stupid line. Work on insertion in dictionary. Not finished yet.
- *
- */
+/* $Id: drdwr.c,v 1.13 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <sys/types.h>
 #include <fcntl.h>

@@ -1,65 +1,26 @@
-/*
- * Copyright (C) 1994-2001, Index Data
- * All rights reserved.
- *
- * $Log: dirs.c,v $
- * Revision 1.17  2001-03-29 14:07:14  adam
- * Fixed nasty bug for fileUpdate.
- *
- * Revision 1.16  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.15  1999/02/02 14:50:51  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.14  1998/01/12 15:04:07  adam
- * The test option (-s) only uses read-lock (and not write lock).
- *
- * Revision 1.13  1997/09/09 13:38:06  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.12  1996/11/08 11:10:13  adam
- * Buffers used during file match got bigger.
- * Compressed ISAM support everywhere.
- * Bug fixes regarding masking characters in queries.
- * Redesigned Regexp-2 queries.
- *
- * Revision 1.11  1996/10/29 14:06:47  adam
- * Include zebrautl.h instead of alexutil.h.
- *
- * Revision 1.10  1996/06/04 10:18:58  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.9  1996/04/23  12:39:07  adam
- * Bug fix: In function dirs_del dict_delete is used to remove a file
- * rather than a bogus dict_insert.
- *
- * Revision 1.8  1996/04/12  07:02:21  adam
- * File update of single files.
- *
- * Revision 1.7  1996/03/21 14:50:09  adam
- * File update uses modify-time instead of change-time.
- *
- * Revision 1.6  1996/02/02  13:44:43  adam
- * The public dictionary functions simply use char instead of Dict_char
- * to represent search strings. Dict_char is used internally only.
- *
- * Revision 1.5  1996/01/17  14:54:44  adam
- * Function dirs_rmdir uses dict_delete.
- *
- * Revision 1.4  1995/11/30  08:34:27  adam
- * Started work on commit facility.
- * Changed a few malloc/free to xmalloc/xfree.
- *
- * Revision 1.3  1995/11/20  16:59:45  adam
- * New update method: the 'old' keys are saved for each records.
- *
- * Revision 1.2  1995/11/20  11:56:23  adam
- * Work on new traversal.
- *
- * Revision 1.1  1995/11/17  15:54:42  adam
- * Started work on virtual directory structure.
- */
+/* $Id: dirs.c,v 1.18 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>

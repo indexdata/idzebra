@@ -1,33 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: rstemp.h,v $
- * Revision 1.7  2002-03-20 20:24:29  adam
- * Hits per term. Returned in SearchResult-1
- *
- * Revision 1.6  1999/02/02 14:50:43  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.5  1998/03/05 08:37:44  adam
- * New result set model.
- *
- * Revision 1.4  1997/09/17 12:19:11  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.3  1997/09/05 15:30:05  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.2  1995/09/04 15:20:13  adam
- * More work on temp sets. is_open member removed.
- *
- * Revision 1.1  1994/11/04  13:21:23  quinn
- * Working.
- *
- */
+/* $Id: rstemp.h,v 1.8 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifndef RSET_TEMP_H
 #define RSET_TEMP_H

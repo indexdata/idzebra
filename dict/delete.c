@@ -1,33 +1,26 @@
-/*
- * Copyright (C) 1994-2000, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: delete.c,v $
- * Revision 1.7  2000-12-05 09:59:10  adam
- * Work on dict_delete_subtree.
- *
- * Revision 1.6  1999/05/15 14:36:37  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.5  1999/02/02 14:50:17  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.4  1996/02/02 13:43:50  adam
- * The public functions simply use char instead of Dict_char to represent
- * search strings. Dict_char is used internally only.
- *
- * Revision 1.3  1995/12/07  11:48:55  adam
- * Insert operation obeys DICT_type = 1 (slack in page).
- * Function dict_open exists if page size or magic aren't right.
- *
- * Revision 1.2  1995/12/06  17:48:30  adam
- * Bug fix: delete didn't work.
- *
- * Revision 1.1  1995/12/06  14:52:21  adam
- * New function: dict_delete.
- *
- */
+/* $Id: delete.c,v 1.8 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.5 2002-04-10 14:47:49 heikki Exp $ -->
+ <!-- $Id: introduction.xml,v 1.6 2002-08-02 19:26:55 adam Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -147,7 +147,6 @@
     <listitem>
      <para>
       Protocol facilities: Init, Search, Retrieve, Delete, Browse and Sort.
-      FIXME - Itemupdate. (Remove delete until that time, confuses people) -H
      </para>
     </listitem>
 
@@ -186,13 +185,6 @@
      </para>
     </listitem>
 
-    <listitem>
-     <para>
-      Some variant support (not fully implemented yet).
-      FIXME - Test if complete enough - is it worth mentioning at all -H
-     </para>
-    </listitem>
-
    </itemizedlist>
    
   </para>
@@ -213,12 +205,6 @@
   
   <para>
    <itemizedlist>
-    <listitem>
-     <para>
-      *Complete the support for variants.
-      FIXME - who cares -H
-     </para>
-    </listitem>
 
     <listitem>
      <para>

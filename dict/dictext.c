@@ -1,34 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: dictext.c,v $
- * Revision 1.8  2000-09-05 14:04:05  adam
- * Updates for prefix 'yaz_' for YAZ log functions.
- *
- * Revision 1.7  1999/02/02 14:50:18  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.6  1996/10/29 14:00:02  adam
- * Page size given by DICT_DEFAULT_PAGESIZE in dict.h.
- *
- * Revision 1.5  1996/01/31 21:03:59  adam
- * Extra options.
- *
- * Revision 1.4  1995/09/04  12:33:31  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.3  1994/10/04  17:46:54  adam
- * Function options now returns arg with error option.
- *
- * Revision 1.2  1994/09/28  13:07:08  adam
- * Use log_mask_str now.
- *
- * Revision 1.1  1994/09/16  15:39:11  adam
- * Initial code of lookup - not tested yet.
- *
- */
+/* $Id: dictext.c,v 1.9 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <string.h>
 #include <stdlib.h>

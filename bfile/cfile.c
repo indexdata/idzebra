@@ -1,93 +1,26 @@
-/*
- * Copyright (C) 1995-2000, Index Data ApS
- * All rights reserved.
- *
- * $Log: cfile.c,v $
- * Revision 1.26  2000-03-20 19:08:35  adam
- * Added remote record import using Z39.50 extended services and Segment
- * Requests.
- *
- * Revision 1.25  1999/05/26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.24  1999/05/12 13:08:06  adam
- * First version of ISAMS.
- *
- * Revision 1.23  1998/10/15 13:09:29  adam
- * Minor changes.
- *
- * Revision 1.22  1998/10/13 20:07:22  adam
- * Changed some log messages.
- *
- * Revision 1.21  1998/08/24 17:29:52  adam
- * Minor changes.
- *
- * Revision 1.20  1998/08/07 15:07:13  adam
- * Fixed but in cf_commit_flat.
- *
- * Revision 1.19  1997/02/12 20:37:17  adam
- * Changed the messages logged. No real code changed.
- *
- * Revision 1.18  1996/10/29 13:56:15  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.17  1996/04/19 16:49:00  adam
- * Minor changes.
- *
- * Revision 1.16  1996/04/19  16:23:47  adam
- * Serious bug fix in shadow implementation; function new_bucket might
- * set wrong bucket number on new bucket.
- *
- * Revision 1.15  1996/04/18  16:02:56  adam
- * Changed logging a bit.
- * Removed warning message when commiting flat shadow files.
- *
- * Revision 1.14  1996/04/12  07:01:55  adam
- * Yet another bug fix (next_block was initialized to 0; now set to 1).
- *
- * Revision 1.13  1996/04/09 14:48:49  adam
- * Bug fix: offset calculation when using flat files was completely broken.
- *
- * Revision 1.12  1996/04/09  06:47:28  adam
- * Function scan_areadef doesn't use sscanf (%n fails on this Linux).
- *
- * Revision 1.11  1996/03/26 15:59:05  adam
- * The directory of the shadow table file can be specified by the new
- * bf_lockDir call.
- *
- * Revision 1.10  1996/02/07  14:03:46  adam
- * Work on flat indexed shadow files.
- *
- * Revision 1.9  1996/02/07  10:08:43  adam
- * Work on flat shadow (not finished yet).
- *
- * Revision 1.8  1995/12/15  12:36:52  adam
- * Moved hash file information to union.
- * Renamed commit files.
- *
- * Revision 1.7  1995/12/15  10:35:07  adam
- * Changed names of commit files.
- *
- * Revision 1.6  1995/12/11  09:03:53  adam
- * New function: cf_unlink.
- * New member of commit file head: state (0) deleted, (1) hash file.
- *
- * Revision 1.5  1995/12/08  16:21:14  adam
- * Work on commit/update.
- *
- * Revision 1.4  1995/12/01  16:24:28  adam
- * Commit files use separate meta file area.
- *
- * Revision 1.3  1995/12/01  11:37:22  adam
- * Cached/commit files implemented as meta-files.
- *
- * Revision 1.2  1995/11/30  17:00:49  adam
- * Several bug fixes. Commit system runs now.
- *
- * Revision 1.1  1995/11/30  08:33:11  adam
- * Started work on commit facility.
- *
- */
+/* $Id: cfile.c,v 1.27 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <assert.h>
 #include <stdlib.h>

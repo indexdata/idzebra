@@ -1,26 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: imalloc.h,v $
- * Revision 1.5  1999-05-26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.4  1999/02/02 14:50:09  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.3  1997/10/27 14:27:13  adam
- * Minor changes.
- *
- * Revision 1.2  1996/05/14 11:33:41  adam
- * MEMDEBUG turned off by default.
- *
- * Revision 1.1  1994/09/26  10:16:54  adam
- * First version of dfa module in alex. This version uses yacc to parse
- * regular expressions. This should be hand-made instead.
- *
- */
+/* $Id: imalloc.h,v 1.6 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifdef __cplusplus
 extern "C" {

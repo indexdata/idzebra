@@ -1,113 +1,26 @@
-/*
- * Copyright (C) 1994-2000, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: dict.h,v $
- * Revision 1.31  2000-12-05 09:59:10  adam
- * Work on dict_delete_subtree.
- *
- * Revision 1.30  1999/11/30 13:48:03  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.29  1999/05/15 14:36:37  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.28  1999/03/09 13:07:06  adam
- * Work on dict_compact routine.
- *
- * Revision 1.27  1999/02/02 14:50:32  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.26  1997/09/18 08:59:18  adam
- * Extra generic handle for the character mapping routines.
- *
- * Revision 1.25  1997/09/17 12:19:09  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.24  1997/09/05 15:30:00  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.23  1996/10/29 13:45:33  adam
- * Changed definition of DICT_DEFAULT_PAGESIZE.
- *
- * Revision 1.22  1996/06/04 10:20:10  adam
- * Added support for character mapping.
- *
- * Revision 1.21  1996/05/24  14:46:07  adam
- * Added dict_grep_cmap function to define user-mapping in grep lookups.
- *
- * Revision 1.20  1996/03/20  09:35:23  adam
- * Function dict_lookup_grep got extra parameter, init_pos, which marks
- * from which position in pattern approximate pattern matching should occur.
- *
- * Revision 1.19  1996/02/02  13:43:54  adam
- * The public functions simply use char instead of Dict_char to represent
- * search strings. Dict_char is used internally only.
- *
- * Revision 1.18  1996/02/01  20:41:06  adam
- * Bug fix: insert didn't work on 8-bit characters due to unsigned char
- * compares in dict_strcmp (strcmp) and signed Dict_char. Dict_char is
- * unsigned now.
- *
- * Revision 1.17  1995/12/07  11:47:04  adam
- * Default pagesize is 4k instead of 8k.
- *
- * Revision 1.16  1995/12/06  14:41:13  adam
- * New function: dict_delete.
- *
- * Revision 1.15  1995/10/27  13:59:17  adam
- * Function dict_look_grep got extra parameter max_pos that upon return
- * hold length of longest prefix that matches pattern.
- *
- * Revision 1.14  1995/10/09  16:18:35  adam
- * Function dict_lookup_grep got extra client data parameter.
- *
- * Revision 1.13  1995/10/06  09:03:51  adam
- * First version of scan.
- *
- * Revision 1.12  1995/09/14  11:53:02  adam
- * Grep handle function parameter info is const now.
- *
- * Revision 1.11  1995/09/04  09:09:51  adam
- * String arg in dict lookup is const.
- * Minor changes.
- *
- * Revision 1.10  1994/10/05  12:16:58  adam
- * Pagesize is a resource now.
- *
- * Revision 1.9  1994/10/04  12:08:19  adam
- * Minor changes.
- *
- * Revision 1.8  1994/10/03  17:23:11  adam
- * First version of dictionary lookup with regular expressions and errors.
- *
- * Revision 1.7  1994/09/22  10:44:47  adam
- * Don't remember what changed!!
- *
- * Revision 1.6  1994/09/16  15:39:21  adam
- * Initial code of lookup - not tested yet.
- *
- * Revision 1.5  1994/09/06  13:05:29  adam
- * Further development of insertion. Some special cases are
- * not properly handled yet! assert(0) are put here. The
- * binary search in each page definitely reduce usr CPU.
- *
- * Revision 1.4  1994/09/01  17:44:40  adam
- * Work on insertion in dictionary. Not finished yet.
- *
- * Revision 1.3  1994/08/18  12:41:12  adam
- * Some development of dictionary. Not finished at all!
- *
- * Revision 1.2  1994/08/17  13:32:33  adam
- * Use cache in dict - not in bfile.
- *
- * Revision 1.1  1994/08/16  16:26:53  adam
- * Added dict.
- *
- */
+/* $Id: dict.h,v 1.32 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifndef DICT_H
 #define DICT_H

@@ -1,43 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: recctrl.c,v $
- * Revision 1.5  1999-05-26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.4  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.3  1998/10/16 08:14:36  adam
- * Updated record control system.
- *
- * Revision 1.2  1996/10/29 14:03:16  adam
- * Include zebrautl.h instead of alexutil.h.
- *
- * Revision 1.1  1996/10/11 10:57:24  adam
- * New module recctrl. Used to manage records (extract/retrieval).
- *
- * Revision 1.5  1996/06/04 10:18:59  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.4  1995/12/04  17:59:24  adam
- * More work on regular expression conversion.
- *
- * Revision 1.3  1995/12/04  14:22:30  adam
- * Extra arg to recType_byName.
- * Started work on new regular expression parsed input to
- * structured records.
- *
- * Revision 1.2  1995/11/15  14:46:19  adam
- * Started work on better record management system.
- *
- * Revision 1.1  1995/09/27  12:22:28  adam
- * More work on extract in record control.
- * Field name is not in isam keys but in prefix in dictionary words.
- *
- */
+/* $Id: recctrl.c,v 1.6 2002-08-02 19:26:56 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>

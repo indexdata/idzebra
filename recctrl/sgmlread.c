@@ -1,42 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: sgmlread.c,v $
- * Revision 1.10  1999-11-30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.9  1999/07/14 10:56:16  adam
- * Filter handles multiple records in one file.
- *
- * Revision 1.8  1999/06/25 13:47:25  adam
- * Minor change that prevents MSVC warning.
- *
- * Revision 1.7  1999/05/21 12:00:17  adam
- * Better diagnostics for extraction process.
- *
- * Revision 1.6  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.5  1999/02/02 14:51:31  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.4  1997/09/17 12:19:22  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.3  1997/09/04 13:54:41  adam
- * Added MARC filter - type grs.marc.<syntax> where syntax refers
- * to abstract syntax. New method tellf in retrieve/extract method.
- *
- * Revision 1.2  1997/04/30 08:56:08  quinn
- * null
- *
- * Revision 1.1  1996/10/11  10:57:32  adam
- * New module recctrl. Used to manage records (extract/retrieval).
- *
- */
+/* $Id: sgmlread.c,v 1.11 2002-08-02 19:26:56 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 #include <assert.h>
 #include <yaz/log.h>
 

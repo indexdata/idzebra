@@ -1,30 +1,26 @@
-/*
- * Copyright (c) 1997-1999, Index Data.
- * See the file LICENSE for details.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: direntz.h,v $
- * Revision 1.6  2002-04-04 20:50:36  adam
- * Multi register works with record paths and data1 profile path
- *
- * Revision 1.5  2002/04/04 14:14:13  adam
- * Multiple registers (alpha early)
- *
- * Revision 1.4  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.3  1999/02/02 14:50:33  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.2  1997/09/17 12:19:09  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.1  1997/09/09 13:38:03  adam
- * Partial port to WIN95/NT.
- *
- *
- */
+/* $Id: direntz.h,v 1.7 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 
 #ifdef WIN32

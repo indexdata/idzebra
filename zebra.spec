@@ -1,8 +1,8 @@
 Name: zebra
-Version: 1.2.0
+Version: 1.3.0
 Release: 1
 Requires: yaz
-Copyright: Distributable
+Copyright: GPL
 Group: Applications/Databases
 Vendor: Index Data ApS <info@indexdata.dk>
 Source: zebra-%{version}.tar.gz
@@ -13,9 +13,7 @@ Summary: Zebra: a fielded free-text engine with a Z39.50 frontend.
 
 %description
 Zebra is a fielded free-text indexing and retrieval engine with a Z39.50
-front-end. You can use any compatible, commercial or freeware Z39.50 client to
-access data stored in Zebra. Zebra may be used free-of-charge in non-profit
-applications by non-commercial organisations. 
+front-end.
 
 %prep
 %setup

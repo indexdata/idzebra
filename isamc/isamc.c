@@ -1,85 +1,26 @@
-/*
- * Copyright (c) 1995-1998, Index Data.
- * See the file LICENSE for details.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: isamc.c,v $
- * Revision 1.21  2002-06-19 10:29:18  adam
- * align block sizes for isam sys. Better plot for test
- *
- * Revision 1.20  1999/11/30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.19  1999/07/14 10:59:27  adam
- * Changed functions isc_getmethod, isams_getmethod.
- * Improved fatal error handling (such as missing EXPLAIN schema).
- *
- * Revision 1.18  1999/06/30 09:08:23  adam
- * Added coder to reset.
- *
- * Revision 1.17  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.16  1998/05/27 14:32:03  adam
- * Changed default block category layout.
- *
- * Revision 1.15  1998/05/20 10:12:25  adam
- * Implemented automatic EXPLAIN database maintenance.
- * Modified Zebra to work with ASN.1 compiled version of YAZ.
- *
- * Revision 1.14  1998/03/19 10:04:35  adam
- * Minor changes.
- *
- * Revision 1.13  1998/03/18 09:23:55  adam
- * Blocks are stored in chunks on free list - up to factor 2 in speed.
- * Fixed bug that could occur in block category rearrangemen.
- *
- * Revision 1.12  1998/03/16 10:37:24  adam
- * Added more statistics.
- *
- * Revision 1.11  1998/03/13 15:30:50  adam
- * New functions isc_block_used and isc_block_size. Fixed 'leak'
- * in isc_alloc_block.
- *
- * Revision 1.10  1998/03/11 11:18:18  adam
- * Changed the isc_merge to take into account the mfill (minimum-fill).
- *
- * Revision 1.9  1998/03/06 13:54:02  adam
- * Fixed two nasty bugs in isc_merge.
- *
- * Revision 1.8  1997/09/17 12:19:20  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.7  1997/02/12 20:42:43  adam
- * Bug fix: during isc_merge operations, some pages weren't marked dirty
- * even though they should be. At this point the merge operation marks
- * a page dirty if the previous page changed at all. A better approach is
- * to mark it dirty if the last key written changed in previous page.
- *
- * Revision 1.6  1996/11/08 11:15:29  adam
- * Number of keys in chain are stored in first block and the function
- * to retrieve this information, isc_pp_num is implemented.
- *
- * Revision 1.5  1996/11/04 14:08:57  adam
- * Optimized free block usage.
- *
- * Revision 1.4  1996/11/01 13:36:46  adam
- * New element, max_blocks_mem, that control how many blocks of max size
- * to store in memory during isc_merge.
- * Function isc_merge now ignores delete/update of identical keys and
- * the proper blocks are then non-dirty and not written in flush_blocks.
- *
- * Revision 1.3  1996/11/01  08:59:14  adam
- * First version of isc_merge that supports update/delete.
- *
- * Revision 1.2  1996/10/29 16:44:56  adam
- * Work on isc_merge.
- *
- * Revision 1.1  1996/10/29  13:40:48  adam
- * First work.
- *
- */
+/* $Id: isamc.c,v 1.22 2002-08-02 19:26:56 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 /* 
  * TODO:

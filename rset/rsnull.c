@@ -1,62 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: rsnull.c,v $
- * Revision 1.14  2002-07-25 13:06:44  adam
- * Character set negotiation updates
- *
- * Revision 1.13  2002/03/21 10:25:42  adam
- * use lockDir. Fixes for searchResult for null/sort sets
- *
- * Revision 1.12  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.11  1999/02/02 14:51:36  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.10  1998/03/05 08:36:28  adam
- * New result set model.
- *
- * Revision 1.9  1997/12/18 10:54:25  adam
- * New method result set method rs_hits that returns the number of
- * hits in result-set (if known). The ranked result set returns real
- * number of hits but only when not combined with other operands.
- *
- * Revision 1.8  1996/10/29 13:55:24  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.7  1995/12/11 09:15:25  adam
- * New set types: sand/sor/snot - ranked versions of and/or/not in
- * ranked/semi-ranked result sets.
- * Note: the snot not finished yet.
- * New rset member: flag.
- * Bug fix: r_delete in rsrel.c did free bad memory block.
- *
- * Revision 1.6  1995/10/12  12:41:57  adam
- * Private info (buf) moved from struct rset_control to struct rset.
- * Bug fixes in relevance.
- *
- * Revision 1.5  1995/10/10  14:00:04  adam
- * Function rset_open changed its wflag parameter to general flags.
- *
- * Revision 1.4  1995/10/06  14:38:06  adam
- * New result set method: r_score.
- * Local no (sysno) and score is transferred to retrieveCtrl.
- *
- * Revision 1.3  1995/09/08  14:52:42  adam
- * Work on relevance feedback.
- *
- * Revision 1.2  1995/09/07  13:58:43  adam
- * New parameter: result-set file descriptor (RSFD) to support multiple
- * positions within the same result-set.
- * Boolean operators: and, or, not implemented.
- *
- * Revision 1.1  1995/09/06  10:35:44  adam
- * Null set implemented.
- *
- */
+/* $Id: rsnull.c,v 1.15 2002-08-02 19:26:57 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdio.h>
 #include <rsnull.h>

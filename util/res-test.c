@@ -1,31 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: res-test.c,v $
- * Revision 1.7  1999-02-02 14:51:41  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.6  1996/10/29 13:48:16  adam
- * Updated to use zebrautl.h instead of alexutil.h.
- *
- * Revision 1.5  1995/09/04 12:34:05  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.4  1994/10/04  17:47:11  adam
- * Function options now returns arg with error option.
- *
- * Revision 1.3  1994/08/18  11:02:27  adam
- * Implementation of res_write.
- *
- * Revision 1.2  1994/08/18  10:02:01  adam
- * Module alexpath moved from res.c to alexpath.c. Minor changes in res-test.c
- *
- * Revision 1.1  1994/08/18  09:43:51  adam
- * Development of resource manager. Only missing is res_write.
- *
- */
+/* $Id: res-test.c,v 1.8 2002-08-02 19:26:57 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdio.h>
 

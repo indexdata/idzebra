@@ -1,42 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: dfap.h,v $
- * Revision 1.9  1999-05-26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.8  1999/02/02 14:50:06  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.7  1997/09/29 09:05:17  adam
- * Thread safe DFA module. We simply had to put a few static vars to
- * the DFA_parse structure.
- *
- * Revision 1.6  1997/09/18 08:59:17  adam
- * Extra generic handle for the character mapping routines.
- *
- * Revision 1.5  1997/09/05 15:29:58  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.4  1996/06/04 10:20:03  adam
- * Added support for character mapping.
- *
- * Revision 1.3  1996/01/08  09:09:19  adam
- * Function dfa_parse got 'const' string argument.
- * New functions to define char mappings made public.
- *
- * Revision 1.2  1995/01/25  11:30:50  adam
- * Simple error reporting when parsing regular expressions.
- * Memory usage reduced.
- *
- * Revision 1.1  1995/01/24  16:02:53  adam
- * New private header file in dfa module (dfap.h).
- * Module no longer uses yacc to parse regular expressions.
- *
- */
+/* $Id: dfap.h,v 1.10 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifndef DFAP_H
 #define DFAP_H

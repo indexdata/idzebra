@@ -1,94 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data 
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: zebramap.c,v $
- * Revision 1.26  2002-08-01 08:53:35  adam
- * Work on xpath-like queries
- *
- * Revision 1.25  2002/04/05 12:54:29  adam
- * Using yaz_fclose
- *
- * Revision 1.24  2002/04/04 20:50:37  adam
- * Multi register works with record paths and data1 profile path
- *
- * Revision 1.23  2001/11/15 08:41:24  adam
- * Fix for weight (bug introduced by previous commit).
- *
- * Revision 1.22  2001/11/14 22:06:27  adam
- * Rank-weight may be controlled via query.
- *
- * Revision 1.21  2001/01/22 10:42:56  adam
- * Added numerical sort.
- *
- * Revision 1.20  2000/03/02 14:35:19  adam
- * Added structure year and date.
- *
- * Revision 1.19  1999/11/30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.18  1999/10/15 08:27:46  adam
- * Fixed replace handler. 8-bit fix.
- *
- * Revision 1.17  1999/09/08 12:13:21  adam
- * Fixed minor bug "replace"-mappings. Removed some logging messages.
- *
- * Revision 1.16  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.15  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.14  1999/02/19 10:37:40  adam
- * Minor fix.
- *
- * Revision 1.13  1999/02/18 15:01:04  adam
- * Structure=key uses register type 0.
- *
- * Revision 1.12  1999/02/12 13:29:25  adam
- * Implemented position-flag for registers.
- *
- * Revision 1.11  1998/10/13 20:09:19  adam
- * Changed call to readconf_line.
- *
- * Revision 1.10  1998/06/23 15:33:37  adam
- * Added feature to specify sort criteria in query (type 7 specifies
- * sort flags).
- *
- * Revision 1.9  1998/04/02 14:35:30  adam
- * First version of Zebra that works with compiled ASN.1.
- *
- * Revision 1.8  1998/03/05 08:42:44  adam
- * Minor changes to zebramap data structures. Query mapping rules changed.
- *
- * Revision 1.7  1998/02/10 12:03:07  adam
- * Implemented Sort.
- *
- * Revision 1.6  1998/01/29 13:36:01  adam
- * Structure word-list, free-form-text and document-text all
- * trigger ranked search.
- *
- * Revision 1.5  1997/11/19 10:22:14  adam
- * Bug fix (introduced by previous commit).
- *
- * Revision 1.4  1997/11/18 10:05:08  adam
- * Changed character map facility so that admin can specify character
- * mapping files for each register type, w, p, etc.
- *
- * Revision 1.3  1997/11/17 15:35:26  adam
- * Bug fix. Relation=relevance wasn't observed.
- *
- * Revision 1.2  1997/10/31 12:39:30  adam
- * Changed log message.
- *
- * Revision 1.1  1997/10/27 14:33:06  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- */
+/* $Id: zebramap.c,v 1.27 2002-08-02 19:26:57 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <assert.h>
 #include <ctype.h>

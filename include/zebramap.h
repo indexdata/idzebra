@@ -1,55 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: zebramap.h,v $
- * Revision 1.13  2002-04-04 20:50:36  adam
- * Multi register works with record paths and data1 profile path
- *
- * Revision 1.12  2001/11/14 22:06:27  adam
- * Rank-weight may be controlled via query.
- *
- * Revision 1.11  2001/01/22 10:42:56  adam
- * Added numerical sort.
- *
- * Revision 1.10  1999/11/30 13:48:03  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.9  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.8  1999/02/12 13:29:21  adam
- * Implemented position-flag for registers.
- *
- * Revision 1.7  1999/02/02 14:50:46  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.6  1998/06/23 15:33:33  adam
- * Added feature to specify sort criteria in query (type 7 specifies
- * sort flags).
- *
- * Revision 1.5  1998/03/05 08:39:26  adam
- * Minor changes to zebramap data structures. Changed query
- * mapping rules.
- *
- * Revision 1.4  1998/02/10 12:03:05  adam
- * Implemented Sort.
- *
- * Revision 1.3  1997/11/18 10:05:08  adam
- * Changed character map facility so that admin can specify character
- * mapping files for each register type, w, p, etc.
- *
- * Revision 1.2  1997/10/29 12:02:47  adam
- * Added missing prototype.
- *
- * Revision 1.1  1997/10/27 14:33:04  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- */
+/* $Id: zebramap.h,v 1.14 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #ifndef ZEBRAMAP_H
 #define ZEBRAMAP_H

@@ -1,80 +1,26 @@
-/*
- * Copyright (C) 1994-2001, Index Data 
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: rectext.c,v $
- * Revision 1.14  2001-01-22 11:41:41  adam
- * Added support for raw retrieval (element set name "R").
- *
- * Revision 1.13  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.12  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.11  1999/05/21 12:00:17  adam
- * Better diagnostics for extraction process.
- *
- * Revision 1.10  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.9  1998/10/16 08:14:38  adam
- * Updated record control system.
- *
- * Revision 1.8  1998/05/20 10:12:27  adam
- * Implemented automatic EXPLAIN database maintenance.
- * Modified Zebra to work with ASN.1 compiled version of YAZ.
- *
- * Revision 1.7  1998/03/11 11:19:05  adam
- * Changed the way sequence numbers are generated.
- *
- * Revision 1.6  1998/02/10 12:03:06  adam
- * Implemented Sort.
- *
- * Revision 1.5  1997/10/27 14:33:06  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- * Revision 1.4  1996/11/04 14:09:16  adam
- * Minor changes.
- *
- * Revision 1.3  1996/11/01 09:00:33  adam
- * This simple "text" format now supports element specs B and M.
- *
- * Revision 1.2  1996/10/29 14:02:45  adam
- * Uses buffered read to speed up things.
- *
- * Revision 1.1  1996/10/11 10:57:28  adam
- * New module recctrl. Used to manage records (extract/retrieval).
- *
- * Revision 1.7  1996/01/17 14:57:55  adam
- * Prototype changed for reader functions in extract/retrieve. File
- *  is identified by 'void *' instead of 'int.
- *
- * Revision 1.6  1995/10/10  13:59:24  adam
- * Function rset_open changed its wflag parameter to general flags.
- *
- * Revision 1.5  1995/10/02  16:24:39  adam
- * Use attribute actually used in search requests.
- *
- * Revision 1.4  1995/10/02  15:42:55  adam
- * Extract uses file descriptors instead of FILE pointers.
- *
- * Revision 1.3  1995/09/28  09:19:45  adam
- * xfree/xmalloc used everywhere.
- * Extract/retrieve method seems to work for text records.
- *
- * Revision 1.2  1995/09/15  14:45:21  adam
- * Retrieve control.
- * Work on truncation.
- *
- * Revision 1.1  1995/09/14  07:48:25  adam
- * Record control management.
- *
- */
+/* $Id: rectext.c,v 1.15 2002-08-02 19:26:56 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>

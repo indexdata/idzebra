@@ -1,69 +1,26 @@
-/*
- * Copyright (C) 1995-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: retrieve.c,v $
- * Revision 1.19  2002-07-25 13:06:43  adam
- * Character set negotiation updates
- *
- * Revision 1.18  2002/07/02 20:20:09  adam
- * idzebra:{filename,score,size,localnumber} tags for XML
- *
- * Revision 1.17  2002/05/03 13:49:04  adam
- * play with shellsort
- *
- * Revision 1.16  2002/04/04 20:50:37  adam
- * Multi register works with record paths and data1 profile path
- *
- * Revision 1.15  2002/04/04 14:14:13  adam
- * Multiple registers (alpha early)
- *
- * Revision 1.14  2001/01/22 11:41:41  adam
- * Added support for raw retrieval (element set name "R").
- *
- * Revision 1.13  2000/03/20 19:08:36  adam
- * Added remote record import using Z39.50 extended services and Segment
- * Requests.
- *
- * Revision 1.12  2000/03/15 15:00:30  adam
- * First work on threaded version.
- *
- * Revision 1.11  1999/10/29 10:00:00  adam
- * Fixed minor bug where database name wasn't set in zebra_record_fetch.
- *
- * Revision 1.10  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.9  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.8  1999/03/09 16:27:49  adam
- * More work on SDRKit integration.
- *
- * Revision 1.7  1999/03/02 16:15:43  quinn
- * Added "tagsysno" and "tagrank" directives to zebra.cfg.
- *
- * Revision 1.6  1999/02/18 15:01:25  adam
- * Minor changes.
- *
- * Revision 1.5  1999/02/17 11:29:56  adam
- * Fixed in record_fetch. Minor updates to API.
- *
- * Revision 1.4  1999/02/02 14:51:07  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.3  1998/10/28 10:54:40  adam
- * SDRKit integration.
- *
- * Revision 1.2  1998/10/16 08:14:33  adam
- * Updated record control system.
- *
- * Revision 1.1  1998/03/05 08:45:13  adam
- * New result set model and modular ranking system. Moved towards
- * descent server API. System information stored as "SGML" records.
- *
- */
+/* $Id: retrieve.c,v 1.20 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdio.h>
 #include <assert.h>

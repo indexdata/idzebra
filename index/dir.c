@@ -1,78 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: dir.c,v $
- * Revision 1.22  2002-04-04 20:50:36  adam
- * Multi register works with record paths and data1 profile path
- *
- * Revision 1.21  1999/05/26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.20  1999/02/02 14:50:50  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.19  1998/11/03 10:16:11  adam
- * Uses stat and not lstat so that file traversal follows symbolic links.
- *
- * Revision 1.18  1997/09/25 14:55:33  adam
- * Windows port uses stat and not lstat.
- *
- * Revision 1.17  1997/09/09 13:38:06  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.16  1996/10/29 14:06:45  adam
- * Include zebrautl.h instead of alexutil.h.
- *
- * Revision 1.15  1996/06/04 10:18:58  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.14  1996/04/09  06:49:18  adam
- * Traversal of directories doesn't follow symbolic links.
- *
- * Revision 1.13  1996/03/21 14:50:08  adam
- * File update uses modify-time instead of change-time.
- *
- * Revision 1.12  1996/02/05  12:29:55  adam
- * Logging reduced a bit.
- * The remaining running time is estimated during register merge.
- *
- * Revision 1.11  1995/11/20  16:59:44  adam
- * New update method: the 'old' keys are saved for each records.
- *
- * Revision 1.10  1995/11/20  11:56:22  adam
- * Work on new traversal.
- *
- * Revision 1.9  1995/10/30  13:42:12  adam
- * Added errno.h
- *
- * Revision 1.8  1995/10/10  13:59:23  adam
- * Function rset_open changed its wflag parameter to general flags.
- *
- * Revision 1.7  1995/09/28  09:19:40  adam
- * xfree/xmalloc used everywhere.
- * Extract/retrieve method seems to work for text records.
- *
- * Revision 1.6  1995/09/08  14:52:26  adam
- * Minor changes. Dictionary is lower case now.
- *
- * Revision 1.5  1995/09/06  16:11:16  adam
- * Option: only one word key per file.
- *
- * Revision 1.4  1995/09/04  12:33:41  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.3  1995/09/01  14:06:35  adam
- * Split of work into more files.
- *
- * Revision 1.2  1995/09/01  10:57:07  adam
- * Minor changes.
- *
- * Revision 1.1  1995/09/01  10:34:51  adam
- * Added dir.c
- *
- */
+/* $Id: dir.c,v 1.23 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>

@@ -1,65 +1,26 @@
-/*
- * Copyright (C) 1994-1999, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: rset.c,v $
- * Revision 1.16  2002-07-25 13:06:44  adam
- * Character set negotiation updates
- *
- * Revision 1.15  2002/03/20 20:24:30  adam
- * Hits per term. Returned in SearchResult-1
- *
- * Revision 1.14  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.13  1999/02/02 14:51:33  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.12  1998/04/26 10:56:57  adam
- * Added include of string.h.
- *
- * Revision 1.11  1998/03/05 08:36:28  adam
- * New result set model.
- *
- * Revision 1.10  1998/02/10 11:56:46  adam
- * Implemented rset_dup.
- *
- * Revision 1.9  1996/10/29 13:55:21  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.8  1995/12/11 09:15:23  adam
- * New set types: sand/sor/snot - ranked versions of and/or/not in
- * ranked/semi-ranked result sets.
- * Note: the snot not finished yet.
- * New rset member: flag.
- * Bug fix: r_delete in rsrel.c did free bad memory block.
- *
- * Revision 1.7  1995/10/12  12:41:56  adam
- * Private info (buf) moved from struct rset_control to struct rset.
- * Bug fixes in relevance.
- *
- * Revision 1.6  1995/09/08  14:52:41  adam
- * Work on relevance feedback.
- *
- * Revision 1.5  1995/09/07  13:58:43  adam
- * New parameter: result-set file descriptor (RSFD) to support multiple
- * positions within the same result-set.
- * Boolean operators: and, or, not implemented.
- *
- * Revision 1.4  1995/09/06  16:11:56  adam
- * More work on boolean sets.
- *
- * Revision 1.3  1995/09/04  15:20:39  adam
- * More work on temp sets. is_open member removed.
- *
- * Revision 1.2  1995/09/04  12:33:56  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.1  1994/11/04  13:21:28  quinn
- * Working.
- *
- */
+/* $Id: rset.c,v 1.17 2002-08-02 19:26:57 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <stdio.h>
 #include <string.h>

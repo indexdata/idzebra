@@ -1,97 +1,26 @@
-/*
- * Copyright (c) 1996-1998, Index Data.
- * See the file LICENSE for details.
- * Heikki Levanto
- *
- * $Id: merge-d.c,v 1.27 2002-07-12 18:12:21 heikki Exp $
- *
- * bugs
- *  sinleton-bit has to be in the high end, not low, so as not to confuse
- *  ordinary small numbers, like in the next pointer..
- *
- * missing
- *
- * optimize
- *  - study and optimize block sizes (later)
- *  - find a way to decide the size of an empty diffblock (after merge)
- *  - On allocating more blocks (in append and merge), check the order of 
- *    blocks, and if needed, swap them. 
- *  - Write a routine to save/load indexes into a block, save only as many 
- *    bytes as needed (size, diff, diffindexes)
- *
- *
- * caveat
- *  There is a confusion about the block addresses. cat or type is the category,
- *  pos or block is the block number. pp structures keep these two separate,
- *  and combine when saving the pp. The next pointer in the pp structure is
- *  also a combined address, but needs to be combined every time it is needed,
- *  and separated when the partss are needed... This is done with the isamd_
- *  _block, _type, and _addr macros. The _addr takes block and type as args,
- *  in that order. This conflicts with the order these are often mentioned in 
- *  the debug log calls, and other places, leading to small mistakes here
- *  and there. 
- *
- *  Needs cleaning! The way diff blocks are handled in append and reading is
- *  quite different, and likely to give maintenance problems.
- *
- *  log levels (set isamddebug=x in zebra.cfg (or what ever cfg file you use) )
- *    0 = no logging. Default
- *    1 = no logging here. isamd logs overall statistics
- *    2 = Each call to isamd_append with start address and no more
- *    3 = Start and type of append, start of merge, and result of append
- *    4 = Block allocations
- *    5 = Block-level operations (read/write)
- *    6 = Details about diff blocks etc.
- *    7 = Log each record as it passes the system (once)
- *    8 = Log raw and (de)coded data
- *    9 = Anything else that may be useful
- *   .. = Anything needed to hunt a specific bug
- *  (note that all tests in the code are like debug>3, which means 4 or above!)
- *
- * Design for the new and improved isamd
- * Key points:
- *  - The first block is only diffs, no straight data
- *  - Additional blocks are straight data
- *  - When a diff block gets filled up, a data block is created by
- *    merging the diffs with the data
- *
- * Structure
- *  - Isamd_pp: buffer for diffs and for data
- *              keep both pos, type, and combined address
- *              routine to set the address
- *  - diffbuf: lengths as short ints, or bytes for small blocks
- *  - keys are of key_struct, not just a number of bytes.
- *
- * Routines
- *  - isamd_append
- *    - create_new_block if needed
- *    - append_diffs
- *      - load_diffs 
- *      - get diffend, start encoding
- *      - while input data
- *        - encode it
- *        - if no room, then realloc block in larger size
- *        - if still no room, merge and exit
- *        - append in the block
- *
- * - merge
- *   - just as before, except that merges also input data directly
- *   - writes into new data blocks
- *       
- *      
- * - isamd.c: load firstpp, load datablock
- *            save firstpp, save datablock
- * - Readlength, writelength - handling right size of len fields
- * - isamd_read_main_item: take also a merge input structure, and merge it too
- * - prefilter: cache two inputs, and check if they cancel.
- * - single-item optimization
- * 
- * questions: Should we realloc firstblocks in a different size as the main
- * blocks. Makes a sideways seek, which is bound to be slowe. But saves some
- * update time. Compromise: alloc the first one in the size of the datablock,
- * but increase if necessary. Large blocks get a large diff, ok. Small ones
- * may get an extra seek in read, but save merges.
- */
+/* $Id: merge-d.c,v 1.28 2002-08-02 19:26:56 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 
 #define NEW_ISAM_D 1  /* not yet ready to delete the old one! */
@@ -1174,7 +1103,10 @@ int isamd_append (ISAMD is, char *dictentry, int dictlen, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.27  2002-07-12 18:12:21  heikki
+ * Revision 1.28  2002-08-02 19:26:56  adam
+ * Towards GPL
+ *
+ * Revision 1.27  2002/07/12 18:12:21  heikki
  * Isam-D now stores small entries directly in the dictionary.
  * Needs more tuning and cleaning...
  *

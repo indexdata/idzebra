@@ -1,58 +1,26 @@
-/*
- * Copyright (C) 1995-1998, Index Data
- * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
- * $Log: commit.c,v $
- * Revision 1.15  1999-05-26 07:49:12  adam
- * C++ compilation.
- *
- * Revision 1.14  1998/08/07 15:07:16  adam
- * Fixed but in cf_commit_flat.
- *
- * Revision 1.13  1996/10/29 13:56:16  adam
- * Include of zebrautl.h instead of alexutil.h.
- *
- * Revision 1.12  1996/04/24 13:29:16  adam
- * Work on optimized on commit operation.
- *
- * Revision 1.11  1996/04/23  12:36:41  adam
- * Started work on more efficient commit operation.
- *
- * Revision 1.10  1996/04/18  16:02:56  adam
- * Changed logging a bit.
- * Removed warning message when commiting flat shadow files.
- *
- * Revision 1.9  1996/04/12  07:01:57  adam
- * Yet another bug fix (next_block was initialized to 0; now set to 1).
- *
- * Revision 1.8  1996/02/07 14:03:49  adam
- * Work on flat indexed shadow files.
- *
- * Revision 1.7  1996/02/07  10:08:46  adam
- * Work on flat shadow (not finished yet).
- *
- * Revision 1.6  1995/12/15  12:36:53  adam
- * Moved hash file information to union.
- * Renamed commit files.
- *
- * Revision 1.5  1995/12/12  15:57:55  adam
- * Implemented mf_unlink. cf_unlink uses mf_unlink.
- *
- * Revision 1.4  1995/12/11  09:03:55  adam
- * New function: cf_unlink.
- * New member of commit file head: state (0) deleted, (1) hash file.
- *
- * Revision 1.3  1995/12/01  16:24:29  adam
- * Commit files use separate meta file area.
- *
- * Revision 1.2  1995/12/01  11:37:24  adam
- * Cached/commit files implemented as meta-files.
- *
- * Revision 1.1  1995/11/30  08:33:13  adam
- * Started work on commit facility.
- *
- */
+/* $Id: commit.c,v 1.16 2002-08-02 19:26:55 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+
 
 #include <assert.h>
 #include <stdlib.h>
