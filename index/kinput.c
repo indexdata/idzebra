@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.28  1998-03-05 08:45:12  adam
+ * Revision 1.29  1998-06-11 15:41:39  adam
+ * Minor changes.
+ *
+ * Revision 1.28  1998/03/05 08:45:12  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -154,7 +157,7 @@ void getFnameTmp (char *fname, int no)
 
 void key_file_chunk_read (struct key_file *f)
 {
-    int nr = 0, r, fd;
+    int nr = 0, r = 0, fd;
     char fname[1024];
     getFnameTmp (fname, f->no);
     fd = open (fname, O_BINARY|O_RDONLY);

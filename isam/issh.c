@@ -143,8 +143,8 @@ int main()
 
     log_init(LOG_ALL, "issh", 0);
 
-    assert(common_resource = res_open("testres"));
-
+    common_resource = res_open("testres");
+    assert(common_resource);
 
     for (;;)
     {
