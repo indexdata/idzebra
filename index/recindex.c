@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.29  2000-04-05 09:49:35  adam
+ * Revision 1.30  2000-07-13 10:14:20  heikki
+ * Removed compiler warnings when making zebra
+ *
+ * Revision 1.29  2000/04/05 09:49:35  adam
  * On Unix, zebra/z'mbol uses automake.
  *
  * Revision 1.28  1999/12/08 22:44:45  adam
@@ -669,7 +672,9 @@ static Record rec_get_int (Records p, int sysno)
     char *nptr, *cptr;
     char *in_buf = 0;
     char *bz_buf = 0;
+#if HAVE_BZLIB_H
     int bz_size;
+#endif
     char compression_method;
 
     assert (sysno > 0);

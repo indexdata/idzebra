@@ -136,6 +136,9 @@ void inv_prstat (BFiles bfs)
     ISAM  isam  = NULL;
     ISAMC isamc = NULL;
     ISAMD isamd = NULL;
+    int blocks;
+    int size;
+    int count;
 #endif
     Records records;
     int i, prev;
@@ -143,9 +146,6 @@ void inv_prstat (BFiles bfs)
     int after = 1000000000;
     struct inv_stat_info stat_info;
     char term_dict[2*IT_MAX_WORD+2];
-    int blocks;
-    int size;
-    int count;
         
     term_dict[0] = 1;
     term_dict[1] = 0;
@@ -323,7 +323,10 @@ void inv_prstat (BFiles bfs)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.20  1999-12-01 13:30:30  adam
+ * Revision 1.21  2000-07-13 10:14:20  heikki
+ * Removed compiler warnings when making zebra
+ *
+ * Revision 1.20  1999/12/01 13:30:30  adam
  * Updated configure for Zmbol/Zebra dependent settings.
  *
  * Revision 1.19  1999/11/30 13:48:03  adam
