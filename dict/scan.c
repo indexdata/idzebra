@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.9  1997-10-27 14:33:04  adam
+ * Revision 1.10  1998-03-06 16:58:04  adam
+ * Fixed bug which related to scanning of large indexes.
+ *
+ * Revision 1.9  1997/10/27 14:33:04  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -102,14 +105,18 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                  --(*count);
             }
             if (*count > 0 && subptr)
-	         dict_scan_trav (dict, subptr, pos+1, str, 0, count, 
-                                 client, userfunc, dir);
+            {
+	        dict_scan_trav (dict, subptr, pos+1, str, 0, count, 
+                                client, userfunc, dir);
+                dict_bf_readp (dict->dbf, ptr, &p);
+                indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short)); 
+	    }
         }
         lo += dir;
     }
     return 0;
 }
-    
+
 int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str, 
 		 int *before, int *after, void *client,
                  int (*userfunc)(char *, const char *, int, void *))
@@ -182,9 +189,11 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
                             return 1;
                 }
 		else if (subptr)
+                {
                     if (dict_scan_r (dict, subptr, pos+1, str, before, after,
                                      client, userfunc))
                         return 1;
+                }
                 break;
             }
         }
