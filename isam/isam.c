@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.17  1995-12-06 15:48:44  quinn
+ * Revision 1.18  1996-02-06 10:19:56  quinn
+ * Attempt at fixing bug. Not all blocks were read before they were unlinked
+ * prior to a remap operation.
+ *
+ * Revision 1.17  1995/12/06  15:48:44  quinn
  * Fixed update-problem.
  *
  * Revision 1.16  1995/12/06  14:48:26  quinn
@@ -427,6 +431,10 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
 	i++;
     if (i != tab.pos_type)
     {
+	/* read remaining blocks */
+	for (; tab.cur_mblock; tab.cur_mblock = tab.cur_mblock->next)
+	    if (tab.cur_mblock->state < IS_MBSTATE_CLEAN)
+		is_m_read_full(&tab, tab.cur_mblock);
     	is_p_unmap(&tab);
 	tab.pos_type = i;
     }

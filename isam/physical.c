@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.8  1996-01-29 09:47:11  quinn
+ * Revision 1.9  1996-02-06 10:19:57  quinn
+ * Attempt at fixing bug. Not all blocks were read before they were unlinked
+ * prior to a remap operation.
+ *
+ * Revision 1.8  1996/01/29  09:47:11  quinn
  * Fixed mean little bug in the read-table code.
  *
  * Revision 1.7  1995/12/06  14:48:27  quinn
@@ -81,7 +85,7 @@ int is_p_read_partial(is_mtable *tab, is_mblock *block)
     is_mbuf *buf;
 
     assert(block->state == IS_MBSTATE_UNREAD);
-    block->data = buf =  xmalloc_mbuf(IS_MBUF_TYPE_LARGE);
+    block->data = buf = xmalloc_mbuf(IS_MBUF_TYPE_LARGE);
     toread = tab->is->types[tab->pos_type].blocksize;
     if (toread > is_mbuf_size[buf->type])
     {
@@ -225,11 +229,13 @@ void is_p_unmap(is_mtable *tab)
     is_mblock *p;
 
     for (p = tab->data; p; p = p->next)
+    {
     	if (p->diskpos >= 0)
     	{
 	    is_freestore_free(tab->is, tab->pos_type, p->diskpos);
 	    p->diskpos = -1;
 	}
+    }
 }
 
 static is_mbuf *mbuf_takehead(is_mbuf **mb, int *num, int keysize)
