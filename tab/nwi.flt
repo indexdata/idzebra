@@ -1,0 +1,46 @@
+#
+# Input-filter for the Nordic Web Index record syntax. Output is 'gils-like'.
+#
+# $Id: nwi.flt,v 1.1 1996-02-28 16:47:43 quinn Exp $
+#
+
+BEGIN                            { begin record gils }
+
+/<ti> */ BODY /$/                  { data -element title $1 }
+
+/<dm> */  BODY /$/                  { data -element dateOfLastModification $1 }
+
+/<ci> */ BODY /$/                  { data -element controlIdentifier $1 }
+
+/<si>/                           { begin element supplementalInformation }
+/<lc> */ BODY /$/                  { data -element lastChecked $1 }
+/<by> */ BODY /$/                  { data -element bytes $1 }
+
+/<av>/                           { begin element availability }
+/<avli> */ BODY /$/                { data -element linkage $1 }
+/<ty> */ BODY /$/                  { data -element linkageType $1 }
+
+/<lsi>/                          { begin element localSubjectIndex }
+/<dh> */ BODY /$/                  { data -element localSubjectTerm $1 }
+
+# Don't want to have <ip> inside of LocalSubjectIndex
+# Since we end localsubjectindex, we consume the end-tag for that as well.
+
+/<ip>[ \n]*/ BODY /<\/ip>[ \n]*<\/lsi>/  {
+				    end element;
+				    data -element sampleText $1
+				 }
+
+/<ip>[ \n]*/ BODY /<\/ip>/       { data -element sampleText $1 }
+
+/<cr>/                           { begin element crossReference }
+/<li> */ BODY /$/                  { data -element linkage $1 }
+/<cp> */ BODY /$/                  { data -element title $1 }
+
+/<\/nwi>/                        { end record }
+
+# Generic end-marker
+
+/<\/[^>]*>/                      { end element }
+/\n/                             { }
+/./ {}
