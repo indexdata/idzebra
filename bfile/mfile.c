@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.31  1999-02-18 12:49:33  adam
+ * Revision 1.32  1999-04-28 14:53:07  adam
+ * Fixed stupid bug regarding split-files.
+ *
+ * Revision 1.31  1999/02/18 12:49:33  adam
  * Changed file naming scheme for register files as well as record
  * store/index files.
  *
@@ -551,7 +554,7 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 	    mf->files[mf->cur_file].blocks =
 	    	mf->files[mf->cur_file].bytes = 0;
 	    mf->files[mf->cur_file].fd = -1;
-	    sprintf(tmp, "%s/%s.mf.%d", dp->name, mf->name,
+	    sprintf(tmp, "%s/%s-%d.mf", dp->name, mf->name,
 		mf->files[mf->cur_file].number);
 	    mf->files[mf->cur_file].path = xstrdup(tmp);
 	    mf->no_files++;
