@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.4 2002-08-30 01:18:40 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.5 2002-09-19 19:51:48 adam Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -43,7 +43,7 @@
   </para>
  </sect1>
 
- <sect1>
+ <sect1 id="example1">
   <title>Example 1: Minimal Configuration</title>
 
   <para>
@@ -126,7 +126,7 @@
   </para>
  </sect1>
 
- <sect1>
+ <sect1 id="example2">
   <title>Example 2: Adding Some Configuration</title>
 
   <para>
@@ -161,7 +161,7 @@ zebraidx -t grs.sgml update records
      The master configuration file, <literal>zebra.cfg</literal>,
      which is as short and simple as it can be:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.4 2002-08-30 01:18:40 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.5 2002-09-19 19:51:48 adam Exp $
 	# Bare-bones master configuration file for Zebra
 	profilePath: .:../../tab:../../../yaz/tab
      </screen>
@@ -178,7 +178,7 @@ zebraidx -t grs.sgml update records
      The BIB-1 attribute set configuration file,
      <literal>bib1.att</literal>, which is also as short as possible:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.4 2002-08-30 01:18:40 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.5 2002-09-19 19:51:48 adam Exp $
 	# Bare-bones BIB-1 attribute set file for Zebra
 	reference Bib-1
      </screen>
