@@ -1,0 +1,21 @@
+#
+# Experimental format for the HCI bibliography
+#
+
+BEGIN                { begin record meta }
+
+/^%T /               { end element; begin element title }
+/^%A /               { end element; begin element author }
+/^%X /               { end element; begin element abstract }
+/^%B /               { end element; begin element source }
+/^%I /               { end element; begin element publicationPlace }
+/^%D /               { end element; begin element publicationDate }
+/^%S /               { end element; begin element subject }
+# /^%K /               { end element; begin element subject }
+/^%Z /               { end element; begin element relation }
+
+/^%. /               { end element }
+
+/\n/                 { data " " }
+
+END                 { end record }
