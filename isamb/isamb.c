@@ -1,4 +1,9 @@
-
+/*
+ *  Copyright (c) 1995-1998, Index Data.
+ *  See the file LICENSE for details.
+ *
+ *  $Id: isamb.c,v 1.4 2002-04-17 08:17:13 adam Exp $
+ */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
 #include <isamb.h>
@@ -12,17 +17,26 @@ struct ISAMB_head {
 
 #define ISAMB_DATA_OFFSET 3
 
+#define DST_BUF_SIZE 4500
+#define DST_ITEM_MAX 256
+
+struct ISAMB_file {
+    BFile bf;
+    int head_dirty;
+    struct ISAMB_head head;
+};
+
 struct ISAMB_s {
     BFiles bfs;
-    BFile bf;
     ISAMC_M method;
-    int head_dirty;
 
-    struct ISAMB_head head;
+    struct ISAMB_file *file;
+    int no_cat;
 };
 
 struct ISAMB_block {
     int pos;
+    int cat;
     int size;
     int leaf;
     int dirty;
@@ -52,40 +66,57 @@ void decode_ptr (char **src, int *pos)
 ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
 {
     ISAMB isamb = xmalloc (sizeof(*isamb));
+    int i, b_size = 64;
 
     isamb->bfs = bfs;
     isamb->method = (ISAMC_M) xmalloc (sizeof(*method));
     memcpy (isamb->method, method, sizeof(*method));
+    isamb->no_cat = 4;
 
-    isamb->head.first_block = 1;
-    isamb->head.last_block = 1;
-    isamb->head.block_size = 1024;
-    isamb->head_dirty = 0;
-
-    isamb->bf = bf_open (bfs, name, isamb->head.block_size, writeflag);
+    isamb->file = xmalloc (sizeof(*isamb->file) * isamb->no_cat);
+    for (i = 0; i<isamb->no_cat; i++)
+    {
+        char fname[DST_BUF_SIZE];
+        isamb->file[i].head.first_block = 1;
+        isamb->file[i].head.last_block = 1;
+        isamb->file[i].head.block_size = b_size;
+        b_size = b_size * 4;
+        isamb->file[i].head_dirty = 0;
+        sprintf (fname, "%s-%d", name, i);
+        isamb->file[i].bf =
+            bf_open (bfs, fname, isamb->file[i].head.block_size, writeflag);
     
-    bf_read (isamb->bf, 0, 0, sizeof(struct ISAMB_head),
-             &isamb->head);
+        bf_read (isamb->file[i].bf, 0, 0, sizeof(struct ISAMB_head),
+                 &isamb->file[i].head);
+    }
     return isamb;
 }
 
 void isamb_close (ISAMB isamb)
 {
-    if (isamb->head_dirty)
-        bf_write (isamb->bf, 0, 0, sizeof(struct ISAMB_head), &isamb->head);
+    int i;
+    for (i = 0; i<isamb->no_cat; i++)
+    {
+        if (isamb->file[i].head_dirty)
+            bf_write (isamb->file[i].bf, 0, 0,
+                      sizeof(struct ISAMB_head), &isamb->file[i].head);
+    }
+    xfree (isamb->file);
     xfree (isamb->method);
     xfree (isamb);
 }
 
 struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
 {
+    int cat = pos&3;
     struct ISAMB_block *p;
     if (!pos)
         return 0;
     p = xmalloc (sizeof(*p));
     p->pos = pos;
-    p->bytes = xmalloc (b->head.block_size);
-    bf_read (b->bf, pos, 0, 0, p->bytes);
+    p->cat = pos & 3;
+    p->bytes = xmalloc (b->file[cat].head.block_size);
+    bf_read (b->file[cat].bf, pos/4, 0, 0, p->bytes);
     p->leaf = p->bytes[0];
     p->size = p->bytes[1] + 256 * p->bytes[2];
     p->offset = ISAMB_DATA_OFFSET;
@@ -94,15 +125,19 @@ struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
     return p;
 }
 
-struct ISAMB_block *new_block (ISAMB b, int leaf)
+struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
 {
     struct ISAMB_block *p;
+    int block_no;
     
     p = xmalloc (sizeof(*p));
-    p->pos = b->head.last_block++;
-    b->head_dirty = 1;
-    p->bytes = xmalloc (b->head.block_size);
-    memset (p->bytes, 0, b->head.block_size);
+    block_no = b->file[cat].head.last_block++;
+    p->cat = cat;
+    p->pos = block_no * 4 + cat;
+    p->cat = cat;
+    b->file[cat].head_dirty = 1;
+    p->bytes = xmalloc (b->file[cat].head.block_size);
+    memset (p->bytes, 0, b->file[cat].head.block_size);
     p->leaf = leaf;
     p->size = ISAMB_DATA_OFFSET;
     p->dirty = 1;
@@ -120,7 +155,7 @@ void close_block (ISAMB b, struct ISAMB_block *p)
         p->bytes[0] = p->leaf;
         p->bytes[1] = p->size & 255;
         p->bytes[2] = p->size >> 8;
-        bf_write (b->bf, p->pos, 0, 0, p->bytes);
+        bf_write (b->file[p->cat].bf, p->pos/4, 0, 0, p->bytes);
     }
     (*b->method->code_stop)(ISAMC_DECODE, p->decodeClientData);
     xfree (p->bytes);
@@ -135,7 +170,7 @@ void insert_leaf (ISAMB b, struct ISAMB_block *p, const void *new_item,
                   struct ISAMB_block **sp,
                   void *sub_item, int *sub_size)
 {
-    char dst_buf[2048];
+    char dst_buf[DST_BUF_SIZE];
     char *dst = dst_buf;
     char *src = p->bytes + ISAMB_DATA_OFFSET;
     char *endp = p->bytes + p->size;
@@ -144,12 +179,12 @@ void insert_leaf (ISAMB b, struct ISAMB_block *p, const void *new_item,
     char *half1 = 0;
     char *half2 = 0;
     char *cut = dst_buf + p->size / 2;
-    char cut_item_buf[256];
+    char cut_item_buf[DST_ITEM_MAX];
     int cut_item_size = 0;
 
     while (src != endp)
     {
-        char file_item_buf[256];
+        char file_item_buf[DST_ITEM_MAX];
         char *file_item = file_item_buf;
 
         (*b->method->code_item)(ISAMC_DECODE, c1, &file_item, &src);
@@ -195,7 +230,7 @@ void insert_leaf (ISAMB b, struct ISAMB_block *p, const void *new_item,
         p->dirty = 1;
     }
     p->size = dst - dst_buf + ISAMB_DATA_OFFSET;
-    if (p->size > b->head.block_size)
+    if (p->size > b->file[p->cat].head.block_size)
     {
         char *first_dst;
         char *cut_item = cut_item_buf;
@@ -205,7 +240,7 @@ void insert_leaf (ISAMB b, struct ISAMB_block *p, const void *new_item,
         memcpy (p->bytes+ISAMB_DATA_OFFSET, dst_buf, half1 - dst_buf);
 
         /* second half */
-        *sp = new_block (b, 1);
+        *sp = new_block (b, 1, p->cat);
 
         (*b->method->code_reset)(c2);
 
@@ -227,7 +262,7 @@ void insert_leaf (ISAMB b, struct ISAMB_block *p, const void *new_item,
     else
     {
         assert (p->size > ISAMB_DATA_OFFSET);
-        assert (p->size <= b->head.block_size);
+        assert (p->size <= b->file[p->cat].head.block_size);
         memcpy (p->bytes+ISAMB_DATA_OFFSET, dst_buf, dst - dst_buf);
         *sp = 0;
     }
@@ -244,7 +279,7 @@ void insert_int (ISAMB b, struct ISAMB_block *p, const void *new_item,
     char *endp = p->bytes + p->size;
     int pos;
     struct ISAMB_block *sub_p1 = 0, *sub_p2 = 0;
-    char sub_item[256];
+    char sub_item[DST_ITEM_MAX];
     int sub_size;
 
     *sp = 0;
@@ -276,7 +311,7 @@ void insert_int (ISAMB b, struct ISAMB_block *p, const void *new_item,
     }
     if (sub_p2)
     {
-        char dst_buf[2048];
+        char dst_buf[DST_BUF_SIZE];
         char *dst = dst_buf;
 
         assert (sub_size < 20);
@@ -297,7 +332,7 @@ void insert_int (ISAMB b, struct ISAMB_block *p, const void *new_item,
             dst += endp - src;
         }
         p->size = dst - dst_buf + ISAMB_DATA_OFFSET;
-        if (p->size <= b->head.block_size)
+        if (p->size <= b->file[p->cat].head.block_size)
         {
             memcpy (startp, dst_buf, dst - dst_buf);
         }
@@ -308,7 +343,7 @@ void insert_int (ISAMB b, struct ISAMB_block *p, const void *new_item,
             src = dst_buf;
             endp = dst;
 
-            half = src + b->head.block_size/2;
+            half = src + b->file[p->cat].head.block_size/2;
             decode_ptr (&src, &pos);
             while (src <= half)
             {
@@ -324,7 +359,7 @@ void insert_int (ISAMB b, struct ISAMB_block *p, const void *new_item,
             memcpy (split_item, src, *split_size);
             src += *split_size;
 
-            *sp = new_block (b, 0);
+            *sp = new_block (b, 0, p->cat);
             (*sp)->size = endp - src;
             memcpy ((*sp)->bytes+ISAMB_DATA_OFFSET, src, (*sp)->size);
             (*sp)->size += ISAMB_DATA_OFFSET;
@@ -349,47 +384,127 @@ void insert_sub (ISAMB b, struct ISAMB_block *p, const void *new_item,
         insert_int (b, p, new_item, sp, sub_item, sub_size);
 }
 
+int insert_flat (ISAMB b, const void *new_item, ISAMC_P *posp)
+{
+    struct ISAMB_block *p = 0;
+    char *src = 0, *endp = 0;
+    char dst_buf[DST_BUF_SIZE], *dst = dst_buf;
+    int new_size;
+    ISAMB_P pos = *posp;
+    void *c1 = (*b->method->code_start)(ISAMC_DECODE);
+    void *c2 = (*b->method->code_start)(ISAMC_ENCODE);
+    
+    if (pos)
+    {
+        p = open_block (b, pos);
+        if (!p)
+            return -1;
+        src = p->bytes + ISAMB_DATA_OFFSET;
+        endp = p->bytes + p->size;
+
+    }
+    while (p && src != endp)
+    {
+        char file_item_buf[DST_ITEM_MAX];
+        char *file_item = file_item_buf;
+
+        (*b->method->code_item)(ISAMC_DECODE, c1, &file_item, &src);
+        if (new_item)
+        {
+            int d = (*b->method->compare_item)(file_item_buf, new_item);
+            if (d > 0)
+            {
+                char *item_ptr = (char*) new_item;
+                (*b->method->code_item)(ISAMC_ENCODE, c2, &dst, &item_ptr);
+                new_item = 0;
+                p->dirty = 1;
+            }
+            else if (d == 0)
+            {
+                new_item = 0;
+            }
+        }
+        file_item = file_item_buf;
+        (*b->method->code_item)(ISAMC_ENCODE, c2, &dst, &file_item);
+    }
+    if (new_item)
+    {
+        char *item_ptr = (char*) new_item;
+        (*b->method->code_item)(ISAMC_ENCODE, c2, &dst, &item_ptr);
+        new_item = 0;
+        if (p)
+            p->dirty = 1;
+    }
+    new_size = dst - dst_buf + ISAMB_DATA_OFFSET;
+    if (p && new_size > p->size)
+    {
+        yaz_log (LOG_LOG, "resize %d -> %d", p->size, new_size);
+        close_block (b, p);
+        /* delete it too!! */
+        p = 0; /* make a new one anyway */
+    }
+    if (!p)
+    {   /* must create a new one */
+        int i;
+        for (i = 0; i < b->no_cat; i++)
+            if (new_size <= b->file[i].head.block_size)
+                break;
+        p = new_block (b, 1, i);
+    }
+    memcpy (p->bytes+ISAMB_DATA_OFFSET, dst_buf, dst - dst_buf);
+    p->size = new_size;
+    *posp = p->pos;
+    (*b->method->code_stop)(ISAMC_DECODE, c1);
+    (*b->method->code_stop)(ISAMC_ENCODE, c2);
+    close_block (b, p);
+    return 0;
+}
+
 int isamb_insert_one (ISAMB b, const void *item, ISAMC_P pos)
 {
-    struct ISAMB_block *p, *sp = 0;
-    char sub_item[256];
-    int sub_size;
 
-    if (!pos)
-        p = new_block (b, 1);
-    else
-        p = open_block (b, pos);
-    if (!p)
-        return -1;
-
-    insert_sub (b, p, item, &sp, sub_item, &sub_size);
-    if (sp)
-    {    /* increase level of tree by one */
-        struct ISAMB_block *p2 = new_block (b, 0);
-        char *dst = p2->bytes + p2->size;
-        
-        encode_ptr (&dst, p->pos);
-        assert (sub_size < 20);
-        encode_ptr (&dst, sub_size);
-        memcpy (dst, sub_item, sub_size);
-        dst += sub_size;
-        encode_ptr (&dst, sp->pos);
-
-        p2->size = dst - (char*) p2->bytes;
-        pos = p2->pos;  /* return new super page */
-        close_block (b, sp);
-        close_block (b, p2);
+    if ((pos & 3) != b->no_cat-1)
+    {
+        /* note if pos == 0 we go here too! */
+        /* flat insert */
+        insert_flat (b, item, &pos);
     }
     else
-        pos = p->pos;   /* return current one (again) */
-    close_block (b, p);
+    {
+        /* b-tree insert */
+        struct ISAMB_block *p, *sp = 0;
+        char sub_item[DST_ITEM_MAX];
+        int sub_size;
+
+        insert_sub (b, p, item, &sp, sub_item, &sub_size);
+        if (sp)
+        {    /* increase level of tree by one */
+            struct ISAMB_block *p2 = new_block (b, 0, p->cat);
+            char *dst = p2->bytes + p2->size;
+            
+            encode_ptr (&dst, p->pos);
+            assert (sub_size < 20);
+            encode_ptr (&dst, sub_size);
+            memcpy (dst, sub_item, sub_size);
+            dst += sub_size;
+            encode_ptr (&dst, sp->pos);
+            
+            p2->size = dst - (char*) p2->bytes;
+            pos = p2->pos;  /* return new super page */
+            close_block (b, sp);
+            close_block (b, p2);
+        }
+        else
+            pos = p->pos;   /* return current one (again) */
+        close_block (b, p);
+    }
     return pos;
 }
 
 ISAMB_P isamb_merge (ISAMB b, ISAMB_P pos, ISAMC_I data)
 {
     int i_mode;
-    char item_buf[256];
+    char item_buf[DST_ITEM_MAX];
     char *item_ptr = item_buf;
     while ((*data->read_item)(data->clientData, &item_ptr, &i_mode))
     {
