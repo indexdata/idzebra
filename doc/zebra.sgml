@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.13 1996-01-03 16:21:58 quinn Exp $
+  $Id: zebra.sgml,v 1.14 1996-01-10 14:42:21 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
-<author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.13 $
+<author><htmlurl url="http://130.225.252.168/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
+<date>$Revision: 1.14 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -188,8 +188,6 @@ could do better, please drop us a mail. If you think it's all really
 neat, you're welcome to drop us a line saying that, too. You'll find
 contact info at the end of this file.
 
-<sect>Getting Started
-
 <sect>Compiling the software
 
 <p>
@@ -292,7 +290,7 @@ Z>show 1
 If you've made it this far, there's a reasonably good chance that
 you've got through the compilation OK.
 
-<sect><heading><label id="administrating">Administrating Zebra</>
+<sect>Administrating Zebra<label id="administrating">
 
 <p>
 Unlike many simpler retrieval systems, Zebra supports safe, incremental
@@ -332,7 +330,7 @@ be run in the same directory where the configuration file if you do
 not indicate the location of the configuration file by option
 <tt>-c</tt>.
 
-<sect1><heading><label id="record-types">Record Types</>
+<sect1>Record Types<label id="record-types">
 <p>
 Indexing is a per-record process, in which
 either insert/modify/delete will occur. Before a record is indexed
@@ -344,7 +342,7 @@ To specify a particular extraction process, use either the
 command line option <tt>-t</tt> or specify a
 <tt>recordType</tt> setting in the configuration file.
 
-<sect1><heading><label id="configuration-file">The Zebra Configuration File</>
+<sect1>The Zebra Configuration File<label id="configuration-file">
 <p>
 The Zebra configuration file, read by <tt>zebraidx</tt> and
 <tt>zebrasrv</tt> defaults to <tt>zebra.cfg</tt> unless specified
@@ -575,7 +573,7 @@ command. If you wish to delete records, you must use the,
 This will remove all records that match the files below that root
 directory.
 
-<sect1><heading><label id="register-location">Register Location</>
+<sect1>Register Location<label id="register-location">
 
 <p>
 Normally, the index files that form dictionaries, inverted
@@ -614,7 +612,7 @@ other applications do not use the free space. In a large production system,
 it is recommended that you allocate one or more filesystem exclusively
 to the Zebra register files.
 
-<sect1><heading><label id="shadow-registers">Safe Updating - Using Shadow Registers</>
+<sect1>Safe Updating - Using Shadow Registers<label id="shadow-registers">
 
 <sect2>Description
 
@@ -913,7 +911,7 @@ converted from the internal structure to a form suitable for exchange
 over the network - according to the Z39.50 standard.
 </itemize>
 
-<sect1><heading><label id="local-representation">Local Representation</>
+<sect1>Local Representation<label id="local-representation">
 
 <p>
 As mentioned earlier, Zebra places few restrictions on the type of
@@ -1166,7 +1164,7 @@ and in hardcopy.
 <it>NOTE: Tcl support is not currently available, but will be
 included with the next release.</it>
 
-<sect1><heading><label id="internal-representation">Internal Representation</>
+<sect1>Internal Representation<label id="internal-representation">
 
 <p>
 When records are manipulated by the system, they're represented in a
@@ -1497,7 +1495,7 @@ tag	9	bodyOfDisplay	string
 tag	10	organization	string
 </verb></tscreen>
 
-<sect2><heading><label id="variant-set">The Variant Set (.var) Files</>
+<sect2>The Variant Set (.var) Files<label id="variant-set">
 
 <p>
 The variant set file is a straightforward representation of the
@@ -1624,7 +1622,7 @@ simpleelement (4,1)
 simpleelement (4,52)
 </verb></tscreen>
 
-<sect2><heading><label id="schema-mapping">The Schema Mapping (.map) Files</>
+<sect2>The Schema Mapping (.map) Files<label id="schema-mapping">
 
 <p>
 Sometimes, the client might want to receive a database record in
