@@ -75,7 +75,7 @@ yazconfig = @yazconfig@
 
 noinst_LIBRARIES = librset.a
 
-librset_a_SOURCES = rset.c rstemp.c rsisam.c rsnull.c rsbool.c 	rsisamc.c rsm_or.c rsisams.c
+librset_a_SOURCES = rset.c rstemp.c rsisam.c rsnull.c rsbool.c 	rsisamc.c rsm_or.c rsisams.c rsisamd.c
 
 
 INCLUDES = -I$(srcdir)/../include @YAZINC@
@@ -88,7 +88,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 librset_a_LIBADD = 
 librset_a_OBJECTS =  rset.o rstemp.o rsisam.o rsnull.o rsbool.o \
-rsisamc.o rsm_or.o rsisams.o
+rsisamc.o rsm_or.o rsisams.o rsisamd.o
 AR = ar
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -102,7 +102,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = gtar
 GZIP_ENV = --best
 DEP_FILES =  .deps/rsbool.P .deps/rset.P .deps/rsisam.P .deps/rsisamc.P \
-.deps/rsisams.P .deps/rsm_or.P .deps/rsnull.P .deps/rstemp.P
+.deps/rsisamd.P .deps/rsisams.P .deps/rsm_or.P .deps/rsnull.P \
+.deps/rstemp.P
 SOURCES = $(librset_a_SOURCES)
 OBJECTS = $(librset_a_OBJECTS)
 

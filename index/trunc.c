@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.18  2000-05-18 12:01:36  adam
+ * Revision 1.19  2001-01-16 16:56:15  heikki
+ * Searching in my isam-d
+ *
+ * Revision 1.18  2000/05/18 12:01:36  adam
  * System call times(2) used again. More 64-bit fixes.
  *
  * Revision 1.17  2000/03/15 15:00:30  adam
@@ -77,6 +80,7 @@
 #if ZMBOL
 #include <rsisam.h>
 #include <rsisamc.h>
+#include <rsisamd.h>
 #if NEW_TRUNC
 #include <rsm_or.h>
 #endif
@@ -359,6 +363,60 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         heap_close (ti);
         xfree (ispt);
     }
+
+    else if (zi->service->isamd)
+    {
+        ISAMD_PP *ispt;
+        int i;
+        struct trunc_info *ti;
+
+        ispt = (ISAMD_PP *) xmalloc (sizeof(*ispt) * (to-from));
+
+        ti = heap_init (to-from, sizeof(struct it_key),
+                        key_compare_it);
+        for (i = to-from; --i >= 0; )
+        {
+            ispt[i] = isamd_pp_open (zi->service->isamd, isam_p[from+i]);
+            if (isamd_pp_read (ispt[i], ti->tmpbuf))
+                heap_insert (ti, ti->tmpbuf, i);
+            else
+                isamd_pp_close (ispt[i]);
+        }
+        while (ti->heapnum)
+        {
+            int n = ti->indx[ti->ptr[1]];
+
+            rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+#if 0
+/* section that preserve all keys */
+            heap_delete (ti);
+            if (isamd_pp_read (ispt[n], ti->tmpbuf))
+                heap_insert (ti, ti->tmpbuf, n);
+            else
+                isamd_pp_close (ispt[n]);
+#else
+/* section that preserve all keys with unique sysnos */
+            while (1)
+            {
+                if (!isamd_pp_read (ispt[n], ti->tmpbuf))
+                {
+                    heap_delete (ti);
+                    isamd_pp_close (ispt[n]);
+                    break;
+                }
+                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+                {
+                    heap_delete (ti);
+                    heap_insert (ti, ti->tmpbuf, n);
+                    break;
+                }
+            }
+#endif
+        }
+        heap_close (ti);
+        xfree (ispt);
+    }
+
 #endif
     else if (zi->service->isams)
     {
@@ -402,6 +460,9 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         heap_close (ti);
         xfree (ispt);
     }
+    else
+        logf (LOG_WARN, "Unknown isam set in rset_trunc_r");
+
     rset_close (result, result_rsfd);
     return result;
 }
@@ -437,6 +498,17 @@ static int isamc_trunc_cmp (const void *p1, const void *p2)
     if (d)
         return d;
     return isc_block (i1) - isc_block (i2);
+}
+static int isamd_trunc_cmp (const void *p1, const void *p2)
+{
+    ISAMD_P i1 = *(ISAMD_P*) p1;
+    ISAMD_P i2 = *(ISAMD_P*) p2;
+    int d;
+
+    d = isamd_type (i1) - isamd_type (i2);
+    if (d)
+        return d;
+    return isamd_block (i1) - isamd_block (i2);
 }
 #endif
 
@@ -505,10 +577,39 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
 #endif
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
+    else if (zi->service->isamd)
+    {
+        if (no == 1)
+        {
+            rset_isamd_parms parms;
+
+            parms.pos = *isam_p;
+            parms.is = zi->service->isamd;
+	    parms.rset_term = rset_term_create (term, length, flags);
+            return rset_create (rset_kind_isamd, &parms);
+        }
+#if NEW_TRUNC_NOT_DONE_FOR_ISAM_D
+        else if (no < 10000)
+        {
+            rset_m_or_parms parms;
+
+            parms.key_size = sizeof(struct it_key);
+            parms.cmp = key_compare_it;
+            parms.isc = 0;
+            parms.isamd=zi->service->isamd;
+            parms.isam_positions = isam_p;
+            parms.no_isam_positions = no;
+            parms.no_save_positions = 100000;
+	    parms.rset_term = rset_term_create (term, length, flags);
+            return rset_create (rset_kind_m_or, &parms);
+        }
+#endif
+        qsort (isam_p, no, sizeof(*isam_p), isamd_trunc_cmp);
+    }
 #endif
     else
     {
-        logf (LOG_WARN, "Neither isam / isamc / isams set in rset_trunc");
+        logf (LOG_WARN, "Unknown isam set in rset_trunc");
 	return rset_create (rset_kind_null, NULL);
     }
     return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100);
