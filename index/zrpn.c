@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.36  1995-12-06 12:41:27  adam
+ * Revision 1.37  1995-12-06 15:05:28  adam
+ * More verbose in count_set.
+ *
+ * Revision 1.36  1995/12/06  12:41:27  adam
  * New command 'stat' for the index program.
  * Filenames can be read from stdin by specifying '-'.
  * Bug fix/enhancement of the transformation from terms to regular
@@ -1173,6 +1176,7 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
 static void count_set (RSET r, int *count)
 {
     int psysno = 0;
+    int kno = 0;
     struct it_key key;
     RSFD rfd;
 
@@ -1186,9 +1190,10 @@ static void count_set (RSET r, int *count)
             psysno = key.sysno;
             (*count)++;
         }
+        kno++;
     }
     rset_close (r, rfd);
-    logf (LOG_DEBUG, "%d distinct sysnos", *count);
+    logf (LOG_DEBUG, "%d keys, %d distinct sysnos", kno, *count);
 }
 
 int rpn_search (ZServerInfo *zi,
