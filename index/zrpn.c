@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.150 2004-09-09 10:08:05 heikki Exp $
+/* $Id: zrpn.c,v 1.151 2004-09-13 09:02:16 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -37,7 +37,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rset.h>
 
 
-static const struct key_control it_ctrl={ 
+static const struct key_control it_ctrl = { 
     sizeof(struct it_key),
     2, /* we have sysnos and seqnos in this key, nothing more */
     key_compare_it, 
@@ -46,7 +46,7 @@ static const struct key_control it_ctrl={
 };
 
 
-const struct key_control *key_it_ctrl=&it_ctrl;
+const struct key_control *key_it_ctrl = &it_ctrl;
 
 struct rpn_char_map_info {
     ZebraMaps zm;
@@ -1054,7 +1054,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                                   attributeSet,
                                   reg_type, space_split, term_dst))
                 return 0;
-            logf (LOG_LOG, "dict_lookup_grep: %s", term_dict+prefix_len);
+            logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict+prefix_len);
             r = dict_lookup_grep (zh->reg->dict, term_dict, 0,
                                   grep_info, &max_pos, 0, grep_handle);
             if (r)

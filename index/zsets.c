@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.60 2004-09-01 15:01:32 heikki Exp $
+/* $Id: zsets.c,v 1.61 2004-09-13 09:02:16 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -750,8 +750,6 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     zebraSet->hits = 0;
     rfd = rset_open (rset, RSETF_READ);
 
-    yaz_log (LOG_LOG, "resultSetRank");
-
     rank_class = zebraRankLookup (zh, rank_handler_name);
     if (!rank_class)
     {
@@ -837,7 +835,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
                  rset->rset_terms[i]->count);
     }
 */
-    yaz_log (LOG_LOG, ZINT_FORMAT " keys, "ZINT_FORMAT" distinct sysnos", 
+    yaz_log (LOG_DEBUG, ZINT_FORMAT " keys, "ZINT_FORMAT" distinct sysnos", 
                     kno, zebraSet->hits);
 }
 

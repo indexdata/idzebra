@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.130 2004-09-09 10:41:42 adam Exp $
+/* $Id: zebraapi.c,v 1.131 2004-09-13 09:02:16 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -43,13 +43,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ASSERTZHRES assert(zh && zh->service && zh->res)
 #define ASSERTZS assert(zs)
 
-/* A simple log macro */
-/* don't break with older yazen that lack log_app2 */
-#ifdef LOG_APP2
 #define LOG_API LOG_APP2
-#else
-#define LOG_API LOG_DEBUG
-#endif
 
 static Res zebra_open_res (ZebraHandle zh);
 static void zebra_close_res (ZebraHandle zh);
@@ -157,7 +151,7 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
 {
     Res res;
 
-    yaz_log(LOG_API|LOG_LOG,"zebra_start %s",configName);
+    yaz_log(LOG_API,"zebra_start %s",configName);
 
     if ((res = res_open (configName, def_res, over_res)))
     {
@@ -238,7 +232,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     assert (res);
 
-    yaz_log (LOG_LOG|LOG_API, "zebra_register_open rw = %d useshadow=%d p=%p,n=%s,rp=%s",
+    yaz_log (LOG_DEBUG, "zebra_register_open rw=%d useshadow=%d p=%p n=%s rp=%s",
              rw, useshadow, reg, name, reg_path ? reg_path : "(none)");
     
     reg->dh = data1_createx (DATA1_FLAG_XML);
@@ -255,7 +249,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     getcwd(cwd, sizeof(cwd)-1);
     profilePath = res_get_def(res, "profilePath", DEFAULT_PROFILE_PATH);
-    yaz_log(LOG_LOG, "profilePath=%s cwd=%s", profilePath, cwd);
+    yaz_log(LOG_DEBUG, "profilePath=%s cwd=%s", profilePath, cwd);
 
     data1_set_tabpath (reg->dh, profilePath);
     data1_set_tabroot (reg->dh, reg_path);
@@ -410,7 +404,7 @@ int zebra_admin_start (ZebraHandle zh)
 static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 {
     ASSERTZS;
-    yaz_log(LOG_LOG|LOG_API, "zebra_register_close p=%p", reg);
+    yaz_log(LOG_DEBUG, "zebra_register_close p=%p", reg);
     reg->stop_flag = 0;
     zebra_chdir (zs);
     if (reg->records)
@@ -451,7 +445,7 @@ int zebra_stop(ZebraService zs)
 {
     if (!zs)
         return 0;
-    yaz_log (LOG_LOG|LOG_API, "zebra_stop");
+    yaz_log (LOG_API, "zebra_stop");
 
     while (zs->sessions)
     {
@@ -692,7 +686,7 @@ void map_basenames (ZebraHandle zh, ODR stream,
     *num_bases = info.new_num_bases;
     *basenames = info.new_basenames;
     for (i = 0; i<*num_bases; i++)
-	logf (LOG_LOG, "base %s", (*basenames)[i]);
+	logf (LOG_DEBUG, "base %s", (*basenames)[i]);
 }
 
 int zebra_select_database (ZebraHandle zh, const char *basename)
@@ -812,7 +806,7 @@ int zebra_search_RPN (ZebraHandle zh, ODR o,
 	while (i--) maxhits *= 10;
     }
     if (zh->hits > maxhits) { /* too large for yaz to handle */
-        logf(LOG_LOG,"limiting hits to "ZINT_FORMAT, maxhits);
+        logf(LOG_DEBUG,"limiting hits to "ZINT_FORMAT, maxhits);
 	*hits=maxhits;  /* round it down to two digits, to look like rounded */
     }
     else
@@ -1409,7 +1403,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
             zebra_get_state (zh, &val, &seqno);
             if (val == 'c')
             {
-                yaz_log (LOG_LOG, "previous transaction didn't finish commit");
+                yaz_log (LOG_WARN, "previous transaction didn't finish commit");
                 zebra_unlock (zh->lock_shadow);
                 zebra_unlock (zh->lock_normal);
                 zebra_commit (zh);
@@ -1421,7 +1415,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
                 {
                     BFiles bfs = bfs_create (res_get (zh->res, "shadow"),
                                              zh->path_reg);
-                    yaz_log (LOG_LOG, "previous transaction didn't reach commit");
+                    yaz_log (LOG_WARN, "previous transaction didn't reach commit");
                     bf_commitClean (bfs, rval);
                     bfs_destroy (bfs);
             }
@@ -1498,13 +1492,13 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
             dirty = 1;
         else if (seqno != zh->reg->seqno)
         {
-            yaz_log (LOG_LOG, "reopen seqno cur/old %d/%d",
+            yaz_log (LOG_DEBUG, "reopen seqno cur/old %d/%d",
                      seqno, zh->reg->seqno);
             dirty = 1;
         }
         else if (zh->reg->last_val != val)
         {
-            yaz_log (LOG_LOG, "reopen last cur/old %d/%d",
+            yaz_log (LOG_DEBUG, "reopen last cur/old %d/%d",
                      val, zh->reg->last_val);
             dirty = 1;
         }
@@ -1584,7 +1578,7 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
         zh->trans_no--;
         zh->trans_w_no = 0;
         
-        yaz_log (LOG_LOG, "zebra_end_trans");
+        yaz_log (LOG_DEBUG, "zebra_end_trans");
         rval = res_get (zh->res, "shadow");
         
         zebraExplain_runNumberIncrement (zh->reg->zei, 1);
@@ -1610,7 +1604,7 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
         if (val != 'd')
         {
             BFiles bfs = bfs_create (rval, zh->path_reg);
-            yaz_log (LOG_LOG, "deleting shadow stuff val=%c", val);
+            yaz_log (LOG_DEBUG, "deleting shadow val=%c", val);
             bf_commitClean (bfs, rval);
             bfs_destroy (bfs);
         }
@@ -1638,7 +1632,7 @@ int zebra_repository_update (ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     zh->errCode=0;
-    logf (LOG_LOG|LOG_API, "updating %s", path);
+    logf (LOG_API, "updating %s", path);
     repositoryUpdate (zh, path);
     return zh->errCode;
 }
@@ -1647,7 +1641,7 @@ int zebra_repository_delete (ZebraHandle zh, const char *path)
 {
     ASSERTZH;
     zh->errCode=0;
-    logf (LOG_LOG|LOG_API, "deleting %s", path);
+    logf (LOG_API, "deleting %s", path);
     repositoryDelete (zh, path);
     return zh->errCode;
 }
@@ -1700,13 +1694,13 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
         {
             zebra_set_state (zh, 'c', seqno);
             
-            logf (LOG_LOG, "commit start");
+            logf (LOG_DEBUG, "commit start");
             bf_commitExec (bfs);
 #ifndef WIN32
             sync ();
 #endif
         }
-        logf (LOG_LOG, "commit clean");
+        logf (LOG_DEBUG, "commit clean");
         bf_commitClean (bfs, rval);
         seqno++;
         zebra_set_state (zh, 'o', seqno);
@@ -1978,7 +1972,7 @@ int zebra_insert_record (ZebraHandle zh,
 			 const char *buf, int buf_size, int force_update)
 {
     int res;
-    yaz_log(LOG_API,"zebra_insert_record sysno=" ZINT_FORMAT, *sysno);
+    yaz_log(LOG_API, "zebra_insert_record sysno=" ZINT_FORMAT, *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -2004,7 +1998,7 @@ int zebra_update_record (ZebraHandle zh,
 {
     int res;
 
-    yaz_log(LOG_API,"zebra_update_record sysno=" ZINT_FORMAT, *sysno);
+    yaz_log(LOG_API, "zebra_update_record sysno=" ZINT_FORMAT, *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
@@ -2029,7 +2023,7 @@ int zebra_delete_record (ZebraHandle zh,
 			 int force_update) 
 {
     int res;
-    yaz_log(LOG_API,"zebra_delete_record sysno=" ZINT_FORMAT, *sysno);
+    yaz_log(LOG_API, "zebra_delete_record sysno=" ZINT_FORMAT, *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
