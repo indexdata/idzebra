@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.17  2000-03-15 15:00:30  adam
+ * Revision 1.18  2000-05-18 12:01:36  adam
+ * System call times(2) used again. More 64-bit fixes.
+ *
+ * Revision 1.17  2000/03/15 15:00:30  adam
  * First work on threaded version.
  *
  * Revision 1.16  1999/11/30 13:48:03  adam
@@ -486,7 +489,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             return rset_create (rset_kind_isamc, &parms);
         }
 #if NEW_TRUNC
-        else if (no < 200)
+        else if (no < 10000)
         {
             rset_m_or_parms parms;
 

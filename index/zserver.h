@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.48  2000-04-05 09:49:35  adam
+ * Revision 1.49  2000-05-18 12:01:36  adam
+ * System call times(2) used again. More 64-bit fixes.
+ *
+ * Revision 1.48  2000/04/05 09:49:35  adam
  * On Unix, zebra/z'mbol uses automake.
  *
  * Revision 1.47  2000/03/20 19:08:36  adam
@@ -222,10 +225,6 @@ struct zebra_service {
     ZebraLockHandle server_lock_cmt;
     ZebraLockHandle server_lock_org;
     char *server_path_prefix;
-#if HAVE_SYS_TIMES_H
-    struct tms tms1;
-    struct tms tms2;    
-#endif
     data1_handle dh;
     ZebraMaps zebra_maps;
     ZebraRankClass rank_classes;
@@ -272,6 +271,10 @@ struct zebra_session {
     int errCode;
     int hits;
     char *errString;
+#if HAVE_SYS_TIMES_H
+    struct tms tms1;
+    struct tms tms2;    
+#endif
 };
 
 struct rank_control {
@@ -354,9 +357,9 @@ void zebra_index_merge (ZebraHandle zh);
 
 
 struct zebra_fetch_control {
-    int offset_end;
-    int record_offset;
-    int record_int_pos;
+    off_t offset_end;
+    off_t record_offset;
+    off_t record_int_pos;
     const char *record_int_buf;
     int record_int_len;
     int fd;

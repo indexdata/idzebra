@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
@@ -641,7 +641,7 @@ void zebra_index_merge (ZebraHandle zh)
     time (&progressInfo.lastTime);
     for (i = 1; i<=nkeys; i++)
     {
-        kf[i] = key_file_init (i, 32768, zh->service->res);
+        kf[i] = key_file_init (i, 8192, zh->service->res);
         kf[i]->readHandler = progressFunc;
         kf[i]->readInfo = &progressInfo;
         progressInfo.totalBytes += kf[i]->length;
@@ -772,7 +772,7 @@ void key_input (BFiles bfs, int nkeys, int cache, Res res)
     time (&progressInfo.lastTime);
     for (i = 1; i<=nkeys; i++)
     {
-        kf[i] = key_file_init (i, 32768, res);
+        kf[i] = key_file_init (i, 8192, res);
         kf[i]->readHandler = progressFunc;
         kf[i]->readInfo = &progressInfo;
         progressInfo.totalBytes += kf[i]->length;
@@ -831,7 +831,10 @@ void key_input (BFiles bfs, int nkeys, int cache, Res res)
 
 /*
  * $Log: kinput.c,v $
- * Revision 1.43  2000-03-20 19:08:36  adam
+ * Revision 1.44  2000-05-18 12:01:36  adam
+ * System call times(2) used again. More 64-bit fixes.
+ *
+ * Revision 1.43  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.102  2000-05-15 15:32:33  adam
+ * Revision 1.103  2000-05-18 12:01:36  adam
+ * System call times(2) used again. More 64-bit fixes.
+ *
+ * Revision 1.102  2000/05/15 15:32:33  adam
  * Added 64 bit file input.
  *
  * Revision 1.101  2000/05/15 13:02:39  adam
@@ -435,7 +438,7 @@ int key_open (struct recordGroup *rGroup, int mem)
     char *recordCompression;
     int record_compression = REC_COMPRESS_NONE;
     if (!mem)
-        mem = atoi(res_get_def (common_resource, "memMax", "4"))*1024*1024;
+        mem = atoi(res_get_def (common_resource, "memMax", "16"))*1024*1024;
     if (mem < 50000)
         mem = 50000;
     key_buf = (char **) xmalloc (mem);

@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.32  2000-04-19 14:35:59  adam
+ * Revision 1.33  2000-05-18 12:01:36  adam
+ * System call times(2) used again. More 64-bit fixes.
+ *
+ * Revision 1.32  2000/04/19 14:35:59  adam
  * WIN32 update (this version is known not to work on Windows).
  *
  * Revision 1.31  2000/04/05 10:07:02  adam
@@ -159,11 +162,21 @@ static int zebra_register_lock (ZebraHandle zh)
 	zh->errCode = 1019;
 	return 1;
     }
+#if HAVE_SYS_TIMES_H
+    times (&zh->tms1);
+#endif
     return 0;
 }
 
 static void zebra_register_unlock (ZebraHandle zh)
 {
+#if HAVE_SYS_TIMES_H
+    times (&zh->tms2);
+    logf (LOG_LOG, "user/system: %ld/%ld",
+                    (long) (zh->tms2.tms_utime - zh->tms1.tms_utime),
+                    (long) (zh->tms2.tms_stime - zh->tms1.tms_stime));
+
+#endif
 }
 
 ZebraHandle zebra_open (ZebraService zs)
@@ -272,7 +285,7 @@ static int zebra_register_activate (ZebraService zh)
 	logf (LOG_WARN, "rec_open");
 	return -1;
     }
-    if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 40, 1, 0)))
+    if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 80, 1, 0)))
     {
 	logf (LOG_WARN, "dict_open");
 	return -1;
