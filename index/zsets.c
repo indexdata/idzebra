@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.11  1996-12-23 15:30:46  adam
+ * Revision 1.12  1997-09-25 14:57:36  adam
+ * Windows NT port.
+ *
+ * Revision 1.11  1996/12/23 15:30:46  adam
  * Work on truncation.
  * Bug fix: result sets weren't deleted after server shut down.
  *
@@ -46,7 +49,11 @@
  */
 #include <stdio.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 #include "zserver.h"
 #include <rstemp.h>

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.65  1997-09-22 12:39:06  adam
+ * Revision 1.66  1997-09-25 14:58:03  adam
+ * Windows NT port.
+ *
+ * Revision 1.65  1997/09/22 12:39:06  adam
  * Added get_pos method for the ranked result sets.
  *
  * Revision 1.64  1997/09/18 08:59:20  adam
@@ -226,7 +229,11 @@
  */
 #include <stdio.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <ctype.h>
 
 #include "zserver.h"

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.48  1997-09-17 12:19:19  adam
+ * Revision 1.49  1997-09-25 14:57:23  adam
+ * Windows NT port.
+ *
+ * Revision 1.48  1997/09/17 12:19:19  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -178,16 +181,24 @@
  */
 #include <stdio.h>
 #include <assert.h>
+#ifdef WINDOWS
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #include <fcntl.h>
 
 #include <data1.h>
 #include <recctrl.h>
 #include <dmalloc.h>
 
-#define USE_TIMES 1
 #ifdef __linux__
 #define USE_TIMES 1
+#endif
+
+#ifndef USE_TIMES
+#define USE_TIMES 0
 #endif
 
 #if USE_TIMES
@@ -284,8 +295,11 @@ static void register_unlock (ZServerInfo *zi)
         else
             waitSec = 0;
     }
+#ifdef WINDOWS
+#else
     if (waitSec > 0)
         sleep (waitSec);
+#endif
     if (zi->registerState != -1)
         zebraServerUnlock (zi->registerState);
 }
