@@ -28,7 +28,7 @@ $(LIB): $(PO)
 	$(CC) -c $(DEFS) $(CFLAGS) $<
 
 clean:
-	rm -f *.[oa] $(TPROG) core mon.out gmon.out errlist isam-test
+	rm -f *.[oa] $(TPROG) core mon.out gmon.out errlist isam-test issh
 
 depend: depend2
 
