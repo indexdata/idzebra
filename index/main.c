@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.31  1996-01-08 19:15:46  adam
+ * Revision 1.32  1996-02-01 20:50:04  adam
+ * Bug fix: zebraIndexUnlock was always called even though zebraIndexLock
+ * was never called - happens when no commands are specified.
+ *
+ * Revision 1.31  1996/01/08  19:15:46  adam
  * New input filter that works!
  *
  * Revision 1.30  1995/12/12  16:00:59  adam
@@ -305,7 +309,8 @@ int main (int argc, char **argv)
             exit (1);
         }
     }
-    zebraIndexUnlock ();
+    if (common_resource)
+        zebraIndexUnlock ();
     exit (0);
 }
 
