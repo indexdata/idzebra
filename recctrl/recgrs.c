@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.83 2003-09-16 12:18:24 adam Exp $
+/* $Id: recgrs.c,v 1.84 2003-09-16 19:35:19 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -373,8 +373,6 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
             int xpdone = 0;
             flen = 0;
             
-	    //	    logf (LOG_LOG,"Index value, %s",wrd->string);
-
             /* we have to fetch the whole path to the data tag */
             for (nn = n; nn; nn = nn->parent) {
                 if (nn->which == DATA1N_tag) {
