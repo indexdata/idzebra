@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.19  1995-10-27 14:00:11  adam
+ * Revision 1.20  1995-11-15 14:46:18  adam
+ * Started work on better record management system.
+ *
+ * Revision 1.19  1995/10/27  14:00:11  adam
  * Implemented detection of database availability.
  *
  * Revision 1.18  1995/10/17  18:02:08  adam
@@ -117,3 +120,4 @@ void strtab_del (struct strtab *t,
 int index_char_cvt (int c);
 int index_word_prefix (char *string, int attset_ordinal,
                        int local_attribute, char *databaseName);
+

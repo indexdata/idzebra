@@ -1,13 +1,13 @@
 # Copyright (C) 1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.16 1995-11-01 13:58:27 quinn Exp $
+# $Id: Makefile,v 1.17 1995-11-15 14:46:17 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
 YAZ=../../yaz
 YAZLIB=$(YAZ)/lib/libyaz.a
-#OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
+OSILIB=../../xtimosi/src/libmosi.a $(YAZ)/lib/librfc.a
 #NETLIB=-lnsl -lsocket
 INCLUDE=-I../include -I$(YAZ)/include
 TPROG1=index
@@ -15,10 +15,10 @@ TPROG2=kdump
 TPROG3=zserver
 DEFS=$(INCLUDE)
 O1 = main.o dir.o trav.o extract.o kinput.o kcompare.o \
- symtab.o text.o recctrl.o structrec.o
+ symtab.o text.o recctrl.o structrec.o recindex.o
 O2 = kdump.o
 O3 = zserver.o kcompare.o zrpn.o zsets.o text.o recctrl.o structrec.o  \
-	attribute.o
+	attribute.o recindex.o
 CPP=$(CC) -E
 
 all: $(TPROG1) $(TPROG2) $(TPROG3)
