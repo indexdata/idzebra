@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.12 2004-09-28 10:15:02 adam Exp $
+/* $Id: d1_absyn.c,v 1.13 2004-09-30 18:30:35 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -33,8 +33,95 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define D1_MAX_NESTING  128
 
-#if PRIVATE_DATA1_ABSYN
-#endif
+struct data1_hash_table {
+    NMEM nmem;
+    int size;
+    struct data1_hash_entry **ar;
+};
+
+struct data1_hash_entry {
+    void *clientData;
+    char *str;
+    struct data1_hash_entry *next;
+};
+
+unsigned data1_hash_calc(struct data1_hash_table *ht, const char *str)
+{
+    unsigned v = 0;
+    assert(str);
+    while (*str)
+    {
+	if (*str >= 'a' && *str <= 'z')
+	    v = v*65509 + *str -'a'+10;
+	else if (*str >= 'A' && *str <= 'Z')
+	    v = v*65509 + *str -'A'+10;
+	else if (*str >= '0' && *str <= '9')
+	    v = v*65509 + *str -'0';
+	str++;
+    }
+    return v % ht->size;
+}
+
+struct data1_hash_table *data1_hash_open(int size, NMEM nmem)
+{
+    int i;
+    struct data1_hash_table *ht = nmem_malloc(nmem, sizeof(*ht));
+    ht->nmem = nmem;
+    ht->size = size;
+    if (ht->size <= 0)
+	ht->size = 29;
+    ht->ar = nmem_malloc(nmem, sizeof(*ht->ar) * ht->size);
+    for (i = 0; i<ht->size; i++)
+	ht->ar[i] = 0;
+    return ht;
+}
+
+void data1_hash_insert(struct data1_hash_table *ht, const char *str,
+		       void *clientData, int copy)
+{
+    char *dstr = copy ? nmem_strdup(ht->nmem, str) : str;
+    if (strchr(str, '?') || strchr(str, '.'))
+    {
+	int i;
+	for (i = 0; i<ht->size; i++)
+	{
+	    struct data1_hash_entry **he = &ht->ar[i];
+	    for (; *he && strcmp(str, (*he)->str); he = &(*he)->next)
+		;
+	    if (!*he)
+	    {
+		*he = nmem_malloc(ht->nmem, sizeof(**he));
+		(*he)->str = dstr;
+		(*he)->next = 0;
+	    }
+	    (*he)->clientData = clientData;
+	}
+    }
+    else
+    {
+	struct data1_hash_entry **he = &ht->ar[data1_hash_calc(ht, str)];
+	for (; *he && strcmp(str, (*he)->str); he = &(*he)->next)
+	    ;
+	if (!*he)
+	{
+	    *he = nmem_malloc(ht->nmem, sizeof(**he));
+	    (*he)->str = dstr;
+	    (*he)->next = 0;
+	}
+	(*he)->clientData = clientData;
+    }
+}
+
+void *data1_hash_lookup(struct data1_hash_table *ht, const char *str)
+{
+    struct data1_hash_entry **he = &ht->ar[data1_hash_calc(ht, str)];
+    
+    for (; *he && yaz_matchstr(str, (*he)->str); he = &(*he)->next)
+	;
+    if (*he)
+	return (*he)->clientData;
+    return 0;
+}
 
 struct data1_systag {
     char *name;
@@ -55,6 +142,18 @@ struct data1_attset_cache_info
     data1_attset *attset;
     data1_attset_cache next;
 };
+
+data1_element *data1_mk_element(data1_handle dh)
+{
+    data1_element *e = nmem_malloc(data1_nmem_get(dh), sizeof(*e));
+    e->name = 0;
+    e->tag = 0;
+    e->termlists = 0;
+    e->next = e->children = 0;
+    e->sub_name = 0;
+    e->hash = 0;
+    return e;
+}
 
 data1_absyn *data1_absyn_search (data1_handle dh, const char *name)
 {
@@ -209,6 +308,11 @@ data1_esetname *data1_getesetbyname(data1_handle dh, data1_absyn *a,
     return 0;
 }
 
+/* we have multiple versions of data1_getelementbyname */
+#define DATA1_GETELEMENTBYTAGNAME_VERSION 1
+
+#if DATA1_GETELEMENTBYTAGNAME_VERSION==0
+/* straight linear search */
 data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
 					  data1_element *parent,
 					  const char *tagname)
@@ -234,6 +338,44 @@ data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
     }
     return 0;
 }
+#endif
+
+#if DATA1_GETELEMENTBYTAGNAME_VERSION==1
+/* using hash search */
+data1_element *data1_getelementbytagname (data1_handle dh, data1_absyn *abs,
+					  data1_element *parent,
+					  const char *tagname)
+{
+    data1_element *r;
+    struct data1_hash_table *ht;
+
+    /* It's now possible to have a data1 tree with no abstract syntax */
+    if ( !abs )
+        return 0;
+
+    if (!parent)
+        r = abs->main_elements;
+    else
+	r = parent->children;
+
+    if (!r)
+	return 0;
+
+    ht = r->hash;
+    if (!ht)
+    {
+	ht = r->hash = data1_hash_open(29, data1_nmem_get(dh));
+	for (; r; r = r->next)
+	{
+	    data1_name *n;
+	    
+	    for (n = r->tag->names; n; n = n->next)
+		data1_hash_insert(ht, n->name, r, 0);
+	}
+    }
+    return data1_hash_lookup(ht, tagname);
+}
+#endif
 
 data1_element *data1_getelementbyname (data1_handle dh, data1_absyn *absyn,
 				       const char *name)
@@ -617,12 +759,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 		return 0;
 	    }
 	    level = i;
-	    new_element = *ppl[level-1] = (data1_element *)
-		nmem_malloc(data1_nmem_get(dh), sizeof(*new_element));
-	    new_element->next = new_element->children = 0;
-	    new_element->tag = 0;
-	    new_element->termlists = 0;
-	    new_element->sub_name = 0;
+	    new_element = *ppl[level-1] = data1_mk_element(dh);
 	    
 	    tp = &new_element->termlists;
 	    ppl[level-1] = &new_element->next;
@@ -1034,6 +1171,6 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	fix_element_ref (dh, res, cur_elements->elements);
     }
     *systagsp = 0;
-    yaz_log (LOG_DEBUG, "%s: data1_read_absyn end", file);
+    yaz_log(LOG_DEBUG, "%s: data1_read_absyn end", file);
     return res;
 }
