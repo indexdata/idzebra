@@ -17,7 +17,7 @@ Description: Zebra (documentation)
 Package: zebra-runtime
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, yaz-runtime (>= 1.9), libexpat1, tcl8.3, libbz2
+Depends: ${shlibs:Depends}
 Description: Zebra (runtime files)
  Zebra is a high-performance, general-purpose structured text indexing
  and retrieval engine. It reads structured records in a variety of input
