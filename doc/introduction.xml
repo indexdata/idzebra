@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.24 2003-03-31 20:56:28 adam Exp $ -->
+ <!-- $Id: introduction.xml,v 1.25 2003-06-26 08:46:31 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -263,11 +263,13 @@
   <sect2>
    <title>ULS (Union List of Serials)</title>
    <para>
-    The M25-Link systems team
-    (<ulink url="http://www.m25lib.ac.uk/M25link/"/>)
-    are involved in a project called ULS to provide a union catalogue
-    for periodicals in 21 member libraries.  They do this with an
-    unusual architecture which they call a
+    The M25 Systems Team
+    has created a union catalogue for the periodicals of the
+    twenty-one constituent libraries of the University of London and
+    the University of Westminster
+    (<ulink url="http://www.m25lib.ac.uk/ULS/"/>).
+    They have achieved this using an
+    unusual architecture, which they describe as a
     ``non-distributed virtual union catalogue''.
    </para>
    <para>
