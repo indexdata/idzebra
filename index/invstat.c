@@ -20,13 +20,16 @@ struct inv_stat_info {
     ISAMS isams;
     ISAMH isamh;
     ISAMD isamd;
-    int no_isam_entries[8];
+    int no_isam_entries[9];
     int no_dict_entries;
     int no_dict_bytes;
     int isam_bounds[20];
     int isam_occurrences[20];
     char tmp[128];
 };
+
+#define SINGLETON_TYPE 8 /* the type to use for singletons that */ 
+                         /* have no block and no block type */
 
 static int inv_stat_handle (char *name, const char *info, int pos,
                             void *client)
@@ -77,8 +80,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         pp = isamh_pp_open (stat_info->isamh, isam_p);
         
         occur = isamh_pp_num (pp);
-	  //  printf ("  opening item %d=%d:%d \n",
-  	  //    isam_p, isamh_type(isam_p),isamh_block(isam_p));
         while (isamh_pp_read(pp, &key))
 	{
             occurx++;
@@ -119,7 +120,10 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         if (occurx != occur) 
           logf(LOG_LOG,"Count error!!! read %d, counted %d", occur, occurx);
         assert (occurx == occur);
-	stat_info->no_isam_entries[isamd_type(isam_p)] += occur;
+        if ( is_singleton(isam_p) )
+  	    stat_info->no_isam_entries[SINGLETON_TYPE] += occur;
+	else
+	    stat_info->no_isam_entries[isamd_type(isam_p)] += occur;
         isamd_pp_close (pp);
     }
     if (stat_info->isams)
@@ -160,7 +164,10 @@ void inv_prstat (BFiles bfs)
     int after = 1000000000;
     struct inv_stat_info stat_info;
     char term_dict[2*IT_MAX_WORD+2];
-
+    int blocks;
+    int size;
+    int count;
+        
     term_dict[0] = 1;
     term_dict[1] = 0;
 
@@ -224,7 +231,7 @@ void inv_prstat (BFiles bfs)
     }
     records = rec_open (bfs, 0, 0);
 
-    for (i = 0; i<8; i++)
+    for (i = 0; i<=SINGLETON_TYPE; i++)
 	stat_info.no_isam_entries[i] = 0;
     stat_info.no_dict_entries = 0;
     stat_info.no_dict_bytes = 0;
@@ -276,21 +283,67 @@ void inv_prstat (BFiles bfs)
 	    fprintf (stderr, "\n");
 	}
     }
-	
+    if (isamd)
+    {
+	fprintf (stderr, "   Blocks   Occur      KB Bytes/Entry\n");
+	if (isamd->method->debug >0) 
+            logf(LOG_LOG,"   Blocks   Occur      KB Bytes/Entry");
+	for (i = 0; i<=SINGLETON_TYPE; i++)
+	{
+	    blocks= isamd_block_used(isamd,i);
+	    size= isamd_block_size(isamd,i);
+	    count=stat_info.no_isam_entries[i];
+	    if (i==SINGLETON_TYPE) 
+	        blocks=size=0;
+	    if (stat_info.no_isam_entries[i]) 
+	    {
+		fprintf (stderr, "%c %7d %7d %7d %5.2f\n",
+    		         (i==SINGLETON_TYPE)?('z'):('A'+i),
+    		         blocks,
+    		         count,
+    		    	 (int) ((1023.0 + (double) blocks * size)/1024),
+    			 ((double) blocks * size)/count);
+	        if (isamd->method->debug >0) 
+    		    logf(LOG_LOG, "%c %7d %7d %7d %5.2f",
+    		         (i==SINGLETON_TYPE)?('z'):('A'+i),
+    		         blocks,
+    		         count,
+    		    	 (int) ((1023.0 + (double) blocks * size)/1024),
+    			 ((double) blocks * size)/count);
+	    } /* entries */
+	} /* for */
+    } /* isamd */
+    if ( (isamd) && (isamd->method->debug>0))
     fprintf (stderr, "\n%d words using %d bytes\n",
              stat_info.no_dict_entries, stat_info.no_dict_bytes);
     fprintf (stderr, "    Occurrences     Words\n");
+    if ( (isamd) && (isamd->method->debug>0) )
+    {
+	logf(LOG_LOG, "%d words using %d bytes",
+             stat_info.no_dict_entries, stat_info.no_dict_bytes);
+        logf(LOG_LOG, "    Occurrences     Words");
+    }
     prev = 1;
     for (i = 0; stat_info.isam_bounds[i]; i++)
     {
         int here = stat_info.isam_bounds[i];
         fprintf (stderr, "%7d-%-7d %7d\n",
                  prev, here, stat_info.isam_occurrences[i]);
+        if ( (isamd) && (isamd->method->debug>0) &&
+             stat_info.isam_occurrences[i] )
+        {
+    	    logf(LOG_LOG,"%7d-%-7d %7d",
+                 prev, here, stat_info.isam_occurrences[i]);
+        }
         prev = here+1;
     }
     fprintf (stderr, "%7d-        %7d\n",
              prev, stat_info.isam_occurrences[i]);
-
+    if ( (isamd) && (isamd->method->debug>0) &&
+         ( stat_info.isam_occurrences[i] ||
+           stat_info.isam_occurrences[i+1])  )
+        logf(LOG_LOG,"%7d-        %7d",
+        prev, stat_info.isam_occurrences[i]);
     rec_close (&records);
     dict_close (dict);
 
@@ -312,7 +365,10 @@ void inv_prstat (BFiles bfs)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.17  1999-08-20 08:28:37  heikki
+ * Revision 1.18  1999-10-06 11:46:36  heikki
+ * mproved statistics on isam-d
+ *
+ * Revision 1.17  1999/08/20 08:28:37  heikki
  * Log levels
  *
  * Revision 1.16  1999/08/18 08:38:22  heikki

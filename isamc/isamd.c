@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.16 1999-10-05 09:57:40 heikki Exp $ 
+ * $Id: isamd.c,v 1.17 1999-10-06 11:46:36 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -179,6 +179,8 @@ ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method)
 
 int isamd_block_used (ISAMD is, int type)
 {
+    if ( type==-1) /* singleton */
+      return 0; 
     if (type < 0 || type >= is->no_files)
 	return -1;
     return is->files[type].head.lastblock-1;
@@ -187,6 +189,8 @@ int isamd_block_used (ISAMD is, int type)
 int isamd_block_size (ISAMD is, int type)
 {
     ISAMD_filecat filecat = is->method->filecat;
+    if ( type==-1) /* singleton */
+      return 0; /* no bytes used */ 
     if (type < 0 || type >= is->no_files)
 	return -1;
     return filecat[type].bsize;
@@ -246,14 +250,14 @@ int isamd_close (ISAMD is)
                   is->files[i].no_op_main,
                   is->files[i].no_op_diffonly);
         }
-        logf(LOG_LOG,"single   %8d", is->no_op_single);
-        logf(LOG_LOG,"new      %8d", is->no_op_new);
+        logf(LOG_LOG,"open single  %8d", is->no_op_single);
+        logf(LOG_LOG,"open new     %8d", is->no_op_new);
 
         logf(LOG_LOG, "new build   %8d", is->no_fbuilds);
         logf(LOG_LOG, "append      %8d", is->no_appds);
         logf(LOG_LOG, "  merges    %8d", is->no_merges);
         logf(LOG_LOG, "  singles   %8d", is->no_singles);
-        logf(LOG_LOG, "  non       %8d", is->no_non);
+        logf(LOG_LOG, "  no-ops    %8d", is->no_non);
 
         logf(LOG_LOG, "read blocks %8d", is->no_read);
         logf(LOG_LOG, "read keys:  %8d %8.1f k/bl", 
@@ -845,7 +849,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.16  1999-10-05 09:57:40  heikki
+ * Revision 1.17  1999-10-06 11:46:36  heikki
+ * mproved statistics on isam-d
+ *
+ * Revision 1.16  1999/10/05 09:57:40  heikki
  * Tuning the isam-d (and fixed a small "detail")
  *
  * Revision 1.15  1999/09/27 14:36:36  heikki
