@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.10  1996-02-07 14:03:46  adam
+ * Revision 1.11  1996-03-26 15:59:05  adam
+ * The directory of the shadow table file can be specified by the new
+ * bf_lockDir call.
+ *
+ * Revision 1.10  1996/02/07  14:03:46  adam
  * Work on flat indexed shadow files.
  *
  * Revision 1.9  1996/02/07  10:08:43  adam
@@ -321,7 +325,7 @@ static void cf_moveto_flat (CFile cf)
     struct CFile_hash_bucket *p;
     int i, j;
 
-    logf (LOG_LOG, "Moving to flat shadow.");
+    logf (LOG_LOG, "Moving to flat shadow: %s", cf->rmf->name);
     logf (LOG_LOG, "hits=%d miss=%d bucket_in_memory=%d total=%d",
 	cf->no_hits, cf->no_miss, cf->bucket_in_memory, 
         cf->head.next_bucket - cf->head.first_bucket);

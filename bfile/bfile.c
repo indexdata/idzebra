@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.19  1996-02-05 12:28:58  adam
+ * Revision 1.20  1996-03-26 15:59:04  adam
+ * The directory of the shadow table file can be specified by the new
+ * bf_lockDir call.
+ *
+ * Revision 1.19  1996/02/05  12:28:58  adam
  * Removed a LOG_LOG message.
  *
  * Revision 1.18  1996/01/02  08:59:06  quinn
@@ -63,6 +67,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <unistd.h>
 
@@ -71,6 +76,41 @@
 #include "cfile.h"
 
 static MFile_area commit_area = NULL;
+static char *commit_lockDir = NULL;
+
+static FILE *open_cache (const char *flags)
+{
+    char cacheFilename[1024];
+    FILE *file;
+
+    sprintf (cacheFilename, "%scache", commit_lockDir ? commit_lockDir : "");
+    file = fopen (cacheFilename, flags);
+    return file;
+}
+
+static void unlink_cache (void)
+{
+    char cacheFilename[1024];
+
+    sprintf (cacheFilename, "%scache", commit_lockDir ? commit_lockDir : "");
+    unlink (cacheFilename);
+}
+
+void bf_lockDir (const char *lockDir)
+{
+    size_t len;
+    
+    xfree (commit_lockDir);
+
+    if (lockDir == NULL)
+        lockDir = "";
+    len = strlen(lockDir);
+    commit_lockDir = xmalloc (len+2);
+    strcpy (commit_lockDir, lockDir);
+    
+    if (len > 0 && commit_lockDir[len-1] != '/')
+        strcpy (commit_lockDir + len, "/");
+}
 
 void bf_cache (int enableFlag)
 {
@@ -78,7 +118,9 @@ void bf_cache (int enableFlag)
     {
         if (!commit_area)
             if (res_get (common_resource, "shadow"))
+            {
                 commit_area = mf_init ("shadow");
+            }
             else
             {
                 logf (LOG_FATAL, "Shadow area must be defined if commit"
@@ -105,7 +147,6 @@ BFile bf_open (const char *name, int block_size, int wflag)
 
     if (commit_area)
     {
-        FILE *outf;
         int first_time;
 
         tmp->mf = mf_open (0, name, block_size, 0);
@@ -113,7 +154,15 @@ BFile bf_open (const char *name, int block_size, int wflag)
                            wflag, &first_time);
         if (first_time)
         {
-            outf = fopen ("cache", "a");
+            FILE *outf;
+
+            outf = open_cache ("a");
+            if (!outf)
+            {
+                logf (LOG_FATAL|LOG_ERRNO, "open %scache",
+                      commit_lockDir ? commit_lockDir : "");
+                exit (1);
+            }
             fprintf (outf, "%s %d\n", name, block_size);
             fclose (outf);
         }
@@ -152,7 +201,7 @@ int bf_commitExists (void)
 {
     FILE *inf;
 
-    inf = fopen ("cache", "r");
+    inf = open_cache ("r");
     if (inf)
     {
         fclose (inf);
@@ -171,7 +220,7 @@ void bf_commitExec (void)
     int first_time;
 
     assert (commit_area);
-    if (!(inf = fopen ("cache", "r")))
+    if (!(inf = open_cache ("r")))
     {
         logf (LOG_LOG, "No commit file");
         return ;
@@ -205,7 +254,7 @@ void bf_commitClean (void)
         mustDisable = 1;
     }
 
-    if (!(inf = fopen ("cache", "r")))
+    if (!(inf = open_cache ("r")))
         return ;
     while (fscanf (inf, "%s %d", path, &block_size) == 2)
     {
@@ -216,7 +265,7 @@ void bf_commitClean (void)
         mf_close (mf);
     }
     fclose (inf);
-    unlink ("cache");
+    unlink_cache ();
     if (mustDisable)
         bf_cache (0);
 }
