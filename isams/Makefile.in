@@ -1,0 +1,42 @@
+# Copyright (C) 1996-1999, Index Data 
+# All rights reserved.
+# Sebastian Hammer, Adam Dickmeiss
+# $Id: Makefile.in,v 1.1 1999-11-30 14:02:45 adam Exp $
+
+SHELL=/bin/sh
+
+CC=@CC@
+CPP=@CPP@
+RANLIB=@RANLIB@
+CDEFS=@DEFS@ @ODEFS@
+LIBS=@LIBS@
+
+YAZLIB=@YAZLIB@
+YAZINC=@YAZINC@
+
+INCLUDE=-I../include $(YAZINC)
+DEFS=$(CDEFS) $(INCLUDE)
+LIB=../lib/isams.a 
+PO = isams.o
+
+all: $(LIB)
+
+alll: $(LIB) 
+
+$(LIB): $(PO)
+	rm -f $(LIB)
+	ar qc $(LIB) $(PO)
+	$(RANLIB) $(LIB)
+
+.c.o:
+	$(CC) -c $(DEFS) $(CFLAGS) $<
+
+clean:
+	rm -f *.[oa] $(TPROG1) core mon.out gmon.out errlist *~
+
+depend:
+	sed '/^#Depend/q' <Makefile >Makefile.tmp
+	$(CPP) $(DEFS) -M *.c >>Makefile.tmp
+	mv -f Makefile.tmp Makefile
+
+#Depend --- DOT NOT DELETE THIS LINE
