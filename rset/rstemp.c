@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.9  1995-09-15 09:20:42  adam
+ * Revision 1.10  1995-09-15 14:45:39  adam
+ * Bug fixes.
+ *
+ * Revision 1.9  1995/09/15  09:20:42  adam
  * Bug fixes.
  *
  * Revision 1.8  1995/09/08  14:52:42  adam
@@ -102,7 +105,7 @@ static struct rset_control *r_create(const struct rset_control *sel,
     info->fd = -1;
     info->fname = NULL;
     info->key_size = temp_parms->key_size;
-    info->buf_size = 1024;
+    info->buf_size = 2048;
     info->buf_mem = xmalloc (info->buf_size);
     info->pos_cur = 0;
     info->pos_end = 0;
@@ -132,7 +135,7 @@ static RSFD r_open (struct rset_control *ct, int wflag)
     }
     rfd = xmalloc (sizeof(*rfd));
     rfd->info = info;
-    r_rewind (ct);
+    r_rewind (rfd);
     return rfd;
 }
 
@@ -150,6 +153,7 @@ static void r_flush (RSFD rfd, int mk)
         info->fname = xmalloc (strlen(s)+1);
         strcpy (info->fname, s);
 
+        logf (LOG_DEBUG, "creating tempfile %s", info->fname);
         info->fd = open (info->fname, O_RDWR|O_CREAT, 0666);
         if (info->fd == -1)
         {
@@ -222,6 +226,12 @@ static void r_reread (RSFD rfd)
             info->pos_border = info->pos_end;
         count = info->pos_border - info->pos_buf;
         if (count > 0)
+        {
+            if (lseek (info->fd, info->pos_buf, SEEK_SET) == -1)
+            {
+                logf (LOG_FATAL|LOG_ERRNO, "lseek %s", info->fname);
+                exit (1);
+            }
             if ((r = read (info->fd, info->buf_mem, count)) < count)
             {
                 if (r == -1)
@@ -231,6 +241,7 @@ static void r_reread (RSFD rfd)
                           (long) count, (long) r);
                 exit (1);
             }
+        }
     }
     else
         info->pos_border = info->pos_end;
