@@ -1,5 +1,5 @@
 /* zebrash.c - command-line interface to zebra API 
- *  $Id: zebrash.c,v 1.8 2003-06-02 13:13:59 adam Exp $
+ *  $Id: zebrash.c,v 1.9 2003-06-02 13:33:16 adam Exp $
  *
  * Copyrigth 2003 Index Data Aps
  *
@@ -272,7 +272,7 @@ static int cmd_select_database ( char *args[], char *outbuff)
     char *db=args[1];
     if (!db)
 	db="Default";
-    return zebra_select_database(zh, args[1]);
+    return zebra_select_database(zh, db);
 }
  
 /**************************************
@@ -378,6 +378,14 @@ int onecommand( char *line, char *outbuff)
     strncpy(argbuf,line, MAX_ARG_LEN-1);
     argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
     n=split_args(argbuf, args);
+
+#if 0
+    for (i = 0; i <= n; i++)
+    {
+	const char *cp = args[i];
+	printf ("args %d :%s:\n", i, cp ? cp : "<null>");
+    }
+#endif
     if (0==n)
 	return -1; /* no command on line, too bad */
     for (i=0;cmds[i].cmd;i++)
