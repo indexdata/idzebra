@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.6  1995-09-08 14:52:26  adam
+ * Revision 1.7  1995-09-28 09:19:40  adam
+ * xfree/xmalloc used everywhere.
+ * Extract/retrieve method seems to work for text records.
+ *
+ * Revision 1.6  1995/09/08  14:52:26  adam
  * Minor changes. Dictionary is lower case now.
  *
  * Revision 1.5  1995/09/06  16:11:16  adam
@@ -51,11 +55,7 @@ struct dir_entry *dir_open (const char *rep)
             exit (1);
         return NULL;
     }
-    if (!(entry = malloc (sizeof(*entry) * entry_max)))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }    
+    entry = xmalloc (sizeof(*entry) * entry_max);
     while ((dent = readdir (dir)))
     {
         if (strcmp (dent->d_name, ".") == 0 ||
@@ -65,21 +65,13 @@ struct dir_entry *dir_open (const char *rep)
         {
             struct dir_entry *entry_n;
 
-            if (!(entry_n = malloc (sizeof(*entry) * (entry_max + 400))))
-            {
-                logf (LOG_FATAL|LOG_ERRNO, "malloc");
-                exit (1);
-            }
+            entry_n = xmalloc (sizeof(*entry) * (entry_max + 400));
             memcpy (entry_n, entry, idx * sizeof(*entry));
-            free (entry);
+            xfree (entry);
             entry = entry_n;
             entry_max += 100;
         }
-        if (!(entry[idx].name = malloc (strlen(dent->d_name)+1)))
-        {
-            logf (LOG_FATAL|LOG_ERRNO, "malloc");
-            exit (1);
-        }
+        entry[idx].name = xmalloc (strlen(dent->d_name)+1);
         strcpy (entry[idx].name, dent->d_name);
         idx++;
     }
@@ -109,7 +101,7 @@ void dir_free (struct dir_entry **e_p)
 
     assert (e);
     while (e[i].name)
-        free (e[i++].name);
-    free (e);
+        xfree (e[i++].name);
+    xfree (e);
     *e_p = NULL;
 }

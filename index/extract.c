@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.9  1995-09-27 12:22:28  adam
+ * Revision 1.10  1995-09-28 09:19:41  adam
+ * xfree/xmalloc used everywhere.
+ * Extract/retrieve method seems to work for text records.
+ *
+ * Revision 1.9  1995/09/27  12:22:28  adam
  * More work on extract in record control.
  * Field name is not in isam keys but in prefix in dictionary words.
  *
@@ -195,13 +199,15 @@ void file_extract (int cmd, const char *fname, const char *kname)
     sprintf (ext_res, "fileExtension.%s", ext);
     if (!(file_type = res_get (common_resource, ext_res)))
         return;
-    
+    if (!(rt = recType_byName (file_type)))
+        return;
     file_info = dict_lookup (file_idx, kname);
     if (!file_info)
     {
         sysno = sysno_next++;
         dict_insert (file_idx, kname, sizeof(sysno), &sysno);
         lseek (sys_idx_fd, sysno * SYS_IDX_ENTRY_LEN, SEEK_SET);
+        write (sys_idx_fd, file_type, strlen (file_type)+1);
         write (sys_idx_fd, kname, strlen(kname)+1);
     }
     else
@@ -212,8 +218,6 @@ void file_extract (int cmd, const char *fname, const char *kname)
         logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
         return;
     }
-    if (!(rt = recType_byName (file_type)))
-        return;
     extractCtrl.inf = inf;
     extractCtrl.subType = "";
     extractCtrl.init = wordInit;

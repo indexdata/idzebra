@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.5  1995-09-27 16:17:32  adam
+ * Revision 1.6  1995-09-28 09:19:49  adam
+ * xfree/xmalloc used everywhere.
+ * Extract/retrieve method seems to work for text records.
+ *
+ * Revision 1.5  1995/09/27  16:17:32  adam
  * More work on retrieve.
  *
  * Revision 1.4  1995/09/07  13:58:36  adam
@@ -110,8 +114,8 @@ void resultSetRecordDel (ZServerInfo *zi, ZServerRecord *records, int num)
     int i;
 
     for (i = 0; i<num; i++)
-        free (records[i].buf);
-    free (records);
+        xfree (records[i].buf);
+    xfree (records);
 }
 
 

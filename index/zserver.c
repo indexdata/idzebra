@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.7  1995-09-27 16:17:32  adam
+ * Revision 1.8  1995-09-28 09:19:47  adam
+ * xfree/xmalloc used everywhere.
+ * Extract/retrieve method seems to work for text records.
+ *
+ * Revision 1.7  1995/09/27  16:17:32  adam
  * More work on retrieve.
  *
  * Revision 1.6  1995/09/08  08:53:22  adam
@@ -33,10 +37,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "zserver.h"
-
+#include <recctrl.h>
 #include <backend.h>
 #include <dmalloc.h>
+#include "zserver.h"
 
 ZServerInfo server_info;
 
@@ -103,6 +107,55 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     return &r;
 }
 
+static int record_read (int fd, char *buf, size_t count)
+{
+    return read (fd, buf, count);
+}
+
+static int record_fetch (ZServerInfo *zi, int sysno, ODR stream,
+                          oid_value input_format, oid_value *output_format,
+                          char **rec_bufp, int *rec_lenp)
+{
+    char record_info[SYS_IDX_ENTRY_LEN];
+    char *fname, *file_type;
+    RecType rt;
+    struct recRetrieveCtrl retrieveCtrl;
+
+    if (lseek (zi->sys_idx_fd, sysno * SYS_IDX_ENTRY_LEN,
+               SEEK_SET) == -1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "Retrieve: lseek of sys_idx");
+        exit (1);
+    }
+    if (read (zi->sys_idx_fd, record_info, SYS_IDX_ENTRY_LEN) == -1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "Retrieve: read of sys_idx");
+        exit (1);
+    }
+    file_type = record_info;
+    fname = record_info + strlen(record_info) + 1;
+    if (!(rt = recType_byName (file_type)))
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "Retrieve: Cannot handle type %s", 
+              file_type);
+        exit (1);
+    }
+    if ((retrieveCtrl.fd = open (fname, O_RDONLY)) == -1)
+    {
+        logf (LOG_FATAL|LOG_ERRNO, "Retrieve: Open record file %s", fname);
+        exit (1);
+    }
+    retrieveCtrl.odr = stream;
+    retrieveCtrl.readf = record_read;
+    retrieveCtrl.input_format = input_format;
+    (*rt->retrieve)(&retrieveCtrl);
+    *output_format = retrieveCtrl.output_format;
+    *rec_bufp = retrieveCtrl.rec_buf;
+    *rec_lenp = retrieveCtrl.rec_len;
+    close (retrieveCtrl.fd);
+    return 0;
+}
+
 bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
 {
     static bend_fetchresult r;
@@ -129,14 +182,8 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
         logf (LOG_DEBUG, "Out of range. pos=%d", q->number);
         return &r;
     }
-#if 0
-    r.len = records[0].size;
-    server_info.recordBuf = r.record = xmalloc (r.len+1);
-    strcpy (r.record, records[0].buf);
-    resultSetRecordDel (&server_info, records, 1);
-    r.format = VAL_SUTRS;
-    r.errcode = 0;
-#endif
+    r.errcode = record_fetch (&server_info, records[0].sysno, q->stream,
+                              q->format, &r.format, &r.record, &r.len);
     return &r;
 }
 

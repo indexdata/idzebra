@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.3  1995-09-06 16:11:18  adam
+ * Revision 1.4  1995-09-28 09:19:46  adam
+ * xfree/xmalloc used everywhere.
+ * Extract/retrieve method seems to work for text records.
+ *
+ * Revision 1.3  1995/09/06  16:11:18  adam
  * Option: only one word key per file.
  *
  * Revision 1.2  1995/09/04  12:33:43  adam
@@ -74,11 +78,7 @@ void copy_file (const char *dst, const char *src)
         logf (LOG_FATAL|LOG_ERRNO, "Cannot open %s", src);
         exit (1);
     }
-    if (!(buf = malloc (4096)))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "malloc");
-        exit (1);
-    }
+    buf = xmalloc (4096);
     while ((r=read (s_fd, buf, 4096))>0)
         for (w = 0; w < r; w += i)
         {
@@ -94,7 +94,7 @@ void copy_file (const char *dst, const char *src)
         logf (LOG_FATAL|LOG_ERRNO, "read");
         exit (1);
     }
-    free (buf);
+    xfree (buf);
     close (d_fd);
     close (s_fd);
 }

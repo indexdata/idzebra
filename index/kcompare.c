@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.7  1995-09-27 12:22:28  adam
+ * Revision 1.8  1995-09-28 09:19:42  adam
+ * xfree/xmalloc used everywhere.
+ * Extract/retrieve method seems to work for text records.
+ *
+ * Revision 1.7  1995/09/27  12:22:28  adam
  * More work on extract in record control.
  * Field name is not in isam keys but in prefix in dictionary words.
  *
@@ -51,28 +55,26 @@ void key_logdump (int logmask, const void *p)
 
 int key_compare (const void *p1, const void *p2)
 {
-    struct it_key i1, i2;
-    memcpy (&i1, p1, sizeof(i1));
-    memcpy (&i2, p2, sizeof(i2));
-    if (i1.sysno != i2.sysno)
+    const struct it_key *i1 = p1, *i2 = p2;
+    if (i1->sysno != i2->sysno)
     {
-        if (i1.sysno > i2.sysno)
+        if (i1->sysno > i2->sysno)
             return 2;
         else
             return -2;
     }
 #if IT_KEY_HAVE_SEQNO
-    if (i1.seqno != i2.seqno)
+    if (i1->seqno != i2->seqno)
     {
-        if (i1.seqno > i2.seqno)
+        if (i1->seqno > i2->seqno)
             return 1;
         else
             return -1;
     }
 #else
-    if (i1.freq != i2.freq)
+    if (i1->freq != i2->freq)
     {
-        if (i1.freq > i2.freq)
+        if (i1->freq > i2->freq)
             return 1;
         else
             return -1;

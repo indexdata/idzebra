@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: symtab.c,v $
- * Revision 1.1  1995-09-06 16:11:18  adam
+ * Revision 1.2  1995-09-28 09:19:44  adam
+ * xfree/xmalloc used everywhere.
+ * Extract/retrieve method seems to work for text records.
+ *
+ * Revision 1.1  1995/09/06  16:11:18  adam
  * Option: only one word key per file.
  *
  */
@@ -72,8 +76,8 @@ void strtab_del (struct strtab *t,
         {
             e1 = e->next;
             (*func)(e->name, e->info, data);
-            free (e->name);
-            free (e);
+            xfree (e->name);
+            xfree (e);
         }
-    free (t);
+    xfree (t);
 }

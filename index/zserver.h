@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.5  1995-09-27 16:17:32  adam
+ * Revision 1.6  1995-09-28 09:19:48  adam
+ * xfree/xmalloc used everywhere.
+ * Extract/retrieve method seems to work for text records.
+ *
+ * Revision 1.5  1995/09/27  16:17:32  adam
  * More work on retrieve.
  *
  * Revision 1.4  1995/09/14  11:53:28  adam
@@ -59,6 +63,6 @@ int rpn_search (ZServerInfo *zi,
 ZServerSet *resultSetAdd (ZServerInfo *zi, const char *name,
                           int ov, RSET rset);
 ZServerSet *resultSetGet (ZServerInfo *zi, const char *name);
-ZServerRecord *resultSetRecordGet (ZServerInfo *zi, const char *name,
-                                   int num, int *positions);
+ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
+                                    int num, int *positions);
 void resultSetRecordDel (ZServerInfo *zi, ZServerRecord *records, int num);
