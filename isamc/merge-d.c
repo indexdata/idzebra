@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.16 1999-08-24 10:12:02 heikki Exp $
+ * $Id: merge-d.c,v 1.17 1999-08-24 13:17:42 heikki Exp $
  *
  * missing
  *
@@ -54,6 +54,50 @@
  *    9 = Anything else that may be useful
  *   .. = Anything needed to hunt a specific bug
  *  (note that all tests in the code are like debug>3, which means 4 or above!)
+ *
+ * Design for the new and improved isamd
+ * Key points:
+ *  - The first block is only diffs, no straight data
+ *  - Additional blocks are straight data
+ *  - When a diff block gets filled up, a data block is created by
+ *    merging the diffs with the data
+ *
+ * Structure
+ *  - Isamd_pp: buffer for diffs and for data
+ *              keep both pos, type, and combined address
+ *              routine to set the address
+ *  - diffbuf: lengths as short ints, or bytes for small blocks
+ *  - keys are of key_struct, not just a number of bytes.
+ *
+ * Routines
+ *  - isamd_append
+ *    - create_new_block if needed
+ *    - append_diffs
+ *      - load_diffs 
+ *      - get diffend, start encoding
+ *      - while input data
+ *        - encode it
+ *        - if no room, then realloc block in larger size
+ *        - if still no room, merge and exit
+ *        - append in the block
+ *
+ * - merge
+ *   - just as before, except that merges also input data directly
+ *   - writes into new data blocks
+ *       
+ *      
+ * - isamd.c: load firstpp, load datablock
+ *            save firstpp, save datablock
+ * - Readlength, writelength - handling right size of len fields
+ * - isamd_read_main_item: take also a merge input structure, and merge it too
+ * - prefilter: cache two inputs, and check if they cancel.
+ * - single-item optimization
+ * 
+ * questions: Should we realloc firstblocks in a different size as the main
+ * blocks. Makes a sideways seek, which is bound to be slowe. But saves some
+ * update time. Compromise: alloc the first one in the size of the datablock,
+ * but increase if necessary. Large blocks get a large diff, ok. Small ones
+ * may get an extra seek in read, but save merges.
  */
 
 #include <stdlib.h>
@@ -937,7 +981,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.16  1999-08-24 10:12:02  heikki
+ * Revision 1.17  1999-08-24 13:17:42  heikki
+ * Block sizes, comments
+ *
+ * Revision 1.16  1999/08/24 10:12:02  heikki
  * Comments about optimising
  *
  * Revision 1.15  1999/08/22 08:26:34  heikki
