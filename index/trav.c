@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.20  1996-03-21 14:50:10  adam
+ * Revision 1.21  1996-03-22 15:34:18  quinn
+ * Fixed bad reference
+ *
+ * Revision 1.20  1996/03/21  14:50:10  adam
  * File update uses modify-time instead of change-time.
  *
  * Revision 1.19  1996/03/20  16:16:55  quinn
@@ -251,8 +254,8 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                     {
                         dirs_add (di, src, dst->sysno, e_src[i_src].mtime);
                     }
-		    logf (LOG_LOG, "old: %s", ctime (&dst->ctime));
-                    logf (LOG_LOG, "new: %s", ctime (&e_src[i_src].ctime));
+		    logf (LOG_LOG, "old: %s", ctime (&dst->mtime));
+                    logf (LOG_LOG, "new: %s", ctime (&e_src[i_src].mtime));
                 }
                 dst = dirs_read (di);
                 break;
