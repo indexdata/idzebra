@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1998, Index Data
+ * Copyright (C) 1995-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.61  1999-03-09 16:27:49  adam
+ * Revision 1.62  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.61  1999/03/09 16:27:49  adam
  * More work on SDRKit integration.
  *
  * Revision 1.60  1998/10/16 08:14:31  adam
@@ -228,6 +231,7 @@
 #include <dict.h>
 #include <isam.h>
 #include <isamc.h>
+#include <isams.h>
 #include <data1.h>
 #include <recctrl.h>
 
@@ -310,12 +314,14 @@ void inv_prstat (BFiles bfs);
 void inv_compact (BFiles bfs);
 void key_input (BFiles bfs, int nkeys, int cache);
 ISAMC_M key_isamc_m (Res res);
+ISAMS_M key_isams_m (Res res);
 int merge_sort (char **buf, int from, int to);
 int key_SU_code (int ch, char *out);
 
 #define FNAME_DICT "dict"
 #define FNAME_ISAM "isam"
 #define FNAME_ISAMC "isamc"
+#define FNAME_ISAMS "isams"
 #define FNAME_CONFIG "zebra.cfg"
 
 #define GMATCH_DICT "gmatch"

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.26  1999-02-02 14:50:54  adam
+ * Revision 1.27  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.26  1999/02/02 14:50:54  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.25  1998/06/08 15:26:06  adam
@@ -296,6 +299,27 @@ ISAMC_M key_isamc_m (Res res)
 
     return me;
 }
+
+ISAMS_M key_isams_m (Res res)
+{
+    static ISAMS_M me = NULL;
+
+    if (me)
+        return me;
+
+    me = isams_getmethod ();
+
+    me->compare_item = key_compare;
+
+    me->code_start = iscz1_code_start;
+    me->code_item = iscz1_code_item;
+    me->code_stop = iscz1_code_stop;
+
+    me->debug = atoi(res_get_def (res, "isamsDebug", "0"));
+
+    return me;
+}
+
 
 int key_SU_code (int ch, char *out)
 {

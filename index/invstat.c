@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.9  1999-02-12 13:29:23  adam
+ * Revision 1.10  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.9  1999/02/12 13:29:23  adam
  * Implemented position-flag for registers.
  *
  * Revision 1.8  1999/02/02 14:50:53  adam
@@ -48,6 +51,7 @@
 struct inv_stat_info {
     ISAM isam;
     ISAMC isamc;
+    ISAMS isams;
     int no_isam_entries[8];
     int no_dict_entries;
     int no_dict_bytes;
@@ -96,6 +100,23 @@ static int inv_stat_handle (char *name, const char *info, int pos,
 	stat_info->no_isam_entries[isc_type(isam_p)] += occur;
         isc_pp_close (pp);
     }
+    if (stat_info->isams)
+    {
+        ISAMS_PP pp;
+        int occurx = 0;
+	struct it_key key;
+
+        pp = isams_pp_open (stat_info->isams, isam_p);
+        occur = isams_pp_num (pp);
+        while (isams_pp_read(pp, &key))
+	{
+	    printf ("sysno=%d seqno=%d\n", key.sysno, key.seqno);
+            occurx++;
+	}
+        assert (occurx == occur);
+	stat_info->no_isam_entries[isc_type(isam_p)] += occur;
+        isams_pp_close (pp);
+    }
 
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
         i++;
@@ -108,6 +129,7 @@ void inv_prstat (BFiles bfs)
     Dict dict;
     ISAM isam = NULL;
     ISAMC isamc = NULL;
+    ISAMS isams = NULL;
     Records records;
     int i, prev;
     int before = 0;
@@ -124,22 +146,31 @@ void inv_prstat (BFiles bfs)
         logf (LOG_FATAL, "dict_open fail");
         exit (1);
     }
-    if (!res_get_match (common_resource, "isam", "i", NULL))
-    {
-        isamc = isc_open (bfs, FNAME_ISAMC, 0, key_isamc_m (common_resource));
-        if (!isamc)
-        {
-            logf (LOG_FATAL, "isc_open fail");
-            exit (1);
-        }
-    }
-    else
+    if (res_get_match (common_resource, "isam", "i", NULL))
     {
         isam = is_open (bfs, FNAME_ISAM, key_compare, 0,
 			sizeof(struct it_key), common_resource);
         if (!isam)
         {
             logf (LOG_FATAL, "is_open fail");
+            exit (1);
+        }
+    }
+    else if (res_get_match (common_resource, "isam", "s", NULL))
+    {
+        isams = isams_open (bfs, FNAME_ISAMS, 0, key_isams_m(common_resource));
+        if (!isams)
+        {
+            logf (LOG_FATAL, "isams_open fail");
+            exit (1);
+        }
+    }
+    else
+    {
+        isamc = isc_open (bfs, FNAME_ISAMC, 0, key_isamc_m (common_resource));
+        if (!isamc)
+        {
+            logf (LOG_FATAL, "isc_open fail");
             exit (1);
         }
     }
@@ -151,6 +182,7 @@ void inv_prstat (BFiles bfs)
     stat_info.no_dict_bytes = 0;
     stat_info.isam = isam;
     stat_info.isamc = isamc;
+    stat_info.isams = isams;
     stat_info.isam_bounds[0] = 1;
     stat_info.isam_bounds[1] = 2;
     stat_info.isam_bounds[2] = 3;
@@ -216,5 +248,7 @@ void inv_prstat (BFiles bfs)
         is_close (isam);
     if (isamc)
         isc_close (isamc);
+    if (isams)
+        isams_close (isams);
     
 }

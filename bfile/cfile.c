@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1998, Index Data ApS
+ * Copyright (C) 1995-1999, Index Data ApS
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.23  1998-10-15 13:09:29  adam
+ * Revision 1.24  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.23  1998/10/15 13:09:29  adam
  * Minor changes.
  *
  * Revision 1.22  1998/10/13 20:07:22  adam
@@ -503,14 +506,14 @@ int cf_new (CFile cf, int no)
 }
 
 
-int cf_read (CFile cf, int no, int offset, int num, void *buf)
+int cf_read (CFile cf, int no, int offset, int nbytes, void *buf)
 {
     int block;
     
     assert (cf);
     if (!(block = cf_lookup (cf, no)))
         return -1;
-    if (!mf_read (cf->block_mf, block, offset, num, buf))
+    if (!mf_read (cf->block_mf, block, offset, nbytes, buf))
     {
         logf (LOG_FATAL|LOG_ERRNO, "cf_read no=%d, block=%d", no, block);
         exit (1);
@@ -518,7 +521,7 @@ int cf_read (CFile cf, int no, int offset, int num, void *buf)
     return 1;
 }
 
-int cf_write (CFile cf, int no, int offset, int num, const void *buf)
+int cf_write (CFile cf, int no, int offset, int nbytes, const void *buf)
 {
     int block;
 
@@ -526,16 +529,16 @@ int cf_write (CFile cf, int no, int offset, int num, const void *buf)
     if (!(block = cf_lookup (cf, no)))
     {
         block = cf_new (cf, no);
-        if (offset || num)
+        if (offset || nbytes)
         {
             mf_read (cf->rmf, no, 0, 0, cf->iobuf);
-            memcpy (cf->iobuf + offset, buf, num);
+            memcpy (cf->iobuf + offset, buf, nbytes);
             buf = cf->iobuf;
             offset = 0;
-            num = 0;
+            nbytes = 0;
         }
     }
-    if (mf_write (cf->block_mf, block, offset, num, buf))
+    if (mf_write (cf->block_mf, block, offset, nbytes, buf))
     {
         logf (LOG_FATAL|LOG_ERRNO, "cf_write no=%d, block=%d", no, block);
         exit (1);

@@ -3,20 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: rsisamc.h,v $
- * Revision 1.4  1999-02-02 14:50:40  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.3  1998/03/05 08:37:44  adam
- * New result set model.
- *
- * Revision 1.2  1997/09/05 15:30:04  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.1  1996/10/29 13:41:33  adam
- * First use of isamc.
- *
+ * $Id: rsisamc.h,v 1.5 1999-05-12 13:08:06 adam Exp $
  */
 
 #ifndef RSET_ISAMC_H

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data 
+ * Copyright (C) 1994-1999, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.40  1998-11-16 16:03:45  adam
+ * Revision 1.41  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.40  1998/11/16 16:03:45  adam
  * Moved loggin utilities to Yaz. Was implemented in file zlogs.c.
  *
  * Revision 1.39  1998/10/16 08:14:35  adam
@@ -187,6 +190,7 @@ struct zebra_info {
     SortIdx sortIdx;
     ISAM isam;
     ISAMC isamc;
+    ISAMS isams;
     Records records;
     int errCode;
     int hits;

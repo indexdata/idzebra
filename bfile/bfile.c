@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.27  1999-02-02 14:50:01  adam
+ * Revision 1.28  1999-05-12 13:08:05  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.27  1999/02/02 14:50:01  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.26  1998/02/17 10:32:52  adam
@@ -219,20 +222,20 @@ BFile bf_open (BFiles bfs, const char *name, int block_size, int wflag)
     return(tmp);
 }
 
-int bf_read (BFile bf, int no, int offset, int num, void *buf)
+int bf_read (BFile bf, int no, int offset, int nbytes, void *buf)
 {
     int r;
 
-    if (bf->cf && (r=cf_read (bf->cf, no, offset, num, buf)) != -1)
+    if (bf->cf && (r=cf_read (bf->cf, no, offset, nbytes, buf)) != -1)
         return r;
-    return mf_read (bf->mf, no, offset, num, buf);
+    return mf_read (bf->mf, no, offset, nbytes, buf);
 }
 
-int bf_write (BFile bf, int no, int offset, int num, const void *buf)
+int bf_write (BFile bf, int no, int offset, int nbytes, const void *buf)
 {
     if (bf->cf)
-        return cf_write (bf->cf, no, offset, num, buf);
-    return mf_write (bf->mf, no, offset, num, buf);
+        return cf_write (bf->cf, no, offset, nbytes, buf);
+    return mf_write (bf->mf, no, offset, nbytes, buf);
 }
 
 int bf_commitExists (BFiles bfs)

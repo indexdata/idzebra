@@ -3,40 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: mfile.h,v $
- * Revision 1.10  1999-02-02 14:50:35  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.9  1997/09/18 08:59:19  adam
- * Extra generic handle for the character mapping routines.
- *
- * Revision 1.8  1997/09/17 12:19:10  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.7  1997/09/05 15:30:01  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.6  1996/10/29 13:46:10  adam
- * Removed obsolete headers alexpath, alexutil. Created zebrautl.h as
- * a replacement.
- *
- * Revision 1.5  1995/12/05 11:15:03  quinn
- * Fixed FILENAME_MAX for some Sun systems, hopefully.
- *
- * Revision 1.4  1995/11/30  08:33:30  adam
- * Started work on commit facility.
- *
- * Revision 1.3  1995/09/04  12:33:35  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.2  1994/09/14  13:10:36  quinn
- * Small changes
- *
- * Revision 1.1  1994/08/23  14:41:46  quinn
- * First functional version of mfile.
- *
+ * $Id: mfile.h,v 1.11 1999-05-12 13:08:06 adam Exp $
  */
 
 #ifndef MFILE_H
@@ -126,12 +93,12 @@ int mf_close(MFile mf);
 /*
  * Read one block from a metafile. Interface mirrors bfile.
  */
-int mf_read(MFile mf, int no, int offset, int num, void *buf);
+int mf_read(MFile mf, int no, int offset, int nbytes, void *buf);
 
 /*
  * Same.
  */
-int mf_write(MFile mf, int no, int offset, int num, const void *buf);
+int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf);
 
 /*
  * Destroy a metafile, unlinking component files. File must be open.

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.31  1999-02-02 14:50:56  adam
+ * Revision 1.32  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.31  1999/02/02 14:50:56  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.30  1998/10/28 10:53:57  adam
@@ -312,6 +315,7 @@ struct heap_info {
     Dict dict;
     ISAM isam;
     ISAMC isamc;
+    ISAMS isams;
 };
 
 struct heap_info *key_heap_init (int nkeys,
@@ -495,6 +499,42 @@ int heap_inpc (struct heap_info *hi)
     return 0;
 } 
 
+int heap_inps (struct heap_info *hi)
+{
+    struct heap_cread_info hci;
+    ISAMS_I isams_i = xmalloc (sizeof(*isams_i));
+
+    hci.key = xmalloc (KEY_SIZE);
+    hci.mode = 1;
+    hci.hi = hi;
+    hci.more = heap_read_one (hi, hci.cur_name, hci.key);
+
+    isams_i->clientData = &hci;
+    isams_i->read_item = heap_cread_item;
+
+    while (hci.more)
+    {
+        char this_name[INP_NAME_MAX];
+        ISAMS_P isams_p;
+        char *dict_info;
+
+        strcpy (this_name, hci.cur_name);
+	assert (hci.cur_name[1]);
+        no_diffs++;
+        if (!(dict_info = dict_lookup (hi->dict, hci.cur_name)))
+        {
+            isams_p = isams_merge (hi->isams, isams_i);
+            no_insertions++;
+            dict_insert (hi->dict, this_name, sizeof(ISAMS_P), &isams_p);
+        }
+	else
+	    abort();
+    }
+    xfree (isams_i);
+    return 0;
+} 
+
+
 int heap_inp (struct heap_info *hi)
 {
     char *info;
@@ -606,6 +646,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
     Dict dict;
     ISAM isam = NULL;
     ISAMC isamc = NULL;
+    ISAMS isams = NULL;
     struct key_file **kf;
     char rbuf[1024];
     int i, r;
@@ -632,23 +673,33 @@ void key_input (BFiles bfs, int nkeys, int cache)
         logf (LOG_FATAL, "dict_open fail");
         exit (1);
     }
-    if (!res_get_match (common_resource, "isam", "i", NULL))
+    if (res_get_match (common_resource, "isam", "s", NULL))
     {
-        isamc = isc_open (bfs,
-			  FNAME_ISAMC, 1, key_isamc_m (common_resource));
-        if (!isamc)
+        isams = isams_open (bfs, FNAME_ISAMS, 1,
+			    key_isams_m (common_resource));
+        if (!isams)
         {
-            logf (LOG_FATAL, "isc_open fail");
+            logf (LOG_FATAL, "isams_open fail");
             exit (1);
         }
     }
-    else
+    else if (res_get_match (common_resource, "isam", "i", NULL))
     {
         isam = is_open (bfs, FNAME_ISAM, key_compare, 1,
 			sizeof(struct it_key), common_resource);
         if (!isam)
         {
             logf (LOG_FATAL, "is_open fail");
+            exit (1);
+        }
+    }
+    else
+    {
+        isamc = isc_open (bfs, FNAME_ISAMC, 1,
+			  key_isamc_m (common_resource));
+        if (!isamc)
+        {
+            logf (LOG_FATAL, "isc_open fail");
             exit (1);
         }
     }
@@ -669,19 +720,24 @@ void key_input (BFiles bfs, int nkeys, int cache)
     hi->dict = dict;
     hi->isam = isam;
     hi->isamc = isamc;
+    hi->isams = isams;
 
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read (kf[i], rbuf)))
             key_heap_insert (hi, rbuf, r, kf[i]);
     if (isamc)
         heap_inpc (hi);
-    else
-        heap_inp (hi);
+    else if (isams)
+	heap_inps (hi);
+    else if (isam)
+	heap_inp (hi);
     dict_close (dict);
     if (isam)
         is_close (isam);
     if (isamc)
         isc_close (isamc);
+    if (isams)
+	isams_close (isams);
    
     for (i = 1; i<=nkeys; i++)
     {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.16  1999-02-19 10:38:30  adam
+ * Revision 1.17  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.16  1999/02/19 10:38:30  adam
  * Implemented chdir-setting.
  *
  * Revision 1.15  1999/02/17 12:18:12  adam
@@ -145,22 +148,31 @@ static int zebra_register_lock (ZebraHandle zh)
     }
     zh->isam = NULL;
     zh->isamc = NULL;
-    if (!res_get_match (zh->res, "isam", "i", NULL))
-    {
-        if (!(zh->isamc = isc_open (zh->bfs, FNAME_ISAMC,
-				    0, key_isamc_m(zh->res))))
-	{
-	    logf (LOG_WARN, "isc_open");
-            return -1;
-	}
-
-    }
-    else
+    zh->isams = NULL;
+    if (res_get_match (zh->res, "isam", "i", NULL))
     {
         if (!(zh->isam = is_open (zh->bfs, FNAME_ISAM, key_compare, 0,
                                   sizeof (struct it_key), zh->res)))
 	{
 	    logf (LOG_WARN, "is_open");
+            return -1;
+	}
+    }
+    else if (res_get_match (zh->res, "isam", "s", NULL))
+    {
+        if (!(zh->isams = isams_open (zh->bfs, FNAME_ISAMS, 0,
+				      key_isams_m(zh->res))))
+	{
+	    logf (LOG_WARN, "isams_open");
+            return -1;
+	}
+    }
+    else
+    {
+        if (!(zh->isamc = isc_open (zh->bfs, FNAME_ISAMC,
+				    0, key_isamc_m(zh->res))))
+	{
+	    logf (LOG_WARN, "isc_open");
             return -1;
 	}
     }
@@ -253,6 +265,8 @@ void zebra_close (ZebraHandle zh)
             is_close (zh->isam);
         if (zh->isamc)
             isc_close (zh->isamc);
+	if (zh->isams)
+	    isams_close (zh->isams);
         rec_close (&zh->records);
         zebra_register_unlock (zh);
     }

@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1998, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.2 1998-10-28 15:20:51 adam Exp $
+# $Id: Makefile.in,v 1.3 1999-05-12 13:08:06 adam Exp $
 
 SHELL=/bin/sh
 
@@ -18,7 +18,7 @@ INCLUDE=-I../include $(YAZINC)
 DEFS=$(CDEFS) $(INCLUDE)
 LIB=../lib/rset.a
 PROG=
-PO=rset.o rstemp.o rsisam.o rsnull.o rsbool.o rsisamc.o rsm_or.o
+PO=rset.o rstemp.o rsisam.o rsnull.o rsbool.o rsisamc.o rsm_or.o rsisams.o
 
 all: $(LIB)
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.12  1999-02-02 14:51:10  adam
+ * Revision 1.13  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.12  1999/02/02 14:51:10  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.11  1998/03/25 13:48:02  adam
@@ -54,6 +57,7 @@
 #include <rstemp.h>
 #include <rsisam.h>
 #include <rsisamc.h>
+#include <rsisams.h>
 #include <rsnull.h>
 
 #define NEW_TRUNC 1
@@ -286,7 +290,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         heap_close (ti);
         xfree (ispt);
     }
-    else
+    else if (zi->isamc)
     {
         ISAMC_PP *ispt;
         int i;
@@ -312,7 +316,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
 #if 0
 /* section that preserve all keys */
             heap_delete (ti);
-            if (is_readkey (ispt[n], ti->tmpbuf))
+            if (isc_pp_read (ispt[n], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, n);
             else
                 isc_pp_close (ispt[n]);
@@ -334,6 +338,48 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                 }
             }
 #endif
+        }
+        heap_close (ti);
+        xfree (ispt);
+    }
+    else if (zi->isams)
+    {
+        ISAMS_PP *ispt;
+        int i;
+        struct trunc_info *ti;
+
+        ispt = xmalloc (sizeof(*ispt) * (to-from));
+
+        ti = heap_init (to-from, sizeof(struct it_key),
+                        key_compare_it);
+        for (i = to-from; --i >= 0; )
+        {
+            ispt[i] = isams_pp_open (zi->isams, isam_p[from+i]);
+            if (isams_pp_read (ispt[i], ti->tmpbuf))
+                heap_insert (ti, ti->tmpbuf, i);
+            else
+                isams_pp_close (ispt[i]);
+        }
+        while (ti->heapnum)
+        {
+            int n = ti->indx[ti->ptr[1]];
+
+            rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+            while (1)
+            {
+                if (!isams_pp_read (ispt[n], ti->tmpbuf))
+                {
+                    heap_delete (ti);
+                    isams_pp_close (ispt[n]);
+                    break;
+                }
+                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+                {
+                    heap_delete (ti);
+                    heap_insert (ti, ti->tmpbuf, n);
+                    break;
+                }
+            }
         }
         heap_close (ti);
         xfree (ispt);
@@ -364,6 +410,14 @@ static int isamc_trunc_cmp (const void *p1, const void *p2)
     if (d)
         return d;
     return isc_block (i1) - isc_block (i2);
+}
+
+static int isams_trunc_cmp (const void *p1, const void *p2)
+{
+    ISAMS_P i1 = *(ISAMS_P*) p1;
+    ISAMS_P i2 = *(ISAMS_P*) p2;
+
+    return i1 - i2;
 }
 
 RSET rset_trunc (ZebraHandle zi, ISAM_P *isam_p, int no,
@@ -415,9 +469,24 @@ RSET rset_trunc (ZebraHandle zi, ISAM_P *isam_p, int no,
 #endif
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
+    else if (zi->isams)
+    {
+        if (no < 1)
+            return rset_create (rset_kind_null, NULL);
+        else if (no == 1)
+        {
+            rset_isams_parms parms;
+
+            parms.pos = *isam_p;
+            parms.is = zi->isams;
+	    parms.rset_term = rset_term_create (term, length, flags);
+            return rset_create (rset_kind_isams, &parms);
+        }
+        qsort (isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
+    }
     else
     {
-        logf (LOG_WARN, "Neither isam nor isamc set in rset_trunc");
+        logf (LOG_WARN, "Neither isam / isamc / isams set in rset_trunc");
 	return rset_create (rset_kind_null, NULL);
     }
     return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100);

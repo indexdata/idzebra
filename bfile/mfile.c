@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.32  1999-04-28 14:53:07  adam
+ * Revision 1.33  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.32  1999/04/28 14:53:07  adam
  * Fixed stupid bug regarding split-files.
  *
  * Revision 1.31  1999/02/18 12:49:33  adam
@@ -390,10 +393,12 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     assert (ma);
     for (mnew = ma->mfiles; mnew; mnew = mnew->next)
     	if (!strcmp(name, mnew->name))
+	{
     	    if (mnew->open)
     	        abort();
 	    else
 	        break;
+	}
     if (!mnew)
     {
     	mnew = xmalloc(sizeof(*mnew));
@@ -471,16 +476,18 @@ int mf_close(MFile mf)
 /*
  * Read one block from a metafile. Interface mirrors bfile.
  */
-int mf_read(MFile mf, int no, int offset, int num, void *buf)
+int mf_read(MFile mf, int no, int offset, int nbytes, void *buf)
 {
     int rd, toread;
 
     if ((rd = file_position(mf, no, offset)) < 0)
+    {
         if (rd == -2)
             return 0;
         else
             exit(1);
-    toread = num ? num : mf->blocksize;
+    }
+    toread = nbytes ? nbytes : mf->blocksize;
     if ((rd = read(mf->files[mf->cur_file].fd, buf, toread)) < 0)
     {
     	logf (LOG_FATAL|LOG_ERRNO, "mf_read: Read failed (%s)",
@@ -496,7 +503,7 @@ int mf_read(MFile mf, int no, int offset, int num, void *buf)
 /*
  * Write.
  */
-int mf_write(MFile mf, int no, int offset, int num, const void *buf)
+int mf_write(MFile mf, int no, int offset, int nbytes, const void *buf)
 {
     int ps, nblocks, towrite;
     mf_dir *dp;
@@ -572,7 +579,7 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 		nblocks * mf->blocksize;
 	}
     }
-    towrite = num ? num : mf->blocksize;
+    towrite = nbytes ? nbytes : mf->blocksize;
     if (write(mf->files[mf->cur_file].fd, buf, towrite) < towrite)
     {
     	logf (LOG_FATAL|LOG_ERRNO, "Write failed for file %s part %d",

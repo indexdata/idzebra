@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dcompact.c,v $
- * Revision 1.2  1999-03-09 16:27:49  adam
+ * Revision 1.3  1999-05-12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.2  1999/03/09 16:27:49  adam
  * More work on SDRKit integration.
  *
  * Revision 1.1  1999/03/09 13:07:06  adam
@@ -24,7 +27,6 @@ int dict_compact (BFiles bfs, const char *from_name, const char *to_name)
     int no_dir = 0;
     Dict from, to;
     int *map, i;
-    map = xmalloc (100);
     from = dict_open (bfs, from_name, 0, 0);
     if (!from)
 	return -1;
