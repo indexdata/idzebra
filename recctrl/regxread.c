@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.48 2003-06-17 22:22:57 adam Exp $
+/* $Id: regxread.c,v 1.49 2003-09-16 13:56:52 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -903,7 +903,6 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
 	    c_prev = c;
 	    restore_ptr = ptr;
 	}
-
         c = f_win_advance (spec, &ptr);
 
         if (ptr == F_WIN_EOF)
@@ -920,7 +919,7 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
         t = state->trans;
         i = state->tran_no;
         while (1)
-            if (--i < 0)
+            if (--i < 0)    /* no transition for character c */
             {
                 if (last_rule)
                 {
@@ -950,8 +949,7 @@ static int tryMatch (struct lexSpec *spec, int *pptr, int *mptr,
 		    last_rule = state->rule_nno;
 		    last_ptr = ptr;
 		}
-		else
-		    break;
+		break;
             }
             else
                 t++;
