@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.7  1996-02-07 10:08:46  adam
+ * Revision 1.8  1996-02-07 14:03:49  adam
+ * Work on flat indexed shadow files.
+ *
+ * Revision 1.7  1996/02/07  10:08:46  adam
  * Work on flat shadow (not finished yet).
  *
  * Revision 1.6  1995/12/15  12:36:53  adam
@@ -49,20 +52,16 @@ void cf_unlink (CFile cf)
     mf_unlink (cf->hash_mf);
 }
 
-void cf_commit (CFile cf)
-{
+   
+static void cf_commit_hash (CFile cf)
+{ 
     int i, bucket_no;
     int hash_bytes;
     struct CFile_ph_bucket *p;
 
-    if (cf->bucket_in_memory)
-    {
-        logf (LOG_FATAL, "Cannot commit potential dirty cache");
-        exit (1);
-    }
     p = xmalloc (sizeof(*p));
     hash_bytes = cf->head.hash_size * sizeof(int);
-    bucket_no = (hash_bytes+sizeof(cf->head))/HASH_BSIZE + 2;
+    bucket_no = cf->head.first_bucket;
     for (; bucket_no < cf->head.next_bucket; bucket_no++)
     {
         if (!mf_read (cf->hash_mf, bucket_no, 0, 0, p))
@@ -81,5 +80,47 @@ void cf_commit (CFile cf)
         }
     }
     xfree (p);
+}
+
+static void cf_commit_flat (CFile cf)
+{
+    int *fp;
+    int hno;
+    int i, vno = 0;
+
+    fp = xmalloc (HASH_BSIZE);
+    for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
+    {
+        mf_read (cf->hash_mf, hno, 0, 0, fp);
+        for (i = 0; i < (HASH_BSIZE/sizeof(int)); i++)
+        {
+            if (fp[i])
+            {
+                if (!mf_read (cf->block_mf, fp[i], 0, 0, cf->iobuf))
+                {
+                    logf (LOG_FATAL, "read commit block at %d (->%d)",
+                          fp[i], vno);
+                    exit (1);
+                }
+                mf_write (cf->rmf, vno, 0, 0, cf->iobuf);
+            }
+            vno++;
+        }
+    }
+    xfree (fp);
+}
+
+void cf_commit (CFile cf)
+{
+
+    if (cf->bucket_in_memory)
+    {
+        logf (LOG_FATAL, "Cannot commit potential dirty cache");
+        exit (1);
+    }
+    if (cf->head.state == 1)
+        cf_commit_hash (cf);
+    else if (cf->head.state == 2)
+        cf_commit_flat (cf);
 }
 

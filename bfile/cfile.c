@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.9  1996-02-07 10:08:43  adam
+ * Revision 1.10  1996-02-07 14:03:46  adam
+ * Work on flat indexed shadow files.
+ *
+ * Revision 1.9  1996/02/07  10:08:43  adam
  * Work on flat shadow (not finished yet).
  *
  * Revision 1.8  1995/12/15  12:36:52  adam
@@ -49,6 +52,8 @@ static int write_head (CFile cf)
     int bno = 1;
     const char *tab = (char*) cf->array;
 
+    if (!tab)
+        return 0;
     while (left >= HASH_BSIZE)
     {
         mf_write (cf->hash_mf, bno++, 0, 0, tab);
@@ -66,6 +71,8 @@ static int read_head (CFile cf)
     int bno = 1;
     char *tab = (char*) cf->array;
 
+    if (!tab)
+        return 0;
     while (left >= HASH_BSIZE)
     {
         mf_read (cf->hash_mf, bno++, 0, 0, tab);
@@ -106,9 +113,9 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         *firstp = 1;
         cf->head.state = 1;
         cf->head.block_size = block_size;
-        cf->head.hash_size = 401;
+        cf->head.hash_size = 199;
         hash_bytes = cf->head.hash_size * sizeof(int);
-        cf->head.next_bucket =
+        cf->head.flat_bucket = cf->head.next_bucket = cf->head.first_bucket = 
             (hash_bytes+sizeof(cf->head))/HASH_BSIZE + 2;
         cf->head.next_block = 1;
         if (wflag)
@@ -126,18 +133,28 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         assert (cf->head.hash_size > 2);
         hash_bytes = cf->head.hash_size * sizeof(int);
         assert (cf->head.next_bucket > 0);
-        cf->array = xmalloc (hash_bytes);
+        if (cf->head.state == 1)
+            cf->array = xmalloc (hash_bytes);
+        else
+            cf->array = NULL;
         read_head (cf);
     }
-    cf->parray = xmalloc (cf->head.hash_size * sizeof(*cf->parray));
-    for (i = 0; i<cf->head.hash_size; i++)
-        cf->parray[i] = NULL;
+    if (cf->head.state == 1)
+    {
+        cf->parray = xmalloc (cf->head.hash_size * sizeof(*cf->parray));
+        for (i = 0; i<cf->head.hash_size; i++)
+            cf->parray[i] = NULL;
+    }
+    else
+        cf->parray = NULL;
     cf->bucket_lru_front = cf->bucket_lru_back = NULL;
     cf->bucket_in_memory = 0;
-    cf->max_bucket_in_memory = 400;
+    cf->max_bucket_in_memory = 100;
     cf->dirty = 0;
     cf->iobuf = xmalloc (cf->head.block_size);
     memset (cf->iobuf, 0, cf->head.block_size);
+    cf->no_hits = 0;
+    cf->no_miss = 0;
     return cf;
 }
 
@@ -265,7 +282,10 @@ static int cf_lookup_hash (CFile cf, int no)
     {
         for (i = 0; i<HASH_BUCKET && hb->ph.vno[i]; i++)
             if (hb->ph.no[i] == no)
+            {
+                (cf->no_hits)++;
                 return hb->ph.vno[i];
+            }
     }
     for (block_no = cf->array[hno]; block_no; block_no = hb->ph.next_bucket)
     {
@@ -276,12 +296,55 @@ static int cf_lookup_hash (CFile cf, int no)
         }
         if (hb)
             continue;
+        (cf->no_miss)++;
         hb = get_bucket (cf, block_no, hno);
         for (i = 0; i<HASH_BUCKET && hb->ph.vno[i]; i++)
             if (hb->ph.no[i] == no)
                 return hb->ph.vno[i];
     }
     return 0;
+}
+
+static void cf_write_flat (CFile cf, int no, int vno)
+{
+    int hno = (no*sizeof(int))/HASH_BSIZE;
+    int off = (no*sizeof(int)) - hno*sizeof(HASH_BSIZE);
+
+    hno += cf->head.next_bucket;
+    if (hno >= cf->head.flat_bucket)
+        cf->head.flat_bucket = hno+1;
+    mf_write (cf->hash_mf, hno, off, sizeof(int), &vno);
+}
+
+static void cf_moveto_flat (CFile cf)
+{
+    struct CFile_hash_bucket *p;
+    int i, j;
+
+    logf (LOG_LOG, "Moving to flat shadow.");
+    logf (LOG_LOG, "hits=%d miss=%d bucket_in_memory=%d total=%d",
+	cf->no_hits, cf->no_miss, cf->bucket_in_memory, 
+        cf->head.next_bucket - cf->head.first_bucket);
+    assert (cf->head.state == 1);
+    flush_bucket (cf, -1);
+    assert (cf->bucket_in_memory == 0);
+    p = xmalloc (sizeof(*p));
+    for (i = cf->head.first_bucket; i < cf->head.next_bucket; i++)
+    {
+        if (!mf_read (cf->hash_mf, i, 0, 0, &p->ph))
+        {
+            logf (LOG_FATAL|LOG_ERRNO, "read bucket moveto flat");
+            exit (1);
+        }
+        for (j = 0; j < HASH_BUCKET && p->ph.vno[j]; j++)
+            cf_write_flat (cf, p->ph.no[j], p->ph.vno[j]);
+    }
+    xfree (p);
+    xfree (cf->array);
+    cf->array = NULL;
+    xfree (cf->parray);
+    cf->parray = NULL;
+    cf->head.state = 2;
 }
 
 static int cf_lookup (CFile cf, int no)
@@ -291,13 +354,11 @@ static int cf_lookup (CFile cf, int no)
     return cf_lookup_hash (cf, no);
 }
 
-int cf_new_flat (CFile cf, int no)
+static int cf_new_flat (CFile cf, int no)
 {
-    int hno = (no*sizeof(int))/HASH_BSIZE;
-    int off = (no*sizeof(int)) - hno*sizeof(HASH_BSIZE);
     int vno = (cf->head.next_block)++;
 
-    mf_write (cf->hash_mf, hno+cf->head.next_bucket, off, sizeof(int), &vno);
+    cf_write_flat (cf, no, vno);
     return vno;
 }
 
@@ -313,6 +374,7 @@ static int cf_new_hash (CFile cf, int no)
             for (i = 0; i<HASH_BUCKET; i++)
                 if (!hb->ph.vno[i])
                 {
+                    (cf->no_hits)++;
                     hb->ph.no[i] = no;
                     hb->ph.vno[i] = vno;
                     hb->dirty = 1;
@@ -330,6 +392,7 @@ static int cf_new_hash (CFile cf, int no)
             }
         if (hb)
             continue;
+        (cf->no_miss)++;
         hb = get_bucket (cf, *bucketpp, hno);
         assert (hb);
         for (i = 0; i<HASH_BUCKET; i++)
@@ -355,6 +418,12 @@ int cf_new (CFile cf, int no)
 {
     if (cf->head.state > 1)
         return cf_new_flat (cf, no);
+    if (cf->no_miss*5 > cf->no_hits)
+    {
+        cf_moveto_flat (cf);
+        assert (cf->head.state > 1);
+        return cf_new_flat (cf, no);
+    }
     return cf_new_hash (cf, no);
 }
 
@@ -401,6 +470,10 @@ int cf_write (CFile cf, int no, int offset, int num, const void *buf)
 
 int cf_close (CFile cf)
 {
+    logf (LOG_LOG, "cf_close");
+    logf (LOG_LOG, "hits=%d miss=%d bucket_in_memory=%d total=%d",
+          cf->no_hits, cf->no_miss, cf->bucket_in_memory,
+          cf->head.next_bucket - cf->head.first_bucket);
     flush_bucket (cf, -1);
     if (cf->dirty)
     {

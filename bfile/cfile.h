@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.h,v $
- * Revision 1.6  1996-02-07 10:08:45  adam
+ * Revision 1.7  1996-02-07 14:03:48  adam
+ * Work on flat indexed shadow files.
+ *
+ * Revision 1.6  1996/02/07  10:08:45  adam
  * Work on flat shadow (not finished yet).
  *
  * Revision 1.5  1995/12/15  12:36:52  adam
@@ -29,7 +32,7 @@
 #ifndef CFILE_H
 #define CFILE_H
 
-#define HASH_BUCKET 63
+#define HASH_BUCKET 31
 
 struct CFile_hash_bucket {
     struct CFile_ph_bucket {
@@ -54,7 +57,9 @@ typedef struct CFile_struct
         int next_block;
         int block_size;
         int hash_size;
+        int first_bucket;
         int next_bucket;
+        int flat_bucket;
     } head;
     MFile block_mf;
     MFile hash_mf;
@@ -66,6 +71,8 @@ typedef struct CFile_struct
     int max_bucket_in_memory;
     char *iobuf;
     MFile rmf;
+    int  no_hits;
+    int  no_miss;
 } *CFile;
 
 int cf_close (CFile cf);
