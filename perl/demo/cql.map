@@ -1,0 +1,19 @@
+set.srw    = http://www.loc.gov/zing/cql/srw-indexes/v1.0/
+set.dc     = http://www.loc.gov/zing/cql/dc-indexes/v1.0/
+set.job    = http://www.technomat.hu/zombine/1.0/cql/job/
+
+qualifier.srw.serverChoice = 1=1016 4=2 6=1
+qualifier.dc.title         = 1=4
+qualifier.dc.subject       = 1=21
+qualifier.job.id           = 1=5000 4=109 6=3
+ 
+relation.<                 = 2=1
+relation.le                = 2=2
+relation.eq                = 2=3
+relation.ge                = 2=4
+relation.>                 = 2=5
+relation.scr               = 2=3
+
+position.any               = 3=3 
+#structure.job.id          = 4=109
+#structure.*               = 4=1
