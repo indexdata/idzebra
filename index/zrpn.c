@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.14  1995-09-28 12:10:32  adam
+ * Revision 1.15  1995-10-02 15:18:52  adam
+ * New member in recRetrieveCtrl: diagnostic.
+ *
+ * Revision 1.14  1995/09/28  12:10:32  adam
  * Bug fixes. Field prefix used in queries.
  *
  * Revision 1.13  1995/09/18  14:17:50  adam
@@ -386,7 +389,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     char term_sub[IT_MAX_WORD+1];
     char *p0 = termz, *p1 = NULL;
     Z_Term *term = zapt->term;
-    size_t sizez, i;
+    size_t sizez, i, j;
 
     parms.key_size = sizeof(struct it_key);
     parms.max_rec = 100;
@@ -402,8 +405,8 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     sizez = i + term->u.general->len;
     if (sizez > IT_MAX_WORD)
         sizez = IT_MAX_WORD;
-    for ( ; i < sizez; i++)
-        termz[i] = index_char_cvt (term->u.general->buf[i]);
+    for (j = 0; i < sizez; i++, j++)
+        termz[i] = index_char_cvt (term->u.general->buf[j]);
     termz[i] = '\0';
 
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
@@ -437,7 +440,7 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
 
     char termz[IT_MAX_WORD+1];
     Z_Term *term = zapt->term;
-    size_t sizez, i;
+    size_t sizez, i, j;
 
     if (term->which != Z_Term_general)
     {
@@ -445,11 +448,12 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
         return NULL;
     }
     i = index_word_prefix (termz, 1, 1016);
+    logf (LOG_DEBUG, "i=%d", i);
     sizez = i + term->u.general->len;
     if (sizez > IT_MAX_WORD)
         sizez = IT_MAX_WORD;
-    for ( ; i < sizez; i++)
-        termz[i] = index_char_cvt (term->u.general->buf[i]);
+    for (j = 0; i < sizez; i++, j++)
+        termz[i] = index_char_cvt (term->u.general->buf[j]);
     termz[i] = '\0';
 
     isam_p_indx = 0;  /* global, set by trunc_term - see below */
@@ -475,7 +479,7 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
 
     char termz[IT_MAX_WORD+1];
     Z_Term *term = zapt->term;
-    size_t sizez, i;
+    size_t sizez, i, j;
 
     if (term->which != Z_Term_general)
     {
@@ -486,8 +490,8 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
     sizez = i + term->u.general->len;
     if (sizez > IT_MAX_WORD)
         sizez = IT_MAX_WORD;
-    for ( ; i < sizez; i++)
-        termz[i] = index_char_cvt (term->u.general->buf[i]);
+    for (j = 0 ; i < sizez; i++, j++)
+        termz[i] = index_char_cvt (term->u.general->buf[j]);
     termz[i] = '\0';
 
     isam_p_indx = 0;  /* global, set by trunc_term - see below */

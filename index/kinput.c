@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.6  1995-09-29 15:51:56  adam
+ * Revision 1.7  1995-10-02 15:18:52  adam
+ * New member in recRetrieveCtrl: diagnostic.
+ *
+ * Revision 1.6  1995/09/29  15:51:56  adam
  * First work on multi-way read.
  *
  * Revision 1.5  1995/09/29  14:01:43  adam
@@ -161,18 +164,19 @@ void key_input (const char *dict_fname, const char *isam_fname,
 
 
 struct key_file {
-    int   no;
-    off_t offset;
-    char *buf;
-    size_t buf_size;
-    size_t chunk;
-    size_t buf_ptr;
+    int   no;            /* file no */
+    off_t offset;        /* file offset */
+    unsigned char *buf;  /* buffer block */
+    size_t buf_size;     /* number of read bytes in block */
+    size_t chunk;        /* number of bytes allocated */
+    size_t buf_ptr;      /* current position in buffer */
+    char *prev_name;     /* last word read */
 };
 
 void key_file_chunk_read (struct key_file *f)
 {
     int nr = 0, r, fd;
-    char  fname[256];
+    char fname[256];
     sprintf (fname, TEMP_FNAME, f->no);
     fd = open (fname, O_RDONLY);
     if (fd == -1)
@@ -182,11 +186,9 @@ void key_file_chunk_read (struct key_file *f)
     }
     if (lseek (fd, f->offset, SEEK_SET) == -1)
     {
-        logf (LOG_FATAL|LOG_ERRNO, "lseek to %ld in file %s",
-              (long) f->offset, fname);
+        logf (LOG_FATAL|LOG_ERRNO, "cannot seek %s", fname);
         exit (1);
     }
-    f->buf = xmalloc (f->chunk);
     while (f->chunk - nr > 0)
     {
         r = read (fd, f->buf + nr, f->chunk - nr);
@@ -202,10 +204,47 @@ void key_file_chunk_read (struct key_file *f)
     f->buf_size = nr;
 }
 
-void key_file_chunk_discard (struct key_file *f)
+void key_file_init (struct key_file *f)
 {
+    f->buf = xmalloc (f->chunk);
+    f->prev_name = xmalloc (256);
+    *f->prev_name = '\0';
+}
 
+int key_file_getc (struct key_file *f)
+{
+    if (f->buf_ptr < f->buf_size)
+        return f->buf[(f->buf_ptr)++];
+    if (f->buf_size < f->chunk)
+        return EOF;
+    f->offset += f->buf_size;
+    key_file_chunk_read (f);
+    if (f->buf_ptr < f->buf_size)
+        return f->buf[(f->buf_ptr)++];
+    else
+        return EOF;
+}
 
+int key_file_read (struct key_file *f, char *name, char *key)
+{
+    int i, c;
+
+    c = key_file_getc (f);
+    if (c == 0)
+        strcpy (name, f->prev_name);
+    else if (c == EOF)
+        return 0;
+    else
+    {
+        i = 0;
+        name[i++] = c;
+        while ((name[i++] = key_file_getc (f)))
+            ;
+        strcpy (f->prev_name, name);
+    }
+    for (i = 0; i<KEY_SIZE; i++)
+        key[i++] = key_file_getc (f);
+    return 1;
 }
 
 int inp2 (Dict dict, ISAM isam, const char *name)

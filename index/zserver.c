@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.8  1995-09-28 09:19:47  adam
+ * Revision 1.9  1995-10-02 15:18:52  adam
+ * New member in recRetrieveCtrl: diagnostic.
+ *
+ * Revision 1.8  1995/09/28  09:19:47  adam
  * xfree/xmalloc used everywhere.
  * Extract/retrieve method seems to work for text records.
  *
@@ -148,12 +151,13 @@ static int record_fetch (ZServerInfo *zi, int sysno, ODR stream,
     retrieveCtrl.odr = stream;
     retrieveCtrl.readf = record_read;
     retrieveCtrl.input_format = input_format;
+    retrieveCtrl.diagnostic = 0;
     (*rt->retrieve)(&retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = retrieveCtrl.rec_buf;
     *rec_lenp = retrieveCtrl.rec_len;
     close (retrieveCtrl.fd);
-    return 0;
+    return retrieveCtrl.diagnostic;
 }
 
 bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
