@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.11  1995-09-04 09:09:51  adam
+ * Revision 1.12  1995-09-14 11:53:02  adam
+ * Grep handle function parameter info is const now.
+ *
+ * Revision 1.11  1995/09/04  09:09:51  adam
  * String arg in dict lookup is const.
  * Minor changes.
  *
@@ -109,7 +112,7 @@ char      *dict_lookup (Dict dict, const Dict_char *p);
 int        dict_lookup_ec (Dict dict, Dict_char *p, int range,
                            int (*f)(Dict_char *name));
 int        dict_lookup_grep (Dict dict, Dict_char *p, int range, 
-                             int (*f)(Dict_char *name, char *info));       
+                             int (*f)(Dict_char *name, const char *info));
 int        dict_strcmp (const Dict_char *s1, const Dict_char *s2);
 int        dict_strlen (const Dict_char *s);
 

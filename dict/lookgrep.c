@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.4  1995-01-24 16:01:02  adam
+ * Revision 1.5  1995-09-14 11:52:59  adam
+ * Grep handle function parameter info is const now.
+ *
+ * Revision 1.4  1995/01/24  16:01:02  adam
  * Added -ansi to CFLAGS.
  * Use new API of dfa module.
  *
@@ -229,7 +232,7 @@ static INLINE int move (MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
 
 static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                       MatchWord *Rj, int pos,
-                      int (*userfunc)(Dict_char *name, char *info),
+                      int (*userfunc)(Dict_char *name, const char *info),
                       Dict_char *prefix, struct DFA *dfa)
 {
     int lo, hi, d;
@@ -331,7 +334,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
 }
 
 int dict_lookup_grep (Dict dict, Dict_char *pattern, int range,
-                    int (*userfunc)(Dict_char *name, char *info))
+                    int (*userfunc)(Dict_char *name, const char *info))
 {
     MatchWord *Rj;
     Dict_char prefix[MAX_LENGTH+1];
