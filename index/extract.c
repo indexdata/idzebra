@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: extract.c,v 1.112 2002-03-14 18:41:59 adam Exp $
+ * $Id: extract.c,v 1.113 2002-03-15 20:20:55 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -1152,8 +1152,6 @@ int explain_extract (void *handle, Record rec, data1_node *n)
     
     grs_extract_tree(&extractCtrl, n);
 
-    logf (LOG_LOG, "flush explain record, sysno=%d", rec->sysno);
-
     if (rec->size[recInfo_delKeys])
     {
 	struct recKeys delkeys;
@@ -1403,7 +1401,7 @@ void extract_add_index_string (RecWord *p, const char *string,
         if (ch < 0)
         {
             ch = zebraExplain_addSU (zei, attrSet, attrUse);
-            yaz_log (LOG_LOG, "addSU set=%d use=%d SU=%d",
+            yaz_log (LOG_DEBUG, "addSU set=%d use=%d SU=%d",
                      attrSet, attrUse, ch);
         }
 	assert (ch > 0);
@@ -1596,7 +1594,6 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
 	xfree (sk);
 	sk = sk_next;
     }
-    yaz_log (LOG_LOG, "extract_flushSortKeys");
     *skp = 0;
 }
 
