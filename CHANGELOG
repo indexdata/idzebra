@@ -1,5 +1,7 @@
 
---- 1.3.5 2003/MM/DD
+--- 1.3.5 2003/02/20
+
+Updated for newer version of YAZ (introduction of string schema).
 
 Directory examples/zthes now part of distribution (was missing
 in previous release).

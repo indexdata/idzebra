@@ -1,5 +1,5 @@
-/* $Id: zebraver.h,v 1.26 2002-11-26 13:50:29 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: zebraver.h,v 1.27 2003-02-20 21:13:37 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -21,9 +21,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.3.4"
+#define ZEBRAVER "1.3.5"
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 2002-11-26 13:50:29 $"
+#define ZEBRADATE "$Date: 2003-02-20 21:13:37 $"
 #endif

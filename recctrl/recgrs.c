@@ -1,5 +1,5 @@
-/* $Id: recgrs.c,v 1.73 2003-02-18 11:57:58 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: recgrs.c,v 1.74 2003-02-20 21:13:37 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
