@@ -1,0 +1,317 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+
+<!-- $Id: marc_indexing.sgml,v 1.1 2003-03-10 13:27:38 oleg Exp $ -->
+
+<book>
+<bookinfo>
+ <title>Indexing of MARC records by Zebra</title>
+ <abstract>
+  <simpara>Zebra is suitable for distribution of MARC records via Z39.50. We
+	have a several possibilities to describe the indexing process of MARC records.
+	This document shows these possibilities.
+  </simpara>
+ </abstract>
+</bookinfo>
+
+<chapter>
+ <title>Simple indexing of MARC records</title>
+<para>Simple indexing is not described yet.</para>
+</chapter>
+
+<chapter>
+ <title>Extended indexing of MARC records</title>
+
+<para>Extended indexing of MARC records will help you if you need index a
+combination of subfields, or index only a part of the whole field,
+or use during indexing process embedded fields of MARC record.
+</para>
+
+<para>Extended indexing of MARC records additionally allows:
+<itemizedlist>
+
+<listitem>
+<para>to index data in LEADER of MARC record</para>
+</listitem>
+
+<listitem>
+<para>to index data in control fields (with fixed length)</para>
+</listitem>
+
+<listitem>
+<para>to use during indexing the values of indicators</para>
+</listitem>
+
+<listitem>
+<para>to index linked fields for UNIMARC based formats</para>
+</listitem>
+
+</itemizedlist>
+</para>
+
+<note><para>In compare with simple indexing process the extended indexing
+may increase (about 2-3 times) the time of indexing process for MARC
+records.</para></note>
+
+<sect1>
+<title>The index-formula</title>
+
+<para>At the beginning, we have to define the term <emphasis>index-formula</emphasis>
+for MARC records. This term helps to understand the notation of extended indexing of MARC records
+by Zebra. Our definition is based on the document <ulink url="http://www.rba.ru/rusmarc/soft/Z39-50.htm">"The
+table of conformity for Z39.50 use attributes and RUSMARC fields"</ulink>.
+The document is available only in russian language.</para>
+
+<para>The <emphasis>index-formula</emphasis> is the combination of subfields presented in such way:</para>
+
+<screen>
+    71-00$a, $g, $h ($c){.$b ($c)} ,       (1)
+</screen>
+
+<para>We know that Zebra supports a Bib-1 attribute - right truncation.
+In this case, the <emphasis>index-formula</emphasis> (1) consists from 
+forms, defined in the same way as (1)</para>
+
+<screen>
+    71-00$a, $g, $h
+    71-00$a, $g
+    71-00$a
+</screen>
+
+<note><para>The original MARC record may be without some elements, which included in <emphasis>index-formula</emphasis>.</para>
+</note>
+
+<para>This notation incudes such operands as:
+<variablelist>
+
+<varlistentry>
+ <term>#</term>
+ <listitem><para>It means whitespace character.</para></listitem>
+</varlistentry>
+
+<varlistentry>
+ <term>-</term>
+ <listitem><para>The position may contain any value, defined by MARC format.
+ For example, <emphasis>index-formula</emphasis></para>
+
+<screen>
+    70-#1$a, $g , (2)
+</screen>
+
+<para>includes</para> 
+
+<screen>
+    700#1$a, $g
+    701#1$a, $g
+    702#1$a, $g
+</screen>
+
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>{...}</term>
+<listitem><para>The repeatable elements are defined in figure-brackets {}. For example,
+<emphasis>index-formula</emphasis></para>
+
+
+<screen>
+    71-00$a, $g, $h ($c){.$b ($c)} , (3)
+</screen>
+
+<para>includes</para>
+
+<screen>
+    71-00$a, $g, $h ($c). $b ($c)
+    71-00$a, $g, $h ($c). $b ($c). $b ($c)
+    71-00$a, $g, $h ($c). $b ($c). $b ($c). $b ($c)
+</screen>
+
+</listitem>
+</varlistentry>
+</variablelist>
+
+<note><para>All another operands are the same as accepted in MARC world.</para>
+</note>
+
+</sect1>
+
+<sect1>
+<title>Notation of <emphasis>index-formula</emphasis> for Zebra</title>
+
+
+<para>Extended indexing overloads <literal>path</literal> of
+<literal>elm</literal> definition in abstract syntax file of Zebra
+(<literal>.abs</literal> file). It means that names beginning with
+<literal>"mc-"</literal> are interpreted by Zebra as
+<emphasis>index-formula</emphasis>. The database index is created and
+linked with <emphasis>access point</emphasis> (Bib-1 use attribute)
+according to this formula.</para>
+
+<para>For example, <emphasis>index-formula</emphasis></para>
+
+<screen>
+    71-00$a, $g, $h ($c){.$b ($c)} , (4)
+</screen>
+
+<para>in <literal>.abs</literal> file looks like:</para>
+
+<screen>
+    mc-71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}
+</screen>
+
+
+<para>The notation of <emphasis>index-formula</emphasis> uses the operands:
+<variablelist>
+
+<varlistentry>
+<term>_</term>
+<listitem><para>It means whitespace character.</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>.</term>
+<listitem><para>The position may contain any value, defined by MARC format. For example,
+<emphasis>index-formula</emphasis></para>
+
+<screen>
+    70-#1$a, $g , (5)
+</screen>
+
+<para>matches <literal>mc-70._1_$a,_$g_</literal> and includes</para>
+
+<screen>
+    700_1_$a,_$g_
+    701_1_$a,_$g_
+    702_1_$a,_$g_
+</screen>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>{...}</term>
+<listitem><para>The repeatable elements are defined in figure-brackets {}. For example,
+<emphasis>index-formula</emphasis></para>
+
+<screen>
+    71#00$a, $g, $h ($c) {.$b ($c)} , (6)
+</screen>
+
+<para>matches <literal>mc-71.00_$a,_$g,_$h_(_$c_){.$b_(_$c_)}</literal> and
+includes</para>
+
+<screen>
+    71.00_$a,_$g,_$h_(_$c_).$b_(_$c_)
+    71.00_$a,_$g,_$h_(_$c_).$b_(_$c_).$b_(_$c_)
+    71.00_$a,_$g,_$h_(_$c_).$b_(_$c_).$b_(_$c_).$b_(_$c_)
+</screen>
+</listitem>
+</varlistentry>
+
+
+<varlistentry>
+<term>&#60;...&#62;</term>
+<listitem><para>Embedded <emphasis>index-formula</emphasis> (for linked fields) is between &#60;&#62;. For example,
+<emphasis>index-formula</emphasis></para>
+
+<screen>
+    4--#-$170-#1$a, $g ($c) , (7)
+</screen>
+
+<para>matches <literal>mc-4.._._$1&#60;70._1_$a,_$g_(_$c_)&#62;_</literal> and
+includes</para>
+
+<screen>
+    463_._$1&#60;70._1_$a,_$g_(_$c_)&#62;_
+</screen>
+
+</listitem>
+</varlistentry>
+</variablelist>
+</para>
+
+<note>
+<para>All another operands are the same as accepted in MARC world.</para>
+</note>
+
+<sect2>
+<title>Examples</title>
+
+<para>
+<orderedlist>
+
+<listitem>
+
+<para>indexing LEADER</para>
+
+<para>You need to use keyword "ldr" to index leader. For example, indexing data from 6th
+and 7th position of LEADER</para>
+
+<screen>
+    elm mc-ldr[6]       	Record-type			!
+    elm mc-ldr[7]       	Bib-level			!
+</screen>
+
+</listitem>
+
+<listitem>
+
+<para>indexing data from control fields</para>
+
+<para>indexing date (the time added to database)</para>
+
+<screen>
+    elm mc-008[0-5]     	Date/time-added-to-db		!	
+</screen>
+
+<para>or for RUSMARC (this data included in 100th field)</para>
+
+<screen>
+    elm mc-100___$a[0-7]_   Date/time-added-to-db		!
+</screen>
+
+</listitem>
+
+<listitem>
+
+<para>using indicators while indexing</para>
+
+<para>For RUSMARC <emphasis>index-formula</emphasis>
+<literal>70-#1$a, $g</literal> matches</para>
+
+<screen>
+    elm 70._1_$a,_$g_       Author          !:w,!:p
+</screen>
+
+<para>When Zebra finds a field according to <literal>"70."</literal> pattern it checks
+the indicators.  In this case the value of first indicator doesn't mater, but
+the value of second one must be whitespace, in another case a field is not 
+indexed.</para>
+
+</listitem>
+
+<listitem>
+
+<para>indexing embedded (linked) fields for UNIMARC based formats</para>
+
+<para>For RUSMARC <emphasis>index-formula</emphasis> 
+<literal>4--#-$170-#1$a, $g ($c)</literal> matches</para>
+
+<screen>
+    elm mc-4.._._$1<70._1_$a,_$g_(_$c_)>_   Author          !:w,!:p
+</screen>
+
+<para>Data are extracted from record if the field matches to
+<literal>"4.._."</literal> pattern and data in linked field match to embedded
+<emphasis>index-formula</emphasis> <literal>70._1_$a,_$g_(_$c_)</literal>.</para>
+
+</listitem>
+
+</orderedlist>
+</para>
+
+
+</sect2>
+</sect1>
+
+</chapter>
+</book>
