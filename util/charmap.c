@@ -1,67 +1,9 @@
 /*
- * Copyright (C) 1996-1999, Index Data
+ * Copyright (C) 1996-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: charmap.c,v $
- * Revision 1.18  1999-11-30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.17  1999/09/08 12:13:21  adam
- * Fixed minor bug "replace"-mappings. Removed some logging messages.
- *
- * Revision 1.16  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.15  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.14  1998/10/13 20:09:18  adam
- * Changed call to readconf_line.
- *
- * Revision 1.13  1997/10/27 14:33:06  adam
- * Moved towards generic character mapping depending on "structure"
- * field in abstract syntax file. Fixed a few memory leaks. Fixed
- * bug with negative integers when doing searches with relational
- * operators.
- *
- * Revision 1.12  1997/09/05 15:30:11  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.11  1997/09/05 09:52:32  adam
- * Extra argument added to function chr_read_maptab (tab path).
- *
- * Revision 1.10  1997/07/01 13:01:08  adam
- * Bug fix in routine find_entry: didn't take into account the len arg.
- *
- * Revision 1.9  1996/10/29 13:48:14  adam
- * Updated to use zebrautl.h instead of alexutil.h.
- *
- * Revision 1.8  1996/10/18 12:39:23  adam
- * Uses LOG_DEBUG instead of LOG_WARN for "Character map overlap".
- *
- * Revision 1.7  1996/06/06  12:08:56  quinn
- * Fixed bug.
- *
- * Revision 1.6  1996/06/04  13:28:00  quinn
- * More work on charmapping
- *
- * Revision 1.5  1996/06/04  08:32:15  quinn
- * Moved default keymap to keychars.c
- *
- * Revision 1.4  1996/06/03  16:32:13  quinn
- * Temporary bug-fix
- *
- * Revision 1.3  1996/06/03  15:17:46  quinn
- * Fixed bug.
- *
- * Revision 1.2  1996/06/03  10:15:09  quinn
- * Fixed bug in mapping function.
- *
- * Revision 1.1  1996/05/31  09:07:18  quinn
- * Work on character-set handling
- *
+ * $Id: charmap.c,v 1.19 2002-02-18 11:47:23 adam Exp $
  *
  */
 
@@ -115,8 +57,11 @@ typedef struct chrwork
  * Add an entry to the character map.
  */
 static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
-				   const char *from, int len, char *to)
+				   const char *from, int len, char *to,
+                                   const char *from_0)
 {
+    if (!from_0)
+        from_0 = from;
     if (!root)
     {
 	root = (chr_t_entry *) nmem_malloc(nmem, sizeof(*root));
@@ -127,6 +72,13 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
     {
 	if (!root->target || !root->target[0] || strcmp(root->target[0], to))
 	{
+            if (from_0 && 
+                root->target && root->target[0] && root->target[0][0] &&
+                strcmp (root->target[0], CHR_UNKNOWN))
+            {
+                yaz_log (LOG_WARN, "duplicate entry for charmap from '%s'",
+                         from_0);
+            }
 	    root->target = (unsigned char **)
 		nmem_malloc(nmem, sizeof(*root->target)*2);
 	    root->target[0] = (unsigned char *) nmem_strdup(nmem, to);
@@ -146,7 +98,7 @@ static chr_t_entry *set_map_string(chr_t_entry *root, NMEM nmem,
 	}
 	if (!(root->children[(unsigned char) *from] =
 	    set_map_string(root->children[(unsigned char) *from], nmem,
-			   from + 1, len - 1, to)))
+			   from + 1, len - 1, to, from_0)))
 	    return 0;
     }
     return root;
@@ -234,7 +186,8 @@ unsigned char zebra_prim(char **s)
 {
     unsigned char c;
     unsigned int i;
-    
+
+    yaz_log (LOG_DEBUG, "prim %.3s", *s);
     if (**s == '\\')
     {
 	(*s)++;
@@ -264,10 +217,13 @@ unsigned char zebra_prim(char **s)
         default:
             (*s)++;
 	}
-	return c;
     }
-    c = **s;
-    ++(*s);
+    else
+    {
+        c = **s;
+        ++(*s);
+    }
+    yaz_log (LOG_DEBUG, "out %d", c);
     return c;
 }
 
@@ -281,7 +237,7 @@ static void fun_addentry(const char *s, void *data, int num)
     char tmp[2];
     
     tmp[0] = num; tmp[1] = '\0';
-    tab->input = set_map_string(tab->input, tab->nmem, s, strlen(s), tmp);
+    tab->input = set_map_string(tab->input, tab->nmem, s, strlen(s), tmp, 0);
     tab->output[num + tab->base_uppercase] =
 	(unsigned char *) nmem_strdup(tab->nmem, s);
 }
@@ -294,7 +250,7 @@ static void fun_addspace(const char *s, void *data, int num)
 {
     chrmaptab tab = (chrmaptab) data;
     tab->input = set_map_string(tab->input, tab->nmem, s, strlen(s),
-				(char*) CHR_SPACE);
+				(char*) CHR_SPACE, 0);
 }
 
 /*
@@ -321,7 +277,8 @@ static void fun_add_map(const char *s, void *data, int num)
 
     assert(arg->map->input);
     logf (LOG_DEBUG, "set map %.*s", (int) strlen(s), s);
-    set_map_string(arg->map->input, arg->map->nmem, s, strlen(s), arg->string);
+    set_map_string(arg->map->input, arg->map->nmem, s, strlen(s), arg->string,
+                   0);
     for (s = arg->string; *s; s++)
 	logf (LOG_DEBUG, " %3d", (unsigned char) *s);
 }
@@ -336,7 +293,7 @@ static void fun_add_qmap(const char *s, void *data, int num)
     assert(arg->map->q_input);
     logf (LOG_DEBUG, "set qmap %.*s", (int) strlen(s), s);
     set_map_string(arg->map->q_input, arg->map->nmem, s,
-		   strlen(s), arg->string);
+		   strlen(s), arg->string, 0);
     for (s = arg->string; *s; s++)
 	logf (LOG_DEBUG, " %3d", (unsigned char) *s);
 }
