@@ -1,8 +1,5 @@
 #!/bin/sh
-# $Id: test.sh,v 1.4 2004-03-09 18:45:17 adam Exp $
-test -d tmp || mkdir tmp
-test -d lock || mkdir lock
-test -d register || mkdir register
+# $Id: test.sh,v 1.5 2004-12-04 00:51:39 adam Exp $
 
 echo Loading Records
 if [ -x ../../index/zebraidx ]; then

@@ -6,3 +6,8 @@ tmp
 zebrasrv.pid
 socket
 *.log
+*.mf
+*.LCK
+.deps
+.libs
+t1
