@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.14  1995-12-05 13:12:37  quinn
+ * Revision 1.15  1995-12-08 16:21:14  adam
+ * Work on commit/update.
+ *
+ * Revision 1.14  1995/12/05  13:12:37  quinn
  * Added <errno.h>
  *
  * Revision 1.13  1995/11/30  17:00:50  adam
@@ -171,7 +174,8 @@ MFile_area mf_init(const char *name)
     logf (LOG_DEBUG, "mf_init(%s)", name);
     for (mp = open_areas; mp; mp = mp->next)
     	if (!strcmp(name, mp->name))
-    	    abort();
+    	    return mp;
+    ma = xmalloc(sizeof(MFile_area_struct));
     strcpy(ma->name, name);
     ma->next = open_areas;
     open_areas = ma;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.4  1995-12-01 16:24:28  adam
+ * Revision 1.5  1995-12-08 16:21:14  adam
+ * Work on commit/update.
+ *
+ * Revision 1.4  1995/12/01  16:24:28  adam
  * Commit files use separate meta file area.
  *
  * Revision 1.3  1995/12/01  11:37:22  adam
@@ -82,9 +85,10 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         logf (LOG_FATAL|LOG_ERRNO, "Failed to open %s", path);
         exit (1);
     }
-    if (!mf_read (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head))
+    if (!firstp || !mf_read (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head))
     {
-        *firstp = 1;
+        if (firstp)
+            *firstp = 1;
         cf->head.block_size = block_size;
         cf->head.hash_size = 401;
         hash_bytes = cf->head.hash_size * sizeof(int);

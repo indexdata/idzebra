@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.15  1995-12-01 16:24:28  adam
+ * Revision 1.16  1995-12-08 16:21:13  adam
+ * Work on commit/update.
+ *
+ * Revision 1.15  1995/12/01  16:24:28  adam
  * Commit files use separate meta file area.
  *
  * Revision 1.14  1995/12/01  11:37:21  adam
@@ -51,6 +54,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include <alexutil.h>
 #include <bfile.h>
@@ -58,17 +62,22 @@
 
 static MFile_area commit_area = NULL;
 
-void bf_cache (void)
+void bf_cache (int enableFlag)
 {
-    if (!commit_area)
-        if (res_get (common_resource, "commit"))
-            commit_area = mf_init ("commit");
-        else
-        {
-            logf (LOG_FATAL, "Commit area must be defined if commit"
-                  "is to be enabled");
-            exit (1);
-        }
+    if (enableFlag)
+    {
+        if (!commit_area)
+            if (res_get (common_resource, "commit"))
+                commit_area = mf_init ("commit");
+            else
+            {
+                logf (LOG_FATAL, "Commit area must be defined if commit"
+                      "is to be enabled");
+                exit (1);
+            }
+    }
+    else
+        commit_area = NULL;
 }
 
 int bf_close (BFile bf)
@@ -90,10 +99,10 @@ BFile bf_open (const char *name, int block_size, int wflag)
         int first_time;
 
         logf (LOG_LOG, "cf,mf_open %s", name);
+        
         tmp->mf = mf_open (0, name, block_size, 0);
         tmp->cf = cf_open (tmp->mf, commit_area, name, block_size,
                            wflag, &first_time);
-
         if (first_time)
         {
             outf = fopen ("cache", "a");
@@ -131,7 +140,20 @@ int bf_write (BFile bf, int no, int offset, int num, const void *buf)
     return mf_write (bf->mf, no, offset, num, buf);
 }
 
-void bf_commit (void)
+int bf_commitExists (void)
+{
+    FILE *inf;
+
+    inf = fopen ("cache", "r");
+    if (inf)
+    {
+        fclose (inf);
+        return 1;
+    }
+    return 0;
+}
+
+void bf_commitExec (void)
 {
     FILE *inf;
     int block_size;
@@ -143,8 +165,8 @@ void bf_commit (void)
     assert (commit_area);
     if (!(inf = fopen ("cache", "r")))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cannot open commit %s", "cache");
-        exit (1);
+        logf (LOG_LOG, "No commit file");
+        return ;
     }
     while (fscanf (inf, "%s %d", path, &block_size) == 2)
     {
@@ -157,4 +179,27 @@ void bf_commit (void)
         mf_close (mf);
     }
     fclose (inf);
+}
+
+void bf_commitClean (void)
+{
+    FILE *inf;
+    int block_size;
+    char path[256];
+    MFile mf;
+    CFile cf;
+
+    assert (commit_area);
+    if (!(inf = fopen ("cache", "r")))
+        return ;
+    while (fscanf (inf, "%s %d", path, &block_size) == 2)
+    {
+        mf = mf_open (0, path, block_size, 0);
+        cf = cf_open (mf, commit_area, path, block_size, 1, NULL);
+
+        cf_close (cf);
+        mf_close (mf);
+    }
+    fclose (inf);
+    unlink ("cache");
 }
