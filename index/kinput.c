@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.14  1996-02-07 14:06:37  adam
+ * Revision 1.15  1996-03-21 14:50:09  adam
+ * File update uses modify-time instead of change-time.
+ *
+ * Revision 1.14  1996/02/07  14:06:37  adam
  * Better progress report during register merge.
  * New command: clean - removes temporary shadow files.
  *
@@ -58,7 +61,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>

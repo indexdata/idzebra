@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.19  1996-03-20 16:16:55  quinn
+ * Revision 1.20  1996-03-21 14:50:10  adam
+ * File update uses modify-time instead of change-time.
+ *
+ * Revision 1.19  1996/03/20  16:16:55  quinn
  * Added diagnostic output
  *
  * Revision 1.18  1996/03/19  12:43:27  adam
@@ -194,9 +197,8 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
             src[++src_len] = '\0';
         }
         dirs_mkdir (di, src, 0);
-#if 0
-        dst = NULL;
-#endif
+        if (repComp (dst->path, src, src_len))
+            dst = NULL;
     }
     else if (!e_src)
     {
@@ -243,11 +245,11 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
             switch (e_src[i_src].kind)
             {
             case dirs_file:
-                if (e_src[i_src].ctime > dst->ctime)
+                if (e_src[i_src].mtime > dst->mtime)
                 {
                     if (fileExtract (&dst->sysno, tmppath, rGroup, 0))
                     {
-                        dirs_add (di, src, dst->sysno, e_src[i_src].ctime);
+                        dirs_add (di, src, dst->sysno, e_src[i_src].mtime);
                     }
 		    logf (LOG_LOG, "old: %s", ctime (&dst->ctime));
                     logf (LOG_LOG, "new: %s", ctime (&e_src[i_src].ctime));
@@ -274,7 +276,7 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
             {
             case dirs_file:
                 if (fileExtract (&sysno, tmppath, rGroup, 0))
-                    dirs_add (di, src, sysno, e_src[i_src].ctime);            
+                    dirs_add (di, src, sysno, e_src[i_src].mtime);            
                 break;
             case dirs_dir:
                 fileUpdateR (di, dst, base, src, rGroup);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.35  1996-02-12 18:45:36  adam
+ * Revision 1.36  1996-03-21 14:50:09  adam
+ * File update uses modify-time instead of change-time.
+ *
+ * Revision 1.35  1996/02/12  18:45:36  adam
  * New fileVerboseFlag in record group control.
  *
  * Revision 1.34  1995/12/11  11:43:29  adam
@@ -127,6 +130,7 @@
  *
  */
 
+#include <time.h>
 #include <zebraver.h>
 #include <alexutil.h>
 #include <dict.h>
@@ -146,14 +150,14 @@ enum dirsKind { dirs_dir, dirs_file };
 struct dir_entry {
     enum dirsKind kind;
     char *name;
-    int ctime;
+    time_t mtime;
 };
 
 struct dirs_entry {
     enum dirsKind kind;
     char path[256];
     SYSNO sysno;
-    int ctime;
+    time_t mtime;
 };
 
 struct recordGroup {
@@ -171,9 +175,9 @@ struct recordGroup {
 struct dirs_info *dirs_open (Dict dict, const char *rep);
 struct dirs_entry *dirs_read (struct dirs_info *p);
 struct dirs_entry *dirs_last (struct dirs_info *p);
-void dirs_mkdir (struct dirs_info *p, const char *src, int ctime);
+void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime);
 void dirs_rmdir (struct dirs_info *p, const char *src);
-void dirs_add (struct dirs_info *p, const char *src, int sysno, int ctime);
+void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime);
 void dirs_del (struct dirs_info *p, const char *src);
 void dirs_free (struct dirs_info **pp);
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.12  1996-02-05 12:29:55  adam
+ * Revision 1.13  1996-03-21 14:50:08  adam
+ * File update uses modify-time instead of change-time.
+ *
+ * Revision 1.12  1996/02/05  12:29:55  adam
  * Logging reduced a bit.
  * The remaining running time is estimated during register merge.
  *
@@ -101,14 +104,14 @@ struct dir_entry *dir_open (const char *rep)
         {
         case S_IFREG:
             entry[idx].kind = dirs_file;
-            entry[idx].ctime = finfo.st_ctime;
+            entry[idx].mtime = finfo.st_mtime;
             entry[idx].name = xmalloc (strlen(dent->d_name)+1);
             strcpy (entry[idx].name, dent->d_name);
             idx++;
             break;
         case S_IFDIR:
             entry[idx].kind = dirs_dir;
-            entry[idx].ctime = finfo.st_ctime;
+            entry[idx].mtime = finfo.st_mtime;
             entry[idx].name = xmalloc (strlen(dent->d_name)+2);
             strcpy (entry[idx].name, dent->d_name);
 	    strcat (entry[idx].name, "/");

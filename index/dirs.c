@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.6  1996-02-02 13:44:43  adam
+ * Revision 1.7  1996-03-21 14:50:09  adam
+ * File update uses modify-time instead of change-time.
+ *
+ * Revision 1.6  1996/02/02  13:44:43  adam
  * The public dictionary functions simply use char instead of Dict_char
  * to represent search strings. Dict_char is used internally only.
  *
@@ -63,20 +66,20 @@ static int dirs_client_proc (char *name, const char *info, int pos,
         assert (0);
     }
     entry = ci->entries + ci->no_cur;
-    if (info[0] == sizeof(entry->sysno)+sizeof(entry->ctime))
+    if (info[0] == sizeof(entry->sysno)+sizeof(entry->mtime))
     {
         strcpy (entry->path, name + ci->prelen); 
         entry->kind = dirs_file;
         memcpy (&entry->sysno, info+1, sizeof(entry->sysno));
-        memcpy (&entry->ctime, info+1+sizeof(entry->sysno), 
-                sizeof(entry->ctime));
+        memcpy (&entry->mtime, info+1+sizeof(entry->sysno), 
+                sizeof(entry->mtime));
         ci->no_cur++;
     } 
-    else if (info[0] == sizeof(entry->ctime))
+    else if (info[0] == sizeof(entry->mtime))
     {
         strcpy (entry->path, name + ci->prelen);
         entry->kind = dirs_dir;
-        memcpy (&entry->ctime, info+1, sizeof(entry->ctime));
+        memcpy (&entry->mtime, info+1, sizeof(entry->mtime));
         ci->no_cur++;
     }
     return 0;
@@ -127,13 +130,13 @@ struct dirs_entry *dirs_last (struct dirs_info *p)
     return p->last_entry;
 }
 
-void dirs_mkdir (struct dirs_info *p, const char *src, int ctime)
+void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime)
 {
     char path[256];
 
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_mkdir %s", path);
-    dict_insert (p->dict, path, sizeof(ctime), &ctime);
+    dict_insert (p->dict, path, sizeof(mtime), &mtime);
 }
 
 void dirs_rmdir (struct dirs_info *p, const char *src)
@@ -145,7 +148,7 @@ void dirs_rmdir (struct dirs_info *p, const char *src)
     dict_delete (p->dict, path);
 }
 
-void dirs_add (struct dirs_info *p, const char *src, int sysno, int ctime)
+void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime)
 {
     char path[256];
     char info[16];
@@ -153,8 +156,8 @@ void dirs_add (struct dirs_info *p, const char *src, int sysno, int ctime)
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_add %s", path);
     memcpy (info, &sysno, sizeof(sysno));
-    memcpy (info+sizeof(sysno), &ctime, sizeof(ctime));
-    dict_insert (p->dict, path, sizeof(sysno)+sizeof(ctime), info);
+    memcpy (info+sizeof(sysno), &mtime, sizeof(mtime));
+    dict_insert (p->dict, path, sizeof(sysno)+sizeof(mtime), info);
 }
 
 void dirs_del (struct dirs_info *p, const char *src)
