@@ -9,11 +9,13 @@ Source: zebra-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 URL: http://www.indexdata.dk/zebra/
-Summary: Zebra: a fielded free-text engine with a Z39.50 frontend.
+Summary: High-performance, structured text indexing and retrival engine.
 
 %description
-Zebra is a fielded free-text indexing and retrieval engine with a Z39.50
-front-end.
+Zebra is a high-performance, general-purpose structured text indexing
+and retrieval engine. It reads structured records in a variety of input
+formats (eg. email, XML, MARC) and allows access to them through exact
+boolean search expressions and relevance-ranked free-text queries. 
 
 %prep
 %setup
