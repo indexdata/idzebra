@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.4 2004-06-02 07:51:52 adam Exp $
+/* $Id: tstisamb.c,v 1.5 2004-06-02 12:30:32 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,6 +25,18 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <isamb.h>
 #include <assert.h>
+
+static void log_item(int level, const void *b, const char *txt)
+{
+    int x;
+    memcpy(&x, b, sizeof(int));
+    yaz_log(LOG_DEBUG, "%s %d", txt, x);
+}
+
+static void log_pr(const char *txt)
+{
+    yaz_log(LOG_DEBUG, "%s", txt);
+}
 
 int compare_item(const void *a, const void *b)
 {
@@ -172,11 +184,8 @@ void tst_insert(ISAMB isb, int n)
     }
     isamb_pp_close(pp);
 
+    isamb_dump(isb, isamc_p, log_pr);
     isamb_unlink(isb, isamc_p);
-}
-
-static void log_item(int level, const void *b, const char *txt)
-{
 }
 
 int main(int argc, char **argv)

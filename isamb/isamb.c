@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.35 2004-06-02 07:53:31 adam Exp $
+/* $Id: isamb.c,v 1.36 2004-06-02 12:30:32 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -326,8 +326,7 @@ void isamb_close (ISAMB isamb)
     xfree (isamb);
 }
 
-
-struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
+static struct ISAMB_block *open_block (ISAMB b, ISAMC_P pos)
 {
     int cat = pos&CAT_MASK;
     struct ISAMB_block *p;
@@ -1008,6 +1007,63 @@ void isamb_pp_close (ISAMB_PP pp)
     isamb_pp_close_x (pp, 0, 0);
 }
 
+/* simple recursive dumper .. */
+static void isamb_dump_r (ISAMB b, ISAMB_P pos, void (*pr)(const char *str),
+			  int level)
+{
+    char buf[1024];
+    char prefix_str[1024];
+    if (pos)
+    {
+	struct ISAMB_block *p = open_block (b, pos);
+	sprintf(prefix_str, "%*s %d cat=%d size=%d max=%d", level*2, "",
+		pos, p->cat, p->size, b->file[p->cat].head.block_max);
+	(*pr)(prefix_str);
+	sprintf(prefix_str, "%*s %d", level*2, "", pos);
+	if (p->leaf)
+	{
+	    while (p->offset < p->size)
+	    {
+		char *src = p->bytes + p->offset;
+		char *dst = buf;
+		(*b->method->code_item)(ISAMC_DECODE, p->decodeClientData,
+					&dst, &src);
+		(*b->method->log_item)(LOG_DEBUG, buf, prefix_str);
+		p->offset = src - (char*) p->bytes;
+	    }
+	    assert(p->offset == p->size);
+	}
+	else
+	{
+	    char *src = p->bytes + p->offset;
+	    int sub;
+	    int item_len;
+
+	    decode_ptr (&src, &sub);
+	    p->offset = src - (char*) p->bytes;
+
+	    isamb_dump_r(b, sub, pr, level+1);
+	    
+	    while (p->offset < p->size)
+	    {
+		decode_ptr (&src, &item_len);
+		(*b->method->log_item)(LOG_DEBUG, src, prefix_str);
+		src += item_len;
+		decode_ptr (&src, &sub);
+		
+		p->offset = src - (char*) p->bytes;
+		
+		isamb_dump_r(b, sub, pr, level+1);
+	    }		
+	}
+	close_block(b,p);
+    }
+}
+
+void isamb_dump (ISAMB b, ISAMB_P pos, void (*pr)(const char *str))
+{
+    return isamb_dump_r(b, pos, pr, 0);
+}
 
 #if 0
 /* Old isamb_pp_read that Adam wrote, kept as a reference in case we need to
