@@ -61,7 +61,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         occur = isc_pp_num (pp);
         while (isc_pp_read(pp, &key))
 	{
-	    printf ("sysno=%d seqno=%d\n", key.sysno, key.seqno);
+	    //printf ("sysno=%d seqno=%d\n", key.sysno, key.seqno);
             occurx++;
 	}
         assert (occurx == occur);
@@ -82,14 +82,15 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         while (isamh_pp_read(pp, &key))
 	{
             occurx++;
-	    logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
-	           key.sysno, key.seqno,
-	           key.sysno, key.seqno,
-	           occur,occurx, pp->offset);
+	    //logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
+	    //       key.sysno, key.seqno,
+	    //       key.sysno, key.seqno,
+	    //       occur,occurx, pp->offset);
 	}
-        if (occurx != occur) 
+        if (occurx != occur) {
           logf(LOG_LOG,"Count error!!! read %d, counted %d", occur, occurx);
-        assert (occurx == occur);
+          //isamh_pp_dump(stat_info->isamh, isam_p);
+          }
 	stat_info->no_isam_entries[isamh_type(isam_p)] += occur;
         isamh_pp_close (pp);
     }
@@ -102,16 +103,19 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         pp = isamd_pp_open (stat_info->isamd, isam_p);
         
         occur = isamd_pp_num (pp);
-	  //  printf ("  opening item %d=%d:%d \n",
-  	  //    isam_p, isamh_type(isam_p),isamh_block(isam_p));
         while (isamd_pp_read(pp, &key))
 	{
             occurx++;
-	    logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
+            if ( pp->is->method->debug >8 )
+	       logf (LOG_LOG,"sysno=%d seqno=%d (%x/%x) oc=%d/%d ofs=%d ",
 	           key.sysno, key.seqno,
 	           key.sysno, key.seqno,
 	           occur,occurx, pp->offset);
 	}
+        if ( pp->is->method->debug >7 )
+	   logf(LOG_LOG,"item %d=%d:%d says %d keys, counted %d",
+	      isam_p, isamd_type(isam_p), isamd_block(isam_p),
+	      occur, occurx); 
         if (occurx != occur) 
           logf(LOG_LOG,"Count error!!! read %d, counted %d", occur, occurx);
         assert (occurx == occur);
@@ -308,7 +312,10 @@ void inv_prstat (BFiles bfs)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.16  1999-08-18 08:38:22  heikki
+ * Revision 1.17  1999-08-20 08:28:37  heikki
+ * Log levels
+ *
+ * Revision 1.16  1999/08/18 08:38:22  heikki
  * Memory leak hunting
  *
  * Revision 1.15  1999/08/18 08:34:53  heikki
