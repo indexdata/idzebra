@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.36  1996-02-12 18:45:37  adam
+ * Revision 1.37  1996-03-19 12:43:26  adam
+ * Bug fix: File update traversal didn't handle trailing slashes correctly.
+ * Bug fix: Update of sub directory groups wasn't handled correctly.
+ *
+ * Revision 1.36  1996/02/12  18:45:37  adam
  * New fileVerboseFlag in record group control.
  *
  * Revision 1.35  1996/02/12  15:56:11  adam
@@ -214,6 +218,8 @@ int main (int argc, char **argv)
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
+                else if (!strcmp (arg, "dump"))
+                    cmd = 's';
                 else if (!strcmp (arg, "del") || !strcmp(arg, "delete"))
                     cmd = 'd';
                 else if (!strcmp (arg, "commit"))
@@ -305,6 +311,12 @@ int main (int argc, char **argv)
                     logf (LOG_LOG, "Deleting %s", rGroup.path);
                     repositoryDelete (&rGroup);
                 }
+                else if (cmd == 's')
+                {
+                    logf (LOG_LOG, "Dumping %s", rGroup.path);
+                    repositoryShow (&rGroup);
+                }
+
                 cmd = 0;
                 nsections = key_close ();
                 if (nsections)

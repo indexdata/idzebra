@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.17  1996-02-12 18:45:17  adam
+ * Revision 1.18  1996-03-19 12:43:27  adam
+ * Bug fix: File update traversal didn't handle trailing slashes correctly.
+ * Bug fix: Update of sub directory groups wasn't handled correctly.
+ *
+ * Revision 1.17  1996/02/12  18:45:17  adam
  * Changed naming of some functions.
  *
  * Revision 1.16  1996/02/05  12:30:02  adam
@@ -170,7 +174,8 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     sprintf (tmppath, "%s%s", base, src);
     e_src = dir_open (tmppath);
     logf (LOG_LOG, "Dir: %s", tmppath);
-#if 1
+
+#if 0
     if (!dst || repComp (dst->path, src, src_len))
 #else
     if (!dst || strcmp (dst->path, src))
@@ -178,13 +183,16 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     {
         if (!e_src)
             return;
-        if (src_len && src[src_len-1] == '/')
-            --src_len;
-        else
+
+        if (src_len && src[src_len-1] != '/')
+        {
             src[src_len] = '/';
-        src[src_len+1] = '\0';
+            src[++src_len] = '\0';
+        }
         dirs_mkdir (di, src, 0);
+#if 0
         dst = NULL;
+#endif
     }
     else if (!e_src)
     {
@@ -194,11 +202,11 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     }
     else
     {
-        if (src_len && src[src_len-1] == '/')
-            --src_len;
-        else
+        if (src_len && src[src_len-1] != '/')
+        {
             src[src_len] = '/';
-        src[src_len+1] = '\0';
+            src[++src_len] = '\0';
+        }
         dst = dirs_read (di); 
     }
     dir_sort (e_src);
@@ -207,13 +215,13 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
     {
         int sd;
 
-        if (dst && !repComp (dst->path, src, src_len+1))
+        if (dst && !repComp (dst->path, src, src_len))
         {
             if (e_src[i_src].name)
             {
-                logf (LOG_DEBUG, "dst=%s src=%s", dst->path + src_len+1, 
+                logf (LOG_DEBUG, "dst=%s src=%s", dst->path + src_len,
 		      e_src[i_src].name);
-                sd = strcmp (dst->path + src_len+1, e_src[i_src].name);
+                sd = strcmp (dst->path + src_len, e_src[i_src].name);
             }
             else
                 sd = -1;
@@ -225,7 +233,7 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
         logf (LOG_DEBUG, "trav sd=%d", sd);
         if (sd == 0)
         {
-            strcpy (src + src_len+1, e_src[i_src].name);
+            strcpy (src + src_len, e_src[i_src].name);
             sprintf (tmppath, "%s%s", base, src);
             
             switch (e_src[i_src].kind)
@@ -253,7 +261,7 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
         else if (sd > 0)
         {
             SYSNO sysno = 0;
-            strcpy (src + src_len+1, e_src[i_src].name);
+            strcpy (src + src_len, e_src[i_src].name);
             sprintf (tmppath, "%s%s", base, src);
 
             switch (e_src[i_src].kind)
@@ -305,9 +313,44 @@ static void groupRes (struct recordGroup *rGroup)
     rGroup->recordId = res_get (common_resource, resStr);
 }
 
+
+void repositoryShow (struct recordGroup *rGroup)
+{
+    char src[1024];
+    int src_len;
+    struct dirs_entry *dst;
+    Dict dict;
+    struct dirs_info *di;
+    
+    if (!(dict = dict_open (FMATCH_DICT, 50, 1)))
+    {
+        logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
+        exit (1);
+    }
+    
+    assert (rGroup->path);    
+    strcpy (src, rGroup->path);
+    src_len = strlen (src);
+    
+    if (src_len && src[src_len-1] != '/')
+    {
+        src[src_len] = '/';
+        src[++src_len] = '\0';
+    }
+    
+    di = dirs_open (dict, src);
+    
+    while ( (dst = dirs_read (di)) )
+        logf (LOG_LOG, "%s", dst->path);
+    dirs_free (&di);
+    dict_close (dict);
+}
+
 void repositoryUpdate (struct recordGroup *rGroup)
 {
-    char src[256];
+    char src[1024];
+    char dst[1024];
+    int src_len;
 
     groupRes (rGroup);
     if (rGroup->recordId && !strcmp (rGroup->recordId, "file"))
@@ -321,9 +364,20 @@ void repositoryUpdate (struct recordGroup *rGroup)
             exit (1);
         }
         assert (rGroup->path);
-        di = dirs_open (dict, rGroup->path);
-        strcpy (src, "");
-        fileUpdateR (di, dirs_read (di), rGroup->path, src, rGroup);
+
+        strcpy (src, rGroup->path);
+        src_len = strlen (src);
+
+        if (src_len && src[src_len-1] != '/')
+        {
+            src[src_len] = '/';
+            src[++src_len] = '\0';
+        }
+
+        di = dirs_open (dict, src);
+
+        *dst = '\0';
+        fileUpdateR (di, dirs_read (di), src, dst, rGroup);
         dirs_free (&di);
         dict_close (dict);
     }
