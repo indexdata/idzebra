@@ -1,5 +1,5 @@
 #!/bin/sh
-# $id$
+# $Id: test1.sh,v 1.3 2004-06-15 09:43:27 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -10,7 +10,7 @@ if ../../index/zebraidx -c $pp/zebra.cfg -l $LOG -V|grep Expat >/dev/null; then
 else
 	exit 0
 fi
-../../index/zebraidx -c $pp/zebra.cfg -l$LOG update *.xml
+../../index/zebraidx -c $pp/zebra.cfg -l$LOG update $pp/*.xml
 ../../index/zebrasrv -c $pp/zebra.cfg -l$LOG unix:socket &
 sleep 1
 ../api/testclient unix:socket '@term string æ' >tmp1

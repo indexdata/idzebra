@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.8 2004-06-15 08:06:34 adam Exp $
+# $Id: test1.sh,v 1.9 2004-06-15 09:43:30 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -7,12 +7,12 @@ LOG=test1.log
 
 rm -f $LOG
 echo  "initializing..." >>$LOG
-mkdir -p reg
-rm -f records/esdd000[12].grs # these should not be here, will be created later
+test -d reg || mkdir reg
+rm -f $pp/records/esdd000[12].grs # these should not be here, will be created later
 ../../index/zebraidx -l $LOG -c $pp/zebra1.cfg init || exit 1
 
 echo "updating..." >>$LOG
-../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records  || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update $pp/records  || exit 1
 
 echo "killing old server (if any)..." >>$LOG
 test -f zebrasrv.pid && kill `cat zebrasrv.pid`
@@ -41,7 +41,7 @@ echo "search 4..." >>$LOG
 grep "^Result count: 9$" log >/dev/null || exit 1
 
 echo "reindexing..." >>$LOG
-../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update $pp/records || exit 1
 
 echo "search 5..." >>$LOG
 ../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1

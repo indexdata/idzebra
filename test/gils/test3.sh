@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test3.sh,v 1.3 2004-06-15 08:06:34 adam Exp $
+# $Id: test3.sh,v 1.4 2004-06-15 09:43:30 adam Exp $
 
 # Testing searches with lots of @and operators
 # in order to test the fast-forward operation of rsets
@@ -19,7 +19,7 @@ mkdir -p reg
 ../../index/zebraidx -l $LOG -c $pp/zebra1.cfg init || exit 1
 
 echo "updating..." >>$LOG
-../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records  || exit 1
+../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update $pp/records  || exit 1
 
 echo "starting server..." >>$LOG
 ../../index/zebrasrv -S -c $pp/zebra1.cfg $DBG -l $LOG tcp:@:9901 &

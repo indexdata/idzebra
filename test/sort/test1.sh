@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.6 2004-06-15 08:06:35 adam Exp $
+# $Id: test1.sh,v 1.7 2004-06-15 09:43:34 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -11,7 +11,7 @@ rm -fr reg
 mkdir reg
 rm -fr recs
 mkdir recs
-cp rec*.xml recs
+cp $pp/rec*.xml recs
 ../../index/zebraidx -c $pp/zebra.cfg -l $LOG update recs || exit 1
 ../../index/zebrasrv -c $pp/zebra.cfg -l $LOG unix:socket &
 sleep 1

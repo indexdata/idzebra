@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.3 2004-06-15 08:06:34 adam Exp $
+# $Id: test1.sh,v 1.4 2004-06-15 09:43:33 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -12,7 +12,7 @@ if ../../index/zebraidx -c $pp/zebra.cfg -l $LOG -V|grep Expat >/dev/null; then
 else
 	exit 0
 fi
-../../index/zebraidx -c $pp/zebra.cfg -l $LOG $DBG update m*.xml
+../../index/zebraidx -c $pp/zebra.cfg -l $LOG $DBG update $pp/m*.xml
 ../../index/zebrasrv -c $pp/zebra.cfg -l $LOG $DBG unix:socket &
 sleep 1
 ../api/testclient unix:socket '@and @attr 1=1003 jack @attr 1=4 computer' >tmp1

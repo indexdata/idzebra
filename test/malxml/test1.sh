@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.4 2004-06-15 08:06:34 adam Exp $
+# $Id: test1.sh,v 1.5 2004-06-15 09:43:32 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -11,4 +11,4 @@ if ../../index/zebraidx -l $LOG -V|grep Expat >/dev/null; then
 else
         exit 0
 fi
-../../index/zebraidx -c $pp/zebra.cfg -l $LOG update f1.xml
+../../index/zebraidx -c $pp/zebra.cfg -l $LOG update $pp/f1.xml

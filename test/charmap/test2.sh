@@ -10,7 +10,7 @@ if ../../index/zebraidx -c $pp/zebra.cfg -l $LOG -V|grep Expat >/dev/null; then
 else
 	exit 0
 fi
-../../index/zebraidx -c $pp/zebra.cfg -l$LOG update *.xml
+../../index/zebraidx -c $pp/zebra.cfg -l$LOG update $pp/*.xml
 ../../index/zebrasrv -c $pp/zebra.cfg -l$LOG unix:socket &
 sleep 1
 # search for UNICODE 1E25 - letter h with dot below

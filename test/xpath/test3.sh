@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test3.sh,v 1.4 2004-06-15 08:06:35 adam Exp $
+# $Id: test3.sh,v 1.5 2004-06-15 09:43:34 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -8,7 +8,7 @@ TMP=test3.tmp
 rm -f $LOG
 rm -f $TMP
 ../../index/zebraidx -c $pp/zebra.cfg -l $LOG init || exit 1
-../../index/zebraidx -c $pp/zebra.cfg -l $LOG -t grs.sgml update rec.xml || exit 2
+../../index/zebraidx -c $pp/zebra.cfg -l $LOG -t grs.sgml update $pp/rec.xml || exit 2
 test -f dict*.mf || exit 1
 ../../index/zebrasrv -c $pp/zebra.cfg -l $LOG -S unix:socket & 
 sleep 1

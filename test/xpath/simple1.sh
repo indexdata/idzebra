@@ -1,13 +1,15 @@
 #!/bin/sh
-# $Id: simple1.sh,v 1.3 2003-05-21 14:39:23 adam Exp $
+# $Id: simple1.sh,v 1.4 2004-06-15 09:43:34 adam Exp $
 # test with one simple sgml record
 
+pp=${srcdir:-"."}
+
 LOG=simple1.log
-../../index/zebraidx -l $LOG init || exit 1
-../../index/zebraidx -l $LOG update simple1.xml || exit 1
+../../index/zebraidx -c $pp/zebra.cfg -l $LOG init || exit 1
+../../index/zebraidx -c $pp/zebra.cfg -l $LOG update $pp/simple1.xml || exit 1
 
 echo "Starting server " >> $LOG
-../../index/zebrasrv -l $LOG -S unix:socket &
+../../index/zebrasrv -c $pp/zebra.cfg -l $LOG -S unix:socket &
 sleep 1
 test -f zebrasrv.pid || exit 2
 
