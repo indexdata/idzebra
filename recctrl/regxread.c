@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: regxread.c,v $
- * Revision 1.35  2001-03-29 21:31:31  adam
+ * Revision 1.36  2001-05-22 21:02:26  adam
+ * Fixes for Tcl UTF8 character handling.
+ *
+ * Revision 1.35  2001/03/29 21:31:31  adam
  * Fixed "record begin" for Tcl filter.
  *
  * Revision 1.34  2000/11/29 14:24:01  adam
@@ -1401,7 +1404,14 @@ static int cmd_tcl_data (ClientData clientData, Tcl_Interp *interp,
 
     while (argi < argc)
     {
+#if TCL_MAJOR_VERSION > 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION > 0)
+	Tcl_DString ds;
+	char *native = Tcl_UtfToExternalDString(0, argv[argi], -1, &ds);
+	execData (spec, native, strlen(native), textFlag);
+	Tcl_DStringFree (&ds);
+#else
 	execData (spec, argv[argi], strlen(argv[argi]), textFlag);
+#endif
 	argi++;
     }
     if (element)
