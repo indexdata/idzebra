@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.11 2003-03-04 19:33:52 pop Exp $
+# $Id: Session.pm,v 1.12 2003-03-05 00:28:16 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -15,7 +15,7 @@ BEGIN {
     use IDZebra::Resultset;
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
-    our $VERSION = do { my @r = (q$Revision: 1.11 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.12 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
 #    our @ISA = qw(IDZebra::Logger);
 }
 
@@ -337,7 +337,14 @@ sub errAdd {
 sub begin_trans {
     my ($self) = @_;
     $self->checkzh;
-    IDZebra::begin_trans($self->{zh});
+    if (my $err = IDZebra::begin_trans($self->{zh},1)) {
+	if ($self->errCode == 2) {
+	    croak ("TRANS_RW not allowed within TRANS_RO");
+	} else {
+	    croak("Error starting transaction; code:".
+		  $self->errCode . " message: " . $self->errString);
+	}
+    }
 }
 
 sub end_trans {

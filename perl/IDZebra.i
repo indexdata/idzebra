@@ -235,7 +235,7 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
 
 /* begin transaction (add write lock) (zebraapi.c) */
 %name(begin_trans)         
-void zebra_begin_trans (ZebraHandle zh);
+int zebra_begin_trans (ZebraHandle zh, int rw);
 
 /* end transaction (remove write lock) (zebraapi.c) */
 %name(end_trans)           

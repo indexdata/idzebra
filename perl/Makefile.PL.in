@@ -2,7 +2,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
               'NAME'     => 'IDZebra',
-              'OBJECT'   => 'IDZebra_wrap.o zebra_api_ext.o zebra_perl.o' ,
+              'OBJECT'   => 'IDZebra_wrap.o zebra_perl.o' ,
               'INC'      => "-I../index -I../include @YAZINC@",
               'LIBS'     => "-L../index -lzebra -L../data1 -ldata1 @ZPERL_LIBS@ @TCL_LIB@ @YAZLIB@",
               'OPTIMIZE' => '-g -O2'

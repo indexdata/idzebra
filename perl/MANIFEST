@@ -1,4 +1,3 @@
-.cvsignore
 IDZebra_wrap.c
 MANIFEST
 Makefile.PL
@@ -10,9 +9,6 @@ demo/index.sh
 demo/pod.abs
 demo/pod.pm
 demo/zebra.cfg
-demo/register
-demo/lock
-demo/tmp
 lib/IDZebra.pm
 lib/IDZebra/Data1.pm
 lib/IDZebra/Filter.pm
@@ -30,7 +26,5 @@ t/05_search.t
 t/06_retrieval.t
 t/07_sort.t
 t/08_scan.t
-zebra_api_ext.c
-zebra_api_ext.h
 zebra_perl.c
 zebra_perl.h

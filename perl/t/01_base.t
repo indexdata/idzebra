@@ -1,6 +1,6 @@
 #!perl -Tw
 # =============================================================================
-# $Id: 01_base.t,v 1.2 2003-03-04 19:33:53 pop Exp $
+# $Id: 01_base.t,v 1.3 2003-03-05 00:28:16 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,7 +14,7 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests=>9;
+use Test::More tests=>10;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -25,6 +25,11 @@ BEGIN {
 }
 
 use pod;
+# ----------------------------------------------------------------------------
+# Just to be sure...
+mkdir ("demo/tmp");
+mkdir ("demo/lock");
+mkdir ("demo/register");
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -50,8 +55,19 @@ $sess->group(groupName => 'demo2');
 
 ok(($sess->group->{databaseName} eq "demo2"),"Record group is selected");
 
+# ---------------------------------------------------------------------------
+# Transactions
+$sess->begin_read;
+eval {$sess->begin_trans;};
+ok (($@ ne ""), $@);
+$sess->end_read;
+
+
+
+
 # ----------------------------------------------------------------------------
 # Close session
+
 
 $sess->close;
 
