@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.15  1995-12-07 17:38:48  adam
+ * Revision 1.16  1996-02-05 12:30:02  adam
+ * Logging reduced a bit.
+ * The remaining running time is estimated during register merge.
+ *
+ * Revision 1.15  1995/12/07  17:38:48  adam
  * Work locking mechanisms for concurrent updates/commit.
  *
  * Revision 1.14  1995/12/06  12:41:26  adam
@@ -90,6 +94,7 @@ static void repositoryExtractR (int deleteFlag, char *rep,
     e = dir_open (rep);
     if (!e)
         return;
+    logf (LOG_LOG, "Dir: %s", rep);
     if (rep[rep_len-1] != '/')
         rep[rep_len] = '/';
     else
@@ -113,7 +118,7 @@ static void repositoryExtractR (int deleteFlag, char *rep,
 
 static void stdinExtractR (int deleteFlag, struct recordGroup *rGroup)
 {
-    char tmppath[256];
+    char tmppath[1024];
 
     logf (LOG_LOG, "stdinExtractR");
     while (scanf ("%s", tmppath) == 1)
@@ -124,7 +129,7 @@ static void repositoryDeleteR (struct dirs_info *di, struct dirs_entry *dst,
 			       const char *base, char *src,
 			       struct recordGroup *rGroup)
 {
-    char tmppath[256];
+    char tmppath[1024];
     size_t src_len = strlen (src);
 
     while (dst && !repComp (dst->path, src, src_len+1))
@@ -156,12 +161,12 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
 {
     struct dir_entry *e_src;
     int i_src = 0;
-    static char tmppath[256];
+    static char tmppath[1024];
     size_t src_len = strlen (src);
 
     sprintf (tmppath, "%s%s", base, src);
     e_src = dir_open (tmppath);
-
+    logf (LOG_LOG, "Dir: %s", tmppath);
 #if 1
     if (!dst || repComp (dst->path, src, src_len))
 #else
@@ -227,7 +232,6 @@ static void repositoryUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                 {
                     if (fileExtract (&dst->sysno, tmppath, rGroup, 0))
                     {
-                        logf (LOG_LOG, "dirs_add");
                         dirs_add (di, src, dst->sysno, e_src[i_src].ctime);
                     }
                 }

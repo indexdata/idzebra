@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.48  1996-02-01 20:53:26  adam
+ * Revision 1.49  1996-02-05 12:29:57  adam
+ * Logging reduced a bit.
+ * The remaining running time is estimated during register merge.
+ *
+ * Revision 1.48  1996/02/01  20:53:26  adam
  * The temporary per-record keys are compacted a little, and duplication
  * of the per-records keys are avoided when they are saved in the record
  * information buffer.
@@ -696,8 +700,8 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
                 }
             if (first)
             {
-                logf (LOG_WARN, "Record in file %s didn't contain match"
-                      " fields in (%d,%d)", fname, attrSet, attrUse);
+                logf (LOG_WARN, "Record didn't contain match"
+                      " fields in (%d,%d)", attrSet, attrUse);
                 return NULL;
             }
         }
@@ -767,6 +771,25 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
     return dstBuf;
 }
 
+struct recordLogInfo {
+    const char *fname;
+    char *op;
+    struct recordGroup *rGroup;
+};
+     
+static void recordLogPreamble (int level, const char *msg, void *info)
+{
+    struct recordLogInfo *p = info;
+    FILE *outf = log_file ();
+
+    if (level & LOG_LOG)
+        return ;
+    if (p->op) 
+        fprintf (outf, "%s of ", p->op);
+    fprintf (outf, "%s type %s\n", p->rGroup->recordType, p->fname);
+    log_event_start (NULL, NULL);
+}
+
 static int recordExtract (SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
                           struct file_read_info *fi, RecType recType,
@@ -777,7 +800,13 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     char *matchStr;
     SYSNO sysnotmp;
     Record rec;
+    struct recordLogInfo logInfo;
 
+    logInfo.fname = fname;
+    logInfo.op = NULL;
+    logInfo.rGroup = rGroup;
+    log_event_start (recordLogPreamble, &logInfo);
+    
     if (fi->fd != -1)
     {
         extractCtrl.fh = fi;
@@ -820,7 +849,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             }
             else
             {
-                logf (LOG_WARN, "Record not inserted");
+                logf (LOG_WARN, "Bad match criteria");
                 return 0;
             }
         }
@@ -831,10 +860,14 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     {
         if (deleteFlag)
         {
-            logf (LOG_LOG, "? %s", fname);
+            logf (LOG_LOG, "Cannot delete new record");
             return 1;
         }
-        logf (LOG_LOG, "add %s %s", rGroup->recordType, fname);
+        logInfo.op = "add";
+#if 0
+        logf (LOG_LOG, "update %s %s", rGroup->recordType,
+              fname);
+#endif
         rec = rec_new (records);
         *sysno = rec->sysno;
 
@@ -857,14 +890,16 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         flushRecordKeys (*sysno, 0, &delkeys, rec->info[recInfo_databaseName]);
         if (deleteFlag)
         {
+            logInfo.op = "delete";
             if (!delkeys.buf_used)
             {
-                logf (LOG_WARN, "cannot delete %s: storeKeys false",
-                      fname);
+                logf (LOG_WARN, "cannot delete; storeKeys false");
             }
             else
             {
+#if 0
                 logf (LOG_LOG, "delete %s %s", rGroup->recordType, fname);
+#endif
                 records_deleted++;
                 if (matchStr)
                     dict_delete (matchDict, matchStr);
@@ -874,15 +909,17 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         }
         else
         {
+            logInfo.op = "update";
             if (!delkeys.buf_used)
             {
-                logf (LOG_WARN, "cannot update %s: storeKeys false",
-                      fname);
+                logf (LOG_WARN, "cannot update; storeKeys false");
             }
             else
             {
+#if 0
                 logf (LOG_LOG, "update %s %s", rGroup->recordType,
                       fname);
+#endif
                 flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
                 records_updated++;
             }
@@ -953,6 +990,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         rec_strdup (rGroup->databaseName, &rec->size[recInfo_databaseName]); 
 
     rec_put (records, &rec);
+    log_event_start (NULL, NULL);
     return 1;
 }
 
@@ -999,14 +1037,18 @@ int fileExtract (SYSNO *sysno, const char *fname,
             sprintf (ext_res, "%srecordType", gprefix);
             if (!(rGroup->recordType = res_get (common_resource, ext_res)))
             {
+#if 0
                 logf (LOG_LOG, "? %s", fname);
+#endif
                 return 0;
             }
         }
     }
     if (!rGroup->recordType)
     {
+#if 0
         logf (LOG_LOG, "? record %s", fname);
+#endif
         return 0;
     }
     if (!(recType = recType_byName (rGroup->recordType, subType)))

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.11  1995-11-20 16:59:44  adam
+ * Revision 1.12  1996-02-05 12:29:55  adam
+ * Logging reduced a bit.
+ * The remaining running time is estimated during register merge.
+ *
+ * Revision 1.11  1995/11/20  16:59:44  adam
  * New update method: the 'old' keys are saved for each records.
  *
  * Revision 1.10  1995/11/20  11:56:22  adam
@@ -63,7 +67,7 @@ struct dir_entry *dir_open (const char *rep)
     size_t idx = 0;
     struct dir_entry *entry;
 
-    logf (LOG_LOG, "dir_open %s", rep);
+    logf (LOG_DEBUG, "dir_open %s", rep);
     if (!(dir = opendir(rep)))
     {
         logf (LOG_WARN|LOG_ERRNO, "opendir %s", rep);
@@ -114,7 +118,7 @@ struct dir_entry *dir_open (const char *rep)
     }
     entry[idx].name = NULL;
     closedir (dir);
-    logf (LOG_LOG, "dir_close");
+    logf (LOG_DEBUG, "dir_close");
     return entry;
 }
 

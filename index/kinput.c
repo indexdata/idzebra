@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.12  1995-12-06 17:49:19  adam
+ * Revision 1.13  1996-02-05 12:30:00  adam
+ * Logging reduced a bit.
+ * The remaining running time is estimated during register merge.
+ *
+ * Revision 1.12  1995/12/06  17:49:19  adam
  * Uses dict_delete now.
  *
  * Revision 1.11  1995/12/06  16:06:43  adam
@@ -50,6 +54,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <time.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -78,20 +83,36 @@ struct key_file {
     char *prev_name;     /* last word read */
     int   sysno;         /* last sysno */
     int   seqno;         /* last seqno */
+    off_t length;        /* length of file */
+                         /* handler invoked in each read */
+    void (*readHandler)(struct key_file *keyp, void *rinfo);
+    void *readInfo;
 };
+
+void getFnameTmp (char *fname, int no)
+{
+    sprintf (fname, TEMP_FNAME, no);
+}
 
 void key_file_chunk_read (struct key_file *f)
 {
     int nr = 0, r, fd;
     char fname[256];
-    sprintf (fname, TEMP_FNAME, f->no);
+    getFnameTmp (fname, f->no);
     fd = open (fname, O_RDONLY);
     if (fd == -1)
     {
         logf (LOG_FATAL|LOG_ERRNO, "cannot open %s", fname);
         exit (1);
     }
-    logf (LOG_LOG, "reading chunk from %s", fname);
+    if (!f->length)
+    {
+        if ((f->length = lseek (fd, 0L, SEEK_END)) == (off_t) -1)
+        {
+            logf (LOG_FATAL|LOG_ERRNO, "cannot seek %s", fname);
+            exit (1);
+        }
+    }
     if (lseek (fd, f->offset, SEEK_SET) == -1)
     {
         logf (LOG_FATAL|LOG_ERRNO, "cannot seek %s", fname);
@@ -111,6 +132,8 @@ void key_file_chunk_read (struct key_file *f)
     }
     f->buf_size = nr;
     f->buf_ptr = 0;
+    if (f->readHandler)
+        (*f->readHandler)(f, f->readInfo);
     close (fd);
 }
 
@@ -124,6 +147,8 @@ struct key_file *key_file_init (int no, int chunk)
     f->no = no;
     f->chunk = chunk;
     f->offset = 0;
+    f->length = 0;
+    f->readHandler = NULL;
     f->buf = xmalloc (f->chunk);
     f->prev_name = xmalloc (256);
     *f->prev_name = '\0';
@@ -385,6 +410,36 @@ int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
     return 0;
 }
 
+struct progressInfo {
+    time_t   startTime;
+    time_t   lastTime;
+    off_t    totalBytes;
+    off_t    totalOffset;
+};
+
+void progressFunc (struct key_file *keyp, void *info)
+{
+    struct progressInfo *p = info;
+    time_t now, remaining;
+
+    if (keyp->buf_size <= 0 || p->totalBytes <= 0)
+        return ;
+    p->totalOffset += keyp->buf_size;
+    time (&now);
+
+    if (now < p->lastTime+10)
+        return ;
+    p->lastTime = now;
+    remaining = (now - p->startTime)*
+        ((double) p->totalBytes/p->totalOffset - 1.0);
+    if (remaining <= 130)
+        logf (LOG_LOG, "Merge %2.1f%% completed; %ld seconds remaining",
+               (100.0*p->totalOffset) / p->totalBytes, (long) remaining);
+    else
+        logf (LOG_LOG, "Merge %2.1f%% completed; %ld minutes remaining",
+		(100.0*p->totalOffset) / p->totalBytes, (long) remaining/60);
+}
+
 void key_input (const char *dict_fname, const char *isam_fname,
                 int nkeys, int cache)
                 
@@ -395,6 +450,7 @@ void key_input (const char *dict_fname, const char *isam_fname,
     char rbuf[1024];
     int i, r;
     struct heap_info *hi;
+    struct progressInfo progressInfo;
 
     dict = dict_open (dict_fname, cache, 1);
     if (!dict)
@@ -410,9 +466,18 @@ void key_input (const char *dict_fname, const char *isam_fname,
     }
 
     kf = xmalloc ((1+nkeys) * sizeof(*kf));
+    progressInfo.totalBytes = 0;
+    progressInfo.totalOffset = 0;
+    time (&progressInfo.startTime);
+    time (&progressInfo.lastTime);
     for (i = 1; i<=nkeys; i++)
+    {
         kf[i] = key_file_init (i, 32768);
-    
+        kf[i]->readHandler = progressFunc;
+        kf[i]->readInfo = &progressInfo;
+        progressInfo.totalBytes += kf[i]->length;
+        progressInfo.totalOffset += kf[i]->buf_size;
+    }
     hi = key_heap_init (nkeys, key_qsort_compare);
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read (kf[i], rbuf)))
@@ -421,7 +486,12 @@ void key_input (const char *dict_fname, const char *isam_fname,
 
     dict_close (dict);
     is_close (isam);
-
+    
+    for (i = 1; i<=nkeys; i++)
+    {
+        getFnameTmp (rbuf, i);
+        unlink (rbuf);
+    }
     logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
     logf (LOG_LOG, "Distinct words .%7d", no_diffs);
     logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
