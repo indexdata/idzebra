@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.3 2004-06-02 06:39:36 adam Exp $
+/* $Id: tstisamb.c,v 1.4 2004-06-02 07:51:52 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -119,7 +119,7 @@ void tst_forward(ISAMB isb, int n)
 	int x = -1;
 	int xuntil = i;
 	isamb_pp_forward(pp, &x, &xuntil);
-	if (x != xuntil)
+	if (x > xuntil)
 	{
 	    yaz_log(LOG_WARN, "isamb_pp_forward (2). Got %d (expected %d)",
 		    x, xuntil);
