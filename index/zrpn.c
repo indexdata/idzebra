@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.95  1999-09-07 07:19:21  adam
+ * Revision 1.96  1999-09-23 10:05:05  adam
+ * Implemented structure=105 searching.
+ *
+ * Revision 1.95  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.94  1999/07/20 13:59:18  adam
@@ -714,6 +717,55 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
     return i;
 }
 
+/* term_105: handle term, where trunc=Process # and ! and right trunc */
+static int term_105 (ZebraMaps zebra_maps, int reg_type,
+		     const char **src, char *dst, int space_split,
+		     char *dst_term)
+{
+    const char *s0, *s1;
+    const char **map;
+    int i = 0;
+    int j = 0;
+
+    if (!term_pre (zebra_maps, reg_type, src, "*!", "*!"))
+        return 0;
+    s0 = *src;
+    while (*s0)
+    {
+        if (*s0 == '*')
+        {
+            dst[i++] = '.';
+            dst[i++] = '+';
+	    dst_term[j++] = *s0++;
+        }
+        else if (*s0 == '!')
+	{
+            dst[i++] = '.';
+	    dst_term[j++] = *s0++;
+	}
+        {
+            s1 = s0;
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            if (space_split && **map == *CHR_SPACE)
+                break;
+            while (s1 < s0)
+            {
+                if (!isalnum (*s1))
+                    dst[i++] = '\\';
+		dst_term[j++] = *s1;
+                dst[i++] = *s1++;
+            }
+        }
+    }
+    dst[i++] = '.';
+    dst[i++] = '*';
+    dst[i] = '\0';
+    
+    dst_term[j++] = '\0';
+    *src = s0;
+    return i;
+}
+
 
 /* gen_regular_rel - generate regular expression from relation
  *  val:     border value (inclusive)
@@ -1198,6 +1250,17 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    if (r)
 		logf (LOG_WARN, "dict_lookup_grep err, trunc=#/!: %d", r);
 	    break;
+	case 105:        /* process * and ! in term */
+	    term_dict[j++] = '(';
+	    if (!term_105 (zh->zebra_maps, reg_type,
+			   &termp, term_dict + j, space_split, term_dst))
+		return 0;
+	    strcat (term_dict, ")");
+	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+				  &max_pos, 0, grep_handle);
+	    if (r)
+		logf (LOG_WARN, "dict_lookup_grep err, trunc=*/!: %d", r);
+	    break;
         }
     }
     *term_sub = termp;
@@ -1493,6 +1556,9 @@ char *normalize_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	break;
     case 104:
 	ex_list = "!#";
+	break;
+    case 105:
+	ex_list = "!*";
 	break;
     }
     if (ex_list)
