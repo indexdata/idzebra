@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.14 2004-11-29 21:55:28 adam Exp $
+/* $Id: recctrl.c,v 1.15 2005-01-05 00:10:19 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,7 +24,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#if HAVE_DLFCN_H
 #include <dlfcn.h>
+#endif
 
 #include <direntz.h>
 #include <zebrautl.h>
@@ -101,6 +103,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     recTypeClass_add (&rts, idzebra_filter_safari, nmem, 0);
 #endif
 
+#if HAVE_DLFCN_H
     if (module_path)
     {
 	DIR *dir = opendir(module_path);
@@ -146,6 +149,7 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 	    closedir(dir);
 	}
     }
+#endif
     return rts;
 }
 
@@ -180,8 +184,10 @@ void recTypeClass_destroy(RecTypeClass rtc)
 {
     for (; rtc; rtc = rtc->next)
     {
+#if HAVE_DLFCN_H
 	if (rtc->module_handle)
 	    dlclose(rtc->module_handle);
+#endif
     }
 }
 
