@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2000
-dnl $Id: configure.in,v 1.27 2001-02-26 22:14:59 adam Exp $
+dnl $Id: configure.in,v 1.28 2001-02-28 09:01:41 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -15,16 +15,16 @@ else
 	AM_INIT_AUTOMAKE(zebra,1.1)
 	if test ! -r ${srcdir}/isam; then
 		mkdir ${srcdir}/isam
-		touch ${srcdir}/isam/Makefile.in
 	fi
+	touch ${srcdir}/isam/Makefile.in
 	if test ! -r ${srcdir}/isamc; then
 		mkdir ${srcdir}/isamc
-		touch ${srcdir}/isamc/Makefile.in
 	fi
+	touch ${srcdir}/isamc/Makefile.in
 	if test ! -r ${srcdir}/isamb; then
 		mkdir ${srcdir}/isamb
-		touch ${srcdir}/isamb/Makefile.in
 	fi
+	touch ${srcdir}/isamb/Makefile.in
 fi
 AM_CONDITIONAL(ISZMBOL,test $PACKAGE = zmbol)
 dnl ------ Substitutions
