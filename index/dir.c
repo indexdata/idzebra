@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.1  1995-09-01 10:34:51  adam
+ * Revision 1.2  1995-09-01 10:57:07  adam
+ * Minor changes.
+ *
+ * Revision 1.1  1995/09/01  10:34:51  adam
  * Added dir.c
  *
  */
@@ -63,13 +66,14 @@ struct dir_entry *dir_open (const char *rep)
             exit (1);
         }
         strcpy (entry[idx].name, dent->d_name);
+        idx++;
     }
     entry[idx].name = NULL;
     closedir (dir);
     return entry;
 }
 
-int dir_cmp (const void *p1, const void *p2)
+static int dir_cmp (const void *p1, const void *p2)
 {
     return strcmp (((struct dir_entry *) p1)->name,
                    ((struct dir_entry *) p2)->name);
@@ -90,7 +94,7 @@ void dir_free (struct dir_entry **e_p)
 
     assert (e);
     while (e[i].name)
-        free (e[i].name);
+        free (e[i++].name);
     free (e);
     *e_p = NULL;
 }

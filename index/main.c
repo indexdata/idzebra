@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.2  1995-09-01 10:30:24  adam
+ * Revision 1.3  1995-09-01 10:57:07  adam
+ * Minor changes.
+ *
+ * Revision 1.2  1995/09/01  10:30:24  adam
  * More work on indexing. Not working yet.
  *
  * Revision 1.1  1995/08/31  14:50:24  adam
@@ -141,7 +144,8 @@ void text_extract (SYSNO sysno, int cmd, const char *fname)
     fclose (inf);
 }
 
-void file_extract (int cmd, struct stat *fs, const char *fname)
+void file_extract (int cmd, struct stat *fs, const char *fname,
+                   const char *kname)
 {
     int i;
     char ext[128];
@@ -150,7 +154,7 @@ void file_extract (int cmd, struct stat *fs, const char *fname)
     const char *file_type;
     void *file_info;
 
-    log (LOG_DEBUG, "%c %s", cmd, fname);
+    log (LOG_DEBUG, "%c %s k=%s", cmd, fname, kname);
     return;
     for (i = strlen(fname); --i >= 0; )
         if (fname[i] == '/')
@@ -202,7 +206,7 @@ static void repository_extract_r (int cmd, char *rep)
         switch (fs.st_mode & S_IFMT)
         {
         case S_IFREG:
-            file_extract (cmd, &fs, rep);
+            file_extract (cmd, &fs, rep, rep);
             break;
         case S_IFDIR:
             repository_extract_r (cmd, rep);
@@ -254,43 +258,57 @@ void repository_update_r (int cmd, char *dst, char *src)
         dst[dst_len] = '/';
     else
         --dst_len;
-    while (e_dst[i_dst].name && e_src[i_src].name)
+    while (e_dst[i_dst].name || e_src[i_src].name)
     {
-        int sd = strcmp (e_dst[i_dst].name, e_src[i_src].name);
+        int sd;
 
-        strcpy (dst +dst_len+1, e_dst[i_dst].name);
-        strcpy (src +src_len+1, e_src[i_src].name);
-
+        if (e_dst[i_dst].name && e_src[i_src].name)
+            sd = strcmp (e_dst[i_dst].name, e_src[i_src].name);
+        else if (e_src[i_src].name)
+            sd = 1;
+        else
+            sd = -1;
+                
         if (sd == 0)
         {
+            strcpy (dst +dst_len+1, e_dst[i_dst].name);
+            strcpy (src +src_len+1, e_src[i_src].name);
+            
             /* check type, date, length */
 
-            stat (dst, &fs_dst);
-            stat (src, &fs_src);
-
-            switch (fs_dst.st_mode & S_IFMT)
+            if (strcmp (e_dst[i_dst].name, ".") &&
+                strcmp (e_dst[i_dst].name, ".."))
             {
-            case S_IFREG:
-                if (fs_src.st_mtime != fs_dst.st_mtime)
+                stat (dst, &fs_dst);
+                stat (src, &fs_src);
+                
+                switch (fs_dst.st_mode & S_IFMT)
                 {
-                    file_extract ('a', &fs_src, src);
-                    file_extract ('d', &fs_dst, dst);
+                case S_IFREG:
+                    if (fs_src.st_mtime != fs_dst.st_mtime)
+                    {
+                        file_extract ('d', &fs_dst, dst, dst);
+                        file_extract ('a', &fs_src, src, dst);
+                    }
+                    break;
+                case S_IFDIR:
+                    repository_update_r (cmd, dst, src);
+                    break;
                 }
-                break;
-            case S_IFDIR:
-                repository_update_r (cmd, dst, src);
-                break;
             }
             i_src++;
             i_dst++;
         }
         else if (sd > 0)
         {
+            strcpy (dst +dst_len+1, e_src[i_src].name);
+            strcpy (src +src_len+1, e_src[i_src].name);
+            
             stat (src, &fs_src);
             switch (fs_src.st_mode & S_IFMT)
             {
             case S_IFREG:
-                file_extract ('a', &fs_src, src);
+                file_extract ('a', &fs_src, src, dst);
                 break;
             case S_IFDIR:
                 repository_add_tree (cmd, dst, src);
@@ -300,11 +318,14 @@ void repository_update_r (int cmd, char *dst, char *src)
         }
         else 
         {
+            strcpy (dst +dst_len+1, e_dst[i_dst].name);
+            strcpy (src +src_len+1, e_dst[i_dst].name);
+            
             stat (dst, &fs_dst);
             switch (fs_dst.st_mode & S_IFMT)
             {
             case S_IFREG:
-                file_extract ('d', &fs_dst, dst);
+                file_extract ('d', &fs_dst, dst, dst);
                 break;
             case S_IFDIR:
                 repository_del_tree (cmd, dst, src);
