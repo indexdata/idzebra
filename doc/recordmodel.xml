@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.7 2002-10-11 09:05:09 adam Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.8 2002-10-17 08:10:08 mike Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -8,7 +8,7 @@
    kind of structured data. Each record in the system is associated with
    a <emphasis>record schema</emphasis> which lends context to the data
    elements of the record.
-   Any number of record schema can coexist in the system.
+   Any number of record schemas can coexist in the system.
    Although it may be wise to use only a single schema within
    one database, the system poses no such restrictions.
   </para>
@@ -16,7 +16,7 @@
   <para>
    The record model described in this chapter applies to the fundamental,
    structured
-   record type <literal>grs</literal> as introduced in
+   record type <literal>grs</literal>, introduced in
    <xref linkend="record-types"/>.
    <!--
    FIXME - Need to describe the simple string-tag model, or at least 
@@ -185,16 +185,16 @@
 
      <screen>
       &#60;Distributor&#62;
-      &#60;Name&#62; USGS/WRD &#60;/Name&#62;
-      &#60;Organization&#62; USGS/WRD &#60;/Organization&#62;
-      &#60;Street-Address&#62;
-      U.S. GEOLOGICAL SURVEY, 505 MARQUETTE, NW
-      &#60;/Street-Address&#62;
-      &#60;City&#62; ALBUQUERQUE &#60;/City&#62;
-      &#60;State&#62; NM &#60;/State&#62;
-      &#60;Zip-Code&#62; 87102 &#60;/Zip-Code&#62;
-      &#60;Country&#62; USA &#60;/Country&#62;
-      &#60;Telephone&#62; (505) 766-5560 &#60;/Telephone&#62;
+        &#60;Name&#62; USGS/WRD &#60;/Name&#62;
+        &#60;Organization&#62; USGS/WRD &#60;/Organization&#62;
+        &#60;Street-Address&#62;
+          U.S. GEOLOGICAL SURVEY, 505 MARQUETTE, NW
+        &#60;/Street-Address&#62;
+        &#60;City&#62; ALBUQUERQUE &#60;/City&#62;
+        &#60;State&#62; NM &#60;/State&#62;
+        &#60;Zip-Code&#62; 87102 &#60;/Zip-Code&#62;
+        &#60;Country&#62; USA &#60;/Country&#62;
+        &#60;Telephone&#62; (505) 766-5560 &#60;/Telephone&#62;
       &#60;/Distributor&#62;
      </screen>
 
@@ -220,7 +220,7 @@
      Each element is terminated by a closing tag - beginning
      with <literal>&#60;</literal>/, and containing the same symbolic
      tag-name as the corresponding opening tag.
-     The general closing tag - <literal>&#60;</literal>&gt;/ -
+     The general closing tag - <literal>&lt;</literal>/&gt; -
      terminates the element started by the last opening tag. The
      structuring of elements is significant.
      The element <emphasis>Telephone</emphasis>,
@@ -304,7 +304,7 @@
       tag with the same <emphasis>class</emphasis> and
       <emphasis>value</emphasis> settings, or by the
       appearance of another, normal tag. In other words, the end-tags for
-      the variants used in the example above could have been saved.
+      the variants used in the example above could have been omitted.
      </para>
 
      <para>

@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.9 2002-10-16 20:33:31 mike Exp $ -->
+ <!-- $Id: examples.xml,v 1.10 2002-10-17 08:10:08 mike Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -182,8 +182,8 @@
    and well defined.
   </para>
   <para>
-   For convenience, access points are gathered into <define>attribute
-   sets</define>.  For example, the BIB-1 attribute set is supposed to
+   For convenience, access points are gathered into <firstterm>attribute
+   sets</firstterm>.  For example, the BIB-1 attribute set is supposed to
    contain bibliographic access points such as author, title, subject
    and ISBN; the GEO attribute set contains access points pertaining
    to geospatial information (bounding box, ###, etc.); the CIMI
@@ -216,6 +216,17 @@
    want to support the BIB-1 attribute set.  Then we need to tell it
    which elements of its record pertain to access point 1003.
   </para>
+  <itemizedlist>
+   <listitem>
+    <para>
+     
+    </para>
+   </listitem>
+   <listitem>
+    <para>
+    </para>
+   </listitem>
+  </itemizedlist>
  </sect1>
 </chapter>
 
@@ -240,7 +251,7 @@
      The master configuration file, <literal>zebra.cfg</literal>,
      which is as short and simple as it can be:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.9 2002-10-16 20:33:31 mike Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.10 2002-10-17 08:10:08 mike Exp $
 	# Bare-bones master configuration file for Zebra
 	profilePath: .:../../tab:../../../yaz/tab
      </screen>
@@ -249,28 +260,6 @@
      the file called
      <literal>bib1.att</literal>.
      ### What is an attribute set?
-    </para>
-   </listitem>
-
-   <listitem>
-    <para>
-     The BIB-1 attribute set configuration file,
-     <literal>bib1.att</literal>, which is also as short as possible:
-     <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.9 2002-10-16 20:33:31 mike Exp $
-	# Bare-bones BIB-1 attribute set file for Zebra
-	reference Bib-1
-     </screen>
-     Apart from the comments, all this specifies is that reference of
-     the attribute set described by this file is
-     <literal>Bib-1</literal>, a name recognised by the system as
-     referring to a well-known opaque identifier that is transmitted
-     by clients as part of their searches.
-     ### Yeuch!  Surely we can say that better!
-    </para>
-    <para>
-     ### Can't we somehow say this trivial thing in the main
-     configuration file?
     </para>
    </listitem>
 -->

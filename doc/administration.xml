@@ -1,7 +1,13 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.8 2002-10-11 09:05:09 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.9 2002-10-17 08:10:08 mike Exp $ -->
  <title>Administrating Zebra</title>
- 
+ <!-- ### It's a bit daft that this chapter (which describes half of
+          the configuration-file formats) is separated from
+          "recordmodel.xml" (which describes the other half) by the
+          instructions on running zebraidx and zebrasrv.  Some careful
+          re-ordering is required here.
+ -->
+
  <para>
   Unlike many simpler retrieval systems, Zebra supports safe, incremental
   updates to an existing index.
@@ -203,6 +209,7 @@
        group of records. If you plan to update/delete this type of
        records later this should be specified as 1; otherwise it
        should be 0 (default), to save register space.
+       <!-- ### this is the first mention of "register" -->
        See <xref linkend="file-ids"/>.
       </para>
      </listitem>
@@ -222,6 +229,7 @@
      </listitem>
     </varlistentry>
     <varlistentry>
+     <!-- ### probably a better place to define "register" -->
      <term>register: <replaceable>register-location</replaceable></term>
      <listitem>
       <para>
@@ -253,7 +261,7 @@
      <term>keyTmpDir: <replaceable>directory</replaceable></term>
      <listitem>
       <para>
-       Directory in which temporary files used during zebraidx' update
+       Directory in which temporary files used during zebraidx's update
        phase are stored. 
       </para>
      </listitem>
@@ -329,8 +337,9 @@
    That is, when a client wishes to retrieve a record
    following a search operation, the files are accessed from the place
    where you originally put them - if you remove the files (without
-   running <literal>zebraidx</literal> again, the client
-   will receive a diagnostic message.
+   running <literal>zebraidx</literal> again, the server will return
+   diagnostic number 14 (``System error in presenting records'') to
+   the client.
   </para>
   
   <para>

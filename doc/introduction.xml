@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.17 2002-10-16 20:33:31 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.18 2002-10-17 08:10:08 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -109,7 +109,13 @@
       Zebra is written in portable C, so it runs on most Unix-like systems 
       as well as Windows NT.  A binary distribution for Windows NT is
       available at
-      <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/"/>
+      <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/"/>,
+      and pre-built packages are available for some Linux
+      distributions:
+      Red Hat 7.x RPMs at
+      <ulink url="http://ftp.indexdata.dk/pub/zebra/RedHat7.X/"/>
+      and Debian packages at
+      <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/"/>
      </para>
     </listitem>
     
@@ -127,7 +133,17 @@
      <para>
       Protocol facilities: Init, Search, Present (retrieval),
       Segmentation (support for very large records), Delete, Scan
-      (index browsing), Sort, Close and some Extended Services.
+      (index browsing), Sort, Close and support for the ``update''
+      Extended Service to add or replace an existing XML record.
+	<!-- Adam says:
+	     * Supported
+	     You can insert/delete/replace an XML record given an
+	     "external" ID.  Actually this way of doing ES Update was
+	     meant for an OAI application that Ian Ibbotson had in
+	     mind to implement. The "update" command in YAZ client
+	     implements this on the client side. My plan is to make
+	     this available in ZOOM "extended" soon..
+	-->
      </para>
     </listitem>
 
@@ -315,14 +331,15 @@
    announcements from the authors (new
    releases, bug fixes, etc.) and general discussion.  You are welcome
    to seek support there.  Join by sending email to
-   <email>zebra-request@indexdata.dk</email>. Put the word 'subscribe'
-   in the body of the message.
+   <email>zebra-request@indexdata.dk</email>. Put the word
+   <literal>subscribe</literal> in the body of the message.
   </para>
   <para>
    Third, it's possible to buy a commercial support contract, with
    well defined service levels and response times, from Index Data.
    See
    <ulink url="http://www.indexdata.dk/support/?lang=en"/>
+   <!-- ### compare this page with http://indexdata.dk/support2/ -->
    for details.
   </para>
  </sect1>  

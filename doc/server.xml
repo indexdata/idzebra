@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.4 2002-10-11 09:05:09 adam Exp $ -->
+ <!-- $Id: server.xml,v 1.5 2002-10-17 08:10:08 mike Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -235,7 +235,7 @@
    </para>
 
    <para>
-    The server has full support for piggy-backed present requests (see
+    The server has full support for piggy-backed retrieval (see
     also the following section).
    </para>
 
@@ -258,6 +258,7 @@
     A phrase register is created for those fields in the
     <literal>.abs</literal> file that contains a
     <literal>p</literal>-specifier.
+    <!-- ### whatever the hell _that_ is -->
    </para>
 
    <para>
