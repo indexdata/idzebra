@@ -1,9 +1,53 @@
 /*
- * Copyright (C) 1994-2002, Index Data
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: lockutil.c,v 1.15 2002-04-04 14:14:13 adam Exp $
+ * $Log: lockutil.c,v $
+ * Revision 1.12.2.1  2002-07-23 12:40:33  adam
+ * Use busy wait for file locking on NT
+ *
+ * Revision 1.12  1999/05/26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.11  1999/02/02 14:50:59  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.10  1997/09/29 09:08:36  adam
+ * Revised locking system to be thread safe for the server.
+ *
+ * Revision 1.9  1997/09/25 14:54:43  adam
+ * WIN32 files lock support.
+ *
+ * Revision 1.8  1997/09/17 12:19:15  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.7  1997/09/09 13:38:08  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.6  1996/10/29 14:08:14  adam
+ * Uses resource lockDir instead of lockPath.
+ *
+ * Revision 1.5  1996/03/26 16:01:13  adam
+ * New setting lockPath: directory of various lock files.
+ *
+ * Revision 1.4  1995/12/13  08:46:10  adam
+ * Locking uses F_WRLCK and F_RDLCK again!
+ *
+ * Revision 1.3  1995/12/12  16:00:57  adam
+ * System call sync(2) used after update/commit.
+ * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
+ * and F_RDLCK.
+ *
+ * Revision 1.2  1995/12/11  11:43:29  adam
+ * Locking based on fcntl instead of flock.
+ * Setting commitEnable removed. Command line option -n can be used to
+ * prevent commit if commit setting is defined in the configuration file.
+ *
+ * Revision 1.1  1995/12/07  17:38:47  adam
+ * Work locking mechanisms for concurrent updates/commit.
+ *
  */
 #include <stdio.h>
 #include <assert.h>
@@ -25,67 +69,30 @@ struct zebra_lock_info {
     int excl_flag;
 };
 
-char *zebra_mk_fname (const char *dir, const char *name)
+ZebraLockHandle zebra_lock_create (const char *name, int excl_flag)
 {
-    int dlen = dir ? strlen(dir) : 0;
-    char *fname = xmalloc (dlen + strlen(name) + 3);
-
-#ifdef WIN32
-    if (dlen)
-    {
-        int last_one = dir[dlen-1];
-
-        if (!strchr ("/\\:", last_one))
-            sprintf (fname, "%s\\%s", dir, name);
-        else
-            sprintf (fname, "%s%s", dir, name);
-    }
-    else
-        sprintf (fname, "%s", name);
-#else
-    if (dlen)
-    {
-        int last_one = dir[dlen-1];
-
-        if (!strchr ("/", last_one))
-            sprintf (fname, "%s/%s", dir, name);
-        else
-            sprintf (fname, "%s%s", dir, name);
-    }
-    else
-        sprintf (fname, "%s", name);
-#endif
-    return fname;
-}
-
-ZebraLockHandle zebra_lock_create (const char *dir,
-                                   const char *name, int excl_flag)
-{
-    char *fname = zebra_mk_fname(dir, name);
     ZebraLockHandle h = (ZebraLockHandle) xmalloc (sizeof(*h));
-
     h->excl_flag = excl_flag;
     h->fd = -1;
-
-    
+    yaz_log (LOG_DEBUG, "zebra_lock_create %s %d begin", name, excl_flag);
 #ifdef WIN32
     if (!h->excl_flag)
         h->fd = open (name, O_BINARY|O_RDONLY);
     if (h->fd == -1)
-        h->fd = open (fname, ((h->excl_flag > 1) ? O_EXCL : 0)|
+        h->fd = open (name, ((h->excl_flag > 1) ? O_EXCL : 0)|
 	    (O_BINARY|O_CREAT|O_RDWR), 0666);
 #else
-    h->fd= open (fname, ((h->excl_flag > 1) ? O_EXCL : 0)|
+    h->fd= open (name, ((h->excl_flag > 1) ? O_EXCL : 0)|
 	    (O_BINARY|O_CREAT|O_RDWR|O_SYNC), 0666);
 #endif
     if (h->fd == -1)
     {
 	if (h->excl_flag <= 1)
-            logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
+            logf (LOG_WARN|LOG_ERRNO, "open %s", name);
 	xfree (h);
-        h = 0;
+	return NULL;
     }
-    xfree (fname);
+    yaz_log (LOG_DEBUG, "zebra_lock_create %s %d end", name, excl_flag);
     return h;
 }
 
@@ -118,28 +125,21 @@ static int unixLock (int fd, int type, int cmd)
 }
 #endif
 
-int zebra_lock_w (ZebraLockHandle h)
-{
-#ifdef WIN32
-    return _locking (h->fd, _LK_LOCK, 1);
-#else
-    return unixLock (h->fd, F_WRLCK, F_SETLKW);
-#endif
-}
-
-int zebra_lock_r (ZebraLockHandle h)
-{
-#ifdef WIN32
-    return _locking (h->fd, _LK_LOCK, 1);
-#else
-    return unixLock (h->fd, F_RDLCK, F_SETLKW);
-#endif
-}
-
 int zebra_lock (ZebraLockHandle h)
 {
 #ifdef WIN32
-    return _locking (h->fd, _LK_LOCK, 1);
+    int m = 10;
+    yaz_log(LOG_DEBUG, "lock begin");
+    while (_locking (h->fd, _LK_NBLCK, 1) != 0)
+    {
+	Sleep(m);
+	if (m > 1000)
+	    m = m+100;
+	else
+	    m = m * 2;
+    }
+    yaz_log(LOG_DEBUG, "lock end m=%d", m);
+    return 0;
 #else
     return unixLock (h->fd, h->excl_flag ? F_WRLCK : F_RDLCK, F_SETLKW);
 #endif
@@ -148,7 +148,9 @@ int zebra_lock (ZebraLockHandle h)
 int zebra_lock_nb (ZebraLockHandle h)
 {
 #ifdef WIN32
+    yaz_log(LOG_DEBUG, "lock_nb begin");
     return _locking (h->fd, _LK_NBLCK, 1);
+    yaz_log(LOG_DEBUG, "lock_nb end");
 #else
     return unixLock (h->fd, h->excl_flag ? F_WRLCK : F_RDLCK, F_SETLK);
 #endif
