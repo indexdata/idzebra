@@ -2,7 +2,7 @@
  *  Copyright (c) 2000-2002, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.14 2002-05-06 17:45:21 adam Exp $
+ *  $Id: isamb.c,v 1.15 2002-05-14 21:12:56 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -386,7 +386,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
                         lookahead_item = 0;
                         more = 0;
                     }
-                    if (max_item &&
+                    if (lookahead_item && max_item &&
                         (*b->method->compare_item)(max_item, lookahead_item) <= 0)
                     {
 			yaz_log (LOG_LOG, "max_item 1");
