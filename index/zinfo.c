@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.42 2005-01-15 19:38:29 adam Exp $
+/* $Id: zinfo.c,v 1.43 2005-01-16 23:28:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,7 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <stdlib.h>
+#include <sys/types.h>
 #include <assert.h>
 #include <string.h>
 #include <time.h>
