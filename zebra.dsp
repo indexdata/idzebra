@@ -76,6 +76,10 @@ LIB32=link.exe -lib
 # Name "zebra - Win32 Debug"
 # Begin Source File
 
+SOURCE=.\index\attribute.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\bfile\bfile.c
 # End Source File
 # Begin Source File
@@ -132,6 +136,10 @@ SOURCE=.\dict\insert.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\index\invstat.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\isam\isam.c
 # End Source File
 # Begin Source File
@@ -141,6 +149,22 @@ SOURCE=.\isamc\isamc.c
 # Begin Source File
 
 SOURCE=.\isam\isutil.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\kcompare.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\lockidx.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\locksrv.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\lockutil.c
 # End Source File
 # Begin Source File
 
@@ -176,7 +200,15 @@ SOURCE=.\dict\open.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\util\passwddb.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\isam\physical.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\rank1.c
 # End Source File
 # Begin Source File
 
@@ -192,6 +224,14 @@ SOURCE=.\recctrl\recgrs.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\index\recindex.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\recstat.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\recctrl\rectext.c
 # End Source File
 # Begin Source File
@@ -201,6 +241,10 @@ SOURCE=.\recctrl\regxread.c
 # Begin Source File
 
 SOURCE=.\util\res.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\retrieve.c
 # End Source File
 # Begin Source File
 
@@ -248,11 +292,43 @@ SOURCE=.\recctrl\sgmlread.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\index\sortidx.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\dfa\states.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\index\symtab.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\trunc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\zebraapi.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\util\zebramap.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\zinfo.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\zlogs.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\zrpn.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\index\zsets.c
 # End Source File
 # End Target
 # End Project

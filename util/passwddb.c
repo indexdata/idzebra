@@ -4,16 +4,22 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: passwddb.c,v $
- * Revision 1.2  1998-06-25 09:55:51  adam
+ * Revision 1.3  1998-06-25 19:16:32  adam
+ * Minor changes to Visual C++ project.
+ *
+ * Revision 1.2  1998/06/25 09:55:51  adam
  * Minor changes - fixex headers.
  *
  */
+#ifdef WINDOWS
+#else
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <stdio.h>
 
 #ifndef USE_CRYPT
-#define USE_CRYPT 1
+#define USE_CRYPT 0
 #endif
 
 #if USE_CRYPT
