@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.46.2.1 2004-08-06 09:30:57 adam Exp $
+/* $Id: kcompare.c,v 1.46.2.2 2004-08-06 09:36:07 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -31,7 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef __GNUC__
 #define CODEC_INLINE inline
 #else
-#define CODEC_INLINE inline
+#define CODEC_INLINE
 #endif
 
 void key_logdump_txt (int logmask, const void *p, const char *txt)
