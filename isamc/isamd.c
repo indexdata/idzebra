@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.17 1999-10-06 11:46:36 heikki Exp $ 
+ * $Id: isamd.c,v 1.18 1999-10-06 15:18:13 heikki Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -37,13 +37,14 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
         {    32,   40 },  /* 24 is the smallest unreasonable size! */
 	{    64,    0 },
 #else
-        {    32,    1 },
         {    64,    1 },
 	{   128,    1 },
-        {   512,    1 },
+	{   256,    1 },
+	{   512,    1 },
+        {  1024,    1 },
         {  2048,    1 },
-        {  8192,    1 },
-        { 32768,    0 },
+        {  4096,    1 },
+        {  8192,    0 },
 
 #endif
 #ifdef SKIPTHIS
@@ -849,7 +850,11 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.17  1999-10-06 11:46:36  heikki
+ * Revision 1.18  1999-10-06 15:18:13  heikki
+ *
+ * Improving block sizes again
+ *
+ * Revision 1.17  1999/10/06 11:46:36  heikki
  * mproved statistics on isam-d
  *
  * Revision 1.16  1999/10/05 09:57:40  heikki
