@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.16  1999-09-07 07:19:21  adam
+ * Revision 1.17  1999-09-08 12:13:21  adam
+ * Fixed minor bug "replace"-mappings. Removed some logging messages.
+ *
+ * Revision 1.16  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.15  1999/05/26 07:49:14  adam
@@ -70,8 +73,10 @@
 #define ZEBRA_MAP_TYPE_SORT  1
 #define ZEBRA_MAP_TYPE_INDEX 2
 
+#define ZEBRA_REPLACE_ANY  300
+
 struct zm_token {
-    char *token_from;
+    int *token_from;
     char *token_to;
     int token_min;
     struct zm_token *next;
@@ -166,6 +171,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 	    (*zm)->maptab = NULL;
 	    (*zm)->completeness = 0;
 	    (*zm)->positioned = 0;
+	    (*zm)->replace_tokens = 0;
 	}
 	else if (zm && !yaz_matchstr (argv[0], "charmap") && argc == 2)
 	{
@@ -187,27 +193,35 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
         else if (zm && !yaz_matchstr (argv[0], "replace") && argc >= 2)
         {
 	    struct zm_token *token = nmem_malloc (zms->nmem, sizeof(*token));
-	    char *cp, *dp;
 	    token->next = (*zm)->replace_tokens;
 	    (*zm)->replace_tokens = token;
-	    dp = token->token_from = nmem_strdup (zms->nmem, cp = argv[1]);
-	    while (*cp)
-	    {
-		if (*cp == '$')
-		{
-		    *dp++ = ' ';
-		    cp++;
-		}
-		else
-		    *dp++ = zebra_prim(&cp);
+	    token->token_from = 0;
+            if (argc >= 2)
+            {
+	        char *cp = argv[1];
+	        int *dp = token->token_from = (int *)
+                    nmem_malloc (zms->nmem, (1+strlen(cp))*sizeof(int));
+	        while (*cp)
+		    if (*cp == '$')
+		    {
+		        *dp++ = ' ';
+		        cp++;
+		    }
+		    else if (*cp == '.')
+                    {
+                        *dp++ = ZEBRA_REPLACE_ANY;
+                        cp++;
+                    }
+                    else
+		        *dp++ = zebra_prim(&cp);
+	        *dp = '\0';
 	    }
-	    *dp = '\0';
-
 	    if (argc >= 3)
 	    {
-		dp = token->token_to = nmem_strdup (zms->nmem, cp = argv[2]);
+                char *cp = argv[2];
+		char *dp = token->token_to =
+                    nmem_malloc (zms->nmem, strlen(cp)+1);
 		while (*cp)
-		{
 		    if (*cp == '$')
 		    {
 			*dp++ = ' ';
@@ -215,7 +229,6 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 		    }
 		    else
 			*dp++ = zebra_prim(&cp);
-		}
 		*dp = '\0';
 	    }
 	    else
@@ -563,9 +576,8 @@ WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
     wrbuf_write(zms->wrbuf_1, input_str, input_len);
     if (!zm->replace_tokens)
 	return zms->wrbuf_1;
-   
+  
 #if 0 
-    logf (LOG_LOG, "zebra_replace");
     logf (LOG_LOG, "in:%.*s:", wrbuf_len(zms->wrbuf_1),
 	  wrbuf_buf(zms->wrbuf_1));
 #endif
@@ -616,7 +628,7 @@ int zebra_replace_sub(ZebraMaps zms, unsigned reg_id, const char *ex_list,
 		    c = ' ';
 		else
 		    c = tolower(input_str[j+i]);
-		if (token->token_from[j] == '.')
+		if (token->token_from[j] == ZEBRA_REPLACE_ANY)
 		{
 		    if (c == ' ')
 			break;

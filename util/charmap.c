@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.16  1999-09-07 07:19:21  adam
+ * Revision 1.17  1999-09-08 12:13:21  adam
+ * Fixed minor bug "replace"-mappings. Removed some logging messages.
+ *
+ * Revision 1.16  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.15  1999/05/26 07:49:14  adam
@@ -241,11 +244,22 @@ unsigned char zebra_prim(char **s)
 	case 't': c = '\t'; (*s)++; break;
 	case 's': c = ' '; (*s)++; break;
 	case 'x': sscanf(*s, "x%2x", &i); c = i; *s += 3; break;
-	case '{': case '[': case '(': case '}': case ']': case ')': case '$':
-	    (*s)++;
-	    break;
-	default:
-	    sscanf(*s, "%3o", &i); c = i; *s += 3; break;
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+	    sscanf(*s, "%3o", &i);
+            c = i;
+            *s += 3;
+            break;
+        default:
+            (*s)++;
 	}
 	return c;
     }
@@ -303,10 +317,10 @@ static void fun_add_map(const char *s, void *data, int num)
     chrwork *arg = (chrwork *) data;
 
     assert(arg->map->input);
-    logf (LOG_LOG, "set map %.*s", (int) strlen(s), s);
+    logf (LOG_DEBUG, "set map %.*s", (int) strlen(s), s);
     set_map_string(arg->map->input, arg->map->nmem, s, strlen(s), arg->string);
     for (s = arg->string; *s; s++)
-	logf (LOG_LOG, " %3d", (unsigned char) *s);
+	logf (LOG_DEBUG, " %3d", (unsigned char) *s);
 }
 
 /*
@@ -317,11 +331,11 @@ static void fun_add_qmap(const char *s, void *data, int num)
     chrwork *arg = (chrwork *) data;
 
     assert(arg->map->q_input);
-    logf (LOG_LOG, "set qmap %.*s", (int) strlen(s), s);
+    logf (LOG_DEBUG, "set qmap %.*s", (int) strlen(s), s);
     set_map_string(arg->map->q_input, arg->map->nmem, s,
 		   strlen(s), arg->string);
     for (s = arg->string; *s; s++)
-	logf (LOG_LOG, " %3d", (unsigned char) *s);
+	logf (LOG_DEBUG, " %3d", (unsigned char) *s);
 }
 
 
@@ -393,7 +407,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only)
     int argc, num = (int) *CHR_BASE, i;
     NMEM nmem;
 
-    logf (LOG_LOG, "maptab %s open", name);
+    logf (LOG_DEBUG, "maptab %s open", name);
     if (!(f = yaz_path_fopen(tabpath, name, "r")))
     {
 	logf(LOG_WARN|LOG_ERRNO, "%s", name);
@@ -542,7 +556,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only)
 	chrmaptab_destroy(res);
 	res = 0;
     }
-    logf (LOG_LOG, "maptab %s close %d errors", name, errors);
+    logf (LOG_DEBUG, "maptab %s close %d errors", name, errors);
     return res;
 }
 
