@@ -37,4 +37,4 @@ cd doc; make prefix=$RPM_BUILD_ROOT/usr install
 %config /usr/share/zebra/tab
 /usr/bin/zebrasrv
 /usr/bin/zebraidx
-/usr/share/zebra/doc
+/usr/share/doc/zebra
