@@ -1,4 +1,3 @@
-IDZebra.i
 IDZebra_wrap.c
 Makefile.PL.in
 README
@@ -14,9 +13,9 @@ lib/IDZebra/Data1.pm
 lib/IDZebra/Filter.pm
 lib/IDZebra/Logger.pm
 lib/IDZebra/Repository.pm
+lib/IDZebra/Resultset.pm
 lib/IDZebra/Service.pm
 lib/IDZebra/Session.pm
-rg.h
 test.pl
 zebra_api_ext.c
 zebra_api_ext.h
