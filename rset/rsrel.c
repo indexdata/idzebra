@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.22  1997-12-18 10:54:25  adam
+ * Revision 1.23  1998-01-07 13:53:41  adam
+ * Queries using simple ranked operands returns right number of hits.
+ *
+ * Revision 1.22  1997/12/18 10:54:25  adam
  * New method result set method rs_hits that returns the number of
  * hits in result-set (if known). The ranked result set returns real
  * number of hits but only when not combined with other operands.
@@ -130,6 +133,14 @@ struct rset_rel_info {
     float   *score_buf;                 /* score buffer */
     int     *sort_idx;                  /* score sorted index */
     int     *sysno_idx;                 /* sysno sorted index (ring buffer) */
+    int     no_isam_positions;
+    ISAM    is;
+    ISAMC   isc;
+    ISAM_P  *isam_positions;
+    int     no_terms;
+    int     *term_no;
+
+    int     method;
     struct rset_rel_rfd *rfd_list;
 };
 
@@ -192,7 +203,7 @@ static int qcomp (const void *p1, const void *p2)
 #define SCORE_COOC 0.3                       /* component dependent on co-oc */
 #define SCORE_DYN  (1-(SCORE_SHOW+SCORE_COOC)) /* dynamic component of score */
 
-static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
+static void relevance (struct rset_rel_info *info)
 {
     char **isam_buf;
     char *isam_tmp_buf;
@@ -210,67 +221,67 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     int i;
 
     logf (LOG_DEBUG, "relevance");
-    isam_buf = xmalloc (parms->no_isam_positions * sizeof(*isam_buf));
-    isam_r = xmalloc (sizeof (*isam_r) * parms->no_isam_positions);
-    if (parms->is)
-        isam_pt = xmalloc (sizeof (*isam_pt) * parms->no_isam_positions);
-    else if (parms->isc)
-        isamc_pp = xmalloc (sizeof (*isamc_pp) * parms->no_isam_positions);
+    isam_buf = xmalloc (info->no_isam_positions * sizeof(*isam_buf));
+    isam_r = xmalloc (sizeof (*isam_r) * info->no_isam_positions);
+    if (info->is)
+        isam_pt = xmalloc (sizeof (*isam_pt) * info->no_isam_positions);
+    else if (info->isc)
+        isamc_pp = xmalloc (sizeof (*isamc_pp) * info->no_isam_positions);
     else
     {
         logf (LOG_FATAL, "No isamc or isam in rs_rel");
         abort ();
     }
     isam_tmp_buf = xmalloc (info->key_size);
-    max_tf = xmalloc (sizeof (*max_tf) * parms->no_terms);
-    tf = xmalloc (sizeof (*tf) * parms->no_terms);
+    max_tf = xmalloc (sizeof (*max_tf) * info->no_terms);
+    tf = xmalloc (sizeof (*tf) * info->no_terms);
 
-    for (i = 0; i<parms->no_terms; i++)
+    for (i = 0; i<info->no_terms; i++)
 	max_tf[i] = 0;
-    for (i = 0; i<parms->no_isam_positions; i++)
+    for (i = 0; i < info->no_isam_positions; i++)
     {
         isam_buf[i] = xmalloc (info->key_size);
         if (isam_pt)
         {
-            isam_pt[i] = is_position (parms->is, parms->isam_positions[i]);
-            max_tf [parms->term_no[i]] = is_numkeys (isam_pt[i]);
+            isam_pt[i] = is_position (info->is, info->isam_positions[i]);
+            max_tf [info->term_no[i]] = is_numkeys (isam_pt[i]);
             isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
         } 
         else if (isamc_pp)
         {
-            isamc_pp[i] = isc_pp_open (parms->isc, parms->isam_positions[i]);
-            max_tf [parms->term_no[i]] = isc_pp_num (isamc_pp[i]);
+            isamc_pp[i] = isc_pp_open (info->isc, info->isam_positions[i]);
+            max_tf [info->term_no[i]] = isc_pp_num (isamc_pp[i]);
             isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
         }
         logf (LOG_DEBUG, "max tf %d = %d", i, max_tf[i]);
     }
-    switch (parms->method)
+    switch (info->method)
     {
     case RSREL_METHOD_B:
 	while (1)
 	{
 	    int r, min = -1;
 	    int pos = 0;
-	    for (i = 0; i<parms->no_isam_positions; i++)
+	    for (i = 0; i<info->no_isam_positions; i++)
 		if (isam_r[i] && 
 		    (min < 0 ||
-		     (r = (*parms->cmp)(isam_buf[i], isam_buf[min])) < 1))
+		     (r = (*info->cmp)(isam_buf[i], isam_buf[min])) < 1))
 		    min = i;
 	    if (!isam_prev_buf)
 	    {
-		pos_tf = xmalloc (sizeof(*pos_tf) * parms->no_isam_positions);
+		pos_tf = xmalloc (sizeof(*pos_tf) * info->no_isam_positions);
 		isam_prev_buf = xmalloc (info->key_size);
-		fact1 = 100000/parms->no_isam_positions;
+		fact1 = 100000/info->no_isam_positions;
 		fact2 = 100000/
-		    (parms->no_isam_positions*parms->no_isam_positions);
+		    (info->no_isam_positions*info->no_isam_positions);
 		
 		no_occur = score_sum = 0;
 		memcpy (isam_prev_buf, isam_buf[min], info->key_size);
-		for (i = 0; i<parms->no_isam_positions; i++)
+		for (i = 0; i<info->no_isam_positions; i++)
 		    pos_tf[i] = -10;
 	    }
 	    else if (min < 0 ||
-		     (*parms->cmp)(isam_buf[min], isam_prev_buf) > 1)
+		     (*info->cmp)(isam_buf[min], isam_prev_buf) > 1)
 	    {
 		logf (LOG_LOG, "final occur = %d ratio=%d",
 		      no_occur, score_sum / no_occur);
@@ -279,12 +290,12 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 		    break;
 		no_occur = score_sum = 0;
 		memcpy (isam_prev_buf, isam_buf[min], info->key_size);
-		for (i = 0; i<parms->no_isam_positions; i++)
+		for (i = 0; i<info->no_isam_positions; i++)
 		    pos_tf[i] = -10;
 	    }
-	    pos = (*parms->get_pos)(isam_buf[min]);
+	    pos = (*info->get_pos)(isam_buf[min]);
 	    logf (LOG_LOG, "pos=%d", pos);
-	    for (i = 0; i<parms->no_isam_positions; i++)
+	    for (i = 0; i<info->no_isam_positions; i++)
 	    {
 		int d = pos - pos_tf[i];
 		
@@ -318,55 +329,55 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 	    
 	    last_term = -1;
 	    /* find min with lowest sysno */
-	    for (i = 0; i<parms->no_isam_positions; i++)
+	    for (i = 0; i<info->no_isam_positions; i++)
 	    {
 		if (isam_r[i] && 
 		    (min < 0
-		     || (r = (*parms->cmp)(isam_buf[i], isam_buf[min])) < 2))
+		     || (r = (*info->cmp)(isam_buf[i], isam_buf[min])) < 2))
 		{
 		    min = i;
 		    co_oc = 1;
 		}
-		else if (!r && last_term != parms->term_no[i]) 
+		else if (!r && last_term != info->term_no[i]) 
 		    co_oc++;  /* new occurrence */
-		last_term = parms->term_no[i];
+		last_term = info->term_no[i];
 	    }
 	    
 	    if (min < 0)
 		break;
 	    memcpy (isam_tmp_buf, isam_buf[min], info->key_size);
 	    /* calculate for all with those sysno */
-	    for (i = 0; i < parms->no_terms; i++)
+	    for (i = 0; i < info->no_terms; i++)
 		tf[i] = 0;
-	    for (i = 0; i<parms->no_isam_positions; i++)
+	    for (i = 0; i<info->no_isam_positions; i++)
 	    {
 		int r;
 		
 		if (isam_r[i])
-		    r = (*parms->cmp)(isam_buf[i], isam_tmp_buf);
+		    r = (*info->cmp)(isam_buf[i], isam_tmp_buf);
 		else 
 		    r = 2;
 		if (r <= 1 && r >= -1)
 		{
 		    do
 		    {
-			tf[parms->term_no[i]]++;
+			tf[info->term_no[i]]++;
 			if (isam_pt)
 			    isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
 			else if (isamc_pp)
 			    isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
 		    } while (isam_r[i] && 
-			     (*parms->cmp)(isam_buf[i], isam_tmp_buf) <= 1);
+			     (*info->cmp)(isam_buf[i], isam_tmp_buf) <= 1);
 		}
 	    }
 	    /* calculate relevance value */
 	    score = 0.0;
-	    for (i = 0; i<parms->no_terms; i++)
+	    for (i = 0; i<info->no_terms; i++)
 		if (tf[i])
-		    score += SCORE_SHOW + SCORE_COOC*co_oc/parms->no_terms +
+		    score += SCORE_SHOW + SCORE_COOC*co_oc/info->no_terms +
 			SCORE_DYN*tf[i]/max_tf[i];
 	    /* if value is in the top score, then save it - don't emit yet */
-	    add_rec (info, score/parms->no_terms, isam_tmp_buf);
+	    add_rec (info, score/info->no_terms, isam_tmp_buf);
 	} /* while */
 	break;
     } /* switch */
@@ -374,7 +385,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
         info->sysno_idx[i] = i;
     qsort_info = info;
     qsort (info->sysno_idx, info->no_rec, sizeof(*info->sysno_idx), qcomp);
-    for (i = 0; i<parms->no_isam_positions; i++)
+    for (i = 0; i<info->no_isam_positions; i++)
     {
         if (isam_pt)
             is_pt_free (isam_pt[i]);
@@ -391,21 +402,34 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     xfree(tf);
 }
 
-static void *r_create (const struct rset_control *sel, void *parms,
+static void *r_create (const struct rset_control *sel, void *v_parms,
                        int *flags)
 {
-    rset_relevance_parms *r_parms = parms;
+    rset_relevance_parms *parms = v_parms;
     struct rset_rel_info *info;
 
     *flags |= RSET_FLAG_RANKED;
     info = xmalloc (sizeof(struct rset_rel_info));
-    info->key_size = r_parms->key_size;
+    info->key_size = parms->key_size;
     assert (info->key_size > 1);
-    info->max_rec = r_parms->max_rec;
+    info->max_rec = parms->max_rec;
     assert (info->max_rec > 1);
-    info->cmp = r_parms->cmp;
-    info->get_pos = r_parms->get_pos;
+    info->cmp = parms->cmp;
+    info->get_pos = parms->get_pos;
 
+    info->method = parms->method;
+    info->no_isam_positions = parms->no_isam_positions;
+    info->isam_positions =
+	xmalloc (sizeof(*info->isam_positions)*parms->no_isam_positions);
+    memcpy (info->isam_positions, parms->isam_positions,
+	    sizeof(*info->isam_positions) * parms->no_isam_positions);
+    info->is = parms->is;
+    info->isc = parms->isc;
+    info->no_terms = parms->no_terms;
+    info->term_no = xmalloc (sizeof(*info->term_no)*parms->no_isam_positions);
+    memcpy (info->term_no, parms->term_no,
+	    sizeof(*info->term_no)*parms->no_isam_positions);
+    
     info->key_buf = xmalloc (info->key_size * info->max_rec);
     info->score_buf = xmalloc (sizeof(*info->score_buf) * info->max_rec);
     info->sort_idx = xmalloc (sizeof(*info->sort_idx) * info->max_rec);
@@ -414,7 +438,7 @@ static void *r_create (const struct rset_control *sel, void *parms,
     info->hits = 0;
     info->rfd_list = NULL;
 
-    relevance (info, r_parms);
+    relevance (info);
     return info;
 }
 
@@ -462,6 +486,8 @@ static void r_delete (RSET ct)
     xfree (info->score_buf);
     xfree (info->sort_idx);
     xfree (info->sysno_idx);
+    xfree (info->isam_positions);
+    xfree (info->term_no);
     xfree (info);
 }
 

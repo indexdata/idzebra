@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.h,v $
- * Revision 1.6  1997-12-18 10:54:24  adam
+ * Revision 1.7  1998-01-07 13:53:41  adam
+ * Queries using simple ranked operands returns right number of hits.
+ *
+ * Revision 1.6  1997/12/18 10:54:24  adam
  * New method result set method rs_hits that returns the number of
  * hits in result-set (if known). The ranked result set returns real
  * number of hits but only when not combined with other operands.
@@ -49,11 +52,10 @@ typedef struct rset_relevance_parms
 
     ISAM    is;
     ISAMC   isc;
-    ISAM_P  *isam_positions;
-
-    int     no_isam_positions;
-    int     no_terms;
-    int     *term_no;
+    ISAM_P  *isam_positions;            /* positions */
+    int     no_isam_positions;          /* no of positions (no of ISAM_P) */
+    int     no_terms;                   /* no of terms */
+    int     *term_no;                   /* which term at isam_position */
     int     (*get_pos)(const void *p);
 
     int     method;

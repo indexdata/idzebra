@@ -1,3 +1,5 @@
+Simple ranked searches now return correct number of hits.
+
 Moved towards generic character mapping. Configuration file default.idx
 specifies character map files for register types w, p, u, etc.
 

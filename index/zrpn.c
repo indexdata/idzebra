@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1997, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.71  1997-12-18 10:54:24  adam
+ * Revision 1.72  1998-01-07 13:53:41  adam
+ * Queries using simple ranked operands returns right number of hits.
+ *
+ * Revision 1.71  1997/12/18 10:54:24  adam
  * New method result set method rs_hits that returns the number of
  * hits in result-set (if known). The ranked result set returns real
  * number of hits but only when not combined with other operands.
@@ -362,8 +365,7 @@ static void add_isam_p (const char *info, struct grep_info *p)
         ISAM_P *new_isam_p_buf;
 #ifdef TERM_COUNT        
         int *new_term_no;        
-#endif        
-        
+#endif
         p->isam_p_size = 2*p->isam_p_size + 100;
         new_isam_p_buf = xmalloc (sizeof(*new_isam_p_buf) *
                                   p->isam_p_size);
