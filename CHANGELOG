@@ -1,4 +1,13 @@
---- XXXX XXXX/XX/XX
+--- XXXXX XXXX/XX/XX
+
+Fixed small problem in SUTRS-filter. A newline was sometimes inserted before
+the rank and record number.
+
+Fixed bug in the isam subsystem - caused a malfunction when accessing
+words which occurred more than 10000 times.
+
+Distribution should now include YAZ (Z39.50 protocol stack) to simplify
+installation.
 
 Server can now run under inetd. Use option -i, and -w <directory> to
 set working directory to desired location.
