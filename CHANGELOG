@@ -1,4 +1,6 @@
 
+--- 1.3.16 2004/03/29
+
 For text filter, return only header if elementSetName=H . elementSetName=R
 returns contents only. Other elementSetName returns both header+content.
 
@@ -8,6 +10,11 @@ Added feature charmaps (.chr) so that characters may be specified in
 \LXXXX HEX notation.
 
 Fixed problem with encoding directive for charmap(.chr) files.
+
+Allow Remote insert/delete/replace/update with record, recordIdNumber
+(sysno) and/or recordIdOpaque(user supplied record Id). If both
+IDs are omitted internal record ID match is assumed (recordId: - in
+zebra cfg).
 
 --- 1.3.15 2004/01/15
 

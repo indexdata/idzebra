@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.113 2004-01-22 11:27:21 adam Exp $
+/* $Id: zserver.c,v 1.114 2004-03-29 15:48:14 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -79,6 +79,7 @@ bend_initresult *bend_init (bend_initrequest *q)
 	r->errcode = 1;
 	return r;
     }
+    r->handle = zh;
     if (q->auth)
     {
 	if (q->auth->which == Z_IdAuthentication_open)
@@ -93,15 +94,20 @@ bend_initresult *bend_init (bend_initrequest *q)
 	    }
 	    xfree (openpass);
 	}
+	else if (q->auth->which == Z_IdAuthentication_idPass)
+	{
+	    Z_IdPass *idPass = q->auth->u.idPass;
+
+	    user = idPass->userId;
+	    passwd = idPass->password;
+	}
     }
     if (zebra_auth (zh, user, passwd))
     {
 	r->errcode = 222;
 	r->errstring = user;
-	zebra_close (zh);
 	return r;
     }
-    r->handle = zh;
     if (q->charneg_request) /* characater set and langauge negotiation? */
     {
         char **charsets = 0;

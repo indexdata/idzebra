@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.117 2004-01-22 15:40:25 heikki Exp $
+/* $Id: zebraapi.c,v 1.118 2004-03-29 15:48:14 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -108,6 +108,7 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->errCode = 0;
     zh->errString = 0;
     zh->res = 0; 
+    zh->user_perm = 0;
 
     zh->reg_name = xstrdup ("");
     zh->path_reg = 0;
@@ -508,6 +509,7 @@ int zebra_close (ZebraHandle zh)
     }
     zebra_mutex_cond_unlock (&zs->session_lock);
     xfree (zh->reg_name);
+    xfree (zh->user_perm);
     zh->service=0; /* more likely to trigger an assert */
     xfree (zh->path_reg);
     xfree (zh);
@@ -974,18 +976,25 @@ void zebra_clearError(ZebraHandle zh)
 
 int zebra_auth (ZebraHandle zh, const char *user, const char *pass)
 {
+    const char *p;
+    char u[40];
     ZebraService zs;
+
     ASSERTZH;
-    yaz_log(LOG_API,"zebra_auth u=%s p=%s",user,pass);
     zh->errCode=0;
     zs= zh->service;
-    if (!zs->passwd_db || !passwd_db_auth (zs->passwd_db, user, pass))
-    {
-        logf(LOG_APP,"AUTHOK:%s", user?user:"ANONYMOUS");
-	return 0;
-    }
+    
+    sprintf(u, "perm.%.30s", user ? user : "anonymous");
+    p = res_get(zs->global_res, u);
+    xfree (zh->user_perm);
+    zh->user_perm = xstrdup(p ? p : "r");
 
-    logf(LOG_APP,"AUTHFAIL:%s", user?user:"ANONYMOUS");
+    /* users that don't require a password .. */
+    if (zh->user_perm && strchr(zh->user_perm, 'a'))
+	return 0;
+    
+    if (!zs->passwd_db || !passwd_db_auth (zs->passwd_db, user, pass))
+	return 0;
     return 1;
 }
 
@@ -998,7 +1007,8 @@ int zebra_admin_import_begin (ZebraHandle zh, const char *database,
     zh->errCode=0;
     if (zebra_select_database(zh, database))
         return 1;
-    zebra_begin_trans (zh, 1);
+    if (zebra_begin_trans (zh, 1))
+	return 1;
     return 0;
 }
 
@@ -1069,7 +1079,8 @@ int zebra_admin_exchange_record (ZebraHandle zh,
     memcpy (recid_z, recid_buf, recid_len);
     recid_z[recid_len] = 0;
 
-    zebra_begin_trans(zh,1);
+    if (zebra_begin_trans(zh, 1))
+	return -1;
 
     rinfo = dict_lookup (zh->reg->matchDict, recid_z);
     if (rinfo)
@@ -1308,6 +1319,17 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
     }
     ASSERTZHRES;
     yaz_log(LOG_API,"zebra_begin_trans rw=%d",rw);
+
+    if (zh->user_perm)
+    {
+	if (rw && !strchr(zh->user_perm, 'w'))
+	{
+	    zh->errCode = 223;
+	    zh->errString = 0;
+	    return -1;
+	}
+    }
+
     assert (zh->res);
     if (rw)
     {
@@ -1932,7 +1954,8 @@ int zebra_insert_record (ZebraHandle zh,
 
     if (buf_size < 1) buf_size = strlen(buf);
 
-    zebra_begin_trans(zh, 1);
+    if (zebra_begin_trans(zh, 1))
+	return 1;
     res = buffer_extract_record (zh, buf, buf_size, 
 				 0, /* delete_flag  */
 				 0, /* test_mode */
@@ -1957,7 +1980,8 @@ int zebra_update_record (ZebraHandle zh,
 
     if (buf_size < 1) buf_size = strlen(buf);
 
-    zebra_begin_trans(zh, 1);
+    if (zebra_begin_trans(zh, 1))
+	return 1;
     res = buffer_extract_record (zh, buf, buf_size, 
 				 0, /* delete_flag */
 				 0, /* test_mode */
@@ -1981,7 +2005,8 @@ int zebra_delete_record (ZebraHandle zh,
 
     if (buf_size < 1) buf_size = strlen(buf);
 
-    zebra_begin_trans(zh, 1);
+    if (zebra_begin_trans(zh, 1))
+	return 1;
     res = buffer_extract_record (zh, buf, buf_size,
 				 1, /* delete_flag */
 				 0, /* test_mode */
