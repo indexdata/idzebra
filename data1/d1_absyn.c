@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.13 2004-09-30 18:30:35 adam Exp $
+/* $Id: d1_absyn.c,v 1.14 2004-09-30 18:31:14 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -79,7 +79,7 @@ struct data1_hash_table *data1_hash_open(int size, NMEM nmem)
 void data1_hash_insert(struct data1_hash_table *ht, const char *str,
 		       void *clientData, int copy)
 {
-    char *dstr = copy ? nmem_strdup(ht->nmem, str) : str;
+    char *dstr = copy ? nmem_strdup(ht->nmem, str) : (char*) str;
     if (strchr(str, '?') || strchr(str, '.'))
     {
 	int i;
