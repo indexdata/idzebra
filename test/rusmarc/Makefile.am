@@ -1,5 +1,10 @@
+# $Id: Makefile.am,v 1.3 2004-03-09 18:45:17 adam Exp $
 
-EXTRA_DIST = zebra.cfg test.sh
+check_SCRIPTS = test1.sh
+
+TESTS = $(check_SCRIPTS)
+
+EXTRA_DIST = zebra.cfg test.sh $(check_SCRIPTS)
 
 dist-hook:
 	mkdir -p $(distdir)/records
