@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.56 1996-10-29 14:12:11 adam Exp $
+# $Id: Makefile,v 1.57 1996-12-20 11:06:37 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -9,8 +9,6 @@ RANLIB=ranlib
 
 # Where are Yaz libraries located?
 YAZLIB=../../yaz/lib/libyaz.a
-#YAZLIB=/usr/local/lib/libyazchkr.a
-#YAZLIB=-lyaz
 # Where are Yaz header files located?
 YAZINC=-I../../yaz/include
 # If Yaz is compiled with mosi support uncomment and specify.

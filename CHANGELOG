@@ -1,4 +1,4 @@
-Reduction in size of saved keys (storeKeys = 1).
+Reduced disk space for saved keys (storeKeys = 1).
 
 Implemented proximity operator in search.
 
