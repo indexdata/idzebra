@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfap.h,v $
- * Revision 1.1  1995-01-24 16:02:53  adam
+ * Revision 1.2  1995-01-25 11:30:50  adam
+ * Simple error reporting when parsing regular expressions.
+ * Memory usage reduced.
+ *
+ * Revision 1.1  1995/01/24  16:02:53  adam
  * New private header file in dfa module (dfap.h).
  * Module no longer uses yacc to parse regular expressions.
  *
@@ -17,7 +21,6 @@
 
 struct DFA_parse {
     struct Tnode *root;       /* root of regular syntax tree */
-    struct Tnode *top;        /* regular tree top (returned by parse_dfa) */
     int position;             /* no of positions so far */
     int rule;                 /* no of rules so far */
     BSetHandle *charset;      /* character set type */

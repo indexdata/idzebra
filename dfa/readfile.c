@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: readfile.c,v $
- * Revision 1.3  1995-01-24 16:00:22  adam
+ * Revision 1.4  1995-01-25 11:30:51  adam
+ * Simple error reporting when parsing regular expressions.
+ * Memory usage reduced.
+ *
+ * Revision 1.3  1995/01/24  16:00:22  adam
  * Added -ansi to CFLAGS.
  * Some changes to the dfa module.
  *
@@ -104,6 +108,7 @@ static void read_rules (struct DFA *dfa)
             {
                 fprintf (stderr, "%s #%d: regular expression syntax error\n",
                         inf_name, line_no);
+                assert (0);
                 err_no++;
             }
             else

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lexer.c,v $
- * Revision 1.5  1995-01-24 16:00:22  adam
+ * Revision 1.6  1995-01-25 11:30:51  adam
+ * Simple error reporting when parsing regular expressions.
+ * Memory usage reduced.
+ *
+ * Revision 1.5  1995/01/24  16:00:22  adam
  * Added -ansi to CFLAGS.
  * Some changes to the dfa module.
  *
@@ -141,6 +145,10 @@ int main (int argc, char **argv)
             if (i)
                 return i;
             dfa_mkstate (dfa);
+
+#ifdef MEMDEBUG
+    imemstat();
+#endif
         }
     dfa_delete (&dfa);
 #ifdef MEMDEBUG

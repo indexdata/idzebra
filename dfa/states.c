@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: states.c,v $
- * Revision 1.2  1995-01-24 16:00:23  adam
+ * Revision 1.3  1995-01-25 11:30:51  adam
+ * Simple error reporting when parsing regular expressions.
+ * Memory usage reduced.
+ *
+ * Revision 1.2  1995/01/24  16:00:23  adam
  * Added -ansi to CFLAGS.
  * Some changes to the dfa module.
  *
@@ -23,8 +27,8 @@
 #include "dfap.h"
 #include "imalloc.h"
 
-#define DFA_CHUNK 200
-#define TRAN_CHUNK 800
+#define DFA_CHUNK 40
+#define TRAN_CHUNK 100
 
 int init_DFA_states (struct DFA_states **dfasp, SetType st, int hash)
 {
@@ -67,7 +71,8 @@ int rm_DFA_states (struct DFA_states **dfasp)
     struct DFA_trans  *tm, *tm1;
 
     assert (dfas);
-    ifree (dfas->hasharray);
+    if (dfas->hasharray)
+        ifree (dfas->hasharray);
     ifree (dfas->sortarray);
 
     for (tm=dfas->transmem; tm; tm=tm1)
@@ -95,6 +100,7 @@ int add_DFA_state (struct DFA_states *dfas, Set *s, struct DFA_state **sp)
 
     assert (dfas);
     assert (*s);
+    assert (dfas->hasharray);
     sip = dfas->hasharray + (hash_Set (dfas->st, *s) % dfas->hash);
     for (si = *sip; si; si=si->link)
         if (eq_Set (dfas->st, si->set, *s))
@@ -184,4 +190,6 @@ void sort_DFA_states (struct DFA_states *dfas)
         imalloc (sizeof(struct DFA_state *)*dfas->no);
     for (s = dfas->marked; s; s=s->next)
         dfas->sortarray[s->no] = s;
+    ifree (dfas->hasharray);
+    dfas->hasharray = NULL;
 }
