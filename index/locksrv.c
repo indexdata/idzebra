@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: locksrv.c,v $
- * Revision 1.6  1996-10-29 14:06:52  adam
+ * Revision 1.7  1997-09-04 13:58:04  adam
+ * Added O_BINARY for open calls.
+ *
+ * Revision 1.6  1996/10/29 14:06:52  adam
  * Include zebrautl.h instead of alexutil.h.
  *
  * Revision 1.5  1996/05/15 11:58:18  adam
@@ -50,7 +53,7 @@ int zebraServerLock (int commitPhase)
     if (server_lock_cmt == -1)
     {
         sprintf (path, "%s%s", pathPrefix, FNAME_COMMIT_LOCK);
-        if ((server_lock_cmt = open (path, O_CREAT|O_RDWR, 0666))
+        if ((server_lock_cmt = open (path, O_BINARY|O_CREAT|O_RDWR, 0666))
             == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
@@ -59,7 +62,7 @@ int zebraServerLock (int commitPhase)
         assert (server_lock_org == -1);
 
         sprintf (path, "%s%s", pathPrefix, FNAME_ORG_LOCK);
-        if ((server_lock_org = open (path, O_CREAT|O_RDWR, 0666))
+        if ((server_lock_org = open (path, O_BINARY|O_CREAT|O_RDWR, 0666))
             == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
@@ -112,7 +115,7 @@ int zebraServerLockGetState (time_t *timep)
         *timep = xstat.st_ctime;
     
     sprintf (path, "%s%s", pathPrefix, FNAME_MAIN_LOCK);
-    fd = open (path, O_RDONLY);
+    fd = open (path, O_BINARY|O_RDONLY);
     if (fd == -1)
     {
         *buf = 0;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.8  1997-02-12 20:39:46  adam
+ * Revision 1.9  1997-09-04 13:58:04  adam
+ * Added O_BINARY for open calls.
+ *
+ * Revision 1.8  1997/02/12 20:39:46  adam
  * Implemented options -f <n> that limits the log to the first <n>
  * records.
  * Changed some log messages also.
@@ -61,7 +64,8 @@ int zebraIndexWait (int commitPhase)
     if (server_lock_cmt == -1)
     {
         sprintf (path, "%s%s", pathPrefix, FNAME_COMMIT_LOCK);
-        if ((server_lock_cmt = open (path, O_CREAT|O_RDWR|O_SYNC, 0666))
+        if ((server_lock_cmt = open (path, O_BINARY|O_CREAT|O_RDWR|O_SYNC,
+                                     0666))
             == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
@@ -73,7 +77,8 @@ int zebraIndexWait (int commitPhase)
     if (server_lock_org == -1)
     {
         sprintf (path, "%s%s", pathPrefix, FNAME_ORG_LOCK);
-        if ((server_lock_org = open (path, O_CREAT|O_RDWR|O_SYNC, 0666))
+        if ((server_lock_org = open (path, O_BINARY|O_CREAT|O_RDWR|O_SYNC,
+                                     0666))
             == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "create %s", path);
@@ -152,10 +157,10 @@ void zebraIndexLock (int commitNow)
     sprintf (path, "%s%s", pathPrefix, FNAME_MAIN_LOCK);
     while (1)
     {
-        lock_fd = open (path, O_CREAT|O_RDWR|O_EXCL, 0666);
+        lock_fd = open (path, O_BINARY|O_CREAT|O_RDWR|O_EXCL, 0666);
         if (lock_fd == -1)
         {
-            lock_fd = open (path, O_RDWR);
+            lock_fd = open (path, O_BINARY|O_RDWR);
             if (lock_fd == -1) 
             {
                 if (errno == ENOENT)

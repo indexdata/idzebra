@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.22  1997-02-12 20:39:45  adam
+ * Revision 1.23  1997-09-04 13:57:39  adam
+ * Added O_BINARY for open calls.
+ *
+ * Revision 1.22  1997/02/12 20:39:45  adam
  * Implemented options -f <n> that limits the log to the first <n>
  * records.
  * Changed some log messages also.
@@ -133,7 +136,7 @@ void key_file_chunk_read (struct key_file *f)
     int nr = 0, r, fd;
     char fname[1024];
     getFnameTmp (fname, f->no);
-    fd = open (fname, O_RDONLY);
+    fd = open (fname, O_BINARY|O_RDONLY);
     if (fd == -1)
     {
         logf (LOG_FATAL|LOG_ERRNO, "cannot open %s", fname);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.18  1996-10-29 13:54:52  adam
+ * Revision 1.19  1997-09-04 13:58:57  adam
+ * Added O_BINARY for open calls.
+ *
+ * Revision 1.18  1996/10/29 13:54:52  adam
  * Changed name of setting tempSetDir to setTmpDir.
  *
  * Revision 1.17  1995/12/11 09:15:28  adam
@@ -158,9 +161,9 @@ static RSFD r_open (RSET ct, int flag)
     if (info->fname)
     {
         if (flag & RSETF_WRITE)
-            info->fd = open (info->fname, O_RDWR|O_CREAT, 0666);
+            info->fd = open (info->fname, O_BINARY|O_RDWR|O_CREAT, 0666);
         else
-            info->fd = open (info->fname, O_RDONLY);
+            info->fd = open (info->fname, O_BINARY|O_RDONLY);
         if (info->fd == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "open %s", info->fname);
@@ -188,7 +191,7 @@ static void r_flush (RSFD rfd, int mk)
         strcpy (info->fname, s);
 
         logf (LOG_DEBUG, "creating tempfile %s", info->fname);
-        info->fd = open (info->fname, O_RDWR|O_CREAT, 0666);
+        info->fd = open (info->fname, O_BINARY|O_RDWR|O_CREAT, 0666);
         if (info->fd == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "open %s", info->fname);
