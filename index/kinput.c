@@ -787,15 +787,18 @@ void key_input (BFiles bfs, int nkeys, int cache)
     logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
     logf (LOG_LOG, "Deletions. . . .%7d", no_deletions);
     logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
-    
-    xmalloc_trav("unfreed"); /* while hunting leaks */     
+
+    /* xmalloc_trav("unfreed"); while hunting leaks */     
 }
 
 
 
 /*
  * $Log: kinput.c,v $
- * Revision 1.39  1999-08-18 10:39:20  heikki
+ * Revision 1.40  1999-09-08 12:12:39  adam
+ * Removed log message.
+ *
+ * Revision 1.39  1999/08/18 10:39:20  heikki
  * Added a comment on memory leaks
  *
  * Revision 1.38  1999/08/18 08:38:04  heikki
