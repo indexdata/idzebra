@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisamc.c,v $
- * Revision 1.7  1999-05-26 07:49:14  adam
+ * Revision 1.8  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.7  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.6  1999/02/02 14:51:35  adam
@@ -29,10 +32,12 @@
  *
  */
 
+
 #include <stdio.h>
 #include <assert.h>
-#include <rsisamc.h>
 #include <zebrautl.h>
+#if ZMBOL
+#include <rsisamc.h>
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
@@ -157,3 +162,4 @@ static int r_write (RSFD rfd, const void *buf)
     logf (LOG_FATAL, "ISAMC set type is read-only");
     return -1;
 }
+#endif

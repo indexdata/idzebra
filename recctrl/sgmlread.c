@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: sgmlread.c,v $
- * Revision 1.9  1999-07-14 10:56:16  adam
+ * Revision 1.10  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.9  1999/07/14 10:56:16  adam
  * Filter handles multiple records in one file.
  *
  * Revision 1.8  1999/06/25 13:47:25  adam
@@ -35,7 +38,7 @@
  *
  */
 #include <assert.h>
-#include <log.h>
+#include <yaz/log.h>
 
 #include "grsread.h"
 

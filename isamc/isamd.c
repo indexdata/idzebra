@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * $Id: isamd.c,v 1.18 1999-10-06 15:18:13 heikki Exp $ 
+ * $Id: isamd.c,v 1.19 1999-11-30 13:48:04 adam Exp $ 
  *
  * Isamd - isam with diffs 
  * Programmed by: Heikki Levanto
@@ -17,7 +17,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <log.h>
+#include <yaz/log.h>
 #include "../index/index.h"  /* isamd uses the internal structure of it_key */
 #include "isamd-p.h"
 
@@ -850,7 +850,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.18  1999-10-06 15:18:13  heikki
+ * Revision 1.19  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.18  1999/10/06 15:18:13  heikki
  *
  * Improving block sizes again
  *

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.20  1999-05-26 07:49:14  adam
+ * Revision 1.21  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.20  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.19  1999/02/02 14:51:34  adam
@@ -72,11 +75,11 @@
  * Work
  *
  */
-
 #include <stdio.h>
 #include <assert.h>
-#include <rsisam.h>
 #include <zebrautl.h>
+#if ZMBOL
+#include <rsisam.h>
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
@@ -203,3 +206,4 @@ static int r_write (RSFD rfd, const void *buf)
     logf (LOG_FATAL, "ISAM set type is read-only");
     return -1;
 }
+#endif

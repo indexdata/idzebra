@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.9  1999-09-07 07:19:21  adam
+ * Revision 1.10  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.9  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.8  1999/02/12 13:29:21  adam
@@ -42,7 +45,7 @@
 #ifndef ZEBRAMAP_H
 #define ZEBRAMAP_H
 
-#include <proto.h>
+#include <yaz/proto.h>
 #include <res.h>
 
 #ifdef __cplusplus

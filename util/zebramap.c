@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.18  1999-10-15 08:27:46  adam
+ * Revision 1.19  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.18  1999/10/15 08:27:46  adam
  * Fixed replace handler. 8-bit fix.
  *
  * Revision 1.17  1999/09/08 12:13:21  adam
@@ -69,7 +72,7 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <yaz-util.h>
+#include <yaz/yaz-util.h>
 #include <charmap.h>
 #include <zebramap.h>
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.17  1999-09-08 12:13:21  adam
+ * Revision 1.18  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.17  1999/09/08 12:13:21  adam
  * Fixed minor bug "replace"-mappings. Removed some logging messages.
  *
  * Revision 1.16  1999/09/07 07:19:21  adam
@@ -71,7 +74,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include <yaz-util.h>
+#include <yaz/yaz-util.h>
 #include <charmap.h>
 
 #define CHR_MAXSTR 1024

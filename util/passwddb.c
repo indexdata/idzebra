@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: passwddb.c,v $
- * Revision 1.5  1999-05-26 07:49:14  adam
+ * Revision 1.6  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.5  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.4  1999/02/02 14:51:39  adam
@@ -32,8 +35,8 @@
 #include <crypt.h>
 #endif
 
-#include <log.h>
-#include <xmalloc.h>
+#include <yaz/log.h>
+#include <yaz/xmalloc.h>
 
 #include <passwddb.h>
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.72  1999-10-14 14:33:50  adam
+ * Revision 1.73  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.72  1999/10/14 14:33:50  adam
  * Added truncation 5=106.
  *
  * Revision 1.71  1999/09/08 12:12:06  adam
@@ -270,7 +273,7 @@
 #include <unistd.h>
 #endif
 
-#include <data1.h>
+#include <yaz/data1.h>
 #include "index.h"
 #include "recindex.h"
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.9  1999-06-25 13:47:25  adam
+ * Revision 1.10  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.9  1999/06/25 13:47:25  adam
  * Minor change that prevents MSVC warning.
  *
  * Revision 1.8  1999/05/26 07:49:14  adam
@@ -38,9 +41,9 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include <log.h>
-#include <yaz-util.h>
-#include <marcdisp.h>
+#include <yaz/log.h>
+#include <yaz/yaz-util.h>
+#include <yaz/marcdisp.h>
 #include "grsread.h"
 
 data1_node *data1_mk_node_wp (data1_handle dh, NMEM mem, data1_node *parent)

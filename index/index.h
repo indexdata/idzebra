@@ -10,12 +10,16 @@
 #include <zebramap.h>
 
 #include <dict.h>
+#include <isams.h>
+#if ZMBOL
 #include <isam.h>
 #include <isamc.h>
-#include <isams.h>
-#include <isamh.h>
 #include <isamd.h>
-#include <data1.h>
+#define ISAM_DEFAULT "c"
+#else
+#define ISAM_DEFAULT "s"
+#endif
+#include <yaz/data1.h>
 #include <recctrl.h>
 
 #ifdef __cplusplus
@@ -100,10 +104,11 @@ void key_logdump (int mask, const void *p);
 void inv_prstat (BFiles bfs);
 void inv_compact (BFiles bfs);
 void key_input (BFiles bfs, int nkeys, int cache);
-ISAMC_M key_isamc_m (Res res, ISAMC_M me);
 ISAMS_M key_isams_m (Res res, ISAMS_M me);
-ISAMH_M key_isamh_m (Res res);
+#if ZMBOL
+ISAMC_M key_isamc_m (Res res, ISAMC_M me);
 ISAMD_M key_isamd_m (Res res, ISAMD_M me);
+#endif
 int merge_sort (char **buf, int from, int to);
 int key_SU_code (int ch, char *out);
 
@@ -161,7 +166,10 @@ extern Res common_resource;
 
 /*
  * $Log: index.h,v $
- * Revision 1.66  1999-07-14 13:21:34  heikki
+ * Revision 1.67  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.66  1999/07/14 13:21:34  heikki
  * Added isam-d files. Compiles (almost) clean. Doesn't work at all
  *
  * Revision 1.65  1999/07/14 10:59:26  adam

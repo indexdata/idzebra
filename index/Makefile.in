@@ -1,7 +1,7 @@
-# Copyright (C) 1995-1998, Index Data
+# Copyright (C) 1995-1999, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.8 1999-06-09 11:58:48 adam Exp $
+# $Id: Makefile.in,v 1.9 1999-11-30 13:48:03 adam Exp $
 
 SHELL=/bin/sh
 
@@ -12,16 +12,14 @@ CDEFS=@DEFS@ @ODEFS@
 LIBS=@LIBS@
 TCL_LIB=@TCL_LIB@
 
-YAZLIB=../../yaz/lib/libyaz.a
-YAZINC=-I../../yaz/include
-#OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
-#OSILIB=../../xtimosi/src/libmosi.a -lrfc
+YAZLIB=@YAZLIB@
+YAZINC=@YAZINC@
 
 INCLUDE=-I../include $(YAZINC)
 TCL_INCLUDE=@TCL_INCLUDE@
-TPROG1=zebraidx
+TPROG1=../bin/zebraidx
 TPROG2=kdump
-TPROG3=zebrasrv
+TPROG3=../bin/zebrasrv
 TPROG4=hlvltest
 TPROG5=apitest
 DEFS=$(CDEFS) $(INCLUDE) $(TCL_INCLUDE)
@@ -39,11 +37,11 @@ O5 = apitest.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
 
 all: $(TPROG1) $(TPROG2) $(TPROG3)
 
-$(TPROG1): $(O1) ../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
-		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a $(YAZLIB)
+$(TPROG1): $(O1) ../lib/dict.a ../lib/isams.a ../lib/isam.a ../lib/isamc.a \
+		../lib/recctrl.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a 
 	$(CC) $(CFLAGS) -o $(TPROG1) $(O1) \
-		../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
-		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
+		../lib/dict.a ../lib/isams.a ../lib/isam.a ../lib/isamc.a \
+		../lib/recctrl.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
 		$(YAZLIB) $(TCL_LIB) $(LIBS)
 
 $(TPROG2): $(O2)
@@ -51,29 +49,32 @@ $(TPROG2): $(O2)
 		$(YAZLIB) $(LIBS)
 
 $(TPROG3): $(O3) \
-		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
-		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB)
+		../lib/rset.a ../lib/dict.a ../lib/isams.a ../lib/isam.a \
+		../lib/recctrl.a ../lib/isamc.a ../lib/bfile.a ../lib/dfa.a \
+		../lib/zebrautl.a 
 	$(CC) $(CFLAGS) -o $(TPROG3) $(O3) \
-		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
-		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
+		../lib/rset.a ../lib/dict.a ../lib/isams.a ../lib/isam.a \
+		../lib/recctrl.a ../lib/isamc.a ../lib/bfile.a ../lib/dfa.a \
+		../lib/zebrautl.a \
 		$(YAZLIB) $(OSILIB) $(TCL_LIB) $(LIBS) -lm
 
 $(TPROG4): $(O4) \
-		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
-		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB)
+		../lib/rset.a ../lib/dict.a ../lib/isams.a ../lib/isam.a \
+		../lib/recctrl.a \
+		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a
 	$(CC) $(CFLAGS) -o $(TPROG4) $(O4) \
-		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
+		../lib/rset.a ../lib/dict.a ../lib/isams.a ../lib/isam.a \
+		../lib/recctrl.a \
 		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
 		$(YAZLIB) $(OSILIB) $(TCL_LIB) $(LIBS) -lm 
 
 $(TPROG5): $(O5) \
-		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
-		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
-		$(YAZLIB)
+		../lib/rset.a ../lib/dict.a ../lib/isams.a ../lib/isam.a \
+		../lib/recctrl.a \
+		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a
 	$(CC) $(CFLAGS) -o $(TPROG5) $(O5) \
-		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
+		../lib/rset.a ../lib/dict.a ../lib/isams.a ../lib/isam.a \
+		../lib/recctrl.a \
 		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
 		$(YAZLIB) $(OSILIB) $(TCL_LIB) $(LIBS) -lm
 

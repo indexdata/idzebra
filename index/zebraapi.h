@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.h,v $
- * Revision 1.7  1999-11-04 15:00:45  adam
+ * Revision 1.8  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.7  1999/11/04 15:00:45  adam
  * Implemented delete result set(s).
  *
  * Revision 1.6  1999/02/17 11:29:57  adam
@@ -28,9 +31,9 @@
  *
  */
 
-#include <odr.h>
-#include <oid.h>
-#include <proto.h>
+#include <yaz/odr.h>
+#include <yaz/oid.h>
+#include <yaz/proto.h>
 
 #ifdef __cplusplus
 extern "C" {

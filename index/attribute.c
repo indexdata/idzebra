@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: attribute.c,v $
- * Revision 1.10  1999-02-02 14:50:49  adam
+ * Revision 1.11  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.10  1999/02/02 14:50:49  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.9  1998/05/20 10:12:14  adam
@@ -42,7 +45,7 @@
 
 #include <stdio.h>
 
-#include <log.h>
+#include <yaz/log.h>
 #include <res.h>
 #include <zebrautl.h>
 #include "zserver.h"

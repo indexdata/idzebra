@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.19  1999-07-14 10:59:27  adam
+ * Revision 1.20  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.19  1999/07/14 10:59:27  adam
  * Changed functions isc_getmethod, isams_getmethod.
  * Improved fatal error handling (such as missing EXPLAIN schema).
  *
@@ -84,7 +87,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <log.h>
+#include <yaz/log.h>
 #include "isamc-p.h"
 
 static void flush_block (ISAMC is, int cat);

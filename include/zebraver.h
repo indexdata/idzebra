@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.13  1999-02-02 14:50:48  adam
+ * Revision 1.14  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.13  1999/02/02 14:50:48  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.12  1998/02/10 12:03:05  adam
@@ -46,10 +49,13 @@
  */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.0b2"
+#define ZEBRAVER "1.0"
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 1999-02-02 14:50:48 $"
+#define ZEBRADATE "$Date: 1999-11-30 13:48:03 $"
 #endif
 
+#ifndef ZMBOL
+#define ZMBOL 1
+#endif

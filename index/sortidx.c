@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: sortidx.c,v $
- * Revision 1.3  1999-05-26 07:49:13  adam
+ * Revision 1.4  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.3  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.2  1998/06/25 09:55:50  adam
@@ -14,7 +17,7 @@
  
 #include <string.h>
 
-#include <log.h>
+#include <yaz/log.h>
 #include <bfile.h>
 #include <sortidx.h>
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.25  1999-11-04 15:00:45  adam
+ * Revision 1.26  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.25  1999/11/04 15:00:45  adam
  * Implemented delete result set(s).
  *
  * Revision 1.24  1999/10/14 14:33:50  adam
@@ -99,7 +102,7 @@
 #include <unistd.h>
 #endif
 
-#include <diagbib1.h>
+#include <yaz/diagbib1.h>
 #include "zserver.h"
 
 static void zebra_chdir (ZebraHandle zh)
@@ -161,20 +164,24 @@ static int zebra_register_lock (ZebraHandle zh)
 	    dict_close (zh->dict);
 	if (zh->sortIdx)
 	    sortIdx_close (zh->sortIdx);
+        if (zh->isams)
+            isams_close (zh->isams);
+#if ZMBOL
         if (zh->isam)
             is_close (zh->isam);
         if (zh->isamc)
             isc_close (zh->isamc);
-        if (zh->isams)
-            isams_close (zh->isams);
+#endif
         rec_close (&zh->records);
     }
     bf_cache (zh->bfs, state ? res_get (zh->res, "shadow") : NULL);
     zh->registerState = state;
 
+    zh->isams = NULL;
+#if ZMBOL
     zh->isam = NULL;
     zh->isamc = NULL;
-    zh->isams = NULL;
+#endif
     zh->dict = NULL;
     zh->sortIdx = NULL;
     zh->zei = NULL;
@@ -196,16 +203,7 @@ static int zebra_register_lock (ZebraHandle zh)
 	    logf (LOG_WARN, "sortIdx_open");
 	    zh->errCode = 2;
 	}
-	if (res_get_match (zh->res, "isam", "i", NULL))
-	{
-	    if (!(zh->isam = is_open (zh->bfs, FNAME_ISAM, key_compare, 0,
-				      sizeof (struct it_key), zh->res)))
-	    {
-		logf (LOG_WARN, "is_open");
-		zh->errCode = 2;
-	    }
-	}
-	else if (res_get_match (zh->res, "isam", "s", NULL))
+	if (res_get_match (zh->res, "isam", "s", ISAM_DEFAULT))
 	{
 	    struct ISAMS_M_s isams_m;
 	    if (!(zh->isams = isams_open (zh->bfs, FNAME_ISAMS, 0,
@@ -215,7 +213,17 @@ static int zebra_register_lock (ZebraHandle zh)
 		zh->errCode = 2;
 	    }
 	}
-	else
+#if ZMBOL
+	else if (res_get_match (zh->res, "isam", "i", ISAM_DEFAULT))
+	{
+	    if (!(zh->isam = is_open (zh->bfs, FNAME_ISAM, key_compare, 0,
+				      sizeof (struct it_key), zh->res)))
+	    {
+		logf (LOG_WARN, "is_open");
+		zh->errCode = 2;
+	    }
+	}
+	else if (res_get_match (zh->res, "isam", "c", ISAM_DEFAULT))
 	{
 	    struct ISAMC_M_s isamc_m;
 	    if (!(zh->isamc = isc_open (zh->bfs, FNAME_ISAMC,
@@ -225,6 +233,7 @@ static int zebra_register_lock (ZebraHandle zh)
 		zh->errCode = 2;
 	    }
 	}
+#endif
 	zh->zei = zebraExplain_open (zh->records, zh->dh, zh->res, 0, 0, 0);
 	if (!zh->zei)
 	{
@@ -335,12 +344,14 @@ void zebra_close (ZebraHandle zh)
         zebraExplain_close (zh->zei, 0, 0);
         dict_close (zh->dict);
 	sortIdx_close (zh->sortIdx);
+	if (zh->isams)
+	    isams_close (zh->isams);
+#if ZMBOL
         if (zh->isam)
             is_close (zh->isam);
         if (zh->isamc)
             isc_close (zh->isamc);
-	if (zh->isams)
-	    isams_close (zh->isams);
+#endif
         rec_close (&zh->records);
         zebra_register_unlock (zh);
     }

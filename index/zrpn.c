@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.97  1999-10-14 14:33:50  adam
+ * Revision 1.98  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.97  1999/10/14 14:33:50  adam
  * Added truncation 5=106.
  *
  * Revision 1.96  1999/09/23 10:05:05  adam
@@ -448,7 +451,7 @@ struct grep_info {
 #ifdef TERM_COUNT        
     int *term_no;        
 #endif        
-    ISAM_P *isam_p_buf;
+    ISAMS_P *isam_p_buf;
     int isam_p_size;        
     int isam_p_indx;
     ZebraHandle zh;
@@ -475,12 +478,12 @@ static void add_isam_p (const char *name, const char *info,
 {
     if (p->isam_p_indx == p->isam_p_size)
     {
-        ISAM_P *new_isam_p_buf;
+        ISAMS_P *new_isam_p_buf;
 #ifdef TERM_COUNT        
         int *new_term_no;        
 #endif
         p->isam_p_size = 2*p->isam_p_size + 100;
-        new_isam_p_buf = (ISAM_P *) xmalloc (sizeof(*new_isam_p_buf) *
+        new_isam_p_buf = (ISAMS_P *) xmalloc (sizeof(*new_isam_p_buf) *
 					     p->isam_p_size);
         if (p->isam_p_buf)
         {
@@ -2354,7 +2357,7 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem,
 
 struct scan_info_entry {
     char *term;
-    ISAM_P isam_p;
+    ISAMS_P isam_p;
 };
 
 struct scan_info {
@@ -2378,8 +2381,8 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
     scan_info->list[idx].term = (char *)
 	odr_malloc (scan_info->odr, strlen(name + len_prefix)+1);
     strcpy (scan_info->list[idx].term, name + len_prefix);
-    assert (*info == sizeof(ISAM_P));
-    memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAM_P));
+    assert (*info == sizeof(ISAMS_P));
+    memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAMS_P));
     return 0;
 }
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.26  1999-10-07 09:48:36  adam
+ * Revision 1.27  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.26  1999/10/07 09:48:36  adam
  * Allow res_get / res_get_def with NULL res.
  *
  * Revision 1.25  1999/05/26 07:49:14  adam
@@ -95,7 +98,7 @@
 #endif
 
 #include <zebrautl.h>
-#include <yaz-util.h>
+#include <yaz/yaz-util.h>
 
 static struct res_entry *add_entry (Res r)
 {
@@ -292,6 +295,8 @@ int res_get_match (Res r, const char *name, const char *value, const char *s)
 {
     const char *cn = res_get (r, name);
 
+    if (!cn)
+	cn = s;
     if (cn && !yaz_matchstr (cn, value))
         return 1;
     return 0;

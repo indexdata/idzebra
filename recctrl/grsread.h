@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: grsread.h,v $
- * Revision 1.7  1999-05-26 07:49:14  adam
+ * Revision 1.8  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.7  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.6  1999/05/20 12:57:18  adam
@@ -32,7 +35,7 @@
 #ifndef GRSREAD_H
 #define GRSREAD_H
 
-#include <data1.h>
+#include <yaz/data1.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.c,v $
- * Revision 1.9  1999-07-13 14:45:42  adam
+ * Revision 1.10  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.9  1999/07/13 14:45:42  adam
  * Fixed memory leak.
  *
  * Revision 1.8  1999/05/26 07:49:14  adam
@@ -37,15 +40,17 @@
  *
  */
 
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <zebrautl.h>
+#if ZMBOL
 #include <isam.h>
 #include <isamc.h>
 #include <rsm_or.h>
-#include <zebrautl.h>
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
@@ -349,3 +354,4 @@ static int r_write (RSFD rfd, const void *buf)
     logf (LOG_FATAL, "mor set type is read-only");
     return -1;
 }
+#endif

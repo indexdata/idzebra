@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.h,v $
- * Revision 1.7  1999-05-26 07:49:13  adam
+ * Revision 1.8  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.7  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.6  1999/02/02 14:51:12  adam
@@ -33,7 +36,7 @@
 #ifndef ZINFO_H
 #define ZINFO_H
 
-#include <data1.h>
+#include <yaz/data1.h>
 #include "recindex.h"
 
 #ifdef __cplusplus

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.32  1999-09-07 07:19:21  adam
+ * Revision 1.33  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.32  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.31  1999/07/14 10:56:43  adam
@@ -197,8 +200,8 @@
 #include <unistd.h>
 #endif
 
-#include <log.h>
-#include <oid.h>
+#include <yaz/log.h>
+#include <yaz/oid.h>
 
 #include <recctrl.h>
 #include "grsread.h"

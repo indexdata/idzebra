@@ -1,5 +1,5 @@
 :
 echo Loading Records
-../../index/zebraidx -t grs.sgml update records
+../../bin/zebraidx -t grs.sgml update records
 echo Starting Server
-../../index/zebrasrv
+../../bin/zebrasrv

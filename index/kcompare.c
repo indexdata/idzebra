@@ -201,22 +201,6 @@ static void iscz1_code_item (int mode, void *vp, char **dst, char **src)
     }
 }
 
-ISAMC_M key_isamc_m (Res res, ISAMC_M me)
-{
-    isc_getmethod (me);
-
-    me->compare_item = key_compare;
-
-    me->code_start = iscz1_code_start;
-    me->code_item = iscz1_code_item;
-    me->code_stop = iscz1_code_stop;
-    me->code_reset = iscz1_code_reset;
-
-    me->debug = atoi(res_get_def (res, "isamcDebug", "0"));
-
-    return me;
-}
-
 ISAMS_M key_isams_m (Res res, ISAMS_M me)
 {
     isams_getmethod (me);
@@ -232,14 +216,11 @@ ISAMS_M key_isams_m (Res res, ISAMS_M me)
     return me;
 }
 
-ISAMH_M key_isamh_m (Res res)
+#if ZMBOL
+
+ISAMC_M key_isamc_m (Res res, ISAMC_M me)
 {
-    static ISAMH_M me = NULL;
-
-    if (me)
-        return me;
-
-    me = isamh_getmethod ();
+    isc_getmethod (me);
 
     me->compare_item = key_compare;
 
@@ -248,7 +229,7 @@ ISAMH_M key_isamh_m (Res res)
     me->code_stop = iscz1_code_stop;
     me->code_reset = iscz1_code_reset;
 
-    me->debug = atoi(res_get_def (res, "isamhDebug", "9"));
+    me->debug = atoi(res_get_def (res, "isamcDebug", "0"));
 
     return me;
 }
@@ -270,6 +251,7 @@ ISAMD_M key_isamd_m (Res res,ISAMD_M me)
     return me;
 }
 
+#endif
 
 int key_SU_code (int ch, char *out)
 {
@@ -288,7 +270,10 @@ int key_SU_code (int ch, char *out)
 
 /* 
  * $Log: kcompare.c,v $
- * Revision 1.34  1999-07-14 13:21:34  heikki
+ * Revision 1.35  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.34  1999/07/14 13:21:34  heikki
  * Added isam-d files. Compiles (almost) clean. Doesn't work at all
  *
  * Revision 1.33  1999/07/14 10:59:26  adam

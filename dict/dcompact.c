@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dcompact.c,v $
- * Revision 1.6  1999-09-07 08:13:08  adam
+ * Revision 1.7  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.6  1999/09/07 08:13:08  adam
  * Removed log messages.
  *
  * Revision 1.5  1999/05/26 07:49:12  adam
@@ -29,7 +32,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <log.h>
+#include <yaz/log.h>
 #include <dict.h>
 
 static void dict_copy_page(Dict dict, char *to_p, char *from_p, int *map)

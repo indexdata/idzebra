@@ -36,7 +36,10 @@
  * OF THIS SOFTWARE.
  *
  * $Log: charmap.h,v $
- * Revision 1.5  1999-09-07 07:19:21  adam
+ * Revision 1.6  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.5  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.4  1997/10/27 14:33:04  adam
@@ -54,7 +57,7 @@
 #ifndef CHARMAP_H
 #define CHARMAP_H
 
-#include <yconfig.h>
+#include <yaz/yconfig.h>
 
 #ifdef __cplusplus
 extern "C" {

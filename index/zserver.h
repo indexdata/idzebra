@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.44  1999-11-04 15:00:45  adam
+ * Revision 1.45  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.44  1999/11/04 15:00:45  adam
  * Implemented delete result set(s).
  *
  * Revision 1.43  1999/07/14 10:59:27  adam
@@ -160,7 +163,7 @@
 #include <sys/times.h>
 #endif
 
-#include <backend.h>
+#include <yaz/backend.h>
 #include <rset.h>
 
 #include <sortidx.h>
@@ -193,9 +196,11 @@ struct zebra_info {
     ZebraSet sets;
     Dict dict;
     SortIdx sortIdx;
+    ISAMS isams;
+#if ZMBOL
     ISAM isam;
     ISAMC isamc;
-    ISAMS isams;
+#endif
     Records records;
     int errCode;
     int hits;
@@ -239,7 +244,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	       int *position, int *num_entries, ZebraScanEntry **list,
 	       int *is_partial);
 
-RSET rset_trunc (ZebraHandle zh, ISAM_P *isam_p, int no,
+RSET rset_trunc (ZebraHandle zh, ISAMS_P *isam_p, int no,
 		 const char *term, int length_term, const char *flags);
 
 ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov);

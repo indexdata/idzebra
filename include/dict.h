@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.29  1999-05-15 14:36:37  adam
+ * Revision 1.30  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.29  1999/05/15 14:36:37  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.28  1999/03/09 13:07:06  adam
@@ -107,7 +110,7 @@
 #define DICT_H
 
 #include <bfile.h>
-#include <log.h>
+#include <yaz/log.h>
 
 #ifdef __cplusplus
 extern "C" {

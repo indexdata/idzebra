@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.74  1999-11-29 15:13:26  adam
+ * Revision 1.75  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.74  1999/11/29 15:13:26  adam
  * Server sets implementationName - and Version.
  *
  * Revision 1.73  1999/11/04 15:00:45  adam
@@ -272,7 +275,7 @@
 #include <unistd.h>
 #endif
 
-#include <data1.h>
+#include <yaz/data1.h>
 
 #include "zserver.h"
 

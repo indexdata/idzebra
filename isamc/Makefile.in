@@ -1,7 +1,7 @@
-# Copyright (C) 1996-1998, Index Data 
+# Copyright (C) 1996-1999, Index Data 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.6 1999-07-14 13:21:34 heikki Exp $
+# $Id: Makefile.in,v 1.7 1999-11-30 13:48:04 adam Exp $
 
 SHELL=/bin/sh
 
@@ -11,14 +11,14 @@ RANLIB=@RANLIB@
 CDEFS=@DEFS@ @ODEFS@
 LIBS=@LIBS@
 
-YAZLIB=../../yaz/lib/libyaz.a
-YAZINC=-I../../yaz/include
+YAZLIB=@YAZLIB@
+YAZINC=@YAZINC@
 
 INCLUDE=-I../include $(YAZINC)
 TPROG1=isamctst
 DEFS=$(CDEFS) $(INCLUDE)
 LIB=../lib/isamc.a 
-PO = isamc.o isamh.o isamd.o merge.o merge-d.o isams.o
+PO = isamc.o isamd.o merge.o merge-d.o
 
 all: $(LIB)
 

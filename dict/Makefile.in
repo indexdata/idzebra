@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1998, Index Data 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.4 1999-06-09 11:58:48 adam Exp $
+# $Id: Makefile.in,v 1.5 1999-11-30 13:48:03 adam Exp $
 
 SHELL=/bin/sh
 
@@ -11,8 +11,8 @@ RANLIB=@RANLIB@
 CDEFS=@DEFS@ @ODEFS@
 LIBS=@LIBS@
 
-YAZLIB=../../yaz/lib/libyaz.a
-YAZINC=-I../../yaz/include
+YAZLIB=@YAZLIB@
+YAZINC=@YAZINC@
 
 INCLUDE=-I../include $(YAZINC)
 TPROG1=dicttest

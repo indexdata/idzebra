@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.24 1999-10-05 09:57:40 heikki Exp $
+ * $Id: merge-d.c,v 1.25 1999-11-30 13:48:04 adam Exp $
  *
  * bugs
  *  sinleton-bit has to be in the high end, not low, so as not to confuse
@@ -100,7 +100,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
-#include <log.h>
+#include <yaz/log.h>
 #include "../index/index.h"
 #include "isamd-p.h"
 
@@ -1122,7 +1122,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.24  1999-10-05 09:57:40  heikki
+ * Revision 1.25  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.24  1999/10/05 09:57:40  heikki
  * Tuning the isam-d (and fixed a small "detail")
  *
  * Revision 1.23  1999/09/27 14:36:36  heikki

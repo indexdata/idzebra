@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebrautl.h,v $
- * Revision 1.5  1999-02-02 14:50:47  adam
+ * Revision 1.6  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.5  1999/02/02 14:50:47  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.4  1997/10/27 14:33:04  adam
@@ -30,7 +33,8 @@
 #ifndef ZEBRA_UTIL_H
 #define ZEBRA_UTIL_H
 
-#include <yaz-util.h>
+#include <yaz/yaz-util.h>
 #include <res.h>
+#include <zebraver.h>
 
 #endif

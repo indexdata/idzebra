@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.16  1999-05-26 07:49:14  adam
+ * Revision 1.17  1999-11-30 13:48:04  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.16  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.15  1999/02/02 14:51:22  adam
@@ -63,7 +66,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <log.h>
+#include <yaz/log.h>
 #include <isam.h>
 
 static int is_freestore_alloc(ISAM is, int type)

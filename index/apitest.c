@@ -1,8 +1,8 @@
 
 #include <stdio.h>
 
-#include <log.h>
-#include <pquery.h>
+#include <yaz/log.h>
+#include <yaz/pquery.h>
 #include "zebraapi.h"
 
 /* Small routine to display GRS-1 record variants ... */

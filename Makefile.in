@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1999, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.6 1999-06-09 11:58:48 adam Exp $
+# $Id: Makefile.in,v 1.7 1999-11-30 13:48:03 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -11,9 +11,9 @@ CPP=@CPP@
 CDEFS=@DEFS@ @ODEFS@
 
 # Where are Yaz libraries located?
-YAZLIB=../../yaz/lib/libyaz.a
+YAZLIB=@YAZLIB@
 # Where are Yaz header files located?
-YAZINC=-I../../yaz/include
+YAZINC=@YAZINC@
 # If Yaz is compiled with mosi support uncomment and specify.
 #OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
 
@@ -25,8 +25,22 @@ TCL_LIB=@TCL_LIB@
 LIBS=@LIBS@
 
 prefix=@prefix@
+exec_prefix=@exec_prefix@
 
-SUBDIR=util bfile dfa dict isamc isam rset recctrl index
+INSTALL=@INSTALL@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+INSTALL_DATA=@INSTALL_DATA@
+
+BUILD=@build_root@
+BINDIR=$(exec_prefix)/bin
+#  Public libraries and header files
+LIBDIR=$(exec_prefix)/lib
+INCDIR=$(prefix)/include
+#  Misc tables, etc.
+ZEBRADIR=$(prefix)/lib/zebra
+ZEBRATAB=$(prefix)/lib/zebra/tab
+
+SUBDIR=util bfile dfa dict isams isamc isam rset recctrl index
 
 all:
 	for i in $(SUBDIR); do cd $$i; if $(MAKE) OSILIB="$(OSILIB)" YAZLIB="$(YAZLIB)" YAZINC="$(YAZINC)" RANLIB="$(RANLIB)" CDEFS="$(CDEFS)" LIBS="$(LIBS)" CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done
@@ -48,6 +62,17 @@ cleandepend:
 	for i in $(SUBDIR); do (cd $$i; \
 		if sed '/^#Depend/q' <Makefile >Makefile.tmp; then \
 		mv -f Makefile.tmp Makefile; fi; rm -f .depend); done
+
+install:
+	$(INSTALL) -d $(BUILD)$(BINDIR)
+	$(INSTALL_PROGRAM) bin/zebraidx $(BUILD)$(BINDIR)
+	$(INSTALL_PROGRAM) bin/zebrasrv $(BUILD)$(BINDIR)
+	$(INSTALL) -d $(BUILD)$(ZEBRATAB)
+	@cd tab; for f in *; do \
+		if [ -f $$f ]; then \
+			$(INSTALL_DATA) $$f $(BUILD)$(ZEBRATAB); \
+		fi; \
+	done
 
 wc:
 	wc `find . -name '*.[ch]'`

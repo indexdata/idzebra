@@ -208,11 +208,12 @@ struct heap_info {
     int    *ptr;
     int    (*cmp)(const void *p1, const void *p2);
     Dict dict;
+    ISAMS isams;
+#if ZMBOL
     ISAM isam;
     ISAMC isamc;
-    ISAMS isams;
-    ISAMH isamh;
     ISAMD isamd;
+#endif
 };
 
 struct heap_info *key_heap_init (int nkeys,
@@ -346,6 +347,7 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
     return 1;
 }
 
+#if ZMBOL
 int heap_inpc (struct heap_info *hi)
 {
     struct heap_cread_info hci;
@@ -394,92 +396,6 @@ int heap_inpc (struct heap_info *hi)
         }
     }
     xfree (isamc_i);
-    return 0;
-} 
-
-int heap_inps (struct heap_info *hi)
-{
-    struct heap_cread_info hci;
-    ISAMS_I isams_i = (ISAMS_I) xmalloc (sizeof(*isams_i));
-
-    hci.key = (char *) xmalloc (KEY_SIZE);
-    hci.mode = 1;
-    hci.hi = hi;
-    hci.more = heap_read_one (hi, hci.cur_name, hci.key);
-
-    isams_i->clientData = &hci;
-    isams_i->read_item = heap_cread_item;
-
-    while (hci.more)
-    {
-        char this_name[INP_NAME_MAX];
-        ISAMS_P isams_p;
-        char *dict_info;
-
-        strcpy (this_name, hci.cur_name);
-	assert (hci.cur_name[1]);
-        no_diffs++;
-        if (!(dict_info = dict_lookup (hi->dict, hci.cur_name)))
-        {
-            isams_p = isams_merge (hi->isams, isams_i);
-            no_insertions++;
-            dict_insert (hi->dict, this_name, sizeof(ISAMS_P), &isams_p);
-        }
-	else
-	    abort();
-    }
-    xfree (isams_i);
-    return 0;
-} 
-
-int heap_inph (struct heap_info *hi)
-{
-    struct heap_cread_info hci;
-    ISAMH_I isamh_i = (ISAMH_I) xmalloc (sizeof(*isamh_i));
-
-    hci.key = (char *) xmalloc (KEY_SIZE);
-    hci.mode = 1;
-    hci.hi = hi;
-    hci.more = heap_read_one (hi, hci.cur_name, hci.key);
-
-    isamh_i->clientData = &hci;
-    isamh_i->read_item = heap_cread_item;
-
-    while (hci.more)
-    {
-        char this_name[INP_NAME_MAX];
-        ISAMH_P isamh_p, isamh_p2;
-        char *dict_info;
-
-        strcpy (this_name, hci.cur_name);
-	assert (hci.cur_name[1]);
-        no_diffs++;
-        if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
-        {
-            memcpy (&isamh_p, dict_info+1, sizeof(ISAMH_P));
-            isamh_p2 = isamh_append (hi->isamh, isamh_p, isamh_i);
-            if (!isamh_p2)
-            {
-                no_deletions++;
-                if (!dict_delete (hi->dict, this_name))
-                    abort();
-            }
-            else 
-            {
-                no_updates++;
-                if (isamh_p2 != isamh_p)
-                    dict_insert (hi->dict, this_name,
-                                 sizeof(ISAMH_P), &isamh_p2);
-            }
-        } 
-        else
-        {
-            isamh_p = isamh_append (hi->isamh, 0, isamh_i);
-            no_insertions++;
-            dict_insert (hi->dict, this_name, sizeof(ISAMH_P), &isamh_p);
-        }
-    }
-    xfree (isamh_i);
     return 0;
 } 
 
@@ -533,9 +449,6 @@ int heap_inpd (struct heap_info *hi)
     xfree (isamd_i);
     return 0;
 } 
-
-
-
 
 int heap_inp (struct heap_info *hi)
 {
@@ -607,6 +520,43 @@ int heap_inp (struct heap_info *hi)
     return 0;
 }
 
+#endif
+
+int heap_inps (struct heap_info *hi)
+{
+    struct heap_cread_info hci;
+    ISAMS_I isams_i = (ISAMS_I) xmalloc (sizeof(*isams_i));
+
+    hci.key = (char *) xmalloc (KEY_SIZE);
+    hci.mode = 1;
+    hci.hi = hi;
+    hci.more = heap_read_one (hi, hci.cur_name, hci.key);
+
+    isams_i->clientData = &hci;
+    isams_i->read_item = heap_cread_item;
+
+    while (hci.more)
+    {
+        char this_name[INP_NAME_MAX];
+        ISAMS_P isams_p;
+        char *dict_info;
+
+        strcpy (this_name, hci.cur_name);
+	assert (hci.cur_name[1]);
+        no_diffs++;
+        if (!(dict_info = dict_lookup (hi->dict, hci.cur_name)))
+        {
+            isams_p = isams_merge (hi->isams, isams_i);
+            no_insertions++;
+            dict_insert (hi->dict, this_name, sizeof(ISAMS_P), &isams_p);
+        }
+	else
+	    abort();
+    }
+    xfree (isams_i);
+    return 0;
+} 
+
 struct progressInfo {
     time_t   startTime;
     time_t   lastTime;
@@ -646,11 +596,12 @@ void key_input (BFiles bfs, int nkeys, int cache)
                 
 {
     Dict dict;
+    ISAMS isams = NULL;
+#if ZMBOL
     ISAM isam = NULL;
     ISAMC isamc = NULL;
-    ISAMS isams = NULL;
-    ISAMH isamh = NULL;
     ISAMD isamd = NULL;
+#endif
     struct key_file **kf;
     char rbuf[1024];
     int i, r;
@@ -677,7 +628,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
         logf (LOG_FATAL, "dict_open fail");
         exit (1);
     }
-    if (res_get_match (common_resource, "isam", "s", NULL))
+    if (res_get_match (common_resource, "isam", "s", ISAM_DEFAULT))
     {
 	struct ISAMS_M_s isams_m;
         isams = isams_open (bfs, FNAME_ISAMS, 1,
@@ -687,8 +638,10 @@ void key_input (BFiles bfs, int nkeys, int cache)
             logf (LOG_FATAL, "isams_open fail");
             exit (1);
         }
+	logf (LOG_LOG, "isams opened");
     }
-    else if (res_get_match (common_resource, "isam", "i", NULL))
+#if ZMBOL
+    else if (res_get_match (common_resource, "isam", "i", ISAM_DEFAULT))
     {
         isam = is_open (bfs, FNAME_ISAM, key_compare, 1,
 			sizeof(struct it_key), common_resource);
@@ -698,17 +651,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
             exit (1);
         }
     }
-    else if (res_get_match (common_resource, "isam", "h", NULL))
-    {
-        isamh = isamh_open (bfs, FNAME_ISAMH, 1,
-			  key_isamh_m (common_resource));
-        if (!isamh)
-        {
-            logf (LOG_FATAL, "isamh_open fail");
-            exit (1);
-        }
-    }
-    else if (res_get_match (common_resource, "isam", "d", NULL))
+    else if (res_get_match (common_resource, "isam", "d", ISAM_DEFAULT))
     {
 	struct ISAMD_M_s isamd_m;
         isamd = isamd_open (bfs, FNAME_ISAMD, 1,
@@ -719,7 +662,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
             exit (1);
         }
     }
-    else
+    else if (res_get_match (common_resource, "isam", "c", ISAM_DEFAULT))
     {
 	struct ISAMC_M_s isamc_m;
         isamc = isc_open (bfs, FNAME_ISAMC, 1,
@@ -730,6 +673,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
             exit (1);
         }
     }
+#endif
     kf = (struct key_file **) xmalloc ((1+nkeys) * sizeof(*kf));
     progressInfo.totalBytes = 0;
     progressInfo.totalOffset = 0;
@@ -745,37 +689,38 @@ void key_input (BFiles bfs, int nkeys, int cache)
     }
     hi = key_heap_init (nkeys, key_qsort_compare);
     hi->dict = dict;
+    hi->isams = isams;
+#if ZMBOL
     hi->isam = isam;
     hi->isamc = isamc;
-    hi->isams = isams;
-    hi->isamh = isamh;
     hi->isamd = isamd;
+#endif
     
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read (kf[i], rbuf)))
             key_heap_insert (hi, rbuf, r, kf[i]);
-    if (isamc)
-        heap_inpc (hi);
-    else if (isams)
+    if (isams)
 	heap_inps (hi);
+#if ZMBOL
+    else if (isamc)
+        heap_inpc (hi);
     else if (isam)
 	heap_inp (hi);
-    else if (isamh)
-	heap_inph (hi);
     else if (isamd)
 	heap_inpd (hi);
+#endif
 	
     dict_close (dict);
+    if (isams)
+	isams_close (isams);
+#if ZMBOL
     if (isam)
         is_close (isam);
     if (isamc)
         isc_close (isamc);
-    if (isams)
-	isams_close (isams);
-    if (isamh)
-        isamh_close (isamh);
     if (isamd)
         isamd_close (isamd);
+#endif
    
     for (i = 1; i<=nkeys; i++)
     {
@@ -795,7 +740,10 @@ void key_input (BFiles bfs, int nkeys, int cache)
 
 /*
  * $Log: kinput.c,v $
- * Revision 1.40  1999-09-08 12:12:39  adam
+ * Revision 1.41  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.40  1999/09/08 12:12:39  adam
  * Removed log message.
  *
  * Revision 1.39  1999/08/18 10:39:20  heikki

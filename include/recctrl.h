@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.31  1999-09-07 07:19:21  adam
+ * Revision 1.32  1999-11-30 13:48:03  adam
+ * Improved installation. Updated for inclusion of YAZ header files.
+ *
+ * Revision 1.31  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.30  1999/05/21 12:00:17  adam
@@ -115,10 +118,10 @@
 #ifndef RECCTRL_H
 #define RECCTRL_H
 
-#include <proto.h>
-#include <oid.h>
-#include <odr.h>
-#include <data1.h>
+#include <yaz/proto.h>
+#include <yaz/oid.h>
+#include <yaz/odr.h>
+#include <yaz/data1.h>
 #include <zebramap.h>
 
 #ifdef __cplusplus
