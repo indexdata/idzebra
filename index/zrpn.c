@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.138 2004-05-26 13:52:26 adam Exp $
+/* $Id: zrpn.c,v 1.139 2004-06-02 12:29:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1686,6 +1686,7 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
         bool_parms.rset_r = rset[i];
         bool_parms.key_size = sizeof(struct it_key);
 	bool_parms.cmp = key_compare_it;
+	bool_parms.log_item = key_logdump_txt;
         result = rset_create (rset_kind_or, &bool_parms);
     }
     return result;
@@ -1743,6 +1744,7 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
         bool_parms.rset_r = rset[i];
         bool_parms.key_size = sizeof(struct it_key);
 	bool_parms.cmp = key_compare_it;
+	bool_parms.log_item = key_logdump_txt;
         result = rset_create (rset_kind_and, &bool_parms);
     }
     return result;
@@ -1987,6 +1989,7 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
         bool_parms.rset_r = rset[i];
         bool_parms.key_size = sizeof(struct it_key);
 	bool_parms.cmp = key_compare_it;
+	bool_parms.log_item = key_logdump_txt;
         result = rset_create (rset_kind_and, &bool_parms);
     }
     return result;
@@ -2457,6 +2460,7 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
         }
         bool_parms.key_size = sizeof(struct it_key);
         bool_parms.cmp = key_compare_it;
+	bool_parms.log_item = key_logdump_txt;
 
         switch (zop->which)
         {
@@ -2905,7 +2909,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
                 bool_parms.key_size = sizeof(struct it_key);
                 bool_parms.cmp = key_compare_it;
-                bool_parms.rset_l = rset;
+		bool_parms.log_item = key_logdump_txt;
+		bool_parms.rset_l = rset;
                 bool_parms.rset_r = rset2;
               
                 rset = rset_create (rset_kind_or, &bool_parms);
@@ -2919,7 +2924,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
             bool_parms.key_size = sizeof(struct it_key);
             bool_parms.cmp = key_compare_it;
-            bool_parms.rset_l = rset;
+	    bool_parms.log_item = key_logdump_txt;
+	    bool_parms.rset_l = rset;
             bool_parms.rset_r = rset_dup(limit_set);
 
             rset = rset_create (rset_kind_and, &bool_parms);
@@ -2984,7 +2990,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
                 bool_parms.key_size = sizeof(struct it_key);
                 bool_parms.cmp = key_compare_it;
-                bool_parms.rset_l = rset;
+		bool_parms.log_item = key_logdump_txt;
+		bool_parms.rset_l = rset;
                 bool_parms.rset_r = rset2;
               
                 rset = rset_create (rset_kind_or, &bool_parms);
@@ -2998,6 +3005,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 
             bool_parms.key_size = sizeof(struct it_key);
             bool_parms.cmp = key_compare_it;
+	    bool_parms.log_item = key_logdump_txt;
             bool_parms.rset_l = rset;
             bool_parms.rset_r = rset_dup(limit_set);
 

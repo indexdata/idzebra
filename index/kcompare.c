@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.44 2004-06-01 12:56:38 adam Exp $
+/* $Id: kcompare.c,v 1.45 2004-06-02 12:29:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -136,7 +136,7 @@ static void iscz1_code_stop (int mode, void *p)
 }
 
 #if INT_CODEC_NEW 
-CODEC_INLINE void iscz1_encode_int (unsigned d, char **dst)
+static CODEC_INLINE void iscz1_encode_int (unsigned d, char **dst)
 {
     unsigned char *bp = (unsigned char*) *dst;
 
@@ -149,7 +149,7 @@ CODEC_INLINE void iscz1_encode_int (unsigned d, char **dst)
     *dst = (char *) bp;
 }
 
-CODEC_INLINE int iscz1_decode_int (unsigned char **src)
+static CODEC_INLINE int iscz1_decode_int (unsigned char **src)
 {
     unsigned d = 0;
     unsigned char c;
@@ -166,7 +166,7 @@ CODEC_INLINE int iscz1_decode_int (unsigned char **src)
 #else
 /* ! INT_CODEC_NEW */
 
-CODEC_INLINE void iscz1_encode_int (unsigned d, char **dst)
+static CODEC_INLINE void iscz1_encode_int (unsigned d, char **dst)
 {
     unsigned char *bp = (unsigned char*) *dst;
 
@@ -193,7 +193,7 @@ CODEC_INLINE void iscz1_encode_int (unsigned d, char **dst)
     *dst = (char *) bp;
 }
 
-CODEC_INLINE int iscz1_decode_int (unsigned char **src)
+static CODEC_INLINE int iscz1_decode_int (unsigned char **src)
 {
     unsigned c = *(*src)++;
     switch (c & 192)
