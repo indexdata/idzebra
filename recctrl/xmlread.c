@@ -1,5 +1,5 @@
-/* $Id: xmlread.c,v 1.11 2003-09-08 09:51:02 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
+/* $Id: xmlread.c,v 1.12 2004-07-26 12:26:25 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -79,7 +79,7 @@ static void cb_chardata (void *user, const char *s, int len)
                                                    ui->d1_stack[ui->level -1]);
 }
 
-static void cb_decl (void *user, const char *version, const char*encoding,
+static void cb_decl (void *user, const char *version, const char *encoding,
                      int standalone)
 {
     struct user_info *ui = (struct user_info*) user;
@@ -89,7 +89,7 @@ static void cb_decl (void *user, const char *version, const char*encoding,
     attr_list[1] = version;
 
     attr_list[2] = "encoding";
-    attr_list[3] = "UTF-8"; /* encoding */
+    attr_list[3] = "UTF-8"; /* internally it's always UTF-8 */
 
     attr_list[4] = "standalone";
     attr_list[5] = standalone  ? "yes" : "no";
@@ -98,7 +98,7 @@ static void cb_decl (void *user, const char *version, const char*encoding,
     
     data1_mk_preprocess (ui->dh, ui->nmem, "xml", attr_list,
                              ui->d1_stack[ui->level-1]);
-    yaz_log (ui->loglevel, "decl version=%s encoding=%s",
+    yaz_log (LOG_LOG, "decl version=%s encoding=%s",
              version ? version : "null",
              encoding ? encoding : "null");
 }
@@ -115,8 +115,6 @@ static void cb_processing (void *user, const char *target,
     yaz_log (ui->loglevel, "decl processing target=%s data=%s",
              target ? target : "null",
              data ? data : "null");
-    
-    
 }
 
 static void cb_comment (void *user, const char *data)
@@ -400,6 +398,7 @@ data1_node *zebra_read_xml (data1_handle dh,
     XML_Parser parser;
     struct user_info uinfo;
     int done = 0;
+    data1_node *first_node;
 
     uinfo.loglevel = LOG_DEBUG;
     uinfo.level = 1;
@@ -454,6 +453,24 @@ data1_node *zebra_read_xml (data1_handle dh,
     XML_ParserFree (parser);
     if (!uinfo.d1_stack[1] || !done)
         return 0;
+    /* insert XML header if not present .. */
+    first_node = uinfo.d1_stack[0]->child;
+    if (first_node->which != DATA1N_preprocess ||
+	strcmp(first_node->u.preprocess.target, "xml"))
+    {
+        const char *attr_list[5];
+
+        attr_list[0] = "version";
+        attr_list[1] = "1.0";
+
+        attr_list[2] = "encoding";
+        attr_list[3] = "UTF-8"; /* encoding */
+
+        attr_list[4] = 0;
+    
+        data1_insert_preprocess (uinfo.dh, uinfo.nmem, "xml", attr_list,
+				 uinfo.d1_stack[0]);
+    }
     return uinfo.d1_stack[0];
 }
 
