@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.7  1994-09-28 11:56:25  quinn
+ * Revision 1.8  1994-09-28 12:32:17  quinn
+ * Trivial
+ *
+ * Revision 1.7  1994/09/28  11:56:25  quinn
  * Added sort of input to is_merge
  *
  * Revision 1.6  1994/09/28  11:29:33  quinn
@@ -291,7 +294,6 @@ ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data)
     extcmp = is->cmp;
     qsort(data, num, is_keysize(is) + 1, sort_input);
     is_m_establish_tab(is, &tab, pos);
-    /* TODO: do something to aquire oldnum at this point */
     if (pos)
     	if (is_m_read_full(&tab, tab.data) < 0)
     	{
