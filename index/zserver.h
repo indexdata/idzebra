@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.38  1998-09-22 10:03:44  adam
+ * Revision 1.39  1998-10-16 08:14:35  adam
+ * Updated record control system.
+ *
+ * Revision 1.38  1998/09/22 10:03:44  adam
  * Changed result sets to be persistent in the sense that they can
  * be re-searched if needed.
  * Fixed memory leak in rsm_or.
@@ -199,6 +202,7 @@ struct zebra_info {
 #endif
     ZebraMaps zebra_maps;
     ZebraRankClass rank_classes;
+    RecTypes recTypes;
     Passwd_db passwd_db;
 };
 

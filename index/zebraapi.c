@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.10  1998-09-22 10:03:42  adam
+ * Revision 1.11  1998-10-16 08:14:34  adam
+ * Updated record control system.
+ *
+ * Revision 1.10  1998/09/22 10:03:42  adam
  * Changed result sets to be persistent in the sense that they can
  * be re-searched if needed.
  * Fixed memory leak in rsm_or.
@@ -178,7 +181,9 @@ ZebraHandle zebra_open (const char *configName)
     zh->sets = NULL;
     zh->registerState = -1;  /* trigger open of registers! */
     zh->registerChange = 0;
-    
+    zh->recTypes = recTypes_init (zh->dh);
+    recTypes_default_handlers (zh->recTypes);
+
     zh->records = NULL;
     zh->zebra_maps = zebra_maps_open (zh->res);
     zh->rank_classes = NULL;
@@ -215,6 +220,7 @@ void zebra_close (ZebraHandle zh)
         rec_close (&zh->records);
         zebra_register_unlock (zh);
     }
+    recTypes_destroy (zh->recTypes);
     zebra_maps_close (zh->zebra_maps);
     zebraRankDestroy (zh);
     bfs_destroy (zh->bfs);

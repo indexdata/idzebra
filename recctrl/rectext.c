@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.8  1998-05-20 10:12:27  adam
+ * Revision 1.9  1998-10-16 08:14:38  adam
+ * Updated record control system.
+ *
+ * Revision 1.8  1998/05/20 10:12:27  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -64,7 +67,11 @@
 #include <zebrautl.h>
 #include "rectext.h"
 
-static void text_init (void)
+static void text_init (RecType recType)
+{
+}
+
+static void text_destroy (RecType recType)
 {
 }
 
@@ -211,6 +218,7 @@ static int text_retrieve (struct recRetrieveCtrl *p)
 static struct recType text_type = {
     "text",
     text_init,
+    text_destroy,
     text_extract,
     text_retrieve
 };

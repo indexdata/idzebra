@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.c,v $
- * Revision 1.2  1996-10-29 14:03:16  adam
+ * Revision 1.3  1998-10-16 08:14:36  adam
+ * Updated record control system.
+ *
+ * Revision 1.2  1996/10/29 14:03:16  adam
  * Include zebrautl.h instead of alexutil.h.
  *
  * Revision 1.1  1996/10/11 10:57:24  adam
@@ -37,8 +40,50 @@
 #include "rectext.h"
 #include "recgrs.h"
 
-RecType recType_byName (const char *name, char *subType)
+struct recTypeEntry {
+    RecType recType;
+    struct recTypeEntry *next;
+    int init_flag;
+};
+
+struct recTypes {
+    data1_handle dh;
+    struct recTypeEntry *entries;
+};
+
+RecTypes recTypes_init (data1_handle dh)
 {
+    RecTypes p = (RecTypes) nmem_malloc (data1_nmem_get (dh), sizeof(*p));
+
+    p->dh = dh;
+    p->entries = 0;
+    return p;
+}
+
+void recTypes_destroy (RecTypes rts)
+{
+    struct recTypeEntry *rte;
+
+    for (rte = rts->entries; rte; rte = rte->next)
+	if (rte->init_flag)
+	    (*(rte->recType)->destroy)(rte->recType);
+}
+
+void recTypes_add_handler (RecTypes rts, RecType rt)
+{
+    struct recTypeEntry *rte;
+
+    rte = nmem_malloc (data1_nmem_get (rts->dh), sizeof(*rte));
+
+    rte->recType = rt;
+    rte->init_flag = 0;
+    rte->next = rts->entries;
+    rts->entries = rte;
+}
+
+RecType recType_byName (RecTypes rts, const char *name, char *subType)
+{
+    struct recTypeEntry *rte;
     char *p;
     char tmpname[256];
 
@@ -50,10 +95,21 @@ RecType recType_byName (const char *name, char *subType)
     }
     else
         *subType = '\0';
-    if (!strcmp (recTypeGrs->name, tmpname))
-        return recTypeGrs;
-    if (!strcmp (recTypeText->name, tmpname))
-        return recTypeText;
-    return NULL;
+    for (rte = rts->entries; rte; rte = rte->next)
+	if (!strcmp (rte->recType->name, tmpname))
+	{
+	    if (!rte->init_flag)
+	    {
+		rte->init_flag = 1;
+		(*(rte->recType)->init)(rte->recType);
+	    }
+	    return rte->recType;
+	}
+    return 0;
 }
 
+void recTypes_default_handlers (RecTypes rts)
+{
+    recTypes_add_handler (rts, recTypeGrs);
+    recTypes_add_handler (rts, recTypeText);
+}

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1998, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.59  1998-06-08 14:43:11  adam
+ * Revision 1.60  1998-10-16 08:14:31  adam
+ * Updated record control system.
+ *
+ * Revision 1.59  1998/06/08 14:43:11  adam
  * Added suport for EXPLAIN Proxy servers - added settings databasePath
  * and explainDatabase to facilitate this. Increased maximum number
  * of databases and attributes in one register.
@@ -223,6 +226,7 @@
 #include <isam.h>
 #include <isamc.h>
 #include <data1.h>
+#include <recctrl.h>
 
 #define IT_MAX_WORD 256
 #define IT_KEY_HAVE_SEQNO 1
@@ -250,7 +254,6 @@ struct dirs_entry {
     time_t mtime;
 };
 
-
 struct recordGroup {
     char         *groupName;
     char         *databaseName;
@@ -266,6 +269,7 @@ struct recordGroup {
     data1_handle dh;
     BFiles       bfs;
     ZebraMaps    zebra_maps;
+    RecTypes     recTypes;
 };
 
 void getFnameTmp (char *fname, int no);

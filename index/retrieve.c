@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1995-1998, Index Data I/S 
+ * Copyright (C) 1995-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.1  1998-03-05 08:45:13  adam
+ * Revision 1.2  1998-10-16 08:14:33  adam
+ * Updated record control system.
+ *
+ * Revision 1.1  1998/03/05 08:45:13  adam
  * New result set model and modular ranking system. Moved towards
  * descent server API. System information stored as "SGML" records.
  *
@@ -101,7 +104,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     *basenamep = odr_malloc (stream, strlen(basename)+1);
     strcpy (*basenamep, basename);
 
-    if (!(rt = recType_byName (file_type, subType)))
+    if (!(rt = recType_byName (zh->recTypes, file_type, subType)))
     {
         logf (LOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
 	return 14;

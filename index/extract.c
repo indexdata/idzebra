@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.87  1998-10-15 13:10:33  adam
+ * Revision 1.88  1998-10-16 08:14:29  adam
+ * Updated record control system.
+ *
+ * Revision 1.87  1998/10/15 13:10:33  adam
  * Fixed bug in Zebra that caused it to stop indexing when empty
  * record was read.
  *
@@ -1515,7 +1518,8 @@ int fileExtract (SYSNO *sysno, const char *fname,
     }
     if (!*rGroup->recordType)
 	return 0;
-    if (!(recType = recType_byName (rGroup->recordType, subType)))
+    if (!(recType =
+	  recType_byName (rGroup->recTypes, rGroup->recordType, subType)))
     {
         logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
         return 0;

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.58  1998-06-08 14:43:13  adam
+ * Revision 1.59  1998-10-16 08:14:32  adam
+ * Updated record control system.
+ *
+ * Revision 1.58  1998/06/08 14:43:13  adam
  * Added suport for EXPLAIN Proxy servers - added settings databasePath
  * and explainDatabase to facilitate this. Increased maximum number
  * of databases and attributes in one register.
@@ -260,6 +263,8 @@ int main (int argc, char **argv)
     rGroupDef.fileVerboseLimit = 100000;
     rGroupDef.zebra_maps = NULL;
     rGroupDef.dh = data1_create ();
+    rGroupDef.recTypes = recTypes_init (rGroupDef.dh);
+    recTypes_default_handlers (rGroupDef.recTypes);
 
     prog = *argv;
     if (argc < 2)

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.26  1998-05-20 10:12:12  adam
+ * Revision 1.27  1998-10-16 08:14:28  adam
+ * Updated record control system.
+ *
+ * Revision 1.26  1998/05/20 10:12:12  adam
  * Implemented automatic EXPLAIN database maintenance.
  * Modified Zebra to work with ASN.1 compiled version of YAZ.
  *
@@ -163,15 +166,25 @@ struct recRetrieveCtrl {
     char *message;
 };
 
-typedef struct recType
-{
-    char *name;                       /* Name of record type */
-    void (*init)(void);               /* Init function - called once       */
-    int  (*extract)(struct recExtractCtrl *ctrl);     /* Extract proc      */
-    int  (*retrieve)(struct recRetrieveCtrl *ctrl);   /* Retrieve proc     */
-} *RecType;
+typedef struct recType *RecType;
 
-RecType recType_byName (const char *name, char *subType);
+struct recType
+{
+    char *name;                            /* Name of record type */
+    void (*init)(RecType recType);         /* Init function - called once  */
+    void (*destroy)(RecType recType);                  /* Destroy function */
+    int  (*extract)(struct recExtractCtrl *ctrl);      /* Extract proc     */
+    int  (*retrieve)(struct recRetrieveCtrl *ctrl);    /* Retrieve proc    */
+    void *clientData;                      /* data handle */
+};
+
+typedef struct recTypes *RecTypes;
+
+RecTypes recTypes_init (data1_handle dh);
+void recTypes_destroy (RecTypes recTypes);
+void recTypes_default_handlers (RecTypes recTypes);
+
+RecType recType_byName (RecTypes rts, const char *name, char *subType);
 
 int grs_extract_tree(struct recExtractCtrl *p, data1_node *n);
 

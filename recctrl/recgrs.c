@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.21  1998-07-01 09:16:10  adam
+ * Revision 1.22  1998-10-16 08:14:37  adam
+ * Updated record control system.
+ *
+ * Revision 1.21  1998/07/01 09:16:10  adam
  * Element localno only added when it's greater than 0.
  *
  * Revision 1.20  1998/05/20 10:12:26  adam
@@ -201,7 +204,11 @@ static data1_node *read_grs_type (struct grs_read_info *p, const char *type)
     return NULL;
 }
 
-static void grs_init(void)
+static void grs_init(RecType recType)
+{
+}
+
+static void grs_destroy(RecType recType)
 {
 }
 
@@ -648,6 +655,7 @@ static struct recType grs_type =
 {
     "grs",
     grs_init,
+    grs_destroy,
     grs_extract,
     grs_retrieve
 };
