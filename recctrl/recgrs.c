@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.35  2000-11-29 15:21:31  adam
+ * Revision 1.36  2000-12-05 10:01:44  adam
+ * Fixed bug regarding user-defined attribute sets.
+ *
+ * Revision 1.35  2000/11/29 15:21:31  adam
  * Fixed problem with passwd db.
  *
  * Revision 1.34  2000/02/25 13:24:49  adam
@@ -578,7 +581,9 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
         nmem_destroy (mem);
 	return 0;
     }
+#if 0
     data1_pr_tree (p->dh, node, stdout);
+#endif
     logf (LOG_DEBUG, "grs_retrieve: size");
     if ((dnew = data1_insert_taggeddata(p->dh, node, node,
 				       "size", mem)))

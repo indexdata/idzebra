@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data 
+ * Copyright (C) 1994-2000, Index Data 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.104  2000-09-05 14:04:05  adam
+ * Revision 1.105  2000-12-05 10:01:44  adam
+ * Fixed bug regarding user-defined attribute sets.
+ *
+ * Revision 1.104  2000/09/05 14:04:05  adam
  * Updates for prefix 'yaz_' for YAZ log functions.
  *
  * Revision 1.103  2000/05/18 12:01:36  adam
@@ -419,6 +422,7 @@ static int records_processed = 0;
 
 static ZebraExplainInfo zti = NULL;
 
+
 static void logRecord (int showFlag)
 {
     if (!showFlag)
@@ -739,6 +743,21 @@ static void addIndexString (RecWord *p, const char *string, int length)
     
     *dst++ = lead;
 
+#if SU_SCHEME
+    if ((lead & 3) < 3)
+    {
+        int ch = zebraExplain_lookupSU (zti, attrSet, attrUse);
+        if (ch < 0)
+        {
+            ch = zebraExplain_addSU (zti, attrSet, attrUse);
+            yaz_log (LOG_LOG, "addSU set=%d use=%d SU=%d",
+                     attrSet, attrUse, ch);
+        }
+	assert (ch > 0);
+	memcpy (dst, &ch, sizeof(ch));
+	dst += sizeof(ch);
+    }
+#else
     if (!(lead & 1))
     {
         memcpy (dst, &attrSet, sizeof(attrSet));
@@ -749,6 +768,7 @@ static void addIndexString (RecWord *p, const char *string, int length)
         memcpy (dst, &attrUse, sizeof(attrUse));
         dst += sizeof(attrUse);
     }
+#endif
     *dst++ = p->reg_type;
     memcpy (dst, string, length);
     dst += length;
@@ -918,20 +938,31 @@ static void flushSortKeys (SYSNO sysno, int cmd)
 
 static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys)
 {
+#if SU_SCHEME
+#else
     unsigned char attrSet = (unsigned char) -1;
     unsigned short attrUse = (unsigned short) -1;
+#endif
     int seqno = 0;
     int off = 0;
+    int ch = 0;
 
     zebraExplain_recordCountIncrement (zti, cmd ? 1 : -1);
     while (off < reckeys->buf_used)
     {
         const char *src = reckeys->buf + off;
         struct it_key key;
-        int lead, ch;
+        int lead;
     
         lead = *src++;
 
+#if SU_SCHEME
+	if ((lead & 3) < 3)
+	{
+	    memcpy (&ch, src, sizeof(ch));
+	    src += sizeof(ch);
+	}
+#else
         if (!(lead & 1))
         {
             memcpy (&attrSet, src, sizeof(attrSet));
@@ -942,14 +973,23 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys)
             memcpy (&attrUse, src, sizeof(attrUse));
             src += sizeof(attrUse);
         }
+#endif
         if (key_buf_used + 1024 > (ptr_top-ptr_i)*sizeof(char*))
             key_flush ();
         ++ptr_i;
+
         key_buf[ptr_top-ptr_i] = (char*)key_buf + key_buf_used;
 
+#if SU_SCHEME
+#else
         ch = zebraExplain_lookupSU (zti, attrSet, attrUse);
         if (ch < 0)
+        {
             ch = zebraExplain_addSU (zti, attrSet, attrUse);
+            yaz_log (LOG_LOG, "addSU cmd=%d set=%d use=%d SU=%d",
+                     cmd, attrSet, attrUse, ch);
+        }
+#endif
         assert (ch > 0);
 	key_buf_used += key_SU_code (ch, ((char*)key_buf) + key_buf_used);
 
@@ -982,13 +1022,22 @@ static const char **searchRecordKey (struct recKeys *reckeys,
     int off = 0;
     int startSeq = -1;
     int i;
+    int seqno = 0;
+#if SU_SCHEME
+    int chS, ch;
+#else
     short attrUse;
     char attrSet;
-    int seqno = 0;
+#endif
 
     for (i = 0; i<32; i++)
         ws[i] = NULL;
-    
+
+#if SU_SCHEME
+    chS = zebraExplain_lookupSU (zti, attrSetS, attrUseS);
+    if (chS < 0)
+	return ws;
+#endif
     while (off < reckeys->buf_used)
     {
 
@@ -997,7 +1046,13 @@ static const char **searchRecordKey (struct recKeys *reckeys,
         int lead;
     
         lead = *src++;
-
+#if SU_SCHEME
+	if ((lead & 3)<3)
+	{
+	    memcpy (&ch, src, sizeof(ch));
+	    src += sizeof(ch);
+	}
+#else
         if (!(lead & 1))
         {
             memcpy (&attrSet, src, sizeof(attrSet));
@@ -1008,6 +1063,7 @@ static const char **searchRecordKey (struct recKeys *reckeys,
             memcpy (&attrUse, src, sizeof(attrUse));
             src += sizeof(attrUse);
         }
+#endif
         wstart = src;
         while (*src++)
             ;
@@ -1018,7 +1074,13 @@ static const char **searchRecordKey (struct recKeys *reckeys,
             memcpy (&seqno, src, sizeof(seqno));
             src += sizeof(seqno);
         }
-        if (attrUseS == attrUse && attrSetS == attrSet)
+	if (
+#if SU_SCHEME
+	    ch == chS
+#else
+	    attrUseS == attrUse && attrSetS == attrSet
+#endif
+	    )
         {
             int woff;
 

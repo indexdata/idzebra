@@ -1,5 +1,8 @@
 Remote record import using Z39.50 Extended Services and Segments.
 
+Fixed bug where updating a database with user-defined attributes
+could corrupt the register (bad storeKeys).
+
 Multi-threaded version.
 
 Fixed bug regarding proximity.

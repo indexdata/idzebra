@@ -1,5 +1,14 @@
 Zebra TODO
-$Id: TODO,v 1.9 2000-07-07 12:49:20 adam Exp $
+$Id: TODO,v 1.10 2000-12-05 10:01:44 adam Exp $
+
+Explain category Attributedetails should include name/description
+of search- attrribute.
+
+String indexing/search (possibly including XPATH-like queres)
+
+Null-value search.
+
+Handle XML empty node constructs <tag/>
 
 Browse set.
 

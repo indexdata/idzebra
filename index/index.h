@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1995-1999, Index Data
+ * Copyright (C) 1995-0000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  * (log at the end)
@@ -27,6 +27,8 @@
 #include <recctrl.h>
 
 YAZ_BEGIN_CDECL
+
+#define SU_SCHEME 1
 
 #define IT_MAX_WORD 256
 #define IT_KEY_HAVE_SEQNO 1
@@ -165,7 +167,10 @@ YAZ_END_CDECL
 #endif
 /*
  * $Log: index.h,v $
- * Revision 1.69  2000-03-20 19:08:36  adam
+ * Revision 1.70  2000-12-05 10:01:44  adam
+ * Fixed bug regarding user-defined attribute sets.
+ *
+ * Revision 1.69  2000/03/20 19:08:36  adam
  * Added remote record import using Z39.50 extended services and Segment
  * Requests.
  *

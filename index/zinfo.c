@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.20  2000-11-29 14:24:01  adam
+ * Revision 1.21  2000-12-05 10:01:44  adam
+ * Fixed bug regarding user-defined attribute sets.
+ *
+ * Revision 1.20  2000/11/29 14:24:01  adam
  * Script configure uses yaz pthreads options. Added locking for
  * zebra_register_{lock,unlock}.
  *
@@ -762,7 +765,7 @@ static void zebraExplain_readDatabase (ZebraExplainInfo zei,
     {
 	zdi->recordCount = atoi_n (np->child->u.data.data,
 				   np->child->u.data.len);
-    }    
+    }
     zdi->readFlag = 0;
     rec_rm (&rec);
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindxp.h,v $
- * Revision 1.8  2000-04-05 09:49:35  adam
+ * Revision 1.9  2000-12-05 10:01:44  adam
+ * Fixed bug regarding user-defined attribute sets.
+ *
+ * Revision 1.8  2000/04/05 09:49:35  adam
  * On Unix, zebra/z'mbol uses automake.
  *
  * Revision 1.7  1999/07/06 12:28:04  adam
@@ -47,7 +50,7 @@ YAZ_BEGIN_CDECL
 
 #define REC_BLOCK_TYPES 2
 #define REC_HEAD_MAGIC "recindex"
-#define REC_VERSION 1
+#define REC_VERSION 2
 
 struct records_info {
     int rw;

@@ -1,6 +1,6 @@
-## $Id: Makefile.am,v 1.4 2000-10-17 12:37:09 adam Exp $
+## $Id: Makefile.am,v 1.5 2000-12-05 10:01:44 adam Exp $
 
-noinst_PROGRAMS = apitest
+noinst_PROGRAMS = apitest kdump
 
 if ISZMBOL
 bin_PROGRAMS = zmbolidx zmbolsrv 
@@ -30,6 +30,8 @@ apitest_SOURCES = apitest.c kcompare.c zrpn.c zsets.c attribute.c recindex.c \
  lockutil.c locksrv.c zinfo.c trunc.c sortidx.c rank1.c zebraapi.c \
  retrieve.c kinput.c \
  index.h recindex.h recindxp.h zebraapi.h zinfo.h zserver.h
+
+kdump_SOURCES=kdump.c kcompare.c
 
 INCLUDES = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.18  1999-09-07 07:19:21  adam
+ * Revision 1.19  2000-12-05 10:01:44  adam
+ * Fixed bug regarding user-defined attribute sets.
+ *
+ * Revision 1.18  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.17  1999/02/02 14:50:55  adam
@@ -163,7 +166,7 @@ int main (int argc, char **argv)
         }
         else if (ret == 'v')
         {
-            log_init (log_mask_str(arg), prog, NULL);
+            yaz_log_init (yaz_log_mask_str(arg), prog, NULL);
         }
 	else if (ret == 'c')
 	{

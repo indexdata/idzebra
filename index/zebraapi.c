@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.41  2000-12-01 17:59:08  adam
+ * Revision 1.42  2000-12-05 10:01:44  adam
+ * Fixed bug regarding user-defined attribute sets.
+ *
+ * Revision 1.41  2000/12/01 17:59:08  adam
  * Fixed bug regarding online updates on WIN32.
  * When zebra.cfg is not available the server will not abort.
  *
@@ -882,6 +885,7 @@ static void extract_add_index_string (RecWord *p, const char *string,
     int diff = 0;
     int *pseqno = &p->seqnos[p->reg_type];
     ZebraHandle zh = p->extractCtrl->handle;
+    ZebraExplainInfo zei = zh->service->zei;
     struct recKeys *keys = &zh->keys;
 
     if (keys->buf_used+1024 > keys->buf_max)
@@ -917,6 +921,21 @@ static void extract_add_index_string (RecWord *p, const char *string,
     
     *dst++ = lead;
 
+#if SU_SCHEME
+    if ((lead & 3) < 3)
+    {
+        int ch = zebraExplain_lookupSU (zei, attrSet, attrUse);
+        if (ch < 0)
+        {
+            ch = zebraExplain_addSU (zei, attrSet, attrUse);
+            yaz_log (LOG_LOG, "addSU set=%d use=%d SU=%d",
+                     attrSet, attrUse, ch);
+        }
+	assert (ch > 0);
+	memcpy (dst, &ch, sizeof(ch));
+	dst += sizeof(ch);
+    }
+#else
     if (!(lead & 1))
     {
         memcpy (dst, &attrSet, sizeof(attrSet));
@@ -927,6 +946,7 @@ static void extract_add_index_string (RecWord *p, const char *string,
         memcpy (dst, &attrUse, sizeof(attrUse));
         dst += sizeof(attrUse);
     }
+#endif
     *dst++ = p->reg_type;
     memcpy (dst, string, length);
     dst += length;
@@ -1262,10 +1282,14 @@ static void extract_flushWriteKeys (ZebraHandle zh)
 static void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 				     int cmd, struct recKeys *reckeys)
 {
+#if SU_SCHEME
+#else
     unsigned char attrSet = (unsigned char) -1;
     unsigned short attrUse = (unsigned short) -1;
+#endif
     int seqno = 0;
     int off = 0;
+    int ch = 0;
     ZebraExplainInfo zei = zh->service->zei;
 
     if (!zh->key_buf)
@@ -1282,10 +1306,17 @@ static void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
     {
         const char *src = reckeys->buf + off;
         struct it_key key;
-        int lead, ch;
+        int lead;
     
         lead = *src++;
 
+#if SU_SCHEME
+	if ((lead & 3) < 3)
+	{
+	    memcpy (&ch, src, sizeof(ch));
+	    src += sizeof(ch);
+	}
+#else
         if (!(lead & 1))
         {
             memcpy (&attrSet, src, sizeof(attrSet));
@@ -1296,15 +1327,18 @@ static void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
             memcpy (&attrUse, src, sizeof(attrUse));
             src += sizeof(attrUse);
         }
+#endif
         if (zh->key_buf_used + 1024 > (zh->ptr_top-zh->ptr_i)*sizeof(char*))
             extract_flushWriteKeys (zh);
         ++(zh->ptr_i);
         (zh->key_buf)[zh->ptr_top - zh->ptr_i] =
 	    (char*)zh->key_buf + zh->key_buf_used;
-
+#if SU_SCHEME
+#else
         ch = zebraExplain_lookupSU (zei, attrSet, attrUse);
         if (ch < 0)
             ch = zebraExplain_addSU (zei, attrSet, attrUse);
+#endif
         assert (ch > 0);
 	zh->key_buf_used +=
 	    key_SU_code (ch,((char*)zh->key_buf) + zh->key_buf_used);
