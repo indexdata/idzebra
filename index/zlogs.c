@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zlogs.c,v $
- * Revision 1.3  1996-03-20 09:36:40  adam
+ * Revision 1.4  1996-10-08 09:41:25  quinn
+ * Fixed diagnostic.
+ *
+ * Revision 1.3  1996/03/20  09:36:40  adam
  * Function dict_lookup_grep got extra parameter, init_pos, which marks
  * from which position in pattern approximate pattern matching should occur.
  * Approximate pattern matching is used in relevance=re-2.
@@ -252,7 +255,7 @@ static void zlog_structure (Z_RPNStructure *zs, int level, enum oid_value ast)
             logf (LOG_LOG, "%*.s or", level, "");
             break;
         case Z_Operator_and_not:
-            logf (LOG_LOG, "%*.s and", level, "");
+            logf (LOG_LOG, "%*.s and-not", level, "");
             break;
         default:
             logf (LOG_LOG, "%*.s unknown complex", level, "");
