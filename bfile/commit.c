@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.6  1995-12-15 12:36:53  adam
+ * Revision 1.7  1996-02-07 10:08:46  adam
+ * Work on flat shadow (not finished yet).
+ *
+ * Revision 1.6  1995/12/15  12:36:53  adam
  * Moved hash file information to union.
  * Renamed commit files.
  *
@@ -58,9 +61,9 @@ void cf_commit (CFile cf)
         exit (1);
     }
     p = xmalloc (sizeof(*p));
-    hash_bytes = cf->head.u.hash.hash_size * sizeof(int);
+    hash_bytes = cf->head.hash_size * sizeof(int);
     bucket_no = (hash_bytes+sizeof(cf->head))/HASH_BSIZE + 2;
-    for (; bucket_no < cf->head.u.hash.next_bucket; bucket_no++)
+    for (; bucket_no < cf->head.next_bucket; bucket_no++)
     {
         if (!mf_read (cf->hash_mf, bucket_no, 0, 0, p))
         {

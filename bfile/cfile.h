@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.h,v $
- * Revision 1.5  1995-12-15 12:36:52  adam
+ * Revision 1.6  1996-02-07 10:08:45  adam
+ * Work on flat shadow (not finished yet).
+ *
+ * Revision 1.5  1995/12/15  12:36:52  adam
  * Moved hash file information to union.
  * Renamed commit files.
  *
@@ -42,18 +45,16 @@ struct CFile_hash_bucket {
 
 #define HASH_BSIZE sizeof(struct CFile_ph_bucket)
 
+#define CFILE_FLAT 1
+
 typedef struct CFile_struct
 {
     struct CFile_head {
         int state;
-        union {
-            struct {
-                int hash_size;
-                int next_bucket;
-                int next_block;
-                int block_size;
-            } hash;
-        } u;
+        int next_block;
+        int block_size;
+        int hash_size;
+        int next_bucket;
     } head;
     MFile block_mf;
     MFile hash_mf;
