@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: gils.sgml,v 1.1 1996-05-07 11:19:13 quinn Exp $
+  $Id: gils.sgml,v 1.2 1996-05-07 12:29:36 quinn Exp $
 -->
 
 <article>
 <title>Serving GILS Records with Zebra
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.1 $
+<date>$Revision: 1.2 $
 <abstract>
 This document explains how to set up a simple database of Government
 Information Locator Records using the Zebra retrieval engine and
@@ -18,7 +18,7 @@ Z39.50 server (version 1.0b1 or later).
 
 <p>
 Zebra is a powerful and versatile information management system,
-allowing you to construct arbitrarily record structures and managing
+allowing you to construct arbitrarily complex record structures and managing
 efficient, robust databases.
 
 Since the internal data modeling tools of Zebra are based on the
@@ -50,18 +50,19 @@ to the host <tt/ftp.indexdata.dk/, log in as <tt/ftp/, and give your
 Email-address as the password. Then type <tt>cd index/yaz</tt>, and
 use the <tt/dir/ command to locate the current version of Zebra. The
 file will be named <tt/zebra-xxx/, where <tt/xxx/ is the current
-version of the software. Remember to use the <it/bin/ command, before
+version of the software. Remember to use the <tt/bin/ command before
 using <tt/get/ to download the software.
 
 Once the distribution archive has been dowloaded, it must be
-decompressed. For this, use the command <tt/gunzip/ command (if your
+decompressed. To do this, use the command <tt/gunzip/ command (if your
 system doesn't have the <tt/gunzip/ program, you will need to acquire
 this separately). Finally, use the command <tt>tar xvf
-&gt;file&lt;</tt> to unpack the archive.
+&lt;file&gt;</tt> to unpack the archive.
 
-If you dosnloaded the source version of the software (this is the only
+If you downloaded the source version of the software (this is the only
 option today, although we expect to release binary versions for Linux,
-SunOS, and Digital Unix shortly).
+SunOS, and Digital Unix shortly), you will have to compile Zebra
+before you can use it.
 
 On many of the major version of the Unix operating system, compiling
 Zebra is a simple matter of typing <tt/make/ in the top-level
@@ -69,8 +70,8 @@ distribution directory (this is the directory that was created when
 you executed <tt/tar/). Normally, Zebra compiles cleanly at least on
 Linux, Digital Unix (DEC OSF/1), and IBM AIX. On certain platforms
 (such as SunOS), you will need to edit the top-level <tt/Makefile/ to
-set the <tt/NETLIB/ variable to include the &dquot;Berkeley Socket
-Libraries&dquot;. On other Unix platforms, you <it/may/ need to modify
+set the <tt/NETLIB/ variable to include the Berkeley Socket
+Libraries. On other Unix platforms, you <it/may/ need to modify
 Makefiles or header files, but in general, we have found Zebra to be
 easily portable across modern Unix-versions. You do need an ANSI-C
 compliant compiler (you'll see a long list of Syntax-errors during the
@@ -93,11 +94,11 @@ held responsible for their contents.</it>
 
 If you <tt/cd/ to the <tt/test/ directory, the first thing to notice
 is the file <tt/zebra.cfg/. There has to be a file like this present
-whenever you use Zebra - it establishes various settings and default,
+whenever you use Zebra - it establishes various settings and defaults,
 and we'll return to its contents below (a detailed
 description is found in the general Zebra documentation file).
 
-The subdirectory <tt/records/ contain the sample records. We'll get
+The subdirectory <tt/records/ contains the sample records. We'll get
 back to them, too.
 
 The first order of business is to index the sample records, and create
@@ -182,8 +183,7 @@ dashes (-). Hence, <tt/local-subject-index/ is equivalent to
 It is useful to look at the records in the <tt>test/records</tt> as
 examples of how SGML-formatted GILS record can look. Note that
 whitespace is generally ignored, so you can choose whatever layout of
-your records suits you best. Note also that in some cases, the records
-are generated automatically rather than typed in by a human.
+your records suits you best.
 
 <sect>The Zebra Configuration File
 
@@ -194,14 +194,14 @@ told to look for it elsewhere with the <tt/-c/ option). The example
 file in the <tt/test/ directory represents all but the bare minimum
 for such a file. While it may seem daunting at first, we find the
 following to be a powerful setup for a GILS-like database (everything
-preceded by (#) is ignored by the software):
+preceded by (&num;) is ignored by the software):
 
 <tscreen><verb>
 #
 # Sample configuration file for GILS database
 #
 
-# Where are the configuration tables located?
+# Where are the configuration files located?
 profilePath: /usr/local/lib/zebra
 
 # Load attribute sets for searching
@@ -301,6 +301,8 @@ your clients may access the Zebra server without interruption
 throughout the update and commit procedures - Zebra will ensure that
 the parts of the register accessed by the server are always
 consistent.
+
+</descrip>
 
 <sect>Creating Your Own Database
 
