@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.5 2004-08-03 14:54:41 heikki Exp $
+/* $Id: rsprox.c,v 1.6 2004-08-04 09:59:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,8 +25,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <assert.h>
 
-#include <rsprox.h>
 #include <zebrautl.h>
+#include <rsprox.h>
 
 #ifndef RSET_DEBUG
 #define RSET_DEBUG 0

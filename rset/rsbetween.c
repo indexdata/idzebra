@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.15 2004-08-03 14:54:41 heikki Exp $
+/* $Id: rsbetween.c,v 1.16 2004-08-04 09:59:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -35,8 +35,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <assert.h>
 
-#include <rsbetween.h>
 #include <zebrautl.h>
+#include <rsbetween.h>
 
 #define RSBETWEEN_DEBUG 0
 

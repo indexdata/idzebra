@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.21 2004-08-03 14:54:41 heikki Exp $
+/* $Id: rset.c,v 1.22 2004-08-04 09:59:03 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -65,7 +65,7 @@ RSET rset_dup (RSET rs)
     return rs;
 }
 
-void rset_default_pos (RSFD rfd, int *current, int *total)
+void rset_default_pos (RSFD rfd, zint *current, zint *total)
 { /* FIXME - This function should not be needed, only while */
   /*         coding the pos functions. */
     assert(rfd);
