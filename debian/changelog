@@ -1,3 +1,9 @@
+idzebra (1.3.3-4) unstable; urgency=low
+
+  * fix system tags for GRS-1 retrieval.
+
+ -- Adam Dickmeiss <adam@indexdata.dk>  Wed,  9 Oct 2002 22:56:24 +0100
+
 idzebra (1.3.3-3) unstable; urgency=low
 
   * official release.
