@@ -1,5 +1,5 @@
-/* $Id: dfa.c,v 1.29 2003-06-18 11:46:33 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: dfa.c,v 1.30 2003-06-18 21:32:44 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -1068,7 +1068,6 @@ static struct DFA_states *mk_dfas (struct DFA_parse *dfap, int poset_chunk)
     mk_dfa_tran (parse_info, dfas);
     if (debug_dfa_tran)
     {
-	printf ("PR_TRAN\n");
         pr_tran (parse_info, dfas);
     }
     if (dfa_verbose)
