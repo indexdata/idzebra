@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.7  1995-11-28 09:09:43  adam
+ * Revision 1.8  1995-11-28 14:26:21  adam
+ * Bug fix: recordId with constant wasn't right.
+ * Bug fix: recordId dictionary entry wasn't deleted when needed.
+ *
+ * Revision 1.7  1995/11/28  09:09:43  adam
  * Zebra config renamed.
  * Use setting 'recordId' to identify record now.
  * Bug fix in recindex.c: rec_release_blocks was invokeded even
@@ -261,7 +265,6 @@ static void rec_write_single (Records p, Record rec)
         else
         {
             memcpy (cptr, &block_free, sizeof(int));
-            logf (LOG_LOG, "writing block %d (1)", block_prev);
             bf_write (p->data_BFile[dst_type], block_prev, 0, 0, cptr);
             cptr = p->tmp_buf + no_written;
         }
@@ -272,7 +275,6 @@ static void rec_write_single (Records p, Record rec)
     assert (block_prev != -1);
     block_free = 0;
     memcpy (cptr, &block_free, sizeof(int));
-    logf (LOG_LOG, "writing block %d (2) dst=%d", block_prev, dst_type);
     bf_write (p->data_BFile[dst_type], block_prev, 0,
               sizeof(int) + (p->tmp_buf+size) - cptr, cptr);
 }

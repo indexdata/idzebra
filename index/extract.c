@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.34  1995-11-28 09:09:38  adam
+ * Revision 1.35  1995-11-28 14:26:21  adam
+ * Bug fix: recordId with constant wasn't right.
+ * Bug fix: recordId dictionary entry wasn't deleted when needed.
+ *
+ * Revision 1.34  1995/11/28  09:09:38  adam
  * Zebra config renamed.
  * Use setting 'recordId' to identify record now.
  * Bug fix in recindex.c: rec_release_blocks was invokeded even
@@ -613,13 +617,13 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
             special[spec_len] = '\0';
             s = s1;
 
-            if (strcmp (special, "group"))
+            if (!strcmp (special, "group"))
                 spec_src = rGroup->groupName;
-            else if (strcmp (special, "database"))
+            else if (!strcmp (special, "database"))
                 spec_src = rGroup->databaseName;
-            else if (strcmp (special, "filename"))
+            else if (!strcmp (special, "filename"))
                 spec_src = fname;
-            else if (strcmp (special, "type"))
+            else if (!strcmp (special, "type"))
                 spec_src = rGroup->recordType;
             else 
                 spec_src = NULL;
@@ -638,7 +642,7 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
             while (*s && *s != stopMarker)
             {
                 if (i < 63)
-                    tmpString[i++] = *s;
+                    tmpString[i++] = *s++;
             }
             if (*s)
                 s++;
@@ -725,15 +729,17 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     {
         if (deleteFlag)
         {
-            logf (LOG_LOG, "? record %s", fname);
+            logf (LOG_LOG, "? %s", fname);
             return 1;
         }
-        logf (LOG_LOG, "add %s record %s", rGroup->recordType, fname);
+        logf (LOG_LOG, "add %s %s", rGroup->recordType, fname);
         rec = rec_new (records);
         *sysno = rec->sysno;
 
         if (matchStr)
+        {
             dict_insert (matchDict, matchStr, sizeof(*sysno), sysno);
+        }
         flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName);
 
         records_inserted++;
@@ -751,14 +757,17 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         {
             if (!delkeys.buf_used)
             {
-                logf (LOG_WARN, "cannot delete %s - no delete keys",
-                      fname);
+                logf (LOG_WARN, "cannot delete %s - no delete keys", fname);
             }
             else
-                logf (LOG_LOG, "delete %s record %s", rGroup->recordType,
-                      fname);
-            records_deleted++;
-            rec_del (records, &rec);
+            {
+                SYSNO sysnoz = 0;
+                logf (LOG_LOG, "delete %s %s", rGroup->recordType, fname);
+                records_deleted++;
+                if (matchStr)
+                    dict_insert (matchDict, matchStr, sizeof(sysnoz), &sysnoz);
+                rec_del (records, &rec);
+            }
             return 1;
         }
         else
@@ -770,7 +779,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             }
             else
             {
-                logf (LOG_LOG, "update %s record %s", rGroup->recordType,
+                logf (LOG_LOG, "update %s %s", rGroup->recordType,
                       fname);
                 flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
                 records_updated++;
@@ -876,7 +885,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
             sprintf (ext_res, "%srecordType", gprefix);
             if (!(rGroup->recordType = res_get (common_resource, ext_res)))
             {
-                logf (LOG_LOG, "? record %s", fname);
+                logf (LOG_LOG, "? %s", fname);
                 return 0;
             }
         }
