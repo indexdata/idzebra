@@ -1,5 +1,5 @@
-/* $Id: delete.c,v 1.8 2002-08-02 19:26:55 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: delete.c,v 1.9 2003-06-30 15:56:48 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -20,8 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -33,56 +31,51 @@ static void dict_del_subtree (Dict dict, Dict_ptr ptr,
 			      void *client, 
 			      int (*f)(const char *, void *))
 {
-    int more = 1;
     void *p = 0;
+    short *indxp;
+    int i, hi;
     
     if (!ptr)
 	return;
-    
-    while (more)
-    {
-	short *indxp;
-	int i, hi;
 	
-	dict_bf_readp (dict->dbf, ptr, &p);
-	hi = DICT_nodir(p)-1;
-	indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
-	more = 0;
-	for (i = 0; i <= hi; i++)
+    dict_bf_readp (dict->dbf, ptr, &p);
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
+    hi = DICT_nodir(p)-1;
+    for (i = 0; i <= hi; i++)
+    {
+	if (indxp[-i] > 0)
 	{
-	    if (indxp[-i] > 0)
-	    {
-		/* string (Dict_char *) DICT_EOS terminated */
-		/* unsigned char        length of information */
-		/* char *               information */
-		char *info = (char*)p + indxp[-i];
-		if (f)
-		    (*f)(info + (dict_strlen((Dict_char*) info)+1)
-			 *sizeof(Dict_char), client);
-	    }
-	    else
-	    {
-		
-		Dict_ptr subptr;
+	    /* string (Dict_char *) DICT_EOS terminated */
+	    /* unsigned char        length of information */
+	    /* char *               information */
+	    char *info = (char*)p + indxp[-i];
+	    if (f)
+		(*f)(info + (dict_strlen((Dict_char*) info)+1)
+		     *sizeof(Dict_char), client);
+	}
+	else
+	{
+	    Dict_ptr subptr;
 	    
-		/* Dict_ptr             subptr */
-		/* Dict_char            sub char */
-		/* unsigned char        length of information */
-		/* char *               information */
-		char *info = (char*)p - indxp[-i];
-		memcpy (&subptr, info, sizeof(Dict_ptr));
-
-		if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
-		{
-		    if (f)
-			(*f)(info+sizeof(Dict_ptr)+sizeof(Dict_char), client);
-		}
-		if (subptr)
-		{
-		    dict_del_subtree (dict, subptr, client, f);
-		    more = 1;
-		    break;
-		}
+	    /* Dict_ptr             subptr */
+	    /* Dict_char            sub char */
+	    /* unsigned char        length of information */
+	    /* char *               information */
+	    char *info = (char*)p - indxp[-i];
+	    memcpy (&subptr, info, sizeof(Dict_ptr));
+	    
+	    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+	    {
+		if (f)
+		    (*f)(info+sizeof(Dict_ptr)+sizeof(Dict_char), client);
+	    }
+	    if (subptr)
+	    {
+		dict_del_subtree (dict, subptr, client, f);
+	
+		/* page may be gone. reread it .. */
+		dict_bf_readp (dict->dbf, ptr, &p);
+		indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
 	    }
 	}
     }
