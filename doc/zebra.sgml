@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.32 1996-11-11 13:37:49 adam Exp $
+  $Id: zebra.sgml,v 1.33 1996-12-11 12:07:45 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.32 $
+<date>$Revision: 1.33 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -987,8 +987,80 @@ For the <bf/Truncation/ attribute, <bf/No Truncation/ is the default.
 is <bf/Regxp-1/. <bf/Regxp-2/ enables the fault-tolerant (fuzzy)
 search. As a default, a single error (deletion, insertion,
 replacement) is accepted when terms are matched against the register
-contents. The <bf/Regxp-1/ and <bf/Regxp-2/ both follow the same syntax
-with the operands:
+contents.
+
+Zebra interprets queries in one the following ways:
+<descrip>
+<tag>1 Phrase search</tag>
+ Each token separated by white space is truncated according to the
+ value of truncation attribute. If the completeness attribute
+ is <bf/complete subfield/ the search is directed to the phrase
+ register. For other completeness attribute values the term is split
+ into tokens according to the white-space specification in the
+ character map. Only records in which each token exists in the order
+ specified are matched.
+<tag>2 Word search</tag>
+ The token is truncated according to the value of truncation attribute. 
+ The completeness attribute is ignored.
+<tag>3 Ranked search</tag>
+ Each token separated by white space is truncated according to the value
+ of truncation attribute. The completenss attribute is ignored.
+<tag>4 Numeric relation</tag>
+ The token should consist of decimal digits. The integer is matched
+ against integers in the register according to the relation attribute.
+ The truncation - and the completenss attribute is ignored.
+<tag>5 Document identifier</tag>
+ The token consists of exactly one document identifier. The 
+ truncation - and the completeness attribute is ignored.
+</descrip>
+
+For ranked searches the result sets are ranked and a score
+is associated with each record. All other result sets from the
+remaining four types are non-ranked.
+
+Combinations of the structure attribute and the relation attribute
+determine how the query is interpreted. The two following tables
+define how.
+
+<verb>
+                              Structure Attribute (4)
+                        none     phrase(1)  word(2)   word list(6)
+
+           none          1         1         2         3
+           =   (3)       1         1         2         3
+           <   (1)       4         4         4         4
+Relation   <=  (2)       4         4         4         4
+Attribute  >=  (4)       4         4         4         4
+ (2)       >   (5)       4         4         4         4
+           <>  (6)       -         -         -         -
+           rel (102)     3         3         3         3
+           other         1         1         2         3
+ 
+</verb>
+
+<verb>
+                              Structure Attribute (4)
+                       free-form- document- local-    string
+                       text       text      number 
+                       (105)      (106)     (107)     (108)
+           none          3         3         5         1
+           =   (3)       3         3         5         1
+           <   (1)       4         4         5         4
+ Relation  <=  (2)       4         4         5         4
+ Attribute >=  (4)       4         4         5         4
+ (2)       >   (5)       4         4         5         4
+           <>  (6)       -         -         5         -
+           rel (102)     3         3         5         3
+           other         3         3         5         1
+
+</verb>
+
+<sect3>Regular expressions
+<p>
+
+Each term in a query is interpreted as a regular expression if
+the truncation value is either <bf/Regxp-1/ (102) or <bf/Regxp-2/ (103).
+Both query types follow the same syntax with the operands:
 <descrip>
 <tag/x/ Matches the character <it/x/.
 <tag/./ Matches any character.
@@ -1015,8 +1087,29 @@ Since the plus operator is normally a suffix operator the addition to
 the query syntax doesn't violate the syntax for standard regular
 expressions.
 
-<sect2>Present
+<sect3>Query examples
+<p>
+Phrase search for <bf/information retrieval/ in the title-register:
+<verb>
+ @attr 1=4 "information retrieval"
+</verb>
 
+Ranked search for the same thing:
+<verb>
+ @attr 1=4 @attr 2=102 "Information retrieval"
+</verb>
+
+Phrase search with a regular expression:
+<verb>
+ @attr 1=4 @attr 5=102 "informat.* retrieval"
+</verb>
+
+Ranked search with a regular expression:
+<verb>
+ @attr 1=4 @attr 5=102 @attr 2=102 "informat.* retrieval"
+</verb>
+
+<sect2>Present
 <p>
 The present facility is supported in a standard fashion. The requested
 record syntax is matched against the ones supported by the profile of
