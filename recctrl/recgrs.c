@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.27  1999-05-20 12:57:18  adam
+ * Revision 1.28  1999-05-21 12:00:17  adam
+ * Better diagnostics for extraction process.
+ *
+ * Revision 1.27  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.26  1999/03/02 16:15:44  quinn
@@ -201,8 +204,9 @@ struct grs_handlers {
     struct grs_handler *handlers;
 };
 
-static data1_node *read_grs_type (struct grs_handlers *h,
-				  struct grs_read_info *p, const char *type)
+static int read_grs_type (struct grs_handlers *h,
+			  struct grs_read_info *p, const char *type,
+			  data1_node **root)
 {
     struct grs_handler *gh = h->handlers;
     const char *cp = strchr (type, '.');
@@ -218,19 +222,18 @@ static data1_node *read_grs_type (struct grs_handlers *h,
     {
         if (!memcmp (type, gh->type->type, cp-type))
 	{
-	    data1_node *node;
 	    if (!gh->initFlag)
 	    {
 		gh->initFlag = 1;
 		gh->clientData = (*gh->type->init)();
 	    }
 	    p->clientData = gh->clientData;
-            node = (gh->type->read)(p);
+            *root = (gh->type->read)(p);
 	    gh->clientData = p->clientData;
-	    return node;
+	    return 0;
 	}
     }
-    return NULL;
+    return 1;
 }
 
 static void grs_add_handler (struct grs_handlers *h, RecTypeGrs t)
@@ -416,9 +419,10 @@ static int grs_extract(void *clientData, struct recExtractCtrl *p)
     gri.mem = mem;
     gri.dh = p->dh;
 
-    n = read_grs_type (h, &gri, p->subType);
+    if (read_grs_type (h, &gri, p->subType, &n))
+	return RECCTRL_EXTRACT_ERROR;
     if (!n)
-        return -1;
+        return RECCTRL_EXTRACT_EOF;
 
     oe.proto = PROTO_Z3950;
     oe.oclass = CLASS_SCHEMA;
@@ -429,11 +433,11 @@ static int grs_extract(void *clientData, struct recExtractCtrl *p)
     if (dumpkeys(n, p, 0) < 0)
     {
 	data1_free_tree(p->dh, n);
-	return -2;
+	return RECCTRL_EXTRACT_ERROR;
     }
     data1_free_tree(p->dh, n);
     nmem_destroy(mem);
-    return 0;
+    return RECCTRL_EXTRACT_OK;
 }
 
 /*
@@ -532,7 +536,12 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     gri.dh = p->dh;
 
     logf (LOG_DEBUG, "grs_retrieve");
-    node = read_grs_type (h, &gri, p->subType);
+    if (read_grs_type (h, &gri, p->subType, &node))
+    {
+	p->diagnostic = 14;
+        nmem_destroy (mem);
+	return 0;
+    }
     if (!node)
     {
 	p->diagnostic = 14;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.10  1999-05-20 12:57:18  adam
+ * Revision 1.11  1999-05-21 12:00:17  adam
+ * Better diagnostics for extraction process.
+ *
+ * Revision 1.10  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.9  1998/10/16 08:14:38  adam
@@ -145,7 +148,7 @@ static int text_extract (void *clientData, struct recExtractCtrl *p)
         }
     } while (r > 0);
     buf_close (fi);
-    return 0;
+    return RECCTRL_EXTRACT_OK;
 }
 
 static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)

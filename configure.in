@@ -1,5 +1,5 @@
 # Zebra, Index Data Aps, 1994-1999
-# $Id: configure.in,v 1.6 1999-05-21 11:08:46 adam Exp $
+# $Id: configure.in,v 1.7 1999-05-21 12:00:17 adam Exp $
 # See the file LICENSE.2 for details.
 #
 AC_INIT(include/zebraver.h)
@@ -42,6 +42,8 @@ if test -r ${tclconfig}/tclConfig.sh; then
         SHLIB_VERSION=$TCL_SHLIB_VERSION
         AC_MSG_RESULT($TCL_VERSION)
 	ODEFS="-DHAVE_TCL_H=1"
+else
+	ODEFS="-DHAVE_TCL_H=0"
 fi
 #
 # sockets

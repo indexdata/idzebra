@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.29  1999-05-20 12:57:18  adam
+ * Revision 1.30  1999-05-21 12:00:17  adam
+ * Better diagnostics for extraction process.
+ *
+ * Revision 1.29  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.28  1999/03/02 16:15:42  quinn
@@ -185,6 +188,10 @@ struct recType
     int  (*retrieve)(void *clientData,
 		     struct recRetrieveCtrl *ctrl); /* Retrieve proc */
 };
+
+#define RECCTRL_EXTRACT_OK    0
+#define RECCTRL_EXTRACT_EOF   1
+#define RECCTRL_EXTRACT_ERROR 2
 
 typedef struct recTypes *RecTypes;
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.94  1999-05-20 12:57:18  adam
+ * Revision 1.95  1999-05-21 12:00:17  adam
+ * Better diagnostics for extraction process.
+ *
+ * Revision 1.94  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.93  1999/05/15 14:36:38  adam
@@ -1297,14 +1300,16 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 
         log_event_start (NULL, NULL);
 
-        if (r)      
-        {
+	if (r == RECCTRL_EXTRACT_EOF)
+	    return 0;
+	else if (r == RECCTRL_EXTRACT_ERROR)
+	{
             /* error occured during extraction ... */
             if (rGroup->flagRw &&
 		records_processed < rGroup->fileVerboseLimit)
             {
-                logf (LOG_WARN, "fail %s %s %ld code = %d", rGroup->recordType,
-                      fname, (long) recordOffset, r);
+                logf (LOG_WARN, "fail %s %s %ld", rGroup->recordType,
+                      fname, (long) recordOffset);
             }
             return 0;
         }
