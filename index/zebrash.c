@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.15 2003-07-03 14:45:02 heikki Exp $
+/* $Id: zebrash.c,v 1.16 2003-07-03 16:16:22 heikki Exp $
    Copyright (C) 2002,2003
    Index Data Aps
 
@@ -38,12 +38,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "zebraapi.h"
 #include <yaz/log.h>
+#include <yaz/proto.h>
 
 #define MAX_NO_ARGS 32
 #define MAX_OUT_BUFF 4096
 #define MAX_ARG_LEN 1024
 #define PROMPT "ZebraSh>"
 #define DEFAULTCONFIG "./zebra.cfg"
+#define DEFAULTRESULTSET "MyResultSet"
 
 /**************************************
  * Global variables (yuck!)
@@ -52,6 +54,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 ZebraService zs=0;  /* our global handle to zebra */
 ZebraHandle  zh=0;  /* the current session */
 /* time being, only one session works */
+int nextrecno=0;  /* record number to show next */
 
 /**************************************
  * Help functions
@@ -418,7 +421,7 @@ static int cmd_search_pqf( char *args[], char *outbuff)
 
 static int cmd_find( char *args[], char *outbuff)
 {
-    char *setname="MyResultSet";
+    char *setname=DEFAULTRESULTSET;
     char qry[MAX_ARG_LEN]="";
     int i=1;
     int rc;
@@ -440,10 +443,42 @@ static int cmd_find( char *args[], char *outbuff)
     {
         sprintf(qry,"%d hits found\n",hits);
         strcat(outbuff,qry);
+        nextrecno=0;
     }
     return rc;
 }
 
+static int cmd_show( char *args[], char *outbuff)
+{
+    int start=defargint(args[1], nextrecno);
+    int nrecs=defargint(args[2],1);
+    char *setname=defarg(args[3],DEFAULTRESULTSET);
+    int rc=0;
+    ODR odr;
+    Z_RecordComposition *pcomp=0;
+
+    oid_value format;
+    ZebraRetrievalRecord recs;
+    odr=odr_createmem(ODR_ENCODE);
+    rc =z_RecordComposition(odr, &pcomp, 0,"recordComposition");
+    printf("rc1=%d\n",rc);
+    format=oid_getvalbyname ("xml"); /*FIXME*/
+
+    rc = zebra_records_retrieve (zh, odr, setname,
+            pcomp, format, nrecs, &recs);
+                    
+                    /*
+                    ODR stream,
+                    const char *setname, 
+                    Z_RecordComposition *comp,
+                    oid_value input_format,
+                    int num_recs, 
+                    ZebraRetrievalRecord *recs);
+                    */
+
+    nextrecno=start+1;
+    return rc;
+}
 /**************************************)
  * Command table, parser, and help 
  */
@@ -552,6 +587,12 @@ struct cmdstruct cmds[] = {
     { "f","query",
       "simplified search",
       cmd_find},
+    { "show","[start] [numrecs] [resultset]",
+      "shows a result",
+      cmd_show},
+    { "s","[start] [numrecs] [resultset]",
+      "shows a result",
+      cmd_show},
     { "", "Misc:","", 0}, 
     { "echo", "string", 
       "ouputs the string", 
@@ -577,12 +618,13 @@ int onecommand(
 {
     int i;
     char *args[MAX_NO_ARGS];
-    int n;
+    int nargs;
     char argbuf[MAX_ARG_LEN];
     logf(LOG_APP,"%s",line);
     strncpy(argbuf,line, MAX_ARG_LEN-1);
     argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
-    n=split_args(argbuf, args);
+    memset(args,'\0',MAX_NO_ARGS*sizeof(char *));
+    nargs=split_args(argbuf, args);
 
 #if 0
     for (i = 0; i <= n; i++)
@@ -591,13 +633,13 @@ int onecommand(
 	printf ("args %d :%s:\n", i, cp ? cp : "<null>");
     }
 #endif
-    if (0==n)
+    if (0==nargs)
 	return -90; /* no command on line, too bad */
 
     if (0==strcmp(args[0],"expect")) 
     {
 	char *rest;
-        if (n>1)
+        if (nargs>1)
             rest= line + (args[1]-argbuf); /* rest of the line */
         else
             return -1; /* need something to expect */
@@ -612,7 +654,7 @@ int onecommand(
     for (i=0;cmds[i].cmd;i++)
 	if (0==strcmp(cmds[i].cmd, args[0])) 
 	{
-	    if (n>1)
+	    if (nargs>1)
 		args[0]= line + (args[1]-argbuf); /* rest of the line */
 	    else
 		args[0]=""; 
