@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.21  1998-11-03 15:43:39  adam
+ * Revision 1.22  1998-11-03 16:07:13  adam
+ * Yet another fix.
+ *
+ * Revision 1.21  1998/11/03 15:43:39  adam
  * Fixed bug introduced by previous commit.
  *
  * Revision 1.20  1998/11/03 14:51:28  adam
@@ -799,7 +802,6 @@ static void tagDataRelease (struct lexSpec *spec,
 {
     data1_node *res;
     
-    assert (d1_stack[d1_level]);
     if ((res = d1_stack[d1_level]) &&
 	res->which == DATA1N_data && 
 	res->u.data.what == DATA1I_text)
@@ -862,7 +864,10 @@ static void variantBegin (struct lexSpec *spec,
 
 	parent->last_child = res;
 	if (d1_stack[*d1_level])
+	{
+	    tagDataRelease (spec, d1_stack, *d1_level);
 	    d1_stack[*d1_level]->next = res;
+	}
 	else
 	    parent->child = res;
 	d1_stack[*d1_level] = res;
