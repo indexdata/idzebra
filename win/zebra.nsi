@@ -1,8 +1,10 @@
-; $Id: zebra.nsi,v 1.21 2004-08-06 09:38:23 adam Exp $
+; $Id: zebra.nsi,v 1.22 2004-08-20 12:36:53 adam Exp $
 
 !define VERSION "1.4.0"
 
 !include "MUI.nsh"
+
+SetCompressor bzip2
 
 Name "Zebra"
 Caption "Index Data Zebra ${VERSION} Setup"
@@ -67,7 +69,12 @@ Section "Zebra Runtime"
 	SectionIn 1 2
 	SetOutPath $INSTDIR\bin
 	File ..\bin\*.exe
-	File ..\bin\*.dll
+	File ..\bin\iconv.dll
+	File ..\bin\zlib.dll
+	File ..\bin\libxml2.dll
+	File ..\bin\yaz.dll
+	File ..\bin\libexpat.dll
+	File c:\winnt\system32\msvcr71.dll
 SectionEnd
 
 Section "Zebra Development"
@@ -80,8 +87,13 @@ SectionEnd
 
 Section "Zebra Documentation"
 	SectionIn 1 2
-	SetOutPath $INSTDIR
-	File /r ..\doc
+	SetOutPath $INSTDIR\doc
+	File ..\doc\*.html
+	File ..\doc\*.png
+	File ..\doc\*.pdf
+	File ..\doc\*.xml
+	File ..\doc\*.in
+	File ..\doc\*.xsl
 	SetOutPath "$SMPROGRAMS\Index Data\Zebra\"
 	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\HTML Documentation.lnk" \
                  "$INSTDIR\doc\zebra.html"

@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.28 2004-08-06 13:35:45 adam Exp $
+# $Id: makefile,v 1.29 2004-08-20 12:37:56 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -27,7 +27,7 @@ all: dirs zebralib zserver zindex
 ROOTDIR=..   # The home of zebra
 
 # YAZ include files, libraries, etc.
-YAZDIR=$(ROOTDIR)\..\YAZ-2.0.22
+YAZDIR=$(ROOTDIR)\..\YAZ
 YAZINCL=$(YAZDIR)\include
 YAZLIB=$(YAZDIR)\lib\yaz.lib
 YAZLIBS=$(YAZLIB)
@@ -70,6 +70,18 @@ APITESTDIR=$(SRCDIR)\APITEST
 TMPDIR=$(ROOTDIR)\win\tmp
 TMP=$(TMPDIR)
 TEMP=$(TMPDIR)
+
+# NSIS
+NSIS="c:\program files\nsis\makensis.exe"
+
+dist:
+	nmake DEBUG=1 clean
+	nmake DEBUG=0 clean
+	nmake DEBUG=0
+	$(NSIS) zebra.nsi
+
+nsis:
+	$(NSIS) zebra.nsi
 
 ###########################################################
 ############### Targets - what to make
@@ -165,21 +177,17 @@ LINK_LIBS= kernel32.lib user32.lib   gdi32.lib   winspool.lib \
            oleaut32.lib uuid.lib     odbc32.lib  odbccp32.lib \
            wsock32.lib  advapi32.lib $(ICONV_LIB) $(EXPAT_LIB)
 
-COMMON_LNK_OPTIONS= /nologo \
-                    /machine:i386 \
-				    /incremental:no
-
-#                    /subsystem:windows \
+COMMON_LNK_OPTIONS= /nologo /machine:i386 /incremental:no
 
 DEBUG_LNK_OPTIONS= /debug 
 
-RELEASE_LNK_OPTIONS=  /pdb:none
+RELEASE_LNK_OPTIONS= 
 
-ZEBRALIB_LINK_OPTIONS = -lib 
+ZEBRALIB_LINK_OPTIONS= -lib 
 
-ZSERVER_LINK_OPTIONS = /subsystem:console  
-ZINDEX_LINK_OPTIONS = /subsystem:console  
-APITEST_LINK_OPTIONS = /subsystem:console  
+ZSERVER_LINK_OPTIONS= /subsystem:console  
+ZINDEX_LINK_OPTIONS= /subsystem:console  
+APITEST_LINK_OPTIONS= /subsystem:console  
 
 # Final opt variables
 !if $(DEBUG)
@@ -426,7 +434,6 @@ clean:
 	-del $(OBJDIR)\*.obj
 	-del $(OBJDIR)\*.sbr
 	-del $(BINDIR)\*.exe
-	-del $(BINDIR)\*.dll
 	-del $(TMPDIR)\*.
 	-del $(LIBDIR)\*.lib
 
