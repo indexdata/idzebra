@@ -1,11 +1,10 @@
-
 SHELL=/bin/sh
 INCLUDE=-I../include
 TPROG=btest
 CFLAGS=-g -Wall
 DEFS=$(INCLUDE)
 LIB=../lib/bfile.a
-PO = open.o close.o rdwr.o
+PO = bfile.o
 CPP=cc -E
 
 all: $(LIB)
