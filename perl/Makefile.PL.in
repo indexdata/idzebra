@@ -16,7 +16,7 @@ WriteMakefile(
 
 sub MY::postamble {
 'IDZebra_wrap.c: IDZebra.i
-	./doswig
+	./doswig'
 	;
 }
 
