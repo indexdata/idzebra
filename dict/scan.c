@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.10  1998-03-06 16:58:04  adam
+ * Revision 1.11  1998-06-22 11:34:45  adam
+ * Changed scan callback function so it doesn't stop further scanning.
+ *
+ * Revision 1.10  1998/03/06 16:58:04  adam
  * Fixed bug which related to scanning of large indexes.
  *
  * Revision 1.9  1997/10/27 14:33:04  adam
@@ -76,9 +79,8 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
             for (j = 0; info[j] != DICT_EOS; j++)
 		str[pos+j] = info[j];
             str[pos+j] = DICT_EOS;
-            if ((*userfunc)((char*) str, info+(j+1)*sizeof(Dict_char),
-                            *count * dir, client))
-                return 1;
+            (*userfunc)((char*) str, info+(j+1)*sizeof(Dict_char),
+                            *count * dir, client);
             --(*count);
         }
         else
