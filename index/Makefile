@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.42 1996-11-04 14:07:39 adam Exp $
+# $Id: Makefile,v 1.43 1997-09-04 13:59:28 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -29,7 +29,7 @@ CPP=$(CC) -E
 all: $(TPROG1) $(TPROG2) $(TPROG3)
 
 $(TPROG1): $(O1) ../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
-		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a 
+		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a $(YAZLIB)
 	$(CC) $(CFLAGS) -o $(TPROG1) $(O1) \
 		../lib/dict.a ../lib/isam.a ../lib/isamc.a ../lib/recctrl.a \
 		../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
@@ -40,7 +40,8 @@ $(TPROG2): $(O2)
 
 $(TPROG3): $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
-		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a
+		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
+		$(YAZLIB)
 	$(CC) $(CFLAGS) -o $(TPROG3) $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/recctrl.a \
 		../lib/isamc.a ../lib/bfile.a ../lib/dfa.a ../lib/zebrautl.a \
