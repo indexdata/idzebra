@@ -1,4 +1,4 @@
-# $Id: Resultset.pm,v 1.12 2004-09-15 14:11:06 heikki Exp $
+# $Id: Resultset.pm,v 1.13 2004-09-16 14:58:47 heikki Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -12,7 +12,7 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.12 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.13 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -25,6 +25,7 @@ sub new {
     my $class = ref($proto) || $proto;
     my $self = {};
     bless ($self, $class);
+    logf(LOG_DEBUG,"creating a Resultset ".$args{name});
 
     $self->{session} = $session;
     weaken ($self->{session});
@@ -37,6 +38,7 @@ sub new {
     $self->{errCode}     = $args{errCode};
     $self->{errString}   = $args{errString};
 
+    logf(LOG_DEBUG,"created a Resultset ".$self->{name});
     return ($self);
 }
 
@@ -95,6 +97,7 @@ sub DESTROY {
     # Deleteresultset?
     
     my $stats = 0;
+    logf(LOG_DEBUG, "Destroying a Resultset ". $self->{name});
     if ($self->{session}{zh}) { 
 	my $r = IDZebra::deleteResultSet($self->{session}{zh},
 					 0, #Z_DeleteRequest_list,
@@ -109,6 +112,7 @@ sub DESTROY {
     }
 
     delete($self->{session});
+    logf(LOG_DEBUG, "Destroyed a Resultset ". $self->{name});
 }
 # -----------------------------------------------------------------------------
 sub records {
@@ -171,14 +175,19 @@ sub sort {
 	croak ("Session is closed or out of scope");
     }
 
-    unless ($setname) {
-	return ($_[0] = $self->{session}->sortResultsets($sortspec, 
-			 $self->{session}->_new_setname, ($self)));
-	return ($_[0]);
-    } else {
-	return ($self->{session}->sortResultsets($sortspec, 
-						 $setname, ($self)));
+    if (!$setname) {
+        $setname=$self->{session}->_new_setname();
     }
+    return ($self->{session}->sortResultsets($sortspec, 
+					 $setname, ($self)));
+#    unless ($setname) {
+#	return ($_[0] = $self->{session}->sortResultsets($sortspec, 
+#			 $self->{session}->_new_setname, ($self)));
+#	return ($_[0]);
+#    } else {
+#	return ($self->{session}->sortResultsets($sortspec, 
+#						 $setname, ($self)));
+#    }
 }
 
 # ============================================================================
