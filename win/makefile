@@ -1,5 +1,5 @@
 # Z'mbol/Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.8 2002-03-14 18:41:59 adam Exp $
+# $Id: makefile,v 1.9 2002-03-21 10:31:54 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -218,8 +218,6 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\insert.obj \
 	$(OBJDIR)\invstat.obj \
 	$(OBJDIR)\kcompare.obj \
-	$(OBJDIR)\lockidx.obj \
-	$(OBJDIR)\locksrv.obj \
 	$(OBJDIR)\lockutil.obj \
 	$(OBJDIR)\lookgrep.obj \
 	$(OBJDIR)\lookup.obj \
