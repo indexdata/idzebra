@@ -1,0 +1,19 @@
+index w
+completeness 0
+charmap string.chr
+
+index p
+completeness 1
+charmap string.chr
+
+index u
+completeness 0
+charmap urx.chr
+
+index n
+completeness 0
+charmap numeric.chr
+
+index 0
+completeness 0
+charmap @

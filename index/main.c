@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.52  1997-10-31 12:34:04  adam
+ * Revision 1.53  1997-11-18 10:05:08  adam
+ * Changed character map facility so that admin can specify character
+ * mapping files for each register type, w, p, etc.
+ *
+ * Revision 1.52  1997/10/31 12:34:04  adam
  * Added missing nmem_init.
  *
  * Revision 1.51  1997/10/27 14:33:05  adam
@@ -293,7 +297,7 @@ int main (int argc, char **argv)
                     bf_lockDir (rGroupDef.bfs,
 				res_get (common_resource, "lockDir"));
 		    rGroupDef.zebra_maps = zebra_maps_open (res_get(
-			common_resource, "profilePath"));
+			common_resource, "profilePath"), common_resource);
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.20  1997-10-31 12:37:55  adam
+ * Revision 1.21  1997-11-18 10:05:08  adam
+ * Changed character map facility so that admin can specify character
+ * mapping files for each register type, w, p, etc.
+ *
+ * Revision 1.20  1997/10/31 12:37:55  adam
  * Code calls xfree() instead of free().
  *
  * Revision 1.19  1997/10/01 11:44:06  adam
@@ -173,7 +177,7 @@ static int qcomp (const void *p1, const void *p2)
                             qsort_info->key_buf + i2*qsort_info->key_size);
 }
 
-#define NEW_RANKING 1
+#define NEW_RANKING 0
 
 #define SCORE_SHOW 0.0                       /* base score for showing up */
 #define SCORE_COOC 0.3                       /* component dependent on co-oc */

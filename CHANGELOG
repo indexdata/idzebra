@@ -1,9 +1,9 @@
+Moved towards generic character mapping. Configuration file default.idx
+specifies character map files for register types w, p, u, etc.
+
 Implemented "begin variant" for the sgml.regx - filter.
 
 Fixed a few memory leaks.
-
-Moved towards generic character mapping. Type w, p uses
-string.chr, u uses urx.chr and n uses numeric.chr.
 
 Added support for C++, headers uses extern "C" for public definitions.
 

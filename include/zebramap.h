@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.2  1997-10-29 12:02:47  adam
+ * Revision 1.3  1997-11-18 10:05:08  adam
+ * Changed character map facility so that admin can specify character
+ * mapping files for each register type, w, p, etc.
+ *
+ * Revision 1.2  1997/10/29 12:02:47  adam
  * Added missing prototype.
  *
  * Revision 1.1  1997/10/27 14:33:04  adam
@@ -19,13 +23,14 @@
 #define ZEBRAMAP_H
 
 #include <proto.h>
+#include <res.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct zebra_maps *ZebraMaps;
-ZebraMaps zebra_maps_open (const char *tabpath);
+ZebraMaps zebra_maps_open (const char *tabpath, Res res);
 
 void zebra_maps_close (ZebraMaps zm);
 

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.51  1997-10-27 14:33:06  adam
+ * Revision 1.52  1997-11-18 10:05:08  adam
+ * Changed character map facility so that admin can specify character
+ * mapping files for each register type, w, p, etc.
+ *
+ * Revision 1.51  1997/10/27 14:33:06  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -327,7 +331,8 @@ bend_initresult *bend_init (bend_initrequest *q)
     zi->records = NULL;
     zi->odr = odr_createmem (ODR_ENCODE);
     zi->registered_sets = NULL;
-    zi->zebra_maps = zebra_maps_open (res_get(zi->res, "profilePath"));
+    zi->zebra_maps = zebra_maps_open (res_get(zi->res, "profilePath"),
+				      zi->res);
     return r;
 }
 

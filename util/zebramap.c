@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.3  1997-11-17 15:35:26  adam
+ * Revision 1.4  1997-11-18 10:05:08  adam
+ * Changed character map facility so that admin can specify character
+ * mapping files for each register type, w, p, etc.
+ *
+ * Revision 1.3  1997/11/17 15:35:26  adam
  * Bug fix. Relation=relevance wasn't observed.
  *
  * Revision 1.2  1997/10/31 12:39:30  adam
@@ -27,7 +31,9 @@
 
 struct zebra_map {
     int reg_type;
+    int completeness;
     chrmaptab maptab;
+    const char *maptab_name;
     struct zebra_map *next;
 };
 
@@ -35,6 +41,8 @@ struct zebra_maps {
     char *tabpath;
     NMEM nmem;
     struct zebra_map *map_list;
+    char temp_map_str[2];
+    const char *temp_map_ptr[2];
 };
 
 void zebra_maps_close (ZebraMaps zms)
@@ -52,75 +60,111 @@ void zebra_maps_close (ZebraMaps zms)
     xfree (zms);
 }
 
-ZebraMaps zebra_maps_open (const char *tabpath)
+static void zebra_map_read (ZebraMaps zms, const char *name)
+{
+    FILE *f;
+    char line[512];
+    char *argv[10];
+    int argc;
+    struct zebra_map **zm = 0;
+
+    if (!(f = yaz_path_fopen(zms->tabpath, name, "r")))
+    {
+	logf(LOG_WARN|LOG_ERRNO, "%s", name);
+	return ;
+    }
+    while ((argc = readconf_line(f, line, 512, argv, 10)))
+    {
+	if (!strcmp (argv[0], "index") && argc == 2)
+	{
+	    if (!zm)
+		zm = &zms->map_list;
+	    else
+		zm = &(*zm)->next;
+	    *zm = nmem_malloc (zms->nmem, sizeof(**zm));
+	    (*zm)->reg_type = argv[1][0];
+	    (*zm)->maptab_name = NULL;
+	    (*zm)->maptab = NULL;
+	    (*zm)->completeness = 0;
+	}
+	else if (zm && !strcmp (argv[0], "charmap") && argc == 2)
+	{
+	    (*zm)->maptab_name = nmem_strdup (zms->nmem, argv[1]);
+	}
+	else if (zm && !strcmp (argv[0], "completeness") && argc == 2)
+	{
+	    (*zm)->completeness = atoi (argv[1]);
+	}
+    }
+    if (zm)
+	(*zm)->next = NULL;
+    fclose (f);
+}
+static void zms_map_handle (void *p, const char *name, const char *value)
+{
+    ZebraMaps zms = p;
+    
+    zebra_map_read (zms, value);
+}
+
+ZebraMaps zebra_maps_open (const char *tabpath, Res res)
 {
     ZebraMaps zms = xmalloc (sizeof(*zms));
 
     zms->nmem = nmem_create ();
     zms->tabpath = nmem_strdup (zms->nmem, tabpath);
     zms->map_list = NULL;
+
+    zms->temp_map_str[0] = '\0';
+    zms->temp_map_str[1] = '\0';
+
+    zms->temp_map_ptr[0] = zms->temp_map_str;
+    zms->temp_map_ptr[1] = NULL;
+    
+    if (!res_trav (res, "index", zms, zms_map_handle))
+	zebra_map_read (zms, "default.idx");
     return zms;
 }
 
 chrmaptab zebra_map_get (ZebraMaps zms, int reg_type)
 {
-    char name[512];
     struct zebra_map *zm;
-
+    
     for (zm = zms->map_list; zm; zm = zm->next)
-    {
 	if (reg_type == zm->reg_type)
-	    return zm->maptab;
-    }
-    *name = '\0';
-    switch (reg_type)
+	    break;
+    if (!zm)
     {
-    case 'w':
-    case 'p':
-	strcat (name, "string");
-	break;
-    case 'n':
-	strcat (name, "numeric");
-	break;
-    case 'u':
-	strcat (name, "urx");
-	break;
-    default:
-	strcat (name, "null");
+	logf (LOG_WARN, "unknown register type: %c", reg_type);
+	return NULL;
     }
-    strcat (name, ".chr");
-
-    zm = xmalloc (sizeof(*zm));
-    zm->reg_type = reg_type;
-    zm->next = zms->map_list;
-    zms->map_list = zm;
-    if (!(zm->maptab = chrmaptab_create (zms->tabpath, name, 0)))
-	logf(LOG_WARN, "Failed to read character table %s", name);
-    else
-	logf(LOG_DEBUG, "Read character table %s", name);
+    if (!zm->maptab)
+    {
+	if (!strcmp (zm->maptab_name, "@"))
+	    return NULL;
+	if (!(zm->maptab = chrmaptab_create (zms->tabpath,
+					     zm->maptab_name, 0)))
+	    logf(LOG_WARN, "Failed to read character table %s",
+		 zm->maptab_name);
+	else
+	    logf(LOG_DEBUG, "Read character table %s", zm->maptab_name);
+    }
     return zm->maptab;
 }
 
 const char **zebra_maps_input (ZebraMaps zms, int reg_type,
 			       const char **from, int len)
 {
-    static char str[2] = {0,0};
-    static const char *buf[2] = {0,0};
     chrmaptab maptab;
 
     maptab = zebra_map_get (zms, reg_type);
     if (maptab)
 	return chr_map_input(maptab, from, len);
-	
-    if (isalnum(**from))
-    {
-	str[0] = isupper(**from) ? tolower(**from) : **from;
-	buf[0] = str;
-    }
-    else
-	buf[0] = (char*) CHR_SPACE;
+    
+    zms->temp_map_str[0] = **from;
+
     (*from)++;
-    return buf;
+    return zms->temp_map_ptr;
 }
 
 const char *zebra_maps_output(ZebraMaps zms, int reg_type, const char **from)
@@ -204,9 +248,12 @@ static void attr_init (AttrType *src, Z_AttributesPlusTerm *zapt,
 /* ------------------------------------ */
 
 int zebra_maps_is_complete (ZebraMaps zms, int reg_type)
-{
-    if (reg_type == 'p')
-	return 1;
+{ 
+    struct zebra_map *zm;
+    
+    for (zm = zms->map_list; zm; zm = zm->next)
+	if (reg_type == zm->reg_type)
+	    return zm->completeness;
     return 0;
 }
 
