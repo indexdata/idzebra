@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.86  1998-10-13 20:33:53  adam
+ * Revision 1.87  1998-10-15 13:10:33  adam
+ * Fixed bug in Zebra that caused it to stop indexing when empty
+ * record was read.
+ *
+ * Revision 1.86  1998/10/13 20:33:53  adam
  * Fixed one log message and change use ordinal to be an unsigned char.
  *
  * Revision 1.85  1998/09/22 10:03:41  adam
@@ -1257,7 +1261,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
                 return 1;
             logf (LOG_WARN, "No keys generated for file %s", fname);
             logf (LOG_WARN, " The file is probably empty");
-            return 0;
+            return 1;
         }
     }
 
