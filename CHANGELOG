@@ -1,4 +1,7 @@
 
+Fixed a bug in searches with X-Path searches sometimes giving "extra"
+hits.
+
 Zebra server checks for zebrasrv.pid and refuses to start if it is already
 locked by another (running) zebrasrv.
 
