@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.18 2004-10-15 10:07:34 heikki Exp $
+/* $Id: rsprox.c,v 1.19 2004-10-20 14:32:29 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -196,7 +196,7 @@ static int r_forward (RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                         (*kctrl->getseq)(p->buf[i]))
                     { /* FIXME - We need more flexible multilevel stuff */
                         p->more[i-1] = rset_read ( p->rfd[i-1], p->buf[i-1],
-                                                   &p->terms[i]);
+                                                   &p->terms[i-1]);
                         break;
                     }
                 }
@@ -211,8 +211,8 @@ static int r_forward (RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
             {
                 memcpy (buf, p->buf[0], kctrl->key_size);
                 if (term)
-                    *term=p->terms[i];
-                p->more[0] = rset_read (p->rfd[0], p->buf[0], &p->terms[i]);
+                    *term=p->terms[0];
+                p->more[0] = rset_read (p->rfd[0], p->buf[0], &p->terms[0]);
                 p->hits++;
                 return 1;
             }
@@ -285,7 +285,7 @@ static int r_forward (RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                         return 1;
                     }
                 }
-                p->more[1] = rset_read (p->rfd[1], p->buf[1],&p->terms[i]);
+                p->more[1] = rset_read (p->rfd[1], p->buf[1],&p->terms[1]);
             }
         }
     }

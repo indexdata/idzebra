@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.63 2004-10-15 10:07:34 heikki Exp $
+/* $Id: zsets.c,v 1.64 2004-10-20 14:32:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -206,6 +206,8 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
             return NULL;
         if (s->rset)
             rset_delete (s->rset);
+        if (s->rset_nmem)
+            nmem_destroy (s->rset_nmem);
         if (s->nmem)
             nmem_destroy (s->nmem);
     }
@@ -256,6 +258,8 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
             {
                 NMEM nmem = nmem_create ();
                 yaz_log (LOG_LOG, "research %s", name);
+                if (!s->rset_nmem)
+                    s->rset_nmem=nmem_create();
                 s->rset =
                     rpn_search (zh, nmem, s->rset_nmem, s->rpn, s->num_bases,
                                 s->basenames, s->name, s);
@@ -778,27 +782,27 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
             /* term lists! */
             /* (*rc->add) (handle, this_sys, term_index); */
             
-        if ( (est==-2) && (zebraSet->hits==esthits))
-        { /* time to estimate the hits */
-            rset_pos(rfd,&cur,&tot); 
-            if (tot>0) {
-                ratio=cur/tot;
-                est=(zint)(0.5+zebraSet->hits/ratio);
-                logf(LOG_LOG, "Estimating hits (%s) "
-                              "%0.1f->"ZINT_FORMAT
-                              "; %0.1f->"ZINT_FORMAT,
-                              rset->control->desc,
-                              cur, zebraSet->hits,
-                              tot,est);
-                i=0; /* round to 3 significant digits */
-                while (est>1000) {
-                    est/=10;
-                    i++;
+            if ( (est==-2) && (zebraSet->hits==esthits))
+            { /* time to estimate the hits */
+                rset_pos(rfd,&cur,&tot); 
+                if (tot>0) {
+                    ratio=cur/tot;
+                    est=(zint)(0.5+zebraSet->hits/ratio);
+                    logf(LOG_LOG, "Estimating hits (%s) "
+                                  "%0.1f->"ZINT_FORMAT
+                                  "; %0.1f->"ZINT_FORMAT,
+                                  rset->control->desc,
+                                  cur, zebraSet->hits,
+                                  tot,est);
+                    i=0; /* round to 3 significant digits */
+                    while (est>1000) {
+                        est/=10;
+                        i++;
+                    }
+                    while (i--) est*=10;
+                    zebraSet->hits=est;
                 }
-                while (i--) est*=10;
-                zebraSet->hits=est;
             }
-        }
         }
         while (rset_read (rfd, &key,0) && (est<0) );
            /* FIXME - term ?? */

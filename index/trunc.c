@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.46 2004-10-15 10:07:32 heikki Exp $
+/* $Id: trunc.c,v 1.47 2004-10-20 14:32:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -407,30 +407,30 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
                  int preserve_position, int term_type, NMEM rset_nmem,
                  const struct key_control *kctrl, int scope)
 {
+    TERMID termid;
     logf (LOG_DEBUG, "rset_trunc no=%d", no);
     if (no < 1)
 	return rsnull_create (rset_nmem,kctrl);
+    termid=rset_term_create(term, length, flags, term_type,rset_nmem);
     if (zi->reg->isams)
     {
         if (no == 1)
             return rsisams_create(rset_nmem, kctrl, scope,
-                    zi->reg->isams, *isam_p, 
-                    0 /*FIXME - use proper TERMID*/); 
+                    zi->reg->isams, *isam_p, termid);
         qsort (isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
     }
     else if (zi->reg->isamc)
     {
         if (no == 1)
             return rsisamc_create(rset_nmem, kctrl, scope,
-                    zi->reg->isamc, *isam_p,
-                    0 /*FIXME - use proper TERMID*/); 
+                    zi->reg->isamc, *isam_p, termid);
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
     else if (zi->reg->isamb)
     {
         if (no == 1)
             return rsisamb_create(rset_nmem,kctrl, scope,
-                    zi->reg->isamb, *isam_p, 0 /* FIXME - TERMID */ );
+                    zi->reg->isamb, *isam_p, termid);
         else if (no <10000 ) /* FIXME - hardcoded number */
         {
             RSET r;
@@ -438,8 +438,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             int i;
             for (i=0;i<no;i++)
                 rsets[i]=rsisamb_create(rset_nmem, kctrl, scope,
-                    zi->reg->isamb, isam_p[i],
-                    0 /* FIXME - use a proper TERMID */ );
+                    zi->reg->isamb, isam_p[i], termid);
             r=rsmultior_create( rset_nmem, kctrl, scope, no, rsets);
             xfree(rsets);
             return r;

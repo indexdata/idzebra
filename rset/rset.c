@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.34 2004-10-15 10:07:34 heikki Exp $
+/* $Id: rset.c,v 1.35 2004-10-20 14:32:29 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -147,4 +147,33 @@ int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
 
     return more;
 }
+
+TERMID rset_term_create (const char *name, int length, const char *flags,
+                                    int type, NMEM nmem)
+
+{
+    TERMID t;
+    logf (LOG_DEBUG, "term_create '%s' %d f=%s type=%d nmem=%p",
+            name, length, flags, type, nmem);
+    t= (TERMID) nmem_malloc (nmem, sizeof(*t));
+    if (!name)
+        t->name = NULL;
+    else if (length == -1)
+        t->name = nmem_strdup(nmem,name);
+    else
+    {
+        t->name = (char*) nmem_malloc(nmem,length+1);
+        memcpy (t->name, name, length);
+        t->name[length] = '\0';
+    }
+    if (!flags)
+        t->flags = NULL;
+    else
+        t->flags = nmem_strdup(nmem,flags);
+    t->nn = -1;
+    t->count = 0;
+    t->type = type;
+    return t;
+}
+
 

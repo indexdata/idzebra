@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.37 2004-10-15 10:07:32 heikki Exp $
+/* $Id: rset.h,v 1.38 2004-10-20 14:32:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -40,14 +40,28 @@ extern "C" {
 typedef struct rsfd *RSFD; /* Rset "file descriptor" */
 typedef struct rset *RSET; /* Result set */
 
-/*
-typedef struct terminfo *TERMID; 
-*/
-typedef int TERMID; 
-       /* term thing for the rsets. They don't need to   */
-       /* know what it is. FIXME - define that somewhere */
-/* using int while testing, to get more type checking to work */
 
+/** 
+ * rset_term is all we need to know of a term to do ranking etc. 
+ * As far as the rsets are concerned, it is just a dummy pointer to
+ * be passed around.
+ */
+
+struct rset_term {
+    char *name;
+    int  nn;
+    char *flags;
+    int  count;
+    int  type;
+};
+
+typedef struct rset_term *TERMID; 
+TERMID rset_term_create (const char *name, int length, const char *flags,
+                                    int type, NMEM nmem);
+
+
+
+/** rsfd is a "file descriptor" for reading from a rset */
 struct rsfd {  /* the stuff common to all rsfd's. */
     RSET rset;  /* ptr to the rset this FD is opened to */
     void *priv; /* private parameters for this type */
@@ -55,6 +69,13 @@ struct rsfd {  /* the stuff common to all rsfd's. */
 };
 
 
+/** 
+ * rset_control has function pointers to all the important functions
+ * of a rset. Each type of rset will have its own control block, pointing
+ * to the functions for that type. They all have their own create function
+ * which is not part of the control block, as it takes different args for
+ * each type.
+ */
 struct rset_control
 {
     char *desc; /* text description of set type (for debugging) */
@@ -69,9 +90,16 @@ struct rset_control
     int (*f_write)(RSFD rfd, const void *buf);
 };
 
+/** rset_default_forward implements a generic forward with a read-loop */
 int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
 
+/**
+ * key_control contains all there is to know about the keys stored in 
+ * an isam, and therefore operated by the rsets. Other than this info,
+ * all we assume is that all keys are the same size, and they can be
+ * memcpy'd around
+ */
 struct key_control {
     int key_size;
     int scope;  /* default for what level we operate (book/chapter/verse) on*/
@@ -84,6 +112,12 @@ struct key_control {
     /* FIXME - decode and encode, and lots of other stuff */
 };
 
+/**
+ * A rset is an ordered sequence of keys, either directly from an underlaying
+ * isam, or from one of the higher-level operator rsets (and, or, ...).
+ * Actually, it is "virtual base class", no pure rsets exist in the system,
+ * they all are of some derived type.
+ */
 typedef struct rset
 {
     const struct rset_control *control;

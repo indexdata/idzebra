@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.6 2004-08-25 09:23:39 adam Exp $
+/* $Id: t5.c,v 1.7 2004-10-20 14:32:29 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -64,6 +64,7 @@ int main(int argc, char **argv)
     ;
 
     yaz_log_init_file("t5.log");
+    yaz_log_init_level(LOG_ALL);
 
     nmem_init ();
     
