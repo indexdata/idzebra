@@ -1,21 +1,21 @@
-# $Id: Makefile,v 1.4 1998-01-29 13:35:11 adam Exp $
+# $Id: Makefile,v 1.5 1999-12-09 01:03:48 adam Exp $
 all: zebra.tex zebra.txt zebra.html
 
 zebra.txt: zebra.sgml
-	sgml2txt zebra.sgml
+	sgml2txt -f zebra.sgml
 
-zebra.tex: zebra.sgml
-	sgml2latex zebra.sgml
+zebra.ps: zebra.sgml
+	sgml2latex -o ps -p a4 zebra.sgml
 
 zebra.html: zebra.sgml
 	sgml2html zebra.sgml
 
 
 gils.txt: gils.sgml
-	sgml2txt gils.sgml
+	sgml2txt -f gils.sgml
 
-gils.tex: gils.sgml
-	sgml2latex gils.sgml
+gils.ps: gils.sgml
+	sgml2latex -o ps -p a4 gils.sgml
 
 gils.html: gils.sgml
 	sgml2html gils.sgml
