@@ -38,20 +38,20 @@ ZebraHandle  zh=0;  /* the current session */
  */
 
  
-static int split_args( char *line, char** argv )
+static int split_args( char *line, char** args )
 { /* splits line into individual null-terminated strings, 
-   * returns pointers to them in argv */
+   * returns pointers to them in args */
   char *p=line;
   int i=0;
-  argv[0]=0; /* by default */
+  args[0]=0; /* by default */
   while (*p==' ' || *p=='\t' || *p=='\n')
     p++;
   while (*p)
   {
     while (*p==' ' || *p=='\t' || *p=='\n')
       p++;
-    argv[i++]=p;
-    argv[i]=0;
+    args[i++]=p;
+    args[i]=0;
     while (*p && *p!=' ' && *p!='\t' && *p!='\n')
       p++;
     *p++='\0';
@@ -127,66 +127,123 @@ int cmd_zebra_close( char *args[], char *outbuff)
  * Command table, parser, and help 
  */
 
- struct cmdstruct
- {
-   char * cmd;
-   char * args;
-   char * explanation;
-   int (*testfunc)(char *args[], char *outbuff);
- } ;
+struct cmdstruct
+{
+  char * cmd;
+  char * args;
+  char * explanation;
+  int (*testfunc)(char *args[], char *outbuff);
+} ;
 
- struct cmdstruct cmds[] = {
-   { "zebra_start", "[configfile]", 
-        "starts the zebra service", cmd_zebra_start },
-   { "zebra_stop", "", 
-        "stops the zebra service", cmd_zebra_stop },
-   { "zebra_open", "", 
-        "starts a zebra session", cmd_zebra_open },
-   { "zebra_close", "", 
-        "closes a zebra session", cmd_zebra_close },
-   { "echo", "string", "ouputs the string", cmd_echo },
-   { "quit", "", "exits the program", cmd_quit },
-   { "help", "", 0, cmd_help },
-   
-   {0,0,0,0} /* end marker */
- };
  
- int onecommand( char *line, char *outbuff)
- {
-   int i;
-   char *argv[MAX_NO_ARGS];
-   int n;
-   char argbuf[MAX_ARG_LEN];
-   strncpy(argbuf,line, MAX_ARG_LEN-1);
-   argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
-   n=split_args(argbuf, argv);
-   if (0==n)
-     return 0; /* no command on line, too bad */
-   for (i=0;cmds[i].cmd;i++)
-     if (0==strcmp(cmds[i].cmd, argv[0])) 
-     {
-       if (n>1)
-         argv[0]= line + (argv[1]-argbuf); /* rest of the line */
-       else
-         argv[0]=""; 
-       return ((cmds[i].testfunc)(argv,outbuff));
-     }
-   sprintf (outbuff, "Unknown command '%s'. Try help",argv[0] );
-   return -1; 
- }
+struct cmdstruct cmds[] = {
+  /* special cases:
+   *   if text is 0, does not list the command
+   *   if cmd is "", adds the args (and newline) in command listing
+   */
+  { "", "Starting and stopping:", "", 0 },
+  { "zebra_start", 
+    "[configfile]", 
+    "starts the zebra service. You need to call this first\n"
+    "if no configfile is given, assumes " DEFAULTCONFIG, 
+    cmd_zebra_start },
+  { "zebra_stop",   "", 
+    "stops the zebra service", 
+    cmd_zebra_stop },
+  { "zebra_open", "", 
+    "starts a zebra session. Once you have called zebra_start\n"
+    "you can call zebra_open to start working", 
+    cmd_zebra_open },
+  { "zebra_close", "", 
+    "closes a zebra session", 
+    cmd_zebra_close },
+  { "", "Misc:","", 0},
+  { "echo", "string", 
+    "ouputs the string", 
+    cmd_echo },
+  { "quit", "", 
+    "exits the program", 
+    cmd_quit },
+  { "help", "[command]", 
+    "Gives help on command, or lists them all", 
+    cmd_help },
+  { "", "help [command] gives more info on command", "",0 },   
+  {0,0,0,0} /* end marker */
+};
+ 
+int onecommand( char *line, char *outbuff)
+{
+  int i;
+  char *args[MAX_NO_ARGS];
+  int n;
+  char argbuf[MAX_ARG_LEN];
+  strncpy(argbuf,line, MAX_ARG_LEN-1);
+  argbuf[MAX_ARG_LEN-1]='\0'; /* just to be sure */
+  n=split_args(argbuf, args);
+  if (0==n)
+    return 0; /* no command on line, too bad */
+  for (i=0;cmds[i].cmd;i++)
+    if (0==strcmp(cmds[i].cmd, args[0])) 
+    {
+      if (n>1)
+        args[0]= line + (args[1]-argbuf); /* rest of the line */
+      else
+        args[0]=""; 
+      return ((cmds[i].testfunc)(args,outbuff));
+    }
+  sprintf (outbuff, "Unknown command '%s'. Try help",args[0] );
+  return -1; 
+}
  
  int cmd_help( char *args[], char *outbuff)
  { 
-   int i;
-   char tmp[MAX_ARG_LEN];
+  int i;
+  char tmp[MAX_ARG_LEN];
+  if (args[1])
+  { /* help for a single command */
    for (i=0;cmds[i].cmd;i++)
-     if (cmds[i].explanation)
+     if (0==strcmp(cmds[i].cmd, args[0])) 
      {
-       sprintf(tmp, "%s %s %s\n",
-         cmds[i].cmd, cmds[i].args, cmds[i].explanation);
-       strcat(outbuff,tmp);
+       strcat(outbuff,cmds[i].cmd);
+       strcat(outbuff,"  ");
+       strcat(outbuff,cmds[i].args);
+       strcat(outbuff,"\n");
+       strcat(outbuff,cmds[i].explanation);
+       strcat(outbuff,"\n");
      }
-    return 0;
+  }
+  else 
+  { /* list all commands */
+    strcpy(tmp,"    ");
+    for (i=0;cmds[i].cmd;i++)
+      if (cmds[i].explanation)
+      {
+       /* sprintf(tmp, "%s %s %s\n",
+          cmds[i].cmd, cmds[i].args, cmds[i].explanation);
+        */
+        strcat(tmp, cmds[i].cmd);
+        strcat(tmp,"  ");
+        if (!*cmds[i].cmd)
+        {
+          strcat(outbuff, tmp);
+          strcat(outbuff,"\n");
+          strcpy(tmp,"    ");
+          if (*cmds[i].args)
+          {
+            strcat(outbuff, cmds[i].args);
+            strcat(outbuff,"\n");
+          }
+        }
+        if (strlen(tmp)>50)
+        {
+          strcat(outbuff,tmp);
+          strcat(outbuff,"\n");
+          strcpy(tmp,"    ");
+        }
+      }
+    strcat(outbuff,tmp);
+  }
+  return 0;
  }
  
  
@@ -234,7 +291,7 @@ void shell()
  * Main 
  */
  
-int main (int argc, char ** argv)
+int main (int argc, char ** args)
 {
   shell();
   return 0;
