@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.147 2004-01-22 11:27:21 adam Exp $
+/* $Id: extract.c,v 1.148 2004-01-22 11:50:16 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -423,7 +423,7 @@ static int file_extract_record(ZebraHandle zh,
 {
     RecordAttr *recordAttr;
     int r;
-    char *matchStr;
+    const char *matchStr;
     SYSNO sysnotmp;
     Record rec;
     off_t recordOffset = 0;
@@ -846,7 +846,7 @@ int buffer_extract_record (ZebraHandle zh,
     RecordAttr *recordAttr;
     struct recExtractCtrl extractCtrl;
     int i, r;
-    char *matchStr = 0;
+    const char *matchStr = 0;
     RecType recType = NULL;
     char subType[1024];
     void *clientData;
@@ -953,20 +953,22 @@ int buffer_extract_record (ZebraHandle zh,
     if (! *sysno) {
         char *rinfo;
         if (match_criteria && *match_criteria) {
-            matchStr = (char *)match_criteria;
+            matchStr = match_criteria;
         } else {
             if (zh->m_record_id && *zh->m_record_id) {
                 matchStr = fileMatchStr (zh, &zh->reg->keys, pr_fname, 
                                          zh->m_record_id);
+		if (!matchStr)
+                {
+                    logf (LOG_WARN, "Bad match criteria (recordID)");
+		    return 1;
+                }
             }
         }
         if (matchStr) {
             rinfo = dict_lookup (zh->reg->matchDict, matchStr);
             if (rinfo)
                 memcpy (sysno, rinfo+1, sizeof(*sysno));
-        } else {
-            logf (LOG_WARN, "Bad match criteria (recordID)");
-            return 0;
         }
     }
 
