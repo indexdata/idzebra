@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: recgrs.c,v $
- * Revision 1.44  2002-04-11 20:09:47  adam
+ * Revision 1.45  2002-04-12 14:40:42  adam
+ * Work on XPATH
+ *
+ * Revision 1.44  2002/04/11 20:09:47  adam
  * work on string tag indexing
  *
  * Revision 1.43  2002/03/21 23:06:36  adam
@@ -324,20 +327,22 @@ static void grs_destroy(void *clientData)
     free (h);
 }
 
-static void index_string_tag (data1_node *n,
-                              struct recExtractCtrl *p,
-                              int level, RecWord *wrd,
-                              int use)
+static void index_xpath (data1_node *n, struct recExtractCtrl *p,
+                         int level, RecWord *wrd, int use)
 {
     int i;
+    char tag_path_full[1024];
+    size_t flen = 0;
+    data1_node *nn;
+
     switch (n->which)
     {
     case DATA1N_data:
         wrd->reg_type = 'w';
         wrd->string = n->u.data.data;
         wrd->length = n->u.data.len;
-        wrd->attrSet = VAL_BIB1;
-        wrd->attrUse = 1016;
+        wrd->attrSet = VAL_IDXPATH,
+        wrd->attrUse = use;
         if (p->flagShowRecords)
         {
             printf("%*s data=", (level + 1) * 4, "");
@@ -351,16 +356,40 @@ static void index_string_tag (data1_node *n,
         }
         break;
     case DATA1N_tag:
-        wrd->reg_type = 'w';
-        wrd->string = n->u.tag.tag;
-        wrd->length = strlen(n->u.tag.tag);
-        wrd->attrSet = VAL_BIB1;
+        for (nn = n; nn; nn = nn->parent)
+        {
+            if (n->which == DATA1N_tag)
+            {
+                size_t tlen = strlen(nn->u.tag.tag);
+                if (tlen + flen > (sizeof(tag_path_full)-2))
+                    return;
+                memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
+                flen += tlen;
+                tag_path_full[flen++] = '/';
+            }
+            else if (n->which == DATA1N_root)
+            {
+                size_t tlen = strlen(nn->u.root.type);
+                if (tlen + flen > (sizeof(tag_path_full)-2))
+                    return;
+                memcpy (tag_path_full + flen, nn->u.root.type, tlen);
+                flen += tlen;
+                tag_path_full[flen++] = '/';
+                break;
+            }
+        }
+        wrd->reg_type = '0';
+        wrd->string = tag_path_full;
+        wrd->length = flen;
+        wrd->attrSet = VAL_IDXPATH,
         wrd->attrUse = use;
         if (p->flagShowRecords)
         {
             printf("%*s tag=", (level + 1) * 4, "");
-            for (i = 0; i<wrd->length && i < 8; i++)
+            for (i = 0; i<wrd->length && i < 40; i++)
                 fputc (wrd->string[i], stdout);
+            if (i == 40)
+                printf (" ..");
             printf("\n");
         }
         else
@@ -496,7 +525,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
             index_termlist (n, n, p, level, &wrd);
             /* index start tag */
             if (!n->root->u.root.absyn)
-                index_string_tag (n, p, level, &wrd, 1);
+                index_xpath (n, p, level, &wrd, 1);
 	}
 
 	if (n->child)
@@ -524,7 +553,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	    if (par)
 		index_termlist (par, n, p, level, &wrd);
             if (!n->root->u.root.absyn)
-                index_string_tag (n, p, level, &wrd, 1016);
+                index_xpath (n, p, level, &wrd, 1016);
 
  	}
 
@@ -532,7 +561,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 	{
             /* index end tag */
             if (!n->root->u.root.absyn)
-                index_string_tag (n, p, level, &wrd, 2);
+                index_xpath (n, p, level, &wrd, 2);
 	}
 
 

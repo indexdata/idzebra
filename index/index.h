@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
- * $Id: index.h,v 1.77 2002-04-05 08:46:26 adam Exp $
+ * $Id: index.h,v 1.78 2002-04-12 14:40:42 adam Exp $
  */
 
 #ifndef INDEX_H
@@ -306,7 +306,8 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	       int *is_partial);
 
 RSET rset_trunc (ZebraHandle zh, ISAMS_P *isam_p, int no,
-		 const char *term, int length_term, const char *flags);
+		 const char *term, int length_term, const char *flags,
+                 int preserve_position);
 
 void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       const char *db, int set,

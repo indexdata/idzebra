@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.22  2002-04-05 08:46:26  adam
+ * Revision 1.23  2002-04-12 14:40:42  adam
+ * Work on XPATH
+ *
+ * Revision 1.22  2002/04/05 08:46:26  adam
  * Zebra with full functionality
  *
  * Revision 1.21  2002/04/04 14:14:13  adam
@@ -190,8 +193,8 @@ static void heap_close (struct trunc_info *ti)
 }
 
 static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
-			 const char *flags, ISAMS_P *isam_p, int from, int to,
-                         int merge_chunk)
+                          const char *flags, ISAMS_P *isam_p, int from, int to,
+                          int merge_chunk, int preserve_position)
 {
     RSET result; 
     RSFD result_rsfd;
@@ -221,10 +224,12 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         {
             if (i_add <= to - i)
                 rset[rscur] = rset_trunc_r (zi, term, length, flags,
-				            isam_p, i, i+i_add, merge_chunk);
+				            isam_p, i, i+i_add,
+                                            merge_chunk, preserve_position);
             else
                 rset[rscur] = rset_trunc_r (zi, term, length, flags,
-                                            isam_p, i, to, merge_chunk);
+                                            isam_p, i, to,
+                                            merge_chunk, preserve_position);
             rscur++;
         }
         ti = heap_init (rscur, sizeof(struct it_key), key_compare_it);
@@ -341,31 +346,32 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
-#if 0
-/* section that preserve all keys */
-            heap_delete (ti);
-            if (isc_pp_read (ispt[n], ti->tmpbuf))
-                heap_insert (ti, ti->tmpbuf, n);
-            else
-                isc_pp_close (ispt[n]);
-#else
-/* section that preserve all keys with unique sysnos */
-            while (1)
+            if (preserve_position)
             {
-                if (!isc_pp_read (ispt[n], ti->tmpbuf))
-                {
-                    heap_delete (ti);
-                    isc_pp_close (ispt[n]);
-                    break;
-                }
-                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
-                {
-                    heap_delete (ti);
+                heap_delete (ti);
+                if (isc_pp_read (ispt[n], ti->tmpbuf))
                     heap_insert (ti, ti->tmpbuf, n);
-                    break;
+                else
+                    isc_pp_close (ispt[n]);
+            }
+            else
+            {
+                while (1)
+                {
+                    if (!isc_pp_read (ispt[n], ti->tmpbuf))
+                    {
+                        heap_delete (ti);
+                        isc_pp_close (ispt[n]);
+                        break;
+                    }
+                    if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+                    {
+                        heap_delete (ti);
+                        heap_insert (ti, ti->tmpbuf, n);
+                        break;
+                    }
                 }
             }
-#endif
         }
         heap_close (ti);
         xfree (ispt);
@@ -517,7 +523,8 @@ static int isamd_trunc_cmp (const void *p1, const void *p2)
 }
 
 RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
-		 const char *term, int length, const char *flags)
+		 const char *term, int length, const char *flags,
+                 int preserve_position)
 {
     logf (LOG_DEBUG, "rset_trunc no=%d", no);
     if (no < 1)
@@ -616,6 +623,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
         logf (LOG_WARN, "Unknown isam set in rset_trunc");
 	return rset_create (rset_kind_null, NULL);
     }
-    return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100);
+    return rset_trunc_r (zi, term, length, flags, isam_p, 0, no, 100,
+                         preserve_position);
 }
 
