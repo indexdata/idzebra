@@ -64,6 +64,7 @@ package IDZebra;
 *repository_update = *IDZebrac::repository_update;
 *repository_delete = *IDZebrac::repository_delete;
 *repository_show = *IDZebrac::repository_show;
+*insert_record = *IDZebrac::insert_record;
 *update_record = *IDZebrac::update_record;
 *delete_record = *IDZebrac::delete_record;
 *search_PQF = *IDZebrac::search_PQF;

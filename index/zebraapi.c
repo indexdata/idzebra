@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.92 2003-03-12 17:11:23 pop Exp $
+/* $Id: zebraapi.c,v 1.93 2003-03-13 04:25:17 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1776,6 +1776,32 @@ void api_records_retrieve (ZebraHandle zh, ODR stream,
   If not, and a record is provided, then sysno is got from there
 */
 
+int zebra_insert_record (ZebraHandle zh, 
+			 struct recordGroup *rGroup,
+			 const char *recordType,
+			 int sysno, const char *match, const char *fname,
+			 const char *buf, int buf_size,
+			 int force_update) // This one is ignored
+ 
+{
+    int res;
+
+    if (buf_size < 1) buf_size = strlen(buf);
+
+    zebra_begin_trans(zh, 1);
+    res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
+			     0, // delete_flag 
+			     0, // test_mode,
+			     recordType,
+			     &sysno,   
+			     match, fname,
+			     force_update, 
+			     0); // allow_update     
+    zebra_end_trans(zh); 
+    if (res < 0) return (res);
+    return sysno; 
+}
+
 int zebra_update_record (ZebraHandle zh, 
 			 struct recordGroup *rGroup,
 			 const char *recordType,
@@ -1795,10 +1821,13 @@ int zebra_update_record (ZebraHandle zh,
 			     recordType,
 			     &sysno,   
 			     match, fname,
-			     force_update);     
+			     force_update, 
+			     1); // allow_update    
     zebra_end_trans(zh); 
     return sysno; 
 }
+
+
 
 int zebra_delete_record (ZebraHandle zh, 
 			 struct recordGroup *rGroup, 
@@ -1818,7 +1847,8 @@ int zebra_delete_record (ZebraHandle zh,
 			     recordType,
 			     &sysno,
 			     match,fname,
-			     force_update);    
+			     force_update,
+			     1); // allow_update    
     zebra_end_trans(zh);
     return sysno;   
 }

@@ -278,6 +278,17 @@ void zebra_repository_show (ZebraHandle zh);
    If not, and match_criteria is provided, then sysno is guessed
    If not, and a record is provided, then sysno is got from there */
 
+%name(insert_record)       
+int zebra_insert_record (ZebraHandle zh, 
+			 recordGroup *rGroup, 
+			 const char *recordType,
+			 int sysno, 
+			 const char *match, 
+			 const char *fname,
+			 const char *buf, 
+			 int buf_size,
+			 int force_update);
+
 %name(update_record)       
 int zebra_update_record (ZebraHandle zh, 
 			 recordGroup *rGroup, 

@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 03_record_update.t,v 1.2 2003-03-05 13:55:22 pop Exp $
+# $Id: 03_record_update.t,v 1.3 2003-03-13 04:25:18 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,7 +14,7 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 11;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -57,13 +57,23 @@ $stat = $sess->end_trans;
 ok(($stat->{deleted} == 1), "Deleted 1 records");
 
 $sess->begin_trans;
-$sysno = $sess->update_record(data       => $rec2,
-			       recordType => 'grs.perl.pod',
-			       groupName  => "demo1",
-			       );
+$sysno = $sess->insert_record(data       => $rec2,
+			      recordType => 'grs.perl.pod',
+			      groupName  => "demo1",
+			      );
 $stat = $sess->end_trans;
 ok(($stat->{inserted} == 1), "Inserted 1 records");
+ok(($sysno > 0),"Inserted record got valid sysno");
 
+$sess->begin_trans;
+$sysno = $sess->insert_record(data       => $rec2,
+			      recordType => 'grs.perl.pod',
+			      groupName  => "demo1",
+			      );
+$stat = $sess->end_trans;
+ok(($stat->{inserted} == 0), "Inserted 0 records");
+ok(($stat->{updated} == 0), "Updated 0 records");
+ok(($sysno < 0),"Inserted record got invalid sysno");
 
 
 

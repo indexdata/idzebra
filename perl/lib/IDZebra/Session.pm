@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.14 2003-03-12 17:08:53 pop Exp $
+# $Id: Session.pm,v 1.15 2003-03-13 04:25:18 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -15,7 +15,7 @@ BEGIN {
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
     require Exporter;
-    our $VERSION = do { my @r = (q$Revision: 1.14 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.15 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger Exporter);
     our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
@@ -451,6 +451,12 @@ sub _update_args {
 # -----------------------------------------------------------------------------
 # Per record update
 # -----------------------------------------------------------------------------
+sub insert_record {
+    my ($self, %args) = @_;
+    $self->checkzh;
+    return(IDZebra::insert_record($self->{zh},
+				  $self->_record_update_args(%args)));
+}
 
 sub update_record {
     my ($self, %args) = @_;
@@ -540,7 +546,7 @@ sub cql2pqf {
     my $res = "\0" x 2048;
     my $r = IDZebra::cql2pqf($self->{cql_ct}, $cqlquery, $res, 2048);
     if ($r) {
-	carp ("Error transforming CQL query: '$cqlquery', status:$r");
+#	carp ("Error transforming CQL query: '$cqlquery', status:$r");
     }
     $res=~s/\0.+$//g;
     return ($res,$r); 
@@ -950,15 +956,36 @@ where sysno in itself is sufficient to identify the record
 
 This case the record is extracted, and if already exists, located in the database, then deleted... 
 
-  $sysno = $sess->delete_record(data       => $rec1,
+  $sysno = $sess->update_record(data       => $rec1,
                                 match      => $myid,
                                 recordType => 'grs.perl.pod',
 			        groupName  => "demo1");
 
-Don't try this at home! This case, the record identifier string (which is normally generated according to the rules set in recordId directive of zebra.cfg) is provided directly....
+Don't try this at home! This case, the record identifier string (which is normally generated according to the rules set in I<recordId> member of the record group, or in the I<recordId> parameter) is provided directly.... Looks much better this way:
 
+  $sysno = $sess->update_record(data          => $rec1,
+                                databaseName  => 'books',
+                                recordId      => '(bib1,ISBN)',
+                                recordType    => 'grs.perl.pod',
+                                flagStoreData => 1,
+                                flagStoreKeys => 1);
 
-B<Important:> Note, that one record can be updated only once within a transaction - all subsequent updates are skipped. 
+You can notice, that it's not necessary to define a record group in zebra.cfg: you can do it "on the fly" in your code.
+
+B<Important:> Note, that one record can be updated only once within a transaction - all subsequent updates are skipped. If you'd like to override this feature, use the I<force=E<gt>1> flag:
+
+  $sysno = $sess->update_record(data       => $rec1,
+		                recordType => 'grs.perl.pod',
+			        groupName  => "demo1",
+                                force      => 1);
+
+If you don't like to update the record, if it alerady exists, use the I<insert_record> method:
+
+  $sysno = $sess->insert_record(data       => $rec1,
+		                recordType => 'grs.perl.pod',
+			        groupName  => "demo1");
+
+In this case, sysno will be -1, if the record could not be added, because there was already one in the database, with the same record identifier (generated according to the I<recordId> setting).
 
 =head1 DATABASE SELECTION
 

@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.15 2003-03-12 17:08:53 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.16 2003-03-13 04:25:17 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -3968,6 +3968,61 @@ XS(_wrap_repository_show) {
         zebra_repository_show(arg1);
         
         
+        XSRETURN(argvi);
+        fail:
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
+XS(_wrap_insert_record) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraHandle arg1 ;
+        recordGroup *arg2 ;
+        char *arg3 ;
+        int arg4 ;
+        char *arg5 ;
+        char *arg6 ;
+        char *arg7 ;
+        int arg8 ;
+        int arg9 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 9) || (items > 9)) {
+            SWIG_croak("Usage: insert_record(zh,rGroup,recordType,sysno,match,fname,buf,buf_size,force_update);");
+        }
+        {
+            ZebraHandle * argp;
+            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_ZebraHandle,0) < 0) {
+                SWIG_croak("Type error in argument 1 of insert_record. Expected _p_ZebraHandle");
+            }
+            arg1 = *argp;
+        }
+        {
+            if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_recordGroup,0) < 0) {
+                SWIG_croak("Type error in argument 2 of insert_record. Expected _p_recordGroup");
+            }
+        }
+        if (!SvOK((SV*) ST(2))) arg3 = 0;
+        else arg3 = (char *) SvPV(ST(2), PL_na);
+        arg4 = (int) SvIV(ST(3));
+        if (!SvOK((SV*) ST(4))) arg5 = 0;
+        else arg5 = (char *) SvPV(ST(4), PL_na);
+        if (!SvOK((SV*) ST(5))) arg6 = 0;
+        else arg6 = (char *) SvPV(ST(5), PL_na);
+        if (!SvOK((SV*) ST(6))) arg7 = 0;
+        else arg7 = (char *) SvPV(ST(6), PL_na);
+        arg8 = (int) SvIV(ST(7));
+        arg9 = (int) SvIV(ST(8));
+        result = (int)zebra_insert_record(arg1,arg2,(char const *)arg3,arg4,(char const *)arg5,(char const *)arg6,(char const *)arg7,arg8,arg9);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -8464,6 +8519,7 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::repository_update", _wrap_repository_update},
 {"IDZebrac::repository_delete", _wrap_repository_delete},
 {"IDZebrac::repository_show", _wrap_repository_show},
+{"IDZebrac::insert_record", _wrap_insert_record},
 {"IDZebrac::update_record", _wrap_update_record},
 {"IDZebrac::delete_record", _wrap_delete_record},
 {"IDZebrac::search_PQF", _wrap_search_PQF},

@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.142 2003-03-12 17:11:23 pop Exp $
+/* $Id: extract.c,v 1.143 2003-03-13 04:25:17 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -918,7 +918,7 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
 				 sysno,
 				 match_criteria,
 				 "<no file>",
-				 0));
+				 0,1));
 }
 /*
   If sysno is provided, then it's used to identify the reocord.
@@ -935,7 +935,8 @@ int bufferExtractRecord (ZebraHandle zh,
 			 int *sysno,
 			 const char *match_criteria,
 			 const char *fname,
-			 int force_update)
+			 int force_update,
+			 int allow_update)
 
 {
     RecordAttr *recordAttr;
@@ -1094,12 +1095,19 @@ int bufferExtractRecord (ZebraHandle zh,
         extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys);
 
         zh->records_inserted++;
-    }
+    } 
     else
     {
         /* record already exists */
         struct recKeys delkeys;
         struct sortKeys sortKeys;
+
+	if (!allow_update) {
+	      logf (LOG_LOG, "skipped %s %s %ld", 
+		    recordType, fname, (long) recordOffset);
+	      logRecord(zh);
+	      return -1;
+	}
 
         rec = rec_get (zh->reg->records, *sysno);
         assert (rec);

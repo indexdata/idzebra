@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.96 2003-03-12 17:11:23 pop Exp $
+/* $Id: index.h,v 1.97 2003-03-13 04:25:17 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -421,7 +421,8 @@ int bufferExtractRecord (ZebraHandle zh,
 			 int *sysno,
 			 const char *match_criteria,
 			 const char *fname,
-			 int force_update);
+			 int force_update,
+			 int allow_update);
 
 int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
                         const char *buf, size_t buf_size,
