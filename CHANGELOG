@@ -1,3 +1,5 @@
+Added SOIF-filter. Thanks to Peter Valkenburg.
+
 For the regx-filter "end element -record" may trigger a mark-of-record
 if outer level is reached.
 
