@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.28  1999-07-06 12:26:04  adam
+ * Revision 1.29  1999-07-12 07:27:54  adam
+ * Improved speed of Tcl processing. Fixed one memory leak.
+ *
+ * Revision 1.28  1999/07/06 12:26:04  adam
  * Fixed filters so that MS-DOS CR is ignored.
  *
  * Revision 1.27  1999/06/28 13:25:40  quinn
@@ -204,6 +207,9 @@
 
 struct regxCode {
     char *str;
+#if HAVE_TCL_H
+    Tcl_Obj *tcl_obj;
+#endif
 };
 
 struct lexRuleAction {
@@ -350,6 +356,10 @@ static void regxCodeDel (struct regxCode **pp)
     struct regxCode *p = *pp;
     if (p)
     {
+#if HAVE_TCL_H
+	if (p->tcl_obj)
+	    Tcl_DecrRefCount (p->tcl_obj);
+#endif
         xfree (p->str); 
         xfree (p);
         *pp = NULL;
@@ -364,6 +374,11 @@ static void regxCodeMk (struct regxCode **pp, const char *buf, int len)
     p->str = (char *) xmalloc (len+1);
     memcpy (p->str, buf, len);
     p->str[len] = '\0';
+#if HAVE_TCL_H
+    p->tcl_obj = Tcl_NewStringObj ((char *) buf, len);
+    if (p->tcl_obj)
+	Tcl_IncrRefCount (p->tcl_obj);
+#endif
     *pp = p;
 }
 
@@ -420,6 +435,7 @@ static void lexContextDestroy (struct lexContext *p)
 {
     struct lexRule *rp, *rp1;
 
+    dfa_delete (&p->dfa);
     xfree (p->fastRule);
     for (rp = p->rules; rp; rp = rp1)
     {
@@ -429,6 +445,7 @@ static void lexContextDestroy (struct lexContext *p)
     }
     actionListDel (&p->beginActionList);
     actionListDel (&p->endActionList);
+    actionListDel (&p->initActionList);
     xfree (p->name);
     xfree (p);
 }
@@ -701,40 +718,39 @@ int readOneSpec (struct lexSpec *spec, const char *s)
 int readFileSpec (struct lexSpec *spec)
 {
     struct lexContext *lc;
-    char *lineBuf;
-    int lineSize = 512;
     int c, i, errors = 0;
     FILE *spec_inf = 0;
+    WRBUF lineBuf;
+    char fname[256];
 
-    lineBuf = (char *) xmalloc (1+lineSize);
 #if HAVE_TCL_H
     if (spec->tcl_interp)
     {
-	sprintf (lineBuf, "%s.tflt", spec->name);
-	spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh), lineBuf, "r");
+	sprintf (fname, "%s.tflt", spec->name);
+	spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh), fname, "r");
     }
 #endif
     if (!spec_inf)
     {
-	sprintf (lineBuf, "%s.flt", spec->name);
-	spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh), lineBuf, "r");
+	sprintf (fname, "%s.flt", spec->name);
+	spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh), fname, "r");
     }
     if (!spec_inf)
     {
         logf (LOG_ERRNO|LOG_WARN, "cannot read spec file %s", spec->name);
-        xfree (lineBuf);
         return -1;
     }
-    logf (LOG_LOG, "reading regx filter %s", lineBuf);
+    logf (LOG_LOG, "reading regx filter %s", fname);
 #if HAVE_TCL_H
     if (spec->tcl_interp)
 	logf (LOG_LOG, "Tcl enabled");
 #endif
+    lineBuf = wrbuf_alloc();
     spec->lineNo = 0;
     c = getc (spec_inf);
     while (c != EOF)
     {
-        int off = 0;
+	wrbuf_rewind (lineBuf);
         if (c == '#' || c == '\n' || c == ' ' || c == '\t' || c == '\r')
         {
             while (c != '\n' && c != EOF)
@@ -746,11 +762,11 @@ int readFileSpec (struct lexSpec *spec)
         else
         {
             int addLine = 0;
-
-            lineBuf[off++] = c;
+	    
             while (1)
             {
                 int c1 = c;
+		wrbuf_putc(lineBuf, c);
                 c = getc (spec_inf);
 		while (c == '\r')
 		    c = getc (spec_inf);
@@ -762,17 +778,14 @@ int readFileSpec (struct lexSpec *spec)
                         break;
                     addLine++;
                 }
-                lineBuf[off] = c;
-                if (off < lineSize)
-                    off++;
             }
-            lineBuf[off] = '\0';
-            readOneSpec (spec, lineBuf);
+	    wrbuf_putc(lineBuf, '\0');
+            readOneSpec (spec, wrbuf_buf(lineBuf));
             spec->lineNo += addLine;
         }
     }
     fclose (spec_inf);
-    xfree (lineBuf);
+    wrbuf_free(lineBuf, 1);
 
 #if 0
     debug_dfa_trav = 1;
@@ -1412,6 +1425,7 @@ static int cmd_tcl_unread (ClientData clientData, Tcl_Interp *interp,
 static void execTcl (struct lexSpec *spec, struct regxCode *code)
 {   
     int i;
+    int ret;
     for (i = 0; i < spec->arg_no; i++)
     {
 	char var_name[10], *var_buf;
@@ -1428,7 +1442,11 @@ static void execTcl (struct lexSpec *spec, struct regxCode *code)
 	    var_buf[var_len] = ch;
 	}
     }
-    if (Tcl_Eval (spec->tcl_interp, code->str) != TCL_OK)
+    if (code->tcl_obj)
+	ret = Tcl_GlobalEvalObj(spec->tcl_interp, code->tcl_obj);
+    else
+	ret = Tcl_GlobalEval (spec->tcl_interp, code->str);
+    if (ret != TCL_OK)
     {
     	const char *err = Tcl_GetVar(spec->tcl_interp, "errorInfo", 0);
 	logf(LOG_FATAL, "Tcl error, line=%d, \"%s\"\n%s", 
@@ -1436,7 +1454,6 @@ static void execTcl (struct lexSpec *spec, struct regxCode *code)
 	    spec->tcl_interp->result,
 	    err ? err : "[NO ERRORINFO]");
     }
-
 }
 /* HAVE_TCL_H */
 #endif
