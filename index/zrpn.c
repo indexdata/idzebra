@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.31  1995-10-17 18:02:10  adam
+ * Revision 1.32  1995-10-27 14:00:11  adam
+ * Implemented detection of database availability.
+ *
+ * Revision 1.31  1995/10/17  18:02:10  adam
  * New feature: databases. Implemented as prefix to words in dictionary.
  *
  * Revision 1.30  1995/10/16  09:32:38  adam
@@ -118,7 +121,7 @@
 #include <rsrel.h>
 
 int index_word_prefix_map (char *string, oid_value attrSet, int attrUse,
-                           int num_bases, char **basenames)
+                           char *basename)
 {
     attent *attp;
 
@@ -128,8 +131,7 @@ int index_word_prefix_map (char *string, oid_value attrSet, int attrUse,
         return -1;
     logf (LOG_DEBUG, "ord=%d", attp->attset_ordinal);
     return index_word_prefix (string, attp->attset_ordinal,
-                              attp->local_attribute,
-                              num_bases, basenames);
+                              attp->local_attribute, basename);
 }
 
 /*
@@ -595,7 +597,8 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                             const char *term_sub,
                             char *term_dict,
                             oid_value attributeSet,
-                            struct grep_info *grep_info)
+                            struct grep_info *grep_info,
+                            int *max_pos)
 {
     AttrType relation;
     int relation_value;
@@ -636,7 +639,7 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         return 0;
     }
     logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
-    r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, 
+    r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, max_pos,
                           grep_handle);
     if (r)
         logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
@@ -650,7 +653,7 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                        int num_bases, char **basenames)
 {
     char term_dict[2*IT_MAX_WORD+2];
-    int i, j, r;
+    int i, j, r, base_no;
     AttrType truncation;
     int truncation_value;
     AttrType use;
@@ -666,63 +669,82 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
     if (use_value == -1)
         use_value = 1016;
-    i = index_word_prefix_map (term_dict, curAttributeSet, use_value,
-                               num_bases, basenames);
-    if (i < 0)
-    {
-        zi->errCode = 114;
-        return -1;
-    }
 
-    if (relational_term (zi, zapt, term_sub, term_dict,
-                         attributeSet, grep_info))
-        return 0;
-    switch (truncation_value)
+    for (base_no = 0; base_no < num_bases; base_no++)
     {
-    case -1:         /* not specified */
-    case 100:        /* do not truncate */
-        strcat (term_dict, "(");
-        strcat (term_dict, term_sub);
-        strcat (term_dict, ")");
-        logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
-        r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                              grep_handle);
-        if (r)
-            logf (LOG_WARN, "dict_lookup_grep fail, trunc=none: %d", r);
-        break;
-    case 1:          /* right truncation */
-        strcat (term_dict, term_sub);
-        strcat (term_dict, ".*");
-        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, grep_handle);
-        break;
-    case 2:          /* left truncation */
-    case 3:          /* left&right truncation */
-        zi->errCode = 120;
-        return -1;
-    case 101:        /* process # in term */
-        for (j = strlen(term_dict), i = 0; term_sub[i] && i < 2; i++)
-            term_dict[j++] = term_sub[i];
-        for (; term_sub[i]; i++)
-            if (term_sub[i] == '#')
+        int max_pos;
+        int prefix_len = index_word_prefix_map (term_dict, curAttributeSet,
+                                                use_value,
+                                                basenames[base_no]);
+        if (prefix_len < 0)
+        {
+            zi->errCode = 114;
+            return -1;
+        }
+        if (!relational_term (zi, zapt, term_sub, term_dict,
+                              attributeSet, grep_info, &max_pos))
+        {
+            switch (truncation_value)
             {
-                term_dict[j++] = '.';
-                term_dict[j++] = '*';
+            case -1:         /* not specified */
+            case 100:        /* do not truncate */
+                strcat (term_dict, "(");
+                strcat (term_dict, term_sub);
+                strcat (term_dict, ")");
+                logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
+                r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                                      &max_pos, grep_handle);
+                if (r)
+                    logf (LOG_WARN, "dict_lookup_grep err, trunc=none:%d", r);
+                break;
+            case 1:          /* right truncation */
+                strcat (term_dict, term_sub);
+                strcat (term_dict, ".*");
+                dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                                  &max_pos, grep_handle);
+                break;
+            case 2:          /* left truncation */
+            case 3:          /* left&right truncation */
+                zi->errCode = 120;
+                return -1;
+            case 101:        /* process # in term */
+                for (j = strlen(term_dict), i = 0; term_sub[i] && i < 2; i++)
+                    term_dict[j++] = term_sub[i];
+                for (; term_sub[i]; i++)
+                    if (term_sub[i] == '#')
+                    {
+                        term_dict[j++] = '.';
+                        term_dict[j++] = '*';
+                    }
+                    else
+                        term_dict[j++] = term_sub[i];
+                term_dict[j] = '\0';
+                r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                                      &max_pos, grep_handle);
+                if (r)
+                    logf (LOG_WARN, "dict_lookup_grep err, trunc=#: %d",
+                          r);
+                break;
+            case 102:        /* regular expression */
+                strcat (term_dict, "(");
+                strcat (term_dict, term_sub);
+                strcat (term_dict, ")");
+                logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
+                r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                                      &max_pos, grep_handle);
+                if (r)
+                    logf (LOG_WARN, "dict_lookup_grep err, trunc=regular: %d",
+                          r);
+                break;
             }
-            else
-                term_dict[j++] = term_sub[i];
-        term_dict[j] = '\0';
-        dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, grep_handle);
-        break;
-    case 102:        /* regular expression */
-        strcat (term_dict, "(");
-        strcat (term_dict, term_sub);
-        strcat (term_dict, ")");
-        logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
-        r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
-                              grep_handle);
-        if (r)
-            logf (LOG_WARN, "dict_lookup_grep fail, trunc=regular: %d", r);
-        break;
+        }
+        logf (LOG_DEBUG, "max_pos = %d", max_pos);
+        if (max_pos <= strlen(basenames[base_no]))
+        {
+            zi->errCode = 109; /* Database unavailable */
+            zi->errString = basenames[base_no];
+            return -1;
+        }
     }
     logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
     return 0;
@@ -1253,12 +1275,18 @@ static int scan_handle (Dict_char *name, const char *info, int pos,
     return 0;
 }
 
-int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
+
+static int dummy_handle (Dict_char *name, const char *info, void *p)
+{
+    return 0;
+}
+
+int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
               int num_bases, char **basenames,
               int *position, int *num_entries, struct scan_entry **list,
               int *status)
 {
-    int i, j, sizez;
+    int i, j, sizez, max_pos;
     int pos = *position;
     int num = *num_entries;
     int before;
@@ -1275,12 +1303,13 @@ int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
         return 111;
     scan_info.before = before = pos-1;
     scan_info.after = after = 1+num-pos;
-    scan_info.odr = odr;
+    scan_info.odr = zi->odr;
 
     logf (LOG_DEBUG, "scan, before = %d, after = %d", before, after);
     
     scan_info.isam = zi->wordIsam;
-    scan_info.list = odr_malloc (odr, (before+after)*sizeof(*scan_info.list));
+    scan_info.list = odr_malloc (zi->odr, (before+after)*
+                                 sizeof(*scan_info.list));
     for (j = 0; j<before+after; j++)
         scan_info.list[j].term = NULL;
     attr_init (&use, zapt, 1);
@@ -1289,7 +1318,15 @@ int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
 
     if (use_value == -1)
         use_value = 1016;
-    i = index_word_prefix (termz, 1, use_value, num_bases, basenames);
+    i = index_word_prefix (termz, 1, use_value, *basenames);
+
+    dict_lookup_grep (zi->wordDict, termz, 0, NULL, &max_pos,
+                      dummy_handle);
+    if (max_pos <= strlen(*basenames))
+    {
+        zi->errString = *basenames;
+        return zi->errCode = 109; /* Database unavailable */
+    }
     strcpy (scan_info.prefix, termz);
     sizez = term->u.general->len;
     if (sizez > IT_MAX_WORD)

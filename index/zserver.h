@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.11  1995-10-17 18:02:12  adam
+ * Revision 1.12  1995-10-27 14:00:12  adam
+ * Implemented detection of database availability.
+ *
+ * Revision 1.11  1995/10/17  18:02:12  adam
  * New feature: databases. Implemented as prefix to words in dictionary.
  *
  * Revision 1.10  1995/10/09  16:18:38  adam
@@ -72,7 +75,7 @@ int rpn_search (ZServerInfo *zi,
                 Z_RPNQuery *rpn, int num_bases, char **basenames, 
                 const char *setname, int *hits);
 
-int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
+int rpn_scan (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
               int num_bases, char **basenames,
               int *position, int *num_entries, struct scan_entry **list,
               int *status);

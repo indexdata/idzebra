@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.18  1995-10-17 18:02:08  adam
+ * Revision 1.19  1995-10-27 14:00:11  adam
+ * Implemented detection of database availability.
+ *
+ * Revision 1.18  1995/10/17  18:02:08  adam
  * New feature: databases. Implemented as prefix to words in dictionary.
  *
  * Revision 1.17  1995/10/13  16:01:49  adam
@@ -113,6 +116,4 @@ void strtab_del (struct strtab *t,
                  void *data);
 int index_char_cvt (int c);
 int index_word_prefix (char *string, int attset_ordinal,
-                       int local_attribute,
-                       int numbases,
-                       char **databaseNames);
+                       int local_attribute, char *databaseName);

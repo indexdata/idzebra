@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.22  1995-10-17 18:02:07  adam
+ * Revision 1.23  1995-10-27 14:00:10  adam
+ * Implemented detection of database availability.
+ *
+ * Revision 1.22  1995/10/17  18:02:07  adam
  * New feature: databases. Implemented as prefix to words in dictionary.
  *
  * Revision 1.21  1995/10/10  12:24:38  adam
@@ -262,7 +265,7 @@ static void wordAdd (const RecWord *p)
     key_buf[ptr_top-ptr_i] = (char*)key_buf + kused;
     kused += index_word_prefix ((char*)key_buf + kused,
                                 p->attrSet, p->attrUse,
-                                1, &key_databaseName);
+                                key_databaseName);
     switch (p->which)
     {
     case Word_String:

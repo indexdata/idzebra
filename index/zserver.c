@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.19  1995-10-17 18:02:11  adam
+ * Revision 1.20  1995-10-27 14:00:12  adam
+ * Implemented detection of database availability.
+ *
+ * Revision 1.19  1995/10/17  18:02:11  adam
  * New feature: databases. Implemented as prefix to words in dictionary.
  *
  * Revision 1.18  1995/10/16  14:03:09  quinn
@@ -134,12 +137,14 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
 
     odr_reset (server_info.odr);
     server_info.errCode = 0;
+    server_info.errString = NULL;
     switch (q->query->which)
     {
     case Z_Query_type_1:
         r.errcode = rpn_search (&server_info, q->query->u.type_1,
                                 q->num_bases, q->basenames, q->setname,
                                 &r.hits);
+        r.errstring = server_info.errString;
         break;
     default:
         r.errcode = 107;
@@ -252,14 +257,15 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
 
     odr_reset (server_info.odr);
     server_info.errCode = 0;
+    server_info.errString = 0;
 
-    r.errstring = 0;
     r.term_position = q->term_position;
     r.num_entries = q->num_entries;
-    r.errcode = rpn_scan (&server_info, server_info.odr, q->term,
+    r.errcode = rpn_scan (&server_info, q->term,
                           q->num_bases, q->basenames,
                           &r.term_position,
                           &r.num_entries, &r.entries, &status);
+    r.errstring = server_info.errString;
     r.status = status;
     return &r;
 }
