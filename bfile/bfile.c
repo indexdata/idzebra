@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.33  2002-04-04 14:14:13  adam
+ * Revision 1.34  2002-07-16 13:17:53  heikki
+ * Removed a crash on zebraidx init, if the register area isn't there
+ *
+ * Revision 1.33  2002/04/04 14:14:13  adam
  * Multiple registers (alpha early)
  *
  * Revision 1.32  2000/03/15 15:00:30  adam
@@ -145,6 +148,8 @@ BFiles bfs_create (const char *spec, const char *base)
 
 void bfs_destroy (BFiles bfs)
 {
+    if (!bfs)
+        return;
     xfree (bfs->cache_fname);
     xfree (bfs->base);
     mf_destroy (bfs->commit_area);
@@ -278,6 +283,8 @@ int bf_commitExists (BFiles bfs)
 
 void bf_reset (BFiles bfs)
 {
+    if (!bfs)
+	return;
     mf_reset (bfs->commit_area);
     mf_reset (bfs->register_area);
 }
