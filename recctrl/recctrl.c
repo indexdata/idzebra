@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.10 2004-09-28 12:52:03 adam Exp $
+/* $Id: recctrl.c,v 1.11 2004-09-30 07:23:15 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -48,6 +48,24 @@ struct recTypes {
     struct recTypeInstance *entries;
 };
 
+#ifdef IDZEBRA_STATIC_TEXT
+    extern RecType idzebra_filter_text[];
+#endif
+#ifdef IDZEBRA_STATIC_GRS_XML
+#if HAVE_EXPAT_H
+    extern RecType idzebra_filter_grs_xml[];
+#endif
+#endif
+#ifdef IDZEBRA_STATIC_GRS_REGX
+    extern RecType idzebra_filter_grs_regx[];
+#endif
+#ifdef IDZEBRA_STATIC_GRS_MARC
+    extern RecType idzebra_filter_grs_marc[];
+#endif
+#ifdef IDZEBRA_STATIC_GRS_DANBIB
+    extern RecType idzebra_filter_grs_danbib[];
+#endif
+
 static void recTypeClass_add (struct recTypeClass **rts, RecType *rt,
 			      NMEM nmem, void *module_handle);
 
@@ -60,25 +78,20 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     extern RecType idzebra_filter_grs_sgml[];
     recTypeClass_add (&rts, idzebra_filter_grs_sgml, nmem, 0);
 #ifdef IDZEBRA_STATIC_TEXT
-    extern RecType idzebra_filter_text[];
     recTypeClass_add (&rts, idzebra_filter_text, nmem, 0);
 #endif
 #ifdef IDZEBRA_STATIC_GRS_XML
 #if HAVE_EXPAT_H
-    extern RecType idzebra_filter_grs_xml[];
     recTypeClass_add (&rts, idzebra_filter_grs_xml, nmem, 0);
 #endif
 #endif
 #ifdef IDZEBRA_STATIC_GRS_REGX
-    extern RecType idzebra_filter_grs_regx[];
     recTypeClass_add (&rts, idzebra_filter_grs_regx, nmem, 0);
 #endif
 #ifdef IDZEBRA_STATIC_GRS_MARC
-    extern RecType idzebra_filter_grs_marc[];
     recTypeClass_add (&rts, idzebra_filter_grs_marc, nmem, 0);
 #endif
 #ifdef IDZEBRA_STATIC_GRS_DANBIB
-    extern RecType idzebra_filter_grs_danbib[];
     recTypeClass_add (&rts, idzebra_filter_grs_danbib, nmem, 0);
 #endif
 
