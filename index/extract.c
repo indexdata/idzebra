@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.13  1995-09-29 14:01:39  adam
+ * Revision 1.14  1995-10-02 15:29:13  adam
+ * More logging in file_extract.
+ *
+ * Revision 1.13  1995/09/29  14:01:39  adam
  * Bug fixes.
  *
  * Revision 1.12  1995/09/28  14:22:56  adam
@@ -206,7 +209,7 @@ static void wordAdd (const RecWord *p)
 
 void file_extract (int cmd, const char *fname, const char *kname)
 {
-    int i;
+    int i, r;
     char ext[128];
     SYSNO sysno;
     char ext_res[128];
@@ -216,7 +219,6 @@ void file_extract (int cmd, const char *fname, const char *kname)
     struct recExtractCtrl extractCtrl;
     RecType rt;
 
-    logf (LOG_DEBUG, "%c %s k=%s", cmd, fname, kname);
     for (i = strlen(fname); --i >= 0; )
         if (fname[i] == '/')
         {
@@ -233,6 +235,7 @@ void file_extract (int cmd, const char *fname, const char *kname)
         return;
     if (!(rt = recType_byName (file_type)))
         return;
+    logf (LOG_DEBUG, "%c %s k=%s", cmd, fname, kname);
     file_info = dict_lookup (file_idx, kname);
     if (!file_info)
     {
@@ -256,6 +259,8 @@ void file_extract (int cmd, const char *fname, const char *kname)
     extractCtrl.add = wordAdd;
     key_sysno = sysno;
     key_cmd = cmd;
-    (*rt->extract)(&extractCtrl);
+    r = (*rt->extract)(&extractCtrl);
     fclose (inf);
+    if (r)
+        logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
 }
