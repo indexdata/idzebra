@@ -1,5 +1,5 @@
 <chapter id="examples">
- <!-- $Id: examples.xml,v 1.8 2002-10-10 14:27:18 heikki Exp $ -->
+ <!-- $Id: examples.xml,v 1.9 2002-10-16 20:33:31 mike Exp $ -->
  <title>Example Configurations</title>
 
  <sect1>
@@ -106,7 +106,7 @@
    <screen>
     $ yaz-client tcp:@:9999
     Connecting...Ok.
-    Z&gt; find @attr 1=/GENUS/MEANING @and lizard earthquakes
+    Z&gt; find @attr 1=/GENUS/SPECIES/AUTHOR/@name Wedel
     Number of hits: 1
     Z&gt; format xml
     Z&gt; show 1
@@ -139,9 +139,88 @@
   </para>
  </sect1>
 
- <sect1 id="example2">
-  <title>Example 2: Supporting Z39.50 Searches</title>
 
+ <sect1 id="example2">
+  <title>Example 2: Supporting Interoperable Searches</title>
+
+  <para>
+   The problem with the previous example is that you need to know the
+   structure of the documents in order to find them.  For example,
+   when we wanted to know the genera for which Matt Wedel is an
+   author, we had to formulate a complex XPath 
+   <literal>1=/GENUS/SPECIES/AUTHOR/@name</literal>
+   which embodies the knowledge that author names are specified in the
+   <literal>name</literal> attribute of the
+   <literal>&lt;AUTHOR&gt;</literal> element,
+   which is inside the
+   <literal>&lt;SPECIES&gt;</literal> element,
+   which in turn is inside the top-level
+   <literal>&lt;GENUS&gt;</literal> element.
+  </para>
+  <para>
+   This is bad not just because it requires a lot of typing, but more
+   significantly because it ties searching semantics to the physical
+   structure of the searched records.  You can't use the same search
+   specification to search two databases if their internal
+   representations are different.  Consider an alternative dinosaur
+   database in which the records have author names specified
+   inside an <literal>&lt;authorName&gt;</literal> element directly
+   inside a top-level <literal>&lt;taxon&gt;</literal> element: then
+   you'd need to search for them using
+   <literal>1=/taxon/authorName</literal>
+  </para>
+  <para>
+   How, then, can we build broadcasting Information Retrieval
+   applications that look for records in many different databases?
+   The Z39.50 protocol offers a powerful and general solution to this:
+   abstract ``access points''.  In the Z39.50 model, an access point
+   is simply a point at which searches can be directed.  Nothing is
+   said about implementation: in a given database, an access point
+   might be implemented as an index, a path into physical records, an
+   algorithm for interrogating relational tables or whatever works.
+   The key point is that the semantics of an access point are fixed
+   and well defined.
+  </para>
+  <para>
+   For convenience, access points are gathered into <define>attribute
+   sets</define>.  For example, the BIB-1 attribute set is supposed to
+   contain bibliographic access points such as author, title, subject
+   and ISBN; the GEO attribute set contains access points pertaining
+   to geospatial information (bounding box, ###, etc.); the CIMI
+   attribute set contains access points to do with museum collections
+   (provenance, inscriptions, etc.)
+  </para>
+  <para>
+   In practice, the BIB-1 attribute set has tended to be a dumping
+   ground for all sorts of access points, so that, for example, it
+   includes some geospatial access points as well as strictly
+   bibliographic ones.  Nevertheless, the key point is that this model
+   allows a layer of abstraction over the physical representation of
+   records in databases.
+  </para>
+  <para>
+   In the BIB-1 attribute set, an author search is represented by
+   access point 1003.  (See
+   <ulink url="###bib1-semantics"/>)
+   So we need to configure our dinosaur database so that searches for
+   BIB-1 access point 1003 look the 
+   <literal>name</literal> attribute of the
+   <literal>&lt;AUTHOR&gt;</literal> element,
+   inside the
+   <literal>&lt;SPECIES&gt;</literal> element,
+   inside the top-level
+   <literal>&lt;GENUS&gt;</literal> element.
+  </para>
+  <para>
+   This is a two-step process.  First, we need to tell Zebra that we
+   want to support the BIB-1 attribute set.  Then we need to tell it
+   which elements of its record pertain to access point 1003.
+  </para>
+ </sect1>
+</chapter>
+
+
+<!--
   <para>
    You may have noticed as <literal>zebraidx</literal> was building
    the database that it issued a warning, which we ignored at the
@@ -150,10 +229,9 @@
     $ zebraidx update records
     00:45:46-08/10: ../../index/zebraidx(5016) [warn] records/genera.xml:0 Couldn't open GENUS.abs [No such file or directory]
    </screen>
-   <!-- FIXME ### This needs more text -->
+   FIXME ### This needs more text
   </para>
- </sect1>
-</chapter>
+-->
 
 <!--
 
@@ -162,7 +240,7 @@
      The master configuration file, <literal>zebra.cfg</literal>,
      which is as short and simple as it can be:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.8 2002-10-10 14:27:18 heikki Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.9 2002-10-16 20:33:31 mike Exp $
 	# Bare-bones master configuration file for Zebra
 	profilePath: .:../../tab:../../../yaz/tab
      </screen>
@@ -179,7 +257,7 @@
      The BIB-1 attribute set configuration file,
      <literal>bib1.att</literal>, which is also as short as possible:
      <screen>
-	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.8 2002-10-10 14:27:18 heikki Exp $
+	# $Header: /home/cvsroot/idis/doc/examples.xml,v 1.9 2002-10-16 20:33:31 mike Exp $
 	# Bare-bones BIB-1 attribute set file for Zebra
 	reference Bib-1
      </screen>
