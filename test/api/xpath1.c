@@ -1,5 +1,5 @@
-/* $Id: xpath1.c,v 1.2 2004-11-19 10:27:16 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: xpath1.c,v 1.3 2004-12-02 11:28:20 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -41,8 +41,8 @@ int main(int argc, char **argv)
         0};
 
     zs = start_up("zebraxpath.cfg", argc, argv);
-    zh = zebra_open (zs);
-    init_data(zh,myrec);
+    zh = zebra_open(zs);
+    init_data(zh, myrec);
 
     do_query(__LINE__,zh, "@attr 1=/sgml/tag before", 0);
     do_query(__LINE__,zh, "@attr 1=/sgml/tag inside", 1);

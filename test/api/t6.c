@@ -1,5 +1,5 @@
-/* $Id: t6.c,v 1.5 2004-10-29 13:02:39 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: t6.c,v 1.6 2004-12-02 11:28:20 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -24,14 +24,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "testlib.h"
 
-	
 int main(int argc, char **argv)
 {
     int i;
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open (zs);
+    ZebraHandle zh = zebra_open(zs);
 
-    
     srand(17);
     
     zebra_select_database(zh, "Default");
@@ -62,9 +60,9 @@ int main(int argc, char **argv)
 	strcat(rec_buf, "</Control-Identifier></gils>");
 	zebra_add_record (zh, rec_buf, strlen(rec_buf));
 
-	zebra_end_trans (zh);
+	zebra_end_trans(zh);
 	zebra_close(zh);
     }
 
-    return close_down(0 /*zh*/ ,zs,0);
+    return close_down(0 /*zh*/, zs, 0);
 }

@@ -1,5 +1,5 @@
-/* $Id: t2.c,v 1.14 2004-10-29 13:02:39 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: t2.c,v 1.15 2004-12-02 11:28:20 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -31,10 +31,10 @@ const char *myrec[] = {
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open (zs);
+    ZebraHandle  zh = zebra_open(zs);
 
-    init_data(zh,myrec);
+    init_data(zh, myrec);
     do_query(__LINE__,zh, "@attr 1=4 my", 1);
 
-    return close_down(zh,zs,0);
+    return close_down(zh, zs, 0);
 }

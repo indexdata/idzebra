@@ -1,5 +1,5 @@
-/* $Id: t8.c,v 1.5 2004-10-29 13:02:39 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: t8.c,v 1.6 2004-12-02 11:28:20 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -24,8 +24,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "testlib.h"
 
-
-	
 const char *recs[] = {
         "<gils>\n"
         "  <title>My title</title>\n"
@@ -62,7 +60,7 @@ const char *recs[] = {
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up("zebra8.cfg", argc, argv);
-    ZebraHandle  zh = zebra_open (zs);
+    ZebraHandle zh = zebra_open (zs);
 
     init_data(zh, recs);
 
@@ -93,5 +91,5 @@ int main(int argc, char **argv)
     /* N=41 and N=49 get only rec2 */
     Q( "@attr 2=3 @attr gils 1=2040 @attr 4=109 \"41 49\" ",1);
 
-    return close_down(zh,zs,0);
+    return close_down(zh, zs, 0);
 }

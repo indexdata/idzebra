@@ -1,7 +1,5 @@
-
-
-/* $Id: xpath5.c,v 1.3 2004-11-05 17:44:32 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: xpath5.c,v 1.4 2004-12-02 11:28:20 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -62,8 +60,8 @@ const char *recs[] = {
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up("zebraxpath.cfg", argc, argv);
-    ZebraHandle zh = zebra_open (zs);
-    init_data(zh,recs);
+    ZebraHandle zh = zebra_open(zs);
+    init_data(zh, recs);
 
 //     yaz_log_init_level(LOG_ALL);
 

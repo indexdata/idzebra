@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.9 2004-10-29 13:02:39 heikki Exp $
+/* $Id: t5.c,v 1.10 2004-12-02 11:28:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -33,9 +33,9 @@ const char *myrec[] = {
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open (zs);
+    ZebraHandle zh = zebra_open(zs);
 
-    init_data(zh,myrec);
+    init_data(zh, myrec);
 
     do_query(__LINE__,zh, "@attr 1=4 my", 3);
     do_query(__LINE__,zh, "@attr 1=4 {my x}", 1);
@@ -60,5 +60,5 @@ int main(int argc, char **argv)
     /* exl=1 distance=2 order=0 relation=3 (=), known, unit=word */
     do_query(__LINE__,zh, "@prox 1 2 1 3 k 2 my x", 1);
 
-    return close_down(zh,zs,0);
+    return close_down(zh, zs, 0);
 }

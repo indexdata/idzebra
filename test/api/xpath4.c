@@ -1,7 +1,5 @@
-
-
-/* $Id: xpath4.c,v 1.4 2004-11-05 18:08:06 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: xpath4.c,v 1.5 2004-12-02 11:28:20 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -89,13 +87,13 @@ const char *myrec[] = {
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up("zebraxpath.cfg", argc, argv);
-    ZebraHandle zh = zebra_open (zs);
+    ZebraHandle zh = zebra_open(zs);
 
 #if 0
     yaz_log_init_level( yaz_log_mask_str_x("xpath4,rsbetween", LOG_DEFAULT_LEVEL));
 #endif
 
-    init_data(zh,myrec);
+    init_data(zh, myrec);
 
 #define q(qry,hits) do_query(__LINE__,zh,qry,hits)
 

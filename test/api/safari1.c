@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.1 2004-11-29 21:55:28 adam Exp $
+/* $Id: safari1.c,v 1.2 2004-12-02 11:28:20 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     zint ids[2];
     ZebraService zs = start_up("safari.cfg", argc, argv);
     
-    ZebraHandle  zh = zebra_open (zs);
+    ZebraHandle zh = zebra_open(zs);
 
     init_data(zh, myrec);
     do_query(__LINE__, zh, "@attr 1=1016 the", 1);

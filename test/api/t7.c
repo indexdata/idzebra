@@ -1,4 +1,4 @@
-/* $Id: t7.c,v 1.4 2004-10-29 13:02:39 heikki Exp $
+/* $Id: t7.c,v 1.5 2004-12-02 11:28:20 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -51,12 +51,11 @@ int main(int argc, char **argv)
           yaz_sort_spec (odr_output, "@attr 1=4 id");
     int hits;
 
-    init_data(zh,recs);
+    init_data(zh, recs);
 
-
-    zebra_begin_trans (zh, 0);
+    zebra_begin_trans(zh, 0);
         
-    zebra_search_RPN (zh, odr_input, query, setname1, &hits);
+    zebra_search_RPN(zh, odr_input, query, setname1, &hits);
 
     rc=zebra_sort(zh, odr_output, 1, &setname1, setname2, spec, &status);
     if (rc) 
@@ -72,17 +71,17 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    zebra_end_trans (zh);
+    zebra_end_trans(zh);
     yaz_pqf_destroy(parser);
 
     /*
      zebra_deleleResultSet(zh, Z_DeleteRequest_list,
                           1, &setnamep, &status);
     */  
-    odr_destroy (odr_input);
-    odr_destroy (odr_output);
+    odr_destroy(odr_input);
+    odr_destroy(odr_output);
 
-    zebra_commit (zh);
+    zebra_commit(zh);
 
-    return close_down(zh,zs,0);
+    return close_down(zh, zs, 0);
 }

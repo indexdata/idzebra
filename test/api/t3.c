@@ -1,5 +1,5 @@
-/* $Id: t3.c,v 1.12 2004-10-29 13:02:39 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: t3.c,v 1.13 2004-12-02 11:28:20 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -35,9 +35,9 @@ int main(int argc, char **argv)
 {
     int i;
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open (zs);
+    ZebraHandle zh = zebra_open(zs);
 
-    init_data(zh,myrec);
+    init_data(zh, myrec);
 
     for (i = 0; i<4; i++)
     {
@@ -64,17 +64,17 @@ int main(int argc, char **argv)
         yaz_pqf_destroy(parser);
 #if 0
         /*FIXME Why is this disabled ??? */
-        zebra_records_retrieve (zh, odr_output, setname, 0,
-                                VAL_TEXT_XML, 1, &retrievalRecord);
+        zebra_records_retrieve(zh, odr_output, setname, 0,
+			       VAL_TEXT_XML, 1, &retrievalRecord);
 #endif
 #if 1
         zebra_deleleResultSet(zh, Z_DeleteRequest_list,
                               1, &setnamep, &status);
 #endif
-        odr_destroy (odr_input);
-        odr_destroy (odr_output);
+        odr_destroy(odr_input);
+        odr_destroy(odr_output);
     }
-    zebra_commit (zh);
+    zebra_commit(zh);
 
-    return close_down(zh,zs,0);
+    return close_down(zh, zs, 0);
 }

@@ -1,6 +1,6 @@
 
-/* $Id: xpath3.c,v 1.1 2004-10-29 14:16:22 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: xpath3.c,v 1.2 2004-12-02 11:28:20 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -40,8 +40,8 @@ const char *myrec[] = {
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up("zebraxpath.cfg", argc, argv);
-    ZebraHandle zh = zebra_open (zs);
-    init_data(zh,myrec);
+    ZebraHandle zh = zebra_open(zs);
+    init_data(zh, myrec);
 
 #define q(qry,hits) do_query(__LINE__,zh,qry,hits)
 

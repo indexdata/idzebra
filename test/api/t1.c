@@ -1,5 +1,5 @@
-/* $Id: t1.c,v 1.10 2004-10-29 13:02:39 heikki Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: t1.c,v 1.11 2004-12-02 11:28:20 adam Exp $
+   Copyright (C) 2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -28,7 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open (zs);
+    ZebraHandle  zh = zebra_open(zs);
     
-    return close_down(zh,zs,0);
+    return close_down(zh, zs, 0);
 }
