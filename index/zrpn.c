@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.33  1995-11-01 13:58:28  quinn
+ * Revision 1.34  1995-11-16 17:00:56  adam
+ * Better logging of rpn query.
+ *
+ * Revision 1.33  1995/11/01  13:58:28  quinn
  * Moving data1 to yaz/retrieval
  *
  * Revision 1.32  1995/10/27  14:00:11  adam
@@ -135,45 +138,6 @@ int index_word_prefix_map (char *string, oid_value attrSet, int attrUse,
     logf (LOG_DEBUG, "ord=%d", attp->attset_ordinal);
     return index_word_prefix (string, attp->attset_ordinal,
                               attp->local_attribute, basename);
-}
-
-/*
- * attr_print: log attributes
- */
-static void attr_print (Z_AttributesPlusTerm *t)
-{
-    int of, i;
-    for (of = 0; of < t->num_attributes; of++)
-    {
-        Z_AttributeElement *element;
-        element = t->attributeList[of];
-
-        switch (element->which) 
-        {
-        case Z_AttributeValue_numeric:
-            logf (LOG_DEBUG, "attributeType=%d value=%d", 
-                  *element->attributeType,
-                  *element->value.numeric);
-            break;
-        case Z_AttributeValue_complex:
-            logf (LOG_DEBUG, "attributeType=%d complex", 
-                  *element->attributeType);
-            for (i = 0; i<element->value.complex->num_list; i++)
-            {
-                if (element->value.complex->list[i]->which ==
-                    Z_StringOrNumeric_string)
-                    logf (LOG_DEBUG, "   string: '%s'",
-                          element->value.complex->list[i]->u.string);
-                else if (element->value.complex->list[i]->which ==
-                         Z_StringOrNumeric_numeric)
-                    logf (LOG_DEBUG, "   numeric: '%d'",
-                          *element->value.complex->list[i]->u.numeric);
-            }
-            break;
-        default:
-            assert (0);
-        }
-    }
 }
 
 typedef struct {
@@ -741,7 +705,6 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                 break;
             }
         }
-        logf (LOG_DEBUG, "max_pos = %d", max_pos);
         if (max_pos <= strlen(basenames[base_no]))
         {
             zi->errCode = 109; /* Database unavailable */
@@ -1218,12 +1181,13 @@ int rpn_search (ZServerInfo *zi,
     oident *attrset;
     oid_value attributeSet;
 
+    zlog_rpn (rpn);
+
     zi->errCode = 0;
     zi->errString = NULL;
-    
+
     attrset = oid_getentbyoid (rpn->attributeSetId);
     attributeSet = attrset->value;
-
     rset = rpn_search_structure (zi, rpn->RPNStructure, attributeSet,
                                  num_bases, basenames);
     if (!rset)

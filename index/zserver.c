@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.22  1995-11-16 15:34:55  adam
+ * Revision 1.23  1995-11-16 17:00:56  adam
+ * Better logging of rpn query.
+ *
+ * Revision 1.22  1995/11/16  15:34:55  adam
  * Uses new record management system in both indexer and server.
  *
  * Revision 1.21  1995/11/01  16:25:52  quinn
@@ -148,9 +151,12 @@ bend_searchresult *bend_search (void *handle, bend_searchrequest *q, int *fd)
     r.errstring = 0;
     r.hits = 0;
 
+
     odr_reset (server_info.odr);
     server_info.errCode = 0;
     server_info.errString = NULL;
+
+    logf (LOG_LOG, "ResultSet '%s'", q->setname);
     switch (q->query->which)
     {
     case Z_Query_type_1:

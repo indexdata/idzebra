@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.13  1995-11-16 15:34:56  adam
+ * Revision 1.14  1995-11-16 17:00:57  adam
+ * Better logging of rpn query.
+ *
+ * Revision 1.13  1995/11/16  15:34:56  adam
  * Uses new record management system in both indexer and server.
  *
  * Revision 1.12  1995/10/27  14:00:12  adam
@@ -97,3 +100,4 @@ ZServerSet *resultSetGet (ZServerInfo *zi, const char *name);
 ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
                                     int num, int *positions);
 void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num);
+void zlog_rpn (Z_RPNQuery *rpn);
