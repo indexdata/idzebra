@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.h,v $
- * Revision 1.9  1998-08-07 15:07:15  adam
+ * Revision 1.10  1998-10-15 13:09:31  adam
+ * Minor changes.
+ *
+ * Revision 1.9  1998/08/07 15:07:15  adam
  * Fixed but in cf_commit_flat.
  *
  * Revision 1.8  1996/04/18 16:02:56  adam
@@ -41,13 +44,15 @@
 
 #define HASH_BUCKET 15
 
+struct CFile_ph_bucket {     /* structure on disc */
+    int no[HASH_BUCKET];     /* block number in original file */
+    int vno[HASH_BUCKET];    /* block number in shadow file */
+    int this_bucket;         /* this bucket number */
+    int next_bucket;         /* next bucket number */
+};
+
 struct CFile_hash_bucket {
-    struct CFile_ph_bucket {     /* structure on disc */
-        int no[HASH_BUCKET];     /* block number in original file */
-        int vno[HASH_BUCKET];    /* block number in shadow file */
-        int this_bucket;         /* this bucket number */
-        int next_bucket;         /* next bucket number */
-    } ph;
+    struct CFile_ph_bucket ph;
     int dirty;
     struct CFile_hash_bucket *h_next, **h_prev;
     struct CFile_hash_bucket *lru_next, *lru_prev;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.22  1998-10-13 20:07:22  adam
+ * Revision 1.23  1998-10-15 13:09:29  adam
+ * Minor changes.
+ *
+ * Revision 1.22  1998/10/13 20:07:22  adam
  * Changed some log messages.
  *
  * Revision 1.21  1998/08/24 17:29:52  adam
@@ -129,7 +132,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
 {
     char path[1024];
     int i;
-    CFile cf = xmalloc (sizeof(*cf));
+    CFile cf = (CFile) xmalloc (sizeof(*cf));
     int hash_bytes;
    
     cf->rmf = mf; 
