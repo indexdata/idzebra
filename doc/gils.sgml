@@ -1,24 +1,25 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: gils.sgml,v 1.3 1996-05-09 09:59:42 quinn Exp $
+  $Id: gils.sgml,v 1.4 1996-05-13 13:25:51 quinn Exp $
 -->
 
 <article>
 <title>Serving GILS Records with Zebra
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.3 $
+<date>$Revision: 1.4 $
 <abstract>
 This document explains how to set up a simple database of Government
 Information Locator Records using the Zebra retrieval engine and
-Z39.50 server (version 1.0b1 or later).
+Z39.50 server (version 1.0a6 or later).
 </abstract>
 
 <sect>Introduction
 
 <p>
-Zebra is a powerful and versatile information management system,
-allowing you to construct arbitrarily complex record structures and managing
+Zebra is a powerful and versatile information management system
+which allows you to construct arbitrarily complex record structures
+and manage
 efficient, robust databases.
 
 Since the internal data modeling tools of Zebra are based on the
@@ -40,8 +41,8 @@ GILS-compliant database service.
 <p>
 The first step is to download the software. If you are using a WWW
 browser, you can point it at the Zebra distribution archive at
-<htmlurl url="http://www.indexdata.dk/zebra.html"
-name="http://www.indexdata.dk/zebra.html">, and follow the link named
+<tt>&lt;<htmlurl url="http://www.indexdata.dk/zebra.html"
+name="http://www.indexdata.dk/zebra.html">&gt;</tt>, and follow the link named
 <it/Download the latest version of the software (xxx)/, where <it/xxx/
 is the current version of Zebra.
 
@@ -94,7 +95,7 @@ held responsible for their contents.</it>
 
 If you <tt/cd/ to the <tt/test/ directory, the first thing to notice
 is the file <tt/zebra.cfg/. There has to be a file like this present
-whenever you use Zebra - it establishes various settings and defaults,
+whenever you run Zebra - it establishes various settings and defaults,
 and we'll return to its contents below (a detailed
 description is found in the general Zebra documentation file).
 
@@ -104,7 +105,10 @@ back to them, too.
 The first order of business is to index the sample records, and create
 the access files required by the Z39.50 server. To do this, position
 yourself in the <tt/test/ directory, and type the command
-<tt>../index/zebraidx update records</tt>.
+
+<tscreen><verb>
+$ ../index/zebraidx update records
+</verb></tscreen>
 
 The indexing program will respond with a stream of control
 information, and when it completes, the database is ready. To start
@@ -122,7 +126,10 @@ also use the simple demonstration client which is included with Zebra
 itself. To do this, start a new session on your machine (or put the
 server in the background). Change to the directory <tt>yaz/client</tt>
 under the main Zebra distribution directory. Now execute the command
-<tt>./client tcp:localhost:9999</tt>.
+
+<tscreen><verb>
+$ ./client tcp:localhost:9999
+</verb></tscreen>
 
 If all went well, the client will tell you that it has established an
 association with your test server. To test it, try out these commands:
@@ -183,7 +190,7 @@ dashes (-). Hence, <tt/local-subject-index/ is equivalent to
 It is useful to look at the records in the <tt>test/records</tt> as
 examples of how SGML-formatted GILS record can look. Note that
 whitespace is generally ignored, so you can choose whatever layout of
-your records suits you best.
+your records that suits you best.
 
 <sect>The Zebra Configuration File
 
@@ -192,7 +199,7 @@ As mentioned, the Zebra indexer and server always look for the file
 <tt/zebra.cfg/ in their current working directory (unless they are
 told to look for it elsewhere with the <tt/-c/ option). The example
 file in the <tt/test/ directory represents all but the bare minimum
-for such a file. While it may seem daunting at first, we find the
+for such a file. We find the
 following to be a powerful setup for a GILS-like database (everything
 preceded by (&num;) is ignored by the software):
 
@@ -274,7 +281,7 @@ path of the directory followed by a colon (:), followed by the maximum
 amounts of megabytes (M) or kilobytes (K) of disk space that Zebra is
 allowed to use in the given directory. If you specify more than one
 directory:size combination <it/on the same line/, Zebra will fill up
-each directory, one at a time. This feature is essential if your
+each directory from left to right. This feature is essential if your
 database is so large that the registers cannot fit into a single
 partition of your disk.
 
@@ -319,7 +326,7 @@ server up and running, you may want to read the description of the
 <tt/zebra.cfg/ file in the general documentation, to set up additional
 defaults for database names, etc.
 
-If you copy one of thse files, you should be careful to update the
+If you copy one of these files, you should be careful to update the
 pathnames to reflect the setup of your own database. In particular, if
 you want to specify one or more directories for the register files
 and/or the shadow files, you should make sure that these directories
@@ -328,10 +335,20 @@ processes.
 
 You need to make sure that your GILS records are available, too. For
 small to medium-sized (say, less than 100,000 records) databases, it
-is frequently useful to maintain the records as individual files
-someplace in the file system. Zebra will, by default, access these
+is sometimes preferable to maintain the records as individual files
+somewhere in the file system. Zebra will, by default, access these
 files directly whenever the user requests to see a specific record.
 However, you can set up Zebra to maintain the database records in
 other ways, too. Consult the general documentation for details.
+
+Finally, you need to run <tt/zebraidx/ to create the index files, and
+start up the server, <tt/zebrasrv/ (the server can be run from the
+<tt/inetd/ if required), and you are in business.
+
+To access the data, you can use a dedicated Z39.50 client, or you can
+set up a WWW/Z39.50 gateway to allow common WWW browsers to search
+your data. CNIDR's
+Isite
+package includes a good, free gateway that you can experiment with.
 
 </article>
