@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1998, Index Data
+ * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.c,v $
- * Revision 1.3  1998-10-16 08:14:36  adam
+ * Revision 1.4  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.3  1998/10/16 08:14:36  adam
  * Updated record control system.
  *
  * Revision 1.2  1996/10/29 14:03:16  adam
@@ -44,6 +47,7 @@ struct recTypeEntry {
     RecType recType;
     struct recTypeEntry *next;
     int init_flag;
+    void *clientData;
 };
 
 struct recTypes {
@@ -66,7 +70,7 @@ void recTypes_destroy (RecTypes rts)
 
     for (rte = rts->entries; rte; rte = rte->next)
 	if (rte->init_flag)
-	    (*(rte->recType)->destroy)(rte->recType);
+	    (*(rte->recType)->destroy)(rte->clientData);
 }
 
 void recTypes_add_handler (RecTypes rts, RecType rt)
@@ -77,11 +81,13 @@ void recTypes_add_handler (RecTypes rts, RecType rt)
 
     rte->recType = rt;
     rte->init_flag = 0;
+    rte->clientData = 0;
     rte->next = rts->entries;
     rts->entries = rte;
 }
 
-RecType recType_byName (RecTypes rts, const char *name, char *subType)
+RecType recType_byName (RecTypes rts, const char *name, char *subType,
+			void **clientDataP)
 {
     struct recTypeEntry *rte;
     char *p;
@@ -101,8 +107,10 @@ RecType recType_byName (RecTypes rts, const char *name, char *subType)
 	    if (!rte->init_flag)
 	    {
 		rte->init_flag = 1;
-		(*(rte->recType)->init)(rte->recType);
+		rte->clientData =
+		    (*(rte->recType)->init)(rte->recType);
 	    }
+	    *clientDataP = rte->clientData;
 	    return rte->recType;
 	}
     return 0;

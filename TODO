@@ -1,6 +1,4 @@
-Zebra TODO $Id: TODO,v 1.6 1998-03-05 08:45:11 adam Exp $
-
-Make regx-filter thread safe.
+Zebra TODO $Id: TODO,v 1.7 1999-05-20 12:57:18 adam Exp $
 
 Size of sort entries should be configurable.
 
@@ -14,9 +12,6 @@ Configurable default search attributes.
 
 Better ranking in searches. Admin should be able specify initial
  weight to certain fields.
-
-Explain support - including d1 to grs (d1_grs.c) in YAZ; Zebra
- to auto-generate explain information depending on data1 system.
 
 ISAMC optimization: indirect block with pointers to all blocks
  in chain. The initial block should include the count as well.

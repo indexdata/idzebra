@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.26  1999-03-02 16:15:44  quinn
+ * Revision 1.27  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.26  1999/03/02 16:15:44  quinn
  * Added "tagsysno" and "tagrank" directives to zebra.cfg.
  *
  * Revision 1.25  1999/02/18 15:01:26  adam
@@ -187,19 +190,22 @@
 
 #define GRS_MAX_WORD 512
 
-static data1_node *read_grs_type (struct grs_read_info *p, const char *type)
+struct grs_handler {
+    RecTypeGrs type;
+    void *clientData;
+    int initFlag;
+    struct grs_handler *next;
+};
+
+struct grs_handlers {
+    struct grs_handler *handlers;
+};
+
+static data1_node *read_grs_type (struct grs_handlers *h,
+				  struct grs_read_info *p, const char *type)
 {
-    static struct {
-        char *type;
-        data1_node *(*func)(struct grs_read_info *p);
-    } tab[] = {
-        { "sgml",  grs_read_sgml },
-        { "regx",  grs_read_regx },
-        { "marc",  grs_read_marc },
-        { NULL, NULL }
-    };
+    struct grs_handler *gh = h->handlers;
     const char *cp = strchr (type, '.');
-    int i;
 
     if (cp == NULL || cp == type)
     {
@@ -208,20 +214,62 @@ static data1_node *read_grs_type (struct grs_read_info *p, const char *type)
     }
     else
         strcpy (p->type, cp+1);
-    for (i=0; tab[i].type; i++)
+    for (gh = h->handlers; gh; gh = gh->next)
     {
-        if (!memcmp (type, tab[i].type, cp-type))
-            return (tab[i].func)(p);
+        if (!memcmp (type, gh->type->type, cp-type))
+	{
+	    data1_node *node;
+	    if (!gh->initFlag)
+	    {
+		gh->initFlag = 1;
+		gh->clientData = (*gh->type->init)();
+	    }
+	    p->clientData = gh->clientData;
+            node = (gh->type->read)(p);
+	    gh->clientData = p->clientData;
+	    return node;
+	}
     }
     return NULL;
 }
 
-static void grs_init(RecType recType)
+static void grs_add_handler (struct grs_handlers *h, RecTypeGrs t)
 {
+    struct grs_handler *gh = malloc (sizeof(*gh));
+    gh->next = h->handlers;
+    h->handlers = gh;
+    gh->initFlag = 0;
+    gh->clientData = 0;
+    gh->type = t;
 }
 
-static void grs_destroy(RecType recType)
+static void *grs_init(RecType recType)
 {
+    struct grs_handlers *h = malloc (sizeof(*h));
+    h->handlers = 0;
+
+    grs_add_handler (h, recTypeGrs_sgml);
+    grs_add_handler (h, recTypeGrs_regx);
+#if HAVE_TCL_H
+    grs_add_handler (h, recTypeGrs_tcl);
+#endif
+    grs_add_handler (h, recTypeGrs_marc);
+    return h;
+}
+
+static void grs_destroy(void *clientData)
+{
+    struct grs_handlers *h = clientData;
+    struct grs_handler *gh = h->handlers, *gh_next;
+    while (gh)
+    {
+	gh_next = gh->next;
+	if (gh->initFlag)
+	    (*gh->type->destroy)(gh->clientData);
+	free (gh);
+	gh = gh_next;
+    }
+    free (h);
 }
 
 static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
@@ -349,13 +397,14 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
     return dumpkeys(n, p, 0);
 }
 
-static int grs_extract(struct recExtractCtrl *p)
+static int grs_extract(void *clientData, struct recExtractCtrl *p)
 {
     data1_node *n;
     NMEM mem;
     struct grs_read_info gri;
     oident oe;
     int oidtmp[OID_SIZE];
+    struct grs_handlers *h = clientData;
 
     mem = nmem_create (); 
     gri.readf = p->readf;
@@ -367,7 +416,7 @@ static int grs_extract(struct recExtractCtrl *p)
     gri.mem = mem;
     gri.dh = p->dh;
 
-    n = read_grs_type (&gri, p->subType);
+    n = read_grs_type (h, &gri, p->subType);
     if (!n)
         return -1;
 
@@ -461,7 +510,7 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
     }
 }
 
-static int grs_retrieve(struct recRetrieveCtrl *p)
+static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 {
     data1_node *node = 0, *onode = 0;
     data1_node *dnew;
@@ -470,6 +519,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     NMEM mem;
     struct grs_read_info gri;
     char *tagname;
+    struct grs_handlers *h = clientData;
     
     mem = nmem_create();
     gri.readf = p->readf;
@@ -482,7 +532,7 @@ static int grs_retrieve(struct recRetrieveCtrl *p)
     gri.dh = p->dh;
 
     logf (LOG_DEBUG, "grs_retrieve");
-    node = read_grs_type (&gri, p->subType);
+    node = read_grs_type (h, &gri, p->subType);
     if (!node)
     {
 	p->diagnostic = 14;

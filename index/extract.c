@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.93  1999-05-15 14:36:38  adam
+ * Revision 1.94  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.93  1999/05/15 14:36:38  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.92  1999/03/09 16:27:49  adam
@@ -1238,7 +1241,7 @@ void addSchema (struct recExtractCtrl *p, Odr_oid *oid)
 static int recordExtract (SYSNO *sysno, const char *fname,
                           struct recordGroup *rGroup, int deleteFlag,
                           struct file_read_info *fi,
-			  RecType recType, char *subType)
+			  RecType recType, char *subType, void *clientData)
 {
     RecordAttr *recordAttr;
     int r;
@@ -1290,7 +1293,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         logInfo.rGroup = rGroup;
         log_event_start (recordLogPreamble, &logInfo);
 
-        r = (*recType->extract)(&extractCtrl);
+        r = (*recType->extract)(clientData, &extractCtrl);
 
         log_event_start (NULL, NULL);
 
@@ -1529,6 +1532,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
     struct recordGroup rGroupM;
     struct recordGroup *rGroup = &rGroupM;
     struct file_read_info *fi;
+    void *clientData;
 
     memcpy (rGroup, rGroupP, sizeof(*rGroupP));
    
@@ -1568,7 +1572,8 @@ int fileExtract (SYSNO *sysno, const char *fname,
     if (!*rGroup->recordType)
 	return 0;
     if (!(recType =
-	  recType_byName (rGroup->recTypes, rGroup->recordType, subType)))
+	  recType_byName (rGroup->recTypes, rGroup->recordType, subType,
+			  &clientData)))
     {
         logf (LOG_WARN, "No such record type: %s", rGroup->recordType);
         return 0;
@@ -1707,7 +1712,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
     {
         file_begin (fi);
         r = recordExtract (sysno, fname, rGroup, deleteFlag, fi,
-                           recType, subType);
+                           recType, subType, clientData);
     } while (r && !sysno && fi->file_more);
     file_read_stop (fi);
     if (fd != -1)

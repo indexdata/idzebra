@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isams.c,v $
- * Revision 1.2  1999-05-15 14:35:48  adam
+ * Revision 1.3  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.2  1999/05/15 14:35:48  adam
  * Minor changes.
  *
  * Revision 1.1  1999/05/12 13:08:06  adam
@@ -179,7 +182,7 @@ ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
 {
     ISAMS_PP pp = xmalloc (sizeof(*pp));
 
-    if (is->debug = 1)
+    if (is->debug > 1)
 	logf (LOG_LOG, "isams: isams_pp_open pos=%ld", (long) pos);
     pp->is = is;
     pp->decodeClientData = (*is->method->code_start)(ISAMC_DECODE);

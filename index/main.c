@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.64  1999-05-15 14:36:38  adam
+ * Revision 1.65  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.64  1999/05/15 14:36:38  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.63  1999/03/09 16:27:49  adam
@@ -549,6 +552,7 @@ int main (int argc, char **argv)
         else
             logf (LOG_WARN, "unknown option '-%s'", arg);
     }
+    recTypes_destroy (rGroupDef.recTypes);
     if (common_resource)
     {
         zebraIndexUnlock ();

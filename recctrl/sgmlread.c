@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: sgmlread.c,v $
- * Revision 1.5  1999-02-02 14:51:31  adam
+ * Revision 1.6  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.5  1999/02/02 14:51:31  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.4  1997/09/17 12:19:22  adam
@@ -26,7 +29,29 @@
 
 #include "grsread.h"
 
-data1_node *grs_read_sgml (struct grs_read_info *p)
+static data1_node *grs_read_sgml (struct grs_read_info *p)
 {
+    logf (LOG_LOG, "grs_read_sgml");
     return data1_read_record (p->dh, p->readf, p->fh, p->mem);
 }
+
+static void *grs_init_sgml()
+{
+    logf (LOG_LOG, "grs_init_gsml");
+    return 0;
+}
+
+static void grs_destroy_sgml(void *clientData)
+{
+    logf (LOG_LOG, "grs_destroy_sgml");
+}
+
+static struct recTypeGrs sgml_type = {
+    "sgml",
+    grs_init_sgml,
+    grs_destroy_sgml,
+    grs_read_sgml
+};
+
+RecTypeGrs recTypeGrs_sgml = &sgml_type;
+

@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1998, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.2 1998-10-28 15:20:50 adam Exp $
+# $Id: Makefile.in,v 1.3 1999-05-20 12:57:18 adam Exp $
 
 SHELL=/bin/sh
 
@@ -15,7 +15,8 @@ YAZLIB=../../yaz/lib/libyaz.a
 YAZINC=-I../../yaz/z39.50 -I../../yaz/include
 
 INCLUDE=-I../include $(YAZINC)
-DEFS=$(CDEFS) $(INCLUDE)
+TCL_INCLUDE=@TCL_INCLUDE@
+DEFS=$(CDEFS) $(INCLUDE) $(TCL_INCLUDE)
 LIB=../lib/recctrl.a
 PO=recctrl.o recgrs.o sgmlread.o regxread.o marcread.o rectext.o
 

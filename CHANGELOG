@@ -1,3 +1,8 @@
+Implemented new Tcl record filter -  use grs.tcl.<filter> to enable it.
+Zebra's configure script automatically attempts to locate Tcl. For
+manual Tcl configuration use option --with-tclconfig=<path> to specify
+where Tcl's library files are located.
+
 Implemented "compression" of Dictionary and ISAM system. Dictionary
 format HAS changed.
 

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: grsread.h,v $
- * Revision 1.5  1999-02-02 14:51:26  adam
+ * Revision 1.6  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.5  1999/02/02 14:51:26  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.4  1997/09/17 12:19:21  adam
@@ -28,6 +31,7 @@
 
 #include <data1.h>
 struct grs_read_info {
+    void *clientData;
     int (*readf)(void *, char *, size_t);
     off_t (*seekf)(void *, off_t);
     off_t (*tellf)(void *);
@@ -39,7 +43,15 @@ struct grs_read_info {
     data1_handle dh;
 };
 
-data1_node *grs_read_regx (struct grs_read_info *p);
-data1_node *grs_read_sgml (struct grs_read_info *p);
-data1_node *grs_read_marc (struct grs_read_info *p);
+typedef struct recTypeGrs {
+    char *type;
+    void *(*init)(void);
+    void (*destroy)(void *clientData);
+    data1_node *(*read)(struct grs_read_info *p);
+} *RecTypeGrs;
+
+extern RecTypeGrs recTypeGrs_sgml;
+extern RecTypeGrs recTypeGrs_regx;
+extern RecTypeGrs recTypeGrs_tcl;
+extern RecTypeGrs recTypeGrs_marc;
 #endif

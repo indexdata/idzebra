@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.8  1999-03-09 16:27:49  adam
+ * Revision 1.9  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.8  1999/03/09 16:27:49  adam
  * More work on SDRKit integration.
  *
  * Revision 1.7  1999/03/02 16:15:43  quinn
@@ -115,6 +118,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     char subType[128];
     struct fetch_control fc;
     RecordAttr *recordAttr;
+    void *clientData;
 
     rec = rec_get (zh->records, sysno);
     if (!rec)
@@ -130,7 +134,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     *basenamep = odr_malloc (stream, strlen(basename)+1);
     strcpy (*basenamep, basename);
 
-    if (!(rt = recType_byName (zh->recTypes, file_type, subType)))
+    if (!(rt = recType_byName (zh->recTypes, file_type, subType, &clientData)))
     {
         logf (LOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
 	return 14;
@@ -240,7 +244,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     retrieveCtrl.diagnostic = 0;
     retrieveCtrl.dh = zh->dh;
     retrieveCtrl.res = zh->res;
-    (*rt->retrieve)(&retrieveCtrl);
+    (*rt->retrieve)(clientData, &retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = retrieveCtrl.rec_buf;
     *rec_lenp = retrieveCtrl.rec_len;

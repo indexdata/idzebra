@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.9  1998-10-16 08:14:38  adam
+ * Revision 1.10  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.9  1998/10/16 08:14:38  adam
  * Updated record control system.
  *
  * Revision 1.8  1998/05/20 10:12:27  adam
@@ -67,11 +70,12 @@
 #include <zebrautl.h>
 #include "rectext.h"
 
-static void text_init (RecType recType)
+static void *text_init (RecType recType)
 {
+    return 0;
 }
 
-static void text_destroy (RecType recType)
+static void text_destroy (void *clientData)
 {
 }
 
@@ -114,7 +118,7 @@ void buf_close (struct buf_info *fi)
     xfree (fi);
 }
 
-static int text_extract (struct recExtractCtrl *p)
+static int text_extract (void *clientData, struct recExtractCtrl *p)
 {
     char w[512];
     RecWord recWord;
@@ -144,7 +148,7 @@ static int text_extract (struct recExtractCtrl *p)
     return 0;
 }
 
-static int text_retrieve (struct recRetrieveCtrl *p)
+static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
     int r, text_ptr = 0;
     static char *text_buf = NULL;

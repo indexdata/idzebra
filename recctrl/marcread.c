@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.6  1999-02-02 14:51:27  adam
+ * Revision 1.7  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.6  1999/02/02 14:51:27  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.5  1997/11/18 10:03:24  adam
@@ -285,3 +288,21 @@ data1_node *grs_read_marc (struct grs_read_info *p)
     }
     return res_root;
 } 
+
+static void *grs_init_marc()
+{
+    return 0;
+}
+
+static void grs_destroy_marc(void *clientData)
+{
+}
+
+static struct recTypeGrs marc_type = {
+    "marc",
+    grs_init_marc,
+    grs_destroy_marc,
+    grs_read_marc
+};
+
+RecTypeGrs recTypeGrs_marc = &marc_type;

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.28  1999-03-02 16:15:42  quinn
+ * Revision 1.29  1999-05-20 12:57:18  adam
+ * Implemented TCL filter. Updated recctrl system.
+ *
+ * Revision 1.28  1999/03/02 16:15:42  quinn
  * Added "tagsysno" and "tagrank" directives to zebra.cfg.
  *
  * Revision 1.27  1998/10/16 08:14:28  adam
@@ -174,12 +177,13 @@ typedef struct recType *RecType;
 
 struct recType
 {
-    char *name;                            /* Name of record type */
-    void (*init)(RecType recType);         /* Init function - called once  */
-    void (*destroy)(RecType recType);                  /* Destroy function */
-    int  (*extract)(struct recExtractCtrl *ctrl);      /* Extract proc     */
-    int  (*retrieve)(struct recRetrieveCtrl *ctrl);    /* Retrieve proc    */
-    void *clientData;                      /* data handle */
+    char *name;                           /* Name of record type */
+    void *(*init)(RecType recType);       /* Init function - called once */
+    void (*destroy)(void *clientData);    /* Destroy function */
+    int  (*extract)(void *clientData,
+		    struct recExtractCtrl *ctrl);   /* Extract proc */
+    int  (*retrieve)(void *clientData,
+		     struct recRetrieveCtrl *ctrl); /* Retrieve proc */
 };
 
 typedef struct recTypes *RecTypes;
@@ -188,7 +192,8 @@ RecTypes recTypes_init (data1_handle dh);
 void recTypes_destroy (RecTypes recTypes);
 void recTypes_default_handlers (RecTypes recTypes);
 
-RecType recType_byName (RecTypes rts, const char *name, char *subType);
+RecType recType_byName (RecTypes rts, const char *name, char *subType,
+			void **clientDataP);
 
 int grs_extract_tree(struct recExtractCtrl *p, data1_node *n);
 
