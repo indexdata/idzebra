@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1999, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.4 1999-05-20 12:57:18 adam Exp $
+# $Id: Makefile.in,v 1.5 1999-05-21 11:08:46 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -16,6 +16,10 @@ YAZLIB=../../yaz/lib/libyaz.a
 YAZINC=-I../../yaz/z39.50 -I../../yaz/include
 # If Yaz is compiled with mosi support uncomment and specify.
 #OSILIB=../../xtimosi/src/libmosi.a ../../yaz/lib/librfc.a
+
+# Tcl include files and libraries
+TCL_INCLUDE=@TCL_INCLUDE@
+TCL_LIB=@TCL_LIB@
 
 # Some systems have seperate socket libraries
 LIBS=@LIBS@

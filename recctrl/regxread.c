@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.23  1999-05-20 12:57:18  adam
+ * Revision 1.24  1999-05-21 11:08:46  adam
+ * Tcl filter attempts to read <filt>.tflt. Improvements to configure
+ * script so that it reads uninstalled Tcl source.
+ *
+ * Revision 1.23  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.22  1998/11/03 16:07:13  adam
@@ -685,10 +689,28 @@ int readFileSpec (struct lexSpec *spec)
     char *lineBuf;
     int lineSize = 512;
     int c, i, errors = 0;
-    FILE *spec_inf;
+    FILE *spec_inf = 0;
 
     lineBuf = xmalloc (1+lineSize);
-    logf (LOG_LOG, "reading regx filter %s.flt", spec->name);
+#if HAVE_TCL_H
+    if (spec->tcl_interp)
+    {
+	sprintf (lineBuf, "%s.tflt", spec->name);
+	spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh), lineBuf, "r");
+    }
+#endif
+    if (!spec_inf)
+    {
+	sprintf (lineBuf, "%s.flt", spec->name);
+	spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh), lineBuf, "r");
+    }
+    if (!spec_inf)
+    {
+        logf (LOG_ERRNO|LOG_WARN, "cannot read spec file %s", spec->name);
+        xfree (lineBuf);
+        return -1;
+    }
+    logf (LOG_LOG, "reading regx filter %s.flt", lineBuf);
     sprintf (lineBuf, "%s.flt", spec->name);
     if (!(spec_inf = yaz_path_fopen (data1_get_tabpath(spec->dh),
 				     lineBuf, "r")))
@@ -697,6 +719,10 @@ int readFileSpec (struct lexSpec *spec)
         xfree (lineBuf);
         return -1;
     }
+#if HAVE_TCL_H
+    if (spec->tcl_interp)
+	logf (LOG_LOG, "Tcl enabled");
+#endif
     spec->lineNo = 0;
     c = getc (spec_inf);
     while (c != EOF)

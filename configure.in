@@ -1,19 +1,21 @@
-dnl Zebra
-dnl (c) Index Data 1994-1999
-dnl See the file LICENSE for details.
-dnl $Id: configure.in,v 1.5 1999-05-20 12:57:18 adam Exp $
+# Zebra, Index Data Aps, 1994-1999
+# $Id: configure.in,v 1.6 1999-05-21 11:08:46 adam Exp $
+# See the file LICENSE.2 for details.
+#
 AC_INIT(include/zebraver.h)
-dnl ------ Substitutions
+# ------ Substitutions
 AC_SUBST(ODEFS)
 AC_SUBST(DEFS)
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
-dnl
-dnl ------ Checking programs
+#
+# ------ Checking programs
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+#
+# look for Tcl
 TCL_LIB=""
 TCL_INCLUDE=""
 tclconfig=NONE
@@ -27,8 +29,13 @@ fi
 if test -r ${tclconfig}/tclConfig.sh; then
 	AC_MSG_CHECKING(for Tcl)
 	. ${tclconfig}/tclConfig.sh
-	TCL_LIB="$TCL_LIB_SPEC $TCL_LIBS"
-	TCL_INCLUDE=-I${TCL_PREFIX}/include
+	if test -r ${tclconfig}/../generic/tcl.h; then
+		TCL_INCLUDE=-I${tclconfig}/../generic
+		TCL_LIB="$TCL_BUILD_LIB_SPEC $TCL_LIBS"
+ 	else
+		TCL_INCLUDE=-I${TCL_PREFIX}/include
+		TCL_LIB="$TCL_LIB_SPEC $TCL_LIBS"
+	fi
         SHLIB_CFLAGS=$TCL_SHLIB_CFLAGS
         SHLIB_LD=$TCL_SHLIB_LD
         SHLIB_SUFFIX=$TCL_SHLIB_SUFFIX
@@ -36,8 +43,8 @@ if test -r ${tclconfig}/tclConfig.sh; then
         AC_MSG_RESULT($TCL_VERSION)
 	ODEFS="-DHAVE_TCL_H=1"
 fi
-dnl
-dnl ----- Sockets
+#
+# sockets
 checkBoth=0
 AC_CHECK_FUNC(connect)
 if test "$ac_cv_func_connect" = "no"; then
@@ -49,15 +56,15 @@ if test "$checkBoth" = "1"; then
 	AC_CHECK_FUNC(accept, , [LIBS=$oldLibs])
 fi
 AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, main, [LIBS="$LIBS -lnsl"]))
-dnl
-dnl ------ tcpd
+#
+# tcpd wrapper
 AC_CHECK_LIB(wrap, main, [LIBS="$LIBS -lwrap"])
-dnl
-dnl ------ Headers
+# 
+# headers
 AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
 	AC_MSG_WARN(Your system doesn't seem to support ANSI C)
 fi
-dnl
-dnl ------ Makefiles
+#
+# makefiles
 AC_OUTPUT(Makefile util/Makefile bfile/Makefile dfa/Makefile dict/Makefile isam/Makefile isamc/Makefile recctrl/Makefile rset/Makefile index/Makefile)

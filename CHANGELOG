@@ -1,3 +1,6 @@
+Changed Tcl record filter so that it attemps to read  <filt>.tflt. If
+that fails, the filter reads the file <filt>.flt (regx style filter).
+
 Implemented new Tcl record filter -  use grs.tcl.<filter> to enable it.
 Zebra's configure script automatically attempts to locate Tcl. For
 manual Tcl configuration use option --with-tclconfig=<path> to specify
