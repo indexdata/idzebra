@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.56  1996-11-08 11:10:32  adam
+ * Revision 1.57  1996-11-11 13:38:02  adam
+ * Added proximity support in search.
+ *
+ * Revision 1.56  1996/11/08 11:10:32  adam
  * Buffers used during file match got bigger.
  * Compressed ISAM support everywhere.
  * Bug fixes regarding masking characters in queries.
@@ -903,6 +906,99 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
     return result;
 }
 
+static RSET rpn_proximity (RSET rset1, RSET rset2, int ordered,
+                           int exclusion, int relation, int distance)
+{
+    int i;
+    RSFD rsfd1, rsfd2;
+    int  more1, more2;
+    struct it_key buf1, buf2;
+    RSFD rsfd_result;
+    RSET result;
+    rset_temp_parms parms;
+    
+    rsfd1 = rset_open (rset1, RSETF_READ|RSETF_SORT_SYSNO);
+    more1 = rset_read (rset1, rsfd1, &buf1);
+    
+    rsfd2 = rset_open (rset2, RSETF_READ|RSETF_SORT_SYSNO);
+    more2 = rset_read (rset2, rsfd2, &buf2);
+
+    parms.key_size = sizeof (struct it_key);
+    result = rset_create (rset_kind_temp, &parms);
+    rsfd_result = rset_open (result, RSETF_WRITE|RSETF_SORT_SYSNO);
+   
+    logf (LOG_DEBUG, "rpn_proximity  excl=%d ord=%d rel=%d dis=%d",
+          exclusion, ordered, relation, distance);
+    while (more1 && more2)
+    {
+        int cmp = key_compare (&buf1, &buf2);
+        if (cmp < -1)
+            more1 = rset_read (rset1, rsfd1, &buf1);
+        else if (cmp > 1)
+            more2 = rset_read (rset2, rsfd2, &buf2);
+        else
+        {
+            int sysno = buf1.sysno;
+            int seqno[500];
+            int n = 0;
+
+            seqno[n++] = buf1.seqno;
+            while ((more1 = rset_read (rset1, rsfd1, &buf1)) &&
+                   sysno == buf1.sysno)
+                if (n < 500)
+                    seqno[n++] = buf1.seqno;
+            do
+            {
+                for (i = 0; i<n; i++)
+                {
+                    int diff = buf2.seqno - seqno[i];
+                    int excl = exclusion;
+                    if (!ordered && diff < 0)
+                        diff = -diff;
+                    logf (LOG_DEBUG, "l = %d r = %d", seqno[i], buf2.seqno);
+                    switch (relation)
+                    {
+                    case 1:      /* < */
+                        if (diff < distance)
+                            excl = !excl;
+                        break;
+                    case 2:      /* <= */
+                        if (diff <= distance)
+                            excl = !excl;
+                        break;
+                    case 3:      /* == */
+                        if (diff == distance)
+                            excl = !excl;
+                        break;
+                    case 4:      /* >= */
+                        if (diff >= distance)
+                            excl = !excl;
+                        break;
+                    case 5:      /* > */
+                        if (diff > distance)
+                            excl = !excl;
+                        break;
+                    case 6:      /* != */
+                        if (diff != distance)
+                            excl = !excl;
+                        break;
+                    }
+                    if (excl)
+                    {
+                        logf (LOG_DEBUG, " match");
+                        rset_write (result, rsfd_result, &buf2);
+                    }
+                }
+            } while ((more2 = rset_read (rset2, rsfd2, &buf2)) &&
+                      sysno == buf2.sysno);
+        }
+    }
+    rset_close (result, rsfd_result);
+    rset_close (rset1, rsfd1);
+    rset_close (rset2, rsfd2);
+    return result;
+}
+
 static RSET rpn_prox (RSET *rset, int rset_no)
 {
     int i;
@@ -1167,8 +1263,10 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
     RSET r = NULL;
     if (zs->which == Z_RPNStructure_complex)
     {
+        Z_Operator *zop = zs->u.complex->roperator;
         rset_bool_parms bool_parms;
         int soft = 0;
+         
 
         bool_parms.rset_l = rpn_search_structure (zi, zs->u.complex->s1,
                                                   attributeSet,
@@ -1190,7 +1288,7 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
         bool_parms.key_size = sizeof(struct it_key);
         bool_parms.cmp = key_compare;
 
-        switch (zs->u.complex->roperator->which)
+        switch (zop->which)
         {
         case Z_Operator_and:
             r = rset_create (soft ? rset_kind_sand:rset_kind_and, &bool_parms);
@@ -1201,8 +1299,30 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
         case Z_Operator_and_not:
             r = rset_create (soft ? rset_kind_snot:rset_kind_not, &bool_parms);
             break;
+        case Z_Operator_prox:
+            if (zop->u.prox->which != Z_ProxCode_known)
+            {
+                zi->errCode = 132;
+                return NULL;
+            }
+            if (*zop->u.prox->proximityUnitCode != Z_ProxUnit_word)
+            {
+                static char val[16];
+                zi->errCode = 132;
+                zi->errString = val;
+                sprintf (val, "%d", *zop->u.prox->proximityUnitCode);
+                return NULL;
+            }
+            r = rpn_proximity (bool_parms.rset_l, bool_parms.rset_r,
+                               *zop->u.prox->ordered,
+                               (!zop->u.prox->exclusion ? 0 :
+                                         *zop->u.prox->exclusion),
+                               *zop->u.prox->relationType,
+                               *zop->u.prox->distance);
+            break;
         default:
-            assert (0);
+            zi->errCode = 110;
+            return NULL;
         }
     }
     else if (zs->which == Z_RPNStructure_simple)
@@ -1220,12 +1340,14 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
         }
         else
         {
-            assert (0);
+            zi->errCode = 3;
+            return NULL;
         }
     }
     else
     {
-        assert (0);
+        zi->errCode = 3;
+        return NULL;
     }
     return r;
 }

@@ -1,3 +1,5 @@
+Implemented proximity operator in search.
+
 Bug fix: the path name buffers used by file match traversal routines
 have been extended to support long file names.
 

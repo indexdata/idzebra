@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.31 1996-11-08 14:17:24 adam Exp $
+  $Id: zebra.sgml,v 1.32 1996-11-11 13:37:49 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.31 $
+<date>$Revision: 1.32 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -946,10 +946,11 @@ the client. The maximum PDU size is negotiated down to a maximum of
 <sect2>Search
 
 <p>
-The supported query type are 1 and 101 All operators except PROXIMITY
-are currently supported. Queries can be arbitrarily complex. Named
-result sets are supported, and result sets can be used as operands
-with no limitations. Searches may span multiple databases.
+The supported query type are 1 and 101. All operators are currently
+supported except that only proximity units of type "word" are supported
+for the proximity operator. Queries can be arbitrarily complex. Named
+result sets are supported, and result sets can be used as operands with
+no limitations. Searches may span multiple databases.
 
 The server has full support for piggy-backed present requests (see
 also the following section).
