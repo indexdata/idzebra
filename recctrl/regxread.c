@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.50.2.1 2004-08-15 17:20:22 adam Exp $
+/* $Id: regxread.c,v 1.50.2.2 2005-03-11 20:45:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -32,6 +32,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "grsread.h"
 
 #if HAVE_TCL_H
+#define USE_NON_CONST
 #include <tcl.h>
 
 #if MAJOR_VERSION >= 8
