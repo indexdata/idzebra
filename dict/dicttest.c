@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.12  1994-10-03 17:23:03  adam
+ * Revision 1.13  1994-10-04 12:08:05  adam
+ * Some bug fixes and some optimizations.
+ *
+ * Revision 1.12  1994/10/03  17:23:03  adam
  * First version of dictionary lookup with regular expressions and errors.
  *
  * Revision 1.11  1994/09/28  13:07:09  adam
@@ -58,13 +61,6 @@ char *prog;
 static Dict dict;
 
 static int look_hits;
-
-static int lookup_handle (Dict_char *name)
-{
-    look_hits++;
-    printf ("%s\n", name);
-    return 0;
-}
 
 static int grep_handle (Dict_char *name, char *info)
 {
@@ -228,7 +224,7 @@ int main (int argc, char **argv)
                     else
                     {
                         look_hits = 0;
-                        dict_lookup_ec (dict, ipf_ptr, range, lookup_handle);
+                        dict_lookup_grep (dict, ipf_ptr, range, grep_handle);
                         if (look_hits)
                             no_of_hits++;
                         else
@@ -242,6 +238,13 @@ int main (int argc, char **argv)
         }
         fclose (ipf);
     }
+    if (grep_pattern)
+    {
+        if (range < 0)
+            range = 0;
+        log (LOG_LOG, "Grepping '%s'", grep_pattern);
+        dict_lookup_grep (dict, grep_pattern, range, grep_handle);
+    }
     if (rw)
     {
         log (LOG_LOG, "Insertions.... %d", no_of_iterations);
@@ -254,13 +257,6 @@ int main (int argc, char **argv)
         log (LOG_LOG, "Lookups....... %d", no_of_iterations);
         log (LOG_LOG, "No of hits.... %d", no_of_hits);
         log (LOG_LOG, "No of misses.. %d", no_of_misses);
-    }
-    if (grep_pattern)
-    {
-        if (range < 0)
-            range = 0;
-        log (LOG_LOG, "Grepping '%s'", grep_pattern);
-        dict_lookup_grep (dict, grep_pattern, range, grep_handle);
     }
     dict_close (dict);
     res_close (common_resource);

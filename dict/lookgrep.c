@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.1  1994-10-03 17:23:04  adam
+ * Revision 1.2  1994-10-04 12:08:07  adam
+ * Some bug fixes and some optimizations.
+ *
+ * Revision 1.1  1994/10/03  17:23:04  adam
  * First version of dictionary lookup with regular expressions and errors.
  *
  */
@@ -19,11 +22,13 @@
 
 typedef unsigned MatchWord;
 #define WORD_BITS 32
+#define MAX_LENGTH 1024
 
 typedef struct {
-    int n;           /* no of MatchWord needed */
-    int range;       /* max no. of errors */
-    MatchWord *Sc;   /* Mask Sc */
+  int n;                 /* no of MatchWord needed */
+  int range;             /* max no. of errors */
+  int fact;              /* (range+1)*n */
+  MatchWord *match_mask; /* match_mask */
 } MatchContext;
 
 #define INLINE 
@@ -32,17 +37,8 @@ static INLINE void set_bit (MatchContext *mc, MatchWord *m, int ch, int state)
 {
     int off = state & (WORD_BITS-1);
     int wno = state / WORD_BITS;
-
+  
     m[mc->n * ch + wno] |= 1<<off;
-}
-
-static INLINE void reset_bit (MatchContext *mc, MatchWord *m, int ch,
-                              int state)
-{
-    int off = state & (WORD_BITS-1);
-    int wno = state / WORD_BITS;
-
-    m[mc->n * ch + wno] &= ~(1<<off);
 }
 
 static INLINE MatchWord get_bit (MatchContext *mc, MatchWord *m, int ch,
@@ -57,31 +53,25 @@ static INLINE MatchWord get_bit (MatchContext *mc, MatchWord *m, int ch,
 static MatchContext *mk_MatchContext (DFA_states *dfas, int range)
 {
     MatchContext *mc = xmalloc (sizeof(*mc));
-    int i;
+    int s;
 
     mc->n = (dfas->no+WORD_BITS) / WORD_BITS;
     mc->range = range;
-    mc->Sc = xcalloc (sizeof(*mc->Sc) * 256 * mc->n, 1);
-    
-    for (i=0; i<dfas->no; i++)
-    {
-        int j;
-        DFA_state *state = dfas->sortarray[i];
+    mc->fact = (range+1)*mc->n;
+    mc->match_mask = xcalloc (mc->n, sizeof(*mc->match_mask));
 
-        for (j=0; j<state->tran_no; j++)
-        {
-            int ch;
-            int ch0 = state->trans[j].ch[0];
-            int ch1 = state->trans[j].ch[1];
-            assert (ch0 >= 0 && ch1 >= 0);
-            
-            for (ch = ch0; ch <= ch1; ch++)
-                set_bit (mc, mc->Sc, ch, i);
-        }
-    }
+    for (s = 0; s<dfas->no; s++)
+        if (dfas->sortarray[s]->rule_no)
+            set_bit (mc, mc->match_mask, 0, s);
     return mc;
 }
 
+static void rm_MatchContext (MatchContext **mc)
+{
+    xfree ((*mc)->match_mask);
+    xfree (*mc);
+    *mc = NULL;
+}
 
 static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
                    DFA_states *dfas, int ch)
@@ -89,14 +79,8 @@ static void mask_shift (MatchContext *mc, MatchWord *Rdst, MatchWord *Rsrc,
     int j, s = 0;
     MatchWord *Rsrc_p = Rsrc, mask;
 
-#if 1
     for (j = 0; j<mc->n; j++)
         Rdst[j] = 0;
-#else
-    Rdst[0] = 1;
-    for (j = 1; j<mc->n; j++)
-        Rdst[j] = 0;
-#endif
     while (1)
     {
         mask = *Rsrc_p++;
@@ -208,26 +192,28 @@ static void or (MatchContext *mc, MatchWord *Rdst,
         Rdst[i] = Rsrc1[i] | Rsrc2[i];
 }
 
-static int move (MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
+static INLINE int move (MatchContext *mc, MatchWord *Rj1, MatchWord *Rj,
                  Dict_char ch, DFA_states *dfas, MatchWord *Rtmp)
 {
     int d;
-    MatchWord *Rj_a = Rtmp;
-    MatchWord *Rj_b = Rtmp +   mc->n;
-    MatchWord *Rj_c = Rtmp + 2*mc->n;
+    MatchWord *Rtmp_2 = Rtmp + mc->n;
 
     mask_shift (mc, Rj1, Rj, dfas, ch);
     for (d = 1; d <= mc->range; d++)
     {
-        mask_shift (mc, Rj_b, Rj+d*mc->n, dfas, ch);    /* 1 */
+        or (mc, Rtmp, Rj, Rj1);                         /* 2,3 */
         
-        or (mc, Rj_a, Rj+(d-1)*mc->n, Rj1+(d-1)*mc->n); /* 2,3 */
+        shift (mc, Rtmp_2, Rtmp, dfas);
+
+        mask_shift (mc, Rtmp, Rj+mc->n, dfas, ch);      /* 1 */
+                
+        or (mc, Rtmp, Rtmp_2, Rtmp);                    /* 1,2,3*/
+
+        Rj1 += mc->n;
         
-        shift (mc, Rj_c, Rj_a, dfas);
-        
-        or (mc, Rj_a, Rj_b, Rj_c);                      /* 1,2,3*/
-        
-        or (mc, Rj1+d*mc->n, Rj_a, Rj+(d-1)*mc->n);     /* 1,2,3,4 */
+        or (mc, Rj1, Rtmp, Rj);                         /* 1,2,3,4 */
+
+        Rj += mc->n;
     }
     return 1;
 
@@ -239,7 +225,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                       int (*userfunc)(Dict_char *name, char *info),
                       Dict_char *prefix, DFA_states *dfas)
 {
-    int lo, hi;
+    int lo, hi, d;
     void *p;
     short *indxp;
     char *info;
@@ -248,6 +234,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
     lo = 0;
     hi = DICT_nodir(p)-1;
     indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));    
+
     while (lo <= hi)
     {
         if (indxp[-lo] > 0)
@@ -261,10 +248,9 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
             for (j=0; ; j++)
             {
                 Dict_char ch;
-                int s, d;
-                MatchWord *Rj0 =    Rj + j    *(1+mc->range)*mc->n;
-                MatchWord *Rj1 =    Rj + (j+1)*(1+mc->range)*mc->n;
-                MatchWord *Rj_tmp = Rj + (j+2)*(1+mc->range)*mc->n;
+                MatchWord *Rj0 =    Rj + j    *mc->fact;
+                MatchWord *Rj1 =    Rj + (j+1)*mc->fact;
+                MatchWord *Rj_tmp = Rj + (j+2)*mc->fact;
 
                 memcpy (&ch, info+j*sizeof(Dict_char), sizeof(Dict_char));
                 prefix[pos+j] = ch;
@@ -274,30 +260,26 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                         (*userfunc)(prefix, info+(j+1)*sizeof(Dict_char));
                     break;
                 }
-
-                was_match = 0;
                 move (mc, Rj1, Rj0, ch, dfas, Rj_tmp);
                 for (d = mc->n; --d >= 0; )
                     if (Rj1[mc->range*mc->n + d])
                         break;
                 if (d < 0)
                     break;
-                for (s = 0; s<dfas->no; s++)
-                {
-                    if (dfas->sortarray[s]->rule_no)
-                        if (get_bit (mc, Rj1+mc->range*mc->n, 0, s))
-                            was_match = 1;
-                }
-                for (d = 0; d <= mc->range; d++)
-                    reset_bit (mc, Rj1+d*mc->n, 0, dfas->no);
+                was_match = 0;
+                for (d = mc->n; --d >= 0; )
+                    if (Rj1[mc->range*mc->n + d] & mc->match_mask[d])
+                    {
+                        was_match = 1;
+                        break;
+                    }
             }
         }
         else
         {
-            MatchWord *Rj1 =    Rj+  (1+mc->range)*mc->n;
-            MatchWord *Rj_tmp = Rj+2*(1+mc->range)*mc->n;
+            MatchWord *Rj1 =    Rj+  mc->fact;
+            MatchWord *Rj_tmp = Rj+2*mc->fact;
             Dict_char ch;
-            int d;
 
             /* Dict_ptr             subptr */
             /* Dict_char            sub char */
@@ -316,16 +298,14 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                 Dict_ptr subptr;
                 if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
                 {
-                    int s;
-                    for (s = 0; s<dfas->no; s++)
-                        if (dfas->sortarray[s]->rule_no)
-                            if (get_bit (mc, Rj1+mc->range*mc->n, 0, s))
-                            {
-                                prefix[pos+1] = DICT_EOS;
-                                (*userfunc)(prefix, info+sizeof(Dict_ptr)+
-                                            sizeof(Dict_char));
-                                break;
-                            }
+                    for (d = mc->n; --d >= 0; )
+                        if (Rj1[mc->range*mc->n + d] & mc->match_mask[d])
+                        {
+                            prefix[pos+1] = DICT_EOS;
+                            (*userfunc)(prefix, info+sizeof(Dict_ptr)+
+                                        sizeof(Dict_char));
+                            break;
+                        }
                 }
                 memcpy (&subptr, info, sizeof(Dict_ptr));
                 if (subptr)
@@ -346,7 +326,7 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range,
                     int (*userfunc)(Dict_char *name, char *info))
 {
     MatchWord *Rj;
-    Dict_char prefix[2048];
+    Dict_char prefix[MAX_LENGTH+1];
     char *this_pattern = pattern;
     DFA_states *dfas;
     MatchContext *mc;
@@ -360,13 +340,12 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range,
         return -1;
     }
     dfa->root = dfa->top;
-    dfas = mk_dfas (dfa, 200);
+    dfas = mk_dfas (dfa, 50);
     rm_dfa (&dfa);
 
     mc = mk_MatchContext (dfas, range);
 
-    Rj = xcalloc ((1000+dict_strlen(pattern)+range+2)*(range+1)*mc->n,
-                  sizeof(*Rj));
+    Rj = xcalloc ((MAX_LENGTH+1) * mc->n, sizeof(*Rj));
 
     set_bit (mc, Rj, 0, 0);
     for (d = 1; d<=mc->range; d++)
@@ -388,8 +367,6 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range,
 
     rm_dfas (&dfas);
     xfree (Rj);
+    rm_MatchContext (&mc);
     return i;
 }
-
-
-
