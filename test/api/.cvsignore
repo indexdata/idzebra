@@ -6,3 +6,4 @@ t[0-9]
 *.LCK
 t[0-9].log
 testclient
+zebrasrv.pid
