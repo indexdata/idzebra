@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.64  1997-09-18 08:59:20  adam
+ * Revision 1.65  1997-09-22 12:39:06  adam
+ * Added get_pos method for the ranked result sets.
+ *
+ * Revision 1.64  1997/09/18 08:59:20  adam
  * Extra generic handle for the character mapping routines.
  *
  * Revision 1.63  1997/09/17 12:19:18  adam
@@ -854,6 +857,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     parms.key_size = sizeof(struct it_key);
     parms.max_rec = 1000;
     parms.cmp = key_compare_it;
+    parms.get_pos = key_get_pos;
     parms.is = zi->isam;
     parms.isc = zi->isamc;
     parms.no_terms = 0;

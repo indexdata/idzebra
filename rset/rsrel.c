@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.16  1997-09-17 12:19:23  adam
+ * Revision 1.17  1997-09-22 12:39:07  adam
+ * Added get_pos method for the ranked result sets.
+ *
+ * Revision 1.16  1997/09/17 12:19:23  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -101,6 +104,7 @@ struct rset_rel_info {
     int     max_rec;
     int     no_rec;
     int     (*cmp)(const void *p1, const void *p2);
+    int     (*get_pos)(const void *p);
     char    *key_buf;                   /* key buffer */
     float   *score_buf;                 /* score buffer */
     int     *sort_idx;                  /* score sorted index */
@@ -212,7 +216,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 #if 0
     while (1)
     {
-	int min = -1;
+	int r, min = -1;
 	int pos = 0;
         for (i = 0; i<parms->no_isam_positions; i++)
             if (isam_r[i] && 
@@ -221,7 +225,14 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
                 min = i;
         if (min < 0)
             break;
-	pos = (*parms->get_pos)(isam_buf[min]);
+	i = min;
+	pos = (*parms->get_pos)(isam_buf[i]);
+	logf (LOG_LOG, "pos=%d", pos);
+	if (isam_pt)
+	    isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
+	else if (isamc_pp)
+	    isam_r[i] = isc_pp_read (isamc_pp[i], isam_buf[i]);
+    }
 #else
     while (1)
     {
@@ -315,6 +326,7 @@ static void *r_create (const struct rset_control *sel, void *parms,
     info->max_rec = r_parms->max_rec;
     assert (info->max_rec > 1);
     info->cmp = r_parms->cmp;
+    info->get_pos = r_parms->get_pos;
 
     info->key_buf = xmalloc (info->key_size * info->max_rec);
     info->score_buf = xmalloc (sizeof(*info->score_buf) * info->max_rec);

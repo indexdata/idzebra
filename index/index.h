@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.51  1997-09-18 08:59:19  adam
+ * Revision 1.52  1997-09-22 12:39:06  adam
+ * Added get_pos method for the ranked result sets.
+ *
+ * Revision 1.51  1997/09/18 08:59:19  adam
  * Extra generic handle for the character mapping routines.
  *
  * Revision 1.50  1997/09/17 12:19:13  adam
@@ -256,6 +259,7 @@ void repositoryShow (struct recordGroup *rGroup);
 void key_open (BFiles bfs, int mem);
 int key_close (void);
 int key_compare (const void *p1, const void *p2);
+int key_get_pos (const void *p);
 int key_compare_it (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);

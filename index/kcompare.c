@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.21  1997-09-17 12:19:13  adam
+ * Revision 1.22  1997-09-22 12:39:06  adam
+ * Added get_pos method for the ranked result sets.
+ *
+ * Revision 1.21  1997/09/17 12:19:13  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -147,6 +150,13 @@ int key_qsort_compare (const void *p1, const void *p2)
     if ((r = key_compare (cp1+l+1, cp2+l+1)))
         return r;
     return cp1[l] - cp2[l];
+}
+
+int key_get_pos (const void *p)
+{
+    struct it_key key;
+    memcpy (&key, p, sizeof(key));
+    return key.seqno;
 }
 
 struct iscz1_code_info {

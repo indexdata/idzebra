@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trunc.c,v $
- * Revision 1.5  1997-09-17 12:19:17  adam
+ * Revision 1.6  1997-09-22 12:39:06  adam
+ * Added get_pos method for the ranked result sets.
+ *
+ * Revision 1.5  1997/09/17 12:19:17  adam
  * Zebra version corresponds to YAZ version 1.4.
  * Changed Zebra server so that it doesn't depend on global common_resource.
  *
@@ -342,7 +345,7 @@ static int isamc_trunc_cmp (const void *p1, const void *p2)
 
 RSET rset_trunc (ZServerInfo *zi, ISAM_P *isam_p, int no)
 {
-    logf (LOG_LOG, "rset_trunc no=%d", no);
+    logf (LOG_DEBUG, "rset_trunc no=%d", no);
     if (zi->isam)
     {
         if (no < 1)
