@@ -1,20 +1,25 @@
 //#include "zebraapi.h"
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+
+#include <yaz/yaz-util.h>
+#include <yaz/proto.h>
 #include "zebra_perl.h"
 #include <data1.h>
 #include <yaz/log.h>
-#include "rg.h"
 
 NMEM handles;
 
 void init (void) {
   nmem_init ();
   yaz_log_init_prefix ("ZebraPerl");
-  yaz_log (LOG_LOG, "Zebra::API initialized");
+  yaz_log (LOG_LOG, "Zebra API initialized");
 }
 
 void DESTROY (void) {
   nmem_exit ();
-  yaz_log (LOG_LOG, "Zebra::API destroyed");
+  yaz_log (LOG_LOG, "Zebra API destroyed");
 }
 
 /* Logging facilities from yaz */
@@ -29,5 +34,6 @@ void logFile (const char *fname) {
 void logMsg (int level, const char *message) {
   logf(level, "%s", message);
 }
+
 
 
