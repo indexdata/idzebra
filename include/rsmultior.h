@@ -1,4 +1,4 @@
-/* $Id: rsmultior.h,v 1.1 2004-08-16 16:17:49 heikki Exp $
+/* $Id: rsmultior.h,v 1.2 2004-08-19 12:49:14 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -36,8 +36,10 @@ typedef struct rset_multior_parms
     int     key_size;
     int     (*cmp)(const void *p1, const void *p2);
 
-    RSET *rsets;
     int no_rsets;
+    RSET *rsets;  /* array of rsets to multi-or */
+                  /* allocated when creating parms, */
+                  /* rset will free when deleted */
 
     RSET_TERM rset_term;
 

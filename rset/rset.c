@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.23 2004-08-06 10:09:28 heikki Exp $
+/* $Id: rset.c,v 1.24 2004-08-19 12:49:15 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -130,9 +130,11 @@ RSET_TERM rset_term_create (const char *name, int length, const char *flags,
 
 void rset_term_destroy (RSET_TERM t)
 {
-    xfree (t->name);
-    xfree (t->flags);
-    xfree (t);
+    if (t) { /* rsmultior uses things without terms at all ! */
+        xfree (t->name);
+        xfree (t->flags);
+        xfree (t);
+    }
 }
 
 RSET_TERM rset_term_dup (RSET_TERM t)

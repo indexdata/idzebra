@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.34 2004-08-16 16:17:49 heikki Exp $
+/* $Id: trunc.c,v 1.35 2004-08-19 12:49:14 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -478,7 +478,7 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
                                                 term_type);
             return rset_create (rset_kind_isamb, &parms);
         }
-#if 0       
+#if 1
         else if (no <10000 ) /* FIXME - hardcoded number */
         {
             rset_multior_parms m_parms;
@@ -493,10 +493,13 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             b_parms.key_size = sizeof(struct it_key);
             b_parms.cmp = key_compare_it;
             b_parms.is = zi->reg->isamb;
-            b_parms.rset_term = m_parms.rset_term;
+            /* FIXME - make it so that we can pass a null ptr to term */
+            /* needs changes in all rsets, here and there! */
             for (i=0;i<no;i++)
             {
                 b_parms.pos = isam_p[i];
+                b_parms.rset_term = rset_term_create (term, length, flags,
+                                                term_type);
                 m_parms.rsets[i]=rset_create (rset_kind_isamb, &b_parms);
             }
             return rset_create (rset_kind_multior, &m_parms);
