@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.10  1995-11-16 17:00:44  adam
+ * Revision 1.11  1995-12-06 14:43:02  adam
+ * New function: dict_delete.
+ *
+ * Revision 1.10  1995/11/16  17:00:44  adam
  * Changed stupid log.
  *
  * Revision 1.9  1995/10/27  13:58:09  adam
@@ -370,6 +373,7 @@ int dict_lookup_grep (Dict dict, Dict_char *pattern, int range, void *client,
     struct DFA *dfa = dfa_init();
     int i, d;
 
+    logf (LOG_DEBUG, "dict_lookup_grep '%s' range=%d", pattern, range);
     i = dfa_parse (dfa, &this_pattern);
     if (i || *this_pattern)
     {

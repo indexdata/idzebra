@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.15  1995-10-27 13:59:17  adam
+ * Revision 1.16  1995-12-06 14:41:13  adam
+ * New function: dict_delete.
+ *
+ * Revision 1.15  1995/10/27  13:59:17  adam
  * Function dict_look_grep got extra parameter max_pos that upon return
  * hold length of longest prefix that matches pattern.
  *
@@ -118,6 +121,7 @@ Dict       dict_open (const char *name, int cache, int rw);
 int        dict_close (Dict dict);
 int        dict_insert (Dict dict, const Dict_char *p, int userlen,
                         void *userinfo);
+int        dict_delete (Dict dict, const Dict_char *p);
 char      *dict_lookup (Dict dict, const Dict_char *p);
 int        dict_lookup_ec (Dict dict, Dict_char *p, int range,
                            int (*f)(Dict_char *name));
