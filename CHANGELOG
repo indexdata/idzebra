@@ -1,3 +1,7 @@
+Zebra supports the specification of arbitrary attributes sets,
+schemas and tag sets, because of the change in YAZ' OID
+management system.
+
 Fixed bug in Sort that caused it NOT to use character mapping as
 it should.
 
