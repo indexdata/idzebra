@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.39  1996-04-09 10:05:21  adam
+ * Revision 1.40  1996-04-26 10:00:23  adam
+ * Added option -V to zebraidx to display version information.
+ * Removed stupid warnings from file update.
+ *
+ * Revision 1.39  1996/04/09  10:05:21  adam
  * Bug fix: prev_name buffer possibly too small; allocated in key_file_init.
  *
  * Revision 1.38  1996/03/26  16:01:14  adam
@@ -199,11 +203,13 @@ int main (int argc, char **argv)
 	" -d <database> Records belong to Z39.50 database <database>.\n"
 	" -m <mbytes>   Use <mbytes> before flushing keys to disk.\n"
         " -n            Don't use shadow system\n"
-	" -v <level>    Set logging to <level>.\n");
+	" -v <level>    Set logging to <level>\n"
+        " -V            Show version\n"
+                 );
         exit (1);
     }
     log_event_end (abort_func, NULL);
-    while ((ret = options ("t:c:g:d:m:v:n", argv, argc, &arg)) != -2)
+    while ((ret = options ("Vt:c:g:d:m:v:n", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -352,6 +358,11 @@ int main (int argc, char **argv)
                     sync ();
                 }
             }
+        }
+        else if (ret == 'V')
+        {
+            fprintf (stderr, "Zebra %s %s\n",
+                     ZEBRAVER, ZEBRADATE);
         }
         else if (ret == 'v')
         {

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.23  1996-04-12 07:02:25  adam
+ * Revision 1.24  1996-04-26 10:00:23  adam
+ * Added option -V to zebraidx to display version information.
+ * Removed stupid warnings from file update.
+ *
+ * Revision 1.23  1996/04/12  07:02:25  adam
  * File update of single files.
  *
  * Revision 1.22  1996/04/09 06:50:50  adam
@@ -382,11 +386,9 @@ static void fileUpdate (Dict dict, struct recordGroup *rGroup,
         struct dirs_entry *e_dst;
         di = dirs_fopen (dict, src);
 
-        logf (LOG_WARN, "Handle file %s", src);
         e_dst = dirs_read (di);
         if (e_dst)
         {
-            logf (LOG_WARN, "Update Handle file %s", src);
             if (sbuf.st_mtime > e_dst->mtime)
                 if (fileExtract (&e_dst->sysno, src, rGroup, 0))
                     dirs_add (di, src, e_dst->sysno, sbuf.st_mtime);
@@ -394,7 +396,6 @@ static void fileUpdate (Dict dict, struct recordGroup *rGroup,
         else
         {
             SYSNO sysno = 0;
-            logf (LOG_WARN, "New Handle file %s", src);
             if (fileExtract (&sysno, src, rGroup, 0))
                  dirs_add (di, src, sysno, sbuf.st_mtime);
         }
