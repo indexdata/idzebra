@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.9 2004-12-14 11:23:15 adam Exp $
+/* $Id: testlib.c,v 1.10 2005-01-04 20:00:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -229,7 +229,6 @@ void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
     const char *setname="rsetname";
     zint *positions = (zint *) malloc(1 + (exphits * sizeof(zint)));
     int hits;
-    int rc;
     int i;
         
     hits = do_query(lineno, zh, query, exphits);
@@ -241,7 +240,7 @@ void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
     
     if (!meta)
     {
-        printf("Error: retrieve returned %d \n%s\n",rc,query);
+        printf("Error: retrieve returned error\n%s\n", query);
         exit (1);
     }
 
