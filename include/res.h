@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.h,v $
- * Revision 1.5  1994-09-16 14:37:46  quinn
+ * Revision 1.6  1996-10-29 13:44:12  adam
+ * Added res_get_match.
+ *
+ * Revision 1.5  1994/09/16 14:37:46  quinn
  * added res_get_def
  *
  * Revision 1.4  1994/09/06  13:02:29  quinn
@@ -37,6 +40,7 @@ Res res_open (const char *name);
 void res_close (Res r);
 char *res_get (Res r, const char *name);
 char *res_get_def (Res r, const char *name, char *def);
+int res_get_match (Res r, const char *name, const char *value, const char *s);
 void res_put (Res r, const char *name, const char *value);
 void res_trav (Res r, const char *prefix, 
                void (*f)(const char *name, const char *value));
