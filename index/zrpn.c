@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.49  1996-06-04 10:18:11  adam
+ * Revision 1.50  1996-06-07 08:51:53  adam
+ * Bug fix: Character mapping was broken (introducued by last revision).
+ *
+ * Revision 1.49  1996/06/04  10:18:11  adam
  * Search/scan uses character mapping module.
  *
  * Revision 1.48  1996/05/28  15:15:01  adam
@@ -863,7 +866,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     char termz[IT_MAX_WORD+1];
     char term_sub[IT_MAX_WORD+1];
     struct grep_info grep_info;
-    char *p0 = termz, *p1 = NULL;
+    char *p0 = termz;
     RSET result;
 
     parms.key_size = sizeof(struct it_key);
@@ -884,31 +887,33 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     while (1)
     {
         char **map;
-        char *p2 = NULL;
+        char *p2, *p1;
+
         p1 = p0;
-        while (*p1)
+        while (*(p0 = p1))
+        {
+            map = map_chrs_input (&p1, strlen(p1));
+            if (**map != *CHR_SPACE)
+                break;
+        }
+        if (!*p0)
+            break;
+        
+        p1 = p0;
+        while (*(p2 = p1))
         {
             map = map_chrs_input (&p1, strlen(p1));
             if (**map == *CHR_SPACE)
                 break;
-            p2 = p1;
         }
-        if (p1 == p0)
+        if (p2 == p0)
             break;
         memcpy (term_sub, p0, p2-p0);
         term_sub[p2-p0] = '\0';
-        while (*p1)
-        {
-            map = map_chrs_input (&p1, strlen(p1));
-            if (**map == *CHR_SPACE)
-                break;
-        }
+        p0 = p2;
         if (field_term (zi, zapt, term_sub, 'w', attributeSet, &grep_info,
                         num_bases, basenames))
             return NULL;
-        if (!p1)
-            break;
-        p0 = p1;
     }
     parms.isam_positions = grep_info.isam_p_buf;
     parms.no_isam_positions = grep_info.isam_p_indx;
@@ -1052,7 +1057,7 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
 {
     char termz[IT_MAX_WORD+1];
     char term_sub[IT_MAX_WORD+1];
-    char *p0 = termz, *p1 = NULL;
+    char *p0 = termz;
     RSET rset[60], result;
     int i, rset_no = 0;
     struct grep_info grep_info;
@@ -1070,27 +1075,32 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
     while (1)
     {
         char **map;
-        char *p2 = NULL;
+        char *p2, *p1;
+
         p1 = p0;
-        while (*p1)
-        {
-            map = map_chrs_input (&p1, strlen(p1));
-            if (**map == *CHR_SPACE)
-                break;
-            p2 = p1;
-        }
-        if (p1 == p0)
-            break;
-        memcpy (term_sub, p0, p2-p0);
-        term_sub[p2-p0] = '\0';
-        p0 = p1;
-        while (*p1)
+        while (*(p0 = p1))
         {
             map = map_chrs_input (&p1, strlen(p1));
             if (**map != *CHR_SPACE)
                 break;
-            p0 = p1;
         }
+        if (!*p0)
+            break;
+        
+        p1 = p0;
+        while (*(p2 = p1))
+        {
+            map = map_chrs_input (&p1, strlen(p1));
+            if (**map == *CHR_SPACE)
+                break;
+        }
+        if (p2 == p0)
+            break;
+
+        memcpy (term_sub, p0, p2-p0);
+        term_sub[p2-p0] = '\0';
+        p0 = p2;
+
         grep_info.isam_p_indx = 0;
         if (field_term (zi, zapt, term_sub, 'w', attributeSet, &grep_info,
                         num_bases, basenames))
@@ -1111,8 +1121,6 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
         }
         assert (rset[rset_no]);
         if (++rset_no >= sizeof(rset)/sizeof(*rset))
-            break;
-        if (!p1)
             break;
     }
     xfree (grep_info.isam_p_buf);
