@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.35 2004-06-14 23:42:33 adam Exp $
+/* $Id: res.c,v 1.36 2004-06-15 08:05:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -80,16 +80,19 @@ static char *xstrdup_env(const char *src)
 	    char *env_val;
 	    int k = 0;
 	    i = i + 2;
-	    while (k < 127 && src[i] && !strchr("}\n\r\f", src[i]))
+	    while (k < 127 && src[i] && !strchr(":}\n\r\f", src[i]))
 		envname[k++] = src[i++];
 	    envname[k] = '\0';
-	    if (src[i] == '}')
-		i++;
+
 	    env_val = getenv(envname);
 	    if (env_val)
 		env_strlen += 1 + strlen(env_val);
 	    else
 		env_strlen++;
+	    while (src[i] && !strchr("}\n\r\f", src[i]))
+		i++;
+	    if (src[i] == '}')
+		i++;
 	}
 	else
 	    i++;
@@ -104,17 +107,25 @@ static char *xstrdup_env(const char *src)
 	    char *env_val;
 	    int k = 0;
 	    i = i + 2;
-	    while(k < 127 && src[i] && !strchr("}\n\r\f", src[i]))
+	    while(k < 127 && src[i] && !strchr(":}\n\r\f", src[i]))
 		envname[k++] = src[i++];
 	    envname[k] = '\0';
-	    if (src[i] == '}')
-		i++;
 	    env_val = getenv(envname);
 	    if (env_val)
 	    {
 		strcpy(dst+j, env_val);
 		j += strlen(env_val);
 	    }
+	    else if (src[i] == ':' && src[i+1] == '-') 
+	    {
+		i = i + 2;
+		while (src[i] && !strchr("}\n\r\f", src[i]))
+		    dst[j++] = src[i++];
+	    }
+	    while (src[i] && !strchr("}\n\r\f", src[i]))
+		i++;
+	    if (src[i] == '}')
+		i++;
 	}
 	else
 	    dst[j++] = src[i++];
