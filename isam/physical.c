@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: physical.c,v $
- * Revision 1.6  1995-09-04 12:33:47  adam
+ * Revision 1.7  1995-12-06 14:48:27  quinn
+ * Fixed some strange bugs.
+ *
+ * Revision 1.6  1995/09/04  12:33:47  adam
  * Various cleanup. YAZ util used instead.
  *
  * Revision 1.5  1994/09/28  11:29:33  quinn
@@ -148,6 +151,7 @@ int is_p_read_full(is_mtable *tab, is_mblock *block)
 	    dread += toread;
 	    block->bread += toread * is_keysize(tab->is);
     	}
+	block->state = IS_MBSTATE_CLEAN;
     }
     logf (LOG_DEBUG, "R: Block #%d contains %d records.", block->diskpos, block->num_records);
     return 0;

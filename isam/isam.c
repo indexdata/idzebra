@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.15  1995-12-06 09:59:45  quinn
+ * Revision 1.16  1995-12-06 14:48:26  quinn
+ * Fixed some strange bugs.
+ *
+ * Revision 1.15  1995/12/06  09:59:45  quinn
  * Fixed memory-consumption bug in memory.c
  * Added more blocksizes to the default ISAM configuration.
  *
@@ -467,13 +470,11 @@ void is_pt_free(ISPT ip)
  */
 int is_readkey(ISPT ip, void *buf)
 {
-fprintf(stderr, "XXReadkey.\n");
     return is_m_read_record(&ip->tab, buf);
 }    
 
 int is_numkeys(ISPT ip)
 {
-fprintf(stderr, "XXNumkeys.\n");
     return is_m_num_records(&ip->tab);
 }
 
