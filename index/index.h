@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.110 2004-08-04 08:35:23 adam Exp $
+/* $Id: index.h,v 1.111 2004-08-06 13:14:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -36,10 +36,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <dict.h>
 #include <isams.h>
-#include <isam.h>
 #include <isamc.h>
 #include <isamb.h>
-#define ISAM_DEFAULT "c"
 #include <data1.h>
 #include <recctrl.h>
 #include "recindex.h"
@@ -49,6 +47,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rset.h>
 
 YAZ_BEGIN_CDECL
+
+#define ISAM_DEFAULT "b"
 
 #define SU_SCHEME 1
 
@@ -237,7 +237,6 @@ struct zebra_register {
     char *name;
     
     ISAMS isams;
-    ISAM isam;
     ISAMC isamc;
     ISAMB isamb;
     Dict dict;

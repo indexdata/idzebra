@@ -1,5 +1,5 @@
-/* $Id: trunc.c,v 1.30 2004-08-06 12:28:22 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: trunc.c,v 1.31 2004-08-06 13:14:46 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -30,7 +30,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rstemp.h>
 #include <rsnull.h>
 #include <rsisams.h>
-#include <rsisam.h>
 #include <rsisamc.h>
 #include <rsisamb.h>
 #if NEW_TRUNC
@@ -217,62 +216,6 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         xfree (rsfd);
         heap_close (ti);
     }
-    else if (zi->reg->isam)
-    {
-        ISPT *ispt;
-        int i;
-        struct trunc_info *ti;
-
-        ispt = (ISPT *) xmalloc (sizeof(*ispt) * (to-from));
-
-        ti = heap_init (to-from, sizeof(struct it_key),
-                        key_compare_it);
-        for (i = to-from; --i >= 0; )
-        {
-            ispt[i] = is_position (zi->reg->isam, isam_p[from+i]);
-            if (is_readkey (ispt[i], ti->tmpbuf))
-                heap_insert (ti, ti->tmpbuf, i);
-            else
-                is_pt_free (ispt[i]);
-        }
-        while (ti->heapnum)
-        {
-            int n = ti->indx[ti->ptr[1]];
-
-            rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
-            nn++;
-            if (preserve_position)
-            {
-/* section that preserve all keys */
-                heap_delete (ti);
-                if (is_readkey (ispt[n], ti->tmpbuf))
-                    heap_insert (ti, ti->tmpbuf, n);
-                else
-                    is_pt_free (ispt[n]);
-            }
-            else
-            {
-/* section that preserve all keys with unique sysnos */
-                while (1)
-                {
-                    if (!is_readkey (ispt[n], ti->tmpbuf))
-                    {
-                        heap_delete (ti);
-                        is_pt_free (ispt[n]);
-                        break;
-                    }
-                    if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
-                    {
-                        heap_delete (ti);
-                        heap_insert (ti, ti->tmpbuf, n);
-                        break;
-                    }
-                }
-            }
-        }
-        heap_close (ti);
-        xfree (ispt);
-    }
     else if (zi->reg->isamc)
     {
         ISAMC_PP *ispt;
@@ -441,21 +384,9 @@ static int isams_trunc_cmp (const void *p1, const void *p2)
 
     if (i1 > i2)
         return 1;
-    if (i1 < i2)
+    else if (i1 < i2)
 	return -1;
     return 0;
-}
-
-static int isam_trunc_cmp (const void *p1, const void *p2)
-{
-    ISAM_P i1 = *(ISAM_P*) p1;
-    ISAM_P i2 = *(ISAM_P*) p2;
-    int d;
-
-    d = is_type (i1) - is_type (i2);
-    if (d)
-        return d;
-    return is_block (i1) - is_block (i2);
 }
 
 static int isamc_trunc_cmp (const void *p1, const void *p2)
@@ -499,20 +430,6 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
             return rset_create (rset_kind_isams, &parms);
         }
         qsort (isam_p, no, sizeof(*isam_p), isams_trunc_cmp);
-    }
-    else if (zi->reg->isam)
-    {
-        if (no == 1)
-        {
-            rset_isam_parms parms;
-
-            parms.pos = *isam_p;
-            parms.is = zi->reg->isam;
-	    parms.rset_term = rset_term_create (term, length, flags,
-                                                term_type);
-            return rset_create (rset_kind_isam, &parms);
-        }
-        qsort (isam_p, no, sizeof(*isam_p), isam_trunc_cmp);
     }
     else if (zi->reg->isamc)
     {

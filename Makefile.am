@@ -1,8 +1,8 @@
-## $Id: Makefile.am,v 1.14 2004-07-28 11:15:10 adam Exp $
+## $Id: Makefile.am,v 1.15 2004-08-06 13:14:46 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
-SUBDIRS=util bfile dfa dict isams isamb isamc isam rset data1 \
+SUBDIRS=util bfile dfa dict isams isamb isamc rset data1 \
  recctrl tab index test examples include doc
 
 SPEC_FILE=$(PACKAGE).spec

@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.38 2004-08-06 12:55:01 adam Exp $
+/* $Id: invstat.c,v 1.39 2004-08-06 13:14:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -113,15 +113,6 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         assert (occurx == occur);
 	stat_info->no_isam_entries[0] += occur;
         isams_pp_close (pp);
-    }
-    if (stat_info->zh->reg->isam)
-    {
-        ISPT ispt;
-
-        ispt = is_position (stat_info->zh->reg->isam, (int) isam_p);
-        occur = is_numkeys (ispt);
-	stat_info->no_isam_entries[is_type(isam_p)] += occur;
-        is_pt_free (ispt);
     }
     if (stat_info->zh->reg->isamc)
     {

@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.60 2004-08-04 08:35:23 adam Exp $
+/* $Id: kinput.c,v 1.61 2004-08-06 13:14:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -704,77 +704,6 @@ int heap_inpb (struct heap_info *hi)
     return 0;
 } 
 
-int heap_inp (struct heap_info *hi)
-{
-    char *info;
-    char next_name[INP_NAME_MAX];
-    char cur_name[INP_NAME_MAX];
-    int key_buf_size = INP_BUF_START;
-    int key_buf_ptr;
-    char *next_key;
-    char *key_buf;
-    int more;
-    
-    next_key = (char *) xmalloc (KEY_SIZE);
-    key_buf = (char *) xmalloc (key_buf_size);
-    more = heap_read_one (hi, cur_name, key_buf);
-    while (more)                   /* EOF ? */
-    {
-        int nmemb;
-        key_buf_ptr = KEY_SIZE;
-        while (1)
-        {
-            if (!(more = heap_read_one (hi, next_name, next_key)))
-                break;
-            if (*next_name && strcmp (next_name, cur_name))
-                break;
-            memcpy (key_buf + key_buf_ptr, next_key, KEY_SIZE);
-            key_buf_ptr += KEY_SIZE;
-            if (key_buf_ptr+(int) KEY_SIZE >= key_buf_size)
-            {
-                char *new_key_buf;
-                new_key_buf = (char *) xmalloc (key_buf_size + INP_BUF_ADD);
-                memcpy (new_key_buf, key_buf, key_buf_size);
-                key_buf_size += INP_BUF_ADD;
-                xfree (key_buf);
-                key_buf = new_key_buf;
-            }
-        }
-        hi->no_diffs++;
-        nmemb = key_buf_ptr / KEY_SIZE;
-        assert (nmemb * (int) KEY_SIZE == key_buf_ptr);
-        if ((info = dict_lookup (hi->reg->dict, cur_name)))
-        {
-            ISAM_P isam_p, isam_p2;
-            memcpy (&isam_p, info+1, sizeof(ISAM_P));
-            isam_p2 = is_merge (hi->reg->isam, isam_p, nmemb, key_buf);
-            if (!isam_p2)
-            {
-                hi->no_deletions++;
-                if (!dict_delete (hi->reg->dict, cur_name))
-                    abort ();
-            }
-            else 
-            {
-                hi->no_updates++;
-                if (isam_p2 != isam_p)
-                    dict_insert (hi->reg->dict, cur_name,
-                                 sizeof(ISAM_P), &isam_p2);
-            }
-        }
-        else
-        {
-            ISAM_P isam_p;
-            hi->no_insertions++;
-            isam_p = is_merge (hi->reg->isam, 0, nmemb, key_buf);
-            dict_insert (hi->reg->dict, cur_name, sizeof(ISAM_P), &isam_p);
-        }
-        memcpy (key_buf, next_key, KEY_SIZE);
-        strcpy (cur_name, next_name);
-    }
-    return 0;
-}
-
 int heap_inps (struct heap_info *hi)
 {
     struct heap_cread_info hci;
@@ -913,8 +842,6 @@ void zebra_index_merge (ZebraHandle zh)
 	heap_inps (hi);
     if (zh->reg->isamc)
         heap_inpc (hi);
-    if (zh->reg->isam)
-	heap_inp (hi);
     if (zh->reg->isamb)
 	heap_inpb (hi);
 	

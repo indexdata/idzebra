@@ -1,4 +1,4 @@
-/* $Id: rsm_or.c,v 1.17 2004-08-06 12:55:03 adam Exp $
+/* $Id: rsm_or.c,v 1.18 2004-08-06 13:14:47 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -29,7 +29,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include <zebrautl.h>
-#include <isam.h>
 #include <isamc.h>
 #include <rsm_or.h>
 
@@ -62,7 +61,7 @@ struct rset_mor_info {
     int     no_rec;
     int     (*cmp)(const void *p1, const void *p2);
     ISAMC   isc;
-    ISAM_P  *isam_positions;
+    ISAMC_P *isam_positions;
 
     int     no_isam_positions;
     int     no_save_positions;
@@ -192,7 +191,7 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 
     info->isc = r_parms->isc;
     info->no_isam_positions = r_parms->no_isam_positions;
-    info->isam_positions = (ISAM_P *)
+    info->isam_positions = (ISAMC_P *)
 	xmalloc (sizeof(*info->isam_positions) * info->no_isam_positions);
     memcpy (info->isam_positions, r_parms->isam_positions,
             sizeof(*info->isam_positions) * info->no_isam_positions);

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.122 2004-08-04 09:05:17 adam Exp $
+/* $Id: zebraapi.c,v 1.123 2004-08-06 13:14:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -261,7 +261,6 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     reg->sortIdx = 0;
     reg->isams = 0;
     reg->matchDict = 0;
-    reg->isam = 0;
     reg->isamc = 0;
     reg->isamb = 0;
     reg->zei = 0;
@@ -305,15 +304,6 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 				      key_isams_m(res, &isams_m))))
 	{
 	    logf (LOG_WARN, "isams_open");
-	    return 0;
-	}
-    }
-    if (res_get_match (res, "isam", "i", ISAM_DEFAULT))
-    {
-	if (!(reg->isam = is_open (reg->bfs, FNAME_ISAM, key_compare, rw,
-				  sizeof (struct it_key), res)))
-	{
-	    logf (LOG_WARN, "is_open");
 	    return 0;
 	}
     }
@@ -412,8 +402,6 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 	sortIdx_close (reg->sortIdx);
 	if (reg->isams)
 	    isams_close (reg->isams);
-        if (reg->isam)
-            is_close (reg->isam);
         if (reg->isamc)
             isc_close (reg->isamc);
         if (reg->isamb)

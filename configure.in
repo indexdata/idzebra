@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.92 2004-08-04 08:35:22 adam Exp $
+dnl $Id: configure.in,v 1.93 2004-08-06 13:14:46 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -371,7 +371,6 @@ AC_OUTPUT([
   isamb/Makefile
   isams/Makefile
   isamc/Makefile
-  isam/Makefile
   rset/Makefile
   data1/Makefile
   recctrl/Makefile
