@@ -39,5 +39,6 @@ rm -fr ${RPM_BUILD_ROOT}
 %doc README LICENSE.zebra CHANGELOG 
 %config /usr/share/idzebra/tab
 /usr/bin/*
+/usr/include/*
 /usr/share/doc/idzebra
 /usr/share/man/*/*
