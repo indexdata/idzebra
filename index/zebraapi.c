@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.126 2004-08-10 15:21:48 heikki Exp $
+/* $Id: zebraapi.c,v 1.127 2004-08-25 09:23:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -36,7 +36,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/sortspec.h>
 #include "index.h"
 #include <charmap.h>
-#include "zebraapi.h"
+#include <idzebra/api.h>
 
 /* simple asserts to validate the most essential input args */
 #define ASSERTZH assert(zh && zh->service)

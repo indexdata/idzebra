@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.17 2004-08-06 13:36:23 adam Exp $
+/* $Id: zinfo.h,v 1.18 2004-08-25 09:23:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ZINFO_H
 
 #include <data1.h>
-#include "zebraapi.h"
+#include <idzebra/api.h>
 #include "recindex.h"
 
 YAZ_BEGIN_CDECL

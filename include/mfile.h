@@ -1,4 +1,4 @@
-/* $Id: mfile.h,v 1.22 2004-08-04 08:35:23 adam Exp $
+/* $Id: mfile.h,v 1.23 2004-08-25 09:23:35 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 #include <yaz/yconfig.h>
-#include <zebraver.h>
+#include <idzebra/version.h>
 
 #ifdef WIN32
 

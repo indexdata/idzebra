@@ -1,4 +1,4 @@
-/* $Id: t6.c,v 1.2 2004-08-13 13:16:52 adam Exp $
+/* $Id: t6.c,v 1.3 2004-08-25 09:23:39 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,7 +24,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/log.h>
 #include <yaz/pquery.h>
-#include <zebraapi.h>
+#include <idzebra/api.h>
+
 /* read zebra.cfg from env var srcdir if it exists; otherwise current dir */
 static ZebraService start_service()
 {

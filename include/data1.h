@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.10 2004-08-04 08:35:23 adam Exp $
+/* $Id: data1.h,v 1.11 2004-08-25 09:23:35 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -31,7 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/oid.h>
 #include <yaz/proto.h>
 
-#include <zebraver.h>
+#include <idzebra/version.h>
 #include <d1_attset.h>
 #include <d1_map.h>
 #include <yaz/yaz-util.h>

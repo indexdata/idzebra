@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.112 2004-07-28 08:15:45 adam Exp $
+/* $Id: main.c,v 1.113 2004-08-25 09:23:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -44,7 +44,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #include <data1.h>
-#include "zebraapi.h"
+#include <idzebra/api.h>
 
 char *prog;
 

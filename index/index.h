@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.113 2004-08-10 08:19:15 heikki Exp $
+/* $Id: index.h,v 1.114 2004-08-25 09:23:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define INDEX_H
 
 #include <time.h>
-#include <zebraver.h>
+#include <idzebra/version.h>
 #include <zebrautl.h>
 #include <zebramap.h>
 #include <sortidx.h>
@@ -41,7 +41,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <data1.h>
 #include <recctrl.h>
 #include "recindex.h"
-#include "zebraapi.h"
+#include <idzebra/api.h>
 #include "zinfo.h"
 #include <passwddb.h>
 #include <rset.h>

@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.16 2004-07-28 08:15:45 adam Exp $
+/* $Id: apitest.c,v 1.17 2004-08-25 09:23:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -26,7 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/log.h>
 #include <yaz/pquery.h>
-#include "zebraapi.h"
+#include <idzebra/api.h>
 
 /* Small routine to display GRS-1 record variants ... */
 /* Copied verbatim from yaz/client/client.c */

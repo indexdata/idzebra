@@ -1,4 +1,4 @@
-/* $Id: zserver.h,v 1.57 2002-08-02 19:26:56 adam Exp $
+/* $Id: zserver.h,v 1.58 2004-08-25 09:23:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/backend.h>
 #include <yaz/charneg.h>
-#include "zebraapi.h"
+#include <idzebra/api.h>
 
 YAZ_BEGIN_CDECL
 

@@ -1,7 +1,7 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.94 2004-08-24 10:37:18 adam Exp $
+dnl $Id: configure.in,v 1.95 2004-08-25 09:23:35 adam Exp $
 dnl
-AC_INIT(include/zebraver.h)
+AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
 AM_PROG_LIBTOOL
 dnl ------ Substitutions
@@ -377,7 +377,7 @@ AC_OUTPUT([
   recctrl/Makefile
   recctrl/perlread.h
   index/Makefile
-  include/Makefile
+  include/Makefile include/idzebra/Makefile
   tab/Makefile
   doc/Makefile
   doc/zebra.xml

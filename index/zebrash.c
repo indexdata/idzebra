@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.28 2004-08-04 08:35:23 adam Exp $
+/* $Id: zebrash.c,v 1.29 2004-08-25 09:23:36 adam Exp $
    Copyright (C) 2002,2003,2004
    Index Data Aps
 
@@ -37,7 +37,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <readline/history.h>
 #endif
 
-#include "zebraapi.h"
+#include <idzebra/api.h>
 #include <yaz/log.h>
 #include <yaz/proto.h>
 #include <yaz/sortspec.h>

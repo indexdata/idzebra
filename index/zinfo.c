@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.39 2004-08-06 13:36:23 adam Exp $
+/* $Id: zinfo.c,v 1.40 2004-08-25 09:23:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <time.h>
 
-#include <zebraver.h>
+#include <idzebra/version.h>
 #include "zinfo.h"
 
 #define ZINFO_DEBUG 0

@@ -1,4 +1,4 @@
-/* $Id: rsm_or.h,v 1.8 2004-08-20 14:44:45 heikki Exp $
+/* $Id: version.h,v 1.1 2004-08-25 09:23:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,29 +20,28 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#ifndef ZEBRAVER
 
+#define ZEBRAVER "1.4.0"
 
-#ifndef RSET_M_OR_H
-#define RSET_M_OR_H
+#define ZEBRADATE "$Date: 2004-08-25 09:23:36 $"
 
-#include <rset.h>
+#ifdef __GNUC__
+typedef long long int zint;
+#define ZINT_FORMAT "%lld"
+#define ZINT_FORMAT0 "lld"
+#else
+#ifdef WIN32
+typedef __int64 zint;
+#define ZINT_FORMAT "%I64d"
+#define ZINT_FORMAT0 "I64d"
+#else
+typedef long zint;
+#define ZINT_FORMAT "%ld"
+#define ZINT_FORMAT0 "ld"
+#endif
+#endif
 
-YAZ_BEGIN_CDECL
-
-extern const struct rset_control *rset_kind_m_or;
-
-typedef struct rset_m_or_parms
-{
-    int     key_size;
-    int     (*cmp)(const void *p1, const void *p2);
-
-    ISAMC   isc;
-    ISAMC_P  *isam_positions;
-
-    int     no_isam_positions;
-    int     no_save_positions;
-} rset_m_or_parms;
-
-YAZ_END_CDECL
+typedef zint SYSNO;
 
 #endif

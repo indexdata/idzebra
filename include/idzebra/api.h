@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.15 2004-08-06 13:36:22 adam Exp $
+/* $Id: api.h,v 1.1 2004-08-25 09:23:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -32,8 +32,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/odr.h>
 #include <yaz/oid.h>
 #include <yaz/proto.h>
-#include <res.h>
-#include <zebraver.h>
+#include <idzebra/res.h>
+#include <idzebra/version.h>
 
 /* Fixme! Compare string (ignore case) */
 #ifdef WIN32
