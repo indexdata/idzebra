@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.12  1997-11-18 10:03:24  adam
+ * Revision 1.13  1997-12-12 06:33:58  adam
+ * Fixed bug that showed up when multiple filter where used.
+ * Made one routine thread-safe.
+ *
+ * Revision 1.12  1997/11/18 10:03:24  adam
  * Member num_children removed from data1_node.
  *
  * Revision 1.11  1997/11/06 11:41:01  adam
@@ -339,6 +343,7 @@ static void lexSpecDel (struct lexSpec **pp)
     xfree (p->trans.fastRule);
     for (rp = p->trans.rules; rp; rp = rp1)
     {
+	rp1 = rp->next;
         actionListDel (&rp->info.actionList);
         xfree (rp);
     }
@@ -774,14 +779,13 @@ static void tagBegin (struct lexSpec *spec,
     res = data1_mk_node (spec->dh, spec->m);
     res->parent = parent;
     res->which = DATA1N_tag;
-    res->u.tag.tag = res->lbuf;
     res->u.tag.get_bytes = -1;
 
     if (len >= DATA1_LOCALDATA)
         len = DATA1_LOCALDATA-1;
-
-    memcpy (res->u.tag.tag, tag, len);
-    res->u.tag.tag[len] = '\0';
+    memcpy (res->lbuf, tag, len);
+    res->lbuf[len] = '\0';
+    res->u.tag.tag = res->lbuf;
    
 #if REGX_DEBUG 
     logf (LOG_DEBUG, "tag begin %s (%d)", res->u.tag.tag, *d1_level);
@@ -957,10 +961,8 @@ static int execTok (struct lexSpec *spec, const char **src,
     return 2;
 }
 
-static char *regxStrz (const char *src, int len)
+static char *regxStrz (const char *src, int len, char *str)
 {
-    static char str[64];
-    
     if (len > 63)
         len = 63;
     memcpy (str, src, len);
@@ -981,7 +983,7 @@ static int execCode (struct lexSpec *spec,
     r = execTok (spec, &s, arg_no, arg_start, arg_end, &cmd_str, &cmd_len);
     while (r)
     {
-        char *p;
+        char *p, ptmp[64];
         
         if (r == 1)
         {
@@ -989,14 +991,14 @@ static int execCode (struct lexSpec *spec,
                          &cmd_str, &cmd_len);
             continue;
         }
-        p = regxStrz (cmd_str, cmd_len);
+        p = regxStrz (cmd_str, cmd_len, ptmp);
         if (!strcmp (p, "begin"))
         {
             r = execTok (spec, &s, arg_no, arg_start, arg_end,
                          &cmd_str, &cmd_len);
             if (r < 2)
                 continue;
-            p = regxStrz (cmd_str, cmd_len);
+            p = regxStrz (cmd_str, cmd_len, ptmp);
             if (!strcmp (p, "record"))
             {
                 r = execTok (spec, &s, arg_no, arg_start, arg_end,
@@ -1087,7 +1089,7 @@ static int execCode (struct lexSpec *spec,
                          &cmd_str, &cmd_len);
             if (r > 1)
             {
-                p = regxStrz (cmd_str, cmd_len);
+                p = regxStrz (cmd_str, cmd_len, ptmp);
                 if (!strcmp (p, "record"))
                 {
                     *d1_level = 0;
@@ -1177,7 +1179,7 @@ static int execCode (struct lexSpec *spec,
                     logf (LOG_WARN, "missing number after -offset");
                     continue;
                 }
-                p = regxStrz (cmd_str, cmd_len);
+                p = regxStrz (cmd_str, cmd_len, ptmp);
                 offset = atoi (p);
                 r = execTok (spec, &s, arg_no, arg_start, arg_end,
                              &cmd_str, &cmd_len);
@@ -1431,7 +1433,6 @@ static data1_node *lexRoot (struct lexSpec *spec, off_t offset)
 data1_node *grs_read_regx (struct grs_read_info *p)
 {
     int res;
-    data1_node *n;
 
 #if REGX_DEBUG
     logf (LOG_DEBUG, "grs_read_regx");
@@ -1460,6 +1461,5 @@ data1_node *grs_read_regx (struct grs_read_info *p)
         curLexSpec->f_win_size = 500000;
     }
     curLexSpec->m = p->mem;
-    n = lexRoot (curLexSpec, p->offset);
-    return n;
+    return lexRoot (curLexSpec, p->offset);
 }
