@@ -1,3 +1,6 @@
+Configuration settings are case-insensitive and single dash (-)
+characters are ignored in comparisons.
+
 The index processing ignores empty files - warning given.
 
 New option to zebraidx (-V) displays version information.
