@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1996, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.22 1996-05-14 11:34:16 adam Exp $
+# $Id: Makefile,v 1.23 1996-05-22 08:23:41 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -11,7 +11,6 @@ YAZINC=
 
 INCLUDE=-I../include $(YAZINC)
 TPROG=opt-test
-#CFLAGS=-g -Wall -pedantic -ansi
 DEFS=$(INCLUDE)
 CPP=$(CC) -E
 LIB=../lib/alexutil.a

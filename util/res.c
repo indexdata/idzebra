@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.14  1996-04-26 11:51:20  adam
+ * Revision 1.15  1996-05-22 08:23:43  adam
+ * Bug fix: trailing blanks in resource values where not removed.
+ *
+ * Revision 1.14  1996/04/26 11:51:20  adam
  * Resource names are matched by the yaz_matchstr routine instead of strcmp.
  *
  * Revision 1.13  1995/09/04  12:34:05  adam
@@ -140,6 +143,10 @@ static void reread (Res r)
             {
                 if (fr_buf[no] == '\0' || fr_buf[no] == '\n')
                 {
+                    while (val_size > 0 &&
+                              (val_buf[val_size-1] == ' ' ||
+                               val_buf[val_size-1] == '\t'))
+                        val_size--;
                     val_buf[val_size++] = '\0';
                     resp->value = xmalloc (val_size);
                     strcpy (resp->value, val_buf);
