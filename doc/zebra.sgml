@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.5 1995-11-28 16:34:43 quinn Exp $
+  $Id: zebra.sgml,v 1.6 1995-11-28 16:41:48 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.5 $
+<date>$Revision: 1.6 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -451,6 +451,9 @@ simple.recordType: text
 simple.database: textbase
 </verb></tscreen>
 
+Since the existing records in an index can not be addressed by their
+IDs, it is impossible to delete records when using this method.
+
 <sect1>Indexing with File Record IDs
 
 <p>
@@ -498,6 +501,10 @@ enable file record Ids. Zebra must know from the first time that you
 index the group that
 the files should be indexed with file record IDs.
 </em>
+
+You cannot explicitly delete records when using this method. Instead
+you have to delete the files from the file system (or remove them)
+and then run <tt>zebraidx</tt> with the <tt>update</tt> again.
 
 <sect1>Indexing with General Record IDs
 <p>
@@ -553,6 +560,12 @@ updating your system is simply a matter of running <tt>zebraidx</tt>
 with the <tt>update</tt> command. However, the update with general
 keys is considerably slower than with file record IDs, since all files
 visited must be (re)read to find their IDs. 
+
+You may have noticed that when using the general record IDs
+method, you can only add or modify existing records with the <tt>update</tt>
+command. If you wish to delete records, you must use another command,
+<tt>delete</tt>, which a root directory as a parameter. This will remove
+all records that match the files below the root directory.
 
 <sect1>Register location
 
