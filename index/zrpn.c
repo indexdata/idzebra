@@ -1,5 +1,5 @@
-/* $Id: zrpn.c,v 1.128 2003-02-26 21:46:37 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: zrpn.c,v 1.129 2003-02-27 11:29:13 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -950,7 +950,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 {
                     /* set was found, but value wasn't defined */
                     char val_str[32];
-                    sprintf (val_str, "%d (1)", use_value);
+                    sprintf (val_str, "%d", use_value);
                     zh->errCode = 114;
                     zh->errString = nmem_strdup (stream, val_str);
                 }
@@ -996,7 +996,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         if (!prefix_len)
         {
             char val_str[32];
-            sprintf (val_str, "%d (2)", use_value);
+            sprintf (val_str, "%d", use_value);
             zh->errCode = 114;
             zh->errString = nmem_strdup (stream, val_str);
             return -1;
@@ -1774,7 +1774,7 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			 oid_value attributeSet, struct grep_info *grep_info,
 			 int reg_type, int complete_flag,
 			 int num_bases, char **basenames,
-			 char *term_dst, int xpath_use)
+			 char *term_dst, int xpath_use, NMEM stream)
 {
     char term_dict[2*IT_MAX_WORD+2];
     int r, base_no;
@@ -1822,7 +1822,12 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
                       curAttributeSet, use_value, r);
                 if (r == -1)
+		{
+                    char val_str[32];
+                    sprintf (val_str, "%d", use_value);
+                    zh->errString = nmem_strdup (stream, val_str);
                     zh->errCode = 114;
+		}
                 else
                     zh->errCode = 121;
                 return -1;
@@ -1859,7 +1864,10 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         if (!prefix_len)
         {
+            char val_str[32];
+            sprintf (val_str, "%d", use_value);
             zh->errCode = 114;
+            zh->errString = nmem_strdup (stream, val_str);
             return -1;
         }
         term_dict[prefix_len++] = ')';        
@@ -1900,7 +1908,8 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
 	grep_info.isam_p_indx = 0;
         r = numeric_term (zh, zapt, &termp, attributeSet, &grep_info,
 			  reg_type, complete_flag, num_bases, basenames,
-			  term_dst, xpath_use);
+			  term_dst, xpath_use,
+			  stream);
         if (r < 1)
             break;
 	logf (LOG_DEBUG, "term: %s", term_dst);
@@ -2705,7 +2714,12 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             logf (LOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
                   attributeset, use_value);
 	    if (r == -1)
-		zh->errCode = 114;
+	    {
+                char val_str[32];
+                sprintf (val_str, "%d", use_value);
+                zh->errCode = 114;
+                zh->errString = odr_strdup (stream, val_str);
+	    }	
 	    else
 		zh->errCode = 121;
 	    *num_entries = 0;
