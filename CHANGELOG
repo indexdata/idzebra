@@ -1,13 +1,20 @@
 
-Perl API updates and fixes.
+Zvrank: an experimental ranking algorithm. See doc/zvrank.txt
+ Johannes Leveling <Johannes.Leveling at fernuni-hagen.de>
+
+Advanced MARC indexing. See doc/marc_indexing.xml
+ Oleg Kolobov <oleg at lib.tpu.ru>
+
+Perl API updates and fixes. 
+ Peter Popovics <pop at technomat.hu>
 
 Fixed 'zebraidx delete'.
 
 Implemented 'zebraidx clean'.
 
-64-bit offsets for register files on WIN32.
+64-bit offsets for register files on WIN32 (no 2 GB limit).
 
-Fixed a few memory leaks wrt sorting.
+Fixed a few memory leaks WRT sorting.
 
 --- 1.3.7 2003/02/27
 
