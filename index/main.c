@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2001, Index Data
  * All rights reserved.
  *
- * $Id: main.c,v 1.80 2001-11-19 23:05:22 adam Exp $
+ * $Id: main.c,v 1.81 2001-11-19 23:29:09 adam Exp $
  */
 #include <stdio.h>
 #include <string.h>
@@ -39,7 +39,9 @@ int main (int argc, char **argv)
     int nsections = 0;
     int disableCommit = 0;
     size_t mem_max = 0;
+#ifndef WIN32
     char nbuf[100];
+#endif
     struct recordGroup rGroupDef;
 
     nmem_init ();
