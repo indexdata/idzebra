@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookup.c,v $
- * Revision 1.2  1994-09-16 15:39:14  adam
+ * Revision 1.3  1994-09-26 10:17:25  adam
+ * Minor changes.
+ *
+ * Revision 1.2  1994/09/16  15:39:14  adam
  * Initial code of lookup - not tested yet.
  *
  * Revision 1.1  1994/08/16  16:26:48  adam
@@ -61,7 +64,11 @@ static char *dict_look (Dict dict, Dict_char *str)
             {
                 memcpy (&subptr, info, sizeof(Dict_ptr));
                 if (*++str == DICT_EOS)
-                    return info+sizeof(Dict_ptr)+sizeof(Dict_char);
+                {
+                    if (info[sizeof(Dict_ptr)+sizeof(Dict_char)])
+                        return info+sizeof(Dict_ptr)+sizeof(Dict_char);
+                    return NULL;
+                }
                 else
                 {
                     if (subptr == 0)

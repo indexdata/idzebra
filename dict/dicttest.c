@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.9  1994-09-22 14:43:56  adam
+ * Revision 1.10  1994-09-26 10:17:24  adam
+ * Minor changes.
+ *
+ * Revision 1.9  1994/09/22  14:43:56  adam
  * First functional version of lookup with error correction. A 'range'
  * specified the maximum number of insertions+deletions+substitutions.
  *
@@ -46,10 +49,13 @@
 #include <dict.h>
 
 char *prog;
-Dict dict;
+static Dict dict;
+
+static int look_hits;
 
 static int lookup_handle (Dict_char *name)
 {
+    look_hits++;
     printf ("%s\n", name);
     return 0;
 }
@@ -64,11 +70,12 @@ int main (int argc, char **argv)
     int infosize = 4;
     int cache = 10;
     int ret;
+    int unique = 0;
+    char *arg;
     int no_of_iterations = 0;
     int no_of_new = 0, no_of_same = 0, no_of_change = 0;
     int no_of_hits = 0, no_of_misses = 0;
-    int unique = 0;
-    char *arg;
+
     
     prog = argv[0];
     if (argc < 2)
@@ -202,7 +209,12 @@ int main (int argc, char **argv)
                     }
                     else
                     {
+                        look_hits = 0;
                         dict_lookup_ec (dict, ipf_ptr, range, lookup_handle);
+                        if (look_hits)
+                            no_of_hits++;
+                        else
+                            no_of_misses++;
                     }
                     ++no_of_iterations;
                     ipf_ptr += (i-1);
