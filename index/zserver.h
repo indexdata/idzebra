@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.10  1995-10-09 16:18:38  adam
+ * Revision 1.11  1995-10-17 18:02:12  adam
+ * New feature: databases. Implemented as prefix to words in dictionary.
+ *
+ * Revision 1.10  1995/10/09  16:18:38  adam
  * Function dict_lookup_grep got extra client data parameter.
  *
  * Revision 1.9  1995/10/06  14:38:01  adam
@@ -43,11 +46,6 @@
 #include <rset.h>
 
 typedef struct {
-    size_t size;
-    char *buf;
-} ZServerRecord;
-
-typedef struct {
     int sysno;
     int score;
 } ZServerSetSysno;
@@ -75,6 +73,7 @@ int rpn_search (ZServerInfo *zi,
                 const char *setname, int *hits);
 
 int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
+              int num_bases, char **basenames,
               int *position, int *num_entries, struct scan_entry **list,
               int *status);
 
@@ -83,4 +82,4 @@ ZServerSet *resultSetAdd (ZServerInfo *zi, const char *name,
 ZServerSet *resultSetGet (ZServerInfo *zi, const char *name);
 ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name,
                                     int num, int *positions);
-void resultSetRecordDel (ZServerInfo *zi, ZServerRecord *records, int num);
+void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.18  1995-10-16 14:03:09  quinn
+ * Revision 1.19  1995-10-17 18:02:11  adam
+ * New feature: databases. Implemented as prefix to words in dictionary.
+ *
+ * Revision 1.18  1995/10/16  14:03:09  quinn
  * Changes to support element set names and espec1
  *
  * Revision 1.17  1995/10/16  09:32:40  adam
@@ -231,8 +234,9 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
         return &r;
     }
     r.errcode = record_fetch (&server_info, records[0].sysno,
-                              records[0].score, q->stream,
-                              q->format, q->comp, &r.format, &r.record, &r.len);
+                              records[0].score, q->stream, q->format,
+                              q->comp, &r.format, &r.record, &r.len);
+    resultSetSysnoDel (&server_info, records, 1);
     return &r;
 }
 
@@ -253,6 +257,7 @@ bend_scanresult *bend_scan (void *handle, bend_scanrequest *q, int *num)
     r.term_position = q->term_position;
     r.num_entries = q->num_entries;
     r.errcode = rpn_scan (&server_info, server_info.odr, q->term,
+                          q->num_bases, q->basenames,
                           &r.term_position,
                           &r.num_entries, &r.entries, &status);
     r.status = status;

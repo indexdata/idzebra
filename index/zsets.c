@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.8  1995-10-10 13:59:25  adam
+ * Revision 1.9  1995-10-17 18:02:14  adam
+ * New feature: databases. Implemented as prefix to words in dictionary.
+ *
+ * Revision 1.8  1995/10/10  13:59:25  adam
  * Function rset_open changed its wflag parameter to general flags.
  *
  * Revision 1.7  1995/10/06  14:38:01  adam
@@ -73,8 +76,8 @@ ZServerSet *resultSetGet (ZServerInfo *zi, const char *name)
     return NULL;
 }
 
-ZServerSetSysno *resultSetSysnoGet  (ZServerInfo *zi, const char *name, 
-                                     int num, int *positions)
+ZServerSetSysno *resultSetSysnoGet (ZServerInfo *zi, const char *name, 
+                                    int num, int *positions)
 {
     ZServerSet *sset;
     ZServerSetSysno *sr;
@@ -117,11 +120,7 @@ ZServerSetSysno *resultSetSysnoGet  (ZServerInfo *zi, const char *name,
     return sr;
 }
 
-void resultSetRecordDel (ZServerInfo *zi, ZServerRecord *records, int num)
+void resultSetSysnoDel (ZServerInfo *zi, ZServerSetSysno *records, int num)
 {
-    int i;
-
-    for (i = 0; i<num; i++)
-        xfree (records[i].buf);
     xfree (records);
 }

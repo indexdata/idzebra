@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.17  1995-10-13 16:01:49  adam
+ * Revision 1.18  1995-10-17 18:02:08  adam
+ * New feature: databases. Implemented as prefix to words in dictionary.
+ *
+ * Revision 1.17  1995/10/13  16:01:49  adam
  * Work on relations.
  *
  * Revision 1.16  1995/10/10  12:24:38  adam
@@ -80,9 +83,11 @@ struct dir_entry {
 struct dir_entry *dir_open (const char *rep);
 void dir_sort (struct dir_entry *e);
 void dir_free (struct dir_entry **e_p);
-void repository (int cmd, const char *rep, const char *base_path);
+void repository (int cmd, const char *rep, const char *base_path,
+                 char *databaseName);
 
-void file_extract (int cmd, const char *fname, const char *kname);
+void file_extract (int cmd, const char *fname, const char *kname,
+                   char *databaseName);
 
 void key_open (int mem);
 int key_close (void);
@@ -107,4 +112,7 @@ void strtab_del (struct strtab *t,
                  void (*func)(const char *name, void *info, void *data),
                  void *data);
 int index_char_cvt (int c);
-int index_word_prefix (char *string, int attrSet, int attrUse);
+int index_word_prefix (char *string, int attset_ordinal,
+                       int local_attribute,
+                       int numbases,
+                       char **databaseNames);

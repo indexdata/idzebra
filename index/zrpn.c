@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.30  1995-10-16 09:32:38  adam
+ * Revision 1.31  1995-10-17 18:02:10  adam
+ * New feature: databases. Implemented as prefix to words in dictionary.
+ *
+ * Revision 1.30  1995/10/16  09:32:38  adam
  * More work on relational op.
  *
  * Revision 1.29  1995/10/13  16:01:49  adam
@@ -114,7 +117,8 @@
 #include <rsbool.h>
 #include <rsrel.h>
 
-int index_word_prefix_map (char *string, oid_value attrSet, int attrUse)
+int index_word_prefix_map (char *string, oid_value attrSet, int attrUse,
+                           int num_bases, char **basenames)
 {
     attent *attp;
 
@@ -124,7 +128,8 @@ int index_word_prefix_map (char *string, oid_value attrSet, int attrUse)
         return -1;
     logf (LOG_DEBUG, "ord=%d", attp->attset_ordinal);
     return index_word_prefix (string, attp->attset_ordinal,
-                              attp->local_attribute);
+                              attp->local_attribute,
+                              num_bases, basenames);
 }
 
 /*
@@ -504,7 +509,7 @@ static int grep_handle (Dict_char *name, const char *info, void *p)
     return 0;
 }
 
-static void gen_regular_ge (char *dst, int val)
+static void gen_regular_rel (char *dst, int val, int islt)
 {
     int dst_p = 1;
     int w, d, i;
@@ -512,33 +517,55 @@ static void gen_regular_ge (char *dst, int val)
     char numstr[20];
 
     *dst = '(';
-    if (val < 0) 
-        val = 0;
     sprintf (numstr, "%d", val);
     for (w = strlen(numstr); --w >= 0; pos++)
     {
         d = numstr[w];
         if (pos > 0)
         {
-            if (d == '9')
-                continue;
-            d++;
+            if (islt)
+            {
+                if (d == '0')
+                    continue;
+                d--;
+            } 
+            else
+            {
+                if (d == '9')
+                    continue;
+                d++;
+            }
         }
         
         strcpy (dst + dst_p, numstr);
         dst_p = strlen(dst) - pos - 1;
 
-        if (d <= '8')
-        { 
-            dst[dst_p++] = '[';
-            dst[dst_p++] = d;
-            dst[dst_p++] = '-';
-            dst[dst_p++] = '9';
-            dst[dst_p++] = ']';
+        if (islt)
+        {
+            if (d != '0')
+            {
+                dst[dst_p++] = '[';
+                dst[dst_p++] = '0';
+                dst[dst_p++] = '-';
+                dst[dst_p++] = d;
+                dst[dst_p++] = ']';
+            }
+            else
+                dst[dst_p++] = d;
         }
         else
-            dst[dst_p++] = d;
-
+        {
+            if (d != '9')
+            { 
+                dst[dst_p++] = '[';
+                dst[dst_p++] = d;
+                dst[dst_p++] = '-';
+                dst[dst_p++] = '9';
+                dst[dst_p++] = ']';
+            }
+            else
+                dst[dst_p++] = d;
+        }
         for (i = 0; i<pos; i++)
         {
             dst[dst_p++] = '[';
@@ -550,24 +577,84 @@ static void gen_regular_ge (char *dst, int val)
         dst[dst_p++] = '|';
     }
     dst[dst_p] = '\0';
-    for (i = 0; i <= pos; i++)
-        strcat (dst, "[0-9]");
-    strcat (dst, "[0-9]*)");
+    if (islt)
+    {
+        for (i=1; i<pos; i++)
+            strcat (dst, "[0-9]?");
+    }
+    else
+    {
+        for (i = 0; i <= pos; i++)
+            strcat (dst, "[0-9]");
+        strcat (dst, "[0-9]*");
+    }
+    strcat (dst, ")");
+}
+
+static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
+                            const char *term_sub,
+                            char *term_dict,
+                            oid_value attributeSet,
+                            struct grep_info *grep_info)
+{
+    AttrType relation;
+    int relation_value;
+    int term_value;
+    int r;
+
+    attr_init (&relation, zapt, 2);
+    relation_value = attr_find (&relation, NULL);
+    term_value = atoi (term_sub);
+
+    switch (relation_value)
+    {
+    case 1:
+        if (term_value <= 0)
+            return 1;
+        logf (LOG_DEBUG, "Relation <");
+        gen_regular_rel (term_dict + strlen(term_dict), term_value-1, 1);
+        break;
+    case 2:
+        if (term_value < 0)
+            return 1;
+        logf (LOG_DEBUG, "Relation <=");
+        gen_regular_rel (term_dict + strlen(term_dict), term_value, 1);
+        break;
+    case 4:
+        if (term_value < 0)
+            term_value = 0;
+        logf (LOG_DEBUG, "Relation >=");
+        gen_regular_rel (term_dict + strlen(term_dict), term_value, 0);
+        break;
+    case 5:
+        if (term_value < 0)
+            term_value = 0;
+        logf (LOG_DEBUG, "Relation >");
+        gen_regular_rel (term_dict + strlen(term_dict), term_value+1, 0);
+        break;
+    default:
+        return 0;
+    }
+    logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
+    r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, 
+                          grep_handle);
+    if (r)
+        logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
+    logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
+    return 1;
 }
 
 static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                        const char *term_sub,
-                       oid_value attributeSet, struct grep_info *grep_info)
+                       oid_value attributeSet, struct grep_info *grep_info,
+                       int num_bases, char **basenames)
 {
-    char term_dict[10*IT_MAX_WORD+2];
+    char term_dict[2*IT_MAX_WORD+2];
     int i, j, r;
-    const char *info;    
     AttrType truncation;
     int truncation_value;
     AttrType use;
     int use_value;
-    AttrType relation;
-    int relation_value;
     oid_value curAttributeSet = attributeSet;
 
     attr_init (&use, zapt, 1);
@@ -577,51 +664,31 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     truncation_value = attr_find (&truncation, NULL);
     logf (LOG_DEBUG, "truncation value %d", truncation_value);
 
-    attr_init (&relation, zapt, 2);
-    relation_value = attr_find (&relation, NULL);
-
     if (use_value == -1)
         use_value = 1016;
-    i = index_word_prefix_map (term_dict, curAttributeSet, use_value);
+    i = index_word_prefix_map (term_dict, curAttributeSet, use_value,
+                               num_bases, basenames);
     if (i < 0)
     {
         zi->errCode = 114;
         return -1;
     }
-    switch (relation_value)
-    {
-    case 1:
-    case 2:
-        break;
-    case 4:
-        logf (LOG_LOG, "Relation ge");
-        gen_regular_ge (term_dict + strlen(term_dict), atoi(term_sub));
-        logf (LOG_LOG, "dict_lookup_grep: %s", term_dict);
-        r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, 
-                              grep_handle);
-        if (r)
-            logf (LOG_WARN, "dict_lookup_grep fail, rel=ge: %d", r);
-        logf (LOG_LOG, "%d positions", grep_info->isam_p_indx);
+
+    if (relational_term (zi, zapt, term_sub, term_dict,
+                         attributeSet, grep_info))
         return 0;
-    case 5:
-        logf (LOG_LOG, "Relation gt");
-        gen_regular_ge (term_dict + strlen(term_dict), atoi(term_sub)+1);
-        logf (LOG_LOG, "dict_lookup_grep: %s", term_dict);
-        r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info, 
-                              grep_handle);
-        if (r)
-            logf (LOG_WARN, "dict_lookup_grep fail, rel=gt: %d", r);
-        logf (LOG_LOG, "%d positions", grep_info->isam_p_indx);
-        return 0;
-    }
     switch (truncation_value)
     {
     case -1:         /* not specified */
     case 100:        /* do not truncate */
+        strcat (term_dict, "(");
         strcat (term_dict, term_sub);
-        logf (LOG_DEBUG, "dict_lookup: %s", term_dict);
-        if ((info = dict_lookup (zi->wordDict, term_dict)))
-            add_isam_p (info, grep_info);
+        strcat (term_dict, ")");
+        logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
+        r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
+                              grep_handle);
+        if (r)
+            logf (LOG_WARN, "dict_lookup_grep fail, trunc=none: %d", r);
         break;
     case 1:          /* right truncation */
         strcat (term_dict, term_sub);
@@ -650,14 +717,14 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         strcat (term_dict, "(");
         strcat (term_dict, term_sub);
         strcat (term_dict, ")");
-        logf (LOG_LOG, "dict_lookup_grep: %s", term_dict);
+        logf (LOG_DEBUG, "dict_lookup_grep: %s", term_dict);
         r = dict_lookup_grep (zi->wordDict, term_dict, 0, grep_info,
                               grep_handle);
         if (r)
-            logf (LOG_WARN, "dict_lookup_grep fail, truncation=regular: %d", r);
+            logf (LOG_WARN, "dict_lookup_grep fail, trunc=regular: %d", r);
         break;
     }
-    logf (LOG_LOG, "%d positions", grep_info->isam_p_indx);
+    logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
     return 0;
 }
 
@@ -677,7 +744,8 @@ static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 
 static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
                                       Z_AttributesPlusTerm *zapt,
-                                      oid_value attributeSet)
+                                      oid_value attributeSet,
+                                      int num_bases, char **basenames)
 {
     rset_relevance_parms parms;
     char termz[IT_MAX_WORD+1];
@@ -709,7 +777,8 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
         }
         else
             strcpy (term_sub, p0);
-        if (trunc_term (zi, zapt, term_sub, attributeSet, &grep_info))
+        if (trunc_term (zi, zapt, term_sub, attributeSet, &grep_info,
+                        num_bases, basenames))
             return NULL;
         if (!p1)
             break;
@@ -729,7 +798,8 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
 
 static RSET rpn_search_APT_word (ZServerInfo *zi,
                                  Z_AttributesPlusTerm *zapt,
-                                 oid_value attributeSet)
+                                 oid_value attributeSet,
+                                 int num_bases, char **basenames)
 {
     rset_isam_parms parms;
     char termz[IT_MAX_WORD+1];
@@ -747,7 +817,8 @@ static RSET rpn_search_APT_word (ZServerInfo *zi,
     grep_info.isam_p_size = 0;
     grep_info.isam_p_buf = NULL;
 
-    if (trunc_term (zi, zapt, termz, attributeSet, &grep_info))
+    if (trunc_term (zi, zapt, termz, attributeSet, &grep_info,
+                    num_bases, basenames))
         return NULL;
     if (grep_info.isam_p_indx < 1)
         result = rset_create (rset_kind_null, NULL);
@@ -852,7 +923,8 @@ static RSET rpn_prox (RSET *rset, int rset_no)
 
 static RSET rpn_search_APT_phrase (ZServerInfo *zi,
                                    Z_AttributesPlusTerm *zapt,
-                                   oid_value attributeSet)
+                                   oid_value attributeSet,
+                                   int num_bases, char **basenames)
 {
     char termz[IT_MAX_WORD+1];
     char term_sub[IT_MAX_WORD+1];
@@ -882,7 +954,8 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
             strcpy (term_sub, p0);
 
         grep_info.isam_p_indx = 0;
-        if (trunc_term (zi, zapt, term_sub, attributeSet, &grep_info))
+        if (trunc_term (zi, zapt, term_sub, attributeSet, &grep_info,
+                        num_bases, basenames))
             return NULL;
         if (grep_info.isam_p_indx == 0)
             rset[rset_no] = rset_create (rset_kind_null, NULL);
@@ -947,7 +1020,8 @@ static RSET rpn_search_APT_local (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 }
 
 static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                            oid_value attributeSet)
+                            oid_value attributeSet,
+                            int num_bases, char **basenames)
 {
     AttrType relation;
     AttrType structure;
@@ -962,17 +1036,23 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     {
     case -1:
         if (relation_value == 102) /* relevance relation */
-            return rpn_search_APT_relevance (zi, zapt, attributeSet);
-        return rpn_search_APT_phrase (zi, zapt, attributeSet);
+            return rpn_search_APT_relevance (zi, zapt, attributeSet,
+                                             num_bases, basenames);
+        return rpn_search_APT_phrase (zi, zapt, attributeSet,
+                                      num_bases, basenames);
     case 1: /* phrase */
         if (relation_value == 102) /* relevance relation */
-            return rpn_search_APT_relevance (zi, zapt, attributeSet);
-        return rpn_search_APT_phrase (zi, zapt, attributeSet);
+            return rpn_search_APT_relevance (zi, zapt, attributeSet,
+                                             num_bases, basenames);
+        return rpn_search_APT_phrase (zi, zapt, attributeSet,
+                                      num_bases, basenames);
         break;
     case 2: /* word */
         if (relation_value == 102) /* relevance relation */
-            return rpn_search_APT_relevance (zi, zapt, attributeSet);
-        return rpn_search_APT_word (zi, zapt, attributeSet);
+            return rpn_search_APT_relevance (zi, zapt, attributeSet,
+                                             num_bases, basenames);
+        return rpn_search_APT_word (zi, zapt, attributeSet,
+                                    num_bases, basenames);
     case 3: /* key */
         break;
     case 4: /* year */
@@ -980,7 +1060,8 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     case 5: /* date - normalized */
         break;
     case 6: /* word list */
-        return rpn_search_APT_relevance (zi, zapt, attributeSet);
+        return rpn_search_APT_relevance (zi, zapt, attributeSet,
+                                         num_bases, basenames);
     case 100: /* date - un-normalized */
         break;
     case 101: /* name - normalized */
@@ -992,13 +1073,16 @@ static RSET rpn_search_APT (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     case 104: /* urx */
         break;
     case 105: /* free-form-text */
-        return rpn_search_APT_relevance (zi, zapt, attributeSet);
+        return rpn_search_APT_relevance (zi, zapt, attributeSet,
+                                         num_bases, basenames);
     case 106: /* document-text */
-        return rpn_search_APT_relevance (zi, zapt, attributeSet);
+        return rpn_search_APT_relevance (zi, zapt, attributeSet,
+                                         num_bases, basenames);
     case 107: /* local-number */
         return rpn_search_APT_local (zi, zapt, attributeSet);
     case 108: /* string */ 
-        return rpn_search_APT_word (zi, zapt, attributeSet);
+        return rpn_search_APT_word (zi, zapt, attributeSet,
+                                    num_bases, basenames);
     case 109: /* numeric string */
         break;
     }
@@ -1016,7 +1100,8 @@ static RSET rpn_search_ref (ZServerInfo *zi, Z_ResultSetId *resultSetId)
 }
 
 static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
-                                  oid_value attributeSet)
+                                  oid_value attributeSet,
+                                  int num_bases, char **basenames)
 {
     RSET r = NULL;
     if (zs->which == Z_RPNStructure_complex)
@@ -1024,11 +1109,13 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
         rset_bool_parms bool_parms;
 
         bool_parms.rset_l = rpn_search_structure (zi, zs->u.complex->s1,
-                                                  attributeSet);
+                                                  attributeSet,
+                                                  num_bases, basenames);
         if (bool_parms.rset_l == NULL)
             return NULL;
         bool_parms.rset_r = rpn_search_structure (zi, zs->u.complex->s2,
-                                                  attributeSet);
+                                                  attributeSet,
+                                                  num_bases, basenames);
         if (bool_parms.rset_r == NULL)
         {
             rset_delete (bool_parms.rset_l);
@@ -1058,7 +1145,7 @@ static RSET rpn_search_structure (ZServerInfo *zi, Z_RPNStructure *zs,
         {
             logf (LOG_DEBUG, "rpn_search_APT");
             r = rpn_search_APT (zi, zs->u.simple->u.attributesPlusTerm,
-                                attributeSet);
+                                attributeSet, num_bases, basenames);
         }
         else if (zs->u.simple->which == Z_Operand_resultSetId)
         {
@@ -1112,7 +1199,8 @@ int rpn_search (ZServerInfo *zi,
     attrset = oid_getentbyoid (rpn->attributeSetId);
     attributeSet = attrset->value;
 
-    rset = rpn_search_structure (zi, rpn->RPNStructure, attributeSet);
+    rset = rpn_search_structure (zi, rpn->RPNStructure, attributeSet,
+                                 num_bases, basenames);
     if (!rset)
         return zi->errCode;
     count_set (rset, hits);
@@ -1166,6 +1254,7 @@ static int scan_handle (Dict_char *name, const char *info, int pos,
 }
 
 int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
+              int num_bases, char **basenames,
               int *position, int *num_entries, struct scan_entry **list,
               int *status)
 {
@@ -1181,6 +1270,9 @@ int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
     struct scan_info scan_info;
 
     logf (LOG_DEBUG, "scan, position = %d, num = %d", pos, num);
+
+    if (num_bases != 1)
+        return 111;
     scan_info.before = before = pos-1;
     scan_info.after = after = 1+num-pos;
     scan_info.odr = odr;
@@ -1197,7 +1289,7 @@ int rpn_scan (ZServerInfo *zi, ODR odr, Z_AttributesPlusTerm *zapt,
 
     if (use_value == -1)
         use_value = 1016;
-    i = index_word_prefix (termz, 1, use_value);
+    i = index_word_prefix (termz, 1, use_value, num_bases, basenames);
     strcpy (scan_info.prefix, termz);
     sizez = term->u.general->len;
     if (sizez > IT_MAX_WORD)

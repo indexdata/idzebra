@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.11  1995-10-06 16:33:37  adam
+ * Revision 1.12  1995-10-17 18:02:08  adam
+ * New feature: databases. Implemented as prefix to words in dictionary.
+ *
+ * Revision 1.11  1995/10/06  16:33:37  adam
  * Use attribute mappings.
  *
  * Revision 1.10  1995/09/29  14:01:41  adam
@@ -113,9 +116,27 @@ int index_char_cvt (int c)
 }
 
 int index_word_prefix (char *string, int attset_ordinal,
-                           int local_attribute)
+                       int local_attribute,
+                       int num_bases,
+                       char **databaseNames)
 {
-    sprintf (string, "%c%04d", attset_ordinal + '0', local_attribute);
-    return 5;
+    int i;
+    if (num_bases > 1)
+    {
+        sprintf (string, "%c%04d(", attset_ordinal + '0', local_attribute);
+        strcat (string, databaseNames[i]);
+        for (i = 1; i < num_bases; i++)
+        {
+            strcat (string, "|");
+            strcat (string, databaseNames[i]);
+        }
+        strcat (string, ")@");
+    }
+    else
+        sprintf (string, "%c%04d%s@", attset_ordinal + '0', local_attribute,
+                 *databaseNames);
+    for (i = 0; string[i]; i++)
+        string[i] = index_char_cvt (string[i]);
+    return i;
 }
 

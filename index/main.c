@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.13  1995-10-10 12:24:39  adam
+ * Revision 1.14  1995-10-17 18:02:09  adam
+ * New feature: databases. Implemented as prefix to words in dictionary.
+ *
+ * Revision 1.13  1995/10/10  12:24:39  adam
  * Temporary sort files are compressed.
  *
  * Revision 1.12  1995/10/04  16:57:20  adam
@@ -63,10 +66,12 @@ int main (int argc, char **argv)
     char *arg;
     char *base_name = NULL;
     char *base_path = NULL;
+    char *databaseName = "Default";
     int nsections;
+    int key_open_flag = 0;
 
     prog = *argv;
-    while ((ret = options ("r:v:m:", argv, argc, &arg)) != -2)
+    while ((ret = options ("r:v:m:d:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -99,9 +104,12 @@ int main (int argc, char **argv)
             }
             else
             {
-                unlink ("keys.tmp");
-                key_open (mem_max);
-                repository (cmd, arg, base_path);
+                if (!key_open_flag)
+                {
+                    key_open (mem_max);
+                    key_open_flag = 1;
+                }
+                repository (cmd, arg, base_path, databaseName);
                 cmd = 0;
             }
         }
@@ -117,6 +125,10 @@ int main (int argc, char **argv)
         {
             mem_max = 1024*1024*atoi(arg);
         }
+        else if (ret == 'd')
+        {
+            databaseName = arg;
+        }
         else
         {
             logf (LOG_FATAL, "Unknown option '-%s'", arg);
@@ -125,10 +137,12 @@ int main (int argc, char **argv)
     }
     if (!base_name)
     {
-        fprintf (stderr, "index [-v log] [-r repository] "
-                 "base cmd1 dir1 cmd2 dir2 ...\n");
+        fprintf (stderr, "index [-v log] [-r repository] [-m meg] [-d base]"
+                 " base cmd1 dir1 cmd2 dir2 ...\n");
         exit (1);
     }
+    if (!key_open_flag)
+        exit (0);
     nsections = key_close ();
     if (!nsections)
         exit (0);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.21  1995-10-10 12:24:38  adam
+ * Revision 1.22  1995-10-17 18:02:07  adam
+ * New feature: databases. Implemented as prefix to words in dictionary.
+ *
+ * Revision 1.21  1995/10/10  12:24:38  adam
  * Temporary sort files are compressed.
  *
  * Revision 1.20  1995/10/06  13:52:05  adam
@@ -88,6 +91,7 @@ static int sys_idx_fd = -1;
 
 static int key_cmd;
 static int key_sysno;
+static char *key_databaseName;
 static char **key_buf;
 static size_t ptr_top;
 static size_t ptr_i;
@@ -182,7 +186,7 @@ void encode_key_write (char *k, struct encode_info *i, FILE *outf)
         exit (1);
     }
 }
-    
+
 void key_flush (void)
 {
     FILE *outf;
@@ -257,7 +261,8 @@ static void wordAdd (const RecWord *p)
     ++ptr_i;
     key_buf[ptr_top-ptr_i] = (char*)key_buf + kused;
     kused += index_word_prefix ((char*)key_buf + kused,
-                                p->attrSet, p->attrUse);
+                                p->attrSet, p->attrUse,
+                                1, &key_databaseName);
     switch (p->which)
     {
     case Word_String:
@@ -358,7 +363,8 @@ static int file_read (int fd, char *buf, size_t count)
     return read (fd, buf, count);
 }
 #endif
-void file_extract (int cmd, const char *fname, const char *kname)
+void file_extract (int cmd, const char *fname, const char *kname,
+                   char *databaseName)
 {
     int i, r;
     char ext[128];
@@ -369,6 +375,7 @@ void file_extract (int cmd, const char *fname, const char *kname)
     struct recExtractCtrl extractCtrl;
     RecType rt;
 
+    key_databaseName = databaseName;
     for (i = strlen(fname); --i >= 0; )
         if (fname[i] == '/')
         {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.4  1995-09-28 09:19:46  adam
+ * Revision 1.5  1995-10-17 18:02:09  adam
+ * New feature: databases. Implemented as prefix to words in dictionary.
+ *
+ * Revision 1.4  1995/09/28  09:19:46  adam
  * xfree/xmalloc used everywhere.
  * Extract/retrieve method seems to work for text records.
  *
@@ -30,7 +33,7 @@
 #include <alexutil.h>
 #include "index.h"
 
-static void repository_extract_r (int cmd, char *rep)
+static void repository_extract_r (int cmd, char *rep, char *databaseName)
 {
     struct dir_entry *e;
     int i;
@@ -51,10 +54,10 @@ static void repository_extract_r (int cmd, char *rep)
         switch (fs.st_mode & S_IFMT)
         {
         case S_IFREG:
-            file_extract (cmd, rep, rep);
+            file_extract (cmd, rep, rep, databaseName);
             break;
         case S_IFDIR:
-            repository_extract_r (cmd, rep);
+            repository_extract_r (cmd, rep, databaseName);
             break;
         }
     }
@@ -111,15 +114,15 @@ void del_dir (const char *dst)
         logf (LOG_ERRNO|LOG_WARN, "rmdir");
 }
 
-void repository_update_r (int cmd, char *dst, char *src);
+void repository_update_r (int cmd, char *dst, char *src, char *databaseName);
 
-void repository_add_tree (int cmd, char *dst, char *src)
+void repository_add_tree (int cmd, char *dst, char *src, char *databaseName)
 {
     mkdir (dst, 0755);
-    repository_update_r (cmd, dst, src);
+    repository_update_r (cmd, dst, src, databaseName);
 }
 
-void repository_del_tree (int cmd, char *dst, char *src)
+void repository_del_tree (int cmd, char *dst, char *src, char *databaseName)
 {
     size_t dst_len = strlen (dst);
     size_t src_len = strlen (src);
@@ -148,11 +151,11 @@ void repository_del_tree (int cmd, char *dst, char *src)
         switch (fs_dst.st_mode & S_IFMT)
         {
         case S_IFREG:
-            file_extract ('d', dst, dst);
+            file_extract ('d', dst, dst, databaseName);
             del_file (dst);
             break;
         case S_IFDIR:
-            repository_del_tree (cmd, dst, src);
+            repository_del_tree (cmd, dst, src, databaseName);
             break;
         }
         i_dst++;
@@ -165,7 +168,7 @@ void repository_del_tree (int cmd, char *dst, char *src)
     }
 }
 
-void repository_update_r (int cmd, char *dst, char *src)
+void repository_update_r (int cmd, char *dst, char *src, char *databaseName)
 {
     struct dir_entry *e_dst, *e_src;
     int i_dst = 0, i_src = 0;
@@ -181,13 +184,13 @@ void repository_update_r (int cmd, char *dst, char *src)
     if (!e_dst)
     {
         dir_free (&e_src);
-        repository_add_tree (cmd, dst, src);
+        repository_add_tree (cmd, dst, src, databaseName);
         return;
     }
     else if (!e_src)
     {
         dir_free (&e_dst);
-        repository_del_tree (cmd, dst, src);
+        repository_del_tree (cmd, dst, src, databaseName);
         return;
     }
 
@@ -228,13 +231,13 @@ void repository_update_r (int cmd, char *dst, char *src)
             case S_IFREG:
                 if (fs_src.st_ctime > fs_dst.st_ctime)
                 {
-                    file_extract ('d', dst, dst);
-                    file_extract ('a', src, dst);
+                    file_extract ('d', dst, dst, databaseName);
+                    file_extract ('a', src, dst, databaseName);
                     copy_file (dst, src);
                 }
                 break;
             case S_IFDIR:
-                repository_update_r (cmd, dst, src);
+                repository_update_r (cmd, dst, src, databaseName);
                 break;
             }
             i_src++;
@@ -249,11 +252,11 @@ void repository_update_r (int cmd, char *dst, char *src)
             switch (fs_src.st_mode & S_IFMT)
             {
             case S_IFREG:
-                file_extract ('a', src, dst);
+                file_extract ('a', src, dst, databaseName);
                 copy_file (dst, src);
                 break;
             case S_IFDIR:
-                repository_add_tree (cmd, dst, src);
+                repository_add_tree (cmd, dst, src, databaseName);
                 break;
             }
             i_src++;
@@ -267,11 +270,11 @@ void repository_update_r (int cmd, char *dst, char *src)
             switch (fs_dst.st_mode & S_IFMT)
             {
             case S_IFREG:
-                file_extract ('d', dst, dst);
+                file_extract ('d', dst, dst, databaseName);
                 del_file (dst);
                 break;
             case S_IFDIR:
-                repository_del_tree (cmd, dst, src);
+                repository_del_tree (cmd, dst, src, databaseName);
                 break;
             }
             i_dst++;
@@ -281,7 +284,8 @@ void repository_update_r (int cmd, char *dst, char *src)
     dir_free (&e_src);
 }
 
-void repository (int cmd, const char *rep, const char *base_path)
+void repository (int cmd, const char *rep, const char *base_path,
+                 char *databaseName)
 {
     char rep_tmp1[2048];
     char rep_tmp2[2048];
@@ -290,9 +294,9 @@ void repository (int cmd, const char *rep, const char *base_path)
     if (base_path)
     {
         strcpy (rep_tmp2, base_path);
-        repository_update_r (cmd, rep_tmp2, rep_tmp1);
+        repository_update_r (cmd, rep_tmp2, rep_tmp1, databaseName);
     }
     else
-        repository_extract_r (cmd, rep_tmp1);
+        repository_extract_r (cmd, rep_tmp1, databaseName);
 }
 
