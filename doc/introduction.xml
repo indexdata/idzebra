@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.10 2002-08-29 01:15:25 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.11 2002-08-29 14:05:11 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -78,10 +78,10 @@
      <para>
       Robust updating - records can be added and deleted ``on the fly''
       without rebuilding the index from scratch.
-      Registers can be safely updated even while users are accessing
+      Records can be safely updated even while users are accessing
       the server.
       The update procedure is tolerant to crashes or hard interrupts
-      during register updating - registers can be reconstructed following
+      during database updating - data can be reconstructed following
       a crash.
      </para>
     </listitem>
@@ -190,7 +190,9 @@
    Zebra has been deployed in numerous applications, in both the
    academic and commercial worlds, in application domains as diverse
    as bibliographic catalogues, geospatial information, structured
-   vocabulary browsing, ### (Help, guys!)
+   vocabulary browsing, government information locators, civic
+   information systems, environmental observations, museum information
+   and web indexes.
   </para>
   <para>
    Notable applications include the following:
@@ -199,7 +201,7 @@
   <sect2>
    <title>DADS - the DTV Article Database Service</title>
    <para>
-    DADS is a huge database of more than ten million records, totally
+    DADS is a huge database of more than ten million records, totalling
     over ten gigabytes of data.  The records are metadata about academic
     journal articles, primarily scientific; about 10% of these
     metadata records link to the full text of the articles they
@@ -207,12 +209,16 @@
     full text is not indexed.)
    </para>
    <para>
-    It allows students and researchers at DTU (###) to find and order
+    It allows students and researchers at DTU (Danmarks Tekniske
+    Universitet, the Technical College of Denmark) to find and order
     articles from multiple databases in a single query.  The database
     contains literature on all engineering subjects.  It's available
-    on-line through a web gateway at
-	http://www.dtv.dk/search/index_e.htm
-    though currently only to registered users.
+    on-line through a web gateway, though currently only to registered
+    users.
+   </para>
+   <para>
+    More information can be found at
+    <ulink url="http://www.dtv.dk/help/dads/index_e.htm"/>
    </para>
   </sect2>
 
