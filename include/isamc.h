@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.h,v $
- * Revision 1.3  1996-11-01 13:35:03  adam
+ * Revision 1.4  1996-11-08 11:08:01  adam
+ * New internal release.
+ *
+ * Revision 1.3  1996/11/01 13:35:03  adam
  * New element, max_blocks_mem, that control how many blocks of max size
  * to store in memory during isc_merge.
  *
@@ -59,8 +62,8 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P pos, ISAMC_I data);
 ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P pos);
 void isc_pp_close (ISAMC_PP pp);
 int isc_read_item (ISAMC_PP pp, char **dst);
-int isc_read_key (ISAMC_PP pp, void *buf);
-int isc_numkeys (ISAMC_PP pp);
+int isc_pp_read (ISAMC_PP pp, void *buf);
+int isc_pp_num (ISAMC_PP pp);
 
 #define isc_type(x) ((x) & 7)
 #define isc_block(x) ((x) >> 3)

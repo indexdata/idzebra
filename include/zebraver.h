@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.8  1996-10-18 12:38:22  adam
+ * Revision 1.9  1996-11-08 11:08:03  adam
+ * New internal release.
+ *
+ * Revision 1.8  1996/10/18 12:38:22  adam
  * New internal release.
  *
  * Revision 1.7  1996/06/06  13:30:12  quinn
@@ -35,5 +38,6 @@
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 1996-10-18 12:38:22 $"
+#define ZEBRADATE "$Date: 1996-11-08 11:08:03 $"
 #endif
+
