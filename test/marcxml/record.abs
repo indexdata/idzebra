@@ -1,4 +1,4 @@
-# $Id: record.abs,v 1.5 2004-12-02 12:04:49 adam Exp $
+# $Id: record.abs,v 1.6 2005-01-21 13:06:43 adam Exp $
 
 name marcxml
 attset bib1.att
@@ -14,4 +14,4 @@ xelm /record/controlfield[@tag="008"]		Code-Language:w
 xelm /record/datafield[@tag="100"]/subfield[@code="a"]	author:w,author:s
 xelm /record/datafield[@tag="245"]/subfield		title:w
 xelm /record/datafield[@tag="650"]		subject-heading:w,subject-heading:p
-
+xelm /record/datafield[@tag="710"]/subfield		Server-choice:p:range(data,first(data,'.'))
