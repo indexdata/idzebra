@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.32 2005-01-16 00:00:29 adam Exp $
+# $Id: makefile,v 1.33 2005-01-16 00:27:54 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -9,11 +9,11 @@ DEBUG=0   # 0 for release, 1 for debug
 
 # EXPAT is optional. It's required for grs.xml-filters.
 HAVE_EXPAT=1
-EXPAT_DIR= c:\Expat-1.95.7
+EXPAT_DIR=c:\Expat-1.95.8
 
 # iconv is optional
 HAVE_ICONV=1
-ICONV_DIR = c:\iconv-1.9.1.win32
+ICONV_DIR=c:\iconv-1.9.1.win32
 
 default: all
 
