@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.15  1996-03-20 09:35:18  adam
+ * Revision 1.16  1996-05-24 14:46:04  adam
+ * Added dict_grep_cmap function to define user-mapping in grep lookups.
+ *
+ * Revision 1.15  1996/03/20  09:35:18  adam
  * Function dict_lookup_grep got extra parameter, init_pos, which marks
  * from which position in pattern approximate pattern matching should occur.
  *
@@ -440,4 +443,9 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     xfree (Rj);
     rm_MatchContext (&mc);
     return i;
+}
+
+void dict_grep_cmap (Dict dict, char **(*cmap)(const char **from))
+{
+    dict->grep_cmap = cmap;
 }

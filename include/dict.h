@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.20  1996-03-20 09:35:23  adam
+ * Revision 1.21  1996-05-24 14:46:07  adam
+ * Added dict_grep_cmap function to define user-mapping in grep lookups.
+ *
+ * Revision 1.20  1996/03/20  09:35:23  adam
  * Function dict_lookup_grep got extra parameter, init_pos, which marks
  * from which position in pattern approximate pattern matching should occur.
  *
@@ -118,9 +121,9 @@ typedef struct Dict_file_struct
 typedef struct Dict_struct {
     int rw;
     Dict_BFile dbf;
+    char **(*grep_cmap)(const char **from);
     struct Dict_head head;
-}
-*Dict;
+} *Dict;
 
 #define DICT_MAGIC "dict00"
 
@@ -150,6 +153,9 @@ int	   dict_scan (Dict dict, char *str,
 		      int *before, int *after, void *client,
 		      int (*f)(char *name, const char *info, int pos,
                                void *client));
+
+void       dict_grep_cmap (Dict dict, char **(*cmap)(const char **from));
+
 
 #define DICT_EOS        0
 #define DICT_type(x)    0[(Dict_ptr*) x]

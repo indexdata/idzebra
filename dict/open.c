@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.9  1996-02-02 13:43:51  adam
+ * Revision 1.10  1996-05-24 14:46:04  adam
+ * Added dict_grep_cmap function to define user-mapping in grep lookups.
+ *
+ * Revision 1.9  1996/02/02  13:43:51  adam
  * The public functions simply use char instead of Dict_char to represent
  * search strings. Dict_char is used internally only.
  *
@@ -53,6 +56,7 @@ Dict dict_open (const char *name, int cache, int rw)
 
     sprintf (resource_str, "dict.%s.pagesize", name);
 
+    dict->grep_cmap = NULL;
     page_size = atoi (res_get_def (common_resource, resource_str, 
                                    DICT_DEFAULT_PAGESIZE));
     if (page_size < 2048)
