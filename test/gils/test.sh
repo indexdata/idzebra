@@ -1,15 +1,15 @@
-:
-echo Loading Records
+#!/bin/sh
 if [ -x ../../index/zmbolidx ]; then
-	../../index/zmbolidx -t grs.sgml update records
+	IDX=../../index/zmbolidx
+	SRV=../../index/zmbolsrv
+elif [ -x ../../index/zebraidx ]; then 
+	IDX=../../index/zebraidx
+	SRV=../../index/zebrasrv
+else
+	echo "No indexer found"
+	exit 1
 fi
-if [ -x ../../index/zebraidx ]; then
-	../../index/zebraidx -t grs.sgml update records
-fi
+echo Loading Records
+$IDX -t grs.sgml update records
 echo Starting Server
-if [ -x ../../index/zmbolsrv ]; then
-	../../index/zmbolsrv
-fi
-if [ -x ../../index/zebrasrv ]; then
-	../../index/zebrasrv
-fi
+$SRV
