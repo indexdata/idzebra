@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.10 2004-01-16 15:27:35 heikki Exp $
+/* $Id: rsbetween.c,v 1.11 2004-01-30 13:07:14 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -21,6 +21,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 
+/* rsbetween is (mostly) used for xml searches. It returns the hits of the
+ * "middle" rset, that are in between the "left" and "right" rsets. For
+ * example "Shakespeare" in between "<title>" and </title>. The thing is 
+ * complicated by the inclusion of attributes (from their own rset). If attrs
+ * specified, they must match the "left" rset (start tag). "Hamlet" between
+ * "<title lang=eng>" and "</title>". (This assumes that the attributes are
+ * indexed to the same seqno as the tags).
+*/ 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,8 +160,8 @@ static RSFD r_open_between (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-	logf (LOG_FATAL, "between set type is read-only");
-	return NULL;
+        logf (LOG_FATAL, "between set type is read-only");
+        return NULL;
     }
     rfd = (struct rset_between_rfd *) xmalloc (sizeof(*rfd));
     rfd->next = info->rfd_list;
@@ -170,11 +178,11 @@ static RSFD r_open_between (RSET ct, int flag)
     rfd->rfd_r = rset_open (info->rset_r, RSETF_READ);
     
     rfd->more_l = rset_read (info->rset_l, rfd->rfd_l, rfd->buf_l,
-			     &rfd->term_index_l);
+                             &rfd->term_index_l);
     rfd->more_m = rset_read (info->rset_m, rfd->rfd_m, rfd->buf_m,
-			     &rfd->term_index_m);
+                             &rfd->term_index_m);
     rfd->more_r = rset_read (info->rset_r, rfd->rfd_r, rfd->buf_r,
-			     &rfd->term_index_r);
+                             &rfd->term_index_r);
     if (info->rset_attr)
     {
         int dummy;
@@ -279,23 +287,23 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
     {
         log2( p, "start of loop", cmp_l, cmp_r);
 
-	/* forward L until past m, count levels, note rec boundaries */
-	if (p->more_l)
-	    cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
-	else
-	{
-	    p->level = 0;
-	    cmp_l=2; /* past this record */
-	}
+        /* forward L until past m, count levels, note rec boundaries */
+        if (p->more_l)
+            cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
+        else
+        {
+            p->level = 0;
+            cmp_l=2; /* past this record */
+        }
         log2( p, "after first L", cmp_l, cmp_r);
 
         while (cmp_l < 0)   /* l before m */
-	{
+        {
             if (cmp_l == -2)
-		p->level=0; /* earlier record */
+                p->level=0; /* earlier record */
             if (cmp_l == -1)
             {
-		p->level++; /* relevant start tag */
+                p->level++; /* relevant start tag */
 
                 if (!info->rset_attr)
                     attr_match = 1;
@@ -320,61 +328,61 @@ static int r_read_between (RSFD rfd, void *buf, int *term_index)
                 }
             }
             p->more_l = rset_read (info->rset_l, p->rfd_l, p->buf_l,
-	   		   &p->term_index_l);
+                              &p->term_index_l);
             if (p->more_l)
             {
-	        cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
+                cmp_l= (*info->cmp)(p->buf_l, p->buf_m);
             }
             else
-		cmp_l=2; 
-	    log2( p, "end of L loop", cmp_l, cmp_r);
+                cmp_l=2; 
+            log2( p, "end of L loop", cmp_l, cmp_r);
         } /* forward L */
 
             
-	/* forward R until past m, count levels */
+        /* forward R until past m, count levels */
         log2( p, "Before moving R", cmp_l, cmp_r);
         if (p->more_r)
-	    cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
-	else
-	    cmp_r=2; 
+            cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
+        else
+            cmp_r=2; 
         log2( p, "after first R", cmp_l, cmp_r);
         while (cmp_r < 0)   /* r before m */
-	{
- 	    /* -2, earlier record, doesn't matter */
+        {
+             /* -2, earlier record, doesn't matter */
             if (cmp_r == -1)
-		p->level--; /* relevant end tag */
+                p->level--; /* relevant end tag */
             if (p->more_r)
             {
                 p->more_r = rset_read (info->rset_r, p->rfd_r, p->buf_r,
-		    		   &p->term_index_r);
-	        cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
+                                       &p->term_index_r);
+                cmp_r= (*info->cmp)(p->buf_r, p->buf_m);
             }
             else
-		cmp_r=2; 
+                cmp_r=2; 
         log2( p, "End of R loop", cmp_l, cmp_r);
         } /* forward R */
-	
-	if ( ( p->level <= 0 ) && ! p->more_l)
-	    return 0; /* no more start tags, nothing more to find */
         
-	if ( attr_match && p->level > 0)  /* within a tag pair (or deeper) */
-	{
-	    memcpy (buf, p->buf_m, info->key_size);
+        if ( ( p->level <= 0 ) && ! p->more_l)
+            return 0; /* no more start tags, nothing more to find */
+        
+        if ( attr_match && p->level > 0)  /* within a tag pair (or deeper) */
+        {
+            memcpy (buf, p->buf_m, info->key_size);
             *term_index = p->term_index_m;
             log2( p, "Returning a hit (and forwarding m)", cmp_l, cmp_r);
             p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
                                    &p->term_index_m);
-	    if (cmp_l == 2)
-		p->level = 0;
-	    return 1;
-	}
-	else if ( ! p->more_l )  /* not in data, no more starts */
-	{
-	    log2( p, "no more starts, exiting without a hit", cmp_l, cmp_r);
-	    return 0;  /* ergo, nothing can be found. stop scanning */
-	}
-	if (cmp_l == 2)
-	    p->level = 0;
+            if (cmp_l == 2)
+                p->level = 0;
+            return 1;
+        }
+        else if ( ! p->more_l )  /* not in data, no more starts */
+        {
+            log2( p, "no more starts, exiting without a hit", cmp_l, cmp_r);
+            return 0;  /* ergo, nothing can be found. stop scanning */
+        }
+        if (cmp_l == 2)
+            p->level = 0;
         p->more_m = rset_read (info->rset_m, p->rfd_m, p->buf_m,
                                &p->term_index_m);
         log2( p, "End of M loop", cmp_l, cmp_r);
