@@ -1,4 +1,4 @@
-/* $Id: recgrs.h,v 1.1 2004-09-28 10:15:03 adam Exp $
+/* $Id: recgrs.h,v 1.2 2004-09-28 13:31:20 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,14 +20,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#ifndef GRSREAD_H
-#define GRSREAD_H
+#ifndef RECGRS_H
+#define RECGRS_H
 
 #include <idzebra/recctrl.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 struct grs_read_info {
     void *clientData;
@@ -41,17 +39,18 @@ struct grs_read_info {
     data1_handle dh;
 };
 
+YAZ_EXPORT
 int zebra_grs_extract(void *clientData, struct recExtractCtrl *p,
 		      data1_node *(*grs_read)(struct grs_read_info *));
 
+YAZ_EXPORT
 int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
 		       data1_node *(*grs_read)(struct grs_read_info *));
 
 
+YAZ_EXPORT
 int grs_extract_tree(struct recExtractCtrl *p, data1_node *n);
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif

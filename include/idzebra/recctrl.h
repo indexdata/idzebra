@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.2 2004-09-28 12:39:54 adam Exp $
+/* $Id: recctrl.h,v 1.3 2004-09-28 13:31:18 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,8 +20,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #ifndef RECCTRL_H
 #define RECCTRL_H
 
@@ -32,9 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <idzebra/data1.h>
 #include <idzebra/zebramap.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 /* single word entity */
 typedef struct {
@@ -115,21 +111,30 @@ struct recType
 typedef struct recTypeClass *RecTypeClass;
 typedef struct recTypes *RecTypes;
 
+YAZ_EXPORT
 RecTypeClass recTypeClass_create (Res res, NMEM nmem);
+
+YAZ_EXPORT
 void recTypeClass_destroy(RecTypeClass rtc);
+
+YAZ_EXPORT
 void recTypeClass_info(RecTypeClass rtc, void *cd,
 		       void (*cb)(void *cd, const char *s));
 
+YAZ_EXPORT
 RecTypes recTypes_init(RecTypeClass rtc, data1_handle dh);
+
+YAZ_EXPORT
 void recTypes_destroy(RecTypes recTypes);
+
+YAZ_EXPORT
 void recTypes_default_handlers(RecTypes recTypes, Res res);
 
+YAZ_EXPORT
 RecType recType_byName(RecTypes rts, Res res, const char *name,
 		       void **clientDataP);
 
 
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif
