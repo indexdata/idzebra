@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.33 2004-08-11 13:35:04 adam Exp $
+/* $Id: trunc.c,v 1.34 2004-08-16 16:17:49 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,6 +35,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #if NEW_TRUNC
 #include <rsm_or.h>
 #endif
+#include <rsmultior.h>
 
 struct trunc_info {
     int  *ptr;
@@ -469,15 +470,38 @@ RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
         if (no == 1)
         {
             rset_isamb_parms parms;
-
             parms.key_size = sizeof(struct it_key);
             parms.cmp = key_compare_it;
             parms.pos = *isam_p;
             parms.is = zi->reg->isamb;
-	    parms.rset_term = rset_term_create (term, length, flags,
+            parms.rset_term = rset_term_create (term, length, flags,
                                                 term_type);
             return rset_create (rset_kind_isamb, &parms);
         }
+#if 0       
+        else if (no <10000 ) /* FIXME - hardcoded number */
+        {
+            rset_multior_parms m_parms;
+            rset_isamb_parms b_parms;
+            int i;
+            m_parms.key_size = sizeof(struct it_key);
+            m_parms.cmp = key_compare_it;
+            m_parms.no_rsets=no;
+            m_parms.rsets=xmalloc(sizeof(*m_parms.rsets)*no);
+            m_parms.rset_term = rset_term_create (term, length, flags,
+                                                term_type);
+            b_parms.key_size = sizeof(struct it_key);
+            b_parms.cmp = key_compare_it;
+            b_parms.is = zi->reg->isamb;
+            b_parms.rset_term = m_parms.rset_term;
+            for (i=0;i<no;i++)
+            {
+                b_parms.pos = isam_p[i];
+                m_parms.rsets[i]=rset_create (rset_kind_isamb, &b_parms);
+            }
+            return rset_create (rset_kind_multior, &m_parms);
+        } /* <10000 - rs_multior */
+#endif        
         qsort (isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
     else

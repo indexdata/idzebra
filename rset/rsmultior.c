@@ -1,4 +1,4 @@
-/* $Id: rsm_or.c,v 1.19 2004-08-16 16:17:49 heikki Exp $
+/* $Id: rsmultior.c,v 1.1 2004-08-16 16:17:49 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -30,7 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <zebrautl.h>
 #include <isamc.h>
-#include <rsm_or.h>
+#include <rsmultior.h>
 
 static void *r_create(RSET ct, const struct rset_control *sel, void *parms);
 static RSFD r_open (RSET ct, int flag);
@@ -42,7 +42,7 @@ static int r_write (RSFD rfd, const void *buf);
 
 static const struct rset_control control = 
 {
-    "m-or (old)",
+    "multi-or",
     r_create,
     r_open,
     r_close,
@@ -54,9 +54,9 @@ static const struct rset_control control =
     r_write,
 };
 
-const struct rset_control *rset_kind_m_or = &control;
+const struct rset_control *rset_kind_multior = &control;
 
-struct rset_mor_info {
+struct rset_multior_info {
     int     key_size;
     int     no_rec;
     int     (*cmp)(const void *p1, const void *p2);
@@ -68,23 +68,12 @@ struct rset_mor_info {
     struct rset_mor_rfd *rfd_list;
 };
 
-struct trunc_info {
-    int  *ptr;
-    int  *indx;
-    char **heap;
-    int  heapnum;
-    int  (*cmp)(const void *p1, const void *p2);
-    int  keysize;
-    char *swapbuf;
-    char *tmpbuf;
-    char *buf;
-};
 
-struct rset_mor_rfd {
+struct rset_multior_rfd {
     int flag;
     int position;
     int position_max;
-    ISAMC_PP *ispt;
+/*    ISAMC_PP *ispt; */
     struct rset_mor_rfd *next;
     struct rset_mor_info *info;
     struct trunc_info *ti;
@@ -92,6 +81,7 @@ struct rset_mor_rfd {
     char *pbuf;
 };
 
+#if 0
 static void heap_swap (struct trunc_info *ti, int i1, int i2)
 {
     int swap;
@@ -176,9 +166,12 @@ static void heap_close (struct trunc_info *ti)
     xfree (ti);
 }
 
+#endif
 static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
 {
-    rset_m_or_parms *r_parms = (rset_m_or_parms *) parms;
+    return 0;
+/*        
+    rset_multior_parms *r_parms = (rset_multior_parms *) parms;
     struct rset_mor_info *info;
 
     ct->flags |= RSET_FLAG_VOLATILE;
@@ -201,10 +194,13 @@ static void *r_create (RSET ct, const struct rset_control *sel, void *parms)
     ct->rset_terms = (RSET_TERM *) xmalloc (sizeof(*ct->rset_terms));
     ct->rset_terms[0] = r_parms->rset_term;
     return info;
+   */
 }
 
 static RSFD r_open (RSET ct, int flag)
 {
+        return 0;
+        /*
     struct rset_mor_rfd *rfd;
     struct rset_mor_info *info = (struct rset_mor_info *) ct->buf;
     int i;
@@ -250,10 +246,12 @@ static RSFD r_open (RSET ct, int flag)
 
     r_rewind (rfd);
     return rfd;
+    */
 }
 
 static void r_close (RSFD rfd)
 {
+        /*
     struct rset_mor_info *info = ((struct rset_mor_rfd*)rfd)->info;
     struct rset_mor_rfd **rfdp;
     int i;
@@ -274,10 +272,12 @@ static void r_close (RSFD rfd)
         }
     logf (LOG_FATAL, "r_close but no rfd match!");
     assert (0);
+    */
 }
 
 static void r_delete (RSET ct)
 {
+        /*
     struct rset_mor_info *info = (struct rset_mor_info *) ct->buf;
     int i;
 
@@ -285,10 +285,13 @@ static void r_delete (RSET ct)
     xfree (info->isam_positions);
 
     for (i = 0; i<ct->no_rset_terms; i++)
-	rset_term_destroy (ct->rset_terms[i]);
+	rset_term_destroy (ct->rset_terms[i]);  
+    */ /* FIXME - Watch out! */
+        /*
     xfree (ct->rset_terms);
 
     xfree (info);
+    */
 }
 
 static void r_rewind (RSFD rfd)
@@ -298,6 +301,8 @@ static void r_rewind (RSFD rfd)
 
 static int r_read (RSFD rfd, void *buf, int *term_index)
 {
+        return 0;
+        /*
     struct rset_mor_rfd *mrfd = (struct rset_mor_rfd *) rfd;
     struct trunc_info *ti = mrfd->ti;
     int n = ti->indx[ti->ptr[1]];
@@ -346,6 +351,7 @@ static int r_read (RSFD rfd, void *buf, int *term_index)
         (*mrfd->countp)++;
     }
     return 1;
+    */
 }
 
 static int r_write (RSFD rfd, const void *buf)
