@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.30  1999-07-06 12:26:41  adam
+ * Revision 1.31  1999-07-14 10:56:43  adam
+ * Fixed potential memory leak.
+ *
+ * Revision 1.30  1999/07/06 12:26:41  adam
  * Retrieval handler obeys schema and handles XML transfer syntax.
  *
  * Revision 1.29  1999/05/26 07:49:14  adam
@@ -406,16 +409,14 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
     return dumpkeys(n, p, 0);
 }
 
-static int grs_extract(void *clientData, struct recExtractCtrl *p)
+static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
+			   NMEM mem)
 {
     data1_node *n;
-    NMEM mem;
     struct grs_read_info gri;
     oident oe;
     int oidtmp[OID_SIZE];
-    struct grs_handlers *h = (struct grs_handlers *) clientData;
 
-    mem = nmem_create (); 
     gri.readf = p->readf;
     gri.seekf = p->seekf;
     gri.tellf = p->tellf;
@@ -429,7 +430,6 @@ static int grs_extract(void *clientData, struct recExtractCtrl *p)
 	return RECCTRL_EXTRACT_ERROR;
     if (!n)
         return RECCTRL_EXTRACT_EOF;
-
     oe.proto = PROTO_Z3950;
     oe.oclass = CLASS_SCHEMA;
     oe.value = n->u.root.absyn->reference;
@@ -442,8 +442,18 @@ static int grs_extract(void *clientData, struct recExtractCtrl *p)
 	return RECCTRL_EXTRACT_ERROR;
     }
     data1_free_tree(p->dh, n);
-    nmem_destroy(mem);
     return RECCTRL_EXTRACT_OK;
+}
+
+static int grs_extract(void *clientData, struct recExtractCtrl *p)
+{
+    int ret;
+    NMEM mem = nmem_create ();
+    struct grs_handlers *h = (struct grs_handlers *) clientData;
+
+    ret = grs_extract_sub(h, p, mem);
+    nmem_destroy(mem);
+    return ret;
 }
 
 /*
@@ -464,7 +474,7 @@ static int process_comp(data1_handle dh, data1_node *n, Z_RecordComposition *c)
 					 c->u.simple->u.generic)))
 	{
 	    logf(LOG_LOG, "Unknown esetname '%s'", c->u.simple->u.generic);
-		return 25; /* invalid esetname */
+	    return 25; /* invalid esetname */
 	}
 	logf(LOG_DEBUG, "Esetname '%s' in simple compspec",
 	     c->u.simple->u.generic);
