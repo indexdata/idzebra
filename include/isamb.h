@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2000-2002, Index Data
  * All rights reserved.
- * $Id: isamb.h,v 1.2 2002-04-16 22:31:42 adam Exp $
+ * $Id: isamb.h,v 1.3 2002-04-29 18:03:45 adam Exp $
  */
 
 #ifndef ISAMB_H
@@ -26,5 +26,10 @@ int isamb_pp_read (ISAMB_PP pp, void *buf);
 void isamb_pp_close (ISAMB_PP pp);
 
 int isamb_pp_num (ISAMB_PP pp);
+
+ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level);
+void isamb_pp_close_x (ISAMB_PP pp, int *size, int *blocks);
+
+int isamb_block_info (ISAMB isamb, int cat);
 
 #endif

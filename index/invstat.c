@@ -20,6 +20,10 @@ struct inv_stat_info {
     int isam_bounds[20];
     int isam_occurrences[20];
     char tmp[128];
+    int isamb_levels[10];
+    int isamb_sizes[10];
+    int isamb_blocks[10];
+    int isamb_no[10];
 };
 
 #define SINGLETON_TYPE 8 /* the type to use for singletons that */ 
@@ -116,11 +120,19 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     {
         ISAMB_PP pp;
         struct it_key key;
-
-        pp = isamb_pp_open(stat_info->zh->reg->isamb, isam_p);
+        int cat = isam_p & 3;
+        int level;
+        int size;
+        int blocks;
+        
+        pp = isamb_pp_open_x(stat_info->zh->reg->isamb, isam_p, &level);
         while (isamb_pp_read(pp, &key))
             occur++;
-        isamb_pp_close (pp);
+        isamb_pp_close_x (pp, &size, &blocks);
+        stat_info->isamb_no[cat]++;
+        stat_info->isamb_levels[cat] += level;
+        stat_info->isamb_blocks[cat] += blocks;
+        stat_info->isamb_sizes[cat] += size;
     }
 
     while (occur > stat_info->isam_bounds[i] && stat_info->isam_bounds[i])
@@ -174,6 +186,14 @@ void zebra_register_statistics (ZebraHandle zh)
 
     for (i = 0; i<20; i++)
         stat_info.isam_occurrences[i] = 0;
+
+    for (i = 0; i<10; i++)
+    {
+        stat_info.isamb_levels[i] = 0;
+        stat_info.isamb_sizes[i] = 0;
+        stat_info.isamb_blocks[i] = 0;
+        stat_info.isamb_no[i] = 0;
+    }
 
     dict_scan (zh->reg->dict, term_dict, &before, &after, &stat_info,
                inv_stat_handle);
@@ -230,6 +250,24 @@ void zebra_register_statistics (ZebraHandle zh)
     if ( (zh->reg->isamd) && (zh->reg->isamd->method->debug>0))
         fprintf (stderr, "\n%d words using %d bytes\n",
              stat_info.no_dict_entries, stat_info.no_dict_bytes);
+
+    if (zh->reg->isamb)
+    {
+        for (i = 0; i<4; i++)
+        {
+            int bsize = isamb_block_info(zh->reg->isamb, i);
+            if (bsize < 0)
+                break;
+            fprintf (stderr, "Category   %d\n", i);
+            fprintf (stderr, "Block size %d\n", bsize);
+            fprintf (stderr, "Lists:     %d\n", stat_info.isamb_no[i]);
+            fprintf (stderr, "Blocks:    %d\n", stat_info.isamb_blocks[i]);
+            fprintf (stderr, "Size:      %d\n", stat_info.isamb_sizes[i]);
+            fprintf (stderr, "Total      %d\n", stat_info.isamb_blocks[i]*
+                     bsize);
+        }
+    }
+
     fprintf (stderr, "    Occurrences     Words\n");
     prev = 1;
     for (i = 0; stat_info.isam_bounds[i]; i++)
@@ -249,7 +287,10 @@ void zebra_register_statistics (ZebraHandle zh)
 /*
  *
  * $Log: invstat.c,v $
- * Revision 1.25  2002-04-26 08:44:47  adam
+ * Revision 1.26  2002-04-29 18:03:46  adam
+ * More isamb statistics
+ *
+ * Revision 1.25  2002/04/26 08:44:47  adam
  * Index statistics working again
  *
  * Revision 1.24  2002/04/05 08:46:26  adam

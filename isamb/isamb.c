@@ -2,7 +2,7 @@
  *  Copyright (c) 2000-2002, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.10 2002-04-26 08:44:47 adam Exp $
+ *  $Id: isamb.c,v 1.11 2002-04-29 18:03:46 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -53,6 +53,8 @@ struct ISAMB_block {
 struct ISAMB_PP_s {
     ISAMB isamb;
     int level;
+    int total_size;
+    int no_blocks;
     struct ISAMB_block **block;
 };
 
@@ -558,7 +560,7 @@ int isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I stream)
     return pos;
 }
 
-ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos)
+ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level)
 {
     ISAMB_PP pp = xmalloc (sizeof(*pp));
 
@@ -566,11 +568,16 @@ ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos)
     pp->block = xmalloc (10 * sizeof(*pp->block));
 
     pp->level = 0;
+    pp->total_size = 0;
+    pp->no_blocks = 0;
     while (1)
     {
         struct ISAMB_block *p = open_block (isamb, pos);
         char *src = p->bytes + p->offset;
         pp->block[pp->level] = p;
+
+        pp->total_size += p->size;
+        pp->no_blocks++;
 
         if (p->bytes[0]) /* leaf */
             break;
@@ -580,18 +587,41 @@ ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos)
         pp->level++;
     }
     pp->block[pp->level+1] = 0;
+    if (level)
+        *level = pp->level;
     return pp;
 }
 
-void isamb_pp_close (ISAMB_PP pp)
+ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos)
+{
+    return isamb_pp_open_x (isamb, pos, 0);
+}
+
+void isamb_pp_close_x (ISAMB_PP pp, int *size, int *blocks)
 {
     int i;
     if (!pp)
         return;
+    if (size)
+        *size = pp->total_size;
+    if (blocks)
+        *blocks = pp->no_blocks;
     for (i = 0; i <= pp->level; i++)
         close_block (pp->isamb, pp->block[i]);
     xfree (pp->block);
     xfree (pp);
+}
+
+int isamb_block_info (ISAMB isamb, int cat)
+{
+    if (cat >= 0 && cat < isamb->no_cat)
+        return isamb->file[cat].head.block_size;
+    return -1;
+}
+
+void isamb_pp_close (ISAMB_PP pp)
+{
+    return isamb_pp_close_x (pp, 0, 0);
 }
 
 int isamb_pp_read (ISAMB_PP pp, void *buf)
@@ -628,6 +658,9 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
         while (1)
         {
             pp->block[pp->level] = p = open_block (pp->isamb, pos);
+
+            pp->total_size += p->size;
+            pp->no_blocks++;
             
             if (p->leaf) /* leaf */
             {
