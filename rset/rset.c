@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.19 2004-01-22 11:27:22 adam Exp $
+/* $Id: rset.c,v 1.20 2004-01-30 11:43:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -27,6 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 
 #include <rset.h>
+#include <../index/index.h> /* for log_keydump. Debugging only */
 
 RSET rset_create(const struct rset_control *sel, void *parms)
 {
@@ -63,10 +64,27 @@ RSET rset_dup (RSET rs)
     return rs;
 }
 
-int rset_default_forward(RSFD rfd, void *buf, const void *untilbuf)
+int rset_default_forward(RSET ct, RSFD rfd, void *buf, int *term_index, 
+                           int (*cmpfunc)(const void *p1, const void *p2), 
+                           const void *untilbuf)
 {
-    logf (LOG_FATAL, "rset_default-forward not yet implemented");
-    return 0;
+    int more=1;
+    int cmp=2;
+    logf (LOG_DEBUG, "rset_default_forward starting '%s' (ct=%p rfd=%p)",
+                    ct->control->desc, ct,rfd);
+    key_logdump(LOG_DEBUG, untilbuf);
+    while ( (cmp==2) && (more))
+    {
+        logf (LOG_DEBUG, "rset_default_forward looping m=%d c=%d",more,cmp);
+        more=rset_read(ct, rfd, buf, term_index);
+        if (more)
+            cmp=(*cmpfunc)(untilbuf,buf);
+        if (more)
+            key_logdump(LOG_DEBUG,buf);
+    }
+    logf (LOG_DEBUG, "rset_default_forward exiting m=%d c=%d",more,cmp);
+
+    return more;
 }
 
 RSET_TERM *rset_terms(RSET rs, int *no)

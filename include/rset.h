@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.20 2004-01-16 18:04:33 heikki Exp $
+/* $Id: rset.h,v 1.21 2004-01-30 11:43:40 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -43,13 +43,17 @@ struct rset_control
     void (*f_close)(RSFD rfd);
     void (*f_delete)(RSET ct);
     void (*f_rewind)(RSFD rfd);
-    int (*f_forward)(RSFD rfd, void *buf, const void *untilbuf);
+    int (*f_forward)(RSET ct, RSFD rfd, void *buf,  int *term_index,
+                     int (*cmpfunc)(const void *p1, const void *p2), 
+                     const void *untilbuf);
     int (*f_count)(RSET ct);
     int (*f_read)(RSFD rfd, void *buf, int *term_index);
     int (*f_write)(RSFD rfd, const void *buf);
 };
 
-int rset_default_forward(RSFD rfd, void *buf, const void *untilbuf);
+int rset_default_forward(RSET ct, RSFD rfd, void *buf, int *term_index, 
+                     int (*cmpfunc)(const void *p1, const void *p2), 
+                     const void *untilbuf);
 
 struct rset_term {
     char *name;
@@ -93,10 +97,14 @@ RSET rset_dup (RSET rs);
 /* void rset_rewind(RSET rs); */
 #define rset_rewind(rs, rfd) (*(rs)->control->f_rewind)((rfd))
 
+/* int rset_forward(RSET rs, void *buf, int *indx, void *untilbuf); */
+#define rset_forward(rs, fd, buf, indx, cmpfunc, untilbuf) \
+    (*(rs)->control->f_forward)((rs), (fd), (buf), (indx), (cmpfunc), (untilbuf))
+
 /* int rset_count(RSET rs); */
 #define rset_count(rs) (*(rs)->control->f_count)(rs)
 
-/* int rset_read(RSET rs, void *buf); */
+/* int rset_read(RSET rs, void *buf, int *indx); */
 #define rset_read(rs, fd, buf, indx) (*(rs)->control->f_read)((fd), (buf), indx)
 
 /* int rset_write(RSET rs, const void *buf); */

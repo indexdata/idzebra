@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.4 2004-01-28 10:44:52 heikki Exp $
+/* $Id: rsisamb.c,v 1.5 2004-01-30 11:43:41 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -40,7 +40,7 @@ static int r_write (RSFD rfd, const void *buf);
 
 static const struct rset_control control = 
 {
-    "isamc",
+    "isamb",
     r_create,
     r_open,
     r_close,
