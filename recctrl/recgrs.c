@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: recgrs.c,v 1.49 2002-05-13 14:13:43 adam Exp $
+ * $Id: recgrs.c,v 1.50 2002-05-14 20:48:47 adam Exp $
  */
 
 #include <stdio.h>
@@ -136,7 +136,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
     case DATA1N_tag:
         for (nn = n; nn; nn = nn->parent)
         {
-            if (n->which == DATA1N_tag)
+            if (nn->which == DATA1N_tag)
             {
                 size_t tlen = strlen(nn->u.tag.tag);
                 if (tlen + flen > (sizeof(tag_path_full)-2))
@@ -145,7 +145,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                 flen += tlen;
                 tag_path_full[flen++] = '/';
             }
-            else if (n->which == DATA1N_root)
+            else if (nn->which == DATA1N_root)
             {
                 size_t tlen = strlen(nn->u.root.type);
                 if (tlen + flen > (sizeof(tag_path_full)-2))
