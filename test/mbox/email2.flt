@@ -1,0 +1,15 @@
+BEGIN /.*$/ { begin record email; begin context headers }
+
+/^From .*$/ { unread 0; end element; end record }
+
+CONTEXT {headers}
+
+/^[A-Z][^:]*/ /: / { end element; begin element $0 }
+
+/\n\n/   { end context; end element; begin element body }
+
+/\n/    {}
+/^\t/    { data " " }
+/^ /    { data " " }
+
+END { end record }
