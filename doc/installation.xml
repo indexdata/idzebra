@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.13 2003-03-31 20:57:29 adam Exp $ -->
+<!-- $Id: installation.xml,v 1.14 2003-11-29 16:47:22 adam Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -15,12 +15,11 @@
    <ulink url="http://www.redhat.com/">Redhat Linux</ulink>,
    <ulink url="http://www.gentoo.org/">Gentoo Linux</ulink>,
    <ulink url="http://www.suse.com/">SuSE Linux</ulink>,
-   <ulink url="http://www.netbsd.org/Ports/cobalt/">NetBSD (Cobalt)</ulink>,
    <ulink url="http://www.freebsd.org/">FreeBSD (i386)</ulink>,
    <ulink url="http://www.apple.com/macosx/">MAC OSX</ulink>,
    <ulink url="http://wwws.sun.com/software/solaris/">SunOS 5.8
     (sparc)</ulink>,
-   <ulink url="http://www.microsoft.com/windows2000/">Windows 2000 SP3</ulink>.
+   <ulink url="http://www.microsoft.com/windows2000/">Windows 2000</ulink>.
   </para>
   
   <para>
@@ -255,6 +254,10 @@
         If <literal>HAVE_EXPAT</literal> is set to 1, Zebra is compiled
         with Expat support. In this configuration, set 
         <literal>ZEBRA_DIR</literal> to the Expat source directory.
+	Windows version of Expat can be downloaded from
+	<ulink url="http://sourceforge.net/projects/expat/">
+	 SourceForge
+	</ulink>.
        </para></listitem>
      </varlistentry>
      
@@ -265,14 +268,14 @@
         If <literal>HAVE_ICONV</literal> is set to 1, Zebra is compiled
         with iconv support. In this configuration, set 
         <literal>ICONV_DIR</literal> to the iconv source directory.
-        
-        iconv binaries can be downloaded from
+        Iconv binaries can be downloaded from
         <ulink url="http://www.zlatkovic.com/projects/libxml/binaries.html">
-         this site</ulink>.
-        </para>
+         this site
+	</ulink>.
+       </para>
       </listitem>
      </varlistentry>
-
+     
      <varlistentry>
       <term><literal>BZIP2INCLUDE</literal>,
        <literal>BZIP2LIB</literal>,
@@ -280,7 +283,8 @@
       </term>
       <listitem><para>
         Define these symbols if Zebra is to be compiled with
-        BZIP2 record compression support.
+	<ulink url="http://sources.redhat.com/bzip2/">BZIP2</ulink>
+	record compression support.
        </para></listitem>
      </varlistentry>
      
