@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.6 2005-03-30 09:25:24 adam Exp $
+/* $Id: safari.c,v 1.7 2005-03-31 12:42:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,25 +28,25 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
 
-struct safari_info {
+struct filter_info {
     char *sep;
 };
 
-static void *safari_init (Res res, RecType recType)
+static void *filter_init (Res res, RecType recType)
 {
-    struct safari_info *tinfo = (struct safari_info *) xmalloc(sizeof(*tinfo));
+    struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
     tinfo->sep = 0;
     return tinfo;
 }
 
-static void safari_config(void *clientData, Res res, const char *args)
+static void filter_config(void *clientData, Res res, const char *args)
 {
 
 }
 
-static void safari_destroy(void *clientData)
+static void filter_destroy(void *clientData)
 {
-    struct safari_info *tinfo = clientData;
+    struct filter_info *tinfo = clientData;
     xfree (tinfo->sep);
     xfree (tinfo);
 }
@@ -58,7 +58,7 @@ struct fi_info {
     int max;
 };
 
-struct fi_info *fi_open(struct recExtractCtrl *p)
+static struct fi_info *fi_open(struct recExtractCtrl *p)
 {
     struct fi_info *fi = (struct fi_info *) xmalloc (sizeof(*fi));
 
@@ -69,7 +69,7 @@ struct fi_info *fi_open(struct recExtractCtrl *p)
     return fi;
 }
 
-int fi_getchar(struct fi_info *fi, char *dst)
+static int fi_getchar(struct fi_info *fi, char *dst)
 {
     if (fi->offset >= fi->max)
     {
@@ -84,7 +84,7 @@ int fi_getchar(struct fi_info *fi, char *dst)
     return 1;
 }
 
-int fi_gets(struct fi_info *fi, char *dst, int max)
+static int fi_gets(struct fi_info *fi, char *dst, int max)
 {
     int l;
     for (l = 0; l < max; l++)
@@ -98,21 +98,21 @@ int fi_gets(struct fi_info *fi, char *dst, int max)
     return 1;
 }
 
-void fi_close (struct fi_info *fi)
+static void fi_close (struct fi_info *fi)
 {
     xfree (fi->buf);
     xfree (fi);
 }
 
-static int safari_extract(void *clientData, struct recExtractCtrl *p)
+static int filter_extract(void *clientData, struct recExtractCtrl *p)
 {
-    struct safari_info *tinfo = clientData;
+    struct filter_info *tinfo = clientData;
     char line[512];
     RecWord recWord;
     struct fi_info *fi = fi_open(p);
 
 #if 0
-    yaz_log(YLOG_LOG, "safari_extract off=%ld",
+    yaz_log(YLOG_LOG, "filter_extract off=%ld",
 	    (long) (*fi->p->tellf)(fi->p->fh));
 #endif
     xfree(tinfo->sep);
@@ -150,11 +150,11 @@ static int safari_extract(void *clientData, struct recExtractCtrl *p)
     return RECCTRL_EXTRACT_OK;
 }
 
-static int safari_retrieve (void *clientData, struct recRetrieveCtrl *p)
+static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
-    int r, safari_ptr = 0;
-    static char *safari_buf = NULL;
-    static int safari_size = 0;
+    int r, filter_ptr = 0;
+    static char *filter_buf = NULL;
+    static int filter_size = 0;
     int make_header = 1;
     int make_body = 1;
     const char *elementSetName = NULL;
@@ -181,44 +181,44 @@ static int safari_retrieve (void *clientData, struct recRetrieveCtrl *p)
     }
     while (1)
     {
-        if (safari_ptr + 4096 >= safari_size)
+        if (filter_ptr + 4096 >= filter_size)
         {
             char *nb;
 
-            safari_size = 2*safari_size + 8192;
-            nb = (char *) xmalloc (safari_size);
-            if (safari_buf)
+            filter_size = 2*filter_size + 8192;
+            nb = (char *) xmalloc (filter_size);
+            if (filter_buf)
             {
-                memcpy (nb, safari_buf, safari_ptr);
-                xfree (safari_buf);
+                memcpy (nb, filter_buf, filter_ptr);
+                xfree (filter_buf);
             }
-            safari_buf = nb;
+            filter_buf = nb;
         }
-        if (make_header && safari_ptr == 0)
+        if (make_header && filter_ptr == 0)
         {
             if (p->score >= 0)
             {
-                sprintf (safari_buf, "Rank: %d\n", p->score);
-                safari_ptr = strlen(safari_buf);
+                sprintf (filter_buf, "Rank: %d\n", p->score);
+                filter_ptr = strlen(filter_buf);
             }
-            sprintf (safari_buf + safari_ptr, "Local Number: " ZINT_FORMAT "\n",
+            sprintf (filter_buf + filter_ptr, "Local Number: " ZINT_FORMAT "\n",
 		     p->localno);
-            safari_ptr = strlen(safari_buf);
+            filter_ptr = strlen(filter_buf);
 	    if (p->fname)
 	    {
-		sprintf (safari_buf + safari_ptr, "Filename: %s\n", p->fname);
-		safari_ptr = strlen(safari_buf);
+		sprintf (filter_buf + filter_ptr, "Filename: %s\n", p->fname);
+		filter_ptr = strlen(filter_buf);
 	    }
-	    strcpy(safari_buf+safari_ptr++, "\n");
+	    strcpy(filter_buf+filter_ptr++, "\n");
         }
 	if (!make_body)
 	    break;
-        r = (*p->readf)(p->fh, safari_buf + safari_ptr, 4096);
+        r = (*p->readf)(p->fh, filter_buf + filter_ptr, 4096);
         if (r <= 0)
             break;
-        safari_ptr += r;
+        filter_ptr += r;
     }
-    safari_buf[safari_ptr] = '\0';
+    filter_buf[filter_ptr] = '\0';
     if (elementSetName)
     {
         if (!strcmp (elementSetName, "B"))
@@ -228,7 +228,7 @@ static int safari_retrieve (void *clientData, struct recRetrieveCtrl *p)
     }
     if (no_lines)
     {
-        char *p = safari_buf;
+        char *p = filter_buf;
         int i = 0;
 
         while (++i <= no_lines && (p = strchr (p, '\n')))
@@ -236,22 +236,23 @@ static int safari_retrieve (void *clientData, struct recRetrieveCtrl *p)
         if (p)
         {
             p[1] = '\0';
-            safari_ptr = p-safari_buf;
+            filter_ptr = p-filter_buf;
         }
     }
     p->output_format = VAL_SUTRS;
-    p->rec_buf = safari_buf;
-    p->rec_len = safari_ptr; 
+    p->rec_buf = filter_buf;
+    p->rec_len = filter_ptr; 
     return 0;
 }
 
-static struct recType safari_type = {
+static struct recType filter_type = {
+    0,
     "safari",
-    safari_init,
-    safari_config,
-    safari_destroy,
-    safari_extract,
-    safari_retrieve
+    filter_init,
+    filter_config,
+    filter_destroy,
+    filter_extract,
+    filter_retrieve
 };
 
 RecType
@@ -262,6 +263,6 @@ idzebra_filter
 #endif
 
 [] = {
-    &safari_type,
+    &filter_type,
     0,
 };

@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.18 2005-03-30 09:25:24 adam Exp $
+/* $Id: recctrl.c,v 1.19 2005-03-31 12:42:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -50,30 +50,6 @@ struct recTypes {
     struct recTypeInstance *entries;
 };
 
-#ifdef IDZEBRA_STATIC_GRS_SGML
-    extern RecType idzebra_filter_grs_sgml[];
-#endif
-#ifdef IDZEBRA_STATIC_TEXT
-    extern RecType idzebra_filter_text[];
-#endif
-#ifdef IDZEBRA_STATIC_GRS_XML
-#if HAVE_EXPAT_H
-    extern RecType idzebra_filter_grs_xml[];
-#endif
-#endif
-#ifdef IDZEBRA_STATIC_GRS_REGX
-    extern RecType idzebra_filter_grs_regx[];
-#endif
-#ifdef IDZEBRA_STATIC_GRS_MARC
-    extern RecType idzebra_filter_grs_marc[];
-#endif
-#ifdef IDZEBRA_STATIC_GRS_DANBIB
-    extern RecType idzebra_filter_grs_danbib[];
-#endif
-#ifdef IDZEBRA_STATIC_SAFARI
-    extern RecType idzebra_filter_safari[];
-#endif
-
 static void recTypeClass_add (struct recTypeClass **rts, RecType *rt,
 			      NMEM nmem, void *module_handle);
 
@@ -84,27 +60,62 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 					  DEFAULT_MODULE_PATH);
 
 #ifdef IDZEBRA_STATIC_GRS_SGML
-    recTypeClass_add (&rts, idzebra_filter_grs_sgml, nmem, 0);
+    if (1)
+    {
+	extern RecType idzebra_filter_grs_sgml[];
+	recTypeClass_add (&rts, idzebra_filter_grs_sgml, nmem, 0);
+    }
 #endif
 #ifdef IDZEBRA_STATIC_TEXT
-    recTypeClass_add (&rts, idzebra_filter_text, nmem, 0);
+    if (1)
+    {
+	extern RecType idzebra_filter_text[];
+	recTypeClass_add (&rts, idzebra_filter_text, nmem, 0);
+    }
 #endif
 #ifdef IDZEBRA_STATIC_GRS_XML
 #if HAVE_EXPAT_H
-    recTypeClass_add (&rts, idzebra_filter_grs_xml, nmem, 0);
+    if (1)
+    {
+	extern RecType idzebra_filter_grs_xml[];
+	recTypeClass_add (&rts, idzebra_filter_grs_xml, nmem, 0);
+    }
 #endif
 #endif
 #ifdef IDZEBRA_STATIC_GRS_REGX
-    recTypeClass_add (&rts, idzebra_filter_grs_regx, nmem, 0);
+    if (1)
+    {
+	extern RecType idzebra_filter_grs_regx[];
+	recTypeClass_add (&rts, idzebra_filter_grs_regx, nmem, 0);
+    }
 #endif
 #ifdef IDZEBRA_STATIC_GRS_MARC
-    recTypeClass_add (&rts, idzebra_filter_grs_marc, nmem, 0);
+    if (1)
+    {
+	extern RecType idzebra_filter_grs_marc[];
+	recTypeClass_add (&rts, idzebra_filter_grs_marc, nmem, 0);
+    }
 #endif
 #ifdef IDZEBRA_STATIC_GRS_DANBIB
-    recTypeClass_add (&rts, idzebra_filter_grs_danbib, nmem, 0);
+    if (1)
+    {
+	extern RecType idzebra_filter_grs_danbib[];
+	recTypeClass_add (&rts, idzebra_filter_grs_danbib, nmem, 0);
+    }
 #endif
 #ifdef IDZEBRA_STATIC_SAFARI
-    recTypeClass_add (&rts, idzebra_filter_safari, nmem, 0);
+    if (1)
+    {
+	extern RecType idzebra_filter_safari[];
+	recTypeClass_add (&rts, idzebra_filter_safari, nmem, 0);
+    }
+#endif
+#ifdef IDZEBRA_STATIC_ALVIS
+    if (1)
+    {
+	extern RecType idzebra_filter_alvis[];
+	recTypeClass_add (&rts, idzebra_filter_alvis, nmem, 0);
+    }
 #endif
 
 #if HAVE_DLFCN_H

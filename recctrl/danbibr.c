@@ -1,4 +1,4 @@
-/* $Id: danbibr.c,v 1.9 2005-01-15 19:38:32 adam Exp $
+/* $Id: danbibr.c,v 1.10 2005-03-31 12:42:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -215,6 +215,7 @@ static int retrieve_danbib(void *clientData, struct recRetrieveCtrl *ctrl)
 }
 
 static struct recType danbib_type = {
+    0,
     "grs.danbib",
     init_danbib,
     0,

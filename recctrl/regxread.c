@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.58 2005-03-30 09:25:24 adam Exp $
+/* $Id: regxread.c,v 1.59 2005-03-31 12:42:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1920,6 +1920,7 @@ static int retrieve_regx(void *clientData, struct recRetrieveCtrl *ctrl)
 }
 
 static struct recType regx_type = {
+    0,
     "grs.regx",
     grs_init,
     grs_config,
@@ -1986,6 +1987,7 @@ static int retrieve_tcl(void *clientData, struct recRetrieveCtrl *ctrl)
 }
 
 static struct recType tcl_type = {
+    0,
     "grs.tcl",
     grs_init,
     grs_config,

@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.8 2005-03-05 09:19:14 adam Exp $
+/* $Id: recctrl.h,v 1.9 2005-03-31 12:42:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -98,6 +98,7 @@ typedef struct recType *RecType;
 
 struct recType
 {
+    int version;
     char *name;                           /* Name of record type */
     void *(*init)(Res res, RecType recType);  /* Init function - called once */
     void (*config)(void *clientData, Res res, const char *args); /* Config */

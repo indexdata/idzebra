@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.18 2005-01-15 19:38:32 adam Exp $
+/* $Id: xmlread.c,v 1.19 2005-03-31 12:42:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -484,7 +484,7 @@ static data1_node *grs_read_xml (struct grs_read_info *p)
     return zebra_read_xml (p->dh, p->readf, p->fh, p->mem);
 }
 
-static void *init_xml(Res res, RecType recType)
+static void *filter_init(Res res, RecType recType)
 {
     struct xml_info *p = (struct xml_info *) xmalloc (sizeof(*p));
 
@@ -493,30 +493,31 @@ static void *init_xml(Res res, RecType recType)
     return p;
 }
 
-static void destroy_xml(void *clientData)
+static void filter_destroy(void *clientData)
 {
     struct xml_info *p = (struct xml_info *) clientData;
 
     xfree (p);
 }
 
-static int extract_xml(void *clientData, struct recExtractCtrl *ctrl)
+static int filter_extract(void *clientData, struct recExtractCtrl *ctrl)
 {
     return zebra_grs_extract(clientData, ctrl, grs_read_xml);
 }
 
-static int retrieve_xml(void *clientData, struct recRetrieveCtrl *ctrl)
+static int filter_retrieve(void *clientData, struct recRetrieveCtrl *ctrl)
 {
     return zebra_grs_retrieve(clientData, ctrl, grs_read_xml);
 }
 
-static struct recType xml_type = {
-    "grs.xml",
-    init_xml,
+static struct recType filter_type = {
     0,
-    destroy_xml,
-    extract_xml,
-    retrieve_xml,
+    "grs.xml",
+    filter_init,
+    0,
+    filter_destroy,
+    filter_extract,
+    filter_retrieve,
 };
 
 RecType
@@ -527,7 +528,7 @@ idzebra_filter
 #endif
 
 [] = {
-    &xml_type,
+    &filter_type,
     0,
 };
     

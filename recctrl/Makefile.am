@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.15 2004-11-29 21:55:28 adam Exp $
+## $Id: Makefile.am,v 1.16 2005-03-31 12:42:06 adam Exp $
 
 common_libs = libidzebra-recctrl.la \
  ../data1/libidzebra-data1.la \
@@ -32,13 +32,19 @@ mod_safari_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
 mod_safari_la_LADD =
 mod_safari_la_LIBADD = $(common_libs) $(mod_safari_la_LADD)
 
+mod_alvis_la_SOURCES = alvis.c
+mod_alvis_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+mod_alvis_la_LADD =
+mod_alvis_la_LIBADD = $(common_libs) $(mod_alvis_la_LADD)
+
 pkglib_LTLIBRARIES = $(SHARED_MODULE_LA) 
 EXTRA_LTLIBRARIES = \
 	mod-grs-regx.la \
 	mod-grs-xml.la \
 	mod-grs-marc.la  \
 	mod-grs-danbib.la \
-	mod-safari.la
+	mod-safari.la \
+	mod-alvis.la
 
 # The common library
 lib_LTLIBRARIES = libidzebra-recctrl.la

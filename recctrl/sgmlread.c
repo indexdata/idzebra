@@ -1,4 +1,4 @@
-/* $Id: sgmlread.c,v 1.16 2005-01-15 19:38:32 adam Exp $
+/* $Id: sgmlread.c,v 1.17 2005-03-31 12:42:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -115,6 +115,7 @@ static int grs_retrieve_sgml(void *clientData, struct recRetrieveCtrl *ctrl)
 
 static struct recType grs_type_sgml =
 {
+    0,
     "grs.sgml",
     grs_init_sgml,
     grs_config_sgml,

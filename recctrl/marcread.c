@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.30 2005-01-15 19:38:32 adam Exp $
+/* $Id: marcread.c,v 1.31 2005-03-31 12:42:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -804,6 +804,7 @@ static int retrieve_marc(void *clientData, struct recRetrieveCtrl *ctrl)
 }
 
 static struct recType marc_type = {
+    0,
     "grs.marc",
     init_marc,
     config_marc,
@@ -823,6 +824,7 @@ static int retrieve_marcxml(void *clientData, struct recRetrieveCtrl *ctrl)
 }
 
 static struct recType marcxml_type = {
+    0,
     "grs.marcxml",
     init_marc,
     config_marc,
