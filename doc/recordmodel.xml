@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.16 2002-12-30 10:25:24 adam Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.17 2003-02-28 14:09:49 adam Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -477,11 +477,12 @@
      <variablelist>
 
       <varlistentry>
-       <term>begin <emphasis>type [parameter ... ]</emphasis></term>
+       <term>begin <replaceable>type [parameter ... ]</replaceable></term>
        <listitem>
         <para>
          Begin a new
-         data element. The type is one of the following:
+         data element. The <replaceable>type</replaceable> is one of
+         the following:
          <variablelist>
           
           <varlistentry>
@@ -492,7 +493,7 @@
              name of the schema that describes the structure of the record, eg.
              <literal>gils</literal> or <literal>wais</literal> (see below).
              The <literal>begin record</literal> call should precede
-             any other use of the <emphasis>begin</emphasis> statement.
+             any other use of the <replaceable>begin</replaceable> statement.
             </para>
            </listitem>
           </varlistentry>
@@ -512,7 +513,7 @@
            <listitem>
             <para>
              Begin a new node in a variant tree. The parameters are
-             <emphasis>class type value</emphasis>.
+             <replaceable>class type value</replaceable>.
             </para>
            </listitem>
           </varlistentry>
@@ -521,7 +522,7 @@
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>data</term>
+       <term>data <replaceable>parameter</replaceable></term>
        <listitem>
         <para>
          Create a data element. The concatenated arguments make
@@ -530,28 +531,41 @@
          the layout (whitespace) of the data should be retained for
          transmission.
          The option <literal>-element</literal>
-         <emphasis>tag</emphasis> wraps the data up in
-         the <emphasis>tag</emphasis>.
+         <replaceable>tag</replaceable> wraps the data up in
+         the <replaceable>tag</replaceable>.
          The use of the <literal>-element</literal> option is equivalent to
-         preceding the command with a <emphasis>begin
-          element</emphasis> command, and following
-         it with the <emphasis>end</emphasis> command.
+         preceding the command with a <replaceable>begin
+          element</replaceable> command, and following
+         it with the <replaceable>end</replaceable> command.
         </para>
        </listitem>
       </varlistentry>
       <varlistentry>
-       <term>end <emphasis>[type]</emphasis></term>
+       <term>end <replaceable>[type]</replaceable></term>
        <listitem>
         <para>
          Close a tagged element. If no parameter is given,
          the last element on the stack is terminated.
          The first parameter, if any, is a type name, similar
-         to the <emphasis>begin</emphasis> statement.
-         For the <emphasis>element</emphasis> type, a tag
+         to the <replaceable>begin</replaceable> statement.
+         For the <replaceable>element</replaceable> type, a tag
          name can be provided to terminate a specific tag.
         </para>
        </listitem>
       </varlistentry>
+
+      <varlistentry>
+       <term>unread <replaceable>no</replaceable></term>
+       <listitem>
+        <para>
+         Move the input pointer to the offset of first character that
+         match rule given by <replaceable>no</replaceable>.
+         The first rule from left-to-right is numbered zero,
+         the second rule is named 1 and so on.
+        </para>
+       </listitem>
+      </varlistentry>
+
      </variablelist>
     </para>
 
@@ -571,23 +585,21 @@
       /^Subject:/ BODY /$/ { data -element title $1 }
       /^Date:/ BODY /$/    { data -element lastModified $1 }
       /\n\n/ BODY END      {
-      begin element bodyOfDisplay
-      begin variant body iana "text/plain"
-      data -text $1
-      end record
+         begin element bodyOfDisplay
+         begin variant body iana "text/plain"
+         data -text $1
+         end record
       }
      </screen>
 
     </para>
 
     <para>
-     If Zebra is compiled with support for Tcl (Tool Command Language)
-     enabled, the statements described above are supplemented with a complete
+     If Zebra is compiled with support for Tcl enabled, the statements
+     described above are supplemented with a complete
      scripting environment, including control structures (conditional
      expressions and loop constructs), and powerful string manipulation
-     mechanisms for modifying the elements of a record. Tcl is a popular
-     scripting environment, with several tutorials available both online
-     and in hardcopy.
+     mechanisms for modifying the elements of a record.
     </para>
 
    </sect2>
