@@ -1,5 +1,5 @@
-# Z'mbol/Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.14 2002-08-05 20:05:07 adam Exp $
+# Zebra makefile for MS NMAKE
+# $Id: makefile,v 1.15 2002-08-20 12:01:00 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -20,7 +20,7 @@ all: dirs zebralib zserver zindex
 ###########################################################
 # The current directory is supposed to be something like
 # ..../Zebra/Win, everything is relative to that
-ROOTDIR=..   # The home of Z'mbol
+ROOTDIR=..   # The home of zebra
 
 # YAZ include files, libraries, etc.
 YAZDIR=$(ROOTDIR)\..\YAZ
