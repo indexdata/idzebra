@@ -1,4 +1,4 @@
-/* $Id: commit.c,v 1.19 2004-08-06 12:55:01 adam Exp $
+/* $Id: commit.c,v 1.20 2004-09-13 08:43:28 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -197,7 +197,7 @@ static void cf_commit_flat (CFile cf)
     fp = (zint *) xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
-	for (i = 0; i < (int) (HASH_BSIZE/sizeof(int)); i++)
+	for (i = 0; i < (int) (HASH_BSIZE/sizeof(zint)); i++)
 	    fp[i] = 0;
         if (!mf_read (cf->hash_mf, hno, 0, 0, fp) &&
             hno != cf->head.flat_bucket-1)
@@ -206,7 +206,7 @@ static void cf_commit_flat (CFile cf)
 		  " (" ZINT_FORMAT "-" ZINT_FORMAT ") commit",
                   hno, cf->head.next_bucket, cf->head.flat_bucket-1);
         }
-        for (i = 0; i < (int) (HASH_BSIZE/sizeof(int)); i++)
+        for (i = 0; i < (int) (HASH_BSIZE/sizeof(zint)); i++)
         {
             if (fp[i])
             {
