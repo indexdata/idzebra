@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.38 2004-06-02 17:26:03 heikki Exp $
+/* $Id: isamb.c,v 1.39 2004-06-02 18:50:37 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1138,6 +1138,7 @@ int isamb_pp_read (ISAMB_PP pp, void *buf)
 #define NEW_FORWARD 0
 #if NEW_FORWARD
 
+#define ISAMB_DEBUG 1  /* while coding this part */
 
 static int isamb_pp_read_on_leaf(ISAMB_PP pp, void *buf)
 { /* reads the next item on the current leaf, returns 0 if end of leaf*/
@@ -1164,7 +1165,7 @@ static int isamb_pp_read_on_leaf(ISAMB_PP pp, void *buf)
 
 static int isamb_pp_climb_level(ISAMB_PP pp, int *pos)
 { /* climbs higher in the tree, until finds a level with data left */
-  /* returns teh node to (consider to) descend to in *pos) */
+  /* returns the node to (consider to) descend to in *pos) */
     struct ISAMB_block *p = pp->block[pp->level];
     char *src;
     int item_len;
@@ -1201,7 +1202,40 @@ static int isamb_pp_climb_level(ISAMB_PP pp, int *pos)
 } /* climb_level */
 
 
-static void isamb_pp_descend_to_first_leaf(ISAMB_PP pp, int pos)
+static int isamb_pp_forward_unode(ISAMB_PP pp, int pos, const void *untilbuf)
+{ /* scans a upper node until it finds a child <= untilbuf */
+  /* pp points to the key value, as always. pos is the child read from */
+  /* the buffer */
+  /* if all values are too small, returns the last child in the node */
+  /* FIXME - this can be detected, and avoided by looking at the */
+  /* parent node, but that gets messy. Presumably the cost is */
+  /* pretty low anyway */
+    struct ISAMB_block *p = pp->block[pp->level];
+    char *src=p->bytes + p->offset;
+    int item_len;
+    int cmp;
+    int nxtpos;
+    assert(!p->leaf);
+    assert(p->offset <= p->size);
+    if (p->offset == p->size)
+        return pos; /* already at the end of it */
+    while(p->offset < p->size) {
+        decode_ptr(&src,&item_len);
+        cmp=(*pp->isamb->method->compare_item)(untilbuf,src);
+        src+=item_len;
+        decode_ptr(&src,&nxtpos);
+        if (cmp<2)
+        {
+            return pos;
+        } /* found one */
+        pos=nxtpos;
+        p->offset=src-(char*)p->bytes;
+    }
+    return pos; /* that's the last one in the line */
+    
+} /* forward_unode */
+
+static void isamb_pp_descend_to_leaf(ISAMB_PP pp, int pos, const void *untilbuf)
 { /* climbs down the tree, from pos, to the leftmost leaf */
     struct ISAMB_block *p = pp->block[pp->level];
     char *src;
@@ -1212,9 +1246,9 @@ static void isamb_pp_descend_to_first_leaf(ISAMB_PP pp, int pos)
     ++(pp->accessed_nodes[pp->maxlevel-pp->level]);
     ++(pp->no_blocks);
 #if ISAMB_DEBUG
-        logf(LOG_DEBUG,"isamb_pp_descend_to_first_leaf "
-                       "got lev %d node %d lf=%d", 
-                       pp->level, p->pos, p->leaf);
+    logf(LOG_DEBUG,"isamb_pp_descend_to_leaf "
+                   "got lev %d node %d lf=%d", 
+                   pp->level, p->pos, p->leaf);
 #endif
     if (p->leaf)
         return;
@@ -1222,27 +1256,48 @@ static void isamb_pp_descend_to_first_leaf(ISAMB_PP pp, int pos)
     src=p->bytes + p->offset;
     decode_ptr(&src, &pos);
     p->offset=src-(char*)p->bytes;
-    isamb_pp_descend_to_first_leaf(pp,pos);
-} /* descend_to_first_leaf */
+    if (untilbuf)
+        pos=isamb_pp_forward_unode(pp,pos,untilbuf);
+    isamb_pp_descend_to_leaf(pp,pos,untilbuf);
+} /* descend_to_leaf */
 
 static int isamb_pp_find_next_leaf(ISAMB_PP pp)
 { /* finds the next leaf by climbing up and down */
     int pos;
     if (!isamb_pp_climb_level(pp,&pos))
         return 0;
-    isamb_pp_descend_to_first_leaf(pp, pos);
+    isamb_pp_descend_to_leaf(pp, pos,0);
     return 1;
 }
 static int isamb_pp_forward_on_leaf(ISAMB_PP pp, void *buf, const void *untilbuf)
 { /* forwards on the current leaf, returns 0 if not found */
-    assert (!"FIXME - not done yet");
-    return 0;
+    int cmp;
+    int skips=0;
+    while (1){
+        if (!isamb_pp_read_on_leaf(pp,buf))
+            return 0;
+        /* FIXME - this is an extra function call, inline the read? */
+        cmp=(*pp->isamb->method->compare_item)(untilbuf,buf);
+        if (cmp <2){  /* found a good one */
+#if ISAMB_DEBUG
+            if (skips)
+                logf(LOG_DEBUG, "isam_pp_fwd_on_leaf skipped %d items",skips);
+#endif
+            pp->returned_numbers++;
+            return 1;
+        }
+        pp->skipped_numbers++;
+        skips++;
+    }
 } /* forward_on_leaf */
 
 static int isamb_pp_climb_desc(ISAMB_PP pp, void *buf, const void *untilbuf)
 { /* climbs up and descends to a leaf where values >= *untilbuf are found */
-    assert (!"FIXME - not done yet");
-    return 0;
+    int pos;
+    if (!isamb_pp_climb_level(pp,&pos))
+        return 0;
+    isamb_pp_descend_to_leaf(pp, pos,untilbuf);
+    return 1;
 } /* climb_desc */
 
 int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
@@ -1251,7 +1306,6 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
     struct ISAMB_block *p = pp->block[pp->level];
     assert(p->leaf);
 #endif
-    untilbuf=0; /*FIXME - disabling the forward part */
     if (untilbuf) {
         if (isamb_pp_forward_on_leaf( pp, buf, untilbuf))
             return 1;
