@@ -1,0 +1,20 @@
+#
+# Experimental format for the HCI bibliography
+#
+
+BEGIN                { begin record gils }
+
+/^%T / BODY /^%/     { data -element title $1; unread 2 }
+/^%S / BODY /^%/     {
+                      begin element localSubjectIndex;
+		      data -element localSubjectTerm $1;
+		      end element;
+		      unread 2
+		     }
+/^%A / BODY /^%/     { data -element author $1; unread 2 }
+/^%D / BODY /^%/     { data -element publicationDate $1; unread 2 }
+/^%P / BODY /^%/     { data -element publicationPlace $1; unread 2 }
+/^%X / BODY /^%/     { data -text -element abstract $1; unread 2 }
+
+
+END                 { end record }
