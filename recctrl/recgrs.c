@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.85 2003-10-07 09:18:21 adam Exp $
+/* $Id: recgrs.c,v 1.86 2004-05-21 11:58:56 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -107,6 +107,7 @@ static void *grs_init(RecType recType)
 #if HAVE_PERL
     grs_add_handler (h, recTypeGrs_perl);
 #endif
+    grs_add_handler (h, recTypeGrs_danbib);
     return h;
 }
 
