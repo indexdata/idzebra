@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.40 2004-06-02 23:05:55 adam Exp $
+/* $Id: isamb.c,v 1.41 2004-06-03 00:23:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1534,6 +1534,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilb)
     if (!p)
         return 0;
 
+again:
     while (p->offset == p->size)
     {
         int pos, item_len;
@@ -1548,6 +1549,7 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilb)
             assert (!p->leaf);  
         }
 
+	assert(!p->leaf);
         src = p->bytes + p->offset;
         
         decode_ptr (&src, &item_len);
@@ -1604,10 +1606,18 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilb)
     }
     assert (p->offset < p->size);
     assert (p->leaf);
-    src = p->bytes + p->offset;
-    (*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
+    while(1)
+    {
+	char *dst0 = dst;
+        src = p->bytes + p->offset;
+        (*pp->isamb->method->code_item)(ISAMC_DECODE, p->decodeClientData,
                                     &dst, &src);
-    p->offset = src - (char*) p->bytes;
+        p->offset = src - (char*) p->bytes;
+        if (!untilb || (*pp->isamb->method->compare_item)(untilb, dst0) <= 1)
+	    break;
+	dst = dst0;
+	if (p->offset == p->size) goto again;
+    }
     /* key_logdump_txt(LOG_DEBUG,buf, "isamb_pp_read returning 1"); */
     return 1;
 }
