@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.15  1996-03-21 14:50:09  adam
+ * Revision 1.16  1996-04-09 10:05:20  adam
+ * Bug fix: prev_name buffer possibly too small; allocated in key_file_init.
+ *
+ * Revision 1.15  1996/03/21  14:50:09  adam
  * File update uses modify-time instead of change-time.
  *
  * Revision 1.14  1996/02/07  14:06:37  adam
@@ -103,7 +106,7 @@ void getFnameTmp (char *fname, int no)
 void key_file_chunk_read (struct key_file *f)
 {
     int nr = 0, r, fd;
-    char fname[256];
+    char fname[1024];
     getFnameTmp (fname, f->no);
     fd = open (fname, O_RDONLY);
     if (fd == -1)
@@ -156,7 +159,7 @@ struct key_file *key_file_init (int no, int chunk)
     f->length = 0;
     f->readHandler = NULL;
     f->buf = xmalloc (f->chunk);
-    f->prev_name = xmalloc (256);
+    f->prev_name = xmalloc (512);
     *f->prev_name = '\0';
     key_file_chunk_read (f);
     return f;
@@ -265,7 +268,7 @@ struct heap_info *key_heap_init (int nkeys,
     for (i = 0; i<= nkeys; i++)
     {
         hi->ptr[i] = i;
-        hi->info.buf[i] = xmalloc (512);
+        hi->info.buf[i] = xmalloc (768);
     }
     return hi;
 }
@@ -459,6 +462,20 @@ void key_input (const char *dict_fname, const char *isam_fname,
     struct heap_info *hi;
     struct progressInfo progressInfo;
 
+    if (nkeys < 0)
+    {
+        char fname[1024];
+        nkeys = 0;
+        while (1)
+        {
+            getFnameTmp (fname, nkeys+1);
+            if (access (fname, R_OK) == -1)
+                break;
+            nkeys++;
+        }
+        if (!nkeys)
+            return ;
+    }
     dict = dict_open (dict_fname, cache, 1);
     if (!dict)
     {

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.38  1996-03-26 16:01:14  adam
+ * Revision 1.39  1996-04-09 10:05:21  adam
+ * Bug fix: prev_name buffer possibly too small; allocated in key_file_init.
+ *
+ * Revision 1.38  1996/03/26  16:01:14  adam
  * New setting lockPath: directory of various lock files.
  *
  * Revision 1.37  1996/03/19  12:43:26  adam
@@ -222,6 +225,10 @@ int main (int argc, char **argv)
                 }
                 if (!strcmp (arg, "update"))
                     cmd = 'u';
+                else if (!strcmp (arg, "update1"))
+                    cmd = 'U';
+                else if (!strcmp (arg, "update2"))
+                    cmd = 'm';
                 else if (!strcmp (arg, "dump"))
                     cmd = 's';
                 else if (!strcmp (arg, "del") || !strcmp(arg, "delete"))
@@ -301,28 +308,42 @@ int main (int argc, char **argv)
                     zebraIndexLockMsg ("w");
                 }
                 zebraIndexWait (0);
-
+                
                 memcpy (&rGroup, &rGroupDef, sizeof(rGroup));
-                key_open (mem_max);
                 rGroup.path = arg;
-                if (cmd == 'u')
+                switch (cmd)
                 {
+                case 'u':
+                    key_open (mem_max);
                     logf (LOG_LOG, "Updating %s", rGroup.path);
                     repositoryUpdate (&rGroup);
-                }
-                else if (cmd == 'd')
-                {
+                    nsections = key_close ();
+                    break;
+                case 'U':
+                    key_open (mem_max);
+                    logf (LOG_LOG, "Updating (pass 1) %s", rGroup.path);
+                    repositoryUpdate (&rGroup);
+                    key_close ();
+                    nsections = 0;
+                    break;
+                case 'd':
+                    key_open (mem_max);
                     logf (LOG_LOG, "Deleting %s", rGroup.path);
                     repositoryDelete (&rGroup);
-                }
-                else if (cmd == 's')
-                {
+                    nsections = key_close ();
+                    break;
+                case 's':
                     logf (LOG_LOG, "Dumping %s", rGroup.path);
                     repositoryShow (&rGroup);
+                    nsections = 0;
+                    break;
+                case 'm':
+                    nsections = -1;
+                    break;
+                default:
+                    nsections = 0;
                 }
-
                 cmd = 0;
-                nsections = key_close ();
                 if (nsections)
                 {
                     logf (LOG_LOG, "Merging with index");
