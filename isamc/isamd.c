@@ -1,10 +1,14 @@
 /*
  * Copyright (c) 1995-1998, Index Data.
  * See the file LICENSE for details.
- * Heikki Levanto
- * 
- * Isamd - isam with diffs 
+ * $Id: isamd.c,v 1.8 1999-08-18 13:28:16 heikki Exp $ 
  *
+ * Isamd - isam with diffs 
+ * Programmed by: Heikki Levanto
+ *
+ * Todo
+ *  - Statistics are missing and/or completely wrong
+ *  - Lots of code stolen from isamc, not all needed any more
  */
 
 
@@ -29,7 +33,7 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
 {
     static struct ISAMD_filecat_s def_cat[] = {
 #if SMALL_TEST
-/*        blocksz,   max keys before switching size. Unused time being */
+/*        blocksz,   max. Unused time being */
         {    20,   40 },
 	{    32,    0 },
 #else
@@ -51,13 +55,9 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
         { 32768,   0  },
 */
 
-/* assume about 2 bytes per pointer, when compressed. The head uses */
-/* 16 bytes, and other blocks use 8 for header info... If you want 3 */
-/* blocks of 32 bytes, say max 16+24+24 = 64 keys */
-
     };
-    ISAMD_M m = (ISAMD_M) xmalloc (sizeof(*m));  /*??? never released??? */
-    m->filecat = def_cat;
+    ISAMD_M m = (ISAMD_M) xmalloc (sizeof(*m));  /* never released! */
+    m->filecat = def_cat;                        /* ok, only alloc'd once */
 
     m->code_start = NULL;
     m->code_item = NULL;
@@ -66,7 +66,7 @@ ISAMD_M isamd_getmethod (ISAMD_M me)
 
     m->compare_item = NULL;
 
-    m->debug = 1;
+    m->debug = 0; /* default to no debug */
 
     m->max_blocks_mem = 10;
 
@@ -89,11 +89,11 @@ ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method)
     assert (filecat);
 
     /* determine number of block categories */
-    if (is->method->debug)
+    if (is->method->debug>0)
         logf (LOG_LOG, "isamd: bsize  maxkeys");
     do
     {
-        if (is->method->debug)
+        if (is->method->debug>0)
             logf (LOG_LOG, "isamd:%6d %6d",
                   filecat[i].bsize, filecat[i].mblocks);
     } while (filecat[i++].mblocks);
@@ -104,13 +104,6 @@ ISAMD isamd_open (BFiles bfs, const char *name, int writeflag, ISAMD_M method)
     assert (is->max_cat <=8 ); /* we have only 3 bits for it */
     
     is->files = (ISAMD_file) xmalloc (sizeof(*is->files)*is->no_files);
-    if (writeflag)
-    {
-      /* TODO - what ever needs to be done here... */
-    }
-    else
-    {
-    }
 
     for (i = 0; i<is->no_files; i++)
     {
@@ -168,7 +161,7 @@ int isamd_close (ISAMD is)
 {
     int i;
 
-    if (is->method->debug)
+    if (is->method->debug>0)
     {
 	logf (LOG_LOG, "isamd:    next    forw   mid-f    prev   backw   mid-b");
 	for (i = 0; i<is->no_files; i++)
@@ -184,7 +177,7 @@ int isamd_close (ISAMD is)
 		  (double) is->files[i].sum_backward/is->files[i].no_backward
 		  : 0.0);
     }
-    if (is->method->debug)
+    if (is->method->debug>0)
         logf (LOG_LOG, "isamd:  writes   reads skipped   alloc released  remap");
     for (i = 0; i<is->no_files; i++)
     {
@@ -193,7 +186,7 @@ int isamd_close (ISAMD is)
         if (is->files[i].head_is_dirty)
             bf_write (is->files[i].bf, 0, 0, sizeof(ISAMD_head),
                  &is->files[i].head);
-        if (is->method->debug)
+        if (is->method->debug>0)
             logf (LOG_LOG, "isamd:%8d%8d%8d%8d%8d%8d",
                   is->files[i].no_writes,
                   is->files[i].no_reads,
@@ -214,13 +207,15 @@ int isamd_close (ISAMD is)
 int isamd_read_block (ISAMD is, int cat, int pos, char *dst)
 {
     ++(is->files[cat].no_reads);
+    if (is->method->debug > 6)
+        logf (LOG_LOG, "isamd: read_block %d %d", cat, pos);
     return bf_read (is->files[cat].bf, pos, 0, 0, dst);
 }
 
 int isamd_write_block (ISAMD is, int cat, int pos, char *src)
 {
     ++(is->files[cat].no_writes);
-    if (is->method->debug > 2)
+    if (is->method->debug > 6)
         logf (LOG_LOG, "isamd: write_block %d %d", cat, pos);
     return bf_write (is->files[cat].bf, pos, 0, 0, src);
 }
@@ -229,7 +224,7 @@ int isamd_write_dblock (ISAMD is, int cat, int pos, char *src,
                       int nextpos, int offset)
 {
     ISAMD_BLOCK_SIZE size = offset + ISAMD_BLOCK_OFFSET_N;
-    if (is->method->debug > 2)
+    if (is->method->debug > 4)
         logf (LOG_LOG, "isamd: write_dblock. size=%d nextpos=%d",
               (int) size, nextpos);
     src -= ISAMD_BLOCK_OFFSET_N;
@@ -388,14 +383,14 @@ int isamd_alloc_block (ISAMD is, int cat)
     }
     if (!block)
         block = alloc_block (is, cat);
-    if (is->method->debug > 3)
+    if (is->method->debug > 4)
         logf (LOG_LOG, "isamd: alloc_block in cat %d: %d", cat, block);
     return block;
 }
 
 void isamd_release_block (ISAMD is, int cat, int pos)
 {
-    if (is->method->debug > 3)
+    if (is->method->debug > 4)
         logf (LOG_LOG, "isamd: release_block in cat %d: %d", cat, pos);
     assert(pos!=0);
     
@@ -443,7 +438,7 @@ void isamd_pp_close (ISAMD_PP pp)
     isamd_free_diffs(pp);  /* see merge-d.h */
     xfree (pp->buf);
     xfree (pp);
-    if (is->method->debug > 2)
+    if (is->method->debug > 5)
        logf (LOG_LOG, "isamd_pp_close %p %d=%d:%d  sz=%d n=%d=%d:%d",
              pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
              pp->next, isamd_type(pp->next), isamd_block(pp->next) );
@@ -490,12 +485,8 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
         assert (pp->next != pp->pos);
         pp->offset = src - pp->buf; 
         assert (pp->offset == ISAMD_BLOCK_OFFSET_1);
-//        if (is->method->debug > 2)
-//           logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
-//                 pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
-//                 pp->next, isamd_type(pp->next), isamd_block(pp->next) );
     }
-    if (is->method->debug > 2)
+    if (is->method->debug > 5)
        logf (LOG_LOG, "isamd_pp_open  %p %d=%d:%d  sz=%d n=%d=%d:%d",
              pp, isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, pp->size, 
              pp->next, isamd_type(pp->next), isamd_block(pp->next) );
@@ -519,7 +510,7 @@ void isamd_buildfirstblock(ISAMD_PP pp){
   memcpy(dst, &pp->diffs, sizeof(pp->diffs));
   dst += sizeof(pp->diffs);  
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_1);
-  if (pp->is->method->debug > 2)
+  if (pp->is->method->debug > 5)
      logf (LOG_LOG, "isamd: first: sz=%d  p=%d/%d>%d/%d nk=%d d=%d",
            pp->size, 
            pp->cat, pp->pos, 
@@ -536,7 +527,7 @@ void isamd_buildlaterblock(ISAMD_PP pp){
   memcpy(dst, &pp->size,sizeof(pp->size));
   dst += sizeof(pp->size);
   assert (dst - pp->buf  == ISAMD_BLOCK_OFFSET_N);
-  if (pp->is->method->debug > 2)
+  if (pp->is->method->debug > 5)
      logf (LOG_LOG, "isamd: l8r: sz=%d  p=%d/%d>%d/%d",
            pp->size, 
            pp->pos, pp->cat, 
@@ -607,12 +598,10 @@ int isamd_read_main_item (ISAMD_PP pp, char **dst)
         /* assume block is non-empty */
         assert (src - pp->buf == ISAMD_BLOCK_OFFSET_N);
         assert (pp->next != isamd_addr(pp->pos,pp->cat));
-        //if (pp->deleteFlag)
-        //    isamd_release_block (is, pp->cat, pp->pos);
         (*is->method->code_reset)(pp->decodeClientData);
         (*is->method->code_item)(ISAMD_DECODE, pp->decodeClientData, dst, &src);
         pp->offset = src - pp->buf; 
-        if (is->method->debug > 2)
+        if (is->method->debug > 4)
             logf (LOG_LOG, "isamd: read_block size=%d %d %d next=%d",
                  pp->size, pp->cat, pp->pos, pp->next);
         return 2;
@@ -693,8 +682,8 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.7  1999-08-18 10:45:27  heikki
- * Another fix for the difflen problem.
+ * Revision 1.8  1999-08-18 13:28:16  heikki
+ * Set log levels to decent values
  *
  * Revision 1.6  1999/08/17 19:44:25  heikki
  * Fixed memory leaks

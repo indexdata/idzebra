@@ -3,7 +3,7 @@
  * See the file LICENSE for details.
  * Heikki Levanto
  *
- * $Id: merge-d.c,v 1.11 1999-08-18 10:37:11 heikki Exp $
+ * $Id: merge-d.c,v 1.12 1999-08-18 13:28:17 heikki Exp $
  *
  * todo
  *  - Clean up log levels
@@ -11,8 +11,12 @@
  *  - single-entry optimizing
  *  - study and optimize block sizes (later)
  *  - Clean up the different ways diffs are handled in writing and reading
+ *  - Keep a merge-count in the firstpp, and if the block has already been
+ *    merged, reduce it to a larger size even if it could fit in a small one!
+ *  - Keep minimum freespace in the category table, and use that in reduce!
  *
  * bugs
+ *  - Still has not been able to run a complete long test on bagel!
  *
  * caveat
  *  There is a confusion about the block addresses. cat or type is the category,
@@ -31,15 +35,17 @@
  *  log levels (set isamd=x in zebra.cfg (or what ever cfg file you use) )
  *  NOT IMPLEMEMTED YET !!!
  *    0 = no logging. Default
- *    1 = Each call to isamd_append with start address and no more
- *    2 = Start and type of append, start of merge, and result of append
- *    3 = Block allocations
- *    4 = Block-level operations (read/write)
- *    5 = Details about diff blocks etc.
- *    6 = Log each record as it passes the system (once)
- *    7 = Log raw and (de)coded data
- *    8 = Anything else that may be useful
- *    9 = Anything needed toi hunt a specific bug
+ *    1 = no logging here. isamd logs overall statistics
+ *    2 = Each call to isamd_append with start address and no more
+ *    3 = Start and type of append, start of merge, and result of append
+ *    4 = Block allocations
+ *    5 = Block-level operations (read/write)
+ *    6 = Details about diff blocks etc.
+ *    7 = Log each record as it passes the system (once)
+ *    8 = Log raw and (de)coded data
+ *    9 = Anything else that may be useful
+ *   .. = Anything needed toi hunt a specific bug
+ *  (note that all tests in the code are like debug>3, which means 4 or above!)
  */
 
 #include <stdlib.h>
@@ -99,10 +105,10 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
    int i=1;  /* [0] is used for the main data */
    int diffsz= maxinfos * sizeof(struct ISAMD_DIFF_s);
 
-   pp->diffinfo = xmalloc( diffsz );  /*!!!*/ /* does not always get freed */
+   pp->diffinfo = xmalloc( diffsz ); 
    memset(pp->diffinfo,'\0',diffsz);
-   if (pp->is->method->debug > 1)   //4
-     logf(LOG_LOG,"isamd_getDiffInfo: %d (%d:%d), ix=%d mx=%d",
+   if (pp->is->method->debug > 5)   
+      logf(LOG_LOG,"isamd_getDiffInfo: %d (%d:%d), ix=%d mx=%d",
          isamd_addr(pp->pos, pp->cat), pp->cat, pp->pos, diffidx,maxinfos);
    assert(pp->diffbuf);
 
@@ -110,7 +116,7 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
    {  
       if ( diffidx+sizeof(int) > pp->is->method->filecat[pp->cat].bsize )
       {
-         if (pp->is->method->debug > 4)
+         if (pp->is->method->debug > 5)
            logf(LOG_LOG,"isamd_getDiffInfo:Near end (no room for len) at ix=%d n=%d",
                diffidx, i);
          return; /* whole block done */
@@ -121,7 +127,8 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
         logf(LOG_LOG,"isamd_getDiffInfo: max=%d ix=%d dbuf=%p",
           pp->diffinfo[i].maxidx, diffidx, pp->diffbuf);
 
-      if (pp->diffinfo[i].maxidx > pp->is->method->filecat[pp->cat].bsize)
+      if ( (pp->is->method->debug > 0) &&
+         (pp->diffinfo[i].maxidx > pp->is->method->filecat[pp->cat].bsize) )
       { /* bug-hunting, this fails on some long runs that log too much */
          logf(LOG_LOG,"Bad MaxIx!!! %s:%d: diffidx=%d", 
                        __FILE__,__LINE__, diffidx);
@@ -135,7 +142,7 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
 
       if (0==pp->diffinfo[i].maxidx)
       {
-         if (pp->is->method->debug > 1)  //!!! 4
+         if (pp->is->method->debug > 5)  //!!! 4
            logf(LOG_LOG,"isamd_getDiffInfo:End mark at ix=%d n=%d",
                diffidx, i);
          return; /* end marker */
@@ -143,7 +150,7 @@ static void getDiffInfo(ISAMD_PP pp, int diffidx)
       diffidx += sizeof(int);
       pp->diffinfo[i].decodeData = (*pp->is->method->code_start)(ISAMD_DECODE);
       pp->diffinfo[i].diffidx = diffidx;
-      if (pp->is->method->debug > 4)
+      if (pp->is->method->debug > 5)
         logf(LOG_LOG,"isamd_getDiff[%d]:%d-%d %s",
           i,diffidx-sizeof(int),pp->diffinfo[i].maxidx,
           hexdump((char *)&pp->diffbuf[diffidx-4],8,0) );
@@ -168,7 +175,7 @@ static void loadDiffs(ISAMD_PP pp)
       isamd_read_block (pp->is, isamd_type(diffaddr), 
                                 isamd_block(diffaddr), pp->diffbuf );
       diffidx= ISAMD_BLOCK_OFFSET_N; 
-      if (pp->is->method->debug > 1) //4 !!!
+      if (pp->is->method->debug > 4)
         logf(LOG_LOG,"isamd_LoadDiffs: loaded block %d=%d:%d, d=%d ix=%d",
           diffaddr, isamd_type(diffaddr),isamd_block(diffaddr), 
           pp->diffs,diffidx);
@@ -177,7 +184,7 @@ static void loadDiffs(ISAMD_PP pp)
    { /* integrated block, just set the pointers */
      pp->diffbuf = pp->buf;
      diffidx = pp->size;  /* size is the beginning of diffs, diffidx the end*/
-      if (pp->is->method->debug > 1)  // 4 !!!
+      if (pp->is->method->debug > 4)
         logf(LOG_LOG,"isamd_LoadDiffs: within %d=%d:%d, d=%d ix=%d ",
           isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, pp->diffs, diffidx);
    }
@@ -188,13 +195,13 @@ static void loadDiffs(ISAMD_PP pp)
 void isamd_free_diffs(ISAMD_PP pp)
 {
   int i;
-  if (pp->is->method->debug > 4)
+  if (pp->is->method->debug > 5)
      logf(LOG_LOG,"isamd_free_diffs: pp=%p di=%p", pp, pp->diffinfo);
   if (!pp->diffinfo) 
     return;
   for (i=1;pp->diffinfo[i].decodeData;i++) 
   {
-      if (pp->is->method->debug > 4)
+      if (pp->is->method->debug > 8)
          logf(LOG_LOG,"isamd_free_diffs [%d]=%p",i, 
                        pp->diffinfo[i].decodeData);
       (*pp->is->method->code_stop)(ISAMD_DECODE,pp->diffinfo[i].decodeData);
@@ -228,7 +235,7 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
      { /* 0 is special case, main data. */
         keyptr=(char*) &(pp->diffinfo[0].key);
         pp->diffinfo[0].mode = ! isamd_read_main_item(pp,&keyptr);
-        if (pp->is->method->debug > 4)
+        if (pp->is->method->debug > 7)
           logf(LOG_LOG,"isamd_read_item: read main %d.%d (%x.%x)",
             pp->diffinfo[0].key.sysno, pp->diffinfo[0].key.seqno,
             pp->diffinfo[0].key.sysno, pp->diffinfo[0].key.seqno);
@@ -236,7 +243,7 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
      winner = 0;
      for (i=1; (!retry) && (pp->diffinfo[i].decodeData); i++)
      {
-        if (pp->is->method->debug > 4)
+        if (pp->is->method->debug > 8)
           logf(LOG_LOG,"isamd_read_item: considering d%d %d.%d ix=%d mx=%d",
                i, pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                   pp->diffinfo[i].diffidx,   pp->diffinfo[i].maxidx);
@@ -251,7 +258,7 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
            pp->diffinfo[i].diffidx += codeptr-codestart;
            pp->diffinfo[i].mode = pp->diffinfo[i].key.seqno & 1;
            pp->diffinfo[i].key.seqno = pp->diffinfo[i].key.seqno >>1 ;
-           if (pp->is->method->debug > 4)
+           if (pp->is->method->debug > 7)
              logf(LOG_LOG,"isamd_read_item: read diff[%d] %d.%d (%x.%x)",i,
                pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno);
@@ -263,7 +270,7 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
             cmp=-1; /* end of main sequence, take all diffs */
           if (cmp<0)
           {
-             if (pp->is->method->debug > 4)
+             if (pp->is->method->debug > 8)
                logf(LOG_LOG,"isamd_read_item: ins %d<%d %d.%d (%x.%x) < %d.%d (%x.%x)",
                  i, winner,
                  pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
@@ -274,13 +281,13 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
                winner = i;
              else
                assert(!"delete diff for nonexisting item");  
-               /* is an assert too steep here?*/
+               /* is an assert too steep here? Not really.*/
           } /* earlier key */
           else if (cmp==0)
           {
              if (!pp->diffinfo[i].mode) /* delete diff. should always be */
              {
-                if (pp->is->method->debug > 4)
+                if (pp->is->method->debug > 8)
                   logf(LOG_LOG,"isamd_read_item: del %d at%d %d.%d (%x.%x)",
                     i, winner,
                     pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
@@ -288,12 +295,13 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
                 pp->diffinfo[winner].key.sysno=0; /* delete it */
              }
              else
-                if (pp->is->method->debug > 4)
+                if (pp->is->method->debug > 2)
                   logf(LOG_LOG,"isamd_read_item: duplicate ins %d at%d %d.%d (%x.%x)",
                     i, winner,
                     pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno,
                     pp->diffinfo[i].key.sysno, pp->diffinfo[i].key.seqno);
                 /* skip the insert, since we already have it in the base */
+                /* Should we fail an assertion here??? */
              pp->diffinfo[i].key.sysno=0; /* done with the delete */
              retry=1; /* start all over again */
           } /* matching key */
@@ -304,7 +312,7 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
 
   if ( pp->diffinfo[winner].key.sysno)
   {
-    if (pp->is->method->debug > 4)
+    if (pp->is->method->debug > 7)
       logf(LOG_LOG,"isamd_read_item: got %d  %d.%d (%x.%x)",
         winner,
         pp->diffinfo[winner].key.sysno, pp->diffinfo[winner].key.seqno,
@@ -316,7 +324,7 @@ int isamd_read_item (ISAMD_PP pp, char **dst)
   } 
   else 
   {
-    if (pp->is->method->debug > 4)
+    if (pp->is->method->debug > 7)
       logf(LOG_LOG,"isamd_read_item: eof w=%d  %d.%d (%x.%x)",
         winner,
         pp->diffinfo[winner].key.sysno, pp->diffinfo[winner].key.seqno,
@@ -338,14 +346,14 @@ static void isamd_reduceblock(ISAMD_PP pp)
 {
    if (pp->pos)
       return; /* existing block, do not touch */
-   if (pp->is->method->debug > 1)  // 2 !!!
+   if (pp->is->method->debug > 5)  
      logf(LOG_LOG,"isamd_reduce: start p=%d c=%d sz=%d",
        pp->pos, pp->cat, pp->size); 
    while ( ( pp->cat > 0 ) && (!pp->next) && 
            (pp->offset < pp->is->method->filecat[pp->cat-1].bsize ) )
       pp->cat--;
    pp->pos = isamd_alloc_block(pp->is, pp->cat);
-   if (pp->is->method->debug > 1) // 2 !!!
+   if (pp->is->method->debug > 5) 
      logf(LOG_LOG,"isamd_reduce:  got  p=%d c=%d sz=%d",
        pp->pos, pp->cat, pp->size);    
 } /* reduceblock */
@@ -396,7 +404,7 @@ static ISAMD_PP read_diff_block(ISAMD_PP firstpp, int* p_diffidx)
          pp->pos = isamd_alloc_block(pp->is, pp->cat);
          firstpp->diffs = pp->pos*2 +1;
          diffidx = pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N;
-         if (pp->is->method->debug >3) 
+         if (pp->is->method->debug >5) 
              logf(LOG_LOG,"isamd_appd: alloc diff  (d=%d) %d=%d:%d ix=%d",
                    firstpp->diffs,
                    isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
@@ -410,7 +418,7 @@ static ISAMD_PP read_diff_block(ISAMD_PP firstpp, int* p_diffidx)
         while ( ( i < pp->is->method->filecat[pp->cat].bsize) && 
                 ( i <= diffidx + sizeof(int)))
             pp->buf[i++]='\0';
-        if (pp->is->method->debug >1) //!!! 3
+        if (pp->is->method->debug >5) 
              logf(LOG_LOG,"isamd_appd: set up diffhead  (d=%d) %d=%d:%d ix=%d",
                    firstpp->diffs,
                    isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
@@ -423,7 +431,7 @@ static ISAMD_PP read_diff_block(ISAMD_PP firstpp, int* p_diffidx)
       { /* diffs in a separate block, load it */
         pp=isamd_pp_open(pp->is, isamd_addr(firstpp->diffs/2,pp->cat));
         diffidx = pp->offset= pp->size;
-        if (pp->is->method->debug >1)  // 3 !!! 
+        if (pp->is->method->debug >5) 
            logf(LOG_LOG,"isamd_appd: loaded diff (d=%d) %d=%d:%d ix=%d",
                  firstpp->diffs,
                  isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
@@ -432,7 +440,7 @@ static ISAMD_PP read_diff_block(ISAMD_PP firstpp, int* p_diffidx)
       else
       { /* diffs within the nead */
          diffidx= pp->diffs/2;
-         if (pp->is->method->debug >1)  // 3 !!! 
+         if (pp->is->method->debug >5)  
             logf(LOG_LOG,"isamd_appd: diffs in head d=%d %d=%d:%d ix=%d sz=%d",
                      pp->diffs,
                      isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
@@ -470,7 +478,7 @@ static ISAMD_PP get_new_main_block( ISAMD_PP firstpp, ISAMD_PP pp)
       pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N; 
       pp->next=0;
       if (pp->is->method->debug >3) 
-         logf(LOG_LOG,"isamd_build: Alloc2 f=%d (%d:%d) n=%d(%d:%d)",
+         logf(LOG_LOG,"isamd_g_mainblk: Alloc2 f=%d=%d:%d n=%d=%d:%d",
             isamd_addr(firstpp->pos,firstpp->cat), 
             firstpp->cat, firstpp->pos,
             isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos );
@@ -480,7 +488,7 @@ static ISAMD_PP get_new_main_block( ISAMD_PP firstpp, ISAMD_PP pp)
       newblock = isamd_alloc_block(pp->is, firstpp->cat);
       pp->next = isamd_addr(newblock,firstpp->cat);
       if (pp->is->method->debug >3) 
-         logf(LOG_LOG,"isamd_build: Alloc new after p=%d=%d:%d  n=%d=%d:%d",
+         logf(LOG_LOG,"isamd_build: Alloc1 after p=%d=%d:%d->%d=%d:%d",
             isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos,
             isamd_addr(newblock,pp->cat), pp->cat, newblock );
       isamd_buildlaterblock(pp);
@@ -488,7 +496,6 @@ static ISAMD_PP get_new_main_block( ISAMD_PP firstpp, ISAMD_PP pp)
       pp->size = pp->offset = ISAMD_BLOCK_OFFSET_N;
       pp->next=0;
       pp->cat = firstpp->cat;
-//      pp->pos = isamd_block(firstpp->next); /* ???? FIRSTPP ???? */
       pp->pos = newblock;
       pp->cat = firstpp->cat; /* is already, never mind */
    }
@@ -515,7 +522,7 @@ static ISAMD_PP  append_main_item(ISAMD_PP firstpp,
    (*pp->is->method->code_item)(ISAMD_ENCODE, encoder_data, &c_ptr, &i_ptr);
    codelen = c_ptr - codebuff;
    assert ( (codelen<128) && (codelen>0));
-   if (pp->is->method->debug >3)
+   if (pp->is->method->debug >7)
       logf(LOG_LOG,"isamd:build: coded into %s  (nk=%d)",
           hexdump(codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1);
 
@@ -529,7 +536,7 @@ static ISAMD_PP  append_main_item(ISAMD_PP firstpp,
       (*pp->is->method->code_item)(ISAMD_ENCODE, encoder_data, &c_ptr, &i_ptr);
       codelen = c_ptr - codebuff;
       assert ( (codelen<128) && (codelen>0));
-      if (pp->is->method->debug >3)
+      if (pp->is->method->debug >7)
          logf(LOG_LOG,"isamd:build: recoded into %s  (nk=%d)",
              hexdump(codebuff, c_ptr-codebuff,hexbuff), firstpp->numKeys+1);
    } /* block full */    
@@ -568,10 +575,10 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
    
    encoder_data=(*is->method->code_start)(ISAMD_ENCODE);
    
-   if (is->method->debug >3)
-      logf(LOG_LOG,"isamd_bld start: p=%d c=%d sz=%d maxsz=%d ",
-         pp->pos, pp->cat, pp->size, 
-         pp->is->method->filecat[pp->is->max_cat].bsize); 
+   if (is->method->debug >2)
+      logf(LOG_LOG,"isamd_bld start: p=%d=%d:%d sz=%d maxsz=%d ",
+         isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos, 
+         pp->size, pp->is->method->filecat[pp->is->max_cat].bsize); 
 
    /* read first input */
    i_ptr = i_item;
@@ -579,7 +586,7 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
    if (i_more)
      assert( i_ptr-i_item == sizeof(i_key) );
 
-   if (pp->is->method->debug >3)
+   if (pp->is->method->debug >7)
       logf(LOG_LOG,"isamd: build_fi start: m=%d %s",
          i_mode, hexdump(i_item,i_ptr-i_item,hexbuff) );
 
@@ -594,8 +601,8 @@ static int isamd_build_first_block(ISAMD is, ISAMD_I data)
       i_ptr = i_item;
       i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); 
       
-      if ( (i_more) && (pp->is->method->debug >3) )
-         logf(LOG_LOG,"isamd: build_fi start: m=%d %s",
+      if ( (i_more) && (pp->is->method->debug >7) )
+         logf(LOG_LOG,"isamd: build_fi read: m=%d %s",
             i_mode, hexdump(i_item,i_ptr-i_item,hexbuff) );
       
    } /* i_more */
@@ -635,11 +642,12 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
      readpp->diffbuf= xmalloc( diffidx); /* copy diffs to where read wants*/
      memcpy( readpp->diffbuf, &((*p_pp)->buf[0]), diffidx);
      diffidx = ISAMD_BLOCK_OFFSET_N;
-     if (readpp->is->method->debug >1) {  //!!! 3
-         logf(LOG_LOG,"isamd_merge:separate diffs at ix=%d", 
-                 diffidx);
-         logf(LOG_LOG,"isamd_merge: dbuf=%p (from %p) pp=%p", 
-                  readpp->diffbuf, &((*p_pp)->buf[0]), (*p_pp) );
+     if (readpp->is->method->debug >2) 
+     { 
+        logf(LOG_LOG,"isamd_merge:separate diffs at ix=%d", 
+                diffidx);
+        logf(LOG_LOG,"isamd_merge: dbuf=%p (from %p) pp=%p", 
+                 readpp->diffbuf, &((*p_pp)->buf[0]), (*p_pp) );
      }
   }
   else
@@ -648,13 +656,13 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
      diffidx=readpp->size;
      readpp->diffs = diffidx*2+0;
      readpp->diffbuf=readpp->buf; 
-     if (readpp->is->method->debug >1)  //!!! 3 
+     if (readpp->is->method->debug >2)  
          logf(LOG_LOG,"isamd_merge:local diffs at %d: %s", 
            diffidx,hexdump(&(readpp->diffbuf[diffidx]),8,0));
   }
 
   getDiffInfo(readpp,diffidx);
-  if (readpp->is->method->debug >3) 
+  if (readpp->is->method->debug >8) 
          logf(LOG_LOG,"isamd_merge: diffinfo=%p", readpp->diffinfo);
   
 
@@ -662,7 +670,7 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
   {  /* we had a separate diff block, release it, we have copied the data */
      isamd_release_block(readpp->is, readpp->cat, killblk);
      isamd_pp_close (*p_pp);
-     if (readpp->is->method->debug >1)  // 3 !!! 
+     if (readpp->is->method->debug >3)  
          logf(LOG_LOG,"isamd_merge: released diff block %d=%d:%d",
               isamd_addr(killblk,readpp->cat), readpp->cat, killblk );
   }
@@ -672,7 +680,7 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
   killblk=readpp->pos;
   assert(killblk);
   isamd_release_block(readpp->is, readpp->cat, killblk);
-  if (readpp->is->method->debug >1)  //!!! 3 
+  if (readpp->is->method->debug >3)   
       logf(LOG_LOG,"isamd_merge: released old firstblock %d (%d:%d)",
                isamd_addr(killblk,readpp->cat), readpp->cat, killblk );
 
@@ -684,7 +692,7 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
     /* pray that is not a delete as well... */
     r_key.sysno = 0;
     r_key.seqno = 0;
-     if (readpp->is->method->debug >1) 
+     if (readpp->is->method->debug >3) 
          logf(LOG_LOG,"isamd_merge:all data has been deleted (nk=%d) ",
             readpp->numKeys);
     assert (readpp->numKeys == 0);
@@ -698,14 +706,14 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
   
   while (r_more)
   {
-     if (readpp->is->method->debug >4) 
+     if (readpp->is->method->debug >6) 
          logf(LOG_LOG,"isamd_merge: got key %d.%d",
            r_key.sysno, r_key.seqno );
      pp= append_main_item(firstpp, pp, &r_key, encoder_data);
 
      if ( (readpp->pos != killblk ) && (0!=readpp->pos) )
      {  /* pos can get to 0 at end of main seq, if still diffs left...*/
-        if (readpp->is->method->debug >1) //!!! 3 
+        if (readpp->is->method->debug >3)  
             logf(LOG_LOG,"isamd_merge: released block %d (%d:%d) now %d=%d:%d",
                 isamd_addr(killblk,readpp->cat), readpp->cat, killblk,
                 isamd_addr(readpp->pos,readpp->cat),readpp->cat, readpp->pos );
@@ -722,20 +730,20 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
   /* TODO: while pkey is an insert, and after last key inserted, append it */
   /* will prevent multiple merges on large insert runs */  
 
-  /* set things up so that merge can continue */
+  /* set things up so that append can continue */
   isamd_reduceblock(firstpp);
   firstpp->diffs=0; 
 
   if (firstpp!=pp) 
   { /* the last data block is of no interest any more */
     save_last_pp(pp);
-    if (readpp->is->method->debug >1) 
+    if (readpp->is->method->debug >4) 
         logf(LOG_LOG,"isamd_merge: saved last block %d=%d:%d",
               isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos);
     isamd_pp_close(pp);
   }
 
-  if (readpp->is->method->debug >3) 
+  if (readpp->is->method->debug >5) 
         logf(LOG_LOG,"isamd_merge: closing readpp %d=%d:%d di=%p",
               isamd_addr(readpp->pos,readpp->cat), readpp->cat, readpp->pos,
               readpp->diffinfo);
@@ -745,7 +753,7 @@ static int merge ( ISAMD_PP *p_firstpp,   /* first pp of the chain */
   
   *p_firstpp = firstpp; 
 
-  if (readpp->is->method->debug >1)   //!!! 3
+  if (readpp->is->method->debug >2)  
       logf(LOG_LOG,"isamd_merge: merge ret  %d=%d:%d nx=%d=%d:%d d=%d=2*%d+%d",
             isamd_addr(pp->pos,pp->cat), pp->cat, pp->pos,
             pp->next, isamd_type(pp->next), isamd_block(pp->next),
@@ -783,7 +791,7 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
    int merge_rc;
 
    firstpp=isamd_pp_open(is, ipos);
-   if (is->method->debug >1)  //!!! 3
+   if (is->method->debug >2) 
       logf(LOG_LOG,"isamd_appd: Start ipos=%d=%d:%d d=%d=%d*2+%d nk=%d",
         ipos, isamd_type(ipos), isamd_block(ipos),
         firstpp->diffs, firstpp->diffs/2, firstpp->diffs & 1, firstpp->numKeys);
@@ -798,7 +806,7 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
    i_ptr = i_item;
    i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); 
 
-   if (is->method->debug >3)
+   if (is->method->debug >6)
       logf(LOG_LOG,"isamd_appd: start with m=%d %s",
          i_mode, hexdump(i_item,i_ptr-i_item,hexbuff) );
 
@@ -813,7 +821,7 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
       (*is->method->code_item)(ISAMD_ENCODE, encoder_data, &c_ptr, &i_ptr);
       codelen = c_ptr - codebuff;
       assert ( (codelen<128) && (codelen>0));
-      if (is->method->debug >3)
+      if (is->method->debug >7)
          logf(LOG_LOG,"isamd_appd: coded into %d: %s (nk=%d) (ix=%d)",
              codelen, hexdump(codebuff, codelen,hexbuff), 
              firstpp->numKeys,diffidx);
@@ -823,7 +831,7 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
          if (is->method->debug >3)
             logf(LOG_LOG,"isamd_appd: block full (ix=%d mx=%d lix=%d)",
                diffidx, maxsize, difflenidx);
-         if (is->method->debug >5)
+         if (is->method->debug >8)
             logf(LOG_LOG,"isamd_appd: block pp=%p buf=%p [%d]:%s",
                pp, pp->buf, 
                difflenidx, hexdump(&pp->buf[difflenidx],8,0));
@@ -844,7 +852,7 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
          (*is->method->code_item)(ISAMD_ENCODE, encoder_data, &c_ptr, &i_ptr);
          codelen = c_ptr - codebuff;
          assert ( (codelen<128) && (codelen>0));
-         if (is->method->debug >3)
+         if (is->method->debug >7)
             logf(LOG_LOG,"isamd_appd: recoded into %d: %s (nk=%d) (ix=%d)",
                 codelen, hexdump(codebuff, codelen,hexbuff), 
                 firstpp->numKeys,diffidx);
@@ -869,7 +877,7 @@ static int append_diffs(ISAMD is, ISAMD_P ipos, ISAMD_I data)
       /* (try to) read the next input */
       i_ptr = i_item;
       i_more = (*data->read_item)(data->clientData, &i_ptr, &i_mode); 
-      if ( (i_more) && (is->method->debug >3) )
+      if ( (i_more) && (is->method->debug >6) )
          logf(LOG_LOG,"isamd_appd: got m=%d %s",
             i_mode, hexdump(i_item,i_ptr-i_item,hexbuff) );
    } /* more loop */
@@ -916,7 +924,10 @@ ISAMD_P isamd_append (ISAMD is, ISAMD_P ipos, ISAMD_I data)
 
 /*
  * $Log: merge-d.c,v $
- * Revision 1.11  1999-08-18 10:37:11  heikki
+ * Revision 1.12  1999-08-18 13:28:17  heikki
+ * Set log levels to decent values
+ *
+ * Revision 1.11  1999/08/18 10:37:11  heikki
  * Fixed (another) difflen bug
  *
  * Revision 1.10  1999/08/18 09:13:31  heikki
