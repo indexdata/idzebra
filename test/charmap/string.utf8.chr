@@ -1,0 +1,28 @@
+# $Id: string.utf8.chr,v 1.1 2004-03-09 15:12:15 adam Exp $
+
+# Define the basic value-set. *Beware* of changing this without re-indexing
+# your databases.
+
+# This specifies that _this_ file is in UTF-8.
+encoding utf-8
+
+lowercase {0-9}{a-y}üzæäøöå
+uppercase {0-9}{A-Y}ÜZÆÄØÖÅ
+
+# Breaking characters
+
+space {\001-\040}!"#$%&'\()*+,-./:;<=>?@\[\\]^_`\{|}~
+
+# Characters to be considered equivalent for searching purposes.
+
+# equivalent æä(ae)
+# equivalent øö(oe)
+# equivalent å(aa)
+# equivalent uü
+
+# Supplemental mappings
+
+# Latin letter with h with dot below
+map \L1E25 h
+# Latin letter with H with dot below
+map \L1E24 h

@@ -1,5 +1,5 @@
-/* $Id: charmap.c,v 1.27 2003-01-13 10:53:16 oleg Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: charmap.c,v 1.28 2004-03-09 15:12:15 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -244,6 +244,14 @@ unsigned char zebra_prim(char **s)
     return c;
 }
 
+static int zebra_ucs4_strlen(ucs4_t *s)
+{
+    int i = 0;
+    while (*s++)
+	i++;
+    return i;
+}
+
 ucs4_t zebra_prim_w(ucs4_t **s)
 {
     ucs4_t c;
@@ -263,13 +271,16 @@ ucs4_t zebra_prim_w(ucs4_t **s)
 	case 't': c = '\t'; (*s)++; break;
 	case 's': c = ' '; (*s)++; break;
 	case 'x': 
-            fmtstr[0] = (*s)[0];
-            fmtstr[1] = (*s)[1];
-            fmtstr[2] = (*s)[2];
-            fmtstr[3] = 0;
-            sscanf(fmtstr, "x%2x", &i);
-            c = i;
-            *s += 3; break;
+	    if (zebra_ucs4_strlen(*s) >= 3)
+	    {
+		fmtstr[0] = (*s)[1];
+		fmtstr[1] = (*s)[2];
+		fmtstr[2] = 0;
+		sscanf(fmtstr, "%x", &i);
+		c = i;
+		*s += 3;
+	    }
+	    break;
         case '0':
         case '1':
         case '2':
@@ -280,14 +291,30 @@ ucs4_t zebra_prim_w(ucs4_t **s)
         case '7':
         case '8':
         case '9':
-            fmtstr[0] = (*s)[0];
-            fmtstr[1] = (*s)[1];
-            fmtstr[2] = (*s)[2];
-            fmtstr[3] = 0;
-	    sscanf(fmtstr, "%3o", &i);
-            c = i;
-            *s += 3;
+	    if (zebra_ucs4_strlen(*s) >= 3)
+	    {
+		fmtstr[0] = (*s)[0];
+		fmtstr[1] = (*s)[1];
+		fmtstr[2] = (*s)[2];
+		fmtstr[3] = 0;
+		sscanf(fmtstr, "%o", &i);
+		c = i;
+		*s += 3;
+	    }
             break;
+	case 'L':
+	    if (zebra_ucs4_strlen(*s) >= 5)
+	    {
+		fmtstr[0] = (*s)[1];
+		fmtstr[1] = (*s)[2];
+		fmtstr[2] = (*s)[3];
+		fmtstr[3] = (*s)[4];
+		fmtstr[4] = 0;
+		sscanf(fmtstr, "%x", &i);
+		c = i;
+		*s += 5;
+	    }
+	    break;
         default:
             (*s)++;
 	}
@@ -386,6 +413,8 @@ static int scan_to_utf8 (yaz_iconv_t t, ucs4_t *from, size_t inlen,
         ret = yaz_iconv (t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
         if (ret == (size_t) (-1))
         {
+	    yaz_log(LOG_LOG, "from: %2X %2X %2X %2X",
+		    from[0], from[1], from[2], from[3]);
             yaz_log (LOG_WARN|LOG_ERRNO, "bad unicode sequence");
             return -1;
         }
@@ -648,20 +677,23 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	     * zebra need to comment next part of code.
 	     */
 
-	    /*
+	    /* Original code */
+#if 1
             if (t_unicode != 0)
                 yaz_iconv_close (t_unicode);
             t_unicode = yaz_iconv_open (ucs4_native, argv[1]);
-	    */
-	    
+#endif
 	    /*
 	     * Fix me. It is additional staff for conversion of characters from local encoding
 	     * of *.chr file to UTF-8 (internal encoding).
 	     * NOTE: The derective encoding must be first directive in *.chr file.
 	     */
+	    /* For whatever reason Oleg enabled this.. */
+#if 0
 	    if (t_utf8 != 0)
         	yaz_iconv_close(t_utf8);
 	    t_utf8 = yaz_iconv_open ("UTF-8", argv[1]);
+#endif
         }
 	else
 	{

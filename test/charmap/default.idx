@@ -1,0 +1,38 @@
+# Zebra indexes as referred to from the *.abs-files.
+#  $Id: default.idx,v 1.1 2004-03-09 15:12:15 adam Exp $
+#
+# Traditional word index
+index w
+completeness 0
+position 1
+charmap string.utf8.chr
+
+# Phrase index
+index p
+completeness 1
+charmap string.chr
+
+# URX (URL) index
+index u
+completeness 0
+charmap urx.chr
+
+# Numeric index (integer only)
+index n
+completeness 0
+charmap numeric.chr
+
+# Null map index (no mapping at all)
+index 0
+completeness 0
+position 1
+charmap @
+
+# Sort register (no mapping at all)
+sort s
+completeness 1
+charmap string.chr
+
+index y
+completeness 0
+charmap @
