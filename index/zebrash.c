@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.21 2003-09-23 09:53:08 adam Exp $
+/* $Id: zebrash.c,v 1.22 2003-09-23 10:09:38 adam Exp $
    Copyright (C) 2002,2003
    Index Data Aps
 
@@ -708,29 +708,42 @@ void shell()
     wrbuf_puts(outbuff,"Zebrash at your service");
     while (rc!=-99)
     {
+	char *nl_cp;
 	char buf[MAX_ARG_LEN];
+	char* line_in = 0;
 #if HAVE_READLINE_READLINE_H
-	char* line_in;
-	line_in=readline(PROMPT);
-	if (!line_in)
-	    break;
+	if (isatty(0)) {
+	    line_in=readline(PROMPT);
+	    if (!line_in)
+		break;
 #if HAVE_READLINE_HISTORY_H
-	if (*line_in)
-	    add_history(line_in);
+	    if (*line_in)
+		add_history(line_in);
 #endif
-	if(strlen(line_in) > MAX_ARG_LEN-1) {
-	    fprintf(stderr,"Input line too long\n");
-	    break;
 	}
-	strcpy(buf,line_in);
-	free (line_in);
-#else    
+#endif
+	/* line_in != NULL if readine is present and input is a tty */
+	
 	printf (PROMPT); 
 	fflush (stdout);
-	if (!fgets (buf, MAX_ARG_LEN-1, stdin))
-	    break; 
-#endif 
+	if (line_in)
+	{
+	    if(strlen(line_in) > MAX_ARG_LEN-1) {
+		fprintf(stderr,"Input line too long\n");
+		break;
+	    }
+	    strcpy(buf,line_in);
+	    free (line_in);
+	}
+	else 
+	{
+	    if (!fgets (buf, MAX_ARG_LEN-1, stdin))
+		break; 
+	}
 	
+	/* get rid of \n in line */
+	if ((nl_cp = strchr(buf, '\n')))
+	    *nl_cp = '\0';
 	strncpy(prevout, wrbuf_buf(outbuff), MAX_OUT_BUFF);
         wrbuf_rewind(outbuff);
 	rc=onecommand(buf, outbuff, prevout);
