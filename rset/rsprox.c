@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.1 2004-06-09 12:15:25 adam Exp $
+/* $Id: rsprox.c,v 1.2 2004-06-14 21:44:26 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -147,9 +147,11 @@ static RSFD r_open (RSET ct, int flag)
 
     rfd->more = xmalloc (sizeof(*rfd->more) * info->p.rset_no);
 
+    rfd->buf = xmalloc(sizeof(*rfd->buf) * info->p.rset_no);
     for (i = 0; i < info->p.rset_no; i++)
 	rfd->buf[i] = xmalloc (info->p.key_size);
 
+    rfd->rfd = xmalloc(sizeof(*rfd->rfd) * info->p.rset_no);
     for (i = 0; i < info->p.rset_no; i++)
 	rfd->rfd[i] = rset_open (info->p.rset[i], RSETF_READ);
 
@@ -170,10 +172,12 @@ static void r_close (RSFD rfd)
 	    int i;
 	    for (i = 0; i<info->p.rset_no; i++)
 		xfree ((*rfdp)->buf[i]);
+	    xfree ((*rfdp)->buf);
             xfree ((*rfdp)->more);
 
 	    for (i = 0; i<info->p.rset_no; i++)
 		rset_close (info->p.rset[i], (*rfdp)->rfd[i]);
+	    xfree ((*rfdp)->rfd);
 
             *rfdp = (*rfdp)->next;
             xfree (rfd);
@@ -213,14 +217,14 @@ static void r_rewind (RSFD rfd)
 }
 
 static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
-                     int (*cmpfunc)(const void *p1, const void *p2),
-                     const void *untilbuf)
+		      int (*cmpfunc)(const void *p1, const void *p2),
+		      const void *untilbuf)
 {
     /* Note: CT is not used. We _can_ pass NULL for it */
     struct rset_prox_info *info = ((struct rset_prox_rfd*)rfd)->info;
     struct rset_prox_rfd *p = (struct rset_prox_rfd *) rfd;
     int cmp=0;
-    int rc, i;
+    int i;
     int dummy;
 
     if (untilbuf)
@@ -232,50 +236,128 @@ static int r_forward (RSET ct, RSFD rfd, void *buf, int *term_index,
 				      p->buf[0], &dummy, info->p.cmp,
 				      untilbuf);
     }
-    while (p->more[0]) 
+    if (info->p.ordered && info->p.relation == 3 && info->p.exclusion == 0
+	&& info->p.distance == 1)
     {
-	for (i = 1; i < info->p.rset_no; i++)
+	while (p->more[0]) 
 	{
-	    if (!p->more[i]) 
+	    for (i = 1; i < info->p.rset_no; i++)
 	    {
-		p->more[0] = 0;    /* saves us a goto out of while loop. */
-		break;
-	    }
-	    cmp = (*info->p.cmp) (p->buf[i], p->buf[i-1]);
-	    if (cmp > 1)
-	    {
-		p->more[i-1] = rset_forward (info->p.rset[i-1], p->rfd[i-1],
-					     p->buf[i-1], &dummy,
-					     info->p.cmp,
-					     p->buf[i]);
-		break;
-	    }
-	    else if (cmp == 1)
-	    {
-		if ((*info->p.getseq)(p->buf[i-1]) +1 != (*info->p.getseq)(p->buf[i]))
+		if (!p->more[i]) 
 		{
-		    p->more[i-1] = rset_read (info->p.rset[i-1], p->rfd[i-1],
-					      p->buf[i-1], &dummy);
+		    p->more[0] = 0;    /* saves us a goto out of while loop. */
+		    break;
+		}
+		cmp = (*info->p.cmp) (p->buf[i], p->buf[i-1]);
+		if (cmp > 1)
+		{
+		    p->more[i-1] = rset_forward (info->p.rset[i-1], p->rfd[i-1],
+						 p->buf[i-1], &dummy,
+						 info->p.cmp,
+						 p->buf[i]);
+		    break;
+		}
+		else if (cmp == 1)
+		{
+		    if ((*info->p.getseq)(p->buf[i-1]) +1 != (*info->p.getseq)(p->buf[i]))
+		    {
+			p->more[i-1] = rset_read (info->p.rset[i-1], p->rfd[i-1],
+						  p->buf[i-1], &dummy);
+			break;
+		    }
+		}
+		else
+		{
+		    p->more[i] = rset_forward (info->p.rset[i], p->rfd[i],
+					       p->buf[i], &dummy,
+					       info->p.cmp,
+					       p->buf[i-1]);
 		    break;
 		}
 	    }
-	    else
+	    if (i == p->info->p.rset_no)
 	    {
-		p->more[i] = rset_forward (info->p.rset[i], p->rfd[i],
-					   p->buf[i], &dummy,
-					   info->p.cmp,
-					   p->buf[i-1]);
-		break;
+		memcpy (buf, p->buf[0], info->p.key_size);
+		*term_index = 0;
+		
+		p->more[0] = rset_read (info->p.rset[0], p->rfd[0],
+					p->buf[0], &dummy);
+		return 1;
 	    }
 	}
-	if (i == p->info->p.rset_no)
+    }
+    else if (info->p.rset_no == 2)
+    {
+	while (p->more[0] && p->more[1]) 
 	{
-            memcpy (buf, p->buf[0], info->p.key_size);
-	    *term_index = 0;
-
-	    p->more[0] = rset_read (info->p.rset[0], p->rfd[0],
-				    p->buf[0], &dummy);
-	    return 1;
+	    int cmp = (*info->p.cmp)(p->buf[0], p->buf[1]);
+	    if (cmp < -1)
+		p->more[0] = rset_read (info->p.rset[0], p->rfd[0], p->buf[0],
+					term_index);
+	    else if (cmp > 1)
+		p->more[1] = rset_read (info->p.rset[1], p->rfd[1], p->buf[1],
+					term_index);
+	    else
+	    {
+		int seqno[500];
+		int n = 0;
+		
+		seqno[n++] = (*info->p.getseq)(p->buf[0]);
+		while ((p->more[0] = rset_read (info->p.rset[0], p->rfd[0],
+						p->buf[0],
+						term_index)) >= -1 &&
+		       p->more[0] <= -1)
+		    if (n < 500)
+			seqno[n++] = (*info->p.getseq)(p->buf[0]);
+		
+		for (i = 0; i<n; i++)
+		{
+		    int diff = (*info->p.getseq)(p->buf[1]) - seqno[i];
+		    int excl = info->p.exclusion;
+		    if (!info->p.ordered && diff < 0)
+			diff = -diff;
+		    switch (info->p.relation)
+		    {
+		    case 1:      /* < */
+			if (diff < info->p.distance && diff >= 0)
+			    excl = !excl;
+			break;
+		    case 2:      /* <= */
+			if (diff <= info->p.distance && diff >= 0)
+			    excl = !excl;
+			break;
+		    case 3:      /* == */
+			if (diff == info->p.distance && diff >= 0)
+			    excl = !excl;
+			break;
+		    case 4:      /* >= */
+			if (diff >= info->p.distance && diff >= 0)
+			    excl = !excl;
+			break;
+		    case 5:      /* > */
+			if (diff > info->p.distance && diff >= 0)
+			    excl = !excl;
+			break;
+		    case 6:      /* != */
+			if (diff != info->p.distance && diff >= 0)
+			    excl = !excl;
+			break;
+		    }
+		    if (excl)
+		    {
+			memcpy (buf, p->buf[1], info->p.key_size);
+			*term_index = 0;
+			
+			p->more[1] = rset_read (info->p.rset[1],
+						p->rfd[1], p->buf[1],
+						term_index);
+			return 1;
+		    }
+		}
+		p->more[1] = rset_read (info->p.rset[1], p->rfd[1],
+					p->buf[1],
+					term_index);
+	    }
 	}
     }
     return 0;
