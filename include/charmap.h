@@ -1,6 +1,6 @@
-/* $Id: charmap.h,v 1.9.2.1 2004-09-16 14:07:49 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
-   Index Data Aps
+/* $Id: charmap.h,v 1.9.2.2 2005-03-11 21:10:12 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 
@@ -46,9 +46,8 @@ YAZ_EXPORT void chrmaptab_destroy (chrmaptab tab);
 YAZ_EXPORT const char **chr_map_input(chrmaptab t, const char **from, int len, int first);
 YAZ_EXPORT const char **chr_map_input_x(chrmaptab t,
 					const char **from, int *len, int first);
-YAZ_EXPORT const char **chr_map_input_q(chrmaptab maptab,
-					const char **from, int len,
-					const char **qmap);
+YAZ_EXPORT const char **chr_map_q_input(chrmaptab maptab,
+					const char **from, int len, int first);
     
 YAZ_EXPORT const char *chr_map_output(chrmaptab t, const char **from, int len);
 

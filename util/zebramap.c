@@ -1,6 +1,6 @@
-/* $Id: zebramap.c,v 1.32.2.3 2005-01-16 23:13:32 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
-   Index Data Aps
+/* $Id: zebramap.c,v 1.32.2.4 2005-03-11 21:10:13 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 
@@ -20,12 +20,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <ctype.h>
 
-#include <zebrautl.h>
 #include <charmap.h>
+#include <yaz/yaz-util.h>
+
 #include <zebramap.h>
 
 #define ZEBRA_MAP_TYPE_SORT  1
@@ -96,7 +97,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 
     if (!(f = yaz_fopen(zms->tabpath, name, "r", zms->tabroot)))
     {
-	logf(LOG_WARN|LOG_ERRNO, "%s", name);
+	yaz_log(LOG_WARN|LOG_ERRNO, "%s", name);
 	return ;
     }
     while ((argc = readconf_line(f, &lineno, line, 512, argv, 10)))
@@ -155,7 +156,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 	    token->next = (*zm)->replace_tokens;
 	    (*zm)->replace_tokens = token;
 #if 0
-	    logf (LOG_LOG, "replace %s", argv[1]);
+	    yaz_log (LOG_LOG, "replace %s", argv[1]);
 #endif
 	    token->token_from = 0;
             if (argc >= 2)
@@ -178,7 +179,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 		    {
 		        *dp++ = zebra_prim(&cp);
 #if 0
-			logf (LOG_LOG, "  char %2X %c", dp[-1], dp[-1]);
+			yaz_log (LOG_LOG, "  char %2X %c", dp[-1], dp[-1]);
 #endif
 		    }
 	        *dp = '\0';
@@ -261,7 +262,7 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
     if (!zm)
     {
 	zm = (struct zebra_map *) nmem_malloc (zms->nmem, sizeof(*zm));
-	logf (LOG_WARN, "Unknown register type: %c", reg_id);
+	yaz_log (LOG_WARN, "Unknown register type: %c", reg_id);
 
 	zm->reg_id = reg_id;
 	zm->maptab_name = nmem_strdup (zms->nmem, "@");
@@ -281,10 +282,10 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
 	if (!(zm->maptab = chrmaptab_create (zms->tabpath,
 					     zm->maptab_name, 0,
                                              zms->tabroot)))
-	    logf(LOG_WARN, "Failed to read character table %s",
+	    yaz_log(LOG_WARN, "Failed to read character table %s",
 		 zm->maptab_name);
 	else
-	    logf(LOG_DEBUG, "Read character table %s", zm->maptab_name);
+	    yaz_log(LOG_DEBUG, "Read character table %s", zm->maptab_name);
     }
     return zm->maptab;
 }
@@ -298,6 +299,32 @@ const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
     if (maptab)
 	return chr_map_input(maptab, from, len, first);
     
+    zms->temp_map_str[0] = **from;
+
+    (*from)++;
+    return zms->temp_map_ptr;
+}
+
+const char **zebra_maps_search(ZebraMaps zms, unsigned reg_id,
+			       const char **from, int len,  int *q_map_match)
+{
+    chrmaptab maptab;
+    
+    *q_map_match = 0;
+    maptab = zebra_charmap_get (zms, reg_id);
+    if (maptab)
+    {
+	const char **map;
+	map = chr_map_q_input(maptab, from, len, 0);
+	if (map && map[0])
+	{
+	    *q_map_match = 1;
+	    return map;
+	}
+	map = chr_map_input(maptab, from, len, 0);
+	if (map)
+	    return map;
+    }
     zms->temp_map_str[0] = **from;
 
     (*from)++;
@@ -545,7 +572,7 @@ WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
 	return zms->wrbuf_1;
   
 #if 0
-    logf (LOG_LOG, "in:%.*s:", wrbuf_len(zms->wrbuf_1),
+    yaz_log (LOG_LOG, "in:%.*s:", wrbuf_len(zms->wrbuf_1),
 	  wrbuf_buf(zms->wrbuf_1));
 #endif
     for (;;)
@@ -632,7 +659,7 @@ int zebra_replace_sub(ZebraMaps zms, unsigned reg_id, const char *ex_list,
 	}
     }
 #if 0
-    logf (LOG_LOG, "out:%.*s:", wrbuf_len(wrbuf), wrbuf_buf(wrbuf));
+    yaz_log (LOG_LOG, "out:%.*s:", wrbuf_len(wrbuf), wrbuf_buf(wrbuf));
 #endif
     return no_replaces;
 }

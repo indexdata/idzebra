@@ -1,5 +1,5 @@
-/* $Id: zrpn.c,v 1.141.2.7 2005-02-25 10:09:15 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: zrpn.c,v 1.141.2.8 2005-03-11 21:10:12 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -275,14 +275,41 @@ static int term_pre(ZebraMaps zebra_maps, int reg_type, const char **src,
     return *s0;
 }
 
+
+static void esc_str(char *out_buf, int out_size,
+		    const char *in_buf, int in_size)
+{
+    int k;
+
+    assert(out_buf);
+    assert(in_buf);
+    assert(out_size > 20);
+    *out_buf = '\0';
+    for (k = 0; k<in_size; k++)
+    {
+	int c = in_buf[k] & 0xff;
+	int pc;
+	if (c < 32 || c > 126)
+	    pc = '?';
+	else
+	    pc = c;
+	sprintf(out_buf +strlen(out_buf), "%02X:%c  ", c, pc);
+	if (strlen(out_buf) > out_size-20)
+	{
+	    strcat(out_buf, "..");
+	    break;
+	}
+    }
+}
+
 #define REGEX_CHARS " []()|.*+?!"
 
-/* term_100: handle term, where trunc=none(no operators at all) */
+/* term_100: handle term, where trunc = none(no operators at all) */
 static int term_100(ZebraMaps zebra_maps, int reg_type,
-		     const char **src, char *dst, int space_split,
-		     char *dst_term)
+                     const char **src, char *dst, int space_split,
+                     char *dst_term)
 {
-    const char *s0, *s1;
+    const char *s0;
     const char **map;
     int i = 0;
     int j = 0;
@@ -295,42 +322,56 @@ static int term_100(ZebraMaps zebra_maps, int reg_type,
     s0 = *src;
     while (*s0)
     {
-        s1 = s0;
-        map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
-	if (space_split)
-	{
-	    if (**map == *CHR_SPACE)
-		break;
-	}
-	else  /* complete subfield only. */
-	{
-	    if (**map == *CHR_SPACE)
-	    {   /* save space mapping for later  .. */
-		space_start = s1;
-		space_end = s0;
-		continue;
-	    }
-	    else if (space_start)
-	    {   /* reload last space */
-		while (space_start < space_end)
-		{
-                    if (strchr(REGEX_CHARS, *space_start))
-			dst[i++] = '\\';
-		    dst_term[j++] = *space_start;
-		    dst[i++] = *space_start++;
-		}
-		/* and reset */
-		space_start = space_end = 0;
-	    }
-	}
-	/* add non-space char */
-        while (s1 < s0)
+        const char *s1 = s0;
+	int q_map_match = 0;
+        map = zebra_maps_search(zebra_maps, reg_type, &s0, strlen(s0), 
+				&q_map_match);
+        if (space_split)
         {
-            if (strchr(REGEX_CHARS, *s1))
-                dst[i++] = '\\';
-	    dst_term[j++] = *s1;
-            dst[i++] = *s1++;
+            if (**map == *CHR_SPACE)
+                break;
         }
+        else  /* complete subfield only. */
+        {
+            if (**map == *CHR_SPACE)
+            {   /* save space mapping for later  .. */
+                space_start = s1;
+                space_end = s0;
+                continue;
+            }
+            else if (space_start)
+            {   /* reload last space */
+                while (space_start < space_end)
+                {
+                    if (strchr(REGEX_CHARS, *space_start))
+                        dst[i++] = '\\';
+                    dst_term[j++] = *space_start;
+                    dst[i++] = *space_start++;
+                }
+                /* and reset */
+                space_start = space_end = 0;
+            }
+        }
+	/* add non-space char */
+	memcpy(dst_term+j, s1, s0 - s1);
+	j += (s0 - s1);
+	if (!q_map_match)
+	{
+	    while (s1 < s0)
+	    {
+		if (strchr(REGEX_CHARS, *s1))
+		    dst[i++] = '\\';
+		dst[i++] = *s1++;
+	    }
+	}
+	else
+	{
+	    char tmpbuf[80];
+	    esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
+	    
+	    strcpy(dst + i, map[0]);
+	    i += strlen(map[0]);
+	}
     }
     dst[i] = '\0';
     dst_term[j] = '\0';
@@ -338,12 +379,12 @@ static int term_100(ZebraMaps zebra_maps, int reg_type,
     return i;
 }
 
-/* term_101: handle term, where trunc=Process # */
+/* term_101: handle term, where trunc = Process # */
 static int term_101(ZebraMaps zebra_maps, int reg_type,
-		     const char **src, char *dst, int space_split,
-		     char *dst_term)
+                     const char **src, char *dst, int space_split,
+                     char *dst_term)
 {
-    const char *s0, *s1;
+    const char *s0;
     const char **map;
     int i = 0;
     int j = 0;
@@ -357,21 +398,37 @@ static int term_101(ZebraMaps zebra_maps, int reg_type,
         {
             dst[i++] = '.';
             dst[i++] = '*';
-	    dst_term[j++] = *s0++;
+            dst_term[j++] = *s0++;
         }
         else
         {
-            s1 = s0;
-            map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
+	    const char *s1 = s0;
+	    int q_map_match = 0;
+	    map = zebra_maps_search(zebra_maps, reg_type, &s0, strlen(s0), 
+				    &q_map_match);
             if (space_split && **map == *CHR_SPACE)
                 break;
-            while (s1 < s0)
-            {
-                if (strchr(REGEX_CHARS, *s1))
-                    dst[i++] = '\\';
-		dst_term[j++] = *s1;
-                dst[i++] = *s1++;
-            }
+
+	    /* add non-space char */
+	    memcpy(dst_term+j, s1, s0 - s1);
+	    j += (s0 - s1);
+	    if (!q_map_match)
+	    {
+		while (s1 < s0)
+		{
+		    if (strchr(REGEX_CHARS, *s1))
+			dst[i++] = '\\';
+		    dst[i++] = *s1++;
+		}
+	    }
+	    else
+	    {
+		char tmpbuf[80];
+		esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
+		
+		strcpy(dst + i, map[0]);
+		i += strlen(map[0]);
+	    }
         }
     }
     dst[i] = '\0';
@@ -380,21 +437,21 @@ static int term_101(ZebraMaps zebra_maps, int reg_type,
     return i;
 }
 
-/* term_103: handle term, where trunc=re-2 (regular expressions) */
+/* term_103: handle term, where trunc = re-2 (regular expressions) */
 static int term_103(ZebraMaps zebra_maps, int reg_type, const char **src,
-		     char *dst, int *errors, int space_split,
-		     char *dst_term)
+                     char *dst, int *errors, int space_split,
+                     char *dst_term)
 {
     int i = 0;
     int j = 0;
-    const char *s0, *s1;
+    const char *s0;
     const char **map;
 
     if (!term_pre(zebra_maps, reg_type, src, "^\\()[].*+?|", "(", !space_split))
         return 0;
     s0 = *src;
     if (errors && *s0 == '+' && s0[1] && s0[2] == '+' && s0[3] &&
-        isdigit(s0[1]))
+        isdigit(((const unsigned char *)s0)[1]))
     {
         *errors = s0[1] - '0';
         s0 += 3;
@@ -404,39 +461,55 @@ static int term_103(ZebraMaps zebra_maps, int reg_type, const char **src,
     while (*s0)
     {
         if (strchr("^\\()[].*+?|-", *s0))
-	{
-	    dst_term[j++] = *s0;
+        {
+            dst_term[j++] = *s0;
             dst[i++] = *s0++;
-	}
+        }
         else
         {
-            s1 = s0;
-            map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
-            if (**map == *CHR_SPACE)
+	    const char *s1 = s0;
+	    int q_map_match = 0;
+	    map = zebra_maps_search(zebra_maps, reg_type, &s0, strlen(s0), 
+				    &q_map_match);
+            if (space_split && **map == *CHR_SPACE)
                 break;
-            while (s1 < s0)
-            {
-                if (strchr(REGEX_CHARS, *s1))
-                    dst[i++] = '\\';
-		dst_term[j++] = *s1;
-                dst[i++] = *s1++;
-            }
+
+	    /* add non-space char */
+	    memcpy(dst_term+j, s1, s0 - s1);
+	    j += (s0 - s1);
+	    if (!q_map_match)
+	    {
+		while (s1 < s0)
+		{
+		    if (strchr(REGEX_CHARS, *s1))
+			dst[i++] = '\\';
+		    dst[i++] = *s1++;
+		}
+	    }
+	    else
+	    {
+		char tmpbuf[80];
+		esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
+		
+		strcpy(dst + i, map[0]);
+		i += strlen(map[0]);
+	    }
         }
     }
     dst[i] = '\0';
     dst_term[j] = '\0';
     *src = s0;
+    
     return i;
 }
 
-/* term_103: handle term, where trunc=re-1 (regular expressions) */
+/* term_103: handle term, where trunc = re-1 (regular expressions) */
 static int term_102 (ZebraMaps zebra_maps, int reg_type, const char **src,
-		     char *dst, int space_split, char *dst_term)
+                     char *dst, int space_split, char *dst_term)
 {
     return term_103(zebra_maps, reg_type, src, dst, NULL, space_split,
-		     dst_term);
+                     dst_term);
 }
-
 
 /* term_104: handle term, where trunc=Process # and ! */
 static int term_104(ZebraMaps zebra_maps, int reg_type,
