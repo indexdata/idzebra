@@ -1,11 +1,11 @@
-## $Id: Makefile.am,v 1.23 2004-05-10 08:42:56 adam Exp $
+## $Id: Makefile.am,v 1.23.2.1 2004-08-19 13:10:23 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
- zebrahtml.dsl.in \
- zebraphp.dsl.in \
- zebraprint.dsl.in \
- tkl.xsl.in \
+ zebrahtml.dsl \
+ zebraphp.dsl \
+ zebraprint.dsl \
+ tkl.xsl \
  xml.dcl
 XMLFILES = \
  zebra.xml.in \
