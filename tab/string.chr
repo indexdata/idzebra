@@ -1,0 +1,36 @@
+# Danish/Swedish character map.
+#
+# $Id: string.chr,v 1.1 1997-10-27 14:35:04 adam Exp $
+
+# Define the basic value-set. *Beware* of changing this without re-indexing
+# your databases.
+
+lowercase {0-9}{a-y}üzזהרצו(aa)
+uppercase {0-9}{A-Y}ÜZִֶ״ײֵ(AA)
+
+# Breaking characters
+
+space {\001-\040}!"#$%&'\()*+,-./:;<=>?@\[\\]^_`\{|}~
+
+# Characters to be considered equivalent for searching purposes.
+
+# equivalent זה(ae)
+# equivalent רצ(oe)
+# equivalent ו(aa)
+# equivalent uü
+
+# Supplemental mappings
+
+map (&aelig;)      ז
+map (&oslash;)     ר
+map (&aring;)      ו
+map (&Aelig;)      ֶ
+map (&Oslash;)     ״
+map (&Aring;)      ֵ
+
+map יֹ		e
+map ב		a
+map ף		o
+map ם		i
+
+map (Aa)	(AA)
