@@ -1,5 +1,5 @@
 
-/* $Id: xpath3.c,v 1.2 2004-12-15 13:07:07 adam Exp $
+/* $Id: xpath3.c,v 1.3 2005-01-03 12:10:23 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     q("@attr 1=/root/first content",1);
     q("@attr {1=/root/first[@attr='danish']} content",1);
     q("@attr {1=/root/second[@attr='danish lake']} content",1);
-    /*q("@attr {1=/root/third[@attr='dansk sø']} content",1); */
+    q("@attr {1=/root/third[@attr='dansk s\xc3\xb8']} content",1); 
     /* FIXME - This triggers bug200 */
 
     return close_down(zh, zs, 0);
