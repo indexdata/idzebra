@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.13 2004-08-11 13:36:13 adam Exp $
+/* $Id: xmlread.c,v 1.14 2004-09-27 10:44:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -480,7 +480,12 @@ struct xml_info {
     XML_Expat_Version expat_version;
 };
 
-static void *grs_init_xml(void)
+static data1_node *grs_read_xml (struct grs_read_info *p)
+{
+    return zebra_read_xml (p->dh, p->readf, p->fh, p->mem);
+}
+
+static void *init_xml(Res res, RecType recType)
 {
     struct xml_info *p = (struct xml_info *) xmalloc (sizeof(*p));
 
@@ -489,27 +494,43 @@ static void *grs_init_xml(void)
     return p;
 }
 
-static data1_node *grs_read_xml (struct grs_read_info *p)
-{
-    return zebra_read_xml (p->dh, p->readf, p->fh, p->mem);
-}
-
-static void grs_destroy_xml(void *clientData)
+static void destroy_xml(void *clientData)
 {
     struct xml_info *p = (struct xml_info *) clientData;
 
     xfree (p);
 }
 
-static struct recTypeGrs xml_type = {
-    "xml",
-    grs_init_xml,
-    grs_destroy_xml,
-    grs_read_xml
+static int extract_xml(void *clientData, struct recExtractCtrl *ctrl)
+{
+    return zebra_grs_extract(clientData, ctrl, grs_read_xml);
+}
+
+static int retrieve_xml(void *clientData, struct recRetrieveCtrl *ctrl)
+{
+    return zebra_grs_retrieve(clientData, ctrl, grs_read_xml);
+}
+
+static struct recType xml_type = {
+    "grs.xml",
+    init_xml,
+    0,
+    destroy_xml,
+    extract_xml,
+    retrieve_xml,
 };
 
-RecTypeGrs recTypeGrs_xml = &xml_type;
+RecType
+#ifdef IDZEBRA_STATIC_GRS_XML
+idzebra_filter_grs_xml
+#else
+idzebra_filter
+#endif
 
-/* HAVE_EXPAT_H */
+[] = {
+    &xml_type,
+    0,
+};
+    
 #endif
 

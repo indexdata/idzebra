@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.132 2004-09-15 08:13:51 adam Exp $
+/* $Id: zebraapi.c,v 1.133 2004-09-27 10:44:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -178,11 +178,18 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
                                 res_get (zh->global_res, "passwd"));
         }
         zh->path_root = res_get (zh->global_res, "root");
+	zh->nmem = nmem_create();
+	zh->record_classes = recTypeClass_create (zh->global_res, zh->nmem);
         return zh;
     }
     return 0;
 }
 
+void zebra_filter_info(ZebraService zs, void *cd,
+			void (*cb)(void *cd, const char *name))
+{
+    recTypeClass_info(zs->record_classes, cd, cb);
+}
 
 void zebra_pidfname(ZebraService zs, char *path)
 {
@@ -253,8 +260,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 
     data1_set_tabpath (reg->dh, profilePath);
     data1_set_tabroot (reg->dh, reg_path);
-    reg->recTypes = recTypes_init (reg->dh);
-    recTypes_default_handlers (reg->recTypes);
+    reg->recTypes = recTypes_init (zs->record_classes, reg->dh);
 
     reg->zebra_maps = zebra_maps_open (res, reg_path);
     reg->rank_classes = NULL;
@@ -452,6 +458,8 @@ int zebra_stop(ZebraService zs)
     if (zs->passwd_db)
 	passwd_db_close (zs->passwd_db);
 
+    recTypeClass_destroy(zs->record_classes);
+    nmem_destroy(zs->nmem);
     res_close (zs->global_res);
     xfree (zs->configName);
     xfree (zs);

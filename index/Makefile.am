@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.27 2004-08-30 21:36:53 adam Exp $
+## $Id: Makefile.am,v 1.28 2004-09-27 10:44:49 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -32,10 +32,10 @@ zebrash_SOURCES = zebrash.c
 apitest_SOURCES = apitest.c
 kdump_SOURCES = kdump.c
 
-AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE) \
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) \
   -DDEFAULT_PROFILE_PATH=\"$(pkgdatadir)/tab\"
 
-zebrash_LDADD= $(zebralibs) $(YAZLALIB) $(TCL_LIB) $(READLINE_LIBS)
+zebrash_LDADD= $(zebralibs) $(YAZLALIB) $(READLINE_LIBS)
 
-LDADD = $(zebralibs) $(YAZLALIB) $(TCL_LIB)
+LDADD = $(zebralibs) $(YAZLALIB)
 

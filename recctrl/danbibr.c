@@ -1,4 +1,4 @@
-/* $Id: danbibr.c,v 1.4 2004-05-26 13:47:08 adam Exp $
+/* $Id: danbibr.c,v 1.5 2004-09-27 10:44:50 adam Exp $
    Copyright (C) 2004
    Index Data Aps
 
@@ -39,7 +39,7 @@ struct danbibr_info {
     char read_buf[READ_CHUNK+1];  /* space for \0 */
 };
 
-static void *grs_init_danbib(void)
+static void *init_danbib(Res res, RecType rt)
 {
     struct danbibr_info *p = (struct danbibr_info *) xmalloc (sizeof(*p));
 
@@ -188,7 +188,7 @@ static data1_node *mk_tree(struct grs_read_info *p, const char *rec_buf)
     return root;
 }
 
-static data1_node *grs_read_danbib (struct grs_read_info *p)
+static data1_node *read_danbib (struct grs_read_info *p)
 {
     struct danbibr_info *info = p->clientData;
 
@@ -197,7 +197,7 @@ static data1_node *grs_read_danbib (struct grs_read_info *p)
     return 0;
 }
 
-static void grs_destroy_danbib(void *clientData)
+static void destroy_danbib(void *clientData)
 {
     struct danbibr_info *p = (struct danbibr_info *) clientData;
 
@@ -205,12 +205,37 @@ static void grs_destroy_danbib(void *clientData)
     xfree (p);
 }
 
-static struct recTypeGrs danbib_type = {
-    "danbib",
-    grs_init_danbib,
-    grs_destroy_danbib,
-    grs_read_danbib
+
+static int extract_danbib(void *clientData, struct recExtractCtrl *ctrl)
+{
+    return zebra_grs_extract(clientData, ctrl, read_danbib);
+}
+
+static int retrieve_danbib(void *clientData, struct recRetrieveCtrl *ctrl)
+{
+    return zebra_grs_retrieve(clientData, ctrl, read_danbib);
+}
+
+static struct recType danbib_type = {
+    "grs.danbib",
+    init_danbib,
+    0,
+    destroy_danbib,
+    extract_danbib,
+    retrieve_danbib,
 };
 
-RecTypeGrs recTypeGrs_danbib = &danbib_type;
+RecType
+#ifdef IDZEBRA_STATIC_GRS_DANBIB
+idzebra_filter_grs_danbib
+#else
+idzebra_filter
+#endif
+
+[] = {
+    &danbib_type,
+    0,
+};
+    
+
 

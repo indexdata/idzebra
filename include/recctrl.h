@@ -1,5 +1,5 @@
-/* $Id: recctrl.h,v 1.41 2004-08-06 12:28:22 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: recctrl.h,v 1.42 2004-09-27 10:44:48 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -28,6 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/proto.h>
 #include <yaz/oid.h>
 #include <yaz/odr.h>
+#include <idzebra/res.h>
 #include <data1.h>
 #include <zebramap.h>
 
@@ -55,7 +56,6 @@ struct recExtractCtrl {
     off_t     (*tellf)(void *fh);                /* tell function          */
     void      (*endf)(void *fh, off_t offset);   /* end of record position */
     off_t     offset;                            /* start offset           */
-    char      *subType;
     void      (*init)(struct recExtractCtrl *p, RecWord *w);
     void      *clientData;
     void      (*tokenAdd)(RecWord *w);
@@ -83,7 +83,6 @@ struct recRetrieveCtrl {
     int       score;                  /* score 0-1000 or -1 if none        */
     int       recordSize;             /* size of record in bytes */
     char      *fname;                 /* name of file (or NULL if internal) */
-    char      *subType;
     data1_handle dh;
     
     /* response */
@@ -99,7 +98,8 @@ typedef struct recType *RecType;
 struct recType
 {
     char *name;                           /* Name of record type */
-    void *(*init)(RecType recType);       /* Init function - called once */
+    void *(*init)(Res res, RecType recType);  /* Init function - called once */
+    void (*config)(void *clientData, Res res, const char *args); /* Config */
     void (*destroy)(void *clientData);    /* Destroy function */
     int  (*extract)(void *clientData,
 		    struct recExtractCtrl *ctrl);   /* Extract proc */
@@ -112,14 +112,21 @@ struct recType
 #define RECCTRL_EXTRACT_ERROR_GENERIC 2
 #define RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER 3
 
+typedef struct recTypeClass *RecTypeClass;
 typedef struct recTypes *RecTypes;
 
-RecTypes recTypes_init (data1_handle dh);
-void recTypes_destroy (RecTypes recTypes);
-void recTypes_default_handlers (RecTypes recTypes);
+RecTypeClass recTypeClass_create (Res res, NMEM nmem);
+void recTypeClass_destroy(RecTypeClass rtc);
+void recTypeClass_info(RecTypeClass rtc, void *cd,
+		       void (*cb)(void *cd, const char *s));
 
-RecType recType_byName (RecTypes rts, const char *name, char *subType,
-			void **clientDataP);
+RecTypes recTypes_init(RecTypeClass rtc, data1_handle dh);
+void recTypes_destroy(RecTypes recTypes);
+void recTypes_default_handlers(RecTypes recTypes, Res res);
+
+RecType recType_byName(RecTypes rts, Res res, const char *name,
+		       void **clientDataP);
+
 
 int grs_extract_tree(struct recExtractCtrl *p, data1_node *n);
 

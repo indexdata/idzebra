@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.24 2004-06-16 22:12:30 adam Exp $
+/* $Id: marcread.c,v 1.25 2004-09-27 10:44:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -34,8 +34,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define MARC_DEBUG 0
 #define MARCOMP_DEBUG 0
 
+struct marc_info {
+    char type[256];
+};
+
 static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 {
+    struct marc_info *mi = (struct marc_info*) p->clientData;
     char buf[100000];
     int entry_p;
     int record_length;
@@ -76,7 +81,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 	if (p->endf)
 	    (*p->endf)(p->fh, cur_offset - 1);
     }
-    absynName = p->type;
+    absynName = mi->type;
     res_root = data1_mk_root (p->dh, p->mem, absynName);
     if (!res_root)
     {
@@ -768,29 +773,75 @@ data1_node *grs_read_marc(struct grs_read_info *p)
     return root;
 }
 
-static void *grs_init_marc(void)
+static void *init_marc(Res res, RecType rt)
 {
-    return 0;
+    struct marc_info *p = xmalloc(sizeof(*p));
+    strcpy(p->type, "");
+    return p;
 }
 
-static void grs_destroy_marc(void *clientData)
+static void config_marc(void *clientData, Res res, const char *args)
 {
+    struct marc_info *p = (struct marc_info*) clientData;
+    if (strlen(args) < sizeof(p->type))
+	strcpy(p->type, args);
 }
 
-static struct recTypeGrs marc_type = {
-    "marc",
-    grs_init_marc,
-    grs_destroy_marc,
-    grs_read_marc
+static void destroy_marc(void *clientData)
+{
+    struct marc_info *p = (struct marc_info*) clientData;
+    xfree (p);
+}
+
+
+static int extract_marc(void *clientData, struct recExtractCtrl *ctrl)
+{
+    return zebra_grs_extract(clientData, ctrl, grs_read_marc);
+}
+
+static int retrieve_marc(void *clientData, struct recRetrieveCtrl *ctrl)
+{
+    return zebra_grs_retrieve(clientData, ctrl, grs_read_marc);
+}
+
+static struct recType marc_type = {
+    "grs.marc",
+    init_marc,
+    config_marc,
+    destroy_marc,
+    extract_marc,
+    retrieve_marc,
 };
 
-RecTypeGrs recTypeGrs_marc = &marc_type;
+static int extract_marcxml(void *clientData, struct recExtractCtrl *ctrl)
+{
+    return zebra_grs_extract(clientData, ctrl, grs_read_marcxml);
+}
 
-static struct recTypeGrs marcxml_type = {
-    "marcxml",
-    grs_init_marc,
-    grs_destroy_marc,
-    grs_read_marcxml
+static int retrieve_marcxml(void *clientData, struct recRetrieveCtrl *ctrl)
+{
+    return zebra_grs_retrieve(clientData, ctrl, grs_read_marcxml);
+}
+
+static struct recType marcxml_type = {
+    "grs.marcxml",
+    init_marc,
+    config_marc,
+    destroy_marc,
+    extract_marcxml,
+    retrieve_marcxml,
 };
 
-RecTypeGrs recTypeGrs_marcxml = &marcxml_type;
+RecType
+#ifdef IDZEBRA_STATIC_GRS_MARC
+idzebra_filter_grs_marc
+#else
+idzebra_filter
+#endif
+
+[] = {
+    &marc_type,
+    &marcxml_type,
+    0,
+};
+    

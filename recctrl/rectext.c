@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.19 2004-08-06 12:55:03 adam Exp $
+/* $Id: rectext.c,v 1.20 2004-09-27 10:44:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -26,17 +26,22 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 
 #include <zebrautl.h>
-#include "rectext.h"
+#include <recctrl.h>
 
 struct text_info {
     char *sep;
 };
 
-static void *text_init (RecType recType)
+static void *text_init (Res res, RecType recType)
 {
     struct text_info *tinfo = (struct text_info *) xmalloc(sizeof(*tinfo));
     tinfo->sep = 0;
     return tinfo;
+}
+
+static void text_config(void *clientData, Res res, const char *args)
+{
+
 }
 
 static void text_destroy (void *clientData)
@@ -105,10 +110,6 @@ static int text_extract (void *clientData, struct recExtractCtrl *p)
 #endif
     xfree(tinfo->sep);
     tinfo->sep = 0;
-    if (p->subType) {
-	if (!strncmp(p->subType, "sep=", 4))
-	    tinfo->sep = xstrdup(p->subType+4);
-    }
     (*p->init)(p, &recWord);
     recWord.reg_type = 'w';
     do
@@ -230,9 +231,20 @@ static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
 static struct recType text_type = {
     "text",
     text_init,
+    text_config,
     text_destroy,
     text_extract,
     text_retrieve
 };
 
-RecType recTypeText = &text_type;
+RecType
+#ifdef IDZEBRA_STATIC_TEXT
+idzebra_filter_text
+#else
+idzebra_filter
+#endif
+
+[] = {
+    &text_type,
+    0,
+};

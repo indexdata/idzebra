@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.89 2004-08-24 14:29:09 adam Exp $
+/* $Id: recgrs.c,v 1.90 2004-09-27 10:44:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -25,6 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <sys/types.h>
 #ifndef WIN32
 #include <unistd.h>
+#include <dlfcn.h>
 #endif
 
 #include <yaz/log.h>
@@ -34,97 +35,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "grsread.h"
 
 #define GRS_MAX_WORD 512
-
-struct grs_handler {
-    RecTypeGrs type;
-    void *clientData;
-    int initFlag;
-    struct grs_handler *next;
-};
-
-struct grs_handlers {
-    struct grs_handler *handlers;
-};
-
-static int read_grs_type (struct grs_handlers *h,
-			  struct grs_read_info *p, const char *type,
-			  data1_node **root)
-{
-    struct grs_handler *gh = h->handlers;
-    const char *cp = strchr (type, '.');
-
-    if (cp == NULL || cp == type)
-    {
-        cp = strlen(type) + type;
-        *p->type = 0;
-    }
-    else
-        strcpy (p->type, cp+1);
-    for (gh = h->handlers; gh; gh = gh->next)
-    {
-        if (!memcmp (type, gh->type->type, cp-type) && 
-	    gh->type->type[cp-type] == '\0')
-	{
-	    if (!gh->initFlag)
-	    {
-		gh->initFlag = 1;
-		gh->clientData = (*gh->type->init)();
-	    }
-	    p->clientData = gh->clientData;
-            *root = (gh->type->read)(p);
-	    gh->clientData = p->clientData;
-	    return 0;
-	}
-    }
-    return 1;
-}
-
-static void grs_add_handler (struct grs_handlers *h, RecTypeGrs t)
-{
-    struct grs_handler *gh = (struct grs_handler *) xmalloc (sizeof(*gh));
-    gh->next = h->handlers;
-    h->handlers = gh;
-    gh->initFlag = 0;
-    gh->clientData = 0;
-    gh->type = t;
-}
-
-static void *grs_init(RecType recType)
-{
-    struct grs_handlers *h = (struct grs_handlers *) xmalloc (sizeof(*h));
-    h->handlers = 0;
-
-    grs_add_handler (h, recTypeGrs_sgml);
-    grs_add_handler (h, recTypeGrs_regx);
-#if HAVE_TCL_H
-    grs_add_handler (h, recTypeGrs_tcl);
-#endif
-    grs_add_handler (h, recTypeGrs_marc);
-    grs_add_handler (h, recTypeGrs_marcxml);
-#if HAVE_EXPAT_H
-    grs_add_handler (h, recTypeGrs_xml);
-#endif
-#if HAVE_PERL
-    grs_add_handler (h, recTypeGrs_perl);
-#endif
-    grs_add_handler (h, recTypeGrs_danbib);
-    return h;
-}
-
-static void grs_destroy(void *clientData)
-{
-    struct grs_handlers *h = (struct grs_handlers *) clientData;
-    struct grs_handler *gh = h->handlers, *gh_next;
-    while (gh)
-    {
-	gh_next = gh->next;
-	if (gh->initFlag)
-	    (*gh->type->destroy)(gh->clientData);
-	xfree (gh);
-	gh = gh_next;
-    }
-    xfree (h);
-}
 
 struct source_parser {
     int len;
@@ -923,8 +833,9 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
     return dumpkeys(n, p, 0, &wrd);
 }
 
-static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
-			   NMEM mem)
+static int grs_extract_sub(void *clientData, struct recExtractCtrl *p,
+			   NMEM mem,
+			   data1_node *(*grs_read)(struct grs_read_info *))
 {
     data1_node *n;
     struct grs_read_info gri;
@@ -940,9 +851,9 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
     gri.offset = p->offset;
     gri.mem = mem;
     gri.dh = p->dh;
+    gri.clientData = clientData;
 
-    if (read_grs_type (h, &gri, p->subType, &n))
-	return RECCTRL_EXTRACT_ERROR_NO_SUCH_FILTER;
+    n = (*grs_read)(&gri);
     if (!n)
         return RECCTRL_EXTRACT_EOF;
     oe.proto = PROTO_Z3950;
@@ -976,13 +887,12 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
     return RECCTRL_EXTRACT_OK;
 }
 
-static int grs_extract(void *clientData, struct recExtractCtrl *p)
+int zebra_grs_extract(void *clientData, struct recExtractCtrl *p,
+		      data1_node *(*grs_read)(struct grs_read_info *))
 {
     int ret;
     NMEM mem = nmem_create ();
-    struct grs_handlers *h = (struct grs_handlers *) clientData;
-
-    ret = grs_extract_sub(h, p, mem);
+    ret = grs_extract_sub(clientData, p, mem, grs_read);
     nmem_destroy(mem);
     return ret;
 }
@@ -1110,7 +1020,8 @@ static void zebra_xml_metadata (struct recRetrieveCtrl *p, data1_node *top,
     data1_mk_text (p->dh, mem, i2, n);
 }
 
-static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
+int zebra_grs_retrieve(void *clientData, struct recRetrieveCtrl *p,
+		       data1_node *(*grs_read)(struct grs_read_info *))
 {
     data1_node *node = 0, *onode = 0, *top;
     data1_node *dnew;
@@ -1119,7 +1030,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     NMEM mem;
     struct grs_read_info gri;
     const char *tagname;
-    struct grs_handlers *h = (struct grs_handlers *) clientData;
+
     int requested_schema = VAL_NONE;
     data1_marctab *marctab;
     int dummy;
@@ -1133,14 +1044,10 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     gri.offset = 0;
     gri.mem = mem;
     gri.dh = p->dh;
+    gri.clientData = clientData;
 
     yaz_log(LOG_DEBUG, "grs_retrieve");
-    if (read_grs_type (h, &gri, p->subType, &node))
-    {
-	p->diagnostic = 14;
-        nmem_destroy (mem);
-	return 0;
-    }
+    node = (*grs_read)(&gri);
     if (!node)
     {
 	p->diagnostic = 14;
@@ -1422,13 +1329,3 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     return 0;
 }
 
-static struct recType grs_type =
-{
-    "grs",
-    grs_init,
-    grs_destroy,
-    grs_extract,
-    grs_retrieve
-};
-
-RecType recTypeGrs = &grs_type;

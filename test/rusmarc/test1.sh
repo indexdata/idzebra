@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.5 2004-06-16 21:48:57 adam Exp $
+# $Id: test1.sh,v 1.6 2004-09-27 10:44:52 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -8,7 +8,13 @@ rm -f $LOG
 test -d tmp || mkdir tmp
 test -d lock || mkdir lock
 test -d register || mkdir register
-../../index/zebraidx -c $pp/zebra.cfg -l$LOG init
+
+if ../../index/zebraidx -c $pp/zebra.cfg -l $LOG filters|grep grs.marc >/dev/null; then
+        ../../index/zebraidx -c $pp/zebra.cfg -l$LOG init
+else
+        exit 0
+fi
+
 if grep 'UTF-8 to koi8-r unsupported' $LOG >/dev/null; then
 	exit 0
 fi

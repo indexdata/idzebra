@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.114 2004-09-26 20:38:50 adam Exp $
+/* $Id: main.c,v 1.115 2004-09-27 10:44:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -35,18 +35,20 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <sys/times.h>
 #endif
 
-#if HAVE_TCL_H
-#include <tcl.h>
-#endif
-
-#if HAVE_EXPAT_H
-#include <expat.h>
-#endif
-
 #include <data1.h>
 #include <idzebra/api.h>
 
 char *prog;
+
+static void filter_cb(void *cd, const char *name)
+{
+    puts (name);
+}
+
+static void show_filters(ZebraService zs)
+{
+    zebra_filter_info(zs, 0, filter_cb);
+}
 
 int main (int argc, char **argv)
 {
@@ -180,6 +182,10 @@ int main (int argc, char **argv)
                 {
                     zebra_compact (zh);
                 }
+                else if (!strcmp (arg, "filters"))
+                {
+                    show_filters(zs);
+                }
                 else
                 {
                     logf (LOG_FATAL, "unknown command: %s", arg);
@@ -232,17 +238,6 @@ int main (int argc, char **argv)
 #if HAVE_BZLIB_H
             printf("Using: libbzip2, (C) 1996-1999 Julian R Seward.  All rights reserved.\n");
 #endif
-#if HAVE_TCL_H
-	    printf("Using: Tcl %s\n", TCL_VERSION);
-#endif
-#if HAVE_EXPAT_H
-	    if (1)
-	    {
-		XML_Expat_Version v = XML_ExpatVersionInfo();
-		printf ("Using: Expat %d.%d.%d\n",
-			v.major, v.minor, v.micro);
-	    }
-#endif
         }
         else if (ret == 'v')
             yaz_log_init_level (yaz_log_mask_str(arg));
@@ -264,7 +259,7 @@ int main (int argc, char **argv)
 	    res_set(res, "recordType", arg);
         else if (ret == 'n')
 	    enable_commit = 0;
-        else if (ret == 'L')
+	else if (ret == 'L')
 	    res_set(res, "followLinks", "0");
         else
             logf (LOG_WARN, "unknown option '-%s'", arg);

@@ -1,4 +1,4 @@
-/* $Id: regxread.c,v 1.52 2004-08-15 17:22:45 adam Exp $
+/* $Id: regxread.c,v 1.53 2004-09-27 10:44:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -139,6 +139,7 @@ struct lexSpec {
 
 struct lexSpecs {
     struct lexSpec *spec;
+    char type[256];
 };
 
 static char *f_win_get (struct lexSpec *spec, off_t start_pos, off_t end_pos,
@@ -1856,11 +1857,20 @@ void grs_destroy(void *clientData)
     xfree (specs);
 }
 
-void *grs_init(void)
+void *grs_init(Res res, RecType recType)
 {
     struct lexSpecs *specs = (struct lexSpecs *) xmalloc (sizeof(*specs));
     specs->spec = 0;
+    strcpy(specs->type, "");
     return specs;
+}
+
+
+void grs_config(void *clientData, Res res, const char *args)
+{
+    struct lexSpecs *specs = (struct lexSpecs *) clientData;
+    if (strlen(args) < sizeof(specs->type))
+	strcpy(specs->type, args);
 }
 
 data1_node *grs_read_regx (struct grs_read_info *p)
@@ -1872,11 +1882,11 @@ data1_node *grs_read_regx (struct grs_read_info *p)
 #if REGX_DEBUG
     logf (LOG_LOG, "grs_read_regx");
 #endif
-    if (!*curLexSpec || strcmp ((*curLexSpec)->name, p->type))
+    if (!*curLexSpec || strcmp ((*curLexSpec)->name, specs->type))
     {
         if (*curLexSpec)
             lexSpecDestroy (curLexSpec);
-        *curLexSpec = lexSpecCreate (p->type, p->dh);
+        *curLexSpec = lexSpecCreate (specs->type, p->dh);
         res = readFileSpec (*curLexSpec);
         if (res)
         {
@@ -1899,14 +1909,25 @@ data1_node *grs_read_regx (struct grs_read_info *p)
     return lexRoot (*curLexSpec, p->offset, "main");
 }
 
-static struct recTypeGrs regx_type = {
-    "regx",
+static int extract_regx(void *clientData, struct recExtractCtrl *ctrl)
+{
+    return zebra_grs_extract(clientData, ctrl, grs_read_regx);
+}
+
+static int retrieve_regx(void *clientData, struct recRetrieveCtrl *ctrl)
+{
+    return zebra_grs_retrieve(clientData, ctrl, grs_read_regx);
+}
+
+static struct recType regx_type = {
+    "grs.regx",
     grs_init,
+    grs_config,
     grs_destroy,
-    grs_read_regx
+    extract_regx,
+    retrieve_regx,
 };
 
-RecTypeGrs recTypeGrs_regx = &regx_type;
 
 #if HAVE_TCL_H
 data1_node *grs_read_tcl (struct grs_read_info *p)
@@ -1918,12 +1939,12 @@ data1_node *grs_read_tcl (struct grs_read_info *p)
 #if REGX_DEBUG
     logf (LOG_LOG, "grs_read_tcl");
 #endif
-    if (!*curLexSpec || strcmp ((*curLexSpec)->name, p->type))
+    if (!*curLexSpec || strcmp ((*curLexSpec)->name, specs->type))
     {
 	Tcl_Interp *tcl_interp;
         if (*curLexSpec)
             lexSpecDestroy (curLexSpec);
-        *curLexSpec = lexSpecCreate (p->type, p->dh);
+        *curLexSpec = lexSpecCreate (specs->type, p->dh);
 	Tcl_FindExecutable("");
 	tcl_interp = (*curLexSpec)->tcl_interp = Tcl_CreateInterp();
 	Tcl_Init(tcl_interp);
@@ -1954,12 +1975,38 @@ data1_node *grs_read_tcl (struct grs_read_info *p)
     return lexRoot (*curLexSpec, p->offset, "main");
 }
 
-static struct recTypeGrs tcl_type = {
-    "tcl",
+static int extract_tcl(void *clientData, struct recExtractCtrl *ctrl)
+{
+    return zebra_grs_extract(clientData, ctrl, grs_read_tcl);
+}
+
+static int retrieve_tcl(void *clientData, struct recRetrieveCtrl *ctrl)
+{
+    return zebra_grs_retrieve(clientData, ctrl, grs_read_tcl);
+}
+
+static struct recType tcl_type = {
+    "grs.tcl",
     grs_init,
+    grs_config,
     grs_destroy,
-    grs_read_tcl
+    extract_tcl,
+    retrieve_tcl,
 };
 
-RecTypeGrs recTypeGrs_tcl = &tcl_type;
 #endif
+
+RecType
+#ifdef IDZEBRA_STATIC_GRS_REGX
+idzebra_filter_grs_regx
+#else
+idzebra_filter
+#endif
+
+[] = {
+    &regx_type,
+#if HAVE_TCL_H
+    &tcl_type,
+#endif
+    0,
+};

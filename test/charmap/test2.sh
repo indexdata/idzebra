@@ -5,7 +5,7 @@ pp=${srcdir:-"."}
 
 LOG=test2.log
 rm -f $LOG
-if ../../index/zebraidx -c $pp/zebra.cfg -l $LOG -V|grep Expat >/dev/null; then
+if ../../index/zebraidx -c $pp/zebra.cfg -l $LOG filters|grep grs.xml >/dev/null; then
 	../../index/zebraidx -c $pp/zebra.cfg -l$LOG init
 else
 	exit 0

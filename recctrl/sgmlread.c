@@ -1,4 +1,4 @@
-/* $Id: sgmlread.c,v 1.11 2002-08-02 19:26:56 adam Exp $
+/* $Id: sgmlread.c,v 1.12 2004-09-27 10:44:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -80,13 +80,18 @@ static data1_node *grs_read_sgml (struct grs_read_info *p)
     return node;
 }
 
-static void *grs_init_sgml(void)
+static void *grs_init_sgml(Res res, RecType recType)
 {
     struct sgml_getc_info *p = (struct sgml_getc_info *) xmalloc (sizeof(*p));
     p->buf_size = 512;
     p->buf = xmalloc (p->buf_size);
     p->wrbuf = wrbuf_alloc();
     return p;
+}
+
+static void grs_config_sgml(void *clientData, Res res, const char *args)
+{
+
 }
 
 static void grs_destroy_sgml(void *clientData)
@@ -98,12 +103,34 @@ static void grs_destroy_sgml(void *clientData)
     xfree (p);
 }
 
-static struct recTypeGrs sgml_type = {
-    "sgml",
+static int grs_extract_sgml(void *clientData, struct recExtractCtrl *ctrl)
+{
+    return zebra_grs_extract(clientData, ctrl, grs_read_sgml);
+}
+
+static int grs_retrieve_sgml(void *clientData, struct recRetrieveCtrl *ctrl)
+{
+    return zebra_grs_retrieve(clientData, ctrl, grs_read_sgml);
+}
+
+static struct recType grs_type_sgml =
+{
+    "grs.sgml",
     grs_init_sgml,
+    grs_config_sgml,
     grs_destroy_sgml,
-    grs_read_sgml
+    grs_extract_sgml,
+    grs_retrieve_sgml
 };
 
-RecTypeGrs recTypeGrs_sgml = &sgml_type;
+RecType
+#ifdef IDZEBRA_STATIC_GRS_SGML
+idzebra_filter_grs_sgml
+#else
+idzebra_filter
+#endif
 
+[] = {
+    &grs_type_sgml,
+    0,
+};

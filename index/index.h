@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.120 2004-09-15 08:13:51 adam Exp $
+/* $Id: index.h,v 1.121 2004-09-27 10:44:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -259,6 +259,8 @@ struct zebra_service {
     Zebra_mutex_cond session_lock;
     Passwd_db passwd_db;
     const char *path_root;
+    RecTypeClass record_classes;
+    NMEM nmem;
 };
 
 

@@ -13,6 +13,7 @@
 #include <yaz/pquery.h>
 
 #include "zebra_perl.h"
+#include "../recctrl/perlread.h"
 #include <data1.h>
 
 NMEM handles;
@@ -20,12 +21,12 @@ NMEM handles;
 void init (void) {
   nmem_init ();
   yaz_log_init_prefix ("ZebraPerl");
-  yaz_log (LOG_DEBUG, "Zebra API initialized");
+  yaz_log (LOG_LOG, "Zebra API initialized");
 }
 
 void DESTROY (void) {
   nmem_exit ();
-  yaz_log (LOG_DEBUG, "Zebra API destroyed");
+  yaz_log (LOG_LOG, "Zebra API destroyed");
 }   
 
 /* Logging facilities from yaz */
@@ -266,3 +267,95 @@ scanEntry *getScanEntry(ScanObj *so, int pos) {
   return (&so->entries[pos-1]);
 }
 
+#if 1
+void Filter_store_buff (struct perl_context *context, char *buff, size_t len)
+{
+    dSP;
+    
+    ENTER;
+    SAVETMPS;
+    
+    PUSHMARK(SP) ;
+    XPUSHs(context->filterRef);
+    XPUSHs(sv_2mortal(newSVpv(buff, len)));  
+    PUTBACK ;
+    call_method("_store_buff", 0);
+    SPAGAIN ;
+    PUTBACK ;
+    
+    FREETMPS;
+    LEAVE;
+}
+
+/*  The "file" manipulation function wrappers */
+int grs_perl_readf(struct perl_context *context, size_t len)
+{
+    int r;
+    char *buf = (char *) xmalloc (len+1);
+    r = (*context->readf)(context->fh, buf, len);
+    if (r > 0) Filter_store_buff (context, buf, r);
+    xfree (buf);
+    return (r);
+}
+
+int grs_perl_readline(struct perl_context *context)
+{
+    int r;
+    char *buf = (char *) xmalloc (4096);
+    char *p = buf;
+    
+    while ((r = (*context->readf)(context->fh,p,1)) && (p-buf < 4095)) {
+	p++;
+	if (*(p-1) == 10) break;
+    }
+    
+    *p = 0;
+    
+    if (p != buf) Filter_store_buff (context, buf, p - buf);
+    xfree (buf);
+    return (p - buf);
+}
+
+char grs_perl_getc(struct perl_context *context)
+{
+    int r;
+    char *p;
+    if ((r = (*context->readf)(context->fh,p,1))) {
+	return (*p);
+    } else {
+	return (0);
+    }
+}
+
+off_t grs_perl_seekf(struct perl_context *context, off_t offset)
+{
+    return ((*context->seekf)(context->fh, offset));
+}
+
+off_t grs_perl_tellf(struct perl_context *context)
+{
+    return ((*context->tellf)(context->fh));
+}
+
+void grs_perl_endf(struct perl_context *context, off_t offset)
+{
+    (*context->endf)(context->fh, offset);
+}
+
+/* Get pointers from the context. Easyer to wrap this by SWIG */
+data1_handle *grs_perl_get_dh(struct perl_context *context)
+{
+    return(&context->dh);
+}
+
+NMEM *grs_perl_get_mem(struct perl_context *context)
+{
+    return(&context->mem);
+}
+
+/* Set the result in the context */
+void grs_perl_set_res(struct perl_context *context, data1_node *n)
+{
+    context->res = n;
+}
+#endif

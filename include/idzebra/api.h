@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.1 2004-08-25 09:23:36 adam Exp $
+/* $Id: api.h,v 1.2 2004-09-27 10:44:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -88,6 +88,10 @@ YAZ_EXPORT ZebraService zebra_start_res (const char *configName,
 
 /* Close the whole Zebra */
 YAZ_EXPORT int zebra_stop (ZebraService zs);
+
+/* Report name of each record class (filter) */
+YAZ_EXPORT void zebra_filter_info(ZebraService zs, void *cd,
+				  void (*cb)(void *cd, const char *name));
 
 
 /* Open a ZebraHandle */

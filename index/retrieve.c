@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.24 2004-08-10 08:19:15 heikki Exp $
+/* $Id: retrieve.c,v 1.25 2004-09-27 10:44:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -91,7 +91,6 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
     char *fname, *file_type, *basename;
     RecType rt;
     struct recRetrieveCtrl retrieveCtrl;
-    char subType[128];
     struct zebra_fetch_control fc;
     RecordAttr *recordAttr;
     void *clientData;
@@ -118,8 +117,8 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
         if (!strcmp (comp->u.simple->u.generic, "R"))
 	    raw_mode = 1;
     }
-    if (!(rt = recType_byName (zh->reg->recTypes,
-			       file_type, subType, &clientData)))
+    if (!(rt = recType_byName (zh->reg->recTypes, zh->res,
+			       file_type, &clientData)))
     {
         logf (LOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
 	return 14;
@@ -185,7 +184,6 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
 	    return 0;
 	}
     }
-    retrieveCtrl.subType = subType;
     retrieveCtrl.localno = sysno;
     retrieveCtrl.score = score;
     retrieveCtrl.recordSize = recordAttr->recordSize;

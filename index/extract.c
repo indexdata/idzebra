@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.162 2004-09-15 08:13:51 adam Exp $
+/* $Id: extract.c,v 1.163 2004-09-27 10:44:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -400,10 +400,9 @@ static int file_extract_record(ZebraHandle zh,
     off_t recordOffset = 0;
     RecType recType;
     void *clientData;
-    char subType[128];
     
     if (!(recType =
-	  recType_byName (zh->reg->recTypes, zh->m_record_type, subType,
+	  recType_byName (zh->reg->recTypes, zh->res, zh->m_record_type,
 			  &clientData)))
     {
         logf (LOG_WARN, "No such record type: %s", zh->m_record_type);
@@ -436,7 +435,6 @@ static int file_extract_record(ZebraHandle zh,
 	extractCtrl.tellf = file_tell;
 	extractCtrl.endf = file_end;
 	extractCtrl.fh = fi;
-	extractCtrl.subType = subType;
 	extractCtrl.init = extract_init;
 	extractCtrl.tokenAdd = extract_token_add;
 	extractCtrl.schemaAdd = extract_schema_add;
@@ -824,7 +822,6 @@ int buffer_extract_record (ZebraHandle zh,
     int i, r;
     const char *matchStr = 0;
     RecType recType = NULL;
-    char subType[1024];
     void *clientData;
     Record rec;
     long recordOffset = 0;
@@ -861,7 +858,7 @@ int buffer_extract_record (ZebraHandle zh,
     
     if (recordType && *recordType) {
         logf (LOG_DEBUG, "Record type explicitly specified: %s", recordType);
-        recType = recType_byName (zh->reg->recTypes, recordType, subType,
+        recType = recType_byName (zh->reg->recTypes, zh->res, recordType,
                                   &clientData);
     } else {
         if (!(zh->m_record_type)) {
@@ -869,8 +866,8 @@ int buffer_extract_record (ZebraHandle zh,
             return 0;
         }
         logf (LOG_DEBUG, "Get record type from rgroup: %s",zh->m_record_type);
-        recType = recType_byName (zh->reg->recTypes, zh->m_record_type, subType,
-                                  &clientData);
+        recType = recType_byName (zh->reg->recTypes, zh->res,
+				  zh->m_record_type, &clientData);
         recordType = zh->m_record_type;
     }
     
@@ -879,7 +876,6 @@ int buffer_extract_record (ZebraHandle zh,
         return 0;
     }
     
-    extractCtrl.subType = subType;
     extractCtrl.init = extract_init;
     extractCtrl.tokenAdd = extract_token_add;
     extractCtrl.schemaAdd = extract_schema_add;

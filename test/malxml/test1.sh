@@ -1,12 +1,12 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.5 2004-06-15 09:43:32 adam Exp $
+# $Id: test1.sh,v 1.6 2004-09-27 10:44:51 adam Exp $
 
 pp=${srcdir:-"."}
 
 LOG=test1.log
 
 rm -f $LOG
-if ../../index/zebraidx -l $LOG -V|grep Expat >/dev/null; then
+if ../../index/zebraidx -c $pp/zebra.cfg -l $LOG filters|grep grs.xml >/dev/null; then
         ../../index/zebraidx -c $pp/zebra.cfg -l$LOG init
 else
         exit 0

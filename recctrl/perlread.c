@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.9 2004-09-06 09:31:34 adam Exp $
+/* $Id: perlread.c,v 1.10 2004-09-27 10:44:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -34,28 +34,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <zebrautl.h>
 #include <dfa.h>
 #include "grsread.h"
-
-
-#define GRS_PERL_MODULE_NAME_MAXLEN 255
-
-/* Context information for the filter */
-struct perl_context {
-    PerlInterpreter *perli;
-    PerlInterpreter *origi;
-    int perli_ready;
-    char filterClass[GRS_PERL_MODULE_NAME_MAXLEN];
-    SV *filterRef;
-    
-    int (*readf)(void *, char *, size_t);
-    off_t (*seekf)(void *, off_t);
-    off_t (*tellf)(void *);
-    void (*endf)(void *, off_t);
-    
-    void *fh;
-    data1_handle dh;
-    NMEM mem;
-    data1_node *res;
-};
 
 /* Constructor call for the filter object */
 void Filter_create (struct perl_context *context) 
@@ -143,6 +121,8 @@ int Filter_process (struct perl_context *context)
   can hide this whole compexity behind.
 
 */
+
+#if 0
 void Filter_store_buff (struct perl_context *context, char *buff, size_t len)
 {
     dSP;
@@ -233,9 +213,10 @@ void grs_perl_set_res(struct perl_context *context, data1_node *n)
 {
     context->res = n;
 }
+#endif
 
 /* The filter handlers (init, destroy, read) */
-static void *grs_init_perl(void)
+static void *init_perl(Res res, RecType rt)
 {
     struct perl_context *context = 
 	(struct perl_context *) xmalloc (sizeof(*context));
@@ -253,10 +234,18 @@ static void *grs_init_perl(void)
     }
     context->perli_ready = 0;
     strcpy(context->filterClass, "");
-    return (context);
+    strcpy(context->type, "");
+    return context;
 }
 
-void grs_destroy_perl(void *clientData)
+static void config_perl(void *clientData, Res res, const char *args)
+{
+    struct perl_context *p = (struct perl_context*) clientData;
+    if (strlen(args) < sizeof(p->type))
+	strcpy(p->type, args);
+}
+
+static void destroy_perl(void *clientData)
 {
     struct perl_context *context = (struct perl_context *) clientData;
     
@@ -275,7 +264,7 @@ void grs_destroy_perl(void *clientData)
 static data1_node *grs_read_perl (struct grs_read_info *p)
 {
     struct perl_context *context = (struct perl_context *) p->clientData;
-    char *filterClass = p->type;
+    char *filterClass = context->type;
     
     /* The "file" manipulation function wrappers */
     context->readf = p->readf;
@@ -290,7 +279,7 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
     
     /* If the class was not interpreted before... */
     /* This is not too efficient, when indexing with many different filters... */
-    if (strcmp(context->filterClass,filterClass)) {
+    if (strcmp(context->filterClass, filterClass)) {
 	
 	char modarg[GRS_PERL_MODULE_NAME_MAXLEN + 2];
 	char initarg[GRS_PERL_MODULE_NAME_MAXLEN + 2];
@@ -353,17 +342,40 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
     Filter_process(context);
     
     /* return the created data1 node */
-    return (context->res);
+    return context->res;
 }
 
-static struct recTypeGrs perl_type = {
-    "perl",
-    grs_init_perl,
-    grs_destroy_perl,
-    grs_read_perl
+static int extract_perl(void *clientData, struct recExtractCtrl *ctrl)
+{
+    return zebra_grs_extract(clientData, ctrl, grs_read_perl);
+}
+
+static int retrieve_perl(void *clientData, struct recRetrieveCtrl *ctrl)
+{
+    return zebra_grs_retrieve(clientData, ctrl, grs_read_perl);
+}
+
+static struct recType perl_type = {
+    "grs.perl",
+    init_perl,
+    config_perl,
+    destroy_perl,
+    extract_perl,
+    retrieve_perl,
 };
 
-RecTypeGrs recTypeGrs_perl = &perl_type;
+RecType
+#ifdef IDZEBRA_STATIC_GRS_PERL
+idzebra_filter_grs_perl
+#else
+idzebra_filter
+#endif
+
+[] = {
+    &perl_type,
+    0,
+};
+    
 
 /* HAVE_PERL */
 #endif
