@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: marcread.c,v $
- * Revision 1.3  1997-09-24 13:36:51  adam
+ * Revision 1.4  1997-10-27 14:34:26  adam
+ * Fixed bug - data1 root node wasn't tagged at all!
+ *
+ * Revision 1.3  1997/09/24 13:36:51  adam
  * *** empty log message ***
  *
  * Revision 1.2  1997/09/17 12:19:21  adam
@@ -158,6 +161,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
         return NULL;
     }
     res_root = data1_mk_node_wp (p->dh, p->mem, NULL);
+    res_root->which = DATA1N_root;
     res_root->u.root.type = nmem_malloc (p->mem, strlen(absynName)+1);
     strcpy (res_root->u.root.type, absynName);
     res_root->u.root.absyn = absyn;
