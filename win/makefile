@@ -1,12 +1,11 @@
 # Z'mbol/Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.12 2002-07-25 13:45:59 adam Exp $
+# $Id: makefile,v 1.13 2002-08-05 20:04:27 adam Exp $
  
 ###########################################################
 ############### Parameters 
 ###########################################################
 
 DEBUG=1   # 0 for release, 1 for debug
-ZMBOL=0
 
 # iconv
 HAVE_ICONV=1
@@ -71,13 +70,8 @@ TEMP=$(TMPDIR)
 ###########################################################
 
 ZEBRALIB=$(LIBDIR)\zebra.lib
-!if $(ZMBOL)
-ZSERVER=$(BINDIR)\zmbolsrv.exe
-ZINDEX=$(BINDIR)\zmbolidx.exe
-!else
 ZSERVER=$(BINDIR)\zebrasrv.exe
 ZINDEX=$(BINDIR)\zebraidx.exe
-!endif
 APITEST=$(BINDIR)\apitest.exe
 
 # shortcut names defined here
@@ -114,7 +108,6 @@ COMMON_C_OPTIONS=          \
   /FR"$(OBJDIR)\\"         \
   /Fo"$(OBJDIR)\\"         \
   /Fd"$(OBJDIR)\\"         \
-  /D"ZMBOL=$(ZMBOL)"       \
   $(BZIP2DEF)
 
 COMMON_C_INCLUDES= \
