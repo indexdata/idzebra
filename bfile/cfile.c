@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.21  1998-08-24 17:29:52  adam
+ * Revision 1.22  1998-10-13 20:07:22  adam
+ * Changed some log messages.
+ *
+ * Revision 1.21  1998/08/24 17:29:52  adam
  * Minor changes.
  *
  * Revision 1.20  1998/08/07 15:07:13  adam
@@ -130,7 +133,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
     int hash_bytes;
    
     cf->rmf = mf; 
-    logf (LOG_LOG, "cf: open %s %s", cf->rmf->name, wflag ? "rdwr" : "rd");
+    logf (LOG_DEBUG, "cf: open %s %s", cf->rmf->name, wflag ? "rdwr" : "rd");
     sprintf (path, "%s-b", fname);
     if (!(cf->block_mf = mf_open (area, path, block_size, wflag)))
     {
@@ -377,8 +380,8 @@ static void cf_moveto_flat (CFile cf)
     struct CFile_hash_bucket *p;
     int i, j;
 
-    logf (LOG_LOG, "cf: Moving to flat shadow: %s", cf->rmf->name);
-    logf (LOG_LOG, "cf: hits=%d miss=%d bucket_in_memory=%d total=%d",
+    logf (LOG_DEBUG, "cf: Moving to flat shadow: %s", cf->rmf->name);
+    logf (LOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=%d total=%d",
 	cf->no_hits, cf->no_miss, cf->bucket_in_memory, 
         cf->head.next_bucket - cf->head.first_bucket);
     assert (cf->head.state == 1);
@@ -539,7 +542,7 @@ int cf_write (CFile cf, int no, int offset, int num, const void *buf)
 
 int cf_close (CFile cf)
 {
-    logf (LOG_LOG, "cf: close hits=%d miss=%d bucket_in_memory=%d total=%d",
+    logf (LOG_DEBUG, "cf: close hits=%d miss=%d bucket_in_memory=%d total=%d",
           cf->no_hits, cf->no_miss, cf->bucket_in_memory,
           cf->head.next_bucket - cf->head.first_bucket);
     flush_bucket (cf, -1);
