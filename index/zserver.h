@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.25  1997-09-29 09:08:36  adam
+ * Revision 1.26  1997-09-29 12:41:35  adam
+ * Fixed bug regarding USE_TIMES var.
+ *
+ * Revision 1.25  1997/09/29 09:08:36  adam
  * Revised locking system to be thread safe for the server.
  *
  * Revision 1.24  1997/09/17 12:19:19  adam
@@ -138,7 +141,7 @@ typedef struct {
     ZebraLockHandle server_lock_cmt;
     ZebraLockHandle server_lock_org;
     char *server_path_prefix;
-#ifdef USE_TIMES
+#if USE_TIMES
     struct tms tms1;
     struct tms tms2;    
 #endif
