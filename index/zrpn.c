@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.47  1996-05-15 18:36:28  adam
+ * Revision 1.48  1996-05-28 15:15:01  adam
+ * Bug fix: Didn't handle unknown database correctly.
+ *
+ * Revision 1.47  1996/05/15  18:36:28  adam
  * Function trans_term transforms unsearchable characters to blanks.
  *
  * Revision 1.46  1996/05/15  11:57:56  adam
@@ -714,6 +717,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         {
             zi->errCode = 109; /* Database unavailable */
             zi->errString = basenames[base_no];
+            return -1;
         }
         for (local_attr = attp->local_attributes; local_attr;
              local_attr = local_attr->next)
