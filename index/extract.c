@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.98  1999-09-07 07:19:21  adam
+ * Revision 1.99  2000-02-24 10:57:02  adam
+ * Sequence number incremented after each incomplete-field.
+ *
+ * Revision 1.98  1999/09/07 07:19:21  adam
  * Work on character mapping. Implemented replace rules.
  *
  * Revision 1.97  1999/07/06 12:28:04  adam
@@ -810,6 +813,7 @@ static void addIncompleteField (RecWord *p)
 	    return;
 	addString (p, buf, i);
     }
+    (p->seqnos[p->reg_type])++; /* to separate this from next one  */
 }
 
 static void addCompleteField (RecWord *p)
