@@ -1,4 +1,4 @@
-; $Id: zebra.nsi,v 1.4 2002-09-09 09:36:24 adam Exp $
+; $Id: zebra.nsi,v 1.5 2002-09-09 10:32:10 adam Exp $
 
 !define VERSION "1.3.2"
 
@@ -34,12 +34,12 @@ Section "" ; (default section)
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Zebra" "UninstallString" '"$INSTDIR\uninst.exe"'
 	; write out uninstaller
 	WriteUninstaller "$INSTDIR\uninst.exe"
-	SetOutPath $SMPROGRAMS\Zebra
- 	CreateShortCut "$SMPROGRAMS\Zebra\Zebra Program Directory.lnk" \
+	SetOutPath "$SMPROGRAMS\Index Data\Zebra\"
+ 	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\Zebra Program Directory.lnk" \
                  "$INSTDIR"
-	WriteINIStr "$SMPROGRAMS\Zebra\Zebra Home page.url" \
+	WriteINIStr "$SMPROGRAMS\Index Data\Zebra\Zebra Home page.url" \
               "InternetShortcut" "URL" "http://www.indexdata.dk/zebra/"
-	CreateShortCut "$SMPROGRAMS\Zebra\Uninstall Zebra.lnk" \
+	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\Uninstall Zebra.lnk" \
 		"$INSTDIR\uninst.exe"
 	SetOutPath $INSTDIR
 	File ..\LICENSE.zebra
@@ -50,20 +50,9 @@ SectionEnd ; end of default section
 
 Section "Zebra Runtime"
 	SectionIn 1 2
-	IfFileExists "$INSTDIR\bin\zebrasrv.exe" 0 Noservice
-	ExecWait '"$INSTDIR\bin\zebrasrv.exe" -remove'
-Noservice:
 	SetOutPath $INSTDIR\bin
 	File ..\bin\*.exe
 	File ..\bin\*.dll
-	SetOutPath $SMPROGRAMS\Zebra
-	SetOutPath $SMPROGRAMS\Zebra\Server
- 	CreateShortCut "$SMPROGRAMS\Zebra\Server\Server on console on port 9999.lnk" \
-                 "$INSTDIR\bin\zebrasrv.exe"
-  	CreateShortCut "$SMPROGRAMS\Zebra\Server\Install Z39.50 service on port 210.lnk" \
-                  "$INSTDIR\bin\zebrasrv.exe" '-installa tcp:@:210'
- 	CreateShortCut "$SMPROGRAMS\Zebra\Server\Remove Z39.50 service.lnk" \
-                 "$INSTDIR\bin\zebrasrv.exe" '-remove'
 SectionEnd
 
 Section "Zebra Development"
@@ -78,10 +67,10 @@ Section "Zebra Documentation"
 	SectionIn 1 2
 	SetOutPath $INSTDIR
 	File /r ..\doc
-	SetOutPath $SMPROGRAMS\Zebra
-	CreateShortCut "$SMPROGRAMS\Zebra\HTML Documentation.lnk" \
+	SetOutPath "$SMPROGRAMS\Index Data\Zebra\"
+	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\HTML Documentation.lnk" \
                  "$INSTDIR\doc\zebra.html"
-	CreateShortCut "$SMPROGRAMS\Zebra\PDF Documentaion.lnk" \
+	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\PDF Documentaion.lnk" \
                  "$INSTDIR\doc\zebra.pdf"
 SectionEnd
 
@@ -142,7 +131,7 @@ Section Uninstall
 	DeleteRegKey HKLM "SOFTWARE\Index Data\Zebra"
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Zebra"
 	ExecWait '"$INSTDIR\bin\zebrasrv" -remove'
-	RMDir /r $SMPROGRAMS\Zebra
+	RMDir /r "$SMPROGRAMS\Index Data\Zebra"
 	RMDir /r $INSTDIR
         IfFileExists $INSTDIR 0 Removed 
 		MessageBox MB_OK|MB_ICONEXCLAMATION \
