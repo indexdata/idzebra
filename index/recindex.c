@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.16  1996-06-04 10:19:00  adam
+ * Revision 1.17  1997-02-12 20:39:46  adam
+ * Implemented options -f <n> that limits the log to the first <n>
+ * records.
+ * Changed some log messages also.
+ *
+ * Revision 1.16  1996/06/04 10:19:00  adam
  * Minor changes - removed include of ctype.h.
  *
  * Revision 1.15  1996/05/13  14:23:06  adam
@@ -498,7 +503,7 @@ Record rec_new (Records p)
 
     assert (p);
     rec = xmalloc (sizeof(*rec));
-    if (p->head.index_free == 0)
+    if (1 || p->head.index_free == 0)
         sysno = (p->head.index_last)++;
     else
     {

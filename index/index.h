@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.47  1996-12-23 15:30:44  adam
+ * Revision 1.48  1997-02-12 20:39:45  adam
+ * Implemented options -f <n> that limits the log to the first <n>
+ * records.
+ * Changed some log messages also.
+ *
+ * Revision 1.47  1996/12/23 15:30:44  adam
  * Work on truncation.
  * Bug fix: result sets weren't deleted after server shut down.
  *
@@ -210,7 +215,7 @@ struct recordGroup {
     int  flagStoreData;
     int  flagStoreKeys;
     int  flagShowRecords;
-    int  fileVerboseFlag;
+    int  fileVerboseLimit;
 };
 
 void getFnameTmp (char *fname, int no);

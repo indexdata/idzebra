@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.21  1996-11-08 11:10:23  adam
+ * Revision 1.22  1997-02-12 20:39:45  adam
+ * Implemented options -f <n> that limits the log to the first <n>
+ * records.
+ * Changed some log messages also.
+ *
+ * Revision 1.21  1996/11/08 11:10:23  adam
  * Buffers used during file match got bigger.
  * Compressed ISAM support everywhere.
  * Bug fixes regarding masking characters in queries.
@@ -640,7 +645,7 @@ void key_input (int nkeys, int cache)
         is_close (isam);
     if (isamc)
         isc_close (isamc);
-    
+   
     for (i = 1; i<=nkeys; i++)
     {
         getFnameTmp (rbuf, i);

@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.67  1996-11-15 15:02:14  adam
+ * Revision 1.68  1997-02-12 20:39:45  adam
+ * Implemented options -f <n> that limits the log to the first <n>
+ * records.
+ * Changed some log messages also.
+ *
+ * Revision 1.67  1996/11/15 15:02:14  adam
  * Minor changes regarding logging.
  *
  * Revision 1.66  1996/11/14  09:52:21  adam
@@ -903,7 +908,7 @@ static char *fileMatchStr (struct recKeys *reckeys, struct recordGroup *rGroup,
 
 struct recordLogInfo {
     const char *fname;
-    char *op;
+    int recordOffset;
     struct recordGroup *rGroup;
 };
      
@@ -914,9 +919,8 @@ static void recordLogPreamble (int level, const char *msg, void *info)
 
     if (level & LOG_LOG)
         return ;
-    if (p->op) 
-        fprintf (outf, "%s of ", p->op);
-    fprintf (outf, "%s type %s\n", p->rGroup->recordType, p->fname);
+    fprintf (outf, "File %s, offset %d, type %s\n",
+             p->rGroup->recordType, p->recordOffset, p->fname);
     log_event_start (NULL, NULL);
 }
 
@@ -933,11 +937,6 @@ static int recordExtract (SYSNO *sysno, const char *fname,
     Record rec;
     struct recordLogInfo logInfo;
 
-    logInfo.fname = fname;
-    logInfo.op = NULL;
-    logInfo.rGroup = rGroup;
-    log_event_start (recordLogPreamble, &logInfo);
-    
     if (fi->fd != -1)
     {
         /* we are going to read from a file, so prepare the extraction */
@@ -960,24 +959,35 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.flagShowRecords = rGroup->flagShowRecords;
         if (rGroup->flagShowRecords)
             printf ("File: %s %ld\n", fname, (long) recordOffset);
+
+        logInfo.fname = fname;
+        logInfo.recordOffset = recordOffset;
+        logInfo.rGroup = rGroup;
+        log_event_start (recordLogPreamble, &logInfo);
+
         r = (*recType->extract)(&extractCtrl);
+
+        log_event_start (NULL, NULL);
 
         if (r)      
         {
             /* error occured during extraction ... */
-            if (!rGroup->flagShowRecords)
-                logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
+            if (!rGroup->flagShowRecords &&
+                    records_processed < rGroup->fileVerboseLimit)
+            {
+                logf (LOG_WARN, "fail %s %s %ld code = %d", rGroup->recordType,
+                      fname, (long) recordOffset, r);
+            }
             return 0;
         }
         if (reckeys.buf_used == 0)
         {
             /* the extraction process returned no information - the record
-               is probably empty */
-            if (!rGroup->flagShowRecords)
-            {
-                logf (LOG_WARN, "No keys generated for file %s", fname);
-                logf (LOG_WARN, " The file is probably empty");
-            }
+               is probably empty - unless flagShowRecords is in use */
+            if (rGroup->flagShowRecords)
+                return 1;
+            logf (LOG_WARN, "No keys generated for file %s", fname);
+            logf (LOG_WARN, " The file is probably empty");
             return 0;
         }
     }
@@ -1017,8 +1027,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
             logf (LOG_LOG, "Cannot delete new record");
             return 1;
         }
-        logInfo.op = "add";
-        if (rGroup->fileVerboseFlag)
+        if (records_processed < rGroup->fileVerboseLimit)
             logf (LOG_LOG, "add %s %s %ld", rGroup->recordType,
                   fname, (long) recordOffset);
         rec = rec_new (records);
@@ -1045,14 +1054,15 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         if (deleteFlag)
         {
             /* record going to be deleted */
-            logInfo.op = "delete";
             if (!delkeys.buf_used)
             {
-                logf (LOG_WARN, "cannot delete; storeKeys false");
+                logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
+                      fname, (long) recordOffset);
+                logf (LOG_WARN, "cannot delete file above, storeKeys false");
             }
             else
             {
-                if (rGroup->fileVerboseFlag)
+                if (records_processed < rGroup->fileVerboseLimit)
                     logf (LOG_LOG, "delete %s %s %ld", rGroup->recordType,
                           fname, (long) recordOffset);
                 records_deleted++;
@@ -1066,14 +1076,15 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         else
         {
             /* record going to be updated */
-            logInfo.op = "update";
             if (!delkeys.buf_used)
             {
-                logf (LOG_WARN, "cannot update; storeKeys false");
+                logf (LOG_LOG, "update %s %s %ld", rGroup->recordType,
+                      fname, (long) recordOffset);
+                logf (LOG_WARN, "cannot update file above, storeKeys false");
             }
             else
             {
-                if (rGroup->fileVerboseFlag)
+                if (records_processed < rGroup->fileVerboseLimit)
                     logf (LOG_LOG, "update %s %s %ld", rGroup->recordType,
                           fname, (long) recordOffset);
                 flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
@@ -1199,7 +1210,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
             sprintf (ext_res, "%srecordType", gprefix);
             if (!(rGroup->recordType = res_get (common_resource, ext_res)))
             {
-                if (rGroup->fileVerboseFlag)
+                if (records_processed < rGroup->fileVerboseLimit)
                     logf (LOG_LOG, "? %s", fname);
                 return 0;
             }
@@ -1207,7 +1218,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
     }
     if (!rGroup->recordType)
     {
-        if (rGroup->fileVerboseFlag)
+        if (records_processed < rGroup->fileVerboseLimit)
             logf (LOG_LOG, "? record %s", fname);
         return 0;
     }
@@ -1285,7 +1296,6 @@ int fileExtract (SYSNO *sysno, const char *fname,
         r = recordExtract (sysno, fname, rGroup, deleteFlag, fi,
                            recType, subType);
     } while (r && !sysno && fi->file_more);
-    log_event_start (NULL, NULL);
     file_read_stop (fi);
     if (fd != -1)
         close (fd);

@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.46  1997-02-10 10:20:13  adam
+ * Revision 1.47  1997-02-12 20:39:46  adam
+ * Implemented options -f <n> that limits the log to the first <n>
+ * records.
+ * Changed some log messages also.
+ *
+ * Revision 1.46  1997/02/10 10:20:13  adam
  * Flag fileVerboseFlag set to 0 (default).
  *
  * Revision 1.45  1996/11/08 11:10:26  adam
@@ -205,7 +210,7 @@ int main (int argc, char **argv)
     rGroupDef.flagStoreData = -1;
     rGroupDef.flagStoreKeys = -1;
     rGroupDef.flagShowRecords = 0;
-    rGroupDef.fileVerboseFlag = 0;
+    rGroupDef.fileVerboseLimit = 100000;
 
     prog = *argv;
     if (argc < 2)
@@ -223,15 +228,15 @@ int main (int argc, char **argv)
 	" -g <group>    Index files according to group settings.\n"
 	" -d <database> Records belong to Z39.50 database <database>.\n"
 	" -m <mbytes>   Use <mbytes> before flushing keys to disk.\n"
-        " -n            Don't use shadow system\n"
-	" -s            Show analysis on stdout, but do no work\n"
-	" -v <level>    Set logging to <level>\n"
-        " -V            Show version\n"
+        " -n            Don't use shadow system.\n"
+	" -s            Show analysis on stdout, but do no work.\n"
+	" -v <level>    Set logging to <level>.\n"
+        " -f <n>        Display information for the first <n> records.\n"
+        " -V            Show version.\n"
                  );
         exit (1);
     }
-    log_event_end (abort_func, NULL);
-    while ((ret = options ("sVt:c:g:d:m:v:n", argv, argc, &arg)) != -2)
+    while ((ret = options ("sVt:c:g:d:m:v:nf:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -240,11 +245,13 @@ int main (int argc, char **argv)
             {
                 if (!common_resource)
                 {
+                    logf (LOG_LOG, "zebra version %s %s",
+                          ZEBRAVER, ZEBRADATE);
                     common_resource = res_open (configName ?
                                                 configName : FNAME_CONFIG);
                     if (!common_resource)
                     {
-                        logf (LOG_FATAL, "Cannot open resource `%s'",
+                        logf (LOG_FATAL, "cannot open resource `%s'",
                               configName);
                         exit (1);
                     }
@@ -277,19 +284,19 @@ int main (int argc, char **argv)
                     }
                     if (bf_commitExists ())
                     {
-                        logf (LOG_LOG, "Commit start");
+                        logf (LOG_LOG, "commit start");
                         zebraIndexLockMsg ("c");
                         zebraIndexWait (1);
-                        logf (LOG_LOG, "Commit execute");
+                        logf (LOG_LOG, "commit execute");
                         bf_commitExec ();
                         sync ();
                         zebraIndexLockMsg ("d");
                         zebraIndexWait (0);
-                        logf (LOG_LOG, "Commit clean");
+                        logf (LOG_LOG, "commit clean");
                         bf_commitClean ();
                     }
                     else
-                        logf (LOG_LOG, "Nothing to commit");
+                        logf (LOG_LOG, "cothing to commit");
                 }
                 else if (!strcmp (arg, "clean"))
                 {
@@ -298,11 +305,11 @@ int main (int argc, char **argv)
                     {
                         zebraIndexLockMsg ("d");
                         zebraIndexWait (0);
-                        logf (LOG_LOG, "Commit clean");
+                        logf (LOG_LOG, "commit clean");
                         bf_commitClean ();
                     }
                     else
-                        logf (LOG_LOG, "Nothing to clean");
+                        logf (LOG_LOG, "nothing to clean");
                 }
                 else if (!strcmp (arg, "stat") || !strcmp (arg, "status"))
                 {
@@ -318,7 +325,7 @@ int main (int argc, char **argv)
                 }
                 else
                 {
-                    logf (LOG_FATAL, "Unknown command: %s", arg);
+                    logf (LOG_FATAL, "unknown command: %s", arg);
                     exit (1);
                 }
             }
@@ -326,6 +333,7 @@ int main (int argc, char **argv)
             {
                 struct recordGroup rGroup;
 
+                log_event_end (abort_func, NULL);
                 zebraIndexLock (0);
                 rval = res_get (common_resource, "shadow");
                 if (rval && *rval && !disableCommit)
@@ -346,25 +354,25 @@ int main (int argc, char **argv)
                 {
                 case 'u':
                     key_open (mem_max);
-                    logf (LOG_LOG, "Updating %s", rGroup.path);
+                    logf (LOG_LOG, "updating %s", rGroup.path);
                     repositoryUpdate (&rGroup);
                     nsections = key_close ();
                     break;
                 case 'U':
                     key_open (mem_max);
-                    logf (LOG_LOG, "Updating (pass 1) %s", rGroup.path);
+                    logf (LOG_LOG, "updating (pass 1) %s", rGroup.path);
                     repositoryUpdate (&rGroup);
                     key_close ();
                     nsections = 0;
                     break;
                 case 'd':
                     key_open (mem_max);
-                    logf (LOG_LOG, "Deleting %s", rGroup.path);
+                    logf (LOG_LOG, "deleting %s", rGroup.path);
                     repositoryDelete (&rGroup);
                     nsections = key_close ();
                     break;
                 case 's':
-                    logf (LOG_LOG, "Dumping %s", rGroup.path);
+                    logf (LOG_LOG, "dumping %s", rGroup.path);
                     repositoryShow (&rGroup);
                     nsections = 0;
                     break;
@@ -377,38 +385,29 @@ int main (int argc, char **argv)
                 cmd = 0;
                 if (nsections)
                 {
-                    logf (LOG_LOG, "Merging with index");
+                    logf (LOG_LOG, "merging with index");
                     key_input (nsections, 60);
                     sync ();
                 }
+                log_event_end (NULL, NULL);
             }
         }
         else if (ret == 'V')
         {
-            fprintf (stderr, "Zebra %s %s\n",
-                     ZEBRAVER, ZEBRADATE);
+            fprintf (stderr, "Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
         }
         else if (ret == 'v')
-        {
             log_init (log_mask_str(arg), prog, NULL);
-        }
         else if (ret == 'm')
-        {
             mem_max = 1024*1024*atoi(arg);
-        }
         else if (ret == 'd')
-        {
             rGroupDef.databaseName = arg;
-        }
 	else if (ret == 's')
-	{
 	    rGroupDef.flagShowRecords = 1;
-            rGroupDef.fileVerboseFlag = 1;
-	}
         else if (ret == 'g')
-        {
             rGroupDef.groupName = arg;
-        }
+        else if (ret == 'f')
+            rGroupDef.fileVerboseLimit = atoi(arg);
         else if (ret == 'c')
             configName = arg;
         else if (ret == 't')
@@ -417,7 +416,7 @@ int main (int argc, char **argv)
             disableCommit = 1;
         else
         {
-            logf (LOG_FATAL, "Unknown option '-%s'", arg);
+            logf (LOG_FATAL, "unknown option '-%s'", arg);
             exit (1);
         }
     }

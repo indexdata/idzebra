@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.28  1996-11-01 08:58:44  adam
+ * Revision 1.29  1997-02-12 20:39:47  adam
+ * Implemented options -f <n> that limits the log to the first <n>
+ * records.
+ * Changed some log messages also.
+ *
+ * Revision 1.28  1996/11/01 08:58:44  adam
  * Interface to isamc system now includes update and delete.
  *
  * Revision 1.27  1996/10/29 14:06:56  adam
@@ -132,7 +137,7 @@ static void repositoryExtractR (int deleteFlag, char *rep,
     e = dir_open (rep);
     if (!e)
         return;
-    logf (LOG_LOG, "Dir: %s", rep);
+    logf (LOG_LOG, "dir %s", rep);
     if (rep[rep_len-1] != '/')
         rep[rep_len] = '/';
     else
@@ -195,7 +200,7 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
 
     sprintf (tmppath, "%s%s", base, src);
     e_src = dir_open (tmppath);
-    logf (LOG_LOG, "Dir: %s", tmppath);
+    logf (LOG_LOG, "dir %s", tmppath);
 
 #if 0
     if (!dst || repComp (dst->path, src, src_len))

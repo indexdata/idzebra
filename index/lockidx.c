@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.7  1996-10-29 14:08:13  adam
+ * Revision 1.8  1997-02-12 20:39:46  adam
+ * Implemented options -f <n> that limits the log to the first <n>
+ * records.
+ * Changed some log messages also.
+ *
+ * Revision 1.7  1996/10/29 14:08:13  adam
  * Uses resource lockDir instead of lockPath.
  *
  * Revision 1.6  1996/03/26 16:01:13  adam
@@ -158,12 +163,11 @@ void zebraIndexLock (int commitNow)
                 logf (LOG_FATAL|LOG_ERRNO, "open %s", path);
                 exit (1);
             }
-            logf (LOG_LOG, "zebraLockNB");
             if (zebraLockNB (lock_fd, 1) == -1)
             {
                 if (errno == EWOULDBLOCK)
                 {
-                    logf (LOG_LOG, "Waiting for other index process");
+                    logf (LOG_LOG, "waiting for other index process");
                     zebraLock (lock_fd, 1);
                     zebraUnlock (lock_fd);
                     close (lock_fd);
@@ -177,11 +181,11 @@ void zebraIndexLock (int commitNow)
             }
             else
             {
-                logf (LOG_WARN, "Unlocked %s", path);
+                logf (LOG_WARN, "unlocked %s", path);
                 r = read (lock_fd, buf, 256);
                 if (r == 0)
                 {
-                    logf (LOG_WARN, "Zero length %s", path);
+                    logf (LOG_WARN, "zero length %s", path);
                     close (lock_fd);
                     unlink (path);
                     continue;
@@ -193,7 +197,7 @@ void zebraIndexLock (int commitNow)
                 }
                 if (*buf == 'r')
                 {
-                    logf (LOG_WARN, "Previous transaction didn't"
+                    logf (LOG_WARN, "previous transaction didn't"
                           " reach commit");
                     close (lock_fd);
                     bf_commitClean ();
@@ -202,7 +206,7 @@ void zebraIndexLock (int commitNow)
                 }
                 else if (*buf == 'd')
                 {
-                    logf (LOG_WARN, "Commit file wan't deleted after commit");
+                    logf (LOG_WARN, "commit file wan't deleted after commit");
                     close (lock_fd);
                     bf_commitClean ();
                     unlink (path);
@@ -210,7 +214,7 @@ void zebraIndexLock (int commitNow)
                 }                    
                 else if (*buf == 'w')
                 {
-                    logf (LOG_WARN, "Your index may be inconsistent");
+                    logf (LOG_WARN, "your index may be inconsistent");
                     exit (1);
                 }
                 else if (*buf == 'c')
@@ -221,13 +225,13 @@ void zebraIndexLock (int commitNow)
                         close (lock_fd);
                         continue;
                     }
-                    logf (LOG_FATAL, "Previous transaction didn't"
+                    logf (LOG_FATAL, "previous transaction didn't"
                           " finish commit. Commit now!");
                     exit (1);
                 }
                 else 
                 {
-                    logf (LOG_FATAL, "Unknown id 0x%02x in %s", *buf,
+                    logf (LOG_FATAL, "unknown id 0x%02x in %s", *buf,
                           path);
                     exit (1);
                 }
