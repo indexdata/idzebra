@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.35 2005-01-16 23:14:58 adam Exp $
+/* $Id: charmap.c,v 1.36 2005-03-11 17:56:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -75,6 +75,15 @@ typedef struct chrwork
     char string[CHR_MAXSTR+1];
 } chrwork;
 
+/*
+ * Callback for equivalent stuff
+ */
+typedef struct
+{
+    NMEM nmem;
+    int no_eq;
+    char *eq[CHR_MAXEQUIV];
+} chr_equiv_work;
 /*
  * Add an entry to the character map.
  */
@@ -208,6 +217,20 @@ const char **chr_map_input(chrmaptab maptab, const char **from, int len, int fir
     len_tmp[1] = -1;
     if (!(res = find_entry_x(t, from, len_tmp, first)))
 	abort();
+    return (const char **) (res->target);
+}
+
+const char **chr_map_q_input(chrmaptab maptab,
+			     const char **from, int len, int first)
+{
+    chr_t_entry *t = maptab->q_input;
+    chr_t_entry *res;
+    int len_tmp[2];
+    
+    len_tmp[0] = len;
+    len_tmp[1] = -1;
+    if (!(res = find_entry_x(t, from, len_tmp, first)))
+	return 0;
     return (const char **) (res->target);
 }
 
@@ -399,6 +422,18 @@ static void fun_mkstring(const char *s, void *data, int num)
 }
 
 /*
+ * Create an unmodified string (scan_string handler).
+ */
+static void fun_add_equivalent_string(const char *s, void *data, int num)
+{
+    chr_equiv_work *arg = (chr_equiv_work *) data;
+    
+    if (arg->no_eq == CHR_MAXEQUIV)
+	return;
+    arg->eq[arg->no_eq++] = nmem_strdup(arg->nmem, s);
+}
+
+/*
  * Add a map to the string contained in the argument.
  */
 static void fun_add_map(const char *s, void *data, int num)
@@ -409,21 +444,6 @@ static void fun_add_map(const char *s, void *data, int num)
     yaz_log (YLOG_DEBUG, "set map %.*s", (int) strlen(s), s);
     set_map_string(arg->map->input, arg->map->nmem, s, strlen(s), arg->string,
                    0);
-    for (s = arg->string; *s; s++)
-	yaz_log (YLOG_DEBUG, " %3d", (unsigned char) *s);
-}
-
-/*
- * Add a query map to the string contained in the argument.
- */
-static void fun_add_qmap(const char *s, void *data, int num)
-{
-    chrwork *arg = (chrwork *) data;
-
-    assert(arg->map->q_input);
-    yaz_log (YLOG_DEBUG, "set qmap %.*s", (int) strlen(s), s);
-    set_map_string(arg->map->q_input, arg->map->nmem, s,
-		   strlen(s), arg->string, 0);
     for (s = arg->string; *s; s++)
 	yaz_log (YLOG_DEBUG, " %3d", (unsigned char) *s);
 }
@@ -690,28 +710,57 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 		++errors;
 	    }
 	}
-	else if (!yaz_matchstr(argv[0], "qmap"))
+	else if (!yaz_matchstr(argv[0], "equivalent"))
 	{
-	    chrwork buf;
+	    chr_equiv_work w;
 
-	    if (argc != 3)
+	    if (argc != 2)
 	    {
-		yaz_log(YLOG_FATAL, "charmap directive qmap requires 2 args");
+		yaz_log(YLOG_FATAL, "equivalent requires 1 argument");
 		++errors;
 	    }
-	    buf.map = res;
-	    buf.string[0] = '\0';
-	    if (scan_string(argv[2], t_unicode, t_utf8, 
-                            fun_mkstring, &buf, 0) < 0)
-	    {
-		yaz_log(YLOG_FATAL, "Bad qmap target");
-		++errors;
-	    }
+	    w.nmem = res->nmem;
+	    w.no_eq = 0;
 	    if (scan_string(argv[1], t_unicode, t_utf8, 
-                            fun_add_qmap, &buf, 0) < 0)
+                            fun_add_equivalent_string, &w, 0) < 0)
 	    {
-		yaz_log(YLOG_FATAL, "Bad qmap source");
+		yaz_log(YLOG_FATAL, "equivalent: invalid string");
 		++errors;
+	    }
+	    else if (w.no_eq == 0)
+	    {
+		yaz_log(YLOG_FATAL, "equivalent: no strings");
+		++errors;
+	    }
+	    else
+	    {
+		char *result_str;
+		int i, slen = 5;
+
+		/* determine length of regular expression */
+		for (i = 0; i<w.no_eq; i++)
+		    slen += strlen(w.eq[i]) + 1;
+		result_str = nmem_malloc(res->nmem, slen + 5);
+
+		/* build the regular expression */
+		*result_str = '\0';
+		slen = 0;
+		for (i = 0; i<w.no_eq; i++)
+		{
+		    result_str[slen++]  = i ? '|' : '(';
+		    strcpy(result_str + slen, w.eq[i]);
+		    slen += strlen(w.eq[i]);
+		}
+		result_str[slen++] = ')';
+		result_str[slen] = '\0';
+
+		/* each eq will map to this regular expression */
+		for (i = 0; i<w.no_eq; i++)
+		{
+		    set_map_string(res->q_input, res->nmem,
+				   w.eq[i], strlen(w.eq[i]),
+				   result_str, 0);
+		}
 	    }
 	}
         else if (!yaz_matchstr(argv[0], "encoding"))

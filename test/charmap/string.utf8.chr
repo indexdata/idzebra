@@ -1,4 +1,4 @@
-# $Id: string.utf8.chr,v 1.1 2004-03-09 15:12:15 adam Exp $
+# $Id: string.utf8.chr,v 1.2 2005-03-11 17:56:36 adam Exp $
 
 # Define the basic value-set. *Beware* of changing this without re-indexing
 # your databases.
@@ -15,10 +15,10 @@ space {\001-\040}!"#$%&'\()*+,-./:;<=>?@\[\\]^_`\{|}~
 
 # Characters to be considered equivalent for searching purposes.
 
-# equivalent æä(ae)
-# equivalent øö(oe)
-# equivalent å(aa)
-# equivalent uü
+equivalent æä(ae)
+equivalent øö(oe)
+equivalent å(aa)
+equivalent uü
 
 # Supplemental mappings
 
@@ -26,3 +26,6 @@ space {\001-\040}!"#$%&'\()*+,-./:;<=>?@\[\\]^_`\{|}~
 map \L1E25 h
 # Latin letter with H with dot below
 map \L1E24 h
+
+
+

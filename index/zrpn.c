@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.170 2005-03-05 09:19:15 adam Exp $
+/* $Id: zrpn.c,v 1.171 2005-03-11 17:56:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -295,6 +295,33 @@ static int term_pre(ZebraMaps zebra_maps, int reg_type, const char **src,
     return *s0;
 }
 
+
+static void esc_str(char *out_buf, int out_size,
+		    const char *in_buf, int in_size)
+{
+    int k;
+
+    assert(out_buf);
+    assert(in_buf);
+    assert(out_size > 20);
+    *out_buf = '\0';
+    for (k = 0; k<in_size; k++)
+    {
+	int c = in_buf[k] & 0xff;
+	int pc;
+	if (c < 32 || c > 126)
+	    pc = '?';
+	else
+	    pc = c;
+	sprintf(out_buf +strlen(out_buf), "%02X:%c  ", c, pc);
+	if (strlen(out_buf) > out_size-20)
+	{
+	    strcat(out_buf, "..");
+	    break;
+	}
+    }
+}
+
 #define REGEX_CHARS " []()|.*+?!"
 
 /* term_100: handle term, where trunc = none(no operators at all) */
@@ -302,7 +329,7 @@ static int term_100(ZebraMaps zebra_maps, int reg_type,
                      const char **src, char *dst, int space_split,
                      char *dst_term)
 {
-    const char *s0, *s1;
+    const char *s0;
     const char **map;
     int i = 0;
     int j = 0;
@@ -315,8 +342,10 @@ static int term_100(ZebraMaps zebra_maps, int reg_type,
     s0 = *src;
     while (*s0)
     {
-        s1 = s0;
-        map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
+        const char *s1 = s0;
+	int q_map_match = 0;
+        map = zebra_maps_search(zebra_maps, reg_type, &s0, strlen(s0), 
+				&q_map_match);
         if (space_split)
         {
             if (**map == *CHR_SPACE)
@@ -343,14 +372,26 @@ static int term_100(ZebraMaps zebra_maps, int reg_type,
                 space_start = space_end = 0;
             }
         }
-        /* add non-space char */
-        while (s1 < s0)
-        {
-            if (strchr(REGEX_CHARS, *s1))
-                dst[i++] = '\\';
-            dst_term[j++] = *s1;
-            dst[i++] = *s1++;
-        }
+	/* add non-space char */
+	memcpy(dst_term+j, s1, s0 - s1);
+	j += (s0 - s1);
+	if (!q_map_match)
+	{
+	    while (s1 < s0)
+	    {
+		if (strchr(REGEX_CHARS, *s1))
+		    dst[i++] = '\\';
+		dst[i++] = *s1++;
+	    }
+	}
+	else
+	{
+	    char tmpbuf[80];
+	    esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
+	    
+	    strcpy(dst + i, map[0]);
+	    i += strlen(map[0]);
+	}
     }
     dst[i] = '\0';
     dst_term[j] = '\0';
@@ -363,7 +404,7 @@ static int term_101(ZebraMaps zebra_maps, int reg_type,
                      const char **src, char *dst, int space_split,
                      char *dst_term)
 {
-    const char *s0, *s1;
+    const char *s0;
     const char **map;
     int i = 0;
     int j = 0;
@@ -381,17 +422,33 @@ static int term_101(ZebraMaps zebra_maps, int reg_type,
         }
         else
         {
-            s1 = s0;
-            map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
+	    const char *s1 = s0;
+	    int q_map_match = 0;
+	    map = zebra_maps_search(zebra_maps, reg_type, &s0, strlen(s0), 
+				    &q_map_match);
             if (space_split && **map == *CHR_SPACE)
                 break;
-            while (s1 < s0)
-            {
-                if (strchr(REGEX_CHARS, *s1))
-                    dst[i++] = '\\';
-                dst_term[j++] = *s1;
-                dst[i++] = *s1++;
-            }
+
+	    /* add non-space char */
+	    memcpy(dst_term+j, s1, s0 - s1);
+	    j += (s0 - s1);
+	    if (!q_map_match)
+	    {
+		while (s1 < s0)
+		{
+		    if (strchr(REGEX_CHARS, *s1))
+			dst[i++] = '\\';
+		    dst[i++] = *s1++;
+		}
+	    }
+	    else
+	    {
+		char tmpbuf[80];
+		esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
+		
+		strcpy(dst + i, map[0]);
+		i += strlen(map[0]);
+	    }
         }
     }
     dst[i] = '\0';
@@ -407,7 +464,7 @@ static int term_103(ZebraMaps zebra_maps, int reg_type, const char **src,
 {
     int i = 0;
     int j = 0;
-    const char *s0, *s1;
+    const char *s0;
     const char **map;
 
     if (!term_pre(zebra_maps, reg_type, src, "^\\()[].*+?|", "(", !space_split))
@@ -430,22 +487,39 @@ static int term_103(ZebraMaps zebra_maps, int reg_type, const char **src,
         }
         else
         {
-            s1 = s0;
-            map = zebra_maps_input(zebra_maps, reg_type, &s0, strlen(s0), 0);
-            if (**map == *CHR_SPACE)
+	    const char *s1 = s0;
+	    int q_map_match = 0;
+	    map = zebra_maps_search(zebra_maps, reg_type, &s0, strlen(s0), 
+				    &q_map_match);
+            if (space_split && **map == *CHR_SPACE)
                 break;
-            while (s1 < s0)
-            {
-                if (strchr(REGEX_CHARS, *s1))
-                    dst[i++] = '\\';
-                dst_term[j++] = *s1;
-                dst[i++] = *s1++;
-            }
+
+	    /* add non-space char */
+	    memcpy(dst_term+j, s1, s0 - s1);
+	    j += (s0 - s1);
+	    if (!q_map_match)
+	    {
+		while (s1 < s0)
+		{
+		    if (strchr(REGEX_CHARS, *s1))
+			dst[i++] = '\\';
+		    dst[i++] = *s1++;
+		}
+	    }
+	    else
+	    {
+		char tmpbuf[80];
+		esc_str(tmpbuf, sizeof(tmpbuf), map[0], strlen(map[0]));
+		
+		strcpy(dst + i, map[0]);
+		i += strlen(map[0]);
+	    }
         }
     }
     dst[i] = '\0';
     dst_term[j] = '\0';
     *src = s0;
+    
     return i;
 }
 
@@ -1171,6 +1245,12 @@ static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    zh->errString = nmem_strdup_i(stream, truncation_value);
 	    return -1;
         }
+	if (attr_ok)
+	{
+	    char buf[80];
+	    const char *input = term_dict + prefix_len;
+	    esc_str(buf, sizeof(buf), input, strlen(input));
+	}
 	if (attr_ok)
 	{
 	    yaz_log(log_level_rpn, "dict_lookup_grep: %s", term_dict+prefix_len);
@@ -1915,7 +1995,7 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     grep_info.isam_p_indx = 0;
     r = dict_lookup_grep(zh->reg->dict, term_dict, 0,
                           &grep_info, &max_pos, 0, grep_handle);
-    yaz_log (YLOG_LOG, "%s %d positions", term,
+    yaz_log (YLOG_DEBUG, "%s %d positions", term,
              grep_info.isam_p_indx);
     rset = rset_trunc(zh, grep_info.isam_p_buf,
                        grep_info.isam_p_indx, term, strlen(term),

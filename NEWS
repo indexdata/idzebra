@@ -1,3 +1,5 @@
+Implemented the 'equivalent' directive for .chr-files.
+
 Added 'melm' directive to absyn format to simplify config files
 for MARC-style databases. See tab/marc21.abs for an example.
 

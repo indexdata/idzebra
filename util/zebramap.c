@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.39 2005-01-16 23:14:58 adam Exp $
+/* $Id: zebramap.c,v 1.40 2005-03-11 17:56:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -299,6 +299,32 @@ const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
     if (maptab)
 	return chr_map_input(maptab, from, len, first);
     
+    zms->temp_map_str[0] = **from;
+
+    (*from)++;
+    return zms->temp_map_ptr;
+}
+
+const char **zebra_maps_search(ZebraMaps zms, unsigned reg_id,
+			       const char **from, int len,  int *q_map_match)
+{
+    chrmaptab maptab;
+    
+    *q_map_match = 0;
+    maptab = zebra_charmap_get (zms, reg_id);
+    if (maptab)
+    {
+	const char **map;
+	map = chr_map_q_input(maptab, from, len, 0);
+	if (map && map[0])
+	{
+	    *q_map_match = 1;
+	    return map;
+	}
+	map = chr_map_input(maptab, from, len, 0);
+	if (map)
+	    return map;
+    }
     zms->temp_map_str[0] = **from;
 
     (*from)++;
