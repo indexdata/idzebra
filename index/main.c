@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.34  1996-02-07 14:06:39  adam
+ * Revision 1.35  1996-02-12 15:56:11  adam
+ * New code command: unread.
+ *
+ * Revision 1.34  1996/02/07  14:06:39  adam
  * Better progress report during register merge.
  * New command: clean - removes temporary shadow files.
  *
@@ -239,7 +242,7 @@ int main (int argc, char **argv)
                 }
                 else if (!strcmp (arg, "clean"))
                 {
-                    zebraIndexLock (0);
+                    zebraIndexLock (1);
                     if (bf_commitExists ())
                     {
                         zebraIndexLockMsg ("d");
