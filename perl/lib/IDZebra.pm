@@ -76,6 +76,7 @@ package IDZebra;
 *cql2pqf = *IDZebrac::cql2pqf;
 *records_retrieve = *IDZebrac::records_retrieve;
 *record_retrieve = *IDZebrac::record_retrieve;
+*deleteResultSet = *IDZebrac::deleteResultSet;
 *sort = *IDZebrac::sort;
 *scan_PQF = *IDZebrac::scan_PQF;
 sub getScanEntry {

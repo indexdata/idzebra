@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 06_retrieval.t,v 1.1 2003-03-03 00:44:39 pop Exp $
+# $Id: 06_retrieval.t,v 1.2 2003-03-03 12:14:28 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,7 +14,7 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 19;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -66,7 +66,32 @@ ok (($rec1->{score}), "score: $rec1->{score}");
 ok (($rec1->{format} eq 'SUTRS'), "format: $rec1->{format}");
 ok ((length($rec1->{buf}) > 0), "buf: ". length($rec1->{buf})." bytes");
 
-# ----------------------------------------------------------------------------
-# Close session
 
-$sess->close;
+#$rs1 = undef;
+
+# ----------------------------------------------------------------------------
+# Close session, check for rs availability
+
+$sess=undef;
+
+eval { my ($rec2) = $rs1->records(from=>1,to=>1); };
+
+ok (($@ ne ""), "Resultset is invalidated with session");
+
+# ----------------------------------------------------------------------------
+# Code from doc...
+#  foreach my $rec ($rs1->records()) {
+#      print STDERR "REC:$rec\n";
+#      unless ($rec->errCode) {
+#         printf  ("Pos:%d, Base: %s, sysno: %d, score %d format: %s\n%s\n\n",
+#             $rec->position,
+#             $rec->base,
+#             $rec->sysno,
+#             $rec->score,
+#             $rec->format,
+#             $rec->buf
+#         );
+#      }
+#  }
+
+

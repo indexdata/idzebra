@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.8 2003-03-03 00:47:58 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.9 2003-03-03 12:14:27 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -4476,6 +4476,75 @@ XS(_wrap_record_retrieve) {
 }
 
 
+XS(_wrap_deleteResultSet) {
+    char _swigmsg[SWIG_MAX_ERRMSG] = "";
+    const char *_swigerr = _swigmsg;
+    {
+        ZebraHandle arg1 ;
+        int arg2 ;
+        int arg3 ;
+        char **arg4 ;
+        int *arg5 ;
+        int result;
+        int argvi = 0;
+        dXSARGS;
+        
+        if ((items < 5) || (items > 5)) {
+            SWIG_croak("Usage: deleteResultSet(zh,function,num_setnames,setnames,statuses);");
+        }
+        {
+            ZebraHandle * argp;
+            if (SWIG_ConvertPtr(ST(0),(void **) &argp, SWIGTYPE_p_ZebraHandle,0) < 0) {
+                SWIG_croak("Type error in argument 1 of deleteResultSet. Expected _p_ZebraHandle");
+            }
+            arg1 = *argp;
+        }
+        arg2 = (int) SvIV(ST(1));
+        arg3 = (int) SvIV(ST(2));
+        {
+            AV *tempav;
+            I32 len;
+            int i;
+            SV  **tv;
+            STRLEN na;
+            if (!SvROK(ST(3)))
+            croak("Argument 4 is not a reference.");
+            if (SvTYPE(SvRV(ST(3))) != SVt_PVAV)
+            croak("Argument 4 is not an array.");
+            tempav = (AV*)SvRV(ST(3));
+            len = av_len(tempav);
+            arg4 = (char **) malloc((len+2)*sizeof(char *));
+            for (i = 0; i <= len; i++) {
+                tv = av_fetch(tempav, i, 0);	
+                arg4[i] = (char *) SvPV(*tv,na);
+            }
+            arg4[i] = NULL;
+        }
+        {
+            int i;
+            if (!SvIOK(ST(4))) 
+            croak("Argument 5 is not an integer.");
+            i = SvIV(ST(4));
+            arg5 = &i;
+        }
+        result = (int)zebra_deleleResultSet(arg1,arg2,arg3,arg4,arg5);
+        
+        ST(argvi) = sv_newmortal();
+        sv_setiv(ST(argvi++), (IV) result);
+        {
+            free(arg4);
+        }
+        XSRETURN(argvi);
+        fail:
+        {
+            free(arg4);
+        }
+        (void) _swigerr;
+    }
+    croak(_swigerr);
+}
+
+
 XS(_wrap_sort) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
@@ -5204,9 +5273,11 @@ XS(_wrap_data1_nodetogr) {
             arg4 = *argp;
         }
         {
-            if (SWIG_ConvertPtr(ST(4), (void **) &arg5, SWIGTYPE_p_int,0) < 0) {
-                SWIG_croak("Type error in argument 5 of data1_nodetogr. Expected _p_int");
-            }
+            int i;
+            if (!SvIOK(ST(4))) 
+            croak("Argument 5 is not an integer.");
+            i = SvIV(ST(4));
+            arg5 = &i;
         }
         result = (Z_GenericRecord *)data1_nodetogr(arg1,arg2,arg3,arg4,arg5);
         
@@ -5324,9 +5395,11 @@ XS(_wrap_data1_nodetobuf) {
         }
         arg3 = (int) SvIV(ST(2));
         {
-            if (SWIG_ConvertPtr(ST(3), (void **) &arg4, SWIGTYPE_p_int,0) < 0) {
-                SWIG_croak("Type error in argument 4 of data1_nodetobuf. Expected _p_int");
-            }
+            int i;
+            if (!SvIOK(ST(3))) 
+            croak("Argument 4 is not an integer.");
+            i = SvIV(ST(3));
+            arg4 = &i;
         }
         result = (char *)data1_nodetobuf(arg1,arg2,arg3,arg4);
         
@@ -6898,9 +6971,11 @@ XS(_wrap_data1_nodetomarc) {
         }
         arg4 = (int) SvIV(ST(3));
         {
-            if (SWIG_ConvertPtr(ST(4), (void **) &arg5, SWIGTYPE_p_int,0) < 0) {
-                SWIG_croak("Type error in argument 5 of data1_nodetomarc. Expected _p_int");
-            }
+            int i;
+            if (!SvIOK(ST(4))) 
+            croak("Argument 5 is not an integer.");
+            i = SvIV(ST(4));
+            arg5 = &i;
         }
         result = (char *)data1_nodetomarc(arg1,arg2,arg3,arg4,arg5);
         
@@ -6947,9 +7022,11 @@ XS(_wrap_data1_nodetoidsgml) {
         }
         arg3 = (int) SvIV(ST(2));
         {
-            if (SWIG_ConvertPtr(ST(3), (void **) &arg4, SWIGTYPE_p_int,0) < 0) {
-                SWIG_croak("Type error in argument 4 of data1_nodetoidsgml. Expected _p_int");
-            }
+            int i;
+            if (!SvIOK(ST(3))) 
+            croak("Argument 4 is not an integer.");
+            i = SvIV(ST(3));
+            arg4 = &i;
         }
         result = (char *)data1_nodetoidsgml(arg1,arg2,arg3,arg4);
         
@@ -7090,9 +7167,11 @@ XS(_wrap_data1_nodetosoif) {
         }
         arg3 = (int) SvIV(ST(2));
         {
-            if (SWIG_ConvertPtr(ST(3), (void **) &arg4, SWIGTYPE_p_int,0) < 0) {
-                SWIG_croak("Type error in argument 4 of data1_nodetosoif. Expected _p_int");
-            }
+            int i;
+            if (!SvIOK(ST(3))) 
+            croak("Argument 4 is not an integer.");
+            i = SvIV(ST(3));
+            arg4 = &i;
         }
         result = (char *)data1_nodetosoif(arg1,arg2,arg3,arg4);
         
@@ -8477,6 +8556,7 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::cql2pqf", _wrap_cql2pqf},
 {"IDZebrac::records_retrieve", _wrap_records_retrieve},
 {"IDZebrac::record_retrieve", _wrap_record_retrieve},
+{"IDZebrac::deleteResultSet", _wrap_deleteResultSet},
 {"IDZebrac::sort", _wrap_sort},
 {"IDZebrac::scan_PQF", _wrap_scan_PQF},
 {"IDZebrac::getScanEntry", _wrap_getScanEntry},

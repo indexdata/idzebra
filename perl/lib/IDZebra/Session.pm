@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.8 2003-03-03 00:45:37 pop Exp $
+# $Id: Session.pm,v 1.9 2003-03-03 12:14:27 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -13,7 +13,8 @@ BEGIN {
     use Scalar::Util;
     use IDZebra::Logger qw(:flags :calls);
     use IDZebra::Resultset;
-    our $VERSION = do { my @r = (q$Revision: 1.8 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    use IDZebra::RetrievalRecord;
+    our $VERSION = do { my @r = (q$Revision: 1.9 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
 #    our @ISA = qw(IDZebra::Logger);
 }
 
@@ -105,6 +106,14 @@ sub close {
     my ($self) = @_;
 
     if ($self->{zh}) {
+
+	my $stats = 0; 
+	# Delete all resulsets
+	my $r = IDZebra::deleteResultSet($self->{zh},
+					 1, #Z_DeleteRequest_all,
+					 0,[],
+					 $stats);
+
 	while (IDZebra::trans_no($self->{zh}) > 0) {
 	    logf (LOG_WARN,"Explicitly closing transaction with session");
 	    $self->end_trans;
@@ -137,6 +146,7 @@ sub DESTROY {
     if (defined ($self->{cql_ct})) {
       IDZebra::cql_transform_close($self->{cql_ct});
     }
+
 }
 # -----------------------------------------------------------------------------
 # Record group selection  This is a bit nasty... but used at many places 

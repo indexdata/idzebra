@@ -14,6 +14,20 @@
 
 /* RetrievalRecordBuff is a special construct, to allow to map a char * buf
    to non-null terminated perl string scalar value (SVpv). */
+%typemap(in) int * {
+  int i;
+  if (!SvIOK($input)) 
+    croak("Argument $argnum is not an integer.");
+  i = SvIV($input);
+  $1 = &i;
+}
+
+%typemap(out) int * {
+  $result=newSViv($1)  
+  sv_2mortal($result);
+  argvi++;
+}
+
 %typemap(out) RetrievalRecordBuf * {
   if ($1->len) {
     $result = newSVpv($1->buf,$1->len);
@@ -291,6 +305,13 @@ void record_retrieve(RetrievalObj *ro,
 		     RetrievalRecord *res,
 		     int pos);
 
+/* Delete Result Set(s) (zebraapi.c) */
+%name(deleteResultSet)
+int zebra_deleleResultSet(ZebraHandle zh, int function,
+			  int num_setnames, char **setnames,
+			  int *statuses);
+
+
 /* == Sort ================================================================= */
 int sort (ZebraHandle zh, 
 	  ODR stream,
@@ -315,12 +336,6 @@ ScanEntry *getScanEntry(ScanObj *so, int pos);
 */
 
 
-/* Delete Result Set(s) */
-/*
-int zebra_deleleResultSet(ZebraHandle zh, int function,
-			  int num_setnames, char **setnames,
-			  int *statuses);
-*/
 
 /* do authentication */
 /*

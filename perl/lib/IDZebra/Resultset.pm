@@ -1,4 +1,4 @@
-# $Id: Resultset.pm,v 1.5 2003-03-03 00:45:37 pop Exp $
+# $Id: Resultset.pm,v 1.6 2003-03-03 12:14:27 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -12,7 +12,7 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.5 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.6 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -60,9 +60,17 @@ sub errString {
 
 # =============================================================================
 sub DESTROY {
-    my ($self) = @_;
+    my $self = shift;
 
     # Deleteresultset?
+    
+    my $stats = 0;
+    if ($self->{session}{zh}) { 
+	my $r = IDZebra::deleteResultSet($self->{session}{zh},
+					 0, #Z_DeleteRequest_list,
+					 1,[$self->{name}],
+					 $stats);
+    }
 
     if ($self->{odr_stream}) {
         IDZebra::odr_reset($self->{odr_stream});
@@ -70,14 +78,15 @@ sub DESTROY {
 	$self->{odr_stream} = undef;  
     }
 
-#    delete($self->{ro});
-#    delete($self->{session}{resultsets}{$self->{name}});
     delete($self->{session});
 }
 # -----------------------------------------------------------------------------
 sub records {
     my ($self, %args) = @_;
 
+    unless ($self->{session}{zh}) { 
+	croak ("Session is closed or out of scope");
+    }
     my $from = $args{from} ? $args{from} : 1;
     my $to   = $args{to}   ? $args{to}   : $self->{recordCount};
 
@@ -120,6 +129,11 @@ sub records {
 # ============================================================================
 sub sort {
     my ($self, $sortspec, $setname) = @_;
+
+    unless ($self->{session}{zh}) { 
+	croak ("Session is closed or out of scope");
+    }
+
     unless ($setname) {
 	$_[0] = $self->{session}->sortResultsets($sortspec, 
 						 $self->{name}, ($self));
@@ -139,19 +153,75 @@ IDZebra::Resultset - Representation of Zebra search results
 
 =head1 SYNOPSIS
 
+  $count = $rs->count;
+
+  printf ("RS Status is %d (%s)\n", $rs->errCode, $rs->errString);
+
+  my @recs = $rs->records(from => 1,
+			  to   => 10);
+
 =head1 DESCRIPTION
 
 The I<Resultset> object represents results of a Zebra search. Contains number of hits, search status, and can be used to sort and retrieve the records.
 
 =head1 PROPERTIES
 
-  $count = $rs->count;
+The folowing properties are available, trough object methods and the object hash reference:
 
-  printf ("RS Status is %d (%s)\n", $rs->errCode, $rs->errString);
+=over 4
 
-I<$rs-E<gt>errCode> is 0, if there were no errors during search.
+=item B<errCode>
+
+The error code returned from search, resulting the Resultset object.
+
+=item B<errString>
+
+The optional error string
+
+=item B<recordCount>
+
+The number of hits (records available) in the resultset
+
+=item B<count>
+
+Just the synonym for I<recordCount>
+
+=back
 
 =head1 RETRIEVING RECORDS
+
+In order to retrieve records, use the I<records> method:
+
+  my @recs = $rs->records();
+
+By default this is going to return an array of IDZebra::RetrievalRecord objects. The possible arguments are:
+
+=over 4
+
+=item B<from>
+
+Retrieve records from the given position. The first record corresponds to position 1. If not specified, retrieval starts from the first record.
+
+=item B<to>
+
+The last record position to be fetched. If not specified, all records are going to be fetched, starting from position I<from>.
+
+=item B<elementSet>
+
+The element set used for retrieval. If not specified 'I<R>' is used, which will return the "record" in the original format (ie.: without extraction, just as the original file, or data buffer in the update call).
+
+=item B<schema>
+
+The schema used for retrieval. The default is "".
+
+=item B<recordSyntax>
+
+The record syntax for retrieval. The default is SUTRS.
+
+=back
+
+=head1 SORTING
+
 
 
 =head1 COPYRIGHT
