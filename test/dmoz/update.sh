@@ -1,7 +1,10 @@
 #!/bin/sh
-# $Id: update.sh,v 1.9 2002-07-03 10:13:30 adam Exp $
+# $Id: update.sh,v 1.10 2002-07-15 11:48:21 adam Exp $
 t=$1
 test -n "$t" || exit 1
+test -d reg-$t && rm -fr reg-$t
+mkdir reg-$t
+
 rm -f *.mf *.LCK *.tmp
 ../../index/zebraidx -l zebraidx-$t.log init 
 i=0
@@ -13,13 +16,8 @@ while test -f dmoz.$i.xml; do
 
 	grep ' zebraidx times:' zebraidx-$t.log | sed 's/.*zebraidx times://g' >>times-$t.log
 
-	test -d rtmp || mkdir rtmp
-	cp *.mf rtmp
-	rm -f *.mf
-	mv rtmp/*.mf .
-
 	i=`expr $i + 1`
-	mod=`expr $i % 5`
+	mod=`expr $i % 50`
 	if test $mod -eq 0; then
 		echo "run $i" >> stat-$t.log
 		../../index/zebraidx -l zebraidx-$t.log -c zebra-$t.cfg stat >>stat-$t.log 
