@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.1  1994-08-16 16:26:48  adam
+ * Revision 1.2  1994-08-17 13:32:19  adam
+ * Use cache in dict - not in bfile.
+ *
+ * Revision 1.1  1994/08/16  16:26:48  adam
  * Added dict.
  *
  */
@@ -24,11 +27,11 @@ static Dict_ptr new_page (Dict dict, Dict_ptr back_ptr, void **pp)
     {
         dict->head.free_list++;
         dict->head.last = dict->head.free_list;
-        bf_newp (dict->bf, ptr, &p);
+        dict_bf_newp (dict->dbf, ptr, &p);
     }
     else
     {
-        bf_readp (dict->bf, dict->head.free_list, &p);
+        dict_bf_readp (dict->dbf, dict->head.free_list, &p);
         dict->head.free_list = DICT_nextptr(p);
         if (dict->head.free_list == 0)
             dict->head.free_list = dict->head.last;
@@ -70,7 +73,7 @@ static int dict_ins (Dict dict, const Dict_char *str, Dict_ptr back_ptr,
                 if (memcmp (info+sizeof(Dict_ptr), userinfo, sizeof(userinfo)))
                 {
                     memcpy (info+sizeof(Dict_ptr), userinfo, sizeof(userinfo));
-                    bf_touch (dict->bf, ptr);
+                    dict_bf_touch (dict->dbf, ptr);
                 }
                 return 0;
             }
@@ -93,7 +96,7 @@ static int dict_ins (Dict dict, const Dict_char *str, Dict_ptr back_ptr,
                 {
                     subptr = new_page (dict, ptr, &pp);
                     memcpy (info, &subptr, sizeof(subptr));
-                    bf_touch (dict->bf, ptr);
+                    dict_bf_touch (dict->dbf, ptr);
                 }
                 return dict_ins (dict, str+1, ptr, pp, userinfo);
             }

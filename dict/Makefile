@@ -1,7 +1,7 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.1 1994-08-16 16:26:46 adam Exp $
+# $Id: Makefile,v 1.2 1994-08-17 13:32:18 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
@@ -9,7 +9,7 @@ TPROG=dicttest
 CFLAGS=-g -Wall
 DEFS=$(INCLUDE)
 LIB=../lib/dict.a 
-PO = open.o close.o insert.o lookup.o
+PO = dopen.o dclose.o drdwr.o open.o close.o insert.o lookup.o 
 CPP=cc -E
 
 all: $(LIB)

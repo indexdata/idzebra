@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.1  1994-08-16 16:26:49  adam
+ * Revision 1.2  1994-08-17 13:32:20  adam
+ * Use cache in dict - not in bfile.
+ *
+ * Revision 1.1  1994/08/16  16:26:49  adam
  * Added dict.
  *
  */
@@ -24,21 +27,18 @@ Dict dict_open (const char *name, int cache, int rw)
 
     dict = xmalloc (sizeof(*dict));
 
-    if (rw)
-        dict->bf = bf_open_w (name, DICT_PAGESIZE, cache);
-    else
-        dict->bf = bf_open (name, DICT_PAGESIZE, cache);
+    dict->dbf = dict_bf_open (name, DICT_PAGESIZE, cache, rw);
 
-    if(!dict->bf)
+    if(!dict->dbf)
     {
         free (dict);
         return NULL;
     }
-    if (bf_read (dict->bf, 0, &head_buf) <= 0)
+    if (dict_bf_readp (dict->dbf, 0, &head_buf) <= 0)
     {
         if (rw) 
         {   /* create header with information (page 0) */
-            bf_newp (dict->bf, 0, &head_buf);
+            dict_bf_newp (dict->dbf, 0, &head_buf);
             dh = (struct Dict_head *) head_buf;
             strcpy(dh->magic_str, DICT_MAGIC);
             dh->free_list = dh->last = 1;
@@ -56,13 +56,13 @@ Dict dict_open (const char *name, int cache, int rw)
         dh = (struct Dict_head *) head_buf;
         if (!strcmp (dh->magic_str, DICT_MAGIC))
         {
-            bf_close (dict->bf);
+            dict_bf_close (dict->dbf);
             free (dict);
             return NULL;
         }
         if (dh->page_size != DICT_PAGESIZE)
         {
-            bf_close (dict->bf);
+            dict_bf_close (dict->dbf);
             free (dict);
             return NULL;
         }
