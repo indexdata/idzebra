@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.111 2003-09-05 12:35:06 adam Exp $
+/* $Id: zserver.c,v 1.112 2003-11-09 11:48:16 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -149,7 +149,7 @@ bend_initresult *bend_init (bend_initrequest *q)
                 if (selected)
                     zebra_record_encoding (zh, right_name);
         	q->charneg_response =
-        	    yaz_set_response_charneg (q->stream, right_name,
+        	    yaz_set_response_charneg (q->stream, charsets[i],
                                               0, selected);
         	break;
             } else {
