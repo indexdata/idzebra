@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.8 2003-06-20 14:21:23 heikki Exp $
+/* $Id: zebraapi.h,v 1.9 2003-06-30 19:37:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -184,7 +184,7 @@ YAZ_EXPORT int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
  */                   
           
 YAZ_EXPORT int zebra_create_database (ZebraHandle zh, const char *db);
-
+YAZ_EXPORT int zebra_drop_database (ZebraHandle zh, const char *db);
 
 YAZ_EXPORT int zebra_admin_shutdown (ZebraHandle zh);
 YAZ_EXPORT int zebra_admin_start (ZebraHandle zh);

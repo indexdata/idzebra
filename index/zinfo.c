@@ -1,5 +1,5 @@
-/* $Id: zinfo.c,v 1.36 2003-01-15 07:26:40 oleg Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: zinfo.c,v 1.37 2003-06-30 19:37:12 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -19,8 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
-
 
 #include <stdlib.h>
 #include <assert.h>
@@ -272,6 +270,52 @@ void zebraExplain_mergeAccessInfo (ZebraExplainInfo zei, data1_node *n,
 				    &(*accessInfo)->schemas);
     }
 }
+
+/* Explain structure
+    root record
+      of type targetInfo
+      and has sysno = 1
+
+    databaseList (list of databases)
+*/
+/*
+Example root:
+explain:
+  targetInfo: TargetInfo
+    name: Zebra
+    namedResultSets: 1
+    multipleDbSearch: 1
+    nicknames:
+      name: Zebra
+    commonInfo:
+      dateAdded: 20030630190601
+      dateChanged: 20030630190601
+      languageCode: EN
+    accessinfo:
+      unitSystems:
+        string: ISO
+      attributeSetIds:
+        oid: 1.2.840.10003.3.2
+        oid: 1.2.840.10003.3.5
+        oid: 1.2.840.10003.3.1
+      schemas:
+        oid: 1.2.840.10003.13.1000.81.2
+        oid: 1.2.840.10003.13.2
+    zebraInfo:
+      version: 1.3.12
+      databaseList:
+        database:
+          name: Default
+          id: 50
+          attributeDetailsId: 51
+        database:
+          name: IR-Explain-1
+          id: 52
+          attributeDetailsId: 53
+      ordinalSU: 38
+      runNumber: 1
+nextResultSetPosition = 2
+*/
 
 ZebraExplainInfo zebraExplain_open (
     Records records, data1_handle dh,
@@ -596,6 +640,45 @@ static void zebraExplain_readDatabase (ZebraExplainInfo zei,
     }
     zdi->readFlag = 0;
     rec_rm (&rec);
+}
+
+int zebraExplain_removeDatabase(ZebraExplainInfo zei, void *update_handle)
+{
+    struct zebDatabaseInfoB **zdip = &zei->databaseInfo;
+
+    while (*zdip)
+    {
+	if (*zdip == zei->curDatabaseInfo)
+	{
+	    struct zebDatabaseInfoB *zdi = *zdip;
+	    Record rec;
+
+	    zei->dirty = 1;
+	    zei->updateHandle = update_handle;
+
+	    if (zdi->attributeDetails)
+	    {
+		/* remove attribute details keys and delete it */
+		zebAttributeDetails zad = zdi->attributeDetails;
+		
+		rec = rec_get(zei->records, zad->sysno);
+		(*zei->updateFunc)(zei->updateHandle, rec, 0);
+		rec_rm(&rec);
+	    }
+	    /* remove database record keys and delete it */
+	    rec = rec_get (zei->records, zdi->sysno);
+	    (*zei->updateFunc)(zei->updateHandle, rec, 0);
+	    rec_rm(&rec);
+
+	    /* remove from list */
+	    *zdip = zdi->next;
+
+	    /* current database is IR-Explain-1 */
+	    return 0;
+	}
+	zdip = &(*zdip)->next;
+    }
+    return -1;
 }
 
 int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database)
@@ -1227,6 +1310,19 @@ int zebraExplain_lookupSU (ZebraExplainInfo zei, int set, int use)
     return -1;
 }
 
+int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
+			  int (*f)(void *handle, int ord))
+{
+    struct zebDatabaseInfoB *zdb = zei->curDatabaseInfo;
+    if (zdb)
+    {
+	struct zebSUInfoB *zsui = zdb->attributeDetails->SUInfo;
+	for ( ;zsui; zsui = zsui->next)
+	    (*f)(handle,  zsui->info.ordinal);
+    }
+    return 0;
+}
+			  
 int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
 			     const char **db, int *set, int *use)
 {

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.108 2003-06-23 14:35:41 heikki Exp $
+/* $Id: zebraapi.c,v 1.109 2003-06-30 19:37:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1098,11 +1098,59 @@ int zebra_admin_exchange_record (ZebraHandle zh,
     return 0;
 }
 
+int delete_w_handle(const char *info, void *handle)
+{
+    ZebraHandle zh = (ZebraHandle) handle;
+    ISAMC_P pos;
+
+    if (*info == sizeof(pos))
+    {
+	memcpy (&pos, info+1, sizeof(pos));
+	isamb_unlink(zh->reg->isamb, pos);
+    }
+    return 0;
+}
+
+static int delete_SU_handle(void *handle, int ord)
+{
+    ZebraHandle zh = (ZebraHandle) handle;
+    char ord_buf[20];
+    int ord_len;
+
+    ord_len = key_SU_encode (ord, ord_buf);
+    ord_buf[ord_len] = '\0';
+
+    assert (zh->reg->isamb);
+    dict_delete_subtree(zh->reg->dict, ord_buf,
+			zh, delete_w_handle);
+    return 0;
+}
+
+int zebra_drop_database  (ZebraHandle zh, const char *database)
+{
+    ASSERTZH;
+    yaz_log(LOG_API,"zebra_drop_database");
+    zh->errCode = 0;
+
+    if (zebra_select_database (zh, database))
+        return -1;
+    if (zebra_begin_trans (zh, 1))
+        return -1;
+    if (zh->reg->isamb)
+    {
+	zebraExplain_curDatabase (zh->reg->zei, database);
+	
+	zebraExplain_trav_ord(zh->reg->zei, zh, delete_SU_handle);
+	zebraExplain_removeDatabase(zh->reg->zei, zh);
+    }
+    zebra_end_trans (zh);
+    return 0;
+}
+
 int zebra_create_database (ZebraHandle zh, const char *database)
 {
-    ZebraService zs;
     ASSERTZH;
-    yaz_log(LOG_API,"zebra_admin_create");
+    yaz_log(LOG_API,"zebra_create_database");
     zh->errCode=0;
 
     if (zebra_select_database (zh, database))
@@ -1110,7 +1158,6 @@ int zebra_create_database (ZebraHandle zh, const char *database)
     if (zebra_begin_trans (zh, 1))
         return -1;
 
-    zs = zh->service;
     /* announce database */
     if (zebraExplain_newDatabase (zh->reg->zei, database, 0 
                                   /* explainDatabase */))

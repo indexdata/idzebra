@@ -1,10 +1,29 @@
-/* zebrash.c - command-line interface to zebra API 
- *  $Id: zebrash.c,v 1.13 2003-06-23 15:38:16 adam Exp $
- *
- * Copyrigth 2003 Index Data Aps
- *
- */
- 
+/* $Id: zebrash.c,v 1.14 2003-06-30 19:37:12 adam Exp $
+   Copyright (C) 2002,2003
+   Index Data Aps
+
+This file is part of the Zebra server.
+
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+/* 
+   zebrash.c - command-line interface to zebra API
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
@@ -295,6 +314,18 @@ static int cmd_create_database( char *args[], char *outbuff)
     return zebra_create_database(zh, db);
 }
 
+static int cmd_drop_database( char *args[], char *outbuff)
+{
+    char *db=args[1];
+    if (!db)
+        db="Default";
+    strcat(outbuff,"Dropping database ");
+    strcat(outbuff,db);
+    strcat(outbuff,"\n");
+	
+    return zebra_drop_database(zh, db);
+}
+
 static int cmd_begin_trans( char *args[], char *outbuff)
 {
     int rw=0;
@@ -437,8 +468,11 @@ struct cmdstruct cmds[] = {
       "Selects a database",
       cmd_select_database},    
     { "create_database", "basename",
-      "Creates a database",
+      "Create database",
       cmd_create_database},
+    { "drop_database", "basename",
+      "Drop database",
+      cmd_drop_database},
     { "begin_trans", "[rw]",
       "Begins a transaction. rw=1 means write, otherwise read-only",
       cmd_begin_trans},

@@ -1,5 +1,5 @@
-/* $Id: main.c,v 1.104 2003-05-20 21:39:57 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: main.c,v 1.105 2003-06-30 19:37:12 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -96,6 +96,8 @@ int main (int argc, char **argv)
         " update <dir>  Update index with files below <dir>.\n"
 	"               If <dir> is empty filenames are read from stdin.\n"
         " delete <dir>  Delete index with files below <dir>.\n"
+        " create <db>   Create database <db>\n"
+        " drop <db>     Drop database <db>\n"
         " commit        Commit changes\n"
         " clean         Clean shadow files\n"
         "Options:\n"
@@ -172,6 +174,14 @@ int main (int argc, char **argv)
 		{
                     zebra_init (zh);
 		}
+		else if (!strcmp(arg, "drop"))
+		{
+		    cmd = 'D';
+		}
+		else if (!strcmp(arg, "create"))
+		{
+		    cmd = 'C';
+		}
                 else if (!strcmp (arg, "commit"))
                 {
                     zebra_commit (zh);
@@ -184,7 +194,7 @@ int main (int argc, char **argv)
                 {
                     zebra_register_statistics (zh,0);
                 }
-                else if (!strcmp (arg, "dump") || !strcmp (arg, "dumpdict"))
+                else if (!strcmp (arg, "dumpdict"))
                 {
                     zebra_register_statistics (zh,1);
                 }
@@ -221,6 +231,12 @@ int main (int argc, char **argv)
                     zebra_repository_show (zh);
                     nsections = 0;
                     break;
+		case 'C':
+		    zebra_create_database(zh, rGroupDef.path);
+		    break;
+		case 'D':
+		    zebra_drop_database(zh, rGroupDef.path);
+		    break;
                 default:
                     nsections = 0;
                 }

@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.144 2003-04-15 16:46:18 adam Exp $
+/* $Id: extract.c,v 1.145 2003-06-30 19:37:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1303,8 +1303,9 @@ int explain_extract (void *handle, Record rec, data1_node *n)
     extractCtrl.zebra_maps = zh->reg->zebra_maps;
     extractCtrl.flagShowRecords = 0;
     extractCtrl.handle = handle;
-    
-    grs_extract_tree(&extractCtrl, n);
+
+    if (n)
+	grs_extract_tree(&extractCtrl, n);
 
     if (rec->size[recInfo_delKeys])
     {
