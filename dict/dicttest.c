@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.17  1995-12-06 17:48:30  adam
+ * Revision 1.18  1996-02-01 20:39:52  adam
+ * Bug fix: insert didn't work on 8-bit characters due to unsigned char
+ * compares in dict_strcmp (strcmp) and signed Dict_char. Dict_char is
+ * unsigned now.
+ *
+ * Revision 1.17  1995/12/06  17:48:30  adam
  * Bug fix: delete didn't work.
  *
  * Revision 1.16  1995/10/09  16:18:31  adam
@@ -105,8 +110,17 @@ int main (int argc, char **argv)
     {
         fprintf (stderr, "usage:\n "
                  " %s [-d] [-r n] [-u] [-g pat] [-s n] [-v n] [-i f] [-w]"
-                 " [-c n] base file\n",
+                 " [-c n] base file\n\n",
                  prog);
+        fprintf (stderr, "  -d      delete instead of insert\n");
+        fprintf (stderr, "  -r n    set regular match range\n");
+        fprintf (stderr, "  -u      report if keys change during insert\n");
+        fprintf (stderr, "  -g p    try pattern n (see -r)\n");
+        fprintf (stderr, "  -s n    set info size to n (instead of 4)\n");
+        fprintf (stderr, "  -v n    set logging level\n");
+        fprintf (stderr, "  -i f    read file with words\n");
+        fprintf (stderr, "  -w      insert/delete instead of lookup\n");
+        fprintf (stderr, "  -c n    cache size (number of pages)\n");
         exit (1);
     }
     while ((ret = options ("dr:ug:s:v:i:wc:", argv, argc, &arg)) != -2)

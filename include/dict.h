@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.17  1995-12-07 11:47:04  adam
+ * Revision 1.18  1996-02-01 20:41:06  adam
+ * Bug fix: insert didn't work on 8-bit characters due to unsigned char
+ * compares in dict_strcmp (strcmp) and signed Dict_char. Dict_char is
+ * unsigned now.
+ *
+ * Revision 1.17  1995/12/07  11:47:04  adam
  * Default pagesize is 4k instead of 8k.
  *
  * Revision 1.16  1995/12/06  14:41:13  adam
@@ -67,7 +72,7 @@
 #include <bfile.h>
 
 typedef unsigned Dict_ptr;
-typedef char Dict_char;
+typedef unsigned char Dict_char;
 
 struct Dict_head {
     char magic_str[8];

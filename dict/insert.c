@@ -4,7 +4,12 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.14  1995-12-07 11:48:56  adam
+ * Revision 1.15  1996-02-01 20:39:59  adam
+ * Bug fix: insert didn't work on 8-bit characters due to unsigned char
+ * compares in dict_strcmp (strcmp) and signed Dict_char. Dict_char is
+ * unsigned now.
+ *
+ * Revision 1.14  1995/12/07  11:48:56  adam
  * Insert operation obeys DICT_type = 1 (slack in page).
  * Function dict_open exists if page size or magic aren't right.
  *
@@ -147,10 +152,13 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
     {
         char *info, *info1;
         int slen;
+        Dict_char dc;
+        
 
         info = (char*) p + ((short*) p)[j];
         /* entry start */
-        assert (*info == best_char);
+        memcpy (&dc, info, sizeof(dc));
+        assert (dc == best_char);
         slen = dict_strlen(info);
 
         assert (slen > 0);
