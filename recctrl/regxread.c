@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.4  1997-02-12 20:42:58  adam
+ * Revision 1.5  1997-02-19 16:22:33  adam
+ * Fixed "end element" to terminate record in outer-most level.
+ *
+ * Revision 1.4  1997/02/12 20:42:58  adam
  * Changed some log messages.
  *
  * Revision 1.3  1996/11/08 14:05:33  adam
@@ -990,6 +993,11 @@ static int execCode (struct lexSpec *spec,
                 {
                     r = execTok (spec, &s, arg_no, arg_start, arg_end,
                                  &cmd_str, &cmd_len);
+                    if (*d1_level == 1)
+                    {
+                        *d1_level = 0;
+                        returnCode = 0;
+                    }
                     if (r > 2)
                     {
                         tagEnd (spec, d1_stack, d1_level, cmd_str, cmd_len);
