@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.27 2004-08-06 12:28:22 adam Exp $
+/* $Id: rset.h,v 1.28 2004-08-06 12:55:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -61,7 +61,7 @@ struct rset_term {
     char *name;
     zint nn;
     char *flags;
-    int  count;
+    zint count;
     int  type;
 };
 

@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.52 2004-08-06 10:09:27 heikki Exp $
+/* $Id: zsets.c,v 1.53 2004-08-06 12:55:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -697,7 +697,7 @@ void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
     rset_close (rset, rfd);
 
     for (i = 0; i < rset->no_rset_terms; i++)
-	yaz_log (LOG_LOG, "term=\"%s\" nn=%d type=%s count=%d",
+	yaz_log (LOG_LOG, "term=\"%s\" nn=" ZINT_FORMAT " type=%s count=" ZINT_FORMAT,
                  rset->rset_terms[i]->name,
                  rset->rset_terms[i]->nn,
                  rset->rset_terms[i]->flags,
@@ -802,7 +802,7 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     rset_close (rset, rfd);
 
     for (i = 0; i < rset->no_rset_terms; i++)
-	yaz_log (LOG_LOG, "term=\"%s\" nn=%d type=%s count=%d",
+	yaz_log (LOG_LOG, "term=\"%s\" nn=" ZINT_FORMAT " type=%s count=" ZINT_FORMAT,
                  rset->rset_terms[i]->name,
                  rset->rset_terms[i]->nn,
                  rset->rset_terms[i]->flags,

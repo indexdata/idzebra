@@ -1,4 +1,4 @@
-/* $Id: commit.c,v 1.18 2004-08-06 12:28:22 adam Exp $
+/* $Id: commit.c,v 1.19 2004-08-06 12:55:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -202,7 +202,8 @@ static void cf_commit_flat (CFile cf)
         if (!mf_read (cf->hash_mf, hno, 0, 0, fp) &&
             hno != cf->head.flat_bucket-1)
         {
-            logf (LOG_FATAL, "read index block hno=%d (" ZINT_FORMAT "-" ZINT_FORMAT ") commit",
+            logf (LOG_FATAL, "read index block hno=" ZINT_FORMAT
+		  " (" ZINT_FORMAT "-" ZINT_FORMAT ") commit",
                   hno, cf->head.next_bucket, cf->head.flat_bucket-1);
         }
         for (i = 0; i < (int) (HASH_BSIZE/sizeof(int)); i++)
@@ -214,7 +215,7 @@ static void cf_commit_flat (CFile cf)
 #else
                 if (!mf_read (cf->block_mf, fp[i], 0, 0, cf->iobuf))
                 {
-                    logf (LOG_FATAL, "read data block hno=%d (" ZINT_FORMAT "-" ZINT_FORMAT ") "
+                    logf (LOG_FATAL, "read data block hno=" ZINT_FORMAT " (" ZINT_FORMAT "-" ZINT_FORMAT ") "
                                      "i=%d commit block at " ZINT_FORMAT " (->" ZINT_FORMAT")",
                           hno, cf->head.next_bucket, cf->head.flat_bucket-1,
                           i, fp[i], vno);

@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.54 2004-08-06 12:28:22 adam Exp $
+/* $Id: mfile.c,v 1.55 2004-08-06 12:55:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -521,7 +521,7 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 	    if ((nblocks = (int) (mf->files[mf->cur_file].dir->avail_bytes /
 		mf->blocksize)) > 0)
 	    {
-	    	logf (LOG_DEBUG, "Capping off file %s at pos %d",
+	    	logf (LOG_DEBUG, "Capping off file %s at pos " ZINT_FORMAT,
 		    mf->files[mf->cur_file].path, nblocks);
 	    	if ((ps = file_position(mf,
 		    (mf->cur_file ? mf->files[mf->cur_file-1].top : 0) +
@@ -531,7 +531,7 @@ int mf_write(MFile mf, zint no, int offset, int nbytes, const void *buf)
 				 mf->name);
 		    exit(1);
                 }
-		logf (LOG_DEBUG, "ps = %d", ps);
+		logf (LOG_DEBUG, "ps = " ZINT_FORMAT, ps);
 		if (write(mf->files[mf->cur_file].fd, &dummych, 1) < 1)
 		{
 		    logf (LOG_ERRNO|LOG_FATAL, "mf_write %s internal error (3)",

@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.13 2004-08-06 10:09:28 heikki Exp $
+/* $Id: rsisamb.c,v 1.14 2004-08-06 12:55:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -63,7 +63,7 @@ struct rset_pp_info {
     ISAMB_PP pt;
     struct rset_pp_info *next;
     struct rset_isamb_info *info;
-    int *countp;
+    zint *countp;
     void *buf;
 };
 

@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.41 2004-08-06 12:28:23 adam Exp $
+/* $Id: rstemp.c,v 1.42 2004-08-06 12:55:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -79,7 +79,7 @@ struct rset_temp_info {
 struct rset_temp_rfd {
     struct rset_temp_info *info;
     struct rset_temp_rfd *next;
-    int *countp;
+    zint *countp;
     void *buf;
     size_t  pos_cur;       /* current position in set */
     zint cur; /* number of the current hit */

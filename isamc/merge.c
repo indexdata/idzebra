@@ -1,4 +1,4 @@
-/* $Id: merge.c,v 1.25 2004-08-06 12:28:23 adam Exp $
+/* $Id: merge.c,v 1.26 2004-08-06 12:55:02 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -345,7 +345,8 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
             if (border < new_offset && border >= r_offset)
             {
                 if (debug > 2)
-                    logf (LOG_LOG, "isc: border %d %d", ptr, border);
+                    logf (LOG_LOG, "isc: border %d " ZINT_FORMAT,
+			  ptr, border);
                 /* Max size of current block category reached ...
                    make new virtual block entry */
                 mb[++ptr].block = 0;
@@ -421,7 +422,8 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
             ptr = j;
             border = get_border (is, mb, ptr, cat, firstpos);
 	    if (debug > 3)
-		logf (LOG_LOG, "isc: border=%d r_offset=%d", border, r_offset);
+		logf (LOG_LOG, "isc: border=" ZINT_FORMAT " r_offset=%d",
+		      border, r_offset);
         }
     }
     if (mb[ptr].offset < r_offset)

@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.18 2004-06-16 20:32:41 adam Exp $
+/* $Id: rectext.c,v 1.19 2004-08-06 12:55:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -183,7 +183,8 @@ static int text_retrieve (void *clientData, struct recRetrieveCtrl *p)
                 sprintf (text_buf, "Rank: %d\n", p->score);
                 text_ptr = strlen(text_buf);
             }
-            sprintf (text_buf + text_ptr, "Local Number: %d\n", p->localno);
+            sprintf (text_buf + text_ptr, "Local Number: " ZINT_FORMAT "\n",
+		     p->localno);
             text_ptr = strlen(text_buf);
 	    if (p->fname)
 	    {

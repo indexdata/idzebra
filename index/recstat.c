@@ -1,4 +1,4 @@
-/* $Id: recstat.c,v 1.9 2004-08-04 08:35:23 adam Exp $
+/* $Id: recstat.c,v 1.10 2004-08-06 12:55:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -41,7 +41,7 @@ void rec_prstat (Records records)
 
     for (i = 0; i< REC_BLOCK_TYPES; i++)
     {
-        logf (LOG_LOG, "Record blocks of size " ZINT_FORMAT,
+        logf (LOG_LOG, "Record blocks of size %d",
               records->head.block_size[i]);
         logf (LOG_LOG,
           " Used/Total/Bytes used            "

@@ -1,4 +1,4 @@
-/* $Id: rsm_or.c,v 1.16 2004-08-03 14:54:41 heikki Exp $
+/* $Id: rsm_or.c,v 1.17 2004-08-06 12:55:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -89,7 +89,7 @@ struct rset_mor_rfd {
     struct rset_mor_rfd *next;
     struct rset_mor_info *info;
     struct trunc_info *ti;
-    int  *countp;
+    zint *countp;
     char *pbuf;
 };
 

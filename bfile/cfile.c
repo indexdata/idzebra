@@ -1,4 +1,4 @@
-/* $Id: cfile.c,v 1.29 2004-08-06 12:28:22 adam Exp $
+/* $Id: cfile.c,v 1.30 2004-08-06 12:55:01 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -466,7 +466,7 @@ int cf_read (CFile cf, zint no, int offset, int nbytes, void *buf)
     zebra_mutex_unlock (&cf->mutex);
     if (!mf_read (cf->block_mf, block, offset, nbytes, buf))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_read no=" ZINT_FORMAT ", block=%d", no, block);
+        logf (LOG_FATAL|LOG_ERRNO, "cf_read no=" ZINT_FORMAT " block=" ZINT_FORMAT, no, block);
         exit (1);
     }
     return 1;
@@ -493,7 +493,8 @@ int cf_write (CFile cf, zint no, int offset, int nbytes, const void *buf)
     zebra_mutex_unlock (&cf->mutex);
     if (mf_write (cf->block_mf, block, offset, nbytes, buf))
     {
-        logf (LOG_FATAL|LOG_ERRNO, "cf_write no=" ZINT_FORMAT ", block=%d", no, block);
+        logf (LOG_FATAL|LOG_ERRNO, "cf_write no=" ZINT_FORMAT
+	      " block=" ZINT_FORMAT, no, block);
         exit (1);
     }
     return 0;

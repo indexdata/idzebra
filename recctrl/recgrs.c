@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86 2004-05-21 11:58:56 adam Exp $
+/* $Id: recgrs.c,v 1.87 2004-08-06 12:55:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1046,7 +1046,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
 	dnew->u.data.what = DATA1I_text;
 	dnew->u.data.data = dnew->lbuf;
         
-	sprintf(dnew->u.data.data, "%d", p->localno);
+	sprintf(dnew->u.data.data, ZINT_FORMAT, p->localno);
 	dnew->u.data.len = strlen(dnew->u.data.data);
     }
 #if 0

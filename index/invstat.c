@@ -1,5 +1,5 @@
-/* $Id: invstat.c,v 1.37 2004-08-06 12:28:22 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: invstat.c,v 1.38 2004-08-06 12:55:01 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -64,7 +64,7 @@ static void print_dict_item (ZebraMaps zm, const char *s, zint count,
     }
     *to = '\0';
     /* yaz_log (LOG_LOG, "%s", keybuf); */
-    printf("%10d %s %d.%d - %d.%d\n",count, keybuf,
+    printf("%10" ZINT_FORMAT0 " %s %d.%d - %d.%d\n", count, keybuf,
               firstsys,firstseq, lastsys,lastseq);
 }
 
@@ -260,7 +260,8 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
 	fprintf (stdout, "   Blocks    Occur  Size KB   Bytes/Entry\n");
 	for (i = 0; isc_block_used (zh->reg->isamc, i) >= 0; i++)
 	{
-	    fprintf (stdout, " %8" ZINT_FORMAT0 " %8d", isc_block_used (zh->reg->isamc, i),
+	    fprintf (stdout, " %8" ZINT_FORMAT0 " %8" ZINT_FORMAT0,
+		     isc_block_used (zh->reg->isamc, i),
 		     stat_info.no_isam_entries[i]);
 
 	    if (stat_info.no_isam_entries[i])
@@ -287,7 +288,8 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
             fprintf (stdout, "Block size %d\n", bsize);
             fprintf (stdout, "Blocks:    %d\n", stat_info.isamb_blocks[i]);
             fprintf (stdout, "Size:      %d\n", stat_info.isamb_sizes[i]);
-            fprintf (stdout, "Entries:   %d\n", stat_info.no_isam_entries[i]);
+            fprintf (stdout, "Entries:   " ZINT_FORMAT "\n",
+		     stat_info.no_isam_entries[i]);
             fprintf (stdout, "Total      %d\n", stat_info.isamb_blocks[i]*
                      bsize);
             for (j = 0; j<5; j++)
@@ -303,7 +305,7 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     occur = 0;
     for (i = 0; i<9; i++)
         occur += stat_info.no_isam_entries[i];
-    fprintf (stdout, "Word pos       %d\n", occur);
+    fprintf (stdout, "Word pos       " ZINT_FORMAT "\n", occur);
     fprintf (stdout, "    Occurrences     Words\n");
     prev = 1;
     for (i = 0; stat_info.isam_bounds[i]; i++)
