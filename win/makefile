@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.26 2004-08-06 09:38:36 adam Exp $
+# $Id: makefile,v 1.27 2004-08-06 12:27:30 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -214,11 +214,9 @@ APITEST_OBJS= \
 ZEBRALIB_OBJS= \
 	$(OBJDIR)\isam.obj \
 	$(OBJDIR)\isamc.obj \
-	$(OBJDIR)\isamd.obj \
 	$(OBJDIR)\isutil.obj \
 	$(OBJDIR)\memory.obj \
 	$(OBJDIR)\merge.obj \
-	$(OBJDIR)\merge-d.obj \
 	$(OBJDIR)\physical.obj \
 	$(OBJDIR)\rootblk.obj \
 	$(OBJDIR)\zebra-lock.obj \
@@ -227,6 +225,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\bset.obj \
 	$(OBJDIR)\cfile.obj \
 	$(OBJDIR)\charmap.obj \
+	$(OBJDIR)\atoi_zn.obj \
 	$(OBJDIR)\close.obj \
 	$(OBJDIR)\commit.obj \
 	$(OBJDIR)\compact.obj \
