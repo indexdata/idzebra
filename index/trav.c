@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.22  1996-04-09 06:50:50  adam
+ * Revision 1.23  1996-04-12 07:02:25  adam
+ * File update of single files.
+ *
+ * Revision 1.22  1996/04/09 06:50:50  adam
  * Bug fix: bad reference in function fileUpdateR.
  *
  * Revision 1.21  1996/03/22 15:34:18  quinn
@@ -360,43 +363,87 @@ void repositoryShow (struct recordGroup *rGroup)
     dict_close (dict);
 }
 
-void repositoryUpdate (struct recordGroup *rGroup)
+static void fileUpdate (Dict dict, struct recordGroup *rGroup,
+                        const char *path)
 {
+    struct dirs_info *di;
+    struct stat sbuf;
     char src[1024];
     char dst[1024];
     int src_len;
 
-    groupRes (rGroup);
-    if (rGroup->recordId && !strcmp (rGroup->recordId, "file"))
+    assert (path);
+    strcpy (src, path);
+    src_len = strlen (src);
+
+    stat (src, &sbuf);
+    if (S_ISREG(sbuf.st_mode))
     {
-        Dict dict;
-        struct dirs_info *di;
+        struct dirs_entry *e_dst;
+        di = dirs_fopen (dict, src);
 
-        if (!(dict = dict_open (FMATCH_DICT, 50, 1)))
+        logf (LOG_WARN, "Handle file %s", src);
+        e_dst = dirs_read (di);
+        if (e_dst)
         {
-            logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
-            exit (1);
+            logf (LOG_WARN, "Update Handle file %s", src);
+            if (sbuf.st_mtime > e_dst->mtime)
+                if (fileExtract (&e_dst->sysno, src, rGroup, 0))
+                    dirs_add (di, src, e_dst->sysno, sbuf.st_mtime);
         }
-        assert (rGroup->path);
-
-        strcpy (src, rGroup->path);
-        src_len = strlen (src);
-
+        else
+        {
+            SYSNO sysno = 0;
+            logf (LOG_WARN, "New Handle file %s", src);
+            if (fileExtract (&sysno, src, rGroup, 0))
+                 dirs_add (di, src, sysno, sbuf.st_mtime);
+        }
+        dirs_free (&di);
+    }
+    else if (S_ISDIR(sbuf.st_mode))
+    {
         if (src_len && src[src_len-1] != '/')
         {
             src[src_len] = '/';
             src[++src_len] = '\0';
         }
-
         di = dirs_open (dict, src);
-
         *dst = '\0';
         fileUpdateR (di, dirs_read (di), src, dst, rGroup);
         dirs_free (&di);
+    }
+    else
+    {
+        logf (LOG_WARN, "Cannot handle file %s", src);
+    }
+}
+
+void repositoryUpdate (struct recordGroup *rGroup)
+{
+    groupRes (rGroup);
+    assert (rGroup->path);
+    if (rGroup->recordId && !strcmp (rGroup->recordId, "file"))
+    {
+        Dict dict;
+        if (!(dict = dict_open (FMATCH_DICT, 50, 1)))
+        {
+            logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
+            exit (1);
+        }
+        if (*rGroup->path == '\0' || !strcmp(rGroup->path, "-"))
+        {
+            char src[1024];
+            while (scanf ("%s", src) == 1)
+                fileUpdate (dict, rGroup, src);
+        }
+        else
+            fileUpdate (dict, rGroup, rGroup->path);
         dict_close (dict);
     }
     else 
     {
+        char src[1024];
+
         strcpy (src, rGroup->path);
         if (*src == '\0' || !strcmp (src, "-"))
             stdinExtractR (0, rGroup);

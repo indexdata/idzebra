@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.7  1996-03-21 14:50:09  adam
+ * Revision 1.8  1996-04-12 07:02:21  adam
+ * File update of single files.
+ *
+ * Revision 1.7  1996/03/21 14:50:09  adam
  * File update uses modify-time instead of change-time.
  *
  * Revision 1.6  1996/02/02  13:44:43  adam
@@ -101,6 +104,34 @@ struct dirs_info *dirs_open (Dict dict, const char *rep)
     p->entries = xmalloc (sizeof(*p->entries) * (p->no_max));
     logf (LOG_DEBUG, "dirs_open first scan");
     dict_scan (p->dict, p->nextpath, &before, &after, p, dirs_client_proc);
+    return p;
+}
+
+struct dirs_info *dirs_fopen (Dict dict, const char *path)
+{
+    struct dirs_info *p;
+    struct dirs_entry *entry;
+    char *info;
+
+    p = xmalloc (sizeof(*p));
+    p->dict = dict;
+    *p->prefix = '\0';
+    p->entries = xmalloc (sizeof(*p->entries));
+    p->no_read = 0;
+    p->no_cur = 0;
+    p->no_max = 2;
+
+    entry = p->entries;
+    info = dict_lookup (dict, path);
+    if (info && info[0] == sizeof(entry->sysno)+sizeof(entry->mtime))
+    {
+        strcpy (entry->path, path); 
+        entry->kind = dirs_file;
+        memcpy (&entry->sysno, info+1, sizeof(entry->sysno));
+        memcpy (&entry->mtime, info+1+sizeof(entry->sysno), 
+                sizeof(entry->mtime));
+        p->no_cur++;
+    }
     return p;
 }
 

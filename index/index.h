@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.37  1996-03-26 16:01:13  adam
+ * Revision 1.38  1996-04-12 07:02:23  adam
+ * File update of single files.
+ *
+ * Revision 1.37  1996/03/26 16:01:13  adam
  * New setting lockPath: directory of various lock files.
  *
  * Revision 1.36  1996/03/21  14:50:09  adam
@@ -176,6 +179,7 @@ struct recordGroup {
 
         
 struct dirs_info *dirs_open (Dict dict, const char *rep);
+struct dirs_info *dirs_fopen (Dict dict, const char *path);
 struct dirs_entry *dirs_read (struct dirs_info *p);
 struct dirs_entry *dirs_last (struct dirs_info *p);
 void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime);
