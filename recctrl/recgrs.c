@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.78 2003-04-25 08:57:36 adam Exp $
+/* $Id: recgrs.c,v 1.79 2003-05-05 20:14:42 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -452,136 +452,136 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
             data1_xattr *xp;
             data1_termlist *tl;
 	    int do_xpindex;
- 
+            
 	    tag_path_full[flen] = 0;
- 
+            
             /* Add tag start/end xpath index, only when there is a ! in the apropriate xelm
-	      directive, or default xpath indexing is enabled */
+               directive, or default xpath indexing is enabled */
 	    if (!(do_xpindex = 1 - termlist_only)) {
-	      if ((tl = xpath_termlist_by_tagpath(tag_path_full, n))) {
-		for (; tl; tl = tl->next) { if (!tl->att) {do_xpindex = 1;} }
-	      }
+                if ((tl = xpath_termlist_by_tagpath(tag_path_full, n))) {
+                    for (; tl; tl = tl->next) { if (!tl->att) {do_xpindex = 1;} }
+                }
 	    }
 	    if (do_xpindex) {
-	      (*p->tokenAdd)(wrd);   /* index element pag (AKA tag path) */
+                (*p->tokenAdd)(wrd);   /* index element pag (AKA tag path) */
 	    }
-
+            
             if (use == 1) /* only for the starting tag... */
             {
-
+                
 #define MAX_ATTR_COUNT 50
-
-	      data1_termlist *tll[MAX_ATTR_COUNT];
-	      
-	      int i = 0;
-
-	      /* get termlists for attributes, and find out, if we have to do xpath indexing */
-	      for (xp = n->u.tag.attributes; xp; xp = xp->next) {
-                  i++;
-	      }
-              
-	      i = 0;
-	      for (xp = n->u.tag.attributes; xp; xp = xp->next) {
-                  char comb[512];
-                  int do_xpindex = 1 - termlist_only;
-                  data1_termlist *tl;
-                  char attr_tag_path_full[1024]; 
-                  int int_len = flen;
-                  
-                  /* this could be cached as well */
-                  sprintf (attr_tag_path_full, "@%s/%.*s",
-                           xp->name, int_len, tag_path_full);
-                  
-                  tll[i] = xpath_termlist_by_tagpath(attr_tag_path_full,n);
-                  
-                  /* if there is a ! in the xelm termlist, or default indexing is on, 
-                     proceed with xpath idx */
-                  if ((tl = tll[i]))
-                  {
-                      for (; tl; tl = tl->next)
-                      { 
-                          if (!tl->att)
-                              do_xpindex = 1;
-                      }
-                  }
-                  
-                  if (do_xpindex) {
-                      
-                      /* attribute  (no value) */
-                      wrd->reg_type = '0';
-                      wrd->attrUse = 3;
-                      wrd->string = xp->name;
-                      wrd->length = strlen(xp->name);
-                      
-                      wrd->seqno--;
-                      (*p->tokenAdd)(wrd);
-                      
-                      if (xp->value &&
-                          strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2) {
-                          
-                          /* attribute value exact */
-                          strcpy (comb, xp->name);
-                          strcat (comb, "=");
-                          strcat (comb, xp->value);
-                          
-                          wrd->attrUse = 3;
-                          wrd->reg_type = '0';
-                          wrd->string = comb;
-                          wrd->length = strlen(comb);
-                          wrd->seqno--;
-                          
-                          (*p->tokenAdd)(wrd);
-                      }
-                  }                
-                  i++;
-	      }
-              
-	      i = 0;
-	      for (xp = n->u.tag.attributes; xp; xp = xp->next) {
-                  data1_termlist *tl;
-                  char attr_tag_path_full[1024];
-                  int int_len = flen;
-                  int xpdone = 0;
-                  
-                  sprintf (attr_tag_path_full, "@%s/%.*s",
-                           xp->name, int_len, tag_path_full);
-                  
-                  if ((tl = tll[i]))
-                  {
-                      /* If there is a termlist given (=xelm directive) */
-                      for (; tl; tl = tl->next)
-                      {
-                          if (!tl->att) {
-                              /* add xpath index for the attribute */
-                              index_xpath_attr (attr_tag_path_full, xp->name,
-                                                xp->value, tl->structure,
-                                                p, wrd);
-                              xpdone = 1;
-                          } else {
-                              /* add attribute based index for the attribute */
-                              if (xp->value) {
-                                  wrd->attrSet = (int) 
-                                      (tl->att->parent->reference);
-                                  wrd->attrUse = tl->att->locals->local;
-                                  wrd->reg_type = *tl->structure;
-                                  wrd->string = xp->value;
-                                  wrd->length = strlen(xp->value);
-                                  (*p->tokenAdd)(wrd);
-                              }
-                          }
-                      }
-                  }
-                  /* if there was no termlist for the given path, 
-                     or the termlist didn't have a ! element, index 
-                     the attribute as "w" */
-                  if ((!xpdone) && (!termlist_only))
-                  {
-                      index_xpath_attr (attr_tag_path_full, xp->name,
-                                        xp->value,  "w", p, wrd);
-                  }
-                  i++;
-	      }
-	    }
+                
+                data1_termlist *tll[MAX_ATTR_COUNT];
+                
+                int i = 0;
+                
+                /* get termlists for attributes, and find out, if we have to do xpath indexing */
+                for (xp = n->u.tag.attributes; xp; xp = xp->next) {
+                    i++;
+                }
+                
+                i = 0;
+                for (xp = n->u.tag.attributes; xp; xp = xp->next) {
+                    char comb[512];
+                    int do_xpindex = 1 - termlist_only;
+                    data1_termlist *tl;
+                    char attr_tag_path_full[1024]; 
+                    int int_len = flen;
+                    
+                    /* this could be cached as well */
+                    sprintf (attr_tag_path_full, "@%s/%.*s",
+                             xp->name, int_len, tag_path_full);
+                    
+                    tll[i] = xpath_termlist_by_tagpath(attr_tag_path_full,n);
+                    
+                    /* if there is a ! in the xelm termlist, or default indexing is on, 
+                       proceed with xpath idx */
+                    if ((tl = tll[i]))
+                    {
+                        for (; tl; tl = tl->next)
+                        { 
+                            if (!tl->att)
+                                do_xpindex = 1;
+                        }
+                    }
+                    
+                    if (do_xpindex) {
+                        
+                        /* attribute  (no value) */
+                        wrd->reg_type = '0';
+                        wrd->attrUse = 3;
+                        wrd->string = xp->name;
+                        wrd->length = strlen(xp->name);
+                        
+                        wrd->seqno--;
+                        (*p->tokenAdd)(wrd);
+                        
+                        if (xp->value &&
+                            strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2) {
+                            
+                            /* attribute value exact */
+                            strcpy (comb, xp->name);
+                            strcat (comb, "=");
+                            strcat (comb, xp->value);
+                            
+                            wrd->attrUse = 3;
+                            wrd->reg_type = '0';
+                            wrd->string = comb;
+                            wrd->length = strlen(comb);
+                            wrd->seqno--;
+                            
+                            (*p->tokenAdd)(wrd);
+                        }
+                    }                
+                    i++;
+                }
+                
+                i = 0;
+                for (xp = n->u.tag.attributes; xp; xp = xp->next) {
+                    data1_termlist *tl;
+                    char attr_tag_path_full[1024];
+                    int int_len = flen;
+                    int xpdone = 0;
+                    
+                    sprintf (attr_tag_path_full, "@%s/%.*s",
+                             xp->name, int_len, tag_path_full);
+                    
+                    if ((tl = tll[i]))
+                    {
+                        /* If there is a termlist given (=xelm directive) */
+                        for (; tl; tl = tl->next)
+                        {
+                            if (!tl->att) {
+                                /* add xpath index for the attribute */
+                                index_xpath_attr (attr_tag_path_full, xp->name,
+                                                  xp->value, tl->structure,
+                                                  p, wrd);
+                                xpdone = 1;
+                            } else {
+                                /* add attribute based index for the attribute */
+                                if (xp->value) {
+                                    wrd->attrSet = (int) 
+                                        (tl->att->parent->reference);
+                                    wrd->attrUse = tl->att->locals->local;
+                                    wrd->reg_type = *tl->structure;
+                                    wrd->string = xp->value;
+                                    wrd->length = strlen(xp->value);
+                                    (*p->tokenAdd)(wrd);
+                                }
+                            }
+                        }
+                    }
+                    /* if there was no termlist for the given path, 
+                       or the termlist didn't have a ! element, index 
+                       the attribute as "w" */
+                    if ((!xpdone) && (!termlist_only))
+                    {
+                        index_xpath_attr (attr_tag_path_full, xp->name,
+                                          xp->value,  "w", p, wrd);
+                    }
+                    i++;
+                }
+            }
 	}
     }
 }
@@ -811,6 +811,7 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
         if ((oid_ent_to_oid (&oe, oidtmp)))
             (*p->schemaAdd)(p, oidtmp);
     }
+    data1_concat_text(p->dh, mem, n);
 
     /* ensure our data1 tree is UTF-8 */
     data1_iconv (p->dh, mem, n, "UTF-8", data1_get_encoding(p->dh, n));
@@ -1000,6 +1001,8 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
         nmem_destroy (mem);
 	return 0;
     }
+    data1_concat_text(p->dh, mem, node);
+
     /* ensure our data1 tree is UTF-8 */
     data1_iconv (p->dh, mem, node, "UTF-8", data1_get_encoding(p->dh, node));
 
