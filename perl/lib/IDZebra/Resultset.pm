@@ -1,4 +1,4 @@
-# $Id: Resultset.pm,v 1.8 2003-03-05 13:55:22 pop Exp $
+# $Id: Resultset.pm,v 1.9 2003-03-06 23:32:10 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -12,7 +12,7 @@ BEGIN {
     use IDZebra::Logger qw(:flags :calls);
     use Scalar::Util qw(weaken);
     use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.8 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.9 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger);
 }
 
@@ -91,6 +91,14 @@ sub records {
     my $from = $args{from} ? $args{from} : 1;
     my $to   = $args{to}   ? $args{to}   : $self->{recordCount};
 
+    if (($to-$from) >= 1000) {
+	if ($args{to}) {
+	    croak ("Cannot fetch more than 1000 records at a time");
+	} else {
+	    $to = $from + 999;
+	}
+    }
+
     my $elementSet   = $args{elementSet}   ? $args{elementSet}    : 'R';
     my $schema       = $args{schema}       ? $args{schema}        : '';
     my $recordSyntax = $args{recordSyntax} ? $args{recordSyntax}  : '';
@@ -109,7 +117,6 @@ sub records {
 			      $to,
 			      $ro);
 
-
     my @res = ();
 
     for (my $i=$from; $i<=$to; $i++) {
@@ -118,7 +125,7 @@ sub records {
 	if ($class) {
 	    
 	} else {
-	    push (@res, $rec);
+	    push (@res, $rec); 
 	}
     }
 
