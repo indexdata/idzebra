@@ -88,7 +88,6 @@ package IDZebra;
 *records_retrieve = *IDZebrac::records_retrieve;
 *record_retrieve = *IDZebrac::record_retrieve;
 *deleteResultSet = *IDZebrac::deleteResultSet;
-*resultSetTerms = *IDZebrac::resultSetTerms;
 *sort = *IDZebrac::sort;
 *scan_PQF = *IDZebrac::scan_PQF;
 *getScanEntry = *IDZebrac::getScanEntry;

@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.20 2004-07-28 08:15:46 adam Exp $
+# $Id: Session.pm,v 1.21 2004-09-09 14:12:10 adam Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -16,7 +16,7 @@ BEGIN {
     use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
     require Exporter;
-    our $VERSION = do { my @r = (q$Revision: 1.20 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.21 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
     our @ISA = qw(IDZebra::Logger Exporter);
     our @EXPORT = qw (TRANS_RW TRANS_RO);
 }
@@ -482,8 +482,8 @@ sub insert_record {
     my @args = $self->_record_update_args(%args);
     my $stat = IDZebra::insert_record($self->{zh}, @args);
     # ADAM: rg no longer part of vector
-    my $sysno = $args[1]; $stat = -1 * $stat if ($stat > 0);
-    return $stat ? $stat : $$sysno;
+    print STDERR "\nsub insert_record stat=$stat sys=${$args[1]}\n";
+    return $stat;
 }
 
 sub update_record {
@@ -507,8 +507,8 @@ sub delete_record {
 
 sub _record_update_args {
     my ($self, %args) = @_;
-
-    my $sysno   = $args{sysno}      ? $args{sysno}      : 0;
+    my $dummysysno=0;
+    my $sysno   = $args{sysno}      ? $args{sysno}      : \$dummysysno;
     my $match   = $args{match}      ? $args{match}      : "";
     my $rectype = $args{recordType} ? $args{recordType} : "";
     my $fname   = $args{file}       ? $args{file}       : "<no file>";
@@ -556,7 +556,7 @@ sub _record_update_args {
     }
 
     # ADAM: rg no longer part of vector..
-    return ($rectype, \$sysno, $match, $fname, $buff, $len, $force);
+    return ($rectype, $sysno, $match, $fname, $buff, $len, $force);
 }
 
 # -----------------------------------------------------------------------------
