@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1995-2004
-dnl $Id: configure.in,v 1.102 2004-09-28 08:44:48 adam Exp $
+dnl $Id: configure.in,v 1.103 2004-09-28 12:52:03 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -7,13 +7,6 @@ dnl ------ Substitutions
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
 AC_SUBST(READLINE_LIBS)
-dnl ------ Perl substitutions
-AC_SUBST(PERL_BINARY)
-AC_SUBST(PERL_XS_INIT)
-AC_SUBST(PERL_XS_INIT_INCLUDE)
-AC_SUBST(PERL_LIBS)
-AC_SUBST(PERL_CFLAGS)
-AC_SUBST(ZPERL_LIBS)
 dnl
 dnl ------ Checking programs
 AC_PROG_CC
@@ -180,9 +173,6 @@ if test "$expat" != "no"; then
 	CFLAGS="$xCFLAGS"
 fi
 dnl
-dnl ------ PERL
-AC_ARG_WITH(perl,   [  --with-perl[=FILE]        perl binary location],[perl=$withval],[perl=yes])
-
 dnl ------- 64 bit files
 AC_MSG_CHECKING(for LFS)
 AC_TRY_RUN([#define _FILE_OFFSET_BITS 64
@@ -269,85 +259,6 @@ else
    def="no"
 fi
 ZEBRA_MODULE(grs-xml,[$def], [  --enable-mod-grs-xml    XML filter (Expat based)])
-ZEBRA_MODULE(grs-perl,no,    [  --enable-mod-grs-perl   Perl filter])
-PERL_XS_INIT="NULL"
-PERL_XS_INIT_INCLUDE=''
-PERL_BINARY=""
-if test "$myen" != "no"; then
-	AC_MSG_CHECKING(for perl binary)
-	if test "$perl" = "yes"; then
-	    perlbin=`which perl`
-	else
-            perlbin="$perl"
-        fi 
-        if test -x "$perlbin"; then
-	    AC_MSG_RESULT($perlbin)	
-	    AC_MSG_CHECKING(perl core directory)
-	    archdir=`$perlbin -MConfig -e 'print $Config{archlib}'`;
-	    perlcore="$archdir/CORE";
-	    if test -d "$perlcore"; then
-		PERL_BINARY="$perlbin"
-		AC_MSG_RESULT($perlcore)	
-	    else
-		AC_MSG_RESULT(Failed)	
-	    fi
-
-	    AC_MSG_CHECKING("for ExtUtils::Embed to determine ccopts")
-	    PERL_CFLAGS=`$perlbin -MExtUtils::Embed -e ccopts 2>/dev/null`
-	    if test "$PERL_CFLAGS"; then
-		AC_MSG_RESULT(OK)	
-            else
-		PERL_CFLAGS="-I$perlcore"
-		AC_MSG_RESULT(Using defaults)	
-	    fi
-
-	    AC_MSG_CHECKING("for ExtUtils::Embed to determine ldflags")
-	    PERL_LIBS=`$perlbin -MExtUtils::Embed -e ldopts 2>/dev/null`
-	    if test "$PERL_LIBS"; then
-		AC_MSG_RESULT(OK)	
-            else
-                PERL_LIBS="-L$perlcore -lperl -lm"
-		AC_MSG_RESULT(Using defaults)	
-	    fi
-
-	    AC_MSG_CHECKING("for ExtUtils::Embed to create xs_init")
-	    xsf="recctrl/xsinit.h"
-	    `rm $xsf 2>/dev/null`;
-
-	    `$perlbin -MExtUtils::Embed -e xsinit -- -o $xsf 2>/dev/null`
-	    if test -r "$xsf"; then
-		AC_MSG_RESULT(OK)	
-		PERL_XS_INIT="xs_init"
-		PERL_XS_INIT_INCLUDE='#include "xsinit.h"'
-            else
-		AC_MSG_RESULT(XS libraries are not going to be available)
-            fi
-
-	    xLIBS="$LIBS"
-	    xCFLAGS="$CFLAGS"
-	    CFLAGS="$PERL_CFLAGS $CFLAGS"
-	    LIBS="$PERL_LIBS $LIBS"
-
-	    AC_MSG_CHECKING(for perl library)
-            AC_TRY_LINK([
-            #include <stdio.h>
-             ],[
-	     ;
-		],AM_CONDITIONAL(perl,true)
-	          AC_DEFINE(HAVE_PERL,1)
-		  AC_MSG_RESULT(found)
-	          ZPERL_LIBS="$xLIBS"
-			,
-                  AC_MSG_RESULT(not found)
-	          AC_DEFINE(HAVE_PERL,0))
-	    LIBS="$xLIBS"
-	    CFLAGS="$xCFLAGS"
-        else
-	    AC_DEFINE(HAVE_PERL,0)
-	    AC_MSG_RESULT(Not found)
-	fi
-fi
-
 dnl ------ ANSI C Header files
 AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
@@ -370,7 +281,6 @@ AC_OUTPUT([
   rset/Makefile
   data1/Makefile
   recctrl/Makefile
-  recctrl/perlread.h
   index/Makefile
   include/Makefile include/idzebra/Makefile
   tab/Makefile
@@ -383,16 +293,13 @@ AC_OUTPUT([
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
   test/rusmarc/Makefile test/cddb/Makefile test/malxml/Makefile 
   test/config/Makefile test/sort2/Makefile
-  perl/Makefile.PL test/xelm/Makefile
+  test/xelm/Makefile
   test/dmoz/Makefile test/xpath/Makefile test/sort/Makefile test/zsh/Makefile
   test/marcxml/Makefile test/charmap/Makefile test/codec/Makefile
   examples/Makefile examples/gils/Makefile examples/zthes/Makefile
   idzebra.spec
   idzebra-config
 ],[sed s%idzebra_echo_source=yes%idzebra_echo_source=no%g < idzebra-config > util/idzebra-config && chmod +x idzebra-config util/idzebra-config])
-if test -x "$perlbin"; then
-	res=`cd perl ; $perlbin Makefile.PL ; cd .. ;`;
-fi
 if test  -z "$YAZLIB"; then
 	echo "YAZ was not found. Use --with-yaz=DIR to specify location."
 	test -f /etc/debian_version && echo "Debian package libyaz-dev is required."

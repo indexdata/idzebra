@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.9 2004-09-28 10:15:03 adam Exp $
+/* $Id: recctrl.c,v 1.10 2004-09-28 12:52:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -76,10 +76,6 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 #ifdef IDZEBRA_STATIC_GRS_MARC
     extern RecType idzebra_filter_grs_marc[];
     recTypeClass_add (&rts, idzebra_filter_grs_marc, nmem, 0);
-#endif
-#ifdef IDZEBRA_STATIC_GRS_PERL
-    extern RecType idzebra_filter_grs_perl[];
-    recTypeClass_add (&rts, idzebra_filter_grs_perl, nmem, 0);
 #endif
 #ifdef IDZEBRA_STATIC_GRS_DANBIB
     extern RecType idzebra_filter_grs_danbib[];

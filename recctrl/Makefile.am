@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.13 2004-09-28 10:15:03 adam Exp $
+## $Id: Makefile.am,v 1.14 2004-09-28 12:52:03 adam Exp $
 
 common_libs = libidzebra-recctrl.la \
  ../data1/libidzebra-data1.la \
@@ -7,11 +7,6 @@ common_libs = libidzebra-recctrl.la \
  $(YAZLALIB)
 
 # The shared modules 
-mod_grs_perl_la_SOURCES = perlread.c perlread.h.in
-mod_grs_perl_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
-mod_grs_perl_la_LADD = $(PERL_LIBS)
-mod_grs_perl_la_LIBADD = $(common_libs) $(mod_grs_perl_la_LADD)
-
 mod_grs_regx_la_SOURCES = regxread.c
 mod_grs_regx_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
 mod_grs_regx_la_LADD = $(TCL_LIB)
@@ -34,7 +29,6 @@ mod_grs_danbib_la_LIBADD = $(common_libs) $(mod_grs_danbib_la_LADD)
 
 pkglib_LTLIBRARIES = $(SHARED_MODULE_LA) 
 EXTRA_LTLIBRARIES = \
-	mod-grs-perl.la \
 	mod-grs-regx.la \
 	mod-grs-xml.la \
 	mod-grs-marc.la  \
@@ -52,11 +46,9 @@ libidzebra_recctrl_la_LIBADD = $(STATIC_MODULE_OBJ) \
 libidzebra_recctrl_la_DEPENDENCIES = $(STATIC_MODULE_OBJ)
 
 EXTRA_libidzebra_recctrl_la_SOURCES = \
- $(mod_grs_perl_la_SOURCES) \
  $(mod_grs_regx_la_SOURCES) \
  $(mod_grs_xml_la_SOURCES) \
  $(mod_grs_marc_la_SOURCES) \
  $(mod_grs_danbib_la_SOURCES)
 
-AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE) $(PERL_CFLAGS) -DDEFAULT_MODULE_PATH=\"$(pkglibdir)\"
-EXTRA_DIST=perlread.c perlread.h.in
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE) -DDEFAULT_MODULE_PATH=\"$(pkglibdir)\"
