@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.60 2002-08-17 07:59:54 adam Exp $
+/* $Id: recgrs.c,v 1.61 2002-08-23 14:29:58 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -399,8 +399,8 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
 	    {
 		printf("%*s", level * 4, "");
 		printf("Data: ");
-		if (n->u.data.len > 32)
-		    printf("'%.24s ... %.6s'\n", n->u.data.data,
+		if (n->u.data.len > 256)
+		    printf("'%.240s ... %.6s'\n", n->u.data.data,
 			   n->u.data.data + n->u.data.len-6);
 		else if (n->u.data.len > 0)
 		    printf("'%.*s'\n", n->u.data.len, n->u.data.data);
