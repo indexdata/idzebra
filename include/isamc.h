@@ -1,10 +1,14 @@
 /*
- * Copyright (c) 1995-1996, Index Data.
+ * Copyright (c) 1995-1997, Index Data.
  * See the file LICENSE for details.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.h,v $
- * Revision 1.4  1996-11-08 11:08:01  adam
+ * Revision 1.5  1997-09-05 15:30:00  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.4  1996/11/08 11:08:01  adam
  * New internal release.
  *
  * Revision 1.3  1996/11/01 13:35:03  adam
@@ -21,6 +25,10 @@
 
 #ifndef ISAMC_H
 #define ISAMC_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct ISAMC_s *ISAMC;
 typedef int ISAMC_P;
@@ -67,5 +75,9 @@ int isc_pp_num (ISAMC_PP pp);
 
 #define isc_type(x) ((x) & 7)
 #define isc_block(x) ((x) >> 3)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

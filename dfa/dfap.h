@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfap.h,v $
- * Revision 1.4  1996-06-04 10:20:03  adam
+ * Revision 1.5  1997-09-05 15:29:58  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.4  1996/06/04 10:20:03  adam
  * Added support for character mapping.
  *
  * Revision 1.3  1996/01/08  09:09:19  adam
@@ -38,7 +42,7 @@ struct DFA_parse {
     struct Tblock *end;       /* end block of Tnodes */
     int *charMap;
     int charMapSize;
-    char **(*cmap)(const char **from, int len);
+    const char **(*cmap)(const char **from, int len);
 };
 
 typedef struct DFA_stateb_ {

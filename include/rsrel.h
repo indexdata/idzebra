@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.h,v $
- * Revision 1.3  1996-11-08 11:08:02  adam
+ * Revision 1.4  1997-09-05 15:30:05  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.3  1996/11/08 11:08:02  adam
  * New internal release.
  *
  * Revision 1.2  1996/06/11 10:53:16  quinn
@@ -19,6 +23,10 @@
 #define RSET_REL_H
 
 #include <rset.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern const rset_control *rset_kind_relevance;
 
@@ -36,5 +44,9 @@ typedef struct rset_relevance_parms
     int no_terms;
     int *term_no;
 } rset_relevance_parms;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,15 +1,23 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bset.h,v $
- * Revision 1.1  1994-09-26 10:17:42  adam
+ * Revision 1.2  1997-09-05 15:29:59  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.1  1994/09/26 10:17:42  adam
  * Dfa-module header files.
  *
  */
 #ifndef BSET_H
 #define BSET_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef unsigned short BSetWord;
 typedef BSetWord *BSet;
@@ -40,5 +48,9 @@ int        travi_BSet     (BSetHandle *sh, BSet src, unsigned member);
 unsigned   hash_BSet      (BSetHandle *sh, BSet src);
 int        eq_BSet        (BSetHandle *sh, BSet dst, BSet src);
 void       pr_charBSet    (BSetHandle *sh, BSet src, void (*f)(int));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

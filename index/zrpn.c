@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.61  1997-02-10 10:21:14  adam
+ * Revision 1.62  1997-09-05 15:30:09  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.61  1997/02/10 10:21:14  adam
  * Bug fix: in search terms character (^) wasn't observed.
  *
  * Revision 1.60  1997/01/31 11:10:34  adam
@@ -339,10 +343,10 @@ static int grep_handle (char *name, const char *info, void *p)
     return 0;
 }
 
-static int term_pre (char **src, const char *ct1, const char *ct2)
+static int term_pre (const char **src, const char *ct1, const char *ct2)
 {
-    char *s1, *s0 = *src;
-    char **map;
+    const char *s1, *s0 = *src;
+    const char **map;
 
     /* skip white space */
     while (*s0)
@@ -361,9 +365,10 @@ static int term_pre (char **src, const char *ct1, const char *ct2)
     return *s0;
 }
 
-static int term_100 (char **src, char *dst, int space_split)
+static int term_100 (const char **src, char *dst, int space_split)
 {
-    char *s0, *s1, **map;
+    const char *s0, *s1;
+    const char **map;
     int i = 0;
 
     if (!term_pre (src, NULL, NULL))
@@ -387,9 +392,10 @@ static int term_100 (char **src, char *dst, int space_split)
     return i;
 }
 
-static int term_101 (char **src, char *dst, int space_split)
+static int term_101 (const char **src, char *dst, int space_split)
 {
-    char *s0, *s1, **map;
+    const char *s0, *s1;
+    const char **map;
     int i = 0;
 
     if (!term_pre (src, "#", "#"))
@@ -423,10 +429,11 @@ static int term_101 (char **src, char *dst, int space_split)
 }
 
 
-static int term_103 (char **src, char *dst, int *errors, int space_split)
+static int term_103 (const char **src, char *dst, int *errors, int space_split)
 {
     int i = 0;
-    char *s0, *s1, **map;
+    const char *s0, *s1;
+    const char **map;
 
     if (!term_pre (src, "^\\()[].*+?|", "("))
         return 0;
@@ -462,7 +469,7 @@ static int term_103 (char **src, char *dst, int *errors, int space_split)
     return i;
 }
 
-static int term_102 (char **src, char *dst, int space_split)
+static int term_102 (const char **src, char *dst, int space_split)
 {
     return term_103 (src, dst, NULL, space_split);
 }
@@ -577,7 +584,7 @@ static void gen_regular_rel (char *dst, int val, int islt)
 }
 
 static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                            char **term_sub,
+                            const char **term_sub,
                             char *term_dict,
                             oid_value attributeSet,
                             struct grep_info *grep_info,
@@ -642,7 +649,7 @@ static int relational_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
 }
 
 static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                       char **term_sub, int regType,
+                       const char **term_sub, int regType,
                        oid_value attributeSet, struct grep_info *grep_info,
                        int num_bases, char **basenames, int space_split)
 {
@@ -653,7 +660,7 @@ static int field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     AttrType use;
     int use_value;
     oid_value curAttributeSet = attributeSet;
-    char *termp;
+    const char *termp;
 
     attr_init (&use, zapt, 1);
     use_value = attr_find (&use, &curAttributeSet);
@@ -800,8 +807,8 @@ static void trans_scan_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                              char *termz)
 {
     Z_Term *term = zapt->term;
-    char **map;
-    char *cp = (char*) term->u.general->buf;
+    const char **map;
+    const char *cp = (const char *) term->u.general->buf;
     const char *cp_end = cp + term->u.general->len;
     const char *src;
     int i = 0;
@@ -833,7 +840,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
 {
     rset_relevance_parms parms;
     char termz[IT_MAX_WORD+1];
-    char *termp = termz;
+    const char *termp = termz;
     struct grep_info grep_info;
     RSET result;
     int term_index = 0;
@@ -893,7 +900,7 @@ static RSET rpn_search_APT_cphrase (ZServerInfo *zi,
     char termz[IT_MAX_WORD+1];
     struct grep_info grep_info;
     RSET result;
-    char *termp = termz;
+    const char *termp = termz;
     int r;
 
     if (zapt->term->which != Z_Term_general)
@@ -1101,7 +1108,7 @@ static RSET rpn_search_APT_phrase (ZServerInfo *zi,
                                    int num_bases, char **basenames)
 {
     char termz[IT_MAX_WORD+1];
-    char *termp = termz;
+    const char *termp = termz;
     RSET rset[60], result;
     int i, r, rset_no = 0;
     struct grep_info grep_info;

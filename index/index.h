@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.48  1997-02-12 20:39:45  adam
+ * Revision 1.49  1997-09-05 15:30:08  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.48  1997/02/12 20:39:45  adam
  * Implemented options -f <n> that limits the log to the first <n>
  * records.
  * Changed some log messages also.
@@ -289,5 +293,5 @@ int zebraLockNB (int fd, int wr);
 int zebraUnlock (int fd);
 
 void init_charmap(void);
-char **map_chrs_input(char **from, int len);
+const char **map_chrs_input(const char **from, int len);
 const char *map_chrs_output(const char **from);

@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.11  1995-12-11 09:07:53  adam
+ * Revision 1.12  1997-09-05 15:30:03  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.11  1995/12/11 09:07:53  adam
  * New rset member 'flag', that holds various flags about a result set -
  * currently 'volatile' (set is register dependent) and 'ranked' (set is
  * ranked).
@@ -53,6 +57,9 @@
 
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef void *RSFD;
 
 typedef struct rset *RSET;
@@ -118,4 +125,9 @@ void rset_delete(RSET rs);
 
 #define rset_is_volatile(rs) ((rs)->flags & RSET_FLAG_VOLATILE)
 #define rset_is_ranked(rs) ((rs)->flags & RSET_FLAG_RANKED)
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.17  1996-06-04 10:20:06  adam
+ * Revision 1.18  1997-09-05 15:29:58  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.17  1996/06/04 10:20:06  adam
  * Added support for character mapping.
  *
  * Revision 1.16  1996/05/24  14:46:04  adam
@@ -451,7 +455,8 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
     return i;
 }
 
-void dict_grep_cmap (Dict dict, char **(*cmap)(const char **from, int len))
+void dict_grep_cmap (Dict dict,
+		     const char **(*cmap)(const char **from, int len))
 {
     dict->grep_cmap = cmap;
 }

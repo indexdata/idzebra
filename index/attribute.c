@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: attribute.c,v $
- * Revision 1.4  1996-10-29 14:06:48  adam
+ * Revision 1.5  1997-09-05 15:30:08  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.4  1996/10/29 14:06:48  adam
  * Include zebrautl.h instead of alexutil.h.
  *
  * Revision 1.3  1996/05/09 07:28:54  quinn
@@ -32,16 +36,15 @@ static data1_attset *registered_sets = 0;
 
 static void att_loadset(const char *n, const char *name)
 {
-    data1_attset *new;
+    data1_attset *cnew;
 
-    if (!(new = data1_read_attset((char*) name)))
+    if (!(cnew = data1_read_attset((char*) name)))
     {
 	logf(LOG_WARN|LOG_ERRNO, "%s", name);
 	return;
     }
-    new->next = registered_sets;
-    registered_sets = new;
-    return;
+    cnew->next = registered_sets;
+    registered_sets = cnew;
 }
 
 static void load_atts()

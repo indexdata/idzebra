@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsm_or.h,v $
- * Revision 1.2  1996-12-23 15:29:54  adam
+ * Revision 1.3  1997-09-05 15:30:04  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.2  1996/12/23 15:29:54  adam
  * More work on truncation algorithm.
  *
  * Revision 1.1  1996/12/20 11:06:45  adam
@@ -17,6 +21,10 @@
 #define RSET_M_OR_H
 
 #include <rset.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern const rset_control *rset_kind_m_or;
 
@@ -31,5 +39,9 @@ typedef struct rset_m_or_parms
     int     no_isam_positions;
     int     no_save_positions;
 } rset_m_or_parms;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

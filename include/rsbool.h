@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsbool.h,v $
- * Revision 1.4  1995-12-11 09:07:53  adam
+ * Revision 1.5  1997-09-05 15:30:02  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.4  1995/12/11 09:07:53  adam
  * New rset member 'flag', that holds various flags about a result set -
  * currently 'volatile' (set is register dependent) and 'ranked' (set is
  * ranked).
@@ -29,6 +33,10 @@
 
 #include <rset.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const rset_control *rset_kind_and;
 extern const rset_control *rset_kind_or;
 extern const rset_control *rset_kind_not;
@@ -44,5 +52,9 @@ typedef struct rset_bool_parms
     RSET    rset_r;
     int (*cmp)(const void *p1, const void *p2);
 } rset_bool_parms;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

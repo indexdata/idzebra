@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.23  1996-10-29 13:45:33  adam
+ * Revision 1.24  1997-09-05 15:30:00  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.23  1996/10/29 13:45:33  adam
  * Changed definition of DICT_DEFAULT_PAGESIZE.
  *
  * Revision 1.22  1996/06/04 10:20:10  adam
@@ -89,6 +93,10 @@
 #include <bfile.h>
 #include <log.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef unsigned Dict_ptr;
 typedef unsigned char Dict_char;
 
@@ -128,7 +136,7 @@ typedef struct Dict_file_struct
 typedef struct Dict_struct {
     int rw;
     Dict_BFile dbf;
-    char **(*grep_cmap)(const char **from, int len);
+    const char **(*grep_cmap)(const char **from, int len);
     struct Dict_head head;
 } *Dict;
 
@@ -162,7 +170,7 @@ int	   dict_scan (Dict dict, char *str,
                                void *client));
 
 void       dict_grep_cmap (Dict dict,
-                           char **(*cmap)(const char **from, int len));
+                           const char **(*cmap)(const char **from, int len));
 
 
 #define DICT_EOS        0
@@ -186,6 +194,9 @@ void       dict_grep_cmap (Dict dict,
    dir[0..nodir-1]
    ptr,info,string
  */
+#ifdef __cplusplus
+}
+#endif
 
    
 #endif

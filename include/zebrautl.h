@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1995-1996, Index Data I/S 
+ * Copyright (C) 1995-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebrautl.h,v $
- * Revision 1.1  1996-10-29 13:46:12  adam
+ * Revision 1.2  1997-09-05 15:30:06  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.1  1996/10/29 13:46:12  adam
  * Removed obsolete headers alexpath, alexutil. Created zebrautl.h as
  * a replacement.
  *

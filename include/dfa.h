@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.h,v $
- * Revision 1.6  1996-06-04 10:20:10  adam
+ * Revision 1.7  1997-09-05 15:29:59  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.6  1996/06/04 10:20:10  adam
  * Added support for character mapping.
  *
  * Revision 1.5  1996/01/08  09:09:48  adam
@@ -30,6 +34,10 @@
 
 #include <bset.h>
 #include <set.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct DFA_tran {
     unsigned char ch[2];      /* transition on ch[0] <= c <= ch[1] to */
@@ -63,7 +71,7 @@ struct DFA {
 
 struct DFA *dfa_init (void);
 void dfa_set_cmap (struct DFA *dfa,
-                   char **(*cmap)(const char **from, int len));
+                   const char **(*cmap)(const char **from, int len));
 int dfa_parse (struct DFA *, const char **);
 void dfa_mkstate (struct DFA *);
 void dfa_delete (struct DFA **);
@@ -99,4 +107,9 @@ extern unsigned short
 #define DFA_ERR_SYNTAX 1
 #define DFA_ERR_LP     2
 #define DFA_ERR_RP     3
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

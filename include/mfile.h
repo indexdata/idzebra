@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.h,v $
- * Revision 1.6  1996-10-29 13:46:10  adam
+ * Revision 1.7  1997-09-05 15:30:01  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.6  1996/10/29 13:46:10  adam
  * Removed obsolete headers alexpath, alexutil. Created zebrautl.h as
  * a replacement.
  *
@@ -33,6 +37,10 @@
 #ifndef FILENAME_MAX
 #include <sys/param.h>
 #define FILENAME_MAX MAXPATHLEN
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #define MF_MIN_BLOCKS_CREAT 1          /* minimum free blocks in new dir */
@@ -125,5 +133,8 @@ int mf_unlink(MFile mf);
  * Unlink the file by name, rather than MFile-handle.
  */
 int mf_unlink_name(MFile_area, const char *name);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

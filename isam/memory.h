@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: memory.h,v $
- * Revision 1.5  1996-03-11 14:52:25  quinn
+ * Revision 1.6  1997-09-05 15:30:10  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.5  1996/03/11 14:52:25  quinn
  * Fixed update bug. Repeated insertion in the same area sometimes caused
  * problems.
  *
@@ -27,6 +31,10 @@
 
 #ifndef MEMORY_H
 #define MEMORY_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern int is_mbuf_size[3];
 
@@ -104,5 +112,10 @@ void is_m_delete_record(is_mtable *tab);
 int is_m_peek_record(is_mtable *tab, void *rec);
 int is_m_read_full(is_mtable *tab, is_mblock *mblock);
 int is_m_num_records(is_mtable *tab);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

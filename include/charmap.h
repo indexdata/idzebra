@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995, Index Data.
+ * Copyright (c) 1995-1997, Index Data.
  * 
  * All rights reserved.
  * 
@@ -35,10 +35,19 @@
  * LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
  * OF THIS SOFTWARE.
  *
+ * $Log: charmap.h,v $
+ * Revision 1.3  1997-09-05 15:29:59  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
  */
 
 #ifndef CHARMAP_H
 #define CHARMAP_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern const char *CHR_UNKNOWN;
 extern const char *CHR_SPACE;
@@ -58,6 +67,10 @@ typedef struct chrmaptab
 chrmaptab *chr_read_maptab(const char *tabpath, const char *name);
 int chr_map_chrs(chr_t_entry *t, char **from, int len, int *read, char **to,
     int max);
-char **chr_map_input(chr_t_entry *t, char **from, int len);
+const char **chr_map_input(chr_t_entry *t, const char **from, int len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

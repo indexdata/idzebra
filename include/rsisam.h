@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.h,v $
- * Revision 1.2  1995-09-04 09:09:53  adam
+ * Revision 1.3  1997-09-05 15:30:04  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.2  1995/09/04 09:09:53  adam
  * String arg in dict lookup is const.
  * Minor changes.
  *
@@ -19,6 +23,10 @@
 #include <rset.h>
 #include <isam.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const rset_control *rset_kind_isam;
 
 typedef struct rset_isam_parms
@@ -26,5 +34,9 @@ typedef struct rset_isam_parms
     ISAM is;
     ISAM_P pos;
 } rset_isam_parms;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.18  1997-09-04 13:56:15  adam
+ * Revision 1.19  1997-09-05 15:30:02  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.18  1997/09/04 13:56:15  adam
  * Added new filter grs.marc.<syntax> where <syntax> refers to
  * abstract syntax. New method tellf in extract/retrieve control
  * block.
@@ -74,15 +78,28 @@
 #include <oid.h>
 #include <odr.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum {
+    Word_String,
+    Word_Phrase,
+    Word_Numeric
+} RecWordType;
+
 /* single word entity */
 typedef struct {
     int  attrSet;
     int  attrUse;
+    RecWordType which;
+#if 0
     enum {
 	Word_String,
 	Word_Phrase,
         Word_Numeric
     } which;
+#endif
     union {
         char *string;
         int  numeric;
@@ -101,7 +118,7 @@ struct recExtractCtrl {
     char      *subType;
     void      (*init)(RecWord *p);
     void      (*add)(const RecWord *p);
-    char **(*map_chrs_input)(char **from, int len);
+    const char **(*map_chrs_input)(const char **from, int len);
     int       flagShowRecords;
 };
 
@@ -136,5 +153,9 @@ typedef struct recType
 } *RecType;
 
 RecType recType_byName (const char *name, char *subType);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

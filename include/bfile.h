@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.h,v $
- * Revision 1.13  1996-10-29 13:43:07  adam
+ * Revision 1.14  1997-09-05 15:29:58  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.13  1996/10/29 13:43:07  adam
  * Added a few comments.
  *
  * Revision 1.12  1996/03/26 16:00:44  adam
@@ -44,6 +48,10 @@
 #define BFILE_H
 
 #include <mfile.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define bf_blocksize(bf) mf_blocksize(bf->mf)
 
@@ -92,5 +100,9 @@ void bf_commitExec (void);
 
 /* bf_commitClean: cleans commit files, etc */
 void bf_commitClean (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

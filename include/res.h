@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.h,v $
- * Revision 1.6  1996-10-29 13:44:12  adam
+ * Revision 1.7  1997-09-05 15:30:02  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.6  1996/10/29 13:44:12  adam
  * Added res_get_match.
  *
  * Revision 1.5  1994/09/16 14:37:46  quinn
@@ -23,6 +27,10 @@
 
 #ifndef RES_H
 #define RES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct res_entry {
     char *name;
@@ -45,4 +53,9 @@ void res_put (Res r, const char *name, const char *value);
 void res_trav (Res r, const char *prefix, 
                void (*f)(const char *name, const char *value));
 int res_write (Res r);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

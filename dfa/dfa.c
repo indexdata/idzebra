@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dfa.c,v $
- * Revision 1.15  1997-02-10 10:19:20  adam
+ * Revision 1.16  1997-09-05 15:29:57  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.15  1997/02/10 10:19:20  adam
  * Added facility for open character sets, eg [a-].
  *
  * Revision 1.14  1996/10/29 13:57:22  adam
@@ -418,7 +422,8 @@ static int read_charset (void)
             break;
         if (parse_info->cmap)
         {
-            char **mapto, mapfrom[2];
+            const char **mapto;
+	    char mapfrom[2];
             const char *mcp = mapfrom;
             mapfrom[0] = ch0;
             mapto = (*parse_info->cmap)(&mcp, 1);
@@ -447,7 +452,8 @@ static int read_charset (void)
 #endif
             if (!open_range && parse_info->cmap)
             {
-                char **mapto, mapfrom[2];
+                const char **mapto;
+		char mapfrom[2];
                 const char *mcp = mapfrom;
                 mapfrom[0] = ch1;
                 mapto = (*parse_info->cmap) (&mcp, 1);
@@ -474,7 +480,7 @@ static int read_charset (void)
 
 static int map_l_char (void)
 {
-    char **mapto;
+    const char **mapto;
     const char *cp0 = (const char *) (expr_ptr-1);
     int i = 0, len = strlen(cp0);
 
@@ -1101,7 +1107,8 @@ struct DFA *dfa_init (void)
     return dfa;
 }
 
-void dfa_set_cmap (struct DFA *dfa, char **(*cmap)(const char **from, int len))
+void dfa_set_cmap (struct DFA *dfa,
+		   const char **(*cmap)(const char **from, int len))
 {
     dfa->parse_info->cmap = cmap;
 }

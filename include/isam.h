@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.11  1996-10-29 13:43:44  adam
+ * Revision 1.12  1997-09-05 15:30:00  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.11  1996/10/29 13:43:44  adam
  * Removed definition of SYSNO.
  *
  * Revision 1.10  1995/09/06 16:10:57  adam
@@ -46,6 +50,10 @@
 
 #include "../isam/memory.h"
 #include "../isam/physical.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define IS_MAX_BLOCKTYPES 4
 #define IS_MAX_RECORD 512
@@ -132,5 +140,9 @@ int is_numkeys(ISPT ip);
 void is_rewind(ISPT ip);
 
 ISAM_P is_merge(ISAM is, ISAM_P pos, int num, char *data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

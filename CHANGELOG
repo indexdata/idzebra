@@ -1,3 +1,8 @@
+Added support for C++, headers uses extern "C" for public definitions.
+
+New filter grs.marc.<syntax> that reads MARC records in the ISO2709
+format. <syntax> refers to the abstract syntax.
+
 Bug fix: The show records facility (-s) only displayed information for
 the first record in a file (and not for every record in the file).
 

@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.6  1997-09-04 13:54:40  adam
+ * Revision 1.7  1997-09-05 15:30:10  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.6  1997/09/04 13:54:40  adam
  * Added MARC filter - type grs.marc.<syntax> where syntax refers
  * to abstract syntax. New method tellf in retrieve/extract method.
  *
@@ -160,9 +164,9 @@ static void grs_init(void)
 static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
     data1_att *att)
 {
-    char *b = n->u.data.data;
+    const char *b = n->u.data.data;
     int remain;
-    char **map = 0;
+    const char **map = 0;
 
     remain = n->u.data.len - (b - n->u.data.data);
     if (remain > 0)
@@ -188,7 +192,7 @@ static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
 	i = 0;
 	while (map && *map && **map != *CHR_SPACE)
 	{
-	    char *cp = *map;
+	    const char *cp = *map;
 
 	    while (i < GRS_MAX_WORD && *cp)
 		buf[i++] = *(cp++);
@@ -214,8 +218,9 @@ static void dumpkeys_word(data1_node *n, struct recExtractCtrl *p,
 static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
     data1_att *att)
 {
-    char *b = n->u.data.data;
-    char buf[GRS_MAX_WORD+1], **map = 0;
+    const char *b = n->u.data.data;
+    char buf[GRS_MAX_WORD+1];
+    const char **map = 0;
     RecWord wrd;
     int i = 0, remain;
 
@@ -240,7 +245,7 @@ static void dumpkeys_phrase(data1_node *n, struct recExtractCtrl *p,
 	    buf[i++] = *CHR_SPACE;
 	while (map && *map && **map != *CHR_SPACE)
 	{
-	    char *cp = *map;
+	    const char *cp = *map;
 
 	    if (i >= GRS_MAX_WORD)
 		break;

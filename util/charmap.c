@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1996-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.11  1997-09-05 09:52:32  adam
+ * Revision 1.12  1997-09-05 15:30:11  adam
+ * Changed prototype for chr_map_input - added const.
+ * Added support for C++, headers uses extern "C" for public definitions.
+ *
+ * Revision 1.11  1997/09/05 09:52:32  adam
  * Extra argument added to function chr_read_maptab (tab path).
  *
  * Revision 1.10  1997/07/01 13:01:08  adam
@@ -83,8 +87,8 @@ typedef struct chrwork
 /*
  * Add an entry to the character map.
  */
-static chr_t_entry *set_map_string(chr_t_entry *root, char *from, int len,
-    char *to)
+static chr_t_entry *set_map_string(chr_t_entry *root, const char *from,
+				   int len, char *to)
 {
     if (!root)
     {
@@ -143,15 +147,14 @@ int chr_map_chrs(chr_t_entry *t, char **from, int len, int *read, char **to,
     return i;
 }
 
-#if 1
 
-static chr_t_entry *find_entry(chr_t_entry *t, char **from, int len)
+static chr_t_entry *find_entry(chr_t_entry *t, const char **from, int len)
 {
     chr_t_entry *res;
 
     if (len && t->children && t->children[(unsigned char) **from])
     {
-	char *pos = *from;
+	const char *pos = *from;
 
 	(*from)++;
 	if ((res = find_entry(t->children[(unsigned char) *pos],
@@ -164,9 +167,9 @@ static chr_t_entry *find_entry(chr_t_entry *t, char **from, int len)
    return t->target ? t : 0;
 }
 
-char **chr_map_input(chr_t_entry *t, char **from, int len)
+const char **chr_map_input(chr_t_entry *t, const char **from, int len)
 {
-    static char *buf[2] = {0, 0};
+    static const char *buf[2] = {0, 0};
     chr_t_entry *res;
 
     if (!(res = find_entry(t, from, len)))
@@ -175,42 +178,6 @@ char **chr_map_input(chr_t_entry *t, char **from, int len)
     return buf;
 }
 
-#else
-
-char **chr_map_input(chr_t_entry *t, char **from, int len)
-{
-    static char *buf[2] = {0, 0}, str[2] = {0, 0};
-    char *start = *from;
-
-    if (t)
-    {
-	while (len && t->children && t->children[(unsigned char) **from])
-	{
-	    t = t->children[(unsigned char) **from];
-	    (*from)++;
-	    len--;
-	}
-	buf[0] = (char*) t->target;
-    }
-    else /* null mapping */
-    {
-	if (isalnum(**from))
-	{
-	    str[0] = **from;
-	    buf[0] = str;
-	}
-	else if (isspace(**from))
-	    buf[0] = (char*) CHR_SPACE;
-	else
-	    buf[0] = (char*) CHR_UNKNOWN;
-    }
-    if (start == *from)
-	(*from)++;
-    return buf;
-    /* return (char*) t->target; */
-}
-
-#endif
 
 static unsigned char prim(char **s)
 {
@@ -245,7 +212,7 @@ static unsigned char prim(char **s)
  * Callback function.
  * Add an entry to the value space.
  */
-static void fun_addentry(char *s, void *data, int num)
+static void fun_addentry(const char *s, void *data, int num)
 {
     chrmaptab *tab = data;
     char tmp[2];
@@ -259,7 +226,7 @@ static void fun_addentry(char *s, void *data, int num)
  * Callback function.
  * Add a space-entry to the value space.
  */
-static void fun_addspace(char *s, void *data, int num)
+static void fun_addspace(const char *s, void *data, int num)
 {
     chrmaptab *tab = data;
     tab->input = set_map_string(tab->input, s, strlen(s), (char*) CHR_SPACE);
@@ -268,10 +235,10 @@ static void fun_addspace(char *s, void *data, int num)
 /*
  * Create a string containing the mapped characters provided.
  */
-static void fun_mkstring(char *s, void *data, int num)
+static void fun_mkstring(const char *s, void *data, int num)
 {
     chrwork *arg = data;
-    char **res, *p = s;
+    const char **res, *p = s;
 
     res = chr_map_input(arg->map->input, &s, strlen(s));
     if (*res == (char*) CHR_UNKNOWN)
@@ -283,7 +250,7 @@ static void fun_mkstring(char *s, void *data, int num)
 /*
  * Add a map to the string contained in the argument.
  */
-static void fun_addmap(char *s, void *data, int num)
+static void fun_addmap(const char *s, void *data, int num)
 {
     chrwork *arg = data;
 
@@ -291,7 +258,7 @@ static void fun_addmap(char *s, void *data, int num)
     set_map_string(arg->map->input, s, strlen(s), arg->string);
 }
 
-static int scan_string(char *s, void (*fun)(char *c, void *data, int num),
+static int scan_string(char *s, void (*fun)(const char *c, void *data, int num),
     void *data, int *num)
 {
     unsigned char c, str[1024], begin, end, *p;
