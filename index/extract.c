@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.16  1995-10-03 14:28:45  adam
+ * Revision 1.17  1995-10-03 14:28:57  adam
+ * Buffered read in extract works.
+ *
+ * Revision 1.16  1995/10/03  14:28:45  adam
  * Work on more effecient read handler in extract.
  *
  * Revision 1.15  1995/10/02  15:42:53  adam
@@ -213,46 +216,74 @@ static void wordAdd (const RecWord *p)
     kused += sizeof(key);
 }
 
+#define FILE_READ_BUF 1
+#if FILE_READ_BUF
 static char *file_buf;
 static int file_offset;
 static int file_bufsize;
 
+static void file_read_start (int fd)
+{
+    file_offset = 0;
+    file_buf = xmalloc (4096);
+    file_bufsize = read (fd, file_buf, 4096);
+}
+
+static void file_read_stop (int fd)
+{
+    xfree (file_buf);
+}
+
 static int file_read (int fd, char *buf, size_t count)
 {
-    if (file_offset + count <= file_bufsize)
+    int l = file_bufsize - file_offset;
+
+    if (count > l)
     {
-        memcpy (buf, file_buf + file_offset, count);
-        file_offset += count;
-        return count;
-    }
-    else if (file_bufsize > 0)
-    {
-        int l = file_bufsize - file_offset;
+        int r;
         if (l > 0)
             memcpy (buf, file_buf + file_offset, l);
-        if (count - l > file_bufsize)
+        count = count-l;
+        if (count > file_bufsize)
         {
-            r = read (fd, buf, count);
-            if (r > 0)
-                file_bufsize = read (fd, file_buf, file_bufsize);
-            else
-                file_bufsize = 0;
+            if ((r = read (fd, buf + l, count)) == -1)
+            {
+                logf (LOG_FATAL|LOG_ERRNO, "read");
+                exit (1);
+            }
+            file_bufsize = 0;
             file_offset = 0;
             return r;
         }
-        r = read (fd, file_buf, file_bufsize);
+        file_bufsize = r = read (fd, file_buf, 4096);
         if (r == -1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "read");
             exit (1);
         }
-        memcpy (buf + l, file_buf, count - l);
-        file_offset = count - l;
-        file_bufsize = r;
+        else if (r <= count)
+        {
+            file_offset = r;
+            memcpy (buf + l, file_buf, r);
+            return l + r;
+        }
+        else
+        {
+            file_offset = count;
+            memcpy (buf + l, file_buf, count - l);
+            return count;
+        }
     }
+    memcpy (buf, file_buf + file_offset, count);
+    file_offset += count;
+    return count;
+}
+#else
+static int file_read (int fd, char *buf, size_t count)
+{
     return read (fd, buf, count);
 }
-
+#endif
 void file_extract (int cmd, const char *fname, const char *kname)
 {
     int i, r;
@@ -301,7 +332,13 @@ void file_extract (int cmd, const char *fname, const char *kname)
     extractCtrl.subType = "";
     extractCtrl.init = wordInit;
     extractCtrl.add = wordAdd;
+#if FILE_READ_BUF
+    file_read_start (extractCtrl.fd);
+#endif
     extractCtrl.readf = file_read;
+#if FILE_READ_BUF
+    file_read_stop (extractCtrl.fd);
+#endif
     key_sysno = sysno;
     key_cmd = cmd;
     r = (*rt->extract)(&extractCtrl);
