@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.154 2004-09-28 16:39:46 heikki Exp $
+/* $Id: zrpn.c,v 1.155 2004-10-01 14:25:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1691,8 +1691,8 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
 {
     char term_dst[IT_MAX_WORD+1];
     const char *termp = termz;
-    RSET rset[60], result;
-    int i, r, rset_no = 0;
+    RSET rset[60]; /* FIXME - hard-coded magic number */
+    int  r, rset_no = 0;
     struct grep_info grep_info;
 
     if (grep_info_prepare (zh, zapt, &grep_info, reg_type, stream))
@@ -1721,14 +1721,10 @@ static RSET rpn_search_APT_numeric (ZebraHandle zh,
     grep_info_delete (&grep_info);
     if (rset_no == 0)
         return rsnull_create (rset_nmem,key_it_ctrl);
-    result = rset[0];
-    for (i = 1; i<rset_no; i++)
-    {
-        /* FIXME - Use a proper multi-and */
-        result= rsbool_create_and(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
-                result, rset[i] );
-    }
-    return result;
+    if (rset_no == 1)
+        return rset[0];
+    return rsmultiand_create(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
+               rset_no, rset);
 }
 
 static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
@@ -1741,14 +1737,6 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     RSFD rsfd;
     struct it_key key;
     int sys;
-    /*
-    rset_temp_parms parms;
-
-    parms.cmp = key_compare_it;
-    parms.key_size = sizeof (struct it_key);
-    parms.temp_path = res_get (zh->res, "setTmpDir");
-    result = rset_create (rset_kind_temp, &parms);
-    */
     result = rstemp_create( rset_nmem,key_it_ctrl,key_it_ctrl->scope,
                      res_get (zh->res, "setTmpDir") );
     rsfd = rset_open (result, RSETF_WRITE);
@@ -2174,38 +2162,37 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
     if (zs->which == Z_RPNStructure_complex)
     {
         Z_Operator *zop = zs->u.complex->roperator;
-        RSET rset_l;
-        RSET rset_r;
+        RSET rsets[2]; /* l and r argument */
 
-        rset_l = rpn_search_structure (zh, zs->u.complex->s1,
+        rsets[0]=rpn_search_structure (zh, zs->u.complex->s1,
                                        attributeSet, stream, rset_nmem,
                                        sort_sequence,
                                        num_bases, basenames);
-        if (rset_l == NULL)
+        if (rsets[0] == NULL)
             return NULL;
-        rset_r = rpn_search_structure (zh, zs->u.complex->s2,
+        rsets[1]=rpn_search_structure (zh, zs->u.complex->s2,
                                        attributeSet, stream, rset_nmem,
                                        sort_sequence,
                                        num_bases, basenames);
-        if (rset_r == NULL)
+        if (rsets[1] == NULL)
         {
-            rset_delete (rset_l);
+            rset_delete (rsets[0]);
             return NULL;
         }
 
         switch (zop->which)
         {
         case Z_Operator_and:
-            r = rsbool_create_and(rset_nmem,key_it_ctrl, key_it_ctrl->scope,
-                    rset_l,rset_r );
+            r=rsmultiand_create(rset_nmem, key_it_ctrl, key_it_ctrl->scope,
+                        2, rsets);
             break;
         case Z_Operator_or:
-            r = rsbool_create_or(rset_nmem,key_it_ctrl, key_it_ctrl->scope,
-                    rset_l,rset_r );
+            r=rsmultior_create(rset_nmem, key_it_ctrl, key_it_ctrl->scope,
+                        2, rsets);
             break;
         case Z_Operator_and_not:
             r = rsbool_create_not(rset_nmem,key_it_ctrl, key_it_ctrl->scope,
-                    rset_l,rset_r );
+                    rsets[0],rsets[1]);
             break;
         case Z_Operator_prox:
             if (zop->u.prox->which != Z_ProximityOperator_known)
@@ -2224,12 +2211,8 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
             else
             {
                 /* new / old prox */
-                RSET twosets[2];
-                
-                twosets[0] = rset_l;
-                twosets[1] = rset_r;
                 r=rsprox_create(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
-                         2, twosets, 
+                         2, rsets, 
                          *zop->u.prox->ordered,
                          (!zop->u.prox->exclusion ? 
                               0 : *zop->u.prox->exclusion),

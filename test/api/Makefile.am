@@ -1,9 +1,9 @@
-# $Id: Makefile.am,v 1.17 2004-09-30 08:16:49 adam Exp $
+# $Id: Makefile.am,v 1.18 2004-10-01 14:25:28 heikki Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c
 
-check_PROGRAMS = t1 t2 t3 t4 t5 t6 t7
+check_PROGRAMS = t1 t2 t3 t4 t5 t6 t7 t8
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST=zebra.cfg zebra6.cfg
@@ -15,6 +15,7 @@ t4_SOURCES = t4.c
 t5_SOURCES = t5.c
 t6_SOURCES = t6.c
 t7_SOURCES = t7.c
+t8_SOURCES = t8.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 
