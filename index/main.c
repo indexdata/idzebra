@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.23  1995-11-30 08:34:31  adam
+ * Revision 1.24  1995-11-30 17:01:38  adam
+ * New setting commitCache: points to commit directories/files.
+ * New command commit: commits at the end of a zebraidx run.
+ *
+ * Revision 1.23  1995/11/30  08:34:31  adam
  * Started work on commit facility.
  * Changed a few malloc/free to xmalloc/xfree.
  *
@@ -97,6 +101,7 @@ extern char *data1_tabpath;
 
 int main (int argc, char **argv)
 {
+    int commit_at_end = 0;
     int ret;
     int cmd = 0;
     char *arg;
@@ -131,27 +136,12 @@ int main (int argc, char **argv)
 	" -v <level>    Set logging to <level>.\n");
         exit (1);
     }
-    while ((ret = options ("t:c:g:d:m:v:l:", argv, argc, &arg)) != -2)
+    while ((ret = options ("t:c:g:d:m:v:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
             if(cmd == 0) /* command */
             {
-                if (!strcmp (arg, "update"))
-                    cmd = 'u';
-                else if (!strcmp (arg, "del") || !strcmp(arg, "delete"))
-                    cmd = 'd';
-                else
-                {
-                    logf (LOG_FATAL, "Unknown command: %s", arg);
-                    exit (1);
-                }
-            }
-            else
-            {
-                struct recordGroup rGroup;
-
-                memcpy (&rGroup, &rGroupDef, sizeof(rGroup));
                 if (!common_resource)
                 {
                     common_resource = res_open (configName ?
@@ -163,8 +153,25 @@ int main (int argc, char **argv)
                         exit (1);
                     }
                     data1_tabpath = res_get (common_resource, "profilePath");
-                    assert (data1_tabpath);
+                    bf_cache (res_get (common_resource, "commitCache"));
                 }
+                if (!strcmp (arg, "update"))
+                    cmd = 'u';
+                else if (!strcmp (arg, "del") || !strcmp(arg, "delete"))
+                    cmd = 'd';
+                else if (!strcmp (arg, "commit"))
+                    commit_at_end = 1;
+                else
+                {
+                    logf (LOG_FATAL, "Unknown command: %s", arg);
+                    exit (1);
+                }
+            }
+            else
+            {
+                struct recordGroup rGroup;
+
+                memcpy (&rGroup, &rGroupDef, sizeof(rGroup));
                 if (!key_open_flag)
                 {
                     key_open (mem_max);
@@ -198,21 +205,26 @@ int main (int argc, char **argv)
             configName = arg;
         else if (ret == 't')
             rGroupDef.recordType = arg;
-        else if (ret == 'l')
-            bf_cache (arg);
         else
         {
             logf (LOG_FATAL, "Unknown option '-%s'", arg);
             exit (1);
         }
     }
-    if (!key_open_flag)
-        exit (0);
-    nsections = key_close ();
-    if (!nsections)
-        exit (0);
-    logf (LOG_LOG, "Merging with index");
-    key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, nsections, 60);
+    if (key_open_flag)
+    {
+        nsections = key_close ();
+        if (nsections)
+        {
+            logf (LOG_LOG, "Merging with index");
+            key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, nsections, 60);
+        }
+    }
+    if (commit_at_end)
+    {
+        logf (LOG_LOG, "commiting");
+        bf_commit (res_get (common_resource, "commitCache"));
+    }
     exit (0);
 }
 
