@@ -1,10 +1,12 @@
 use ExtUtils::MakeMaker;
 
+my $libs = `../idzebra-config --libs`;
+my $flags = `../idzebra-config --cflags`;
 WriteMakefile(
               'NAME'          => 'IDZebra',
               'OBJECT'        => 'IDZebra_wrap.o zebra_perl.o' ,
-              'INC'           => "-I@top_srcdir@/index -I../include @YAZINC@",
-              'LIBS'          => "-L@top_srcdir@/index -lzebra @TCL_LIB@ @YAZLIB@ @ZPERL_LIBS@",
+              'INC'           => $flags,
+              'LIBS'          => [$libs],
               'OPTIMIZE'      => '-g',
 #              'PREREQ_FATAL'  => 1,
               'PREREQ_PM'     => {
