@@ -14,9 +14,9 @@ ac_default_prefix=/usr/local
 ac_help="$ac_help
   --with-buildroot        RPM Build root"
 ac_help="$ac_help
-  --with-yazconfig        Path for yaz-config"
+  --with-yazconfig=DIR    yaz-config in DIR (example /home/yaz-1.5)"
 ac_help="$ac_help
-  --with-tclconfig        Path for tclConfig.sh"
+  --with-tclconfig=DIR    tclConfig.sh in DIR"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -1087,9 +1087,9 @@ fi
 	tclconfig=${prefix}/lib
 	prefix=${saveprefix}
 fi
+echo $ac_n "checking for Tcl""... $ac_c" 1>&6
+echo "configure:1092: checking for Tcl" >&5
 if test -r ${tclconfig}/tclConfig.sh; then
-	echo $ac_n "checking for Tcl""... $ac_c" 1>&6
-echo "configure:1093: checking for Tcl" >&5
 	. ${tclconfig}/tclConfig.sh
 	if test -r ${tclconfig}/../generic/tcl.h; then
 		TCL_INCLUDE=-I${tclconfig}/../generic
@@ -1105,23 +1105,24 @@ echo "configure:1093: checking for Tcl" >&5
         echo "$ac_t""$TCL_VERSION" 1>&6
 	ODEFS="-DHAVE_TCL_H=1"
 else
+        echo "$ac_t""Not found" 1>&6
 	ODEFS="-DHAVE_TCL_H=0"
 fi
 for ac_hdr in sys/times.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:1115: checking for $ac_hdr" >&5
+echo "configure:1116: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1120 "configure"
+#line 1121 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1125: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1126: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1148,7 +1149,7 @@ fi
 done
 
 echo $ac_n "checking for bzCompressInit in -lbz2""... $ac_c" 1>&6
-echo "configure:1152: checking for bzCompressInit in -lbz2" >&5
+echo "configure:1153: checking for bzCompressInit in -lbz2" >&5
 ac_lib_var=`echo bz2'_'bzCompressInit | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1156,7 +1157,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lbz2  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1160 "configure"
+#line 1161 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1167,7 +1168,7 @@ int main() {
 bzCompressInit()
 ; return 0; }
 EOF
-if { (eval echo configure:1171: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1172: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1199,17 +1200,17 @@ if test "$ac_cv_lib_bz2_bzCompressInit" = "yes"; then
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:1203: checking for $ac_hdr" >&5
+echo "configure:1204: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1208 "configure"
+#line 1209 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1213: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1214: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1237,12 +1238,12 @@ done
 
 fi
 echo $ac_n "checking for ANSI C header files""... $ac_c" 1>&6
-echo "configure:1241: checking for ANSI C header files" >&5
+echo "configure:1242: checking for ANSI C header files" >&5
 if eval "test \"`echo '$''{'ac_cv_header_stdc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1246 "configure"
+#line 1247 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 #include <stdarg.h>
@@ -1250,7 +1251,7 @@ else
 #include <float.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1254: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1255: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1267,7 +1268,7 @@ rm -f conftest*
 if test $ac_cv_header_stdc = yes; then
   # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 1271 "configure"
+#line 1272 "configure"
 #include "confdefs.h"
 #include <string.h>
 EOF
@@ -1285,7 +1286,7 @@ fi
 if test $ac_cv_header_stdc = yes; then
   # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 1289 "configure"
+#line 1290 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 EOF
@@ -1306,7 +1307,7 @@ if test "$cross_compiling" = yes; then
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 1310 "configure"
+#line 1311 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 #define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
@@ -1317,7 +1318,7 @@ if (XOR (islower (i), ISLOWER (i)) || toupper (i) != TOUPPER (i)) exit(2);
 exit (0); }
 
 EOF
-if { (eval echo configure:1321: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:1322: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   :
 else
