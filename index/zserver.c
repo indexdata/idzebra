@@ -1,5 +1,5 @@
-/* $Id: zserver.c,v 1.108 2003-06-18 11:46:33 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: zserver.c,v 1.109 2003-07-02 22:00:06 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -382,6 +382,7 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 	break;
     case Z_ESAdminOriginPartToKeep_drop:
 	yaz_log(LOG_LOG, "adm-drop");
+	zebra_drop_database (zh, r->toKeep->databaseName);
 	break;
     case Z_ESAdminOriginPartToKeep_create:
 	yaz_log(LOG_LOG, "adm-create %s", r->toKeep->databaseName);
