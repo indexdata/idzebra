@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.12 2004-07-26 12:26:25 adam Exp $
+/* $Id: xmlread.c,v 1.12.2.1 2004-08-11 13:26:29 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -98,9 +98,11 @@ static void cb_decl (void *user, const char *version, const char *encoding,
     
     data1_mk_preprocess (ui->dh, ui->nmem, "xml", attr_list,
                              ui->d1_stack[ui->level-1]);
+#if 0
     yaz_log (LOG_LOG, "decl version=%s encoding=%s",
              version ? version : "null",
              encoding ? encoding : "null");
+#endif
 }
     
 static void cb_processing (void *user, const char *target,
