@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.144 2004-12-10 12:37:07 heikki Exp $
+/* $Id: zebraapi.c,v 1.145 2004-12-21 22:00:57 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -48,7 +48,6 @@ static int log_level_initialized=0;
 
 static Res zebra_open_res (ZebraHandle zh);
 static void zebra_close_res (ZebraHandle zh);
-
 
 static void zebra_chdir (ZebraService zs)
 {
@@ -125,7 +124,6 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->shadow_enable = 1;
 
     default_encoding = res_get_def(zs->global_res, "encoding", "ISO-8859-1");
-    zh->record_encoding = xstrdup (default_encoding);
 
     zh->iconv_to_utf8 =
         yaz_iconv_open ("UTF-8", default_encoding);
@@ -137,6 +135,8 @@ ZebraHandle zebra_open (ZebraService zs)
     if (zh->iconv_to_utf8 == 0)
         yaz_log (YLOG_WARN, "iconv: UTF-8 to %s unsupported",
            default_encoding);
+
+    zh->record_encoding = 0;
 
     zebra_mutex_cond_lock (&zs->session_lock);
 
@@ -1870,27 +1870,17 @@ int zebra_shadow_enable (ZebraHandle zh, int value)
     return 0;
 }
 
-int zebra_record_encoding (ZebraHandle zh, const char *encoding)
+int zebra_octet_term_encoding(ZebraHandle zh, const char *encoding)
 {
     ASSERTZH;
     assert(encoding);
-    yaz_log(log_level,"zebra_record_encoding");
-    zh->errCode=0;
-    xfree (zh->record_encoding);
-
-    /*
-     * Fixme!
-     * Something about charset aliases. Oleg???
-     */
+    yaz_log(log_level,"zebra_octet_term_encoding");
+    zh->errCode = 0;
 
     if (zh->iconv_to_utf8 != 0)
         yaz_iconv_close(zh->iconv_to_utf8);
     if (zh->iconv_from_utf8 != 0)
         yaz_iconv_close(zh->iconv_from_utf8);
-    
-    zh->record_encoding = xstrdup (encoding);
-    
-    yaz_log(YLOG_DEBUG, "Reset record encoding: %s", encoding);
     
     zh->iconv_to_utf8 =
         yaz_iconv_open ("UTF-8", encoding);
@@ -1901,6 +1891,18 @@ int zebra_record_encoding (ZebraHandle zh, const char *encoding)
     if (zh->iconv_to_utf8 == 0)
         yaz_log (YLOG_WARN, "iconv: UTF-8 to %s unsupported", encoding);
 
+    return 0;
+}
+
+int zebra_record_encoding (ZebraHandle zh, const char *encoding)
+{
+    ASSERTZH;
+    yaz_log(log_level,"zebra_record_encoding");
+    zh->errCode = 0;
+    xfree (zh->record_encoding);
+    zh->record_encoding = 0;
+    if (encoding)
+	zh->record_encoding = xstrdup (encoding);
     return 0;
 }
 

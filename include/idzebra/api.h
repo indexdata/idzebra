@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.4 2004-12-02 17:27:03 adam Exp $
+/* $Id: api.h,v 1.5 2004-12-21 22:00:57 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -254,6 +254,12 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict);
 
 YAZ_EXPORT
 int zebra_record_encoding (ZebraHandle zh, const char *encoding);
+
+YAZ_EXPORT
+int zebra_record_encoding (ZebraHandle zh, const char *encoding);
+
+YAZ_EXPORT
+int zebra_octet_term_encoding(ZebraHandle zh, const char *encoding);
 
 /* Resources */
 YAZ_EXPORT
