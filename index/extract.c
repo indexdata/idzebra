@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.56  1996-05-09 09:54:42  adam
+ * Revision 1.57  1996-05-13 14:23:04  adam
+ * Work on compaction of set/use bytes in dictionary.
+ *
+ * Revision 1.56  1996/05/09  09:54:42  adam
  * Server supports maps from one logical attributes to a list of physical
  * attributes.
  * The extraction process doesn't make space consuming 'any' keys.
@@ -213,7 +216,7 @@
 #include <recctrl.h>
 #include "index.h"
 
-#include "recindex.h"
+#include "zinfo.h"
 
 static Dict matchDict;
 
@@ -229,6 +232,8 @@ static int records_inserted = 0;
 static int records_updated = 0;
 static int records_deleted = 0;
 static int records_processed = 0;
+
+static ZebTargetInfo *zti = NULL;
 
 static void logRecord (int showFlag)
 {
@@ -260,6 +265,9 @@ void key_open (int mem)
     }
     assert (!records);
     records = rec_open (1);
+#if 1
+    zti = zebTargetInfo_open (records, 1);
+#endif
 }
 
 struct encode_info {
@@ -373,6 +381,9 @@ int key_close (void)
 {
     key_flush ();
     xfree (key_buf);
+#if 1
+    zebTargetInfo_close (zti, 1);
+#endif
     rec_close (&records);
     dict_close (matchDict);
 
@@ -461,6 +472,14 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
     char attrSet = -1;
     short attrUse = -1;
     int off = 0;
+
+#if 1
+    if (zebTargetInfo_curDatabase (zti, databaseName))
+    {
+        if (zebTargetInfo_newDatabase (zti, databaseName))
+            abort ();
+    }
+#endif
     while (off < reckeys->buf_used)
     {
         const char *src = reckeys->buf + off;
@@ -483,8 +502,16 @@ static void flushRecordKeys (SYSNO sysno, int cmd, struct recKeys *reckeys,
             key_flush ();
         ++ptr_i;
         key_buf[ptr_top-ptr_i] = (char*)key_buf + key_buf_used;
+#if 1
+        lead = zebTargetInfo_lookupSU (zti, attrSet, attrUse);
+        if (lead < 0)
+            lead = zebTargetInfo_addSU (zti, attrSet, attrUse);
+        assert (lead > 0);
+        ((char*) key_buf) [key_buf_used++] = lead;
+#else
         key_buf_used += index_word_prefix ((char*)key_buf + key_buf_used,
                                            attrSet, attrUse, databaseName);
+#endif
         while (*src)
             ((char*)key_buf) [key_buf_used++] = index_char_cvt (*src++);
         src++;

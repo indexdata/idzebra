@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kcompare.c,v $
- * Revision 1.15  1995-11-20 16:59:46  adam
+ * Revision 1.16  1996-05-13 14:23:05  adam
+ * Work on compaction of set/use bytes in dictionary.
+ *
+ * Revision 1.15  1995/11/20  16:59:46  adam
  * New update method: the 'old' keys are saved for each records.
  *
  * Revision 1.14  1995/10/30  15:08:08  adam
@@ -126,6 +129,7 @@ int index_char_cvt (int c)
     return tolower (c);
 }
 
+#if 1
 int index_word_prefix (char *string, int attset_ordinal,
                        int local_attribute,
                        const char *databaseName)
@@ -137,4 +141,4 @@ int index_word_prefix (char *string, int attset_ordinal,
         string[i] = index_char_cvt (string[i]);
     return i;
 }
-
+#endif

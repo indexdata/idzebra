@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.14  1996-02-01 20:48:15  adam
+ * Revision 1.15  1996-05-13 14:23:06  adam
+ * Work on compaction of set/use bytes in dictionary.
+ *
+ * Revision 1.14  1996/02/01  20:48:15  adam
  * The total size of records are always checked in rec_cache_insert to
  * reduce memory usage.
  *
@@ -552,6 +555,9 @@ void rec_put (Records p, Record *recpp)
 void rec_rm (Record *recpp)
 {
     int i;
+
+    if (!*recpp)
+        return ;
     for (i = 0; i < REC_NO_INFO; i++)
         xfree ((*recpp)->info[i]);
     xfree (*recpp);
