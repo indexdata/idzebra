@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.74 2003-02-20 21:13:37 adam Exp $
+/* $Id: recgrs.c,v 1.75 2003-03-08 14:27:58 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -214,7 +214,7 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
     struct xpath_location_step *xp;
 
 #endif
-    char *pexpr = malloc(strlen(tagpath)+2);
+    char *pexpr = xmalloc(strlen(tagpath)+2);
     int ok = 0;
     
     sprintf (pexpr, "%s\n", tagpath);
@@ -279,6 +279,8 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 	}
         xpe = xpe->next;
     } 
+
+    xfree(pexpr);
     
     if (ok) {
       logf(LOG_DEBUG,"Got it");
