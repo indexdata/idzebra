@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.72  1997-07-15 16:32:29  adam
+ * Revision 1.73  1997-09-04 13:57:20  adam
+ * New file extract/retrieve method tellf (added).
+ * Added O_BINARY for open calls.
+ *
+ * Revision 1.72  1997/07/15 16:32:29  adam
  * Bug fix: Match handler didn't terminate the resulting string!
  *
  * Revision 1.71  1997/07/15 16:28:41  adam
@@ -752,6 +756,12 @@ static off_t file_seek (void *handle, off_t offset)
     return lseek (p->fd, offset, SEEK_SET);
 }
 
+static off_t file_tell (void *handle)
+{
+    struct file_read_info *p = handle;
+    return p->file_offset;
+}
+
 static int file_read (void *handle, char *buf, size_t count)
 {
     struct file_read_info *p = handle;
@@ -978,6 +988,7 @@ static int recordExtract (SYSNO *sysno, const char *fname,
         extractCtrl.offset = recordOffset;
         extractCtrl.readf = file_read;
         extractCtrl.seekf = file_seek;
+        extractCtrl.tellf = file_tell;
         extractCtrl.endf = file_end;
         extractCtrl.map_chrs_input = map_chrs_input;
         extractCtrl.flagShowRecords = rGroup->flagShowRecords;
@@ -1309,7 +1320,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
         fd = -1;
     else
     {
-        if ((fd = open (fname, O_RDONLY)) == -1)
+        if ((fd = open (fname, O_BINARY|O_RDONLY)) == -1)
         {
             logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
             return 0;
