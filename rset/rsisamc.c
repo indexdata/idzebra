@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.31 2004-11-15 23:09:36 adam Exp $
+/* $Id: rsisamc.c,v 1.32 2004-11-15 23:13:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -61,30 +61,30 @@ struct rset_isamc_info {
     ISAMC_P pos;
 };
 
-static int log_level=0;
-static int log_level_initialized=0;
+static int log_level = 0;
+static int log_level_initialized = 0;
 
 RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol, int scope,
                              ISAMC is, ISAMC_P pos, TERMID term)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope,term);
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,term);
     struct rset_isamc_info *info;
     if (!log_level_initialized)
     {
-        log_level=yaz_log_module_level("rsisamc");
-        log_level_initialized=1;
+        log_level = yaz_log_module_level("rsisamc");
+        log_level_initialized = 1;
     }
     info = (struct rset_isamc_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->is = is;
     info->pos = pos;
     rnew->priv = info;
-    logf(log_level, "create: term=%p", term);
+    yaz_log(log_level, "create: term=%p", term);
     return rnew;
 }
 
 static void r_delete (RSET ct)
 {
-    logf (log_level, "rsisamc_delete");
+    yaz_log(log_level, "rsisamc_delete");
 }
 
 
@@ -94,18 +94,18 @@ RSFD r_open (RSET ct, int flag)
     RSFD rfd;
     struct rset_pp_info *ptinfo;
 
-    logf (log_level, "risamc_open");
+    yaz_log(log_level, "risamc_open");
     if (flag & RSETF_WRITE)
     {
-        logf (LOG_FATAL, "ISAMC set type is read-only");
+        yaz_log(LOG_FATAL, "ISAMC set type is read-only");
         return NULL;
     }
     rfd = rfd_create_base(ct);
     if (rfd->priv)
-        ptinfo=(struct rset_pp_info *)rfd->priv;
+        ptinfo = (struct rset_pp_info *)rfd->priv;
     else {
         ptinfo = (struct rset_pp_info *) nmem_malloc (ct->nmem,sizeof(*ptinfo));
-        rfd->priv=ptinfo;
+        rfd->priv = ptinfo;
         ptinfo->buf = nmem_malloc (ct->nmem,ct->keycontrol->key_size);
     }
     ptinfo->pt = isc_pp_open(info->is, info->pos);
@@ -114,7 +114,7 @@ RSFD r_open (RSET ct, int flag)
 
 static void r_close (RSFD rfd)
 {
-    struct rset_pp_info *p=(struct rset_pp_info *)(rfd->priv);
+    struct rset_pp_info *p = (struct rset_pp_info *)(rfd->priv);
 
     isc_pp_close(p->pt);
     rfd_delete_base(rfd);
@@ -123,25 +123,25 @@ static void r_close (RSFD rfd)
 
 static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
-    struct rset_pp_info *p=(struct rset_pp_info *)(rfd->priv);
+    struct rset_pp_info *p = (struct rset_pp_info *)(rfd->priv);
     int r;
     r = isc_pp_read(p->pt, buf);
     if (term)
-        *term=rfd->rset->term;
-    logf(log_level,"read returning term %p", *term);
+        *term = rfd->rset->term;
+    yaz_log(log_level,"read returning term %p", *term);
     return r;
 }
 
 static int r_write (RSFD rfd, const void *buf)
 {
-    logf (LOG_FATAL, "ISAMC set type is read-only");
+    yaz_log(LOG_FATAL, "ISAMC set type is read-only");
     return -1;
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)
 {
-    *current=-1;  /* sorry, not implemented yet */
-    *total=-1;
+    *current = -1;  /* sorry, not implemented yet */
+    *total = -1;
 }
 
 
