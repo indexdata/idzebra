@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: retrieve.c,v $
- * Revision 1.10  1999-05-26 07:49:13  adam
+ * Revision 1.11  1999-10-29 10:00:00  adam
+ * Fixed minor bug where database name wasn't set in zebra_record_fetch.
+ *
+ * Revision 1.10  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.9  1999/05/20 12:57:18  adam
@@ -127,6 +130,7 @@ int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
     if (!rec)
     {
         logf (LOG_DEBUG, "rec_get fail on sysno=%d", sysno);
+	*basenamep = 0;
         return 14;
     }
     recordAttr = rec_init_attr (zh->zei, rec);
