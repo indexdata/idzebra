@@ -1,22 +1,23 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.25 1995-02-06 10:08:31 adam Exp $
+# $Id: Makefile,v 1.26 1995-09-04 12:32:45 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
-SUBDIR=util str bfile dfa dict isam rset it base
-CFLAGS=-Wall -g -pedantic -ansi 
-CC=gcc
+SUBDIR=util str bfile dfa dict isam rset index it base
+RANLIB=ranlib
+YAZ=../../yaz
 
 all:
-	for i in $(SUBDIR); do cd $$i; if $(MAKE) CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done
+	for i in $(SUBDIR); do cd $$i; if $(MAKE) YAZ="$(YAZ)" RANLIB="$(RANLIB)" CFLAGS="$(CFLAGS)" CC="$(CC)"; then cd ..; else exit 1; fi; done
 
 dep depend:
-	for i in $(SUBDIR); do cd $$i; if $(MAKE) depend; then cd ..; else exit 1; fi; done
+	for i in $(SUBDIR); do cd $$i; if $(MAKE) YAZ="$(YAZ)" depend; then cd ..; else exit 1; fi; done
 
 clean:
 	for i in $(SUBDIR); do (cd $$i; $(MAKE) clean); done
+	rm -f lib/*.a
 
 cleanup:
 	rm -f `find $(SUBDIR) -name "*.[oa]" -print`
@@ -24,28 +25,26 @@ cleanup:
 	rm -f `find $(SUBDIR) -name "errlist" -print`
 	rm -f `find $(SUBDIR) -name "a.out" -print`
 
-distclean: cleanup clean
+cleandepend: 
 	for i in $(SUBDIR); do (cd $$i; \
-		mv Makefile Makefile.old; \
-		sed '/^#Depend/q' <Makefile.old >Makefile; \
-		rm Makefile.old); done
+		if sed '/^#Depend/q' <Makefile >Makefile.tmp; then \
+		mv -f Makefile.tmp Makefile; fi; rm -f .depend); done
 
-usedepend1:
+taildepend:
 	for i in $(SUBDIR); do (cd $$i; \
-		mv Makefile Makefile.tmp; \
-		sed 's/^if/#if/' <Makefile.tmp|sed 's/^include/#include/'| \
+		if sed 's/^if/#if/' <Makefile|sed 's/^include/#include/'| \
 		sed 's/^endif/#endif/' | \
-		sed 's/^depend: depend2/depend: depend1/g' >Makefile; \
-		rm Makefile.tmp); done
+		sed 's/^depend: depend2/depend: depend1/g' | \
+		sed '/^#Depend/q' >Makefile.tmp; then \
+		mv -f Makefile.tmp Makefile; fi); done
 
-usedepend2:
+gnudepend:
 	for i in $(SUBDIR); do (cd $$i; \
-		mv Makefile Makefile.tmp; \
-		sed '/^#Depend/q' <Makefile.tmp| \
+		if sed '/^#Depend/q' <Makefile| \
 		sed 's/^#if/if/' |sed 's/^#include/include/'| \
 		sed 's/^#endif/endif/' | \
-		sed 's/^depend: depend1/depend: depend2/g' >Makefile; \
-		rm Makefile.tmp); done
+		sed 's/^depend: depend1/depend: depend2/g' >Makefile.tmp;then \
+		mv -f Makefile.tmp Makefile; fi); done
 
 wc:
 	wc `find . -name '*.[ch]'`
