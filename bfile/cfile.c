@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.13  1996-04-09 14:48:49  adam
+ * Revision 1.14  1996-04-12 07:01:55  adam
+ * Yet another bug fix (next_block was initialized to 0; now set to 1).
+ *
+ * Revision 1.13  1996/04/09 14:48:49  adam
  * Bug fix: offset calculation when using flat files was completely broken.
  *
  * Revision 1.12  1996/04/09  06:47:28  adam
@@ -128,7 +131,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
         hash_bytes = cf->head.hash_size * sizeof(int);
         cf->head.flat_bucket = cf->head.next_bucket = cf->head.first_bucket = 
             (hash_bytes+sizeof(cf->head))/HASH_BSIZE + 2;
-        cf->head.next_block = 0;
+        cf->head.next_block = 1;
         if (wflag)
             mf_write (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
         cf->array = xmalloc (hash_bytes);
@@ -324,6 +327,7 @@ static void cf_write_flat (CFile cf, int no, int vno)
     hno += cf->head.next_bucket;
     if (hno >= cf->head.flat_bucket)
         cf->head.flat_bucket = hno+1;
+    cf->dirty = 1;
     mf_write (cf->hash_mf, hno, off, sizeof(int), &vno);
 }
 

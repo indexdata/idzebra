@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: commit.c,v $
- * Revision 1.8  1996-02-07 14:03:49  adam
+ * Revision 1.9  1996-04-12 07:01:57  adam
+ * Yet another bug fix (next_block was initialized to 0; now set to 1).
+ *
+ * Revision 1.8  1996/02/07 14:03:49  adam
  * Work on flat indexed shadow files.
  *
  * Revision 1.7  1996/02/07  10:08:46  adam
@@ -91,15 +94,27 @@ static void cf_commit_flat (CFile cf)
     fp = xmalloc (HASH_BSIZE);
     for (hno = cf->head.next_bucket; hno < cf->head.flat_bucket; hno++)
     {
-        mf_read (cf->hash_mf, hno, 0, 0, fp);
+        if (hno == cf->head.next_bucket || hno == cf->head.flat_bucket-1)
+        {
+            for (i = 0; i < (HASH_BSIZE/sizeof(int)); i++)
+                fp[i] = 0;
+        }
+        if (!mf_read (cf->hash_mf, hno, 0, 0, fp))
+        {
+            logf (LOG_WARN, "read index block hno=%d (%d-%d) commit",
+                             hno, cf->head.next_bucket,
+                             cf->head.flat_bucket-1);
+        }
         for (i = 0; i < (HASH_BSIZE/sizeof(int)); i++)
         {
             if (fp[i])
             {
                 if (!mf_read (cf->block_mf, fp[i], 0, 0, cf->iobuf))
                 {
-                    logf (LOG_FATAL, "read commit block at %d (->%d)",
-                          fp[i], vno);
+                    logf (LOG_FATAL, "read data block hno=%d (%d-%d) "
+                                     "i=%d commit block at %d (->%d)",
+                          hno, cf->head.next_bucket, cf->head.flat_bucket-1,
+                          i, fp[i], vno);
                     exit (1);
                 }
                 mf_write (cf->rmf, vno, 0, 0, cf->iobuf);
