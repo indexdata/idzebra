@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dirs.c,v $
- * Revision 1.8  1996-04-12 07:02:21  adam
+ * Revision 1.9  1996-04-23 12:39:07  adam
+ * Bug fix: In function dirs_del dict_delete is used to remove a file
+ * rather than a bogus dict_insert.
+ *
+ * Revision 1.8  1996/04/12  07:02:21  adam
  * File update of single files.
  *
  * Revision 1.7  1996/03/21 14:50:09  adam
@@ -194,12 +198,10 @@ void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime)
 void dirs_del (struct dirs_info *p, const char *src)
 {
     char path[256];
-    char info[2];
 
     sprintf (path, "%s%s", p->prefix, src);
     logf (LOG_DEBUG, "dirs_del %s", path);
-    info[0] = 'r';
-    dict_insert (p->dict, path, 1, info);
+    dict_delete (p->dict, path);
 }
 
 void dirs_free (struct dirs_info **pp)
