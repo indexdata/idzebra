@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data ApS
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: res.c,v $
- * Revision 1.22  1998-01-12 15:04:32  adam
+ * Revision 1.23  1998-10-28 15:18:55  adam
+ * Fix for DOS-formatted configuration files.
+ *
+ * Revision 1.22  1998/01/12 15:04:32  adam
  * Removed exit - call.
  *
  * Revision 1.21  1997/11/18 10:04:03  adam
@@ -165,7 +168,7 @@ static void reread (Res r)
             val_size = 0;
             while (1)
             {
-                if (fr_buf[no] == '\0' || fr_buf[no] == '\n')
+                if (fr_buf[no] == '\0' || strchr("\n\r\f", fr_buf[no]))
                 {
                     while (val_size > 0 &&
                               (val_buf[val_size-1] == ' ' ||
@@ -178,7 +181,7 @@ static void reread (Res r)
                          resp->name, resp->value);
                     break;
                 }
-                else if (fr_buf[no] == '\\' && fr_buf[no+1] == '\n')
+                else if (fr_buf[no] == '\\' && strchr ("\n\r\f", fr_buf[no+1]))
                 {
                     line = fgets (fr_buf, sizeof(fr_buf)-1, fr);
                     if (!line)
