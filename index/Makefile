@@ -1,7 +1,7 @@
 # Copyright (C) 1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.11 1995-09-27 12:22:27 adam Exp $
+# $Id: Makefile,v 1.12 1995-10-10 14:03:33 adam Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -13,7 +13,7 @@ TPROG1=index
 TPROG2=kdump
 TPROG3=zserver
 DEFS=$(INCLUDE)
-O1 = main.o dir.o trav.o extract.o kinput.o kcompare.o ksort.o\
+O1 = main.o dir.o trav.o extract.o kinput.o kcompare.o \
  symtab.o text.o recctrl.o
 O2 = kdump.o
 O3 = zserver.o kcompare.o zrpn.o zsets.o text.o recctrl.o
