@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.44 2005-01-15 19:38:24 adam Exp $
+/* $Id: rset.h,v 1.45 2005-01-15 20:47:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,12 +20,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #ifndef RSET_H
 #define RSET_H
 
-#include <stdlib.h>
+#include <stddef.h>
 
 /* unfortunately we need the isam includes here, for the arguments for */
 /* rsisamX_create */
@@ -33,9 +31,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <idzebra/isamc.h> 
 #include <idzebra/isams.h> 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+YAZ_BEGIN_CDECL
 
 typedef struct rsfd *RSFD; /* Rset "file descriptor" */
 typedef struct rset *RSET; /* Result set */
@@ -199,7 +195,7 @@ RSET rset_dup (RSET rs);
 
 /* int rset_pos(RSFD fd, double *current, double *total); */
 #define rset_pos(rfd,cur,tot) \
-    (*(rfd)->rset->control->f_pos)( (rfd),(cur),(tot))
+    (*(rfd)->rset->control->f_pos)((rfd),(cur),(tot))
 
 /* int rset_read(RSFD rfd, void *buf, TERMID term); */
 #define rset_read(rfd, buf, term) \
@@ -214,62 +210,45 @@ RSET rset_dup (RSET rs);
 /** rset_count counts or estimates the keys in it*/
 zint rset_count(RSET rs);
 
-RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
+RSET rstemp_create(NMEM nmem, const struct key_control *kcontrol,
                     int scope, 
                     const char *temp_path, TERMID term);
 
 RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol);
 
-RSET rsbool_create_and( NMEM nmem, const struct key_control *kcontrol,
-                        int scope, 
-                        RSET rset_l, RSET rset_r);
+RSET rsbool_create_and(NMEM nmem, const struct key_control *kcontrol,
+		       int scope, RSET rset_l, RSET rset_r);
 
-RSET rsbool_create_or ( NMEM nmem, const struct key_control *kcontrol,
-                        int scope,
-                        RSET rset_l, RSET rset_r);
+RSET rsbool_create_or (NMEM nmem, const struct key_control *kcontrol,
+		       int scope, RSET rset_l, RSET rset_r);
 
-RSET rsbool_create_not( NMEM nmem, const struct key_control *kcontrol,
-                        int scope,
-                        RSET rset_l, RSET rset_r);
+RSET rsbool_create_not(NMEM nmem, const struct key_control *kcontrol,
+		       int scope, RSET rset_l, RSET rset_r);
 
-RSET rsbetween_create(  NMEM nmem, const struct key_control *kcontrol,
-                        int scope, 
-                        RSET rset_l, RSET rset_m, RSET rset_r, 
-                        RSET rset_attr);
+RSET rsbetween_create(NMEM nmem, const struct key_control *kcontrol,
+		      int scope, RSET rset_l, RSET rset_m, RSET rset_r, 
+		      RSET rset_attr);
 
-RSET rsmultior_create(  NMEM nmem, const struct key_control *kcontrol,
-                        int scope, 
-                        int no_rsets, RSET* rsets);
+RSET rsmulti_or_create(NMEM nmem, const struct key_control *kcontrol,
+		       int scope, int no_rsets, RSET* rsets);
 
-RSET rsmultiand_create( NMEM nmem, const struct key_control *kcontrol,
-                        int scope, 
-                        int no_rsets, RSET* rsets);
+RSET rsmulti_and_create(NMEM nmem, const struct key_control *kcontrol,
+			int scope, int no_rsets, RSET* rsets);
 
-RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol,
-                        int scope, 
-                    int rset_no, RSET *rset,
-                    int ordered, int exclusion,
-                    int relation, int distance);
+RSET rsprox_create(NMEM nmem, const struct key_control *kcontrol,
+		   int scope, int rset_no, RSET *rset,
+		   int ordered, int exclusion, int relation, int distance);
 
-RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol,
-                        int scope, 
-                     ISAMB is, ISAMB_P pos,
-                     TERMID term);
+RSET rsisamb_create(NMEM nmem, const struct key_control *kcontrol,
+		    int scope, ISAMB is, ISAMB_P pos, TERMID term);
 
-RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol,
-                        int scope, 
-                     ISAMC is, ISAMC_P pos,
-                     TERMID term);
+RSET rsisamc_create(NMEM nmem, const struct key_control *kcontrol,
+		    int scope, ISAMC is, ISAMC_P pos, TERMID term);
 
-RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol,
-                        int scope,
-                     ISAMS is, ISAMS_P pos,
-                     TERMID term);
+RSET rsisams_create(NMEM nmem, const struct key_control *kcontrol,
+		    int scope, ISAMS is, ISAMS_P pos, TERMID term);
 
 
-
-#ifdef __cplusplus
-}
-#endif
+YAZ_END_CDECL
 
 #endif
