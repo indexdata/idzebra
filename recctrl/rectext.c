@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.2  1996-10-29 14:02:45  adam
+ * Revision 1.3  1996-11-01 09:00:33  adam
+ * This simple "text" format now supports element specs B and M.
+ *
+ * Revision 1.2  1996/10/29 14:02:45  adam
  * Uses buffered read to speed up things.
  *
  * Revision 1.1  1996/10/11 10:57:28  adam
@@ -125,6 +128,12 @@ static int text_retrieve (struct recRetrieveCtrl *p)
     static char *text_buf = NULL;
     static int text_size = 0;
     int start_flag = 1;
+    const char *elementSetName = NULL;
+    int no_lines = 0;
+
+    if (p->comp && p->comp->which == Z_RecordComp_simple &&
+        p->comp->u.simple->which == Z_ElementSetNames_generic)
+        elementSetName = p->comp->u.simple->u.generic;
 
     while (1)
     {
@@ -156,6 +165,27 @@ static int text_retrieve (struct recRetrieveCtrl *p)
         if (r <= 0)
             break;
         text_ptr += r;
+    }
+    text_buf[text_ptr] = '\0';
+    if (elementSetName)
+    {
+        if (!strcmp (elementSetName, "B"))
+            no_lines = 4;
+        if (!strcmp (elementSetName, "M"))
+            no_lines = 20;
+    }
+    if (no_lines)
+    {
+        char *p = text_buf;
+        int i = 0;
+
+        while (++i <= no_lines && (p = strchr (p, '\n')))
+            p++;
+        if (p)
+        {
+            p[1] = '\0';
+            text_ptr = p-text_buf;
+        }
     }
     p->output_format = VAL_SUTRS;
     p->rec_buf = text_buf;
