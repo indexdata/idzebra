@@ -1,4 +1,4 @@
-/* $Id: zebramap.h,v 1.15 2004-07-28 09:47:41 adam Exp $
+/* $Id: zebramap.h,v 1.15.2.1 2004-09-16 14:07:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -34,7 +34,7 @@ ZebraMaps zebra_maps_open (Res res, const char *base);
 void zebra_maps_close (ZebraMaps zm);
 
 const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
-			       const char **from, int len);
+			       const char **from, int len, int first);
 const char *zebra_maps_output(ZebraMaps, unsigned reg_id, const char **from);
 
 int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,

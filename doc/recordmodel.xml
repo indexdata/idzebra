@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.18 2004-08-04 08:26:43 adam Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.17.2.1 2004-09-16 14:07:49 adam Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -1786,174 +1786,216 @@
      special-purpose fields such as WWW-style linkages (URx).
     </para>
 
-    <para>
-     The field types, and hence character sets, are associated with data
-     elements by the .abs files (see above).
-     The file <literal>default.idx</literal>
-     provides the association between field type codes (as used in the .abs
-     files) and the character map files (with the .chr suffix). The format
-     of the .idx file is as follows
-    </para>
+    <sect3 id="default-idx-file">
+     <title>The default.idx file</title>
+     <para>
+      The field types, and hence character sets, are associated with data
+      elements by the .abs files (see above).
+      The file <literal>default.idx</literal>
+      provides the association between field type codes (as used in the .abs
+      files) and the character map files (with the .chr suffix). The format
+      of the .idx file is as follows
+     </para>
 
-    <para>
-     <variablelist>
+     <para>
+      <variablelist>
 
-      <varlistentry>
-       <term>index <emphasis>field type code</emphasis></term>
-       <listitem>
-        <para>
-         This directive introduces a new search index code.
-         The argument is a one-character code to be used in the
-         .abs files to select this particular index type. An index, roughly,
-         corresponds to a particular structure attribute during search. Refer
-         to <xref linkend="search"/>.
-        </para>
-       </listitem></varlistentry>
-      <varlistentry>
-       <term>sort <emphasis>field code type</emphasis></term>
-       <listitem>
-        <para>
-         This directive introduces a 
-         sort index. The argument is a one-character code to be used in the
-         .abs fie to select this particular index type. The corresponding
-         use attribute must be used in the sort request to refer to this
-         particular sort index. The corresponding character map (see below)
-         is used in the sort process.
-        </para>
-       </listitem></varlistentry>
-      <varlistentry>
-       <term>completeness <emphasis>boolean</emphasis></term>
-       <listitem>
-        <para>
-         This directive enables or disables complete field indexing.
-         The value of the <emphasis>boolean</emphasis> should be 0
-         (disable) or 1. If completeness is enabled, the index entry will
-         contain the complete contents of the field (up to a limit), with words
-         (non-space characters) separated by single space characters
-         (normalized to " " on display). When completeness is
-         disabled, each word is indexed as a separate entry. Complete subfield
-         indexing is most useful for fields which are typically browsed (eg.
-         titles, authors, or subjects), or instances where a match on a
-         complete subfield is essential (eg. exact title searching). For fields
-         where completeness is disabled, the search engine will interpret a
-         search containing space characters as a word proximity search.
-        </para>
-       </listitem></varlistentry>
-      <varlistentry>
-       <term>charmap <emphasis>filename</emphasis></term>
-       <listitem>
-        <para>
-         This is the filename of the character
-         map to be used for this index for field type.
-        </para>
-       </listitem></varlistentry>
-     </variablelist>
-    </para>
+       <varlistentry>
+	<term>index <emphasis>field type code</emphasis></term>
+	<listitem>
+	 <para>
+	  This directive introduces a new search index code.
+	  The argument is a one-character code to be used in the
+	  .abs files to select this particular index type. An index, roughly,
+	  corresponds to a particular structure attribute during search. Refer
+	  to <xref linkend="search"/>.
+	 </para>
+	</listitem></varlistentry>
+       <varlistentry>
+	<term>sort <emphasis>field code type</emphasis></term>
+	<listitem>
+	 <para>
+	  This directive introduces a 
+	  sort index. The argument is a one-character code to be used in the
+	  .abs fie to select this particular index type. The corresponding
+	  use attribute must be used in the sort request to refer to this
+	  particular sort index. The corresponding character map (see below)
+	  is used in the sort process.
+	 </para>
+	</listitem></varlistentry>
+       <varlistentry>
+	<term>completeness <emphasis>boolean</emphasis></term>
+	<listitem>
+	 <para>
+	  This directive enables or disables complete field indexing.
+	  The value of the <emphasis>boolean</emphasis> should be 0
+	  (disable) or 1. If completeness is enabled, the index entry will
+	  contain the complete contents of the field (up to a limit), with words
+	  (non-space characters) separated by single space characters
+	  (normalized to " " on display). When completeness is
+	  disabled, each word is indexed as a separate entry. Complete subfield
+	  indexing is most useful for fields which are typically browsed (eg.
+	  titles, authors, or subjects), or instances where a match on a
+	  complete subfield is essential (eg. exact title searching). For fields
+	  where completeness is disabled, the search engine will interpret a
+	  search containing space characters as a word proximity search.
+	 </para>
+	</listitem></varlistentry>
+       <varlistentry>
+	<term>charmap <emphasis>filename</emphasis></term>
+	<listitem>
+	 <para>
+	  This is the filename of the character
+	  map to be used for this index for field type.
+	 </para>
+	</listitem></varlistentry>
+      </variablelist>
+     </para>
+    </sect3>
 
-    <para>
-     The contents of the character map files are structured as follows:
-    </para>
+    <sect3 id="character-map-files">
+     <title>The character map file format</title>
+     <para>
+      The contents of the character map files are structured as follows:
+     </para>
 
-    <para>
-     <variablelist>
+     <para>
+      <variablelist>
 
-      <varlistentry>
-       <term>lowercase <emphasis>value-set</emphasis></term>
-       <listitem>
-        <para>
-         This directive introduces the basic value set of the field type.
-         The format is an ordered list (without spaces) of the
-         characters which may occur in "words" of the given type.
-         The order of the entries in the list determines the
-         sort order of the index. In addition to single characters, the
-         following combinations are legal:
-        </para>
+       <varlistentry>
+	<term>lowercase <emphasis>value-set</emphasis></term>
+	<listitem>
+	 <para>
+	  This directive introduces the basic value set of the field type.
+	  The format is an ordered list (without spaces) of the
+	  characters which may occur in "words" of the given type.
+	  The order of the entries in the list determines the
+	  sort order of the index. In addition to single characters, the
+	  following combinations are legal:
+	 </para>
 
-        <para>
+	 <para>
 
-         <itemizedlist>
-          <listitem>
-           <para>
-            Backslashes may be used to introduce three-digit octal, or
-            two-digit hex representations of single characters
-            (preceded by <literal>x</literal>).
-            In addition, the combinations
-            \\, \\r, \\n, \\t, \\s (space &mdash; remember that real
-            space-characters may not occur in the value definition), and
-            \\ are recognized, with their usual interpretation.
-           </para>
-          </listitem>
+	  <itemizedlist>
+	   <listitem>
+	    <para>
+	     Backslashes may be used to introduce three-digit octal, or
+	     two-digit hex representations of single characters
+	     (preceded by <literal>x</literal>).
+	     In addition, the combinations
+	     \\, \\r, \\n, \\t, \\s (space &mdash; remember that real
+	     space-characters may not occur in the value definition), and
+	     \\ are recognized, with their usual interpretation.
+	    </para>
+	   </listitem>
 
-          <listitem>
-           <para>
-            Curly braces {} may be used to enclose ranges of single
-            characters (possibly using the escape convention described in the
-            preceding point), eg. {a-z} to introduce the
-            standard range of ASCII characters.
-            Note that the interpretation of such a range depends on
-            the concrete representation in your local, physical character set.
-           </para>
-          </listitem>
+	   <listitem>
+	    <para>
+	     Curly braces {} may be used to enclose ranges of single
+	     characters (possibly using the escape convention described in the
+	     preceding point), eg. {a-z} to introduce the
+	     standard range of ASCII characters.
+	     Note that the interpretation of such a range depends on
+	     the concrete representation in your local, physical character set.
+	    </para>
+	   </listitem>
 
-          <listitem>
-           <para>
-            paranthesises () may be used to enclose multi-byte characters -
-            eg. diacritics or special national combinations (eg. Spanish
-            "ll"). When found in the input stream (or a search term),
-            these characters are viewed and sorted as a single character, with a
-            sorting value depending on the position of the group in the value
-            statement.
-           </para>
-          </listitem>
+	   <listitem>
+	    <para>
+	     paranthesises () may be used to enclose multi-byte characters -
+	     eg. diacritics or special national combinations (eg. Spanish
+	     "ll"). When found in the input stream (or a search term),
+	     these characters are viewed and sorted as a single character, with a
+	     sorting value depending on the position of the group in the value
+	     statement.
+	    </para>
+	   </listitem>
 
-         </itemizedlist>
+	  </itemizedlist>
 
-        </para>
-       </listitem></varlistentry>
-      <varlistentry>
-       <term>uppercase <emphasis>value-set</emphasis></term>
-       <listitem>
-        <para>
-         This directive introduces the
-         upper-case equivalencis to the value set (if any). The number and
-         order of the entries in the list should be the same as in the
-         <literal>lowercase</literal> directive.
-        </para>
-       </listitem></varlistentry>
-      <varlistentry>
-       <term>space <emphasis>value-set</emphasis></term>
-       <listitem>
-        <para>
-         This directive introduces the character
-         which separate words in the input stream. Depending on the
-         completeness mode of the field in question, these characters either
-         terminate an index entry, or delimit individual "words" in
-         the input stream. The order of the elements is not significant &mdash;
-         otherwise the representation is the same as for the
-         <literal>uppercase</literal> and <literal>lowercase</literal>
-         directives.
-        </para>
-       </listitem></varlistentry>
-      <varlistentry>
-       <term>map <emphasis>value-set</emphasis>
-        <emphasis>target</emphasis></term>
-       <listitem>
-        <para>
-         This directive introduces a
-         mapping between each of the members of the value-set on the left to
-         the character on the right. The character on the right must occur in
-         the value set (the <literal>lowercase</literal> directive) of
-         the character set, but
-         it may be a paranthesis-enclosed multi-octet character. This directive
-         may be used to map diacritics to their base characters, or to map
-         HTML-style character-representations to their natural form, etc.
-        </para>
-       </listitem></varlistentry>
-     </variablelist>
-    </para>
-
+	 </para>
+	</listitem></varlistentry>
+       <varlistentry>
+	<term>uppercase <emphasis>value-set</emphasis></term>
+	<listitem>
+	 <para>
+	  This directive introduces the
+	  upper-case equivalencis to the value set (if any). The number and
+	  order of the entries in the list should be the same as in the
+	  <literal>lowercase</literal> directive.
+	 </para>
+	</listitem></varlistentry>
+       <varlistentry>
+	<term>space <emphasis>value-set</emphasis></term>
+	<listitem>
+	 <para>
+	  This directive introduces the character
+	  which separate words in the input stream. Depending on the
+	  completeness mode of the field in question, these characters either
+	  terminate an index entry, or delimit individual "words" in
+	  the input stream. The order of the elements is not significant &mdash;
+	  otherwise the representation is the same as for the
+	  <literal>uppercase</literal> and <literal>lowercase</literal>
+	  directives.
+	 </para>
+	</listitem></varlistentry>
+       <varlistentry>
+	<term>map <emphasis>value-set</emphasis>
+	 <emphasis>target</emphasis></term>
+	<listitem>
+	 <para>
+	  This directive introduces a
+	  mapping between each of the members of the value-set on the left to
+	  the character on the right. The character on the right must occur in
+	  the value set (the <literal>lowercase</literal> directive) of
+	  the character set, but
+	  it may be a paranthesis-enclosed multi-octet character. This directive
+	  may be used to map diacritics to their base characters, or to map
+	  HTML-style character-representations to their natural form, etc. The map directive
+	  can also be used to ignore leading articles in searching and/or sorting, and to perform
+	  other special transformations. See section <xref linkend="leading-articles"/>.
+	 </para>
+	</listitem></varlistentry>
+      </variablelist>
+     </para>
+    </sect3>
+    <sect3 id="leading-articles">
+     <title>Ignoring leading articles</title>
+     <para>
+      In addition to specifying sort orders, space (blank) handling, and upper/lowercase folding,
+      you can also use the character map files to make Zebra ignore leading articles in sorting
+      records, or when doing complete field searching.
+     </para>
+     <para>
+      This is done using the <literal>map</literal> directive in the character map file. In a
+      nutshell, what you do is map certain sequences of characters, when they occur <emphasis>
+      in the beginning of a field</emphasis>, to a space. Assuming that the character "@" is
+      defined as a space character in your file, you can do:
+      <screen>
+       map (^The\s) @
+       map (^the\s) @
+      </screen>
+      The effect of these directives is to map either 'the' or 'The', followed by a space
+      character, to a space. The hat ^ character denotes beginning-of-field only when
+      complete-subfield indexing or sort indexing is taking place; otherwise, it is treated just
+      as any other character.
+     </para>
+     <para>
+      Because the <literal>default.idx</literal> file can be used to associate different
+      character maps with different indexing types -- and you can create additional indexing
+      types, should the need arise -- it is possible to specify that leading articles should be
+      ignored either in sorting, in complete-field searching, or both.
+     </para>
+     <para>
+      If you ignore certain prefixes in sorting, then these will be eliminated from the index,
+      and sorting will take place as if they weren't there. However, if you set the system up
+      to ignore certain prefixes in <emphasis>searching</emphasis>, then these are deleted both
+      from the indexes and from query terms, when the client specifies complete-field
+      searching. This has the effect that a search for 'the science journal' and 'science
+      journal' would both produce the same results.
+     </para>
+    </sect3>
    </sect2>
-
   </sect1>
 
   <sect1 id="formats">

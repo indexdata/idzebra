@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.32 2004-06-16 20:30:47 adam Exp $
+/* $Id: zebramap.c,v 1.32.2.1 2004-09-16 14:07:51 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -291,13 +291,13 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
 }
 
 const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
-			       const char **from, int len)
+			       const char **from, int len, int first)
 {
     chrmaptab maptab;
 
     maptab = zebra_charmap_get (zms, reg_id);
     if (maptab)
-	return chr_map_input(maptab, from, len);
+	return chr_map_input(maptab, from, len, first);
     
     zms->temp_map_str[0] = **from;
 

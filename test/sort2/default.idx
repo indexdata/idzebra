@@ -1,5 +1,5 @@
 # Zebra indexes as referred to from the *.abs-files.
-#  $Id: default.idx,v 1.10.2.1 2004-09-16 14:07:50 adam Exp $
+#  $Id: default.idx,v 1.1.2.1 2004-09-16 14:07:51 adam Exp $
 #
 
 # Traditional word index
@@ -8,14 +8,14 @@
 index w
 completeness 0
 position 1
-charmap string.chr
+charmap sort.chr
 
 # Phrase index
 # Used if completeness is 'complete {sub}field' (@attr 6=2, @attr 6=1)
 # and structure is word/phrase/word-list/free-form-text/document-text
 index p
 completeness 1
-charmap string.chr
+charmap sort.chr
 
 # URX (URL) index
 # Used if structure=urx (@attr 4=104)
@@ -48,8 +48,8 @@ index d
 completeness 0
 charmap @
 
-# Sort register
+# Sort, with prefixes to ignore
 sort s
 completeness 1
-charmap string.chr
+charmap sort.chr
 

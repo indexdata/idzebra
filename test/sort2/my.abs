@@ -1,0 +1,14 @@
+# $Id: my.abs,v 1.1.2.1 2004-09-16 14:07:51 adam Exp $
+
+name my
+reference WAIS-schema
+attset bib1.att
+tagset generic.tag
+xpath enable
+
+varset var1.var
+
+esetname B @
+esetname F @
+
+elm title		Title			!:p,!:w,!:s

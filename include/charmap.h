@@ -1,4 +1,4 @@
-/* $Id: charmap.h,v 1.9 2004-07-28 09:47:41 adam Exp $
+/* $Id: charmap.h,v 1.9.2.1 2004-09-16 14:07:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -43,9 +43,9 @@ YAZ_EXPORT chrmaptab chrmaptab_create(const char *tabpath, const char *name,
 				      int map_only, const char *tabroot);
 YAZ_EXPORT void chrmaptab_destroy (chrmaptab tab);
 
-YAZ_EXPORT const char **chr_map_input(chrmaptab t, const char **from, int len);
+YAZ_EXPORT const char **chr_map_input(chrmaptab t, const char **from, int len, int first);
 YAZ_EXPORT const char **chr_map_input_x(chrmaptab t,
-					const char **from, int *len);
+					const char **from, int *len, int first);
 YAZ_EXPORT const char **chr_map_input_q(chrmaptab maptab,
 					const char **from, int len,
 					const char **qmap);

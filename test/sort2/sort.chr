@@ -1,0 +1,34 @@
+# character map that removes some leading prefixes
+#
+# $Id: sort.chr,v 1.2.2.1 2004-09-16 14:07:51 adam Exp $
+
+# Define the basic value-set. *Beware* of changing this without re-indexing
+# your databases.
+
+lowercase {0-9}{a-y}üzזהרצו
+uppercase {0-9}{A-Y}ÜZִֶ״ײֵ
+
+# Breaking characters
+
+space {\001-\040}!"#$%&'\()*+,-./:;<=>?@\[\\]^_`\{|}~
+
+# Characters to be considered equivalent for searching purposes.
+
+# equivalent זה(ae)
+# equivalent רצ(oe)
+# equivalent ו(aa)
+# equivalent uü
+
+map (^The\s)	@
+map (^the\s)	@
+map (^a\s)      @
+map (^A\s)	@
+
+#map יֹ		e
+#map ב		a
+#map ף		o
+#map ם		i
+
+#map (Aa)	(AA)
+
+#map (aa)        a

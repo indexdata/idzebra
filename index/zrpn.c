@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.142 2004-08-04 08:35:23 adam Exp $
+/* $Id: zrpn.c,v 1.141.2.1 2004-09-16 14:07:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -56,7 +56,7 @@ typedef struct {
 static const char **rpn_char_map_handler (void *vp, const char **from, int len)
 {
     struct rpn_char_map_info *p = (struct rpn_char_map_info *) vp;
-    const char **out = zebra_maps_input (p->zm, p->reg_type, from, len);
+    const char **out = zebra_maps_input (p->zm, p->reg_type, from, len, 0);
 #if 0
     if (out && *out)
     {
@@ -164,7 +164,7 @@ struct grep_info {
 #ifdef TERM_COUNT        
     int *term_no;        
 #endif        
-    ISAMC_P *isam_p_buf;
+    ISAMS_P *isam_p_buf;
     int isam_p_size;        
     int isam_p_indx;
     ZebraHandle zh;
@@ -194,12 +194,12 @@ static void add_isam_p (const char *name, const char *info,
 {
     if (p->isam_p_indx == p->isam_p_size)
     {
-        ISAMC_P *new_isam_p_buf;
+        ISAMS_P *new_isam_p_buf;
 #ifdef TERM_COUNT        
         int *new_term_no;        
 #endif
         p->isam_p_size = 2*p->isam_p_size + 100;
-        new_isam_p_buf = (ISAMC_P *) xmalloc (sizeof(*new_isam_p_buf) *
+        new_isam_p_buf = (ISAMS_P *) xmalloc (sizeof(*new_isam_p_buf) *
 					     p->isam_p_size);
         if (p->isam_p_buf)
         {
@@ -253,7 +253,7 @@ static int grep_handle (char *name, const char *info, void *p)
 }
 
 static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
-		     const char *ct1, const char *ct2)
+		     const char *ct1, const char *ct2, int first)
 {
     const char *s1, *s0 = *src;
     const char **map;
@@ -266,7 +266,7 @@ static int term_pre (ZebraMaps zebra_maps, int reg_type, const char **src,
         if (ct2 && strchr (ct2, *s0))
             break;
         s1 = s0;
-        map = zebra_maps_input (zebra_maps, reg_type, &s1, strlen(s1));
+        map = zebra_maps_input (zebra_maps, reg_type, &s1, strlen(s1), first);
         if (**map != *CHR_SPACE)
             break;
         s0 = s1;
@@ -290,13 +290,13 @@ static int term_100 (ZebraMaps zebra_maps, int reg_type,
     const char *space_start = 0;
     const char *space_end = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, NULL, NULL))
+    if (!term_pre (zebra_maps, reg_type, src, NULL, NULL, !space_split))
         return 0;
     s0 = *src;
     while (*s0)
     {
         s1 = s0;
-        map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+        map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
 	if (space_split)
 	{
 	    if (**map == *CHR_SPACE)
@@ -348,7 +348,7 @@ static int term_101 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "#", "#"))
+    if (!term_pre (zebra_maps, reg_type, src, "#", "#", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -362,7 +362,7 @@ static int term_101 (ZebraMaps zebra_maps, int reg_type,
         else
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -390,7 +390,7 @@ static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
     const char *s0, *s1;
     const char **map;
 
-    if (!term_pre (zebra_maps, reg_type, src, "^\\()[].*+?|", "("))
+    if (!term_pre (zebra_maps, reg_type, src, "^\\()[].*+?|", "(", !space_split))
         return 0;
     s0 = *src;
     if (errors && *s0 == '+' && s0[1] && s0[2] == '+' && s0[3] &&
@@ -411,7 +411,7 @@ static int term_103 (ZebraMaps zebra_maps, int reg_type, const char **src,
         else
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (**map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -448,7 +448,7 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "?*#", "?*#"))
+    if (!term_pre (zebra_maps, reg_type, src, "?*#", "?*#", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -491,7 +491,7 @@ static int term_104 (ZebraMaps zebra_maps, int reg_type,
 	}
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -519,7 +519,7 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
     int i = 0;
     int j = 0;
 
-    if (!term_pre (zebra_maps, reg_type, src, "*!", "*!"))
+    if (!term_pre (zebra_maps, reg_type, src, "*!", "*!", !space_split))
         return 0;
     s0 = *src;
     while (*s0)
@@ -537,7 +537,7 @@ static int term_105 (ZebraMaps zebra_maps, int reg_type,
 	}
         {
             s1 = s0;
-            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0), 0);
             if (space_split && **map == *CHR_SPACE)
                 break;
             while (s1 < s0)
@@ -1235,7 +1235,7 @@ static int trans_scan_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             
         while ((len = (cp_end - cp)) > 0)
         {
-            map = zebra_maps_input (zh->reg->zebra_maps, reg_type, &cp, len);
+            map = zebra_maps_input (zh->reg->zebra_maps, reg_type, &cp, len, 0);
             if (**map == *CHR_SPACE)
                 space_map = *map;
             else
@@ -1365,7 +1365,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
 {
     char term_dst[IT_MAX_WORD+1];
     RSET rset[60], result;
-    int rset_no = 0;
+    int  rset_no = 0;
     struct grep_info grep_info;
     char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
@@ -1787,7 +1787,6 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     RSET result;
     RSFD rsfd;
     struct it_key key;
-    int sys;
     rset_temp_parms parms;
 
     parms.rset_term = rset_term_create (termz, -1, rank_type,
@@ -1798,19 +1797,10 @@ static RSET rpn_search_APT_local (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     result = rset_create (rset_kind_temp, &parms);
     rsfd = rset_open (result, RSETF_WRITE);
 
-    sys = atoi(termz);
-    if (sys <= 0)
-	sys = 1;
-#if IT_KEY_NEW
-    key.mem[0] = sys;
-    key.mem[1] = 1;
-    key.len = 2;
-#else
-    key.sysno = sys;
+    key.sysno = atoi (termz);
     key.seqno = 1;
     if (key.sysno <= 0)
         key.sysno = 1;
-#endif
     rset_write (result, rsfd, &key);
     rset_close (result, rsfd);
     return result;
@@ -2400,7 +2390,7 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem,
 
 struct scan_info_entry {
     char *term;
-    ISAMC_P isam_p;
+    ISAMS_P isam_p;
 };
 
 struct scan_info {
@@ -2424,8 +2414,8 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
     scan_info->list[idx].term = (char *)
 	odr_malloc (scan_info->odr, strlen(name + len_prefix)+1);
     strcpy (scan_info->list[idx].term, name + len_prefix);
-    assert (*info == sizeof(ISAMC_P));
-    memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAMC_P));
+    assert (*info == sizeof(ISAMS_P));
+    memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAMS_P));
     return 0;
 }
 
@@ -2475,19 +2465,11 @@ static void count_set (RSET r, int *count)
     rfd = rset_open (r, RSETF_READ);
     while (rset_read (r, rfd, &key, &term_index))
     {
-#if IT_KEY_NEW
-        if (key.mem[0] != psysno)
-        {
-            psysno = key.mem[0];
-            (*count)++;
-        }
-#else
         if (key.sysno != psysno)
         {
             psysno = key.sysno;
             (*count)++;
         }
-#endif
         kno++;
     }
     rset_close (r, rfd);
