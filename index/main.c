@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.11  1995-09-29 14:01:45  adam
+ * Revision 1.12  1995-10-04 16:57:20  adam
+ * Key input and merge sort in one pass.
+ *
+ * Revision 1.11  1995/09/29  14:01:45  adam
  * Bug fixes.
  *
  * Revision 1.10  1995/09/28  14:22:57  adam
@@ -127,12 +130,17 @@ int main (int argc, char **argv)
     nsections = key_close ();
     if (!nsections)
         exit (0);
+#if 0
     logf (LOG_LOG, "Merge sorting");
     mbuf = xmalloc (100000);
     merge_sort (mbuf, 1, nsections+1);
     xfree (mbuf);
     logf (LOG_LOG, "Input");
     key_input (FNAME_WORD_DICT, FNAME_WORD_ISAM, "keys1.tmp", 60);
+#else
+    logf (LOG_LOG, "Input");
+    key_input2 (FNAME_WORD_DICT, FNAME_WORD_ISAM, nsections, 60);
+#endif
     exit (0);
 }
 

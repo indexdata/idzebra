@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.14  1995-09-29 14:01:40  adam
+ * Revision 1.15  1995-10-04 16:57:19  adam
+ * Key input and merge sort in one pass.
+ *
+ * Revision 1.14  1995/09/29  14:01:40  adam
  * Bug fixes.
  *
  * Revision 1.13  1995/09/28  14:22:56  adam
@@ -83,6 +86,8 @@ int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
 void key_input (const char *dict_fname, const char *isam_fname, 
                 const char *key_fname, int cache);
+void key_input2 (const char *dict_fname, const char *isam_fname,
+                 int nkeys, int cache);
 int merge_sort (char **buf, int from, int to);
 
 #define TEMP_FNAME  "keys%d.tmp"

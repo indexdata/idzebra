@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.7  1995-10-02 15:18:52  adam
+ * Revision 1.8  1995-10-04 16:57:19  adam
+ * Key input and merge sort in one pass.
+ *
+ * Revision 1.7  1995/10/02  15:18:52  adam
  * New member in recRetrieveCtrl: diagnostic.
  *
  * Revision 1.6  1995/09/29  15:51:56  adam
@@ -184,6 +187,7 @@ void key_file_chunk_read (struct key_file *f)
         logf (LOG_FATAL|LOG_ERRNO, "cannot open %s", fname);
         exit (1);
     }
+    logf (LOG_LOG, "reading chunk from %s", fname);
     if (lseek (fd, f->offset, SEEK_SET) == -1)
     {
         logf (LOG_FATAL|LOG_ERRNO, "cannot seek %s", fname);
@@ -202,13 +206,23 @@ void key_file_chunk_read (struct key_file *f)
         exit (1);
     }
     f->buf_size = nr;
+    f->buf_ptr = 0;
+    close (fd);
 }
 
-void key_file_init (struct key_file *f)
+struct key_file *key_file_init (int no, int chunk)
 {
+    struct key_file *f;
+
+    f = xmalloc (sizeof(*f));
+    f->no = no;
+    f->chunk = chunk;
+    f->offset = 0;
     f->buf = xmalloc (f->chunk);
     f->prev_name = xmalloc (256);
     *f->prev_name = '\0';
+    key_file_chunk_read (f);
+    return f;
 }
 
 int key_file_getc (struct key_file *f)
@@ -225,31 +239,141 @@ int key_file_getc (struct key_file *f)
         return EOF;
 }
 
-int key_file_read (struct key_file *f, char *name, char *key)
+int key_file_read (struct key_file *f, char *key)
 {
-    int i, c;
+    int i, j, c;
 
     c = key_file_getc (f);
     if (c == 0)
-        strcpy (name, f->prev_name);
+    {
+        strcpy (key, f->prev_name);
+        i = 1+strlen (key);
+    }
     else if (c == EOF)
         return 0;
     else
     {
         i = 0;
-        name[i++] = c;
-        while ((name[i++] = key_file_getc (f)))
+        key[i++] = c;
+        while ((key[i++] = key_file_getc (f)))
             ;
-        strcpy (f->prev_name, name);
+        strcpy (f->prev_name, key);
     }
-    for (i = 0; i<KEY_SIZE; i++)
+    for (j = KEY_SIZE; --j >= 0; )
         key[i++] = key_file_getc (f);
+    return i;
+}
+
+struct heap_info {
+    struct {
+        struct key_file **file;
+        char   **buf;
+    } info;
+    int    heapnum;
+    int    *ptr;
+    int    (*cmp)(const void *p1, const void *p2);
+};
+
+struct heap_info *key_heap_init (int nkeys,
+                                 int (*cmp)(const void *p1, const void *p2))
+{
+    struct heap_info *hi;
+    int i;
+
+    hi = xmalloc (sizeof(*hi));
+    hi->info.file = xmalloc (sizeof(*hi->info.file) * (1+nkeys));
+    hi->info.buf = xmalloc (sizeof(*hi->info.buf) * (1+nkeys));
+    hi->heapnum = 0;
+    hi->ptr = xmalloc (sizeof(*hi->ptr) * (1+nkeys));
+    hi->cmp = cmp;
+    for (i = 0; i<= nkeys; i++)
+    {
+        hi->ptr[i] = i;
+        hi->info.buf[i] = xmalloc (512);
+    }
+    return hi;
+}
+
+static void key_heap_swap (struct heap_info *hi, int i1, int i2)
+{
+    int swap;
+
+    swap = hi->ptr[i1];
+    hi->ptr[i1] = hi->ptr[i2];
+    hi->ptr[i2] = swap;
+}
+
+
+static void key_heap_delete (struct heap_info *hi)
+{
+    int cur = 1, child = 2;
+
+    assert (hi->heapnum > 0);
+
+#if 1
+    key_heap_swap (hi, 1, hi->heapnum);
+    hi->heapnum--;
+#else
+    hi->ptr[1] = hi->ptr[hi->heapnum--];
+#endif
+    while (child <= hi->heapnum) {
+        if (child < hi->heapnum &&
+            (*hi->cmp)(&hi->info.buf[hi->ptr[child]],
+                       &hi->info.buf[hi->ptr[child+1]]) > 0)
+            child++;
+        if ((*hi->cmp)(&hi->info.buf[hi->ptr[cur]],
+                       &hi->info.buf[hi->ptr[child]]) > 0)
+        {            
+            key_heap_swap (hi, cur, child);
+            cur = child;
+            child = 2*cur;
+        }
+        else
+            break;
+    }
+}
+
+static void key_heap_insert (struct heap_info *hi, const char *buf, int nbytes,
+                             struct key_file *kf)
+{
+    int cur, parent;
+
+    cur = ++(hi->heapnum);
+    memcpy (hi->info.buf[hi->ptr[cur]], buf, nbytes);
+    hi->info.file[hi->ptr[cur]] = kf;
+
+    parent = cur/2;
+    while (parent && (*hi->cmp)(&hi->info.buf[hi->ptr[parent]],
+                                &hi->info.buf[hi->ptr[cur]]) > 0)
+    {
+        key_heap_swap (hi, cur, parent);
+        cur = parent;
+        parent = cur/2;
+    }
+}
+
+static int heap_read_one (struct heap_info *hi, char *name, char *key)
+{
+    int n, r;
+    char rbuf[512];
+    struct key_file *kf;
+
+    if (!hi->heapnum)
+        return 0;
+    n = hi->ptr[1];
+    strcpy (name, hi->info.buf[n]);
+    kf = hi->info.file[n];
+    r = strlen(name);
+    memcpy (key, hi->info.buf[n] + r+1, KEY_SIZE);
+    key_heap_delete (hi);
+    if ((r = key_file_read (kf, rbuf)))
+        key_heap_insert (hi, rbuf, r, kf);
+    no_iterations++;
     return 1;
 }
 
-int inp2 (Dict dict, ISAM isam, const char *name)
+int heap_inp (Dict dict, ISAM isam, struct heap_info *hi)
 {
-    FILE *inf;
     char *info;
     char next_name[INP_NAME_MAX+1];
     char cur_name[INP_NAME_MAX+1];
@@ -261,19 +385,14 @@ int inp2 (Dict dict, ISAM isam, const char *name)
     
     next_key = xmalloc (KEY_SIZE);
     key_buf = xmalloc (key_buf_size * (KEY_SIZE));
-    if (!(inf = fopen (name, "r")))
-    {
-        logf (LOG_FATAL|LOG_ERRNO, "cannot open `%s'", name);
-        exit (1);
-    }
-    more = read_one (inf, cur_name, key_buf);
+    more = heap_read_one (hi, cur_name, key_buf);
     while (more)                   /* EOF ? */
     {
         int nmemb;
         key_buf_ptr = KEY_SIZE;
         while (1)
         {
-            if (!(more = read_one (inf, next_name, next_key)))
+            if (!(more = heap_read_one (hi, next_name, next_key)))
                 break;
             if (*next_name && strcmp (next_name, cur_name))
                 break;
@@ -313,7 +432,6 @@ int inp2 (Dict dict, ISAM isam, const char *name)
         memcpy (key_buf, next_key, KEY_SIZE);
         strcpy (cur_name, next_name);
     }
-    fclose (inf);
     return 0;
 }
 
@@ -322,6 +440,10 @@ void key_input2 (const char *dict_fname, const char *isam_fname,
 {
     Dict dict;
     ISAM isam;
+    struct key_file **kf;
+    char rbuf[1024];
+    int i, r;
+    struct heap_info *hi;
 
     dict = dict_open (dict_fname, cache, 1);
     if (!dict)
@@ -335,9 +457,20 @@ void key_input2 (const char *dict_fname, const char *isam_fname,
         logf (LOG_FATAL, "is_open fail of `%s'", isam_fname);
         exit (1);
     }
-    inp2 (dict, isam, NULL);
+
+    kf = xmalloc ((1+nkeys) * sizeof(*kf));
+    for (i = 1; i<=nkeys; i++)
+        kf[i] = key_file_init (i, 32768);
+    
+    hi = key_heap_init (nkeys, key_qsort_compare);
+    for (i = 1; i<=nkeys; i++)
+        if ((r = key_file_read (kf[i], rbuf)))
+            key_heap_insert (hi, rbuf, r, kf[i]);
+    heap_inp (dict, isam, hi);
+
     dict_close (dict);
     is_close (isam);
+
     logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
     logf (LOG_LOG, "Distinct words .%7d", no_diffs);
     logf (LOG_LOG, "Updates. . . . .%7d", no_updates);

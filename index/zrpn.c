@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.17  1995-10-04 12:55:17  adam
+ * Revision 1.18  1995-10-04 16:57:20  adam
+ * Key input and merge sort in one pass.
+ *
+ * Revision 1.17  1995/10/04  12:55:17  adam
  * Bug fix in ranked search. Use=Any keys inserted.
  *
  * Revision 1.16  1995/10/02  16:24:40  adam
@@ -397,29 +400,6 @@ static int trunc_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
     return 0;
 }
 
-#if 0
-static void field_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
-                        char *termz)
-{
-    size_t i, j, sizez;
-    AttrType use;
-    int use_value;
-    Z_Term *term = zapt->term;
-
-    attr_init (&use, zapt, 1);
-    use_value = attr_find (&use);
-    if (use_value == -1)
-        use_value = 1016;
-
-    i = index_word_prefix (termz, 1, use_value);
-    sizez = i + term->u.general->len;
-    if (sizez > IT_MAX_WORD)
-        sizez = IT_MAX_WORD;
-    for (j = 0; i < sizez; i++, j++)
-        termz[i] = index_char_cvt (term->u.general->buf[j]);
-    termz[i] = '\0';
-}
-#else
 static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
                         char *termz)
 {
@@ -433,7 +413,6 @@ static void trans_term (ZServerInfo *zi, Z_AttributesPlusTerm *zapt,
         termz[i] = index_char_cvt (term->u.general->buf[i]);
     termz[i] = '\0';
 }
-#endif
 
 static RSET rpn_search_APT_relevance (ZServerInfo *zi, 
                                       Z_AttributesPlusTerm *zapt)
