@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: extract.c,v 1.110 2002-02-20 17:30:01 adam Exp $
+ * $Id: extract.c,v 1.111 2002-02-20 23:07:54 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -945,7 +945,6 @@ int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
     }
     /* match criteria */
 
-
     if (! *sysno)
     {
         /* new record */
@@ -1442,15 +1441,14 @@ static void extract_add_sort_string (RecWord *p, const char *string,
 {
     struct sortKey *sk;
     ZebraHandle zh = p->extractCtrl->handle;
-    struct sortKey *sortKeys = zh->sortKeys;
 
-    for (sk = sortKeys; sk; sk = sk->next)
+    for (sk = zh->sortKeys; sk; sk = sk->next)
 	if (sk->attrSet == p->attrSet && sk->attrUse == p->attrUse)
 	    return;
 
     sk = (struct sortKey *) xmalloc (sizeof(*sk));
-    sk->next = sortKeys;
-    sortKeys = sk;
+    sk->next = zh->sortKeys;
+    zh->sortKeys = sk;
 
     sk->string = (char *) xmalloc (length);
     sk->length = length;
@@ -1597,6 +1595,7 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
 	xfree (sk);
 	sk = sk_next;
     }
+    yaz_log (LOG_LOG, "extract_flushSortKeys");
     *skp = 0;
 }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: t2.c,v 1.1 2002-02-20 17:30:02 adam Exp $
+ * $Id: t2.c,v 1.2 2002-02-20 23:07:54 adam Exp $
  */
 
 #include <zebraapi.h>
@@ -28,6 +28,9 @@ int main(int argc, char **argv)
     zebra_commit (zh);
     zebra_close (zh);
     zebra_stop (zs);
+
+    odr_destroy (odr_input);
+    odr_destroy (odr_output);
 
     nmem_exit ();
     xmalloc_trav ("x");

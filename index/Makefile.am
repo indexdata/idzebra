@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.7 2002-02-20 17:30:01 adam Exp $
+## $Id: Makefile.am,v 1.8 2002-02-20 23:07:54 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -39,6 +39,7 @@ LDADD = libzebra.a $(YAZLIB) $(TCL_LIB)
 
 libzebra.a: $(libzebra_a_OBJECTS) $(libzebra_a_DEPENDENCIES)
 	-test ! -d atmp && mkdir atmp
+	-rm -f libzebra.a
 	mkdir atmp; for i in $(libzebra_a_LIBADD); do cd atmp; ar x ../$$i; cd ..; done
-	ar qc libzebra.a $(libzebra_a_OBJECTS) libzebra.a atmp/*.o
+	ar cru libzebra.a $(libzebra_a_OBJECTS) libzebra.a atmp/*.o
 	$(RANLIB) libzebra.a

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zinfo.c,v 1.23 2002-02-20 17:30:01 adam Exp $
+ * $Id: zinfo.c,v 1.24 2002-02-20 23:07:54 adam Exp $
  */
 
 #include <stdlib.h>
@@ -269,6 +269,8 @@ static Record createRecord (Records records, int *sysno)
 
 void zebraExplain_flush (ZebraExplainInfo zei, int writeFlag, void *handle)
 {
+    if (!zei)
+        return;
     zei->updateHandle = handle;
     if (writeFlag)
     {

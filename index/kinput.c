@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Id: kinput.c,v 1.45 2002-02-20 17:30:01 adam Exp $
+ * $Id: kinput.c,v 1.46 2002-02-20 23:07:54 adam Exp $
  *
  * Bugs
  *  - Allocates a lot of memory for the merge process, but never releases it.
@@ -115,6 +115,13 @@ void key_file_chunk_read (struct key_file *f)
     if (f->readHandler)
         (*f->readHandler)(f, f->readInfo);
     close (fd);
+}
+
+void key_file_destroy (struct key_file *f)
+{
+    xfree (f->buf);
+    xfree (f->prev_name);
+    xfree (f);
 }
 
 struct key_file *key_file_init (int no, int chunk, Res res)
@@ -251,6 +258,19 @@ struct heap_info *key_heap_init (int nkeys,
         hi->info.buf[i] = (char *) xmalloc (INP_NAME_MAX);
     }
     return hi;
+}
+
+void key_heap_destroy (struct heap_info *hi, int nkeys)
+{
+    int i;
+    yaz_log (LOG_LOG, "key_heap_destroy");
+    for (i = 0; i<=nkeys; i++)
+        xfree (hi->info.buf[i]);
+    
+    xfree (hi->info.buf);
+    xfree (hi->ptr);
+    xfree (hi->info.file);
+    xfree (hi);
 }
 
 static void key_heap_swap (struct heap_info *hi, int i1, int i2)
@@ -682,78 +702,11 @@ void zebra_index_merge (ZebraHandle zh)
     logf (LOG_LOG, "Deletions. . . .%7d", no_deletions);
     logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
     zh->key_file_no = 0;
+
+    key_heap_destroy (hi, nkeys);
+    for (i = 1; i<=nkeys; i++)
+        key_file_destroy (kf[i]);
+    xfree (kf);
 }
 
-void key_input (ZebraHandle zh, int nkeys, int cache, Res res)
-                
-{
-    struct key_file **kf;
-    char rbuf[1024];
-    int i, r;
-    struct heap_info *hi;
-    struct progressInfo progressInfo;
-
-    if (nkeys < 0)
-    {
-        char fname[1024];
-        nkeys = 0;
-        while (1)
-        {
-            getFnameTmp (res, fname, nkeys+1);
-            if (access (fname, R_OK) == -1)
-                break;
-            nkeys++;
-        }
-        if (!nkeys)
-            return ;
-    }
-    kf = (struct key_file **) xmalloc ((1+nkeys) * sizeof(*kf));
-    progressInfo.totalBytes = 0;
-    progressInfo.totalOffset = 0;
-    time (&progressInfo.startTime);
-    time (&progressInfo.lastTime);
-    for (i = 1; i<=nkeys; i++)
-    {
-        kf[i] = key_file_init (i, 8192, res);
-        kf[i]->readHandler = progressFunc;
-        kf[i]->readInfo = &progressInfo;
-        progressInfo.totalBytes += kf[i]->length;
-        progressInfo.totalOffset += kf[i]->buf_size;
-    }
-    hi = key_heap_init (nkeys, key_qsort_compare);
-    hi->dict = zh->service->dict;
-    hi->isams = zh->service->isams;
-#if ZMBOL
-    hi->isam = zh->service->isam;
-    hi->isamc = zh->service->isamc;
-    hi->isamd = zh->service->isamd;
-#endif
-    
-    for (i = 1; i<=nkeys; i++)
-        if ((r = key_file_read (kf[i], rbuf)))
-            key_heap_insert (hi, rbuf, r, kf[i]);
-    if (hi->isams)
-	heap_inps (hi);
-#if ZMBOL
-    else if (hi->isamc)
-        heap_inpc (hi);
-    else if (hi->isam)
-	heap_inp (hi);
-    else if (hi->isamd)
-	heap_inpd (hi);
-#endif
-	
-    for (i = 1; i<=nkeys; i++)
-    {
-        getFnameTmp (res, rbuf, i);
-        unlink (rbuf);
-    }
-    logf (LOG_LOG, "Iterations . . .%7d", no_iterations);
-    logf (LOG_LOG, "Distinct words .%7d", no_diffs);
-    logf (LOG_LOG, "Updates. . . . .%7d", no_updates);
-    logf (LOG_LOG, "Deletions. . . .%7d", no_deletions);
-    logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
-
-    /* xmalloc_trav("unfreed"); while hunting leaks */     
-}
 

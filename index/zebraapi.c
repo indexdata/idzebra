@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.45 2002-02-20 17:30:01 adam Exp $
+ * $Id: zebraapi.c,v 1.46 2002-02-20 23:07:54 adam Exp $
  */
 
 #include <assert.h>
@@ -34,9 +34,6 @@ static void zebra_chdir (ZebraService zh)
 
 static void zebra_flush_reg (ZebraHandle zh)
 {
-    if (zh->service->matchDict)
-        dict_close (zh->service->matchDict);
-    zh->service->matchDict = 0;
     zebraExplain_flush (zh->service->zei, 1, zh);
     
     extract_flushWriteKeys (zh);
@@ -152,7 +149,6 @@ static int zebra_register_activate (ZebraHandle zh, int rw, int useshadow)
     zs->recTypes = recTypes_init (zs->dh);
     recTypes_default_handlers (zs->recTypes);
 
-    zs->records = NULL;
     zs->zebra_maps = zebra_maps_open (zs->res);
     zs->rank_classes = NULL;
 
@@ -160,12 +156,14 @@ static int zebra_register_activate (ZebraHandle zh, int rw, int useshadow)
     zs->dict = 0;
     zs->sortIdx = 0;
     zs->isams = 0;
+    zs->matchDict = 0;
 #if ZMBOL
     zs->isam = 0;
     zs->isamc = 0;
     zs->isamd = 0;
 #endif
     zs->zei = 0;
+    zs->matchDict = 0;
     
     zebraRankInstall (zs, rank1_class);
 
@@ -180,6 +178,10 @@ static int zebra_register_activate (ZebraHandle zh, int rw, int useshadow)
     {
 	logf (LOG_WARN, "rec_open");
 	return -1;
+    }
+    if (rw)
+    {
+        zs->matchDict = dict_open (zs->bfs, GMATCH_DICT, 50, 1, 0);
     }
     if (!(zs->dict = dict_open (zs->bfs, FNAME_DICT, 80, rw, 0)))
     {
@@ -282,6 +284,8 @@ static int zebra_register_deactivate (ZebraHandle zh)
     {
         zebraExplain_close (zs->zei, 0);
         dict_close (zs->dict);
+        if (zs->matchDict)
+            dict_close (zs->matchDict);
 	sortIdx_close (zs->sortIdx);
 	if (zs->isams)
 	    isams_close (zs->isams);
@@ -716,12 +720,14 @@ static int zebra_begin_read (ZebraHandle zh)
     char val;
     int seqno;
 
-    zebra_flush_reg (zh);
 
     (zh->trans_no)++;
 
     if (zh->trans_no != 1)
+    {
+        zebra_flush_reg (zh);
         return 0;
+    }
 
     zebra_get_state (&val, &seqno);
     if (val == 'd')
@@ -832,8 +838,6 @@ void zebra_begin_trans (ZebraHandle zh)
     zebra_set_state ('d', seqno);
 
     zebra_register_activate (zh, 1, rval ? 1 : 0);
-    zh->service->matchDict = dict_open (zh->service->bfs, GMATCH_DICT,
-                                        50, 1, 0);
     zh->seqno = seqno;
 }
 
