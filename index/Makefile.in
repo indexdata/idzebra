@@ -61,7 +61,6 @@ CC = @CC@
 CPP = @CPP@
 DEFS = @DEFS@
 MAKEINFO = @MAKEINFO@
-ODEFS = @ODEFS@
 PACKAGE = @PACKAGE@
 PROGPREFIX = @PROGPREFIX@
 RANLIB = @RANLIB@
@@ -86,9 +85,9 @@ noinst_PROGRAMS = apitest
 apitest_SOURCES = apitest.c kcompare.c zrpn.c zsets.c attribute.c recindex.c  lockutil.c locksrv.c zinfo.c trunc.c sortidx.c rank1.c zebraapi.c  retrieve.c kinput.c  index.h recindex.h recindxp.h zebraapi.h zinfo.h zserver.h
 
 
-INCLUDES = -I$(srcdir)/../include @YAZINC@
+INCLUDES = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)
 
-LDADD = @SUBLIBS@ @YAZLIB@
+LDADD = @SUBLIBS@ $(YAZLIB) $(TCL_LIB)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)

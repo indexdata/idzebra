@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.2 2000-04-06 09:03:28 adam Exp $
+## $Id: Makefile.am,v 1.3 2000-05-02 11:26:13 adam Exp $
 
 noinst_PROGRAMS = apitest
 
@@ -31,6 +31,6 @@ apitest_SOURCES = apitest.c kcompare.c zrpn.c zsets.c attribute.c recindex.c \
  retrieve.c kinput.c \
  index.h recindex.h recindxp.h zebraapi.h zinfo.h zserver.h
 
-INCLUDES = -I$(srcdir)/../include @YAZINC@
+INCLUDES = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)
 
-LDADD = @SUBLIBS@ @YAZLIB@
+LDADD = @SUBLIBS@ $(YAZLIB) $(TCL_LIB)

@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2000
-dnl $Id: configure.in,v 1.19 2000-04-05 09:55:44 adam Exp $
+dnl $Id: configure.in,v 1.20 2000-05-02 11:26:13 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -38,7 +38,6 @@ fi
 AM_CONDITIONAL(ISZMBOL,test $PACKAGE = zmbol)
 dnl ------ Substitutions
 AC_SUBST(SUBLIBS)
-AC_SUBST(ODEFS)
 AC_SUBST(DEFS)
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
@@ -130,10 +129,10 @@ if test -r ${tclconfig}/tclConfig.sh; then
         SHLIB_SUFFIX=$TCL_SHLIB_SUFFIX
         SHLIB_VERSION=$TCL_SHLIB_VERSION
         AC_MSG_RESULT($TCL_VERSION)
-	ODEFS="-DHAVE_TCL_H=1"
+	AC_DEFINE(HAVE_TCL_H,1)
 else
         AC_MSG_RESULT(Not found)
-	ODEFS="-DHAVE_TCL_H=0"
+	AC_DEFINE(HAVE_TCL_H,0)
 fi
 dnl
 dnl ------ times
