@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.25  1995-11-21 15:29:12  adam
+ * Revision 1.26  1995-11-22 17:19:17  adam
+ * Record management uses the bfile system.
+ *
+ * Revision 1.25  1995/11/21  15:29:12  adam
  * Config file 'base' read by default by both indexer and server.
  *
  * Revision 1.24  1995/11/21  15:01:15  adam
@@ -133,7 +136,8 @@ void dir_sort (struct dir_entry *e);
 void dir_free (struct dir_entry **e_p);
 
 void repositoryUpdate (struct recordGroup *rGroup);
-void repositoryExtract (struct recordGroup *rGroup);
+void repositoryAdd (struct recordGroup *rGroup);
+void repositoryDelete (struct recordGroup *rGroup);
 
 void key_open (int mem);
 int key_close (void);

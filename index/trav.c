@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.10  1995-11-21 15:01:16  adam
+ * Revision 1.11  1995-11-22 17:19:19  adam
+ * Record management uses the bfile system.
+ *
+ * Revision 1.10  1995/11/21  15:01:16  adam
  * New general match criteria implemented.
  * New feature: document groups.
  *
@@ -56,7 +59,8 @@ static int repComp (const char *a, const char *b, size_t len)
     return memcmp (a, b, len);
 }
 
-static void repositoryExtractR (char *rep, struct recordGroup *rGroup)
+static void repositoryExtractR (int deleteFlag, char *rep,
+                                struct recordGroup *rGroup)
 {
     struct dir_entry *e;
     int i;
@@ -75,10 +79,10 @@ static void repositoryExtractR (char *rep, struct recordGroup *rGroup)
         switch (e[i].kind)
         {
         case dirs_file:
-            fileExtract (NULL, rep, rGroup, 0);
+            fileExtract (NULL, rep, rGroup, deleteFlag);
             break;
         case dirs_dir:
-            repositoryExtractR (rep, rGroup);
+            repositoryExtractR (deleteFlag, rep, rGroup);
             break;
         }
     }
@@ -220,11 +224,21 @@ void repositoryUpdate (struct recordGroup *rGroup)
     dict_close (dict);
 }
 
-void repositoryExtract (struct recordGroup *rGroup)
+void repositoryDelete (struct recordGroup *rGroup)
 {
     char src[256];
 
     assert (rGroup->path);
     strcpy (src, rGroup->path);
-    repositoryExtractR (src, rGroup);
+    repositoryExtractR (1, src, rGroup);
 }
+
+void repositoryAdd (struct recordGroup *rGroup)
+{
+    char src[256];
+
+    assert (rGroup->path);
+    strcpy (src, rGroup->path);
+    repositoryExtractR (0, src, rGroup);
+}
+

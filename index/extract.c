@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.29  1995-11-21 15:01:14  adam
+ * Revision 1.30  1995-11-22 17:19:16  adam
+ * Record management uses the bfile system.
+ *
+ * Revision 1.29  1995/11/21  15:01:14  adam
  * New general match criteria implemented.
  * New feature: document groups.
  *
@@ -732,6 +735,11 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
     /* new record ? */
     if (! *sysno)
     {
+        if (deleteFlag)
+        {
+            logf (LOG_LOG, "? record %s", fname);
+            return 1;
+        }
         logf (LOG_LOG, "add record %s", fname);
         rec = rec_new (records);
         *sysno = rec->sysno;
@@ -745,15 +753,25 @@ int fileExtract (SYSNO *sysno, const char *fname, struct recordGroup *rGroup,
     else
     {
         struct recKeys delkeys;
-        
+
         rec = rec_get (records, *sysno);
 
         delkeys.buf_used = rec->size[2];
 	delkeys.buf = rec->info[2];
         flushRecordKeys (*sysno, 0, &delkeys, rec->info[3]);
-        flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
-
-        records_updated++;
+        if (deleteFlag)
+        {
+            logf (LOG_LOG, "delete record %s", fname);
+            records_deleted++;
+            rec_del (records, &rec);
+            return 1;
+        }
+        else
+        {
+            logf (LOG_LOG, "update record %s", fname);
+            flushRecordKeys (*sysno, 1, &reckeys, rGroup->databaseName); 
+            records_updated++;
+        }
     }
     free (rec->info[0]);
     rec->info[0] = rec_strdup (file_type, &rec->size[0]);

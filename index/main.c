@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.17  1995-11-21 15:01:16  adam
+ * Revision 1.18  1995-11-22 17:19:17  adam
+ * Record management uses the bfile system.
+ *
+ * Revision 1.17  1995/11/21  15:01:16  adam
  * New general match criteria implemented.
  * New feature: document groups.
  *
@@ -141,12 +144,9 @@ int main (int argc, char **argv)
                 if (cmd == 'u')
                     repositoryUpdate (&rGroup);
                 else if (cmd == 'a')
-                    repositoryExtract (&rGroup);
+                    repositoryAdd (&rGroup);
                 else if (cmd == 'd')
-                {
-                    logf (LOG_FATAL, "Not implemented yet.");
-                    exit (1);
-                }
+                    repositoryDelete (&rGroup);
                 cmd = 0;
             }
         }
