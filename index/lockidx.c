@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.19  2000-09-05 14:04:05  adam
+ * Revision 1.20  2000-10-16 20:16:00  adam
+ * Fixed problem with close of lock file for WIN32.
+ *
+ * Revision 1.19  2000/09/05 14:04:05  adam
  * Updates for prefix 'yaz_' for YAZ log functions.
  *
  * Revision 1.18  2000/02/24 11:00:07  adam
@@ -177,9 +180,15 @@ void zebraIndexUnlock (void)
     
     zebra_lock_prefix (common_resource, path);
     strcat (path, FNAME_MAIN_LOCK);
+#ifdef WIN32
+    zebra_lock_destroy (server_lock_main);
+    if (unlink (path) && errno != ENOENT)
+        logf (LOG_WARN|LOG_ERRNO, "unlink %s failed", path);
+#else
     if (unlink (path) && errno != ENOENT)
         logf (LOG_WARN|LOG_ERRNO, "unlink %s failed", path);
     zebra_lock_destroy (server_lock_main);
+#endif
     server_lock_main = 0;
 }
 
