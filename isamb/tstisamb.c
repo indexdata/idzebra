@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.18 2005-03-18 12:05:11 adam Exp $
+/* $Id: tstisamb.c,v 1.19 2005-03-21 17:20:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -229,6 +229,27 @@ void tst_forward(ISAMB isb, int n)
     isamb_unlink(isb, isamc_p);
 }
 
+void tst_x(ISAMB isb)
+{
+    ISAMC_I isamc_i;
+    ISAMB_P isamb_p = 0;
+    struct read_info ri;
+
+    isamc_i.clientData = &ri;
+    isamc_i.read_item = code_read;
+    ri.no = 1000;
+    ri.step = 1;
+    ri.max = 1500;
+
+    isamb_p = isamb_merge (isb, isamb_p , &isamc_i);
+
+    ri.no = 1;
+    ri.step = 1;
+    ri.max = 500;
+
+    isamb_p = isamb_merge (isb, isamb_p , &isamc_i);
+}
+
 void tst_append(ISAMB isb, int n)
 {
     ISAMC_I isamc_i;
@@ -296,7 +317,9 @@ int main(int argc, char **argv)
 
     tst_forward(isb, 10000);
 
-    tst_append(isb, 10000);
+    tst_x(isb);
+
+    tst_append(isb, 1000);
     /* close isam handle */
     isamb_close(isb);
 

@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.74 2005-03-18 12:05:11 adam Exp $
+/* $Id: isamb.c,v 1.75 2005-03-21 17:20:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -839,6 +839,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
     int cut_item_size = 0;
     int no_items = 0;    /* number of items (total) */
     int no_items_1 = 0;  /* number of items (first half) */
+    int inserted_dst_bytes = 0;
 
     if (p && p->size)
     {
@@ -852,6 +853,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         {
             const char *dst_item = 0; /* resulting item to be inserted */
             char *lookahead_next;
+	    char *dst_0 = dst;
             int d = -1;
             
             if (lookahead_item)
@@ -877,7 +879,6 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             else
                 dst_item = file_item_buf;
 
-	       
             if (!*lookahead_mode && d == 0)
             {
 		/* it's a deletion and they match so there is nothing to be
@@ -914,7 +915,8 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
             {
 		/* we must move the lookahead pointer */
 
-                if (dst > maxp)
+		inserted_dst_bytes += (dst - dst_0);
+                if (inserted_dst_bytes >=  quater)
 		    /* no more room. Mark lookahead as "gone".. */
                     lookahead_item = 0;
                 else
@@ -971,17 +973,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
        either it's empty (new) or all file items have been read in
        previous loop */
 
-    /* determine maximum ptr for tail */
-    if (half2)
-    {
-	/* split already. No more splits - fill up to one full (Extra) block */
-	maxp = half2 + b->file[b->no_cat-1].head.block_max;
-    }
-    else
-    {
-	/* no split. Fill up to 1+1/4 block */
-	maxp = dst_buf + b->file[b->no_cat-1].head.block_max + quater;
-    }
+    maxp = dst_buf + b->file[b->no_cat-1].head.block_max + quater;
     while (lookahead_item)
     {
         char *dst_item;
@@ -1066,6 +1058,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
 	
 	/* first half */
         p->size = half1 - dst_buf;
+	assert(p->size <=  b->file[p->cat].head.block_max);
         memcpy (p->bytes, dst_buf, half1 - dst_buf);
 	p->no_items = no_items_1;
 
@@ -1081,6 +1074,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         memcpy (first_dst, half2, dst - half2);
 
         (*sp2)->size = (first_dst - (*sp2)->bytes) + (dst - half2);
+	assert((*sp2)->size <=  b->file[p->cat].head.block_max);
 	(*sp2)->no_items = no_items - no_items_1;
         (*sp2)->dirty = 1;
         p->dirty = 1;
