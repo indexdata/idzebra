@@ -1,0 +1,10 @@
+BEGIN			{ begin record cddb }
+/^DISCID=/ BODY /$/	{ data -element identifier $1 }
+/^DTITLE=/ BODY /$/	{ data -element title $1 }
+/^TTITLE[0-9]+=/ BODY /$/ {
+				begin element track
+			 	data -element title $1
+				end element
+			}
+	
+
