@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.20  1998-11-16 10:10:53  adam
+ * Revision 1.21  1998-11-16 16:03:46  adam
+ * Moved loggin utilities to Yaz. Was implemented in file zlogs.c.
+ *
+ * Revision 1.20  1998/11/16 10:10:53  adam
  * Fixed problem with zebraPosSetCreate that occurred when positions were
  * less than 1.
  *
@@ -121,8 +124,6 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, ODR input, ODR output,
 			  const char *setname)
 {
     ZebraSet zebraSet;
-
-    zlog_rpn (rpn);
 
     zh->errCode = 0;
     zh->errString = NULL;

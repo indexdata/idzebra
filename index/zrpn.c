@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.89  1998-11-16 10:11:55  adam
+ * Revision 1.90  1998-11-16 16:03:43  adam
+ * Moved loggin utilities to Yaz. Was implemented in file zlogs.c.
+ *
+ * Revision 1.89  1998/11/16 10:11:55  adam
  * Added addtional info for error 114 - unsupported use attribute.
  *
  * Revision 1.88  1998/10/18 07:54:52  adam
@@ -2216,7 +2219,6 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     if (attributeset == VAL_NONE)
         attributeset = VAL_BIB1;
 
-    zlog_scan (zapt, attributeset);
     logf (LOG_DEBUG, "position = %d, num = %d", pos, num);
         
     attr_init (&use, zapt, 1);

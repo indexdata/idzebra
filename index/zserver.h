@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.h,v $
- * Revision 1.39  1998-10-16 08:14:35  adam
+ * Revision 1.40  1998-11-16 16:03:45  adam
+ * Moved loggin utilities to Yaz. Was implemented in file zlogs.c.
+ *
+ * Revision 1.39  1998/10/16 08:14:35  adam
  * Updated record control system.
  *
  * Revision 1.38  1998/09/22 10:03:44  adam
@@ -255,9 +258,6 @@ void zebra_sort (ZebraHandle zh, ODR stream,
 		 int num_input_setnames, const char **input_setnames,
 		 const char *output_setname, Z_SortKeySpecList *sort_sequence,
 		 int *sort_status);
-
-void zlog_rpn (Z_RPNQuery *rpn);
-void zlog_scan (Z_AttributesPlusTerm *zapt, oid_value ast);
 
 int zebra_server_lock_init (ZebraHandle zh);
 int zebra_server_lock_destroy (ZebraHandle zh);

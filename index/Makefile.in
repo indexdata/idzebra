@@ -1,7 +1,7 @@
 # Copyright (C) 1995-1998, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.2 1998-10-28 15:20:47 adam Exp $
+# $Id: Makefile.in,v 1.3 1998-11-16 16:03:41 adam Exp $
 
 SHELL=/bin/sh
 
@@ -28,7 +28,7 @@ O1 = main.o dir.o dirs.o trav.o extract.o kinput.o kcompare.o \
  zinfo.o invstat.o sortidx.o
 O2 = kdump.o
 O3 = zserver.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
- zlogs.o lockutil.o locksrv.o zinfo.o trunc.o sortidx.o rank1.o zebraapi.o \
+ lockutil.o locksrv.o zinfo.o trunc.o sortidx.o rank1.o zebraapi.o \
  retrieve.o
 O4 = hlvl.o hlvltest.o kcompare.o
 O5 = apitest.o kcompare.o zrpn.o zsets.o attribute.o recindex.o \
