@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockutil.c,v $
- * Revision 1.3  1995-12-12 16:00:57  adam
+ * Revision 1.4  1995-12-13 08:46:10  adam
+ * Locking uses F_WRLCK and F_RDLCK again!
+ *
+ * Revision 1.3  1995/12/12  16:00:57  adam
  * System call sync(2) used after update/commit.
  * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
  * and F_RDLCK.
@@ -53,7 +56,7 @@ static int intLock (int fd, int type, int cmd)
 
 int zebraLock (int fd, int wr)
 {
-#if 1
+#if 0
     return intLock (fd, wr ? F_EXLCK : F_SHLCK, F_SETLKW);
 #else
     return intLock (fd, wr ? F_WRLCK : F_RDLCK, F_SETLKW);
@@ -62,10 +65,10 @@ int zebraLock (int fd, int wr)
 
 int zebraLockNB (int fd, int wr)
 {
-#if 1
-    return intLock (fd, wr ? F_EXLCK : F_SHLCK, F_SETLKW);
+#if 0
+    return intLock (fd, wr ? F_EXLCK : F_SHLCK, F_SETLK);
 #else
-    return intLock (fd, wr ? F_WRLCK : F_RDLCK, F_SETLKW);
+    return intLock (fd, wr ? F_WRLCK : F_RDLCK, F_SETLK);
 #endif
 }
 

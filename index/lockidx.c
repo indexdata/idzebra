@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lockidx.c,v $
- * Revision 1.4  1995-12-12 16:00:57  adam
+ * Revision 1.5  1995-12-13 08:46:09  adam
+ * Locking uses F_WRLCK and F_RDLCK again!
+ *
+ * Revision 1.4  1995/12/12  16:00:57  adam
  * System call sync(2) used after update/commit.
  * Locking (based on fcntl) uses F_EXLCK and F_SHLCK instead of F_WRLCK
  * and F_RDLCK.
@@ -142,7 +145,7 @@ void zebraIndexLock (int commitNow)
         lock_fd = open (path, O_CREAT|O_RDWR|O_EXCL, 0666);
         if (lock_fd == -1)
         {
-            lock_fd = open (path, O_RDONLY);
+            lock_fd = open (path, O_RDWR);
             if (lock_fd == -1) 
             {
                 if (errno == ENOENT)
@@ -150,12 +153,15 @@ void zebraIndexLock (int commitNow)
                 logf (LOG_FATAL|LOG_ERRNO, "open %s", path);
                 exit (1);
             }
+            logf (LOG_LOG, "zebraLockNB");
             if (zebraLockNB (lock_fd, 1) == -1)
             {
                 if (errno == EWOULDBLOCK)
                 {
                     logf (LOG_LOG, "Waiting for other index process");
                     zebraLock (lock_fd, 1);
+                    zebraUnlock (lock_fd);
+                    close (lock_fd);
                     continue;
                 }
                 else
@@ -177,7 +183,7 @@ void zebraIndexLock (int commitNow)
                 }
                 else if (r == -1)
                 {
-                    logf (LOG_FATAL|LOG_ERRNO, "read  %s", path);
+                    logf (LOG_FATAL|LOG_ERRNO, "read %s", path);
                     exit (1);
                 }
                 if (*buf == 'r')
