@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.31  1999-07-14 10:56:43  adam
+ * Revision 1.32  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.31  1999/07/14 10:56:43  adam
  * Fixed potential memory leak.
  *
  * Revision 1.30  1999/07/06 12:26:41  adam
@@ -382,7 +385,7 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level)
 		    wrd.length = n->u.data.len;
 		    wrd.attrSet = (int) (tlist->att->parent->reference);
 		    wrd.attrUse = tlist->att->locals->local;
-		    (*p->addWord)(&wrd);
+		    (*p->tokenAdd)(&wrd);
 		}
 	    }
 	}
@@ -404,7 +407,7 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
     oe.value = n->u.root.absyn->reference;
 
     if ((oid_ent_to_oid (&oe, oidtmp)))
-	(*p->addSchema)(p, oidtmp);
+	(*p->schemaAdd)(p, oidtmp);
 
     return dumpkeys(n, p, 0);
 }
@@ -434,7 +437,7 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
     oe.oclass = CLASS_SCHEMA;
     oe.value = n->u.root.absyn->reference;
     if ((oid_ent_to_oid (&oe, oidtmp)))
-	(*p->addSchema)(p, oidtmp);
+	(*p->schemaAdd)(p, oidtmp);
 
     if (dumpkeys(n, p, 0) < 0)
     {

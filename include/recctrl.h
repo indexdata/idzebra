@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.30  1999-05-21 12:00:17  adam
+ * Revision 1.31  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.30  1999/05/21 12:00:17  adam
  * Better diagnostics for extraction process.
  *
  * Revision 1.29  1999/05/20 12:57:18  adam
@@ -131,6 +134,7 @@ typedef struct {
     int  length;
     int  *seqnos;
     ZebraMaps zebra_maps;
+    struct recExtractCtrl *extractCtrl;
 } RecWord;
 
 /* Extract record control */
@@ -143,11 +147,12 @@ struct recExtractCtrl {
     off_t     offset;                            /* start offset           */
     char      *subType;
     void      (*init)(struct recExtractCtrl *p, RecWord *w);
-    void      (*addWord)(RecWord *p);
+    void      *clientData;
+    void      (*tokenAdd)(RecWord *w);
     ZebraMaps zebra_maps;
     int       flagShowRecords;
     int       seqno[256];
-    void      (*addSchema)(struct recExtractCtrl *p, Odr_oid *oid);
+    void      (*schemaAdd)(struct recExtractCtrl *p, Odr_oid *oid);
     data1_handle dh;
 };
 

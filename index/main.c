@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.69  1999-07-21 08:31:33  adam
+ * Revision 1.70  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.69  1999/07/21 08:31:33  adam
  * More version info on WIN32.
  *
  * Revision 1.68  1999/07/14 10:59:26  adam
@@ -543,7 +546,7 @@ int main (int argc, char **argv)
 #endif
 #if HAVE_BZLIB_H
             fprintf (stderr, "libbzip2\n"
-		     " (C) 1996-1998 Julian R Seward.  All rights reserved.\n");
+		     " (C) 1996-1999 Julian R Seward.  All rights reserved.\n");
 #endif
         }
         else if (ret == 'v')

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.94  1999-07-20 13:59:18  adam
+ * Revision 1.95  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.94  1999/07/20 13:59:18  adam
  * Fixed bug that occurred when phrases had 0 hits.
  *
  * Revision 1.93  1999/06/17 14:38:40  adam
@@ -452,8 +455,11 @@ static void term_untrans  (ZebraHandle zh, int reg_type,
     while (*src)
     {
         const char *cp = zebra_maps_output (zh->zebra_maps, reg_type, &src);
-        while (*cp)
-            *dst++ = *cp++;
+	if (!cp)
+	    *dst++ = *src++;
+	else
+	    while (*cp)
+		*dst++ = *cp++;
     }
     *dst = '\0';
 }
@@ -661,6 +667,54 @@ static int term_102 (ZebraMaps zebra_maps, int reg_type, const char **src,
 		     dst_term);
 }
 
+
+/* term_104: handle term, where trunc=Process # and ! */
+static int term_104 (ZebraMaps zebra_maps, int reg_type,
+		     const char **src, char *dst, int space_split,
+		     char *dst_term)
+{
+    const char *s0, *s1;
+    const char **map;
+    int i = 0;
+    int j = 0;
+
+    if (!term_pre (zebra_maps, reg_type, src, "#!", "#!"))
+        return 0;
+    s0 = *src;
+    while (*s0)
+    {
+        if (*s0 == '#')
+        {
+            dst[i++] = '.';
+            dst[i++] = '*';
+	    dst_term[j++] = *s0++;
+        }
+        else if (*s0 == '!')
+	{
+            dst[i++] = '.';
+	    dst_term[j++] = *s0++;
+	}
+        {
+            s1 = s0;
+            map = zebra_maps_input (zebra_maps, reg_type, &s0, strlen(s0));
+            if (space_split && **map == *CHR_SPACE)
+                break;
+            while (s1 < s0)
+            {
+                if (!isalnum (*s1))
+                    dst[i++] = '\\';
+		dst_term[j++] = *s1;
+                dst[i++] = *s1++;
+            }
+        }
+    }
+    dst[i] = '\0';
+    dst_term[j++] = '\0';
+    *src = s0;
+    return i;
+}
+
+
 /* gen_regular_rel - generate regular expression from relation
  *  val:     border value (inclusive)
  *  islt:    1 if <=; 0 if >=.
@@ -758,11 +812,14 @@ static void gen_regular_rel (char *dst, int val, int islt)
     dst[dst_p] = '\0';
     if (islt)
     {
-        for (i=1; i<pos; i++)
-            strcat (dst, "[0-9]?");
+	/* match everything less than 10^(pos-1) */
+	strcat (dst, "0*");
+	for (i=1; i<pos; i++)
+	    strcat (dst, "[0-9]?");
     }
     else
     {
+	/* match everything greater than 10^pos */
         for (i = 0; i <= pos; i++)
             strcat (dst, "[0-9]");
         strcat (dst, "[0-9]*");
@@ -1130,6 +1187,17 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 		logf (LOG_WARN, "dict_lookup_grep err, trunc=eregular: %d",
 		      r);
 	    break;
+	case 104:        /* process # and ! in term */
+	    term_dict[j++] = '(';
+	    if (!term_104 (zh->zebra_maps, reg_type,
+			   &termp, term_dict + j, space_split, term_dst))
+		return 0;
+	    strcat (term_dict, ")");
+	    r = dict_lookup_grep (zh->dict, term_dict, 0, grep_info,
+				  &max_pos, 0, grep_handle);
+	    if (r)
+		logf (LOG_WARN, "dict_lookup_grep err, trunc=#/!: %d", r);
+	    break;
         }
     }
     *term_sub = termp;
@@ -1399,9 +1467,51 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no)
     return result;
 }
 
+
+char *normalize_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+		     const char *termz, NMEM stream, unsigned reg_id)
+{
+    WRBUF wrbuf = 0;
+    AttrType truncation;
+    int truncation_value;
+    char *ex_list = 0;
+
+    attr_init (&truncation, zapt, 5);
+    truncation_value = attr_find (&truncation, NULL);
+
+    switch (truncation_value)
+    {
+    default:
+	ex_list = "";
+	break;
+    case 101:
+	ex_list = "#";
+	break;
+    case 102:
+    case 103:
+	ex_list = 0;
+	break;
+    case 104:
+	ex_list = "!#";
+	break;
+    }
+    if (ex_list)
+	wrbuf = zebra_replace(zh->zebra_maps, reg_id, ex_list,
+			      termz, strlen(termz));
+    if (!wrbuf)
+	return nmem_strdup(stream, termz);
+    else
+    {
+	char *buf = (char*) nmem_malloc (stream, wrbuf_len(wrbuf)+1);
+	memcpy (buf, wrbuf_buf(wrbuf), wrbuf_len(wrbuf));
+	buf[wrbuf_len(wrbuf)] = '\0';
+	return buf;
+    }
+}
+
 static RSET rpn_search_APT_phrase (ZebraHandle zh,
                                    Z_AttributesPlusTerm *zapt,
-				   const char *termz,
+				   const char *termz_org,
                                    oid_value attributeSet,
 				   NMEM stream,
 				   int reg_type, int complete_flag,
@@ -1409,10 +1519,11 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
 				   int num_bases, char **basenames)
 {
     char term_dst[IT_MAX_WORD+1];
-    const char *termp = termz;
     RSET rset[60], result;
     int i, r, rset_no = 0;
     struct grep_info grep_info;
+    char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
+    const char *termp = termz;
 
 #ifdef TERM_COUNT
     grep_info.term_no = 0;
@@ -1460,7 +1571,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
 
 static RSET rpn_search_APT_or_list (ZebraHandle zh,
                                     Z_AttributesPlusTerm *zapt,
-				    const char *termz,
+				    const char *termz_org,
                                     oid_value attributeSet,
 				    NMEM stream,
 				    int reg_type, int complete_flag,
@@ -1468,11 +1579,11 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
 				    int num_bases, char **basenames)
 {
     char term_dst[IT_MAX_WORD+1];
-    const char *termp = termz;
     RSET rset[60], result;
     int i, r, rset_no = 0;
     struct grep_info grep_info;
-
+    char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
+    const char *termp = termz;
 #ifdef TERM_COUNT
     grep_info.term_no = 0;
 #endif
@@ -1525,7 +1636,7 @@ static RSET rpn_search_APT_or_list (ZebraHandle zh,
 
 static RSET rpn_search_APT_and_list (ZebraHandle zh,
                                      Z_AttributesPlusTerm *zapt,
-				     const char *termz,
+				     const char *termz_org,
                                      oid_value attributeSet,
 				     NMEM stream,
 				     int reg_type, int complete_flag,
@@ -1533,10 +1644,11 @@ static RSET rpn_search_APT_and_list (ZebraHandle zh,
 				     int num_bases, char **basenames)
 {
     char term_dst[IT_MAX_WORD+1];
-    const char *termp = termz;
     RSET rset[60], result;
     int i, r, rset_no = 0;
     struct grep_info grep_info;
+    char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
+    const char *termp = termz;
 
 #ifdef TERM_COUNT
     grep_info.term_no = 0;

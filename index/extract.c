@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.97  1999-07-06 12:28:04  adam
+ * Revision 1.98  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.97  1999/07/06 12:28:04  adam
  * Updated record index structure. Format includes version ID. Compression
  * algorithm ID is stored for each record block.
  *
@@ -649,6 +652,7 @@ static void wordInit (struct recExtractCtrl *p, RecWord *w)
     w->attrSet = VAL_BIB1;
     w->attrUse = 1016;
     w->reg_type = 'w';
+    w->extractCtrl = p;
 }
 
 static struct sortKey {
@@ -856,6 +860,13 @@ static void addCompleteField (RecWord *p)
 
 static void addRecordKey (RecWord *p)
 {
+    WRBUF wrbuf;
+    if ((wrbuf = zebra_replace(p->zebra_maps, p->reg_type, 0,
+			       p->string, p->length)))
+    {
+	p->string = wrbuf_buf(wrbuf);
+	p->length = wrbuf_len(wrbuf);
+    }
     if (zebra_maps_is_complete (p->zebra_maps, p->reg_type))
 	addCompleteField (p);
     else
@@ -1291,8 +1302,8 @@ static int recordExtract (SYSNO *sysno, const char *fname,
 	extractCtrl.fh = fi;
 	extractCtrl.subType = subType;
 	extractCtrl.init = wordInit;
-	extractCtrl.addWord = addRecordKey;
-	extractCtrl.addSchema = addSchema;
+	extractCtrl.tokenAdd = addRecordKey;
+	extractCtrl.schemaAdd = addSchema;
 	extractCtrl.dh = rGroup->dh;
 	for (i = 0; i<256; i++)
 	{
@@ -1632,7 +1643,7 @@ int fileExtract (SYSNO *sysno, const char *fname,
     {
         if (zebraExplain_newDatabase (zti, rGroup->databaseName,
 				      rGroup->explainDatabase))
-            abort ();
+	    return 0;
     }
 
     if (rGroup->flagStoreData == -1)
@@ -1760,8 +1771,8 @@ static int explain_extract (void *handle, Record rec, data1_node *n)
     reckeys.prevSeqNo = 0;
     
     extractCtrl.init = wordInit;
-    extractCtrl.addWord = addRecordKey;
-    extractCtrl.addSchema = addSchema;
+    extractCtrl.tokenAdd = addRecordKey;
+    extractCtrl.schemaAdd = addSchema;
     extractCtrl.dh = rGroup->dh;
     for (i = 0; i<256; i++)
 	extractCtrl.seqno[i] = 0;

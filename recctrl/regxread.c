@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.31  1999-07-14 13:05:29  adam
+ * Revision 1.32  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.31  1999/07/14 13:05:29  adam
  * Tcl filter works with objects when TCL is version 8 or later; filter
  * works with strings otherwise (slow).
  *
@@ -1026,9 +1029,9 @@ static void tagStrip (const char **tag, int *len)
 static void tagBegin (struct lexSpec *spec, 
                       const char *tag, int len)
 {
-    struct data1_node *parent = spec->d1_stack[spec->d1_level -1];
+    struct data1_node *parent;
     data1_element *elem = NULL;
-    data1_node *partag = get_parent_tag(spec->dh, parent);
+    data1_node *partag;
     data1_node *res;
     data1_element *e = NULL;
     int localtag = 0;
@@ -1039,6 +1042,9 @@ static void tagBegin (struct lexSpec *spec,
         return ;
     }
     tagStrip (&tag, &len);
+
+    parent = spec->d1_stack[spec->d1_level -1];
+    partag = get_parent_tag(spec->dh, parent);
    
     res = data1_mk_node (spec->dh, spec->m);
     res->parent = parent;

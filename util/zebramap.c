@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.c,v $
- * Revision 1.15  1999-05-26 07:49:14  adam
+ * Revision 1.16  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.15  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.14  1999/02/19 10:37:40  adam
@@ -67,6 +70,13 @@
 #define ZEBRA_MAP_TYPE_SORT  1
 #define ZEBRA_MAP_TYPE_INDEX 2
 
+struct zm_token {
+    char *token_from;
+    char *token_to;
+    int token_min;
+    struct zm_token *next;
+};
+
 struct zebra_map {
     unsigned reg_id;
     int completeness;
@@ -83,6 +93,7 @@ struct zebra_map {
     chrmaptab maptab;
     const char *maptab_name;
     struct zebra_map *next;
+    struct zm_token *replace_tokens;
 };
 
 struct zebra_maps {
@@ -92,6 +103,7 @@ struct zebra_maps {
     char temp_map_str[2];
     const char *temp_map_ptr[2];
     struct zebra_map **lookup_array;
+    WRBUF wrbuf_1, wrbuf_2;
 };
 
 void zebra_maps_close (ZebraMaps zms)
@@ -103,6 +115,8 @@ void zebra_maps_close (ZebraMaps zms)
 	    chrmaptab_destroy (zm->maptab);
 	zm = zm->next;
     }
+    wrbuf_free (zms->wrbuf_1, 1);
+    wrbuf_free (zms->wrbuf_2, 1);
     nmem_destroy (zms->nmem);
     xfree (zms);
 }
@@ -136,6 +150,7 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
 	    (*zm)->type = ZEBRA_MAP_TYPE_INDEX;
 	    (*zm)->completeness = 0;
 	    (*zm)->positioned = 1;
+	    (*zm)->replace_tokens = 0;
 	}
 	else if (!yaz_matchstr (argv[0], "sort") && argc == 2)
 	{
@@ -169,6 +184,43 @@ static void zebra_map_read (ZebraMaps zms, const char *name)
             if ((*zm)->type == ZEBRA_MAP_TYPE_SORT)
 		(*zm)->u.sort.entry_size = atoi (argv[1]);
         }
+        else if (zm && !yaz_matchstr (argv[0], "replace") && argc >= 2)
+        {
+	    struct zm_token *token = nmem_malloc (zms->nmem, sizeof(*token));
+	    char *cp, *dp;
+	    token->next = (*zm)->replace_tokens;
+	    (*zm)->replace_tokens = token;
+	    dp = token->token_from = nmem_strdup (zms->nmem, cp = argv[1]);
+	    while (*cp)
+	    {
+		if (*cp == '$')
+		{
+		    *dp++ = ' ';
+		    cp++;
+		}
+		else
+		    *dp++ = zebra_prim(&cp);
+	    }
+	    *dp = '\0';
+
+	    if (argc >= 3)
+	    {
+		dp = token->token_to = nmem_strdup (zms->nmem, cp = argv[2]);
+		while (*cp)
+		{
+		    if (*cp == '$')
+		    {
+			*dp++ = ' ';
+			cp++;
+		    }
+		    else
+			*dp++ = zebra_prim(&cp);
+		}
+		*dp = '\0';
+	    }
+	    else
+		token->token_to = 0;
+        }
     }
     if (zm)
 	(*zm)->next = NULL;
@@ -191,7 +243,8 @@ ZebraMaps zebra_maps_open (Res res)
     int i;
 
     zms->nmem = nmem_create ();
-    zms->tabpath = nmem_strdup (zms->nmem, res_get_def (res, "profilePath", "."));
+    zms->tabpath = nmem_strdup (zms->nmem,
+				res_get_def (res, "profilePath", "."));
     zms->map_list = NULL;
 
     zms->temp_map_str[0] = '\0';
@@ -206,6 +259,9 @@ ZebraMaps zebra_maps_open (Res res)
 	zms->lookup_array[i] = 0;
     if (!res || !res_trav (res, "index", zms, zms_map_handle))
 	zebra_map_read (zms, "default.idx");
+
+    zms->wrbuf_1 = wrbuf_alloc();
+    zms->wrbuf_2 = wrbuf_alloc();
     return zms;
 }
 
@@ -261,19 +317,47 @@ const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
     return zms->temp_map_ptr;
 }
 
+#if 0
+int zebra_maps_input_tokens (ZebraMaps zms, unsigned reg_id,
+			     const char *input_str, int input_len,
+			     WRBUF wrbuf)
+{
+    chrmaptab maptab = zebra_charmap_get (zms, reg_id);
+    int len[4];
+    char *str[3];
+    int input_i = 0;
+    int first = 1;
+    const char **out;
+	
+    if (!maptab)
+    {
+	wrbuf_write (wrbuf, input_str, input_len);
+	return -1;
+    }
+    str[0] = " ";
+    len[0] = 1;
+    str[1] = input_str;
+    len[1] = input_len;
+    str[2] = " ";
+    len[2] = 1;
+    len[3] = -1;
+    
+    out = chr_map_input (maptab, str, len);
+    while (len[1] > 0)
+    {
+	while (out && *out && **out == *CHR_SPACE)
+	    out = chr_map_input (maptab, str, len);
+    }
+}
+#endif
+
 const char *zebra_maps_output(ZebraMaps zms, unsigned reg_id,
 			      const char **from)
 {
-    chrmaptab maptab;
-    unsigned char i = (unsigned char) **from;
-    static char buf[2] = {0,0};
-
-    maptab = zebra_charmap_get (zms, reg_id);
-    if (maptab)
-	return chr_map_output (maptab, from, 1);
-    (*from)++;
-    buf[0] = i;
-    return buf;
+    chrmaptab maptab = zebra_charmap_get (zms, reg_id);
+    if (!maptab)
+	return 0;
+    return chr_map_output (maptab, from, 1);
 }
 
 
@@ -465,4 +549,109 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
 	return -1;
     }
     return 0;
+}
+
+int zebra_replace_sub(ZebraMaps zms, unsigned reg_id, const char *ex_list,
+		      const char *input_str, int input_len, WRBUF wrbuf);
+
+WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
+		    const char *input_str, int input_len)
+{
+    struct zebra_map *zm = zebra_map_get (zms, reg_id);
+
+    wrbuf_rewind(zms->wrbuf_1);
+    wrbuf_write(zms->wrbuf_1, input_str, input_len);
+    if (!zm->replace_tokens)
+	return zms->wrbuf_1;
+   
+#if 0 
+    logf (LOG_LOG, "zebra_replace");
+    logf (LOG_LOG, "in:%.*s:", wrbuf_len(zms->wrbuf_1),
+	  wrbuf_buf(zms->wrbuf_1));
+#endif
+    for (;;)
+    {
+	if (!zebra_replace_sub(zms, reg_id, ex_list, wrbuf_buf(zms->wrbuf_1),
+			       wrbuf_len(zms->wrbuf_1), zms->wrbuf_2))
+	    return zms->wrbuf_2;
+	if (!zebra_replace_sub(zms, reg_id, ex_list, wrbuf_buf(zms->wrbuf_2),
+			       wrbuf_len(zms->wrbuf_2), zms->wrbuf_1))
+	    return zms->wrbuf_1;
+    }
+    return 0;
+}
+
+int zebra_replace_sub(ZebraMaps zms, unsigned reg_id, const char *ex_list,
+		      const char *input_str, int input_len, WRBUF wrbuf)
+{
+    int i = -1;
+    int no_replaces = 0;
+    struct zebra_map *zm = zebra_map_get (zms, reg_id);
+
+    wrbuf_rewind(wrbuf);
+    for (i = -1; i <= input_len; )
+    {
+	struct zm_token *token;
+	char replace_string[128];
+	int replace_out;
+	int replace_in = 0;
+
+	for (token = zm->replace_tokens; !replace_in && token;
+	     token = token->next)
+	{
+	    int j = 0;
+	    int replace_done = 0;
+	    replace_out = 0;
+	    for (;; j++)
+	    {
+		int c;
+		if (!token->token_from[j])
+		{
+		    replace_in = j;
+		    break;
+		}
+		if (ex_list && strchr (ex_list, token->token_from[j]))
+		    break;
+		if (i+j < 0 || j+i >= input_len)
+		    c = ' ';
+		else
+		    c = tolower(input_str[j+i]);
+		if (token->token_from[j] == '.')
+		{
+		    if (c == ' ')
+			break;
+		    replace_string[replace_out++] = c;
+		}
+		else
+		{
+		    if (c != token->token_from[j])
+			break;
+		    if (!replace_done)
+		    {
+			const char *cp = token->token_to;
+			replace_done = 1;
+			for (; cp && *cp; cp++)
+			    replace_string[replace_out++] = *cp;
+		    }
+		}
+	    }
+	}
+	if (!replace_in)
+	{
+	    if (i >= 0 && i < input_len)
+		wrbuf_putc(wrbuf, input_str[i]);
+	    i++;
+	}
+	else
+	{
+	    no_replaces++;
+	    if (replace_out)
+		wrbuf_write(wrbuf, replace_string, replace_out);
+	    i += replace_in;
+	}
+    }
+#if 0
+    logf (LOG_LOG, "out:%.*s:", wrbuf_len(wrbuf), wrbuf_buf(wrbuf));
+#endif
+    return no_replaces;
 }

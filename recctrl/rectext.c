@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rectext.c,v $
- * Revision 1.12  1999-05-26 07:49:14  adam
+ * Revision 1.13  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.12  1999/05/26 07:49:14  adam
  * C++ compilation.
  *
  * Revision 1.11  1999/05/21 12:00:17  adam
@@ -147,7 +150,7 @@ static int text_extract (void *clientData, struct recExtractCtrl *p)
         {
             recWord.string = w;
 	    recWord.length = i;
-            (*p->addWord)(&recWord);
+            (*p->tokenAdd)(&recWord);
         }
     } while (r > 0);
     buf_close (fi);

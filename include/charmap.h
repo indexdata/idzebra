@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1995-1997, Index Data.
+ * Copyright (c) 1995-1999, Index Data.
  * 
  * All rights reserved.
  * 
@@ -36,7 +36,10 @@
  * OF THIS SOFTWARE.
  *
  * $Log: charmap.h,v $
- * Revision 1.4  1997-10-27 14:33:04  adam
+ * Revision 1.5  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.4  1997/10/27 14:33:04  adam
  * Moved towards generic character mapping depending on "structure"
  * field in abstract syntax file. Fixed a few memory leaks. Fixed
  * bug with negative integers when doing searches with relational
@@ -51,26 +54,35 @@
 #ifndef CHARMAP_H
 #define CHARMAP_H
 
+#include <yconfig.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const char *CHR_UNKNOWN;
-extern const char *CHR_SPACE;
-extern const char *CHR_BASE;
+YAZ_EXPORT extern const char *CHR_UNKNOWN;
+YAZ_EXPORT extern const char *CHR_SPACE;
+YAZ_EXPORT extern const char *CHR_BASE;
 
 struct chr_t_entry;
 typedef struct chr_t_entry chr_t_entry;
 
 typedef struct chrmaptab_info *chrmaptab;
 
-chrmaptab chrmaptab_create(const char *tabpath, const char *name,
-			   int map_only);
-void chrmaptab_destroy (chrmaptab tab);
+YAZ_EXPORT chrmaptab chrmaptab_create(const char *tabpath, const char *name,
+				      int map_only);
+YAZ_EXPORT void chrmaptab_destroy (chrmaptab tab);
 
-const char **chr_map_input(chrmaptab t, const char **from, int len);
+YAZ_EXPORT const char **chr_map_input(chrmaptab t, const char **from, int len);
+YAZ_EXPORT const char **chr_map_input_x(chrmaptab t,
+					const char **from, int *len);
+YAZ_EXPORT const char **chr_map_input_q(chrmaptab maptab,
+					const char **from, int len,
+					const char **qmap);
+    
+YAZ_EXPORT const char *chr_map_output(chrmaptab t, const char **from, int len);
 
-const char *chr_map_output(chrmaptab t, const char **from, int len);
+YAZ_EXPORT unsigned char zebra_prim(char **s);
 
 #ifdef __cplusplus
 }

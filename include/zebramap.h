@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebramap.h,v $
- * Revision 1.8  1999-02-12 13:29:21  adam
+ * Revision 1.9  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.8  1999/02/12 13:29:21  adam
  * Implemented position-flag for registers.
  *
  * Revision 1.7  1999/02/02 14:50:46  adam
@@ -64,6 +67,10 @@ int zebra_maps_sort (ZebraMaps zms, Z_SortAttributes *sortAttributes);
 int zebra_maps_is_complete (ZebraMaps zms, unsigned reg_id);
 int zebra_maps_is_sort (ZebraMaps zms, unsigned reg_id);
 int zebra_maps_is_positioned (ZebraMaps zms, unsigned reg_id);
+
+WRBUF zebra_replace(ZebraMaps zms, unsigned reg_id, const char *ex_list,
+		    const char *input_str, int input_len);
+
 #ifdef __cplusplus
 }
 #endif

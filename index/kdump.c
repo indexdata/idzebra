@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kdump.c,v $
- * Revision 1.17  1999-02-02 14:50:55  adam
+ * Revision 1.18  1999-09-07 07:19:21  adam
+ * Work on character mapping. Implemented replace rules.
+ *
+ * Revision 1.17  1999/02/02 14:50:55  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.16  1998/05/20 10:12:17  adam
@@ -207,8 +210,11 @@ int main (int argc, char **argv)
 	while (*from)
 	{
 	    const char *res = zebra_maps_output (zm, reg_type, &from);
-	    while (*res)
-		*(to++) = *(res++);
+	    if (!res)
+		*to++ = *from++;
+	    else
+		while (*res)
+		    *to++ = *res++;
 	}
 	*to = '\0';
         printf ("%c %3d %c %7d %5d %s\n", reg_type, usedb_type, op ? 'i':'d',
