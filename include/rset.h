@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.h,v $
- * Revision 1.5  1995-09-04 15:20:13  adam
+ * Revision 1.6  1995-09-06 16:10:58  adam
+ * More work on boolean sets.
+ *
+ * Revision 1.5  1995/09/04  15:20:13  adam
  * More work on temp sets. is_open member removed.
  *
  * Revision 1.4  1995/09/04  09:09:52  adam
@@ -57,10 +60,10 @@ RSET rset_create(const rset_control *sel, void *parms);       /* parameters? */
 void rset_delete(RSET rs);
 
 /* void rset_rewind(RSET rs); */
-#define rset_rewind(rs, wflag) ((*(rs)->control->f_rewind)((rs)->control))
+#define rset_rewind(rs) ((*(rs)->control->f_rewind)((rs)->control))
 
 /* int rset_count(RSET rs); */
-#define rset_count(rs, wflag) ((*(rs)->control->f_count)((rs)->control))
+#define rset_count(rs) ((*(rs)->control->f_count)((rs)->control))
 
 /* int rset_read(RSET rs, void *buf); */
 #define rset_read(rs, buf) ((*(rs)->control->f_read)((rs)->control, (buf)))

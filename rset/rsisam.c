@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsisam.c,v $
- * Revision 1.7  1995-09-06 10:35:44  adam
+ * Revision 1.8  1995-09-06 16:11:56  adam
+ * More work on boolean sets.
+ *
+ * Revision 1.7  1995/09/06  10:35:44  adam
  * Null set implemented.
  *
  * Revision 1.6  1995/09/05  11:43:24  adam

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.h,v $
- * Revision 1.9  1994-09-28 16:58:26  quinn
+ * Revision 1.10  1995-09-06 16:10:57  adam
+ * More work on boolean sets.
+ *
+ * Revision 1.9  1994/09/28  16:58:26  quinn
  * Small mod.
  *
  * Revision 1.8  1994/09/28  12:56:09  quinn
@@ -98,7 +101,7 @@ typedef struct ispt_struct
  * Open isam file.
  */
 ISAM is_open(const char *name, int (*cmp)(const void *p1, const void *p2),
-    int writeflag);
+    int writeflag, int keysize);
 
 /*
  * Close isam file.

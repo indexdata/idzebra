@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rstemp.c,v $
- * Revision 1.5  1995-09-05 16:36:59  adam
+ * Revision 1.6  1995-09-06 16:11:56  adam
+ * More work on boolean sets.
+ *
+ * Revision 1.5  1995/09/05  16:36:59  adam
  * Minor changes.
  *
  * Revision 1.4  1995/09/05  11:43:24  adam

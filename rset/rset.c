@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994, Index Data I/S 
+ * Copyright (C) 1994-1995, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rset.c,v $
- * Revision 1.3  1995-09-04 15:20:39  adam
+ * Revision 1.4  1995-09-06 16:11:56  adam
+ * More work on boolean sets.
+ *
+ * Revision 1.3  1995/09/04  15:20:39  adam
  * More work on temp sets. is_open member removed.
  *
  * Revision 1.2  1995/09/04  12:33:56  adam
