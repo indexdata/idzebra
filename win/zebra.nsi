@@ -1,4 +1,4 @@
-; $Id: zebra.nsi,v 1.22 2004-08-20 12:36:53 adam Exp $
+; $Id: zebra.nsi,v 1.23 2004-08-25 08:42:13 adam Exp $
 
 !define VERSION "1.4.0"
 
@@ -81,6 +81,8 @@ Section "Zebra Development"
 	SectionIn 1
 	SetOutPath $INSTDIR\include
 	File ..\include\*.h
+	SetOutPath $INSTDIR\include\idzebra
+	File ..\include\idzebra\*.h
 	SetOutPath $INSTDIR\lib
 	File ..\lib\*.lib
 SectionEnd
