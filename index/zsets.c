@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zsets.c,v $
- * Revision 1.18  1998-09-22 10:03:45  adam
+ * Revision 1.19  1998-09-22 10:48:22  adam
+ * Minor changes in search API.
+ *
+ * Revision 1.18  1998/09/22 10:03:45  adam
  * Changed result sets to be persistent in the sense that they can
  * be re-searched if needed.
  * Fixed memory leak in rsm_or.
@@ -109,7 +112,7 @@ struct zset_sort_info {
     struct zset_sort_entry **entries;
 };
 
-ZebraSet resultSetAddRPN (ZebraHandle zh, ODR stream, ODR decode,
+ZebraSet resultSetAddRPN (ZebraHandle zh, ODR input, ODR output,
 			  Z_RPNQuery *rpn, int num_bases, char **basenames, 
 			  const char *setname)
 {
@@ -127,9 +130,9 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, ODR stream, ODR decode,
     zebraSet->rpn = 0;
     zebraSet->num_bases = num_bases;
     zebraSet->basenames = basenames;
-    zebraSet->nmem = odr_extract_mem (decode);
+    zebraSet->nmem = odr_extract_mem (input);
 
-    zebraSet->rset = rpn_search (zh, stream->mem, rpn,
+    zebraSet->rset = rpn_search (zh, output->mem, rpn,
                                  zebraSet->num_bases,
 		                 zebraSet->basenames, zebraSet->name,
 				 zebraSet);

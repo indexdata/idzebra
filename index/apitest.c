@@ -98,7 +98,7 @@ int main (int argc, char **argv)
 {
     /* odr is a handle to memory assocated with RETURNED data from
        various functions */
-    ODR odr;
+    ODR odr_input, odr_output;
     
     /* zh is our Zebra Handle - describes the server as a whole */
     ZebraHandle zh;
@@ -109,7 +109,8 @@ int main (int argc, char **argv)
 
     nmem_init ();
 
-    odr = odr_createmem (ODR_ENCODE);    
+    odr_input = odr_createmem (ODR_DECODE);    
+    odr_output = odr_createmem (ODR_ENCODE);    
     
    /* open Zebra */
     zh = zebra_open ("zebra.cfg");
@@ -128,7 +129,7 @@ int main (int argc, char **argv)
     for (argno = 1; argno < argc; argno++)
     {
 	/* parse the query and generate an RPN structure */
-	Z_RPNQuery *query = p_query_rpn (odr, PROTO_Z3950, argv[argno]);
+	Z_RPNQuery *query = p_query_rpn (odr_input, PROTO_Z3950, argv[argno]);
 	char setname[64];
 	int errCode;
 	int i;
@@ -141,7 +142,7 @@ int main (int argc, char **argv)
 	if (!query)
 	{
 	    logf (LOG_WARN, "bad query %s\n", argv[argno]);
-	    odr_reset (odr);
+	    odr_reset (odr_input);
 	    continue;
 	}
 
@@ -149,7 +150,7 @@ int main (int argc, char **argv)
 	sprintf (setname, "%d", i);
 
 	/* fire up the search */
-	zebra_search_rpn (zh, odr, query, 1, &base, setname);
+	zebra_search_rpn (zh, odr_input, odr_output, query, 1, &base, setname);
 	
 	/* status ... */
 	errCode = zebra_errCode (zh);
@@ -173,16 +174,17 @@ int main (int argc, char **argv)
 	    noOfRecordsToFetch = zebra_hits(zh);
 
 	/* reset our memory - we've finished dealing with search */
-	odr_reset (odr);
+	odr_reset (odr_input);
+ 	odr_reset (odr_output);
 
 	/* prepare to fetch ... */
-	records = malloc (sizeof(*records) * noOfRecordsToFetch);
+	records = odr_malloc (odr_input, sizeof(*records) * noOfRecordsToFetch);
 	/* specify position of each record to fetch */
 	/* first one is numbered 1 and NOT 0 */
 	for (i = 0; i<noOfRecordsToFetch; i++)
 	    records[i].position = i+1;
 	/* fetch them and request for GRS-1 records */
-	zebra_records_retrieve (zh, odr, setname, NULL,	VAL_GRS1,
+	zebra_records_retrieve (zh, odr_input, setname, NULL, VAL_GRS1,
 				noOfRecordsToFetch, records);
 
 	/* status ... */
@@ -223,8 +225,12 @@ int main (int argc, char **argv)
 		}
 	    }
 	}
-	free (records);
-	odr_reset (odr);  /* reset memory */
+	/* reset our memory - we've finished dealing with present */
+	odr_reset (odr_input); 
+	odr_reset (odr_output);
     }
+    odr_destroy (odr_input);
+    odr_destroy (odr_output);
+    zebra_close (zh);
     return 0;
 }

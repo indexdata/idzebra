@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.85  1998-09-22 10:03:43  adam
+ * Revision 1.86  1998-09-22 10:48:20  adam
+ * Minor changes in search API.
+ *
+ * Revision 1.85  1998/09/22 10:03:43  adam
  * Changed result sets to be persistent in the sense that they can
  * be re-searched if needed.
  * Fixed memory leak in rsm_or.
@@ -2036,8 +2039,6 @@ RSET rpn_search (ZebraHandle zh, NMEM nmem,
     oid_value attributeSet;
     Z_SortKeySpecList *sort_sequence;
     int sort_status, i;
-
-    zlog_rpn (rpn);
 
     zh->errCode = 0;
     zh->errString = NULL;

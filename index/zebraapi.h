@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.h,v $
- * Revision 1.4  1998-09-02 13:53:18  adam
+ * Revision 1.5  1998-09-22 10:48:19  adam
+ * Minor changes in search API.
+ *
+ * Revision 1.4  1998/09/02 13:53:18  adam
  * Extra parameter decode added to search routines to implement
  * persistent queries.
  *
@@ -46,7 +49,7 @@ typedef struct zebra_info *ZebraHandle;
 YAZ_EXPORT ZebraHandle zebra_open (const char *configName);
 
 /* Search using RPN-Query */
-YAZ_EXPORT void zebra_search_rpn (ZebraHandle zh, ODR stream, ODR decode,
+YAZ_EXPORT void zebra_search_rpn (ZebraHandle zh, ODR input, ODR output,
                        Z_RPNQuery *query, int num_bases, char **basenames, 
 		       const char *setname);
 
