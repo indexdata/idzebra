@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.5  1994-09-06 13:05:29  adam
+ * Revision 1.6  1994-09-16 15:39:21  adam
+ * Initial code of lookup - not tested yet.
+ *
+ * Revision 1.5  1994/09/06  13:05:29  adam
  * Further development of insertion. Some special cases are
  * not properly handled yet! assert(0) are put here. The
  * binary search in each page definitely reduce usr CPU.
@@ -84,7 +87,7 @@ int dict_bf_close (Dict_BFile dbf);
 Dict dict_open (const char *name, int cache, int rw);
 int dict_close (Dict dict);
 int dict_insert (Dict dict, const Dict_char *p, int userlen, void *userinfo);
-int dict_lookup (Dict dict, Dict_char *p);
+char *dict_lookup (Dict dict, Dict_char *p);
 int dict_strcmp (const Dict_char *s1, const Dict_char *s2);
 int dict_strlen (const Dict_char *s);
 

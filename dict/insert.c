@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: insert.c,v $
- * Revision 1.8  1994-09-16 12:35:01  adam
+ * Revision 1.9  1994-09-16 15:39:13  adam
+ * Initial code of lookup - not tested yet.
+ *
+ * Revision 1.8  1994/09/16  12:35:01  adam
  * New version of split_page which use clean_page for splitting.
  *
  * Revision 1.7  1994/09/12  08:06:42  adam
@@ -80,12 +83,13 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
     void *subp;
     char *info_here;
     Dict_ptr subptr;
-    int i, need;
-    short *indxp, *best_indxp;
+    int i;
+    short *indxp, *best_indxp = NULL;
     Dict_char best_char = 0;
     Dict_char prev_char = 0;
     int best_no = -1, no_current = 1;
 
+    /* determine splitting char... */
     indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
     for (i = DICT_nodir (p); --i >= 0; --indxp)
     {
@@ -124,7 +128,7 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
     info_here = NULL;
     for (indxp=best_indxp, i=0; i<best_no; i++, indxp++)
     {
-        char *info;
+        char *info, *info1;
         int slen;
 
         assert (*indxp > 0);
@@ -139,111 +143,15 @@ static int split_page (Dict dict, Dict_ptr ptr, void *p)
             assert (!info_here);
             info_here = info+(slen+1)*sizeof(Dict_char);
         }
-    }
-    /* calculate the amount of bytes needed for this entry when */
-    /* transformed to a sub entry */
-    need = sizeof(Dict_char)+sizeof(Dict_ptr)+1;
-    if (info_here)
-        need += *info_here;
-
-    indxp = best_indxp;
-    /* now loop on all entries with string length > 1 i.e. all */
-    /* those entries which contribute to a sub page */
-    best_indxp = NULL;                  
-    for (i=0; i<best_no; i++, indxp++)
-    {
-        char *info, *info1;
-        int slen;
-
-        assert (*indxp > 0);
-        
-        info = (char*) p + *indxp;                    /* entry start */
-        assert (*info == best_char);
-        slen = dict_strlen(info);
-            
-        if (slen > 1)
+        else
         {
             info1 = info+(1+slen)*sizeof(Dict_char);  /* info start */
-
-            if (need <= (1+slen)*sizeof(Dict_char) + 1 + *info1)
-                best_indxp = indxp;                   /* space for entry */
             dict_ins (dict, info+sizeof(Dict_char), subptr, *info1, info1+1);
             dict_bf_readp (dict->dbf, ptr, &p);
         }
     }
-#if 1
     /* now clean the page ... */
     clean_page (dict, ptr, p, &best_char, subptr, info_here);
-    return 0;
-#endif
-    if (best_indxp)
-    {   /* there was a hole big enough for a sub entry */
-        char *info = (char*) p + *best_indxp;
-        short *indxp1;
-
-        *--indxp = - *best_indxp;
-        DICT_type(p) = 1;
-        DICT_nodir (p) -= (best_no-1);
-        indxp1 = (short*)((char*)p+DICT_PAGESIZE-DICT_nodir(p)*sizeof(short));
-        while (indxp != indxp1)
-        {
-            --indxp;
-            *indxp = indxp[1-best_no];
-        }
-        memcpy (info, &subptr, sizeof(Dict_ptr));     /* store subptr */
-        info += sizeof(Dict_ptr);
-        memcpy (info, &best_char, sizeof(Dict_char)); /* store sub char */
-        info += sizeof(Dict_char);
-        if (info_here)
-            memcpy (info, info_here, *info_here+1);   /* with information */
-        else
-            *info = 0;                                /* without info */
-#if CHECK
-        best_indxp = NULL;
-        prev_char = 0;
-        indxp = (short*) ((char*) p+DICT_PAGESIZE-sizeof(short));
-        for (i = DICT_nodir (p); --i >= 0; --indxp)
-        {
-            if (*indxp > 0) /* tail string here! */
-            {
-                Dict_char dc;
-                
-                memcpy (&dc, (char*) p + *indxp, sizeof(dc));
-                assert (dc != best_char);
-                assert (dc >= prev_char);
-                prev_char = dc;
-            }
-            else
-            {
-                Dict_char dc;
-                memcpy (&dc, (char*)p - *indxp+sizeof(Dict_ptr),
-                        sizeof(dc));
-                assert (dc > prev_char);
-                if (dc == best_char)
-                {
-                    assert (best_indxp == NULL);
-                    best_indxp = indxp;
-                }
-                prev_char = dc;
-            }
-        }
-        assert (best_indxp);
-#endif    
-    }
-    else
-    {
-        short *indxp1, *indxp2;
-        assert (0);
-        DICT_type(p) = 1;
-        DICT_nodir(p) -= best_no;
-        indxp2 = indxp;
-        indxp1 = (short*)((char*) p+DICT_PAGESIZE-DICT_nodir(p)*sizeof(short));
-        do
-        {
-            --indxp2;
-            indxp2[0] = indxp2[-best_no];
-        } while (indxp2 != indxp1);
-    }
     return 0;
 }
 
@@ -318,6 +226,7 @@ static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
     DICT_type(p) = 0;
     DICT_nodir(p) = no;
     xfree (np);
+    dict_bf_touch (dict->dbf, ptr);
 }
 
 
@@ -329,7 +238,7 @@ static void clean_page (Dict dict, Dict_ptr ptr, void *p, Dict_char *out,
 static int dict_ins (Dict dict, const Dict_char *str,
                      Dict_ptr back_ptr, int userlen, void *userinfo)
 {
-    int hi, lo, mid, i, slen, cmp = 1;
+    int hi, lo, mid, slen, cmp = 1;
     Dict_ptr ptr = back_ptr;
     short *indxp;
     char *info;
@@ -429,7 +338,6 @@ static int dict_ins (Dict dict, const Dict_char *str,
                         if (DICT_type(p) == 1)
                         {
                             clean_page (dict, ptr, p, NULL, 0, NULL);
-                            dict_bf_touch (dict->dbf, ptr);
                             return dict_ins (dict, str-1, ptr,
                                              userlen, userinfo);
                         }
@@ -482,28 +390,7 @@ static int dict_ins (Dict dict, const Dict_char *str,
     if (DICT_size(p)+slen+userlen >=
         DICT_PAGESIZE - (1+DICT_nodir(p))*sizeof(short)) /* overflow? */
     {
-        if (DICT_type(p) == 1)
-        {
-            clean_page (dict, ptr, p, NULL, 0, NULL);
-            dict_bf_touch (dict->dbf, ptr);
-            return dict_ins (dict, str, ptr, userlen, userinfo);
-        }
-        i = 0;
-        do 
-        {
-            assert (i <= 1);
-            if (split_page (dict, ptr, p)) 
-            {
-                log (LOG_FATAL, "Unable to split page %d\n", ptr);
-                abort ();
-            }
-            if (DICT_size(p)+slen+userlen <
-                DICT_PAGESIZE - (1+DICT_nodir(p))*sizeof(short))
-                break;
-            i++;
-            clean_page (dict, ptr, p, NULL, 0, NULL);
-        } while (DICT_size(p)+slen+userlen > DICT_PAGESIZE -
-                 (1+DICT_nodir(p))*sizeof(short));
+        split_page (dict, ptr, p);
         return dict_ins (dict, str, ptr, userlen, userinfo);
     }
     if (cmp)

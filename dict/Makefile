@@ -1,11 +1,12 @@
 # Copyright (C) 1994, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.6 1994-09-12 08:06:41 adam Exp $
+# $Id: Makefile,v 1.7 1994-09-16 15:39:10 adam Exp $
 
 SHELL=/bin/sh
 INCLUDE=-I../include
-TPROG=dicttest
+TPROG1=dicttest
+TPROG2=dictext
 CFLAGS=-O -Wall -g -pedantic
 DEFS=$(INCLUDE)
 LIB=../lib/dict.a 
@@ -14,8 +15,12 @@ CPP=cc -E
 
 all: $(LIB)
 
-$(TPROG): $(TPROG).o $(LIB) 
-	$(CC) $(CFLAGS) -o $(TPROG) $(TPROG).o $(LIB) ../lib/bfile.a ../lib/util.a
+$(TPROG1): $(TPROG1).o $(LIB) 
+	$(CC) $(CFLAGS) -o $(TPROG1) $(TPROG1).o $(LIB) ../lib/bfile.a ../lib/util.a
+
+$(TPROG2): $(TPROG2).o $(LIB) 
+	$(CC) $(CFLAGS) -o $(TPROG2) $(TPROG2).o ../lib/util.a
+
 
 $(LIB): $(PO)
 	rm -f $(LIB)
@@ -26,7 +31,7 @@ $(LIB): $(PO)
 	$(CC) -c $(DEFS) $(CFLAGS) $<
 
 clean:
-	rm -f *.[oa] $(TPROG) core mon.out gmon.out errlist
+	rm -f *.[oa] $(TPROG1) $(TPROG2) core mon.out gmon.out errlist
 
 dep depend:
 	$(CPP) $(INCLUDE) -M *.c >.depend

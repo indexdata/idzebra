@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dicttest.c,v $
- * Revision 1.5  1994-09-06 13:05:14  adam
+ * Revision 1.6  1994-09-16 15:39:12  adam
+ * Initial code of lookup - not tested yet.
+ *
+ * Revision 1.5  1994/09/06  13:05:14  adam
  * Further development of insertion. Some special cases are
  * not properly handled yet! assert(0) are put here. The
  * binary search in each page definitely reduce usr CPU.
@@ -44,17 +47,18 @@ int main (int argc, char **argv)
     int ret;
     int no_of_insertions = 0;
     int no_of_new = 0, no_of_same = 0, no_of_change = 0;
+    int unique = 0;
     char *arg;
     
     prog = argv[0];
     if (argc < 2)
     {
         fprintf (stderr, "usage:\n"
-                 "  %s [-s n] [-v n] [-i f] [-w] [-c n] base file\n",
+                 "  %s [-u] [-s n] [-v n] [-i f] [-w] [-c n] base file\n",
                  prog);
         exit (1);
     }
-    while ((ret = options ("s:v:i:wc:", argv, argc, &arg)) != -2)
+    while ((ret = options ("us:v:i:wc:", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -67,6 +71,10 @@ int main (int argc, char **argv)
                 log (LOG_FATAL, "too many files specified\n");
                 exit (1);
             }
+        }
+        else if (ret == 'u')
+        {
+            unique = 1;
         }
         else if (ret == 'c')
         {
@@ -115,7 +123,7 @@ int main (int argc, char **argv)
     if (inputfile)
     {
         FILE *ipf;
-        char ipf_buf[256];
+        char ipf_buf[1024];
         int line = 1;
         char infobytes[120];
         memset (infobytes, 0, 120);
@@ -126,7 +134,7 @@ int main (int argc, char **argv)
             exit (1);
         }
         
-        while (fgets (ipf_buf, 255, ipf))
+        while (fgets (ipf_buf, 1023, ipf))
         {
             char *ipf_ptr = ipf_buf;
             sprintf (infobytes, "%d", line);
@@ -140,7 +148,6 @@ int main (int argc, char **argv)
                         i++;
                     if (ipf_ptr[i])
                         ipf_ptr[i++] = '\0';
-#if 1
                     switch(dict_insert (dict, ipf_ptr, infosize, infobytes))
                     {
                     case 0:
@@ -148,14 +155,15 @@ int main (int argc, char **argv)
                         break;
                     case 1:
                         no_of_change++;
+                        if (unique)
+                            log (LOG_LOG, "%s change\n", ipf_ptr);
                         break;
                     case 2:
+                        if (unique)
+                            log (LOG_LOG, "%s duplicate\n", ipf_ptr);
                         no_of_same++;
                         break;
                     }
-#else
-                    printf ("%s\n", ipf_ptr);
-#endif
                     ++no_of_insertions;
                     ipf_ptr += (i-1);
                 }
