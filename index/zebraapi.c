@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.96 2003-03-26 16:41:48 adam Exp $
+/* $Id: zebraapi.c,v 1.97 2003-04-02 18:46:13 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -1800,7 +1800,7 @@ int zebra_insert_record (ZebraHandle zh,
 			 const char *recordType,
 			 int sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
-			 int force_update) // This one is ignored
+			 int force_update) /* This one is ignored */
  
 {
     int res;
@@ -1809,13 +1809,13 @@ int zebra_insert_record (ZebraHandle zh,
 
     zebra_begin_trans(zh, 1);
     res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
-			     0, // delete_flag 
-			     0, // test_mode,
+			     0, /* delete_flag  */
+			     0, /* test_mode */
 			     recordType,
 			     &sysno,   
 			     match, fname,
 			     force_update, 
-			     0); // allow_update     
+			     0); /* allow_update */
     zebra_end_trans(zh); 
     if (res < 0) return (res);
     return sysno; 
@@ -1835,13 +1835,13 @@ int zebra_update_record (ZebraHandle zh,
 
     zebra_begin_trans(zh, 1);
     res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
-			     0, // delete_flag 
-			     0, // test_mode,
+			     0, /* delete_flag */
+			     0, /* test_mode */
 			     recordType,
 			     &sysno,   
 			     match, fname,
 			     force_update, 
-			     1); // allow_update    
+			     1); /* allow_update */
     zebra_end_trans(zh); 
     return sysno; 
 }
@@ -1861,13 +1861,13 @@ int zebra_delete_record (ZebraHandle zh,
 
     zebra_begin_trans(zh, 1);
     res=bufferExtractRecord (zh, buf, buf_size, rGroup, 
-			     1, // delete_flag
-			     0, // test_mode, 
+			     1, /* delete_flag */
+			     0, /* test_mode */
 			     recordType,
 			     &sysno,
 			     match,fname,
 			     force_update,
-			     1); // allow_update    
+			     1); /* allow_update */
     zebra_end_trans(zh);
     return sysno;   
 }
