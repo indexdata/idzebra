@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.16 2005-01-15 19:38:31 adam Exp $
+/* $Id: tstisamb.c,v 1.17 2005-01-16 23:38:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,6 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <stdlib.h>
 #include <string.h>
 #include <yaz/log.h>
 #include <yaz/xmalloc.h>
