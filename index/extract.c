@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.14  1995-10-02 15:29:13  adam
+ * Revision 1.15  1995-10-02 15:42:53  adam
+ * Extract uses file descriptors instead of FILE pointers.
+ *
+ * Revision 1.14  1995/10/02  15:29:13  adam
  * More logging in file_extract.
  *
  * Revision 1.13  1995/09/29  14:01:39  adam
@@ -207,6 +210,11 @@ static void wordAdd (const RecWord *p)
     kused += sizeof(key);
 }
 
+static int file_read (int fd, char *buf, size_t count)
+{
+    return read (fd, buf, count);
+}
+
 void file_extract (int cmd, const char *fname, const char *kname)
 {
     int i, r;
@@ -215,7 +223,6 @@ void file_extract (int cmd, const char *fname, const char *kname)
     char ext_res[128];
     const char *file_type;
     void *file_info;
-    FILE *inf;
     struct recExtractCtrl extractCtrl;
     RecType rt;
 
@@ -248,19 +255,19 @@ void file_extract (int cmd, const char *fname, const char *kname)
     else
         memcpy (&sysno, (char*) file_info+1, sizeof(sysno));
 
-    if (!(inf = fopen (fname, "r")))
+    if ((extractCtrl.fd = open (fname, O_RDONLY)) == -1)
     {
         logf (LOG_WARN|LOG_ERRNO, "open %s", fname);
         return;
     }
-    extractCtrl.inf = inf;
     extractCtrl.subType = "";
     extractCtrl.init = wordInit;
     extractCtrl.add = wordAdd;
+    extractCtrl.readf = file_read;
     key_sysno = sysno;
     key_cmd = cmd;
     r = (*rt->extract)(&extractCtrl);
-    fclose (inf);
+    close (extractCtrl.fd);
     if (r)
         logf (LOG_WARN, "Couldn't extract file %s, code %d", fname, r);
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.7  1995-10-02 15:18:09  adam
+ * Revision 1.8  1995-10-02 15:43:35  adam
+ * Extract uses file descriptors instead of FILE pointers.
+ *
+ * Revision 1.7  1995/10/02  15:18:09  adam
  * Minor changes.
  *
  * Revision 1.6  1995/10/02  15:05:26  quinn
@@ -50,7 +53,8 @@ typedef struct {
 
 /* Extract record control */
 struct recExtractCtrl {
-    FILE *inf;
+    int        fd;                     /* File descriptor and read function */
+    int       (*readf)(int fd, char *buf, size_t count);
     char *subType;
     void (*init)(RecWord *p);
     void (*add)(const RecWord *p);
