@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: regxread.c,v $
- * Revision 1.30  1999-07-14 10:55:28  adam
+ * Revision 1.31  1999-07-14 13:05:29  adam
+ * Tcl filter works with objects when TCL is version 8 or later; filter
+ * works with strings otherwise (slow).
+ *
+ * Revision 1.30  1999/07/14 10:55:28  adam
  * Fixed memory leak.
  *
  * Revision 1.29  1999/07/12 07:27:54  adam
@@ -192,6 +196,10 @@
 
 #if HAVE_TCL_H
 #include <tcl.h>
+
+#if MAJOR_VERSION >= 8
+#define HAVE_TCL_OBJECTS
+#endif
 #endif
 
 #define REGX_DEBUG 0
@@ -210,7 +218,7 @@
 
 struct regxCode {
     char *str;
-#if HAVE_TCL_H
+#if HAVE_TCL_OBJECTS
     Tcl_Obj *tcl_obj;
 #endif
 };
@@ -358,7 +366,7 @@ static void regxCodeDel (struct regxCode **pp)
     struct regxCode *p = *pp;
     if (p)
     {
-#if HAVE_TCL_H
+#if HAVE_TCL_OBJECTS
 	if (p->tcl_obj)
 	    Tcl_DecrRefCount (p->tcl_obj);
 #endif
@@ -376,7 +384,7 @@ static void regxCodeMk (struct regxCode **pp, const char *buf, int len)
     p->str = (char *) xmalloc (len+1);
     memcpy (p->str, buf, len);
     p->str[len] = '\0';
-#if HAVE_TCL_H
+#if HAVE_TCL_OBJECTS
     p->tcl_obj = Tcl_NewStringObj ((char *) buf, len);
     if (p->tcl_obj)
 	Tcl_IncrRefCount (p->tcl_obj);
@@ -506,7 +514,7 @@ static void lexSpecDestroy (struct lexSpec **pp)
 	lexContextDestroy (lt);
 	lt = lt_next;
     }
-#if HAVE_TCL_H
+#if HAVE_TCL_OBJECTS
     if (p->tcl_interp)
 	Tcl_DeleteInterp (p->tcl_interp);
 #endif
@@ -1441,10 +1449,11 @@ static void execTcl (struct lexSpec *spec, struct regxCode *code)
 	    var_buf[var_len] = ch;
 	}
     }
-    if (code->tcl_obj)
-	ret = Tcl_GlobalEvalObj(spec->tcl_interp, code->tcl_obj);
-    else
-	ret = Tcl_GlobalEval (spec->tcl_interp, code->str);
+#if HAVE_TCL_OBJECTS
+    ret = Tcl_GlobalEvalObj(spec->tcl_interp, code->tcl_obj);
+#else
+    ret = Tcl_GlobalEval (spec->tcl_interp, code->str);
+#endif
     if (ret != TCL_OK)
     {
     	const char *err = Tcl_GetVar(spec->tcl_interp, "errorInfo", 0);
