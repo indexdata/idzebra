@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: sortidx.c,v 1.5 2002-01-07 19:52:22 adam Exp $
+ * $Id: sortidx.c,v 1.6 2002-02-18 11:46:58 adam Exp $
  */
  
 #include <string.h>
@@ -88,8 +88,8 @@ int sortIdx_type (SortIdx si, int type)
 	sf->head.sysno_max = 0;
 	if (!si->write_flag)
         {
-            xfree (sf);
             bf_close (sf->bf);
+            xfree (sf);
 	    return -1;
         }
     }
