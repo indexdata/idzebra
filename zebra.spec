@@ -1,12 +1,12 @@
 Summary: Zebra - An Open Indexing Search Engine
 Name: zebra
-Version: 1.0
+Version: 1.0pl1
 Release: 1
 Copyright: distributable
 Group: Applications/Internet
 Vendor: Index Data ApS <info@indexdata.dk>
 Url: http://www.indexdata.dk/zebra/
-Source: zebra-1.0.tar.gz
+Source: zebra-1.0pl1.tar.gz
 BuildRoot: /var/tmp/%{name}-%{version}-root
 Packager: Adam Dickmeiss <adam@indexdata.dk>
 
