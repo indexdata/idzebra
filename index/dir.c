@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dir.c,v $
- * Revision 1.8  1995-10-10 13:59:23  adam
+ * Revision 1.9  1995-10-30 13:42:12  adam
+ * Added errno.h
+ *
+ * Revision 1.8  1995/10/10  13:59:23  adam
  * Function rset_open changed its wflag parameter to general flags.
  *
  * Revision 1.7  1995/09/28  09:19:40  adam
@@ -36,6 +39,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <ctype.h>
 
