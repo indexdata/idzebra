@@ -1,4 +1,4 @@
-/* $Id: direntz.h,v 1.10 2005-01-15 21:45:42 adam Exp $
+/* $Id: direntz.h,v 1.11 2005-01-15 22:13:14 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -38,7 +38,7 @@ DIR *opendir (const char *path);
 struct dirent *readdir (DIR *dd);
 void closedir (DIR *dd);
 
-YAZ_ENC_CDECL
+YAZ_END_CDECL
 
 #else
 /* include UNIX version */
