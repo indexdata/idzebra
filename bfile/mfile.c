@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: mfile.c,v $
- * Revision 1.5  1994-09-12 08:01:51  quinn
+ * Revision 1.6  1994-09-14 13:10:15  quinn
+ * Corrected some bugs in the init-phase
+ *
+ * Revision 1.5  1994/09/12  08:01:51  quinn
  * Small
  *
  * Revision 1.4  1994/09/01  14:51:07  quinn
@@ -20,6 +23,12 @@
  * First functional version.
  *
  */
+
+
+ /*
+  * TODO: The size estimates in init may not be accurate due to
+  * only partially written final blocks.
+  */
 
 #include <sys/types.h>
 #include <fcntl.h>
@@ -75,7 +84,7 @@ static int scan_areadef(MFile_area ma, const char *name)
     return 0;
 }
 
-static int file_position(MFile mf, int pos)
+static int file_position(MFile mf, int pos, int offset)
 {
     int off = 0, c = mf->cur_file, ps;
 
@@ -98,7 +107,8 @@ static int file_position(MFile mf, int pos)
     	log(LOG_FATAL|LOG_ERRNO, "Failed to open %s", mf->files[c].path);
     	return -1;
     }
-    if (lseek(mf->files[c].fd, (ps = pos - off) * mf->blocksize, SEEK_SET) < 0)
+    if (lseek(mf->files[c].fd, (ps = pos - off) * mf->blocksize + offset,
+    	SEEK_SET) < 0)
     {
     	log(LOG_FATAL|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
     	return -1;
@@ -223,7 +233,8 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     char tmp[FILENAME_MAX+1];
     mf_dir *dp;
 
-    log(LOG_LOG, "mf_open(%s)", name);
+    log(LOG_LOG, "mf_open(%s bs=%d, %s)", name, block_size,
+    	wflag ? "RW" : "RDONLY");
     if (!ma)
     {
         if (!default_area && !(default_area = mf_init(MF_DEFAULT_AREA)))
@@ -264,6 +275,13 @@ MFile mf_open(MFile_area ma, const char *name, int block_size, int wflag)
     }
     else
     {
+    	for (i = 0; i < new->no_files; i++)
+    	{
+	    if (new->files[i].bytes % block_size)
+	    	new->files[i].bytes += block_size - new->files[i].bytes %
+		    block_size;
+	    new->files[i].blocks = new->files[i].bytes / block_size;
+	}
     	assert(!new->open);
     }
     new->blocksize = block_size;
@@ -304,16 +322,18 @@ int mf_close(MFile mf)
  */
 int mf_read(MFile mf, int no, int offset, int num, void *buf)
 {
-    int rd;
+    int rd, toread;
 
-    if (file_position(mf, no) < 0)
+    if (file_position(mf, no, offset) < 0)
     	exit(1);
-    if ((rd = read(mf->files[mf->cur_file].fd, buf, mf->blocksize)) < 0)
+    toread = num ? num : mf->blocksize;
+    if ((rd = read(mf->files[mf->cur_file].fd, buf, toread)) < 0)
     {
-    	log(LOG_FATAL|LOG_ERRNO, "Read failed");
+    	log(LOG_FATAL|LOG_ERRNO, "mf_read: Read failed (%s)",
+    		mf->files[mf->cur_file].path);
     	exit(1);
     }
-    else if (rd < mf->blocksize)
+    else if (rd < toread)
     	return 0;
     else
     	return 1;
@@ -324,12 +344,12 @@ int mf_read(MFile mf, int no, int offset, int num, void *buf)
  */
 int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 {
-    int ps, nblocks;
+    int ps, nblocks, towrite;
     mf_dir *dp;
     char tmp[FILENAME_MAX+1];
     unsigned char dummych = '\xff';
 
-    if ((ps = file_position(mf, no)) < 0)
+    if ((ps = file_position(mf, no, offset)) < 0)
 	exit(1);
     /* file needs to grow */
     while (ps >= mf->files[mf->cur_file].blocks)
@@ -347,7 +367,7 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 		    mf->files[mf->cur_file].path, nblocks);
 	    	if ((ps = file_position(mf,
 		    (mf->cur_file ? mf->files[mf->cur_file-1].top : 0) +
-		    mf->files[mf->cur_file].blocks + nblocks)) < 0)
+		    mf->files[mf->cur_file].blocks + nblocks, 0)) < 0)
 			exit(1);
 		if (write(mf->files[mf->cur_file].fd, &dummych, 1) < 1)
 		{
@@ -383,7 +403,7 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 	    mf->files[mf->cur_file].path = xstrdup(tmp);
 	    mf->no_files++;
 	    /* open new file and position at beginning */
-	    if ((ps = file_position(mf, no)) < 0)
+	    if ((ps = file_position(mf, no, offset)) < 0)
 	    	exit(1);
 	}
 	else
@@ -394,7 +414,8 @@ int mf_write(MFile mf, int no, int offset, int num, const void *buf)
 	    mf->files[mf->cur_file].dir->avail_bytes -= nblocks * mf->blocksize;
 	}
     }
-    if (write(mf->files[mf->cur_file].fd, buf, mf->blocksize) < mf->blocksize)
+    towrite = num ? num : mf->blocksize;
+    if (write(mf->files[mf->cur_file].fd, buf, towrite) < towrite)
     {
     	log(LOG_FATAL|LOG_ERRNO, "Write failed");
     	exit(1);
