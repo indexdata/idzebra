@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.35  1999-02-02 14:51:09  adam
+ * Revision 1.36  1999-05-15 14:36:38  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.35  1999/02/02 14:51:09  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.34  1998/06/08 14:43:14  adam
@@ -393,7 +396,7 @@ void repositoryShow (struct recordGroup *rGroup)
     Dict dict;
     struct dirs_info *di;
     
-    if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50, 0)))
+    if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50, 0, 0)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
 	return;
@@ -508,7 +511,8 @@ void repositoryUpdate (struct recordGroup *rGroup)
     if (rGroup->recordId && !strcmp (rGroup->recordId, "file"))
     {
         Dict dict;
-        if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50, rGroup->flagRw)))
+        if (!(dict = dict_open (rGroup->bfs, FMATCH_DICT, 50,
+				rGroup->flagRw, 0)))
         {
             logf (LOG_FATAL, "dict_open fail of %s", FMATCH_DICT);
 	    return ;

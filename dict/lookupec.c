@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookupec.c,v $
- * Revision 1.7  1999-02-02 14:50:26  adam
+ * Revision 1.8  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.7  1999/02/02 14:50:26  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.6  1996/02/02 13:43:51  adam
@@ -60,7 +63,7 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
     dict_bf_readp (dict->dbf, ptr, &p);
     lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));    
     while (lo <= hi)
     {
         if (indxp[-lo] > 0)
@@ -131,7 +134,7 @@ int dict_look_ec (Dict dict, Dict_ptr ptr, MatchInfo *mi, MatchWord *ri_base,
                                   userfunc, range, prefix);
                     dict_bf_readp (dict->dbf, ptr, &p);
                     indxp = (short*) ((char*) p + 
-                                      DICT_pagesize(dict)-sizeof(short));
+                                      DICT_bsize(p)-sizeof(short));
                 }
             }
         }
@@ -164,7 +167,7 @@ int dict_lookup_ec (Dict dict, char *pattern, int range,
     int i;
     Dict_char prefix[2048];
 
-    if (dict->head.last == 1)
+    if (!dict->head.root)
         return 0;
     
     mi = prepare_match ((Dict_char*) pattern);
@@ -174,7 +177,8 @@ int dict_lookup_ec (Dict dict, char *pattern, int range,
     for (i=0; i<=range; i++)
         ri[i] = (2<<i)-1;
     
-    i = dict_look_ec (dict, 1, mi, ri, 0, userfunc, range, prefix);
+    i = dict_look_ec (dict, dict->head.root, mi, ri, 0, userfunc,
+		      range, prefix);
     xfree (ri);
     return i;
 }

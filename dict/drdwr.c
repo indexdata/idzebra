@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: drdwr.c,v $
- * Revision 1.10  1999-02-02 14:50:21  adam
+ * Revision 1.11  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.10  1999/02/02 14:50:21  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.9  1997/09/09 13:38:01  adam
@@ -92,7 +95,43 @@ void dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush)
         p = bf->lru_back;
         if (p->dirty)
         {
-            bf_write (bf->bf, p->no, 0, 0, p->data);
+	    if (!bf->compact_flag)
+		bf_write (bf->bf, p->no, 0, 0, p->data);
+	    else
+	    {
+		int effective_block = p->no / bf->block_size;
+		int effective_offset = p->no -
+		    effective_block * bf->block_size;
+		int remain = bf->block_size - effective_offset;
+
+		if (remain >= p->nbytes)
+		{
+		    bf_write (bf->bf, effective_block, effective_offset,
+			      p->nbytes, p->data);
+#if 0
+		    logf (LOG_LOG, "bf_write no=%d offset=%d size=%d",
+			  effective_block, effective_offset,
+			  p->nbytes);
+#endif
+			  
+		}
+		else
+		{
+#if 0
+		    logf (LOG_LOG, "bf_write1 no=%d offset=%d size=%d",
+			  effective_block, effective_offset,
+			  remain);
+#endif
+		    bf_write (bf->bf, effective_block, effective_offset,
+			      remain, p->data);
+#if 0
+		    logf (LOG_LOG, "bf_write2 no=%d offset=%d size=%d",
+			  effective_block+1, 0, p->nbytes - remain);
+#endif
+		    bf_write (bf->bf, effective_block+1, 0,
+			      p->nbytes - remain, (char*)p->data + remain);
+		}
+	    }
         }
         release_block (bf, p);
     }
@@ -166,7 +205,23 @@ int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
     }
     bf->misses++;
     p = alloc_block (bf, no);
-    i = bf_read (bf->bf, no, 0, 0, p->data);
+
+    //////////////// insert here
+
+    if (!bf->compact_flag)
+	i = bf_read (bf->bf, no, 0, 0, p->data);
+    else
+    {
+	int effective_block = no / bf->block_size;
+	int effective_offset = no - effective_block * bf->block_size;
+
+	i = bf_read (bf->bf, effective_block, effective_offset,
+		     bf->block_size - effective_offset, p->data);
+	if (i > 0 && effective_offset > 0)
+	    i = bf_read (bf->bf, effective_block+1, 0, effective_offset,
+			 p->data + bf->block_size - effective_offset);
+	i = 1;
+    }
     if (i > 0)
     {
         *bufp = p->data;
@@ -177,7 +232,7 @@ int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
     return i;
 }
 
-int dict_bf_newp (Dict_BFile dbf, int no, void **bufp)
+int dict_bf_newp (Dict_BFile dbf, int no, void **bufp, int nbytes)
 {
     struct Dict_file_block *p;
     if (!(p = find_block (dbf, no)))
@@ -187,6 +242,7 @@ int dict_bf_newp (Dict_BFile dbf, int no, void **bufp)
     *bufp = p->data;
     memset (p->data, 0, dbf->block_size);
     p->dirty = 1;
+    p->nbytes = nbytes;
 #if 0
     printf ("bf_newp of %d:", no);
     dict_pr_lru (dbf);

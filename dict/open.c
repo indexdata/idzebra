@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: open.c,v $
- * Revision 1.14  1999-03-09 13:07:06  adam
+ * Revision 1.15  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.14  1999/03/09 13:07:06  adam
  * Work on dict_compact routine.
  *
  * Revision 1.13  1999/02/02 14:50:27  adam
@@ -57,11 +60,11 @@
 
 #include <dict.h>
 
-Dict dict_open (BFiles bfs, const char *name, int cache, int rw)
+Dict dict_open (BFiles bfs, const char *name, int cache, int rw,
+		int compact_flag)
 {
     Dict dict;
     void *head_buf;
-    struct Dict_head *dh;
     char resource_str[80];
     int page_size;
 
@@ -90,37 +93,34 @@ Dict dict_open (BFiles bfs, const char *name, int cache, int rw)
     }
     if (dict_bf_readp (dict->dbf, 0, &head_buf) <= 0)
     {
+	strcpy (dict->head.magic_str, DICT_MAGIC);
+	dict->head.last = 1;
+	dict->head.root = 0;
+	dict->head.freelist = 0;
+	dict->head.page_size = page_size;
+	dict->head.compact_flag = compact_flag;
+	
+	/* create header with information (page 0) */
         if (rw) 
-        {   /* create header with information (page 0) */
-            dict_bf_newp (dict->dbf, 0, &head_buf);
-            dh = (struct Dict_head *) head_buf;
-            strcpy(dh->magic_str, DICT_MAGIC);
-            dh->free_list = dh->last = 1;
-            dh->page_size = page_size;
-            memcpy (&dict->head, dh, sizeof(*dh));
-        }
-        else
-        {   /* no header present, i.e. no dictionary at all */
-            dict->head.free_list = dict->head.last = 0;
-            dict->head.page_size = page_size;
-        }
+            dict_bf_newp (dict->dbf, 0, &head_buf, page_size);
     }
     else /* header was there, check magic and page size */
     {
-        dh = (struct Dict_head *) head_buf;
-        if (strcmp (dh->magic_str, DICT_MAGIC))
+	memcpy (&dict->head, head_buf, sizeof(dict->head));
+        if (strcmp (dict->head.magic_str, DICT_MAGIC))
         {
             logf (LOG_WARN, "Bad magic of `%s'", name);
             exit (1);
         }
-        if (dh->page_size != page_size)
+        if (dict->head.page_size != page_size)
         {
             logf (LOG_WARN, "Resource %s is %d and pagesize of `%s' is %d",
-                  resource_str, page_size, name, dh->page_size);
-            exit (1);
+                  resource_str, page_size, name, dict->head.page_size);
+	    return 0;
         }
-        memcpy (&dict->head, dh, sizeof(*dh));
     }
+    if (dict->head.compact_flag)
+	dict_bf_compact(dict->dbf);
     return dict;
 }
 

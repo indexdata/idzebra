@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookup.c,v $
- * Revision 1.9  1999-02-02 14:50:25  adam
+ * Revision 1.10  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.9  1999/02/02 14:50:25  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.8  1998/03/05 08:17:24  adam
@@ -41,9 +44,8 @@
 
 #include <dict.h>
 
-static char *dict_look (Dict dict, const Dict_char *str)
+static char *dict_look (Dict dict, const Dict_char *str, Dict_ptr ptr)
 {
-    Dict_ptr ptr = 1;
     int mid, lo, hi;
     int cmp;
     void *p;
@@ -53,7 +55,7 @@ static char *dict_look (Dict dict, const Dict_char *str)
     dict_bf_readp (dict->dbf, ptr, &p);
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));    
     while (lo <= hi)
     {
         mid = (lo+hi)/2;
@@ -97,8 +99,7 @@ static char *dict_look (Dict dict, const Dict_char *str)
                     dict_bf_readp (dict->dbf, ptr, &p);
                     mid = lo = 0;
                     hi = DICT_nodir(p)-1;
-                    indxp = (short*) ((char*) p+DICT_pagesize(dict)
-                                      -sizeof(short));
+                    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
                     continue;
                 }
             }
@@ -113,9 +114,7 @@ static char *dict_look (Dict dict, const Dict_char *str)
 
 char *dict_lookup (Dict dict, const char *p)
 {
-    if (dict->head.last <= 1)
+    if (!dict->head.root)
         return NULL;
-    return dict_look (dict, (const Dict_char *) p);
+    return dict_look (dict, (const Dict_char *) p, dict->head.root);
 }
-
-

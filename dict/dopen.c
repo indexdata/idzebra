@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dopen.c,v $
- * Revision 1.6  1999-02-02 14:50:20  adam
+ * Revision 1.7  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.6  1999/02/02 14:50:20  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.5  1997/09/17 12:19:07  adam
@@ -34,6 +37,7 @@ static void common_init (Dict_BFile bf, int block_size, int cache)
     int i;
 
     bf->block_size = block_size;
+    bf->compact_flag = 0;
     bf->cache = cache;
     bf->hash_size = 31;
 
@@ -77,4 +81,9 @@ Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
         return NULL;
     common_init (dbf, block_size, cache);
     return dbf;
+}
+
+void dict_bf_compact (Dict_BFile dbf)
+{
+    dbf->compact_flag = 1;
 }

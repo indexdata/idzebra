@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.63  1999-03-09 16:27:49  adam
+ * Revision 1.64  1999-05-15 14:36:38  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.63  1999/03/09 16:27:49  adam
  * More work on SDRKit integration.
  *
  * Revision 1.62  1999/02/18 15:01:24  adam
@@ -422,7 +425,6 @@ int main (int argc, char **argv)
                 }
                 else if (!strcmp (arg, "compact"))
                 {
-		    printf ("--------- compact ------\n");
                     rval = res_get (common_resource, "shadow");
                     zebraIndexLock (rGroupDef.bfs, 0, rval);
                     if (rval && *rval)

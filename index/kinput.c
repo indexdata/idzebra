@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.32  1999-05-12 13:08:06  adam
+ * Revision 1.33  1999-05-15 14:36:38  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.32  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  * Revision 1.31  1999/02/02 14:50:56  adam
@@ -667,7 +670,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
         if (!nkeys)
             return ;
     }
-    dict = dict_open (bfs, FNAME_DICT, cache, 1);
+    dict = dict_open (bfs, FNAME_DICT, cache, 1, 0);
     if (!dict)
     {
         logf (LOG_FATAL, "dict_open fail");

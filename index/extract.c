@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.92  1999-03-09 16:27:49  adam
+ * Revision 1.93  1999-05-15 14:36:38  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.92  1999/03/09 16:27:49  adam
  * More work on SDRKit integration.
  *
  * Revision 1.91  1999/02/12 13:29:22  adam
@@ -405,7 +408,7 @@ int key_open (struct recordGroup *rGroup, int mem)
     key_buf_used = 0;
     key_file_no = 0;
 
-    if (!(matchDict = dict_open (bfs, GMATCH_DICT, 50, rw)))
+    if (!(matchDict = dict_open (bfs, GMATCH_DICT, 50, rw, 0)))
     {
         logf (LOG_FATAL, "dict_open fail of %s", GMATCH_DICT);
 	return -1;

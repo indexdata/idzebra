@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: delete.c,v $
- * Revision 1.5  1999-02-02 14:50:17  adam
+ * Revision 1.6  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.5  1999/02/02 14:50:17  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.4  1996/02/02 13:43:50  adam
@@ -30,9 +33,8 @@
 
 #include <dict.h>
 
-static int dict_del (Dict dict, const Dict_char *str)
+static int dict_del (Dict dict, const Dict_char *str, Dict_ptr ptr)
 {
-    Dict_ptr ptr = 1;
     int mid, lo, hi;
     int cmp;
     void *p;
@@ -42,7 +44,7 @@ static int dict_del (Dict dict, const Dict_char *str)
     dict_bf_readp (dict->dbf, ptr, &p);
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));    
     while (lo <= hi)
     {
         mid = (lo+hi)/2;
@@ -101,8 +103,7 @@ static int dict_del (Dict dict, const Dict_char *str)
                     dict_bf_readp (dict->dbf, ptr, &p);
                     mid = lo = 0;
                     hi = DICT_nodir(p)-1;
-                    indxp = (short*) ((char*) p+DICT_pagesize(dict)
-                                      -sizeof(short));
+                    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
                     continue;
                 }
             }
@@ -117,7 +118,7 @@ static int dict_del (Dict dict, const Dict_char *str)
 
 int dict_delete (Dict dict, const char *p)
 {
-    if (dict->head.last == 1)
+    if (!dict->head.root)
         return 0;
-    return dict_del (dict, (const Dict_char*) p);
+    return dict_del (dict, (const Dict_char*) p, dict->head.root);
 }

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: dict.h,v $
- * Revision 1.28  1999-03-09 13:07:06  adam
+ * Revision 1.29  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.28  1999/03/09 13:07:06  adam
  * Work on dict_compact routine.
  *
  * Revision 1.27  1999/02/02 14:50:32  adam
@@ -116,7 +119,8 @@ typedef unsigned char Dict_char;
 struct Dict_head {
     char magic_str[8];
     int page_size;
-    Dict_ptr free_list, last;
+    int compact_flag;
+    Dict_ptr root, last, freelist;
 };
 
 struct Dict_file_block
@@ -126,6 +130,7 @@ struct Dict_file_block
     void *data;
     int dirty;
     int no;
+    int nbytes;
 };
 
 typedef struct Dict_file_struct
@@ -144,6 +149,7 @@ typedef struct Dict_file_struct
     int  block_size;
     int  hits;
     int  misses;
+    int  compact_flag;
 } *Dict_BFile;
 
 typedef struct Dict_struct {
@@ -154,19 +160,21 @@ typedef struct Dict_struct {
     struct Dict_head head;
 } *Dict;
 
-#define DICT_MAGIC "dict00"
+#define DICT_MAGIC "dict01"
 
 #define DICT_DEFAULT_PAGESIZE 4096
 
 int        dict_bf_readp (Dict_BFile bf, int no, void **bufp);
-int        dict_bf_newp (Dict_BFile bf, int no, void **bufp);
+int        dict_bf_newp (Dict_BFile bf, int no, void **bufp, int nbytes);
 int        dict_bf_touch (Dict_BFile bf, int no);
 void       dict_bf_flush_blocks (Dict_BFile bf, int no_to_flush);
 Dict_BFile dict_bf_open (BFiles bfs, const char *name, int block_size,
 			 int cache, int rw);
 int        dict_bf_close (Dict_BFile dbf);
+void       dict_bf_compact (Dict_BFile dbf);
      
-Dict       dict_open (BFiles bfs, const char *name, int cache, int rw);
+Dict       dict_open (BFiles bfs, const char *name, int cache, int rw,
+		      int compact_flag);
 int        dict_close (Dict dict);
 int        dict_insert (Dict dict, const char *p, int userlen, void *userinfo);
 int        dict_delete (Dict dict, const char *p);
@@ -187,17 +195,17 @@ int	   dict_scan (Dict dict, char *str,
 void       dict_grep_cmap (Dict dict, void *vp,
                            const char **(*cmap)(void *vp,
 						const char **from, int len));
-int        dict_compact (BFiles bfs, const char *from, const char *to);
+int        dict_copy_compact (BFiles bfs, const char *from, const char *to);
 
 
 #define DICT_EOS        0
 #define DICT_type(x)    0[(Dict_ptr*) x]
 #define DICT_backptr(x) 1[(Dict_ptr*) x]
-#define DICT_nextptr(x) 2[(Dict_ptr*) x]
-#define DICT_nodir(x)   0[(short*)((char*)(x)+3*sizeof(Dict_ptr))]
-#define DICT_size(x)    1[(short*)((char*)(x)+3*sizeof(Dict_ptr))]
-#define DICT_infoffset  (3*sizeof(Dict_ptr)+2*sizeof(short))
-#define DICT_pagesize(x) ((x)->head.page_size)
+#define DICT_bsize(x)   2[(short*)((char*)(x)+2*sizeof(Dict_ptr))]
+#define DICT_nodir(x)   0[(short*)((char*)(x)+2*sizeof(Dict_ptr))]
+#define DICT_size(x)    1[(short*)((char*)(x)+2*sizeof(Dict_ptr))]
+#define DICT_infoffset  (2*sizeof(Dict_ptr)+3*sizeof(short))
+#define DICT_xxxxpagesize(x) ((x)->head.page_size)
 
 #define DICT_to_str(x)  sizeof(Dict_info)+sizeof(Dict_ptr)
 

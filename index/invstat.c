@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: invstat.c,v $
- * Revision 1.10  1999-05-12 13:08:06  adam
+ * Revision 1.11  1999-05-15 14:36:38  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.10  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  * Revision 1.9  1999/02/12 13:29:23  adam
@@ -140,7 +143,7 @@ void inv_prstat (BFiles bfs)
     term_dict[0] = 1;
     term_dict[1] = 0;
 
-    dict = dict_open (bfs, FNAME_DICT, 100, 0);
+    dict = dict_open (bfs, FNAME_DICT, 100, 0, 0);
     if (!dict)
     {
         logf (LOG_FATAL, "dict_open fail");

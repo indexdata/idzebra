@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: compact.c,v $
- * Revision 1.1  1999-03-09 10:16:35  adam
+ * Revision 1.2  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.1  1999/03/09 10:16:35  adam
  * Work on compaction of dictionary/isamc.
  *
  */
@@ -17,5 +20,5 @@
 
 void inv_compact (BFiles bfs)
 {
-    dict_compact (bfs, FNAME_DICT, "out");
+    dict_copy_compact (bfs, FNAME_DICT, "out");
 }

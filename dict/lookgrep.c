@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: lookgrep.c,v $
- * Revision 1.22  1999-02-02 14:50:23  adam
+ * Revision 1.23  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.22  1999/02/02 14:50:23  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.21  1998/06/24 12:16:12  adam
@@ -304,7 +307,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
     dict_bf_readp (dict->dbf, ptr, &p);
     lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
 
     while (lo <= hi)
     {
@@ -404,8 +407,7 @@ static int dict_grep (Dict dict, Dict_ptr ptr, MatchContext *mc,
                                    init_pos))
                         return 1;
                     dict_bf_readp (dict->dbf, ptr, &p);
-                    indxp = (short*) ((char*) p+DICT_pagesize(dict)
-                                      -sizeof(short));
+                    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
                 }
             }
         }
@@ -471,8 +473,9 @@ int dict_lookup_grep (Dict dict, const char *pattern, int range, void *client,
         }
     }
     *max_pos = 0;
-    if (dict->head.last > 1)
-        i = dict_grep (dict, 1, mc, Rj, 0, client, userfunc, prefix,
+    if (dict->head.root)
+        i = dict_grep (dict, dict->head.root, mc, Rj, 0, client,
+		       userfunc, prefix,
                        dfa, max_pos, init_pos);
     else
         i = 0;

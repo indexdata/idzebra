@@ -1,3 +1,6 @@
+Implemented "compression" of Dictionary and ISAM system. Dictionary
+format HAS changed.
+
 Added "tagsysno" directive to zebra.cfg to control under which tag the
 sysstem ID is placed. Use tagsysno: 0 to disable Zebra's system number
 entirely.

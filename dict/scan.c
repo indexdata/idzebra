@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: scan.c,v $
- * Revision 1.12  1999-02-02 14:50:28  adam
+ * Revision 1.13  1999-05-15 14:36:37  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.12  1999/02/02 14:50:28  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.11  1998/06/22 11:34:45  adam
@@ -68,7 +71,7 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         lo = hi;
     else
         lo = start;
-    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short)); 
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short)); 
 
     while (lo <= hi && lo >= 0 && *count > 0)
     {
@@ -114,7 +117,7 @@ int dict_scan_trav (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
 	        dict_scan_trav (dict, subptr, pos+1, str, 0, count, 
                                 client, userfunc, dir);
                 dict_bf_readp (dict->dbf, ptr, &p);
-                indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short)); 
+                indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short)); 
 	    }
         }
         lo += dir;
@@ -136,7 +139,7 @@ int dict_scan_r (Dict dict, Dict_ptr ptr, int pos, Dict_char *str,
         return 0;
     mid = lo = 0;
     hi = DICT_nodir(p)-1;
-    indxp = (short*) ((char*) p+DICT_pagesize(dict)-sizeof(short));    
+    indxp = (short*) ((char*) p+DICT_bsize(p)-sizeof(short));
     while (lo <= hi)
     {
         mid = (lo+hi)/2;
@@ -231,9 +234,8 @@ int dict_scan (Dict dict, char *str, int *before, int *after, void *client,
 	logf (LOG_DEBUG, " %3d  %c", str[i],
 	      (str[i] > ' ' && str[i] < 127) ? str[i] : '?');
     }
-    if (dict->head.last <= 1)
+    if (!dict->head.root)
         return 0;
-    return dict_scan_r (dict, 1, 0, (Dict_char *) str, before, after, client,
-                        f);
+    return dict_scan_r (dict, dict->head.root, 0, (Dict_char *) str,
+			before, after, client, f);
 }
-

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.17  1999-05-12 13:08:06  adam
+ * Revision 1.18  1999-05-15 14:36:38  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.17  1999/05/12 13:08:06  adam
  * First version of ISAMS.
  *
  * Revision 1.16  1999/02/19 10:38:30  adam
@@ -136,7 +139,7 @@ static int zebra_register_lock (ZebraHandle zh)
     bf_cache (zh->bfs, state ? res_get (zh->res, "shadow") : NULL);
     zh->registerState = state;
     zh->records = rec_open (zh->bfs, 0);
-    if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 40, 0)))
+    if (!(zh->dict = dict_open (zh->bfs, FNAME_DICT, 40, 0, 0)))
     {
 	logf (LOG_WARN, "dict_open");
         return -1;
