@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: bfile.c,v $
- * Revision 1.5  1994-08-18 08:10:08  quinn
+ * Revision 1.6  1994-08-23 14:21:38  quinn
+ * Fixed call to log
+ *
+ * Revision 1.5  1994/08/18  08:10:08  quinn
  * Minimal changes
  *
  * Revision 1.4  1994/08/17  14:27:32  quinn
@@ -38,7 +41,7 @@ BFile bf_open (const char *name, int block_size, int wflag)
 
     if ((tmp->fd = open(name, wflag ? O_RDWR : O_RDONLY, 0666)) < 0)
     {
-        log(LOG_FATAL, "open: %s"); 
+        log(LOG_FATAL|LOG_ERRNO, "open"); 
 	return(0);
     }
     tmp->block_size = block_size;
