@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.100  1999-12-28 15:48:12  adam
+ * Revision 1.101  2000-03-02 14:35:03  adam
+ * Fixed proximity handling.
+ *
+ * Revision 1.100  1999/12/28 15:48:12  adam
  * Minor Fix.
  *
  * Revision 1.99  1999/12/23 09:03:32  adam
@@ -1337,99 +1340,8 @@ static void trans_scan_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     termz[i] = '\0';
 }
 
-static RSET rpn_proximity (ZebraHandle zh, RSET rset1, RSET rset2,
-			   int ordered,
-                           int exclusion, int relation, int distance)
-{
-    int i;
-    RSFD rsfd1, rsfd2;
-    int  more1, more2;
-    struct it_key buf1, buf2;
-    RSFD rsfd_result;
-    RSET result;
-    rset_temp_parms parms;
-    int term_index;
-    
-    rsfd1 = rset_open (rset1, RSETF_READ);
-    more1 = rset_read (rset1, rsfd1, &buf1, &term_index);
-    
-    rsfd2 = rset_open (rset2, RSETF_READ);
-    more2 = rset_read (rset2, rsfd2, &buf2, &term_index);
-
-    parms.key_size = sizeof (struct it_key);
-    parms.temp_path = res_get (zh->res, "setTmpDir");
-    result = rset_create (rset_kind_temp, &parms);
-    rsfd_result = rset_open (result, RSETF_WRITE);
-   
-    logf (LOG_DEBUG, "rpn_proximity  excl=%d ord=%d rel=%d dis=%d",
-          exclusion, ordered, relation, distance);
-    while (more1 && more2)
-    {
-        int cmp = key_compare_it (&buf1, &buf2);
-        if (cmp < -1)
-            more1 = rset_read (rset1, rsfd1, &buf1, &term_index);
-        else if (cmp > 1)
-            more2 = rset_read (rset2, rsfd2, &buf2, &term_index);
-        else
-        {
-            int sysno = buf1.sysno;
-            int seqno[500];
-            int n = 0;
-
-            seqno[n++] = buf1.seqno;
-            while ((more1 = rset_read (rset1, rsfd1, &buf1, &term_index)) &&
-                   sysno == buf1.sysno)
-                if (n < 500)
-                    seqno[n++] = buf1.seqno;
-            do
-            {
-                for (i = 0; i<n; i++)
-                {
-                    int diff = buf2.seqno - seqno[i];
-                    int excl = exclusion;
-                    if (!ordered && diff < 0)
-                        diff = -diff;
-                    switch (relation)
-                    {
-                    case 1:      /* < */
-                        if (diff < distance)
-                            excl = !excl;
-                        break;
-                    case 2:      /* <= */
-                        if (diff <= distance)
-                            excl = !excl;
-                        break;
-                    case 3:      /* == */
-                        if (diff == distance)
-                            excl = !excl;
-                        break;
-                    case 4:      /* >= */
-                        if (diff >= distance)
-                            excl = !excl;
-                        break;
-                    case 5:      /* > */
-                        if (diff > distance)
-                            excl = !excl;
-                        break;
-                    case 6:      /* != */
-                        if (diff != distance)
-                            excl = !excl;
-                        break;
-                    }
-                    if (excl)
-                        rset_write (result, rsfd_result, &buf2);
-                }
-            } while ((more2 = rset_read (rset2, rsfd2, &buf2, &term_index)) &&
-                      sysno == buf2.sysno);
-        }
-    }
-    rset_close (result, rsfd_result);
-    rset_close (rset1, rsfd1);
-    rset_close (rset2, rsfd2);
-    return result;
-}
-
-static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no)
+static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no,
+		      int ordered, int exclusion, int relation, int distance)
 {
     int i;
     RSFD *rsfd;
@@ -1469,6 +1381,11 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no)
     }
     for (i = 0; i<rset_no; i++)
     {
+	buf[i] = 0;
+	rsfd[i] = 0;
+    }
+    for (i = 0; i<rset_no; i++)
+    {
 	buf[i] = (struct it_key *) xmalloc (sizeof(**buf));
 	rsfd[i] = rset_open (rset[i], RSETF_READ);
         if (!(more[i] = rset_read (rset[i], rsfd[i], buf[i], &term_index)))
@@ -1476,21 +1393,17 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no)
     }
     if (i != rset_no)
     {
+	/* at least one is empty ... return null set */
 	rset_null_parms parms;
-
-	while (i >= 0)
-	{
-	    rset_close (rset[i], rsfd[i]);
-	    xfree (buf[i]);
-	    --i;
-	}
+	
 	parms.rset_term = rset_term_create (prox_term, length_prox_term,
 					    flags);
 	parms.rset_term->nn = 0;
 	result = rset_create (rset_kind_null, &parms);
     }
-    else
+    else if (ordered && relation == 3 && exclusion == 0 && distance == 1)
     {
+	/* special proximity case = phrase search ... */
 	rset_temp_parms parms;
 	RSFD rsfd_result;
 
@@ -1542,13 +1455,105 @@ static RSET rpn_prox (ZebraHandle zh, RSET *rset, int rset_no)
 		more[0] = rset_read (*rset, *rsfd, *buf, &term_index);
 	    }
 	}
-	
-	for (i = 0; i<rset_no; i++)
+	rset_close (result, rsfd_result);
+    }
+    else if (rset_no == 2)
+    {
+	/* generic proximity case (two input sets only) ... */
+	rset_temp_parms parms;
+	RSFD rsfd_result;
+
+	logf (LOG_LOG, "generic prox, dist = %d, relation = %d, ordered =%d, exclusion=%d",
+	      distance, relation, ordered, exclusion);
+	parms.rset_term = rset_term_create (prox_term, length_prox_term,
+					    flags);
+	parms.rset_term->nn = min_nn;
+	parms.key_size = sizeof (struct it_key);
+	parms.temp_path = res_get (zh->res, "setTmpDir");
+	result = rset_create (rset_kind_temp, &parms);
+	rsfd_result = rset_open (result, RSETF_WRITE);
+
+	while (more[0] && more[1]) 
 	{
-	    rset_close (rset[i], rsfd[i]);
-	    xfree (buf[i]);
+	    int cmp = key_compare_it (buf[0], buf[1]);
+	    if (cmp < -1)
+		more[0] = rset_read (rset[0], rsfd[0], buf[0], &term_index);
+	    else if (cmp > 1)
+		more[1] = rset_read (rset[1], rsfd[1], buf[1], &term_index);
+	    else
+	    {
+		int sysno = buf[0]->sysno;
+		int seqno[500];
+		int n = 0;
+		
+		seqno[n++] = buf[0]->seqno;
+		while ((more[0] = rset_read (rset[0], rsfd[0], buf[0],
+					     &term_index)) &&
+		       sysno == buf[0]->sysno)
+		    if (n < 500)
+			seqno[n++] = buf[0]->seqno;
+		do
+		{
+		    for (i = 0; i<n; i++)
+		    {
+			int diff = buf[1]->seqno - seqno[i];
+			int excl = exclusion;
+			if (!ordered && diff < 0)
+			    diff = -diff;
+			switch (relation)
+			{
+			case 1:      /* < */
+			    if (diff < distance && diff >= 0)
+				excl = !excl;
+			    break;
+			case 2:      /* <= */
+			    if (diff <= distance && diff >= 0)
+				excl = !excl;
+			    break;
+			case 3:      /* == */
+			    if (diff == distance && diff >= 0)
+				excl = !excl;
+			    break;
+			case 4:      /* >= */
+			    if (diff >= distance && diff >= 0)
+				excl = !excl;
+			    break;
+			case 5:      /* > */
+			    if (diff > distance && diff >= 0)
+				excl = !excl;
+			    break;
+			case 6:      /* != */
+			    if (diff != distance && diff >= 0)
+				excl = !excl;
+			    break;
+			}
+			if (excl)
+			{
+			    rset_write (result, rsfd_result, buf[1]);
+			    break;
+			}
+		    }
+		} while ((more[1] = rset_read (rset[1], rsfd[1], buf[1],
+					       &term_index)) &&
+			 sysno == buf[1]->sysno);
+	    }
 	}
 	rset_close (result, rsfd_result);
+    }
+    else
+    {
+	rset_null_parms parms;
+	
+	parms.rset_term = rset_term_create (prox_term, length_prox_term,
+					    flags);
+	parms.rset_term->nn = 0;
+	result = rset_create (rset_kind_null, &parms);
+    }
+    for (i = 0; i<rset_no; i++)
+    {
+	if (rset[i])
+	    rset_close (rset[i], rsfd[i]);
+	xfree (buf[i]);
     }
     xfree (buf);
     xfree (more);
@@ -1655,7 +1660,7 @@ static RSET rpn_search_APT_phrase (ZebraHandle zh,
     }
     else if (rset_no == 1)
         return (rset[0]);
-    result = rpn_prox (zh, rset, rset_no);
+    result = rpn_prox (zh, rset, rset_no, 1, 0, 3, 1);
     for (i = 0; i<rset_no; i++)
         rset_delete (rset[i]);
     return result;
@@ -2266,12 +2271,22 @@ static RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
                 return NULL;
             }
 #endif
-            r = rpn_proximity (zh, bool_parms.rset_l, bool_parms.rset_r,
-                               *zop->u.prox->ordered,
-                               (!zop->u.prox->exclusion ? 0 :
-                                         *zop->u.prox->exclusion),
-                               *zop->u.prox->relationType,
-                               *zop->u.prox->distance);
+	    else
+	    {
+		RSET rsets[2];
+
+		rsets[0] = bool_parms.rset_l;
+		rsets[1] = bool_parms.rset_r;
+		
+		r = rpn_prox (zh, rsets, 2, 
+			      *zop->u.prox->ordered,
+			      (!zop->u.prox->exclusion ? 0 :
+			       *zop->u.prox->exclusion),
+			      *zop->u.prox->relationType,
+			      *zop->u.prox->distance);
+		rset_delete (rsets[0]);
+		rset_delete (rsets[1]);
+	    }
             break;
         default:
             zh->errCode = 110;
