@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.109 2003-06-30 19:37:12 adam Exp $
+/* $Id: zebraapi.c,v 1.110 2003-07-04 13:58:32 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -793,7 +793,7 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
 			     ZebraRetrievalRecord *recs)
 {
     ZebraPosSet poset;
-    int i, *pos_array;
+    int i, *pos_array, ret = 0;
     ASSERTZH;
     yaz_log(LOG_API,"zebra_records_retrieve n=%d",num_recs);
     zh->errCode=0;
@@ -802,13 +802,13 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
     {
         zh->errCode = 30;
         zh->errString = odr_strdup (stream, setname);
-        return 1;
+        return -1;
     }
     
     zh->errCode = 0;
 
     if (zebra_begin_read (zh))
-	return 1;
+	return -1;
 
     pos_array = (int *) xmalloc (num_recs * sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
@@ -819,6 +819,7 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
         logf (LOG_DEBUG, "zebraPosSetCreate error");
         zh->errCode = 30;
         zh->errString = nmem_strdup (stream->mem, setname);
+	ret = -1;
     }
     else
     {
@@ -849,6 +850,7 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
 		sprintf (num_str, "%d", pos_array[i]);	
 		zh->errCode = 13;
                 zh->errString = odr_strdup (stream, num_str);
+		ret = -1;
                 break;
 	    }
 	}
@@ -856,7 +858,7 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
     }
     zebra_end_read (zh);
     xfree (pos_array);
-    return 0;
+    return ret;
 }
 
 int zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
