@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.107  2001-05-28 13:58:48  adam
+ * Revision 1.108  2001-06-14 11:44:56  adam
+ * Bug fix: default storeKeys setting wasn't read when group was specified.
+ *
+ * Revision 1.107  2001/05/28 13:58:48  adam
  * Call flushSortKeys when record is skipped to fix bad re-use of
  * sort keys to whatever next record that comes in.
  *
@@ -1765,11 +1768,14 @@ int fileExtract (SYSNO *sysno, const char *fname,
         const char *sval;
 
         sprintf (ext_res, "%sstoreKeys.%s", gprefix, ext);
-        if (!(sval = res_get (common_resource, ext_res)))
+        sval = res_get (common_resource, ext_res);
+	if (!sval)
         {
             sprintf (ext_res, "%sstoreKeys", gprefix);
             sval = res_get (common_resource, ext_res);
         }
+	if (!sval)
+	    sval = res_get (common_resource, "storeKeys");
         if (sval)
             rGroup->flagStoreKeys = atoi (sval);
     }
