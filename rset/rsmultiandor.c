@@ -1,4 +1,4 @@
-/* $Id: rsmultior.c,v 1.10 2004-09-09 10:08:06 heikki Exp $
+/* $Id: rsmultiandor.c,v 1.1 2004-09-28 13:06:35 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -21,6 +21,17 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 
+/*
+ * This module implements the rsmultior and rsmultiand result sets
+ *
+ * rsmultior is based on a heap, from which we find the next hit.
+ *
+ * rsmultiand is based on a simple array of rsets, and a linear
+ * search to find the record that exists in all of those rsets.
+ * To speed things up, the array is sorted so that the smallest
+ * rsets come first, they are most likely to have the hits furthest
+ * away, and thus forwarding to them makes the most sense.
+ */
 
 
 #include <assert.h>
@@ -32,30 +43,47 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <isamc.h>
 #include <rset.h>
 
-static RSFD r_open (RSET ct, int flag);
+static RSFD r_open_and (RSET ct, int flag);
+static RSFD r_open_or (RSET ct, int flag);
 static void r_close (RSFD rfd);
 static void r_delete (RSET ct);
 static void r_rewind (RSFD rfd);
-static int r_read (RSFD rfd, void *buf);
+static int r_read_and (RSFD rfd, void *buf);
+static int r_read_or (RSFD rfd, void *buf);
 static int r_write (RSFD rfd, const void *buf);
-static int r_forward(RSFD rfd, void *buf,
+static int r_forward_and(RSFD rfd, void *buf,
+                     const void *untilbuf);
+static int r_forward_or(RSFD rfd, void *buf,
                      const void *untilbuf);
 static void r_pos (RSFD rfd, double *current, double *total);
 
-static const struct rset_control control = 
+static const struct rset_control control_or = 
 {
     "multi-or",
     r_delete,
-    r_open,
+    r_open_or,
     r_close,
     r_rewind,
-    r_forward,
+    r_forward_or,
     r_pos,
-    r_read,
+    r_read_or,
+    r_write,
+};
+static const struct rset_control control_and = 
+{
+    "multi-and",
+    r_delete,
+    r_open_and,
+    r_close,
+    r_rewind,
+    r_forward_and,
+    r_pos,
+    r_read_and,
     r_write,
 };
 
-const struct rset_control *rset_kind_multior = &control;
+const struct rset_control *rset_kind_multior = &control_or;
+const struct rset_control *rset_kind_multiand = &control_and;
 
 /* The heap structure: 
  * The rset contains a list or rsets we are ORing together 
@@ -80,18 +108,21 @@ struct heap {
 typedef struct heap *HEAP;
 
 
-struct rset_multior_info {
+struct rset_multiandor_info {
     int     no_rsets;
     RSET    *rsets;
 };
 
 
-struct rset_multior_rfd {
+struct rset_multiandor_rfd {
     int flag;
     struct heap_item *items; /* we alloc and free them here */
     HEAP h;
     zint hits; /* returned so far */
+    int eof; /* seen the end of it */
 };
+
+/* Heap functions ***********************/
 
 #if 0
 static void heap_dump_item( HEAP h, int i, int level) {
@@ -210,12 +241,15 @@ static void heap_destroy (HEAP h)
 }
 
 
-RSET rsmultior_create( NMEM nmem, const struct key_control *kcontrol, int scope,
-            int no_rsets, RSET* rsets)
+/* Creating and deleting rsets ***********************/
+
+static RSET rsmulti_andor_create( NMEM nmem, const struct key_control *kcontrol, 
+                           int scope, int no_rsets, RSET* rsets, 
+                           const struct rset_control *ctrl)
 {
-    RSET rnew=rset_create_base(&control, nmem,kcontrol, scope);
-    struct rset_multior_info *info;
-    info = (struct rset_multior_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    RSET rnew=rset_create_base(ctrl, nmem,kcontrol, scope);
+    struct rset_multiandor_info *info;
+    info = (struct rset_multiandor_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->no_rsets=no_rsets;
     info->rsets=(RSET*)nmem_malloc(rnew->nmem, no_rsets*sizeof(*rsets));
     memcpy(info->rsets,rsets,no_rsets*sizeof(*rsets));
@@ -223,19 +257,35 @@ RSET rsmultior_create( NMEM nmem, const struct key_control *kcontrol, int scope,
     return rnew;
 }
 
+RSET rsmultior_create( NMEM nmem, const struct key_control *kcontrol, int scope,
+            int no_rsets, RSET* rsets)
+{
+    return rsmulti_andor_create(nmem, kcontrol, scope, 
+                                no_rsets, rsets, &control_or);
+}
+
+RSET rsmultiand_create( NMEM nmem, const struct key_control *kcontrol, int scope,
+            int no_rsets, RSET* rsets)
+{
+    return rsmulti_andor_create(nmem, kcontrol, scope, 
+                                no_rsets, rsets, &control_and);
+}
+
 static void r_delete (RSET ct)
 {
-    struct rset_multior_info *info = (struct rset_multior_info *) ct->priv;
+    struct rset_multiandor_info *info = (struct rset_multiandor_info *) ct->priv;
     int i;
     for(i=0;i<info->no_rsets;i++)
         rset_delete(info->rsets[i]);
 }
 
-static RSFD r_open (RSET ct, int flag)
+/* Opening and closing fd's on them *********************/
+
+static RSFD r_open_andor (RSET ct, int flag, int is_and)
 {
     RSFD rfd;
-    struct rset_multior_rfd *p;
-    struct rset_multior_info *info = (struct rset_multior_info *) ct->priv;
+    struct rset_multiandor_rfd *p;
+    struct rset_multiandor_info *info = (struct rset_multiandor_info *) ct->priv;
     const struct key_control *kctrl = ct->keycontrol;
     int i;
 
@@ -246,13 +296,13 @@ static RSFD r_open (RSET ct, int flag)
     }
     rfd=rfd_create_base(ct);
     if (rfd->priv) {
-        p=(struct rset_multior_rfd *)rfd->priv;
+        p=(struct rset_multiandor_rfd *)rfd->priv;
         heap_clear(p->h);
         assert(p->items);
         /* all other pointers shouls already be allocated, in right sizes! */
     }
     else {
-        p = (struct rset_multior_rfd *) nmem_malloc (ct->nmem,sizeof(*p));
+        p = (struct rset_multiandor_rfd *) nmem_malloc (ct->nmem,sizeof(*p));
         rfd->priv=p;
         p->h = heap_create( ct->nmem, info->no_rsets, kctrl);
         p->items=(struct heap_item *) nmem_malloc(ct->nmem,
@@ -264,18 +314,40 @@ static RSFD r_open (RSET ct, int flag)
     }
     p->flag = flag;
     p->hits=0;
-    for (i=0; i<info->no_rsets; i++){
-        p->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
-        if ( rset_read(p->items[i].fd, p->items[i].buf) )
-            heap_insert(p->h, &(p->items[i]));
+    p->eof=0;
+    if (is_and)
+    { /* read the array and sort it */
+        for (i=0; i<info->no_rsets; i++){
+            p->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
+            if ( !rset_read(p->items[i].fd, p->items[i].buf) )
+                p->eof=1;
+        }
+    } else
+    { /* fill the heap for ORing */
+        for (i=0; i<info->no_rsets; i++){
+            p->items[i].fd=rset_open(info->rsets[i],RSETF_READ);
+            if ( rset_read(p->items[i].fd, p->items[i].buf) )
+                heap_insert(p->h, &(p->items[i]));
+        }
     }
     return rfd;
 }
 
+static RSFD r_open_or (RSET ct, int flag)
+{
+    return r_open_andor(ct, flag, 0);
+}
+
+static RSFD r_open_and (RSET ct, int flag)
+{
+    return r_open_andor(ct, flag, 1);
+}
+
+
 static void r_close (RSFD rfd)
 {
-    struct rset_multior_info *info=(struct rset_multior_info *)(rfd->rset->priv);
-    struct rset_multior_rfd *p=(struct rset_multior_rfd *)(rfd->priv);
+    struct rset_multiandor_info *info=(struct rset_multiandor_info *)(rfd->rset->priv);
+    struct rset_multiandor_rfd *p=(struct rset_multiandor_rfd *)(rfd->priv);
     int i;
 
     heap_destroy (p->h);
@@ -286,15 +358,10 @@ static void r_close (RSFD rfd)
 }
 
 
-static void r_rewind (RSFD rfd)
-{
-    assert(!"rewind not implemented yet");
-}
 
-
-static int r_forward(RSFD rfd, void *buf, const void *untilbuf)
+static int r_forward_or(RSFD rfd, void *buf, const void *untilbuf)
 {
-    struct rset_multior_rfd *mrfd=rfd->priv;
+    struct rset_multiandor_rfd *mrfd=rfd->priv;
     const struct key_control *kctrl=rfd->rset->keycontrol;
     struct heap_item it;
     int rdres;
@@ -302,6 +369,9 @@ static int r_forward(RSFD rfd, void *buf, const void *untilbuf)
         return 0;
     it = *(mrfd->h->heap[1]);
     memcpy(buf,it.buf, kctrl->key_size); 
+    /* FIXME - This is not right ! */
+    /* If called with an untilbuf, we need to compare to that, and */
+    /* forward until we are somewhere! */
     (mrfd->hits)++;
     if (untilbuf)
         rdres=rset_forward(it.fd, it.buf, untilbuf);
@@ -315,15 +385,25 @@ static int r_forward(RSFD rfd, void *buf, const void *untilbuf)
 
 }
 
-static int r_read (RSFD rfd, void *buf)
+static int r_read_or (RSFD rfd, void *buf)
 {
-    return r_forward(rfd, buf,0);
+    return r_forward_or(rfd, buf,0);
+}
+
+static int r_read_and (RSFD rfd, void *buf)
+{
+    return 0;
+}
+static int r_forward_and(RSFD rfd, void *buf, const void *untilbuf)
+{
+    return 0;
 }
 
 static void r_pos (RSFD rfd, double *current, double *total)
 {
-    struct rset_multior_info *info=(struct rset_multior_info *)(rfd->rset->priv);
-    struct rset_multior_rfd *mrfd=(struct rset_multior_rfd *)(rfd->priv);
+    struct rset_multiandor_info *info=
+             (struct rset_multiandor_info *)(rfd->rset->priv);
+    struct rset_multiandor_rfd *mrfd=(struct rset_multiandor_rfd *)(rfd->priv);
     double cur, tot;
     double scur=0.0, stot=0.0;
     int i;
@@ -340,6 +420,13 @@ static void r_pos (RSFD rfd, double *current, double *total)
     }
     *current=mrfd->hits;
     *total=*current*stot/scur;
+}
+
+
+static void r_rewind (RSFD rfd)
+{
+    assert(!"rewind not implemented yet");
+    /* FIXME - rewind all parts, rebalance heap, clear hits */
 }
 
 static int r_write (RSFD rfd, const void *buf)
