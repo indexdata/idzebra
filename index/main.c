@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.112.2.2 2005-01-21 13:23:03 adam Exp $
+/* $Id: main.c,v 1.112.2.3 2005-01-23 15:47:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -221,7 +221,7 @@ int main (int argc, char **argv)
         else if (ret == 'V')
         {
             printf("Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
-	    printf(" (C) 1994-2004, Index Data ApS\n");
+	    printf(" (C) 1994-2005, Index Data ApS\n");
 #ifdef WIN32
 #ifdef _DEBUG
             printf(" WIN32 Debug\n");
