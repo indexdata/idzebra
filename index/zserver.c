@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.17  1995-10-16 09:32:40  adam
+ * Revision 1.18  1995-10-16 14:03:09  quinn
+ * Changes to support element set names and espec1
+ *
+ * Revision 1.17  1995/10/16  09:32:40  adam
  * More work on relational op.
  *
  * Revision 1.16  1995/10/13  12:26:44  adam
@@ -147,8 +150,9 @@ static int record_read (int fd, char *buf, size_t count)
 }
 
 static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
-                          oid_value input_format, oid_value *output_format,
-                          char **rec_bufp, int *rec_lenp)
+                          oid_value input_format, Z_RecordComposition *comp,
+			  oid_value *output_format, char **rec_bufp,
+			  int *rec_lenp)
 {
     char record_info[SYS_IDX_ENTRY_LEN];
     char *fname, *file_type;
@@ -189,6 +193,7 @@ static int record_fetch (ZServerInfo *zi, int sysno, int score, ODR stream,
     retrieveCtrl.odr = stream;
     retrieveCtrl.readf = record_read;
     retrieveCtrl.input_format = retrieveCtrl.output_format = input_format;
+    retrieveCtrl.comp = comp;
     retrieveCtrl.diagnostic = 0;
     (*rt->retrieve)(&retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
@@ -227,7 +232,7 @@ bend_fetchresult *bend_fetch (void *handle, bend_fetchrequest *q, int *num)
     }
     r.errcode = record_fetch (&server_info, records[0].sysno,
                               records[0].score, q->stream,
-                              q->format, &r.format, &r.record, &r.len);
+                              q->format, q->comp, &r.format, &r.record, &r.len);
     return &r;
 }
 

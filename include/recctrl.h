@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.9  1995-10-06 14:37:53  adam
+ * Revision 1.10  1995-10-16 14:03:06  quinn
+ * Changes to support element set names and espec1
+ *
+ * Revision 1.9  1995/10/06  14:37:53  adam
  * New result set method: r_score.
  * Local no (sysno) and score is transferred to retrieveCtrl.
  *
@@ -37,6 +40,7 @@
 #ifndef RECCTRL_H
 #define RECCTRL_H
 
+#include <proto.h>
 #include <oid.h>
 #include <odr.h>
 
@@ -71,6 +75,7 @@ struct recRetrieveCtrl {
     int        fd;                     /* File descriptor and read function */
     int       (*readf)(int fd, char *buf, size_t count);
     oid_value  input_format;           /* Preferred record syntax */
+    Z_RecordComposition *comp;         /* formatting instructions */
     int        localno;                /* local id of record */
     int        score;                  /* score 0-1000 or -1 if none */
     
