@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.119 2004-12-13 20:51:30 adam Exp $
+/* $Id: main.c,v 1.120 2005-01-03 19:33:22 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -77,7 +77,7 @@ int main (int argc, char **argv)
 
 #ifdef WIN32
 #else
-    sprintf(nbuf, "%.40s(%d)", *argv, getpid());
+    sprintf(nbuf, "%.40s(%ld)", *argv, (long) getpid());
     yaz_log_init_prefix (nbuf);
 #endif
 #if HAVE_SYS_TIMES_H
