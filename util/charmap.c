@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: charmap.c,v $
- * Revision 1.1  1996-05-31 09:07:18  quinn
+ * Revision 1.2  1996-06-03 10:15:09  quinn
+ * Fixed bug in mapping function.
+ *
+ * Revision 1.1  1996/05/31  09:07:18  quinn
  * Work on character-set handling
  *
  *
@@ -16,6 +19,7 @@
  */
 
 #include <ctype.h>
+#include <string.h>
 
 #include <alexutil.h>
 #include <yaz-util.h>
@@ -51,7 +55,16 @@ static chr_t_entry *set_map_string(chr_t_entry *root, char *from, int len,
 	root->target = 0;
     }
     if (!len)
-	root->target = (unsigned char *) xstrdup(to);
+    {
+	if (!root->target || (char*) root->target == CHR_SPACE ||
+	    (char*) root->target == CHR_UNKNOWN)
+	    root->target = (unsigned char *) xstrdup(to);
+	else if ((char*) to != CHR_SPACE)
+	{
+	    logf(LOG_FATAL, "Character map overlap");
+	    return 0;
+	}
+    }
     else
     {
 	if (!root->children)
@@ -62,9 +75,10 @@ static chr_t_entry *set_map_string(chr_t_entry *root, char *from, int len,
 	    for (i = 0; i < 256; i++)
 		root->children[i] = 0;
 	}
-	root->children[(unsigned char) *from] =
+	if (!(root->children[(unsigned char) *from] =
 	    set_map_string(root->children[(unsigned char) *from], from + 1,
-	    len - 1, to);
+	    len - 1, to)))
+	    return 0;
     }
     return root;
 }
@@ -93,6 +107,55 @@ int chr_map_chrs(chr_t_entry *t, char **from, int len, int *read, char **to,
     }
     return i;
 }
+
+#if 1
+
+static chr_t_entry *find_entry(chr_t_entry *t, char **from, int len)
+{
+    chr_t_entry *res;
+
+    if (t->children && t->children[(unsigned char) **from])
+    {
+	char *pos = *from;
+
+	(*from)++;
+	if ((res = find_entry(t->children[(unsigned char) *pos],
+	    from, len - 1)))
+	    return res;
+	/* no match */
+	*from = pos;
+    }
+    /* no children match. use ourselves */
+   return t;
+}
+
+char **chr_map_input(chr_t_entry *t, char **from, int len)
+{
+    static char *buf[2] = {0, 0}, str[2] = {0, 0};
+    chr_t_entry *res;
+
+    if (!t) /* no table loaded. Null mapping */
+    {
+	if (isalnum(**from))
+	{
+	    str[0] = **from;
+	    buf[0] = str;
+	}
+	else if (isspace(**from))
+	    buf[0] = (char*) CHR_SPACE;
+	else
+	    buf[0] = (char*) CHR_UNKNOWN;
+	(*from)++;
+	return buf;
+    }
+    /* no children match. use our target string */
+    if (!(res = find_entry(t, from, len)))
+	abort();
+    buf[0] = (char *) res->target;
+    return buf;
+}
+
+#else
 
 char **chr_map_input(chr_t_entry *t, char **from, int len)
 {
@@ -126,6 +189,8 @@ char **chr_map_input(chr_t_entry *t, char **from, int len)
     return buf;
     /* return (char*) t->target; */
 }
+
+#endif
 
 static unsigned char prim(char **s)
 {
@@ -183,7 +248,7 @@ static void fun_addspace(char *s, void *data, int num)
 static int scan_string(char *s, void (*fun)(char *c, void *data, int num),
     void *data, int *num)
 {
-    unsigned char c, str[1024], begin, end;
+    unsigned char c, str[1024], begin, end, *p;
 
     while (*s)
     {
@@ -212,7 +277,22 @@ static int scan_string(char *s, void (*fun)(char *c, void *data, int num),
 		}
 		break;
 	    case '[': s++; abort(); break;
-	    case '(': s++; abort(); break;
+	    case '(':
+		p = (unsigned char*) ++s;
+		/* Find the end-marker, ignoring escapes */
+		do
+		{
+		    if (!(p = (unsigned char*) strchr((char*) p, ')')))
+		    {
+			logf(LOG_FATAL, "Missing ')' in string");
+			return -1;
+		    }
+		}
+		while (*(p -  1) == '\\');
+		*p = 0;
+		(*fun)(s, data, num ? (*num)++ : 0);
+		s = (char*) p + 1;
+		break;
 	    default:
 	        c = prim(&s);
 	        str[0] = c; str[1] = '\0';
@@ -238,27 +318,21 @@ chrmaptab *chr_read_maptab(char *name)
     res->input = xmalloc(sizeof(*res->input));
     res->input->target = (unsigned char*) CHR_UNKNOWN;
     res->input->equiv = 0;
-#if 0
+#if 1
     res->input->children = xmalloc(sizeof(res->input) * 256);
     for (i = 0; i < 256; i++)
     {
 	res->input->children[i] = xmalloc(sizeof(*res->input));
 	res->input->children[i]->children = 0;
-	res->input->children[i]->target = CHR_UNKNOWN;
+	res->input->children[i]->target = (unsigned char*) CHR_UNKNOWN;
 	res->input->children[i]->equiv = 0;
     }
 #else
     res->input->children = 0;
 #endif
     res->query_equiv = 0;
-    for (i = 0; i < 256; i++)
-    {
-	char *t = xmalloc(2);
-
-	t[0] = i;
-	t[1] = '\0';
-	res->output[i] = (unsigned char*)t;
-    }
+    for (i = *CHR_BASE; i < 256; i++)
+	res->output[i] = 0;
     res->output[(int) *CHR_SPACE] = (unsigned char *) " ";
     res->output[(int) *CHR_UNKNOWN] = (unsigned char*) "@";
     res->base_uppercase = 0;
