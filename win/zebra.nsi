@@ -1,4 +1,4 @@
-; $Id: zebra.nsi,v 1.20.2.2 2004-08-17 06:59:55 adam Exp $
+; $Id: zebra.nsi,v 1.20.2.3 2004-08-19 12:51:28 adam Exp $
 
 !define VERSION "1.3.17"
 
@@ -68,6 +68,7 @@ Section "Zebra Runtime"
 	SetOutPath $INSTDIR\bin
 	File ..\bin\*.exe
 	File ..\bin\*.dll
+	File c:\winnt\system32\msvcr71.dll
 SectionEnd
 
 Section "Zebra Development"
@@ -80,8 +81,13 @@ SectionEnd
 
 Section "Zebra Documentation"
 	SectionIn 1 2
-	SetOutPath $INSTDIR
-	File /r ..\doc
+	SetOutPath $INSTDIR\doc
+	File ..\doc\*.html
+	File ..\doc\*.png
+	File ..\doc\*.pdf
+	File ..\doc\*.xml
+	File ..\doc\*.in
+	File ..\doc\*.xsl
 	SetOutPath "$SMPROGRAMS\Index Data\Zebra\"
 	CreateShortCut "$SMPROGRAMS\Index Data\Zebra\HTML Documentation.lnk" \
                  "$INSTDIR\doc\zebra.html"
