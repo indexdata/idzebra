@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.29  1995-11-28 09:09:40  adam
+ * Revision 1.30  1995-12-05 11:25:02  adam
+ * Include of zebraver.h.
+ *
+ * Revision 1.29  1995/11/28  09:09:40  adam
  * Zebra config renamed.
  * Use setting 'recordId' to identify record now.
  * Bug fix in recindex.c: rec_release_blocks was invokeded even
@@ -102,6 +105,7 @@
  *
  */
 
+#include <zebraver.h>
 #include <alexutil.h>
 #include <dict.h>
 #include <isam.h>
