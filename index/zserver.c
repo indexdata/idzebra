@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zserver.c,v $
- * Revision 1.42  1996-11-08 11:10:36  adam
+ * Revision 1.43  1996-11-15 15:03:58  adam
+ * Logging of execution speed by using the times(2) call.
+ *
+ * Revision 1.42  1996/11/08  11:10:36  adam
  * Buffers used during file match got bigger.
  * Compressed ISAM support everywhere.
  * Bug fixes regarding masking characters in queries.
@@ -164,9 +167,22 @@
 #include <data1.h>
 #include <recctrl.h>
 #include <dmalloc.h>
+
+#ifdef __LINUX__
+#define USE_TIMES 1
+#endif
+
+#if USE_TIMES
+#include <sys/times.h>
+#endif
 #include "zserver.h"
 
 ZServerInfo server_info;
+
+#if USE_TIMES
+static struct tms tms1;
+static struct tms tms2;
+#endif
 
 static int register_lock (ZServerInfo *zi)
 {
@@ -182,6 +198,9 @@ static int register_lock (ZServerInfo *zi)
         state = 0;
     }
     zebraServerLock (state);
+#if USE_TIMES
+    times (&tms1);
+#endif
     if (zi->registerState == state)
     {
         if (zi->registerChange >= lastChange)
@@ -233,6 +252,12 @@ static void register_unlock (ZServerInfo *zi)
 {
     static int waitSec = -1;
 
+#if USE_TIMES
+    times (&tms2);
+    logf (LOG_LOG, "user/system: %ld/%ld",
+			(long) (tms2.tms_utime - tms1.tms_utime),
+			(long) (tms2.tms_stime - tms1.tms_stime));
+#endif
     if (waitSec == -1)
     {
         char *s = res_get (common_resource, "debugRequestWait");
