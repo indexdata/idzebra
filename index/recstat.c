@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recstat.c,v $
- * Revision 1.1  1995-12-06 12:41:26  adam
+ * Revision 1.2  1996-05-14 14:04:34  adam
+ * In zebraidx, the 'stat' command is improved. Statistics about ISAM/DICT
+ * is collected.
+ *
+ * Revision 1.1  1995/12/06  12:41:26  adam
  * New command 'stat' for the index program.
  * Filenames can be read from stdin by specifying '-'.
  * Bug fix/enhancement of the transformation from terms to regular
@@ -15,7 +19,6 @@
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 #include <fcntl.h>
 #include <unistd.h>
 

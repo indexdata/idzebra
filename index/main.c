@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1995, Index Data I/S 
+ * Copyright (C) 1994-1996, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.40  1996-04-26 10:00:23  adam
+ * Revision 1.41  1996-05-14 14:04:34  adam
+ * In zebraidx, the 'stat' command is improved. Statistics about ISAM/DICT
+ * is collected.
+ *
+ * Revision 1.40  1996/04/26  10:00:23  adam
  * Added option -V to zebraidx to display version information.
  * Removed stupid warnings from file update.
  *
@@ -290,6 +294,7 @@ int main (int argc, char **argv)
                         zebraIndexLockMsg ("r");
                     }
                     rec_prstat ();
+                    inv_prstat  (FNAME_WORD_DICT, FNAME_WORD_ISAM);
                 }
                 else
                 {

@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: index.h,v $
- * Revision 1.38  1996-04-12 07:02:23  adam
+ * Revision 1.39  1996-05-14 14:04:33  adam
+ * In zebraidx, the 'stat' command is improved. Statistics about ISAM/DICT
+ * is collected.
+ *
+ * Revision 1.38  1996/04/12  07:02:23  adam
  * File update of single files.
  *
  * Revision 1.37  1996/03/26 16:01:13  adam
@@ -203,6 +207,7 @@ void key_write (int cmd, struct it_key *k, const char *str);
 int key_compare (const void *p1, const void *p2);
 int key_qsort_compare (const void *p1, const void *p2);
 void key_logdump (int mask, const void *p);
+void inv_prstat (const char *dict_fname, const char *isam_fname);
 void key_input (const char *dict_fname, const char *isam_fname,
                  int nkeys, int cache);
 int merge_sort (char **buf, int from, int to);
