@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: extract.c,v $
- * Revision 1.68  1997-02-12 20:39:45  adam
+ * Revision 1.69  1997-04-29 09:26:03  adam
+ * Bug fix: generic recordId handling didn't work for compressed internal
+ * keys.
+ *
+ * Revision 1.68  1997/02/12 20:39:45  adam
  * Implemented options -f <n> that limits the log to the first <n>
  * records.
  * Changed some log messages also.
@@ -658,28 +662,36 @@ static const char **searchRecordKey (struct recKeys *reckeys,
     
     while (off < reckeys->buf_used)
     {
+
         const char *src = reckeys->buf + off;
-        char attrSet;
-        short attrUse;
-        int seqno;
-        const char *wstart;
-        
-        memcpy (&attrSet, src, sizeof(attrSet));
-        src += sizeof(attrSet);
+	const char *wstart;
+        int lead;
+	short attrUse;
+	char attrSet;
+	int seqno;
+    
+        lead = *src++;
 
-        memcpy (&attrUse, src, sizeof(attrUse));
-        src += sizeof(attrUse);
-
+        if (!(lead & 1))
+        {
+            memcpy (&attrSet, src, sizeof(attrSet));
+            src += sizeof(attrSet);
+        }
+        if (!(lead & 2))
+        {
+            memcpy (&attrUse, src, sizeof(attrUse));
+            src += sizeof(attrUse);
+        }
         wstart = src;
         while (*src++)
             ;
-
-        memcpy (&seqno, src, sizeof(seqno));
-        src += sizeof(seqno);
-
-#if 0
-        logf (LOG_LOG, "(%d,%d) %d %s", attrSet, attrUse, seqno, wstart);
-#endif
+        if (lead & 60)
+            seqno += ((lead>>2) & 15)-1;
+        else
+        {
+            memcpy (&seqno, src, sizeof(seqno));
+            src += sizeof(seqno);
+        }
         if (attrUseS == attrUse && attrSetS == attrSet)
         {
             int woff;
