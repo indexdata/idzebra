@@ -3,7 +3,10 @@
  * All rights reserved.
  *
  * $Log: zebraapi.c,v $
- * Revision 1.39  2000-11-29 14:24:01  adam
+ * Revision 1.40  2000-11-29 15:21:31  adam
+ * Fixed problem with passwd db.
+ *
+ * Revision 1.39  2000/11/29 14:24:01  adam
  * Script configure uses yaz pthreads options. Added locking for
  * zebra_register_{lock,unlock}.
  *
@@ -299,6 +302,17 @@ ZebraService zebra_start (const char *configName)
     zebra_chdir (zh);
     zebra_server_lock_init (zh);
     zebra_mutex_cond_init (&zh->session_lock);
+    if (!res_get (zh->res, "passwd"))
+	zh->passwd_db = NULL;
+    else
+    {
+	zh->passwd_db = passwd_db_open ();
+	if (!zh->passwd_db)
+	    logf (LOG_WARN|LOG_ERRNO, "passwd_db_open failed");
+	else
+	    passwd_db_file (zh->passwd_db, res_get (zh->res, "passwd"));
+    }
+
     return zh;
 }
 
@@ -344,17 +358,6 @@ static int zebra_register_activate (ZebraService zh, int rw)
     zh->zei = 0;
     
     zebraRankInstall (zh, rank1_class);
-
-    if (!res_get (zh->res, "passwd"))
-	zh->passwd_db = NULL;
-    else
-    {
-	zh->passwd_db = passwd_db_open ();
-	if (!zh->passwd_db)
-	    logf (LOG_WARN|LOG_ERRNO, "passwd_db_open failed");
-	else
-	    passwd_db_file (zh->passwd_db, res_get (zh->res, "passwd"));
-    }
 
     if (!(zh->records = rec_open (zh->bfs, rw, 0)))
     {

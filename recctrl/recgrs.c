@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recgrs.c,v $
- * Revision 1.34  2000-02-25 13:24:49  adam
+ * Revision 1.35  2000-11-29 15:21:31  adam
+ * Fixed problem with passwd db.
+ *
+ * Revision 1.34  2000/02/25 13:24:49  adam
  * Fixed bug regarding pointer conversion that showed up on OSF V5.
  *
  * Revision 1.33  1999/11/30 13:48:04  adam
@@ -575,6 +578,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
         nmem_destroy (mem);
 	return 0;
     }
+    data1_pr_tree (p->dh, node, stdout);
     logf (LOG_DEBUG, "grs_retrieve: size");
     if ((dnew = data1_insert_taggeddata(p->dh, node, node,
 				       "size", mem)))
