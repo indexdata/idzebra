@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.12 2002-04-12 14:40:42 adam Exp $
+## $Id: Makefile.am,v 1.13 2002-04-15 09:48:30 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -29,7 +29,7 @@ zebrasrv_SOURCES = zserver.c
 apitest_SOURCES = apitest.c
 kdump_SOURCES=kdump.c kcompare.c
 
-INCLUDES = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)
 
 LDADD = libzebra.a $(YAZLIB) $(TCL_LIB)
 
