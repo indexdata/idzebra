@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.19 2003-03-05 11:12:18 oleg Exp $
+/* $Id: marcread.c,v 1.20 2003-03-05 16:43:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -85,7 +85,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p)
     }
     res_top = data1_mk_tag (p->dh, p->mem, absynName, 0, res_root);
 
-    if (marctab = res_root->u.root.absyn->marc)
+    if ((marctab = res_root->u.root.absyn->marc))
     {
 	memcpy(marctab->leader, buf, 24);
         memcpy(marctab->implementation_codes, buf+6, 4);
@@ -270,18 +270,7 @@ static char *get_data(data1_node *n, int *len)
     *len = strlen(r);
     return r;
 }
-static char *tr(char *s, int c1, int c2)
-{
-    char *p = s;
-    
-    while(*p)
-    {
-	if (*p == c1)
-	    *p = c2;
-	p++;
-    }
-    return s;
-}
+
 static data1_node *lookup_subfield(data1_node *node, const char *name)
 {
     data1_node *p;
