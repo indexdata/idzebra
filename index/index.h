@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.97 2003-03-13 04:25:17 pop Exp $
+/* $Id: index.h,v 1.98 2003-03-26 16:41:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -323,7 +323,7 @@ struct zebra_session {
 
 struct rank_control {
     char *name;
-    void *(*create)(struct zebra_register *reg);
+    void *(*create)(ZebraHandle zh);
     void (*destroy)(struct zebra_register *reg, void *class_handle);
     void *(*begin)(struct zebra_register *reg, void *class_handle, RSET rset);
     void (*end)(struct zebra_register *reg, void *set_handle);
@@ -403,6 +403,7 @@ int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att);
 
 extern struct rank_control *rank1_class;
 extern struct rank_control *rankzv_class;
+extern struct rank_control *rankliv_class;
 
 int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
@@ -465,6 +466,8 @@ void zebra_end_read (ZebraHandle zh);
 
 int zebra_file_stat (const char *file_name, struct stat *buf,
                      int follow_links);
+
+void zebra_livcode_transform(ZebraHandle zh, Z_RPNQuery *query);
 
 YAZ_END_CDECL
 

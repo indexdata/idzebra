@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.2 2003-03-03 10:31:46 adam Exp $
+/* $Id: zvrank.c,v 1.3 2003-03-26 16:41:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -659,7 +659,7 @@ struct rank_set_info {
  * zv_create: Creates/Initialises this rank handler. This routine is 
  *  called exactly once. The routine returns the class_handle.
  */
-static void *zv_create (struct zebra_register *reg) {
+static void *zv_create (ZebraHandle zh) {
     struct rank_class_info *ci = (struct rank_class_info *)
         xmalloc (sizeof(*ci));
     yaz_log(LOG_DEBUG, "zv_create\n");

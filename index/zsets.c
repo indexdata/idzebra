@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.43 2003-03-06 11:58:08 adam Exp $
+/* $Id: zsets.c,v 1.44 2003-03-26 16:41:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -765,7 +765,7 @@ ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name)
     if (p && !p->init_flag)
     {
 	if (p->control->create)
-	    p->class_handle = (*p->control->create)(zh->reg);
+	    p->class_handle = (*p->control->create)(zh);
 	p->init_flag = 1;
     }
     return p;

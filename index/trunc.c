@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.27 2002-08-02 19:26:55 adam Exp $
+/* $Id: trunc.c,v 1.28 2003-03-26 16:41:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -142,6 +142,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
     RSET result; 
     RSFD result_rsfd;
     rset_temp_parms parms;
+    int nn = 0;
 
     parms.cmp = key_compare_it;
     parms.key_size = sizeof(struct it_key);
@@ -194,6 +195,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+            nn++;
 
             while (1)
             {
@@ -239,6 +241,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+            nn++;
             if (preserve_position)
             {
 /* section that preserve all keys */
@@ -294,6 +297,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+            nn++;
             if (preserve_position)
             {
                 heap_delete (ti);
@@ -350,6 +354,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+            nn++;
 #if 0
 /* section that preserve all keys */
             heap_delete (ti);
@@ -384,6 +389,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
         ISAMS_PP *ispt;
         int i;
         struct trunc_info *ti;
+        int nn = 0;
 
         ispt = (ISAMS_PP *) xmalloc (sizeof(*ispt) * (to-from));
 
@@ -402,6 +408,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+            nn++;
             while (1)
             {
                 if (!isams_pp_read (ispt[n], ti->tmpbuf))
@@ -444,6 +451,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             int n = ti->indx[ti->ptr[1]];
 
             rset_write (result, result_rsfd, ti->heap[ti->ptr[1]]);
+            nn++;
 
             if (preserve_position)
             {
@@ -478,6 +486,7 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
     else
         logf (LOG_WARN, "Unknown isam set in rset_trunc_r");
 
+    parms.rset_term->nn = nn;
     rset_close (result, result_rsfd);
     return result;
 }

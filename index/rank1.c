@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.12 2003-01-13 22:45:22 adam Exp $
+/* $Id: rank1.c,v 1.13 2003-03-26 16:41:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -30,7 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <unistd.h>
 #endif
 
-#define DEBUG_RANK 0
+#define DEBUG_RANK 1
 
 #include "index.h"
 
@@ -65,7 +65,7 @@ static int log2_int (unsigned g)
  * create: Creates/Initialises this rank handler. This routine is 
  *  called exactly once. The routine returns the class_handle.
  */
-static void *create (struct zebra_register *reg)
+static void *create (ZebraHandle zh)
 {
     struct rank_class_info *ci = (struct rank_class_info *)
 	xmalloc (sizeof(*ci));
@@ -113,10 +113,15 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 #endif
 	if (!strncmp (rset->rset_terms[i]->flags, "rank,", 5))
 	{
+            const char *cp = strstr(rset->rset_terms[i]->flags+4, ",w=");
 	    si->entries[i].rank_flag = 1;
-            si->entries[i].rank_weight = atoi (rset->rset_terms[i]->flags+5);
+            if (cp)
+                si->entries[i].rank_weight = atoi (cp+3);
+            else
+                si->entries[i].rank_weight = 34;
 #if DEBUG_RANK
-            yaz_log (LOG_LOG, " weight=%d", i, si->entries[i].rank_weight);
+            yaz_log (LOG_LOG, " i=%d weight=%d", i,
+                     si->entries[i].rank_weight);
 #endif
 	    (si->no_rank_entries)++;
 	}
@@ -125,7 +130,7 @@ static void *begin (struct zebra_register *reg, void *class_handle, RSET rset)
 	si->entries[i].local_occur = 0;
 	si->entries[i].global_occur = g;
 	si->entries[i].global_inv = 32 - log2_int (g);
-	yaz_log (LOG_DEBUG, "-------- %d ------", 32 - log2_int (g));
+	yaz_log (LOG_DEBUG, " global_inv = %d g = %d", 32 - log2_int (g), g);
     }
     return si;
 }

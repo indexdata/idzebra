@@ -1,6 +1,12 @@
 
-Zvrank: an experimental ranking algorithm. See doc/zvrank.txt
- Johannes Leveling <Johannes.Leveling at fernuni-hagen.de>
+Zvrank: an experimental ranking algorithm. See doc/zvrank.txt and
+source in index/zvrank.c. Enable this by using rank: zvrank in zebra.cfg.
+Contributed by Johannes Leveling <Johannes.Leveling at fernuni-hagen.de>
+
+livrank: another experimental ranking algorithm. Source in livcode.c.
+Enable this by using rank: livrank in zebra.cfg and use -DLIV_CODE=1
+for CFLAGS.
+Contributed by Pete Mallinson, University of Liverpool. 
 
 Advanced MARC indexing. See doc/marc_indexing.xml
  Oleg Kolobov <oleg at lib.tpu.ru>

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.95 2003-03-26 00:02:05 adam Exp $
+/* $Id: zebraapi.c,v 1.96 2003-03-26 16:41:48 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -241,6 +241,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     
     zebraRankInstall (reg, rank1_class);
     zebraRankInstall (reg, rankzv_class);
+    zebraRankInstall (reg, rankliv_class);
 
     recordCompression = res_get_def (res, "recordCompression", "none");
     if (!strcmp (recordCompression, "none"))
@@ -753,6 +754,9 @@ void zebra_search_rpn (ZebraHandle zh, ODR decode, ODR stream,
 
     if (zebra_begin_read (zh))
 	return;
+
+    zebra_livcode_transform(zh, query);
+
     resultSetAddRPN (zh, decode, stream, query, 
                      zh->num_basenames, zh->basenames, setname);
 
@@ -1586,7 +1590,7 @@ void zebra_set_resource(ZebraHandle zh, const char *name, const char *value)
 }
 
 const char *zebra_get_resource(ZebraHandle zh,
-		                const char *name, const char *defaultvalue)
+                               const char *name, const char *defaultvalue)
 {
     ASSERTZH;
     zh->errCode=0;

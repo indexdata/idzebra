@@ -1,5 +1,5 @@
-/* $Id: zebramap.c,v 1.29 2002-12-16 22:59:34 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: zebramap.c,v 1.30 2003-03-26 16:41:48 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -304,40 +304,6 @@ const char **zebra_maps_input (ZebraMaps zms, unsigned reg_id,
     return zms->temp_map_ptr;
 }
 
-#if 0
-int zebra_maps_input_tokens (ZebraMaps zms, unsigned reg_id,
-			     const char *input_str, int input_len,
-			     WRBUF wrbuf)
-{
-    chrmaptab maptab = zebra_charmap_get (zms, reg_id);
-    int len[4];
-    char *str[3];
-    int input_i = 0;
-    int first = 1;
-    const char **out;
-	
-    if (!maptab)
-    {
-	wrbuf_write (wrbuf, input_str, input_len);
-	return -1;
-    }
-    str[0] = " ";
-    len[0] = 1;
-    str[1] = input_str;
-    len[1] = input_len;
-    str[2] = " ";
-    len[2] = 1;
-    len[3] = -1;
-    
-    out = chr_map_input (maptab, str, len);
-    while (len[1] > 0)
-    {
-	while (out && *out && **out == *CHR_SPACE)
-	    out = chr_map_input (maptab, str, len);
-    }
-}
-#endif
-
 const char *zebra_maps_output(ZebraMaps zms, unsigned reg_id,
 			      const char **from)
 {
@@ -472,23 +438,27 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     AttrType relation;
     AttrType sort_relation;
     AttrType weight;
+    AttrType use;
     int completeness_value;
     int structure_value;
     int relation_value;
     int sort_relation_value;
     int weight_value;
+    int use_value;
 
     attr_init_APT (&structure, zapt, 4);
     attr_init_APT (&completeness, zapt, 6);
     attr_init_APT (&relation, zapt, 2);
     attr_init_APT (&sort_relation, zapt, 7);
     attr_init_APT (&weight, zapt, 9);
+    attr_init_APT (&use, zapt, 1);
 
     completeness_value = attr_find (&completeness, NULL);
     structure_value = attr_find (&structure, NULL);
     relation_value = attr_find (&relation, NULL);
     sort_relation_value = attr_find (&sort_relation, NULL);
     weight_value = attr_find (&weight, NULL);
+    use_value = attr_find(&use, NULL);
 
     if (completeness_value == 2 || completeness_value == 3)
 	*complete_flag = 1;
@@ -503,7 +473,7 @@ int zebra_maps_attr (ZebraMaps zms, Z_AttributesPlusTerm *zapt,
     {
         if (weight_value == -1)
             weight_value = 34;
-        sprintf (rank_type, "rank,%d", weight_value);
+        sprintf (rank_type, "rank,w=%d,u=%d", weight_value, use_value);
     }
     if (relation_value == 103)
     {
