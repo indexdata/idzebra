@@ -1,5 +1,5 @@
-/* $Id: d1_espec.c,v 1.2 2002-10-22 13:19:50 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: d1_espec.c,v 1.2.2.1 2004-10-05 12:25:34 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -200,6 +200,8 @@ static Z_ETagUnit *read_tagunit(char *buf, NMEM nmem,
 	else
 	    t->occurrences = 0;
     }
+    else
+	return 0;
     return u;
 }
 
