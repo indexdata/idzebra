@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.47 2004-05-10 08:47:54 adam Exp $
+/* $Id: zsets.c,v 1.48 2004-06-07 22:09:32 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -207,6 +207,8 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     }
     else
     {
+	const char *sort_max_str = zebra_get_resource(zh, "sortmax", "1000");
+
 	yaz_log (LOG_DEBUG, "adding result set %s", name);
 	s = (ZebraSet) xmalloc (sizeof(*s));
 	s->next = zh->sets;
@@ -216,7 +218,10 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
 
 	s->sort_info = (struct zset_sort_info *)
 	    xmalloc (sizeof(*s->sort_info));
-	s->sort_info->max_entries = 1000;
+	s->sort_info->max_entries = atoi(sort_max_str);
+	if (s->sort_info->max_entries < 2)
+	    s->sort_info->max_entries = 2;
+
 	s->sort_info->entries = (struct zset_sort_entry **)
 	    xmalloc (sizeof(*s->sort_info->entries) *
 		     s->sort_info->max_entries);

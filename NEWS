@@ -1,4 +1,7 @@
 
+Maximum number of records to be sorted in a result set can be
+specified by setting "sortmax". Default is 1000.
+
 Allow use of string use attributes for regular attribute sets. The
 name matches the name given in the attribute set file. All strings
 starting with / are considered X-Path as usual.
