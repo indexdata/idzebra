@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.36 2004-10-22 10:12:51 heikki Exp $
+/* $Id: rset.c,v 1.37 2004-10-22 10:58:29 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -157,10 +157,8 @@ void rset_get_no_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 /* rset_get_one_term gets that one term from an rset. Used by rsisamX */
 void rset_get_one_term(RSET ct,TERMID *terms,int maxterms,int *curterm)
 {
-    yaz_log(LOG_LOG,"FIXME: get_one_term: max=%d cur=%d", maxterms, *curterm);
     if (ct->term)
     {
-        yaz_log(LOG_LOG,"FIXME: get_one_term: '%s'", ct->term->name);
         if (*curterm < maxterms)
             terms[*curterm]=ct->term;
         (*curterm)++;

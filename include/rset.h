@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.39 2004-10-22 10:12:51 heikki Exp $
+/* $Id: rset.h,v 1.40 2004-10-22 10:58:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -49,9 +49,9 @@ typedef struct rset *RSET; /* Result set */
 
 struct rset_term {
     char *name;
-    int  nn;
+    zint  nn; /* FIXME - what is this used for */
     char *flags;
-    int  count;
+    zint  count;
     int  type;
 };
 

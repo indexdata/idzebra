@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.66 2004-10-22 10:12:51 heikki Exp $
+/* $Id: zsets.c,v 1.67 2004-10-22 10:58:28 heikki Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -812,33 +812,26 @@ void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset)
     }
     rset_close (rfd);
     n=0;
-    logf(LOG_LOG,"FIXME: Counting terms"); 
     rset_getterms(rset,0,0,&n);
-    logf(LOG_LOG,"FIXME: Got %d terms", n);
     terms=xmalloc( sizeof(*terms)*n);
     i=n;
     n=0;
     rset_getterms(rset,terms,i,&n);
-    logf(LOG_LOG,"FIXME: Collected %d terms", n);
-    for (i=0;i<n;i++)
-        logf(LOG_LOG,"FIXME: term[%d]='%s'",i,terms[i]->name);
-    xfree(terms);
 
 
-/*
-    for (i = 0; i < rset->no_rset_terms; i++)
+    for (i = 0; i < n; i++)
     {
         if (est>0)
-            rset->rset_terms[i]->count = 
-                est=(zint)(rset->rset_terms[i]->count/ratio);
+            terms[i]->count = 
+                est=(zint)(terms[i]->count/ratio);
         yaz_log (LOG_LOG, "term=\"%s\" nn=" ZINT_FORMAT 
                     " type=%s count=" ZINT_FORMAT,
-                 rset->rset_terms[i]->name,
-                 rset->rset_terms[i]->nn,
-                 rset->rset_terms[i]->flags,
-                 rset->rset_terms[i]->count);
+                 terms[i]->name,
+                 terms[i]->nn,
+                 terms[i]->flags,
+                 terms[i]->count);
     }
-*/
+    xfree(terms);
     yaz_log (LOG_DEBUG, ZINT_FORMAT " keys, "ZINT_FORMAT" distinct sysnos", 
                     kno, zebraSet->hits);
 }
