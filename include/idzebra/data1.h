@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.3 2004-10-04 09:19:16 adam Exp $
+/* $Id: data1.h,v 1.4 2004-10-04 09:20:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -264,7 +264,7 @@ typedef struct data1_element
     char *sub_name;
     struct data1_element *children;
     struct data1_element *next;
-    struct data1_hash *hash;
+    struct data1_hash_table *hash;
 } data1_element;
 
 typedef struct data1_sub_elements {
