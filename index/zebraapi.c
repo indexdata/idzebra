@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraapi.c,v $
- * Revision 1.14  1999-02-02 14:51:11  adam
+ * Revision 1.15  1999-02-17 12:18:12  adam
+ * Fixed zebra_close so that a NULL pointer is ignored.
+ *
+ * Revision 1.14  1999/02/02 14:51:11  adam
  * Updated WIN32 code specific sections. Changed header.
  *
  * Revision 1.13  1998/12/16 12:23:30  adam
@@ -216,6 +219,8 @@ ZebraHandle zebra_open (const char *configName)
 
 void zebra_close (ZebraHandle zh)
 {
+    if (!zh)
+	return;
     if (zh->records)
     {
         resultSetDestroy (zh);
