@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.25 2003-06-26 08:46:31 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.26 2003-10-30 11:11:57 adam Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -375,7 +375,7 @@
    Third, it's possible to buy a commercial support contract, with
    well defined service levels and response times, from Index Data.
    See
-   <ulink url="http://indexdata.dk/support2/"/>
+   <ulink url="http://indexdata.dk/support/"/>
    for details.
   </para>
  </sect1>  
