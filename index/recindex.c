@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.c,v $
- * Revision 1.23  1999-05-26 07:49:13  adam
+ * Revision 1.24  1999-06-25 13:48:02  adam
+ * Updated MSVC project files.
+ * Added BZIP2 record compression (not very well tested).
+ *
+ * Revision 1.23  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.22  1999/02/18 12:49:34  adam
@@ -97,12 +101,32 @@
  * Started work on better record management system.
  *
  */
+
+
+/*
+ *  Format of first block
+ *      next       (4 bytes)
+ *      ref_count  (4 bytes)
+ *      block      (504 bytes)
+ *
+ *  Format of subsequent blocks 
+ *      next  (4 bytes)
+ *      block (508 bytes)
+ *
+ *  Format of each record
+ *      sysno
+ *      (length, data) - pairs
+ *      length = 0 if same as previous
+ */
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
 
 #include "recindxp.h"
 
+#if HAVE_BZLIB_H
+#include <bzlib.h>
+#endif
 static void rec_write_head (Records p)
 {
     int r;
@@ -118,13 +142,13 @@ static void rec_write_head (Records p)
     }
 }
 
-static void rec_tmp_expand (Records p, int size, int dst_type)
+static void rec_tmp_expand (Records p, int size)
 {
     if (p->tmp_size < size + 2048 ||
-        p->tmp_size < p->head.block_size[dst_type]*2)
+        p->tmp_size < p->head.block_size[REC_BLOCK_TYPES-1]*2)
     {
         xfree (p->tmp_buf);
-        p->tmp_size = size + p->head.block_size[dst_type]*2 + 2048;
+        p->tmp_size = size + p->head.block_size[REC_BLOCK_TYPES-1]*2 + 2048;
         p->tmp_buf = (char *) xmalloc (p->tmp_size);
     }
 }
@@ -155,12 +179,15 @@ static void write_indx (Records p, int sysno, void *buf, int itemsize)
 static void rec_release_blocks (Records p, int sysno)
 {
     struct record_index_entry entry;
-    int freeblock, freenext;
+    int freeblock;
+    int block_and_ref[2];
     int dst_type;
+    int first = 1;
 
+    logf (LOG_LOG, "release_blocks for sysno=%d", sysno);
     if (read_indx (p, sysno, &entry, sizeof(entry), 1) != 1)
         return ;
-    p->head.total_bytes -= entry.size;
+
     freeblock = entry.next;
     assert (freeblock > 0);
     dst_type = freeblock & 7;
@@ -168,22 +195,40 @@ static void rec_release_blocks (Records p, int sysno)
     freeblock = freeblock / 8;
     while (freeblock)
     {
-        if (bf_read (p->data_BFile[dst_type], freeblock, 0, sizeof(freenext),
-                     &freenext) != 1)
+        if (bf_read (p->data_BFile[dst_type], freeblock, 0,
+		     sizeof(block_and_ref), block_and_ref) != 1)
         {
             logf (LOG_FATAL|LOG_ERRNO, "read in rec_del_single");
             exit (1);
         }
-        if (bf_write (p->data_BFile[dst_type], freeblock, 0, sizeof(freenext),
+	if (first)
+	{
+	    block_and_ref[1]--;
+	    if (block_and_ref[1])
+	    {
+		if (bf_write (p->data_BFile[dst_type], freeblock, 0,
+			      sizeof(block_and_ref), block_and_ref))
+		{
+		    logf (LOG_FATAL|LOG_ERRNO, "write in rec_del_single");
+		    exit (1);
+		}
+		return;
+	    }
+	    first = 0;
+	}
+	
+        if (bf_write (p->data_BFile[dst_type], freeblock, 0, sizeof(freeblock),
                       &p->head.block_free[dst_type]))
         {
             logf (LOG_FATAL|LOG_ERRNO, "write in rec_del_single");
             exit (1);
         }
         p->head.block_free[dst_type] = freeblock;
-        freeblock = freenext;
+        freeblock = block_and_ref[0];
+
         p->head.block_used[dst_type]--;
     }
+    p->head.total_bytes -= entry.size;
 }
 
 static void rec_delete_single (Records p, Record rec)
@@ -198,27 +243,23 @@ static void rec_delete_single (Records p, Record rec)
     write_indx (p, rec->sysno, &entry, sizeof(entry));
 }
 
+static void rec_write_tmp_buf (Records p, int size, int *sysnos);
 
 static void rec_write_single (Records p, Record rec)
 {
+
+    int sysnos[2];
     int i, size = 0;
     char *cptr;
-    int dst_type = 0;
-    int no_written = 0;
-    int block_prev = -1, block_free;
-    struct record_index_entry entry;
 
+    logf (LOG_LOG, " rec_write_single !!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     for (i = 0; i < REC_NO_INFO; i++)
         if (!rec->info[i])
             size += sizeof(*rec->size);
         else
             size += sizeof(*rec->size) + rec->size[i];
 
-    for (i = 1; i<REC_BLOCK_TYPES; i++)
-        if (size >= p->head.block_move[i])
-            dst_type = i;
-
-    rec_tmp_expand (p, size, dst_type);
+    rec_tmp_expand (p, size);
 
     cptr = p->tmp_buf + sizeof(int);           /* a hack! */
     for (i = 0; i < REC_NO_INFO; i++)
@@ -231,7 +272,23 @@ static void rec_write_single (Records p, Record rec)
             cptr += rec->size[i];
         }
     }
-    cptr = p->tmp_buf;
+    sysnos[0] = rec->sysno;
+    sysnos[1] = -1;
+    rec_write_tmp_buf (p, size, sysnos);
+}
+
+static void rec_write_tmp_buf (Records p, int size, int *sysnos)
+{
+    struct record_index_entry entry;
+    int no_written = 0;
+    char *cptr = p->tmp_buf;
+    int block_prev = -1, block_free;
+    int dst_type = 0;
+    int i;
+
+    for (i = 1; i<REC_BLOCK_TYPES; i++)
+        if (size >= p->head.block_move[i])
+            dst_type = i;
     while (no_written < size)
     {
         block_free = p->head.block_free[dst_type];
@@ -253,7 +310,11 @@ static void rec_write_single (Records p, Record rec)
             entry.next = block_free*8 + dst_type;
             entry.size = size;
             p->head.total_bytes += size;
-            write_indx (p, rec->sysno, &entry, sizeof(entry));
+	    while (*sysnos > 0)
+	    {
+		write_indx (p, *sysnos, &entry, sizeof(entry));
+		sysnos++;
+	    }
         }
         else
         {
@@ -346,11 +407,148 @@ Records rec_open (BFiles bfs, int rw)
             exit (1);
         }
     }
-    p->cache_max = 10;
+    p->cache_max = 400;
     p->cache_cur = 0;
     p->record_cache = (struct record_cache_entry *)
 	xmalloc (sizeof(*p->record_cache)*p->cache_max);
     return p;
+}
+
+static void rec_encode_unsigned (unsigned n, unsigned char *buf, int *len)
+{
+    (*len) = 0;
+    while (n > 127)
+    {
+	buf[*len] = 128 + (n & 127);
+	n = n >> 7;
+	(*len)++;
+    }
+    buf[*len] = n;
+    (*len)++;
+}
+
+static void rec_decode_unsigned(unsigned *np, unsigned char *buf, int *len)
+{
+    unsigned n = 0;
+    unsigned w = 1;
+    (*len) = 0;
+
+    while (buf[*len] > 127)
+    {
+	n += w*(buf[*len] & 127);
+	w = w << 7;
+	(*len)++;
+    }
+    n += w * buf[*len];
+    (*len)++;
+    *np = n;
+}
+static void rec_cache_flush_block1 (Records p, Record rec, Record last_rec,
+				    char **out_buf, int *out_size,
+				    int *out_offset)
+{
+    int i;
+    int len;
+
+    for (i = 0; i<REC_NO_INFO; i++)
+    {
+	if (*out_offset + (int) rec->size[i] + 20 > *out_size)
+	{
+	    int new_size = *out_offset + rec->size[i] + 65536;
+	    char *np = (char *) xmalloc (new_size);
+	    if (*out_offset)
+		memcpy (np, *out_buf, *out_offset);
+	    xfree (*out_buf);
+	    *out_size = new_size;
+	    *out_buf = np;
+	}
+	if (i == 0)
+	{
+	    rec_encode_unsigned (rec->sysno, *out_buf + *out_offset, &len);
+	    (*out_offset) += len;
+	}
+	if (rec->size[i] == 0)
+	{
+	    rec_encode_unsigned (1, *out_buf + *out_offset, &len);
+	    (*out_offset) += len;
+	}
+	else if (last_rec && rec->size[i] == last_rec->size[i] &&
+		 !memcmp (rec->info[i], last_rec->info[i], rec->size[i]))
+	{
+	    rec_encode_unsigned (0, *out_buf + *out_offset, &len);
+	    (*out_offset) += len;
+	}
+	else
+	{
+	    rec_encode_unsigned (rec->size[i]+1, *out_buf + *out_offset, &len);
+	    (*out_offset) += len;
+	    memcpy (*out_buf + *out_offset, rec->info[i], rec->size[i]);
+	    (*out_offset) += rec->size[i];
+	}
+    }
+}
+
+static void rec_write_multiple (Records p, int saveCount)
+{
+    int i;
+    int ref_count = 0;
+    Record last_rec = 0;
+    int out_size = 1000;
+    int out_offset = 0;
+    char *out_buf = (char *) xmalloc (out_size);
+    int *sysnos = (int *) xmalloc (sizeof(*sysnos) * (p->cache_cur + 1));
+    int *sysnop = sysnos;
+
+    for (i = 0; i<p->cache_cur - saveCount; i++)
+    {
+        struct record_cache_entry *e = p->record_cache + i;
+        switch (e->flag)
+        {
+        case recordFlagNew:
+            rec_cache_flush_block1 (p, e->rec, last_rec, &out_buf,
+				    &out_size, &out_offset);
+	    *sysnop++ = e->rec->sysno;
+	    ref_count++;
+	    e->flag = recordFlagNop;
+	    last_rec = e->rec;
+            break;
+        case recordFlagWrite:
+	    rec_release_blocks (p, e->rec->sysno);
+            rec_cache_flush_block1 (p, e->rec, last_rec, &out_buf,
+				    &out_size, &out_offset);
+	    *sysnop++ = e->rec->sysno;
+	    ref_count++;
+	    e->flag = recordFlagNop;
+	    last_rec = e->rec;
+            break;
+	default:
+	    break;
+        }
+    }
+    *sysnop = -1;
+    if (ref_count)
+    {
+	int csize = out_offset + (out_offset >> 6) + 620;
+
+	rec_tmp_expand (p, csize);
+#if HAVE_BZLIB_H	
+	i = bzBuffToBuffCompress (p->tmp_buf+2*sizeof(int), &csize,
+				  out_buf, out_offset, 9, 0, 30);
+	if (i != BZ_OK)
+	{
+	    logf (LOG_FATAL, "bzBuffToCompress error code=%d", i);
+	    exit (1);
+	}
+#else
+	memcpy (p->tmp_buf + 2*sizeof(int), out_buf, out_offset);
+	csize = out_offset;
+#endif
+	memcpy (p->tmp_buf + sizeof(int), &ref_count, sizeof(ref_count));
+	/* -------- compression */
+	rec_write_tmp_buf (p, csize + sizeof(int), sysnos);
+    }
+    xfree (out_buf);
+    xfree (sysnos);
 }
 
 static void rec_cache_flush (Records p, int saveCount)
@@ -359,6 +557,8 @@ static void rec_cache_flush (Records p, int saveCount)
 
     if (saveCount >= p->cache_cur)
         saveCount = 0;
+
+    rec_write_multiple (p, saveCount);
     for (i = 0; i<p->cache_cur - saveCount; i++)
     {
         struct record_cache_entry *e = p->record_cache + i;
@@ -457,11 +657,12 @@ void rec_close (Records *pp)
 
 Record rec_get (Records p, int sysno)
 {
-    int i;
+    int i, in_size;
     Record rec, *recp;
     struct record_index_entry entry;
     int freeblock, dst_type;
     char *nptr, *cptr;
+    char *in_buf = 0;
 
     assert (sysno > 0);
     assert (p);
@@ -482,7 +683,7 @@ Record rec_get (Records p, int sysno)
     assert (freeblock > 0);
     
     rec = (Record) xmalloc (sizeof(*rec));
-    rec_tmp_expand (p, entry.size, dst_type);
+    rec_tmp_expand (p, entry.size);
 
     cptr = p->tmp_buf;
     bf_read (p->data_BFile[dst_type], freeblock, 0, 0, cptr);
@@ -501,20 +702,51 @@ Record rec_get (Records p, int sysno)
     }
 
     rec->sysno = sysno;
-    nptr = p->tmp_buf + sizeof(freeblock);
-    for (i = 0; i < REC_NO_INFO; i++)
+#if HAVE_BZLIB_H
+    in_size = entry.size * 30+100;
+    in_buf = (char *) xmalloc (in_size);
+    i = bzBuffToBuffDecompress (in_buf, &in_size, p->tmp_buf+2*sizeof(int),
+				entry.size-sizeof(int), 0, 4);
+    if (i != BZ_OK)
     {
-        memcpy (&rec->size[i], nptr, sizeof(*rec->size));
-        nptr += sizeof(*rec->size);
-        if (rec->size[i])
-        {
-            rec->info[i] = (char *) xmalloc (rec->size[i]);
-            memcpy (rec->info[i], nptr, rec->size[i]);
-            nptr += rec->size[i];
-        }
-        else
-            rec->info[i] = NULL;
+	logf (LOG_FATAL, "bzBuffToDecompress error code=%d", i);
+	exit (1);
     }
+#else
+    in_buf = p->tmp_buf + 2*sizeof(int);
+    in_size = entry.size - sizeof(int);
+#endif
+    nptr = in_buf;                /* skip ref count */
+    while (nptr < in_buf + in_size)
+    {
+	int this_sysno;
+	int len;
+	rec_decode_unsigned (&this_sysno, nptr, &len);
+	nptr += len;
+
+	for (i = 0; i < REC_NO_INFO; i++)
+	{
+	    int this_size;
+	    rec_decode_unsigned (&this_size, nptr, &len);
+	    nptr += len;
+
+	    if (this_size == 0)
+		continue;
+	    rec->size[i] = this_size-1;
+
+	    if (rec->size[i])
+	    {
+		rec->info[i] = (char *) xmalloc (rec->size[i]);
+		memcpy (rec->info[i], nptr, rec->size[i]);
+		nptr += rec->size[i];
+	    }
+	    else
+		rec->info[i] = NULL;
+	}
+	if (this_sysno == sysno)
+	    break;
+    }
+    xfree (in_buf);
     rec_cache_insert (p, rec, recordFlagNop);
     return rec;
 }

@@ -1,5 +1,5 @@
 # Microsoft Developer Studio Project File - Name="zebra" - Package Owner=<4>
-# Microsoft Developer Studio Generated Build File, Format Version 5.00
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
@@ -22,9 +22,11 @@ CFG=zebra - Win32 Debug
 !MESSAGE 
 
 # Begin Project
+# PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
 CPP=cl.exe
+RSC=rc.exe
 
 !IF  "$(CFG)" == "zebra - Win32 Release"
 
@@ -39,7 +41,9 @@ CPP=cl.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "include" /I "..\yaz\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "include" /I "..\yaz\include" /I "..\bzip2-0.9.0c" /D "_WINDOWS" /D "WIN32" /D "NDEBUG" /D HAVE_BZLIB_H=1 /YX /FD /c
+# ADD BASE RSC /l 0x409
+# ADD RSC /l 0x409
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -60,7 +64,9 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "include" /I "..\yaz\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /FR /YX /FD /c
+# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "include" /I "..\yaz\include" /I "..\bzip2-0.9.0c" /D "_WINDOWS" /D "WIN32" /D "_DEBUG" /D HAVE_BZLIB_H=1 /FR /YX /FD /c
+# ADD BASE RSC /l 0x409
+# ADD RSC /l 0x409
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -156,6 +162,10 @@ SOURCE=.\isamc\isamc.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\Isamc\Isams.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\isam\isutil.c
 # End Source File
 # Begin Source File
@@ -220,10 +230,6 @@ SOURCE=.\index\rank1.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\dfa\readfile.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\recctrl\recctrl.c
 # End Source File
 # Begin Source File
@@ -273,6 +279,10 @@ SOURCE=.\rset\rsisam.c
 # Begin Source File
 
 SOURCE=.\rset\rsisamc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\rset\rsisams.c
 # End Source File
 # Begin Source File
 

@@ -149,7 +149,7 @@ int main (int argc, char **argv)
 	}
 
 	/* result set name will be called 1,2, etc */
-	sprintf (setname, "%d", i);
+	sprintf (setname, "%d", argno);
 
 	/* fire up the search */
 	zebra_search_rpn (zh, odr_input, odr_output, query, 1, &base, setname);

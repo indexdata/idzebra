@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.65  1999-05-20 12:57:18  adam
+ * Revision 1.66  1999-06-25 13:48:02  adam
+ * Updated MSVC project files.
+ * Added BZIP2 record compression (not very well tested).
+ *
+ * Revision 1.65  1999/05/20 12:57:18  adam
  * Implemented TCL filter. Updated recctrl system.
  *
  * Revision 1.64  1999/05/15 14:36:38  adam
@@ -517,13 +521,12 @@ int main (int argc, char **argv)
         }
         else if (ret == 'V')
         {
-            fprintf (stderr, "Zebra %s %s\n", 
-#if ZEBRASDR
-			"SDR",
-#else
-			ZEBRAVER,
+            fprintf (stderr, "Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
+	    fprintf (stderr, " (C) 1994-1999, Index Data ApS\n");
+#if HAVE_BZLIB_H
+            fprintf (stderr, "libbzip2\n"
+		     " (C) 1996-1998 Julian R Seward.  All rights reserved.\n");
 #endif
-		        ZEBRADATE);
         }
         else if (ret == 'v')
             log_init_level (log_mask_str(arg));

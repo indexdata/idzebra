@@ -1,5 +1,5 @@
 # Microsoft Developer Studio Project File - Name="apitest" - Package Owner=<4>
-# Microsoft Developer Studio Generated Build File, Format Version 5.00
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
@@ -22,6 +22,7 @@ CFG=apitest - Win32 Debug
 !MESSAGE 
 
 # Begin Project
+# PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
 CPP=cl.exe
@@ -41,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\include" /I "..\..\yaz\include" /I "..\index" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\include" /I "..\..\yaz\include" /I "..\index" /D "_CONSOLE" /D "_MBCS" /D "WIN32" /D "NDEBUG" /D HAVE_BZLIB_H=1 /YX /FD /c
 # ADD BASE RSC /l 0x406 /d "NDEBUG"
 # ADD RSC /l 0x406 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -49,12 +50,12 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zebra.lib yaz.lib server.lib /nologo /subsystem:console /machine:I386 /libpath:"..\release" /libpath:"..\..\yaz\release" /libpath:"..\..\yaz\server\release"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zebra.lib yaz.lib server.lib libbz2.lib /nologo /subsystem:console /machine:I386 /libpath:"..\release" /libpath:"..\..\yaz\lib" /libpath:"..\..\bzip2-0.9.0c\debug"
 # Begin Special Build Tool
 OutDir=.\Release
 ProjDir=.
 TargetName=apitest
-SOURCE=$(InputPath)
+SOURCE="$(InputPath)"
 PostBuild_Cmds=copy $(OutDir)\$(TargetName).exe $(ProjDir)\..\..\bin
 # End Special Build Tool
 
@@ -69,9 +70,10 @@ PostBuild_Cmds=copy $(OutDir)\$(TargetName).exe $(ProjDir)\..\..\bin
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I "..\include" /I "..\..\yaz\include" /I "..\index" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\include" /I "..\..\yaz\include" /I "..\index" /D "_CONSOLE" /D "_MBCS" /D "WIN32" /D "_DEBUG" /D HAVE_BZLIB_H=1 /YX /FD /c
 # ADD BASE RSC /l 0x406 /d "_DEBUG"
 # ADD RSC /l 0x406 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -79,12 +81,12 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zebra.lib yaz.lib server.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"..\debug" /libpath:"..\..\yaz\debug" /libpath:"..\..\yaz\server\debug"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zebra.lib yaz.lib server.lib libbz2.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"..\debug" /libpath:"..\..\yaz\lib" /libpath:"..\..\bzip2-0.9.0c\debug"
 # Begin Special Build Tool
 OutDir=.\Debug
 ProjDir=.
 TargetName=apitest
-SOURCE=$(InputPath)
+SOURCE="$(InputPath)"
 PostBuild_Cmds=copy $(OutDir)\$(TargetName).exe $(ProjDir)\..\..\bin
 # End Special Build Tool
 

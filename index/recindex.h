@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindex.h,v $
- * Revision 1.15  1999-05-26 07:49:13  adam
+ * Revision 1.16  1999-06-25 13:48:02  adam
+ * Updated MSVC project files.
+ * Added BZIP2 record compression (not very well tested).
+ *
+ * Revision 1.15  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.14  1999/02/02 14:51:04  adam
@@ -76,6 +80,8 @@ typedef struct record_info {
     int newFlag;
     char *info[REC_NO_INFO];
     size_t size[REC_NO_INFO];
+    char buf_size[REC_NO_INFO][6];
+    size_t size_size[REC_NO_INFO];
 } *Record;
 
 typedef struct records_info *Records;
