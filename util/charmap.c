@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: charmap.c,v 1.23 2002-07-25 13:06:44 adam Exp $
+ * $Id: charmap.c,v 1.24 2002-07-26 14:43:09 adam Exp $
  *
  */
 
@@ -379,15 +379,10 @@ static int scan_to_utf8 (iconv_t t, ucs4_t *from, size_t inlen,
         *outbuf++ = *from;  /* ISO-8859-1 is OK here */
     else
     {
-        size_t i;
-        for (i = 0; i<inlen; i++)
-            yaz_log (LOG_LOG, "%08X", from[i]);
         ret = iconv (t, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
         if (ret == (size_t) (-1))
         {
             yaz_log (LOG_WARN|LOG_ERRNO, "bad unicode sequence");
-            for (i = 0; i<inlen; i++)
-                yaz_log (LOG_LOG, "%08X", from[i]);
             return -1;
         }
     }
@@ -418,18 +413,13 @@ static int scan_string(char *s_native,
         if (ret == (size_t)(-1))
             return -1;
         i = (outbuf - (char*) arg)/sizeof(ucs4_t);
-        yaz_log (LOG_LOG, "to unicode");
     }
     else
     { 
         for (i = 0; s_native[i]; i++)
             arg[i] = s_native[i] & 255; /* ISO-8859-1 conversion */
-        yaz_log (LOG_LOG, "to virtual unicode");
     }
     arg[i] = 0;      /* terminate */
-    for (j = 0; j<i; j++)
-        yaz_log (LOG_LOG, " %d %8X %d %c", j, arg[j], arg[j],
-                 (arg[j] > 33 && arg[j] < 127) ? arg[j] : '?');
     if (s[0] == 0xfeff || s[0] == 0xfeff)  /* skip byte Order Mark */
         s++;
     while (*s)
