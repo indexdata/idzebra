@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.9  1995-09-11 13:09:35  adam
+ * Revision 1.10  1995-09-11 15:23:26  adam
+ * More work on relevance search.
+ *
+ * Revision 1.9  1995/09/11  13:09:35  adam
  * More work on relevance feedback.
  *
  * Revision 1.8  1995/09/08  14:52:27  adam
@@ -102,7 +105,7 @@ static RSET rpn_search_APT_relevance (ZServerInfo *zi,
     rset_relevance_parms parms;
 
     parms.key_size = sizeof(struct it_key);
-    parms.max_rec = 100;
+    parms.max_rec = 10;
     parms.cmp = key_compare;
     parms.is = zi->wordIsam;
     split_term (zi, zapt->term, &parms.isam_positions, 

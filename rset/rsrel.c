@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: rsrel.c,v $
- * Revision 1.2  1995-09-11 13:09:41  adam
+ * Revision 1.3  1995-09-11 15:23:40  adam
+ * More work on relevance search.
+ *
+ * Revision 1.2  1995/09/11  13:09:41  adam
  * More work on relevance feedback.
  *
  * Revision 1.1  1995/09/08  14:52:42  adam
@@ -51,8 +54,9 @@ struct rset_rel_info {
     int     max_rec;
     int     no_rec;
     int     (*cmp)(const void *p1, const void *p2);
-    void    *key_buf;
-    int     *score_buf;
+    char    *key_buf;
+    float   *score_buf;
+    int     *sort_idx;
 
     struct rset_rel_rfd *rfd_list;
 };
@@ -62,6 +66,39 @@ struct rset_rel_rfd {
     struct rset_rel_rfd *next;
     struct rset_rel_info *info;
 };
+
+static void add_rec (struct rset_rel_info *info, double score, void *key)
+{
+    int idx, i, j;
+
+    for (i = 0; i<info->no_rec; i++)
+    {
+        idx = info->sort_idx[i];
+        if (score <= info->score_buf[idx])
+            break;
+    }
+    if (i == 0)
+    {
+        if (info->no_rec == info->max_rec)
+            return;
+        for (j = info->no_rec; j > 0; --j)
+            info->sort_idx[j] = info->sort_idx[j-1];
+        idx = info->sort_idx[j] = info->no_rec;
+        ++(info->no_rec);
+    }
+    else
+    {
+        idx = info->sort_idx[0];
+
+        --i;
+        for (j = 0; j < i; ++j)
+            info->sort_idx[j] = info->sort_idx[j+1];
+        info->sort_idx[j] = idx;
+        
+    }
+    memcpy (info->key_buf + idx*info->key_size, key, info->key_size);
+    info->score_buf[idx] = score;
+}
 
 static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
 {
@@ -92,7 +129,7 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
     while (1)
     {
         int min = -1, i;
-        double length, similarity;
+        double length, score;
 
         /* find min with lowest sysno */
         for (i = 0; i<parms->no_isam_positions; i++)
@@ -102,14 +139,12 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
         if (min < 0)
             break;
         memcpy (isam_tmp_buf, isam_buf[min], info->key_size);
-        logf (LOG_LOG, "calc rel for");
-        key_logdump (LOG_LOG, isam_tmp_buf);
         /* calculate for all with those sysno */
         length = 0.0;
         for (i = 0; i<parms->no_isam_positions; i++)
         {
             int r;
-
+            
             if (isam_r[i])
                 r = (*parms->cmp)(isam_buf[i], isam_tmp_buf);
             else 
@@ -125,18 +160,22 @@ static void relevance (struct rset_rel_info *info, rset_relevance_parms *parms)
                     isam_r[i] = is_readkey (isam_pt[i], isam_buf[i]);
                 } while (isam_r[i] && 
                          (*parms->cmp)(isam_buf[i], isam_tmp_buf) <= 1);
-                logf (LOG_DEBUG, "tf%d = %d", i, tf);
                 wgt[i] = 0.5+tf*0.5/max_tf[i];
                 length += wgt[i] * wgt[i];
             }
         }
         /* calculate relevance value */
         length = sqrt (length);
-        similarity = 0.0;
+        score = 0.0;
         for (i = 0; i<parms->no_isam_positions; i++)
-             similarity += wgt[i]/length;
-        logf (LOG_LOG, " %f", similarity);
+            score += wgt[i]/length;
+        if (score > 1.0)
+        {
+            key_logdump (LOG_LOG, isam_tmp_buf);
+            logf (LOG_LOG, " %f", score);
+        }
         /* if value is in the top score, then save it - don't emit yet */
+        add_rec (info, score, isam_tmp_buf);
     }
     for (i = 0; i<parms->no_isam_positions; i++)
     {
@@ -170,6 +209,7 @@ static rset_control *r_create (const struct rset_control *sel, void *parms)
 
     info->key_buf = xmalloc (info->key_size * info->max_rec);
     info->score_buf = xmalloc (sizeof(*info->score_buf) * info->max_rec);
+    info->sort_idx = xmalloc (sizeof(*info->sort_idx) * info->max_rec);
     info->no_rec = 0;
     info->rfd_list = NULL;
 
@@ -190,7 +230,7 @@ static RSFD r_open (rset_control *ct, int wflag)
     rfd = xmalloc (sizeof(*rfd));
     rfd->next = info->rfd_list;
     info->rfd_list = rfd;
-    rfd->position = 0;
+    rfd->position = info->no_rec;
     rfd->info = info;
     return rfd;
 }
@@ -218,13 +258,17 @@ static void r_delete (rset_control *ct)
     assert (info->rfd_list == NULL);
     xfree (info->key_buf);
     xfree (info->score_buf);
+    xfree (info->sort_idx);
     xfree (info);
     xfree (ct);
 }
 
 static void r_rewind (RSFD rfd)
 {
-    ((struct rset_rel_rfd*) rfd)->position = 0;
+    struct rset_rel_rfd *p = rfd;
+    struct rset_rel_info *info = p->info;
+    
+    p->position = info->no_rec;
 }
 
 static int r_count (rset_control *ct)
@@ -239,14 +283,14 @@ static int r_read (RSFD rfd, void *buf)
     struct rset_rel_rfd *p = rfd;
     struct rset_rel_info *info = p->info;
 
-    if (p->position >= info->max_rec)
+    if (p->position <= 0)
         return 0;
-    memcpy ((char*) buf + sizeof(*info->score_buf),
-            (char*) info->key_buf + info->key_size * p->position,
-            info->key_size);
+    --(p->position);
+    logf (LOG_DEBUG, "score: %f",
+          info->score_buf[info->sort_idx[p->position]]);
     memcpy ((char*) buf,
-            info->score_buf + p->position, sizeof(*info->score_buf));
-    ++(p->position);
+            info->key_buf + info->key_size * info->sort_idx[p->position],
+            info->key_size);
     return 1;
 }
 
