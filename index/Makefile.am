@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.13 2002-04-15 09:48:30 adam Exp $
+## $Id: Makefile.am,v 1.14 2002-08-05 14:08:08 adam Exp $
 
 noinst_PROGRAMS = apitest kdump
 
@@ -16,14 +16,8 @@ libzebra_a_LIBADD = \
  ../recctrl/librecctrl.a ../bfile/libbfile.a ../dfa/libdfa.a \
  ../util/libutil.a
 
-if ISZMBOL
-bin_PROGRAMS = zmbolidx zmbolsrv 
-else
 bin_PROGRAMS = zebraidx zebrasrv
-endif
 
-zmbolidx_SOURCES = main.c
-zmbolsrv_SOURCES = zserver.c
 zebraidx_SOURCES = main.c
 zebrasrv_SOURCES = zserver.c
 apitest_SOURCES = apitest.c

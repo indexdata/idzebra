@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.90 2002-08-02 19:26:56 adam Exp $
+/* $Id: zserver.c,v 1.91 2002-08-05 14:08:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -66,13 +66,8 @@ bend_initresult *bend_init (bend_initrequest *q)
     q->bend_fetch = bend_fetch;
     q->bend_scan = bend_scan;
 
-#if ZMBOL
-    q->implementation_name = "Z'mbol Information Server";
-    q->implementation_version = "Z'mbol " ZEBRAVER;
-#else
     q->implementation_name = "Zebra Information Server";
     q->implementation_version = "Zebra " ZEBRAVER;
-#endif
 
     logf (LOG_DEBUG, "bend_init");
 

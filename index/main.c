@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.93 2002-08-02 19:26:55 adam Exp $
+/* $Id: main.c,v 1.94 2002-08-05 14:08:08 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -119,13 +119,8 @@ int main (int argc, char **argv)
             {
                 if (!zs)
                 {
-#if ZMBOL
-                    logf (LOG_LOG, "Z'mbol version %s %s",
-                          ZEBRAVER, ZEBRADATE);
-#else
                     logf (LOG_LOG, "Zebra version %s %s",
                           ZEBRAVER, ZEBRADATE);
-#endif
                     zs = zebra_start (configName ? configName : "zebra.cfg");
                     if (!zs)
                         exit (1);
@@ -213,11 +208,7 @@ int main (int argc, char **argv)
         }
         else if (ret == 'V')
         {
-#if ZMBOL
-            fprintf (stderr, "Z'mbol %s %s\n", ZEBRAVER, ZEBRADATE);
-#else
             fprintf (stderr, "Zebra %s %s\n", ZEBRAVER, ZEBRADATE);
-#endif
 	    fprintf (stderr, " (C) 1994-2002, Index Data ApS\n");
 #ifdef WIN32
 #ifdef _DEBUG

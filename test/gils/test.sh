@@ -1,8 +1,5 @@
 #!/bin/sh
-if [ -x ../../index/zmbolidx ]; then
-	IDX=../../index/zmbolidx
-	SRV=../../index/zmbolsrv
-elif [ -x ../../index/zebraidx ]; then 
+if [ -x ../../index/zebraidx ]; then 
 	IDX=../../index/zebraidx
 	SRV=../../index/zebrasrv
 else
