@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.17 2002-09-03 12:22:21 adam Exp $
+# $Id: makefile,v 1.18 2002-10-22 14:41:29 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -62,6 +62,7 @@ ISAMBDIR=$(SRCDIR)\ISAMB
 RECCTRLDIR=$(SRCDIR)\RECCTRL
 RSETDIR=$(SRCDIR)\RSET
 UTILDIR=$(SRCDIR)\UTIL
+DATA1DIR=$(SRCDIR)\DATA1
 APITESTDIR=$(SRCDIR)\APITEST
 
 # Force temp files in a local temp, easier to clean
@@ -287,7 +288,25 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\extract.obj \
 	$(OBJDIR)\kinput.obj \
 	$(OBJDIR)\rsisams.obj \
-	$(OBJDIR)\trav.obj
+	$(OBJDIR)\trav.obj \
+	$(OBJDIR)\d1_absyn.obj \
+	$(OBJDIR)\d1_attset.obj \
+	$(OBJDIR)\d1_doespec.obj \
+	$(OBJDIR)\d1_espec.obj \
+	$(OBJDIR)\d1_expout.obj \
+	$(OBJDIR)\d1_grs.obj \
+	$(OBJDIR)\d1_handle.obj \
+	$(OBJDIR)\d1_if.obj \
+	$(OBJDIR)\d1_map.obj \
+	$(OBJDIR)\d1_marc.obj \
+	$(OBJDIR)\d1_prtree.obj \
+	$(OBJDIR)\d1_read.obj \
+	$(OBJDIR)\d1_soif.obj \
+	$(OBJDIR)\d1_sumout.obj \
+	$(OBJDIR)\d1_sutrs.obj \
+	$(OBJDIR)\d1_tagset.obj \
+	$(OBJDIR)\d1_varset.obj \
+	$(OBJDIR)\d1_write.obj
 
 ALL_OBJS=\
   $(ZEBRALIB_OBJS) \
@@ -340,6 +359,9 @@ ALL_OBJS=\
 	$(CPP) $(COPT) $< 
 
 {$(UTILDIR)}.c{$(OBJDIR)}.obj:
+	$(CPP) $(COPT) $< 
+
+{$(DATA1DIR)}.c{$(OBJDIR)}.obj:
 	$(CPP) $(COPT) $< 
 
 {$(APITESTDIR)}.c{$(OBJDIR)}.obj:
