@@ -1,5 +1,5 @@
-/* $Id: d1_read.c,v 1.4 2003-05-05 20:13:29 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: d1_read.c,v 1.5 2003-09-08 10:26:51 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -1132,6 +1132,9 @@ void data1_concat_text(data1_handle dh, NMEM m, data1_node *n)
             n->u.data.data = ndata;
             n->u.data.len = sz;
             n->next = np;
+	    if (!np && n->parent)
+		n->parent->last_child = n;
+		
         }
         data1_concat_text(dh, m, n->child);
     }
