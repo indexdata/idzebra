@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.30 2004-11-04 13:54:08 heikki Exp $
+/* $Id: rsisamc.c,v 1.31 2004-11-15 23:09:36 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -75,9 +75,9 @@ RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol, int scope,
         log_level_initialized=1;
     }
     info = (struct rset_isamc_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    info->is=is;
-    info->pos=pos;
-    rnew->priv=info;
+    info->is = is;
+    info->pos = pos;
+    rnew->priv = info;
     logf(log_level, "create: term=%p", term);
     return rnew;
 }
@@ -90,6 +90,7 @@ static void r_delete (RSET ct)
 
 RSFD r_open (RSET ct, int flag)
 {
+    struct rset_isamc_info *info = (struct rset_isamc_info *) ct->priv;
     RSFD rfd;
     struct rset_pp_info *ptinfo;
 
@@ -107,6 +108,7 @@ RSFD r_open (RSET ct, int flag)
         rfd->priv=ptinfo;
         ptinfo->buf = nmem_malloc (ct->nmem,ct->keycontrol->key_size);
     }
+    ptinfo->pt = isc_pp_open(info->is, info->pos);
     return rfd;
 }
 
@@ -114,7 +116,7 @@ static void r_close (RSFD rfd)
 {
     struct rset_pp_info *p=(struct rset_pp_info *)(rfd->priv);
 
-    isc_pp_close (p->pt);
+    isc_pp_close(p->pt);
     rfd_delete_base(rfd);
 }
 
