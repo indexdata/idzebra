@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: kinput.c,v $
- * Revision 1.19  1996-10-29 14:09:46  adam
+ * Revision 1.20  1996-11-01 08:58:41  adam
+ * Interface to isamc system now includes update and delete.
+ *
+ * Revision 1.19  1996/10/29 14:09:46  adam
  * Use of cisam system - enabled if setting isamc is 1.
  *
  * Revision 1.18  1996/06/04 10:18:59  adam
@@ -400,9 +403,7 @@ int heap_cread_item (void *vp, char **dst, int *insertMode)
 int heap_inpc (struct heap_info *hi)
 {
     struct heap_cread_info hci;
-    ISAMC_P isamc_p;
     ISAMC_I isamc_i = xmalloc (sizeof(*isamc_i));
-    void *dict_info;
 
     hci.key = xmalloc (KEY_SIZE);
     hci.mode = 1;
@@ -414,16 +415,33 @@ int heap_inpc (struct heap_info *hi)
 
     while (hci.more)
     {
+        char this_name[INP_NAME_MAX];
+        ISAMC_P isamc_p, isamc_p2;
+        char *dict_info;
+
+        strcpy (this_name, hci.cur_name);
         logf (LOG_DEBUG, "inserting %s", 1+hci.cur_name);
         if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
         {
-            logf (LOG_FATAL, "Cannot merge really yet! %s", hci.cur_name);
-            exit (1);
+            memcpy (&isamc_p, dict_info+1, sizeof(ISAMC_P));
+            isamc_p2 = isc_merge (hi->isamc, isamc_p, isamc_i);
+            if (!isamc_p2)
+            {
+                no_deletions++;
+                if (!dict_delete (hi->dict, this_name))
+                    abort();
+            }
+            else 
+            {
+                no_updates++;
+                if (isamc_p2 != isamc_p)
+                    dict_insert (hi->dict, this_name,
+                                 sizeof(ISAMC_P), &isamc_p2);
+
+            }
         } 
         else
         {
-            char this_name[128];
-            strcpy (this_name, hci.cur_name);
             isamc_p = isc_merge (hi->isamc, 0, isamc_i);
             no_insertions++;
             dict_insert (hi->dict, this_name, sizeof(ISAMC_P), &isamc_p);

@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: trav.c,v $
- * Revision 1.27  1996-10-29 14:06:56  adam
+ * Revision 1.28  1996-11-01 08:58:44  adam
+ * Interface to isamc system now includes update and delete.
+ *
+ * Revision 1.27  1996/10/29 14:06:56  adam
  * Include zebrautl.h instead of alexutil.h.
  *
  * Revision 1.26  1996/06/04 10:19:01  adam
@@ -263,8 +266,8 @@ static void fileUpdateR (struct dirs_info *di, struct dirs_entry *dst,
                     {
                         dirs_add (di, src, dst->sysno, e_src[i_src].mtime);
                     }
-		    logf (LOG_LOG, "old: %s", ctime (&dst->mtime));
-                    logf (LOG_LOG, "new: %s", ctime (&e_src[i_src].mtime));
+		    logf (LOG_DEBUG, "old: %s", ctime (&dst->mtime));
+                    logf (LOG_DEBUG, "new: %s", ctime (&e_src[i_src].mtime));
                 }
                 dst = dirs_read (di);
                 break;
