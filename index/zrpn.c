@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: zrpn.c,v 1.118 2002-08-01 08:53:35 adam Exp $
+ * $Id: zrpn.c,v 1.119 2002-08-02 10:07:48 adam Exp $
  */
 #include <stdio.h>
 #include <assert.h>
@@ -2081,6 +2081,7 @@ static int parse_xpath(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                     if (i)
                         memcpy (p->u.relation.value, cp - i, i);
                     p->u.relation.value[i] = 0;
+                    yaz_log (LOG_LOG, "value=%s", p->u.relation.value);
 
                     cp++;
                 }                           
@@ -2208,28 +2209,6 @@ static RSET rpn_search_xpath (ZebraHandle zh,
             zh->errString = basenames[base_no];
             return rset;
         }
-        if (level > 0 && xpath[level-1].part[0] == '@')
-        {
-            rset_between_parms parms;
-            RSET rset_start_attr, rset_end_attr;
-            --level;
-            rset_start_attr = xpath_trunc(zh, stream, 
-                                          '0', xpath[level].part+1,
-                                          3, curAttributeSet);
-
-            rset_end_attr = xpath_trunc(zh, stream, 
-                                        '0', xpath[level].part+1,
-                                        4, curAttributeSet);
-
-            parms.key_size = sizeof(struct it_key);
-            parms.cmp = key_compare_it;
-            parms.rset_l = rset_start_attr;
-            parms.rset_m = rset;
-            parms.rset_r = rset_end_attr;
-            parms.rset_attr = 0;
-            parms.printer = key_print_it;
-            rset = rset_create (rset_kind_between, &parms);
-        }
         while (--level >= 0)
         {
             char xpath_rev[128];
@@ -2250,6 +2229,13 @@ static RSET rpn_search_xpath (ZebraHandle zh,
                             memcpy (xpath_rev + len, "[^/]*", 5);
                             len += 5;
                         }
+                        else if (*cp == ' ')
+                        {
+
+                            xpath_rev[len++] = 1;
+                            xpath_rev[len++] = ' ';
+                        }
+
                         else
                             xpath_rev[len++] = *cp;
                     xpath_rev[len++] = '/';

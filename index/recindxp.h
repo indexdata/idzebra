@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recindxp.h,v $
- * Revision 1.10  2001-10-15 19:53:43  adam
+ * Revision 1.11  2002-08-02 10:07:48  adam
+ * XPATH fixes - leaf attributes part of tag path
+ *
+ * Revision 1.10  2001/10/15 19:53:43  adam
  * POSIX thread updates. First work on term sets.
  *
  * Revision 1.9  2000/12/05 10:01:44  adam
@@ -53,7 +56,7 @@ YAZ_BEGIN_CDECL
 
 #define REC_BLOCK_TYPES 2
 #define REC_HEAD_MAGIC "recindex"
-#define REC_VERSION 3
+#define REC_VERSION 4
 
 struct records_info {
     int rw;

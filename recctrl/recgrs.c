@@ -2,7 +2,7 @@
  * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Id: recgrs.c,v 1.57 2002-08-01 09:37:44 adam Exp $
+ * $Id: recgrs.c,v 1.58 2002-08-02 10:07:48 adam Exp $
  */
 
 #include <stdio.h>
@@ -175,76 +175,66 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
         else
         {
             data1_xattr *xp;
-            (*p->tokenAdd)(wrd);
-
-#if 0
-            for (xp = n->u.tag.attributes; xp; xp = xp->next)
+            (*p->tokenAdd)(wrd);   /* index element pag (AKA tag path) */
+            if (use == 1)
             {
-                if (use == 1)
-                {   /* attribute  (no value) */
-                    wrd->reg_type = '0';
-                    wrd->attrUse = 3;
-                    wrd->string = xp->name;
-                    wrd->length = strlen(xp->name);
-                    
-                    wrd->seqno--;
-                    (*p->tokenAdd)(wrd);
-                }
-            }                
-#else
-            for (xp = n->u.tag.attributes; xp; xp = xp->next)
-            {
-                char comb[512];
-                
-                if (use == 1)
-                {   /* attribute start */
-                    wrd->reg_type = '0';
-                    wrd->attrUse = 3;
-                    wrd->string = xp->name;
-                    wrd->length = strlen(xp->name);
-                    
-                    wrd->seqno--;
-                    (*p->tokenAdd)(wrd);
-                }
-                
-                if (use == 1 && xp->value &&
-                    strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2)
+                for (xp = n->u.tag.attributes; xp; xp = xp->next)
                 {
-                    /* attribute value exact */
-                    strcpy (comb, xp->name);
-                    strcat (comb, "=");
-                    strcat (comb, xp->value);
-                    
-                    wrd->attrUse = 3;
+                    char comb[512];
+                    /* attribute  (no value) */
                     wrd->reg_type = '0';
-                    wrd->string = comb;
-                    wrd->length = strlen(comb);
-                    wrd->seqno--;
+                    wrd->attrUse = 3;
+                    wrd->string = xp->name;
+                    wrd->length = strlen(xp->name);
                     
+                    wrd->seqno--;
                     (*p->tokenAdd)(wrd);
 
-                    /* attribute value phrase */
+                    if (xp->value &&
+                        strlen(xp->name) + strlen(xp->value) < sizeof(comb)-2)
+                    {
+                        /* attribute value exact */
+                        strcpy (comb, xp->name);
+                        strcat (comb, "=");
+                        strcat (comb, xp->value);
+                        
+                        wrd->attrUse = 3;
+                        wrd->reg_type = '0';
+                        wrd->string = comb;
+                        wrd->length = strlen(comb);
+                        wrd->seqno--;
+                        
+                        (*p->tokenAdd)(wrd);
+                    }
+                }                
+                for (xp = n->u.tag.attributes; xp; xp = xp->next)
+                {
+                    char attr_tag_path_full[1024];
+                    
+                    sprintf (attr_tag_path_full, "@%s/%.*s",
+                             xp->name, flen, tag_path_full);
 
+                    wrd->reg_type = '0';
+                    wrd->attrUse = 1;
+                    wrd->string = attr_tag_path_full;
+                    wrd->length = strlen(attr_tag_path_full);
+                    (*p->tokenAdd)(wrd);
+                    
                     wrd->attrUse = 1015;
                     wrd->reg_type = 'w';
                     wrd->string = xp->value;
                     wrd->length = strlen(xp->value);
-
-                    (*p->tokenAdd)(wrd);
-                }
-                if (use == 2)
-                {
-                    wrd->reg_type = '0';
-                    wrd->attrUse = 4;
-                    wrd->string = xp->name;
-                    wrd->length = strlen(xp->name);
                     
+                    (*p->tokenAdd)(wrd);
+                    
+                    wrd->reg_type = '0';
+                    wrd->attrUse = 2;
+                    wrd->string = attr_tag_path_full;
+                    wrd->length = strlen(attr_tag_path_full);
                     (*p->tokenAdd)(wrd);
                 }
             }
-#endif
         }
-        break;
     }
 }
 
