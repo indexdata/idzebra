@@ -1,6 +1,6 @@
-/* $Id: d1_espec.c,v 1.2.2.2 2004-10-12 16:47:38 quinn Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
-   Index Data Aps
+/* $Id: d1_espec.c,v 1.2.2.3 2005-02-08 00:53:14 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 
@@ -23,10 +23,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <ctype.h>
 
+#include <yaz/log.h>
 #include <yaz/odr.h>
 #include <yaz/proto.h>
-#include <yaz/log.h>
 #include <data1.h>
 
 static Z_Variant *read_variant(int argc, char **argv, NMEM nmem,
@@ -61,10 +62,8 @@ static Z_Variant *read_variant(int argc, char **argv, NMEM nmem,
 	}
 	t = r->triples[i] = (Z_Triple *)nmem_malloc(nmem, sizeof(Z_Triple));
 	t->variantSetId = 0;
-	t->zclass = (int *)nmem_malloc(nmem, sizeof(int));
-	*t->zclass = zclass;
-	t->type = (int *)nmem_malloc(nmem, sizeof(int));
-	*t->type = type;
+	t->zclass = nmem_intdup(nmem, zclass);
+	t->type = nmem_intdup(nmem, type);
 	/*
 	 * This is wrong.. we gotta look up the correct type for the
 	 * variant, I guess... damn this stuff.
@@ -77,16 +76,12 @@ static Z_Variant *read_variant(int argc, char **argv, NMEM nmem,
 	else if (d1_isdigit(*value))
 	{
 	    t->which = Z_Triple_integer;
-	    t->value.integer = (int *)
-		nmem_malloc(nmem, sizeof(*t->value.integer));
-	    *t->value.integer = atoi(value);
+	    t->value.integer = nmem_intdup(nmem, atoi(value));
 	}
 	else
 	{
 	    t->which = Z_Triple_internationalString;
-	    t->value.internationalString = (char *)
-		nmem_malloc(nmem, strlen(value)+1);
-	    strcpy(t->value.internationalString, value);
+	    t->value.internationalString = nmem_strdup(nmem, value);
 	}
     }
     return r;
@@ -103,8 +98,7 @@ static Z_Occurrences *read_occurrences(char *occ, NMEM nmem,
 	op->which = Z_Occurrences_values;
 	op->u.values = (Z_OccurValues *)
 	    nmem_malloc(nmem, sizeof(Z_OccurValues));
-	op->u.values->start = (int *)nmem_malloc(nmem, sizeof(int));
-	*op->u.values->start = 1;
+	op->u.values->start = nmem_intdup(nmem, 1);
 	op->u.values->howMany = 0;
     }
     else if (!strcmp(occ, "all"))
@@ -129,13 +123,9 @@ static Z_Occurrences *read_occurrences(char *occ, NMEM nmem,
 	}
 	op->which = Z_Occurrences_values;
 	op->u.values = ov;
-	ov->start = (int *)nmem_malloc(nmem, sizeof(*ov->start));
-	*ov->start = atoi(occ);
+	ov->start = nmem_intdup(nmem, atoi(occ));
 	if ((p = strchr(occ, '+')))
-	{
-	    ov->howMany = (int *)nmem_malloc(nmem, sizeof(*ov->howMany));
-	    *ov->howMany = atoi(p + 1);
-	}
+	    ov->howMany = nmem_intdup(nmem, atoi(p + 1));
 	else
 	    ov->howMany = 0;
     }
@@ -176,32 +166,48 @@ static Z_ETagUnit *read_tagunit(char *buf, NMEM nmem,
 	{
 	    valp++;
 	    force_string = 1;
+	    if (*valp && valp[strlen(valp)-1] == '\'')
+		*valp = '\0';
 	}
 	u->which = Z_ETagUnit_specificTag;
 	u->u.specificTag = t = (Z_SpecificTag *)nmem_malloc(nmem, sizeof(*t));
-	t->tagType = (int *)nmem_malloc(nmem, sizeof(*t->tagType));
-	*t->tagType = type;
+	t->tagType = nmem_intdup(nmem, type);
 	t->tagValue = (Z_StringOrNumeric *)
 	    nmem_malloc(nmem, sizeof(*t->tagValue));
-	if (!force_string && (numval = atoi(valp)))
+	if (!force_string && isdigit(*(unsigned char *)valp))
 	{
+	    numval = atoi(valp);
 	    t->tagValue->which = Z_StringOrNumeric_numeric;
-	    t->tagValue->u.numeric = (int *)nmem_malloc(nmem, sizeof(int));
-	    *t->tagValue->u.numeric = numval;
+	    t->tagValue->u.numeric = nmem_intdup(nmem, numval);
 	}
 	else
 	{
 	    t->tagValue->which = Z_StringOrNumeric_string;
-	    t->tagValue->u.string = (char *)nmem_malloc(nmem, strlen(valp)+1);
-	    strcpy(t->tagValue->u.string, valp);
+	    t->tagValue->u.string = nmem_strdup(nmem, valp);
 	}
 	if (terms > 2) /* an occurrences-spec exists */
 	    t->occurrences = read_occurrences(occ, nmem, file, lineno);
 	else
 	    t->occurrences = 0;
     }
+    else if ((terms = sscanf(buf, "%511[^)]", value)) >= 1)
+    {
+	Z_SpecificTag *t;
+	char *valp = value;
+
+	u->which = Z_ETagUnit_specificTag;
+	u->u.specificTag = t = (Z_SpecificTag *)nmem_malloc(nmem, sizeof(*t));
+	t->tagType = nmem_intdup(nmem, 3);
+	t->tagValue = (Z_StringOrNumeric *)
+	    nmem_malloc(nmem, sizeof(*t->tagValue));
+	t->tagValue->which = Z_StringOrNumeric_string;
+	t->tagValue->u.string = nmem_strdup(nmem, valp);
+	t->occurrences = read_occurrences("all", nmem, file, lineno);
+    }
     else
+    {
 	return 0;
+    }
     return u;
 }
 
@@ -218,7 +224,6 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
     char *argv[50], line[512];
     Z_Espec1 *res = (Z_Espec1 *)nmem_malloc(nmem, sizeof(*res));
     
-    yaz_log(LOG_DEBUG, "Espec1 reading file '%s'", file);
     if (!(f = data1_path_fopen(dh, file, "r")))
     {
 	yaz_log(LOG_WARN|LOG_ERRNO, "%s", file);
@@ -249,9 +254,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
 		(char **)nmem_malloc(nmem, sizeof(char**)*nnames);
 	    for (i = 0; i < nnames; i++)
 	    {
-		res->elementSetNames[i] = (char *)
-		    nmem_malloc(nmem, strlen(argv[i+1])+1);
-		strcpy(res->elementSetNames[i], argv[i+1]);
+		res->elementSetNames[i] = nmem_strdup(nmem, argv[i+1]);
 	    }
 	    res->num_elementSetNames = nnames;
 	}
@@ -279,8 +282,7 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
 			file, lineno, argv[0]);
 		continue;
 	    }
-	    res->defaultTagType = (int *)nmem_malloc(nmem, sizeof(int));
-	    *res->defaultTagType = atoi(argv[1]);
+	    res->defaultTagType = nmem_intdup(nmem, atoi(argv[1]));
 	}
 	else if (!strcmp(argv[0], "defaultvariantrequest"))
 	{
@@ -301,7 +303,6 @@ Z_Espec1 *data1_read_espec1 (data1_handle dh, const char *file)
 	    char *ep;
 	    int num, i = 0;
 	    
-	    yaz_log(LOG_DEBUG, "Simpleelemnt: '%s'", line);
 	    if (!res->elements)
 		res->elements = (Z_ElementRequest **)
 		    nmem_malloc(nmem, size_esn = 24*sizeof(er));

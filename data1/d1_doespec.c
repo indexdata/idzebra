@@ -1,6 +1,6 @@
-/* $Id: d1_doespec.c,v 1.2.2.1 2005-01-16 23:13:29 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
-   Index Data Aps
+/* $Id: d1_doespec.c,v 1.2.2.2 2005-02-08 00:53:13 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
 This file is part of the Zebra server.
 
@@ -22,15 +22,17 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <assert.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-#include <yaz/oid.h>
 #include <yaz/log.h>
+#include <yaz/oid.h>
 #include <yaz/proto.h>
 #include <data1.h>
 
 static int match_children(data1_handle dh, data1_node *n,
 			  Z_Espec1 *e, int i, Z_ETagUnit **t,
-    int num);
+			  int num,
+			  int select_flag);
 
 static int match_children_wildpath(data1_handle dh, data1_node *n,
 				   Z_Espec1 *e, int i,
@@ -67,7 +69,7 @@ static Z_Triple *find_triple(Z_Variant *var, oid_value universalset,
 }
 
 static void mark_subtree(data1_node *n, int make_variantlist, int no_data,
-    int get_bytes, Z_Variant *vreq)
+			 int get_bytes, Z_Variant *vreq, int select_flag)
 {
     data1_node *c;
 
@@ -83,7 +85,7 @@ static void mark_subtree(data1_node *n, int make_variantlist, int no_data,
      */
 #endif
     {
-	n->u.tag.node_selected = 1;
+	n->u.tag.node_selected = select_flag;
 	n->u.tag.make_variantlist = make_variantlist;
 	n->u.tag.no_data_requested = no_data;
 	n->u.tag.get_bytes = get_bytes;
@@ -94,12 +96,13 @@ static void mark_subtree(data1_node *n, int make_variantlist, int no_data,
 	if (c->which == DATA1N_tag && (!n->child ||
 	    n->child->which != DATA1N_tag))
 	{
-	    c->u.tag.node_selected = 1;
+	    c->u.tag.node_selected = select_flag;
 	    c->u.tag.make_variantlist = make_variantlist;
 	    c->u.tag.no_data_requested = no_data;
 	    c->u.tag.get_bytes = get_bytes;
 	}
-	mark_subtree(c, make_variantlist, no_data, get_bytes, vreq);
+	mark_subtree(c, make_variantlist, no_data, get_bytes, vreq,
+		     select_flag);
     }
 }
 
@@ -146,10 +149,54 @@ static void match_triple (data1_handle dh, Z_Variant *vreq,
 	}
     }
 }
+
+static int match_node_and_attr (data1_node *c, const char *spec)
+{
+
+    char predicate[64];
+    char elem[64];
+    char attr[64];
+    char value[64];
+    char dummy_ch;
+
+    data1_tag *tag = 0;
+    if (c->u.tag.element)
+	tag = c->u.tag.element->tag;
+    
+    *predicate = '\0';
+    sscanf(spec, "%63[^[]%c%63[^]]", elem, &dummy_ch, predicate);
+    if (data1_matchstr(elem, tag ? tag->value.string : c->u.tag.tag))
+	return 0;
+
+    if (*predicate == '\0')
+	return 1;
+    else if (sscanf(predicate, "@%63[^=]=%63s", attr, value) == 2)
+    {
+	data1_xattr *xa;
+	for (xa = c->u.tag.attributes; xa; xa = xa->next)
+	    if (!strcmp(xa->name, attr) &&
+		!strcmp(xa->value, value))
+		return 1;
+	return 0;
+    }
+    else if (sscanf(predicate, "@%63s", attr) == 1)
+    {
+	data1_xattr *xa;
+	for (xa = c->u.tag.attributes; xa; xa = xa->next)
+	    if (!strcmp(xa->name, attr))
+		return 1;
+    }
+    else
+    {
+	yaz_log(LOG_WARN, "Bad simpleelement component: '%s'", spec);
+    }
+    return 0;
+}
 				
 static int match_children_here (data1_handle dh, data1_node *n,
 				Z_Espec1 *e, int i,
-				Z_ETagUnit **t, int num)
+				Z_ETagUnit **t, int num,
+				int select_flag)
 {
     int counter = 0, hits = 0;
     data1_node *c;
@@ -179,19 +226,36 @@ static int match_children_here (data1_handle dh, data1_node *n,
 		if (*want->tagValue->u.numeric != tag->value.numeric)
 		    continue;
 	    }
-	    else
+	    else if (want->tagValue->which == Z_StringOrNumeric_string)
 	    {
-		assert(want->tagValue->which == Z_StringOrNumeric_string);
+		const char *str_val = want->tagValue->u.string;
+		if (str_val[0] == '!')
+		{
+		    str_val++;
+		    select_flag = 0;
+		}
 		if (tag && tag->which != DATA1T_string)
 		    continue;
-		if (data1_matchstr(want->tagValue->u.string,
-		    tag ? tag->value.string : c->u.tag.tag))
+#if 1
+		if (!match_node_and_attr(c, str_val))
 		    continue;
+#else	   
+		if (data1_matchstr(str_val,
+				   tag ? tag->value.string : c->u.tag.tag))
+		    continue;
+#endif
+	    }
+	    else
+	    {
+		yaz_log(LOG_WARN, "Bad SpecificTag type: %d",
+			want->tagValue->which);
+		continue;
 	    }
 	}
-	else
+	else if (tp->which == Z_ETagUnit_wildThing)
 	    occur = tp->u.wildThing;
-
+	else
+	    continue;
 	/*
 	 * Ok, so we have a matching tag. Are we within occurrences-range?
 	 */
@@ -205,9 +269,9 @@ static int match_children_here (data1_handle dh, data1_node *n,
 	    (occur->which == Z_Occurrences_values && counter >=
 	    *occur->u.values->start))
 	{
-	    if (match_children(dh, c, e, i, t + 1, num - 1))
+	    if (match_children(dh, c, e, i, t + 1, num - 1, select_flag))
 	    {
-		c->u.tag.node_selected = 1;
+		c->u.tag.node_selected = select_flag;
 		/*
 		 * Consider the variant specification if this is a complete
 		 * match.
@@ -250,7 +314,8 @@ static int match_children_here (data1_handle dh, data1_node *n,
 			if (!show_variantlist)
 			    match_triple (dh, vreq, defsetval, var1, c);
 		    }
-		    mark_subtree(c, show_variantlist, no_data, get_bytes, vreq);
+		    mark_subtree(c, show_variantlist, no_data, get_bytes, vreq,
+				 select_flag);
 		}
 		hits++;
 		/*
@@ -268,7 +333,7 @@ static int match_children_here (data1_handle dh, data1_node *n,
 }
 
 static int match_children(data1_handle dh, data1_node *n, Z_Espec1 *e,
-			  int i, Z_ETagUnit **t, int num)
+			  int i, Z_ETagUnit **t, int num, int select_flag)
 {
     int res;
 
@@ -278,7 +343,8 @@ static int match_children(data1_handle dh, data1_node *n, Z_Espec1 *e,
     {
     case Z_ETagUnit_wildThing:
     case Z_ETagUnit_specificTag:
-        res = match_children_here(dh, n, e, i, t, num); break;
+        res = match_children_here(dh, n, e, i, t, num, select_flag);
+	break;
     case Z_ETagUnit_wildPath:
         res = match_children_wildpath(dh, n, e, i, t, num); break;
     default:
@@ -301,7 +367,8 @@ int data1_doespec1 (data1_handle dh, data1_node *n, Z_Espec1 *e)
             return 100;
         match_children(dh, n, e, i,
                        e->elements[i]->u.simpleElement->path->tags,
-                       e->elements[i]->u.simpleElement->path->num_tags);
+                       e->elements[i]->u.simpleElement->path->num_tags,
+		       1 /* select (include) by default */ );
     }
     return 0;
 }
