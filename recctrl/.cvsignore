@@ -2,3 +2,4 @@
 Makefile
 Makefile.in
 perlread.h
+xsinit.h
