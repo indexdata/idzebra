@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.133 2003-04-15 20:48:04 adam Exp $
+/* $Id: zrpn.c,v 1.134 2003-09-05 10:51:17 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -912,6 +912,10 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     struct rpn_char_map_info rcmi;
     int space_split = complete_flag ? 0 : 1;
 
+    int bases_ok = 0;     /* no of databases with OK attribute */
+    int errCode = 0;      /* err code (if any is not OK) */
+    char *errString = 0;  /* addinfo */
+
     rpn_char_map_prepare (zh->reg, reg_type, &rcmi);
     attr_init (&use, zapt, 1);
     use_value = attr_find_ex (&use, &curAttributeSet, &use_string);
@@ -963,8 +967,8 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                     /* set was found, but value wasn't defined */
                     char val_str[32];
                     sprintf (val_str, "%d", use_value);
-                    zh->errCode = 114;
-                    zh->errString = nmem_strdup (stream, val_str);
+                    errCode = 114;
+                    errString = nmem_strdup (stream, val_str);
                 }
                 else
                 {
@@ -976,10 +980,10 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                     oident.value = curAttributeSet;
                     oid_ent_to_oid (&oident, oid);
                     
-                    zh->errCode = 121;
-                    zh->errString = nmem_strdup (stream, oident.desc);
+                    errCode = 121;
+                    errString = nmem_strdup (stream, oident.desc);
                 }
-                return -1;
+                continue;
             }
         }
         for (local_attr = attp.local_attributes; local_attr;
@@ -1009,10 +1013,12 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         {
             char val_str[32];
             sprintf (val_str, "%d", use_value);
-            zh->errCode = 114;
-            zh->errString = nmem_strdup (stream, val_str);
-            return -1;
+            errCode = 114;
+            errString = nmem_strdup (stream, val_str);
+	    continue;
         }
+	bases_ok++; /* this has OK attributes */
+
         term_dict[prefix_len++] = ')';
         term_dict[prefix_len++] = 1;
         term_dict[prefix_len++] = reg_type;
@@ -1134,6 +1140,12 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 		logf (LOG_WARN, "dict_lookup_grep err, trunc=*/!: %d", r);
 	    break;
         }
+    }
+    if (!bases_ok)
+    {
+	zh->errCode = errCode;
+	zh->errString = errString;
+	return -1;
     }
     *term_sub = termp;
     logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
@@ -1798,6 +1810,10 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     const char *termp;
     struct rpn_char_map_info rcmi;
 
+    int bases_ok = 0;     /* no of databases with OK attribute */
+    int errCode = 0;      /* err code (if any is not OK) */
+    char *errString = 0;  /* addinfo */
+
     rpn_char_map_prepare (zh->reg, reg_type, &rcmi);
     attr_init (&use, zapt, 1);
     use_value = attr_find_ex (&use, &curAttributeSet, &use_string);
@@ -1838,12 +1854,12 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 		{
                     char val_str[32];
                     sprintf (val_str, "%d", use_value);
-                    zh->errString = nmem_strdup (stream, val_str);
-                    zh->errCode = 114;
+                    errString = nmem_strdup (stream, val_str);
+                    errCode = 114;
 		}
                 else
-                    zh->errCode = 121;
-                return -1;
+                    errCode = 121;
+                continue;
             }
         }
         if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
@@ -1879,10 +1895,11 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         {
             char val_str[32];
             sprintf (val_str, "%d", use_value);
-            zh->errCode = 114;
-            zh->errString = nmem_strdup (stream, val_str);
-            return -1;
+            errCode = 114;
+            errString = nmem_strdup (stream, val_str);
+            continue;
         }
+	bases_ok++;
         term_dict[prefix_len++] = ')';        
         term_dict[prefix_len++] = 1;
         term_dict[prefix_len++] = reg_type;
@@ -1892,6 +1909,12 @@ static int numeric_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			       attributeSet, grep_info, &max_pos, reg_type,
 			       term_dst))
 	    return 0;
+    }
+    if (!bases_ok)
+    {
+	zh->errCode = errCode;
+	zh->errString = errString;
+	return -1;
     }
     *term_sub = termp;
     logf (LOG_DEBUG, "%d positions", grep_info->isam_p_indx);
@@ -2690,6 +2713,10 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     int ords[32], ord_no = 0;
     int ptr[32];
 
+    int bases_ok = 0;     /* no of databases with OK attribute */
+    int errCode = 0;      /* err code (if any is not OK) */
+    char *errString = 0;  /* addinfo */
+
     unsigned reg_id;
     char *search_type = NULL;
     char rank_type[128];
@@ -2758,13 +2785,12 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    {
                 char val_str[32];
                 sprintf (val_str, "%d", use_value);
-                zh->errCode = 114;
-                zh->errString = odr_strdup (stream, val_str);
+                errCode = 114;
+                errString = odr_strdup (stream, val_str);
 	    }	
 	    else
-		zh->errCode = 121;
-	    *num_entries = 0;
-	    return;
+		errCode = 121;
+	    continue;
         }
         if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
         {
@@ -2773,6 +2799,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    *num_entries = 0;
 	    return;
         }
+	bases_ok++;
         for (local_attr = attp.local_attributes; local_attr && ord_no < 32;
              local_attr = local_attr->next)
         {
@@ -2784,10 +2811,20 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                 ords[ord_no++] = ord;
         }
     }
+    if (!bases_ok && errCode)
+    {
+	zh->errCode = errCode;
+	zh->errString = errString;
+	*num_entries = 0;
+    }
     if (ord_no == 0)
     {
+	char val_str[32];
+	sprintf (val_str, "%d", use_value);
+	zh->errCode = 114;
+	zh->errString = odr_strdup (stream, val_str);
+
 	*num_entries = 0;
-        zh->errCode = 113;
 	return;
     }
     /* prepare dictionary scanning */

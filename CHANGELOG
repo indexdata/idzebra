@@ -1,5 +1,11 @@
 
+Zebra ignores "unsupported use attribute" for individual databases
+when search multiple databases (unless all databases fail).
+
 New filter grs.marcxml which works like grs.marc but produces MARCXML.
+
+Added support for database deletion. It is possible to create/drop
+a database from zebraidx utility.
 
 Write zebrasrv.pid to lockdir.
 

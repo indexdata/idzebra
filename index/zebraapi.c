@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.113 2003-08-21 10:30:04 adam Exp $
+/* $Id: zebraapi.c,v 1.114 2003-09-05 10:51:17 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -19,8 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
-
 
 #include <assert.h>
 #include <stdio.h>
@@ -1137,6 +1135,7 @@ static int delete_SU_handle(void *handle, int ord)
 
 int zebra_drop_database  (ZebraHandle zh, const char *database)
 {
+    int ret = 0;
     ASSERTZH;
     yaz_log(LOG_API,"zebra_drop_database");
     zh->errCode = 0;
@@ -1152,8 +1151,13 @@ int zebra_drop_database  (ZebraHandle zh, const char *database)
 	zebraExplain_trav_ord(zh->reg->zei, zh, delete_SU_handle);
 	zebraExplain_removeDatabase(zh->reg->zei, zh);
     }
+    else
+    {
+	yaz_log(LOG_WARN, "drop database only supported for isam:b");
+	ret = -1;
+    }
     zebra_end_trans (zh);
-    return 0;
+    return ret;
 }
 
 int zebra_create_database (ZebraHandle zh, const char *database)
@@ -1260,7 +1264,6 @@ int zebra_end_read (ZebraHandle zh)
 
 int zebra_begin_trans (ZebraHandle zh, int rw)
 {
-    yaz_log(LOG_LOG, "zebra_begin_trans rw=%d trans=%d", rw, zh->trans_no);
     if (!zh->res)
     {
         zh->errCode = 2;
