@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.88 2003-03-04 23:30:20 adam Exp $
+/* $Id: zebraapi.c,v 1.89 2003-03-04 23:48:55 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -1136,8 +1136,14 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         (zh->trans_no++);
         if (zh->trans_w_no)
             return 0;
+        if (zh->trans_no != 1)
+        {
+            zh->errCode = 2;
+            zh->errString = "write trans not allowed within read trans";
+            return -1;
+        }
         zh->trans_w_no = zh->trans_no;
-        
+
         zh->errCode=0;
         
         yaz_log (LOG_LOG, "zebra_begin_trans");
