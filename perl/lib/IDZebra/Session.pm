@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.7 2003-02-28 20:11:20 pop Exp $
+# $Id: Session.pm,v 1.8 2003-03-03 00:45:37 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -7,14 +7,14 @@ package IDZebra::Session;
 use strict;
 use warnings;
 
+
 BEGIN {
     use IDZebra;
+    use Scalar::Util;
     use IDZebra::Logger qw(:flags :calls);
     use IDZebra::Resultset;
-    use Scalar::Util;
-    use Carp;
-    our $VERSION = do { my @r = (q$Revision: 1.7 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
-    our @ISA = qw(IDZebra::Logger);
+    our $VERSION = do { my @r = (q$Revision: 1.8 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+#    our @ISA = qw(IDZebra::Logger);
 }
 
 1;
@@ -94,6 +94,13 @@ sub open {
     return ($self);
 }
 
+sub checkzh {
+    my ($self) = @_;
+    unless (defined($self->{zh})) {
+	croak ("Zebra session is not opened");
+    }
+}
+
 sub close {
     my ($self) = @_;
 
@@ -136,6 +143,7 @@ sub DESTROY {
 # -----------------------------------------------------------------------------
 sub group {
     my ($self,%args) = @_;
+    $self->checkzh;
     if ($#_ > 0) {
 	$self->{rg} = $self->_makeRecordGroup(%args);
 	$self->_selectRecordGroup($self->{rg});
@@ -145,6 +153,7 @@ sub group {
 
 sub selectRecordGroup {
     my ($self, $groupName) = @_;
+    $self->checkzh;
     $self->{rg} = $self->_getRecordGroup($groupName);
     $self->_selectRecordGroup($self->{rg});
 }
@@ -252,6 +261,8 @@ sub _selectRecordGroup {
 sub databases {
     my ($self, @databases) = @_;
 
+    $self->checkzh;
+
     unless ($#_ >0) {
 	return (keys(%{$self->{databases}}));
     }
@@ -314,11 +325,13 @@ sub errAdd {
 # -----------------------------------------------------------------------------
 sub begin_trans {
     my ($self) = @_;
+    $self->checkzh;
     IDZebra::begin_trans($self->{zh});
 }
 
 sub end_trans {
     my ($self) = @_;
+    $self->checkzh;
     my $stat = IDZebra::ZebraTransactionStatus->new();
     IDZebra::end_trans($self->{zh}, $stat);
     return ($stat);
@@ -326,22 +339,26 @@ sub end_trans {
 
 sub begin_read {
     my ($self) =@_;
+    $self->checkzh;
     return(IDZebra::begin_read($self->{zh}));
 }
 
 sub end_read {
     my ($self) =@_;
+    $self->checkzh;
     IDZebra::end_read($self->{zh});
 }
 
 sub shadow_enable {
     my ($self, $value) = @_;
+    $self->checkzh;
     if ($#_ > 0) { IDZebra::set_shadow_enable($self->{zh},$value); }
     return (IDZebra::get_shadow_enable($self->{zh}));
 }
 
 sub commit {
     my ($self) = @_;
+    $self->checkzh;
     if ($self->shadow_enable) {
 	return(IDZebra::commit($self->{zh}));
     }
@@ -363,16 +380,19 @@ sub odr_reset {
 # -----------------------------------------------------------------------------
 sub init {
     my ($self) = @_;
+    $self->checkzh;
     return(IDZebra::init($self->{zh}));
 }
 
 sub compact {
     my ($self) = @_;
+    $self->checkzh;
     return(IDZebra::compact($self->{zh}));
 }
 
 sub update {
     my ($self, %args) = @_;
+    $self->checkzh;
     my $rg = $self->_update_args(%args);
     $self->_selectRecordGroup($rg);
     $self->begin_trans;
@@ -383,6 +403,7 @@ sub update {
 
 sub delete {
     my ($self, %args) = @_;
+    $self->checkzh;
     my $rg = $self->_update_args(%args);
     $self->_selectRecordGroup($rg);
     $self->begin_trans;
@@ -393,6 +414,7 @@ sub delete {
 
 sub show {
     my ($self, %args) = @_;
+    $self->checkzh;
     my $rg = $self->_update_args(%args);
     $self->_selectRecordGroup($rg);
     $self->begin_trans;
@@ -414,12 +436,14 @@ sub _update_args {
 
 sub update_record {
     my ($self, %args) = @_;
+    $self->checkzh;
     return(IDZebra::update_record($self->{zh},
 				  $self->_record_update_args(%args)));
 }
 
 sub delete_record {
     my ($self, %args) = @_;
+    $self->checkzh;
     return(IDZebra::delete_record($self->{zh},
 				  $self->_record_update_args(%args)));
 }
@@ -462,7 +486,6 @@ sub _record_update_args {
 
     $rg->{databaseName} = "Default" unless ($rg->{databaseName});
 
-#    print STDERR "$rectype,$sysno,$match,$fname,$len\n";
     unless ($rectype) {
 	$rectype="";
     }
@@ -495,9 +518,11 @@ sub cql2pqf {
     }
     my $res = "\0" x 2048;
     my $r = IDZebra::cql2pqf($self->{cql_ct}, $cqlquery, $res, 2048);
-    unless ($r) {return (undef)};
+    if ($r) {
+	carp ("Error transforming CQL query: '$cqlquery', status:$r");
+    }
     $res=~s/\0.+$//g;
-    return ($res); 
+    return ($res,$r); 
 }
 
 
@@ -507,6 +532,8 @@ sub cql2pqf {
 sub search {
     my ($self, %args) = @_;
 
+    $self->checkzh;
+
     if ($args{cqlmap}) { $self->cqlmap($args{cqlmap}); }
 
     my $query;
@@ -514,8 +541,11 @@ sub search {
 	$query = $args{pqf};
     }
     elsif ($args{cql}) {
-	unless ($query = $self->cql2pqf($args{cql})) {
-	    croak ("Invalid CQL query: '$args{cql}'");
+	my $cqlstat;
+	($query, $cqlstat) =  $self->cql2pqf($args{cql});
+	unless ($query) {
+	    croak ("Failed to transform query: '$args{cql}', ".
+		   "status: ($cqlstat)");
 	}
     }
     unless ($query) {
@@ -570,6 +600,8 @@ sub _search_pqf {
 
 sub sortResultsets {
     my ($self, $sortspec, $setname, @sets) = @_;
+
+    $self->checkzh;
 
     my @setnames;
     my $count = 0;

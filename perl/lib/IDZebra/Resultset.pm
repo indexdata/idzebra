@@ -1,17 +1,20 @@
-#!/usr/bin/perl
-# ============================================================================
+# $Id: Resultset.pm,v 1.5 2003-03-03 00:45:37 pop Exp $
+# 
 # Zebra perl API header
 # =============================================================================
-use strict;
-use Carp;
-# ============================================================================
 package IDZebra::Resultset;
-use IDZebra;
-use IDZebra::Logger qw(:flags :calls);
-use IDZebra::Repository;
-use Scalar::Util qw(weaken);
 
-our @ISA = qw(IDZebra::Logger);
+use strict;
+use warnings;
+
+BEGIN {
+    use IDZebra;
+    use IDZebra::Logger qw(:flags :calls);
+    use Scalar::Util qw(weaken);
+    use Carp;
+    our $VERSION = do { my @r = (q$Revision: 1.5 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our @ISA = qw(IDZebra::Logger);
+}
 
 1;
 # -----------------------------------------------------------------------------
@@ -21,11 +24,11 @@ sub new {
     my ($proto,$session, %args) = @_;
     my $class = ref($proto) || $proto;
     my $self = {};
+    bless ($self, $class);
+
     $self->{session} = $session;
     weaken ($self->{session});
 
-    # Retrieval object
-    $self->{ro} = IDZebra::RetrievalObj->new();
     $self->{odr_stream} = IDZebra::odr_createmem($IDZebra::ODR_DECODE);
 
     $self->{name}        = $args{name};
@@ -33,14 +36,13 @@ sub new {
     $self->{errCode}     = $args{errCode};
     $self->{errString}   = $args{errString};
 
-    bless ($self, $class);
-
-#    $self->{session}{resultsets}{$args{name}} = $self;
-#    weaken ($self->{session}{resultsets}{$args{name}};
-
     return ($self);
 }
 
+sub recordCount {
+    my ($self) = @_;
+    return ($self->{recordCount});
+}
 sub count {
     my ($self) = @_;
     return ($self->{recordCount});
@@ -68,7 +70,7 @@ sub DESTROY {
 	$self->{odr_stream} = undef;  
     }
 
-    delete($self->{ro});
+#    delete($self->{ro});
 #    delete($self->{session}{resultsets}{$self->{name}});
     delete($self->{session});
 }
