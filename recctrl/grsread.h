@@ -1,35 +1,9 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Log: grsread.h,v $
- * Revision 1.8  1999-11-30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.7  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.6  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.5  1999/02/02 14:51:26  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.4  1997/09/17 12:19:21  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.3  1997/09/04 13:54:40  adam
- * Added MARC filter - type grs.marc.<syntax> where syntax refers
- * to abstract syntax. New method tellf in retrieve/extract method.
- *
- * Revision 1.2  1997/04/30 08:56:08  quinn
- * null
- *
- * Revision 1.1  1996/10/11  10:57:23  adam
- * New module recctrl. Used to manage records (extract/retrieval).
- *
+ * $Id: grsread.h,v 1.9 2002-05-13 14:13:43 adam Exp $
  */
 
 #ifndef GRSREAD_H
@@ -65,6 +39,7 @@ extern RecTypeGrs recTypeGrs_sgml;
 extern RecTypeGrs recTypeGrs_regx;
 extern RecTypeGrs recTypeGrs_tcl;
 extern RecTypeGrs recTypeGrs_marc;
+extern RecTypeGrs recTypeGrs_xml;
 
 #ifdef __cplusplus
 }

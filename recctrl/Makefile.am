@@ -1,7 +1,7 @@
-## $Id: Makefile.am,v 1.2 2000-05-02 11:26:13 adam Exp $
+## $Id: Makefile.am,v 1.3 2002-05-13 14:13:43 adam Exp $
 
 noinst_LIBRARIES = librecctrl.a
 
 librecctrl_a_SOURCES = recctrl.c recgrs.c sgmlread.c regxread.c \
-	marcread.c rectext.c grsread.h recgrs.h rectext.h
+	marcread.c rectext.c grsread.h recgrs.h rectext.h xmlread.c 
 INCLUDES = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE)

@@ -1,242 +1,8 @@
 /*
- * Copyright (C) 1994-2001, Index Data
+ * Copyright (C) 1994-2002, Index Data
  * All rights reserved.
  *
- * $Log: recgrs.c,v $
- * Revision 1.48  2002-05-07 11:05:20  adam
- * data1 updates. Run number fix
- *
- * Revision 1.47  2002/05/03 13:50:25  adam
- * data1 cleanup
- *
- * Revision 1.46  2002/04/13 18:16:43  adam
- * More XPATH work; common sequence numbers for extract keys
- *
- * Revision 1.45  2002/04/12 14:40:42  adam
- * Work on XPATH
- *
- * Revision 1.44  2002/04/11 20:09:47  adam
- * work on string tag indexing
- *
- * Revision 1.43  2002/03/21 23:06:36  adam
- * Source 'tag' in abs-file
- *
- * Revision 1.42  2002/02/20 17:30:01  adam
- * Work on new API. Locking system re-implemented
- *
- * Revision 1.41  2001/05/22 21:01:47  adam
- * Removed print of data1 tree on stdout so that inetd works again.
- *
- * Revision 1.40  2001/03/29 21:31:31  adam
- * Fixed "record begin" for Tcl filter.
- *
- * Revision 1.39  2000/12/05 19:09:15  adam
- * Fixed problem where indexer could crash if abstract syntax was undefined.
- *
- * Revision 1.38  2000/12/05 14:44:58  adam
- * Fixed minor bug that could cause zmbol to break it data were emitted
- * with not parent tags.
- *
- * Revision 1.37  2000/12/05 12:22:53  adam
- * Termlist source implemented (so that we can index values of XML/SGML
- * attributes).
- *
- * Revision 1.36  2000/12/05 10:01:44  adam
- * Fixed bug regarding user-defined attribute sets.
- *
- * Revision 1.35  2000/11/29 15:21:31  adam
- * Fixed problem with passwd db.
- *
- * Revision 1.34  2000/02/25 13:24:49  adam
- * Fixed bug regarding pointer conversion that showed up on OSF V5.
- *
- * Revision 1.33  1999/11/30 13:48:04  adam
- * Improved installation. Updated for inclusion of YAZ header files.
- *
- * Revision 1.32  1999/09/07 07:19:21  adam
- * Work on character mapping. Implemented replace rules.
- *
- * Revision 1.31  1999/07/14 10:56:43  adam
- * Fixed potential memory leak.
- *
- * Revision 1.30  1999/07/06 12:26:41  adam
- * Retrieval handler obeys schema and handles XML transfer syntax.
- *
- * Revision 1.29  1999/05/26 07:49:14  adam
- * C++ compilation.
- *
- * Revision 1.28  1999/05/21 12:00:17  adam
- * Better diagnostics for extraction process.
- *
- * Revision 1.27  1999/05/20 12:57:18  adam
- * Implemented TCL filter. Updated recctrl system.
- *
- * Revision 1.26  1999/03/02 16:15:44  quinn
- * Added "tagsysno" and "tagrank" directives to zebra.cfg.
- *
- * Revision 1.25  1999/02/18 15:01:26  adam
- * Minor changes.
- *
- * Revision 1.24  1999/02/02 14:51:28  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.23  1998/10/18 07:51:10  adam
- * Changed one logf call.
- *
- * Revision 1.22  1998/10/16 08:14:37  adam
- * Updated record control system.
- *
- * Revision 1.21  1998/07/01 09:16:10  adam
- * Element localno only added when it's greater than 0.
- *
- * Revision 1.20  1998/05/20 10:12:26  adam
- * Implemented automatic EXPLAIN database maintenance.
- * Modified Zebra to work with ASN.1 compiled version of YAZ.
- *
- * Revision 1.19  1998/03/11 11:19:05  adam
- * Changed the way sequence numbers are generated.
- *
- * Revision 1.18  1998/03/05 08:41:31  adam
- * Minor changes.
- *
- * Revision 1.17  1998/02/10 12:03:06  adam
- * Implemented Sort.
- *
- * Revision 1.16  1998/01/29 13:38:17  adam
- * Fixed problem with mapping to record with unknown schema.
- *
- * Revision 1.15  1998/01/26 10:37:57  adam
- * Better diagnostics.
- *
- * Revision 1.14  1997/11/06 11:41:01  adam
- * Implemented "begin variant" for the sgml.regx filter.
- *
- * Revision 1.13  1997/10/31 12:35:44  adam
- * Added a few log statements.
- *
- * Revision 1.12  1997/10/29 12:02:22  adam
- * Using oid_ent_to_oid used instead of the non thread-safe oid_getoidbyent.
- *
- * Revision 1.11  1997/10/27 14:34:00  adam
- * Work on generic character mapping depending on "structure" field
- * in abstract syntax file.
- *
- * Revision 1.10  1997/09/18 08:59:21  adam
- * Extra generic handle for the character mapping routines.
- *
- * Revision 1.9  1997/09/17 12:19:21  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.8  1997/09/09 13:38:14  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.7  1997/09/05 15:30:10  adam
- * Changed prototype for chr_map_input - added const.
- * Added support for C++, headers uses extern "C" for public definitions.
- *
- * Revision 1.6  1997/09/04 13:54:40  adam
- * Added MARC filter - type grs.marc.<syntax> where syntax refers
- * to abstract syntax. New method tellf in retrieve/extract method.
- *
- * Revision 1.5  1997/07/15 16:29:03  adam
- * Initialized dummy variable to keep checker gcc happy.
- *
- * Revision 1.4  1997/04/30 08:56:08  quinn
- * null
- *
- * Revision 1.2  1996/10/11  16:06:43  quinn
- * Revision 1.3  1997/02/24 10:41:50  adam
- * Cleanup of code and commented out the "end element-end-record" code.
- *
- * Revision 1.2  1996/10/11 16:06:43  quinn
- * Fixed arguments to nodetogr
- *
- * Revision 1.1  1996/10/11  10:57:25  adam
- * New module recctrl. Used to manage records (extract/retrieval).
- *
- * Revision 1.29  1996/10/08 10:30:21  quinn
- * Fixed type mismatch
- *
- * Revision 1.28  1996/10/07  16:06:40  quinn
- * Added SOIF support
- *
- * Revision 1.27  1996/06/11  10:54:12  quinn
- * Relevance work
- *
- * Revision 1.26  1996/06/06  12:08:45  quinn
- * Added showRecord function
- *
- * Revision 1.25  1996/06/04  14:18:53  quinn
- * Charmap work
- *
- * Revision 1.24  1996/06/04  13:27:54  quinn
- * More work on charmapping
- *
- * Revision 1.23  1996/06/04  10:19:01  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.22  1996/06/03  10:15:27  quinn
- * Various character-mapping.
- *
- * Revision 1.21  1996/05/31  13:27:24  quinn
- * Character-conversion in phrases, too.
- *
- * Revision 1.19  1996/05/16  15:31:14  quinn
- * a7
- *
- * Revision 1.18  1996/05/09  07:28:56  quinn
- * Work towards phrases and multiple registers
- *
- * Revision 1.17  1996/05/01  13:46:37  adam
- * First work on multiple records in one file.
- * New option, -offset, to the "unread" command in the filter module.
- *
- * Revision 1.16  1996/01/17  14:57:54  adam
- * Prototype changed for reader functions in extract/retrieve. File
- *  is identified by 'void *' instead of 'int.
- *
- * Revision 1.15  1996/01/08  19:15:47  adam
- * New input filter that works!
- *
- * Revision 1.14  1995/12/15  12:36:11  adam
- * Retrieval calls data1_read_regx when subType is specified.
- *
- * Revision 1.13  1995/12/15  12:24:43  quinn
- * *** empty log message ***
- *
- * Revision 1.12  1995/12/15  12:20:28  quinn
- * *** empty log message ***
- *
- * Revision 1.11  1995/12/15  12:07:57  quinn
- * Changed extraction strategy.
- *
- * Revision 1.10  1995/12/14  11:10:48  quinn
- * Explain work
- *
- * Revision 1.9  1995/12/13  17:14:05  quinn
- * *** empty log message ***
- *
- * Revision 1.8  1995/12/13  15:33:18  quinn
- * *** empty log message ***
- *
- * Revision 1.7  1995/12/13  13:45:39  quinn
- * Changed data1 to use nmem.
- *
- * Revision 1.6  1995/12/04  14:22:30  adam
- * Extra arg to recType_byName.
- * Started work on new regular expression parsed input to
- * structured records.
- *
- * Revision 1.5  1995/11/28  14:18:37  quinn
- * Set output_format.
- *
- * Revision 1.4  1995/11/21  13:14:49  quinn
- * Fixed end-of-data-field problem (maybe).
- *
- * Revision 1.3  1995/11/15  19:13:09  adam
- * Work on record management.
- *
+ * $Id: recgrs.c,v 1.49 2002-05-13 14:13:43 adam Exp $
  */
 
 #include <stdio.h>
@@ -299,7 +65,7 @@ static int read_grs_type (struct grs_handlers *h,
 
 static void grs_add_handler (struct grs_handlers *h, RecTypeGrs t)
 {
-    struct grs_handler *gh = (struct grs_handler *) malloc (sizeof(*gh));
+    struct grs_handler *gh = (struct grs_handler *) xmalloc (sizeof(*gh));
     gh->next = h->handlers;
     h->handlers = gh;
     gh->initFlag = 0;
@@ -309,7 +75,7 @@ static void grs_add_handler (struct grs_handlers *h, RecTypeGrs t)
 
 static void *grs_init(RecType recType)
 {
-    struct grs_handlers *h = (struct grs_handlers *) malloc (sizeof(*h));
+    struct grs_handlers *h = (struct grs_handlers *) xmalloc (sizeof(*h));
     h->handlers = 0;
 
     grs_add_handler (h, recTypeGrs_sgml);
@@ -318,6 +84,9 @@ static void *grs_init(RecType recType)
     grs_add_handler (h, recTypeGrs_tcl);
 #endif
     grs_add_handler (h, recTypeGrs_marc);
+#if YAZ_HAVE_EXPAT
+    grs_add_handler (h, recTypeGrs_xml);
+#endif
     return h;
 }
 
@@ -330,10 +99,10 @@ static void grs_destroy(void *clientData)
 	gh_next = gh->next;
 	if (gh->initFlag)
 	    (*gh->type->destroy)(gh->clientData);
-	free (gh);
+	xfree (gh);
 	gh = gh_next;
     }
-    free (h);
+    xfree (h);
 }
 
 static void index_xpath (data1_node *n, struct recExtractCtrl *p,

@@ -3,7 +3,7 @@
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
- * $Id: marcread.c,v 1.13 2002-05-03 13:50:25 adam Exp $
+ * $Id: marcread.c,v 1.14 2002-05-13 14:13:43 adam Exp $
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -102,7 +102,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
 
 
         /* generate field node */
-        res = data1_mk_tag_n (p->dh, p->mem, tag, 3, res_root);
+        res = data1_mk_tag_n (p->dh, p->mem, tag, 3, 0 /* attr */, res_root);
 
 #if MARC_DEBUG
         fprintf (outf, "%s ", tag);
@@ -121,7 +121,7 @@ data1_node *grs_read_marc (struct grs_read_info *p)
             int j;
 #endif
             res = data1_mk_tag_n (p->dh, p->mem, 
-                                  buf+i, indicator_length, res);
+                                  buf+i, indicator_length, 0 /* attr */, res);
 #if MARC_DEBUG
             for (j = 0; j<indicator_length; j++)
                 fprintf (outf, "%c", buf[j+i]);
@@ -137,7 +137,8 @@ data1_node *grs_read_marc (struct grs_read_info *p)
             {
 	        data1_node *res =
 		    data1_mk_tag_n (p->dh, p->mem,
-                                    buf+i+1, identifier_length-1, parent);
+                                    buf+i+1, identifier_length-1, 
+                                    0 /* attr */, parent);
 #if MARC_DEBUG
                 fprintf (outf, " $"); 
                 for (j = 1; j<identifier_length; j++)
@@ -167,8 +168,8 @@ data1_node *grs_read_marc (struct grs_read_info *p)
         }
         if (i > i0)
 	{
-	    data1_node *res = data1_mk_tag_n (p->dh, p->mem,
-                                              "@", 1, parent);
+	    data1_node *res = data1_mk_tag (p->dh, p->mem, "@", 0 /* attr */,
+                                            parent);
             data1_mk_text_n (p->dh, p->mem, buf + i0, i - i0, res);
 	}
 #if MARC_DEBUG

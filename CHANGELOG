@@ -1,6 +1,8 @@
 
 --- 1.2.0 2002/MM/DD
 
+XML filter (-t grs.xml).
+
 Multiple registers. New setting in resource 'root' that holds base
 directory for register(s). A group a databases may be put in separate
 register in directory root/reg by using db name 'reg/db1' ... 'reg/dbN'.
