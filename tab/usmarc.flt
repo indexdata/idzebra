@@ -1,0 +1,8 @@
+#
+# Rather dummy input-filter for MARC
+#
+
+BEGIN			{ begin record usmarc }
+/^.../ / / /../ / /     { begin element $0 }
+/\$/ /./ BODY /[$\n]/   { data -element $1 $2; unread 3 }
+/\n/                    { end element }
