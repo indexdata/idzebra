@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.1 2002-10-22 10:47:48 adam Exp $
+ * $Id: testclient.c,v 1.2 2002-10-23 13:25:00 heikki Exp $
  *
  * Synchronous single-target client doing search (but no yet retrieval)
  */
@@ -15,10 +15,11 @@ int main(int argc, char **argv)
     ZOOM_resultset r;
     int error;
     const char *errmsg, *addinfo;
+    int sec;
 
-    if (argc != 3)
+    if ( (argc != 3) && (argc !=4) )
     {
-        fprintf (stderr, "usage:\n%s target query\n", *argv);
+        fprintf (stderr, "usage:\n%s target query [delay]\n", *argv);
         fprintf (stderr, " eg.  bagel.indexdata.dk/gils computer\n");
         exit (1);
     }
@@ -35,6 +36,13 @@ int main(int argc, char **argv)
 	fprintf (stderr, "Error: %s (%d) %s\n", errmsg, error, addinfo);
     else
 	printf ("Result count: %d\n", ZOOM_resultset_size(r));
+    if (argc==4)
+    {
+        sec=atoi(argv[3]);
+	if (sec <= 0)
+	    sec=3;
+	sleep(sec);
+    }
     ZOOM_resultset_destroy (r);
     ZOOM_connection_destroy (z);
     exit (0);
