@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: timing2.sh,v 1.11 2005-01-03 09:19:26 adam Exp $ 
+# $Id: timing2.sh,v 1.12 2005-01-03 12:08:04 adam Exp $ 
 # Demonstrated that updates depend on file timestamps
 
 pp=${srcdir:-"."}
@@ -15,7 +15,7 @@ rm -f $pp/records/esdd000[12].grs # these should not be here, will be created la
 touch timeref1  # make an early timestamp
 
 echo "  starting server..." >>$LOG
-../../index/zebrasrv -D -p z.pid -S -c $pp/zebra2.cfg -l $LOG tcp:@:9901
+../../index/zebrasrv -D -p z.pid -S -c $pp/zebra2.cfg -l $LOG unix:socket
 test -f z.pid || exit 1
 sleep 1
 touch timeref2  # make a later timestamp
@@ -24,7 +24,7 @@ echo "  update 1..." >>$LOG
 ../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update $pp/records || exit 1
 
 echo "  search 1..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 9$" log >/dev/null || exit 1
 
 echo "making a test record..." >>$LOG
@@ -35,7 +35,7 @@ echo "  indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update $pp/records || exit 1
 
 echo "  search 2..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 10$" log >/dev/null || exit 1
 
 echo "  modifying a test record (xyz)..." >>$LOG
@@ -47,7 +47,7 @@ echo "    not indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update $pp/records || exit 1
 
 echo "    search 3..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 echo "    checking..." >>$LOG
 grep "^Result count: 10$" log >/dev/null || exit 1
 
@@ -58,7 +58,7 @@ echo "    indexing it..." >>$LOG
 ../../index/zebraidx -l $LOG -c $pp/zebra2.cfg update $pp/records || exit 1
 
 echo "    search 4..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 echo "    checking..." >>$LOG
 grep "^Result count: 9$" log >/dev/null || exit 1
 

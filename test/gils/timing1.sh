@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: timing1.sh,v 1.11 2005-01-03 09:19:26 adam Exp $
+# $Id: timing1.sh,v 1.12 2005-01-03 12:08:04 adam Exp $
 # tests that updates are reflected immediately # in the registers.
 # Repeatedly modifies a record and counts hits.
 # Test 1: with good sleeps in every between - should pass always
@@ -15,7 +15,7 @@ rm -f $pp/records/esdd000[12].grs # these should not be here, will be created la
 ../../index/zebraidx -c $pp/zebra2.cfg -l $LOG init || exit 1
 
 echo "  starting server..." >>$LOG
-../../index/zebrasrv -D -p z.pid -S -c $pp/zebra2.cfg -l $LOG tcp:@:9901
+../../index/zebrasrv -D -p z.pid -S -c $pp/zebra2.cfg -l $LOG unix:socket
 test -f z.pid || exit 1
 sleep 2
 
@@ -24,7 +24,7 @@ echo "  update 1..." >>$LOG
 sleep 2
 
 echo "  search 1..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 9$" log >/dev/null || exit 1
 sleep 2
 
@@ -36,7 +36,7 @@ echo "  indexing it..." >>$LOG
 sleep 2
 
 echo "  search 2..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 10$" log >/dev/null || exit 1
 
 sleep 2
@@ -49,7 +49,7 @@ echo "    indexing it..." >>$LOG
 
 sleep 2
 echo "    search 3..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 echo "    checking..." >>$LOG
 grep "^Result count: 9$" log >/dev/null || exit 1
 
@@ -63,7 +63,7 @@ echo "    indexing it..." >>$LOG
 
 sleep 2
 echo "    search 4..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 echo "    checking..." >>$LOG
 grep "^Result count: 10$" log >/dev/null || exit 1
 
@@ -77,7 +77,7 @@ echo "    indexing it..." >>$LOG
 
 sleep 2
 echo "    search 5..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 echo "    checking..." >>$LOG
 grep "^Result count: 9$" log >/dev/null || exit 1
 
@@ -92,7 +92,7 @@ echo "    indexing it..." >>$LOG
 
 sleep 2
 echo "    search 6..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 echo "    checking..." >>$LOG
 grep "^Result count: 10$" log >/dev/null || exit 1
 
@@ -108,7 +108,7 @@ echo "    indexing it..." >>$LOG
 
 sleep 2
 echo "    search 7..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 echo "    checking..." >>$LOG
 grep "^Result count: 9$" log >/dev/null || exit 1
 
@@ -122,7 +122,7 @@ echo "    indexing it..." >>$LOG
 
 sleep 2
 echo "    search 8..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 echo "    checking..." >>$LOG
 grep "^Result count: 10$" log >/dev/null || exit 1
 

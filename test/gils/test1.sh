@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test1.sh,v 1.12 2005-01-03 09:19:26 adam Exp $
+# $Id: test1.sh,v 1.13 2005-01-03 12:08:04 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -15,32 +15,32 @@ echo "updating..." >>$LOG
 ../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update $pp/records  || exit 1
 
 echo "starting server..." >>$LOG
-../../index/zebrasrv -D -p z.pid -S -c $pp/zebra1.cfg -l $LOG tcp:@:9901
+../../index/zebrasrv -D -p z.pid -S -c $pp/zebra1.cfg -l $LOG unix:socket
 
 echo "checking it runs..." >>$LOG
 test -f z.pid || exit 1
 
 echo "search 1..." >>$LOG
-../api/testclient localhost:9901 utah > log || exit 1
+../api/testclient unix:socket utah > log || exit 1
 grep "^Result count: 17$" log >/dev/null || exit 1
 
 echo "search 2..." >>$LOG
-../api/testclient localhost:9901 "@or utah the" > log || exit 1
+../api/testclient unix:socket "@or utah the" > log || exit 1
 grep "^Result count: 40$" log >/dev/null || exit 1
 
 echo "search 3..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 the" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 the" > log || exit 1
 grep "^Result count: 1$" log >/dev/null || exit 1
 
 echo "search 4..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 9$" log >/dev/null || exit 1
 
 echo "reindexing..." >>$LOG
 ../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update $pp/records || exit 1
 
 echo "search 5..." >>$LOG
-../api/testclient localhost:9901 "@attr 1=4 utah" > log || exit 1
+../api/testclient unix:socket "@attr 1=4 utah" > log || exit 1
 grep "^Result count: 18$" log >/dev/null || exit 1
 
 echo "stopping server..." >>$LOG

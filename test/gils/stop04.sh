@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: stop04.sh,v 1.9 2005-01-03 09:19:26 adam Exp $
+# $Id: stop04.sh,v 1.10 2005-01-03 12:08:04 adam Exp $
 # test start and stop of the forked server 
 
 pp=${srcdir:-"."}
@@ -15,7 +15,7 @@ mkdir -p reg
 ../../index/zebraidx -l $LOG -c $pp/zebra1.cfg update records  || exit 1
 
 echo "Starting server with (forked)..." >>$LOG
-../../index/zebrasrv -D -p z.pid -c $pp/zebra1.cfg -l $LOG tcp:@:9901 
+../../index/zebrasrv -D -p z.pid -c $pp/zebra1.cfg -l $LOG unix:socket
 
 echo "  checking that it runs... " >>$LOG
 test -f z.pid || exit 1
@@ -23,14 +23,14 @@ PID=`cat z.pid`
 kill -CHLD $PID >/dev/null 2>&1 || exit 1
 
 echo "  connecting to it..." >>$LOG
-../api/testclient localhost:9901 utah >>$LOG || exit 1
+../api/testclient unix:socket utah >>$LOG || exit 1
 sleep 1
 
 echo "  checking that it still runs..." >>$LOG
 kill -CHLD $PID >/dev/null 2>&1 || exit 1
 
 echo "  connecting again, with a delay..." >>$LOG
-../api/testclient localhost:9901 utah 5 >>$LOG
+../api/testclient unix:socket utah 5 >>$LOG
 sleep 1 # let the client connect 
 
 echo "  killing it..." >>$LOG
