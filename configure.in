@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2002
-dnl $Id: configure.in,v 1.33 2002-04-05 08:46:26 adam Exp $
+dnl $Id: configure.in,v 1.34 2002-04-05 19:45:20 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -49,7 +49,10 @@ if test -r ${tclconfig}/tclConfig.sh; then
 	if test -r ${tclconfig}/../generic/tcl.h; then
 		TCL_INCLUDE=-I${tclconfig}/../generic
 		TCL_LIB="$TCL_BUILD_LIB_SPEC $TCL_LIBS"
- 	else
+ 	elif test -d ${TCL_PREFIX}/include/tcl${TCL_VERSION}; then
+		TCL_INCLUDE=-I${TCL_PREFIX}/include/tcl${TCL_VERSION}
+		TCL_LIB="$TCL_LIB_SPEC $TCL_LIBS"
+	else
 		TCL_INCLUDE=-I${TCL_PREFIX}/include
 		TCL_LIB="$TCL_LIB_SPEC $TCL_LIBS"
 	fi
