@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isam.c,v $
- * Revision 1.19  1996-02-10 12:20:56  quinn
+ * Revision 1.20  1996-03-19 13:14:57  quinn
+ * Moved an xfree()
+ *
+ * Revision 1.19  1996/02/10  12:20:56  quinn
  * *** empty log message ***
  *
  * Revision 1.18  1996/02/06  10:19:56  quinn
@@ -360,7 +363,6 @@ int is_close(ISAM is)
 	    bf_close(is->types[i].bf);
 	}
     }
-    xfree(is);
     if (is->writeflag)
     {
 	logf(LOG_LOG, "ISAM statistics:");
@@ -383,6 +385,7 @@ int is_close(ISAM is)
 	logf(LOG_LOG, "block_jumps                 %d", statistics.block_jumps);
 	logf(LOG_LOG, "tab_deletes                 %d", statistics.tab_deletes);
     }
+    xfree(is);
     return 0;
 }
 
