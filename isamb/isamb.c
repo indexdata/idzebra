@@ -1,5 +1,5 @@
-/* $Id: isamb.c,v 1.62 2004-12-13 20:51:31 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: isamb.c,v 1.63 2005-01-02 18:50:53 adam Exp $
+   Copyright (C) 1995-2005
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -205,10 +205,14 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
 	isamb->file[i].head.first_block = ISAMB_CACHE_ENTRY_SIZE/b_size+1;
 	isamb->file[i].head.last_block = isamb->file[i].head.first_block;
 	isamb->file[i].head.block_size = b_size;
+#if ISAMB_PTR_CODEC
 	if (i == isamb->no_cat-1 || b_size > 128)
 	    isamb->file[i].head.block_offset = 8;
 	else
 	    isamb->file[i].head.block_offset = 4;
+#else
+	isamb->file[i].head.block_offset = 11;
+#endif
 	isamb->file[i].head.block_max =
 	    b_size - isamb->file[i].head.block_offset;
 	isamb->file[i].head.free_list = 0;
@@ -1129,6 +1133,8 @@ ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level, int scope)
     ISAMB_PP pp = xmalloc (sizeof(*pp));
     int i;
 
+    assert(pos);
+
     pp->isamb = isamb;
     pp->block = xmalloc (ISAMB_MAX_LEVEL * sizeof(*pp->block));
 
@@ -1152,8 +1158,6 @@ ISAMB_PP isamb_pp_open_x (ISAMB isamb, ISAMB_P pos, int *level, int scope)
         pp->no_blocks++;
         if (p->leaf)
             break;
-
-                                        
         decode_ptr (&src, &pos);
         p->offset = src - p->bytes;
         pp->level++;
