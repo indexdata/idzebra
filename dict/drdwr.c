@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: drdwr.c,v $
- * Revision 1.11  1999-05-15 14:36:37  adam
+ * Revision 1.12  1999-05-18 20:00:33  adam
+ * Minor fix.
+ *
+ * Revision 1.11  1999/05/15 14:36:37  adam
  * Updated dictionary. Implemented "compression" of dictionary.
  *
  * Revision 1.10  1999/02/02 14:50:21  adam
@@ -206,8 +209,6 @@ int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
     bf->misses++;
     p = alloc_block (bf, no);
 
-    //////////////// insert here
-
     if (!bf->compact_flag)
 	i = bf_read (bf->bf, no, 0, 0, p->data);
     else
@@ -219,7 +220,7 @@ int dict_bf_readp (Dict_BFile bf, int no, void **bufp)
 		     bf->block_size - effective_offset, p->data);
 	if (i > 0 && effective_offset > 0)
 	    i = bf_read (bf->bf, effective_block+1, 0, effective_offset,
-			 p->data + bf->block_size - effective_offset);
+			 (char*) p->data + bf->block_size - effective_offset);
 	i = 1;
     }
     if (i > 0)
