@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.9 2002-08-28 08:14:47 mike Exp $ -->
+ <!-- $Id: introduction.xml,v 1.10 2002-08-29 01:15:25 mike Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -52,8 +52,7 @@
   <title>Features</title>
   
   <para>
-   This is an overview of some of the most important features of the
-   system.
+   This is an overview of some of Zebra's most important features:
   </para>
   
   <para>
@@ -61,34 +60,36 @@
 
     <listitem>
      <para>
-      Supports large databases - files for indexes, etc. can be
+      Very large databases: files for indexes, etc. can be
       automatically partitioned over multiple disks.
      </para>
     </listitem>
 
     <listitem>
      <para>
-      Supports arbitrarily complex records - base input format is an
-      SGML-like syntax which allows nested (structured) data elements, as
-      well as variant forms of data.
+      Arbitrarily complex records.  The internal data format
+      is an structured format conceptually similar to XML or GRS-1,
+      which allows nested structured data elements and
+      variant forms of data.
      </para>
     </listitem>
 
     <listitem>
      <para>
-      Robust updating - records can be added and deleted without
-      rebuilding the index from scratch.
+      Robust updating - records can be added and deleted ``on the fly''
+      without rebuilding the index from scratch.
+      Registers can be safely updated even while users are accessing
+      the server.
       The update procedure is tolerant to crashes or hard interrupts
       during register updating - registers can be reconstructed following
       a crash.
-      Registers can be safely updated even while users are accessing
-      the server.
      </para>
     </listitem>
 
     <listitem>
      <para>
-      Supports random storage formats. A system of input filters driven by
+      Configurable to understand many input formats.
+      A system of input filters driven by
       regular expressions allows you to easily process most ASCII-based
       data formats. SGML, XML, ISO2709 (MARC), and raw text are also
       supported.
@@ -97,40 +98,27 @@
 
     <listitem>     
      <para>
-      Supports boolean queries as well as relevance-ranking (free-text)
-      searching. Right truncation and masking in terms are supported, as
-      well as full regular expressions.
+      Searching supports a powerful combination of boolean queries as
+      well as relevance-ranking (free-text) queries.  Truncation,
+      masking, full regular expression matching and "approximate
+      matching" (eg. spelling mistakes) are all supported.
      </para>
     </listitem>
 
     <listitem>
       <para>
-        Can import the data into Zebras own storage, or just refer to
-        external files (good for building indexes of "live"
-	collections).
+	Index-only databases: data can be, and usually is, imported
+        into Zebra's own storage, but Zebra can also refer to
+        external files, building and maintaining indexes of "live"
+	collections.
       </para>
     </listitem>
 
     <listitem>
      <para>
-      Supports multiple concrete syntaxes
-      for record exchange (depending on the configuration): GRS-1, SUTRS,
-      XML, ISO2709 (*MARC). Records can be mapped between record syntaxes
-      and schema on the fly.      
-     </para>
-    </listitem>
-
-    <listitem>     
-     <para>
-      Supports approximate matching in registers (ie. spelling mistakes,
-      etc).
-     </para>
-    </listitem>
-    
-    <listitem>
-     <para>
       Zebra is written in portable C, so it runs on most Unix-like systems 
-      as well as Windows NT - a binary distribution for Windows NT is available.
+      as well as Windows NT.  A binary distribution for Windows NT is
+      available.
      </para>
     </listitem>
     
@@ -146,7 +134,8 @@
    <itemizedlist>
     <listitem>
      <para>
-      Protocol facilities: Init, Search, Retrieve, Delete, Browse and Sort.
+      Protocol facilities: Init, Search, Present (retrieval), Delete,
+      Scan (index browsing) and Sort.
      </para>
     </listitem>
 
@@ -161,6 +150,7 @@
       Named result sets are supported.
      </para>
     </listitem>
+
     <listitem>
      <para>
       Easily configured to support different application profiles, with
@@ -172,16 +162,19 @@
 
     <listitem>
      <para>
-      Complex composition specifications using Espec-1 are partially
-      supported (simple element requests only).
+      Complex composition specifications using Espec-1 (partial support).
+      Element sets are defined using the Espec-1 capability,
+      and are specified in configuration files as simple element
+      requests (and, optionally, variant requests).
      </para>
     </listitem>
 
     <listitem>
      <para>
-      Element Set Names are defined using the Espec-1 capability of the
-      system, and are given in configuration files as simple element
-      requests (and possibly variant requests).
+      Multiple record syntaxes
+      for data retrieval: GRS-1, SUTRS,
+      XML, ISO2709 (MARC), etc. Records can be mapped between record syntaxes
+      and schemas on the fly.      
      </para>
     </listitem>
 
@@ -196,7 +189,8 @@
   <para>
    Zebra has been deployed in numerous applications, in both the
    academic and commercial worlds, in application domains as diverse
-   as bibliographic information, geospatial, ### (Help, guys!)
+   as bibliographic catalogues, geospatial information, structured
+   vocabulary browsing, ### (Help, guys!)
   </para>
   <para>
    Notable applications include the following:
@@ -238,11 +232,11 @@
  </sect1>
 
  <sect1 id="future">
-  <title>Future Work</title>
+  <title>Future Directions</title>
   
   <para>
    These are some of the plans that we have for the software in the near
-   and far future, approximately ordered after their relative importance.
+   and far future, ordered approximately as we expect to work on them.
   </para>
   
   <para>
@@ -266,9 +260,10 @@
 
     <listitem>
      <para>
-       Finalisation, documentation of the Zebra API. Consider
-       exposing the API through SOAP as well (allowing updates,
-       database management).
+       Finalisation and documentation of Zebra's C programming
+       API, allowing updates, database management and other functions
+       not readily expressed in Z39.50.  We will also consider
+       exposing the API through SOAP.
      </para>
     </listitem>
 
@@ -287,7 +282,10 @@
   <para>
    Programmers thrive on user feedback. If you are interested in a
    facility that you don't see mentioned here, or if there's something
-   you think we could do better, please drop us a mail.
+   you think we could do better, please drop us a mail.  Better still,
+   implement it and send us the patches.
+  </para>
+  <para>
    If you think it's all really neat, you're welcome to drop us a line
    saying that, too. You'll find contact info at the end of this file.
   </para>
