@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.53 2002-04-05 08:46:26 adam Exp $
+ * $Id: zebraapi.c,v 1.54 2002-04-05 12:49:51 adam Exp $
  */
 
 #include <assert.h>
@@ -556,7 +556,7 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
 {
     int i;
     const char *cp;
-    size_t len = 0;
+    int len = 0;
     char *new_reg = 0;
     
     if (num_bases < 1)
@@ -595,7 +595,7 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
                 zh->errCode = 23;
                 return -1;
             }
-            if (len != cp - basenames[i] ||
+            if (len != cp1 - basenames[i] ||
                 memcmp (basenames[i], new_reg, len))
             {
                 zh->errCode = 23;
@@ -1152,7 +1152,9 @@ int zebra_commit (ZebraHandle zh)
         zebra_set_state (zh, 'c', seqno);
 
         logf (LOG_LOG, "commit start");
+#ifndef WIN32
         sleep (2);
+#endif
         bf_commitExec (bfs);
 #ifndef WIN32
         sync ();

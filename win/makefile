@@ -1,12 +1,12 @@
 # Z'mbol/Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.9 2002-03-21 10:31:54 adam Exp $
+# $Id: makefile,v 1.10 2002-04-05 12:49:51 adam Exp $
  
 ###########################################################
 ############### Parameters 
 ###########################################################
 
 DEBUG=1   # 0 for release, 1 for debug
-ZMBOL=1
+ZMBOL=0
 
 default: all
 
@@ -182,8 +182,7 @@ ZEBRAIDX_OBJS= \
 APITEST_OBJS= \
 	$(OBJDIR)\apitest.obj
 
-!if $(ZMBOL)
-ZMBOLLIB_OBJS= \
+ZEBRALIB_OBJS= \
 	$(OBJDIR)\isam.obj \
 	$(OBJDIR)\isamc.obj \
 	$(OBJDIR)\isamd.obj \
@@ -192,12 +191,7 @@ ZMBOLLIB_OBJS= \
 	$(OBJDIR)\merge.obj \
 	$(OBJDIR)\merge-d.obj \
 	$(OBJDIR)\physical.obj \
-	$(OBJDIR)\rootblk.obj
-!else
-ZMBOLLIB_OBJS=
-!endif
-ZEBRALIB_OBJS= \
-    $(ZMBOLLIB_OBJS) \
+	$(OBJDIR)\rootblk.obj \
 	$(OBJDIR)\zebra-lock.obj \
 	$(OBJDIR)\attribute.obj \
 	$(OBJDIR)\bfile.obj \
@@ -278,45 +272,44 @@ ALL_OBJS=\
 # source files. Funny way of doing it, but it works.
 
 {$(SRCDIR)}.cpp{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $<
+	$(CPP) $(COPT) $<
 
 {$(SRCDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $<
+	$(CPP) $(COPT) $<
 
 # ZebraLib
 {$(INDEXDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(BFILEDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(DFADIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(DICTDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(ISAMSDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(ISAMDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(ISAMCDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(RECCTRLDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(RSETDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(UTILDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
+	$(CPP) $(COPT) $< 
 
 {$(APITESTDIR)}.c{$(OBJDIR)}.obj:
-	@$(CPP) $(COPT) $< 
-
+	$(CPP) $(COPT) $< 
 
 ###########################################################
 ############### Linking
@@ -378,7 +371,7 @@ clean:
 	-del $(OBJDIR)\*.sbr
 	-del $(BINDIR)\*.exe
 	-del $(TMPDIR)\*.
-	-del $(ZEBRALIB)
+	-del $(LIBDIR)\*.lib
 
 ########### check directories and create if needed
 dirs: $(OBJDIR) $(WINDIR) $(LIBDIR) $(BINDIR) $(TMPDIR)
