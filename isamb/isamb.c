@@ -2,7 +2,7 @@
  *  Copyright (c) 2000-2002, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.15 2002-05-14 21:12:56 adam Exp $
+ *  $Id: isamb.c,v 1.16 2002-05-30 13:22:17 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -203,7 +203,7 @@ int insert_sub (ISAMB b, struct ISAMB_block **p,
 int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
                 int *mode,
                 ISAMC_I stream, struct ISAMB_block **sp,
-                void *split_item, int *split_size)
+                void *split_item, int *split_size, void *last_max_item)
 {
     char *startp = p->bytes;
     char *src = startp;
@@ -240,7 +240,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
         sub_p1 = open_block (b, pos);
         assert (sub_p1);
         more = insert_sub (b, &sub_p1, lookahead_item, mode, stream, &sub_p2, 
-                           sub_item, &sub_size, 0);
+                           sub_item, &sub_size, last_max_item);
     }
     if (sub_p2)
     {
@@ -389,7 +389,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
                     if (lookahead_item && max_item &&
                         (*b->method->compare_item)(max_item, lookahead_item) <= 0)
                     {
-			yaz_log (LOG_LOG, "max_item 1");
+                        /* max_item 1 */
                         lookahead_item = 0;
                     }
                     
@@ -428,7 +428,7 @@ int insert_leaf (ISAMB b, struct ISAMB_block **sp1, void *lookahead_item,
         if (max_item &&
             (*b->method->compare_item)(max_item, lookahead_item) <= 0)
         {
- 	    yaz_log (LOG_LOG, "max_item 2");
+            /* max_item 2 */
             break;
         }
         if (!*lookahead_mode)
@@ -537,7 +537,7 @@ int insert_sub (ISAMB b, struct ISAMB_block **p, void *new_item,
                             sub_size, max_item);
     else
         return insert_int (b, *p, new_item, mode, stream, sp, sub_item,
-                           sub_size);
+                           sub_size, max_item);
 }
 
 int isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I stream)
