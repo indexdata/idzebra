@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2000-2002, Index Data
  * All rights reserved.
- * $Id: isamb.h,v 1.3 2002-04-29 18:03:45 adam Exp $
+ * $Id: isamb.h,v 1.4 2002-07-15 11:50:45 adam Exp $
  */
 
 #ifndef ISAMB_H
@@ -14,7 +14,8 @@ typedef struct ISAMB_s *ISAMB;
 typedef struct ISAMB_PP_s *ISAMB_PP;
 typedef ISAMC_P ISAMB_P;
 
-ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method);
+ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method,
+                  int cache);
 void isamb_close (ISAMB isamb);
 
 ISAMB_P isamb_merge (ISAMB b, ISAMB_P pos, ISAMC_I data);

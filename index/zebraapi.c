@@ -2,7 +2,7 @@
  * Copyright (C) 1995-2002, Index Data
  * All rights reserved.
  *
- * $Id: zebraapi.c,v 1.61 2002-07-03 14:10:12 adam Exp $
+ * $Id: zebraapi.c,v 1.62 2002-07-15 11:50:45 adam Exp $
  */
 
 #include <assert.h>
@@ -260,7 +260,29 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
 	struct ISAMC_M_s isamc_m;
 	
 	if (!(reg->isamb = isamb_open (reg->bfs, "isamb",
-                                       rw, key_isamc_m(res, &isamc_m))))
+                                       rw, key_isamc_m(res, &isamc_m), 0)))
+	{
+	    logf (LOG_WARN, "isamb_open");
+	    return 0;
+	}
+    }
+    if (res_get_match (res, "isam", "bc", ISAM_DEFAULT))
+    {
+	struct ISAMC_M_s isamc_m;
+	
+	if (!(reg->isamb = isamb_open (reg->bfs, "isamb",
+                                       rw, key_isamc_m(res, &isamc_m), 1)))
+	{
+	    logf (LOG_WARN, "isamb_open");
+	    return 0;
+	}
+    }
+    if (res_get_match (res, "isam", "null", ISAM_DEFAULT))
+    {
+	struct ISAMC_M_s isamc_m;
+	
+	if (!(reg->isamb = isamb_open (reg->bfs, "isamb",
+                                       rw, key_isamc_m(res, &isamc_m), -1)))
 	{
 	    logf (LOG_WARN, "isamb_open");
 	    return 0;
