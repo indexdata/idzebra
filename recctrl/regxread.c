@@ -1,5 +1,5 @@
-/* $Id: regxread.c,v 1.46 2002-09-24 19:41:00 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: regxread.c,v 1.47 2003-04-24 19:34:20 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -669,12 +669,17 @@ static void execData (struct lexSpec *spec,
 	return ;
 #if REGX_DEBUG
     if (elen > 40)
-        logf (LOG_LOG, "data (%d bytes) %.15s ... %.*s", elen,
+        logf (LOG_LOG, "data(%d bytes) %.15s ... %.*s", elen,
 	      ebuf, 15, ebuf + elen-15);
+    else if (elen == 1 && ebuf[0] == '\n')
+    {
+        logf (LOG_LOG, "data(new line)");
+        assert(0);
+    }
     else if (elen > 0)
-        logf (LOG_LOG, "data (%d bytes) %.*s", elen, elen, ebuf);
+        logf (LOG_LOG, "data(%d bytes) %.*s", elen, elen, ebuf);
     else 
-        logf (LOG_LOG, "data (%d bytes)", elen);
+        logf (LOG_LOG, "data(%d bytes)", elen);
 #endif
         
     if (spec->d1_level <= 1)
@@ -768,7 +773,7 @@ static void variantBegin (struct lexSpec *spec,
     ttype[type_len] = '\0';
 
 #if REGX_DEBUG 
-    logf (LOG_LOG, "variant begin %s %s (%d)", tclass, ttype,
+    logf (LOG_LOG, "variant begin(%s,%s,%d)", tclass, ttype,
 	  spec->d1_level);
 #endif
 
@@ -793,7 +798,7 @@ static void variantBegin (struct lexSpec *spec,
 	}
 
 #if REGX_DEBUG 
-    logf (LOG_LOG, "variant node (%d)", spec->d1_level);
+    logf (LOG_LOG, "variant node(%d)", spec->d1_level);
 #endif
     parent = spec->d1_stack[spec->d1_level-1];
     res = data1_mk_node2 (spec->dh, spec->m, DATA1N_variant, parent);
@@ -838,7 +843,7 @@ static void tagBegin (struct lexSpec *spec,
 	tagDataRelease (spec);
 
 #if REGX_DEBUG 
-    logf (LOG_LOG, "begin tag %s (%d)", tag, spec->d1_level);
+    logf (LOG_LOG, "begin tag(%.*s, %d)", len, tag, spec->d1_level);
 #endif
 
     spec->d1_stack[spec->d1_level] = data1_mk_tag_n (
@@ -864,7 +869,7 @@ static void tagEnd (struct lexSpec *spec, int min_level,
             break;
     }
 #if REGX_DEBUG
-    logf (LOG_LOG, "end tag (%d)", spec->d1_level);
+    logf (LOG_LOG, "end tag(%d)", spec->d1_level);
 #endif
 }
 

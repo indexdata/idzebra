@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.75 2003-03-08 14:27:58 pop Exp $
+/* $Id: recgrs.c,v 1.76 2003-04-24 19:34:19 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -563,10 +563,10 @@ static void index_termlist (data1_node *par, data1_node *n,
 		       tlist->att->name, tlist->att->value,
 		       tlist->source);
 		printf (" data=\"");
-		for (i = 0; i<wrd->length && i < 8; i++)
+		for (i = 0; i<wrd->length && i < 40; i++)
 		    fputc (wrd->string[i], stdout);
 		fputc ('"', stdout);
-		if (wrd->length > 8)
+		if (wrd->length > 40)
 		    printf (" ...");
 		fputc ('\n', stdout);
 	    }
