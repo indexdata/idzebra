@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.26 1996-05-13 10:20:17 quinn Exp $
+  $Id: zebra.sgml,v 1.27 1996-06-04 08:21:13 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">, <tt><htmlurl url="mailto:info@index.ping.dk" name="info@index.ping.dk"></>
-<date>$Revision: 1.26 $
+<date>$Revision: 1.27 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -49,7 +49,7 @@ mailing-list by sending Email to <tt/zebra-request@index.ping.dk/.
 <sect1>Features
 
 <p>
-This is a listof some of the most important features of the
+This is a list of some of the most important features of the
 system.
 
 <itemize>
@@ -971,7 +971,7 @@ expression is constructed to match the given expression. If
 processor is invoked.
 
 For the <bf/Truncation/ attribute, <bf/No Truncation/ is the default.
-<bf/Left Truncation/ is not supported. <bf/Process #/ is supported, as
+<bf/Left Truncation/ is not supported. <bf/Process &num;/ is supported, as
 is <bf/Regxp-1/. <bf/Regxp-2/ enables the fault-tolerant (fuzzy)
 search. As a default, a single error (deletion, insertion,
 replacement) is accepted when terms are matched against the register
@@ -1905,7 +1905,7 @@ belonging to the Explain schema.
 <sect>License
 
 <p>
-Copyright &copy; 1995, Index Data.
+Copyright &copy; 1995,1996 Index Data.
 
 All rights reserved.
 
