@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc-p.h,v $
- * Revision 1.2  1996-11-01 08:59:13  adam
+ * Revision 1.3  1996-11-04 14:08:55  adam
+ * Optimized free block usage.
+ *
+ * Revision 1.2  1996/11/01 08:59:13  adam
  * First version of isc_merge that supports update/delete.
  *
  * Revision 1.1  1996/10/29 13:40:47  adam
@@ -31,6 +34,9 @@ typedef struct ISAMC_file_s {
     int no_allocated;
     int no_released;
     int no_remap;
+
+    int fc_max;
+    int *fc_list;
 } *ISAMC_file;
 
 struct ISAMC_s {

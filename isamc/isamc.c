@@ -4,10 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: isamc.c,v $
- * Revision 1.4  1996-11-01 13:36:46  adam
+ * Revision 1.5  1996-11-04 14:08:57  adam
+ * Optimized free block usage.
+ *
+ * Revision 1.4  1996/11/01 13:36:46  adam
  * New element, max_blocks_mem, that control how many blocks of max size
  * to store in memory during isc_merge.
- * Function isc_merge now ignoreds delete/update of identical keys and
+ * Function isc_merge now ignores delete/update of identical keys and
  * the proper blocks are then non-dirty and not written in flush_blocks.
  *
  * Revision 1.3  1996/11/01  08:59:14  adam
@@ -33,6 +36,9 @@
 
 #include <log.h>
 #include "isamc-p.h"
+
+static void release_fc (ISAMC is, int cat);
+static void init_fc (ISAMC is, int cat);
 
 ISAMC_M isc_getmethod (void)
 {
@@ -64,7 +70,7 @@ ISAMC isc_open (const char *name, int writeflag, ISAMC_M method)
 {
     ISAMC is;
     ISAMC_filecat filecat;
-    int i;
+    int i, j;
     int max_buf_size = 0;
 
     is = xmalloc (sizeof(*is));
@@ -124,6 +130,8 @@ ISAMC isc_open (const char *name, int writeflag, ISAMC_M method)
         is->files[i].no_allocated = 0;
         is->files[i].no_released = 0;
         is->files[i].no_remap = 0;
+
+        init_fc (is, i);
     }
     return is;
 }
@@ -136,6 +144,7 @@ int isc_close (ISAMC is)
         logf (LOG_LOG, "isc:  writes   reads skipped   alloc released  remap");
     for (i = 0; i<is->no_files; i++)
     {
+        release_fc (is, i);
         assert (is->files[i].bf);
         if (is->files[i].head_is_dirty)
             bf_write (is->files[i].bf, 0, 0, sizeof(ISAMC_head),
@@ -148,6 +157,7 @@ int isc_close (ISAMC is)
                   is->files[i].no_allocated,
                   is->files[i].no_released,
                   is->files[i].no_remap);
+        xfree (is->files[i].fc_list);
         bf_close (is->files[i].bf);
     }
     xfree (is->files);
@@ -184,7 +194,7 @@ int isc_write_dblock (ISAMC is, int cat, int pos, char *src,
     return isc_write_block (is, cat, pos, src - sizeof(int)*2);
 }
 
-int isc_alloc_block (ISAMC is, int cat)
+static int alloc_block (ISAMC is, int cat)
 {
     int block;
     char buf[sizeof(int)];
@@ -198,12 +208,31 @@ int isc_alloc_block (ISAMC is, int cat)
     }
     else
         block = (is->files[cat].head.lastblock)++;
-    if (is->method->debug > 2)
+    return block;
+}
+
+int isc_alloc_block (ISAMC is, int cat)
+{
+    int block = 0;
+
+    if (is->files[cat].fc_list)
+    {
+        int j, nb;
+        for (j = 0; j < is->files[cat].fc_max; j++)
+            if ((nb = is->files[cat].fc_list[j]) && (!block || nb < block))
+            {
+                is->files[cat].fc_list[j] = 0;
+                break;
+            }
+    }
+    if (!block)
+        block = alloc_block (is, cat);
+    if (is->method->debug > 3)
         logf (LOG_LOG, "isc: alloc_block in cat %d: %d", cat, block);
     return block;
 }
 
-void isc_release_block (ISAMC is, int cat, int pos)
+static void release_block (ISAMC is, int cat, int pos)
 {
     char buf[sizeof(int)];
    
@@ -212,8 +241,45 @@ void isc_release_block (ISAMC is, int cat, int pos)
     memcpy (buf, &is->files[cat].head.freelist, sizeof(int));
     is->files[cat].head.freelist = pos;
     bf_write (is->files[cat].bf, pos, 0, sizeof(int), buf);
-    if (is->method->debug > 2)
+}
+
+void isc_release_block (ISAMC is, int cat, int pos)
+{
+    if (is->method->debug > 3)
         logf (LOG_LOG, "isc: release_block in cat %d: %d", cat, pos);
+    if (is->files[cat].fc_list)
+    {
+        int b, j;
+        for (j = 0; j<is->files[cat].fc_max; j++)
+            if (!is->files[cat].fc_list[j])
+            {
+                is->files[cat].fc_list[j] = pos;
+                return;
+            }
+    }
+    release_block (is, cat, pos);
+}
+
+static void init_fc (ISAMC is, int cat)
+{
+    int j = 100;
+        
+    is->files[cat].fc_max = j;
+    is->files[cat].fc_list = xmalloc (sizeof(*is->files[0].fc_list) * j);
+    while (--j >= 0)
+        is->files[cat].fc_list[j] = 0;
+}
+
+static void release_fc (ISAMC is, int cat)
+{
+    int b, j = is->files[cat].fc_max;
+
+    while (--j >= 0)
+        if ((b = is->files[cat].fc_list[j]))
+        {
+            release_block (is, cat, b);
+            is->files[cat].fc_list[j] = 0;
+        }
 }
 
 void isc_pp_close (ISAMC_PP pp)

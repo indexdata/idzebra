@@ -4,10 +4,13 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: merge.c,v $
- * Revision 1.2  1996-11-01 13:36:46  adam
+ * Revision 1.3  1996-11-04 14:08:59  adam
+ * Optimized free block usage.
+ *
+ * Revision 1.2  1996/11/01 13:36:46  adam
  * New element, max_blocks_mem, that control how many blocks of max size
  * to store in memory during isc_merge.
- * Function isc_merge now ignoreds delete/update of identical keys and
+ * Function isc_merge now ignores delete/update of identical keys and
  * the proper blocks are then non-dirty and not written in flush_blocks.
  *
  * Revision 1.1  1996/11/01  08:59:15  adam
@@ -173,7 +176,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                 i_item_ptr = i_item;
                 i_more = (*data->read_item)(data->clientData, &i_item_ptr,
                                            &i_mode);
-                /* it next input item the same as current except
+                /* is next input item the same as current except
                    for the delete flag? */
                 cmp = (*is->method->compare_item)(i_item, f_item);
                 if (!cmp && i_mode)
@@ -246,7 +249,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I data)
                                      &r_out_ptr, &r_item);
             new_offset = r_out_ptr - r_buf; 
 
-            if (border >= r_offset && border < new_offset)
+            if (border < new_offset && border >= r_offset)
             {
                 if (is->method->debug > 2)
                     logf (LOG_LOG, "isc: border %d %d", ptr, border);
