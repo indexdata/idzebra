@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1996, Index Data I/S 
+ * Copyright (C) 1994-1997, Index Data I/S 
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.3  1996-05-22 08:21:59  adam
+ * Revision 1.4  1997-09-25 14:57:08  adam
+ * Added string.h.
+ *
+ * Revision 1.3  1996/05/22 08:21:59  adam
  * Added public ZebDatabaseInfo structure.
  *
  * Revision 1.2  1996/05/14 06:16:41  adam
@@ -17,6 +20,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include "zinfo.h"
 
