@@ -1,5 +1,5 @@
 dnl Zebra, Index Data Aps, 1994-2000
-dnl $Id: configure.in,v 1.22 2000-07-07 12:49:20 adam Exp $
+dnl $Id: configure.in,v 1.23 2000-10-11 12:31:27 adam Exp $
 dnl
 AC_INIT(include/zebraver.h)
 AC_MSG_CHECKING(for package)
@@ -10,6 +10,7 @@ if test -r ${srcdir}/LICENSE.zmbol; then
 	AM_INIT_AUTOMAKE(zmbol,1.1)
         SUBLIBS="../rset/librset.a \
  ../dict/libdict.a \
+ ../isamb/libisamb.a \
  ../isams/libisams.a \
  ../isam/libisam.a \
  ../isamc/libisamc.a \
@@ -34,6 +35,10 @@ else
 		mkdir ${srcdir}/isamc
 		touch ${srcdir}/isamc/Makefile.in
 	fi
+	if test ! -r ${srcdir}/isamb; then
+		mkdir ${srcdir}/isamb
+		touch ${srcdir}/isamb/Makefile.in
+	fi
 fi
 AM_CONDITIONAL(ISZMBOL,test $PACKAGE = zmbol)
 dnl ------ Substitutions
@@ -41,8 +46,6 @@ AC_SUBST(SUBLIBS)
 AC_SUBST(DEFS)
 AC_SUBST(TCL_INCLUDE)
 AC_SUBST(TCL_LIB)
-AC_SUBST(YAZLIB)
-AC_SUBST(YAZINC)
 AC_SUBST(PROGPREFIX)
 dnl
 dnl ------ Checking programs
@@ -50,36 +53,9 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
-dnl
-dnl ------ Look for Yaz
-dnl See if user specified location of yaz-config; otherwise
-dnl use ../yaz if is a directory (internal development); otherwise
-dnl use yaz-config found in PATH.
-yazconfig=NONE
-yazpath=NONE
-AC_ARG_WITH(yazconfig, [  --with-yazconfig=DIR    yaz-config in DIR (example /home/yaz-1.5)], [yazpath=$withval])
-if test "x$yazpath" != "xNONE"; then
-	yazconfig=$yazpath/yaz-config
-else
-	for i in ../yaz* ../yaz; do
-		if test -d $i; then
-			if test -r $i/yaz-config; then
-				yazconfig=$i/yaz-config
-			fi
-		fi
-	done
-	if test "x$yazconfig" = "xNONE"; then
-		AC_PATH_PROG(yazconfig, yaz-config, NONE)
-	fi
-fi
-AC_MSG_CHECKING(for YAZ)
-if test -r $yazconfig; then
-	. $yazconfig
-	AC_MSG_RESULT($yazconfig)
-else
-	AC_MSG_RESULT(Not found)
-fi
-dnl
+
+YAZ_INIT
+
 dnl ------ Threads
 AC_ARG_ENABLE(threads, [  --disable-threads       disable threads],[enable_threads=$enableval],[enable_threads=yes])
 if test "$enable_threads" = "yes"; then
@@ -181,6 +157,7 @@ AC_OUTPUT([
   bfile/Makefile
   dfa/Makefile
   dict/Makefile
+  isamb/Makefile
   isams/Makefile
   isamc/Makefile
   isam/Makefile

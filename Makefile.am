@@ -1,11 +1,11 @@
-## $Id: Makefile.am,v 1.2 2000-04-06 09:03:27 adam Exp $
+## $Id: Makefile.am,v 1.3 2000-10-11 12:31:27 adam Exp $
 
 AUTOMAKE_OPTIONS=foreign
 
 EXTRA_DIST= README CHANGELOG 
 
 if ISZMBOL
-SUBDIRS=util bfile dfa dict isams isamc isam rset recctrl tab index test
+SUBDIRS=util bfile dfa dict isams isamb isamc isam rset recctrl tab index test
 else
 SUBDIRS=util bfile dfa dict isams rset recctrl tab index test
 endif
