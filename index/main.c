@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: main.c,v $
- * Revision 1.45  1996-11-08 11:10:26  adam
+ * Revision 1.46  1997-02-10 10:20:13  adam
+ * Flag fileVerboseFlag set to 0 (default).
+ *
+ * Revision 1.45  1996/11/08 11:10:26  adam
  * Buffers used during file match got bigger.
  * Compressed ISAM support everywhere.
  * Bug fixes regarding masking characters in queries.
@@ -202,7 +205,7 @@ int main (int argc, char **argv)
     rGroupDef.flagStoreData = -1;
     rGroupDef.flagStoreKeys = -1;
     rGroupDef.flagShowRecords = 0;
-    rGroupDef.fileVerboseFlag = 1;
+    rGroupDef.fileVerboseFlag = 0;
 
     prog = *argv;
     if (argc < 2)
@@ -400,6 +403,7 @@ int main (int argc, char **argv)
 	else if (ret == 's')
 	{
 	    rGroupDef.flagShowRecords = 1;
+            rGroupDef.fileVerboseFlag = 1;
 	}
         else if (ret == 'g')
         {
