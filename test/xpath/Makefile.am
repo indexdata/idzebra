@@ -1,16 +1,17 @@
-# $Id: Makefile.am,v 1.10 2004-12-02 14:05:04 adam Exp $
+# $Id: Makefile.am,v 1.11 2004-12-15 13:07:07 adam Exp $
 
-check_PROGRAMS = xpath1 xpath2 xpath3 xpath4 xpath5
+check_PROGRAMS = xpath1 xpath2 xpath3 xpath4 xpath5 xpath6
 
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST=zebraxpath.cfg
+EXTRA_DIST=zebra.cfg rec1.xml rec2.xml assembled.abs
 
 xpath1_SOURCES = xpath1.c
 xpath2_SOURCES = xpath2.c
 xpath3_SOURCES = xpath3.c
 xpath4_SOURCES = xpath4.c
 xpath5_SOURCES = xpath5.c
+xpath6_SOURCES = xpath6.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include $(YAZINC)
 

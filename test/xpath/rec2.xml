@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembled org="0">
+  <cwd>KBA/oldkba/CAS/367-93-1</cwd>
+  <orgs>
+    <org>0</org>
+    <org>1</org>
+    <org>147</org>
+    <org>41</org>
+    <org>46</org>
+    <org>86</org>
+  </orgs>
+  <basic>
+    <names org="0">
+      <title>ISOPROPYL-β-D-THIOGALACTOPYRANOSID- DIOXAN FRI</title>
+      <CASno>367-93-1</CASno>
+      <synonyms>
+    <synonym>IPTG</synonym>
+  </synonyms>
+    </names>
+    <searchmodified>20010918</searchmodified>
+    <register creator="autoconv" lastmodifier="autoconv" modifier="autoconv" release_dan="2003-09-19" release_eng="" public="0" status="0" lastmodified="2001-09-18">
+  <robotinfo indextype="1" selfcontained="1" class="kba"/>
+  <searchprelastmodified>20010918</searchprelastmodified>
+  
+  <kbandoc>
+    <daop navn="Dato oprettet">20010918</daop>
+    <dare navn="Dato rettet">20000407</dare>
+    <dafr navn="Det originale filnavn">367931</dafr>
+    <casn navn="CAS nummer">367-93-1</casn>
+    <titl navn="Titel">ISOPROPYL-β-D-THIOGALACTOPYRANOSID- DIOXAN
+      FRI</titl>
+    <tial navn="Titel">IPTG</tial>
+    <orga navn="Originaltekst A">
+        <p>pr.nr.:</p>
+        <p>bruttoformel: C
+        <sub>9</sub>
+        H
+        <sub>18</sub>
+        O
+        <sub>5</sub>
+        S</p>
+        <p>molvægt: 238,3</p>
+        <p>kogepunkt:</p>
+        <p>smeltepunkt: ca 110°C</p>
+        <p>massefylde:</p>
+      </orga>
+    <orgb navn="Originaltekst B">
+        <p align="center"> </p>
+      </orgb>
+    <orgc navn="Originaltekst C">
+        <p>
+          <font face="Arial,Univers">Der foreligger ikke information, der
+          gør det muligt at klassificere dette stof.</font>
+        </p>
+      </orgc>
+    <orgd navn="Originaltekst D">
+      <center>
+        <font size="5" face="Arial,Univers ">Data til brug ved substitution
+        m.m.</font>
+      </center>
+      <br/>
+      <table border="1" cellspacing="3" width="100%">
+        <tr>
+          <td align="center" valign="top">
+            <p align="center">
+              <font size="3" face="Arial,Univers ">
+                <font face="Arial,Univers"> GRÆNSE-</font>
+              </font>
+            </p>
+            <p align="center">VÆRDI </p>
+          </td>
+          <td valign="top">
+            <p align="center">
+              <font face="Arial,Univers">FLAMME-</font>
+            </p>
+            <p align="center">PUNKT</p>
+          </td>
+          <td valign="top">
+            <p align="center">
+              <font face="Arial,Univers">EKSPLO-</font>
+            </p>
+            <p align="center">SIONS-</p>
+            <p align="center">GRÆNSE</p>
+          </td>
+          <td valign="top">
+            <p align="center">
+              <font face="Arial,Univers">DAMPTRYK</font>
+            </p>
+            <p align="center">
+              <font face="Arial,Univers">mmHg</font>
+            </p>
+          </td>
+          <td valign="top">
+            <p align="center">
+              <font face="Arial,Univers">FORDAMP-</font>
+            </p>
+            <p align="center">NINGS-</p>
+            <p align="center">HASTIGHED</p>
+          </td>
+          <td valign="top">
+            <p align="center">
+              <font face="Arial,Univers">VHI</font>
+            </p>
+            <p align="center">
+              <font face="Arial,Univers">(VHR)</font>
+            </p>
+          </td>
+          <td valign="top">
+            <p align="center">
+              <font face="Arial,Univers">LOG.</font>
+            </p>
+            <p align="center">
+              <font face="Arial,Univers">OCTANOL:</font>
+            </p>
+            <p align="center">
+              <font face="Arial,Univers">VAND</font>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td align="center" width="32%" valign="top">
+            <p align="center">
+              <font face="Arial,Univers">-</font>
+            </p>
+          </td>
+          <td width="12%" valign="top">
+            <p align="center">
+              <font face="Arial,Univers"> </font>
+            </p>
+          </td>
+          <td width="12%" valign="top">
+            <p align="center">
+              <font face="Arial,Univers"> </font>
+            </p>
+          </td>
+          <td width="12%" valign="top">
+            <p align="center">
+              <font face="Arial,Univers"> </font>
+            </p>
+          </td>
+          <td width="12%" valign="top">
+            <p align="center">
+              <font face="Arial,Univers"> </font>
+            </p>
+          </td>
+          <td width="12%" valign="top">
+            <p align="center">
+              <font face="Arial,Univers"> </font>
+            </p>
+          </td>
+          <td width="13%" valign="top">
+            <p align="center">
+              <font face="Arial,Univers">-1,25</font>
+            </p>
+          </td>
+        </tr>
+      </table>
+      <br/>
+      </orgd>
+    <orge navn="Originaltekst E">
+        <table border="1" cellspacing="3" bordercolor="#000000" width="100%">
+          <tr>
+            <td width="50%" valign="top">
+              <font face="Arial,Univers" size="4">Særlig
+              advarsel</font>
+            </td>
+            <td>
+              <p>
+                <font face="Arial,Univers" size="4">Supplerende
+                information </font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="50%" valign="top">
+              <p>
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="50%" valign="top">
+              <p>
+                <font face="Arial,Univers">Ved indhold af 1,4-dioxan CAS nr
+                123-91-1 se brugsanvisning for dette stof.</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top" colspan="8">
+            </td>
+          </tr>
+        </table>
+        <br/>
+        <table border="1" cellspacing="3" bordercolor="#000000" cellpadding="6" width="100%">
+          <tr>
+            <td valign="top" colspan="8">
+              <p>
+                <font face="Arial,Univers" size="4">SUNDHEDSFARLIGE
+                EGENSKABER: SAMMENFATNING AF AFSNIT B.</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="37%" valign="top" colspan="3">
+              <p>
+                <font face="Arial,Univers">LANGTIDSVIRKNINGER VED
+                UDSÆTTELSE</font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers">
+                  <font size="3">Nej</font>
+                </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers">Mistænkt</font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers">Ja</font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers">Modstridende</font>
+              </p>
+              <p align="center">
+                <font face="Arial,Univers">oplysninger</font>
+              </p>
+            </td>
+            <td width="13%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers">Ingen</font>
+              </p>
+              <p align="center">
+                <font face="Arial,Univers">dokumentation</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="37%" valign="top" colspan="3">
+              <p>
+                <font face="Arial,Univers">
+                  <font face="Arial,Univers">Kræftfremkaldende</font>
+                </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers">
+                  <font face="Arial,Univers"> </font>
+                </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="13%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> X</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="37%" valign="top" colspan="3">
+              <p>
+                <font face="Arial,Univers">
+                  <font face="Arial,Univers">Skade på
+                  kønsorganer, æg, sæd, foster</font>
+                </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers">
+                  <font face="Arial,Univers"> </font>
+                </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="13%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> X</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="37%" valign="top" colspan="3">
+              <p>
+                <font face="Arial,Univers">Skade på arveanlæg
+                (mutagent)</font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="13%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> X</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="37%" valign="top" colspan="3">
+              <p>
+                <font face="Arial,Univers">Hudsygdomme bl.a. allergi</font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="13%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> X</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="37%" valign="top" colspan="3">
+              <p>
+                <font face="Arial,Univers">Allergisk astma</font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="13%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> X</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="37%" valign="top" colspan="3">
+              <p>
+                <font face="Arial,Univers">Skade på
+                nervesystemet</font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="13%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> X</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="37%" valign="top" colspan="3">
+              <p>
+                <font face="Arial,Univers">Organskade: lunger, lever,
+                nyrer</font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="13%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> X</font>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td width="37%" valign="top" colspan="3">
+              <p>
+                <font face="Arial,Univers">Øvrige skader:</font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="12%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> </font>
+              </p>
+            </td>
+            <td width="13%" valign="top">
+              <p align="center">
+                <font face="Arial,Univers"> X</font>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </orge>
+    <orgf navn="Originaltekst F">
+        <afsnit>
+<h2 class="sectionheading">A: Anvendelsesområde/begrænsning</h2>
+          <font size="3">
+            <br/>
+          </font>
+          <p>
+            <font size="3">
+              <b>Information om lokal praksis - skal udfyldes af
+              instituttet/afdelingen:</b>
+            </font>
+          </p>
+        </afsnit>
+      </orgf>
+    <orgg navn="Originaltekst G">
+<h2 class="sectionheading">B: Sundhedsfarlige egenskaber</h2>
+      <font size="3">
+        <br/>
+      </font>
+      <p>
+        <font size="3">Der foreligger stærkt begrænset viden om
+        dette stofs virkninger.</font>
+      </p>
+      <br/>
+      <p>Stoffet kan optages gennem hud, lunger og mavetarmkanal.</p>
+      <p>
+        <b>Indånding</b>
+      </p>
+      <p>
+      <i>Akut forgiftning:</i>
+        Evt. irritation af slimhinderne i de øvre luftveje (SAF).</p>
+      <p>
+      <b>
+        <i>Langtidsvirkninger:</i>
+      </b>
+       Der foreligger ingen information.</p>
+      <p>
+        <b>Hud</b>
+      </p>
+      <p>Evt.irritation.</p>
+      <p>
+      <b>
+        <i>Langtidsvirkninger:</i>
+      </b>
+       Der foreligger ingen information.</p>
+      <p>
+        <b>Øjne</b>
+      </p>
+      <p>Evt. irritation.</p>
+      <p>
+        <b>Indtagelse</b>
+      </p>
+      </orgg>
+    <orgh navn="Originaltekst H">
+        <afsnit>
+<h2 class="sectionheading">C: Forholdsregler ved brug</h2>
+        <font size="3">
+          <br/>
+        </font>
+        <p>
+          <font size="3">Sørg for effektiv procesventilation f.eks
+          stinkskab. Brug engangshandsker ved uundgåelig kontakt med
+          stoffet. Vær opmærksom på gennembrudstid, søg
+          oplysning hos handskeleverandør.</font>
+        </p>
+        <br/>
+        <p>Der skal være let adgang til nødbruser,
+        øjenskylleflaske og håndvask med sæbe.</p>
+        <br/>
+        <p>Der mangler viden om stoffets langtidsvirkninger,
+        tilrettelæg derfor arbejdet så kontakt med stoffet
+        undgås.</p>
+        <br/>
+        <p>Benyttede glasvarer, apparatur og lign. skylles omhyggeligt,
+        inden det stilles til opvask.</p>
+        <br/>
+        <p>
+          <b>Information om lokal praksis - skal udfyldes af
+          instituttet/afdelingen:</b>
+        </p>
+        </afsnit>
+      </orgh>
+    <orgi navn="Originaltekst I">
+        <afsnit>
+<h2 class="sectionheading">D: Beskrivelse af stoffet/produktet</h2>
+          <font size="3">
+            <br/>
+          </font>
+          <p>
+            <font size="3">Fast stof. Der foreligger ikke information om
+            opløselighed.</font>
+          </p>
+          <p>Kan indeholde op til 5% vand (Aldrich).</p>
+          <p>
+          <b>
+            <i>Uforligelighed:</i>
+          </b>
+           Der foreligger ingen information.</p>
+          <p>
+          <b>
+            <i>Miljøforhold:</i>
+          </b>
+           Der er ikke fundet nogen data om stoffets nedbrydning og det
+          må derfor anses for ikke at være let nedbrydeligt.</p>
+          <p>Anses ikke for bioakkumulerende.</p>
+          <br/>
+          <p>
+            <b>Instituttets/afdelingens supplerende oplysninger:</b>
+          </p>
+        </afsnit>
+      </orgi>
+    <orgj navn="Originaltekst J">
+<h2 class="sectionheading">E: Opvarmning og brand</h2>
+        <font size="3">
+          <br/>
+        </font>
+        <p>
+          <font size="3">
+          <b>Brand:</b>
+           Der kan dannes giftige gasser af bl.a. kulmonoxid og
+          svovloxider.</font>
+        </p>
+        <p>
+        <b>Slukning:</b>
+         Vandtåge, kuldioxid, pulverslukker (SA).</p>
+        <p>Vær dog opmærksom på, at pulver kan skade
+        apparatur.</p>
+        <br/>
+      </orgj>
+    <orgk navn="Originaltekst K">
+        <afsnit>
+<h2 class="sectionheading">F: Forholdsregler ved spild og bortskaffelse</h2>
+        <font size="3">
+          <br/>
+        </font>
+        <p>
+          <font size="3">Begræns støvudvikling. Hold uvedkommende
+          på afstand og informer ved øget risiko for
+          påvirkning.</font>
+        </p>
+        <p>Undgå kontakt med stoffet. Anvend evt handsker og
+        åndedrætsværn med kombinationsfilter (Type
+        ABEK-P).</p>
+        <p>Tør op evt. med fugtig klud. Klud og spild bortskaffes som
+        kemikalieaffald i veltillukket beholder. Rengør området
+        efter opsamling af spild.</p>
+        <p>Informér de Kommunale myndigheder og institutionens
+        miljøansvarlige ved større udslip til omgivelserne.</p>
+        <br/>
+        <div class="affaldsgruppeline">Affaldsgruppe: B Klasse,
+        klassifikationskode: - UN nr: -</div>
+        <br/>
+        </afsnit>
+      </orgk>
+    <orgl navn="Originaltekst L">
+<h2 class="sectionheading">G: Første hjælp</h2>
+        <font size="3">
+          <br/>
+        </font>
+        <p>
+          <font size="3">
+          <b>Indånding:</b>
+           Personen bringes i frisk luft, holdes i ro og under opsyn. Ved
+          risiko for bevidstløshed lejres personen i aflåst
+          sideleje og holdes varm. Ved manglende vejrtrækning gives
+          kunstigt åndedræt.</font>
+        </p>
+        <p>
+        <b>Hud:</b>
+         Skyl længe og grundigt med vand, fjern forurenet tøj og
+        evt. smykker.</p>
+        <p>
+        <b>Øjne:</b>
+         Skyl straks med vand. Spil øjet grundigt op. Fjern
+        kontaktlinser. Fortsæt skylningen indtil læge overtager
+        behandlingen.</p>
+        <p>
+        <b>Indtagelse:</b>
+         Skyl straks munden og drik vand eller mælk. Giv ikke
+        væske til bevidstløse. Fremkald ikke opkastning.</p>
+        <p>Ved vedvarende gener søg skadestue og medbring denne
+        brugsanvisning.</p>
+        <br/>
+      </orgl>
+    <orgm navn="Originaltekst M">
+        <afsnit>
+<h2 class="sectionheading">H: Sikkerhedsforskrifter ved oplagring</h2>
+        <font size="3">
+          <br/>
+        </font>
+        <p>
+          <font size="3">Stoffet skal opbevares tæt tillukket på
+          et køligt, tørt sted.</font>
+        </p>
+        <p>
+          <b>Information om lokal praksis - skal udfyldes af
+          instituttet/afdelingen:</b>
+        </p>
+        <br/>
+        </afsnit>
+      </orgm>
+    <rdcsynonyms>
+        <rdcsynonym>IPTG</rdcsynonym>
+      </rdcsynonyms>
+  </kbandoc>
+</register>
+  </basic>
+  <notes>
+    <note org="46">
+      <producer>Pharmacia</producer>
+    </note>
+  </notes>
+  <holdings>
+    <holding org="41">
+      <kvantum>0,001 kg</kvantum>
+      <building>24.5.33</building>
+      <room>Køleskab</room>
+      <place>Xn</place>
+    </holding>
+    <holding org="46">
+      <kvantum>10 g</kvantum>
+      <building>24.2.35</building>
+      <room>Kølerum</room>
+      <place>Ej oplyst</place>
+    </holding>
+    <holding org="86">
+      <kvantum>10g</kvantum>
+      <building>teilum, 6. sal</building>
+    </holding>
+    <holding org="147">
+      <kvantum>2g</kvantum>
+      <building>4.2.15</building>
+      <room>Freezer</room>
+      <place>T</place>
+    </holding>
+    <holding org="147">
+      <kvantum>5g</kvantum>
+      <building>4.2.11</building>
+      <room>-20C freezer 1</room>
+      <place>T R45</place>
+    </holding>
+  </holdings>
+</assembled>

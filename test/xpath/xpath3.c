@@ -1,5 +1,5 @@
 
-/* $Id: xpath3.c,v 1.1 2004-12-02 14:05:04 adam Exp $
+/* $Id: xpath3.c,v 1.2 2004-12-15 13:07:07 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -38,7 +38,7 @@ const char *myrec[] = {
 
 int main(int argc, char **argv)
 {
-    ZebraService zs = start_up("zebraxpath.cfg", argc, argv);
+    ZebraService zs = start_up(0, argc, argv);
     ZebraHandle zh = zebra_open(zs);
     init_data(zh, myrec);
 

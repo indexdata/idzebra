@@ -1,4 +1,4 @@
-/* $Id: xpath1.c,v 1.1 2004-12-02 14:05:04 adam Exp $
+/* $Id: xpath1.c,v 1.2 2004-12-15 13:07:07 adam Exp $
    Copyright (C) 2003,2004
    Index Data Aps
 
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
         "</sgml> \n",
         0};
 
-    zs = start_up("zebraxpath.cfg", argc, argv);
+    zs = start_up(0, argc, argv);
     zh = zebra_open(zs);
     init_data(zh, myrec);
 
