@@ -48,14 +48,15 @@ package IDZebra;
 *errCode = *IDZebrac::errCode;
 *errString = *IDZebrac::errString;
 *errAdd = *IDZebrac::errAdd;
-*describe_recordGroup = *IDZebrac::describe_recordGroup;
 *init_recordGroup = *IDZebrac::init_recordGroup;
 *res_get_recordGroup = *IDZebrac::res_get_recordGroup;
 *set_group = *IDZebrac::set_group;
-*select_databases = *IDZebrac::select_databases;
 *select_database = *IDZebrac::select_database;
+*select_databases = *IDZebrac::select_databases;
 *begin_trans = *IDZebrac::begin_trans;
 *end_trans = *IDZebrac::end_trans;
+*begin_read = *IDZebrac::begin_read;
+*end_read = *IDZebrac::end_read;
 *commit = *IDZebrac::commit;
 *get_shadow_enable = *IDZebrac::get_shadow_enable;
 *set_shadow_enable = *IDZebrac::set_shadow_enable;
@@ -66,11 +67,10 @@ package IDZebra;
 *repository_show = *IDZebrac::repository_show;
 *update_record = *IDZebrac::update_record;
 *delete_record = *IDZebrac::delete_record;
-*begin_read = *IDZebrac::begin_read;
-*end_read = *IDZebrac::end_read;
 *search_PQF = *IDZebrac::search_PQF;
-*admin_start = *IDZebrac::admin_start;
-*admin_shutdown = *IDZebrac::admin_shutdown;
+*records_retrieve = *IDZebrac::records_retrieve;
+*record_retrieve = *IDZebrac::record_retrieve;
+*sort = *IDZebrac::sort;
 *nmem_create = *IDZebrac::nmem_create;
 *nmem_destroy = *IDZebrac::nmem_destroy;
 *data1_create = *IDZebrac::data1_create;
@@ -206,6 +206,227 @@ sub DESTROY {
     delete $ITERATORS{$self};
     if (exists $OWNER{$self}) {
         IDZebrac::delete_recordGroup($self);
+        delete $OWNER{$self};
+    }
+}
+
+sub DISOWN {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    delete $OWNER{$ptr};
+    };
+
+sub ACQUIRE {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    $OWNER{$ptr} = 1;
+    };
+
+sub FETCH {
+    my ($self,$field) = @_;
+    my $member_func = "swig_${field}_get";
+    my $val = $self->$member_func();
+    if (exists $BLESSEDMEMBERS{$field}) {
+        return undef if (!defined($val));
+        my %retval;
+        tie %retval,$BLESSEDMEMBERS{$field},$val;
+        return bless \%retval, $BLESSEDMEMBERS{$field};
+    }
+    return $val;
+}
+
+sub STORE {
+    my ($self,$field,$newval) = @_;
+    my $member_func = "swig_${field}_set";
+    if (exists $BLESSEDMEMBERS{$field}) {
+        $self->$member_func(tied(%{$newval}));
+    } else {
+        $self->$member_func($newval);
+    }
+}
+
+
+############# Class : IDZebra::RetrievalObj ##############
+
+package IDZebra::RetrievalObj;
+@ISA = qw( IDZebra );
+%OWNER = ();
+%BLESSEDMEMBERS = (
+);
+
+%ITERATORS = ();
+*swig_noOfRecords_get = *IDZebrac::RetrievalObj_noOfRecords_get;
+*swig_noOfRecords_set = *IDZebrac::RetrievalObj_noOfRecords_set;
+*swig_records_get = *IDZebrac::RetrievalObj_records_get;
+*swig_records_set = *IDZebrac::RetrievalObj_records_set;
+sub new {
+    my $pkg = shift;
+    my @args = @_;
+    my $self = IDZebrac::new_RetrievalObj(@args);
+    return undef if (!defined($self));
+    $OWNER{$self} = 1;
+    my %retval;
+    tie %retval, "IDZebra::RetrievalObj", $self;
+    return bless \%retval, $pkg;
+}
+
+sub DESTROY {
+    return unless $_[0]->isa('HASH');
+    my $self = tied(%{$_[0]});
+    return unless defined $self;
+    delete $ITERATORS{$self};
+    if (exists $OWNER{$self}) {
+        IDZebrac::delete_RetrievalObj($self);
+        delete $OWNER{$self};
+    }
+}
+
+sub DISOWN {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    delete $OWNER{$ptr};
+    };
+
+sub ACQUIRE {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    $OWNER{$ptr} = 1;
+    };
+
+sub FETCH {
+    my ($self,$field) = @_;
+    my $member_func = "swig_${field}_get";
+    my $val = $self->$member_func();
+    if (exists $BLESSEDMEMBERS{$field}) {
+        return undef if (!defined($val));
+        my %retval;
+        tie %retval,$BLESSEDMEMBERS{$field},$val;
+        return bless \%retval, $BLESSEDMEMBERS{$field};
+    }
+    return $val;
+}
+
+sub STORE {
+    my ($self,$field,$newval) = @_;
+    my $member_func = "swig_${field}_set";
+    if (exists $BLESSEDMEMBERS{$field}) {
+        $self->$member_func(tied(%{$newval}));
+    } else {
+        $self->$member_func($newval);
+    }
+}
+
+
+############# Class : IDZebra::RetrievalRecord ##############
+
+package IDZebra::RetrievalRecord;
+@ISA = qw( IDZebra );
+%OWNER = ();
+%BLESSEDMEMBERS = (
+);
+
+%ITERATORS = ();
+*swig_errCode_get = *IDZebrac::RetrievalRecord_errCode_get;
+*swig_errCode_set = *IDZebrac::RetrievalRecord_errCode_set;
+*swig_errString_get = *IDZebrac::RetrievalRecord_errString_get;
+*swig_errString_set = *IDZebrac::RetrievalRecord_errString_set;
+*swig_position_get = *IDZebrac::RetrievalRecord_position_get;
+*swig_position_set = *IDZebrac::RetrievalRecord_position_set;
+*swig_base_get = *IDZebrac::RetrievalRecord_base_get;
+*swig_base_set = *IDZebrac::RetrievalRecord_base_set;
+*swig_format_get = *IDZebrac::RetrievalRecord_format_get;
+*swig_format_set = *IDZebrac::RetrievalRecord_format_set;
+*swig_buf_get = *IDZebrac::RetrievalRecord_buf_get;
+*swig_buf_set = *IDZebrac::RetrievalRecord_buf_set;
+sub new {
+    my $pkg = shift;
+    my @args = @_;
+    my $self = IDZebrac::new_RetrievalRecord(@args);
+    return undef if (!defined($self));
+    $OWNER{$self} = 1;
+    my %retval;
+    tie %retval, "IDZebra::RetrievalRecord", $self;
+    return bless \%retval, $pkg;
+}
+
+sub DESTROY {
+    return unless $_[0]->isa('HASH');
+    my $self = tied(%{$_[0]});
+    return unless defined $self;
+    delete $ITERATORS{$self};
+    if (exists $OWNER{$self}) {
+        IDZebrac::delete_RetrievalRecord($self);
+        delete $OWNER{$self};
+    }
+}
+
+sub DISOWN {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    delete $OWNER{$ptr};
+    };
+
+sub ACQUIRE {
+    my $self = shift;
+    my $ptr = tied(%$self);
+    $OWNER{$ptr} = 1;
+    };
+
+sub FETCH {
+    my ($self,$field) = @_;
+    my $member_func = "swig_${field}_get";
+    my $val = $self->$member_func();
+    if (exists $BLESSEDMEMBERS{$field}) {
+        return undef if (!defined($val));
+        my %retval;
+        tie %retval,$BLESSEDMEMBERS{$field},$val;
+        return bless \%retval, $BLESSEDMEMBERS{$field};
+    }
+    return $val;
+}
+
+sub STORE {
+    my ($self,$field,$newval) = @_;
+    my $member_func = "swig_${field}_set";
+    if (exists $BLESSEDMEMBERS{$field}) {
+        $self->$member_func(tied(%{$newval}));
+    } else {
+        $self->$member_func($newval);
+    }
+}
+
+
+############# Class : IDZebra::ScanEntry ##############
+
+package IDZebra::ScanEntry;
+@ISA = qw( IDZebra );
+%OWNER = ();
+%BLESSEDMEMBERS = (
+);
+
+%ITERATORS = ();
+*swig_occurrences_get = *IDZebrac::ScanEntry_occurrences_get;
+*swig_occurrences_set = *IDZebrac::ScanEntry_occurrences_set;
+*swig_term_get = *IDZebrac::ScanEntry_term_get;
+*swig_term_set = *IDZebrac::ScanEntry_term_set;
+sub new {
+    my $pkg = shift;
+    my @args = @_;
+    my $self = IDZebrac::new_ScanEntry(@args);
+    return undef if (!defined($self));
+    $OWNER{$self} = 1;
+    my %retval;
+    tie %retval, "IDZebra::ScanEntry", $self;
+    return bless \%retval, $pkg;
+}
+
+sub DESTROY {
+    return unless $_[0]->isa('HASH');
+    my $self = tied(%{$_[0]});
+    return unless defined $self;
+    delete $ITERATORS{$self};
+    if (exists $OWNER{$self}) {
+        IDZebrac::delete_ScanEntry($self);
         delete $OWNER{$self};
     }
 }
