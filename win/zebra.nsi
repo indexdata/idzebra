@@ -1,6 +1,8 @@
-; $Id: zebra.nsi,v 1.20 2004-03-29 15:48:14 adam Exp $
+; $Id: zebra.nsi,v 1.21 2004-08-06 09:38:23 adam Exp $
 
-!define VERSION "1.3.16"
+!define VERSION "1.4.0"
+
+!include "MUI.nsh"
 
 Name "Zebra"
 Caption "Index Data Zebra ${VERSION} Setup"
@@ -13,19 +15,32 @@ ComponentText "This will install Zebra on your computer:"
 InstType "Full (w/ Source)"
 InstType "Lite (w/o Source)"
 
-; Some default compiler settings (uncomment and change at will):
-; SetCompress auto ; (can be off or force)
-; SetDatablockOptimize on ; (can be off)
-; CRCCheck on ; (can be off)
-; AutoCloseWindow false ; (can be true for the window go away automatically at end)
-; ShowInstDetails hide ; (can be show to have them shown, or nevershow to disable)
-; SetDateSave off ; (can be on to have files restored to their orginal date)
-
 InstallDir "$PROGRAMFILES\Zebra"
 InstallDirRegKey HKLM "SOFTWARE\Index Data\Zebra" ""
-DirShow show ; (make this hide to not let the user change it)
-DirText "Select the directory to install Zebra in:"
 
+;--------------------------------
+; Pages
+
+  !insertmacro MUI_PAGE_LICENSE "license.txt"
+  !insertmacro MUI_PAGE_COMPONENTS
+  !insertmacro MUI_PAGE_DIRECTORY
+  !insertmacro MUI_PAGE_INSTFILES
+  
+  !insertmacro MUI_UNPAGE_CONFIRM
+  !insertmacro MUI_UNPAGE_INSTFILES
+; Page components
+; Page directory
+; Page instfiles
+
+; UninstPage uninstConfirm
+; UninstPage instfiles
+
+;--------------------------------
+;Languages
+ 
+!insertmacro MUI_LANGUAGE "English"
+
+;--------------------------------
 Section "" ; (default section)
 	SetOutPath "$INSTDIR"
 	; add files / whatever that need to be installed here.
