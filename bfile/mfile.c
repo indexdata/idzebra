@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.51 2003-03-25 23:47:23 adam Exp $
+/* $Id: mfile.c,v 1.52 2003-04-05 12:32:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -162,10 +162,13 @@ static int file_position(MFile mf, int pos, int offset)
     	     return -1;
         }
     }
-    if (mfile_seek(mf->files[c].fd, (ps = pos - off) * mf->blocksize + offset,
+    ps = pos - off;
+    if (mfile_seek(mf->files[c].fd, ps * (mfile_off_t) mf->blocksize + offset,
     	SEEK_SET) < 0)
     {
     	logf (LOG_WARN|LOG_ERRNO, "Failed to seek in %s", mf->files[c].path);
+        logf(LOG_WARN, "pos=%d off=%d blocksize=%d offset=%d",
+                       pos, off, mf->blocksize, offset);
     	return -1;
     }
     mf->cur_file = c;
