@@ -4,7 +4,11 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: recctrl.h,v $
- * Revision 1.11  1995-12-04 14:20:54  adam
+ * Revision 1.12  1996-01-17 15:01:25  adam
+ * Prototype changed for reader functions in extract/retrieve. File
+ *  is identified by 'void *' instead of 'int'.
+ *
+ * Revision 1.11  1995/12/04  14:20:54  adam
  * Extra arg to recType_byName.
  *
  * Revision 1.10  1995/10/16  14:03:06  quinn
@@ -64,8 +68,8 @@ typedef struct {
 
 /* Extract record control */
 struct recExtractCtrl {
-    int       fd;                     /* File descriptor and read function */
-    int       (*readf)(int fd, char *buf, size_t count);
+    void      *fh;                    /* File handle and read function */
+    int       (*readf)(void *fh, char *buf, size_t count);
     char      *subType;
     void      (*init)(RecWord *p);
     void      (*add)(const RecWord *p);
@@ -75,8 +79,8 @@ struct recExtractCtrl {
 struct recRetrieveCtrl {
     /* Input parameters ... */
     ODR       odr;                    /* ODR used to create response */
-    int       fd;                     /* File descriptor and read function */
-    int       (*readf)(int fd, char *buf, size_t count);
+    void     *fh;                     /* File descriptor and read function */
+    int       (*readf)(void *fh, char *buf, size_t count);
     oid_value input_format;           /* Preferred record syntax */
     Z_RecordComposition *comp;         /* formatting instructions */
     int       localno;                /* local id of record */
