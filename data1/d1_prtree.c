@@ -1,5 +1,5 @@
-/* $Id: d1_prtree.c,v 1.2 2002-10-22 13:19:50 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
+/* $Id: d1_prtree.c,v 1.3 2003-09-08 10:26:26 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -122,6 +122,12 @@ static void pr_tree (data1_handle dh, data1_node *n, FILE *out, int level)
 	pr_tree (dh, n->child, out, level+4);
     if (n->next)
 	pr_tree (dh, n->next, out, level);
+    else
+    {
+	if (n->parent && n->parent->last_child != n)
+	    fprintf(out, "%*sWARNING: last_child=%p != %p\n", level, "",
+		    n->parent->last_child, n);
+    }
 }
 
 
