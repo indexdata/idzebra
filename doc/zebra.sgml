@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.7 1995-11-28 16:47:24 adam Exp $
+  $Id: zebra.sgml,v 1.8 1995-11-28 16:56:26 quinn Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author>Index Data, <tt/info@index.ping.dk/
-<date>$Revision: 1.7 $
+<date>$Revision: 1.8 $
 <abstract>
 The Zebra information server combines a versatile fielded/free-text
 search engine with a Z39.50-1995 frontend to provide a powerful and flexible
@@ -47,6 +47,9 @@ You should read <it/Specifying and Using Application (Database)
 Profiles/, which is bundled with the YAZ documentation, to learn how
 records are formatted, and how you can configure Zebra to handle
 different types of Z39.50 application profiles.
+
+If you are interested in using the software, you should join the support
+mailing-list by sending Email to <tt/zebra-request@index.ping.dk/.
 
 <sect1>Features
 
