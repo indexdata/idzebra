@@ -1,11 +1,12 @@
 #! /bin/sh
-# $Id: zebrasrv,v 1.1 2003-05-19 21:35:02 adam Exp $
+# $Id: zebrasrv,v 1.2 2005-01-12 09:58:24 adam Exp $
 # Start and stop idzebra script for Debian.
 
 test -x /usr/bin/zebrasrv || exit 0
 
 dirs="/var/lib/idzebra"
 uid=nobody
+listen="tcp:@:210"
 
 case "$1" in
   start)
@@ -16,7 +17,7 @@ case "$1" in
         done
         echo -n "Starting IDZebra server: zebrasrv"
 	for d in $dirs; do
-	    start-stop-daemon --start --quiet --background --pidfile $d/zebrasrv.pid --exec /usr/bin/zebrasrv -- -w $d -u $uid -l log tcp:@:210
+	    start-stop-daemon --start --quiet --background --pidfile $d/zebrasrv.pid --exec /usr/bin/zebrasrv -- -w $d -u $uid -l log $listen
 	done
         echo "."
 	;;
@@ -31,7 +32,7 @@ case "$1" in
   reload|force-reload)
         echo -n "Reloading IDZebra server's configuration"
 	for d in $dirs; do
-	    start-stop-daemon --stop --signal 1 --quiet --background --oknodo --pidfile $d/zebrasrv.pid --exec /usr/bin/zebrasrv -- -w $d -u $uid -l log tcp:@:210
+	    start-stop-daemon --stop --signal 1 --quiet --background --oknodo --pidfile $d/zebrasrv.pid --exec /usr/bin/zebrasrv -- -w $d -u $uid -l log $listen
 	done
 	echo "."
 	;;
