@@ -1,7 +1,7 @@
 # Copyright (C) 1994-1999, Index Data
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile.in,v 1.8 1999-12-01 13:30:30 adam Exp $
+# $Id: Makefile.in,v 1.9 1999-12-01 19:11:42 adam Exp $
 
 SHELL=/bin/sh
 MAKE=make
@@ -37,8 +37,8 @@ BINDIR=$(exec_prefix)/bin
 LIBDIR=$(exec_prefix)/lib
 INCDIR=$(prefix)/include
 #  Misc tables, etc.
-ZEBRADIR=$(prefix)/lib/zebra
-ZEBRATAB=$(prefix)/lib/zebra/tab
+ZEBRADIR=$(prefix)/lib/@PROGPREFIX@
+ZEBRATAB=$(prefix)/lib/@PROGPREFIX@/tab
 
 SUBDIR=@SUBDIR@
 
@@ -65,8 +65,8 @@ cleandepend:
 
 install:
 	$(INSTALL) -d $(BUILD)$(BINDIR)
-	$(INSTALL_PROGRAM) bin/zebraidx $(BUILD)$(BINDIR)
-	$(INSTALL_PROGRAM) bin/zebrasrv $(BUILD)$(BINDIR)
+	$(INSTALL_PROGRAM) bin/@PROGPREFIX@idx $(BUILD)$(BINDIR)
+	$(INSTALL_PROGRAM) bin/@PROGPREFIX@srv $(BUILD)$(BINDIR)
 	$(INSTALL) -d $(BUILD)$(ZEBRATAB)
 	@cd tab; for f in *; do \
 		if [ -f $$f ]; then \
