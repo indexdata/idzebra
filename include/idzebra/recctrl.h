@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.6 2005-01-15 19:38:24 adam Exp $
+/* $Id: recctrl.h,v 1.7 2005-01-16 23:13:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,6 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef RECCTRL_H
 #define RECCTRL_H
 
+#include <sys/types.h>
 #include <yaz/proto.h>
 #include <yaz/oid.h>
 #include <yaz/odr.h>
