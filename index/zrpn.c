@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zrpn.c,v $
- * Revision 1.32  1995-10-27 14:00:11  adam
+ * Revision 1.33  1995-11-01 13:58:28  quinn
+ * Moving data1 to yaz/retrieval
+ *
+ * Revision 1.32  1995/10/27  14:00:11  adam
  * Implemented detection of database availability.
  *
  * Revision 1.31  1995/10/17  18:02:10  adam
@@ -112,7 +115,7 @@
 #include <unistd.h>
 
 #include "zserver.h"
-#include <attribute.h>
+#include "attribute.h"
 
 #include <rsisam.h>
 #include <rstemp.h>

@@ -1,7 +1,7 @@
 # Copyright (C) 1995, Index Data I/S 
 # All rights reserved.
 # Sebastian Hammer, Adam Dickmeiss
-# $Id: Makefile,v 1.15 1995-10-30 15:12:42 adam Exp $
+# $Id: Makefile,v 1.16 1995-11-01 13:58:27 quinn Exp $
 
 SHELL=/bin/sh
 RANLIB=ranlib
@@ -15,18 +15,19 @@ TPROG2=kdump
 TPROG3=zserver
 DEFS=$(INCLUDE)
 O1 = main.o dir.o trav.o extract.o kinput.o kcompare.o \
- symtab.o text.o recctrl.o
+ symtab.o text.o recctrl.o structrec.o
 O2 = kdump.o
-O3 = zserver.o kcompare.o zrpn.o zsets.o text.o recctrl.o
+O3 = zserver.o kcompare.o zrpn.o zsets.o text.o recctrl.o structrec.o  \
+	attribute.o
 CPP=$(CC) -E
 
 all: $(TPROG1) $(TPROG2) $(TPROG3)
 
 $(TPROG1): $(O1) ../lib/dict.a \
-		../lib/isam.a ../lib/bfile.a ../lib/data1.a ../lib/alexutil.a \
+		../lib/isam.a ../lib/bfile.a ../lib/alexutil.a \
 		$(YAZLIB)
 	$(CC) $(CFLAGS) -o $(TPROG1) $(O1) ../lib/dict.a \
-		../lib/isam.a ../lib/bfile.a ../lib/data1.a ../lib/alexutil.a \
+		../lib/isam.a ../lib/bfile.a ../lib/alexutil.a \
 		$(YAZLIB) $(OSILIB)
 
 $(TPROG2): $(O2) $(YAZLIB)
@@ -34,11 +35,11 @@ $(TPROG2): $(O2) $(YAZLIB)
 
 $(TPROG3): $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/bfile.a \
-		../lib/dfa.a ../lib/alexutil.a ../lib/data1.a \
+		../lib/dfa.a ../lib/alexutil.a \
 		$(YAZLIB)
 	$(CC) $(CFLAGS) -o $(TPROG3) $(O3) \
 		../lib/rset.a ../lib/dict.a ../lib/isam.a ../lib/bfile.a \
-		../lib/dfa.a ../lib/data1.a ../lib/alexutil.a \
+		../lib/dfa.a ../lib/alexutil.a \
 		$(YAZLIB) $(OSILIB) $(NETLIB) -lm
 
 .c.o:
