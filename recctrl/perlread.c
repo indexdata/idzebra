@@ -1,4 +1,4 @@
-/* $Id: perlread.c,v 1.6 2003-02-27 23:21:40 pop Exp $
+/* $Id: perlread.c,v 1.7 2003-02-28 16:20:10 pop Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -105,6 +105,7 @@ int Filter_process (struct perl_context *context)
 
   FREETMPS;
   LEAVE;
+
   return (res);
 }
 
@@ -167,6 +168,33 @@ int grs_perl_readf(struct perl_context *context, size_t len) {
   if (r > 0) Filter_store_buff (context, buf, r);
   xfree (buf);
   return (r);
+}
+
+int grs_perl_readline(struct perl_context *context) {
+  int r;
+  char *buf = (char *) xmalloc (4096);
+  char *p = buf;
+  
+  while ((r = (*context->readf)(context->fh,p,1)) && (p-buf < 4095)) {
+    p++;
+    if (*(p-1) == 10) break;
+  }
+
+  *p = 0;
+
+  if (p != buf) Filter_store_buff (context, buf, p - buf);
+  xfree (buf);
+  return (p - buf);
+}
+
+char grs_perl_getc(struct perl_context *context) {
+  int r;
+  char *p;
+  if (r = (*context->readf)(context->fh,p,1)) {
+    return (*p);
+  } else {
+    return (0);
+  }
 }
 
 off_t grs_perl_seekf(struct perl_context *context, off_t offset) {
@@ -264,6 +292,7 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
       if (context->origi == NULL) perl_destruct(context->perli);
     }
     if (context->origi == NULL) perl_construct(context->perli);
+    
     /*
     ENTER;
     SAVETMPS;
@@ -292,7 +321,10 @@ static data1_node *grs_read_perl (struct grs_read_info *p)
 
   /* Wow... if calling with individual update_record calls from perl,
      the filter object reference may go out of scope... */
-  if (!SvOK(context->filterRef)) Filter_create(context);
+  if (!sv_isa(context->filterRef, context->filterClass)) {
+    Filter_create(context);
+    logf (LOG_DEBUG,"Filter recreated");
+  }
 
   if (!SvTRUE(context->filterRef)) {
     logf (LOG_WARN,"Failed to initialize perl filter %s",context->filterClass);
