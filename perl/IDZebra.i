@@ -327,7 +327,7 @@ void zebra_scan_PQF (ZebraHandle zh,
 		     ODR stream,
 		     const char *pqf_query);
 
-ScanEntry *getScanEntry(ScanObj *so, int pos);
+scanEntry *getScanEntry(ScanObj *so, int pos);
 
 /* Admin functionality */
 /*

@@ -1,6 +1,6 @@
 #!perl -Tw
 # =============================================================================
-# $Id: 01_base.t,v 1.1 2003-03-03 00:44:39 pop Exp $
+# $Id: 01_base.t,v 1.2 2003-03-04 19:33:53 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -14,7 +14,7 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests => 9;
+use Test::More tests=>9;
 
 # ----------------------------------------------------------------------------
 # Session opening and closing
@@ -54,3 +54,4 @@ ok(($sess->group->{databaseName} eq "demo2"),"Record group is selected");
 # Close session
 
 $sess->close;
+

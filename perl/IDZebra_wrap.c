@@ -212,7 +212,7 @@ SWIG_TypeClientData(swig_type_info *ti, void *clientdata) {
  * perl5.swg
  *
  * Perl5 runtime library
- * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.9 2003-03-03 12:14:27 pop Exp $
+ * $Header: /home/cvsroot/idis/perl/Attic/IDZebra_wrap.c,v 1.10 2003-03-04 19:33:52 pop Exp $
  * ----------------------------------------------------------------------------- */
 
 #define SWIGPERL
@@ -530,7 +530,7 @@ static void _swig_create_magic(CPerlObj *pPerl, SV *sv, const char *name, int (C
 #define  SWIGTYPE_p_data1_marctab swig_types[29] 
 #define  SWIGTYPE_p_ZebraTransactionStatus swig_types[30] 
 #define  SWIGTYPE_p_Z_BriefBib swig_types[31] 
-#define  SWIGTYPE_p_ScanEntry swig_types[32] 
+#define  SWIGTYPE_p_scanEntry swig_types[32] 
 #define  SWIGTYPE_p_f_p_void_p_char_size_t__int swig_types[33] 
 #define  SWIGTYPE_p_FILE swig_types[34] 
 #define  SWIGTYPE_p_data1_element swig_types[35] 
@@ -2099,21 +2099,21 @@ XS(_wrap_delete_RetrievalRecord) {
 }
 
 
-XS(_wrap_ScanEntry_occurrences_set) {
+XS(_wrap_scanEntry_occurrences_set) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
-        ScanEntry *arg1 ;
+        scanEntry *arg1 ;
         int arg2 ;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 2) || (items > 2)) {
-            SWIG_croak("Usage: ScanEntry_occurrences_set(self,occurrences);");
+            SWIG_croak("Usage: scanEntry_occurrences_set(self,occurrences);");
         }
         {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanEntry,0) < 0) {
-                SWIG_croak("Type error in argument 1 of ScanEntry_occurrences_set. Expected _p_ScanEntry");
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_scanEntry,0) < 0) {
+                SWIG_croak("Type error in argument 1 of scanEntry_occurrences_set. Expected _p_scanEntry");
             }
         }
         arg2 = (int) SvIV(ST(1));
@@ -2128,21 +2128,21 @@ XS(_wrap_ScanEntry_occurrences_set) {
 }
 
 
-XS(_wrap_ScanEntry_occurrences_get) {
+XS(_wrap_scanEntry_occurrences_get) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
-        ScanEntry *arg1 ;
+        scanEntry *arg1 ;
         int result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: ScanEntry_occurrences_get(self);");
+            SWIG_croak("Usage: scanEntry_occurrences_get(self);");
         }
         {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanEntry,0) < 0) {
-                SWIG_croak("Type error in argument 1 of ScanEntry_occurrences_get. Expected _p_ScanEntry");
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_scanEntry,0) < 0) {
+                SWIG_croak("Type error in argument 1 of scanEntry_occurrences_get. Expected _p_scanEntry");
             }
         }
         result = (int) ((arg1)->occurrences);
@@ -2157,21 +2157,21 @@ XS(_wrap_ScanEntry_occurrences_get) {
 }
 
 
-XS(_wrap_ScanEntry_term_set) {
+XS(_wrap_scanEntry_term_set) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
-        ScanEntry *arg1 ;
+        scanEntry *arg1 ;
         char *arg2 ;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 2) || (items > 2)) {
-            SWIG_croak("Usage: ScanEntry_term_set(self,term);");
+            SWIG_croak("Usage: scanEntry_term_set(self,term);");
         }
         {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanEntry,0) < 0) {
-                SWIG_croak("Type error in argument 1 of ScanEntry_term_set. Expected _p_ScanEntry");
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_scanEntry,0) < 0) {
+                SWIG_croak("Type error in argument 1 of scanEntry_term_set. Expected _p_scanEntry");
             }
         }
         if (!SvOK((SV*) ST(1))) arg2 = 0;
@@ -2190,21 +2190,21 @@ XS(_wrap_ScanEntry_term_set) {
 }
 
 
-XS(_wrap_ScanEntry_term_get) {
+XS(_wrap_scanEntry_term_get) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
-        ScanEntry *arg1 ;
+        scanEntry *arg1 ;
         char *result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: ScanEntry_term_get(self);");
+            SWIG_croak("Usage: scanEntry_term_get(self);");
         }
         {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanEntry,0) < 0) {
-                SWIG_croak("Type error in argument 1 of ScanEntry_term_get. Expected _p_ScanEntry");
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_scanEntry,0) < 0) {
+                SWIG_croak("Type error in argument 1 of scanEntry_term_get. Expected _p_scanEntry");
             }
         }
         result = (char *) ((arg1)->term);
@@ -2223,21 +2223,21 @@ XS(_wrap_ScanEntry_term_get) {
 }
 
 
-XS(_wrap_new_ScanEntry) {
+XS(_wrap_new_scanEntry) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
-        ScanEntry *result;
+        scanEntry *result;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 0) || (items > 0)) {
-            SWIG_croak("Usage: new_ScanEntry();");
+            SWIG_croak("Usage: new_scanEntry();");
         }
-        result = (ScanEntry *)(ScanEntry *) calloc(1, sizeof(ScanEntry));
+        result = (scanEntry *)(scanEntry *) calloc(1, sizeof(scanEntry));
         
         ST(argvi) = sv_newmortal();
-        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_ScanEntry,0);
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_scanEntry,0);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -2246,20 +2246,20 @@ XS(_wrap_new_ScanEntry) {
 }
 
 
-XS(_wrap_delete_ScanEntry) {
+XS(_wrap_delete_scanEntry) {
     char _swigmsg[SWIG_MAX_ERRMSG] = "";
     const char *_swigerr = _swigmsg;
     {
-        ScanEntry *arg1 ;
+        scanEntry *arg1 ;
         int argvi = 0;
         dXSARGS;
         
         if ((items < 1) || (items > 1)) {
-            SWIG_croak("Usage: delete_ScanEntry(self);");
+            SWIG_croak("Usage: delete_scanEntry(self);");
         }
         {
-            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_ScanEntry,0) < 0) {
-                SWIG_croak("Type error in argument 1 of delete_ScanEntry. Expected _p_ScanEntry");
+            if (SWIG_ConvertPtr(ST(0), (void **) &arg1, SWIGTYPE_p_scanEntry,0) < 0) {
+                SWIG_croak("Type error in argument 1 of delete_scanEntry. Expected _p_scanEntry");
             }
         }
         free((char *) arg1);
@@ -2452,7 +2452,7 @@ XS(_wrap_ScanObj_entries_set) {
     const char *_swigerr = _swigmsg;
     {
         ScanObj *arg1 ;
-        ScanEntry *arg2 ;
+        scanEntry *arg2 ;
         int argvi = 0;
         dXSARGS;
         
@@ -2465,8 +2465,8 @@ XS(_wrap_ScanObj_entries_set) {
             }
         }
         {
-            if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_ScanEntry,0) < 0) {
-                SWIG_croak("Type error in argument 2 of ScanObj_entries_set. Expected _p_ScanEntry");
+            if (SWIG_ConvertPtr(ST(1), (void **) &arg2, SWIGTYPE_p_scanEntry,0) < 0) {
+                SWIG_croak("Type error in argument 2 of ScanObj_entries_set. Expected _p_scanEntry");
             }
         }
         if (arg1) (arg1)->entries = arg2;
@@ -2485,7 +2485,7 @@ XS(_wrap_ScanObj_entries_get) {
     const char *_swigerr = _swigmsg;
     {
         ScanObj *arg1 ;
-        ScanEntry *result;
+        scanEntry *result;
         int argvi = 0;
         dXSARGS;
         
@@ -2497,10 +2497,10 @@ XS(_wrap_ScanObj_entries_get) {
                 SWIG_croak("Type error in argument 1 of ScanObj_entries_get. Expected _p_ScanObj");
             }
         }
-        result = (ScanEntry *) ((arg1)->entries);
+        result = (scanEntry *) ((arg1)->entries);
         
         ST(argvi) = sv_newmortal();
-        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_ScanEntry,0);
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_scanEntry,0);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -4668,7 +4668,7 @@ XS(_wrap_getScanEntry) {
     {
         ScanObj *arg1 ;
         int arg2 ;
-        ScanEntry *result;
+        scanEntry *result;
         int argvi = 0;
         dXSARGS;
         
@@ -4681,10 +4681,10 @@ XS(_wrap_getScanEntry) {
             }
         }
         arg2 = (int) SvIV(ST(1));
-        result = (ScanEntry *)getScanEntry(arg1,arg2);
+        result = (scanEntry *)getScanEntry(arg1,arg2);
         
         ST(argvi) = sv_newmortal();
-        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_ScanEntry,0);
+        SWIG_MakePtr(ST(argvi++), (void *) result, SWIGTYPE_p_scanEntry,0);
         XSRETURN(argvi);
         fail:
         (void) _swigerr;
@@ -8320,7 +8320,7 @@ static swig_type_info _swigt__p_Z_ExplainRecord[] = {{"_p_Z_ExplainRecord", 0, "
 static swig_type_info _swigt__p_data1_marctab[] = {{"_p_data1_marctab", 0, "data1_marctab *", 0},{"_p_data1_marctab"},{0}};
 static swig_type_info _swigt__p_ZebraTransactionStatus[] = {{"IDZebra::ZebraTransactionStatus", 0, "ZebraTransactionStatus *", 0},{"IDZebra::ZebraTransactionStatus"},{0}};
 static swig_type_info _swigt__p_Z_BriefBib[] = {{"_p_Z_BriefBib", 0, "Z_BriefBib *", 0},{"_p_Z_BriefBib"},{0}};
-static swig_type_info _swigt__p_ScanEntry[] = {{"IDZebra::ScanEntry", 0, "ScanEntry *", 0},{"IDZebra::ScanEntry"},{0}};
+static swig_type_info _swigt__p_scanEntry[] = {{"IDZebra::scanEntry", 0, "scanEntry *", 0},{"IDZebra::scanEntry"},{0}};
 static swig_type_info _swigt__p_f_p_void_p_char_size_t__int[] = {{"_p_f_p_void_p_char_size_t__int", 0, "int (*)(void *,char *,size_t)", 0},{"_p_f_p_void_p_char_size_t__int"},{0}};
 static swig_type_info _swigt__p_FILE[] = {{"_p_FILE", 0, "FILE *", 0},{"_p_FILE"},{0}};
 static swig_type_info _swigt__p_data1_element[] = {{"_p_data1_element", 0, "data1_element *", 0},{"_p_data1_element"},{0}};
@@ -8366,7 +8366,7 @@ _swigt__p_Z_ExplainRecord,
 _swigt__p_data1_marctab, 
 _swigt__p_ZebraTransactionStatus, 
 _swigt__p_Z_BriefBib, 
-_swigt__p_ScanEntry, 
+_swigt__p_scanEntry, 
 _swigt__p_f_p_void_p_char_size_t__int, 
 _swigt__p_FILE, 
 _swigt__p_data1_element, 
@@ -8483,12 +8483,12 @@ static swig_command_info swig_commands[] = {
 {"IDZebrac::RetrievalRecord_buf_get", _wrap_RetrievalRecord_buf_get},
 {"IDZebrac::new_RetrievalRecord", _wrap_new_RetrievalRecord},
 {"IDZebrac::delete_RetrievalRecord", _wrap_delete_RetrievalRecord},
-{"IDZebrac::ScanEntry_occurrences_set", _wrap_ScanEntry_occurrences_set},
-{"IDZebrac::ScanEntry_occurrences_get", _wrap_ScanEntry_occurrences_get},
-{"IDZebrac::ScanEntry_term_set", _wrap_ScanEntry_term_set},
-{"IDZebrac::ScanEntry_term_get", _wrap_ScanEntry_term_get},
-{"IDZebrac::new_ScanEntry", _wrap_new_ScanEntry},
-{"IDZebrac::delete_ScanEntry", _wrap_delete_ScanEntry},
+{"IDZebrac::scanEntry_occurrences_set", _wrap_scanEntry_occurrences_set},
+{"IDZebrac::scanEntry_occurrences_get", _wrap_scanEntry_occurrences_get},
+{"IDZebrac::scanEntry_term_set", _wrap_scanEntry_term_set},
+{"IDZebrac::scanEntry_term_get", _wrap_scanEntry_term_get},
+{"IDZebrac::new_scanEntry", _wrap_new_scanEntry},
+{"IDZebrac::delete_scanEntry", _wrap_delete_scanEntry},
 {"IDZebrac::ScanObj_num_entries_set", _wrap_ScanObj_num_entries_set},
 {"IDZebrac::ScanObj_num_entries_get", _wrap_ScanObj_num_entries_get},
 {"IDZebrac::ScanObj_position_set", _wrap_ScanObj_position_set},
@@ -8709,7 +8709,7 @@ XS(SWIG_init) {
     SWIG_TypeClientData(SWIGTYPE_p_recordGroup, (void*) "IDZebra::recordGroup");
     SWIG_TypeClientData(SWIGTYPE_p_RetrievalObj, (void*) "IDZebra::RetrievalObj");
     SWIG_TypeClientData(SWIGTYPE_p_RetrievalRecord, (void*) "IDZebra::RetrievalRecord");
-    SWIG_TypeClientData(SWIGTYPE_p_ScanEntry, (void*) "IDZebra::ScanEntry");
+    SWIG_TypeClientData(SWIGTYPE_p_scanEntry, (void*) "IDZebra::scanEntry");
     SWIG_TypeClientData(SWIGTYPE_p_ScanObj, (void*) "IDZebra::ScanObj");
     SWIG_TypeClientData(SWIGTYPE_p_ZebraTransactionStatus, (void*) "IDZebra::ZebraTransactionStatus");
     ST(0) = &PL_sv_yes;

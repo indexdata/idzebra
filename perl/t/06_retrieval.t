@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 06_retrieval.t,v 1.2 2003-03-03 12:14:28 pop Exp $
+# $Id: 06_retrieval.t,v 1.3 2003-03-04 19:33:53 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -32,7 +32,7 @@ my $sess = IDZebra::Session->open(configFile => 'demo/zebra.cfg',
 				  groupName => 'demo2');
 # ----------------------------------------------------------------------------
 # search
-our $filecount = 6;
+our $filecount = 8;
 
 my ($hits, $expected);
 

@@ -1,4 +1,4 @@
-# $Id: Session.pm,v 1.10 2003-03-03 18:27:25 pop Exp $
+# $Id: Session.pm,v 1.11 2003-03-04 19:33:52 pop Exp $
 # 
 # Zebra perl API header
 # =============================================================================
@@ -13,8 +13,9 @@ BEGIN {
     use Scalar::Util;
     use IDZebra::Logger qw(:flags :calls);
     use IDZebra::Resultset;
+    use IDZebra::ScanList;
     use IDZebra::RetrievalRecord;
-    our $VERSION = do { my @r = (q$Revision: 1.10 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
+    our $VERSION = do { my @r = (q$Revision: 1.11 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }; 
 #    our @ISA = qw(IDZebra::Logger);
 }
 
@@ -655,6 +656,22 @@ sub sortResultsets {
 				      errString   => $errString);
     
     return ($rs);
+}
+# -----------------------------------------------------------------------------
+# Scan
+# -----------------------------------------------------------------------------
+sub scan {
+    my ($self, %args) = @_;
+
+    $self->checkzh;
+
+    unless ($args{expression}) {
+	croak ("No scan expression given");
+    }
+
+    my $sl = IDZebra::ScanList->new($self,%args);
+
+    return ($sl);
 }
 
 # ============================================================================

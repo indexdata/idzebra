@@ -275,7 +275,7 @@ void zebra_scan_PQF (ZebraHandle zh,
     return;
   }
 
-  so->entries = (ScanEntry *)
+  so->entries = (scanEntry *)
     odr_malloc (stream, sizeof(so->entries) * (so->num_entries));
 
 
@@ -288,7 +288,7 @@ void zebra_scan_PQF (ZebraHandle zh,
        so->position, so->num_entries, so->is_partial);
 }
 
-ScanEntry *getScanEntry(ScanObj *so, int pos) {
+scanEntry *getScanEntry(ScanObj *so, int pos) {
   return (&so->entries[pos-1]);
 }
 

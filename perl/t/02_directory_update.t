@@ -1,6 +1,6 @@
 #!perl
 # =============================================================================
-# $Id: 02_directory_update.t,v 1.1 2003-03-03 00:44:39 pop Exp $
+# $Id: 02_directory_update.t,v 1.2 2003-03-04 19:33:53 pop Exp $
 #
 # Perl API header
 # =============================================================================
@@ -42,7 +42,7 @@ $sess->init();
 # ----------------------------------------------------------------------------
 # repository upadte
 
-our $filecount = 6;
+our $filecount = 8;
 $sess->begin_trans;
 $sess->update(path      =>  'lib');
 my $stat = $sess->end_trans;

@@ -39,13 +39,13 @@ typedef struct {
 typedef struct {
     int occurrences;     /* scan term occurrences */
     char *term;          /* scan term string */
-} ScanEntry;
+} scanEntry;
 
 typedef struct {
   int num_entries;
   int position;
   int is_partial;
-  ScanEntry *entries;
+  scanEntry *entries;
 } ScanObj;
 
 #endif

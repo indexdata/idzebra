@@ -418,27 +418,27 @@ sub STORE {
 }
 
 
-############# Class : IDZebra::ScanEntry ##############
+############# Class : IDZebra::scanEntry ##############
 
-package IDZebra::ScanEntry;
+package IDZebra::scanEntry;
 @ISA = qw( IDZebra );
 %OWNER = ();
 %BLESSEDMEMBERS = (
 );
 
 %ITERATORS = ();
-*swig_occurrences_get = *IDZebrac::ScanEntry_occurrences_get;
-*swig_occurrences_set = *IDZebrac::ScanEntry_occurrences_set;
-*swig_term_get = *IDZebrac::ScanEntry_term_get;
-*swig_term_set = *IDZebrac::ScanEntry_term_set;
+*swig_occurrences_get = *IDZebrac::scanEntry_occurrences_get;
+*swig_occurrences_set = *IDZebrac::scanEntry_occurrences_set;
+*swig_term_get = *IDZebrac::scanEntry_term_get;
+*swig_term_set = *IDZebrac::scanEntry_term_set;
 sub new {
     my $pkg = shift;
     my @args = @_;
-    my $self = IDZebrac::new_ScanEntry(@args);
+    my $self = IDZebrac::new_scanEntry(@args);
     return undef if (!defined($self));
     $OWNER{$self} = 1;
     my %retval;
-    tie %retval, "IDZebra::ScanEntry", $self;
+    tie %retval, "IDZebra::scanEntry", $self;
     return bless \%retval, $pkg;
 }
 
@@ -448,7 +448,7 @@ sub DESTROY {
     return unless defined $self;
     delete $ITERATORS{$self};
     if (exists $OWNER{$self}) {
-        IDZebrac::delete_ScanEntry($self);
+        IDZebrac::delete_scanEntry($self);
         delete $OWNER{$self};
     }
 }
@@ -495,7 +495,7 @@ package IDZebra::ScanObj;
 @ISA = qw( IDZebra );
 %OWNER = ();
 %BLESSEDMEMBERS = (
-    entries => 'IDZebra::ScanEntry',
+    entries => 'IDZebra::scanEntry',
 );
 
 %ITERATORS = ();
