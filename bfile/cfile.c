@@ -4,7 +4,10 @@
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: cfile.c,v $
- * Revision 1.18  1996-10-29 13:56:15  adam
+ * Revision 1.19  1997-02-12 20:37:17  adam
+ * Changed the messages logged. No real code changed.
+ *
+ * Revision 1.18  1996/10/29 13:56:15  adam
  * Include of zebrautl.h instead of alexutil.h.
  *
  * Revision 1.17  1996/04/19 16:49:00  adam
@@ -121,7 +124,7 @@ CFile cf_open (MFile mf, MFile_area area, const char *fname,
     int hash_bytes;
    
     cf->rmf = mf; 
-    logf (LOG_LOG, "cf_open %s %s", cf->rmf->name, wflag ? "rdwr" : "rd");
+    logf (LOG_LOG, "cf: open %s %s", cf->rmf->name, wflag ? "rdwr" : "rd");
     sprintf (path, "%s-b", fname);
     if (!(cf->block_mf = mf_open (area, path, block_size, wflag)))
     {
@@ -368,8 +371,8 @@ static void cf_moveto_flat (CFile cf)
     struct CFile_hash_bucket *p;
     int i, j;
 
-    logf (LOG_LOG, "Moving to flat shadow: %s", cf->rmf->name);
-    logf (LOG_LOG, "hits=%d miss=%d bucket_in_memory=%d total=%d",
+    logf (LOG_LOG, "cf: Moving to flat shadow: %s", cf->rmf->name);
+    logf (LOG_LOG, "cf: hits=%d miss=%d bucket_in_memory=%d total=%d",
 	cf->no_hits, cf->no_miss, cf->bucket_in_memory, 
         cf->head.next_bucket - cf->head.first_bucket);
     assert (cf->head.state == 1);
@@ -530,18 +533,15 @@ int cf_write (CFile cf, int no, int offset, int num, const void *buf)
 
 int cf_close (CFile cf)
 {
-    logf (LOG_LOG, "hits=%d miss=%d bucket_in_memory=%d total=%d",
+    logf (LOG_DEBUG, "cf: hits=%d miss=%d bucket_in_memory=%d total=%d",
           cf->no_hits, cf->no_miss, cf->bucket_in_memory,
           cf->head.next_bucket - cf->head.first_bucket);
     flush_bucket (cf, -1);
     if (cf->dirty)
     {
-        logf (LOG_LOG, "cf_close %s, dirty", cf->rmf->name);
         mf_write (cf->hash_mf, 0, 0, sizeof(cf->head), &cf->head);
         write_head (cf);
     }
-    else
-        logf (LOG_LOG, "cf_close %s", cf->rmf->name);
     mf_close (cf->hash_mf);
     mf_close (cf->block_mf);
     xfree (cf->array);
