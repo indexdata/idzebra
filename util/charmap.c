@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.26 2002-08-28 19:52:29 adam Exp $
+/* $Id: charmap.c,v 1.27 2003-01-13 10:53:16 oleg Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -412,8 +412,8 @@ static int scan_string(char *s_native,
         char *inbuf = s_native;
         size_t outbytesleft = sizeof(arg)-4;
         size_t inbytesleft = strlen(s_native);
-        size_t ret;
-        ret = yaz_iconv(t_unicode, &inbuf, &inbytesleft,
+        size_t ret;        	
+	ret = yaz_iconv(t_unicode, &inbuf, &inbytesleft,
                         &outbuf, &outbytesleft);
         if (ret == (size_t)(-1))
             return -1;
@@ -495,6 +495,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
         ucs4_native = "UCS-4LE";
 
     t_utf8 = yaz_iconv_open ("UTF-8", ucs4_native);
+
     logf (LOG_DEBUG, "maptab %s open", name);
     if (!(f = yaz_fopen(tabpath, name, "r", tabroot)))
     {
@@ -642,9 +643,25 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	}
         else if (!yaz_matchstr(argv[0], "encoding"))
         {
+	    /*
+	     * Fix me. When t_unicode==0 and use encoding directive in *.chr file the beheviour of the
+	     * zebra need to comment next part of code.
+	     */
+
+	    /*
             if (t_unicode != 0)
                 yaz_iconv_close (t_unicode);
             t_unicode = yaz_iconv_open (ucs4_native, argv[1]);
+	    */
+	    
+	    /*
+	     * Fix me. It is additional staff for conversion of characters from local encoding
+	     * of *.chr file to UTF-8 (internal encoding).
+	     * NOTE: The derective encoding must be first directive in *.chr file.
+	     */
+	    if (t_utf8 != 0)
+        	yaz_iconv_close(t_utf8);
+	    t_utf8 = yaz_iconv_open ("UTF-8", argv[1]);
         }
 	else
 	{
