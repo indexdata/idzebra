@@ -1,10 +1,14 @@
 /*
- * Copyright (C) 1994-1998, Index Data I/S 
+ * Copyright (C) 1994-1998, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zinfo.c,v $
- * Revision 1.11  1998-06-09 12:16:48  adam
+ * Revision 1.12  1998-10-13 20:37:11  adam
+ * Changed the way attribute sets are saved in Explain database to
+ * reflect "dynamic" OIDs.
+ *
+ * Revision 1.11  1998/06/09 12:16:48  adam
  * Implemented auto-generation of CategoryList records.
  *
  * Revision 1.10  1998/06/08 14:43:15  adam
@@ -627,6 +631,9 @@ static void zebraExplain_readAttributeDetails (ZebraExplainInfo zei,
 	data1_node *node_use = NULL;
 	data1_node *node_ordinal = NULL;
 	data1_node *np2;
+	char oid_str[128];
+	int oid_str_len;
+
 	if (np->which != DATA1N_tag || strcmp (np->u.tag.tag, "attr"))
 	    continue;
 	for (np2 = np->child; np2; np2 = np2->next)
@@ -642,10 +649,16 @@ static void zebraExplain_readAttributeDetails (ZebraExplainInfo zei,
 		node_ordinal = np2->child;
 	}
 	assert (node_set && node_use && node_ordinal);
+
+	oid_str_len = node_set->u.data.len;
+	if (oid_str_len >= sizeof(oid_str))
+	    oid_str_len = sizeof(oid_str)-1;
+	memcpy (oid_str, node_set->u.data.data, oid_str_len);
+	oid_str[oid_str_len] = '\0';
 	
         *zsuip = nmem_malloc (zei->nmem, sizeof(**zsuip));
-	(*zsuip)->info.set = atoi_n (node_set->u.data.data,
-				     node_set->u.data.len);
+	(*zsuip)->info.set = oid_getvalbyname (oid_str);
+
 	(*zsuip)->info.use = atoi_n (node_use->u.data.data,
 				     node_use->u.data.len);
 	(*zsuip)->info.ordinal = atoi_n (node_ordinal->u.data.data,
@@ -1022,15 +1035,15 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 		data1_node *node_abt, *node_atd, *node_atvs;
 		data1_add_tagdata_oid (zei->dh, node_asd, "oid",
 				       oid, zei->nmem);
-
+		
 		node_abt = data1_add_tag (zei->dh, node_asd,
 					  "attributesByType", zei->nmem);
 		node_atd = data1_add_tag (zei->dh, node_abt,
 					  "attributeTypeDetails", zei->nmem);
 		data1_add_tagdata_int (zei->dh, node_atd,
-					"type", 1, zei->nmem);
+				       "type", 1, zei->nmem);
 		node_atvs = data1_add_tag (zei->dh, node_atd, 
-					  "attributeValues", zei->nmem);
+					   "attributeValues", zei->nmem);
 		writeAttributeValueDetails (zei, zad, node_atvs, attset);
 	    }
 	}
@@ -1042,15 +1055,23 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 				 "attrlist", zei->nmem);
     for (zsui = zad->SUInfo; zsui; zsui = zsui->next)
     {
+	struct oident oident;
+	int oid[OID_SIZE];
 	data1_node *node_attr;
-	node_attr = data1_add_tag (zei->dh, node_list,
-				      "attr", zei->nmem);
-	data1_add_tagdata_int (zei->dh, node_attr, "set",
-				  zsui->info.set, zei->nmem);
+	
+	node_attr = data1_add_tag (zei->dh, node_list, "attr", zei->nmem);
+	
+	oident.proto = PROTO_Z3950;
+	oident.oclass = CLASS_ATTSET;
+	oident.value = zsui->info.set;
+	oid_ent_to_oid (&oident, oid);
+	
+	data1_add_tagdata_text (zei->dh, node_attr, "set",
+				oident.desc, zei->nmem);
 	data1_add_tagdata_int (zei->dh, node_attr, "use",
-				  zsui->info.use, zei->nmem);
+			       zsui->info.use, zei->nmem);
 	data1_add_tagdata_int (zei->dh, node_attr, "ordinal",
-				  zsui->info.ordinal, zei->nmem);
+			       zsui->info.ordinal, zei->nmem);
     }
     /* convert to "SGML" and write it */
 #if ZINFO_DEBUG
