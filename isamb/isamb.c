@@ -2,7 +2,7 @@
  *  Copyright (c) 1995-1998, Index Data.
  *  See the file LICENSE for details.
  *
- *  $Id: isamb.c,v 1.5 2002-04-17 08:48:54 adam Exp $
+ *  $Id: isamb.c,v 1.6 2002-04-17 09:03:38 adam Exp $
  */
 #include <yaz/xmalloc.h>
 #include <yaz/log.h>
@@ -71,7 +71,7 @@ ISAMB isamb_open (BFiles bfs, const char *name, int writeflag, ISAMC_M method)
     isamb->bfs = bfs;
     isamb->method = (ISAMC_M) xmalloc (sizeof(*method));
     memcpy (isamb->method, method, sizeof(*method));
-    isamb->no_cat = 4;
+    isamb->no_cat = 2;
 
     isamb->file = xmalloc (sizeof(*isamb->file) * isamb->no_cat);
     for (i = 0; i<isamb->no_cat; i++)
@@ -472,9 +472,10 @@ int isamb_insert_one (ISAMB b, const void *item, ISAMC_P pos)
     else
     {
         /* b-tree insert */
-        struct ISAMB_block *p, *sp = 0;
+        struct ISAMB_block *p = open_block (b, pos), *sp = 0;
         char sub_item[DST_ITEM_MAX];
         int sub_size;
+
 
         insert_sub (b, p, item, &sp, sub_item, &sub_size);
         if (sp)
