@@ -1,14 +1,14 @@
 <!doctype linuxdoc system>
 
 <!--
-  $Id: zebra.sgml,v 1.44 1999-12-08 22:11:56 adam Exp $
+  $Id: zebra.sgml,v 1.45 2000-02-10 10:19:47 adam Exp $
 -->
 
 <article>
 <title>Zebra Server - Administrators's Guide and Reference
 <author><htmlurl url="http://www.indexdata.dk/" name="Index Data">,
 <tt><htmlurl url="mailto:info@indexdata.dk" name="info@indexdata.dk"></>
-<date>$Revision: 1.44 $
+<date>$Revision: 1.45 $
 <abstract>
 
 
@@ -1902,7 +1902,7 @@ where the tag itself is passed through unchanged.
 
 <p>
 Zebra
-Copyright (c) 1995-1999 Index Data ApS.
+Copyright (c) 1995-2000 Index Data ApS.
 
 All rights reserved.
 

@@ -1,10 +1,13 @@
 /*
- * Copyright (C) 1994-1999, Index Data
+ * Copyright (C) 1994-2000, Index Data
  * All rights reserved.
  * Sebastian Hammer, Adam Dickmeiss
  *
  * $Log: zebraver.h,v $
- * Revision 1.15  1999-12-01 13:30:30  adam
+ * Revision 1.16  2000-02-10 10:19:47  adam
+ * Patch level 1.
+ *
+ * Revision 1.15  1999/12/01 13:30:30  adam
  * Updated configure for Zmbol/Zebra dependent settings.
  *
  * Revision 1.14  1999/11/30 13:48:03  adam
@@ -52,9 +55,9 @@
  */
 
 #ifndef ZEBRAVER
-#define ZEBRAVER "1.0"
+#define ZEBRAVER "1.0pl1"
 #endif
 
 #ifndef ZEBRADATE
-#define ZEBRADATE "$Date: 1999-12-01 13:30:30 $"
+#define ZEBRADATE "$Date: 2000-02-10 10:19:47 $"
 #endif
