@@ -455,12 +455,15 @@ ISAMD_PP isamd_pp_open (ISAMD is, ISAMD_P ipos)
 {
     ISAMD_PP pp = (ISAMD_PP) xmalloc (sizeof(*pp));
     char *src;
+    int sz = is->method->filecat[is->max_cat].bsize;
+                 /* always allocate for the largest blocks, saves trouble */
    
     pp->cat = isamd_type(ipos);
     pp->pos = isamd_block(ipos); 
 
-    src = pp->buf = (char *) xmalloc (is->method->filecat[is->max_cat].bsize);
-                 /* always allocate for the largest blocks, saves trouble */
+    src = pp->buf = (char *) xmalloc (sz);
+    memset(src,'\0',sz); /* clear the buffer, for new blocks */
+    
     pp->next = 0;
     pp->size = 0;
     pp->offset = 0;
@@ -690,7 +693,10 @@ void isamd_pp_dump (ISAMD is, ISAMD_P ipos)
 
 /*
  * $Log: isamd.c,v $
- * Revision 1.6  1999-08-17 19:44:25  heikki
+ * Revision 1.7  1999-08-18 10:45:27  heikki
+ * Another fix for the difflen problem.
+ *
+ * Revision 1.6  1999/08/17 19:44:25  heikki
  * Fixed memory leaks
  *
  * Revision 1.4  1999/08/04 14:21:18  heikki
