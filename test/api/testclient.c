@@ -1,5 +1,5 @@
 /*
- * $Id: testclient.c,v 1.1.2.1 2004-12-16 16:28:18 heikki Exp $
+ * $Id: testclient.c,v 1.1.2.2 2005-01-16 23:11:31 adam Exp $
  *
  * Z39.50 client specifically for Zebra testing.
  */
@@ -27,7 +27,6 @@ int main(int argc, char **argv)
     char *target = 0;
     char *arg;
     int delay_sec = 0;
-    int expected_hits=-1;
     int ret;
     int retrieve_number = 0;
     int retrieve_offset = 0;

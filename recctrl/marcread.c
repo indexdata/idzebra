@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.24.2.1 2004-11-30 16:39:42 oleg Exp $
+/* $Id: marcread.c,v 1.24.2.2 2005-01-16 23:11:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -288,7 +288,6 @@ static char *get_data(data1_node *n, int *len)
     {
         if (n->which == DATA1N_data)
         {
-            int i;
             *len = n->u.data.len;
 	    
 	    /** Fixme: not delete leader/final whitespaces
