@@ -1,127 +1,12 @@
 /*
  * Copyright (C) 1994-1999, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
+ * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
  *
- * $Log: kinput.c,v $
- * Revision 1.34  1999-05-26 07:49:13  adam
- * C++ compilation.
- *
- * Revision 1.33  1999/05/15 14:36:38  adam
- * Updated dictionary. Implemented "compression" of dictionary.
- *
- * Revision 1.32  1999/05/12 13:08:06  adam
- * First version of ISAMS.
- *
- * Revision 1.31  1999/02/02 14:50:56  adam
- * Updated WIN32 code specific sections. Changed header.
- *
- * Revision 1.30  1998/10/28 10:53:57  adam
- * Added type cast to prevent warning.
- *
- * Revision 1.29  1998/06/11 15:41:39  adam
- * Minor changes.
- *
- * Revision 1.28  1998/03/05 08:45:12  adam
- * New result set model and modular ranking system. Moved towards
- * descent server API. System information stored as "SGML" records.
- *
- * Revision 1.27  1998/02/17 10:32:52  adam
- * Fixed bug: binary files weren't opened with flag b on NT.
- *
- * Revision 1.26  1998/01/29 13:39:13  adam
- * Compress ISAM is default.
- *
- * Revision 1.25  1997/09/17 12:19:14  adam
- * Zebra version corresponds to YAZ version 1.4.
- * Changed Zebra server so that it doesn't depend on global common_resource.
- *
- * Revision 1.24  1997/09/09 13:38:07  adam
- * Partial port to WIN95/NT.
- *
- * Revision 1.23  1997/09/04 13:57:39  adam
- * Added O_BINARY for open calls.
- *
- * Revision 1.22  1997/02/12 20:39:45  adam
- * Implemented options -f <n> that limits the log to the first <n>
- * records.
- * Changed some log messages also.
- *
- * Revision 1.21  1996/11/08 11:10:23  adam
- * Buffers used during file match got bigger.
- * Compressed ISAM support everywhere.
- * Bug fixes regarding masking characters in queries.
- * Redesigned Regexp-2 queries.
- *
- * Revision 1.20  1996/11/01 08:58:41  adam
- * Interface to isamc system now includes update and delete.
- *
- * Revision 1.19  1996/10/29 14:09:46  adam
- * Use of cisam system - enabled if setting isamc is 1.
- *
- * Revision 1.18  1996/06/04 10:18:59  adam
- * Minor changes - removed include of ctype.h.
- *
- * Revision 1.17  1996/05/14  15:47:07  adam
- * Cleanup of various buffer size entities.
- *
- * Revision 1.16  1996/04/09  10:05:20  adam
- * Bug fix: prev_name buffer possibly too small; allocated in key_file_init.
- *
- * Revision 1.15  1996/03/21  14:50:09  adam
- * File update uses modify-time instead of change-time.
- *
- * Revision 1.14  1996/02/07  14:06:37  adam
- * Better progress report during register merge.
- * New command: clean - removes temporary shadow files.
- *
- * Revision 1.13  1996/02/05  12:30:00  adam
- * Logging reduced a bit.
- * The remaining running time is estimated during register merge.
- *
- * Revision 1.12  1995/12/06  17:49:19  adam
- * Uses dict_delete now.
- *
- * Revision 1.11  1995/12/06  16:06:43  adam
- * Better diagnostics. Work on 'real' dictionary deletion.
- *
- * Revision 1.10  1995/12/06  12:41:22  adam
- * New command 'stat' for the index program.
- * Filenames can be read from stdin by specifying '-'.
- * Bug fix/enhancement of the transformation from terms to regular
- * expressons in the search engine.
- *
- * Revision 1.9  1995/10/10  12:24:39  adam
- * Temporary sort files are compressed.
- *
- * Revision 1.8  1995/10/04  16:57:19  adam
- * Key input and merge sort in one pass.
- *
- * Revision 1.7  1995/10/02  15:18:52  adam
- * New member in recRetrieveCtrl: diagnostic.
- *
- * Revision 1.6  1995/09/29  15:51:56  adam
- * First work on multi-way read.
- *
- * Revision 1.5  1995/09/29  14:01:43  adam
- * Bug fixes.
- *
- * Revision 1.4  1995/09/28  14:22:57  adam
- * Sort uses smaller temporary files.
- *
- * Revision 1.3  1995/09/06  16:11:17  adam
- * Option: only one word key per file.
- *
- * Revision 1.2  1995/09/04  12:33:42  adam
- * Various cleanup. YAZ util used instead.
- *
- * Revision 1.1  1995/09/04  09:10:37  adam
- * More work on index add/del/update.
- * Merge sort implemented.
- * Initial work on z39 server.
- *
+ * (log at the end)
+ 
  */
-
+ 
 #include <fcntl.h>
 #ifdef WIN32
 #include <io.h>
@@ -322,6 +207,7 @@ struct heap_info {
     ISAM isam;
     ISAMC isamc;
     ISAMS isams;
+    ISAMH isamh;
 };
 
 struct heap_info *key_heap_init (int nkeys,
@@ -541,6 +427,56 @@ int heap_inps (struct heap_info *hi)
     return 0;
 } 
 
+int heap_inph (struct heap_info *hi)
+{
+    struct heap_cread_info hci;
+    ISAMH_I isamh_i = (ISAMH_I) xmalloc (sizeof(*isamh_i));
+
+    hci.key = (char *) xmalloc (KEY_SIZE);
+    hci.mode = 1;
+    hci.hi = hi;
+    hci.more = heap_read_one (hi, hci.cur_name, hci.key);
+
+    isamh_i->clientData = &hci;
+    isamh_i->read_item = heap_cread_item;
+
+    while (hci.more)
+    {
+        char this_name[INP_NAME_MAX];
+        ISAMH_P isamh_p, isamh_p2;
+        char *dict_info;
+
+        strcpy (this_name, hci.cur_name);
+	assert (hci.cur_name[1]);
+        no_diffs++;
+        if ((dict_info = dict_lookup (hi->dict, hci.cur_name)))
+        {
+            memcpy (&isamh_p, dict_info+1, sizeof(ISAMH_P));
+            isamh_p2 = isamh_append (hi->isamh, isamh_p, isamh_i);
+            if (!isamh_p2)
+            {
+                no_deletions++;
+                if (!dict_delete (hi->dict, this_name))
+                    abort();
+            }
+            else 
+            {
+                no_updates++;
+                if (isamh_p2 != isamh_p)
+                    dict_insert (hi->dict, this_name,
+                                 sizeof(ISAMH_P), &isamh_p2);
+            }
+        } 
+        else
+        {
+            isamh_p = isamh_append (hi->isamh, 0, isamh_i);
+            no_insertions++;
+            dict_insert (hi->dict, this_name, sizeof(ISAMH_P), &isamh_p);
+        }
+    }
+    xfree (isamh_i);
+    return 0;
+} 
 
 int heap_inp (struct heap_info *hi)
 {
@@ -654,6 +590,7 @@ void key_input (BFiles bfs, int nkeys, int cache)
     ISAM isam = NULL;
     ISAMC isamc = NULL;
     ISAMS isams = NULL;
+    ISAMH isamh = NULL;
     struct key_file **kf;
     char rbuf[1024];
     int i, r;
@@ -700,6 +637,16 @@ void key_input (BFiles bfs, int nkeys, int cache)
             exit (1);
         }
     }
+    else if (res_get_match (common_resource, "isam", "h", NULL))
+    {
+        isamh = isamh_open (bfs, FNAME_ISAMH, 1,
+			  key_isamh_m (common_resource));
+        if (!isamh)
+        {
+            logf (LOG_FATAL, "isamh_open fail");
+            exit (1);
+        }
+    }
     else
     {
         isamc = isc_open (bfs, FNAME_ISAMC, 1,
@@ -728,7 +675,8 @@ void key_input (BFiles bfs, int nkeys, int cache)
     hi->isam = isam;
     hi->isamc = isamc;
     hi->isams = isams;
-
+    hi->isamh = isamh;
+    
     for (i = 1; i<=nkeys; i++)
         if ((r = key_file_read (kf[i], rbuf)))
             key_heap_insert (hi, rbuf, r, kf[i]);
@@ -738,6 +686,9 @@ void key_input (BFiles bfs, int nkeys, int cache)
 	heap_inps (hi);
     else if (isam)
 	heap_inp (hi);
+    else if (isamh)
+	heap_inph (hi);
+	
     dict_close (dict);
     if (isam)
         is_close (isam);
@@ -745,6 +696,8 @@ void key_input (BFiles bfs, int nkeys, int cache)
         isc_close (isamc);
     if (isams)
 	isams_close (isams);
+    if (isamh)
+        isamh_close (isamh);
    
     for (i = 1; i<=nkeys; i++)
     {
@@ -758,4 +711,128 @@ void key_input (BFiles bfs, int nkeys, int cache)
     logf (LOG_LOG, "Insertions . . .%7d", no_insertions);
 }
 
+
+
+/*
+ * $Log: kinput.c,v $
+ * Revision 1.35  1999-06-30 15:07:23  heikki
+ * Adding isamh stuff
+ *
+ * Revision 1.34  1999/05/26 07:49:13  adam
+ * C++ compilation.
+ *
+ * Revision 1.33  1999/05/15 14:36:38  adam
+ * Updated dictionary. Implemented "compression" of dictionary.
+ *
+ * Revision 1.32  1999/05/12 13:08:06  adam
+ * First version of ISAMS.
+ *
+ * Revision 1.31  1999/02/02 14:50:56  adam
+ * Updated WIN32 code specific sections. Changed header.
+ *
+ * Revision 1.30  1998/10/28 10:53:57  adam
+ * Added type cast to prevent warning.
+ *
+ * Revision 1.29  1998/06/11 15:41:39  adam
+ * Minor changes.
+ *
+ * Revision 1.28  1998/03/05 08:45:12  adam
+ * New result set model and modular ranking system. Moved towards
+ * descent server API. System information stored as "SGML" records.
+ *
+ * Revision 1.27  1998/02/17 10:32:52  adam
+ * Fixed bug: binary files weren't opened with flag b on NT.
+ *
+ * Revision 1.26  1998/01/29 13:39:13  adam
+ * Compress ISAM is default.
+ *
+ * Revision 1.25  1997/09/17 12:19:14  adam
+ * Zebra version corresponds to YAZ version 1.4.
+ * Changed Zebra server so that it doesn't depend on global common_resource.
+ *
+ * Revision 1.24  1997/09/09 13:38:07  adam
+ * Partial port to WIN95/NT.
+ *
+ * Revision 1.23  1997/09/04 13:57:39  adam
+ * Added O_BINARY for open calls.
+ *
+ * Revision 1.22  1997/02/12 20:39:45  adam
+ * Implemented options -f <n> that limits the log to the first <n>
+ * records.
+ * Changed some log messages also.
+ *
+ * Revision 1.21  1996/11/08 11:10:23  adam
+ * Buffers used during file match got bigger.
+ * Compressed ISAM support everywhere.
+ * Bug fixes regarding masking characters in queries.
+ * Redesigned Regexp-2 queries.
+ *
+ * Revision 1.20  1996/11/01 08:58:41  adam
+ * Interface to isamc system now includes update and delete.
+ *
+ * Revision 1.19  1996/10/29 14:09:46  adam
+ * Use of cisam system - enabled if setting isamc is 1.
+ *
+ * Revision 1.18  1996/06/04 10:18:59  adam
+ * Minor changes - removed include of ctype.h.
+ *
+ * Revision 1.17  1996/05/14  15:47:07  adam
+ * Cleanup of various buffer size entities.
+ *
+ * Revision 1.16  1996/04/09  10:05:20  adam
+ * Bug fix: prev_name buffer possibly too small; allocated in key_file_init.
+ *
+ * Revision 1.15  1996/03/21  14:50:09  adam
+ * File update uses modify-time instead of change-time.
+ *
+ * Revision 1.14  1996/02/07  14:06:37  adam
+ * Better progress report during register merge.
+ * New command: clean - removes temporary shadow files.
+ *
+ * Revision 1.13  1996/02/05  12:30:00  adam
+ * Logging reduced a bit.
+ * The remaining running time is estimated during register merge.
+ *
+ * Revision 1.12  1995/12/06  17:49:19  adam
+ * Uses dict_delete now.
+ *
+ * Revision 1.11  1995/12/06  16:06:43  adam
+ * Better diagnostics. Work on 'real' dictionary deletion.
+ *
+ * Revision 1.10  1995/12/06  12:41:22  adam
+ * New command 'stat' for the index program.
+ * Filenames can be read from stdin by specifying '-'.
+ * Bug fix/enhancement of the transformation from terms to regular
+ * expressons in the search engine.
+ *
+ * Revision 1.9  1995/10/10  12:24:39  adam
+ * Temporary sort files are compressed.
+ *
+ * Revision 1.8  1995/10/04  16:57:19  adam
+ * Key input and merge sort in one pass.
+ *
+ * Revision 1.7  1995/10/02  15:18:52  adam
+ * New member in recRetrieveCtrl: diagnostic.
+ *
+ * Revision 1.6  1995/09/29  15:51:56  adam
+ * First work on multi-way read.
+ *
+ * Revision 1.5  1995/09/29  14:01:43  adam
+ * Bug fixes.
+ *
+ * Revision 1.4  1995/09/28  14:22:57  adam
+ * Sort uses smaller temporary files.
+ *
+ * Revision 1.3  1995/09/06  16:11:17  adam
+ * Option: only one word key per file.
+ *
+ * Revision 1.2  1995/09/04  12:33:42  adam
+ * Various cleanup. YAZ util used instead.
+ *
+ * Revision 1.1  1995/09/04  09:10:37  adam
+ * More work on index add/del/update.
+ * Merge sort implemented.
+ * Initial work on z39 server.
+ *
+ */
 

@@ -1,10 +1,167 @@
 /*
  * Copyright (C) 1995-1999, Index Data
  * All rights reserved.
- * Sebastian Hammer, Adam Dickmeiss
- *
+ * Sebastian Hammer, Adam Dickmeiss, Heikki Levanto
+ * (log at the end)
+ */
+#include <time.h>
+#include <zebraver.h>
+#include <zebrautl.h>
+#include <zebramap.h>
+
+#include <dict.h>
+#include <isam.h>
+#include <isamc.h>
+#include <isams.h>
+#include <isamh.h>
+#include <data1.h>
+#include <recctrl.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define IT_MAX_WORD 256
+#define IT_KEY_HAVE_SEQNO 1
+#define IT_KEY_HAVE_FIELD 0
+
+typedef int SYSNO;
+
+struct it_key {
+    int  sysno;
+    int  seqno;
+};
+
+enum dirsKind { dirs_dir, dirs_file };
+
+struct dir_entry {
+    enum dirsKind kind;
+    char *name;
+    time_t mtime;
+};
+
+struct dirs_entry {
+    enum dirsKind kind;
+    char path[256];
+    SYSNO sysno;
+    time_t mtime;
+};
+
+struct recordGroup {
+    char         *groupName;
+    char         *databaseName;
+    char         *path;
+    char         *recordId;
+    char         *recordType;
+    int          flagStoreData;
+    int          flagStoreKeys;
+    int          flagRw;
+    int          fileVerboseLimit;
+    int          databaseNamePath;
+    int          explainDatabase;
+#if ZEBRASDR
+    int          useSDR;
+#endif
+    data1_handle dh;
+    BFiles       bfs;
+    ZebraMaps    zebra_maps;
+    RecTypes     recTypes;
+};
+
+void getFnameTmp (char *fname, int no);
+        
+struct dirs_info *dirs_open (Dict dict, const char *rep, int rw);
+struct dirs_info *dirs_fopen (Dict dict, const char *path);
+struct dirs_entry *dirs_read (struct dirs_info *p);
+struct dirs_entry *dirs_last (struct dirs_info *p);
+void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime);
+void dirs_rmdir (struct dirs_info *p, const char *src);
+void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime);
+void dirs_del (struct dirs_info *p, const char *src);
+void dirs_free (struct dirs_info **pp);
+
+struct dir_entry *dir_open (const char *rep);
+void dir_sort (struct dir_entry *e);
+void dir_free (struct dir_entry **e_p);
+
+void repositoryUpdate (struct recordGroup *rGroup);
+void repositoryAdd (struct recordGroup *rGroup);
+void repositoryDelete (struct recordGroup *rGroup);
+void repositoryShow (struct recordGroup *rGroup);
+
+int key_open (struct recordGroup *rGroup, int mem);
+int key_close (struct recordGroup *group);
+int key_compare (const void *p1, const void *p2);
+int key_get_pos (const void *p);
+int key_compare_it (const void *p1, const void *p2);
+int key_qsort_compare (const void *p1, const void *p2);
+void key_logdump (int mask, const void *p);
+void inv_prstat (BFiles bfs);
+void inv_compact (BFiles bfs);
+void key_input (BFiles bfs, int nkeys, int cache);
+ISAMC_M key_isamc_m (Res res);
+ISAMS_M key_isams_m (Res res);
+ISAMH_M key_isamh_m (Res res);
+int merge_sort (char **buf, int from, int to);
+int key_SU_code (int ch, char *out);
+
+#define FNAME_DICT "dict"
+#define FNAME_ISAM "isam"
+#define FNAME_ISAMC "isamc"
+#define FNAME_ISAMS "isams"
+#define FNAME_ISAMH "isamh"
+#define FNAME_CONFIG "zebra.cfg"
+
+#define GMATCH_DICT "gmatch"
+#define FMATCH_DICT "fmatch"
+
+struct strtab *strtab_mk (void);
+int strtab_src (struct strtab *t, const char *name, void ***infop);
+void strtab_del (struct strtab *t,
+                 void (*func)(const char *name, void *info, void *data),
+                 void *data);
+int index_char_cvt (int c);
+int index_word_prefix (char *string, int attset_ordinal,
+                       int local_attribute, const char *databaseName);
+
+int fileExtract (SYSNO *sysno, const char *fname,
+                 const struct recordGroup *rGroup, int deleteFlag);
+
+void zebraIndexLockMsg (const char *str);
+void zebraIndexUnlock (void);
+void zebraIndexLock (BFiles bfs, int commitNow, const char *rval);
+int zebraIndexWait (int commitPhase);
+
+#define FNAME_MAIN_LOCK   "zebraidx.LCK"
+#define FNAME_COMMIT_LOCK "zebracmt.LCK"
+#define FNAME_ORG_LOCK    "zebraorg.LCK"
+#define FNAME_TOUCH_TIME  "zebraidx.time"
+
+typedef struct zebra_lock_info *ZebraLockHandle;
+ZebraLockHandle zebra_lock_create(const char *file, int excl_flag);
+void zebra_lock_destroy (ZebraLockHandle h);
+int zebra_lock (ZebraLockHandle h);
+int zebra_lock_nb (ZebraLockHandle h);
+int zebra_unlock (ZebraLockHandle h);
+int zebra_lock_fd (ZebraLockHandle h);
+void zebra_lock_prefix (Res res, char *dst);
+
+void zebra_load_atts (data1_handle dh, Res res);
+
+extern Res common_resource;
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
+/*
  * $Log: index.h,v $
- * Revision 1.63  1999-05-26 07:49:13  adam
+ * Revision 1.64  1999-06-30 15:07:23  heikki
+ * Adding isamh stuff
+ *
+ * Revision 1.63  1999/05/26 07:49:13  adam
  * C++ compilation.
  *
  * Revision 1.62  1999/05/12 13:08:06  adam
@@ -226,149 +383,3 @@
  * New simple file index tool.
  *
  */
-#include <time.h>
-#include <zebraver.h>
-#include <zebrautl.h>
-#include <zebramap.h>
-
-#include <dict.h>
-#include <isam.h>
-#include <isamc.h>
-#include <isams.h>
-#include <data1.h>
-#include <recctrl.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define IT_MAX_WORD 256
-#define IT_KEY_HAVE_SEQNO 1
-#define IT_KEY_HAVE_FIELD 0
-
-typedef int SYSNO;
-
-struct it_key {
-    int  sysno;
-    int  seqno;
-};
-
-enum dirsKind { dirs_dir, dirs_file };
-
-struct dir_entry {
-    enum dirsKind kind;
-    char *name;
-    time_t mtime;
-};
-
-struct dirs_entry {
-    enum dirsKind kind;
-    char path[256];
-    SYSNO sysno;
-    time_t mtime;
-};
-
-struct recordGroup {
-    char         *groupName;
-    char         *databaseName;
-    char         *path;
-    char         *recordId;
-    char         *recordType;
-    int          flagStoreData;
-    int          flagStoreKeys;
-    int          flagRw;
-    int          fileVerboseLimit;
-    int          databaseNamePath;
-    int          explainDatabase;
-#if ZEBRASDR
-    int          useSDR;
-#endif
-    data1_handle dh;
-    BFiles       bfs;
-    ZebraMaps    zebra_maps;
-    RecTypes     recTypes;
-};
-
-void getFnameTmp (char *fname, int no);
-        
-struct dirs_info *dirs_open (Dict dict, const char *rep, int rw);
-struct dirs_info *dirs_fopen (Dict dict, const char *path);
-struct dirs_entry *dirs_read (struct dirs_info *p);
-struct dirs_entry *dirs_last (struct dirs_info *p);
-void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime);
-void dirs_rmdir (struct dirs_info *p, const char *src);
-void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime);
-void dirs_del (struct dirs_info *p, const char *src);
-void dirs_free (struct dirs_info **pp);
-
-struct dir_entry *dir_open (const char *rep);
-void dir_sort (struct dir_entry *e);
-void dir_free (struct dir_entry **e_p);
-
-void repositoryUpdate (struct recordGroup *rGroup);
-void repositoryAdd (struct recordGroup *rGroup);
-void repositoryDelete (struct recordGroup *rGroup);
-void repositoryShow (struct recordGroup *rGroup);
-
-int key_open (struct recordGroup *rGroup, int mem);
-int key_close (struct recordGroup *group);
-int key_compare (const void *p1, const void *p2);
-int key_get_pos (const void *p);
-int key_compare_it (const void *p1, const void *p2);
-int key_qsort_compare (const void *p1, const void *p2);
-void key_logdump (int mask, const void *p);
-void inv_prstat (BFiles bfs);
-void inv_compact (BFiles bfs);
-void key_input (BFiles bfs, int nkeys, int cache);
-ISAMC_M key_isamc_m (Res res);
-ISAMS_M key_isams_m (Res res);
-int merge_sort (char **buf, int from, int to);
-int key_SU_code (int ch, char *out);
-
-#define FNAME_DICT "dict"
-#define FNAME_ISAM "isam"
-#define FNAME_ISAMC "isamc"
-#define FNAME_ISAMS "isams"
-#define FNAME_CONFIG "zebra.cfg"
-
-#define GMATCH_DICT "gmatch"
-#define FMATCH_DICT "fmatch"
-
-struct strtab *strtab_mk (void);
-int strtab_src (struct strtab *t, const char *name, void ***infop);
-void strtab_del (struct strtab *t,
-                 void (*func)(const char *name, void *info, void *data),
-                 void *data);
-int index_char_cvt (int c);
-int index_word_prefix (char *string, int attset_ordinal,
-                       int local_attribute, const char *databaseName);
-
-int fileExtract (SYSNO *sysno, const char *fname,
-                 const struct recordGroup *rGroup, int deleteFlag);
-
-void zebraIndexLockMsg (const char *str);
-void zebraIndexUnlock (void);
-void zebraIndexLock (BFiles bfs, int commitNow, const char *rval);
-int zebraIndexWait (int commitPhase);
-
-#define FNAME_MAIN_LOCK   "zebraidx.LCK"
-#define FNAME_COMMIT_LOCK "zebracmt.LCK"
-#define FNAME_ORG_LOCK    "zebraorg.LCK"
-#define FNAME_TOUCH_TIME  "zebraidx.time"
-
-typedef struct zebra_lock_info *ZebraLockHandle;
-ZebraLockHandle zebra_lock_create(const char *file, int excl_flag);
-void zebra_lock_destroy (ZebraLockHandle h);
-int zebra_lock (ZebraLockHandle h);
-int zebra_lock_nb (ZebraLockHandle h);
-int zebra_unlock (ZebraLockHandle h);
-int zebra_lock_fd (ZebraLockHandle h);
-void zebra_lock_prefix (Res res, char *dst);
-
-void zebra_load_atts (data1_handle dh, Res res);
-
-extern Res common_resource;
-
-#ifdef __cplusplus
-}
-#endif
