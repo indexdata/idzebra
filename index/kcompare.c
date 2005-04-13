@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.55 2005-01-15 19:38:25 adam Exp $
+/* $Id: kcompare.c,v 1.56 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -281,7 +281,7 @@ ISAMS_M *key_isams_m (Res res, ISAMS_M *me)
 
 ISAMC_M *key_isamc_m (Res res, ISAMC_M *me)
 {
-    isc_getmethod (me);
+    isamc_getmethod (me);
 
     me->compare_item = key_compare;
     me->log_item = key_logdump_txt;

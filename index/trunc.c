@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.51 2005-01-15 20:47:15 adam Exp $
+/* $Id: trunc.c,v 1.52 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -123,12 +123,12 @@ static void heap_close (struct trunc_info *ti)
     xfree(ti);
 }
 
-static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
-                          const char *flags, ISAMS_P *isam_p, int from, int to,
-                          int merge_chunk, int preserve_position,
-                          int term_type, NMEM rset_nmem,
-                          const struct key_control *kctrl, int scope,
-                          TERMID termid)
+static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
+                         const char *flags, ISAM_P *isam_p, int from, int to,
+			 int merge_chunk, int preserve_position,
+			 int term_type, NMEM rset_nmem,
+			 const struct key_control *kctrl, int scope,
+			 TERMID termid)
 {
     RSET result; 
     RSFD result_rsfd;
@@ -225,11 +225,11 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
                         key_compare_it);
         for (i = to-from; --i >= 0; )
         {
-            ispt[i] = isc_pp_open (zi->reg->isamc, isam_p[from+i]);
-            if (isc_pp_read (ispt[i], ti->tmpbuf))
+            ispt[i] = isamc_pp_open (zi->reg->isamc, isam_p[from+i]);
+            if (isamc_pp_read (ispt[i], ti->tmpbuf))
                 heap_insert (ti, ti->tmpbuf, i);
             else
-                isc_pp_close (ispt[i]);
+                isamc_pp_close (ispt[i]);
         }
         while (ti->heapnum)
         {
@@ -240,19 +240,19 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
             if (preserve_position)
             {
                 heap_delete (ti);
-                if (isc_pp_read (ispt[n], ti->tmpbuf))
+                if (isamc_pp_read (ispt[n], ti->tmpbuf))
                     heap_insert (ti, ti->tmpbuf, n);
                 else
-                    isc_pp_close (ispt[n]);
+                    isamc_pp_close (ispt[n]);
             }
             else
             {
                 while (1)
                 {
-                    if (!isc_pp_read (ispt[n], ti->tmpbuf))
+                    if (!isamc_pp_read (ispt[n], ti->tmpbuf))
                     {
                         heap_delete (ti);
-                        isc_pp_close (ispt[n]);
+                        isamc_pp_close (ispt[n]);
                         break;
                     }
                     if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
@@ -377,8 +377,8 @@ static RSET rset_trunc_r (ZebraHandle zi, const char *term, int length,
 
 static int isams_trunc_cmp (const void *p1, const void *p2)
 {
-    ISAMS_P i1 = *(ISAMS_P*) p1;
-    ISAMS_P i2 = *(ISAMS_P*) p2;
+    ISAM_P i1 = *(ISAM_P*) p1;
+    ISAM_P i2 = *(ISAM_P*) p2;
 
     if (i1 > i2)
         return 1;
@@ -389,13 +389,13 @@ static int isams_trunc_cmp (const void *p1, const void *p2)
 
 static int isamc_trunc_cmp (const void *p1, const void *p2)
 {
-    ISAMC_P i1 = *(ISAMC_P*) p1;
-    ISAMC_P i2 = *(ISAMC_P*) p2;
+    ISAM_P i1 = *(ISAM_P*) p1;
+    ISAM_P i2 = *(ISAM_P*) p2;
     zint d;
 
-    d = (isc_type (i1) - isc_type (i2));
+    d = (isamc_type (i1) - isamc_type (i2));
     if (d == 0)
-        d = isc_block (i1) - isc_block (i2);
+        d = isamc_block (i1) - isamc_block (i2);
     if (d > 0)
 	return 1;
     else if (d < 0)
@@ -403,7 +403,7 @@ static int isamc_trunc_cmp (const void *p1, const void *p2)
     return 0;
 }
 
-RSET rset_trunc (ZebraHandle zi, ISAMS_P *isam_p, int no,
+RSET rset_trunc (ZebraHandle zi, ISAM_P *isam_p, int no,
 		 const char *term, int length, const char *flags,
                  int preserve_position, int term_type, NMEM rset_nmem,
                  const struct key_control *kctrl, int scope)

@@ -1,4 +1,4 @@
-/* $Id: invstat.c,v 1.45 2005-03-09 12:14:42 adam Exp $
+/* $Id: invstat.c,v 1.46 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -74,7 +74,7 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     zint occur = 0;
     int i = 0;
     struct inv_stat_info *stat_info = (struct inv_stat_info*) client;
-    ISAMS_P isam_p;
+    ISAM_P isam_p;
     int firstsys=-1;
     int firstseq=-1;
     int lastsys=-1;
@@ -83,8 +83,8 @@ static int inv_stat_handle (char *name, const char *info, int pos,
     stat_info->no_dict_entries++;
     stat_info->no_dict_bytes += strlen(name);
 
-    assert (*info == sizeof(ISAMS_P));
-    memcpy (&isam_p, info+1, sizeof(ISAMS_P));
+    assert (*info == sizeof(ISAM_P));
+    memcpy (&isam_p, info+1, sizeof(ISAM_P));
 
     if (stat_info->zh->reg->isams)
     {
@@ -108,15 +108,15 @@ static int inv_stat_handle (char *name, const char *info, int pos,
         zint occurx = 0;
 	struct it_key key;
 
-        pp = isc_pp_open (stat_info->zh->reg->isamc, isam_p);
-        occur = isc_pp_num (pp);
-        while (isc_pp_read(pp, &key))
+        pp = isamc_pp_open (stat_info->zh->reg->isamc, isam_p);
+        occur = isamc_pp_num (pp);
+        while (isamc_pp_read(pp, &key))
 	{
             occurx++;
 	}
         assert (occurx == occur);
-	stat_info->no_isam_entries[isc_type(isam_p)] += occur;
-        isc_pp_close (pp);
+	stat_info->no_isam_entries[isamc_type(isam_p)] += occur;
+        isamc_pp_close (pp);
     }
     if (stat_info->zh->reg->isamb)
     {
@@ -213,19 +213,19 @@ int zebra_register_statistics (ZebraHandle zh, int dumpdict)
     if (zh->reg->isamc)
     {
 	fprintf (stdout, "   Blocks    Occur  Size KB   Bytes/Entry\n");
-	for (i = 0; isc_block_used (zh->reg->isamc, i) >= 0; i++)
+	for (i = 0; isamc_block_used (zh->reg->isamc, i) >= 0; i++)
 	{
 	    fprintf (stdout, " %8" ZINT_FORMAT0 " %8" ZINT_FORMAT0,
-		     isc_block_used (zh->reg->isamc, i),
+		     isamc_block_used (zh->reg->isamc, i),
 		     stat_info.no_isam_entries[i]);
 
 	    if (stat_info.no_isam_entries[i])
 		fprintf (stdout, " %8d   %f",
 			 (int) ((1023.0 + (double)
-                                 isc_block_used(zh->reg->isamc, i) *
-				 isc_block_size(zh->reg->isamc,i))/1024),
-			 ((double) isc_block_used(zh->reg->isamc, i) *
-			  isc_block_size(zh->reg->isamc,i))/
+                                 isamc_block_used(zh->reg->isamc, i) *
+				 isamc_block_size(zh->reg->isamc,i))/1024),
+			 ((double) isamc_block_used(zh->reg->isamc, i) *
+			  isamc_block_size(zh->reg->isamc,i))/
 			 stat_info.no_isam_entries[i]);
 	    fprintf (stdout, "\n");
 	}

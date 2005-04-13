@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.172 2005-04-13 08:52:01 adam Exp $
+/* $Id: zrpn.c,v 1.173 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -180,7 +180,7 @@ struct grep_info {
 #ifdef TERM_COUNT        
     int *term_no;        
 #endif        
-    ISAMC_P *isam_p_buf;
+    ISAM_P *isam_p_buf;
     int isam_p_size;        
     int isam_p_indx;
     ZebraHandle zh;
@@ -215,13 +215,13 @@ static void add_isam_p(const char *name, const char *info,
     }
     if (p->isam_p_indx == p->isam_p_size)
     {
-        ISAMC_P *new_isam_p_buf;
+        ISAM_P *new_isam_p_buf;
 #ifdef TERM_COUNT        
         int *new_term_no;        
 #endif
         p->isam_p_size = 2*p->isam_p_size + 100;
-        new_isam_p_buf = (ISAMC_P *) xmalloc(sizeof(*new_isam_p_buf) *
-                                             p->isam_p_size);
+        new_isam_p_buf = (ISAM_P *) xmalloc(sizeof(*new_isam_p_buf) *
+					    p->isam_p_size);
         if (p->isam_p_buf)
         {
             memcpy(new_isam_p_buf, p->isam_p_buf,
@@ -2406,7 +2406,7 @@ RSET rpn_search(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
 
 struct scan_info_entry {
     char *term;
-    ISAMC_P isam_p;
+    ISAM_P isam_p;
 };
 
 struct scan_info {
@@ -2430,8 +2430,8 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
     scan_info->list[idx].term = (char *)
         odr_malloc(scan_info->odr, strlen(name + len_prefix)+1);
     strcpy(scan_info->list[idx].term, name + len_prefix);
-    assert (*info == sizeof(ISAMC_P));
-    memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAMC_P));
+    assert (*info == sizeof(ISAM_P));
+    memcpy (&scan_info->list[idx].isam_p, info+1, sizeof(ISAM_P));
     return 0;
 }
 

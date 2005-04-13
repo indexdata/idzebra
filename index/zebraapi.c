@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.157 2005-04-13 08:52:27 adam Exp $
+/* $Id: zebraapi.c,v 1.158 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -345,10 +345,10 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     if (res_get_match (res, "isam", "c", ISAM_DEFAULT))
     {
 	struct ISAMC_M_s isamc_m;
-	if (!(reg->isamc = isc_open (reg->bfs, FNAME_ISAMC,
+	if (!(reg->isamc = isamc_open (reg->bfs, FNAME_ISAMC,
 				    rw, key_isamc_m(res, &isamc_m))))
 	{
-	    yaz_log (YLOG_WARN, "isc_open failed");
+	    yaz_log (YLOG_WARN, "isamc_open failed");
 	    return 0;
 	}
     }
@@ -439,7 +439,7 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 	if (reg->isams)
 	    isams_close (reg->isams);
         if (reg->isamc)
-            isc_close (reg->isamc);
+            isamc_close (reg->isamc);
         if (reg->isamb)
             isamb_close (reg->isamb);
         rec_close (&reg->records);
@@ -1243,7 +1243,7 @@ int zebra_admin_exchange_record (ZebraHandle zh,
 int delete_w_handle(const char *info, void *handle)
 {
     ZebraHandle zh = (ZebraHandle) handle;
-    ISAMC_P pos;
+    ISAM_P pos;
     ASSERTZH;
 
     if (*info == sizeof(pos))

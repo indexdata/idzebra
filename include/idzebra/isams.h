@@ -1,4 +1,4 @@
-/* $Id: isams.h,v 1.2 2005-01-15 19:38:24 adam Exp $
+/* $Id: isams.h,v 1.3 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -31,7 +31,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 YAZ_BEGIN_CDECL
 
 typedef struct ISAMS_s *ISAMS;
-typedef ISAMC_P ISAMS_P;
 typedef struct ISAMS_PP_s *ISAMS_PP;
 
 typedef struct ISAMS_M_s {
@@ -54,8 +53,8 @@ void isams_getmethod (ISAMS_M *me);
 ISAMS isams_open (BFiles bfs, const char *name, int writeflag,
 		  ISAMS_M *method);
 int isams_close (ISAMS is);
-ISAMS_P isams_merge (ISAMS is, ISAMS_I data);
-ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos);
+ISAM_P isams_merge (ISAMS is, ISAMS_I data);
+ISAMS_PP isams_pp_open (ISAMS is, ISAM_P pos);
 void isams_pp_close (ISAMS_PP pp);
 int isams_read_item (ISAMS_PP pp, char **dst);
 int isams_pp_read (ISAMS_PP pp, void *buf);

@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.36 2005-03-30 09:25:24 adam Exp $
+/* $Id: rsisamc.c,v 1.37 2005-04-13 13:03:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -58,14 +58,14 @@ struct rset_pp_info {
 
 struct rset_isamc_info {
     ISAMC   is;
-    ISAMC_P pos;
+    ISAM_P pos;
 };
 
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-RSET rsisamc_create( NMEM nmem, const struct key_control *kcontrol, int scope,
-                             ISAMC is, ISAMC_P pos, TERMID term)
+RSET rsisamc_create(NMEM nmem, const struct key_control *kcontrol, int scope,
+		    ISAMC is, ISAM_P pos, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,term);
     struct rset_isamc_info *info;
@@ -108,7 +108,7 @@ RSFD r_open (RSET ct, int flag)
         rfd->priv = ptinfo;
         ptinfo->buf = nmem_malloc (ct->nmem,ct->keycontrol->key_size);
     }
-    ptinfo->pt = isc_pp_open(info->is, info->pos);
+    ptinfo->pt = isamc_pp_open(info->is, info->pos);
     return rfd;
 }
 
@@ -116,7 +116,7 @@ static void r_close (RSFD rfd)
 {
     struct rset_pp_info *p = (struct rset_pp_info *)(rfd->priv);
 
-    isc_pp_close(p->pt);
+    isamc_pp_close(p->pt);
     rfd_delete_base(rfd);
 }
 
@@ -125,7 +125,7 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_pp_info *p = (struct rset_pp_info *)(rfd->priv);
     int r;
-    r = isc_pp_read(p->pt, buf);
+    r = isamc_pp_read(p->pt, buf);
     if (term)
         *term = rfd->rset->term;
     yaz_log(log_level, "isamc.r_read");

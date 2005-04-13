@@ -1,4 +1,4 @@
-/* $Id: isams.c,v 1.11 2005-01-15 19:38:31 adam Exp $
+/* $Id: isams.c,v 1.12 2005-04-13 13:03:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -112,7 +112,7 @@ int isams_close (ISAMS is)
     return 0;
 }
 
-ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
+ISAM_P isams_merge (ISAMS is, ISAMS_I data)
 {
     char i_item[128];
     int i_more, i_mode;
@@ -184,7 +184,7 @@ ISAMS_P isams_merge (ISAMS is, ISAMS_I data)
     return first_block * is->block_size + first_offset;
 }
 
-ISAMS_PP isams_pp_open (ISAMS is, ISAMS_P pos)
+ISAMS_PP isams_pp_open (ISAMS is, ISAM_P pos)
 {
     ISAMS_PP pp = (ISAMS_PP) xmalloc (sizeof(*pp));
 

@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.19 2005-03-21 17:20:54 adam Exp $
+/* $Id: tstisamb.c,v 1.20 2005-04-13 13:03:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -97,7 +97,7 @@ int code_read(void *vp, char **dst, int *insertMode)
 void tst_insert(ISAMB isb, int n)
 {
     ISAMC_I isamc_i;
-    ISAMC_P isamc_p;
+    ISAM_P isamc_p;
     struct read_info ri;
     ISAMB_PP pp;
     char key_buf[10];
@@ -112,7 +112,8 @@ void tst_insert(ISAMB isb, int n)
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
     
-    isamc_p = isamb_merge (isb, 0 /* new list */ , &isamc_i);
+    isamc_p = 0; /* new list */
+    isamb_merge (isb, &isamc_p , &isamc_i);
 
     /* read the entries */
     pp = isamb_pp_open (isb, isamc_p, 1);
@@ -153,7 +154,7 @@ void tst_insert(ISAMB isb, int n)
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
     
-    isamc_p = isamb_merge (isb, isamc_p , &isamc_i);
+    isamb_merge (isb, &isamc_p , &isamc_i);
 
     /* delete a number of entries (odd ones) */
     ri.no = 1;
@@ -164,7 +165,7 @@ void tst_insert(ISAMB isb, int n)
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
     
-    isamc_p = isamb_merge (isb, isamc_p , &isamc_i);
+    isamb_merge (isb, &isamc_p, &isamc_i);
 
     if (isamc_p)
     {
@@ -176,7 +177,7 @@ void tst_insert(ISAMB isb, int n)
 void tst_forward(ISAMB isb, int n)
 {
     ISAMC_I isamc_i;
-    ISAMC_P isamc_p;
+    ISAM_P isamc_p;
     struct read_info ri;
     int i;
     ISAMB_PP pp;
@@ -190,7 +191,8 @@ void tst_forward(ISAMB isb, int n)
     isamc_i.clientData = &ri;
     isamc_i.read_item = code_read;
     
-    isamc_p = isamb_merge (isb, 0 /* new list */ , &isamc_i);
+    isamc_p = 0;
+    isamb_merge (isb, &isamc_p, &isamc_i);
 
     /* read the entries */
     pp = isamb_pp_open (isb, isamc_p, 1);
@@ -232,7 +234,7 @@ void tst_forward(ISAMB isb, int n)
 void tst_x(ISAMB isb)
 {
     ISAMC_I isamc_i;
-    ISAMB_P isamb_p = 0;
+    ISAM_P isamb_p = 0;
     struct read_info ri;
 
     isamc_i.clientData = &ri;
@@ -241,19 +243,19 @@ void tst_x(ISAMB isb)
     ri.step = 1;
     ri.max = 1500;
 
-    isamb_p = isamb_merge (isb, isamb_p , &isamc_i);
+    isamb_merge (isb, &isamb_p , &isamc_i);
 
     ri.no = 1;
     ri.step = 1;
     ri.max = 500;
 
-    isamb_p = isamb_merge (isb, isamb_p , &isamc_i);
+    isamb_merge (isb, &isamb_p , &isamc_i);
 }
 
 void tst_append(ISAMB isb, int n)
 {
     ISAMC_I isamc_i;
-    ISAMB_P isamb_p = 0;
+    ISAM_P isamb_p = 0;
     struct read_info ri;
     int i;
     int chunk = 10;
@@ -269,7 +271,7 @@ void tst_append(ISAMB isb, int n)
 	isamc_i.clientData = &ri;
 	isamc_i.read_item = code_read;
 	
-	isamb_p = isamb_merge (isb, isamb_p , &isamc_i);
+	isamb_merge (isb, &isamb_p , &isamc_i);
     }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.19 2005-03-30 09:25:24 adam Exp $
+/* $Id: rsisams.c,v 1.20 2005-04-13 13:03:50 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -55,12 +55,12 @@ struct rset_pp_info {
 
 struct rset_isams_info {
     ISAMS   is;
-    ISAMS_P pos;
+    ISAM_P pos;
 };
 
 
-RSET rsisams_create( NMEM nmem, const struct key_control *kcontrol, int scope,
-            ISAMS is, ISAMS_P pos, TERMID term)
+RSET rsisams_create(NMEM nmem, const struct key_control *kcontrol, int scope,
+		    ISAMS is, ISAM_P pos, TERMID term)
 {
     RSET rnew=rset_create_base(&control, nmem, kcontrol, scope, term);
     struct rset_isams_info *info;

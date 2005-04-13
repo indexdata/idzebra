@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.64 2005-01-15 19:38:26 adam Exp $
+/* $Id: kinput.c,v 1.65 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -546,7 +546,7 @@ int heap_inpc (struct heap_info *hi)
     while (hci.more)
     {
         char this_name[INP_NAME_MAX];
-        ISAMC_P isamc_p, isamc_p2;
+        ISAM_P isamc_p, isamc_p2;
         char *dict_info;
 
         strcpy (this_name, hci.cur_name);
@@ -554,8 +554,9 @@ int heap_inpc (struct heap_info *hi)
         hi->no_diffs++;
         if ((dict_info = dict_lookup (hi->reg->dict, hci.cur_name)))
         {
-            memcpy (&isamc_p, dict_info+1, sizeof(ISAMC_P));
-            isamc_p2 = isc_merge (hi->reg->isamc, isamc_p, isamc_i);
+            memcpy (&isamc_p, dict_info+1, sizeof(ISAM_P));
+	    isamc_p2 = isamc_p;
+            isamc_merge (hi->reg->isamc, &isamc_p2, isamc_i);
             if (!isamc_p2)
             {
                 hi->no_deletions++;
@@ -567,14 +568,15 @@ int heap_inpc (struct heap_info *hi)
                 hi->no_updates++;
                 if (isamc_p2 != isamc_p)
                     dict_insert (hi->reg->dict, this_name,
-                                 sizeof(ISAMC_P), &isamc_p2);
+                                 sizeof(ISAM_P), &isamc_p2);
             }
         } 
         else
         {
-            isamc_p = isc_merge (hi->reg->isamc, 0, isamc_i);
+	    isamc_p = 0;
+	    isamc_merge (hi->reg->isamc, &isamc_p, isamc_i);
             hi->no_insertions++;
-            dict_insert (hi->reg->dict, this_name, sizeof(ISAMC_P), &isamc_p);
+            dict_insert (hi->reg->dict, this_name, sizeof(ISAM_P), &isamc_p);
         }
     }
     xfree (isamc_i);
@@ -626,7 +628,7 @@ int heap_inpb (struct heap_info *hi)
     while (hci.more)
     {
         char this_name[INP_NAME_MAX];
-        ISAMC_P isamc_p, isamc_p2;
+        ISAM_P isamc_p, isamc_p2;
         char *dict_info;
 
         strcpy (this_name, hci.cur_name);
@@ -638,8 +640,9 @@ int heap_inpb (struct heap_info *hi)
 #endif
         if ((dict_info = dict_lookup (hi->reg->dict, hci.cur_name)))
         {
-            memcpy (&isamc_p, dict_info+1, sizeof(ISAMC_P));
-            isamc_p2 = isamb_merge (hi->reg->isamb, isamc_p, isamc_i);
+            memcpy (&isamc_p, dict_info+1, sizeof(ISAM_P));
+	    isamc_p2 = isamc_p;
+            isamb_merge (hi->reg->isamb, &isamc_p2, isamc_i);
             if (!isamc_p2)
             {
                 hi->no_deletions++;
@@ -651,14 +654,15 @@ int heap_inpb (struct heap_info *hi)
                 hi->no_updates++;
                 if (isamc_p2 != isamc_p)
                     dict_insert (hi->reg->dict, this_name,
-                                 sizeof(ISAMC_P), &isamc_p2);
+                                 sizeof(ISAM_P), &isamc_p2);
             }
         } 
         else
         {
-            isamc_p = isamb_merge (hi->reg->isamb, 0, isamc_i);
+	    isamc_p = 0;
+            isamb_merge (hi->reg->isamb, &isamc_p, isamc_i);
             hi->no_insertions++;
-            dict_insert (hi->reg->dict, this_name, sizeof(ISAMC_P), &isamc_p);
+            dict_insert (hi->reg->dict, this_name, sizeof(ISAM_P), &isamc_p);
         }
     }
     xfree (isamc_i);
@@ -687,7 +691,7 @@ int heap_inps (struct heap_info *hi)
     while (hci.more)
     {
         char this_name[INP_NAME_MAX];
-        ISAMS_P isams_p;
+        ISAM_P isams_p;
         char *dict_info;
 
         strcpy (this_name, hci.cur_name);
@@ -697,7 +701,7 @@ int heap_inps (struct heap_info *hi)
         {
             isams_p = isams_merge (hi->reg->isams, isams_i);
             hi->no_insertions++;
-            dict_insert (hi->reg->dict, this_name, sizeof(ISAMS_P), &isams_p);
+            dict_insert (hi->reg->dict, this_name, sizeof(ISAM_P), &isams_p);
         }
 	else
 	{

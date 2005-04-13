@@ -1,4 +1,4 @@
-/* $Id: isamb.h,v 1.4 2005-03-08 14:02:08 adam Exp $
+/* $Id: isamb.h,v 1.5 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -30,7 +30,6 @@ YAZ_BEGIN_CDECL
 
 typedef struct ISAMB_s *ISAMB;
 typedef struct ISAMB_PP_s *ISAMB_PP;
-typedef ISAMC_P ISAMB_P;
 
 YAZ_EXPORT
 ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
@@ -40,10 +39,10 @@ YAZ_EXPORT
 void isamb_close(ISAMB isamb);
 
 YAZ_EXPORT 
-ISAMB_P isamb_merge(ISAMB b, ISAMB_P pos, ISAMC_I *data);
+void isamb_merge(ISAMB b, ISAM_P *pos, ISAMC_I *data);
 
 YAZ_EXPORT
-ISAMB_PP isamb_pp_open(ISAMB isamb, ISAMB_P pos, int scope);
+ISAMB_PP isamb_pp_open(ISAMB isamb, ISAM_P pos, int scope);
 
 YAZ_EXPORT
 int isamb_pp_read(ISAMB_PP pp, void *buf);
@@ -60,10 +59,10 @@ YAZ_EXPORT
 void isamb_pp_close(ISAMB_PP pp);
 
 YAZ_EXPORT
-int isamb_unlink(ISAMB b, ISAMC_P pos);
+int isamb_unlink(ISAMB b, ISAM_P pos);
 
 YAZ_EXPORT
-ISAMB_PP isamb_pp_open_x(ISAMB isamb, ISAMB_P pos, int *level, int scope);
+ISAMB_PP isamb_pp_open_x(ISAMB isamb, ISAM_P pos, int *level, int scope);
 YAZ_EXPORT
 void isamb_pp_close_x(ISAMB_PP pp, zint *size, zint *blocks);
 
@@ -71,7 +70,7 @@ YAZ_EXPORT
 int isamb_block_info(ISAMB isamb, int cat);
 
 YAZ_EXPORT
-void isamb_dump(ISAMB b, ISAMB_P pos, void (*pr)(const char *str));
+void isamb_dump(ISAMB b, ISAM_P pos, void (*pr)(const char *str));
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.47 2005-01-17 01:21:43 adam Exp $
+/* $Id: rset.h,v 1.48 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -240,13 +240,13 @@ RSET rsprox_create(NMEM nmem, const struct key_control *kcontrol,
 		   int ordered, int exclusion, int relation, int distance);
 
 RSET rsisamb_create(NMEM nmem, const struct key_control *kcontrol,
-		    int scope, ISAMB is, ISAMB_P pos, TERMID term);
+		    int scope, ISAMB is, ISAM_P pos, TERMID term);
 
 RSET rsisamc_create(NMEM nmem, const struct key_control *kcontrol,
-		    int scope, ISAMC is, ISAMC_P pos, TERMID term);
+		    int scope, ISAMC is, ISAM_P pos, TERMID term);
 
 RSET rsisams_create(NMEM nmem, const struct key_control *kcontrol,
-		    int scope, ISAMS is, ISAMS_P pos, TERMID term);
+		    int scope, ISAMS is, ISAM_P pos, TERMID term);
 
 
 YAZ_END_CDECL

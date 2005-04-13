@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.30 2005-03-30 09:25:24 adam Exp $
+/* $Id: rsisamb.c,v 1.31 2005-04-13 13:03:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -57,14 +57,14 @@ struct rset_pp_info {
 
 struct rset_isamb_info {
     ISAMB   is;
-    ISAMB_P pos;
+    ISAM_P pos;
 };
 
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-RSET rsisamb_create( NMEM nmem, const struct key_control *kcontrol, int scope,
-            ISAMB is, ISAMB_P pos, TERMID term)
+RSET rsisamb_create(NMEM nmem, const struct key_control *kcontrol, int scope,
+		    ISAMB is, ISAM_P pos, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term);
     struct rset_isamb_info *info;

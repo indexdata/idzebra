@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.75 2005-03-21 17:20:54 adam Exp $
+/* $Id: isamb.c,v 1.76 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -72,7 +72,7 @@ struct ISAMB_head {
 #define ISAMB_PTR_CODEC 1
 
 struct ISAMB_cache_entry {
-    ISAMB_P pos;
+    ISAM_P pos;
     unsigned char *buf;
     int dirty;
     int hits;
@@ -102,7 +102,7 @@ struct ISAMB_s {
 };
 
 struct ISAMB_block {
-    ISAMB_P pos;
+    ISAM_P pos;
     int cat;
     int size;
     int leaf;
@@ -119,7 +119,7 @@ struct ISAMB_block {
 
 struct ISAMB_PP_s {
     ISAMB isamb;
-    ISAMB_P pos;
+    ISAM_P pos;
     int level;
     int maxlevel; /* total depth */
     zint total_size;
@@ -181,7 +181,7 @@ static void decode_ptr(const char **src, zint *pos)
 #endif
 
 ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
-                  int cache)
+		 int cache)
 {
     ISAMB isamb = xmalloc(sizeof(*isamb));
     int i, b_size = ISAMB_MIN_SIZE;
@@ -299,7 +299,7 @@ static void flush_blocks (ISAMB b, int cat)
     }
 }
 
-static int cache_block (ISAMB b, ISAMC_P pos, char *userbuf, int wr)
+static int cache_block (ISAMB b, ISAM_P pos, char *userbuf, int wr)
 {
     int cat = (int) (pos&CAT_MASK);
     int off = (int) (((pos/CAT_MAX) & 
@@ -432,7 +432,7 @@ void isamb_close (ISAMB isamb)
    * Reserve 5 bytes for large block sizes. 1 for small ones .. Number
    of items. We can thus have at most 2^40 nodes. 
 */
-static struct ISAMB_block *open_block(ISAMB b, ISAMC_P pos)
+static struct ISAMB_block *open_block(ISAMB b, ISAM_P pos)
 {
     int cat = (int) (pos&CAT_MASK);
     const char *src;
@@ -544,7 +544,7 @@ static void check_block (ISAMB b, struct ISAMB_block *p)
         char *startp = p->bytes;
         const char *src = startp;
         char *endp = p->bytes + p->size;
-        ISAMB_P pos;
+        ISAM_P pos;
 	void *c1 = (*b->method->codec.start)();
             
         decode_ptr(&src, &pos);
@@ -628,7 +628,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
     char *startp = p->bytes;
     const char *src = startp;
     char *endp = p->bytes + p->size;
-    ISAMB_P pos;
+    ISAM_P pos;
     struct ISAMB_block *sub_p1 = 0, *sub_p2 = 0;
     char sub_item[DST_ITEM_MAX];
     int sub_size;
@@ -1108,7 +1108,7 @@ int insert_sub (ISAMB b, struct ISAMB_block **p, void *new_item,
                            sub_size, max_item);
 }
 
-int isamb_unlink (ISAMB b, ISAMC_P pos)
+int isamb_unlink (ISAMB b, ISAM_P pos)
 {
     struct ISAMB_block *p1;
 
@@ -1149,7 +1149,7 @@ int isamb_unlink (ISAMB b, ISAMC_P pos)
     return 0;
 }
 
-ISAMB_P isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
+void isamb_merge(ISAMB b, ISAM_P *pos, ISAMC_I *stream)
 {
     char item_buf[DST_ITEM_MAX];
     char *item_ptr;
@@ -1166,7 +1166,8 @@ ISAMB_P isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
             more =
                 (*stream->read_item)(stream->clientData, &item_ptr, &i_mode);
         }
-        return 1;
+	*pos = 1;
+        return;
     }
     item_ptr = item_buf;
     more = (*stream->read_item)(stream->clientData, &item_ptr, &i_mode);
@@ -1176,8 +1177,8 @@ ISAMB_P isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
         char sub_item[DST_ITEM_MAX];
         int sub_size;
         
-        if (pos)
-            p = open_block(b, pos);
+        if (*pos)
+            p = open_block(b, *pos);
         more = insert_sub (b, &p, item_buf, &i_mode, stream, &sp,
 			   sub_item, &sub_size, 0);
         if (sp)
@@ -1203,7 +1204,7 @@ ISAMB_P isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
             
             p2->size = dst - p2->bytes;
 	    p2->no_items = p->no_items + sp->no_items;
-            pos = p2->pos;  /* return new super page */
+            *pos = p2->pos;  /* return new super page */
             close_block(b, sp);
             close_block(b, p2);
 #if INT_ENCODE
@@ -1212,7 +1213,7 @@ ISAMB_P isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
         }
         else
 	{
-            pos = p->pos;   /* return current one (again) */
+            *pos = p->pos;   /* return current one (again) */
 	}
 	if (p->no_items == 0)
 	    must_delete = 1;
@@ -1222,13 +1223,12 @@ ISAMB_P isamb_merge (ISAMB b, ISAMC_P pos, ISAMC_I *stream)
     }
     if (must_delete)
     {
-	isamb_unlink(b, pos);
-	return 0;
+	isamb_unlink(b, *pos);
+	*pos = 0;
     }
-    return pos;
 }
 
-ISAMB_PP isamb_pp_open_x(ISAMB isamb, ISAMB_P pos, int *level, int scope)
+ISAMB_PP isamb_pp_open_x(ISAMB isamb, ISAM_P pos, int *level, int scope)
 {
     ISAMB_PP pp = xmalloc(sizeof(*pp));
     int i;
@@ -1270,7 +1270,7 @@ ISAMB_PP isamb_pp_open_x(ISAMB isamb, ISAMB_P pos, int *level, int scope)
     return pp;
 }
 
-ISAMB_PP isamb_pp_open (ISAMB isamb, ISAMB_P pos, int scope)
+ISAMB_PP isamb_pp_open (ISAMB isamb, ISAM_P pos, int scope)
 {
     return isamb_pp_open_x(isamb, pos, 0, scope);
 }
@@ -1318,7 +1318,7 @@ void isamb_pp_close (ISAMB_PP pp)
 }
 
 /* simple recursive dumper .. */
-static void isamb_dump_r (ISAMB b, ISAMB_P pos, void (*pr)(const char *str),
+static void isamb_dump_r (ISAMB b, ISAM_P pos, void (*pr)(const char *str),
 			  int level)
 {
     char buf[1024];
@@ -1347,7 +1347,7 @@ static void isamb_dump_r (ISAMB b, ISAMB_P pos, void (*pr)(const char *str),
 	else
 	{
 	    const char *src = p->bytes + p->offset;
-	    ISAMB_P sub;
+	    ISAM_P sub;
 
 	    decode_ptr(&src, &sub);
 	    p->offset = src - (char*) p->bytes;
@@ -1380,7 +1380,7 @@ static void isamb_dump_r (ISAMB b, ISAMB_P pos, void (*pr)(const char *str),
     }
 }
 
-void isamb_dump(ISAMB b, ISAMB_P pos, void (*pr)(const char *str))
+void isamb_dump(ISAMB b, ISAM_P pos, void (*pr)(const char *str))
 {
     isamb_dump_r(b, pos, pr, 0);
 }
@@ -1514,7 +1514,7 @@ static int isamb_pp_forward_on_leaf(ISAMB_PP pp, void *buf, const void *untilbuf
     }
 } /* forward_on_leaf */
 
-static int isamb_pp_climb_level(ISAMB_PP pp, ISAMB_P *pos)
+static int isamb_pp_climb_level(ISAMB_PP pp, ISAM_P *pos)
 { /* climbs higher in the tree, until finds a level with data left */
   /* returns the node to (consider to) descend to in *pos) */
     struct ISAMB_block *p = pp->block[pp->level];
@@ -1654,7 +1654,7 @@ static zint isamb_pp_forward_unode(ISAMB_PP pp, zint pos, const void *untilbuf)
     
 } /* forward_unode */
 
-static void isamb_pp_descend_to_leaf(ISAMB_PP pp, ISAMB_P pos,
+static void isamb_pp_descend_to_leaf(ISAMB_PP pp, ISAM_P pos,
 				     const void *untilbuf)
 { /* climbs down the tree, from pos, to the leftmost leaf */
     struct ISAMB_block *p = pp->block[pp->level];
@@ -1694,7 +1694,7 @@ static void isamb_pp_descend_to_leaf(ISAMB_PP pp, ISAMB_P pos,
 
 static int isamb_pp_find_next_leaf(ISAMB_PP pp)
 { /* finds the next leaf by climbing up and down */
-    ISAMB_P pos;
+    ISAM_P pos;
     if (!isamb_pp_climb_level(pp, &pos))
         return 0;
     isamb_pp_descend_to_leaf(pp, pos, 0);
@@ -1703,7 +1703,7 @@ static int isamb_pp_find_next_leaf(ISAMB_PP pp)
 
 static int isamb_pp_climb_desc(ISAMB_PP pp,  const void *untilbuf)
 { /* climbs up and descends to a leaf where values >= *untilbuf are found */
-    ISAMB_P pos;
+    ISAM_P pos;
 #if ISAMB_DEBUG
     struct ISAMB_block *p = pp->block[pp->level];
     yaz_log(YLOG_DEBUG, "isamb_pp_climb_desc starting "
@@ -1823,7 +1823,7 @@ int isamb_pp_forward2(ISAMB_PP pp, void *buf, const void *untilb)
 again:
     while (p->offset == p->size)
     {
-        ISAMB_P pos;
+        ISAM_P pos;
 #if INT_ENCODE
 	const char *src_0;
 	void *c1;

@@ -1,4 +1,4 @@
-/* $Id: merge.c,v 1.29 2005-01-15 19:38:31 adam Exp $
+/* $Id: merge.c,v 1.30 2005-04-13 13:03:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,14 +27,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include "isamc-p.h"
 
-struct isc_merge_block {
-    int offset;       /* offset in r_buf */
-    zint block;        /* block number of file (0 if none) */
-    int dirty;        /* block is different from that on file */
+struct isamc_merge_block {
+    int offset;   /* offset in r_buf */
+    zint block;   /* block number of file (0 if none) */
+    int dirty;    /* block is different from that on file */
 };
 
 #if 0
-static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
+static void opt_blocks (ISAMC is, struct isamc_merge_block *mb, int ptr,
 			int last)
 {
     int i, no_dirty = 0;
@@ -63,7 +63,7 @@ static void opt_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
 }
 #endif
 
-static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
+static void flush_blocks (ISAMC is, struct isamc_merge_block *mb, int ptr,
                           char *r_buf, zint *firstpos, int cat, int last,
                           zint *numkeys)
 {
@@ -74,7 +74,7 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
         /* consider this block number */
         if (!mb[i].block) 
         {
-            mb[i].block = isc_alloc_block (is, cat);
+            mb[i].block = isamc_alloc_block (is, cat);
             mb[i].dirty = 1;
         }
 
@@ -83,7 +83,7 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
             mb[i+1].block = 0;
         else if (!mb[i+1].block)       
         {
-            mb[i+1].block = isc_alloc_block (is, cat);
+            mb[i+1].block = isamc_alloc_block (is, cat);
             mb[i+1].dirty = 1;
             mb[i].dirty = 1;
         }
@@ -131,11 +131,11 @@ static void flush_blocks (ISAMC is, struct isc_merge_block *mb, int ptr,
         }
         memcpy (src, &mb[i+1].block, sizeof(zint));
         memcpy (src+sizeof(zint), &ssize, sizeof(ssize));
-        isc_write_block (is, cat, mb[i].block, src);
+        isamc_write_block (is, cat, mb[i].block, src);
     }
 }
 
-static int get_border (ISAMC is, struct isc_merge_block *mb, zint ptr,
+static int get_border (ISAMC is, struct isamc_merge_block *mb, zint ptr,
                        int cat, zint firstpos)
 {
    /* Border set to initial fill or block size depending on
@@ -151,7 +151,7 @@ static int get_border (ISAMC is, struct isc_merge_block *mb, zint ptr,
     return mb[ptr].offset + fill - off;
 }
 
-ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
+void isamc_merge (ISAMC is, ISAM_P *ipos, ISAMC_I *data)
 {
 
     char i_item[128], *i_item_ptr;
@@ -163,7 +163,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     int last_dirty = 0;
     int debug = is->method->debug;
  
-    struct isc_merge_block mb[200];
+    struct isamc_merge_block mb[200];
 
     zint firstpos = 0;
     int cat = 0;
@@ -178,16 +178,16 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     r_clientData = (*is->method->codec.start)();
     r_buf = is->merge_buf + 128;
 
-    pp = isc_pp_open (is, ipos);
+    pp = isamc_pp_open (is, *ipos);
     /* read first item from file. make sure f_more indicates no boundary */
     f_item_ptr = f_item;
-    f_more = isc_read_item (pp, &f_item_ptr);
+    f_more = isamc_read_item (pp, &f_item_ptr);
     if (f_more > 0)
         f_more = 1;
     cat = pp->cat;
 
     if (debug > 1)
-        yaz_log (YLOG_LOG, "isc: isc_merge begin %d " ZINT_FORMAT, cat, pp->pos);
+        yaz_log (YLOG_LOG, "isc: isamc_merge begin %d " ZINT_FORMAT, cat, pp->pos);
 
     /* read first item from i */
     i_item_ptr = i_item;
@@ -220,7 +220,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
                     if (debug > 3)
                         yaz_log (YLOG_LOG, "isc: release A");
                     if (mb[ptr].block)
-                        isc_release_block (is, pp->cat, mb[ptr].block);
+                        isamc_release_block (is, pp->cat, mb[ptr].block);
                     mb[ptr].block = pp->pos;
 		    if (!mb[ptr].dirty)
 			mb[ptr].dirty = 1;
@@ -306,14 +306,14 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
             }
             /* move f */
             f_item_ptr = f_item;
-            f_more = isc_read_item (pp, &f_item_ptr);
+            f_more = isamc_read_item (pp, &f_item_ptr);
         }
         else if (cmp > 0)               /* insert f */
         {
             memcpy (r_item, f_item, f_item_ptr - f_item);
             /* move f */
             f_item_ptr = f_item;
-            f_more = isc_read_item (pp, &f_item_ptr);
+            f_more = isamc_read_item (pp, &f_item_ptr);
         }
         else                            /* insert i */
         {
@@ -391,7 +391,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
             /* delete all original block(s) read so far */
             for (i = 0; i < ptr; i++)
                 if (mb[i].block)
-                    isc_release_block (is, pp->cat, mb[i].block);
+                    isamc_release_block (is, pp->cat, mb[i].block);
             /* also delete all block to be read in the future */
             pp->deleteFlag = 1;
 
@@ -438,7 +438,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
         {
             if (debug > 3)
                 yaz_log (YLOG_LOG, "isc: release C");
-            isc_release_block (is, pp->cat, mb[ptr].block);
+            isamc_release_block (is, pp->cat, mb[ptr].block);
             mb[ptr].block = 0;
 	    if (ptr > 0)
 		mb[ptr-1].dirty = 1;
@@ -452,7 +452,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     {
         /* we have to patch initial block with num keys if that
            has changed */
-        if (numKeys != isc_pp_num (pp))
+        if (numKeys != isamc_pp_num (pp))
         {
             if (debug > 2)
                 yaz_log (YLOG_LOG, "isc: patch num keys firstpos=" ZINT_FORMAT " num=" ZINT_FORMAT,
@@ -464,7 +464,7 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     else if (ptr > 0)
     {   /* we haven't flushed initial block yet and there surely are some
            blocks to flush. Make first block dirty if numKeys differ */
-        if (numKeys != isc_pp_num (pp))
+        if (numKeys != isamc_pp_num (pp))
             mb[0].dirty = 1;
     }
     /* flush rest of block(s) in r_buf */
@@ -474,8 +474,8 @@ ISAMC_P isc_merge (ISAMC is, ISAMC_P ipos, ISAMC_I *data)
     if (!firstpos)
         cat = 0;
     if (debug > 1)
-        yaz_log (YLOG_LOG, "isc: isc_merge return %d " ZINT_FORMAT, cat, firstpos);
-    isc_pp_close (pp);
-    return cat + firstpos * 8;
+        yaz_log (YLOG_LOG, "isc: isamc_merge return %d " ZINT_FORMAT, cat, firstpos);
+    isamc_pp_close (pp);
+    *ipos = cat + firstpos * 8;
 }
 

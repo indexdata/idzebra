@@ -1,4 +1,4 @@
-/* $Id: isamc.h,v 1.2 2005-01-15 19:38:24 adam Exp $
+/* $Id: isamc.h,v 1.3 2005-04-13 13:03:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,8 +28,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
+typedef zint ISAM_P;
+
 typedef struct ISAMC_s *ISAMC;
-typedef zint ISAMC_P;
 typedef struct ISAMC_PP_s *ISAMC_PP;
 
 typedef struct ISAMC_filecat_s {
@@ -56,23 +57,24 @@ typedef struct ISAMC_I_s {
     void *clientData;
 } ISAMC_I;
 
-void isc_getmethod (ISAMC_M *m);
+void isamc_getmethod (ISAMC_M *m);
 
-ISAMC isc_open (BFiles bfs, const char *name, int writeflag, ISAMC_M *method);
-int isc_close (ISAMC is);
-ISAMC_P isc_merge (ISAMC is, ISAMC_P pos, ISAMC_I *data);
+ISAMC isamc_open (BFiles bfs, const char *name, int writeflag,
+		  ISAMC_M *method);
+int isamc_close (ISAMC is);
+void isamc_merge (ISAMC is, ISAM_P *pos, ISAMC_I *data);
 
-ISAMC_PP isc_pp_open (ISAMC is, ISAMC_P pos);
-void isc_pp_close (ISAMC_PP pp);
-int isc_read_item (ISAMC_PP pp, char **dst);
-int isc_pp_read (ISAMC_PP pp, void *buf);
-zint isc_pp_num (ISAMC_PP pp);
+ISAMC_PP isamc_pp_open (ISAMC is, ISAM_P pos);
+void isamc_pp_close (ISAMC_PP pp);
+int isamc_read_item (ISAMC_PP pp, char **dst);
+int isamc_pp_read (ISAMC_PP pp, void *buf);
+zint isamc_pp_num (ISAMC_PP pp);
 
-zint isc_block_used (ISAMC is, int type);
-int isc_block_size (ISAMC is, int type);
+zint isamc_block_used (ISAMC is, int type);
+int isamc_block_size (ISAMC is, int type);
 
-#define isc_type(x) ((x) & 7)
-#define isc_block(x) ((x) >> 3)
+#define isamc_type(x) ((x) & 7)
+#define isamc_block(x) ((x) >> 3)
 
 YAZ_END_CDECL
 
