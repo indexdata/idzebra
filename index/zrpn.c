@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.171 2005-03-11 17:56:34 adam Exp $
+/* $Id: zrpn.c,v 1.172 2005-04-13 08:52:01 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2573,45 +2573,58 @@ void rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         use_value = 1016;
     for (base_no = 0; base_no < num_bases && ord_no < 32; base_no++)
     {
-        int r;
-        attent attp;
-        data1_local_attribute *local_attr;
+	data1_local_attribute *local_attr;
+	attent attp;
+	int ord;
 
-        if ((r = att_getentbyatt (zh, &attp, attributeset, use_value,
-                                use_string)))
-        {
-            yaz_log(YLOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
-                  attributeset, use_value);
-            if (r == -1)
-            {
-                char val_str[32];
-                sprintf (val_str, "%d", use_value);
-                errCode = 114;
-                errString = odr_strdup (stream, val_str);
-            }   
-            else
-                errCode = 121;
-            continue;
-        }
-        if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
-        {
-            zh->errString = basenames[base_no];
-            zh->errCode = 109; /* Database unavailable */
-            *num_entries = 0;
-            return;
-        }
-        bases_ok++;
-        for (local_attr = attp.local_attributes; local_attr && ord_no < 32;
-             local_attr = local_attr->next)
-        {
-            int ord;
+	if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
+	{
+	    zh->errString = basenames[base_no];
+	    zh->errCode = 109; /* Database unavailable */
+	    *num_entries = 0;
+	    return;
+	}
 
-            ord = zebraExplain_lookup_attr_su(zh->reg->zei,
+	if (use_string &&
+	    (ord = zebraExplain_lookup_attr_str(zh->reg->zei,
+						use_string)) >= 0)
+	{
+	    /* we have a match for a raw string attribute */
+	    if (ord > 0)
+		ords[ord_no++] = ord;
+            attp.local_attributes = 0;  /* no more attributes */
+	}
+	else
+	{
+	    int r;
+	    
+	    if ((r = att_getentbyatt (zh, &attp, attributeset, use_value,
+				      use_string)))
+	    {
+		yaz_log(YLOG_DEBUG, "att_getentbyatt fail. set=%d use=%d",
+			attributeset, use_value);
+		if (r == -1)
+		{
+		    char val_str[32];
+		    sprintf (val_str, "%d", use_value);
+		    errCode = 114;
+		    errString = odr_strdup (stream, val_str);
+		}   
+		else
+		    errCode = 121;
+		continue;
+	    }
+	}
+	bases_ok++;
+	for (local_attr = attp.local_attributes; local_attr && ord_no < 32;
+	     local_attr = local_attr->next)
+	{
+	    ord = zebraExplain_lookup_attr_su(zh->reg->zei,
 					      attp.attset_ordinal,
 					      local_attr->local);
-            if (ord > 0)
-                ords[ord_no++] = ord;
-        }
+	    if (ord > 0)
+		ords[ord_no++] = ord;
+	}
     }
     if (!bases_ok && errCode)
     {
