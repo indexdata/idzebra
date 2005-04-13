@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.16 2005-03-17 08:31:53 adam Exp $
+/* $Id: api.h,v 1.17 2005-04-13 08:52:26 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -224,7 +224,6 @@ YAZ_EXPORT int zebra_deleteResultSet(ZebraHandle zh, int function,
 				     int num_setnames, char **setnames,
 				     int *statuses);
 
-
 /**
    \fn int zebra_scan(ZebraHandle zh, ODR stream,
    Z_AttributesPlusTerm *zapt, oid_value attributeset,
@@ -246,7 +245,23 @@ YAZ_EXPORT int zebra_scan(ZebraHandle zh, ODR stream,
 			  ZebraScanEntry **list,
 			  int *is_partial);
 
-             
+/**
+   \fn int zebra_scan_PQF(ZebraHandle zh, ODR stream,
+   const char *query, int *position, int *num_entries, ZebraScanEntry **list, int *is_partial)
+   \brief performs Scan (taking PQF string)
+   \param zh session handle
+   \param stream ODR handle for result
+   \param query PQF scan query
+   \param position input/output position
+   \param num_entries number of terms requested / returned 
+   \param list list of resulting terms (ODR allocated)
+   \param is_partial upon return 1=partial, 0=complete
+*/
+YAZ_EXPORT int zebra_scan_PQF(ZebraHandle zh, ODR stream,
+			      const char *query,
+			      int *position, int *num_entries,
+			      ZebraScanEntry **entries,
+			      int *is_partial);
 /**
    \fn int zebra_auth(ZebraHandle zh, const char *user, const char *pass)
    \brief authenticate user. Returns 0 if OK, != 0 on failure

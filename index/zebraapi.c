@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.156 2005-03-17 08:31:53 adam Exp $
+/* $Id: zebraapi.c,v 1.157 2005-04-13 08:52:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -952,10 +952,28 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
     return ret;
 }
 
+int zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
+		   int *position, int *num_entries, ZebraScanEntry **entries,
+		   int *is_partial)
+{
+    YAZ_PQF_Parser pqf_parser = yaz_pqf_create ();
+    Z_AttributesPlusTerm *zapt;
+    int *attributeSet;
+    
+    if (!(zapt = yaz_pqf_scan(pqf_parser, stream, &attributeSet, query)))
+    {
+	yaz_pqf_destroy (pqf_parser);
+	return -1;
+    }
+    yaz_pqf_destroy (pqf_parser);
+    return zebra_scan(zh, stream, zapt, VAL_BIB1,
+		      position, num_entries, entries, is_partial);
+}
+
 int zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		 oid_value attributeset,
-		 int *position, int *num_entries, ZebraScanEntry **entries,
-		 int *is_partial)
+		oid_value attributeset,
+		int *position, int *num_entries, ZebraScanEntry **entries,
+		int *is_partial)
 {
     ASSERTZH;
     assert(stream);
