@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.173 2005-04-13 13:03:47 adam Exp $
+/* $Id: zrpn.c,v 1.174 2005-04-14 09:03:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1095,7 +1095,7 @@ static int string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 				      use_string)))
             {
                 yaz_log(YLOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
-                      curAttributeSet, use_value, r);
+			curAttributeSet, use_value, r);
                 if (r == -1)
                 {
                     /* set was found, but value wasn't defined */
@@ -1702,8 +1702,11 @@ static int numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                       curAttributeSet, use_value, r);
                 if (r == -1)
                 {
-                    errString = nmem_strdup_i(stream, use_value);
                     errCode = 114;
+                    if (use_string)
+                        errString = nmem_strdup(stream, use_string);
+                    else
+                        errString = nmem_strdup_i (stream, use_value);
                 }
                 else
                     errCode = 121;
@@ -2524,6 +2527,7 @@ void rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     NMEM rset_nmem = NULL; 
 
     *list = 0;
+    *is_partial = 0;
 
     if (attributeset == VAL_NONE)
         attributeset = VAL_BIB1;
@@ -2605,10 +2609,15 @@ void rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 			attributeset, use_value);
 		if (r == -1)
 		{
-		    char val_str[32];
-		    sprintf (val_str, "%d", use_value);
 		    errCode = 114;
-		    errString = odr_strdup (stream, val_str);
+                    if (use_string)
+                        errString = odr_strdup(stream, use_string);
+                    else
+		    {
+			char val_str[32];
+			sprintf (val_str, "%d", use_value);
+                        errString = odr_strdup(stream, val_str);
+		    }
 		}   
 		else
 		    errCode = 121;
@@ -2631,6 +2640,7 @@ void rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         zh->errCode = errCode;
         zh->errString = errString;
         *num_entries = 0;
+	return;
     }
     if (ord_no == 0)
     {
