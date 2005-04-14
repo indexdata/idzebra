@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.158 2005-04-13 13:03:47 adam Exp $
+/* $Id: zebraapi.c,v 1.159 2005-04-14 09:02:40 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2119,7 +2119,7 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
     assert(pqf_query);
     assert(setname);
 
-    yaz_log(log_level, "zebra_search_PQF s=%s q=%s",setname, pqf_query);
+    yaz_log(log_level, "zebra_search_PQF s=%s q=%s", setname, pqf_query);
     
     query = p_query_rpn (odr, PROTO_Z3950, pqf_query);
     
