@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.78 2005-03-08 14:02:15 adam Exp $
+/* $Id: zsets.c,v 1.79 2005-04-14 12:01:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -419,7 +419,7 @@ ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name,
             
             if (sort_info)
                 position = sort_info->num_entries;
-            while (num_i < num && positions[num_i] < position)
+            while (num_i < num && positions[num_i] <= position)
                 num_i++;
 	    
 	    if (sset->cache_rfd &&
