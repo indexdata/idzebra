@@ -1,4 +1,4 @@
-/* $Id: tstisamb.c,v 1.20 2005-04-13 13:03:48 adam Exp $
+/* $Id: tstisamb.c,v 1.21 2005-04-14 07:48:57 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -242,12 +242,14 @@ void tst_x(ISAMB isb)
     ri.no = 1000;
     ri.step = 1;
     ri.max = 1500;
+    ri.insertMode = 1;
 
     isamb_merge (isb, &isamb_p , &isamc_i);
 
     ri.no = 1;
     ri.step = 1;
     ri.max = 500;
+    ri.insertMode = 1;
 
     isamb_merge (isb, &isamb_p , &isamc_i);
 }
