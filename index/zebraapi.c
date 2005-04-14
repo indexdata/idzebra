@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.159 2005-04-14 09:02:40 adam Exp $
+/* $Id: zebraapi.c,v 1.160 2005-04-14 12:02:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -876,7 +876,7 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
     assert(recs);
     assert(num_recs>0);
 
-    yaz_log(log_level, "zebra_records_retrieve n=%d",num_recs);
+    yaz_log(log_level, "zebra_records_retrieve n=%d", num_recs);
     zh->errCode = 0;
 
     if (!zh->res)
@@ -919,10 +919,10 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
 		char *buf;
 		int len;
 		recs[i].errCode =
-		    zebra_record_fetch (zh, poset[i].sysno, poset[i].score,
-					stream, input_format, comp,
-					&recs[i].format, &buf, &len,
-					&recs[i].base, &recs[i].errString);
+		    zebra_record_fetch(zh, poset[i].sysno, poset[i].score,
+				       stream, input_format, comp,
+				       &recs[i].format, &buf, &len,
+				       &recs[i].base, &recs[i].errString);
 		recs[i].len = len;
 		if (len > 0)
 		{
