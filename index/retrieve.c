@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.28 2005-01-15 19:38:26 adam Exp $
+/* $Id: retrieve.c,v 1.29 2005-04-14 12:02:58 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -97,7 +97,19 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
     void *clientData;
     int raw_mode = 0;
 
+    *basenamep = 0;
     *addinfo = 0;
+    if (comp && comp->which == Z_RecordComp_simple &&
+        comp->u.simple->which == Z_ElementSetNames_generic && 
+        !strcmp (comp->u.simple->u.generic, "_sysno_"))
+    {
+	char rec_str[60];
+	sprintf(rec_str, ZINT_FORMAT, sysno);
+	*output_format = VAL_SUTRS;
+	*rec_lenp = strlen(rec_str);
+	*rec_bufp = odr_strdup(stream, rec_str);
+	return 0;
+    }
     rec = rec_get (zh->reg->records, sysno);
     if (!rec)
     {
@@ -114,10 +126,10 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
     strcpy (*basenamep, basename);
 
     if (comp && comp->which == Z_RecordComp_simple &&
-        comp->u.simple->which == Z_ElementSetNames_generic)
+        comp->u.simple->which == Z_ElementSetNames_generic && 
+        !strcmp (comp->u.simple->u.generic, "R"))
     {
-        if (!strcmp (comp->u.simple->u.generic, "R"))
-	    raw_mode = 1;
+	raw_mode = 1;
     }
     if (!(rt = recType_byName (zh->reg->recTypes, zh->res,
 			       file_type, &clientData)))
