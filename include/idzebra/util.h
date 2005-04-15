@@ -1,4 +1,4 @@
-/* $Id: util.h,v 1.1 2005-03-30 09:25:23 adam Exp $
+/* $Id: util.h,v 1.2 2005-04-15 10:47:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,7 +23,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef ZEBRA_UTIL_H
 #define ZEBRA_UTIL_H
 
-#include <yaz/yaz-util.h>
+#include <yaz/yconfig.h>
+#include <yaz/log.h>
 
 #include <idzebra/version.h>
 
@@ -49,6 +50,10 @@ typedef long zint;
 #define ZINT_FORMAT0 "ld"
 #endif
 #endif
+
+typedef short ZEBRA_RES;
+#define ZEBRA_FAIL -1
+#define ZEBRA_OK   0
 
 typedef zint SYSNO;
 

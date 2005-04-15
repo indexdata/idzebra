@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.59 2005-03-30 09:25:23 adam Exp $
+/* $Id: mfile.c,v 1.60 2005-04-15 10:47:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -44,6 +44,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <zebra-lock.h>
 #include <idzebra/util.h>
+#include <yaz/yaz-util.h>
 #include "mfile.h"
 
 static int scan_areadef(MFile_area ma, const char *ad, const char *base)

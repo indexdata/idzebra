@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.40 2005-03-30 09:25:23 adam Exp $
+/* $Id: bfile.c,v 1.41 2005-04-15 10:47:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -30,6 +30,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <unistd.h>
 #endif
 
+#include <yaz/xmalloc.h>
 #include <idzebra/util.h>
 #include <idzebra/bfile.h>
 #include "mfile.h"

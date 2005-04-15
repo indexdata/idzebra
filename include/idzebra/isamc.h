@@ -1,4 +1,4 @@
-/* $Id: isamc.h,v 1.3 2005-04-13 13:03:47 adam Exp $
+/* $Id: isamc.h,v 1.4 2005-04-15 10:47:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -57,20 +57,37 @@ typedef struct ISAMC_I_s {
     void *clientData;
 } ISAMC_I;
 
+YAZ_EXPORT
 void isamc_getmethod (ISAMC_M *m);
 
+YAZ_EXPORT
 ISAMC isamc_open (BFiles bfs, const char *name, int writeflag,
 		  ISAMC_M *method);
+YAZ_EXPORT
 int isamc_close (ISAMC is);
+
+YAZ_EXPORT
 void isamc_merge (ISAMC is, ISAM_P *pos, ISAMC_I *data);
 
+YAZ_EXPORT
 ISAMC_PP isamc_pp_open (ISAMC is, ISAM_P pos);
+
+YAZ_EXPORT
 void isamc_pp_close (ISAMC_PP pp);
+
+YAZ_EXPORT
 int isamc_read_item (ISAMC_PP pp, char **dst);
+
+YAZ_EXPORT
 int isamc_pp_read (ISAMC_PP pp, void *buf);
+
+YAZ_EXPORT
 zint isamc_pp_num (ISAMC_PP pp);
 
+YAZ_EXPORT
 zint isamc_block_used (ISAMC is, int type);
+
+YAZ_EXPORT
 int isamc_block_size (ISAMC is, int type);
 
 #define isamc_type(x) ((x) & 7)

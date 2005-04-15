@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.10 2005-01-15 19:38:35 adam Exp $
+/* $Id: testlib.h,v 1.11 2005-04-15 10:47:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -81,6 +81,12 @@ void init_data( ZebraHandle zh, const char **recs);
  */
 int do_query(int lineno, ZebraHandle zh, char *query, int exphits);
 
+
+/**
+ * do_query does a simple query, and checks that error is what is expected
+ */
+int do_query_x(int lineno, ZebraHandle zh, char *query, int exphits,
+	       int experror);
 
 /** 
  * ranking_query makes a query, checks number of hits, and for 

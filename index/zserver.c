@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.130 2005-03-08 14:02:12 adam Exp $
+/* $Id: zserver.c,v 1.131 2005-04-15 10:47:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -263,6 +263,7 @@ int bend_search (void *handle, bend_search_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     zint zhits = 0;
+    ZEBRA_RES res;
 
     r->hits = 0;
     r->errcode = 0;
@@ -278,15 +279,18 @@ int bend_search (void *handle, bend_search_rr *r)
     switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
-	zebra_search_RPN (zh, r->stream, r->query->u.type_1,
-			  r->setname, &zhits);
-	if (zhits >   2147483646)
-	    r->hits = 2147483647;
-	else
+	res = zebra_search_RPN (zh, r->stream, r->query->u.type_1,
+				r->setname, &zhits);
+	if (zebra_errCode(zh) == 0)
+	{
+	    if (zhits >   2147483646)
+		r->hits = 2147483647;
+	    else
 	    r->hits = (int) zhits;
-        zebra_result (zh, &r->errcode, &r->errstring);
-        if (!r->errcode)
             search_terms (zh, r);
+	}
+	else
+	    zebra_result (zh, &r->errcode, &r->errstring);
         break;
     case Z_Query_type_2:
 	r->errcode = 107;
@@ -643,7 +647,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 			}
 			else
 			{
-			    int r = -1;
+			    ZEBRA_RES r = ZEBRA_FAIL;
 			    switch(action) {
 			    case 1:
 				r = zebra_insert_record(
@@ -655,7 +659,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
 				    0);
-				if (r)
+				if (r == ZEBRA_FAIL)
 				{
 				    rr->errcode = 224;
 				    rr->errstring = "insert_record failed";
@@ -672,7 +676,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
 				    1);
-				if (r)
+				if (r == ZEBRA_FAIL)
 				{
 				    rr->errcode = 224;
 				    rr->errstring = "update_record failed";
@@ -688,7 +692,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
 				    0);
-				if (r)
+				if (r == ZEBRA_FAIL)
 				{
 				    rr->errcode = 224;
 				    rr->errstring = "delete_record failed";

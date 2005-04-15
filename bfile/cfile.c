@@ -1,4 +1,4 @@
-/* $Id: cfile.c,v 1.34 2005-03-30 09:25:23 adam Exp $
+/* $Id: cfile.c,v 1.35 2005-04-15 10:47:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,6 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 
 #include <idzebra/util.h>
+#include <yaz/yaz-util.h>
 #include "mfile.h"
 #include "cfile.h"
 

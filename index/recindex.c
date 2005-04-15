@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.42 2005-01-16 23:14:57 adam Exp $
+/* $Id: recindex.c,v 1.43 2005-04-15 10:47:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -42,6 +42,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #include <string.h>
 
+#include <yaz/yaz-util.h>
 #include "recindxp.h"
 
 #if HAVE_BZLIB_H

@@ -1,4 +1,4 @@
-/* $Id: dicttest.c,v 1.33 2005-03-30 09:25:23 adam Exp $
+/* $Id: dicttest.c,v 1.34 2005-04-15 10:47:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,6 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <idzebra/dict.h>
 #include <idzebra/util.h>
 #include <idzebra/res.h>
+#include <yaz/yaz-util.h>
 
 char *prog;
 static Dict dict;

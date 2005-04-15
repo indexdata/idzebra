@@ -1,4 +1,4 @@
-/* $Id: t3.c,v 1.16 2005-03-09 12:14:42 adam Exp $
+/* $Id: t3.c,v 1.17 2005-04-15 10:47:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -41,9 +41,6 @@ int main(int argc, char **argv)
 
     for (i = 0; i<4; i++)
     {
-#if 0
-        ZebraRetrievalRecord retrievalRecord;
-#endif
         char setname[20];
         char *setnamep = setname;
         int status;
@@ -62,15 +59,8 @@ int main(int argc, char **argv)
         zebra_end_trans (zh);
         zebra_end_trans (zh);
         yaz_pqf_destroy(parser);
-#if 0
-        /*FIXME Why is this disabled ??? */
-        zebra_records_retrieve(zh, odr_output, setname, 0,
-			       VAL_TEXT_XML, 1, &retrievalRecord);
-#endif
-#if 1
         zebra_deleteResultSet(zh, Z_DeleteRequest_list,
                               1, &setnamep, &status);
-#endif
         odr_destroy(odr_input);
         odr_destroy(odr_output);
     }

@@ -1,4 +1,4 @@
-/* $Id: commit.c,v 1.24 2005-03-30 09:25:23 adam Exp $
+/* $Id: commit.c,v 1.25 2005-04-15 10:47:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,6 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 
 #include <idzebra/util.h>
+#include <yaz/xmalloc.h>
 #include "mfile.h"
 #include "cfile.h"
 

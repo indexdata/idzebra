@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.79 2005-04-14 12:01:22 adam Exp $
+/* $Id: zsets.c,v 1.80 2005-04-15 10:47:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -89,16 +89,71 @@ static void loglevels()
     log_level_searchhits = yaz_log_module_level("searchhits");
     log_level_searchterms = yaz_log_module_level("searchterms");
     log_level_resultsets = yaz_log_module_level("resultsets");
-    log_level_set=1;
+    log_level_set = 1;
 }
 
-ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,
-                          Z_RPNQuery *rpn, int num_bases,
-                          char **basenames, 
-                          const char *setname)
+ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
+			  Z_RPNQuery *rpn, ZebraSet sset)
+{
+    RSET rset;
+    oident *attrset;
+    Z_SortKeySpecList *sort_sequence;
+    int sort_status, i;
+
+    zh->errCode = 0;
+    zh->errString = NULL;
+    zh->hits = 0;
+
+    sort_sequence = (Z_SortKeySpecList *)
+        nmem_malloc(nmem, sizeof(*sort_sequence));
+    sort_sequence->num_specs = 10; /* FIXME - Hard-coded number */
+    sort_sequence->specs = (Z_SortKeySpec **)
+        nmem_malloc(nmem, sort_sequence->num_specs *
+                     sizeof(*sort_sequence->specs));
+    for (i = 0; i<sort_sequence->num_specs; i++)
+        sort_sequence->specs[i] = 0;
+    
+    attrset = oid_getentbyoid (rpn->attributeSetId);
+    rset = rpn_search_structure (zh, rpn->RPNStructure, attrset->value,
+                                 nmem, rset_nmem,
+                                 sort_sequence,
+				 sset->num_bases, sset->basenames);
+    if (!rset)
+    {
+	sset->rset = 0;
+        return ZEBRA_FAIL;
+    }
+
+    if (zh->errCode)
+        yaz_log(YLOG_DEBUG, "search error: %d", zh->errCode);
+    
+    for (i = 0; sort_sequence->specs[i]; i++)
+        ;
+    sort_sequence->num_specs = i;
+    if (!i)
+        resultSetRank (zh, sset, rset, rset_nmem);
+    else
+    {
+        yaz_log(YLOG_DEBUG, "resultSetSortSingle in rpn_search");
+        resultSetSortSingle (zh, nmem, sset, rset,
+                             sort_sequence, &sort_status);
+        if (zh->errCode)
+        {
+            yaz_log(YLOG_DEBUG, "resultSetSortSingle status = %d", zh->errCode);
+        }
+    }
+    sset->rset = rset;
+    return ZEBRA_OK;
+}
+
+
+ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
+			   int num_bases, char **basenames,
+			   const char *setname)
 {
     ZebraSet zebraSet;
     int i;
+    ZEBRA_RES res;
 
     zh->errCode = 0;
     zh->errString = NULL;
@@ -106,11 +161,11 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,
 
     zebraSet = resultSetAdd (zh, setname, 1);
     if (!zebraSet)
-        return 0;
+        return ZEBRA_FAIL;
     zebraSet->locked = 1;
     zebraSet->rpn = 0;
     zebraSet->nmem = m;
-    zebraSet->rset_nmem=nmem_create(); 
+    zebraSet->rset_nmem = nmem_create(); 
 
     zebraSet->num_bases = num_bases;
     zebraSet->basenames = 
@@ -118,16 +173,15 @@ ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m,
     for (i = 0; i<num_bases; i++)
         zebraSet->basenames[i] = nmem_strdup (zebraSet->nmem, basenames[i]);
 
-
-    zebraSet->rset = rpn_search (zh, zebraSet->nmem, zebraSet->rset_nmem,
-                                 rpn, zebraSet->num_bases,
-                                 zebraSet->basenames, zebraSet->name,
-                                 zebraSet);
+    res = resultSetSearch(zh, zebraSet->nmem, zebraSet->rset_nmem,
+			  rpn, zebraSet);
     zh->hits = zebraSet->hits;
     if (zebraSet->rset)
         zebraSet->rpn = rpn;
     zebraSet->locked = 0;
-    return zebraSet;
+    if (!zebraSet->rset)
+	return ZEBRA_FAIL;
+    return res;
 }
 
 void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
@@ -215,7 +269,7 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     s->term_entries = 0;
     s->hits = 0;
     s->rset = 0;
-    s->rset_nmem=0;
+    s->rset_nmem = 0;
     s->nmem = 0;
     s->rpn = 0;
     s->cache_position = 0;
@@ -236,9 +290,7 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
                 yaz_log(log_level_resultsets, "research %s", name);
                 if (!s->rset_nmem)
                     s->rset_nmem=nmem_create();
-                s->rset =
-                    rpn_search (zh, nmem, s->rset_nmem, s->rpn, s->num_bases,
-                                s->basenames, s->name, s);
+		resultSetSearch(zh, nmem, s->rset_nmem, s->rpn, s);
                 nmem_destroy (nmem);
             }
             return s;

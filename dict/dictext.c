@@ -1,4 +1,4 @@
-/* $Id: dictext.c,v 1.12 2005-03-30 09:25:23 adam Exp $
+/* $Id: dictext.c,v 1.13 2005-04-15 10:47:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,6 +29,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 
 #include <idzebra/util.h>
+#include <yaz/yaz-util.h>
 
 char *prog;
 
@@ -42,7 +43,7 @@ int main (int argc, char **argv)
     char ipf_buf[1024];
 
     prog = *argv;
-    while ((ret = options ("8vh", argv, argc, &arg)) != -2)
+    while ((ret = options("8vh", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {

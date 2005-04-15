@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.132 2005-04-13 13:03:47 adam Exp $
+/* $Id: index.h,v 1.133 2005-04-15 10:47:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -335,16 +335,17 @@ struct term_set_list {
     struct term_set_entry *last;
 };
 
-RSET rpn_search (ZebraHandle zh, NMEM mem, NMEM rset_nmem,
-		 Z_RPNQuery *rpn, int num_bases, char **basenames, 
-		 const char *setname, ZebraSet sset);
+RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
+			   oid_value attributeSet, 
+			   NMEM stream, NMEM rset_nmem,
+			   Z_SortKeySpecList *sort_sequence,
+			   int num_bases, char **basenames);
 
-
-void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-	       oid_value attributeset,
-	       int num_bases, char **basenames,
-	       int *position, int *num_entries, ZebraScanEntry **list,
-	       int *is_partial, RSET limit_set, int return_zero);
+ZEBRA_RES rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
+		    oid_value attributeset,
+		    int num_bases, char **basenames,
+		    int *position, int *num_entries, ZebraScanEntry **list,
+		    int *is_partial, RSET limit_set, int return_zero);
 
 RSET rset_trunc (ZebraHandle zh, ISAM_P *isam_p, int no,
 		 const char *term, int length_term, const char *flags,
@@ -356,9 +357,9 @@ void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       int use, const char *term);
 ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov);
 ZebraSet resultSetGet (ZebraHandle zh, const char *name);
-ZebraSet resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
-                          int num_bases, char **basenames,
-                          const char *setname);
+ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
+		     int num_bases, char **basenames,
+		     const char *setname);
 RSET resultSetRef (ZebraHandle zh, const char *resultSetId);
 void resultSetDestroy (ZebraHandle zh, int num_names, char **names,
 		       int *statuses);
@@ -405,16 +406,16 @@ void extract_get_fname_tmp (ZebraHandle zh, char *fname, int no);
 
 void zebra_index_merge (ZebraHandle zh);
 
-int buffer_extract_record (ZebraHandle zh, 
-			   const char *buf, size_t buf_size,
-			   int delete_flag,
-			   int test_mode, 
-			   const char *recordType,
-			   SYSNO *sysno,
-			   const char *match_criteria,
-			   const char *fname,
-			   int force_update,
-			   int allow_update);
+ZEBRA_RES buffer_extract_record (ZebraHandle zh, 
+				 const char *buf, size_t buf_size,
+				 int delete_flag,
+				 int test_mode, 
+				 const char *recordType,
+				 SYSNO *sysno,
+				 const char *match_criteria,
+				 const char *fname,
+				 int force_update,
+				 int allow_update);
 
 #if 0
 int extract_rec_in_mem (ZebraHandle zh, const char *recordType,
@@ -454,8 +455,8 @@ int explain_extract (void *handle, Record rec, data1_node *n);
 int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
 		 int deleteFlag);
 
-int zebra_begin_read (ZebraHandle zh);
-int zebra_end_read (ZebraHandle zh);
+ZEBRA_RES zebra_begin_read (ZebraHandle zh);
+ZEBRA_RES zebra_end_read (ZebraHandle zh);
 
 int zebra_file_stat (const char *file_name, struct stat *buf,
                      int follow_links);

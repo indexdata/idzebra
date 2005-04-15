@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.12 2005-03-09 12:14:42 adam Exp $
+/* $Id: testlib.c,v 1.13 2005-04-15 10:47:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -120,38 +120,38 @@ void init_data(ZebraHandle zh, const char **recs)
     zebra_select_database(zh, "Default");
     yaz_log(log_level, "going to call init");
     i = zebra_init(zh);
-    yaz_log(log_level, "init returned %d",i);
+    yaz_log(log_level, "init returned %d", i);
     if (i) 
     {
         printf("init failed with %d\n",i);
         zebra_result(zh, &i, &addinfo);
-        printf("  Error %d   %s\n",i,addinfo);
+        printf("  Error %d   %s\n", i, addinfo);
         exit(1);
     }
     if (recs)
     {
         zebra_begin_trans (zh, 1);
         for (i = 0; recs[i]; i++)
-            zebra_add_record (zh, recs[i], strlen(recs[i]));
-        zebra_end_trans (zh);
-        zebra_commit (zh);
+            zebra_add_record(zh, recs[i], strlen(recs[i]));
+        zebra_end_trans(zh);
+        zebra_commit(zh);
     }
 
 }
 
-int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
+int do_query_x(int lineno, ZebraHandle zh, char *query, int exphits,
+	      int experror)
 {
     ODR odr;
     YAZ_PQF_Parser parser;
     Z_RPNQuery *rpn;
     const char *setname="rsetname";
     zint hits;
-    int rc;
-        
+    ZEBRA_RES rc;
 
-    yaz_log(log_level,"======================================");
-    yaz_log(log_level,"qry[%d]: %s", lineno, query);
-    odr=odr_createmem (ODR_DECODE);    
+    yaz_log(log_level, "======================================");
+    yaz_log(log_level, "qry[%d]: %s", lineno, query);
+    odr = odr_createmem (ODR_DECODE);    
 
     parser = yaz_pqf_create();
     rpn = yaz_pqf_parse(parser, odr, query);
@@ -159,20 +159,46 @@ int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
         printf("Error: Parse failed \n%s\n",query);
         exit(1);
     }
-    rc = zebra_search_RPN (zh, odr, rpn, setname, &hits);
-    if (rc) {
-        printf("Error: search returned %d \n%s\n",rc,query);
-        exit (1);
+    rc = zebra_search_RPN(zh, odr, rpn, setname, &hits);
+    if (experror)
+    {
+	if (rc != ZEBRA_FAIL)
+	{
+	    printf("Error: search returned %d (OK), but error was expected\n"
+		   "%s\n",  rc, query);
+	    exit(1);
+	}
+	int code = zebra_errCode(zh);
+	if (code != experror)
+	{
+	    printf("Error: search returned error code %d, but error %d was "
+		   "expected\n%s\n",
+		   code, experror, query);
+	    exit(1);
+	}
     }
-
-    if (hits != exphits) {
-        printf("Error: search returned " ZINT_FORMAT " hits instead of %d\n",
-                hits, exphits);
-        exit (1);
+    else
+    {
+	if (rc == ZEBRA_FAIL) {
+	    printf("Error: search returned %d\n%s\n", rc, query);
+	    exit (1);
+	}
+	if (hits != exphits) {
+	    printf("Error: search returned " ZINT_FORMAT 
+		   " hits instead of %d\n%s\n",
+		   hits, exphits, query);
+	    exit (1);
+	}
     }
     yaz_pqf_destroy(parser);
     odr_destroy (odr);
     return hits;
+}
+
+
+int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
+{
+    return do_query_x(lineno, zh, query, exphits, 0);
 }
 
 
@@ -181,7 +207,7 @@ int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
  * it contains the given string, and that it gets the right score
  */
 void ranking_query(int lineno, ZebraHandle zh, char *query, 
-          int exphits, char *firstrec, int firstscore )
+		   int exphits, char *firstrec, int firstscore)
 {
     ZebraRetrievalRecord retrievalRecord[10];
     ODR odr_output = odr_createmem (ODR_ENCODE);    
@@ -207,8 +233,8 @@ void ranking_query(int lineno, ZebraHandle zh, char *query,
     if (!strstr(retrievalRecord[0].buf, firstrec))
     {
         printf("Error: Got the wrong record first\n");
-        printf("Expected '%s' but got \n",firstrec);
-        printf("%.*s\n",retrievalRecord[0].len,retrievalRecord[0].buf);
+        printf("Expected '%s' but got \n", firstrec);
+        printf("%.*s\n", retrievalRecord[0].len, retrievalRecord[0].buf);
         exit(1);
     }
     

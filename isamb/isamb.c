@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.76 2005-04-13 13:03:47 adam Exp $
+/* $Id: isamb.c,v 1.77 2005-04-15 10:47:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -196,7 +196,7 @@ ISAMB isamb_open(BFiles bfs, const char *name, int writeflag, ISAMC_M *method,
     isamb->skipped_numbers = 0;
     isamb->returned_numbers = 0;
     for (i = 0; i<ISAMB_MAX_LEVEL; i++)
-      isamb->skipped_nodes[i] = isamb->accessed_nodes[i] = 0;
+	isamb->skipped_nodes[i] = isamb->accessed_nodes[i] = 0;
 
     assert(cache == 0);
     isamb->file = xmalloc(sizeof(*isamb->file) * isamb->no_cat);

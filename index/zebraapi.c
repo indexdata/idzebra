@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.160 2005-04-14 12:02:08 adam Exp $
+/* $Id: zebraapi.c,v 1.161 2005-04-15 10:47:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -398,7 +398,7 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     return reg;
 }
 
-int zebra_admin_shutdown (ZebraHandle zh)
+ZEBRA_RES zebra_admin_shutdown (ZebraHandle zh)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_admin_shutdown");
@@ -407,10 +407,10 @@ int zebra_admin_shutdown (ZebraHandle zh)
     zebra_mutex_cond_lock (&zh->service->session_lock);
     zh->service->stop_flag = 1;
     zebra_mutex_cond_unlock (&zh->service->session_lock);
-    return 0;
+    return ZEBRA_OK;
 }
 
-int zebra_admin_start (ZebraHandle zh)
+ZEBRA_RES zebra_admin_start (ZebraHandle zh)
 {
     ZebraService zs;
     ASSERTZH;
@@ -419,7 +419,7 @@ int zebra_admin_start (ZebraHandle zh)
     zs = zh->service;
     zebra_mutex_cond_lock (&zs->session_lock);
     zebra_mutex_cond_unlock (&zs->session_lock);
-    return 0;
+    return ZEBRA_OK;
 }
 
 static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
@@ -460,10 +460,10 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
     xfree(reg);
 }
 
-int zebra_stop(ZebraService zs)
+ZEBRA_RES zebra_stop(ZebraService zs)
 {
     if (!zs)
-        return 0;
+        return ZEBRA_OK;
     yaz_log (log_level, "zebra_stop");
 
     while (zs->sessions)
@@ -481,10 +481,10 @@ int zebra_stop(ZebraService zs)
     res_close (zs->global_res);
     xfree(zs->configName);
     xfree(zs);
-    return 0;
+    return ZEBRA_OK;
 }
 
-int zebra_close (ZebraHandle zh)
+ZEBRA_RES zebra_close (ZebraHandle zh)
 {
     ZebraService zs;
     struct zebra_session **sp;
@@ -492,7 +492,7 @@ int zebra_close (ZebraHandle zh)
 
     yaz_log(log_level, "zebra_close");
     if (!zh)
-        return 0;
+        return ZEBRA_OK;
     ASSERTZH;
     zh->errCode = 0;
     
@@ -535,7 +535,7 @@ int zebra_close (ZebraHandle zh)
     zh->service = 0; /* more likely to trigger an assert */
     xfree(zh->path_reg);
     xfree(zh);
-    return 0;
+    return ZEBRA_OK;
 }
 
 struct map_baseinfo {
@@ -583,12 +583,12 @@ static void zebra_close_res (ZebraHandle zh)
     zh->res = 0;
 }
 
-static int zebra_select_register (ZebraHandle zh, const char *new_reg)
+static void zebra_select_register (ZebraHandle zh, const char *new_reg)
 {
     ASSERTZH;
     zh->errCode = 0;
     if (zh->res && strcmp (zh->reg_name, new_reg) == 0)
-        return 0;
+        return;
     if (!zh->res)
     {
         assert (zh->reg == 0);
@@ -646,7 +646,6 @@ static int zebra_select_register (ZebraHandle zh, const char *new_reg)
             zebra_lock_create (res_get(zh->res, "lockDir"), fname, 0);
 
     }
-    return 1;
 }
 
 void map_basenames_func (void *vp, const char *name, const char *value)
@@ -732,7 +731,7 @@ void map_basenames (ZebraHandle zh, ODR stream,
 	yaz_log (YLOG_DEBUG, "base %s", (*basenames)[i]);
 }
 
-int zebra_select_database (ZebraHandle zh, const char *basename)
+ZEBRA_RES zebra_select_database (ZebraHandle zh, const char *basename)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_select_database %s",basename);
@@ -741,8 +740,8 @@ int zebra_select_database (ZebraHandle zh, const char *basename)
     return zebra_select_databases (zh, 1, &basename);
 }
 
-int zebra_select_databases (ZebraHandle zh, int num_bases,
-                            const char **basenames)
+ZEBRA_RES zebra_select_databases (ZebraHandle zh, int num_bases,
+				  const char **basenames)
 {
     int i;
     const char *cp;
@@ -758,7 +757,7 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
     if (num_bases < 1)
     {
         zh->errCode = 23;
-        return -1;
+        return ZEBRA_FAIL;
     }
     for (i = 0; i < zh->num_basenames; i++)
         xfree(zh->basenames[i]);
@@ -803,7 +802,7 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
             if (cp1)
             {
                 zh->errCode = 23;
-                return -1;
+                return ZEBRA_FAIL;
             }
         }
     }
@@ -812,21 +811,20 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
     if (!zh->res)
     {
         zh->errCode = 109;
-        return -1;
+        return ZEBRA_FAIL;
     }
     if (!zh->lock_normal || !zh->lock_shadow)
     {
         zh->errCode = 2;
-	return -1;
+	return ZEBRA_FAIL;
     }
-    return 0;
+    return ZEBRA_OK;
 }
 
-int zebra_search_RPN (ZebraHandle zh, ODR o,
-		       Z_RPNQuery *query, const char *setname, zint *hits)
+ZEBRA_RES zebra_search_RPN (ZebraHandle zh, ODR o, Z_RPNQuery *query,
+			    const char *setname, zint *hits)
 {
-    const char *max;
-    zint maxhits;
+    ZEBRA_RES r;
     ASSERTZH;
     assert(o);
     assert(query);
@@ -837,38 +835,25 @@ int zebra_search_RPN (ZebraHandle zh, ODR o,
     zh->hits = 0;
     *hits = 0;
 
-    if (zebra_begin_read (zh))
-	return 1;
+    if (zebra_begin_read(zh) == ZEBRA_FAIL)
+	return ZEBRA_FAIL;
 
-    resultSetAddRPN (zh, odr_extract_mem(o), query, 
-                     zh->num_basenames, zh->basenames, setname);
-
-    zebra_end_read (zh);
-    max = res_get (zh->res, "maxhits");
-    if (max)
-	maxhits = atoi(max);
-    else {
-        int i = 0; 
-	maxhits = INT_MAX;  /* properly rounded, to make it look like a limit*/
-	while (maxhits>100) { maxhits/=10; i++;}
-	while (i--) maxhits *= 10;
-    }
-    if (zh->hits > maxhits) { /* too large for yaz to handle */
-        yaz_log(YLOG_DEBUG, "limiting hits to "ZINT_FORMAT, maxhits);
-	*hits = maxhits;  
-    }
-    else
-        *hits = zh->hits;
-    return 0;
+    r = resultSetAddRPN(zh, odr_extract_mem(o), query, 
+			zh->num_basenames, zh->basenames, setname);
+    zebra_end_read(zh);
+    *hits = zh->hits;
+    return r;
 }
 
-int zebra_records_retrieve (ZebraHandle zh, ODR stream,
-			    const char *setname, Z_RecordComposition *comp,
-			    oid_value input_format, int num_recs,
-			    ZebraRetrievalRecord *recs)
+ZEBRA_RES zebra_records_retrieve (ZebraHandle zh, ODR stream,
+				  const char *setname,
+				  Z_RecordComposition *comp,
+				  oid_value input_format, int num_recs,
+				  ZebraRetrievalRecord *recs)
 {
     ZebraMetaRecord *poset;
-    int i, ret = 0;
+    int i;
+    ZEBRA_RES ret = ZEBRA_OK;
     zint *pos_array;
     ASSERTZH;
     assert(stream);
@@ -883,13 +868,13 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
     {
         zh->errCode = 30;
         zh->errString = odr_strdup(stream, setname);
-        return -1;
+        return ZEBRA_FAIL;
     }
     
     zh->errCode = 0;
 
-    if (zebra_begin_read (zh))
-	return -1;
+    if (zebra_begin_read (zh) == ZEBRA_FAIL)
+	return ZEBRA_FAIL;
 
     pos_array = (zint *) xmalloc(num_recs * sizeof(*pos_array));
     for (i = 0; i<num_recs; i++)
@@ -900,7 +885,7 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
         yaz_log (YLOG_DEBUG, "zebraPosSetCreate error");
         zh->errCode = 30;
         zh->errString = nmem_strdup (stream->mem, setname);
-	ret = -1;
+	ret = ZEBRA_FAIL;
     }
     else
     {
@@ -941,7 +926,7 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
 		sprintf (num_str, ZINT_FORMAT, pos_array[i]);	
 		zh->errCode = 13;
                 zh->errString = odr_strdup (stream, num_str);
-		ret = -1;
+		ret = ZEBRA_FAIL;
                 break;
 	    }
 	}
@@ -952,9 +937,10 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
     return ret;
 }
 
-int zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
-		   int *position, int *num_entries, ZebraScanEntry **entries,
-		   int *is_partial)
+ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
+			 int *position,
+			 int *num_entries, ZebraScanEntry **entries,
+			 int *is_partial)
 {
     YAZ_PQF_Parser pqf_parser = yaz_pqf_create ();
     Z_AttributesPlusTerm *zapt;
@@ -963,18 +949,20 @@ int zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
     if (!(zapt = yaz_pqf_scan(pqf_parser, stream, &attributeSet, query)))
     {
 	yaz_pqf_destroy (pqf_parser);
-	return -1;
+	return ZEBRA_FAIL;
     }
     yaz_pqf_destroy (pqf_parser);
     return zebra_scan(zh, stream, zapt, VAL_BIB1,
 		      position, num_entries, entries, is_partial);
 }
 
-int zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		oid_value attributeset,
-		int *position, int *num_entries, ZebraScanEntry **entries,
-		int *is_partial)
+ZEBRA_RES zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
+		      oid_value attributeset,
+		      int *position,
+		      int *num_entries, ZebraScanEntry **entries,
+		      int *is_partial)
 {
+    ZEBRA_RES res;
     ASSERTZH;
     assert(stream);
     assert(zapt);
@@ -984,23 +972,24 @@ int zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     assert(entries);
     yaz_log(log_level, "zebra_scan");
     zh->errCode = 0;
-    if (zebra_begin_read (zh))
+    if (zebra_begin_read (zh) == ZEBRA_FAIL)
     {
 	*entries = 0;
 	*num_entries = 0;
-	return 1;
+	return ZEBRA_FAIL;
     }
-    rpn_scan (zh, stream, zapt, attributeset,
-	      zh->num_basenames, zh->basenames, position,
-	      num_entries, entries, is_partial, 0, 0);
+    res = rpn_scan (zh, stream, zapt, attributeset,
+		    zh->num_basenames, zh->basenames, position,
+		    num_entries, entries, is_partial, 0, 0);
     zebra_end_read (zh);
-    return 0;
+    return res;
 }
 
-int zebra_sort (ZebraHandle zh, ODR stream,
-		 int num_input_setnames, const char **input_setnames,
-		 const char *output_setname, Z_SortKeySpecList *sort_sequence,
-		 int *sort_status)
+ZEBRA_RES zebra_sort (ZebraHandle zh, ODR stream,
+		      int num_input_setnames, const char **input_setnames,
+		      const char *output_setname,
+		      Z_SortKeySpecList *sort_sequence,
+		      int *sort_status)
 {
     ASSERTZH;
     assert(stream);
@@ -1010,12 +999,11 @@ int zebra_sort (ZebraHandle zh, ODR stream,
     assert(sort_status);
     yaz_log(log_level, "zebra_sort");
     zh->errCode = 0;
-    if (zebra_begin_read (zh))
-	return 1;
+    if (zebra_begin_read (zh) == ZEBRA_FAIL)
+	return ZEBRA_FAIL;
     resultSetSort (zh, stream->mem, num_input_setnames, input_setnames,
 		   output_setname, sort_sequence, sort_status);
-    zebra_end_read(zh);
-    return 0;
+    return zebra_end_read(zh);
 }
 
 int zebra_deleteResultSet(ZebraHandle zh, int function,
@@ -1082,11 +1070,11 @@ void zebra_clearError(ZebraHandle zh)
     if (zh)
     {
         zh->errCode = 0;
-        zh->errString="";
+        zh->errString = 0;
     }
 }
 
-int zebra_auth (ZebraHandle zh, const char *user, const char *pass)
+ZEBRA_RES zebra_auth (ZebraHandle zh, const char *user, const char *pass)
 {
     const char *p;
     char u[40];
@@ -1103,38 +1091,36 @@ int zebra_auth (ZebraHandle zh, const char *user, const char *pass)
 
     /* users that don't require a password .. */
     if (zh->user_perm && strchr(zh->user_perm, 'a'))
-	return 0;
+	return ZEBRA_OK;
     
     if (!zs->passwd_db || !passwd_db_auth (zs->passwd_db, user, pass))
-	return 0;
-    return 1;
+	return ZEBRA_OK;
+    return ZEBRA_FAIL;
 }
 
-int zebra_admin_import_begin (ZebraHandle zh, const char *database,
+ZEBRA_RES zebra_admin_import_begin (ZebraHandle zh, const char *database,
                                const char *record_type)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_admin_import_begin db=%s rt=%s", 
 		     database, record_type);
     zh->errCode = 0;
-    if (zebra_select_database(zh, database))
-        return 1;
-    if (zebra_begin_trans (zh, 1))
-	return 1;
-    return 0;
+    if (zebra_select_database(zh, database) == ZEBRA_FAIL)
+        return ZEBRA_FAIL;
+    return zebra_begin_trans(zh, 1);
 }
 
-int zebra_admin_import_end (ZebraHandle zh)
+ZEBRA_RES zebra_admin_import_end (ZebraHandle zh)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_admin_import_end");
     zh->errCode = 0;
-    zebra_end_trans (zh);
-    return 0;
+    return zebra_end_trans(zh);
 }
 
-int zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
+ZEBRA_RES zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 {
+    ZEBRA_RES res = ZEBRA_OK;
     SYSNO sysno;
     int i;
     ASSERTZH;
@@ -1144,42 +1130,39 @@ int zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
     {
 	Z_NamePlusRecord *npr = segment->segmentRecords[i];
 
-	printf ("--------------%d--------------------\n", i);
-        /* FIXME - What! printing on stdout ??? */
 	if (npr->which == Z_NamePlusRecord_intermediateFragment)
 	{
 	    Z_FragmentSyntax *fragment = npr->u.intermediateFragment;
 	    if (fragment->which == Z_FragmentSyntax_notExternallyTagged)
 	    {
 		Odr_oct *oct = fragment->u.notExternallyTagged;
-		printf ("%.*s", (oct->len > 100 ? 100 : oct->len) ,
-			oct->buf);
-		
 		sysno = 0;
 		
-		zebra_update_record(zh, 
-				    0, /* record Type */
-				    &sysno,
-				    0, /* match */
-				    0, /* fname */
-				    oct->buf, oct->len,
-				    0);
+		if ( zebra_update_record(zh, 
+					 0, /* record Type */
+					 &sysno,
+					 0, /* match */
+					 0, /* fname */
+					 oct->buf, oct->len,
+					 0) == ZEBRA_FAIL)
+		    res = ZEBRA_FAIL;
 	    }
 	}
     }
-    return 0;
+    return res;
 }
 
-int zebra_admin_exchange_record (ZebraHandle zh,
-                                 const char *rec_buf,
-                                 size_t rec_len,
-                                 const char *recid_buf, size_t recid_len,
-                                 int action)
+ZEBRA_RES zebra_admin_exchange_record (ZebraHandle zh,
+				       const char *rec_buf,
+				       size_t rec_len,
+				       const char *recid_buf, size_t recid_len,
+				       int action)
     /* 1 = insert. Fail it already exists */
     /* 2 = replace. Fail it does not exist */
     /* 3 = delete. Fail if does not exist */
     /* 4 = update. Insert/replace */
 {
+    ZEBRA_RES res;
     SYSNO sysno = 0;
     char *rinfo = 0;
     char recid_z[256];
@@ -1191,12 +1174,13 @@ int zebra_admin_exchange_record (ZebraHandle zh,
     zh->errCode = 0;
 
     if (!recid_buf || recid_len <= 0 || recid_len >= sizeof(recid_z))
-        return -1;
+        return ZEBRA_FAIL;
+
     memcpy (recid_z, recid_buf, recid_len);
     recid_z[recid_len] = 0;
 
-    if (zebra_begin_trans(zh, 1))
-	return -1;
+    if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
+	return ZEBRA_FAIL;
 
     rinfo = dict_lookup (zh->reg->matchDict, recid_z);
     if (rinfo)
@@ -1204,7 +1188,7 @@ int zebra_admin_exchange_record (ZebraHandle zh,
         if (action == 1)  /* fail if insert */
         {
 	     zebra_end_trans(zh);
-	     return -1;
+	     return ZEBRA_FAIL;
 	}
 
         memcpy (&sysno, rinfo+1, sizeof(sysno));
@@ -1214,19 +1198,19 @@ int zebra_admin_exchange_record (ZebraHandle zh,
         if (action == 2 || action == 3) /* fail if delete or update */
         {
 	    zebra_end_trans(zh);
-            return -1;
+            return ZEBRA_FAIL;
 	}
 	action = 1;  /* make it an insert (if it's an update).. */
     }
-    buffer_extract_record (zh, rec_buf, rec_len,
-			   action == 3 ? 1 : 0 /* delete flag */,
-			   0, /* test mode */
-			   0, /* recordType */
-			   &sysno, 
-			   0, /* match */
-			   0, /* fname */
+    res = buffer_extract_record (zh, rec_buf, rec_len,
+				 action == 3 ? 1 : 0 /* delete flag */,
+				 0, /* test mode */
+				 0, /* recordType */
+				 &sysno, 
+				 0, /* match */
+				 0, /* fname */
 			   0, /* force update */
-			   1  /* allow update */
+				 1  /* allow update */
 	);
     if (action == 1)
     {
@@ -1237,7 +1221,7 @@ int zebra_admin_exchange_record (ZebraHandle zh,
         dict_delete (zh->reg->matchDict, recid_z);
     }
     zebra_end_trans(zh);
-    return 0;
+    return res;
 }
 
 int delete_w_handle(const char *info, void *handle)
@@ -1269,17 +1253,17 @@ static int delete_SU_handle(void *handle, int ord)
     return 0;
 }
 
-int zebra_drop_database  (ZebraHandle zh, const char *database)
+ZEBRA_RES zebra_drop_database  (ZebraHandle zh, const char *database)
 {
-    int ret = 0;
+    ZEBRA_RES ret = ZEBRA_OK;
     ASSERTZH;
     yaz_log(log_level, "zebra_drop_database");
     zh->errCode = 0;
 
-    if (zebra_select_database (zh, database))
-        return -1;
-    if (zebra_begin_trans (zh, 1))
-        return -1;
+    if (zebra_select_database (zh, database) == ZEBRA_FAIL)
+        return ZEBRA_FAIL;
+    if (zebra_begin_trans (zh, 1) == ZEBRA_FAIL)
+        return ZEBRA_FAIL;
     if (zh->reg->isamb)
     {
 	zebraExplain_curDatabase (zh->reg->zei, database);
@@ -1290,23 +1274,23 @@ int zebra_drop_database  (ZebraHandle zh, const char *database)
     else
     {
 	yaz_log(YLOG_WARN, "drop database only supported for isam:b");
-	ret = -1;
+	ret = ZEBRA_FAIL;
     }
     zebra_end_trans (zh);
     return ret;
 }
 
-int zebra_create_database (ZebraHandle zh, const char *database)
+ZEBRA_RES zebra_create_database (ZebraHandle zh, const char *database)
 {
     ASSERTZH;
-    yaz_log(log_level, "zebra_create_database %s",database);
+    yaz_log(log_level, "zebra_create_database %s", database);
     assert(database);
     zh->errCode = 0;
 
-    if (zebra_select_database (zh, database))
-        return -1;
+    if (zebra_select_database (zh, database) == ZEBRA_FAIL)
+        return ZEBRA_FAIL;
     if (zebra_begin_trans (zh, 1))
-        return -1;
+        return ZEBRA_FAIL;
 
     /* announce database */
     if (zebraExplain_newDatabase (zh->reg->zei, database, 0 
@@ -1315,10 +1299,9 @@ int zebra_create_database (ZebraHandle zh, const char *database)
         zebra_end_trans (zh);
 	zh->errCode = 224;
 	zh->errString = "database already exist";
-	return -1;
+	return ZEBRA_FAIL;
     }
-    zebra_end_trans (zh);
-    return 0;
+    return zebra_end_trans (zh);
 }
 
 int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
@@ -1345,9 +1328,7 @@ int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
     return wrbuf_len(wrbuf);
 }
 
-
-int zebra_set_state (ZebraHandle zh, int val, int seqno)
-    /* FIXME - zint seqno ?? */
+static void zebra_set_state (ZebraHandle zh, int val, int seqno)
 {
     char state_fname[256];
     char *fname;
@@ -1365,10 +1346,9 @@ int zebra_set_state (ZebraHandle zh, int val, int seqno)
     fprintf (f, "%c %d %ld\n", val, seqno, p);
     fclose (f);
     xfree(fname);
-    return 0;
 }
 
-int zebra_get_state (ZebraHandle zh, char *val, int *seqno)
+static void zebra_get_state (ZebraHandle zh, char *val, int *seqno)
 {
     char state_fname[256];
     char *fname;
@@ -1389,15 +1369,14 @@ int zebra_get_state (ZebraHandle zh, char *val, int *seqno)
         fclose (f);
     }
     xfree(fname);
-    return 0;
 }
 
-int zebra_begin_read (ZebraHandle zh)
+ZEBRA_RES zebra_begin_read (ZebraHandle zh)
 {
     return zebra_begin_trans(zh, 0);
 }
 
-int zebra_end_read (ZebraHandle zh)
+ZEBRA_RES zebra_end_read (ZebraHandle zh)
 {
     return zebra_end_trans(zh);
 }
@@ -1431,7 +1410,7 @@ static void read_res_for_transaction(ZebraHandle zh)
     zh->m_file_verbose_limit = atoi(v);
 }
 
-int zebra_begin_trans (ZebraHandle zh, int rw)
+ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
 {
     ASSERTZH;
     zebra_select_default_database(zh);
@@ -1439,7 +1418,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
     {
         zh->errCode = 2;
         zh->errString = "zebra_begin_trans: no database selected";
-        return -1;
+        return ZEBRA_FAIL;
     }
     ASSERTZHRES;
     yaz_log(log_level, "zebra_begin_trans rw=%d",rw);
@@ -1450,7 +1429,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
 	{
 	    zh->errCode = 223;
 	    zh->errString = 0;
-	    return -1;
+	    return ZEBRA_FAIL;
 	}
     }
 
@@ -1472,7 +1451,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         {
             zh->errCode = 2;
             zh->errString = "zebra_begin_trans: write trans not allowed within read trans";
-            return -1;
+            return ZEBRA_FAIL;
         }
         if (zh->reg)
 	{
@@ -1538,7 +1517,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         {
             yaz_log (YLOG_FATAL, "zebra_begin_trans couldn't finish commit");
             abort();
-            return -1;
+            return ZEBRA_FAIL;
         }
         zebra_set_state (zh, 'd', seqno);
         
@@ -1560,7 +1539,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
             zh->errCode = 2;
             zh->errString = "zebra_begin_trans: cannot open register";
             yaz_log(YLOG_FATAL, zh->errString);
-            return -1;
+            return ZEBRA_FAIL;
         }
     }
     else
@@ -1574,7 +1553,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         if (zh->trans_no != 1)
         {
             zebra_flush_reg (zh);
-            return 0;
+            return ZEBRA_OK;
         }
         zh->errCode = 0;
 #if HAVE_SYS_TIMES_H
@@ -1584,13 +1563,13 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
         {
             (zh->trans_no)--;
             zh->errCode = 109;
-            return -1;
+            return ZEBRA_FAIL;
         }
         if (!zh->lock_normal || !zh->lock_shadow)
         {
             (zh->trans_no)--;
             zh->errCode = 2;
-            return -1;
+            return ZEBRA_FAIL;
         }
         zebra_get_state (zh, &val, &seqno);
         if (val == 'd')
@@ -1611,7 +1590,7 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
             dirty = 1;
         }
         if (!dirty)
-            return 0;
+            return ZEBRA_OK;
         
         if (val == 'c')
             zebra_lock_r (zh->lock_shadow);
@@ -1632,16 +1611,16 @@ int zebra_begin_trans (ZebraHandle zh, int rw)
             zebra_unlock (zh->lock_shadow);
             zh->trans_no--;
             zh->errCode = 109;
-            return -1;
+            return ZEBRA_FAIL;
         }
         zh->reg->last_val = val;
         zh->reg->seqno = seqno;
     }
     read_res_for_transaction(zh);
-    return 0;
+    return ZEBRA_OK;
 }
 
-int zebra_end_trans (ZebraHandle zh)
+ZEBRA_RES zebra_end_trans (ZebraHandle zh)
 {
     ZebraTransactionStatus dummy;
     ASSERTZH;
@@ -1649,7 +1628,7 @@ int zebra_end_trans (ZebraHandle zh)
     return zebra_end_transaction(zh, &dummy);
 }
 
-int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
+ZEBRA_RES zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
 {
     char val;
     int seqno;
@@ -1670,13 +1649,13 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
     {
         zh->errCode = 2;
         zh->errString = "zebra_end_trans: no open transaction";
-        return -1;
+        return ZEBRA_FAIL;
     }
     if (zh->trans_no != zh->trans_w_no)
     {
         zh->trans_no--;
         if (zh->trans_no != 0)
-            return 0;
+            return ZEBRA_OK;
 
         /* release read lock */
 
@@ -1735,7 +1714,7 @@ int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
     status->utime = (long) (zh->tms2.tms_utime - zh->tms1.tms_utime);
     status->stime = (long) (zh->tms2.tms_stime - zh->tms1.tms_stime);
 #endif
-    return 0;
+    return ZEBRA_OK;
 }
 
 int zebra_repository_update (ZebraHandle zh, const char *path)
@@ -1829,21 +1808,21 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
     return 0;
 }
 
-int zebra_clean (ZebraHandle zh)
+ZEBRA_RES zebra_clean (ZebraHandle zh)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_clean");
     return zebra_commit_ex(zh, 1);
 }
 
-int zebra_commit (ZebraHandle zh)
+ZEBRA_RES zebra_commit (ZebraHandle zh)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_commit");
     return zebra_commit_ex(zh, 0);
 }
 
-int zebra_init (ZebraHandle zh)
+ZEBRA_RES zebra_init (ZebraHandle zh)
 {
     const char *rval;
     BFiles bfs = 0;
@@ -1855,20 +1834,20 @@ int zebra_init (ZebraHandle zh)
     if (!zh->res)
     {
         zh->errCode = 109;
-        return -1;
+	return ZEBRA_FAIL;
     }
     rval = res_get (zh->res, "shadow");
 
     bfs = bfs_create (res_get (zh->res, "register"), zh->path_reg);
     if (!bfs)
-	return -1;
+	return ZEBRA_FAIL;
     if (rval && *rval)
         bf_cache (bfs, rval);
     
     bf_reset (bfs);
     bfs_destroy (bfs);
     zebra_set_state (zh, 'o', 0);
-    return 0;
+    return ZEBRA_OK;
 }
 
 int zebra_compact (ZebraHandle zh)
@@ -1897,16 +1876,15 @@ int zebra_result (ZebraHandle zh, int *code, char **addinfo)
     return 0;
 }
 
-int zebra_shadow_enable (ZebraHandle zh, int value)
+void zebra_shadow_enable (ZebraHandle zh, int value)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_shadow_enable");
     zh->errCode = 0;
     zh->shadow_enable = value;
-    return 0;
 }
 
-int zebra_octet_term_encoding(ZebraHandle zh, const char *encoding)
+ZEBRA_RES zebra_octet_term_encoding(ZebraHandle zh, const char *encoding)
 {
     ASSERTZH;
     assert(encoding);
@@ -1927,10 +1905,10 @@ int zebra_octet_term_encoding(ZebraHandle zh, const char *encoding)
     if (zh->iconv_to_utf8 == 0)
         yaz_log (YLOG_WARN, "iconv: UTF-8 to %s unsupported", encoding);
 
-    return 0;
+    return ZEBRA_OK;
 }
 
-int zebra_record_encoding (ZebraHandle zh, const char *encoding)
+ZEBRA_RES zebra_record_encoding (ZebraHandle zh, const char *encoding)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_record_encoding");
@@ -1939,10 +1917,10 @@ int zebra_record_encoding (ZebraHandle zh, const char *encoding)
     zh->record_encoding = 0;
     if (encoding)
 	zh->record_encoding = xstrdup (encoding);
-    return 0;
+    return ZEBRA_OK;
 }
 
-int zebra_set_resource(ZebraHandle zh, const char *name, const char *value)
+void zebra_set_resource(ZebraHandle zh, const char *name, const char *value)
 {
     ASSERTZH;
     assert(name);
@@ -1950,7 +1928,6 @@ int zebra_set_resource(ZebraHandle zh, const char *name, const char *value)
     yaz_log(log_level, "zebra_set_resource %s:%s",name,value);
     zh->errCode = 0;
     res_set(zh->res, name, value);
-    return 0;
 }
 
 const char *zebra_get_resource(ZebraHandle zh,
@@ -1983,12 +1960,11 @@ int zebra_get_shadow_enable (ZebraHandle zh)
     return (zh->shadow_enable);
 }
 
-int zebra_set_shadow_enable (ZebraHandle zh, int value)
+void zebra_set_shadow_enable (ZebraHandle zh, int value)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_set_shadow_enable %d",value);
     zh->shadow_enable = value;
-    return 0;
 }
 
 /* Used by Perl API.. Added the record buffer dup to zebra_records_retrieve
@@ -2019,12 +1995,13 @@ int zebra_add_record(ZebraHandle zh,
     return zebra_update_record(zh, 0, &sysno, 0, 0, buf, buf_size, 0);
 }
 
-int zebra_insert_record (ZebraHandle zh, 
-			 const char *recordType,
-			 SYSNO *sysno, const char *match, const char *fname,
-			 const char *buf, int buf_size, int force_update)
+ZEBRA_RES zebra_insert_record (ZebraHandle zh, 
+			       const char *recordType,
+			       SYSNO *sysno, const char *match,
+			       const char *fname,
+			       const char *buf, int buf_size, int force_update)
 {
-    int res;
+    ZEBRA_RES res;
     ASSERTZH;
     assert(sysno);
     assert(buf);
@@ -2033,8 +2010,8 @@ int zebra_insert_record (ZebraHandle zh,
     if (buf_size < 1)
 	buf_size = strlen(buf);
 
-    if (zebra_begin_trans(zh, 1))
-	return 1;
+    if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
+	return ZEBRA_FAIL;
     res = buffer_extract_record (zh, buf, buf_size, 
 				 0, /* delete_flag  */
 				 0, /* test_mode */
@@ -2047,13 +2024,14 @@ int zebra_insert_record (ZebraHandle zh,
     return res; 
 }
 
-int zebra_update_record (ZebraHandle zh, 
-			 const char *recordType,
-			 SYSNO* sysno, const char *match, const char *fname,
-			 const char *buf, int buf_size,
-			 int force_update)
+ZEBRA_RES zebra_update_record (ZebraHandle zh, 
+			       const char *recordType,
+			       SYSNO* sysno, const char *match,
+			       const char *fname,
+			       const char *buf, int buf_size,
+			       int force_update)
 {
-    int res;
+    ZEBRA_RES res;
     ASSERTZH;
     assert(sysno);
     assert(buf);
@@ -2062,8 +2040,8 @@ int zebra_update_record (ZebraHandle zh,
 
     if (buf_size < 1) buf_size = strlen(buf);
 
-    if (zebra_begin_trans(zh, 1))
-	return 1;
+    if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
+	return ZEBRA_FAIL;
     res = buffer_extract_record (zh, buf, buf_size, 
 				 0, /* delete_flag */
 				 0, /* test_mode */
@@ -2076,13 +2054,14 @@ int zebra_update_record (ZebraHandle zh,
     return res; 
 }
 
-int zebra_delete_record (ZebraHandle zh, 
-			 const char *recordType,
-			 SYSNO *sysno, const char *match, const char *fname,
-			 const char *buf, int buf_size,
-			 int force_update) 
+ZEBRA_RES zebra_delete_record (ZebraHandle zh, 
+			       const char *recordType,
+			       SYSNO *sysno, const char *match,
+			       const char *fname,
+			       const char *buf, int buf_size,
+			       int force_update) 
 {
-    int res;
+    ZEBRA_RES res;
     ASSERTZH;
     assert(sysno);
     assert(buf);
@@ -2090,8 +2069,8 @@ int zebra_delete_record (ZebraHandle zh,
 
     if (buf_size < 1) buf_size = strlen(buf);
 
-    if (zebra_begin_trans(zh, 1))
-	return 1;
+    if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
+	return ZEBRA_FAIL;
     res = buffer_extract_record (zh, buf, buf_size,
 				 1, /* delete_flag */
 				 0, /* test_mode */
@@ -2101,18 +2080,18 @@ int zebra_delete_record (ZebraHandle zh,
 				 force_update,
 				 1); /* allow_update */
     zebra_end_trans(zh);
-    return res;   
+    return res;
 }
 
 /* ---------------------------------------------------------------------------
   Searching 
 */
 
-int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
-		      const char *setname, zint *numhits)
+ZEBRA_RES zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
+			    const char *setname, zint *numhits)
 {
     zint hits = 0;
-    int res = -1;
+    ZEBRA_RES res = ZEBRA_OK;
     Z_RPNQuery *query;
     ODR odr = odr_createmem(ODR_ENCODE);
     ASSERTZH;
@@ -2124,7 +2103,10 @@ int zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
     query = p_query_rpn (odr, PROTO_Z3950, pqf_query);
     
     if (!query)
+    {
         yaz_log (YLOG_WARN, "bad query %s\n", pqf_query);
+	res = ZEBRA_FAIL;
+    }
     else
         res = zebra_search_RPN (zh, odr, query, setname, &hits);
     
