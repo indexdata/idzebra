@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.41 2005-04-15 10:47:47 adam Exp $
+/* $Id: bfile.c,v 1.42 2005-04-18 08:05:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -212,8 +212,8 @@ int bf_xclose (BFile bf, int version, const char *more_info)
 {
     if (bf->header_dirty)
     {
-	assert(bf->alloc_buf);
 	zint pos = 0;
+	assert(bf->alloc_buf);
 	assert(bf->magic);
 	sprintf(bf->alloc_buf, "%s %d " ZINT_FORMAT " " ZINT_FORMAT " ", 
 		bf->magic, version, bf->last_block, bf->free_list);
