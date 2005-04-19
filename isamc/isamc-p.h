@@ -1,4 +1,4 @@
-/* $Id: isamc-p.h,v 1.14 2005-01-15 19:38:31 adam Exp $
+/* $Id: isamc-p.h,v 1.15 2005-04-19 08:44:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -96,10 +96,10 @@ struct ISAMC_PP_s {
 #define ISAMC_BLOCK_OFFSET_1 (sizeof(zint)+sizeof(ISAMC_BLOCK_SIZE)+sizeof(zint)) 
 #define ISAMC_BLOCK_OFFSET_N (sizeof(zint)+sizeof(ISAMC_BLOCK_SIZE)) 
 
-zint isc_alloc_block (ISAMC is, int cat);
-void isc_release_block (ISAMC is, int cat, zint pos);
-int isc_read_block (ISAMC is, int cat, zint pos, char *dst);
-int isc_write_block (ISAMC is, int cat, zint pos, char *src);
+zint isamc_alloc_block (ISAMC is, int cat);
+void isamc_release_block (ISAMC is, int cat, zint pos);
+int isamc_read_block (ISAMC is, int cat, zint pos, char *dst);
+int isamc_write_block (ISAMC is, int cat, zint pos, char *src);
 
 YAZ_END_CDECL
 
