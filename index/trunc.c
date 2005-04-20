@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.55 2005-04-20 10:16:29 adam Exp $
+/* $Id: trunc.c,v 1.56 2005-04-20 10:21:29 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -439,7 +439,6 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
             xfree(rsets);
             return r;
         } 
-	fprintf(stderr, "Using rset_trunc_r limit=%d\n", trunc_limit);
         qsort(isam_p, no, sizeof(*isam_p), isamc_trunc_cmp);
     }
     else
