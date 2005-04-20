@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.175 2005-04-15 10:47:48 adam Exp $
+/* $Id: zrpn.c,v 1.176 2005-04-20 10:17:14 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1875,11 +1875,11 @@ static RSET rpn_search_APT_numeric(ZebraHandle zh,
 	    break;
         yaz_log(YLOG_DEBUG, "term: %s", term_dst);
         rset[rset_no] = rset_trunc(zh, grep_info.isam_p_buf,
-                                    grep_info.isam_p_indx, term_dst,
-                                    strlen(term_dst), rank_type,
-                                    0 /* preserve position */,
-                                    zapt->term->which, rset_nmem, 
-                                    key_it_ctrl,key_it_ctrl->scope);
+				   grep_info.isam_p_indx, term_dst,
+				   strlen(term_dst), rank_type,
+				   0 /* preserve position */,
+				   zapt->term->which, rset_nmem, 
+				   key_it_ctrl,key_it_ctrl->scope);
 	if (!rset[rset_no])
 	    break;
     }
@@ -2080,9 +2080,9 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     yaz_log (YLOG_DEBUG, "%s %d positions", term,
              grep_info.isam_p_indx);
     rset = rset_trunc(zh, grep_info.isam_p_buf,
-                       grep_info.isam_p_indx, term, strlen(term),
-                       flags, 1, term_type,rset_nmem,
-                       key_it_ctrl, key_it_ctrl->scope);
+		      grep_info.isam_p_indx, term, strlen(term),
+		      flags, 1, term_type,rset_nmem,
+		      key_it_ctrl, key_it_ctrl->scope);
     grep_info_delete (&grep_info);
     return rset;
 }
