@@ -1,4 +1,4 @@
-/* $Id: t6.c,v 1.7 2005-01-15 19:38:35 adam Exp $
+/* $Id: t6.c,v 1.8 2005-04-20 10:20:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,33 +36,51 @@ int main(int argc, char **argv)
     zebra_init(zh);
     zebra_close(zh);
 
-    for (i = 0; i<100; i++)
+    for (i = 0; i<10; i++)
     {
-	char rec_buf[5120];
-	int j;
+	int l;
 
 	zh = zebra_open (zs);
 	zebra_select_database(zh, "Default");
 	
 	zebra_begin_trans (zh, 1);
 
-	*rec_buf = '\0';
-	strcat(rec_buf, "<gils><title>");
-	j = (rand() & 15) + 1;
-	while (--j >= 0)
+	for (l = 0; l<1000; l++)
 	{
-	    int c = 65 + (rand() & 15);
-	    sprintf(rec_buf + strlen(rec_buf), "%c ", c);
+	    char rec_buf[5120];
+	    int j;
+	    *rec_buf = '\0';
+	    strcat(rec_buf, "<gils><title>");
+	    if (i == 0)
+	    {
+		sprintf(rec_buf + strlen(rec_buf), "aaa");
+	    }
+	    else
+	    {
+		j = (rand() & 15) + 1;
+		while (--j >= 0)
+		{
+		    int c = 65 + (rand() & 15);
+		    sprintf(rec_buf + strlen(rec_buf), "%c", c);
+		}
+	    }
+	    strcat(rec_buf, "</title><Control-Identifier>");
+	    j = rand() & 31;
+	    sprintf(rec_buf + strlen(rec_buf), "%d", j);
+	    strcat(rec_buf, "</Control-Identifier></gils>");
+	    zebra_add_record (zh, rec_buf, strlen(rec_buf));
 	}
-	strcat(rec_buf, "</title><Control-Identifier>");
-	j = rand() & 31;
-	sprintf(rec_buf + strlen(rec_buf), "%d", j);
-	strcat(rec_buf, "</Control-Identifier></gils>");
-	zebra_add_record (zh, rec_buf, strlen(rec_buf));
-
 	zebra_end_trans(zh);
 	zebra_close(zh);
     }
+    zh = zebra_open(zs);
 
-    return close_down(0 /*zh*/, zs, 0);
+    zebra_select_database(zh, "Default");
+
+    zebra_set_resource(zh, "trunclimit", "2");
+
+    /* check massive truncation: bug #281 */
+    do_query(__LINE__, zh, "@attr 1=4 @attr 2=1 z", -1);
+
+    return close_down(zh, zs, 0);
 }
