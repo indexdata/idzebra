@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.13 2005-04-15 10:47:49 adam Exp $
+/* $Id: testlib.c,v 1.14 2005-04-20 10:18:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -155,8 +155,9 @@ int do_query_x(int lineno, ZebraHandle zh, char *query, int exphits,
 
     parser = yaz_pqf_create();
     rpn = yaz_pqf_parse(parser, odr, query);
+    yaz_pqf_destroy(parser);
     if (!rpn) {
-        printf("Error: Parse failed \n%s\n",query);
+        printf("Error: Parse failed \n%s\n", query);
         exit(1);
     }
     rc = zebra_search_RPN(zh, odr, rpn, setname, &hits);
@@ -183,14 +184,13 @@ int do_query_x(int lineno, ZebraHandle zh, char *query, int exphits,
 	    printf("Error: search returned %d\n%s\n", rc, query);
 	    exit (1);
 	}
-	if (hits != exphits) {
+	if (exphits != -1 && hits != exphits) {
 	    printf("Error: search returned " ZINT_FORMAT 
 		   " hits instead of %d\n%s\n",
 		   hits, exphits, query);
 	    exit (1);
 	}
     }
-    yaz_pqf_destroy(parser);
     odr_destroy (odr);
     return hits;
 }
