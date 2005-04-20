@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.53 2005-04-20 08:32:36 adam Exp $
+/* $Id: trunc.c,v 1.54 2005-04-20 10:15:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -130,13 +130,14 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
 			 const struct key_control *kctrl, int scope,
 			 TERMID termid)
 {
-    RSET result; 
+    RSET result;
     RSFD result_rsfd;
     int nn = 0;
 
-    result = rstemp_create( rset_nmem,kctrl, scope,
-			    res_get(zi->res, "setTmpDir"), termid);
+    result = rstemp_create(rset_nmem, kctrl, scope,
+			   res_get(zi->res, "setTmpDir"), termid);
     result_rsfd = rset_open(result, RSETF_WRITE);
+    yaz_log(YLOG_LOG, "rset_trunc_r from=%d to=%d result=%p", from, to, result);
 
     if (to - from > merge_chunk)
     {
@@ -157,20 +158,20 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
 					   isam_p, i, i+i_add,
 					   merge_chunk, preserve_position,
 					   term_type, rset_nmem, 
-					   kctrl, scope,termid);
+					   kctrl, scope, 0);
             else
                 rset[rscur] = rset_trunc_r(zi, term, length, flags,
 					   isam_p, i, to,
 					   merge_chunk, preserve_position,
 					   term_type, rset_nmem, 
-					   kctrl, scope,termid);
+					   kctrl, scope, 0);
             rscur++;
         }
         ti = heap_init (rscur, sizeof(struct it_key), key_compare_it);
         for (i = rscur; --i >= 0; )
         {
             rsfd[i] = rset_open(rset[i], RSETF_READ);
-            if (rset_read(rsfd[i], ti->tmpbuf,0))
+            if (rset_read(rsfd[i], ti->tmpbuf, 0))
                 heap_insert(ti, ti->tmpbuf, i);
             else
             {
@@ -365,6 +366,7 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
         yaz_log(YLOG_WARN, "Unknown isam set in rset_trunc_r");
 
     rset_close(result_rsfd);
+    yaz_log(YLOG_LOG, "rset_trunc_r returned result=%p", result);
     return result;
 }
 
@@ -402,8 +404,9 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
 		const struct key_control *kctrl, int scope)
 {
     TERMID termid;
+    RSET result;
     int trunc_chunk;
-    yaz_log(YLOG_DEBUG, "rset_trunc no=%d", no);
+    yaz_log(YLOG_LOG, "rset_trunc no=%d", no);
     if (no < 1)
 	return rsnull_create(rset_nmem,kctrl);
     termid = rset_term_create(term, length, flags, term_type,rset_nmem);
@@ -448,8 +451,10 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
 	return rsnull_create(rset_nmem, kctrl);
     }
     trunc_chunk = atoi(res_get_def(zi->res, "truncchunk", "100"));
-    return rset_trunc_r(zi, term, length, flags, isam_p, 0, no, trunc_chunk,
-			preserve_position, term_type, rset_nmem, kctrl, scope,
-			termid);
+    result = rset_trunc_r(zi, term, length, flags, isam_p, 0, no, trunc_chunk,
+			  preserve_position, term_type, rset_nmem, kctrl, scope,
+			  termid);
+    yaz_log(YLOG_LOG, "rset_trunc no=%d returned=%p", no, result);
+    return result;
 }
 
