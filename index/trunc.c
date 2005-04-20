@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.54 2005-04-20 10:15:19 adam Exp $
+/* $Id: trunc.c,v 1.55 2005-04-20 10:16:29 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -137,7 +137,6 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
     result = rstemp_create(rset_nmem, kctrl, scope,
 			   res_get(zi->res, "setTmpDir"), termid);
     result_rsfd = rset_open(result, RSETF_WRITE);
-    yaz_log(YLOG_LOG, "rset_trunc_r from=%d to=%d result=%p", from, to, result);
 
     if (to - from > merge_chunk)
     {
@@ -366,7 +365,6 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
         yaz_log(YLOG_WARN, "Unknown isam set in rset_trunc_r");
 
     rset_close(result_rsfd);
-    yaz_log(YLOG_LOG, "rset_trunc_r returned result=%p", result);
     return result;
 }
 
@@ -406,7 +404,6 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
     TERMID termid;
     RSET result;
     int trunc_chunk;
-    yaz_log(YLOG_LOG, "rset_trunc no=%d", no);
     if (no < 1)
 	return rsnull_create(rset_nmem,kctrl);
     termid = rset_term_create(term, length, flags, term_type,rset_nmem);
@@ -454,7 +451,6 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
     result = rset_trunc_r(zi, term, length, flags, isam_p, 0, no, trunc_chunk,
 			  preserve_position, term_type, rset_nmem, kctrl, scope,
 			  termid);
-    yaz_log(YLOG_LOG, "rset_trunc no=%d returned=%p", no, result);
     return result;
 }
 
