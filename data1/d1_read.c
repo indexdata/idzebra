@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.15 2005-01-17 22:12:34 adam Exp $
+/* $Id: d1_read.c,v 1.16 2005-04-23 16:30:58 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -697,8 +697,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 	{
 	    data1_xattr *xattr;
 
-	    char tag[64];
-	    char args[256];
+	    char tag[256];
 	    int null_tag = 0;
 	    int end_tag = 0;
 	    size_t i = 0;
@@ -708,6 +707,33 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 	    {
 		end_tag = 1;
 		c = ampr (get_byte, fh, &amp);
+	    }
+	    else if (amp == 0 && c == '?')
+	    {
+		int quote_mode = 0;
+		while ((c = ampr(get_byte, fh, &amp)))
+		{
+		    if (amp)
+			continue;
+		    if (quote_mode == 0)
+		    {
+			if (c == '"')
+			    quote_mode = c;
+			else if (c == '\'')
+			    quote_mode = c;
+			else if (c == '>')
+			{
+			    c = ampr(get_byte, fh, &amp);
+			    break;
+			}
+		    }
+		    else 
+		    {
+			if (amp == 0 && c == quote_mode)
+			    quote_mode = 0;
+		    }
+		}
+		continue;
 	    }
 	    else if (amp == 0 && c == '!')
 	    {
@@ -776,7 +802,6 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 	    }
 	    tag[i] = '\0';
 	    xattr = data1_read_xattr (dh, m, get_byte, fh, wrbuf, &c, &amp);
-	    args[0] = '\0';
 	    if (amp == 0 && c == '/')
 	    {    /* <tag attrs/> or <tag/> */
 		null_tag = 1;
@@ -829,17 +854,21 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
                 }
 		continue;
 	    }	
-	    else if (!strcmp(tag, "var"))
+	    else if (!strcmp(tag, "var") 
+		     && xattr && xattr->next && xattr->next->next
+		     && xattr->value == 0 
+		     && xattr->next->value == 0
+		     && xattr->next->next->value == 0)
 	    {
-		char tclass[DATA1_MAX_SYMBOL], type[DATA1_MAX_SYMBOL];
+		/* <var class type value> */
+		const char *tclass = xattr->name;
+		const char *type = xattr->next->name;
+		const char *value = xattr->next->name;
 		data1_vartype *tp;
 		int val_offset;
 		
-		if (sscanf(args, "%s %s %n", tclass, type, &val_offset) != 2)
-		{
-		    yaz_log(YLOG_WARN, "Malformed variant triple at '%s'", tag);
-		    continue;
-		}
+		yaz_log(YLOG_LOG, "Variant class=%s type=%s value=%s",
+			tclass, type, value);
 		if (!(tp =
 		      data1_getvartypebyct(dh,
 					   parent->root->u.root.absyn->varset,
@@ -869,7 +898,7 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 		    res = data1_mk_node2 (dh, m, DATA1N_variant, parent);
 		    res->u.variant.type = tp;
 		    res->u.variant.value =
-			data1_insert_string (dh, res, m, args + val_offset);
+			data1_insert_string (dh, res, m, value);
 		}
 	    }
 	    else 

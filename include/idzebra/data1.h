@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.8 2005-03-30 09:25:23 adam Exp $
+/* $Id: data1.h,v 1.9 2005-04-23 16:30:58 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -406,7 +406,8 @@ YAZ_EXPORT data1_datatype data1_maptype(data1_handle dh, char *t);
 YAZ_EXPORT data1_varset *data1_read_varset(data1_handle dh, const char *file);
 YAZ_EXPORT data1_vartype *data1_getvartypebyct(data1_handle dh,
 					       data1_varset *set,
-					       char *zclass, char *type);
+					       const char *zclass,
+					       const char *type);
 YAZ_EXPORT data1_vartype *data1_getvartypeby_absyn(data1_handle dh,
 						   data1_absyn *absyn,
 						   char *zclass, char *type);
