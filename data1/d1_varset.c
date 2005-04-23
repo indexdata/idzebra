@@ -1,4 +1,4 @@
-/* $Id: d1_varset.c,v 1.2 2002-10-22 13:19:50 adam Exp $
+/* $Id: d1_varset.c,v 1.2.2.1 2005-04-23 16:31:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -28,7 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <data1.h>
 
 data1_vartype *data1_getvartypebyct (data1_handle dh, data1_varset *set,
-				     char *zclass, char *type)
+				     const char *zclass, const char *type)
 {
     data1_varclass *c;
     data1_vartype *t;
