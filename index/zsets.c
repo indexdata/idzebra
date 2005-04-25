@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.80 2005-04-15 10:47:49 adam Exp $
+/* $Id: zsets.c,v 1.81 2005-04-25 11:54:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -95,10 +95,11 @@ static void loglevels()
 ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
 			  Z_RPNQuery *rpn, ZebraSet sset)
 {
-    RSET rset;
+    RSET rset = 0;
     oident *attrset;
     Z_SortKeySpecList *sort_sequence;
     int sort_status, i;
+    ZEBRA_RES res;
 
     zh->errCode = 0;
     zh->errString = NULL;
@@ -114,14 +115,15 @@ ZEBRA_RES resultSetSearch(ZebraHandle zh, NMEM nmem, NMEM rset_nmem,
         sort_sequence->specs[i] = 0;
     
     attrset = oid_getentbyoid (rpn->attributeSetId);
-    rset = rpn_search_structure (zh, rpn->RPNStructure, attrset->value,
-                                 nmem, rset_nmem,
-                                 sort_sequence,
-				 sset->num_bases, sset->basenames);
-    if (!rset)
+    res = rpn_search_top(zh, rpn->RPNStructure, attrset->value,
+			 nmem, rset_nmem,
+			 sort_sequence,
+			 sset->num_bases, sset->basenames,
+			 &rset);
+    if (res != ZEBRA_OK)
     {
 	sset->rset = 0;
-        return ZEBRA_FAIL;
+        return res;
     }
 
     if (zh->errCode)

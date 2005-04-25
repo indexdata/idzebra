@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.133 2005-04-15 10:47:48 adam Exp $
+/* $Id: index.h,v 1.134 2005-04-25 11:54:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -335,11 +335,12 @@ struct term_set_list {
     struct term_set_entry *last;
 };
 
-RSET rpn_search_structure (ZebraHandle zh, Z_RPNStructure *zs,
-			   oid_value attributeSet, 
-			   NMEM stream, NMEM rset_nmem,
-			   Z_SortKeySpecList *sort_sequence,
-			   int num_bases, char **basenames);
+ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
+			 oid_value attributeSet, 
+			 NMEM stream, NMEM rset_nmem,
+			 Z_SortKeySpecList *sort_sequence,
+			 int num_bases, char **basenames,
+			 RSET *result_set);
 
 ZEBRA_RES rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		    oid_value attributeset,

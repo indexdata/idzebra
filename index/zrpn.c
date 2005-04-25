@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.176 2005-04-20 10:17:14 adam Exp $
+/* $Id: zrpn.c,v 1.177 2005-04-25 11:54:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1538,14 +1538,14 @@ static RSET rpn_search_APT_phrase(ZebraHandle zh,
 	return 0;
     }
     if (rset_no == 0)
-        return rsnull_create (rset_nmem,key_it_ctrl); 
+        return rsnull_create (rset_nmem, key_it_ctrl); 
     else if (rset_no == 1)
         return (rset[0]);
     else
         result = rsprox_create( rset_nmem, key_it_ctrl, key_it_ctrl->scope,
-                       rset_no, rset,
-                       1 /* ordered */, 0 /* exclusion */,
-                       3 /* relation */, 1 /* distance */);
+				rset_no, rset,
+				1 /* ordered */, 0 /* exclusion */,
+				3 /* relation */, 1 /* distance */);
     return result;
 }
 
@@ -1590,7 +1590,7 @@ static RSET rpn_search_APT_or_list(ZebraHandle zh,
 	return 0;
     }
     if (rset_no == 0)
-        return rsnull_create (rset_nmem,key_it_ctrl);  
+        return rsnull_create (rset_nmem, key_it_ctrl);  
     return rsmulti_or_create(rset_nmem, key_it_ctrl, key_it_ctrl->scope,
 			     rset_no, rset);
 }
@@ -2233,11 +2233,12 @@ static RSET rpn_search_xpath (ZebraHandle zh,
 
 
 
-static RSET rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-			   oid_value attributeSet, NMEM stream,
-			   Z_SortKeySpecList *sort_sequence,
-			   int num_bases, char **basenames, 
-			   NMEM rset_nmem)
+static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
+				oid_value attributeSet, NMEM stream,
+				Z_SortKeySpecList *sort_sequence,
+				int num_bases, char **basenames, 
+				NMEM rset_nmem,
+				RSET *rset)
 {
     unsigned reg_id;
     char *search_type = NULL;
@@ -2245,7 +2246,6 @@ static RSET rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int complete_flag;
     int sort_flag;
     char termz[IT_MAX_WORD+1];
-    RSET rset = 0;
     int xpath_len;
     int xpath_use = 0;
     struct xpath_location_step xpath[10];
@@ -2264,11 +2264,16 @@ static RSET rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     yaz_log(YLOG_DEBUG, "rank_type=%s", rank_type);
 
     if (zapt_term_to_utf8(zh, zapt, termz))
-        return 0;
+	return ZEBRA_FAIL;
 
     if (sort_flag)
-        return rpn_sort_spec(zh, zapt, attributeSet, stream, sort_sequence,
-			     rank_type);
+    {
+        *rset = rpn_sort_spec(zh, zapt, attributeSet, stream, sort_sequence,
+			      rank_type);
+	if (!*rset)
+	    return ZEBRA_FAIL;
+	return ZEBRA_OK;
+    }
     xpath_len = parse_xpath(zh, zapt, attributeSet, xpath, 10, stream);
     if (xpath_len >= 0)
     {
@@ -2279,158 +2284,250 @@ static RSET rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     if (!strcmp (search_type, "phrase"))
     {
-        rset = rpn_search_APT_phrase(zh, zapt, termz, attributeSet, stream,
-				     reg_id, complete_flag, rank_type,
-				     xpath_use,
-				     num_bases, basenames, rset_nmem);
+        *rset = rpn_search_APT_phrase(zh, zapt, termz, attributeSet, stream,
+				      reg_id, complete_flag, rank_type,
+				      xpath_use,
+				      num_bases, basenames, rset_nmem);
     }
     else if (!strcmp (search_type, "and-list"))
     {
-        rset = rpn_search_APT_and_list(zh, zapt, termz, attributeSet, stream,
+        *rset = rpn_search_APT_and_list(zh, zapt, termz, attributeSet, stream,
+					reg_id, complete_flag, rank_type,
+					xpath_use,
+					num_bases, basenames, rset_nmem);
+    }
+    else if (!strcmp (search_type, "or-list"))
+    {
+        *rset = rpn_search_APT_or_list(zh, zapt, termz, attributeSet, stream,
 				       reg_id, complete_flag, rank_type,
 				       xpath_use,
 				       num_bases, basenames, rset_nmem);
     }
-    else if (!strcmp (search_type, "or-list"))
-    {
-        rset = rpn_search_APT_or_list(zh, zapt, termz, attributeSet, stream,
-				      reg_id, complete_flag, rank_type,
-				      xpath_use,
-				      num_bases, basenames, rset_nmem);
-    }
     else if (!strcmp (search_type, "local"))
     {
-        rset = rpn_search_APT_local(zh, zapt, termz, attributeSet, stream,
-				    rank_type, rset_nmem);
+        *rset = rpn_search_APT_local(zh, zapt, termz, attributeSet, stream,
+				     rank_type, rset_nmem);
     }
     else if (!strcmp (search_type, "numeric"))
     {
-        rset = rpn_search_APT_numeric(zh, zapt, termz, attributeSet, stream,
-				      reg_id, complete_flag, rank_type,
-				      xpath_use,
-				      num_bases, basenames, rset_nmem);
-    }
-    else if (!strcmp (search_type, "always"))
-    {
-        rset = 0;
+        *rset = rpn_search_APT_numeric(zh, zapt, termz, attributeSet, stream,
+				       reg_id, complete_flag, rank_type,
+				       xpath_use,
+				       num_bases, basenames, rset_nmem);
     }
     else
     {
         zh->errCode = 118;
-	return 0;
+	return ZEBRA_FAIL;
     }
-    return rpn_search_xpath (zh, attributeSet, num_bases, basenames,
-                             stream, rank_type, rset, 
-                             xpath_len, xpath, rset_nmem);
+    if (!*rset)
+	return ZEBRA_FAIL;
+    *rset = rpn_search_xpath (zh, attributeSet, num_bases, basenames,
+			      stream, rank_type, *rset, 
+			      xpath_len, xpath, rset_nmem);
+    if (!*rset)
+	return ZEBRA_FAIL;
+    return ZEBRA_OK;
 }
 
-RSET rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
-			  oid_value attributeSet, 
-			  NMEM stream, NMEM rset_nmem,
-			  Z_SortKeySpecList *sort_sequence,
-			  int num_bases, char **basenames)
+static ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
+				      oid_value attributeSet, 
+				      NMEM stream, NMEM rset_nmem,
+				      Z_SortKeySpecList *sort_sequence,
+				      int num_bases, char **basenames,
+				      RSET **result_sets, int *num_result_sets,
+				      Z_Operator *parent_op);
+
+ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
+			 oid_value attributeSet, 
+			 NMEM stream, NMEM rset_nmem,
+			 Z_SortKeySpecList *sort_sequence,
+			 int num_bases, char **basenames,
+			 RSET *result_set)
 {
-    RSET r = NULL;
+    RSET *result_sets = 0;
+    int num_result_sets = 0;
+    ZEBRA_RES res = rpn_search_structure(zh, zs, attributeSet,
+					 stream, rset_nmem,
+					 sort_sequence, 
+					 num_bases, basenames,
+					 &result_sets, &num_result_sets,
+					 0 /* no op */);
+    if (res != ZEBRA_OK)
+    {
+	int i;
+	for (i = 0; i<num_result_sets; i++)
+	    rset_delete(result_sets[i]);
+	*result_set = 0;
+	return res;
+    }
+    assert(num_result_sets == 1);
+    assert(result_sets);
+    assert(*result_sets);
+    *result_set = *result_sets;
+    return ZEBRA_OK;
+}
+
+ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
+			       oid_value attributeSet, 
+			       NMEM stream, NMEM rset_nmem,
+			       Z_SortKeySpecList *sort_sequence,
+			       int num_bases, char **basenames,
+			       RSET **result_sets, int *num_result_sets,
+			       Z_Operator *parent_op)
+{
+    *num_result_sets = 0;
     if (zs->which == Z_RPNStructure_complex)
     {
+	ZEBRA_RES res;
         Z_Operator *zop = zs->u.complex->roperator;
-        RSET rsets[2]; /* l and r argument */
+	RSET *result_sets_l = 0;
+	int num_result_sets_l = 0;
+	RSET *result_sets_r = 0;
+	int num_result_sets_r = 0;
 
-        rsets[0] = rpn_search_structure(zh, zs->u.complex->s1,
-					attributeSet, stream, rset_nmem,
-					sort_sequence,
-					num_bases, basenames);
-        if (rsets[0] == NULL)
-            return NULL;
-        rsets[1] = rpn_search_structure(zh, zs->u.complex->s2,
-					attributeSet, stream, rset_nmem,
-					sort_sequence,
-					num_bases, basenames);
-        if (rsets[1] == NULL)
-        {
-            rset_delete(rsets[0]);
-            return NULL;
-        }
+        res = rpn_search_structure(zh, zs->u.complex->s1,
+				   attributeSet, stream, rset_nmem,
+				   sort_sequence,
+				   num_bases, basenames,
+				   &result_sets_l, &num_result_sets_l,
+				   zop);
+	if (res != ZEBRA_OK)
+	{
+	    int i;
+	    for (i = 0; i<num_result_sets_l; i++)
+		rset_delete(result_sets_l[i]);
+	    return res;
+	}
+        res = rpn_search_structure(zh, zs->u.complex->s2,
+				   attributeSet, stream, rset_nmem,
+				   sort_sequence,
+				   num_bases, basenames,
+				   &result_sets_r, &num_result_sets_r,
+				   zop);
+	if (res != ZEBRA_OK)
+	{
+	    int i;
+	    for (i = 0; i<num_result_sets_l; i++)
+		rset_delete(result_sets_l[i]);
+	    for (i = 0; i<num_result_sets_r; i++)
+		rset_delete(result_sets_r[i]);
+	    return res;
+	}
 
-        switch (zop->which)
-        {
-        case Z_Operator_and:
-            r = rsmulti_and_create(rset_nmem, key_it_ctrl, key_it_ctrl->scope,
-				   2, rsets);
-            break;
-        case Z_Operator_or:
-            r = rsmulti_or_create(rset_nmem, key_it_ctrl, key_it_ctrl->scope,
-				  2, rsets);
-            break;
-        case Z_Operator_and_not:
-            r = rsbool_create_not(rset_nmem,key_it_ctrl, key_it_ctrl->scope,
-                    rsets[0], rsets[1]);
-            break;
-        case Z_Operator_prox:
-            if (zop->u.prox->which != Z_ProximityOperator_known)
-            {
-                zh->errCode = 132;
-                return NULL;
-            }
-            if (*zop->u.prox->u.known != Z_ProxUnit_word)
-            {
-                char *val = (char *) nmem_malloc(stream, 16);
-                zh->errCode = 132;
-                zh->errString = val;
-                sprintf (val, "%d", *zop->u.prox->u.known);
-                return NULL;
-            }
-            else
-            {
-                /* new / old prox */
-                r = rsprox_create(rset_nmem,key_it_ctrl,key_it_ctrl->scope,
-                         2, rsets, 
-                         *zop->u.prox->ordered,
-                         (!zop->u.prox->exclusion ? 
-                              0 : *zop->u.prox->exclusion),
-                         *zop->u.prox->relationType,
-                         *zop->u.prox->distance );
-            }
-            break;
-        default:
-            zh->errCode = 110;
-            return NULL;
-        }
+	/* make a new list of result for all children */
+	*num_result_sets = num_result_sets_l + num_result_sets_r;
+	*result_sets = nmem_malloc(stream, *num_result_sets * 
+				   sizeof(**result_sets));
+	memcpy(*result_sets, result_sets_l, 
+	       num_result_sets_l * sizeof(**result_sets));
+	memcpy(*result_sets + num_result_sets_l, result_sets_r, 
+	       num_result_sets_r * sizeof(**result_sets));
+
+	if (!parent_op || parent_op->which != zop->which
+	    || (zop->which != Z_Operator_and &&
+		zop->which != Z_Operator_or))
+	{
+	    /* parent node different from this one (or non-present) */
+	    /* we must combine result sets now */
+	    RSET rset;
+	    switch (zop->which)
+	    {
+	    case Z_Operator_and:
+		rset = rsmulti_and_create(rset_nmem, key_it_ctrl,
+					  key_it_ctrl->scope,
+					  *num_result_sets, *result_sets);
+		break;
+	    case Z_Operator_or:
+		rset = rsmulti_or_create(rset_nmem, key_it_ctrl,
+					 key_it_ctrl->scope,
+					 *num_result_sets, *result_sets);
+		break;
+	    case Z_Operator_and_not:
+		rset = rsbool_create_not(rset_nmem, key_it_ctrl,
+					 key_it_ctrl->scope,
+					 (*result_sets)[0],
+					 (*result_sets)[1]);
+		break;
+	    case Z_Operator_prox:
+		if (zop->u.prox->which != Z_ProximityOperator_known)
+		{
+		    zh->errCode = 132;
+		    return ZEBRA_FAIL;
+		}
+		if (*zop->u.prox->u.known != Z_ProxUnit_word)
+		{
+		    char *val = (char *) nmem_malloc(stream, 16);
+		    zh->errCode = 132;
+		    zh->errString = val;
+		    sprintf (val, "%d", *zop->u.prox->u.known);
+		    return ZEBRA_FAIL;
+		}
+		else
+		{
+		    rset = rsprox_create(rset_nmem, key_it_ctrl,
+					 key_it_ctrl->scope,
+					 *num_result_sets, *result_sets, 
+					 *zop->u.prox->ordered,
+					 (!zop->u.prox->exclusion ? 
+					  0 : *zop->u.prox->exclusion),
+					 *zop->u.prox->relationType,
+					 *zop->u.prox->distance );
+		}
+		break;
+	    default:
+		zh->errCode = 110;
+		return ZEBRA_FAIL;
+	    }
+	    *num_result_sets = 1;
+	    *result_sets = nmem_malloc(stream, *num_result_sets * 
+				       sizeof(**result_sets));
+	    (*result_sets)[0] = rset;
+	}
     }
     else if (zs->which == Z_RPNStructure_simple)
     {
+	RSET rset;
+	ZEBRA_RES res;
+
         if (zs->u.simple->which == Z_Operand_APT)
         {
             yaz_log(YLOG_DEBUG, "rpn_search_APT");
-            r = rpn_search_APT(zh, zs->u.simple->u.attributesPlusTerm,
-			       attributeSet, stream, sort_sequence,
-			       num_bases, basenames,rset_nmem);
+            res = rpn_search_APT(zh, zs->u.simple->u.attributesPlusTerm,
+				 attributeSet, stream, sort_sequence,
+				 num_bases, basenames, rset_nmem, &rset);
+	    if (res != ZEBRA_OK)
+		return res;
         }
         else if (zs->u.simple->which == Z_Operand_resultSetId)
         {
             yaz_log(YLOG_DEBUG, "rpn_search_ref");
-            r = resultSetRef (zh, zs->u.simple->u.resultSetId);
-            if (!r)
+            rset = resultSetRef(zh, zs->u.simple->u.resultSetId);
+            if (!rset)
             {
                 zh->errCode = 30;
                 zh->errString =
-                    nmem_strdup (stream, zs->u.simple->u.resultSetId);
-                return 0;
+                    nmem_strdup(stream, zs->u.simple->u.resultSetId);
+		return ZEBRA_FAIL;
             }
-	    rset_dup(r);
+	    rset_dup(rset);
         }
         else
         {
             zh->errCode = 3;
-            return 0;
+            return ZEBRA_FAIL;
         }
+	*num_result_sets = 1;
+	*result_sets = nmem_malloc(stream, *num_result_sets * 
+				   sizeof(**result_sets));
+	(*result_sets)[0] = rset;
     }
     else
     {
         zh->errCode = 3;
-        return 0;
+        return ZEBRA_FAIL;
     }
-    return r;
+    return ZEBRA_OK;
 }
 
 struct scan_info_entry {
