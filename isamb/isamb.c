@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.77 2005-04-15 10:47:49 adam Exp $
+/* $Id: isamb.c,v 1.78 2005-04-25 10:42:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1802,7 +1802,8 @@ void isamb_pp_pos(ISAMB_PP pp, double *current, double *total)
     struct ISAMB_block *p = pp->block[pp->level];
     assert(total);
     assert(current);
-    assert(p->leaf);
+    
+    /* if end-of-stream PP may not be leaf */
 
     *total = (double) (pp->block[0]->no_items);
     *current = (double) pp->returned_numbers;
