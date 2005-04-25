@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.78 2005-04-25 10:42:08 adam Exp $
+/* $Id: isamb.c,v 1.79 2005-04-25 10:45:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1799,7 +1799,6 @@ int isamb_pp_forward (ISAMB_PP pp, void *buf, const void *untilbuf)
 void isamb_pp_pos(ISAMB_PP pp, double *current, double *total)
 { /* return an estimate of the current position and of the total number of */
   /* occureences in the isam tree, based on the current leaf */
-    struct ISAMB_block *p = pp->block[pp->level];
     assert(total);
     assert(current);
     
