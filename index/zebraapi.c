@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.161 2005-04-15 10:47:48 adam Exp $
+/* $Id: zebraapi.c,v 1.162 2005-04-26 08:11:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -756,7 +756,7 @@ ZEBRA_RES zebra_select_databases (ZebraHandle zh, int num_bases,
     
     if (num_bases < 1)
     {
-        zh->errCode = 23;
+        zh->errCode = YAZ_BIB1_COMBI_OF_SPECIFIED_DATABASES_UNSUPP;
         return ZEBRA_FAIL;
     }
     for (i = 0; i < zh->num_basenames; i++)
@@ -787,13 +787,13 @@ ZEBRA_RES zebra_select_databases (ZebraHandle zh, int num_bases,
         {
             if (!cp1)
             {
-                zh->errCode = 23;
+                zh->errCode = YAZ_BIB1_COMBI_OF_SPECIFIED_DATABASES_UNSUPP;
                 return -1;
             }
             if (len != cp1 - basenames[i] ||
                 memcmp (basenames[i], new_reg, len))
             {
-                zh->errCode = 23;
+                zh->errCode = YAZ_BIB1_COMBI_OF_SPECIFIED_DATABASES_UNSUPP;
                 return -1;
             }
         }
@@ -801,7 +801,7 @@ ZEBRA_RES zebra_select_databases (ZebraHandle zh, int num_bases,
         {
             if (cp1)
             {
-                zh->errCode = 23;
+                zh->errCode = YAZ_BIB1_COMBI_OF_SPECIFIED_DATABASES_UNSUPP;
                 return ZEBRA_FAIL;
             }
         }
@@ -810,19 +810,19 @@ ZEBRA_RES zebra_select_databases (ZebraHandle zh, int num_bases,
     xfree(new_reg);
     if (!zh->res)
     {
-        zh->errCode = 109;
+        zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
         return ZEBRA_FAIL;
     }
     if (!zh->lock_normal || !zh->lock_shadow)
     {
-        zh->errCode = 2;
+        zh->errCode = YAZ_BIB1_TEMPORARY_SYSTEM_ERROR;
 	return ZEBRA_FAIL;
     }
     return ZEBRA_OK;
 }
 
-ZEBRA_RES zebra_search_RPN (ZebraHandle zh, ODR o, Z_RPNQuery *query,
-			    const char *setname, zint *hits)
+ZEBRA_RES zebra_search_RPN(ZebraHandle zh, ODR o, Z_RPNQuery *query,
+			   const char *setname, zint *hits)
 {
     ZEBRA_RES r;
     ASSERTZH;
@@ -866,7 +866,7 @@ ZEBRA_RES zebra_records_retrieve (ZebraHandle zh, ODR stream,
 
     if (!zh->res)
     {
-        zh->errCode = 30;
+        zh->errCode = YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST;
         zh->errString = odr_strdup(stream, setname);
         return ZEBRA_FAIL;
     }
@@ -883,7 +883,7 @@ ZEBRA_RES zebra_records_retrieve (ZebraHandle zh, ODR stream,
     if (!poset)
     {
         yaz_log (YLOG_DEBUG, "zebraPosSetCreate error");
-        zh->errCode = 30;
+        zh->errCode = YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST;
         zh->errString = nmem_strdup (stream->mem, setname);
 	ret = ZEBRA_FAIL;
     }
@@ -924,7 +924,7 @@ ZEBRA_RES zebra_records_retrieve (ZebraHandle zh, ODR stream,
 	        char num_str[20];
 
 		sprintf (num_str, ZINT_FORMAT, pos_array[i]);	
-		zh->errCode = 13;
+		zh->errCode = YAZ_BIB1_PRESENT_REQUEST_OUT_OF_RANGE;
                 zh->errString = odr_strdup (stream, num_str);
 		ret = ZEBRA_FAIL;
                 break;
@@ -945,15 +945,18 @@ ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
     YAZ_PQF_Parser pqf_parser = yaz_pqf_create ();
     Z_AttributesPlusTerm *zapt;
     int *attributeSet;
+    ZEBRA_RES res;
     
     if (!(zapt = yaz_pqf_scan(pqf_parser, stream, &attributeSet, query)))
     {
-	yaz_pqf_destroy (pqf_parser);
-	return ZEBRA_FAIL;
+	res = ZEBRA_FAIL;
+	zh->errCode = YAZ_BIB1_SCAN_MALFORMED_SCAN;
     }
+    else
+	res = zebra_scan(zh, stream, zapt, VAL_BIB1,
+			 position, num_entries, entries, is_partial);
     yaz_pqf_destroy (pqf_parser);
-    return zebra_scan(zh, stream, zapt, VAL_BIB1,
-		      position, num_entries, entries, is_partial);
+    return res;
 }
 
 ZEBRA_RES zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
@@ -1297,7 +1300,7 @@ ZEBRA_RES zebra_create_database (ZebraHandle zh, const char *database)
                                   /* explainDatabase */))
     {
         zebra_end_trans (zh);
-	zh->errCode = 224;
+	zh->errCode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
 	zh->errString = "database already exist";
 	return ZEBRA_FAIL;
     }
@@ -1416,7 +1419,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
     zebra_select_default_database(zh);
     if (!zh->res)
     {
-        zh->errCode = 2;
+        zh->errCode = YAZ_BIB1_TEMPORARY_SYSTEM_ERROR;
         zh->errString = "zebra_begin_trans: no database selected";
         return ZEBRA_FAIL;
     }
@@ -1427,7 +1430,8 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
     {
 	if (rw && !strchr(zh->user_perm, 'w'))
 	{
-	    zh->errCode = 223;
+	    zh->errCode = 
+		YAZ_BIB1_ES_PERMISSION_DENIED_ON_ES_CANNOT_MODIFY_OR_DELETE;
 	    zh->errString = 0;
 	    return ZEBRA_FAIL;
 	}
@@ -1449,7 +1453,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
 	}
         if (zh->trans_no != 1)
         {
-            zh->errCode = 2;
+            zh->errCode = YAZ_BIB1_TEMPORARY_SYSTEM_ERROR;
             zh->errString = "zebra_begin_trans: write trans not allowed within read trans";
             return ZEBRA_FAIL;
         }
@@ -1536,7 +1540,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
             zh->trans_no--;
             zh->trans_w_no = 0;
 
-            zh->errCode = 2;
+            zh->errCode = YAZ_BIB1_TEMPORARY_SYSTEM_ERROR;
             zh->errString = "zebra_begin_trans: cannot open register";
             yaz_log(YLOG_FATAL, zh->errString);
             return ZEBRA_FAIL;
@@ -1562,13 +1566,13 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
         if (!zh->res)
         {
             (zh->trans_no)--;
-            zh->errCode = 109;
+            zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
             return ZEBRA_FAIL;
         }
         if (!zh->lock_normal || !zh->lock_shadow)
         {
             (zh->trans_no)--;
-            zh->errCode = 2;
+            zh->errCode = YAZ_BIB1_TEMPORARY_SYSTEM_ERROR;
             return ZEBRA_FAIL;
         }
         zebra_get_state (zh, &val, &seqno);
@@ -1610,7 +1614,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
             zebra_unlock (zh->lock_normal);
             zebra_unlock (zh->lock_shadow);
             zh->trans_no--;
-            zh->errCode = 109;
+            zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
             return ZEBRA_FAIL;
         }
         zh->reg->last_val = val;
@@ -1647,7 +1651,7 @@ ZEBRA_RES zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *status)
 
     if (!zh->res || !zh->reg)
     {
-        zh->errCode = 2;
+        zh->errCode = YAZ_BIB1_TEMPORARY_SYSTEM_ERROR;
         zh->errString = "zebra_end_trans: no open transaction";
         return ZEBRA_FAIL;
     }
@@ -1747,7 +1751,7 @@ int zebra_repository_show (ZebraHandle zh, const char *path)
     return zh->errCode;
 }
 
-static int zebra_commit_ex (ZebraHandle zh, int clean_only)
+static int zebra_commit_ex(ZebraHandle zh, int clean_only)
 {
     int seqno;
     char val;
@@ -1759,7 +1763,7 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
     zebra_select_default_database(zh);
     if (!zh->res)
     {
-        zh->errCode = 109;
+        zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
         return -1;
     }
     rval = res_get (zh->res, "shadow");    
@@ -1808,21 +1812,21 @@ static int zebra_commit_ex (ZebraHandle zh, int clean_only)
     return 0;
 }
 
-ZEBRA_RES zebra_clean (ZebraHandle zh)
+ZEBRA_RES zebra_clean(ZebraHandle zh)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_clean");
     return zebra_commit_ex(zh, 1);
 }
 
-ZEBRA_RES zebra_commit (ZebraHandle zh)
+ZEBRA_RES zebra_commit(ZebraHandle zh)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_commit");
     return zebra_commit_ex(zh, 0);
 }
 
-ZEBRA_RES zebra_init (ZebraHandle zh)
+ZEBRA_RES zebra_init(ZebraHandle zh)
 {
     const char *rval;
     BFiles bfs = 0;
@@ -1833,7 +1837,7 @@ ZEBRA_RES zebra_init (ZebraHandle zh)
     zebra_select_default_database(zh);
     if (!zh->res)
     {
-        zh->errCode = 109;
+        zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
 	return ZEBRA_FAIL;
     }
     rval = res_get (zh->res, "shadow");
@@ -1850,7 +1854,7 @@ ZEBRA_RES zebra_init (ZebraHandle zh)
     return ZEBRA_OK;
 }
 
-int zebra_compact (ZebraHandle zh)
+ZEBRA_RES zebra_compact(ZebraHandle zh)
 {
     BFiles bfs;
     ASSERTZH;
@@ -1858,25 +1862,24 @@ int zebra_compact (ZebraHandle zh)
     zh->errCode = 0;
     if (!zh->res)
     {
-        zh->errCode = 109;
-        return -1;
+        zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
+        return ZEBRA_FAIL;
     }
     bfs = bfs_create (res_get (zh->res, "register"), zh->path_reg);
     inv_compact (bfs);
     bfs_destroy (bfs);
-    return 0;
+    return ZEBRA_OK;
 }
 
-int zebra_result (ZebraHandle zh, int *code, char **addinfo)
+void zebra_result(ZebraHandle zh, int *code, char **addinfo)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_result");
     *code = zh->errCode;
     *addinfo = zh->errString;
-    return 0;
 }
 
-void zebra_shadow_enable (ZebraHandle zh, int value)
+void zebra_shadow_enable(ZebraHandle zh, int value)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_shadow_enable");
@@ -1957,7 +1960,7 @@ int zebra_get_shadow_enable (ZebraHandle zh)
 {
     ASSERTZH;
     yaz_log(log_level, "zebra_get_shadow_enable");
-    return (zh->shadow_enable);
+    return zh->shadow_enable;
 }
 
 void zebra_set_shadow_enable (ZebraHandle zh, int value)
@@ -2087,8 +2090,8 @@ ZEBRA_RES zebra_delete_record (ZebraHandle zh,
   Searching 
 */
 
-ZEBRA_RES zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
-			    const char *setname, zint *numhits)
+ZEBRA_RES zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
+			   const char *setname, zint *numhits)
 {
     zint hits = 0;
     ZEBRA_RES res = ZEBRA_OK;
@@ -2105,10 +2108,11 @@ ZEBRA_RES zebra_search_PQF (ZebraHandle zh, const char *pqf_query,
     if (!query)
     {
         yaz_log (YLOG_WARN, "bad query %s\n", pqf_query);
+	zh->errCode = YAZ_BIB1_MALFORMED_QUERY;
 	res = ZEBRA_FAIL;
     }
     else
-        res = zebra_search_RPN (zh, odr, query, setname, &hits);
+        res = zebra_search_RPN(zh, odr, query, setname, &hits);
     
     odr_destroy(odr);
 
@@ -2141,7 +2145,7 @@ int zebra_sort_by_specstr (ZebraHandle zh, ODR stream,
     if (!sort_sequence)
     {
         yaz_log(YLOG_WARN, "invalid sort specs '%s'", sort_spec);
-        zh->errCode = 207;
+        zh->errCode = YAZ_BIB1_CANNOT_SORT_ACCORDING_TO_SEQUENCE;
 	return -1;
     }
     

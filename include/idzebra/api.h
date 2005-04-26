@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.18 2005-04-15 10:47:48 adam Exp $
+/* $Id: api.h,v 1.19 2005-04-26 08:11:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -161,7 +161,7 @@ YAZ_EXPORT char *zebra_errAdd(ZebraHandle zh);
     \param code pointer to returned error code
     \param addinfo pointer to returned additional info
 */
-YAZ_EXPORT int zebra_result(ZebraHandle zh, int *code, char **addinfo);
+YAZ_EXPORT void zebra_result(ZebraHandle zh, int *code, char **addinfo);
 
 /** \fn void zebra_clearError(ZebraHandle zh)
     \brief clears last error.
@@ -354,7 +354,9 @@ ZEBRA_RES zebra_clean(ZebraHandle zh);
 YAZ_EXPORT
 ZEBRA_RES zebra_init(ZebraHandle zh);
 
-YAZ_EXPORT int zebra_compact(ZebraHandle zh);
+YAZ_EXPORT
+ZEBRA_RES zebra_compact(ZebraHandle zh);
+
 YAZ_EXPORT int zebra_repository_update(ZebraHandle zh, const char *path);
 YAZ_EXPORT int zebra_repository_delete(ZebraHandle zh, const char *path);
 YAZ_EXPORT int zebra_repository_show(ZebraHandle zh, const char *path);

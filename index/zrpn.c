@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.178 2005-04-25 21:40:34 adam Exp $
+/* $Id: zrpn.c,v 1.179 2005-04-26 08:11:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,6 +29,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #include <ctype.h>
 
+#include <yaz/diagbib1.h>
 #include "index.h"
 #include <zebra_xpath.h>
 
@@ -1057,7 +1058,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
         if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
         {
-            zh->errCode = 109; /* Database unavailable */
+            zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
             zh->errString = basenames[base_no];
             return ZEBRA_FAIL;
         }
@@ -1111,7 +1112,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 if (r == -1)
                 {
                     /* set was found, but value wasn't defined */
-                    errCode = 114;
+                    errCode = YAZ_BIB1_UNSUPP_USE_ATTRIBUTE;
                     if (use_string)
                         errString = nmem_strdup(stream, use_string);
                     else
@@ -1127,7 +1128,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                     oident.value = curAttributeSet;
                     oid_ent_to_oid (&oident, oid);
                     
-                    errCode = 121;
+                    errCode = YAZ_BIB1_UNSUPP_ATTRIBUTE_SET;
                     errString = nmem_strdup(stream, oident.desc);
                 }
                 continue;
@@ -1277,7 +1278,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             strcat(term_dict, ")");
             break;
 	default:
-	    zh->errCode = 120;
+	    zh->errCode = YAZ_BIB1_UNSUPP_TRUNCATION_ATTRIBUTE;
 	    zh->errString = nmem_strdup_i(stream, truncation_value);
 	    return ZEBRA_FAIL;
         }
@@ -1332,7 +1333,8 @@ static ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             if (ret == (size_t)(-1))
             {
                 ret = yaz_iconv(zh->iconv_to_utf8, 0, 0, 0, 0);
-                zh->errCode = 125;
+                zh->errCode =
+		    YAZ_BIB1_QUERY_TERM_INCLUDES_CHARS_THAT_DO_NOT_TRANSLATE_INTO_;
                 return -1;
             }
             *outbuf = 0;
@@ -1354,7 +1356,7 @@ static ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         termz[sizez] = '\0';
         break;
     default:
-        zh->errCode = 124;
+        zh->errCode = YAZ_BIB1_UNSUPP_CODED_VALUE_FOR_TERM;
 	return ZEBRA_FAIL;
     }
     return ZEBRA_OK;
@@ -1490,7 +1492,7 @@ static int grep_info_prepare(ZebraHandle zh,
         grep_info->termset = resultSetAdd(zh, termset_name, 1);
         if (!grep_info->termset)
         {
-            zh->errCode = 128;
+            zh->errCode = YAZ_BIB1_ILLEGAL_RESULT_SET_NAME;
             zh->errString = nmem_strdup(stream, termset_name);
             return -1;
         }
@@ -1786,20 +1788,20 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                       curAttributeSet, use_value, r);
                 if (r == -1)
                 {
-                    errCode = 114;
+                    errCode = YAZ_BIB1_UNSUPP_USE_ATTRIBUTE;
                     if (use_string)
                         errString = nmem_strdup(stream, use_string);
                     else
                         errString = nmem_strdup_i (stream, use_value);
                 }
                 else
-                    errCode = 121;
+                    errCode = YAZ_BIB1_UNSUPP_ATTRIBUTE_SET;
                 continue;
             }
         }
         if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
         {
-            zh->errCode = 109; /* Database unavailable */
+            zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
             zh->errString = basenames[base_no];
             return -1;
         }
@@ -1829,7 +1831,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         if (!prefix_len)
         {
-            errCode = 114;
+            errCode = YAZ_BIB1_UNSUPP_USE_ATTRIBUTE;
             errString = nmem_strdup_i(stream, use_value);
             continue;
         }
@@ -2179,7 +2181,7 @@ static RSET rpn_search_xpath(ZebraHandle zh,
         
         if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
         {
-            zh->errCode = 109; /* Database unavailable */
+            zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
             zh->errString = basenames[base_no];
             return rset;
         }
@@ -2357,7 +2359,7 @@ static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     }
     else
     {
-        zh->errCode = 118;
+        zh->errCode = YAZ_BIB1_UNSUPP_STRUCTURE_ATTRIBUTE;
 	return ZEBRA_FAIL;
     }
     if (res != ZEBRA_OK)
@@ -2494,13 +2496,13 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
 	    case Z_Operator_prox:
 		if (zop->u.prox->which != Z_ProximityOperator_known)
 		{
-		    zh->errCode = 132;
+		    zh->errCode = YAZ_BIB1_UNSUPP_PROX_UNIT_CODE;
 		    return ZEBRA_FAIL;
 		}
 		if (*zop->u.prox->u.known != Z_ProxUnit_word)
 		{
 		    char *val = (char *) nmem_malloc(stream, 16);
-		    zh->errCode = 132;
+		    zh->errCode = YAZ_BIB1_UNSUPP_PROX_UNIT_CODE;
 		    zh->errString = val;
 		    sprintf(val, "%d", *zop->u.prox->u.known);
 		    return ZEBRA_FAIL;
@@ -2518,7 +2520,7 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
 		}
 		break;
 	    default:
-		zh->errCode = 110;
+		zh->errCode = YAZ_BIB1_OPERATOR_UNSUPP;
 		return ZEBRA_FAIL;
 	    }
 	    *num_result_sets = 1;
@@ -2547,7 +2549,7 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
             rset = resultSetRef(zh, zs->u.simple->u.resultSetId);
             if (!rset)
             {
-                zh->errCode = 30;
+                zh->errCode = YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST;
                 zh->errString =
                     nmem_strdup(stream, zs->u.simple->u.resultSetId);
 		return ZEBRA_FAIL;
@@ -2556,7 +2558,7 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
         }
         else
         {
-            zh->errCode = 3;
+            zh->errCode = YAZ_BIB1_UNSUPP_SEARCH;
             return ZEBRA_FAIL;
         }
 	*num_result_sets = 1;
@@ -2566,7 +2568,7 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
     }
     else
     {
-        zh->errCode = 3;
+        zh->errCode = YAZ_BIB1_UNSUPP_SEARCH;
         return ZEBRA_FAIL;
     }
     return ZEBRA_OK;
@@ -2733,7 +2735,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 			rank_type, &complete_flag, &sort_flag))
     {
         *num_entries = 0;
-        zh->errCode = 113;
+        zh->errCode = YAZ_BIB1_UNSUPP_ATTRIBUTE_TYPE;
         return ZEBRA_FAIL;
     }
     yaz_log(YLOG_DEBUG, "use_value = %d", use_value);
@@ -2749,7 +2751,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	if (zebraExplain_curDatabase (zh->reg->zei, basenames[base_no]))
 	{
 	    zh->errString = basenames[base_no];
-	    zh->errCode = 109; /* Database unavailable */
+	    zh->errCode = YAZ_BIB1_DATABASE_UNAVAILABLE;
 	    *num_entries = 0;
 	    return ZEBRA_FAIL;
 	}
@@ -2774,7 +2776,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 			attributeset, use_value);
 		if (r == -1)
 		{
-		    errCode = 114;
+		    errCode = YAZ_BIB1_UNSUPP_USE_ATTRIBUTE;
                     if (use_string)
                         errString = odr_strdup(stream, use_string);
                     else
@@ -2785,7 +2787,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		    }
 		}   
 		else
-		    errCode = 121;
+		    errCode = YAZ_BIB1_UNSUPP_ATTRIBUTE_SET;
 		continue;
 	    }
 	}
