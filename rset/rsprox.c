@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.26 2005-03-30 09:25:24 adam Exp $
+/* $Id: rsprox.c,v 1.27 2005-04-26 10:09:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -54,8 +54,6 @@ static const struct rset_control control =
     r_write,
 };
 
-const struct rset_control *rset_kind_prox = &control;
-
 struct rset_prox_info {
     RSET *rset;   /* array of 'child' rsets */
     int rset_no;  /* how many of them */
@@ -94,7 +92,6 @@ RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol, int scope,
     return rnew;
 }
 
-
 static void r_delete (RSET ct)
 {
     struct rset_prox_info *info = (struct rset_prox_info *) ct->priv;
@@ -103,7 +100,6 @@ static void r_delete (RSET ct)
     for (i = 0; i<info->rset_no; i++)
         rset_delete(info->rset[i]);
 }
-
 
 static RSFD r_open (RSET ct, int flag)
 {

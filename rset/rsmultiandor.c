@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.15 2005-03-30 09:25:24 adam Exp $
+/* $Id: rsmultiandor.c,v 1.16 2005-04-26 10:09:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -69,6 +69,7 @@ static const struct rset_control control_or =
     r_read_or,
     r_write,
 };
+
 static const struct rset_control control_and = 
 {
     "multi-and",
@@ -81,9 +82,6 @@ static const struct rset_control control_and =
     r_read_and,
     r_write,
 };
-
-const struct rset_control *rset_kind_multior = &control_or;
-const struct rset_control *rset_kind_multiand = &control_and;
 
 /* The heap structure: 
  * The rset contains a list or rsets we are ORing together 

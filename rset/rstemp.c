@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.61 2005-03-30 09:25:24 adam Exp $
+/* $Id: rstemp.c,v 1.62 2005-04-26 10:09:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -44,7 +44,6 @@ static void r_pos(RSFD rfd, double *current, double  *total);
 static void r_flush(RSFD rfd, int mk);
 static void r_reread(RSFD rfd);
 
-
 static const struct rset_control control = 
 {
     "temp",
@@ -58,8 +57,6 @@ static const struct rset_control control =
     r_write,
 };
 
-const struct rset_control *rset_kind_temp = &control;
-
 struct rset_temp_info {
     int     fd;            /* file descriptor for temp file */
     char   *fname;         /* name of temp file */
@@ -69,7 +66,7 @@ struct rset_temp_info {
     size_t  pos_buf;       /* position of first byte in window */
     size_t  pos_border;    /* position of last byte+1 in window */
     int     dirty;         /* window is dirty */
-    zint     hits;          /* no of hits */
+    zint    hits;          /* no of hits */
     char   *temp_path;
 };
 
@@ -83,8 +80,8 @@ struct rset_temp_rfd {
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-RSET rstemp_create( NMEM nmem, const struct key_control *kcontrol,
-                    int scope, const char *temp_path, TERMID term)
+RSET rstemp_create(NMEM nmem, const struct key_control *kcontrol,
+                   int scope, const char *temp_path, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,term);
     struct rset_temp_info *info;

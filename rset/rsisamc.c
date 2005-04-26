@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.37 2005-04-13 13:03:49 adam Exp $
+/* $Id: rsisamc.c,v 1.38 2005-04-26 10:09:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -19,9 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
-
-
 
 #include <stdio.h>
 #include <assert.h>
@@ -48,8 +45,6 @@ static const struct rset_control control =
     r_read,
     r_write,
 };
-
-const struct rset_control *rset_kind_isamc = &control;
 
 struct rset_pp_info {
     ISAMC_PP pt;

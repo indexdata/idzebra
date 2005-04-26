@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.36 2005-03-30 09:25:24 adam Exp $
+/* $Id: rsbetween.c,v 1.37 2005-04-26 10:09:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -40,9 +40,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rset.h>
 
 
-static RSFD r_open (RSET ct, int flag);
-static void r_close (RSFD rfd);
-static void r_delete (RSET ct);
+static RSFD r_open(RSET ct, int flag);
+static void r_close(RSFD rfd);
+static void r_delete(RSET ct);
 static int r_forward(RSFD rfd, void *buf, 
                     TERMID *term, const void *untilbuf);
 static int r_read(RSFD rfd, void *buf, TERMID *term );
@@ -62,9 +62,6 @@ static const struct rset_control control =
     r_read,
     r_write,
 };
-
-
-const struct rset_control *rset_kind_between = &control;
 
 #define STARTTAG 0
 #define HIT 1
@@ -100,16 +97,15 @@ static void checkterm( RSET rs, char *tag, NMEM nmem)
 {
     if (!rs->term)
     {
-        rs->term=
-             rset_term_create(tag,strlen(tag),"",0,nmem);
+        rs->term = rset_term_create(tag, strlen(tag), "", 0, nmem);
         rs->term->rset = rs;
     }
 }
 
 
 RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
-            int scope,
-            RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
+		       int scope,
+		       RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,0);
     struct rset_between_info *info=
@@ -151,7 +147,7 @@ RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
 }
 
 
-static void r_delete (RSET ct)
+static void r_delete(RSET ct)
 {
     struct rset_between_info *info = (struct rset_between_info *) ct->priv;
     yaz_log(log_level,"delete rset at %p",ct);
@@ -159,7 +155,7 @@ static void r_delete (RSET ct)
 }
 
 
-static RSFD r_open (RSET ct, int flag)
+static RSFD r_open(RSET ct, int flag)
 {
     struct rset_between_info *info = (struct rset_between_info *) ct->priv;
     RSFD rfd;
@@ -167,7 +163,7 @@ static RSFD r_open (RSET ct, int flag)
 
     if (flag & RSETF_WRITE)
     {
-        yaz_log (YLOG_FATAL, "between set type is read-only");
+        yaz_log(YLOG_FATAL, "between set type is read-only");
         return NULL;
     }
     rfd = rfd_create_base(ct);
@@ -180,7 +176,7 @@ static RSFD r_open (RSET ct, int flag)
         p->startbuf = nmem_malloc(ct->nmem, (ct->keycontrol->key_size)); 
         p->attrbuf = nmem_malloc(ct->nmem, (ct->keycontrol->key_size)); 
     }
-    p->andrfd = rset_open (info->andset, RSETF_READ);
+    p->andrfd = rset_open(info->andset, RSETF_READ);
     p->hits=-1;
     p->depth = 0;
     p->attrdepth = 0;
@@ -190,11 +186,11 @@ static RSFD r_open (RSET ct, int flag)
     return rfd;
 }
 
-static void r_close (RSFD rfd)
+static void r_close(RSFD rfd)
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     yaz_log(log_level,"close rfd=%p", rfd);
-    rset_close (p->andrfd);
+    rset_close(p->andrfd);
     rfd_delete_base(rfd);
 }
 
@@ -237,7 +233,7 @@ static void checkattr(RSFD rfd)
 }
 
 
-static int r_read (RSFD rfd, void *buf, TERMID *term)
+static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_between_info *info =(struct rset_between_info *)rfd->rset->priv;
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
@@ -313,14 +309,14 @@ static int r_read (RSFD rfd, void *buf, TERMID *term)
 }  /* r_read */
 
 
-static int r_write (RSFD rfd, const void *buf)
+static int r_write(RSFD rfd, const void *buf)
 {
-    yaz_log (YLOG_FATAL, "between set type is read-only");
+    yaz_log(YLOG_FATAL, "between set type is read-only");
     return -1;
 }
 
 
-static void r_pos (RSFD rfd, double *current, double *total)
+static void r_pos(RSFD rfd, double *current, double *total)
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     rset_pos(p->andrfd,current, total);

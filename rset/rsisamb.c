@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.31 2005-04-13 13:03:48 adam Exp $
+/* $Id: rsisamb.c,v 1.32 2005-04-26 10:09:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -47,8 +47,6 @@ static const struct rset_control control =
     r_read,
     r_write,
 };
-
-const struct rset_control *rset_kind_isamb = &control;
 
 struct rset_pp_info {
     ISAMB_PP pt;

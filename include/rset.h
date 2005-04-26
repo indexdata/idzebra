@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.49 2005-04-15 10:47:48 adam Exp $
+/* $Id: rset.h,v 1.50 2005-04-26 10:09:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -55,9 +55,7 @@ struct rset_term {
 
 typedef struct rset_term *TERMID; 
 TERMID rset_term_create (const char *name, int length, const char *flags,
-                                    int type, NMEM nmem);
-
-
+			 int type, NMEM nmem);
 
 /** rsfd is a "file descriptor" for reading from a rset */
 struct rsfd {  /* the stuff common to all rsfd's. */
@@ -212,8 +210,7 @@ RSET rset_dup (RSET rs);
 zint rset_count(RSET rs);
 
 RSET rstemp_create(NMEM nmem, const struct key_control *kcontrol,
-                    int scope, 
-                    const char *temp_path, TERMID term);
+                    int scope, const char *temp_path, TERMID term);
 
 RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol);
 

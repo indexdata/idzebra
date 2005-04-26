@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.32 2005-03-30 09:25:24 adam Exp $
+/* $Id: rsnull.c,v 1.33 2005-04-26 10:09:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -47,8 +47,6 @@ static const struct rset_control control =
     r_read,
     r_write,
 };
-
-const struct rset_control *rset_kind_null = &control;
 
 RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol )
 {
