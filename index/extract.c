@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.180 2005-04-28 09:32:09 adam Exp $
+/* $Id: extract.c,v 1.181 2005-04-28 12:13:04 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -158,6 +158,8 @@ static struct file_read_info *file_read_start (int fd)
     fi->fd = fd;
     fi->file_max = 0;
     fi->file_moffset = 0;
+    fi->file_offset = 0;
+    fi->file_more = 0;
     return fi;
 }
 
@@ -194,23 +196,20 @@ static int file_read (void *handle, char *buf, size_t count)
     return r;
 }
 
-static void file_begin (void *handle)
-{
-    struct file_read_info *p = (struct file_read_info *) handle;
-
-    p->file_offset = p->file_moffset;
-    if (p->file_moffset)
-        lseek (p->fd, p->file_moffset, SEEK_SET);
-    p->file_more = 0;
-}
-
 static void file_end (void *handle, off_t offset)
 {
     struct file_read_info *p = (struct file_read_info *) handle;
 
-    assert (p->file_more == 0);
-    p->file_more = 1;
-    p->file_moffset = offset;
+    if (offset != p->file_moffset)
+    {
+	yaz_log(YLOG_LOG, "file_end OK");
+	p->file_moffset = offset;
+	p->file_more = 1;
+    }
+    else
+    {
+	yaz_log(YLOG_LOG, "file_end REJECTED");
+    }
 }
 
 static char *fileMatchStr (ZebraHandle zh,
@@ -375,7 +374,21 @@ void create_rec_keys_codec(struct recKeys *keys)
     keys->buf_used = 0;
     iscz1_reset(keys->codec_handle);
 }
-     
+
+static void init_extractCtrl(ZebraHandle zh, struct recExtractCtrl *ctrl)
+{
+    int i;
+    for (i = 0; i<256; i++)
+    {
+	if (zebra_maps_is_positioned(zh->reg->zebra_maps, i))
+	    ctrl->seqno[i] = 1;
+	else
+	    ctrl->seqno[i] = 0;
+    }
+    ctrl->zebra_maps = zh->reg->zebra_maps;
+    ctrl->flagShowRecords = !zh->m_flag_rw;
+}
+
 static int file_extract_record(ZebraHandle zh,
 			       SYSNO *sysno, const char *fname,
 			       int deleteFlag,
@@ -404,12 +417,9 @@ static int file_extract_record(ZebraHandle zh,
 	struct recExtractCtrl extractCtrl;
 
         /* we are going to read from a file, so prepare the extraction */
-	int i;
-
 	create_rec_keys_codec(&zh->reg->keys);
 
 	zh->reg->sortKeys.buf_used = 0;
-
 	
 	recordOffset = fi->file_moffset;
         extractCtrl.handle = zh;
@@ -428,15 +438,7 @@ static int file_extract_record(ZebraHandle zh,
 
 	extract_set_store_data_prepare(&extractCtrl);
 
-	for (i = 0; i<256; i++)
-	{
-	    if (zebra_maps_is_positioned(zh->reg->zebra_maps, i))
-		extractCtrl.seqno[i] = 1;
-	    else
-		extractCtrl.seqno[i] = 0;
-	}
-	extractCtrl.zebra_maps = zh->reg->zebra_maps;
-	extractCtrl.flagShowRecords = !zh->m_flag_rw;
+	init_extractCtrl(zh, &extractCtrl);
 
         if (!zh->m_flag_rw)
             printf ("File: %s " PRINTF_OFF_T "\n", fname, recordOffset);
@@ -674,7 +676,6 @@ static int file_extract_record(ZebraHandle zh,
         rec->size[recInfo_storeData] = zh->store_data_size;
         rec->info[recInfo_storeData] = zh->store_data_buf;
 	zh->store_data_buf = 0;
-	file_end(fi, fi->file_offset);
     }
     else if (zh->m_store_data)
     {
@@ -804,11 +805,18 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
     fi = file_read_start (fd);
     do
     {
-        file_begin (fi);
+	fi->file_moffset = fi->file_offset;
+	fi->file_more = 0;  /* file_end not called (yet) */
         r = file_extract_record (zh, sysno, fname, deleteFlag, fi, 1,
 				 recType, recTypeClientData);
+	yaz_log(YLOG_LOG, "file_extract_record returned %d", r);
+	if (fi->file_more)
+	{   /* file_end has been called so reset offset .. */
+	    fi->file_offset = fi->file_moffset;
+	    lseek(fi->fd, fi->file_moffset, SEEK_SET);
+	}
     }
-    while (r && !sysno && fi->file_more);
+    while (r && !sysno);
     file_read_stop (fi);
     if (fd != -1)
         close (fd);
@@ -835,7 +843,7 @@ ZEBRA_RES buffer_extract_record (ZebraHandle zh,
 {
     RecordAttr *recordAttr;
     struct recExtractCtrl extractCtrl;
-    int i, r;
+    int r;
     const char *matchStr = 0;
     RecType recType = NULL;
     void *clientData;
@@ -904,16 +912,10 @@ ZEBRA_RES buffer_extract_record (ZebraHandle zh,
     extractCtrl.schemaAdd = extract_schema_add;
     extractCtrl.dh = zh->reg->dh;
     extractCtrl.handle = zh;
-    extractCtrl.zebra_maps = zh->reg->zebra_maps;
-    extractCtrl.flagShowRecords = 0;
     extractCtrl.match_criteria[0] = '\0';
-    for (i = 0; i<256; i++)
-    {
-	if (zebra_maps_is_positioned(zh->reg->zebra_maps, i))
-	    extractCtrl.seqno[i] = 1;
-	else
-	    extractCtrl.seqno[i] = 0;
-    }
+    
+    init_extractCtrl(zh, &extractCtrl);
+
     extract_set_store_data_prepare(&extractCtrl);
 
     r = (*recType->extract)(clientData, &extractCtrl);
@@ -1144,7 +1146,15 @@ ZEBRA_RES buffer_extract_record (ZebraHandle zh,
 
     /* update store data */
     xfree (rec->info[recInfo_storeData]);
-    if (zh->m_store_data)
+
+    /* update store data */
+    if (zh->store_data_buf)
+    {
+        rec->size[recInfo_storeData] = zh->store_data_size;
+        rec->info[recInfo_storeData] = zh->store_data_buf;
+	zh->store_data_buf = 0;
+    }
+    else if (zh->m_store_data)
     {
         rec->size[recInfo_storeData] = recordAttr->recordSize;
         rec->info[recInfo_storeData] = (char *)
@@ -1174,7 +1184,6 @@ int explain_extract (void *handle, Record rec, data1_node *n)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     struct recExtractCtrl extractCtrl;
-    int i;
 
     if (zebraExplain_curDatabase (zh->reg->zei,
 				  rec->info[recInfo_databaseName]))
@@ -1193,9 +1202,9 @@ int explain_extract (void *handle, Record rec, data1_node *n)
     extractCtrl.tokenAdd = extract_token_add;
     extractCtrl.schemaAdd = extract_schema_add;
     extractCtrl.dh = zh->reg->dh;
-    for (i = 0; i<256; i++)
-	extractCtrl.seqno[i] = 0;
-    extractCtrl.zebra_maps = zh->reg->zebra_maps;
+
+    init_extractCtrl(zh, &extractCtrl);
+
     extractCtrl.flagShowRecords = 0;
     extractCtrl.match_criteria[0] = '\0';
     extractCtrl.handle = handle;
