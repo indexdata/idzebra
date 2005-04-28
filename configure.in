@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2005
-dnl $Id: configure.in,v 1.119 2005-04-28 08:20:39 adam Exp $
+dnl $Id: configure.in,v 1.120 2005-04-28 18:56:13 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -271,7 +271,8 @@ AC_DEFUN([ZEBRA_MODULE],[
 	elif test "$myen" = "no"; then
 	   AC_MSG_RESULT([disabled])
 	else
-	   AC_MSG_RESULT([bad value. Assuming disabled])
+	   AC_MSG_RESULT([$myen])
+	   AC_MSG_ERROR([invalid --enable-mod-$1 value. Use on,off,static or shared])
 	fi
 ])
 
