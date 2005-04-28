@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.2 2005-04-28 12:34:21 adam Exp $
+/* $Id: xslt.c,v 1.3 2005-04-28 13:33:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -59,6 +59,8 @@ static void set_param_int(const char **params, const char *name,
 			  zint value, ODR odr)
 {
     char *quoted = odr_malloc(odr, 30); /* 25 digits enough for 2^64 */
+    while (*params)
+	params++;
     sprintf(quoted, "'" ZINT_FORMAT "'", value);
     params[0] = name;
     params[1] = quoted;
