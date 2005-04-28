@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.162 2005-04-26 08:11:22 adam Exp $
+/* $Id: zebraapi.c,v 1.163 2005-04-28 08:20:40 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -144,6 +144,8 @@ ZebraHandle zebra_open (ZebraService zs)
     zs->sessions = zh;
 
     zebra_mutex_cond_unlock (&zs->session_lock);
+
+    zh->store_data_buf = 0;
 
     return zh;
 }
@@ -1928,7 +1930,7 @@ void zebra_set_resource(ZebraHandle zh, const char *name, const char *value)
     ASSERTZH;
     assert(name);
     assert(value);
-    yaz_log(log_level, "zebra_set_resource %s:%s",name,value);
+    yaz_log(log_level, "zebra_set_resource %s:%s", name, value);
     zh->errCode = 0;
     res_set(zh->res, name, value);
 }
@@ -1940,9 +1942,9 @@ const char *zebra_get_resource(ZebraHandle zh,
     ASSERTZH;
     assert(name);
     assert(defaultvalue);
-    v= res_get_def( zh->res, name, (char *)defaultvalue);
+    v = res_get_def (zh->res, name, (char *)defaultvalue);
     zh->errCode = 0;
-    yaz_log(log_level, "zebra_get_resource %s:%s",name,v);
+    yaz_log(log_level, "zebra_get_resource %s:%s", name, v);
     return v;
 }
 

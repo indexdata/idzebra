@@ -1,4 +1,4 @@
-/* $Id: t2.c,v 1.3 2005-01-15 19:38:37 adam Exp $
+/* $Id: t2.c,v 1.4 2005-04-28 08:20:41 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,7 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include "../api/testlib.h"
+#include "testlib.h"
 
 int main(int argc, char **argv)
 {

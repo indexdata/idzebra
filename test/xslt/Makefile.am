@@ -1,15 +1,13 @@
-# $Id: Makefile.am,v 1.4 2005-04-28 08:20:41 adam Exp $
+# $Id: Makefile.am,v 1.1 2005-04-28 08:20:41 adam Exp $
 
-check_PROGRAMS = t1 t2
-
+check_PROGRAMS = xslt1
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST = zebra.cfg record.abs m1.xml m2.xml m3.xml sample-marc
+EXTRA_DIST=zebra.cfg marc-col.xml marc1.xsl
 
-t1_SOURCES = t1.c
-t2_SOURCES = t2.c
+xslt1_SOURCES = xslt1.c
 
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(srcdir)/../api $(YAZINC)
+AM_CPPFLAGS = -I$(srcdir)/../api -I$(top_srcdir)/include $(YAZINC)
 
 zebralibs = \
  ../../index/libidzebra-api.la \
@@ -25,5 +23,4 @@ zebralibs = \
  ../../util/libidzebra-util.la
 
 LDADD = ../api/libtestlib.a $(zebralibs) $(YAZLALIB)
-
 

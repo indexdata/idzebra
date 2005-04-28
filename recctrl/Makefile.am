@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.16 2005-03-31 12:42:06 adam Exp $
+## $Id: Makefile.am,v 1.17 2005-04-28 08:20:40 adam Exp $
 
 common_libs = libidzebra-recctrl.la \
  ../data1/libidzebra-data1.la \
@@ -34,8 +34,13 @@ mod_safari_la_LIBADD = $(common_libs) $(mod_safari_la_LADD)
 
 mod_alvis_la_SOURCES = alvis.c
 mod_alvis_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
-mod_alvis_la_LADD =
+mod_alvis_la_LADD = $(XSLT_LIBS)
 mod_alvis_la_LIBADD = $(common_libs) $(mod_alvis_la_LADD)
+
+mod_xslt_la_SOURCES = xslt.c
+mod_xslt_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+mod_xslt_la_LADD = $(XSLT_LIBS)
+mod_xslt_la_LIBADD = $(common_libs) $(mod_alvis_la_LADD)
 
 pkglib_LTLIBRARIES = $(SHARED_MODULE_LA) 
 EXTRA_LTLIBRARIES = \
@@ -44,7 +49,8 @@ EXTRA_LTLIBRARIES = \
 	mod-grs-marc.la  \
 	mod-grs-danbib.la \
 	mod-safari.la \
-	mod-alvis.la
+	mod-alvis.la \
+	mod-xslt.la
 
 # The common library
 lib_LTLIBRARIES = libidzebra-recctrl.la
@@ -62,6 +68,9 @@ EXTRA_libidzebra_recctrl_la_SOURCES = \
  $(mod_grs_xml_la_SOURCES) \
  $(mod_grs_marc_la_SOURCES) \
  $(mod_grs_danbib_la_SOURCES) \
- $(mod_safari_la_SOURCES)
+ $(mod_safari_la_SOURCES) \
+ $(mod_alvis_la_SOURCES) \
+ $(mod_xslt_la_SOURCES)
 
-AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(TCL_INCLUDE) -DDEFAULT_MODULE_PATH=\"$(pkglibdir)\"
+AM_CPPFLAGS = -I$(srcdir)/../include $(YAZINC) $(XSLT_CFLAGS) \
+ $(TCL_INCLUDE) -DDEFAULT_MODULE_PATH=\"$(pkglibdir)\"

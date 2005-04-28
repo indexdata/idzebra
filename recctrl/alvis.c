@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.1 2005-03-31 12:42:06 adam Exp $
+/* $Id: alvis.c,v 1.2 2005-04-28 08:20:40 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -44,23 +44,23 @@ static void filter_config(void *clientData, Res res, const char *args)
 
 }
 
-static void filter_destroy(void *clientData)
+static void filter_destroy (void *clientData)
 {
     struct filter_info *tinfo = clientData;
     xfree (tinfo->sep);
     xfree (tinfo);
 }
 
-struct fi_info {
+struct buf_info {
     struct recExtractCtrl *p;
     char *buf;
     int offset;
     int max;
 };
 
-static struct fi_info *fi_open(struct recExtractCtrl *p)
+static struct buf_info *buf_open (struct recExtractCtrl *p)
 {
-    struct fi_info *fi = (struct fi_info *) xmalloc (sizeof(*fi));
+    struct buf_info *fi = (struct buf_info *) xmalloc (sizeof(*fi));
 
     fi->p = p;
     fi->buf = (char *) xmalloc (4096);
@@ -69,7 +69,7 @@ static struct fi_info *fi_open(struct recExtractCtrl *p)
     return fi;
 }
 
-static int fi_getchar(struct fi_info *fi, char *dst)
+static int buf_read (struct filter_info *tinfo, struct buf_info *fi, char *dst)
 {
     if (fi->offset >= fi->max)
     {
@@ -81,35 +81,28 @@ static int fi_getchar(struct fi_info *fi, char *dst)
             return 0;
     }
     *dst = fi->buf[(fi->offset)++];
-    return 1;
-}
-
-static int fi_gets(struct fi_info *fi, char *dst, int max)
-{
-    int l;
-    for (l = 0; l < max; l++)
+    if (tinfo->sep && *dst == *tinfo->sep)
     {
-	if (!fi_getchar(fi, dst+l))
-	    return 0;
-	if (dst[l] == '\n')
-	    break;
+	off_t off = (*fi->p->tellf)(fi->p->fh);
+	(*fi->p->endf)(fi->p->fh, off - (fi->max - fi->offset));
+	return 0;
     }
-    dst[l] = '\0';
     return 1;
 }
 
-static void fi_close (struct fi_info *fi)
+static void buf_close (struct buf_info *fi)
 {
     xfree (fi->buf);
     xfree (fi);
 }
 
-static int filter_extract(void *clientData, struct recExtractCtrl *p)
+static int filter_extract (void *clientData, struct recExtractCtrl *p)
 {
     struct filter_info *tinfo = clientData;
-    char line[512];
+    char w[512];
     RecWord recWord;
-    struct fi_info *fi = fi_open(p);
+    int r;
+    struct buf_info *fi = buf_open (p);
 
 #if 0
     yaz_log(YLOG_LOG, "filter_extract off=%ld",
@@ -118,35 +111,25 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     xfree(tinfo->sep);
     tinfo->sep = 0;
     (*p->init)(p, &recWord);
-
-    if (!fi_gets(fi, line, sizeof(line)-1))
-	return RECCTRL_EXTRACT_ERROR_GENERIC;
-    sscanf(line, "%255s", p->match_criteria);
-    
     recWord.reg_type = 'w';
-    while (fi_gets(fi, line, sizeof(line)-1))
+    do
     {
-	int nor = 0;
-	char field[40];
-	char *cp;
-#if 0
-	yaz_log(YLOG_LOG, "safari line: %s", line);
-#endif
-	if (sscanf(line, ZINT_FORMAT " " ZINT_FORMAT " " ZINT_FORMAT " %39s %n",
-		   &recWord.record_id, &recWord.section_id, &recWord.seqno,
-		   field, &nor) < 4)
-	{
-	    yaz_log(YLOG_WARN, "Bad safari record line: %s", line);
-	    return RECCTRL_EXTRACT_ERROR_GENERIC;
+        int i = 0;
+            
+        r = buf_read (tinfo, fi, w);
+        while (r > 0 && i < 511 && w[i] != '\n' && w[i] != '\r')
+        {
+            i++;
+            r = buf_read (tinfo, fi, w + i); 
 	}
-	for (cp = line + nor; *cp == ' '; cp++)
-	    ;
-	recWord.attrStr = field;
-	recWord.term_buf = cp;
-	recWord.term_len = strlen(cp);
-	(*p->tokenAdd)(&recWord);
-    }
-    fi_close(fi);
+        if (i)
+        {
+            recWord.term_buf = w;
+	    recWord.term_len = i;
+            (*p->tokenAdd)(&recWord);
+        }
+    } while (r > 0);
+    buf_close (fi);
     return RECCTRL_EXTRACT_OK;
 }
 

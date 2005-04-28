@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.134 2005-04-25 11:54:08 adam Exp $
+/* $Id: index.h,v 1.135 2005-04-28 08:20:40 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -306,6 +306,9 @@ struct zebra_session {
     int m_explain_database;
     int m_flag_rw;
     int m_file_verbose_limit;
+
+    void *store_data_buf;
+    size_t store_data_size;
 };
 
 struct rank_control {

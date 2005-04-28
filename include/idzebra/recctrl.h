@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.9 2005-03-31 12:42:06 adam Exp $
+/* $Id: recctrl.h,v 1.10 2005-04-28 08:20:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -59,7 +59,9 @@ struct recExtractCtrl {
     void      (*init)(struct recExtractCtrl *p, RecWord *w);
     void      *clientData;
     void      (*tokenAdd)(RecWord *w);
+    void      (*setStoreData)(struct recExtractCtrl *p, void *buf, size_t size);
     ZebraMaps zebra_maps;
+    int       first_record;
     int       flagShowRecords;
     int       seqno[256];
     char      match_criteria[256];

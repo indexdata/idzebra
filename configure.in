@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2005
-dnl $Id: configure.in,v 1.118 2005-04-26 08:11:22 adam Exp $
+dnl $Id: configure.in,v 1.119 2005-04-28 08:20:39 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -28,6 +28,30 @@ dnl
 dnl ------ YAZ
 YAZ_INIT($yazflag,2.1.3)
 YAZ_DOC
+dnl ----- libXSLT
+AC_SUBST(XSLT_LIBS)
+AC_SUBST(XSLT_CFLAGS)
+xsltdir=yes
+AC_ARG_WITH(xslt,[[  --with-xslt[=PREFIX]    use libxslt in PREFIX]],xsltdir=$withval)
+if test "$xsltdir" = "yes"; then
+	for d in /usr /usr/local; do
+		if test -x $d/bin/xslt-config; then
+			xsltdir=$d
+		fi
+	done
+fi
+if test "$xsltdir" != "no"; then
+	AC_MSG_CHECKING(for libXSLT)
+	if test -x $xsltdir/bin/xslt-config; then
+		XSLT_LIBS=`$xsltdir/bin/xslt-config --libs`
+		XSLT_CFLAGS=`$xsltdir/bin/xslt-config --cflags`
+		XSLT_VER=`$xsltdir/bin/xslt-config --version`
+		AC_MSG_RESULT($XSLT_VER)
+		AC_DEFINE(HAVE_XSLT)
+	else
+		AC_MSG_RESULT(Not found)
+	fi
+fi
 dnl ------ Look for Tcl
 dnl See if user has specified location of tclConfig.sh; otherwise
 dnl see if tclConfig.sh exists in same prefix lcoation as tclsh; otherwise
@@ -256,14 +280,20 @@ ZEBRA_MODULE(grs-sgml,static,[  --enable-mod-grs-sgml   Simple SGML/XML filter])
 ZEBRA_MODULE(grs-regx,shared,[  --enable-mod-grs-regx   REGX/TCL filter])
 ZEBRA_MODULE(grs-marc,shared,[  --enable-mod-grs-marc   MARC filter])
 ZEBRA_MODULE(grs-danbib,shared,[  --enable-mod-grs-danbib DanBib filter (DBC)])
-ZEBRA_MODULE(safari,shared,[  --enable-mod-safari Safari filter (DBC)])
+ZEBRA_MODULE(safari,shared,  [  --enable-mod-safari Safari filter (DBC)])
 if test "$ac_cv_header_expat_h" = "yes"; then
    def="shared"
 else
    def="no"
 fi
 ZEBRA_MODULE(grs-xml,[$def], [  --enable-mod-grs-xml    XML filter (Expat based)])
-ZEBRA_MODULE(alvis,shared,   [  --enable-mod-alvis      ALVIS XML filter])
+if test "$XSLT_VER"; then
+   def="shared"
+else
+   def="no"
+fi
+ZEBRA_MODULE(xslt,[$def],    [  --enable-mod-xslt       XSLT filter])
+ZEBRA_MODULE(alvis,shared,   [  --enable-mod-alvis      ALVIS filter])
 dnl ------ ANSI C Header files
 AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
@@ -296,6 +326,7 @@ AC_OUTPUT([
   doc/zebraphp.dsl
   doc/tkl.xsl
   test/Makefile test/gils/Makefile test/usmarc/Makefile test/api/Makefile
+  test/xslt/Makefile
   test/xpath/Makefile
   test/rusmarc/Makefile test/cddb/Makefile test/malxml/Makefile 
   test/mbox/Makefile
