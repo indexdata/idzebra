@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.179 2005-04-28 08:20:39 adam Exp $
+/* $Id: extract.c,v 1.180 2005-04-28 09:32:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -148,8 +148,6 @@ struct file_read_info {
     off_t file_moffset;     /* offset of rec/rec boundary */
     int file_more;
     int fd;
-    char *sdrbuf;
-    int sdrmax;
 };
 
 static struct file_read_info *file_read_start (int fd)
@@ -160,8 +158,6 @@ static struct file_read_info *file_read_start (int fd)
     fi->fd = fd;
     fi->file_max = 0;
     fi->file_moffset = 0;
-    fi->sdrbuf = 0;
-    fi->sdrmax = 0;
     return fi;
 }
 
@@ -174,8 +170,6 @@ static off_t file_seek (void *handle, off_t offset)
 {
     struct file_read_info *p = (struct file_read_info *) handle;
     p->file_offset = offset;
-    if (p->sdrbuf)
-	return offset;
     return lseek (p->fd, offset, SEEK_SET);
 }
 
@@ -190,16 +184,7 @@ static int file_read (void *handle, char *buf, size_t count)
     struct file_read_info *p = (struct file_read_info *) handle;
     int fd = p->fd;
     int r;
-    if (p->sdrbuf)
-    {
-	r = count;
-	if (r > p->sdrmax - p->file_offset)
-	    r = p->sdrmax - p->file_offset;
-	if (r)
-	    memcpy (buf, p->sdrbuf + p->file_offset, r);
-    }
-    else
-	r = read (fd, buf, count);
+    r = read (fd, buf, count);
     if (r > 0)
     {
         p->file_offset += r;
@@ -214,7 +199,7 @@ static void file_begin (void *handle)
     struct file_read_info *p = (struct file_read_info *) handle;
 
     p->file_offset = p->file_moffset;
-    if (!p->sdrbuf && p->file_moffset)
+    if (p->file_moffset)
         lseek (p->fd, p->file_moffset, SEEK_SET);
     p->file_more = 0;
 }
@@ -822,7 +807,8 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
         file_begin (fi);
         r = file_extract_record (zh, sysno, fname, deleteFlag, fi, 1,
 				 recType, recTypeClientData);
-    } while (r && !sysno && fi->file_more);
+    }
+    while (r && !sysno && fi->file_more);
     file_read_stop (fi);
     if (fd != -1)
         close (fd);
