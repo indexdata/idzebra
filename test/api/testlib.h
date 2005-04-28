@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.11 2005-04-15 10:47:49 adam Exp $
+/* $Id: testlib.h,v 1.12 2005-04-28 11:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,9 +27,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/pquery.h>
 #include <yaz/log.h>
 #include <idzebra/api.h>
-
-int log_level;
-
 
 /** 
  * start_up : Does all the usual start functions
@@ -73,7 +70,7 @@ ZebraService start_service(char *cfgname);
 int close_down(ZebraHandle zh, ZebraService zs, int retcode);
 
 /** inits the database and inserts test data */
-void init_data( ZebraHandle zh, const char **recs);
+void init_data(ZebraHandle zh, const char **recs);
 
 
 /**

@@ -1,4 +1,4 @@
-/* $Id: t10.c,v 1.6 2005-01-15 19:38:35 adam Exp $
+/* $Id: t10.c,v 1.7 2005-04-28 11:25:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -78,16 +78,16 @@ int main(int argc, char **argv)
     ZebraService zs = start_up("zebrazv.cfg", argc, argv);
     ZebraHandle  zh = zebra_open (zs);
   
-    int loglevel=yaz_log_mask_str("zvrank,rank1,t10");
+    int loglevel = yaz_log_mask_str("zvrank,rank1,t10");
     init_data(zh, recs);
     zebra_close(zh);
     yaz_log_init_level(loglevel);
-    for (i=0; tests[i].schema; i++)
+    for (i = 0; tests[i].schema; i++)
     {
         zh = zebra_open (zs);
         zebra_select_database(zh, "Default");
         zebra_set_resource(zh, "zvrank.weighting-scheme", tests[i].schema);
-        yaz_log(log_level,"============%d: %s ============", i,tests[i].schema);
+        yaz_log(loglevel,"============%d: %s ===========", i, tests[i].schema);
 
         ranking_query( __LINE__, zh, "@attr 1=1016 @attr 2=102 the",
                 3, tests[i].hit1, tests[i].score1);
