@@ -1,11 +1,12 @@
-# $Id: Makefile.am,v 1.1 2005-04-28 08:20:41 adam Exp $
+# $Id: Makefile.am,v 1.2 2005-04-28 12:34:45 adam Exp $
 
-check_PROGRAMS = xslt1
+check_PROGRAMS = xslt1 xslt2
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST=zebra.cfg marc-col.xml marc1.xsl
 
 xslt1_SOURCES = xslt1.c
+xslt2_SOURCES = xslt2.c
 
 AM_CPPFLAGS = -I$(srcdir)/../api -I$(top_srcdir)/include $(YAZINC)
 
