@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.1 2005-04-28 08:20:40 adam Exp $
+/* $Id: xslt.c,v 1.2 2005-04-28 12:34:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,9 +36,35 @@ struct filter_info {
     xmlTextReaderPtr reader;
     char *fname;
     int split_depth;
+    ODR odr;
 };
 
-static const char *zebra_index_ns = "http://indexdata.dk/zebra/indexing/1";
+#define ZEBRA_INDEX_NS "http://indexdata.dk/zebra/indexing/1"
+#define ZEBRA_SCHEMA_IDENTITY_NS "http://indexdata.dk/zebra/identity/1"
+static const char *zebra_index_ns = ZEBRA_INDEX_NS;
+
+static void set_param_str(const char **params, const char *name,
+			  const char *value, ODR odr)
+{
+    char *quoted = odr_malloc(odr, 3 + strlen(value));
+    sprintf(quoted, "'%s'", value);
+    while (*params)
+	params++;
+    params[0] = name;
+    params[1] = quoted;
+    params[2] = 0;
+}
+
+static void set_param_int(const char **params, const char *name,
+			  zint value, ODR odr)
+{
+    char *quoted = odr_malloc(odr, 30); /* 25 digits enough for 2^64 */
+    sprintf(quoted, "'" ZINT_FORMAT "'", value);
+    params[0] = name;
+    params[1] = quoted;
+    params[2] = 0;
+}
+
 
 static void *filter_init (Res res, RecType recType)
 {
@@ -47,6 +73,7 @@ static void *filter_init (Res res, RecType recType)
     tinfo->reader = 0;
     tinfo->fname = 0;
     tinfo->split_depth = 1;
+    tinfo->odr = odr_createmem(ODR_ENCODE);
     return tinfo;
 }
 
@@ -73,6 +100,7 @@ static void filter_destroy(void *clientData)
     if (tinfo->stylesheet_xsp)
 	xsltFreeStylesheet(tinfo->stylesheet_xsp);
     xfree(tinfo->fname);
+    odr_destroy(tinfo->odr);
     xfree(tinfo);
 }
 
@@ -135,13 +163,15 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
 
 static int filter_extract(void *clientData, struct recExtractCtrl *p)
 {
-    static const char *params[] = {
-	"schema", "'http://indexdata.dk/zebra/indexing/1'",
-	0
-    };
+    const char *params[10];
     struct filter_info *tinfo = clientData;
     RecWord recWord;
     int ret;
+
+    params[0] = 0;
+
+    odr_reset(tinfo->odr);
+    set_param_str(params, "schema", ZEBRA_INDEX_NS, tinfo->odr);
 
     if (p->first_record)
     {
@@ -221,18 +251,14 @@ static int ioclose_ret(void *context)
 
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
-    static const char *params[] = {
-	"schema", "'F'",
-	0
-    };
+    const char *esn = ZEBRA_SCHEMA_IDENTITY_NS;
+    const char *params[10];
     struct filter_info *tinfo = clientData;
     xmlDocPtr resDoc;
     xmlDocPtr doc;
 
     if (p->comp)
     {
-	const char *esn;
-	char *esn_quoted;
 	if (p->comp->which != Z_RecordComp_simple
 	    || p->comp->u.simple->which != Z_ElementSetNames_generic)
 	{
@@ -240,10 +266,16 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	    return 0;
 	}
 	esn = p->comp->u.simple->u.generic;
-	esn_quoted = odr_malloc(p->odr, 3 + strlen(esn));
-	sprintf(esn_quoted, "'%s'", esn);
-	params[1] = esn_quoted;
     }
+    
+    params[0] = 0;
+    set_param_str(params, "schema", esn, p->odr);
+    if (p->fname)
+	set_param_str(params, "filename", p->fname, p->odr);
+    if (p->score >= 0)
+	set_param_int(params, "score", p->score, p->odr);
+    set_param_int(params, "size", p->recordSize, p->odr);
+    
     if (!tinfo->stylesheet_xsp)
     {
 	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
@@ -258,8 +290,15 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
 	return 0;
     }
-    resDoc = xsltApplyStylesheet(tinfo->stylesheet_xsp,
-				 doc, params);
+
+    if (!strcmp(esn, ZEBRA_SCHEMA_IDENTITY_NS))
+	resDoc = doc;
+    else
+    {
+	resDoc = xsltApplyStylesheet(tinfo->stylesheet_xsp,
+				     doc, params);
+	xmlFreeDoc(doc);
+    }
     if (!resDoc)
     {
 	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
@@ -295,7 +334,6 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	p->diagnostic = YAZ_BIB1_RECORD_SYNTAX_UNSUPP;
     }
     xmlFreeDoc(resDoc);
-    xmlFreeDoc(doc);
     return 0;
 }
 
