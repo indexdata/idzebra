@@ -1,4 +1,4 @@
-/* $Id: d1_read.c,v 1.16 2005-04-23 16:30:58 adam Exp $
+/* $Id: d1_read.c,v 1.17 2005-04-28 08:12:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -865,7 +865,6 @@ data1_node *data1_read_nodex (data1_handle dh, NMEM m,
 		const char *type = xattr->next->name;
 		const char *value = xattr->next->name;
 		data1_vartype *tp;
-		int val_offset;
 		
 		yaz_log(YLOG_LOG, "Variant class=%s type=%s value=%s",
 			tclass, type, value);
