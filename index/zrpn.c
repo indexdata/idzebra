@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.180 2005-04-29 10:36:13 adam Exp $
+/* $Id: zrpn.c,v 1.181 2005-04-29 10:37:12 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2831,7 +2831,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     }
     before = pos-1;
     after = 1+num-pos;
-    yaz_log(YLOG_EBUG, "rpn_scan pos=%d num=%d before=%d "
+    yaz_log(YLOG_DEBUG, "rpn_scan pos=%d num=%d before=%d "
 	    "after=%d before+after=%d",
 	    pos, num, before, after, before+after);
     scan_info_array = (struct scan_info *)
