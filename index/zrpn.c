@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.182 2005-04-29 10:54:45 adam Exp $
+/* $Id: zrpn.c,v 1.183 2005-04-29 18:38:50 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2598,6 +2598,7 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
 	idx = scan_info->after - pos + scan_info->before;
     else
         idx = - pos - 1;
+
     if (idx < 0)
 	return 0;
     scan_info->list[idx].term = (char *)
@@ -2818,19 +2819,17 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         return ZEBRA_OK;
     }
     /* prepare dictionary scanning */
-    if (pos < 1 || pos > num)
-    {
-	zh->errCode = YAZ_BIB1_SCAN_UNSUPP_VALUE_OF_POSITION_IN_RESPONSE;
-	*num_entries = 0;
-	return ZEBRA_FAIL;
-    }
     if (num < 1)
     {
 	*num_entries = 0;
 	return ZEBRA_OK;
     }
     before = pos-1;
+    if (before < 0)
+	before = 0;
     after = 1+num-pos;
+    if (after < 0)
+	after = 0;
     yaz_log(YLOG_DEBUG, "rpn_scan pos=%d num=%d before=%d "
 	    "after=%d before+after=%d",
 	    pos, num, before, after, before+after);
@@ -2880,8 +2879,10 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         int j, j0 = -1;
         const char *mterm = NULL;
         const char *tst;
-        RSET rset;
-        
+        RSET rset = 0;
+	int lo = i + pos-1; /* offset in result list */
+
+	/* find: j0 is the first of the minimal values */
         for (j = 0; j < ord_no; j++)
         {
             if (ptr[j] < before+after && ptr[j] >= 0 &&
@@ -2893,45 +2894,61 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             }
         }
         if (j0 == -1)
-            break;
-        scan_term_untrans(zh, stream->mem, reg_id,
-			  &glist[i+before].term, mterm);
-        rset = rset_trunc(zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
-			  glist[i+before].term, strlen(glist[i+before].term),
-			  NULL, 0, zapt->term->which, rset_nmem, 
-			  key_it_ctrl,key_it_ctrl->scope);
-        ptr[j0]++;
+            break;  /* no value found, stop */
+
+	/* get result set for first one , but only if it's within bounds */
+	if (lo >= 0)
+	{
+	    /* get result set for first term */
+	    scan_term_untrans(zh, stream->mem, reg_id,
+			      &glist[lo].term, mterm);
+	    rset = rset_trunc(zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
+			      glist[lo].term, strlen(glist[lo].term),
+			      NULL, 0, zapt->term->which, rset_nmem, 
+			      key_it_ctrl,key_it_ctrl->scope);
+	}
+	ptr[j0]++; /* move index for this set .. */
+	/* get result set for remaining scan terms */
         for (j = j0+1; j<ord_no; j++)
         {
             if (ptr[j] < before+after && ptr[j] >= 0 &&
                 (tst = scan_info_array[j].list[ptr[j]].term) &&
                 !strcmp (tst, mterm))
             {
-                RSET rsets[2];
-		
-		rsets[0] = rset;
-                rsets[1] =
-		    rset_trunc(zh, &scan_info_array[j].list[ptr[j]].isam_p, 1,
-			       glist[i+before].term,
-			       strlen(glist[i+before].term), NULL, 0,
-			       zapt->term->which,rset_nmem,
-			       key_it_ctrl, key_it_ctrl->scope);
-                rset = rsmulti_or_create(rset_nmem, key_it_ctrl,
-					 2, key_it_ctrl->scope, rsets);
+		if (lo >= 0)
+		{
+		    RSET rsets[2];
+		    
+		    rsets[0] = rset;
+		    rsets[1] =
+			rset_trunc(
+			    zh, &scan_info_array[j].list[ptr[j]].isam_p, 1,
+			    glist[lo].term,
+			    strlen(glist[lo].term), NULL, 0,
+			    zapt->term->which,rset_nmem,
+			    key_it_ctrl, key_it_ctrl->scope);
+		    rset = rsmulti_or_create(rset_nmem, key_it_ctrl,
+					     2, key_it_ctrl->scope, rsets);
+		}
                 ptr[j]++;
             }
         }
-        if (limit_set)
+	if (lo >= 0)
 	{
-	    RSET rsets[2];
-	    rsets[0] = rset;
-	    rsets[1] = rset_dup(limit_set);
-	    
-	    rset = rsmulti_and_create(rset_nmem, key_it_ctrl,
-				      key_it_ctrl->scope, 2, rsets);
+	    /* merge with limit_set if given */
+	    if (limit_set)
+	    {
+		RSET rsets[2];
+		rsets[0] = rset;
+		rsets[1] = rset_dup(limit_set);
+		
+		rset = rsmulti_and_create(rset_nmem, key_it_ctrl,
+					  key_it_ctrl->scope, 2, rsets);
+	    }
+	    /* count it */
+	    count_set(rset, &glist[lo].occurrences);
+	    rset_delete(rset);
 	}
-	count_set(rset, &glist[i+before].occurrences);
-	rset_delete(rset);
     }
     if (i < after)
     {
@@ -2948,6 +2965,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	const char *mterm = NULL;
 	const char *tst;
 	RSET rset;
+	int lo = before-1-i; /* offset in result list */
 	
 	for (j = 0; j <ord_no; j++)
 	{
@@ -2963,11 +2981,11 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    break;
 	
 	scan_term_untrans (zh, stream->mem, reg_id,
-			   &glist[before-1-i].term, mterm);
+			   &glist[lo].term, mterm);
 	
 	rset = rset_trunc
 	    (zh, &scan_info_array[j0].list[before-1-ptr[j0]].isam_p, 1,
-	     glist[before-1-i].term, strlen(glist[before-1-i].term),
+	     glist[lo].term, strlen(glist[lo].term),
 	     NULL, 0, zapt->term->which,rset_nmem,
 	     key_it_ctrl,key_it_ctrl->scope);
 	
@@ -2985,8 +3003,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		rsets[1] = rset_trunc(
 		    zh,
 		    &scan_info_array[j].list[before-1-ptr[j]].isam_p, 1,
-		    glist[before-1-i].term,
-		    strlen(glist[before-1-i].term), NULL, 0,
+		    glist[lo].term,
+		    strlen(glist[lo].term), NULL, 0,
 		    zapt->term->which, rset_nmem,
 		    key_it_ctrl, key_it_ctrl->scope);
 		rset = rsmulti_or_create(rset_nmem, key_it_ctrl,
@@ -3004,7 +3022,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    rset = rsmulti_and_create(rset_nmem, key_it_ctrl,
 				      key_it_ctrl->scope, 2, rsets);
 	}
-	count_set (rset, &glist[before-1-i].occurrences);
+	count_set (rset, &glist[lo].occurrences);
 	rset_delete (rset);
     }
     i = before-i;
