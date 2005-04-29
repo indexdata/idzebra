@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.181 2005-04-28 12:13:04 adam Exp $
+/* $Id: extract.c,v 1.182 2005-04-29 10:33:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -202,13 +202,8 @@ static void file_end (void *handle, off_t offset)
 
     if (offset != p->file_moffset)
     {
-	yaz_log(YLOG_LOG, "file_end OK");
 	p->file_moffset = offset;
 	p->file_more = 1;
-    }
-    else
-    {
-	yaz_log(YLOG_LOG, "file_end REJECTED");
     }
 }
 
@@ -809,7 +804,6 @@ int fileExtract (ZebraHandle zh, SYSNO *sysno, const char *fname,
 	fi->file_more = 0;  /* file_end not called (yet) */
         r = file_extract_record (zh, sysno, fname, deleteFlag, fi, 1,
 				 recType, recTypeClientData);
-	yaz_log(YLOG_LOG, "file_extract_record returned %d", r);
 	if (fi->file_more)
 	{   /* file_end has been called so reset offset .. */
 	    fi->file_offset = fi->file_moffset;
