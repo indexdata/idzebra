@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.141.2.8 2005-03-11 21:10:12 adam Exp $
+/* $Id: zrpn.c,v 1.141.2.9 2005-04-29 18:38:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -2662,8 +2662,17 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	return;
     }
     /* prepare dictionary scanning */
+    if (num < 1)
+    {
+	*num_entries = 0;
+	return;
+    }
     before = pos-1;
+    if (before < 0)
+	before = 0;
     after = 1+num-pos;
+    if (after < 0)
+	after = 0;
     scan_info_array = (struct scan_info *)
 	odr_malloc (stream, ord_no * sizeof(*scan_info_array));
     for (i = 0; i < ord_no; i++)
@@ -2709,6 +2718,7 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         const char *mterm = NULL;
         const char *tst;
         RSET rset;
+	int lo = i + pos-1; /* offset in result list */
         
         for (j = 0; j < ord_no; j++)
         {
@@ -2722,12 +2732,14 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         }
         if (j0 == -1)
             break;
-        scan_term_untrans (zh, stream->mem, reg_id,
-			   &glist[i+before].term, mterm);
-        rset = rset_trunc (zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
-			   glist[i+before].term, strlen(glist[i+before].term),
-			   NULL, 0, zapt->term->which);
-
+	if (lo >= 0)
+	{
+	    scan_term_untrans (zh, stream->mem, reg_id,
+			       &glist[lo].term, mterm);
+	    rset = rset_trunc(zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
+			      glist[lo].term, strlen(glist[lo].term),
+			      NULL, 0, zapt->term->which);
+	}
         ptr[j0]++;
         for (j = j0+1; j<ord_no; j++)
         {
@@ -2735,40 +2747,46 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
                 (tst=scan_info_array[j].list[ptr[j]].term) &&
                 !strcmp (tst, mterm))
             {
-                rset_bool_parms bool_parms;
-                RSET rset2;
-
-                rset2 =
-                   rset_trunc (zh, &scan_info_array[j].list[ptr[j]].isam_p, 1,
-			       glist[i+before].term,
-			       strlen(glist[i+before].term), NULL, 0,
-                               zapt->term->which);
-
-                bool_parms.key_size = sizeof(struct it_key);
-                bool_parms.cmp = key_compare_it;
-		bool_parms.log_item = key_logdump_txt;
-		bool_parms.rset_l = rset;
-                bool_parms.rset_r = rset2;
-              
-                rset = rset_create (rset_kind_or, &bool_parms);
-
+		if (lo >= 0)
+		{
+		    rset_bool_parms bool_parms;
+		    RSET rset2;
+		    
+		    rset2 =
+			rset_trunc(zh,
+				   &scan_info_array[j].list[ptr[j]].isam_p, 1,
+				   glist[lo].term,
+				   strlen(glist[lo].term), NULL, 0,
+				   zapt->term->which);
+		    
+		    bool_parms.key_size = sizeof(struct it_key);
+		    bool_parms.cmp = key_compare_it;
+		    bool_parms.log_item = key_logdump_txt;
+		    bool_parms.rset_l = rset;
+		    bool_parms.rset_r = rset2;
+		    
+		    rset = rset_create (rset_kind_or, &bool_parms);
+		}
                 ptr[j]++;
             }
         }
-        if (limit_set)
-        {
-            rset_bool_parms bool_parms;
-
-            bool_parms.key_size = sizeof(struct it_key);
-            bool_parms.cmp = key_compare_it;
-	    bool_parms.log_item = key_logdump_txt;
-	    bool_parms.rset_l = rset;
-            bool_parms.rset_r = rset_dup(limit_set);
-
-            rset = rset_create (rset_kind_and, &bool_parms);
-        }
-        count_set (rset, &glist[i+before].occurrences);
-        rset_delete (rset);
+	if (lo >= 0)
+	{
+	    if (limit_set)
+	    {
+		rset_bool_parms bool_parms;
+		
+		bool_parms.key_size = sizeof(struct it_key);
+		bool_parms.cmp = key_compare_it;
+		bool_parms.log_item = key_logdump_txt;
+		bool_parms.rset_l = rset;
+		bool_parms.rset_r = rset_dup(limit_set);
+		
+		rset = rset_create (rset_kind_and, &bool_parms);
+	    }
+	    count_set (rset, &glist[lo].occurrences);
+	    rset_delete (rset);
+	}
     }
     if (i < after)
     {
