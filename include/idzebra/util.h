@@ -1,4 +1,4 @@
-/* $Id: util.h,v 1.2 2005-04-15 10:47:48 adam Exp $
+/* $Id: util.h,v 1.3 2005-04-29 23:09:57 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -35,6 +35,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
+/** \var zint
+ * \brief Zebra integer
+ *
+ * This integer is used in various Zebra APIs to specify record identifires,
+ * number of occurrences etc. It is a "large" integer and is usually
+ * 64-bit on newer architectures.
+ */
 #ifdef __GNUC__
 typedef long long int zint;
 #define ZINT_FORMAT "%lld"
@@ -51,6 +58,12 @@ typedef long zint;
 #endif
 #endif
 
+/** \var typedef ZEBRA_RES
+ * \brief Common return type for Zebra API
+ *
+ * This return code indicates success with code ZEBRA_OK and failure
+ * with ZEBRA_FAIL
+ */
 typedef short ZEBRA_RES;
 #define ZEBRA_FAIL -1
 #define ZEBRA_OK   0
