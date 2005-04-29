@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.100 2005-03-05 09:19:15 adam Exp $
+/* $Id: recgrs.c,v 1.101 2005-04-29 23:09:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -285,7 +285,7 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
                     yaz_log(YLOG_WARN, 
                          "  Only attributes (@) are supported in xelm xpath predicates");
                     yaz_log(YLOG_WARN, "predicate %s ignored", p->u.relation.name);
-                    return (1);
+                    return 1;
                 }
                 attname = p->u.relation.name + 1;
                 res = 0;
@@ -361,43 +361,43 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
     data1_node *nn;
 #ifdef ENHANCED_XELM 
     struct xpath_location_step *xp;
-
 #endif
     char *pexpr = xmalloc(strlen(tagpath)+2);
     int ok = 0;
     
     sprintf (pexpr, "%s\n", tagpath);
-    yaz_log(YLOG_DEBUG,"Checking tagpath %s",tagpath);
-    while (xpe) 
+    yaz_log(YLOG_DEBUG, "Checking tagpath %s",tagpath);
+    for (; xpe; xpe = xpe->next)
     {
         struct DFA_state **dfaar = xpe->dfa->states;
-        struct DFA_state *s=dfaar[0];
-        struct DFA_tran *t;
-        const char *p;
-        int i;
-        unsigned char c;
+        struct DFA_state *s = dfaar[0];
+        struct DFA_tran *t = s->trans;
+        int i = s->tran_no;
+        unsigned char c = *pexpr++;
         int start_line = 1;
 
-        c = *pexpr++; t = s->trans; i = s->tran_no;
-	if ((c >= t->ch[0] && c <= t->ch[1]) || (!t->ch[0])) {
-            p = pexpr;
-            do {
+	if ((c >= t->ch[0] && c <= t->ch[1]) || (!t->ch[0]))
+	{
+            const char *p = pexpr;
+            do 
+	    {
                 if ((s = dfaar[t->to])->rule_no && 
-                    (start_line || s->rule_nno))  {
+                    (start_line || s->rule_nno))
+		{
                     ok = 1;
                     break;
                 }
-                for (t=s->trans, i=s->tran_no; --i >= 0; t++) {
+                for (t=s->trans, i=s->tran_no; --i >= 0; t++)
                     if ((unsigned) *p >= t->ch[0] && (unsigned) *p <= t->ch[1])
                         break;
-                }
                 p++;
-            } while (i >= 0);
+            } 
+	    while (i >= 0);
 	}
 	if (ok)
-	    yaz_log(YLOG_DEBUG," xpath match %s",xpe->xpath_expr);
+	    yaz_log(YLOG_DEBUG, " xpath match %s",xpe->xpath_expr);
 	else
-	    yaz_log(YLOG_DEBUG," xpath no match %s",xpe->xpath_expr);
+	    yaz_log(YLOG_DEBUG, " xpath no match %s",xpe->xpath_expr);
 
         pexpr--;
         if (ok) {
@@ -406,39 +406,36 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
             xp = xpe->xpath;
             
             /* find the first tag up in the node structure */
-            nn = n; while (nn && nn->which != DATA1N_tag) {
-                nn = nn->parent;
-            }
+            for (nn = n; nn && nn->which != DATA1N_tag; nn = nn->parent)
+		;
             
             /* go from inside out in the node structure, while going
                backwards trough xpath location steps ... */
-            for (i=xpe->xpath_len - 1; i>0; i--) {
+            for (i = xpe->xpath_len - 1; i>0; i--)
+	    {
+                yaz_log(YLOG_DEBUG, "Checking step %d: %s on tag %s",
+			i, xp[i].part, nn->u.tag.tag);
                 
-                yaz_log(YLOG_DEBUG,"Checking step %d: %s on tag %s",
-		     i,xp[i].part,nn->u.tag.tag);
-                
-                if (!d1_check_xpath_predicate(nn, xp[i].predicate)) {
-                    yaz_log(YLOG_DEBUG,"  Predicates didn't match");
+                if (!d1_check_xpath_predicate(nn, xp[i].predicate))
+		{
+                    yaz_log(YLOG_DEBUG, "  Predicates didn't match");
                     ok = 0;
                     break;
                 }
                 
-                if (nn->which == DATA1N_tag) {
+                if (nn->which == DATA1N_tag)
                     nn = nn->parent;
-                }
             }
 #endif
-            if (ok) {
+            if (ok)
                 break;
-            }
 	}
-        xpe = xpe->next;
     } 
     
     xfree(pexpr);
     
     if (ok) {
-      yaz_log(YLOG_DEBUG,"Got it");
+	yaz_log(YLOG_DEBUG, "Got it");
         return xpe->termlists;
     } else {
         return NULL;
