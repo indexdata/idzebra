@@ -1,4 +1,4 @@
-/* $Id: scantest.c,v 1.3 2005-01-15 19:38:24 adam Exp $
+/* $Id: scantest.c,v 1.4 2005-04-29 18:43:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,6 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <yaz/log.h>
 
 #include <yaz/options.h>
 #include <idzebra/dict.h>
@@ -41,11 +42,15 @@ static int handler(char *name, const char *info, int pos, void *client)
 	idx = hi->a - pos + hi->b;
     else
 	idx = -pos - 1;
-    hi->ar[idx] = malloc(strlen(name)+1);
-    strcpy(hi->ar[idx], name);
+
 #if 0
     printf ("pos=%d idx=%d name=%s\n", pos, idx, name);
 #endif
+    if (idx < 0)
+	return 0;
+
+    hi->ar[idx] = malloc(strlen(name)+1);
+    strcpy(hi->ar[idx], name);
     return 0;
 }
 
@@ -112,7 +117,7 @@ int main(int argc, char **argv)
     char *arg;
 
     strcpy(scan_term, "1004");
-    while ((ret = options("b:a:t:n:", argv, argc, &arg)) != -2)
+    while ((ret = options("b:a:t:n:v:", argv, argc, &arg)) != -2)
     {
 	switch(ret)
 	{
@@ -130,6 +135,8 @@ int main(int argc, char **argv)
 	case 'n':
 	    number = atoi(arg);
 	    break;
+	case 'v':
+	    yaz_log_init_level(yaz_log_mask_str(arg));
 	}
     }
 
@@ -158,7 +165,7 @@ int main(int argc, char **argv)
 		"4497",
 		"4498",
 		"4499",
-	    "45"};
+		"45"};
 	    strcpy(scan_term, "4499");
 	    errors += tst(dict, 2, 2, scan_term, cs, 0);
 	}
