@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.179 2005-04-26 08:11:22 adam Exp $
+/* $Id: zrpn.c,v 1.180 2005-04-29 10:36:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2594,9 +2594,12 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
     len_prefix = strlen(scan_info->prefix);
     if (memcmp (name, scan_info->prefix, len_prefix))
         return 1;
-    if (pos > 0)        idx = scan_info->after - pos + scan_info->before;
+    if (pos > 0)
+	idx = scan_info->after - pos + scan_info->before;
     else
         idx = - pos - 1;
+    if (idx < 0)
+	return 0;
     scan_info->list[idx].term = (char *)
         odr_malloc(scan_info->odr, strlen(name + len_prefix)+1);
     strcpy(scan_info->list[idx].term, name + len_prefix);
@@ -2815,8 +2818,22 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         return ZEBRA_OK;
     }
     /* prepare dictionary scanning */
+    if (pos <= 0)
+    {
+	zh->errCode = YAZ_BIB1_SCAN_UNSUPP_VALUE_OF_POSITION_IN_RESPONSE;
+	*num_entries = 0;
+	return ZEBRA_FAIL;
+    }
+    if (num < 1)
+    {
+	*num_entries = 0;
+	return ZEBRA_OK;
+    }
     before = pos-1;
     after = 1+num-pos;
+    yaz_log(YLOG_EBUG, "rpn_scan pos=%d num=%d before=%d "
+	    "after=%d before+after=%d",
+	    pos, num, before, after, before+after);
     scan_info_array = (struct scan_info *)
         odr_malloc(stream, ord_no * sizeof(*scan_info_array));
     for (i = 0; i < ord_no; i++)
@@ -2867,7 +2884,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         
         for (j = 0; j < ord_no; j++)
         {
-            if (ptr[j] < before+after &&
+            if (ptr[j] < before+after && ptr[j] >= 0 &&
                 (tst = scan_info_array[j].list[ptr[j]].term) &&
                 (!mterm || strcmp (tst, mterm) < 0))
             {
@@ -2886,7 +2903,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         ptr[j0]++;
         for (j = j0+1; j<ord_no; j++)
         {
-            if (ptr[j] < before+after &&
+            if (ptr[j] < before+after && ptr[j] >= 0 &&
                 (tst = scan_info_array[j].list[ptr[j]].term) &&
                 !strcmp (tst, mterm))
             {
@@ -2921,7 +2938,6 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	*num_entries -= (after-i);
 	*is_partial = 1;
     }
-    
     /* consider terms before main term */
     for (i = 0; i<ord_no; i++)
 	ptr[i] = 0;
@@ -2935,7 +2951,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	
 	for (j = 0; j <ord_no; j++)
 	{
-	    if (ptr[j] < before &&
+	    if (ptr[j] < before && ptr[j] >= 0 &&
 		(tst = scan_info_array[j].list[before-1-ptr[j]].term) &&
 		(!mterm || strcmp (tst, mterm) > 0))
 	    {
@@ -2959,7 +2975,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	
 	for (j = j0+1; j<ord_no; j++)
 	{
-	    if (ptr[j] < before &&
+	    if (ptr[j] < before && ptr[j] >= 0 &&
 		(tst = scan_info_array[j].list[before-1-ptr[j]].term) &&
 		!strcmp (tst, mterm))
 	    {
