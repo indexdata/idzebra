@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.141.2.9 2005-04-29 18:38:49 adam Exp $
+/* $Id: zrpn.c,v 1.141.2.10 2005-04-29 18:56:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -1163,7 +1163,7 @@ static int string_term (ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    strcat (term_dict, ")");
 	    break;
 	case 103:       /* Regexp-2 */
-	    r = 1;
+	    regex_range = 1;
 	    term_dict[j++] = '(';
 	    init_pos = 2;
 	    if (!term_103 (zh->reg->zebra_maps, reg_type,
