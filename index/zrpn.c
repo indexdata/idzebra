@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.181 2005-04-29 10:37:12 adam Exp $
+/* $Id: zrpn.c,v 1.182 2005-04-29 10:54:45 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2818,7 +2818,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         return ZEBRA_OK;
     }
     /* prepare dictionary scanning */
-    if (pos <= 0)
+    if (pos < 1 || pos > num)
     {
 	zh->errCode = YAZ_BIB1_SCAN_UNSUPP_VALUE_OF_POSITION_IN_RESPONSE;
 	*num_entries = 0;
