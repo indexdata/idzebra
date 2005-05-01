@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.20 2005-04-29 23:09:57 adam Exp $
+/* $Id: api.h,v 1.21 2005-05-01 20:43:11 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -469,19 +469,77 @@ YAZ_END_CDECL
  *
  * \section intro_sec Introduction
  *
- * Zebra is a search engine for structure data. It includes the
- * following components: util, dict, isam, recctrl, filters.
+ * Zebra is a search engine for structure data, such as XML, MARC
+ * and others. The following chapters briefly describe each of
+ * Zebra major modules/components.
  *
- * \section util util
+ * \section util Base Utilities
  *
- * \section dict dict
+ * The Zebra utilities (util.h) defines fundamental types and a few
+ * utilites for Zebra.
  *
- * \section isam isam
+ * \section res Resources
  *
- * \section data1 data-1
+ * The resources system (res.h) is a manager of configuration 
+ * resources. The resources can be viewed as a simple database.
+ * Resources can be read from a configurtion file, they can be
+ * read or written by an application. Resources can also be written,
+ * but that facility is not currently in use.
  *
- * \section recctrl recctrl
+ * \section bfile Bfiles
  *
+ * The Bfiles (bfile.h) provides a portable interface to the
+ * local file system. It also provides a facility for safe updates
+ * (shadow updates). All file system access is handle by this module
+ * (except for trival reads of configuration files).
+ *
+ * \section dict Dictionary
+ *
+ * The Zebra dictionary (dict.h) maps a search term (key) to a value. The
+ * value is a reference to the list of records identifers in which
+ * the term occurs. Zebra uses an ISAM data structure for the list
+ * of term occurrences. The Dictionary uses \ref bfile.
+ *
+ * \section isam ISAM
+ *
+ * Zebra maintains an ISAM for each term where each ISAM is a list
+ * of record identifiers corresponding to the records in which the
+ * term occur. Unlike traditional ISAM systems, the Zebra ISAM
+ * is compressed. The ISAM system uses \ref bfile.
+ *
+ * Zebra has more than one ISAM system. The old and stable ISAM system
+ * is named isamc (see isamc.h). Another version isams is a write-once
+ * isam system that is quite compact - suitable for CD-ROMs (isams.h). 
+ * The newest ISAM system, isamb, is implemented as a B-Tree (see isamb.h).
+ *
+ * \section data1 Data-1
+ *
+ * The data1 (data1.h) module deals with structured documents. The module can
+ * can read, modify and write documents. The document structure was
+ * originally based on GRS-1 - a Z39.50 v3 structure that predates
+ * DOM. These days the data1 structure may describe XML/SGML as well.
+ * The data1, like DOM, is a tree structure. Each node in the tree
+ * can be of type element, text (cdata), preprocessing instruction,
+ * comment. Element nodes can point to attribute nodes.
+ *
+ * \section recctrl Record Control
+ *
+ * The record control module (recctrl.h) is responsible for
+ * managing the various record types ("classes" or filters).
+ *
+ * \section rset Result-Set
+ *
+ * The Result-Set module (rset.h) defines an interface that all
+ * Zebra Search Results must implement. Each operation (AND, OR, ..)
+ * correspond to an implementation of that interface.
+ *
+ * \section dfa DFA
+ *
+ * DFA (dfa.h) Deterministic Finite Automa is a regular expression engine.
+ * The module compiles a regular expression to a DFA. The DFA can then
+ * be used in various application to perform fast match against the
+ * origianl expression. The \ref Dict uses DFA to perform lookup
+ * using regular expressions.
  */
 
 #endif

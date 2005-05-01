@@ -1,4 +1,4 @@
-/* $Id: dict.h,v 1.3 2005-01-15 19:38:24 adam Exp $
+/* $Id: dict.h,v 1.4 2005-05-01 20:43:11 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,6 +20,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+/** \file dict.h
+    \brief Zebra dictionary
+    
+    The dictionary is a hash that maps a string to a value.
+    The value is opaque and is defined as a sequence of bytes
+    with a length in the range 0 to 255.
+*/
+
 #ifndef DICT_H
 #define DICT_H
 
@@ -28,6 +36,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
+/** \var Dict
+ * \brief Dictionary type
+ *
+ * Most dictionary functions operatate on a Dict type (object).
+ */
 typedef struct Dict_struct *Dict;
 
 typedef unsigned Dict_ptr;
