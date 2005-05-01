@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.4 2005-05-01 07:17:46 adam Exp $
+/* $Id: xslt.c,v 1.5 2005-05-01 07:38:51 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,6 +26,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/diagbib1.h>
 #include <libxml/xmlversion.h>
+#include <libxml/parser.h>
 #include <libxml/tree.h>
 #ifdef LIBXML_READER_ENABLED
 #include <libxml/xmlreader.h>
@@ -188,10 +189,10 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 {
     RecWord recWord;
     const char *params[10];
-    params[0] = 0;
     xmlChar *buf_out;
     int len_out;
 
+    params[0] = 0;
     set_param_str(params, "schema", ZEBRA_INDEX_NS, tinfo->odr);
 
     (*p->init)(p, &recWord);
