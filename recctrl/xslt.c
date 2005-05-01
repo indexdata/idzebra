@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.3 2005-04-28 13:33:20 adam Exp $
+/* $Id: xslt.c,v 1.4 2005-05-01 07:17:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,7 +25,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 
 #include <yaz/diagbib1.h>
+#include <libxml/xmlversion.h>
+#include <libxml/tree.h>
+#ifdef LIBXML_READER_ENABLED
 #include <libxml/xmlreader.h>
+#endif
 #include <libxslt/transform.h>
 
 #include <idzebra/util.h>
@@ -33,7 +37,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct filter_info {
     xsltStylesheetPtr stylesheet_xsp;
+#ifdef LIBXML_READER_ENABLED
     xmlTextReaderPtr reader;
+#endif
     char *fname;
     int split_depth;
     ODR odr;
@@ -68,14 +74,24 @@ static void set_param_int(const char **params, const char *name,
 }
 
 
-static void *filter_init (Res res, RecType recType)
+static void *filter_init_xslt(Res res, RecType recType)
 {
     struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
     tinfo->stylesheet_xsp = 0;
+#ifdef LIBXML_READER_ENABLED
     tinfo->reader = 0;
+#endif
     tinfo->fname = 0;
-    tinfo->split_depth = 1;
+    tinfo->split_depth = 0;
     tinfo->odr = odr_createmem(ODR_ENCODE);
+    return tinfo;
+}
+
+static void *filter_init_xslt1(Res res, RecType recType)
+{
+    struct filter_info *tinfo = (struct filter_info *)
+	filter_init_xslt(res, recType);
+    tinfo->split_depth = 1;
     return tinfo;
 }
 
@@ -101,6 +117,10 @@ static void filter_destroy(void *clientData)
     struct filter_info *tinfo = clientData;
     if (tinfo->stylesheet_xsp)
 	xsltFreeStylesheet(tinfo->stylesheet_xsp);
+#ifdef LIBXML_READER_ENABLED
+    if (tinfo->reader)
+	xmlFreeTextReader(tinfo->reader);
+#endif
     xfree(tinfo->fname);
     odr_destroy(tinfo->odr);
     xfree(tinfo);
@@ -163,18 +183,48 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
     }
 }
 
-static int filter_extract(void *clientData, struct recExtractCtrl *p)
+static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
+		       xmlDocPtr doc)
 {
-    const char *params[10];
-    struct filter_info *tinfo = clientData;
     RecWord recWord;
-    int ret;
-
+    const char *params[10];
     params[0] = 0;
+    xmlChar *buf_out;
+    int len_out;
 
-    odr_reset(tinfo->odr);
     set_param_str(params, "schema", ZEBRA_INDEX_NS, tinfo->odr);
 
+    (*p->init)(p, &recWord);
+    recWord.reg_type = 'w';
+
+    if (tinfo->stylesheet_xsp)
+    {
+	xmlDocPtr resDoc = 
+	    xsltApplyStylesheet(tinfo->stylesheet_xsp,
+				doc, params);
+	if (p->flagShowRecords)
+	{
+	    xmlDocDumpMemory(resDoc, &buf_out, &len_out);
+	    fwrite(buf_out, len_out, 1, stdout);
+	    xmlFree(buf_out);
+	}
+	index_node(tinfo, p, xmlDocGetRootElement(resDoc), &recWord);
+	xmlFreeDoc(resDoc);
+    }
+    xmlDocDumpMemory(doc, &buf_out, &len_out);
+    if (p->flagShowRecords)
+	fwrite(buf_out, len_out, 1, stdout);
+    (*p->setStoreData)(p, buf_out, len_out);
+    xmlFree(buf_out);
+    
+    xmlFreeDoc(doc);
+    return RECCTRL_EXTRACT_OK;
+}
+
+#ifdef LIBXML_READER_ENABLED
+static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
+{
+    int ret;
     if (p->first_record)
     {
 	if (tinfo->reader)
@@ -191,9 +241,6 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
     if (!tinfo->stylesheet_xsp)
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
 
-    (*p->init)(p, &recWord);
-    recWord.reg_type = 'w';
-
     ret = xmlTextReaderRead(tinfo->reader);
     while (ret == 1) {
 	int type = xmlTextReaderNodeType(tinfo->reader);
@@ -201,43 +248,57 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 	if (tinfo->split_depth == 0 ||
 	    (type == XML_READER_TYPE_ELEMENT && tinfo->split_depth == depth))
 	{
-	    xmlChar *buf_out;
-	    int len_out;
-
 	    xmlNodePtr ptr = xmlTextReaderExpand(tinfo->reader);
 	    xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
 	    xmlDocPtr doc = xmlNewDoc("1.0");
 
 	    xmlDocSetRootElement(doc, ptr2);
-	    
-	    if (tinfo->stylesheet_xsp)
-	    {
-		xmlDocPtr resDoc = 
-		    xsltApplyStylesheet(tinfo->stylesheet_xsp,
-					doc, params);
-		if (p->flagShowRecords)
-		{
-		    xmlDocDumpMemory(resDoc, &buf_out, &len_out);
-		    fwrite(buf_out, len_out, 1, stdout);
-		    xmlFree(buf_out);
-		}
-		index_node(tinfo, p, xmlDocGetRootElement(resDoc), &recWord);
-		xmlFreeDoc(resDoc);
-	    }
-	    xmlDocDumpMemory(doc, &buf_out, &len_out);
-	    if (p->flagShowRecords)
-		fwrite(buf_out, len_out, 1, stdout);
-	    (*p->setStoreData)(p, buf_out, len_out);
-	    xmlFree(buf_out);
 
-	    xmlFreeDoc(doc);
-	    return RECCTRL_EXTRACT_OK;
+	    return extract_doc(tinfo, p, doc);	    
 	}
 	ret = xmlTextReaderRead(tinfo->reader);
     }
     xmlFreeTextReader(tinfo->reader);
     tinfo->reader = 0;
     return RECCTRL_EXTRACT_EOF;
+}
+#endif
+
+static int extract_full(struct filter_info *tinfo, struct recExtractCtrl *p)
+{
+    if (p->first_record) /* only one record per stream */
+    {
+	xmlDocPtr doc = xmlReadIO(ioread_ex, ioclose_ex, p /* I/O handler */,
+				  0 /* URL */,
+				  0 /* encoding */,
+				  XML_PARSE_XINCLUDE);
+	if (!doc)
+	{
+	    return RECCTRL_EXTRACT_ERROR_GENERIC;
+	}
+	return extract_doc(tinfo, p, doc);
+    }
+    else
+	return RECCTRL_EXTRACT_EOF;
+}
+
+static int filter_extract(void *clientData, struct recExtractCtrl *p)
+{
+    struct filter_info *tinfo = clientData;
+
+    odr_reset(tinfo->odr);
+
+    if (tinfo->split_depth == 0)
+	return extract_full(tinfo, p);
+    else
+    {
+#ifdef LIBXML_READER_ENABLED
+	return extract_split(tinfo, p);
+#else
+	/* no xmlreader so we can't split it */
+	return RECCTRL_EXTRACT_ERROR_GENERIC;
+#endif
+    }
 }
 
 static int ioread_ret(void *context, char *buffer, int len)
@@ -339,10 +400,20 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     return 0;
 }
 
-static struct recType filter_type = {
+static struct recType filter_type_xslt = {
     0,
     "xslt",
-    filter_init,
+    filter_init_xslt,
+    filter_config,
+    filter_destroy,
+    filter_extract,
+    filter_retrieve
+};
+
+static struct recType filter_type_xslt1 = {
+    0,
+    "xslt1",
+    filter_init_xslt1,
     filter_config,
     filter_destroy,
     filter_extract,
@@ -357,6 +428,9 @@ idzebra_filter
 #endif
 
 [] = {
-    &filter_type,
+    &filter_type_xslt,
+#ifdef LIBXML_READER_ENABLED
+    &filter_type_xslt1,
+#endif
     0,
 };

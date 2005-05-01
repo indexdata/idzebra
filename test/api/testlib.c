@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.14 2005-04-20 10:18:19 adam Exp $
+/* $Id: testlib.c,v 1.15 2005-05-01 07:17:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -181,7 +181,9 @@ int do_query_x(int lineno, ZebraHandle zh, char *query, int exphits,
     else
     {
 	if (rc == ZEBRA_FAIL) {
-	    printf("Error: search returned %d\n%s\n", rc, query);
+	    int code = zebra_errCode(zh);
+	    printf("Error: search returned %d. Code %d\n%s\n", rc, 
+		   code, query);
 	    exit (1);
 	}
 	if (exphits != -1 && hits != exphits) {

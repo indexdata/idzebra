@@ -1,4 +1,4 @@
-/* $Id: xslt1.c,v 1.1 2005-04-28 14:58:24 adam Exp $
+/* $Id: xslt1.c,v 1.2 2005-05-01 07:17:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,10 +29,13 @@ int main(int argc, char **argv)
     ZebraService zs = start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs);
 
-    check_filter(zs, "xslt");
+    check_filter(zs, "xslt1");
+
     zebra_select_database(zh, "Default");
 
     zebra_init(zh);
+
+    zebra_set_resource(zh, "recordType", "xslt1.marc1.xsl");
 
     zebra_begin_trans(zh, 1);
     sprintf(path, "%.200s/marc-col.xml", get_srcdir());
