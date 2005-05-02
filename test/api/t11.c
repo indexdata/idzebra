@@ -1,4 +1,4 @@
-/* $Id: t11.c,v 1.1 2005-05-02 09:05:22 adam Exp $
+/* $Id: t11.c,v 1.2 2005-05-02 09:25:12 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -79,6 +79,16 @@ int main(int argc, char **argv)
     }
     if (1)
     {
+	const char *ent[] = { "f", 0 };
+	do_scan(__LINE__, zh, "@attr 1=4 a", -4, 1, -4, 1, 0, ent);
+    }
+    if (1)
+    {
+	const char *ent[] = { "f", 0 };
+	do_scan(__LINE__, zh, "@attr 1=4 a", -5, 1, -5, 0, 1, ent);
+    }
+    if (1)
+    {
 	const char *ent[] = { "d", "e", "f", 0 };
 	do_scan(__LINE__, zh, "@attr 1=4 a", -2, 3, -2, 3, 0, ent);
     }
@@ -105,11 +115,11 @@ int main(int argc, char **argv)
     if (1)
     {
 	const char *ent[] = { "a", "b", "c", "d", "e", "f", 0 };
-	do_scan(__LINE__, zh, "@attr 1=4 0", 100, 10, 1, 6, 1, ent);
+	do_scan(__LINE__, zh, "@attr 1=4 0", 22, 10, 1, 0, 1, ent);
     }
     if (1)
     {
-	do_scan(__LINE__, zh, "@attr 1=4 z", -100, 10, 1, 6, 1, 0);
+	do_scan(__LINE__, zh, "@attr 1=4 z", -22, 10, -22, 0, 1, 0);
     }
     return close_down(zh, zs, 0);
 }

@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.184 2005-04-29 18:56:22 adam Exp $
+/* $Id: zrpn.c,v 1.185 2005-05-02 09:25:12 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2954,6 +2954,11 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     {
 	*num_entries -= (after-i);
 	*is_partial = 1;
+	if (*num_entries < 0)
+	{
+	    *num_entries = 0;
+	    return ZEBRA_OK;
+	}
     }
     /* consider terms before main term */
     for (i = 0; i<ord_no; i++)
@@ -3031,6 +3036,11 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         *is_partial = 1;
         *position -= i;
         *num_entries -= i;
+	if (*num_entries <= 0)
+	{
+	    *num_entries = 0;
+	    return ZEBRA_OK;
+	}
     }
     
     nmem_destroy(rset_nmem);
