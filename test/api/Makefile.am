@@ -1,9 +1,9 @@
-# $Id: Makefile.am,v 1.27 2004-12-02 14:05:04 adam Exp $
+# $Id: Makefile.am,v 1.28 2005-05-02 09:05:22 adam Exp $
 
 noinst_PROGRAMS = testclient
 testclient_SOURCES = testclient.c 
 
-simpletests = t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 
+simpletests = t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11
 safaritests = safari1
 check_PROGRAMS = $(simpletests) $(safaritests)
 TESTS = $(check_PROGRAMS)
@@ -24,6 +24,7 @@ t7_SOURCES = t7.c
 t8_SOURCES = t8.c
 t9_SOURCES = t9.c rankingrecords.h
 t10_SOURCES = t10.c rankingrecords.h
+t11_SOURCES = t11.c
 
 safari1_SOURCES = safari1.c testlib.c
 

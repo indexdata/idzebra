@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.15 2005-05-01 07:17:47 adam Exp $
+/* $Id: testlib.c,v 1.16 2005-05-02 09:05:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -203,6 +203,75 @@ int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
     return do_query_x(lineno, zh, query, exphits, 0);
 }
 
+void do_scan(int lineno, ZebraHandle zh, const char *query,
+	     int pos, int num,
+	     int exp_pos, int exp_num, int exp_partial,
+	     const char **exp_entries)
+{
+    ODR odr = odr_createmem(ODR_ENCODE);
+    ZebraScanEntry *entries = 0;
+    int partial = -123;
+    ZEBRA_RES res;
+
+    yaz_log(log_level, "======================================");
+    yaz_log(log_level, "scan[%d]: pos=%d num=%d %s", lineno, pos, num, query);
+
+    res = zebra_scan_PQF(zh, odr, query, &pos, &num, &entries, &partial);
+    if (res != ZEBRA_OK)
+    {
+	printf("Error: scan returned %d (FAIL), but no error was expected\n"
+	       "%s\n",  res, query);
+	exit(1);
+    }
+    else
+    {
+	int fails = 0;
+	if (partial == -123)
+	{
+	    printf("Error: scan returned OK, but partial was not set\n"
+		   "%s\n", query);
+	    fails++;
+	}
+	if (partial != exp_partial)
+	{
+	    printf("Error: scan returned OK, with partial/expected %d/%d\n"
+		   "%s\n", partial, exp_partial, query);
+	    fails++;
+	}
+	if (num != exp_num)
+	{
+	    printf("Error: scan returned OK, with num/expected %d/%d\n"
+		   "%s\n", num, exp_num, query);
+	    fails++;
+	}
+	if (pos != exp_pos)
+	{
+	    printf("Error: scan returned OK, with pos/expected %d/%d\n"
+		   "%s\n", pos, exp_pos, query);
+	    fails++;
+	}
+	if (fails)
+	    exit(1);
+	fails = 0;
+	if (exp_entries)
+	{
+	    int i;
+	    for (i = 0; i<num; i++)
+	    {
+		if (strcmp(exp_entries[i], entries[i].term))
+		{
+		    printf("Error: scan OK, but entry %d term/exp %s/%s\n"
+			   "%s\n",
+			   i, entries[i].term, exp_entries[i], query);
+		    fails++;
+		}
+	    }
+	}
+	if (fails)
+	    exit(0);
+    }
+    odr_destroy(odr);
+}
 
 /** 
  * makes a query, checks number of hits, and for the first hit, that 

@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.12 2005-04-28 11:25:24 adam Exp $
+/* $Id: testlib.h,v 1.13 2005-05-02 09:05:22 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -84,6 +84,15 @@ int do_query(int lineno, ZebraHandle zh, char *query, int exphits);
  */
 int do_query_x(int lineno, ZebraHandle zh, char *query, int exphits,
 	       int experror);
+
+/**
+ * do_scan is a utility for scan testing 
+ */
+void do_scan(int lineno, ZebraHandle zh, const char *query,
+	     int pos, int num,  /* input params */
+	     int exp_pos, int exp_num,  int exp_partial, /* expected result */
+	     const char **exp_entries  /* expected entries (or NULL) */
+    );
 
 /** 
  * ranking_query makes a query, checks number of hits, and for 
