@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.44 2005-03-30 09:25:24 adam Exp $
+/* $Id: rset.c,v 1.45 2005-05-03 09:11:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -51,7 +51,7 @@ RSFD rfd_create_base(RSET rs)
     else
     {
         rnew = nmem_malloc(rs->nmem, sizeof(*rnew));
-        rnew->priv = NULL;
+	rnew->priv = 0;
         rnew->rset = rs;
         yaz_log(log_level, "rfd_create_base (new): rfd=%p rs=%p fl=%p priv=%p", 
 		rnew, rs, rs->free_list, rnew->priv); 
@@ -84,7 +84,7 @@ void rfd_delete_base(RSFD rfd)
 }
 
 RSET rset_create_base(const struct rset_control *sel, 
-                      NMEM nmem, const struct key_control *kcontrol,
+                      NMEM nmem, struct rset_key_control *kcontrol,
                       int scope, TERMID term)
 {
     RSET rnew;
@@ -113,6 +113,7 @@ RSET rset_create_base(const struct rset_control *sel,
     rnew->free_list = NULL;
     rnew->use_list = NULL;
     rnew->keycontrol = kcontrol;
+    (*kcontrol->inc)(kcontrol);
     rnew->scope = scope;
     rnew->term = term;
     if (term)
@@ -131,6 +132,7 @@ void rset_delete (RSET rs)
 	    yaz_log(YLOG_WARN, "rs_delete(%s) still has RFDs in use",
 		    rs->control->desc);
         (*rs->control->f_delete)(rs);
+	(*rs->keycontrol->dec)(rs->keycontrol);
         if (rs->my_nmem)
             nmem_destroy(rs->nmem);
     }
@@ -148,6 +150,7 @@ RSET rset_dup (RSET rs)
     (rs->count)++;
     yaz_log(log_level, "rs_dup(%s), rs=%p, count=%d",
             rs->control->desc, rs, rs->count); 
+    (*rs->keycontrol->inc)(rs->keycontrol);
     return rs;
 }
 

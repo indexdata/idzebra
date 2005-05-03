@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.54 2005-04-26 10:09:38 adam Exp $
+/* $Id: rsbool.c,v 1.55 2005-05-03 09:11:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -83,12 +83,12 @@ static const struct rset_control control_not =
     r_write,
 };
 
-struct rset_bool_info {
+struct rset_private {
     RSET rset_l;
     RSET rset_r;
 };
 
-struct rset_bool_rfd {
+struct rfd_private {
     zint hits;
     RSFD rfd_l;
     RSFD rfd_r;
@@ -102,19 +102,20 @@ struct rset_bool_rfd {
 };    
 
 static RSET rsbool_create_base(const struct rset_control *ctrl,
-			       NMEM nmem, const struct key_control *kcontrol,
+			       NMEM nmem,
+			       struct rset_key_control *kcontrol,
 			       int scope, RSET rset_l, RSET rset_r)
 {
-    RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope,0);
-    struct rset_bool_info *info;
-    info = (struct rset_bool_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope, 0);
+    struct rset_private *info;
+    info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->rset_l = rset_l;
     info->rset_r = rset_r;
     rnew->priv = info;
     return rnew;
 }
 
-RSET rsbool_create_and( NMEM nmem, const struct key_control *kcontrol,
+RSET rsbool_create_and( NMEM nmem, struct rset_key_control *kcontrol,
                         int scope, RSET rset_l, RSET rset_r)
 {
     return rsbool_create_base(&control_and, nmem, kcontrol,
@@ -122,34 +123,32 @@ RSET rsbool_create_and( NMEM nmem, const struct key_control *kcontrol,
                               rset_l, rset_r);
 }
 
-RSET rsbool_create_or( NMEM nmem, const struct key_control *kcontrol,
-                        int scope, RSET rset_l, RSET rset_r)
+RSET rsbool_create_or(NMEM nmem, struct rset_key_control *kcontrol,
+                      int scope, RSET rset_l, RSET rset_r)
 {
     return rsbool_create_base(&control_or, nmem, kcontrol,
                               scope, rset_l, rset_r);
 }
 
-RSET rsbool_create_not( NMEM nmem, const struct key_control *kcontrol,
-                        int scope, RSET rset_l, RSET rset_r)
+RSET rsbool_create_not(NMEM nmem, struct rset_key_control *kcontrol,
+                       int scope, RSET rset_l, RSET rset_r)
 {
     return rsbool_create_base(&control_not, nmem, kcontrol,
                               scope, rset_l, rset_r);
 }
 
-static void r_delete (RSET ct)
+static void r_delete(RSET ct)
 {
-    struct rset_bool_info *info = (struct rset_bool_info *) ct->priv;
+    struct rset_private *info = (struct rset_private *) ct->priv;
     rset_delete (info->rset_l);
     rset_delete (info->rset_r);
 }
 
-
-static RSFD r_open (RSET ct, int flag)
+static RSFD r_open(RSET ct, int flag)
 {
-    struct rset_bool_info *info = (struct rset_bool_info *) ct->priv;
+    struct rset_private *info = (struct rset_private *) ct->priv;
     RSFD rfd;
-    struct rset_bool_rfd *p;
-   
+    struct rfd_private *p;
 
     if (flag & RSETF_WRITE)
     {
@@ -158,7 +157,7 @@ static RSFD r_open (RSET ct, int flag)
     }
     rfd = rfd_create_base(ct);
     if (rfd->priv)
-        p = (struct rset_bool_rfd *)rfd->priv;
+        p = (struct rfd_private *)rfd->priv;
     else {
         p = nmem_malloc(ct->nmem,sizeof(*p));
         rfd->priv = p;
@@ -179,21 +178,18 @@ static RSFD r_open (RSET ct, int flag)
 
 static void r_close (RSFD rfd)
 {
- /* struct rset_bool_info *info = (struct rset_bool_info*)(rfd->rset->priv); */
-    struct rset_bool_rfd *prfd=(struct rset_bool_rfd *)rfd->priv;
+    struct rfd_private *prfd=(struct rfd_private *)rfd->priv;
 
     rset_close (prfd->rfd_l);
     rset_close (prfd->rfd_r);
     rfd_delete_base(rfd);
 }
 
-
-
 static int r_forward(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf)
 {
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *)rfd->priv;
-    const struct key_control *kctrl=rfd->rset->keycontrol;
+    struct rfd_private *p = (struct rfd_private *)rfd->priv;
+    const struct rset_key_control *kctrl=rfd->rset->keycontrol;
 
     if ( p->more_l && ((kctrl->cmp)(untilbuf,p->buf_l)>=rfd->rset->scope) )
         p->more_l = rset_forward(p->rfd_l, p->buf_l, &p->term_l, untilbuf);
@@ -221,8 +217,8 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term,
 
 static int r_read_and(RSFD rfd, void *buf, TERMID *term)
 {
-    struct rset_bool_rfd *p=(struct rset_bool_rfd *)rfd->priv;
-    const struct key_control *kctrl=rfd->rset->keycontrol;
+    struct rfd_private *p=(struct rfd_private *)rfd->priv;
+    const struct rset_key_control *kctrl=rfd->rset->keycontrol;
 
     while (p->more_l || p->more_r)
     {
@@ -352,8 +348,8 @@ static int r_read_and(RSFD rfd, void *buf, TERMID *term)
 
 static int r_read_or (RSFD rfd, void *buf, TERMID *term)
 {
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *)rfd->priv;
-    const struct key_control *kctrl = rfd->rset->keycontrol;
+    struct rfd_private *p = (struct rfd_private *)rfd->priv;
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
 
     while (p->more_l || p->more_r)
     {
@@ -417,8 +413,8 @@ static int r_read_or (RSFD rfd, void *buf, TERMID *term)
 
 static int r_read_not(RSFD rfd, void *buf, TERMID *term)
 {
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *)rfd->priv;
-    const struct key_control *kctrl = rfd->rset->keycontrol;
+    struct rfd_private *p = (struct rfd_private *)rfd->priv;
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
 
     while (p->more_l || p->more_r)
     {
@@ -478,7 +474,7 @@ static int r_write(RSFD rfd, const void *buf)
 
 static void r_pos(RSFD rfd, double *current, double *total)
 {
-    struct rset_bool_rfd *p = (struct rset_bool_rfd *)rfd->priv;
+    struct rfd_private *p = (struct rfd_private *)rfd->priv;
     double lcur, ltot;
     double rcur, rtot;
     double r;
@@ -511,7 +507,7 @@ static void r_pos(RSFD rfd, double *current, double *total)
 
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
-    struct rset_bool_info *info = (struct rset_bool_info *) ct->priv;
+    struct rset_private *info = (struct rset_private *) ct->priv;
     rset_getterms(info->rset_l, terms, maxterms, curterm);
     rset_getterms(info->rset_r, terms, maxterms, curterm);
 }

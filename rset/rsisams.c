@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.21 2005-04-26 10:09:38 adam Exp $
+/* $Id: rsisams.c,v 1.22 2005-05-03 09:11:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -45,25 +45,26 @@ static const struct rset_control control =
     r_write,
 };
 
-struct rset_pp_info {
+struct rfd_private {
     ISAMS_PP pt;
 };
 
-struct rset_isams_info {
+struct rset_private {
     ISAMS   is;
     ISAM_P pos;
 };
 
 
-RSET rsisams_create(NMEM nmem, const struct key_control *kcontrol, int scope,
+RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
+		    int scope,
 		    ISAMS is, ISAM_P pos, TERMID term)
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol, scope, term);
-    struct rset_isams_info *info;
-    info = (struct rset_isams_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    rnew->priv=info;
-    info->is=is;
-    info->pos=pos;
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term);
+    struct rset_private *info;
+    info = (struct rset_private *) nmem_malloc(rnew->nmem,sizeof(*info));
+    rnew->priv = info;
+    info->is = is;
+    info->pos = pos;
     return rnew;
 }
 
@@ -76,9 +77,9 @@ static void r_delete (RSET ct)
 
 RSFD r_open (RSET ct, int flag)
 {
-    struct rset_isams_info *info = (struct rset_isams_info *) ct->priv;
+    struct rset_private *info = (struct rset_private *) ct->priv;
     RSFD rfd;
-    struct rset_pp_info *ptinfo;
+    struct rfd_private *ptinfo;
 
     yaz_log (YLOG_DEBUG, "risams_open");
     if (flag & RSETF_WRITE)
@@ -88,9 +89,9 @@ RSFD r_open (RSET ct, int flag)
     }
     rfd=rfd_create_base(ct);
     if (rfd->priv)
-        ptinfo=(struct rset_pp_info *)(rfd->priv);
+        ptinfo=(struct rfd_private *)(rfd->priv);
     else {
-        ptinfo = (struct rset_pp_info *) nmem_malloc(ct->nmem,sizeof(*ptinfo));
+        ptinfo = (struct rfd_private *) nmem_malloc(ct->nmem,sizeof(*ptinfo));
         ptinfo->pt = isams_pp_open (info->is, info->pos);
         rfd->priv=ptinfo;
     }
@@ -99,7 +100,7 @@ RSFD r_open (RSET ct, int flag)
 
 static void r_close (RSFD rfd)
 {
-    struct rset_pp_info *ptinfo=(struct rset_pp_info *)(rfd->priv);
+    struct rfd_private *ptinfo = (struct rfd_private *)(rfd->priv);
 
     isams_pp_close (ptinfo->pt);
     rfd_delete_base(rfd);
@@ -108,7 +109,7 @@ static void r_close (RSFD rfd)
 
 static int r_read (RSFD rfd, void *buf, TERMID *term)
 {
-    struct rset_pp_info *ptinfo=(struct rset_pp_info *)(rfd->priv);
+    struct rfd_private *ptinfo = (struct rfd_private *)(rfd->priv);
     int rc;
     rc=isams_pp_read(ptinfo->pt, buf);
     if (rc && term)

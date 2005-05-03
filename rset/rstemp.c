@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.62 2005-04-26 10:09:38 adam Exp $
+/* $Id: rstemp.c,v 1.63 2005-05-03 09:11:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -57,7 +57,7 @@ static const struct rset_control control =
     r_write,
 };
 
-struct rset_temp_info {
+struct rset_private {
     int     fd;            /* file descriptor for temp file */
     char   *fname;         /* name of temp file */
     char   *buf_mem;       /* window buffer */
@@ -70,7 +70,7 @@ struct rset_temp_info {
     char   *temp_path;
 };
 
-struct rset_temp_rfd {
+struct rfd_private {
     void *buf;
     size_t  pos_cur;       /* current position in set */
                            /* FIXME - term pos or what ??  */
@@ -80,17 +80,17 @@ struct rset_temp_rfd {
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-RSET rstemp_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rstemp_create(NMEM nmem, struct rset_key_control *kcontrol,
                    int scope, const char *temp_path, TERMID term)
 {
-    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,term);
-    struct rset_temp_info *info;
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term);
+    struct rset_private *info;
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rstemp");
         log_level_initialized = 1;
     }
-    info = (struct rset_temp_info *) nmem_malloc(rnew->nmem, sizeof(*info));
+    info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->fd = -1;
     info->fname = NULL;
     info->buf_size = 4096;
@@ -110,7 +110,7 @@ RSET rstemp_create(NMEM nmem, const struct key_control *kcontrol,
 
 static void r_delete(RSET ct)
 {
-    struct rset_temp_info *info = (struct rset_temp_info*) ct->priv;
+    struct rset_private *info = (struct rset_private*) ct->priv;
 
     yaz_log(log_level, "r_delete: set size %ld", (long) info->pos_end);
     if (info->fname)
@@ -122,9 +122,9 @@ static void r_delete(RSET ct)
 
 static RSFD r_open(RSET ct, int flag)
 {
-    struct rset_temp_info *info = (struct rset_temp_info *) ct->priv;
+    struct rset_private *info = (struct rset_private *) ct->priv;
     RSFD rfd;
-    struct rset_temp_rfd *prfd;
+    struct rfd_private *prfd;
 
     if (info->fd == -1 && info->fname)
     {
@@ -141,7 +141,7 @@ static RSFD r_open(RSET ct, int flag)
     rfd = rfd_create_base(ct);
     if (!rfd->priv)
     {
-        prfd = (struct rset_temp_rfd *) nmem_malloc(ct->nmem, sizeof(*prfd));
+        prfd = (struct rfd_private *) nmem_malloc(ct->nmem, sizeof(*prfd));
         rfd->priv = (void *)prfd;
         prfd->buf = nmem_malloc(ct->nmem,ct->keycontrol->key_size);
     } 
@@ -160,8 +160,7 @@ static RSFD r_open(RSET ct, int flag)
  */
 static void r_flush(RSFD rfd, int mk)
 {
-    /* struct rset_temp_info *info = ((struct rset_temp_rfd*) rfd)->info; */
-    struct rset_temp_info *info = rfd->rset->priv;
+    struct rset_private *info = rfd->rset->priv;
 
     if (!info->fname && mk)
     {
@@ -221,8 +220,7 @@ static void r_flush(RSFD rfd, int mk)
 
 static void r_close(RSFD rfd)
 {
-    /*struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv; */
-    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
+    struct rset_private *info = (struct rset_private *)rfd->rset->priv;
     if (rfd_is_last(rfd))
     {
 	r_flush(rfd, 0);
@@ -242,8 +240,8 @@ static void r_close(RSFD rfd)
  */
 static void r_reread(RSFD rfd)
 {
-    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv; 
-    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
+    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv; 
+    struct rset_private *info = (struct rset_private *)rfd->rset->priv;
 
     if (info->fname)
     {
@@ -279,8 +277,8 @@ static void r_reread(RSFD rfd)
 
 static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
-    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
-    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
+    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;  
+    struct rset_private *info = (struct rset_private *)rfd->rset->priv;
 
     size_t nc = mrfd->pos_cur + rfd->rset->keycontrol->key_size;
 
@@ -304,8 +302,8 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
 
 static int r_write(RSFD rfd, const void *buf)
 {
-    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
-    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
+    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;  
+    struct rset_private *info = (struct rset_private *)rfd->rset->priv;
 
     size_t nc = mrfd->pos_cur + rfd->rset->keycontrol->key_size;
 
@@ -328,9 +326,8 @@ static int r_write(RSFD rfd, const void *buf)
 
 static void r_pos(RSFD rfd, double  *current, double  *total)
 {
-    /* struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd; */
-    struct rset_temp_rfd *mrfd = (struct rset_temp_rfd*) rfd->priv;  
-    struct rset_temp_info *info = (struct rset_temp_info *)rfd->rset->priv;
+    struct rfd_private *mrfd = (struct rfd_private*) rfd->priv;  
+    struct rset_private *info = (struct rset_private *)rfd->rset->priv;
     
     *current = (double) mrfd->cur;
     *total = (double) info->hits;

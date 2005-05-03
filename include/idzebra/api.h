@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.21 2005-05-01 20:43:11 adam Exp $
+/* $Id: api.h,v 1.22 2005-05-03 09:11:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -463,6 +463,10 @@ void zebra_meta_records_destroy(ZebraHandle zh, ZebraMetaRecord *records,
 
 YAZ_EXPORT 
 struct BFiles_struct *zebra_get_bfs(ZebraHandle zh);
+
+YAZ_EXPORT
+ZEBRA_RES zebra_set_limit(ZebraHandle zh, int exclude_flag, zint *ids);
+
 YAZ_END_CDECL				      
 
 /** \mainpage Zebra

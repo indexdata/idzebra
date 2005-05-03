@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.56 2005-04-20 10:21:29 adam Exp $
+/* $Id: trunc.c,v 1.57 2005-05-03 09:11:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -127,7 +127,7 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
                          const char *flags, ISAM_P *isam_p, int from, int to,
 			 int merge_chunk, int preserve_position,
 			 int term_type, NMEM rset_nmem,
-			 const struct key_control *kctrl, int scope,
+			 struct rset_key_control *kctrl, int scope,
 			 TERMID termid)
 {
     RSET result;
@@ -399,14 +399,16 @@ static int isamc_trunc_cmp(const void *p1, const void *p2)
 RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
 		const char *term, int length, const char *flags,
 		int preserve_position, int term_type, NMEM rset_nmem,
-		const struct key_control *kctrl, int scope)
+	        struct rset_key_control *kctrl, int scope)
 {
     TERMID termid;
     RSET result;
     int trunc_chunk;
+    
     if (no < 1)
-	return rsnull_create(rset_nmem,kctrl);
-    termid = rset_term_create(term, length, flags, term_type,rset_nmem);
+	return rsnull_create(rset_nmem, kctrl);
+    
+    termid = rset_term_create(term, length, flags, term_type, rset_nmem);
     if (zi->reg->isams)
     {
         if (no == 1)
@@ -425,7 +427,7 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
     {
 	int trunc_limit = atoi(res_get_def(zi->res, "trunclimit", "10000"));
         if (no == 1)
-            return rsisamb_create(rset_nmem,kctrl, scope,
+            return rsisamb_create(rset_nmem, kctrl, scope,
 				  zi->reg->isamb, *isam_p, termid);
         else if (no < trunc_limit) 
         {
@@ -448,8 +450,8 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
     }
     trunc_chunk = atoi(res_get_def(zi->res, "truncchunk", "100"));
     result = rset_trunc_r(zi, term, length, flags, isam_p, 0, no, trunc_chunk,
-			  preserve_position, term_type, rset_nmem, kctrl, scope,
-			  termid);
+			  preserve_position, term_type, rset_nmem, kctrl,
+			  scope, termid);
     return result;
 }
 

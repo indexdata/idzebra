@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.38 2005-04-26 10:09:38 adam Exp $
+/* $Id: rsisamc.c,v 1.39 2005-05-03 09:11:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -59,7 +59,8 @@ struct rset_isamc_info {
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-RSET rsisamc_create(NMEM nmem, const struct key_control *kcontrol, int scope,
+RSET rsisamc_create(NMEM nmem, struct rset_key_control *kcontrol,
+		    int scope,
 		    ISAMC is, ISAM_P pos, TERMID term)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,term);

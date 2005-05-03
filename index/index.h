@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.135 2005-04-28 08:20:40 adam Exp $
+/* $Id: index.h,v 1.136 2005-05-03 09:11:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -309,6 +309,8 @@ struct zebra_session {
 
     void *store_data_buf;
     size_t store_data_size;
+
+    struct zebra_limit *m_limit;
 };
 
 struct rank_control {
@@ -338,6 +340,16 @@ struct term_set_list {
     struct term_set_entry *last;
 };
 
+
+void zebra_limit_destroy(struct zebra_limit *zl);
+struct zebra_limit *zebra_limit_create(int exclude_flag, zint *ids);
+void zebra_limit_for_rset(struct zebra_limit *zl,
+			  int (**filter_func)(const void *buf, void *data),
+			  void (**filter_destroy)(void *data),
+			  void **filter_data);
+
+struct rset_key_control *zebra_key_control_create(ZebraHandle zh);
+
 ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
 			 oid_value attributeSet, 
 			 NMEM stream, NMEM rset_nmem,
@@ -354,7 +366,7 @@ ZEBRA_RES rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 RSET rset_trunc (ZebraHandle zh, ISAM_P *isam_p, int no,
 		 const char *term, int length_term, const char *flags,
                  int preserve_position, int term_type, NMEM rset_nmem,
-                 const struct key_control *kctrl, int scope);
+                 struct rset_key_control *kctrl, int scope);
 
 void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       const char *db, int set,

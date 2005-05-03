@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.50 2005-04-26 10:09:38 adam Exp $
+/* $Id: rset.h,v 1.51 2005-05-03 09:11:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -113,15 +113,20 @@ void rset_get_one_term(RSET ct,TERMID *terms,int maxterms,int *curterm);
  * all we assume is that all keys are the same size, and they can be
  * memcpy'd around
  */
-struct key_control {
+struct rset_key_control {
+    void *context;
     int key_size;
     int scope;  /* default for what level we operate (book/chapter/verse) on*/
                 /* usual sysno/seqno is 2 */
-    int (*cmp) (const void *p1, const void *p2);
+    int (*cmp)(const void *p1, const void *p2);
     void (*key_logdump_txt) (int logmask, const void *p, const char *txt);
     zint (*getseq)(const void *p);
-      /* FIXME - Should not need a getseq, it won't make much sense with */
-      /* higher-order keys. Use a (generalized) cmp instead, or something */
+    int (*filter_func)(const void *p, void *data);
+    void *filter_data;
+    void (*inc)(struct rset_key_control *kc);
+    void (*dec)(struct rset_key_control *kc);
+    /* FIXME - Should not need a getseq, it won't make much sense with */
+    /* higher-order keys. Use a (generalized) cmp instead, or something */
     /* FIXME - decode and encode, and lots of other stuff */
 };
 
@@ -134,7 +139,7 @@ struct key_control {
 typedef struct rset
 {
     const struct rset_control *control;
-    const struct key_control *keycontrol;
+    struct rset_key_control *keycontrol;
     int  count;  /* reference count */
     void *priv;  /* stuff private to the given type of rset */
     NMEM nmem;    /* nibble memory for various allocs */
@@ -168,7 +173,7 @@ int rfd_is_last(RSFD rfd);
 
 RSET rset_create_base(const struct rset_control *sel, 
                       NMEM nmem,
-                      const struct key_control *kcontrol,
+		      struct rset_key_control *kcontrol,
                       int scope,
                       TERMID term);
 
@@ -209,43 +214,42 @@ RSET rset_dup (RSET rs);
 /** rset_count counts or estimates the keys in it*/
 zint rset_count(RSET rs);
 
-RSET rstemp_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rstemp_create(NMEM nmem, struct rset_key_control *kcontrol,
                     int scope, const char *temp_path, TERMID term);
 
-RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol);
+RSET rsnull_create(NMEM nmem, struct rset_key_control *kcontrol);
 
-RSET rsbool_create_and(NMEM nmem, const struct key_control *kcontrol,
+RSET rsbool_create_and(NMEM nmem, struct rset_key_control *kcontrol,
 		       int scope, RSET rset_l, RSET rset_r);
 
-RSET rsbool_create_or (NMEM nmem, const struct key_control *kcontrol,
+RSET rsbool_create_or(NMEM nmem, struct rset_key_control *kcontrol,
+		      int scope, RSET rset_l, RSET rset_r);
+
+RSET rsbool_create_not(NMEM nmem, struct rset_key_control *kcontrol,
 		       int scope, RSET rset_l, RSET rset_r);
 
-RSET rsbool_create_not(NMEM nmem, const struct key_control *kcontrol,
-		       int scope, RSET rset_l, RSET rset_r);
-
-RSET rsbetween_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rsbetween_create(NMEM nmem, struct rset_key_control *kcontrol,
 		      int scope, RSET rset_l, RSET rset_m, RSET rset_r, 
 		      RSET rset_attr);
 
-RSET rsmulti_or_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rsmulti_or_create(NMEM nmem, struct rset_key_control *kcontrol,
 		       int scope, int no_rsets, RSET* rsets);
 
-RSET rsmulti_and_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rsmulti_and_create(NMEM nmem, struct rset_key_control *kcontrol,
 			int scope, int no_rsets, RSET* rsets);
 
-RSET rsprox_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rsprox_create(NMEM nmem, struct rset_key_control *kcontrol,
 		   int scope, int rset_no, RSET *rset,
 		   int ordered, int exclusion, int relation, int distance);
 
-RSET rsisamb_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rsisamb_create(NMEM nmem, struct rset_key_control *kcontrol,
 		    int scope, ISAMB is, ISAM_P pos, TERMID term);
 
-RSET rsisamc_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rsisamc_create(NMEM nmem, struct rset_key_control *kcontrol,
 		    int scope, ISAMC is, ISAM_P pos, TERMID term);
 
-RSET rsisams_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
 		    int scope, ISAMS is, ISAM_P pos, TERMID term);
-
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.33 2005-04-26 10:09:38 adam Exp $
+/* $Id: rsnull.c,v 1.34 2005-05-03 09:11:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,20 +20,17 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-
-
 #include <stdio.h>
 #include <assert.h>
 #include <idzebra/util.h>
 #include <rset.h>
 
-
-static RSFD r_open (RSET ct, int flag);
-static void r_close (RSFD rfd);
-static void r_delete (RSET ct);
-static void r_pos (RSFD rfd, double *current, double *total);
-static int r_read (RSFD rfd, void *buf, TERMID *term);
-static int r_write (RSFD rfd, const void *buf);
+static RSFD r_open(RSET ct, int flag);
+static void r_close(RSFD rfd);
+static void r_delete(RSET ct);
+static void r_pos(RSFD rfd, double *current, double *total);
+static int r_read(RSFD rfd, void *buf, TERMID *term);
+static int r_write(RSFD rfd, const void *buf);
 
 static const struct rset_control control = 
 {
@@ -48,14 +45,14 @@ static const struct rset_control control =
     r_write,
 };
 
-RSET rsnull_create(NMEM nmem, const struct key_control *kcontrol )
+RSET rsnull_create(NMEM nmem, struct rset_key_control *kcontrol )
 {
-    RSET rnew=rset_create_base(&control, nmem, kcontrol,0,0);
-    rnew->priv=NULL;
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, 0, 0);
+    rnew->priv = 0;
     return rnew;
 }
 
-static RSFD r_open (RSET ct, int flag)
+static RSFD r_open(RSET ct, int flag)
 {
     RSFD rfd;
     if (flag & RSETF_WRITE)
@@ -63,22 +60,21 @@ static RSFD r_open (RSET ct, int flag)
         yaz_log (YLOG_FATAL, "NULL set type is read-only");
         return NULL;
     }
-    rfd=rfd_create_base(ct);
-    rfd->priv=NULL; 
+    rfd = rfd_create_base(ct);
+    rfd->priv = 0;
     return rfd;
 }
 
-static void r_close (RSFD rfd)
+static void r_close(RSFD rfd)
 {
     rfd_delete_base(rfd);
 }
 
-static void r_delete (RSET ct)
+static void r_delete(RSET ct)
 {
 }
 
-
-static void r_pos (RSFD rfd, double *current, double *total)
+static void r_pos(RSFD rfd, double *current, double *total)
 {
     assert(rfd);
     assert(current);
@@ -87,14 +83,14 @@ static void r_pos (RSFD rfd, double *current, double *total)
     *current=0;
 }
 
-static int r_read (RSFD rfd, void *buf, TERMID *term)
+static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
     if (term)
-        *term=0; /* NULL */
+        *term = 0;
     return 0;
 }
 
-static int r_write (RSFD rfd, const void *buf)
+static int r_write(RSFD rfd, const void *buf)
 {
     yaz_log (YLOG_FATAL, "NULL set type is read-only");
     return -1;

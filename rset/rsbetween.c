@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.37 2005-04-26 10:09:38 adam Exp $
+/* $Id: rsbetween.c,v 1.38 2005-05-03 09:11:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -103,9 +103,9 @@ static void checkterm( RSET rs, char *tag, NMEM nmem)
 }
 
 
-RSET rsbetween_create( NMEM nmem, const struct key_control *kcontrol,
-		       int scope,
-		       RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
+RSET rsbetween_create(NMEM nmem, struct rset_key_control *kcontrol,
+		      int scope,
+		      RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,0);
     struct rset_between_info *info=
@@ -210,9 +210,10 @@ static int r_forward(RSFD rfd, void *buf,
 
 static void checkattr(RSFD rfd)
 {
-    struct rset_between_info *info =(struct rset_between_info *)rfd->rset->priv;
-    struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
-    const struct key_control *kctrl = rfd->rset->keycontrol;
+    struct rset_between_info *info =(struct rset_between_info *)
+	rfd->rset->priv;
+    struct rset_between_rfd *p = (struct rset_between_rfd *)rfd->priv;
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
     int cmp;
     if (p->attrdepth)
         return; /* already found one */
@@ -235,9 +236,10 @@ static void checkattr(RSFD rfd)
 
 static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
-    struct rset_between_info *info =(struct rset_between_info *)rfd->rset->priv;
-    struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
-    const struct key_control *kctrl = rfd->rset->keycontrol;
+    struct rset_between_info *info =
+	(struct rset_between_info *)rfd->rset->priv;
+    struct rset_between_rfd *p = (struct rset_between_rfd *)rfd->priv;
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
     int cmp;
     TERMID dummyterm = 0;
     yaz_log(log_level,"== read: term=%p",term);

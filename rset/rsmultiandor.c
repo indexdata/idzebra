@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.16 2005-04-26 10:09:38 adam Exp $
+/* $Id: rsmultiandor.c,v 1.17 2005-05-03 09:11:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -101,19 +101,19 @@ struct heap_item {
 struct heap {
     int heapnum;
     int heapmax;
-    const struct key_control *kctrl;
+    const struct rset_key_control *kctrl;
     struct heap_item **heap; /* ptrs to the rfd */
 };
 typedef struct heap *HEAP;
 
 
-struct rset_multiandor_info {
+struct rset_private {
     int     no_rsets;
     RSET    *rsets;
 };
 
 
-struct rset_multiandor_rfd {
+struct rfd_private {
     int flag;
     struct heap_item *items; /* we alloc and free them here */
     HEAP h; /* and move around here */
@@ -222,7 +222,7 @@ static void heap_insert (HEAP h, struct heap_item *hi)
 
 
 static
-HEAP heap_create (NMEM nmem, int size, const struct key_control *kctrl)
+HEAP heap_create (NMEM nmem, int size, const struct rset_key_control *kctrl)
 {
     HEAP h = (HEAP) nmem_malloc (nmem, sizeof(*h));
 
@@ -263,18 +263,19 @@ int compare_ands(const void *x, const void *y)
 
 /* Creating and deleting rsets ***********************/
 
-static RSET rsmulti_andor_create( NMEM nmem, const struct key_control *kcontrol, 
-                           int scope, int no_rsets, RSET* rsets, 
-                           const struct rset_control *ctrl)
+static RSET rsmulti_andor_create(NMEM nmem,
+				 struct rset_key_control *kcontrol, 
+				 int scope, int no_rsets, RSET* rsets, 
+				 const struct rset_control *ctrl)
 {
-    RSET rnew = rset_create_base(ctrl, nmem,kcontrol, scope,0);
-    struct rset_multiandor_info *info;
+    RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope,0);
+    struct rset_private *info;
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsmultiandor");
         log_level_initialized = 1;
     }
-    info = (struct rset_multiandor_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info = (struct rset_private *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->no_rsets = no_rsets;
     info->rsets = (RSET*)nmem_malloc(rnew->nmem, no_rsets*sizeof(*rsets));
     memcpy(info->rsets,rsets,no_rsets*sizeof(*rsets));
@@ -282,14 +283,14 @@ static RSET rsmulti_andor_create( NMEM nmem, const struct key_control *kcontrol,
     return rnew;
 }
 
-RSET rsmulti_or_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rsmulti_or_create(NMEM nmem, struct rset_key_control *kcontrol,
 		       int scope, int no_rsets, RSET* rsets)
 {
     return rsmulti_andor_create(nmem, kcontrol, scope, 
                                 no_rsets, rsets, &control_or);
 }
 
-RSET rsmulti_and_create(NMEM nmem, const struct key_control *kcontrol,
+RSET rsmulti_and_create(NMEM nmem, struct rset_key_control *kcontrol,
 			int scope, int no_rsets, RSET* rsets)
 {
     return rsmulti_andor_create(nmem, kcontrol, scope, 
@@ -298,7 +299,7 @@ RSET rsmulti_and_create(NMEM nmem, const struct key_control *kcontrol,
 
 static void r_delete (RSET ct)
 {
-    struct rset_multiandor_info *info = (struct rset_multiandor_info *) ct->priv;
+    struct rset_private *info = (struct rset_private *) ct->priv;
     int i;
     for(i = 0; i<info->no_rsets; i++)
         rset_delete(info->rsets[i]);
@@ -310,9 +311,9 @@ static void r_delete (RSET ct)
 static RSFD r_open_andor (RSET ct, int flag, int is_and)
 {
     RSFD rfd;
-    struct rset_multiandor_rfd *p;
-    struct rset_multiandor_info *info = (struct rset_multiandor_info *) ct->priv;
-    const struct key_control *kctrl = ct->keycontrol;
+    struct rfd_private *p;
+    struct rset_private *info = (struct rset_private *) ct->priv;
+    const struct rset_key_control *kctrl = ct->keycontrol;
     int i;
 
     if (flag & RSETF_WRITE)
@@ -322,14 +323,14 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
     }
     rfd = rfd_create_base(ct);
     if (rfd->priv) {
-        p = (struct rset_multiandor_rfd *)rfd->priv;
+        p = (struct rfd_private *)rfd->priv;
         if (!is_and)
             heap_clear(p->h);
         assert(p->items);
         /* all other pointers shouls already be allocated, in right sizes! */
     }
     else {
-        p = (struct rset_multiandor_rfd *) nmem_malloc (ct->nmem,sizeof(*p));
+        p = (struct rfd_private *) nmem_malloc (ct->nmem,sizeof(*p));
         rfd->priv = p;
         p->h = 0;
         p->tailbits = 0;
@@ -339,9 +340,10 @@ static RSFD r_open_andor (RSET ct, int flag, int is_and)
             p->h = heap_create( ct->nmem, info->no_rsets, kctrl);
         p->items=(struct heap_item *) nmem_malloc(ct->nmem,
                               info->no_rsets*sizeof(*p->items));
-        for (i = 0; i<info->no_rsets; i++){
+        for (i = 0; i<info->no_rsets; i++)
+	{
             p->items[i].rset = info->rsets[i];
-            p->items[i].buf = nmem_malloc(ct->nmem,kctrl->key_size);
+            p->items[i].buf = nmem_malloc(ct->nmem, kctrl->key_size);
         }
     }
     p->flag = flag;
@@ -381,9 +383,9 @@ static RSFD r_open_and (RSET ct, int flag)
 
 static void r_close (RSFD rfd)
 {
-    struct rset_multiandor_info *info=
-        (struct rset_multiandor_info *)(rfd->rset->priv);
-    struct rset_multiandor_rfd *p=(struct rset_multiandor_rfd *)(rfd->priv);
+    struct rset_private *info=
+        (struct rset_private *)(rfd->rset->priv);
+    struct rfd_private *p=(struct rfd_private *)(rfd->priv);
     int i;
 
     if (p->h)
@@ -399,8 +401,8 @@ static void r_close (RSFD rfd)
 static int r_forward_or(RSFD rfd, void *buf, 
                         TERMID *term,const void *untilbuf)
 { /* while heap head behind untilbuf, forward it and rebalance heap */
-    struct rset_multiandor_rfd *p = rfd->priv;
-    const struct key_control *kctrl = rfd->rset->keycontrol;
+    struct rfd_private *p = rfd->priv;
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
     if (heap_empty(p->h))
         return 0;
     while ( (*kctrl->cmp)(p->h->heap[1]->buf,untilbuf) < -rfd->rset->scope )
@@ -422,8 +424,8 @@ static int r_forward_or(RSFD rfd, void *buf,
 
 static int r_read_or (RSFD rfd, void *buf, TERMID *term)
 {
-    struct rset_multiandor_rfd *mrfd = rfd->priv;
-    const struct key_control *kctrl = rfd->rset->keycontrol;
+    struct rfd_private *mrfd = rfd->priv;
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
     struct heap_item *it;
     int rdres;
     if (heap_empty(mrfd->h))
@@ -451,9 +453,9 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
   /* Once a hit has been found, scan all items for the smallest */
   /* value. Mark all as being in the tail. Read next from that */
   /* item, and if not in the same record, clear its tail bit */
-    struct rset_multiandor_rfd *p = rfd->priv;
-    const struct key_control *kctrl = rfd->rset->keycontrol;
-    struct rset_multiandor_info *info = rfd->rset->priv;
+    struct rfd_private *p = rfd->priv;
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
+    struct rset_private *info = rfd->rset->priv;
     int i, mintail;
     int cmp;
 
@@ -531,9 +533,9 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
 static int r_forward_and(RSFD rfd, void *buf, TERMID *term, 
                          const void *untilbuf)
 { 
-    struct rset_multiandor_rfd *p = rfd->priv;
-    const struct key_control *kctrl = rfd->rset->keycontrol;
-    struct rset_multiandor_info *info = rfd->rset->priv;
+    struct rfd_private *p = rfd->priv;
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
+    struct rset_private *info = rfd->rset->priv;
     int i;
     int cmp;
     int killtail = 0;
@@ -564,10 +566,10 @@ static int r_forward_and(RSFD rfd, void *buf, TERMID *term,
 
 static void r_pos (RSFD rfd, double *current, double *total)
 {
-    struct rset_multiandor_info *info =
-	(struct rset_multiandor_info *)(rfd->rset->priv);
-    struct rset_multiandor_rfd *mrfd = 
-	(struct rset_multiandor_rfd *)(rfd->priv);
+    struct rset_private *info =
+	(struct rset_private *)(rfd->rset->priv);
+    struct rfd_private *mrfd = 
+	(struct rfd_private *)(rfd->priv);
     double cur, tot;
     double scur = 0.0, stot = 0.0;
     int i;
@@ -601,8 +603,8 @@ static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
     /* term. We do not want to duplicate those. Other multiors (and ands) */
     /* have different terms under them. Those we want. */
 {
-    struct rset_multiandor_info *info = 
-        (struct rset_multiandor_info *) ct->priv;
+    struct rset_private *info = 
+        (struct rset_private *) ct->priv;
     int firstterm= *curterm;
     int i;
     for (i = 0; i<info->no_rsets; i++)

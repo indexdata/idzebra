@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.163 2005-04-28 08:20:40 adam Exp $
+/* $Id: zebraapi.c,v 1.164 2005-05-03 09:11:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -146,6 +146,8 @@ ZebraHandle zebra_open (ZebraService zs)
     zebra_mutex_cond_unlock (&zs->session_lock);
 
     zh->store_data_buf = 0;
+
+    zh->m_limit = zebra_limit_create(0, 0);
 
     return zh;
 }
@@ -535,6 +537,9 @@ ZEBRA_RES zebra_close (ZebraHandle zh)
     xfree(zh->reg_name);
     xfree(zh->user_perm);
     zh->service = 0; /* more likely to trigger an assert */
+
+    zebra_limit_destroy(zh->m_limit);
+
     xfree(zh->path_reg);
     xfree(zh);
     return ZEBRA_OK;
@@ -2165,9 +2170,24 @@ int zebra_sort_by_specstr (ZebraHandle zh, ODR stream,
     return sort_status;
 }
 
+/* ---------------------------------------------------------------------------
+  Get BFS for Zebra system (to make alternative storage methods)
+*/
 struct BFiles_struct *zebra_get_bfs(ZebraHandle zh)
 {
     if (zh && zh->reg)
 	return zh->reg->bfs;
     return 0;
+}
+
+
+/* ---------------------------------------------------------------------------
+  Set limit for search/scan
+*/
+ZEBRA_RES zebra_set_limit(ZebraHandle zh, int exclude_flag, zint *ids)
+{
+    ASSERTZH;
+    zebra_limit_destroy(zh->m_limit);
+    zh->m_limit = zebra_limit_create(exclude_flag, ids);
+    return ZEBRA_OK;
 }

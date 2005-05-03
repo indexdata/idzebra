@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.27 2005-04-26 10:09:38 adam Exp $
+/* $Id: rsprox.c,v 1.28 2005-05-03 09:11:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -72,10 +72,11 @@ struct rset_prox_rfd {
 };    
 
 
-RSET rsprox_create( NMEM nmem, const struct key_control *kcontrol, int scope,
-		    int rset_no, RSET *rset,
-		    int ordered, int exclusion,
-		    int relation, int distance)
+RSET rsprox_create(NMEM nmem, struct rset_key_control *kcontrol,
+		   int scope,
+		   int rset_no, RSET *rset,
+		   int ordered, int exclusion,
+		   int relation, int distance)
 {
     RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,0);
     struct rset_prox_info *info;
@@ -151,11 +152,11 @@ static void r_close (RSFD rfd)
     rfd_delete_base(rfd);
 }
 
-static int r_forward (RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
+static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
 {
     struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
-    struct rset_prox_rfd *p=(struct rset_prox_rfd *)(rfd->priv);
-    const struct key_control *kctrl = rfd->rset->keycontrol;
+    struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
     int cmp = 0;
     int i;
 

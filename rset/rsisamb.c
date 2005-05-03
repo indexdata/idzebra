@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.32 2005-04-26 10:09:38 adam Exp $
+/* $Id: rsisamb.c,v 1.33 2005-05-03 09:11:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,14 +26,14 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <rset.h>
 #include <string.h>
 
-
-static RSFD r_open (RSET ct, int flag);
-static void r_close (RSFD rfd);
-static void r_delete (RSET ct);
+static RSFD r_open(RSET ct, int flag);
+static void r_close(RSFD rfd);
+static void r_delete(RSET ct);
 static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf);
-static void r_pos (RSFD rfd, double *current, double *total);
-static int r_read (RSFD rfd, void *buf, TERMID *term);
-static int r_write (RSFD rfd, const void *buf);
+static void r_pos(RSFD rfd, double *current, double *total);
+static int r_read(RSFD rfd, void *buf, TERMID *term);
+static int r_read_filter(RSFD rfd, void *buf, TERMID *term);
+static int r_write(RSFD rfd, const void *buf);
 
 static const struct rset_control control = 
 {
@@ -48,12 +48,25 @@ static const struct rset_control control =
     r_write,
 };
 
-struct rset_pp_info {
+static const struct rset_control control_filter = 
+{
+    "isamb",
+    r_delete,
+    rset_get_one_term,
+    r_open,
+    r_close,
+    r_forward, 
+    r_pos,
+    r_read_filter,
+    r_write,
+};
+
+struct rfd_private {
     ISAMB_PP pt;
     void *buf;
 };
 
-struct rset_isamb_info {
+struct rset_private {
     ISAMB   is;
     ISAM_P pos;
 };
@@ -61,34 +74,37 @@ struct rset_isamb_info {
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-RSET rsisamb_create(NMEM nmem, const struct key_control *kcontrol, int scope,
+RSET rsisamb_create(NMEM nmem, struct rset_key_control *kcontrol,
+		    int scope,
 		    ISAMB is, ISAM_P pos, TERMID term)
 {
-    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term);
-    struct rset_isamb_info *info;
+    RSET rnew = rset_create_base(
+	kcontrol->filter_func ? &control_filter : &control,
+	nmem, kcontrol, scope, term);
+    struct rset_private *info;
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsisamb");
         log_level_initialized = 1;
     }
-    info = (struct rset_isamb_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->is = is;
     info->pos = pos;
     rnew->priv = info;
-    yaz_log(log_level,"rsisamb_create");
+    yaz_log(log_level, "rsisamb_create");
     return rnew;
 }
 
-static void r_delete (RSET ct)
+static void r_delete(RSET ct)
 {
     yaz_log(log_level, "rsisamb_delete");
 }
 
-RSFD r_open (RSET ct, int flag)
+RSFD r_open(RSET ct, int flag)
 {
-    struct rset_isamb_info *info = (struct rset_isamb_info *) ct->priv;
+    struct rset_private *info = (struct rset_private *) ct->priv;
     RSFD rfd;
-    struct rset_pp_info *ptinfo;
+    struct rfd_private *ptinfo;
 
     if (flag & RSETF_WRITE)
     {
@@ -97,58 +113,75 @@ RSFD r_open (RSET ct, int flag)
     }
     rfd = rfd_create_base(ct);
     if (rfd->priv)
-        ptinfo = (struct rset_pp_info *) (rfd->priv);
+        ptinfo = (struct rfd_private *) (rfd->priv);
     else {
-        ptinfo = (struct rset_pp_info *)nmem_malloc(ct->nmem,sizeof(*ptinfo));
-        ptinfo->buf = nmem_malloc (ct->nmem,ct->keycontrol->key_size);
+        ptinfo = (struct rfd_private *) nmem_malloc(ct->nmem,sizeof(*ptinfo));
+        ptinfo->buf = nmem_malloc(ct->nmem,ct->keycontrol->key_size);
         rfd->priv = ptinfo;
     }
-    ptinfo->pt = isamb_pp_open (info->is, info->pos, ct->scope );
-    yaz_log(log_level,"rsisamb_open");
+    ptinfo->pt = isamb_pp_open(info->is, info->pos, ct->scope );
+    yaz_log(log_level, "rsisamb_open");
     return rfd;
 }
 
-static void r_close (RSFD rfd)
+static void r_close(RSFD rfd)
 {
-    struct rset_pp_info *ptinfo = (struct rset_pp_info *)(rfd->priv);
+    struct rfd_private *ptinfo = (struct rfd_private *)(rfd->priv);
     isamb_pp_close (ptinfo->pt);
     rfd_delete_base(rfd);
-    yaz_log(log_level,"rsisamb_close");
+    yaz_log(log_level, "rsisamb_close");
 }
 
 
 static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
 {
-    struct rset_pp_info *pinfo = (struct rset_pp_info *)(rfd->priv);
+    struct rfd_private *pinfo = (struct rfd_private *)(rfd->priv);
     int rc;
     rc = isamb_pp_forward(pinfo->pt, buf, untilbuf);
     if (rc && term)
         *term = rfd->rset->term;
-    yaz_log(log_level,"rsisamb_forward");
+    yaz_log(log_level, "rsisamb_forward");
     return rc; 
 }
 
-static void r_pos (RSFD rfd, double *current, double *total)
+static void r_pos(RSFD rfd, double *current, double *total)
 {
-    struct rset_pp_info *pinfo = (struct rset_pp_info *)(rfd->priv);
+    struct rfd_private *pinfo = (struct rfd_private *)(rfd->priv);
     assert(rfd);
     isamb_pp_pos(pinfo->pt, current, total);
-    yaz_log(log_level,"isamb.r_pos returning %0.1f/%0.1f",
+    yaz_log(log_level, "isamb.r_pos returning %0.1f/%0.1f",
               *current, *total);
 }
 
-static int r_read (RSFD rfd, void *buf, TERMID *term)
+static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
-    struct rset_pp_info *pinfo = (struct rset_pp_info *)(rfd->priv);
+    struct rfd_private *pinfo = (struct rfd_private *)(rfd->priv);
     int rc;
     rc = isamb_pp_read(pinfo->pt, buf);
     if (rc && term)
         *term = rfd->rset->term;
-    yaz_log(log_level,"isamb.r_read ");
+    yaz_log(log_level, "isamb.r_read ");
     return rc;
 }
 
-static int r_write (RSFD rfd, const void *buf)
+static int r_read_filter(RSFD rfd, void *buf, TERMID *term)
+{
+    struct rfd_private *pinfo = (struct rfd_private *)rfd->priv;
+    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
+    int rc;
+    while((rc = isamb_pp_read(pinfo->pt, buf)))
+    {
+	int incl = (*kctrl->filter_func)(buf, kctrl->filter_data);
+	if (incl)
+	    break;
+    }
+    if (rc && term)
+        *term = rfd->rset->term;
+    yaz_log(log_level, "isamb.r_read_filter");
+    return rc;
+}
+
+static int r_write(RSFD rfd, const void *buf)
 {
     yaz_log(YLOG_FATAL, "ISAMB set type is read-only");
     return -1;
