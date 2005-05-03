@@ -1,3 +1,10 @@
+--- 1.3.26 2005/05/XX
+
+Fixed bug #304: Fuzzy search regExpr-2 did not use proper error distance
+of 1.
+
+Fixed bug #305: Scan now handles negative preferred-position-in-response.
+
 Implemented the 'equivalent' directive for .chr-files.
 
 --- 1.3.24 2005/02/09
