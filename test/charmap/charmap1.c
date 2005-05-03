@@ -1,4 +1,4 @@
-/* $Id: charmap1.c,v 1.4 2005-03-11 17:56:36 adam Exp $
+/* $Id: charmap1.c,v 1.5 2005-05-03 14:04:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -52,8 +52,17 @@ int main(int argc, char **argv)
     /* search for aa  */
     do_query(__LINE__, zh, "@term string laas", 1);
 
-    /* search for aa  (regular) */
+    /* search for aa regular-1 */
     do_query(__LINE__, zh, "@attr 5=102 @term string lås", 1);
+
+    /* search for aa regular-2 */
+    do_query(__LINE__, zh, "@attr 5=103 @term string lås", 1);
+
+    /* search for aa trunc=104 */
+    do_query(__LINE__, zh, "@attr 5=104 @term string laas", 1);
+
+    /* search for aa trunc=105 */
+    do_query(__LINE__, zh, "@attr 5=104 @term string laas", 1);
 
     /* search for aaa  */
     do_query(__LINE__, zh, "@term string laaas", 0);

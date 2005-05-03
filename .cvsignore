@@ -9,3 +9,4 @@ libtool
 idzebra-config
 idzebra.spec
 autom4te.cache
+Doxyfile
