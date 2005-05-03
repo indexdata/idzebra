@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.16 2005-05-02 09:05:22 adam Exp $
+/* $Id: testlib.c,v 1.17 2005-05-03 09:07:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -304,7 +304,7 @@ void ranking_query(int lineno, ZebraHandle zh, char *query,
     if (!strstr(retrievalRecord[0].buf, firstrec))
     {
         printf("Error: Got the wrong record first\n");
-        printf("Expected '%s' but got \n", firstrec);
+        printf("Expected '%s' but got\n", firstrec);
         printf("%.*s\n", retrievalRecord[0].len, retrievalRecord[0].buf);
         exit(1);
     }
@@ -345,7 +345,7 @@ void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
     {
 	if (meta[i].sysno != ids[i])
 	{
-	    printf("Expected id=" ZINT_FORMAT " but got id=" ZINT_FORMAT,
+	    printf("Expected id=" ZINT_FORMAT " but got id=" ZINT_FORMAT "\n",
 		   ids[i], meta[i].sysno);
 	    exit(1);
 	}
