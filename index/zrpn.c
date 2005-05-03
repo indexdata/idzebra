@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.186 2005-05-03 09:11:34 adam Exp $
+/* $Id: zrpn.c,v 1.187 2005-05-03 13:57:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1237,6 +1237,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 return ZEBRA_OK;
 	    }
             strcat(term_dict, ")");
+	    break;
         case 104:        /* process # and ! in term */
             term_dict[j++] = '(';
             if (!term_104(zh->reg->zebra_maps, reg_type,
