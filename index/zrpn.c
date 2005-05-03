@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.141.2.10 2005-04-29 18:56:20 adam Exp $
+/* $Id: zrpn.c,v 1.141.2.11 2005-05-03 13:12:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data Aps
 
@@ -2792,6 +2792,11 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     {
         *num_entries -= (after-i);
         *is_partial = 1;
+	if (*num_entries <= 0)
+	{
+	    *num_entries = 0;
+	    return;
+	}
     }
 
     /* consider terms before main term */
@@ -2875,6 +2880,11 @@ void rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         *is_partial = 1;
         *position -= i;
         *num_entries -= i;
+	if (*num_entries <= 0)
+	{
+	    *num_entries = 0;
+	    return;
+	}
     }
     *list = glist + i;               /* list is set to first 'real' entry */
     
