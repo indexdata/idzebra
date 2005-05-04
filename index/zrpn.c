@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.188 2005-05-03 14:04:31 adam Exp $
+/* $Id: zrpn.c,v 1.189 2005-05-04 10:48:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2007,20 +2007,14 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int i;
     int sort_relation_value;
     AttrType sort_relation_type;
-    int use_value;
-    AttrType use_type;
     Z_SortKeySpec *sks;
     Z_SortKey *sk;
-    Z_AttributeElement *ae;
     int oid[OID_SIZE];
     oident oe;
     char termz[20];
     
     attr_init(&sort_relation_type, zapt, 7);
     sort_relation_value = attr_find(&sort_relation_type, &attributeSet);
-
-    attr_init(&use_type, zapt, 1);
-    use_value = attr_find(&use_type, &attributeSet);
 
     if (!sort_sequence->specs)
     {
@@ -2057,21 +2051,7 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         nmem_malloc(stream, sizeof(*sk->u.sortAttributes));
 
     sk->u.sortAttributes->id = oid;
-    sk->u.sortAttributes->list = (Z_AttributeList *)
-        nmem_malloc(stream, sizeof(*sk->u.sortAttributes->list));
-    sk->u.sortAttributes->list->num_attributes = 1;
-    sk->u.sortAttributes->list->attributes = (Z_AttributeElement **)
-        nmem_malloc(stream, sizeof(*sk->u.sortAttributes->list->attributes));
-    ae = *sk->u.sortAttributes->list->attributes = (Z_AttributeElement *)
-        nmem_malloc(stream, sizeof(**sk->u.sortAttributes->list->attributes));
-    ae->attributeSet = 0;
-    ae->attributeType = (int *)
-        nmem_malloc(stream, sizeof(*ae->attributeType));
-    *ae->attributeType = 1;
-    ae->which = Z_AttributeValue_numeric;
-    ae->value.numeric = (int *)
-        nmem_malloc(stream, sizeof(*ae->value.numeric));
-    *ae->value.numeric = use_value;
+    sk->u.sortAttributes->list = zapt->attributes;
 
     sks->sortRelation = (int *)
         nmem_malloc(stream, sizeof(*sks->sortRelation));
