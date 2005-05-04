@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.8 2004-07-28 08:15:47 adam Exp $
+/* $Id: t4.c,v 1.8.2.1 2005-05-04 10:40:19 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -20,6 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <stdlib.h>
 #include <yaz/log.h>
 #include <yaz/pquery.h>
 #include <zebraapi.h>
