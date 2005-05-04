@@ -1,4 +1,4 @@
---- 1.3.26 2005/05/XX
+--- 1.3.26 2005/05/04
 
 Fixed bug #304: Fuzzy search regExpr-2 did not use proper error distance
 of 1.
