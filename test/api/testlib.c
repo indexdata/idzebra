@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.17 2005-05-03 09:07:17 adam Exp $
+/* $Id: testlib.c,v 1.18 2005-05-04 10:50:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -139,8 +139,8 @@ void init_data(ZebraHandle zh, const char **recs)
 
 }
 
-int do_query_x(int lineno, ZebraHandle zh, char *query, int exphits,
-	      int experror)
+int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
+	       int experror)
 {
     ODR odr;
     YAZ_PQF_Parser parser;
@@ -188,7 +188,7 @@ int do_query_x(int lineno, ZebraHandle zh, char *query, int exphits,
 	}
 	if (exphits != -1 && hits != exphits) {
 	    printf("Error: search returned " ZINT_FORMAT 
-		   " hits instead of %d\n%s\n",
+		   " hits instead of " ZINT_FORMAT "\n%s\n",
 		   hits, exphits, query);
 	    exit (1);
 	}
@@ -198,7 +198,7 @@ int do_query_x(int lineno, ZebraHandle zh, char *query, int exphits,
 }
 
 
-int do_query(int lineno, ZebraHandle zh, char *query, int exphits)
+int do_query(int lineno, ZebraHandle zh, const char *query, zint exphits)
 {
     return do_query_x(lineno, zh, query, exphits, 0);
 }

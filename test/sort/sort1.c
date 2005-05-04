@@ -1,4 +1,4 @@
-/* $Id: sort1.c,v 1.3 2005-01-15 19:38:39 adam Exp $
+/* $Id: sort1.c,v 1.4 2005-05-04 10:50:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,15 +20,48 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <assert.h>
 #include "../api/testlib.h"
+
+static void sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
+{
+    ZebraMetaRecord *recs;
+    zint i;
+    int errs = 0;
+
+    assert(query);
+    do_query(__LINE__, zh, query, hits);
+
+    recs = zebra_meta_records_create_range (zh, "rsetname", 1, 4);
+    if (!recs)
+    {
+	fprintf(stderr, "recs==0\n");
+	exit(1);
+    }
+    for (i = 0; i<hits; i++)
+	if (recs[i].sysno != exp[i])
+	    errs++;
+    if (errs)
+    {
+	printf("Sequence not in right order for query\n%s\ngot exp\n",
+	       query);
+	for (i = 0; i<hits; i++)
+	    printf(" " ZINT_FORMAT "   " ZINT_FORMAT "\n",
+		   recs[i].sysno, exp[i]);
+    }
+    zebra_meta_records_destroy (zh, recs, 4);
+
+    if (errs)
+	exit(1);
+}
 
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open(zs);
-    ZebraMetaRecord *recs;
+    zint ids[5];
     char path[256];
-    int i, errs = 0;
+    int i;
 
     zebra_select_database(zh, "Default");
 
@@ -43,30 +76,23 @@ int main(int argc, char **argv)
     zebra_end_trans(zh);
     zebra_commit(zh);
 
-    do_query(__LINE__,zh, "@or computer @attr 7=1 @attr 1=30 0", 4);
+    ids[0] = 3;
+    ids[1] = 2;
+    ids[2] = 4;
+    ids[3] = 5;
+    sort(zh, "@or computer @attr 7=1 @attr 1=30 0", 4, ids);
 
-    recs = zebra_meta_records_create_range (zh, "rsetname", 1, 4);
-    if (!recs)
-    {
-	fprintf(stderr, "recs==0\n");
-	exit(1);
-    }
-    if (recs[0].sysno != 3)
-	errs++;
-    if (recs[1].sysno != 2)
-	errs++;
-    if (recs[2].sysno != 4)
-	errs++;
-    if (recs[3].sysno != 5)
-	errs++;
+    ids[0] = 5;
+    ids[1] = 4;
+    ids[2] = 2;
+    ids[3] = 3;
+    sort(zh, "@or computer @attr 7=1 @attr 1=1021 0", 4, ids);
 
-    zebra_meta_records_destroy (zh, recs, 4);
-
-    if (errs)
-    {
-	fprintf(stderr, "%d sysnos did not match\n", errs);
-	exit(1);
-    }
+    ids[0] = 2;
+    ids[1] = 5;
+    ids[2] = 4;
+    ids[3] = 3;
+    sort(zh, "@or computer @attr 7=1 @attr 1=1021 @attr 4=109 0", 4, ids);
 
     return close_down(zh, zs, 0);
 }
