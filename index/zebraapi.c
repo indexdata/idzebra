@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.4 2005-01-23 14:59:42 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.5 2005-05-06 18:59:23 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -629,6 +629,22 @@ static int zebra_select_register (ZebraHandle zh, const char *new_reg)
         zh->lock_shadow =
             zebra_lock_create (res_get(zh->res, "lockDir"), fname, 0);
 
+	if (!zh->lock_normal || !zh->lock_shadow)
+	{
+	    if (zh->lock_normal)
+	    {
+		zebra_lock_destroy(zh->lock_normal);
+		zh->lock_normal = 0;
+	    }
+	    if (zh->lock_shadow)
+	    {
+		zebra_lock_destroy(zh->lock_shadow);
+		zh->lock_shadow = 0;
+	    }
+	    zebra_close_res(zh);
+	    
+	    return -1;
+	}
     }
     return 1;
 }
@@ -704,7 +720,7 @@ int zebra_select_default_database(ZebraHandle zh)
 	const char *group = res_get(zh->service->global_res, "group");
 	const char *v = res_get_prefix(zh->service->global_res,
 				       "database", group, "Default");
-	zebra_select_database(zh, v);
+	return zebra_select_database(zh, v);
     }
     return 0;
 }
