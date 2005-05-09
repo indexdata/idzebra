@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.189 2005-05-04 10:48:39 adam Exp $
+/* $Id: zrpn.c,v 1.190 2005-05-09 13:24:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2421,15 +2421,16 @@ ZEBRA_RES rpn_search_top(ZebraHandle zh, Z_RPNStructure *zs,
 	for (i = 0; i<num_result_sets; i++)
 	    rset_delete(result_sets[i]);
 	*result_set = 0;
-	return res;
     }
-    assert(num_result_sets == 1);
-    assert(result_sets);
-    assert(*result_sets);
-    *result_set = *result_sets;
-
+    else
+    {
+	assert(num_result_sets == 1);
+	assert(result_sets);
+	assert(*result_sets);
+	*result_set = *result_sets;
+    }
     (*kc->dec)(kc);
-    return ZEBRA_OK;
+    return res;
 }
 
 ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
