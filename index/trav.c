@@ -1,4 +1,4 @@
-/* $Id: trav.c,v 1.44 2004-01-22 11:27:21 adam Exp $
+/* $Id: trav.c,v 1.44.2.1 2005-05-09 19:57:38 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -312,7 +312,7 @@ static void fileUpdate (ZebraHandle zh, Dict dict, const char *path)
     else if (S_ISREG(sbuf.st_mode))
     {
         struct dirs_entry *e_dst;
-        di = dirs_fopen (dict, src);
+        di = dirs_fopen (dict, src, zh->m_flag_rw);
 
         e_dst = dirs_read (di);
         if (e_dst)

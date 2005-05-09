@@ -1,5 +1,5 @@
-/* $Id: dirs.c,v 1.20 2004-08-04 08:35:23 adam Exp $
-   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
+/* $Id: dirs.c,v 1.19.2.1 2005-05-09 19:57:38 adam Exp $
+   Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
 This file is part of the Zebra server.
@@ -101,7 +101,7 @@ struct dirs_info *dirs_open (Dict dict, const char *rep, int rw)
     return p;
 }
 
-struct dirs_info *dirs_fopen (Dict dict, const char *path)
+struct dirs_info *dirs_fopen (Dict dict, const char *path, int rw)
 {
     struct dirs_info *p;
     struct dirs_entry *entry;
@@ -109,6 +109,7 @@ struct dirs_info *dirs_fopen (Dict dict, const char *path)
 
     p = (struct dirs_info *) xmalloc (sizeof(*p));
     p->dict = dict;
+    p->rw = rw;
     *p->prefix = '\0';
     p->entries = (struct dirs_entry *) xmalloc (sizeof(*p->entries));
     p->no_read = 0;
@@ -185,7 +186,7 @@ void dirs_rmdir (struct dirs_info *p, const char *src)
 	dict_delete (p->dict, path);
 }
 
-void dirs_add (struct dirs_info *p, const char *src, SYSNO sysno, time_t mtime)
+void dirs_add (struct dirs_info *p, const char *src, int sysno, time_t mtime)
 {
     char path[DIRS_MAX_PATH];
     char info[16];
