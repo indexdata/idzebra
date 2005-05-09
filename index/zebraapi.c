@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.165 2005-05-06 18:59:35 adam Exp $
+/* $Id: zebraapi.c,v 1.166 2005-05-09 10:04:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -665,8 +665,6 @@ static void zebra_select_register (ZebraHandle zh, const char *new_reg)
 		zh->lock_shadow = 0;
 	    }
 	    zebra_close_res(zh);
-	    
-	    return -1;
 	}
     }
 }
