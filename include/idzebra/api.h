@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.22 2005-05-03 09:11:34 adam Exp $
+/* $Id: api.h,v 1.23 2005-05-09 10:16:12 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -465,7 +465,7 @@ YAZ_EXPORT
 struct BFiles_struct *zebra_get_bfs(ZebraHandle zh);
 
 YAZ_EXPORT
-ZEBRA_RES zebra_set_limit(ZebraHandle zh, int exclude_flag, zint *ids);
+ZEBRA_RES zebra_set_limit(ZebraHandle zh, int complement_flag, zint *ids);
 
 YAZ_END_CDECL				      
 

@@ -1,4 +1,4 @@
-/* $Id: limit.c,v 1.1 2005-05-03 09:11:34 adam Exp $
+/* $Id: limit.c,v 1.2 2005-05-09 10:16:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,7 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "index.h"
 
 struct zebra_limit {
-    int exclude_flag;
+    int complement_flag;
     zint *ids;
 };
 
@@ -41,7 +41,7 @@ void zebra_limit_destroy(struct zebra_limit *zl)
     }
 }
 
-struct zebra_limit *zebra_limit_create(int exclude_flag, zint *ids)
+struct zebra_limit *zebra_limit_create(int complement_flag, zint *ids)
 {
     struct zebra_limit *zl = 0;
     size_t i;
@@ -52,7 +52,7 @@ struct zebra_limit *zebra_limit_create(int exclude_flag, zint *ids)
 	zl = xmalloc(sizeof(*zl));
 	zl->ids = xmalloc((i+1) * sizeof(*ids));
 	memcpy(zl->ids, ids, (i+1) * sizeof(*ids));
-	zl->exclude_flag = exclude_flag;
+	zl->complement_flag = complement_flag;
     }
     return zl;
 }
@@ -67,8 +67,8 @@ static int zebra_limit_filter_cb(const void *buf, void *data)
 	return 1;
     for (i = 0; zl->ids[i]; i++)
 	if (zl->ids[i] == key->mem[1])
-	    return zl->exclude_flag ? 0 : 1;
-    return zl->exclude_flag ? 1 : 0;
+	    return zl->complement_flag ? 0 : 1;
+    return zl->complement_flag ? 0 : 1;
 }
 
 static void zebra_limit_destroy_cb(void *data)
@@ -85,7 +85,7 @@ void zebra_limit_for_rset(struct zebra_limit *zl,
     {
 	struct zebra_limit *hl;
 
-	hl = zebra_limit_create(zl->exclude_flag, zl->ids);
+	hl = zebra_limit_create(zl->complement_flag, zl->ids);
 	*filter_data = hl;
 	*filter_func = zebra_limit_filter_cb;
 	*filter_destroy = zebra_limit_destroy_cb;

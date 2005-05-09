@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.166 2005-05-09 10:04:30 adam Exp $
+/* $Id: zebraapi.c,v 1.167 2005-05-09 10:16:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -147,7 +147,7 @@ ZebraHandle zebra_open (ZebraService zs)
 
     zh->store_data_buf = 0;
 
-    zh->m_limit = zebra_limit_create(0, 0);
+    zh->m_limit = zebra_limit_create(1, 0);
 
     return zh;
 }
@@ -2198,10 +2198,10 @@ struct BFiles_struct *zebra_get_bfs(ZebraHandle zh)
 /* ---------------------------------------------------------------------------
   Set limit for search/scan
 */
-ZEBRA_RES zebra_set_limit(ZebraHandle zh, int exclude_flag, zint *ids)
+ZEBRA_RES zebra_set_limit(ZebraHandle zh, int complement_flag, zint *ids)
 {
     ASSERTZH;
     zebra_limit_destroy(zh->m_limit);
-    zh->m_limit = zebra_limit_create(exclude_flag, ids);
+    zh->m_limit = zebra_limit_create(complement_flag, ids);
     return ZEBRA_OK;
 }
