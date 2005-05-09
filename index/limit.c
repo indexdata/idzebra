@@ -1,4 +1,4 @@
-/* $Id: limit.c,v 1.2 2005-05-09 10:16:13 adam Exp $
+/* $Id: limit.c,v 1.3 2005-05-09 10:28:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -45,10 +45,10 @@ struct zebra_limit *zebra_limit_create(int complement_flag, zint *ids)
 {
     struct zebra_limit *zl = 0;
     size_t i;
-    for (i = 0; ids && ids[i]; i++)
-	;
-    if (i)
+    if (ids)
     {
+	for (i = 0; ids[i]; i++)
+	    ;
 	zl = xmalloc(sizeof(*zl));
 	zl->ids = xmalloc((i+1) * sizeof(*ids));
 	memcpy(zl->ids, ids, (i+1) * sizeof(*ids));
@@ -68,7 +68,7 @@ static int zebra_limit_filter_cb(const void *buf, void *data)
     for (i = 0; zl->ids[i]; i++)
 	if (zl->ids[i] == key->mem[1])
 	    return zl->complement_flag ? 0 : 1;
-    return zl->complement_flag ? 0 : 1;
+    return zl->complement_flag ? 1 : 0;
 }
 
 static void zebra_limit_destroy_cb(void *data)
