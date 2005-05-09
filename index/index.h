@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.136 2005-05-03 09:11:34 adam Exp $
+/* $Id: index.h,v 1.137 2005-05-09 19:57:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -78,7 +78,7 @@ struct dirs_entry {
 void getFnameTmp (Res res, char *fname, int no);
         
 struct dirs_info *dirs_open (Dict dict, const char *rep, int rw);
-struct dirs_info *dirs_fopen (Dict dict, const char *path);
+struct dirs_info *dirs_fopen (Dict dict, const char *path, int rw);
 struct dirs_entry *dirs_read (struct dirs_info *p);
 struct dirs_entry *dirs_last (struct dirs_info *p);
 void dirs_mkdir (struct dirs_info *p, const char *src, time_t mtime);

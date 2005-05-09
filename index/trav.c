@@ -1,4 +1,4 @@
-/* $Id: trav.c,v 1.47 2005-01-15 19:38:27 adam Exp $
+/* $Id: trav.c,v 1.48 2005-05-09 19:57:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -312,7 +312,7 @@ static void fileUpdate (ZebraHandle zh, Dict dict, const char *path)
     else if (S_ISREG(sbuf.st_mode))
     {
         struct dirs_entry *e_dst;
-        di = dirs_fopen (dict, src);
+        di = dirs_fopen (dict, src, zh->m_flag_rw);
 
         e_dst = dirs_read (di);
         if (e_dst)
@@ -392,6 +392,24 @@ static void repositoryExtractG (ZebraHandle zh, const char *path,
         repositoryExtract (zh, deleteFlag, path);
 }
 
+#if 0
+static int dump_file_dict_func(char *name, const char *info, int pos,
+				void *client)
+{
+    yaz_log(YLOG_LOG, "%s", name);
+    return 0;
+}
+static void dump_file_dict(Dict dict)
+{
+    int before = 10;
+    int after = 1000;
+    char term[1000];
+    
+    strcpy(term, "0");
+    dict_scan (dict, term, &before, &after, 0, dump_file_dict_func);
+}
+#endif
+
 void repositoryUpdate (ZebraHandle zh, const char *path)
 {
     assert (path);
@@ -412,7 +430,11 @@ void repositoryUpdate (ZebraHandle zh, const char *path)
         }
         else
             fileUpdate (zh, dict, path);
+#if 0
+	dump_file_dict(dict);
+#endif
         dict_close (dict);
+	
     }
     else 
         repositoryExtractG (zh, path, 0);

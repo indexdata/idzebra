@@ -1,4 +1,4 @@
-/* $Id: dirs.c,v 1.22 2005-01-15 19:38:25 adam Exp $
+/* $Id: dirs.c,v 1.23 2005-05-09 19:57:35 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -101,7 +101,7 @@ struct dirs_info *dirs_open (Dict dict, const char *rep, int rw)
     return p;
 }
 
-struct dirs_info *dirs_fopen (Dict dict, const char *path)
+struct dirs_info *dirs_fopen (Dict dict, const char *path, int rw)
 {
     struct dirs_info *p;
     struct dirs_entry *entry;
@@ -109,6 +109,7 @@ struct dirs_info *dirs_fopen (Dict dict, const char *path)
 
     p = (struct dirs_info *) xmalloc (sizeof(*p));
     p->dict = dict;
+    p->rw = rw;
     *p->prefix = '\0';
     p->entries = (struct dirs_entry *) xmalloc (sizeof(*p->entries));
     p->no_read = 0;
