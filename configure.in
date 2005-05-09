@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2005
-dnl $Id: configure.in,v 1.120 2005-04-28 18:56:13 adam Exp $
+dnl $Id: configure.in,v 1.121 2005-05-09 11:39:57 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -42,12 +42,19 @@ if test "$xsltdir" = "yes"; then
 fi
 if test "$xsltdir" != "no"; then
 	AC_MSG_CHECKING(for libXSLT)
+
 	if test -x $xsltdir/bin/xslt-config; then
-		XSLT_LIBS=`$xsltdir/bin/xslt-config --libs`
-		XSLT_CFLAGS=`$xsltdir/bin/xslt-config --cflags`
 		XSLT_VER=`$xsltdir/bin/xslt-config --version`
 		AC_MSG_RESULT($XSLT_VER)
-		AC_DEFINE(HAVE_XSLT)
+		have_xslt_version=`echo "$XSLT_VER" | awk 'BEGIN { FS = "."; } { printf "%d", ([$]1 * 1000 + [$]2) * 1000 + [$]3;}'`
+		if test $have_xslt_version -lt 1001012; then
+			AC_MSG_WARN([libXSLT too old. Use 1.1.12 or later])
+			XSLT_VER=""
+		else
+			XSLT_LIBS=`$xsltdir/bin/xslt-config --libs`
+			XSLT_CFLAGS=`$xsltdir/bin/xslt-config --cflags`
+			AC_DEFINE(HAVE_XSLT)
+		fi
 	else
 		AC_MSG_RESULT(Not found)
 	fi
