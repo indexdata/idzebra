@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.131 2005-04-15 10:47:49 adam Exp $
+/* $Id: zserver.c,v 1.132 2005-05-11 12:39:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,6 +36,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/log.h>
 #include <yaz/ill.h>
 #include <yaz/yaz-util.h>
+#include <yaz/diagbib1.h>
 
 #include <sys/types.h>
 
@@ -77,7 +78,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     if (!(zh = zebra_open (sob->handle)))
     {
 	yaz_log (YLOG_WARN, "Failed to read config `%s'", sob->configname);
-	r->errcode = 1;
+	r->errcode = YAZ_BIB1_PERMANENT_SYSTEM_ERROR;
 	return r;
     }
     r->handle = zh;
@@ -103,9 +104,9 @@ bend_initresult *bend_init (bend_initrequest *q)
 	    passwd = idPass->password;
 	}
     }
-    if (zebra_auth (zh, user, passwd))
+    if (zebra_auth(zh, user, passwd) != ZEBRA_OK)
     {
-	r->errcode = 222;
+	r->errcode = YAZ_BIB1_INIT_AC_BAD_USERID_AND_OR_PASSWORD;
 	r->errstring = user;
 	return r;
     }
@@ -265,12 +266,9 @@ int bend_search (void *handle, bend_search_rr *r)
     zint zhits = 0;
     ZEBRA_RES res;
 
-    r->hits = 0;
-    r->errcode = 0;
-    r->errstring = NULL;
-    
-    if (zebra_select_databases (zh, r->num_bases,
-                                (const char **) r->basenames))
+    res = zebra_select_databases (zh, r->num_bases,
+				  (const char **) r->basenames);
+    if (res != ZEBRA_OK)
     {
         zebra_result (zh, &r->errcode, &r->errstring);
         return 0;
@@ -279,9 +277,11 @@ int bend_search (void *handle, bend_search_rr *r)
     switch (r->query->which)
     {
     case Z_Query_type_1: case Z_Query_type_101:
-	res = zebra_search_RPN (zh, r->stream, r->query->u.type_1,
-				r->setname, &zhits);
-	if (zebra_errCode(zh) == 0)
+	res = zebra_search_RPN(zh, r->stream, r->query->u.type_1,
+			       r->setname, &zhits);
+	if (res != ZEBRA_OK)
+	    zebra_result(zh, &r->errcode, &r->errstring);
+	else
 	{
 	    if (zhits >   2147483646)
 		r->hits = 2147483647;
@@ -289,15 +289,13 @@ int bend_search (void *handle, bend_search_rr *r)
 	    r->hits = (int) zhits;
             search_terms (zh, r);
 	}
-	else
-	    zebra_result (zh, &r->errcode, &r->errstring);
         break;
     case Z_Query_type_2:
-	r->errcode = 107;
+	r->errcode = YAZ_BIB1_QUERY_TYPE_UNSUPP;
 	r->errstring = "type-2";
 	break;
     default:
-        r->errcode = 107;
+        r->errcode = YAZ_BIB1_QUERY_TYPE_UNSUPP;
     }
     return 0;
 }
@@ -307,24 +305,28 @@ int bend_fetch (void *handle, bend_fetch_rr *r)
 {
     ZebraHandle zh = (ZebraHandle) handle;
     ZebraRetrievalRecord retrievalRecord;
+    ZEBRA_RES res;
 
     retrievalRecord.position = r->number;
     
     r->last_in_set = 0;
-    zebra_records_retrieve (zh, r->stream, r->setname, r->comp,
+    res = zebra_records_retrieve (zh, r->stream, r->setname, r->comp,
 			    r->request_format, 1, &retrievalRecord);
-    zebra_result (zh, &r->errcode, &r->errstring);
-    /*  non Surrogate Diagnostic OR Surrogate Diagnostic */
-    if (r->errcode == 0 && retrievalRecord.errCode)
+    if (res != ZEBRA_OK)
     {
+	/* non-surrogate diagnostic */
+	zebra_result (zh, &r->errcode, &r->errstring);
+    }
+    else if (retrievalRecord.errCode)
+    {
+	/* surrogate diagnostic (diagnostic per record) */
 	r->surrogate_flag = 1;
 	r->errcode = retrievalRecord.errCode;
 	r->errstring = retrievalRecord.errString;
 	r->basename = retrievalRecord.base;
     }
-    else if (r->errcode == 0)        /* Database Record */
+    else
     {
-	r->errcode = 0;
 	r->basename = retrievalRecord.base;
 	r->record = retrievalRecord.buf;
 	r->len = retrievalRecord.len;
@@ -338,34 +340,43 @@ static int bend_scan (void *handle, bend_scan_rr *r)
     ZebraScanEntry *entries;
     ZebraHandle zh = (ZebraHandle) handle;
     int is_partial, i;
+    ZEBRA_RES res;
 
-    if (zebra_select_databases (zh, r->num_bases, 
-                                (const char **) r->basenames))
+    res = zebra_select_databases(zh, r->num_bases, 
+				 (const char **) r->basenames);
+    if (res != ZEBRA_OK)
     {
         zebra_result (zh, &r->errcode, &r->errstring);
         return 0;
     }
     if (r->step_size != 0 && *r->step_size != 0) {
-	r->errcode = 205; /* "Only zero step size supported for Scan" */
+	r->errcode = YAZ_BIB1_ONLY_ZERO_STEP_SIZE_SUPPORTED_FOR_SCAN;
 	r->errstring = 0;
         return 0;
     }
     r->entries = (struct scan_entry *)
 	odr_malloc (r->stream, sizeof(*r->entries) * r->num_entries);
-    zebra_scan (zh, r->stream, r->term,
-		r->attributeset,
-		&r->term_position,
-		&r->num_entries, &entries, &is_partial);
-    if (is_partial)
-	r->status = BEND_SCAN_PARTIAL;
-    else
-	r->status = BEND_SCAN_SUCCESS;
-    for (i = 0; i < r->num_entries; i++)
+    res = zebra_scan(zh, r->stream, r->term,
+		     r->attributeset,
+		     &r->term_position,
+		     &r->num_entries, &entries, &is_partial);
+    if (res == ZEBRA_OK)
     {
-	r->entries[i].term = entries[i].term;
-	r->entries[i].occurrences = entries[i].occurrences;
+	if (is_partial)
+	    r->status = BEND_SCAN_PARTIAL;
+	else
+	    r->status = BEND_SCAN_SUCCESS;
+	for (i = 0; i < r->num_entries; i++)
+	{
+	    r->entries[i].term = entries[i].term;
+	    r->entries[i].occurrences = entries[i].occurrences;
+	}
     }
-    zebra_result (zh, &r->errcode, &r->errstring);
+    else
+    {
+	r->status = BEND_SCAN_PARTIAL;
+	zebra_result(zh, &r->errcode, &r->errstring);
+    }
     return 0;
 }
 
@@ -545,7 +556,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
             else
             {
                 yaz_log (YLOG_WARN, "no database supplied for ES Update");
-                rr->errcode = 1008;
+                rr->errcode =
+		    YAZ_BIB1_ES_MISSING_MANDATORY_PARAMETER_FOR_SPECIFIED_FUNCTION_;
                 rr->errstring = "database";
                 return 0;
             }
@@ -603,7 +615,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 		    }
                     if (oident && oident->value != VAL_TEXT_XML)
                     {
-                        rr->errcode = 224;
+                        rr->errcode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
                         rr->errstring = "only XML update supported";
                         break;
                     }
@@ -626,7 +638,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 
                         if (!action)
                         {
-                            rr->errcode = 224;
+                            rr->errcode =
+				YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
                             rr->errstring = "unsupported ES Update action";
                             break;
                         }
@@ -640,7 +653,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                                 action);
                             if (r)
                             {
-                                rr->errcode = 224;
+                                rr->errcode =
+				    YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
                                 rr->errstring = "record exchange failed";
                                 break;
                             }
@@ -661,7 +675,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    0);
 				if (r == ZEBRA_FAIL)
 				{
-				    rr->errcode = 224;
+				    rr->errcode =
+					YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
 				    rr->errstring = "insert_record failed";
 				}
 				break;
@@ -678,7 +693,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    1);
 				if (r == ZEBRA_FAIL)
 				{
-				    rr->errcode = 224;
+				    rr->errcode =
+					YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
 				    rr->errstring = "update_record failed";
 				}
 				break;
@@ -694,7 +710,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    0);
 				if (r == ZEBRA_FAIL)
 				{
-				    rr->errcode = 224;
+				    rr->errcode =
+					YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
 				    rr->errstring = "delete_record failed";
 				}
 				break;
@@ -710,7 +727,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
     {
         yaz_log (YLOG_WARN, "Unknown Extended Service(%d)",
 		 rr->esr->taskSpecificParameters->which);
-        rr->errcode = 221;
+        rr->errcode = YAZ_BIB1_ES_EXTENDED_SERVICE_TYPE_UNSUPP;
 	
     }
     return 0;

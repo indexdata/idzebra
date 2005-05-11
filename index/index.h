@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.137 2005-05-09 19:57:35 adam Exp $
+/* $Id: index.h,v 1.138 2005-05-11 12:39:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -309,6 +309,7 @@ struct zebra_session {
 
     void *store_data_buf;
     size_t store_data_size;
+    NMEM nmem_error;
 
     struct zebra_limit *m_limit;
 };
@@ -379,14 +380,16 @@ ZEBRA_RES resultSetAddRPN (ZebraHandle zh, NMEM m, Z_RPNQuery *rpn,
 RSET resultSetRef (ZebraHandle zh, const char *resultSetId);
 void resultSetDestroy (ZebraHandle zh, int num_names, char **names,
 		       int *statuses);
-void resultSetSort (ZebraHandle zh, NMEM nmem,
-		    int num_input_setnames, const char **input_setnames,
-		    const char *output_setname,
-		    Z_SortKeySpecList *sort_sequence, int *sort_status);
-void resultSetSortSingle (ZebraHandle zh, NMEM nmem,
-			  ZebraSet sset, RSET rset,
-			  Z_SortKeySpecList *sort_sequence, int *sort_status);
-void resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset, NMEM nmem);
+ZEBRA_RES resultSetSort (ZebraHandle zh, NMEM nmem,
+			 int num_input_setnames, const char **input_setnames,
+			 const char *output_setname,
+			 Z_SortKeySpecList *sort_sequence, int *sort_status);
+ZEBRA_RES resultSetSortSingle (ZebraHandle zh, NMEM nmem,
+			       ZebraSet sset, RSET rset,
+			       Z_SortKeySpecList *sort_sequence,
+			       int *sort_status);
+ZEBRA_RES resultSetRank (ZebraHandle zh, ZebraSet zebraSet, RSET rset,
+			 NMEM nmem);
 void resultSetInvalidate (ZebraHandle zh);
 
 int zebra_server_lock_init (ZebraService zh);
@@ -487,6 +490,9 @@ void iscz1_encode (void *vp, char **dst, const char **src);
 
 Dict dict_open_res (BFiles bfs, const char *name, int cache, int rw,
 		    int compact_flag, Res res);
+
+void zebra_setError(ZebraHandle zh, int code, const char *addinfo);
+void zebra_setError_zint(ZebraHandle zh, int code, zint i);
 
 YAZ_END_CDECL
 

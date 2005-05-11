@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.123 2005-01-21 13:23:25 adam Exp $
+/* $Id: main.c,v 1.124 2005-05-11 12:39:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -113,8 +113,7 @@ int main (int argc, char **argv)
                  );
         exit (1);
     }
-    while ((ret = options ("sVt:c:g:d:m:v:nf:l:L"
-			   , argv, argc, &arg)) != -2)
+    while ((ret = options("sVt:c:g:d:m:v:nf:l:L", argv, argc, &arg)) != -2)
     {
         if (ret == 0)
         {
@@ -135,9 +134,11 @@ int main (int argc, char **argv)
 		    zebra_shadow_enable (zh, enable_commit);
                 }
 
-		if (database && zebra_select_database (zh, database))
+		if (database &&
+		    zebra_select_database (zh, database) == ZEBRA_FAIL)
 		{
-		    yaz_log(YLOG_FATAL, "Could not select database %s errCode=%d",
+		    yaz_log(YLOG_FATAL, "Could not select database %s "
+			    "errCode=%d",
 			    database, zebra_errCode(zh) );
 		    exit (1);
 		}
@@ -195,33 +196,39 @@ int main (int argc, char **argv)
             }
 	    else
             {
+		ZEBRA_RES res = ZEBRA_OK;
 		if (!trans_started)
 		{
 		    trans_started=1;
-                    if (zebra_begin_trans (zh, 1))
+                    if (zebra_begin_trans (zh, 1) != ZEBRA_OK)
                         exit(1);
 		}
                 switch (cmd)
                 {
                 case 'u':
-                    zebra_repository_update (zh, arg);
+                    res = zebra_repository_update (zh, arg);
                     break;
                 case 'd':
-                    zebra_repository_delete (zh, arg);
+                    res = zebra_repository_delete (zh, arg);
                     break;
                 case 's':
-                    zebra_repository_show (zh, arg);
+                    res = zebra_repository_show (zh, arg);
                     nsections = 0;
                     break;
 		case 'C':
-		    zebra_create_database(zh, arg);
+		    res = zebra_create_database(zh, arg);
 		    break;
 		case 'D':
-		    zebra_drop_database(zh, arg);
+		    res = zebra_drop_database(zh, arg);
 		    break;
                 default:
                     nsections = 0;
                 }
+		if (res != ZEBRA_OK)
+		{
+		    yaz_log(YLOG_WARN, "Operation failed");
+		    exit(1);
+		}
                 log_event_end (NULL, NULL);
             }
         }

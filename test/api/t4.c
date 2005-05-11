@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.16 2005-04-14 12:01:50 adam Exp $
+/* $Id: t4.c,v 1.17 2005-05-11 12:39:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -59,6 +59,7 @@ int main(int argc, char **argv)
 
     for (i = 0; i<2; i++)
     {
+	ZEBRA_RES ret;
         ZebraRetrievalRecord retrievalRecord[NUMBER_TO_FETCH_MAX];
         char setname[20];
         int j;
@@ -69,7 +70,13 @@ int main(int argc, char **argv)
         zint hits;
         
         sprintf(setname, "s%d", i+1);
-        zebra_search_RPN(zh, odr_input, query, setname, &hits);
+        ret = zebra_search_RPN(zh, odr_input, query, setname, &hits);
+	if (ret != ZEBRA_OK)
+	{
+	    int code = zebra_errCode(zh);
+	    yaz_log(YLOG_WARN, "Unexpected error code=%d", code);
+	    exit(1);
+	}
 	if (hits != number_to_be_inserted)
 	{
 	    yaz_log(YLOG_WARN, "Unexpected hit count " ZINT_FORMAT 
@@ -86,13 +93,14 @@ int main(int argc, char **argv)
 	for (j = 0; j < number_to_fetch; j++)
 	    retrievalRecord[j].position = j+1;
 
-        zebra_records_retrieve(zh, odr_output, setname, 0,
-			       VAL_TEXT_XML, number_to_fetch, retrievalRecord);
-	
-	if (zebra_errCode(zh))
+        ret = zebra_records_retrieve(zh, odr_output, setname, 0,
+				     VAL_TEXT_XML, number_to_fetch,
+				     retrievalRecord);
+	if (ret != ZEBRA_OK)
 	{
+	    int code = zebra_errCode(zh);
 	    yaz_log(YLOG_FATAL, "zebra_records_retrieve returned error %d",
-		    zebra_errCode(zh));
+		    code);
 	    exit(1);
 	}
 	

@@ -1,4 +1,4 @@
-/* $Id: t7.c,v 1.8 2005-03-09 12:14:42 adam Exp $
+/* $Id: t7.c,v 1.9 2005-05-11 12:39:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -34,43 +34,59 @@ const char *recs[] = {
 
 int main(int argc, char **argv)
 {
+    const char *setname1 = "set1";
+    const char *setname2 = "set2";
+    const char *setname3 = "set3";
+    int status;
+    ZEBRA_RES ret;
     ZebraService zs = start_up(0, argc, argv);
     ZebraHandle  zh = zebra_open (zs);
-
-    const char *setname1="set1";
-    const char *setname2="set2";
-    const char *setname3="set3";
-    int status;
-    int rc;
     ODR odr_input = odr_createmem (ODR_DECODE);    
     ODR odr_output = odr_createmem (ODR_ENCODE);    
     YAZ_PQF_Parser parser = yaz_pqf_create();
-    Z_RPNQuery *query = yaz_pqf_parse(parser, odr_input, 
-                                      "@attr 1=4 my");
-    Z_SortKeySpecList *spec = 
-          yaz_sort_spec (odr_output, "@attr 1=4 id");
+    Z_RPNQuery *query = yaz_pqf_parse(parser, odr_input, "@attr 1=4 my");
+    Z_SortKeySpecList *spec = yaz_sort_spec (odr_output, "1=4 <");
     zint hits;
 
     init_data(zh, recs);
 
     zebra_begin_trans(zh, 0);
         
-    zebra_search_RPN(zh, odr_input, query, setname1, &hits);
+    ret = zebra_search_RPN(zh, odr_input, query, setname1, &hits);
+    if (ret == ZEBRA_FAIL)
+    {
+	int code = zebra_errCode(zh);
+        printf("search returned ERROR, OK was expected ret=%d  "
+	       "code=%d\n", ret, code); 
+    }
 
-    rc=zebra_sort(zh, odr_output, 1, &setname1, setname2, spec, &status);
-    if (rc) 
+    ret = zebra_sort(zh, odr_output, 1, &setname1, setname2, spec, &status);
+    if (ret == ZEBRA_FAIL) 
     { 
-        printf("sort A returned %d %d \n",rc,status); 
+	int code = zebra_errCode(zh);
+        printf("sort A returned ERROR, OK was expected ret=%d status=%d "
+	       "code=%d\n", ret, status, code); 
         exit(1);
     }
     
-    rc=zebra_sort(zh, odr_output, 1, &setname2, setname3, spec, &status);
-    if (rc) 
+    ret = zebra_sort(zh, odr_output, 1, &setname2, setname3, spec, &status);
+    if (ret == ZEBRA_FAIL)
     { 
-        printf("sort B returned %d %d \n",rc,status); 
+	int code = zebra_errCode(zh);
+        printf("sort B returned ERROR, OK was expected ret=%d status=%d "
+	       "code=%d\n", ret, status, code); 
         exit(1);
     }
 
+    spec = yaz_sort_spec(odr_output, "1=5 <"); /* invalid sort spec */
+
+    ret = zebra_sort(zh, odr_output, 1, &setname1, setname2, spec, &status);
+    if (ret == ZEBRA_OK) 
+    { 
+        printf("sort C returned OK, ERROR was expected ret=%d status=%d\n",
+	       ret, status);
+        exit(1);
+    }
     zebra_end_trans(zh);
     yaz_pqf_destroy(parser);
 
