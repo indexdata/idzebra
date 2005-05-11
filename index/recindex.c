@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.43 2005-04-15 10:47:48 adam Exp $
+/* $Id: recindex.c,v 1.44 2005-05-11 12:36:45 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -48,34 +48,34 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #if HAVE_BZLIB_H
 #include <bzlib.h>
 #endif
-static void rec_write_head (Records p)
+static void rec_write_head(Records p)
 {
     int r;
 
-    assert (p);
-    assert (p->index_BFile);
+    assert(p);
+    assert(p->index_BFile);
 
-    r = bf_write (p->index_BFile, 0, 0, sizeof(p->head), &p->head);    
+    r = bf_write(p->index_BFile, 0, 0, sizeof(p->head), &p->head);    
     if (r)
     {
-        yaz_log (YLOG_FATAL|YLOG_ERRNO, "write head of %s", p->index_fname);
-        exit (1);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "write head of %s", p->index_fname);
+        exit(1);
     }
 }
 
-static void rec_tmp_expand (Records p, int size)
+static void rec_tmp_expand(Records p, int size)
 {
     if (p->tmp_size < size + 2048 ||
         p->tmp_size < p->head.block_size[REC_BLOCK_TYPES-1]*2)
     {
-        xfree (p->tmp_buf);
+        xfree(p->tmp_buf);
         p->tmp_size = size + (int)
 	        	(p->head.block_size[REC_BLOCK_TYPES-1])*2 + 2048;
-        p->tmp_buf = (char *) xmalloc (p->tmp_size);
+        p->tmp_buf = (char *) xmalloc(p->tmp_size);
     }
 }
 
-static int read_indx (Records p, SYSNO sysno, void *buf, int itemsize, 
+static int read_indx(Records p, SYSNO sysno, void *buf, int itemsize, 
                       int ignoreError)
 {
     int r;
@@ -86,20 +86,20 @@ static int read_indx (Records p, SYSNO sysno, void *buf, int itemsize,
     if (sz1 > itemsize)
 	sz1 = itemsize;  /* no more than itemsize bytes */
 
-    r = bf_read (p->index_BFile, 1+pos/RIDX_CHUNK, off, sz1, buf);
+    r = bf_read(p->index_BFile, 1+pos/RIDX_CHUNK, off, sz1, buf);
     if (r == 1 && sz1 < itemsize) /* boundary? - must read second part */
-	r = bf_read (p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1,
+	r = bf_read(p->index_BFile, 2+pos/RIDX_CHUNK, 0, itemsize - sz1,
 			(char*) buf + sz1);
     if (r != 1 && !ignoreError)
     {
-        yaz_log (YLOG_FATAL|YLOG_ERRNO, "read in %s at pos %ld",
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in %s at pos %ld",
               p->index_fname, (long) pos);
-        exit (1);
+        exit(1);
     }
     return r;
 }
 
-static void write_indx (Records p, SYSNO sysno, void *buf, int itemsize)
+static void write_indx(Records p, SYSNO sysno, void *buf, int itemsize)
 {
     zint pos = (sysno-1)*itemsize;
     int off = (int) (pos%RIDX_CHUNK);
@@ -114,7 +114,7 @@ static void write_indx (Records p, SYSNO sysno, void *buf, int itemsize)
 		(char*) buf + sz1);
 }
 
-static void rec_release_blocks (Records p, SYSNO sysno)
+static void rec_release_blocks(Records p, SYSNO sysno)
 {
     struct record_index_entry entry;
     zint freeblock;
@@ -122,35 +122,35 @@ static void rec_release_blocks (Records p, SYSNO sysno)
     int dst_type;
     int first = 1;
 
-    if (read_indx (p, sysno, &entry, sizeof(entry), 1) != 1)
+    if (read_indx(p, sysno, &entry, sizeof(entry), 1) != 1)
         return ;
 
     freeblock = entry.next;
-    assert (freeblock > 0);
+    assert(freeblock > 0);
     dst_type = (int) (freeblock & 7);
-    assert (dst_type < REC_BLOCK_TYPES);
+    assert(dst_type < REC_BLOCK_TYPES);
     freeblock = freeblock / 8;
     while (freeblock)
     {
-        if (bf_read (p->data_BFile[dst_type], freeblock, 0,
+        if (bf_read(p->data_BFile[dst_type], freeblock, 0,
 		     first ? sizeof(block_and_ref) : sizeof(zint),
 		     block_and_ref) != 1)
         {
-            yaz_log (YLOG_FATAL|YLOG_ERRNO, "read in rec_del_single");
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in rec_del_single");
             exit (1);
         }
 	if (first)
 	{
 	    short ref;
-	    memcpy (&ref, block_and_ref + sizeof(freeblock), sizeof(ref));
+	    memcpy(&ref, block_and_ref + sizeof(freeblock), sizeof(ref));
 	    --ref;
-	    memcpy (block_and_ref + sizeof(freeblock), &ref, sizeof(ref));
+	    memcpy(block_and_ref + sizeof(freeblock), &ref, sizeof(ref));
 	    if (ref)
 	    {
-		if (bf_write (p->data_BFile[dst_type], freeblock, 0,
+		if (bf_write(p->data_BFile[dst_type], freeblock, 0,
 			      sizeof(block_and_ref), block_and_ref))
 		{
-		    yaz_log (YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
+		    yaz_log(YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
 		    exit (1);
 		}
 		return;
@@ -158,33 +158,33 @@ static void rec_release_blocks (Records p, SYSNO sysno)
 	    first = 0;
 	}
 	
-        if (bf_write (p->data_BFile[dst_type], freeblock, 0, sizeof(freeblock),
+        if (bf_write(p->data_BFile[dst_type], freeblock, 0, sizeof(freeblock),
                       &p->head.block_free[dst_type]))
         {
-            yaz_log (YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
-            exit (1);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "write in rec_del_single");
+            exit(1);
         }
         p->head.block_free[dst_type] = freeblock;
-        memcpy (&freeblock, block_and_ref, sizeof(freeblock));
+        memcpy(&freeblock, block_and_ref, sizeof(freeblock));
 
         p->head.block_used[dst_type]--;
     }
     p->head.total_bytes -= entry.size;
 }
 
-static void rec_delete_single (Records p, Record rec)
+static void rec_delete_single(Records p, Record rec)
 {
     struct record_index_entry entry;
 
-    rec_release_blocks (p, rec->sysno);
+    rec_release_blocks(p, rec->sysno);
 
     entry.next = p->head.index_free;
     entry.size = 0;
     p->head.index_free = rec->sysno;
-    write_indx (p, rec->sysno, &entry, sizeof(entry));
+    write_indx(p, rec->sysno, &entry, sizeof(entry));
 }
 
-static void rec_write_tmp_buf (Records p, int size, SYSNO *sysnos)
+static void rec_write_tmp_buf(Records p, int size, SYSNO *sysnos)
 {
     struct record_index_entry entry;
     int no_written = 0;
@@ -201,12 +201,13 @@ static void rec_write_tmp_buf (Records p, int size, SYSNO *sysnos)
         block_free = p->head.block_free[dst_type];
         if (block_free)
         {
-            if (bf_read (p->data_BFile[dst_type],
+            if (bf_read(p->data_BFile[dst_type],
                          block_free, 0, sizeof(*p->head.block_free),
                          &p->head.block_free[dst_type]) != 1)
             {
-                yaz_log (YLOG_FATAL|YLOG_ERRNO, "read in %s at free block " ZINT_FORMAT,
-                      p->data_fname[dst_type], block_free);
+                yaz_log(YLOG_FATAL|YLOG_ERRNO, "read in %s at free block "
+			 ZINT_FORMAT,
+			 p->data_fname[dst_type], block_free);
 		exit (1);
             }
         }
@@ -225,22 +226,22 @@ static void rec_write_tmp_buf (Records p, int size, SYSNO *sysnos)
         }
         else
         {
-            memcpy (cptr, &block_free, sizeof(block_free));
-            bf_write (p->data_BFile[dst_type], block_prev, 0, 0, cptr);
+            memcpy(cptr, &block_free, sizeof(block_free));
+            bf_write(p->data_BFile[dst_type], block_prev, 0, 0, cptr);
             cptr = p->tmp_buf + no_written;
         }
         block_prev = block_free;
         no_written += (int)(p->head.block_size[dst_type]) - sizeof(zint);
         p->head.block_used[dst_type]++;
     }
-    assert (block_prev != -1);
+    assert(block_prev != -1);
     block_free = 0;
-    memcpy (cptr, &block_free, sizeof(block_free));
-    bf_write (p->data_BFile[dst_type], block_prev, 0,
+    memcpy(cptr, &block_free, sizeof(block_free));
+    bf_write(p->data_BFile[dst_type], block_prev, 0,
               sizeof(block_free) + (p->tmp_buf+size) - cptr, cptr);
 }
 
-Records rec_open (BFiles bfs, int rw, int compression_method)
+Records rec_open(BFiles bfs, int rw, int compression_method)
 {
     Records p;
     int i, r;
@@ -255,14 +256,14 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
     p->index_BFile = bf_open (bfs, p->index_fname, RIDX_CHUNK, rw);
     if (p->index_BFile == NULL)
     {
-        yaz_log (YLOG_FATAL|YLOG_ERRNO, "open %s", p->index_fname);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "open %s", p->index_fname);
         exit (1);
     }
-    r = bf_read (p->index_BFile, 0, 0, 0, p->tmp_buf);
+    r = bf_read(p->index_BFile, 0, 0, 0, p->tmp_buf);
     switch (r)
     {
     case 0:
-        memcpy (p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic));
+        memcpy(p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic));
 	sprintf (p->head.version, "%3d", REC_VERSION);
         p->head.index_free = 0;
         p->head.index_last = 1;
@@ -282,19 +283,19 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
             p->head.block_move[i] = p->head.block_size[i] * 24;
         }
         if (rw)
-            rec_write_head (p);
+            rec_write_head(p);
         break;
     case 1:
-        memcpy (&p->head, p->tmp_buf, sizeof(p->head));
+        memcpy(&p->head, p->tmp_buf, sizeof(p->head));
         if (memcmp (p->head.magic, REC_HEAD_MAGIC, sizeof(p->head.magic)))
         {
-            yaz_log (YLOG_FATAL, "file %s has bad format", p->index_fname);
+            yaz_log(YLOG_FATAL, "file %s has bad format", p->index_fname);
             exit (1);
         }
 	version = atoi (p->head.version);
 	if (version != REC_VERSION)
 	{
-	    yaz_log (YLOG_FATAL, "file %s is version %d, but version"
+	    yaz_log(YLOG_FATAL, "file %s is version %d, but version"
 		  " %d is required", p->index_fname, version, REC_VERSION);
 	    exit (1);
 	}
@@ -305,7 +306,7 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
         char str[80];
         sprintf (str, "recd%c", i + 'A');
         p->data_fname[i] = (char *) xmalloc (strlen(str)+1);
-        strcpy (p->data_fname[i], str);
+        strcpy(p->data_fname[i], str);
         p->data_BFile[i] = NULL;
     }
     for (i = 0; i<REC_BLOCK_TYPES; i++)
@@ -314,7 +315,7 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
                                           (int) (p->head.block_size[i]),
                                           rw)))
         {
-            yaz_log (YLOG_FATAL|YLOG_ERRNO, "bf_open %s", p->data_fname[i]);
+            yaz_log(YLOG_FATAL|YLOG_ERRNO, "bf_open %s", p->data_fname[i]);
             exit (1);
         }
     }
@@ -326,7 +327,7 @@ Records rec_open (BFiles bfs, int rw, int compression_method)
     return p;
 }
 
-static void rec_encode_unsigned (unsigned n, unsigned char *buf, int *len)
+static void rec_encode_unsigned(unsigned n, unsigned char *buf, int *len)
 {
     (*len) = 0;
     while (n > 127)
@@ -356,7 +357,7 @@ static void rec_decode_unsigned(unsigned *np, unsigned char *buf, int *len)
     *np = n;
 }
 
-static void rec_encode_zint (zint n, unsigned char *buf, int *len)
+static void rec_encode_zint(zint n, unsigned char *buf, int *len)
 {
     (*len) = 0;
     while (n > 127)
@@ -386,9 +387,9 @@ static void rec_decode_zint(zint *np, unsigned char *buf, int *len)
     *np = n;
 }
 
-static void rec_cache_flush_block1 (Records p, Record rec, Record last_rec,
-				    char **out_buf, int *out_size,
-				    int *out_offset)
+static void rec_cache_flush_block1(Records p, Record rec, Record last_rec,
+				   char **out_buf, int *out_size,
+				   int *out_offset)
 {
     int i;
     int len;
@@ -400,7 +401,7 @@ static void rec_cache_flush_block1 (Records p, Record rec, Record last_rec,
 	    int new_size = *out_offset + rec->size[i] + 65536;
 	    char *np = (char *) xmalloc (new_size);
 	    if (*out_offset)
-		memcpy (np, *out_buf, *out_offset);
+		memcpy(np, *out_buf, *out_offset);
 	    xfree (*out_buf);
 	    *out_size = new_size;
 	    *out_buf = np;
@@ -425,13 +426,13 @@ static void rec_cache_flush_block1 (Records p, Record rec, Record last_rec,
 	{
 	    rec_encode_unsigned (rec->size[i]+1, *out_buf + *out_offset, &len);
 	    (*out_offset) += len;
-	    memcpy (*out_buf + *out_offset, rec->info[i], rec->size[i]);
+	    memcpy(*out_buf + *out_offset, rec->info[i], rec->size[i]);
 	    (*out_offset) += rec->size[i];
 	}
     }
 }
 
-static void rec_write_multiple (Records p, int saveCount)
+static void rec_write_multiple(Records p, int saveCount)
 {
     int i;
     short ref_count = 0;
@@ -495,10 +496,10 @@ static void rec_write_multiple (Records p, int saveCount)
 				      &csize, out_buf, out_offset, 1, 0, 30);
 	    if (i != BZ_OK)
 	    {
-		yaz_log (YLOG_WARN, "bzBuffToBuffCompress error code=%d", i);
+		yaz_log(YLOG_WARN, "bzBuffToBuffCompress error code=%d", i);
 		csize = 0;
 	    }
-	    yaz_log (YLOG_LOG, "compress %4d %5d %5d", ref_count, out_offset,
+	    yaz_log(YLOG_LOG, "compress %4d %5d %5d", ref_count, out_offset,
 		  csize);
 #endif
 	    break;
@@ -510,13 +511,13 @@ static void rec_write_multiple (Records p, int saveCount)
 	    /* either no compression or compression not supported ... */
 	    csize = out_offset;
 	    rec_tmp_expand (p, csize);
-	    memcpy (p->tmp_buf + sizeof(zint) + sizeof(short) + sizeof(char),
+	    memcpy(p->tmp_buf + sizeof(zint) + sizeof(short) + sizeof(char),
 		    out_buf, out_offset);
 	    csize = out_offset;
 	    compression_method = REC_COMPRESS_NONE;
 	}
-	memcpy (p->tmp_buf + sizeof(zint), &ref_count, sizeof(ref_count));
-	memcpy (p->tmp_buf + sizeof(zint)+sizeof(short),
+	memcpy(p->tmp_buf + sizeof(zint), &ref_count, sizeof(ref_count));
+	memcpy(p->tmp_buf + sizeof(zint)+sizeof(short),
 		&compression_method, sizeof(compression_method));
 		
 	/* -------- compression */
@@ -526,7 +527,7 @@ static void rec_write_multiple (Records p, int saveCount)
     xfree (sysnos);
 }
 
-static void rec_cache_flush (Records p, int saveCount)
+static void rec_cache_flush(Records p, int saveCount)
 {
     int i, j;
 
@@ -538,17 +539,17 @@ static void rec_cache_flush (Records p, int saveCount)
     for (i = 0; i<p->cache_cur - saveCount; i++)
     {
         struct record_cache_entry *e = p->record_cache + i;
-        rec_rm (&e->rec);
+        rec_rm(&e->rec);
     } 
     /* i still being used ... */
     for (j = 0; j<saveCount; j++, i++)
-        memcpy (p->record_cache+j, p->record_cache+i,
+        memcpy(p->record_cache+j, p->record_cache+i,
                 sizeof(*p->record_cache));
     p->cache_cur = saveCount;
 }
 
-static Record *rec_cache_lookup (Records p, SYSNO sysno,
-                                 enum recordCacheFlag flag)
+static Record *rec_cache_lookup(Records p, SYSNO sysno,
+				enum recordCacheFlag flag)
 {
     int i;
     for (i = 0; i<p->cache_cur; i++)
@@ -564,7 +565,7 @@ static Record *rec_cache_lookup (Records p, SYSNO sysno,
     return NULL;
 }
 
-static void rec_cache_insert (Records p, Record rec, enum recordCacheFlag flag)
+static void rec_cache_insert(Records p, Record rec, enum recordCacheFlag flag)
 {
     struct record_cache_entry *e;
 
@@ -583,26 +584,26 @@ static void rec_cache_insert (Records p, Record rec, enum recordCacheFlag flag)
         if (used > 90000)
             rec_cache_flush (p, 1);
     }
-    assert (p->cache_cur < p->cache_max);
+    assert(p->cache_cur < p->cache_max);
 
     e = p->record_cache + (p->cache_cur)++;
     e->flag = flag;
     e->rec = rec_cp (rec);
 }
 
-void rec_close (Records *pp)
+void rec_close(Records *pp)
 {
     Records p = *pp;
     int i;
 
-    assert (p);
+    assert(p);
 
-    zebra_mutex_destroy (&p->mutex);
+    zebra_mutex_destroy(&p->mutex);
     rec_cache_flush (p, 0);
     xfree (p->record_cache);
 
     if (p->rw)
-        rec_write_head (p);
+        rec_write_head(p);
 
     if (p->index_BFile)
         bf_close (p->index_BFile);
@@ -618,7 +619,7 @@ void rec_close (Records *pp)
     *pp = NULL;
 }
 
-static Record rec_get_int (Records p, SYSNO sysno)
+static Record rec_get_int(Records p, SYSNO sysno)
 {
     int i, in_size, r;
     Record rec, *recp;
@@ -633,8 +634,8 @@ static Record rec_get_int (Records p, SYSNO sysno)
 #endif
     char compression_method;
 
-    assert (sysno > 0);
-    assert (p);
+    assert(sysno > 0);
+    assert(p);
 
     if ((recp = rec_cache_lookup (p, sysno, recordFlagNop)))
         return rec_cp (*recp);
@@ -646,18 +647,18 @@ static Record rec_get_int (Records p, SYSNO sysno)
         return NULL;       /* record is deleted */
 
     dst_type = (int) (entry.next & 7);
-    assert (dst_type < REC_BLOCK_TYPES);
+    assert(dst_type < REC_BLOCK_TYPES);
     freeblock = entry.next / 8;
 
-    assert (freeblock > 0);
+    assert(freeblock > 0);
     
     rec_tmp_expand (p, entry.size);
 
     cptr = p->tmp_buf;
-    r = bf_read (p->data_BFile[dst_type], freeblock, 0, 0, cptr);
+    r = bf_read(p->data_BFile[dst_type], freeblock, 0, 0, cptr);
     if (r < 0)
 	return 0;
-    memcpy (&freeblock, cptr, sizeof(freeblock));
+    memcpy(&freeblock, cptr, sizeof(freeblock));
 
     while (freeblock)
     {
@@ -665,17 +666,17 @@ static Record rec_get_int (Records p, SYSNO sysno)
 
         cptr += p->head.block_size[dst_type] - sizeof(freeblock);
         
-        memcpy (&tmp, cptr, sizeof(tmp));
-        r = bf_read (p->data_BFile[dst_type], freeblock, 0, 0, cptr);
+        memcpy(&tmp, cptr, sizeof(tmp));
+        r = bf_read(p->data_BFile[dst_type], freeblock, 0, 0, cptr);
 	if (r < 0)
 	    return 0;
-        memcpy (&freeblock, cptr, sizeof(freeblock));
-        memcpy (cptr, &tmp, sizeof(tmp));
+        memcpy(&freeblock, cptr, sizeof(freeblock));
+        memcpy(cptr, &tmp, sizeof(tmp));
     }
 
     rec = (Record) xmalloc (sizeof(*rec));
     rec->sysno = sysno;
-    memcpy (&compression_method, p->tmp_buf + sizeof(zint) + sizeof(short),
+    memcpy(&compression_method, p->tmp_buf + sizeof(zint) + sizeof(short),
 	    sizeof(compression_method));
     in_buf = p->tmp_buf + sizeof(zint) + sizeof(short) + sizeof(char);
     in_size = entry.size - sizeof(short) - sizeof(char);
@@ -693,17 +694,17 @@ static Record rec_get_int (Records p, SYSNO sysno)
 	    i = bzBuffToBuffDecompress
 #endif
                  (bz_buf, &bz_size, in_buf, in_size, 0, 0);
-	    yaz_log (YLOG_LOG, "decompress %5d %5d", in_size, bz_size);
+	    yaz_log(YLOG_LOG, "decompress %5d %5d", in_size, bz_size);
 	    if (i == BZ_OK)
 		break;
-	    yaz_log (YLOG_LOG, "failed");
+	    yaz_log(YLOG_LOG, "failed");
 	    xfree (bz_buf);
             bz_size *= 2;
 	}
 	in_buf = bz_buf;
 	in_size = bz_size;
 #else
-	yaz_log (YLOG_FATAL, "cannot decompress record(s) in BZIP2 format");
+	yaz_log(YLOG_FATAL, "cannot decompress record(s) in BZIP2 format");
 	exit (1);
 #endif
 	break;
@@ -747,22 +748,22 @@ static Record rec_get_int (Records p, SYSNO sysno)
 	if (rec->info[i] && rec->size[i])
 	{
 	    char *np = xmalloc (rec->size[i]+1);
-	    memcpy (np, rec->info[i], rec->size[i]);
+	    memcpy(np, rec->info[i], rec->size[i]);
             np[rec->size[i]] = '\0';
 	    rec->info[i] = np;
 	}
 	else
 	{
-	    assert (rec->info[i] == 0);
-	    assert (rec->size[i] == 0);
+	    assert(rec->info[i] == 0);
+	    assert(rec->size[i] == 0);
 	}
     }
     xfree (bz_buf);
-    rec_cache_insert (p, rec, recordFlagNop);
+    rec_cache_insert(p, rec, recordFlagNop);
     return rec;
 }
 
-Record rec_get (Records p, SYSNO sysno)
+Record rec_get(Records p, SYSNO sysno)
 {
     Record rec;
     zebra_mutex_lock (&p->mutex);
@@ -772,13 +773,13 @@ Record rec_get (Records p, SYSNO sysno)
     return rec;
 }
 
-static Record rec_new_int (Records p)
+static Record rec_new_int(Records p)
 {
     int i;
     SYSNO sysno;
     Record rec;
 
-    assert (p);
+    assert(p);
     rec = (Record) xmalloc (sizeof(*rec));
     if (1 || p->head.index_free == 0)
         sysno = (p->head.index_last)++;
@@ -797,11 +798,11 @@ static Record rec_new_int (Records p)
         rec->info[i] = NULL;
         rec->size[i] = 0;
     }
-    rec_cache_insert (p, rec, recordFlagNew);
+    rec_cache_insert(p, rec, recordFlagNew);
     return rec;
 }
 
-Record rec_new (Records p)
+Record rec_new(Records p)
 {
     Record rec;
     zebra_mutex_lock (&p->mutex);
@@ -811,7 +812,7 @@ Record rec_new (Records p)
     return rec;
 }
 
-void rec_del (Records p, Record *recpp)
+void rec_del(Records p, Record *recpp)
 {
     Record *recp;
 
@@ -819,38 +820,38 @@ void rec_del (Records p, Record *recpp)
     (p->head.no_records)--;
     if ((recp = rec_cache_lookup (p, (*recpp)->sysno, recordFlagDelete)))
     {
-        rec_rm (recp);
+        rec_rm(recp);
         *recp = *recpp;
     }
     else
     {
-        rec_cache_insert (p, *recpp, recordFlagDelete);
-        rec_rm (recpp);
+        rec_cache_insert(p, *recpp, recordFlagDelete);
+        rec_rm(recpp);
     }
     zebra_mutex_unlock (&p->mutex);
     *recpp = NULL;
 }
 
-void rec_put (Records p, Record *recpp)
+void rec_put(Records p, Record *recpp)
 {
     Record *recp;
 
     zebra_mutex_lock (&p->mutex);
     if ((recp = rec_cache_lookup (p, (*recpp)->sysno, recordFlagWrite)))
     {
-        rec_rm (recp);
+        rec_rm(recp);
         *recp = *recpp;
     }
     else
     {
-        rec_cache_insert (p, *recpp, recordFlagWrite);
-        rec_rm (recpp);
+        rec_cache_insert(p, *recpp, recordFlagWrite);
+        rec_rm(recpp);
     }
     zebra_mutex_unlock (&p->mutex);
     *recpp = NULL;
 }
 
-void rec_rm (Record *recpp)
+void rec_rm(Record *recpp)
 {
     int i;
 
@@ -862,7 +863,7 @@ void rec_rm (Record *recpp)
     *recpp = NULL;
 }
 
-Record rec_cp (Record rec)
+Record rec_cp(Record rec)
 {
     Record n;
     int i;
@@ -879,13 +880,13 @@ Record rec_cp (Record rec)
         {
             n->size[i] = rec->size[i];
             n->info[i] = (char *) xmalloc (rec->size[i]);
-            memcpy (n->info[i], rec->info[i], rec->size[i]);
+            memcpy(n->info[i], rec->info[i], rec->size[i]);
         }
     return n;
 }
 
 
-char *rec_strdup (const char *s, size_t *len)
+char *rec_strdup(const char *s, size_t *len)
 {
     char *p;
 
@@ -896,7 +897,7 @@ char *rec_strdup (const char *s, size_t *len)
     }
     *len = strlen(s)+1;
     p = (char *) xmalloc (*len);
-    strcpy (p, s);
+    strcpy(p, s);
     return p;
 }
 
