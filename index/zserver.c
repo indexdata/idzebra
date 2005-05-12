@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.132 2005-05-11 12:39:37 adam Exp $
+/* $Id: zserver.c,v 1.133 2005-05-12 10:17:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -471,7 +471,6 @@ static int es_admin (ZebraHandle zh, Z_Admin *r)
     default:
 	break;
     }
-
     return 0;
 }
 
@@ -561,11 +560,14 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                 rr->errstring = "database";
                 return 0;
             }
-	    if (notToKeep)
+	    if (zebra_begin_trans(zh, 1) != ZEBRA_OK)
+	    {
+		zebra_result(zh, &rr->errcode, &rr->errstring);
+	    }
+	    else
 	    {
 		int i;
-                zebra_begin_trans (zh, 1);
-		for (i = 0; i < notToKeep->num; i++)
+		for (i = 0; notToKeep && i < notToKeep->num; i++)
 		{
 		    Z_External *rec = notToKeep->elements[i]->record;
                     struct oident *oident = 0;
