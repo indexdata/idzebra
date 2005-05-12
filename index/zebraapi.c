@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.5 2005-05-06 18:59:23 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.6 2005-05-12 10:01:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -1025,6 +1025,8 @@ int zebra_auth (ZebraHandle zh, const char *user, const char *pass)
     p = res_get(zs->global_res, u);
     xfree (zh->user_perm);
     zh->user_perm = xstrdup(p ? p : "r");
+
+    yaz_log(LOG_LOG, "User perm for %s: %s", u, zh->user_perm);
 
     /* users that don't require a password .. */
     if (zh->user_perm && strchr(zh->user_perm, 'a'))

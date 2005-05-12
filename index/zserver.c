@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.117.2.2 2005-01-16 23:13:29 adam Exp $
+/* $Id: zserver.c,v 1.117.2.3 2005-05-12 10:01:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -489,6 +489,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 	    Z_IUUpdateEsRequest *esRequest = up->u.esRequest;
 	    Z_IUOriginPartToKeep *toKeep = esRequest->toKeep;
 	    Z_IUSuppliedRecords *notToKeep = esRequest->notToKeep;
+	    int res;
 	    
 	    yaz_log (LOG_LOG, "action");
 	    if (toKeep->action)
@@ -534,11 +535,13 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                 rr->errstring = "database";
                 return 0;
             }
-	    if (notToKeep)
+	    res = zebra_begin_trans (zh, 1);
+	    if (res)
+		zebra_result(zh, &rr->errcode, &rr->errstring);
+	    else
 	    {
 		int i;
-                zebra_begin_trans (zh, 1);
-		for (i = 0; i < notToKeep->num; i++)
+		for (i = 0; notToKeep && i < notToKeep->num; i++)
 		{
 		    Z_External *rec = notToKeep->elements[i]->record;
                     struct oident *oident = 0;
@@ -691,7 +694,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 			}
                     }
 		}
-                zebra_end_trans (zh);
+		zebra_end_trans (zh);
 	    }
 	}
     }
