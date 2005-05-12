@@ -5,7 +5,7 @@ dnl ----- Setup Docbook documentation for YAZ
 AC_DEFUN([YAZ_DOC],
 [
 AC_SUBST(DTD_DIR)	
-AC_ARG_WITH(docbook-dtd, [  --with-docbook-dtd[=DIR]  use docbookx.dtd in DIR],
+AC_ARG_WITH(docbook-dtd,[[  --with-docbook-dtd=DIR  use docbookx.dtd in DIR]],
 [
 	if test -f "$withval/docbookx.dtd"; then
 		DTD_DIR=$withval
@@ -13,11 +13,11 @@ AC_ARG_WITH(docbook-dtd, [  --with-docbook-dtd[=DIR]  use docbookx.dtd in DIR],
 ],[
 	AC_MSG_CHECKING(for docbookx.dtd)
 	DTD_DIR=""
-	for d in /usr/share/sgml/docbook/dtd/xml/4.1.2 \
-		/usr/share/sgml/docbook/xml-dtd-4.1.2* \
-		/usr/share/sgml/docbook/xml-dtd-4.1 \
-		/usr/share/sgml/docbook/dtd/xml/4.0 \
-		/usr/lib/sgml/dtd/docbook-xml 
+	for d in /usr/lib/sgml/dtd/docbook-xml \
+		 /usr/share/sgml/docbook/dtd/4.2 \
+		 /usr/share/sgml/docbook/dtd/xml/4.0 \
+		 /usr/share/sgml/docbook/dtd/xml/4.1.2 \
+		 /usr/share/sgml/docbook/xml-dtd-4.* 
 	do
 		if test -f $d/docbookx.dtd; then
 			AC_MSG_RESULT($d)
@@ -30,7 +30,7 @@ AC_ARG_WITH(docbook-dtd, [  --with-docbook-dtd[=DIR]  use docbookx.dtd in DIR],
 	fi
 ])
 AC_SUBST(DSSSL_DIR)
-AC_ARG_WITH(docbook-dsssl,[  --with-docbook-dsssl[=DIR] use Docbook DSSSL in DIR/{html,print}/docbook.dsl],
+AC_ARG_WITH(docbook-dsssl,[[  --with-docbook-dsssl=DIR use Docbook DSSSL in DIR/{html,print}/docbook.dsl]],
 [
 	if test -f "$withval/html/docbook.dsl"; then
 		DSSSL_DIR=$withval
@@ -53,7 +53,7 @@ AC_ARG_WITH(docbook-dsssl,[  --with-docbook-dsssl[=DIR] use Docbook DSSSL in DIR
 	fi
 ])
 AC_SUBST(XSL_DIR)
-AC_ARG_WITH(docbook-xsl,[  --with-docbook-xsl[=DIR]  use Docbook XSL in DIR/{htmlhelp,xhtml}],
+AC_ARG_WITH(docbook-xsl,[[  --with-docbook-xsl=DIR  use Docbook XSL in DIR/{htmlhelp,xhtml}]],
 [
 	if test -f "$withval/htmlhelp/htmlhelp.xsl"; then
 		XSL_DIR=$withval
@@ -92,7 +92,7 @@ AC_DEFUN([YAZ_INIT],
 		else
 			yazsrcdir=$srcdir
 		fi
-		for i in ${yazsrcdir}/../yaz* ${yazsrcdir}/../yaz ../yaz* ../yaz; do
+		for i in ${yazsrcdir}/../../yaz ${yazsrcdir}/../yaz* ${yazsrcdir}/../yaz; do
 			if test -d $i; then
 				if test -r $i/yaz-config; then
 					yazconfig=$i/yaz-config
@@ -128,6 +128,9 @@ AC_DEFUN([YAZ_INIT],
 			req_yaz_version=`echo "$2" | awk 'BEGIN { FS = "."; } { printf "%d", ([$]1 * 1000 + [$]2) * 1000 + [$]3;}'`
 			if test "$have_yaz_version" -lt "$req_yaz_version"; then
 				AC_MSG_ERROR([$YAZVERSION. Requires $2 or later])
+			fi
+			if test "$req_yaz_version" -gt "2000028"; then
+				YAZINC="$YAZINC -DYAZ_USE_NEW_LOG=1"
 			fi
 		fi
 	fi
