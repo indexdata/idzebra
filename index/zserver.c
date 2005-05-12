@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.117.2.3 2005-05-12 10:01:54 adam Exp $
+/* $Id: zserver.c,v 1.117.2.4 2005-05-12 10:03:24 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -536,7 +536,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                 return 0;
             }
 	    res = zebra_begin_trans (zh, 1);
-	    if (res)
+	    if (res) /* zebra_trans_failed ? */
 		zebra_result(zh, &rr->errcode, &rr->errstring);
 	    else
 	    {
