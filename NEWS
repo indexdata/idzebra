@@ -4,7 +4,7 @@ Depend on YAZ 2.0.18 or later in configure.
 
 Fixed crash that could occur if ES update transaction failed.
 
-Configure enables the use the crypt API - if available.
+Configure enables the use of the crypt API - if available.
 
 Fixed bug #304: Fuzzy search regExpr-2 did not use proper error distance
 of 1.
