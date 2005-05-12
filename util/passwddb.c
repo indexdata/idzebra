@@ -1,4 +1,4 @@
-/* $Id: passwddb.c,v 1.7 2002-08-02 19:26:57 adam Exp $
+/* $Id: passwddb.c,v 1.7.2.1 2005-05-12 08:02:47 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -28,11 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <stdio.h>
 
-#ifndef USE_CRYPT
-#define USE_CRYPT 0
-#endif
-
-#if USE_CRYPT
+#if HAVE_CRYPT_H
 #include <crypt.h>
 #endif
 
@@ -128,7 +124,7 @@ void passwd_db_show (Passwd_db db)
 int passwd_db_auth (Passwd_db db, const char *user, const char *pass)
 {
 	struct passwd_entry *pe;
-#if USE_CRYPT
+#if HAVE_CRYPT_H
 	char salt[3];
 	const char *des_try;
 #endif
@@ -137,7 +133,7 @@ int passwd_db_auth (Passwd_db db, const char *user, const char *pass)
 			break;
 	if (!pe)
 		return -1;
-#if USE_CRYPT
+#if HAVE_CRYPT_H
 	if (strlen (pe->des) < 3)
 		return -3;
 	if (!pass)

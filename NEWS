@@ -1,4 +1,6 @@
---- 1.3.26 2005/05/04
+--- 1.3.26 2005/05/XX
+
+Configure enables the use the crypt API - if available.
 
 Fixed bug #304: Fuzzy search regExpr-2 did not use proper error distance
 of 1.
