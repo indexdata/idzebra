@@ -1,5 +1,7 @@
 --- 1.3.26 2005/05/XX
 
+Depend on YAZ 2.0.18 or later in configure.
+
 Fixed crash that could occur if ES update transaction failed.
 
 Configure enables the use the crypt API - if available.
