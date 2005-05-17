@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.42 2005-04-18 08:05:28 adam Exp $
+/* $Id: bfile.c,v 1.43 2005-05-17 08:50:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -99,11 +99,11 @@ static void unlink_cache (BFiles bfs)
     unlink (bfs->cache_fname);
 }
 
-void bf_cache (BFiles bfs, const char *spec)
+ZEBRA_RES bf_cache (BFiles bfs, const char *spec)
 {
     if (spec)
     {
-        yaz_log (YLOG_LOG, "enabling cache spec=%s", spec);
+        yaz_log (YLOG_LOG, "enabling shadow spec=%s", spec);
         if (!bfs->commit_area)
 	    bfs->commit_area = mf_init ("shadow", spec, bfs->base);
         if (bfs->commit_area)
@@ -114,9 +114,15 @@ void bf_cache (BFiles bfs, const char *spec)
             strcat (bfs->cache_fname, "/cache");
             yaz_log (YLOG_LOG, "cache_fname = %s", bfs->cache_fname);
         }
+	else
+	{
+	    yaz_log(YLOG_WARN, "shadow could not be enabled");
+	    return ZEBRA_FAIL;
+	}
     }
     else
         bfs->commit_area = NULL;
+    return ZEBRA_OK;
 }
 
 int bf_close (BFile bf)

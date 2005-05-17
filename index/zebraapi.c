@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.168 2005-05-11 12:39:37 adam Exp $
+/* $Id: zebraapi.c,v 1.169 2005-05-17 08:50:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -268,15 +268,27 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     
     reg->dh = data1_createx (DATA1_FLAG_XML);
     if (!reg->dh)
+    {
+	xfree(reg);
         return 0;
+    }
     reg->bfs = bfs_create (res_get (res, "register"), reg_path);
     if (!reg->bfs)
     {
         data1_destroy(reg->dh);
+	xfree(reg);
         return 0;
     }
     if (useshadow)
-        bf_cache (reg->bfs, res_get (res, "shadow"));
+    {
+        if (bf_cache (reg->bfs, res_get (res, "shadow")) == ZEBRA_FAIL)
+	{
+	    bfs_destroy(reg->bfs);
+	    data1_destroy(reg->dh);
+	    xfree(reg);
+	    return 0;
+	}
+    }
 
     getcwd(cwd, sizeof(cwd)-1);
     profilePath = res_get_def(res, "profilePath", DEFAULT_PROFILE_PATH);

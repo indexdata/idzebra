@@ -1,4 +1,4 @@
-/* $Id: bfile.h,v 1.4 2005-03-30 09:25:23 adam Exp $
+/* $Id: bfile.h,v 1.5 2005-05-17 08:50:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -73,7 +73,7 @@ int bf_write (BFile bf, zint no, int offset, int nbytes, const void *buf);
 
 /* bf_cache: enables bfile cache if spec is not NULL */
 YAZ_EXPORT
-void bf_cache (BFiles bfs, const char *spec);
+ZEBRA_RES bf_cache (BFiles bfs, const char *spec);
 
 /* bf_commitExists: returns 1 if commit is pending; 0 otherwise */
 YAZ_EXPORT

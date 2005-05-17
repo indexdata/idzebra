@@ -1,4 +1,4 @@
-/* $Id: mfile.c,v 1.60 2005-04-15 10:47:47 adam Exp $
+/* $Id: mfile.c,v 1.61 2005-05-17 08:50:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -161,7 +161,7 @@ static zint file_position(MFile mf, zint pos, int offset)
             if (!mf->wr && errno == ENOENT && off == 0)
                 return -2;
     	    yaz_log (YLOG_WARN|YLOG_ERRNO, "Failed to open %s", mf->files[c].path);
-    	     return -1;
+	    return -1;
         }
     }
     ps = pos - off;
