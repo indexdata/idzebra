@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.6 2005-05-12 10:01:54 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.7 2005-05-18 12:20:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -43,13 +43,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ASSERTZHRES assert(zh && zh->service && zh->res)
 #define ASSERTZS assert(zs)
 
-/* A simple log macro */
-/* don't break with older yazen that lack log_app2 */
-#ifdef LOG_APP2
 #define LOG_API LOG_APP2
-#else
-#define LOG_API LOG_DEBUG
-#endif
 
 static Res zebra_open_res (ZebraHandle zh);
 static void zebra_close_res (ZebraHandle zh);
@@ -94,7 +88,6 @@ ZebraHandle zebra_open (ZebraService zs)
     ZebraHandle zh;
     const char *default_encoding;
     ASSERTZS;
-    yaz_log(LOG_API,"zebra_open");
 
     if (!zs)
         return 0;
