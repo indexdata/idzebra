@@ -1,4 +1,4 @@
-/* $Id: rsmultiandor.c,v 1.17 2005-05-03 09:11:36 adam Exp $
+/* $Id: rsmultiandor.c,v 1.18 2005-05-18 11:47:50 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -268,13 +268,14 @@ static RSET rsmulti_andor_create(NMEM nmem,
 				 int scope, int no_rsets, RSET* rsets, 
 				 const struct rset_control *ctrl)
 {
-    RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope,0);
+    RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope, 0);
     struct rset_private *info;
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsmultiandor");
         log_level_initialized = 1;
     }
+    yaz_log(log_level, "rsmultiand_andor_create scope=%d", scope);
     info = (struct rset_private *) nmem_malloc(rnew->nmem,sizeof(*info));
     info->no_rsets = no_rsets;
     info->rsets = (RSET*)nmem_malloc(rnew->nmem, no_rsets*sizeof(*rsets));
@@ -484,6 +485,7 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                 p->eof = 1; /* game over, once tails have been returned */
                 p->tailbits[mintail]=0; 
                 (p->tailcount)--;
+		(p->hits)++;
                 return 1;
             }
             /* still a tail? */
@@ -492,6 +494,7 @@ static int r_read_and (RSFD rfd, void *buf, TERMID *term)
                 p->tailbits[mintail]=0;
                 (p->tailcount)--;
             }
+	    (p->hits)++;
             return 1;
         } 
         /* not tailing, forward until all reocrds match, and set up */
