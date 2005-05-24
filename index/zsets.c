@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.82 2005-05-11 12:39:37 adam Exp $
+/* $Id: zsets.c,v 1.83 2005-05-24 11:35:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -43,6 +43,7 @@ struct zebra_set_term_entry {
     int use;
     char *term;
 };
+
 struct zebra_set {
     char *name;
     RSET rset;
@@ -361,9 +362,9 @@ void resultSetDestroy (ZebraHandle zh, int num, char **names,int *statuses)
     }
 }
 
-ZebraMetaRecord *zebra_meta_records_create_range (ZebraHandle zh,
-						  const char *name, 
-						  zint start, int num)
+ZebraMetaRecord *zebra_meta_records_create_range(ZebraHandle zh,
+						 const char *name, 
+						 zint start, int num)
 {
     zint pos_small[10];
     zint *pos = pos_small;
@@ -386,8 +387,8 @@ ZebraMetaRecord *zebra_meta_records_create_range (ZebraHandle zh,
     return mr;
 }
 
-ZebraMetaRecord *zebra_meta_records_create (ZebraHandle zh, const char *name, 
-					    int num, zint *positions)
+ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name, 
+					   int num, zint *positions)
 {
     ZebraSet sset;
     ZebraMetaRecord *sr = 0;
@@ -794,15 +795,15 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     }
     rset_close (rfd);
     yaz_log(log_level_sort, ZINT_FORMAT " keys, " ZINT_FORMAT " sysnos, sort",
-		    kno, sset->hits);   
+	    kno, sset->hits);   
     for (i = 0; i < numTerms; i++)
         yaz_log(log_level_sort, "term=\"%s\" type=%s count=" ZINT_FORMAT,
-                 terms[i]->name, terms[i]->flags, rset_count(terms[i]->rset));
+                 terms[i]->name, terms[i]->flags, terms[i]->rset->hits_count);
     *sort_status = Z_SortResponse_success;
     return ZEBRA_OK;
 }
 
-RSET resultSetRef (ZebraHandle zh, const char *resultSetId)
+RSET resultSetRef(ZebraHandle zh, const char *resultSetId)
 {
     ZebraSet s;
 
@@ -811,25 +812,19 @@ RSET resultSetRef (ZebraHandle zh, const char *resultSetId)
     return NULL;
 }
 
-ZEBRA_RES resultSetRank (ZebraHandle zh, ZebraSet zebraSet,
-			 RSET rset, NMEM nmem)
+ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
+			RSET rset, NMEM nmem)
 {
-    zint kno = 0;
     struct it_key key;
-    RSFD rfd;
     TERMID termid;
     TERMID *terms;
+    zint kno = 0;
     int numTerms = 0;
     int n = 0;
     int i;
     ZebraRankClass rank_class;
-    struct rank_control *rc;
     struct zset_sort_info *sort_info;
     const char *rank_handler_name = res_get_def(zh->res, "rank", "rank-1");
-    double cur,tot; 
-    zint est=-2; /* -2 not done, -1 can't do, >0 actual estimate*/
-    zint esthits;
-    double ratio;
 
     if (!log_level_set)
         loglevels();
@@ -837,90 +832,67 @@ ZEBRA_RES resultSetRank (ZebraHandle zh, ZebraSet zebraSet,
     sort_info->num_entries = 0;
     zebraSet->hits = 0;
     rset_getterms(rset, 0, 0, &n);
-    yaz_log(YLOG_LOG, "Got %d terms", n);
     terms = (TERMID *) nmem_malloc(nmem, sizeof(*terms)*n);
     rset_getterms(rset, terms, n, &numTerms);
 
-    rfd = rset_open (rset, RSETF_READ);
-
-    rank_class = zebraRankLookup (zh, rank_handler_name);
+    rank_class = zebraRankLookup(zh, rank_handler_name);
     if (!rank_class)
     {
         yaz_log(YLOG_WARN, "No such rank handler: %s", rank_handler_name);
 	zebra_setError(zh, YAZ_BIB1_UNSUPP_SEARCH, "Cannot find rank handler");
         return ZEBRA_FAIL;
     }
-    rc = rank_class->control;
-
-    if (rset_read (rfd, &key, &termid))
+    else
     {
-        zint psysno = key.mem[0];
-        int score;
-        void *handle =
-            (*rc->begin) (zh->reg, rank_class->class_handle, rset, nmem,
-                          terms, numTerms);
-        (zebraSet->hits)++;
-        esthits = atoi(res_get_def(zh->res, "estimatehits","0"));
-        if (!esthits) 
-            est = -1; /* can not do */
-        do
-        {
-            zint this_sys = key.mem[0]; /* FIXME - assumes scope==2 */
-            zint seqno = key.mem[key.len-1]; /* FIXME - assumes scope==2 */
-            kno++;
-            key_logdump_txt(log_level_searchhits,&key," Got hit");
-            if (this_sys != psysno)
-            {
-                score = (*rc->calc) (handle, psysno);
-
-                resultSetInsertRank (zh, sort_info, psysno, score, 'A');
-                (zebraSet->hits)++;
-                psysno = this_sys;
-            }
-            (*rc->add) (handle, CAST_ZINT_TO_INT(seqno), termid);
-            
-            if ((est==-2) && (zebraSet->hits==esthits))
-            { /* time to estimate the hits */
-                rset_pos(rfd,&cur,&tot); 
-                if (tot>0) {
-                    ratio = cur/tot;
-                    est = (zint)(0.5+zebraSet->hits/ratio);
-                    yaz_log(log_level_searchhits, "Estimating hits (%s) "
-                                  "%0.1f->" ZINT_FORMAT
-                                  "; %0.1f->" ZINT_FORMAT,
-                                  rset->control->desc,
-                                  cur, zebraSet->hits,
-                                  tot, est);
-                    i = 0; /* round to 3 significant digits */
-                    while (est>1000) {
-                        est /= 10;
-                        i++;
-                    }
-                    while (i--)
-			est *= 10;
-                    zebraSet->hits = est;
-                }
-            }
-        }
-        while (rset_read (rfd, &key,&termid) && (est<0) );
-        score = (*rc->calc)(handle, psysno);
-        resultSetInsertRank(zh, sort_info, psysno, score, 'A');
-        (*rc->end) (zh->reg, handle);
+	RSFD rfd = rset_open(rset, RSETF_READ);
+	struct rank_control *rc = rank_class->control;
+	double score;
+	
+	void *handle =
+	    (*rc->begin) (zh->reg, rank_class->class_handle, rset, nmem,
+			  terms, numTerms);
+	zint psysno = 0;
+	while (rset_read(rfd, &key, &termid))
+	{
+	    zint this_sys = key.mem[0];
+	    zint seqno = key.mem[key.len-1];
+	    kno++;
+	    key_logdump_txt(log_level_searchhits, &key, " Got hit");
+	    if (this_sys != psysno)
+	    {
+		if (rfd->counted_items >= rset->hits_limit)
+		    break;
+		if (psysno)
+		{
+		    score = (*rc->calc) (handle, psysno);
+		    resultSetInsertRank (zh, sort_info, psysno, score, 'A');
+		}
+		psysno = this_sys;
+	    }
+	    (*rc->add) (handle, CAST_ZINT_TO_INT(seqno), termid);
+	}
+	if (psysno)
+	{
+	    score = (*rc->calc)(handle, psysno);
+	    resultSetInsertRank(zh, sort_info, psysno, score, 'A');
+	}
+	(*rc->end) (zh->reg, handle);
+	rset_close (rfd);
     }
-    rset_close (rfd);
-    
+    zebraSet->hits = rset->hits_count;
+
     yaz_log(log_level_searchterms, ZINT_FORMAT " keys, "
 	    ZINT_FORMAT " sysnos, rank",  kno, zebraSet->hits);
     for (i = 0; i < numTerms; i++)
     {
         yaz_log(log_level_searchterms, "term=\"%s\" type=%s count="
 		ZINT_FORMAT,
-		terms[i]->name, terms[i]->flags, rset_count(terms[i]->rset));
+		terms[i]->name, terms[i]->flags, terms[i]->rset->hits_count);
     }
     return ZEBRA_OK;
 }
 
-ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name)
+ZebraRankClass zebraRankLookup(ZebraHandle zh, const char *name)
 {
     ZebraRankClass p = zh->reg->rank_classes;
     while (p && strcmp (p->control->name, name))
@@ -934,7 +906,7 @@ ZebraRankClass zebraRankLookup (ZebraHandle zh, const char *name)
     return p;
 }
 
-void zebraRankInstall (struct zebra_register *reg, struct rank_control *ctrl)
+void zebraRankInstall(struct zebra_register *reg, struct rank_control *ctrl)
 {
     ZebraRankClass p = (ZebraRankClass) xmalloc (sizeof(*p));
     p->control = (struct rank_control *) xmalloc (sizeof(*p->control));
@@ -945,7 +917,7 @@ void zebraRankInstall (struct zebra_register *reg, struct rank_control *ctrl)
     reg->rank_classes = p;
 }
 
-void zebraRankDestroy (struct zebra_register *reg)
+void zebraRankDestroy(struct zebra_register *reg)
 {
     ZebraRankClass p = reg->rank_classes;
     while (p)
@@ -959,4 +931,102 @@ void zebraRankDestroy (struct zebra_register *reg)
         p = p_next;
     }
     reg->rank_classes = NULL;
+}
+
+static int trav_rset_for_termids(RSET rset, TERMID *termid_array,
+				 zint *hits_array, int *approx_array)
+{
+    int no = 0;
+    int i;
+    for (i = 0; i<rset->no_children; i++)
+	no += trav_rset_for_termids(rset->children[i],
+				    (termid_array ? termid_array + no : 0),
+				    (hits_array ? hits_array + no : 0),
+				    (approx_array ? approx_array + no : 0));
+    if (rset->term)
+    {
+	if (termid_array)
+	    termid_array[no] = rset->term;
+	if (hits_array)
+	    hits_array[no] = rset->hits_count;
+	if (approx_array)
+	    approx_array[no] = rset->hits_approx;
+#if 0
+	yaz_log(YLOG_LOG, "rset=%p term=%s count=" ZINT_FORMAT,
+		rset, rset->term->name, rset->hits_count);
+#endif
+	no++;
+    }
+    return no;
+}
+
+ZEBRA_RES zebra_result_set_term_no(ZebraHandle zh, const char *setname,
+				   int *num_terms)
+{
+    ZebraSet sset = resultSetGet(zh, setname);
+    *num_terms = 0;
+    if (sset)
+    {
+	*num_terms = trav_rset_for_termids(sset->rset, 0, 0, 0);
+	return ZEBRA_OK;
+    }
+    return ZEBRA_FAIL;
+}
+
+ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
+				     int no, zint *count, int *approx,
+				     char *termbuf, size_t *termlen)
+{
+    ZebraSet sset = resultSetGet(zh, setname);
+    if (sset)
+    {
+	int num_terms = trav_rset_for_termids(sset->rset, 0, 0, 0);
+	if (no >= 0 && no < num_terms)
+	{
+	    TERMID *term_array = xmalloc(num_terms * sizeof(*term_array));
+	    zint *hits_array = xmalloc(num_terms * sizeof(*hits_array));
+	    int *approx_array = xmalloc(num_terms * sizeof(*approx_array));
+	    
+	    trav_rset_for_termids(sset->rset, term_array,
+				  hits_array, approx_array);
+
+	    if (count)
+		*count = hits_array[no];
+	    if (approx)
+		*approx = approx_array[no];
+	    if (termbuf)
+	    {
+		char *inbuf = term_array[no]->name;
+		size_t inleft = strlen(inbuf);
+		size_t outleft = *termlen - 1;
+
+		if (zh->iconv_from_utf8 != 0)
+		{
+		    char *outbuf = termbuf;
+		    size_t ret;
+		    
+		    ret = yaz_iconv(zh->iconv_from_utf8, &inbuf, &inleft,
+				    &outbuf, &outleft);
+		    if (ret == (size_t)(-1))
+			*termlen = 0;
+		    else
+			*termlen = outbuf - termbuf;
+		}
+		else
+		{
+		    if (inleft > outleft)
+			inleft = outleft;
+		    *termlen = inleft;
+		    memcpy(termbuf, inbuf, *termlen);
+		}
+		termbuf[*termlen] = '\0';
+	    }
+
+	    xfree(term_array);
+	    xfree(hits_array);
+	    xfree(approx_array);
+	    return ZEBRA_OK;
+	}
+    }
+    return ZEBRA_FAIL;
 }

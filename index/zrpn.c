@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.191 2005-05-11 12:39:37 adam Exp $
+/* $Id: zrpn.c,v 1.192 2005-05-24 11:35:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1608,7 +1608,7 @@ static ZEBRA_RES rpn_search_APT_phrase(ZebraHandle zh,
     if (res != ZEBRA_OK)
 	return res;
     if (num_result_sets == 0)
-	*rset = rsnull_create (rset_nmem, kc); 
+	*rset = rsnull_create (rset_nmem, kc, 0); 
     else if (num_result_sets == 1)
 	*rset = result_sets[0];
     else
@@ -1646,11 +1646,11 @@ static ZEBRA_RES rpn_search_APT_or_list(ZebraHandle zh,
     if (res != ZEBRA_OK)
 	return res;
     if (num_result_sets == 0)
-	*rset = rsnull_create (rset_nmem, kc); 
+	*rset = rsnull_create (rset_nmem, kc, 0); 
     else if (num_result_sets == 1)
 	*rset = result_sets[0];
     else
-	*rset = rsmulti_or_create(rset_nmem, kc, kc->scope,
+	*rset = rsmulti_or_create(rset_nmem, kc, kc->scope, 0 /* termid */,
 				  num_result_sets, result_sets);
     if (!*rset)
 	return ZEBRA_FAIL;
@@ -1683,7 +1683,7 @@ static ZEBRA_RES rpn_search_APT_and_list(ZebraHandle zh,
     if (res != ZEBRA_OK)
 	return res;
     if (num_result_sets == 0)
-	*rset = rsnull_create (rset_nmem, kc); 
+	*rset = rsnull_create (rset_nmem, kc, 0); 
     else if (num_result_sets == 1)
 	*rset = result_sets[0];
     else
@@ -1956,7 +1956,7 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
 	return ZEBRA_FAIL;
     }
     if (num_result_sets == 0)
-        *rset = rsnull_create(rset_nmem, kc);
+        *rset = rsnull_create(rset_nmem, kc, 0);
     if (num_result_sets == 1)
         *rset = result_sets[0];
     else
@@ -1998,6 +1998,7 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			       oid_value attributeSet, NMEM stream,
 			       Z_SortKeySpecList *sort_sequence,
 			       const char *rank_type,
+			       NMEM rset_nmem,
 			       RSET *rset,
 			       struct rset_key_control *kc)
 {
@@ -2066,7 +2067,7 @@ static ZEBRA_RES rpn_sort_spec(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     sks->which = Z_SortKeySpec_null;
     sks->u.null = odr_nullval ();
     sort_sequence->specs[i] = sks;
-    *rset = rsnull_create (NULL, kc);
+    *rset = rsnull_create (rset_nmem, kc, 0);
     return ZEBRA_OK;
 }
 
@@ -2106,10 +2107,10 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     const char *flags = "void";
 
     if (grep_info_prepare(zh, 0 /* zapt */, &grep_info, '0') == ZEBRA_FAIL)
-        return rsnull_create(rset_nmem, kc);
+        return rsnull_create(rset_nmem, kc, 0);
     
     if (ord < 0)
-        return rsnull_create(rset_nmem, kc);
+        return rsnull_create(rset_nmem, kc, 0);
     if (prefix_len)
         term_dict[prefix_len++] = '|';
     else
@@ -2327,7 +2328,7 @@ static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 
     if (sort_flag)
         return rpn_sort_spec(zh, zapt, attributeSet, stream, sort_sequence,
-			     rank_type, rset, kc);
+			     rank_type, rset_nmem, rset, kc);
     xpath_len = parse_xpath(zh, zapt, attributeSet, xpath, 10, stream);
     if (xpath_len >= 0)
     {
@@ -2506,7 +2507,7 @@ ZEBRA_RES rpn_search_structure(ZebraHandle zh, Z_RPNStructure *zs,
 		break;
 	    case Z_Operator_or:
 		rset = rsmulti_or_create(rset_nmem, kc,
-					 kc->scope,
+					 kc->scope, 0, /* termid */
 					 *num_result_sets, *result_sets);
 		break;
 	    case Z_Operator_and_not:
@@ -2953,7 +2954,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 			    zapt->term->which,rset_nmem,
 			    kc, kc->scope);
 		    rset = rsmulti_or_create(rset_nmem, kc,
-					     2, kc->scope, rsets);
+					     kc->scope, 0 /* termid */,
+					     2, rsets);
 		}
                 ptr[j]++;
             }
@@ -2968,7 +2970,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		rsets[1] = rset_dup(limit_set);
 		
 		rset = rsmulti_and_create(rset_nmem, kc,
-					  kc->scope, 2, rsets);
+					  kc->scope,
+					  2, rsets);
 	    }
 	    /* count it */
 	    count_set(rset, &glist[lo].occurrences);
@@ -3040,7 +3043,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		    zapt->term->which, rset_nmem,
 		    kc, kc->scope);
 		rset = rsmulti_or_create(rset_nmem, kc,
-					 2, kc->scope, rsets);
+					 kc->scope, 0 /* termid */, 2, rsets);
 		
 		ptr[j]++;
 	    }

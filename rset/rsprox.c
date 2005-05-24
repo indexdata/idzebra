@@ -1,4 +1,4 @@
-/* $Id: rsprox.c,v 1.28 2005-05-03 09:11:36 adam Exp $
+/* $Id: rsprox.c,v 1.29 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -55,8 +55,6 @@ static const struct rset_control control =
 };
 
 struct rset_prox_info {
-    RSET *rset;   /* array of 'child' rsets */
-    int rset_no;  /* how many of them */
     int ordered;
     int exclusion;
     int relation;
@@ -78,13 +76,10 @@ RSET rsprox_create(NMEM nmem, struct rset_key_control *kcontrol,
 		   int ordered, int exclusion,
 		   int relation, int distance)
 {
-    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,0);
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, 0,
+				 rset_no, rset);
     struct rset_prox_info *info;
     info = (struct rset_prox_info *) nmem_malloc(rnew->nmem,sizeof(*info));
-    info->rset = nmem_malloc(rnew->nmem,rset_no * sizeof(*info->rset));
-    memcpy(info->rset, rset,
-           rset_no * sizeof(*info->rset));
-    info->rset_no = rset_no;
     info->ordered = ordered;
     info->exclusion = exclusion;
     info->relation = relation;
@@ -95,16 +90,10 @@ RSET rsprox_create(NMEM nmem, struct rset_key_control *kcontrol,
 
 static void r_delete (RSET ct)
 {
-    struct rset_prox_info *info = (struct rset_prox_info *) ct->priv;
-    int i;
-
-    for (i = 0; i<info->rset_no; i++)
-        rset_delete(info->rset[i]);
 }
 
 static RSFD r_open (RSET ct, int flag)
 {
-    struct rset_prox_info *info = (struct rset_prox_info *) ct->priv;
     RSFD rfd;
     struct rset_prox_rfd *p;
     int i;
@@ -116,25 +105,25 @@ static RSFD r_open (RSET ct, int flag)
     }
     rfd = rfd_create_base(ct);
     if (rfd->priv)
-        p=(struct rset_prox_rfd *)(rfd->priv);
+        p = (struct rset_prox_rfd *)(rfd->priv);
     else {
         p = (struct rset_prox_rfd *) nmem_malloc(ct->nmem,sizeof(*p));
         rfd->priv = p;
-        p->more = nmem_malloc (ct->nmem,sizeof(*p->more) * info->rset_no);
-        p->buf = nmem_malloc(ct->nmem,sizeof(*p->buf) * info->rset_no);
-        p->terms = nmem_malloc(ct->nmem,sizeof(*p->terms) * info->rset_no);
-        for (i = 0; i < info->rset_no; i++) 
+        p->more = nmem_malloc (ct->nmem,sizeof(*p->more) * ct->no_children);
+        p->buf = nmem_malloc(ct->nmem,sizeof(*p->buf) * ct->no_children);
+        p->terms = nmem_malloc(ct->nmem,sizeof(*p->terms) * ct->no_children);
+        for (i = 0; i < ct->no_children; i++) 
         {
             p->buf[i] = nmem_malloc(ct->nmem,ct->keycontrol->key_size);
             p->terms[i] = 0;
         }
-        p->rfd = nmem_malloc(ct->nmem,sizeof(*p->rfd) * info->rset_no);
+        p->rfd = nmem_malloc(ct->nmem,sizeof(*p->rfd) * ct->no_children);
     }
     yaz_log(YLOG_DEBUG,"rsprox (%s) open [%p] n=%d", 
-            ct->control->desc, rfd, info->rset_no);
+            ct->control->desc, rfd, ct->no_children);
 
-    for (i = 0; i < info->rset_no; i++) {
-        p->rfd[i] = rset_open (info->rset[i], RSETF_READ);
+    for (i = 0; i < ct->no_children; i++) {
+        p->rfd[i] = rset_open (ct->children[i], RSETF_READ);
         p->more[i] = rset_read (p->rfd[i], p->buf[i], &p->terms[i]);
     }
     p->hits = 0;
@@ -143,20 +132,20 @@ static RSFD r_open (RSET ct, int flag)
 
 static void r_close (RSFD rfd)
 {
-    struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
-    struct rset_prox_rfd *p=(struct rset_prox_rfd *)(rfd->priv);
+    RSET ct = rfd->rset;
+    struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
     
     int i;
-    for (i = 0; i<info->rset_no; i++)
-        rset_close (p->rfd[i]);
-    rfd_delete_base(rfd);
+    for (i = 0; i<ct->no_children; i++)
+        rset_close(p->rfd[i]);
 }
 
 static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
 {
-    struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
+    RSET ct = rfd->rset;
+    struct rset_prox_info *info = (struct rset_prox_info *)(ct->priv);
     struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
-    const struct rset_key_control *kctrl = rfd->rset->keycontrol;
+    const struct rset_key_control *kctrl = ct->keycontrol;
     int cmp = 0;
     int i;
 
@@ -173,7 +162,7 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
     {
         while (p->more[0]) 
         {
-            for (i = 1; i < info->rset_no; i++)
+            for (i = 1; i < ct->no_children; i++)
             {
                 if (!p->more[i]) 
                 {
@@ -206,7 +195,7 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
                     break;
                 }
             }
-            if (i == info->rset_no)
+            if (i == ct->no_children)
             {
                 memcpy (buf, p->buf[0], kctrl->key_size);
                 if (term)
@@ -217,7 +206,7 @@ static int r_forward(RSFD rfd, void *buf, TERMID *term, const void *untilbuf)
             }
         }
     }
-    else if (info->rset_no == 2)
+    else if (ct->no_children == 2)
     {
         while (p->more[0] && p->more[1]) 
         {
@@ -305,7 +294,7 @@ static int r_write (RSFD rfd, const void *buf)
 
 static void r_pos (RSFD rfd, double *current, double *total)
 {
-    struct rset_prox_info *info = (struct rset_prox_info *)(rfd->rset->priv);
+    RSET ct = rfd->rset;
     struct rset_prox_rfd *p = (struct rset_prox_rfd *)(rfd->priv);
     int i;
     double r = 0.0;
@@ -314,7 +303,7 @@ static void r_pos (RSFD rfd, double *current, double *total)
 
     yaz_log(YLOG_DEBUG, "rsprox_pos");
 
-    for (i = 0; i < info->rset_no; i++)
+    for (i = 0; i < ct->no_children; i++)
     {
         rset_pos(p->rfd[i],  &cur, &tot);
         if (tot>0) {
@@ -337,14 +326,10 @@ static void r_pos (RSFD rfd, double *current, double *total)
                     i,*current, *total, r);
 }
 
-
-
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
-    struct rset_prox_info *info =
-              (struct rset_prox_info *) ct->priv;
     int i;
-    for (i = 0; i<info->rset_no; i++)
-        rset_getterms(info->rset[i], terms, maxterms, curterm);
+    for (i = 0; i<ct->no_children; i++)
+        rset_getterms(ct->children[i], terms, maxterms, curterm);
 }
 

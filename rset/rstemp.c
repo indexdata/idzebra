@@ -1,4 +1,4 @@
-/* $Id: rstemp.c,v 1.63 2005-05-03 09:11:36 adam Exp $
+/* $Id: rstemp.c,v 1.64 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -51,7 +51,7 @@ static const struct rset_control control =
     rset_get_one_term,
     r_open,
     r_close,
-    rset_default_forward,
+    0, /* no forward */
     r_pos, 
     r_read,
     r_write,
@@ -83,7 +83,8 @@ static int log_level_initialized = 0;
 RSET rstemp_create(NMEM nmem, struct rset_key_control *kcontrol,
                    int scope, const char *temp_path, TERMID term)
 {
-    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term);
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term,
+				 0, 0);
     struct rset_private *info;
     if (!log_level_initialized)
     {
@@ -230,7 +231,6 @@ static void r_close(RSFD rfd)
 	    info->fd = -1;
 	}
     }
-    rfd_delete_base(rfd);
 }
 
 

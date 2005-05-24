@@ -1,4 +1,4 @@
-/* $Id: t9.c,v 1.5 2005-01-15 19:38:35 adam Exp $
+/* $Id: t9.c,v 1.6 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     init_data(zh, recs);
 
     qry( zh, "@attr 1=1016 @attr 2=102 the",
-            3, "first title", 872 );
+            3, "first title", 997 );
 
     qry( zh, "@attr 1=1016 @attr 2=102 foo",
             3, "second title", 850 );
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     /* get the record with the most significant hit, that is the 'bar' */
     /* as that is the rarest of my search words */
     qry( zh, "@attr 1=1016 @attr 2=102 @or @or the foo bar",
-            3, "third title", 895 );
+            3, "third title", 940 );
 
     return close_down(zh, zs, 0);
 }

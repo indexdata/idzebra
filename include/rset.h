@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.51 2005-05-03 09:11:34 adam Exp $
+/* $Id: rset.h,v 1.52 2005-05-24 11:35:41 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -62,6 +62,8 @@ struct rsfd {  /* the stuff common to all rsfd's. */
     RSET rset;  /* ptr to the rset this FD is opened to */
     void *priv; /* private parameters for this type */
     RSFD next;  /* to keep lists of used/free rsfd's */
+    zint counted_items;
+    char *counted_buf;
 };
 
 
@@ -97,6 +99,9 @@ struct rset_control
 /** rset_default_forward implements a generic forward with a read-loop */
 int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
                      const void *untilbuf);
+
+/** rset_default_read implements a generic read */
+int rset_default_read(RSFD rfd, void *buf, TERMID *term);
 
 /** rset_get_no_terms is a getterms function for those that don't have any */
 void rset_get_no_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
@@ -140,15 +145,21 @@ typedef struct rset
 {
     const struct rset_control *control;
     struct rset_key_control *keycontrol;
-    int  count;  /* reference count */
-    void *priv;  /* stuff private to the given type of rset */
-    NMEM nmem;    /* nibble memory for various allocs */
-    char my_nmem; /* Should the nmem be destroyed with the rset?  */
-                  /* 1 if created with it, 0 if passed from above */
+    int  refcount;  /* reference count */
+    void *priv;     /* stuff private to the given type of rset */
+    NMEM nmem;      /* nibble memory for various allocs */
+    char my_nmem;   /* Should the nmem be destroyed with the rset?  */
+                    /* 1 if created with it, 0 if passed from above */
     RSFD free_list; /* all rfd's allocated but not currently in use */
     RSFD use_list;  /* all rfd's in use */
-    int scope;    /* On what level do we count hits and compare them? */
-    TERMID term; /* the term thing for ranking etc */
+    int scope;      /* On what level do we count hits and compare them? */
+    TERMID term;    /* the term thing for ranking etc */
+    int no_children;
+    RSET *children;
+    zint hits_limit;
+    zint hits_count;
+    zint hits_round;
+    int hits_approx; 
 } rset;
 /* rset is a "virtual base class", which will never exist on its own 
  * all instances are rsets of some specific type, like rsisamb, or rsbool
@@ -168,30 +179,27 @@ typedef struct rset
  */
 
 RSFD rfd_create_base(RSET rs);
-void rfd_delete_base(RSFD rfd);
 int rfd_is_last(RSFD rfd);
 
 RSET rset_create_base(const struct rset_control *sel, 
                       NMEM nmem,
 		      struct rset_key_control *kcontrol,
                       int scope,
-                      TERMID term);
+                      TERMID term,
+		      int no_children, RSET *children);
 
 void rset_delete(RSET rs);
 RSET rset_dup (RSET rs);
-
+void rset_close(RSFD rfd);
 
 #define RSETF_READ       0
 #define RSETF_WRITE      1
 /* RSFD rset_open(RSET rs, int wflag); */
 #define rset_open(rs, wflag) (*(rs)->control->f_open)((rs), (wflag))
 
-/* void rset_close(RSFD rfd); */
-#define rset_close(rfd) (*(rfd)->rset->control->f_close)(rfd)
-
 /* int rset_forward(RSFD rfd, void *buf, TERMID term, void *untilbuf); */
 #define rset_forward(rfd, buf, term, untilbuf) \
-    (*(rfd)->rset->control->f_forward)((rfd),(buf),(term),(untilbuf))
+    rset_default_forward((rfd), (buf), (term), (untilbuf))
 
 /* void rset_getterms(RSET ct, TERMID *terms, int maxterms, int *curterm); */
 #define rset_getterms(ct, terms, maxterms, curterm) \
@@ -202,8 +210,7 @@ RSET rset_dup (RSET rs);
     (*(rfd)->rset->control->f_pos)((rfd),(cur),(tot))
 
 /* int rset_read(RSFD rfd, void *buf, TERMID term); */
-#define rset_read(rfd, buf, term) \
-    (*(rfd)->rset->control->f_read)((rfd), (buf), (term))
+#define rset_read(rfd, buf, term) rset_default_read((rfd), (buf), (term))
 
 /* int rset_write(RSFD rfd, const void *buf); */
 #define rset_write(rfd, buf) (*(rfd)->rset->control->f_write)((rfd), (buf))
@@ -217,7 +224,7 @@ zint rset_count(RSET rs);
 RSET rstemp_create(NMEM nmem, struct rset_key_control *kcontrol,
                     int scope, const char *temp_path, TERMID term);
 
-RSET rsnull_create(NMEM nmem, struct rset_key_control *kcontrol);
+RSET rsnull_create(NMEM nmem, struct rset_key_control *kcontrol, TERMID term);
 
 RSET rsbool_create_and(NMEM nmem, struct rset_key_control *kcontrol,
 		       int scope, RSET rset_l, RSET rset_r);
@@ -233,7 +240,7 @@ RSET rsbetween_create(NMEM nmem, struct rset_key_control *kcontrol,
 		      RSET rset_attr);
 
 RSET rsmulti_or_create(NMEM nmem, struct rset_key_control *kcontrol,
-		       int scope, int no_rsets, RSET* rsets);
+		       int scope, TERMID termid, int no_rsets, RSET* rsets);
 
 RSET rsmulti_and_create(NMEM nmem, struct rset_key_control *kcontrol,
 			int scope, int no_rsets, RSET* rsets);
@@ -250,6 +257,8 @@ RSET rsisamc_create(NMEM nmem, struct rset_key_control *kcontrol,
 
 RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
 		    int scope, ISAMS is, ISAM_P pos, TERMID term);
+
+void rset_visit(RSET rset, int level);
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.55 2005-05-03 09:11:36 adam Exp $
+/* $Id: rsbool.c,v 1.56 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -106,7 +106,11 @@ static RSET rsbool_create_base(const struct rset_control *ctrl,
 			       struct rset_key_control *kcontrol,
 			       int scope, RSET rset_l, RSET rset_r)
 {
-    RSET rnew = rset_create_base(ctrl, nmem, kcontrol, scope, 0);
+    RSET children[2], rnew;
+
+    children[0] = rset_l;
+    children[1] = rset_r;
+    rnew = rset_create_base(ctrl, nmem, kcontrol, scope, 0, 2, children);
     struct rset_private *info;
     info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->rset_l = rset_l;
@@ -139,9 +143,6 @@ RSET rsbool_create_not(NMEM nmem, struct rset_key_control *kcontrol,
 
 static void r_delete(RSET ct)
 {
-    struct rset_private *info = (struct rset_private *) ct->priv;
-    rset_delete (info->rset_l);
-    rset_delete (info->rset_r);
 }
 
 static RSFD r_open(RSET ct, int flag)
@@ -182,7 +183,6 @@ static void r_close (RSFD rfd)
 
     rset_close (prfd->rfd_l);
     rset_close (prfd->rfd_r);
-    rfd_delete_base(rfd);
 }
 
 static int r_forward(RSFD rfd, void *buf, TERMID *term,

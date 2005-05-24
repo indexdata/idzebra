@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.38 2005-05-03 09:11:35 adam Exp $
+/* $Id: rsbetween.c,v 1.39 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -69,7 +69,6 @@ static const struct rset_control control =
 #define ATTRTAG 3
 
 struct rset_between_info {
-    RSET andset; /* the multi-and of the above */
     TERMID startterm; /* pseudo terms for detecting which one we read from */
     TERMID stopterm;
     TERMID attrterm;
@@ -107,7 +106,7 @@ RSET rsbetween_create(NMEM nmem, struct rset_key_control *kcontrol,
 		      int scope,
 		      RSET rset_l, RSET rset_m, RSET rset_r, RSET rset_attr)
 {
-    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,0);
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, 0, 0, 0);
     struct rset_between_info *info=
         (struct rset_between_info *) nmem_malloc(rnew->nmem,sizeof(*info));
     RSET rsetarray[4];
@@ -124,14 +123,14 @@ RSET rsbetween_create(NMEM nmem, struct rset_key_control *kcontrol,
     rsetarray[ATTRTAG] = rset_attr;
 
     /* make sure we have decent terms for all rsets. Create dummies if needed*/
-    checkterm( rsetarray[STARTTAG], "(start)",nmem);
-    checkterm( rsetarray[STOPTAG], "(start)",nmem);
+    checkterm(rsetarray[STARTTAG], "(start)", nmem);
+    checkterm(rsetarray[STOPTAG], "(start)", nmem);
     info->startterm = rsetarray[STARTTAG]->term;
     info->stopterm = rsetarray[STOPTAG]->term;
 
     if (rset_attr)
     {
-        checkterm( rsetarray[ATTRTAG], "(start)",nmem);
+        checkterm(rsetarray[ATTRTAG], "(start)", nmem);
         info->attrterm = rsetarray[ATTRTAG]->term;
         n = 4;
     }
@@ -140,24 +139,22 @@ RSET rsbetween_create(NMEM nmem, struct rset_key_control *kcontrol,
         info->attrterm = NULL;
         n = 3; 
     }
-    info->andset = rsmulti_and_create( nmem, kcontrol, scope, n, rsetarray);
+    rnew->no_children = 1;
+    rnew->children = nmem_malloc(rnew->nmem, sizeof(RSET *));
+    rnew->children[0] = rsmulti_and_create(nmem, kcontrol, 
+					   scope, n, rsetarray);
     rnew->priv = info;
-    yaz_log(log_level,"create rset at %p",rnew);
+    yaz_log(log_level, "create rset at %p", rnew);
     return rnew;
 }
 
-
 static void r_delete(RSET ct)
 {
-    struct rset_between_info *info = (struct rset_between_info *) ct->priv;
-    yaz_log(log_level,"delete rset at %p",ct);
-    rset_delete(info->andset);
 }
 
 
 static RSFD r_open(RSET ct, int flag)
 {
-    struct rset_between_info *info = (struct rset_between_info *) ct->priv;
     RSFD rfd;
     struct rset_between_rfd *p;
 
@@ -172,17 +169,17 @@ static RSFD r_open(RSET ct, int flag)
     else {
         p = (struct rset_between_rfd *) nmem_malloc(ct->nmem, (sizeof(*p)));
         rfd->priv = p;
-        p->recbuf = nmem_malloc(ct->nmem, (ct->keycontrol->key_size)); 
-        p->startbuf = nmem_malloc(ct->nmem, (ct->keycontrol->key_size)); 
-        p->attrbuf = nmem_malloc(ct->nmem, (ct->keycontrol->key_size)); 
+        p->recbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size); 
+        p->startbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size); 
+        p->attrbuf = nmem_malloc(ct->nmem, ct->keycontrol->key_size); 
     }
-    p->andrfd = rset_open(info->andset, RSETF_READ);
-    p->hits=-1;
+    p->andrfd = rset_open(ct->children[0], RSETF_READ);
+    p->hits = -1;
     p->depth = 0;
     p->attrdepth = 0;
     p->attrbufok = 0;
     p->startbufok = 0;
-    yaz_log(log_level,"open rset=%p rfd=%p", ct, rfd);
+    yaz_log(log_level, "open rset=%p rfd=%p", ct, rfd);
     return rfd;
 }
 
@@ -191,10 +188,7 @@ static void r_close(RSFD rfd)
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
     yaz_log(log_level,"close rfd=%p", rfd);
     rset_close(p->andrfd);
-    rfd_delete_base(rfd);
 }
-
-
 
 static int r_forward(RSFD rfd, void *buf, 
                      TERMID *term, const void *untilbuf)
@@ -205,8 +199,6 @@ static int r_forward(RSFD rfd, void *buf,
     rc = rset_forward(p->andrfd,buf,term,untilbuf);
     return rc;
 }
-
-
 
 static void checkattr(RSFD rfd)
 {
@@ -233,7 +225,6 @@ static void checkattr(RSFD rfd)
     }
 }
 
-
 static int r_read(RSFD rfd, void *buf, TERMID *term)
 {
     struct rset_between_info *info =
@@ -242,39 +233,39 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
     const struct rset_key_control *kctrl = rfd->rset->keycontrol;
     int cmp;
     TERMID dummyterm = 0;
-    yaz_log(log_level,"== read: term=%p",term);
+    yaz_log(log_level, "== read: term=%p",term);
     if (!term)
-        term=&dummyterm;
-    while ( rset_read(p->andrfd,buf,term) )
+        term = &dummyterm;
+    while (rset_read(p->andrfd, buf, term))
     {
         yaz_log(log_level,"read loop term=%p d=%d ad=%d",
-                *term,p->depth, p->attrdepth);
+                *term, p->depth, p->attrdepth);
         if (p->hits<0) 
         {/* first time? */
-            memcpy(p->recbuf,buf,kctrl->key_size);
+            memcpy(p->recbuf, buf, kctrl->key_size);
             p->hits = 0;
             cmp = rfd->rset->scope; /* force newrecord */
         }
         else {
-            cmp=(kctrl->cmp)(buf,p->recbuf);
-            yaz_log(log_level, "cmp=%d",cmp);
+            cmp = (kctrl->cmp)(buf, p->recbuf);
+            yaz_log(log_level, "cmp=%d", cmp);
         }
 
         if (cmp>=rfd->rset->scope)
         { 
-            yaz_log(log_level,"new record");
+            yaz_log(log_level, "new record");
             p->depth = 0;
             p->attrdepth = 0;
-            memcpy(p->recbuf,buf,kctrl->key_size);
+            memcpy(p->recbuf, buf, kctrl->key_size);
         }
 
         if (*term)
-            yaz_log(log_level,"  term: '%s'", (*term)->name);
+            yaz_log(log_level, "  term: '%s'", (*term)->name);
         if (*term==info->startterm)
         {
             p->depth++;
-            yaz_log(log_level,"read start tag. d=%d",p->depth);
-            memcpy(p->startbuf,buf,kctrl->key_size);
+            yaz_log(log_level, "read start tag. d=%d", p->depth);
+            memcpy(p->startbuf, buf, kctrl->key_size);
             p->startbufok = 1;
             checkattr(rfd); /* in case we already saw the attr here */
         }
@@ -283,12 +274,13 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
             if (p->depth == p->attrdepth)
                 p->attrdepth = 0; /* ending the tag with attr match */
             p->depth--;
-            yaz_log(log_level,"read end tag. d=%d ad=%d",p->depth, p->attrdepth);
+            yaz_log(log_level,"read end tag. d=%d ad=%d", p->depth,
+		    p->attrdepth);
         }
         else if (*term==info->attrterm)
         {
             yaz_log(log_level,"read attr");
-            memcpy(p->attrbuf,buf,kctrl->key_size);
+            memcpy(p->attrbuf, buf, kctrl->key_size);
             p->attrbufok = 1;
             checkattr(rfd); /* in case the start tag came first */
         }
@@ -298,11 +290,11 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
             {
                 p->hits++;
                 yaz_log(log_level,"got a hit h="ZINT_FORMAT" d=%d ad=%d", 
-                        p->hits,p->depth,p->attrdepth);
+                        p->hits, p->depth, p->attrdepth);
                 return 1; /* we have everything in place already! */
             } else
                 yaz_log(log_level, "Ignoring hit. h="ZINT_FORMAT" d=%d ad=%d",
-                        p->hits,p->depth,p->attrdepth);
+                        p->hits, p->depth, p->attrdepth);
         }
     } /* while read */
 
@@ -321,14 +313,13 @@ static int r_write(RSFD rfd, const void *buf)
 static void r_pos(RSFD rfd, double *current, double *total)
 {
     struct rset_between_rfd *p=(struct rset_between_rfd *)rfd->priv;
-    rset_pos(p->andrfd,current, total);
-    yaz_log(log_level,"pos: %0.1f/%0.1f ", *current, *total);
+    rset_pos(p->andrfd, current, total);
+    yaz_log(log_level, "pos: %0.1f/%0.1f ", *current, *total);
 }
 
 static void r_get_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
-    struct rset_between_info *info = (struct rset_between_info *) ct->priv;
-    rset_getterms(info->andset, terms, maxterms, curterm);
+    rset_getterms(ct->children[0], terms, maxterms, curterm);
 }
 
  

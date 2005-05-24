@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.45 2005-05-03 09:11:36 adam Exp $
+/* $Id: rset.c,v 1.46 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -51,6 +51,7 @@ RSFD rfd_create_base(RSET rs)
     else
     {
         rnew = nmem_malloc(rs->nmem, sizeof(*rnew));
+	rnew->counted_buf = nmem_malloc(rs->nmem, rs->keycontrol->key_size);
 	rnew->priv = 0;
         rnew->rset = rs;
         yaz_log(log_level, "rfd_create_base (new): rfd=%p rs=%p fl=%p priv=%p", 
@@ -58,6 +59,7 @@ RSFD rfd_create_base(RSET rs)
     }
     rnew->next = rs->use_list;
     rs->use_list = rnew;
+    rnew->counted_items = 0;
     return rnew;
 }
 
@@ -65,10 +67,52 @@ RSFD rfd_create_base(RSET rs)
  *
  * puts an rfd into the freelist of the rset. Only when the rset gets
  * deleted, will all the nmem disappear */
-void rfd_delete_base(RSFD rfd) 
+void rset_close(RSFD rfd)
 {
     RSFD *pfd;
     RSET rs = rfd->rset;
+
+    if (rs->hits_count == 0)
+    {
+	TERMID termid;
+	char buf[100];
+	while(rfd->counted_items < rs->hits_limit
+	      && rset_default_read(rfd, buf, &termid))
+	    ;
+	
+	rs->hits_count = rfd->counted_items;
+	rs->hits_approx = 0;
+	if (rs->hits_count >= rs->hits_limit)
+	{
+	    double cur, tot;
+	    zint est;
+	    rset_pos(rfd, &cur, &tot); 
+	    if (tot > 0) {
+		int i;
+		double ratio = cur/tot;
+		est = (zint)(0.5 + rs->hits_count / ratio);
+		yaz_log(log_level, "Estimating hits (%s) "
+			"%0.1f->" ZINT_FORMAT
+			"; %0.1f->" ZINT_FORMAT,
+			rs->control->desc,
+			cur, rs->hits_count,
+			tot, est);
+		i = 0; /* round to significant digits */
+		while (est > rs->hits_round) {
+		    est /= 10;
+		    i++;
+		}
+		while (i--)
+		    est *= 10;
+		rs->hits_count = est;
+		rs->hits_approx = 1;
+	    }
+	}
+	yaz_log(log_level, "rset_close p=%p count=" ZINT_FORMAT, rs,
+		rs->hits_count);
+    }
+    (*rs->control->f_close)(rfd);
+    
     yaz_log(log_level, "rfd_delete_base: rfd=%p rs=%p priv=%p fl=%p",
             rfd, rs, rfd->priv, rs->free_list); 
     for (pfd = &rs->use_list; *pfd; pfd = &(*pfd)->next)
@@ -85,11 +129,12 @@ void rfd_delete_base(RSFD rfd)
 
 RSET rset_create_base(const struct rset_control *sel, 
                       NMEM nmem, struct rset_key_control *kcontrol,
-                      int scope, TERMID term)
+                      int scope, TERMID term,
+		      int no_children, RSET *children)
 {
-    RSET rnew;
+    RSET rset;
     NMEM M;
-    /* assert(nmem); */ /* can not yet be used, api/t4 fails */
+    assert(nmem);  /* can not yet be used, api/t4 fails */
     if (!log_level_initialized) 
     {
         log_level = yaz_log_module_level("rset");
@@ -100,37 +145,52 @@ RSET rset_create_base(const struct rset_control *sel,
         M = nmem;
     else
         M = nmem_create();
-    rnew = (RSET) nmem_malloc(M, sizeof(*rnew));
-    yaz_log(log_level, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rnew, nmem); 
-    rnew->nmem = M;
+    rset = (RSET) nmem_malloc(M, sizeof(*rset));
+    yaz_log(log_level, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rset, nmem); 
+    rset->nmem = M;
     if (nmem)
-        rnew->my_nmem = 0;
+        rset->my_nmem = 0;
     else 
-        rnew->my_nmem = 1;
-    rnew->control = sel;
-    rnew->count = 1; /* refcount! */
-    rnew->priv = 0;
-    rnew->free_list = NULL;
-    rnew->use_list = NULL;
-    rnew->keycontrol = kcontrol;
+        rset->my_nmem = 1;
+    rset->control = sel;
+    rset->refcount = 1;
+    rset->priv = 0;
+    rset->free_list = NULL;
+    rset->use_list = NULL;
+    rset->hits_count = 0;
+    rset->hits_limit = 1000;
+    rset->hits_round = 1000;
+    rset->keycontrol = kcontrol;
     (*kcontrol->inc)(kcontrol);
-    rnew->scope = scope;
-    rnew->term = term;
+    rset->scope = scope;
+    rset->term = term;
     if (term)
-        term->rset = rnew;
-    return rnew;
+        term->rset = rset;
+
+    rset->no_children = no_children;
+    rset->children = 0;
+    if (no_children)
+    {
+	rset->children = (RSET*)
+	    nmem_malloc(rset->nmem, no_children*sizeof(RSET *));
+	memcpy(rset->children, children, no_children*sizeof(RSET *));
+    }
+    return rset;
 }
 
-void rset_delete (RSET rs)
+void rset_delete(RSET rs)
 {
-    (rs->count)--;
-    yaz_log(log_level, "rs_delete(%s), rs=%p, count=%d",
-            rs->control->desc, rs, rs->count); 
-    if (!rs->count)
+    (rs->refcount)--;
+    yaz_log(log_level, "rs_delete(%s), rs=%p, refcount=%d",
+            rs->control->desc, rs, rs->refcount); 
+    if (!rs->refcount)
     {
+	int i;
 	if (rs->use_list)
 	    yaz_log(YLOG_WARN, "rs_delete(%s) still has RFDs in use",
 		    rs->control->desc);
+	for (i = 0; i<rs->no_children; i++)
+	    rset_delete(rs->children[i]);
         (*rs->control->f_delete)(rs);
 	(*rs->keycontrol->dec)(rs->keycontrol);
         if (rs->my_nmem)
@@ -147,38 +207,11 @@ int rfd_is_last(RSFD rfd)
 
 RSET rset_dup (RSET rs)
 {
-    (rs->count)++;
-    yaz_log(log_level, "rs_dup(%s), rs=%p, count=%d",
-            rs->control->desc, rs, rs->count); 
+    (rs->refcount)++;
+    yaz_log(log_level, "rs_dup(%s), rs=%p, refcount=%d",
+            rs->control->desc, rs, rs->refcount); 
     (*rs->keycontrol->inc)(rs->keycontrol);
     return rs;
-}
-
-int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
-			 const void *untilbuf)
-{
-    int more = 1;
-    int cmp = rfd->rset->scope;
-    if (log_level)
-    {
-        yaz_log (log_level, "rset_default_forward starting '%s' (ct=%p rfd=%p)",
-                    rfd->rset->control->desc, rfd->rset, rfd);
-        /* key_logdump(log_level, untilbuf); */
-    }
-    while (cmp>=rfd->rset->scope && more)
-    {
-        if (log_level)  /* time-critical, check first */
-            yaz_log(log_level, "rset_default_forward looping m=%d c=%d",
-		    more, cmp);
-        more = rset_read(rfd, buf, term);
-        if (more)
-            cmp = (rfd->rset->keycontrol->cmp)(untilbuf, buf);
-    }
-    if (log_level)
-        yaz_log (log_level, "rset_default_forward exiting m=%d c=%d",
-		 more, cmp);
-
-    return more;
 }
 
 /** 
@@ -196,7 +229,6 @@ zint rset_count(RSET rs)
     return (zint) tot;
 }
 
-
 /** rset_get_no_terms is a getterms function for those that don't have any */
 void rset_get_no_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
@@ -204,7 +236,7 @@ void rset_get_no_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
 }
 
 /* rset_get_one_term gets that one term from an rset. Used by rsisamX */
-void rset_get_one_term(RSET ct,TERMID *terms,int maxterms,int *curterm)
+void rset_get_one_term(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
     if (ct->term)
     {
@@ -215,8 +247,8 @@ void rset_get_one_term(RSET ct,TERMID *terms,int maxterms,int *curterm)
 }
 
 
-TERMID rset_term_create (const char *name, int length, const char *flags,
-                                    int type, NMEM nmem)
+TERMID rset_term_create(const char *name, int length, const char *flags,
+			int type, NMEM nmem)
 
 {
     TERMID t;
@@ -242,3 +274,55 @@ TERMID rset_term_create (const char *name, int length, const char *flags,
     t->rset = 0;
     return t;
 }
+
+int rset_default_read(RSFD rfd, void *buf, TERMID *term)
+{
+    RSET rset = rfd->rset;
+    int rc = (*rset->control->f_read)(rfd, buf, term);
+    if (rc > 0)
+    {
+	if (rfd->counted_items == 0 ||
+	    (rset->keycontrol->cmp)(buf, rfd->counted_buf) >= rset->scope)
+	{
+	    memcpy(rfd->counted_buf, buf, rset->keycontrol->key_size);
+	    rfd->counted_items++;
+	}
+    }
+    return rc;
+}
+
+int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
+			 const void *untilbuf)
+{
+    RSET rset = rfd->rset;
+    int more;
+
+    if (rset->control->f_forward &&
+	rfd->counted_items >= rset->hits_limit)
+    {
+	assert (rset->control->f_forward != rset_default_forward);
+	return rset->control->f_forward(rfd, buf, term, untilbuf);
+    }
+    
+    while ((more = rset_read(rfd, buf, term)) > 0)
+    {
+	if ((rfd->rset->keycontrol->cmp)(untilbuf, buf) <= 1)
+	    break;
+    }
+    if (log_level)
+	yaz_log (log_level, "rset_default_forward exiting m=%d c=%d",
+		 more, rset->scope);
+    
+    return more;
+}
+
+void rset_visit(RSET rset, int level)
+{
+    int i;
+    yaz_log(YLOG_LOG, "%*s%c " ZINT_FORMAT, level, "",
+	    rset->hits_approx ? '~' : '=',
+	    rset->hits_count);
+    for (i = 0; i<rset->no_children; i++)
+	rset_visit(rset->children[i], level+1);
+}
+

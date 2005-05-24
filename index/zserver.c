@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.133 2005-05-12 10:17:07 adam Exp $
+/* $Id: zserver.c,v 1.134 2005-05-24 11:35:42 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -171,18 +171,15 @@ bend_initresult *bend_init (bend_initrequest *q)
     return r;
 }
 
-static void search_terms (ZebraHandle zh, bend_search_rr *r)
+static void search_terms(ZebraHandle zh, bend_search_rr *r)
 {
-    zint count = 0;
     int no_terms;
     int i;
     int type = Z_Term_general;
     struct Z_External *ext;
     Z_SearchInfoReport *sr;
 
-    /* get no of terms for result set */
-    no_terms = 0; /* zebra_resultSetTerms (zh, r->setname, 0, 0, 0, 0, 0); */
-      /* FIXME - Rsets don't know number of terms no more ??? */
+    zebra_result_set_term_no(zh, r->setname, &no_terms);
     if (!no_terms)
         return;
 
@@ -210,13 +207,14 @@ static void search_terms (ZebraHandle zh, bend_search_rr *r)
     for (i = 0; i<no_terms; i++)
     {
         Z_Term *term;
+	zint count;
+	int approx;
         char outbuf[1024];
         size_t len = sizeof(outbuf);
-        /* FIXME - Can we just skip this ??? */
-        /*
-        zebra_resultSetTerms (zh, r->setname, i,
-                              &count, &type, outbuf, &len);
-        */
+
+	zebra_result_set_term_info(zh, r->setname, i,
+				   &count, &approx, outbuf, &len);
+
         sr->elements[i] = odr_malloc (r->stream, sizeof(**sr->elements));
         sr->elements[i]->subqueryId = 0;
         sr->elements[i]->fullQuery = odr_malloc (r->stream, 

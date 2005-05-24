@@ -1,4 +1,4 @@
-/* $Id: rsisamc.c,v 1.39 2005-05-03 09:11:36 adam Exp $
+/* $Id: rsisamc.c,v 1.40 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -40,7 +40,7 @@ static const struct rset_control control =
     rset_get_one_term,
     r_open,
     r_close,
-    rset_default_forward,
+    0, /* no forward */
     r_pos,
     r_read,
     r_write,
@@ -63,14 +63,14 @@ RSET rsisamc_create(NMEM nmem, struct rset_key_control *kcontrol,
 		    int scope,
 		    ISAMC is, ISAM_P pos, TERMID term)
 {
-    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope,term);
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term, 0, 0);
     struct rset_isamc_info *info;
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsisamc");
         log_level_initialized = 1;
     }
-    info = (struct rset_isamc_info *) nmem_malloc(rnew->nmem,sizeof(*info));
+    info = (struct rset_isamc_info *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->is = is;
     info->pos = pos;
     rnew->priv = info;
@@ -113,7 +113,6 @@ static void r_close (RSFD rfd)
     struct rset_pp_info *p = (struct rset_pp_info *)(rfd->priv);
 
     isamc_pp_close(p->pt);
-    rfd_delete_base(rfd);
 }
 
 

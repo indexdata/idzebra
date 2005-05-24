@@ -1,3 +1,6 @@
+Added support for term hit counts. This was not in place for earlier
+1.4 versions, but is present in the 1.3 series. Bug #124.
+
 Implemented the 'equivalent' directive for .chr-files.
 
 Added zebra_get_bfs to get BFile handle for session.

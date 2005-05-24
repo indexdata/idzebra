@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.33 2005-05-03 09:11:36 adam Exp $
+/* $Id: rsisamb.c,v 1.34 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -80,7 +80,7 @@ RSET rsisamb_create(NMEM nmem, struct rset_key_control *kcontrol,
 {
     RSET rnew = rset_create_base(
 	kcontrol->filter_func ? &control_filter : &control,
-	nmem, kcontrol, scope, term);
+	nmem, kcontrol, scope, term, 0, 0);
     struct rset_private *info;
     if (!log_level_initialized)
     {
@@ -128,7 +128,6 @@ static void r_close(RSFD rfd)
 {
     struct rfd_private *ptinfo = (struct rfd_private *)(rfd->priv);
     isamb_pp_close (ptinfo->pt);
-    rfd_delete_base(rfd);
     yaz_log(log_level, "rsisamb_close");
 }
 

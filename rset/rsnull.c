@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.34 2005-05-03 09:11:36 adam Exp $
+/* $Id: rsnull.c,v 1.35 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,15 +39,16 @@ static const struct rset_control control =
     rset_get_no_terms,
     r_open,
     r_close,
-    rset_default_forward,
+    0, /* no forward */
     r_pos,
     r_read,
     r_write,
 };
 
-RSET rsnull_create(NMEM nmem, struct rset_key_control *kcontrol )
+RSET rsnull_create(NMEM nmem, struct rset_key_control *kcontrol,
+		   TERMID term)
 {
-    RSET rnew = rset_create_base(&control, nmem, kcontrol, 0, 0);
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, 0, term, 0, 0);
     rnew->priv = 0;
     return rnew;
 }
@@ -67,7 +68,6 @@ static RSFD r_open(RSET ct, int flag)
 
 static void r_close(RSFD rfd)
 {
-    rfd_delete_base(rfd);
 }
 
 static void r_delete(RSET ct)
@@ -79,8 +79,8 @@ static void r_pos(RSFD rfd, double *current, double *total)
     assert(rfd);
     assert(current);
     assert(total);
-    *total=0;
-    *current=0;
+    *total = 0;
+    *current = 0;
 }
 
 static int r_read(RSFD rfd, void *buf, TERMID *term)
@@ -92,7 +92,7 @@ static int r_read(RSFD rfd, void *buf, TERMID *term)
 
 static int r_write(RSFD rfd, const void *buf)
 {
-    yaz_log (YLOG_FATAL, "NULL set type is read-only");
+    yaz_log(YLOG_FATAL, "NULL set type is read-only");
     return -1;
 }
 

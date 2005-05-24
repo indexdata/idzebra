@@ -1,4 +1,4 @@
-/* $Id: rsisams.c,v 1.22 2005-05-03 09:11:36 adam Exp $
+/* $Id: rsisams.c,v 1.23 2005-05-24 11:35:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,7 +39,7 @@ static const struct rset_control control =
     rset_get_one_term,
     r_open,
     r_close,
-    rset_default_forward,
+    0, /* no foward */
     r_pos,
     r_read,
     r_write,
@@ -59,7 +59,7 @@ RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
 		    int scope,
 		    ISAMS is, ISAM_P pos, TERMID term)
 {
-    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term);
+    RSET rnew = rset_create_base(&control, nmem, kcontrol, scope, term, 0, 0);
     struct rset_private *info;
     info = (struct rset_private *) nmem_malloc(rnew->nmem,sizeof(*info));
     rnew->priv = info;
@@ -71,9 +71,7 @@ RSET rsisams_create(NMEM nmem, struct rset_key_control *kcontrol,
 static void r_delete (RSET ct)
 {
     yaz_log (YLOG_DEBUG, "rsisams_delete");
-    rset_delete(ct);
 }
-
 
 RSFD r_open (RSET ct, int flag)
 {
@@ -103,7 +101,6 @@ static void r_close (RSFD rfd)
     struct rfd_private *ptinfo = (struct rfd_private *)(rfd->priv);
 
     isams_pp_close (ptinfo->pt);
-    rfd_delete_base(rfd);
 }
 
 
