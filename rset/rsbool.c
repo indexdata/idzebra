@@ -1,4 +1,4 @@
-/* $Id: rsbool.c,v 1.56 2005-05-24 11:35:43 adam Exp $
+/* $Id: rsbool.c,v 1.57 2005-05-24 20:40:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -107,11 +107,11 @@ static RSET rsbool_create_base(const struct rset_control *ctrl,
 			       int scope, RSET rset_l, RSET rset_r)
 {
     RSET children[2], rnew;
+    struct rset_private *info;
 
     children[0] = rset_l;
     children[1] = rset_r;
     rnew = rset_create_base(ctrl, nmem, kcontrol, scope, 0, 2, children);
-    struct rset_private *info;
     info = (struct rset_private *) nmem_malloc(rnew->nmem, sizeof(*info));
     info->rset_l = rset_l;
     info->rset_r = rset_r;
