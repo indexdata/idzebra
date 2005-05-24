@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.16 2005-03-08 14:02:15 adam Exp $
+/* $Id: zvrank.c,v 1.17 2005-05-24 11:27:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -53,8 +53,8 @@ fernuni-hagen.de>
 
 #include "index.h"
 
-static int log_level=0;
-static int log_initialized=0;
+static int log_level = 0;
+static int log_initialized = 0;
 
 static double blog(double x) { 
     /* log_2, log_e or log_10 is used, best to change it here if necessary */
@@ -669,13 +669,13 @@ static void *zv_create (ZebraHandle zh) {
         xmalloc (sizeof(*ci));
     if (!log_initialized)
     {
-        log_level=yaz_log_module_level("zvrank");
-        log_initialized=1;
+        log_level = yaz_log_module_level("zvrank");
+        log_initialized = 1;
     }
 
     yaz_log(log_level, "zv_create");
-    wscheme=res_get_def(res, "zvrank.weighting-scheme", "");
-    for (i=0; wscheme[i] && i < 8; i++) 
+    wscheme=  res_get_def(res, "zvrank.weighting-scheme", "");
+    for (i = 0; wscheme[i] && i < 8; i++) 
         ci->rscheme[i]=wscheme[i];
     ci->rscheme[i] = '\0';
     return ci;
