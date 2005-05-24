@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.19 2005-05-09 12:03:59 adam Exp $
+/* $Id: testlib.c,v 1.20 2005-05-24 11:27:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -41,9 +41,11 @@ void start_log(int argc, char **argv)
         return;
     sprintf(logname, "%s.log", argv[0]);
     yaz_log_init_file(logname);
-    log_level = yaz_log_mask_str_x(argv[0],0);
+    log_level = yaz_log_mask_str_x(argv[0], 0);
+    if (argc >= 2)
+	log_level |= yaz_log_mask_str_x(argv[1], 0);
     yaz_log_init_level(YLOG_DEFAULT_LEVEL | log_level);
-    yaz_log(log_level,"starting %s",argv[0]);
+    yaz_log(log_level, "starting %s", argv[0]);
 }
 
 /** 
