@@ -1,6 +1,6 @@
-; $Id: zebra.nsi,v 1.20.2.10 2005-05-04 11:48:14 adam Exp $
+; $Id: zebra.nsi,v 1.20.2.11 2005-05-30 13:43:06 adam Exp $
 
-!define VERSION "1.3.26"
+!define VERSION "1.3.28"
 
 !include "MUI.nsh"
 
