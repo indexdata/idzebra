@@ -1,4 +1,4 @@
-/* $Id: passwddb.c,v 1.7.2.1 2005-05-12 08:02:47 adam Exp $
+/* $Id: passwddb.c,v 1.7.2.2 2005-05-30 13:24:54 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -38,9 +38,10 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <passwddb.h>
 
 struct passwd_entry {
-	char *name;
-	char *des;
-	struct passwd_entry *next;
+    char *name;
+    char *des;
+    int encrypt_flag;
+    struct passwd_entry *next;
 };
 
 struct passwd_db {
@@ -70,83 +71,105 @@ static int get_entry (const char **p, char *dst, int max)
 	return i;
 }
 
-int passwd_db_file (Passwd_db db, const char *fname)
+static int passwd_db_file_int(Passwd_db db, const char *fname,
+			      int encrypt_flag)
 {
-	FILE *f;
-	char buf[1024];
-	f = fopen (fname, "r");
-	if (!f)
-		return -1;
-	while (fgets (buf, sizeof(buf)-1, f))
-	{
-		struct passwd_entry *pe;
-		char name[128];
-		char des[128];
-		char *p;
-		const char *cp = buf;
-		if ((p = strchr (buf, '\n')))
-			*p = '\0';
-		get_entry (&cp, name, 128);
-		get_entry (&cp, des, 128);
-
-		pe = (struct passwd_entry *) xmalloc (sizeof(*pe));
-		pe->name = xstrdup (name);
-		pe->des = xstrdup (des);
-		pe->next = db->entries;
-		db->entries = pe;
-	}
-	fclose (f);
-	return 0;
+    FILE *f;
+    char buf[1024];
+    f = fopen (fname, "r");
+    if (!f)
+	return -1;
+    while (fgets (buf, sizeof(buf)-1, f))
+    {
+	struct passwd_entry *pe;
+	char name[128];
+	char des[128];
+	char *p;
+	const char *cp = buf;
+	if ((p = strchr (buf, '\n')))
+	    *p = '\0';
+	get_entry (&cp, name, 128);
+	get_entry (&cp, des, 128);
+	
+	pe = (struct passwd_entry *) xmalloc (sizeof(*pe));
+	pe->name = xstrdup (name);
+	pe->encrypt_flag = encrypt_flag;
+	pe->des = xstrdup (des);
+	pe->next = db->entries;
+	db->entries = pe;
+    }
+    fclose (f);
+    return 0;
 }
+
 
 void passwd_db_close (Passwd_db db)
 {
-	struct passwd_entry *pe = db->entries;
-	while (pe)
-	{
-		struct passwd_entry *pe_next = pe->next;
+    struct passwd_entry *pe = db->entries;
+    while (pe)
+    {
+	struct passwd_entry *pe_next = pe->next;
 	
-		xfree (pe->name);
-		xfree (pe->des);
-		xfree (pe);
-		pe = pe_next;
-	}
-	xfree (db);
+	xfree (pe->name);
+	xfree (pe->des);
+	xfree (pe);
+	pe = pe_next;
+    }
+    xfree (db);
 }
 
 void passwd_db_show (Passwd_db db)
 {
-	struct passwd_entry *pe;
-	for (pe = db->entries; pe; pe = pe->next)
-		logf (LOG_LOG,"%s:%s", pe->name, pe->des);
+    struct passwd_entry *pe;
+    for (pe = db->entries; pe; pe = pe->next)
+	logf (LOG_LOG,"%s:%s", pe->name, pe->des);
 }
 
 int passwd_db_auth (Passwd_db db, const char *user, const char *pass)
 {
-	struct passwd_entry *pe;
+    struct passwd_entry *pe;
+    for (pe = db->entries; pe; pe = pe->next)
+	if (user && !strcmp (user, pe->name))
+	    break;
+    if (!pe)
+	return -1;
+    if (pe->encrypt_flag)
+    {
 #if HAVE_CRYPT_H
 	char salt[3];
 	const char *des_try;
-#endif
-	for (pe = db->entries; pe; pe = pe->next)
-		if (user && !strcmp (user, pe->name))
-			break;
-	if (!pe)
-		return -1;
-#if HAVE_CRYPT_H
 	if (strlen (pe->des) < 3)
-		return -3;
+	    return -3;
 	if (!pass)
 	    return -2;
 	memcpy (salt, pe->des, 2);
 	salt[2] = '\0';	
 	des_try = crypt (pass, salt);
 	if (strcmp (des_try, pe->des))
-		return -2;
+	    return -2;
 #else
-	if (strcmp (pe->des, pass))
-		return -2;
+	return -2;
 #endif
-	return 0;	
+    }
+    else
+    {
+	if (strcmp (pe->des, pass))
+	    return -2;
+    }
+    return 0;	
+}
+
+int passwd_db_file_crypt(Passwd_db db, const char *fname)
+{
+#if HAVE_CRYPT_H
+    return passwd_db_file_int(db, fname, 1);
+#else
+    return -1;
+#endif
+}
+
+int passwd_db_file_plain(Passwd_db db, const char *fname)
+{
+    return passwd_db_file_int(db, fname, 0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: passtest.c,v 1.4 2002-08-02 19:26:57 adam Exp $
+/* $Id: passtest.c,v 1.4.2.1 2005-05-30 13:24:53 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -26,12 +26,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 int main (int argc, char **argv)
 {
-	Passwd_db db;
-
-	db = passwd_db_open();
-
-	passwd_db_file (db, "/etc/passwd");
-	passwd_db_auth (db, "adam", "xtx9Y=");
-	passwd_db_close (db);
-	return 0;
+    Passwd_db db;
+    
+    db = passwd_db_open();
+    
+    passwd_db_file_plain(db, "/etc/passwd");
+    passwd_db_auth(db, "adam", "xtx9Y=");
+    passwd_db_close(db);
+    return 0;
 }

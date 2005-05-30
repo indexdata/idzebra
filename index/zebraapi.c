@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.7 2005-05-18 12:20:34 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.8 2005-05-30 13:24:53 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -154,6 +154,8 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
 
     if ((res = res_open (configName, def_res, over_res)))
     {
+	const char *passwd_plain = 0;
+	const char *passwd_encrypt = 0;
         ZebraService zh = xmalloc (sizeof(*zh));
 
 	yaz_log (LOG_DEBUG, "Read resources `%s'", configName);
@@ -165,16 +167,36 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
         zebra_chdir (zh);
         
         zebra_mutex_cond_init (&zh->session_lock);
-        if (!res_get (zh->global_res, "passwd"))
+	passwd_plain = res_get (zh->global_res, "passwd");
+	passwd_encrypt = res_get (zh->global_res, "passwd.c");
+
+        if (!passwd_plain && !passwd_encrypt)
             zh->passwd_db = NULL;
         else
         {
-            zh->passwd_db = passwd_db_open ();
+            zh->passwd_db = passwd_db_open();
             if (!zh->passwd_db)
                 logf (LOG_WARN|LOG_ERRNO, "passwd_db_open failed");
             else
-                passwd_db_file (zh->passwd_db,
-                                res_get (zh->global_res, "passwd"));
+	    {
+		if (passwd_plain)
+		    if (passwd_db_file_plain(zh->passwd_db, passwd_plain))
+		    {
+			logf(LOG_WARN, 
+			     "Failed to read passwords %s (or unsupported)",
+			     passwd_plain);
+		    }
+		if (passwd_encrypt)
+		{
+		    if (passwd_db_file_crypt(zh->passwd_db, passwd_encrypt))
+		    {
+			logf(LOG_WARN, 
+			     "Failed to read encrypted pwds %s "
+			     "(or unsupported)", passwd_encrypt);
+		    }
+		}
+
+	    }
         }
         zh->path_root = res_get (zh->global_res, "root");
         return zh;

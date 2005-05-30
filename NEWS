@@ -1,3 +1,12 @@
+
+--- 1.3.28 2005/05/30
+
+Documented authentication facility in Zebra. Added zebra.cfg directive
+'passwd.c' which specifies user accounts file with encrypted passwords. The
+directive 'passwd' specifies user accounts file with clear-text passwords.
+The previous version of Zebra used plain/clear text depending on
+configuration automatically. That caused upgrade trouble. Bug #356.
+
 --- 1.3.26 2005/05/24
 
 Depend on YAZ 2.0.18 or later in configure.
