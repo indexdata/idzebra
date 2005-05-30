@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.17 2004-01-22 16:23:23 heikki Exp $ -->
+ <!-- $Id: administration.xml,v 1.18 2005-05-30 13:22:11 adam Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -335,27 +335,50 @@
      </listitem>
     </varlistentry>
 
-     <!--
-     no longer supported.
     <varlistentry>
-     <term>tagsysno: 0|1</term>
+     <term>passwd: <replaceable>file</replaceable></term>
      <listitem>
       <para>
-       Species whether Zebra should include system-number data in XML
-       and GRS-1 records returned to clients, represented by the
-       <literal>&lt;localControlNumber&gt;</literal> element in XML
-       and the <literal>(1,14)</literal> tag in GRS-1.
-       The content of these elements is an internally-generated
-       integer uniquely identifying the record within its database.
-       It is included by default but may be turned off, with
-       <literal>tagsysno: 0</literal> for databases in which a local
-       control number is explicitly specified in the input records
-       themselves.
+       Specifies a file with description of user accounts for Zebra.
+       The format is similar to that known to Apache's htpasswd files
+       and UNIX' passwd files. Non-empty lines not beginning with
+       # are considered account lines. There is one account per-line.
+       A line consists of fields separate by a single colon character.
+       First field is username, second is password.
       </para>
      </listitem>
     </varlistentry>
-     -->
-     
+
+    <varlistentry>
+     <term>passwd.c: <replaceable>file</replaceable></term>
+     <listitem>
+      <para>
+       Specifies a file with description of user accounts for Zebra.
+       File format is similar to that used by the passwd directive except
+       that the password are encrypted. Use Apache's htpasswd or similar
+       for maintenanace.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term>perm.<replaceable>user</replaceable>:
+     <replaceable>permstring</replaceable></term>
+     <listitem>
+      <para>
+       Specifies permissions (priviledge) for a user that are allowed
+       to access Zebra via the passwd system. There are two kinds
+       of permissions currently: read (r) and write(w). By default
+       users not listed in a permission directive are given the read
+       priviledge. To specify permissions for a user with no
+       username, or Z39.50 anonymous style use
+	<literal>anonymous</literal>. The permstring consists of
+       a sequence of characters. Include character <literal>w</literal>
+       for write/update access, <literal>r</literal> for read access.
+      </para>
+     </listitem>
+    </varlistentry>
+
    </variablelist>
   </para>
   
