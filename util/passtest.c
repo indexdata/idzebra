@@ -1,4 +1,4 @@
-/* $Id: passtest.c,v 1.5 2005-01-15 19:38:42 adam Exp $
+/* $Id: passtest.c,v 1.6 2005-05-30 13:27:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -30,8 +30,8 @@ int main (int argc, char **argv)
 
 	db = passwd_db_open();
 
-	passwd_db_file (db, "/etc/passwd");
-	passwd_db_auth (db, "adam", "xtx9Y=");
-	passwd_db_close (db);
+	passwd_db_file_plain(db, "/etc/passwd");
+	passwd_db_auth(db, "adam", "xtx9Y=");
+	passwd_db_close(db);
 	return 0;
 }

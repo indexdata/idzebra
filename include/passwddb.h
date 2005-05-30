@@ -1,4 +1,4 @@
-/* $Id: passwddb.h,v 1.6 2005-01-15 21:45:42 adam Exp $
+/* $Id: passwddb.h,v 1.7 2005-05-30 13:27:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -31,7 +31,8 @@ typedef struct passwd_db *Passwd_db;
 
 Passwd_db passwd_db_open (void);
 int passwd_db_auth (Passwd_db db, const char *user, const char *pass);
-int passwd_db_file (Passwd_db db, const char *fname);
+int passwd_db_file_plain(Passwd_db db, const char *fname);
+int passwd_db_file_crypt(Passwd_db db, const char *fname);
 void passwd_db_close (Passwd_db db);
 void passwd_db_show (Passwd_db db);
 

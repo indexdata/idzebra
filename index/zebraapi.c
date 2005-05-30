@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.169 2005-05-17 08:50:49 adam Exp $
+/* $Id: zebraapi.c,v 1.170 2005-05-30 13:27:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -154,6 +154,8 @@ ZebraHandle zebra_open (ZebraService zs)
     return zh;
 }
 
+	const char *passwd_plain = 0;
+	const char *passwd_encrypt = 0;
 ZebraService zebra_start (const char *configName)
 {
     return zebra_start_res(configName, 0, 0);
@@ -185,16 +187,23 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
         zebra_chdir (zh);
         
         zebra_mutex_cond_init (&zh->session_lock);
-        if (!res_get (zh->global_res, "passwd"))
+	passwd_plain = res_get (zh->global_res, "passwd");
+	passwd_encrypt = res_get (zh->global_res, "passwd.c");
+
+        if (!passwd_plain && !passwd_encrypt)
             zh->passwd_db = NULL;
         else
         {
-            zh->passwd_db = passwd_db_open ();
+            zh->passwd_db = passwd_db_open();
             if (!zh->passwd_db)
                 yaz_log (YLOG_WARN|YLOG_ERRNO, "passwd_db_open failed");
             else
-                passwd_db_file (zh->passwd_db,
-                                res_get (zh->global_res, "passwd"));
+	    {
+		if (passwd_plain)
+		    passwd_db_file_plain(zh->passwd_db, passwd_plain);
+		if (passwd_encrypt)
+		    passwd_db_file_crypt(zh->passwd_db, passwd_encrypt);
+	    }
         }
         zh->path_root = res_get (zh->global_res, "root");
 	zh->nmem = nmem_create();
