@@ -1,9 +1,9 @@
-# $Id: Makefile.am,v 1.3 2005-05-01 07:17:47 adam Exp $
+# $Id: Makefile.am,v 1.4 2005-05-31 14:18:17 adam Exp $
 
 check_PROGRAMS = xslt1 xslt2 xslt3
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST=zebra.cfg marc-col.xml marc-one.xml marc1.xsl
+EXTRA_DIST=zebra.cfg marc-col.xml marc-one.xml index.xsl id.xsl marcschema.xsl
 
 xslt1_SOURCES = xslt1.c
 xslt2_SOURCES = xslt2.c

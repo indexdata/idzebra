@@ -1,4 +1,4 @@
-/* $Id: xslt3.c,v 1.1 2005-05-01 07:17:47 adam Exp $
+/* $Id: xslt3.c,v 1.2 2005-05-31 14:18:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     
     zebra_init(zh);
 
-    zebra_set_resource(zh, "recordType", "xslt.marc1.xsl");
+    zebra_set_resource(zh, "recordType", "xslt.marcschema.xml");
 
     sprintf(path, "%.200s/marc-one.xml", get_srcdir());
     f = fopen(path, "rb");

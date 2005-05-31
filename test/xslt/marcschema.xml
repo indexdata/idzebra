@@ -1,0 +1,8 @@
+<schemaInfo>
+  <!-- $Id: marcschema.xml,v 1.1 2005-05-31 14:18:17 adam Exp $ -->
+  <schema name="index" identifier="http://indexdata.dk/zebra/indexing/1"
+          stylesheet="index.xsl" />
+  <schema name="F" stylesheet="id.xsl" />
+</schemaInfo>
+
+   
