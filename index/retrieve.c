@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.22 2004-08-04 08:35:23 adam Exp $
+/* $Id: retrieve.c,v 1.21.2.1 2005-05-31 19:28:49 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -82,7 +82,7 @@ void zebra_record_int_end (void *fh, off_t off)
     fc->offset_end = off;
 }
 
-int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
+int zebra_record_fetch (ZebraHandle zh, int sysno, int score, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep)
@@ -97,10 +97,21 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
     void *clientData;
     int raw_mode = 0;
 
+    if (comp && comp->which == Z_RecordComp_simple &&
+        comp->u.simple->which == Z_ElementSetNames_generic && 
+        !strcmp (comp->u.simple->u.generic, "_sysno_"))
+    {
+	char rec_str[60];
+	sprintf(rec_str, "%d", sysno);
+	*output_format = VAL_SUTRS;
+	*rec_lenp = strlen(rec_str);
+	*rec_bufp = odr_strdup(stream, rec_str);
+	return 0;
+    }
     rec = rec_get (zh->reg->records, sysno);
     if (!rec)
     {
-        logf (LOG_DEBUG, "rec_get fail on sysno=" ZINT_FORMAT, sysno);
+        logf (LOG_DEBUG, "rec_get fail on sysno=%d", sysno);
 	*basenamep = 0;
         return 14;
     }
@@ -124,7 +135,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
         logf (LOG_WARN, "Retrieve: Cannot handle type %s",  file_type);
 	return 14;
     }
-    logf (LOG_DEBUG, "retrieve localno=" ZINT_FORMAT " score=%d", sysno,score);
+    logf (LOG_DEBUG, "retrieve localno=%d score=%d", sysno, score);
     retrieveCtrl.fh = &fc;
     fc.fd = -1;
     retrieveCtrl.fname = fname;

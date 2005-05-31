@@ -1,4 +1,7 @@
 
+Added support for special slement set _sysno_ which returns a
+record ID for a record packed as a SUTRS record.
+
 --- 1.3.28 2005/05/30
 
 Documented authentication facility in Zebra. Added zebra.cfg directive
