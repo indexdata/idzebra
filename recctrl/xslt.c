@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.5 2005-05-01 07:38:51 adam Exp $
+/* $Id: xslt.c,v 1.6 2005-05-31 17:36:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,22 +28,28 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <libxml/xmlversion.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
-#ifdef LIBXML_READER_ENABLED
 #include <libxml/xmlreader.h>
-#endif
 #include <libxslt/transform.h>
 
 #include <idzebra/util.h>
 #include <idzebra/recctrl.h>
 
-struct filter_info {
+struct filter_schema {
+    const char *name;
+    const char *identifier;
+    const char *stylesheet;
+    struct filter_schema *next;
+    const char *default_schema;
     xsltStylesheetPtr stylesheet_xsp;
-#ifdef LIBXML_READER_ENABLED
-    xmlTextReaderPtr reader;
-#endif
+};
+
+struct filter_info {
+    xmlDocPtr doc;
     char *fname;
     int split_depth;
     ODR odr;
+    struct filter_schema *schemas;
+    xmlTextReaderPtr reader;
 };
 
 #define ZEBRA_INDEX_NS "http://indexdata.dk/zebra/indexing/1"
@@ -78,13 +84,12 @@ static void set_param_int(const char **params, const char *name,
 static void *filter_init_xslt(Res res, RecType recType)
 {
     struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
-    tinfo->stylesheet_xsp = 0;
-#ifdef LIBXML_READER_ENABLED
     tinfo->reader = 0;
-#endif
     tinfo->fname = 0;
     tinfo->split_depth = 0;
     tinfo->odr = odr_createmem(ODR_ENCODE);
+    tinfo->doc = 0;
+    tinfo->schemas = 0;
     return tinfo;
 }
 
@@ -96,33 +101,113 @@ static void *filter_init_xslt1(Res res, RecType recType)
     return tinfo;
 }
 
+static int attr_content(struct _xmlAttr *attr, const char *name,
+			const char **dst_content)
+{
+    if (!strcmp(attr->name, name) && attr->children &&
+	attr->children->type == XML_TEXT_NODE)
+    {
+	*dst_content = attr->children->content;
+	return 1;
+    }
+    return 0;
+}
+
+static void destroy_schemas(struct filter_info *tinfo)
+{
+    struct filter_schema *schema = tinfo->schemas;
+    while (schema)
+    {
+	struct filter_schema *schema_next = schema->next;
+	if (schema->stylesheet_xsp)
+	    xsltFreeStylesheet(schema->stylesheet_xsp);
+	xfree(schema);
+	schema = schema_next;
+    }
+    tinfo->schemas = 0;
+    xfree(tinfo->fname);
+    if (tinfo->doc)
+	xmlFreeDoc(tinfo->doc);    
+    tinfo->doc = 0;
+}
+
+static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
+{
+    xmlNodePtr ptr;
+    tinfo->fname = xstrdup(fname);
+    tinfo->doc = xmlParseFile(tinfo->fname);
+    if (!tinfo->doc)
+	return ZEBRA_FAIL;
+    ptr = xmlDocGetRootElement(tinfo->doc);
+    if (!ptr || ptr->type != XML_ELEMENT_NODE ||
+	strcmp(ptr->name, "schemaInfo"))
+	return ZEBRA_FAIL;
+    for (ptr = ptr->children; ptr; ptr = ptr->next)
+    {
+	if (ptr->type == XML_ELEMENT_NODE &&
+	    !strcmp(ptr->name, "schema"))
+	{
+	    struct _xmlAttr *attr;
+	    struct filter_schema *schema = xmalloc(sizeof(*schema));
+	    schema->name = 0;
+	    schema->identifier = 0;
+	    schema->stylesheet = 0;
+	    schema->default_schema = 0;
+	    schema->next = tinfo->schemas;
+	    schema->stylesheet_xsp = 0;
+	    tinfo->schemas = schema;
+	    for (attr = ptr->properties; attr; attr = attr->next)
+	    {
+		attr_content(attr, "identifier", &schema->identifier);
+		attr_content(attr, "name", &schema->name);
+		attr_content(attr, "stylesheet", &schema->stylesheet);
+		attr_content(attr, "default", &schema->default_schema);
+	    }
+	    if (schema->stylesheet)
+		schema->stylesheet_xsp =
+		    xsltParseStylesheetFile(
+			(const xmlChar*) schema->stylesheet);
+	}
+    }
+    return ZEBRA_OK;
+}
+
+static struct filter_schema *lookup_schema(struct filter_info *tinfo,
+					   const char *est)
+{
+    struct filter_schema *schema;
+    for (schema = tinfo->schemas; schema; schema = schema->next)
+    {
+	if (est)
+	{
+	    if (schema->identifier && !strcmp(schema->identifier, est))
+		return schema;
+	    if (schema->name && !strcmp(schema->name, est))
+		return schema;
+	}
+	if (schema->default_schema)
+	    return schema;
+    }
+    return 0;
+}
+
 static void filter_config(void *clientData, Res res, const char *args)
 {
     struct filter_info *tinfo = clientData;
     if (!args || !*args)
-	args = "default.xsl";
-    if (!tinfo->fname || strcmp(args, tinfo->fname))
-    {
-	/* different filename so must reread stylesheet */
-	xfree(tinfo->fname);
-	tinfo->fname = xstrdup(args);
-	if (tinfo->stylesheet_xsp)
-	    xsltFreeStylesheet(tinfo->stylesheet_xsp);
-	tinfo->stylesheet_xsp =
-	    xsltParseStylesheetFile((const xmlChar*) tinfo->fname);
-    }
+	args = "xsltfilter.xml";
+    if (tinfo->fname && !strcmp(args, tinfo->fname))
+	return;
+    destroy_schemas(tinfo);
+    create_schemas(tinfo, args);
 }
 
 static void filter_destroy(void *clientData)
 {
     struct filter_info *tinfo = clientData;
-    if (tinfo->stylesheet_xsp)
-	xsltFreeStylesheet(tinfo->stylesheet_xsp);
-#ifdef LIBXML_READER_ENABLED
+    destroy_schemas(tinfo);
     if (tinfo->reader)
 	xmlFreeTextReader(tinfo->reader);
-#endif
-    xfree(tinfo->fname);
     odr_destroy(tinfo->odr);
     xfree(tinfo);
 }
@@ -192,16 +277,18 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
     xmlChar *buf_out;
     int len_out;
 
+    struct filter_schema *schema = lookup_schema(tinfo, ZEBRA_INDEX_NS);
+
     params[0] = 0;
     set_param_str(params, "schema", ZEBRA_INDEX_NS, tinfo->odr);
 
     (*p->init)(p, &recWord);
     recWord.reg_type = 'w';
 
-    if (tinfo->stylesheet_xsp)
+    if (schema && schema->stylesheet_xsp)
     {
 	xmlDocPtr resDoc = 
-	    xsltApplyStylesheet(tinfo->stylesheet_xsp,
+	    xsltApplyStylesheet(schema->stylesheet_xsp,
 				doc, params);
 	if (p->flagShowRecords)
 	{
@@ -222,7 +309,6 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
     return RECCTRL_EXTRACT_OK;
 }
 
-#ifdef LIBXML_READER_ENABLED
 static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
 {
     int ret;
@@ -237,9 +323,6 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
 				       XML_PARSE_XINCLUDE);
     }
     if (!tinfo->reader)
-	return RECCTRL_EXTRACT_ERROR_GENERIC;
-
-    if (!tinfo->stylesheet_xsp)
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
 
     ret = xmlTextReaderRead(tinfo->reader);
@@ -263,7 +346,6 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
     tinfo->reader = 0;
     return RECCTRL_EXTRACT_EOF;
 }
-#endif
 
 static int extract_full(struct filter_info *tinfo, struct recExtractCtrl *p)
 {
@@ -293,12 +375,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 	return extract_full(tinfo, p);
     else
     {
-#ifdef LIBXML_READER_ENABLED
 	return extract_split(tinfo, p);
-#else
-	/* no xmlreader so we can't split it */
-	return RECCTRL_EXTRACT_ERROR_GENERIC;
-#endif
     }
 }
 
@@ -313,6 +390,7 @@ static int ioclose_ret(void *context)
     return 0;
 }
 
+
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
     const char *esn = ZEBRA_SCHEMA_IDENTITY_NS;
@@ -320,6 +398,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     struct filter_info *tinfo = clientData;
     xmlDocPtr resDoc;
     xmlDocPtr doc;
+    struct filter_schema *schema;
 
     if (p->comp)
     {
@@ -331,7 +410,14 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	}
 	esn = p->comp->u.simple->u.generic;
     }
-    
+    schema = lookup_schema(tinfo, esn);
+    if (!schema)
+    {
+	p->diagnostic =
+	    YAZ_BIB1_SPECIFIED_ELEMENT_SET_NAME_NOT_VALID_FOR_SPECIFIED_;
+	return 0;
+    }
+
     params[0] = 0;
     set_param_str(params, "schema", esn, p->odr);
     if (p->fname)
@@ -340,11 +426,6 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	set_param_int(params, "score", p->score, p->odr);
     set_param_int(params, "size", p->recordSize, p->odr);
     
-    if (!tinfo->stylesheet_xsp)
-    {
-	p->diagnostic = YAZ_BIB1_SYSTEM_ERROR_IN_PRESENTING_RECORDS;
-	return 0;
-    }
     doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
 		    0 /* URL */,
 		    0 /* encoding */,
@@ -355,11 +436,11 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	return 0;
     }
 
-    if (!strcmp(esn, ZEBRA_SCHEMA_IDENTITY_NS))
+    if (!schema->stylesheet_xsp)
 	resDoc = doc;
     else
     {
-	resDoc = xsltApplyStylesheet(tinfo->stylesheet_xsp,
+	resDoc = xsltApplyStylesheet(schema->stylesheet_xsp,
 				     doc, params);
 	xmlFreeDoc(doc);
     }
