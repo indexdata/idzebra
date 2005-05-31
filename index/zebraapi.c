@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.171 2005-05-31 13:01:37 adam Exp $
+/* $Id: zebraapi.c,v 1.172 2005-05-31 17:10:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -154,8 +154,6 @@ ZebraHandle zebra_open (ZebraService zs)
     return zh;
 }
 
-	const char *passwd_plain = 0;
-	const char *passwd_encrypt = 0;
 ZebraService zebra_start (const char *configName)
 {
     return zebra_start_res(configName, 0, 0);
@@ -171,11 +169,13 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
         log_level_initialized = 1;
     }
 
-    yaz_log(log_level, "zebra_start %s",configName);
+    yaz_log(YLOG_LOG, "zebra_start %s %s",configName, ZEBRAVER);
     assert(configName);
 
     if ((res = res_open (configName, def_res, over_res)))
     {
+	const char *passwd_plain = 0;
+	const char *passwd_encrypt = 0;
         ZebraService zh = xmalloc(sizeof(*zh));
 
 	yaz_log (YLOG_DEBUG, "Read resources `%s'", configName);
