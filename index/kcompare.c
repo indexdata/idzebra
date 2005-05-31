@@ -1,4 +1,4 @@
-/* $Id: kcompare.c,v 1.56 2005-04-13 13:03:47 adam Exp $
+/* $Id: kcompare.c,v 1.57 2005-05-31 07:29:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -33,9 +33,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define CODEC_INLINE
 #endif
 
-void key_logdump_txt (int logmask, const void *p, const char *txt)
+void key_logdump_txt(int logmask, const void *p, const char *txt)
 {
     struct it_key key;
+    if (!txt)
+	txt = "(none)";
     if (p)
     {
 	char formstr[128];
@@ -50,13 +52,13 @@ void key_logdump_txt (int logmask, const void *p, const char *txt)
 		strcat(formstr, ".");
 	    sprintf(formstr + strlen(formstr), ZINT_FORMAT, key.mem[i]);
 	}
-        yaz_log (logmask, "%s %s", formstr, txt);
+        yaz_log(logmask, "%s %s", formstr, txt);
     }
     else
-        yaz_log(logmask, " (null) %s",txt);
+        yaz_log(logmask, " (no key) %s",txt);
 }
 
-void key_logdump (int logmask, const void *p)
+void key_logdump(int logmask, const void *p)
 {
     key_logdump_txt(logmask,  p, "");
 }

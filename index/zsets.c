@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.83 2005-05-24 11:35:42 adam Exp $
+/* $Id: zsets.c,v 1.84 2005-05-31 07:29:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -780,10 +780,11 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
         }
     }
     rfd = rset_open (rset, RSETF_READ);
-    /* FIXME - pass a TERMID *, and use it for something below !! */
     while (rset_read (rfd, &key, &termid))
     {
         zint this_sys = key.mem[0];
+	if (log_level_searchhits)
+	    key_logdump_txt(log_level_searchhits, &key, termid->name);
 	kno++;
         if (this_sys != psysno)
         {
@@ -857,7 +858,8 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 	    zint this_sys = key.mem[0];
 	    zint seqno = key.mem[key.len-1];
 	    kno++;
-	    key_logdump_txt(log_level_searchhits, &key, " Got hit");
+	    if (log_level_searchhits)
+		key_logdump_txt(log_level_searchhits, &key, termid->name);
 	    if (this_sys != psysno)
 	    {
 		if (rfd->counted_items >= rset->hits_limit)
