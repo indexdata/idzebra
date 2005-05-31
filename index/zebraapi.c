@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.170 2005-05-30 13:27:08 adam Exp $
+/* $Id: zebraapi.c,v 1.171 2005-05-31 13:01:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -944,6 +944,9 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 	    {
 		char *buf;
 		int len;
+
+		zebra_get_hit_vector(zh, setname, poset[i].sysno);
+
 		recs[i].errCode =
 		    zebra_record_fetch(zh, poset[i].sysno, poset[i].score,
 				       stream, input_format, comp,

@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.84 2005-05-31 07:29:10 adam Exp $
+/* $Id: zsets.c,v 1.85 2005-05-31 13:01:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1032,3 +1032,54 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
     }
     return ZEBRA_FAIL;
 }
+
+ZEBRA_RES zebra_get_hit_vector(ZebraHandle zh, const char *setname,
+			       zint sysno)
+{
+    ZebraSet sset = resultSetGet(zh, setname);
+    yaz_log(YLOG_LOG, "zebra_get_hit_vector setname=%s zysno=" ZINT_FORMAT,
+	    setname, sysno);
+    if (!sset)
+	return ZEBRA_FAIL;
+    else
+    {
+	struct rset_key_control *kc = zebra_key_control_create(zh);
+	NMEM nmem = nmem_create();
+	struct it_key key;
+	RSET rsets[2], rset_comb;
+	RSET rset_temp = rstemp_create(nmem, kc, kc->scope, 
+				       res_get (zh->res, "setTmpDir"),0 );
+	
+	TERMID termid;
+	RSFD rsfd = rset_open(rset_temp, RSETF_WRITE);
+	
+	key.mem[0] = sysno;
+	key.mem[1] = 0;
+	key.mem[2] = 0;
+	key.mem[3] = 0;
+	key.len = 2;
+	rset_write (rsfd, &key);
+	rset_close (rsfd);
+
+	rsets[0] = rset_temp;
+	rsets[1] = rset_dup(sset->rset);
+	
+	rset_comb = rsmulti_and_create(nmem, kc, kc->scope, 2, rsets);
+
+	rsfd = rset_open(rset_comb, RSETF_READ);
+
+	while (rset_read(rsfd, &key, &termid))
+	{
+	    if (termid)
+	    {
+		key_logdump_txt(YLOG_LOG, &key, termid->name);
+		yaz_log(YLOG_LOG, "   type=%d", termid->type);
+	    }
+	}
+	rset_close(rsfd);
+	
+	rset_delete(rset_comb);
+    }
+    return ZEBRA_OK;
+}
+

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.138 2005-05-11 12:39:36 adam Exp $
+/* $Id: index.h,v 1.139 2005-05-31 13:01:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -463,6 +463,8 @@ off_t zebra_record_int_tell (void *fh);
 int zebra_record_int_read (void *fh, char *buf, size_t count);
 void zebra_record_int_end (void *fh, off_t offset);
 
+void print_rec_keys(ZebraHandle zh, struct recKeys *reckeys);
+
 void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
                               int cmd, struct recKeys *reckeys);
 void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
@@ -493,6 +495,11 @@ Dict dict_open_res (BFiles bfs, const char *name, int cache, int rw,
 
 void zebra_setError(ZebraHandle zh, int code, const char *addinfo);
 void zebra_setError_zint(ZebraHandle zh, int code, zint i);
+
+void zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, int reg_type,
+			      char **dst, const char *src);
+
+ZEBRA_RES zebra_get_hit_vector(ZebraHandle zh, const char *setname, zint sysno);
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.29 2005-04-14 12:02:58 adam Exp $
+/* $Id: retrieve.c,v 1.30 2005-05-31 13:01:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -211,7 +211,15 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
     retrieveCtrl.res = zh->res;
     retrieveCtrl.rec_buf = 0;
     retrieveCtrl.rec_len = -1;
-    
+
+    if (1)
+    {
+	struct recKeys reckeys;
+	reckeys.buf = rec->info[recInfo_delKeys];
+	reckeys.buf_used = rec->size[recInfo_delKeys];
+
+	print_rec_keys(zh, &reckeys);
+    }
     (*rt->retrieve)(clientData, &retrieveCtrl);
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = (char *) retrieveCtrl.rec_buf;

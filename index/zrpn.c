@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.192 2005-05-24 11:35:42 adam Exp $
+/* $Id: zrpn.c,v 1.193 2005-05-31 13:01:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -173,8 +173,8 @@ struct grep_info {
     ZebraSet termset;
 };        
 
-static void term_untrans(ZebraHandle zh, int reg_type,
-                           char *dst, const char *src)
+void zebra_term_untrans(ZebraHandle zh, int reg_type,
+			char *dst, const char *src)
 {
     int len = 0;
     while (*src)
@@ -238,7 +238,7 @@ static void add_isam_p(const char *name, const char *info,
         int su_code = 0;
         int len = key_SU_decode (&su_code, name);
         
-        term_untrans  (p->zh, p->reg_type, term_tmp, name+len+1);
+        zebra_term_untrans  (p->zh, p->reg_type, term_tmp, name+len+1);
         yaz_log(log_level_rpn, "grep: %d %c %s", su_code, name[len], term_tmp);
         zebraExplain_lookup_ord (p->zh->reg->zei,
                                  su_code, &db, &set, &use);
@@ -2634,13 +2634,13 @@ static int scan_handle (char *name, const char *info, int pos, void *client)
     return 0;
 }
 
-static void scan_term_untrans (ZebraHandle zh, NMEM stream, int reg_type,
-                               char **dst, const char *src)
+void zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, int reg_type,
+			      char **dst, const char *src)
 {
     char term_src[IT_MAX_WORD];
     char term_dst[IT_MAX_WORD];
     
-    term_untrans (zh, reg_type, term_src, src);
+    zebra_term_untrans (zh, reg_type, term_src, src);
 
     if (zh->iconv_from_utf8 != 0)
     {
@@ -2926,8 +2926,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	if (lo >= 0)
 	{
 	    /* get result set for first term */
-	    scan_term_untrans(zh, stream->mem, reg_id,
-			      &glist[lo].term, mterm);
+	    zebra_term_untrans_iconv(zh, stream->mem, reg_id,
+				     &glist[lo].term, mterm);
 	    rset = rset_trunc(zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
 			      glist[lo].term, strlen(glist[lo].term),
 			      NULL, 0, zapt->term->which, rset_nmem, 
@@ -3015,13 +3015,13 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	if (j0 == -1)
 	    break;
 	
-	scan_term_untrans (zh, stream->mem, reg_id,
-			   &glist[lo].term, mterm);
+	zebra_term_untrans_iconv(zh, stream->mem, reg_id,
+				 &glist[lo].term, mterm);
 	
 	rset = rset_trunc
 	    (zh, &scan_info_array[j0].list[before-1-ptr[j0]].isam_p, 1,
 	     glist[lo].term, strlen(glist[lo].term),
-	     NULL, 0, zapt->term->which,rset_nmem,
+	     NULL, 0, zapt->term->which, rset_nmem,
 	     kc, kc->scope);
 	
 	ptr[j0]++;

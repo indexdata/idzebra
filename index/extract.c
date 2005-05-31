@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.182 2005-04-29 10:33:53 adam Exp $
+/* $Id: extract.c,v 1.183 2005-05-31 13:01:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -116,7 +116,7 @@ static const char **searchRecordKey (ZebraHandle zh,
 	int attrSet, attrUse;
 
 	iscz1_decode(decode_handle, &dst, &src);
-	assert(key.len < 4 && key.len > 2);
+	assert(key.len <= 4 && key.len > 2);
 
 	attrSet = (int) key.mem[0] >> 16;
 	attrUse = (int) key.mem[0] & 65535;
@@ -1471,6 +1471,45 @@ void extract_add_it_key (ZebraHandle zh,
     dst += slen;
     *dst++ = '\0';
     keys->buf_used = dst - keys->buf;
+}
+
+void print_rec_keys(ZebraHandle zh, struct recKeys *reckeys)
+{
+    void *decode_handle = iscz1_start();
+    int off = 0;
+    int seqno = 0;
+    NMEM nmem = nmem_create();
+
+    yaz_log(YLOG_LOG, "print_rec_keys buf=%p sz=%d", reckeys->buf,
+	    reckeys->buf_used);
+    assert(reckeys->buf);
+    while (off < reckeys->buf_used)
+    {
+        const char *src = reckeys->buf + off;
+        struct it_key key;
+	char *dst = (char*) &key;
+	int attrSet, attrUse;
+	char dst_buf[IT_MAX_WORD];
+	char *dst_term = dst_buf;
+
+	iscz1_decode(decode_handle, &dst, &src);
+	assert(key.len <= 4 && key.len > 2);
+
+	attrSet = (int) key.mem[0] >> 16;
+	attrUse = (int) key.mem[0] & 65535;
+	seqno = (int) key.mem[key.len-1];
+
+	zebra_term_untrans_iconv(zh, nmem, src[0], &dst_term, src+1);
+	
+	yaz_log(YLOG_LOG, "ord=" ZINT_FORMAT " seqno=%d term=%s",
+		key.mem[0], seqno, dst_term); 
+        while (*src++)
+	    ;
+        off = src - reckeys->buf;
+	nmem_reset(nmem);
+    }
+    nmem_destroy(nmem);
+    iscz1_stop(decode_handle);
 }
 
 void extract_add_index_string (RecWord *p, const char *str, int length)
