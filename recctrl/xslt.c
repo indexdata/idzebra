@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.6 2005-05-31 17:36:16 adam Exp $
+/* $Id: xslt.c,v 1.7 2005-06-01 07:32:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -46,7 +46,8 @@ struct filter_schema {
 struct filter_info {
     xmlDocPtr doc;
     char *fname;
-    int split_depth;
+    const char *split_level;
+    const char *split_path;
     ODR odr;
     struct filter_schema *schemas;
     xmlTextReaderPtr reader;
@@ -86,7 +87,8 @@ static void *filter_init_xslt(Res res, RecType recType)
     struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
     tinfo->reader = 0;
     tinfo->fname = 0;
-    tinfo->split_depth = 0;
+    tinfo->split_level = 0;
+    tinfo->split_path = 0;
     tinfo->odr = odr_createmem(ODR_ENCODE);
     tinfo->doc = 0;
     tinfo->schemas = 0;
@@ -97,7 +99,7 @@ static void *filter_init_xslt1(Res res, RecType recType)
 {
     struct filter_info *tinfo = (struct filter_info *)
 	filter_init_xslt(res, recType);
-    tinfo->split_depth = 1;
+    tinfo->split_level = "1";
     return tinfo;
 }
 
@@ -144,8 +146,9 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 	return ZEBRA_FAIL;
     for (ptr = ptr->children; ptr; ptr = ptr->next)
     {
-	if (ptr->type == XML_ELEMENT_NODE &&
-	    !strcmp(ptr->name, "schema"))
+	if (ptr->type != XML_ELEMENT_NODE)
+	    continue;
+	if (!strcmp(ptr->name, "schema"))
 	{
 	    struct _xmlAttr *attr;
 	    struct filter_schema *schema = xmalloc(sizeof(*schema));
@@ -167,6 +170,20 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 		schema->stylesheet_xsp =
 		    xsltParseStylesheetFile(
 			(const xmlChar*) schema->stylesheet);
+	}
+	else if (!strcmp(ptr->name, "split"))
+	{
+	    struct _xmlAttr *attr;
+	    for (attr = ptr->properties; attr; attr = attr->next)
+	    {
+		attr_content(attr, "level", &tinfo->split_level);
+		attr_content(attr, "path", &tinfo->split_path);
+	    }
+	}
+	else
+	{
+	    yaz_log(YLOG_WARN, "Bad element %s in %s", ptr->name, fname);
+	    return ZEBRA_FAIL;
 	}
     }
     return ZEBRA_OK;
@@ -312,6 +329,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
 {
     int ret;
+    int split_depth = 0;
     if (p->first_record)
     {
 	if (tinfo->reader)
@@ -325,12 +343,15 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
     if (!tinfo->reader)
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
 
+    if (tinfo->split_level)
+	split_depth = atoi(tinfo->split_level);
     ret = xmlTextReaderRead(tinfo->reader);
     while (ret == 1) {
 	int type = xmlTextReaderNodeType(tinfo->reader);
 	int depth = xmlTextReaderDepth(tinfo->reader);
-	if (tinfo->split_depth == 0 ||
-	    (type == XML_READER_TYPE_ELEMENT && tinfo->split_depth == depth))
+	if (split_depth == 0 ||
+	    (split_depth > 0 &&
+	     type == XML_READER_TYPE_ELEMENT && split_depth == depth))
 	{
 	    xmlNodePtr ptr = xmlTextReaderExpand(tinfo->reader);
 	    xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
@@ -371,7 +392,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 
     odr_reset(tinfo->odr);
 
-    if (tinfo->split_depth == 0)
+    if (tinfo->split_level == 0 && tinfo->split_path == 0)
 	return extract_full(tinfo, p);
     else
     {
