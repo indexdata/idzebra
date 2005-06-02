@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.193 2005-05-31 13:01:37 adam Exp $
+/* $Id: zrpn.c,v 1.194 2005-06-02 11:59:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1523,7 +1523,23 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
     return ZEBRA_OK;
 }
                                
-
+/**
+  \brief Create result set(s) for list of terms
+  \param zh Zebra Handle
+  \param termz_org term as used in query but converted to UTF-8
+  \param attributeSet default attribute set
+  \param stream memory for result
+  \param reg_type register type ('w', 'p',..)
+  \param complete_flag whether it's phrases or not
+  \param rank_type term flags for ranking
+  \param xpath_use use attribute for X-Path (-1 for no X-path)
+  \param num_bases number of databases
+  \param basenames array of databases
+  \param rset_mem memory for result sets
+  \param result_sets output result set for each term in list (output)
+  \param number number of output result sets
+  \param kc rset key control to be used for created result sets
+*/
 static ZEBRA_RES term_list_trunc(ZebraHandle zh,
 				 Z_AttributesPlusTerm *zapt,
 				 const char *termz_org,
@@ -2329,14 +2345,23 @@ static ZEBRA_RES rpn_search_APT(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     if (sort_flag)
         return rpn_sort_spec(zh, zapt, attributeSet, stream, sort_sequence,
 			     rank_type, rset_nmem, rset, kc);
+    /* consider if an X-Path query is used */
     xpath_len = parse_xpath(zh, zapt, attributeSet, xpath, 10, stream);
     if (xpath_len >= 0)
     {
-        xpath_use = 1016;
-        if (xpath[xpath_len-1].part[0] == '@')
-            xpath_use = 1015;
+        xpath_use = 1016;  /* searching for element by default */
+        if (xpath[xpath_len-1].part[0] == '@') 
+            xpath_use = 1015;  /* last step an attribute .. */
     }
 
+    /* search using one of the various search type strategies
+       termz is our UTF-8 search term
+       attributeSet is top-level default attribute set 
+       stream is ODR for search
+       reg_id is the register type
+       complete_flag is 1 for complete subfield, 0 for incomplete
+       xpath_use is use-attribute to be used for X-Path search, 0 for none
+    */
     if (!strcmp(search_type, "phrase"))
     {
         res = rpn_search_APT_phrase(zh, zapt, termz, attributeSet, stream,

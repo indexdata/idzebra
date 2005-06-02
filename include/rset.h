@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.52 2005-05-24 11:35:41 adam Exp $
+/* $Id: rset.h,v 1.53 2005-06-02 11:59:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -32,25 +32,25 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
-typedef struct rsfd *RSFD; /* Rset "file descriptor" */
-typedef struct rset *RSET; /* Result set */
-
+typedef struct rsfd *RSFD;
+typedef struct rset *RSET;
 
 /** 
  * rset_term is all we need to know of a term to do ranking etc. 
  * As far as the rsets are concerned, it is just a dummy pointer to
  * be passed around.
  */
-
 struct rset_term {
-    /** the term itself */
-    char *name;
-    char *flags;
-    int  type;
-    /** the rset corresponding to this term */
-    RSET rset;
-    /** private stuff for the ranking algorithm */
-    void *rankpriv;
+    char *name;    /** the term itself in internal encoding (UTF-8/raw) */
+    char *flags;   /** flags for rank method */
+    int  type;     /** Term_type from RPN Query. Actually this
+		       is Z_Term_general, Z_Term_numeric,
+		       Z_Term_characterString, ..
+		       This info is used to return encoded term back for
+		       search-result-1 .
+		   */
+    RSET rset;     /** the rset corresponding to this term */
+    void *rankpriv;/** private stuff for the ranking algorithm */
 };
 
 typedef struct rset_term *TERMID; 
@@ -103,13 +103,6 @@ int rset_default_forward(RSFD rfd, void *buf, TERMID *term,
 /** rset_default_read implements a generic read */
 int rset_default_read(RSFD rfd, void *buf, TERMID *term);
 
-/** rset_get_no_terms is a getterms function for those that don't have any */
-void rset_get_no_terms(RSET ct, TERMID *terms, int maxterms, int *curterm);
-
-/** 
- * rset_get_one_term is a getterms function for those rsets that have
- * exactly one term, like all rsisamX types. 
- */
 void rset_get_one_term(RSET ct,TERMID *terms,int maxterms,int *curterm);
 
 /**
@@ -145,15 +138,13 @@ typedef struct rset
 {
     const struct rset_control *control;
     struct rset_key_control *keycontrol;
-    int  refcount;  /* reference count */
-    void *priv;     /* stuff private to the given type of rset */
-    NMEM nmem;      /* nibble memory for various allocs */
-    char my_nmem;   /* Should the nmem be destroyed with the rset?  */
-                    /* 1 if created with it, 0 if passed from above */
-    RSFD free_list; /* all rfd's allocated but not currently in use */
-    RSFD use_list;  /* all rfd's in use */
-    int scope;      /* On what level do we count hits and compare them? */
-    TERMID term;    /* the term thing for ranking etc */
+    int  refcount;   /* reference count */
+    void *priv;      /* stuff private to the given type of rset */
+    NMEM nmem;       /* nibble memory for various allocs */
+    RSFD free_list;  /* all rfd's allocated but not currently in use */
+    RSFD use_list;   /* all rfd's in use */
+    int scope;       /* On what level do we count hits and compare them? */
+    TERMID term;     /* the term thing for ranking etc */
     int no_children;
     RSET *children;
     zint hits_limit;

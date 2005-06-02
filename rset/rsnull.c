@@ -1,4 +1,4 @@
-/* $Id: rsnull.c,v 1.35 2005-05-24 11:35:43 adam Exp $
+/* $Id: rsnull.c,v 1.36 2005-06-02 11:59:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,7 +36,7 @@ static const struct rset_control control =
 {
     "null",
     r_delete,
-    rset_get_no_terms,
+    rset_get_one_term,
     r_open,
     r_close,
     0, /* no forward */
@@ -95,4 +95,3 @@ static int r_write(RSFD rfd, const void *buf)
     yaz_log(YLOG_FATAL, "NULL set type is read-only");
     return -1;
 }
-

@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.46 2005-05-24 11:35:43 adam Exp $
+/* $Id: rset.c,v 1.47 2005-06-02 11:59:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -30,13 +30,15 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-/** \fn rfd_create_base(RSET rs)
- *
- * creates an rfd. Either allocates a new one, in which case the priv 
- * pointer is null, and will have to be filled in, or picks up one 
- * from the freelist, in which case the priv is already allocated,
- * and presumably everything that hangs from it as well 
- */
+/**
+   \brief Common constuctor for RFDs
+   \param rs Result set handle.
+   
+   Creates an rfd. Either allocates a new one, in which case the priv 
+   pointer is null, and will have to be filled in, or picks up one 
+   from the freelist, in which case the priv is already allocated,
+   and presumably everything that hangs from it as well 
+*/
 RSFD rfd_create_base(RSET rs)
 {
     RSFD rnew = rs->free_list;
@@ -63,10 +65,10 @@ RSFD rfd_create_base(RSET rs)
     return rnew;
 }
 
-/** \fn rfd_delete_base
- *
- * puts an rfd into the freelist of the rset. Only when the rset gets
- * deleted, will all the nmem disappear */
+/**
+   \brief Closes a result set RFD handle
+   \param rfd the RFD handle.
+*/
 void rset_close(RSFD rfd)
 {
     RSFD *pfd;
@@ -127,31 +129,37 @@ void rset_close(RSFD rfd)
 	    rs->control->desc);
 }
 
+/**
+   \brief Common constuctor for RSETs
+   \param sel The interface control handle
+   \param nmem The memory handle for it.
+   \param kcontrol Key control info (decode, encode, comparison etc)
+   \param scope scope for set
+   \param term Information about term for it (NULL for none).
+   \param no_children number of child rsets (0 for none)
+   \param children child rsets (NULL for none).
+   
+   Creates an rfd. Either allocates a new one, in which case the priv 
+   pointer is null, and will have to be filled in, or picks up one 
+   from the freelist, in which case the priv is already allocated,
+   and presumably everything that hangs from it as well 
+*/
 RSET rset_create_base(const struct rset_control *sel, 
                       NMEM nmem, struct rset_key_control *kcontrol,
                       int scope, TERMID term,
 		      int no_children, RSET *children)
 {
     RSET rset;
-    NMEM M;
-    assert(nmem);  /* can not yet be used, api/t4 fails */
+    assert(nmem);
     if (!log_level_initialized) 
     {
         log_level = yaz_log_module_level("rset");
         log_level_initialized = 1;
     }
 
-    if (nmem) 
-        M = nmem;
-    else
-        M = nmem_create();
-    rset = (RSET) nmem_malloc(M, sizeof(*rset));
+    rset = (RSET) nmem_malloc(nmem, sizeof(*rset));
     yaz_log(log_level, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rset, nmem); 
-    rset->nmem = M;
-    if (nmem)
-        rset->my_nmem = 0;
-    else 
-        rset->my_nmem = 1;
+    rset->nmem = nmem;
     rset->control = sel;
     rset->refcount = 1;
     rset->priv = 0;
@@ -178,6 +186,13 @@ RSET rset_create_base(const struct rset_control *sel,
     return rset;
 }
 
+/**
+   \brief Destructor RSETs
+   \param rs Handle for result set.
+   
+   Destroys a result set and all its children.
+   The f_delete method of control is called for the result set.
+*/
 void rset_delete(RSET rs)
 {
     (rs->refcount)--;
@@ -193,11 +208,15 @@ void rset_delete(RSET rs)
 	    rset_delete(rs->children[i]);
         (*rs->control->f_delete)(rs);
 	(*rs->keycontrol->dec)(rs->keycontrol);
-        if (rs->my_nmem)
-            nmem_destroy(rs->nmem);
     }
 }
 
+/**
+   \brief Test for last use of RFD
+   \param rfd RFD handle.
+   
+   Returns 1 if this RFD is the last reference to it; 0 otherwise.
+*/
 int rfd_is_last(RSFD rfd)
 {
     if (rfd->rset->use_list == rfd && rfd->next == 0)
@@ -205,6 +224,12 @@ int rfd_is_last(RSFD rfd)
     return 0;
 }
 
+/**
+   \brief Duplicate an RSET
+   \param rs Handle for result set.
+   
+   Duplicates a result set by incrementing the reference count to it.
+*/
 RSET rset_dup (RSET rs)
 {
     (rs->refcount)++;
@@ -215,11 +240,14 @@ RSET rset_dup (RSET rs)
 }
 
 /** 
- * rset_count uses rset_pos to get the total and returns that.
- * This is ok for rsisamb/c/s, and for some other rsets, but in case of
- * booleans etc it will give bad estimate, as nothing has been read
- * from that rset
- */
+    \brief Estimates hit count for result set.
+    \param rs Result Set.
+
+    rset_count uses rset_pos to get the total and returns that.
+    This is ok for rsisamb/c/s, and for some other rsets, but in case of
+    booleans etc it will give bad estimate, as nothing has been read
+    from that rset
+*/
 zint rset_count(RSET rs)
 {
     double cur, tot;
@@ -229,24 +257,34 @@ zint rset_count(RSET rs)
     return (zint) tot;
 }
 
-/** rset_get_no_terms is a getterms function for those that don't have any */
-void rset_get_no_terms(RSET ct, TERMID *terms, int maxterms, int *curterm)
-{
-    return;
-}
+/**
+   \brief is a getterms function for those that don't have any
+   \param ct result set handle
+   \param terms array of terms (0..maxterms-1)
+   \param maxterms length of terms array
+   \param curterm current size of terms array
 
-/* rset_get_one_term gets that one term from an rset. Used by rsisamX */
+   If there is a term associated with rset the term is appeneded; otherwise
+   the terms array is untouched but curterm is incremented anyway.
+*/
 void rset_get_one_term(RSET ct, TERMID *terms, int maxterms, int *curterm)
 {
     if (ct->term)
     {
         if (*curterm < maxterms)
             terms[*curterm] = ct->term;
-        (*curterm)++;
+	(*curterm)++;
     }
 }
 
-
+/**
+   \brief Creates a TERMID entry.
+   \param name Term/Name buffer with given length
+   \param length of term
+   \param flags for term
+   \param type Term Type, Z_Term_general, Z_Term_characterString,..
+   \param nmem memory for term.
+*/
 TERMID rset_term_create(const char *name, int length, const char *flags,
 			int type, NMEM nmem)
 

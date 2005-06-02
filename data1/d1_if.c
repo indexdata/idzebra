@@ -1,4 +1,4 @@
-/* $Id: d1_if.c,v 1.6 2005-01-15 19:38:18 adam Exp $
+/* $Id: d1_if.c,v 1.7 2005-06-02 11:59:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -246,14 +246,9 @@ data1_node *data1_LookupNode(data1_node* node, char* pTagPath)
 }
 
 /**
-
-data1_CountOccurences
-
-Count the number of occurences of the last instance on a tagpath.
-
-@param data1_node* node : The root of the tree we wish to look for occurences in
-@param const char* pTagPath : The tagpath we want to count the occurences of... 
-
+   \brief Count the number of occurences of the last instance on a tagpath.
+   \param node : The root of the tree we wish to look for occurences in
+   \param pTagPath : The tagpath we want to count the occurences of... 
 */
 int data1_CountOccurences(data1_node* node, char* pTagPath)
 {

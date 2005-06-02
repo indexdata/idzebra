@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.172 2005-05-31 17:10:06 adam Exp $
+/* $Id: zebraapi.c,v 1.173 2005-06-02 11:59:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1002,11 +1002,11 @@ ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
     return res;
 }
 
-ZEBRA_RES zebra_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
-		      oid_value attributeset,
-		      int *position,
-		      int *num_entries, ZebraScanEntry **entries,
-		      int *is_partial)
+ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
+		     oid_value attributeset,
+		     int *position,
+		     int *num_entries, ZebraScanEntry **entries,
+		     int *is_partial)
 {
     ZEBRA_RES res;
     ASSERTZH;
@@ -1301,20 +1301,20 @@ static int delete_SU_handle(void *handle, int ord)
     return 0;
 }
 
-ZEBRA_RES zebra_drop_database  (ZebraHandle zh, const char *database)
+ZEBRA_RES zebra_drop_database(ZebraHandle zh, const char *db)
 {
     ZEBRA_RES ret = ZEBRA_OK;
     ASSERTZH;
-    yaz_log(log_level, "zebra_drop_database");
+    yaz_log(log_level, "zebra_drop_database %s", db);
     zebra_clearError(zh);
 
-    if (zebra_select_database (zh, database) == ZEBRA_FAIL)
+    if (zebra_select_database (zh, db) == ZEBRA_FAIL)
         return ZEBRA_FAIL;
     if (zebra_begin_trans (zh, 1) == ZEBRA_FAIL)
         return ZEBRA_FAIL;
     if (zh->reg->isamb)
     {
-	zebraExplain_curDatabase (zh->reg->zei, database);
+	zebraExplain_curDatabase (zh->reg->zei, db);
 	
 	zebraExplain_trav_ord(zh->reg->zei, zh, delete_SU_handle);
 	zebraExplain_removeDatabase(zh->reg->zei, zh);
@@ -1328,24 +1328,24 @@ ZEBRA_RES zebra_drop_database  (ZebraHandle zh, const char *database)
     return ret;
 }
 
-ZEBRA_RES zebra_create_database (ZebraHandle zh, const char *database)
+ZEBRA_RES zebra_create_database (ZebraHandle zh, const char *db)
 {
     ASSERTZH;
-    yaz_log(log_level, "zebra_create_database %s", database);
-    assert(database);
+    yaz_log(log_level, "zebra_create_database %s", db);
+    assert(db);
     zebra_clearError(zh);
 
-    if (zebra_select_database (zh, database) == ZEBRA_FAIL)
+    if (zebra_select_database (zh, db) == ZEBRA_FAIL)
         return ZEBRA_FAIL;
     if (zebra_begin_trans (zh, 1))
         return ZEBRA_FAIL;
 
     /* announce database */
-    if (zebraExplain_newDatabase (zh->reg->zei, database, 0 
+    if (zebraExplain_newDatabase (zh->reg->zei, db, 0 
                                   /* explainDatabase */))
     {
         zebra_end_trans (zh);
-	zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED, database);
+	zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED, db);
 	return ZEBRA_FAIL;
     }
     return zebra_end_trans (zh);
@@ -2140,9 +2140,9 @@ ZEBRA_RES zebra_delete_record (ZebraHandle zh,
 */
 
 ZEBRA_RES zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
-			   const char *setname, zint *numhits)
+			   const char *setname, zint *hits)
 {
-    zint hits = 0;
+    zint lhits = 0;
     ZEBRA_RES res = ZEBRA_OK;
     Z_RPNQuery *query;
     ODR odr = odr_createmem(ODR_ENCODE);
@@ -2161,14 +2161,14 @@ ZEBRA_RES zebra_search_PQF(ZebraHandle zh, const char *pqf_query,
 	res = ZEBRA_FAIL;
     }
     else
-        res = zebra_search_RPN(zh, odr, query, setname, &hits);
+        res = zebra_search_RPN(zh, odr, query, setname, &lhits);
     
     odr_destroy(odr);
 
-    yaz_log(log_level, "Hits: " ZINT_FORMAT, hits);
+    yaz_log(log_level, "Hits: " ZINT_FORMAT, lhits);
 
-    if (numhits)
-	*numhits = hits;
+    if (hits)
+	*hits = lhits;
 
     return res;
 }
