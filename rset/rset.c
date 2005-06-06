@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.47 2005-06-02 11:59:54 adam Exp $
+/* $Id: rset.c,v 1.48 2005-06-06 21:31:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -284,9 +284,10 @@ void rset_get_one_term(RSET ct, TERMID *terms, int maxterms, int *curterm)
    \param flags for term
    \param type Term Type, Z_Term_general, Z_Term_characterString,..
    \param nmem memory for term.
+   \param ol ord list
 */
 TERMID rset_term_create(const char *name, int length, const char *flags,
-			int type, NMEM nmem)
+			int type, NMEM nmem, struct ord_list *ol)
 
 {
     TERMID t;
@@ -310,6 +311,7 @@ TERMID rset_term_create(const char *name, int length, const char *flags,
     t->type = type;
     t->rankpriv = 0;
     t->rset = 0;
+    t->ol = ol;
     return t;
 }
 

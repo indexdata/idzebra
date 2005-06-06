@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.39 2005-05-24 11:35:43 adam Exp $
+/* $Id: rsbetween.c,v 1.40 2005-06-06 21:31:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -92,11 +92,11 @@ static int log_level_initialized = 0;
 
 /* make sure that the rset has a term attached. If not, create one */
 /* we need these terms for the tags, to distinguish what we read */
-static void checkterm( RSET rs, char *tag, NMEM nmem)
+static void checkterm(RSET rs, char *tag, NMEM nmem)
 {
     if (!rs->term)
     {
-        rs->term = rset_term_create(tag, strlen(tag), "", 0, nmem);
+        rs->term = rset_term_create(tag, strlen(tag), "", 0, nmem, 0);
         rs->term->rset = rs;
     }
 }

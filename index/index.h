@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.139 2005-05-31 13:01:37 adam Exp $
+/* $Id: index.h,v 1.140 2005-06-06 21:31:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -364,10 +364,11 @@ ZEBRA_RES rpn_scan (ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		    int *position, int *num_entries, ZebraScanEntry **list,
 		    int *is_partial, RSET limit_set, int return_zero);
 
-RSET rset_trunc (ZebraHandle zh, ISAM_P *isam_p, int no,
-		 const char *term, int length_term, const char *flags,
-                 int preserve_position, int term_type, NMEM rset_nmem,
-                 struct rset_key_control *kctrl, int scope);
+RSET rset_trunc(ZebraHandle zh, ISAM_P *isam_p, int no,
+		const char *term, int length_term, const char *flags,
+		int preserve_position, int term_type, NMEM rset_nmem,
+		struct rset_key_control *kctrl, int scope,
+		struct ord_list *ol);
 
 void resultSetAddTerm (ZebraHandle zh, ZebraSet s, int reg_type,
 		       const char *db, int set,

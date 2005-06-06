@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.53 2005-06-02 11:59:53 adam Exp $
+/* $Id: rset.h,v 1.54 2005-06-06 21:31:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -35,6 +35,11 @@ YAZ_BEGIN_CDECL
 typedef struct rsfd *RSFD;
 typedef struct rset *RSET;
 
+struct ord_list {
+    int ord;
+    struct ord_list *next;
+};
+
 /** 
  * rset_term is all we need to know of a term to do ranking etc. 
  * As far as the rsets are concerned, it is just a dummy pointer to
@@ -51,11 +56,12 @@ struct rset_term {
 		   */
     RSET rset;     /** the rset corresponding to this term */
     void *rankpriv;/** private stuff for the ranking algorithm */
+    struct ord_list *ol;
 };
 
 typedef struct rset_term *TERMID; 
 TERMID rset_term_create (const char *name, int length, const char *flags,
-			 int type, NMEM nmem);
+			 int type, NMEM nmem, struct ord_list *ol);
 
 /** rsfd is a "file descriptor" for reading from a rset */
 struct rsfd {  /* the stuff common to all rsfd's. */

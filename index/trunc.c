@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.58 2005-05-24 11:35:42 adam Exp $
+/* $Id: trunc.c,v 1.59 2005-06-06 21:31:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -399,13 +399,14 @@ static int isamc_trunc_cmp(const void *p1, const void *p2)
 RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
 		const char *term, int length, const char *flags,
 		int preserve_position, int term_type, NMEM rset_nmem,
-	        struct rset_key_control *kctrl, int scope)
+	        struct rset_key_control *kctrl, int scope,
+		struct ord_list *ol)
 {
     TERMID termid;
     RSET result;
     int trunc_chunk;
     
-    termid = rset_term_create(term, length, flags, term_type, rset_nmem);
+    termid = rset_term_create(term, length, flags, term_type, rset_nmem, ol);
     if (no < 1)
 	return rsnull_create(rset_nmem, kctrl, termid);
     
