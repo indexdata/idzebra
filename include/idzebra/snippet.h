@@ -1,4 +1,4 @@
-/* $Id: snippet.h,v 1.1 2005-06-07 11:36:38 adam Exp $
+/* $Id: snippet.h,v 1.2 2005-06-07 14:53:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,6 +29,7 @@ YAZ_BEGIN_CDECL
 
 struct zebra_snippet_word {
     zint seqno;
+    int reg_type;
     int ord;
     char *term;
     int match;
@@ -41,9 +42,11 @@ typedef struct zebra_snippet_word zebra_snippet_word;
 zebra_snippets *zebra_snippets_create();
 void zebra_snippets_destroy(zebra_snippets *l);
 void zebra_snippets_append(zebra_snippets *l,
-			   zint seqno, int ord, const char *term);
+			   zint seqno, int reg_type,
+			   int ord, const char *term);
 void zebra_snippets_append_match(zebra_snippets *l,
-				 zint seqno, int ord, const char *term,
+				 zint seqno, int reg_type,
+				 int ord, const char *term,
 				 int match);
 zebra_snippet_word *zebra_snippets_list(zebra_snippets *l);
 void zebra_snippets_log(zebra_snippets *l, int log_level);

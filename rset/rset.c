@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.49 2005-06-07 07:41:05 adam Exp $
+/* $Id: rset.c,v 1.50 2005-06-07 14:53:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -307,9 +307,11 @@ struct ord_list *ord_list_dup(NMEM nmem, struct ord_list *list)
    \param type Term Type, Z_Term_general, Z_Term_characterString,..
    \param nmem memory for term.
    \param ol ord list
+   \param reg_type register type
 */
 TERMID rset_term_create(const char *name, int length, const char *flags,
-			int type, NMEM nmem, struct ord_list *ol)
+			int type, NMEM nmem, struct ord_list *ol,
+			int reg_type)
 
 {
     TERMID t;
@@ -331,6 +333,7 @@ TERMID rset_term_create(const char *name, int length, const char *flags,
     else
         t->flags = nmem_strdup(nmem, flags);
     t->type = type;
+    t->reg_type = reg_type;
     t->rankpriv = 0;
     t->rset = 0;
     t->ol = ord_list_dup(nmem, ol);

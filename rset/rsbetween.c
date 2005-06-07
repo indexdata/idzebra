@@ -1,4 +1,4 @@
-/* $Id: rsbetween.c,v 1.40 2005-06-06 21:31:08 adam Exp $
+/* $Id: rsbetween.c,v 1.41 2005-06-07 14:53:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -96,7 +96,7 @@ static void checkterm(RSET rs, char *tag, NMEM nmem)
 {
     if (!rs->term)
     {
-        rs->term = rset_term_create(tag, strlen(tag), "", 0, nmem, 0);
+        rs->term = rset_term_create(tag, strlen(tag), "", 0, nmem, 0, 0);
         rs->term->rset = rs;
     }
 }

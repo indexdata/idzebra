@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.87 2005-06-07 11:36:38 adam Exp $
+/* $Id: zsets.c,v 1.88 2005-06-07 14:53:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1073,11 +1073,10 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 	    if (termid)
 	    {
 		struct ord_list *ol;
-		key_logdump_txt(YLOG_LOG, &key, termid->name);
 		for (ol = termid->ol; ol; ol = ol->next)
 		{
-		    yaz_log(YLOG_LOG, "   ord=%d", ol->ord);
 		    zebra_snippets_append(snippets, key.mem[key.len-1],
+					  termid->reg_type,
 					  ol->ord, termid->name);
 		}
 	    }

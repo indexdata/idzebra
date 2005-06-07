@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.196 2005-06-07 07:41:05 adam Exp $
+/* $Id: zrpn.c,v 1.197 2005-06-07 14:53:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1018,7 +1018,7 @@ static ZEBRA_RES term_trunc(ZebraHandle zh,
 		       grep_info->isam_p_indx, term_dst,
 		       strlen(term_dst), rank_type, 1 /* preserve pos */,
 		       zapt->term->which, rset_nmem,
-		       kc, kc->scope, ol);
+		       kc, kc->scope, ol, reg_type);
     if (!*rset)
 	return ZEBRA_FAIL;
     return ZEBRA_OK;
@@ -1965,7 +1965,7 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
 		       strlen(term_dst), rank_type,
 		       0 /* preserve position */,
 		       zapt->term->which, rset_nmem, 
-		       kc, kc->scope, 0);
+		       kc, kc->scope, 0, reg_type);
 	if (!result_sets[num_result_sets])
 	    break;
 	num_result_sets++;
@@ -2159,7 +2159,7 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     rset = rset_trunc(zh, grep_info.isam_p_buf,
 		      grep_info.isam_p_indx, term, strlen(term),
 		      flags, 1, term_type,rset_nmem,
-		      kc, kc->scope, 0);
+		      kc, kc->scope, 0, reg_type);
     grep_info_delete(&grep_info);
     return rset;
 }
@@ -2963,7 +2963,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    rset = rset_trunc(zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
 			      glist[lo].term, strlen(glist[lo].term),
 			      NULL, 0, zapt->term->which, rset_nmem, 
-			      kc, kc->scope, 0);
+			      kc, kc->scope, 0, reg_id);
 	}
 	ptr[j0]++; /* move index for this set .. */
 	/* get result set for remaining scan terms */
@@ -2984,7 +2984,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 			    glist[lo].term,
 			    strlen(glist[lo].term), NULL, 0,
 			    zapt->term->which,rset_nmem,
-			    kc, kc->scope, 0);
+			    kc, kc->scope, 0, reg_id);
 		    rset = rsmulti_or_create(rset_nmem, kc,
 					     kc->scope, 0 /* termid */,
 					     2, rsets);
@@ -3054,7 +3054,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    (zh, &scan_info_array[j0].list[before-1-ptr[j0]].isam_p, 1,
 	     glist[lo].term, strlen(glist[lo].term),
 	     NULL, 0, zapt->term->which, rset_nmem,
-	     kc, kc->scope, 0);
+	     kc, kc->scope, 0, reg_id);
 	
 	ptr[j0]++;
 	
@@ -3073,7 +3073,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		    glist[lo].term,
 		    strlen(glist[lo].term), NULL, 0,
 		    zapt->term->which, rset_nmem,
-		    kc, kc->scope, 0);
+		    kc, kc->scope, 0, reg_id);
 		rset = rsmulti_or_create(rset_nmem, kc,
 					 kc->scope, 0 /* termid */, 2, rsets);
 		

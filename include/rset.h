@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.55 2005-06-07 07:41:04 adam Exp $
+/* $Id: rset.h,v 1.56 2005-06-07 14:53:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -58,6 +58,7 @@ struct rset_term {
 		       This info is used to return encoded term back for
 		       search-result-1 .
 		   */
+    int reg_type;  /** register type */
     RSET rset;     /** the rset corresponding to this term */
     void *rankpriv;/** private stuff for the ranking algorithm */
     struct ord_list *ol;
@@ -65,7 +66,8 @@ struct rset_term {
 
 typedef struct rset_term *TERMID; 
 TERMID rset_term_create (const char *name, int length, const char *flags,
-			 int type, NMEM nmem, struct ord_list *ol);
+			 int type, NMEM nmem, struct ord_list *ol,
+			 int reg_type);
 
 /** rsfd is a "file descriptor" for reading from a rset */
 struct rsfd {  /* the stuff common to all rsfd's. */

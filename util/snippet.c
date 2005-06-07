@@ -1,4 +1,4 @@
-/* $Id: snippet.c,v 1.2 2005-06-07 13:10:52 adam Exp $
+/* $Id: snippet.c,v 1.3 2005-06-07 14:53:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -47,14 +47,14 @@ void zebra_snippets_destroy(zebra_snippets *l)
 }
 
 void zebra_snippets_append(zebra_snippets *l,
-			   zint seqno, int ord, const char *term)
+			   zint seqno, int reg_type, int ord, const char *term)
 {
-    zebra_snippets_append_match(l, seqno, ord, term, 0);
+    zebra_snippets_append_match(l, seqno, reg_type, ord, term, 0);
 }
 
 void zebra_snippets_append_match(zebra_snippets *l,
-				 zint seqno, int ord, const char *term,
-				 int match)
+				 zint seqno, int reg_type, 
+				 int ord, const char *term, int match)
 {
     struct zebra_snippet_word *w = nmem_malloc(l->nmem, sizeof(*w));
 
@@ -66,6 +66,7 @@ void zebra_snippets_append_match(zebra_snippets *l,
     l->tail = w;
 
     w->seqno = seqno;
+    w->reg_type = reg_type;
     w->ord = ord;
     w->term = nmem_strdup(l->nmem, term);
     w->match = match;
@@ -80,8 +81,9 @@ void zebra_snippets_log(zebra_snippets *l, int log_level)
 {
     zebra_snippet_word *w;
     for (w = l->front; w; w = w->next)
-	yaz_log(log_level, "term=%s%s seqno=" ZINT_FORMAT " ord=%d",
-		w->term, (w->match ? "*" : ""), w->seqno, w->ord);
+	yaz_log(log_level, "term=%s%s seqno=" ZINT_FORMAT " reg_type=%c "
+		"ord=%d",
+		w->term, (w->match ? "*" : ""), w->seqno, w->reg_type, w->ord);
 }
 
 zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
@@ -96,12 +98,17 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
     while(1)
     {
 	int window_start;
+	int reg_type;
 	zebra_snippet_word *hit_w, *doc_w;
 	int min_ord = 0; /* not set yet */
 	for (hit_w = zebra_snippets_list(hit); hit_w; hit_w = hit_w->next)
 	    if (hit_w->ord > ord &&
-		(min_ord == 0 || hit_w->ord < min_ord))
+		(min_ord == 0 || 
+		 (hit_w->ord < min_ord && hit_w->reg_type == reg_type)))
+	    {
 		min_ord = hit_w->ord;
+		reg_type = hit_w->reg_type;
+	    }
 	if (min_ord == 0)
 	    break;
 	ord = min_ord;
@@ -119,7 +126,7 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 		int seq_no_last = 0;
 		while (look_w && look_w->seqno < hit_w->seqno + window_size)
 		{
-		    if (look_w->ord == ord)
+		    if (look_w->ord == ord && look_w->reg_type == reg_type)
 		    {
 			seq_no_last = look_w->seqno;
 			number_this++;
@@ -134,29 +141,31 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 		}
 	    }
 	}
-	yaz_log(YLOG_LOG, "ord=%d", ord);
-	yaz_log(YLOG_LOG, "first_seq_no_best_window=%d", first_seq_no_best_window);
-	yaz_log(YLOG_LOG, "last_seq_no_best_window=%d", last_seq_no_best_window);
-	yaz_log(YLOG_LOG, "number_best_window=%d", number_best_window);
+	yaz_log(YLOG_DEBUG, "ord=%d", ord);
+	yaz_log(YLOG_DEBUG, "first_seq_no_best_window=%d", first_seq_no_best_window);
+	yaz_log(YLOG_DEBUG, "last_seq_no_best_window=%d", last_seq_no_best_window);
+	yaz_log(YLOG_DEBUG, "number_best_window=%d", number_best_window);
 
 	window_start = (first_seq_no_best_window + last_seq_no_best_window -
 			window_size) / 2;
 	for (doc_w = zebra_snippets_list(doc); doc_w; doc_w = doc_w->next)
-	    if (doc_w->ord == ord 
+	    if (doc_w->ord == ord && doc_w->reg_type == reg_type
 		&& doc_w->seqno >= window_start
 		&& doc_w->seqno < window_start + window_size)
 	    {
 		int match = 0;
 		for (hit_w = zebra_snippets_list(hit); hit_w; hit_w = hit_w->next)
 		{
-		    if (hit_w->ord == ord && hit_w->seqno == doc_w->seqno)
+		    if (hit_w->ord == ord && hit_w->reg_type == reg_type &&
+			hit_w->seqno == doc_w->seqno)
 			
 		    {
 			match = 1;
 			break;
 		    }
 		}
-		zebra_snippets_append_match(result, doc_w->seqno, ord,
+		zebra_snippets_append_match(result, doc_w->seqno,
+					    doc_w->reg_type, ord,
 					    doc_w->term, match);
 	    }
     }
