@@ -1,4 +1,4 @@
-/* $Id: snippet.c,v 1.3 2005-06-07 14:53:39 adam Exp $
+/* $Id: snippet.c,v 1.4 2005-06-07 15:12:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -99,8 +99,12 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
     {
 	int window_start;
 	int reg_type;
+	int first_seq_no_best_window = 0;
+	int last_seq_no_best_window = 0;
+	int number_best_window = 0;
 	zebra_snippet_word *hit_w, *doc_w;
 	int min_ord = 0; /* not set yet */
+
 	for (hit_w = zebra_snippets_list(hit); hit_w; hit_w = hit_w->next)
 	    if (hit_w->ord > ord &&
 		(min_ord == 0 || 
@@ -112,10 +116,6 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
 	if (min_ord == 0)
 	    break;
 	ord = min_ord;
-
-	int first_seq_no_best_window = 0;
-	int last_seq_no_best_window = 0;
-	int number_best_window = 0;
 
 	for (hit_w = zebra_snippets_list(hit); hit_w; hit_w = hit_w->next)
 	{
