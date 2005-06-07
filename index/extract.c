@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.183 2005-05-31 13:01:36 adam Exp $
+/* $Id: extract.c,v 1.184 2005-06-07 11:36:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1471,6 +1471,42 @@ void extract_add_it_key (ZebraHandle zh,
     dst += slen;
     *dst++ = '\0';
     keys->buf_used = dst - keys->buf;
+}
+
+ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh, struct recKeys *reckeys,
+				  zebra_snippets *snippets)
+{
+   void *decode_handle = iscz1_start();
+    int off = 0;
+    int seqno = 0;
+    NMEM nmem = nmem_create();
+
+    yaz_log(YLOG_LOG, "zebra_rec_keys_snippets buf=%p sz=%d", reckeys->buf,
+	    reckeys->buf_used);
+    assert(reckeys->buf);
+    while (off < reckeys->buf_used)
+    {
+        const char *src = reckeys->buf + off;
+        struct it_key key;
+	char *dst = (char*) &key;
+	char dst_buf[IT_MAX_WORD];
+	char *dst_term = dst_buf;
+
+	iscz1_decode(decode_handle, &dst, &src);
+	assert(key.len <= 4 && key.len > 2);
+
+	seqno = (int) key.mem[key.len-1];
+
+	zebra_term_untrans_iconv(zh, nmem, src[0], &dst_term, src+1);
+	zebra_snippets_append(snippets, seqno, key.mem[0], dst_term);
+        while (*src++)
+	    ;
+        off = src - reckeys->buf;
+	nmem_reset(nmem);
+    }
+    nmem_destroy(nmem);
+    iscz1_stop(decode_handle);
+    return ZEBRA_OK;
 }
 
 void print_rec_keys(ZebraHandle zh, struct recKeys *reckeys)

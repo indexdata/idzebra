@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.10 2005-04-28 08:20:39 adam Exp $
+/* $Id: recctrl.h,v 1.11 2005-06-07 11:36:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,6 +29,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/odr.h>
 #include <idzebra/res.h>
 #include <idzebra/data1.h>
+#include <idzebra/snippet.h>
 #include <idzebra/zebramap.h>
 
 YAZ_BEGIN_CDECL
@@ -87,6 +88,8 @@ struct recRetrieveCtrl {
     int       recordSize;             /* size of record in bytes */
     char      *fname;                 /* name of file (or NULL if internal) */
     data1_handle dh;
+    zebra_snippets *hit_snippet;
+    zebra_snippets *doc_snippet;
     
     /* response */
     oid_value  output_format;

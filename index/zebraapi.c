@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.173 2005-06-02 11:59:53 adam Exp $
+/* $Id: zebraapi.c,v 1.174 2005-06-07 11:36:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -944,14 +944,18 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 	    {
 		char *buf;
 		int len;
+		zebra_snippets *hit_snippet = zebra_snippets_create();
 
-		zebra_get_hit_vector(zh, setname, poset[i].sysno);
+		zebra_snippets_hit_vector(zh, setname, poset[i].sysno, 
+					  hit_snippet);
 
 		recs[i].errCode =
 		    zebra_record_fetch(zh, poset[i].sysno, poset[i].score,
+				       hit_snippet,
 				       stream, input_format, comp,
 				       &recs[i].format, &buf, &len,
 				       &recs[i].base, &recs[i].errString);
+		
 		recs[i].len = len;
 		if (len > 0)
 		{
@@ -962,6 +966,7 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 		    recs[i].buf = buf;
                 recs[i].score = poset[i].score;
                 recs[i].sysno = poset[i].sysno;
+		zebra_snippets_destroy(hit_snippet);
 	    }
 	    else
 	    {

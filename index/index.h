@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.140 2005-06-06 21:31:08 adam Exp $
+/* $Id: index.h,v 1.141 2005-06-07 11:36:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -416,7 +416,8 @@ extern struct rank_control *rank1_class;
 extern struct rank_control *rankzv_class;
 extern struct rank_control *rankliv_class;
 
-int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
+int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, 
+			zebra_snippets *hit_snippet, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep,
@@ -465,6 +466,10 @@ int zebra_record_int_read (void *fh, char *buf, size_t count);
 void zebra_record_int_end (void *fh, off_t offset);
 
 void print_rec_keys(ZebraHandle zh, struct recKeys *reckeys);
+ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh, struct recKeys *reckeys,
+				  zebra_snippets *snippets);
+ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
+				    zint sysno, zebra_snippets *snippets);
 
 void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
                               int cmd, struct recKeys *reckeys);

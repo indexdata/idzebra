@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.30 2005-05-31 13:01:37 adam Exp $
+/* $Id: retrieve.c,v 1.31 2005-06-07 11:36:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -82,7 +82,8 @@ void zebra_record_int_end (void *fh, off_t off)
     fc->offset_end = off;
 }
 
-int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
+int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
+			zebra_snippets *hit_snippet, ODR stream,
 			oid_value input_format, Z_RecordComposition *comp,
 			oid_value *output_format, char **rec_bufp,
 			int *rec_lenp, char **basenamep,
@@ -211,16 +212,43 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, ODR stream,
     retrieveCtrl.res = zh->res;
     retrieveCtrl.rec_buf = 0;
     retrieveCtrl.rec_len = -1;
-
+    retrieveCtrl.hit_snippet = hit_snippet;
+    retrieveCtrl.doc_snippet = zebra_snippets_create();
+    
     if (1)
     {
+	/* snippets code */
 	struct recKeys reckeys;
+	zebra_snippets *snippet;
 	reckeys.buf = rec->info[recInfo_delKeys];
 	reckeys.buf_used = rec->size[recInfo_delKeys];
 
-	print_rec_keys(zh, &reckeys);
+	zebra_snippets_rec_keys(zh, &reckeys, retrieveCtrl.doc_snippet);
+
+
+	yaz_log(YLOG_LOG, "DOC SNIPPET:");
+	zebra_snippets_log(retrieveCtrl.doc_snippet, YLOG_LOG);
+	yaz_log(YLOG_LOG, "HIT SNIPPET:");
+	zebra_snippets_log(retrieveCtrl.hit_snippet, YLOG_LOG);
+
+	snippet = zebra_snippets_window(retrieveCtrl.doc_snippet,
+					retrieveCtrl.hit_snippet,
+					10);
+	
+	yaz_log(YLOG_LOG, "WINDOW SNIPPET:");
+	zebra_snippets_log(snippet, YLOG_LOG);
+
+	(*rt->retrieve)(clientData, &retrieveCtrl);
+
+	zebra_snippets_destroy(snippet);
     }
-    (*rt->retrieve)(clientData, &retrieveCtrl);
+    else
+    {
+	(*rt->retrieve)(clientData, &retrieveCtrl);
+    }
+
+    zebra_snippets_destroy(retrieveCtrl.doc_snippet);
+
     *output_format = retrieveCtrl.output_format;
     *rec_bufp = (char *) retrieveCtrl.rec_buf;
     *rec_lenp = retrieveCtrl.rec_len;

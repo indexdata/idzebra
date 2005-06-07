@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.7 2005-06-01 07:32:46 adam Exp $
+/* $Id: xslt.c,v 1.8 2005-06-07 11:36:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -56,6 +56,16 @@ struct filter_info {
 #define ZEBRA_INDEX_NS "http://indexdata.dk/zebra/indexing/1"
 #define ZEBRA_SCHEMA_IDENTITY_NS "http://indexdata.dk/zebra/identity/1"
 static const char *zebra_index_ns = ZEBRA_INDEX_NS;
+
+static void set_param_xml(const char **params, const char *name,
+			  const char *value, ODR odr)
+{
+    while (*params)
+	params++;
+    params[0] = name;
+    params[1] = value;
+    params[2] = 0;
+}
 
 static void set_param_str(const char **params, const char *name,
 			  const char *value, ODR odr)
@@ -412,6 +422,51 @@ static int ioclose_ret(void *context)
 }
 
 
+static const char *snippet_doc(struct recRetrieveCtrl *p)
+{
+    const char *xml_doc_str;
+    int ord = 0;
+    WRBUF wrbuf = wrbuf_alloc();
+    zebra_snippets *res = 
+	zebra_snippets_window(p->doc_snippet, p->hit_snippet, 10);
+    zebra_snippet_word *w = zebra_snippets_list(res);
+
+#if 1
+    wrbuf_printf(wrbuf, "\'");
+#else
+    wrbuf_printf(wrbuf, "<snippet>\n");
+#endif
+    for (; w; w = w->next)
+    {
+	if (ord == 0)
+	    ord = w->ord;
+	else if (ord != w->ord)
+	    break;
+#if 1
+	wrbuf_printf(wrbuf, "%s%s%s ", 
+		     w->match ? "*" : "",
+		     w->term,
+		     w->match ? "*" : "");
+#else
+	wrbuf_printf(wrbuf, " <term %s ord='%d' seqno='%d'>", 
+		     (w->match ? "match='1'" : ""),
+		     w->ord, w->seqno);
+	wrbuf_xmlputs(wrbuf, w->term);
+	wrbuf_printf(wrbuf, "</term>\n");
+#endif
+    }
+#if 1
+    wrbuf_printf(wrbuf, "\'");
+#else
+    wrbuf_printf(wrbuf, "</snippet>\n");
+#endif
+    xml_doc_str = odr_strdup(p->odr, wrbuf_buf(wrbuf));
+
+    zebra_snippets_destroy(res);
+    wrbuf_free(wrbuf, 1);
+    return xml_doc_str;
+}
+
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
     const char *esn = ZEBRA_SCHEMA_IDENTITY_NS;
@@ -447,6 +502,7 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 	set_param_int(params, "score", p->score, p->odr);
     set_param_int(params, "size", p->recordSize, p->odr);
     
+    set_param_xml(params, "snippet", snippet_doc(p), p->odr);
     doc = xmlReadIO(ioread_ret, ioclose_ret, p /* I/O handler */,
 		    0 /* URL */,
 		    0 /* encoding */,

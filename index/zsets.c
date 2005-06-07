@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.86 2005-06-06 21:31:08 adam Exp $
+/* $Id: zsets.c,v 1.87 2005-06-07 11:36:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1033,8 +1033,8 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
     return ZEBRA_FAIL;
 }
 
-ZEBRA_RES zebra_get_hit_vector(ZebraHandle zh, const char *setname,
-			       zint sysno)
+ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
+				    zint sysno, zebra_snippets *snippets)
 {
     ZebraSet sset = resultSetGet(zh, setname);
     yaz_log(YLOG_LOG, "zebra_get_hit_vector setname=%s zysno=" ZINT_FORMAT,
@@ -1074,14 +1074,18 @@ ZEBRA_RES zebra_get_hit_vector(ZebraHandle zh, const char *setname,
 	    {
 		struct ord_list *ol;
 		key_logdump_txt(YLOG_LOG, &key, termid->name);
-		yaz_log(YLOG_LOG, "   type=%d", termid->type);
 		for (ol = termid->ol; ol; ol = ol->next)
+		{
 		    yaz_log(YLOG_LOG, "   ord=%d", ol->ord);
+		    zebra_snippets_append(snippets, key.mem[key.len-1],
+					  ol->ord, termid->name);
+		}
 	    }
 	}
 	rset_close(rsfd);
 	
 	rset_delete(rset_comb);
+	nmem_destroy(nmem);
     }
     return ZEBRA_OK;
 }
