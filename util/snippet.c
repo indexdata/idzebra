@@ -1,4 +1,4 @@
-/* $Id: snippet.c,v 1.1 2005-06-07 11:36:43 adam Exp $
+/* $Id: snippet.c,v 1.2 2005-06-07 13:10:52 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -90,6 +90,8 @@ zebra_snippets *zebra_snippets_window(zebra_snippets *doc, zebra_snippets *hit,
     int ord = -1;
 
     zebra_snippets *result = zebra_snippets_create();
+    if (window_size == 0)
+	window_size = 1000000;
 
     while(1)
     {

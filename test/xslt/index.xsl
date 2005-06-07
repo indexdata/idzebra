@@ -1,8 +1,8 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:m="http://www.loc.gov/MARC21/slim"
-  xmlns:z="http://indexdata.dk/zebra/indexing/1"
+  xmlns:z="http://indexdata.dk/zebra/xslt/1"
   version="1.0">
-  <!-- $Id: index.xsl,v 1.1 2005-05-31 14:18:17 adam Exp $ -->
+  <!-- $Id: index.xsl,v 1.2 2005-06-07 13:10:52 adam Exp $ -->
   <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
   
   <xsl:template match="/m:record/m:controlfield[@tag=001]">
