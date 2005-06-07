@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.48 2005-06-06 21:31:09 adam Exp $
+/* $Id: rset.c,v 1.49 2005-06-07 07:41:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -277,6 +277,28 @@ void rset_get_one_term(RSET ct, TERMID *terms, int maxterms, int *curterm)
     }
 }
 
+struct ord_list *ord_list_create(NMEM nmem)
+{
+    return 0;
+}
+
+struct ord_list *ord_list_append(NMEM nmem, struct ord_list *list,
+					int ord)
+{
+    struct ord_list *n = nmem_malloc(nmem, sizeof(*n));
+    n->ord = ord;
+    n->next = list;
+    return n;
+}
+
+struct ord_list *ord_list_dup(NMEM nmem, struct ord_list *list)
+{
+    struct ord_list *n = ord_list_create(nmem);
+    for (; list; list = list->next)
+	n = ord_list_append(nmem, n, list->ord);
+    return n;
+}
+
 /**
    \brief Creates a TERMID entry.
    \param name Term/Name buffer with given length
@@ -311,7 +333,7 @@ TERMID rset_term_create(const char *name, int length, const char *flags,
     t->type = type;
     t->rankpriv = 0;
     t->rset = 0;
-    t->ol = ol;
+    t->ol = ord_list_dup(nmem, ol);
     return t;
 }
 

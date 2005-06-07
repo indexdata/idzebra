@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.195 2005-06-06 21:31:08 adam Exp $
+/* $Id: zrpn.c,v 1.196 2005-06-07 07:41:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -49,20 +49,6 @@ typedef struct
     int minor;
     Z_AttributesPlusTerm *zapt;
 } AttrType;
-
-static struct ord_list *ord_list_create(NMEM nmem)
-{
-    return 0;
-}
-
-static struct ord_list *ord_list_append(NMEM nmem, struct ord_list *list,
-					int ord)
-{
-    struct ord_list *n = nmem_malloc(nmem, sizeof(*n));
-    n->ord = ord;
-    n->next = list;
-    return n;
-}
 
 static int log_level_set = 0;
 static int log_level_rpn = 0;

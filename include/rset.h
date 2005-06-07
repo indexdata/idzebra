@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.54 2005-06-06 21:31:08 adam Exp $
+/* $Id: rset.h,v 1.55 2005-06-07 07:41:04 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,6 +39,10 @@ struct ord_list {
     int ord;
     struct ord_list *next;
 };
+
+struct ord_list *ord_list_create(NMEM nmem);
+struct ord_list *ord_list_append(NMEM nmem, struct ord_list *list, int ord);
+struct ord_list *ord_list_dup(NMEM nmem, struct ord_list *list);
 
 /** 
  * rset_term is all we need to know of a term to do ranking etc. 
