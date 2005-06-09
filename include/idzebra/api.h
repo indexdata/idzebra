@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.25 2005-06-02 11:59:53 adam Exp $
+/* $Id: api.h,v 1.26 2005-06-09 10:39:52 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -174,6 +174,17 @@ void zebra_result(ZebraHandle zh, int *code, char **addinfo);
 */
 YAZ_EXPORT
 void zebra_clearError(ZebraHandle zh);
+
+
+/**
+   \brief Set limit before Zebra does approx hit count
+   \param zh session handle
+   \param approx_limit the limit
+   
+   Results will be approximiate if hit count is greater than the
+   limit specified. By default there is a high-limit (no limit).
+*/
+ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit);
 
 /**
    \brief Search using PQF Query 

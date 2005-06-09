@@ -1,3 +1,6 @@
+Added zebra_set_approx_limit for a ZebraHandle (session). Results
+will be approximate if hit count is greater than the limit specified.
+
 Added support for term hit counts. This was not in place for earlier
 1.4 versions, but is present in the 1.3 series. Bug #124.
 

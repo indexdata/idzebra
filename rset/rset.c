@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.50 2005-06-07 14:53:39 adam Exp $
+/* $Id: rset.c,v 1.51 2005-06-09 10:39:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -166,7 +166,7 @@ RSET rset_create_base(const struct rset_control *sel,
     rset->free_list = NULL;
     rset->use_list = NULL;
     rset->hits_count = 0;
-    rset->hits_limit = 1000;
+    rset->hits_limit = 0;
     rset->hits_round = 1000;
     rset->keycontrol = kcontrol;
     (*kcontrol->inc)(kcontrol);
@@ -347,7 +347,7 @@ int rset_default_read(RSFD rfd, void *buf, TERMID *term)
     if (rc > 0)
     {
 	if (rfd->counted_items == 0 ||
-	    (rset->keycontrol->cmp)(buf, rfd->counted_buf) >= rset->scope)
+	    (rset->keycontrol->cmp)(buf, rfd->counted_buf) > rset->scope)
 	{
 	    memcpy(rfd->counted_buf, buf, rset->keycontrol->key_size);
 	    rfd->counted_items++;

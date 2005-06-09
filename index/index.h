@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.142 2005-06-07 14:53:39 adam Exp $
+/* $Id: index.h,v 1.143 2005-06-09 10:39:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -266,6 +266,7 @@ struct zebra_session {
 
     char **basenames;
     int num_basenames;
+    zint approx_limit;
     char *reg_name;
     char *path_reg;
 

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.174 2005-06-07 11:36:38 adam Exp $
+/* $Id: zebraapi.c,v 1.175 2005-06-09 10:39:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -115,6 +115,7 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->num_basenames = 0;
     zh->basenames = 0;
 
+    zh->approx_limit = 1000000000;
     zh->trans_no = 0;
     zh->trans_w_no = 0;
 
@@ -861,6 +862,12 @@ ZEBRA_RES zebra_select_databases (ZebraHandle zh, int num_bases,
         zh->errCode = YAZ_BIB1_TEMPORARY_SYSTEM_ERROR;
 	return ZEBRA_FAIL;
     }
+    return ZEBRA_OK;
+}
+
+ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit)
+{
+    zh->approx_limit = approx_limit;
     return ZEBRA_OK;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.197 2005-06-07 14:53:39 adam Exp $
+/* $Id: zrpn.c,v 1.198 2005-06-09 10:39:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2698,28 +2698,29 @@ void zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, int reg_type,
         *dst = nmem_strdup(stream, term_src);
 }
 
-static void count_set (RSET r, int *count)
+static void count_set(ZebraHandle zh, RSET rset, zint *count)
 {
     zint psysno = 0;
-    int kno = 0;
     struct it_key key;
     RSFD rfd;
 
     yaz_log(YLOG_DEBUG, "count_set");
 
+    rset->hits_limit = zh->approx_limit;
+
     *count = 0;
-    rfd = rset_open (r, RSETF_READ);
-    while (rset_read (rfd, &key,0 /* never mind terms */))
+    rfd = rset_open(rset, RSETF_READ);
+    while (rset_read(rfd, &key,0 /* never mind terms */))
     {
         if (key.mem[0] != psysno)
         {
             psysno = key.mem[0];
-            (*count)++;
+	    if (rfd->counted_items >= rset->hits_limit)
+		break;
         }
-        kno++;
     }
     rset_close (rfd);
-    yaz_log(YLOG_DEBUG, "%d keys, %d records", kno, *count);
+    *count = rset->hits_count;
 }
 
 ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
@@ -2994,6 +2995,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
         }
 	if (lo >= 0)
 	{
+	    zint count;
 	    /* merge with limit_set if given */
 	    if (limit_set)
 	    {
@@ -3006,7 +3008,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 					  2, rsets);
 	    }
 	    /* count it */
-	    count_set(rset, &glist[lo].occurrences);
+	    count_set(zh, rset, &count);
+	    glist[lo].occurrences = count;
 	    rset_delete(rset);
 	}
     }
@@ -3033,6 +3036,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	const char *tst;
 	RSET rset;
 	int lo = before-1-i; /* offset in result list */
+	zint count;
 	
 	for (j = 0; j <ord_no; j++)
 	{
@@ -3089,7 +3093,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    rset = rsmulti_and_create(rset_nmem, kc,
 				      kc->scope, 2, rsets);
 	}
-	count_set (rset, &glist[lo].occurrences);
+	count_set(zh, rset, &count);
+	glist[lo].occurrences = count;
 	rset_delete (rset);
     }
     (*kc->dec)(kc);
