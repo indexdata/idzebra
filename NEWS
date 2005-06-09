@@ -1,3 +1,5 @@
+Added 'melm' directive to absyn format to simplify config files
+for MARC-style databases. See tab/marc21.abs for an example.
 
 Added support for special slement set _sysno_ which returns a
 record ID for a record packed as a SUTRS record.

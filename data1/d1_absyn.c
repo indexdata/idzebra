@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.9.2.1 2004-08-24 14:06:31 adam Exp $
+/* $Id: d1_absyn.c,v 1.9.2.2 2005-06-09 22:08:10 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -450,6 +450,33 @@ static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
     return 0;
 }
 
+/* quinn
+ * Converts a 'melm' field[$subfield] pattern to a simple xpath
+ */
+static int melm2xpath(char *melm, char *buf)
+{
+    char *dollar;
+    char *field = melm;
+    char *subfield;
+    char *fieldtype;
+    if ((dollar = index(melm, '$'))) {
+	*dollar = '\0';
+	subfield = ++dollar;
+    } else
+	subfield = "";
+    if (field[0] == '0' && field[1] == '0')
+	fieldtype = "controlfield";
+    else
+	fieldtype = "datafield";
+    sprintf(buf, "/*/%s[@tag=\"%s\"]", fieldtype, field);
+    if (*subfield) 
+	sprintf(buf + strlen(buf), "/subfield[@code=\"%s\"]", subfield);
+    else if (field[0] != '0' || field[1] != '0')
+	strcat(buf, "/subfield");
+    yaz_log(YLOG_DEBUG, "Created xpath: '%s'", buf);
+    return 0;
+}
+
 const char *data1_systag_lookup(data1_absyn *absyn, const char *tag,
                                 const char *default_value)
 {
@@ -692,20 +719,28 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	   pop, 2003-01-17
 	*/
 
-	else if (!strcmp(cmd, "xelm")) {
+	else if (!strcmp(cmd, "xelm") || !strcmp(cmd, "melm")) {
 
 	    int i;
 	    char *p, *xpath_expr, *termlists;
 	    const char *regexp;
 	    struct DFA *dfa = dfa = dfa_init();
 	    data1_termlist **tp;
+	    char melm_xpath[128];
             
 	    if (argc < 3)
 	    {
 		yaz_log(LOG_WARN, "%s:%d: Bad # of args to xelm", file, lineno);
 		continue;
 	    }
-	    xpath_expr = argv[1];
+	    
+	    if (!strcmp(cmd, "melm")) {
+		if (melm2xpath(argv[1], melm_xpath) < 0)
+		    continue;
+		xpath_expr = melm_xpath;
+	    } else {
+		xpath_expr = argv[1];
+	    }
 	    termlists = argv[2];
 	    regexp = mk_xpath_regexp(dh, xpath_expr);
 	    i = dfa_parse (dfa, &regexp);

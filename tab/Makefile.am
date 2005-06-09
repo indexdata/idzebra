@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.5 2004-05-21 13:25:17 adam Exp $
+## $Id: Makefile.am,v 1.5.2.1 2005-06-09 22:08:11 adam Exp $
 
 tabdatadir = $(pkgdatadir)/tab
 tabdata_DATA = bib1.att dan1.att danbib.abs danmarc.abs danmarc.mar \
@@ -9,7 +9,7 @@ tabdata_DATA = bib1.att dan1.att danbib.abs danmarc.abs danmarc.mar \
  nwi.flt refer.flt scan.chr sgml.flt soif.flt string.chr summary.abs \
  summary.tag tagsetg.tag tagsetm.tag urx.chr usmarc.abs usmarc-b.est \
  usmarc.flt usmarc.mar usmarc.tag var1.var wais.abs wais-b.est \
- wais-variant.est
+ wais-variant.est marc21.abs
 
 EXTRA_DIST = $(tabdata_DATA)
 

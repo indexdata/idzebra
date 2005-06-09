@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.17.2.1 2004-09-16 14:07:49 adam Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.17.2.2 2005-06-09 22:08:10 adam Exp $ -->
   <title>The Record Model</title>
   
   <para>
@@ -1040,7 +1040,22 @@
         </para>
        </listitem>
       </varlistentry>
-      
+      <varlistentry>
+       <term>melm <replaceable>field$subfield attributes</replaceable></term>
+       <listitem>
+        <para>
+	 This directive is specifically for MARC-formatted records,
+	 ingested either in the form of MARCXML documents, or in the
+	 ISO2709/Z39.2 format using the grs.marcxml input filter. You can
+	 specify indexing rules for any subfield, or you can leave off the
+	 <replaceable>$subfield</replaceable> part and specify default rules
+	 for all subfields of the given field (note: default rules should come
+	 after any subfield-specific rules in the configuration file). The
+	 <replaceable>attributes</replaceable> have the same syntax and meaning
+	 as for the 'elm' directive above.
+	</para>
+       </listitem>
+      </varlistentry>
       <varlistentry>
        <term>encoding <replaceable>encodingname</replaceable></term>
        <listitem>
