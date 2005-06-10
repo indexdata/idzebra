@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.175 2005-06-09 10:39:53 adam Exp $
+/* $Id: zebraapi.c,v 1.176 2005-06-10 10:55:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -867,6 +867,8 @@ ZEBRA_RES zebra_select_databases (ZebraHandle zh, int num_bases,
 
 ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit)
 {
+    if (approx_limit == 0)
+         approx_limit = 2000000000;
     zh->approx_limit = approx_limit;
     return ZEBRA_OK;
 }
