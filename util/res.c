@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.41 2005-04-15 10:47:49 adam Exp $
+/* $Id: res.c,v 1.42 2005-06-13 10:27:52 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -455,3 +455,14 @@ int res_write (Res r)
     return 0;
 }
 
+ZEBRA_RES res_get_int(Res r, const char *name, int *val)
+{
+    const char *cp = res_get(r, name);
+    if (cp)
+    {
+	if (sscanf(cp, "%d", val) == 1)
+	    return ZEBRA_OK;
+	yaz_log(YLOG_WARN, "Expected integer for resource %s", name);
+    }
+    return ZEBRA_FAIL;
+}

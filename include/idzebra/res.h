@@ -1,4 +1,4 @@
-/* $Id: res.h,v 1.4 2005-03-30 09:25:23 adam Exp $
+/* $Id: res.h,v 1.5 2005-06-13 10:27:52 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -57,6 +57,9 @@ int res_write (Res r);
 YAZ_EXPORT
 const char *res_get_prefix (Res r, const char *name, const char *prefix,
 			    const char *def);
+
+YAZ_EXPORT
+ZEBRA_RES res_get_int(Res r, const char *name, int *val);
 
 YAZ_END_CDECL
 
