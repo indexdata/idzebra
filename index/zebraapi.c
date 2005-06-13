@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.176 2005-06-10 10:55:18 adam Exp $
+/* $Id: zebraapi.c,v 1.177 2005-06-13 10:29:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -37,6 +37,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "index.h"
 #include <charmap.h>
 #include <idzebra/api.h>
+
+#define DEFAULT_APPROX_LIMIT 2000000000
 
 /* simple asserts to validate the most essential input args */
 #define ASSERTZH assert(zh && zh->service)
@@ -115,7 +117,7 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->num_basenames = 0;
     zh->basenames = 0;
 
-    zh->approx_limit = 1000000000;
+    zh->approx_limit = DEFAULT_APPROX_LIMIT;
     zh->trans_no = 0;
     zh->trans_w_no = 0;
 
@@ -234,21 +236,15 @@ Dict dict_open_res (BFiles bfs, const char *name, int cache, int rw,
 {
     int page_size = 4096;
     char resource_str[200];
-    const char *v;
     sprintf (resource_str, "dict.%.100s.pagesize", name);
     assert(bfs);
     assert(name);
 
-    v = res_get(res, resource_str);
-    if (v)
-    {
-	page_size = atoi(v);
+    if (res_get_int(res, resource_str, &page_size) == ZEBRA_OK)
 	yaz_log(YLOG_LOG, "Using custom dictionary page size %d for %s",
 		page_size, name);
-    }
     return dict_open(bfs, name, cache, rw, compact_flag, page_size);
 }
-
 
 static
 struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
@@ -693,6 +689,12 @@ static void zebra_select_register (ZebraHandle zh, const char *new_reg)
 	    zebra_close_res(zh);
 	}
     }
+    if (zh->res)
+    {
+	int approx = 0;
+	if (res_get_int(zh->res, "estimatehits", &approx) == ZEBRA_OK)
+	    zebra_set_approx_limit(zh, approx);
+    }
 }
 
 void map_basenames_func (void *vp, const char *name, const char *value)
@@ -868,7 +870,7 @@ ZEBRA_RES zebra_select_databases (ZebraHandle zh, int num_bases,
 ZEBRA_RES zebra_set_approx_limit(ZebraHandle zh, zint approx_limit)
 {
     if (approx_limit == 0)
-         approx_limit = 2000000000;
+	approx_limit = DEFAULT_APPROX_LIMIT;
     zh->approx_limit = approx_limit;
     return ZEBRA_OK;
 }
@@ -979,12 +981,20 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 	    }
 	    else
 	    {
-		if (ret == ZEBRA_OK) /* only need to set it once */
+	        /* only need to set it once */
+		if (pos_array[i] < zh->approx_limit && ret == ZEBRA_OK)
+		{
 		    zebra_setError_zint(zh,
 					YAZ_BIB1_PRESENT_REQUEST_OUT_OF_RANGE,
 					pos_array[i]);
-		ret = ZEBRA_FAIL;
-                break;
+		    ret = ZEBRA_FAIL;
+		    break;
+		}
+		recs[i].buf = 0;  /* no record and no error issued */
+		recs[i].len = 0;
+		recs[i].errCode = 0;
+		recs[i].format = VAL_NONE;
+		recs[i].sysno = 0;
 	    }
 	}
 	zebra_meta_records_destroy(zh, poset, num_recs);

@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.134 2005-05-24 11:35:42 adam Exp $
+/* $Id: zserver.c,v 1.135 2005-06-13 10:29:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -309,7 +309,7 @@ int bend_fetch (void *handle, bend_fetch_rr *r)
     
     r->last_in_set = 0;
     res = zebra_records_retrieve (zh, r->stream, r->setname, r->comp,
-			    r->request_format, 1, &retrievalRecord);
+				  r->request_format, 1, &retrievalRecord);
     if (res != ZEBRA_OK)
     {
 	/* non-surrogate diagnostic */

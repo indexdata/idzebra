@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2005
-dnl $Id: configure.in,v 1.124 2005-05-24 20:39:02 adam Exp $
+dnl $Id: configure.in,v 1.125 2005-06-13 10:29:20 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -31,7 +31,7 @@ else
 fi
 dnl
 dnl ------ YAZ
-YAZ_INIT($yazflag,2.1.5)
+YAZ_INIT($yazflag,2.1.9)
 YAZ_DOC
 dnl ----- libXSLT
 AC_SUBST(XSLT_LIBS)
