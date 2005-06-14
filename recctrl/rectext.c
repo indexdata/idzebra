@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.26 2005-03-31 12:42:07 adam Exp $
+/* $Id: rectext.c,v 1.27 2005-06-14 18:28:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -41,7 +41,12 @@ static void *filter_init (Res res, RecType recType)
 
 static void filter_config(void *clientData, Res res, const char *args)
 {
-
+    struct filter_info *tinfo = (struct marc_info*) clientData;
+    yaz_log(YLOG_LOG, "args:%s: len=%d", args, strlen(args));
+    xfree(tinfo->sep);
+    tinfo->sep = 0;
+    if (args && *args)
+	tinfo->sep = xstrdup(args);
 }
 
 static void filter_destroy (void *clientData)
@@ -69,7 +74,7 @@ static struct buf_info *buf_open (struct recExtractCtrl *p)
     return fi;
 }
 
-static int buf_read (struct filter_info *tinfo, struct buf_info *fi, char *dst)
+static int buf_getchar (struct filter_info *tinfo, struct buf_info *fi, char *dst)
 {
     if (fi->offset >= fi->max)
     {
@@ -103,33 +108,35 @@ static int filter_extract (void *clientData, struct recExtractCtrl *p)
     RecWord recWord;
     int r;
     struct buf_info *fi = buf_open (p);
+    int no_read = 0;
 
 #if 0
     yaz_log(YLOG_LOG, "filter_extract off=%ld",
 	    (long) (*fi->p->tellf)(fi->p->fh));
 #endif
-    xfree(tinfo->sep);
-    tinfo->sep = 0;
     (*p->init)(p, &recWord);
     recWord.reg_type = 'w';
     do
     {
         int i = 0;
             
-        r = buf_read (tinfo, fi, w);
+        r = buf_getchar (tinfo, fi, w);
         while (r > 0 && i < 511 && w[i] != '\n' && w[i] != '\r')
         {
             i++;
-            r = buf_read (tinfo, fi, w + i); 
+            r = buf_getchar (tinfo, fi, w + i); 
 	}
         if (i)
         {
+	    no_read += i;
             recWord.term_buf = w;
 	    recWord.term_len = i;
             (*p->tokenAdd)(&recWord);
         }
     } while (r > 0);
     buf_close (fi);
+    if (no_read == 0)
+	return RECCTRL_EXTRACT_EOF;
     return RECCTRL_EXTRACT_OK;
 }
 
