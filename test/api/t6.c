@@ -1,4 +1,4 @@
-/* $Id: t6.c,v 1.8 2005-04-20 10:20:32 adam Exp $
+/* $Id: t6.c,v 1.9 2005-06-14 20:01:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 	
 	zebra_begin_trans (zh, 1);
 
-	for (l = 0; l<1000; l++)
+	for (l = 0; l<100; l++)
 	{
 	    char rec_buf[5120];
 	    int j;
