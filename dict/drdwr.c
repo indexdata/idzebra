@@ -1,4 +1,4 @@
-/* $Id: drdwr.c,v 1.16 2005-01-15 19:38:21 adam Exp $
+/* $Id: drdwr.c,v 1.17 2005-06-14 20:28:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -24,7 +24,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <sys/types.h>
 #include <fcntl.h>
-#ifndef WIN32
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <string.h>

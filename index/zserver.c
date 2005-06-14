@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.135 2005-06-13 10:29:20 adam Exp $
+/* $Id: zserver.c,v 1.136 2005-06-14 20:28:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,7 +28,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <io.h>
 #include <process.h>
 #include <sys/locking.h>
-#else
+#endif
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 

@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.22 2005-06-14 20:02:30 adam Exp $
+/* $Id: testlib.c,v 1.23 2005-06-14 20:28:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,8 +22,12 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /** testlib - utilities for the api tests */
 
+#if HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
+#if HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
+#endif
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -65,10 +69,14 @@ void start_log(int argc, char **argv)
  */
 ZebraService start_up(char *cfgname, int argc, char **argv)
 {
+#if HAVE_SYS_RESOURCE_H
+#if HAVE_SYS_TIME_H
     struct rlimit rlim;
     rlim.rlim_cur = 20;
     rlim.rlim_max = 20;
     setrlimit(RLIMIT_CPU, &rlim);
+#endif
+#endif
     nmem_init();
     start_log(argc, argv);
     return start_service(cfgname);

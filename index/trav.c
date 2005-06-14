@@ -1,4 +1,4 @@
-/* $Id: trav.c,v 1.48 2005-05-09 19:57:35 adam Exp $
+/* $Id: trav.c,v 1.49 2005-06-14 20:28:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,7 +27,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <io.h>
 #define S_ISREG(x) (x & _S_IFREG)
 #define S_ISDIR(x) (x & _S_IFDIR)
-#else
+#endif
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <direntz.h>

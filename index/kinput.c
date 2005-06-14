@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.65 2005-04-13 13:03:47 adam Exp $
+/* $Id: kinput.c,v 1.66 2005-06-14 20:28:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,7 +23,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <fcntl.h>
 #ifdef WIN32
 #include <io.h>
-#else
+#endif
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 #include <stdlib.h>

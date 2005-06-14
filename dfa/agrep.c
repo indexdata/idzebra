@@ -1,4 +1,4 @@
-/* $Id: agrep.c,v 1.15 2005-03-30 09:25:23 adam Exp $
+/* $Id: agrep.c,v 1.16 2005-06-14 20:28:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -32,10 +32,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <fcntl.h>
 
 #ifdef WIN32
-
 #include <io.h>
-
-#else
+#endif
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 

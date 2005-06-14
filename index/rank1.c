@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.24 2005-03-08 14:41:37 adam Exp $
+/* $Id: rank1.c,v 1.25 2005-06-14 20:28:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -24,7 +24,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #ifdef WIN32
 #include <io.h>
-#else
+#endif
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 

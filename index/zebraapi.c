@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.177 2005-06-13 10:29:20 adam Exp $
+/* $Id: zebraapi.c,v 1.178 2005-06-14 20:28:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,7 +27,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <io.h>
 #include <process.h>
 #include <direct.h>
-#else
+#endif
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 

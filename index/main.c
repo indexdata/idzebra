@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.124 2005-05-11 12:39:36 adam Exp $
+/* $Id: main.c,v 1.125 2005-06-14 20:28:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,8 +26,11 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #ifdef WIN32
 #include <io.h>
-#else
+#endif
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#if HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
 #include <time.h>
@@ -65,8 +68,10 @@ int main (int argc, char **argv)
     int trans_started=0;
 #if HAVE_SYS_TIMES_H
     struct tms tms1, tms2;
-    struct timeval start_time, end_time;
     double usec;
+#endif
+#if HAVE_SYS_TIME_H
+    struct timeval start_time, end_time;
 #endif
 #ifndef WIN32
     char nbuf[100];
@@ -83,6 +88,8 @@ int main (int argc, char **argv)
 #endif
 #if HAVE_SYS_TIMES_H
     times(&tms1);
+#endif
+#if HAVE_SYS_TIME_H
     gettimeofday(&start_time, 0);
 #endif
     prog = *argv;
@@ -279,6 +286,7 @@ int main (int argc, char **argv)
     zebra_close (zh);
     zebra_stop (zs);
 #if HAVE_SYS_TIMES_H
+#if HAVE_SYS_TIME_H
     if (trans_started)
     {
         gettimeofday(&end_time, 0);
@@ -290,6 +298,7 @@ int main (int argc, char **argv)
 		(double) (tms2.tms_utime - tms1.tms_utime)/100,
 		(double) (tms2.tms_stime - tms1.tms_stime)/100);
     }
+#endif
 #endif
     nmem_exit();
     exit (0);
