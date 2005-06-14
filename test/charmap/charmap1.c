@@ -1,4 +1,4 @@
-/* $Id: charmap1.c,v 1.5 2005-05-03 14:04:31 adam Exp $
+/* $Id: charmap1.c,v 1.6 2005-06-14 10:33:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -45,7 +45,6 @@ int main(int argc, char **argv)
     /* search for UNICODE 1E25 - letter h with dot below */
     do_query(__LINE__, zh, "@term string ḥ", 1);
 
-
     /* search for UNICODE A ring */
     do_query(__LINE__, zh, "@term string lås", 1);
 
@@ -66,6 +65,18 @@ int main(int argc, char **argv)
 
     /* search for aaa  */
     do_query(__LINE__, zh, "@term string laaas", 0);
+    
+    /* search ABC in title:0 .  */
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 ABC", 1);
+    
+    /* search DEF in title:0 .  */
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 DEF", 0);
+    
+    /* search [ in title:0 .  */
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 [", 1);
+    
+    /* search \ in title:0 .  */
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 \\\\\\\\", 1);
 
     return close_down(zh, zs, 0);
 }

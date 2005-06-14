@@ -1,10 +1,10 @@
-# $Id: Makefile.am,v 1.2 2004-12-02 13:59:08 adam Exp $
+# $Id: Makefile.am,v 1.3 2005-06-14 10:33:31 adam Exp $
 
 check_PROGRAMS = charmap1
 
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST = zebra.cfg x.xml default.idx string.utf8.chr
+EXTRA_DIST = zebra.cfg x.xml x.abs default.idx string.utf8.chr
 
 charmap1_SOURCES = charmap1.c
 
