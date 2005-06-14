@@ -1,4 +1,4 @@
-/* $Id: charmap1.c,v 1.6 2005-06-14 10:33:31 adam Exp $
+/* $Id: charmap1.c,v 1.7 2005-06-14 12:42:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -77,6 +77,9 @@ int main(int argc, char **argv)
     
     /* search \ in title:0 .  */
     do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 \\\\\\\\", 1);
+
+    /* search { in title:0 .  */
+    do_query(__LINE__, zh, "@attr 4=3 @attr 1=4 \\{", 1);
 
     return close_down(zh, zs, 0);
 }

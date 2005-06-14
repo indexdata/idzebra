@@ -5,11 +5,11 @@
     laas
     <Acronym>
       UUCCSEIS
-      [ ] /
     </Acronym>
   </Title>
   <Title>ABC</Title>
   <Title> DEF</Title>
   <Title>[</Title>
   <Title>\</Title>
+  <Title>{</Title>
 </x>
