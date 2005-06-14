@@ -1,4 +1,4 @@
-/* $Id: xmlread.c,v 1.19 2005-03-31 12:42:07 adam Exp $
+/* $Id: xmlread.c,v 1.20 2005-06-14 18:27:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -400,6 +400,7 @@ data1_node *zebra_read_xml (data1_handle dh,
     struct user_info uinfo;
     int done = 0;
     data1_node *first_node;
+    int no_read = 0;
 
     uinfo.loglevel = YLOG_DEBUG;
     uinfo.level = 1;
@@ -442,7 +443,9 @@ data1_node *zebra_read_xml (data1_handle dh,
         }
         else if (r == 0)
             done = 1;
-        if (!XML_ParseBuffer (parser, r, done))
+	else
+	    no_read += r;
+        if (no_read && !XML_ParseBuffer (parser, r, done))
         {
 	    done = 1;
 	    yaz_log (YLOG_WARN, "%d:%d:XML error: %s",
@@ -452,6 +455,8 @@ data1_node *zebra_read_xml (data1_handle dh,
 	}
     }
     XML_ParserFree (parser);
+    if (no_read == 0)
+	return 0;
     if (!uinfo.d1_stack[1] || !done)
         return 0;
     /* insert XML header if not present .. */
