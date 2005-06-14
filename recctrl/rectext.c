@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.27 2005-06-14 18:28:21 adam Exp $
+/* $Id: rectext.c,v 1.28 2005-06-14 20:27:33 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -42,7 +42,6 @@ static void *filter_init (Res res, RecType recType)
 static void filter_config(void *clientData, Res res, const char *args)
 {
     struct filter_info *tinfo = (struct marc_info*) clientData;
-    yaz_log(YLOG_LOG, "args:%s: len=%d", args, strlen(args));
     xfree(tinfo->sep);
     tinfo->sep = 0;
     if (args && *args)
