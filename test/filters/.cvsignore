@@ -1,0 +1,15 @@
+Makefile
+Makefile.in
+*.mf
+*.log
+log
+*.LCK
+shadow
+reg
+socket
+zebrasrv.pid
+.libs
+.deps
+grs.marc
+grs.xml
+text
