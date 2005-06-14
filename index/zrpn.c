@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.198 2005-06-09 10:39:53 adam Exp $
+/* $Id: zrpn.c,v 1.199 2005-06-14 12:42:48 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1432,50 +1432,6 @@ static ZEBRA_RES trans_scan_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     return ZEBRA_OK;
 }
 
-char *normalize_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
-                     const char *termz, NMEM stream, unsigned reg_id)
-{
-    WRBUF wrbuf = 0;
-    AttrType truncation;
-    int truncation_value;
-    char *ex_list = 0;
-
-    attr_init(&truncation, zapt, 5);
-    truncation_value = attr_find(&truncation, NULL);
-
-    switch (truncation_value)
-    {
-    default:
-        ex_list = "";
-        break;
-    case 101:
-        ex_list = "#";
-        break;
-    case 102:
-    case 103:
-        ex_list = 0;
-        break;
-    case 104:
-        ex_list = "!#";
-        break;
-    case 105:
-        ex_list = "!*";
-        break;
-    }
-    if (ex_list)
-        wrbuf = zebra_replace(zh->reg->zebra_maps, reg_id, ex_list,
-                              termz, strlen(termz));
-    if (!wrbuf)
-        return nmem_strdup(stream, termz);
-    else
-    {
-        char *buf = (char*) nmem_malloc(stream, wrbuf_len(wrbuf)+1);
-        memcpy (buf, wrbuf_buf(wrbuf), wrbuf_len(wrbuf));
-        buf[wrbuf_len(wrbuf)] = '\0';
-        return buf;
-    }
-}
-
 static void grep_info_delete(struct grep_info *grep_info)
 {
 #ifdef TERM_COUNT
@@ -1533,7 +1489,7 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
 /**
   \brief Create result set(s) for list of terms
   \param zh Zebra Handle
-  \param termz_org term as used in query but converted to UTF-8
+  \param termz term as used in query but converted to UTF-8
   \param attributeSet default attribute set
   \param stream memory for result
   \param reg_type register type ('w', 'p',..)
@@ -1549,7 +1505,7 @@ static ZEBRA_RES grep_info_prepare(ZebraHandle zh,
 */
 static ZEBRA_RES term_list_trunc(ZebraHandle zh,
 				 Z_AttributesPlusTerm *zapt,
-				 const char *termz_org,
+				 const char *termz,
 				 oid_value attributeSet,
 				 NMEM stream,
 				 int reg_type, int complete_flag,
@@ -1561,7 +1517,6 @@ static ZEBRA_RES term_list_trunc(ZebraHandle zh,
 {
     char term_dst[IT_MAX_WORD+1];
     struct grep_info grep_info;
-    char *termz = normalize_term(zh, zapt, termz_org, stream, reg_type);
     const char *termp = termz;
     int alloc_sets = 0;
 

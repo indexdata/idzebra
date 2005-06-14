@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.36 2005-03-11 17:56:36 adam Exp $
+/* $Id: charmap.c,v 1.37 2005-06-14 12:42:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -241,50 +241,6 @@ const char *chr_map_output(chrmaptab maptab, const char **from, int len)
     return (const char*) maptab->output[c];
 }
 
-unsigned char zebra_prim(char **s)
-{
-    unsigned char c;
-    unsigned int i = 0;
-
-    yaz_log (YLOG_DEBUG, "prim %.3s", *s);
-    if (**s == '\\')
-    {
-        (*s)++;
-        c = **s;
-        switch (c)
-        {
-        case '\\': c = '\\'; (*s)++; break;
-        case 'r': c = '\r'; (*s)++; break;
-        case 'n': c = '\n'; (*s)++; break;
-        case 't': c = '\t'; (*s)++; break;
-        case 's': c = ' '; (*s)++; break;
-        case 'x': sscanf(*s, "x%2x", &i); c = i; *s += 3; break;
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            sscanf(*s, "%3o", &i);
-            c = i;
-            *s += 3;
-            break;
-        default:
-            (*s)++;
-        }
-    }
-    else
-    {
-        c = **s;
-        ++(*s);
-    }
-    return c;
-}
-
 static int zebra_ucs4_strlen(ucs4_t *s)
 {
     int i = 0;
@@ -300,7 +256,7 @@ ucs4_t zebra_prim_w(ucs4_t **s)
     char fmtstr[8];
 
     yaz_log (YLOG_DEBUG, "prim_w %.3s", (char *) *s);
-    if (**s == '\\')
+    if (**s == '\\' && 1[*s])
     {
 	(*s)++;
 	c = **s;
@@ -533,7 +489,6 @@ static int scan_string(char *s_native,
 		(*fun)(str, data, num ? (*num)++ : 0);
 	    }
 	    break;
-	case '[': s++; abort(); break;
 	case '(':
             ++s;
 	    s0 = s; i = 0;
