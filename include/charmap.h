@@ -1,4 +1,4 @@
-/* $Id: charmap.h,v 1.12 2005-03-11 17:56:32 adam Exp $
+/* $Id: charmap.h,v 1.13 2005-06-15 18:52:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -19,8 +19,6 @@ along with Zebra; see the file LICENSE.zebra.  If not, write to the
 Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
-
-
 
 #ifndef CHARMAP_H
 #define CHARMAP_H
@@ -50,8 +48,6 @@ YAZ_EXPORT const char **chr_map_q_input(chrmaptab maptab,
 					const char **from, int len, int first);
     
 YAZ_EXPORT const char *chr_map_output(chrmaptab t, const char **from, int len);
-
-YAZ_EXPORT unsigned char zebra_prim(char **s);
 
 YAZ_END_CDECL
 
