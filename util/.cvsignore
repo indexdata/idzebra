@@ -3,6 +3,8 @@
 Makefile
 Makefile.in
 passtest
+tstcharmap
 idzebra-config
 *.lo
 *.la
+*.log

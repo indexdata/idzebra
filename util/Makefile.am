@@ -1,12 +1,16 @@
-## $Id: Makefile.am,v 1.14 2005-06-07 11:36:42 adam Exp $
+## $Id: Makefile.am,v 1.15 2005-06-15 21:31:45 adam Exp $
 
 lib_LTLIBRARIES = libidzebra-util.la
 
 noinst_PROGRAMS = passtest
 
+check_PROGRAMS = tstcharmap
+
+TESTS = $(check_PROGRAMS)
+
 bin_SCRIPTS = idzebra-config
 
-EXTRA_DIST = zebrasrv.rh
+EXTRA_DIST = zebrasrv.rh tstcharmap.chr
 
 DISTCLEANFILES = idzebra-config
 
@@ -17,3 +21,5 @@ libidzebra_util_la_SOURCES = zint.c res.c charmap.c zebramap.c passwddb.c \
  zebra-lock.c dirent.c xpath.c atoi_zn.c snippet.c
 
 passtest_SOURCES = passtest.c
+
+tstcharmap_SOURCES = tstcharmap.c

@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.41 2005-06-14 12:42:49 adam Exp $
+/* $Id: zebramap.c,v 1.42 2005-06-15 21:31:45 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -215,7 +215,7 @@ chrmaptab zebra_charmap_get (ZebraMaps zms, unsigned reg_id)
 	if (!zm->maptab_name || !yaz_matchstr (zm->maptab_name, "@"))
 	    return NULL;
 	if (!(zm->maptab = chrmaptab_create (zms->tabpath,
-					     zm->maptab_name, 0,
+					     zm->maptab_name,
                                              zms->tabroot)))
 	    yaz_log(YLOG_WARN, "Failed to read character table %s",
 		 zm->maptab_name);

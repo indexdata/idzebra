@@ -1,4 +1,4 @@
-/* $Id: charmap.h,v 1.13 2005-06-15 18:52:49 adam Exp $
+/* $Id: charmap.h,v 1.14 2005-06-15 21:31:45 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -38,7 +38,7 @@ typedef struct chr_t_entry chr_t_entry;
 typedef struct chrmaptab_info *chrmaptab;
 
 YAZ_EXPORT chrmaptab chrmaptab_create(const char *tabpath, const char *name,
-				      int map_only, const char *tabroot);
+				      const char *tabroot);
 YAZ_EXPORT void chrmaptab_destroy (chrmaptab tab);
 
 YAZ_EXPORT const char **chr_map_input(chrmaptab t, const char **from, int len, int first);

@@ -1,4 +1,4 @@
-/* $Id: charmap.c,v 1.37 2005-06-14 12:42:49 adam Exp $
+/* $Id: charmap.c,v 1.38 2005-06-15 21:31:45 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -510,8 +510,8 @@ static int scan_string(char *s_native,
     return 0;
 }
 
-chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
-                           const char *tabroot)
+chrmaptab chrmaptab_create(const char *tabpath, const char *name,
+			   const char *tabroot)
 {
     FILE *f;
     char line[512], *argv[50];
@@ -525,17 +525,18 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
     unsigned endian = 31;
     const char *ucs4_native = "UCS-4";
 
-    if (*(char*) &endian == 31)      /* little endian? */
-        ucs4_native = "UCS-4LE";
-
-    t_utf8 = yaz_iconv_open ("UTF-8", ucs4_native);
-
     yaz_log (YLOG_DEBUG, "maptab %s open", name);
     if (!(f = yaz_fopen(tabpath, name, "r", tabroot)))
     {
 	yaz_log(YLOG_WARN|YLOG_ERRNO, "%s", name);
 	return 0;
     }
+
+    if (*(char*) &endian == 31)      /* little endian? */
+        ucs4_native = "UCS-4LE";
+
+    t_utf8 = yaz_iconv_open ("UTF-8", ucs4_native);
+
     nmem = nmem_create ();
     res = (chrmaptab) nmem_malloc(nmem, sizeof(*res));
     res->nmem = nmem;
@@ -554,15 +555,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	res->input->children[i]->target = (unsigned char **)
 	    nmem_malloc (res->nmem, 2 * sizeof(unsigned char *));
 	res->input->children[i]->target[1] = 0;
-	if (map_only)
-	{
-	    res->input->children[i]->target[0] = (unsigned char *)
-		nmem_malloc (res->nmem, 2 * sizeof(unsigned char));
-	    res->input->children[i]->target[0][0] = i;
-	    res->input->children[i]->target[0][1] = 0;
-	}
-	else
-	    res->input->children[i]->target[0] = (unsigned char*) CHR_UNKNOWN;
+	res->input->children[i]->target[0] = (unsigned char*) CHR_UNKNOWN;
     }
     res->q_input = (chr_t_entry *)
 	nmem_malloc(res->nmem, sizeof(*res->q_input));
@@ -576,7 +569,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
     res->base_uppercase = 0;
 
     while (!errors && (argc = readconf_line(f, &lineno, line, 512, argv, 50)))
-	if (!map_only && !yaz_matchstr(argv[0], "lowercase"))
+	if (!yaz_matchstr(argv[0], "lowercase"))
 	{
 	    if (argc != 2)
 	    {
@@ -594,7 +587,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 	    res->output[(int) *CHR_UNKNOWN + num] = (unsigned char*) "@";
 	    num = (int) *CHR_BASE;
 	}
-	else if (!map_only && !yaz_matchstr(argv[0], "uppercase"))
+	else if (!yaz_matchstr(argv[0], "uppercase"))
 	{
 	    if (!res->base_uppercase)
 	    {
@@ -613,7 +606,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 		++errors;
 	    }
 	}
-	else if (!map_only && !yaz_matchstr(argv[0], "space"))
+	else if (!yaz_matchstr(argv[0], "space"))
 	{
 	    if (argc != 2)
 	    {
@@ -627,7 +620,7 @@ chrmaptab chrmaptab_create(const char *tabpath, const char *name, int map_only,
 		++errors;
 	    }
 	}
-	else if (!map_only && !yaz_matchstr(argv[0], "cut"))
+	else if (!yaz_matchstr(argv[0], "cut"))
 	{
 	    if (argc != 2)
 	    {
