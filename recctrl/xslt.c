@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.9 2005-06-07 13:10:52 adam Exp $
+/* $Id: xslt.c,v 1.10 2005-06-15 15:30:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -288,12 +288,12 @@ static int ioclose_ex(void *context)
     return 0;
 }
 
-static void index_field(struct filter_info *tinfo, struct recExtractCtrl *ctrl,
+static void index_cdata(struct filter_info *tinfo, struct recExtractCtrl *ctrl,
 			xmlNodePtr ptr,	RecWord *recWord)
 {
     for(; ptr; ptr = ptr->next)
     {
-	index_field(tinfo, ctrl, ptr->children, recWord);
+	index_cdata(tinfo, ctrl, ptr->children, recWord);
 	if (ptr->type != XML_TEXT_NODE)
 	    continue;
 	recWord->term_buf = ptr->content;
@@ -313,22 +313,22 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
 	    continue;
 	if (!strcmp(ptr->name, "index"))
 	{
-	    char *field_str = 0;
+	    char *name_str = 0;
 	    const char *xpath_str = 0;
 	    struct _xmlAttr *attr;
 	    for (attr = ptr->properties; attr; attr = attr->next)
 	    {
-		if (!strcmp(attr->name, "field") 
+		if (!strcmp(attr->name, "name") 
 		    && attr->children && attr->children->type == XML_TEXT_NODE)
-		    field_str = attr->children->content;
+		    name_str = attr->children->content;
 		if (!strcmp(attr->name, "xpath") 
 		    && attr->children && attr->children->type == XML_TEXT_NODE)
 		    xpath_str = attr->children->content;
 	    }
-	    if (field_str)
+	    if (name_str)
 	    {
-		recWord->attrStr = field_str;
-		index_field(tinfo, ctrl, ptr->children, recWord);
+		recWord->attrStr = name_str;
+		index_cdata(tinfo, ctrl, ptr->children, recWord);
 	    }
 	}
     }
