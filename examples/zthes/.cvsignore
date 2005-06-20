@@ -2,3 +2,4 @@
 *.LCK
 *.in
 Makefile
+zebrasrv.pid
