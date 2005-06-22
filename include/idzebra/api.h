@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.26 2005-06-09 10:39:52 adam Exp $
+/* $Id: api.h,v 1.27 2005-06-22 19:42:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -253,7 +253,8 @@ ZEBRA_RES zebra_result_set_term_no(ZebraHandle zh, const char *setname,
 YAZ_EXPORT
 ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 				     int no, zint *count, int *approx,
-				     char *termbuf, size_t *termlen);
+				     char *termbuf, size_t *termlen,
+				     const char **term_ref_id);
 
 
 /**

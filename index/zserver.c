@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.136 2005-06-14 20:28:54 adam Exp $
+/* $Id: zserver.c,v 1.137 2005-06-22 19:42:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -214,7 +214,8 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
         size_t len = sizeof(outbuf);
 
 	zebra_result_set_term_info(zh, r->setname, i,
-				   &count, &approx, outbuf, &len);
+				   &count, &approx, outbuf, &len,
+				   0 /* term_ref_id */ );
 
         sr->elements[i] = odr_malloc (r->stream, sizeof(**sr->elements));
         sr->elements[i]->subqueryId = 0;

@@ -1,4 +1,4 @@
-/* $Id: rset.c,v 1.51 2005-06-09 10:39:53 adam Exp $
+/* $Id: rset.c,v 1.52 2005-06-22 19:42:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -78,13 +78,16 @@ void rset_close(RSFD rfd)
     {
 	TERMID termid;
 	char buf[100];
-	while(rfd->counted_items < rs->hits_limit
+	while(rfd->counted_items <= rs->hits_limit
 	      && rset_default_read(rfd, buf, &termid))
 	    ;
 	
 	rs->hits_count = rfd->counted_items;
+	yaz_log(log_level, "rset_close rset=%p hits_count=" ZINT_FORMAT
+		" hits_limit=" ZINT_FORMAT,
+		rs, rs->hits_count, rs->hits_limit);
 	rs->hits_approx = 0;
-	if (rs->hits_count >= rs->hits_limit)
+	if (rs->hits_count > rs->hits_limit)
 	{
 	    double cur, tot;
 	    zint est;
@@ -159,6 +162,9 @@ RSET rset_create_base(const struct rset_control *sel,
 
     rset = (RSET) nmem_malloc(nmem, sizeof(*rset));
     yaz_log(log_level, "rs_create(%s) rs=%p (nm=%p)", sel->desc, rset, nmem); 
+    yaz_log(log_level, " ref_id=%s limit=" ZINT_FORMAT, 
+	    (term && term->ref_id ? term->ref_id : "null"),
+	    rset->hits_limit);
     rset->nmem = nmem;
     rset->control = sel;
     rset->refcount = 1;
@@ -173,8 +179,10 @@ RSET rset_create_base(const struct rset_control *sel,
     rset->scope = scope;
     rset->term = term;
     if (term)
+    {
         term->rset = rset;
-
+	rset->hits_limit = term->hits_limit;
+    }
     rset->no_children = no_children;
     rset->children = 0;
     if (no_children)
@@ -308,10 +316,13 @@ struct ord_list *ord_list_dup(NMEM nmem, struct ord_list *list)
    \param nmem memory for term.
    \param ol ord list
    \param reg_type register type
+   \param hits_limit limit before counting stops and gets approximate
+   \param ref_id supplied ID for term that can be used to identify this
 */
 TERMID rset_term_create(const char *name, int length, const char *flags,
 			int type, NMEM nmem, struct ord_list *ol,
-			int reg_type)
+			int reg_type,
+			zint hits_limit, const char *ref_id)
 
 {
     TERMID t;
@@ -323,15 +334,16 @@ TERMID rset_term_create(const char *name, int length, const char *flags,
     else if (length == -1)
         t->name = nmem_strdup(nmem, name);
     else
-    {
-        t->name = (char*) nmem_malloc(nmem, length+1);
-        memcpy (t->name, name, length);
-        t->name[length] = '\0';
-    }
+	t->name = nmem_strdupn(nmem, name, length);
+    if (!ref_id)
+	t->ref_id = 0;
+    else
+	t->ref_id = nmem_strdup(nmem, ref_id);
     if (!flags)
         t->flags = NULL;
     else
         t->flags = nmem_strdup(nmem, flags);
+    t->hits_limit = hits_limit;
     t->type = type;
     t->reg_type = reg_type;
     t->rankpriv = 0;

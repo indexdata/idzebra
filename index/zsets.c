@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.89 2005-06-09 10:39:53 adam Exp $
+/* $Id: zsets.c,v 1.90 2005-06-22 19:42:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -866,7 +866,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 		key_logdump_txt(log_level_searchhits, &key, termid->name);
 	    if (this_sys != psysno)
 	    {
-		if (rfd->counted_items >= rset->hits_limit)
+		if (rfd->counted_items > rset->hits_limit)
 		    break;
 		if (psysno)
 		{
@@ -960,8 +960,9 @@ static int trav_rset_for_termids(RSET rset, TERMID *termid_array,
 	if (approx_array)
 	    approx_array[no] = rset->hits_approx;
 #if 0
-	yaz_log(YLOG_LOG, "rset=%p term=%s count=" ZINT_FORMAT,
-		rset, rset->term->name, rset->hits_count);
+	yaz_log(YLOG_LOG, "rset=%p term=%s limit=" ZINT_FORMAT
+		" count=" ZINT_FORMAT,
+		rset, rset->term->name, rset->hits_limit, rset->hits_count);
 #endif
 	no++;
     }
@@ -983,7 +984,8 @@ ZEBRA_RES zebra_result_set_term_no(ZebraHandle zh, const char *setname,
 
 ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 				     int no, zint *count, int *approx,
-				     char *termbuf, size_t *termlen)
+				     char *termbuf, size_t *termlen,
+				     const char **term_ref_id)
 {
     ZebraSet sset = resultSetGet(zh, setname);
     if (sset)
@@ -1029,6 +1031,8 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 		}
 		termbuf[*termlen] = '\0';
 	    }
+	    if (term_ref_id)
+		*term_ref_id = term_array[no]->ref_id;
 
 	    xfree(term_array);
 	    xfree(hits_array);

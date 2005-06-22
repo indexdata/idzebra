@@ -1,4 +1,4 @@
-/* $Id: rset.h,v 1.56 2005-06-07 14:53:38 adam Exp $
+/* $Id: rset.h,v 1.57 2005-06-22 19:42:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -61,13 +61,15 @@ struct rset_term {
     int reg_type;  /** register type */
     RSET rset;     /** the rset corresponding to this term */
     void *rankpriv;/** private stuff for the ranking algorithm */
+    zint hits_limit;/** limit for hits if > 0 */
+    char *ref_id;  /** reference for this term */
     struct ord_list *ol;
 };
 
 typedef struct rset_term *TERMID; 
 TERMID rset_term_create (const char *name, int length, const char *flags,
 			 int type, NMEM nmem, struct ord_list *ol,
-			 int reg_type);
+			 int reg_type, zint hits_limit, const char *ref_id);
 
 /** rsfd is a "file descriptor" for reading from a rset */
 struct rsfd {  /* the stuff common to all rsfd's. */

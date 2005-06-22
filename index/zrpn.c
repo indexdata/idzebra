@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.200 2005-06-14 20:28:54 adam Exp $
+/* $Id: zrpn.c,v 1.201 2005-06-22 19:42:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -990,6 +990,43 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			     char *term_dst, int xpath_use,
 			     struct ord_list **ol);
 
+static ZEBRA_RES term_limits_APT(ZebraHandle zh,
+				 Z_AttributesPlusTerm *zapt,
+				 zint *hits_limit_value,
+				 const char **term_ref_id_str)
+{
+    AttrType term_ref_id_attr;
+    AttrType hits_limit_attr;
+ 
+    attr_init(&hits_limit_attr, zapt, 9);
+    *hits_limit_value  = attr_find(&hits_limit_attr, NULL);
+
+    attr_init(&term_ref_id_attr, zapt, 10);
+    attr_find_ex(&term_ref_id_attr, NULL, term_ref_id_str);
+
+    /* no limit given ? */
+    if (*hits_limit_value == -1)
+	if (*term_ref_id_str)
+	{
+	    /* use global if term_ref is present */
+	    *hits_limit_value = zh->approx_limit;
+	}
+	else
+	{
+	    /* no counting if term_ref is not present */
+	    *hits_limit_value = 0;
+	}
+    else if (*hits_limit_value == 0)
+    {
+	/* 0 is the same as global limit */
+	*hits_limit_value = zh->approx_limit;
+    }
+    yaz_log(YLOG_LOG, "term_limits_APT ref_id=%s limit=" ZINT_FORMAT,
+	    *term_ref_id_str ? *term_ref_id_str : "none",
+	    *hits_limit_value);
+    return ZEBRA_OK;
+}
+
 static ZEBRA_RES term_trunc(ZebraHandle zh,
 			    Z_AttributesPlusTerm *zapt,
 			    const char **term_sub, 
@@ -1005,7 +1042,11 @@ static ZEBRA_RES term_trunc(ZebraHandle zh,
 {
     ZEBRA_RES res;
     struct ord_list *ol;
+    zint hits_limit_value;
+    const char *term_ref_id_str = 0;
     *rset = 0;
+
+    term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str);
     grep_info->isam_p_indx = 0;
     res = string_term(zh, zapt, term_sub, attributeSet, stream, grep_info,
 		      reg_type, complete_flag, num_bases, basenames,
@@ -1019,7 +1060,8 @@ static ZEBRA_RES term_trunc(ZebraHandle zh,
 		       grep_info->isam_p_indx, term_dst,
 		       strlen(term_dst), rank_type, 1 /* preserve pos */,
 		       zapt->term->which, rset_nmem,
-		       kc, kc->scope, ol, reg_type);
+		       kc, kc->scope, ol, reg_type, hits_limit_value,
+		       term_ref_id_str);
     if (!*rset)
 	return ZEBRA_FAIL;
     return ZEBRA_OK;
@@ -1871,6 +1913,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     return ZEBRA_OK;
 }
 
+				 
 static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
 					Z_AttributesPlusTerm *zapt,
 					const char *termz,
@@ -1890,6 +1933,10 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
     ZEBRA_RES res;
     struct grep_info grep_info;
     int alloc_sets = 0;
+    zint hits_limit_value;
+    const char *term_ref_id_str = 0;
+
+    term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str);
 
     yaz_log(log_level_rpn, "APT_numeric t='%s'", termz);
     if (grep_info_prepare(zh, zapt, &grep_info, reg_type) == ZEBRA_FAIL)
@@ -1921,7 +1968,9 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
 		       strlen(term_dst), rank_type,
 		       0 /* preserve position */,
 		       zapt->term->which, rset_nmem, 
-		       kc, kc->scope, 0, reg_type);
+		       kc, kc->scope, 0, reg_type,
+		       hits_limit_value,
+		       term_ref_id_str);
 	if (!result_sets[num_result_sets])
 	    break;
 	num_result_sets++;
@@ -2115,7 +2164,8 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     rset = rset_trunc(zh, grep_info.isam_p_buf,
 		      grep_info.isam_p_indx, term, strlen(term),
 		      flags, 1, term_type,rset_nmem,
-		      kc, kc->scope, 0, reg_type);
+		      kc, kc->scope, 0, reg_type, 0 /* hits_limit */,
+		      0 /* term_ref_id_str */);
     grep_info_delete(&grep_info);
     return rset;
 }
@@ -2920,7 +2970,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    rset = rset_trunc(zh, &scan_info_array[j0].list[ptr[j0]].isam_p, 1,
 			      glist[lo].term, strlen(glist[lo].term),
 			      NULL, 0, zapt->term->which, rset_nmem, 
-			      kc, kc->scope, 0, reg_id);
+			      kc, kc->scope, 0, reg_id, 0 /* hits_limit */,
+			      0 /* term_ref_id_str */);
 	}
 	ptr[j0]++; /* move index for this set .. */
 	/* get result set for remaining scan terms */
@@ -2941,7 +2992,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 			    glist[lo].term,
 			    strlen(glist[lo].term), NULL, 0,
 			    zapt->term->which,rset_nmem,
-			    kc, kc->scope, 0, reg_id);
+			    kc, kc->scope, 0, reg_id, 0 /* hits_limit */,
+			    0 /* term_ref_id_str */ );
 		    rset = rsmulti_or_create(rset_nmem, kc,
 					     kc->scope, 0 /* termid */,
 					     2, rsets);
@@ -3014,7 +3066,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	    (zh, &scan_info_array[j0].list[before-1-ptr[j0]].isam_p, 1,
 	     glist[lo].term, strlen(glist[lo].term),
 	     NULL, 0, zapt->term->which, rset_nmem,
-	     kc, kc->scope, 0, reg_id);
+	     kc, kc->scope, 0, reg_id, 0 /* hits_limit */,
+	     0 /* term_ref_id_str */);
 	
 	ptr[j0]++;
 	
@@ -3033,7 +3086,8 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		    glist[lo].term,
 		    strlen(glist[lo].term), NULL, 0,
 		    zapt->term->which, rset_nmem,
-		    kc, kc->scope, 0, reg_id);
+		    kc, kc->scope, 0, reg_id, 0 /* hits_limit */,
+		    0 /* term_ref_id_str */);
 		rset = rsmulti_or_create(rset_nmem, kc,
 					 kc->scope, 0 /* termid */, 2, rsets);
 		
