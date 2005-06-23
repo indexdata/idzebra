@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.101 2005-04-29 23:09:30 adam Exp $
+/* $Id: recgrs.c,v 1.102 2005-06-23 06:45:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -465,32 +465,50 @@ static void index_xpath_attr (char *tag_path, char *name, char *value,
 			      char *structure, struct recExtractCtrl *p,
 			      RecWord *wrd)
 {
+#if NATTR
+    wrd->index_name = ZEBRA_XPATH_ELM_BEGIN;
+#else
     wrd->attrSet = VAL_IDXPATH;
     wrd->attrUse = 1;
-    wrd->reg_type = '0';
+#endif
+    wrd->index_type = '0';
     wrd->term_buf = tag_path;
     wrd->term_len = strlen(tag_path);
     (*p->tokenAdd)(wrd);
     
     if (value) {
+#if NATTR
+	wrd->index_name = ZEBRA_XPATH_ATTR;
+#else
         wrd->attrUse = 1015;
-        wrd->reg_type = 'w';
+#endif
+        wrd->index_type = 'w';
         wrd->term_buf = value;
         wrd->term_len = strlen(value);
         (*p->tokenAdd)(wrd);
     }
-    
+#if NATTR
+    wrd->index_name = ZEBRA_XPATH_ELM_END;
+#else
     wrd->attrUse = 2;
-    wrd->reg_type = '0';
+#endif
+    wrd->index_type = '0';
     wrd->term_buf = tag_path;
     wrd->term_len = strlen(tag_path);
     (*p->tokenAdd)(wrd);
 }
 
 
-static void index_xpath (struct source_parser *sp, data1_node *n,
-			 struct recExtractCtrl *p,
-                         int level, RecWord *wrd, int use)
+static void index_xpath(struct source_parser *sp, data1_node *n,
+			struct recExtractCtrl *p,
+			int level, RecWord *wrd,
+#if NATTR
+			char *xpath_index,
+			int xpath_is_start
+#else
+			int use
+#endif
+    )
 {
     int i;
     char tag_path_full[1024];
@@ -499,8 +517,19 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
     int termlist_only = 1;
     data1_termlist *tl;
     int xpdone = 0;
+#if NATTR
+#else
+    int xpath_is_start = 0;
+    if (use == 1)
+	xpath_is_start = 1;
+#endif
 
+#if NATTR
+    yaz_log(YLOG_DEBUG, "index_xpath level=%d xpath_index=%s",
+	    level, xpath_index);
+#else
     yaz_log(YLOG_DEBUG, "index_xpath level=%d use=%d", level, use);
+#endif
     if ((!n->root->u.root.absyn) ||
 	(n->root->u.root.absyn->enable_xpath_indexing)) {
 	termlist_only = 0;
@@ -541,14 +570,23 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
 	    {
 		/* need to copy recword because it may be changed */
 		RecWord wrd_tl;
-		wrd->reg_type = *tl->structure;
-		/* this is the ! case, so structure is for the xpath index */
+		wrd->index_type = *tl->structure;
 		memcpy (&wrd_tl, wrd, sizeof(*wrd));
 		if (tl->source)
 		    sp_parse(sp, n, &wrd_tl, tl->source);
-		if (!tl->att) {
+#if NATTR
+		if (!tl->index_name)
+#else
+		if (!tl->att)
+#endif
+		{
+		    /* this is the ! case, so structure is for the xpath index */
+#if NATTR
+		    wrd_tl.index_name = xpath_index;
+#else
 		    wrd_tl.attrSet = VAL_IDXPATH;
 		    wrd_tl.attrUse = use;
+#endif
 		    if (p->flagShowRecords)
 		    {
 			int i;
@@ -566,17 +604,25 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
 		    xpdone = 1;
 		} else {
 		    /* this is just the old fashioned attribute based index */
+#if NATTR
+		    wrd_tl.index_name = tl->index_name;
+#else
 		    wrd_tl.attrSet = (int) (tl->att->parent->reference);
 		    wrd_tl.attrUse = tl->att->locals->local;
+#endif
 		    if (p->flagShowRecords)
 		    {
 			int i;
 			printf("%*sIdx: [%s]", (level + 1) * 4, "",
 			       tl->structure);
+#if NATTR
+			printf("%s %s", tl->index_name, tl->source);
+#else
 			printf("%s:%s [%d] %s",
 			       tl->att->parent->name,
 			       tl->att->name, tl->att->value,
 			       tl->source);
+#endif
 			printf (" XData:\"");
 			for (i = 0; i<wrd_tl.term_len && i < 40; i++)
 			    fputc (wrd_tl.term_buf[i], stdout);
@@ -594,9 +640,13 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
 	   or no ! in the termlist, and default indexing is enabled... */
 	if (!p->flagShowRecords && !xpdone && !termlist_only)
 	{
+#if NATTR
+	    wrd->index_name = xpath_index;
+#else
 	    wrd->attrSet = VAL_IDXPATH;
 	    wrd->attrUse = use;
-	    wrd->reg_type = 'w';
+#endif
+	    wrd->index_type = 'w';
 	    (*p->tokenAdd)(wrd);
 	}
         break;
@@ -618,11 +668,15 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
         }
 
 
-        wrd->reg_type = '0';
+        wrd->index_type = '0';
         wrd->term_buf = tag_path_full;
         wrd->term_len = flen;
+#if NATTR
+	wrd->index_name = xpath_index;
+#else
         wrd->attrSet = VAL_IDXPATH;
         wrd->attrUse = use;
+#endif
         if (p->flagShowRecords)
         {
             printf("%*s tag=", (level + 1) * 4, "");
@@ -640,18 +694,30 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
             
 	    tag_path_full[flen] = 0;
             
-            /* Add tag start/end xpath index, only when there is a ! in the apropriate xelm
-               directive, or default xpath indexing is enabled */
-	    if (!(do_xpindex = 1 - termlist_only)) {
-                if ((tl = xpath_termlist_by_tagpath(tag_path_full, n))) {
-                    for (; tl; tl = tl->next) { if (!tl->att) {do_xpindex = 1;} }
+            /* Add tag start/end xpath index, only when there is a ! in
+	       the apropriate xelm directive, or default xpath indexing
+	       is enabled 
+	    */
+	    if (!(do_xpindex = 1 - termlist_only))
+	    {
+                if ((tl = xpath_termlist_by_tagpath(tag_path_full, n))) 
+		{
+                    for (; tl; tl = tl->next) 
+		    {
+#if NATTR
+			if (!tl->index_name)
+#else
+			if (!tl->att) 
+#endif
+			    do_xpindex = 1;
+		    }
                 }
 	    }
 	    if (do_xpindex) {
                 (*p->tokenAdd)(wrd);   /* index element pag (AKA tag path) */
 	    }
             
-            if (use == 1) /* only for the starting tag... */
+            if (xpath_is_start == 1) /* only for the starting tag... */
             {
 #define MAX_ATTR_COUNT 50
                 data1_termlist *tll[MAX_ATTR_COUNT];
@@ -682,17 +748,26 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
                     if ((tl = tll[i]))
                     {
                         for (; tl; tl = tl->next)
-                        { 
+                        {
+#if NATTR
+			    if (!tl->index_name)
+				do_xpindex = 1;
+#else
                             if (!tl->att)
                                 do_xpindex = 1;
+#endif
                         }
                     }
                     
                     if (do_xpindex) {
                         
                         /* attribute  (no value) */
-                        wrd->reg_type = '0';
+                        wrd->index_type = '0';
+#if NATTR
+			wrd->index_name = ZEBRA_XPATH_ATTR;
+#else
                         wrd->attrUse = 3;
+#endif
                         wrd->term_buf = xp->name;
                         wrd->term_len = strlen(xp->name);
                         
@@ -706,9 +781,13 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
                             strcpy (comb, xp->name);
                             strcat (comb, "=");
                             strcat (comb, xp->value);
-                            
+
+#if NATTR
+                            wrd->index_name = ZEBRA_XPATH_ATTR;
+#else
                             wrd->attrUse = 3;
-                            wrd->reg_type = '0';
+#endif
+                            wrd->index_type = '0';
                             wrd->term_buf = comb;
                             wrd->term_len = strlen(comb);
                             wrd->seqno--;
@@ -734,7 +813,12 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
                         /* If there is a termlist given (=xelm directive) */
                         for (; tl; tl = tl->next)
                         {
-                            if (!tl->att) {
+#if NATTR
+			    if (!tl->index_name)
+#else
+                            if (!tl->att) 
+#endif
+			    {
                                 /* add xpath index for the attribute */
                                 index_xpath_attr (attr_tag_path_full, xp->name,
                                                   xp->value, tl->structure,
@@ -742,11 +826,16 @@ static void index_xpath (struct source_parser *sp, data1_node *n,
                                 xpdone = 1;
                             } else {
                                 /* add attribute based index for the attribute */
-                                if (xp->value) {
+                                if (xp->value) 
+				{
+#if NATTR
+				    wrd->index_name = tl->index_name;
+#else
                                     wrd->attrSet = (int) 
                                         (tl->att->parent->reference);
                                     wrd->attrUse = tl->att->locals->local;
-                                    wrd->reg_type = *tl->structure;
+#endif
+                                    wrd->index_type = *tl->structure;
                                     wrd->term_buf = xp->value;
                                     wrd->term_len = strlen(xp->value);
                                     (*p->tokenAdd)(wrd);
@@ -804,10 +893,14 @@ static void index_termlist (struct source_parser *sp, data1_node *par,
 		int i;
 		printf("%*sIdx: [%s]", (level + 1) * 4, "",
 		       tlist->structure);
+#if NATTR
+		printf("%s %s", tlist->index_name, tlist->source);
+#else
 		printf("%s:%s [%d] %s",
 		       tlist->att->parent->name,
 		       tlist->att->name, tlist->att->value,
 		       tlist->source);
+#endif
 		printf (" XData:\"");
 		for (i = 0; i<wrd->term_len && i < 40; i++)
 		    fputc (wrd->term_buf[i], stdout);
@@ -818,9 +911,13 @@ static void index_termlist (struct source_parser *sp, data1_node *par,
 	    }
 	    else
 	    {
-		wrd->reg_type = *tlist->structure;
+		wrd->index_type = *tlist->structure;
+#if NATTR
+		wrd->index_name = tlist->index_name;
+#else
 		wrd->attrSet = (int) (tlist->att->parent->reference);
 		wrd->attrUse = tlist->att->locals->local;
+#endif
 		(*p->tokenAdd)(wrd);
 	    }
 	}
@@ -874,8 +971,14 @@ static int dumpkeys_r(struct source_parser *sp,
 	{
             index_termlist(sp, n, n, p, level, wrd);
             /* index start tag */
+#if NATTR
+	    if (n->root->u.root.absyn)
+      	        index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_BEGIN, 
+			    1 /* is start */);
+#else
 	    if (n->root->u.root.absyn)
       	        index_xpath(sp, n, p, level, wrd, 1);
+#endif
  	}
 
 	if (n->child)
@@ -903,13 +1006,23 @@ static int dumpkeys_r(struct source_parser *sp,
 	    if (par)
 		index_termlist(sp, par, n, p, level, wrd);
 
+#if NATTR
+	    index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_CDATA, 
+			0 /* is start */);
+#else
 	    index_xpath(sp, n, p, level, wrd, 1016);
+#endif
  	}
 
 	if (n->which == DATA1N_tag)
 	{
             /* index end tag */
+#if NATTR
+	    index_xpath(sp, n, p, level, wrd, ZEBRA_XPATH_ELM_END, 
+			0 /* is start */);
+#else
 	    index_xpath(sp, n, p, level, wrd, 2);
+#endif
 	}
 
 	if (p->flagShowRecords && n->which == DATA1N_root)

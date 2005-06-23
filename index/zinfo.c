@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.45 2005-03-05 09:19:14 adam Exp $
+/* $Id: zinfo.c,v 1.46 2005-06-23 06:45:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -32,6 +32,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ZINFO_DEBUG 0
 
 struct zebSUInfo {
+    int index_type;
 #define ZEB_SU_SET_USE 1
 #define ZEB_SU_STR 2
     int which;
@@ -572,6 +573,7 @@ static void zebraExplain_readAttributeDetails (ZebraExplainInfo zei,
 	data1_node *node_use = NULL;
 	data1_node *node_str = NULL;
 	data1_node *node_ordinal = NULL;
+	data1_node *node_type = NULL;
 	data1_node *np2;
 	char oid_str[128];
 	int oid_str_len;
@@ -591,11 +593,22 @@ static void zebraExplain_readAttributeDetails (ZebraExplainInfo zei,
 		node_str = np2->child;
 	    else if (!strcmp (np2->u.tag.tag, "ordinal"))
 		node_ordinal = np2->child;
+	    else if (!strcmp (np2->u.tag.tag, "type"))
+		node_type = np2->child;
 	}
 	assert (node_ordinal);
 
         *zsuip = (struct zebSUInfoB *)
 	    nmem_malloc (zei->nmem, sizeof(**zsuip));
+
+	if (node_type && node_type->u.data.len > 0)
+	    (*zsuip)->info.index_type =  node_type->u.data.data[0];
+	else
+	{
+	    yaz_log(YLOG_WARN, "Missing attribute 'type' in attribute info");
+	    (*zsuip)->info.index_type = 'w';
+	}
+
 	if (node_set && node_use)
 	{
 	    (*zsuip)->info.which = ZEB_SU_SET_USE;
@@ -624,7 +637,7 @@ static void zebraExplain_readAttributeDetails (ZebraExplainInfo zei,
 	}
 	else
 	{
-	    yaz_log(YLOG_WARN, "Missng set/use/str in attribute info");
+	    yaz_log(YLOG_WARN, "Missing set/use/str in attribute info");
 	    continue;
 	}
 	(*zsuip)->info.ordinal = atoi_n (node_ordinal->u.data.data,
@@ -1089,9 +1102,16 @@ static void zebraExplain_writeAttributeDetails (ZebraExplainInfo zei,
 	struct oident oident;
 	int oid[OID_SIZE];
 	data1_node *node_attr;
+	char index_type_str[2];
+
 	
 	node_attr = data1_mk_tag (zei->dh, zei->nmem, "attr", 0 /* attr */,
                                   node_list);
+
+	index_type_str[0] = zsui->info.index_type;
+	index_type_str[1] = '\0';
+	data1_mk_tag_data_text (zei->dh, node_attr, "type",
+				index_type_str, zei->nmem);
 	if (zsui->info.which == ZEB_SU_SET_USE)
 	{
 	    oident.proto = PROTO_Z3950;
@@ -1339,28 +1359,31 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush)
     rec_put (zei->records, &trec);
 }
 
-int zebraExplain_lookup_attr_su(ZebraExplainInfo zei, int set, int use)
+int zebraExplain_lookup_attr_su(ZebraExplainInfo zei, int index_type,
+				int set, int use)
 {
     struct zebSUInfoB *zsui;
 
     assert (zei->curDatabaseInfo);
     for (zsui = zei->curDatabaseInfo->attributeDetails->SUInfo;
 	 zsui; zsui=zsui->next)
-        if (zsui->info.which == ZEB_SU_SET_USE &&
+        if (zsui->info.index_type == index_type &&
+	    zsui->info.which == ZEB_SU_SET_USE &&
 	    zsui->info.u.su.use == use && zsui->info.u.su.set == set)
             return zsui->info.ordinal;
     return -1;
 }
 
-int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, const char *str)
+int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, int index_type,
+				 const char *str)
 {
     struct zebSUInfoB *zsui;
 
     assert (zei->curDatabaseInfo);
     for (zsui = zei->curDatabaseInfo->attributeDetails->SUInfo;
 	 zsui; zsui=zsui->next)
-        if (zsui->info.which == ZEB_SU_STR &&
-	    !strcmp(zsui->info.u.str, str))
+        if (zsui->info.index_type == index_type &&
+	    zsui->info.which == ZEB_SU_STR && !strcmp(zsui->info.u.str, str))
             return zsui->info.ordinal;
     return -1;
 }
@@ -1436,7 +1459,8 @@ void zebraExplain_addAttributeSet (ZebraExplainInfo zei, int set)
     }
 }
 
-int zebraExplain_add_attr_su(ZebraExplainInfo zei, int set, int use)
+int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
+			     int set, int use)
 {
     struct zebSUInfoB *zsui;
 
@@ -1447,6 +1471,7 @@ int zebraExplain_add_attr_su(ZebraExplainInfo zei, int set, int use)
     zei->curDatabaseInfo->attributeDetails->SUInfo = zsui;
     zei->curDatabaseInfo->attributeDetails->dirty = 1;
     zei->dirty = 1;
+    zsui->info.index_type = index_type;
     zsui->info.which = ZEB_SU_SET_USE;
     zsui->info.u.su.set = set;
     zsui->info.u.su.use = use;
@@ -1454,7 +1479,8 @@ int zebraExplain_add_attr_su(ZebraExplainInfo zei, int set, int use)
     return zsui->info.ordinal;
 }
 
-int zebraExplain_add_attr_str(ZebraExplainInfo zei, const char *str)
+int zebraExplain_add_attr_str(ZebraExplainInfo zei, int index_type,
+			      const char *index_name)
 {
     struct zebSUInfoB *zsui;
 
@@ -1464,8 +1490,9 @@ int zebraExplain_add_attr_str(ZebraExplainInfo zei, const char *str)
     zei->curDatabaseInfo->attributeDetails->SUInfo = zsui;
     zei->curDatabaseInfo->attributeDetails->dirty = 1;
     zei->dirty = 1;
+    zsui->info.index_type = index_type;
     zsui->info.which = ZEB_SU_STR;
-    zsui->info.u.str = nmem_strdup(zei->nmem, str);
+    zsui->info.u.str = nmem_strdup(zei->nmem, index_name);
     zsui->info.ordinal = (zei->ordinalSU)++;
     return zsui->info.ordinal;
 }

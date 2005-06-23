@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.144 2005-06-22 19:42:38 adam Exp $
+/* $Id: index.h,v 1.145 2005-06-23 06:45:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -199,11 +199,15 @@ struct recKeys {
     void *codec_handle;
 };
 
+#if NATTR
+
+#else
 struct sortKeys {
     int buf_used;
     int buf_max;
     char *buf;
 };
+#endif
 
 struct zebra_register {
     char *name;
@@ -231,10 +235,10 @@ struct zebra_register {
     int active; /* 0=shutdown, 1=enabled and inactive, 2=activated */
 
     struct recKeys keys;
-#if 1
-    struct sortKeys sortKeys;
+#if NATTR
+    struct recKeys sortKeys;
 #else
-    struct sortKey *sortKeys;
+    struct sortKeys sortKeys;
 #endif
     char **key_buf;
     size_t ptr_top;
@@ -475,8 +479,13 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 
 void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
                               int cmd, struct recKeys *reckeys);
+#if NATTR
+void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
+                            int cmd, struct recKeys *skp);
+#else
 void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
                             int cmd, struct sortKeys *skp);
+#endif
 void extract_schema_add (struct recExtractCtrl *p, Odr_oid *oid);
 void extract_token_add (RecWord *p);
 int explain_extract (void *handle, Record rec, data1_node *n);

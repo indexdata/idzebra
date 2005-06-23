@@ -1,4 +1,4 @@
-/* $Id: rectext.c,v 1.28 2005-06-14 20:27:33 adam Exp $
+/* $Id: rectext.c,v 1.29 2005-06-23 06:45:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -41,7 +41,7 @@ static void *filter_init (Res res, RecType recType)
 
 static void filter_config(void *clientData, Res res, const char *args)
 {
-    struct filter_info *tinfo = (struct marc_info*) clientData;
+    struct filter_info *tinfo = (struct filter_info*) clientData;
     xfree(tinfo->sep);
     tinfo->sep = 0;
     if (args && *args)
@@ -114,7 +114,6 @@ static int filter_extract (void *clientData, struct recExtractCtrl *p)
 	    (long) (*fi->p->tellf)(fi->p->fh));
 #endif
     (*p->init)(p, &recWord);
-    recWord.reg_type = 'w';
     do
     {
         int i = 0;

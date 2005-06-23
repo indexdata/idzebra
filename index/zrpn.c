@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.201 2005-06-22 19:42:38 adam Exp $
+/* $Id: zrpn.c,v 1.202 2005-06-23 06:45:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1067,13 +1067,6 @@ static ZEBRA_RES term_trunc(ZebraHandle zh,
     return ZEBRA_OK;
 }
 
-static char *nmem_strdup_i(NMEM nmem, int v)
-{
-    char val_str[64];
-    sprintf(val_str, "%d", v);
-    return nmem_strdup(nmem, val_str);
-}
-
 static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 			     const char **term_sub, 
 			     oid_value attributeSet, NMEM stream,
@@ -1096,9 +1089,6 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     int space_split = complete_flag ? 0 : 1;
 
     int bases_ok = 0;     /* no of databases with OK attribute */
-    int errCode = 0;      /* err code (if any is not OK) */
-    char *errString = 0;  /* addinfo */
-
 
     *ol = ord_list_create(stream);
 
@@ -1152,6 +1142,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
 	else if (use_string &&
 		 (ord = zebraExplain_lookup_attr_str(zh->reg->zei,
+						     reg_type,
 						     use_string)) >= 0)
 	{
 	    /* we have a match for a raw string attribute */
@@ -1183,11 +1174,13 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                 if (r == -1)
                 {
                     /* set was found, but value wasn't defined */
-                    errCode = YAZ_BIB1_UNSUPP_USE_ATTRIBUTE;
                     if (use_string)
-                        errString = nmem_strdup(stream, use_string);
+			zebra_setError(zh, 
+				       YAZ_BIB1_UNSUPP_USE_ATTRIBUTE,
+				       use_string);
                     else
-                        errString = nmem_strdup_i (stream, use_value);
+			zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, 
+					    use_value);
                 }
                 else
                 {
@@ -1199,8 +1192,10 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
                     oident.value = curAttributeSet;
                     oid_ent_to_oid (&oident, oid);
                     
-                    errCode = YAZ_BIB1_UNSUPP_ATTRIBUTE_SET;
-                    errString = nmem_strdup(stream, oident.desc);
+		    zebra_setError(zh, 
+				   YAZ_BIB1_UNSUPP_ATTRIBUTE_SET,
+				   oident.desc);
+		    
                 }
                 continue;
             }
@@ -1212,6 +1207,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    int i, ord_len;
 	    
 	    ord = zebraExplain_lookup_attr_su(zh->reg->zei,
+					      reg_type,
 					      attp.attset_ordinal,
 					      local_attr->local);
 	    if (ord < 0)
@@ -1234,9 +1230,11 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    attr_ok = 1;
 
         term_dict[prefix_len++] = ')';
+#if REG_TYPE_PREFIX
         term_dict[prefix_len++] = 1;
         term_dict[prefix_len++] = reg_type;
         yaz_log(log_level_rpn, "reg_type = %d", term_dict[prefix_len-1]);
+#endif
         term_dict[prefix_len] = '\0';
         j = prefix_len;
         switch (truncation_value)
@@ -1373,10 +1371,7 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	}
     }
     if (!bases_ok)
-    {
-	zebra_setError(zh, errCode, errString);
         return ZEBRA_FAIL;
-    }
     *term_sub = termp;
     yaz_log(YLOG_DEBUG, "%d positions", grep_info->isam_p_indx);
     return ZEBRA_OK;
@@ -1795,8 +1790,6 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     struct rpn_char_map_info rcmi;
 
     int bases_ok = 0;     /* no of databases with OK attribute */
-    int errCode = 0;      /* err code (if any is not OK) */
-    char *errString = 0;  /* addinfo */
 
     rpn_char_map_prepare (zh->reg, reg_type, &rcmi);
     attr_init(&use, zapt, 1);
@@ -1832,20 +1825,22 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         else
         {
             if ((r = att_getentbyatt (zh, &attp, curAttributeSet, use_value,
-                                            use_string)))
+				      use_string)))
             {
                 yaz_log(YLOG_DEBUG, "att_getentbyatt fail. set=%d use=%d r=%d",
                       curAttributeSet, use_value, r);
                 if (r == -1)
                 {
-                    errCode = YAZ_BIB1_UNSUPP_USE_ATTRIBUTE;
                     if (use_string)
-                        errString = nmem_strdup(stream, use_string);
+			zebra_setError(zh, 
+				       YAZ_BIB1_UNSUPP_USE_ATTRIBUTE,
+				       use_string);
                     else
-                        errString = nmem_strdup_i (stream, use_value);
+			zebra_setError_zint(zh, YAZ_BIB1_UNSUPP_USE_ATTRIBUTE, 
+					    use_value);
                 }
                 else
-                    errCode = YAZ_BIB1_UNSUPP_ATTRIBUTE_SET;
+		    zebra_setError(zh, YAZ_BIB1_UNSUPP_ATTRIBUTE_SET, 0);
                 continue;
             }
         }
@@ -1863,6 +1858,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             int i, ord_len;
 
             ord = zebraExplain_lookup_attr_su(zh->reg->zei,
+					      reg_type,
 					      attp.attset_ordinal,
 					      local_attr->local);
             if (ord < 0)
@@ -1885,10 +1881,12 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
             continue;
         }
         bases_ok++;
-        term_dict[prefix_len++] = ')';        
+        term_dict[prefix_len++] = ')';
+#if REG_TYPE_PREFIX    
         term_dict[prefix_len++] = 1;
         term_dict[prefix_len++] = reg_type;
         yaz_log(YLOG_DEBUG, "reg_type = %d", term_dict[prefix_len-1]);
+#endif
         term_dict[prefix_len] = '\0';
         if (!numeric_relation(zh, zapt, &termp, term_dict,
 			      attributeSet, grep_info, &max_pos, reg_type,
@@ -1904,10 +1902,7 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	}
     }
     if (!bases_ok)
-    {
-	zebra_setError(zh, errCode, errString);
         return ZEBRA_FAIL;
-    }
     *term_sub = termp;
     yaz_log(YLOG_DEBUG, "%d positions", grep_info->isam_p_indx);
     return ZEBRA_OK;
@@ -2129,7 +2124,8 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
     char term_dict[2048];
     char ord_buf[32];
     int prefix_len = 0;
-    int ord = zebraExplain_lookup_attr_su(zh->reg->zei, curAttributeSet, use);
+    int ord = zebraExplain_lookup_attr_su(zh->reg->zei, reg_type,
+					  curAttributeSet, use);
     int ord_len, i, r, max_pos;
     int term_type = Z_Term_characterString;
     const char *flags = "void";
@@ -2151,9 +2147,10 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
         term_dict[prefix_len++] = ord_buf[i];
     }
     term_dict[prefix_len++] = ')';
+#if REG_TYPE_PREFIX
     term_dict[prefix_len++] = 1;
     term_dict[prefix_len++] = reg_type;
-    
+#endif
     strcpy(term_dict+prefix_len, term);
     
     grep_info.isam_p_indx = 0;
@@ -2826,7 +2823,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	}
 
 	if (use_string &&
-	    (ord = zebraExplain_lookup_attr_str(zh->reg->zei,
+	    (ord = zebraExplain_lookup_attr_str(zh->reg->zei, reg_id,
 						use_string)) >= 0)
 	{
 	    /* we have a match for a raw string attribute */
@@ -2864,7 +2861,7 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	for (local_attr = attp.local_attributes; local_attr && ord_no < 32;
 	     local_attr = local_attr->next)
 	{
-	    ord = zebraExplain_lookup_attr_su(zh->reg->zei,
+	    ord = zebraExplain_lookup_attr_su(zh->reg->zei, reg_id,
 					      attp.attset_ordinal,
 					      local_attr->local);
 	    if (ord > 0)
@@ -2918,7 +2915,9 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             scan_info->list[j].term = NULL;
 
         prefix_len += key_SU_encode (ords[i], termz + prefix_len);
+#if REG_TYPE_PREFIX
         termz[prefix_len++] = reg_id;
+#endif
         termz[prefix_len] = 0;
         strcpy(scan_info->prefix, termz);
 

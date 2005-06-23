@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.19 2005-01-15 19:38:18 adam Exp $
+/* $Id: d1_absyn.c,v 1.20 2005-06-23 06:45:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -561,12 +561,17 @@ static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
 	    nmem_malloc(data1_nmem_get(dh), sizeof(**tp));
 	(*tp)->next = 0;
         
+#if NATTR
+	(*tp)->index_name = nmem_strdup(data1_nmem_get(dh), element_name);
+	if (*attname == '!' && xpelement)
+	    (*tp)->index_name = 0;
+#else
 	if (!xpelement) {
             if (*attname == '!')
                 strcpy(attname, element_name);
 	}
-	if (!((*tp)->att = data1_getattbyname(dh, res->attset,
-                                              attname))) {
+	if (!((*tp)->att = data1_getattbyname(dh, res->attset, attname))) 
+	{
             if ((!xpelement) || (*attname != '!')) {
                 yaz_log(YLOG_WARN,
                         "%s:%d: Couldn't find att '%s' in attset",
@@ -576,7 +581,7 @@ static int parse_termlists (data1_handle dh, data1_termlist ***tpp,
                 (*tp)->att = 0;
             }
 	}
-        
+#endif   
 	if (r == 2 && (source = strchr(structure, ':')))
 	    *source++ = '\0';   /* cut off structure .. */
 	else
@@ -1037,6 +1042,9 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	}
 	else if (!strcmp(cmd, "attset"))
 	{
+#if NATTR
+	    yaz_log(YLOG_WARN, "%s:%d: attset obsolete", file, lineno);
+#else
 	    char *name;
 	    data1_attset *attset;
 	    
@@ -1058,6 +1066,7 @@ data1_absyn *data1_read_absyn (data1_handle dh, const char *file,
 	    (*attset_childp)->child = attset;
 	    (*attset_childp)->next = 0;
 	    attset_childp = &(*attset_childp)->next;
+#endif
 	}
 	else if (!strcmp(cmd, "tagset"))
 	{

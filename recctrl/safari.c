@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.7 2005-03-31 12:42:07 adam Exp $
+/* $Id: safari.c,v 1.8 2005-06-23 06:45:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -123,7 +123,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 	return RECCTRL_EXTRACT_ERROR_GENERIC;
     sscanf(line, "%255s", p->match_criteria);
     
-    recWord.reg_type = 'w';
+    recWord.index_type = 'w';
     while (fi_gets(fi, line, sizeof(line)-1))
     {
 	int nor = 0;
@@ -141,7 +141,7 @@ static int filter_extract(void *clientData, struct recExtractCtrl *p)
 	}
 	for (cp = line + nor; *cp == ' '; cp++)
 	    ;
-	recWord.attrStr = field;
+	recWord.index_name = field;
 	recWord.term_buf = cp;
 	recWord.term_len = strlen(cp);
 	(*p->tokenAdd)(&recWord);

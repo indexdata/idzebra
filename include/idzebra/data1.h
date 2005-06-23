@@ -1,4 +1,4 @@
-/* $Id: data1.h,v 1.9 2005-04-23 16:30:58 adam Exp $
+/* $Id: data1.h,v 1.10 2005-06-23 06:45:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -245,7 +245,11 @@ struct data1_tagset
 
 typedef struct data1_termlist
 {
+#if NATTR
+    char *index_name;
+#else
     data1_att *att;
+#endif
     char *structure;
     char *source;
     struct data1_termlist *next;

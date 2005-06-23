@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.23 2005-03-08 14:02:12 adam Exp $
+/* $Id: zinfo.h,v 1.24 2005-06-23 06:45:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -50,10 +50,14 @@ void zebraExplain_close (ZebraExplainInfo zei);
 int zebraExplain_curDatabase (ZebraExplainInfo zei, const char *database);
 int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 			      int explain_database);
-int zebraExplain_lookup_attr_su(ZebraExplainInfo zei, int set, int use);
-int zebraExplain_add_attr_su(ZebraExplainInfo zei, int set, int use);
-int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, const char *str);
-int zebraExplain_add_attr_str(ZebraExplainInfo zei, const char *str);
+int zebraExplain_lookup_attr_su(ZebraExplainInfo zei, int index_type,
+				int set, int use);
+int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
+			     int set, int use);
+int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, int index_type,
+				 const char *str);
+int zebraExplain_add_attr_str(ZebraExplainInfo zei, int index_type,
+			      const char *str);
 void zebraExplain_addSchema (ZebraExplainInfo zei, Odr_oid *oid);
 void zebraExplain_recordCountIncrement (ZebraExplainInfo zei, int adjust_num);
 void zebraExplain_recordBytesIncrement (ZebraExplainInfo zei, int adjust_num);

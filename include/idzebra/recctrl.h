@@ -1,4 +1,4 @@
-/* $Id: recctrl.h,v 1.11 2005-06-07 11:36:38 adam Exp $
+/* $Id: recctrl.h,v 1.12 2005-06-23 06:45:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -34,12 +34,22 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 YAZ_BEGIN_CDECL
 
+#if NATTR
+#define ZEBRA_XPATH_ELM_BEGIN "_XPATH_BEGIN"
+#define ZEBRA_XPATH_ELM_END   "_XPATH_END"
+#define ZEBRA_XPATH_CDATA     "_XPATH_CDATA"
+#define ZEBRA_XPATH_ATTR      "_XPATH_ATTR"
+#endif
+
 /* single word entity */
 typedef struct {
+#if NATTR
+#else
     int  attrSet;
     int  attrUse;
-    unsigned reg_type;
-    char *attrStr;
+#endif
+    unsigned index_type;
+    char *index_name;
     char *term_buf;
     int  term_len;
     zint seqno;

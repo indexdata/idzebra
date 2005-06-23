@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.2 2005-04-28 08:20:40 adam Exp $
+/* $Id: alvis.c,v 1.3 2005-06-23 06:45:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -111,7 +111,6 @@ static int filter_extract (void *clientData, struct recExtractCtrl *p)
     xfree(tinfo->sep);
     tinfo->sep = 0;
     (*p->init)(p, &recWord);
-    recWord.reg_type = 'w';
     do
     {
         int i = 0;

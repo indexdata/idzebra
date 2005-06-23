@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.10 2005-06-15 15:30:05 adam Exp $
+/* $Id: xslt.c,v 1.11 2005-06-23 06:45:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -314,6 +314,7 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
 	if (!strcmp(ptr->name, "index"))
 	{
 	    char *name_str = 0;
+	    const char *type_str = 0;
 	    const char *xpath_str = 0;
 	    struct _xmlAttr *attr;
 	    for (attr = ptr->properties; attr; attr = attr->next)
@@ -324,11 +325,20 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
 		if (!strcmp(attr->name, "xpath") 
 		    && attr->children && attr->children->type == XML_TEXT_NODE)
 		    xpath_str = attr->children->content;
+		if (!strcmp(attr->name, "type") 
+		    && attr->children && attr->children->type == XML_TEXT_NODE)
+		    type_str = attr->children->content;
 	    }
 	    if (name_str)
 	    {
-		recWord->attrStr = name_str;
+		int prev_type = recWord->index_type; /* save default type */
+
+		if (type_str && *type_str)
+		    recWord->index_type = *type_str; /* type was given */
+		recWord->index_name = name_str;
 		index_cdata(tinfo, ctrl, ptr->children, recWord);
+
+		recWord->index_type = prev_type;     /* restore it again */
 	    }
 	}
     }
@@ -348,7 +358,6 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
     set_param_str(params, "schema", zebra_xslt_ns, tinfo->odr);
 
     (*p->init)(p, &recWord);
-    recWord.reg_type = 'w';
 
     if (schema && schema->stylesheet_xsp)
     {

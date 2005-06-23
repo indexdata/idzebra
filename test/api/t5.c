@@ -1,4 +1,4 @@
-/* $Id: t5.c,v 1.12 2005-04-15 10:47:49 adam Exp $
+/* $Id: t5.c,v 1.13 2005-06-23 06:45:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 
     /* provoke unsupported relation */
     do_query_x(__LINE__, zh, "@attr 1=1016 @attr 2=6 x", 0, 117);
-    do_query_x(__LINE__, zh, "@attr 1=1016 @attr 2=6 @attr 4=109 x", 0, 117);
+    do_query_x(__LINE__, zh, "@attr 1=1016 @attr 2=6 @attr 4=109 x", 0, 114);
  
     return close_down(zh, zs, 0);
 }
