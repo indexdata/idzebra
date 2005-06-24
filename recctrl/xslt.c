@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.11 2005-06-23 06:45:47 adam Exp $
+/* $Id: xslt.c,v 1.12 2005-06-24 13:45:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -313,21 +313,15 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
 	    continue;
 	if (!strcmp(ptr->name, "index"))
 	{
-	    char *name_str = 0;
+	    const char *name_str = 0;
 	    const char *type_str = 0;
 	    const char *xpath_str = 0;
 	    struct _xmlAttr *attr;
 	    for (attr = ptr->properties; attr; attr = attr->next)
 	    {
-		if (!strcmp(attr->name, "name") 
-		    && attr->children && attr->children->type == XML_TEXT_NODE)
-		    name_str = attr->children->content;
-		if (!strcmp(attr->name, "xpath") 
-		    && attr->children && attr->children->type == XML_TEXT_NODE)
-		    xpath_str = attr->children->content;
-		if (!strcmp(attr->name, "type") 
-		    && attr->children && attr->children->type == XML_TEXT_NODE)
-		    type_str = attr->children->content;
+		attr_content(attr, "name", &name_str);
+		attr_content(attr, "xpath", &xpath_str);
+		attr_content(attr, "type", &type_str);
 	    }
 	    if (name_str)
 	    {
@@ -344,6 +338,29 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
     }
 }
 
+static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
+			 xmlNodePtr ptr, RecWord *recWord)
+{
+    if (ptr->type == XML_ELEMENT_NODE && ptr->ns &&
+	!strcmp(ptr->ns->href, zebra_xslt_ns)
+	&& !strcmp(ptr->name, "record"))
+    {
+	const char *type_str = "update";
+	const char *id_str = 0;
+	struct _xmlAttr *attr;
+	for (attr = ptr->properties; attr; attr = attr->next)
+	{
+	    attr_content(attr, "type", &type_str);
+	    attr_content(attr, "id", &id_str);
+	}
+	if (id_str)
+	    sscanf(id_str, "%255s", ctrl->match_criteria);
+
+	ptr = ptr->children;
+    }
+    index_node(tinfo, ctrl, ptr, recWord);
+}
+    
 static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 		       xmlDocPtr doc)
 {
@@ -370,7 +387,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 	    fwrite(buf_out, len_out, 1, stdout);
 	    xmlFree(buf_out);
 	}
-	index_node(tinfo, p, xmlDocGetRootElement(resDoc), &recWord);
+	index_record(tinfo, p, xmlDocGetRootElement(resDoc), &recWord);
 	xmlFreeDoc(resDoc);
     }
     xmlDocDumpMemory(doc, &buf_out, &len_out);
@@ -554,7 +571,8 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     if (p->score >= 0)
 	set_param_int(params, "score", p->score, p->odr);
     set_param_int(params, "size", p->recordSize, p->odr);
-    
+    set_param_int(params, "id", p->localno, p->odr);
+
     if (window_size >= 0)
 	set_param_xml(params, "snippet", snippet_doc(p, 1, window_size),
 		      p->odr);
