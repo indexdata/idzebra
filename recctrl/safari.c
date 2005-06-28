@@ -1,4 +1,4 @@
-/* $Id: safari.c,v 1.8 2005-06-23 06:45:47 adam Exp $
+/* $Id: safari.c,v 1.9 2005-06-28 12:18:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -86,13 +86,16 @@ static int fi_getchar(struct fi_info *fi, char *dst)
 
 static int fi_gets(struct fi_info *fi, char *dst, int max)
 {
-    int l;
-    for (l = 0; l < max; l++)
+    int l = 0;
+    while(1)
     {
-	if (!fi_getchar(fi, dst+l))
+	char dstbyte;
+	if (!fi_getchar(fi, &dstbyte))
 	    return 0;
-	if (dst[l] == '\n')
+	if (dstbyte == '\n')
 	    break;
+	if (l < max)
+	    dst[l++] = dstbyte;
     }
     dst[l] = '\0';
     return 1;
