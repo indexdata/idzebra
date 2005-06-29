@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.9.2.2 2005-06-09 22:08:10 adam Exp $
+/* $Id: d1_absyn.c,v 1.9.2.3 2005-06-29 16:52:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -293,65 +293,73 @@ void fix_element_ref (data1_handle dh, data1_absyn *absyn, data1_element *e)
 
  */
 
-const char * mk_xpath_regexp (data1_handle dh, char *expr) 
+static const char * mk_xpath_regexp (data1_handle dh, const char *expr) 
 {
-    char *p = expr;
-    char *pp;
-    char *s;
+    const char *p = expr;
     int abs = 1;
     int i;
-    int j;
-    int e=0;
-    int is_predicate = 0;
+    int e = 0;
+    char *stack[32];
+    char *res_p, *res = 0;
+    size_t res_size = 1;
     
-    static char *stack[32];
-    static char res[1024];
-    char *r = "";
-    
-    if (*p != '/') { return (""); }
+    if (*p != '/')
+	return ("");
     p++;
-    if (*p == '/') { abs=0; p++; }
-    
-    while (*p) {
-        i=0;
-        while (*p && !strchr("/",*p)) { 
-	  i++; p++; 
-	}
-        stack[e] = (char *) nmem_malloc (data1_nmem_get (dh), i+1);
+    if (*p == '/') 
+    { 
+	abs =0;
+	p++;
+    }
+    while (*p)
+    {
+	int is_predicate = 0;
+	char *s;
+	int j;
+        for (i = 0; *p && !strchr("/",*p); i++, p++)
+	    ;
+	res_size += (i+3); /* we'll add / between later .. */
+        stack[e] = (char *) nmem_malloc(data1_nmem_get(dh), i+1);
 	s = stack[e];
-	for (j=0; j< i; j++) {
-	  pp = p-i+j;
-	  if (*pp == '[') {
-	    is_predicate=1;
-	  }
-	  else if (*pp == ']') {
-	    is_predicate=0;
-	  }
-	  else {
-	    if (!is_predicate) {
-	      if (*pp == '*') 
-		 *s++ = '.';
-	      *s++ = *pp;
+	for (j = 0; j < i; j++)
+	{
+	    const char *pp = p-i+j;
+	    if (*pp == '[')
+		is_predicate=1;
+	    else if (*pp == ']')
+		is_predicate=0;
+	    else 
+	    {
+		if (!is_predicate) {
+		    if (*pp == '*') 
+			*s++ = '.';
+		    *s++ = *pp;
+		}
 	    }
-	  }
 	}
 	*s = 0;
         e++;
-        if (*p) {p++;}
+        if (*p)
+	    p++;
     }
-    e--;  p = &res[0]; i=0;
-    sprintf (p, "^"); p++;
-    while (e >= 0) {
-        /* !!! res size is not checked !!! */
-        sprintf (p, "%s/",stack[e]);
-        p += strlen(stack[e]) + 1;
-        e--;
+    res_p = res = nmem_malloc(data1_nmem_get(dh), res_size + 10);
+
+    i = 0;
+    sprintf(res_p, ".*/");
+    res_p = res_p + strlen(res_p);
+    while (--e >= 0) {
+	sprintf(res_p, "%s/", stack[e]);
+	res_p += strlen(stack[e]) + 1;
     }
-    if (!abs) { sprintf (p, ".*"); p+=2; }
-    sprintf (p, "$"); p++;
-    r = nmem_strdup (data1_nmem_get (dh), res);
-    yaz_log(LOG_DEBUG,"Got regexp: %s",r);
-    return (r);
+    if (!abs)
+    {
+	sprintf(res_p, ".*"); 
+	res_p += 2;
+    }
+    sprintf (res_p, "$");
+    res_p++;
+    yaz_log(YLOG_DEBUG, "Got regexp: %s", res);
+    return res;
 }
 
 /* *ostrich*

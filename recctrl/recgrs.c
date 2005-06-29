@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.2 2004-10-12 16:47:38 quinn Exp $
+/* $Id: recgrs.c,v 1.86.2.3 2005-06-29 16:52:50 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -324,6 +324,33 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
     return 0;
 }
 
+static int dfa_match_first(struct DFA_state **dfaar, const char *text)
+{
+    struct DFA_state *s = dfaar[0]; /* start state */
+    struct DFA_tran *t;
+    int i;
+    const char *p = text;
+    unsigned char c;
+    
+    for (c = *p++, t = s->trans, i = s->tran_no; --i >= 0; t++)
+	if (c >= t->ch[0] && c <= t->ch[1])
+	{
+	    while (i >= 0)
+	    {
+		/* move to next state and return if we get a match */
+		s = dfaar[t->to];
+		if (s->rule_no)
+		    return 1;
+		/* next char */
+		c = *p++;
+		for (t = s->trans, i = s->tran_no; --i >= 0; t++)
+		    if (c >= t->ch[0] && c <= t->ch[1])
+			break;
+	    }
+	}
+    return 0;
+}
+
 
 /* *ostrich*
    
@@ -351,43 +378,20 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
     struct xpath_location_step *xp;
 
 #endif
-    char *pexpr = xmalloc(strlen(tagpath)+2);
+    char *pexpr = xmalloc(strlen(tagpath)+5);
     int ok = 0;
-    
-    sprintf (pexpr, "%s\n", tagpath);
+
+    sprintf (pexpr, "/%s\n", tagpath);
     yaz_log(LOG_DEBUG,"Checking tagpath %s",tagpath);
     while (xpe) 
     {
-        struct DFA_state **dfaar = xpe->dfa->states;
-        struct DFA_state *s=dfaar[0];
-        struct DFA_tran *t;
-        const char *p;
-        int i;
-        unsigned char c;
-        int start_line = 1;
-
-        c = *pexpr++; t = s->trans; i = s->tran_no;
-	if ((c >= t->ch[0] && c <= t->ch[1]) || (!t->ch[0])) {
-            p = pexpr;
-            do {
-                if ((s = dfaar[t->to])->rule_no && 
-                    (start_line || s->rule_nno))  {
-                    ok = 1;
-                    break;
-                }
-                for (t=s->trans, i=s->tran_no; --i >= 0; t++) {
-                    if ((unsigned) *p >= t->ch[0] && (unsigned) *p <= t->ch[1])
-                        break;
-                }
-                p++;
-            } while (i >= 0);
-	}
+	int i;
+	ok = dfa_match_first(xpe->dfa->states, pexpr);
 	if (ok)
-	    yaz_log(LOG_DEBUG," xpath match %s",xpe->xpath_expr);
+	    yaz_log(YLOG_DEBUG, " xpath got match %s",xpe->xpath_expr);
 	else
-	    yaz_log(LOG_DEBUG," xpath no match %s",xpe->xpath_expr);
+	    yaz_log(YLOG_DEBUG, " xpath no match %s",xpe->xpath_expr);
 
-        pexpr--;
         if (ok) {
 #ifdef ENHANCED_XELM 
             /* we have to check the perdicates up to the root node */
@@ -1169,6 +1173,7 @@ static int grs_retrieve(void *clientData, struct recRetrieveCtrl *p)
     }
     
     tagname = data1_systag_lookup(node->u.root.absyn, "rank", "rank");
+
     if (tagname && p->score >= 0 &&
 	(dnew = data1_mk_tag_data_wd(p->dh, top, tagname, mem)))
     {
