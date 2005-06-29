@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.79 2005-04-25 10:45:28 adam Exp $
+/* $Id: isamb.c,v 1.80 2005-06-29 12:31:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -732,11 +732,12 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
         p->size = dst - dst_buf;
         assert (p->size >= 0);
 
-
         if (p->size <= b->file[p->cat].head.block_max)
         {
 	    /* it fits OK in this block */
             memcpy (startp, dst_buf, dst - dst_buf);
+
+	    close_block(b, sub_p2);
         }
         else
         {
@@ -753,6 +754,9 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
             const char *half;
             src = dst_buf;
             endp = dst;
+
+	    p->dirty = 1;
+	    close_block(b, sub_p2);
 
             half = src + b->file[p->cat].head.block_size/2;
             decode_ptr(&src, &pos);
@@ -807,8 +811,7 @@ int insert_int (ISAMB b, struct ISAMB_block *p, void *lookahead_item,
 	    (*sp)->no_items = p->no_items - no_items_first_half;
 	    p->no_items = no_items_first_half;
         }
-        p->dirty = 1;
-        close_block(b, sub_p2);
+	p->dirty = 1;
     }
     close_block(b, sub_p1);
     (*b->method->codec.stop)(c1);
