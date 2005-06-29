@@ -4,3 +4,4 @@ xpath enable
 
 xelm /assembled/basic/names/CASno !:w,!:p,!:s,NAL-call-number:p,Title-key:s
 xelm /*/orgs  body-of-text:w
+xelm //something Title:w

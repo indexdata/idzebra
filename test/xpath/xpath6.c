@@ -1,4 +1,4 @@
-/* $Id: xpath6.c,v 1.3 2005-05-04 12:53:05 adam Exp $
+/* $Id: xpath6.c,v 1.4 2005-06-29 16:52:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -46,6 +46,7 @@ int main(int argc, char **argv)
     zebra_end_trans(zh);
     zebra_commit(zh);
     
+
     do_query(__LINE__, zh, "@attr 5=1 @attr 6=3  @attr 4=1 @attr 1=/assembled/basic/names/CASno \"367-93-1\"", 2);
 
     do_query(__LINE__, zh, "@attr 5=1 @attr 6=3  @attr 4=1 @attr 1=18 \"367-93-1\"", 2);
@@ -60,10 +61,8 @@ int main(int argc, char **argv)
 	     "@and @attr 1=/assembled/orgs/org 1 @attr 5=1 @attr 6=3  @attr 4=1 "
 	     "@attr 1=/assembled/basic/names/CASno 367-93-1", 2);
 
-#if 0
     /* bug #317 */
-    do_query(__LINE__, zh, "@attr 1=1010 46", 1);
-#endif
+    do_query(__LINE__, zh, "@attr 1=1010 46", 2);
 
     return close_down(zh, zs, 0);
 }

@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.102 2005-06-23 06:45:47 adam Exp $
+/* $Id: recgrs.c,v 1.103 2005-06-29 16:52:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -337,6 +337,33 @@ int d1_check_xpath_predicate(data1_node *n, struct xpath_predicate *p)
 }
 
 
+static int dfa_match_first(struct DFA_state **dfaar, const char *text)
+{
+    struct DFA_state *s = dfaar[0]; /* start state */
+    struct DFA_tran *t;
+    int i;
+    const char *p = text;
+    unsigned char c;
+    
+    for (c = *p++, t = s->trans, i = s->tran_no; --i >= 0; t++)
+	if (c >= t->ch[0] && c <= t->ch[1])
+	{
+	    while (i >= 0)
+	    {
+		/* move to next state and return if we get a match */
+		s = dfaar[t->to];
+		if (s->rule_no)
+		    return 1;
+		/* next char */
+		c = *p++;
+		for (t = s->trans, i = s->tran_no; --i >= 0; t++)
+		    if (c >= t->ch[0] && c <= t->ch[1])
+			break;
+	    }
+	}
+    return 0;
+}
+
 /* *ostrich*
    
 New function, looking for xpath "element" definitions in abs, by
@@ -362,44 +389,20 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 #ifdef ENHANCED_XELM 
     struct xpath_location_step *xp;
 #endif
-    char *pexpr = xmalloc(strlen(tagpath)+2);
+    char *pexpr = xmalloc(strlen(tagpath)+5);
     int ok = 0;
     
-    sprintf (pexpr, "%s\n", tagpath);
-    yaz_log(YLOG_DEBUG, "Checking tagpath %s",tagpath);
+    sprintf (pexpr, "/%s\n", tagpath);
+    yaz_log(YLOG_LOG, "Checking tagpath %s", pexpr);
     for (; xpe; xpe = xpe->next)
     {
-        struct DFA_state **dfaar = xpe->dfa->states;
-        struct DFA_state *s = dfaar[0];
-        struct DFA_tran *t = s->trans;
-        int i = s->tran_no;
-        unsigned char c = *pexpr++;
-        int start_line = 1;
-
-	if ((c >= t->ch[0] && c <= t->ch[1]) || (!t->ch[0]))
-	{
-            const char *p = pexpr;
-            do 
-	    {
-                if ((s = dfaar[t->to])->rule_no && 
-                    (start_line || s->rule_nno))
-		{
-                    ok = 1;
-                    break;
-                }
-                for (t=s->trans, i=s->tran_no; --i >= 0; t++)
-                    if ((unsigned) *p >= t->ch[0] && (unsigned) *p <= t->ch[1])
-                        break;
-                p++;
-            } 
-	    while (i >= 0);
-	}
+	int i;
+	ok = dfa_match_first(xpe->dfa->states, pexpr);
 	if (ok)
-	    yaz_log(YLOG_DEBUG, " xpath match %s",xpe->xpath_expr);
+	    yaz_log(YLOG_LOG, " xpath got match %s",xpe->xpath_expr);
 	else
-	    yaz_log(YLOG_DEBUG, " xpath no match %s",xpe->xpath_expr);
+	    yaz_log(YLOG_LOG, " xpath no match %s",xpe->xpath_expr);
 
-        pexpr--;
         if (ok) {
 #ifdef ENHANCED_XELM 
             /* we have to check the perdicates up to the root node */
@@ -499,6 +502,32 @@ static void index_xpath_attr (char *tag_path, char *name, char *value,
 }
 
 
+static void mk_tag_path_full(char *tag_path_full, size_t max, data1_node *n)
+{
+    size_t flen = 0;
+    data1_node *nn;
+
+    /* we have to fetch the whole path to the data tag */
+    for (nn = n; nn; nn = nn->parent)
+    {
+	if (nn->which == DATA1N_tag)
+	{
+	    size_t tlen = strlen(nn->u.tag.tag);
+	    if (tlen + flen > (max - 2))
+		break;
+	    memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
+	    flen += tlen;
+	    tag_path_full[flen++] = '/';
+	}
+	else
+	    if (nn->which == DATA1N_root)
+		break;
+    }
+    tag_path_full[flen] = 0;
+    yaz_log(YLOG_LOG, "mk_tag_path_full=%s", tag_path_full);
+}
+	
+
 static void index_xpath(struct source_parser *sp, data1_node *n,
 			struct recExtractCtrl *p,
 			int level, RecWord *wrd,
@@ -512,8 +541,6 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 {
     int i;
     char tag_path_full[1024];
-    size_t flen = 0;
-    data1_node *nn;
     int termlist_only = 1;
     data1_termlist *tl;
     int xpdone = 0;
@@ -541,26 +568,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
         wrd->term_buf = n->u.data.data;
         wrd->term_len = n->u.data.len;
         xpdone = 0;
-        flen = 0;
-            
-	/* we have to fetch the whole path to the data tag */
-	for (nn = n; nn; nn = nn->parent)
-	{
-	    if (nn->which == DATA1N_tag)
-	    {
-		size_t tlen = strlen(nn->u.tag.tag);
-		if (tlen + flen > (sizeof(tag_path_full)-2))
-		    break;
-		memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
-		flen += tlen;
-		tag_path_full[flen++] = '/';
-	    }
-	    else
-		if (nn->which == DATA1N_root)
-		    break;
-	}
-	
-	tag_path_full[flen] = 0;
+
+	mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
 	
 	/* If we have a matching termlist... */
 	if (n->root->u.root.absyn && 
@@ -651,26 +660,11 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
 	}
         break;
     case DATA1N_tag:
-        flen = 0;
-        for (nn = n; nn; nn = nn->parent)
-        {
-            if (nn->which == DATA1N_tag)
-            {
-                size_t tlen = strlen(nn->u.tag.tag);
-                if (tlen + flen > (sizeof(tag_path_full)-2))
-		    break;
-                memcpy (tag_path_full + flen, nn->u.tag.tag, tlen);
-                flen += tlen;
-                tag_path_full[flen++] = '/';
-            }
-            else if (nn->which == DATA1N_root)
-                break;
-        }
-
+	mk_tag_path_full(tag_path_full, sizeof(tag_path_full), n);
 
         wrd->index_type = '0';
         wrd->term_buf = tag_path_full;
-        wrd->term_len = flen;
+        wrd->term_len = strlen(tag_path_full);
 #if NATTR
 	wrd->index_name = xpath_index;
 #else
@@ -691,8 +685,6 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
             data1_xattr *xp;
             data1_termlist *tl;
 	    int do_xpindex;
-            
-	    tag_path_full[flen] = 0;
             
             /* Add tag start/end xpath index, only when there is a ! in
 	       the apropriate xelm directive, or default xpath indexing
@@ -735,11 +727,10 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                     int do_xpindex = 1 - termlist_only;
                     data1_termlist *tl;
                     char attr_tag_path_full[1024]; 
-                    int int_len = flen;
                     
                     /* this could be cached as well */
-                    sprintf (attr_tag_path_full, "@%s/%.*s",
-                             xp->name, int_len, tag_path_full);
+                    sprintf (attr_tag_path_full, "@%s/%s",
+                             xp->name, tag_path_full);
                     
                     tll[i] = xpath_termlist_by_tagpath(attr_tag_path_full,n);
                     
@@ -802,11 +793,10 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                 for (xp = n->u.tag.attributes; xp; xp = xp->next) {
                     data1_termlist *tl;
                     char attr_tag_path_full[1024];
-                    int int_len = flen;
                     int xpdone = 0;
                     
-                    sprintf (attr_tag_path_full, "@%s/%.*s",
-                             xp->name, int_len, tag_path_full);
+                    sprintf (attr_tag_path_full, "@%s/%s",
+                             xp->name, tag_path_full);
                     
                     if ((tl = tll[i]))
                     {
