@@ -45,10 +45,10 @@ clean:
 	# Add here commands to clean up after the build process.
 	-$(MAKE) distclean
 ifneq "$(wildcard /usr/share/misc/config.sub)" ""
-	cp -f /usr/share/misc/config.sub config.sub
+	if [! -f config.sub] ; then cp -f /usr/share/misc/config.sub config.sub ; fi
 endif
 ifneq "$(wildcard /usr/share/misc/config.guess)" ""
-	cp -f /usr/share/misc/config.guess config.guess
+	if [! -f config.guess] ; then cp -f /usr/share/misc/config.guess config.guess ; fi
 endif
 
 
