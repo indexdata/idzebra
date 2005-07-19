@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.9.2.3 2005-06-29 16:52:50 adam Exp $
+/* $Id: d1_absyn.c,v 1.9.2.4 2005-07-19 18:34:16 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -467,7 +467,7 @@ static int melm2xpath(char *melm, char *buf)
     char *field = melm;
     char *subfield;
     char *fieldtype;
-    if ((dollar = index(melm, '$'))) {
+    if ((dollar = strchr(melm, '$'))) {
 	*dollar = '\0';
 	subfield = ++dollar;
     } else
