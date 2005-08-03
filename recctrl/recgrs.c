@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.103 2005-06-29 16:52:27 adam Exp $
+/* $Id: recgrs.c,v 1.104 2005-08-03 07:44:27 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -393,15 +393,10 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
     int ok = 0;
     
     sprintf (pexpr, "/%s\n", tagpath);
-    yaz_log(YLOG_LOG, "Checking tagpath %s", pexpr);
     for (; xpe; xpe = xpe->next)
     {
 	int i;
 	ok = dfa_match_first(xpe->dfa->states, pexpr);
-	if (ok)
-	    yaz_log(YLOG_LOG, " xpath got match %s",xpe->xpath_expr);
-	else
-	    yaz_log(YLOG_LOG, " xpath no match %s",xpe->xpath_expr);
 
         if (ok) {
 #ifdef ENHANCED_XELM 
@@ -524,7 +519,6 @@ static void mk_tag_path_full(char *tag_path_full, size_t max, data1_node *n)
 		break;
     }
     tag_path_full[flen] = 0;
-    yaz_log(YLOG_LOG, "mk_tag_path_full=%s", tag_path_full);
 }
 	
 
