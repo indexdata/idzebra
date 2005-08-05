@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.26 2004-12-15 09:10:47 adam Exp $
+## $Id: Makefile.am,v 1.27 2005-08-05 14:39:12 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -20,7 +20,13 @@ XMLFILES = \
  license.xml \
  indexdata.xml \
  zebraidx-options.xml \
- zebraidx-commands.xml
+ zebraidx-commands.xml \
+ zebrasrv-options.xml \
+ zebrasrv-synopsis.xml \
+ zebrasrv-virtual.xml
+
+# zebrasrv-commands.xml \
+
 
 HTMLFILES =  \
  administration.html apps.html configuration-file.html data-model.html \
@@ -50,7 +56,9 @@ zebraidx.1: zebraidx-man.sgml zebraidx-options.xml zebraidx-commands.xml
 	if test ! -f zebraidx-commands.xml ; then ln -s $(srcdir)/zebraidx-commands.xml .; fi
 	docbook2man $(srcdir)/zebraidx-man.sgml
 
-zebrasrv.8: zebrasrv-man.sgml
+# zebrasrv-commands.xml
+zebrasrv.8: zebrasrv-man.sgml  zebrasrv-options.xml \
+            zebrasrv-synopsis.xml zebrasrv-virtual.xml
 	docbook2man $(srcdir)/zebrasrv-man.sgml
 
 idzebra-config.1: idzebra-config-man.sgml
