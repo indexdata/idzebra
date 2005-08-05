@@ -1,4 +1,4 @@
-/* $Id: tstcodec.c,v 1.6 2005-01-15 19:38:35 adam Exp $
+/* $Id: tstcodec.c,v 1.7 2005-08-05 10:33:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,6 +20,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
+#include <stdlib.h>
 #include "../../index/index.h"
 
 char *prog = "";
