@@ -1,4 +1,4 @@
-/* $Id: kdump.c,v 1.29 2005-06-14 20:28:54 adam Exp $
+/* $Id: kdump.c,v 1.30 2005-08-05 10:40:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -23,6 +23,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
 #ifdef WIN32
 #include <io.h>
 #endif

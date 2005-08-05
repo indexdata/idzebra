@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.24 2005-06-23 06:45:46 adam Exp $
+/* $Id: zinfo.h,v 1.25 2005-08-05 10:40:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -52,6 +52,8 @@ int zebraExplain_newDatabase (ZebraExplainInfo zei, const char *database,
 			      int explain_database);
 int zebraExplain_lookup_attr_su(ZebraExplainInfo zei, int index_type,
 				int set, int use);
+int zebraExplain_lookup_attr_su_any_index(ZebraExplainInfo zei,
+					  int set, int use);
 int zebraExplain_add_attr_su(ZebraExplainInfo zei, int index_type,
 			     int set, int use);
 int zebraExplain_lookup_attr_str(ZebraExplainInfo zei, int index_type,

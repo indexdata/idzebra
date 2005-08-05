@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.46 2005-06-23 06:45:46 adam Exp $
+/* $Id: zinfo.c,v 1.47 2005-08-05 10:40:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1357,6 +1357,20 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush)
     trec->size[recInfo_storeData] = sgml_len;
     
     rec_put (zei->records, &trec);
+}
+
+int zebraExplain_lookup_attr_su_any_index(ZebraExplainInfo zei,
+					  int set, int use)
+{
+    struct zebSUInfoB *zsui;
+
+    assert (zei->curDatabaseInfo);
+    for (zsui = zei->curDatabaseInfo->attributeDetails->SUInfo;
+	 zsui; zsui=zsui->next)
+        if (zsui->info.which == ZEB_SU_SET_USE &&
+	    zsui->info.u.su.use == use && zsui->info.u.su.set == set)
+            return zsui->info.ordinal;
+    return -1;
 }
 
 int zebraExplain_lookup_attr_su(ZebraExplainInfo zei, int index_type,

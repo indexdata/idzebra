@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.187 2005-06-23 06:45:46 adam Exp $
+/* $Id: extract.c,v 1.188 2005-08-05 10:40:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -98,42 +98,45 @@ static void extract_init (struct recExtractCtrl *p, RecWord *w)
     w->section_id = 0;
 }
 
-static const char **searchRecordKey (ZebraHandle zh,
-                                     struct recKeys *reckeys,
-				     int attrSetS, int attrUseS)
+static void searchRecordKey(ZebraHandle zh,
+			    const struct recKeys *reckeys,
+			    int attrSetS, int attrUseS,
+			    const char **ws, int ws_length)
 {
-    static const char *ws[32];
     void *decode_handle = iscz1_start();
     int off = 0;
     int startSeq = -1;
     int seqno = 0;
     int i;
+    int ch;
 
-    for (i = 0; i<32; i++)
+    for (i = 0; i<ws_length; i++)
         ws[i] = NULL;
+
+    ch = zebraExplain_lookup_attr_su_any_index(zh->reg->zei,
+					       attrSetS, attrUseS);
+    if (ch < 0)
+	return ;
 
     while (off < reckeys->buf_used)
     {
         const char *src = reckeys->buf + off;
         struct it_key key;
 	char *dst = (char*) &key;
-	int attrSet, attrUse;
 
 	iscz1_decode(decode_handle, &dst, &src);
 	assert(key.len <= 4 && key.len > 2);
 
-	attrSet = (int) key.mem[0] >> 16;
-	attrUse = (int) key.mem[0] & 65535;
 	seqno = (int) key.mem[key.len-1];
 
-	if (attrUseS == attrUse && attrSetS == attrSet)
+	if (key.mem[0] == ch)
         {
             int woff;
 
             if (startSeq == -1)
                 startSeq = seqno;
             woff = seqno - startSeq;
-            if (woff >= 0 && woff < 31)
+            if (woff >= 0 && woff < ws_length)
                 ws[woff] = src;
         }
 
@@ -143,7 +146,6 @@ static const char **searchRecordKey (ZebraHandle zh,
     }
     iscz1_stop(decode_handle);
     assert (off == reckeys->buf_used);
-    return ws;
 }
 
 struct file_read_info {
@@ -218,7 +220,6 @@ static char *fileMatchStr (ZebraHandle zh,
     static char dstBuf[2048];      /* static here ??? */
     char *dst = dstBuf;
     const char *s = spec;
-    static const char **w;
 
     while (1)
     {
@@ -228,6 +229,7 @@ static char *fileMatchStr (ZebraHandle zh,
             break;
         if (*s == '(')
         {
+	    const char *ws[32];
 	    char attset_str[64], attname_str[64];
 	    data1_attset *attset;
 	    int i;
@@ -260,8 +262,7 @@ static char *fileMatchStr (ZebraHandle zh,
 		else
 		    attUse = atoi (attname_str);
 	    }
-            w = searchRecordKey (zh, reckeys, attSet, attUse);
-            assert (w);
+            searchRecordKey (zh, reckeys, attSet, attUse, ws, 32);
 
             if (*s == ')')
             {
@@ -277,15 +278,15 @@ static char *fileMatchStr (ZebraHandle zh,
             s++;
 
             for (i = 0; i<32; i++)
-                if (matchFlag[i] && w[i])
+                if (matchFlag[i] && ws[i])
                 {
                     if (first)
                     {
                         *dst++ = ' ';
                         first = 0;
                     }
-                    strcpy (dst, w[i]);
-                    dst += strlen(w[i]);
+                    strcpy (dst, ws[i]);
+                    dst += strlen(ws[i]);
                 }
             if (first)
             {

@@ -1,4 +1,4 @@
-/* $Id: t6.c,v 1.9 2005-06-14 20:01:21 adam Exp $
+/* $Id: t6.c,v 1.10 2005-08-05 10:40:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,7 +27,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 int main(int argc, char **argv)
 {
     int i;
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = start_up("zebra6.cfg", argc, argv);
     ZebraHandle zh = zebra_open(zs);
 
     srand(17);
