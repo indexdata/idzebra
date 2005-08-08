@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.202 2005-06-23 06:45:46 adam Exp $
+/* $Id: zrpn.c,v 1.203 2005-08-08 12:04:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1021,7 +1021,7 @@ static ZEBRA_RES term_limits_APT(ZebraHandle zh,
 	/* 0 is the same as global limit */
 	*hits_limit_value = zh->approx_limit;
     }
-    yaz_log(YLOG_LOG, "term_limits_APT ref_id=%s limit=" ZINT_FORMAT,
+    yaz_log(YLOG_DEBUG, "term_limits_APT ref_id=%s limit=" ZINT_FORMAT,
 	    *term_ref_id_str ? *term_ref_id_str : "none",
 	    *hits_limit_value);
     return ZEBRA_OK;
