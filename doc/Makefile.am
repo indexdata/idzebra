@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.27 2005-08-05 14:39:12 marc Exp $
+## $Id: Makefile.am,v 1.28 2005-08-08 11:08:52 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -24,9 +24,6 @@ XMLFILES = \
  zebrasrv-options.xml \
  zebrasrv-synopsis.xml \
  zebrasrv-virtual.xml
-
-# zebrasrv-commands.xml \
-
 
 HTMLFILES =  \
  administration.html apps.html configuration-file.html data-model.html \
@@ -108,5 +105,3 @@ dist-hook:
 			exit 1; \
 		fi \
 	done
-
-
