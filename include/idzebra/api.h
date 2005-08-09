@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.27 2005-06-22 19:42:38 adam Exp $
+/* $Id: api.h,v 1.28 2005-08-09 09:35:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -267,13 +267,15 @@ ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
    \param num_entries number of terms requested / returned 
    \param entries list of resulting terms (ODR allocated)
    \param is_partial upon return 1=partial, 0=complete
+   \param setname limit scan by this set (NULL means no limit)
 */
 YAZ_EXPORT ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream,
 				Z_AttributesPlusTerm *zapt,
 				oid_value attributeset,
 				int *position, int *num_entries,
 				ZebraScanEntry **entries,
-				int *is_partial);
+				int *is_partial,
+				const char *setname);
 
 /**
    \brief performs Scan (taking PQF string)
@@ -284,11 +286,12 @@ YAZ_EXPORT ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream,
    \param num_entries number of terms requested / returned 
    \param entries list of resulting terms (ODR allocated)
    \param is_partial upon return 1=partial, 0=complete
+   \param setname limit scan by this set (NULL means no limit)
 */
 YAZ_EXPORT
 ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
 		    int *position, int *num_entries, ZebraScanEntry **entries,
-		    int *is_partial);
+		    int *is_partial, const char *setname);
 
 /**
    \brief authenticate user. Returns 0 if OK, != 0 on failure

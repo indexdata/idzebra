@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.23 2005-06-14 20:28:54 adam Exp $
+/* $Id: testlib.c,v 1.24 2005-08-09 09:35:26 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -238,7 +238,8 @@ void do_scan(int lineno, ZebraHandle zh, const char *query,
     yaz_log(log_level, "======================================");
     yaz_log(log_level, "scan[%d]: pos=%d num=%d %s", lineno, pos, num, query);
 
-    res = zebra_scan_PQF(zh, odr, query, &pos, &num, &entries, &partial);
+    res = zebra_scan_PQF(zh, odr, query, &pos, &num, &entries, &partial, 
+			 0 /* setname */);
     if (res != ZEBRA_OK)
     {
 	printf("Error: scan returned %d (FAIL), but no error was expected\n"

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.179 2005-06-23 06:45:46 adam Exp $
+/* $Id: zebraapi.c,v 1.180 2005-08-09 09:35:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1015,7 +1015,8 @@ ZEBRA_RES zebra_records_retrieve(ZebraHandle zh, ODR stream,
 ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
 			 int *position,
 			 int *num_entries, ZebraScanEntry **entries,
-			 int *is_partial)
+			 int *is_partial,
+			 const char *setname)
 {
     YAZ_PQF_Parser pqf_parser = yaz_pqf_create ();
     Z_AttributesPlusTerm *zapt;
@@ -1029,7 +1030,8 @@ ZEBRA_RES zebra_scan_PQF(ZebraHandle zh, ODR stream, const char *query,
     }
     else
 	res = zebra_scan(zh, stream, zapt, VAL_BIB1,
-			 position, num_entries, entries, is_partial);
+			 position, num_entries, entries, is_partial,
+			 setname);
     yaz_pqf_destroy (pqf_parser);
     return res;
 }
@@ -1038,9 +1040,11 @@ ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 		     oid_value attributeset,
 		     int *position,
 		     int *num_entries, ZebraScanEntry **entries,
-		     int *is_partial)
+		     int *is_partial,
+		     const char *setname)
 {
     ZEBRA_RES res;
+    RSET limit_rset = 0;
     ASSERTZH;
     assert(stream);
     assert(zapt);
@@ -1056,9 +1060,21 @@ ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
 	*num_entries = 0;
 	return ZEBRA_FAIL;
     }
+    if (setname)
+    {
+	limit_rset = resultSetRef(zh, setname);
+	if (!limit_rset)
+	{
+	    zebra_setError(zh, 
+			   YAZ_BIB1_SPECIFIED_RESULT_SET_DOES_NOT_EXIST,
+			   setname);
+	    zebra_end_read (zh);
+	    return ZEBRA_FAIL;
+	}
+    }
     res = rpn_scan (zh, stream, zapt, attributeset,
 		    zh->num_basenames, zh->basenames, position,
-		    num_entries, entries, is_partial, 0, 0);
+		    num_entries, entries, is_partial, limit_rset, 0);
     zebra_end_read (zh);
     return res;
 }

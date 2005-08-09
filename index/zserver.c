@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.137 2005-06-22 19:42:38 adam Exp $
+/* $Id: zserver.c,v 1.138 2005-08-09 09:35:25 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -359,7 +359,8 @@ static int bend_scan (void *handle, bend_scan_rr *r)
     res = zebra_scan(zh, r->stream, r->term,
 		     r->attributeset,
 		     &r->term_position,
-		     &r->num_entries, &entries, &is_partial);
+		     &r->num_entries, &entries, &is_partial, 
+		     0 /* setname */);
     if (res == ZEBRA_OK)
     {
 	if (is_partial)
