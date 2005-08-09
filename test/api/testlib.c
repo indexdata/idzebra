@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.24 2005-08-09 09:35:26 adam Exp $
+/* $Id: testlib.c,v 1.25 2005-08-09 12:30:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -377,6 +377,51 @@ void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
     odr_destroy (odr_output);
     free(positions);
 }
+
+void do_sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
+{
+    ZebraMetaRecord *recs;
+    zint i;
+    int errs = 0;
+    zint min_val_recs = 0;
+    zint min_val_exp = 0;
+
+    assert(query);
+    do_query(__LINE__, zh, query, hits);
+
+    recs = zebra_meta_records_create_range (zh, "rsetname", 1, 4);
+    if (!recs)
+    {
+	fprintf(stderr, "recs==0\n");
+	exit(1);
+    }
+    /* find min for each sequence to get proper base offset */
+    for (i = 0; i<hits; i++)
+    {
+	if (min_val_recs == 0 || recs[i].sysno < min_val_recs)
+	    min_val_recs = recs[i].sysno;
+	if (min_val_exp == 0 || exp[i] < min_val_exp)
+	    min_val_exp = exp[i];
+    }
+	    
+    /* compare sequences using base offset */
+    for (i = 0; i<hits; i++)
+	if ((recs[i].sysno-min_val_recs) != (exp[i]-min_val_exp))
+	    errs++;
+    if (errs)
+    {
+	printf("Sequence not in right order for query\n%s\ngot exp\n",
+	       query);
+	for (i = 0; i<hits; i++)
+	    printf(" " ZINT_FORMAT "   " ZINT_FORMAT "\n",
+		   recs[i].sysno, exp[i]);
+    }
+    zebra_meta_records_destroy (zh, recs, 4);
+
+    if (errs)
+	exit(1);
+}
+
 
 struct finfo {
     const char *name;

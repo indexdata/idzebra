@@ -1,4 +1,4 @@
-/* $Id: sort1.c,v 1.4 2005-05-04 10:50:09 adam Exp $
+/* $Id: sort1.c,v 1.5 2005-08-09 12:30:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,38 +22,6 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <assert.h>
 #include "../api/testlib.h"
-
-static void sort(ZebraHandle zh, const char *query, zint hits, zint *exp)
-{
-    ZebraMetaRecord *recs;
-    zint i;
-    int errs = 0;
-
-    assert(query);
-    do_query(__LINE__, zh, query, hits);
-
-    recs = zebra_meta_records_create_range (zh, "rsetname", 1, 4);
-    if (!recs)
-    {
-	fprintf(stderr, "recs==0\n");
-	exit(1);
-    }
-    for (i = 0; i<hits; i++)
-	if (recs[i].sysno != exp[i])
-	    errs++;
-    if (errs)
-    {
-	printf("Sequence not in right order for query\n%s\ngot exp\n",
-	       query);
-	for (i = 0; i<hits; i++)
-	    printf(" " ZINT_FORMAT "   " ZINT_FORMAT "\n",
-		   recs[i].sysno, exp[i]);
-    }
-    zebra_meta_records_destroy (zh, recs, 4);
-
-    if (errs)
-	exit(1);
-}
 
 int main(int argc, char **argv)
 {
@@ -80,19 +48,19 @@ int main(int argc, char **argv)
     ids[1] = 2;
     ids[2] = 4;
     ids[3] = 5;
-    sort(zh, "@or computer @attr 7=1 @attr 1=30 0", 4, ids);
+    do_sort(zh, "@or computer @attr 7=1 @attr 1=30 0", 4, ids);
 
     ids[0] = 5;
     ids[1] = 4;
     ids[2] = 2;
     ids[3] = 3;
-    sort(zh, "@or computer @attr 7=1 @attr 1=1021 0", 4, ids);
+    do_sort(zh, "@or computer @attr 7=1 @attr 1=1021 0", 4, ids);
 
     ids[0] = 2;
     ids[1] = 5;
     ids[2] = 4;
     ids[3] = 3;
-    sort(zh, "@or computer @attr 7=1 @attr 1=1021 @attr 4=109 0", 4, ids);
+    do_sort(zh, "@or computer @attr 7=1 @attr 1=1021 @attr 4=109 0", 4, ids);
 
     return close_down(zh, zs, 0);
 }

@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.14 2005-05-04 10:50:09 adam Exp $
+/* $Id: testlib.h,v 1.15 2005-08-09 12:30:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -93,6 +93,8 @@ void do_scan(int lineno, ZebraHandle zh, const char *query,
 	     int exp_pos, int exp_num,  int exp_partial, /* expected result */
 	     const char **exp_entries  /* expected entries (or NULL) */
     );
+
+void do_sort(ZebraHandle zh, const char *query, zint hits, zint *exp);
 
 /** 
  * ranking_query makes a query, checks number of hits, and for 

@@ -1,4 +1,4 @@
-/* $Id: recindex.h,v 1.24 2005-03-30 09:25:23 adam Exp $
+/* $Id: recindex.h,v 1.25 2005-08-09 12:30:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -43,16 +43,19 @@ typedef struct record_info {
 
 typedef struct records_info *Records;
 
-Record rec_cp (Record rec);
-void rec_del (Records p, Record *recpp);
-void rec_rm (Record *recpp);
-void rec_put (Records p, Record *recpp);
-Record rec_new (Records p);
-Record rec_get (Records p, SYSNO sysno);
+Record rec_cp(Record rec);
+void rec_del(Records p, Record *recpp);
+void rec_rm(Record *recpp);
+void rec_put(Records p, Record *recpp);
+Record rec_new(Records p);
+Record rec_get(Records p, SYSNO sysno);
+Record rec_get_root(Records p);
 void rec_close (Records *p);
-Records rec_open (BFiles bfs, int rw, int compression_method);
-char *rec_strdup (const char *s, size_t *len);
-void rec_prstat (Records p);
+Records rec_open(BFiles bfs, int rw, int compression_method);
+char *rec_strdup(const char *s, size_t *len);
+void rec_prstat(Records p);
+
+SYSNO rec_sysno_to_int(SYSNO sysno);
 
 #define REC_COMPRESS_NONE   0
 #define REC_COMPRESS_BZIP2  1

@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.47 2005-08-05 10:40:13 adam Exp $
+/* $Id: zinfo.c,v 1.48 2005-08-09 12:30:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -373,7 +373,7 @@ ZebraExplainInfo zebraExplain_open (
 	         0, 0, 0,  0, 0, 0);
     }
     zdip = &zei->databaseInfo;
-    trec = rec_get (records, 1);      /* get "root" record */
+    trec = rec_get_root(records);      /* get "root" record */
 
     zei->ordinalSU = 1;
     zei->runNumber = 0;
@@ -1309,7 +1309,7 @@ static void zebraExplain_writeTarget (ZebraExplainInfo zei, int key_flush)
 	return;
     zei->dirty = 0;
 
-    trec = rec_get (zei->records, 1);
+    trec = rec_get_root(zei->records);
     xfree (trec->info[recInfo_storeData]);
 
     node_tgtinfo = data1_search_tag (zei->dh, zei->data1_target,

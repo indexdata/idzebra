@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.13 2005-01-15 19:38:27 adam Exp $
+/* $Id: sortidx.c,v 1.14 2005-08-09 12:30:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,6 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/xmalloc.h>
 #include <idzebra/bfile.h>
 #include <sortidx.h>
+#include <recindex.h>
 
 #define SORT_IDX_BLOCKSIZE 64
 
@@ -117,7 +118,7 @@ int sortIdx_type (SortIdx si, int type)
 
 void sortIdx_sysno (SortIdx si, SYSNO sysno)
 {
-    si->sysno = sysno;
+    si->sysno = rec_sysno_to_int(sysno);
 }
 
 void sortIdx_add (SortIdx si, const char *buf, int len)
