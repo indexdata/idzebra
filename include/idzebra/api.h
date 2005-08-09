@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.28 2005-08-09 09:35:25 adam Exp $
+/* $Id: api.h,v 1.29 2005-08-09 10:01:03 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -245,11 +245,39 @@ int zebra_deleteResultSet(ZebraHandle zh, int function,
 			  int *statuses);
 
 
+/**
+   \brief returns number of term info terms assocaited with result set
+   \param zh session handle
+   \param setname result set name
+   \param num_terms number of terms returned in this integer
 
+   This function is used in conjunction with zebra_result_set_term_info.
+   If operation was successful, ZEBRA_OK is returned; otherwise
+   ZEBRA_FAIL is returned (typically non-existing setname)
+*/
 YAZ_EXPORT
 ZEBRA_RES zebra_result_set_term_no(ZebraHandle zh, const char *setname,
 				   int *num_terms);
 
+/**
+   \brief returns information about a term assocated with a result set
+   \param zh session handle
+   \param setname result set name
+   \param no the term we want to know about (0=first, 1=second,..)
+   \param count the number of occurrences of this term, aka hits (output) 
+   \param approx about hits: 0=exact,1=approx (output)
+   \param termbuf buffer for term string (intput, output)
+   \param termlen size of termbuf (input=max, output=actual length)
+   \param term_ref_id if non-NULL *term_ref_id holds term reference
+
+   Returns information about one search term associated with result set.
+   Use zebra_result_set_term_no to read total number of terms associated
+   with result set. If this function can not return information,
+   due to no out of range or bad result set name, ZEBRA_FAIL is
+   returned.
+   The passed termbuf must be able to hold at least *termlen characters.
+   Upon completion, *termlen holds actual length of search term.
+*/
 YAZ_EXPORT
 ZEBRA_RES zebra_result_set_term_info(ZebraHandle zh, const char *setname,
 				     int no, zint *count, int *approx,
@@ -408,11 +436,6 @@ ZEBRA_RES zebra_delete_record(ZebraHandle zh,
 			      int force_update);
 
 YAZ_EXPORT 
-int zebra_resultSetTerms(ZebraHandle zh, const char *setname, 
-			 int no, zint *count, 
-			 int *type, char *out, size_t *len);
-
-YAZ_EXPORT 
 ZEBRA_RES zebra_sort(ZebraHandle zh, ODR stream,
 		     int num_input_setnames,
 		     const char **input_setnames,
@@ -485,7 +508,11 @@ YAZ_END_CDECL
  * \section intro_sec Introduction
  *
  * Zebra is a search engine for structure data, such as XML, MARC
- * and others. The following chapters briefly describe each of
+ * and others.
+ *
+ * API users should read the api.h for all the public definitions.
+ *
+ * The remaining sections briefly describe each of
  * Zebra major modules/components.
  *
  * \section util Base Utilities
