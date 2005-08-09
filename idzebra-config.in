@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: idzebra-config.in,v 1.5 2005-05-03 12:31:28 adam Exp $
+# $Id: idzebra-config.in,v 1.6 2005-08-09 08:58:18 adam Exp $
 prefix=@prefix@
 idzebra_echo_cflags=no
 idzebra_echo_libs=no
@@ -25,6 +25,7 @@ Options:
 	[--lalibs]
 	[--cflags]
 	[--tab]
+	[--modules]
 EOF
     exit $1
 }
@@ -60,6 +61,9 @@ while test $# -gt 0; do
 	    ;;
 	--tab)
 	    idzebra_echo_tab=yes
+	    ;;
+	--modules)
+	    idzebra_echo_modules=yes
 	    ;;
 	--lalibs)
 	    idzebra_echo_lalibs=yes
@@ -124,4 +128,7 @@ if test "$idzebra_echo_lalibs" = "yes"; then
 fi
 if test "$idzebra_echo_tab" = "yes"; then
     echo $IDZEBRATAB
+fi
+if test "$idzebra_echo_modules" = "yes"; then
+    echo "${prefix}/lib/idzebra"
 fi
