@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebrasrv-virtual.xml,v 1.1 2005-08-05 14:39:12 marc Exp $
+   $Id: zebrasrv-virtual.xml,v 1.2 2005-08-12 13:34:10 marc Exp $
    Description of the virtual host mechanism in YAZ GFS
    Included in both manual and man page for yaz-ztest
 -->
@@ -129,7 +129,7 @@
    <listitem>
     <para>
      Specifies a filename that includes CQL to RPN conversion for this
-     backend server. See &reference-tools-cql-map;
+     backend server. See CQL section in YAZ manual.
      If given, the backend server will only "see" a Type-1/RPN query. 
     </para>
    </listitem>
