@@ -15,9 +15,11 @@
 
         <!ENTITY zebraidx-options SYSTEM "zebraidx-options.xml">
         <!ENTITY zebraidx-commands SYSTEM "zebraidx-commands.xml">
+        <!ENTITY zebrasrv-synopsis SYSTEM "zebrasrv-synopsis.xml">
         <!ENTITY zebrasrv-options SYSTEM "zebrasrv-options.xml">
-        <!-- <!ENTITY zebrasrv-commands SYSTEM
-        "zebrasrv-commands.xml"> -->
+        <!ENTITY zebrasrv-virtual SYSTEM "zebrasrv-virtual.xml">
+        <!ENTITY gfs-synopsis-app "zebrasrv">
+
 	<!ENTITY ref-local-representation '
 		<xref linkend="local-representation"/>'>
 	<!ENTITY ref-record-types '
@@ -27,7 +29,7 @@
 	<!ENTITY ref-shadow-registers '
 		<xref linkend="shadow-registers"/>'>
 ]>
-<!-- $Id: zebra.xml.in,v 1.19 2005-08-05 14:39:12 marc Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.20 2005-08-12 13:19:06 marc Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
