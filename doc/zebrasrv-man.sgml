@@ -9,7 +9,7 @@
      <!-- <!ENTITY zebrasrv-commands SYSTEM "zebrasrv-commands.xml"> -->
 
 
-<!-- $Id: zebrasrv-man.sgml,v 1.3 2005-08-05 14:39:12 marc Exp $ -->
+<!-- $Id: zebrasrv-man.sgml,v 1.4 2005-08-12 12:44:36 marc Exp $ -->
 <refentry id="zebrasrv">
  
  <refmeta>
@@ -21,7 +21,7 @@
   <refname>zebrasrv</refname>
   <refpurpose>Zebra Server</refpurpose>
  </refnamediv>
- 
+  
  <refsynopsisdiv>
   <!--
   <cmdsynopsis>
@@ -42,9 +42,18 @@
   &zebrasrv-synopsis;
  </refsynopsisdiv>
   <refsect1><title>DESCRIPTION</title>
+    <para>Zebra is a high-performance, general-purpose structured text indexing
+   and retrieval engine. It reads structured records in a variety of input
+   formats (eg. email, XML, MARC) and allows access to them through exact
+   boolean search expressions and relevance-ranked free-text queries. 
+   </para>
    <para>
-    <command>zebrasrv</command> is a Z39.50 and SRW/U server for Zebra.
-    On Unix you can run the server from the command line - and put it
+    <command>zebrasrv</command> is the Z39.50 and SRW/U frontend
+    server for the <command>Zebra</command> indexer.
+   </para> 
+   <para> 
+    On Unix you can run the <command>zebrasrv</command>
+    server from the command line - and put it
     in the background. It may also operate under the inet daemon.
     On WIN32 you can run the server as a console application or
     as a WIN32 Service.
@@ -102,6 +111,12 @@
     Section "Specification of CQL to RPN mappings" in the YAZ manual.
     <filename>http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql.map</filename>
    </para>
+   <para>
+    The Zebra software is Copyright <command>Index Data</command> 
+    <filename>http://www.indexdata.dk</filename>
+    and distributed under the
+    GPLv2 license.
+   </para> 
   </refsect1>
 </refentry>
 

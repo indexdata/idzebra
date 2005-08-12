@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.7 2002-10-30 11:09:39 adam Exp $ -->
+ <!-- $Id: server.xml,v 1.8 2005-08-12 12:44:36 marc Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -12,6 +12,90 @@
            can be run (inetd, nt service, stand-alone program, daemon...) -H
   -->
 
+  <!-- re-write by MC, using the newly created input files for the 
+   zebrasrv manpage -->
+
+
+ <sect2><title>DESCRIPTION</title>
+    <para>Zebra is a high-performance, general-purpose structured text indexing
+   and retrieval engine. It reads structured records in a variety of input
+   formats (eg. email, XML, MARC) and allows access to them through exact
+   boolean search expressions and relevance-ranked free-text queries. 
+   </para>
+   <para>
+    <command>zebrasrv</command> is the Z39.50 and SRW/U frontend
+    server for the <command>Zebra</command> indexer.
+   </para> 
+   <para> 
+    On Unix you can run the <command>zebrasrv</command>
+    server from the command line - and put it
+    in the background. It may also operate under the inet daemon.
+    On WIN32 you can run the server as a console application or
+    as a WIN32 Service.
+   </para>
+  </sect2>
+
+ <sect2>
+   <title>SYNOPSIS</title>
+    &zebrasrv-synopsis;
+ </sect2>
+
+ <sect2>
+   <title>OPTIONS</title>
+    
+   <para>
+    The options for <command>zebrasrv</command> are the same
+    as those for YAZ' <command>yaz-ztest</command>.
+    Option <literal>-c</literal> specifies a Zebra configuration
+    file - if omitted <filename>zebra.cfg</filename> is read.
+   </para>
+   
+  &zebrasrv-options;
+  </sect2>
+  <sect2><title>VIRTUAL HOSTS</title>
+    <para>
+     <command>zebrasrv</command> uses the YAZ server frontend and does
+     support multiple virtual servers behind multiple listening sockets.
+    </para>
+    &zebrasrv-virtual;
+  </sect2>
+  <sect2><title>FILES</title>
+   <para>
+    <filename>zebra.cfg</filename>
+   </para>
+  </sect2>
+  <sect2><title>SEE ALSO</title>
+   <para>
+    <citerefentry>
+     <refentrytitle>zebraidx</refentrytitle>
+     <manvolnum>1</manvolnum>
+    </citerefentry>,
+    <citerefentry>
+     <refentrytitle>yaz-ztest</refentrytitle>
+     <manvolnum>8</manvolnum>
+    </citerefentry>
+   </para>
+   <para>
+    Section "The Z39.50 Server" in the Zebra manual.
+    <filename>http://www.indexdata.dk/zebra/doc/server.tkl</filename>
+   </para>
+   <para>
+    Section "Virtual Hosts" in the YAZ manual.
+    <filename>http://www.indexdata.dk/yaz/doc/server.vhosts.tkl</filename>
+   </para>
+   <para>
+    Section "Specification of CQL to RPN mappings" in the YAZ manual.
+    <filename>http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql.map</filename>
+   </para>
+   <para>
+    The Zebra software is Copyright <command>Index Data</command> 
+    <filename>http://www.indexdata.dk</filename>
+    and distributed under the
+    GPLv2 license.
+   </para> 
+  </sect2>
+
+  <!--
   <para>
    <emphasis remap="bf">Syntax</emphasis>
 
@@ -132,72 +216,9 @@
     </varlistentry>
    </variablelist>
   </para>
-
-  <para>
-   A <replaceable>listener-address</replaceable> consists of an optional
-   transport mode followed by a colon (:) followed by a listener address.
-   The transport mode is either <literal>ssl</literal> or
-   <literal>tcp</literal> (default).
-  </para>
-
-  <para>
-   For TCP, an address has the form
-  </para>
-
-  <para>
-
-   <screen>
-    hostname | IP-number [: portnumber]
-   </screen>
-
-  </para>
-
-  <para>
-   The port number defaults to 210 (standard Z39.50 port) for
-   privileged users (root), and 9999 for normal users.
-  </para>
-
-  <para>
-   Examples
-  </para>
-
-  <para>
-
-   <screen>
-    tcp:@
-
-    ssl:@:3000
-   </screen>
-
-  </para>
-
-  <para>
-   In both cases, the special hostname "@" is mapped to
-   the address INADDR_ANY, which causes the server to listen on any local
-   interface. To start the server listening on the registered port for
-   Z39.50, and to drop root privileges once the ports are bound, execute
-   the server like this (from a root shell):
-  </para>
-
-  <para>
-
-   <screen>
-    zebrasrv -u daemon @
-   </screen>
-
-  </para>
-
-  <para>
-   You can replace <literal>daemon</literal> with another user, eg.
-   your own account, or a dedicated IR server account.
-  </para>
-
-  <para>
-   The default behavior for <literal>zebrasrv</literal> is to establish
-   a single TCP/IP listener, for the Z39.50 protocol, on port 9999.
-  </para>
-
+  -->
  </sect1>
+
 
  <sect1 id="protocol-support">
   <title>Z39.50 Protocol Support and Behavior</title>

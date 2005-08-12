@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebrasrv-options.xml,v 1.1 2005-08-05 14:39:12 marc Exp $
+   $Id: zebrasrv-options.xml,v 1.2 2005-08-12 12:44:36 marc Exp $
    Options for generic frontend server and yaz-ztest.
    Included in both manual and man page for yaz-ztest
 -->
@@ -20,7 +20,8 @@
     debugging, but not recommended for real operation: Although the
     server is asynchronous and non-blocking, it can be nice to keep
     a software malfunction (okay then, a crash) from affecting all
-    current users.
+    current users. The server can only accept a single
+       connection in this mode.
    </para></listitem></varlistentry>
  
  <varlistentry><term><literal>-1</literal></term>
@@ -53,17 +54,18 @@
 
  <varlistentry><term><literal>-l </literal>
    <replaceable>file</replaceable></term>
-  <listitem><para>The logfile.
+  <listitem><para>
+    Specify an output file for the diagnostic messages.
+       The default is to write this information to
+   <literal>stderr</literal>
    </para></listitem></varlistentry>
 
  <varlistentry><term><literal>-c </literal>
-   <replaceable>config</replaceable></term>
-  <listitem><para>A user option that serves as a specifier for some
-    sort of configuration, usually a filename.
-    The argument to this option is transferred to member
-    <literal>configname</literal> of the
-    <literal>statserv_options_block</literal>.
-   </para></listitem></varlistentry>
+   <replaceable>config-file</replaceable></term>
+  <listitem><para> Read configuration information from
+       <replaceable>config-file</replaceable>.
+       The default configuration is <literal>./zebra.cfg</literal>
+  </para></listitem></varlistentry>
 
  <varlistentry><term><literal>-f </literal>
    <replaceable>vconfig</replaceable></term>
@@ -93,9 +95,9 @@
    </para></listitem></varlistentry>
 
  <varlistentry><term><literal>-w </literal>
-   <replaceable>dir</replaceable></term>
+   <replaceable>working-directory</replaceable></term>
   <listitem><para>
-    The server changes to this directory during before listening 
+    The server changes to this working directory during before listening 
     on incoming connections. This option is useful
     when the server is operating from the <application>inetd</application>
     daemon (see <literal>-i</literal>).
@@ -113,6 +115,9 @@
   <listitem><para>
     Use this to make the the server run from the
     <application>inetd</application> server (UNIX only).
+     Make sure you use the logfile option <literal>-l</literal> in
+       conjunction with this mode and specify the <literal>-l</literal>
+       option before any other options.
    </para></listitem></varlistentry>
  
  <varlistentry><term><literal>-D</literal></term>
@@ -145,13 +150,13 @@
  <varlistentry><term><literal>-t </literal>
    <replaceable>minutes</replaceable></term>
   <listitem><para>
-    Idle session timeout, in minutes.
+    Idle session timeout, in minutes. Default is 60 minutes.
    </para></listitem></varlistentry>
  
  <varlistentry><term><literal>-k </literal>
    <replaceable>size</replaceable></term>
   <listitem><para>
-    Maximum record size/message size, in kilobytes.
+    Maximum record size/message size, in kilobytes. Default is 1024 KB (1 MB).
    </para></listitem>
  </varlistentry>
 
@@ -173,6 +178,55 @@
  </varlistentry>
  
 </variablelist>
+
+
+  <para>
+   A <replaceable>listener-address</replaceable> consists of an optional
+   transport mode followed by a colon (:) followed by a listener address.
+   The transport mode is either a file system socket
+   <literal>unix</literal>,
+   a SSL TCP/IP socket <literal>ssl</literal>, or a plain TCP/IP socket
+   <literal>tcp</literal> (default).
+  </para>
+
+  <para>
+   For TCP, an address has the form
+   <screen>
+    hostname | IP-number [: portnumber]
+   </screen>
+   The port number defaults to 210 (standard Z39.50 port) for
+   privileged users (root), and 9999 for normal users.
+   The special hostname "@" is mapped to
+   the address INADDR_ANY, which causes the server to listen on any local
+   interface.   </para>
+
+  <para>
+   The default behavior for <literal>zebrasrv</literal> - if started
+   as non-priviledged user - is to establish
+   a single TCP/IP listener, for the Z39.50 protocol, on port 9999.
+   <screen>
+    zebrasrv @
+    zebrasrv tcp:some.server.name.org:1234
+    zebrasrv ssl:@:3000
+   </screen>
+  </para>
+
+  <para>
+   To start the server listening on the registered port for
+   Z39.50, or on a filesystem socket, 
+   and to drop root privileges once the ports are bound, execute
+   the server like this from a root shell:
+   <screen>
+    zebrasrv -u daemon @
+    zebrasrv -u daemon tcp:@:210
+    zebrasrv -u daemon unix:/some/file/system/socket
+   </screen>
+   Here <literal>daemon</literal> is an existing user account, and the
+   unix socket <literal>/some/file/system/socket</literal> is readable
+   and writable for the <literal>daemon</literal> account.
+  </para>
+
+
 
 <!-- Keep this comment at the end of the file
 Local variables:
