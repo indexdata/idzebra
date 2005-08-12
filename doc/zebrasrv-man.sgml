@@ -9,7 +9,7 @@
      <!-- <!ENTITY zebrasrv-commands SYSTEM "zebrasrv-commands.xml"> -->
 
 
-<!-- $Id: zebrasrv-man.sgml,v 1.4 2005-08-12 12:44:36 marc Exp $ -->
+<!-- $Id: zebrasrv-man.sgml,v 1.5 2005-08-12 13:50:51 marc Exp $ -->
 <refentry id="zebrasrv">
  
  <refmeta>
@@ -79,7 +79,7 @@
   </refsect1>
   <refsect1><title>VIRTUAL HOSTS</title>
     <para>
-     <command>zebrasrv</command>uses the YAZ server
+     <command>zebrasrv</command> uses the YAZ server
     </para>
     &zebrasrv-virtual;
   </refsect1>

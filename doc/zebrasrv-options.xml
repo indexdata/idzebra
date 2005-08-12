@@ -1,7 +1,9 @@
 <!-- 
-   $Id: zebrasrv-options.xml,v 1.2 2005-08-12 12:44:36 marc Exp $
+   $Id: zebrasrv-options.xml,v 1.3 2005-08-12 13:50:51 marc Exp $
    Options for generic frontend server and yaz-ztest.
    Included in both manual and man page for yaz-ztest
+   Note - these files have been altered for zebrasrv, and are not in
+   sync any more!!
 -->
 
 <variablelist>
@@ -23,6 +25,12 @@
     current users. The server can only accept a single
        connection in this mode.
    </para></listitem></varlistentry>
+<!-- The text for -S option is (in my opinion) the wrong way around. The main
+argument for not using -S is that it can handle only one connection at a
+time, whereas the forking and threading interfaces can handle multiple
+connections. Also, the forking (but not threading) model can survive a
+crash at a single server instance. Heikki -->
+
  
  <varlistentry><term><literal>-1</literal></term>
   <listitem><para>
@@ -70,7 +78,8 @@
  <varlistentry><term><literal>-f </literal>
    <replaceable>vconfig</replaceable></term>
   <listitem><para>This specifies an XML file that describes
-    one or more YAZ frontend virtual servers.
+    one or more YAZ frontend virtual servers. See section VIRTUAL
+   HOSTS for details.
    </para></listitem></varlistentry>
 
  <varlistentry><term><literal>-C </literal>
@@ -84,6 +93,18 @@
     The log level. Use a comma-separated list of members of the set
     {fatal,debug,warn,log,malloc,all,none}.
    </para></listitem></varlistentry>
+<!-- The -v option (for log level) is not enough. There are many more
+log switches than the simple levels you mention, and more can (and will)
+be defined in (loadable?) modules. You can get them all listed in the
+log file with '-v loglevel'. Most users will at least have interest in 
+'server', 'session', 'request', and 'requestdetail', and possibly
+'searchhits', 'searchterms', 'resultsets', 'rpn'. And maybe many more...
+I ought to write a script that greps the bits from the source code -
+that is the only way to get to them, there is no longer any central
+repository for them. No idea how to explain this neatly in the man
+page...
+Heikki -->
+
 
  <varlistentry><term><literal>-u </literal>
    <replaceable>uid</replaceable></term>
@@ -108,7 +129,7 @@
   <listitem><para>
     Specifies that the server should write its Process ID to
     file given by <replaceable>pidfile</replaceable>. 
-    A typical location would be <filename>/var/run/yaz-ztest.pid</filename>.
+    A typical location would be <filename>/var/run/zebrasrv.pid</filename>.
    </para></listitem></varlistentry>
 
  <varlistentry><term><literal>-i</literal></term>
@@ -119,7 +140,13 @@
        conjunction with this mode and specify the <literal>-l</literal>
        option before any other options.
    </para></listitem></varlistentry>
- 
+<!--
+-i: Better say "use this when the server is run from inetd", than "use
+this to make the server run from inetd", as the option itself will only
+tell zebra that it should assume that inetd started it.
+Heikki --> 
+
+
  <varlistentry><term><literal>-D</literal></term>
   <listitem><para>
     Use this to make the server put itself in the background and
@@ -225,7 +252,12 @@
    unix socket <literal>/some/file/system/socket</literal> is readable
    and writable for the <literal>daemon</literal> account.
   </para>
-
+<!--
+The line before the examples "zebrasrv -u daemon @" would sound better
+if it said something like "execute the server from a root shell with a
+command like one of these:" - so that our users won't cut and paste all
+three lines...
+Heikki -->
 
 
 <!-- Keep this comment at the end of the file
