@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.180 2005-08-09 09:35:25 adam Exp $
+/* $Id: zebraapi.c,v 1.181 2005-08-17 21:29:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -172,9 +172,9 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
         log_level = yaz_log_module_level("zebraapi");
         log_level_initialized = 1;
     }
-
-    yaz_log(YLOG_LOG, "zebra_start %s %s",configName, ZEBRAVER);
-    assert(configName);
+    
+    yaz_log(YLOG_LOG, "zebra_start %s %s", ZEBRAVER,
+	    configName ? configName : "");
 
     if ((res = res_open (configName, def_res, over_res)))
     {
@@ -182,10 +182,7 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
 	const char *passwd_encrypt = 0;
         ZebraService zh = xmalloc(sizeof(*zh));
 
-	yaz_log (YLOG_DEBUG, "Read resources `%s'", configName);
-        
         zh->global_res = res;
-        zh->configName = xstrdup(configName);
         zh->sessions = 0;
         
         zebra_chdir (zh);
@@ -511,7 +508,6 @@ ZEBRA_RES zebra_stop(ZebraService zs)
     recTypeClass_destroy(zs->record_classes);
     nmem_destroy(zs->nmem);
     res_close (zs->global_res);
-    xfree(zs->configName);
     xfree(zs);
     return ZEBRA_OK;
 }
@@ -2036,7 +2032,6 @@ const char *zebra_get_resource(ZebraHandle zh,
     const char *v;
     ASSERTZH;
     assert(name);
-    assert(defaultvalue);
     v = res_get_def (zh->res, name, (char *)defaultvalue);
     zebra_clearError(zh);
     yaz_log(log_level, "zebra_get_resource %s:%s", name, v);

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.145 2005-06-23 06:45:46 adam Exp $
+/* $Id: index.h,v 1.146 2005-08-17 21:29:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -250,7 +250,6 @@ struct zebra_register {
 struct zebra_service {
     int stop_flag;
     Res global_res;
-    char *configName;
     struct zebra_session *sessions;
     struct zebra_register *regs;
     Zebra_mutex_cond session_lock;
