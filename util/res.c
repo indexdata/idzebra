@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.43 2005-06-14 20:28:54 adam Exp $
+/* $Id: res.c,v 1.44 2005-08-17 21:28:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -271,10 +271,8 @@ Res res_open (const char *name, Res def_res, Res over_res)
     return r;
 }
 
-void res_close (Res r)
+void res_clear (Res r)
 {
-    if (!r)
-        return;
     if (r->init)
     {
         struct res_entry *re, *re1;
@@ -288,6 +286,16 @@ void res_close (Res r)
             xfree (re);
         }
     }
+    r->init = 0;
+    r->first = r->last = NULL;
+}
+
+void res_close (Res r)
+{
+    if (!r)
+        return;
+    res_clear(r);
+
     xfree (r->name);
     xfree (r);
 }

@@ -1,4 +1,4 @@
-/* $Id: res.h,v 1.5 2005-06-13 10:27:52 adam Exp $
+/* $Id: res.h,v 1.6 2005-08-17 21:28:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -34,6 +34,9 @@ Res res_open (const char *name, Res res_def, Res over_res);
 
 YAZ_EXPORT
 void res_close (Res r);
+
+YAZ_EXPORT
+void res_clear (Res r);
 
 YAZ_EXPORT
 const char *res_get (Res r, const char *name);
