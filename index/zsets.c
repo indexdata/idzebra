@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.91 2005-08-18 12:50:18 adam Exp $
+/* $Id: zsets.c,v 1.92 2005-08-18 19:20:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -838,6 +838,10 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
     ZebraRankClass rank_class;
     struct zset_sort_info *sort_info;
     const char *rank_handler_name = res_get_def(zh->res, "rank", "rank-1");
+    size_t sysno_mem_index = 0;
+
+    if (zh->m_staticrank)
+	sysno_mem_index = 1;
 
     if (!log_level_set)
         loglevels();
@@ -847,10 +851,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
     rset_getterms(rset, 0, 0, &n);
     terms = (TERMID *) nmem_malloc(nmem, sizeof(*terms)*n);
     rset_getterms(rset, terms, n, &numTerms);
-    size_t sysno_mem_index = 0;
 
-    if (zh->m_staticrank)
-	sysno_mem_index = 1;
 
     rank_class = zebraRankLookup(zh, rank_handler_name);
     if (!rank_class)

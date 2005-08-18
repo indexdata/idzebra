@@ -1,4 +1,4 @@
-/* $Id: sortidx.c,v 1.14 2005-08-09 12:30:46 adam Exp $
+/* $Id: sortidx.c,v 1.15 2005-08-18 19:20:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,7 +28,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/xmalloc.h>
 #include <idzebra/bfile.h>
 #include <sortidx.h>
-#include <recindex.h>
+#include "recindex.h"
 
 #define SORT_IDX_BLOCKSIZE 64
 

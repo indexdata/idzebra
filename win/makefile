@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.35 2005-05-13 09:41:59 adam Exp $
+# $Id: makefile,v 1.36 2005-08-18 19:20:38 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -327,7 +327,8 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\d1_write.obj \
 	$(OBJDIR)\xpath.obj \
 	$(OBJDIR)\kcontrol.obj \
-	$(OBJDIR)\limit.obj
+	$(OBJDIR)\limit.obj \
+	$(OBJDIR)\snippet.obj
 
 ALL_OBJS=\
   $(ZEBRALIB_OBJS) \
