@@ -1,4 +1,4 @@
-/* $Id: xslt3.c,v 1.2 2005-05-31 14:18:17 adam Exp $
+/* $Id: xslt3.c,v 1.3 2005-08-18 12:50:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     
     zebra_init(zh);
 
-    zebra_set_resource(zh, "recordType", "xslt.marcschema.xml");
+    zebra_set_resource(zh, "recordType", "xslt.marcschema-one.xml");
 
     sprintf(path, "%.200s/marc-one.xml", get_srcdir());
     f = fopen(path, "rb");
@@ -61,14 +61,25 @@ int main(int argc, char **argv)
 
     record_buf[r] = '\0';
 
-    /* for now only the first of the records in the collection is
-       indexed. That can be seen as a bug */
+    /* index this one record */
     init_data(zh, records_array);
 
     /* only get hits from first record .. */
     do_query(__LINE__, zh, "@attr 1=title computer", 1);
     do_query(__LINE__, zh, "@attr 1=control 11224466", 1);
     do_query_x(__LINE__, zh, "@attr 1=titl computer", 0, 121);
+
+    
+    /* index one more time to see that we don't get dups, since
+     index.xsl has a record ID associated with them */
+    zebra_add_record(zh, record_buf, strlen(record_buf));
+
+    /* only get hits from first record .. */
+    do_query(__LINE__, zh, "@attr 1=title computer", 1);
+    do_query(__LINE__, zh, "@attr 1=control 11224466", 1);
+    do_query_x(__LINE__, zh, "@attr 1=titl computer", 0, 121);
+    
+
     
     return close_down(zh, zs, 0);
 }

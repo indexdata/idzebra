@@ -1,4 +1,4 @@
-/* $Id: xslt2.c,v 1.4 2005-08-18 12:50:20 adam Exp $
+/* $Id: xslt4.c,v 1.1 2005-08-18 12:50:20 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,55 +20,43 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#include <stdio.h>
 #include "testlib.h"
-
+	
 int main(int argc, char **argv)
 {
     char path[256];
-    char record_buf[20000];
-    const char *records_array[] = {
-	record_buf, 0
-    };
-    FILE *f;
-    size_t r;
 
-    ZebraService zs = start_up(0, argc, argv);
+    ZebraService zs = start_up("zebrastaticrank.cfg", argc, argv);
     ZebraHandle  zh = zebra_open(zs);
 
     check_filter(zs, "xslt");
 
     zebra_select_database(zh, "Default");
-    
+
     zebra_init(zh);
 
     zebra_set_resource(zh, "recordType", "xslt.marcschema-col.xml");
+    zebra_set_resource(zh, "staticrank", "1");
 
+    zebra_begin_trans(zh, 1);
     sprintf(path, "%.200s/marc-col.xml", get_srcdir());
-    f = fopen(path, "rb");
-    if (!f)
-    {
-	yaz_log(YLOG_FATAL|YLOG_ERRNO, "Cannot open %s", path);
-	exit(1);
-    }
-    r = fread(record_buf, 1, sizeof(record_buf)-1, f);
-    if (r < 2 || r == sizeof(record_buf)-1)
-    {
-	yaz_log(YLOG_FATAL, "Bad size of %s", path);
-	exit(1);
-    }
-    fclose(f);
+    zebra_repository_update(zh, path);
 
-    record_buf[r] = '\0';
+    zebra_end_trans(zh);
+    zebra_commit(zh);
 
-    /* for now only the first of the records in the collection is
-       indexed. That can be seen as a bug */
-    init_data(zh, records_array);
 
-    /* only get hits from first record .. */
-    do_query(__LINE__, zh, "@attr 1=title computer", 1);
+    do_query(__LINE__, zh, "@attr 1=title computer", 3);
     do_query(__LINE__, zh, "@attr 1=control 11224466", 1);
     do_query_x(__LINE__, zh, "@attr 1=titl computer", 0, 121);
-    
+
+    if (1)
+    {
+	zint ids[5];
+	ids[0] = 2;
+	ids[1] = 4;
+	ids[2] = 3;
+	do_sort(zh, "@attr 1=title computer", 3, ids);
+    }
     return close_down(zh, zs, 0);
 }

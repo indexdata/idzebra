@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.25 2005-08-09 12:30:47 adam Exp $
+/* $Id: testlib.c,v 1.26 2005-08-18 12:50:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -141,10 +141,10 @@ void init_data(ZebraHandle zh, const char **recs)
     zebra_select_database(zh, "Default");
     yaz_log(log_level, "going to call init");
     i = zebra_init(zh);
-    yaz_log(log_level, "init returned %d", i);
+    yaz_log(log_level, "init_data returned %d", i);
     if (i) 
     {
-        printf("init failed with %d\n",i);
+        printf("init_data failed with %d\n",i);
         zebra_result(zh, &i, &addinfo);
         printf("  Error %d   %s\n", i, addinfo);
         exit(1);

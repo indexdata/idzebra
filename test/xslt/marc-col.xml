@@ -1,5 +1,6 @@
 <collection xmlns="http://www.loc.gov/MARC21/slim">
 <record xmlns="http://www.loc.gov/MARC21/slim">
+  <rank>1</rank>
   <leader>00366nam  22001698a 4500</leader>
   <controlfield tag="001">   11224466   </controlfield>
   <controlfield tag="003">DLC  </controlfield>
@@ -32,6 +33,7 @@
   </datafield>
 </record>
 <record xmlns="http://www.loc.gov/MARC21/slim">
+  <rank>5</rank>
   <leader>00366nam  22001698a 4500</leader>
   <controlfield tag="001">   11224467   </controlfield>
   <controlfield tag="003">DLC  </controlfield>
@@ -64,6 +66,7 @@
   </datafield>
 </record>
 <record xmlns="http://www.loc.gov/MARC21/slim">
+  <rank>3</rank>
   <leader>01369cam  2200265 i 4500</leader>
   <controlfield tag="001">   73090924 //r82  </controlfield>
   <controlfield tag="003">DLC  </controlfield>

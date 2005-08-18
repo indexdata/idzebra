@@ -1,0 +1,11 @@
+<schemaInfo>
+  <!-- $Id: marcschema-col.xml,v 1.1 2005-08-18 12:50:19 adam Exp $ -->
+  <schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
+          stylesheet="index.xsl" />
+  <schema name="F" stylesheet="id.xsl" />
+  <schema name="FS" snippet="20" stylesheet="id.xsl" />
+  <schema name="snippet" snippet="10" stylesheet="snippet.xsl" />
+  <split level="1"/>
+</schemaInfo>
+
+   

@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.12 2005-06-24 13:45:54 adam Exp $
+/* $Id: xslt.c,v 1.13 2005-08-18 12:50:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -116,10 +116,6 @@ int zebra_xmlInputCloseCallback (void * context)
     return 0;
 }
 
-
-
-
-
 static void *filter_init_xslt(Res res, RecType recType)
 {
     struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
@@ -138,14 +134,6 @@ static void *filter_init_xslt(Res res, RecType recType)
 			      zebra_xmlInputReadCallback,
 			      zebra_xmlInputCloseCallback);
 #endif
-    return tinfo;
-}
-
-static void *filter_init_xslt1(Res res, RecType recType)
-{
-    struct filter_info *tinfo = (struct filter_info *)
-	filter_init_xslt(res, recType);
-    tinfo->split_level = "1";
     return tinfo;
 }
 
@@ -341,21 +329,30 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
 static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
 			 xmlNodePtr ptr, RecWord *recWord)
 {
-    if (ptr->type == XML_ELEMENT_NODE && ptr->ns &&
+    if (ptr && ptr->type == XML_ELEMENT_NODE && ptr->ns &&
 	!strcmp(ptr->ns->href, zebra_xslt_ns)
 	&& !strcmp(ptr->name, "record"))
     {
 	const char *type_str = "update";
 	const char *id_str = 0;
+	const char *rank_str = 0;
 	struct _xmlAttr *attr;
 	for (attr = ptr->properties; attr; attr = attr->next)
 	{
 	    attr_content(attr, "type", &type_str);
 	    attr_content(attr, "id", &id_str);
+	    attr_content(attr, "rank", &rank_str);
 	}
 	if (id_str)
 	    sscanf(id_str, "%255s", ctrl->match_criteria);
-
+	if (rank_str)
+	{
+	    ctrl->staticrank = atoi(rank_str);
+	    yaz_log(YLOG_LOG, "rank=%d",ctrl->staticrank);
+	}
+	else
+	    yaz_log(YLOG_LOG, "no rank");
+	
 	ptr = ptr->children;
     }
     index_node(tinfo, ctrl, ptr, recWord);
@@ -378,6 +375,7 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 
     if (schema && schema->stylesheet_xsp)
     {
+	xmlNodePtr root_ptr;
 	xmlDocPtr resDoc = 
 	    xsltApplyStylesheet(schema->stylesheet_xsp,
 				doc, params);
@@ -387,7 +385,15 @@ static int extract_doc(struct filter_info *tinfo, struct recExtractCtrl *p,
 	    fwrite(buf_out, len_out, 1, stdout);
 	    xmlFree(buf_out);
 	}
-	index_record(tinfo, p, xmlDocGetRootElement(resDoc), &recWord);
+	root_ptr = xmlDocGetRootElement(resDoc);
+	if (root_ptr)
+	    index_record(tinfo, p, root_ptr, &recWord);
+	else
+	{
+	    yaz_log(YLOG_WARN, "No root for index XML record."
+		    " split_level=%s stylesheet=%s",
+		    tinfo->split_level, schema->stylesheet);
+	}
 	xmlFreeDoc(resDoc);
     }
     xmlDocDumpMemory(doc, &buf_out, &len_out);
@@ -649,16 +655,6 @@ static struct recType filter_type_xslt = {
     filter_retrieve
 };
 
-static struct recType filter_type_xslt1 = {
-    0,
-    "xslt1",
-    filter_init_xslt1,
-    filter_config,
-    filter_destroy,
-    filter_extract,
-    filter_retrieve
-};
-
 RecType
 #ifdef IDZEBRA_STATIC_XSLT
 idzebra_filter_xslt
@@ -668,8 +664,5 @@ idzebra_filter
 
 [] = {
     &filter_type_xslt,
-#ifdef LIBXML_READER_ENABLED
-    &filter_type_xslt1,
-#endif
     0,
 };

@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.48 2005-08-09 12:30:46 adam Exp $
+/* $Id: zinfo.c,v 1.49 2005-08-18 12:50:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1562,6 +1562,7 @@ RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec)
     recordAttr->recordSize = 0;
     recordAttr->recordOffset = 0;
     recordAttr->runNumber = zei->runNumber;
+    recordAttr->staticrank = 0;
     return recordAttr;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.146 2005-08-17 21:29:44 adam Exp $
+/* $Id: index.h,v 1.147 2005-08-18 12:50:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -54,7 +54,7 @@ YAZ_BEGIN_CDECL
 
 #define IT_MAX_WORD 256
 
-#define IT_KEY_LEVEL_MAX 4
+#define IT_KEY_LEVEL_MAX 5
 struct it_key {
     int  len;
     zint mem[IT_KEY_LEVEL_MAX];
@@ -292,6 +292,8 @@ struct zebra_session {
 #endif
     int  shadow_enable;
 
+    int m_staticrank;
+
     zint records_inserted;
     zint records_updated;
     zint records_deleted;
@@ -477,7 +479,8 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 				    zint sysno, zebra_snippets *snippets);
 
 void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
-                              int cmd, struct recKeys *reckeys);
+                              int cmd, struct recKeys *reckeys,
+			      zint staticrank);
 #if NATTR
 void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
                             int cmd, struct recKeys *skp);

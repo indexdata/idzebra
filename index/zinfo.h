@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.25 2005-08-05 10:40:13 adam Exp $
+/* $Id: zinfo.h,v 1.26 2005-08-18 12:50:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -79,6 +79,7 @@ typedef struct {
     int recordSize;
     off_t recordOffset;
     zint runNumber;
+    zint staticrank;
 } RecordAttr;
 RecordAttr *rec_init_attr (ZebraExplainInfo zei, Record rec);
 

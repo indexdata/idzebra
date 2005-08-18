@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.181 2005-08-17 21:29:44 adam Exp $
+/* $Id: zebraapi.c,v 1.182 2005-08-18 12:50:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -126,6 +126,7 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->lock_shadow = 0;
 
     zh->shadow_enable = 1;
+    zh->m_staticrank = 0;
 
     default_encoding = res_get_def(zs->global_res, "encoding", "ISO-8859-1");
 
@@ -698,6 +699,13 @@ static void zebra_select_register (ZebraHandle zh, const char *new_reg)
 	int approx = 0;
 	if (res_get_int(zh->res, "estimatehits", &approx) == ZEBRA_OK)
 	    zebra_set_approx_limit(zh, approx);
+    }
+    if (zh->res)
+    {
+	if (res_get_int(zh->res, "staticrank", &zh->m_staticrank) == ZEBRA_OK)
+	    yaz_log(YLOG_LOG, "static rank set and is %d", zh->m_staticrank);
+	else
+	    yaz_log(YLOG_LOG, "static rank unset");
     }
 }
 

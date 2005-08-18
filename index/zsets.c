@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.90 2005-06-22 19:42:38 adam Exp $
+/* $Id: zsets.c,v 1.91 2005-08-18 12:50:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -398,6 +398,10 @@ ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name,
     RSET rset;
     int i;
     struct zset_sort_info *sort_info;
+    size_t sysno_mem_index = 0;
+
+    if (zh->m_staticrank)
+	sysno_mem_index = 1;
 
     if (!log_level_set)
         loglevels();
@@ -483,7 +487,7 @@ ZebraMetaRecord *zebra_meta_records_create(ZebraHandle zh, const char *name,
 	    }
             while (num_i < num && rset_read (rfd, &key, 0))
             {
-                zint this_sys = key.mem[0];
+                zint this_sys = key.mem[sysno_mem_index];
                 if (this_sys != psysno)
                 {
                     psysno = this_sys;
@@ -711,6 +715,11 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     TERMID termid;
     TERMID *terms;
     int numTerms = 0;
+    size_t sysno_mem_index = 0;
+
+    if (zh->m_staticrank)
+	sysno_mem_index = 1;
+
 
     assert(nmem); /* compiler shut up about unused param */
     sset->sort_info->num_entries = 0;
@@ -785,7 +794,7 @@ ZEBRA_RES resultSetSortSingle(ZebraHandle zh, NMEM nmem,
     rfd = rset_open (rset, RSETF_READ);
     while (rset_read (rfd, &key, &termid))
     {
-        zint this_sys = key.mem[0];
+        zint this_sys = key.mem[sysno_mem_index];
 	if (log_level_searchhits)
 	    key_logdump_txt(log_level_searchhits, &key, termid->name);
 	kno++;
@@ -838,6 +847,10 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
     rset_getterms(rset, 0, 0, &n);
     terms = (TERMID *) nmem_malloc(nmem, sizeof(*terms)*n);
     rset_getterms(rset, terms, n, &numTerms);
+    size_t sysno_mem_index = 0;
+
+    if (zh->m_staticrank)
+	sysno_mem_index = 1;
 
     rank_class = zebraRankLookup(zh, rank_handler_name);
     if (!rank_class)
@@ -859,7 +872,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 	zint psysno = 0;
 	while (rset_read(rfd, &key, &termid))
 	{
-	    zint this_sys = key.mem[0];
+	    zint this_sys = key.mem[sysno_mem_index];
 	    zint seqno = key.mem[key.len-1];
 	    kno++;
 	    if (log_level_searchhits)
