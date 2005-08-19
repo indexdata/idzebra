@@ -3,6 +3,7 @@
 <!-- Identity transform stylesheet -->
 
 <xsl:param name="snippet" select="''"/>
+<xsl:param name="score" select="''"/>
 <xsl:param name="id" select="''"/>
 <xsl:output indent="yes"
       method="xml"
@@ -12,6 +13,7 @@
  <xsl:template match="/">
    <snippet>
      <id><xsl:value-of select="$id"/></id>
+     <score><xsl:value-of select="$score"/></score>
      <xsl:copy-of select="$snippet"/>
    </snippet>
  </xsl:template>
