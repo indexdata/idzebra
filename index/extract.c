@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.189 2005-08-18 12:50:17 adam Exp $
+/* $Id: extract.c,v 1.190 2005-08-19 09:45:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1007,6 +1007,7 @@ ZEBRA_RES buffer_extract_record (ZebraHandle zh,
         *sysno = rec->sysno;
 
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
+	recordAttr->staticrank = extractCtrl.staticrank;
 
         if (matchStr)
         {
@@ -1014,7 +1015,8 @@ ZEBRA_RES buffer_extract_record (ZebraHandle zh,
                          sizeof(*sysno), sysno);
         }
 	extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
-        extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys, 0);
+        extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys,
+				 recordAttr->staticrank);
 
         zh->records_inserted++;
     } 
@@ -1063,7 +1065,8 @@ ZEBRA_RES buffer_extract_record (ZebraHandle zh,
         sortKeys.buf = rec->info[recInfo_sortKeys];
 
 	extract_flushSortKeys (zh, *sysno, 0, &sortKeys);
-        extract_flushRecordKeys (zh, *sysno, 0, &delkeys, 0);
+        extract_flushRecordKeys (zh, *sysno, 0, &delkeys,
+				 recordAttr->staticrank);
         if (delete_flag)
         {
             /* record going to be deleted */
@@ -1108,8 +1111,10 @@ ZEBRA_RES buffer_extract_record (ZebraHandle zh,
 		if (show_progress)
 		    yaz_log (YLOG_LOG, "update %s %s %ld", recordType,
 			     pr_fname, (long) recordOffset);
+		recordAttr->staticrank = extractCtrl.staticrank;
                 extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
-                extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys, 0);
+                extract_flushRecordKeys (zh, *sysno, 1, &zh->reg->keys, 
+					 recordAttr->staticrank);
                 zh->records_updated++;
             }
         }
