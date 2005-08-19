@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.4 2005-08-19 14:06:31 marc Exp $
+/* $Id: alvis.c,v 1.5 2005-08-19 21:40:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -93,25 +93,23 @@ static void set_param_int(const char **params, const char *name,
     params[2] = 0;
 }
 
-
-int zebra_xmlInputMatchCallback (char const *filename)
+static int zebra_xmlInputMatchCallback (char const *filename)
 {
   /* yaz_log(YLOG_LOG, "match %s", filename); */
     return 0;
 }
 
-
-void * zebra_xmlInputOpenCallback (char const *filename)
+static void * zebra_xmlInputOpenCallback (char const *filename)
 {
     return 0;
 }
 
-int zebra_xmlInputReadCallback (void * context, char * buffer, int len)
+static int zebra_xmlInputReadCallback (void * context, char * buffer, int len)
 {
     return 0;
 }
 
-int zebra_xmlInputCloseCallback (void * context)
+static int zebra_xmlInputCloseCallback (void * context)
 {
     return 0;
 }
