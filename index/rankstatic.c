@@ -1,4 +1,4 @@
-/* $Id: rankstatic.c,v 1.1 2005-08-19 09:21:34 adam Exp $
+/* $Id: rankstatic.c,v 1.2 2005-08-19 10:48:36 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,6 +22,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <stdio.h>
 #include <assert.h>
+#include <limits.h>
 #ifdef WIN32
 #include <io.h>
 #endif
@@ -122,7 +123,8 @@ static int calc (void *set_handle, zint sysno, zint staticrank)
     if (!si->no_rank_entries)
 	return -1;   /* ranking not enabled for any terms */
 
-    return staticrank+10;
+    /* staticrank = 0 is highest, MAXINT lowest */
+    return INT_MAX - staticrank;  /* but score is reverse (logical) */
 }
 
 /*
