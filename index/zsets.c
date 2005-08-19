@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.92 2005-08-18 19:20:38 adam Exp $
+/* $Id: zsets.c,v 1.93 2005-08-19 09:21:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -870,31 +870,38 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 	void *handle =
 	    (*rc->begin) (zh->reg, rank_class->class_handle, rset, nmem,
 			  terms, numTerms);
-	zint psysno = 0;
+	zint psysno = 0;  /* previous doc id / sys no */
+	zint pstaticrank = 0; /* previous static rank */
 	while (rset_read(rfd, &key, &termid))
 	{
 	    zint this_sys = key.mem[sysno_mem_index];
+
 	    zint seqno = key.mem[key.len-1];
 	    kno++;
 	    if (log_level_searchhits)
 		key_logdump_txt(log_level_searchhits, &key, termid->name);
-	    if (this_sys != psysno)
-	    {
+	    if (this_sys != psysno) 
+	    {   /* new record .. */
 		if (rfd->counted_items > rset->hits_limit)
 		    break;
 		if (psysno)
-		{
-		    score = (*rc->calc) (handle, psysno);
+		{   /* only if we did have a previous record */
+		    score = (*rc->calc) (handle, psysno, pstaticrank);
+		    /* insert the hit. A=Ascending */
 		    resultSetInsertRank (zh, sort_info, psysno, score, 'A');
 		    count++;
 		}
 		psysno = this_sys;
+		if (zh->m_staticrank)
+		    pstaticrank = key.mem[0];
 	    }
 	    (*rc->add) (handle, CAST_ZINT_TO_INT(seqno), termid);
 	}
+	/* no more items */
 	if (psysno)
-	{
-	    score = (*rc->calc)(handle, psysno);
+	{   /* we had - at least - one record */
+	    score = (*rc->calc)(handle, psysno, pstaticrank);
+	    /* insert the hit. A=Ascending */
 	    resultSetInsertRank(zh, sort_info, psysno, score, 'A');
 	    count++;
 	}

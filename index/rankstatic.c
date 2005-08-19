@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.26 2005-08-19 09:21:34 adam Exp $
+/* $Id: rankstatic.c,v 1.1 2005-08-19 09:21:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -34,37 +34,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int log_level = 0;
 static int log_initialized = 0;
 
-struct rank_class_info {
-    int dummy;
-};
-
-struct rank_term_info {
-    int local_occur;
-    zint global_occur;
-    int global_inv;
-    int rank_flag;
-    int rank_weight;
-    TERMID term;
-    int term_index;
-};
-
 struct rank_set_info {
-    int last_pos;
-    int no_entries;
     int no_rank_entries;
-    struct rank_term_info *entries;
-    NMEM nmem;
 };
-
-static int log2_int (zint g)
-{
-    int n = 0;
-    if (g < 0)
-	return 0;
-    while ((g = g>>1))
-	n++;
-    return n;
-}
 
 /*
  * create: Creates/Initialises this rank handler. This routine is 
@@ -72,16 +44,13 @@ static int log2_int (zint g)
  */
 static void *create (ZebraHandle zh)
 {
-    struct rank_class_info *ci = 
-        (struct rank_class_info *) xmalloc (sizeof(*ci));
-
     if (!log_initialized)
     {
-        log_level = yaz_log_module_level("rank1");
+        log_level = yaz_log_module_level("rankstatic");
         log_initialized = 1;
     }
-    yaz_log(log_level, "rank-1 create");
-    return ci;
+    yaz_log(log_level, "rank-static create");
+    return 0;
 }
 
 /*
@@ -91,10 +60,7 @@ static void *create (ZebraHandle zh)
  */
 static void destroy (struct zebra_register *reg, void *class_handle)
 {
-    struct rank_class_info *ci = (struct rank_class_info *) class_handle;
-
-    yaz_log(log_level, "rank-1 destroy");
-    xfree (ci);
+    yaz_log(log_level, "rank-static destroy");
 }
 
 
@@ -108,42 +74,18 @@ static void *begin (struct zebra_register *reg,
                     TERMID *terms, int numterms)
 {
     struct rank_set_info *si = 
-        (struct rank_set_info *) nmem_malloc (nmem,sizeof(*si));
+        (struct rank_set_info *) nmem_malloc (nmem, sizeof(*si));
     int i;
 
-    yaz_log(log_level, "rank-1 begin");
-    si->no_entries = numterms;
+    yaz_log(log_level, "rank-static begin");
+    /* count how many terms are ranked (2=102 or similar) */
     si->no_rank_entries = 0;
-    si->nmem=nmem;
-    si->entries = (struct rank_term_info *)
-	nmem_malloc (si->nmem, sizeof(*si->entries)*numterms); 
     for (i = 0; i < numterms; i++)
     {
-	zint g = rset_count(terms[i]->rset);
         yaz_log(log_level, "i=%d flags=%s '%s'", i, 
                 terms[i]->flags, terms[i]->name );
-	if  (!strncmp (terms[i]->flags, "rank,", 5)) 
-	{
-            const char *cp = strstr(terms[i]->flags+4, ",w=");
-	    si->entries[i].rank_flag = 1;
-            if (cp)
-                si->entries[i].rank_weight = atoi (cp+3);
-            else
-                si->entries[i].rank_weight = 34;
-            yaz_log(log_level, " i=%d weight=%d g="ZINT_FORMAT, i,
-                     si->entries[i].rank_weight, g);
+	if (!strncmp (terms[i]->flags, "rank,", 5)) 
 	    (si->no_rank_entries)++;
-	}
-	else
-	    si->entries[i].rank_flag = 0;
-	si->entries[i].local_occur = 0;  /* FIXME */
-	si->entries[i].global_occur = g;
-	si->entries[i].global_inv = 32 - log2_int (g);
-	yaz_log(log_level, " global_inv = %d g = " ZINT_FORMAT, 
-                (int) (32-log2_int (g)), g);
-        si->entries[i].term = terms[i];
-        si->entries[i].term_index=i;
-        terms[i]->rankpriv = &(si->entries[i]);
     }
     return si;
 }
@@ -154,8 +96,7 @@ static void *begin (struct zebra_register *reg,
  */
 static void end (struct zebra_register *reg, void *set_handle)
 {
-    yaz_log(log_level, "rank-1 end");
-    /* no need to free anything, they are in nmems */
+    yaz_log(log_level, "rank-static end");
 }
 
 
@@ -166,20 +107,6 @@ static void end (struct zebra_register *reg, void *set_handle)
  */
 static void add (void *set_handle, int seqno, TERMID term)
 {
-    struct rank_set_info *si = (struct rank_set_info *) set_handle;
-    struct rank_term_info *ti;
-    assert(si);
-    if (!term)
-    {
-        yaz_log(log_level, "rank-1 add NULL term");
-        return;
-    }
-    ti= (struct rank_term_info *) term->rankpriv;
-    assert(ti);
-    si->last_pos = seqno;
-    ti->local_occur++;
-    yaz_log(log_level, "rank-1 add seqno=%d term=%s count=%d", 
-            seqno, term->name,ti->local_occur);
 }
 
 /*
@@ -190,29 +117,12 @@ static void add (void *set_handle, int seqno, TERMID term)
  */
 static int calc (void *set_handle, zint sysno, zint staticrank)
 {
-    int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
-    if (!si->no_rank_entries) 
+    if (!si->no_rank_entries)
 	return -1;   /* ranking not enabled for any terms */
 
-    for (i = 0; i < si->no_entries; i++)
-    {
-        yaz_log(log_level, "calc: i=%d rank_flag=%d lo=%d",
-                i, si->entries[i].rank_flag, si->entries[i].local_occur);
-	if (si->entries[i].rank_flag && (lo = si->entries[i].local_occur))
-	    score += (8+log2_int (lo)) * si->entries[i].global_inv *
-                si->entries[i].rank_weight;
-    }
-    divisor = si->no_rank_entries * (8+log2_int (si->last_pos/si->no_entries));
-    score = score / divisor;
-    yaz_log(log_level, "calc sysno=" ZINT_FORMAT " score=%d", sysno, score);
-    if (score > 1000)
-	score = 1000;
-    /* reset the counts for the next term */
-    for (i = 0; i < si->no_entries; i++)
-	si->entries[i].local_occur = 0;
-    return score;
+    return staticrank+10;
 }
 
 /*
@@ -234,7 +144,7 @@ static int calc (void *set_handle, zint sysno, zint staticrank)
  */
 
 static struct rank_control rank_control = {
-    "rank-1",
+    "rank-static",
     create,
     destroy,
     begin,
@@ -243,4 +153,4 @@ static struct rank_control rank_control = {
     add,
 };
  
-struct rank_control *rank_1_class = &rank_control;
+struct rank_control *rank_static_class = &rank_control;

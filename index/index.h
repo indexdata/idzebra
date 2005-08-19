@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.147 2005-08-18 12:50:17 adam Exp $
+/* $Id: index.h,v 1.148 2005-08-19 09:21:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -333,7 +333,7 @@ struct rank_control {
      *	int rssize;	// number of records in result set (estimate?)
      */
     void (*end)(struct zebra_register *reg, void *set_handle);
-    int (*calc)(void *set_handle, zint sysno);
+    int (*calc)(void *set_handle, zint sysno, zint staticrank);
     void (*add)(void *set_handle, int seqno, TERMID term);
 };
 
@@ -419,9 +419,9 @@ void zebraRankDestroy (struct zebra_register *reg);
 int att_getentbyatt(ZebraHandle zh, attent *res, oid_value set, int att,
 		const char *sattr);
 
-extern struct rank_control *rank1_class;
-extern struct rank_control *rankzv_class;
-extern struct rank_control *rankliv_class;
+extern struct rank_control *rank_1_class;
+extern struct rank_control *rank_zv_class;
+extern struct rank_control *rank_static_class;
 
 int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score, 
 			zebra_snippets *hit_snippet, ODR stream,

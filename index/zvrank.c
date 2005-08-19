@@ -1,4 +1,4 @@
-/* $Id: zvrank.c,v 1.17 2005-05-24 11:27:19 adam Exp $
+/* $Id: zvrank.c,v 1.18 2005-08-19 09:21:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -782,7 +782,7 @@ static void zv_add (void *rsi, int seqno, TERMID term) {
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int zv_calc (void *rsi, zint sysno)
+static int zv_calc (void *rsi, zint sysno, zint staticrank)
 {
     int i, veclen; 
     int score=0;
@@ -839,6 +839,5 @@ static struct rank_control rank_control_vsm = {
     zv_add,
 };
  
-struct rank_control *rankzv_class = &rank_control_vsm;
+struct rank_control *rank_zv_class = &rank_control_vsm;
 
-/* EOF */

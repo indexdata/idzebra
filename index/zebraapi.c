@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.182 2005-08-18 12:50:17 adam Exp $
+/* $Id: zebraapi.c,v 1.183 2005-08-19 09:21:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -330,8 +330,9 @@ struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
     reg->key_file_no = 0;
     reg->ptr_i = 0;
     
-    zebraRankInstall (reg, rank1_class);
-    zebraRankInstall (reg, rankzv_class);
+    zebraRankInstall (reg, rank_1_class);
+    zebraRankInstall (reg, rank_zv_class);
+    zebraRankInstall (reg, rank_static_class);
 
     recordCompression = res_get_def (res, "recordCompression", "none");
     if (!strcmp (recordCompression, "none"))
