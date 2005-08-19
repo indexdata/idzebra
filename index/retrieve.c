@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.32 2005-06-14 20:28:54 adam Exp $
+/* $Id: retrieve.c,v 1.33 2005-08-19 13:11:54 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -226,19 +226,21 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
 
 	zebra_snippets_rec_keys(zh, &reckeys, retrieveCtrl.doc_snippet);
 
-
+#if 0
+	/* for debugging purposes */
 	yaz_log(YLOG_LOG, "DOC SNIPPET:");
 	zebra_snippets_log(retrieveCtrl.doc_snippet, YLOG_LOG);
 	yaz_log(YLOG_LOG, "HIT SNIPPET:");
 	zebra_snippets_log(retrieveCtrl.hit_snippet, YLOG_LOG);
-
+#endif
 	snippet = zebra_snippets_window(retrieveCtrl.doc_snippet,
 					retrieveCtrl.hit_snippet,
 					10);
-	
+#if 0
+	/* for debugging purposes */
 	yaz_log(YLOG_LOG, "WINDOW SNIPPET:");
 	zebra_snippets_log(snippet, YLOG_LOG);
-
+#endif
 	(*rt->retrieve)(clientData, &retrieveCtrl);
 
 	zebra_snippets_destroy(snippet);
