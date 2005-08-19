@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.13 2005-08-18 12:50:18 adam Exp $
+/* $Id: xslt.c,v 1.14 2005-08-19 21:41:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -57,6 +57,9 @@ struct filter_info {
 
 #define ZEBRA_SCHEMA_XSLT_NS "http://indexdata.dk/zebra/xslt/1"
 
+#define XML_STRCMP(a,b)   strcmp((char*)a, b)
+#define XML_STRLEN(a) strlen((char*)a)
+
 static const char *zebra_xslt_ns = ZEBRA_SCHEMA_XSLT_NS;
 
 static void set_param_xml(const char **params, const char *name,
@@ -93,25 +96,23 @@ static void set_param_int(const char **params, const char *name,
     params[2] = 0;
 }
 
-
-int zebra_xmlInputMatchCallback (char const *filename)
+static int zebra_xmlInputMatchCallback (char const *filename)
 {
     yaz_log(YLOG_LOG, "match %s", filename);
     return 0;
 }
 
-
-void * zebra_xmlInputOpenCallback (char const *filename)
+static void * zebra_xmlInputOpenCallback (char const *filename)
 {
     return 0;
 }
 
-int zebra_xmlInputReadCallback (void * context, char * buffer, int len)
+static int zebra_xmlInputReadCallback (void * context, char * buffer, int len)
 {
     return 0;
 }
 
-int zebra_xmlInputCloseCallback (void * context)
+static int zebra_xmlInputCloseCallback (void * context)
 {
     return 0;
 }
@@ -140,10 +141,10 @@ static void *filter_init_xslt(Res res, RecType recType)
 static int attr_content(struct _xmlAttr *attr, const char *name,
 			const char **dst_content)
 {
-    if (!strcmp(attr->name, name) && attr->children &&
+    if (!XML_STRCMP(attr->name, name) && attr->children &&
 	attr->children->type == XML_TEXT_NODE)
     {
-	*dst_content = attr->children->content;
+	*dst_content = (const char *)(attr->children->content);
 	return 1;
     }
     return 0;
@@ -176,13 +177,13 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 	return ZEBRA_FAIL;
     ptr = xmlDocGetRootElement(tinfo->doc);
     if (!ptr || ptr->type != XML_ELEMENT_NODE ||
-	strcmp(ptr->name, "schemaInfo"))
+	XML_STRCMP(ptr->name, "schemaInfo"))
 	return ZEBRA_FAIL;
     for (ptr = ptr->children; ptr; ptr = ptr->next)
     {
 	if (ptr->type != XML_ELEMENT_NODE)
 	    continue;
-	if (!strcmp(ptr->name, "schema"))
+	if (!XML_STRCMP(ptr->name, "schema"))
 	{
 	    struct _xmlAttr *attr;
 	    struct filter_schema *schema = xmalloc(sizeof(*schema));
@@ -207,7 +208,7 @@ static ZEBRA_RES create_schemas(struct filter_info *tinfo, const char *fname)
 		    xsltParseStylesheetFile(
 			(const xmlChar*) schema->stylesheet);
 	}
-	else if (!strcmp(ptr->name, "split"))
+	else if (!XML_STRCMP(ptr->name, "split"))
 	{
 	    struct _xmlAttr *attr;
 	    for (attr = ptr->properties; attr; attr = attr->next)
@@ -284,8 +285,8 @@ static void index_cdata(struct filter_info *tinfo, struct recExtractCtrl *ctrl,
 	index_cdata(tinfo, ctrl, ptr->children, recWord);
 	if (ptr->type != XML_TEXT_NODE)
 	    continue;
-	recWord->term_buf = ptr->content;
-	recWord->term_len = strlen(ptr->content);
+	recWord->term_buf = (const char *)ptr->content;
+	recWord->term_len = XML_STRLEN(ptr->content);
 	(*ctrl->tokenAdd)(recWord);
     }
 }
@@ -297,9 +298,9 @@ static void index_node(struct filter_info *tinfo,  struct recExtractCtrl *ctrl,
     {
 	index_node(tinfo, ctrl, ptr->children, recWord);
 	if (ptr->type != XML_ELEMENT_NODE || !ptr->ns ||
-	    strcmp(ptr->ns->href, zebra_xslt_ns))
+	    XML_STRCMP(ptr->ns->href, zebra_xslt_ns))
 	    continue;
-	if (!strcmp(ptr->name, "index"))
+	if (!XML_STRCMP(ptr->name, "index"))
 	{
 	    const char *name_str = 0;
 	    const char *type_str = 0;
@@ -330,8 +331,8 @@ static void index_record(struct filter_info *tinfo,struct recExtractCtrl *ctrl,
 			 xmlNodePtr ptr, RecWord *recWord)
 {
     if (ptr && ptr->type == XML_ELEMENT_NODE && ptr->ns &&
-	!strcmp(ptr->ns->href, zebra_xslt_ns)
-	&& !strcmp(ptr->name, "record"))
+	!XML_STRCMP(ptr->ns->href, zebra_xslt_ns)
+	&& !XML_STRCMP(ptr->name, "record"))
     {
 	const char *type_str = "update";
 	const char *id_str = 0;
@@ -435,7 +436,7 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
 	{
 	    xmlNodePtr ptr = xmlTextReaderExpand(tinfo->reader);
 	    xmlNodePtr ptr2 = xmlCopyNode(ptr, 1);
-	    xmlDocPtr doc = xmlNewDoc("1.0");
+	    xmlDocPtr doc = xmlNewDoc((const xmlChar*) "1.0");
 
 	    xmlDocSetRootElement(doc, ptr2);
 
