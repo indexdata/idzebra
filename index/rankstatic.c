@@ -1,4 +1,4 @@
-/* $Id: rankstatic.c,v 1.2 2005-08-19 10:48:36 adam Exp $
+/* $Id: rankstatic.c,v 1.3 2005-08-19 11:04:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -116,13 +116,15 @@ static void add (void *set_handle, int seqno, TERMID term)
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int calc (void *set_handle, zint sysno, zint staticrank)
+static int calc (void *set_handle, zint sysno, zint staticrank,
+		 int *stop_flag)
 {
     struct rank_set_info *si = (struct rank_set_info *) set_handle;
 
     if (!si->no_rank_entries)
 	return -1;   /* ranking not enabled for any terms */
 
+    /* if we set *stop_flag = 1, we stop processing (of result set list) */
     /* staticrank = 0 is highest, MAXINT lowest */
     return INT_MAX - staticrank;  /* but score is reverse (logical) */
 }

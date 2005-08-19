@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.148 2005-08-19 09:21:34 adam Exp $
+/* $Id: index.h,v 1.149 2005-08-19 11:04:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -333,7 +333,8 @@ struct rank_control {
      *	int rssize;	// number of records in result set (estimate?)
      */
     void (*end)(struct zebra_register *reg, void *set_handle);
-    int (*calc)(void *set_handle, zint sysno, zint staticrank);
+    int (*calc)(void *set_handle, zint sysno, zint staticrank,
+		int *stop_flag);
     void (*add)(void *set_handle, int seqno, TERMID term);
 };
 

@@ -1,4 +1,4 @@
-/* $Id: rank1.c,v 1.26 2005-08-19 09:21:34 adam Exp $
+/* $Id: rank1.c,v 1.27 2005-08-19 11:04:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -188,7 +188,8 @@ static void add (void *set_handle, int seqno, TERMID term)
  *  score should be between 0 and 1000. If score cannot be obtained
  *  -1 should be returned.
  */
-static int calc (void *set_handle, zint sysno, zint staticrank)
+static int calc (void *set_handle, zint sysno, zint staticrank,
+		 int *stop_flag)
 {
     int i, lo, divisor, score = 0;
     struct rank_set_info *si = (struct rank_set_info *) set_handle;

@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.93 2005-08-19 09:21:34 adam Exp $
+/* $Id: zsets.c,v 1.94 2005-08-19 11:04:23 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -872,6 +872,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 			  terms, numTerms);
 	zint psysno = 0;  /* previous doc id / sys no */
 	zint pstaticrank = 0; /* previous static rank */
+	int stop_flag = 0;
 	while (rset_read(rfd, &key, &termid))
 	{
 	    zint this_sys = key.mem[sysno_mem_index];
@@ -886,10 +887,13 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 		    break;
 		if (psysno)
 		{   /* only if we did have a previous record */
-		    score = (*rc->calc) (handle, psysno, pstaticrank);
+		    score = (*rc->calc) (handle, psysno, pstaticrank,
+					 &stop_flag);
 		    /* insert the hit. A=Ascending */
 		    resultSetInsertRank (zh, sort_info, psysno, score, 'A');
 		    count++;
+		    if (stop_flag)
+			break;
 		}
 		psysno = this_sys;
 		if (zh->m_staticrank)
@@ -900,7 +904,7 @@ ZEBRA_RES resultSetRank(ZebraHandle zh, ZebraSet zebraSet,
 	/* no more items */
 	if (psysno)
 	{   /* we had - at least - one record */
-	    score = (*rc->calc)(handle, psysno, pstaticrank);
+	    score = (*rc->calc)(handle, psysno, pstaticrank, &stop_flag);
 	    /* insert the hit. A=Ascending */
 	    resultSetInsertRank(zh, sort_info, psysno, score, 'A');
 	    count++;
