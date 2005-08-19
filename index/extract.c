@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.190 2005-08-19 09:45:24 adam Exp $
+/* $Id: extract.c,v 1.191 2005-08-19 11:03:53 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1313,7 +1313,6 @@ void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
 	struct it_key key_out;
 	char *dst = (char*) &key_in;
 	zint *keyp = key_out.mem;
-	size_t key_idx = 0;
 
 	iscz1_decode(decode_handle, &dst, &src);
 	assert(key_in.len == 4);
