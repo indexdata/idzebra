@@ -1,4 +1,4 @@
-/* $Id: tstcharmap.c,v 1.1 2005-06-15 21:31:45 adam Exp $
+/* $Id: tstcharmap.c,v 1.2 2005-08-19 09:20:21 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,13 +25,24 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #include <charmap.h>
 
+/* use env srcdir as base directory - or current directory if unset */
+const char *get_srcdir()
+{
+    const char *srcdir = getenv("srcdir");
+    if (!srcdir || ! *srcdir)
+        srcdir=".";
+    return srcdir;
+
+}
+
 void tst1()
 {
     /* open existing map chrmaptab.chr */
-    chrmaptab tab = chrmaptab_create(0 /* tabpath */,
+    chrmaptab tab = chrmaptab_create(get_srcdir() /* tabpath */,
 				     "tstcharmap.chr" /* file */,
 				     0 /* tabroot */ );
-    assert(tab);
+    if (!tab)
+	exit(1);
     
     chrmaptab_destroy(tab);
 }
@@ -39,10 +50,12 @@ void tst1()
 void tst2()
 {
     /* open non-existing nonexist.chr */
-    chrmaptab tab = chrmaptab_create(0 /* tabpath */,
+    chrmaptab tab = chrmaptab_create(get_srcdir() /* tabpath */,
 				     "nonexist.chr" /* file */,
 				     0 /* tabroot */ );
-    assert(!tab);
+    
+    if (tab)
+	exit(0);
 }
 
 int main(int argc, char **argv)
