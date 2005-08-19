@@ -1,4 +1,4 @@
-/* $Id: isamb.c,v 1.80 2005-06-29 12:31:46 adam Exp $
+/* $Id: isamb.c,v 1.81 2005-08-19 12:58:01 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -299,7 +299,7 @@ static void flush_blocks (ISAMB b, int cat)
     }
 }
 
-static int cache_block (ISAMB b, ISAM_P pos, char *userbuf, int wr)
+static int cache_block (ISAMB b, ISAM_P pos, unsigned char *userbuf, int wr)
 {
     int cat = (int) (pos&CAT_MASK);
     int off = (int) (((pos/CAT_MAX) & 
@@ -456,7 +456,7 @@ static struct ISAMB_block *open_block(ISAMB b, ISAM_P pos)
             abort();
         }
     }
-    p->bytes = p->buf + offset;
+    p->bytes = (char *)p->buf + offset;
     p->leaf = p->buf[0];
     p->size = (p->buf[1] + 256 * p->buf[2]) - offset;
     if (p->size < 0)
@@ -465,7 +465,7 @@ static struct ISAMB_block *open_block(ISAMB b, ISAM_P pos)
 		 p->size, pos);
     }
     assert (p->size >= 0);
-    src = p->buf + 3;
+    src = (char*) p->buf + 3;
     decode_ptr(&src, &p->no_items);
 
     p->offset = 0;
@@ -509,7 +509,7 @@ struct ISAMB_block *new_block (ISAMB b, int leaf, int cat)
     p->cat = cat;
     b->file[cat].head_dirty = 1;
     memset (p->buf, 0, b->file[cat].head.block_size);
-    p->bytes = p->buf + b->file[cat].head.block_offset;
+    p->bytes = (char*)p->buf + b->file[cat].head.block_offset;
     p->leaf = leaf;
     p->size = 0;
     p->dirty = 1;
@@ -592,7 +592,7 @@ void close_block(ISAMB b, struct ISAMB_block *p)
     {
 	int offset = b->file[p->cat].head.block_offset;
         int size = p->size + offset;
-	char *dst =  p->buf + 3;
+	char *dst =  (char*)p->buf + 3;
         assert (p->size >= 0);
 	
 	/* memset becuase encode_ptr usually does not write all bytes */
