@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2005
-dnl $Id: configure.in,v 1.127 2005-06-14 20:28:05 adam Exp $
+dnl $Id: configure.in,v 1.128 2005-08-19 21:42:17 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -306,7 +306,7 @@ else
    def="no"
 fi
 ZEBRA_MODULE(xslt,[$def],    [  --enable-mod-xslt       XSLT filter])
-ZEBRA_MODULE(alvis,shared,   [  --enable-mod-alvis      ALVIS filter])
+ZEBRA_MODULE(alvis,[$def],   [  --enable-mod-alvis      ALVIS filter])
 dnl ------ ANSI C Header files
 AC_STDC_HEADERS
 if test "$ac_cv_header_stdc" = "no"; then
