@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.104 2005-08-03 07:44:27 adam Exp $
+/* $Id: recgrs.c,v 1.105 2005-08-22 08:19:51 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -220,16 +220,20 @@ static int sp_expr(struct source_parser *sp, data1_node *n, RecWord *wrd)
     }
     else if (sp->len > 0 && isdigit(*(unsigned char *)sp->tok))
     {
-	wrd->term_buf = nmem_malloc(sp->nmem, sp->len);
-	memcpy(wrd->term_buf, sp->tok, sp->len);
+	char *b;
 	wrd->term_len = sp->len;
+	b = nmem_malloc(sp->nmem, sp->len);
+	memcpy(b, sp->tok, sp->len);
+	wrd->term_buf = b;
 	sp_lex(sp);
     }
     else if (sp->len > 2 && sp->tok[0] == '\'' && sp->tok[sp->len-1] == '\'')
     {
+	char *b;
 	wrd->term_len = sp->len - 2;
-	wrd->term_buf = nmem_malloc(sp->nmem, wrd->term_len);
-	memcpy(wrd->term_buf, sp->tok+1, wrd->term_len);
+	b = nmem_malloc(sp->nmem, wrd->term_len);
+	memcpy(b, sp->tok+1, wrd->term_len);
+	wrd->term_buf = b;
 	sp_lex(sp);
     }
     else 
