@@ -1,4 +1,4 @@
-/* $Id: recindex.c,v 1.45 2005-08-09 12:30:46 adam Exp $
+/* $Id: recindex.c,v 1.46 2005-08-22 08:18:43 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -434,23 +434,27 @@ static void rec_cache_flush_block1(Records p, Record rec, Record last_rec,
 	if (i == 0)
 	{
 	    rec_encode_zint(rec_sysno_to_int(rec->sysno), 
-			    *out_buf + *out_offset, &len);
+			    (unsigned char *) *out_buf + *out_offset, &len);
 	    (*out_offset) += len;
 	}
 	if (rec->size[i] == 0)
 	{
-	    rec_encode_unsigned(1, *out_buf + *out_offset, &len);
+	    rec_encode_unsigned(1, (unsigned char *) *out_buf + *out_offset,
+				&len);
 	    (*out_offset) += len;
 	}
 	else if (last_rec && rec->size[i] == last_rec->size[i] &&
 		 !memcmp(rec->info[i], last_rec->info[i], rec->size[i]))
 	{
-	    rec_encode_unsigned(0, *out_buf + *out_offset, &len);
+	    rec_encode_unsigned(0, (unsigned char *) *out_buf + *out_offset,
+				&len);
 	    (*out_offset) += len;
 	}
 	else
 	{
-	    rec_encode_unsigned(rec->size[i]+1, *out_buf + *out_offset, &len);
+	    rec_encode_unsigned(rec->size[i]+1,
+				(unsigned char *) *out_buf + *out_offset,
+				&len);
 	    (*out_offset) += len;
 	    memcpy(*out_buf + *out_offset, rec->info[i], rec->size[i]);
 	    (*out_offset) += rec->size[i];
@@ -504,7 +508,7 @@ static void rec_write_multiple(Records p, int saveCount)
     *sysnop = -1;
     if (ref_count)
     {
-	int csize = 0;  /* indicate compression "not performed yet" */
+	unsigned int csize = 0;  /* indicate compression "not performed yet" */
 	compression_method = p->compression_method;
 	switch (compression_method)
 	{
@@ -656,7 +660,7 @@ static Record rec_get_int(Records p, SYSNO sysno)
     char *in_buf = 0;
     char *bz_buf = 0;
 #if HAVE_BZLIB_H
-    int bz_size;
+    unsigned int bz_size;
 #endif
     char compression_method;
 
@@ -745,13 +749,13 @@ static Record rec_get_int(Records p, SYSNO sysno)
     {
 	zint this_sysno;
 	int len;
-	rec_decode_zint(&this_sysno, nptr, &len);
+	rec_decode_zint(&this_sysno, (unsigned char *) nptr, &len);
 	nptr += len;
 
 	for (i = 0; i < REC_NO_INFO; i++)
 	{
-	    int this_size;
-	    rec_decode_unsigned(&this_size, nptr, &len);
+	    unsigned int this_size;
+	    rec_decode_unsigned(&this_size, (unsigned char *) nptr, &len);
 	    nptr += len;
 
 	    if (this_size == 0)
