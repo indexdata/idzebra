@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.6 2005-08-22 09:03:34 adam Exp $
+/* $Id: alvis.c,v 1.7 2005-08-22 14:39:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -96,7 +96,7 @@ static void set_param_int(const char **params, const char *name,
     params[2] = 0;
 }
 
-#define ENABLE_INPUT_CALLBACK 1
+#define ENABLE_INPUT_CALLBACK 0
 
 #if ENABLE_INPUT_CALLBACK
 static int zebra_xmlInputMatchCallback (char const *filename)
@@ -547,7 +547,7 @@ static const char *snippet_doc(struct recRetrieveCtrl *p, int text_mode,
 static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 {
     const char *esn = zebra_xslt_ns;
-    const char *params[10];
+    const char *params[20];
     struct filter_info *tinfo = clientData;
     xmlDocPtr resDoc;
     xmlDocPtr doc;
