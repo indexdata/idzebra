@@ -1,4 +1,4 @@
-/* $Id: xslt.c,v 1.14 2005-08-19 21:41:37 adam Exp $
+/* $Id: xslt.c,v 1.15 2005-08-22 09:03:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -96,6 +96,9 @@ static void set_param_int(const char **params, const char *name,
     params[2] = 0;
 }
 
+#define ENABLE_INPUT_CALLBACK 1
+
+#if ENABLE_INPUT_CALLBACK
 static int zebra_xmlInputMatchCallback (char const *filename)
 {
     yaz_log(YLOG_LOG, "match %s", filename);
@@ -116,8 +119,9 @@ static int zebra_xmlInputCloseCallback (void * context)
 {
     return 0;
 }
+#endif
 
-static void *filter_init_xslt(Res res, RecType recType)
+static void *filter_init(Res res, RecType recType)
 {
     struct filter_info *tinfo = (struct filter_info *) xmalloc(sizeof(*tinfo));
     tinfo->reader = 0;
@@ -128,7 +132,7 @@ static void *filter_init_xslt(Res res, RecType recType)
     tinfo->doc = 0;
     tinfo->schemas = 0;
 
-#if 0
+#if ENABLE_INPUT_CALLBACK
     xmlRegisterDefaultInputCallbacks();
     xmlRegisterInputCallbacks(zebra_xmlInputMatchCallback,
 			      zebra_xmlInputOpenCallback,
@@ -440,8 +444,8 @@ static int extract_split(struct filter_info *tinfo, struct recExtractCtrl *p)
 
 	    xmlDocSetRootElement(doc, ptr2);
 
-	    return extract_doc(tinfo, p, doc);	    
-	}
+	    return extract_doc(tinfo, p, doc);	 
+  	}
 	ret = xmlTextReaderRead(tinfo->reader);
     }
     xmlFreeTextReader(tinfo->reader);
@@ -646,10 +650,10 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
     return 0;
 }
 
-static struct recType filter_type_xslt = {
+static struct recType filter_type = {
     0,
     "xslt",
-    filter_init_xslt,
+    filter_init,
     filter_config,
     filter_destroy,
     filter_extract,
@@ -664,6 +668,6 @@ idzebra_filter
 #endif
 
 [] = {
-    &filter_type_xslt,
+    &filter_type,
     0,
 };
