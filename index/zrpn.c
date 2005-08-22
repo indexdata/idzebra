@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.203 2005-08-08 12:04:02 adam Exp $
+/* $Id: zrpn.c,v 1.204 2005-08-22 09:04:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -236,7 +236,7 @@ static void add_isam_p(const char *name, const char *info,
         int set, use;
         char term_tmp[IT_MAX_WORD];
         int su_code = 0;
-        int len = key_SU_decode (&su_code, name);
+        int len = key_SU_decode (&su_code, (const unsigned char *) name);
         
         zebra_term_untrans  (p->zh, p->reg_type, term_tmp, name+len+1);
         yaz_log(log_level_rpn, "grep: %d %c %s", su_code, name[len], term_tmp);
@@ -1390,7 +1390,7 @@ static ZEBRA_RES zapt_term_to_utf8(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
     case Z_Term_general:
         if (zh->iconv_to_utf8 != 0)
         {
-            char *inbuf = term->u.general->buf;
+            char *inbuf = (char *) term->u.general->buf;
             size_t inleft = term->u.general->len;
             char *outbuf = termz;
             size_t outleft = IT_MAX_WORD-1;

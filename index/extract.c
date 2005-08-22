@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.191 2005-08-19 11:03:53 adam Exp $
+/* $Id: extract.c,v 1.192 2005-08-22 09:04:17 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1684,9 +1684,9 @@ static void extract_add_sort_string (RecWord *p, const char *str, int length)
     {
         int set, use, slen;
 
-        off += key_SU_decode(&set, sk->buf + off);
-        off += key_SU_decode(&use, sk->buf + off);
-        off += key_SU_decode(&slen, sk->buf + off);
+        off += key_SU_decode(&set, (unsigned char *) sk->buf + off);
+        off += key_SU_decode(&use, (unsigned char *) sk->buf + off);
+        off += key_SU_decode(&slen, (unsigned char *) sk->buf + off);
         off += slen;
         if (p->attrSet == set && p->attrUse == use)
             return;
@@ -1930,9 +1930,9 @@ void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
     {
         int set, use, slen;
         
-        off += key_SU_decode(&set, sk->buf + off);
-        off += key_SU_decode(&use, sk->buf + off);
-        off += key_SU_decode(&slen, sk->buf + off);
+        off += key_SU_decode(&set, (unsigned char *) sk->buf + off);
+        off += key_SU_decode(&use, (unsigned char *) sk->buf + off);
+        off += key_SU_decode(&slen, (unsigned char *) sk->buf + off);
         
         sortIdx_type(sortIdx, use);
         if (cmd == 1)

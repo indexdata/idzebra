@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.183 2005-08-19 09:21:34 adam Exp $
+/* $Id: zebraapi.c,v 1.184 2005-08-22 09:04:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1239,13 +1239,13 @@ ZEBRA_RES zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
 		Odr_oct *oct = fragment->u.notExternallyTagged;
 		sysno = 0;
 		
-		if ( zebra_update_record(zh, 
-					 0, /* record Type */
-					 &sysno,
-					 0, /* match */
-					 0, /* fname */
-					 oct->buf, oct->len,
-					 0) == ZEBRA_FAIL)
+		if (zebra_update_record(zh, 
+					0, /* record Type */
+					&sysno,
+					0, /* match */
+					0, /* fname */
+					(const char *) oct->buf, oct->len,
+					0) == ZEBRA_FAIL)
 		    res = ZEBRA_FAIL;
 	    }
 	}

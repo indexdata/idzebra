@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.138 2005-08-09 09:35:25 adam Exp $
+/* $Id: zserver.c,v 1.139 2005-08-22 09:04:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -650,9 +650,10 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 			{
                             int r = zebra_admin_exchange_record (
                                 zh,
-                                rec->u.octet_aligned->buf,
+                                (const char *) rec->u.octet_aligned->buf,
                                 rec->u.octet_aligned->len,
-                                opaque_recid->buf, opaque_recid->len,
+                                (const char *) opaque_recid->buf,
+				opaque_recid->len,
                                 action);
                             if (r)
                             {
@@ -673,7 +674,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    &sysno,
 				    0, /* match */
 				    0, /* fname */
-				    rec->u.octet_aligned->buf,
+				    (const char *) rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
 				    0);
 				if (r == ZEBRA_FAIL)
@@ -691,7 +692,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    &sysno,
 				    0, /* match */
 				    0, /* fname */
-				    rec->u.octet_aligned->buf,
+				    (const char *) rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
 				    1);
 				if (r == ZEBRA_FAIL)
@@ -708,7 +709,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				    &sysno,
 				    0, /* match */
 				    0, /* fname */
-				    rec->u.octet_aligned->buf,
+				    (const char *) rec->u.octet_aligned->buf,
 				    rec->u.octet_aligned->len,
 				    0);
 				if (r == ZEBRA_FAIL)
