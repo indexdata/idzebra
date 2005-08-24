@@ -1,4 +1,4 @@
-/* $Id: alvis.c,v 1.7 2005-08-22 14:39:47 adam Exp $
+/* $Id: alvis.c,v 1.8 2005-08-24 08:30:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -556,13 +556,18 @@ static int filter_retrieve (void *clientData, struct recRetrieveCtrl *p)
 
     if (p->comp)
     {
-	if (p->comp->which != Z_RecordComp_simple
-	    || p->comp->u.simple->which != Z_ElementSetNames_generic)
+	if (p->comp->which == Z_RecordComp_simple
+	    && p->comp->u.simple->which == Z_ElementSetNames_generic)
 	{
-	    p->diagnostic = YAZ_BIB1_PRESENT_COMP_SPEC_PARAMETER_UNSUPP;
-	    return 0;
+	    esn = p->comp->u.simple->u.generic;
 	}
-	esn = p->comp->u.simple->u.generic;
+	else if (p->comp->which == Z_RecordComp_complex 
+		 && p->comp->u.complex->generic->elementSpec
+		 && p->comp->u.complex->generic->elementSpec->which ==
+		 Z_ElementSpec_elementSetName)
+	{
+	    esn = p->comp->u.complex->generic->elementSpec->u.elementSetName;
+	}
     }
     schema = lookup_schema(tinfo, esn);
     if (!schema)
