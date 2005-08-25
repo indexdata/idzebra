@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.62 2005-07-21 13:05:16 adam Exp $
+/* $Id: trunc.c,v 1.63 2005-08-25 10:37:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -457,7 +457,7 @@ RSET rset_trunc(ZebraHandle zi, ISAM_P *isam_p, int no,
         yaz_log(YLOG_WARN, "Unknown isam set in rset_trunc");
 	return rsnull_create(rset_nmem, kctrl, 0);
     }
-    trunc_chunk = atoi(res_get_def(zi->res, "truncchunk", "100"));
+    trunc_chunk = atoi(res_get_def(zi->res, "truncchunk", "20"));
     result = rset_trunc_r(zi, term, length, flags, isam_p, 0, no, trunc_chunk,
 			  preserve_position, term_type, rset_nmem, kctrl,
 			  scope, termid);
