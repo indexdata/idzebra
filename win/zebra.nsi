@@ -1,6 +1,7 @@
-; $Id: zebra.nsi,v 1.26 2005-01-16 00:30:59 adam Exp $
+; $Id: zebra.nsi,v 1.27 2005-08-25 12:53:42 adam Exp $
 
 !define VERSION "1.4.0"
+!define VS_RUNTIME_LOCATION "c:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin"
 
 !include "MUI.nsh"
 
@@ -74,7 +75,7 @@ Section "Zebra Runtime"
 	File ..\bin\libxml2.dll
 	File ..\bin\yaz.dll
 	File ..\bin\libexpat.dll
-	File c:\winnt\system32\msvcr71.dll
+	File "${VS_RUNTIME_LOCATION}\msvcr71.dll"
 SectionEnd
 
 Section "Zebra Development"
