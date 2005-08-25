@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.36 2005-08-18 19:20:38 adam Exp $
+# $Id: makefile,v 1.37 2005-08-25 12:46:17 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -266,6 +266,7 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\passwddb.obj \
 	$(OBJDIR)\zvrank.obj \
 	$(OBJDIR)\rank1.obj \
+	$(OBJDIR)\rankstatic.obj \
 	$(OBJDIR)\readfile.obj \
 	$(OBJDIR)\recctrl.obj \
 	$(OBJDIR)\recgrs.obj \
