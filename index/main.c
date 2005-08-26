@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.125 2005-06-14 20:28:54 adam Exp $
+/* $Id: main.c,v 1.126 2005-08-26 10:11:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -129,8 +129,6 @@ int main (int argc, char **argv)
                 if (!zs)
                 {
 		    const char *config = configName ? configName : "zebra.cfg";
-                    yaz_log (YLOG_LOG, "Zebra version %s %s",
-                          ZEBRAVER, ZEBRADATE);
                     zs = zebra_start_res (config, 0, res);
                     if (!zs)
                     {
