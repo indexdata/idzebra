@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.34 2005-08-19 14:05:29 marc Exp $
+/* $Id: retrieve.c,v 1.35 2005-08-26 10:13:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -216,7 +216,7 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
     retrieveCtrl.hit_snippet = hit_snippet;
     retrieveCtrl.doc_snippet = zebra_snippets_create();
     
-    if (0)
+    if (1)
     {
 	/* snippets code */
 	struct recKeys reckeys;

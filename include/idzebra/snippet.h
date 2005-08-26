@@ -1,4 +1,4 @@
-/* $Id: snippet.h,v 1.3 2005-08-18 19:20:37 adam Exp $
+/* $Id: snippet.h,v 1.4 2005-08-26 10:13:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -20,8 +20,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 */
 
-#ifndef SNIPPET_H
-#define SNIPPET_H
+#ifndef IDZEBRA_SNIPPET_H
+#define IDZEBRA_SNIPPET_H
 
 #include <idzebra/util.h>
 
@@ -29,7 +29,6 @@ YAZ_BEGIN_CDECL
 
 struct zebra_snippet_word {
     zint seqno;
-    int reg_type;
     int ord;
     char *term;
     int match;
@@ -47,13 +46,11 @@ void zebra_snippets_destroy(zebra_snippets *l);
 
 YAZ_EXPORT
 void zebra_snippets_append(zebra_snippets *l,
-			   zint seqno, int reg_type,
-			   int ord, const char *term);
+			   zint seqno, int ord, const char *term);
 
 YAZ_EXPORT
 void zebra_snippets_append_match(zebra_snippets *l,
-				 zint seqno, int reg_type,
-				 int ord, const char *term,
+				 zint seqno, int ord, const char *term,
 				 int match);
 
 YAZ_EXPORT
