@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.3 2005-06-29 16:52:50 adam Exp $
+/* $Id: recgrs.c,v 1.86.2.4 2005-08-29 12:58:19 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -552,6 +552,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
 		    }
 		    else
 			(*p->tokenAdd)(&wrd_tl);
+			
 		    xpdone = 1;
 		} else {
 		    /* this is just the old fashioned attribute based index */
@@ -588,6 +589,8 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
 	    wrd->reg_type = 'w';
 	    (*p->tokenAdd)(wrd);
 	}
+	else
+	    wrd->seqno++;
         break;
     case DATA1N_tag:
         flen = 0;
@@ -633,7 +636,11 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                directive, or default xpath indexing is enabled */
 	    if (!(do_xpindex = 1 - termlist_only)) {
                 if ((tl = xpath_termlist_by_tagpath(tag_path_full, n))) {
-                    for (; tl; tl = tl->next) { if (!tl->att) {do_xpindex = 1;} }
+                    for (; tl; tl = tl->next)
+		    {
+			if (!tl->att)
+			    do_xpindex = 1;
+		    }
                 }
 	    }
 	    if (do_xpindex) {
@@ -729,7 +736,10 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                                                   xp->value, tl->structure,
                                                   p, wrd);
                                 xpdone = 1;
-                            } else {
+                            } 
+#if 0
+			    else 
+			    {
                                 /* add attribute based index for the attribute */
                                 if (xp->value) {
                                     wrd->attrSet = (int) 
@@ -741,6 +751,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                                     (*p->tokenAdd)(wrd);
                                 }
                             }
+#endif
                         }
                     }
                     /* if there was no termlist for the given path, 
