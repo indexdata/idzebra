@@ -1,4 +1,4 @@
-/* $Id: zebraapi.h,v 1.13.2.1 2004-11-26 11:06:12 adam Exp $
+/* $Id: zebraapi.h,v 1.13.2.2 2005-08-30 13:10:05 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -188,38 +188,38 @@ YAZ_EXPORT int zebra_admin_import_segment (ZebraHandle zh,
 
 YAZ_EXPORT int zebra_admin_import_end (ZebraHandle zh);
 
-int zebra_admin_exchange_record (ZebraHandle zh,
+YAZ_EXPORT int zebra_admin_exchange_record (ZebraHandle zh,
                                  const char *rec_buf,
                                  size_t rec_len,
                                  const char *recid_buf, size_t recid_len,
                                  int action);
 
-int zebra_begin_trans (ZebraHandle zh, int rw);
-int zebra_end_trans (ZebraHandle zh);
-int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *stat);
+YAZ_EXPORT int zebra_begin_trans (ZebraHandle zh, int rw);
+YAZ_EXPORT int zebra_end_trans (ZebraHandle zh);
+YAZ_EXPORT int zebra_end_transaction (ZebraHandle zh, ZebraTransactionStatus *stat);
 
-int zebra_commit (ZebraHandle zh);
-int zebra_clean (ZebraHandle zh);
+YAZ_EXPORT int zebra_commit (ZebraHandle zh);
+YAZ_EXPORT int zebra_clean (ZebraHandle zh);
 
-int zebra_init (ZebraHandle zh);
-int zebra_compact (ZebraHandle zh);
-int zebra_repository_update (ZebraHandle zh, const char *path);
-int zebra_repository_delete (ZebraHandle zh, const char *path);
-int zebra_repository_show (ZebraHandle zh, const char *path);
+YAZ_EXPORT int zebra_init (ZebraHandle zh);
+YAZ_EXPORT int zebra_compact (ZebraHandle zh);
+YAZ_EXPORT int zebra_repository_update (ZebraHandle zh, const char *path);
+YAZ_EXPORT int zebra_repository_delete (ZebraHandle zh, const char *path);
+YAZ_EXPORT int zebra_repository_show (ZebraHandle zh, const char *path);
 
-int zebra_add_record (ZebraHandle zh, const char *buf, int buf_size);
+YAZ_EXPORT int zebra_add_record (ZebraHandle zh, const char *buf, int buf_size);
 			       
-int zebra_insert_record (ZebraHandle zh, 
+YAZ_EXPORT int zebra_insert_record (ZebraHandle zh, 
 			 const char *recordType,
 			 int *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
-int zebra_update_record (ZebraHandle zh, 
+YAZ_EXPORT int zebra_update_record (ZebraHandle zh, 
 			 const char *recordType,
 			 int* sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
 			 int force_update);
-int zebra_delete_record (ZebraHandle zh, 
+YAZ_EXPORT int zebra_delete_record (ZebraHandle zh, 
 			 const char *recordType,
 			 int *sysno, const char *match, const char *fname,
 			 const char *buf, int buf_size,
