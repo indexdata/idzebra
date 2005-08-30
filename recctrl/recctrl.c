@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.20 2005-04-28 08:20:40 adam Exp $
+/* $Id: recctrl.c,v 1.21 2005-08-30 12:27:18 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -56,8 +56,10 @@ static void recTypeClass_add (struct recTypeClass **rts, RecType *rt,
 RecTypeClass recTypeClass_create (Res res, NMEM nmem)
 {
     struct recTypeClass *rts = 0;
+#if HAVE_DLFCN_H
     const char *module_path = res_get_def(res, "modulePath",
 					  DEFAULT_MODULE_PATH);
+#endif
 
 #ifdef IDZEBRA_STATIC_GRS_SGML
     if (1)
