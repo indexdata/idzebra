@@ -1,4 +1,4 @@
-/* $Id: zebramap.c,v 1.42 2005-06-15 21:31:45 adam Exp $
+/* $Id: zebramap.c,v 1.43 2005-08-30 12:23:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -189,6 +189,7 @@ ZebraMaps zebra_maps_open (Res res, const char *base)
 
 struct zebra_map *zebra_map_get (ZebraMaps zms, unsigned reg_id)
 {
+    assert(reg_id >= 0 && reg_id <= 255);
     return zms->lookup_array[reg_id];
 }
 

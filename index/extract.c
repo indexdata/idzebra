@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.193 2005-08-26 10:13:30 adam Exp $
+/* $Id: extract.c,v 1.194 2005-08-30 12:23:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1539,7 +1539,7 @@ ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh, struct recKeys *reckeys,
 	char *dst = (char*) &key;
 	char dst_buf[IT_MAX_WORD];
 	char *dst_term = dst_buf;
-	int index_type, ord;
+	int index_type = 0, ord;
 
 	iscz1_decode(decode_handle, &dst, &src);
 	assert(key.len <= 4 && key.len > 2);
@@ -1549,6 +1549,7 @@ ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh, struct recKeys *reckeys,
 
 	zebraExplain_lookup_ord(zh->reg->zei, ord, &index_type,
 				0/* db */, 0/* set */, 0/* use */);
+	assert(index_type);
 	zebra_term_untrans_iconv(zh, nmem, index_type,
 				 &dst_term, src);
 	zebra_snippets_append(snippets, seqno, ord, dst_term);

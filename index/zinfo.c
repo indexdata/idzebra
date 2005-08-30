@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.50 2005-08-26 10:13:31 adam Exp $
+/* $Id: zinfo.c,v 1.51 2005-08-30 12:23:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1425,15 +1425,17 @@ int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
     {
 	struct zebSUInfoB *zsui = zdb->attributeDetails->SUInfo;
 	for ( ;zsui; zsui = zsui->next)
-	    if (zsui->info.which == ZEB_SU_SET_USE && 
-		zsui->info.ordinal == ord)
+	    if (zsui->info.ordinal == ord)
 	    {
 		if (db)
 		    *db = zdb->databaseName;
-		if (set)
-		    *set = zsui->info.u.su.set;
-		if (use)
-		    *use = zsui->info.u.su.use;
+		if (zsui->info.which == ZEB_SU_SET_USE)
+		{
+		    if (set)
+			*set = zsui->info.u.su.set;
+		    if (use)
+			*use = zsui->info.u.su.use;
+		}
 		if (index_type)
 		    *index_type = zsui->info.index_type;
 		return 0;
