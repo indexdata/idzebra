@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.120.2.9 2005-05-30 13:39:55 adam Exp $
+/* $Id: zebraapi.c,v 1.120.2.10 2005-09-09 14:22:12 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -744,7 +744,6 @@ int zebra_select_database (ZebraHandle zh, const char *basename)
 {
     ASSERTZH;
     yaz_log(LOG_API,"zebra_select_database %s",basename);
-    zh->errCode=0;
     return zebra_select_databases (zh, 1, &basename);
 }
 
@@ -758,7 +757,7 @@ int zebra_select_databases (ZebraHandle zh, int num_bases,
     ASSERTZH;
     yaz_log(LOG_API,"zebra_select_databases n=%d [0]=%s",
 		    num_bases,basenames[0]);
-    zh->errCode=0;
+    zebra_clearError(zh);
     
     if (num_bases < 1)
     {
@@ -832,7 +831,8 @@ int zebra_search_RPN (ZebraHandle zh, ODR o,
 {
     ASSERTZH;
     yaz_log(LOG_API,"zebra_search_rpn");
-    zh->errCode=0;
+
+    zebra_clearError(zh);
     zh->hits = 0;
     *hits = 0;
 
@@ -859,7 +859,8 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
     int i, *pos_array, ret = 0;
     ASSERTZH;
     yaz_log(LOG_API,"zebra_records_retrieve n=%d",num_recs);
-    zh->errCode=0;
+
+    zebra_clearError(zh);
 
     if (!zh->res)
     {
@@ -868,8 +869,6 @@ int zebra_records_retrieve (ZebraHandle zh, ODR stream,
         return -1;
     }
     
-    zh->errCode = 0;
-
     if (zebra_begin_read (zh))
 	return -1;
 
@@ -1206,12 +1205,13 @@ static int delete_SU_handle(void *handle, int ord)
     return 0;
 }
 
-int zebra_drop_database  (ZebraHandle zh, const char *database)
+int zebra_drop_database (ZebraHandle zh, const char *database)
 {
     int ret = 0;
     ASSERTZH;
     yaz_log(LOG_API,"zebra_drop_database");
-    zh->errCode = 0;
+
+    zebra_clearError(zh);
 
     if (zebra_select_database (zh, database))
         return -1;
