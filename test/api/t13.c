@@ -1,4 +1,4 @@
-/* $Id: t13.c,v 1.2 2005-09-13 11:51:07 adam Exp $
+/* $Id: t13.c,v 1.3 2005-09-13 13:15:24 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -34,12 +34,12 @@ void tst()
     const char *val;
     int i;
 
-    default_res = res_open(0, 0, 0); /* completely empty */
+    default_res = res_open(0, 0); /* completely empty */
     if (!default_res)
 	exit(1);
     res_set(default_res, "name1", "value1");
 
-    temp_res = res_open(0, 0, 0); /* completely empty */
+    temp_res = res_open(0, 0); /* completely empty */
     if (!temp_res)
 	exit(1);
     
