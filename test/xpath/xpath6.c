@@ -1,4 +1,4 @@
-/* $Id: xpath6.c,v 1.4 2005-06-29 16:52:27 adam Exp $
+/* $Id: xpath6.c,v 1.5 2005-09-13 11:51:11 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 {
     int i;
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle zh = zebra_open(zs);
+    ZebraHandle zh = zebra_open(zs, 0);
     char path[256];
 
     zebra_select_database(zh, "Default");

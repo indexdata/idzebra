@@ -1,4 +1,4 @@
-/* $Id: mbox1.c,v 1.1 2005-04-28 09:18:20 adam Exp $
+/* $Id: mbox1.c,v 1.2 2005-09-13 11:51:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     char path[256];
 
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open(zs);
+    ZebraHandle  zh = zebra_open(zs, 0);
 
     check_filter(zs, "grs.regx");
     zebra_select_database(zh, "Default");

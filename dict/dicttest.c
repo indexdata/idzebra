@@ -1,4 +1,4 @@
-/* $Id: dicttest.c,v 1.34 2005-04-15 10:47:48 adam Exp $
+/* $Id: dicttest.c,v 1.35 2005-09-13 11:51:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -160,12 +160,14 @@ int main (int argc, char **argv)
         yaz_log (YLOG_FATAL, "no config and/or dictionary specified");
         exit (1);
     }
-    my_resource = res_open (config, 0, 0);
+    my_resource = res_open(0, 0);
     if (!my_resource)
     {
         yaz_log (YLOG_FATAL, "cannot open resource `%s'", config);
         exit (1);
     }
+    res_read_file(my_resource, config);
+
     bfs = bfs_create (res_get(my_resource, "register"), 0);
     if (!bfs)
     {

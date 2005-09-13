@@ -1,4 +1,4 @@
-/* $Id: t11.c,v 1.2 2005-05-02 09:25:12 adam Exp $
+/* $Id: t11.c,v 1.3 2005-09-13 11:51:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -32,7 +32,7 @@ const char *myrec[] = {
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle zh = zebra_open(zs);
+    ZebraHandle zh = zebra_open(zs, 0);
 
     init_data(zh, myrec);
 

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.184 2005-08-22 09:04:18 adam Exp $
+/* $Id: zebraapi.c,v 1.185 2005-09-13 11:51:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -49,8 +49,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int log_level = 0;
 static int log_level_initialized = 0;
 
-static Res zebra_open_res (ZebraHandle zh);
-static void zebra_close_res (ZebraHandle zh);
+static void zebra_open_res(ZebraHandle zh);
+static void zebra_close_res(ZebraHandle zh);
 
 static void zebra_chdir (ZebraService zs)
 {
@@ -79,14 +79,14 @@ static void zebra_flush_reg (ZebraHandle zh)
     zebra_index_merge (zh );
 }
 
-static struct zebra_register *zebra_register_open (ZebraService zs, 
-                                                   const char *name,
-                                                   int rw, int useshadow,
-                                                   Res res,
-                                                   const char *reg_path);
+static struct zebra_register *zebra_register_open(ZebraService zs, 
+						  const char *name,
+						  int rw, int useshadow,
+						  Res res,
+						  const char *reg_path);
 static void zebra_register_close (ZebraService zs, struct zebra_register *reg);
 
-ZebraHandle zebra_open (ZebraService zs)
+ZebraHandle zebra_open(ZebraService zs, Res res)
 {
     ZebraHandle zh;
     const char *default_encoding;
@@ -111,6 +111,7 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->errCode = 0;
     zh->errString = 0;
     zh->res = 0; 
+    zh->session_res = res_open(zs->global_res, res);
     zh->user_perm = 0;
 
     zh->reg_name = xstrdup ("");
@@ -128,7 +129,7 @@ ZebraHandle zebra_open (ZebraService zs)
     zh->shadow_enable = 1;
     zh->m_staticrank = 0;
 
-    default_encoding = res_get_def(zs->global_res, "encoding", "ISO-8859-1");
+    default_encoding = res_get_def(zh->session_res, "encoding", "ISO-8859-1");
 
     zh->iconv_to_utf8 =
         yaz_iconv_open ("UTF-8", default_encoding);
@@ -177,11 +178,14 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
     yaz_log(YLOG_LOG, "zebra_start %s %s", ZEBRAVER,
 	    configName ? configName : "");
 
-    if ((res = res_open (configName, def_res, over_res)))
+    if ((res = res_open(def_res, over_res)))
     {
 	const char *passwd_plain = 0;
 	const char *passwd_encrypt = 0;
         ZebraService zh = xmalloc(sizeof(*zh));
+
+	if (configName)
+	    res_read_file(res, configName);
 
         zh->global_res = res;
         zh->sessions = 0;
@@ -246,9 +250,9 @@ Dict dict_open_res (BFiles bfs, const char *name, int cache, int rw,
 }
 
 static
-struct zebra_register *zebra_register_open (ZebraService zs, const char *name,
-                                            int rw, int useshadow, Res res,
-                                            const char *reg_path)
+struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
+					   int rw, int useshadow, Res res,
+					   const char *reg_path)
 {
     struct zebra_register *reg;
     int record_compression = REC_COMPRESS_NONE;
@@ -533,6 +537,7 @@ ZEBRA_RES zebra_close (ZebraHandle zh)
     if (zh->reg)
         zebra_register_close (zh->service, zh->reg);
     zebra_close_res (zh);
+    res_close(zh->session_res);
 
     xfree(zh->record_encoding);
 
@@ -583,38 +588,34 @@ struct map_baseinfo {
     int new_num_max;
 };
 
-static Res zebra_open_res (ZebraHandle zh)
+static void zebra_open_res(ZebraHandle zh)
 {
-    Res res = 0;
     char fname[512];
     ASSERTZH;
     zh->errCode = 0;
 
     if (zh->path_reg)
     {
-        sprintf (fname, "%.200s/zebra.cfg", zh->path_reg);
-        res = res_open (fname, zh->service->global_res, 0);
-        if (!res)
-            res = zh->service->global_res;
+        sprintf(fname, "%.200s/zebra.cfg", zh->path_reg);
+        zh->res = res_open(zh->session_res, 0);
+	res_read_file(zh->res, fname);
     }
     else if (*zh->reg_name == 0)
     {
-        res = zh->service->global_res;
+        zh->res = res_open(zh->session_res, 0);
     }
     else
     {
         yaz_log (YLOG_WARN, "no register root specified");
-        return 0;  /* no path for register - fail! */
+        zh->res = 0;  /* no path for register - fail! */
     }
-    return res;
 }
 
 static void zebra_close_res (ZebraHandle zh)
 {
     ASSERTZH;
     zh->errCode = 0;
-    if (zh->res != zh->service->global_res)
-        res_close (zh->res);
+    res_close (zh->res);
     zh->res = 0;
 }
 
@@ -655,7 +656,7 @@ static void zebra_select_register (ZebraHandle zh, const char *new_reg)
             strcat (zh->path_reg, zh->reg_name);
         }
     }
-    zh->res = zebra_open_res (zh);
+    zebra_open_res(zh);
     
     if (zh->lock_normal)
         zebra_lock_destroy (zh->lock_normal);
@@ -668,7 +669,7 @@ static void zebra_select_register (ZebraHandle zh, const char *new_reg)
     if (zh->res)
     {
         char fname[512];
-        const char *lock_area  =res_get (zh->res, "lockDir");
+        const char *lock_area = res_get (zh->res, "lockDir");
         
         if (!lock_area && zh->path_reg)
             res_set (zh->res, "lockDir", zh->path_reg);
@@ -749,8 +750,8 @@ int zebra_select_default_database(ZebraHandle zh)
 	/* no database has been selected - so we select based on
 	   resource setting (including group)
 	*/
-	const char *group = res_get(zh->service->global_res, "group");
-	const char *v = res_get_prefix(zh->service->global_res,
+	const char *group = res_get(zh->session_res, "group");
+	const char *v = res_get_prefix(zh->session_res,
 				       "database", group, "Default");
 	return zebra_select_database(zh, v);
     }
@@ -777,7 +778,7 @@ void map_basenames (ZebraHandle zh, ODR stream,
 	odr_malloc (stream, sizeof(*info.new_basenames) * info.new_num_max);
     info.mem = stream->mem;
 
-    res_trav (zh->service->global_res, "mapdb", &info, map_basenames_func);
+    res_trav (zh->session_res, "mapdb", &info, map_basenames_func);
     
     for (i = 0; i<p->num_bases; i++)
 	if (p->basenames[i] && p->new_num_bases < p->new_num_max)
@@ -1623,9 +1624,9 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
         }
         zebra_set_state (zh, 'd', seqno);
         
-        zh->reg = zebra_register_open (zh->service, zh->reg_name,
-                                       1, rval ? 1 : 0, zh->res,
-                                       zh->path_reg);
+        zh->reg = zebra_register_open(zh->service, zh->reg_name,
+				      1, rval ? 1 : 0, zh->res,
+				      zh->path_reg);
         if (zh->reg)
             zh->reg->seqno = seqno;
         else
@@ -1704,9 +1705,9 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
             resultSetInvalidate (zh);
             zebra_register_close (zh->service, zh->reg);
 	}
-        zh->reg = zebra_register_open (zh->service, zh->reg_name,
-                                       0, val == 'c' ? 1 : 0,
-                                       zh->res, zh->path_reg);
+        zh->reg = zebra_register_open(zh->service, zh->reg_name,
+                                      0, val == 'c' ? 1 : 0,
+                                      zh->res, zh->path_reg);
         if (!zh->reg)
         {
             zebra_unlock (zh->lock_normal);

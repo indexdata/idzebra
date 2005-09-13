@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.15 2005-08-09 12:30:47 adam Exp $
+/* $Id: testlib.h,v 1.16 2005-09-13 11:51:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -56,7 +56,7 @@ void start_log(int argc, char **argv);
  * and uses that if need be. 
  * The name defaults to zebra.cfg, if null or emtpy
  */
-ZebraService start_service(char *cfgname);
+ZebraService start_service(const char *cfgname);
 
 
 /** 

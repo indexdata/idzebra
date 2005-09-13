@@ -1,4 +1,4 @@
-/* $Id: xslt2.c,v 1.4 2005-08-18 12:50:20 adam Exp $
+/* $Id: xslt2.c,v 1.5 2005-09-13 11:51:11 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     size_t r;
 
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open(zs);
+    ZebraHandle  zh = zebra_open(zs, 0);
 
     check_filter(zs, "xslt");
 

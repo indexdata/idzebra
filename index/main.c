@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.126 2005-08-26 10:11:49 adam Exp $
+/* $Id: main.c,v 1.127 2005-09-13 11:51:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -63,7 +63,7 @@ int main (int argc, char **argv)
     int nsections = 0;
     int enable_commit = 1;
     char *database = 0;
-    Res res = res_open(0, 0, 0);
+    Res res = res_open(0, 0);
     
     int trans_started=0;
 #if HAVE_SYS_TIMES_H
@@ -135,7 +135,7 @@ int main (int argc, char **argv)
 			yaz_log (YLOG_FATAL, "Cannot read config %s", config);
                         exit (1);
 	            }	
-                    zh = zebra_open (zs);
+                    zh = zebra_open (zs, 0);
 		    zebra_shadow_enable (zh, enable_commit);
                 }
 

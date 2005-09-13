@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.3 2005-08-09 12:30:48 adam Exp $
+/* $Id: t1.c,v 1.4 2005-09-13 11:51:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,7 +25,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 int main(int argc, char **argv)
 {
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open(zs);
+    ZebraHandle  zh = zebra_open(zs, 0);
     char path[256];
     int i;
     zint ids[5];

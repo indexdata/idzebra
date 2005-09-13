@@ -1,4 +1,4 @@
-/* $Id: t12.c,v 1.1 2005-05-09 13:22:44 adam Exp $
+/* $Id: t12.c,v 1.2 2005-09-13 11:51:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,13 +29,13 @@ int main(int argc, char **argv)
     int i;
     int no_db = 140;
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle zh = zebra_open(zs);
+    ZebraHandle zh = zebra_open(zs, 0);
 
     zebra_select_database(zh, "Default");
     zebra_init(zh);
     zebra_close(zh);
 
-    zh = zebra_open (zs);
+    zh = zebra_open(zs, 0);
     
     zebra_begin_trans (zh, 1);
     for (i = 0; i<no_db; i++)
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     }
     zebra_end_trans(zh);
     zebra_close(zh);
-    zh = zebra_open(zs);
+    zh = zebra_open(zs, 0);
     for (i = 0; i<=no_db; i++)
     {
 	char dbstr[20];

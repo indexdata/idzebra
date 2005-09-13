@@ -1,4 +1,4 @@
-/* $Id: t13.c,v 1.1 2005-08-17 21:30:31 adam Exp $
+/* $Id: t13.c,v 1.2 2005-09-13 11:51:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -47,7 +47,7 @@ void tst()
     if (!zs)
 	exit(2);
     
-    zh = zebra_open(zs);
+    zh = zebra_open(zs, 0);
 
     zebra_select_database(zh, "Default");
 

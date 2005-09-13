@@ -1,4 +1,4 @@
-/* $Id: t10.c,v 1.8 2005-05-24 11:35:43 adam Exp $
+/* $Id: t10.c,v 1.9 2005-09-13 11:51:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -74,13 +74,13 @@ int main(int argc, char **argv)
 {
     int i;
     ZebraService zs = start_up("zebrazv.cfg", argc, argv);
-    ZebraHandle  zh = zebra_open (zs);
+    ZebraHandle zh = zebra_open(zs, 0);
   
     init_data(zh, recs);
     zebra_close(zh);
     for (i = 0; tests[i].schema; i++)
     {
-        zh = zebra_open (zs);
+        zh = zebra_open(zs, 0);
         zebra_select_database(zh, "Default");
         zebra_set_resource(zh, "zvrank.weighting-scheme", tests[i].schema);
         yaz_log(YLOG_LOG,"============%d: %s ===========", i, tests[i].schema);

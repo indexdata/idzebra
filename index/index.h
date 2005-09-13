@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.149 2005-08-19 11:04:23 adam Exp $
+/* $Id: index.h,v 1.150 2005-09-13 11:51:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -282,6 +282,7 @@ struct zebra_session {
     int destroyed;
     ZebraSet sets;
     Res res;
+    Res session_res;
     char *user_perm;
     int errCode;
     zint hits;

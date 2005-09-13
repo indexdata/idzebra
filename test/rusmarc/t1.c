@@ -1,4 +1,4 @@
-/* $Id: t1.c,v 1.3 2005-01-15 19:38:39 adam Exp $
+/* $Id: t1.c,v 1.4 2005-09-13 11:51:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 {
     
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open(zs);
+    ZebraHandle  zh = zebra_open(zs, 0);
     char path[256];
 
     check_koi8r();

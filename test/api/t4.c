@@ -1,4 +1,4 @@
-/* $Id: t4.c,v 1.17 2005-05-11 12:39:37 adam Exp $
+/* $Id: t4.c,v 1.18 2005-09-13 11:51:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     int number_to_fetch = 5;
 
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle zh = zebra_open(zs);
+    ZebraHandle zh = zebra_open(zs, 0);
 
     init_data(zh, myrec);
 
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     zebra_stop(zs);
 
     zs = start_service("");
-    zh = zebra_open(zs);
+    zh = zebra_open(zs, 0);
     zebra_select_database(zh, "Default");
     zebra_set_resource(zh, "sortmax", "3"); /* make small sort boundary */
 

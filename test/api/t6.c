@@ -1,4 +1,4 @@
-/* $Id: t6.c,v 1.10 2005-08-05 10:40:13 adam Exp $
+/* $Id: t6.c,v 1.11 2005-09-13 11:51:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 {
     int i;
     ZebraService zs = start_up("zebra6.cfg", argc, argv);
-    ZebraHandle zh = zebra_open(zs);
+    ZebraHandle zh = zebra_open(zs, 0);
 
     srand(17);
     
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     {
 	int l;
 
-	zh = zebra_open (zs);
+	zh = zebra_open (zs, 0);
 	zebra_select_database(zh, "Default");
 	
 	zebra_begin_trans (zh, 1);
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 	zebra_end_trans(zh);
 	zebra_close(zh);
     }
-    zh = zebra_open(zs);
+    zh = zebra_open(zs, 0);
 
     zebra_select_database(zh, "Default");
 

@@ -1,4 +1,4 @@
-/* $Id: t7.c,v 1.9 2005-05-11 12:39:38 adam Exp $
+/* $Id: t7.c,v 1.10 2005-09-13 11:51:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     int status;
     ZEBRA_RES ret;
     ZebraService zs = start_up(0, argc, argv);
-    ZebraHandle  zh = zebra_open (zs);
+    ZebraHandle  zh = zebra_open (zs, 0);
     ODR odr_input = odr_createmem (ODR_DECODE);    
     ODR odr_output = odr_createmem (ODR_ENCODE);    
     YAZ_PQF_Parser parser = yaz_pqf_create();

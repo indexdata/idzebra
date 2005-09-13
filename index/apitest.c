@@ -1,4 +1,4 @@
-/* $Id: apitest.c,v 1.22 2005-03-09 12:14:42 adam Exp $
+/* $Id: apitest.c,v 1.23 2005-09-13 11:51:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -146,7 +146,7 @@ int main (int argc, char **argv)
 	exit (1);
     }
     /* open Zebra */
-    zh = zebra_open (zs);
+    zh = zebra_open (zs, 0);
     if (!zh)
     {
 	printf ("zebras_open failed\n");

@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.29 2005-08-09 10:01:03 adam Exp $
+/* $Id: api.h,v 1.30 2005-09-13 11:51:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -129,7 +129,7 @@ void zebra_filter_info(ZebraService zs, void *cd,
    one handle is sufficient 
 */
 YAZ_EXPORT
-ZebraHandle zebra_open(ZebraService zs);
+ZebraHandle zebra_open(ZebraService zs, Res res);
 
 /**
    \brief Destroys Zebra session handle.

@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.34 2005-06-14 20:28:54 adam Exp $
+/* $Id: zebrash.c,v 1.35 2005-09-13 11:51:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -193,7 +193,7 @@ static int cmd_zebra_open( char *args[], WRBUF outbuff)
     if (!zs)
 	wrbuf_puts(outbuff,"zebra seems not to have been started, "
 		   "trying anyway\n");
-    zh=zebra_open(zs);
+    zh = zebra_open(zs, 0);
     return 0; /* ok */
 }
 

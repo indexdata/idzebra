@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.44 2005-08-17 21:28:07 adam Exp $
+/* $Id: res.c,v 1.45 2005-09-13 11:51:11 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -42,22 +42,20 @@ struct res_entry {
 
 struct res_struct {
     struct res_entry *first, *last;
-    char *name;
-    int  init;
     Res def_res;
     Res over_res;
 };
 
-static struct res_entry *add_entry (Res r)
+static struct res_entry *add_entry(Res r)
 {
     struct res_entry *resp;
 
     if (!r->first)
         resp = r->last = r->first =
-	    (struct res_entry *) xmalloc (sizeof(*resp));
+	    (struct res_entry *) xmalloc(sizeof(*resp));
     else
     {
-        resp = (struct res_entry *) xmalloc (sizeof(*resp));
+        resp = (struct res_entry *) xmalloc(sizeof(*resp));
         r->last->next = resp;
         r->last = resp;
     }
@@ -134,7 +132,7 @@ static char *xstrdup_env(const char *src)
     return dst;
 }
 
-static void reread (Res r)
+ZEBRA_RES res_read_file(Res r, const char *fname)
 {
     struct res_entry *resp;
     char *line;
@@ -143,38 +141,21 @@ static void reread (Res r)
     char fr_buf[1024];
     FILE *fr;
 
-    assert (r);
-    r->init = 1;
+    assert(r);
 
-    if (!r->name)
-	return; 
-
-    fr = fopen (r->name, "r");
+    fr = fopen(fname, "r");
     if (!fr)
     {
-        yaz_log (YLOG_WARN|YLOG_ERRNO, "Cannot open `%s'", r->name);
-	return ;
+        yaz_log(YLOG_WARN|YLOG_ERRNO, "Cannot open `%s'", fname);
+	return ZEBRA_FAIL;
     }
-    val_buf = (char*) xmalloc (val_max);
+    val_buf = (char*) xmalloc(val_max);
     while (1)
     {
-        line = fgets (fr_buf, sizeof(fr_buf)-1, fr);
+        line = fgets(fr_buf, sizeof(fr_buf)-1, fr);
         if (!line)
             break;
-        if (*line == '#')
-        {
-            int no = 0;
-
-            while (fr_buf[no] && fr_buf[no] != '\n')
-                no++;
-            fr_buf[no] = '\0';
-
-            resp = add_entry (r);
-            resp->name = (char*) xmalloc (no+1);
-            resp->value = NULL;
-            strcpy (resp->name, fr_buf);
-        }
-        else
+        if (*line != '#')
         {
             int no = 0;
             while (1)
@@ -184,18 +165,18 @@ static void reread (Res r)
                     no = 0;
                     break;
                 }
-                if (strchr (": \t", fr_buf[no]))
+                if (strchr(": \t", fr_buf[no]))
                     break;
                 no++;
             }
             if (!no)
                 continue;
             fr_buf[no++] = '\0';
-            resp = add_entry (r);
-            resp->name = (char*) xmalloc (no);
-            strcpy (resp->name, fr_buf);
+            resp = add_entry(r);
+            resp->name = (char*) xmalloc(no);
+            strcpy(resp->name, fr_buf);
             
-            while (strchr (" \t", fr_buf[no]))
+            while (strchr(" \t", fr_buf[no]))
                 no++;
             val_size = 0;
             while (1)
@@ -208,13 +189,13 @@ static void reread (Res r)
                         val_size--;
                     val_buf[val_size] = '\0';
 		    resp->value = xstrdup_env(val_buf);
-                    yaz_log (YLOG_DEBUG, "(name=%s,value=%s)",
+                    yaz_log(YLOG_DEBUG, "(name=%s,value=%s)",
                          resp->name, resp->value);
                     break;
                 }
-                else if (fr_buf[no] == '\\' && strchr ("\n\r\f", fr_buf[no+1]))
+                else if (fr_buf[no] == '\\' && strchr("\n\r\f", fr_buf[no+1]))
                 {
-                    line = fgets (fr_buf, sizeof(fr_buf)-1, fr);
+                    line = fgets(fr_buf, sizeof(fr_buf)-1, fr);
                     if (!line)
                     {
 			val_buf[val_size] = '\0';
@@ -230,77 +211,56 @@ static void reread (Res r)
                     {
                         char *nb;
 
-                        nb = (char*) xmalloc (val_max+=1024);
-                        memcpy (nb, val_buf, val_size);
-                        xfree (val_buf);
+                        nb = (char*) xmalloc(val_max+=1024);
+                        memcpy(nb, val_buf, val_size);
+                        xfree(val_buf);
                         val_buf = nb;
                     }
                 }
             }
         }
     }                
-    xfree (val_buf);
-    fclose (fr);
+    xfree(val_buf);
+    fclose(fr);
+    return ZEBRA_OK;
 }
 
-Res res_open (const char *name, Res def_res, Res over_res)
+Res res_open(Res def_res, Res over_res)
 {
     Res r;
 
-    if (name)
-    {
-#ifdef WIN32
-        if (access (name, 4))
-#else
-        if (access (name, R_OK))
-#endif
-        {
-            yaz_log (YLOG_WARN|YLOG_ERRNO, "Cannot open `%s'", name);
-	    return 0;
-        }
-    }
-    r = (Res) xmalloc (sizeof(*r));
-    r->init = 0;
+    r = (Res) xmalloc(sizeof(*r));
     r->first = r->last = NULL;
-    if (name)
-        r->name = xstrdup (name);
-    else
-	r->name=0;
     r->def_res = def_res;
     r->over_res = over_res;
     return r;
 }
 
-void res_clear (Res r)
+void res_clear(Res r)
 {
-    if (r->init)
+    struct res_entry *re, *re1;
+    for (re = r->first; re; re=re1)
     {
-        struct res_entry *re, *re1;
-        for (re = r->first; re; re=re1)
-        {
-            if (re->name)
-                xfree (re->name);
-            if (re->value)
-                xfree (re->value);
-            re1 = re->next;
-            xfree (re);
-        }
+	if (re->name)
+	    xfree(re->name);
+	if (re->value)
+	    xfree(re->value);
+	re1 = re->next;
+	xfree(re);
     }
-    r->init = 0;
     r->first = r->last = NULL;
 }
 
-void res_close (Res r)
+void res_close(Res r)
 {
     if (!r)
         return;
     res_clear(r);
 
-    xfree (r->name);
-    xfree (r);
+    xfree(r);
 }
 
-const char *res_get_prefix (Res r, const char *name, const char *prefix,
+const char *res_get_prefix(Res r, const char *name, const char *prefix,
 			    const char *def)
 {
     const char *v = 0;;
@@ -322,7 +282,7 @@ const char *res_get_prefix (Res r, const char *name, const char *prefix,
     return v;
 }
 
-const char *res_get (Res r, const char *name)
+const char *res_get(Res r, const char *name)
 {
     struct res_entry *re;
     const char *v;
@@ -334,59 +294,55 @@ const char *res_get (Res r, const char *name)
     if (v)
 	return v;
 
-    if (!r->init)
-        reread (r);
     for (re = r->first; re; re=re->next)
-        if (re->value && !yaz_matchstr (re->name, name))
+        if (re->value && !yaz_matchstr(re->name, name))
             return re->value;
 
-    return res_get (r->def_res, name);
+    return res_get(r->def_res, name);
 }
 
-const char *res_get_def (Res r, const char *name, const char *def)
+const char *res_get_def(Res r, const char *name, const char *def)
 {
     const char *t;
 
-    if (!(t = res_get (r, name)))
+    if (!(t = res_get(r, name)))
     {
-    	yaz_log (YLOG_DEBUG, "CAUTION: Using default resource %s:%s", name, def);
+    	yaz_log(YLOG_DEBUG, "CAUTION: Using default resource %s:%s", name, def);
     	return def;
     }
     else
     	return t;
 }
 
-int res_get_match (Res r, const char *name, const char *value, const char *s)
+int res_get_match(Res r, const char *name, const char *value, const char *s)
 {
-    const char *cn = res_get (r, name);
+    const char *cn = res_get(r, name);
 
     if (!cn)
 	cn = s;
-    if (cn && !yaz_matchstr (cn, value))
+    if (cn && !yaz_matchstr(cn, value))
         return 1;
     return 0;
 }
 
-void res_set (Res r, const char *name, const char *value)
+void res_set(Res r, const char *name, const char *value)
 {
     struct res_entry *re;
-    assert (r);
-    if (!r->init)
-        reread (r);
+    assert(r);
 
     for (re = r->first; re; re=re->next)
-        if (re->value && !yaz_matchstr (re->name, name))
+        if (re->value && !yaz_matchstr(re->name, name))
         {
-            xfree (re->value);
-            re->value = xstrdup_env (value);
+            xfree(re->value);
+            re->value = xstrdup_env(value);
             return;
         }
-    re = add_entry (r);
-    re->name = xstrdup (name);
-    re->value = xstrdup_env (value);
+    re = add_entry(r);
+    re->name = xstrdup(name);
+    re->value = xstrdup_env(value);
 }
 
-int res_trav (Res r, const char *prefix, void *p,
+int res_trav(Res r, const char *prefix, void *p,
 	      void (*f)(void *p, const char *name, const char *value))
 {
     struct res_entry *re;
@@ -395,38 +351,35 @@ int res_trav (Res r, const char *prefix, void *p,
     
     if (!r)
         return 0;
+    no = res_trav(r->over_res, prefix, p, f);
+    if (no)
+	return no;
     if (prefix)
         l = strlen(prefix);
-    if (!r->init)
-        reread (r);
     for (re = r->first; re; re=re->next)
         if (re->value)
-            if (l==0 || !memcmp (re->name, prefix, l))
+            if (l==0 || !memcmp(re->name, prefix, l))
 	    {
                 (*f)(p, re->name, re->value);
 		no++;
 	    }
     if (!no)
-        return res_trav (r->def_res, prefix, p, f);
+        return res_trav(r->def_res, prefix, p, f);
     return no;
 }
 
 
-int res_write (Res r)
+ZEBRA_RES res_write_file(Res r, const char *fname)
 {
     struct res_entry *re;
     FILE *fr;
 
-    assert (r);
-    if (!r->init)
-        reread (r);
-    if (!r->name)
-	return 0; /* ok, this was not from a file */
-    fr = fopen (r->name, "w");
+    assert(r);
+    fr = fopen(fname, "w");
     if (!fr)
     {
-        yaz_log (YLOG_FATAL|YLOG_ERRNO, "Cannot create `%s'", r->name);
-        exit (1);
+        yaz_log(YLOG_FATAL|YLOG_ERRNO, "Cannot create `%s'", fname);
+        exit(1);
     }
 
     for (re = r->first; re; re=re->next)
@@ -435,10 +388,10 @@ int res_write (Res r)
         int lefts = strlen(re->name)+2;
 
         if (!re->value)
-            fprintf (fr, "%s\n", re->name);
+            fprintf(fr, "%s\n", re->name);
         else
         {
-            fprintf (fr, "%s: ", re->name);
+            fprintf(fr, "%s: ", re->name);
             while (lefts + strlen(re->value+no) > 78)
             {
                 int i = 20;
@@ -452,16 +405,16 @@ int res_write (Res r)
                 if (i<0)
                     ind = no + 78 - lefts;
                 for (i = no; i != ind; i++)
-                    putc (re->value[i], fr);
-                fprintf (fr, "\\\n");
+                    putc(re->value[i], fr);
+                fprintf(fr, "\\\n");
                 no=ind;
                 lefts = 0;
             }
-            fprintf (fr, "%s\n", re->value+no);
+            fprintf(fr, "%s\n", re->value+no);
         }
     }
-    fclose (fr);
-    return 0;
+    fclose(fr);
+    return ZEBRA_OK;
 }
 
 ZEBRA_RES res_get_int(Res r, const char *name, int *val)

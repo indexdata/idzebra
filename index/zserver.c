@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.139 2005-08-22 09:04:18 adam Exp $
+/* $Id: zserver.c,v 1.140 2005-09-13 11:51:06 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -76,7 +76,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     yaz_log (YLOG_DEBUG, "bend_init");
 
     sob = statserv_getcontrol ();
-    if (!(zh = zebra_open (sob->handle)))
+    if (!(zh = zebra_open (sob->handle, 0)))
     {
 	yaz_log (YLOG_WARN, "Failed to read config `%s'", sob->configname);
 	r->errcode = YAZ_BIB1_PERMANENT_SYSTEM_ERROR;

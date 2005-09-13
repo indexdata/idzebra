@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.26 2005-08-18 12:50:18 adam Exp $
+/* $Id: testlib.c,v 1.27 2005-09-13 11:51:07 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -94,7 +94,7 @@ const char *get_srcdir()
 
 }
 /** start_service - do a zebra_start with a decent config name */
-ZebraService start_service(char *cfgname)
+ZebraService start_service(const char *cfgname)
 {
     char cfg[256];
     const char *srcdir = get_srcdir();
@@ -103,7 +103,7 @@ ZebraService start_service(char *cfgname)
         cfgname="zebra.cfg";
 
     sprintf(cfg, "%.200s/%.50s", srcdir, cfgname);
-    zs=zebra_start(cfg);
+    zs = zebra_start(cfg);
     if (!zs)
     {
         printf("zebra_start failed, probably because missing config file \n"
