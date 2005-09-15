@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.185 2005-09-13 11:51:06 adam Exp $
+/* $Id: zebraapi.c,v 1.186 2005-09-15 09:27:18 pop Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -128,6 +128,8 @@ ZebraHandle zebra_open(ZebraService zs, Res res)
 
     zh->shadow_enable = 1;
     zh->m_staticrank = 0;
+
+    zebra_open_res(zh);
 
     default_encoding = res_get_def(zh->session_res, "encoding", "ISO-8859-1");
 

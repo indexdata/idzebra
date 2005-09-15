@@ -1,4 +1,4 @@
-/* $Id: res.h,v 1.7 2005-09-13 11:51:06 adam Exp $
+/* $Id: res.h,v 1.8 2005-09-15 09:27:18 pop Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -66,6 +66,30 @@ const char *res_get_prefix(Res r, const char *name, const char *prefix,
 
 YAZ_EXPORT
 ZEBRA_RES res_get_int(Res r, const char *name, int *val);
+
+
+/* == pop ================================================================= */
+
+YAZ_EXPORT
+Res res_add_over (Res p, Res t);
+
+YAZ_EXPORT
+void res_remove_over (Res r);
+
+YAZ_EXPORT
+void res_close_over (Res r);
+
+YAZ_EXPORT
+void res_add (Res r, const char *name, const char *value);
+
+YAZ_EXPORT
+char **res_2_array (Res r);
+
+YAZ_EXPORT
+char **res_get_array(Res r, const char* name);
+
+YAZ_EXPORT
+void res_dump (Res r, int level);
 
 YAZ_END_CDECL
 
