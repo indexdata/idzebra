@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.150 2005-09-13 11:51:06 adam Exp $
+/* $Id: index.h,v 1.151 2005-09-16 09:58:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -521,6 +521,9 @@ void zebra_term_untrans_iconv(ZebraHandle zh, NMEM stream, int reg_type,
 			      char **dst, const char *src);
 
 ZEBRA_RES zebra_get_hit_vector(ZebraHandle zh, const char *setname, zint sysno);
+
+void zebra_term_untrans(ZebraHandle zh, int reg_type,
+			char *dst, const char *src);
 
 YAZ_END_CDECL
 

@@ -1,4 +1,4 @@
-/* $Id: rsisamb.c,v 1.34 2005-05-24 11:35:43 adam Exp $
+/* $Id: rsisamb.c,v 1.35 2005-09-16 09:58:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -82,6 +82,7 @@ RSET rsisamb_create(NMEM nmem, struct rset_key_control *kcontrol,
 	kcontrol->filter_func ? &control_filter : &control,
 	nmem, kcontrol, scope, term, 0, 0);
     struct rset_private *info;
+    assert(pos);
     if (!log_level_initialized)
     {
         log_level = yaz_log_module_level("rsisamb");

@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.6 2005-09-13 11:51:07 adam Exp $
+/* $Id: safari1.c,v 1.7 2005-09-16 09:58:39 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -29,7 +29,7 @@ const char *myrec[] =
     "1234\n"  /* first record */
     "00024338 125060 1 any the\n"
     "00024338 125060 2 any art\n"
-    "00024338 125060 3 any of\n",
+    "00024338 125060 3 any mand\n",
 
     "5678\n"  /* other record - same owner id */
     "00024339 125060 1 any den\n"
@@ -48,7 +48,7 @@ const char *myrec[] =
     
     "1001\n"  /* separate record */
     "00024340 125062 1 any the\n"
-    "00024340 125062 2 any gamle\n"
+    "00024340 125062 2 any old\n"
     "00024340 125062 3 any mand\n",
     
     0
@@ -65,21 +65,22 @@ int main(int argc, char **argv)
     init_data(zh, myrec);
     do_query(__LINE__, zh, "@attr 1=any the", 3);
     do_query(__LINE__, zh, "@attr 1=any {the art}", 1);
-    do_query(__LINE__, zh, "@attr 1=any {den gamle}", 1);
+    do_query(__LINE__, zh, "@attr 1=any {den gamle}", 0);
+    do_query(__LINE__, zh, "@attr 1=any {the gamle}", 1);
     do_query(__LINE__, zh, "@attr 1=any {the of}", 0);
 
     /* verify that we get these records exactly */
     ids[0] = 24338;
     ids[1] = 24339;
     ids[2] = 24340;
-    meta_query(__LINE__, zh, "@attr 1=any the", 3, ids);
+    meta_query(__LINE__, zh, "@attr 1=any mand", 3, ids);
 
     /* limit to 125061 */
     limits[0] = 125061;
     limits[1] = 0;
     zebra_set_limit(zh, 0, limits);
     ids[0] = 24339;
-    meta_query(__LINE__, zh, "@attr 1=any the", 1, ids);
+    meta_query(__LINE__, zh, "@attr 1=any mand", 1, ids);
 
     /* limit to 125060, 125061 */
     limits[0] = 125061;
@@ -88,20 +89,20 @@ int main(int argc, char **argv)
     zebra_set_limit(zh, 0, limits);
     ids[0] = 24338;
     ids[1] = 24339;
-    meta_query(__LINE__, zh, "@attr 1=any the", 2, ids);
+    meta_query(__LINE__, zh, "@attr 1=any mand", 2, ids);
 
-    /* all except 125061 */
-    limits[0] = 125061;
+    /* all except 125062 */
+    limits[0] = 125062;
     limits[1] = 0;
     zebra_set_limit(zh, 1, limits);
 
     ids[0] = 24338;
-    ids[1] = 24340;
-    meta_query(__LINE__, zh, "@attr 1=any the", 2, ids);
+    ids[1] = 24339;
+    meta_query(__LINE__, zh, "@attr 1=any mand", 2, ids);
 
     /* no limit */
     zebra_set_limit(zh, 1, 0);
-    do_query(__LINE__, zh, "@attr 1=any the", 3);
+    do_query(__LINE__, zh, "@attr 1=any mand", 3);
 
     return close_down(zh, zs, 0);
 }

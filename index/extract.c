@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.194 2005-08-30 12:23:02 adam Exp $
+/* $Id: extract.c,v 1.195 2005-09-16 09:58:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -42,6 +42,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #define USE_SHELLSORT 0
+
+#define REC_MULTI_SKIP 0
 
 #if USE_SHELLSORT
 static void shellsort(void *ar, int r, size_t s,
@@ -569,6 +571,7 @@ static int file_extract_record(ZebraHandle zh,
 	
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
 
+#if REC_MULTI_SKIP
 	if (!force_update && recordAttr->runNumber ==
             zebraExplain_runNumberIncrement (zh->reg->zei, 0))
 	{
@@ -581,6 +584,7 @@ static int file_extract_record(ZebraHandle zh,
 	    logRecord (zh);
 	    return 1;
 	}
+#endif
 	/* flush old keys for sort&search etc. */
         delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
@@ -1044,6 +1048,7 @@ ZEBRA_RES buffer_extract_record (ZebraHandle zh,
 	
 	recordAttr = rec_init_attr (zh->reg->zei, rec);
 	
+#if REC_MULTI_SKIP
 	if (!force_update) {
 	    if (recordAttr->runNumber ==
 		zebraExplain_runNumberIncrement (zh->reg->zei, 0))
@@ -1057,6 +1062,7 @@ ZEBRA_RES buffer_extract_record (ZebraHandle zh,
 		return ZEBRA_FAIL;
 	    }
 	}
+#endif
 
         delkeys.buf_used = rec->size[recInfo_delKeys];
 	delkeys.buf = rec->info[recInfo_delKeys];
