@@ -1,11 +1,16 @@
 #ifndef API_SWIG_H
 #define API_SWIG_H
 
+#include <yaz/xmalloc.h>
 #include <idzebra/res.h>
 #include <idzebra/api.h>
 
-typedef short IDZEBRA_RES;
+typedef short IDZEBRA_RES; 
 #define RES_LIST char** res_args                                 
+
+typedef struct idzebra_swig_service *IDZebraService;
+
+typedef struct idzebra_swig_session *IDZebraSession;
 
 /* 
 -------------------------------------------------------------------------------
@@ -21,16 +26,16 @@ int api_check_error(void);
 void api_clear_error(void);
 
 
-ZebraService idzebra_start (RES_LIST);
+IDZebraService idzebra_start (RES_LIST);
 
-IDZEBRA_RES idzebra_stop(ZebraService zs);
+IDZEBRA_RES idzebra_stop(IDZebraService srv);
 
 
-ZebraHandle idzebra_open (ZebraService zs, RES_LIST);
+IDZebraSession idzebra_open (IDZebraService srv, RES_LIST);
 
-IDZEBRA_RES idzebra_close(ZebraHandle zh);
+IDZEBRA_RES idzebra_close(IDZebraSession sess);
 
-IDZEBRA_RES idzebra_samplefunc(ZebraHandle zh, RES_LIST);
+IDZEBRA_RES idzebra_samplefunc(IDZebraSession sess, RES_LIST);
 
 
 /* 
@@ -54,7 +59,7 @@ void args_parse_res (Res r,
 	 	     Res skip,
 		     char **args);
 
-void args_use (ZebraHandle zh,
+void args_use (IDZebraSession sess,
 	       Res r,
 	       Res rr,
 	       int mandatory,
@@ -82,12 +87,12 @@ void args_use (ZebraHandle zh,
   }                                                              \
 
 #define ARGS_APPLY                                               \
-  temp_res = res_add_over(zh->session_res, func_res);            \
+  temp_res = res_add_over(sess->res, func_res);                  \
 
 #define ARGS_PROCESS(mode, ...)                                  \
   {                                                              \
   const char *vargs[] = { __VA_ARGS__ , 0 };                     \
-  args_use(zh, local, func_res, mode, vargs);                    \
+  args_use(sess, local, func_res, mode, vargs);                  \
   }                                                              \
 
 #define ARGS_REVOKE                                              \
@@ -95,12 +100,13 @@ void args_use (ZebraHandle zh,
   const char **used;                                             \
   res_remove_over(temp_res);                                     \
   used = res_get_array(local, "_used");                          \
-  args_use(zh, zh->session_res, 0, ARG_MODE_FORCE, used);        \
+  args_use(sess, sess->res, 0, ARG_MODE_FORCE, used);              \
   free_array(used);                                              \
   }                                                              \
 
 #define ARGS_DONE                                                \
   if (func_res) res_close(func_res);                             \
+  if (temp_res) res_close_over(temp_res);                        \
   if (local) res_close(local);                                   \
 
 #endif /* API_SWIG_H */

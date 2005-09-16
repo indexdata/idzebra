@@ -1,18 +1,26 @@
 #include <idzebra/api_swig.h>
-#include <idzebra/res.h>
-#include <idzebra/api.h>
 #include <stdarg.h>
-#include "index.h"
 
 #define DEFAULT_APPROX_LIMIT 2000000000
+
+/* == Internal structures ================================================== */
+
+struct idzebra_swig_service {
+  ZebraService zs;
+  Res res;
+};
+
+struct idzebra_swig_session {
+  ZebraHandle zh;
+  Res res;
+};
 
 /* == API errors, debug ==================================================== */
 static Res api_error = 0;
 const char* api_error_context = 0;
 void api_add_error(const char *fmt, ...); 
-void api_clear_error(void);
+void api_clear_error(void); 
 void free_array(const char **args);
-ZebraHandle zebra_get_handle (ZebraService zs);
 
 
 /* == API init, destroy  =================================================== */
@@ -24,9 +32,9 @@ void idzebra_api_init(void)
 
 /* == Service start/stop =================================================== */
 
-ZebraService idzebra_start(RES_LIST) 
+IDZebraService idzebra_start (RES_LIST)
 {
-  ZebraService zs = 0;
+  IDZebraService srv = xmalloc(sizeof(*srv));
 
   ARGS_INIT;
   API_SET_CONTEXT;
@@ -42,27 +50,27 @@ ZebraService idzebra_start(RES_LIST)
 	      "setTmpDir",
 	      "lockDir");
   
-  zs = zebra_start_res(res_get(func_res,"configName"), NULL, func_res);
+  srv->res = func_res;
+  srv->zs = zebra_start_res(res_get(func_res,"configName"), NULL, srv->res);
 
-  /* Function resources are kept for service (zs->global_res); */
   func_res = 0; 
   ARGS_DONE;
 
-  return (zs);
+  return (srv);
 }
 
-IDZEBRA_RES idzebra_stop(ZebraService zs) 
+IDZEBRA_RES idzebra_stop(IDZebraService srv) 
 {
-  /* Global res have an over part here */
-  res_close_over(zs->global_res);
-  return (zebra_stop(zs));
+  ZEBRA_RES rv = zebra_stop(srv->zs);
+  res_close (srv->res);
+  xfree (srv);
+  return (rv);
 }
 
 /* == Session open/close =================================================== */
-ZebraHandle idzebra_open (ZebraService zs, RES_LIST)
+IDZebraSession idzebra_open (IDZebraService srv, RES_LIST)
 {
-
-  ZebraHandle zh;
+  IDZebraSession sess = xmalloc(sizeof(*sess));
 
   ARGS_INIT;
   API_SET_CONTEXT;
@@ -74,24 +82,25 @@ ZebraHandle idzebra_open (ZebraService zs, RES_LIST)
 	       "estimatehits",
 	       "staticrank");
 
-  zh = zebra_open(zs, func_res);
+  sess->res = func_res;
+  sess->zh = zebra_open(srv->zs, sess->res);
 
   /* Function resources are kept for session (zh->res->over_res); */
   func_res = 0; 
   ARGS_DONE;
 
-  yaz_log (YLOG_DEBUG, "zebra_open zs=%p returns %p", zs, zh);
-
-  return (zh);
+  return (sess);
 }
 
-IDZEBRA_RES idzebra_close(ZebraHandle zh) 
+IDZEBRA_RES idzebra_close(IDZebraSession sess) 
 {
-  res_close_over(zh->session_res);
-  return (zebra_close(zh));
+  ZEBRA_RES rv = zebra_close (sess->zh);
+  res_close (sess->res);
+  xfree (sess);
+  return (rv);
 }
 /* == Sample function == =================================================== */
-IDZEBRA_RES idzebra_samplefunc(ZebraHandle zh, RES_LIST)
+IDZEBRA_RES idzebra_samplefunc(IDZebraSession sess, RES_LIST)
 {
   ARGS_INIT;
   API_SET_CONTEXT;
@@ -99,10 +108,15 @@ IDZEBRA_RES idzebra_samplefunc(ZebraHandle zh, RES_LIST)
   ARGS_PROCESS(ARG_MODE_OPTIONAL,"encoding");
   ARGS_APPLY;
 
-  yaz_log (YLOG_DEBUG, "Got strucc:%s\n",res_get(zh->res,"strucc"));
-  res_dump (zh->res,0);
+  res_dump (sess->res,0);
 
-  ARGS_REVOKE;
+  //  ARGS_REVOKE;
+  {                                                              
+  const char **used;                                             
+  res_remove_over(temp_res);                                     
+  used = (const char **) res_get_array(local, "_used");                          args_use(sess, sess->res, 0, ARG_MODE_FORCE, used);            
+  free_array(used);                                              
+  }                                                              
   ARGS_DONE;
   return (ZEBRA_OK);
 } 
@@ -173,6 +187,7 @@ void idzebra_res_estimatehits (ZebraHandle zh, const char *value)
   zebra_set_approx_limit(zh, val);
 }
 
+/*
 void idzebra_res_staticrank (ZebraHandle zh, const char *value) 
 {
   int val = 0;
@@ -180,8 +195,9 @@ void idzebra_res_staticrank (ZebraHandle zh, const char *value)
     if (! (sscanf(value, "%d", &val) == 1)) 
       api_add_error( "Expected integer value for 'estimatehits'");
   
-  zh->m_staticrank = val;
+  sess->zh->m_staticrank = val;
 }
+*/
 
 /* == applying and revoking call-scope resources =========================== */
 
@@ -211,10 +227,12 @@ void arg_use (ZebraHandle zh,
       }
 
       /* staticrank */
+      /*
       else if (!strcmp(name,"staticrank")) {
 	idzebra_res_staticrank(zh, value);
 	gotit = 1;
       }
+      */
       
       /* collects provided arguments in order to revoke them 
 	 at the end of the function */
@@ -230,7 +248,7 @@ void arg_use (ZebraHandle zh,
   }
 }
 
-void args_use (ZebraHandle zh,
+void args_use (IDZebraSession sess,
 	       Res r,
 	       Res rr,
 	       int mode,
@@ -239,7 +257,7 @@ void args_use (ZebraHandle zh,
   int i = 0;
   if (args) {
     while (args[i]) {
-      arg_use (zh, r, rr, mode, args[i++]);
+      arg_use (sess->zh, r, rr, mode, args[i++]);
     }
   }
 }

@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.187 2005-09-15 12:48:42 adam Exp $
+/* $Id: zebraapi.c,v 1.188 2005-09-16 17:00:41 pop Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -46,8 +46,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ASSERTZHRES assert(zh && zh->service && zh->res)
 #define ASSERTZS assert(zs)
 
-static int log_level = 0;
-static int log_level_initialized = 0;
+static int log_level = YLOG_LOG;
+static int log_level_initialized = 1;
 
 static void zebra_open_res(ZebraHandle zh);
 static void zebra_close_res(ZebraHandle zh);
@@ -198,7 +198,7 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
 
         if (!passwd_plain && !passwd_encrypt)
             zh->passwd_db = NULL;
-        else
+        else 
         {
             zh->passwd_db = passwd_db_open();
             if (!zh->passwd_db)
@@ -1994,7 +1994,7 @@ ZEBRA_RES zebra_octet_term_encoding(ZebraHandle zh, const char *encoding)
 {
     ASSERTZH;
     assert(encoding);
-    yaz_log(log_level, "zebra_octet_term_encoding");
+    yaz_log(log_level, "zebra_octet_term_encoding %s", encoding);
     zebra_clearError(zh);
 
     if (zh->iconv_to_utf8 != 0)
