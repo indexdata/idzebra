@@ -1,4 +1,4 @@
-/* $Id: tstbfile1.c,v 1.1 2005-03-30 09:25:23 adam Exp $
+/* $Id: tstbfile1.c,v 1.2 2005-09-19 09:37:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -22,22 +22,30 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include <idzebra/bfile.h>
 
 void tst1(BFiles bfs)
 {
     int version = 1;
     BFile bf;
+    const char *more_info = 0;
 
     bf_reset(bfs);
     bf = bf_xopen(bfs, "tst", /* block size */ 32, 
 		  /* wr */ 1, "tstmagic",	&version, 0 /* more_info */);
     
-    bf_xclose(bf, version, 0 /* no more info */);
+    bf_xclose(bf, version, "more info");
     
     bf = bf_xopen(bfs, "tst", /* block size */ 32, 
-		  /* wr */ 1, "tstmagic",	&version, 0 /* more_info */);
-    
+		  /* wr */ 1, "tstmagic",	&version, &more_info);
+
+    if (strcmp(more_info, "more info"))
+    {
+	fprintf(stderr, "tstbfile1: more info data corrupt more_info=%s\n",
+		more_info);
+	exit(1);
+    }
     bf_xclose(bf, version, 0 /* no more info */);
 }
 

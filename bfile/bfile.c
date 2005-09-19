@@ -1,4 +1,4 @@
-/* $Id: bfile.c,v 1.44 2005-06-14 20:28:53 adam Exp $
+/* $Id: bfile.c,v 1.45 2005-09-19 09:37:31 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -155,7 +155,7 @@ BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wrflag,
     if (!bf)
 	return 0;
      /* HEADER_SIZE is considered enough for our header */
-    if (bf->alloc_buf_size < HEADER_SIZE)
+    if (bf->block_size < HEADER_SIZE)
 	bf->alloc_buf_size = HEADER_SIZE;
     else
 	bf->alloc_buf_size = bf->block_size;
@@ -211,6 +211,8 @@ BFile bf_xopen(BFiles bfs, const char *name, int block_size, int wrflag,
 	bf_close(bf);
 	return 0;
     }
+    if (hbuf[l] == ' ')
+	l++;
     if (more_info)
 	*more_info = hbuf + l;
     return bf;
