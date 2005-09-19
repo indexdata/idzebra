@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.188 2005-09-16 17:00:41 pop Exp $
+/* $Id: zebraapi.c,v 1.189 2005-09-19 08:20:15 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -46,8 +46,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ASSERTZHRES assert(zh && zh->service && zh->res)
 #define ASSERTZS assert(zs)
 
-static int log_level = YLOG_LOG;
-static int log_level_initialized = 1;
+static int log_level = 0;
+static int log_level_initialized = 0;
 
 static void zebra_open_res(ZebraHandle zh);
 static void zebra_close_res(ZebraHandle zh);
