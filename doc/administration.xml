@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.18 2005-05-30 13:22:11 adam Exp $ -->
+ <!-- $Id: administration.xml,v 1.19 2005-10-20 18:28:10 quinn Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -377,6 +377,18 @@
        for write/update access, <literal>r</literal> for read access.
       </para>
      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term>dbaccess <replaceable>accessfile</replaceable></term>
+      <listitem>
+        <para>
+	  Names a file which lists database subscriptions for individual users.
+	  The access file should consists of lines of the form <literal>username:
+	  dbnames</literal>, where dbnames is a list of database names, seprated by
+	  '+'. No whitespace is allowed in the database list.
+	</para>
+      </listitem>
     </varlistentry>
 
    </variablelist>

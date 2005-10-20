@@ -1,3 +1,7 @@
+Added 'dbperms' setting to zebra.cfg. Names file with lines of
+format username: db1+...dbn, listing databases that user has access to.
+Database-specific access control only happens for searching, at present.
+
 Added zebra_set_approx_limit for a ZebraHandle (session). Results
 will be approximate if hit count is greater than the limit specified.
 

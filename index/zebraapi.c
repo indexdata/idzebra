@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.189 2005-09-19 08:20:15 adam Exp $
+/* $Id: zebraapi.c,v 1.190 2005-10-20 18:28:10 quinn Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -182,6 +182,7 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
     {
 	const char *passwd_plain = 0;
 	const char *passwd_encrypt = 0;
+	const char *dbaccess = 0;
         ZebraService zh = xmalloc(sizeof(*zh));
 
 	if (configName)
@@ -195,6 +196,7 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
         zebra_mutex_cond_init (&zh->session_lock);
 	passwd_plain = res_get (zh->global_res, "passwd");
 	passwd_encrypt = res_get (zh->global_res, "passwd.c");
+	dbaccess = res_get (zh->global_res, "dbaccess");
 
         if (!passwd_plain && !passwd_encrypt)
             zh->passwd_db = NULL;
@@ -211,6 +213,17 @@ ZebraService zebra_start_res (const char *configName, Res def_res, Res over_res)
 		    passwd_db_file_crypt(zh->passwd_db, passwd_encrypt);
 	    }
         }
+
+	if (!dbaccess)
+	    zh->dbaccess = NULL;
+	else {
+	    zh->dbaccess = res_open(NULL, NULL);
+	    if (res_read_file(zh->dbaccess, dbaccess) != ZEBRA_OK) {
+		yaz_log(YLOG_FATAL, "Failed to read %s", dbaccess);
+		return NULL;
+	    }
+	}
+
         zh->path_root = res_get (zh->global_res, "root");
 	zh->nmem = nmem_create();
 	zh->record_classes = recTypeClass_create (zh->global_res, zh->nmem);
@@ -541,6 +554,9 @@ ZEBRA_RES zebra_close (ZebraHandle zh)
 
     xfree(zh->record_encoding);
 
+    if (zh->dbaccesslist)
+	xfree(zh->dbaccesslist);
+
     for (i = 0; i < zh->num_basenames; i++)
         xfree(zh->basenames[i]);
     xfree(zh->basenames);
@@ -819,6 +835,32 @@ ZEBRA_RES zebra_select_databases (ZebraHandle zh, int num_bases,
         zh->errCode = YAZ_BIB1_COMBI_OF_SPECIFIED_DATABASES_UNSUPP;
         return ZEBRA_FAIL;
     }
+
+    /* Check if the user has access to all databases (Seb) */
+    /* You could argue that this should happen later, after we have
+     * determined that the database(s) exist. */
+    if (zh->dbaccesslist) {
+	for (i = 0; i < num_bases; i++) {
+	    const char *db = basenames[i];
+	    char *p, *pp;
+	    for (p = zh->dbaccesslist; p && *p; p = pp) {
+		int len;
+		if ((pp = strchr(p, '+'))) {
+		    len = pp - p;
+		    pp++;
+		}
+		else
+		    len = strlen(p);
+		if (len == strlen(db) && !strncmp(db, p, len))
+		    break;
+	    }
+	    if (!p) {
+		zh->errCode = YAZ_BIB1_ACCESS_TO_SPECIFIED_DATABASE_DENIED;
+		return ZEBRA_FAIL;
+	    }
+	}
+    }
+
     for (i = 0; i < zh->num_basenames; i++)
         xfree(zh->basenames[i]);
     xfree(zh->basenames);
@@ -1179,6 +1221,7 @@ void zebra_clearError(ZebraHandle zh)
 ZEBRA_RES zebra_auth (ZebraHandle zh, const char *user, const char *pass)
 {
     const char *p;
+    const char *astring;
     char u[40];
     ZebraService zs;
 
@@ -1190,6 +1233,13 @@ ZEBRA_RES zebra_auth (ZebraHandle zh, const char *user, const char *pass)
     p = res_get(zs->global_res, u);
     xfree(zh->user_perm);
     zh->user_perm = xstrdup(p ? p : "r");
+
+    /* Determine database access list */
+    astring = res_get(zs->dbaccess, user ? user : "anonymous");
+    if (astring)
+	zh->dbaccesslist = xstrdup(astring);
+    else
+	zh->dbaccesslist = NULL;
 
     /* users that don't require a password .. */
     if (zh->user_perm && strchr(zh->user_perm, 'a'))

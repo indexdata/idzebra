@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.151 2005-09-16 09:58:39 adam Exp $
+/* $Id: index.h,v 1.152 2005-10-20 18:28:10 quinn Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -254,6 +254,7 @@ struct zebra_service {
     struct zebra_register *regs;
     Zebra_mutex_cond session_lock;
     Passwd_db passwd_db;
+    Res dbaccess;
     const char *path_root;
     RecTypeClass record_classes;
     NMEM nmem;
@@ -284,6 +285,7 @@ struct zebra_session {
     Res res;
     Res session_res;
     char *user_perm;
+    char *dbaccesslist;
     int errCode;
     zint hits;
     char *errString;
