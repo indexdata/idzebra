@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.190 2005-10-20 18:28:10 quinn Exp $
+/* $Id: zebraapi.c,v 1.191 2005-10-21 18:29:04 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -113,6 +113,7 @@ ZebraHandle zebra_open(ZebraService zs, Res res)
     zh->res = 0; 
     zh->session_res = res_open(zs->global_res, res);
     zh->user_perm = 0;
+    zh->dbaccesslist = 0;
 
     zh->reg_name = xstrdup ("");
     zh->path_reg = 0;
@@ -554,8 +555,7 @@ ZEBRA_RES zebra_close (ZebraHandle zh)
 
     xfree(zh->record_encoding);
 
-    if (zh->dbaccesslist)
-	xfree(zh->dbaccesslist);
+    xfree(zh->dbaccesslist);
 
     for (i = 0; i < zh->num_basenames; i++)
         xfree(zh->basenames[i]);
@@ -1239,7 +1239,7 @@ ZEBRA_RES zebra_auth (ZebraHandle zh, const char *user, const char *pass)
     if (astring)
 	zh->dbaccesslist = xstrdup(astring);
     else
-	zh->dbaccesslist = NULL;
+	zh->dbaccesslist = 0;
 
     /* users that don't require a password .. */
     if (zh->user_perm && strchr(zh->user_perm, 'a'))
