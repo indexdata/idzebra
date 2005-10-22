@@ -1,4 +1,4 @@
-/* $Id: trunc.c,v 1.63 2005-08-25 10:37:05 adam Exp $
+/* $Id: trunc.c,v 1.64 2005-10-22 17:32:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -146,6 +146,7 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
         struct trunc_info *ti;
         int rscur = 0;
         int rsmax = (to-from)/i_add + 1;
+	int cmp_border = preserve_position ? 0 : 1;
 	NMEM rset_nmem_sub = nmem_create(); /* all sub rsets not needed
 					       after this */
         
@@ -196,7 +197,7 @@ static RSET rset_trunc_r(ZebraHandle zi, const char *term, int length,
                     rset_delete(rset[n]);
                     break;
                 }
-                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > 1)
+                if ((*ti->cmp)(ti->tmpbuf, ti->heap[ti->ptr[1]]) > cmp_border)
                 {
                     heap_delete(ti);
                     heap_insert(ti, ti->tmpbuf, n);
