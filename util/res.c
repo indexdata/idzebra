@@ -1,4 +1,4 @@
-/* $Id: res.c,v 1.46 2005-09-15 09:27:18 pop Exp $
+/* $Id: res.c,v 1.47 2005-10-27 08:49:29 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -433,10 +433,10 @@ ZEBRA_RES res_get_int(Res r, const char *name, int *val)
 Res res_add_over (Res p, Res t)
 {
     if ((!p) || (!t))
-      return (0);
-
+	return (0);
+    
     while (p->over_res)
-      p = p->over_res;
+	p = p->over_res;
     
     p->over_res = t;
     return (p);
@@ -454,7 +454,7 @@ void res_close_over (Res r)
     if (!r)
         return;
     if (r->over_res)
-      res_close(r->over_res);
+	res_close(r->over_res);
     r->over_res = 0;
 }
 
@@ -463,11 +463,11 @@ void res_add (Res r, const char *name, const char *value)
     struct res_entry *re;
     assert (r);
     if ((name) && (value)) 
-      yaz_log (YLOG_RES, "res_add res=%p, name=%s, value=%s", r, name, value);
-
-      re = add_entry (r);
-      re->name = xstrdup (name);
-      re->value = xstrdup_env (value);
+	yaz_log (YLOG_RES, "res_add res=%p, name=%s, value=%s", r, name, value);
+    
+    re = add_entry (r);
+    re->name = xstrdup (name);
+    re->value = xstrdup_env (value);
 }
 
 char **res_2_array (Res r)
@@ -475,70 +475,68 @@ char **res_2_array (Res r)
     struct res_entry *re;
     int i = 0;
     char **list;
-
+    
     if (!r)
-      return 0;
-
+	return 0;
+    
     list = xmalloc(sizeof(char *));
     
     for (re = r->first; re; re=re->next) {
-      list = xrealloc(list, ((i+3) * sizeof(char *)));
-      list[i++] = strdup(re->name);
-      if (re->value) 
-	list[i++] = strdup(re->value);
-      else
-	list[i++] = strdup("");
-      yaz_log(YLOG_RES, "res2array: %s=%s",re->name, re->value);
+	list = xrealloc(list, ((i+3) * sizeof(char *)));
+	list[i++] = strdup(re->name);
+	if (re->value) 
+	    list[i++] = strdup(re->value);
+	else
+	    list[i++] = strdup("");
+	yaz_log(YLOG_RES, "res2array: %s=%s",re->name, re->value);
     }
-  list[i++] = 0;
-  return (list);
+    list[i++] = 0;
+    return (list);
 }
 
 char **res_get_array(Res r, const char* name)
 {
-  struct res_entry *re;
-  int i = 0;
-  char **list;
-
-  if (!r)
-    return 0;
-
-  list = xmalloc(sizeof(char *));
-
-  for (re = r->first; re; re=re->next)
-    if (re->value && !yaz_matchstr (re->name, name))
-      {
-	list = xrealloc(list, (i+2) * sizeof(char *));
-	list[i++] = xstrdup(re->value);
-      }
-
-  if (i == 0)
-    return (res_get_array(r->def_res, name));
-  
-  list[i++] = 0;
-  return (list);
+    struct res_entry *re;
+    int i = 0;
+    char **list;
+    
+    if (!r)
+	return 0;
+    
+    list = xmalloc(sizeof(char *));
+    
+    for (re = r->first; re; re=re->next)
+	if (re->value && !yaz_matchstr (re->name, name))
+	{
+	    list = xrealloc(list, (i+2) * sizeof(char *));
+	    list[i++] = xstrdup(re->value);
+	}
+    
+    if (i == 0)
+	return (res_get_array(r->def_res, name));
+    
+    list[i++] = 0;
+    return (list);
 }
 
 void res_dump (Res r, int level) 
 {
-  struct res_entry *re;
-
-  if (!r)
-    return;
-  
-  printf ("RES:\n", level * 4,"");
-
-  for (re = r->first; re; re=re->next) {
-    printf("%*s - %s:='%s'\n",level * 4,"",re->name,re->value);
-  }
-
-  if (r->def_res) {
-    printf ("%*s DEF ",level * 4,"");
-    res_dump (r->def_res, level + 1);
-  }
-
-  if (r->over_res) {
-    printf ("%*s OVER ",level * 4,"");
-    res_dump (r->over_res, level + 1);
-  }
+    struct res_entry *re;
+    
+    if (!r)
+	return;
+    
+    for (re = r->first; re; re=re->next) {
+	printf("%*s - %s:='%s'\n",level * 4,"",re->name,re->value);
+    }
+    
+    if (r->def_res) {
+	printf ("%*s DEF ",level * 4,"");
+	res_dump (r->def_res, level + 1);
+    }
+    
+    if (r->over_res) {
+	printf ("%*s OVER ",level * 4,"");
+	res_dump (r->over_res, level + 1);
+    }
 }
