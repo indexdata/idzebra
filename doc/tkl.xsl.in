@@ -1,7 +1,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 		version="1.0">
 
-  <xsl:include href="/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/xhtml/chunk.xsl"/>
+  <xsl:include href="@XSL_DIR@/xhtml/chunk.xsl"/>
 
   <xsl:variable name="use.id.as.filename">1</xsl:variable>
   <xsl:variable name="html.ext">.tkl</xsl:variable>
@@ -12,7 +12,7 @@
   <xsl:param name="prev"/>
   <xsl:param name="next"/>
 
-  <document>
+  <xsl:element name="document">
     <title>
        <xsl:apply-templates select="." mode="object.title.markup"/>
     </title>
@@ -39,7 +39,7 @@
 
       <xsl:call-template name="user.footer.navigation"/>
     </body>
-  </document>
+  </xsl:element>
 </xsl:template>
 
 </xsl:stylesheet>
