@@ -1,4 +1,4 @@
-/* $Id: index.h,v 1.153 2005-10-28 07:25:30 adam Exp $
+/* $Id: index.h,v 1.154 2005-10-28 09:22:50 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -192,18 +192,7 @@ typedef struct zebra_rank_class {
     struct zebra_rank_class *next;
 } *ZebraRankClass;
 
-#define NEW_REC_KEYS 1
-
-#if NEW_REC_KEYS
 #include "reckeys.h"
-#else
-struct recKeys {
-    int buf_used;
-    int buf_max;
-    char *buf;
-    void *codec_handle;
-};
-#endif
 
 #if NATTR
 
@@ -240,14 +229,10 @@ struct zebra_register {
     int stop_flag;
     int active; /* 0=shutdown, 1=enabled and inactive, 2=activated */
 
-#if NEW_REC_KEYS
     zebra_rec_keys_t keys;
-#else
-    struct recKeys keys;
-#endif
 
 #if NATTR
-    struct recKeys sortKeys;
+    zebra_rec_keys_t sortKeys;
 #else
     struct sortKeys sortKeys;
 #endif
@@ -487,34 +472,19 @@ off_t zebra_record_int_tell (void *fh);
 int zebra_record_int_read (void *fh, char *buf, size_t count);
 void zebra_record_int_end (void *fh, off_t offset);
 
-#if NEW_REC_KEYS
 void print_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys);
-#else
-void print_rec_keys(ZebraHandle zh, struct recKeys *reckeys);
-#endif
 
-#if NEW_REC_KEYS
 ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh, zebra_rec_keys_t reckeys,
 				  zebra_snippets *snippets);
-#else
-ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh, struct recKeys *reckeys,
-				  zebra_snippets *snippets);
-#endif
 ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 				    zint sysno, zebra_snippets *snippets);
 
-#if NEW_REC_KEYS
 void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
                               int cmd, zebra_rec_keys_t reckeys,
 			      zint staticrank);
-#else
-void extract_flushRecordKeys (ZebraHandle zh, SYSNO sysno,
-                              int cmd, struct recKeys *reckeys,
-			      zint staticrank);
-#endif
 #if NATTR
 void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
-                            int cmd, struct recKeys *skp);
+                            int cmd, zebra_rec_keys_t skp);
 #else
 void extract_flushSortKeys (ZebraHandle zh, SYSNO sysno,
                             int cmd, struct sortKeys *skp);
