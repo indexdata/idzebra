@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.67 2005-09-16 09:58:39 adam Exp $
+/* $Id: kinput.c,v 1.68 2005-10-28 07:25:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -397,18 +397,20 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
 #define PR_KEY_LOW 0
 #define PR_KEY_TOP 0
 
+#if 0
 static void pkey(const char *b, int mode)
 {
     key_logdump_txt(YLOG_LOG, b, mode ? "i" : "d");
 }
+#endif
 
 #if 1
 /* for debugging only */
-static void print_dict_item (ZebraHandle zh, const char *s)
+static void print_dict_item(ZebraHandle zh, const char *s)
 {
     char dst[IT_MAX_WORD+1];
     int ord;
-    int len = key_SU_decode (&ord, (const unsigned char *) s);
+    int len = key_SU_decode(&ord, (const unsigned char *) s);
     int index_type;
     const char *db = 0;
 
@@ -416,7 +418,8 @@ static void print_dict_item (ZebraHandle zh, const char *s)
 			     ord, &index_type, &db, 0, 0);
 
     zebra_term_untrans(zh, index_type, dst, s + len);
-    yaz_log (YLOG_LOG, "%s", dst);
+
+    yaz_log(YLOG_LOG, "ord=%d term=%s", ord, dst);
 }
 #endif
 
@@ -656,7 +659,7 @@ int heap_inpb(struct heap_cread_info *hci, struct heap_info *hi)
         hi->no_diffs++;
 
 #if 0
-        print_dict_item (hi->zh, hci->cur_name);
+        print_dict_item(hi->zh, hci->cur_name);
 #endif
         if ((dict_info = dict_lookup (hi->reg->dict, hci->cur_name)))
         {

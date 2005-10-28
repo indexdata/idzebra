@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.95 2005-08-26 10:13:31 adam Exp $
+/* $Id: zsets.c,v 1.96 2005-10-28 07:25:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1119,6 +1119,7 @@ ZEBRA_RES zebra_snippets_hit_vector(ZebraHandle zh, const char *setname,
 	
 	rset_delete(rset_comb);
 	nmem_destroy(nmem);
+	kc->dec(kc);
     }
     return ZEBRA_OK;
 }

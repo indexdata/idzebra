@@ -1,4 +1,4 @@
-/* $Id: retrieve.c,v 1.35 2005-08-26 10:13:31 adam Exp $
+/* $Id: retrieve.c,v 1.36 2005-10-28 07:25:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -219,12 +219,24 @@ int zebra_record_fetch (ZebraHandle zh, SYSNO sysno, int score,
     if (1)
     {
 	/* snippets code */
-	struct recKeys reckeys;
 	zebra_snippets *snippet;
+
+#if NEW_REC_KEYS
+	zebra_rec_keys_t reckeys = zebra_rec_keys_open();
+	
+	zebra_rec_keys_set_buf(reckeys,
+			       rec->info[recInfo_delKeys],
+			       rec->size[recInfo_delKeys], 
+			       0);
+	zebra_snippets_rec_keys(zh, reckeys, retrieveCtrl.doc_snippet);
+	zebra_rec_keys_close(reckeys);
+#else
+	struct recKeys reckeys;
 	reckeys.buf = rec->info[recInfo_delKeys];
 	reckeys.buf_used = rec->size[recInfo_delKeys];
-
 	zebra_snippets_rec_keys(zh, &reckeys, retrieveCtrl.doc_snippet);
+#endif
+
 
 #if 0
 	/* for debugging purposes */
