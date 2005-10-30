@@ -1,4 +1,4 @@
-/* $Id: limit.c,v 1.4 2005-10-30 22:31:28 adam Exp $
+/* $Id: limit.c,v 1.5 2005-10-30 22:52:37 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -101,12 +101,15 @@ void zebra_limit_for_rset(struct zebra_limit *zl,
 			  void **filter_data)
 {
 #if ZEBRA_LIMIT_DEBUG
-    yaz_log(YLOG_LOG, "zebra_limit_for_rset debug enabled");
+    yaz_log(YLOG_LOG, "zebra_limit_for_rset debug enabled zl=%p", zl);
 #endif
     if (zl && zl->ids)
     {
 	struct zebra_limit *hl;
 
+#if ZEBRA_LIMIT_DEBUG
+	yaz_log(YLOG_LOG, "enable limit");
+#endif
 	hl = zebra_limit_create(zl->complement_flag, zl->ids);
 	*filter_data = hl;
 	*filter_func = zebra_limit_filter_cb;
