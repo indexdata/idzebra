@@ -1,4 +1,4 @@
-/* $Id: limit.c,v 1.3 2005-05-09 10:28:09 adam Exp $
+/* $Id: limit.c,v 1.4 2005-10-30 22:31:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,6 +26,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/xmalloc.h>
 #include <yaz/diagbib1.h>
 #include "index.h"
+
+#define ZEBRA_LIMIT_DEBUG 1
 
 struct zebra_limit {
     int complement_flag;
@@ -63,11 +65,28 @@ static int zebra_limit_filter_cb(const void *buf, void *data)
     const struct it_key *key = buf;
     size_t i;
 
+#if ZEBRA_LIMIT_DEBUG
+    yaz_log(YLOG_LOG, "zebra_limit_filter_cb zl=%p key->len=%d", zl, key->len);
+#endif
     if (key->len != 3)
 	return 1;
     for (i = 0; zl->ids[i]; i++)
+    {
+#if ZEBRA_LIMIT_DEBUG
+	yaz_log(YLOG_LOG, " i=%d ids=" ZINT_FORMAT " mem=" ZINT_FORMAT,
+		i, zl->ids[i], key->mem[1]);
+#endif
 	if (zl->ids[i] == key->mem[1])
+	{
+#if ZEBRA_LIMIT_DEBUG
+	    yaz_log(YLOG_LOG, " match. Ret=%d", zl->complement_flag ? 0:1);
+#endif
 	    return zl->complement_flag ? 0 : 1;
+	}
+    }
+#if ZEBRA_LIMIT_DEBUG
+    yaz_log(YLOG_LOG, " no match. Ret=%d", zl->complement_flag ? 1:0);
+#endif
     return zl->complement_flag ? 1 : 0;
 }
 
@@ -81,6 +100,9 @@ void zebra_limit_for_rset(struct zebra_limit *zl,
 			  void (**filter_destroy)(void *data),
 			  void **filter_data)
 {
+#if ZEBRA_LIMIT_DEBUG
+    yaz_log(YLOG_LOG, "zebra_limit_for_rset debug enabled");
+#endif
     if (zl && zl->ids)
     {
 	struct zebra_limit *hl;
