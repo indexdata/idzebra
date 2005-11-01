@@ -1,4 +1,4 @@
-/* $Id: lookgrep.c,v 1.29 2005-01-15 19:38:21 adam Exp $
+/* $Id: lookgrep.c,v 1.30 2005-11-01 10:16:08 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -33,6 +33,16 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 typedef unsigned MatchWord;
 #define WORD_BITS 32
 #define MAX_LENGTH 1024
+
+/* This code is based 
+ * Sun Wu and Udi Manber: Fast Text Searching Allowing Errors.
+ *      Communications of the ACM, pp. 83-91, Vol. 35, No. 10, Oct. 1992, USA.
+ *      PostScript version of the paper in its submitted form: agrep1.ps)
+ *      recommended reading to understand AGREP ! 
+ *
+ * http://www.tgries.de/agrep/#AGREP1PS
+ * http://www.tgries.de/agrep/doc/agrep1ps.zip
+ */
 
 typedef struct {
   int n;                 /* no of MatchWord needed */
