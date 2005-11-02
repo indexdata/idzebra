@@ -1,3 +1,7 @@
+Zebra reads (non-standard) attribute 10 for RPN queries. The value, when
+specified, is returned as subqueryId in SearchResult-1. It un-specified
+no subqueryId is part of SearchResult-1.
+
 Added 'dbperms' setting to zebra.cfg. Names file with lines of
 format username: db1+...dbn, listing databases that user has access to.
 Database-specific access control only happens for searching, at present.

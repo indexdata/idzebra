@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.205 2005-08-26 10:13:31 adam Exp $
+/* $Id: zrpn.c,v 1.206 2005-11-02 11:43:26 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -82,7 +82,7 @@ static void rpn_char_map_prepare(struct zebra_register *reg, int reg_type,
 }
 
 static int attr_find_ex(AttrType *src, oid_value *attributeSetP,
-                         const char **string_value)
+			const char **string_value)
 {
     int num_attributes;
 
@@ -993,19 +993,28 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 static ZEBRA_RES term_limits_APT(ZebraHandle zh,
 				 Z_AttributesPlusTerm *zapt,
 				 zint *hits_limit_value,
-				 const char **term_ref_id_str)
+				 const char **term_ref_id_str,
+				 NMEM nmem)
 {
     AttrType term_ref_id_attr;
     AttrType hits_limit_attr;
+    int term_ref_id_int;
  
     attr_init(&hits_limit_attr, zapt, 9);
     *hits_limit_value  = attr_find(&hits_limit_attr, NULL);
 
     attr_init(&term_ref_id_attr, zapt, 10);
-    attr_find_ex(&term_ref_id_attr, NULL, term_ref_id_str);
+    term_ref_id_int = attr_find_ex(&term_ref_id_attr, NULL, term_ref_id_str);
+    if (term_ref_id_int != -1)
+    {
+	char *res = nmem_malloc(nmem, 20);
+	sprintf(res, "%d", term_ref_id_int);
+	*term_ref_id_str = res;
+    }
 
     /* no limit given ? */
     if (*hits_limit_value == -1)
+    {
 	if (*term_ref_id_str)
 	{
 	    /* use global if term_ref is present */
@@ -1016,6 +1025,7 @@ static ZEBRA_RES term_limits_APT(ZebraHandle zh,
 	    /* no counting if term_ref is not present */
 	    *hits_limit_value = 0;
 	}
+    }
     else if (*hits_limit_value == 0)
     {
 	/* 0 is the same as global limit */
@@ -1046,7 +1056,8 @@ static ZEBRA_RES term_trunc(ZebraHandle zh,
     const char *term_ref_id_str = 0;
     *rset = 0;
 
-    term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str);
+    term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str,
+		    stream);
     grep_info->isam_p_indx = 0;
     res = string_term(zh, zapt, term_sub, attributeSet, stream, grep_info,
 		      reg_type, complete_flag, num_bases, basenames,
@@ -1931,7 +1942,7 @@ static ZEBRA_RES rpn_search_APT_numeric(ZebraHandle zh,
     zint hits_limit_value;
     const char *term_ref_id_str = 0;
 
-    term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str);
+    term_limits_APT(zh, zapt, &hits_limit_value, &term_ref_id_str, stream);
 
     yaz_log(log_level_rpn, "APT_numeric t='%s'", termz);
     if (grep_info_prepare(zh, zapt, &grep_info, reg_type) == ZEBRA_FAIL)

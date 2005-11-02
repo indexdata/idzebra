@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.140 2005-09-13 11:51:06 adam Exp $
+/* $Id: zserver.c,v 1.141 2005-11-02 11:43:26 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -207,38 +207,37 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
                                sizeof(*sr->elements));
     for (i = 0; i<no_terms; i++)
     {
+	Z_SearchInfoReport_s *se;
         Z_Term *term;
 	zint count;
 	int approx;
         char outbuf[1024];
         size_t len = sizeof(outbuf);
+	const char *term_ref_id = 0;
 
 	zebra_result_set_term_info(zh, r->setname, i,
 				   &count, &approx, outbuf, &len,
-				   0 /* term_ref_id */ );
-
-        sr->elements[i] = odr_malloc (r->stream, sizeof(**sr->elements));
-        sr->elements[i]->subqueryId = 0;
-        sr->elements[i]->fullQuery = odr_malloc (r->stream, 
-                                                 sizeof(bool_t));
-        *sr->elements[i]->fullQuery = 0;
-        sr->elements[i]->subqueryExpression = 
+				   &term_ref_id);
+        se = sr->elements[i] = odr_malloc (r->stream, sizeof(**sr->elements));
+        se->subqueryId = term_ref_id ? 
+	    odr_strdup(r->stream, term_ref_id) : 0;
+	    
+        se->fullQuery = odr_intdup(r->stream, 0);
+        se->subqueryExpression = 
             odr_malloc (r->stream, sizeof(Z_QueryExpression));
-        sr->elements[i]->subqueryExpression->which = 
+        se->subqueryExpression->which = 
             Z_QueryExpression_term;
-        sr->elements[i]->subqueryExpression->u.term =
+        se->subqueryExpression->u.term =
             odr_malloc (r->stream, sizeof(Z_QueryExpressionTerm));
         term = odr_malloc (r->stream, sizeof(Z_Term));
-        sr->elements[i]->subqueryExpression->u.term->queryTerm = term;
+        se->subqueryExpression->u.term->queryTerm = term;
         switch (type)
         {
         case Z_Term_characterString:
-            yaz_log (YLOG_DEBUG, "term as characterString");
             term->which = Z_Term_characterString;
             term->u.characterString = odr_strdup (r->stream, outbuf);
             break;
         case Z_Term_general:
-            yaz_log (YLOG_DEBUG, "term as general");
             term->which = Z_Term_general;
             term->u.general = odr_malloc (r->stream, sizeof(*term->u.general));
             term->u.general->size = term->u.general->len = len;
@@ -249,14 +248,14 @@ static void search_terms(ZebraHandle zh, bend_search_rr *r)
             term->which = Z_Term_general;
             term->u.null = odr_nullval();
         }
-        sr->elements[i]->subqueryExpression->u.term->termComment = 0;
-        sr->elements[i]->subqueryInterpretation = 0;
-        sr->elements[i]->subqueryRecommendation = 0;
+        se->subqueryExpression->u.term->termComment = 0;
+        se->subqueryInterpretation = 0;
+        se->subqueryRecommendation = 0;
 	if (count > 2000000000)
 	    count = 2000000000;
-        sr->elements[i]->subqueryCount = odr_intdup (r->stream, (int) count);
-        sr->elements[i]->subqueryWeight = 0;
-        sr->elements[i]->resultsByDB = 0;
+        se->subqueryCount = odr_intdup(r->stream, (int) count);
+        se->subqueryWeight = 0;
+        se->resultsByDB = 0;
     }
 }
 
