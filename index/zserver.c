@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.117.2.4 2005-05-12 10:03:24 adam Exp $
+/* $Id: zserver.c,v 1.117.2.5 2005-11-07 12:53:47 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -105,7 +105,7 @@ bend_initresult *bend_init (bend_initrequest *q)
     }
     if (zebra_auth (zh, user, passwd))
     {
-	r->errcode = 222;
+	r->errcode = 1011; /* Init/AC: Bad user ID or password  */
 	r->errstring = user;
 	return r;
     }
