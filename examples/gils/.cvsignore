@@ -4,3 +4,5 @@
 log
 zebrasrv.pid
 Makefile
+register
+shadow
