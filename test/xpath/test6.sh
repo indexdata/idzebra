@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: test6.sh,v 1.1.2.1 2004-12-16 19:11:41 heikki Exp $
+# $Id: test6.sh,v 1.1.2.2 2005-11-08 10:46:19 adam Exp $
 
 pp=${srcdir:-"."}
 
@@ -30,6 +30,8 @@ test -f zebrasrv.pid || exit 2
 
 ../api/testclient unix:socket '@and @attr 1=/assembled/orgs/org 46 @attr 5=1 @attr 6=3  @attr 4=1 @attr 1=/assembled/basic/names/CASno 367-93-1' >$TMP.5
 
+../api/testclient unix:socket '@attr 1=1021 46' >$TMP.6
+
 echo 'Killing server' >>$LOG
 kill `cat zebrasrv.pid` || exit 3
 sleep 1
@@ -45,6 +47,8 @@ echo 'Checking that result 4 count is 1' >>$LOG
 grep "^Result count: 1$" $TMP.4 >/dev/null || exit 7
 echo 'Checking that result 5 count is 2' >>$LOG
 grep "^Result count: 2$" $TMP.5 >/dev/null || exit 8
+echo 'Checking that result 6 count is 1' >>$LOG
+grep "^Result count: 1$" $TMP.6 >/dev/null || exit 9
 echo 'Test OK' >>$LOG
 exit 0
 
