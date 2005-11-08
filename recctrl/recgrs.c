@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.4 2005-08-29 12:58:19 adam Exp $
+/* $Id: recgrs.c,v 1.86.2.5 2005-11-08 10:45:57 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -34,6 +34,70 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "grsread.h"
 
 #define GRS_MAX_WORD 512
+
+struct RecWord_list {
+    NMEM nmem;
+    struct RecWord_entry **entries;
+    unsigned hash_size;
+    char *name;
+};
+
+struct RecWord_entry {
+    RecWord w;
+    struct RecWord_entry *next;
+};
+
+struct RecWord_list *RecWord_list_create(const char *name)
+{
+    NMEM m = nmem_create();
+    struct RecWord_list *p = nmem_malloc(m, sizeof(*p));
+    size_t i;
+
+    p->hash_size = 127;
+    p->nmem = m;
+    p->entries = nmem_malloc(m, p->hash_size * sizeof(*p->entries));
+    for (i = 0; i<p->hash_size; i++)
+	p->entries[i] = 0;
+    p->name = nmem_strdup(m, name);
+    return p;
+}
+
+int RecWord_list_lookadd(struct RecWord_list *l, RecWord *wrd)
+{
+    struct RecWord_entry *e;
+
+    unsigned hash =
+	(wrd->attrSet*15 + wrd->attrSet + wrd->reg_type) % l->hash_size;
+
+    for (e = l->entries[hash]; e; e = e->next)
+	if (e->w.attrSet == wrd->attrSet &&
+	    e->w.attrUse == wrd->attrUse &&
+	    e->w.reg_type == wrd->reg_type &&
+	    e->w.length == wrd->length &&
+	    !memcmp(e->w.string, wrd->string, wrd->length))
+	{
+#if 0
+	    fprintf(stderr, "DUP key found in %s\n", l->name);
+	    fprintf(stderr, "set=%d use=%d regtype=%c\n",
+		    wrd->attrSet, wrd->attrUse, wrd->reg_type);
+#endif
+	    return 0;
+	}
+    e = nmem_malloc(l->nmem, sizeof(*e));
+    e->next = l->entries[hash];
+    l->entries[hash] = e;
+    memcpy(&e->w, wrd, sizeof(*wrd));
+    e->w.string = nmem_malloc(l->nmem, wrd->length);
+    memcpy(e->w.string, wrd->string, wrd->length);
+    return 1;
+}
+
+void RecWord_list_destroy(struct RecWord_list *l)
+{
+    if (l)
+	nmem_destroy(l->nmem);
+}
+
 
 struct grs_handler {
     RecTypeGrs type;
@@ -483,8 +547,10 @@ static void index_xpath_attr (char *tag_path, char *name, char *value,
 }
 
 
+
 static void index_xpath (data1_node *n, struct recExtractCtrl *p,
-                         int level, RecWord *wrd, int use)
+                         int level, RecWord *wrd, int use,
+			 struct RecWord_list *wl)
 {
     int i;
     char tag_path_full[1024];
@@ -709,7 +775,8 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                             wrd->length = strlen(comb);
                             wrd->seqno--;
                             
-                            (*p->tokenAdd)(wrd);
+			    if (RecWord_list_lookadd(wl, wrd))
+				(*p->tokenAdd)(wrd);
                         }
                     }                
                     i++;
@@ -737,7 +804,6 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                                                   p, wrd);
                                 xpdone = 1;
                             } 
-#if 0
 			    else 
 			    {
                                 /* add attribute based index for the attribute */
@@ -748,10 +814,10 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                                     wrd->reg_type = *tl->structure;
                                     wrd->string = xp->value;
                                     wrd->length = strlen(xp->value);
-                                    (*p->tokenAdd)(wrd);
+				    if (RecWord_list_lookadd(wl, wrd))
+					(*p->tokenAdd)(wrd);
                                 }
                             }
-#endif
                         }
                     }
                     /* if there was no termlist for the given path, 
@@ -827,7 +893,7 @@ static void index_termlist (data1_node *par, data1_node *n,
 }
 
 static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
-                    RecWord *wrd)
+                    RecWord *wrd, struct RecWord_list *wl)
 {
     for (; n; n = n->next)
     {
@@ -873,11 +939,11 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
             index_termlist (n, n, p, level, wrd);
             /* index start tag */
 	    if (n->root->u.root.absyn)
-      	        index_xpath (n, p, level, wrd, 1);
+      	        index_xpath (n, p, level, wrd, 1, wl);
  	}
 
 	if (n->child)
-	    if (dumpkeys(n->child, p, level + 1, wrd) < 0)
+	    if (dumpkeys(n->child, p, level + 1, wrd, wl) < 0)
 		return -1;
 
 
@@ -901,13 +967,13 @@ static int dumpkeys(data1_node *n, struct recExtractCtrl *p, int level,
 	    if (par)
 		index_termlist (par, n, p, level, wrd);
 
-	    index_xpath (n, p, level, wrd, 1016);
+	    index_xpath (n, p, level, wrd, 1016, wl);
  	}
 
 	if (n->which == DATA1N_tag)
 	{
             /* index end tag */
-	    index_xpath (n, p, level, wrd, 2);
+	    index_xpath (n, p, level, wrd, 2, wl);
 	}
 
 	if (p->flagShowRecords && n->which == DATA1N_root)
@@ -923,6 +989,8 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
     oident oe;
     int oidtmp[OID_SIZE];
     RecWord wrd;
+    int r;
+    struct RecWord_list *wl = 0;
 
     oe.proto = PROTO_Z3950;
     oe.oclass = CLASS_SCHEMA;
@@ -935,7 +1003,10 @@ int grs_extract_tree(struct recExtractCtrl *p, data1_node *n)
     }
     (*p->init)(p, &wrd);
 
-    return dumpkeys(n, p, 0, &wrd);
+    wl = RecWord_list_create("grs_extract_tree");
+    r = dumpkeys(n, p, 0, &wrd, wl);
+    RecWord_list_destroy(wl);
+    return r;
 }
 
 static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
@@ -946,6 +1017,8 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
     oident oe;
     int oidtmp[OID_SIZE];
     RecWord wrd;
+    struct RecWord_list *wl = 0;
+    int ret_val;
 
     gri.readf = p->readf;
     gri.seekf = p->seekf;
@@ -981,14 +1054,17 @@ static int grs_extract_sub(struct grs_handlers *h, struct recExtractCtrl *p,
     data1_pr_tree (p->dh, n, stdout);
 #endif
 
+    wl = RecWord_list_create("grs.sgml");
+
     (*p->init)(p, &wrd);
-    if (dumpkeys(n, p, 0, &wrd) < 0)
-    {
-	data1_free_tree(p->dh, n);
-	return RECCTRL_EXTRACT_ERROR_GENERIC;
-    }
+    if (dumpkeys(n, p, 0, &wrd, wl) < 0)
+	ret_val = RECCTRL_EXTRACT_ERROR_GENERIC;
+    else
+	ret_val = RECCTRL_EXTRACT_OK;
     data1_free_tree(p->dh, n);
-    return RECCTRL_EXTRACT_OK;
+    RecWord_list_destroy(wl);
+
+    return ret_val;
 }
 
 static int grs_extract(void *clientData, struct recExtractCtrl *p)
