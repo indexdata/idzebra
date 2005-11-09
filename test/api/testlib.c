@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.27 2005-09-13 11:51:07 adam Exp $
+/* $Id: testlib.c,v 1.28 2005-11-09 12:01:09 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -144,8 +144,10 @@ void init_data(ZebraHandle zh, const char **recs)
     yaz_log(log_level, "init_data returned %d", i);
     if (i) 
     {
-        printf("init_data failed with %d\n",i);
+	yaz_log(log_level, "init_data: zebra_init failed with %d", i);
+        printf("init_data failed with %d\n", i);
         zebra_result(zh, &i, &addinfo);
+        yaz_log(log_level, "Error %d  %s", i, addinfo);
         printf("  Error %d   %s\n", i, addinfo);
         exit(1);
     }
@@ -178,6 +180,7 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
     rpn = yaz_pqf_parse(parser, odr, query);
     yaz_pqf_destroy(parser);
     if (!rpn) {
+	yaz_log(log_level, "PQF Parse failed\n");
         printf("Error: Parse failed \n%s\n", query);
         exit(1);
     }
@@ -187,6 +190,8 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
 	int code;
 	if (rc != ZEBRA_FAIL)
 	{
+	    yaz_log(log_level, "search returned %d (OK), but error was "
+		    "expected", rc);
 	    printf("Error: search returned %d (OK), but error was expected\n"
 		   "%s\n",  rc, query);
 	    exit(1);
@@ -194,6 +199,8 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
 	code = zebra_errCode(zh);
 	if (code != experror)
 	{
+	    yaz_log(log_level, "search returned error code %d, but error %d "
+		    "was expected", code, experror);
 	    printf("Error: search returned error code %d, but error %d was "
 		   "expected\n%s\n",
 		   code, experror, query);
@@ -204,11 +211,16 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
     {
 	if (rc == ZEBRA_FAIL) {
 	    int code = zebra_errCode(zh);
+	    yaz_log(log_level, "search returned %d. Code %d", rc, code);
+	    
 	    printf("Error: search returned %d. Code %d\n%s\n", rc, 
 		   code, query);
 	    exit (1);
 	}
-	if (exphits != -1 && hits != exphits) {
+	if (exphits != -1 && hits != exphits)
+	{
+	    yaz_log(log_level, "search returned " ZINT_FORMAT 
+		   " hits instead of " ZINT_FORMAT, hits, exphits);
 	    printf("Error: search returned " ZINT_FORMAT 
 		   " hits instead of " ZINT_FORMAT "\n%s\n",
 		   hits, exphits, query);
