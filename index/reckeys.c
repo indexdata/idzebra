@@ -1,4 +1,4 @@
-/* $Id: reckeys.c,v 1.1 2005-10-28 09:22:50 adam Exp $
+/* $Id: reckeys.c,v 1.2 2005-11-09 08:27:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -52,13 +52,13 @@ zebra_rec_keys_t zebra_rec_keys_open()
 }
     
 void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
-			    int owner)
+			    int copy_buf)
 {
     if (p->owner_of_buffer)
 	xfree(p->buf);
     p->buf_used = sz;
     p->buf_max = sz;
-    if (!owner)
+    if (!copy_buf)
     {
 	p->buf = buf;
     }
@@ -72,7 +72,7 @@ void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
 	    memcpy(p->buf, buf, sz);
 	}
     }
-    p->owner_of_buffer = owner;
+    p->owner_of_buffer = copy_buf;
 }
 	
 void zebra_rec_keys_get_buf(zebra_rec_keys_t p, char **buf, size_t *sz)

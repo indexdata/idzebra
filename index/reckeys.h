@@ -1,4 +1,4 @@
-/* $Id: reckeys.h,v 1.1 2005-10-28 09:22:50 adam Exp $
+/* $Id: reckeys.h,v 1.2 2005-11-09 08:27:28 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -45,6 +45,6 @@ int zebra_rec_keys_empty(zebra_rec_keys_t keys);
 void zebra_rec_keys_get_buf(zebra_rec_keys_t p, char **buf, size_t *sz);
 
 void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
-			    int owner);
+			    int copy_buf);
 
 #endif
