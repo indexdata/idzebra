@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.197 2005-10-28 09:22:50 adam Exp $
+/* $Id: extract.c,v 1.198 2005-11-09 11:51:29 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -535,7 +535,11 @@ static int file_extract_record(ZebraHandle zh,
         {
             dict_insert (zh->reg->matchDict, matchStr, sizeof(*sysno), sysno);
         }
+#if NATTR
+	extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
+#else
 	extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
+#endif
         extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys,
 				 recordAttr->staticrank);
         zh->records_inserted++;
@@ -614,7 +618,11 @@ static int file_extract_record(ZebraHandle zh,
                     yaz_log (YLOG_LOG, "update %s %s " PRINTF_OFF_T,
                         zh->m_record_type, fname, recordOffset);
 		recordAttr->staticrank = extractCtrl.staticrank;
+#if NATTR
+                extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
+#else
                 extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
+#endif
                 extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys,
 					 recordAttr->staticrank);
                 zh->records_updated++;
@@ -652,10 +660,16 @@ static int file_extract_record(ZebraHandle zh,
     /* update sort keys */
     xfree (rec->info[recInfo_sortKeys]);
 
+#if NATTR
+    zebra_rec_keys_get_buf(zh->reg->sortKeys,
+			   &rec->info[recInfo_sortKeys],
+			   &rec->size[recInfo_sortKeys]);
+#else
     rec->size[recInfo_sortKeys] = zh->reg->sortKeys.buf_used;
     rec->info[recInfo_sortKeys] = zh->reg->sortKeys.buf;
     zh->reg->sortKeys.buf = NULL;
     zh->reg->sortKeys.buf_max = 0;
+#endif
 
     /* save file size of original record */
     zebraExplain_recordBytesIncrement (zh->reg->zei,
@@ -1002,7 +1016,11 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
             dict_insert (zh->reg->matchDict, matchStr,
                          sizeof(*sysno), sysno);
         }
+#if NATTR
+	extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
+#else
 	extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
+#endif
 	
 #if 0
 	print_rec_keys(zh, zh->reg->keys);
@@ -1039,8 +1057,15 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
 			       rec->info[recInfo_delKeys],
 			       rec->size[recInfo_delKeys],
 			       0);
+#if NATTR
+	zebra_rec_keys_set_buf(sortKeys,
+			       rec->info[recInfo_sortKeys],
+			       rec->size[recInfo_sortKeys],
+			       0);
+#else
         sortKeys.buf_used = rec->size[recInfo_sortKeys];
         sortKeys.buf = rec->info[recInfo_sortKeys];
+#endif
 
 #if NATTR
 	extract_flushSortKeys (zh, *sysno, 0, sortKeys);
@@ -1094,7 +1119,11 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
 		    yaz_log (YLOG_LOG, "update %s %s %ld", recordType,
 			     pr_fname, (long) recordOffset);
 		recordAttr->staticrank = extractCtrl.staticrank;
+#if NATTR
+                extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
+#else
                 extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
+#endif
                 extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys, 
 					 recordAttr->staticrank);
                 zh->records_updated++;
@@ -1131,10 +1160,16 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
     /* update sort keys */
     xfree (rec->info[recInfo_sortKeys]);
 
+#if NATTR
+    zebra_rec_keys_get_buf(zh->reg->sortKeys,
+			   &rec->info[recInfo_sortKeys],
+			   &rec->size[recInfo_sortKeys]);
+#else
     rec->size[recInfo_sortKeys] = zh->reg->sortKeys.buf_used;
     rec->info[recInfo_sortKeys] = zh->reg->sortKeys.buf;
     zh->reg->sortKeys.buf = NULL;
     zh->reg->sortKeys.buf_max = 0;
+#endif
 
     /* save file size of original record */
     zebraExplain_recordBytesIncrement (zh->reg->zei,
@@ -1233,7 +1268,7 @@ int explain_extract (void *handle, Record rec, data1_node *n)
 	zebra_rec_keys_t delkeys = zebra_rec_keys_open();
 	
 #if NATTR
-	zebra_rec_keys_t sortkeys = zzebra_rec_keys_open();
+	zebra_rec_keys_t sortkeys = zebra_rec_keys_open();
 #else
 	struct sortKeys sortkeys;
 #endif
@@ -1269,10 +1304,16 @@ int explain_extract (void *handle, Record rec, data1_node *n)
 			   &rec->size[recInfo_delKeys]);
 
     xfree (rec->info[recInfo_sortKeys]);
+#if NATTR
+    zebra_rec_keys_get_buf(zh->reg->sortKeys,
+			   &rec->info[recInfo_sortKeys],
+			   &rec->size[recInfo_sortKeys]);
+#else
     rec->size[recInfo_sortKeys] = zh->reg->sortKeys.buf_used;
     rec->info[recInfo_sortKeys] = zh->reg->sortKeys.buf;
     zh->reg->sortKeys.buf = NULL;
     zh->reg->sortKeys.buf_max = 0;
+#endif
 
     return 0;
 }
@@ -1495,14 +1536,6 @@ void extract_flushWriteKeys (ZebraHandle zh, int final)
     zh->reg->key_buf_used = 0;
 }
 
-void extract_add_it_key (ZebraHandle zh,
-			 zebra_rec_keys_t *keys,
-			 int reg_type,
-			 const char *str, int slen, struct it_key *key)
-{
-    zebra_rec_keys_write(*keys, reg_type, str, slen, key);
-}
-
 ZEBRA_RES zebra_snippets_rec_keys(ZebraHandle zh,
 				  zebra_rec_keys_t reckeys,
 				  zebra_snippets *snippets)
@@ -1598,16 +1631,23 @@ void extract_add_index_string (RecWord *p, const char *str, int length)
     key.mem[3] = p->seqno;
 
 #if 0
-    /* just for debugging .. */
-    yaz_log(YLOG_LOG, "add: set=%d use=%d "
-	    "record_id=%lld section_id=%lld seqno=%lld",
-	    p->attrSet, p->attrUse, p->record_id, p->section_id, p->seqno);
+    if (1)
+    {
+	char strz[80];
+	int i;
+
+	strz[0] = 0;
+	for (i = 0; i<length && i < 20; i++)
+	    sprintf(strz+strlen(strz), "%02X", str[i] & 0xff);
+	/* just for debugging .. */
+	yaz_log(YLOG_LOG, "add: set=%d use=%d "
+		"record_id=%lld section_id=%lld seqno=%lld %s",
+		p->attrSet, p->attrUse, p->record_id, p->section_id, p->seqno,
+		strz);
+    }
 #endif
 
-    extract_add_it_key(p->extractCtrl->handle, 
-		       &zh->reg->keys,
-		       p->index_type, str,
-		       length, &key);
+    zebra_rec_keys_write(zh->reg->keys, str, length, &key);
 }
 
 #if NATTR
@@ -1635,10 +1675,7 @@ static void extract_add_sort_string (RecWord *p, const char *str, int length)
     key.mem[2] = p->section_id;
     key.mem[3] = p->seqno;
 
-    extract_add_it_key(p->extractCtrl->handle, 
-		       &zh->reg->sortKeys,
-		       p->index_type, str,
-		       length, &key);
+    zebra_rec_keys_write(zh->reg->sortKeys, str, length, &key);
 }
 #else
 static void extract_add_sort_string (RecWord *p, const char *str, int length)

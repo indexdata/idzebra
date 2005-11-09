@@ -1,4 +1,4 @@
-/* $Id: reckeys.c,v 1.2 2005-11-09 08:27:28 adam Exp $
+/* $Id: reckeys.c,v 1.3 2005-11-09 11:51:29 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,8 +25,16 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 #include <ctype.h>
 
+#include <yaz/nmem.h>
 #include "index.h"
 #include "reckeys.h"
+
+struct zebra_rec_key_entry {
+    char *buf;
+    size_t len;
+    struct it_key key;
+    struct zebra_rec_key_entry *next;
+};
 
 struct zebra_rec_keys_t_ {
     size_t buf_used;
@@ -36,7 +44,36 @@ struct zebra_rec_keys_t_ {
     void *encode_handle;
     void *decode_handle;
     char owner_of_buffer;
+
+    NMEM nmem;
+    size_t hash_size;
+    struct zebra_rec_key_entry **entries; 
 };
+
+
+struct zebra_rec_key_entry **zebra_rec_keys_mk_hash(zebra_rec_keys_t p,
+						    const char *buf,
+						    size_t len)
+{
+    unsigned h = 0;
+    size_t i;
+    for (i = 0; i<len; i++)
+	h = h * 65509 + buf[i];
+    return &p->entries[h % (unsigned) p->hash_size];
+}
+
+static void init_hash(zebra_rec_keys_t p)
+{
+    p->entries = 0;
+    nmem_reset(p->nmem);
+    if (p->hash_size)
+    {
+	size_t i;
+	p->entries = nmem_malloc(p->nmem, p->hash_size * sizeof(*p->entries));
+	for (i = 0; i<p->hash_size; i++)
+	    p->entries[i] = 0;
+    }
+}
 
 zebra_rec_keys_t zebra_rec_keys_open()
 {
@@ -48,9 +85,16 @@ zebra_rec_keys_t zebra_rec_keys_open()
     p->owner_of_buffer = 1;
     p->encode_handle = iscz1_start();
     p->decode_handle = iscz1_start(); 
+
+    p->nmem = nmem_create();
+    p->hash_size = 127;
+    p->entries = 0;
+
+    init_hash(p);
+
     return p;
 }
-    
+
 void zebra_rec_keys_set_buf(zebra_rec_keys_t p, char *buf, size_t sz,
 			    int copy_buf)
 {
@@ -96,11 +140,35 @@ void zebra_rec_keys_close(zebra_rec_keys_t p)
 	iscz1_stop(p->encode_handle);
     if (p->decode_handle)
 	iscz1_stop(p->decode_handle);
+    nmem_destroy(p->nmem);
     xfree(p);
 }
 
+int zebra_rec_keys_add_hash(zebra_rec_keys_t keys, 
+			    const char *str, size_t slen,
+			    const struct it_key *key)
+{
+    struct zebra_rec_key_entry **kep = zebra_rec_keys_mk_hash(keys, str, slen);
+    while (*kep)
+    {
+	struct zebra_rec_key_entry *e = *kep;
+	if (slen == e->len && !memcmp(str, e->buf, slen) &&
+	    !key_compare(key, &e->key))
+	{
+	    return 0;
+	}
+	kep = &(*kep)->next;
+    }
+    *kep = nmem_malloc(keys->nmem, sizeof(**kep));
+    (*kep)->next = 0;
+    (*kep)->len = slen;
+    memcpy(&(*kep)->key, key, sizeof(*key));
+    (*kep)->buf = nmem_malloc(keys->nmem, slen);
+    memcpy((*kep)->buf, str, slen);
+    return 1;
+}
+
 void zebra_rec_keys_write(zebra_rec_keys_t keys, 
-			  int reg_type,
 			  const char *str, size_t slen,
 			  const struct it_key *key)
 {
@@ -109,6 +177,8 @@ void zebra_rec_keys_write(zebra_rec_keys_t keys,
     
     assert(keys->owner_of_buffer);
 
+    if (!zebra_rec_keys_add_hash(keys, str, slen, key))
+	return;  /* key already there . Omit it */
     if (keys->buf_used+1024 > keys->buf_max)
     {
         char *b = (char *) xmalloc (keys->buf_max += 128000);
@@ -121,9 +191,6 @@ void zebra_rec_keys_write(zebra_rec_keys_t keys,
 
     iscz1_encode(keys->encode_handle, &dst, &src);
 
-#if REG_TYPE_PREFIX
-    *dst++ = reg_type;
-#endif
     memcpy (dst, str, slen);
     dst += slen;
     *dst++ = '\0';
@@ -136,6 +203,9 @@ void zebra_rec_keys_reset(zebra_rec_keys_t keys)
     keys->buf_used = 0;
     
     iscz1_reset(keys->encode_handle);
+
+    init_hash(keys);
+
 }
 
 int zebra_rec_keys_rewind(zebra_rec_keys_t keys)

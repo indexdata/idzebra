@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.193 2005-10-28 09:22:50 adam Exp $
+/* $Id: zebraapi.c,v 1.194 2005-11-09 11:51:29 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -497,7 +497,7 @@ static void zebra_register_close (ZebraService zs, struct zebra_register *reg)
 
     zebra_rec_keys_close(reg->keys);
 #if NATTR
-    zebra_rec_keys_close(rec->sortKeys);
+    zebra_rec_keys_close(reg->sortKeys);
 #else
     xfree(reg->sortKeys.buf);
 #endif

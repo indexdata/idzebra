@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.206 2005-11-02 11:43:26 adam Exp $
+/* $Id: zrpn.c,v 1.207 2005-11-09 11:51:30 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1241,11 +1241,6 @@ static ZEBRA_RES string_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
 	    attr_ok = 1;
 
         term_dict[prefix_len++] = ')';
-#if REG_TYPE_PREFIX
-        term_dict[prefix_len++] = 1;
-        term_dict[prefix_len++] = reg_type;
-        yaz_log(log_level_rpn, "reg_type = %d", term_dict[prefix_len-1]);
-#endif
         term_dict[prefix_len] = '\0';
         j = prefix_len;
         switch (truncation_value)
@@ -1893,11 +1888,6 @@ static ZEBRA_RES numeric_term(ZebraHandle zh, Z_AttributesPlusTerm *zapt,
         }
         bases_ok++;
         term_dict[prefix_len++] = ')';
-#if REG_TYPE_PREFIX    
-        term_dict[prefix_len++] = 1;
-        term_dict[prefix_len++] = reg_type;
-        yaz_log(YLOG_DEBUG, "reg_type = %d", term_dict[prefix_len-1]);
-#endif
         term_dict[prefix_len] = '\0';
         if (!numeric_relation(zh, zapt, &termp, term_dict,
 			      attributeSet, grep_info, &max_pos, reg_type,
@@ -2158,10 +2148,6 @@ static RSET xpath_trunc(ZebraHandle zh, NMEM stream,
         term_dict[prefix_len++] = ord_buf[i];
     }
     term_dict[prefix_len++] = ')';
-#if REG_TYPE_PREFIX
-    term_dict[prefix_len++] = 1;
-    term_dict[prefix_len++] = reg_type;
-#endif
     strcpy(term_dict+prefix_len, term);
     
     grep_info.isam_p_indx = 0;
@@ -2926,9 +2912,6 @@ ZEBRA_RES rpn_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
             scan_info->list[j].term = NULL;
 
         prefix_len += key_SU_encode (ords[i], termz + prefix_len);
-#if REG_TYPE_PREFIX
-        termz[prefix_len++] = reg_id;
-#endif
         termz[prefix_len] = 0;
         strcpy(scan_info->prefix, termz);
 
