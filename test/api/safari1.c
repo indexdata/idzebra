@@ -1,4 +1,4 @@
-/* $Id: safari1.c,v 1.7 2005-09-16 09:58:39 adam Exp $
+/* $Id: safari1.c,v 1.8 2005-11-10 08:08:19 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -26,7 +26,8 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 const char *myrec[] = 
 {
-    "1234\n"  /* first record */
+    "1234\n"  /* ID first record */
+    /* chunk owner seq idx term */
     "00024338 125060 1 any the\n"
     "00024338 125060 2 any art\n"
     "00024338 125060 3 any mand\n",
@@ -48,9 +49,10 @@ const char *myrec[] =
     
     "1001\n"  /* separate record */
     "00024340 125062 1 any the\n"
+    "00024340 125062 1 any the\n" /* DUP KEY, bug #432 */
     "00024340 125062 2 any old\n"
     "00024340 125062 3 any mand\n",
-    
+
     0
 };
 
