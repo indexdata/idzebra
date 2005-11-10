@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.198 2005-11-09 11:51:29 adam Exp $
+/* $Id: extract.c,v 1.199 2005-11-10 11:25:47 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -586,7 +586,7 @@ static int file_extract_record(ZebraHandle zh,
             {
                 yaz_log (YLOG_LOG, "delete %s %s " PRINTF_OFF_T,
 			 zh->m_record_type, fname, recordOffset);
-                yaz_log (YLOG_WARN, "cannot delete file above, storeKeys false");
+                yaz_log (YLOG_WARN, "cannot delete file above, storeKeys false (1)");
             }
             else
             {
@@ -604,29 +604,19 @@ static int file_extract_record(ZebraHandle zh,
         }
         else
         {
-            /* record going to be updated */
-            if (zebra_rec_keys_empty(delkeys))
-            {
+	    /* flush new keys for sort&search etc */
+            if (zh->records_processed < zh->m_file_verbose_limit)
                 yaz_log (YLOG_LOG, "update %s %s " PRINTF_OFF_T,
                       zh->m_record_type, fname, recordOffset);
-                yaz_log (YLOG_WARN, "cannot update file above, storeKeys false");
-            }
-            else
-            {
-		/* flush new keys for sort&search etc */
-                if (zh->records_processed < zh->m_file_verbose_limit)
-                    yaz_log (YLOG_LOG, "update %s %s " PRINTF_OFF_T,
-                        zh->m_record_type, fname, recordOffset);
-		recordAttr->staticrank = extractCtrl.staticrank;
+	    recordAttr->staticrank = extractCtrl.staticrank;
 #if NATTR
-                extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
+            extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
 #else
-                extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
+            extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
 #endif
-                extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys,
+            extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys,
 					 recordAttr->staticrank);
-                zh->records_updated++;
-            }
+            zh->records_updated++;
         }
 	zebra_rec_keys_close(delkeys);
 #if NATTR
@@ -995,8 +985,7 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
         /* new record */
         if (delete_flag)
         {
-	    if (show_progress)
-		yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
+	    yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
 			 pr_fname, (long) recordOffset);
             yaz_log (YLOG_WARN, "cannot delete record above (seems new)");
             return ZEBRA_FAIL;
@@ -1041,8 +1030,7 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
 
 	if (!allow_update)
 	{
-	    if (show_progress)
-		yaz_log (YLOG_LOG, "skipped %s %s %ld", 
+	    yaz_log (YLOG_LOG, "skipped %s %s %ld", 
 			 recordType, pr_fname, (long) recordOffset);
 	    logRecord(zh);
 	    return ZEBRA_FAIL;
@@ -1079,13 +1067,10 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
             /* record going to be deleted */
             if (zebra_rec_keys_empty(delkeys))
             {
-		if (show_progress)
-		{
-		    yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
-			     pr_fname, (long) recordOffset);
-		    yaz_log (YLOG_WARN, "cannot delete file above, "
-			     "storeKeys false");
-		}
+		yaz_log (YLOG_LOG, "delete %s %s %ld", recordType,
+		     pr_fname, (long) recordOffset);
+		yaz_log (YLOG_WARN, "cannot delete file above, "
+			     "storeKeys false (3)");
 	    }
             else
             {
@@ -1103,31 +1088,18 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
         }
         else
         {
-            /* record going to be updated */
-            if (zebra_rec_keys_empty(delkeys))
-            {
-		if (show_progress)
-		{
+	    if (show_progress)
 		    yaz_log (YLOG_LOG, "update %s %s %ld", recordType,
 			     pr_fname, (long) recordOffset);
-		    yaz_log (YLOG_WARN, "cannot update file above, storeKeys false");
-		}
-	    }
-            else
-            {
-		if (show_progress)
-		    yaz_log (YLOG_LOG, "update %s %s %ld", recordType,
-			     pr_fname, (long) recordOffset);
-		recordAttr->staticrank = extractCtrl.staticrank;
+	    recordAttr->staticrank = extractCtrl.staticrank;
 #if NATTR
-                extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
+            extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
 #else
-                extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
+            extract_flushSortKeys (zh, *sysno, 1, &zh->reg->sortKeys);
 #endif
-                extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys, 
+            extract_flushRecordKeys (zh, *sysno, 1, zh->reg->keys, 
 					 recordAttr->staticrank);
-                zh->records_updated++;
-            }
+            zh->records_updated++;
         }
 	zebra_rec_keys_close(delkeys);
 #if NATTR
