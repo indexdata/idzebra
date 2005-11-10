@@ -1,4 +1,4 @@
-/* $Id: kinput.c,v 1.68 2005-10-28 07:25:30 adam Exp $
+/* $Id: kinput.c,v 1.69 2005-11-10 11:25:13 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -397,7 +397,7 @@ static int heap_read_one (struct heap_info *hi, char *name, char *key)
 #define PR_KEY_LOW 0
 #define PR_KEY_TOP 0
 
-#if 0
+#if 1
 static void pkey(const char *b, int mode)
 {
     key_logdump_txt(YLOG_LOG, b, mode ? "i" : "d");
@@ -414,12 +414,17 @@ static void print_dict_item(ZebraHandle zh, const char *s)
     int index_type;
     const char *db = 0;
 
-    zebraExplain_lookup_ord (zh->reg->zei,
+    if (!zh)
+        yaz_log(YLOG_LOG, "ord=%d", ord);
+    else
+    {
+        zebraExplain_lookup_ord (zh->reg->zei,
 			     ord, &index_type, &db, 0, 0);
 
-    zebra_term_untrans(zh, index_type, dst, s + len);
+        zebra_term_untrans(zh, index_type, dst, s + len);
 
-    yaz_log(YLOG_LOG, "ord=%d term=%s", ord, dst);
+        yaz_log(YLOG_LOG, "ord=%d term=%s", ord, dst);
+    }
 }
 #endif
 
@@ -457,8 +462,8 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
 	    p->look_level++;
 	}
 	memcpy (*dst, p->key_1, p->sz_1);
-#if PR_KEY_TOP
-	yaz_log(YLOG_LOG, "DUP!");
+#if 1
+	yaz_log(YLOG_LOG, "DUP level=%d", p->look_level);
 	pkey(*dst, *insertMode);
 #endif
 	(*dst) += p->sz_1;
@@ -532,7 +537,7 @@ int heap_cread_item2(void *vp, char **dst, int *insertMode)
     }
     p->look_level = level;
     memcpy (*dst, p->key_1, p->sz_1);
-#if PR_KEY_TOP
+#if 0
     pkey(*dst, *insertMode);
 #endif
     (*dst) += p->sz_1;
