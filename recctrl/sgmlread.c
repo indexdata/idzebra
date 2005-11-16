@@ -1,4 +1,4 @@
-/* $Id: sgmlread.c,v 1.11 2002-08-02 19:26:56 adam Exp $
+/* $Id: sgmlread.c,v 1.11.2.1 2005-11-16 04:33:11 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -31,7 +31,7 @@ struct sgml_getc_info {
     int buf_size;
     int size;
     int off;
-    int moffset;
+    off_t moffset;
     void *fh;
     int (*readf)(void *, char *, size_t);
     WRBUF wrbuf;
