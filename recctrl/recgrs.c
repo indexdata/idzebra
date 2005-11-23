@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.5 2005-11-08 10:45:57 adam Exp $
+/* $Id: recgrs.c,v 1.86.2.6 2005-11-23 14:26:05 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -452,9 +452,9 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
 	int i;
 	ok = dfa_match_first(xpe->dfa->states, pexpr);
 	if (ok)
-	    yaz_log(YLOG_DEBUG, " xpath got match %s",xpe->xpath_expr);
+	    yaz_log(LOG_DEBUG, " xpath got match %s",xpe->xpath_expr);
 	else
-	    yaz_log(YLOG_DEBUG, " xpath no match %s",xpe->xpath_expr);
+	    yaz_log(LOG_DEBUG, " xpath no match %s",xpe->xpath_expr);
 
         if (ok) {
 #ifdef ENHANCED_XELM 

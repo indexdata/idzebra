@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.9.2.4 2005-07-19 18:34:16 adam Exp $
+/* $Id: d1_absyn.c,v 1.9.2.5 2005-11-23 14:26:04 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -358,7 +358,7 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
     }
     sprintf (res_p, "$");
     res_p++;
-    yaz_log(YLOG_DEBUG, "Got regexp: %s", res);
+    yaz_log(LOG_DEBUG, "Got regexp: %s", res);
     return res;
 }
 
@@ -481,7 +481,7 @@ static int melm2xpath(char *melm, char *buf)
 	sprintf(buf + strlen(buf), "/subfield[@code=\"%s\"]", subfield);
     else if (field[0] != '0' || field[1] != '0')
 	strcat(buf, "/subfield");
-    yaz_log(YLOG_DEBUG, "Created xpath: '%s'", buf);
+    yaz_log(LOG_DEBUG, "Created xpath: '%s'", buf);
     return 0;
 }
 
