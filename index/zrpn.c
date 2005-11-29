@@ -1,4 +1,4 @@
-/* $Id: zrpn.c,v 1.207 2005-11-09 11:51:30 adam Exp $
+/* $Id: zrpn.c,v 1.208 2005-11-29 11:38:34 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1005,7 +1005,7 @@ static ZEBRA_RES term_limits_APT(ZebraHandle zh,
 
     attr_init(&term_ref_id_attr, zapt, 10);
     term_ref_id_int = attr_find_ex(&term_ref_id_attr, NULL, term_ref_id_str);
-    if (term_ref_id_int != -1)
+    if (term_ref_id_int >= 0)
     {
 	char *res = nmem_malloc(nmem, 20);
 	sprintf(res, "%d", term_ref_id_int);
