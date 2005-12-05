@@ -1,4 +1,4 @@
-/* $Id: recctrl.c,v 1.21 2005-08-30 12:27:18 adam Exp $
+/* $Id: recctrl.c,v 1.22 2005-12-05 12:18:41 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -96,6 +96,13 @@ RecTypeClass recTypeClass_create (Res res, NMEM nmem)
     {
 	extern RecType idzebra_filter_grs_marc[];
 	recTypeClass_add (&rts, idzebra_filter_grs_marc, nmem, 0);
+    }
+#endif
+#ifdef IDZEBRA_STATIC_GRS_CSV
+    if (1)
+    {
+	extern RecType idzebra_filter_grs_csv[];
+	recTypeClass_add (&rts, idzebra_filter_grs_csv, nmem, 0);
     }
 #endif
 #ifdef IDZEBRA_STATIC_GRS_DANBIB

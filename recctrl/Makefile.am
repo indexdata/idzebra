@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.17 2005-04-28 08:20:40 adam Exp $
+## $Id: Makefile.am,v 1.18 2005-12-05 12:18:40 marc Exp $
 
 common_libs = libidzebra-recctrl.la \
  ../data1/libidzebra-data1.la \
@@ -21,6 +21,11 @@ mod_grs_marc_la_SOURCES = marcread.c marcomp.c marcomp.h inline.c inline.h
 mod_grs_marc_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
 mod_grs_marc_la_LADD =
 mod_grs_marc_la_LIBADD = $(common_libs) $(mod_grs_marc_la_LADD)
+
+mod_grs_csv_la_SOURCES = csvread.c
+mod_grs_csv_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
+mod_grs_csv_la_LADD =
+mod_grs_csv_la_LIBADD = $(common_libs) $(mod_grs_csv_la_LADD)
 
 mod_grs_danbib_la_SOURCES = danbibr.c
 mod_grs_danbib_la_LDFLAGS = -rpath $(pkglibdir) -module -avoid-version
@@ -47,6 +52,7 @@ EXTRA_LTLIBRARIES = \
 	mod-grs-regx.la \
 	mod-grs-xml.la \
 	mod-grs-marc.la  \
+	mod-grs-csv.la  \
 	mod-grs-danbib.la \
 	mod-safari.la \
 	mod-alvis.la \
@@ -61,12 +67,14 @@ libidzebra_recctrl_la_LIBADD = $(STATIC_MODULE_OBJ) \
  ../dfa/libidzebra-dfa.la  \
  ../util/libidzebra-util.la \
  $(STATIC_MODULE_LADD)
+
 libidzebra_recctrl_la_DEPENDENCIES = $(STATIC_MODULE_OBJ)
 
 EXTRA_libidzebra_recctrl_la_SOURCES = \
  $(mod_grs_regx_la_SOURCES) \
  $(mod_grs_xml_la_SOURCES) \
  $(mod_grs_marc_la_SOURCES) \
+ $(mod_grs_csv_la_SOURCES) \
  $(mod_grs_danbib_la_SOURCES) \
  $(mod_safari_la_SOURCES) \
  $(mod_alvis_la_SOURCES) \
