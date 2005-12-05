@@ -1,4 +1,4 @@
-/* $Id: csvread.c,v 1.1 2005-12-05 12:18:41 marc Exp $
+/* $Id: csvread.c,v 1.2 2005-12-05 13:58:52 marc Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -180,11 +180,14 @@ static data1_node *grs_read_csv (struct grs_read_info *gri)
         if (read_header){
           /* read field names from header line */
           if (csvp->nr_fields < csvp->max_nr_fields){
+            csvp->field_name[csvp->nr_fields] 
+              = nmem_strdup(csvp->nmem, csvp->value);
+            
             csvp->nr_fields++;
-              yaz_log (YLOG_LOG, "CSV filter grs_read_csv header %d %s", 
+            yaz_log (YLOG_LOG, "CSV filter grs_read_csv field %d name '%s'", 
                        field_nr, csvp->value);
           } else {
-            yaz_log (YLOG_WARN, "CSV filter grs_read_csv header %d %s "
+            yaz_log (YLOG_WARN, "CSV filter grs_read_csv field %d name '%s' "
                      "exceeds configured max number of fields %d", 
                      field_nr, csvp->value, csvp->max_nr_fields);
           }
@@ -192,21 +195,23 @@ static data1_node *grs_read_csv (struct grs_read_info *gri)
           /* process following value line fields */
           if (field_nr < csvp->nr_fields){
             /* less or qual fields number */
-            yaz_log (YLOG_LOG, "CSV filter grs_read_csv value %d %s", 
-                     field_nr, csvp->value);
+            yaz_log (YLOG_LOG, "CSV filter grs_read_csv field %d %s: '%s'", 
+                     field_nr, csvp->field_name[field_nr], csvp->value);
           } else {
           /* too many fields */
-            yaz_log (YLOG_WARN, "CSV filter grs_read_csv value %d %s "
+            yaz_log (YLOG_WARN, "CSV filter grs_read_csv field value %d %s "
                      "exceeds dynamic configured number of fields %d", 
                      field_nr, csvp->value, csvp->nr_fields);
           }
           
         }
+        /* advance buffer and proceed to next field */
         cb++;
         cv = csvp->value;
         field_nr++;
       } else if (*cb == csvp->record_char){
         /* if record finished */
+        /* advance buffer and proceed to record */
         *cv = '\0';
         cb++;
         cv = csvp->value;
@@ -219,7 +224,7 @@ static data1_node *grs_read_csv (struct grs_read_info *gri)
           yaz_log (YLOG_LOG, "CSV filter grs_read_csv record end");
         }
       } else {
-        /* just plain char to be stored in value */
+        /* just plain char to be stored in value, no special action at all */
         if (csvp->lower_case && read_header){
           *cv = tolower(*cb);
         } else {
@@ -236,12 +241,12 @@ static data1_node *grs_read_csv (struct grs_read_info *gri)
   }
 
   /* try to build GRS node and document */
-  /*
-  root_node = data1_mk_root(gri->dh, gri->mem, cvsp->root_name);
+  
+  root_node = data1_mk_root(gri->dh, gri->mem, csvp->root_element);
   node = data1_mk_node2(gri->dh, gri->mem, DATA1N_data, root_node);
   node = data1_mk_tag(gri->dh, gri->mem, "pr_name_gn", 0, node);  
   data1_mk_text_n(gri->dh, gri->mem, csvp->buf, read_bytes, node);
-  */
+  
   if (!root_node){
     yaz_log (YLOG_WARN, "empty CSV record of type '%s' "
              "near file offset %d "
