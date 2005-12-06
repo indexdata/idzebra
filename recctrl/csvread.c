@@ -1,4 +1,4 @@
-/* $Id: csvread.c,v 1.2 2005-12-05 13:58:52 marc Exp $
+/* $Id: csvread.c,v 1.3 2005-12-06 15:36:38 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -46,7 +46,7 @@ struct csv_getc_info {
 };
 */
 
-static struct csv_t {
+struct csv_t {
   NMEM nmem;
   int buf_size;
   char *buf;
@@ -261,9 +261,9 @@ static data1_node *grs_read_csv (struct grs_read_info *gri)
 
 static void *grs_init_csv(Res res, RecType recType)
 {
-  yaz_log (YLOG_LOG, "Called CSV filter grs_init_csv");
   NMEM m = nmem_create();
   struct csv_t *csvp = (struct csv_t *) nmem_malloc(m, sizeof(*csvp));
+  yaz_log (YLOG_LOG, "Called CSV filter grs_init_csv");
   csvp->nmem = m;
   yaz_log (YLOG_LOG, "Ended CSV filter grs_init_csv");
   return csvp;
