@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.194 2005-11-09 11:51:29 adam Exp $
+/* $Id: zebraapi.c,v 1.195 2005-12-07 17:00:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1324,7 +1324,11 @@ ZEBRA_RES zebra_admin_exchange_record (ZebraHandle zh,
     zebra_clearError(zh);
 
     if (!recid_buf || recid_len <= 0 || recid_len >= sizeof(recid_z))
+    {
+	zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
+		       "no record ID or empty record ID");
         return ZEBRA_FAIL;
+    }
 
     memcpy (recid_z, recid_buf, recid_len);
     recid_z[recid_len] = 0;
@@ -1337,8 +1341,10 @@ ZEBRA_RES zebra_admin_exchange_record (ZebraHandle zh,
     {
         if (action == 1)  /* fail if insert */
         {
-	     zebra_end_trans(zh);
-	     return ZEBRA_FAIL;
+	    zebra_end_trans(zh);
+	    zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
+			   "Cannot insert record: already exist");
+	    return ZEBRA_FAIL;
 	}
 
         memcpy (&sysno, rinfo+1, sizeof(sysno));
@@ -1348,6 +1354,8 @@ ZEBRA_RES zebra_admin_exchange_record (ZebraHandle zh,
         if (action == 2 || action == 3) /* fail if delete or update */
         {
 	    zebra_end_trans(zh);
+	    zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
+			   "Cannot delete/update record: does not exist");
             return ZEBRA_FAIL;
 	}
 	action = 1;  /* make it an insert (if it's an update).. */
@@ -1362,6 +1370,11 @@ ZEBRA_RES zebra_admin_exchange_record (ZebraHandle zh,
 			   0, /* force update */
 				 1  /* allow update */
 	);
+    if (res == ZEBRA_FAIL)
+    {
+	zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
+		       "Unable to parse record");
+    }
     if (action == 1)
     {
         dict_insert (zh->reg->matchDict, recid_z, sizeof(sysno), &sysno);

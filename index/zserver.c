@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.141 2005-11-02 11:43:26 adam Exp $
+/* $Id: zserver.c,v 1.142 2005-12-07 17:00:46 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -656,9 +656,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
                                 action);
                             if (r)
                             {
-                                rr->errcode =
-				    YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
-                                rr->errstring = "record exchange failed";
+				zebra_result(zh, &rr->errcode,
+					     &rr->errstring);
                                 break;
                             }
 			}
