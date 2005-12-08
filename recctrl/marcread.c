@@ -1,4 +1,4 @@
-/* $Id: marcread.c,v 1.24.2.2 2005-01-16 23:11:04 adam Exp $
+/* $Id: marcread.c,v 1.24.2.3 2005-12-08 11:06:31 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -42,6 +42,7 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     int indicator_length;
     int identifier_length;
     int base_address;
+    int end_of_directory;
     int length_data_entry;
     int length_starting;
     int length_implementation;
@@ -55,6 +56,18 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
 
     if ((*p->readf)(p->fh, buf, 5) != 5)
         return NULL;
+    while (*buf < '0' || *buf > '9')
+    {
+	int i;
+
+	yaz_log(LOG_WARN, "MARC: Skipping bad byte %d (0x%02X)",
+		*buf & 0xff, *buf & 0xff);
+	for (i = 0; i<4; i++)
+	    buf[i] = buf[i+1];
+
+	if ((*p->readf)(p->fh, buf+4, 1) != 1)
+	    return NULL;
+    }
     record_length = atoi_n (buf, 5);
     if (record_length < 25)
     {
@@ -120,9 +133,32 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
     length_implementation = atoi_n (buf+22, 1);
 
     for (entry_p = 24; buf[entry_p] != ISO2709_FS; )
-        entry_p += 3+length_data_entry+length_starting;
-    base_address = entry_p+1;
-    for (entry_p = 24; buf[entry_p] != ISO2709_FS; )
+    {
+        int l = 3 + length_data_entry + length_starting;
+        if (entry_p + l >= record_length)
+        {
+	    yaz_log(LOG_WARN, "MARC: Directory offset %d: end of record.",
+		    entry_p);
+	    return 0;
+        }
+        /* check for digits in length info */
+        while (--l >= 3)
+            if (!isdigit(*(const unsigned char *) (buf + entry_p+l)))
+                break;
+        if (l >= 3)
+        {
+            /* not all digits, so stop directory scan */
+	    yaz_log(LOG_LOG, "MARC: Bad directory");
+            break;
+        }
+        entry_p += 3 + length_data_entry + length_starting;
+    }
+    end_of_directory = entry_p;
+    if (base_address != entry_p+1)
+    {
+	yaz_log(LOG_WARN, "MARC: Base address does not follow directory");
+    }
+    for (entry_p = 24; entry_p != end_of_directory; )
     {
         int data_length;
         int data_offset;
@@ -151,6 +187,12 @@ static data1_node *grs_read_iso2709 (struct grs_read_info *p, int marc_xml)
         i = data_offset + base_address;
         end_offset = i+data_length-1;
 
+	if (data_length <= 0 || data_offset < 0 || end_offset >= record_length)
+	{
+	    yaz_log(LOG_WARN, "MARC: Bad offsets in data. Skipping rest");
+	    break;
+	}
+	
         if (memcmp (tag, "00", 2) && indicator_length)
         {
             /* generate indicator node */
