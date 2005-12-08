@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.37.2.2 2005-01-16 23:33:26 adam Exp $
+/* $Id: zinfo.c,v 1.37.2.3 2005-12-08 11:10:09 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -336,6 +336,7 @@ ZebraExplainInfo zebraExplain_open (
     logf (LOG_LOG, "zebraExplain_open wr=%d", writeFlag);
 #endif
     zei = (ZebraExplainInfo) nmem_malloc (nmem, sizeof(*zei));
+    zei->databaseInfo = 0;
     zei->write_flag = writeFlag;
     zei->updateHandle = updateHandle;
     zei->updateFunc = updateFunc;
