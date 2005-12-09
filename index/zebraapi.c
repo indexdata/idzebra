@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.196 2005-12-09 10:45:04 adam Exp $
+/* $Id: zebraapi.c,v 1.197 2005-12-09 10:49:10 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -2200,8 +2200,9 @@ ZEBRA_RES zebra_update_record (ZebraHandle zh,
     ASSERTZH;
     assert(buf);
 
-    yaz_log(log_level, "zebra_update_record sysno=" ZINT_FORMAT, 
-	    sysno ? *sysno : "none");
+    yaz_log(log_level, "zebra_update_record");
+    if (sysno)
+	yaz_log(log_level, " sysno=" ZINT_FORMAT, *sysno);
 
     if (buf_size < 1) buf_size = strlen(buf);
 
