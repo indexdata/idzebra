@@ -1,4 +1,4 @@
-/* $Id: api.h,v 1.30 2005-09-13 11:51:05 adam Exp $
+/* $Id: api.h,v 1.31 2005-12-09 11:33:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -167,14 +167,6 @@ char *zebra_errAdd(ZebraHandle zh);
 */
 YAZ_EXPORT
 void zebra_result(ZebraHandle zh, int *code, char **addinfo);
-
-/** 
-    \brief Clears last error.
-    \param zh zebra session handle.
-*/
-YAZ_EXPORT
-void zebra_clearError(ZebraHandle zh);
-
 
 /**
    \brief Set limit before Zebra does approx hit count

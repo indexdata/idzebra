@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.143 2005-12-09 10:45:05 adam Exp $
+/* $Id: zserver.c,v 1.144 2005-12-09 11:33:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -408,8 +408,9 @@ int bend_delete (void *handle, bend_delete_rr *rr)
     return 0;
 }
 
-static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
+static void es_admin_request (bend_esrequest_rr *rr, ZebraHandle zh, Z_AdminEsRequest *r)
 {
+    ZEBRA_RES res = ZEBRA_OK;
     if (r->toKeep->databaseName)
     {
 	yaz_log(YLOG_LOG, "adm request database %s", r->toKeep->databaseName);
@@ -418,22 +419,26 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
     {
     case Z_ESAdminOriginPartToKeep_reIndex:
 	yaz_log(YLOG_LOG, "adm-reindex");
+	rr->errcode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
+	rr->errstring = "adm-reindex not implemented yet";
 	break;
     case Z_ESAdminOriginPartToKeep_truncate:
+	rr->errcode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
+	rr->errstring = "adm-reindex not implemented yet";
 	yaz_log(YLOG_LOG, "adm-truncate");
 	break;
     case Z_ESAdminOriginPartToKeep_drop:
 	yaz_log(YLOG_LOG, "adm-drop");
-	zebra_drop_database (zh, r->toKeep->databaseName);
+	res = zebra_drop_database (zh, r->toKeep->databaseName);
 	break;
     case Z_ESAdminOriginPartToKeep_create:
 	yaz_log(YLOG_LOG, "adm-create %s", r->toKeep->databaseName);
-	zebra_create_database (zh, r->toKeep->databaseName);
+	res = zebra_create_database (zh, r->toKeep->databaseName);
 	break;
     case Z_ESAdminOriginPartToKeep_import:
 	yaz_log(YLOG_LOG, "adm-import");
-	zebra_admin_import_begin (zh, r->toKeep->databaseName,
-			r->toKeep->u.import->recordType);
+	res = zebra_admin_import_begin (zh, r->toKeep->databaseName,
+					r->toKeep->u.import->recordType);
 	break;
     case Z_ESAdminOriginPartToKeep_refresh:
 	yaz_log(YLOG_LOG, "adm-refresh");
@@ -446,7 +451,7 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 	break;
     case Z_ESAdminOriginPartToKeep_shutdown:
 	yaz_log(YLOG_LOG, "shutdown");
-	zebra_admin_shutdown(zh);
+	res = zebra_admin_shutdown(zh);
 	break;
     case Z_ESAdminOriginPartToKeep_start:
 	yaz_log(YLOG_LOG, "start");
@@ -454,24 +459,26 @@ static int es_admin_request (ZebraHandle zh, Z_AdminEsRequest *r)
 	break;
     default:
 	yaz_log(YLOG_LOG, "unknown admin");
+	rr->errcode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
+	rr->errstring = "adm-reindex not implemented yet";
     }
-    return 0;
+    if (res != ZEBRA_OK)
+	zebra_result(zh, &rr->errcode, &rr->errstring);
 }
 
-static int es_admin (ZebraHandle zh, Z_Admin *r)
+static void es_admin (bend_esrequest_rr *rr, ZebraHandle zh, Z_Admin *r)
 {
     switch (r->which)
     {
     case Z_Admin_esRequest:
-	es_admin_request (zh, r->u.esRequest);
-	break;
-    case Z_Admin_taskPackage:
-	yaz_log (YLOG_LOG, "adm taskpackage (unhandled)");
-	break;
+	es_admin_request (rr, zh, r->u.esRequest);
+	return;
     default:
 	break;
     }
-    return 0;
+	yaz_log (YLOG_WARN, "adm taskpackage (unhandled)");
+    rr->errcode = YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED;
+    rr->errstring = "adm-task package (unhandled)";
 }
 
 int bend_segment (void *handle, bend_segment_rr *rr)
@@ -501,9 +508,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
     }
     else if (rr->esr->taskSpecificParameters->which == Z_External_ESAdmin)
     {
-	es_admin (zh, rr->esr->taskSpecificParameters->u.adminService);
-
-        zebra_result (zh, &rr->errcode, &rr->errstring);
+	es_admin(rr, zh, rr->esr->taskSpecificParameters->u.adminService);
     }
     else if (rr->esr->taskSpecificParameters->which == Z_External_update)
     {

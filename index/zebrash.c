@@ -1,4 +1,4 @@
-/* $Id: zebrash.c,v 1.35 2005-09-13 11:51:06 adam Exp $
+/* $Id: zebrash.c,v 1.36 2005-12-09 11:33:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -743,7 +743,7 @@ static int cmd_help( char *args[], WRBUF outbuff)
  
 /* If Zebra reports an error after an operation,
  * append it to the outbuff and log it */
-static void Zerrors ( WRBUF outbuff)
+static void Zerrors (WRBUF outbuff)
 {
     int ec;
     if (!zh)
@@ -757,7 +757,6 @@ static void Zerrors ( WRBUF outbuff)
 	wrbuf_printf(outbuff, "   Zebra error %d: %s, (%s)\n",
 		     ec, zebra_errString (zh),
 		     zebra_errAdd (zh) );
-	zebra_clearError(zh);
     }
 }
 
