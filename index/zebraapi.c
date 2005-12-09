@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.197 2005-12-09 10:49:10 adam Exp $
+/* $Id: zebraapi.c,v 1.198 2005-12-09 10:56:59 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1099,7 +1099,7 @@ ZEBRA_RES zebra_scan(ZebraHandle zh, ODR stream, Z_AttributesPlusTerm *zapt,
     assert(is_partial);
     assert(entries);
     yaz_log(log_level, "zebra_scan");
-    zebra_clearError(zh);
+
     if (zebra_begin_read (zh) == ZEBRA_FAIL)
     {
 	*entries = 0;
@@ -1139,7 +1139,7 @@ ZEBRA_RES zebra_sort (ZebraHandle zh, ODR stream,
     assert(sort_sequence);
     assert(sort_status);
     yaz_log(log_level, "zebra_sort");
-    zebra_clearError(zh);
+
     if (zebra_begin_read(zh) == ZEBRA_FAIL)
 	return ZEBRA_FAIL;
     res = resultSetSort(zh, stream->mem, num_input_setnames, input_setnames,
@@ -1421,7 +1421,6 @@ ZEBRA_RES zebra_drop_database(ZebraHandle zh, const char *db)
     ZEBRA_RES ret = ZEBRA_OK;
     ASSERTZH;
     yaz_log(log_level, "zebra_drop_database %s", db);
-    zebra_clearError(zh);
 
     if (zebra_select_database (zh, db) == ZEBRA_FAIL)
         return ZEBRA_FAIL;
@@ -1437,6 +1436,8 @@ ZEBRA_RES zebra_drop_database(ZebraHandle zh, const char *db)
     else
     {
 	yaz_log(YLOG_WARN, "drop database only supported for isam:b");
+	zebra_setError(zh, YAZ_BIB1_ES_IMMEDIATE_EXECUTION_FAILED,
+		       "drop database only supported for isam:b");
 	ret = ZEBRA_FAIL;
     }
     zebra_end_trans (zh);
@@ -1448,7 +1449,6 @@ ZEBRA_RES zebra_create_database (ZebraHandle zh, const char *db)
     ASSERTZH;
     yaz_log(log_level, "zebra_create_database %s", db);
     assert(db);
-    zebra_clearError(zh);
 
     if (zebra_select_database (zh, db) == ZEBRA_FAIL)
         return ZEBRA_FAIL;
@@ -1475,7 +1475,7 @@ int zebra_string_norm (ZebraHandle zh, unsigned reg_id,
     assert(input_str);
     assert(output_str);
     yaz_log(log_level, "zebra_string_norm ");
-    zebra_clearError(zh);
+
     if (!zh->reg->zebra_maps)
 	return -1;
     wrbuf = zebra_replace(zh->reg->zebra_maps, reg_id, "",
@@ -1498,7 +1498,6 @@ static void zebra_set_state (ZebraHandle zh, int val, int seqno)
     FILE *f;
     ASSERTZH;
     yaz_log(log_level, "zebra_set_state v=%d seq=%d", val, seqno);
-    zebra_clearError(zh);
 
     sprintf (state_fname, "state.%s.LCK", zh->reg_name);
     fname = zebra_mk_fname (res_get(zh->res, "lockDir"), state_fname);
@@ -1518,7 +1517,7 @@ static void zebra_get_state (ZebraHandle zh, char *val, int *seqno)
 
     ASSERTZH;
     yaz_log(log_level, "zebra_get_state ");
-    zebra_clearError(zh);
+
     sprintf (state_fname, "state.%s.LCK", zh->reg_name);
     fname = zebra_mk_fname (res_get(zh->res, "lockDir"), state_fname);
     f = fopen (fname, "r");
@@ -1624,8 +1623,6 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
 	}
         zh->trans_w_no = zh->trans_no;
 
-	zebra_clearError(zh);
-        
         zh->records_inserted = 0;
         zh->records_updated = 0;
         zh->records_deleted = 0;
@@ -1719,7 +1716,6 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
             zebra_flush_reg (zh);
             return ZEBRA_OK;
         }
-	zebra_clearError(zh);
 #if HAVE_SYS_TIMES_H
         times (&zh->tms1);
 #endif
