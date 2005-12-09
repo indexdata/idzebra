@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.195 2005-12-07 17:00:46 adam Exp $
+/* $Id: zebraapi.c,v 1.196 2005-12-09 10:45:04 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1367,7 +1367,7 @@ ZEBRA_RES zebra_admin_exchange_record (ZebraHandle zh,
 				 &sysno, 
 				 0, /* match */
 				 0, /* fname */
-			   0, /* force update */
+				 0, /* force update */
 				 1  /* allow update */
 	);
     if (res == ZEBRA_FAIL)
@@ -2157,8 +2157,7 @@ NOTE: Now returns 0 at success and updates sysno, which is an int*
 int zebra_add_record(ZebraHandle zh,
 		     const char *buf, int buf_size)
 {
-    SYSNO sysno = 0;
-    return zebra_update_record(zh, 0, &sysno, 0, 0, buf, buf_size, 0);
+    return zebra_update_record(zh, 0, 0 /* sysno */, 0, 0, buf, buf_size, 0);
 }
 
 ZEBRA_RES zebra_insert_record (ZebraHandle zh, 
@@ -2199,10 +2198,10 @@ ZEBRA_RES zebra_update_record (ZebraHandle zh,
 {
     ZEBRA_RES res;
     ASSERTZH;
-    assert(sysno);
     assert(buf);
 
-    yaz_log(log_level, "zebra_update_record sysno=" ZINT_FORMAT, *sysno);
+    yaz_log(log_level, "zebra_update_record sysno=" ZINT_FORMAT, 
+	    sysno ? *sysno : "none");
 
     if (buf_size < 1) buf_size = strlen(buf);
 

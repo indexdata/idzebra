@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.199 2005-11-10 11:25:47 adam Exp $
+/* $Id: extract.c,v 1.200 2005-12-09 10:45:04 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -845,6 +845,7 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
 				int force_update,
 				int allow_update)
 {
+    SYSNO sysno0 = 0;
     RecordAttr *recordAttr;
     struct recExtractCtrl extractCtrl;
     int r;
@@ -942,14 +943,14 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
 	yaz_log (YLOG_WARN, "extract error: no such filter");
 	return ZEBRA_FAIL;
     }
-    /* match criteria */
-    matchStr = NULL;
 
     if (extractCtrl.match_criteria[0])
 	match_criteria = extractCtrl.match_criteria;
 
-    if (! *sysno) {
-        char *rinfo;
+    if (!sysno) {
+
+	sysno = &sysno0;
+
         if (match_criteria && *match_criteria) {
             matchStr = match_criteria;
         } else {
@@ -964,7 +965,7 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
             }
         }
         if (matchStr) {
-            rinfo = dict_lookup (zh->reg->matchDict, matchStr);
+	    char *rinfo = dict_lookup (zh->reg->matchDict, matchStr);
             if (rinfo)
 	    {
 		assert(*rinfo == sizeof(*sysno));

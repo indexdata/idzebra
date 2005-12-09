@@ -1,4 +1,4 @@
-/* $Id: zserver.c,v 1.142 2005-12-07 17:00:46 adam Exp $
+/* $Id: zserver.c,v 1.143 2005-12-09 10:45:05 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -572,7 +572,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 		    Z_External *rec = notToKeep->elements[i]->record;
                     struct oident *oident = 0;
                     Odr_oct *opaque_recid = 0;
-		    SYSNO sysno = 0;
+		    SYSNO *sysno = 0;
+		    SYSNO sysno_tmp;
 
 		    if (notToKeep->elements[i]->u.opaque)
 		    {
@@ -582,7 +583,8 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 			    opaque_recid = notToKeep->elements[i]->u.opaque;
 			    break; /* OK, recid already set */
 			case Z_IUSuppliedRecords_elem_number:
-			    sysno = *notToKeep->elements[i]->u.number;
+			    sysno_tmp = *notToKeep->elements[i]->u.number;
+			    sysno = &sysno_tmp;
 			    break;
 			}
                     }
@@ -669,7 +671,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				r = zebra_insert_record(
 				    zh,
 				    0, /* recordType */
-				    &sysno,
+				    sysno,
 				    0, /* match */
 				    0, /* fname */
 				    (const char *) rec->u.octet_aligned->buf,
@@ -687,7 +689,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				r = zebra_update_record(
 				    zh,
 				    0, /* recordType */
-				    &sysno,
+				    sysno,
 				    0, /* match */
 				    0, /* fname */
 				    (const char *) rec->u.octet_aligned->buf,
@@ -704,7 +706,7 @@ int bend_esrequest (void *handle, bend_esrequest_rr *rr)
 				r = zebra_delete_record(
 				    zh,
 				    0, /* recordType */
-				    &sysno,
+				    sysno,
 				    0, /* match */
 				    0, /* fname */
 				    (const char *) rec->u.octet_aligned->buf,
