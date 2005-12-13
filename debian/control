@@ -3,7 +3,7 @@ Priority: optional
 Maintainer: Adam Dickmeiss <adam@indexdata.dk>
 Build-Depends: debhelper (>= 4.0.0)
 Standards-Version: 3.6.0
-Build-Depends: libyaz-dev (>= 2.0.2), libexpat1-dev, tcl8.3-dev, libbz2-dev
+Build-Depends: libyaz-dev (>= 2.0.2), libexpat1-dev, tcl8.3-dev, libbz2-dev, libxslt1-dev
 
 Package: idzebra1.4
 Section: text
@@ -78,6 +78,19 @@ Depends: ${shlibs:Depends}, idzebra1.4-common
 Conflicts: idzebra
 Description: IDZebra libraries
  This package contains all run-time libraries for IDZebra.
+ .
+ IDZebra is a high-performance, general-purpose structured text indexing
+ and retrieval engine. It reads structured records in a variety of input
+ formats (eg. email, XML, MARC) and allows access to them through exact
+ boolean search expressions and relevance-ranked free-text queries.
+
+Package: libidzebra1.4-mod-alvis
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: IDZebra filter alvis (XSLT filter for XML)
+ This package includes the alvis filter which uses libxslt1 to
+ transform XML records by XSLT into XML indexable records.
  .
  IDZebra is a high-performance, general-purpose structured text indexing
  and retrieval engine. It reads structured records in a variety of input

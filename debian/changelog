@@ -1,3 +1,10 @@
+idzebra (1.4.0-2) unstable; urgency=low
+
+  * Added Alvis XSLT filter debian package libidzebra1.4-mod-alvis.
+
+ -- Marc Cromme <marc@indexdata.dk>  Mon, 12 Dec 2005 13:49:07 +0100
+
+
 idzebra (1.4.0-1) unstable; urgency=low
 
   * New package structure. Zebra 1.4 series.
