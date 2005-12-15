@@ -1,4 +1,4 @@
-/* $Id: testlib.h,v 1.16 2005-09-13 11:51:07 adam Exp $
+/* $Id: testlib.h,v 1.17 2005-12-15 13:28:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -115,3 +115,6 @@ void meta_query(int lineno, ZebraHandle zh, char *query, int exphits,
  * if filter given by name does not exist, exit nicely but warn in log 
  */
 void check_filter(ZebraService zs, const char *name);
+
+#define TL_ASSERT(x) if (!(x)) { yaz_log(YLOG_FATAL, "%s:%d TL_ASSERT(%s) failed",  __FILE__, __LINE__, #x); exit(1); }
+#define TL_ASSERT2(x,m) if (!(x)) { yaz_log(YLOG_WARN, "%s", m); yaz_log(YLOG_FATAL, "%s:%d TL_ASSERT(%s) failed",  __FILE__, __LINE__, #x); exit(1); }

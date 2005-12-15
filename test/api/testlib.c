@@ -1,4 +1,4 @@
-/* $Id: testlib.c,v 1.28 2005-11-09 12:01:09 adam Exp $
+/* $Id: testlib.c,v 1.29 2005-12-15 13:28:32 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -89,7 +89,7 @@ const char *get_srcdir()
 {
     const char *srcdir = getenv("srcdir");
     if (!srcdir || ! *srcdir)
-        srcdir=".";
+        srcdir = ".";
     return srcdir;
 
 }
@@ -104,12 +104,7 @@ ZebraService start_service(const char *cfgname)
 
     sprintf(cfg, "%.200s/%.50s", srcdir, cfgname);
     zs = zebra_start(cfg);
-    if (!zs)
-    {
-        printf("zebra_start failed, probably because missing config file \n"
-               "check %s\n", cfg);
-        exit(9);
-    }
+    TL_ASSERT2(zs, "zebra_start_failed. Missing config file?");
     return zs;
 }
 
@@ -149,7 +144,7 @@ void init_data(ZebraHandle zh, const char **recs)
         zebra_result(zh, &i, &addinfo);
         yaz_log(log_level, "Error %d  %s", i, addinfo);
         printf("  Error %d   %s\n", i, addinfo);
-        exit(1);
+	TL_ASSERT(i == 0);
     }
     if (recs)
     {
@@ -179,11 +174,7 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
     parser = yaz_pqf_create();
     rpn = yaz_pqf_parse(parser, odr, query);
     yaz_pqf_destroy(parser);
-    if (!rpn) {
-	yaz_log(log_level, "PQF Parse failed\n");
-        printf("Error: Parse failed \n%s\n", query);
-        exit(1);
-    }
+    TL_ASSERT2(rpn, "Parse of pqf failed");
     rc = zebra_search_RPN(zh, odr, rpn, setname, &hits);
     if (experror)
     {
@@ -194,7 +185,7 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
 		    "expected", rc);
 	    printf("Error: search returned %d (OK), but error was expected\n"
 		   "%s\n",  rc, query);
-	    exit(1);
+	    TL_ASSERT(rc == ZEBRA_FAIL);
 	}
 	code = zebra_errCode(zh);
 	if (code != experror)
@@ -204,7 +195,7 @@ int do_query_x(int lineno, ZebraHandle zh, const char *query, zint exphits,
 	    printf("Error: search returned error code %d, but error %d was "
 		   "expected\n%s\n",
 		   code, experror, query);
-	    exit(1);
+	    TL_ASSERT(code == experror);
 	}
     }
     else
