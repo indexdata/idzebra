@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.49.2.3 2005-01-21 11:35:49 adam Exp $
+/* $Id: zsets.c,v 1.49.2.4 2006-01-12 13:21:27 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005
    Index Data Aps
 
@@ -592,6 +592,55 @@ void resultSetInsertRank(ZebraHandle zh, struct zset_sort_info *sort_info,
     new_entry->score = score;
 }
 
+
+static Z_RPNQuery *copy_RPNQuery(Z_RPNQuery *src_rpn, NMEM dst)
+{
+    Z_RPNQuery *dst_rpn = 0;
+    ODR encode = odr_createmem(ODR_ENCODE);
+    ODR decode = odr_createmem(ODR_DECODE);
+
+    if (z_RPNQuery(encode, &src_rpn, 0, 0))
+    {
+	int len;
+	char *buf = odr_getbuf(encode, &len, 0);
+
+	if (buf)
+	{
+	    odr_setbuf(decode, buf, len, 0);
+	    z_RPNQuery(decode, &dst_rpn, 0, 0);
+	}
+    }
+    nmem_transfer(dst, decode->mem);
+    odr_destroy(encode);
+    odr_destroy(decode);
+    return dst_rpn;
+}
+
+ZebraSet resultSetClone(ZebraHandle zh, const char *setname,
+			ZebraSet rset)
+{
+    ZebraSet nset;
+    int i;
+
+    nset = resultSetAdd(zh, setname, 1);
+    if (!nset)
+	return 0;
+
+    nset->nmem = nmem_create();
+
+    nset->num_bases = rset->num_bases;
+    nset->basenames = 
+        nmem_malloc (nset->nmem, nset->num_bases * sizeof(*rset->basenames));
+    for (i = 0; i<rset->num_bases; i++)
+        nset->basenames[i] = nmem_strdup(nset->nmem, rset->basenames[i]);
+
+    if (rset->rset)
+	nset->rset = rset_dup(rset->rset);
+    if (rset->rpn)
+	nset->rpn = copy_RPNQuery(rset->rpn, nset->nmem);
+    return nset;
+}
+
 void resultSetSort (ZebraHandle zh, NMEM nmem,
 		    int num_input_setnames, const char **input_setnames,
 		    const char *output_setname,
@@ -626,11 +675,7 @@ void resultSetSort (ZebraHandle zh, NMEM nmem,
         return;
     }
     if (strcmp (output_setname, input_setnames[0]))
-    {
-	rset = rset_dup (rset);
-	sset = resultSetAdd (zh, output_setname, 1);
-        sset->rset = rset;
-    }
+	sset = resultSetClone(zh, output_setname, sset);
     resultSetSortSingle (zh, nmem, sset, rset, sort_sequence, sort_status);
 }
 
