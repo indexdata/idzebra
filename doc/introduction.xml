@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.27 2006-01-17 12:16:12 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.28 2006-01-17 13:00:02 marc Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -231,7 +231,27 @@
    </para>
    <para>
     More information can be found at
-    <ulink url="http://www.dtv.dk/help/dads/index_e.htm"/>
+    <ulink url="http://www.dtv.dk/"/> and
+    <ulink url="http://dads.dtv.dk"/>
+   </para>
+  </sect2>
+
+  <sect2>
+   <title>Infonet Eprints</title>
+   <para>
+     The InfoNet Eprints service from the 
+     <ulink url="http://www.dtv.dk/">
+      Technical Knowledge Center of Denmark</ulink>
+     provides access to documents stored in
+     eprint/preprint servers and institutional research archives around
+     the world. The service is based on Open Archives Initiative metadata
+     harvesting of selected scientific archives around the world. These
+     open archives offer free and unrestricted access to their contents.
+    </para>
+   <para>
+    Infonet Eprints currently holds 1.4 million records from 16 archives.
+    The online search facility is found at
+    <ulink url="http://preprints.cvt.dk"/>.
    </para>
   </sect2>
 
@@ -240,7 +260,8 @@
    <para>
     Fernuniversit&#x00E4;t Hagen in Germany have developed a natural
     language interface for access to library databases.
-    <ulink url="http://ki212.fernuni-hagen.de/nli/NLIintro.html"/>
+    <!-- <ulink
+    url="http://ki212.fernuni-hagen.de/nli/NLIintro.html"/> -->
     In order to evaluate this interface for recall and precision, they
     chose Zebra as the basis for retrieval effectiveness.  The Zebra
     server contains a copy of the GIRT database, consisting of more
@@ -255,7 +276,8 @@
    </para>
    <para>
     Evaluation will take place as part of the TREC/CLEF campaign 2003 
-    <ulink url="http://clef.iei.pi.cnr.it or http://www4.eurospider.ch/CLEF/"/>
+    <ulink url="http://clef.iei.pi.cnr.it"/>.
+    <!-- or <ulink url="http://www4.eurospider.ch/CLEF/"/> -->
    </para>
    <para>
     For more information, contact Johannes Leveling
@@ -365,14 +387,12 @@
   </para>
   <para>
    Second, there's the Zebra mailing list.  Its home page at
-   <ulink url="http://indexdata.dk/mailman/listinfo/zebralist"/>
+   <ulink url="http://lists.indexdata.dk/cgi-bin/mailman/listinfo/zebralist"/>
    includes a complete archive of all messages that have ever been
    posted on the list.  The Zebra mailing list is used both for
    announcements from the authors (new
    releases, bug fixes, etc.) and general discussion.  You are welcome
-   to seek support there.  Join by sending email to
-   <email>zebra-request@indexdata.dk</email> with the word
-   <literal>subscribe</literal> in the body of the message.
+   to seek support there.  Join by filling the form on the list home page.
   </para>
   <para>
    Third, it's possible to buy a commercial support contract, with
@@ -403,14 +423,34 @@
        repository.  The recent addition of XPath searching is one
        example of the kind of enhancement we're working on.
      </para>
+     <para>
+       There is also the experimental <literal>ALVIS XSLT</literal>
+       XML input filter, which unleashes the full power of DOM based
+       XSLT transformations during indexing and record retrieval. Work
+       on this filter has been sponsored by the ALVIS EU project
+       <ulink url="http://www.alvis.info/alvis/"/>. We expect this filter to
+       mature soon, as it is planned to be included in the version 1.4
+       release of Zebra. 
+     </para>
     </listitem>
 
     <listitem>
      <para>
        Access to the search engine through SOAP/RPC API to allow the
        construction of applications without requiring Z39.50 tools.
-       This will shortly be available by means of Index Data's
+       <!-- 
+      This will shortly be available by means of Index Data's
        SRW-to-Z39.50 gateway, currently in beta test.
+       -->
+       Experimental support of the 
+       Search/Retrieve Via URL (SRU) 
+       <ulink url="http://www.loc.gov/standards/sru/"/>
+       REST webservice, and the 
+        Search/Retrieve Web Service (SRW)
+       <ulink url="http://www.loc.gov/standards/sru/srw/"/>
+       SOAP Web Service have recently been added to the YAZ/Zebra
+       combo. It remains to find a sponsor for further testing,
+       documentation and packaging of this exiting component.
      </para>
     </listitem>
 
