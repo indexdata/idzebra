@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.28 2006-01-17 13:00:02 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.29 2006-01-17 13:03:34 marc Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -449,7 +449,9 @@
         Search/Retrieve Web Service (SRW)
        <ulink url="http://www.loc.gov/standards/sru/srw/"/>
        SOAP Web Service have recently been added to the YAZ/Zebra
-       combo. It remains to find a sponsor for further testing,
+       combo - including server side Common Query Language (CQL)
+       <ulink url="http://www.loc.gov/standards/sru/cql/"/> parsing
+       and configuration. It remains to find a sponsor for further testing,
        documentation and packaging of this exiting component.
      </para>
     </listitem>
