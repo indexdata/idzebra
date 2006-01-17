@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.26 2003-10-30 11:11:57 adam Exp $ -->
+ <!-- $Id: introduction.xml,v 1.27 2006-01-17 12:16:12 marc Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -109,12 +109,15 @@
       as well as Windows NT.  A binary distribution for Windows NT is
       available at
       <ulink url="http://ftp.indexdata.dk/pub/zebra/win32/"/>,
-      and pre-built packages are available for some Linux
+      and pre-built packages are available for 
+      <!--- some Linux
       distributions:
       Red Hat 7.x RPMs at
       <ulink url="http://ftp.indexdata.dk/pub/zebra/RedHat7.X/"/>
       and Debian packages at
-      <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/"/>
+      -->
+      <literal>GNU/Debian Linux</literal> at 
+      <ulink url="http://ftp.indexdata.dk/pub/zebra/debian/"/>.
      </para>
     </listitem>
     
