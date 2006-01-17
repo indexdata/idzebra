@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.28 2005-08-08 11:08:52 adam Exp $
+## $Id: Makefile.am,v 1.29 2006-01-17 21:26:43 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -7,6 +7,7 @@ SUPPORTFILES = \
  zebraprint.dsl \
  tkl.xsl \
  xml.dcl
+
 XMLFILES = \
  zebra.xml.in \
  introduction.xml \
@@ -28,8 +29,9 @@ XMLFILES = \
 HTMLFILES =  \
  administration.html apps.html configuration-file.html data-model.html \
  example1.html example2.html examples.html features.html file-ids.html \
- formats.html future.html generic-ids.html indexdata.html installation.html \
- installation.win32.html internal-representation.html introduction.html \
+ formats.html future.html generic-ids.html indexdata.html \
+ installation.html installation.debian.html installation.win32.html \
+ internal-representation.html introduction.html \
  license.html locating-records.html protocol-support.html quick-start.html \
  record-model.html register-location.html server.html shadow-registers.html \
  simple-indexing.html support.html zebra.html zebraidx.html 
@@ -101,7 +103,7 @@ dist-hook:
 			fi \
 		done; \
 		if test "$$found" = "0"; then \
-			echo "$$h not found in HTMLFILES"; \
+			echo "$$f not found in HTMLFILES"; \
 			exit 1; \
 		fi \
 	done
