@@ -1,105 +1,20 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.21 2005-01-04 19:10:29 quinn Exp $ -->
-  <title>The Record Model</title>
+  <!-- $Id: recordmodel.xml,v 1.22 2006-01-18 14:00:54 marc Exp $ -->
+  <title>GRS Record Model and Filter Modules</title>
   
-  <para>
-   The Zebra system is designed to support a wide range of data management
-   applications. The system can be configured to handle virtually any
-   kind of structured data. Each record in the system is associated with
-   a <emphasis>record schema</emphasis> which lends context to the data
-   elements of the record.
-   Any number of record schemas can coexist in the system.
-   Although it may be wise to use only a single schema within
-   one database, the system poses no such restrictions.
-  </para>
 
   <para>
    The record model described in this chapter applies to the fundamental,
    structured
    record type <literal>grs</literal>, introduced in
-   <xref linkend="record-types"/>.
-   <!--
-   FIXME - Need to describe the simple string-tag model, or at least 
-   refer to it here. -H
-   -->
+   <xref linkend="componentmodulesgrs"/>.
   </para>
 
-  <para>
-   Records pass through three different states during processing in the
-   system.
-  </para>
 
-  <para>
-
-   <itemizedlist>
-    <listitem>
-     
-     <para>
-      When records are accessed by the system, they are represented
-      in their local, or native format. This might be SGML or HTML files,
-      News or Mail archives, MARC records. If the system doesn't already
-      know how to read the type of data you need to store, you can set up an
-      input filter by preparing conversion rules based on regular
-      expressions and possibly augmented by a flexible scripting language
-      (Tcl).
-      The input filter produces as output an internal representation,
-      a tree structure.
-
-     </para>
-    </listitem>
-    <listitem>
-
-     <para>
-      When records are processed by the system, they are represented
-      in a tree-structure, constructed by tagged data elements hanging off a
-      root node. The tagged elements may contain data or yet more tagged
-      elements in a recursive structure. The system performs various
-      actions on this tree structure (indexing, element selection, schema
-      mapping, etc.),
-
-     </para>
-    </listitem>
-    <listitem>
-
-     <para>
-      Before transmitting records to the client, they are first
-      converted from the internal structure to a form suitable for exchange
-      over the network - according to the Z39.50 standard.
-     </para>
-    </listitem>
-
-   </itemizedlist>
-
-  </para>
-
-  <sect1 id="local-representation">
-   <title>Local Representation</title>
-
+  <sect1 id="grs-record-filters">
+   <title>GRS Record Filters</title>
    <para>
-    As mentioned earlier, Zebra places few restrictions on the type of
-    data that you can index and manage. Generally, whatever the form of
-    the data, it is parsed by an input filter specific to that format, and
-    turned into an internal structure that Zebra knows how to handle. This
-    process takes place whenever the record is accessed - for indexing and
-    retrieval.
-   </para>
-
-   <para>
-    The RecordType parameter in the <literal>zebra.cfg</literal> file, or
-    the <literal>-t</literal> option to the indexer tells Zebra how to
-    process input records.
-    Two basic types of processing are available - raw text and structured
-    data. Raw text is just that, and it is selected by providing the
-    argument <emphasis>text</emphasis> to Zebra. Structured records are
-    all handled internally using the basic mechanisms described in the
-    subsequent sections.
-    Zebra can read structured records in many different formats.
-    How this is done is governed by additional parameters after the
-    "grs" keyword, separated by "." characters.
-   </para>
-
-   <para>
-    Four basic subtypes to the <emphasis>grs</emphasis> type are
+    Many basic subtypes of the <emphasis>grs</emphasis> type are
     currently available:
    </para>
 
@@ -109,38 +24,62 @@
       <term>grs.sgml</term>
       <listitem>
        <para>
-        This is the canonical input format &mdash;
-        described below. It is a simple SGML-like syntax.
+        This is the canonical input format
+        described <xref linkend="grs-canonical-format"/>. It is using
+        simple SGML-like syntax. 
        </para>
-      </listitem>
-     </varlistentry>
-     <varlistentry>
-      <term>grs.regx.<emphasis>filter</emphasis></term>
-      <listitem>
+       <!--
        <para>
-        This enables a user-supplied input
-        filter. The mechanisms of these filters are described below.
+         <literal>libidzebra1.4-mod-grs-sgml not packaged yet ??</literal>
        </para>
+       -->
       </listitem>
      </varlistentry>
      <varlistentry>
-      <term>grs.tcl.<emphasis>filter</emphasis></term>
-      <listitem>
-       <para>
-        Similar to grs.regx but using Tcl for rules.
-       </para>
-      </listitem>
-     </varlistentry>
-     <varlistentry>
-      <term>grs.marc.<emphasis>abstract syntax</emphasis></term>
+      <term>grs.marc<!--.<emphasis>abstract syntax</emphasis>--></term>
       <listitem>
        <para>
         This allows Zebra to read
-        records in the ISO2709 (MARC) encoding standard. In this case, the
+        records in the ISO2709 (MARC) encoding standard. 
+        <!-- In this case, the
         last parameter <emphasis>abstract syntax</emphasis> names the
         <literal>.abs</literal> file (see below)
         which describes the specific MARC structure of the input record as
-        well as the indexing rules.
+        well as the indexing rules. -->
+       </para>
+       <para>
+         The loadable <literal>grs.marc</literal> filter module
+         is packaged in the GNU/Debian package
+        <literal>libidzebra1.4-mod-grs-marc</literal>
+        </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+      <term>grs.marcxml<!--.<emphasis>abstract syntax</emphasis>--></term>
+      <listitem>
+       <para>
+        This allows Zebra to read
+        records in the ISO2709??? (MARCXML) encoding standard.
+       </para>
+       <para>
+         The loadable <literal>grs.marcxml</literal> filter module
+         is also contained in the GNU/Debian package
+        <literal>libidzebra1.4-mod-grs-marc</literal>
+        </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+      <term>grs.danbib</term>
+      <listitem>
+       <para>
+        The <literal>grs.danbib</literal> filter parses DanBib
+        records, a danish MARC record variant called DANMARC.
+        DanBib is the Danish Union Catalogue hosted by the
+        Danish Bibliographic Centre (DBC).
+       </para>
+       <para>The loadable  <literal>grs.danbib</literal> filter module
+         is packages in the GNU/Debian package 
+         <literal>libidzebra1.4-mod-grs-danbib</literal>.
        </para>
       </listitem>
      </varlistentry>
@@ -148,18 +87,55 @@
       <term>grs.xml</term>
       <listitem>
        <para>
-        This filter reads XML records. Only one record per file
+        This filter reads XML records and uses Expat to
+        parse them and convert them into IDZebra's internal 
+        <literal>grs</literal> record model.
+        Only one record per file
         is supported. The filter is only available if Zebra/YAZ
         is compiled with EXPAT support.
        </para>
+       <para>
+         The loadable <literal>grs.xml</literal> filter module
+         is packagged in the GNU/Debian package
+        <literal>libidzebra1.4-mod-grs-xml</literal>
+        </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+      <term>grs.regx<!--.<emphasis>filter</emphasis>--></term>
+      <listitem>
+       <para>
+        This enables a user-supplied Regular Expressions input
+        filter described in
+        <xref linkend="grs-regx-tcl"/>.
+       </para>
+       <para>
+         The loadable  <literal>grs.regx</literal> filter module
+         is packaged in the GNU/Debian package
+        <literal>libidzebra1.4-mod-grs-regx</literal>
+        </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+      <term>grs.tcl<!--.<emphasis>filter</emphasis>--></term>
+      <listitem>
+       <para>
+        Similar to grs.regx but using Tcl for rules, described in 
+        <xref linkend="grs-regx-tcl"/>.
+       </para>
+       <para>
+         The loadable <literal>grs.tcl</literal> filter module
+         is also packaged in the GNU/Debian package
+        <literal>libidzebra1.4-mod-grs-regx</literal>
+        </para>
       </listitem>
      </varlistentry>
 
     </variablelist>
    </para>
 
-   <sect2>
-    <title>Canonical Input Format</title>
+   <sect2 id="grs-canonical-format">
+    <title>GRS Canonical Input Format</title>
 
     <para>
      Although input data can take any form, it is sometimes useful to
@@ -239,7 +215,7 @@
       makes up the total record. In the canonical input format, the root tag
       should contain the name of the schema that lends context to the
       elements of the record
-      (see <xref linkend="internal-representation"/>).
+      (see <xref linkend="grs-internal-representation"/>).
       The following is a GILS record that
       contains only a single element (strictly speaking, that makes it an
       illegal GILS record, since the GILS profile includes several mandatory
@@ -359,8 +335,8 @@
 
    </sect2>
 
-   <sect2>
-    <title>Input Filters</title>
+   <sect2 id="grs-regx-tcl">
+    <title>GRS REGX And TCL Input Filters</title>
 
     <para>
      In order to handle general input formats, Zebra allows the
@@ -606,8 +582,8 @@
 
   </sect1>
 
-  <sect1 id="internal-representation">
-   <title>Internal Representation</title>
+  <sect1 id="grs-internal-representation">
+   <title>GRS Internal Record Representation</title>
 
    <para>
     When records are manipulated by the system, they're represented in a
@@ -730,12 +706,13 @@
    
   </sect1>
   
-  <sect1 id="data-model">
-   <title>Configuring Your Data Model</title>
+  <sect1 id="grs-record-model">
+   <title>GRS Record Model Configuration</title>
    
    <para>
     The following sections describe the configuration files that govern
-    the internal management of data records. The system searches for the files
+    the internal management of <literal>grs</literal> records. 
+    The system searches for the files
     in the directories specified by the <emphasis>profilePath</emphasis>
     setting in the <literal>zebra.cfg</literal> file.
    </para>
@@ -1959,16 +1936,18 @@
 	 <emphasis>target</emphasis></term>
 	<listitem>
 	 <para>
-	  This directive introduces a
-	  mapping between each of the members of the value-set on the left to
-	  the character on the right. The character on the right must occur in
-	  the value set (the <literal>lowercase</literal> directive) of
-	  the character set, but
-	  it may be a paranthesis-enclosed multi-octet character. This directive
-	  may be used to map diacritics to their base characters, or to map
-	  HTML-style character-representations to their natural form, etc. The map directive
-	  can also be used to ignore leading articles in searching and/or sorting, and to perform
-	  other special transformations. See section <xref linkend="leading-articles"/>.
+	  This directive introduces a mapping between each of the
+	  members of the value-set on the left to the character on the
+	  right. The character on the right must occur in the value
+	  set (the <literal>lowercase</literal> directive) of the
+	  character set, but it may be a paranthesis-enclosed
+	  multi-octet character. This directive may be used to map
+	  diacritics to their base characters, or to map HTML-style
+	  character-representations to their natural form, etc. The
+	  map directive can also be used to ignore leading articles in
+	  searching and/or sorting, and to perform other special
+	  transformations. See section <xref
+	  linkend="leading-articles"/>.
 	 </para>
 	</listitem></varlistentry>
       </variablelist>
@@ -1977,47 +1956,55 @@
     <sect3 id="leading-articles">
      <title>Ignoring leading articles</title>
      <para>
-      In addition to specifying sort orders, space (blank) handling, and upper/lowercase folding,
-      you can also use the character map files to make Zebra ignore leading articles in sorting
-      records, or when doing complete field searching.
+      In addition to specifying sort orders, space (blank) handling,
+      and upper/lowercase folding, you can also use the character map
+      files to make Zebra ignore leading articles in sorting records,
+      or when doing complete field searching.
      </para>
      <para>
-      This is done using the <literal>map</literal> directive in the character map file. In a
-      nutshell, what you do is map certain sequences of characters, when they occur <emphasis>
-      in the beginning of a field</emphasis>, to a space. Assuming that the character "@" is
-      defined as a space character in your file, you can do:
+      This is done using the <literal>map</literal> directive in the
+      character map file. In a nutshell, what you do is map certain
+      sequences of characters, when they occur <emphasis> in the
+      beginning of a field</emphasis>, to a space. Assuming that the
+      character "@" is defined as a space character in your file, you
+      can do:
       <screen>
        map (^The\s) @
        map (^the\s) @
       </screen>
-      The effect of these directives is to map either 'the' or 'The', followed by a space
-      character, to a space. The hat ^ character denotes beginning-of-field only when
-      complete-subfield indexing or sort indexing is taking place; otherwise, it is treated just
+      The effect of these directives is to map either 'the' or 'The',
+      followed by a space character, to a space. The hat ^ character
+      denotes beginning-of-field only when complete-subfield indexing
+      or sort indexing is taking place; otherwise, it is treated just
       as any other character.
      </para>
      <para>
-      Because the <literal>default.idx</literal> file can be used to associate different
-      character maps with different indexing types -- and you can create additional indexing
-      types, should the need arise -- it is possible to specify that leading articles should be
-      ignored either in sorting, in complete-field searching, or both.
+      Because the <literal>default.idx</literal> file can be used to
+      associate different character maps with different indexing types
+      -- and you can create additional indexing types, should the need
+      arise -- it is possible to specify that leading articles should
+      be ignored either in sorting, in complete-field searching, or
+      both.
      </para>
      <para>
-      If you ignore certain prefixes in sorting, then these will be eliminated from the index,
-      and sorting will take place as if they weren't there. However, if you set the system up
-      to ignore certain prefixes in <emphasis>searching</emphasis>, then these are deleted both
-      from the indexes and from query terms, when the client specifies complete-field
-      searching. This has the effect that a search for 'the science journal' and 'science
-      journal' would both produce the same results.
+      If you ignore certain prefixes in sorting, then these will be
+      eliminated from the index, and sorting will take place as if
+      they weren't there. However, if you set the system up to ignore
+      certain prefixes in <emphasis>searching</emphasis>, then these
+      are deleted both from the indexes and from query terms, when the
+      client specifies complete-field searching. This has the effect
+      that a search for 'the science journal' and 'science journal'
+      would both produce the same results.
      </para>
     </sect3>
    </sect2>
   </sect1>
 
-  <sect1 id="formats">
-   <title>Exchange Formats</title>
+  <sect1 id="grs-exchange-formats">
+   <title>GRS Exchange Formats</title>
 
    <para>
-    Converting records from the internal structure to en exchange format
+    Converting records from the internal structure to an exchange format
     is largely an automatic process. Currently, the following exchange
     formats are supported:
    </para>
@@ -2085,6 +2072,8 @@
       </para>
      </listitem>
 
+     <!-- FIXME - Is this used anywhere ? -H -->
+     <!--
      <listitem>
       <para>
        SOIF. Support for this syntax is experimental, and is currently
@@ -2092,10 +2081,9 @@
        abstract syntaxes can be mapped to the SOIF format, although nested
        elements are represented by concatenation of the tag names at each
        level.
-       <!-- FIXME - Is this used anywhere ? -H -->
       </para>
      </listitem>
-
+     -->
     </itemizedlist>
    </para>
   </sect1>

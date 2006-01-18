@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.29 2006-01-17 21:26:43 marc Exp $
+## $Id: Makefile.am,v 1.30 2006-01-18 14:00:54 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -9,32 +9,62 @@ SUPPORTFILES = \
  xml.dcl
 
 XMLFILES = \
- zebra.xml.in \
- introduction.xml \
- installation.xml \
- quickstart.xml \
- examples.xml \
- administration.xml \
- zebraidx.xml \
- server.xml \
- recordmodel.xml \
- license.xml \
- indexdata.xml \
- zebraidx-options.xml \
- zebraidx-commands.xml \
- zebrasrv-options.xml \
- zebrasrv-synopsis.xml \
- zebrasrv-virtual.xml
+   zebra.xml.in \
+   administration.xml \
+   architecture.xml \
+   examples.xml \
+   indexdata.xml \
+   installation.xml \
+   introduction.xml \
+   license.xml \
+   marc_indexing.xml \
+   quickstart.xml \
+   recordmodel.xml \
+   server.xml \
+   zebra.xml \
+   zebraidx-commands.xml \
+   zebraidx-options.xml \
+   zebraidx.xml \
+   zebrasrv-options.xml \
+   zebrasrv-synopsis.xml \
+   zebrasrv-virtual.xml
 
 HTMLFILES =  \
- administration.html apps.html configuration-file.html data-model.html \
- example1.html example2.html examples.html features.html file-ids.html \
- formats.html future.html generic-ids.html indexdata.html \
- installation.html installation.debian.html installation.win32.html \
- internal-representation.html introduction.html \
- license.html locating-records.html protocol-support.html quick-start.html \
- record-model.html register-location.html server.html shadow-registers.html \
- simple-indexing.html support.html zebra.html zebraidx.html 
+   administration.html \
+   apps.html \
+   architecture.html \
+   configuration-file.html \
+   example1.html \
+   example2.html \
+   examples.html \
+   features.html \
+   file-ids.html \
+   future.html \
+   generic-ids.html \
+   grs-exchange-formats.html \
+   grs-internal-representation.html \
+   grs-record-model.html \
+   indexdata.html \
+   installation.debian.html \
+   installation.html \
+   installation.win32.html \
+   introduction.html \
+   license.html \
+   locating-records.html \
+   maincomponents.html \
+   protocol-support.html \
+   quick-start.html \
+   record-model.html \
+   register-location.html \
+   server.html \
+   shadow-registers.html \
+   simple-indexing.html \
+   support.html \
+   workflow.html \
+   zebra.html \
+   zebraidx.html
+
+
 
 PNGFILES=zebra.png
 EPSFILES=zebra.eps
