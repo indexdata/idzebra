@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.199 2005-12-09 11:33:32 adam Exp $
+/* $Id: zebraapi.c,v 1.200 2006-01-19 13:30:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -342,7 +342,6 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
     reg->isamc = 0;
     reg->isamb = 0;
     reg->zei = 0;
-    reg->matchDict = 0;
     reg->key_file_no = 0;
     reg->ptr_i = 0;
     
@@ -1286,11 +1285,11 @@ ZEBRA_RES zebra_admin_import_segment (ZebraHandle zh, Z_Segment *segment)
     return res;
 }
 
-ZEBRA_RES zebra_admin_exchange_record (ZebraHandle zh,
-				       const char *rec_buf,
-				       size_t rec_len,
-				       const char *recid_buf, size_t recid_len,
-				       int action)
+ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
+				      const char *rec_buf,
+				      size_t rec_len,
+				      const char *recid_buf, size_t recid_len,
+				      int action)
     /* 1 = insert. Fail it already exists */
     /* 2 = replace. Fail it does not exist */
     /* 3 = delete. Fail if does not exist */
