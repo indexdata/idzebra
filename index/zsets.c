@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.49.2.4 2006-01-12 13:21:27 adam Exp $
+/* $Id: zsets.c,v 1.49.2.5 2006-01-19 13:32:46 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005
    Index Data Aps
 
@@ -50,6 +50,7 @@ struct zebra_set {
     int num_bases;
     char **basenames;
     Z_RPNQuery *rpn;
+    Z_SortKeySpecList *sortSpec;
     struct zset_sort_info *sort_info;
     struct zebra_set_term_entry *term_entries;
     int term_entries_max;
@@ -245,6 +246,7 @@ ZebraSet resultSetAdd (ZebraHandle zh, const char *name, int ov)
     s->rset = 0;
     s->nmem = 0;
     s->rpn = 0;
+    s->sortSpec = 0;
     s->cache_position = 0;
     s->cache_rfd = 0;
     return s;
@@ -264,6 +266,13 @@ ZebraSet resultSetGet (ZebraHandle zh, const char *name)
                 s->rset =
                     rpn_search (zh, nmem, s->rpn, s->num_bases,
 				s->basenames, s->name, s);
+		if (s->rset && s->sortSpec)
+		{
+		    int sort_status;
+		    yaz_log (LOG_LOG, "resort %s", name);
+		    resultSetSortSingle (zh, nmem, s, s->rset, s->sortSpec,
+					 &sort_status);
+		}
                 nmem_destroy (nmem);
             }
             return s;
@@ -593,13 +602,13 @@ void resultSetInsertRank(ZebraHandle zh, struct zset_sort_info *sort_info,
 }
 
 
-static Z_RPNQuery *copy_RPNQuery(Z_RPNQuery *src_rpn, NMEM dst)
+static Z_RPNQuery *copy_RPNQuery(Z_RPNQuery *src, NMEM nmem)
 {
-    Z_RPNQuery *dst_rpn = 0;
+    Z_RPNQuery *dst = 0;
     ODR encode = odr_createmem(ODR_ENCODE);
     ODR decode = odr_createmem(ODR_DECODE);
 
-    if (z_RPNQuery(encode, &src_rpn, 0, 0))
+    if (z_RPNQuery(encode, &src, 0, 0))
     {
 	int len;
 	char *buf = odr_getbuf(encode, &len, 0);
@@ -607,13 +616,36 @@ static Z_RPNQuery *copy_RPNQuery(Z_RPNQuery *src_rpn, NMEM dst)
 	if (buf)
 	{
 	    odr_setbuf(decode, buf, len, 0);
-	    z_RPNQuery(decode, &dst_rpn, 0, 0);
+	    z_RPNQuery(decode, &dst, 0, 0);
 	}
     }
-    nmem_transfer(dst, decode->mem);
+    nmem_transfer(nmem, decode->mem);
     odr_destroy(encode);
     odr_destroy(decode);
-    return dst_rpn;
+    return dst;
+}
+
+static Z_SortKeySpecList *copy_SortKeySpecList(Z_SortKeySpecList *src, NMEM nmem)
+{
+    Z_SortKeySpecList *dst = 0;
+    ODR encode = odr_createmem(ODR_ENCODE);
+    ODR decode = odr_createmem(ODR_DECODE);
+
+    if (z_SortKeySpecList(encode, &src, 0, 0))
+    {
+	int len;
+	char *buf = odr_getbuf(encode, &len, 0);
+
+	if (buf)
+	{
+	    odr_setbuf(decode, buf, len, 0);
+	    z_SortKeySpecList(decode, &dst, 0, 0);
+	}
+    }
+    nmem_transfer(nmem, decode->mem);
+    odr_destroy(encode);
+    odr_destroy(decode);
+    return dst;
 }
 
 ZebraSet resultSetClone(ZebraHandle zh, const char *setname,
@@ -676,6 +708,7 @@ void resultSetSort (ZebraHandle zh, NMEM nmem,
     }
     if (strcmp (output_setname, input_setnames[0]))
 	sset = resultSetClone(zh, output_setname, sset);
+    sset->sortSpec = copy_SortKeySpecList(sort_sequence, sset->nmem);
     resultSetSortSingle (zh, nmem, sset, rset, sort_sequence, sort_status);
 }
 
