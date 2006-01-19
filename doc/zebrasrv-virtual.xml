@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebrasrv-virtual.xml,v 1.2 2005-08-12 13:34:10 marc Exp $
+   $Id: zebrasrv-virtual.xml,v 1.3 2006-01-19 09:27:00 marc Exp $
    Description of the virtual host mechanism in YAZ GFS
    Included in both manual and man page for yaz-ztest
 -->
@@ -11,9 +11,9 @@
 </para>
 <para>
  A backend can be configured to execute in a particular working
- directory. Or the YAZ frontend may perform CQL to RPN conversion, thus
- allowing traditional Z39.50 backends to be offered as a SRW/SRU
- service. SRW/SRU Explain information for a particular backend may also
+ directory. Or the YAZ frontend may perform <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> to RPN conversion, thus
+ allowing traditional Z39.50 backends to be offered as a  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/ <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink>
+ service.  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/ <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink> Explain information for a particular backend may also
  be specified.
 </para>
 <para>
@@ -128,8 +128,8 @@
   <varlistentry><term>element <literal>cql2rpn</literal> (optional)</term>
    <listitem>
     <para>
-     Specifies a filename that includes CQL to RPN conversion for this
-     backend server. See CQL section in YAZ manual.
+     Specifies a filename that includes <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> to RPN conversion for this
+     backend server. See <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> section in YAZ manual.
      If given, the backend server will only "see" a Type-1/RPN query. 
     </para>
    </listitem>
@@ -138,7 +138,7 @@
   <varlistentry><term>element <literal>explain</literal> (optional)</term>
    <listitem>
     <para>
-     Specifies SRW/SRU ZeeRex content for this server. Copied verbatim
+     Specifies  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/ <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink> ZeeRex content for this server. Copied verbatim
      to the client. As things are now, some of the Explain content
      seeem redundant because host information, etc. is also stored
      elsewhere.
@@ -194,7 +194,7 @@
  elements.
 </para>
 <para>
- For <literal>"server2"</literal> elements for CQL to RPN conversion
+ For <literal>"server2"</literal> elements for <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> to RPN conversion
  is supported and explain information has been added (a short one here
  to keep the example small).
 </para>

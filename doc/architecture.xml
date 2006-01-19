@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.1 2006-01-18 14:00:54 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.2 2006-01-19 09:27:00 marc Exp $ -->
   <title>Overview of Zebra Architecture</title>
   
 
@@ -106,7 +106,7 @@
    </para>    
    <para>    
     This virtual package installs all the necessary packages to start
-    working with IDZebra - including utility programs, development libraries,
+    working with Zebra - including utility programs, development libraries,
     documentation and modules.
      <literal>idzebra1.4</literal>
   </para>    
@@ -123,11 +123,11 @@
      numbers, and the like internal data to the YAZ server backend API.
     </para>
     <para> 
-     This package contains all run-time libraries for IDZebra.
+     This package contains all run-time libraries for Zebra.
      <literal>libidzebra1.4</literal> 
-     This package includes documentation for IDZebra in PDF and HTML.
+     This package includes documentation for Zebra in PDF and HTML.
      <literal>idzebra1.4-doc</literal> 
-     This package includes common essential IDZebra configuration files
+     This package includes common essential Zebra configuration files
      <literal>idzebra1.4-common</literal>
     </para>
    </sect2>
@@ -142,7 +142,7 @@
      - creates, updates and drops databases and indexes
     </para>    
     <para>    
-     This package contains IDZebra utilities such as the zebraidx indexer
+     This package contains Zebra utilities such as the zebraidx indexer
      utility and the zebrasrv server.
      <literal>idzebra1.4-utils</literal>
     </para>
@@ -154,7 +154,7 @@
      the core Zebra searcher/retriever which
     </para>    
     <para>    
-     This package contains IDZebra utilities such as the zebraidx indexer
+     This package contains Zebra utilities such as the zebraidx indexer
      utility and the zebrasrv server, and their associated man pages.
      <literal>idzebra1.4-utils</literal>
     </para>
@@ -171,14 +171,14 @@
     <para>
      In addition to Z39.50 requests, the YAZ server frontend acts
      as HTTP server, honouring
-     SRW SOAP requests, and SRU REST requests. Moreover, it can
-     translate inco ming CQL queries to PQF/RPN queries, if
+      <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink> SOAP requests, and  <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink> REST requests. Moreover, it can
+     translate inco ming <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> queries to PQF/RPN queries, if
      correctly configured. 
     </para>
     <para>
     YAZ is a toolkit that allows you to develop software using the
     ANSI Z39.50/ISO23950 standard for information retrieval.
-    SRW/SRU
+     <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/ <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink>
     <literal>libyazthread.so</literal>
     <literal>libyaz.so</literal>
     <literal>libyaz</literal>
@@ -206,7 +206,7 @@ This virtual package contains all base IDZebra filter modules. EMPTY ???
    <sect3 id="componentmodulesgrs">
     <title>GRS Record Model and Filter Modules</title>
     <para>
-   Chapter <xref linkend="record-model"/>
+    <xref linkend="grs-record-model"/>
 
      - grs.danbib     GRS filters of various kind (*.abs files)
 IDZebra filter grs.danbib (DBC DanBib records)
@@ -233,7 +233,7 @@ IDZebra filter grs.danbib (DBC DanBib records)
      <literal>libidzebra1.4-mod-grs-sgml not packaged yet ??</literal>
 
      - grs.xml
-  This package includes the grs.xml filter which uses Expat to
+  This package includes the grs.xml filter which uses <ulink url="http://expat.sourceforge.net/">Expat</ulink> to
   parse records in XML and turn them into IDZebra's internal grs node.
      <literal>libidzebra1.4-mod-grs-xml</literal>
     </para>
@@ -260,28 +260,29 @@ IDZebra filter grs.danbib (DBC DanBib records)
 
    </sect2>
 
+   <!--
    <sect2 id="componentconfig">
     <title>Configuration Files</title>
     <para>
      - yazserver XML based config file
      - core Zebra ascii based config files
      - filter module config files in many flavours  
-     - CQL to PQF ascii based config file
+     - <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> to PQF ascii based config file
     </para>
    </sect2>
-   
+   -->
   </sect1>
 
   <!--
 
 
   <sect1 id="cqltopqf">
-   <title>Server Side CQL To PQF Conversion</title>
+   <title>Server Side <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> To PQF Conversion</title>
    <para>
   The cql2pqf.txt yaz-client config file, which is also used in the
-  yaz-server CQL-to-PQF process, is used to to drive
-  org.z3950.zing.cql.CQLNode's toPQF() back-end and the YAZ CQL-to-PQF
-  converter.  This specifies the interpretation of various CQL
+  yaz-server <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF process, is used to to drive
+  org.z3950.zing.cql.<ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>Node's toPQF() back-end and the YAZ <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF
+  converter.  This specifies the interpretation of various <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>
   indexes, relations, etc. in terms of Type-1 query attributes.
  
   This configuration file generates queries using BIB-1 attributes.
@@ -290,9 +291,9 @@ IDZebra filter grs.danbib (DBC DanBib records)
   indexes to Attribute Architecture (util, XD and BIB-2)
   attributes.
 
-  a) CQL set prefixes  are specified using the correct CQL/SRW/U
+  a) <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> set prefixes  are specified using the correct <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>/ <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/U
   prefixes for the required index sets, or user-invented prefixes for
-  special index sets. An index set in CQL is roughly speaking equivalent to a
+  special index sets. An index set in <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> is roughly speaking equivalent to a
   namespace specifier in XML.
 
   b) The default index set to be used if none explicitely mentioned
@@ -305,9 +306,9 @@ IDZebra filter grs.danbib (DBC DanBib records)
   bib-1 RPN query "@attr 1=text" (where "text" is some existing index
   in zebra, see indexing stylesheet) 
 
-  d) Relation mapping from CQL relations to bib-1 RPN "@attr 2= " stuff
+  d) Relation mapping from <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> relations to bib-1 RPN "@attr 2= " stuff
 
-  e) Relation modifier mapping from CQL relations to bib-1 RPN "@attr
+  e) Relation modifier mapping from <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> relations to bib-1 RPN "@attr
   2= " stuff 
 
   f) Position attributes
@@ -404,8 +405,8 @@ IDZebra filter grs.danbib (DBC DanBib records)
   db/yazserver.xml 
 
   Setup of listening ports, and virtual zebra servers.
-  Note path to server-side CQL-to-PQF config file, and to
-  SRW explain config section. 
+  Note path to server-side <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF config file, and to
+   <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink> explain config section. 
 
   The <directory> path is relative to the directory where zebra.init is placed
   and is started up. The other pathes are relative to <directory>,
@@ -416,69 +417,9 @@ IDZebra filter grs.danbib (DBC DanBib records)
    </para>
 
    <para>
-c)  Main "alvis" XSLT filter config file:
-  cat db/filter_alvis_conf.xml 
-
-  <?xml version="1.0" encoding="UTF8"?>
-  <schemaInfo>
-    <schema name="alvis" stylesheet="db/alvis2alvis.xsl" />
-    <schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
-            stylesheet="db/alvis2index.xsl" />
-    <schema name="dc" stylesheet="db/alvis2dc.xsl" />
-    <schema name="dc-short" stylesheet="db/alvis2dc_short.xsl" />
-    <schema name="snippet" snippet="25" stylesheet="db/alvis2snippet.xsl" />
-    <schema name="help" stylesheet="db/alvis2help.xsl" />
-    <split level="1"/>
-  </schemaInfo>
-
-  the pathes are relative to the directory where zebra.init is placed
-  and is started up.
-
-  The split level decides where the SAX parser shall split the
-  collections of records into individual records, which then are
-  loaded into DOM, and have the indexing XSLT stylesheet applied.
-
-  The indexing stylesheet is found by it's identifier.
-
-  All the other stylesheets are for presentation after search.
-
-- in data/ a short sample of harvested carnivorous plants
-  ZEBRA_INDEX_DIRS=data/carnivor_20050118_2200_short-346.xml
-
-- in root also one single data record - nice for testing the xslt
-  stylesheets,
-  
-  xsltproc db/alvis2index.xsl carni*.xml
-
-  and so on.
-
-- in db/ a cql2pqf.txt yaz-client config file 
-  which is also used in the yaz-server CQL-to-PQF process
-
-   see: http://www.indexdata.com/yaz/doc/tools.tkl#tools.cql.map
-
-- in db/ an indexing XSLT stylesheet. This is a PULL-type XSLT thing,
-  as it constructs the new XML structure by pulling data out of the
-  respective elements/attributes of the old structure.
-
-  Notice the special zebra namespace, and the special elements in this
-  namespace which indicate to the zebra indexer what to do.
-
-  <z:record id="67ht7" rank="675" type="update">
-  indicates that a new record with given id and static rank has to be updated. 
-
-  <z:index name="title" type="w">
-   encloses all the text/XML which shall be indexed in the index named
-   "title" and of index type "w" (see  file default.idx in your zebra
-   installation) 
-
-
-   </para>
-
-   <para>
  Z39.50 searching:
 
-  search like this (using client-side CQL-to-PQF conversion):
+  search like this (using client-side <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF conversion):
 
   yaz-client -q db/cql2pqf.txt localhost:9999
   > format xml
@@ -495,7 +436,7 @@ c)  Main "alvis" XSLT filter config file:
   > s 1
 
 
-  search like this (using server-side CQL-to-PQF conversion):
+  search like this (using server-side <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF conversion):
   (the only difference is "querytype cql" instead of 
    "querytype cql2rpn" and the call without specifying a local
   conversion file)
@@ -526,17 +467,17 @@ c)  Main "alvis" XSLT filter config file:
 
 
 
-SRW/U searching
+ <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/U searching
  Surf into http://localhost:9999
  
  firefox http://localhost:9999
  
  gives you an explain record. Unfortunately, the data found in the 
- CQL-to-PQF text file must be added by hand-craft into the explain
+ <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF text file must be added by hand-craft into the explain
  section of the yazserver.xml file. Too bad, but this is all extreme
  new alpha stuff, and a lot of work has yet to be done ..
  
- Searching via SRU: surf into the URL (lines broken here - concat on
+ Searching via  <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink>: surf into the URL (lines broken here - concat on
  URL line)
  
  - see number of hits:
@@ -558,7 +499,7 @@ SRW/U searching
  
  More info: read the fine manuals at http://www.loc.gov/z3950/agency/zing/srw/
 278,280d299
- Search via SRW:
+ Search via  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>:
  read the fine manual at 
  http://www.loc.gov/z3950/agency/zing/srw/
 
@@ -567,8 +508,8 @@ and so on. The list of available indexes is found in db/cql2pqf.txt
 
 
 7) How do you add to the index attributes of any other type than "w"?
-I mean, in the context of making CQL queries. Let's say I want a date 
-attribute in there, so that one could do date > 20050101 in CQL.
+I mean, in the context of making <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> queries. Let's say I want a date 
+attribute in there, so that one could do date > 20050101 in <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>.
 
 Currently for example 'date-modified' is of type 'w'.
 
@@ -583,7 +524,7 @@ The 2-seconds-of-though solution:
 
 But here's the catch...doesn't the use of the 'd' type require 
 structure type 'date' (@attr 4=5) in PQF? But then...how does that
-reflect in the CQL->RPN/PQF mapping - does it really work if I just
+reflect in the <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>->RPN/PQF mapping - does it really work if I just
 change the type of an element in alvis2index.sl? I would think not...?
 
 

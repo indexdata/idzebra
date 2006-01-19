@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.8 2005-08-12 12:44:36 marc Exp $ -->
+ <!-- $Id: server.xml,v 1.9 2006-01-19 09:27:00 marc Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -23,7 +23,7 @@
    boolean search expressions and relevance-ranked free-text queries. 
    </para>
    <para>
-    <command>zebrasrv</command> is the Z39.50 and SRW/U frontend
+    <command>zebrasrv</command> is the Z39.50 and  <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>/U frontend
     server for the <command>Zebra</command> indexer.
    </para> 
    <para> 
@@ -84,7 +84,7 @@
     <filename>http://www.indexdata.dk/yaz/doc/server.vhosts.tkl</filename>
    </para>
    <para>
-    Section "Specification of CQL to RPN mappings" in the YAZ manual.
+    Section "Specification of <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink> to RPN mappings" in the YAZ manual.
     <filename>http://www.indexdata.dk/yaz/doc/tools.tkl#tools.cql.map</filename>
    </para>
    <para>

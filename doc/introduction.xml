@@ -1,5 +1,5 @@
 <chapter id="introduction">
- <!-- $Id: introduction.xml,v 1.29 2006-01-17 13:03:34 marc Exp $ -->
+ <!-- $Id: introduction.xml,v 1.30 2006-01-19 09:27:00 marc Exp $ -->
  <title>Introduction</title>
  
  <sect1>
@@ -440,16 +440,16 @@
        construction of applications without requiring Z39.50 tools.
        <!-- 
       This will shortly be available by means of Index Data's
-       SRW-to-Z39.50 gateway, currently in beta test.
+        <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>-to-Z39.50 gateway, currently in beta test.
        -->
        Experimental support of the 
-       Search/Retrieve Via URL (SRU) 
+       Search/Retrieve Via URL ( <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink>) 
        <ulink url="http://www.loc.gov/standards/sru/"/>
        REST webservice, and the 
-        Search/Retrieve Web Service (SRW)
+        Search/Retrieve Web Service ( <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>)
        <ulink url="http://www.loc.gov/standards/sru/srw/"/>
        SOAP Web Service have recently been added to the YAZ/Zebra
-       combo - including server side Common Query Language (CQL)
+       combo - including server side Common Query Language (<ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>)
        <ulink url="http://www.loc.gov/standards/sru/cql/"/> parsing
        and configuration. It remains to find a sponsor for further testing,
        documentation and packaging of this exiting component.

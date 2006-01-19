@@ -1,0 +1,138 @@
+ <chapter id="alvis-xml-record-model">
+  <!-- $Id: alvisxmlrecordmodel.xml,v 1.1 2006-01-19 09:27:00 marc Exp $ -->
+  <title>ALVIS XML Record Model and Filter Module</title>
+  
+
+  <para>
+   The record model described in this chapter applies to the fundamental,
+   structured XML
+   record type <literal>alvis</literal>, introduced in
+   <xref linkend="componentmodulesalvis"/>. The ALVIS XML record model
+   is experimental, and it's inner workings might change in future
+   releases of the Zebra Information Server.
+  </para>
+
+  
+
+  
+  
+  <sect1 id="alvis-record-filter">
+   <title>ALLVIS Record Filter</title>
+   <para>
+    The experimental, loadable  Alvis XM/XSLT filter module
+   <literal>mod-alvis.so</literal> is packaged in the GNU/Debian package
+    <literal>libidzebra1.4-mod-alvis</literal>.
+   </para>
+
+   <sect2 id="alvis-internal-representation">
+    <title>ALLVIS Internal Record Representation</title>   
+    <para>FIXME</para>
+   </sect2>
+
+   <sect2 id="alvis-canonical-format">
+    <title>ALLVIS Canonical Format</title>   
+    <para>FIXME</para>
+   </sect2>
+
+
+  </sect1>
+
+
+  <sect1 id="alvis-record-model-config">
+   <title>ALLVIS Record Model Configuration</title>
+   <para>FIXME</para>
+
+
+
+  <sect2 id="alvis-exchange-formats">
+   <title>ALLVIS Exchange Formats</title>
+   <para>FIXME</para>
+  </sect2>
+
+  </sect1>
+
+  
+ </chapter>
+
+
+<!--
+
+c)  Main "alvis" XSLT filter config file:
+  cat db/filter_alvis_conf.xml 
+
+  <?xml version="1.0" encoding="UTF8"?>
+  <schemaInfo>
+    <schema name="alvis" stylesheet="db/alvis2alvis.xsl" />
+    <schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
+            stylesheet="db/alvis2index.xsl" />
+    <schema name="dc" stylesheet="db/alvis2dc.xsl" />
+    <schema name="dc-short" stylesheet="db/alvis2dc_short.xsl" />
+    <schema name="snippet" snippet="25" stylesheet="db/alvis2snippet.xsl" />
+    <schema name="help" stylesheet="db/alvis2help.xsl" />
+    <split level="1"/>
+  </schemaInfo>
+
+  the pathes are relative to the directory where zebra.init is placed
+  and is started up.
+
+  The split level decides where the SAX parser shall split the
+  collections of records into individual records, which then are
+  loaded into DOM, and have the indexing XSLT stylesheet applied.
+
+  The indexing stylesheet is found by it's identifier.
+
+  All the other stylesheets are for presentation after search.
+
+- in data/ a short sample of harvested carnivorous plants
+  ZEBRA_INDEX_DIRS=data/carnivor_20050118_2200_short-346.xml
+
+- in root also one single data record - nice for testing the xslt
+  stylesheets,
+  
+  xsltproc db/alvis2index.xsl carni*.xml
+
+  and so on.
+
+- in db/ a cql2pqf.txt yaz-client config file 
+  which is also used in the yaz-server <ulink url="http://www.loc.gov/standards/sru/cql/">CQL</ulink>-to-PQF process
+
+   see: http://www.indexdata.com/yaz/doc/tools.tkl#tools.cql.map
+
+- in db/ an indexing XSLT stylesheet. This is a PULL-type XSLT thing,
+  as it constructs the new XML structure by pulling data out of the
+  respective elements/attributes of the old structure.
+
+  Notice the special zebra namespace, and the special elements in this
+  namespace which indicate to the zebra indexer what to do.
+
+  <z:record id="67ht7" rank="675" type="update">
+  indicates that a new record with given id and static rank has to be updated. 
+
+  <z:index name="title" type="w">
+   encloses all the text/XML which shall be indexed in the index named
+   "title" and of index type "w" (see  file default.idx in your zebra
+   installation) 
+
+
+   </para>
+
+   <para>
+-->
+
+
+
+
+ <!-- Keep this comment at the end of the file
+ Local variables:
+ mode: sgml
+ sgml-omittag:t
+ sgml-shorttag:t
+ sgml-minimize-attributes:nil
+ sgml-always-quote-attributes:t
+ sgml-indent-step:1
+ sgml-indent-data:t
+ sgml-parent-document: "zebra.xml"
+ sgml-local-catalogs: nil
+ sgml-namecase-general:t
+ End:
+ -->

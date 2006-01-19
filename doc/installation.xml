@@ -1,4 +1,4 @@
-<!-- $Id: installation.xml,v 1.16 2006-01-17 12:06:53 marc Exp $ -->
+<!-- $Id: installation.xml,v 1.17 2006-01-19 09:27:00 marc Exp $ -->
  <chapter id="installation">
   <title>Installation</title>
   <para>
@@ -32,7 +32,7 @@
       (required)</term>
      <listitem>
       <para>
-       Zebra uses YAZ to support Z39.50/SRW. Also the memory management
+       Zebra uses YAZ to support Z39.50/ <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>. Also the memory management
        utilites from YAZ is used by Zebra.
       </para>
      </listitem>
@@ -326,8 +326,8 @@
        <literal>EXPAT_DIR</literal></term>
       <listitem><para>
         If <literal>HAVE_EXPAT</literal> is set to 1, Zebra is compiled
-        with Expat support. In this configuration, set 
-        <literal>ZEBRA_DIR</literal> to the Expat source directory.
+        with <ulink url="http://expat.sourceforge.net/">Expat</ulink> support. In this configuration, set 
+        <literal>ZEBRA_DIR</literal> to the <ulink url="http://expat.sourceforge.net/">Expat</ulink> source directory.
 	Windows version of Expat can be downloaded from
 	<ulink url="http://sourceforge.net/projects/expat/">
 	 SourceForge

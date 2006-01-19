@@ -6,6 +6,7 @@
         <!ENTITY chap-installation SYSTEM "installation.xml">
         <!ENTITY chap-quickstart SYSTEM "quickstart.xml">
         <!ENTITY chap-examples SYSTEM "examples.xml">
+        <!ENTITY chap-architecture SYSTEM "architecture.xml">
         <!ENTITY chap-administration SYSTEM "administration.xml">
         <!ENTITY chap-zebraidx SYSTEM "zebraidx.xml">
         <!ENTITY chap-server SYSTEM "server.xml">
@@ -29,7 +30,7 @@
 	<!ENTITY ref-shadow-registers '
 		<xref linkend="shadow-registers"/>'>
 ]>
-<!-- $Id: zebra.xml.in,v 1.20 2005-08-12 13:19:06 marc Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.21 2006-01-19 09:27:00 marc Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -84,6 +85,7 @@
   &chap-installation;
   &chap-quickstart;
   &chap-examples;
+  &chap-architecture;
   &chap-administration;
   &chap-zebraidx;
   &chap-server;

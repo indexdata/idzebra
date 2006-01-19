@@ -1,5 +1,5 @@
  <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.22 2006-01-18 14:00:54 marc Exp $ -->
+  <!-- $Id: recordmodel.xml,v 1.23 2006-01-19 09:27:00 marc Exp $ -->
   <title>GRS Record Model and Filter Modules</title>
   
 
@@ -87,7 +87,7 @@
       <term>grs.xml</term>
       <listitem>
        <para>
-        This filter reads XML records and uses Expat to
+        This filter reads XML records and uses <ulink url="http://expat.sourceforge.net/">Expat</ulink> to
         parse them and convert them into IDZebra's internal 
         <literal>grs</literal> record model.
         Only one record per file
@@ -2072,8 +2072,7 @@
       </para>
      </listitem>
 
-     <!-- FIXME - Is this used anywhere ? -H -->
-     <!--
+     <!-- FIXME - Is this used anywhere ? -H -->  
      <listitem>
       <para>
        SOIF. Support for this syntax is experimental, and is currently
@@ -2083,7 +2082,7 @@
        level.
       </para>
      </listitem>
-     -->
+   
     </itemizedlist>
    </para>
   </sect1>
