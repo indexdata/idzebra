@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.31 2006-01-22 00:24:10 adam Exp $
+## $Id: Makefile.am,v 1.32 2006-01-23 07:04:34 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -34,13 +34,11 @@ HTMLFILES =  \
    apps.html \
    architecture.html \
    configuration-file.html \
-   data-model.html \
    example1.html \
    example2.html \
    examples.html \
    features.html \
    file-ids.html \
-   formats.html \
    future.html \
    generic-ids.html \
    grs-exchange-formats.html \
@@ -50,7 +48,6 @@ HTMLFILES =  \
    installation.debian.html \
    installation.html \
    installation.win32.html \
-   internal-representation.html \
    introduction.html \
    license.html \
    locating-records.html \
