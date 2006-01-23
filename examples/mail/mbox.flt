@@ -1,0 +1,15 @@
+# $Id: mbox.flt,v 1.1.2.1 2006-01-23 10:35:17 adam Exp $
+# This reads mbox mails. This filter is similar to mail.flt but is
+# using string tags rathar than numeric tags (and tag sets).
+# We do our best to index the Message-ID so that we can uniquely identify
+# the mail being indexed.
+BEGIN				{ begin record mbox }
+/^From:/	BODY	/$/	{ data -element name $1 }
+/^[Mm][Ee][Ss][Ss][Aa][Gg][Ee]-[Ii][Dd]:/	BODY	/$/	{ data -element id $1 }
+/^Subject:/	BODY	/$/	{ data -element title $1 }
+/^Date:/	BODY	/$/	{ data -element date $1 }
+/^$/		BODY	/^From /	{
+						data -text -element body $1
+				  		unread 2
+                                  		end record
+                                	}

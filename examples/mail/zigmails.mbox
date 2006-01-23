@@ -1,0 +1,268 @@
+From - Tue Jul  1 11:00:58 2003
+X-UIDL: 3f014dc900000006
+X-Mozilla-Status: 0001
+X-Mozilla-Status2: 00000000
+Envelope-to: adam@indexdata.dk
+Received: from frink.w3.org ([18.29.1.71])
+	by bagel.index with esmtp (Exim 3.35 #1 (Debian))
+	id 19XGUC-0002xp-00; Tue, 01 Jul 2003 10:27:37 +0200
+Received: from frink.w3.org (localhost [127.0.0.1])
+	by frink.w3.org (8.12.9/8.12.9) with ESMTP id h618RZSn002707;
+	Tue, 1 Jul 2003 04:27:35 -0400 (EDT)
+Received: (from lists@localhost)
+	by frink.w3.org (8.12.9/8.12.9/Submit) id h618QkDn002527;
+	Tue, 1 Jul 2003 04:26:46 -0400 (EDT)
+Resent-Date: Tue, 1 Jul 2003 04:26:46 -0400 (EDT)
+Resent-Message-Id: <200307010826.h618QkDn002527@frink.w3.org>
+Received: from dr-nick.w3.org (dr-nick.w3.org [18.29.1.73])
+	by frink.w3.org (8.12.9/8.12.9) with ESMTP id h618QhSn002466
+	for <www-zig@frink.w3.org>; Tue, 1 Jul 2003 04:26:43 -0400 (EDT)
+Received: from auntie.miketaylor.org.uk (pc-62-30-152-189-hr.blueyonder.co.uk [62.30.152.189])
+	by dr-nick.w3.org (8.12.3/8.12.3/Debian-6.4) with ESMTP id h618Qgvx030432
+	for <www-zig@w3.org>; Tue, 1 Jul 2003 04:26:43 -0400
+Received: from mike by auntie.miketaylor.org.uk with local (Exim 3.35 #1 (Debian))
+	id 19XGT6-00016e-00
+	for <www-zig@w3.org>; Tue, 01 Jul 2003 09:26:28 +0100
+From: Mike Taylor <mike@indexdata.com>
+To: www-zig@w3.org
+Message-Id: <E19XGT6-00016e-00@auntie.miketaylor.org.uk>
+Date: Tue, 01 Jul 2003 09:26:28 +0100
+Subject: Revised XML Proposal
+X-Archived-At: http://www.w3.org/mid/E19XGT6-00016e-00@auntie.miketaylor.org.uk
+Resent-From: www-zig@w3.org
+X-Mailing-List: <www-zig@w3.org> archive/latest/1324
+X-Loop: www-zig@w3.org
+Sender: www-zig-request@w3.org
+Resent-Sender: www-zig-request@w3.org
+Precedence: list
+List-Id: <www-zig.w3.org>
+List-Help: <http://www.w3.org/Mail/>
+List-Unsubscribe: <mailto:www-zig-request@w3.org?subject=unsubscribe>
+Resent-Bcc:
+Status:   
+
+
+Ray (mostly),
+
+Regarding the revised _Requesting XML Record_ proposal at
+http://www.loc.gov/z3950/agency/proposals/request-xml.html
+
+The technical content looks good to me.  I have a few quibbles with
+the wording, but they are not important.
+
+	The globally unique identifier may but need not be a
+	URI. If a URI, it may, but need not be the locator of
+	an XML schema definition or DTD. (And if a URI, it
+	need not be an HTTP URI.)
+
+The phrase "may be need not be" feels awkward to me, and would read
+better as "may be, but need not be,".  And the last of these three
+sentences should use the same phrasing as the first two:
+
+	The globally unique identifier may be, but need not
+	be, a URI. If it is a URI it may be, but need not be,
+	the locator of an XML schema definition or DTD.  (And
+	if a URI, it may be, but need not be, an HTTP URI.)
+
+Also:
+
+	Example 3.  The identifier:
+	"http://www.editeur.org/onix/ReferenceNames" would be
+	used as the element set name to indicate the dtd at
+	http://www.editeur.org/onix/2.0/reference/onix-international.dtd.
+
+"DTD" is an acronym and so should be all-caps.
+
+And finally:
+
+	Example 4.  The identifier:
+	"http://www.kb.nl/persons/theo/dcx/" would be used as
+	the element set name to indicate that records are to
+	be composed according to the definition at that URI
+	(http://www.kb.nl/persons/theo/dcx).
+
+It would be more explicitly exemplify what's going on if this said
+"... composed according to the prose definition at ..."
+
+Sorry to be picky.  (But not so sorry that I won't :-)
+
+ _/|_	 _______________________________________________________________
+/o ) \/  Mike Taylor  <mike@indexdata.com>  http://www.miketaylor.org.uk
+)_v__/\  "Ho ho ho ...  Very witty, Wilde!  Very, very witty!" --
+	 Monty Python's Flying Circus.
+
+--
+Listen to my wife's new CD of kids' music, _Child's Play_, at
+	http://www.pipedreaming.org.uk/childsplay/
+
+
+From - Wed Jul  2 00:57:47 2003
+X-UIDL: 3f0211ea00000001
+X-Mozilla-Status: 0011
+X-Mozilla-Status2: 00000000
+Envelope-to: adam@indexdata.dk
+Received: from frink.w3.org ([18.29.1.71])
+	by bagel.index with esmtp (Exim 3.35 #1 (Debian))
+	id 19XU3R-0000o8-00; Wed, 02 Jul 2003 00:56:53 +0200
+Received: from frink.w3.org (localhost [127.0.0.1])
+	by frink.w3.org (8.12.9/8.12.9) with ESMTP id h61Mn1Sn023384;
+	Tue, 1 Jul 2003 18:49:01 -0400 (EDT)
+Received: (from lists@localhost)
+	by frink.w3.org (8.12.9/8.12.9/Submit) id h61MmH7B022195;
+	Tue, 1 Jul 2003 18:48:17 -0400 (EDT)
+Resent-Date: Tue, 1 Jul 2003 18:48:17 -0400 (EDT)
+Resent-Message-Id: <200307012248.h61MmH7B022195@frink.w3.org>
+Received: from dr-nick.w3.org (dr-nick.w3.org [18.29.1.73])
+	by frink.w3.org (8.12.9/8.12.9) with ESMTP id h61MmESn022042
+	for <www-zig@frink.w3.org>; Tue, 1 Jul 2003 18:48:14 -0400 (EDT)
+Received: from io.mds.rmit.edu.au (io.mds.rmit.edu.au [131.170.70.10])
+	by dr-nick.w3.org (8.12.3/8.12.3/Debian-6.4) with ESMTP id h61MmDvx015709
+	for <www-zig@w3.org>; Tue, 1 Jul 2003 18:48:14 -0400
+Received: by io.mds.rmit.edu.au (Postfix, from userid 301)
+	id 3B6A649B70; Wed,  2 Jul 2003 08:48:06 +1000 (EST)
+Date: Wed, 2 Jul 2003 08:48:06 +1000
+From: Alan Kent <ajk@mds.rmit.edu.au>
+To: www-zig@w3.org
+Message-ID: <20030702084805.B20964@io.mds.rmit.edu.au>
+References: <Law12-F268jRACYiFsH000230b4@hotmail.com> <3F005826.B395FDF4@loc.gov>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Mailer: Mutt 0.95i
+In-Reply-To: <3F005826.B395FDF4@loc.gov>; from Ray Denenberg on Mon, Jun 30, 2003 at 11:32:54AM -0400
+Subject: Re: Proposal: requesting XML records
+X-Archived-At: http://www.w3.org/mid/20030702084805.B20964@io.mds.rmit.edu.au
+Resent-From: www-zig@w3.org
+X-Mailing-List: <www-zig@w3.org> archive/latest/1325
+X-Loop: www-zig@w3.org
+Sender: www-zig-request@w3.org
+Resent-Sender: www-zig-request@w3.org
+Precedence: list
+List-Id: <www-zig.w3.org>
+List-Help: <http://www.w3.org/Mail/>
+List-Unsubscribe: <mailto:www-zig-request@w3.org?subject=unsubscribe>
+Resent-Bcc:
+Status:   
+
+
+On Mon, Jun 30, 2003 at 11:32:54AM -0400, Ray Denenberg wrote:
+> Thanks for the comments on this proposal. It's been updated. See:
+> http://www.loc.gov/z3950/agency/proposals/request-xml.html
+> --Ray
+
+I may have been out of things for a bit, but was there some reason
+why Comp-spec was explicitly excluded?
+
+    "If Comp-spec is used, this agreement does not apply."
+
+Is the purpose to say Comp-spec is out of scope (not defined) or that
+it is recommended that Comp-spec *should not* support these set names.
+I can understand Comp-spec being undefined/out of scope. But it would
+seem wrong to disallow it.
+
+Another observation (not a problem, just an observation), from memory
+element set names are not case sensitive (in a quick skim of standard
+I could not find this just now, but I recall seeing it previously).
+URIs on the other hand are case sensitive. I guess there is no issue
+as long as clients are told to always supply the URI with the correct
+case. (If they don't, should it still work - maybe just undefined).
+But as I said, probably not an issue in practice so not worth mentioning.
+
+Alan
+
+
+From - Wed Jul  2 22:13:36 2003
+X-UIDL: 3f033cee00000006
+X-Mozilla-Status: 0011
+X-Mozilla-Status2: 00000000
+Envelope-to: adam@indexdata.dk
+Received: from frink.w3.org ([18.29.1.71])
+	by bagel.index with esmtp (Exim 3.35 #1 (Debian))
+	id 19XnuF-0007jb-00; Wed, 02 Jul 2003 22:08:43 +0200
+Received: from frink.w3.org (localhost [127.0.0.1])
+	by frink.w3.org (8.12.9/8.12.9) with ESMTP id h62JxFSn024233;
+	Wed, 2 Jul 2003 15:59:15 -0400 (EDT)
+Received: (from lists@localhost)
+	by frink.w3.org (8.12.9/8.12.9/Submit) id h62JwYov024041;
+	Wed, 2 Jul 2003 15:58:34 -0400 (EDT)
+Resent-Date: Wed, 2 Jul 2003 15:58:34 -0400 (EDT)
+Resent-Message-Id: <200307021958.h62JwYov024041@frink.w3.org>
+Received: from dr-nick.w3.org (dr-nick.w3.org [18.29.1.73])
+	by frink.w3.org (8.12.9/8.12.9) with ESMTP id h62JwXSn024006
+	for <www-zig@frink.w3.org>; Wed, 2 Jul 2003 15:58:33 -0400 (EDT)
+Received: from sun8.loc.gov (sun8.loc.gov [140.147.249.48])
+	by dr-nick.w3.org (8.12.3/8.12.3/Debian-6.4) with ESMTP id h62JwWvx008936
+	for <www-zig@w3.org>; Wed, 2 Jul 2003 15:58:32 -0400
+Received: from loc.gov (LSWRKC.dhcp.loc.gov [140.147.156.132])
+	by sun8.loc.gov  with ESMTP id h62JwWqc015205
+	for <www-zig@w3.org>; Wed, 2 Jul 2003 15:58:32 -0400 (EDT)
+Message-ID: <3F033967.67747812@loc.gov>
+Date: Wed, 02 Jul 2003 15:58:32 -0400
+From: Ray Denenberg <rden@loc.gov>
+Organization: Library Of Congress
+X-Mailer: Mozilla 4.77 [en] (Windows NT 5.0; U)
+X-Accept-Language: en
+MIME-Version: 1.0
+To: zig <www-zig@w3.org>
+References: <Law12-F268jRACYiFsH000230b4@hotmail.com> <3F005826.B395FDF4@loc.gov> <20030702084805.B20964@io.mds.rmit.edu.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: Proposal: requesting XML records
+X-Archived-At: http://www.w3.org/mid/3F033967.67747812@loc.gov
+Resent-From: www-zig@w3.org
+X-Mailing-List: <www-zig@w3.org> archive/latest/1326
+X-Loop: www-zig@w3.org
+Sender: www-zig-request@w3.org
+Resent-Sender: www-zig-request@w3.org
+Precedence: list
+List-Id: <www-zig.w3.org>
+List-Help: <http://www.w3.org/Mail/>
+List-Unsubscribe: <mailto:www-zig-request@w3.org?subject=unsubscribe>
+Resent-Bcc:
+Status:   
+
+
+Alan Kent wrote:
+
+>     "If Comp-spec is used, this agreement does not apply."
+>
+> Is the purpose to say Comp-spec is out of scope (not defined) or that
+> it is recommended that Comp-spec *should not* support these set names.
+
+"Out-of-scope".  The proposed agreement simply would not apply to compSpec
+and there is no intent to suggest that compSpec should or should not support
+this.
+
+
+> Another observation (not a problem, just an observation), from memory
+> element set names are not case sensitive (in a quick skim of standard
+> I could not find this just now, but I recall seeing it previously).
+> URIs on the other hand are case sensitive. I guess there is no issue
+> as long as clients are told to always supply the URI with the correct
+> case. (If they don't, should it still work - maybe just undefined).
+> But as I said, probably not an issue in practice so not worth mentioning.
+
+Yes, ESNs are case insensitive and URIs are case sensitive.
+
+So, suppose "http://www. ........... xyz"  and "http://www. ........... XYZ"
+identify two different schemas. Suppose a server knows the first, and the
+client sends the second. The server will treat it as the first. The only
+reasonable answer to this problem is that this never should have happened to
+begin with (these two names identifying different things). But how do you
+prevent that from happening?
+
+I think the practical answer is this:  I think that the domain-name part of
+an http uri is case insensitive, at least in practice. For example,
+HTTP://WWW.LOC.GOV resolves to http://www.loc.gov, whereas
+HTTP://WWW.LOC.GOV/Z3950 does not  resolves to http://www.loc.gov/z3950.
+
+So, assuming that
+(1) the naming authority part of a uri is, in practice, case insensitive; and
+
+(2) a single naming authority has enough sense not to assign conflicting
+names;
+then I think the problem should not arise.
+
+--Ray
+
+
+

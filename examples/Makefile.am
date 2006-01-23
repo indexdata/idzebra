@@ -1,5 +1,5 @@
 
-SUBDIRS=gils zthes
+SUBDIRS=gils zthes mail
 
 EXTRA_DIST = README
 

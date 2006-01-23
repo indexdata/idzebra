@@ -1,0 +1,8 @@
+*.mf
+*.LCK
+log
+zebrasrv.pid
+Makefile.in
+Makefile
+register
+shadow

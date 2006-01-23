@@ -1,0 +1,23 @@
+# $Id: mbox.abs,v 1.1.2.1 2006-01-23 10:35:17 adam Exp $
+
+# This is an abstrac-syntax for mbox mails.. It is similar to
+# wais.abs but is using xelm rather than elm and is tuned for
+# emails only.
+
+name mbox
+attset bib1.att
+
+# Allow Brief and Full to mean the whole thing
+esetname F @
+esetname B @
+
+# No X-Path indexing.
+xpath disable
+
+# Author,BodyOfText,Title,Local-Number are all Bib-1 attributes.
+
+xelm /mbox/name		Author:w
+xelm /mbox/body		BodyOfText:w
+xelm /mbox/title	Title:w
+xelm /mbox/id		Local-Number:0
+
