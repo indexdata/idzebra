@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.32 2006-01-23 07:04:34 adam Exp $
+## $Id: Makefile.am,v 1.33 2006-01-23 13:59:48 adam Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -21,7 +21,6 @@ XMLFILES = \
    quickstart.xml \
    recordmodel.xml \
    server.xml \
-   zebra.xml \
    zebraidx-commands.xml \
    zebraidx-options.xml \
    zebraidx.xml \
