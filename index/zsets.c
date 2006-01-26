@@ -1,4 +1,4 @@
-/* $Id: zsets.c,v 1.98 2006-01-19 13:31:08 adam Exp $
+/* $Id: zsets.c,v 1.99 2006-01-26 22:17:16 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -268,6 +268,7 @@ ZebraSet resultSetAdd(ZebraHandle zh, const char *name, int ov)
     s->rset_nmem = 0;
     s->nmem = 0;
     s->rpn = 0;
+    s->sortSpec = 0;
     s->cache_position = 0;
     s->cache_rfd = 0;
     s->approx_limit = zh->approx_limit;
