@@ -1,4 +1,4 @@
-# $Id: record.abs,v 1.3.2.2 2006-01-23 10:34:45 adam Exp $
+# $Id: record.abs,v 1.3.2.3 2006-02-06 13:19:55 adam Exp $
 
 name marcxml
 attset bib1.att
@@ -10,6 +10,7 @@ marc usmarc.mar
 
 xpath disable
 
+#melm 010$a    identifier-standard,identifier-standard:p
 xelm /record/controlfield[@tag="001"]		Material-type:w:range(data,3,1)
 xelm /record/controlfield[@tag="008"]		Code-Language:w
 xelm /record/datafield[@tag="100"]/subfield[@code="a"]	author:w,author:s
