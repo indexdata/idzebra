@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.106 2006-02-06 13:34:13 adam Exp $
+/* $Id: recgrs.c,v 1.107 2006-02-06 23:22:29 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -813,9 +813,8 @@ static void index_xpath(struct source_parser *sp, data1_node *n,
                                                   p, wrd);
                                 xpdone = 1;
                             } else {
-                                /* if this fragment is enabled, we index
-				   attribute values as well. See bug #460 */
-                                if (0 && xp->value) 
+                                /* index attribute value (only path/@attr) */
+                                if (xp->value) 
 				{
 #if NATTR
 				    wrd->index_name = tl->index_name;
