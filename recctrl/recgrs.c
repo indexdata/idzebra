@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.7 2006-02-06 13:34:00 adam Exp $
+/* $Id: recgrs.c,v 1.86.2.8 2006-02-06 23:16:03 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -446,7 +446,9 @@ data1_termlist *xpath_termlist_by_tagpath(char *tagpath, data1_node *n)
     int ok = 0;
 
     sprintf (pexpr, "/%s\n", tagpath);
-    yaz_log(LOG_DEBUG,"Checking tagpath %s",tagpath);
+#if 0
+    yaz_log(LOG_DEBUG, "Checking tagpath %s", tagpath);
+#endif
     while (xpe) 
     {
 	int i;
@@ -563,7 +565,7 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
     yaz_log(LOG_DEBUG, "index_xpath level=%d use=%d", level, use);
     if ((!n->root->u.root.absyn) ||
 	(n->root->u.root.absyn->enable_xpath_indexing)) {
-      termlist_only = 0;
+	termlist_only = 0;
     }
 
     switch (n->which)
@@ -806,9 +808,9 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                             } 
 			    else 
 			    {
-                                /* if this fragment is enabled, we index
-				   attribute values as well. See bug #460 */
-                                if (0 && xp->value) {
+                                /* index attribute value (only path/@attr) */
+                                if (xp->value)
+				{
                                     wrd->attrSet = (int) 
                                         (tl->att->parent->reference);
                                     wrd->attrUse = tl->att->locals->local;
