@@ -5,5 +5,9 @@ xpath enable
 # NAL-call-number=18, Title-key=33
 xelm /assembled/basic/names/CASno !:w,!:p,!:s,NAL-call-number:p,Title-key:s
 
+# bug 431
 # Bib-level=1021
 xelm /assembled/@org		Bib-level:w,Bib-level:w
+
+#
+xelm /assembled/basic		Title:w

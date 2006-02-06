@@ -1,11 +1,10 @@
 #!/bin/sh
-# $Id: test6.sh,v 1.1.2.2 2005-11-08 10:46:19 adam Exp $
+# $Id: test6.sh,v 1.1.2.3 2006-02-06 23:11:12 adam Exp $
 
 pp=${srcdir:-"."}
 
 LOG="test6.log"
 TMP="test6.tmp"
-#DBG="-v 1647"
 DBG=""
 
 rm -f $LOG
@@ -30,6 +29,7 @@ test -f zebrasrv.pid || exit 2
 
 ../api/testclient unix:socket '@and @attr 1=/assembled/orgs/org 46 @attr 5=1 @attr 6=3  @attr 4=1 @attr 1=/assembled/basic/names/CASno 367-93-1' >$TMP.5
 
+# bug 431
 ../api/testclient unix:socket '@attr 1=1021 46' >$TMP.6
 
 echo 'Killing server' >>$LOG

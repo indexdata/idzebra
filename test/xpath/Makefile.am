@@ -1,6 +1,7 @@
-# $Id: Makefile.am,v 1.7.2.1 2004-12-16 19:11:41 heikki Exp $
+# $Id: Makefile.am,v 1.7.2.2 2006-02-06 23:11:12 adam Exp $
 
-check_SCRIPTS = simple1.sh test1.sh test2.sh test3.sh test4.sh test5.sh test6.sh
+check_SCRIPTS = simple1.sh \
+	test1.sh test2.sh test3.sh test4.sh test5.sh test6.sh test7.sh
 
 TESTS = $(check_SCRIPTS)
 
