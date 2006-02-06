@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.6 2005-11-23 14:26:05 adam Exp $
+/* $Id: recgrs.c,v 1.86.2.7 2006-02-06 13:34:00 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -806,8 +806,9 @@ static void index_xpath (data1_node *n, struct recExtractCtrl *p,
                             } 
 			    else 
 			    {
-                                /* add attribute based index for the attribute */
-                                if (xp->value) {
+                                /* if this fragment is enabled, we index
+				   attribute values as well. See bug #460 */
+                                if (0 && xp->value) {
                                     wrd->attrSet = (int) 
                                         (tl->att->parent->reference);
                                     wrd->attrUse = tl->att->locals->local;
