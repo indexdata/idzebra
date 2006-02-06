@@ -1,4 +1,4 @@
-/* $Id: xpath6.c,v 1.6 2005-11-09 08:09:44 adam Exp $
+/* $Id: xpath6.c,v 1.7 2006-02-06 23:21:49 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -71,6 +71,12 @@ int main(int argc, char **argv)
 
     /* bug #431 */
     do_query(__LINE__, zh, "@attr 1=1021 1", 0);
+
+    /* bug #460 */
+    do_query(__LINE__, zh, "@attr 1=4 46", 0);
+
+    /* bug #460 */
+    do_query(__LINE__, zh, "@attr 1=4 beta", 1);
 
     return close_down(zh, zs, 0);
 }

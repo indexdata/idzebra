@@ -8,3 +8,5 @@ xelm //something Title:w
 
 # Bib-level=1021
 xelm /assembled/@org          Bib-level:w,Bib-level:w
+
+xelm /assembled/basic         Title:w
