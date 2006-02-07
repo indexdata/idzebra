@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.9.2.6 2006-02-06 23:16:03 adam Exp $
+/* $Id: d1_absyn.c,v 1.9.2.7 2006-02-07 00:22:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002
    Index Data Aps
 
@@ -345,9 +345,9 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
 
     *res_p = '\0';
     if (stack[e-1][0] == '@')  /* path/@attr spec (leaf is attribute) */
-	sprintf(res_p, "/");
+	strcpy(res_p, "/");
     else
-	sprintf(res_p, "[^@]*/");  /* path .. (index all cdata below it) */
+	strcpy(res_p, "[^@]*/");  /* path .. (index all cdata below it) */
     res_p = res_p + strlen(res_p);
     while (--e >= 0) {
 	sprintf(res_p, "%s/", stack[e]);

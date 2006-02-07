@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.86.2.8 2006-02-06 23:16:03 adam Exp $
+/* $Id: recgrs.c,v 1.86.2.9 2006-02-07 00:22:25 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -406,6 +406,8 @@ static int dfa_match_first(struct DFA_state **dfaar, const char *text)
 		if (s->rule_no)
 		    return 1;
 		/* next char */
+		if (!c)
+		    return 0;
 		c = *p++;
 		for (t = s->trans, i = s->tran_no; --i >= 0; t++)
 		    if (c >= t->ch[0] && c <= t->ch[1])
