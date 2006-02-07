@@ -1,4 +1,4 @@
-/* $Id: d1_absyn.c,v 1.22 2006-02-06 23:22:28 adam Exp $
+/* $Id: d1_absyn.c,v 1.23 2006-02-07 00:17:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -443,7 +443,6 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
 {
     const char *p = expr;
     int abs = 1;
-    int i;
     int e = 0;
     char *stack[32];
     char *res_p, *res = 0;
@@ -491,9 +490,9 @@ static const char * mk_xpath_regexp (data1_handle dh, const char *expr)
     res_p = res = nmem_malloc(data1_nmem_get(dh), res_size + 10);
 
     if (stack[e-1][0] == '@')  /* path/@attr spec (leaf is attribute) */
-	sprintf(res_p, "/");
+	strcpy(res_p, "/");
     else
-	sprintf(res_p, "[^@]*/");  /* path .. (index all cdata below it) */
+	strcpy(res_p, "[^@]*/");  /* path .. (index all cdata below it) */
     res_p = res_p + strlen(res_p);
     while (--e >= 0) {
 	sprintf(res_p, "%s/", stack[e]);

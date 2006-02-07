@@ -1,4 +1,4 @@
-/* $Id: recgrs.c,v 1.107 2006-02-06 23:22:29 adam Exp $
+/* $Id: recgrs.c,v 1.108 2006-02-07 00:17:44 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -350,6 +350,7 @@ static int dfa_match_first(struct DFA_state **dfaar, const char *text)
     unsigned char c;
     
     for (c = *p++, t = s->trans, i = s->tran_no; --i >= 0; t++)
+    {
 	if (c >= t->ch[0] && c <= t->ch[1])
 	{
 	    while (i >= 0)
@@ -359,12 +360,15 @@ static int dfa_match_first(struct DFA_state **dfaar, const char *text)
 		if (s->rule_no)
 		    return 1;
 		/* next char */
+		if (!c)
+		    return 0;
 		c = *p++;
 		for (t = s->trans, i = s->tran_no; --i >= 0; t++)
 		    if (c >= t->ch[0] && c <= t->ch[1])
 			break;
 	    }
 	}
+    }
     return 0;
 }
 
