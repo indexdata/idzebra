@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.157.2.2 2005-01-16 23:12:10 adam Exp $
+/* $Id: extract.c,v 1.157.2.3 2006-02-08 13:45:34 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
    Index Data Aps
 
@@ -259,6 +259,8 @@ static void file_end (void *handle, off_t offset)
     p->file_moffset = offset;
 }
 
+#define FILE_MATCH_BLANK "\t "
+
 static char *fileMatchStr (ZebraHandle zh,
                            struct recKeys *reckeys,
                            const char *fname, const char *spec)
@@ -270,8 +272,8 @@ static char *fileMatchStr (ZebraHandle zh,
 
     while (1)
     {
-        while (*s == ' ' || *s == '\t')
-            s++;
+	for (; *s && strchr(FILE_MATCH_BLANK, *s); s++)
+	    ;
         if (!*s)
             break;
         if (*s == '(')
@@ -279,21 +281,26 @@ static char *fileMatchStr (ZebraHandle zh,
 	    char attset_str[64], attname_str[64];
 	    data1_attset *attset;
 	    int i;
-            char matchFlag[32];
             int attSet = 1, attUse = 1;
             int first = 1;
-
-            s++;
-	    for (i = 0; *s && *s != ',' && *s != ')'; s++)
-		if (i < 63)
+	    
+	    for (s++; strchr(FILE_MATCH_BLANK, *s); s++)
+		;
+	    for (i = 0; *s && *s != ',' && *s != ')' && 
+		     !strchr(FILE_MATCH_BLANK, *s); s++)
+		if (i+1 < sizeof(attset_str))
 		    attset_str[i++] = *s;
 	    attset_str[i] = '\0';
-
+	    
+	    for (; strchr(FILE_MATCH_BLANK, *s); s++)
+		;
 	    if (*s == ',')
 	    {
-		s++;
-		for (i = 0; *s && *s != ')'; s++)
-		    if (i < 63)
+		for (s++; strchr(FILE_MATCH_BLANK, *s); s++)
+		    ;
+		for (i = 0; *s && *s != ')' && 
+			 !strchr(FILE_MATCH_BLANK, *s); s++)
+		    if (i+1 < sizeof(attname_str))
 			attname_str[i++] = *s;
 		attname_str[i] = '\0';
 	    }
@@ -311,21 +318,17 @@ static char *fileMatchStr (ZebraHandle zh,
             w = searchRecordKey (zh, reckeys, attSet, attUse);
             assert (w);
 
-            if (*s == ')')
-            {
-                for (i = 0; i<32; i++)
-                    matchFlag[i] = 1;
-            }
-            else
-            {
+	    for (; strchr(FILE_MATCH_BLANK, *s); s++)
+		;
+            if (*s != ')')
+	    {
                 logf (LOG_WARN, "Missing ) in match criteria %s in group %s",
                       spec, zh->m_group ? zh->m_group : "none");
                 return NULL;
-            }
+	    }
             s++;
-
             for (i = 0; i<32; i++)
-                if (matchFlag[i] && w[i])
+                if (w[i])
                 {
                     if (first)
                     {
@@ -348,12 +351,12 @@ static char *fileMatchStr (ZebraHandle zh,
             char special[64];
             const char *spec_src = NULL;
             const char *s1 = ++s;
-            while (*s1 && *s1 != ' ' && *s1 != '\t')
+            while (*s1 && !strchr(FILE_MATCH_BLANK, *s1))
                 s1++;
 
             spec_len = s1 - s;
-            if (spec_len > 63)
-                spec_len = 63;
+            if (spec_len > sizeof(special)-1)
+                spec_len = sizeof(special)-1;
             memcpy (special, s, spec_len);
             special[spec_len] = '\0';
             s = s1;
@@ -383,7 +386,7 @@ static char *fileMatchStr (ZebraHandle zh,
 
             while (*s && *s != stopMarker)
             {
-                if (i < 63)
+                if (i+1 < sizeof(tmpString))
                     tmpString[i++] = *s++;
             }
             if (*s)
