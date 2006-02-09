@@ -1,5 +1,5 @@
 # Zebra makefile for MS NMAKE
-# $Id: makefile,v 1.38 2005-08-30 12:25:38 adam Exp $
+# $Id: makefile,v 1.39 2006-02-09 09:20:23 adam Exp $
  
 ###########################################################
 ############### Parameters 
@@ -308,85 +308,16 @@ APITEST_OBJS= \
 	$(OBJDIR)\apitest.obj
 
 ZEBRALIB_OBJS= \
-	$(OBJDIR)\isamc.obj \
-	$(OBJDIR)\merge.obj \
-	$(OBJDIR)\zebra-lock.obj \
+	$(OBJDIR)\alvis.obj \
+	$(OBJDIR)\atoi_zn.obj \
 	$(OBJDIR)\attribute.obj \
 	$(OBJDIR)\bfile.obj \
 	$(OBJDIR)\bset.obj \
 	$(OBJDIR)\cfile.obj \
 	$(OBJDIR)\charmap.obj \
-	$(OBJDIR)\atoi_zn.obj \
 	$(OBJDIR)\close.obj \
 	$(OBJDIR)\commit.obj \
 	$(OBJDIR)\compact.obj \
-	$(OBJDIR)\dclose.obj \
-	$(OBJDIR)\dcompact.obj \
-	$(OBJDIR)\delete.obj \
-	$(OBJDIR)\dfa.obj \
-	$(OBJDIR)\dirent.obj \
-	$(OBJDIR)\dopen.obj \
-	$(OBJDIR)\drdwr.obj \
-	$(OBJDIR)\imalloc.obj \
-	$(OBJDIR)\insert.obj \
-	$(OBJDIR)\invstat.obj \
-	$(OBJDIR)\kcompare.obj \
-	$(OBJDIR)\lockutil.obj \
-	$(OBJDIR)\lookgrep.obj \
-	$(OBJDIR)\lookup.obj \
-	$(OBJDIR)\lookupec.obj \
-	$(OBJDIR)\marcread.obj \
-	$(OBJDIR)\marcomp.obj \
-	$(OBJDIR)\inline.obj \
-	$(OBJDIR)\mfile.obj \
-	$(OBJDIR)\open.obj \
-	$(OBJDIR)\passwddb.obj \
-	$(OBJDIR)\zvrank.obj \
-	$(OBJDIR)\rank1.obj \
-	$(OBJDIR)\rankstatic.obj \
-	$(OBJDIR)\recctrl.obj \
-	$(OBJDIR)\recgrs.obj \
-	$(OBJDIR)\recindex.obj \
-	$(OBJDIR)\recstat.obj \
-	$(OBJDIR)\rectext.obj \
-	$(OBJDIR)\regxread.obj \
-	$(OBJDIR)\xmlread.obj \
-	$(OBJDIR)\alvis.obj \
-	$(OBJDIR)\xslt.obj \
-	$(OBJDIR)\danbibr.obj \
-	$(OBJDIR)\safari.obj \
-	$(OBJDIR)\res.obj \
-	$(OBJDIR)\retrieve.obj \
-	$(OBJDIR)\rsbool.obj \
-	$(OBJDIR)\rset.obj \
-	$(OBJDIR)\rsisamc.obj \
-	$(OBJDIR)\rsmultiandor.obj \
-	$(OBJDIR)\rsnull.obj \
-	$(OBJDIR)\rstemp.obj \
-	$(OBJDIR)\scan.obj \
-	$(OBJDIR)\set.obj \
-	$(OBJDIR)\sgmlread.obj \
-	$(OBJDIR)\sortidx.obj \
-	$(OBJDIR)\states.obj \
-	$(OBJDIR)\symtab.obj \
-	$(OBJDIR)\trunc.obj \
-	$(OBJDIR)\zebraapi.obj \
-	$(OBJDIR)\zebramap.obj \
-	$(OBJDIR)\zint.obj \
-	$(OBJDIR)\zinfo.obj \
-	$(OBJDIR)\zrpn.obj \
-	$(OBJDIR)\zsets.obj \
-	$(OBJDIR)\isams.obj \
-	$(OBJDIR)\isamb.obj \
-	$(OBJDIR)\rsisamb.obj \
-	$(OBJDIR)\rsbetween.obj \
-	$(OBJDIR)\rsprox.obj \
-	$(OBJDIR)\dir.obj \
-	$(OBJDIR)\dirs.obj \
-	$(OBJDIR)\extract.obj \
-	$(OBJDIR)\kinput.obj \
-	$(OBJDIR)\rsisams.obj \
-	$(OBJDIR)\trav.obj \
 	$(OBJDIR)\d1_absyn.obj \
 	$(OBJDIR)\d1_attset.obj \
 	$(OBJDIR)\d1_doespec.obj \
@@ -405,10 +336,81 @@ ZEBRALIB_OBJS= \
 	$(OBJDIR)\d1_tagset.obj \
 	$(OBJDIR)\d1_varset.obj \
 	$(OBJDIR)\d1_write.obj \
-	$(OBJDIR)\xpath.obj \
+	$(OBJDIR)\danbibr.obj \
+	$(OBJDIR)\dclose.obj \
+	$(OBJDIR)\dcompact.obj \
+	$(OBJDIR)\delete.obj \
+	$(OBJDIR)\dfa.obj \
+	$(OBJDIR)\dir.obj \
+	$(OBJDIR)\dirent.obj \
+	$(OBJDIR)\dirs.obj \
+	$(OBJDIR)\dopen.obj \
+	$(OBJDIR)\drdwr.obj \
+	$(OBJDIR)\extract.obj \
+	$(OBJDIR)\imalloc.obj \
+	$(OBJDIR)\inline.obj \
+	$(OBJDIR)\insert.obj \
+	$(OBJDIR)\invstat.obj \
+	$(OBJDIR)\isamb.obj \
+	$(OBJDIR)\isamc.obj \
+	$(OBJDIR)\isams.obj \
+	$(OBJDIR)\kcompare.obj \
 	$(OBJDIR)\kcontrol.obj \
+	$(OBJDIR)\kinput.obj \
 	$(OBJDIR)\limit.obj \
-	$(OBJDIR)\snippet.obj
+	$(OBJDIR)\lockutil.obj \
+	$(OBJDIR)\lookgrep.obj \
+	$(OBJDIR)\lookup.obj \
+	$(OBJDIR)\lookupec.obj \
+	$(OBJDIR)\marcomp.obj \
+	$(OBJDIR)\marcread.obj \
+	$(OBJDIR)\merge.obj \
+	$(OBJDIR)\mfile.obj \
+	$(OBJDIR)\open.obj \
+	$(OBJDIR)\orddict.obj \
+	$(OBJDIR)\passwddb.obj \
+	$(OBJDIR)\rank1.obj \
+	$(OBJDIR)\rankstatic.obj \
+	$(OBJDIR)\recctrl.obj \
+	$(OBJDIR)\recgrs.obj \
+	$(OBJDIR)\recindex.obj \
+	$(OBJDIR)\reckeys.obj \
+	$(OBJDIR)\recstat.obj \
+	$(OBJDIR)\rectext.obj \
+	$(OBJDIR)\regxread.obj \
+	$(OBJDIR)\res.obj \
+	$(OBJDIR)\retrieve.obj \
+	$(OBJDIR)\rsbetween.obj \
+	$(OBJDIR)\rsbool.obj \
+	$(OBJDIR)\rset.obj \
+	$(OBJDIR)\rsisamb.obj \
+	$(OBJDIR)\rsisamc.obj \
+	$(OBJDIR)\rsisams.obj \
+	$(OBJDIR)\rsmultiandor.obj \
+	$(OBJDIR)\rsnull.obj \
+	$(OBJDIR)\rsprox.obj \
+	$(OBJDIR)\rstemp.obj \
+	$(OBJDIR)\safari.obj \
+	$(OBJDIR)\scan.obj \
+	$(OBJDIR)\set.obj \
+	$(OBJDIR)\sgmlread.obj \
+	$(OBJDIR)\snippet.obj \
+	$(OBJDIR)\sortidx.obj \
+	$(OBJDIR)\states.obj \
+	$(OBJDIR)\symtab.obj \
+	$(OBJDIR)\trav.obj \
+	$(OBJDIR)\trunc.obj \
+	$(OBJDIR)\xmlread.obj \
+	$(OBJDIR)\xpath.obj \
+	$(OBJDIR)\xslt.obj \
+	$(OBJDIR)\zebra-lock.obj \
+	$(OBJDIR)\zebraapi.obj \
+	$(OBJDIR)\zebramap.obj \
+	$(OBJDIR)\zinfo.obj \
+	$(OBJDIR)\zint.obj \
+	$(OBJDIR)\zrpn.obj \
+	$(OBJDIR)\zsets.obj \
+	$(OBJDIR)\zvrank.obj
 
 ALL_OBJS=\
   $(ZEBRALIB_OBJS) \
