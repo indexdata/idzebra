@@ -1,5 +1,5 @@
 dnl Zebra, Index Data ApS, 1995-2005
-dnl $Id: configure.in,v 1.129 2005-12-05 12:18:40 marc Exp $
+dnl $Id: configure.in,v 1.130 2006-02-09 08:42:55 adam Exp $
 dnl
 AC_INIT(include/idzebra/version.h)
 AM_INIT_AUTOMAKE(idzebra,1.4.0)
@@ -106,6 +106,16 @@ if test -r ${tclconfig}/tclConfig.sh; then
         SHLIB_VERSION=$TCL_SHLIB_VERSION
         AC_MSG_RESULT($TCL_VERSION)
 	AC_DEFINE(HAVE_TCL_H,1)
+
+	# The Mac OSX -framework causes problems with Libtool
+	# and dependancy libs.. so apply Tcl libs everywhere
+	# bug #461
+	case $host in
+	*-*-darwin*)
+		LIBS="$LIBS $TCL_LIB";
+                ;;
+	esac
+
 else
         AC_MSG_RESULT(Not found)
 	AC_DEFINE(HAVE_TCL_H,0)
