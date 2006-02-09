@@ -1,4 +1,4 @@
-/* $Id: zebraapi.c,v 1.200 2006-01-19 13:30:02 adam Exp $
+/* $Id: zebraapi.c,v 1.201 2006-02-09 08:31:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -36,6 +36,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <yaz/pquery.h>
 #include <yaz/sortspec.h>
 #include "index.h"
+#include "orddict.h"
 #include <charmap.h>
 #include <idzebra/api.h>
 
@@ -435,6 +436,7 @@ struct zebra_register *zebra_register_open(ZebraService zs, const char *name,
 	yaz_log (YLOG_WARN, "Cannot obtain EXPLAIN information");
 	return 0;
     }
+
     reg->active = 2;
     yaz_log (YLOG_DEBUG, "zebra_register_open ok p=%p", reg);
     return reg;
@@ -1299,6 +1301,7 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
     SYSNO sysno = 0;
     char *rinfo = 0;
     char recid_z[256];
+    int db_ord;
     ASSERTZH;
     assert(action>0 && action <=4);
     assert(rec_buf);
@@ -1318,7 +1321,8 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
     if (zebra_begin_trans(zh, 1) == ZEBRA_FAIL)
 	return ZEBRA_FAIL;
 
-    rinfo = dict_lookup (zh->reg->matchDict, recid_z);
+    db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+    rinfo = dict_lookup_ord(zh->reg->matchDict, db_ord, recid_z);
     if (rinfo)
     {
         if (action == 1)  /* fail if insert */
@@ -1359,11 +1363,12 @@ ZEBRA_RES zebra_admin_exchange_record(ZebraHandle zh,
     }
     if (action == 1)
     {
-        dict_insert (zh->reg->matchDict, recid_z, sizeof(sysno), &sysno);
+        dict_insert_ord(zh->reg->matchDict, db_ord, recid_z,
+			sizeof(sysno), &sysno);
     }
     else if (action == 3)
     {
-        dict_delete (zh->reg->matchDict, recid_z);
+        dict_delete_ord(zh->reg->matchDict, db_ord, recid_z);
     }
     zebra_end_trans(zh);
     return res;
@@ -1410,8 +1415,11 @@ ZEBRA_RES zebra_drop_database(ZebraHandle zh, const char *db)
         return ZEBRA_FAIL;
     if (zh->reg->isamb)
     {
+	int db_ord;
 	zebraExplain_curDatabase (zh->reg->zei, db);
-	
+	db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+	dict_delete_subtree_ord(zh->reg->matchDict, db_ord,
+				0 /* handle */, 0 /* func */);
 	zebraExplain_trav_ord(zh->reg->zei, zh, delete_SU_handle);
 	zebraExplain_removeDatabase(zh->reg->zei, zh);
     }
@@ -1684,6 +1692,7 @@ ZEBRA_RES zebra_begin_trans(ZebraHandle zh, int rw)
             yaz_log(YLOG_FATAL, "%s", zh->errString);
             return ZEBRA_FAIL;
         }
+	zebraExplain_curDatabase(zh->reg->zei, zh->basenames[0]);
     }
     else
     {

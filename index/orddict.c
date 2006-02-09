@@ -1,35 +1,74 @@
+/* $Id: orddict.c,v 1.2 2006-02-09 08:31:02 adam Exp $
+   Copyright (C) 1995-2005
+   Index Data ApS
 
-#include <yaz/xmalloc.h>
+This file is part of the Zebra server.
 
-#include "orddict.h"
+Zebra is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
 
-struct zebra_ord_dict {
-    char *str;
-    size_t str_sz;
-    Dict dict;
-};
+Zebra is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-Zebra_ord_dict zebra_ord_dict_open(Dict dict)
+You should have received a copy of the GNU General Public License
+along with Zebra; see the file LICENSE.zebra.  If not, write to the
+Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.
+*/
+
+#include <assert.h>
+#include <yaz/wrbuf.h>
+#include "index.h"
+
+WRBUF zebra_mk_ord_str(int ord, const char *str)
 {
-    Zebra_ord_dict zod = xmalloc(sizeof(*zod));
-    zod->str_sz = 50;
-    zod->str = xmalloc(zod->str_sz);
-    zod->dict = dict;
-    return zod;
+    char pref[20];
+    WRBUF w = wrbuf_alloc();
+    int len;
+
+    assert(ord >= 0);
+
+    len = key_SU_encode(ord, pref);
+
+    wrbuf_write(w, pref, len);
+    wrbuf_puts(w, str);
+    return w;
 }
 
-void zebra_ord_dict_close(Zebra_ord_dict zod)
+char *dict_lookup_ord(Dict d, int ord, const char *str)
 {
-    if (!zod)
-	return;
-    dict_close(zod->dict);
-    xfree(zod->str);
-    xfree(zod);
+    WRBUF w = zebra_mk_ord_str(ord, str);
+    char *rinfo = dict_lookup(d, wrbuf_buf(w));
+    wrbuf_free(w, 1);
+    return rinfo;
 }
 
-char *zebra_ord_dict_lookup (Zebra_ord_dict zod, int ord, 
-			     const char *p)
+int dict_insert_ord(Dict d, int ord, const char *p,
+		    int userlen, void *userinfo)
 {
-    return dict_lookup(zod->dict, p);
+    WRBUF w = zebra_mk_ord_str(ord, p);
+    int r = dict_insert(d, wrbuf_buf(w), userlen, userinfo);
+    wrbuf_free(w, 1);
+    return r;
 }
 
+int dict_delete_ord(Dict d, int ord, const char *p)
+{
+    WRBUF w = zebra_mk_ord_str(ord, p);
+    int r = dict_delete(d, wrbuf_buf(w));
+    wrbuf_free(w, 1);
+    return r;
+}
+
+int dict_delete_subtree_ord(Dict d, int ord, void *client,
+			    int (*f)(const char *info, void *client))
+{
+    WRBUF w = zebra_mk_ord_str(ord, "");
+    int r = dict_delete_subtree(d, wrbuf_buf(w), client, f);
+    wrbuf_free(w, 1);
+    return r;
+}

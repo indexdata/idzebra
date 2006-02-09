@@ -1,4 +1,4 @@
-/* $Id: orddict.h,v 1.1 2006-01-19 13:31:08 adam Exp $
+/* $Id: orddict.h,v 1.2 2006-02-09 08:31:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -25,16 +25,17 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <yaz/yconfig.h>
 #include <idzebra/dict.h>
+#include <yaz/wrbuf.h>
 
 YAZ_BEGIN_CDECL
 
-
-typedef struct zebra_ord_dict *Zebra_ord_dict;
-
-Zebra_ord_dict zebra_ord_dict_open(Dict s);
-void zebra_ord_dict_close(Zebra_ord_dict zod);
-char *zebra_ord_dict_lookup (Zebra_ord_dict zod, int ord, 
-			     const char *p);
+WRBUF zebra_mk_ord_str(int ord, const char *str);
+char *dict_lookup_ord(Dict d, int ord, const char *str);
+int dict_insert_ord(Dict dict, int ord, const char *p,
+		    int userlen, void *userinfo);
+int dict_delete_ord(Dict dict, int ord, const char *p);
+int dict_delete_subtree_ord(Dict d, int ord, void *client,
+			    int (*f)(const char *info, void *client));
 
 YAZ_END_CDECL
 #endif

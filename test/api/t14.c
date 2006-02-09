@@ -1,4 +1,4 @@
-/* $Id: t14.c,v 1.1 2005-12-15 13:28:46 adam Exp $
+/* $Id: t14.c,v 1.2 2006-02-09 08:31:02 adam Exp $
    Copyright (C) 2004-2005
    Index Data ApS
 
@@ -31,15 +31,12 @@ static void create_search_drop(ZebraHandle zh)
     res = zebra_create_database (zh, "Default");
     TL_ASSERT(res == ZEBRA_OK);
 
-#if 0
-    /* probably bug #447 .. but we don't know */
+    /* bug #447 */
     res = zebra_admin_exchange_record (
 	zh, rec, strlen(rec),
 	opaque_id, strlen(opaque_id),
 	1); /* insert */
-
-    TL_ASSERT(res == ZEBRA_FAIL);
-#endif
+    TL_ASSERT(res == ZEBRA_OK);
 
     res = zebra_admin_exchange_record (
 	zh, rec, strlen(rec),
@@ -67,10 +64,8 @@ int main(int argc, char **argv)
     zebra_init(zh);
 
     create_search_drop(zh);
-#if 0
     /* bug #447 */
     create_search_drop(zh);
-#endif
 
     return close_down(zh, zs, 0);
 }

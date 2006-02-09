@@ -1,4 +1,4 @@
-/* $Id: zinfo.h,v 1.27 2005-08-26 10:13:31 adam Exp $
+/* $Id: zinfo.h,v 1.28 2006-02-09 08:31:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -74,6 +74,7 @@ int zebraExplain_lookup_ord (ZebraExplainInfo zei, int ord,
 int zebraExplain_trav_ord(ZebraExplainInfo zei, void *handle,
 			  int (*f)(void *handle, int ord));
 
+int zebraExplain_get_database_ord(ZebraExplainInfo zei);
 int zebraExplain_removeDatabase(ZebraExplainInfo zei, void *updateHandle);
 
 typedef struct {

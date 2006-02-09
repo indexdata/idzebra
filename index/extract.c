@@ -1,4 +1,4 @@
-/* $Id: extract.c,v 1.201 2006-02-08 13:45:44 adam Exp $
+/* $Id: extract.c,v 1.202 2006-02-09 08:31:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -32,6 +32,7 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <fcntl.h>
 
 #include "index.h"
+#include "orddict.h"
 #include <direntz.h>
 #include <charmap.h>
 
@@ -492,7 +493,9 @@ static int file_extract_record(ZebraHandle zh,
 	}
 	if (matchStr)
 	{
-            char *rinfo = dict_lookup (zh->reg->matchDict, matchStr);
+	    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+            char *rinfo = dict_lookup_ord(zh->reg->matchDict, db_ord,
+					  matchStr);
 	    if (rinfo)
 	    {
 		assert(*rinfo == sizeof(*sysno));
@@ -535,7 +538,9 @@ static int file_extract_record(ZebraHandle zh,
 
         if (matchStr)
         {
-            dict_insert (zh->reg->matchDict, matchStr, sizeof(*sysno), sysno);
+	    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+            dict_insert_ord(zh->reg->matchDict, db_ord, matchStr,
+			    sizeof(*sysno), sysno);
         }
 #if NATTR
 	extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
@@ -597,7 +602,10 @@ static int file_extract_record(ZebraHandle zh,
 			     zh->m_record_type, fname, recordOffset);
                 zh->records_deleted++;
                 if (matchStr)
-                    dict_delete (zh->reg->matchDict, matchStr);
+		{
+		    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+                    dict_delete_ord(zh->reg->matchDict, db_ord, matchStr);
+		}
                 rec_del (zh->reg->records, &rec);
             }
 	    rec_rm (&rec);
@@ -966,8 +974,11 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
                 }
             }
         }
-        if (matchStr) {
-	    char *rinfo = dict_lookup (zh->reg->matchDict, matchStr);
+        if (matchStr) 
+	{
+	    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+	    char *rinfo = dict_lookup_ord(zh->reg->matchDict, db_ord,
+					  matchStr);
             if (rinfo)
 	    {
 		assert(*rinfo == sizeof(*sysno));
@@ -1005,8 +1016,9 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
 
         if (matchStr)
         {
-            dict_insert (zh->reg->matchDict, matchStr,
-                         sizeof(*sysno), sysno);
+	    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+            dict_insert_ord(zh->reg->matchDict, db_ord, matchStr,
+			    sizeof(*sysno), sysno);
         }
 #if NATTR
 	extract_flushSortKeys (zh, *sysno, 1, zh->reg->sortKeys);
@@ -1082,7 +1094,10 @@ ZEBRA_RES buffer_extract_record(ZebraHandle zh,
 			     pr_fname, (long) recordOffset);
                 zh->records_deleted++;
                 if (matchStr)
-                    dict_delete (zh->reg->matchDict, matchStr);
+		{
+		    int db_ord = zebraExplain_get_database_ord(zh->reg->zei);
+                    dict_delete_ord(zh->reg->matchDict, db_ord, matchStr);
+		}
                 rec_del (zh->reg->records, &rec);
             }
 	    rec_rm (&rec);

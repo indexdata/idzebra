@@ -1,4 +1,4 @@
-/* $Id: zinfo.c,v 1.53 2005-12-13 13:47:35 adam Exp $
+/* $Id: zinfo.c,v 1.54 2006-02-09 08:31:02 adam Exp $
    Copyright (C) 1995-2005
    Index Data ApS
 
@@ -1607,6 +1607,13 @@ static void att_loadset(void *p, const char *n, const char *name)
     data1_handle dh = (data1_handle) p;
     if (!data1_get_attset (dh, name))
 	yaz_log(YLOG_WARN, "Directive attset failed for %s", name);
+}
+
+int zebraExplain_get_database_ord(ZebraExplainInfo zei)
+{
+    if (!zei->curDatabaseInfo)
+	return -1;
+    return zei->curDatabaseInfo->ordinalDatabase;
 }
 
 void zebraExplain_loadAttsets (data1_handle dh, Res res)
