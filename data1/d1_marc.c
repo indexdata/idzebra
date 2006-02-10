@@ -1,4 +1,4 @@
-/* $Id: d1_marc.c,v 1.6.2.4 2005-02-02 20:26:44 adam Exp $
+/* $Id: d1_marc.c,v 1.6.2.5 2006-02-10 15:19:43 adam Exp $
    Copyright (C) 1995,1996,1997,1998,1999,2000,2001,2002,2003
    Index Data Aps
 
@@ -316,7 +316,11 @@ static int nodetomarc(data1_handle dh,
         for (; subf; subf = subf->next)
         {
             if (!control_field)
+	    {
+		if (marc_xml && subf->which != DATA1N_tag)
+		    continue; /* we skip comments, cdata .. */
                 len += p->identifier_length;
+	    }
 	    get_data(subf, &dlen, control_field ? 0 : 1);
             len += dlen;
         }
@@ -417,14 +421,15 @@ static int nodetomarc(data1_handle dh,
                 const char *identifier = "a";
 		if (marc_xml)
 		{
-		    if (subf->which == DATA1N_tag &&
-			!strcmp(subf->u.tag.tag, "subfield"))
-		    {
-			data1_xattr *xa;
-			for (xa = subf->u.tag.attributes; xa; xa = xa->next)
-			    if (!strcmp(xa->name, "code"))
-				identifier = xa->value;
-		    }
+		    data1_xattr *xa;
+		    if (subf->which != DATA1N_tag)
+			continue;
+		    if (strcmp(subf->u.tag.tag, "subfield"))
+			yaz_log(LOG_WARN, "Unhandled tag %s", subf->u.tag.tag);
+		    
+		    for (xa = subf->u.tag.attributes; xa; xa = xa->next)
+			if (!strcmp(xa->name, "code"))
+			    identifier = xa->value;
 		}
 		else if (subf->which != DATA1N_tag)
                     yaz_log(LOG_WARN, "Malformed fields for marc output.");
