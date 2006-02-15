@@ -1,5 +1,5 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.2 2006-01-19 09:27:00 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.3 2006-02-15 11:07:47 marc Exp $ -->
   <title>Overview of Zebra Architecture</title>
   
 
@@ -206,7 +206,7 @@ This virtual package contains all base IDZebra filter modules. EMPTY ???
    <sect3 id="componentmodulesgrs">
     <title>GRS Record Model and Filter Modules</title>
     <para>
-    <xref linkend="grs-record-model"/>
+    <xref linkend="record-model-grs"/>
 
      - grs.danbib     GRS filters of various kind (*.abs files)
 IDZebra filter grs.danbib (DBC DanBib records)

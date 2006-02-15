@@ -10,7 +10,8 @@
         <!ENTITY chap-administration SYSTEM "administration.xml">
         <!ENTITY chap-zebraidx SYSTEM "zebraidx.xml">
         <!ENTITY chap-server SYSTEM "server.xml">
-        <!ENTITY chap-recordmodel SYSTEM "recordmodel.xml">
+        <!ENTITY chap-recordmodel-grs SYSTEM "recordmodel-grs.xml">
+        <!ENTITY chap-recordmodel-alvisxslt SYSTEM "recordmodel-alvisxslt.xml">
         <!ENTITY app-license SYSTEM "license.xml">
         <!ENTITY app-indexdata SYSTEM "indexdata.xml">
 
@@ -30,7 +31,7 @@
 	<!ENTITY ref-shadow-registers '
 		<xref linkend="shadow-registers"/>'>
 ]>
-<!-- $Id: zebra.xml.in,v 1.22 2006-02-15 10:57:42 mike Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.23 2006-02-15 11:07:47 marc Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
@@ -87,9 +88,10 @@
   &chap-examples;
   &chap-architecture;
   &chap-administration;
+  &chap-recordmodel-grs;
+  &chap-recordmodel-alvisxslt;
   &chap-zebraidx;
   &chap-server;
-  &chap-recordmodel;
   &app-license;
   &app-indexdata;
  

@@ -1,9 +1,9 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.21 2006-01-19 09:26:59 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.22 2006-02-15 11:07:47 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
-          "recordmodel.xml" (which describes the other half) by the
+          "recordmodel-grs.xml" (which describes the other half) by the
           instructions on running zebraidx and zebrasrv.  Some careful
           re-ordering is required here.
  -->
@@ -669,7 +669,7 @@
   </para>
   
   <para>
-   (see <xref linkend="grs-record-model"/>
+   (see <xref linkend="record-model-grs"/>
     for details of how the mapping between elements of your records and
     searchable attributes is established).
   </para>

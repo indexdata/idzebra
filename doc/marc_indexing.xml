@@ -1,8 +1,8 @@
-<?xml version="1.0 encoding="iso-8859-1" standalone="no" ?>
+<?xml version="1.0" encoding="iso-8859-1" standalone="no" ?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" 
  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 
-<!-- $Id: marc_indexing.xml,v 1.2 2003-08-21 10:29:18 adam Exp $ -->
+<!-- $Id: marc_indexing.xml,v 1.3 2006-02-15 11:07:47 marc Exp $ -->
 
 <book id="marc_indexing">
 <bookinfo>

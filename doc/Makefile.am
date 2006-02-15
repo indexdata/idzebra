@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.33 2006-01-23 13:59:48 adam Exp $
+## $Id: Makefile.am,v 1.34 2006-02-15 11:07:47 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -8,8 +8,7 @@ SUPPORTFILES = \
  tkl.xsl \
  xml.dcl
 
-XMLFILES = \
-   zebra.xml.in \
+XMLFILES =  zebra.xml.in \
    administration.xml \
    architecture.xml \
    examples.xml \
@@ -19,8 +18,10 @@ XMLFILES = \
    license.xml \
    marc_indexing.xml \
    quickstart.xml \
-   recordmodel.xml \
+   recordmodel-alvisxslt.xml \
+   recordmodel-grs.xml \
    server.xml \
+   zebra.xml \
    zebraidx-commands.xml \
    zebraidx-options.xml \
    zebraidx.xml \
@@ -28,8 +29,8 @@ XMLFILES = \
    zebrasrv-synopsis.xml \
    zebrasrv-virtual.xml
 
-HTMLFILES =  \
-   administration.html \
+
+HTMLFILES =  administration.html \
    apps.html \
    architecture.html \
    configuration-file.html \
@@ -42,7 +43,6 @@ HTMLFILES =  \
    generic-ids.html \
    grs-exchange-formats.html \
    grs-internal-representation.html \
-   grs-record-model.html \
    indexdata.html \
    installation.debian.html \
    installation.html \
@@ -53,16 +53,20 @@ HTMLFILES =  \
    maincomponents.html \
    protocol-support.html \
    quick-start.html \
-   record-model.html \
+   record-model-alvisxslt-conf.html \
+   record-model-alvisxslt.html \
+   record-model-grs-conf.html \
+   record-model-grs.html \
    register-location.html \
    server.html \
    shadow-registers.html \
    simple-indexing.html \
+   sru-server.html \
+   sru-support.html \
    support.html \
    workflow.html \
    zebra.html \
    zebraidx.html
-
 
 
 PNGFILES=zebra.png
@@ -72,7 +76,8 @@ MANFILES=zebraidx.1 zebrasrv.8 idzebra-config.1
 
 REFFILES=zebraidx-man.sgml zebrasrv-man.sgml idzebra-config-man.sgml
 
-doc_DATA = $(HTMLFILES) zebra.pdf $(PNGFILES)
+#doc_DATA = $(HTMLFILES) zebra.pdf $(PNGFILES)
+doc_DATA = $(HTMLFILES) $(PNGFILES)
 man_MANS = $(MANFILES)
 
 EXTRA_DIST = $(XMLFILES) $(SUPPORTFILES) $(REFFILES) \

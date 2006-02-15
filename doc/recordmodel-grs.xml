@@ -1,5 +1,5 @@
- <chapter id="record-model">
-  <!-- $Id: recordmodel.xml,v 1.23 2006-01-19 09:27:00 marc Exp $ -->
+ <chapter id="record-model-grs">
+  <!-- $Id: recordmodel-grs.xml,v 1.1 2006-02-15 11:07:47 marc Exp $ -->
   <title>GRS Record Model and Filter Modules</title>
   
 
@@ -706,7 +706,7 @@
    
   </sect1>
   
-  <sect1 id="grs-record-model">
+  <sect1 id="record-model-grs-conf">
    <title>GRS Record Model Configuration</title>
    
    <para>

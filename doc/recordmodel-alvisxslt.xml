@@ -1,5 +1,5 @@
- <chapter id="alvis-xml-record-model">
-  <!-- $Id: alvisxmlrecordmodel.xml,v 1.1 2006-01-19 09:27:00 marc Exp $ -->
+ <chapter id="record-model-alvisxslt">
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.1 2006-02-15 11:07:47 marc Exp $ -->
   <title>ALVIS XML Record Model and Filter Module</title>
   
 
@@ -16,7 +16,7 @@
 
   
   
-  <sect1 id="alvis-record-filter">
+  <sect1 id="record-model-alvisxslt-filter">
    <title>ALLVIS Record Filter</title>
    <para>
     The experimental, loadable  Alvis XM/XSLT filter module
@@ -24,12 +24,12 @@
     <literal>libidzebra1.4-mod-alvis</literal>.
    </para>
 
-   <sect2 id="alvis-internal-representation">
+   <sect2 id="record-model-alvisxslt-internal">
     <title>ALLVIS Internal Record Representation</title>   
     <para>FIXME</para>
    </sect2>
 
-   <sect2 id="alvis-canonical-format">
+   <sect2 id="record-model-alvisxslt-canonical">
     <title>ALLVIS Canonical Format</title>   
     <para>FIXME</para>
    </sect2>
@@ -38,14 +38,14 @@
   </sect1>
 
 
-  <sect1 id="alvis-record-model-config">
+  <sect1 id="record-model-alvisxslt-conf">
    <title>ALLVIS Record Model Configuration</title>
    <para>FIXME</para>
 
 
 
-  <sect2 id="alvis-exchange-formats">
-   <title>ALLVIS Exchange Formats</title>
+  <sect2 id="record-model-alvisxslt-exchange">
+   <title>ALVIS Exchange Formats</title>
    <para>FIXME</para>
   </sect2>
 
