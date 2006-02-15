@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.9 2006-01-19 09:27:00 marc Exp $ -->
+ <!-- $Id: server.xml,v 1.10 2006-02-15 10:58:01 mike Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -554,6 +554,22 @@
   </sect2>
  </sect1>
 </chapter>
+
+
+<chapter id="sru-server">
+ <title>The SRU/SRW Server</title>
+
+ <sect1 id="sru-zebrasrv">
+  <title>Running the SRU/SRW Server (zebrasrv)</title>
+  <para>Placeholder for DocBook's facist schema</para>
+ </sect1>
+
+ <sect1 id="sru-support">
+  <title>SRU and SRW Protocol Support and Behavior</title>
+  <para>Placeholder for DocBook's facist schema</para>
+ </sect1>
+</chapter>
+
  <!-- Keep this comment at the end of the file
  Local variables:
  mode: sgml
