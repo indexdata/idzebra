@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.10 2006-02-15 10:58:01 mike Exp $ -->
+ <!-- $Id: server.xml,v 1.11 2006-02-15 11:16:22 mike Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -556,17 +556,17 @@
 </chapter>
 
 
-<chapter id="sru-server">
+<chapter id="server-sru">
  <title>The SRU/SRW Server</title>
 
- <sect1 id="sru-zebrasrv">
+ <sect1 id="server-sru-run">
   <title>Running the SRU/SRW Server (zebrasrv)</title>
   <para>Placeholder for DocBook's facist schema</para>
  </sect1>
 
- <sect1 id="sru-support">
+ <sect1 id="server-sru-support">
   <title>SRU and SRW Protocol Support and Behavior</title>
-  <para>Placeholder for DocBook's facist schema</para>
+  <para>Placeholder for DocBook's facist schema x</para>
  </sect1>
 </chapter>
 
