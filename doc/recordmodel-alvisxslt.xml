@@ -1,5 +1,5 @@
  <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.1 2006-02-15 11:07:47 marc Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.2 2006-02-15 14:57:48 marc Exp $ -->
   <title>ALVIS XML Record Model and Filter Module</title>
   
 
@@ -12,39 +12,183 @@
    releases of the Zebra Information Server.
   </para>
 
-  
-
+  <para> This filter has been developed under the 
+   <ulink url="http://www.alvis.info/">ALVIS</ulink> project funded by
+   the European Community under the "Information Society Technologies"
+   Programme (2002-2006).
+  </para>
   
   
   <sect1 id="record-model-alvisxslt-filter">
-   <title>ALLVIS Record Filter</title>
+   <title>ALVIS Record Filter</title>
    <para>
     The experimental, loadable  Alvis XM/XSLT filter module
    <literal>mod-alvis.so</literal> is packaged in the GNU/Debian package
     <literal>libidzebra1.4-mod-alvis</literal>.
+    It is invoked by the zebra configuration statement
+    <screen>
+     recordtype.xml: alvis.db/filter_alvis_conf.xml
+    </screen>
+    on all data files with suffix <literal>.xml</literal>, where the
+    <literal>alvis</literal> XSLT filter config file is found in the
+    path <literal>db/filter_alvis_conf.xml</literal>
+   </para>
+   <para>The <literal>alvis</literal> XSLT filter config file must be
+    valid XML. It might look like this (used for indexing and display
+    of OAI harvested records):
+    <screen>
+    &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      &lt;schemaInfo&gt;
+        &lt;schema name="identity" stylesheet="xsl/identity.xsl" /&gt;
+        &lt;schema name="index" identifier="http://indexdata.dk/zebra/xslt/1"
+            stylesheet="xsl/oai2index.xsl" /&gt;
+        &lt;schema name="dc" stylesheet="xsl/oai2dc.xsl" /&gt;
+        &lt;!-- use split level 2 when indexing whole OAI Record lists --&gt;
+        &lt;split level="2"/&gt;
+      &lt;/schemaInfo&gt;
+    </screen> 
+   </para>
+   <para>
+    All named stylesheets defined inside
+    <literal>schema</literal> element tags 
+    are for presentation after search, including
+    the indexing stylesheet (which is a great debugging help). The
+    names defined in the <literal>name</literal> attributes must be
+    unique, these are the literal <literal>schema</literal> or 
+    <literal>element set</literal> names used in 
+      <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>,
+      <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink> and
+    Z39.50 protocol queries.
+    The pathes in the <literal>stylesheet</literal> attributes
+    are relative to zebras working directory, or absolute to file
+    system root.
+   </para>
+   <para>
+    The <literal>&lt;split level="2"/&gt;</literal> decides where the
+    XML Reader shall split the
+    collections of records into individual records, which then are
+    loaded into DOM, and have the indexing XSLT stylesheet applied.
+   </para>
+   <para>
+    There must be exactly one indexing XSLT stylesheet, which is
+    defined by the magic attribute  
+    <literal>identifier="http://indexdata.dk/zebra/xslt/1"</literal>.
    </para>
 
    <sect2 id="record-model-alvisxslt-internal">
-    <title>ALLVIS Internal Record Representation</title>   
-    <para>FIXME</para>
+    <title>ALVIS Internal Record Representation</title>   
+    <para>When indexing, an XML Reader is invoked to split the input
+    files into suitable record XML pieces. Each record piece is then
+    transformed to an XML DOM structire, which is essentially the
+    record model. Only XSLT transfomations can be applied during
+    index, search and retrieval. Consequently, output formats are
+    restricted to whatever XSLT can deliver from the record XML
+    structure, be it other XML formats, HTML, or plain text. In case
+    you have <literal>libxslt1</literal> running with EXSLT support,
+    you can use this functionality inside the <literal>alvis</literal>
+    filter configuraiton XSLT stylesheets.
+    </para>
    </sect2>
 
    <sect2 id="record-model-alvisxslt-canonical">
-    <title>ALLVIS Canonical Format</title>   
-    <para>FIXME</para>
+    <title>ALVIS Canonical Indexing Format</title>   
+    <para>The output of the indexing XSLT stylesheets must contain
+    certain elements in the magic 
+     <literal>xmlns:z="http://indexdata.dk/zebra/xslt/1"</literal>
+    namespace. The output of the XSLT indexing transformation is then
+    parsed using DOM methods, and the contained instructions are
+    performed on the <emphasis>magic elements and their
+    subtrees</emphasis>.
+    </para>
+    <para>
+    For example, the output of the command
+     <screen>  
+      xsltproc xsl/oai2index.xsl one-record.xml
+     </screen> 
+     might look like this:
+     <screen>
+      &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      &lt;z:record xmlns:z="http://indexdata.dk/zebra/xslt/1" 
+           z:id="oai:JTRS:CP-3290---Volume-I" 
+           z:rank="47896"
+           z:type="update"&gt;
+       &lt;z:index name="oai:identifier" type="0"&gt;
+                oai:JTRS:CP-3290---Volume-I&lt;/z:index&gt;
+       &lt;z:index name="oai:datestamp" type="0"&gt;2004-07-09&lt;/z:index&gt;
+       &lt;z:index name="oai:setspec" type="0"&gt;jtrs&lt;/z:index&gt;
+       &lt;z:index name="dc:all" type="w"&gt;
+          &lt;z:index name="dc:title" type="w"&gt;Proceedings of the 4th 
+                International Conference and Exhibition:
+                World Congress on Superconductivity - Volume I&lt;/z:index&gt;
+          &lt;z:index name="dc:creator" type="w"&gt;Kumar Krishen and *Calvin
+                Burnham, Editors&lt;/z:index&gt;
+       &lt;/z:index&gt;
+     &lt;/z:record&gt;
+     </screen>
+    </para>
+    <para>This means the following: From the original XML file 
+     <literal>one-record.xml</literal> (or from the XML record DOM of the
+     same form coming from a splitted input file), the indexing
+     stylesheet produces an indexing XML record, which is defined by
+     the <literal>record</literal> element in the magic namespace
+     <literal>xmlns:z="http://indexdata.dk/zebra/xslt/1"</literal>.
+     Zebra uses the content of 
+     <literal>z:id="oai:JTRS:CP-3290---Volume-I"</literal> as internal
+     record ID, and - in case static ranking is set - the content of 
+     <literal>z:rank="47896"</literal> as static rank. Following the
+     discussion in XXX we see that this records is internally ordered
+     lexicographically according to the value of the string
+     <literal>oai:JTRS:CP-3290---Volume-I47896</literal>.
+     The type of action performed during indexing is defined by
+     <literal>z:type="update"&gt;</literal>, with recognized values
+     <literal>insert</literal>, <literal>update</literal>, and 
+     <literal>delete</literal>. 
+    </para>
+    <para>Then the following literal indexes are constructed:
+     <screen>
+       oai:identifier
+       oai:datestamp
+       oai:setspec
+       dc:all
+       dc:title
+       dc:creator
+     </screen>
+     where the indexing type is defined in the 
+     <literal>type</literal> attribute (any value from the standard config
+     file<literal>default.idx</literal> will do). Finally, any 
+     <literal>text()</literal> node content recursively contained
+     inside the <literal>index</literal> will be filtered through the
+     appropriate charmap for character normalization, and will be
+     inserted in the index.
+    </para>
+    <para>
+     Notice that there are no <literal>.abs</literal>,
+     <literal>.est</literal>, <literal>.map</literal>, or other GRS-1
+     filter configuration files involves in this process. Notice also,
+     that the names and types of the indexes can be defined in the
+     indexing XSLT stylesheet <emphasis>dynamically according to
+     content in the original XML records</emphasis>, which has
+     oppertunities for great power and great disaster.
+    </para>
    </sect2>
-
-
   </sect1>
 
 
   <sect1 id="record-model-alvisxslt-conf">
-   <title>ALLVIS Record Model Configuration</title>
-   <para>FIXME</para>
+   <title>ALVIS Record Model Configuration</title>
 
 
+  <sect2 id="record-model-alvisxslt-index">
+   <title>ALVIS Indexing Configuration</title>
+    <para>FIXME
+    </para>
+    <para>FIXME
+    </para>
+    <para>FIXME
+    </para>
+  </sect2>
 
-  <sect2 id="record-model-alvisxslt-exchange">
+  <sect2 id="record-model-alvisxslt-elementset">
    <title>ALVIS Exchange Formats</title>
    <para>FIXME</para>
   </sect2>

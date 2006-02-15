@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.35 2006-02-15 12:08:47 marc Exp $
+## $Id: Makefile.am,v 1.36 2006-02-15 14:57:48 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -30,8 +30,11 @@ XMLFILES =  zebra.xml.in \
    zebrasrv-virtual.xml
 
 
-HTMLFILES =  administration.html \
+HTMLFILES = administration-ranking.html \
+   administration.html \
    apps.html \
+   architecture-maincomponents.html \
+   architecture-workflow.html \
    architecture.html \
    configuration-file.html \
    example1.html \
@@ -50,7 +53,6 @@ HTMLFILES =  administration.html \
    introduction.html \
    license.html \
    locating-records.html \
-   architecture-maincomponents.html \
    protocol-support.html \
    quick-start.html \
    record-model-alvisxslt-conf.html \
@@ -58,13 +60,12 @@ HTMLFILES =  administration.html \
    record-model-grs-conf.html \
    record-model-grs.html \
    register-location.html \
+   server-sru-support.html \
+   server-sru.html \
    server.html \
    shadow-registers.html \
    simple-indexing.html \
-   sru-server.html \
-   sru-support.html \
    support.html \
-   workflow.html \
    zebra.html \
    zebraidx.html
 
