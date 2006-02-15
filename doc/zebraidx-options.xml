@@ -1,5 +1,5 @@
 <!-- 
-   $Id: zebraidx-options.xml,v 1.3 2003-12-03 13:57:16 adam Exp $
+   $Id: zebraidx-options.xml,v 1.4 2006-02-15 12:08:48 marc Exp $
    Options for zebraidx.
    Included in both manual and man page for zebraidx
 -->
@@ -14,7 +14,7 @@
     <literal>grs</literal><replaceable>.subtype</replaceable>.
     If no <replaceable>subtype</replaceable> is provided for the GRS
     (General Record Structure) type, the canonical input format
-    is assumed (see &ref-local-representation;).
+    is assumed (see &ref-architecture-representation;).
     Generally, it is probably advisable to specify the record types
     in the <literal>zebra.cfg</literal> file (see
     &ref-record-types;), to avoid confusion at

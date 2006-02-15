@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.34 2006-02-15 11:07:47 marc Exp $
+## $Id: Makefile.am,v 1.35 2006-02-15 12:08:47 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -50,7 +50,7 @@ HTMLFILES =  administration.html \
    introduction.html \
    license.html \
    locating-records.html \
-   maincomponents.html \
+   architecture-maincomponents.html \
    protocol-support.html \
    quick-start.html \
    record-model-alvisxslt-conf.html \

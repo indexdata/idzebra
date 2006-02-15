@@ -1,5 +1,5 @@
 <chapter id="administration">
- <!-- $Id: administration.xml,v 1.22 2006-02-15 11:07:47 marc Exp $ -->
+ <!-- $Id: administration.xml,v 1.23 2006-02-15 12:08:47 marc Exp $ -->
  <title>Administrating Zebra</title>
  <!-- ### It's a bit daft that this chapter (which describes half of
           the configuration-file formats) is separated from
@@ -843,7 +843,6 @@
     
     <screen>
      register: /d1:500M
-     
      shadow: /scratch1:100M /scratch2:200M
     </screen>
     
@@ -921,8 +920,112 @@
   </sect2>
   
  </sect1>
+
+
+ <sect1 id="administration-ranking">
+  <title>Static and Dynamic Ranking</title>
+  
+   <para>
+    Zebra uses internally inverted indexes to look up term occurencies
+    in documents. Multiple queries from different indexes can be
+    combined by the binary boolean operations <literal>AND</literal>, 
+    <literal>OR</literal> and/or <literal>NOT</literal> (which
+    is in fact a binary <literal>AND NOT</literal> operation). 
+    To ensure fast query execution
+    speed, all indexes have to be sorted in the same order.
+   </para>
+   <para>
+    The indexes are normally sorted according to document 
+    <literal>ID</literal> in
+    ascending order, and any query which does not invoke a special
+    re-ranking function will therefore retrieve the result set in
+    document 
+    <literal>ID</literal>
+    order.
+   </para>
+   <para>
+    If one defines the 
+    <screen>
+    staticrank: 1 
+    </screen> 
+    directive in the main core Zebra config file, the internal document
+    keys used for ordering are augmented by a preceeding integer, which
+    contains the static rank of a given document, and the index lists
+    are ordered 
+    first by ascending static rank,
+    then by ascending document <literal>ID</literal>.
+   </para>
+   <para>
+    This implies that the default rank <literal>0</literal> 
+    is the best rank at the
+    beginning of the list, and <literal>max int</literal> 
+    is the worst static rank.
+   </para>
+   <para>
+    The experimental <literal>alvis</literal> filter provides a
+    directive to fetch static rank information out of the indexed XML
+    records, thus making <emphasis>all</emphasis> hit sets orderd
+    after <emphasis>ascending</emphasis> static
+    rank, and for those doc's which have the same static rank, ordered
+    after <emphasis>ascending</emphasis> doc <literal>ID</literal>.
+    See <xref linkend="record-model-alvisxslt"/> for the glory details.
+   </para>
+   <para>
+    If one wants to do a little fiddeling with the static rank order,
+    one has to invoke additional re-ranking/re-ordering using dynamic 
+    reranking or score functions. These functions return positive
+    interger scores, where <emphasis>highest</emphasis> score is 
+    <emphasis>best</emphasis>, which means that the
+    hit sets will be sorted according to
+    <emphasis>decending</emphasis> 
+    scores (in contrary
+    to the index lists which are sorted according to
+    <emphasis>ascending</emphasis> rank  number and document ID).
+   </para>
+   <!--
+   <para>
+    Those are defined in the zebra C source files 
+    <screen>     
+    "rank-1" : zebra/index/rank1.c  
+               default TF/IDF like zebra dynamic ranking
+    "rank-static" : zebra/index/rankstatic.c
+               do-nothing dummy static ranking (this is just to prove
+               that the static rank can be used in dynamic ranking functions)  
+     "zvrank" : zebra/index/zvrank.c
+               many different dynamic TF/IDF ranking functions 
+    </screen> 
+   </para>
+   -->
+   <para>
+    Those are in the zebra config file enabled by a directive like (use
+    only one of these a time!):
+    <screen> 
+    rank: rank-1        # default
+    rank: rank-static   # dummy 
+    rank: zvrank        # TDF-IDF like
+    </screen>
+    Notice that the <literal>rank-1</literal> and
+    <literal>zvrank</literal> do not use the static rank 
+    information in the list keys, and will produce the same ordering
+    with our without static ranking enabled.
+   </para>
+   <para>
+    The dummy <literal>rank-static</literal> reranking/scoring
+    function returns just 
+    <literal>score = max int - staticrank</literal>
+    in order to preserve the ordering of hit sets with and without it's
+    call.
+     Obviously, to combine static and dynamic ranking usefully, one wants
+    to make a new ranking 
+    function, which is left
+    as an exercise for the reader. 
+   </para>
+   
+ </sect1>
+
  
 </chapter>
+
  <!-- Keep this comment at the end of the file
  Local variables:
  mode: sgml

@@ -1,9 +1,9 @@
  <chapter id="architecture">
-  <!-- $Id: architecture.xml,v 1.3 2006-02-15 11:07:47 marc Exp $ -->
+  <!-- $Id: architecture.xml,v 1.4 2006-02-15 12:08:48 marc Exp $ -->
   <title>Overview of Zebra Architecture</title>
   
 
-  <sect1 id="local-representation">
+  <sect1 id="architecture-representation">
    <title>Local Representation</title>
 
    <para>
@@ -32,7 +32,7 @@
    </para>
   </sect1>
 
-  <sect1 id="workflow">
+  <sect1 id="architecture-workflow">
    <title>Indexing and Retrieval Workflow</title>
 
   <para>
@@ -85,7 +85,7 @@
   </sect1>
 
 
-  <sect1 id="maincomponents">
+  <sect1 id="architecture-maincomponents">
    <title>Main Components</title>
    <para>
     The Zebra system is designed to support a wide range of data management
@@ -242,6 +242,7 @@ IDZebra filter grs.danbib (DBC DanBib records)
    <sect3 id="componentmodulesalvis">
     <title>ALVIS Record Model and Filter Module</title>
      <para>
+      <xref linkend="record-model-alvisxslt"/>
       - alvis          Experimental Alvis XSLT filter
       <literal>mod-alvis.so</literal>
       <literal>libidzebra1.4-mod-alvis</literal>

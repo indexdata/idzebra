@@ -22,8 +22,8 @@
         <!ENTITY zebrasrv-virtual SYSTEM "zebrasrv-virtual.xml">
         <!ENTITY gfs-synopsis-app "zebrasrv">
 
-	<!ENTITY ref-local-representation '
-		<xref linkend="local-representation"/>'>
+	<!ENTITY ref-architecture-representation '
+		<xref linkend="architecture-representation"/>'>
 	<!ENTITY ref-record-types '
 		<xref linkend="record-types"/>'>
 	<!ENTITY ref-configuration-file '
@@ -31,7 +31,7 @@
 	<!ENTITY ref-shadow-registers '
 		<xref linkend="shadow-registers"/>'>
 ]>
-<!-- $Id: zebra.xml.in,v 1.23 2006-02-15 11:07:47 marc Exp $ -->
+<!-- $Id: zebra.xml.in,v 1.24 2006-02-15 12:08:48 marc Exp $ -->
 <book id="zebra">
  <bookinfo>
   <title>Zebra - User's Guide and Reference</title>
