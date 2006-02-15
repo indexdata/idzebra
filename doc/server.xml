@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.11 2006-02-15 11:16:22 mike Exp $ -->
+ <!-- $Id: server.xml,v 1.12 2006-02-15 16:54:36 mike Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -52,7 +52,7 @@
    
   &zebrasrv-options;
   </sect2>
-  <sect2><title>VIRTUAL HOSTS</title>
+  <sect2 id="gfs-config"><title>VIRTUAL HOSTS</title>
     <para>
      <command>zebrasrv</command> uses the YAZ server frontend and does
      support multiple virtual servers behind multiple listening sockets.
@@ -558,15 +558,131 @@
 
 <chapter id="server-sru">
  <title>The SRU/SRW Server</title>
+ <para>
+  In addition to Z39.50, Zebra supports the more recent and
+  web-friendly IR protocol SRU, described at
+  <ulink url="http://www.loc.gov/sru"/>.
+  SRU is ``Search/Retrieve via URL'', a simple, REST-like protocol
+  that uses HTTP GET to request search responses.  The request
+  itself is made of parameters such as
+  <literal>query</literal>,
+  <literal>startRecord</literal>,
+  <literal>maximumRecords</literal>
+  and
+  <literal>recordSchema</literal>;
+  the response is an XML document containing hit-count, result-set
+  records, diagnostics, etc.  SRU can be thought of as a re-casting
+  of Z39.50 semantics in web-friendly terms; or as a standardisation
+  of the ad-hoc query parameters used by search engines such as Google
+  and AltaVista; or as a superset of A9's OpenSearch (which it
+  predates).
+ </para>
+ <para>
+  Zebra further supports SRW, described at
+  <ulink url="http://www.loc.gov/srw"/>.
+  SRW is the ``Search/Retrieve Web Service'', a SOAP-based alternative
+  implementation of the abstract protocol that SRU implements as HTTP
+  GET requests.  In SRW, requests are encoded as XML documents which
+  are posted to the server.  The responses are identical to those
+  returned by SRU servers, except that they are wrapped in a several
+  layers of SOAP envelope.
+ </para>
+ <para>
+  Zebra supports all three protocols - Z39.50, SRU and SRW - on the
+  same port, recognising what protocol is used by each incoming
+  requests and handling them accordingly.  This is a achieved through
+  the use of Deep Magic; civilians are warned not to stand too close.
+ </para>
 
  <sect1 id="server-sru-run">
   <title>Running the SRU/SRW Server (zebrasrv)</title>
-  <para>Placeholder for DocBook's facist schema</para>
+  <para>
+   Because Zebra supports all three protocols on one port, it would
+   seem to follow that the SRU/SRW server is run in the same way as
+   the Z39.50 server, as described above.  This is true, but only in
+   an uninterestingly vacuous way: a Zebra server run in this manner
+   will indeed recognise and accept SRU and SRW requests; but since it
+   doesn't know how to handle the CQL queries that these protocols
+   use, all it can do is send failure responses.
+  </para>
+  <note>
+   <para>
+    It is possible to cheat, by having SRU or SRW search Zebra with
+    a PQF query instead of CQL, using the
+    <literal>x-pquery</literal>
+    parameter instead of
+    <literal>query</literal>.
+    This is a
+    <emphasis role="strong">non-standard extension</emphasis>
+    of CQL, and a
+    <emphasis role="strong">very naughty</emphasis>
+    thing to do, but it does give you a way to see Zebra serving SRU
+    ``right out of the box''.  If you start your favourite Zebra
+    server in the usual way, on port 9999, then you can send your web
+    browser to:
+  </para>
+  <screen>
+	http://localhost:9999/Default?version=1.1&amp;
+		operation=searchRetrieve&amp;
+		x-pquery=mineral&amp;
+		startRecord=1&amp;
+		maximumRecords=1
+  </screen>
+  <para>
+    This will display the XML-formatted SRU response that includes the
+    first record in the result-set found by the query
+    <literal>mineral</literal>.  (For clarity, the SRU URL is shown
+    here broken across lines, but the lines should be joined to gether
+    to make single-line URL for the browser to submit.)
+   </para>
+  </note>
+  <para>
+   In order to turn on Zebra's support for CQL queries, it's necessary
+   to have the YAZ generic front-end (which Zebra uses) translate them
+   into the Z39.50 Type-1 query format that is used internally.  And
+   to do this, the generic front-end's own configuration file must be
+   used.  This file is described
+   <link linkend="gfs-config">elsewhere</link>;
+   the salient point for SRU and SRW support is that
+   <command>zebrasrv</command>
+   must be started with the
+   <literal>-f&nbsp;frontendConfigFile</literal>
+   option rather than the
+   <literal>-c&nbsp;zebraConfigFile</literal>
+   option,
+   and that the front-end configuration file must include both a
+   reference to the Zebra configuration file and the CQL-to-PQF
+   translator configuration file.
+  </para>
+  <para>
+   A minimal front-end configuration file that does this would read as
+   follows:
+  </para>
+  <screen><![CDATA[
+	<yazgfs>
+	  <server>
+	    <config>zebra.cfg</config>
+	    <cql2rpn>../../tab/pqf.properties</cql2rpn>
+	  </server>
+	</yazgfs>
+]]></screen>
+  <para>
+   The
+   <literal>&lt;config&gt;</literal>
+   element contains the name of the Zebra configuration file that was
+   previously specified by the
+   <literal>-c</literal>
+   command-line argument, and the
+   <literal>&lt;cql2rpn&gt;</literal>
+   element contains the name of the CQL properties file specifying how
+   various CQL indexes, relations, etc. are translated into Type-1
+   queries.
+  </para>
  </sect1>
 
  <sect1 id="server-sru-support">
   <title>SRU and SRW Protocol Support and Behavior</title>
-  <para>Placeholder for DocBook's facist schema x</para>
+  <para>### x-pquery</para>
  </sect1>
 </chapter>
 
