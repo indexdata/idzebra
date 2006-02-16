@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.13 2006-02-16 12:28:52 mike Exp $ -->
+ <!-- $Id: server.xml,v 1.14 2006-02-16 13:27:18 mike Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -627,11 +627,11 @@
     browser to:
   </para>
   <screen>
-	http://localhost:9999/Default?version=1.1&amp;
-		operation=searchRetrieve&amp;
-		x-pquery=mineral&amp;
-		startRecord=1&amp;
-		maximumRecords=1
+	http://localhost:9999/Default?version=1.1
+		&amp;operation=searchRetrieve
+		&amp;x-pquery=mineral
+		&amp;startRecord=1
+		&amp;maximumRecords=1
   </screen>
   <para>
     This will display the XML-formatted SRU response that includes the
@@ -683,6 +683,17 @@
    various CQL indexes, relations, etc. are translated into Type-1
    queries.
   </para>
+  <para>
+   A zebra server running with such a configuration can then be
+   queried using proper, conformant SRU URLs with CQL queries:
+  </para>
+  <screen>
+	http://localhost:9999/Default?version=1.1
+		&amp;operation=searchRetrieve
+		&amp;query=title=utah and description=epicent*
+		&amp;startRecord=1
+		&amp;maximumRecords=1
+  </screen>
  </sect1>
 
  <sect1 id="server-sru-support">
@@ -708,23 +719,48 @@
     is with some shame, then, that we admit that Zebra also supports
     an additional query language, our own Prefix Query Format (PQF,
     <ulink url="http://indexdata.com/yaz/doc/tools.tkl#PQF"/>).
-x-pquery
-
-
+    A PQF query is submitted by using the extension parameter
+    <literal>x-pquery</literal>,
+    in which case the
+    <literal>query</literal>
+    parameter must be omitted, which makes the request not valid SRU.
+    Please don't do this.
    </para>
   </sect2>
 
   <sect2>
    <title>Scan</title>
    <para>
-    ###
+    Zebra does <emphasis>not</emphasis> support SRU's
+    <literal>scan</literal>
+    operation, as described at
+    <ulink url="http://www.loc.gov/standards/sru/scan/"/>
+   </para>
+   <para>
+    This is a rather embarrassing surprise as the pieces are all
+    there: Z39.50 scan is supported, and SRU scan requests are
+    recognised and diagnosed.  To add further to the embarrassment, a
+    mutant form of SRU scan <emphasis>is</emphasis> supported, using
+    the non-standard <literal>x-pScanClause</literal> parameter in
+    place of the standard <literal>scanClause</literal> to scan on a
+    PQF query clause.
    </para>
   </sect2>
 
   <sect2>
    <title>Explain</title>
    <para>
-    ###
+    Zebra fully supports SRU's core
+    <literal>searchRetrieve</literal>
+    operation, as described at
+    <ulink url="http://www.loc.gov/standards/sru/explain/index.html"/>
+   </para>
+   <para>
+    The ZeeRex record explaining a database may be requested either
+    with a fully fledged SRU request (with
+    <literal>operation</literal>=<literal>explain</literal>
+    and version-number specified)
+    or with a simple HTTP GET at the server's basename.
    </para>
   </sect2>
 
