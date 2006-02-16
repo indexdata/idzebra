@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.14 2006-02-16 13:27:18 mike Exp $ -->
+ <!-- $Id: server.xml,v 1.15 2006-02-16 14:45:51 marc Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -751,7 +751,7 @@
    <title>Explain</title>
    <para>
     Zebra fully supports SRU's core
-    <literal>searchRetrieve</literal>
+    <literal>explain</literal>
     operation, as described at
     <ulink url="http://www.loc.gov/standards/sru/explain/index.html"/>
    </para>
