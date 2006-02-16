@@ -1,5 +1,5 @@
 <chapter id="server">
- <!-- $Id: server.xml,v 1.12 2006-02-15 16:54:36 mike Exp $ -->
+ <!-- $Id: server.xml,v 1.13 2006-02-16 12:28:52 mike Exp $ -->
  <title>The Z39.50 Server</title>
  
  <sect1 id="zebrasrv">
@@ -593,21 +593,26 @@
   requests and handling them accordingly.  This is a achieved through
   the use of Deep Magic; civilians are warned not to stand too close.
  </para>
+ <para>
+  From here on, ``SRU'' is used to indicate both the SRU and SRW
+  protocols, as they are identical except for the transport used for
+  the protocol packets and Zebra's support for them is equivalent.
+ </para>
 
  <sect1 id="server-sru-run">
-  <title>Running the SRU/SRW Server (zebrasrv)</title>
+  <title>Running the SRU Server (zebrasrv)</title>
   <para>
    Because Zebra supports all three protocols on one port, it would
-   seem to follow that the SRU/SRW server is run in the same way as
+   seem to follow that the SRU server is run in the same way as
    the Z39.50 server, as described above.  This is true, but only in
    an uninterestingly vacuous way: a Zebra server run in this manner
-   will indeed recognise and accept SRU and SRW requests; but since it
+   will indeed recognise and accept SRU requests; but since it
    doesn't know how to handle the CQL queries that these protocols
    use, all it can do is send failure responses.
   </para>
   <note>
    <para>
-    It is possible to cheat, by having SRU or SRW search Zebra with
+    It is possible to cheat, by having SRU search Zebra with
     a PQF query instead of CQL, using the
     <literal>x-pquery</literal>
     parameter instead of
@@ -643,7 +648,7 @@
    to do this, the generic front-end's own configuration file must be
    used.  This file is described
    <link linkend="gfs-config">elsewhere</link>;
-   the salient point for SRU and SRW support is that
+   the salient point for SRU support is that
    <command>zebrasrv</command>
    must be started with the
    <literal>-f&nbsp;frontendConfigFile</literal>
@@ -682,7 +687,103 @@
 
  <sect1 id="server-sru-support">
   <title>SRU and SRW Protocol Support and Behavior</title>
-  <para>### x-pquery</para>
+  <para>
+   Zebra running as an SRU server supports SRU version 1.1, including
+   CQL version 1.1.  In particular, it provides support for the
+   following elements of the protocol.
+  </para>
+
+  <sect2>
+   <title>Search and Retrieval</title>
+   <para>
+    Zebra fully supports SRU's core
+    <literal>searchRetrieve</literal>
+    operation, as described at
+    <ulink url="http://www.loc.gov/standards/sru/sru-spec.html"/>
+   </para>
+   <para>
+    One of the great strengths of SRU is that it mandates a standard
+    query language, CQL, and that all conforming implementations can
+    therefore be trusted to correctly interpret the same queries.  It
+    is with some shame, then, that we admit that Zebra also supports
+    an additional query language, our own Prefix Query Format (PQF,
+    <ulink url="http://indexdata.com/yaz/doc/tools.tkl#PQF"/>).
+x-pquery
+
+
+   </para>
+  </sect2>
+
+  <sect2>
+   <title>Scan</title>
+   <para>
+    ###
+   </para>
+  </sect2>
+
+  <sect2>
+   <title>Explain</title>
+   <para>
+    ###
+   </para>
+  </sect2>
+
+  <sect2>
+   <title>Initialization, Present, Sort, Close</title>
+   <para>
+    In the Z39.50 protocol, Initialization, Present, Sort and Close
+    are separate operations.  In SRU, however, these operations do not
+    exist.
+   </para>
+   <itemizedlist>
+    <listitem>
+     <para>
+      SRU has no explicit initialization handshake phase, but
+      commences immediately with searching, scanning and explain
+      operations.
+     </para>
+    </listitem>
+    <listitem>
+     <para>
+      Neither does SRU have a close operation, since the protocol is
+      stateless and each request is self-contained.  (It is true that
+      multiple SRU request/response pairs may be implemented as
+      multiple HTTP request/response pairs over a single persistent
+      TCP/IP connection; but the closure of that connection is not a
+      protocol-level operation.)
+     </para>
+    </listitem>
+    <listitem>
+     <para>
+      Retrieval in SRU is part of the
+      <literal>searchRetrieve</literal> operation, in which a search
+      is submitted and the response includes a subset of the records
+      in the result set.  There is no direct analogue of Z39.50's
+      Present operation which requests records from an established
+      result set.  In SRU, this is achieved by sending a subsequent
+      <literal>searchRetrieve</literal> request with the query
+      <literal>cql.resultSetId=</literal><emphasis>id</emphasis> where 
+      <emphasis>id</emphasis> is the identifier of the previously
+      generated result-set.
+     </para>
+    </listitem>
+    <listitem>
+     <para>
+      Sorting in CQL is done within the
+      <literal>searchRetrieve</literal> operation - in v1.1, by an
+      explicit <literal>sort</literal> parameter, but the forthcoming
+      v1.2 or v2.0 will most likely use an extension of the query
+      language, CQL for sorting: see
+      <ulink url="http://zing.z3950.org/cql/sorting.html"/>
+     </para>
+    </listitem>
+   </itemizedlist>
+   <para>
+    It can be seen, then, that while Zebra operating as an SRU server
+    does not provide the same set of operations as when operating as a
+    Z39.50 server, it does provide equivalent functionality.
+   </para>
+  </sect2>
  </sect1>
 </chapter>
 
