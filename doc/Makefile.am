@@ -1,4 +1,4 @@
-## $Id: Makefile.am,v 1.36 2006-02-15 14:57:48 marc Exp $
+## $Id: Makefile.am,v 1.37 2006-02-16 12:32:31 marc Exp $
 docdir=$(datadir)/doc/@PACKAGE@
 
 SUPPORTFILES = \
@@ -68,6 +68,7 @@ HTMLFILES = administration-ranking.html \
    support.html \
    zebra.html \
    zebraidx.html
+
 
 
 PNGFILES=zebra.png

@@ -1,5 +1,5 @@
  <chapter id="record-model-alvisxslt">
-  <!-- $Id: recordmodel-alvisxslt.xml,v 1.2 2006-02-15 14:57:48 marc Exp $ -->
+  <!-- $Id: recordmodel-alvisxslt.xml,v 1.3 2006-02-16 12:32:31 marc Exp $ -->
   <title>ALVIS XML Record Model and Filter Module</title>
   
 
@@ -15,27 +15,28 @@
   <para> This filter has been developed under the 
    <ulink url="http://www.alvis.info/">ALVIS</ulink> project funded by
    the European Community under the "Information Society Technologies"
-   Programme (2002-2006).
+   Program (2002-2006).
   </para>
   
   
   <sect1 id="record-model-alvisxslt-filter">
    <title>ALVIS Record Filter</title>
    <para>
-    The experimental, loadable  Alvis XM/XSLT filter module
+    The experimental, loadable  Alvis XML/XSLT filter module
    <literal>mod-alvis.so</literal> is packaged in the GNU/Debian package
     <literal>libidzebra1.4-mod-alvis</literal>.
-    It is invoked by the zebra configuration statement
+    It is invoked by the <filename>zebra.cfg</filename> configuration statement
     <screen>
      recordtype.xml: alvis.db/filter_alvis_conf.xml
     </screen>
-    on all data files with suffix <literal>.xml</literal>, where the
-    <literal>alvis</literal> XSLT filter config file is found in the
-    path <literal>db/filter_alvis_conf.xml</literal>
+    In this example on all data files with suffix 
+    <filename>*.xml</filename>, where the
+    Alvis XSLT filter configuration file is found in the
+    path <filename>db/filter_alvis_conf.xml</filename>.
    </para>
-   <para>The <literal>alvis</literal> XSLT filter config file must be
-    valid XML. It might look like this (used for indexing and display
-    of OAI harvested records):
+   <para>The Alvis XSLT filter configuration file must be
+    valid XML. It might look like this (This example is
+    used for indexing and display of OAI harvested records):
     <screen>
     &lt;?xml version="1.0" encoding="UTF-8"?&gt;
       &lt;schemaInfo&gt;
@@ -59,7 +60,7 @@
       <ulink url="http://www.loc.gov/standards/sru/srw/">SRW</ulink>,
       <ulink url="http://www.loc.gov/standards/sru/">SRU</ulink> and
     Z39.50 protocol queries.
-    The pathes in the <literal>stylesheet</literal> attributes
+    The paths in the <literal>stylesheet</literal> attributes
     are relative to zebras working directory, or absolute to file
     system root.
    </para>
@@ -79,14 +80,14 @@
     <title>ALVIS Internal Record Representation</title>   
     <para>When indexing, an XML Reader is invoked to split the input
     files into suitable record XML pieces. Each record piece is then
-    transformed to an XML DOM structire, which is essentially the
-    record model. Only XSLT transfomations can be applied during
+    transformed to an XML DOM structure, which is essentially the
+    record model. Only XSLT transformations can be applied during
     index, search and retrieval. Consequently, output formats are
     restricted to whatever XSLT can deliver from the record XML
     structure, be it other XML formats, HTML, or plain text. In case
     you have <literal>libxslt1</literal> running with EXSLT support,
-    you can use this functionality inside the <literal>alvis</literal>
-    filter configuraiton XSLT stylesheets.
+    you can use this functionality inside the Alvis
+    filter configuration XSLT stylesheets.
     </para>
    </sect2>
 
@@ -136,7 +137,8 @@
      <literal>z:id="oai:JTRS:CP-3290---Volume-I"</literal> as internal
      record ID, and - in case static ranking is set - the content of 
      <literal>z:rank="47896"</literal> as static rank. Following the
-     discussion in XXX we see that this records is internally ordered
+     discussion in <xref linkend="administration-ranking"/>
+     we see that this records is internally ordered
      lexicographically according to the value of the string
      <literal>oai:JTRS:CP-3290---Volume-I47896</literal>.
      The type of action performed during indexing is defined by
@@ -144,7 +146,7 @@
      <literal>insert</literal>, <literal>update</literal>, and 
      <literal>delete</literal>. 
     </para>
-    <para>Then the following literal indexes are constructed:
+    <para>In this example, the following literal indexes are constructed:
      <screen>
        oai:identifier
        oai:datestamp
@@ -154,21 +156,40 @@
        dc:creator
      </screen>
      where the indexing type is defined in the 
-     <literal>type</literal> attribute (any value from the standard config
-     file<literal>default.idx</literal> will do). Finally, any 
+     <literal>type</literal> attribute 
+     (any value from the standard configuration
+     file <filename>default.idx</filename> will do). Finally, any 
      <literal>text()</literal> node content recursively contained
      inside the <literal>index</literal> will be filtered through the
      appropriate charmap for character normalization, and will be
      inserted in the index.
     </para>
     <para>
-     Notice that there are no <literal>.abs</literal>,
-     <literal>.est</literal>, <literal>.map</literal>, or other GRS-1
-     filter configuration files involves in this process. Notice also,
-     that the names and types of the indexes can be defined in the
-     indexing XSLT stylesheet <emphasis>dynamically according to
-     content in the original XML records</emphasis>, which has
-     oppertunities for great power and great disaster.
+     Specific to this example, we see that the single word
+     <literal>oai:JTRS:CP-3290---Volume-I</literal> will be literal,
+     byte for byte without any form of character normalization,
+     inserted into the index named <literal>oai:identifier</literal>,
+     the text 
+     <literal>Kumar Krishen and *Calvin Burnham, Editors</literal>
+     will be inserted using the <literal>w</literal> character
+     normalization defined in <filename>default.idx</filename> into
+     the index <literal>dc:creator</literal> (that is, after character
+     normalization the index will keep the inidividual words 
+     <literal>kumar</literal>, <literal>krishen</literal>, 
+     <literal>and</literal>, <literal>calvin</literal>,
+     <literal>burnham</literal>, and <literal>editors</literal>), and
+     finally both the texts
+     <literal>Proceedings of the 4th International Conference and Exhibition:
+      World Congress on Superconductivity - Volume I</literal> 
+     and
+     <literal>Kumar Krishen and *Calvin Burnham, Editors</literal> 
+     will be inserted into the index <literal>dc:all</literal> using
+     the same character normalization map <literal>w</literal>. 
+    </para>
+    <para>
+     Notice that there are no <filename>*.abs</filename>,
+     <filename>*.est</filename>, <filename>*.map</filename>, or other GRS-1
+     filter configuration files involves in this process. 
     </para>
    </sect2>
   </sect1>
@@ -180,17 +201,191 @@
 
   <sect2 id="record-model-alvisxslt-index">
    <title>ALVIS Indexing Configuration</title>
-    <para>FIXME
+    <para>
+     As mentioned above, there can be only one indexing
+     stylesheet, and configuration of the indexing process is a synonym
+     of writing an XSLT stylesheet which produces XML output containing the
+     magic elements discussed in  
+     <xref linkend="record-model-alvisxslt-internal"/>. 
+     Obviously, there are million of different ways to accomplish this
+     task, and some comments and code snippets are in order to lead
+     our paduans on the right track to the  good side of the force.
     </para>
-    <para>FIXME
+    <para>
+     Stylesheets can be written in the <emphasis>pull</emphasis> or
+     the <emphasis>push</emphasis> style: <emphasis>pull</emphasis>
+     means that the output XML structure is taken as starting point of
+     the internal structure of the XSLT stylesheet, and portions of
+     the input XML are <emphasis>pulled</emphasis> out and inserted
+     into the right spots of the output XML structure. On the other
+     side, <emphasis>push</emphasis> XSLT stylesheets are recursavly
+     calling their template definitions, a process which is commanded
+     by the input XML structure, and avake to produce some output XML
+     whenever some special conditions in the input styelsheets are
+     met. The <emphasis>pull</emphasis> type is well-suited for input
+     XML with strong and well-defined structure and semantcs, like the
+     following OAI indexing example, whereas the
+     <emphasis>push</emphasis> type might be the only possible way to
+     sort out deeply recursive input XML formats.
     </para>
-    <para>FIXME
+    <para> 
+     A <emphasis>pull</emphasis> stylesheet example used to index
+     OAI harvested records could use some of the following template
+     definitions:
+     <screen>
+      <![CDATA[
+      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+       xmlns:z="http://indexdata.dk/zebra/xslt/1"
+       xmlns:oai="http://www.openarchives.org/OAI/2.0/" 
+       xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" 
+       xmlns:dc="http://purl.org/dc/elements/1.1/"
+       version="1.0">
+
+       <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
+
+        <!-- disable all default text node output -->
+        <xsl:template match="text()"/>
+
+         <!-- match on oai xml record root -->
+         <xsl:template match="/">    
+          <z:record z:id="{normalize-space(oai:record/oai:header/oai:identifier)}" 
+           z:type="update">
+           <!-- you might want to use z:rank="{some XSLT function here}" --> 
+           <xsl:apply-templates/>
+          </z:record>
+         </xsl:template>
+
+         <!-- OAI indexing templates -->
+         <xsl:template match="oai:record/oai:header/oai:identifier">
+          <z:index name="oai:identifier" type="0">
+           <xsl:value-of select="."/>
+          </z:index>    
+         </xsl:template>
+
+         <!-- etc, etc -->
+
+         <!-- DC specific indexing templates -->
+         <xsl:template match="oai:record/oai:metadata/oai_dc:dc/dc:title">
+          <z:index name="dc:title" type="w">
+           <xsl:value-of select="."/>
+          </z:index>
+         </xsl:template>
+
+         <!-- etc, etc -->
+ 
+      </xsl:stylesheet>
+      ]]>
+     </screen>
+    </para>
+    <para>
+     Notice also,
+     that the names and types of the indexes can be defined in the
+     indexing XSLT stylesheet <emphasis>dynamically according to
+     content in the original XML records</emphasis>, which has
+     opportunities for great power and wizardery as well as grande
+     disaster.  
+    </para>
+    <para>
+     The following excerpt of a <emphasis>push</emphasis> stylesheet
+     <emphasis>might</emphasis> 
+     be a good idea according to your strict control of the XML
+     input format (due to rigerours checking against well-defined and
+     tight RelaxNG or XML Schema's, for example):
+     <screen>
+      <![CDATA[
+      <xsl:template name="element-name-indexes">     
+       <z:index name="{name()}" type="w">
+        <xsl:value-of select="'1'"/>
+       </z:index>
+      </xsl:template>
+      ]]>
+     </screen>
+     This template creates indexes which have the name of the working 
+     node of any input  XML file, and assigns a '1' to the index.
+     The example query 
+     <literal>find @attr 1=xyz 1</literal> 
+     finds all files which contain at least one
+     <literal>xyz</literal> XML element. In case you can not control
+     which element names the input files contain, you might ask for
+     disaster and bad karma using this technique.
+    </para>
+    <para>
+     One variation over the theme <emphasis>dynamically created
+     indexes</emphasis> will definitely be unwise:
+     <screen>
+      <![CDATA[  
+      <!-- match on oai xml record root -->
+      <xsl:template match="/">    
+       <z:record z:type="update">
+      
+        <!-- create dynamic index name from input content --> 
+        <xsl:variable name="dynamic_content">
+         <xsl:value-of select="oai:record/oai:header/oai:identifier"/>
+        </xsl:variable>
+        
+        <!-- create zillions of indexes with unknown names -->
+        <z:index name="{$dynamic_content}" type="w">
+         <xsl:value-of select="oai:record/oai:metadata/oai_dc:dc"/>
+        </z:index>          
+       </z:record>
+       
+      </xsl:template>
+      ]]>
+     </screen>
+     Don't be tempted to cross
+     the line to the dark side of the force, paduan; this leads
+     to suffering and pain, and universal
+     disentigration of your project schedule.
     </para>
   </sect2>
 
   <sect2 id="record-model-alvisxslt-elementset">
    <title>ALVIS Exchange Formats</title>
-   <para>FIXME</para>
+   <para>
+     An exchange format can be anything which can be the outcome of an
+     XSLT transformation, as far as the stylesheet is registered in
+     the main Alvis XSLT filter configuration file, see
+     <xref linkend="record-model-alvisxslt-filter"/>.
+     In principle anything that can be expressed in  XML, HTML, and
+     TEXT can be the output of a <literal>schema</literal> or 
+    <literal>element set</literal> directive during search, as long as
+     the information comes from the 
+     <emphasis>original input record XML DOM tree</emphasis>
+     (and not the transformed and <emphasis>indexed</emphasis> XML!!).
+    </para>
+    <para>
+     In addition, internal administrative information from the Zebra
+     indexer can be accessed during record retrieval. The following
+     example is a summary of the possibilities:
+     <screen>
+      <![CDATA[  
+      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+       xmlns:z="http://indexdata.dk/zebra/xslt/1"
+       version="1.0">
+
+       <!-- register internal zebra parameters -->       
+       <xsl:param name="id" select="''"/>
+       <xsl:param name="filename" select="''"/>
+       <xsl:param name="score" select="''"/>
+       <xsl:param name="schema" select="''"/>
+           
+       <xsl:output indent="yes" method="xml" version="1.0" encoding="UTF-8"/>
+
+       <!-- use then for display of internal information -->
+       <xsl:template match="/">
+         <z:zebra>
+           <id><xsl:value-of select="$id"/></id>
+           <filename><xsl:value-of select="$filename"/></filename>
+           <score><xsl:value-of select="$score"/></score>
+           <schema><xsl:value-of select="$schema"/></schema>
+         </z:zebra>
+       </xsl:template>
+
+      </xsl:stylesheet>
+      ]]>
+     </screen>
+    </para>
+
   </sect2>
 
   </sect1>
@@ -216,7 +411,7 @@ c)  Main "alvis" XSLT filter config file:
     <split level="1"/>
   </schemaInfo>
 
-  the pathes are relative to the directory where zebra.init is placed
+  the paths are relative to the directory where zebra.init is placed
   and is started up.
 
   The split level decides where the SAX parser shall split the
